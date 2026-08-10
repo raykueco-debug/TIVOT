@@ -15,9 +15,9 @@ import * as combat from './modules/combat.js';
 import * as saint from './modules/saint.js';
 import * as defense from './modules/defense.js';
 import * as partner from './modules/partner.js';   // 主動技統一入口 tryActive 由手勢觸發
+import * as weapon from './modules/weapon.js';     // 雙槍破防發動 + 換裝面板
 
 // 下一輪接（本輪僅載入驗證模組圖，尚未綁定其互動）
-import './modules/weapon.js';
 import './modules/inspector.js';
 import './modules/enemy.js';
 
@@ -39,6 +39,14 @@ bindBtn('startBtn',     combat.startGame);      // 首頁：開始遊戲
 bindBtn('exitBtn',      combat.goHome);         // 右上：退出回首頁
 bindBtn('testClearBtn', combat.testClearBoard); // 左上（測試用）：一鍵清盤
 bindBtn('rematchBtn',   combat.goHome);         // 結算：本輪一律回首頁（迎擊/評價流程下一輪接）
+
+// 破防值滿 → 點計量表發動「雙槍破防」獎勵射擊窗口
+bindBtn('energyClasp',    weapon.activateDual);
+// 首頁換裝面板：副武器（反擊武器）/ 搭檔（本輪顯示層）
+bindBtn('pickWeaponBtn',  ()=>weapon.openPickSheet('weapon'));
+bindBtn('pickPartnerBtn', ()=>weapon.openPickSheet('partner'));
+bindBtn('pickSheetClose', weapon.closePickSheet);
+weapon.refreshLoadoutLabels();                  // 開機：把當前副武器/搭檔名寫進 loadout 按鈕
 
 window.addEventListener('resize', combat.fitGridSquare);
 window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare,200));
@@ -170,4 +178,4 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
 
 combat.bootIdle();   // over=true，建立背景盤面/血條，停在首頁
 
-console.log('[step4] partner · 被動+主動框架已接上 · 敵：', GAME_CONFIG.enemies[GAME_CONFIG.currentEnemy]?.name, '· HP', state.enemyMax);
+console.log('[step5] weapon · 雙槍破防+換裝面板已接上 · 敵：', GAME_CONFIG.enemies[GAME_CONFIG.currentEnemy]?.name, '· HP', state.enemyMax);

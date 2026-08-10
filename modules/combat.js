@@ -30,6 +30,7 @@ const BOARDS = GAME_CONFIG.boards;
 const DMG_BASE=T.dmgBase, DMG_PER_COMBO=T.dmgPerCombo, DMG_COMBO_CAP=T.dmgComboCap;
 const ENERGY_PER_HIT=T.energyPerHit;
 const DMG_WRONG=T.dmgWrong, DMG_HEAVY=T.dmgHeavy, DMG_DELAY=T.dmgDelay;
+const DMG_DUAL_MULT=T.dmgDualMult;                   // 雙槍破防窗口點擊傷害倍率（<1＝安全牌）
 const ATK_BUFF_SECONDS=T.atkBuffSeconds;
 const SAINT_ADVANCE_DIVISOR=T.saintAdvanceDivisor;   // 聖徒化一次「受擊」推進量＝playerMax/此值
 const CLASP_LEN=110;
@@ -42,7 +43,14 @@ const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a
 export function setup(){
   // combat 把自己擁有的狀態變動原語注入下游模組，切斷反向依賴
   defense.init({ enemyAttack, enemyDamage, floatDmg, triggerAtkBuff, weaponCounter: weapon.weaponCounter });
-  weapon.init({ enemyDamage, floatDmg });
+  // 武器：反擊演算所需（enemyDamage/floatDmg）+ 雙槍破防窗口所需（cut-in/敵計時/盤面/破防值歸零）。
+  weapon.init({
+    enemyDamage, floatDmg,
+    playCutin: saint.playCutin,
+    resetEnemyTimers: defense.resetEnemyTimers,
+    scheduleUlt: defense.scheduleUlt,
+    markNext, buildGrid, resetEnergy,
+  });
   // 聖徒化：combat 為協調者，把 combat/defense/partner 的原語打包注入 saint，
   //   saint 不直接 import 其他業務模組（維持 §2 依賴方向）。改血一律走本檔 HP API（Part A）。
   saint.init({
@@ -164,7 +172,26 @@ function tap(num,cell,e){
 
   // 聖徒化：依序點擊 16 格、受擊推進倒數槽（combat 於期間讓出主迴圈，交由 saint 驅動盤面游標）。
   if(state.saintMode){ saint.saintTap(num, cell); updateStatus(); return; }
-  if(state.dualWield){ return; }    // TODO(next/weapon)：雙槍無視順序快速清盤
+
+  // 雙槍破防（獎勵射擊窗口）：無視順序、點掉的格移除不可重點、快速清盤（降攻安全牌，不吃暴擊/atkBuff）。
+  //   注意：雙槍清盤走自己的收尾（不走 clearBoard、不給完美清盤 bonus）。
+  if(state.dualWield){
+    if(cell.classList.contains('done')) return;
+    cell.classList.add('done'); enemy.shatterCell(cell);
+    state.combo++; resetIntervalDeadline();
+    const dmg=hitDamage()*DMG_DUAL_MULT;
+    SFX.gunshot(true);
+    enemyDamage(Math.round(dmg), false);
+    if(state.cells.every(c=>c.classList.contains('done'))){
+      SFX.clear(); clearAtkBuff(); weapon.endDual();
+      recordBoardTime((Date.now()-state.boardStartTime)/1000);
+      if(state.enemyHp<=0){ win(); return; }
+      defense.resetEnemyTimers();   // 破防清盤瞬間即重置敵大絕與延遲懲罰
+      goNextBoard();
+    }
+    updateStatus();
+    return;
+  }
 
   if(num===state.expect){
     SFX.gunshot(false);            // 普通開槍：重「碰」
@@ -425,8 +452,8 @@ function stopAll(){
   clearInterval(state.intervalTimer);
   clearTimeout(state.atkBuffTimer);
   defense.stopAll();
-  saint.stopTimers();   // 停聖徒化計時器（saintTimer / saintReactTimer）
-  // dualTimer 下一輪接（本輪未使用）
+  saint.stopTimers();    // 停聖徒化計時器（saintTimer / saintReactTimer）
+  weapon.stopTimers();   // 停雙槍破防計時器（dualTimer）
 }
 function fmtTime(sec){
   if(sec==null || !isFinite(sec)) return '--';
@@ -479,6 +506,7 @@ export function startGame(){
   state.over=false; state.defeated=false; state.combo=0; state.energy=0; state.expect=1; state.boardIndex=0;
   state.atkBuff=false;
   saint.reset();   // 聖徒化狀態全重置（saintMode 經 exitSaint、清計時器、關手勢層、清 saint 旗標）
+  weapon.reset();  // 雙槍破防重置（清 dualWield/dualTimer + #grid dualwield class，防跨場殘留）
   state.overkill=0; state.killTime=0; state.transitioning=false;
   state.counterCount=0; state.counterDamage=0; state.perfectCount=0; state.sawExecution=false;
   state.playerHp=state.playerMax; state.enemyHp=state.enemyMax;
