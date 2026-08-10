@@ -38,10 +38,10 @@ combat.setup();
 SFX.preload([
   asset('se_mg_squall'), asset('se_shotgun_blast'), asset('se_sniper_falcon'),
   asset('sfx_reload'),
-  asset('se_pistol_01'), asset('se_pistol_02'),
+  asset('se_pistol_02'),
 ].filter(Boolean));
-// 普攻槍聲：兩支手槍音隨機播（gunshot 呼叫端不變）
-SFX.setShots([asset('se_pistol_01'), asset('se_pistol_02')].filter(Boolean));
+// 普攻槍聲：固定用 Pistol_SE_02（不隨機）
+SFX.setShots([asset('se_pistol_02')].filter(Boolean));
 
 bindBtn('startBtn',     combat.startGame);      // 首頁：開始遊戲
 bindBtn('exitBtn',      combat.goHome);         // 右上：退出回首頁
