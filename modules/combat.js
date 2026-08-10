@@ -20,7 +20,7 @@ import * as enemy from './enemy.js';
 import * as defense from './defense.js';
 import * as weapon from './weapon.js';
 import * as saint from './saint.js';
-import { tryDeathGuard, currentPartner } from './partner.js';
+import * as partner from './partner.js';
 
 const $ = id => document.getElementById(id);
 const T = GAME_CONFIG.tuning;
@@ -57,7 +57,15 @@ export function setup(){
     endCharge: defense.endCharge, resetEnemyTimers: defense.resetEnemyTimers,
     setUltRate: defense.setUltRate,
     // partner（生命歸還主動技查詢）
-    currentPartner,
+    currentPartner: partner.currentPartner,
+  });
+  // 搭檔：combat 注入即死防禦所需原語（UI 刷新 / 傷字 / 敵計時重置與排程 / cut-in 播放器）。
+  //   partner 不反向 import combat/defense/saint，一律經此注入（維持 §2 依賴方向）。
+  partner.init({
+    updateBars, floatDmg,
+    resetEnemyTimers: defense.resetEnemyTimers,
+    scheduleUlt: defense.scheduleUlt,
+    playCutin: saint.playCutin,
   });
 }
 export function bootIdle(){
@@ -298,7 +306,7 @@ function enemyAttack(dmg, kind, saintAmt){
 function handlePlayerLethal(){
   // 1) 先問即死防禦（本場未用過才可用）。可用 → 已於 tryDeathGuard 內把 HP 鎖 1、續盤；
   //    這一擊若同時打死敵人＝1 HP 慘勝，照常由 clearBoard/tap 走 win（未上戰敗鎖）。
-  if(tryDeathGuard()) return;
+  if(partner.tryDeathGuard()) return;
   // 2) 不可用 → 戰敗。先上鎖：即使同一瞬間敵人也歸零，win() 一律讓位（戰敗優先）。
   state.defeated = true;
   lose();

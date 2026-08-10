@@ -14,10 +14,10 @@ import { SFX } from './audio.js';
 import * as combat from './modules/combat.js';
 import * as saint from './modules/saint.js';
 import * as defense from './modules/defense.js';
+// partner 由 combat 直接 import 並注入（即死防禦自動、生命歸還走 saint 手勢），main 不需再引用。
 
 // 下一輪接（本輪僅載入驗證模組圖，尚未綁定其互動）
 import './modules/weapon.js';
-import './modules/partner.js';
 import './modules/inspector.js';
 import './modules/enemy.js';
 
@@ -169,4 +169,4 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
 
 combat.bootIdle();   // over=true，建立背景盤面/血條，停在首頁
 
-console.log('[step3] weapon+saint · 聖徒化已接上 · 敵：', GAME_CONFIG.enemies[GAME_CONFIG.currentEnemy]?.name, '· HP', state.enemyMax);
+console.log('[step4] partner · 即死防禦已接上 · 敵：', GAME_CONFIG.enemies[GAME_CONFIG.currentEnemy]?.name, '· HP', state.enemyMax);
