@@ -43,6 +43,11 @@ export const state = {
   boardsCompleted: 0,
   runStartTime: 0,
   killTime: 0,
+  // 計時碼表（連戰用）：只在「盤面可點且非 overkill」時作動——盤載好/點擊＝繼續，
+  //   敵死(overkill)/轉場/cut-in/結算＝暫停。totalTime = runElapsedMs + 進行中的一段。
+  //   取代舊「killTime 凍結」單一計時，統一成暫停/繼續碼表（overkill 與轉場皆不計）。
+  runElapsedMs: 0,       // 已累計的「實打時間」（毫秒）
+  clockRunSince: 0,      // 目前這段起算時戳；0＝碼表暫停中
 
   /* ── 3.2 生命/敵我（擁有者：combat；playerHp 唯一例外見 applyDeathGuard） ── */
   playerHp: T.playerHp,
@@ -93,12 +98,13 @@ export const state = {
   resultMode: 'rematch',
   currentFavor: 0,
 
-  /* ── 3.7 亂入/Boss（擁有者：enemy） ──────────────────────────── */
+  /* ── 3.7 亂入/Boss + 連戰序列（擁有者：enemy） ──────────────── */
   currentEnemyKey: GAME_CONFIG.currentEnemy,
   curEnemyHitFx: null,
   intruderTriggered: false,
   inIntruderFight: false,
   deathGuardUsed: false,
+  lineupIndex: 0,        // 連戰序列游標（局內第幾隻敵，對應 GAME_CONFIG.lineup）
 
   /* ── 3.8 增益（擁有者：combat） ─────────────────────────────── */
   atkBuff: false,

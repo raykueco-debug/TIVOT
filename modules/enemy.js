@@ -19,8 +19,10 @@ import { SFX } from '../audio.js';
 
 const $ = id => document.getElementById(id);
 
-/* combat 於啟動時注入戰鬥重置原語（Boss 亂入的戰鬥重啟屬 combat 擁有）。 */
-let api = { startIntruderFight(){} };
+/* combat 於啟動時注入原語（維持依賴方向；enemy 不反向 import combat）。
+ *   startIntruderFight — Boss 亂入的戰鬥重啟（combat 擁有）。
+ *   updateBars         — 換敵後刷新血條（enemyHp 顯示，combat 擁有）。 */
+let api = { startIntruderFight(){}, updateBars(){} };
 export function init(a){ api = { ...api, ...a }; }
 
 /* ---------- 受擊特效派工 ----------
@@ -170,6 +172,39 @@ export function setEnemy(key){
   const nameEl = $('enemyName');
   if(nameEl) nameEl.textContent = displayEnemyName(en.name);
   loadEnemyPortrait(en);
+}
+
+/* ---------- 連戰序列（局＝同場多敵）----------
+ *  lineupIndex 為序列游標（§3.7 enemy 擁有）。開場載 lineup[0]、換敵時游標 +1 載下一隻。
+ *  Boss 亂入（inIntruderFight）為單敵新場,不走 lineup → hasNextInLineup 恆 false。 */
+export function startLineup(){
+  state.lineupIndex = 0;
+  const first = (GAME_CONFIG.lineup && GAME_CONFIG.lineup[0]) || GAME_CONFIG.currentEnemy;
+  setEnemy(first);
+}
+// 局內還有沒有下一隻（Boss 戰不算）
+export function hasNextInLineup(){
+  if(state.inIntruderFight) return false;
+  const lu = GAME_CONFIG.lineup || [];
+  return state.lineupIndex < lu.length - 1;
+}
+// 換上序列的下一隻：敵人區「前進遭遇」進場特效（僅敵人區，非 cut-in、盤面不動）。
+//   ①舊敵淡出/縮出（玩家前進掠過）→ ②換敵 config + 刷血條 → ③新敵自遠處逼近淡入。
+//   done() 於進場動畫結束時回呼（combat 於此載下一敵首盤、恢復計時碼表）。
+export function advanceToNextEnemy(done){
+  state.lineupIndex += 1;
+  const key = (GAME_CONFIG.lineup && GAME_CONFIG.lineup[state.lineupIndex]) || state.currentEnemyKey;
+  const img = $('enemyImg');
+  if(img){ img.classList.remove('enemy-enter'); img.classList.add('enemy-leave'); }
+  setTimeout(()=>{
+    setEnemy(key);            // 換立繪/名稱/血量與大絕/懲罰/hitFx config
+    api.updateBars();         // 新敵血條
+    if(img){
+      img.classList.remove('enemy-leave'); void img.offsetWidth; img.classList.add('enemy-enter');
+      setTimeout(()=>img.classList.remove('enemy-enter'), 560);
+    }
+    if(done) done();
+  }, 260);
 }
 
 /* ---------- 亂入 / Boss 遭遇（New Hustle）----------

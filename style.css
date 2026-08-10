@@ -28,6 +28,13 @@
   @keyframes camShake{0%,100%{transform:translate(0,0)}
     20%{transform:translate(-6px,4px)}40%{transform:translate(5px,-3px)}
     60%{transform:translate(-4px,-4px)}80%{transform:translate(4px,3px)}}
+  /* 連戰換敵：敵人區「前進遭遇」進場（僅敵人區、非 cut-in、盤面不動）。
+     leave＝舊敵被掠過（放大＋淡出、變暗）；enter＝新敵自遠處逼近（縮入＋提亮淡入）。 */
+  #enemyImg.enemy-leave{animation:enemyLeave .26s ease-in forwards;}
+  @keyframes enemyLeave{to{transform:scale(1.18);opacity:0;filter:brightness(.35)}}
+  #enemyImg.enemy-enter{animation:enemyEnter .56s cubic-bezier(.2,.7,.25,1);}
+  @keyframes enemyEnter{0%{transform:scale(1.4);opacity:0;filter:brightness(1.7)}
+    100%{transform:scale(1);opacity:1;filter:brightness(1)}}
   #topVignette{position:absolute;inset:0;pointer-events:none;
     background:radial-gradient(120% 80% at 50% 20%,transparent 40%,rgba(0,0,0,.7) 100%);}
 

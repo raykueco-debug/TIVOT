@@ -199,7 +199,7 @@ function triggerMaxBurst(){
   if(state.enemyHp<=0){
     // 追加傷害讓敵人 HP 歸零 → EXSECUTIŌ 演出後直接結算，不回盤面
     markExecution();   // sawExecution=true（評價 Execution 加乘）
-    playSaintCutin('execute', ()=>{ api.win(); });
+    playSaintCutin('execute', ()=>{ api.onEnemyDefeated(); });   // 連戰：擊殺→轉下一敵 or 結算
     return;
   }
   // 敵人未死 → Maximum Burst 演出後回盤面（HP → 50%，D2：reference 為 10%）
@@ -218,7 +218,7 @@ function triggerOBE(){
   api.floatDmg('O.B.E.','50%','28%',true);
   if(state.enemyHp<=0){
     // 聖徒化期間敵 HP 已歸零、但倒數槽先推滿 → 仍播 OBE 演出，收尾直接進結算（不回死盤面）
-    playSaintCutin('obe', ()=>{ $('grid').classList.remove('saint'); api.win(); });
+    playSaintCutin('obe', ()=>{ $('grid').classList.remove('saint'); api.onEnemyDefeated(); });
     return;
   }
   // 全畫面 OVERWRITE BREAKER ENGAGED cut-in → 結束後回盤面（HP → 1）
@@ -267,6 +267,7 @@ function finishSaintMode(finalHpThunk){
 // 通用 cut-in（雙槍破防／聖徒化降臨共用格式）：1.5 秒演出，期間鎖點擊。
 export function playCutin(done, label, imgKey){
   state.cutinPlaying=true;
+  if(api.clockPause) api.clockPause();     // 演出期間碼表暫停（非可點不計時；聖徒化降臨/雙槍破防共用）
   const c=$('cutin');
   if(label!==undefined) $('cutinText').innerHTML = label;
   if(imgKey){ const ci=$('cutinImg'); const src=asset(imgKey); if(ci && src) ci.src=src; }
@@ -283,6 +284,7 @@ export function playCutin(done, label, imgKey){
 // 結局全畫面 cut-in（kind: 'burst' | 'obe' | 'execute' | 'return'）
 function playSaintCutin(kind, done){
   state.cutinPlaying=true;                 // 演出期間鎖定點擊
+  if(api.clockPause) api.clockPause();     // 結局全畫面 cut-in 期間碼表暫停（非可點不計時）
   const c=$('saintCutin');
   let title, sub;
   const enName=(($('enemyName')&&$('enemyName').textContent)||'目標');

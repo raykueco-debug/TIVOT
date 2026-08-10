@@ -158,7 +158,7 @@ export const GAME_CONFIG = {
       name:'地下聖徒_A',        // UI 只顯示底線前的「地下聖徒」；底線後（_A）僅供作者辨識、不顯示
       image:'enemy_faceless',   // 內嵌暫代圖鑰匙（fallback，見最下方 ASSETS）
       imageBase:'faceless',     // 外部目錄鑰匙 → assets/enemy/faceless/portrait.*（優先，載入失敗才用內嵌 image）
-      hp:500,          // 測試耐打值；正式平衡改 ~150
+      hp:200,          // 連戰第一隻（原測試值 500，v-lineup 調 200）
       attack:45,       // 大絕一擊傷害（原 ULT_DAMAGE）
       atkInterval:null,// 大絕蓄力秒數；null＝沿用 tuning.chargeSeconds（逐怪可覆寫）
       sound:{ hit:null, ult:null, death:null }, // 音效槽（外部路徑，null＝用預設 SFX）
@@ -173,6 +173,25 @@ export const GAME_CONFIG = {
         delay:{ type:'blood', angle:'random' },   // 延時懲罰 → 一道血痕、角度隨機
         wrong:{ type:'bite' },                     // 按錯懲罰 → 齒痕
         ult:{   type:'claw', count:3, angle:'random' },  // 大絕 → 三爪、角度隨機
+      },
+    },
+    // ── 連戰第二隻（局內序列第二敵）：巨型聖徒。完全獨立一筆，非沿用 faceless。 ──
+    //    非 Boss（不填 ult/delayPenalty/wrongPenalty → 普通怪走預設：單發大絕、無半傷減時）。
+    //    差異：血更厚（300）＋攻擊更密（蓄力 4×1/1.2≈3.33s）；單擊傷害同一般值。
+    facelessgiant: {
+      name:'巨型聖徒',
+      image:'enemy_facelessgiant',   // 內嵌立繪鑰匙 → resources/enemy/Faceless_EN_02.png
+      imageBase:'facelessgiant',     // 外部目錄鑰匙（現況無 assets/ → 404 fallback 到內嵌，與其他敵同）
+      hp:300,                        // 血更厚
+      attack:45,                     // 大絕單擊傷害（普通值；差異在密度不在單擊）
+      atkInterval:3.33,              // 大絕蓄力秒數：4×(1/1.2)≈3.33 → 攻擊更密（比第一隻高 20%）
+      sound:{ hit:null, ult:null, death:null },
+      special:[],
+      boardGrids:[9,9,16,16,16],     // 自帶：前兩盤 9 格（累積破防、combo 加成總量低，不開場爆血）
+      hitFx:{                        // 自帶獨立三件套（巨型聖徒風味：大絕爪數加重為 4）
+        delay:{ type:'blood', angle:'random' },
+        wrong:{ type:'bite' },
+        ult:{   type:'claw', count:4, angle:'random' },
       },
     },
     // 亂入怪（無傷 45 秒內通關才會出現）— 先用同一隻怪測流程，正式再換
@@ -214,9 +233,10 @@ export const GAME_CONFIG = {
   },
   currentEnemy: 'faceless',   // 這場開場先打誰（填上面的鑰匙名）
 
-  /* 連戰陣容（同場清一隻接下一隻）— 本版僅預留，不接邏輯。
-     日後啟用：填多隻鑰匙，血量與連擊延續。 */
-  lineup: ['faceless'],
+  /* 連戰陣容（局＝同場清一隻接下一隻）。依序取,打完一敵接下一敵,最後一敵清完進結算。
+     同場換敵全延續（playerHp/combo/energy/聖能/計數/計時延續）；只有「場」新戰鬥/Boss 亂入才重置。
+     每隻各跑自己的 boardGrids 盤序（換敵時盤序回 0）。 */
+  lineup: ['faceless','facelessgiant'],
 
   /* 亂入設定（New Hustle）— 結算畫面後、無傷達標才觸發 */
   intruder: {
@@ -302,6 +322,7 @@ export const ASSETS = {
   partner_twin:   "resources/partner/Luna_SI_01.jpg",   // 雙槍修女立繪（暫用 cut-in 圖）
   inspector_freya: "resources/inspector/Freya_SI_01.jpg",
   enemy_witch:    "resources/enemy/Witch_EN_01.jpg",   // v17：槍之魔女（Boss）內嵌立繪
+  enemy_facelessgiant: "resources/enemy/Faceless_EN_02.png",   // 連戰第二隻：巨型聖徒 內嵌立繪
 
   // ── 五張 cut-in 圖（v17.7 嵌入）──
   cutin_saint_luna: "resources/partner/Luna_CI_advent.jpg",   // 聖徒化降臨 cut-in（Luna）

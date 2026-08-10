@@ -59,12 +59,15 @@ export function setup(){
     healPlayer, setPlayerHpRatio,
     // combat 盤面/傷害/UI 原語
     buildGrid, updateBars, startIntervalTimer, resetIntervalDeadline,
-    hitDamage, enemyDamage, floatDmg, markNext, win, setBoard, resetEnergy,
+    hitDamage, enemyDamage, floatDmg, markNext, setBoard, resetEnergy,
+    onEnemyDefeated: finishEnemyOrAdvance,   // 聖徒化擊殺 → 轉下一敵 or（最後一敵）結算（連戰）
     shatterCell: enemy.shatterCell,
     // defense 原語（combat 代為轉交；大絕頻率經 setUltRate 擁有者管道）
     scheduleUlt: defense.scheduleUlt, clearThreat: defense.clearThreat,
     endCharge: defense.endCharge, resetEnemyTimers: defense.resetEnemyTimers,
     setUltRate: defense.setUltRate,
+    // 計時碼表：cut-in 演出期間暫停（playCutin/playSaintCutin 開頭呼叫），維持「非可點不計時」
+    clockPause,
   });
   // 搭檔：combat 注入被動技所需原語 + 主動技各 handler 的分域 api。
   //   被動（即死防禦）：updateBars / floatDmg / resetEnemyTimers / scheduleUlt / playCutin。
@@ -79,8 +82,8 @@ export function setup(){
   // 監察官（評價/結算）：combat 擁有計時 → 算好 totalTime/avg 呼叫 inspector.settle。
   //   inspector 只 import state/config；goHome（combat）與 triggerIntruder（enemy）經此注入。
   inspector.init({ goHome, triggerIntruder: enemy.triggerIntruder });
-  // 敵人：Boss 亂入（enemy.triggerIntruder）的戰鬥重置屬 combat 擁有 → 注入 startIntruderFight。
-  enemy.init({ startIntruderFight });
+  // 敵人：Boss 亂入的戰鬥重置（startIntruderFight，combat 擁有）+ 換敵刷血條（updateBars）注入。
+  enemy.init({ startIntruderFight, updateBars });
 }
 export function bootIdle(){
   // 開機停在首頁：先建立盤面/血條供背景顯示，但 over=true 讓計時與敵人不啟動
@@ -97,6 +100,7 @@ export function goNextBoard(){
   if(state.over) return;
   const nextIdx=state.boardIndex+1;
   state.transitioning=true;
+  clockPause();                // 盤面轉場（RELOADING）不計時
   stopIntervalTimer();
   const t=$('transition'), txt=$('transText');
   txt.textContent='RELOADING';
@@ -127,6 +131,7 @@ export function loadBoard(idx){
   state.boardClean=true;
   buildGrid();
   startIntervalTimer();
+  clockResume();                  // 新盤載好、可點 → 碼表起算（開場/換盤/換敵首盤共用）
   defense.scheduleOpeningUlt();   // 開場保證：每盤 3 秒內敵方就發動大絕
   updateStatus();
 }
@@ -172,6 +177,7 @@ function markNext(){
  * ========================================================================== */
 function tap(num,cell,e){
   if(state.over||state.transitioning||state.cutinPlaying) return;   // 轉場/cut-in 期間不可點
+  clockResume();                    // 盤面可點 → 碼表起算（冪等；overkill 時因 enemyHp<=0 不起算）
   SFX.unlock();                     // iOS：首次觸控解鎖音訊
   enemy.ejectShell(cell);           // 每次點擊都彈殼
   gunHitOnEnemy(cell);              // 槍擊特效映射到敵人對應位置
@@ -191,7 +197,7 @@ function tap(num,cell,e){
     if(state.cells.every(c=>c.classList.contains('done'))){
       SFX.clear(); clearAtkBuff(); weapon.endDual();
       recordBoardTime((Date.now()-state.boardStartTime)/1000);
-      if(state.enemyHp<=0){ win(); return; }
+      if(state.enemyHp<=0){ finishEnemyOrAdvance(); return; }   // 敵死→轉下一敵 or 結算
       defense.resetEnemyTimers();   // 破防清盤瞬間即重置敵大絕與延遲懲罰
       goNextBoard();
     }
@@ -209,11 +215,11 @@ function tap(num,cell,e){
     if(state.expect>state.N) clearBoard(); else markNext();
     updateStatus();
   }else{
-    // Overkill 期間（敵HP已歸零）按錯 → 結束 overkill，立即清盤結算
+    // Overkill 期間（敵HP已歸零）按錯 → 結束 overkill → 轉下一敵 or 結算
     if(state.enemyHp<=0){
       SFX.clear();
       clearAtkBuff();
-      win();
+      finishEnemyOrAdvance();
       return;
     }
     // 按錯：紅字期間按錯 → 重擊且紅字消失；否則普通按錯
@@ -258,7 +264,7 @@ function clearBoard(){
     addEnergy(gain);
     floatDmg('完美清盤 +'+gain,'50%','30%',false);
   }
-  if(state.enemyHp<=0){ win(); return; }   // 敵HP已歸零 → 本盤清完即結算勝利
+  if(state.enemyHp<=0){ finishEnemyOrAdvance(); return; }   // 敵死 → 轉下一敵 or（最後一敵）結算
   defense.resetEnemyTimers();   // 清盤瞬間即重置敵大絕與延遲懲罰（間隔懲罰由 loadBoard 重置）
   goNextBoard();
 }
@@ -386,7 +392,8 @@ function enemyDamage(dmg,isCrit,silent){
       updateBars();
       if(!silent) floatDmg((isCrit?'暴擊 ':'')+dmg, (30+Math.random()*40)+'%','35%',isCrit);
       if(state.enemyHp<=0){
-        if(state.killTime===0) state.killTime=Date.now();   // 凍結計時：OVERKILL 期間不計入總用時
+        if(state.killTime===0) state.killTime=Date.now();   // 敵死標記（OVERKILL 起點）
+        clockPause();                                       // 敵死→進 overkill：碼表暫停（overkill 不計時）
         defense.killThreatSchedule(); clearAtkBuff();
         floatDmg('OVERKILL！','50%','48%',true);
       }
@@ -461,18 +468,62 @@ function stopAll(){
   saint.stopTimers();    // 停聖徒化計時器（saintTimer / saintReactTimer）
   weapon.stopTimers();   // 停雙槍破防計時器（dualTimer）
 }
+
+/* ---- 計時碼表（連戰用；規則：只在「盤面可點且非 overkill」時作動）----
+ *  clockResume：盤面可點才起算（敵活著、非結算/演出/轉場）。多處呼叫皆冪等（僅在暫停中才起算）。
+ *  clockPause ：敵死(overkill)/轉場/cut-in/結算時暫停，把這段併入 runElapsedMs。
+ *  clockElapsedMs：目前累計＝已併入 + 進行中的一段。overkill 與轉場自然不計入。 */
+function clockResume(){
+  if(state.clockRunSince===0 && !state.over && state.enemyHp>0
+     && !state.cutinPlaying && !state.transitioning){
+    state.clockRunSince=Date.now();
+  }
+}
+function clockPause(){
+  if(state.clockRunSince>0){
+    state.runElapsedMs += Date.now()-state.clockRunSince;
+    state.clockRunSince=0;
+  }
+}
+function clockElapsedMs(){
+  return state.runElapsedMs + (state.clockRunSince>0 ? Date.now()-state.clockRunSince : 0);
+}
+function resetClock(){ state.runElapsedMs=0; state.clockRunSince=0; }
+
+/* ---- 敵死收尾：局內還有下一敵→轉敵、否則→結算 ---- */
+function finishEnemyOrAdvance(){
+  if(enemy.hasNextInLineup()){ advanceEnemy(); }
+  else { win(); }
+}
+/* ---- 換敵（局內連戰）：延續全場狀態，只換敵＋盤序回 0，敵人區播「前進遭遇」進場 ----
+ *  延續（不動）：playerHp/combo/energy(聖能)/counter/perfect/sawExecution/flawlessRun/boardTimes。
+ *  只動：overkill 歸零（各敵獨立）、killTime 重置、換敵 config、盤序回 0（各敵跑自己的 boardGrids）。
+ *  計時：轉敵全程碼表暫停（transitioning），新敵首盤 loadBoard → clockResume。 */
+function advanceEnemy(){
+  clockPause();                       // 併入前一敵時間（此前已於敵死暫停，冪等）
+  state.overkill=0;                   // 各敵 overkill 獨立
+  state.transitioning=true;           // 鎖點擊＋碼表不 resume（轉場不計）
+  stopIntervalTimer();
+  defense.resetEnemyTimers();         // 清前一敵殘留紅點/大絕排程
+  enemy.advanceToNextEnemy(()=>{      // 敵人區進場動畫 + 換敵 config + 刷血條
+    if(state.over) return;
+    state.transitioning=false;
+    state.killTime=0;                 // combo/energy/playerHp/計數 皆延續（不在此重置）
+    loadBoard(0);                     // 新敵自己的盤序從第 0 盤起（boardGrids[0]=9）；loadBoard 內 clockResume
+    updateBars();
+  });
+}
 function win(){
   if(state.over || state.defeated) return;   // 戰敗優先：已判定戰敗則勝利結算一律讓位
-  state.over=true; stopAll();
-  const endTime=state.killTime || Date.now();          // 敵HP歸零即凍結；OVERKILL 期間不計入
-  const totalTime=(endTime-state.runStartTime)/1000;
+  state.over=true; clockPause(); stopAll();
+  const totalTime=clockElapsedMs()/1000;               // 只累計實打時間（overkill/轉場/cut-in 皆不計）
   const counted=state.boardTimes.slice(2);             // 平均只計第三盤後（index 2 以後）
   const avg=counted.length ? counted.reduce((a,b)=>a+b,0)/counted.length : null;
   inspector.settle(totalTime, avg, { isLose:false });
 }
 function lose(){
   if(state.over) return;
-  state.over=true; stopAll();
+  state.over=true; clockPause(); stopAll();
   inspector.settle(null, null, { isLose:true });
 }
 
@@ -486,13 +537,13 @@ export function startGame(){
   weapon.reset();  // 雙槍破防重置（清 dualWield/dualTimer + #grid dualwield class，防跨場殘留）
   state.overkill=0; state.killTime=0; state.transitioning=false;
   state.counterCount=0; state.counterDamage=0; state.perfectCount=0; state.sawExecution=false;
-  state.playerHp=state.playerMax; state.enemyHp=state.enemyMax;
+  state.playerHp=state.playerMax;
   state.N=9; state.cols=3;
-  state.runStartTime=Date.now();
+  state.runStartTime=Date.now(); resetClock();   // 計時碼表歸零（loadBoard 起算）
   state.boardTimes=[]; state.boardsCompleted=0;
   state.flawlessRun=true; state.intruderTriggered=false; state.inIntruderFight=false;
   state.deathGuardUsed=false; state.sRankUnlocked=false; state.resultMode='rematch';
-  enemy.setEnemy(GAME_CONFIG.currentEnemy);
+  enemy.startLineup();   // 局：載序列第一隻（lineupIndex=0，含 enemyHp 基準）
   $('home').classList.remove('on');
   $('banner').classList.remove('on'); $('banner').classList.remove('lose');
   $('transition').classList.remove('on');
@@ -518,7 +569,7 @@ export function startIntruderFight(){
   state.counterCount=0; state.counterDamage=0; state.perfectCount=0; state.sawExecution=false;
   state.playerHp=state.playerMax; state.enemyHp=state.enemyMax;
   state.N=9; state.cols=3;
-  state.runStartTime=Date.now();
+  state.runStartTime=Date.now(); resetClock();   // 新場：計時碼表歸零
   state.boardTimes=[]; state.boardsCompleted=0;
   state.flawlessRun=true; state.deathGuardUsed=false;
   state.sRankUnlocked=false; state.resultMode='rematch';
