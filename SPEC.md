@@ -44,15 +44,30 @@
 - `defaultInspector:'freya'`。
 
 ### 4. 評價 `evaluation`
-分數公式：
+
+> ⚠ **修正逆向誤述**（本 SPEC 原記述為 score-tier 制，與 reference 實際行為不符）。
+> reference/index.html:2322 的 `computeEvaluation` rank 為**規則制**；`score/raw` 公式只算 **EXP 顯示**、**不決定 rank**；`tiers` 為 reference 未使用的**休眠 config**。以下依 reference 實際行為記述。
+
+**rank（規則制，以 reference 為準）**——由「無傷與否 + 總用時」直接定等第，不經分數：
+
+| 無傷 flawlessRun | 條件 | rank |
+|---|---|---|
+| 是 | 總用時 ≤ 40s | **S** |
+| 是 | 總用時 > 40s（無時間上限） | **A** |
+| 否 | 總用時 ≤ 40s | **B** |
+| 否 | ≤ 50s | **C** |
+| 否 | ≤ 60s | **D** |
+| 否 | > 60s | **E** |
+
+**EXP（分數公式，僅結算面板顯示，不決定 rank）**：
 ```
-raw   = max(0, timeBonus.base − 總用時秒 × timeBonus.perSecond)
-      + 反擊累計傷害 × counterCoef
-      + 完美防禦次數 × perfectPerHit
-score = raw × (無傷? flawlessMult : 1) × (MaxBurst擊殺? executionMult : 1)
+raw = max(0, timeBonus.base − 總用時秒 × timeBonus.perSecond)
+    + 反擊累計傷害 × counterCoef
+    + 完美防禦次數 × perfectPerHit
+exp = round( raw × (無傷? flawlessMult : 1) × (MaxBurst擊殺? executionMult : 1) )
 ```
-- `score`：`timeBonus{base:3000, perSecond:40}`、`counterCoef:2.0`、`perfectPerHit:50`、`flawlessMult:1.30`、`executionMult:1.10`。
-- `tiers`（分數下限，高→低）：S 3600 / A 2800 / B 2100 / C 1400 / D 700 / E 0。
+- 係數：`timeBonus{base:3000, perSecond:40}`、`counterCoef:2.0`、`perfectPerHit:50`、`flawlessMult:1.30`、`executionMult:1.10`。
+- `tiers`（S 3600 / A 2800 / B 2100 / C 1400 / D 700 / E 0）：**reference 未使用的休眠 config**，保留於 config.js 但不參與 rank 判定（比照本 SPEC 其他過時標註手法）。
 
 ### 5. 敵人 `enemies`
 共用欄位：`name`（UI 只顯示底線前段）、`image`（內嵌 fallback）、`imageBase`（外部目錄優先）、`hp`、`attack`（大絕單擊傷害）、`atkInterval`（大絕蓄力秒，null＝用 `tuning.chargeSeconds`）、`boardGrids`（每盤格數覆寫，聖徒化不受影響）、`hitFx`（受擊特效三件套 delay/wrong/ult，type：`blood`/`bite`/`claw(count)`/`bullet(count,pos)`）。
