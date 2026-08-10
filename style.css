@@ -506,10 +506,14 @@
   #pickSheet .pick-list{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
   #pickSheet .pick-item{padding:11px 14px;background:rgba(30,24,42,.7);
     border:1px solid var(--gold-dim);border-radius:7px;color:var(--ink);
-    font-family:inherit;font-size:14px;letter-spacing:1px;text-align:left;}
+    font-family:inherit;font-size:14px;letter-spacing:1px;text-align:left;
+    display:flex;align-items:center;gap:12px;}
   #pickSheet .pick-item.selected{border-color:var(--gold);color:var(--gold);
     box-shadow:0 0 12px var(--gold-dim);}
   #pickSheet .pick-item:active{transform:scale(.98);}
+  #pickSheet .pick-item .pi-thumb{width:52px;height:52px;flex:none;border-radius:6px;
+    object-fit:cover;background:#0a0a0e;border:1px solid var(--gold-dim);}
+  #pickSheet .pick-item .pi-body{display:flex;flex-direction:column;min-width:0;}
   #pickSheet .pick-item .pi-sub{display:block;font-size:11px;letter-spacing:.5px;
     color:var(--gold-dim);margin-top:3px;}
   #pickSheet .pick-close{padding:9px 30px;background:transparent;border:1px solid var(--gold-dim);

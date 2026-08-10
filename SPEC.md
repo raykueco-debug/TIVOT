@@ -18,15 +18,17 @@
 ## 二、GAME_CONFIG 內容
 
 ### 1. 武器 `weapons`（Counter 反擊用）
-每把武器欄位：`counterWin`（反擊窗口 0~1）、`hits`、`dmgPerHit`、`vfx`（`burst`散彈同時跳字／`single`狙擊大紅字／`null`逐發）、`defenseDamageScale`（Defense 段受傷倍率，相對 `ULT_DAMAGE`）、`noPerfectBand`（取消 Perfect 免傷帶）、`perfectDamageScale`（散彈專屬）。
+每把武器欄位：`counterWin`（反擊窗口 0~1）、`hits`、`dmgPerHit`、`vfx`（`burst`散彈同時跳字／`single`狙擊大紅字／`null`逐發）、`defenseDamageScale`（Defense 段受傷倍率，相對 `ULT_DAMAGE`）、`noPerfectBand`（取消 Perfect 免傷帶）、`perfectDamageScale`（散彈專屬）、`image`（換裝選單縮圖鑰匙 → ASSETS）。
 
-| key | 名稱 | counterWin | hits×dmg | 反擊總傷 | defenseScale | noPerfectBand | 備註 |
-|---|---|---|---|---|---|---|---|
-| `mg` | 重機槍 | 0.12 | 8×6 | 48（基準） | 0.5 | false | 預設武器 |
-| `shotgun` | 散彈槍 | 0.20 | 6×4 | 24 | 0.25 | false | `perfectDamageScale:0.5`（Perfect 改打 6×2=12） |
-| `sniper` | 狙擊槍 | 0.06 | 1×72 | 72 | 0.5 | true | 單發大紅字、無 Perfect 免傷帶 |
+> ⚠ 武器 key＝圖檔基底名（`類型_武器名`，同 `resources/weapon/` 圖庫；統一代碼與檔名。原 reference 為 `mg`/`shotgun`/`sniper` 且 `image:null`，本專案改此命名並接上選單縮圖）。
 
-`defaultWeapon: 'mg'`。
+| key | 名稱 | counterWin | hits×dmg | 反擊總傷 | defenseScale | noPerfectBand | 圖 | 備註 |
+|---|---|---|---|---|---|---|---|---|
+| `MG_Squall` | 重機槍 | 0.12 | 8×6 | 48（基準） | 0.5 | false | MG_Squall.png | 預設武器 |
+| `Shotgun_Blast` | 散彈槍 | 0.20 | 6×4 | 24 | 0.25 | false | Shotgun_Blast.png | `perfectDamageScale:0.5`（Perfect 改打 6×2=12） |
+| `Sniper_Falcon` | 狙擊槍 | 0.06 | 1×72 | 72 | 0.5 | true | Sniper_Falcon.png | 單發大紅字、無 Perfect 免傷帶 |
+
+`defaultWeapon: 'MG_Squall'`。程式僅 `defaultWeapon` 硬寫此 key，其餘一律 `WEAPONS[state.equippedWeapon]` 動態查表、選單動態列 `Object.keys`。
 
 ### 2. 搭檔 `partners`（config key `freya`，顯示名「蕾妮」）
 - `image:'partner_twin'`、`cutin:'cutin_saint'`。

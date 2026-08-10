@@ -24,16 +24,17 @@ export const GAME_CONFIG = {
    *  sound       = 反擊音效鑰匙（可留 null，用預設合成音）
    *  新增武器：複製一整段 {...}，改鑰匙名與數值即可。
    * ------------------------------------------------------------------ */
+  //  ⚠ 武器鑰匙＝圖檔基底名（類型_武器名，同 resources/weapon/ 圖庫命名，統一代碼與檔名）。
   weapons: {
-    // 重機槍：基準武器（反擊總傷 48），Perfect 帶正常、Defense 吃半傷（0.5）
-    mg:      { name:'重機槍', counterWin:0.12, hits:8, dmgPerHit:6,  vfx:null,     defenseDamageScale:0.5,  noPerfectBand:false, image:null, sound:null },
-    // 散彈槍：Counter 6發×4=24；Perfect 檔改打 6發×2=12（perfectDamageScale=0.5，傷害取代免傷）；Defense 檔吃 1/4 傷（0.25，保命但不再全免）
-    shotgun: { name:'散彈槍', counterWin:0.20, hits:6, dmgPerHit:4,  vfx:'burst',  defenseDamageScale:0.25, noPerfectBand:false, perfectDamageScale:0.5, image:null, sound:null },
-    // 狙擊槍：反擊總傷 72（重機槍 1.5 倍）、單發大紅字、無 Perfect 免傷帶（高風險高回報）
-    sniper:  { name:'狙擊槍', counterWin:0.06, hits:1, dmgPerHit:72, vfx:'single', defenseDamageScale:0.5,  noPerfectBand:true,  image:null, sound:null },
-    // grenade: { name:'榴彈', ... }   ← 未來新武器照這個格式加在這裡
+    // 重機槍 Squall：基準武器（反擊總傷 48），Perfect 帶正常、Defense 吃半傷（0.5）
+    MG_Squall:     { name:'重機槍', counterWin:0.12, hits:8, dmgPerHit:6,  vfx:null,     defenseDamageScale:0.5,  noPerfectBand:false, image:'weapon_mg_squall',     sound:null },
+    // 散彈槍 Blast：Counter 6發×4=24；Perfect 檔改打 6發×2=12（perfectDamageScale=0.5，傷害取代免傷）；Defense 檔吃 1/4 傷（0.25，保命但不再全免）
+    Shotgun_Blast: { name:'散彈槍', counterWin:0.20, hits:6, dmgPerHit:4,  vfx:'burst',  defenseDamageScale:0.25, noPerfectBand:false, perfectDamageScale:0.5, image:'weapon_shotgun_blast', sound:null },
+    // 狙擊槍 Falcon：反擊總傷 72（重機槍 1.5 倍）、單發大紅字、無 Perfect 免傷帶（高風險高回報）
+    Sniper_Falcon: { name:'狙擊槍', counterWin:0.06, hits:1, dmgPerHit:72, vfx:'single', defenseDamageScale:0.5,  noPerfectBand:true,  image:'weapon_sniper_falcon', sound:null },
+    // 新武器：複製一段，鑰匙用「類型_武器名」（同圖檔基底名），image 指對應 ASSETS 鑰匙。
   },
-  defaultWeapon: 'mg',   // 開局預設武器（填上面的鑰匙名）
+  defaultWeapon: 'MG_Squall',   // 開局預設武器（填上面的鑰匙名）
 
   /* ------------------------------------------------------------------ *
    *  二、搭檔（修女 Partner）— 改變戰鬥規則的角色
@@ -331,6 +332,11 @@ export const ASSETS = {
   cutin_guard: "resources/partner/Renee_CI_pas.jpg",   // 即死防禦 cut-in（蕾妮/Renee·被動；檔名 _pas＝passive）
   cutin_return: "resources/partner/Renee_CI_act.jpg",   // 生命歸還 cut-in（蕾妮/Renee·主動；檔名 _act＝active）
   cutin_boss: "resources/enemy/Belinda_CI_boss.jpg",   // v18d：Boss（貝琳妲）遭遇 cut-in 專屬圖
+
+  // ── 副武器圖（換裝選單縮圖）：鑰匙對應 weapons.image；檔名＝類型_武器名 ──
+  weapon_mg_squall:     "resources/weapon/MG_Squall.png",       // 重機槍 Squall
+  weapon_shotgun_blast: "resources/weapon/Shotgun_Blast.png",   // 散彈槍 Blast
+  weapon_sniper_falcon: "resources/weapon/Sniper_Falcon.png",   // 狙擊槍 Falcon
 
   // ── 音效（目前用程式合成音，這裡先留空；日後填 base64 或網址）──
   // sfx_counter: null,

@@ -29,7 +29,7 @@
  *     buildGrid / resetEnergy），不 import combat/saint/defense（維持依賴方向）。
  * ========================================================================== */
 
-import { GAME_CONFIG } from '../config.js';
+import { GAME_CONFIG, asset } from '../config.js';
 import { state, addCounter } from '../state.js';
 import { SFX } from '../audio.js';
 
@@ -160,7 +160,10 @@ export function openPickSheet(kind){
     const sub = isWeapon
       ? `反擊勝率 ${Math.round((it.counterWin||0)*100)}% · ${it.hits||0}發×${it.dmgPerHit||0}`
       : (it.perk||'');
-    div.innerHTML = `${it.name||key}${sub?`<span class="pi-sub">${sub}</span>`:''}`;
+    // 副武器縮圖（讀 config image 鑰匙 → ASSETS；無圖則不顯示，版面自適應）
+    const imgSrc = (isWeapon && it.image) ? asset(it.image) : '';
+    const thumb = imgSrc ? `<img class="pi-thumb" src="${imgSrc}" alt="">` : '';
+    div.innerHTML = `${thumb}<span class="pi-body">${it.name||key}${sub?`<span class="pi-sub">${sub}</span>`:''}</span>`;
     const choose=()=>{
       SFX.unlock(); SFX.menuClick();
       if(isWeapon){
