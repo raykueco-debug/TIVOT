@@ -27,11 +27,11 @@ export const GAME_CONFIG = {
   //  ⚠ 武器鑰匙＝圖檔基底名（類型_武器名，同 resources/weapon/ 圖庫命名，統一代碼與檔名）。
   weapons: {
     // 重機槍 Squall：基準武器（反擊總傷 48），Perfect 帶正常、Defense 吃半傷（0.5）
-    MG_Squall:     { name:'重機槍', counterWin:0.12, hits:8, dmgPerHit:6,  vfx:null,     defenseDamageScale:0.5,  noPerfectBand:false, image:'weapon_mg_squall',     sound:null },
+    MG_Squall:     { name:'重機槍', counterWin:0.12, hits:8, dmgPerHit:6,  vfx:null,     defenseDamageScale:0.5,  noPerfectBand:false, image:'weapon_mg_squall',     sound:'se_mg_squall' },
     // 散彈槍 Blast：Counter 6發×4=24；Perfect 檔改打 6發×2=12（perfectDamageScale=0.5，傷害取代免傷）；Defense 檔吃 1/4 傷（0.25，保命但不再全免）
-    Shotgun_Blast: { name:'散彈槍', counterWin:0.20, hits:6, dmgPerHit:4,  vfx:'burst',  defenseDamageScale:0.25, noPerfectBand:false, perfectDamageScale:0.5, image:'weapon_shotgun_blast', sound:null },
+    Shotgun_Blast: { name:'散彈槍', counterWin:0.20, hits:6, dmgPerHit:4,  vfx:'burst',  defenseDamageScale:0.25, noPerfectBand:false, perfectDamageScale:0.5, image:'weapon_shotgun_blast', sound:'se_shotgun_blast' },
     // 狙擊槍 Falcon：反擊總傷 72（重機槍 1.5 倍）、單發大紅字、無 Perfect 免傷帶（高風險高回報）
-    Sniper_Falcon: { name:'狙擊槍', counterWin:0.06, hits:1, dmgPerHit:72, vfx:'single', defenseDamageScale:0.5,  noPerfectBand:true,  image:'weapon_sniper_falcon', sound:null },
+    Sniper_Falcon: { name:'狙擊槍', counterWin:0.06, hits:1, dmgPerHit:72, vfx:'single', defenseDamageScale:0.5,  noPerfectBand:true,  image:'weapon_sniper_falcon', sound:'se_sniper_falcon' },
     // 新武器：複製一段，鑰匙用「類型_武器名」（同圖檔基底名），image 指對應 ASSETS 鑰匙。
   },
   defaultWeapon: 'MG_Squall',   // 開局預設武器（填上面的鑰匙名）
@@ -58,6 +58,7 @@ export const GAME_CONFIG = {
         name:'即死防禦',
         oncePerBattle:true,      // true=整場只擋一次；false=每次都擋（不建議）
         cutin:'cutin_guard',     // 即死防禦專屬大圖（→ Renee_CI_pas.jpg）；程式讀此欄，不硬寫
+        voice:'vo_death_guard',  // cut-in 對應語音（預留槽，見 ASSETS；audio 未接前為 null）
       },
       // ── 主動技：生命歸還 ─────────────────────────────
       //   聖徒化中，由「下往上滑」發動：強制中止聖徒化，保留當前血量（第四結局）。
@@ -66,6 +67,7 @@ export const GAME_CONFIG = {
         name:'生命歸還',
         context:'saint',         // 發動情境：'saint'＝聖徒化內 / 'board'＝一般盤面。partner 依此判定能否發
         cutin:'cutin_return',    // 生命歸還演出大圖（→ Renee_CI_act.jpg）；實際演出由 saint scImgKey.return 讀同一鑰匙
+        voice:'vo_life_return',  // cut-in 對應語音（預留槽，見 ASSETS）
       },
     },
     // 例：新搭檔
@@ -338,9 +340,37 @@ export const ASSETS = {
   weapon_shotgun_blast: "resources/weapon/Shotgun_Blast.png",   // 散彈槍 Blast
   weapon_sniper_falcon: "resources/weapon/Sniper_Falcon.png",   // 狙擊槍 Falcon
 
-  // ── 音效（目前用程式合成音，這裡先留空；日後填 base64 或網址）──
-  // sfx_counter: null,
-  // voice_saint: null,
+  /* ── 音效 / BGM / 語音（預留槽）───────────────────────────────────────────
+   *  目前 audio.js 為 no-op 骨架（合成音尚未搬回），這裡先掛 null 佔位；
+   *  日後填 base64 或路徑（建議 resources/audio/{sfx,bgm,voice}/…）即可，
+   *  程式 asset(key) 已相容 null→""，故未填不會壞。
+   *  命名慣例：SFX＝SE_… ／ BGM＝BGM_… ／ 語音＝VO_…（鑰匙小寫、檔名保留大小寫）  */
+
+  // 反擊武器音效（所有副武器各一支；鑰匙對應 weapons.sound，檔名 SE_<類型_武器名>）
+  se_mg_squall:      null,   // → SE_MG_Squall     （重機槍 反擊）
+  se_shotgun_blast:  null,   // → SE_Shotgun_Blast （散彈槍 反擊）
+  se_sniper_falcon:  null,   // → SE_Sniper_Falcon （狙擊槍 反擊）
+
+  // 普攻槍聲（未來可換「普攻主武器」，故預留；先一支預設，主武器化後每把 SE_<主武器>）
+  se_shot_normal:    null,   // → SE_Shot_Normal   （普攻預設槍聲）
+
+  // BGM（六情境）
+  bgm_home:      null,   // 首頁     → BGM_Home
+  bgm_battle:    null,   // 戰鬥     → BGM_Battle
+  bgm_lose:      null,   // 戰敗     → BGM_Lose
+  bgm_result:    null,   // 結算     → BGM_Result
+  bgm_intruder:  null,   // 亂入     → BGM_Intruder
+  bgm_boss:      null,   // Boss 戰  → BGM_Boss
+
+  // 語音（每個 cut-in 各一支；檔名 VO_<情境>）
+  vo_saint_install: null,   // 聖徒化降臨（SAINT INSTALL）→ VO_SaintInstall
+  vo_maxburst:      null,   // Maximum Burst            → VO_MaxBurst
+  vo_exsectio:      null,   // EXSECUTIŌ（處決）         → VO_Exsectio
+  vo_obe:           null,   // O.B.E.                   → VO_OBE
+  vo_life_return:   null,   // 生命歸還（主動）          → VO_LifeReturn
+  vo_death_guard:   null,   // 即死防禦（被動）          → VO_DeathGuard
+  vo_dual_wield:    null,   // 雙槍破防                 → VO_DualWield
+  vo_new_hustle:    null,   // Boss 遭遇 / 亂入          → VO_NewHustle
 };
 
 /* ---- 小工具：從 ASSETS 取素材（找不到回傳空字串，不會壞）---- */
