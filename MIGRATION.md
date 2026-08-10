@@ -25,7 +25,7 @@ resources/                    ← 圖片資源,依「功能」分目錄
 ├─ inspector/   監察官         Freya_SI_01.jpg
 ├─ partner/     搭檔           Luna_SI_01 / Luna_CI_saint / Luna_CI_advent /
 │                             Luna_CI_obe / Luna_CI_maxburst /
-│                             Reni_CI_guard / Reni_CI_return
+│                             Renee_CI_guard / Renee_CI_return
 ├─ enemy/       敵人           Faceless_EN_01 / Witch_EN_01 / Belinda_CI_boss
 ├─ weapon/      武器(預留,無圖)
 ├─ vfx/         特效(預留,無圖)

@@ -43,7 +43,7 @@ export function currentPartner(){
  *  被動技 · 即死防禦
  * ========================================================================== */
 // 回傳 true = 已擋下（呼叫端 handlePlayerLethal 應 return，不進 lose）。
-// cut-in 圖鑰匙讀 config passive.cutin（維持資料/程式分離；freya 為 'cutin_guard'＝Reni_CI_guard）。
+// cut-in 圖鑰匙讀 config passive.cutin（維持資料/程式分離；freya 為 'cutin_guard'＝Renee_CI_guard）。
 export function tryDeathGuard(){
   const p = currentPartner();
   const pas = p && p.passive;

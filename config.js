@@ -56,7 +56,7 @@ export const GAME_CONFIG = {
         key:'deathGuard',
         name:'即死防禦',
         oncePerBattle:true,      // true=整場只擋一次；false=每次都擋（不建議）
-        cutin:'cutin_guard',     // 即死防禦專屬大圖（Reni_CI_guard）；程式讀此欄，不硬寫
+        cutin:'cutin_guard',     // 即死防禦專屬大圖（Renee_CI_guard）；程式讀此欄，不硬寫
       },
       // ── 主動技：生命歸還 ─────────────────────────────
       //   聖徒化中，由「下往上滑」發動：強制中止聖徒化，保留當前血量（第四結局）。
@@ -328,8 +328,8 @@ export const ASSETS = {
   cutin_saint_luna: "resources/partner/Luna_CI_advent.jpg",   // 聖徒化降臨 cut-in（Luna）
   cutin_obe: "resources/partner/Luna_CI_obe.jpg",   // O.B.E. cut-in（Luna）
   cutin_mb: "resources/partner/Luna_CI_maxburst.jpg",   // Maximum Burst cut-in（Luna）
-  cutin_guard: "resources/partner/Reni_CI_guard.jpg",   // 即死防禦 cut-in（蕾妮·被動）
-  cutin_return: "resources/partner/Reni_CI_return.jpg",   // 生命歸還 cut-in（蕾妮·主動）
+  cutin_guard: "resources/partner/Renee_CI_guard.jpg",   // 即死防禦 cut-in（蕾妮/Renee·被動）
+  cutin_return: "resources/partner/Renee_CI_return.jpg",   // 生命歸還 cut-in（蕾妮/Renee·主動）
   cutin_boss: "resources/enemy/Belinda_CI_boss.jpg",   // v18d：Boss（貝琳妲）遭遇 cut-in 專屬圖
 
   // ── 音效（目前用程式合成音，這裡先留空；日後填 base64 或網址）──

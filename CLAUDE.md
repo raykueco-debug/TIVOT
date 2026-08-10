@@ -121,7 +121,7 @@ SPEC.md             行為規格
 
 ## 5. 資源(已完成,勿重做)
 
-圖片已外置至 `resources/`,依功能分:`inspector/`(Freya_SI_01)、`partner/`(Luna 立繪+聖徒化 cut-in、Reni cut-in)、`enemy/`(Faceless/Witch/Belinda)、`weapon/vfx/background/misc`(預留空)。命名 `角色_類型_編號`(SI=立繪/CI=cut-in/EN=敵人立繪)。`config.js` 的 `ASSETS` 已改為相對路徑;音效/特效為程式合成,無檔案。
+圖片已外置至 `resources/`,依功能分:`inspector/`(Freya_SI_01)、`partner/`(Luna 立繪+聖徒化 cut-in、Renee cut-in)、`enemy/`(Faceless/Witch/Belinda)、`weapon/vfx/background/misc`(預留空)。命名 `角色_類型_編號`(SI=立繪/CI=cut-in/EN=敵人立繪)。`config.js` 的 `ASSETS` 已改為相對路徑;音效/特效為程式合成,無檔案。
 
 ⚠️ SPEC 提到 `imageBase` 走 `assets/inspector/freya/...` 舊路徑——重寫時統一改為 `resources/` 新結構,與已完成的目錄一致。
 
