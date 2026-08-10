@@ -17,8 +17,7 @@ import * as defense from './modules/defense.js';
 import * as partner from './modules/partner.js';   // 主動技統一入口 tryActive 由手勢觸發
 import * as weapon from './modules/weapon.js';     // 雙槍破防發動 + 換裝面板
 
-// 下一輪接（本輪僅載入驗證模組圖，尚未綁定其互動）
-import './modules/inspector.js';
+import * as inspector from './modules/inspector.js';   // 結算/評價/迎擊分流
 import './modules/enemy.js';
 
 const $ = id => document.getElementById(id);
@@ -38,7 +37,7 @@ combat.setup();
 bindBtn('startBtn',     combat.startGame);      // 首頁：開始遊戲
 bindBtn('exitBtn',      combat.goHome);         // 右上：退出回首頁
 bindBtn('testClearBtn', combat.testClearBoard); // 左上（測試用）：一鍵清盤
-bindBtn('rematchBtn',   combat.goHome);         // 結算：本輪一律回首頁（迎擊/評價流程下一輪接）
+bindBtn('rematchBtn',   inspector.onRematchBtn);// 結算：依 resultMode 分流（再度執槍/迎擊）
 
 // 破防值滿 → 點計量表發動「雙槍破防」獎勵射擊窗口
 bindBtn('energyClasp',    weapon.activateDual);
@@ -178,4 +177,4 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
 
 combat.bootIdle();   // over=true，建立背景盤面/血條，停在首頁
 
-console.log('[step5] weapon · 雙槍破防+換裝面板已接上 · 敵：', GAME_CONFIG.enemies[GAME_CONFIG.currentEnemy]?.name, '· HP', state.enemyMax);
+console.log('[step6] inspector · 評價/監察官結算/迎擊分流已接上 · 敵：', GAME_CONFIG.enemies[GAME_CONFIG.currentEnemy]?.name, '· HP', state.enemyMax);

@@ -167,6 +167,13 @@ export function setEnemy(key){
   loadEnemyPortrait(en);
 }
 
+/* ---------- 亂入 / Boss 遭遇（New Hustle）----------
+ *  ⚠ 本輪僅為注入點 no-op：inspector 迎擊分流會呼叫到這裡（可驗非死鈕），
+ *    實際「載 witch → 重啟戰鬥」的 Boss 進場邏輯屬 enemy 職責、留待 CLAUDE.md §6 第 5 步。 */
+export function triggerIntruder(){
+  console.warn('[enemy] triggerIntruder：Boss 遭遇（槍之魔女）待第 5 步實作，本輪為 no-op。');
+}
+
 /* ---------- 開場：把 GAME_CONFIG 的圖/名稱套到畫面上 ---------- */
 export function applyConfigToDOM(){
   const pn = GAME_CONFIG.partners[GAME_CONFIG.defaultPartner];

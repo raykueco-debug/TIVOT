@@ -21,6 +21,7 @@ import * as defense from './defense.js';
 import * as weapon from './weapon.js';
 import * as saint from './saint.js';
 import * as partner from './partner.js';
+import * as inspector from './inspector.js';
 
 const $ = id => document.getElementById(id);
 const T = GAME_CONFIG.tuning;
@@ -75,6 +76,9 @@ export function setup(){
     playCutin: saint.playCutin,
     saintApi: { lifeReturnAbort: saint.lifeReturnAbort },
   });
+  // 監察官（評價/結算）：combat 擁有計時 → 算好 totalTime/avg 呼叫 inspector.settle。
+  //   inspector 只 import state/config；goHome（combat）與 triggerIntruder（enemy，本輪 no-op）經此注入。
+  inspector.init({ goHome, triggerIntruder: enemy.triggerIntruder });
 }
 export function bootIdle(){
   // 開機停在首頁：先建立盤面/血條供背景顯示，但 over=true 讓計時與敵人不啟動
@@ -446,7 +450,7 @@ function updateBars(){
 function updateStatus(){ /* 狀態列已移出畫面（下半為純數字盤），保留為相容呼叫 */ }
 
 /* ============================================================================
- *  勝負 / 結算（本輪為最小結算面板；評價與監察官下一輪接）
+ *  勝負 / 結算（combat 擁有計時 → 算 totalTime/avg → 交 inspector.settle 演出）
  * ========================================================================== */
 function stopAll(){
   clearInterval(state.intervalTimer);
@@ -455,48 +459,19 @@ function stopAll(){
   saint.stopTimers();    // 停聖徒化計時器（saintTimer / saintReactTimer）
   weapon.stopTimers();   // 停雙槍破防計時器（dualTimer）
 }
-function fmtTime(sec){
-  if(sec==null || !isFinite(sec)) return '--';
-  const m=Math.floor(sec/60), s=sec-m*60;
-  return m>0 ? `${m}分${s.toFixed(1)}秒` : `${s.toFixed(1)}秒`;
-}
 function win(){
   if(state.over || state.defeated) return;   // 戰敗優先：已判定戰敗則勝利結算一律讓位
   state.over=true; stopAll();
-  const endTime=state.killTime || Date.now();
+  const endTime=state.killTime || Date.now();          // 敵HP歸零即凍結；OVERKILL 期間不計入
   const totalTime=(endTime-state.runStartTime)/1000;
-  const counted=state.boardTimes.slice(2);   // 平均只計第三盤後
+  const counted=state.boardTimes.slice(2);             // 平均只計第三盤後（index 2 以後）
   const avg=counted.length ? counted.reduce((a,b)=>a+b,0)/counted.length : null;
-  let sub=(($('enemyName')&&$('enemyName').textContent)||'目標')+'已淨化';
-  if(state.overkill>0) sub += ` · OVERKILL ${Math.round(state.overkill)}`;
-  let rows='';
-  rows+=`<div class="row"><span>每盤平均用時</span><b>${fmtTime(avg)}</b></div>`;
-  rows+=`<div class="row"><span>總用時</span><b>${fmtTime(totalTime)}</b></div>`;
-  rows+=`<div class="row"><span>Counter 反擊</span><b>${state.counterCount} 次 · ${state.counterDamage} 傷</b></div>`;
-  rows+=`<div class="row"><span>完美防禦</span><b>${state.perfectCount} 次</b></div>`;
-  rows+=`<div class="row" style="opacity:.6;font-size:11px"><span>（評價 / 監察官結算下一輪接）</span><b></b></div>`;
-  showResult('聖裁完成', sub, rows, false);
+  inspector.settle(totalTime, avg, { isLose:false });
 }
 function lose(){
   if(state.over) return;
   state.over=true; stopAll();
-  const rows=`<div class="row"><span>Counter 反擊</span><b>${state.counterCount} 次 · ${state.counterDamage} 傷</b></div>`
-            +`<div class="row"><span>完美防禦</span><b>${state.perfectCount} 次</b></div>`;
-  showResult('聖光黯滅','HUND 倒下了…', rows, true);
-}
-// 最小結算面板（取代下一輪的 showResultSequence；不跑監察官立繪/打字機/評價）
-function showResult(title, sub, statsHtml, isLose){
-  const b=$('banner');
-  state.resultMode='rematch';
-  const rbtn=$('rematchBtn');
-  rbtn.textContent='再度執槍'; rbtn.classList.remove('intercept','ready'); rbtn.style.display='';
-  $('bannerTitle').textContent=title;
-  $('bannerSub').textContent=sub;
-  $('resultStats').innerHTML=statsHtml||'';
-  $('inspectorStage').style.display='none';   // 監察官結算下一輪接
-  b.classList.toggle('lose', !!isLose);
-  b.classList.remove('seq');
-  b.classList.add('on');
+  inspector.settle(null, null, { isLose:true });
 }
 
 /* ============================================================================
