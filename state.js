@@ -30,6 +30,7 @@ export const state = {
   cols: 3,
   intervalLimit: 2.0,
   intervalDeadline: 0,
+  intervalTimer: null,   // 逐格計時器 handle（§3.1 契約原漏列，補入；combat 所有）
   cells: [],
   order: [],
   expect: 1,
@@ -101,6 +102,13 @@ export const state = {
   /* ── 3.8 增益（擁有者：combat） ─────────────────────────────── */
   atkBuff: false,
   atkBuffTimer: null,
+
+  /* ── UI 閘門（跨模組共享的演出鎖；擁有者：播演出的模組） ──────────
+   *  cutinPlaying：cut-in／結局演出期間鎖住盤面點擊與敵大絕生成。
+   *  combat / defense / saint 皆需「讀」此旗標分支；寫入者為當下播演出的模組
+   *  （本輪僅 combat 的結算會用到，聖徒化/雙槍 cut-in 下一輪接）。
+   *  此為 §3 契約之外、但確為跨模組共享的旗標，統一收進 state 而非散落全域。 */
+  cutinPlaying: false,
 };
 
 /* ============================================================================
@@ -133,8 +141,22 @@ export function exitSaint(){
 }
 
 /* weapon.js 專用：反擊成功時累加反擊計數/傷害（3.6 的跨擁有者計數例外）。
- * inspector 結算時只讀這兩個值。 */
+ * inspector 結算時只讀這兩個值。一次反擊事件呼叫一次（+1 次、+dmg 傷害）。 */
 export function addCounter(dmg){
   state.counterCount += 1;
   state.counterDamage += dmg;
+}
+
+/* defense.js 專用：完美防禦成功時累加完美次數（3.6 的跨擁有者計數例外）。
+ * perfectCount 擁有者為 inspector；由 defense 判定 Perfect 時 +1、inspector 結算時讀。 */
+export function addPerfect(){
+  state.perfectCount += 1;
+}
+
+/* enemy.js 專用：載入敵人時，初始化敵方血量（3.2 combat-owned 的載入時寫入）。
+ * 戰鬥中對敵血的持續變動仍由 combat 的 enemyDamage 負責；此處僅是換怪時的基準設定，
+ * 集中成具名 setter 以符合「跨擁有者寫入走 setter」的契約（見 CLAUDE.md 3.2 / 3.3 註）。 */
+export function initEnemyHp(hp){
+  state.enemyMax = hp;
+  state.enemyHp = hp;
 }
