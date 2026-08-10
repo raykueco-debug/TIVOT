@@ -12,14 +12,14 @@ import { GAME_CONFIG } from './config.js';
 import { state } from './state.js';
 import { SFX } from './audio.js';
 import * as combat from './modules/combat.js';
+import * as saint from './modules/saint.js';
+import * as defense from './modules/defense.js';
 
 // 下一輪接（本輪僅載入驗證模組圖，尚未綁定其互動）
-import './modules/saint.js';
 import './modules/weapon.js';
 import './modules/partner.js';
 import './modules/inspector.js';
 import './modules/enemy.js';
-import './modules/defense.js';
 
 const $ = id => document.getElementById(id);
 
@@ -43,6 +43,130 @@ bindBtn('rematchBtn',   combat.goHome);         // 結算：本輪一律回首�
 window.addEventListener('resize', combat.fitGridSquare);
 window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare,200));
 
+/* ============================================================================
+ *  聖徒化手勢
+ * ========================================================================== */
+// 敵人框左右滑到底 → 發動聖徒化（依方向給橫斬特效）
+(function bindSaintSwipe(){
+  const zone=$('top');
+  if(!zone) return;
+  let startX=0, startY=0, tracking=false;
+  const THRESH=Math.max(90, window.innerWidth*0.30);   // 需滑到底（約螢幕寬 30% 或 90px）
+  zone.addEventListener('touchstart',e=>{
+    if(state.saintMode||state.saintUsedThisBattle||state.over||state.cutinPlaying) return;
+    const t=e.touches[0]; startX=t.clientX; startY=t.clientY; tracking=true;
+  },{passive:true});
+  zone.addEventListener('touchmove',e=>{
+    if(!tracking) return;
+    const t=e.touches[0];
+    const dx=t.clientX-startX, dy=t.clientY-startY;
+    if(Math.abs(dx)>THRESH && Math.abs(dx)>Math.abs(dy)*1.5){   // 水平滑動為主（避免和捲動混淆）
+      tracking=false;
+      saint.activateSaint(dx>0?'right':'left');
+    }
+  },{passive:true});
+  zone.addEventListener('touchend',()=>{tracking=false;});
+  // 桌機滑鼠拖曳也支援（方便測試）
+  let mDown=false;
+  zone.addEventListener('mousedown',e=>{
+    if(state.saintMode||state.saintUsedThisBattle||state.over||state.cutinPlaying) return;
+    mDown=true; startX=e.clientX; startY=e.clientY;
+  });
+  zone.addEventListener('mousemove',e=>{
+    if(!mDown) return;
+    const dx=e.clientX-startX, dy=e.clientY-startY;
+    if(Math.abs(dx)>THRESH && Math.abs(dx)>Math.abs(dy)*1.5){
+      mDown=false;
+      saint.activateSaint(dx>0?'right':'left');
+    }
+  });
+  window.addEventListener('mouseup',()=>{mDown=false;});
+})();
+
+// 生命歸還（搭檔主動技）：聖徒化中，在上半敵畫面「往上一滑」發動。
+//   用專用透明層 #returnSwipe（touch-action:none）；小位移視為點擊 → 放行給底下紅點防禦。
+(function bindReturnSwipe(){
+  const zone=$('returnSwipe');
+  const aura=$('returnAura');
+  if(!zone) return;
+  let startY=0, startX=0, tracking=false, fired=false, moved=0;
+  const need=()=>Math.max(48, (window.innerHeight||600)*0.125);   // 上滑 ≥ 螢幕高 12.5%
+  const TAP_SLOP=14;   // 位移小於此值視為「點擊」而非「滑動」
+
+  // 向心聚光：在觸摸點生成一圈向中心收束的光線
+  const RAYS=12;
+  function showAura(x,y){
+    if(!aura) return;
+    aura.style.left=x+'px'; aura.style.top=y+'px';
+    if(!aura.dataset.built){
+      let html='<div class="core"></div>';
+      for(let i=0;i<RAYS;i++){
+        const a=(360/RAYS)*i;
+        html+=`<div class="ray" style="--a:${a}deg;transform:rotate(${a}deg) translateY(76px);animation-delay:${(i%4)*0.08}s"></div>`;
+      }
+      aura.innerHTML=html; aura.dataset.built='1';
+    }
+    aura.classList.add('on');
+  }
+  function hideAura(){ if(aura) aura.classList.remove('on'); }
+
+  // 用座標反查底下的紅點：命中哪個 threat 就化解哪個（圓形命中判定）
+  function hitThreatAt(x,y){
+    const threats=state.threats;
+    if(!threats || !threats.length) return null;
+    let best=null, bestD=Infinity;
+    for(const th of threats){
+      if(!th.el) continue;
+      const r=th.el.getBoundingClientRect();
+      const cx=r.left+r.width/2, cy=r.top+r.height/2;
+      const rad=Math.max(r.width,r.height)/2;
+      const d=Math.hypot(x-cx, y-cy);
+      if(d<=rad && d<bestD){ best=th; bestD=d; }
+    }
+    return best;
+  }
+
+  function begin(x,y){ startX=x; startY=y; tracking=true; fired=false; moved=0; showAura(x,y); }
+  function move(x,y){
+    if(!tracking||fired) return;
+    moved=Math.max(moved, Math.hypot(x-startX, y-startY));
+    if(aura && aura.classList.contains('on')){ aura.style.left=x+'px'; aura.style.top=y+'px'; }
+    const up = startY - y;
+    if(up > need() && up > Math.abs(x-startX)*1.0){
+      fired=true; tracking=false; hideAura();
+      saint.activateLifeReturn();
+    }
+  }
+  // 抬手：若整段位移很小（點擊而非滑動）→ 放行給底下的紅點防禦
+  function end(x,y){
+    const wasTracking=tracking;
+    tracking=false; hideAura();
+    if(wasTracking && !fired && moved < TAP_SLOP){
+      const th = hitThreatAt(x, y);
+      if(th) defense.resolveThreat(th);   // 聖徒化期間照常點紅點防禦
+    }
+  }
+
+  zone.addEventListener('touchstart',e=>{ const t=e.touches[0]; begin(t.clientX,t.clientY); }, {passive:true});
+  zone.addEventListener('touchmove', e=>{
+    const t=e.touches[0];
+    // 只有「已判定為上滑」時才 preventDefault 接管；否則保持被動，讓點擊得以判定
+    if(tracking && !fired){
+      const up=startY-t.clientY;
+      if(up > need()*0.5) e.preventDefault();
+    }
+    move(t.clientX,t.clientY);
+  }, {passive:false});
+  zone.addEventListener('touchend', e=>{
+    const t=(e.changedTouches&&e.changedTouches[0])||{};
+    end(t.clientX, t.clientY);
+  }, {passive:true});
+  zone.addEventListener('touchcancel', ()=>{ tracking=false; hideAura(); }, {passive:true});
+  zone.addEventListener('mousedown', e=>begin(e.clientX,e.clientY));
+  zone.addEventListener('mousemove', e=>move(e.clientX,e.clientY));
+  window.addEventListener('mouseup', e=>end(e.clientX,e.clientY));
+})();
+
 combat.bootIdle();   // over=true，建立背景盤面/血條，停在首頁
 
-console.log('[step2] combat + enemy + defense 已接上 · 敵：', GAME_CONFIG.enemies[GAME_CONFIG.currentEnemy]?.name, '· HP', state.enemyMax);
+console.log('[step3] weapon+saint · 聖徒化已接上 · 敵：', GAME_CONFIG.enemies[GAME_CONFIG.currentEnemy]?.name, '· HP', state.enemyMax);

@@ -19,7 +19,8 @@ import { SFX } from '../audio.js';
 import * as enemy from './enemy.js';
 import * as defense from './defense.js';
 import * as weapon from './weapon.js';
-import { tryDeathGuard } from './partner.js';
+import * as saint from './saint.js';
+import { tryDeathGuard, currentPartner } from './partner.js';
 
 const $ = id => document.getElementById(id);
 const T = GAME_CONFIG.tuning;
@@ -30,6 +31,7 @@ const DMG_BASE=T.dmgBase, DMG_PER_COMBO=T.dmgPerCombo, DMG_COMBO_CAP=T.dmgComboC
 const ENERGY_PER_HIT=T.energyPerHit;
 const DMG_WRONG=T.dmgWrong, DMG_HEAVY=T.dmgHeavy, DMG_DELAY=T.dmgDelay;
 const ATK_BUFF_SECONDS=T.atkBuffSeconds;
+const SAINT_ADVANCE_DIVISOR=T.saintAdvanceDivisor;   // 聖徒化一次「受擊」推進量＝playerMax/此值
 const CLASP_LEN=110;
 
 const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;};
@@ -41,6 +43,22 @@ export function setup(){
   // combat 把自己擁有的狀態變動原語注入下游模組，切斷反向依賴
   defense.init({ enemyAttack, enemyDamage, floatDmg, triggerAtkBuff, weaponCounter: weapon.weaponCounter });
   weapon.init({ enemyDamage, floatDmg });
+  // 聖徒化：combat 為協調者，把 combat/defense/partner 的原語打包注入 saint，
+  //   saint 不直接 import 其他業務模組（維持 §2 依賴方向）。改血一律走本檔 HP API（Part A）。
+  saint.init({
+    // 統一改血 API（Part A）
+    healPlayer, setPlayerHpRatio,
+    // combat 盤面/傷害/UI 原語
+    buildGrid, updateBars, startIntervalTimer, resetIntervalDeadline,
+    hitDamage, enemyDamage, floatDmg, markNext, win, setBoard, resetEnergy,
+    shatterCell: enemy.shatterCell,
+    // defense 原語（combat 代為轉交；大絕頻率經 setUltRate 擁有者管道）
+    scheduleUlt: defense.scheduleUlt, clearThreat: defense.clearThreat,
+    endCharge: defense.endCharge, resetEnemyTimers: defense.resetEnemyTimers,
+    setUltRate: defense.setUltRate,
+    // partner（生命歸還主動技查詢）
+    currentPartner,
+  });
 }
 export function bootIdle(){
   // 開機停在首頁：先建立盤面/血條供背景顯示，但 over=true 讓計時與敵人不啟動
@@ -136,8 +154,8 @@ function tap(num,cell,e){
   enemy.ejectShell(cell);           // 每次點擊都彈殼
   gunHitOnEnemy(cell);              // 槍擊特效映射到敵人對應位置
 
-  // 下一輪接：聖徒化 / 雙槍點擊分支（本輪 saintMode / dualWield 恆 false，不會進入）
-  if(state.saintMode){ return; }    // TODO(next/saint)：聖徒化依序點擊 16 格、受擊推進倒數槽
+  // 聖徒化：依序點擊 16 格、受擊推進倒數槽（combat 於期間讓出主迴圈，交由 saint 驅動盤面游標）。
+  if(state.saintMode){ saint.saintTap(num, cell); updateStatus(); return; }
   if(state.dualWield){ return; }    // TODO(next/weapon)：雙槍無視順序快速清盤
 
   if(num===state.expect){
@@ -245,8 +263,14 @@ function floatDmg(txt,left,top,crit,extraClass){
 function enemyAttack(dmg, kind, saintAmt){
   if(state.over) return;
   if(state.saintMode){
-    // TODO(next/saint)：聖徒化期間敵攻擊不扣血，改推進倒數槽（+shake/受擊特效/紅閃/saintAdvance）。
-    //   本輪聖徒化未接，saintMode 恆為 false，不會進入此分支。
+    // 聖徒化期間敵攻擊不扣血：改推進倒數槽（推滿＝OBE）。視覺（震動/受擊特效/紅閃）留在 combat，
+    //   倒數槽推進交由 saint.saintAdvance（內部走 HP API healPlayer，滿則觸發 OBE）。
+    //   推進量：一般受擊＝playerMax/SAINT_ADVANCE_DIVISOR（≈+1s）；格擋由呼叫端傳 saintAmt（≈+0.5s）。
+    const amt=(saintAmt!=null)?saintAmt:(state.playerMax/SAINT_ADVANCE_DIVISOR);
+    $('enemyImg').classList.add('shake'); setTimeout(()=>$('enemyImg').classList.remove('shake'),300);
+    enemy.showHitFx(kind);
+    $('redFlash').style.opacity=.8; setTimeout(()=>$('redFlash').style.opacity=0,120);
+    saint.saintAdvance(amt);
     return;
   }
   SFX.hit();                         // 受擊撞擊音
@@ -279,6 +303,38 @@ function handlePlayerLethal(){
   state.defeated = true;
   lose();
 }
+
+/* ============================================================================
+ *  統一改血 API（Part A · 見 DECISIONS.md D3）
+ *  ---------------------------------------------------------------------------
+ *  playerHp 的擁有者仍是 combat；任何想改血的系統（聖徒化三結局、回血/緩回血、
+ *  吸血反擊、各結局回不同百分比…）一律走這組 API，不得直接寫 state.playerHp。
+ *  邊界規則全部集中在此：
+ *    · 扣血：唯一入口 enemyAttack → handlePlayerLethal（D1 致死鏈：即死防禦 / 戰敗優先）。
+ *            致死只可能發生在扣血路徑，故所有來源都自動受 D1 保護。
+ *    · 加血 healPlayer：上限裁切至 playerMax；只增不減，永不致死。
+ *    · 設比例 setPlayerHpRatio：夾在 [1, playerMax]（下限 floor 1，故 ratio<=0 → 1 HP）。
+ *  唯一契約允許的例外寫入：partner 即死防禦 state.applyDeathGuard()（鎖 1 HP）。
+ * ========================================================================== */
+// 加血（回血/吸血/緩回血 tick / 聖徒化 saintAdvance 推進都走這）。回傳裁切後的當前血量。
+export function healPlayer(amount){
+  const add=Math.max(0, amount||0);
+  state.playerHp=Math.min(state.playerMax, state.playerHp+add);
+  updateBars();
+  return state.playerHp;
+}
+// 把血量設為 playerMax 的某百分比（各結局回血走這）。夾在 [1, playerMax]。回傳結果血量。
+export function setPlayerHpRatio(ratio){
+  const hp=Math.max(1, Math.min(state.playerMax, Math.round(state.playerMax*ratio)));
+  state.playerHp=hp;
+  updateBars();
+  return state.playerHp;
+}
+// 設定當前盤面格數（N/cols 為 combat 擁有；聖徒化換 16 宮格 / 收尾還原經此，維持擁有者管道）。
+function setBoard(n, cols){ state.N=n; state.cols=cols; }
+// 歸零聖能並更新 C 字計量表（聖徒化開場清零破防值；energy 為 combat 擁有）。
+function resetEnergy(){ state.energy=0; updateEnergyClasp(); }
+
 // 對敵造成傷害（含 overkill / 擊殺凍結計時）
 function enemyDamage(dmg,isCrit,silent){
   if(dmg>0){
@@ -361,7 +417,8 @@ function stopAll(){
   clearInterval(state.intervalTimer);
   clearTimeout(state.atkBuffTimer);
   defense.stopAll();
-  // saintTimer / saintReactTimer / dualTimer 下一輪接（本輪未使用）
+  saint.stopTimers();   // 停聖徒化計時器（saintTimer / saintReactTimer）
+  // dualTimer 下一輪接（本輪未使用）
 }
 function fmtTime(sec){
   if(sec==null || !isFinite(sec)) return '--';
@@ -412,7 +469,8 @@ function showResult(title, sub, statsHtml, isLose){
  * ========================================================================== */
 export function startGame(){
   state.over=false; state.defeated=false; state.combo=0; state.energy=0; state.expect=1; state.boardIndex=0;
-  state.saintMode=false; state.saintUsedThisBattle=false; state.atkBuff=false;
+  state.atkBuff=false;
+  saint.reset();   // 聖徒化狀態全重置（saintMode 經 exitSaint、清計時器、關手勢層、清 saint 旗標）
   state.overkill=0; state.killTime=0; state.transitioning=false;
   state.counterCount=0; state.counterDamage=0; state.perfectCount=0; state.sawExecution=false;
   state.playerHp=state.playerMax; state.enemyHp=state.enemyMax;
@@ -421,7 +479,6 @@ export function startGame(){
   state.boardTimes=[]; state.boardsCompleted=0;
   state.flawlessRun=true; state.intruderTriggered=false; state.inIntruderFight=false;
   state.deathGuardUsed=false; state.sRankUnlocked=false; state.resultMode='rematch';
-  state.enemyAtkSuppressUntil=0;
   enemy.setEnemy(GAME_CONFIG.currentEnemy);
   $('home').classList.remove('on');
   $('banner').classList.remove('on'); $('banner').classList.remove('lose');

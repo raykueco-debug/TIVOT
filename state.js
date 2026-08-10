@@ -130,15 +130,22 @@ export function applyDeathGuard(){
 
 /* saint.js 專用：進入聖徒化。saintMode 的寫入唯一入口。
  * 其他模組一律只讀 state.saintMode 來分支，不得寫入。
- * TODO(saint)：接 startSaintMode 的實際初始化（倒數槽、16 宮格、cut-in 緩衝）。 */
+ * 只切 saintMode；saintUsedThisBattle 為 saint 自有欄位，於 activateSaint（cut-in 前）
+ * 自行標記，時序與 reference 一致（發動即鎖一場一次，cut-in 結束才真正 startSaintMode）。 */
 export function enterSaint(){
   state.saintMode = true;
-  state.saintUsedThisBattle = true;
 }
 
 /* saint.js 專用：離開聖徒化（三結局收尾共用）。 */
 export function exitSaint(){
   state.saintMode = false;
+}
+
+/* saint.js 專用：以 Maximum Burst 擊殺 → 標記本場處決（EXSECUTIŌ）。
+ * sawExecution 擁有者為 inspector（3.6，結算讀取加乘）；saint 是唯一使其為真的來源，
+ * 比照 addCounter/addPerfect 的「跨擁有者計數例外」，經具名 setter 寫入。 */
+export function markExecution(){
+  state.sawExecution = true;
 }
 
 /* weapon.js 專用：反擊成功時累加反擊計數/傷害（3.6 的跨擁有者計數例外）。

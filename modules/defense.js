@@ -31,6 +31,15 @@ const ULT_OPEN_MS = 3000;                  // 開場保證：每盤 3 秒內敵�
 let api = {};
 export function init(a){ api = a; }
 
+/* ---------- 大絕頻率（擁有者管道）----------
+ *  ULT_MIN / ULT_MAX 為 defense 擁有（3.3）。聖徒化需暫時改密集頻率、離場再還原——
+ *  saint 只「讀」現值存進自有的 saintPrevUlt，實際「寫」一律經此 setter（經 combat 注入的 api），
+ *  維持「跨擁有者寫入走擁有者管道」的契約（見 CLAUDE.md 3.3）。 */
+export function setUltRate(min, max){
+  state.ULT_MIN = min;
+  state.ULT_MAX = max;
+}
+
 /* ---------- 大絕排程 ---------- */
 // 每盤開場呼叫：3 秒內保證發動一次大絕（開場保證）
 export function scheduleOpeningUlt(){ scheduleUlt(ULT_OPEN_MS*Math.random()); }

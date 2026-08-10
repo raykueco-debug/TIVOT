@@ -123,7 +123,7 @@ Boss 多發（`ULT_SHOTS/ULT_GAP_MS`）。`flashDefense` 視覺。`noPerfectBand
 `activateDual`/`endDual`：聖能滿自動發動，`DUAL_SECONDS` 期間傷害 `dmgDualMult`。
 
 ### 聖徒化（v18 受擊推進式）
-`activateSaint(dir)`（左右滑觸發）→ `playSaintCutin` → `startSaintMode`。血條改為**倒數槽**：`saintAdvance(amount)` 只在真受擊（挨大絕／按錯／反應超時）推進（`SAINT_ADVANCE_DIVISOR`），格擋推進較少（`SAINT_BLOCK_DIVISOR`），Counter/Perfect 免傷不推進；無受擊時被動回滿（`SAINT_PASSIVE_HEAL_SEC`）。維持 16 宮格，期間敵大絕更密集（`SAINT_ULT_MIN/MAX_MS`）。`startSaintReactTimer`（每格反應時限，`SAINT_REACT_SEC_IN_SAINT` 放寬）。cut-in 後 `SAINT_NOATK_AFTER_CUTIN_SEC` 秒敵不發動。
+`activateSaint(dir)`（左右滑觸發）→ `playSaintCutin` → `startSaintMode`。血條改為**倒數槽**：`saintAdvance(amount)` 只在真受擊（挨大絕／按錯／反應超時）推進（`SAINT_ADVANCE_DIVISOR`），格擋推進較少（`SAINT_BLOCK_DIVISOR`），Counter/Perfect 免傷不推進；無受擊時被動回滿（`SAINT_PASSIVE_HEAL_SEC`）。維持 16 宮格，期間敵大絕更密集（`SAINT_ULT_MIN/MAX_MS`）。`startSaintReactTimer`（每格反應時限，`SAINT_REACT_SEC_IN_SAINT` 放寬）。~~cut-in 後 `SAINT_NOATK_AFTER_CUTIN_SEC` 秒敵不發動。~~ ⚠ **過時**:reference v18c 已取消此緩衝（`startSaintMode` 設 `enemyAtkSuppressUntil=0`，一進聖徒化敵人即照常發動大絕）；本專案依此為準（2026-08-10 裁決），`saintNoAtkAfterCutinSec` 為休眠參數。
 三種結局：
 - **Maximum Burst / EXSECUTIŌ**（`triggerMaxBurst`）：滿前清盤 → 追加期間總傷 20%（`SAINT_LAST_HIT_RATIO`），`sawExecution=true`（評價 ×1.10）。
 - **OBE**（`triggerOBE`）：推進到滿 = 沒守住。

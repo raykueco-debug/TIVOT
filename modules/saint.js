@@ -3,20 +3,330 @@
  *  ---------------------------------------------------------------------------
  *  職責：降臨 → 推進 → 三結局。血條改為倒數槽，只有真受擊才推進
  *    （受擊 ≈+1s / 格擋 ≈+0.5s / Counter・Perfect 免傷不推進 / 無受擊約 10s 回滿）；
- *    維持 16 宮格、期間敵大絕更密集；cut-in 後 3 秒敵不發動。
+ *    維持 16 宮格、期間敵大絕更密集；左右滑觸發、生命歸還下滑觸發。
  *    三結局：
- *      Maximum Burst（滿前清盤，追加期間總傷 20%，sawExecution=true）
- *      OBE（推進到滿＝沒守住）
- *      生命歸還（下滑觸發，中止並保留當前血量，第四結局）
+ *      Maximum Burst（EXSECUTIŌ）：滿前清盤，追加期間總傷 20%，sawExecution=true。
+ *        回血＝playerMax 的 50%（刻意偏離 reference 的 10%，見 DECISIONS.md D2）。
+ *      OBE：推進到滿＝沒守住（HP→1）。
+ *      生命歸還：下滑觸發，中止並保留當前血量（第四結局，不改血）。
  *
  *  狀態擁有者：3.5 聖徒化（見 state.js）。
- *  ⚠ 契約鐵律：saintMode 只有本模組能寫（經 state.enterSaint/exitSaint）；
- *     其他模組一律只讀 state.saintMode 來分支。此契約若破＝退回舊單檔病灶。
+ *  ⚠ 契約鐵律：
+ *    · saintMode 只有本模組能寫，且一律經 state.enterSaint()/exitSaint()；
+ *      其他模組只讀 state.saintMode 分支。此契約若破＝退回舊單檔病灶。
+ *    · 改血一律走 combat 的統一改血 API（api.healPlayer / api.setPlayerHpRatio，Part A）；
+ *      saint 不得直接寫 state.playerHp。
+ *    · 大絕頻率（ULT_MIN/MAX）為 defense 擁有：saint 只「讀」現值存進自有 saintPrevUlt，
+ *      實際「寫」經 api.setUltRate（defense 擁有者管道）。
  *
- *  預定函式（自 reference 搬遷）：
- *    saintAdvance, activateSaint, playSlash, startSaintReactTimer,
- *    clearSaintReactTimer, setReturnSwipe, startSaintMode, triggerMaxBurst,
- *    triggerOBE, activateLifeReturn, playSaintCutin, finishSaintMode
- *
- *  ⚠ 本輪為骨架：不實作任何聖徒化邏輯。
+ *  依賴：只 import state / config / audio。combat / defense / enemy / partner 的原語
+ *    一律由 combat 於 setup() 注入 api（維持 §2 依賴方向，不反向 import）。
  * ========================================================================== */
+
+import { GAME_CONFIG, asset } from '../config.js';
+import { state, enterSaint, exitSaint, markExecution } from '../state.js';
+import { SFX } from '../audio.js';
+
+const $ = id => document.getElementById(id);
+const T = GAME_CONFIG.tuning;
+
+// 數值一律讀 config
+const SAINT_GRID              = T.saintGrid;              // 聖徒化盤面格數（16）
+const SAINT_GRID_COLS         = T.saintGridCols;         // 每列格數（4）
+const SAINT_ADVANCE_DIVISOR   = T.saintAdvanceDivisor;   // 一次受擊推進＝playerMax/此值（≈+1s）
+const SAINT_PASSIVE_HEAL_SEC  = T.saintPassiveHealSec;   // 無受擊時被動回滿約需秒數
+const SAINT_REACT_SEC_IN_SAINT= T.saintReactSecInSaint;  // 聖徒化期間放寬的每格反應時限（秒）
+const SAINT_ULT_MIN_MS        = T.saintUltMinMs;         // 期間敵大絕頻率下限
+const SAINT_ULT_MAX_MS        = T.saintUltMaxMs;         // 期間敵大絕頻率上限
+const SAINT_COMBO_STEP        = T.saintComboStep;        // 期間每 combo 疊傷斜率（無上限）
+const SAINT_LAST_HIT_RATIO    = T.saintLastHitRatio;     // 結束前清盤 → 追加期間總傷的比例（0.20）
+
+/* combat 於啟動時注入的原語（HP API / 盤面 / 傷害 / defense / partner）。 */
+let api = {};
+export function init(a){ api = a; }
+
+/* ============================================================================
+ *  發動 / 手勢入口
+ * ========================================================================== */
+// 敵人框左右滑到底 → 發動聖徒化（一場一次）。dir='right'|'left' 給對應橫斬特效。
+export function activateSaint(dir){
+  if(state.over||state.saintMode||state.cutinPlaying||state.saintUsedThisBattle||state.transitioning||state.dualWield) return;
+  state.saintUsedThisBattle = true;   // saint 自有欄位：發動即鎖（一場一次），時序同 reference
+  SFX.unlock(); SFX.ultCharge();
+  playSlash(dir);                     // 依滑動方向的橫斬特效
+  playCutin(()=>{
+    if(state.over) return;
+    startSaintMode();
+  }, '聖徒降臨！！<span class="cutin-en">SAINT INSTALL!!</span>', 'cutin_saint_luna');
+}
+
+// 橫斬特效：dir='right' 向右斬、'left' 向左斬
+function playSlash(dir){
+  const fx=$('slashFx');
+  if(!fx) return;
+  fx.innerHTML='';
+  fx.classList.remove('flash'); void fx.offsetWidth; fx.classList.add('flash');
+  const line=document.createElement('div');
+  line.className='slash-line '+(dir==='left'?'go-left':'go-right');
+  fx.appendChild(line);
+  // 補一道稍慢的殘影，讓斬擊更有層次
+  const echo=document.createElement('div');
+  echo.className='slash-line '+(dir==='left'?'go-left':'go-right');
+  echo.style.animationDelay='.06s';
+  echo.style.opacity='.5';
+  echo.style.height='6px';
+  fx.appendChild(echo);
+  setTimeout(()=>{ if(fx) fx.innerHTML=''; }, 600);
+}
+
+/* ============================================================================
+ *  降臨：進入聖徒化
+ * ========================================================================== */
+function startSaintMode(){
+  if(state.over) return;
+  enterSaint();                          // saintMode=true（唯一寫入管道）
+  // v18c/本輪裁決：不設 cut-in 後緩衝——一進聖徒化敵人就照常發動大絕（受擊會加速逼近 OBE）。
+  api.resetEnemyTimers();
+  state.enemyAtkSuppressUntil = 0;
+  api.scheduleUlt();                     // 立即排下一次大絕（不延後）
+  setReturnSwipe(true);                  // 開啟生命歸還手勢層
+  state.saintDamageDealt = 0;
+  state.combo = 0;                       // 期間 saint 代理盤面游標（combat 已讓出主迴圈）
+  api.resetEnergy();                     // 清零破防（雙槍）值，期間也不累積
+  $('grid').classList.add('saint');
+  state.saintPrevBoard = { N:state.N, cols:state.cols };
+  api.setBoard(SAINT_GRID, SAINT_GRID_COLS);   // 維持 16 宮格
+  api.buildGrid();
+  api.floatDmg('SAINT MODE','50%','20%',true);
+  // 血條＝倒數槽，被兩股力量往上推：
+  //   (1) 被動回血打底：滿血/SAINT_PASSIVE_HEAL_SEC 秒定速回，無受擊時約 10 秒到 OBE；
+  //   (2) 受擊額外加速：挨大絕/按錯/延時 +1s、格擋 +0.5s（見 saintAdvance / combat.enemyAttack）。
+  //   推滿＝OBE，推滿前清盤＝Maximum Burst。
+  const healPerTick = state.playerMax / SAINT_PASSIVE_HEAL_SEC * 0.1;   // 每 100ms 的被動推進量
+  clearInterval(state.saintTimer);
+  state.saintTimer = setInterval(()=>{
+    if(state.over||!state.saintMode){ clearInterval(state.saintTimer); state.saintTimer=null; return; }
+    saintAdvance(healPerTick);           // 被動推進；推滿→OBE（由 saintAdvance 內部處理）
+  }, 100);
+  // 大絕頻率改密集：讀現值存自有 saintPrevUlt、經 defense 擁有者管道 setUltRate 寫入
+  state.saintPrevUlt = { min:state.ULT_MIN, max:state.ULT_MAX };
+  api.setUltRate(SAINT_ULT_MIN_MS, SAINT_ULT_MAX_MS);
+  startSaintReactTimer();                // 起算第一格的反應時限
+}
+
+/* ============================================================================
+ *  推進倒數槽（＝回血；推滿→OBE）
+ *  amount＝本次推進量（playerMax 比例值）。走 combat 統一改血 API（healPlayer）。
+ *  Counter／Perfect 免傷則不呼叫此函式。
+ * ========================================================================== */
+export function saintAdvance(amount){
+  if(!state.saintMode) return;
+  const hp = api.healPlayer(amount);     // 推進＝回血（上限裁切在 API 內）
+  if(hp>=state.playerMax){ triggerOBE(); }
+}
+
+/* ============================================================================
+ *  聖徒化盤面點擊（combat.tap 於 saintMode 委派至此）
+ *  依序點 16 格；combo 疊傷無上限；點錯／反應超時＝一次「受擊」推進 +1s。
+ * ========================================================================== */
+export function saintTap(num, cell){
+  if(cell.classList.contains('done')) return;   // 已點掉的格子不可重點
+  if(num===state.expect){
+    SFX.gunshot(true);
+    cell.classList.add('done'); cell.classList.remove('next'); api.shatterCell(cell);
+    state.combo++;
+    const dmg=api.hitDamage() + state.combo*SAINT_COMBO_STEP;   // 疊傷無上限
+    const d=Math.round(dmg);
+    api.enemyDamage(d, true);
+    state.saintDamageDealt += d;                 // 累計期間傷害（供最後一擊追加）
+    state.expect++;
+    if(state.expect>state.N){ triggerMaxBurst(); }              // 推滿前點完全盤 → Maximum Burst
+    else { api.markNext(); startSaintReactTimer(); }           // 點對一格 → 重設反應時限
+  }else{
+    // 點錯（掃格失誤）＝一次「受擊」：統一推進 +1 秒
+    SFX.wrong();
+    cell.classList.add('wrong'); setTimeout(()=>cell.classList.remove('wrong'),300);
+    state.combo=0;
+    api.floatDmg('MISS','50%','44%',true);
+    saintAdvance(state.playerMax/SAINT_ADVANCE_DIVISOR);        // 推進；推滿→OBE
+    if(state.saintMode) startSaintReactTimer();                // 未推滿（仍在聖徒化）→ 重設反應時限
+  }
+}
+
+/* 聖徒化每格反應時限：超時未點下一格 → 一次「受擊」推進，加完重新計時。
+ * 期間專用放寬時限 SAINT_REACT_SEC_IN_SAINT（給玩家餘裕）。 */
+function startSaintReactTimer(){
+  clearTimeout(state.saintReactTimer);
+  if(!state.saintMode) return;
+  const REACT = SAINT_REACT_SEC_IN_SAINT;
+  state.saintReactTimer = setTimeout(function tick(){
+    if(state.over||!state.saintMode||state.cutinPlaying){ return; }
+    SFX.wrong();
+    state.combo=0;
+    api.floatDmg('TOO SLOW','50%','40%',true);
+    saintAdvance(state.playerMax/SAINT_ADVANCE_DIVISOR);        // 推進；推滿→OBE
+    if(!state.saintMode) return;                               // 已因推滿進 OBE → 停
+    state.saintReactTimer = setTimeout(tick, REACT*1000);      // 還沒點 → 繼續計時
+  }, REACT*1000);
+}
+function clearSaintReactTimer(){ clearTimeout(state.saintReactTimer); state.saintReactTimer=null; }
+
+// 生命歸還手勢層開關（只在聖徒化期間開啟，避免平時擋住敵畫面）
+function setReturnSwipe(on){ const z=$('returnSwipe'); if(z) z.classList.toggle('on', !!on); }
+
+/* ============================================================================
+ *  三結局
+ * ========================================================================== */
+// 還原敵大絕頻率（經 defense 擁有者管道；清掉自有 saintPrevUlt）
+function restoreUltRate(){
+  if(state.saintPrevUlt){ api.setUltRate(state.saintPrevUlt.min, state.saintPrevUlt.max); state.saintPrevUlt=null; }
+}
+
+// Maximum Burst（EXSECUTIŌ）：推滿前把 16 格點完 → 追加期間總傷 20%；未擊殺則回血 50%（D2）。
+function triggerMaxBurst(){
+  if(!state.saintMode) return;
+  exitSaint();
+  clearInterval(state.saintTimer); state.saintTimer=null;
+  clearSaintReactTimer(); setReturnSwipe(false);
+  restoreUltRate();
+  if(state.saintDamageDealt>0){
+    const last=Math.round(state.saintDamageDealt*SAINT_LAST_HIT_RATIO);
+    api.enemyDamage(last, true);
+    api.floatDmg('MAXIMUM BURST '+last,'50%','28%',true);
+    SFX.clear();
+  }
+  $('grid').classList.remove('saint');
+  if(state.enemyHp<=0){
+    // 追加傷害讓敵人 HP 歸零 → EXSECUTIŌ 演出後直接結算，不回盤面
+    markExecution();   // sawExecution=true（評價 Execution 加乘）
+    playSaintCutin('execute', ()=>{ api.win(); });
+    return;
+  }
+  // 敵人未死 → Maximum Burst 演出後回盤面（HP → 50%，D2：reference 為 10%）
+  playSaintCutin('burst', ()=>{
+    finishSaintMode(()=>api.setPlayerHpRatio(0.5));
+  });
+}
+
+// OBE：推進到滿＝沒守住（HP → 1）。
+function triggerOBE(){
+  if(!state.saintMode) return;
+  exitSaint();
+  clearInterval(state.saintTimer); state.saintTimer=null;
+  clearSaintReactTimer(); setReturnSwipe(false);
+  restoreUltRate();
+  api.floatDmg('O.B.E.','50%','28%',true);
+  if(state.enemyHp<=0){
+    // 聖徒化期間敵 HP 已歸零、但倒數槽先推滿 → 仍播 OBE 演出，收尾直接進結算（不回死盤面）
+    playSaintCutin('obe', ()=>{ $('grid').classList.remove('saint'); api.win(); });
+    return;
+  }
+  // 全畫面 OVERWRITE BREAKER ENGAGED cut-in → 結束後回盤面（HP → 1）
+  playSaintCutin('obe', ()=>{
+    finishSaintMode(()=>api.setPlayerHpRatio(0));   // setPlayerHpRatio 下限 floor 1 → 恰為 1 HP
+  });
+}
+
+// 生命歸還（搭檔主動技·第四結局）：中止聖徒化，保留當前血量後回盤面（不改血）。
+export function activateLifeReturn(){
+  if(!state.saintMode) return;
+  const p=api.currentPartner();
+  const act=p && p.active;
+  if(!act || act.key!=='lifeReturn') return;   // 當前搭檔沒有此主動技
+  exitSaint();
+  clearInterval(state.saintTimer); state.saintTimer=null;
+  clearSaintReactTimer(); setReturnSwipe(false);
+  restoreUltRate();
+  api.floatDmg('生命歸還','50%','28%',true);
+  // 第四結局 cut-in → 結束後回盤面，血量維持當前值（saintMode 已關、計時器已停，HP 不再變動）
+  playSaintCutin('return', ()=>{
+    finishSaintMode(()=>{ /* 保留當前血量：不改血 */ });
+  });
+}
+
+/* 共用收尾：回到當前 9/16 盤面，敵人排程/間隔懲罰全部歸零，恢復正常扣血攻擊。
+ * finalHpThunk：由各結局傳入，於此執行結局血量設定（一律走 combat 改血 API）。 */
+function finishSaintMode(finalHpThunk){
+  $('grid').classList.remove('saint');
+  restoreUltRate();                      // 保險：還原敵大絕頻率（triggerX 已還原，冪等）
+  if(finalHpThunk) finalHpThunk();       // 設定結局血量（走 combat 改血 API；生命歸還為 no-op）
+  const back=state.saintPrevBoard||{N:16,cols:4};
+  api.setBoard(back.N, back.cols);
+  api.resetEnemyTimers();                // 清紅圈、停蓄力、清大絕排程（含 ultCheckTimer）
+  if(!state.over){
+    api.buildGrid();
+    api.resetIntervalDeadline();         // 間隔（點擊延遲）懲罰歸零
+    api.startIntervalTimer();
+    api.scheduleUlt();                   // 敵大絕蓄力重新計時，恢復正常扣血攻擊
+  }
+}
+
+/* ============================================================================
+ *  演出：降臨 cut-in（通用）／結局全畫面 cut-in
+ * ========================================================================== */
+// 通用 cut-in（雙槍破防／聖徒化降臨共用格式）：1.5 秒演出，期間鎖點擊。
+export function playCutin(done, label, imgKey){
+  state.cutinPlaying=true;
+  const c=$('cutin');
+  if(label!==undefined) $('cutinText').innerHTML = label;
+  if(imgKey){ const ci=$('cutinImg'); const src=asset(imgKey); if(ci && src) ci.src=src; }
+  c.classList.remove('on'); void c.offsetWidth; c.classList.add('on');
+  SFX.gunshot(true);
+  setTimeout(()=>{ SFX.gunshot(true); },200);
+  setTimeout(()=>{
+    c.classList.remove('on');
+    state.cutinPlaying=false;
+    if(done) done();
+  }, 1500);
+}
+
+// 結局全畫面 cut-in（kind: 'burst' | 'obe' | 'execute' | 'return'）
+function playSaintCutin(kind, done){
+  state.cutinPlaying=true;                 // 演出期間鎖定點擊
+  const c=$('saintCutin');
+  let title, sub;
+  const enName=(($('enemyName')&&$('enemyName').textContent)||'目標');
+  if(kind==='burst'){ title='MAXIMUM BURST'; sub='追加聖裁 · HP 50%'; }        // D2：顯示 50%
+  else if(kind==='execute'){ title='EXSECUTIŌ'; sub=enName+' · 消滅'; }
+  else if(kind==='return'){ title='LIFE\nRETURN'; sub='生命歸還 · 血量保留'; }
+  else { title='OVERWRITE\nBREAKER\nENGAGED'; sub='O.B.E. · HP 1'; }
+  $('saintCutinTitle').textContent = title;
+  $('saintCutinSub').textContent   = sub;
+  // 依 kind 載入對應內嵌 cut-in 圖（資料放 ASSETS，程式只讀）
+  const scImgKey = { execute:'cutin_saint_luna', obe:'cutin_obe', burst:'cutin_mb', return:'cutin_return' };
+  const scImgEl  = { execute:'saintCutinImg', obe:'saintCutinImgObe', burst:'saintCutinImgBurst', return:'saintCutinImgReturn' };
+  if(scImgEl[kind]){ const el=$(scImgEl[kind]); if(el){ const src=asset(scImgKey[kind]); if(src) el.src=src; } }
+  c.classList.remove('burst','obe','execute','return','on');
+  c.classList.add(kind);
+  void c.offsetWidth;                      // reflow → 重播動畫
+  c.classList.add('on');
+  SFX.gunshot(true);
+  if(kind==='obe') setTimeout(()=>SFX.hit(), 200); else setTimeout(()=>SFX.clear(), 200);
+  const holdMs = kind==='execute' ? 3000 : 1600;   // EXSECUTIŌ 停留 3 秒
+  setTimeout(()=>{
+    c.classList.remove('on');
+    state.cutinPlaying=false;
+    if(done) done();
+  }, holdMs);
+}
+
+/* ============================================================================
+ *  生命週期（combat 調度）
+ * ========================================================================== */
+// 停聖徒化計時器（combat.stopAll 調度）
+export function stopTimers(){
+  clearInterval(state.saintTimer); state.saintTimer=null;
+  clearTimeout(state.saintReactTimer); state.saintReactTimer=null;
+}
+// 全重置（combat.startGame 調度）：saintMode 經 exitSaint，清計時器/旗標、關手勢層。
+export function reset(){
+  stopTimers();
+  if(state.saintMode) exitSaint();
+  state.saintUsedThisBattle=false;
+  state.saintDamageDealt=0;
+  state.saintPrevBoard=null;
+  state.saintPrevUlt=null;
+  state.enemyAtkSuppressUntil=0;
+  setReturnSwipe(false);
+  $('grid').classList.remove('saint');
+}
