@@ -94,3 +94,30 @@ OBE（HP→1）、EXSECUTIŌ（擊殺→直接結算,不回血）、生命歸還
 
 ### 驗收提醒
 此為內部架構,對外行為與 reference 等價（除 D2 的數值差異）。驗收看行為即可,不會與 reference 有可見差異。
+
+---
+
+## D4 · 聖徒化疊傷斜率 `saintComboStep` 0.5 → 1.0（單場傷害提升至 200+）
+
+- **日期**:2026-08-10
+- **狀態**:已實作（config.js `tuning.saintComboStep`）
+
+### 偏離內容
+reference 的聖徒化每 combo 疊傷斜率 `saintComboStep = 0.5`。本專案**刻意調為 1.0**。
+聖徒化每擊傷害＝`round(dmgBase + min(combo,20)*dmgPerCombo + combo*saintComboStep)`（疊傷項無上限）。
+
+單場 16 擊(combo 1..16)累計 `saintDamageDealt`:
+- reference（0.5）:數列 `[4,4,5,6,7,7,8,9,9,10,11,11,12,13,14,14]`，合計 **144**，MB 追加 `round(144*0.2)=29`，單場總傷 **173**。
+- 本專案（1.0）:數列 `[4,5,7,8,9,10,11,13,14,15,16,17,19,20,21,22]`，合計 **211**，MB 追加 `round(211*0.2)=42`，單場總傷 **253**。
+
+### 為什麼
+作者要求聖徒化單場能帶 **200 以上**傷害、MB 爆發再額外加於其上。原斜率下單擊上限僅 ~14、合計 144 偏弱。
+只調 `saintComboStep`（**僅作用於聖徒化分支**）即達標,不動 `dmgBase/dmgPerCombo`，故**一般戰鬥手感與 reference 完全不變**。
+MB 比例 `saintLastHitRatio` 維持 reference 的 0.20（隨基底放大自然變 42，屬「額外加傷」不另調）。
+
+### 怎麼實作
+純 config 數值:`tuning.saintComboStep: 0.5 → 1.0`。程式未動（機制1/機制2 邏輯本就與 reference 逐字等價，見上一輪核對）。
+
+### 驗收提醒
+對照 reference 時,聖徒化傷害「reference 合計 144 / MB 29、本專案合計 211 / MB 42」為**預期差異**,非重寫錯誤。
+一般（非聖徒化）戰鬥傷害與 reference 應完全一致。

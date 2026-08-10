@@ -269,8 +269,9 @@ export const GAME_CONFIG = {
     saintNoAtkAfterCutinSec: 3, // 聖徒化 cut-in 撤下後，敵不發動大絕的秒數（v16）
     saintUltMinMs:       1200,  // v18：聖徒化期間敵大絕發動頻率下限（毫秒；越小越密集）
     saintUltMaxMs:       2600,  // v18：聖徒化期間敵大絕發動頻率上限（毫秒）
-    saintComboStep:      0.5,   // 聖徒化每 combo 疊傷斜率（無上限；v18：0.35→0.5）
-    saintLastHitRatio:   0.20,  // 結束前清盤 → 追加期間總傷害的 20%
+    saintComboStep:      1.0,   // 聖徒化每 combo 疊傷斜率（無上限）。reference 為 0.5；本專案調 1.0
+                                //   使單場 16 擊累計 ≈211（>200 目標）。見 DECISIONS.md D4。
+    saintLastHitRatio:   0.20,  // 結束前清盤 → 追加期間總傷害的 20%（MB 爆發；維持 reference）
 
     // 攻擊加倍 buff
     atkBuffSeconds:      3,     // 攻擊加倍時長（秒）
