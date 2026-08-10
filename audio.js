@@ -46,6 +46,18 @@ function playBuffer(c, buf, vol){
   }catch(e){}
 }
 
+// 播放音檔（src＝已解析路徑）。已解碼→立即播；未解碼→解碼後補播。null/空→靜默略過。
+function playSrc(src, vol){
+  if(!src) return;
+  const c = ctx();
+  if(!c) return;
+  const buf = _buffers[src];
+  if(buf) playBuffer(c, buf, vol);
+  else load(src).then(b => { if(b) playBuffer(c, b, vol); });
+}
+
+let _shots = [];   // 普攻槍聲候選（已解析路徑，隨機播一支）
+
 export const SFX = {
   // 首次使用者手勢呼叫：喚醒 AudioContext（之後所有播放不再受手勢限制）
   unlock(){
@@ -57,15 +69,10 @@ export const SFX = {
   preload(srcs){ (srcs || []).forEach(load); },
 
   // 播放音檔（src＝已解析路徑）。每次 new source → 可自由重疊、不限制、不打斷前一個。
-  //   已解碼 → 立即播；未解碼 → 解碼後補播（首次略延遲）。null/空 → 靜默略過。
-  play(src, vol){
-    if(!src) return;
-    const c = ctx();
-    if(!c) return;
-    const buf = _buffers[src];
-    if(buf) playBuffer(c, buf, vol);
-    else load(src).then(b => { if(b) playBuffer(c, b, vol); });
-  },
+  play(src, vol){ playSrc(src, vol); },
+
+  // 設定普攻槍聲候選（傳已解析路徑陣列，gunshot 隨機播其一）
+  setShots(srcs){ _shots = (srcs || []).filter(Boolean); },
 
   // 合成「重擊感」：完防／格擋用。短促低頻衝擊 + 高頻噪音瞬態（打擊質感）。可重疊。
   heavyHit(){
@@ -96,8 +103,13 @@ export const SFX = {
     }catch(e){}
   },
 
+  // 普攻槍聲：由 setShots 候選中隨機播一支（正確點擊/雙槍/聖徒化的主武器射擊共用）。
+  gunshot(/* heavy */){
+    if(!_shots.length) return;
+    playSrc(_shots[Math.floor(Math.random()*_shots.length)]);
+  },
+
   // 既有介面：本輪維持 no-op（合成音尚未搬回），供各模組安全呼叫、不報錯。
-  gunshot(/* heavy */){},
   sniperShot(){},
   wrong(){},
   hit(){},

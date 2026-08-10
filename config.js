@@ -354,8 +354,9 @@ export const ASSETS = {
   // 清盤換彈音（盤面清空、顯示 RELOADING 時播）
   sfx_reload:        "resources/weapon/Reload.mp3",
 
-  // 普攻槍聲（未來可換「普攻主武器」，故預留；先一支預設，主武器化後每把 <主武器>_SE）
-  se_shot_normal:    null,   // → Shot_Normal_SE（普攻預設槍聲）
+  // 普攻槍聲（手槍；每次正確點擊由這兩支隨機播一支，製造變化）
+  se_pistol_01:      "resources/weapon/Pistol_SE_01.mp3",
+  se_pistol_02:      "resources/weapon/Pistol_SE_02.mp3",
 
   // BGM（六情境）
   bgm_home:      null,   // 首頁     → BGM_Home

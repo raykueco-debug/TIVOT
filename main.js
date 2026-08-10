@@ -34,11 +34,14 @@ function bindBtn(id, fn){
 // ── 注入 api、綁定、開機 ──
 combat.setup();
 
-// 預載音檔（反擊武器 SE + 清盤換彈）：降低首次播放延遲；解鎖於首次手勢（SFX.unlock）
+// 預載音檔（反擊武器 SE + 清盤換彈 + 普攻手槍）：降低首次播放延遲；解鎖於首次手勢（SFX.unlock）
 SFX.preload([
   asset('se_mg_squall'), asset('se_shotgun_blast'), asset('se_sniper_falcon'),
   asset('sfx_reload'),
+  asset('se_pistol_01'), asset('se_pistol_02'),
 ].filter(Boolean));
+// 普攻槍聲：兩支手槍音隨機播（gunshot 呼叫端不變）
+SFX.setShots([asset('se_pistol_01'), asset('se_pistol_02')].filter(Boolean));
 
 bindBtn('startBtn',     combat.startGame);      // 首頁：開始遊戲
 bindBtn('exitBtn',      combat.goHome);         // 右上：退出回首頁
