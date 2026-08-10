@@ -197,14 +197,15 @@ function triggerMaxBurst(){
   }
   $('grid').classList.remove('saint');
   if(state.enemyHp<=0){
-    // 追加傷害讓敵人 HP 歸零 → EXSECUTIŌ 演出後直接結算，不回盤面
+    // 追加傷害讓敵人 HP 歸零 → EXSECUTIŌ 演出後 → 轉下一敵 or（最後一敵）結算。
+    // 成功 MB 滿血獎勵（D2）：擊殺也回滿——連戰下 MB 秒殺一敵後帶滿血接下一隻。
     markExecution();   // sawExecution=true（評價 Execution 加乘）
-    playSaintCutin('execute', ()=>{ api.onEnemyDefeated(); });   // 連戰：擊殺→轉下一敵 or 結算
+    playSaintCutin('execute', ()=>{ api.setPlayerHpRatio(1); api.onEnemyDefeated(); });
     return;
   }
-  // 敵人未死 → Maximum Burst 演出後回盤面（HP → 50%，D2：reference 為 10%）
+  // 敵人未死 → Maximum Burst 演出後回盤面（成功 MB 滿血獎勵，HP → 100%，D2）
   playSaintCutin('burst', ()=>{
-    finishSaintMode(()=>api.setPlayerHpRatio(0.5));
+    finishSaintMode(()=>api.setPlayerHpRatio(1));
   });
 }
 
@@ -288,7 +289,7 @@ function playSaintCutin(kind, done){
   const c=$('saintCutin');
   let title, sub;
   const enName=(($('enemyName')&&$('enemyName').textContent)||'目標');
-  if(kind==='burst'){ title='MAXIMUM BURST'; sub='追加聖裁 · HP 50%'; }        // D2：顯示 50%
+  if(kind==='burst'){ title='MAXIMUM BURST'; sub='追加聖裁 · HP 100%'; }       // D2：成功 MB 回滿血
   else if(kind==='execute'){ title='EXSECUTIŌ'; sub=enName+' · 消滅'; }
   else if(kind==='return'){ title='LIFE\nRETURN'; sub='生命歸還 · 血量保留'; }
   else { title='OVERWRITE\nBREAKER\nENGAGED'; sub='O.B.E. · HP 1'; }

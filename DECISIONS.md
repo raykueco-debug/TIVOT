@@ -42,25 +42,32 @@ reference 存在一個競態 bug:當玩家 HP 與敵人 HP 在**同一次攻防�
 
 ---
 
-## D2 · Maximum Burst（EXSECUTIŌ）回血 10% → 50%
+## D2 · Maximum Burst 回血 10% → 100%（成功 MB 滿血獎勵，含擊殺）
 
-- **日期**:2026-08-10
-- **狀態**:已實作（saint.js `triggerMaxBurst` 未擊殺分支 → `combat.setPlayerHpRatio(0.5)`）
+- **日期**:2026-08-10（初版 50%）／2026-08-11（改為 100%，並涵蓋擊殺路徑）
+- **狀態**:已實作（saint.js `triggerMaxBurst` 兩路皆 → `combat.setPlayerHpRatio(1)`）
 
 ### 偏離內容
 reference 的 Maximum Burst 未擊殺（敵人仍存活）時,收尾把玩家 HP 設為 `playerMax` 的 **10%**
 （[reference/index.html:1856](reference/index.html) `finishSaintMode(()=>Math.max(1, Math.round(playerMax*0.1)))`）。
-本專案**刻意改為 50%**。連帶把結局 cut-in 副標由「追加聖裁 · HP 10%」改為「追加聖裁 · HP 50%」。
+本專案**刻意改為「成功 MB → 回滿血（100%）」**——只要在推滿前把盤面點完（Maximum Burst 成立）,
+不論是否擊殺,收尾一律 HP 回滿。連帶把結局 cut-in 副標改為「追加聖裁 · HP 100%」。
+（此條先前為 50%,2026-08-11 再提高為 100% 並新增「擊殺也回滿」。）
 
 ### 為什麼
-產品/手感決策:提高「滿前清盤（贏了就跑）」的回報,讓 Maximum Burst 更值得追求。純數值調整,不動流程。
+產品/手感決策:提高「滿前清盤（贏了就跑）」的回報,讓 Maximum Burst 更值得追求。
+連戰（局內多敵，見 lineup）下,**一敵可能被 MB 秒殺後接下一隻**——滿血獎勵讓玩家帶滿血接續下一敵,
+獎勵「用 MB 收頭」的打法。純數值/獎勵調整,不動流程。
 
 ### 怎麼實作
-走統一改血 API（見 D3）:`triggerMaxBurst` 未擊殺分支 `finishSaintMode(()=>api.setPlayerHpRatio(0.5))`。
-OBE（HP→1）、EXSECUTIŌ（擊殺→直接結算,不回血）、生命歸還（保留當前血量）三結局**維持 reference 行為不變**。
+走統一改血 API（見 D3），`triggerMaxBurst` 兩路皆回滿:
+- 未擊殺：`finishSaintMode(()=>api.setPlayerHpRatio(1))`。
+- 擊殺（EXSECUTIŌ）：演出後 `api.setPlayerHpRatio(1)` → `onEnemyDefeated()`（轉下一敵時帶滿血；最後一敵則回滿後結算，無副作用）。
+
+OBE（HP→1）、生命歸還（保留當前血量）維持不變。
 
 ### 驗收提醒
-對照 reference 時,Maximum Burst 未擊殺後「reference 顯示 10 HP、本專案顯示 50 HP」為**預期差異**。
+對照 reference 時,Maximum Burst 後「reference 顯示 10 HP、本專案回滿（100 HP）」為**預期差異**。
 
 ---
 
