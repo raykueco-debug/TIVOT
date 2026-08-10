@@ -257,10 +257,27 @@ function enemyAttack(dmg, kind, saintAmt){
   enemy.showHitFx(kind);             // 依 kind 播放該怪對應受擊特效
   $('redFlash').style.opacity=.8; setTimeout(()=>$('redFlash').style.opacity=0,120);
   $('enemyImg').classList.add('shake'); setTimeout(()=>$('enemyImg').classList.remove('shake'),300);
-  if(state.playerHp<=0){
-    if(tryDeathGuard()) return;      // 即死防禦（本輪固定不擋 → 直接 lose）
-    lose();
-  }
+  if(state.playerHp<=0){ handlePlayerLethal(kind); }
+}
+/* ============================================================================
+ *  致死判定鏈（統一入口）
+ *  ---------------------------------------------------------------------------
+ *  所有會扣玩家血的路徑（挨大絕 / 延時懲罰 / 按錯懲罰 / Defense 格擋）都經 enemyAttack，
+ *  故致死判定集中於此單一 choke point。刻意偏離 reference：修正「玩家與敵人 HP
+ *  同一攻防瞬間同時歸零時，勝利/overkill 搶先結算蓋掉戰敗」的競態——戰敗一律優先。
+ *  （見 DECISIONS.md）
+ *
+ *  ⚠ 判定點刻意放在「未來即死防禦會插入的位置」：本輪 partner 為佔位、deathGuard
+ *    恆不可用，實際行為＝致死即戰敗；下一輪接 partner 時只需讓 tryDeathGuard 回真、
+ *    於其內把 playerHp 鎖 1，combat 這裡不必再改。
+ * ========================================================================== */
+function handlePlayerLethal(){
+  // 1) 先問即死防禦（本場未用過才可用）。可用 → 已於 tryDeathGuard 內把 HP 鎖 1、續盤；
+  //    這一擊若同時打死敵人＝1 HP 慘勝，照常由 clearBoard/tap 走 win（未上戰敗鎖）。
+  if(tryDeathGuard()) return;
+  // 2) 不可用 → 戰敗。先上鎖：即使同一瞬間敵人也歸零，win() 一律讓位（戰敗優先）。
+  state.defeated = true;
+  lose();
 }
 // 對敵造成傷害（含 overkill / 擊殺凍結計時）
 function enemyDamage(dmg,isCrit,silent){
@@ -352,7 +369,7 @@ function fmtTime(sec){
   return m>0 ? `${m}分${s.toFixed(1)}秒` : `${s.toFixed(1)}秒`;
 }
 function win(){
-  if(state.over) return;
+  if(state.over || state.defeated) return;   // 戰敗優先：已判定戰敗則勝利結算一律讓位
   state.over=true; stopAll();
   const endTime=state.killTime || Date.now();
   const totalTime=(endTime-state.runStartTime)/1000;
@@ -394,7 +411,7 @@ function showResult(title, sub, statsHtml, isLose){
  *  流程進出
  * ========================================================================== */
 export function startGame(){
-  state.over=false; state.combo=0; state.energy=0; state.expect=1; state.boardIndex=0;
+  state.over=false; state.defeated=false; state.combo=0; state.energy=0; state.expect=1; state.boardIndex=0;
   state.saintMode=false; state.saintUsedThisBattle=false; state.atkBuff=false;
   state.overkill=0; state.killTime=0; state.transitioning=false;
   state.counterCount=0; state.counterDamage=0; state.perfectCount=0; state.sawExecution=false;

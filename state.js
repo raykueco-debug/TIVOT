@@ -51,6 +51,7 @@ export const state = {
   enemyMax: _enemy.hp,
   overkill: 0,
   over: false,
+  defeated: false,       // 戰敗鎖：一旦致死判定確定戰敗即上鎖，win() 一律讓位（見 DECISIONS.md「戰敗優先」）
   flawlessRun: true,
 
   /* ── 3.3 三級防禦/大絕（擁有者：defense；大寫參數由 enemy 設定敵人時寫入） ── */
