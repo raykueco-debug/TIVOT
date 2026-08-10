@@ -77,8 +77,10 @@ export function setup(){
     saintApi: { lifeReturnAbort: saint.lifeReturnAbort },
   });
   // 監察官（評價/結算）：combat 擁有計時 → 算好 totalTime/avg 呼叫 inspector.settle。
-  //   inspector 只 import state/config；goHome（combat）與 triggerIntruder（enemy，本輪 no-op）經此注入。
+  //   inspector 只 import state/config；goHome（combat）與 triggerIntruder（enemy）經此注入。
   inspector.init({ goHome, triggerIntruder: enemy.triggerIntruder });
+  // 敵人：Boss 亂入（enemy.triggerIntruder）的戰鬥重置屬 combat 擁有 → 注入 startIntruderFight。
+  enemy.init({ startIntruderFight });
 }
 export function bootIdle(){
   // 開機停在首頁：先建立盤面/血條供背景顯示，但 over=true 讓計時與敵人不啟動
@@ -498,6 +500,36 @@ export function startGame(){
   state.cutinPlaying=false;
   stopAll();
   loadBoard(0); updateBars();
+}
+/* ---- Boss 亂入：重開新「場」戰鬥（由 enemy.triggerIntruder 的 enterFight 注入呼叫）----
+ *  依 場/局/敵/盤 模型:Boss 亂入＝重開新場,一切從頭 → 與 startGame 相同的完整重置
+ *  (含 playerHp 滿血、deathGuardUsed 歸零)。與 startGame 僅三處差異:
+ *    ① 載 witch(GAME_CONFIG.intruder.enemy)而非 currentEnemy;
+ *    ② 不寫 inIntruderFight(enemy 於 enterFight 已設 true,§3.7 擁有者);
+ *    ③ 不寫 intruderTriggered(inspector 於 S 解鎖已設 true,維持防重入)。
+ *  觀察上與 reference 等價(S 解鎖前提為無傷,reference 進場時 HP 本就滿、deathGuard 本就未用),
+ *  故不記 DECISIONS;此為「新場」語義的顯式重置。 */
+export function startIntruderFight(){
+  state.over=false; state.defeated=false; state.combo=0; state.energy=0; state.expect=1; state.boardIndex=0;
+  state.atkBuff=false;
+  saint.reset();
+  weapon.reset();
+  state.overkill=0; state.killTime=0; state.transitioning=false;
+  state.counterCount=0; state.counterDamage=0; state.perfectCount=0; state.sawExecution=false;
+  state.playerHp=state.playerMax; state.enemyHp=state.enemyMax;
+  state.N=9; state.cols=3;
+  state.runStartTime=Date.now();
+  state.boardTimes=[]; state.boardsCompleted=0;
+  state.flawlessRun=true; state.deathGuardUsed=false;
+  state.sRankUnlocked=false; state.resultMode='rematch';
+  enemy.setEnemy(GAME_CONFIG.intruder.enemy);   // 載槍之魔女（含 Boss 大絕/懲罰/彈痕 config）
+  $('home').classList.remove('on');
+  $('banner').classList.remove('on'); $('banner').classList.remove('seq'); $('banner').classList.remove('lose');
+  $('transition').classList.remove('on');
+  $('grid').classList.remove('saint'); $('grid').classList.remove('buffed'); $('grid').classList.remove('alert');
+  state.cutinPlaying=false;
+  stopAll();
+  loadBoard(0); updateBars();   // loadBoard 內含 scheduleOpeningUlt → 重啟敵大絕排程
 }
 export function goHome(){
   state.over=true; stopAll();

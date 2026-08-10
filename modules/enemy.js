@@ -15,8 +15,13 @@
 
 import { GAME_CONFIG, asset } from '../config.js';
 import { state, initEnemyHp } from '../state.js';
+import { SFX } from '../audio.js';
 
 const $ = id => document.getElementById(id);
+
+/* combat 於啟動時注入戰鬥重置原語（Boss 亂入的戰鬥重啟屬 combat 擁有）。 */
+let api = { startIntruderFight(){} };
+export function init(a){ api = { ...api, ...a }; }
 
 /* ---------- 受擊特效派工 ----------
  *  依當前怪 curEnemyHitFx[kind] 播放對應特效。
@@ -168,10 +173,39 @@ export function setEnemy(key){
 }
 
 /* ---------- 亂入 / Boss 遭遇（New Hustle）----------
- *  ⚠ 本輪僅為注入點 no-op：inspector 迎擊分流會呼叫到這裡（可驗非死鈕），
- *    實際「載 witch → 重啟戰鬥」的 Boss 進場邏輯屬 enemy 職責、留待 CLAUDE.md §6 第 5 步。 */
+ *  由 inspector 迎擊分流（S 解鎖 → 迎擊）注入呼叫。流程：
+ *    ① 播 Boss 遭遇 cut-in（saintCutin boss 版，鎖盤面 cutinPlaying）；
+ *    ② 延遲 400ms 綁點擊（避免上一動作殘留點擊直接跳過演出）；
+ *    ③ 點畫面 → enterFight：設 inIntruderFight（§3.7 enemy 擁有）→ 呼叫注入的
+ *       combat.startIntruderFight()（重開新場、載 witch）。
+ *  bannerHold 為 reference 舊版自動觸發用,手動迎擊流程不使用 → 視為休眠 config,不接。 */
 export function triggerIntruder(){
-  console.warn('[enemy] triggerIntruder：Boss 遭遇（槍之魔女）待第 5 步實作，本輪為 no-op。');
+  const it = GAME_CONFIG.intruder;
+  const sc = $('saintCutin');
+  $('saintCutinTitle').textContent = it.cutinText || 'NEW HUSTLE INCOMING';
+  $('saintCutinSub').textContent   = '輕觸畫面繼續';
+  $('saintCutinImgBoss').src = asset('cutin_boss');   // Boss 專屬遭遇 cut-in（貝琳妲）
+  sc.classList.remove('obe','execute','burst','return');
+  sc.classList.add('boss','on');
+  state.cutinPlaying = true;              // 鎖盤面點擊（enemy 為當下播演出的模組，允許寫 cutinPlaying）
+  try{ SFX.hit && SFX.hit(); }catch(e){}
+
+  let entered=false;
+  const enterFight=()=>{
+    if(entered) return; entered=true;
+    sc.removeEventListener('click', enterFight);
+    sc.removeEventListener('touchstart', onTouch);
+    $('saintCutinSub').textContent='';
+    sc.classList.remove('on','boss','burst','obe','execute','return');
+    $('banner').classList.remove('on','seq','lose');
+    state.inIntruderFight = true;         // 3.7：標記進入 Boss 戰（結算讀此走 boss 存檔/台詞）
+    api.startIntruderFight();             // combat 擁有的戰鬥重置：重開新場、載 witch
+  };
+  const onTouch=e=>{ e.preventDefault(); enterFight(); };
+  setTimeout(()=>{
+    sc.addEventListener('click', enterFight);
+    sc.addEventListener('touchstart', onTouch, {passive:false});
+  }, 400);
 }
 
 /* ---------- 開場：把 GAME_CONFIG 的圖/名稱套到畫面上 ---------- */
