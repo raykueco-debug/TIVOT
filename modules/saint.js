@@ -227,12 +227,12 @@ function triggerOBE(){
   });
 }
 
-// 生命歸還（搭檔主動技·第四結局）：中止聖徒化，保留當前血量後回盤面（不改血）。
-export function activateLifeReturn(){
+// 生命歸還「執行體」（搭檔主動技·第四結局）：中止聖徒化，保留當前血量後回盤面（不改血）。
+//   ⚠ 「能否發、屬於誰」的判定已移至 partner.tryActive（單槽＋context 分派）；此處為純執行能力，
+//     由 combat 於 setup() 注入給 partner（saintApi.lifeReturnAbort）。saint 不知道誰觸發它。
+//     保留一個 saintMode 保險檢查，避免非聖徒化狀態被誤呼叫。
+export function lifeReturnAbort(){
   if(!state.saintMode) return;
-  const p=api.currentPartner();
-  const act=p && p.active;
-  if(!act || act.key!=='lifeReturn') return;   // 當前搭檔沒有此主動技
   exitSaint();
   clearInterval(state.saintTimer); state.saintTimer=null;
   clearSaintReactTimer(); setReturnSwipe(false);

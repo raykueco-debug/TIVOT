@@ -14,7 +14,7 @@ import { SFX } from './audio.js';
 import * as combat from './modules/combat.js';
 import * as saint from './modules/saint.js';
 import * as defense from './modules/defense.js';
-// partner 由 combat 直接 import 並注入（即死防禦自動、生命歸還走 saint 手勢），main 不需再引用。
+import * as partner from './modules/partner.js';   // 主動技統一入口 tryActive 由手勢觸發
 
 // 下一輪接（本輪僅載入驗證模組圖，尚未綁定其互動）
 import './modules/weapon.js';
@@ -134,7 +134,8 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
     const up = startY - y;
     if(up > need() && up > Math.abs(x-startX)*1.0){
       fired=true; tracking=false; hideAura();
-      saint.activateLifeReturn();
+      // 下滑觸發主動技（情境＝聖徒化內）。能否發、屬於誰由 partner 判定；換 partner 即此技消失。
+      partner.tryActive('saint');
     }
   }
   // 抬手：若整段位移很小（點擊而非滑動）→ 放行給底下的紅點防禦
@@ -169,4 +170,4 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
 
 combat.bootIdle();   // over=true，建立背景盤面/血條，停在首頁
 
-console.log('[step4] partner · 即死防禦已接上 · 敵：', GAME_CONFIG.enemies[GAME_CONFIG.currentEnemy]?.name, '· HP', state.enemyMax);
+console.log('[step4] partner · 被動+主動框架已接上 · 敵：', GAME_CONFIG.enemies[GAME_CONFIG.currentEnemy]?.name, '· HP', state.enemyMax);

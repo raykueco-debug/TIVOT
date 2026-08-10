@@ -56,13 +56,14 @@ export const GAME_CONFIG = {
         key:'deathGuard',
         name:'即死防禦',
         oncePerBattle:true,      // true=整場只擋一次；false=每次都擋（不建議）
-        cutin:'cutin_saint',     // 觸發演出大圖（暫用）
+        cutin:'cutin_guard',     // 即死防禦專屬大圖（Reni_CI_guard）；程式讀此欄，不硬寫
       },
       // ── 主動技：生命歸還 ─────────────────────────────
       //   聖徒化中，由「下往上滑」發動：強制中止聖徒化，保留當前血量（第四結局）。
       active:{
         key:'lifeReturn',
         name:'生命歸還',
+        context:'saint',         // 發動情境：'saint'＝聖徒化內 / 'board'＝一般盤面。partner 依此判定能否發
         cutin:'cutin_saint',     // 第四結局演出大圖（暫用）
       },
     },

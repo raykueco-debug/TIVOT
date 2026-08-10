@@ -56,16 +56,16 @@ export function setup(){
     scheduleUlt: defense.scheduleUlt, clearThreat: defense.clearThreat,
     endCharge: defense.endCharge, resetEnemyTimers: defense.resetEnemyTimers,
     setUltRate: defense.setUltRate,
-    // partner（生命歸還主動技查詢）
-    currentPartner: partner.currentPartner,
   });
-  // 搭檔：combat 注入即死防禦所需原語（UI 刷新 / 傷字 / 敵計時重置與排程 / cut-in 播放器）。
-  //   partner 不反向 import combat/defense/saint，一律經此注入（維持 §2 依賴方向）。
+  // 搭檔：combat 注入被動技所需原語 + 主動技各 handler 的分域 api。
+  //   被動（即死防禦）：updateBars / floatDmg / resetEnemyTimers / scheduleUlt / playCutin。
+  //   主動 saintApi（生命歸還）：saint 的中止+保血執行體。partner 不反向 import，一律經此注入。
   partner.init({
     updateBars, floatDmg,
     resetEnemyTimers: defense.resetEnemyTimers,
     scheduleUlt: defense.scheduleUlt,
     playCutin: saint.playCutin,
+    saintApi: { lifeReturnAbort: saint.lifeReturnAbort },
   });
 }
 export function bootIdle(){
