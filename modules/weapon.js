@@ -56,15 +56,14 @@ export function weaponCounter(dmgScale){
   const w = WEAPONS[state.equippedWeapon];
   if(!w) return;
   const scale = (dmgScale==null) ? 1 : dmgScale;
-
-  // 反擊音效：只在「真反擊（Counter）」時播武器 SE，且整支播一次
-  //   （機槍→連續感、散彈/狙擊→一發）。dmgScale!=null＝散彈完防路徑 → 不播 SE，改由 defense 出重擊合成音。
-  if(dmgScale==null) SFX.play(asset(w.sound));
+  // 反擊武器 SE：只在「真反擊（Counter）」時播；dmgScale!=null＝散彈完防路徑 → 不播（改由 defense 出合成重擊音）。
+  //   機槍＝逐發播（搭搭搭搭搭連續感）、散彈＝一發、狙擊＝一發。play('') 會靜默略過。
+  const se = (dmgScale==null) ? asset(w.sound) : '';
 
   if(w.vfx==='single'){
     // 狙擊：單發，跳一個較大的紅色數字
     const total=Math.max(1, Math.round(w.hits*w.dmgPerHit*scale));
-    SFX.sniperShot();
+    SFX.play(se);                              // 狙擊：一發
     api.enemyDamage(total, true, true);       // 靜默扣血（含 overkill/擊殺判定）
     addCounter(total);
     api.floatDmg(total, '46%','32%', false, 'snipernum');
@@ -73,7 +72,7 @@ export function weaponCounter(dmgScale){
   if(w.vfx==='burst'){
     // 散彈：所有彈丸同一瞬間、同一區塊齊發，各自跳出數字
     const per=Math.max(1, Math.round(w.dmgPerHit*scale));
-    SFX.gunshot(true);
+    SFX.play(se);                              // 散彈：一次一發
     const bx=40+Math.random()*20;
     for(let k=0;k<w.hits;k++){
       api.enemyDamage(per, true, true);
@@ -88,7 +87,7 @@ export function weaponCounter(dmgScale){
   let i=0;
   const fire=()=>{
     if(state.over||i>=w.hits) return;
-    SFX.gunshot(true);
+    SFX.play(se);                              // 機槍：每 hit 播一次 → 搭搭搭搭搭
     api.enemyDamage(per, true);                // 走內建逐發數字
     i++;
     if(i<w.hits) setTimeout(fire, 90);
