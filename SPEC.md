@@ -124,8 +124,18 @@ exp = round( raw × (無傷? flawlessMult : 1) × (MaxBurst擊殺? executionMult
 
 ## 三、核心系統（程式邏輯）
 
+### 戰鬥層級模型（場／局／敵／盤）
+戰鬥分四層,結束條件與重置範圍以此為準（程式已驗與此一致,見 combat.js `win`/`clearBoard`/`goNextBoard`/`enemyDamage`）：
+
+- **場（battle）**：一場完整戰鬥。**新場一切從頭**——`playerHp`、`deathGuardUsed`、所有計數（counter/perfect/sawExecution）、計時（runStartTime/boardTimes）、無傷旗標全歸零。**Boss 亂入＝重開新場**（`combat.startIntruderFight`，僅差別在載 witch、`inIntruderFight=true`）。
+- **局（round／lineup）**：一場內的敵人序列,敵可複數,打完一敵接下一敵。**`lineup` 連戰目前預留、未接邏輯**（`lineup:['faceless']`）。
+- **敵（enemy）**：單一敵人。**結束一敵的唯一條件是 `hp` 歸零** → 進 overkill（`enemyDamage` 凍結 killTime、停大絕排程，不自行結算）→ 清盤時若 `enemyHp<=0` 即 `win()`（最後一敵→結算；連戰接上後→下一敵）。`enemyDamage` 敵血歸零**不**觸發結算,只進 overkill。
+- **盤（board）**：Schulte 數字盤。**一敵之內連續出盤,盤數不固定,以清完該敵 `hp` 為準**。`boards[0..4]` 是**前五盤的參數模板**（grid/cols/interval/hint）,**非結束條件**；`goNextBoard` 對 `boardIndex` 無上限,越界後 `BOARDS[idx]||BOARDS[length-1]` fallback **循環沿用第 5 盤參數繼續出盤**,直到 `hp` 歸零。全檔無「boardIndex 達 5 就 win」的判定。
+
+> ⚠ 修正舊誤述：本 SPEC 早期「一場 = 五盤」是錯的腦補；碼從來以 hp 歸零為結束條件。`faceless` 測試值 `hp:500` 實戰會跑超過五盤,證明越界循環路徑真的會被走到。
+
 ### 戰鬥主循環
-一場 = 五盤 Schulte。`tap(num,cell,e)` 判定按對／按錯：按對 → `gunHitOnEnemy`（依 `hitDamage()`＝`DMG_BASE + min(combo,cap)×perCombo`，雙槍×0.7）、加聖能、疊 combo；按錯 → `enemyAttack(DMG_WRONG 或紅字期 DMG_HEAVY)`。`startIntervalTimer` 逐格計時，超時 → 延時懲罰（`DMG_DELAY`，Boss 縮放）。`goNextBoard`/`loadBoard`/`buildGrid`/`markNext`（hint 高亮）/`clearBoard`/`recordBoardTime`。
+一敵之內連續出盤,清完該敵 hp 才結算（見上「戰鬥層級模型」）。`tap(num,cell,e)` 判定按對／按錯：按對 → `gunHitOnEnemy`（依 `hitDamage()`＝`DMG_BASE + min(combo,cap)×perCombo`，雙槍×0.7）、加聖能、疊 combo；按錯 → `enemyAttack(DMG_WRONG 或紅字期 DMG_HEAVY)`。`startIntervalTimer` 逐格計時，超時 → 延時懲罰（`DMG_DELAY`，Boss 縮放）。`goNextBoard`/`loadBoard`/`buildGrid`/`markNext`（hint 高亮）/`clearBoard`/`recordBoardTime`。
 
 ### 三級防禦（大絕紅點）
 `startCharge`/`scheduleUlt`/`spawnThreat`/`updateThreats`/`resolveThreat`：紅點縮放，依剩餘時間比例 `ratio` 分三段——

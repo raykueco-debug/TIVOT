@@ -1,16 +1,16 @@
 # HANDOFF — Saint Install 模組化重寫 · 進度交接
 
 > 每輪開工前讀本檔 + 憲法/規格。實況以 `git log` 與 `DECISIONS.md` 為準;本檔為人類可讀的進度總覽。
-> 目前狀態:**CLAUDE.md §6 開發順序第 1~4 步已完成**,下一輪為**第 5 步(Boss/亂入)**。
+> 目前狀態:**CLAUDE.md §6 開發順序第 1~5 步已完成**,下一輪為**第 6 步(全流程 ACCEPTANCE 對照 reference 收尾)**。
 
 ---
 
 ## 一、開工必讀(依序)
 1. `CLAUDE.md` — 專案憲法(鐵律、目錄結構、模組邊界、§3 狀態契約與擁有者制、§4 函式歸屬、§6 開發順序)。
 2. `DECISIONS.md` — 已定的刻意偏離 reference 決策 **D1~D4**(D1 戰敗優先致死鏈、D2 MB 回血 50%、D3 統一改血 API、D4 saintComboStep 1.0)。
-3. `SPEC.md` — 行為規格。**注意 §4 已修正為規則制 rank**(見下方三、備註)。
+3. `SPEC.md` — 行為規格。**§4 已修正為規則制 rank**;**§三 已補「戰鬥層級模型(場/局/敵/盤)」**(見下方三、備註)。
 4. `reference/index.html` — 唯讀行為基準,行為有疑義以它為準。
-5. `git log`(HEAD 應為 `3ddaece`)。
+5. `git log`(HEAD 應為 `9dc6db6` 或更新)。
 
 ---
 
@@ -21,20 +21,24 @@
 | `state.js` | ✅ | 集中狀態 + 具名 setter(applyDeathGuard/enterSaint/exitSaint/markExecution/addCounter/addPerfect/initEnemyHp)。 |
 | `config.js` | ✅ | GAME_CONFIG + ASSETS(resources/ 相對路徑)。 |
 | `audio.js` | ✅ | SFX(Web Audio 合成,模組化)。 |
-| `combat.js` | ✅ | 戰鬥核心 + 統一改血 API(`healPlayer`/`setPlayerHpRatio`,D3)+ D1 致死鏈 + 雙槍 tap 分支 + 對 defense/saint/weapon/partner/inspector 的注入協調。win/lose 算 totalTime/avg → `inspector.settle`。 |
-| `defense.js` | ✅ | 三段防禦(Counter/Perfect/Defense)+ `setUltRate` 擁有者管道 + `addPerfect` 計數。 |
-| `enemy.js` | ⚠ 部分 | 立繪 / 受擊特效 / `setEnemy`。**`triggerIntruder` 為 no-op 注入點**(console 提示待第 5 步);無 witch 進場/戰鬥重啟邏輯(witch 僅 config 有資料)。 |
+| `combat.js` | ✅ | 戰鬥核心 + 統一改血 API(`healPlayer`/`setPlayerHpRatio`,D3)+ D1 致死鏈 + 雙槍 tap 分支 + 對 defense/saint/weapon/partner/inspector/enemy 的注入協調。win/lose 算 totalTime/avg → `inspector.settle`。**`startIntruderFight`(Boss 亂入＝重開新場,注入 enemy)**。 |
+| `defense.js` | ✅ | 三段防禦(Counter/Perfect/Defense)+ `setUltRate` 擁有者管道 + `addPerfect` 計數。多發大絕(ULT_SHOTS/GAP)讀取端已就緒。 |
+| `enemy.js` | ✅ | 立繪 / 受擊特效 / `setEnemy`(含 witch Boss 大絕/懲罰/彈痕 config 寫入 state)。**`triggerIntruder` 已接實體**(Boss 遭遇 cut-in → enterFight → 呼叫注入的 `startIntruderFight`)。 |
 | `saint.js` | ✅ | 聖徒化三結局(MB / OBE / 生命歸還)、`lifeReturnAbort` 執行體、`markExecution`。 |
 | `partner.js` | ✅ | 被動即死防禦(`tryDeathGuard`,cut-in 讀 config)歸位接上致死鏈;主動技通用框架(單槽 `tryActive(context)` + 情境標註分派 + `ACTIVE_HANDLERS`,lifeReturn 為首個 handler)。 |
 | `weapon.js` | ✅ | 反擊武器 `weaponCounter`(mg/shotgun/sniper 三 vfx,counter 產生端已驗)、雙槍破防窗口(`activateDual`/`endDual`)、換裝面板(搭檔為顯示層)、`reset`/`stopTimers` 跨場清理。 |
-| `inspector.js` | ✅ | 規則制評價(rank + EXP 顯示)、監察官結算演出(`showResultSequence` 分階段 + 處決台詞分支 + 打字機)、好感雙軌查表(`pickByThreshold`,currentFavor 固定 0)、Boss 優先 `bossDialogues`、S 解鎖 → `onRematchBtn` 迎擊分流、最佳成績雙存檔(一般 `saint_best_total_v1` / Boss `saint_best_total_boss_v1`)。**不搬 legacy `inspectorPanelHtml`(reference 未呼叫的死碼)**。 |
+| `inspector.js` | ✅ | 規則制評價(rank + EXP 顯示)、監察官結算演出(`showResultSequence` 分階段 + 處決台詞分支 + 打字機)、好感雙軌查表(`pickByThreshold`,currentFavor 固定 0)、Boss 優先 `bossDialogues`、S 解鎖 → `onRematchBtn` 迎擊分流、最佳成績雙存檔(一般 `saint_best_total_v1` / Boss `saint_best_total_boss_v1`)。**不搬 legacy `inspectorPanelHtml`**。 |
 | `main.js` | ✅ | composition root:注入、按鈕/手勢綁定、開機閒置。rematchBtn 綁 `inspector.onRematchBtn`。 |
+
+> **CLAUDE.md §6 開發順序第 1~5 步全部完成。** 一般戰、聖徒化、雙槍、監察官結算、Boss/亂入整條龍皆已接上並驗收。
 
 ---
 
 ## 三、Git · 關鍵 commit
 
-- **HEAD**:`3ddaece` docs(SPEC) §4 修正:rank 規則制、tiers 為休眠 config。
+- **HEAD**:`9dc6db6` enemy:Boss/亂入接實體—triggerIntruder(S 解鎖→迎擊→槍之魔女 witch)。
+- `2f244e4` docs(HANDOFF):回寫進度(partner/weapon/inspector 三輪完成)。
+- `3ddaece` docs(SPEC):§4 修正 rank 規則制、tiers 為休眠 config。
 - `8af9453` inspector:評價(規則制 rank+EXP)/監察官結算演出/最佳成績雙存檔/迎擊分流。
 - `772d0be` weapon:雙槍破防獎勵窗口 + 換裝面板收尾。
 - `a58fe81` partner:主動技通用框架(單槽 + 情境標註)+ 被動 cut-in 讀 config。
@@ -43,22 +47,23 @@
 
 ### 備註 · DECISIONS 與 SPEC 修正
 - `DECISIONS.md` 已含 **D1~D4**(刻意偏離)。
-- **SPEC §4 評價已修正為規則制 rank**:reference 的 `computeEvaluation` rank 為規則制(無傷 ≤40s→S 否則 A;有傷 ≤40→B/≤50→C/≤60→D/>60→E),`score/raw` 只算 EXP 顯示、不決定 rank,`tiers`(S3600…)為 reference 未使用的休眠 config。**這是逆向誤述的修正,非刻意偏離,故不入 DECISIONS**。
+- **SPEC §4 評價已修正為規則制 rank**(逆向誤述修正,非刻意偏離,不入 DECISIONS)。
+- **SPEC §三 已補「戰鬥層級模型(場/局/敵/盤)」**:結束一敵唯一靠 `hp` 歸零→overkill→清盤即 win;`boards[0..4]` 是前五盤參數模板、非結束條件,越界循環沿用第 5 盤參數。舊「一場=五盤」為誤述,已修正。
+- **Boss 亂入＝重開新場**(場/局/敵/盤 模型):`startIntruderFight` 做完整重置(playerHp 滿血、deathGuardUsed 歸零)。觀察上與 reference 等價(S 解鎖前提無傷),**照原意加程式註解即可,不記 DECISIONS(無 D5)**。
 
 ---
 
-## 四、下一輪:CLAUDE.md §6 第 5 步 — Boss / 亂入(New Hustle)
+## 四、下一輪:CLAUDE.md §6 第 6 步 — 全流程 ACCEPTANCE 對照 reference 收尾
 
-**目標**:實作「槍之魔女」遭遇整條龍。S 評價 → 迎擊分流**已就緒**,只等 enemy 接實體。
+前 1~5 步功能皆已接上。第 6 步為**收尾驗收**:建 `ACCEPTANCE.md` 把 CLAUDE.md §6 驗收流程的關鍵手感點列成勾選清單,於 390×844 對照 `reference/index.html` 逐項打勾。重點覆蓋:
+- 聖徒化推進手感(受擊 +1s / 格擋 +0.5s / 免傷不推進 / 無受擊 10s 回滿)。
+- 三級防禦門檻(0.35 / 0.12 兩界線)、散彈 Perfect 改傷、狙擊無 Perfect 帶。
+- cut-in 後敵照常發動(v18c 取消緩衝)、聖徒化期間大絕更密集。
+- Boss 雙發大絕(間隔 1s、2~4s 頻率)、延時懲罰半傷減 1 秒、全彈痕。
+- combo 傷害斜率、MaxBurst 追加 20% 總傷(D4/D2 差異)、評價 S 解鎖亂入。
+- 場/局/敵/盤:一敵靠 hp 歸零結束、越界循環出盤、Boss=重開新場。
 
-- **`enemy.triggerIntruder`**:目前為 no-op 注入點(inspector 迎擊分支已呼叫到,可驗非死鈕)。需實作:
-  1. 播亂入 cut-in(`saintCutin` boss 版,`cutin_boss` 圖、`NEW HUSTLE INCOMING` 字樣)。
-  2. 點擊畫面 → 載入 `it.enemy`(witch)數值/立繪(`setEnemy`)。
-  3. **戰鬥重啟**:`inIntruderFight=true`;連擊/聖能/回合統計/計時/每盤用時/無傷旗標全歸零;清紅點與加攻 buff;`sRankUnlocked=false`、`resultMode='rematch'`(避免 Boss 戰後再誤觸迎擊);重排大絕(`resetEnemyTimers`/`scheduleUlt`)。
-  4. 參照 `reference/index.html:2259` `triggerIntruder`。
-- **Boss 專屬機制驗收**(config 已有,defense/enemy 執行):雙發大絕(`shots:2`/`gapMs:1000`/`minMs:2000`/`maxMs:4000`)、延時懲罰半傷減 1 秒、全彈痕受擊特效。
-- **最佳成績**:Boss 走獨立 `saint_best_total_boss_v1`(inspector 已依 `inIntruderFight` 判別,無需改動)。
-- 之後:第 5 步尾段的最佳成績存檔已在 inspector 就位;第 6 步為全流程對照 reference 做 ACCEPTANCE 勾選收尾。
+> 連戰 `lineup`(局層,一場多敵)目前預留未接;若日後要接,屬 combat/enemy 的「敵死→下一敵」串接,與本次 Boss 亂入(重開新場)不同層級。
 
 ---
 
@@ -77,5 +82,5 @@
 - 敵立繪那幾個 404 是既有外部路徑 fallback,正常、與改動無關。
 - **commit**:每模組完成即 commit,訊息末尾加
   `Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>`
-- 刻意偏離 reference 才寫 `DECISIONS.md`;照 reference 一致的不寫;逆向誤述的修正(如 SPEC §4)不入 DECISIONS。
+- 刻意偏離 reference 才寫 `DECISIONS.md`;照 reference 一致的不寫;逆向誤述的修正(如 SPEC §4、戰鬥層級模型)不入 DECISIONS。
 - 語言:與使用者用**繁體中文**溝通。
