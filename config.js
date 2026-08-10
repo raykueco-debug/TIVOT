@@ -56,7 +56,7 @@ export const GAME_CONFIG = {
         key:'deathGuard',
         name:'即死防禦',
         oncePerBattle:true,      // true=整場只擋一次；false=每次都擋（不建議）
-        cutin:'cutin_guard',     // 即死防禦專屬大圖（Renee_CI_guard）；程式讀此欄，不硬寫
+        cutin:'cutin_guard',     // 即死防禦專屬大圖（→ Renee_CI_pas.jpg）；程式讀此欄，不硬寫
       },
       // ── 主動技：生命歸還 ─────────────────────────────
       //   聖徒化中，由「下往上滑」發動：強制中止聖徒化，保留當前血量（第四結局）。
@@ -64,7 +64,7 @@ export const GAME_CONFIG = {
         key:'lifeReturn',
         name:'生命歸還',
         context:'saint',         // 發動情境：'saint'＝聖徒化內 / 'board'＝一般盤面。partner 依此判定能否發
-        cutin:'cutin_saint',     // 第四結局演出大圖（暫用）
+        cutin:'cutin_return',    // 生命歸還演出大圖（→ Renee_CI_act.jpg）；實際演出由 saint scImgKey.return 讀同一鑰匙
       },
     },
     // 例：新搭檔
@@ -328,8 +328,8 @@ export const ASSETS = {
   cutin_saint_luna: "resources/partner/Luna_CI_advent.jpg",   // 聖徒化降臨 cut-in（Luna）
   cutin_obe: "resources/partner/Luna_CI_obe.jpg",   // O.B.E. cut-in（Luna）
   cutin_mb: "resources/partner/Luna_CI_maxburst.jpg",   // Maximum Burst cut-in（Luna）
-  cutin_guard: "resources/partner/Renee_CI_guard.jpg",   // 即死防禦 cut-in（蕾妮/Renee·被動）
-  cutin_return: "resources/partner/Renee_CI_return.jpg",   // 生命歸還 cut-in（蕾妮/Renee·主動）
+  cutin_guard: "resources/partner/Renee_CI_pas.jpg",   // 即死防禦 cut-in（蕾妮/Renee·被動；檔名 _pas＝passive）
+  cutin_return: "resources/partner/Renee_CI_act.jpg",   // 生命歸還 cut-in（蕾妮/Renee·主動；檔名 _act＝active）
   cutin_boss: "resources/enemy/Belinda_CI_boss.jpg",   // v18d：Boss（貝琳妲）遭遇 cut-in 專屬圖
 
   // ── 音效（目前用程式合成音，這裡先留空；日後填 base64 或網址）──
