@@ -1,0 +1,2854 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover, user-scalable=no">
+<!-- iOS 加到主畫面全螢幕（隱藏 Safari 網址列/工具列） -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="聖約第四騎士團">
+<!-- Android/Chrome PWA 全螢幕 -->
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0a080e">
+<title>聖裁修女 · 原型 v2</title>
+<style>
+  :root{
+    --bg:#0a080e;
+    --panel:#120f1a;
+    --ink:#ece6d8;
+    --gold:#d4a94a;
+    --gold-dim:#8a6d2e;
+    --blood:#8a1f1f;
+    --holy:#6fb3d4;
+    --grid:#1c1628;
+    --grid-active:#2e2440;
+    --danger:#c0392b;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;
+    -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
+  html,body{margin:0;padding:0;width:100%;height:100%;background:var(--bg);
+    overflow:hidden;position:fixed;top:0;left:0;
+    font-family:"Iowan Old Style","Palatino Linotype",Georgia,"Songti TC",serif;color:var(--ink);}
+  #app{display:flex;flex-direction:column;height:100%;width:100%;
+    max-width:520px;margin:0 auto;position:relative;}
+
+  /* ===== 上半：敵人（固定 50%） ===== */
+  #top{height:50%;flex:none;position:relative;overflow:hidden;
+    border-bottom:2px solid var(--gold-dim);background:#000;}
+  #enemyImg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+    object-position:center top;transition:transform .06s;}
+  #enemyImg.hit{transform:scale(1.015);}
+  #enemyImg.shake{animation:camShake .3s;}
+  @keyframes camShake{0%,100%{transform:translate(0,0)}
+    20%{transform:translate(-6px,4px)}40%{transform:translate(5px,-3px)}
+    60%{transform:translate(-4px,-4px)}80%{transform:translate(4px,3px)}}
+  #topVignette{position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(120% 80% at 50% 20%,transparent 40%,rgba(0,0,0,.7) 100%);}
+
+  /* HUD：敵人名稱（頂部） */
+  #hud{position:absolute;top:8px;left:0;right:0;padding:0 14px;pointer-events:none;z-index:6;}
+  .enemy-name{font-size:11px;letter-spacing:3px;color:var(--gold);opacity:.9;
+    text-shadow:0 0 8px #000,0 1px 2px #000;text-align:center;}
+
+  /* ===== 敵我血條：橫置於敵人區下方，敵上我下 ===== */
+  /* 破防值計量表以 C 字型扣在兩條血量的左側 */
+  #barsBlock{position:absolute;left:0;right:0;bottom:6px;z-index:6;pointer-events:none;
+    display:flex;align-items:stretch;gap:8px;padding:0 12px 2px;}
+  /* C 字型破防計量表 */
+  #energyClasp{flex:none;width:20px;position:relative;align-self:stretch;touch-action:manipulation;pointer-events:none;}
+  #energyClasp.full{cursor:pointer;pointer-events:auto;}
+  /* 滿值時擴大點擊熱區，讓細長計量表更好按 */
+  #energyClasp.full::before{content:"";position:absolute;top:0;bottom:0;left:-10px;right:-6px;}
+  #energyClasp.full svg{filter:drop-shadow(0 0 8px var(--holy)) drop-shadow(0 0 4px #000);}
+  #energyClasp svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;
+    filter:drop-shadow(0 0 4px #000);}
+  #energyClasp .clasp-track{fill:none;stroke:rgba(0,0,0,.7);stroke-width:6;}
+  #energyClasp .clasp-fill{fill:none;stroke:var(--gold);stroke-width:6;stroke-linecap:round;
+    transition:stroke-dashoffset .25s;}
+  #energyClasp.full .clasp-fill{stroke:#ffe08a;animation:pulse .6s infinite alternate;}
+  /* 兩條橫向血條 */
+  #barStack{flex:1 1 0;display:flex;flex-direction:column;gap:5px;min-width:0;}
+  .hrow{position:relative;}
+  .hpbar{height:14px;background:rgba(0,0,0,.75);border:1px solid var(--gold-dim);
+    border-radius:3px;overflow:hidden;box-shadow:0 0 10px #000;}
+  .hpbar.enemy-bar{border-color:var(--gold-dim);}
+  .hpbar.player-bar{border-color:var(--holy);}
+  .hpbar>i{display:block;height:100%;transition:width .25s;}
+  .hpbar.enemy-bar>i{background:linear-gradient(90deg,var(--blood),#d14e4e);}
+  .hpbar.player-bar>i{background:linear-gradient(90deg,#2b6d9a,var(--holy));}
+  .hp-num{position:absolute;right:5px;top:0;height:14px;line-height:14px;
+    font-size:9px;letter-spacing:1px;opacity:.9;text-shadow:0 0 4px #000,0 0 3px #000;}
+
+  /* 蓄力預警 */
+  #chargeWarn{position:absolute;top:52px;left:0;right:0;text-align:center;display:none;z-index:7;pointer-events:none;}
+  #chargeWarn.on{display:block;}
+  .warn-text{font-size:14px;letter-spacing:4px;color:var(--danger);
+    text-shadow:0 0 12px #000,0 0 8px var(--danger);animation:blink .4s infinite alternate;}
+  @keyframes blink{from{opacity:.5}to{opacity:1}}
+  .warn-count{font-size:34px;font-weight:bold;color:var(--danger);text-shadow:0 0 14px #000;}
+
+  /* 特效層（槍擊命中、彈殼、爪痕、飄字都畫在這） */
+  #fxTop{position:absolute;inset:0;pointer-events:none;z-index:5;overflow:hidden;}
+  .muzzle{position:absolute;width:54px;height:54px;margin:-27px;pointer-events:none;
+    background:radial-gradient(circle,#fff 0%,#ffe08a 30%,rgba(212,169,74,.6) 55%,transparent 70%);
+    animation:muzzle .18s ease-out forwards;}
+  @keyframes muzzle{from{opacity:1;transform:scale(.5) rotate(0)}
+    to{opacity:0;transform:scale(1.4) rotate(25deg)}}
+  .spark{position:absolute;width:3px;height:14px;background:linear-gradient(#fff,#d4a94a);
+    pointer-events:none;animation:spark .25s ease-out forwards;transform-origin:center;}
+  @keyframes spark{from{opacity:1}to{opacity:0;transform:translateY(-18px) scaleY(.3)}}
+  .dmgnum{position:absolute;font-size:18px;font-weight:bold;color:var(--gold);
+    text-shadow:0 0 8px #000;pointer-events:none;animation:floatup .7s ease-out forwards;}
+  .critnum{color:#fff;font-size:26px;text-shadow:0 0 12px var(--danger),0 0 4px #fff;}
+  .snipernum{color:#ff3232;font-size:42px;text-shadow:0 0 18px var(--danger),0 0 6px #fff;}
+  @keyframes floatup{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-40px)}}
+
+  /* 爪痕（被攻擊） */
+  #claw{position:absolute;inset:0;pointer-events:none;opacity:0;z-index:8;}
+  #claw.on{animation:clawFlash .5s ease-out;}
+  @keyframes clawFlash{0%{opacity:0}15%{opacity:1}100%{opacity:0}}
+  #redFlash{position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,transparent 30%,rgba(150,0,0,.55));
+    opacity:0;pointer-events:none;z-index:7;}
+
+  /* v17.2：受擊特效三件套（血痕／齒痕／彈痕）＋防禦統一閃光。皆畫在 #hitFxLayer(z-8)。 */
+  #hitFxLayer{position:absolute;inset:0;pointer-events:none;z-index:8;overflow:hidden;}
+  #hitFxLayer .fx{position:absolute;pointer-events:none;will-change:opacity,transform;}
+  /* 血痕：一道斜向割裂，紅色漸層，隨機角度由 --deg 控制 */
+  .fx-blood{left:50%;top:46%;width:260px;height:52px;margin:-26px 0 0 -130px;
+    transform:translate(-50%,-50%) rotate(var(--deg,20deg)) scaleX(.2);
+    background:linear-gradient(90deg,transparent,rgba(190,20,20,0) 8%,rgba(200,20,20,.92) 20%,rgba(120,0,0,.98) 50%,rgba(200,20,20,.92) 80%,rgba(190,20,20,0) 92%,transparent);
+    border-radius:50%;filter:drop-shadow(0 0 6px rgba(120,0,0,.8));opacity:0;
+    animation:bloodStreak .55s ease-out forwards;}
+  @keyframes bloodStreak{0%{opacity:0;transform:translate(-50%,-50%) rotate(var(--deg,20deg)) scaleX(.05)}
+    22%{opacity:1;transform:translate(-50%,-50%) rotate(var(--deg,20deg)) scaleX(1)}
+    100%{opacity:0;transform:translate(-50%,-50%) rotate(var(--deg,20deg)) scaleX(1)}}
+  /* 齒痕：上下兩排咬痕（用 radial-gradient 點陣模擬），隨機水平位置 */
+  .fx-bite{width:150px;height:96px;margin:-48px 0 0 -75px;opacity:0;
+    animation:biteMark .5s ease-out forwards;
+    background:
+      radial-gradient(circle at 12% 22%, rgba(150,0,0,.95) 0 5px, transparent 6px),
+      radial-gradient(circle at 30% 14%, rgba(150,0,0,.95) 0 6px, transparent 7px),
+      radial-gradient(circle at 50% 12%, rgba(150,0,0,.95) 0 6px, transparent 7px),
+      radial-gradient(circle at 70% 14%, rgba(150,0,0,.95) 0 6px, transparent 7px),
+      radial-gradient(circle at 88% 22%, rgba(150,0,0,.95) 0 5px, transparent 6px),
+      radial-gradient(circle at 12% 78%, rgba(150,0,0,.95) 0 5px, transparent 6px),
+      radial-gradient(circle at 30% 86%, rgba(150,0,0,.95) 0 6px, transparent 7px),
+      radial-gradient(circle at 50% 88%, rgba(150,0,0,.95) 0 6px, transparent 7px),
+      radial-gradient(circle at 70% 86%, rgba(150,0,0,.95) 0 6px, transparent 7px),
+      radial-gradient(circle at 88% 78%, rgba(150,0,0,.95) 0 5px, transparent 6px);
+    filter:drop-shadow(0 0 3px rgba(80,0,0,.8));}
+  @keyframes biteMark{0%{opacity:0;transform:scale(.7)}25%{opacity:1;transform:scale(1.05)}
+    45%{transform:scale(1)}100%{opacity:0}}
+  /* 彈痕：玻璃被擊碎（中心孔＋放射狀裂紋＋環裂），隨機位置。細節用內嵌 SVG 畫。 */
+  .fx-bullet{width:120px;height:120px;margin:-60px 0 0 -60px;opacity:0;
+    animation:bulletHole .5s ease-out forwards;}
+  @keyframes bulletHole{0%{opacity:0;transform:scale(.5)}20%{opacity:1;transform:scale(1.08)}
+    40%{transform:scale(1)}100%{opacity:.92}}
+
+  /* 防禦統一閃光：整張敵圖微微一閃（不過亮）。白＝格擋；金＝完美防禦／反擊。 */
+  #defFlash{position:absolute;inset:0;pointer-events:none;z-index:6;opacity:0;mix-blend-mode:screen;}
+  #defFlash.block{background:radial-gradient(circle at 50% 45%,rgba(255,255,255,.55),rgba(255,255,255,.12) 55%,transparent 72%);
+    animation:defFlashAnim .32s ease-out;}
+  #defFlash.gold{background:radial-gradient(circle at 50% 45%,rgba(240,205,110,.55),rgba(220,175,70,.14) 55%,transparent 72%);
+    animation:defFlashAnim .36s ease-out;}
+  @keyframes defFlashAnim{0%{opacity:0}30%{opacity:.7}100%{opacity:0}}
+
+
+
+  /* 角落按鈕 */
+  .corner-btn{position:absolute;z-index:37;width:44px;height:44px;border-radius:50%;
+    background:rgba(10,8,14,.7);border:1px solid var(--gold-dim);color:var(--gold);
+    font-size:20px;line-height:1;display:flex;align-items:center;justify-content:center;
+    font-family:inherit;-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);}
+  .corner-btn:active{transform:scale(.9);}
+  #exitBtn{top:10px;left:auto;right:10px;font-size:18px;}
+  /* v17：測試人員用「清盤」鈕（左上角）。z-index 同 corner-btn，聖徒化手勢層之上，確保可點。 */
+  #testClearBtn{top:10px;left:10px;right:auto;font-size:12px;letter-spacing:1px;color:var(--holy);border-color:var(--holy);}
+  #ultBtn{bottom:12px;right:12px;width:60px;height:60px;font-size:30px;}
+  #ultBtn:disabled{opacity:.35;}
+  #ultBtn.ready{border-color:var(--holy);color:var(--holy);
+    box-shadow:0 0 16px var(--holy);animation:pulse .8s infinite alternate;}
+  #ultBtn.dual{border-color:var(--holy);color:#fff;background:rgba(60,110,150,.5);
+    box-shadow:0 0 20px var(--holy);}
+
+  /* ===== 下半：純數字盤 ===== */
+  #bottom{height:50%;flex:none;background:var(--panel);padding:10px 12px;
+    display:flex;flex-direction:column;min-height:0;}
+  #gridWrap{flex:1 1 0;min-height:0;display:flex;align-items:center;justify-content:center;position:relative;}
+  #transition{position:absolute;inset:0;display:none;align-items:center;justify-content:center;
+    background:rgba(10,8,14,.82);z-index:15;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);}
+  #transition.on{display:flex;}
+  #transText{font-size:24px;letter-spacing:4px;color:var(--gold);font-weight:bold;
+    text-shadow:0 0 16px var(--gold-dim);animation:transPop .45s;}
+  @keyframes transPop{0%{transform:scale(.7);opacity:0}55%{transform:scale(1.12);opacity:1}100%{transform:scale(1);opacity:1}}
+  @keyframes pulse{from{filter:brightness(1)}to{filter:brightness(1.7)}}
+
+  #grid{display:grid;gap:6px;touch-action:manipulation;}
+  .cell{position:relative;background:var(--grid);border:1px solid #000;
+    border-radius:8px;display:flex;align-items:center;justify-content:center;
+    font-weight:bold;color:var(--ink);transition:transform .06s,background .1s;
+    box-shadow:inset 0 0 12px #0007;overflow:hidden;min-width:0;min-height:0;}
+  .cell:active{transform:scale(.93);}
+  .cell.done{background:var(--grid-active);color:var(--gold-dim);box-shadow:inset 0 0 16px var(--gold-dim);}
+  /* 被點掉的格子破碎消失 */
+  .cell.shatter{animation:cellShatter .32s ease-out forwards;pointer-events:none;}
+  @keyframes cellShatter{
+    0%{opacity:1;transform:scale(1);clip-path:polygon(0 0,100% 0,100% 100%,0 100%);
+       filter:brightness(1.6) drop-shadow(0 0 10px var(--gold));}
+    35%{opacity:1;transform:scale(1.08) rotate(-2deg);
+       clip-path:polygon(10% 0,80% 8%,100% 70%,60% 100%,0 85%,4% 30%);
+       filter:brightness(2) drop-shadow(0 0 16px #fff);}
+    100%{opacity:0;transform:scale(.2) rotate(12deg);
+       clip-path:polygon(45% 40%,55% 42%,58% 55%,50% 60%,42% 55%,44% 45%);
+       filter:brightness(.6);}
+  }
+  .cell.next{border-color:var(--gold);box-shadow:0 0 8px var(--gold-dim);}
+  .cell.wrong{animation:shake .3s;background:var(--danger);}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+  /* 威脅格 / 雙槍暴擊點 */
+  /* 敵方紅點防禦：漸縮半透明紅點，直接點掉解除 */
+  #redDots{position:absolute;inset:0;z-index:9;pointer-events:none;}
+  /* 聖徒化橫斬特效：依滑動方向的一道白金色斬擊光 */
+  #slashFx{position:absolute;inset:0;z-index:30;pointer-events:none;overflow:hidden;}
+  .slash-line{position:absolute;top:50%;left:-40%;width:180%;height:14px;
+    transform:translateY(-50%) rotate(-18deg);
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,0) 15%,#fff 48%,#ffe9a8 52%,rgba(255,233,168,0) 85%,transparent);
+    filter:drop-shadow(0 0 16px #fff) drop-shadow(0 0 28px var(--gold));
+    opacity:0;}
+  .slash-line.go-right{animation:slashRight .45s cubic-bezier(.2,.7,.2,1) forwards;}
+  .slash-line.go-left{animation:slashLeft .45s cubic-bezier(.2,.7,.2,1) forwards;}
+  @keyframes slashRight{0%{opacity:0;transform:translate(-60%,-50%) rotate(-18deg) scaleX(.4)}
+    30%{opacity:1}100%{opacity:0;transform:translate(40%,-50%) rotate(-18deg) scaleX(1.1)}}
+  @keyframes slashLeft{0%{opacity:0;transform:translate(60%,-50%) rotate(18deg) scaleX(.4)}
+    30%{opacity:1}100%{opacity:0;transform:translate(-40%,-50%) rotate(18deg) scaleX(1.1)}}
+  #slashFx.flash::after{content:"";position:absolute;inset:0;background:radial-gradient(circle,rgba(255,255,255,.5),transparent 60%);animation:slashFlash .45s ease-out forwards;}
+  @keyframes slashFlash{0%{opacity:0}20%{opacity:1}100%{opacity:0}}
+  .reddot{position:absolute;border-radius:50%;pointer-events:auto;cursor:pointer;
+    background:radial-gradient(circle,rgba(255,70,70,.7),rgba(200,20,20,.3) 60%,transparent 72%);
+    border:2px solid rgba(255,100,100,.9);box-shadow:0 0 22px rgba(255,40,40,.85),inset 0 0 12px rgba(255,80,80,.6);
+    transform:translate(-50%,-50%);}
+  /* 盤面警戒：紅點出現時數字盤變紅，提醒玩家抬頭看敵人 */
+  #grid.alert .cell{border-color:var(--danger);color:#ff8a8a;}
+  #grid.alert{animation:alertPulse .5s infinite alternate;}
+  @keyframes alertPulse{from{filter:none}to{filter:drop-shadow(0 0 8px var(--danger))}}
+  /* 雙槍模式盤面外框 */
+  #grid.dualwield .cell{border-color:var(--holy);}
+  #grid.dualwield{filter:drop-shadow(0 0 6px var(--holy));}
+  /* 攻擊加倍 buff 盤面金框 */
+  #grid.buffed .cell{border-color:var(--gold);}
+  #grid.buffed{filter:drop-shadow(0 0 8px var(--gold));}
+  /* 聖徒化盤面（金色神聖） */
+  #grid.saint .cell{border-color:var(--gold);background:#2a2418;color:#ffe9a8;}
+  #grid.saint{filter:drop-shadow(0 0 14px var(--gold));animation:saintPulse .8s infinite alternate;}
+  /* v16：聖徒化期間敵發動攻擊（有紅點）時，盤面一樣要變紅（覆蓋金色） */
+  #grid.saint.alert .cell{border-color:var(--danger);color:#ff8a8a;background:#2a1414;}
+  #grid.saint.alert{filter:drop-shadow(0 0 12px var(--danger));animation:alertPulse .5s infinite alternate;}
+  @keyframes saintPulse{from{filter:drop-shadow(0 0 10px var(--gold))}to{filter:drop-shadow(0 0 20px #fff)}}
+
+  /* 彈殼 */
+  .shell{position:absolute;width:9px;height:20px;
+    background:linear-gradient(120deg,#fff3c4 0%,#e8c56a 35%,#a8842e 70%,#6b5220 100%);
+    border-radius:3px;pointer-events:none;z-index:10;
+    box-shadow:0 0 6px rgba(232,197,106,.7);animation:shellEject .55s ease-in forwards;}
+  @keyframes shellEject{0%{opacity:1;transform:translate(0,0) rotate(0)}
+    100%{opacity:0;transform:translate(34px,40px) rotate(260deg)}}
+
+  #controls{margin-top:10px;display:flex;gap:8px;flex-shrink:0;}
+  button.act{flex:1;padding:11px;background:transparent;border:1px solid var(--gold-dim);
+    color:var(--gold);border-radius:8px;font-family:inherit;font-size:13px;letter-spacing:2px;}
+  button.act:active{background:var(--grid-active);}
+  button.act:disabled{opacity:.3;}
+  button.act.ready{border-color:var(--holy);color:var(--holy);animation:pulse .8s infinite alternate;}
+
+  /* 雙槍 cut-in 演出 */
+  #cutin{position:absolute;inset:0;z-index:40;display:none;overflow:hidden;
+    background:radial-gradient(circle at 50% 50%,rgba(40,10,50,.7),rgba(5,4,10,.95));}
+  #cutin.on{display:block;}
+  #cutinImg{position:absolute;top:50%;left:50%;width:88%;max-width:460px;aspect-ratio:4/5;
+    transform:translate(-50%,-50%);
+    border:2px solid var(--gold);box-shadow:0 0 40px var(--holy),0 0 80px rgba(120,40,160,.6);
+    opacity:0;}
+  #cutin.on #cutinImg{animation:cutinSlide 1.5s cubic-bezier(.2,.8,.2,1) forwards;}
+  @keyframes cutinSlide{
+    0%{opacity:0;transform:translate(-50%,-50%) scale(1.4) rotate(-4deg);}
+    18%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(0deg);}
+    82%{opacity:1;transform:translate(-50%,-50%) scale(1.03);}
+    100%{opacity:0;transform:translate(-50%,-50%) scale(1.06);}
+  }
+  #cutinFlash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;}
+  #cutin.on #cutinFlash{animation:cutinFlash 1.5s ease-out forwards;}
+  @keyframes cutinFlash{0%{opacity:.9}12%{opacity:0}100%{opacity:0}}
+  #cutinText{position:absolute;bottom:16%;left:0;right:0;text-align:center;
+    font-size:30px;letter-spacing:10px;color:var(--gold);font-weight:bold;
+    text-shadow:0 0 16px var(--holy),0 2px 6px #000;opacity:0;}
+  #cutin.on #cutinText{animation:cutinTextIn 1.5s ease-out forwards;}
+  @keyframes cutinTextIn{0%{opacity:0;transform:translateY(20px)}25%{opacity:1;transform:translateY(0)}85%{opacity:1}100%{opacity:0}}
+
+  /* 雙槍 cut-in 演出 */
+  #cutin{position:absolute;inset:0;z-index:40;display:none;overflow:hidden;
+    background:radial-gradient(circle at 50% 50%,rgba(40,10,50,.6),rgba(5,4,10,.95));}
+  #cutin.on{display:block;}
+  #cutinFlash{position:absolute;inset:0;background:#fff;opacity:0;}
+  #cutin.on #cutinFlash{animation:cutinFlash 1.5s ease-out;}
+  @keyframes cutinFlash{0%{opacity:1}12%{opacity:0}100%{opacity:0}}
+  #cutinImg{position:absolute;top:50%;left:50%;height:96%;max-width:none;
+    filter:drop-shadow(0 0 30px #c0308a) drop-shadow(0 0 12px #6a30c0);
+    transform:translate(-50%,-50%) scale(1.3);opacity:0;}
+  #cutin.on #cutinImg{animation:cutinImg 1.5s cubic-bezier(.15,.7,.3,1);}
+  @keyframes cutinImg{
+    0%{transform:translate(-120%,-50%) scale(1.5) rotate(-8deg);opacity:0;}
+    18%{transform:translate(-50%,-50%) scale(1.28) rotate(0deg);opacity:1;}
+    82%{transform:translate(-50%,-50%) scale(1.22);opacity:1;}
+    100%{transform:translate(30%,-50%) scale(1.2);opacity:0;}
+  }
+  #cutinText{position:absolute;bottom:16%;left:0;right:0;text-align:center;
+    font-size:40px;font-weight:900;letter-spacing:8px;color:#fff;
+    text-shadow:0 0 20px #c0308a,0 0 8px #fff,3px 3px 0 #6a30c0;
+    font-family:Impact,"Arial Black",sans-serif;opacity:0;transform:skewX(-10deg);}
+  #cutinText .cutin-en{display:block;font-size:16px;letter-spacing:4px;font-weight:700;
+    margin-top:6px;opacity:.92;text-shadow:0 0 12px #c0308a,0 1px 3px #000;}
+  #cutin.on #cutinText{animation:cutinText 1.5s ease-out;}
+  @keyframes cutinText{0%{opacity:0;transform:skewX(-10deg) scale(2)}
+    20%{opacity:1;transform:skewX(-10deg) scale(1)}
+    80%{opacity:1}100%{opacity:0}}
+  #cutinStreak{position:absolute;inset:0;pointer-events:none;
+    background:repeating-linear-gradient(-24deg,transparent 0 18px,rgba(192,48,138,.18) 18px 20px);}
+  #cutin.on #cutinStreak{animation:cutinStreak .5s linear infinite;}
+  @keyframes cutinStreak{from{background-position:0 0}to{background-position:40px 0}}
+
+  /* ===== 聖徒化結局全畫面 cut-in ===== */
+  #saintCutin{position:absolute;inset:0;z-index:50;display:none;overflow:hidden;}
+  /* 生命歸還手勢層：預設隱藏，聖徒化時 .on 開啟；只覆蓋上半敵畫面(高50%)，不擋下半盤面點擊 */
+  #returnSwipe{position:absolute;left:0;right:0;top:0;height:50%;z-index:35;display:none;background:transparent;touch-action:none;}
+  #returnSwipe.on{display:block;}
+  /* 向心聚光特效：按住時定位到觸摸點，光線由四周向中心收束 */
+  #returnAura{position:absolute;width:0;height:0;pointer-events:none;display:none;z-index:36;}
+  #returnAura.on{display:block;}
+  #returnAura .core{position:absolute;left:-9px;top:-9px;width:18px;height:18px;border-radius:50%;
+    background:radial-gradient(circle,rgba(255,240,190,.95),rgba(255,180,90,.5) 55%,transparent 72%);
+    box-shadow:0 0 18px 6px rgba(255,200,110,.6);animation:auraCore .9s ease-in-out infinite;}
+  #returnAura .ray{position:absolute;left:0;top:0;width:3px;height:64px;transform-origin:50% 0;
+    background:linear-gradient(to bottom,transparent,rgba(255,210,130,.85));
+    filter:drop-shadow(0 0 3px rgba(255,190,90,.8));animation:auraRay 1s ease-in infinite;}
+  @keyframes auraRay{
+    0%{ transform:rotate(var(--a)) translateY(76px) scaleY(1); opacity:0; }
+    30%{ opacity:.9; }
+    100%{ transform:rotate(var(--a)) translateY(4px) scaleY(.5); opacity:0; }
+  }
+  @keyframes auraCore{ 0%,100%{transform:scale(.85);opacity:.75;} 50%{transform:scale(1.15);opacity:1;} }
+  #saintCutin.on{display:block;}
+  #saintCutin.burst{background:radial-gradient(circle at 50% 45%,rgba(60,45,10,.85),rgba(8,6,2,.97));}
+  #saintCutin.obe{background:radial-gradient(circle at 50% 45%,rgba(60,8,40,.9),rgba(6,2,8,.98));}
+  #saintCutin.execute{background:radial-gradient(circle at 50% 45%,rgba(80,60,10,.92),rgba(4,2,0,.99));}
+  #saintCutin.return{background:radial-gradient(circle at 50% 45%,rgba(70,55,15,.9),rgba(6,4,1,.98));}
+  #saintCutin.boss{background:radial-gradient(circle at 50% 45%,rgba(70,10,20,.9),rgba(8,2,4,.98));}
+  .scimg{position:absolute;inset:0;width:100%;height:100%;
+    object-fit:cover;object-position:50% 30%;opacity:0;z-index:0;display:none;}
+  /* 依結局類型只顯示對應圖片 */
+  #saintCutin.burst .scimg[data-kind="burst"],
+  #saintCutin.obe .scimg[data-kind="obe"],
+  #saintCutin.execute .scimg[data-kind="execute"],
+  #saintCutin.return .scimg[data-kind="return"],
+  #saintCutin.boss .scimg[data-kind="boss"]{display:block;}
+  #saintCutin.on .scimg{animation:saintCutinImgIn 1.6s ease-out forwards;}
+  @keyframes saintCutinImgIn{0%{opacity:0;transform:scale(1.15)}
+    18%{opacity:1;transform:scale(1)}82%{opacity:1;transform:scale(1)}
+    100%{opacity:.85;transform:scale(1.03)}}
+  #saintCutin.execute.on .scimg[data-kind="execute"]{animation-duration:3s;}
+  #saintCutinFlash{position:absolute;inset:0;opacity:0;z-index:1;}
+  #saintCutinStreak,#saintCutinTitle,#saintCutinSub{z-index:2;}
+  #saintCutin.burst #saintCutinFlash{background:#fff;}
+  #saintCutin.obe #saintCutinFlash{background:#ff3b3b;}
+  #saintCutin.execute #saintCutinFlash{background:#fff;}
+  #saintCutin.return #saintCutinFlash{background:#fff;}
+  #saintCutin.boss #saintCutinFlash{background:#ff3b3b;}
+  #saintCutin.on #saintCutinFlash{animation:cutinFlash 1.6s ease-out forwards;}
+  #saintCutinStreak{position:absolute;inset:0;pointer-events:none;}
+  #saintCutin.burst #saintCutinStreak{
+    background:repeating-linear-gradient(-24deg,transparent 0 16px,rgba(255,223,120,.16) 16px 19px);}
+  #saintCutin.obe #saintCutinStreak{
+    background:repeating-linear-gradient(-24deg,transparent 0 16px,rgba(255,60,90,.18) 16px 19px);}
+  #saintCutin.execute #saintCutinStreak{
+    background:repeating-linear-gradient(-24deg,transparent 0 14px,rgba(255,240,190,.22) 14px 17px);}
+  #saintCutin.return #saintCutinStreak{
+    background:repeating-linear-gradient(-24deg,transparent 0 16px,rgba(255,223,120,.16) 16px 19px);}
+  #saintCutin.boss #saintCutinStreak{
+    background:repeating-linear-gradient(-24deg,transparent 0 16px,rgba(255,60,90,.18) 16px 19px);}
+  #saintCutin.on #saintCutinStreak{animation:cutinStreak .5s linear infinite;}
+  #saintCutinTitle{position:absolute;top:42%;left:0;right:0;text-align:center;
+    transform:translateY(-50%) skewX(-8deg);font-weight:900;
+    font-family:Impact,"Arial Black",sans-serif;line-height:1.05;
+    font-size:clamp(30px,9vw,64px);letter-spacing:4px;opacity:0;padding:0 4%;white-space:pre-line;}
+  #saintCutin.burst #saintCutinTitle{color:#fff;
+    text-shadow:0 0 22px var(--holy),0 0 10px #ffe9a8,3px 3px 0 var(--gold);}
+  #saintCutin.obe #saintCutinTitle{color:#fff;
+    text-shadow:0 0 22px #ff3b6b,0 0 10px #ff8a8a,3px 3px 0 #6a1030;}
+  #saintCutin.execute #saintCutinTitle{color:#fff;
+    text-shadow:0 0 26px var(--gold),0 0 12px #fff,3px 3px 0 #7a5a10;}
+  #saintCutin.return #saintCutinTitle{color:#fff;
+    text-shadow:0 0 22px var(--holy),0 0 10px #ffe9a8,3px 3px 0 var(--gold);}
+  #saintCutin.boss #saintCutinTitle{color:#fff;
+    text-shadow:0 0 22px #ff3b6b,0 0 10px #ff8a8a,3px 3px 0 #6a1030;}
+  #saintCutin.on #saintCutinTitle{animation:saintCutinTitle 1.6s ease-out forwards;}
+  @keyframes saintCutinTitle{0%{opacity:0;transform:translateY(-50%) skewX(-8deg) scale(2.2)}
+    18%{opacity:1;transform:translateY(-50%) skewX(-8deg) scale(1)}
+    82%{opacity:1}100%{opacity:0;transform:translateY(-50%) skewX(-8deg) scale(1.05)}}
+  #saintCutinSub{position:absolute;top:60%;left:0;right:0;text-align:center;
+    font-size:clamp(13px,3.5vw,18px);letter-spacing:6px;font-weight:bold;opacity:0;}
+  #saintCutin.burst #saintCutinSub{color:var(--gold);text-shadow:0 0 12px var(--holy);}
+  #saintCutin.obe #saintCutinSub{color:#ff9db3;text-shadow:0 0 12px #ff3b6b;}
+  #saintCutin.execute #saintCutinSub{color:#ffe9a8;text-shadow:0 0 14px var(--gold);}
+  #saintCutin.return #saintCutinSub{color:var(--gold);text-shadow:0 0 12px var(--holy);}
+  #saintCutin.boss #saintCutinSub{color:#ff9db3;text-shadow:0 0 12px #ff3b6b;}
+  #saintCutin.on #saintCutinSub{animation:cutinTextIn 1.6s ease-out forwards;}
+  /* EXSECUTIŌ 停留 3 秒：拉長各元素動畫 */
+  #saintCutin.execute.on #saintCutinFlash{animation-duration:3s;}
+  #saintCutin.execute.on #saintCutinTitle{animation:saintCutinTitleHold 3s ease-out forwards;}
+  #saintCutin.execute.on #saintCutinSub{animation:cutinTextInHold 3s ease-out forwards;}
+  @keyframes saintCutinTitleHold{0%{opacity:0;transform:translateY(-50%) skewX(-8deg) scale(2.2)}
+    10%{opacity:1;transform:translateY(-50%) skewX(-8deg) scale(1)}
+    90%{opacity:1}100%{opacity:0;transform:translateY(-50%) skewX(-8deg) scale(1.05)}}
+  @keyframes cutinTextInHold{0%{opacity:0;transform:translateY(20px)}12%{opacity:1;transform:translateY(0)}90%{opacity:1}100%{opacity:0}}
+
+  #banner{position:absolute;inset:0;display:none;flex-direction:column;
+    align-items:center;justify-content:space-between;background:rgba(5,4,10,.94);z-index:30;text-align:center;
+    padding:0;overflow:hidden;}
+  #banner.on{display:flex;}
+  /* 可捲動內容區（大標→rows→立繪），retry 固定在最底 */
+  #bannerScroll{flex:1 1 auto;width:100%;display:flex;flex-direction:column;align-items:center;
+    justify-content:flex-start;overflow-y:auto;overflow-x:hidden;padding:26px 0 6px;position:relative;
+    min-height:0;-webkit-overflow-scrolling:touch;}
+  #banner h1{font-size:28px;letter-spacing:4px;color:var(--gold);margin:0 0 8px;
+    text-shadow:0 0 16px var(--gold-dim);}
+  #banner p{font-size:13px;letter-spacing:2px;opacity:.8;margin:4px 0 14px;}
+  #banner.lose h1{color:var(--danger);text-shadow:0 0 16px var(--blood);}
+  /* 大標＋retry 同時進場：淡入＋輕微下沉 */
+  @keyframes bannerHeadIn{ from{opacity:0;transform:translateY(-10px);} to{opacity:1;transform:none;} }
+  #banner.seq h1, #banner.seq p{animation:bannerHeadIn .35s ease-out both;}
+  #banner.seq #rematchBtn{animation:bannerHeadIn .35s ease-out both;}
+  /* 結算數據列 */
+  #resultStats{margin:2px 0 14px;font-size:13px;letter-spacing:1px;line-height:1.9;color:var(--ink);
+    min-width:230px;}
+  #resultStats .row{display:flex;justify-content:space-between;gap:24px;min-width:230px;}
+  #resultStats .row b{color:var(--gold);font-weight:normal;}
+  #resultStats .record{color:#ffe08a;font-size:12px;letter-spacing:3px;
+    text-shadow:0 0 10px var(--gold);animation:blink .5s infinite alternate;margin-top:6px;}
+  /* rows 逐行下刷：每行淡入下沉，1 秒內刷完（delay 由 JS 逐行設定） */
+  @keyframes rowSweep{ from{opacity:0;transform:translateY(-8px);} to{opacity:1;transform:none;} }
+  #resultStats .row, #resultStats .record{opacity:0;}
+  #resultStats.sweep .row, #resultStats.sweep .record{animation:rowSweep .28s ease-out forwards;}
+  /* 評價等第 */
+  #resultStats .rank{font-weight:bold;letter-spacing:2px;}
+  #resultStats .rank-S{color:#ffe08a;text-shadow:0 0 12px var(--gold);}
+  #resultStats .rank-A{color:var(--gold);}
+  #resultStats .rank-B{color:var(--holy);}
+  #resultStats .rank-C{color:#b9c2cc;}
+  #resultStats .rank-D{color:#8f97a0;}
+  #resultStats .rank-E{color:#6d7178;}
+  /* ===== 監察官立繪舞台 ===== */
+  #inspectorStage{position:relative;width:100%;max-width:340px;margin-top:6px;
+    display:flex;justify-content:center;flex:0 0 auto;}
+  #inspectorPortrait{width:auto;max-height:46vh;object-fit:contain;
+    filter:drop-shadow(0 6px 24px rgba(0,0,0,.7));
+    opacity:0;transform:translateY(14px) scale(.98);
+    -webkit-mask-image:radial-gradient(120% 100% at 50% 42%,#000 62%,transparent 96%);
+    mask-image:radial-gradient(120% 100% at 50% 42%,#000 62%,transparent 96%);}
+  #banner.seq #inspectorPortrait{animation:portraitIn .5s cubic-bezier(.2,.7,.3,1) both;}
+  @keyframes portraitIn{ from{opacity:0;transform:translateY(14px) scale(.98);}
+    to{opacity:1;transform:none;} }
+  /* 對話框：絕對定位，疊在立繪下方約 1/4 處，半透明 */
+  #inspectorBubble{position:absolute;left:50%;bottom:22%;transform:translateX(-50%) translateY(8px);
+    width:82%;max-width:300px;background:rgba(16,12,24,.72);
+    border:1px solid var(--gold-dim);border-radius:8px;padding:10px 13px;text-align:left;
+    box-shadow:0 4px 20px rgba(0,0,0,.55);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);
+    opacity:0;pointer-events:none;}
+  #inspectorBubble.show{animation:bubbleIn .3s ease-out forwards;}
+  @keyframes bubbleIn{ from{opacity:0;transform:translateX(-50%) translateY(8px);}
+    to{opacity:1;transform:translateX(-50%) translateY(0);} }
+  #inspectorBubble .insp-name{font-size:11px;letter-spacing:2px;color:var(--gold);
+    margin-bottom:5px;opacity:.9;}
+  #inspectorBubble .insp-line{font-size:13px;letter-spacing:.5px;line-height:1.6;color:var(--ink);min-height:1.6em;}
+  #inspectorBubble .insp-line .caret{opacity:.7;animation:blink .5s infinite alternate;}
+  /* retry 鈕：置底、與畫面同寬、降低高度 */
+  #banner #rematchBtn{flex:0 0 auto;width:100%;max-width:none;margin:0;border-radius:0;
+    padding:12px 0;border:none;border-top:1px solid var(--gold-dim);
+    background:rgba(20,16,28,.6);color:var(--gold);letter-spacing:4px;font-size:15px;}
+  #banner #rematchBtn:active{background:var(--grid-active);}
+  /* 迎擊鈕（S 解鎖後）：變色＋發光脈動 */
+  #banner #rematchBtn.intercept{color:var(--danger);border-top-color:var(--blood);
+    background:rgba(60,12,18,.55);text-shadow:0 0 12px var(--blood);
+    box-shadow:0 -2px 20px rgba(200,40,40,.4),inset 0 0 18px rgba(200,40,40,.25);
+    animation:interceptPulse .7s infinite alternate;}
+  @keyframes interceptPulse{ from{box-shadow:0 -2px 14px rgba(200,40,40,.3),inset 0 0 12px rgba(200,40,40,.2);}
+    to{box-shadow:0 -2px 26px rgba(220,60,60,.6),inset 0 0 22px rgba(220,60,60,.35);} }
+
+  /* ===== 首頁 ===== */
+  #home{position:absolute;inset:0;display:none;flex-direction:column;
+    align-items:center;justify-content:center;z-index:50;text-align:center;
+    background:radial-gradient(120% 90% at 50% 30%,#1a1330,#07050c 90%);}
+  #home.on{display:flex;}
+  #home .title{font-size:38px;letter-spacing:8px;color:var(--gold);margin:0 0 6px;
+    text-shadow:0 0 20px var(--gold-dim),0 0 40px rgba(120,40,160,.5);font-weight:bold;}
+  #home .subtitle{font-size:13px;letter-spacing:3px;color:var(--holy);opacity:.85;margin-bottom:44px;}
+  #startBtn{padding:16px 46px;background:transparent;border:1px solid var(--gold);
+    color:var(--gold);border-radius:10px;font-family:inherit;font-size:17px;letter-spacing:5px;
+    box-shadow:0 0 18px var(--gold-dim);animation:pulse 1.2s infinite alternate;}
+  #startBtn:active{transform:scale(.94);}
+  /* 首頁副武器/搭檔占位入口 */
+  #homeLoadout{display:flex;gap:14px;margin-top:28px;}
+  .loadout-btn{display:flex;flex-direction:column;align-items:center;gap:3px;
+    padding:10px 20px;min-width:100px;background:transparent;border:1px solid var(--gold-dim);
+    color:var(--ink);border-radius:8px;font-family:inherit;}
+  .loadout-btn:active{transform:scale(.95);}
+  .loadout-btn .lb-label{font-size:11px;letter-spacing:3px;color:var(--gold-dim);}
+  .loadout-btn .lb-value{font-size:13px;letter-spacing:1px;color:var(--gold);}
+  /* 選擇彈層 */
+  #pickSheet{position:absolute;inset:0;display:none;align-items:center;justify-content:center;
+    background:rgba(4,3,8,.85);z-index:60;}
+  #pickSheet.on{display:flex;}
+  #pickSheet .pick-panel{width:82%;max-width:340px;background:#0f0c16;
+    border:1px solid var(--gold-dim);border-radius:12px;padding:18px 16px;text-align:center;
+    box-shadow:0 0 30px rgba(0,0,0,.7);}
+  #pickSheet .pick-title{font-size:15px;letter-spacing:4px;color:var(--gold);margin-bottom:14px;}
+  #pickSheet .pick-list{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
+  #pickSheet .pick-item{padding:11px 14px;background:rgba(30,24,42,.7);
+    border:1px solid var(--gold-dim);border-radius:7px;color:var(--ink);
+    font-family:inherit;font-size:14px;letter-spacing:1px;text-align:left;}
+  #pickSheet .pick-item.selected{border-color:var(--gold);color:var(--gold);
+    box-shadow:0 0 12px var(--gold-dim);}
+  #pickSheet .pick-item:active{transform:scale(.98);}
+  #pickSheet .pick-item .pi-sub{display:block;font-size:11px;letter-spacing:.5px;
+    color:var(--gold-dim);margin-top:3px;}
+  #pickSheet .pick-close{padding:9px 30px;background:transparent;border:1px solid var(--gold-dim);
+    color:var(--ink);border-radius:8px;font-family:inherit;font-size:13px;letter-spacing:3px;}
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- 生命歸還手勢層：聖徒化時開啟，透明覆蓋全畫面、完全接管觸控偵測上滑 -->
+  <div id="returnSwipe"><div id="returnAura"></div></div>
+  <!-- 上半：敵人 -->
+  <div id="top">
+    <img id="enemyImg" alt="敵人" src="">
+    <div id="topVignette"></div>
+    <div id="redFlash"></div>
+    <div id="defFlash"></div>
+    <div id="hitFxLayer"></div>
+    <div id="fxTop"></div>
+    <div id="redDots"></div>
+    <div id="slashFx"></div>
+    <svg id="claw" viewBox="0 0 400 500" preserveAspectRatio="none">
+      <g stroke="rgba(200,30,30,.9)" stroke-width="6" fill="none" stroke-linecap="round"
+         filter="drop-shadow(0 0 4px #400)">
+        <path d="M60,40 C160,180 240,340 330,470"/>
+        <path d="M130,20 C220,170 300,330 380,450"/>
+        <path d="M10,90 C110,220 190,380 270,490"/>
+      </g>
+    </svg>
+    <div id="hud">
+      <div class="enemy-name" id="enemyName">地下聖徒</div>
+    </div>
+    <!-- 敵我血條：橫置於敵人區下方，敵上我下；破防計量表 C 字扣左側 -->
+    <div id="barsBlock">
+      <div id="energyClasp">
+        <svg viewBox="0 0 20 60" preserveAspectRatio="none">
+          <!-- C 字型：右側開口，環抱兩條血條的左緣 -->
+          <path class="clasp-track" d="M18 3 A 15 27 0 1 0 18 57"/>
+          <path class="clasp-fill"  id="energyClaspFill" d="M18 3 A 15 27 0 1 0 18 57"/>
+        </svg>
+      </div>
+      <div id="barStack">
+        <div class="hrow">
+          <div class="hpbar enemy-bar"><i id="enemyHp"></i></div>
+          <div class="hp-num" id="enemyHpNum"></div>
+        </div>
+        <div class="hrow">
+          <div class="hpbar player-bar"><i id="playerHp"></i></div>
+          <div class="hp-num" id="playerHpNum"></div>
+        </div>
+      </div>
+    </div>
+    <!-- 退出：右上角 → 回到首頁 -->
+    <button id="exitBtn" class="corner-btn">✕</button>
+    <button id="testClearBtn" class="corner-btn">清盤</button>
+    <!-- 雙槍/開火：右下角 -->
+    <!-- 聖徒化改為敵人框左右滑發動、雙槍改滿值自動，故移除舊大招鈕 -->
+    <div id="chargeWarn"><!-- 倒數數字與招式名已取消，紅圈本身即為時機提示 --></div>
+  </div>
+
+  <!-- 下半：純數字盤 -->
+  <div id="bottom">
+    <div id="gridWrap"><div id="grid"></div>
+      <div id="transition"><div id="transText">RELOADING</div></div>
+    </div>
+  </div>
+
+  <!-- 雙槍 cut-in 演出 -->
+  <div id="cutin">
+    <div id="cutinFlash"></div>
+    <img id="cutinImg" src="" alt="">
+    <div id="cutinText">Guard Crushing</div>
+    <div id="cutinStreak"></div>
+  </div>
+
+  <!-- 聖徒化結局全畫面 cut-in：OBE / Maximum Burst -->
+  <div id="saintCutin">
+    <img id="saintCutinImg" class="scimg" data-kind="execute" src="" alt="">
+    <img id="saintCutinImgObe" class="scimg" data-kind="obe" src="" alt="">
+    <img id="saintCutinImgBurst" class="scimg" data-kind="burst" src="" alt="">
+    <img id="saintCutinImgReturn" class="scimg" data-kind="return" src="" alt="">
+    <img id="saintCutinImgBoss" class="scimg" data-kind="boss" src="" alt="">
+    <div id="saintCutinFlash"></div>
+    <div id="saintCutinStreak"></div>
+    <div id="saintCutinTitle"></div>
+    <div id="saintCutinSub"></div>
+  </div>
+
+  <!-- 勝負 / 結算 -->
+  <div id="banner">
+    <div id="bannerScroll">
+      <h1 id="bannerTitle"></h1>
+      <p id="bannerSub"></p>
+      <div id="resultStats"></div>
+      <!-- 監察官立繪 + 疊在其下 1/4 的對話框 -->
+      <div id="inspectorStage">
+        <img id="inspectorPortrait" alt="" src="">
+        <div id="inspectorBubble">
+          <div class="insp-name" id="inspectorName"></div>
+          <div class="insp-line" id="inspectorLine"></div>
+        </div>
+      </div>
+    </div>
+    <button class="act" id="rematchBtn">再度執槍</button>
+  </div>
+
+  <!-- 首頁 -->
+  <div id="home" class="on">
+    <div class="title">聖約第四騎士團</div>
+    <div class="subtitle">The IV Order of Testament</div>
+    <button id="startBtn">開始遊戲</button>
+    <!-- 副武器 / 搭檔 選擇入口（占位：只接 UI，暫不影響戰鬥）-->
+    <div id="homeLoadout">
+      <button class="loadout-btn" id="pickWeaponBtn"><span class="lb-label">副武器</span><span class="lb-value" id="pickWeaponValue">—</span></button>
+      <button class="loadout-btn" id="pickPartnerBtn"><span class="lb-label">搭　檔</span><span class="lb-value" id="pickPartnerValue">—</span></button>
+    </div>
+  </div>
+
+  <!-- 選擇彈層（副武器 / 搭檔 共用）-->
+  <div id="pickSheet">
+    <div class="pick-panel">
+      <div class="pick-title" id="pickSheetTitle">選擇</div>
+      <div class="pick-list" id="pickSheetList"></div>
+      <button class="pick-close" id="pickSheetClose">關閉</button>
+    </div>
+  </div>
+</div>
+
+<script>
+
+/* ============================================================================
+ *  ★★★  維護者設定區（你只需要改這裡）  ★★★
+ *  ---------------------------------------------------------------------------
+ *  這一整塊是「設定表」。新增武器 / 角色 / 敵人，或調整任何數值、換圖換音效，
+ *  全部都在這裡完成，不用去動下面的程式邏輯。
+ *
+ *  每一個項目都長這樣（三個重點：圖像 image、音效 sound、數值）：
+ *      鑰匙名: {
+ *        name:  '顯示名稱',
+ *        image: '圖片鑰匙',   ← 對應下面 ASSETS 裡的圖
+ *        sound: '音效鑰匙',   ← 對應下面 ASSETS 裡的音效（沒有就留 null）
+ *        ...其餘數值...
+ *      }
+ *
+ *  換圖 / 換音效流程：
+ *    1) 到最下面的 ASSETS，把新的圖或音效（base64 或網址）填進去，取個鑰匙名。
+ *    2) 回到這裡，把項目的 image / sound 改成那個鑰匙名。
+ *  就這樣，兩步完成。
+ * ========================================================================== */
+const GAME_CONFIG = {
+
+  /* ------------------------------------------------------------------ *
+   *  一、武器（特武）— Counter 反擊時使用
+   *  counterWin  = 反擊判定窗口大小（越大越好按，越小風險越高回報越大，範圍 0~1）
+   *  hits        = 反擊打幾發
+   *  dmgPerHit   = 每發傷害（反擊總傷＝hits×dmgPerHit；重機槍 48 為基準）
+   *  vfx         = 傷害數字視覺：'burst'＝同區塊同時跳多個數字（散彈）、
+   *                'single'＝單發較大紅字（狙擊）、留 null＝預設逐發跳
+   *  defenseDamageScale = Defense（格擋）段受傷倍率（相對大絕 ULT_DAMAGE）：
+   *                      0.5＝半傷（預設，重機槍等）、0.25＝四分之一傷（散彈的保命特性）、
+   *                      0＝完全免傷。留 null 視為 0.5。
+   *  noPerfectBand     = true → 取消 Perfect 免傷帶（橘圈被黃圈取代）：
+   *                      只剩「防一半」或「反擊成功」（狙擊的高風險特性）
+   *  image       = 武器 icon（可留 null，暫時不顯示）
+   *  sound       = 反擊音效鑰匙（可留 null，用預設合成音）
+   *  新增武器：複製一整段 {...}，改鑰匙名與數值即可。
+   * ------------------------------------------------------------------ */
+  weapons: {
+    // 重機槍：基準武器（反擊總傷 48），Perfect 帶正常、Defense 吃半傷（0.5）
+    mg:      { name:'重機槍', counterWin:0.12, hits:8, dmgPerHit:6,  vfx:null,     defenseDamageScale:0.5,  noPerfectBand:false, image:null, sound:null },
+    // 散彈槍：Counter 6發×4=24；Perfect 檔改打 6發×2=12（perfectDamageScale=0.5，傷害取代免傷）；Defense 檔吃 1/4 傷（0.25，保命但不再全免）
+    shotgun: { name:'散彈槍', counterWin:0.20, hits:6, dmgPerHit:4,  vfx:'burst',  defenseDamageScale:0.25, noPerfectBand:false, perfectDamageScale:0.5, image:null, sound:null },
+    // 狙擊槍：反擊總傷 72（重機槍 1.5 倍）、單發大紅字、無 Perfect 免傷帶（高風險高回報）
+    sniper:  { name:'狙擊槍', counterWin:0.06, hits:1, dmgPerHit:72, vfx:'single', defenseDamageScale:0.5,  noPerfectBand:true,  image:null, sound:null },
+    // grenade: { name:'榴彈', ... }   ← 未來新武器照這個格式加在這裡
+  },
+  defaultWeapon: 'mg',   // 開局預設武器（填上面的鑰匙名）
+
+  /* ------------------------------------------------------------------ *
+   *  二、搭檔（修女 Partner）— 改變戰鬥規則的角色
+   *  image  = 立繪鑰匙
+   *  cutin  = 聖徒化 cut-in 大圖鑰匙
+   *  voice  = 語音鑰匙（可 null）
+   *  perk   = 被動效果說明（目前僅記錄，效果之後接）
+   *  新增搭檔：複製一段，改鑰匙名與圖音即可。
+   * ------------------------------------------------------------------ */
+  partners: {
+    freya: {
+      name:'蕾妮',
+      image:'partner_twin',    // 立繪（暫用 cut-in 圖代替）
+      cutin:'cutin_saint',     // 聖徒化演出大圖
+      voice:null,              // 語音（PARTNER_SE_SI）之後填
+      perk:'即死防禦（被動）＋生命歸還（主動）',
+      // ── 被動技：即死防禦 ─────────────────────────────
+      //   整場一次性。受到足以致死的攻擊時，改為保留 1 HP，並插入 cut-in。用掉後失效。
+      passive:{
+        key:'deathGuard',
+        name:'即死防禦',
+        oncePerBattle:true,      // true=整場只擋一次；false=每次都擋（不建議）
+        cutin:'cutin_saint',     // 觸發演出大圖（暫用）
+      },
+      // ── 主動技：生命歸還 ─────────────────────────────
+      //   聖徒化中，由「下往上滑」發動：強制中止聖徒化，保留當前血量（第四結局）。
+      active:{
+        key:'lifeReturn',
+        name:'生命歸還',
+        cutin:'cutin_saint',     // 第四結局演出大圖（暫用）
+      },
+    },
+    // 例：新搭檔
+    // kerty: { name:'姬爾蒂', image:'partner_kerty', cutin:'cutin_kerty', voice:null, perk:'聖能累積更快' },
+  },
+  defaultPartner: 'freya',
+
+  /* ------------------------------------------------------------------ *
+   *  三、監察官（Inspector）— 結算畫面角色（框架預留，之後接）
+   * ------------------------------------------------------------------ */
+  inspectors: {
+    freya: {
+      name:'芙蕾雅',
+      tier:'rookie',
+      // 處決勝利（聖徒化 Maximum Burst 擊殺）專屬台詞：優先於 rank 台詞
+      executionLine:'熔斷了？真慘烈呢。',
+      // S 評價點「再度執槍」時的隱藏關警告台詞
+      interceptLine:'慢著！有新的敵人！',
+      image:'inspector_freya',          // 單張立繪鑰匙（無 portraits 時的 fallback）
+      imageBase:'freya',                // 外部目錄鑰匙 → assets/inspector/freya/portrait.*
+      portraits:{                       // 好感度門檻 → 立繪鑰匙（留空則用 image）
+        // 0:'inspector_freya', 30:'inspector_freya__lv1', 60:'inspector_freya__lv2',
+      },
+      // dialogues[評價等第][好感度門檻] → 台詞陣列（隨機取一句）。目前僅好感 0 檔。
+      dialogues:{
+        S:{ 0:['怎麼可能？竟然能夠做到這種程度！'] },
+        A:{ 0:['有興趣加入第十三騎士團嗎？我們需要你這樣的人才。'] },
+        B:{ 0:['這不是還不錯嗎？'] },
+        C:{ 0:['也就比一般人強一點嗎……？'] },
+        D:{ 0:['……你們團長有好好訓練你嗎？'] },
+        E:{ 0:['………………'] },
+        lose:{ 0:['（監察官失敗台詞待填）'] },
+      },
+      // v17.3：Boss 戰（槍之魔女）專屬台詞組。Boss 結算時優先於上方 dialogues。格式同上（[rank][好感門檻]）。
+      bossDialogues:{
+        S:{ 0:['你的實力，說不定能與團長比肩！'] },
+        A:{ 0:['HUND中竟然有你這樣的人存在……！'] },
+        B:{ 0:['幸虧有你，竟然連那種對手也能戰勝！'] },
+        C:{ 0:['我果然沒有看走眼呢。'] },
+        D:{ 0:['辛苦了，慘烈的戰鬥呢。'] },
+        E:{ 0:['醫療班！千萬別讓他死了！'] },
+        lose:{ 0:['醫療班！千萬別讓他死了！'] },
+      },
+    },
+  },
+  defaultInspector: 'freya',   // 填上面的鑰匙名即啟用；null＝結算畫面不顯示監察官
+
+  /* ------------------------------------------------------------------ *
+   *  五、評價分級（EVALUATION）— 結算算分 → 六階 S/A/B/C/D/E
+   *  ------------------------------------------------------------------
+   *  結算時把「用時 + 反擊 + 完美防禦」換算成分數，再套加乘，
+   *  最後對照 tiers 由高到低取第一個達標的等第。
+   *  想調難度／手感就改這裡的係數與門檻。S 段刻意拉高，較難達成。
+   *
+   *  分數公式：
+   *    raw   = max(0, timeBonus.base − 總用時秒數 × timeBonus.perSecond)
+   *          + 反擊累計傷害 × counterCoef
+   *          + 完美防禦次數 × perfectPerHit
+   *    score = raw × (無傷? flawlessMult : 1) × (以MaxBurst擊殺? executionMult : 1)
+   * ------------------------------------------------------------------ */
+  evaluation: {
+    score: {
+      timeBonus:     { base:3000, perSecond:40 }, // 時間分：越短越高，扣到 0 為止
+      counterCoef:   2.0,     // 反擊累計傷害 × 此係數
+      perfectPerHit: 50,      // 每次完美防禦加分
+      flawlessMult:  1.30,    // 全程無傷 → 總分 ×1.30
+      executionMult: 1.10,    // 以 Maximum Burst 擊殺（EXSECUTIŌ）→ 總分 ×1.10
+    },
+    // 六階門檻（分數下限）；由高到低排列，S 段刻意拉高
+    tiers: [
+      { rank:'S', min:3600 },
+      { rank:'A', min:2800 },
+      { rank:'B', min:2100 },
+      { rank:'C', min:1400 },
+      { rank:'D', min: 700 },
+      { rank:'E', min:   0 },
+    ],
+  },
+
+  /* ------------------------------------------------------------------ *
+   *  四、敵人（Enemy）
+   *  name   = 顯示名稱（敵人區上方）
+   *  image  = 敵人立繪鑰匙
+   *  hp     = 血量（雜魚建議 ~150，測試耐打用 500；Boss 拉高血量即可）
+   *  attack = 大絕一擊傷害
+   *  image / sound 都對應最下面 ASSETS。
+   *  新增敵人：複製一段，改鑰匙名、名稱、圖、血量。
+   * ------------------------------------------------------------------ */
+  enemies: {
+    faceless: {
+      name:'地下聖徒_A',        // UI 只顯示底線前的「地下聖徒」；底線後（_A）僅供作者辨識、不顯示
+      image:'enemy_faceless',   // 內嵌暫代圖鑰匙（fallback，見最下方 ASSETS）
+      imageBase:'faceless',     // 外部目錄鑰匙 → assets/enemy/faceless/portrait.*（優先，載入失敗才用內嵌 image）
+      hp:500,          // 測試耐打值；正式平衡改 ~150
+      attack:45,       // 大絕一擊傷害（原 ULT_DAMAGE）
+      atkInterval:null,// 大絕蓄力秒數；null＝沿用 tuning.chargeSeconds（逐怪可覆寫）
+      sound:{ hit:null, ult:null, death:null }, // 音效槽（外部路徑，null＝用預設 SFX）
+      special:[],      // 特殊行動預留（本版不實作邏輯，僅保留結構）
+      // v16：每盤格數手動覆寫（index 對應第幾盤，0-based；null／缺項＝用預設規則：第三盤起 16 格）。
+      //      作者日後可逐怪逐盤填數值微調難度，例：[9,9,16,16,20]。聖徒化 25 宮格不受此影響。
+      boardGrids:[9,9,16,16,16],
+      // v17.2：受擊特效三件套（delay＝延時懲罰／wrong＝按錯懲罰／ult＝大絕）。逐怪可各自設定。
+      //   type 可用：'claw'（爪痕，可設 count 幾道）／'blood'（血痕，一道，角度隨機）／
+      //             'bite'（齒痕）／'bullet'（彈痕/玻璃碎裂，可設 count 幾顆、隨機位置）。
+      hitFx:{
+        delay:{ type:'blood', angle:'random' },   // 延時懲罰 → 一道血痕、角度隨機
+        wrong:{ type:'bite' },                     // 按錯懲罰 → 齒痕
+        ult:{   type:'claw', count:3, angle:'random' },  // 大絕 → 三爪、角度隨機
+      },
+    },
+    // 亂入怪（無傷 45 秒內通關才會出現）— 先用同一隻怪測流程，正式再換
+    intruderEnemy: {
+      name:'亂入者 · ???',
+      image:'enemy_faceless',
+      imageBase:'faceless',
+      hp:400,
+      attack:50,
+      atkInterval:null,
+      sound:{ hit:null, ult:null, death:null },
+      special:[],
+      boardGrids:[9,9,16,16,16],   // v16：每盤格數手動覆寫（同上，聖徒化不受影響）
+    },
+    // ── 槍之魔女（Boss）v17：S 評價後遭遇的隱藏 Boss ──
+    witch: {
+      name:'槍之魔女',
+      image:'enemy_witch',      // 內嵌立繪鑰匙（附圖）
+      imageBase:'witch',        // 外部目錄鑰匙 → assets/enemy/witch/portrait.*（優先，載入失敗才用內嵌 image）
+      hp:500,
+      attack:45,                // 大絕單點傷害（同一般怪基準）
+      atkInterval:null,         // 大絕蓄力窗口（紅圈縮放時間）；null＝沿用 tuning.chargeSeconds
+      sound:{ hit:null, ult:null, death:null },
+      special:[],
+      boardGrids:[9,9,16,16,16],
+      // v17：Boss 專屬機制（一般怪不填＝走預設，資料/程式分離）
+      ult:{ shots:2, gapMs:1000, minMs:2000, maxMs:4000 },   // 大絕：一次先後出 2 個點、間隔 1 秒；發動頻率 2~4 秒
+      delayPenalty:{ dmgScale:0.5, timeDelta:-1 },           // 延時懲罰：攻擊力為一般怪一半、時限減 1 秒
+      wrongPenalty:{ dmgScale:1 },                           // 按錯懲罰：攻擊力同一般怪
+      // v17.2：受擊特效三件套 —— 全部走「彈痕（玻璃碎裂）」，位置隨機、顆數不同
+      hitFx:{
+        delay:{ type:'bullet', count:1, pos:'random' },   // 延時懲罰 → 一顆彈痕
+        wrong:{ type:'bullet', count:3, pos:'random' },   // 按錯懲罰 → 三顆彈痕
+        ult:{   type:'bullet', count:2, pos:'random' },   // 大絕 → 兩顆彈痕
+      },
+    },
+    // 例：新怪
+    // giant: { name:'巨人', image:'enemy_giant', imageBase:'giant', hp:150, attack:30, atkInterval:5, sound:{}, special:[] },
+  },
+  currentEnemy: 'faceless',   // 這場開場先打誰（填上面的鑰匙名）
+
+  /* 連戰陣容（同場清一隻接下一隻）— 本版僅預留，不接邏輯。
+     日後啟用：填多隻鑰匙，血量與連擊延續。 */
+  lineup: ['faceless'],
+
+  /* 亂入設定（New Hustle）— 結算畫面後、無傷達標才觸發 */
+  intruder: {
+    enable:true,
+    condition:{ maxTime:45, noDamage:true },  // 45 秒內 + 全程無傷（v15 起觸發已改綁 S 評價，此條件僅備查）
+    cutinText:'NEW HUSTLE INCOMING',           // 亂入 Boss 遭遇 cut-in 字樣（一律用此，不因怪而異）
+    enemy:'witch',                             // v17：S 評價後遭遇的 Boss＝槍之魔女
+    bannerHold:1800,                           // 結算畫面停留多久(ms)後才播 Boss cut-in
+  },
+
+  /* ------------------------------------------------------------------ *
+   *  五、數值總表（TUNING）— 對應說明書 §16 速查表
+   *  想調手感就改這裡的數字，改完存檔重開即可。
+   * ------------------------------------------------------------------ */
+  tuning: {
+    // 玩家
+    playerHp:            100,   // 我方血量
+
+    // 傷害
+    dmgBase:             3,     // 基礎單發傷害
+    dmgPerCombo:         0.2,   // 每層連擊加成
+    dmgComboCap:         20,    // 連擊加成計入上限
+    dmgDualMult:         0.7,   // 雙槍傷害倍率（<1=安全牌）
+    dmgCritMult:         3,     // 暴擊倍率（保留）
+    dmgWrong:            10,    // 普通按錯受擊
+    dmgHeavy:            18,    // 紅字期間按錯的重擊
+    dmgDelay:            8,     // v17：延時（太慢）懲罰基礎傷害（一般怪；Boss 以 delayPenalty.dmgScale 縮放）
+
+    // 聖能與大絕蓄力
+    energyPerHit:        2,     // 每次正確點擊給的聖能
+    chargeSeconds:       4,     // 敵人大絕蓄力窗口（秒）
+
+    // 三級防禦窗口（依紅點剩餘時間比例；大=早，小=晚）
+    defDefenseMin:       0.35,  // 0.35~1.0 → Defense（傷害減半）
+    defPerfectMin:       0.12,  // 0.12~0.35 → Perfect（免傷）
+                                // 0~0.12 → Counter（免傷+武器反擊）
+
+    // 雙槍
+    dualSeconds:         4,     // 破防模式時長（秒）
+
+    // 聖徒化（受擊競賽爆發）
+    // v18：由「回血計時器」改為「受擊推進計時器」。血條＝倒數槽；只有真正受擊才推進，
+    //      推進到滿＝OBE（沒守住）；滿前把盤面點完＝Maximum Burst（贏了就跑）。
+    //      Counter／Perfect 維持免傷、不推進。維持 16 宮格、期間敵攻擊更密集保持忙碌爽快。
+    saintGrid:           16,    // v18：聖徒化盤面格數（維持 16，不再擴成 25）
+    saintGridCols:       4,     // v18：聖徒化盤面每列格數
+    saintAdvanceDivisor: 15,    // v18：一次「受擊」（挨大絕／按錯／反應超時）推進量＝playerMax/此值（≈+1 秒）
+    saintBlockDivisor:   30,    // v18：一次「格擋（Defense）」推進量＝playerMax/此值（≈+0.5 秒）
+    saintPassiveHealSec: 10,    // v18b：被動回血打底——無受擊時，從現存血量回滿約需秒數（受擊會額外加速）
+    saintReactSecInSaint:5,     // 聖徒化「發動期間」延時懲罰放寬（秒）：v16
+    saintNoAtkAfterCutinSec: 3, // 聖徒化 cut-in 撤下後，敵不發動大絕的秒數（v16）
+    saintUltMinMs:       1200,  // v18：聖徒化期間敵大絕發動頻率下限（毫秒；越小越密集）
+    saintUltMaxMs:       2600,  // v18：聖徒化期間敵大絕發動頻率上限（毫秒）
+    saintComboStep:      0.5,   // 聖徒化每 combo 疊傷斜率（無上限；v18：0.35→0.5）
+    saintLastHitRatio:   0.20,  // 結束前清盤 → 追加期間總傷害的 20%
+
+    // 攻擊加倍 buff
+    atkBuffSeconds:      3,     // 攻擊加倍時長（秒）
+
+    // 榴彈
+    grenades:            1,     // 開局榴彈數
+  },
+
+  /* ------------------------------------------------------------------ *
+   *  六、盤面序列（Schulte 方格）— 進階，通常不用動
+   *  grid=格數, cols=每列幾格, interval=間隔時限(秒), hint=是否高亮下一格
+   * ------------------------------------------------------------------ */
+  boards: [
+    { grid:9,  cols:3, interval:2.0, hint:true  },
+    { grid:9,  cols:3, interval:2.2, hint:false },
+    { grid:16, cols:4, interval:2.8, hint:false },
+    { grid:16, cols:4, interval:3.0, hint:false },
+    { grid:16, cols:4, interval:3.2, hint:false },
+  ],
+
+};
+/* ===== 維護者設定區結束（下面開始是程式邏輯，一般不用改）===== */
+
+
+/* ============================================================================
+ *  素材庫 ASSETS（圖片 / 音效 的實際資料放這裡）
+ *  ---------------------------------------------------------------------------
+ *  上面 GAME_CONFIG 的 image / sound / cutin 欄位，填的是這裡的「鑰匙名」。
+ *  換圖：把某個鑰匙的值換成新的圖（base64 字串 或 網址皆可）。
+ *  例：enemy_faceless: 'https://.../my_boss.png'
+ *  下面那兩坨超長的字串是內建的暫代圖，不用去讀它，換掉整段即可。
+ * ========================================================================== */
+const ASSETS = {
+  // ── 圖片 ──
+  enemy_faceless: "resources/enemy/Faceless_EN_01.jpg",   // 無貌者 Boss 暫代圖
+  cutin_saint:    "resources/partner/Luna_CI_saint.jpg",   // 聖徒化 cut-in 暫代圖
+  partner_twin:   "resources/partner/Luna_SI_01.jpg",   // 雙槍修女立繪（暫用 cut-in 圖）
+  inspector_freya: "resources/inspector/Freya_SI_01.jpg",
+  enemy_witch:    "resources/enemy/Witch_EN_01.jpg",   // v17：槍之魔女（Boss）內嵌立繪
+
+  // ── 五張 cut-in 圖（v17.7 嵌入）──
+  cutin_saint_luna: "resources/partner/Luna_CI_advent.jpg",   // 聖徒化降臨 cut-in（Luna）
+  cutin_obe: "resources/partner/Luna_CI_obe.jpg",   // O.B.E. cut-in（Luna）
+  cutin_mb: "resources/partner/Luna_CI_maxburst.jpg",   // Maximum Burst cut-in（Luna）
+  cutin_guard: "resources/partner/Reni_CI_guard.jpg",   // 即死防禦 cut-in（蕾妮·被動）
+  cutin_return: "resources/partner/Reni_CI_return.jpg",   // 生命歸還 cut-in（蕾妮·主動）
+  cutin_boss: "resources/enemy/Belinda_CI_boss.jpg",   // v18d：Boss（貝琳妲）遭遇 cut-in 專屬圖
+
+  // ── 音效（目前用程式合成音，這裡先留空；日後填 base64 或網址）──
+  // sfx_counter: null,
+  // voice_saint: null,
+};
+
+/* ---- 小工具：從 ASSETS 取素材（找不到回傳空字串，不會壞）---- */
+function asset(key){ return (key && ASSETS[key] != null) ? ASSETS[key] : ''; }
+
+// ===== 戰鬥結構：一場五盤（手機友善：25→改16） =====
+const BOARDS = GAME_CONFIG.boards;
+let boardIndex=0, N=9, cols=3;
+
+let intervalLimit=2.0, intervalTimer=null, intervalDeadline=0;
+let cells=[], order=[], expect=1, combo=0, energy=0;
+const _enemy = GAME_CONFIG.enemies[GAME_CONFIG.currentEnemy];
+let currentEnemyKey = GAME_CONFIG.currentEnemy;   // v16：目前對戰怪的 key（供每盤格數覆寫查詢）
+let curEnemyHitFx = null;                          // v17.2：目前怪的受擊特效三件套（delay/wrong/ult）
+let playerHp=GAME_CONFIG.tuning.playerHp, playerMax=GAME_CONFIG.tuning.playerHp;
+let enemyHp=_enemy.hp, enemyMax=_enemy.hp;
+let overkill=0;               // 敵HP歸零後超出的傷害，作為經驗值 bonus
+let over=false;
+let flawlessRun=true;         // 整場是否全程無傷（亂入怪觸發條件；enemyAttack 真扣血時轉 false）
+let intruderTriggered=false;  // 本場亂入怪是否已出現（避免重複觸發）
+let inIntruderFight=false;    // 目前是否正在打亂入怪
+let deathGuardUsed=false;     // 即死防禦（芙蕾亞被動）：整場是否已用掉（true=失效）
+
+// ── 計時 / 戰績 ──
+let runStartTime=0;           // 本場開始時間（總用時）
+let killTime=0;               // 敵HP剛歸零的時刻（凍結計時，OVERKILL 時間不計入；0=尚未擊殺）
+let boardTimes=[];            // 每盤完成用時（秒），index 對應第幾盤（0-based）
+let boardsCompleted=0;        // 已完成盤數（用於平均計算：只計第 3 盤後）
+const BEST_KEY='saint_best_total_v1';
+const BEST_KEY_BOSS='saint_best_total_boss_v1';   // v17.3：Boss 戰獨立最佳紀錄
+function loadBestTotal(boss){
+  const key = boss ? BEST_KEY_BOSS : BEST_KEY;
+  try{ const v=localStorage.getItem(key); return v?parseFloat(v):null; }catch(e){ return null; }
+}
+function saveBestTotal(t, boss){
+  const key = boss ? BEST_KEY_BOSS : BEST_KEY;
+  try{ localStorage.setItem(key, String(t)); }catch(e){}
+}
+
+// 敵人大絕
+let ultCheckTimer=null;
+// 改為可變：換怪（含亂入）時由 setEnemy() 更新為該怪數值
+let CHARGE_SECONDS=GAME_CONFIG.tuning.chargeSeconds, ULT_DAMAGE=_enemy.attack;
+// v17：Boss 專屬大絕／懲罰參數（一般怪 setEnemy 會填成預設值＝維持原行為）
+let ULT_SHOTS=1;              // 一次大絕發射幾個攻擊點（Boss=2）
+let ULT_GAP_MS=0;            // 多發時每發之間的間隔（毫秒；Boss=1000）
+let ULT_MIN=4000, ULT_MAX=8000;   // 大絕發動頻率窗口（毫秒；Boss=2000~4000）
+let DELAY_PENALTY_SCALE=1;   // 延時（太慢）懲罰傷害倍率（Boss=0.5）
+let DELAY_TIME_DELTA=0;      // 延時懲罰時限調整（秒；Boss=-1，判定更嚴）
+let WRONG_PENALTY_SCALE=1;   // 按錯懲罰傷害倍率（Boss=1＝同一般怪）
+
+// 三級防禦時機窗口（依紅點剩餘時間比例 ratio = left/CHARGE_SECONDS）
+// ratio 大=遠(早)，ratio 小=近(晚)。越晚點風險越高、回報越大。
+const DEF_DEFENSE_MIN=GAME_CONFIG.tuning.defDefenseMin;   // ratio 在 0.35~1.0：Defense（傷害減半）
+const DEF_PERFECT_MIN=GAME_CONFIG.tuning.defPerfectMin;   // ratio 在 0.12~0.35：Perfect Defense（免傷）
+                              // ratio 在 0~0.12：Counter（免傷+反擊武器）
+
+// 反擊武器（可選配，影響 Counter 窗口與傷害）
+const WEAPONS = GAME_CONFIG.weapons;
+let equippedWeapon = GAME_CONFIG.defaultWeapon;   // 預設武器（見 GAME_CONFIG.defaultWeapon）
+let grenades = GAME_CONFIG.tuning.grenades;        // 榴彈數
+
+// 雙槍模式
+let dualWield=false, dualTimer=null;
+const DUAL_SECONDS=GAME_CONFIG.tuning.dualSeconds;
+
+// 聖徒化 Saint Mode（回血爆發，一場一次，敵人框左右滑到底發動）
+let saintMode=false, saintTimer=null;
+let saintUsedThisBattle=false;
+let saintDamageDealt=0;              // 聖徒化期間對敵累計傷害（供最後一擊 20%）
+// 結算統計
+let counterCount=0, counterDamage=0, perfectCount=0;
+let sawExecution=false;             // 本場是否以 Maximum Burst 擊殺（EXSECUTIŌ）→ 評價加乘用
+let sRankUnlocked=false;            // 本場結算是否為 S 評價（解鎖隱藏關）
+let resultMode='rematch';          // 結算按鈕模式：'rematch'（再度執槍）| 'intercept'（迎擊，S 解鎖後）
+let currentFavor=0;                 // 當前監察官好感度（養成層接上前固定 0；供 dialogues/portraits/bonus 挑選）
+const SAINT_GRID=GAME_CONFIG.tuning.saintGrid;                  // v18：聖徒化格數（16）
+const SAINT_GRID_COLS=GAME_CONFIG.tuning.saintGridCols;         // v18：聖徒化每列格數
+const SAINT_ADVANCE_DIVISOR=GAME_CONFIG.tuning.saintAdvanceDivisor;  // v18：一次受擊推進＝playerMax/此值
+const SAINT_BLOCK_DIVISOR=GAME_CONFIG.tuning.saintBlockDivisor;      // v18：一次格擋推進＝playerMax/此值
+const SAINT_PASSIVE_HEAL_SEC=GAME_CONFIG.tuning.saintPassiveHealSec; // v18b：被動回血打底秒數（無受擊時回滿）
+const SAINT_REACT_SEC_IN_SAINT=GAME_CONFIG.tuning.saintReactSecInSaint;  // v16：聖徒化期間放寬的延時懲罰
+const SAINT_NOATK_AFTER_CUTIN_SEC=GAME_CONFIG.tuning.saintNoAtkAfterCutinSec;  // v16：cut-in 後敵不發動秒數
+const SAINT_ULT_MIN_MS=GAME_CONFIG.tuning.saintUltMinMs;        // v18：聖徒化期間敵大絕頻率下限
+const SAINT_ULT_MAX_MS=GAME_CONFIG.tuning.saintUltMaxMs;        // v18：聖徒化期間敵大絕頻率上限
+const SAINT_COMBO_STEP=GAME_CONFIG.tuning.saintComboStep;
+const SAINT_LAST_HIT_RATIO=GAME_CONFIG.tuning.saintLastHitRatio;
+// v18：聖徒化「受擊推進計時器」核心。amount＝本次推進的血條量（playerMax 的比例值）。
+//      推進到滿＝OBE（沒守住，落敗結局）。Counter／Perfect 免傷則不呼叫此函式。
+function saintAdvance(amount){
+  if(!saintMode) return;
+  playerHp=Math.min(playerMax, playerHp+amount);
+  updateBars();
+  if(playerHp>=playerMax){ triggerOBE(); }
+}
+let saintReactTimer=null;   // 聖徒化每格反應時限計時器
+let enemyAtkSuppressUntil=0;   // v16：此時間點前敵人不發動大絕（聖徒化 cut-in 後 3 秒緩衝）
+
+// 點擊傷害：基礎 + 連擊加成（下修，避免暴衝）
+const DMG_BASE=GAME_CONFIG.tuning.dmgBase;
+const DMG_PER_COMBO=GAME_CONFIG.tuning.dmgPerCombo;
+const DMG_COMBO_CAP=GAME_CONFIG.tuning.dmgComboCap;
+const DMG_DUAL_MULT=GAME_CONFIG.tuning.dmgDualMult;
+const DMG_CRIT_MULT=GAME_CONFIG.tuning.dmgCritMult;
+const ENERGY_PER_HIT=GAME_CONFIG.tuning.energyPerHit;
+const DMG_WRONG=GAME_CONFIG.tuning.dmgWrong;
+const DMG_HEAVY=GAME_CONFIG.tuning.dmgHeavy;
+const DMG_DELAY=GAME_CONFIG.tuning.dmgDelay;   // v17：延時（太慢）懲罰基礎傷害（一般怪）
+function hitDamage(){
+  const c=Math.min(combo,DMG_COMBO_CAP);
+  return DMG_BASE + c*DMG_PER_COMBO;
+}
+
+// 攻擊加倍 buff：紅字格剛好是順序數字時觸發
+let atkBuff=false, atkBuffTimer=null;
+const ATK_BUFF_SECONDS=GAME_CONFIG.tuning.atkBuffSeconds;
+
+const $=id=>document.getElementById(id);
+
+/* ================= 音效引擎（Web Audio 全合成，無音檔） ================= */
+const SFX = (() => {
+  let ctx = null, master = null, unlocked = false;
+  function init(){
+    if(ctx) return;
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if(!AC) return;
+    ctx = new AC();
+    master = ctx.createGain();
+    master.gain.value = 0.9;
+    master.connect(ctx.destination);
+  }
+  // iOS：首次觸控解鎖音訊環境
+  function unlock(){
+    init();
+    if(!ctx) return;
+    if(ctx.state === 'suspended') ctx.resume();
+    if(!unlocked){
+      const b = ctx.createBuffer(1,1,22050);
+      const s = ctx.createBufferSource(); s.buffer=b; s.connect(ctx.destination); s.start(0);
+      unlocked = true;
+    }
+  }
+  // 快取一段噪音緩衝
+  let noiseBuf = null;
+  function noise(){
+    if(noiseBuf) return noiseBuf;
+    const len = ctx.sampleRate * 0.5;
+    noiseBuf = ctx.createBuffer(1, len, ctx.sampleRate);
+    const d = noiseBuf.getChannelData(0);
+    for(let i=0;i<len;i++) d[i] = Math.random()*2-1;
+    return noiseBuf;
+  }
+  function env(node, t0, peak, dur, atk=0.002){
+    const g = node.gain;
+    g.setValueAtTime(0, t0);
+    g.linearRampToValueAtTime(peak, t0+atk);
+    g.exponentialRampToValueAtTime(0.0001, t0+dur);
+  }
+  // 開槍：低頻爆震 + 噪音爆發（重「碰」）
+  function gunshot(heavy=false){
+    if(!ctx) return;
+    const t = ctx.currentTime;
+    const vol = heavy ? 1.0 : 0.7;
+    // 低頻 body：正弦快速下滑
+    const osc = ctx.createOscillator();
+    const og = ctx.createGain();
+    osc.type='sine';
+    osc.frequency.setValueAtTime(heavy?170:140, t);
+    osc.frequency.exponentialRampToValueAtTime(heavy?38:45, t+0.12);
+    env(og, t, vol*0.9, heavy?0.22:0.16);
+    osc.connect(og).connect(master);
+    osc.start(t); osc.stop(t+0.25);
+    // 噪音爆發（槍口尖銳感）
+    const ns = ctx.createBufferSource(); ns.buffer=noise();
+    const nf = ctx.createBiquadFilter(); nf.type='lowpass';
+    nf.frequency.setValueAtTime(3800, t);
+    nf.frequency.exponentialRampToValueAtTime(500, t+0.1);
+    const ng = ctx.createGain();
+    env(ng, t, vol*0.8, 0.11);
+    ns.connect(nf).connect(ng).connect(master);
+    ns.start(t); ns.stop(t+0.12);
+    // 額外低頻衝擊（重擊時）
+    if(heavy){
+      const sub = ctx.createOscillator(); const sg=ctx.createGain();
+      sub.type='sine'; sub.frequency.setValueAtTime(60,t);
+      sub.frequency.exponentialRampToValueAtTime(30,t+0.18);
+      env(sg,t,0.7,0.2); sub.connect(sg).connect(master);
+      sub.start(t); sub.stop(t+0.22);
+    }
+  }
+  // 狙擊槍：辨識度高的一發 —— 更響的爆震「碰！」＋更尖的槍口炸裂，隨後一段空氣呼嘯（子彈破空）
+  function sniperShot(){
+    if(!ctx) return;
+    const t = ctx.currentTime;
+    const vol = 1.35;                              // 比重機槍(1.0)更響
+    // 低頻 body：更猛的下滑爆震
+    const osc = ctx.createOscillator();
+    const og = ctx.createGain();
+    osc.type='sine';
+    osc.frequency.setValueAtTime(210, t);
+    osc.frequency.exponentialRampToValueAtTime(32, t+0.16);
+    env(og, t, vol*1.0, 0.30);
+    osc.connect(og).connect(master);
+    osc.start(t); osc.stop(t+0.34);
+    // 槍口炸裂：更亮、更尖的噪音爆發
+    const ns = ctx.createBufferSource(); ns.buffer=noise();
+    const nf = ctx.createBiquadFilter(); nf.type='lowpass';
+    nf.frequency.setValueAtTime(6000, t);
+    nf.frequency.exponentialRampToValueAtTime(600, t+0.12);
+    const ng = ctx.createGain();
+    env(ng, t, vol*0.95, 0.14);
+    ns.connect(nf).connect(ng).connect(master);
+    ns.start(t); ns.stop(t+0.16);
+    // 額外次低頻衝擊（胸腔感）
+    const sub = ctx.createOscillator(); const sg=ctx.createGain();
+    sub.type='sine'; sub.frequency.setValueAtTime(55,t);
+    sub.frequency.exponentialRampToValueAtTime(26,t+0.22);
+    env(sg,t,0.9,0.26); sub.connect(sg).connect(master);
+    sub.start(t); sub.stop(t+0.28);
+    // 槍響後的空氣呼嘯：帶通濾波的噪音，中心頻率快速下滑，稍作延遲拉出「咻——」的尾音
+    const w0 = t + 0.06;
+    const ws = ctx.createBufferSource(); ws.buffer=noise();
+    const wf = ctx.createBiquadFilter(); wf.type='bandpass'; wf.Q.value=6;
+    wf.frequency.setValueAtTime(3200, w0);
+    wf.frequency.exponentialRampToValueAtTime(900, w0+0.34);
+    const wg = ctx.createGain();
+    // 呼嘯：緩起緩落，長於槍響本體
+    wg.gain.setValueAtTime(0, w0);
+    wg.gain.linearRampToValueAtTime(0.42, w0+0.05);
+    wg.gain.exponentialRampToValueAtTime(0.0001, w0+0.4);
+    ws.connect(wf).connect(wg).connect(master);
+    ws.start(w0); ws.stop(w0+0.42);
+  }
+  // 按錯：低沉悶響
+  function wrong(){
+    if(!ctx) return;
+    const t = ctx.currentTime;
+    const osc = ctx.createOscillator(); const g=ctx.createGain();
+    osc.type='square';
+    osc.frequency.setValueAtTime(120, t);
+    osc.frequency.exponentialRampToValueAtTime(55, t+0.18);
+    env(g, t, 0.4, 0.22, 0.005);
+    const f=ctx.createBiquadFilter(); f.type='lowpass'; f.frequency.value=800;
+    osc.connect(f).connect(g).connect(master);
+    osc.start(t); osc.stop(t+0.24);
+  }
+  // 受擊/大絕：撞擊
+  function hit(){
+    if(!ctx) return;
+    const t = ctx.currentTime;
+    const ns = ctx.createBufferSource(); ns.buffer=noise();
+    const f=ctx.createBiquadFilter(); f.type='lowpass';
+    f.frequency.setValueAtTime(1200,t); f.frequency.exponentialRampToValueAtTime(200,t+0.15);
+    const g=ctx.createGain(); env(g,t,0.9,0.2,0.001);
+    ns.connect(f).connect(g).connect(master);
+    ns.start(t); ns.stop(t+0.22);
+    const sub=ctx.createOscillator(); const sg=ctx.createGain();
+    sub.type='sine'; sub.frequency.setValueAtTime(90,t);
+    sub.frequency.exponentialRampToValueAtTime(35,t+0.2);
+    env(sg,t,0.8,0.24); sub.connect(sg).connect(master);
+    sub.start(t); sub.stop(t+0.26);
+  }
+  // 清盤：上揚神聖鈴響（三音琶音）
+  function clear(){
+    if(!ctx) return;
+    const t = ctx.currentTime;
+    [523.25, 659.25, 783.99].forEach((freq,i)=>{
+      const osc=ctx.createOscillator(); const g=ctx.createGain();
+      osc.type='triangle'; osc.frequency.value=freq;
+      const st=t+i*0.06;
+      env(g, st, 0.35, 0.5, 0.01);
+      osc.connect(g).connect(master);
+      osc.start(st); osc.stop(st+0.55);
+    });
+  }
+  // 大招充能：拉升
+  function ultCharge(){
+    if(!ctx) return;
+    const t=ctx.currentTime;
+    const osc=ctx.createOscillator(); const g=ctx.createGain();
+    osc.type='sawtooth';
+    osc.frequency.setValueAtTime(200,t);
+    osc.frequency.exponentialRampToValueAtTime(880,t+0.4);
+    const f=ctx.createBiquadFilter(); f.type='lowpass';
+    f.frequency.setValueAtTime(600,t); f.frequency.exponentialRampToValueAtTime(3000,t+0.4);
+    env(g,t,0.4,0.5,0.02);
+    osc.connect(f).connect(g).connect(master);
+    osc.start(t); osc.stop(t+0.55);
+  }
+  // 確認音（威脅化解 / 攻擊加倍）：清脆雙音
+  function confirm(){
+    if(!ctx) return;
+    const t=ctx.currentTime;
+    [880, 1318.5].forEach((freq,i)=>{
+      const osc=ctx.createOscillator(); const g=ctx.createGain();
+      osc.type='sine'; osc.frequency.value=freq;
+      const st=t+i*0.05;
+      env(g, st, 0.3, 0.25, 0.005);
+      osc.connect(g).connect(master);
+      osc.start(st); osc.stop(st+0.3);
+    });
+  }
+  // 選單點擊音：短促清脆的一聲（UI 回饋，音量偏低不搶戲）
+  function menuClick(){
+    if(!ctx) return;
+    const t=ctx.currentTime;
+    const osc=ctx.createOscillator(); const g=ctx.createGain();
+    osc.type='triangle';
+    osc.frequency.setValueAtTime(660,t);
+    osc.frequency.exponentialRampToValueAtTime(990,t+0.05);
+    env(g, t, 0.09, 0.16, 0.003);
+    osc.connect(g).connect(master);
+    osc.start(t); osc.stop(t+0.1);
+  }
+  return { unlock, gunshot, sniperShot, wrong, hit, clear, ultCharge, confirm, menuClick };
+})();
+
+const fxTop=$('fxTop'), enemyImg=$('enemyImg');
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+/* ---------- 盤面 ---------- */
+let boardStartTime=0;
+let boardClean=true;   // 本盤是否無出錯／未受擊（決定清盤是否給破防獎勵）
+let transitioning=false;
+function goNextBoard(){
+  if(over) return;
+  // 無盤數限制：打到血歸零為止。v17.4：盤序號持續遞增（不再 % 循環回第 1 盤），
+  //   讓第 6 盤以後仍走「第三盤起 16 格」預設；超出設定範圍的間隔/提示沿用最後一盤。
+  const nextIdx=boardIndex+1;
+  transitioning=true;
+  stopIntervalTimer();
+  const t=$('transition'), txt=$('transText');
+  txt.textContent = 'RELOADING';
+  t.classList.add('on');
+  // 重觸發彈跳動畫
+  txt.style.animation='none'; void txt.offsetWidth; txt.style.animation='';
+  setTimeout(()=>{
+    if(over) return;
+    t.classList.remove('on');
+    transitioning=false;
+    loadBoard(nextIdx);
+  }, 900);   // 轉場緩衝：讓手停一下、看清新盤面
+}
+// v16：決定第 idx 盤（0-based）的格數。
+//   優先序：① 該怪 boardGrids[idx] 手動覆寫 → ② 預設規則「第三盤(idx>=2)起 16 格，前兩盤沿用 boards 設定」。
+//   回傳的格數會被還原成正方盤面（cols=sqrt(grid)）；非完全平方數則 fallback 回 boards 原值。
+// v16/v17.4：決定第 idx 盤（0-based）的格數。
+//   優先序：① 該怪 boardGrids[idx] 手動覆寫（僅在該 index 有填值時）→ ② 預設規則「第三盤(idx>=2)起 16 格，前兩盤沿用 boards 設定」。
+//   回傳的格數會被還原成正方盤面（cols=sqrt(grid)）；非完全平方數則 fallback 回 boards 原值。
+//   v17.4：idx 可超出 boards/boardGrids 陣列長度（第 6 盤以後）；此時無手動覆寫，一律走「idx>=2 → 16 格」預設，不再回退成 9 格。
+function boardGridFor(idx){
+  const en = GAME_CONFIG.enemies[currentEnemyKey];
+  const bg = en && en.boardGrids;
+  const baseBoard = BOARDS[idx] || BOARDS[BOARDS.length-1];   // 超出設定範圍 → 沿用最後一盤設定
+  let grid = (bg && bg[idx]!=null) ? bg[idx]
+             : (idx>=2 ? 16 : baseBoard.grid);   // 預設：第三盤起 16 格（含第 6 盤以後）
+  let cols = Math.round(Math.sqrt(grid));
+  if(cols*cols!==grid){ grid=baseBoard.grid; cols=baseBoard.cols; }   // 非平方數 → 用該盤設定保底
+  return { grid, cols };
+}
+function loadBoard(idx){
+  boardIndex=idx;
+  const g=boardGridFor(idx); N=g.grid; cols=g.cols;
+  intervalLimit=(BOARDS[idx]||BOARDS[BOARDS.length-1]).interval;   // v17.4：超出範圍沿用最後一盤間隔
+  boardStartTime=Date.now();
+  boardClean=true;
+  buildGrid();
+  startIntervalTimer();   // 依本盤 intervalLimit 起算
+  scheduleUlt(ULT_OPEN_MS*Math.random());   // 開場保證：每盤 3 秒內敵方就發動大絕
+  updateStatus();
+}
+function buildGrid(){
+  const grid=$('grid'); grid.innerHTML=''; cells=[];
+  grid.style.gridTemplateColumns=`repeat(${cols},1fr)`;
+  grid.style.gridTemplateRows=`repeat(${cols},1fr)`;   // 正方盤面：行數＝列數
+  const fs = N<=9?30 : 24;
+  order=shuffle([...Array(N)].map((_,i)=>i+1));
+  order.forEach(num=>{
+    const c=document.createElement('div');
+    c.className='cell'; c.textContent=num; c.dataset.num=num; c.style.fontSize=fs+'px';
+    let handled=false;
+    c.addEventListener('touchstart',e=>{e.preventDefault();handled=true;tap(num,c,e);},{passive:false});
+    c.addEventListener('click',e=>{if(handled){handled=false;return;}tap(num,c,e);});
+    grid.appendChild(c); cells.push(c);
+  });
+  expect=1; markNext();
+  fitGridSquare();
+}
+// 把 grid 調成正方形：邊長取容器寬高較小值
+function fitGridSquare(){
+  const wrap=$('gridWrap'); if(!wrap) return;
+  const side=Math.min(wrap.clientWidth, wrap.clientHeight);
+  const grid=$('grid');
+  grid.style.width=side+'px';
+  grid.style.height=side+'px';
+}
+function markNext(){
+  cells.forEach(c=>c.classList.remove('next'));
+  // 聖徒化：只提示第一格（expect===1），第一格之後一律不提示
+  if(saintMode){
+    if(expect!==1) return;
+    const c0=cells.find(c=>+c.dataset.num===expect);
+    if(c0) c0.classList.add('next');
+    return;
+  }
+  if(!(BOARDS[boardIndex]||BOARDS[BOARDS.length-1]).hint) return;
+  const c=cells.find(c=>+c.dataset.num===expect);
+  if(c) c.classList.add('next');
+}
+
+/* ---------- 點擊 ---------- */
+function tap(num,cell,e){
+  if(over||transitioning||cutinPlaying) return;   // 轉場/cut-in 期間不可點
+  SFX.unlock();                     // iOS：首次觸控解鎖音訊
+  ejectShell(cell);                 // 每次點擊都彈殼
+  gunHitOnEnemy(cell);              // 槍擊特效映射到敵人對應位置
+
+  // 聖徒化（v18）：依序點擊 16 格；血條＝受擊推進倒數槽（只有受擊才推進、推滿＝OBE）；
+  //   combo 疊傷無上限、清完當盤重建續點；按錯／反應超時視為「受擊」，統一推進 +1 秒。
+  if(saintMode){
+    if(cell.classList.contains('done')) return;         // 已點掉的格子移除、不可重點
+    if(num===expect){
+      SFX.gunshot(true);
+      cell.classList.add('done'); cell.classList.remove('next'); shatterCell(cell);
+      combo++;
+      const dmg=hitDamage() + combo*SAINT_COMBO_STEP;   // 疊傷無上限
+      const d=Math.round(dmg);
+      enemyDamage(d, true);
+      saintDamageDealt += d;                            // 累計期間傷害（供最後一擊）
+      expect++;
+      if(expect>N){ triggerMaxBurst(); }                // 推滿前點完全盤 → Maximum Burst
+      else { markNext(); startSaintReactTimer(); }      // 點對一格 → 重設反應時限
+    }else{
+      // 點錯（掃格失誤）＝一次「受擊」：統一推進 +1 秒（playerMax/15）
+      SFX.wrong();
+      cell.classList.add('wrong'); setTimeout(()=>cell.classList.remove('wrong'),300);
+      combo=0;
+      floatDmg('MISS','50%','44%',true);
+      saintAdvance(playerMax/SAINT_ADVANCE_DIVISOR);    // 推進；推滿→OBE（由 saintAdvance 內部處理）
+      if(saintMode) startSaintReactTimer();             // 未推滿（仍在聖徒化）→ 重設反應時限
+    }
+    updateStatus();
+    return;
+  }
+
+  // 雙槍：無視順序，點掉的格移除、不可重點，快速清盤（降攻安全牌，不暴擊不吃buff）
+  if(dualWield){
+    if(cell.classList.contains('done')) return;
+    cell.classList.add('done'); shatterCell(cell);
+    combo++; resetIntervalDeadline();
+    const dmg=hitDamage()*DMG_DUAL_MULT;
+    SFX.gunshot(true);
+    enemyDamage(Math.round(dmg), false);
+    if(cells.every(c=>c.classList.contains('done'))){
+      SFX.clear(); clearAtkBuff(); endDual();
+      recordBoardTime((Date.now()-boardStartTime)/1000);
+      if(enemyHp<=0){ win(); return; }
+      resetEnemyTimers();   // 破防清盤瞬間即重置敵大絕與延遲懲罰
+      goNextBoard();
+    }
+    updateStatus();
+    return;
+  }
+
+  if(num===expect){
+    SFX.gunshot(false);            // 普通開槍：重「碰」
+    cell.classList.add('done'); cell.classList.remove('next'); shatterCell(cell);
+    combo++; resetIntervalDeadline(); addEnergy(ENERGY_PER_HIT);
+    let dmg=hitDamage(); if(atkBuff) dmg*=2;
+    enemyDamage(Math.round(dmg),false);   // 點擊直接扣敵血
+    expect++;
+    if(expect>N) clearBoard(); else markNext();
+    updateStatus();
+  }else{
+    // Overkill 期間（敵HP已歸零）按錯 → 結束 overkill，立即清盤結算
+    if(enemyHp<=0){
+      SFX.clear();
+      clearAtkBuff();
+      win();
+      return;
+    }
+    // 按錯：紅字期間按錯 → 重擊且紅字消失；否則普通按錯
+    boardClean=false;   // 出錯 → 本盤取消清盤破防獎勵
+    cell.classList.add('wrong'); setTimeout(()=>cell.classList.remove('wrong'),300);
+    combo=0;
+    if(threats.length){
+      clearThreat();                 // 攻擊點消失，不能再補救
+      enemyAttack(Math.max(1, Math.round(DMG_HEAVY*WRONG_PENALTY_SCALE)), 'wrong');
+    }else{
+      SFX.wrong();
+      enemyAttack(Math.max(1, Math.round(DMG_WRONG*WRONG_PENALTY_SCALE)), 'wrong');
+    }
+    resetIntervalDeadline(); updateStatus();
+  }
+}
+
+function clearAtkBuff(){
+  atkBuff=false; clearTimeout(atkBuffTimer);
+  $('grid').classList.remove('buffed');
+}
+function triggerAtkBuff(sec){
+  atkBuff=true;
+  $('grid').classList.add('buffed');
+  clearTimeout(atkBuffTimer);
+  atkBuffTimer=setTimeout(()=>{
+    atkBuff=false; $('grid').classList.remove('buffed'); updateStatus();
+  }, (sec||ATK_BUFF_SECONDS)*1000);
+  updateStatus();
+}
+
+function clearBoard(){
+  SFX.clear();                      // 清盤：神聖鈴響
+  clearAtkBuff();                   // 攻擊加倍 buff 不跨盤
+  const elapsed=(Date.now()-boardStartTime)/1000;
+  recordBoardTime(elapsed);         // 記錄本盤用時
+  // 清盤 bonus 聖能：僅在本盤全程無出錯、未受擊時給予（依清盤速度）
+  if(boardClean){
+    const ideal=N*0.45;
+    const speed=Math.max(0.4, Math.min(1.6, ideal/Math.max(elapsed,0.1)));
+    const gain=Math.round(N*1.8*speed);
+    addEnergy(gain);
+    floatDmg('完美清盤 +'+gain,'50%','30%',false);
+  }
+  // 敵HP已歸零 → 本盤清完即結算勝利
+  if(enemyHp<=0){ win(); return; }
+  resetEnemyTimers();   // 清盤瞬間即重置敵大絕與延遲懲罰
+  goNextBoard();   // 無盤數限制，循環下一盤
+}
+function recordBoardTime(sec){
+  boardsCompleted++;
+  boardTimes.push(sec);
+}
+
+/* ---------- 打擊三件套 ---------- */
+// 1) 槍擊命中敵人：格子在盤面的相對位置 → 映射到敵人圖對應位置
+function gunHitOnEnemy(cell){
+  const gr=$('grid').getBoundingClientRect();
+  const cr=cell.getBoundingClientRect();
+  const relX=(cr.left+cr.width/2 - gr.left)/gr.width;   // 0~1
+  const relY=(cr.top+cr.height/2 - gr.top)/gr.height;   // 0~1
+  const top=$('top').getBoundingClientRect();
+  // 映射：X 直接對應，Y 對應到敵人圖中上段（軀幹範圍 20%~80%）
+  const px=relX*top.width;
+  const py=(0.2+relY*0.6)*top.height;
+  const m=document.createElement('div'); m.className='muzzle';
+  m.style.left=px+'px'; m.style.top=py+'px'; fxTop.appendChild(m);
+  setTimeout(()=>m.remove(),200);
+  // 火花
+  for(let i=0;i<4;i++){
+    const s=document.createElement('div'); s.className='spark';
+    s.style.left=px+'px'; s.style.top=py+'px';
+    s.style.transform=`rotate(${Math.random()*360}deg)`;
+    fxTop.appendChild(s); setTimeout(()=>s.remove(),260);
+  }
+}
+// 破碎消失：任何被點掉的格子播放破碎動畫
+function shatterCell(cell){ cell.classList.add('shatter'); }
+// 2) 彈殼
+function ejectShell(cell){
+  const s=document.createElement('div'); s.className='shell';
+  s.style.right='6px'; s.style.top='6px'; cell.appendChild(s);
+  setTimeout(()=>s.remove(),500);
+}
+// v17.2：受擊特效派工 —— 依當前怪 curEnemyHitFx[kind] 播放對應特效。
+//   kind：'delay'（延時懲罰）/'wrong'（按錯懲罰）/'ult'（大絕）。缺設定或未知 kind → 退回既有爪痕。
+function showHitFx(kind){
+  const fx = curEnemyHitFx && curEnemyHitFx[kind];
+  if(!fx){ triggerClaw(); return; }   // 沒設定 → 用預設爪痕
+  switch(fx.type){
+    case 'claw':  triggerClaw(fx.count||3, fx.angle==='random'); break;
+    case 'blood': spawnBlood(fx.angle==='random'); break;
+    case 'bite':  spawnBite(); break;
+    case 'bullet':spawnBullets(fx.count||1, fx.pos==='random'); break;
+    default:      triggerClaw();
+  }
+}
+// 既有三爪：可指定 count 與是否隨機整體角度（透過父層旋轉）
+function triggerClaw(count, randomAngle){
+  const claw=$('claw');
+  if(randomAngle){ claw.style.transform = 'rotate('+((Math.random()*60)-30).toFixed(1)+'deg)'; }
+  else { claw.style.transform=''; }
+  claw.classList.remove('on'); void claw.offsetWidth; claw.classList.add('on');
+}
+function hitLayer(){ return $('hitFxLayer'); }
+function addFx(el, life){ hitLayer().appendChild(el); setTimeout(()=>{ if(el.parentNode) el.remove(); }, life||650); }
+// 血痕：一道，角度隨機
+function spawnBlood(randomAngle){
+  const d=document.createElement('div');
+  d.className='fx fx-blood';
+  const deg = randomAngle ? (Math.random()*140-70) : 20;
+  d.style.setProperty('--deg', deg.toFixed(1)+'deg');
+  d.style.left=(38+Math.random()*24)+'%';
+  d.style.top =(38+Math.random()*20)+'%';
+  addFx(d,600);
+}
+// 齒痕：一組上下咬痕，水平位置隨機
+function spawnBite(){
+  const d=document.createElement('div');
+  d.className='fx fx-bite';
+  d.style.left=(30+Math.random()*40)+'%';
+  d.style.top =(38+Math.random()*22)+'%';
+  d.style.transform='translate(-50%,-50%) rotate('+((Math.random()*30)-15).toFixed(1)+'deg)';
+  addFx(d,560);
+}
+// 彈痕（玻璃碎裂）：count 顆，位置隨機。每顆用內嵌 SVG 畫中心孔＋放射裂紋＋環裂。
+function spawnBullets(count, randomPos){
+  for(let i=0;i<count;i++){
+    const d=document.createElement('div');
+    d.className='fx fx-bullet';
+    const left = randomPos ? (22+Math.random()*56) : 50;
+    const top  = randomPos ? (24+Math.random()*46) : 46;
+    d.style.left=left+'%'; d.style.top=top+'%';
+    d.style.animationDelay=(i*60)+'ms';
+    d.innerHTML = bulletSVG();
+    addFx(d,600);
+  }
+}
+// 產生一個「玻璃被擊碎」的 SVG：中心暗孔、白色高光、放射狀與環狀裂紋（隨機化角度）。
+function bulletSVG(){
+  const cx=60, cy=60;
+  let cracks='';
+  const spokes=7+Math.floor(Math.random()*3);
+  for(let i=0;i<spokes;i++){
+    const a=(360/spokes)*i + Math.random()*18;
+    const r1=10, r2=40+Math.random()*14;
+    const x1=cx+r1*Math.cos(a*Math.PI/180), y1=cy+r1*Math.sin(a*Math.PI/180);
+    const mx=cx+((r1+r2)/2)*Math.cos((a+ (Math.random()*10-5))*Math.PI/180);
+    const my=cy+((r1+r2)/2)*Math.sin((a+ (Math.random()*10-5))*Math.PI/180);
+    const x2=cx+r2*Math.cos(a*Math.PI/180), y2=cy+r2*Math.sin(a*Math.PI/180);
+    cracks+=`<path d="M${x1.toFixed(1)},${y1.toFixed(1)} Q${mx.toFixed(1)},${my.toFixed(1)} ${x2.toFixed(1)},${y2.toFixed(1)}" stroke="rgba(255,255,255,.85)" stroke-width="1.4" fill="none"/>`;
+  }
+  // 兩圈環裂
+  cracks+=`<circle cx="${cx}" cy="${cy}" r="20" stroke="rgba(255,255,255,.5)" stroke-width="1" fill="none" stroke-dasharray="6 5"/>`;
+  cracks+=`<circle cx="${cx}" cy="${cy}" r="34" stroke="rgba(255,255,255,.35)" stroke-width="1" fill="none" stroke-dasharray="4 7"/>`;
+  return `<svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="${cx}" cy="${cy}" r="7" fill="rgba(10,10,14,.92)"/>
+    <circle cx="${cx}" cy="${cy}" r="10" fill="none" stroke="rgba(255,255,255,.9)" stroke-width="1.5"/>
+    ${cracks}
+  </svg>`;
+}
+// 防禦統一閃光：color 'block'（白）或 'gold'（金）。整張敵圖微微一閃（不過亮）。
+function flashDefense(color){
+  const el=$('defFlash'); if(!el) return;
+  el.classList.remove('block','gold'); void el.offsetWidth;
+  el.classList.add(color==='block'?'block':'gold');
+  setTimeout(()=>el.classList.remove('block','gold'), 400);
+}
+
+// 3) 被攻擊：受擊特效（依 kind 分派）＋ 震動
+function enemyAttack(dmg, kind, saintAmt){
+  if(over) return;
+  if(saintMode){
+    // v18：聖徒化期間敵攻擊不扣血，改「推進倒數槽」→ 推滿＝OBE（沒守住）。
+    //   推進量固定：一般受擊（挨大絕／按錯／延時）＝playerMax/15（≈+1 秒）；
+    //   格擋（Defense）由呼叫端傳 saintAmt＝playerMax/30（≈+0.5 秒）。
+    const amt = (saintAmt!=null) ? saintAmt : (playerMax/SAINT_ADVANCE_DIVISOR);
+    enemyImg.classList.add('shake'); setTimeout(()=>enemyImg.classList.remove('shake'),300);
+    // v16：聖徒化期間敵發動攻擊，畫面一樣要有受擊特效＋紅閃
+    showHitFx(kind);
+    $('redFlash').style.opacity=.8; setTimeout(()=>$('redFlash').style.opacity=0,120);
+    saintAdvance(amt);   // 推進倒數槽；推滿→OBE（由 saintAdvance 內部處理）
+    return;
+  }
+  SFX.hit();                         // 受擊撞擊音
+  boardClean=false;                  // 受擊 → 本盤取消清盤破防獎勵
+  flawlessRun=false;                 // 真實受擊 → 整場無傷旗標取消（亂入怪不再觸發）
+  playerHp=Math.max(0,playerHp-dmg);
+  updateBars();                      // ★ 受擊即刻與血條 UI 連動
+  showHitFx(kind);                   // v17.2：依 kind 播放該怪對應受擊特效
+  $('redFlash').style.opacity=.8; setTimeout(()=>$('redFlash').style.opacity=0,120);
+  enemyImg.classList.add('shake'); setTimeout(()=>enemyImg.classList.remove('shake'),300);
+  if(playerHp<=0){
+    if(tryDeathGuard()) return;      // 芙蕾亞・即死防禦：一次性擋死，保留 1 HP
+    lose();                          // ★ HP 歸零 → 失敗畫面
+  }
+}
+
+// 即死防禦（芙蕾亞被動）：若當前搭檔有此技且本場尚未用掉，將 HP 保留 1 並插 cut-in。
+// 回傳 true 表示已擋下（呼叫端應 return，不進 lose）。
+// 技能判定以玩家戰前實際選的搭檔為準（pickedPartner）；fallback 回預設。
+function currentPartner(){
+  const key = (typeof pickedPartner!=='undefined' && pickedPartner) || GAME_CONFIG.defaultPartner;
+  return GAME_CONFIG.partners[key];
+}
+function tryDeathGuard(){
+  const p=currentPartner();
+  const pas=p && p.passive;
+  if(!pas || pas.key!=='deathGuard') return false;
+  if(pas.oncePerBattle && deathGuardUsed) return false;   // 一次性且已用掉
+  deathGuardUsed=true;
+  playerHp=1; updateBars();
+  floatDmg('即死防禦','50%','40%',true);
+  const label='即死防禦<span class="cutin-en">Death Guard</span>';
+  playCutin(()=>{
+    if(over||saintMode) return;
+    // 即死防禦後：cut-in 撤下瞬間重置敵大絕與延時（間隔）懲罰倒數，避免剛保命就被連段擊殺
+    resetEnemyTimers();
+    scheduleUlt();               // 重新排程敵大絕
+  }, label, 'cutin_guard');      // 插入 cut-in（即死防禦專屬大圖）
+  return true;
+}
+
+function enemyDamage(dmg,isCrit,silent){
+  if(dmg>0){
+    if(enemyHp>0){
+      const after=enemyHp-dmg;
+      if(after<0) overkill+=(-after);   // 這一擊打穿，超出部分計入 overkill
+      enemyHp=Math.max(0,after);
+      updateBars();
+      if(!silent) floatDmg((isCrit?'暴擊 ':'')+dmg, (30+Math.random()*40)+'%','35%',isCrit);
+      if(enemyHp<=0){
+        // 剛擊殺 → 進入 overkill：停掉大絕蓄力、紅框、金框 buff，敵人不再攻擊
+        if(killTime===0) killTime=Date.now();   // 凍結計時：OVERKILL 期間不計入總用時
+        clearThreat(); endCharge(); clearTimeout(ultCheckTimer); clearAtkBuff();
+        floatDmg('OVERKILL！','50%','48%',true);
+      }
+    }else{
+      // 已歸零 → 全數計入 overkill
+      overkill+=dmg;
+      floatDmg('OVERKILL +'+dmg, (30+Math.random()*40)+'%','35%',true);
+    }
+  }
+  enemyImg.classList.add('hit'); setTimeout(()=>enemyImg.classList.remove('hit'),80);
+  // 注意：不在此結束戰鬥；由 clearBoard 在盤面清完時結算
+}
+function floatDmg(txt,left,top,crit,extraClass){
+  const d=document.createElement('div');
+  d.className='dmgnum'+(crit?' critnum':'')+(extraClass?' '+extraClass:''); d.textContent=txt;
+  d.style.left=left; d.style.top=top; fxTop.appendChild(d);
+  setTimeout(()=>d.remove(),700);
+}
+
+/* ---------- 聖能 / 破防（滿值後點計量表主動發動） ---------- */
+function addEnergy(v){
+  if(saintMode) return;              // 聖徒化期間不累積破防值
+  energy=Math.min(100,energy+v);
+  updateEnergyClasp();               // 滿值後不自動發動，等玩家點計量表
+}
+function updateUltBtn(){ /* 舊按鈕已停用：雙槍自動發動、聖徒化用左右滑 */ }
+
+/* ===== 破防（雙槍）：聖能滿後點計量表主動發動，4 秒依序清盤 ===== */
+function activateDual(){
+  if(over||dualWield||saintMode||cutinPlaying||transitioning) return;
+  if(energy<100) return;             // 未滿不能發動
+  SFX.unlock(); SFX.ultCharge();
+  energy=0; updateEnergyClasp();
+  playCutin(()=>{
+    if(over||saintMode) return;
+    // v16：cut-in 撤下瞬間 → 重置敵大絕與延時（間隔）懲罰倒數
+    resetEnemyTimers();
+    scheduleUlt();               // 重新排程敵大絕
+    dualWield=true;
+    $('grid').classList.add('dualwield');
+    markNext();
+    clearTimeout(dualTimer);
+    dualTimer=setTimeout(endDual, DUAL_SECONDS*1000);
+  }, '破防・雙槍<span class="cutin-en">Guard Crushing</span>', 'cutin_saint');
+}
+function endDual(){
+  dualWield=false; clearTimeout(dualTimer);
+  $('grid').classList.remove('dualwield');
+  if(!over && !saintMode){
+    if(cells.some(c=>c.classList.contains('done')) && !cells.every(c=>c.classList.contains('done'))){
+      buildGrid();
+    } else { markNext(); }
+  }
+}
+
+/* ===== 聖徒化：回血爆發，敵人框左右滑到底發動，一場一次 ===== */
+function activateSaint(dir){
+  if(over||saintMode||cutinPlaying||saintUsedThisBattle||transitioning||dualWield) return;
+  saintUsedThisBattle=true;
+  SFX.unlock(); SFX.ultCharge();
+  playSlash(dir);                     // 依滑動方向的橫斬特效
+  playCutin(()=>{
+    if(over) return;
+    startSaintMode();
+  }, '聖徒降臨！！<span class="cutin-en">SAINT INSTALL!!</span>', 'cutin_saint_luna');
+}
+// 橫斬特效：dir='right' 向右斬、'left' 向左斬
+function playSlash(dir){
+  const fx=$('slashFx');
+  if(!fx) return;
+  fx.innerHTML='';
+  fx.classList.remove('flash'); void fx.offsetWidth; fx.classList.add('flash');
+  const line=document.createElement('div');
+  line.className='slash-line '+(dir==='left'?'go-left':'go-right');
+  fx.appendChild(line);
+  // 補一道稍慢的殘影，讓斬擊更有層次
+  const echo=document.createElement('div');
+  echo.className='slash-line '+(dir==='left'?'go-left':'go-right');
+  echo.style.animationDelay='.06s';
+  echo.style.opacity='.5';
+  echo.style.height='6px';
+  fx.appendChild(echo);
+  setTimeout(()=>{ if(fx) fx.innerHTML=''; }, 600);
+}
+let saintPrevBoard=null;
+let saintPrevUlt=null;   // v18：聖徒化前的敵大絕頻率（離場還原）
+// 聖徒化每格反應時限：超時未點下一格 → 一次性加血（同按錯懲罰），加完重新計時
+// v16：聖徒化「發動期間」延時懲罰放寬為 saintReactSecInSaint（5 秒），給玩家更多餘裕。
+function startSaintReactTimer(){
+  clearTimeout(saintReactTimer);
+  if(!saintMode) return;
+  const REACT = SAINT_REACT_SEC_IN_SAINT;   // 聖徒化期間專用時限（v16）
+  saintReactTimer=setTimeout(function tick(){
+    if(over||!saintMode||cutinPlaying){ return; }
+    // v18：反應超時（掃格失誤）＝一次「受擊」：統一推進 +1 秒（playerMax/15）
+    SFX.wrong();
+    combo=0;
+    floatDmg('TOO SLOW','50%','40%',true);
+    updateStatus();
+    saintAdvance(playerMax/SAINT_ADVANCE_DIVISOR);     // 推進；推滿→OBE（由 saintAdvance 內部處理）
+    if(!saintMode) return;                             // 已因推滿進 OBE → 停
+    // 還沒點 → 繼續計時，逾時再罰
+    saintReactTimer=setTimeout(tick, REACT*1000);
+  }, REACT*1000);
+}
+function clearSaintReactTimer(){ clearTimeout(saintReactTimer); saintReactTimer=null; }
+// 生命歸還手勢層開關（只在聖徒化期間開啟，避免平時擋住敵畫面）
+function setReturnSwipe(on){ const z=$('returnSwipe'); if(z) z.classList.toggle('on', !!on); }
+function startSaintMode(){
+  saintMode=true;
+  // v18c：取消開場 3 秒緩衝——一進聖徒化敵人就照常發動大絕（受擊會加速逼近 OBE）。
+  resetEnemyTimers();
+  clearThreat(); endCharge();      // 清掉大絕蓄力中殘留的紅點，避免被手勢層蓋住
+  enemyAtkSuppressUntil = 0;       // 不再壓制敵攻擊
+  scheduleUlt();                   // 立即開始排下一次大絕（不延後）
+  setReturnSwipe(true);            // 開啟生命歸還手勢層
+  saintDamageDealt=0;
+  combo=0;
+  energy=0; updateEnergyClasp();      // 聖徒化清零破防（雙槍）值，期間也不累積
+  $('grid').classList.add('saint');
+  saintPrevBoard={N, cols};
+  N=SAINT_GRID; cols=SAINT_GRID_COLS; buildGrid();   // v18：維持 16 格（不再擴成 25）
+  floatDmg('SAINT MODE','50%','20%',true);
+  // v18b：血條＝倒數槽，同時被兩股力量往上推——
+  //   (1) 被動回血打底：以「滿血/SAINT_PASSIVE_HEAL_SEC 秒」定速回，無受擊時約 15 秒到 OBE；
+  //   (2) 受擊額外加速：挨大絕/按錯/延時 +1 秒、格擋 +0.5 秒（見 saintAdvance / enemyAttack）。
+  //   兩者疊加，受擊越多越快灌滿。推滿＝OBE，推滿前清盤＝Maximum Burst。
+  const healPerTick = playerMax / SAINT_PASSIVE_HEAL_SEC * 0.1;   // 每 100ms 的被動回血量（定速）
+  clearInterval(saintTimer);
+  saintTimer=setInterval(()=>{
+    if(over||!saintMode){ clearInterval(saintTimer); return; }
+    saintAdvance(healPerTick);   // 被動推進；推滿→OBE（由 saintAdvance 內部處理）
+  },100);
+  saintPrevUlt={min:ULT_MIN, max:ULT_MAX};   // 記錄原頻率，離場時還原
+  ULT_MIN=SAINT_ULT_MIN_MS; ULT_MAX=SAINT_ULT_MAX_MS;   // 聖徒化期間：更密集發動
+  startSaintReactTimer();   // 起算第一格的反應時限
+  updateStatus();
+}
+// 贏了這場競賽（v18）：推滿前把 16 格點完 → 追加期間總傷害 20%，HP→10%
+function triggerMaxBurst(){
+  if(!saintMode) return;
+  saintMode=false; clearInterval(saintTimer); clearSaintReactTimer(); setReturnSwipe(false);
+  if(saintPrevUlt){ ULT_MIN=saintPrevUlt.min; ULT_MAX=saintPrevUlt.max; saintPrevUlt=null; }  // v18：還原敵大絕頻率
+  if(saintDamageDealt>0){
+    const last=Math.round(saintDamageDealt*SAINT_LAST_HIT_RATIO);
+    enemyDamage(last, true);
+    floatDmg('MAXIMUM BURST '+last,'50%','28%',true);
+    SFX.clear();
+  }
+  $('grid').classList.remove('saint');
+  if(enemyHp<=0){
+    // 追加傷害讓敵人 HP 歸零 → EXSECUTIŌ 演出後直接結算，不回盤面
+    sawExecution=true;   // 以 Maximum Burst 擊殺 → 評價 Execution 加乘
+    playSaintCutin('execute', ()=>{ win(); });
+    return;
+  }
+  // 敵人未死 → Maximum Burst 演出後回盤面（HP→10%）
+  playSaintCutin('burst', ()=>{
+    finishSaintMode(()=>Math.max(1, Math.round(playerMax*0.1)));   // HP → 10%
+  });
+}
+// 輸了這場競賽：回滿前沒點完 → HP 強制剩 1
+function triggerOBE(){
+  if(!saintMode) return;
+  saintMode=false; clearInterval(saintTimer); clearSaintReactTimer(); setReturnSwipe(false);
+  if(saintPrevUlt){ ULT_MIN=saintPrevUlt.min; ULT_MAX=saintPrevUlt.max; saintPrevUlt=null; }  // 還原敵大絕頻率
+  floatDmg('O.B.E.','50%','28%',true);
+  if(enemyHp<=0){
+    // v18e：聖徒化期間敵 HP 已歸零、但倒數槽先推滿 → 仍播 OBE 演出，收尾直接進結算（不回死盤面）。
+    playSaintCutin('obe', ()=>{ $('grid').classList.remove('saint'); win(); });
+    return;
+  }
+  // 全畫面 OVERWRITE BREAKER ENGAGED cut-in → 結束後回盤面（HP→1）
+  playSaintCutin('obe', ()=>{
+    finishSaintMode(()=>1);   // HP → 1
+  });
+}
+// 生命歸還（芙蕾亞主動技·聖徒化第四結局）：中止聖徒化，保留當前血量後回盤面。
+function activateLifeReturn(){
+  if(!saintMode) return;
+  const p=currentPartner();
+  const act=p && p.active;
+  if(!act || act.key!=='lifeReturn') return;   // 當前搭檔沒有此主動技
+  const keptHp=playerHp;                         // 鎖住當前血量（聖徒化已回復的部分）
+  saintMode=false; clearInterval(saintTimer); clearSaintReactTimer(); setReturnSwipe(false);
+  floatDmg('生命歸還','50%','28%',true);
+  // 走第四結局 cut-in → 結束後回盤面，血量維持 keptHp
+  playSaintCutin('return', ()=>{
+    finishSaintMode(()=>Math.max(1, Math.round(keptHp)));
+  });
+}
+// 播放聖徒化結局全畫面 cut-in（kind: 'burst' | 'obe' | 'execute' | 'return'）
+function playSaintCutin(kind, done){
+  cutinPlaying=true;                 // 演出期間鎖定點擊
+  const c=$('saintCutin');
+  let title, sub;
+  if(kind==='burst'){ title='MAXIMUM BURST'; sub='追加聖裁 · HP 10%'; }
+  else if(kind==='execute'){ title='EXSECUTIŌ'; sub=(($('enemyName')&&$('enemyName').textContent)||'目標')+' · 消滅'; }
+  else if(kind==='return'){ title='LIFE\nRETURN'; sub='生命歸還 · 血量保留'; }
+  else { title='OVERWRITE\nBREAKER\nENGAGED'; sub='O.B.E. · HP 1'; }
+  $('saintCutinTitle').textContent = title;
+  $('saintCutinSub').textContent   = sub;
+  // 依 kind 載入對應內嵌 cut-in 圖（資料放 ASSETS，程式只讀）
+  const scImgKey = { execute:'cutin_saint_luna', obe:'cutin_obe', burst:'cutin_mb', return:'cutin_return' };
+  const scImgEl  = { execute:'saintCutinImg', obe:'saintCutinImgObe', burst:'saintCutinImgBurst', return:'saintCutinImgReturn' };
+  if(scImgEl[kind]){ const el=$(scImgEl[kind]); if(el) el.src = asset(scImgKey[kind]); }
+  c.classList.remove('burst','obe','execute','return','on');
+  c.classList.add(kind);
+  void c.offsetWidth;                // reflow → 重播動畫
+  c.classList.add('on');
+  SFX.gunshot(true);
+  if(kind==='obe') setTimeout(()=>SFX.hit(), 200); else setTimeout(()=>SFX.clear(), 200);
+  const holdMs = kind==='execute' ? 3000 : 1600;   // EXSECUTIŌ 停留 3 秒
+  setTimeout(()=>{
+    c.classList.remove('on');
+    cutinPlaying=false;
+    if(done) done();
+  }, holdMs);
+}
+// 共用收尾：回到當前 9/16 盤面，敵人排程/間隔懲罰全部歸零，恢復正常扣血攻擊
+function finishSaintMode(finalHpFn){
+  $('grid').classList.remove('saint');
+  if(saintPrevUlt){ ULT_MIN=saintPrevUlt.min; ULT_MAX=saintPrevUlt.max; saintPrevUlt=null; }  // v18：還原敵大絕頻率
+  playerHp=finalHpFn(); updateBars();
+  const back=saintPrevBoard||{N:16,cols:4};
+  N=back.N; cols=back.cols;
+  // 敵人狀態全部重置：清紅圈、停蓄力、清大絕排程
+  clearThreat(); endCharge(); clearTimeout(ultCheckTimer);
+  if(!over){
+    buildGrid();
+    resetIntervalDeadline();     // 間隔（點擊延遲）懲罰歸零
+    startIntervalTimer();
+    scheduleUlt();               // 敵大絕蓄力重新計時，恢復正常扣血攻擊
+  }
+  updateStatus();
+}
+let cutinPlaying=false;
+function playCutin(done, label, imgKey){
+  cutinPlaying=true;
+  const c=$('cutin');
+  if(label!==undefined) $('cutinText').innerHTML = label;
+  // 可選：指定本次 cut-in 大圖（資料放 ASSETS，找不到就沿用當前 src）
+  if(imgKey){ const ci=$('cutinImg'); const src=asset(imgKey); if(ci && src) ci.src=src; }
+  c.classList.remove('on'); void c.offsetWidth; c.classList.add('on');
+  SFX.gunshot(true);
+  setTimeout(()=>{ SFX.gunshot(true); },200);
+  setTimeout(()=>{
+    c.classList.remove('on');
+    cutinPlaying=false;
+    if(done) done();
+  }, 1500);
+}
+
+/* ---------- 敵人大絕 ---------- */
+// 清盤瞬間呼叫：立即重置敵大絕蓄力與延遲懲罰時間
+function resetEnemyTimers(){
+  clearThreat(); endCharge(); clearTimeout(ultCheckTimer);
+  resetIntervalDeadline();
+  // 大絕排程由新盤 loadBoard 以「開場 3 秒內」保證重排；此處僅清空
+}
+// ===== 多重攻擊點：畫面可同時存在多個攻擊點，但錯開生成（每 4~8 秒新增一個）=====
+let threats=[];              // 每個攻擊點：{el, t0}
+let threatTick=null;        // 共用倒數迴圈
+const ULT_OPEN_MS=3000;                    // 開場保證：每盤 3 秒內敵方就發動大絕
+function scheduleUlt(firstDelayMs){
+  clearTimeout(ultCheckTimer);
+  const delay = (firstDelayMs!=null) ? firstDelayMs
+                                     : ULT_MIN+Math.random()*(ULT_MAX-ULT_MIN);   // v17：頻率讀該怪 ULT_MIN/MAX
+  ultCheckTimer=setTimeout(()=>{
+    // overkill/演出/轉場期間不生成（聖徒化期間照常出攻擊點）；不受既有攻擊點數量限制
+    if(over||enemyHp<=0||cutinPlaying||transitioning){ scheduleUlt(200); return; }  // 條件未滿足 → 稍後重試
+    // v16：聖徒化 cut-in 後（或雙槍／清盤後）緩衝期內敵不發動，等窗口過了再排
+    if(Date.now() < enemyAtkSuppressUntil){ scheduleUlt(enemyAtkSuppressUntil - Date.now() + 50); return; }
+    startCharge();
+    scheduleUlt();          // 立即排下一個 → 錯開生成、可累積多個
+  }, delay);
+}
+// 生成一次大絕。v17：Boss 可一次先後出多個點（ULT_SHOTS），每發間隔 ULT_GAP_MS。
+function startCharge(){
+  spawnThreat();                     // 第 1 發立即
+  $('chargeWarn').classList.add('on');
+  if(!threatTick){ threatTick=setInterval(updateThreats,50); }
+  // 追加發（Boss=第 2 發，間隔 1 秒）：每發都各自起算蓄力窗口，形成錯位雙點
+  for(let s=1; s<ULT_SHOTS; s++){
+    setTimeout(()=>{
+      if(over||enemyHp<=0||cutinPlaying||transitioning) return;
+      spawnThreat();
+      $('chargeWarn').classList.add('on');
+      if(!threatTick){ threatTick=setInterval(updateThreats,50); }
+    }, s*ULT_GAP_MS);
+  }
+}
+// 更新所有攻擊點的視覺與倒數；到期則釋放
+function updateThreats(){
+  if(!threats.length){ stopThreatTick(); return; }
+  let nearest=CHARGE_SECONDS;
+  // 由後往前，方便釋放時移除
+  for(let i=threats.length-1;i>=0;i--){
+    const th=threats[i];
+    const left=Math.max(0,CHARGE_SECONDS-(Date.now()-th.t0)/1000);
+    if(left<nearest) nearest=left;
+    const ratio=left/CHARGE_SECONDS;
+    const size=20+90*ratio;
+    th.el.style.width=size+'px'; th.el.style.height=size+'px';
+    th.el.style.opacity=0.5+0.5*ratio;
+    const wNP=WEAPONS[equippedWeapon] && WEAPONS[equippedWeapon].noPerfectBand;
+    let col;
+    if(ratio>=DEF_DEFENSE_MIN)      col='rgba(240,200,60';   // 黃圈：防一半
+    else if(ratio>=DEF_PERFECT_MIN) col= wNP ? 'rgba(240,200,60'   // 狙擊：橘圈被黃圈取代（無 Perfect 帶）
+                                              : 'rgba(240,140,40';  // 橘圈：Perfect 免傷
+    else                            col='rgba(240,50,50';    // 紅圈：反擊窗
+    th.el.style.background=`radial-gradient(circle,${col},.75),${col},.3) 60%,transparent 72%)`;
+    th.el.style.borderColor=col+',.95)';
+    th.el.style.boxShadow=`0 0 22px ${col},.85),inset 0 0 12px ${col},.6)`;
+    if(left<=0){ releaseUlt(th); }
+  }
+  // 倒數數字已取消（item 1）：紅圈縮放本身即為時機提示，不再顯示秒數
+}
+function stopThreatTick(){
+  clearInterval(threatTick); threatTick=null;
+  $('chargeWarn').classList.remove('on');
+}
+// 某個攻擊點時間到 → 釋放攻擊，移除該點
+function releaseUlt(th){
+  removeThreat(th);
+  if(over||cutinPlaying) return;
+  enemyAttack(ULT_DAMAGE, 'ult');
+  floatDmg('被擊中','45%','25%',true);   // 招式名已取消（item 1），僅保留受擊提示
+}
+// 兼容舊呼叫：結束/清除所有攻擊點
+function endCharge(){ clearThreat(); }
+function spawnThreat(){
+  const layer=$('redDots');
+  const dot=document.createElement('div');
+  dot.className='reddot';
+  const size=110;
+  dot.style.width=size+'px'; dot.style.height=size+'px';
+  // 位置挑選：黃圈可重疊，但橘圈／紅圈（ratio<DEF_DEFENSE_MIN 的核心）範圍不可與現有攻擊點重疊。
+  const lw=layer.clientWidth||360, lh=layer.clientHeight||360;
+  const coreDia=20+90*DEF_DEFENSE_MIN;      // 橘/紅核心最大直徑（px）
+  const coreR=coreDia/2;
+  const pxLeft=l=>l/100*lw, pxTop=t=>t/100*lh; // 圓心（left/top 為百分比，dot 以中心定位）
+  let lp=20+Math.random()*60, tp=25+Math.random()*45;
+  for(let tries=0;tries<40;tries++){
+    const cx=pxLeft(lp), cy=pxTop(tp);
+    let ok=true;
+    for(const o of threats){
+      const ol=parseFloat(o.el.style.left), ot=parseFloat(o.el.style.top);
+      const ox=pxLeft(ol), oy=pxTop(ot);
+      const dx=cx-ox, dy=cy-oy;
+      if(dx*dx+dy*dy < (coreR*2)*(coreR*2)){ ok=false; break; }  // 兩核心圓相距 < 直徑 → 重疊
+    }
+    if(ok) break;
+    lp=20+Math.random()*60; tp=25+Math.random()*45;
+  }
+  dot.style.left=lp+'%';
+  dot.style.top=tp+'%';
+  const th={el:dot, t0:Date.now()};
+  dot.addEventListener('touchstart',e=>{e.preventDefault();resolveThreat(th);},{passive:false});
+  dot.addEventListener('click',()=>resolveThreat(th));
+  layer.appendChild(dot);
+  threats.push(th);
+  $('grid').classList.add('alert');
+}
+// 從清單移除單一攻擊點
+function removeThreat(th){
+  if(th.el && th.el.parentNode) th.el.remove();
+  const i=threats.indexOf(th);
+  if(i>=0) threats.splice(i,1);
+  if(!threats.length){ $('grid').classList.remove('alert'); stopThreatTick(); }
+}
+// 清除全部攻擊點（清盤/overkill/聖徒化結束等）
+function clearThreat(){
+  threats.forEach(th=>{ if(th.el && th.el.parentNode) th.el.remove(); });
+  threats=[];
+  $('grid').classList.remove('alert');
+  stopThreatTick();
+}
+// 點掉單一攻擊點 → 依剩餘時間判定 Counter / Perfect / Defense
+function resolveThreat(th){
+  if(!th || threats.indexOf(th)<0) return;
+  const left=Math.max(0,CHARGE_SECONDS-(Date.now()-th.t0)/1000);
+  const ratio=left/CHARGE_SECONDS;
+  const w=WEAPONS[equippedWeapon];
+  removeThreat(th);
+  SFX.confirm();
+
+  const counterWin = w ? w.counterWin : DEF_PERFECT_MIN;
+  if(ratio < counterWin){
+    // === Counter === 免傷 + 反擊武器大傷害　（統一特效：金色微閃）
+    flashDefense('gold');
+    floatDmg('COUNTER！','50%','38%',true);
+    triggerAtkBuff(2);
+    weaponCounter();
+  }else if(!(w && w.noPerfectBand) && ratio < DEF_DEFENSE_MIN){
+    // === Perfect Defense ===　（統一特效：金色微閃）
+    perfectCount++;
+    flashDefense('gold');
+    if(w && w.perfectDamageScale){
+      // 散彈槍類：Perfect 檔以傷害取代免傷（打弱化反擊，但不觸發 atkBuff、不免傷）
+      floatDmg('PERFECT','50%','40%',true);
+      weaponCounter(w.perfectDamageScale);
+    }else{
+      // 一般武器：完全免傷（狙擊槍 noPerfectBand=true 時此帶消失，落入下方 Defense）
+      floatDmg('PERFECT','50%','40%',true);
+    }
+  }else{
+    // === Defense（格擋）===　（統一特效：白色微閃）
+    flashDefense('block');
+    if(saintMode){
+      // v18：聖徒化期間，格擋＝推進 +0.5 秒（playerMax/30），與挨大絕的 +1 秒區隔
+      enemyAttack(0, 'ult', playerMax/SAINT_BLOCK_DIVISOR);
+      floatDmg('BLOCK','50%','42%',false);
+    }else{
+      const defScale=(w && w.defenseDamageScale!=null) ? w.defenseDamageScale : 0.5;
+      if(defScale<=0){
+        floatDmg('BLOCK','50%','42%',false);        // 完全免傷（若有武器設 0）
+      }else{
+        const dmg=Math.max(1, Math.round(ULT_DAMAGE*defScale));
+        enemyAttack(dmg, 'ult');                     // 依武器倍率受傷（散彈 1/4、其他 1/2；仍屬大絕受擊）
+        floatDmg('BLOCK −'+dmg,'50%','42%',false);
+      }
+    }
+  }
+}
+// 武器反擊：依選配武器造成多段/單發傷害，傷害視覺依 w.vfx 呈現
+function weaponCounter(dmgScale){
+  const w=WEAPONS[equippedWeapon];
+  if(!w) return;
+  const scale=(dmgScale==null)?1:dmgScale;
+  counterCount++;
+
+  if(w.vfx==='single'){
+    // 狙擊：單發，跳一個較大的紅色數字
+    const total=Math.max(1, Math.round(w.hits*w.dmgPerHit*scale));
+    SFX.sniperShot();                        // 狙擊：更響的一發＋破空呼嘯
+    enemyDamage(total, true, true);          // 靜默扣血（含 overkill/擊殺判定）
+    counterDamage+=total;
+    floatDmg(total, '46%','32%', false, 'snipernum');
+    return;
+  }
+  if(w.vfx==='burst'){
+    // 散彈：所有彈丸同一瞬間、同一區塊齊發，各自跳出數字
+    const per=Math.max(1, Math.round(w.dmgPerHit*scale));   // 每發傷害（依檔位縮放）
+    SFX.gunshot(true);
+    const bx=40+Math.random()*20;            // 同一區塊的中心
+    for(let k=0;k<w.hits;k++){
+      enemyDamage(per, true, true);          // 靜默扣血
+      counterDamage+=per;
+      // 在中心附近微散開，營造「同區塊齊跳」
+      floatDmg(per, (bx-6+k*3)+'%', (34+(k%2)*6)+'%', true);
+    }
+    return;
+  }
+  // 預設（重機槍等）：逐發跳出
+  const per=Math.max(1, Math.round(w.dmgPerHit*scale));
+  let i=0;
+  const fire=()=>{
+    if(over||i>=w.hits) return;
+    SFX.gunshot(true);
+    enemyDamage(per, true);                  // 走內建逐發數字
+    counterDamage+=per;
+    i++;
+    if(i<w.hits) setTimeout(fire, 90);
+  };
+  fire();
+}
+
+/* ---------- 間隔時限 ---------- */
+function startIntervalTimer(){
+  clearInterval(intervalTimer);
+  intervalDeadline=Date.now()+effIntervalLimit()*1000;
+  intervalTimer=setInterval(()=>{
+    if(over){clearInterval(intervalTimer);return;}
+    if(saintMode||cutinPlaying){resetIntervalDeadline();return;}  // 聖徒化/演出中不受間隔壓力
+    if(Date.now()>=intervalDeadline){
+      combo=0;
+      // v17：延時懲罰傷害＝一般怪基礎 × 該怪 delayPenalty.dmgScale（Boss=0.5）；時限已由 effIntervalLimit 減 1 秒
+      if(enemyHp>0){ enemyAttack(Math.max(1, Math.round(DMG_DELAY*DELAY_PENALTY_SCALE)), 'delay'); floatDmg('太慢','60%','55%',false); }  // overkill 期間敵人不攻擊
+      updateStatus(); resetIntervalDeadline();
+    }
+  },80);
+}
+// v17：本盤實際延時時限＝盤面 intervalLimit + 該怪 delayPenalty.timeDelta（Boss=-1，判定更嚴）。下限 0.6 秒防呆。
+function effIntervalLimit(){ return Math.max(0.6, intervalLimit + DELAY_TIME_DELTA); }
+function resetIntervalDeadline(){ intervalDeadline=Date.now()+effIntervalLimit()*1000; }
+function stopIntervalTimer(){ clearInterval(intervalTimer); }
+
+/* ---------- UI ---------- */
+const CLASP_LEN=110;   // C 字路徑約略長度（供 dash 計算）
+function updateBars(){
+  const eh=Math.max(0,enemyHp), ph=Math.max(0,playerHp);
+  $('enemyHp').style.width=(eh/enemyMax*100)+'%';
+  $('enemyHpNum').textContent=Math.round(eh)+' / '+enemyMax;
+  $('playerHp').style.width=(ph/playerMax*100)+'%';
+  $('playerHpNum').textContent=Math.round(ph)+' / '+playerMax;
+  updateEnergyClasp();
+}
+function updateEnergyClasp(){
+  const fill=$('energyClaspFill');
+  if(fill){
+    const total=fill.getTotalLength ? fill.getTotalLength() : CLASP_LEN;
+    fill.style.strokeDasharray=total;
+    fill.style.strokeDashoffset=total*(1-energy/100);
+  }
+  $('energyClasp').classList.toggle('full', energy>=100);
+}
+function updateStatus(){ /* 狀態列已移出畫面（下半為純數字盤），保留為相容呼叫 */ }
+
+/* ---------- 勝負 ---------- */
+function stopAll(){clearTimeout(ultCheckTimer);clearInterval(threatTick);threatTick=null;clearInterval(intervalTimer);clearInterval(saintTimer);clearSaintReactTimer();clearTimeout(dualTimer);clearTimeout(atkBuffTimer);clearThreat();}
+// 秒數格式化
+function fmtTime(sec){
+  if(sec==null || !isFinite(sec)) return '--';
+  const m=Math.floor(sec/60), s=sec-m*60;
+  return m>0 ? `${m}分${s.toFixed(1)}秒` : `${s.toFixed(1)}秒`;
+}
+// 擊敗敵人 → 結算畫面
+function win(){
+  if(over) return;
+  over=true;stopAll();
+  const endTime = killTime || Date.now();          // 敵HP歸零即凍結；OVERKILL 期間不計入
+  const totalTime=(endTime-runStartTime)/1000;
+  // 平均每盤用時：只計「第三盤後」（即第 3 盤起，index 2 以後）
+  const counted=boardTimes.slice(2);
+  const avg = counted.length ? counted.reduce((a,b)=>a+b,0)/counted.length : null;
+  // 最佳總用時 / 破紀錄判定
+  // v17.3：Boss 戰為獨立戰鬥 → 最佳紀錄分開存（不與一般戰混計）
+  const bossFight = inIntruderFight;
+  const prevBest=loadBestTotal(bossFight);
+  const isRecord = (prevBest==null) || (totalTime<prevBest);
+  if(isRecord) saveBestTotal(totalTime, bossFight);
+  const bestShown = isRecord ? totalTime : prevBest;
+
+  let sub=(($('enemyName')&&$('enemyName').textContent)||'目標')+'已淨化';
+  if(overkill>0) sub += ` · OVERKILL ${Math.round(overkill)}`;
+
+  let rows='';
+  rows += `<div class="row"><span>每盤平均用時</span><b>${fmtTime(avg)}</b></div>`;
+  rows += `<div class="row"><span>總用時</span><b>${fmtTime(totalTime)}</b></div>`;
+  rows += `<div class="row"><span>最佳總用時</span><b>${fmtTime(bestShown)}</b></div>`;
+  if(avg==null) rows += `<div class="row" style="opacity:.6;font-size:11px"><span>（平均只計第三盤後）</span><b></b></div>`;
+  rows += combatStatsRows();
+  // ── 評價分級（六階 S/A/B/C/D/E）──
+  const evalResult = computeEvaluation(totalTime);
+  rows += `<div class="row"><span>評價</span><b class="rank rank-${evalResult.rank}">${evalResult.rank}</b></div>`;
+  rows += `<div class="row" style="opacity:.7;font-size:11px"><span>EXP</span><b>${evalResult.exp}</b></div>`;
+  if(isRecord) rows += `<div class="record">★ NEW RECORD ★</div>`;
+  // ── 監察官結算展示（純展示，依評價等第挑台詞）──
+  showResultSequence('聖裁完成', sub, rows, evalResult.rank, false);
+
+  // ── 隱藏關（New Hustle）解鎖判定 ──
+  //   改為「S 評價才解鎖」，且不自動觸發：由結算畫面「再度執槍→迎擊」流程手動進入。
+  const it = GAME_CONFIG.intruder;
+  sRankUnlocked = false;
+  if(it && it.enable && !intruderTriggered && !inIntruderFight && evalResult.rank==='S'){
+    sRankUnlocked = true;   // 解鎖：玩家點「再度執槍」時觸發芙蕾雅台詞→迎擊
+  }
+}
+
+// 亂入 cut-in → 點擊畫面任一角 → 載入亂入怪 → 續戰（血量/連擊延續）
+function triggerIntruder(){
+  const it = GAME_CONFIG.intruder;
+  // v17.2：cut-in 的底維持「結算畫面」（banner 不收），前一場戰鬥畫面此時已不存在。
+  //        saintCutin(z-50) 疊在 banner(z-30) 之上、且為半透明，故結算畫面會透出。
+  //        banner 於真正進場（enterFight）時才收掉。
+  const sc=$('saintCutin');
+  $('saintCutinTitle').textContent = 'NEW HUSTLE INCOMING';   // 亂入 Boss 一律用此字樣（不因怪而異）
+  $('saintCutinSub').textContent   = '輕觸畫面繼續';
+  $('saintCutinImgBoss').src = asset('cutin_boss');          // v18d：Boss 專屬 cut-in 圖（貝琳妲）
+  sc.classList.remove('obe','execute','burst','return');
+  sc.classList.add('boss','on');
+  cutinPlaying=true;                       // 鎖住盤面點擊，避免誤觸
+  try{ SFX.hit && SFX.hit(); }catch(e){}
+
+  // 進入亂入戰的實際流程（由點擊觸發，只執行一次）
+  let entered=false;
+  const enterFight=()=>{
+    if(entered) return; entered=true;
+    sc.removeEventListener('click', enterFight);
+    sc.removeEventListener('touchstart', onTouch);
+    $('saintCutinSub').textContent='';
+    sc.classList.remove('on','boss');
+    $('banner').classList.remove('on','seq','lose');   // v17.2：真正進場時才收掉結算畫面
+    over=false; inIntruderFight=true;
+    // v17.4：進 Boss 戰即清掉 S 解鎖旗標與結算模式，避免 Boss 戰結束後「再度執槍」誤觸迎擊流程再進 Boss。
+    sRankUnlocked=false; resultMode='rematch';
+    // v17：開全新一盤（不延用舊盤狀態）——連擊/聖能/回合統計/計時全部歸零。
+    saintMode=false; saintUsedThisBattle=false; atkBuff=false; overkill=0; killTime=0; transitioning=false; setReturnSwipe(false);
+    combo=0; energy=0; expect=1; updateEnergyClasp();
+    counterCount=0; counterDamage=0; perfectCount=0; sawExecution=false;   // 新戰的結算統計歸零
+    // v17.3：Boss 戰＝獨立一場戰鬥 → 結算/評價與前一場分開計算。重置整場計時、每盤用時、無傷旗標。
+    runStartTime=Date.now(); boardTimes=[]; boardsCompleted=0; flawlessRun=true; killTime=0;
+    boardIndex=0; N=9; cols=3;
+    clearThreat(); clearAtkBuff();      // 清掉殘留紅點與加攻 buff
+    setEnemy(it.enemy);                 // 載入亂入怪數值＋立繪（立繪已改為即時內嵌、外部再升級）
+    $('grid').classList.remove('saint','buffed','alert','dualwield');
+    $('saintCutin').classList.remove('on','burst','obe','execute','return','boss'); cutinPlaying=false;
+    boardStartTime=Date.now();          // 新盤計時起點
+    loadBoard(0); updateBars(); updateUltBtn(); updateStatus();
+    resetEnemyTimers();
+    scheduleUlt(600);                   // 重啟敵人大絕排程
+  };
+  const onTouch=e=>{ e.preventDefault(); enterFight(); };
+  // 短暫延遲後才允許點擊，避免上一動作的殘留點擊直接跳過演出
+  setTimeout(()=>{
+    sc.addEventListener('click', enterFight);
+    sc.addEventListener('touchstart', onTouch, {passive:false});
+  }, 400);
+}
+/* ============================================================================
+ *  評價分級 + 監察官結算展示（純展示，不進戰鬥迴圈）
+ * ========================================================================== */
+
+// 依「門檻 key → 值」的表，挑出不超過 current 的最高門檻對應值；找不到回 fallback
+function pickByThreshold(map, current, fallback){
+  if(!map) return fallback;
+  const keys=Object.keys(map).map(Number).filter(k=>!isNaN(k)).sort((a,b)=>a-b);
+  let picked=fallback, found=false;
+  for(const k of keys){ if(current>=k){ picked=map[k]; found=true; } }
+  return found ? picked : fallback;
+}
+
+// 依結算數據算分並定出等第。回傳 { score, rank, flawless, execution }
+function computeEvaluation(totalTime){
+  // ── 規則制評價 ──
+  //  S：無傷 且 ≤40 秒
+  //  A：無傷（無時間上限，能無傷見到結算基本不會太慢）
+  //  B：有傷 且 ≤40 秒
+  //  C：有傷 且 ≤50 秒
+  //  D：有傷 且 ≤60 秒
+  //  E：有傷 且 >60 秒
+  let rank;
+  if(flawlessRun){
+    rank = (totalTime<=40) ? 'S' : 'A';
+  }else{
+    if(totalTime<=40)      rank='B';
+    else if(totalTime<=50) rank='C';
+    else if(totalTime<=60) rank='D';
+    else                   rank='E';
+  }
+  // EXP：沿用原積分作為經驗值展示（反擊/完美/無傷/處決加成）
+  const ev = GAME_CONFIG.evaluation;
+  let exp = 0;
+  if(ev){
+    const s = ev.score;
+    let raw = Math.max(0, s.timeBonus.base - totalTime * s.timeBonus.perSecond);
+    raw += counterDamage * s.counterCoef;
+    raw += perfectCount  * s.perfectPerHit;
+    if(flawlessRun)  raw *= s.flawlessMult;
+    if(sawExecution) raw *= s.executionMult;
+    exp = Math.round(raw);
+  }
+  return { score:exp, exp, rank, flawless:flawlessRun, execution:sawExecution };
+}
+
+// 取得當前啟用的監察官 config（無則 null）
+function getInspector(){
+  const key=GAME_CONFIG.defaultInspector;
+  if(!key) return null;
+  return GAME_CONFIG.inspectors[key] || null;
+}
+
+// 依監察官 + 好感度挑立繪鑰匙（無 portraits 則用單張 image）
+function pickInspectorPortrait(insp){
+  if(!insp) return null;
+  return pickByThreshold(insp.portraits, currentFavor, insp.image||null);
+}
+
+// 依監察官 + 評價等第(或'lose') + 好感度挑一句台詞；挑不到回 null
+// v17.3：boss=true 時優先用 bossDialogues（Boss 戰專屬台詞組），缺該 rank 才 fallback 回一般 dialogues。
+function pickInspectorDialogue(insp, rankKey, boss){
+  if(!insp) return null;
+  let byRank = null;
+  if(boss && insp.bossDialogues) byRank = insp.bossDialogues[rankKey];
+  if(!byRank && insp.dialogues)  byRank = insp.dialogues[rankKey];
+  if(!byRank) return null;
+  const arr = pickByThreshold(byRank, currentFavor, null);
+  if(!arr || !arr.length) return null;
+  return arr[Math.floor(Math.random()*arr.length)];
+}
+
+// 產生結算畫面監察官展示區 HTML（立繪空→暫代框；台詞空→暫代字）
+function inspectorPanelHtml(rankKey){
+  const insp=getInspector();
+  if(!insp) return '';   // 未啟用監察官 → 不顯示
+  const portraitKey=pickInspectorPortrait(insp);
+  const imgSrc = portraitKey ? asset(portraitKey) : '';
+  const line = pickInspectorDialogue(insp, rankKey, inIntruderFight) || '（監察官台詞待填）';
+  const name = insp.name || '監察官';
+  const portraitHtml = imgSrc
+    ? `<img class="insp-portrait" src="${imgSrc}" alt="">`
+    : `<div class="insp-portrait insp-portrait--empty">立繪</div>`;
+  return `<div id="inspectorPanel">
+      ${portraitHtml}
+      <div class="insp-bubble">
+        <div class="insp-name">${name}</div>
+        <div class="insp-line">${line}</div>
+      </div>
+    </div>`;
+}
+
+// 結算共用：Counter（次數+累計傷害）、完美防禦（次數）
+function combatStatsRows(){
+  let r='';
+  r += `<div class="row"><span>Counter 反擊</span><b>${counterCount} 次 · ${counterDamage} 傷</b></div>`;
+  r += `<div class="row"><span>完美防禦</span><b>${perfectCount} 次</b></div>`;
+  return r;
+}
+// 被擊敗 → 失敗畫面
+function lose(){
+  if(over) return;
+  over=true;stopAll();
+  let rows=combatStatsRows();
+  showResultSequence('聖光黯滅','HUND 倒下了…', rows, 'lose', true);
+}
+// 結算畫面分階段序列：
+//  T0 立繪＋retry＋大標同時進場 → rows 由上往下刷（1s內）→ 對話框彈出 → 逐字台詞（2s內）
+let _inspTypeTimer=null;
+function showResultSequence(title, sub, statsHtml, rankKey, isLose){
+  const b=$('banner');
+  // 每次結算：按鈕歸位為「再度執槍」模式
+  resultMode='rematch';
+  const rbtn=$('rematchBtn');
+  rbtn.textContent='再度執槍';
+  rbtn.classList.remove('intercept','ready');
+  rbtn.style.display='';
+  $('bannerTitle').textContent=title;
+  $('bannerSub').textContent=sub;
+  const stats=$('resultStats');
+  stats.innerHTML=statsHtml||'';
+  stats.classList.remove('sweep');
+
+  // 監察官立繪＋台詞（一般失敗畫面不跑監察官；v17.3：Boss 戰失敗仍顯示監察官，播 Boss 失敗台詞）
+  const insp = (isLose && !inIntruderFight) ? null : getInspector();
+  const stage=$('inspectorStage');
+  const bubble=$('inspectorBubble');
+  const portrait=$('inspectorPortrait');
+  const nameEl=$('inspectorName');
+  const lineEl=$('inspectorLine');
+  clearTimeout(_inspTypeTimer);
+  bubble.classList.remove('show');
+  lineEl.textContent='';
+  if(insp){
+    stage.style.display='flex';
+    const pKey=pickInspectorPortrait(insp);
+    portrait.src = pKey ? asset(pKey) : '';
+    portrait.style.display = portrait.src ? 'block' : 'none';
+    nameEl.textContent = insp.name || '監察官';
+  }else{
+    stage.style.display='none';
+  }
+
+  b.classList.toggle('lose', !!isLose);
+  b.classList.remove('seq');
+  b.classList.add('on');
+  // 觸發進場動畫（立繪＋大標＋retry 同時）
+  void b.offsetWidth;
+  b.classList.add('seq');
+
+  // ── 階段二：rows 由上往下刷，1 秒內刷完 ──
+  const rowEls=stats.querySelectorAll('.row, .record');
+  const n=rowEls.length;
+  const totalSweep=1000;                       // 1 秒內刷完
+  const step = n>1 ? Math.min(120, totalSweep/n) : 0;
+  rowEls.forEach((el,idx)=>{ el.style.animationDelay=(idx*step)+'ms'; });
+  // 稍等立繪起手後再刷 rows
+  setTimeout(()=>{ stats.classList.add('sweep'); }, 260);
+
+  // ── 階段三＋四：rows 刷完後彈出對話框，逐字顯示台詞（2 秒內）──
+  const sweepDone = 260 + (n>0 ? (n-1)*step : 0) + 300;
+  if(insp){
+    // 處決勝利（聖徒化 Maximum Burst 擊殺）→ 固定處決台詞，不論 rank；否則走 rank 台詞
+    // v17.3：Boss 戰一律走 bossDialogues 的 rank 台詞（不套用一般處決台詞）。
+    const line = (!inIntruderFight && sawExecution && insp.executionLine)
+      ? insp.executionLine
+      : (pickInspectorDialogue(insp, rankKey, inIntruderFight) || '（監察官台詞待填）');
+    setTimeout(()=>{
+      bubble.classList.add('show');
+      typeInspectorLine(lineEl, line, 2000);   // 2 秒內逐字
+    }, Math.max(sweepDone, 1100));
+  }
+}
+// 逐字打字機：total 毫秒內把整句顯示完，尾端閃爍游標
+function typeInspectorLine(el, text, total){
+  clearTimeout(_inspTypeTimer);
+  const chars=[...text];
+  const per = chars.length ? Math.max(30, total/chars.length) : 0;
+  let i=0;
+  el.textContent='';
+  const tick=()=>{
+    if(i<chars.length){
+      el.textContent = chars.slice(0,i+1).join('');
+      i++;
+      _inspTypeTimer=setTimeout(tick, per);
+    }
+  };
+  tick();
+}
+function showBanner(t,s,statsHtml,isLose){   // 舊介面保留（若他處呼叫）：直接走序列
+  showResultSequence(t,s,statsHtml,null,isLose);
+}
+
+// 開始一場新戰鬥（從首頁「開始遊戲」或結算後「再度執槍」進入）
+function startGame(){
+  over=false;combo=0;energy=0;expect=1;boardIndex=0;saintMode=false;saintUsedThisBattle=false;atkBuff=false;overkill=0;killTime=0;transitioning=false;setReturnSwipe(false);
+  counterCount=0;counterDamage=0;perfectCount=0;sawExecution=false;
+  playerHp=playerMax;enemyHp=enemyMax;
+  N=9;cols=3;
+  runStartTime=Date.now();
+  boardTimes=[]; boardsCompleted=0;
+  // 全新一場：重置無傷旗標與亂入狀態，並載回開場怪
+  flawlessRun=true; intruderTriggered=false; inIntruderFight=false; deathGuardUsed=false; sRankUnlocked=false; resultMode='rematch';
+  enemyAtkSuppressUntil=0;   // v16：清掉可能殘留的敵不發動窗口
+  setEnemy(GAME_CONFIG.currentEnemy);
+  $('home').classList.remove('on');
+  $('banner').classList.remove('on');$('banner').classList.remove('lose');
+  $('transition').classList.remove('on');
+  $('grid').classList.remove('saint');$('grid').classList.remove('buffed');$('grid').classList.remove('alert');
+  $('saintCutin').classList.remove('on','burst','obe','execute','return','boss');cutinPlaying=false;
+  stopAll();
+  loadBoard(0);updateBars();updateUltBtn();
+}
+// 退出 → 回到首頁
+function goHome(){
+  over=true; stopAll();
+  $('banner').classList.remove('on');$('banner').classList.remove('lose');
+  $('transition').classList.remove('on');
+  $('home').classList.add('on');
+}
+
+// v17：測試人員專用「清盤」鈕 —— 一鍵把當前盤面清空（依當前模式走對應結算路徑）。
+//   正常盤：逐格點掉 → 觸發 clearBoard()（含清盤獎勵/勝利判定/進下一盤）。
+//   聖徒化：點完 25 格 → 觸發 Maximum Burst 結局。
+//   雙槍：點完全部 → 走雙槍清盤路徑。
+function testClearBoard(){
+  if(over||transitioning||cutinPlaying) return;
+  // 找出尚未點掉的格子，依「當前應點順序」逐一模擬點擊，直到盤面被判定清空。
+  let guard=0;
+  while(!over && cells.length && guard++ < 200){
+    if(cells.every(c=>c.classList.contains('done'))) break;
+    let target=null;
+    if(saintMode || !dualWield){
+      // 有序模式（正常＋聖徒化）：點目前 expect 那格
+      target=cells.find(c=>+c.dataset.num===expect && !c.classList.contains('done'));
+    }
+    if(!target){
+      // 雙槍或找不到 expect：點任一未完成格
+      target=cells.find(c=>!c.classList.contains('done'));
+    }
+    if(!target) break;
+    const before=expect, beforeDone=cells.filter(c=>c.classList.contains('done')).length;
+    tap(+target.dataset.num, target);
+    // 若這次 tap 沒有推進（例如 saintMode 下點錯不前進），保險改點正確格；仍無進展則跳出防死迴圈
+    const afterDone=cells.filter(c=>c.classList.contains('done')).length;
+    if(afterDone===beforeDone && expect===before){
+      const fix=cells.find(c=>+c.dataset.num===expect && !c.classList.contains('done'));
+      if(fix && fix!==target){ tap(+fix.dataset.num, fix); }
+      else break;
+    }
+  }
+}
+
+function bindBtn(id,fn){const el=document.getElementById(id);if(!el)return;const run=()=>{SFX.unlock();SFX.menuClick();fn();};let h=false;el.addEventListener("touchstart",e=>{e.preventDefault();h=true;run();},{passive:false});el.addEventListener("click",()=>{if(h){h=false;return;}run();});}
+bindBtn("exitBtn",goHome);         // 右上退出 → 回首頁
+bindBtn("testClearBtn",testClearBoard);   // v17：左上（測試用）一鍵清盤
+// 結算按鈕：依 resultMode 分流
+//  'rematch'：一律回首頁（goHome）。唯一例外＝S 評價解鎖 → 觸發芙蕾雅台詞→鈕變「迎擊」。
+//  'intercept'：迎擊 → 播亂入 cut-in 進 Boss 戰
+function onRematchBtn(){
+  const rbtn=$('rematchBtn');
+  if(resultMode==='intercept'){
+    triggerIntruder();
+    return;
+  }
+  // resultMode==='rematch'
+  if(!sRankUnlocked){
+    goHome();                  // v17.4：一律回首頁（含 Boss 戰勝/敗後），不再直接重開一場
+    return;
+  }
+  // S 評價：解鎖迎擊流程（唯一例外）
+  intruderTriggered=true;      // 標記本場已進入隱藏流程
+  rbtn.style.display='none';   // 鈕先消失
+  const insp=getInspector();
+  const bubble=$('inspectorBubble');
+  const lineEl=$('inspectorLine');
+  // 芙蕾雅重跳一次對話框：「慢著！有新的敵人！」
+  bubble.classList.remove('show'); void bubble.offsetWidth;
+  clearTimeout(_inspTypeTimer);
+  lineEl.textContent='';
+  bubble.classList.add('show');
+  const warnLine = (insp && insp.interceptLine) || '慢著！有新的敵人！';
+  typeInspectorLine(lineEl, warnLine, 1400);
+  // 台詞跳完 → 鈕變「迎擊」、變色發光
+  const dur = 1400 + 300;
+  setTimeout(()=>{
+    resultMode='intercept';
+    rbtn.textContent='迎擊';
+    rbtn.classList.add('intercept','ready');
+    rbtn.style.display='';
+  }, dur);
+}
+bindBtn("rematchBtn", onRematchBtn);   // 結算/失敗 → 依模式分流
+bindBtn("startBtn",startGame);     // 首頁開始遊戲
+
+/* ---- 首頁副武器/搭檔選擇入口 ----
+ *  副武器：選擇即同步 equippedWeapon，直接驅動戰鬥（三段防禦/反擊/視覺）。
+ *  搭檔：仍為純顯示，待養成模組接上再打通。 */
+let pickedWeapon  = GAME_CONFIG.defaultWeapon;
+let pickedPartner = GAME_CONFIG.defaultPartner;
+function refreshLoadoutLabels(){
+  const w=GAME_CONFIG.weapons[pickedWeapon];
+  const p=GAME_CONFIG.partners[pickedPartner];
+  const wv=$('pickWeaponValue'), pv=$('pickPartnerValue');
+  if(wv) wv.textContent = w ? w.name : '—';
+  if(pv) pv.textContent = p ? p.name : '—';
+}
+// 開啟選擇彈層：kind='weapon' | 'partner'
+function openPickSheet(kind){
+  const isWeapon = kind==='weapon';
+  const map   = isWeapon ? GAME_CONFIG.weapons : GAME_CONFIG.partners;
+  const cur   = isWeapon ? pickedWeapon : pickedPartner;
+  $('pickSheetTitle').textContent = isWeapon ? '選擇副武器' : '選擇搭檔';
+  const list=$('pickSheetList'); list.innerHTML='';
+  Object.keys(map).forEach(key=>{
+    const it=map[key];
+    const div=document.createElement('div');
+    div.className='pick-item'+(key===cur?' selected':'');
+    const sub = isWeapon
+      ? `反擊勝率 ${Math.round((it.counterWin||0)*100)}% · ${it.hits||0}發×${it.dmgPerHit||0}`
+      : (it.perk||'');
+    div.innerHTML = `${it.name||key}${sub?`<span class="pi-sub">${sub}</span>`:''}`;
+    const choose=()=>{
+      SFX.unlock(); SFX.menuClick();   // 選單點擊音
+      if(isWeapon){
+        pickedWeapon=key;
+        equippedWeapon=key;   // 副武器選擇即刻驅動戰鬥（item5）
+      }else{
+        pickedPartner=key;    // 搭檔仍為純顯示，待養成模組接上
+      }
+      refreshLoadoutLabels();
+      closePickSheet();
+    };
+    div.addEventListener('click',choose);
+    div.addEventListener('touchstart',e=>{e.preventDefault();choose();},{passive:false});
+    list.appendChild(div);
+  });
+  $('pickSheet').classList.add('on');
+}
+function closePickSheet(){ $('pickSheet').classList.remove('on'); }
+bindBtn("pickWeaponBtn",  ()=>openPickSheet('weapon'));
+bindBtn("pickPartnerBtn", ()=>openPickSheet('partner'));
+bindBtn("pickSheetClose", closePickSheet);
+refreshLoadoutLabels();
+bindBtn("energyClasp",activateDual);   // 點計量表發動破防（需滿值）
+
+// 敵人框左右滑到底 → 發動聖徒化（依方向給橫斬特效）
+(function bindSaintSwipe(){
+  const zone=$('top');
+  if(!zone) return;
+  let startX=0, startY=0, tracking=false;
+  const THRESH=Math.max(90, window.innerWidth*0.30);   // 需滑到底（約螢幕寬30%或90px）
+  zone.addEventListener('touchstart',e=>{
+    if(saintMode||saintUsedThisBattle||over||cutinPlaying) return;
+    const t=e.touches[0]; startX=t.clientX; startY=t.clientY; tracking=true;
+  },{passive:true});
+  zone.addEventListener('touchmove',e=>{
+    if(!tracking) return;
+    const t=e.touches[0];
+    const dx=t.clientX-startX, dy=t.clientY-startY;
+    // 水平滑動為主（避免和垂直捲動混淆）
+    if(Math.abs(dx)>THRESH && Math.abs(dx)>Math.abs(dy)*1.5){
+      tracking=false;
+      activateSaint(dx>0?'right':'left');
+    }
+  },{passive:true});
+  zone.addEventListener('touchend',()=>{tracking=false;});
+  // 桌機滑鼠拖曳也支援（方便測試）
+  let mDown=false;
+  zone.addEventListener('mousedown',e=>{
+    if(saintMode||saintUsedThisBattle||over||cutinPlaying) return;
+    mDown=true; startX=e.clientX; startY=e.clientY;
+  });
+  zone.addEventListener('mousemove',e=>{
+    if(!mDown) return;
+    const dx=e.clientX-startX, dy=e.clientY-startY;
+    if(Math.abs(dx)>THRESH && Math.abs(dx)>Math.abs(dy)*1.5){
+      mDown=false;
+      activateSaint(dx>0?'right':'left');
+    }
+  });
+  window.addEventListener('mouseup',()=>{mDown=false;});
+})();
+
+// ── 生命歸還（芙蕾亞主動技）：聖徒化中，在上半敵畫面「往上一滑」發動 ──
+//    用專用透明層 #returnSwipe（touch-action:none，避開 Safari 捲動與格子 preventDefault）。
+//    聖徒化開始時開啟(.on)、結束時關閉。
+(function bindReturnSwipe(){
+  const zone=$('returnSwipe');
+  const aura=$('returnAura');
+  if(!zone) return;
+  let startY=0, startX=0, tracking=false, fired=false, moved=0;
+  // 需上滑 ≥「上半高度的 25%」＝ 螢幕高 50% × 25% ＝ 螢幕高的 12.5%
+  const need=()=>Math.max(48, (window.innerHeight||600)*0.125);
+  const TAP_SLOP=14;   // 位移小於此值視為「點擊」而非「滑動」
+
+  // 向心聚光：在觸摸點生成一圈向中心收束的光線
+  const RAYS=12;
+  function showAura(x,y){
+    if(!aura) return;
+    aura.style.left=x+'px'; aura.style.top=y+'px';
+    if(!aura.dataset.built){
+      let html='<div class="core"></div>';
+      for(let i=0;i<RAYS;i++){
+        const a=(360/RAYS)*i;
+        html+=`<div class="ray" style="--a:${a}deg;transform:rotate(${a}deg) translateY(76px);animation-delay:${(i%4)*0.08}s"></div>`;
+      }
+      aura.innerHTML=html; aura.dataset.built='1';
+    }
+    aura.classList.add('on');
+  }
+  function hideAura(){ if(aura) aura.classList.remove('on'); }
+
+  // 用座標反查底下的紅點：命中哪個 threat 就化解哪個（圓形命中判定）
+  function hitThreatAt(x,y){
+    if(typeof threats==='undefined' || !threats.length) return null;
+    let best=null, bestD=Infinity;
+    for(const th of threats){
+      if(!th.el) continue;
+      const r=th.el.getBoundingClientRect();
+      const cx=r.left+r.width/2, cy=r.top+r.height/2;
+      const rad=Math.max(r.width,r.height)/2;
+      const d=Math.hypot(x-cx, y-cy);
+      if(d<=rad && d<bestD){ best=th; bestD=d; }
+    }
+    return best;
+  }
+
+  function begin(x,y){ startX=x; startY=y; tracking=true; fired=false; moved=0; showAura(x,y); }
+  function move(x,y){
+    if(!tracking||fired) return;
+    moved=Math.max(moved, Math.hypot(x-startX, y-startY));
+    if(aura && aura.classList.contains('on')){ aura.style.left=x+'px'; aura.style.top=y+'px'; }
+    const up = startY - y;
+    if(up > need() && up > Math.abs(x-startX)*1.0){
+      fired=true; tracking=false; hideAura();
+      activateLifeReturn();
+    }
+  }
+  // 抬手：若整段位移很小（點擊而非滑動）→ 放行給底下的紅點防禦
+  function end(x,y){
+    const wasTracking=tracking;
+    tracking=false; hideAura();
+    if(wasTracking && !fired && moved < TAP_SLOP){
+      const th = hitThreatAt(x, y);
+      if(th) resolveThreat(th);       // 聖徒化期間照常點紅點防禦
+    }
+  }
+
+  zone.addEventListener('touchstart',e=>{ const t=e.touches[0]; begin(t.clientX,t.clientY); }, {passive:true});
+  zone.addEventListener('touchmove', e=>{
+    const t=e.touches[0];
+    // 只有「已判定為上滑」時才 preventDefault 接管；否則保持被動，讓點擊得以判定
+    if(tracking && !fired){
+      const up=startY-t.clientY;
+      if(up > need()*0.5) e.preventDefault();   // 開始明顯上滑才吃掉預設行為
+    }
+    move(t.clientX,t.clientY);
+  }, {passive:false});
+  zone.addEventListener('touchend', e=>{
+    const t=(e.changedTouches&&e.changedTouches[0])||{};
+    end(t.clientX, t.clientY);
+  }, {passive:true});
+  zone.addEventListener('touchcancel', ()=>{ tracking=false; hideAura(); }, {passive:true});
+  zone.addEventListener('mousedown', e=>begin(e.clientX,e.clientY));
+  zone.addEventListener('mousemove', e=>move(e.clientX,e.clientY));
+  window.addEventListener('mouseup', e=>end(e.clientX,e.clientY));
+})();
+
+
+/* ---- 外部目錄資源路徑 ---- */
+const ASSET_BASE = './assets/';   // 圖/音外部根目錄；正式版把圖放進 assets/enemy/<imageBase>/
+/* 載入敵人立繪：優先外部目錄，逐一嘗試常見副檔名，全部失敗才 fallback 到內嵌暫代圖。
+   外部路徑格式：assets/enemy/<imageBase>/portrait.<jpeg|jpg|png|webp> */
+function loadEnemyPortrait(en){
+  const eImg = document.getElementById('enemyImg');
+  if(!eImg) return;
+  const fallback = asset(en.image);         // 內嵌暫代圖
+  // v17：先立刻顯示內嵌圖（避免外部探測期間仍殘留上一隻怪的立繪／延遲數秒才換），
+  //      再非同步嘗試外部目錄；外部載入成功才「升級」覆蓋，失敗就維持內嵌。
+  if(fallback) eImg.src = fallback;
+  if(en.imageBase){
+    const exts = (en.imageExt ? [en.imageExt] : ['jpeg','jpg','png','webp']);
+    const base = ASSET_BASE + 'enemy/' + en.imageBase + '/portrait.';
+    let i = 0;
+    const tryNext = ()=>{
+      if(i >= exts.length){ if(!fallback) eImg.src = ''; return; }  // 全試完 → 保持內嵌（已在上面設好）
+      const probe = new Image();
+      const url = base + exts[i++];
+      probe.onload  = ()=>{ eImg.src = url; };   // 外部有圖 → 升級覆蓋
+      probe.onerror = tryNext;
+      probe.src = url;
+    };
+    tryNext();
+  }else{
+    eImg.src = fallback;
+  }
+}
+
+/* ---- 換上指定敵人（開場、亂入、日後連戰共用）---- */
+function setEnemy(key){
+  const en = GAME_CONFIG.enemies[key];
+  if(!en) return;
+  currentEnemyKey = key;   // v16：記住目前怪 key，供 boardGridFor() 查每盤格數
+  // 數值套入可變戰鬥狀態
+  enemyMax = en.hp; enemyHp = en.hp;
+  ULT_DAMAGE = en.attack;
+  CHARGE_SECONDS = (en.atkInterval!=null) ? en.atkInterval : GAME_CONFIG.tuning.chargeSeconds;
+  // v17：Boss 專屬大絕／懲罰參數（缺欄位＝走一般怪預設，維持原行為）
+  const u = en.ult || {};
+  ULT_SHOTS  = u.shots!=null ? u.shots : 1;
+  ULT_GAP_MS = u.gapMs!=null ? u.gapMs : 0;
+  ULT_MIN    = u.minMs!=null ? u.minMs : 4000;
+  ULT_MAX    = u.maxMs!=null ? u.maxMs : 8000;
+  const dp = en.delayPenalty || {};
+  DELAY_PENALTY_SCALE = dp.dmgScale!=null ? dp.dmgScale : 1;
+  DELAY_TIME_DELTA    = dp.timeDelta!=null ? dp.timeDelta : 0;
+  const wp = en.wrongPenalty || {};
+  WRONG_PENALTY_SCALE = wp.dmgScale!=null ? wp.dmgScale : 1;
+  curEnemyHitFx = en.hitFx || null;   // v17.2：本怪受擊特效三件套（delay/wrong/ult）
+  // 名稱與立繪
+  const nameEl = document.getElementById('enemyName');
+  if(nameEl) nameEl.textContent = displayEnemyName(en.name);   // v17.2：只顯示底線前的名字
+  loadEnemyPortrait(en);
+}
+// UI 顯示名：一律隱藏「_」之後的內容（如 '地下聖徒_A' → '地下聖徒'）。
+function displayEnemyName(name){ return String(name==null?'':name).split('_')[0]; }
+
+/* ---- 開場：把 GAME_CONFIG 的圖/名稱套到畫面上 ---- */
+function applyConfigToDOM(){
+  const pn = GAME_CONFIG.partners[GAME_CONFIG.defaultPartner];
+  setEnemy(GAME_CONFIG.currentEnemy);
+  // 聖徒化 cut-in 大圖（優先用搭檔的 cutin，其次敵人沒有就留空）
+  const cImg = document.getElementById('cutinImg');
+  if(cImg && pn && pn.cutin) cImg.src = asset(pn.cutin);
+}
+applyConfigToDOM();
+
+window.addEventListener('resize',fitGridSquare);
+window.addEventListener('orientationchange',()=>setTimeout(fitGridSquare,200));
+// 開機停在首頁：先建立盤面/血條供背景顯示，但 over=true 讓計時與敵人不啟動
+over=true;
+loadBoard(0);updateBars();updateUltBtn();
+$('home').classList.add('on');
+</script>
+</body>
+</html>
