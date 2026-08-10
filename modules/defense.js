@@ -175,6 +175,7 @@ export function resolveThreat(th){
     // === Perfect Defense ===（金色微閃）
     addPerfect();
     flashDefense('gold');
+    SFX.heavyHit();        // 完防：合成重擊感（反擊才有武器音效，完防/格擋先用合成音）
     if(w && w.perfectDamageScale){
       // 散彈類：Perfect 檔以傷害取代免傷（打弱化反擊，不觸發 atkBuff、不免傷）
       api.floatDmg('PERFECT','50%','40%',true);
@@ -186,6 +187,7 @@ export function resolveThreat(th){
   }else{
     // === Defense（格擋）===（白色微閃）
     flashDefense('block');
+    SFX.heavyHit();        // 格擋：合成重擊感（同完防）
     if(state.saintMode){
       // 聖徒化期間：格擋＝推進 +0.5 秒（下一輪聖徒化才會實際生效）
       api.enemyAttack(0, 'ult', state.playerMax/SAINT_BLOCK_DIVISOR);

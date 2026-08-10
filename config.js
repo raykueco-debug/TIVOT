@@ -346,13 +346,16 @@ export const ASSETS = {
    *  程式 asset(key) 已相容 null→""，故未填不會壞。
    *  命名慣例：SFX＝SE_… ／ BGM＝BGM_… ／ 語音＝VO_…（鑰匙小寫、檔名保留大小寫）  */
 
-  // 反擊武器音效（所有副武器各一支；鑰匙對應 weapons.sound，檔名 SE_<類型_武器名>）
-  se_mg_squall:      null,   // → SE_MG_Squall     （重機槍 反擊）
-  se_shotgun_blast:  null,   // → SE_Shotgun_Blast （散彈槍 反擊）
-  se_sniper_falcon:  null,   // → SE_Sniper_Falcon （狙擊槍 反擊）
+  // 反擊武器音效（所有副武器各一支；鑰匙對應 weapons.sound）。檔名＝<類型_武器名>_SE.mp3，統一放 resources/weapon/。
+  se_mg_squall:      "resources/weapon/MG_Squall_SE.mp3",       // 重機槍 反擊（連續感：整支播一次）
+  se_shotgun_blast:  "resources/weapon/Shotgun_Blast_SE.mp3",   // 散彈槍 反擊（一次一發）
+  se_sniper_falcon:  "resources/weapon/Sniper_Falcon_SE.mp3",   // 狙擊槍 反擊（單發）
 
-  // 普攻槍聲（未來可換「普攻主武器」，故預留；先一支預設，主武器化後每把 SE_<主武器>）
-  se_shot_normal:    null,   // → SE_Shot_Normal   （普攻預設槍聲）
+  // 清盤換彈音（盤面清空、顯示 RELOADING 時播）
+  sfx_reload:        "resources/weapon/Reload.mp3",
+
+  // 普攻槍聲（未來可換「普攻主武器」，故預留；先一支預設，主武器化後每把 <主武器>_SE）
+  se_shot_normal:    null,   // → Shot_Normal_SE（普攻預設槍聲）
 
   // BGM（六情境）
   bgm_home:      null,   // 首頁     → BGM_Home

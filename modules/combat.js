@@ -13,7 +13,7 @@
  *    與監察官結算為下一輪；相關分支以 TODO 標註、以最小佔位不影響本輪流程。
  * ========================================================================== */
 
-import { GAME_CONFIG } from '../config.js';
+import { GAME_CONFIG, asset } from '../config.js';
 import { state } from '../state.js';
 import { SFX } from '../audio.js';
 import * as enemy from './enemy.js';
@@ -104,6 +104,7 @@ export function goNextBoard(){
   stopIntervalTimer();
   const t=$('transition'), txt=$('transText');
   txt.textContent='RELOADING';
+  SFX.play(asset('sfx_reload'));   // 清盤換彈音（RELOADING 顯示時）
   t.classList.add('on');
   txt.style.animation='none'; void txt.offsetWidth; txt.style.animation='';
   setTimeout(()=>{

@@ -57,6 +57,10 @@ export function weaponCounter(dmgScale){
   if(!w) return;
   const scale = (dmgScale==null) ? 1 : dmgScale;
 
+  // 反擊音效：只在「真反擊（Counter）」時播武器 SE，且整支播一次
+  //   （機槍→連續感、散彈/狙擊→一發）。dmgScale!=null＝散彈完防路徑 → 不播 SE，改由 defense 出重擊合成音。
+  if(dmgScale==null) SFX.play(asset(w.sound));
+
   if(w.vfx==='single'){
     // 狙擊：單發，跳一個較大的紅色數字
     const total=Math.max(1, Math.round(w.hits*w.dmgPerHit*scale));

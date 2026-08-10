@@ -8,7 +8,7 @@
  *  聖徒化左右滑、生命歸還上滑、雙槍點計量表、換裝面板等綁定為下一輪。
  * ========================================================================== */
 
-import { GAME_CONFIG } from './config.js';
+import { GAME_CONFIG, asset } from './config.js';
 import { state } from './state.js';
 import { SFX } from './audio.js';
 import * as combat from './modules/combat.js';
@@ -33,6 +33,12 @@ function bindBtn(id, fn){
 
 // ── 注入 api、綁定、開機 ──
 combat.setup();
+
+// 預載音檔（反擊武器 SE + 清盤換彈）：降低首次播放延遲；解鎖於首次手勢（SFX.unlock）
+SFX.preload([
+  asset('se_mg_squall'), asset('se_shotgun_blast'), asset('se_sniper_falcon'),
+  asset('sfx_reload'),
+].filter(Boolean));
 
 bindBtn('startBtn',     combat.startGame);      // 首頁：開始遊戲
 bindBtn('exitBtn',      combat.goHome);         // 右上：退出回首頁
