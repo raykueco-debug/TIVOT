@@ -1,0 +1,509 @@
+  :root{
+    --bg:#0a080e;
+    --panel:#120f1a;
+    --ink:#ece6d8;
+    --gold:#d4a94a;
+    --gold-dim:#8a6d2e;
+    --blood:#8a1f1f;
+    --holy:#6fb3d4;
+    --grid:#1c1628;
+    --grid-active:#2e2440;
+    --danger:#c0392b;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;
+    -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
+  html,body{margin:0;padding:0;width:100%;height:100%;background:var(--bg);
+    overflow:hidden;position:fixed;top:0;left:0;
+    font-family:"Iowan Old Style","Palatino Linotype",Georgia,"Songti TC",serif;color:var(--ink);}
+  #app{display:flex;flex-direction:column;height:100%;width:100%;
+    max-width:520px;margin:0 auto;position:relative;}
+
+  /* ===== 上半：敵人（固定 50%） ===== */
+  #top{height:50%;flex:none;position:relative;overflow:hidden;
+    border-bottom:2px solid var(--gold-dim);background:#000;}
+  #enemyImg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+    object-position:center top;transition:transform .06s;}
+  #enemyImg.hit{transform:scale(1.015);}
+  #enemyImg.shake{animation:camShake .3s;}
+  @keyframes camShake{0%,100%{transform:translate(0,0)}
+    20%{transform:translate(-6px,4px)}40%{transform:translate(5px,-3px)}
+    60%{transform:translate(-4px,-4px)}80%{transform:translate(4px,3px)}}
+  #topVignette{position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(120% 80% at 50% 20%,transparent 40%,rgba(0,0,0,.7) 100%);}
+
+  /* HUD：敵人名稱（頂部） */
+  #hud{position:absolute;top:8px;left:0;right:0;padding:0 14px;pointer-events:none;z-index:6;}
+  .enemy-name{font-size:11px;letter-spacing:3px;color:var(--gold);opacity:.9;
+    text-shadow:0 0 8px #000,0 1px 2px #000;text-align:center;}
+
+  /* ===== 敵我血條：橫置於敵人區下方，敵上我下 ===== */
+  /* 破防值計量表以 C 字型扣在兩條血量的左側 */
+  #barsBlock{position:absolute;left:0;right:0;bottom:6px;z-index:6;pointer-events:none;
+    display:flex;align-items:stretch;gap:8px;padding:0 12px 2px;}
+  /* C 字型破防計量表 */
+  #energyClasp{flex:none;width:20px;position:relative;align-self:stretch;touch-action:manipulation;pointer-events:none;}
+  #energyClasp.full{cursor:pointer;pointer-events:auto;}
+  /* 滿值時擴大點擊熱區，讓細長計量表更好按 */
+  #energyClasp.full::before{content:"";position:absolute;top:0;bottom:0;left:-10px;right:-6px;}
+  #energyClasp.full svg{filter:drop-shadow(0 0 8px var(--holy)) drop-shadow(0 0 4px #000);}
+  #energyClasp svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;
+    filter:drop-shadow(0 0 4px #000);}
+  #energyClasp .clasp-track{fill:none;stroke:rgba(0,0,0,.7);stroke-width:6;}
+  #energyClasp .clasp-fill{fill:none;stroke:var(--gold);stroke-width:6;stroke-linecap:round;
+    transition:stroke-dashoffset .25s;}
+  #energyClasp.full .clasp-fill{stroke:#ffe08a;animation:pulse .6s infinite alternate;}
+  /* 兩條橫向血條 */
+  #barStack{flex:1 1 0;display:flex;flex-direction:column;gap:5px;min-width:0;}
+  .hrow{position:relative;}
+  .hpbar{height:14px;background:rgba(0,0,0,.75);border:1px solid var(--gold-dim);
+    border-radius:3px;overflow:hidden;box-shadow:0 0 10px #000;}
+  .hpbar.enemy-bar{border-color:var(--gold-dim);}
+  .hpbar.player-bar{border-color:var(--holy);}
+  .hpbar>i{display:block;height:100%;transition:width .25s;}
+  .hpbar.enemy-bar>i{background:linear-gradient(90deg,var(--blood),#d14e4e);}
+  .hpbar.player-bar>i{background:linear-gradient(90deg,#2b6d9a,var(--holy));}
+  .hp-num{position:absolute;right:5px;top:0;height:14px;line-height:14px;
+    font-size:9px;letter-spacing:1px;opacity:.9;text-shadow:0 0 4px #000,0 0 3px #000;}
+
+  /* 蓄力預警 */
+  #chargeWarn{position:absolute;top:52px;left:0;right:0;text-align:center;display:none;z-index:7;pointer-events:none;}
+  #chargeWarn.on{display:block;}
+  .warn-text{font-size:14px;letter-spacing:4px;color:var(--danger);
+    text-shadow:0 0 12px #000,0 0 8px var(--danger);animation:blink .4s infinite alternate;}
+  @keyframes blink{from{opacity:.5}to{opacity:1}}
+  .warn-count{font-size:34px;font-weight:bold;color:var(--danger);text-shadow:0 0 14px #000;}
+
+  /* 特效層（槍擊命中、彈殼、爪痕、飄字都畫在這） */
+  #fxTop{position:absolute;inset:0;pointer-events:none;z-index:5;overflow:hidden;}
+  .muzzle{position:absolute;width:54px;height:54px;margin:-27px;pointer-events:none;
+    background:radial-gradient(circle,#fff 0%,#ffe08a 30%,rgba(212,169,74,.6) 55%,transparent 70%);
+    animation:muzzle .18s ease-out forwards;}
+  @keyframes muzzle{from{opacity:1;transform:scale(.5) rotate(0)}
+    to{opacity:0;transform:scale(1.4) rotate(25deg)}}
+  .spark{position:absolute;width:3px;height:14px;background:linear-gradient(#fff,#d4a94a);
+    pointer-events:none;animation:spark .25s ease-out forwards;transform-origin:center;}
+  @keyframes spark{from{opacity:1}to{opacity:0;transform:translateY(-18px) scaleY(.3)}}
+  .dmgnum{position:absolute;font-size:18px;font-weight:bold;color:var(--gold);
+    text-shadow:0 0 8px #000;pointer-events:none;animation:floatup .7s ease-out forwards;}
+  .critnum{color:#fff;font-size:26px;text-shadow:0 0 12px var(--danger),0 0 4px #fff;}
+  .snipernum{color:#ff3232;font-size:42px;text-shadow:0 0 18px var(--danger),0 0 6px #fff;}
+  @keyframes floatup{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-40px)}}
+
+  /* 爪痕（被攻擊） */
+  #claw{position:absolute;inset:0;pointer-events:none;opacity:0;z-index:8;}
+  #claw.on{animation:clawFlash .5s ease-out;}
+  @keyframes clawFlash{0%{opacity:0}15%{opacity:1}100%{opacity:0}}
+  #redFlash{position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,transparent 30%,rgba(150,0,0,.55));
+    opacity:0;pointer-events:none;z-index:7;}
+
+  /* v17.2：受擊特效三件套（血痕／齒痕／彈痕）＋防禦統一閃光。皆畫在 #hitFxLayer(z-8)。 */
+  #hitFxLayer{position:absolute;inset:0;pointer-events:none;z-index:8;overflow:hidden;}
+  #hitFxLayer .fx{position:absolute;pointer-events:none;will-change:opacity,transform;}
+  /* 血痕：一道斜向割裂，紅色漸層，隨機角度由 --deg 控制 */
+  .fx-blood{left:50%;top:46%;width:260px;height:52px;margin:-26px 0 0 -130px;
+    transform:translate(-50%,-50%) rotate(var(--deg,20deg)) scaleX(.2);
+    background:linear-gradient(90deg,transparent,rgba(190,20,20,0) 8%,rgba(200,20,20,.92) 20%,rgba(120,0,0,.98) 50%,rgba(200,20,20,.92) 80%,rgba(190,20,20,0) 92%,transparent);
+    border-radius:50%;filter:drop-shadow(0 0 6px rgba(120,0,0,.8));opacity:0;
+    animation:bloodStreak .55s ease-out forwards;}
+  @keyframes bloodStreak{0%{opacity:0;transform:translate(-50%,-50%) rotate(var(--deg,20deg)) scaleX(.05)}
+    22%{opacity:1;transform:translate(-50%,-50%) rotate(var(--deg,20deg)) scaleX(1)}
+    100%{opacity:0;transform:translate(-50%,-50%) rotate(var(--deg,20deg)) scaleX(1)}}
+  /* 齒痕：上下兩排咬痕（用 radial-gradient 點陣模擬），隨機水平位置 */
+  .fx-bite{width:150px;height:96px;margin:-48px 0 0 -75px;opacity:0;
+    animation:biteMark .5s ease-out forwards;
+    background:
+      radial-gradient(circle at 12% 22%, rgba(150,0,0,.95) 0 5px, transparent 6px),
+      radial-gradient(circle at 30% 14%, rgba(150,0,0,.95) 0 6px, transparent 7px),
+      radial-gradient(circle at 50% 12%, rgba(150,0,0,.95) 0 6px, transparent 7px),
+      radial-gradient(circle at 70% 14%, rgba(150,0,0,.95) 0 6px, transparent 7px),
+      radial-gradient(circle at 88% 22%, rgba(150,0,0,.95) 0 5px, transparent 6px),
+      radial-gradient(circle at 12% 78%, rgba(150,0,0,.95) 0 5px, transparent 6px),
+      radial-gradient(circle at 30% 86%, rgba(150,0,0,.95) 0 6px, transparent 7px),
+      radial-gradient(circle at 50% 88%, rgba(150,0,0,.95) 0 6px, transparent 7px),
+      radial-gradient(circle at 70% 86%, rgba(150,0,0,.95) 0 6px, transparent 7px),
+      radial-gradient(circle at 88% 78%, rgba(150,0,0,.95) 0 5px, transparent 6px);
+    filter:drop-shadow(0 0 3px rgba(80,0,0,.8));}
+  @keyframes biteMark{0%{opacity:0;transform:scale(.7)}25%{opacity:1;transform:scale(1.05)}
+    45%{transform:scale(1)}100%{opacity:0}}
+  /* 彈痕：玻璃被擊碎（中心孔＋放射狀裂紋＋環裂），隨機位置。細節用內嵌 SVG 畫。 */
+  .fx-bullet{width:120px;height:120px;margin:-60px 0 0 -60px;opacity:0;
+    animation:bulletHole .5s ease-out forwards;}
+  @keyframes bulletHole{0%{opacity:0;transform:scale(.5)}20%{opacity:1;transform:scale(1.08)}
+    40%{transform:scale(1)}100%{opacity:.92}}
+
+  /* 防禦統一閃光：整張敵圖微微一閃（不過亮）。白＝格擋；金＝完美防禦／反擊。 */
+  #defFlash{position:absolute;inset:0;pointer-events:none;z-index:6;opacity:0;mix-blend-mode:screen;}
+  #defFlash.block{background:radial-gradient(circle at 50% 45%,rgba(255,255,255,.55),rgba(255,255,255,.12) 55%,transparent 72%);
+    animation:defFlashAnim .32s ease-out;}
+  #defFlash.gold{background:radial-gradient(circle at 50% 45%,rgba(240,205,110,.55),rgba(220,175,70,.14) 55%,transparent 72%);
+    animation:defFlashAnim .36s ease-out;}
+  @keyframes defFlashAnim{0%{opacity:0}30%{opacity:.7}100%{opacity:0}}
+
+
+
+  /* 角落按鈕 */
+  .corner-btn{position:absolute;z-index:37;width:44px;height:44px;border-radius:50%;
+    background:rgba(10,8,14,.7);border:1px solid var(--gold-dim);color:var(--gold);
+    font-size:20px;line-height:1;display:flex;align-items:center;justify-content:center;
+    font-family:inherit;-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);}
+  .corner-btn:active{transform:scale(.9);}
+  #exitBtn{top:10px;left:auto;right:10px;font-size:18px;}
+  /* v17：測試人員用「清盤」鈕（左上角）。z-index 同 corner-btn，聖徒化手勢層之上，確保可點。 */
+  #testClearBtn{top:10px;left:10px;right:auto;font-size:12px;letter-spacing:1px;color:var(--holy);border-color:var(--holy);}
+  #ultBtn{bottom:12px;right:12px;width:60px;height:60px;font-size:30px;}
+  #ultBtn:disabled{opacity:.35;}
+  #ultBtn.ready{border-color:var(--holy);color:var(--holy);
+    box-shadow:0 0 16px var(--holy);animation:pulse .8s infinite alternate;}
+  #ultBtn.dual{border-color:var(--holy);color:#fff;background:rgba(60,110,150,.5);
+    box-shadow:0 0 20px var(--holy);}
+
+  /* ===== 下半：純數字盤 ===== */
+  #bottom{height:50%;flex:none;background:var(--panel);padding:10px 12px;
+    display:flex;flex-direction:column;min-height:0;}
+  #gridWrap{flex:1 1 0;min-height:0;display:flex;align-items:center;justify-content:center;position:relative;}
+  #transition{position:absolute;inset:0;display:none;align-items:center;justify-content:center;
+    background:rgba(10,8,14,.82);z-index:15;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);}
+  #transition.on{display:flex;}
+  #transText{font-size:24px;letter-spacing:4px;color:var(--gold);font-weight:bold;
+    text-shadow:0 0 16px var(--gold-dim);animation:transPop .45s;}
+  @keyframes transPop{0%{transform:scale(.7);opacity:0}55%{transform:scale(1.12);opacity:1}100%{transform:scale(1);opacity:1}}
+  @keyframes pulse{from{filter:brightness(1)}to{filter:brightness(1.7)}}
+
+  #grid{display:grid;gap:6px;touch-action:manipulation;}
+  .cell{position:relative;background:var(--grid);border:1px solid #000;
+    border-radius:8px;display:flex;align-items:center;justify-content:center;
+    font-weight:bold;color:var(--ink);transition:transform .06s,background .1s;
+    box-shadow:inset 0 0 12px #0007;overflow:hidden;min-width:0;min-height:0;}
+  .cell:active{transform:scale(.93);}
+  .cell.done{background:var(--grid-active);color:var(--gold-dim);box-shadow:inset 0 0 16px var(--gold-dim);}
+  /* 被點掉的格子破碎消失 */
+  .cell.shatter{animation:cellShatter .32s ease-out forwards;pointer-events:none;}
+  @keyframes cellShatter{
+    0%{opacity:1;transform:scale(1);clip-path:polygon(0 0,100% 0,100% 100%,0 100%);
+       filter:brightness(1.6) drop-shadow(0 0 10px var(--gold));}
+    35%{opacity:1;transform:scale(1.08) rotate(-2deg);
+       clip-path:polygon(10% 0,80% 8%,100% 70%,60% 100%,0 85%,4% 30%);
+       filter:brightness(2) drop-shadow(0 0 16px #fff);}
+    100%{opacity:0;transform:scale(.2) rotate(12deg);
+       clip-path:polygon(45% 40%,55% 42%,58% 55%,50% 60%,42% 55%,44% 45%);
+       filter:brightness(.6);}
+  }
+  .cell.next{border-color:var(--gold);box-shadow:0 0 8px var(--gold-dim);}
+  .cell.wrong{animation:shake .3s;background:var(--danger);}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+  /* 威脅格 / 雙槍暴擊點 */
+  /* 敵方紅點防禦：漸縮半透明紅點，直接點掉解除 */
+  #redDots{position:absolute;inset:0;z-index:9;pointer-events:none;}
+  /* 聖徒化橫斬特效：依滑動方向的一道白金色斬擊光 */
+  #slashFx{position:absolute;inset:0;z-index:30;pointer-events:none;overflow:hidden;}
+  .slash-line{position:absolute;top:50%;left:-40%;width:180%;height:14px;
+    transform:translateY(-50%) rotate(-18deg);
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,0) 15%,#fff 48%,#ffe9a8 52%,rgba(255,233,168,0) 85%,transparent);
+    filter:drop-shadow(0 0 16px #fff) drop-shadow(0 0 28px var(--gold));
+    opacity:0;}
+  .slash-line.go-right{animation:slashRight .45s cubic-bezier(.2,.7,.2,1) forwards;}
+  .slash-line.go-left{animation:slashLeft .45s cubic-bezier(.2,.7,.2,1) forwards;}
+  @keyframes slashRight{0%{opacity:0;transform:translate(-60%,-50%) rotate(-18deg) scaleX(.4)}
+    30%{opacity:1}100%{opacity:0;transform:translate(40%,-50%) rotate(-18deg) scaleX(1.1)}}
+  @keyframes slashLeft{0%{opacity:0;transform:translate(60%,-50%) rotate(18deg) scaleX(.4)}
+    30%{opacity:1}100%{opacity:0;transform:translate(-40%,-50%) rotate(18deg) scaleX(1.1)}}
+  #slashFx.flash::after{content:"";position:absolute;inset:0;background:radial-gradient(circle,rgba(255,255,255,.5),transparent 60%);animation:slashFlash .45s ease-out forwards;}
+  @keyframes slashFlash{0%{opacity:0}20%{opacity:1}100%{opacity:0}}
+  .reddot{position:absolute;border-radius:50%;pointer-events:auto;cursor:pointer;
+    background:radial-gradient(circle,rgba(255,70,70,.7),rgba(200,20,20,.3) 60%,transparent 72%);
+    border:2px solid rgba(255,100,100,.9);box-shadow:0 0 22px rgba(255,40,40,.85),inset 0 0 12px rgba(255,80,80,.6);
+    transform:translate(-50%,-50%);}
+  /* 盤面警戒：紅點出現時數字盤變紅，提醒玩家抬頭看敵人 */
+  #grid.alert .cell{border-color:var(--danger);color:#ff8a8a;}
+  #grid.alert{animation:alertPulse .5s infinite alternate;}
+  @keyframes alertPulse{from{filter:none}to{filter:drop-shadow(0 0 8px var(--danger))}}
+  /* 雙槍模式盤面外框 */
+  #grid.dualwield .cell{border-color:var(--holy);}
+  #grid.dualwield{filter:drop-shadow(0 0 6px var(--holy));}
+  /* 攻擊加倍 buff 盤面金框 */
+  #grid.buffed .cell{border-color:var(--gold);}
+  #grid.buffed{filter:drop-shadow(0 0 8px var(--gold));}
+  /* 聖徒化盤面（金色神聖） */
+  #grid.saint .cell{border-color:var(--gold);background:#2a2418;color:#ffe9a8;}
+  #grid.saint{filter:drop-shadow(0 0 14px var(--gold));animation:saintPulse .8s infinite alternate;}
+  /* v16：聖徒化期間敵發動攻擊（有紅點）時，盤面一樣要變紅（覆蓋金色） */
+  #grid.saint.alert .cell{border-color:var(--danger);color:#ff8a8a;background:#2a1414;}
+  #grid.saint.alert{filter:drop-shadow(0 0 12px var(--danger));animation:alertPulse .5s infinite alternate;}
+  @keyframes saintPulse{from{filter:drop-shadow(0 0 10px var(--gold))}to{filter:drop-shadow(0 0 20px #fff)}}
+
+  /* 彈殼 */
+  .shell{position:absolute;width:9px;height:20px;
+    background:linear-gradient(120deg,#fff3c4 0%,#e8c56a 35%,#a8842e 70%,#6b5220 100%);
+    border-radius:3px;pointer-events:none;z-index:10;
+    box-shadow:0 0 6px rgba(232,197,106,.7);animation:shellEject .55s ease-in forwards;}
+  @keyframes shellEject{0%{opacity:1;transform:translate(0,0) rotate(0)}
+    100%{opacity:0;transform:translate(34px,40px) rotate(260deg)}}
+
+  #controls{margin-top:10px;display:flex;gap:8px;flex-shrink:0;}
+  button.act{flex:1;padding:11px;background:transparent;border:1px solid var(--gold-dim);
+    color:var(--gold);border-radius:8px;font-family:inherit;font-size:13px;letter-spacing:2px;}
+  button.act:active{background:var(--grid-active);}
+  button.act:disabled{opacity:.3;}
+  button.act.ready{border-color:var(--holy);color:var(--holy);animation:pulse .8s infinite alternate;}
+
+  /* 雙槍 cut-in 演出 */
+  #cutin{position:absolute;inset:0;z-index:40;display:none;overflow:hidden;
+    background:radial-gradient(circle at 50% 50%,rgba(40,10,50,.7),rgba(5,4,10,.95));}
+  #cutin.on{display:block;}
+  #cutinImg{position:absolute;top:50%;left:50%;width:88%;max-width:460px;aspect-ratio:4/5;
+    transform:translate(-50%,-50%);
+    border:2px solid var(--gold);box-shadow:0 0 40px var(--holy),0 0 80px rgba(120,40,160,.6);
+    opacity:0;}
+  #cutin.on #cutinImg{animation:cutinSlide 1.5s cubic-bezier(.2,.8,.2,1) forwards;}
+  @keyframes cutinSlide{
+    0%{opacity:0;transform:translate(-50%,-50%) scale(1.4) rotate(-4deg);}
+    18%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(0deg);}
+    82%{opacity:1;transform:translate(-50%,-50%) scale(1.03);}
+    100%{opacity:0;transform:translate(-50%,-50%) scale(1.06);}
+  }
+  #cutinFlash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;}
+  #cutin.on #cutinFlash{animation:cutinFlash 1.5s ease-out forwards;}
+  @keyframes cutinFlash{0%{opacity:.9}12%{opacity:0}100%{opacity:0}}
+  #cutinText{position:absolute;bottom:16%;left:0;right:0;text-align:center;
+    font-size:30px;letter-spacing:10px;color:var(--gold);font-weight:bold;
+    text-shadow:0 0 16px var(--holy),0 2px 6px #000;opacity:0;}
+  #cutin.on #cutinText{animation:cutinTextIn 1.5s ease-out forwards;}
+  @keyframes cutinTextIn{0%{opacity:0;transform:translateY(20px)}25%{opacity:1;transform:translateY(0)}85%{opacity:1}100%{opacity:0}}
+
+  /* 雙槍 cut-in 演出 */
+  #cutin{position:absolute;inset:0;z-index:40;display:none;overflow:hidden;
+    background:radial-gradient(circle at 50% 50%,rgba(40,10,50,.6),rgba(5,4,10,.95));}
+  #cutin.on{display:block;}
+  #cutinFlash{position:absolute;inset:0;background:#fff;opacity:0;}
+  #cutin.on #cutinFlash{animation:cutinFlash 1.5s ease-out;}
+  @keyframes cutinFlash{0%{opacity:1}12%{opacity:0}100%{opacity:0}}
+  #cutinImg{position:absolute;top:50%;left:50%;height:96%;max-width:none;
+    filter:drop-shadow(0 0 30px #c0308a) drop-shadow(0 0 12px #6a30c0);
+    transform:translate(-50%,-50%) scale(1.3);opacity:0;}
+  #cutin.on #cutinImg{animation:cutinImg 1.5s cubic-bezier(.15,.7,.3,1);}
+  @keyframes cutinImg{
+    0%{transform:translate(-120%,-50%) scale(1.5) rotate(-8deg);opacity:0;}
+    18%{transform:translate(-50%,-50%) scale(1.28) rotate(0deg);opacity:1;}
+    82%{transform:translate(-50%,-50%) scale(1.22);opacity:1;}
+    100%{transform:translate(30%,-50%) scale(1.2);opacity:0;}
+  }
+  #cutinText{position:absolute;bottom:16%;left:0;right:0;text-align:center;
+    font-size:40px;font-weight:900;letter-spacing:8px;color:#fff;
+    text-shadow:0 0 20px #c0308a,0 0 8px #fff,3px 3px 0 #6a30c0;
+    font-family:Impact,"Arial Black",sans-serif;opacity:0;transform:skewX(-10deg);}
+  #cutinText .cutin-en{display:block;font-size:16px;letter-spacing:4px;font-weight:700;
+    margin-top:6px;opacity:.92;text-shadow:0 0 12px #c0308a,0 1px 3px #000;}
+  #cutin.on #cutinText{animation:cutinText 1.5s ease-out;}
+  @keyframes cutinText{0%{opacity:0;transform:skewX(-10deg) scale(2)}
+    20%{opacity:1;transform:skewX(-10deg) scale(1)}
+    80%{opacity:1}100%{opacity:0}}
+  #cutinStreak{position:absolute;inset:0;pointer-events:none;
+    background:repeating-linear-gradient(-24deg,transparent 0 18px,rgba(192,48,138,.18) 18px 20px);}
+  #cutin.on #cutinStreak{animation:cutinStreak .5s linear infinite;}
+  @keyframes cutinStreak{from{background-position:0 0}to{background-position:40px 0}}
+
+  /* ===== 聖徒化結局全畫面 cut-in ===== */
+  #saintCutin{position:absolute;inset:0;z-index:50;display:none;overflow:hidden;}
+  /* 生命歸還手勢層：預設隱藏，聖徒化時 .on 開啟；只覆蓋上半敵畫面(高50%)，不擋下半盤面點擊 */
+  #returnSwipe{position:absolute;left:0;right:0;top:0;height:50%;z-index:35;display:none;background:transparent;touch-action:none;}
+  #returnSwipe.on{display:block;}
+  /* 向心聚光特效：按住時定位到觸摸點，光線由四周向中心收束 */
+  #returnAura{position:absolute;width:0;height:0;pointer-events:none;display:none;z-index:36;}
+  #returnAura.on{display:block;}
+  #returnAura .core{position:absolute;left:-9px;top:-9px;width:18px;height:18px;border-radius:50%;
+    background:radial-gradient(circle,rgba(255,240,190,.95),rgba(255,180,90,.5) 55%,transparent 72%);
+    box-shadow:0 0 18px 6px rgba(255,200,110,.6);animation:auraCore .9s ease-in-out infinite;}
+  #returnAura .ray{position:absolute;left:0;top:0;width:3px;height:64px;transform-origin:50% 0;
+    background:linear-gradient(to bottom,transparent,rgba(255,210,130,.85));
+    filter:drop-shadow(0 0 3px rgba(255,190,90,.8));animation:auraRay 1s ease-in infinite;}
+  @keyframes auraRay{
+    0%{ transform:rotate(var(--a)) translateY(76px) scaleY(1); opacity:0; }
+    30%{ opacity:.9; }
+    100%{ transform:rotate(var(--a)) translateY(4px) scaleY(.5); opacity:0; }
+  }
+  @keyframes auraCore{ 0%,100%{transform:scale(.85);opacity:.75;} 50%{transform:scale(1.15);opacity:1;} }
+  #saintCutin.on{display:block;}
+  #saintCutin.burst{background:radial-gradient(circle at 50% 45%,rgba(60,45,10,.85),rgba(8,6,2,.97));}
+  #saintCutin.obe{background:radial-gradient(circle at 50% 45%,rgba(60,8,40,.9),rgba(6,2,8,.98));}
+  #saintCutin.execute{background:radial-gradient(circle at 50% 45%,rgba(80,60,10,.92),rgba(4,2,0,.99));}
+  #saintCutin.return{background:radial-gradient(circle at 50% 45%,rgba(70,55,15,.9),rgba(6,4,1,.98));}
+  #saintCutin.boss{background:radial-gradient(circle at 50% 45%,rgba(70,10,20,.9),rgba(8,2,4,.98));}
+  .scimg{position:absolute;inset:0;width:100%;height:100%;
+    object-fit:cover;object-position:50% 30%;opacity:0;z-index:0;display:none;}
+  /* 依結局類型只顯示對應圖片 */
+  #saintCutin.burst .scimg[data-kind="burst"],
+  #saintCutin.obe .scimg[data-kind="obe"],
+  #saintCutin.execute .scimg[data-kind="execute"],
+  #saintCutin.return .scimg[data-kind="return"],
+  #saintCutin.boss .scimg[data-kind="boss"]{display:block;}
+  #saintCutin.on .scimg{animation:saintCutinImgIn 1.6s ease-out forwards;}
+  @keyframes saintCutinImgIn{0%{opacity:0;transform:scale(1.15)}
+    18%{opacity:1;transform:scale(1)}82%{opacity:1;transform:scale(1)}
+    100%{opacity:.85;transform:scale(1.03)}}
+  #saintCutin.execute.on .scimg[data-kind="execute"]{animation-duration:3s;}
+  #saintCutinFlash{position:absolute;inset:0;opacity:0;z-index:1;}
+  #saintCutinStreak,#saintCutinTitle,#saintCutinSub{z-index:2;}
+  #saintCutin.burst #saintCutinFlash{background:#fff;}
+  #saintCutin.obe #saintCutinFlash{background:#ff3b3b;}
+  #saintCutin.execute #saintCutinFlash{background:#fff;}
+  #saintCutin.return #saintCutinFlash{background:#fff;}
+  #saintCutin.boss #saintCutinFlash{background:#ff3b3b;}
+  #saintCutin.on #saintCutinFlash{animation:cutinFlash 1.6s ease-out forwards;}
+  #saintCutinStreak{position:absolute;inset:0;pointer-events:none;}
+  #saintCutin.burst #saintCutinStreak{
+    background:repeating-linear-gradient(-24deg,transparent 0 16px,rgba(255,223,120,.16) 16px 19px);}
+  #saintCutin.obe #saintCutinStreak{
+    background:repeating-linear-gradient(-24deg,transparent 0 16px,rgba(255,60,90,.18) 16px 19px);}
+  #saintCutin.execute #saintCutinStreak{
+    background:repeating-linear-gradient(-24deg,transparent 0 14px,rgba(255,240,190,.22) 14px 17px);}
+  #saintCutin.return #saintCutinStreak{
+    background:repeating-linear-gradient(-24deg,transparent 0 16px,rgba(255,223,120,.16) 16px 19px);}
+  #saintCutin.boss #saintCutinStreak{
+    background:repeating-linear-gradient(-24deg,transparent 0 16px,rgba(255,60,90,.18) 16px 19px);}
+  #saintCutin.on #saintCutinStreak{animation:cutinStreak .5s linear infinite;}
+  #saintCutinTitle{position:absolute;top:42%;left:0;right:0;text-align:center;
+    transform:translateY(-50%) skewX(-8deg);font-weight:900;
+    font-family:Impact,"Arial Black",sans-serif;line-height:1.05;
+    font-size:clamp(30px,9vw,64px);letter-spacing:4px;opacity:0;padding:0 4%;white-space:pre-line;}
+  #saintCutin.burst #saintCutinTitle{color:#fff;
+    text-shadow:0 0 22px var(--holy),0 0 10px #ffe9a8,3px 3px 0 var(--gold);}
+  #saintCutin.obe #saintCutinTitle{color:#fff;
+    text-shadow:0 0 22px #ff3b6b,0 0 10px #ff8a8a,3px 3px 0 #6a1030;}
+  #saintCutin.execute #saintCutinTitle{color:#fff;
+    text-shadow:0 0 26px var(--gold),0 0 12px #fff,3px 3px 0 #7a5a10;}
+  #saintCutin.return #saintCutinTitle{color:#fff;
+    text-shadow:0 0 22px var(--holy),0 0 10px #ffe9a8,3px 3px 0 var(--gold);}
+  #saintCutin.boss #saintCutinTitle{color:#fff;
+    text-shadow:0 0 22px #ff3b6b,0 0 10px #ff8a8a,3px 3px 0 #6a1030;}
+  #saintCutin.on #saintCutinTitle{animation:saintCutinTitle 1.6s ease-out forwards;}
+  @keyframes saintCutinTitle{0%{opacity:0;transform:translateY(-50%) skewX(-8deg) scale(2.2)}
+    18%{opacity:1;transform:translateY(-50%) skewX(-8deg) scale(1)}
+    82%{opacity:1}100%{opacity:0;transform:translateY(-50%) skewX(-8deg) scale(1.05)}}
+  #saintCutinSub{position:absolute;top:60%;left:0;right:0;text-align:center;
+    font-size:clamp(13px,3.5vw,18px);letter-spacing:6px;font-weight:bold;opacity:0;}
+  #saintCutin.burst #saintCutinSub{color:var(--gold);text-shadow:0 0 12px var(--holy);}
+  #saintCutin.obe #saintCutinSub{color:#ff9db3;text-shadow:0 0 12px #ff3b6b;}
+  #saintCutin.execute #saintCutinSub{color:#ffe9a8;text-shadow:0 0 14px var(--gold);}
+  #saintCutin.return #saintCutinSub{color:var(--gold);text-shadow:0 0 12px var(--holy);}
+  #saintCutin.boss #saintCutinSub{color:#ff9db3;text-shadow:0 0 12px #ff3b6b;}
+  #saintCutin.on #saintCutinSub{animation:cutinTextIn 1.6s ease-out forwards;}
+  /* EXSECUTIŌ 停留 3 秒：拉長各元素動畫 */
+  #saintCutin.execute.on #saintCutinFlash{animation-duration:3s;}
+  #saintCutin.execute.on #saintCutinTitle{animation:saintCutinTitleHold 3s ease-out forwards;}
+  #saintCutin.execute.on #saintCutinSub{animation:cutinTextInHold 3s ease-out forwards;}
+  @keyframes saintCutinTitleHold{0%{opacity:0;transform:translateY(-50%) skewX(-8deg) scale(2.2)}
+    10%{opacity:1;transform:translateY(-50%) skewX(-8deg) scale(1)}
+    90%{opacity:1}100%{opacity:0;transform:translateY(-50%) skewX(-8deg) scale(1.05)}}
+  @keyframes cutinTextInHold{0%{opacity:0;transform:translateY(20px)}12%{opacity:1;transform:translateY(0)}90%{opacity:1}100%{opacity:0}}
+
+  #banner{position:absolute;inset:0;display:none;flex-direction:column;
+    align-items:center;justify-content:space-between;background:rgba(5,4,10,.94);z-index:30;text-align:center;
+    padding:0;overflow:hidden;}
+  #banner.on{display:flex;}
+  /* 可捲動內容區（大標→rows→立繪），retry 固定在最底 */
+  #bannerScroll{flex:1 1 auto;width:100%;display:flex;flex-direction:column;align-items:center;
+    justify-content:flex-start;overflow-y:auto;overflow-x:hidden;padding:26px 0 6px;position:relative;
+    min-height:0;-webkit-overflow-scrolling:touch;}
+  #banner h1{font-size:28px;letter-spacing:4px;color:var(--gold);margin:0 0 8px;
+    text-shadow:0 0 16px var(--gold-dim);}
+  #banner p{font-size:13px;letter-spacing:2px;opacity:.8;margin:4px 0 14px;}
+  #banner.lose h1{color:var(--danger);text-shadow:0 0 16px var(--blood);}
+  /* 大標＋retry 同時進場：淡入＋輕微下沉 */
+  @keyframes bannerHeadIn{ from{opacity:0;transform:translateY(-10px);} to{opacity:1;transform:none;} }
+  #banner.seq h1, #banner.seq p{animation:bannerHeadIn .35s ease-out both;}
+  #banner.seq #rematchBtn{animation:bannerHeadIn .35s ease-out both;}
+  /* 結算數據列 */
+  #resultStats{margin:2px 0 14px;font-size:13px;letter-spacing:1px;line-height:1.9;color:var(--ink);
+    min-width:230px;}
+  #resultStats .row{display:flex;justify-content:space-between;gap:24px;min-width:230px;}
+  #resultStats .row b{color:var(--gold);font-weight:normal;}
+  #resultStats .record{color:#ffe08a;font-size:12px;letter-spacing:3px;
+    text-shadow:0 0 10px var(--gold);animation:blink .5s infinite alternate;margin-top:6px;}
+  /* rows 逐行下刷：每行淡入下沉，1 秒內刷完（delay 由 JS 逐行設定） */
+  @keyframes rowSweep{ from{opacity:0;transform:translateY(-8px);} to{opacity:1;transform:none;} }
+  #resultStats .row, #resultStats .record{opacity:0;}
+  #resultStats.sweep .row, #resultStats.sweep .record{animation:rowSweep .28s ease-out forwards;}
+  /* 評價等第 */
+  #resultStats .rank{font-weight:bold;letter-spacing:2px;}
+  #resultStats .rank-S{color:#ffe08a;text-shadow:0 0 12px var(--gold);}
+  #resultStats .rank-A{color:var(--gold);}
+  #resultStats .rank-B{color:var(--holy);}
+  #resultStats .rank-C{color:#b9c2cc;}
+  #resultStats .rank-D{color:#8f97a0;}
+  #resultStats .rank-E{color:#6d7178;}
+  /* ===== 監察官立繪舞台 ===== */
+  #inspectorStage{position:relative;width:100%;max-width:340px;margin-top:6px;
+    display:flex;justify-content:center;flex:0 0 auto;}
+  #inspectorPortrait{width:auto;max-height:46vh;object-fit:contain;
+    filter:drop-shadow(0 6px 24px rgba(0,0,0,.7));
+    opacity:0;transform:translateY(14px) scale(.98);
+    -webkit-mask-image:radial-gradient(120% 100% at 50% 42%,#000 62%,transparent 96%);
+    mask-image:radial-gradient(120% 100% at 50% 42%,#000 62%,transparent 96%);}
+  #banner.seq #inspectorPortrait{animation:portraitIn .5s cubic-bezier(.2,.7,.3,1) both;}
+  @keyframes portraitIn{ from{opacity:0;transform:translateY(14px) scale(.98);}
+    to{opacity:1;transform:none;} }
+  /* 對話框：絕對定位，疊在立繪下方約 1/4 處，半透明 */
+  #inspectorBubble{position:absolute;left:50%;bottom:22%;transform:translateX(-50%) translateY(8px);
+    width:82%;max-width:300px;background:rgba(16,12,24,.72);
+    border:1px solid var(--gold-dim);border-radius:8px;padding:10px 13px;text-align:left;
+    box-shadow:0 4px 20px rgba(0,0,0,.55);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);
+    opacity:0;pointer-events:none;}
+  #inspectorBubble.show{animation:bubbleIn .3s ease-out forwards;}
+  @keyframes bubbleIn{ from{opacity:0;transform:translateX(-50%) translateY(8px);}
+    to{opacity:1;transform:translateX(-50%) translateY(0);} }
+  #inspectorBubble .insp-name{font-size:11px;letter-spacing:2px;color:var(--gold);
+    margin-bottom:5px;opacity:.9;}
+  #inspectorBubble .insp-line{font-size:13px;letter-spacing:.5px;line-height:1.6;color:var(--ink);min-height:1.6em;}
+  #inspectorBubble .insp-line .caret{opacity:.7;animation:blink .5s infinite alternate;}
+  /* retry 鈕：置底、與畫面同寬、降低高度 */
+  #banner #rematchBtn{flex:0 0 auto;width:100%;max-width:none;margin:0;border-radius:0;
+    padding:12px 0;border:none;border-top:1px solid var(--gold-dim);
+    background:rgba(20,16,28,.6);color:var(--gold);letter-spacing:4px;font-size:15px;}
+  #banner #rematchBtn:active{background:var(--grid-active);}
+  /* 迎擊鈕（S 解鎖後）：變色＋發光脈動 */
+  #banner #rematchBtn.intercept{color:var(--danger);border-top-color:var(--blood);
+    background:rgba(60,12,18,.55);text-shadow:0 0 12px var(--blood);
+    box-shadow:0 -2px 20px rgba(200,40,40,.4),inset 0 0 18px rgba(200,40,40,.25);
+    animation:interceptPulse .7s infinite alternate;}
+  @keyframes interceptPulse{ from{box-shadow:0 -2px 14px rgba(200,40,40,.3),inset 0 0 12px rgba(200,40,40,.2);}
+    to{box-shadow:0 -2px 26px rgba(220,60,60,.6),inset 0 0 22px rgba(220,60,60,.35);} }
+
+  /* ===== 首頁 ===== */
+  #home{position:absolute;inset:0;display:none;flex-direction:column;
+    align-items:center;justify-content:center;z-index:50;text-align:center;
+    background:radial-gradient(120% 90% at 50% 30%,#1a1330,#07050c 90%);}
+  #home.on{display:flex;}
+  #home .title{font-size:38px;letter-spacing:8px;color:var(--gold);margin:0 0 6px;
+    text-shadow:0 0 20px var(--gold-dim),0 0 40px rgba(120,40,160,.5);font-weight:bold;}
+  #home .subtitle{font-size:13px;letter-spacing:3px;color:var(--holy);opacity:.85;margin-bottom:44px;}
+  #startBtn{padding:16px 46px;background:transparent;border:1px solid var(--gold);
+    color:var(--gold);border-radius:10px;font-family:inherit;font-size:17px;letter-spacing:5px;
+    box-shadow:0 0 18px var(--gold-dim);animation:pulse 1.2s infinite alternate;}
+  #startBtn:active{transform:scale(.94);}
+  /* 首頁副武器/搭檔占位入口 */
+  #homeLoadout{display:flex;gap:14px;margin-top:28px;}
+  .loadout-btn{display:flex;flex-direction:column;align-items:center;gap:3px;
+    padding:10px 20px;min-width:100px;background:transparent;border:1px solid var(--gold-dim);
+    color:var(--ink);border-radius:8px;font-family:inherit;}
+  .loadout-btn:active{transform:scale(.95);}
+  .loadout-btn .lb-label{font-size:11px;letter-spacing:3px;color:var(--gold-dim);}
+  .loadout-btn .lb-value{font-size:13px;letter-spacing:1px;color:var(--gold);}
+  /* 選擇彈層 */
+  #pickSheet{position:absolute;inset:0;display:none;align-items:center;justify-content:center;
+    background:rgba(4,3,8,.85);z-index:60;}
+  #pickSheet.on{display:flex;}
+  #pickSheet .pick-panel{width:82%;max-width:340px;background:#0f0c16;
+    border:1px solid var(--gold-dim);border-radius:12px;padding:18px 16px;text-align:center;
+    box-shadow:0 0 30px rgba(0,0,0,.7);}
+  #pickSheet .pick-title{font-size:15px;letter-spacing:4px;color:var(--gold);margin-bottom:14px;}
+  #pickSheet .pick-list{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
+  #pickSheet .pick-item{padding:11px 14px;background:rgba(30,24,42,.7);
+    border:1px solid var(--gold-dim);border-radius:7px;color:var(--ink);
+    font-family:inherit;font-size:14px;letter-spacing:1px;text-align:left;}
+  #pickSheet .pick-item.selected{border-color:var(--gold);color:var(--gold);
+    box-shadow:0 0 12px var(--gold-dim);}
+  #pickSheet .pick-item:active{transform:scale(.98);}
+  #pickSheet .pick-item .pi-sub{display:block;font-size:11px;letter-spacing:.5px;
+    color:var(--gold-dim);margin-top:3px;}
+  #pickSheet .pick-close{padding:9px 30px;background:transparent;border:1px solid var(--gold-dim);
+    color:var(--ink);border-radius:8px;font-family:inherit;font-size:13px;letter-spacing:3px;}

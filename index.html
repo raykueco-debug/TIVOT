@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover, user-scalable=no">
+<!-- iOS 加到主畫面全螢幕（隱藏 Safari 網址列/工具列） -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="聖約第四騎士團">
+<!-- Android/Chrome PWA 全螢幕 -->
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0a080e">
+<title>聖裁修女 · 原型 v2</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+  <!-- 生命歸還手勢層：聖徒化時開啟，透明覆蓋全畫面、完全接管觸控偵測上滑 -->
+  <div id="returnSwipe"><div id="returnAura"></div></div>
+  <!-- 上半：敵人 -->
+  <div id="top">
+    <img id="enemyImg" alt="敵人">
+    <div id="topVignette"></div>
+    <div id="redFlash"></div>
+    <div id="defFlash"></div>
+    <div id="hitFxLayer"></div>
+    <div id="fxTop"></div>
+    <div id="redDots"></div>
+    <div id="slashFx"></div>
+    <svg id="claw" viewBox="0 0 400 500" preserveAspectRatio="none">
+      <g stroke="rgba(200,30,30,.9)" stroke-width="6" fill="none" stroke-linecap="round"
+         filter="drop-shadow(0 0 4px #400)">
+        <path d="M60,40 C160,180 240,340 330,470"/>
+        <path d="M130,20 C220,170 300,330 380,450"/>
+        <path d="M10,90 C110,220 190,380 270,490"/>
+      </g>
+    </svg>
+    <div id="hud">
+      <div class="enemy-name" id="enemyName">地下聖徒</div>
+    </div>
+    <!-- 敵我血條：橫置於敵人區下方，敵上我下；破防計量表 C 字扣左側 -->
+    <div id="barsBlock">
+      <div id="energyClasp">
+        <svg viewBox="0 0 20 60" preserveAspectRatio="none">
+          <!-- C 字型：右側開口，環抱兩條血條的左緣 -->
+          <path class="clasp-track" d="M18 3 A 15 27 0 1 0 18 57"/>
+          <path class="clasp-fill"  id="energyClaspFill" d="M18 3 A 15 27 0 1 0 18 57"/>
+        </svg>
+      </div>
+      <div id="barStack">
+        <div class="hrow">
+          <div class="hpbar enemy-bar"><i id="enemyHp"></i></div>
+          <div class="hp-num" id="enemyHpNum"></div>
+        </div>
+        <div class="hrow">
+          <div class="hpbar player-bar"><i id="playerHp"></i></div>
+          <div class="hp-num" id="playerHpNum"></div>
+        </div>
+      </div>
+    </div>
+    <!-- 退出：右上角 → 回到首頁 -->
+    <button id="exitBtn" class="corner-btn">✕</button>
+    <button id="testClearBtn" class="corner-btn">清盤</button>
+    <!-- 雙槍/開火：右下角 -->
+    <!-- 聖徒化改為敵人框左右滑發動、雙槍改滿值自動，故移除舊大招鈕 -->
+    <div id="chargeWarn"><!-- 倒數數字與招式名已取消，紅圈本身即為時機提示 --></div>
+  </div>
+
+  <!-- 下半：純數字盤 -->
+  <div id="bottom">
+    <div id="gridWrap"><div id="grid"></div>
+      <div id="transition"><div id="transText">RELOADING</div></div>
+    </div>
+  </div>
+
+  <!-- 雙槍 cut-in 演出 -->
+  <div id="cutin">
+    <div id="cutinFlash"></div>
+    <img id="cutinImg" alt="">
+    <div id="cutinText">Guard Crushing</div>
+    <div id="cutinStreak"></div>
+  </div>
+
+  <!-- 聖徒化結局全畫面 cut-in：OBE / Maximum Burst -->
+  <div id="saintCutin">
+    <img id="saintCutinImg" class="scimg" data-kind="execute" alt="">
+    <img id="saintCutinImgObe" class="scimg" data-kind="obe" alt="">
+    <img id="saintCutinImgBurst" class="scimg" data-kind="burst" alt="">
+    <img id="saintCutinImgReturn" class="scimg" data-kind="return" alt="">
+    <img id="saintCutinImgBoss" class="scimg" data-kind="boss" alt="">
+    <div id="saintCutinFlash"></div>
+    <div id="saintCutinStreak"></div>
+    <div id="saintCutinTitle"></div>
+    <div id="saintCutinSub"></div>
+  </div>
+
+  <!-- 勝負 / 結算 -->
+  <div id="banner">
+    <div id="bannerScroll">
+      <h1 id="bannerTitle"></h1>
+      <p id="bannerSub"></p>
+      <div id="resultStats"></div>
+      <!-- 監察官立繪 + 疊在其下 1/4 的對話框 -->
+      <div id="inspectorStage">
+        <img id="inspectorPortrait" alt="">
+        <div id="inspectorBubble">
+          <div class="insp-name" id="inspectorName"></div>
+          <div class="insp-line" id="inspectorLine"></div>
+        </div>
+      </div>
+    </div>
+    <button class="act" id="rematchBtn">再度執槍</button>
+  </div>
+
+  <!-- 首頁 -->
+  <div id="home" class="on">
+    <div class="title">聖約第四騎士團</div>
+    <div class="subtitle">The IV Order of Testament</div>
+    <button id="startBtn">開始遊戲</button>
+    <!-- 副武器 / 搭檔 選擇入口（占位：只接 UI，暫不影響戰鬥）-->
+    <div id="homeLoadout">
+      <button class="loadout-btn" id="pickWeaponBtn"><span class="lb-label">副武器</span><span class="lb-value" id="pickWeaponValue">—</span></button>
+      <button class="loadout-btn" id="pickPartnerBtn"><span class="lb-label">搭　檔</span><span class="lb-value" id="pickPartnerValue">—</span></button>
+    </div>
+  </div>
+
+  <!-- 選擇彈層（副武器 / 搭檔 共用）-->
+  <div id="pickSheet">
+    <div class="pick-panel">
+      <div class="pick-title" id="pickSheetTitle">選擇</div>
+      <div class="pick-list" id="pickSheetList"></div>
+      <button class="pick-close" id="pickSheetClose">關閉</button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="main.js"></script>
+</body>
+</html>
