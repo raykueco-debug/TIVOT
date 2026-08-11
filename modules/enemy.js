@@ -37,8 +37,18 @@ export function showHitFx(kind){
     case 'blood': spawnBlood(fx.angle==='random'); break;
     case 'bite':  spawnBite(); break;
     case 'bullet':spawnBullets(fx.count||1, fx.pos==='random'); break;
+    case 'slash': spawnSlash(); break;
     default:      triggerClaw();
   }
+}
+// 紅刀痕濺血：一條斜向亮紅刀痕 + 一道血痕（按錯懲罰用）
+export function spawnSlash(){
+  const d=document.createElement('div');
+  d.className='fx fx-slash';
+  const deg=(Math.random()<0.5?-1:1)*(20+Math.random()*35);   // 斜角 ±(20~55)°
+  d.style.setProperty('--deg', deg.toFixed(1)+'deg');
+  addFx(d,480);
+  spawnBlood(true);   // 濺血（血痕，角度隨機）
 }
 // 既有三爪：可指定 count 與是否隨機整體角度（透過父層旋轉）
 export function triggerClaw(count, randomAngle){
@@ -168,6 +178,7 @@ export function setEnemy(key){
   const wp = en.wrongPenalty || {};              // 3.3：按錯懲罰縮放
   state.WRONG_PENALTY_SCALE = wp.dmgScale!=null ? wp.dmgScale : 1;
   state.curEnemyHitFx = en.hitFx || null;        // 3.7：本怪受擊特效三件套
+  state.curEnemySound = en.sound || null;        // 3.7：本怪攻擊音（依 kind：ult/delay/wrong）
   // 名稱與立繪
   const nameEl = $('enemyName');
   if(nameEl) nameEl.textContent = displayEnemyName(en.name);

@@ -38,8 +38,9 @@ combat.setup();
 // 預載音檔（反擊武器 SE + 清盤換彈 + 普攻手槍）：降低首次播放延遲；解鎖於首次手勢（SFX.unlock）
 SFX.preload([
   asset('se_mg_squall'), asset('se_shotgun_blast'), asset('se_sniper_falcon'),
-  asset('sfx_reload'),
+  asset('sfx_reload'), asset('se_guard'),
   asset('se_pistol_02'),
+  asset('em_slash'), asset('em_smack'), asset('em_shot'), asset('em_dagger'),
 ].filter(Boolean));
 // 普攻槍聲：固定用 Pistol_SE_02（不隨機）
 SFX.setShots([asset('se_pistol_02')].filter(Boolean));

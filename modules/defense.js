@@ -15,7 +15,7 @@
  *    不 import combat/weapon（維持 §2 依賴方向，不製造反向依賴）。
  * ========================================================================== */
 
-import { GAME_CONFIG } from '../config.js';
+import { GAME_CONFIG, asset } from '../config.js';
 import { state, addPerfect } from '../state.js';
 import { SFX } from '../audio.js';
 
@@ -181,14 +181,14 @@ export function resolveThreat(th){
       api.floatDmg('PERFECT','50%','40%',true);
       api.weaponCounter(w.perfectDamageScale);
     }else{
-      // 一般武器：完全免傷（狙擊 noPerfectBand=true 時此帶消失，落入下方 Defense）。純免傷 → 合成重擊音。
-      SFX.heavyHit();
+      // 一般武器（如重機槍）：完全免傷（狙擊 noPerfectBand=true 時此帶消失，落入下方 Defense）。
+      //   完美防禦音＝weapon 的 Guard_SE（散彈完防走自己的槍聲，不到這裡）。
+      SFX.play(asset('se_guard'));
       api.floatDmg('PERFECT','50%','40%',true);
     }
   }else{
-    // === Defense（格擋）===（白色微閃）
+    // === Defense（格擋＝不完美防禦，仍挨大絕）===（白色微閃）。攻擊音由下方 enemyAttack('ult') 出敵大絕音。
     flashDefense('block');
-    SFX.heavyHit();        // 格擋：合成重擊感（同完防）
     if(state.saintMode){
       // 聖徒化期間：格擋＝推進 +0.5 秒（下一輪聖徒化才會實際生效）
       api.enemyAttack(0, 'ult', state.playerMax/SAINT_BLOCK_DIVISOR);

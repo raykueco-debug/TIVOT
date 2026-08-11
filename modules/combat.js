@@ -326,6 +326,9 @@ function floatDmg(txt,left,top,crit,extraClass){
 // 被攻擊：扣玩家血 + 受擊特效 + 震動（saintMode 分支下一輪接）
 function enemyAttack(dmg, kind, saintAmt){
   if(state.over) return;
+  // 敵攻擊音：依 kind 播該怪對應音（ult＝大絕命中/不完美防禦格擋、delay＝太慢、wrong＝按錯）。
+  const sk = state.curEnemySound && state.curEnemySound[kind];
+  if(sk) SFX.play(asset(sk));
   if(state.saintMode){
     // 聖徒化期間敵攻擊不扣血：改推進倒數槽（推滿＝OBE）。視覺（震動/受擊特效/紅閃）留在 combat，
     //   倒數槽推進交由 saint.saintAdvance（內部走 HP API healPlayer，滿則觸發 OBE）。

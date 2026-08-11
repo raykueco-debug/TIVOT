@@ -246,17 +246,18 @@ export const GAME_CONFIG = {
       hp:200,          // 連戰第一隻（原測試值 500，v-lineup 調 200）
       attack:45,       // 大絕一擊傷害（原 ULT_DAMAGE）
       atkInterval:null,// 大絕蓄力秒數；null＝沿用 tuning.chargeSeconds（逐怪可覆寫）
-      sound:{ hit:null, ult:null, death:null }, // 音效槽（外部路徑，null＝用預設 SFX）
+      // 攻擊音（依 kind：ult＝大絕命中/不完美防禦格擋、delay＝太慢、wrong＝按錯）。鑰匙對應 ASSETS。
+      sound:{ ult:'em_slash', delay:'em_smack', wrong:'em_slash' },
       special:[],      // 特殊行動預留（本版不實作邏輯，僅保留結構）
       // v16：每盤格數手動覆寫（index 對應第幾盤，0-based；null／缺項＝用預設規則：第三盤起 16 格）。
       //      作者日後可逐怪逐盤填數值微調難度，例：[9,9,16,16,20]。聖徒化 25 宮格不受此影響。
       boardGrids:[9,9,16,16,16],
       // v17.2：受擊特效三件套（delay＝延時懲罰／wrong＝按錯懲罰／ult＝大絕）。逐怪可各自設定。
-      //   type 可用：'claw'（爪痕，可設 count 幾道）／'blood'（血痕，一道，角度隨機）／
-      //             'bite'（齒痕）／'bullet'（彈痕/玻璃碎裂，可設 count 幾顆、隨機位置）。
+      //   type 可用：'claw'（爪痕，可設 count 幾道）／'blood'（血痕）／'bite'（齒痕）／
+      //             'bullet'（彈痕/玻璃碎裂）／'slash'（紅刀痕濺血）。
       hitFx:{
         delay:{ type:'blood', angle:'random' },   // 延時懲罰 → 一道血痕、角度隨機
-        wrong:{ type:'bite' },                     // 按錯懲罰 → 齒痕
+        wrong:{ type:'slash' },                    // 按錯懲罰 → 一條紅刀痕濺血
         ult:{   type:'claw', count:3, angle:'random' },  // 大絕 → 三爪、角度隨機
       },
     },
@@ -270,12 +271,12 @@ export const GAME_CONFIG = {
       hp:300,                        // 血更厚
       attack:45,                     // 大絕單擊傷害（普通值；差異在密度不在單擊）
       atkInterval:3.33,              // 大絕蓄力秒數：4×(1/1.2)≈3.33 → 攻擊更密（比第一隻高 20%）
-      sound:{ hit:null, ult:null, death:null },
+      sound:{ ult:'em_slash', delay:'em_smack', wrong:'em_slash' },   // 兩聖徒攻擊音相同
       special:[],
       boardGrids:[9,9,16,16,16],     // 自帶：前兩盤 9 格（累積破防、combo 加成總量低，不開場爆血）
       hitFx:{                        // 自帶獨立三件套（巨型聖徒風味：大絕爪數加重為 4）
         delay:{ type:'blood', angle:'random' },
-        wrong:{ type:'bite' },
+        wrong:{ type:'slash' },      // 按錯 → 紅刀痕濺血
         ult:{   type:'claw', count:4, angle:'random' },
       },
     },
@@ -299,17 +300,18 @@ export const GAME_CONFIG = {
       hp:500,
       attack:45,                // 大絕單點傷害（同一般怪基準）
       atkInterval:null,         // 大絕蓄力窗口（紅圈縮放時間）；null＝沿用 tuning.chargeSeconds
-      sound:{ hit:null, ult:null, death:null },
+      // Boss 攻擊音：大絕/不完美防禦/延時＝槍聲 EM_Shot；按錯＝匕首 EM_Dagger。
+      sound:{ ult:'em_shot', delay:'em_shot', wrong:'em_dagger' },
       special:[],
       boardGrids:[9,9,16,16,16],
       // v17：Boss 專屬機制（一般怪不填＝走預設，資料/程式分離）
       ult:{ shots:2, gapMs:1000, minMs:2000, maxMs:4000 },   // 大絕：一次先後出 2 個點、間隔 1 秒；發動頻率 2~4 秒
       delayPenalty:{ dmgScale:0.5, timeDelta:-1 },           // 延時懲罰：攻擊力為一般怪一半、時限減 1 秒
       wrongPenalty:{ dmgScale:1 },                           // 按錯懲罰：攻擊力同一般怪
-      // v17.2：受擊特效三件套 —— 全部走「彈痕（玻璃碎裂）」，位置隨機、顆數不同
+      // v17.2：受擊特效 —— 大絕/延時走彈痕（玻璃碎裂），按錯改紅刀痕濺血
       hitFx:{
         delay:{ type:'bullet', count:1, pos:'random' },   // 延時懲罰 → 一顆彈痕
-        wrong:{ type:'bullet', count:3, pos:'random' },   // 按錯懲罰 → 三顆彈痕
+        wrong:{ type:'slash' },                            // 按錯懲罰 → 一條紅刀痕濺血
         ult:{   type:'bullet', count:2, pos:'random' },   // 大絕 → 兩顆彈痕
       },
     },
@@ -445,6 +447,15 @@ export const ASSETS = {
 
   // 清盤換彈音（盤面清空、顯示 RELOADING 時播）
   sfx_reload:        "resources/weapon/Reload.mp3",
+
+  // 完美防禦（完防）合成替代音（一般武器；散彈完防維持自己的槍聲）
+  se_guard:          "resources/weapon/Guard_SE.m4a",
+
+  // 敵人攻擊音（依攻擊種類 kind：ult 大絕命中/不完美防禦格擋、delay 太慢、wrong 按錯）。放 resources/enemy/。
+  em_slash:          "resources/enemy/EM_Slash_SE.m4a",    // 聖徒：大絕/不完美防禦/按錯
+  em_smack:          "resources/enemy/EM_Smack_SE.m4a",    // 聖徒：延時懲罰
+  em_shot:           "resources/enemy/EM_Shot_SE.mp3",     // Boss：大絕/不完美防禦/延時
+  em_dagger:         "resources/enemy/EM_Dagger_SE.m4a",   // Boss：按錯
 
   // 普攻槍聲（手槍；每次正確點擊由這兩支隨機播一支，製造變化）
   se_pistol_01:      "resources/weapon/Pistol_SE_01.mp3",

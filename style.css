@@ -123,6 +123,15 @@
   @keyframes bloodStreak{0%{opacity:0;transform:translate(-50%,-50%) rotate(var(--deg,20deg)) scaleX(.05)}
     22%{opacity:1;transform:translate(-50%,-50%) rotate(var(--deg,20deg)) scaleX(1)}
     100%{opacity:0;transform:translate(-50%,-50%) rotate(var(--deg,20deg)) scaleX(1)}}
+  /* 紅刀痕：一條鋒利亮紅刀割，快速劃過（按錯懲罰用，搭配血痕濺血） */
+  .fx-slash{left:50%;top:46%;width:320px;height:12px;margin:-6px 0 0 -160px;
+    transform:translate(-50%,-50%) rotate(var(--deg,-25deg)) scaleX(.05);
+    background:linear-gradient(90deg,transparent,rgba(255,50,50,0) 5%,rgba(255,70,70,.98) 20%,rgba(200,0,10,1) 50%,rgba(255,70,70,.98) 80%,rgba(255,50,50,0) 95%,transparent);
+    border-radius:50%;filter:drop-shadow(0 0 9px rgba(230,0,25,.95));opacity:0;
+    animation:slashCut .42s ease-out forwards;}
+  @keyframes slashCut{0%{opacity:0;transform:translate(-50%,-50%) rotate(var(--deg,-25deg)) scaleX(.05)}
+    16%{opacity:1;transform:translate(-50%,-50%) rotate(var(--deg,-25deg)) scaleX(1)}
+    100%{opacity:0;transform:translate(-50%,-50%) rotate(var(--deg,-25deg)) scaleX(1)}}
   /* 齒痕：上下兩排咬痕（用 radial-gradient 點陣模擬），隨機水平位置 */
   .fx-bite{width:150px;height:96px;margin:-48px 0 0 -75px;opacity:0;
     animation:biteMark .5s ease-out forwards;
