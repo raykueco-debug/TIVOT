@@ -18,25 +18,25 @@
   <!-- 瀏海/動態島巴洛克飾條：高度隨 env(safe-area-inset-top) 自適應，蓋在頂部瀏海帶、把控制鈕順移到安全區之下。
        preserveAspectRatio 置中不變形；桌面 safe-area=0 → 收成極窄。純 SVG 繪製，無素材。 -->
   <div id="notchBar">
-    <svg id="notchOrn" viewBox="0 0 520 64" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
+    <svg id="notchOrn" viewBox="0 0 520 60" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
       <defs>
-        <g id="ornHalf" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <!-- 由中心向外的底線 -->
-          <path d="M260 55 H126"/>
-          <!-- 末端捲渦（volute） -->
-          <path d="M126 55 C100 55 92 40 108 33 C119 29 126 38 117 45"/>
-          <!-- 主莨苕捲葉 C-scroll -->
-          <path d="M172 55 C170 33 194 25 210 36 C219 42 216 53 207 53 C201 53 200 45 205 43"/>
-          <!-- 小葉飾 -->
-          <path d="M214 55 C219 44 232 42 238 51"/>
+        <g id="ornHalf" fill="none" stroke="currentColor" stroke-linecap="round">
+          <!-- 主橫飾線：由中心向外，末端上揚收成小捲渦 -->
+          <path stroke-width="1.6" d="M256 45 H128 C112 45 104 37 110 30 C114 25 122 27 121 34"/>
+          <!-- 上方細平行線（較淡，雙線邊框感） -->
+          <path stroke-width="1" stroke-opacity=".45" d="M250 41 H152"/>
+          <!-- 中段小葉飾 -->
+          <path stroke-width="1.4" d="M182 45 C182 36 192 32 200 38"/>
+          <!-- 內側小捲 -->
+          <path stroke-width="1.4" d="M216 45 C216 39 224 37 228 42 C230 44 228 48 225 47"/>
         </g>
       </defs>
       <!-- 中央徽記（對稱軸 x=260）：菱形飾牌 + 頂端小十字捲，呼應聖約騎士團 -->
-      <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-        <path d="M260 30 l11 13 l-11 13 l-11 -13 z"/>
-        <circle cx="260" cy="43" r="2.6" fill="currentColor" stroke="none"/>
-        <path d="M260 30 V19"/>
-        <path d="M253 22 C257 17 263 17 267 22"/>
+      <g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+        <path d="M260 30 l9 12 l-9 12 l-9 -12 z"/>
+        <circle cx="260" cy="42" r="2.2" fill="currentColor" stroke="none"/>
+        <path d="M260 30 V21"/>
+        <path d="M254 24 C258 19 262 19 266 24"/>
       </g>
       <!-- 左半 + 鏡射右半（x → 520-x，保證對稱） -->
       <use href="#ornHalf"/>
