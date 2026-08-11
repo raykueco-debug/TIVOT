@@ -637,13 +637,10 @@
     border:1px solid var(--gold-dim);border-radius:20px;color:var(--gold-dim);
     font-family:inherit;font-size:12px;letter-spacing:3px;}
   #home #creditBtn:active, #home #originalBtn:active{transform:scale(.95);color:var(--gold);border-color:var(--gold);}
-  /* 底部版權（英文兩行：作品全稱(E.O.S.) + 版權宣告） */
+  /* 底部版權（單行） */
   #home .home-copyright{position:absolute;left:0;right:0;
-    bottom:calc(12px + env(safe-area-inset-bottom));
-    display:flex;flex-direction:column;align-items:center;gap:3px;
-    text-align:center;color:var(--gold-dim);pointer-events:none;}
-  #home .home-copyright .hc-title{font-size:11px;letter-spacing:2px;color:var(--gold);opacity:.8;}
-  #home .home-copyright .hc-legal{font-size:9.5px;letter-spacing:.8px;opacity:.55;}
+    bottom:calc(12px + env(safe-area-inset-bottom));text-align:center;
+    font-size:10px;letter-spacing:1px;color:var(--gold-dim);opacity:.65;pointer-events:none;}
 
   /* 原作選擇面板 */
   #originalSheet{position:absolute;inset:0;display:none;align-items:center;justify-content:center;
