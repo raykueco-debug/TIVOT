@@ -223,6 +223,7 @@ export const GAME_CONFIG = {
     },
     fail: {
       cn: '驅逐失敗',
+      fadeInMs: 2000,   // 黑白定格後，戰敗畫面慢慢浮現（淡入約 2 秒；淡出仍用全域 fadeMs）
       en: [
         'O lamb burdened with sin—follow thou thy Shepherd, and go forth unto the Beyond...',
       ],

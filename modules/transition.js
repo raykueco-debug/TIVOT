@@ -23,8 +23,10 @@ export function playTransition(kind, done){
   const el = $('expelTransition');
   if(!el || !data){ if(done) done(); return; }   // 缺設定/DOM → 不擋流程
 
-  const fade = cfg.fadeMs || 300;
-  el.style.setProperty('--expel-fade', fade+'ms');   // CSS 淡入淡出時長與 config 同步
+  // 淡入/淡出時長：可由該 kind 的 fadeInMs / fadeOutMs 覆寫（缺則用全域 cfg.fadeMs）。
+  const fadeIn  = (data.fadeInMs  != null) ? data.fadeInMs  : (cfg.fadeMs || 300);
+  const fadeOut = (data.fadeOutMs != null) ? data.fadeOutMs : (cfg.fadeMs || 300);
+  el.style.setProperty('--expel-fade', fadeIn+'ms');   // 先套淡入時長
 
   const cn = data.cn || '';
   const hint = cfg.hint || '';
@@ -41,7 +43,7 @@ export function playTransition(kind, done){
   requestAnimationFrame(()=> el.classList.add('vis'));
 
   let tapEnabled = false, proceeded = false;
-  const enableTimer = setTimeout(()=>{ tapEnabled = true; el.classList.add('ready'); if(el.focus) try{ el.focus(); }catch(e){} }, fade);
+  const enableTimer = setTimeout(()=>{ tapEnabled = true; el.classList.add('ready'); if(el.focus) try{ el.focus(); }catch(e){} }, fadeIn);
 
   function cleanup(){
     clearTimeout(enableTimer);
@@ -53,9 +55,10 @@ export function playTransition(kind, done){
     if(proceeded || !tapEnabled) return;               // 淡入未完成前不接受輕觸
     proceeded = true;
     cleanup();
+    el.style.setProperty('--expel-fade', fadeOut+'ms');// 淡出改用各自時長（失敗淡入慢、淡出仍正常）
     el.classList.remove('vis','ready');                // 開始淡出
     if(done) done();                                   // 遮罩仍近不透明 → 在其後切換底下畫面
-    setTimeout(()=>{ el.classList.remove('show'); }, fade);
+    setTimeout(()=>{ el.classList.remove('show'); }, fadeOut);
   }
   function onTap(e){ if(e && e.preventDefault) e.preventDefault(); proceed(); }
   function onKey(e){ if(e.key==='Enter' || e.key===' ' || e.key==='Spacebar'){ e.preventDefault(); proceed(); } }
