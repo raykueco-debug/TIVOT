@@ -58,11 +58,52 @@ function playSrc(src, vol){
 
 let _shots = [];   // 普攻槍聲候選（已解析路徑，隨機播一支）
 
+/* ── BGM（HTMLAudio；loop、全域單一、不可交疊，切歌時舊曲淡出）────────────── */
+let _bgm = null;        // 目前 BGM 的 HTMLAudioElement
+let _bgmSrc = null;     // 目前 BGM 路徑（同一首播放中不重播、不中斷）
+let _bgmVol = 0.7;      // 目標音量
+function bgmFade(a, to, ms, done){
+  if(!a) return;
+  clearInterval(a.__fade);
+  const from = a.volume;
+  const steps = Math.max(1, Math.round(ms/40));
+  let i = 0;
+  a.__fade = setInterval(()=>{
+    i++;
+    a.volume = Math.max(0, Math.min(1, from + (to-from)*(i/steps)));
+    if(i>=steps){ clearInterval(a.__fade); a.__fade=null; if(done) done(); }
+  }, 40);
+}
+
 export const SFX = {
-  // 首次使用者手勢呼叫：喚醒 AudioContext（之後所有播放不再受手勢限制）
+  // 首次使用者手勢呼叫：喚醒 AudioContext + 補播被 autoplay 擋下的 BGM
   unlock(){
     const c = ctx();
     if(c && c.state === 'suspended') c.resume().catch(()=>{});
+    if(_bgm && _bgm.paused){ const p=_bgm.play(); if(p&&p.catch) p.catch(()=>{}); bgmFade(_bgm, _bgmVol, 400); }
+  },
+
+  /* 切換 BGM：舊曲淡出後停、新曲淡入 loop。同一首播放中 → 不重播、不中斷。src 空 → 不動作。
+   *  不可交疊：全域只留一個 _bgm（切歌時舊的淡出後 pause）。fade 時長可由 opts 覆寫。 */
+  playBgm(src, opts){
+    opts = opts || {};
+    if(!src) return;
+    if(src === _bgmSrc && _bgm && !_bgm.paused) return;   // 同一首正在播 → 不中斷
+    const fadeOut = opts.fadeOutMs!=null ? opts.fadeOutMs : 900;
+    const fadeIn  = opts.fadeInMs!=null  ? opts.fadeInMs  : 700;
+    _bgmVol = opts.volume!=null ? opts.volume : 0.7;
+    const old = _bgm;
+    if(old){ bgmFade(old, 0, fadeOut, ()=>{ try{ old.pause(); }catch(e){} }); }
+    const a = new Audio(src); a.loop = true; a.preload = 'auto'; a.volume = 0;
+    _bgm = a; _bgmSrc = src;
+    const p = a.play();
+    if(p && p.catch) p.catch(()=>{});   // autoplay 被擋 → 等首次手勢由 unlock 補播
+    bgmFade(a, _bgmVol, fadeIn);
+  },
+  // 停 BGM（淡出後停）
+  stopBgm(fadeOutMs){
+    const old = _bgm; _bgm = null; _bgmSrc = null;
+    if(old) bgmFade(old, 0, fadeOutMs!=null ? fadeOutMs : 700, ()=>{ try{ old.pause(); }catch(e){} });
   },
 
   // 預載一批音檔（傳已解析路徑陣列）：降低首次播放延遲

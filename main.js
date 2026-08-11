@@ -35,6 +35,14 @@ function bindBtn(id, fn){
 // ── 注入 api、綁定、開機 ──
 combat.setup();
 
+// 首次任意手勢即解鎖音訊：主選單 BGM 在 autoplay 被擋下後，玩家一互動就補播（unlock 內處理）
+(function primeAudio(){
+  const go=()=>{ SFX.unlock(); window.removeEventListener('pointerdown',go); window.removeEventListener('touchstart',go); window.removeEventListener('keydown',go); };
+  window.addEventListener('pointerdown', go);
+  window.addEventListener('touchstart', go, {passive:true});
+  window.addEventListener('keydown', go);
+})();
+
 // 預載音檔（反擊武器 SE + 清盤換彈 + 普攻手槍）：降低首次播放延遲；解鎖於首次手勢（SFX.unlock）
 SFX.preload([
   asset('se_mg_squall'), asset('se_shotgun_blast'), asset('se_sniper_falcon'),
@@ -45,7 +53,8 @@ SFX.preload([
 // 普攻槍聲：固定用 Pistol_SE_02（不隨機）
 SFX.setShots([asset('se_pistol_02')].filter(Boolean));
 
-bindBtn('startBtn',     ()=>playTransition('start', combat.startGame));   // 首頁：開始遊戲（先播「驅逐開始」過渡禎）
+// 首頁：開始遊戲 → 驅逐開始插入瞬間起播戰鬥 BGM，再播過渡禎
+bindBtn('startBtn',     ()=>{ SFX.playBgm(asset('bgm_battle')); playTransition('start', combat.startGame); });
 bindBtn('exitBtn',      combat.goHome);         // 右上：退出回首頁
 bindBtn('testClearBtn', combat.testClearBoard); // 左上（測試用）：一鍵清盤
 bindBtn('rematchBtn',   inspector.onRematchBtn);// 結算：依 resultMode 分流（再度執槍/迎擊）

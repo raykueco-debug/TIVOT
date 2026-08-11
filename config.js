@@ -461,13 +461,13 @@ export const ASSETS = {
   se_pistol_01:      "resources/weapon/Pistol_SE_01.mp3",
   se_pistol_02:      "resources/weapon/Pistol_SE_02.mp3",
 
-  // BGM（六情境）
-  bgm_home:      null,   // 首頁     → BGM_Home
-  bgm_battle:    null,   // 戰鬥     → BGM_Battle
-  bgm_lose:      null,   // 戰敗     → BGM_Lose
-  bgm_result:    null,   // 結算     → BGM_Result
-  bgm_intruder:  null,   // 亂入     → BGM_Intruder
-  bgm_boss:      null,   // Boss 戰  → BGM_Boss
+  // BGM（loop、不可交疊，切歌時前一首淡出）。放 resources/Stage/。
+  bgm_home:      "resources/Stage/MainMenu.mp3",       // 主選單（含次要選單）
+  bgm_battle:    "resources/Stage/Battle_01.mp3",      // 戰鬥（驅逐開始插入瞬間起播）
+  bgm_lose:      "resources/Stage/MissonFaild_01.mp3", // 任務失敗（驅逐失敗插入起播）
+  bgm_result:    "resources/Stage/Result_01.mp3",      // 結算（驅逐完成頁被點掉後起播）
+  bgm_boss:      "resources/Stage/BOSS_01.mp3",        // Boss 戰（點下迎擊起播）
+  bgm_intruder:  null,   // （無獨立亂入曲；亂入＝Boss，走 bgm_boss）
 
   // 語音（每個 cut-in 各一支；檔名 VO_<情境>）
   vo_saint_install: null,   // 聖徒化降臨（SAINT INSTALL）→ VO_SaintInstall

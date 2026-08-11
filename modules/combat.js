@@ -94,6 +94,7 @@ export function bootIdle(){
   state.over=true;
   loadBoard(0); updateBars();
   $('home').classList.add('on');
+  SFX.playBgm(asset('bgm_home'));   // 主選單 BGM（autoplay 被擋時由首次手勢 unlock 補播）
 }
 
 /* ============================================================================
@@ -560,12 +561,16 @@ function win(){
     overkill: state.runOverkill + state.overkill,              // 整場累計 overkill
     hitsTaken: state.hitsTaken,
   };
-  // 勝利 → 先播「驅逐完成」過渡禎，淡出瞬間才建結算面板（僅勝利套用；戰敗 lose() 不套）
-  playTransition('finish', ()=> inspector.settle(totalTime, stats, { isLose:false }));
+  // 勝利 → 先播「驅逐完成」過渡禎；被點掉（done）後才建結算面板並起播結算 BGM。
+  playTransition('finish', ()=>{
+    SFX.playBgm(asset('bgm_result'));   // 驅逐完成頁被點掉後 → 結算 BGM
+    inspector.settle(totalTime, stats, { isLose:false });
+  });
 }
 function lose(){
   if(state.over) return;
   state.over=true; clockPause(); stopAll();
+  SFX.playBgm(asset('bgm_lose'));   // 驅逐失敗插入瞬間 → 任務失敗 BGM
   // 戰敗 → 先播「驅逐失敗」過渡禎，輕觸後才建戰敗結算（含 Boss 戰戰敗）
   playTransition('fail', ()=> inspector.settle(null, null, { isLose:true }));
 }
@@ -632,6 +637,7 @@ export function goHome(){
   $('banner').classList.remove('on'); $('banner').classList.remove('lose');
   $('transition').classList.remove('on');
   $('home').classList.add('on');
+  SFX.playBgm(asset('bgm_home'));   // 回首頁 → 主選單 BGM
 }
 
 /* ---- 測試用「清盤」鈕：依當前應點順序逐格模擬點擊，把盤面清空走 clearBoard ---- */
