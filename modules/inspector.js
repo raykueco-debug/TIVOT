@@ -194,9 +194,9 @@ export function settle(totalTime, stats, opts={}){
   // ── 評價系統（rating）：大字等級（顯眼）+ EXP + 各數值明細 ──
   const evalResult = evaluate(stats);
   let rows='';
-  rows += `<div class="grade-wrap"><span class="grade-cap">評價</span>`
-        + `<b class="grade-badge rank-${evalResult.grade}">${evalResult.grade}</b>`
-        + `<span class="grade-exp">EXP ${evalResult.exp}</span></div>`;
+  rows += `<div class="grade-wrap"><b class="grade-badge rank-${evalResult.grade}">${evalResult.grade}</b>`
+        + `<span class="grade-meta"><span class="grade-cap">評價</span>`
+        + `<span class="grade-exp">EXP ${evalResult.exp}</span></span></div>`;
   rows += ratingStatsRows(stats, totalTime);
   if(isRecord) rows += `<div class="record">★ NEW RECORD ★</div>`;
   // ── 監察官結算展示（依評價等第挑台詞）──

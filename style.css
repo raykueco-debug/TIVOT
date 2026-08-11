@@ -449,19 +449,19 @@
   #banner.on{display:flex;}
   /* 結算內容區（大標→rows→立繪），retry 固定在最底。固定不可滑動：overflow hidden + 禁回彈。 */
   #bannerScroll{flex:1 1 auto;width:100%;display:flex;flex-direction:column;align-items:center;
-    justify-content:flex-start;overflow:hidden;overscroll-behavior:none;padding:18px 0 6px;position:relative;
+    justify-content:flex-start;overflow:hidden;overscroll-behavior:none;padding:10px 0 6px;position:relative;
     min-height:0;touch-action:none;}
-  #banner h1{font-size:28px;letter-spacing:4px;color:var(--gold);margin:0 0 8px;
+  #banner h1{font-size:26px;letter-spacing:4px;color:var(--gold);margin:0 0 4px;
     text-shadow:0 0 16px var(--gold-dim);}
-  #banner p{font-size:13px;letter-spacing:2px;opacity:.8;margin:4px 0 14px;}
+  #banner p{font-size:13px;letter-spacing:2px;opacity:.8;margin:2px 0 8px;}
   #banner.lose h1{color:var(--danger);text-shadow:0 0 16px var(--blood);}
   /* 大標＋retry 同時進場：淡入＋輕微下沉 */
   @keyframes bannerHeadIn{ from{opacity:0;transform:translateY(-10px);} to{opacity:1;transform:none;} }
   #banner.seq h1, #banner.seq p{animation:bannerHeadIn .35s ease-out both;}
   #banner.seq #rematchBtn{animation:bannerHeadIn .35s ease-out both;}
-  /* 結算數據列 */
-  #resultStats{margin:2px 0 14px;font-size:13px;letter-spacing:1px;line-height:1.9;color:var(--ink);
-    min-width:230px;}
+  /* 結算數據列（緊湊：留出立繪全身空間） */
+  #resultStats{margin:0 0 6px;font-size:12.5px;letter-spacing:1px;line-height:1.5;color:var(--ink);
+    min-width:230px;flex:0 0 auto;}
   #resultStats .row{display:flex;justify-content:space-between;gap:24px;min-width:230px;}
   #resultStats .row b{color:var(--gold);font-weight:normal;}
   #resultStats .record{color:#ffe08a;font-size:12px;letter-spacing:3px;
@@ -470,12 +470,14 @@
   @keyframes rowSweep{ from{opacity:0;transform:translateY(-8px);} to{opacity:1;transform:none;} }
   #resultStats .row, #resultStats .record, #resultStats .grade-wrap{opacity:0;}
   #resultStats.sweep .row, #resultStats.sweep .record, #resultStats.sweep .grade-wrap{animation:rowSweep .28s ease-out forwards;}
-  /* 評價：大字等第（顯眼），色彩沿用 rank-*，glow 用 currentColor */
-  #resultStats .grade-wrap{display:flex;flex-direction:column;align-items:center;margin:0 0 12px;gap:2px;}
-  #resultStats .grade-cap{font-size:11px;letter-spacing:6px;opacity:.6;color:var(--ink);}
-  #resultStats .grade-badge{font-size:60px;font-weight:bold;line-height:1.02;letter-spacing:2px;
-    filter:drop-shadow(0 0 18px currentColor);}
-  #resultStats .grade-exp{font-size:12px;letter-spacing:3px;color:var(--gold);opacity:.9;margin-top:2px;}
+  /* 評價：大字等第橫向緊湊（顯眼但不佔行高），色彩沿用 rank-*，glow 用 currentColor */
+  #resultStats .grade-wrap{display:flex;flex-direction:row;align-items:center;justify-content:center;
+    gap:12px;margin:0 0 6px;}
+  #resultStats .grade-badge{font-size:46px;font-weight:bold;line-height:1;letter-spacing:1px;
+    filter:drop-shadow(0 0 14px currentColor);}
+  #resultStats .grade-meta{display:flex;flex-direction:column;align-items:flex-start;line-height:1.25;}
+  #resultStats .grade-cap{font-size:11px;letter-spacing:5px;opacity:.6;color:var(--ink);}
+  #resultStats .grade-exp{font-size:13px;letter-spacing:2px;color:var(--gold);opacity:.95;}
   /* 無傷貼標：達標才出現，貼在「戰鬥用時」旁 */
   #resultStats .tag-flawless{display:inline-block;margin-left:8px;padding:1px 8px;border-radius:10px;
     font-size:10px;letter-spacing:2px;font-weight:bold;color:var(--bg);background:var(--gold);
@@ -489,18 +491,19 @@
   #resultStats .rank-D{color:#8f97a0;}
   #resultStats .rank-E{color:#6d7178;}
   /* ===== 監察官立繪舞台 ===== */
-  #inspectorStage{position:relative;width:100%;max-width:340px;margin-top:6px;
-    display:flex;justify-content:center;flex:0 0 auto;}
-  #inspectorPortrait{width:auto;max-height:40vh;object-fit:contain;
+  /* 舞台吃掉數據列以外的剩餘空間（flex:1），立繪以 contain 顯示「全身」並隨空間縮放 → 手機也放得下 */
+  #inspectorStage{position:relative;width:100%;max-width:340px;margin-top:2px;
+    display:flex;justify-content:center;align-items:flex-end;flex:1 1 auto;min-height:0;}
+  #inspectorPortrait{width:auto;max-width:100%;max-height:100%;object-fit:contain;object-position:bottom;
     filter:drop-shadow(0 6px 24px rgba(0,0,0,.7));
     opacity:0;transform:translateY(14px) scale(.98);
-    -webkit-mask-image:radial-gradient(120% 100% at 50% 42%,#000 62%,transparent 96%);
-    mask-image:radial-gradient(120% 100% at 50% 42%,#000 62%,transparent 96%);}
+    -webkit-mask-image:linear-gradient(to bottom,#000 86%,transparent 100%);
+    mask-image:linear-gradient(to bottom,#000 86%,transparent 100%);}
   #banner.seq #inspectorPortrait{animation:portraitIn .5s cubic-bezier(.2,.7,.3,1) both;}
   @keyframes portraitIn{ from{opacity:0;transform:translateY(14px) scale(.98);}
     to{opacity:1;transform:none;} }
-  /* 對話框：絕對定位，疊在立繪下方約 1/4 處，半透明 */
-  #inspectorBubble{position:absolute;left:50%;bottom:22%;transform:translateX(-50%) translateY(8px);
+  /* 對話框：絕對定位，疊在立繪偏下方，半透明 */
+  #inspectorBubble{position:absolute;left:50%;bottom:11%;transform:translateX(-50%) translateY(8px);
     width:82%;max-width:300px;background:rgba(16,12,24,.72);
     border:1px solid var(--gold-dim);border-radius:8px;padding:10px 13px;text-align:left;
     box-shadow:0 4px 20px rgba(0,0,0,.55);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);
