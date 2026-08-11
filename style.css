@@ -9,6 +9,11 @@
     --grid:#1c1628;
     --grid-active:#2e2440;
     --danger:#c0392b;
+    /* iPhone 瀏海/動態島：頂部飾條 + 控制列順移。
+       --notch-extra 為安全區之外的視覺餘裕；桌面（無瀏海）safe-area=0，飾條僅剩此極窄餘裕。 */
+    --notch-extra:5px;
+    --notch-bar-h:calc(env(safe-area-inset-top, 0px) + var(--notch-extra));
+    --notch-orn:var(--gold);
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;
     -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
@@ -154,9 +159,19 @@
     font-size:20px;line-height:1;display:flex;align-items:center;justify-content:center;
     font-family:inherit;-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);}
   .corner-btn:active{transform:scale(.9);}
-  #exitBtn{top:10px;left:auto;right:10px;font-size:18px;}
+  /* 頂部控制鈕順移到安全區以下（瀏海/動態島不再遮）；桌面 safe-area=0 → 維持原 10px。 */
+  #exitBtn{top:calc(env(safe-area-inset-top, 0px) + 10px);left:auto;right:10px;font-size:18px;}
   /* v17：測試人員用「清盤」鈕（左上角）。z-index 同 corner-btn，聖徒化手勢層之上，確保可點。 */
-  #testClearBtn{top:10px;left:10px;right:auto;font-size:12px;letter-spacing:1px;color:var(--holy);border-color:var(--holy);}
+  #testClearBtn{top:calc(env(safe-area-inset-top, 0px) + 10px);left:10px;right:auto;font-size:12px;letter-spacing:1px;color:var(--holy);border-color:var(--holy);}
+
+  /* ===== 瀏海/動態島 巴洛克飾條 ===== */
+  /* 高度隨 safe-area 自適應；蓋在頂部瀏海帶，控制鈕已順移到其下。桌面回退：僅 --notch-extra 極窄。 */
+  #notchBar{position:absolute;top:0;left:0;right:0;height:var(--notch-bar-h);z-index:36;
+    pointer-events:none;overflow:hidden;display:flex;align-items:flex-end;justify-content:center;
+    background:linear-gradient(180deg,rgba(10,8,14,.97) 55%,rgba(10,8,14,.72) 100%);
+    border-bottom:1px solid var(--gold-dim);}
+  #notchOrn{display:block;width:100%;height:100%;color:var(--notch-orn);
+    filter:drop-shadow(0 0 2px rgba(212,169,74,.5));}
   #ultBtn{bottom:12px;right:12px;width:60px;height:60px;font-size:30px;}
   #ultBtn:disabled{opacity:.35;}
   #ultBtn.ready{border-color:var(--holy);color:var(--holy);
