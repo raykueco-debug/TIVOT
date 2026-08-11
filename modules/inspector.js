@@ -13,10 +13,10 @@
  *  依賴方向：只 import state/config。combat/enemy 原語（goHome / triggerIntruder）
  *    一律由 combat 於 setup() 注入，維持「combat 為唯一協調者」的邊界。
  *
- *  評價 rank：規則制（以 reference/index.html:2322 為準）——
- *    無傷 ≤40s→S 否則 A；有傷 ≤40→B / ≤50→C / ≤60→D / >60→E。
- *    config.evaluation.tiers（S3600…）為 reference 未使用的休眠 config，不參與判定；
- *    score/raw 公式只拿來算 EXP 顯示，不決定 rank。
+ *  評價系統（rating）：百分制計分 → 對照 GAME_CONFIG.rating.tiers 取等級 → 換算 EXP。
+ *    時間項為主（budget 隨敵人總血量自動變動），加分項（命中率/連擊/完美反擊/overkill）、
+ *    受擊扣分；無傷（hitsTaken=0）直接判 S。取代舊「無傷+時間門檻」規則制與 config.evaluation。
+ *    evaluate/scoreToExp 為純函式（見下），可單獨測試；stats 由 combat.win 組裝。
  * ========================================================================== */
 
 import { GAME_CONFIG, asset } from '../config.js';
@@ -52,35 +52,57 @@ function pickByThreshold(map, current, fallback){
 }
 
 /* ============================================================================
- *  評價（規則制 rank + EXP 顯示分數）
+ *  評價系統（rating）— 百分制計分 → 等級 → EXP
+ *  ---------------------------------------------------------------------------
+ *  所有可調數值集中於 GAME_CONFIG.rating，本檔不硬編任何評分參數。
+ *  evaluate / scoreToExp 為「純函式」（只吃 stats/cfg，不讀 state/DOM），方便單獨測試。
+ *  stats 需含：totalHP、isBoss、clearTime(秒)、accuracy(0~1)、maxCombo、
+ *             perfectCounter、overkill、hitsTaken。
+ *  ⚠ perfectCounter 目前由 combat 映射為「完美防禦次數(perfectCount)」；
+ *    若要改用「Counter 反擊次數(counterCount)」，改 combat.win 的 stats 組裝即可，本檔不動。
  * ========================================================================== */
-// 依結算數據算 rank 與 EXP。回傳 { score, exp, rank, flawless, execution }。
-function computeEvaluation(totalTime){
-  // ── 規則制評價（以 reference 為準；tiers 為休眠 config，不參與判定）──
-  //  S：無傷 且 ≤40s   A：無傷（無時間上限）
-  //  B：有傷 且 ≤40s   C：有傷 且 ≤50s   D：有傷 且 ≤60s   E：有傷 且 >60s
-  let rank;
-  if(state.flawlessRun){
-    rank = (totalTime<=40) ? 'S' : 'A';
-  }else{
-    if(totalTime<=40)      rank='B';
-    else if(totalTime<=50) rank='C';
-    else if(totalTime<=60) rank='D';
-    else                   rank='E';
-  }
-  // EXP：沿用原積分作為經驗值展示（反擊/完美/無傷/處決加成），不決定 rank。
-  const ev = GAME_CONFIG.evaluation;
-  let exp = 0;
-  if(ev){
-    const s = ev.score;
-    let raw = Math.max(0, s.timeBonus.base - totalTime * s.timeBonus.perSecond);
-    raw += state.counterDamage * s.counterCoef;
-    raw += state.perfectCount  * s.perfectPerHit;
-    if(state.flawlessRun)  raw *= s.flawlessMult;
-    if(state.sawExecution) raw *= s.executionMult;
-    exp = Math.round(raw);
-  }
-  return { score:exp, exp, rank, flawless:state.flawlessRun, execution:state.sawExecution };
+const clamp01 = x => (x<0 ? 0 : (x>1 ? 1 : x));
+
+// 分數 → EXP：offset 質數基底 + score×mult，尾數微擾 + overkill 加成，避免整齊倍數。
+export function scoreToExp(score, stats, cfg = GAME_CONFIG.rating.exp){
+  let exp = cfg.offset + score * cfg.mult;
+  const jitter = Math.round((score * cfg.mult) % cfg.jitterMod);
+  exp += jitter;
+  exp += (stats.overkill || 0) * cfg.overkillExp;   // 每次 overkill +overkillExp
+  return Math.round(exp);
+}
+
+// 主評分：回傳 { grade, score, exp, breakdown }。
+export function evaluate(stats, cfg = GAME_CONFIG.rating){
+  const t = cfg.time, p = cfg.points, nm = cfg.norm;
+  // 1) 時間預算：隨敵人總血量自動變動（+ Boss 加成）
+  const budget = (stats.totalHP / t.hpPerBase) * t.base + (stats.isBoss ? t.bossBonus : 0);
+  // 2) 剩餘時間
+  const timeLeft = budget - stats.clearTime;
+  // 3) 時間項：剩餘達 (預算-capSeconds) 即封頂（capSeconds 內 clear → 時間項滿分）
+  const fullMarkLeft = budget - t.capSeconds;
+  const timeRatio = (fullMarkLeft > 0) ? clamp01(timeLeft / fullMarkLeft) : (timeLeft > 0 ? 1 : 0);
+  const timeScore = timeRatio * p.timeMax;
+  // 4) 加分項（各自 clamp 到 0~1 後乘配分）
+  const accScore   = clamp01(stats.accuracy)                 * p.accuracyMax;
+  const comboScore = clamp01(stats.maxCombo / nm.comboTarget) * p.comboMax;
+  const pcScore    = clamp01(stats.perfectCounter / nm.pcTarget) * p.perfectCtrMax;
+  const okScore    = clamp01(stats.overkill / nm.okTarget)    * p.overkillMax;
+  // 5) 受擊扣分
+  const hitPenalty = stats.hitsTaken * p.hitPenalty;
+  // 6) 總分（下限 0）
+  const score = Math.max(0, timeScore + accScore + comboScore + pcScore + okScore - hitPenalty);
+  // 7) 級距：tiers 由高到低，取第一個 score >= min
+  let grade = cfg.tiers[cfg.tiers.length - 1].grade;
+  for(const tier of cfg.tiers){ if(score >= tier.min){ grade = tier.grade; break; } }
+  // 8) 無傷 gate：無受擊 → 直接 S（凌駕分數）
+  if(stats.hitsTaken === 0) grade = 'S';
+
+  const exp = scoreToExp(score, stats, cfg.exp);
+  return {
+    grade, score, exp,
+    breakdown: { timeScore, accScore, comboScore, pcScore, okScore, hitPenalty, budget, timeLeft },
+  };
 }
 
 /* ============================================================================
@@ -112,11 +134,26 @@ function pickInspectorDialogue(insp, rankKey, boss){
   return arr[Math.floor(Math.random()*arr.length)];
 }
 
-// 結算共用：Counter（次數+累計傷害）、完美防禦（次數）
+// 戰敗結算用：Counter（次數+累計傷害）、完美防禦（次數）
 function combatStatsRows(){
   let r='';
   r += `<div class="row"><span>Counter 反擊</span><b>${state.counterCount} 次 · ${state.counterDamage} 傷</b></div>`;
   r += `<div class="row"><span>完美防禦</span><b>${state.perfectCount} 次</b></div>`;
+  return r;
+}
+
+// 勝利結算明細（評價系統輸入的各數值；已移除平均用時，時間門檻/無傷加成改由 evaluate 內處理）
+function ratingStatsRows(stats, totalTime){
+  const accPct = Math.round(clamp01(stats.accuracy) * 100);
+  const flawless = (stats.hitsTaken === 0) ? '是' : '否';
+  let r='';
+  r += `<div class="row"><span>連擊數</span><b>${stats.maxCombo}</b></div>`;
+  r += `<div class="row"><span>受擊數</span><b>${stats.hitsTaken}</b></div>`;
+  r += `<div class="row"><span>命中率</span><b>${accPct}%</b></div>`;
+  r += `<div class="row"><span>Overkill</span><b>${Math.round(stats.overkill)}</b></div>`;
+  r += `<div class="row"><span>完美反擊</span><b>${stats.perfectCounter} 次</b></div>`;
+  r += `<div class="row"><span>用時</span><b>${fmtTime(totalTime)}</b></div>`;
+  r += `<div class="row"><span>無傷</span><b>${flawless}</b></div>`;
   return r;
 }
 
@@ -138,7 +175,7 @@ function saveBestTotal(t, boss){
  *  結算入口：combat.win/lose 算好 totalTime/avg（它擁有計時）後呼叫。
  *    opts.isLose 為真＝戰敗流程（rows 只列反擊/完美，不算評價/最佳/EXP）。
  * ========================================================================== */
-export function settle(totalTime, avg, opts={}){
+export function settle(totalTime, stats, opts={}){
   const isLose = !!opts.isLose;
   if(isLose){
     const rows=combatStatsRows();
@@ -146,35 +183,30 @@ export function settle(totalTime, avg, opts={}){
     return;
   }
   // ── 勝利結算 ──
-  // 最佳總用時 / 破紀錄判定（Boss 戰為獨立戰鬥 → 最佳紀錄分開存）
+  // 最佳總用時 / 破紀錄判定（Boss 戰為獨立戰鬥 → 最佳紀錄分開存）。評價本身不看最佳，只作 NEW RECORD 提示。
   const bossFight = state.inIntruderFight;
   const prevBest=loadBestTotal(bossFight);
   const isRecord = (prevBest==null) || (totalTime<prevBest);
   if(isRecord) saveBestTotal(totalTime, bossFight);
-  const bestShown = isRecord ? totalTime : prevBest;
 
   let sub=(($('enemyName')&&$('enemyName').textContent)||'目標')+'已淨化';
-  if(state.overkill>0) sub += ` · OVERKILL ${Math.round(state.overkill)}`;
+  if(stats.overkill>0) sub += ` · OVERKILL ${Math.round(stats.overkill)}`;
 
+  // ── 評價系統（rating）：等級 + EXP + 各數值明細 ──
+  const evalResult = evaluate(stats);
   let rows='';
-  rows += `<div class="row"><span>每盤平均用時</span><b>${fmtTime(avg)}</b></div>`;
-  rows += `<div class="row"><span>總用時</span><b>${fmtTime(totalTime)}</b></div>`;
-  rows += `<div class="row"><span>最佳總用時</span><b>${fmtTime(bestShown)}</b></div>`;
-  if(avg==null) rows += `<div class="row" style="opacity:.6;font-size:11px"><span>（平均只計第三盤後）</span><b></b></div>`;
-  rows += combatStatsRows();
-  // ── 評價分級（規則制 rank + EXP 顯示）──
-  const evalResult = computeEvaluation(totalTime);
-  rows += `<div class="row"><span>評價</span><b class="rank rank-${evalResult.rank}">${evalResult.rank}</b></div>`;
-  rows += `<div class="row" style="opacity:.7;font-size:11px"><span>EXP</span><b>${evalResult.exp}</b></div>`;
+  rows += `<div class="row"><span>評價</span><b class="rank rank-${evalResult.grade}">${evalResult.grade}</b></div>`;
+  rows += `<div class="row"><span>EXP</span><b>${evalResult.exp}</b></div>`;
+  rows += ratingStatsRows(stats, totalTime);
   if(isRecord) rows += `<div class="record">★ NEW RECORD ★</div>`;
   // ── 監察官結算展示（依評價等第挑台詞）──
-  showResultSequence('聖裁完成', sub, rows, evalResult.rank, false);
+  showResultSequence('聖裁完成', sub, rows, evalResult.grade, false);
 
   // ── 隱藏關（New Hustle）解鎖判定：S 評價才解鎖，不自動觸發 ──
   //   由「再度執槍 → 迎擊」流程手動進入（見 onRematchBtn）。
   const it = GAME_CONFIG.intruder;
   state.sRankUnlocked = false;
-  if(it && it.enable && !state.intruderTriggered && !state.inIntruderFight && evalResult.rank==='S'){
+  if(it && it.enable && !state.intruderTriggered && !state.inIntruderFight && evalResult.grade==='S'){
     state.sRankUnlocked = true;
   }
 }

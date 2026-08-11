@@ -36,6 +36,12 @@ export const state = {
   expect: 1,
   combo: 0,
   critCombo: 0,          // 暴擊用連擊（普攻）：正確點擊 +1；受擊或清盤歸零。驅動暴擊率/加傷成長。
+  // 評價系統（rating）用的整場統計（combat 擁有；startGame/startIntruderFight 歸零）：
+  maxCombo: 0,           // 整場最高連擊
+  hitsTaken: 0,          // 整場受擊次數（=0 → 無傷 gate 直判 S）
+  correctTaps: 0,        // 依序正確點擊數（命中率分子）
+  wrongTaps: 0,          // 按錯格次數（命中率＝correct/(correct+wrong)）
+  runOverkill: 0,        // 整場累計 overkill（state.overkill 每敵歸零，換敵時併入此）
   energy: 0,
   boardStartTime: 0,
   boardClean: true,

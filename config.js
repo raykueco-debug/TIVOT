@@ -148,6 +148,52 @@ export const GAME_CONFIG = {
   },
 
   /* ------------------------------------------------------------------ *
+   *  三之二、評價系統（rating）— 取代上方舊 evaluation
+   *  ------------------------------------------------------------------
+   *  結算以百分制計分（timeScore 為主 60 分 + 加分項 - 受擊扣分），對照 tiers 取等級，
+   *  再把分數換算成 EXP。所有可調數值集中於此，程式碼不得硬編評分參數。
+   *
+   *  時間預算隨敵人總血量自動變動：budget = (totalHP/hpPerBase)*base + (isBoss?bossBonus:0)。
+   *  設計新敵人只要給 hp，評價門檻即自動跟著調整。
+   *  無傷 gate：hitsTaken===0 → 直接判 S（凌駕分數）。
+   * ------------------------------------------------------------------ */
+  rating: {
+    time: {
+      base: 100,          // 每 hpPerBase 血量對應的秒數基數
+      hpPerBase: 500,     // 每 500 血 = 100 秒預算
+      bossBonus: 50,      // isBoss 時預算額外 +50 秒
+      capSeconds: 30,     // 剩餘時間達 (預算-30) 即時間項封頂；即 30 秒內 clear 時間項滿分
+    },
+    points: {
+      timeMax:        60, // 時間項滿分（主評價）
+      accuracyMax:    15, // 命中率 × 15
+      comboMax:       10,
+      perfectCtrMax:  8,
+      overkillMax:    5,
+      hitPenalty:     6,  // 每次受擊扣 6 分
+    },
+    norm: {
+      comboTarget: 30,
+      pcTarget: 5,
+      okTarget: 3,
+    },
+    tiers: [
+      { grade: 'S', min: 80 },
+      { grade: 'A', min: 64 },
+      { grade: 'B', min: 48 },
+      { grade: 'C', min: 32 },
+      { grade: 'D', min: 16 },
+      { grade: 'E', min: 0  },
+    ],
+    exp: {
+      mult: 8.7,          // 非整數倍率，避免整齊倍數
+      offset: 137,        // 質數基底，保證三位數起跳
+      overkillExp: 3,     // 每次 overkill 額外 +3 EXP
+      jitterMod: 7,       // 用分數尾數做微擾，讓 EXP 數字不整齊
+    },
+  },
+
+  /* ------------------------------------------------------------------ *
    *  四、敵人（Enemy）
    *  name   = 顯示名稱（敵人區上方）
    *  image  = 敵人立繪鑰匙

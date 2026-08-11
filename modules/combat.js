@@ -194,7 +194,8 @@ function tap(num,cell,e){
   if(state.dualWield){
     if(cell.classList.contains('done')) return;
     cell.classList.add('done'); enemy.shatterCell(cell);
-    state.combo++; resetIntervalDeadline();
+    state.combo++; if(state.combo>state.maxCombo) state.maxCombo=state.combo;
+    resetIntervalDeadline();
     const dmg=hitDamage()*DMG_DUAL_MULT;
     SFX.gunshot(true);
     enemyDamage(Math.round(dmg), false);
@@ -212,7 +213,9 @@ function tap(num,cell,e){
   if(num===state.expect){
     SFX.gunshot(false);            // 普通開槍：重「碰」
     cell.classList.add('done'); cell.classList.remove('next'); enemy.shatterCell(cell);
-    state.combo++; resetIntervalDeadline(); addEnergy(ENERGY_PER_HIT);
+    state.combo++; if(state.combo>state.maxCombo) state.maxCombo=state.combo;
+    state.correctTaps++;                 // 命中率分子（依序正確點擊）
+    resetIntervalDeadline(); addEnergy(ENERGY_PER_HIT);
     let dmg=hitDamage(); if(state.atkBuff) dmg*=2;
     // 暴擊（普攻）：此分支必為普攻（雙槍破防走上面獨立分支，本輪 saintMode 亦 return），暴擊率/加傷隨 critCombo 成長。
     //   本擊先以「現值」擲骰再 +1（首擊＝base 暴擊率）；命中則跳紅字「暴擊」（交由 enemyDamage 的 isCrit 呈現）。
@@ -236,6 +239,7 @@ function tap(num,cell,e){
     }
     // 按錯：紅字期間按錯 → 重擊且紅字消失；否則普通按錯
     state.boardClean=false;
+    state.wrongTaps++;                    // 命中率分母（按錯格）
     cell.classList.add('wrong'); setTimeout(()=>cell.classList.remove('wrong'),300);
     state.combo=0;
     if(state.threats.length){
@@ -335,6 +339,7 @@ function enemyAttack(dmg, kind, saintAmt){
   SFX.hit();                         // 受擊撞擊音
   state.boardClean=false;            // 受擊 → 本盤取消清盤破防獎勵
   state.critCombo=0;                 // 受擊中斷：暴擊連擊歸零（延時懲罰/按錯重擊/大絕/格擋掉血皆經此路徑）
+  state.hitsTaken++;                 // 評價受擊數（此路徑＝真實掉血；=0 即無傷 gate）
   state.flawlessRun=false;           // 真實受擊 → 整場無傷旗標取消
   state.playerHp=Math.max(0,state.playerHp-dmg);
   updateBars();
@@ -514,6 +519,7 @@ function finishEnemyOrAdvance(){
  *  計時：轉敵全程碼表暫停（transitioning），新敵首盤 loadBoard → clockResume。 */
 function advanceEnemy(){
   clockPause();                       // 併入前一敵時間（此前已於敵死暫停，冪等）
+  state.runOverkill += state.overkill; // 換敵前把本敵 overkill 併入整場累計（評價/EXP 用）
   state.overkill=0;                   // 各敵 overkill 獨立
   state.transitioning=true;           // 鎖點擊＋碼表不 resume（轉場不計）
   stopIntervalTimer();
@@ -526,13 +532,30 @@ function advanceEnemy(){
     updateBars();
   });
 }
+// 整場敵人總血量（評價時間預算用）：一般連戰＝lineup 各敵 hp 相加；Boss 亂入＝單敵新場（enemyMax）。
+//   隨敵人 config 血量自動變動，設計新敵人時評價門檻自動跟著調整（見 config.rating 說明）。
+function runTotalHp(){
+  if(state.inIntruderFight) return state.enemyMax;
+  const lu=(GAME_CONFIG.lineup && GAME_CONFIG.lineup.length) ? GAME_CONFIG.lineup : [state.currentEnemyKey];
+  return lu.reduce((sum,key)=>{ const en=GAME_CONFIG.enemies[key]; return sum + (en?en.hp:0); }, 0);
+}
 function win(){
   if(state.over || state.defeated) return;   // 戰敗優先：已判定戰敗則勝利結算一律讓位
   state.over=true; clockPause(); stopAll();
   const totalTime=clockElapsedMs()/1000;               // 只累計實打時間（overkill/轉場/cut-in 皆不計）
-  const counted=state.boardTimes.slice(2);             // 平均只計第三盤後（index 2 以後）
-  const avg=counted.length ? counted.reduce((a,b)=>a+b,0)/counted.length : null;
-  inspector.settle(totalTime, avg, { isLose:false });
+  const totalTaps=state.correctTaps+state.wrongTaps;
+  // 評價系統輸入（見 inspector.evaluate）：時間/命中率/連擊/完美反擊/overkill/受擊。
+  const stats={
+    totalHP: runTotalHp(),
+    isBoss: state.inIntruderFight,
+    clearTime: totalTime,
+    accuracy: totalTaps>0 ? state.correctTaps/totalTaps : 1,   // 0~1 比率（非百分比）
+    maxCombo: state.maxCombo,
+    perfectCounter: state.perfectCount,                        // 完美反擊＝完美防禦次數（映射見 inspector 註）
+    overkill: state.runOverkill + state.overkill,              // 整場累計 overkill
+    hitsTaken: state.hitsTaken,
+  };
+  inspector.settle(totalTime, stats, { isLose:false });
 }
 function lose(){
   if(state.over) return;
@@ -550,6 +573,7 @@ export function startGame(){
   weapon.reset();  // 雙槍破防重置（清 dualWield/dualTimer + #grid dualwield class，防跨場殘留）
   state.overkill=0; state.killTime=0; state.transitioning=false;
   state.counterCount=0; state.counterDamage=0; state.perfectCount=0; state.sawExecution=false;
+  state.maxCombo=0; state.hitsTaken=0; state.correctTaps=0; state.wrongTaps=0; state.runOverkill=0;   // 評價統計歸零
   state.playerHp=state.playerMax;
   state.N=9; state.cols=3;
   state.runStartTime=Date.now(); resetClock();   // 計時碼表歸零（loadBoard 起算）
@@ -580,6 +604,7 @@ export function startIntruderFight(){
   weapon.reset();
   state.overkill=0; state.killTime=0; state.transitioning=false;
   state.counterCount=0; state.counterDamage=0; state.perfectCount=0; state.sawExecution=false;
+  state.maxCombo=0; state.hitsTaken=0; state.correctTaps=0; state.wrongTaps=0; state.runOverkill=0;   // 評價統計歸零
   state.playerHp=state.playerMax; state.enemyHp=state.enemyMax;
   state.N=9; state.cols=3;
   state.runStartTime=Date.now(); resetClock();   // 新場：計時碼表歸零
