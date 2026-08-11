@@ -175,13 +175,14 @@ export function resolveThreat(th){
     // === Perfect Defense ===（金色微閃）
     addPerfect();
     flashDefense('gold');
-    SFX.heavyHit();        // 完防：合成重擊感（反擊才有武器音效，完防/格擋先用合成音）
     if(w && w.perfectDamageScale){
-      // 散彈類：Perfect 檔以傷害取代免傷（打弱化反擊，不觸發 atkBuff、不免傷）
+      // 散彈類：Perfect 檔以傷害取代免傷（打弱化反擊，不觸發 atkBuff、不免傷）。
+      //   音效由 weaponCounter 的武器 blast SE 出聲（完防與反擊都會觸發散彈音效），此處不再疊合成重擊音。
       api.floatDmg('PERFECT','50%','40%',true);
       api.weaponCounter(w.perfectDamageScale);
     }else{
-      // 一般武器：完全免傷（狙擊 noPerfectBand=true 時此帶消失，落入下方 Defense）
+      // 一般武器：完全免傷（狙擊 noPerfectBand=true 時此帶消失，落入下方 Defense）。純免傷 → 合成重擊音。
+      SFX.heavyHit();
       api.floatDmg('PERFECT','50%','40%',true);
     }
   }else{

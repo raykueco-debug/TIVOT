@@ -36,6 +36,14 @@ import { SFX } from '../audio.js';
 const $ = id => document.getElementById(id);
 const WEAPONS = GAME_CONFIG.weapons;
 const DUAL_SECONDS = GAME_CONFIG.tuning.dualSeconds;   // 雙槍破防窗口時長（秒）
+const COUNTER_CRIT_RATE = GAME_CONFIG.tuning.counterCritRate;  // 反擊武器固定暴擊率（每 hit 獨立擲骰）
+const COUNTER_CRIT_DMG  = GAME_CONFIG.tuning.counterCritDmg;   // 反擊武器暴擊加傷（+10%）
+// 反擊單發暴擊：回傳 { dmg, crit }。crit → 該發傷害 ×(1+加傷)。
+function critHit(base){
+  const crit = Math.random() < COUNTER_CRIT_RATE;
+  const dmg = crit ? Math.max(1, Math.round(base*(1+COUNTER_CRIT_DMG))) : base;
+  return { dmg, crit };
+}
 
 // combat 於啟動時注入所需回呼
 let api = {};
@@ -56,39 +64,47 @@ export function weaponCounter(dmgScale){
   const w = WEAPONS[state.equippedWeapon];
   if(!w) return;
   const scale = (dmgScale==null) ? 1 : dmgScale;
-  // 反擊武器 SE：只在「真反擊（Counter）」時播；dmgScale!=null＝散彈完防路徑 → 不播（改由 defense 出合成重擊音）。
-  //   機槍＝逐發播（搭搭搭搭搭連續感）、散彈＝一發、狙擊＝一發。play('') 會靜默略過。
-  const se = (dmgScale==null) ? asset(w.sound) : '';
+  // 反擊武器 SE：反擊（Counter）與完美防禦（散彈 Perfect 反擊）都會出聲——散彈 blast 兩路徑皆觸發。
+  //   機槍＝逐發播（搭搭搭搭搭連續感）、散彈＝一發、狙擊＝一發。散彈完防由此 SE 出聲，defense 端不再疊合成重擊。
+  const se = asset(w.sound);
+  // 暴擊字樣：每 hit 各自 20% 擲骰，中則傷害 ×(1+加傷) 並在該發前綴紅字「暴擊」。
 
   if(w.vfx==='single'){
-    // 狙擊：單發，跳一個較大的紅色數字
-    const total=Math.max(1, Math.round(w.hits*w.dmgPerHit*scale));
+    // 狙擊：單發，跳一個較大的數字；暴擊則轉紅並前綴「暴擊」
+    const base=Math.max(1, Math.round(w.hits*w.dmgPerHit*scale));
+    const h=critHit(base);
     SFX.play(se);                              // 狙擊：一發
-    api.enemyDamage(total, true, true);       // 靜默扣血（含 overkill/擊殺判定）
-    addCounter(total);
-    api.floatDmg(total, '46%','32%', false, 'snipernum');
+    api.enemyDamage(h.dmg, true, true);       // 靜默扣血（含 overkill/擊殺判定）
+    addCounter(h.dmg);
+    api.floatDmg((h.crit?'暴擊 ':'')+h.dmg, '46%','32%', h.crit, 'snipernum');
     return;
   }
   if(w.vfx==='burst'){
-    // 散彈：所有彈丸同一瞬間、同一區塊齊發，各自跳出數字
-    const per=Math.max(1, Math.round(w.dmgPerHit*scale));
-    SFX.play(se);                              // 散彈：一次一發
+    // 散彈：所有彈丸同一瞬間、同一區塊齊發，各自獨立暴擊、各自跳出數字
+    const base=Math.max(1, Math.round(w.dmgPerHit*scale));
+    SFX.play(se);                              // 散彈：一次一發（完防/反擊皆觸發）
     const bx=40+Math.random()*20;
+    let sum=0;
     for(let k=0;k<w.hits;k++){
-      api.enemyDamage(per, true, true);
-      api.floatDmg(per, (bx-6+k*3)+'%', (34+(k%2)*6)+'%', true);
+      const h=critHit(base); sum+=h.dmg;
+      api.enemyDamage(h.dmg, true, true);
+      api.floatDmg((h.crit?'暴擊 ':'')+h.dmg, (bx-6+k*3)+'%', (34+(k%2)*6)+'%', true);
     }
-    addCounter(per*w.hits);
+    addCounter(sum);
     return;
   }
-  // 預設（重機槍等）：逐發跳出（每 90ms 一發）
-  const per=Math.max(1, Math.round(w.dmgPerHit*scale));
-  addCounter(per*w.hits);                      // 全彈必中（此期間 over 不會被觸發）→ 一次記總傷
+  // 預設（重機槍等）：逐發跳出（每 90ms 一發），每發各自獨立暴擊
+  const base=Math.max(1, Math.round(w.dmgPerHit*scale));
+  const rolls=[]; let sum=0;                   // 先擲定全彈（全彈必中，此期間 over 不會被觸發）→ 一次記總傷
+  for(let k=0;k<w.hits;k++){ const h=critHit(base); rolls.push(h); sum+=h.dmg; }
+  addCounter(sum);
   let i=0;
   const fire=()=>{
     if(state.over||i>=w.hits) return;
+    const h=rolls[i];
     SFX.play(se);                              // 機槍：每 hit 播一次 → 搭搭搭搭搭
-    api.enemyDamage(per, true);                // 走內建逐發數字
+    api.enemyDamage(h.dmg, true, true);        // 靜默扣血 → 由自訂 float 控制「暴擊」字樣（僅暴擊發才顯示）
+    api.floatDmg((h.crit?'暴擊 ':'')+h.dmg, (30+Math.random()*40)+'%','35%', true);
     i++;
     if(i<w.hits) setTimeout(fire, 90);
   };

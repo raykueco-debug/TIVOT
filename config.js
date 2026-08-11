@@ -263,7 +263,17 @@ export const GAME_CONFIG = {
     dmgPerCombo:         0.2,   // 每層連擊加成
     dmgComboCap:         20,    // 連擊加成計入上限
     dmgDualMult:         0.7,   // 雙槍傷害倍率（<1=安全牌）
-    dmgCritMult:         3,     // 暴擊倍率（保留）
+    dmgCritMult:         3,     // 暴擊倍率（舊保留欄位，未使用；實際暴擊改用下方 crit* 參數）
+
+    // 暴擊（普攻）：暴擊率/暴擊加傷皆隨「連擊」成長；連擊於受擊或清盤中斷歸零。雙槍破防期間無暴擊。
+    critBaseRate:        0.10,  // 普攻初始暴擊率（連擊 0 時）
+    critPerCombo:        0.01,  // 每一連擊 +1% 暴擊率
+    critDmgBase:         0.10,  // 普攻暴擊加傷（+10%，連擊 0 時）
+    critDmgPerCombo:     0.01,  // 每一連擊 +1% 暴擊加傷
+    // 暴擊（反擊武器）：固定暴擊率、固定加傷；每一 hit 各自獨立擲骰。
+    counterCritRate:     0.20,  // 反擊武器固定暴擊率
+    counterCritDmg:      0.10,  // 反擊武器暴擊加傷（+10%）
+
     dmgWrong:            10,    // 普通按錯受擊
     dmgHeavy:            18,    // 紅字期間按錯的重擊
     dmgDelay:            8,     // v17：延時（太慢）懲罰基礎傷害（一般怪；Boss 以 delayPenalty.dmgScale 縮放）

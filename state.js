@@ -35,6 +35,7 @@ export const state = {
   order: [],
   expect: 1,
   combo: 0,
+  critCombo: 0,          // 暴擊用連擊（普攻）：正確點擊 +1；受擊或清盤歸零。驅動暴擊率/加傷成長。
   energy: 0,
   boardStartTime: 0,
   boardClean: true,

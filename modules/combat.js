@@ -30,6 +30,8 @@ const BOARDS = GAME_CONFIG.boards;
 // 數值一律讀 config
 const DMG_BASE=T.dmgBase, DMG_PER_COMBO=T.dmgPerCombo, DMG_COMBO_CAP=T.dmgComboCap;
 const ENERGY_PER_HIT=T.energyPerHit;
+const CRIT_BASE_RATE=T.critBaseRate, CRIT_PER_COMBO=T.critPerCombo;      // 普攻暴擊率＝base + critCombo*per
+const CRIT_DMG_BASE=T.critDmgBase, CRIT_DMG_PER_COMBO=T.critDmgPerCombo; // 普攻暴擊加傷＝base + critCombo*per
 const DMG_WRONG=T.dmgWrong, DMG_HEAVY=T.dmgHeavy, DMG_DELAY=T.dmgDelay;
 const DMG_DUAL_MULT=T.dmgDualMult;                   // 雙槍破防窗口點擊傷害倍率（<1＝安全牌）
 const ATK_BUFF_SECONDS=T.atkBuffSeconds;
@@ -130,6 +132,7 @@ export function loadBoard(idx){
   state.intervalLimit=(BOARDS[idx]||BOARDS[BOARDS.length-1]).interval;
   state.boardStartTime=Date.now();
   state.boardClean=true;
+  state.critCombo=0;              // 暴擊連擊為「盤內連續」：新盤（含清盤後換盤/換敵）歸零＝「清盤中斷」
   buildGrid();
   startIntervalTimer();
   clockResume();                  // 新盤載好、可點 → 碼表起算（開場/換盤/換敵首盤共用）
@@ -211,7 +214,15 @@ function tap(num,cell,e){
     cell.classList.add('done'); cell.classList.remove('next'); enemy.shatterCell(cell);
     state.combo++; resetIntervalDeadline(); addEnergy(ENERGY_PER_HIT);
     let dmg=hitDamage(); if(state.atkBuff) dmg*=2;
-    enemyDamage(Math.round(dmg),false);   // 點擊直接扣敵血
+    // 暴擊（普攻）：此分支必為普攻（雙槍破防走上面獨立分支，本輪 saintMode 亦 return），暴擊率/加傷隨 critCombo 成長。
+    //   本擊先以「現值」擲骰再 +1（首擊＝base 暴擊率）；命中則跳紅字「暴擊」（交由 enemyDamage 的 isCrit 呈現）。
+    let crit=false;
+    const cc=state.critCombo;
+    if(Math.random() < CRIT_BASE_RATE + cc*CRIT_PER_COMBO){
+      crit=true; dmg*=(1 + CRIT_DMG_BASE + cc*CRIT_DMG_PER_COMBO);
+    }
+    state.critCombo++;
+    enemyDamage(Math.round(dmg),crit);   // 點擊直接扣敵血（crit=true → 敵區跳紅字「暴擊」）
     state.expect++;
     if(state.expect>state.N) clearBoard(); else markNext();
     updateStatus();
@@ -323,6 +334,7 @@ function enemyAttack(dmg, kind, saintAmt){
   }
   SFX.hit();                         // 受擊撞擊音
   state.boardClean=false;            // 受擊 → 本盤取消清盤破防獎勵
+  state.critCombo=0;                 // 受擊中斷：暴擊連擊歸零（延時懲罰/按錯重擊/大絕/格擋掉血皆經此路徑）
   state.flawlessRun=false;           // 真實受擊 → 整場無傷旗標取消
   state.playerHp=Math.max(0,state.playerHp-dmg);
   updateBars();
