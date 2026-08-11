@@ -222,7 +222,9 @@ export const GAME_CONFIG = {
     },
     fail: {
       cn: '驅逐失敗',
-      en: [],   // 英文經文待作者補（留空則只顯示中文大字 + 輕觸提示）
+      en: [
+        'O lamb burdened with sin—follow thou thy Shepherd, and go forth unto the Beyond...',
+      ],
     },
   },
 
