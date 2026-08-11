@@ -58,66 +58,74 @@ function playSrc(src, vol){
 
 let _shots = [];   // 普攻槍聲候選（已解析路徑，隨機播一支）
 
-/* ── BGM（HTMLAudio；loop、全域單一、不可交疊，切歌時舊曲淡出）────────────── */
-let _bgm = null;        // 目前 BGM 的 HTMLAudioElement
-let _bgmSrc = null;     // 目前 BGM 路徑（同一首播放中不重播、不中斷）
+/* ── BGM（單一 HTMLAudio 元素；首次手勢解鎖後跨場景重複使用「換 src」而非每首 new Audio）───
+ *  為什麼單一元素：手機/iOS 規定「每個新音訊元素都要在使用者手勢當下才能播」。若每首 new Audio，
+ *  用了 delayMs（在 setTimeout 內建立+播）就不在手勢裡 → 被擋（手機沒 BGM）。改用同一個已解鎖的
+ *  元素換 src，之後就算在 setTimeout 也能播。loop、不可交疊、切歌淡出。 */
+let _bgmEl = null;      // 單一 BGM 元素
+let _bgmSrc = null;     // 目前/目標曲（同曲不重播）
 let _bgmVol = 0.7;      // 目標音量
-let _bgmTimer = null;   // 切歌間隔（delayMs）的待播計時器
-function bgmFade(a, to, ms, done){
-  if(!a) return;
-  clearInterval(a.__fade);
-  const from = a.volume;
+let _bgmTimer = null;   // 切歌間隔/淡出後的待播計時器
+function bgmElem(){
+  if(!_bgmEl){ _bgmEl = new Audio(); _bgmEl.loop = true; _bgmEl.preload = 'auto'; }
+  return _bgmEl;
+}
+function bgmFade(el, to, ms, done){
+  if(!el) return;
+  clearInterval(el.__fade);
+  const from = el.volume;
   const steps = Math.max(1, Math.round(ms/40));
   let i = 0;
-  a.__fade = setInterval(()=>{
+  el.__fade = setInterval(()=>{
     i++;
-    a.volume = Math.max(0, Math.min(1, from + (to-from)*(i/steps)));
-    if(i>=steps){ clearInterval(a.__fade); a.__fade=null; if(done) done(); }
+    el.volume = Math.max(0, Math.min(1, from + (to-from)*(i/steps)));
+    if(i>=steps){ clearInterval(el.__fade); el.__fade=null; if(done) done(); }
   }, 40);
 }
 
 export const SFX = {
-  // 首次使用者手勢呼叫：喚醒 AudioContext + 補播被 autoplay 擋下的 BGM
+  // 首次使用者手勢呼叫：喚醒 AudioContext + 於手勢當下解鎖並補播單一 BGM 元素
   unlock(){
     const c = ctx();
     if(c && c.state === 'suspended') c.resume().catch(()=>{});
-    // BGM 被 autoplay 擋 → 首次手勢直接全音量補播（不淡入）
-    if(_bgm && _bgm.paused){ _bgm.volume=_bgmVol; const p=_bgm.play(); if(p&&p.catch) p.catch(()=>{}); }
+    const el = _bgmEl;
+    if(el && el.paused && _bgmSrc){ el.volume=_bgmVol; const p=el.play(); if(p&&p.catch) p.catch(()=>{}); }
   },
 
-  /* 切換 BGM：舊曲淡出後停 →（可選 delayMs 空一拍）→ 新曲直接全音量起播（不淡入）loop。
-   *  同一首播放中 → 不重播、不中斷。src 空 → 不動作。不可交疊：全域只留一個 _bgm。
-   *  opts：fadeOutMs / delayMs（舊曲淡出到新曲起播之間的間隔）/ volume / fadeInMs（預設 0＝不淡入）。 */
+  /* 切換 BGM：同一元素先淡出 →（可選 delayMs 空一拍）→ 換 src 起播（預設不淡入）loop。
+   *  同一首播放中 → 不重播。src 空 → 不動作。opts：fadeOutMs / delayMs / volume / fadeInMs（預設 0）。 */
   playBgm(src, opts){
     opts = opts || {};
     if(!src) return;
-    if(src === _bgmSrc && _bgm && !_bgm.paused){ clearTimeout(_bgmTimer); _bgmTimer=null; return; }  // 同一首正在播
+    const el = bgmElem();
+    if(src === _bgmSrc && !el.paused){ clearTimeout(_bgmTimer); _bgmTimer=null; return; }  // 同曲播放中
     const fadeOut = opts.fadeOutMs!=null ? opts.fadeOutMs : 900;
     const fadeIn  = opts.fadeInMs!=null  ? opts.fadeInMs  : 0;   // 預設不淡入（作者要求：只淡出）
     const delay   = opts.delayMs!=null   ? opts.delayMs   : 0;
     _bgmVol = opts.volume!=null ? opts.volume : 0.7;
+    _bgmSrc = src;                          // 鎖定目標（間隔中同曲再呼叫被上面擋掉）
     clearTimeout(_bgmTimer); _bgmTimer=null;
-    // 舊曲淡出後停
-    const old = _bgm; _bgm = null;
-    if(old){ bgmFade(old, 0, fadeOut, ()=>{ try{ old.pause(); }catch(e){} }); }
-    _bgmSrc = src;   // 先鎖定目標（間隔中同曲再呼叫會被上面判斷擋掉）
-    const startNew = ()=>{
+    clearInterval(el.__fade); el.__fade=null;
+    const switchTo = ()=>{
       _bgmTimer = null;
-      const a = new Audio(src); a.loop = true; a.preload = 'auto';
-      a.volume = (fadeIn > 0 ? 0 : _bgmVol);   // 不淡入 → 直接全音量
-      _bgm = a;
-      const p = a.play();
-      if(p && p.catch) p.catch(()=>{});   // autoplay 被擋 → 等首次手勢由 unlock 補播
-      if(fadeIn > 0) bgmFade(a, _bgmVol, fadeIn);
+      if(_bgmSrc !== src) return;           // 已被後續切歌取代 → 放棄
+      try{ el.src = src; el.currentTime = 0; }catch(e){}
+      el.volume = (fadeIn > 0 ? 0 : _bgmVol);
+      const p = el.play();
+      if(p && p.catch) p.catch(()=>{});     // 尚未解鎖 → 等 unlock 於手勢補播
+      if(fadeIn > 0) bgmFade(el, _bgmVol, fadeIn);
     };
-    if(delay > 0) _bgmTimer = setTimeout(startNew, delay);   // 空一拍再起新曲
-    else startNew();
+    const afterOut = ()=>{ if(delay>0) _bgmTimer=setTimeout(switchTo, delay); else switchTo(); };
+    // 正在播 → 先淡出（同一元素）再切；否則直接（間隔後）切
+    if(!el.paused && el.src && el.volume>0.001) bgmFade(el, 0, fadeOut, afterOut);
+    else afterOut();
   },
   // 停 BGM（淡出後停）
   stopBgm(fadeOutMs){
     clearTimeout(_bgmTimer); _bgmTimer=null;
-    const old = _bgm; _bgm = null; _bgmSrc = null;
-    if(old) bgmFade(old, 0, fadeOutMs!=null ? fadeOutMs : 700, ()=>{ try{ old.pause(); }catch(e){} });
+    _bgmSrc = null;
+    const el = _bgmEl;
+    if(el && !el.paused) bgmFade(el, 0, fadeOutMs!=null ? fadeOutMs : 700, ()=>{ try{ el.pause(); }catch(e){} });
   },
 
   // 預載一批音檔（傳已解析路徑陣列）：降低首次播放延遲
