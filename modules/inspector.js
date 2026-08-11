@@ -224,6 +224,7 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose){
   rbtn.textContent='再度執槍';
   rbtn.classList.remove('intercept','ready');
   rbtn.style.display='';
+  rbtn.style.visibility='';   // 復位：避免沿用上一場「迎擊」流程的 visibility:hidden
   $('bannerTitle').textContent=title;
   $('bannerSub').textContent=sub;
   const stats=$('resultStats');
@@ -316,7 +317,8 @@ export function onRematchBtn(){
   }
   // S 評價：解鎖迎擊流程（唯一例外）
   state.intruderTriggered=true;  // 標記本場已進入隱藏流程
-  rbtn.style.display='none';     // 鈕先消失
+  // 用 visibility 而非 display：保留按鈕版位，避免 flex 重排讓立繪（flex:1 舞台）忽大忽小
+  rbtn.style.visibility='hidden';
   const insp=getInspector();
   const bubble=$('inspectorBubble');
   const lineEl=$('inspectorLine');
@@ -333,6 +335,6 @@ export function onRematchBtn(){
     state.resultMode='intercept';
     rbtn.textContent='迎擊';
     rbtn.classList.add('intercept','ready');
-    rbtn.style.display='';
+    rbtn.style.visibility='';   // 復現（版位一直在，無重排 → 立繪不變大小）
   }, dur);
 }
