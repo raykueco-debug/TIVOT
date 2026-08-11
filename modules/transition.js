@@ -17,11 +17,14 @@ import { GAME_CONFIG } from '../config.js';
 
 const $ = id => document.getElementById(id);
 
-export function playTransition(kind, done){
+/* opts.noTap  ＝不接受輕觸/點擊/按鍵繼續（不顯示提示），改由外部呼叫回傳的 proceed 推進。
+ * opts.noAuto ＝停用 autoMs 自動繼續。回傳 { proceed }：外部（如櫻花飄完）可主動推進。 */
+export function playTransition(kind, done, opts){
+  opts = opts || {};
   const cfg = GAME_CONFIG.transitions;
   const data = cfg && cfg[kind];
   const el = $('expelTransition');
-  if(!el || !data){ if(done) done(); return; }   // 缺設定/DOM → 不擋流程
+  if(!el || !data){ if(done) done(); return { proceed(){} }; }   // 缺設定/DOM → 不擋流程
 
   // 淡入/淡出時長：可由該 kind 的 fadeInMs / fadeOutMs 覆寫（缺則用全域 cfg.fadeMs）。
   const fadeIn  = (data.fadeInMs  != null) ? data.fadeInMs  : (cfg.fadeMs || 300);
@@ -43,10 +46,12 @@ export function playTransition(kind, done){
   requestAnimationFrame(()=> el.classList.add('vis'));
 
   let tapEnabled = false, proceeded = false;
-  const enableTimer = setTimeout(()=>{ tapEnabled = true; el.classList.add('ready'); if(el.focus) try{ el.focus(); }catch(e){} }, fadeIn);
+  // 淡入完成後開放繼續；noTap 時不顯示「輕觸繼續」提示，但仍讓 tapEnabled=true 供外部 proceed。
+  const enableTimer = setTimeout(()=>{ tapEnabled = true;
+    if(!opts.noTap){ el.classList.add('ready'); if(el.focus) try{ el.focus(); }catch(e){} } }, fadeIn);
 
-  // 自動繼續：該 kind 設 autoMs>0 → 淡入後（自 show 起算 autoMs、至少過 fadeIn）沒點就強制 proceed。
-  const autoMs = (data.autoMs != null) ? data.autoMs : 0;
+  // 自動繼續：該 kind 設 autoMs>0 且未 noAuto → 淡入後（自 show 起算 autoMs、至少過 fadeIn）沒繼續就強制 proceed。
+  const autoMs = (!opts.noAuto && data.autoMs != null) ? data.autoMs : 0;
   const autoTimer = autoMs>0 ? setTimeout(()=>{ tapEnabled=true; proceed(); }, Math.max(autoMs, fadeIn+50)) : null;
 
   function cleanup(){
@@ -68,7 +73,10 @@ export function playTransition(kind, done){
   function onTap(e){ if(e && e.preventDefault) e.preventDefault(); proceed(); }
   function onKey(e){ if(e.key==='Enter' || e.key===' ' || e.key==='Spacebar'){ e.preventDefault(); proceed(); } }
 
-  el.addEventListener('touchstart', onTap, {passive:false});
-  el.addEventListener('click', onTap);
-  document.addEventListener('keydown', onKey);
+  if(!opts.noTap){
+    el.addEventListener('touchstart', onTap, {passive:false});
+    el.addEventListener('click', onTap);
+    document.addEventListener('keydown', onKey);
+  }
+  return { proceed };   // 外部（櫻花飄完）主動推進
 }

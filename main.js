@@ -94,7 +94,13 @@ SFX.setShots([asset('se_pistol_02')].filter(Boolean));
 })();
 
 // 首頁：開始遊戲 → 主選單先淡出、空一拍（約 1s）Battle 才淡入（避免唐突），同時播「驅逐開始」過渡禎
-bindBtn('startBtn',     ()=>{ SFX.play(asset('sfx_start')); sakuraBurst(); SFX.playBgm(asset('bgm_battle'), { fadeOutMs:800, delayMs:1000 }); playTransition('start', combat.startGame); });
+bindBtn('startBtn',     ()=>{
+  SFX.play(asset('sfx_start'));
+  SFX.playBgm(asset('bgm_battle'), { fadeOutMs:800, delayMs:1000 });
+  // 驅逐開始：不靠點擊、不自動計時 → 由櫻花飄完（onDone）主動推進進戰鬥
+  const tr = playTransition('start', combat.startGame, { noTap:true, noAuto:true });
+  sakuraBurst({ onDone: ()=> tr.proceed() });
+});
 bindBtn('exitBtn',      showExitConfirm);       // 右上：退出 → 確認對話框（盤面模糊）
 
 // 退出確認：暫停（cutinPlaying）+ 數字盤模糊 + 「回主選單 / 繼續」。回主選單走 goHome（淡出淡入）。

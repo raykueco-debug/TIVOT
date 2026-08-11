@@ -25,7 +25,8 @@
   @keyframes alPulse{0%,100%{opacity:.45}50%{opacity:1}}
   #assetLoader .al-pulse{animation:alPulse 1.5s ease-in-out infinite;}
   /* 退出確認：數字盤模糊到看不清 + 半暗遮罩 + 面板 */
-  #grid.grid-blur{filter:blur(10px) brightness(.6);pointer-events:none;}
+  /* 暫停：重度模糊，讓數字盤難以辨識（模糊+壓暗+輕微放大糊化） */
+  #grid.grid-blur{filter:blur(24px) brightness(.4) contrast(.85);transform:scale(1.04);pointer-events:none;}
   #exitConfirm{position:fixed;inset:0;z-index:9500;display:flex;align-items:center;justify-content:center;
     background:rgba(6,4,12,.55);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);}
   #exitConfirm .ec-panel{width:min(82%,320px);text-align:center;padding:22px 20px;border-radius:12px;
@@ -649,7 +650,8 @@
   #creditSheet .credit-sec{margin-bottom:16px;}
   #creditSheet .credit-h{font-size:12px;letter-spacing:3px;color:var(--holy);
     border-bottom:1px solid var(--gold-dim);padding-bottom:5px;margin-bottom:10px;}
-  #creditSheet .credit-work{font-size:15px;letter-spacing:2px;color:var(--gold);margin-bottom:10px;}
+  #creditSheet .credit-work{font-size:15px;letter-spacing:2px;color:var(--gold);margin-bottom:4px;}
+  #creditSheet .credit-note{font-size:11px;letter-spacing:.5px;color:var(--gold-dim);margin-bottom:10px;}
   #creditSheet .credit-links{display:flex;gap:10px;}
   #creditSheet .credit-link{flex:1;text-align:center;padding:10px 8px;background:rgba(30,24,42,.7);
     border:1px solid var(--gold-dim);border-radius:8px;color:var(--gold);text-decoration:none;

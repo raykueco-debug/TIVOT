@@ -121,6 +121,7 @@ export function sakuraBurst(opts) {
     if (safety) { clearTimeout(safety); safety = null; }
     window.removeEventListener('resize', resize);
     if (canvas.parentNode) canvas.remove();   // 此刻已無花瓣可見，直接移除
+    if (typeof opts.onDone === 'function') { try { opts.onDone(); } catch (e) {} }   // 飄完 → 通知（自動進戰鬥）
   }
 
   requestAnimationFrame(frame);
