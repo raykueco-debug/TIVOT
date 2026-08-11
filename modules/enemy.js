@@ -41,14 +41,29 @@ export function showHitFx(kind){
     default:      triggerClaw();
   }
 }
-// 紅刀痕濺血：一條斜向亮紅刀痕 + 一道血痕（按錯懲罰用）
+// 紅刀痕濺血：一條斜向亮紅刀痕 + 數顆散開的小血滴（按錯懲罰用）。
+//   ⚠ 不沿用 spawnBlood（那是延時懲罰的寬血痕，會誤看成兩個特效同時出現）；改自帶小血滴區隔。
 export function spawnSlash(){
   const d=document.createElement('div');
   d.className='fx fx-slash';
   const deg=(Math.random()<0.5?-1:1)*(20+Math.random()*35);   // 斜角 ±(20~55)°
   d.style.setProperty('--deg', deg.toFixed(1)+'deg');
   addFx(d,480);
-  spawnBlood(true);   // 濺血（血痕，角度隨機）
+  // 濺血：數顆小血滴自中心沿刀痕方向散開，短促淡出
+  const n=7+Math.floor(Math.random()*4);
+  for(let i=0;i<n;i++){
+    const b=document.createElement('div'); b.className='fx fx-drop';
+    const ang=deg + (Math.random()*120-60);                   // 大致沿刀痕、帶散射
+    const dist=26+Math.random()*74;
+    b.style.setProperty('--dx',(Math.cos(ang*Math.PI/180)*dist).toFixed(0)+'px');
+    b.style.setProperty('--dy',(Math.sin(ang*Math.PI/180)*dist).toFixed(0)+'px');
+    b.style.left=(45+Math.random()*10)+'%';
+    b.style.top =(42+Math.random()*8)+'%';
+    const sz=(3+Math.random()*5).toFixed(0);
+    b.style.width=sz+'px'; b.style.height=sz+'px';
+    b.style.animationDelay=(Math.random()*40).toFixed(0)+'ms';
+    addFx(b,440);
+  }
 }
 // 既有三爪：可指定 count 與是否隨機整體角度（透過父層旋轉）
 export function triggerClaw(count, randomAngle){
