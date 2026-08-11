@@ -419,6 +419,7 @@ export const GAME_CONFIG = {
 
 export const ASSETS = {
   // ── 圖片 ──
+  home_emblem:    "resources/background/TIVOT_Emblem.png",   // 主畫面徽記（含 THE IV ORDER OF TESTAMENT 弧字）
   enemy_faceless: "resources/enemy/Faceless_EN_01.jpg",   // 無貌者 Boss 暫代圖
   cutin_saint:    "resources/partner/Luna_CI_saint.jpg",   // 聖徒化 cut-in 暫代圖
   partner_twin:   "resources/partner/Luna_SI_01.jpg",   // 雙槍修女立繪（暫用 cut-in 圖）

@@ -278,4 +278,6 @@ export function applyConfigToDOM(){
   setEnemy(GAME_CONFIG.currentEnemy);
   const cImg = $('cutinImg');
   if(cImg && pn && pn.cutin) cImg.src = asset(pn.cutin);
+  const emb = $('homeEmblem');
+  if(emb && !emb.src) emb.src = asset('home_emblem');   // 主畫面徽記
 }

@@ -571,8 +571,27 @@
     align-items:center;justify-content:center;z-index:50;text-align:center;
     background:radial-gradient(120% 90% at 50% 30%,#1a1330,#07050c 90%);}
   #home.on{display:flex;}
-  #home .title{font-size:38px;letter-spacing:8px;color:var(--gold);margin:0 0 6px;
+  /* 主畫面徽記：金色透明 PNG（含 THE IV ORDER OF TESTAMENT 弧字），置中。
+     微微發光呼吸：drop-shadow 光暈 + 亮度，節奏同「開始遊戲」按鈕（1.2s alternate）。 */
+  #home #homeEmblem{width:min(64vw,300px);max-width:78%;height:auto;margin:0 0 14px;
+    user-select:none;-webkit-user-drag:none;pointer-events:none;
+    animation:emblemGlow 1.2s ease-in-out infinite alternate;}
+  @keyframes emblemGlow{
+    from{filter:drop-shadow(0 0 8px rgba(212,169,74,.25)) brightness(1);}
+    to{filter:drop-shadow(0 0 22px rgba(212,169,74,.6)) brightness(1.12);}}
+  /* 中文主標：不自動換行（依畫面寬用 clamp 縮字，保證單行不溢出） */
+  #home .title{font-size:clamp(24px,7.6vw,34px);letter-spacing:.16em;color:var(--gold);
+    margin:0;white-space:nowrap;
     text-shadow:0 0 20px var(--gold-dim),0 0 40px rgba(120,40,160,.5);font-weight:bold;}
+  /* 副標 SAINT INSTALL：中文標下方，金字加左右細線 */
+  #home .saint-install{display:flex;align-items:center;justify-content:center;gap:12px;
+    margin:10px 0 46px;}
+  #home .saint-install .si-text{font-size:12px;letter-spacing:.42em;
+    color:var(--holy);opacity:.92;text-indent:.42em;white-space:nowrap;
+    text-shadow:0 0 12px rgba(111,179,212,.45);}
+  #home .saint-install .si-rule{width:clamp(22px,9vw,44px);height:1px;
+    background:linear-gradient(90deg,transparent,rgba(111,179,212,.65));}
+  #home .saint-install .si-rule:last-child{background:linear-gradient(90deg,rgba(111,179,212,.65),transparent);}
   #home .subtitle{font-size:13px;letter-spacing:3px;color:var(--holy);opacity:.85;margin-bottom:44px;}
   #startBtn{padding:16px 46px;background:transparent;border:1px solid var(--gold);
     color:var(--gold);border-radius:10px;font-family:inherit;font-size:17px;letter-spacing:5px;
