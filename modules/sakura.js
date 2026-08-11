@@ -12,14 +12,14 @@ const COLORS = ['#ffd7e6', '#ffc0d4', '#f7a8c4', '#ffe4ef', '#f9b6cf'];
 
 export function sakuraBurst(opts) {
   opts = opts || {};
-  const emitMs  = opts.emitMs  != null ? opts.emitMs  : 900;    // 由外緣持續補入的時間
-  const tailMs  = opts.tailMs  != null ? opts.tailMs  : 1200;   // 停止補入後再等這麼久 → 硬收尾
+  const emitMs  = opts.emitMs  != null ? opts.emitMs  : 650;    // 由外緣持續補入的時間（短）
   const density = opts.density != null ? opts.density : 1;
-  const rate    = (opts.rate   != null ? opts.rate    : 50) * density;  // 每秒補入花瓣數
+  const rate    = (opts.rate   != null ? opts.rate    : 55) * density;  // 每秒補入花瓣數
+  const safetyMs= opts.safetyMs!= null ? opts.safetyMs: 5000;   // 後備上限（正常永不觸發，花瓣早已飄出）
 
   const canvas = document.createElement('canvas');
   canvas.id = 'sakuraFx';
-  canvas.style.cssText = 'position:fixed;inset:0;z-index:250;pointer-events:none;opacity:1;transition:opacity .4s ease;';
+  canvas.style.cssText = 'position:fixed;inset:0;z-index:250;pointer-events:none;';
   document.body.appendChild(canvas);
   const ctx = canvas.getContext('2d');
 
@@ -43,14 +43,14 @@ export function sakuraBurst(opts) {
     let x, y;
     if (topEntry) {
       x = rnd(-W * 0.05, W * 1.0);                             // 上緣：橫向隨機（略含左外）
-      y = -20 - Math.random() * H * 0.5;                       // 上方外側不同深度（錯開進場）
+      y = -20 - Math.random() * H * 0.45;                      // 上方外側不同深度（錯開進場）
     } else {
-      x = -20 - Math.random() * W * 0.5;                       // 左緣：外側不同深度（錯開進場）
+      x = -20 - Math.random() * W * 0.45;                      // 左緣：外側不同深度（錯開進場）
       y = rnd(-H * 0.1, H * 0.95);                             // 縱向任意
     }
     return {
       x, y, size,
-      vx: rnd(300, 660),                                       // 強風向右（亂）
+      vx: rnd(340, 680),                                       // 強風向右（亂；確保 ~2.5s 內飄出）
       vy: rnd(90, 370),                                        // 向下（亂；配合 vx → 斜掃）
       flutter: rnd(20, 75),                                    // 亂流抖動幅度
       flPh: Math.random() * Math.PI * 2,
@@ -87,7 +87,7 @@ export function sakuraBurst(opts) {
     ctx.restore();
   }
 
-  let running = true, t0 = null, last = null, emitAcc = 0, stopEmit = false, hardStop = null;
+  let running = true, t0 = null, last = null, emitAcc = 0, stopEmit = false, safety = null;
 
   function frame(ts) {
     if (!running) return;
@@ -108,8 +108,9 @@ export function sakuraBurst(opts) {
       p.y += (p.vy + Math.sin(p.flPh) * p.flutter) * dt;
       p.rot += p.rotSp * dt;
       drawPetal(p);
-      if (p.x > W + 45 || p.y > H + 45) petals.splice(i, 1);   // 吹出右/下緣即除
+      if (p.x > W + 45 || p.y > H + 45) petals.splice(i, 1);   // 吹出右/下緣即除（自然飄出，不淡出消失）
     }
+    // 只有「花瓣全數自然飄出畫面」才收掉 → 保證用飄的飄完、不憑空消失
     if (stopEmit && petals.length === 0) { cleanup(); return; }
     requestAnimationFrame(frame);
   }
@@ -117,14 +118,13 @@ export function sakuraBurst(opts) {
   function cleanup() {
     if (!running) return;
     running = false;
-    if (hardStop) { clearTimeout(hardStop); hardStop = null; }
+    if (safety) { clearTimeout(safety); safety = null; }
     window.removeEventListener('resize', resize);
-    canvas.style.opacity = '0';
-    setTimeout(() => { if (canvas.parentNode) canvas.remove(); }, 440);
+    if (canvas.parentNode) canvas.remove();   // 此刻已無花瓣可見，直接移除
   }
 
   requestAnimationFrame(frame);
-  // 硬收尾：補入結束後最多再等 tailMs 一定淡出（確保進戰鬥前飄完）
-  hardStop = setTimeout(cleanup, emitMs + tailMs);
+  // 後備上限：正常情況下所有花瓣皆於 ~2.5s 內飄出、由上面自然收尾；此計時僅防意外殘留
+  safety = setTimeout(cleanup, safetyMs);
   return { stop: cleanup };
 }

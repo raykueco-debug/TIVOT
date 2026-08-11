@@ -278,9 +278,11 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose){
   if(insp){
     // 處決勝利（聖徒化 Maximum Burst 擊殺）→ 固定處決台詞，不論 rank；否則走 rank 台詞。
     // Boss 戰一律走 bossDialogues 的 rank 台詞（不套用一般處決台詞）。
-    const line = (!state.inIntruderFight && state.sawExecution && insp.executionLine)
+    let line = (!state.inIntruderFight && state.sawExecution && insp.executionLine)
       ? insp.executionLine
       : (pickInspectorDialogue(insp, rankKey, state.inIntruderFight) || '（監察官台詞待填）');
+    // {rand3}＝隨機 3 位數，不足 3 位以 0 補滿（如 007 / 042）。Boss 落敗台詞用。
+    line = line.replace('{rand3}', String(Math.floor(Math.random()*1000)).padStart(3,'0'));
     setTimeout(()=>{
       bubble.classList.add('show');
       typeInspectorLine(lineEl, line, 2000);   // 2 秒內逐字

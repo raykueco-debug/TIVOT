@@ -629,3 +629,41 @@
     color:var(--gold-dim);margin-top:3px;}
   #pickSheet .pick-close{padding:9px 30px;background:transparent;border:1px solid var(--gold-dim);
     color:var(--ink);border-radius:8px;font-family:inherit;font-size:13px;letter-spacing:3px;}
+
+  /* 首頁 Credit 小鈕（低調文字鈕） */
+  #home #creditBtn{margin-top:22px;padding:7px 20px;background:transparent;
+    border:1px solid var(--gold-dim);border-radius:20px;color:var(--gold-dim);
+    font-family:inherit;font-size:12px;letter-spacing:3px;}
+  #home #creditBtn:active{transform:scale(.95);color:var(--gold);border-color:var(--gold);}
+
+  /* Credit 面板 */
+  #creditSheet{position:absolute;inset:0;display:none;align-items:center;justify-content:center;
+    background:rgba(4,3,8,.88);z-index:60;}
+  #creditSheet.on{display:flex;}
+  #creditSheet .credit-panel{width:85%;max-width:360px;max-height:80%;background:#0f0c16;
+    border:1px solid var(--gold-dim);border-radius:12px;padding:18px 16px 16px;text-align:center;
+    display:flex;flex-direction:column;box-shadow:0 0 30px rgba(0,0,0,.7);}
+  #creditSheet .credit-title{font-size:16px;letter-spacing:5px;color:var(--gold);margin-bottom:14px;flex:none;}
+  #creditSheet .credit-scroll{overflow-y:auto;overscroll-behavior:contain;flex:1 1 auto;min-height:0;
+    text-align:left;padding-right:2px;}
+  #creditSheet .credit-sec{margin-bottom:16px;}
+  #creditSheet .credit-h{font-size:12px;letter-spacing:3px;color:var(--holy);
+    border-bottom:1px solid var(--gold-dim);padding-bottom:5px;margin-bottom:10px;}
+  #creditSheet .credit-work{font-size:15px;letter-spacing:2px;color:var(--gold);margin-bottom:10px;}
+  #creditSheet .credit-links{display:flex;gap:10px;}
+  #creditSheet .credit-link{flex:1;text-align:center;padding:10px 8px;background:rgba(30,24,42,.7);
+    border:1px solid var(--gold-dim);border-radius:8px;color:var(--gold);text-decoration:none;
+    font-size:13px;letter-spacing:2px;}
+  #creditSheet .credit-link:active{transform:scale(.97);border-color:var(--gold);box-shadow:0 0 12px var(--gold-dim);}
+  #creditSheet .credit-list{list-style:none;margin:0;padding:0;}
+  #creditSheet .credit-list li{display:flex;align-items:baseline;gap:8px;padding:6px 0;
+    border-bottom:1px dashed rgba(138,109,46,.35);font-size:12.5px;}
+  #creditSheet .credit-list li:last-child{border-bottom:none;}
+  #creditSheet .cl-name{color:var(--ink);flex:1 1 auto;min-width:0;}
+  #creditSheet .cl-by{color:var(--gold-dim);font-size:11px;letter-spacing:.5px;flex:none;}
+  #creditSheet .cl-use{color:var(--holy);font-size:10.5px;letter-spacing:.5px;flex:none;
+    opacity:.85;white-space:nowrap;}
+  #creditSheet .credit-close{margin-top:14px;flex:none;align-self:center;padding:9px 34px;
+    background:transparent;border:1px solid var(--gold-dim);color:var(--ink);
+    border-radius:8px;font-family:inherit;font-size:13px;letter-spacing:3px;}
+  #creditSheet .credit-close:active{transform:scale(.97);}
