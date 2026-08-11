@@ -448,6 +448,11 @@ export const ASSETS = {
   // 清盤換彈音（盤面清空、顯示 RELOADING 時播）
   sfx_reload:        "resources/weapon/Reload.mp3",
 
+  // 開始遊戲 stinger（點下開始瞬間，蓋過 BGM 切歌的淡出/進入前段）
+  sfx_start:         "resources/Stage/Start_01.mp3",
+  // 聖徒化發動音效
+  sfx_saint:         "resources/Stage/SI_01.mp3",
+
   // 完美防禦（完防）合成替代音（一般武器；散彈完防維持自己的槍聲）
   se_guard:          "resources/weapon/Guard_SE.m4a",
 

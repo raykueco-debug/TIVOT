@@ -242,7 +242,7 @@ export function advanceToNextEnemy(done){
  *  bannerHold 為 reference 舊版自動觸發用,手動迎擊流程不使用 → 視為休眠 config,不接。 */
 export function triggerIntruder(){
   const it = GAME_CONFIG.intruder;
-  SFX.playBgm(asset('bgm_boss'));   // 點下迎擊 → Boss 戰 BGM（前一首結算 BGM 淡出）
+  // Boss BGM 已於「再度執槍（S 解鎖）」瞬間起播（見 inspector.onRematchBtn），此處不重播。
   const sc = $('saintCutin');
   $('saintCutinTitle').textContent = it.cutinText || 'NEW HUSTLE INCOMING';
   $('saintCutinSub').textContent   = '輕觸畫面繼續';

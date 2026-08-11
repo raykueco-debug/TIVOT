@@ -49,12 +49,13 @@ SFX.preload([
   asset('sfx_reload'), asset('se_guard'),
   asset('se_pistol_02'),
   asset('em_slash'), asset('em_smack'), asset('em_shot'), asset('em_dagger'),
+  asset('sfx_start'), asset('sfx_saint'),
 ].filter(Boolean));
 // 普攻槍聲：固定用 Pistol_SE_02（不隨機）
 SFX.setShots([asset('se_pistol_02')].filter(Boolean));
 
 // 首頁：開始遊戲 → 主選單先淡出、空一拍（約 1s）Battle 才淡入（避免唐突），同時播「驅逐開始」過渡禎
-bindBtn('startBtn',     ()=>{ SFX.playBgm(asset('bgm_battle'), { fadeOutMs:800, delayMs:1000 }); playTransition('start', combat.startGame); });
+bindBtn('startBtn',     ()=>{ SFX.play(asset('sfx_start')); SFX.playBgm(asset('bgm_battle'), { fadeOutMs:800, delayMs:1000 }); playTransition('start', combat.startGame); });
 bindBtn('exitBtn',      combat.goHome);         // 右上：退出回首頁
 bindBtn('testClearBtn', combat.testClearBoard); // 左上（測試用）：一鍵清盤
 bindBtn('rematchBtn',   inspector.onRematchBtn);// 結算：依 resultMode 分流（再度執槍/迎擊）

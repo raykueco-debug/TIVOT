@@ -53,6 +53,7 @@ export function activateSaint(dir){
   if(state.over||state.saintMode||state.cutinPlaying||state.saintUsedThisBattle||state.transitioning||state.dualWield) return;
   state.saintUsedThisBattle = true;   // saint 自有欄位：發動即鎖（一場一次），時序同 reference
   SFX.unlock(); SFX.ultCharge();
+  SFX.play(asset('sfx_saint'));       // 聖徒化發動音效（SI_01）
   playSlash(dir);                     // 依滑動方向的橫斬特效
   playCutin(()=>{
     if(state.over) return;
