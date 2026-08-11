@@ -152,10 +152,12 @@
     </div>
   </div>
 
-  <!-- 過渡禎：開始/結束的淡入淡出全畫面轉場（文字讀 config.transitions）-->
-  <div id="expelTransition">
+  <!-- 過渡禎：開始/結束的淡入淡出全畫面轉場（文字讀 config.transitions）。
+       輕觸畫面繼續：role=button + aria-label（無障礙），淡入完成後可點/可按 Enter/Space 繼續。 -->
+  <div id="expelTransition" role="button" tabindex="-1" aria-label="輕觸畫面繼續">
     <div class="expel-cn" id="expelCn"></div>
     <div class="expel-en" id="expelEn"></div>
+    <div class="expel-hint" id="expelHint" aria-hidden="true"></div>
   </div>
 
   <!-- 選擇彈層（副武器 / 搭檔 共用）-->

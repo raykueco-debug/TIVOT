@@ -562,7 +562,8 @@ function win(){
 function lose(){
   if(state.over) return;
   state.over=true; clockPause(); stopAll();
-  inspector.settle(null, null, { isLose:true });
+  // 戰敗 → 先播「驅逐失敗」過渡禎，輕觸後才建戰敗結算（含 Boss 戰戰敗）
+  playTransition('fail', ()=> inspector.settle(null, null, { isLose:true }));
 }
 
 /* ============================================================================

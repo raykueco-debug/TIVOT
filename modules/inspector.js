@@ -200,7 +200,7 @@ export function settle(totalTime, stats, opts={}){
   rows += ratingStatsRows(stats, totalTime);
   if(isRecord) rows += `<div class="record">★ NEW RECORD ★</div>`;
   // ── 監察官結算展示（依評價等第挑台詞）──
-  showResultSequence('聖裁完成', sub, rows, evalResult.grade, false);
+  showResultSequence('聖裁', sub, rows, evalResult.grade, false);
 
   // ── 隱藏關（New Hustle）解鎖判定：S 評價才解鎖，不自動觸發 ──
   //   由「再度執槍 → 迎擊」流程手動進入（見 onRematchBtn）。
