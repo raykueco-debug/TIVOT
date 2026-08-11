@@ -152,6 +152,8 @@
       <button class="loadout-btn" id="pickPartnerBtn"><span class="lb-label">搭　檔</span><span class="lb-value" id="pickPartnerValue">—</span></button>
     </div>
     <button id="creditBtn">Credit</button>
+    <button id="originalBtn">原作</button>
+    <div class="home-copyright">Eternal Original Sin 系列・永恆的原罪</div>
   </div>
 
   <!-- 過渡禎：開始/結束的淡入淡出全畫面轉場（文字讀 config.transitions）。
@@ -162,20 +164,25 @@
     <div class="expel-hint" id="expelHint" aria-hidden="true"></div>
   </div>
 
-  <!-- Credit：原作連結（做成按鈕）＋ BGM 來源 -->
+  <!-- 原作：點「原作」→ 選巴哈或 Penana（圖文小說連結） -->
+  <div id="originalSheet">
+    <div class="os-panel">
+      <div class="os-title">原作</div>
+      <div class="os-work">永恆的原罪</div>
+      <div class="os-note">（圖文小說連結，兩站皆已連載完畢）</div>
+      <div class="os-links">
+        <a class="os-link" href="https://home.gamer.com.tw/profile/index_creation.php?owner=AngeLucifer" target="_blank" rel="noopener noreferrer">巴哈姆特</a>
+        <a class="os-link" href="https://www.penana.com/story/199520/%E6%B0%B8%E6%81%86%E7%9A%84%E5%8E%9F%E7%BD%AAii-%E7%81%BD%E5%8E%84%E4%B9%8B%E5%AD%90/" target="_blank" rel="noopener noreferrer">Penana</a>
+      </div>
+      <button class="os-close" id="originalClose">關閉</button>
+    </div>
+  </div>
+
+  <!-- Credit：BGM 來源 -->
   <div id="creditSheet">
     <div class="credit-panel">
       <div class="credit-title">Credit</div>
       <div class="credit-scroll">
-        <div class="credit-sec">
-          <div class="credit-h">原作</div>
-          <div class="credit-work">永恆的原罪</div>
-          <div class="credit-note">（圖文小說連結，兩站皆已連載完畢）</div>
-          <div class="credit-links">
-            <a class="credit-link" href="https://home.gamer.com.tw/profile/index_creation.php?owner=AngeLucifer" target="_blank" rel="noopener noreferrer">巴哈姆特</a>
-            <a class="credit-link" href="https://www.penana.com/story/199520/%E6%B0%B8%E6%81%86%E7%9A%84%E5%8E%9F%E7%BD%AAii-%E7%81%BD%E5%8E%84%E4%B9%8B%E5%AD%90/" target="_blank" rel="noopener noreferrer">Penana</a>
-          </div>
-        </div>
         <div class="credit-sec">
           <div class="credit-h">BGM Source</div>
           <ul class="credit-list">

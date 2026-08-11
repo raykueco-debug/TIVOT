@@ -631,11 +631,35 @@
   #pickSheet .pick-close{padding:9px 30px;background:transparent;border:1px solid var(--gold-dim);
     color:var(--ink);border-radius:8px;font-family:inherit;font-size:13px;letter-spacing:3px;}
 
-  /* 首頁 Credit 小鈕（低調文字鈕） */
-  #home #creditBtn{margin-top:22px;padding:7px 20px;background:transparent;
+  /* 首頁低調小鈕（Credit / 原作） */
+  #home #creditBtn, #home #originalBtn{padding:7px 20px;background:transparent;
     border:1px solid var(--gold-dim);border-radius:20px;color:var(--gold-dim);
     font-family:inherit;font-size:12px;letter-spacing:3px;}
-  #home #creditBtn:active{transform:scale(.95);color:var(--gold);border-color:var(--gold);}
+  #home #creditBtn{margin-top:22px;}
+  #home #originalBtn{margin-top:10px;}
+  #home #creditBtn:active, #home #originalBtn:active{transform:scale(.95);color:var(--gold);border-color:var(--gold);}
+  /* 底部版權小字 */
+  #home .home-copyright{position:absolute;left:0;right:0;
+    bottom:calc(12px + env(safe-area-inset-bottom));text-align:center;
+    font-size:10px;letter-spacing:1px;color:var(--gold-dim);opacity:.6;pointer-events:none;}
+
+  /* 原作選擇面板 */
+  #originalSheet{position:absolute;inset:0;display:none;align-items:center;justify-content:center;
+    background:rgba(4,3,8,.88);z-index:60;}
+  #originalSheet.on{display:flex;}
+  #originalSheet .os-panel{width:80%;max-width:320px;background:#0f0c16;border:1px solid var(--gold-dim);
+    border-radius:12px;padding:18px 16px 16px;text-align:center;box-shadow:0 0 30px rgba(0,0,0,.7);}
+  #originalSheet .os-title{font-size:16px;letter-spacing:6px;color:var(--gold);margin-bottom:12px;}
+  #originalSheet .os-work{font-size:15px;letter-spacing:2px;color:var(--gold);margin-bottom:4px;}
+  #originalSheet .os-note{font-size:11px;letter-spacing:.5px;color:var(--gold-dim);margin-bottom:14px;}
+  #originalSheet .os-links{display:flex;gap:10px;margin-bottom:14px;}
+  #originalSheet .os-link{flex:1;text-align:center;padding:12px 8px;background:rgba(30,24,42,.7);
+    border:1px solid var(--gold-dim);border-radius:8px;color:var(--gold);text-decoration:none;
+    font-size:14px;letter-spacing:2px;}
+  #originalSheet .os-link:active{transform:scale(.97);border-color:var(--gold);box-shadow:0 0 12px var(--gold-dim);}
+  #originalSheet .os-close{padding:9px 34px;background:transparent;border:1px solid var(--gold-dim);
+    color:var(--ink);border-radius:8px;font-family:inherit;font-size:13px;letter-spacing:3px;}
+  #originalSheet .os-close:active{transform:scale(.97);}
 
   /* Credit 面板 */
   #creditSheet{position:absolute;inset:0;display:none;align-items:center;justify-content:center;

@@ -130,9 +130,12 @@ bindBtn('energyClasp',    weapon.activateDual);
 bindBtn('pickWeaponBtn',  ()=>weapon.openPickSheet('weapon'));
 bindBtn('pickPartnerBtn', ()=>weapon.openPickSheet('partner'));
 bindBtn('pickSheetClose', weapon.closePickSheet);
-// Credit：原作連結（新分頁開）＋ BGM 來源
+// Credit：BGM 來源
 bindBtn('creditBtn',  ()=>{ const s=$('creditSheet'); if(s) s.classList.add('on'); });
 bindBtn('creditClose',()=>{ const s=$('creditSheet'); if(s) s.classList.remove('on'); });
+// 原作：點下 → 選巴哈 / Penana（新分頁開）
+bindBtn('originalBtn',  ()=>{ const s=$('originalSheet'); if(s) s.classList.add('on'); });
+bindBtn('originalClose',()=>{ const s=$('originalSheet'); if(s) s.classList.remove('on'); });
 weapon.refreshLoadoutLabels();                  // 開機：把當前副武器/搭檔名寫進 loadout 按鈕
 
 window.addEventListener('resize', combat.fitGridSquare);
