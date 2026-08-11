@@ -189,7 +189,7 @@ export const GAME_CONFIG = {
     exp: {
       mult: 8.7,          // 非整數倍率，避免整齊倍數
       offset: 137,        // 質數基底，保證三位數起跳
-      overkillExp: 3,     // 每次 overkill 額外 +3 EXP
+      overkillExp: 0.5,   // 每點 overkill 額外 +0.5 EXP（原 3 過高：overkill 為累計傷害、數值偏大）
       jitterMod: 7,       // 用分數尾數做微擾，讓 EXP 數字不整齊
     },
   },
