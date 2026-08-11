@@ -513,6 +513,19 @@ function clockElapsedMs(){
 }
 function resetClock(){ state.runElapsedMs=0; state.clockRunSince=0; }
 
+/* 退出確認框：真暫停／續玩。cutinPlaying 已擋新大絕/敵傷害/點擊/間隔懲罰；
+ *  這裡再凍結攻擊圈縮放 + 碼表，續玩時原樣接回（clockResume 需在清旗標後呼叫）。 */
+export function pauseForDialog(){
+  state.cutinPlaying = true;
+  clockPause();
+  defense.pauseThreats();
+}
+export function resumeFromDialog(){
+  state.cutinPlaying = false;
+  defense.resumeThreats();
+  clockResume();
+}
+
 /* ---- 敵死收尾：局內還有下一敵→轉敵、否則→結算 ---- */
 function finishEnemyOrAdvance(){
   if(enemy.hasNextInLineup()){ advanceEnemy(); }

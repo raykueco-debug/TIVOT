@@ -19,6 +19,7 @@ import * as weapon from './modules/weapon.js';     // 雙槍破防發動 + 換�
 
 import * as inspector from './modules/inspector.js';   // 結算/評價/迎擊分流
 import { playTransition } from './modules/transition.js';   // 過渡禎（開始/結束淡入淡出）
+import { sakuraBurst } from './modules/sakura.js';   // 開始遊戲：全畫面櫻花飛舞（純程式）
 import './modules/enemy.js';
 
 const $ = id => document.getElementById(id);
@@ -93,13 +94,13 @@ SFX.setShots([asset('se_pistol_02')].filter(Boolean));
 })();
 
 // 首頁：開始遊戲 → 主選單先淡出、空一拍（約 1s）Battle 才淡入（避免唐突），同時播「驅逐開始」過渡禎
-bindBtn('startBtn',     ()=>{ SFX.play(asset('sfx_start')); SFX.playBgm(asset('bgm_battle'), { fadeOutMs:800, delayMs:1000 }); playTransition('start', combat.startGame); });
+bindBtn('startBtn',     ()=>{ SFX.play(asset('sfx_start')); sakuraBurst(); SFX.playBgm(asset('bgm_battle'), { fadeOutMs:800, delayMs:1000 }); playTransition('start', combat.startGame); });
 bindBtn('exitBtn',      showExitConfirm);       // 右上：退出 → 確認對話框（盤面模糊）
 
 // 退出確認：暫停（cutinPlaying）+ 數字盤模糊 + 「回主選單 / 繼續」。回主選單走 goHome（淡出淡入）。
 function showExitConfirm(){
   if(state.over || state.cutinPlaying || document.getElementById('exitConfirm')) return;   // 非戰鬥中/演出中/已開 → 略過
-  state.cutinPlaying = true;                        // 暫停：停延時懲罰/大絕、擋盤面點擊
+  combat.pauseForDialog();                          // 真暫停：凍結攻擊圈縮放 + 碼表 + 停延時懲罰/新大絕/點擊
   const grid=$('grid'); if(grid) grid.classList.add('grid-blur');
   const dlg=document.createElement('div'); dlg.id='exitConfirm';
   dlg.innerHTML='<div class="ec-panel">'
@@ -111,7 +112,7 @@ function showExitConfirm(){
   const close=()=>{ if(dlg.parentNode) dlg.remove(); if(grid) grid.classList.remove('grid-blur'); };
   const bind=(sel,fn)=>{ const b=dlg.querySelector(sel); const run=()=>{ SFX.unlock(); SFX.menuClick(); fn(); };
     b.addEventListener('click',run); b.addEventListener('touchstart',e=>{e.preventDefault();run();},{passive:false}); };
-  bind('.ec-no', ()=>{ close(); state.cutinPlaying=false; });   // 繼續：解除暫停
+  bind('.ec-no', ()=>{ close(); combat.resumeFromDialog(); });  // 繼續：解除暫停、攻擊圈/碼表接回
   bind('.ec-yes',()=>{ close(); combat.goHome(); });            // 回主選單：goHome 內會清 cutinPlaying + 淡出淡入
 }
 bindBtn('testClearBtn', combat.testClearBoard); // 左上（測試用）：一鍵清盤

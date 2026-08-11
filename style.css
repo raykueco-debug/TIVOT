@@ -554,8 +554,9 @@
   #inspectorBubble .insp-line{font-size:13px;letter-spacing:.5px;line-height:1.6;color:var(--ink);min-height:1.6em;}
   #inspectorBubble .insp-line .caret{opacity:.7;animation:blink .5s infinite alternate;}
   /* retry 鈕：置底、與畫面同寬、降低高度 */
+  /* 貼底大鈕：拉至畫面最底，底部內距吃掉 iOS 安全區(home indicator)→ 底下不留空 */
   #banner #rematchBtn{flex:0 0 auto;width:100%;max-width:none;margin:0;border-radius:0;
-    padding:12px 0;border:none;border-top:1px solid var(--gold-dim);
+    padding:15px 0 calc(15px + env(safe-area-inset-bottom));border:none;border-top:1px solid var(--gold-dim);
     background:rgba(20,16,28,.6);color:var(--gold);letter-spacing:4px;font-size:15px;}
   #banner #rematchBtn:active{background:var(--grid-active);}
   /* 迎擊鈕（S 解鎖後）：變色＋發光脈動 */

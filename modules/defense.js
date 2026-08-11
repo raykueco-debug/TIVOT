@@ -99,6 +99,21 @@ export function stopThreatTick(){
   clearInterval(state.threatTick); state.threatTick=null;
   $('chargeWarn').classList.remove('on');
 }
+/* 暫停/續玩（退出確認框用）：攻擊圈以 Date.now()-t0 計縮放，暫停時停 tick 凍結畫面，
+ *  續玩時把暫停時長補回每個攻擊點的 t0 → 剩餘時間不變、無憑空提前釋放。 */
+let _threatPausedAt = 0;
+export function pauseThreats(){
+  if(_threatPausedAt) return;
+  _threatPausedAt = Date.now();
+  clearInterval(state.threatTick); state.threatTick=null;   // 凍結縮圈（不動 chargeWarn 提示）
+}
+export function resumeThreats(){
+  if(!_threatPausedAt) return;
+  const dt = Date.now() - _threatPausedAt;
+  _threatPausedAt = 0;
+  state.threats.forEach(th=>{ th.t0 += dt; });              // 補時 → 剩餘時間不變
+  if(state.threats.length && !state.threatTick){ state.threatTick=setInterval(updateThreats,50); }
+}
 // 某個攻擊點時間到 → 釋放攻擊，移除該點
 export function releaseUlt(th){
   removeThreat(th);
