@@ -415,7 +415,7 @@ export const ASSETS = {
   enemy_faceless: "resources/enemy/Faceless_EN_01.jpg",   // 無貌者 Boss 暫代圖
   cutin_saint:    "resources/partner/Luna_CI_saint.jpg",   // 聖徒化 cut-in 暫代圖
   partner_twin:   "resources/partner/Luna_SI_01.jpg",   // 雙槍修女立繪（暫用 cut-in 圖）
-  inspector_freya: "resources/inspector/Freya_SI_01.jpg",
+  inspector_freya: "resources/inspector/Freya_SI_01.png",
   enemy_witch:    "resources/enemy/Witch_EN_01.jpg",   // v17：槍之魔女（Boss）內嵌立繪
   enemy_facelessgiant: "resources/enemy/Faceless_EN_02.png",   // 連戰第二隻：巨型聖徒 內嵌立繪
 
