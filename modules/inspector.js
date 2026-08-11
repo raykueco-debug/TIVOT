@@ -58,8 +58,7 @@ function pickByThreshold(map, current, fallback){
  *  evaluate / scoreToExp 為「純函式」（只吃 stats/cfg，不讀 state/DOM），方便單獨測試。
  *  stats 需含：totalHP、isBoss、clearTime(秒)、accuracy(0~1)、maxCombo、
  *             perfectCounter、overkill、hitsTaken。
- *  ⚠ perfectCounter 目前由 combat 映射為「完美防禦次數(perfectCount)」；
- *    若要改用「Counter 反擊次數(counterCount)」，改 combat.win 的 stats 組裝即可，本檔不動。
+ *  完美反擊 = Counter 反擊次數(counterCount)；反擊總傷 = counterDamage（皆由 combat.win 組裝進 stats）。
  * ========================================================================== */
 const clamp01 = x => (x<0 ? 0 : (x>1 ? 1 : x));
 
@@ -85,13 +84,14 @@ export function evaluate(stats, cfg = GAME_CONFIG.rating){
   const timeScore = timeRatio * p.timeMax;
   // 4) 加分項（各自 clamp 到 0~1 後乘配分）
   const accScore   = clamp01(stats.accuracy)                 * p.accuracyMax;
+  const accPerfect = (stats.accuracy >= 1 ? (p.accPerfectBonus || 0) : 0);   // 命中率 100% 額外加成
   const comboScore = clamp01(stats.maxCombo / nm.comboTarget) * p.comboMax;
   const pcScore    = clamp01(stats.perfectCounter / nm.pcTarget) * p.perfectCtrMax;
   const okScore    = clamp01(stats.overkill / nm.okTarget)    * p.overkillMax;
   // 5) 受擊扣分
   const hitPenalty = stats.hitsTaken * p.hitPenalty;
   // 6) 總分（下限 0）
-  const score = Math.max(0, timeScore + accScore + comboScore + pcScore + okScore - hitPenalty);
+  const score = Math.max(0, timeScore + accScore + accPerfect + comboScore + pcScore + okScore - hitPenalty);
   // 7) 級距：tiers 由高到低，取第一個 score >= min
   let grade = cfg.tiers[cfg.tiers.length - 1].grade;
   for(const tier of cfg.tiers){ if(score >= tier.min){ grade = tier.grade; break; } }
@@ -101,7 +101,7 @@ export function evaluate(stats, cfg = GAME_CONFIG.rating){
   const exp = scoreToExp(score, stats, cfg.exp);
   return {
     grade, score, exp,
-    breakdown: { timeScore, accScore, comboScore, pcScore, okScore, hitPenalty, budget, timeLeft },
+    breakdown: { timeScore, accScore, accPerfect, comboScore, pcScore, okScore, hitPenalty, budget, timeLeft },
   };
 }
 
@@ -142,18 +142,17 @@ function combatStatsRows(){
   return r;
 }
 
-// 勝利結算明細（評價系統輸入的各數值；已移除平均用時，時間門檻/無傷加成改由 evaluate 內處理）
+// 勝利結算明細。Overkill 已在標題副行呈現、無傷改為「戰鬥用時」旁的貼標（達標才出現），故此處皆不另列。
 function ratingStatsRows(stats, totalTime){
   const accPct = Math.round(clamp01(stats.accuracy) * 100);
-  const flawless = (stats.hitsTaken === 0) ? '是' : '否';
+  const flawlessTag = (stats.hitsTaken === 0) ? ` <span class="tag-flawless">無傷</span>` : '';
   let r='';
   r += `<div class="row"><span>連擊數</span><b>${stats.maxCombo}</b></div>`;
   r += `<div class="row"><span>受擊數</span><b>${stats.hitsTaken}</b></div>`;
   r += `<div class="row"><span>命中率</span><b>${accPct}%</b></div>`;
-  r += `<div class="row"><span>Overkill</span><b>${Math.round(stats.overkill)}</b></div>`;
   r += `<div class="row"><span>完美反擊</span><b>${stats.perfectCounter} 次</b></div>`;
-  r += `<div class="row"><span>用時</span><b>${fmtTime(totalTime)}</b></div>`;
-  r += `<div class="row"><span>無傷</span><b>${flawless}</b></div>`;
+  r += `<div class="row"><span>反擊總傷</span><b>${Math.round(stats.counterDamage || 0)}</b></div>`;
+  r += `<div class="row"><span>戰鬥用時</span><b>${fmtTime(totalTime)}${flawlessTag}</b></div>`;
   return r;
 }
 
@@ -192,11 +191,12 @@ export function settle(totalTime, stats, opts={}){
   let sub=(($('enemyName')&&$('enemyName').textContent)||'目標')+'已淨化';
   if(stats.overkill>0) sub += ` · OVERKILL ${Math.round(stats.overkill)}`;
 
-  // ── 評價系統（rating）：等級 + EXP + 各數值明細 ──
+  // ── 評價系統（rating）：大字等級（顯眼）+ EXP + 各數值明細 ──
   const evalResult = evaluate(stats);
   let rows='';
-  rows += `<div class="row"><span>評價</span><b class="rank rank-${evalResult.grade}">${evalResult.grade}</b></div>`;
-  rows += `<div class="row"><span>EXP</span><b>${evalResult.exp}</b></div>`;
+  rows += `<div class="grade-wrap"><span class="grade-cap">評價</span>`
+        + `<b class="grade-badge rank-${evalResult.grade}">${evalResult.grade}</b>`
+        + `<span class="grade-exp">EXP ${evalResult.exp}</span></div>`;
   rows += ratingStatsRows(stats, totalTime);
   if(isRecord) rows += `<div class="record">★ NEW RECORD ★</div>`;
   // ── 監察官結算展示（依評價等第挑台詞）──
@@ -258,7 +258,7 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose){
   b.classList.add('seq');
 
   // ── 階段二：rows 由上往下刷，1 秒內刷完 ──
-  const rowEls=stats.querySelectorAll('.row, .record');
+  const rowEls=stats.querySelectorAll('.grade-wrap, .row, .record');
   const n=rowEls.length;
   const totalSweep=1000;                       // 1 秒內刷完
   const step = n>1 ? Math.min(120, totalSweep/n) : 0;

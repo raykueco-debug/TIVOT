@@ -552,7 +552,8 @@ function win(){
     clearTime: totalTime,
     accuracy: totalTaps>0 ? state.correctTaps/totalTaps : 1,   // 0~1 比率（非百分比）
     maxCombo: state.maxCombo,
-    perfectCounter: state.perfectCount,                        // 完美反擊＝完美防禦次數（映射見 inspector 註）
+    perfectCounter: state.counterCount,                        // 完美反擊＝Counter 反擊次數（每次反擊事件 +1）
+    counterDamage: state.counterDamage,                        // 反擊累計總傷（結算顯示用）
     overkill: state.runOverkill + state.overkill,              // 整場累計 overkill
     hitsTaken: state.hitsTaken,
   };

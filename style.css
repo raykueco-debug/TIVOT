@@ -447,10 +447,10 @@
     /* 結算內容同樣避開瀏海（#banner 為絕對定位、吃不到 #app padding，需自帶墊高） */
     padding:var(--notch-bar-h) 0 0;overflow:hidden;}
   #banner.on{display:flex;}
-  /* 可捲動內容區（大標→rows→立繪），retry 固定在最底 */
+  /* 結算內容區（大標→rows→立繪），retry 固定在最底。固定不可滑動：overflow hidden + 禁回彈。 */
   #bannerScroll{flex:1 1 auto;width:100%;display:flex;flex-direction:column;align-items:center;
-    justify-content:flex-start;overflow-y:auto;overflow-x:hidden;padding:26px 0 6px;position:relative;
-    min-height:0;-webkit-overflow-scrolling:touch;}
+    justify-content:flex-start;overflow:hidden;overscroll-behavior:none;padding:18px 0 6px;position:relative;
+    min-height:0;touch-action:none;}
   #banner h1{font-size:28px;letter-spacing:4px;color:var(--gold);margin:0 0 8px;
     text-shadow:0 0 16px var(--gold-dim);}
   #banner p{font-size:13px;letter-spacing:2px;opacity:.8;margin:4px 0 14px;}
@@ -468,8 +468,18 @@
     text-shadow:0 0 10px var(--gold);animation:blink .5s infinite alternate;margin-top:6px;}
   /* rows 逐行下刷：每行淡入下沉，1 秒內刷完（delay 由 JS 逐行設定） */
   @keyframes rowSweep{ from{opacity:0;transform:translateY(-8px);} to{opacity:1;transform:none;} }
-  #resultStats .row, #resultStats .record{opacity:0;}
-  #resultStats.sweep .row, #resultStats.sweep .record{animation:rowSweep .28s ease-out forwards;}
+  #resultStats .row, #resultStats .record, #resultStats .grade-wrap{opacity:0;}
+  #resultStats.sweep .row, #resultStats.sweep .record, #resultStats.sweep .grade-wrap{animation:rowSweep .28s ease-out forwards;}
+  /* 評價：大字等第（顯眼），色彩沿用 rank-*，glow 用 currentColor */
+  #resultStats .grade-wrap{display:flex;flex-direction:column;align-items:center;margin:0 0 12px;gap:2px;}
+  #resultStats .grade-cap{font-size:11px;letter-spacing:6px;opacity:.6;color:var(--ink);}
+  #resultStats .grade-badge{font-size:60px;font-weight:bold;line-height:1.02;letter-spacing:2px;
+    filter:drop-shadow(0 0 18px currentColor);}
+  #resultStats .grade-exp{font-size:12px;letter-spacing:3px;color:var(--gold);opacity:.9;margin-top:2px;}
+  /* 無傷貼標：達標才出現，貼在「戰鬥用時」旁 */
+  #resultStats .tag-flawless{display:inline-block;margin-left:8px;padding:1px 8px;border-radius:10px;
+    font-size:10px;letter-spacing:2px;font-weight:bold;color:var(--bg);background:var(--gold);
+    vertical-align:middle;box-shadow:0 0 10px var(--gold-dim);}
   /* 評價等第 */
   #resultStats .rank{font-weight:bold;letter-spacing:2px;}
   #resultStats .rank-S{color:#ffe08a;text-shadow:0 0 12px var(--gold);}
@@ -481,7 +491,7 @@
   /* ===== 監察官立繪舞台 ===== */
   #inspectorStage{position:relative;width:100%;max-width:340px;margin-top:6px;
     display:flex;justify-content:center;flex:0 0 auto;}
-  #inspectorPortrait{width:auto;max-height:46vh;object-fit:contain;
+  #inspectorPortrait{width:auto;max-height:40vh;object-fit:contain;
     filter:drop-shadow(0 6px 24px rgba(0,0,0,.7));
     opacity:0;transform:translateY(14px) scale(.98);
     -webkit-mask-image:radial-gradient(120% 100% at 50% 42%,#000 62%,transparent 96%);

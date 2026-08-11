@@ -167,8 +167,9 @@ export const GAME_CONFIG = {
     points: {
       timeMax:        60, // 時間項滿分（主評價）
       accuracyMax:    15, // 命中率 × 15
+      accPerfectBonus: 5, // 命中率 100%（零按錯）額外加成
       comboMax:       10,
-      perfectCtrMax:  8,
+      perfectCtrMax:  8,  // 完美反擊（Counter 反擊次數）配分
       overkillMax:    5,
       hitPenalty:     6,  // 每次受擊扣 6 分
     },
