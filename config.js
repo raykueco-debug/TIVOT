@@ -161,8 +161,8 @@ export const GAME_CONFIG = {
     time: {
       base: 100,          // 每 hpPerBase 血量對應的秒數基數
       hpPerBase: 500,     // 每 500 血 = 100 秒預算
-      bossBonus: 50,      // isBoss 時預算額外 +50 秒
-      capSeconds: 30,     // 剩餘時間達 (預算-30) 即時間項封頂；即 30 秒內 clear 時間項滿分
+      bossBonus: 20,      // isBoss 時預算額外 +20 秒
+      capSeconds: 20,     // 剩餘時間達 (預算-20) 即時間項封頂；即 20 秒內 clear 時間項滿分
     },
     points: {
       timeMax:        60, // 時間項滿分（主評價）
@@ -171,7 +171,7 @@ export const GAME_CONFIG = {
       comboMax:       10,
       perfectCtrMax:  8,  // 完美反擊（Counter 反擊次數）配分
       overkillMax:    5,
-      hitPenalty:     6,  // 每次受擊扣 6 分
+      hitPenalty:     10, // 每次受擊扣 10 分（收緊：受擊懲罰加重）
     },
     norm: {
       comboTarget: 30,
