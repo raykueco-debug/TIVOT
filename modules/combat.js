@@ -22,6 +22,7 @@ import * as weapon from './weapon.js';
 import * as saint from './saint.js';
 import * as partner from './partner.js';
 import * as inspector from './inspector.js';
+import { playTransition } from './transition.js';   // 過渡禎（勝利進結算前的「驅逐完成」）
 
 const $ = id => document.getElementById(id);
 const T = GAME_CONFIG.tuning;
@@ -555,7 +556,8 @@ function win(){
     overkill: state.runOverkill + state.overkill,              // 整場累計 overkill
     hitsTaken: state.hitsTaken,
   };
-  inspector.settle(totalTime, stats, { isLose:false });
+  // 勝利 → 先播「驅逐完成」過渡禎，淡出瞬間才建結算面板（僅勝利套用；戰敗 lose() 不套）
+  playTransition('finish', ()=> inspector.settle(totalTime, stats, { isLose:false }));
 }
 function lose(){
   if(state.over) return;

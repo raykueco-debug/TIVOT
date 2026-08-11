@@ -194,6 +194,34 @@ export const GAME_CONFIG = {
   },
 
   /* ------------------------------------------------------------------ *
+   *  三之三、過渡禎（transitions）— 開始/結束的淡入淡出全畫面轉場
+   *  ------------------------------------------------------------------
+   *  durationMs = 整段轉場總長（含淡入淡出）；fadeMs = 淡入/淡出各自時長。
+   *  start  = 點「開始遊戲」→ 淡出瞬間才真正開戰（畫面在不透明遮罩後切換）。
+   *  finish = 勝利進結算前（僅勝利；戰敗不套用）。
+   *  cn 為中文大字；en 為英文小字（每個陣列元素一行）。
+   * ------------------------------------------------------------------ */
+  transitions: {
+    durationMs: 1000,
+    fadeMs: 300,
+    start: {
+      cn: '驅逐開始',
+      en: [
+        'For thou art of dust; unto dust shalt thou return.',
+        'And in the end, thou shalt be brought unto silence.',
+      ],
+    },
+    finish: {
+      cn: '驅逐完成',
+      en: [
+        'The Lord shall send forth Her apostles.',
+        'The hour of Her revelation shall come.',
+        'And all flesh shall repent.',
+      ],
+    },
+  },
+
+  /* ------------------------------------------------------------------ *
    *  四、敵人（Enemy）
    *  name   = 顯示名稱（敵人區上方）
    *  image  = 敵人立繪鑰匙

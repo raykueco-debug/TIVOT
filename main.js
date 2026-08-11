@@ -18,6 +18,7 @@ import * as partner from './modules/partner.js';   // 主動技統一入口 tryA
 import * as weapon from './modules/weapon.js';     // 雙槍破防發動 + 換裝面板
 
 import * as inspector from './modules/inspector.js';   // 結算/評價/迎擊分流
+import { playTransition } from './modules/transition.js';   // 過渡禎（開始/結束淡入淡出）
 import './modules/enemy.js';
 
 const $ = id => document.getElementById(id);
@@ -43,7 +44,7 @@ SFX.preload([
 // 普攻槍聲：固定用 Pistol_SE_02（不隨機）
 SFX.setShots([asset('se_pistol_02')].filter(Boolean));
 
-bindBtn('startBtn',     combat.startGame);      // 首頁：開始遊戲
+bindBtn('startBtn',     ()=>playTransition('start', combat.startGame));   // 首頁：開始遊戲（先播「驅逐開始」過渡禎）
 bindBtn('exitBtn',      combat.goHome);         // 右上：退出回首頁
 bindBtn('testClearBtn', combat.testClearBoard); // 左上（測試用）：一鍵清盤
 bindBtn('rematchBtn',   inspector.onRematchBtn);// 結算：依 resultMode 分流（再度執槍/迎擊）
