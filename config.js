@@ -206,8 +206,10 @@ export const GAME_CONFIG = {
   transitions: {
     fadeMs: 300,
     hint: '輕觸畫面繼續',
+    resultAutoMs: 70000,   // 結算/戰敗畫面停留上限（1:10 內沒操作 → 自動回首頁）
     start: {
       cn: '驅逐開始',
+      autoMs: 3000,     // 3 秒內沒點 → 強制進入戰鬥
       en: [
         'For thou art of dust; unto dust shalt thou return.',
         'And in the end, thou shalt be brought unto silence.',
@@ -215,6 +217,7 @@ export const GAME_CONFIG = {
     },
     finish: {
       cn: '驅逐完成',
+      autoMs: 3000,     // 3 秒內沒點 → 自動進結算
       en: [
         'The Lord shall send forth Her apostles.',
         'The hour of Her revelation shall come.',
@@ -224,6 +227,7 @@ export const GAME_CONFIG = {
     fail: {
       cn: '驅逐失敗',
       fadeInMs: 2000,   // 黑白定格後，戰敗畫面慢慢浮現（淡入約 2 秒；淡出仍用全域 fadeMs）
+      autoMs: 3000,     // 3 秒內沒點 → 自動進戰敗結算
       en: [
         'O lamb burdened with sin—follow thou thy Shepherd, and go forth unto the Beyond...',
       ],

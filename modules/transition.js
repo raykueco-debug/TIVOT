@@ -45,8 +45,13 @@ export function playTransition(kind, done){
   let tapEnabled = false, proceeded = false;
   const enableTimer = setTimeout(()=>{ tapEnabled = true; el.classList.add('ready'); if(el.focus) try{ el.focus(); }catch(e){} }, fadeIn);
 
+  // 自動繼續：該 kind 設 autoMs>0 → 淡入後（自 show 起算 autoMs、至少過 fadeIn）沒點就強制 proceed。
+  const autoMs = (data.autoMs != null) ? data.autoMs : 0;
+  const autoTimer = autoMs>0 ? setTimeout(()=>{ tapEnabled=true; proceed(); }, Math.max(autoMs, fadeIn+50)) : null;
+
   function cleanup(){
     clearTimeout(enableTimer);
+    if(autoTimer) clearTimeout(autoTimer);
     el.removeEventListener('touchstart', onTap);
     el.removeEventListener('click', onTap);
     document.removeEventListener('keydown', onKey);

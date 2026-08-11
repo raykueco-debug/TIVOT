@@ -252,9 +252,10 @@ export function triggerIntruder(){
   state.cutinPlaying = true;              // 鎖盤面點擊（enemy 為當下播演出的模組，允許寫 cutinPlaying）
   try{ SFX.hit && SFX.hit(); }catch(e){}
 
-  let entered=false;
+  let entered=false, autoTimer=null;
   const enterFight=()=>{
     if(entered) return; entered=true;
+    if(autoTimer) clearTimeout(autoTimer);
     sc.removeEventListener('click', enterFight);
     sc.removeEventListener('touchstart', onTouch);
     $('saintCutinSub').textContent='';
@@ -268,6 +269,7 @@ export function triggerIntruder(){
     sc.addEventListener('click', enterFight);
     sc.addEventListener('touchstart', onTouch, {passive:false});
   }, 400);
+  autoTimer = setTimeout(enterFight, 3000);   // 3 秒內沒點 → 自動進 Boss 戰
 }
 
 /* ---------- 開場：把 GAME_CONFIG 的圖/名稱套到畫面上 ---------- */

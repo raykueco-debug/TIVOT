@@ -217,8 +217,13 @@ export function settle(totalTime, stats, opts={}){
  *   T0 立繪＋retry＋大標同時進場 → rows 由上往下刷（1s 內）→ 對話框彈出 → 逐字台詞（2s 內）
  * ========================================================================== */
 let _inspTypeTimer=null;
+let _resultAutoTimer=null;   // 結算/戰敗畫面自動回首頁計時
 function showResultSequence(title, sub, statsHtml, rankKey, isLose){
   const b=$('banner');
+  // 結算/戰敗畫面：停留上限（config resultAutoMs，1:10）內沒操作 → 自動回首頁
+  clearTimeout(_resultAutoTimer);
+  const _autoMs = (GAME_CONFIG.transitions && GAME_CONFIG.transitions.resultAutoMs) || 0;
+  if(_autoMs>0) _resultAutoTimer=setTimeout(()=>{ if(api.goHome) api.goHome(); }, _autoMs);
   // 每次結算：按鈕歸位為「再度執槍」模式
   state.resultMode='rematch';
   const rbtn=$('rematchBtn');
@@ -307,6 +312,7 @@ function typeInspectorLine(el, text, total){
  * ========================================================================== */
 export function onRematchBtn(){
   const rbtn=$('rematchBtn');
+  clearTimeout(_resultAutoTimer);   // 玩家有操作 → 取消自動回首頁
   if(state.resultMode==='intercept'){
     api.triggerIntruder();
     return;
