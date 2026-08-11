@@ -58,7 +58,7 @@ export function activateSaint(dir){
   playCutin(()=>{
     if(state.over) return;
     startSaintMode();
-  }, '聖徒降臨！！<span class="cutin-en">SAINT INSTALL!!</span>', 'cutin_saint_luna');
+  }, '聖徒降臨！！<span class="cutin-en">SAINT INSTALL!!</span>', 'cutin_saint_luna', { noShot:true });
 }
 
 // 橫斬特效：dir='right' 向右斬、'left' 向左斬
@@ -267,15 +267,18 @@ function finishSaintMode(finalHpThunk){
  *  演出：降臨 cut-in（通用）／結局全畫面 cut-in
  * ========================================================================== */
 // 通用 cut-in（雙槍破防／聖徒化降臨共用格式）：1.5 秒演出，期間鎖點擊。
-export function playCutin(done, label, imgKey){
+export function playCutin(done, label, imgKey, opts){
+  opts = opts || {};
   state.cutinPlaying=true;
   if(api.clockPause) api.clockPause();     // 演出期間碼表暫停（非可點不計時；聖徒化降臨/雙槍破防共用）
   const c=$('cutin');
   if(label!==undefined) $('cutinText').innerHTML = label;
   if(imgKey){ const ci=$('cutinImg'); const src=asset(imgKey); if(ci && src) ci.src=src; }
   c.classList.remove('on'); void c.offsetWidth; c.classList.add('on');
-  SFX.gunshot(true);
-  setTimeout(()=>{ SFX.gunshot(true); },200);
+  if(!opts.noShot){                        // 聖徒化降臨傳 noShot（只留 SI_01）；雙槍破防維持槍聲
+    SFX.gunshot(true);
+    setTimeout(()=>{ SFX.gunshot(true); },200);
+  }
   setTimeout(()=>{
     c.classList.remove('on');
     state.cutinPlaying=false;

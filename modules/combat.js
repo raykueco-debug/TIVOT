@@ -570,9 +570,14 @@ function win(){
 function lose(){
   if(state.over) return;
   state.over=true; clockPause(); stopAll();
-  SFX.playBgm(asset('bgm_lose'));   // 驅逐失敗插入瞬間 → 任務失敗 BGM
-  // 戰敗 → 先播「驅逐失敗」過渡禎，輕觸後才建戰敗結算（含 Boss 戰戰敗）
-  playTransition('fail', ()=> inspector.settle(null, null, { isLose:true }));
+  // HP 歸零瞬間 → 畫面黑白定格 1 秒 → 再切「驅逐失敗」過渡禎（BGM 於過渡禎插入時起播）
+  const app=$('app');
+  if(app) app.classList.add('death-freeze');
+  setTimeout(()=>{
+    if(app) app.classList.remove('death-freeze');
+    SFX.playBgm(asset('bgm_lose'));   // 驅逐失敗插入瞬間 → 任務失敗 BGM
+    playTransition('fail', ()=> inspector.settle(null, null, { isLose:true }));
+  }, 1000);
 }
 
 /* ============================================================================

@@ -25,6 +25,9 @@
     max-width:520px;margin:0 auto;position:relative;
     /* 頂部保留安全區墊高：#top（底圖）與 #bottom 為 flex 子項，會被此 padding 整體下移到瀏海之下 */
     padding-top:var(--notch-bar-h);}
+  /* 戰敗定格：HP 歸零瞬間全畫面黑白（快速壓入），維持約 1 秒後才切「驅逐失敗」過渡禎 */
+  #app.death-freeze{filter:grayscale(1) contrast(1.06) brightness(.9);
+    transition:filter .18s ease-out;}
 
   /* ===== 上半：敵人（固定 50%） ===== */
   #top{height:50%;flex:none;position:relative;overflow:hidden;
