@@ -58,16 +58,18 @@ function playSrc(src, vol){
 
 let _shots = [];   // 普攻槍聲候選（已解析路徑，隨機播一支）
 
-/* ── BGM（單一 HTMLAudio 元素；首次手勢解鎖後跨場景重複使用「換 src」而非每首 new Audio）───
- *  為什麼單一元素：手機/iOS 規定「每個新音訊元素都要在使用者手勢當下才能播」。若每首 new Audio，
- *  用了 delayMs（在 setTimeout 內建立+播）就不在手勢裡 → 被擋（手機沒 BGM）。改用同一個已解鎖的
- *  元素換 src，之後就算在 setTimeout 也能播。loop、不可交疊、切歌淡出。 */
+/* ── BGM（單一 HTMLAudio + Blob 全下載後播）───────────────────────────────────
+ *  為什麼這樣：BGM 很長（如主選單 285 秒），整段 Web Audio 解碼 ≈100MB 會爆手機記憶體；
+ *  而 HTMLAudio 直接串流（邊下載邊播）在手機上緩衝不足會斷斷續續。折衷：把整首 fetch 成 Blob
+ *  （壓縮 mp3 留記憶體只有幾 MB）→ 從 blobURL 播（已完整在記憶體、不再走網路 → 不會串流卡頓）。
+ *  單一元素：首次手勢解鎖後跨場景重用（換 src 即可，含 setTimeout 也能播）。loop、不交疊、切歌淡出。 */
 let _bgmEl = null;      // 單一 BGM 元素
-let _bgmSrc = null;     // 目前/目標曲（同曲不重播）
+let _bgmSrc = null;     // 目前/目標曲（邏輯路徑，非 blobURL）
 let _bgmVol = 0.7;      // 目標音量
-let _bgmTimer = null;   // 切歌間隔/淡出後的待播計時器
+let _bgmTimer = null;   // 切歌間隔/待播計時器
+const _bgmBlob = {};    // path → objectURL（快取；壓縮 mp3，體積小可多留）
 function bgmElem(){
-  if(!_bgmEl){ _bgmEl = new Audio(); _bgmEl.loop = true; _bgmEl.preload = 'auto'; }
+  if(!_bgmEl){ _bgmEl = new Audio(); _bgmEl.loop = true; }
   return _bgmEl;
 }
 function bgmFade(el, to, ms, done){
@@ -82,17 +84,24 @@ function bgmFade(el, to, ms, done){
     if(i>=steps){ clearInterval(el.__fade); el.__fade=null; if(done) done(); }
   }, 40);
 }
+// 整首下載成 Blob（快取 objectURL）：完整在記憶體後播 → 不再串流 → 不卡頓
+function ensureBlob(src){
+  if(_bgmBlob[src]) return Promise.resolve(_bgmBlob[src]);
+  return fetch(src).then(r=>r.blob())
+    .then(b=>{ const u=URL.createObjectURL(b); _bgmBlob[src]=u; return u; })
+    .catch(()=>null);
+}
 
 export const SFX = {
-  // 首次使用者手勢呼叫：喚醒 AudioContext + 於手勢當下解鎖並補播單一 BGM 元素
+  // 首次使用者手勢呼叫：喚醒 AudioContext + 於手勢當下補播被 autoplay 擋下的 BGM 元素
   unlock(){
     const c = ctx();
     if(c && c.state === 'suspended') c.resume().catch(()=>{});
     const el = _bgmEl;
-    if(el && el.paused && _bgmSrc){ el.volume=_bgmVol; const p=el.play(); if(p&&p.catch) p.catch(()=>{}); }
+    if(el && el.paused && el.src){ el.volume=_bgmVol; const p=el.play(); if(p&&p.catch) p.catch(()=>{}); }
   },
 
-  /* 切換 BGM：同一元素先淡出 →（可選 delayMs 空一拍）→ 換 src 起播（預設不淡入）loop。
+  /* 切換 BGM：同一元素先淡出 →（可選 delayMs 空一拍）→ 換 blobURL 起播（預設不淡入）loop。
    *  同一首播放中 → 不重播。src 空 → 不動作。opts：fadeOutMs / delayMs / volume / fadeInMs（預設 0）。 */
   playBgm(src, opts){
     opts = opts || {};
@@ -100,23 +109,26 @@ export const SFX = {
     const el = bgmElem();
     if(src === _bgmSrc && !el.paused){ clearTimeout(_bgmTimer); _bgmTimer=null; return; }  // 同曲播放中
     const fadeOut = opts.fadeOutMs!=null ? opts.fadeOutMs : 900;
-    const fadeIn  = opts.fadeInMs!=null  ? opts.fadeInMs  : 0;   // 預設不淡入（作者要求：只淡出）
+    const fadeIn  = opts.fadeInMs!=null  ? opts.fadeInMs  : 0;   // 預設不淡入
     const delay   = opts.delayMs!=null   ? opts.delayMs   : 0;
     _bgmVol = opts.volume!=null ? opts.volume : 0.7;
-    _bgmSrc = src;                          // 鎖定目標（間隔中同曲再呼叫被上面擋掉）
+    _bgmSrc = src;
     clearTimeout(_bgmTimer); _bgmTimer=null;
     clearInterval(el.__fade); el.__fade=null;
+    ensureBlob(src);   // 提早開始下載，切歌時多半已就緒
     const switchTo = ()=>{
       _bgmTimer = null;
-      if(_bgmSrc !== src) return;           // 已被後續切歌取代 → 放棄
-      try{ el.src = src; el.currentTime = 0; }catch(e){}
-      el.volume = (fadeIn > 0 ? 0 : _bgmVol);
-      const p = el.play();
-      if(p && p.catch) p.catch(()=>{});     // 尚未解鎖 → 等 unlock 於手勢補播
-      if(fadeIn > 0) bgmFade(el, _bgmVol, fadeIn);
+      if(_bgmSrc !== src) return;   // 已被後續切歌取代 → 放棄
+      ensureBlob(src).then(url=>{
+        if(!url || _bgmSrc !== src) return;
+        try{ el.src = url; el.currentTime = 0; }catch(e){}
+        el.volume = (fadeIn > 0 ? 0 : _bgmVol);
+        const p = el.play();
+        if(p && p.catch) p.catch(()=>{});   // 尚未解鎖 → 等 unlock 於手勢補播
+        if(fadeIn > 0) bgmFade(el, _bgmVol, fadeIn);
+      });
     };
     const afterOut = ()=>{ if(delay>0) _bgmTimer=setTimeout(switchTo, delay); else switchTo(); };
-    // 正在播 → 先淡出（同一元素）再切；否則直接（間隔後）切
     if(!el.paused && el.src && el.volume>0.001) bgmFade(el, 0, fadeOut, afterOut);
     else afterOut();
   },
