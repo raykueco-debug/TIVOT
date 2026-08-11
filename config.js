@@ -170,13 +170,13 @@ export const GAME_CONFIG = {
       accPerfectBonus: 5, // 命中率 100%（零按錯）額外加成
       comboMax:       10,
       perfectCtrMax:  8,  // 完美反擊（Counter 反擊次數）配分
-      overkillMax:    5,
+      overkillMax:    2,  // overkill 評價分數上限（收緊：原 5 太甜，隨便 overkill 就白拿滿）
       hitPenalty:     10, // 每次受擊扣 10 分（收緊：受擊懲罰加重）
     },
     norm: {
       comboTarget: 30,
       pcTarget: 5,
-      okTarget: 3,
+      okTarget: 4,   // 搭配 overkillMax=2 → 每點 overkill 0.5 分、overkill 4 即封頂（僅 2 分）
     },
     tiers: [
       { grade: 'S', min: 80 },
@@ -189,7 +189,7 @@ export const GAME_CONFIG = {
     exp: {
       mult: 8.7,          // 非整數倍率，避免整齊倍數
       offset: 137,        // 質數基底，保證三位數起跳
-      overkillExp: 0.5,   // 每點 overkill 額外 +0.5 EXP（原 3 過高：overkill 為累計傷害、數值偏大）
+      overkillExp: 3,     // 每點 overkill 額外 +3 EXP（EXP 展示用，不影響評價分數）
       jitterMod: 7,       // 用分數尾數做微擾，讓 EXP 數字不整齊
     },
   },
