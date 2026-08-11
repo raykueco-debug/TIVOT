@@ -140,8 +140,10 @@ export const SFX = {
     if(el && !el.paused) bgmFade(el, 0, fadeOutMs!=null ? fadeOutMs : 700, ()=>{ try{ el.pause(); }catch(e){} });
   },
 
-  // 預載一批音檔（傳已解析路徑陣列）：降低首次播放延遲
-  preload(srcs){ (srcs || []).forEach(load); },
+  // 預載一批 SFX（Web Audio 解碼成 buffer）：回傳 Promise（全部解完）
+  preload(srcs){ return Promise.all((srcs || []).filter(Boolean).map(load)); },
+  // 預載一批 BGM（整首下載成 Blob，切歌即播不再下載）：回傳 Promise
+  preloadBgm(srcs){ return Promise.all((srcs || []).filter(Boolean).map(ensureBlob)); },
 
   // 播放音檔（src＝已解析路徑）。每次 new source → 可自由重疊、不限制、不打斷前一個。
   play(src, vol){ playSrc(src, vol); },

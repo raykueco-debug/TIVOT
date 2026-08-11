@@ -8,7 +8,7 @@
  *  聖徒化左右滑、生命歸還上滑、雙槍點計量表、換裝面板等綁定為下一輪。
  * ========================================================================== */
 
-import { GAME_CONFIG, asset } from './config.js';
+import { GAME_CONFIG, asset, ASSETS } from './config.js';
 import { state } from './state.js';
 import { SFX } from './audio.js';
 import * as combat from './modules/combat.js';
@@ -43,16 +43,42 @@ combat.setup();
   window.addEventListener('keydown', go);
 })();
 
-// 預載音檔（反擊武器 SE + 清盤換彈 + 普攻手槍）：降低首次播放延遲；解鎖於首次手勢（SFX.unlock）
-SFX.preload([
-  asset('se_mg_squall'), asset('se_shotgun_blast'), asset('se_sniper_falcon'),
-  asset('sfx_reload'), asset('se_guard'),
-  asset('se_pistol_02'),
-  asset('em_slash'), asset('em_smack'), asset('em_shot'), asset('em_dagger'),
-  asset('sfx_start'), asset('sfx_saint'),
-].filter(Boolean));
 // 普攻槍聲：固定用 Pistol_SE_02（不隨機）
 SFX.setShots([asset('se_pistol_02')].filter(Boolean));
+
+/* ── 進場全預載：掃 ASSETS 把所有圖＋音一次載到位，載入畫面跑完才揭開選單 ──
+ *  圖 → new Image（瀏覽器快取）；BGM(bgm_*) → Blob 下載；其餘音效 → Web Audio 解碼。
+ *  這樣遊戲中不再有臨時讀取間隙。音訊實際播放仍需首次手勢（primeAudio/unlock）。 */
+(function preloadAll(){
+  const imgs=[], sfx=[], bgm=[];
+  for(const k of Object.keys(ASSETS)){
+    const v=ASSETS[k]; if(!v) continue;
+    if(/\.(png|jpe?g|webp|gif)$/i.test(v)) imgs.push(v);
+    else if(/\.(mp3|m4a|ogg|wav)$/i.test(v)){ (k.indexOf('bgm_')===0 ? bgm : sfx).push(v); }
+  }
+  const total = imgs.length + sfx.length + bgm.length;
+  // 載入遮罩（動態建立，無需改 HTML）
+  const ov=document.createElement('div'); ov.id='assetLoader';
+  ov.style.cssText='position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;'
+    +'align-items:center;justify-content:center;gap:16px;background:#0a0812;color:#d9c68a;'
+    +'font-family:inherit;letter-spacing:4px;transition:opacity .45s ease;';
+  ov.innerHTML='<div style="font-size:15px">載　入　中</div>'
+    +'<div style="width:62%;max-width:300px;height:4px;background:rgba(217,198,138,.18);border-radius:2px;overflow:hidden">'
+    +'<i id="assetLoaderBar" style="display:block;height:100%;width:0;background:#d9c68a;transition:width .18s ease"></i></div>'
+    +'<div id="assetLoaderPct" style="font-size:11px;opacity:.7">0%</div>';
+  document.body.appendChild(ov);
+  let done=0;
+  const bar=$('assetLoaderBar'), pct=$('assetLoaderPct');
+  const tick=()=>{ done++; const p=total?Math.round(done/total*100):100; if(bar)bar.style.width=p+'%'; if(pct)pct.textContent=p+'%'; };
+  const imgP = imgs.map(src=>new Promise(res=>{ const im=new Image(); im.onload=im.onerror=()=>{ tick(); res(); }; im.src=src; }));
+  // 音檔以「數量」計進度：各包一層 tick
+  const wrapCount = (p, n)=> p.then(()=>{ for(let i=0;i<n;i++) tick(); }).catch(()=>{ for(let i=0;i<n;i++) tick(); });
+  const audioP = [ wrapCount(SFX.preload(sfx), sfx.length), wrapCount(SFX.preloadBgm(bgm), bgm.length) ];
+  const finish=()=>{ ov.style.opacity='0'; setTimeout(()=>{ if(ov.parentNode) ov.remove(); }, 480); };
+  // 全部載完或最多等 12 秒（防單一資源卡住整個載入）→ 揭開
+  Promise.all([...imgP, ...audioP]).then(finish);
+  setTimeout(finish, 12000);
+})();
 
 // 首頁：開始遊戲 → 主選單先淡出、空一拍（約 1s）Battle 才淡入（避免唐突），同時播「驅逐開始」過渡禎
 bindBtn('startBtn',     ()=>{ SFX.play(asset('sfx_start')); SFX.playBgm(asset('bgm_battle'), { fadeOutMs:800, delayMs:1000 }); playTransition('start', combat.startGame); });
