@@ -62,6 +62,7 @@ let _shots = [];   // 普攻槍聲候選（已解析路徑，隨機播一支）
 let _bgm = null;        // 目前 BGM 的 HTMLAudioElement
 let _bgmSrc = null;     // 目前 BGM 路徑（同一首播放中不重播、不中斷）
 let _bgmVol = 0.7;      // 目標音量
+let _bgmTimer = null;   // 切歌間隔（delayMs）的待播計時器
 function bgmFade(a, to, ms, done){
   if(!a) return;
   clearInterval(a.__fade);
@@ -83,25 +84,36 @@ export const SFX = {
     if(_bgm && _bgm.paused){ const p=_bgm.play(); if(p&&p.catch) p.catch(()=>{}); bgmFade(_bgm, _bgmVol, 400); }
   },
 
-  /* 切換 BGM：舊曲淡出後停、新曲淡入 loop。同一首播放中 → 不重播、不中斷。src 空 → 不動作。
-   *  不可交疊：全域只留一個 _bgm（切歌時舊的淡出後 pause）。fade 時長可由 opts 覆寫。 */
+  /* 切換 BGM：舊曲淡出後停 →（可選 delayMs 空一拍）→ 新曲淡入 loop。
+   *  同一首播放中 → 不重播、不中斷。src 空 → 不動作。不可交疊：全域只留一個 _bgm。
+   *  opts：fadeOutMs / fadeInMs / delayMs（舊曲淡出到新曲起播之間的間隔）/ volume。 */
   playBgm(src, opts){
     opts = opts || {};
     if(!src) return;
-    if(src === _bgmSrc && _bgm && !_bgm.paused) return;   // 同一首正在播 → 不中斷
+    if(src === _bgmSrc && _bgm && !_bgm.paused){ clearTimeout(_bgmTimer); _bgmTimer=null; return; }  // 同一首正在播
     const fadeOut = opts.fadeOutMs!=null ? opts.fadeOutMs : 900;
     const fadeIn  = opts.fadeInMs!=null  ? opts.fadeInMs  : 700;
+    const delay   = opts.delayMs!=null   ? opts.delayMs   : 0;
     _bgmVol = opts.volume!=null ? opts.volume : 0.7;
-    const old = _bgm;
+    clearTimeout(_bgmTimer); _bgmTimer=null;
+    // 舊曲淡出後停
+    const old = _bgm; _bgm = null;
     if(old){ bgmFade(old, 0, fadeOut, ()=>{ try{ old.pause(); }catch(e){} }); }
-    const a = new Audio(src); a.loop = true; a.preload = 'auto'; a.volume = 0;
-    _bgm = a; _bgmSrc = src;
-    const p = a.play();
-    if(p && p.catch) p.catch(()=>{});   // autoplay 被擋 → 等首次手勢由 unlock 補播
-    bgmFade(a, _bgmVol, fadeIn);
+    _bgmSrc = src;   // 先鎖定目標（間隔中同曲再呼叫會被上面判斷擋掉）
+    const startNew = ()=>{
+      _bgmTimer = null;
+      const a = new Audio(src); a.loop = true; a.preload = 'auto'; a.volume = 0;
+      _bgm = a;
+      const p = a.play();
+      if(p && p.catch) p.catch(()=>{});   // autoplay 被擋 → 等首次手勢由 unlock 補播
+      bgmFade(a, _bgmVol, fadeIn);
+    };
+    if(delay > 0) _bgmTimer = setTimeout(startNew, delay);   // 空一拍再起新曲（更平順）
+    else startNew();
   },
   // 停 BGM（淡出後停）
   stopBgm(fadeOutMs){
+    clearTimeout(_bgmTimer); _bgmTimer=null;
     const old = _bgm; _bgm = null; _bgmSrc = null;
     if(old) bgmFade(old, 0, fadeOutMs!=null ? fadeOutMs : 700, ()=>{ try{ old.pause(); }catch(e){} });
   },
