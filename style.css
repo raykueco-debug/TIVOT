@@ -21,6 +21,23 @@
   html,body{margin:0;padding:0;width:100%;height:100%;background:var(--bg);
     overflow:hidden;position:fixed;top:0;left:0;
     font-family:"Iowan Old Style","Palatino Linotype",Georgia,"Songti TC",serif;color:var(--ink);}
+  /* 載入畫面「點擊繼續」呼吸 */
+  @keyframes alPulse{0%,100%{opacity:.45}50%{opacity:1}}
+  #assetLoader .al-pulse{animation:alPulse 1.5s ease-in-out infinite;}
+  /* 退出確認：數字盤模糊到看不清 + 半暗遮罩 + 面板 */
+  #grid.grid-blur{filter:blur(10px) brightness(.6);pointer-events:none;}
+  #exitConfirm{position:fixed;inset:0;z-index:9500;display:flex;align-items:center;justify-content:center;
+    background:rgba(6,4,12,.55);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);}
+  #exitConfirm .ec-panel{width:min(82%,320px);text-align:center;padding:22px 20px;border-radius:12px;
+    background:linear-gradient(180deg,rgba(30,24,42,.98),rgba(16,12,24,.98));
+    border:1px solid var(--gold-dim);box-shadow:0 12px 44px rgba(0,0,0,.6);}
+  #exitConfirm .ec-title{font-size:17px;letter-spacing:3px;color:var(--gold);margin-bottom:8px;}
+  #exitConfirm .ec-sub{font-size:11px;letter-spacing:1px;color:var(--gold-dim);margin-bottom:18px;}
+  #exitConfirm .ec-btns{display:flex;gap:12px;}
+  #exitConfirm .ec-btns button{flex:1;padding:11px 0;border-radius:8px;font-family:inherit;font-size:13px;
+    letter-spacing:2px;border:1px solid var(--gold-dim);background:transparent;color:var(--ink);}
+  #exitConfirm .ec-btns .ec-yes{border-color:var(--gold);color:var(--gold);}
+  #exitConfirm .ec-btns button:active{transform:scale(.97);}
   #app{display:flex;flex-direction:column;height:100%;width:100%;
     max-width:520px;margin:0 auto;position:relative;
     /* 頂部保留安全區墊高：#top（底圖）與 #bottom 為 flex 子項，會被此 padding 整體下移到瀏海之下 */

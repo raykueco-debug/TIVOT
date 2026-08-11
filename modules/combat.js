@@ -637,12 +637,36 @@ export function startIntruderFight(){
   stopAll();
   loadBoard(0); updateBars();   // loadBoard 內含 scheduleOpeningUlt → 重啟敵大絕排程
 }
+// 全螢幕黑幕過場：淡出（轉黑）→ 全黑時執行 mid() 切畫面 → 淡入（浮現）。約 2×half ms。
+let _fadeOv=null;
+function fadeTransition(mid, half){
+  const ms = half || 1400;
+  let ov=_fadeOv;
+  if(!ov){
+    ov=document.createElement('div'); ov.id='fadeOverlay';
+    ov.style.cssText='position:fixed;inset:0;z-index:9000;background:#000;opacity:0;pointer-events:none;';
+    document.body.appendChild(ov); _fadeOv=ov;
+  }
+  ov.style.transition='opacity '+ms+'ms ease';
+  ov.style.pointerEvents='auto';
+  void ov.offsetWidth;
+  ov.style.opacity='1';                      // 淡出（轉黑）
+  setTimeout(()=>{
+    if(mid) mid();                           // 全黑瞬間切畫面
+    void ov.offsetWidth;
+    ov.style.opacity='0';                    // 淡入（浮現）
+    setTimeout(()=>{ ov.style.pointerEvents='none'; }, ms);
+  }, ms);
+}
 export function goHome(){
-  state.over=true; stopAll();
-  $('banner').classList.remove('on'); $('banner').classList.remove('lose');
-  $('transition').classList.remove('on');
-  $('home').classList.add('on');
-  SFX.playBgm(asset('bgm_home'));   // 回首頁 → 主選單 BGM
+  fadeTransition(()=>{                        // 回主選單：淡出淡入約 3 秒
+    state.over=true; stopAll();
+    state.cutinPlaying=false;                 // 清掉可能的暫停旗標（退出確認用）
+    $('banner').classList.remove('on'); $('banner').classList.remove('lose');
+    $('transition').classList.remove('on');
+    $('home').classList.add('on');
+    SFX.playBgm(asset('bgm_home'));           // 主選單 BGM
+  }, 1400);
 }
 
 /* ---- 測試用「清盤」鈕：依當前應點順序逐格模擬點擊，把盤面清空走 clearBoard ---- */

@@ -57,13 +57,13 @@ SFX.setShots([asset('se_pistol_02')].filter(Boolean));
     else if(/\.(mp3|m4a|ogg|wav)$/i.test(v)){ (k.indexOf('bgm_')===0 ? bgm : sfx).push(v); }
   }
   const total = imgs.length + sfx.length + bgm.length;
-  // 載入遮罩（動態建立，無需改 HTML）
+  // 載入遮罩（動態建立，無需改 HTML）；最前層、蓋住一切
   const ov=document.createElement('div'); ov.id='assetLoader';
   ov.style.cssText='position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;'
     +'align-items:center;justify-content:center;gap:16px;background:#0a0812;color:#d9c68a;'
-    +'font-family:inherit;letter-spacing:4px;transition:opacity .45s ease;';
-  ov.innerHTML='<div style="font-size:15px">載　入　中</div>'
-    +'<div style="width:62%;max-width:300px;height:4px;background:rgba(217,198,138,.18);border-radius:2px;overflow:hidden">'
+    +'font-family:inherit;letter-spacing:4px;transition:opacity .5s ease;text-align:center;padding:0 24px;';
+  ov.innerHTML='<div id="alMsg" style="font-size:15px">載　入　中</div>'
+    +'<div id="alBarWrap" style="width:62%;max-width:300px;height:4px;background:rgba(217,198,138,.18);border-radius:2px;overflow:hidden">'
     +'<i id="assetLoaderBar" style="display:block;height:100%;width:0;background:#d9c68a;transition:width .18s ease"></i></div>'
     +'<div id="assetLoaderPct" style="font-size:11px;opacity:.7">0%</div>';
   document.body.appendChild(ov);
@@ -71,18 +71,49 @@ SFX.setShots([asset('se_pistol_02')].filter(Boolean));
   const bar=$('assetLoaderBar'), pct=$('assetLoaderPct');
   const tick=()=>{ done++; const p=total?Math.round(done/total*100):100; if(bar)bar.style.width=p+'%'; if(pct)pct.textContent=p+'%'; };
   const imgP = imgs.map(src=>new Promise(res=>{ const im=new Image(); im.onload=im.onerror=()=>{ tick(); res(); }; im.src=src; }));
-  // 音檔以「數量」計進度：各包一層 tick
   const wrapCount = (p, n)=> p.then(()=>{ for(let i=0;i<n;i++) tick(); }).catch(()=>{ for(let i=0;i<n;i++) tick(); });
   const audioP = [ wrapCount(SFX.preload(sfx), sfx.length), wrapCount(SFX.preloadBgm(bgm), bgm.length) ];
-  const finish=()=>{ ov.style.opacity='0'; setTimeout(()=>{ if(ov.parentNode) ov.remove(); }, 480); };
-  // 全部載完或最多等 12 秒（防單一資源卡住整個載入）→ 揭開
-  Promise.all([...imgP, ...audioP]).then(finish);
-  setTimeout(finish, 12000);
+  // 載完 → 改「點擊繼續」：這一點＝使用者手勢，解鎖音訊並播 MainMenu，再揭開選單
+  let ready=false;
+  const showReady=()=>{
+    if(ready) return; ready=true;
+    const wrap=$('alBarWrap'); if(wrap) wrap.style.display='none';
+    const p2=$('assetLoaderPct'); if(p2) p2.style.display='none';
+    const msg=$('alMsg'); if(msg){ msg.textContent='點　擊　繼　續'; msg.classList.add('al-pulse'); }
+    const go=()=>{
+      ov.removeEventListener('click',go); ov.removeEventListener('touchstart',go);
+      SFX.unlock();   // 使用者手勢：解鎖音訊 → 主選單 BGM 開始播
+      ov.style.opacity='0'; setTimeout(()=>{ if(ov.parentNode) ov.remove(); }, 520);
+    };
+    ov.addEventListener('click', go);
+    ov.addEventListener('touchstart', go, {passive:true});
+  };
+  Promise.all([...imgP, ...audioP]).then(showReady);
+  setTimeout(showReady, 12000);   // 保底：單一資源卡住也不擋整個載入
 })();
 
 // 首頁：開始遊戲 → 主選單先淡出、空一拍（約 1s）Battle 才淡入（避免唐突），同時播「驅逐開始」過渡禎
 bindBtn('startBtn',     ()=>{ SFX.play(asset('sfx_start')); SFX.playBgm(asset('bgm_battle'), { fadeOutMs:800, delayMs:1000 }); playTransition('start', combat.startGame); });
-bindBtn('exitBtn',      combat.goHome);         // 右上：退出回首頁
+bindBtn('exitBtn',      showExitConfirm);       // 右上：退出 → 確認對話框（盤面模糊）
+
+// 退出確認：暫停（cutinPlaying）+ 數字盤模糊 + 「回主選單 / 繼續」。回主選單走 goHome（淡出淡入）。
+function showExitConfirm(){
+  if(state.over || state.cutinPlaying || document.getElementById('exitConfirm')) return;   // 非戰鬥中/演出中/已開 → 略過
+  state.cutinPlaying = true;                        // 暫停：停延時懲罰/大絕、擋盤面點擊
+  const grid=$('grid'); if(grid) grid.classList.add('grid-blur');
+  const dlg=document.createElement('div'); dlg.id='exitConfirm';
+  dlg.innerHTML='<div class="ec-panel">'
+    +'<div class="ec-title">回到主選單？</div>'
+    +'<div class="ec-sub">目前這場進度不會保留</div>'
+    +'<div class="ec-btns"><button class="ec-no">繼續遊戲</button><button class="ec-yes">回主選單</button></div>'
+    +'</div>';
+  document.body.appendChild(dlg);
+  const close=()=>{ if(dlg.parentNode) dlg.remove(); if(grid) grid.classList.remove('grid-blur'); };
+  const bind=(sel,fn)=>{ const b=dlg.querySelector(sel); const run=()=>{ SFX.unlock(); SFX.menuClick(); fn(); };
+    b.addEventListener('click',run); b.addEventListener('touchstart',e=>{e.preventDefault();run();},{passive:false}); };
+  bind('.ec-no', ()=>{ close(); state.cutinPlaying=false; });   // 繼續：解除暫停
+  bind('.ec-yes',()=>{ close(); combat.goHome(); });            // 回主選單：goHome 內會清 cutinPlaying + 淡出淡入
+}
 bindBtn('testClearBtn', combat.testClearBoard); // 左上（測試用）：一鍵清盤
 bindBtn('rematchBtn',   inspector.onRematchBtn);// 結算：依 resultMode 分流（再度執槍/迎擊）
 
