@@ -54,7 +54,7 @@ SFX.preload([
 SFX.setShots([asset('se_pistol_02')].filter(Boolean));
 
 // 首頁：開始遊戲 → 主選單先淡出、空一拍（約 1s）Battle 才淡入（避免唐突），同時播「驅逐開始」過渡禎
-bindBtn('startBtn',     ()=>{ SFX.playBgm(asset('bgm_battle'), { fadeOutMs:800, delayMs:1000, fadeInMs:900 }); playTransition('start', combat.startGame); });
+bindBtn('startBtn',     ()=>{ SFX.playBgm(asset('bgm_battle'), { fadeOutMs:800, delayMs:1000 }); playTransition('start', combat.startGame); });
 bindBtn('exitBtn',      combat.goHome);         // 右上：退出回首頁
 bindBtn('testClearBtn', combat.testClearBoard); // 左上（測試用）：一鍵清盤
 bindBtn('rematchBtn',   inspector.onRematchBtn);// 結算：依 resultMode 分流（再度執槍/迎擊）

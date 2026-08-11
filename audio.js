@@ -81,18 +81,19 @@ export const SFX = {
   unlock(){
     const c = ctx();
     if(c && c.state === 'suspended') c.resume().catch(()=>{});
-    if(_bgm && _bgm.paused){ const p=_bgm.play(); if(p&&p.catch) p.catch(()=>{}); bgmFade(_bgm, _bgmVol, 400); }
+    // BGM 被 autoplay 擋 → 首次手勢直接全音量補播（不淡入）
+    if(_bgm && _bgm.paused){ _bgm.volume=_bgmVol; const p=_bgm.play(); if(p&&p.catch) p.catch(()=>{}); }
   },
 
-  /* 切換 BGM：舊曲淡出後停 →（可選 delayMs 空一拍）→ 新曲淡入 loop。
+  /* 切換 BGM：舊曲淡出後停 →（可選 delayMs 空一拍）→ 新曲直接全音量起播（不淡入）loop。
    *  同一首播放中 → 不重播、不中斷。src 空 → 不動作。不可交疊：全域只留一個 _bgm。
-   *  opts：fadeOutMs / fadeInMs / delayMs（舊曲淡出到新曲起播之間的間隔）/ volume。 */
+   *  opts：fadeOutMs / delayMs（舊曲淡出到新曲起播之間的間隔）/ volume / fadeInMs（預設 0＝不淡入）。 */
   playBgm(src, opts){
     opts = opts || {};
     if(!src) return;
     if(src === _bgmSrc && _bgm && !_bgm.paused){ clearTimeout(_bgmTimer); _bgmTimer=null; return; }  // 同一首正在播
     const fadeOut = opts.fadeOutMs!=null ? opts.fadeOutMs : 900;
-    const fadeIn  = opts.fadeInMs!=null  ? opts.fadeInMs  : 700;
+    const fadeIn  = opts.fadeInMs!=null  ? opts.fadeInMs  : 0;   // 預設不淡入（作者要求：只淡出）
     const delay   = opts.delayMs!=null   ? opts.delayMs   : 0;
     _bgmVol = opts.volume!=null ? opts.volume : 0.7;
     clearTimeout(_bgmTimer); _bgmTimer=null;
@@ -102,13 +103,14 @@ export const SFX = {
     _bgmSrc = src;   // 先鎖定目標（間隔中同曲再呼叫會被上面判斷擋掉）
     const startNew = ()=>{
       _bgmTimer = null;
-      const a = new Audio(src); a.loop = true; a.preload = 'auto'; a.volume = 0;
+      const a = new Audio(src); a.loop = true; a.preload = 'auto';
+      a.volume = (fadeIn > 0 ? 0 : _bgmVol);   // 不淡入 → 直接全音量
       _bgm = a;
       const p = a.play();
       if(p && p.catch) p.catch(()=>{});   // autoplay 被擋 → 等首次手勢由 unlock 補播
-      bgmFade(a, _bgmVol, fadeIn);
+      if(fadeIn > 0) bgmFade(a, _bgmVol, fadeIn);
     };
-    if(delay > 0) _bgmTimer = setTimeout(startNew, delay);   // 空一拍再起新曲（更平順）
+    if(delay > 0) _bgmTimer = setTimeout(startNew, delay);   // 空一拍再起新曲
     else startNew();
   },
   // 停 BGM（淡出後停）
