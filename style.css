@@ -206,6 +206,8 @@
   .corner-btn:active{transform:scale(.9);}
   /* 控制鈕維持原 top:10px：#top 已被 #app padding 整體下移到瀏海之下，鈕相對 #top 定位即已安全，不再額外偏移（免雙重下推）。 */
   #exitBtn{top:10px;left:auto;right:10px;font-size:18px;}
+  /* 結算畫面（banner 開啟）時隱藏右上退出鈕：corner-btn z-37 高於 banner z-30，會浮在結算之上 */
+  #app:has(#banner.on) #exitBtn{display:none;}
   /* v17：測試人員用「清盤」鈕（左上角）。z-index 同 corner-btn，聖徒化手勢層之上，確保可點。 */
   #testClearBtn{top:10px;left:10px;right:auto;font-size:12px;letter-spacing:1px;color:var(--holy);border-color:var(--holy);}
 
