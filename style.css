@@ -32,18 +32,42 @@
   #assetLoader{position:fixed;inset:0;z-index:99999;background:#0a0812;color:#d9c68a;
     font-family:inherit;transition:opacity .5s ease;overflow:hidden;}
   /* 金色光圈讀取：與首頁紋章外圓重合（位置/圈徑由 main.js placeRing 依 #homeEmblem 實測；
-     量不到前用此處預設保底）。微微明暗呼吸發光，圈內為載入百分比。 */
+     量不到前用此處預設保底）。進度沿圈順時針推進；圈內上=百分比、下=Saint Installation。 */
   #assetLoader #alRing{position:absolute;left:50%;top:23%;width:200px;height:200px;
-    transform:translate(-50%,-50%);border-radius:50%;border:2px solid var(--gold-dim);
-    display:flex;align-items:center;justify-content:center;
+    transform:translate(-50%,-50%);border-radius:50%;
     animation:alRingGlow 2.4s ease-in-out infinite;}
+  #assetLoader #alRing svg{position:absolute;inset:0;width:100%;height:100%;
+    transform:rotate(-90deg);overflow:visible;}   /* -90°：進度自 12 點鐘起、順時針 */
+  #assetLoader .al-rail{fill:none;stroke:rgba(217,198,138,.18);stroke-width:2.5;}
+  #assetLoader .al-prog{fill:none;stroke:var(--gold);stroke-width:2.5;stroke-linecap:round;
+    transition:stroke-dashoffset .25s ease;filter:drop-shadow(0 0 4px rgba(217,198,138,.7));}
   @keyframes alRingGlow{
-    0%,100%{box-shadow:0 0 6px rgba(217,198,138,.22),inset 0 0 8px rgba(217,198,138,.12);
-      border-color:rgba(217,198,138,.5);}
-    50%{box-shadow:0 0 24px rgba(217,198,138,.6),inset 0 0 16px rgba(217,198,138,.3);
-      border-color:#e8d9a8;}}
+    0%,100%{box-shadow:0 0 6px rgba(217,198,138,.18),inset 0 0 8px rgba(217,198,138,.1);}
+    50%{box-shadow:0 0 22px rgba(217,198,138,.5),inset 0 0 14px rgba(217,198,138,.25);}}
+  /* 圈內文字：上百分比、下 Saint Installation，呼吸發光 */
+  #assetLoader #alRingTxt{position:absolute;inset:0;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:7px;
+    animation:alTextBreath 2.4s ease-in-out infinite;}
   #assetLoader #assetLoaderPct{font-size:24px;letter-spacing:2px;color:var(--gold);
-    opacity:.9;transition:opacity .5s ease;font-variant-numeric:tabular-nums;}
+    font-variant-numeric:tabular-nums;}
+  #assetLoader #alRingCap{font-size:10.5px;letter-spacing:3px;color:var(--gold);opacity:.85;}
+  @keyframes alTextBreath{
+    0%,100%{text-shadow:0 0 4px rgba(217,198,138,.25);opacity:.8;}
+    50%{text-shadow:0 0 14px rgba(217,198,138,.85);opacity:1;}}
+  /* 讀取完成（.al-done）：整圈常亮發光、Complete 字樣 */
+  #assetLoader.al-done #alRing{animation:alRingDone 1.8s ease-in-out infinite;}
+  @keyframes alRingDone{
+    0%,100%{box-shadow:0 0 18px rgba(232,217,168,.55),inset 0 0 14px rgba(232,217,168,.3);}
+    50%{box-shadow:0 0 34px rgba(255,244,214,.85),inset 0 0 22px rgba(232,217,168,.45);}}
+  #assetLoader.al-done .al-prog{stroke:#e8d9a8;filter:drop-shadow(0 0 8px rgba(255,244,214,.9));}
+  #assetLoader.al-done #alRingCap{font-size:13px;letter-spacing:5px;opacity:1;}
+  /* 點擊後白光：以光圈為中心的圓形白光擴大籠罩全畫面（--fl-scale 由 JS 依螢幕算） */
+  #alFlash{position:fixed;z-index:100000;transform:translate(-50%,-50%) scale(.9);border-radius:50%;
+    background:radial-gradient(circle,#fff 0%,#fff 55%,rgba(255,255,255,.9) 74%,rgba(255,255,255,0) 100%);
+    opacity:.98;pointer-events:none;
+    transition:transform .48s cubic-bezier(.3,.6,.35,1),opacity .62s ease;}
+  #alFlash.grow{transform:translate(-50%,-50%) scale(var(--fl-scale,9));}
+  #alFlash.fade{opacity:0;}
   /* 監察官立繪舞台：吃畫面下半，立繪 contain 貼底（同結算 inspectorStage 的語言） */
   #assetLoader #alStage{position:absolute;left:0;right:0;bottom:0;height:64%;
     display:flex;justify-content:center;align-items:flex-end;pointer-events:none;}

@@ -74,9 +74,14 @@ function preloadLateBgm(){
   /* 載入遮罩（動態建立，樣式集中在 style.css 的 #assetLoader 區）：
    *  頂部細讀取條＋百分比 → 不佔畫面；中下方監察官立繪＋對話框輪播教學 Hint
    *  （隨機不重複、整句淡入停 5 秒淡出，不用打字機）→ 讀取時間不再乾等。 */
+  const RING_C = 301.59;   // SVG 進度圓周長（r=48, viewBox 100）
   const ov=document.createElement('div'); ov.id='assetLoader';
   ov.innerHTML=
-     '<div id="alRing"><span id="assetLoaderPct">0%</span></div>'
+     '<div id="alRing">'
+    +  '<svg viewBox="0 0 100 100"><circle class="al-rail" cx="50" cy="50" r="48"/>'
+    +  '<circle id="alRingProg" class="al-prog" cx="50" cy="50" r="48" stroke-dasharray="'+RING_C+'" stroke-dashoffset="'+RING_C+'"/></svg>'
+    +  '<div id="alRingTxt"><div id="assetLoaderPct">0%</div><div id="alRingCap">Saint Installation</div></div>'
+    +'</div>'
     +'<div id="alStage"><img id="alPortrait" alt="">'
     +  '<div id="alBubble"><div class="al-name"></div><div class="al-hint" id="alHint"></div></div>'
     +'</div>'
@@ -122,8 +127,10 @@ function preloadLateBgm(){
     cycle();
   }
   let done=0;
-  const bar=$('assetLoaderBar'), pct=$('assetLoaderPct');
-  const tick=()=>{ done++; const p=total?Math.round(done/total*100):100; if(bar)bar.style.width=p+'%'; if(pct)pct.textContent=p+'%'; };
+  const prog=$('alRingProg'), pct=$('assetLoaderPct');
+  const tick=()=>{ done++; const p=total?Math.round(done/total*100):100;
+    if(prog) prog.style.strokeDashoffset=(RING_C*(1-p/100)).toFixed(1);   // 沿光圈順時針推進
+    if(pct) pct.textContent=p+'%'; };
   const imgP = imgs.map(src=>new Promise(res=>{ const im=new Image(); im.onload=im.onerror=()=>{ tick(); res(); }; im.src=src; }));
   const wrapCount = (p, n)=> p.then(()=>{ for(let i=0;i<n;i++) tick(); }).catch(()=>{ for(let i=0;i<n;i++) tick(); });
   const audioP = [ wrapCount(SFX.preload(sfx), sfx.length), wrapCount(SFX.preloadBgm(bgm), bgm.length) ];
@@ -131,15 +138,34 @@ function preloadLateBgm(){
   let ready=false;
   const showReady=()=>{
     if(ready) return; ready=true;
-    const p2=$('assetLoaderPct'); if(p2){ p2.textContent='100%'; p2.style.opacity='0'; }   // 數字淡出，光圈留著等揭開紋章
+    // 讀取完成：進度圈補滿、字樣改 Complete、整圈轉為常亮發光（.al-done，見 style.css）
+    if(prog) prog.style.strokeDashoffset='0';
+    if(pct) pct.style.display='none';
+    const cap=$('alRingCap'); if(cap) cap.textContent='Complete';
+    ov.classList.add('al-done');
     const msg=$('alMsg'); if(msg){ msg.textContent='點　擊　繼　續'; msg.classList.add('al-pulse'); }
     // Hint 輪播不停：載完後玩家未點擊前繼續輪教學
     const go=()=>{
       ov.removeEventListener('click',go); ov.removeEventListener('touchstart',go);
       clearTimeout(hintTimer);   // 停輪播
       SFX.unlock();   // 使用者手勢：解鎖音訊 → 主選單 BGM 開始播
+      SFX.play(asset('sfx_saint'));   // SI_01（第一段已預載解碼 → 點下瞬發）
       preloadLateBgm();   // 第二段：進主選單即背景載 結算/失敗/Boss BGM
-      ov.style.opacity='0'; setTimeout(()=>{ if(ov.parentNode) ov.remove(); }, 520);
+      // 白光擴張：以光圈為中心的圓形白光放大籠罩全畫面 → 蓋住後移除遮罩 → 白光淡出揭開主選單
+      const ring=$('alRing');
+      const rr=ring ? ring.getBoundingClientRect() : null;
+      const cx=rr ? rr.left+rr.width/2 : innerWidth/2;
+      const cy=rr ? rr.top +rr.height/2 : innerHeight*0.25;
+      const d =rr ? rr.width : 200;
+      // 覆蓋全畫面所需直徑（光圈中心到最遠角 ×2）；白光實心區約 55% → 再除以 0.55 保證蓋滿
+      const need=2*Math.hypot(Math.max(cx,innerWidth-cx), Math.max(cy,innerHeight-cy));
+      const fl=document.createElement('div'); fl.id='alFlash';
+      fl.style.left=cx+'px'; fl.style.top=cy+'px'; fl.style.width=d+'px'; fl.style.height=d+'px';
+      fl.style.setProperty('--fl-scale', (need/d/0.55).toFixed(2));
+      document.body.appendChild(fl);
+      requestAnimationFrame(()=>fl.classList.add('grow'));
+      setTimeout(()=>{ if(ov.parentNode) ov.remove(); fl.classList.add('fade'); }, 480);   // 白光蓋滿 → 撤遮罩
+      setTimeout(()=>{ if(fl.parentNode) fl.remove(); }, 1150);                            // 白光淡出完 → 清掉
     };
     ov.addEventListener('click', go);
     ov.addEventListener('touchstart', go, {passive:true});
