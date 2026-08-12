@@ -18,11 +18,11 @@
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;
     -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
-  html,body{margin:0;padding:0;width:100%;height:100%;background:var(--bg);
-    overflow:hidden;position:fixed;top:0;left:0;
+  html,body{margin:0;padding:0;width:auto;height:auto;background:var(--bg);
+    overflow:hidden;position:fixed;top:0;left:0;right:0;bottom:0;
     font-family:"Iowan Old Style","Palatino Linotype",Georgia,"Songti TC",serif;color:var(--ink);}
-  /* 行動裝置動態工具列：100% 可能短於實際可視高 → 用 dvh 讓畫面下移觸底，底部不留死區 */
-  @supports (height:100dvh){ html,body{height:100dvh;} }
+  /* 觸底不用 100%/100dvh：iOS「加入主畫面」(standalone) 的 dvh 會保留幽靈工具列高度，
+     底部露出一截畫布死區 → 改 fixed + 四邊 inset:0 直接撐滿視窗，不經 vh/dvh 單位計算 */
   /* 載入畫面「點擊繼續」呼吸 */
   @keyframes alPulse{0%,100%{opacity:.45}50%{opacity:1}}
   #assetLoader .al-pulse{animation:alPulse 1.5s ease-in-out infinite;}
