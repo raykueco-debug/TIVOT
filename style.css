@@ -21,12 +21,15 @@
   html,body{margin:0;padding:0;width:100%;height:100%;background:var(--bg);
     overflow:hidden;position:fixed;top:0;left:0;
     font-family:"Iowan Old Style","Palatino Linotype",Georgia,"Songti TC",serif;color:var(--ink);}
+  /* 行動裝置動態工具列：100% 可能短於實際可視高 → 用 dvh 讓畫面下移觸底，底部不留死區 */
+  @supports (height:100dvh){ html,body{height:100dvh;} }
   /* 載入畫面「點擊繼續」呼吸 */
   @keyframes alPulse{0%,100%{opacity:.45}50%{opacity:1}}
   #assetLoader .al-pulse{animation:alPulse 1.5s ease-in-out infinite;}
   /* 退出確認：數字盤模糊到看不清 + 半暗遮罩 + 面板 */
-  /* 暫停：重度模糊，讓數字盤難以辨識（模糊+壓暗+輕微放大糊化） */
-  #grid.grid-blur{filter:blur(24px) brightness(.4) contrast(.85);transform:scale(1.04);pointer-events:none;}
+  /* 暫停：直接隱藏整個數字盤（淡出），避免暫停時偷看盤面 */
+  #grid.grid-blur{opacity:0;pointer-events:none;}
+  #grid{transition:opacity .15s ease-out;}   /* 暫停隱藏/恢復顯示皆有淡入淡出 */
   #exitConfirm{position:fixed;inset:0;z-index:9500;display:flex;align-items:center;justify-content:center;
     background:rgba(6,4,12,.55);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);}
   #exitConfirm .ec-panel{width:min(82%,320px);text-align:center;padding:22px 20px;border-radius:12px;
@@ -631,16 +634,17 @@
   #pickSheet .pick-close{padding:9px 30px;background:transparent;border:1px solid var(--gold-dim);
     color:var(--ink);border-radius:8px;font-family:inherit;font-size:13px;letter-spacing:3px;}
 
-  /* 首頁低調小鈕（Credit / 原作）並排一列 */
-  #home #homeLinks{display:flex;gap:12px;margin-top:22px;}
-  #home #creditBtn, #home #originalBtn{padding:7px 22px;background:transparent;
+  /* 首頁底部一排：Credit / 原作 小鈕 + 版權宣告，貼底置中（避開 home indicator 安全區） */
+  #home #homeLinks{position:absolute;left:0;right:0;
+    bottom:calc(12px + env(safe-area-inset-bottom));
+    display:flex;align-items:center;justify-content:center;gap:10px;padding:0 8px;}
+  #home #creditBtn, #home #originalBtn{padding:6px 14px;background:transparent;
     border:1px solid var(--gold-dim);border-radius:20px;color:var(--gold-dim);
-    font-family:inherit;font-size:12px;letter-spacing:3px;}
+    font-family:inherit;font-size:11px;letter-spacing:2px;flex:none;}
   #home #creditBtn:active, #home #originalBtn:active{transform:scale(.95);color:var(--gold);border-color:var(--gold);}
-  /* 底部版權（單行） */
-  #home .home-copyright{position:absolute;left:0;right:0;
-    bottom:calc(12px + env(safe-area-inset-bottom));text-align:center;
-    font-size:10px;letter-spacing:1px;color:var(--gold-dim);opacity:.65;pointer-events:none;}
+  /* 版權（同排，單行不折行） */
+  #home .home-copyright{font-size:9.5px;letter-spacing:.5px;color:var(--gold-dim);
+    opacity:.65;pointer-events:none;white-space:nowrap;min-width:0;}
 
   /* 原作選擇面板 */
   #originalSheet{position:absolute;inset:0;display:none;align-items:center;justify-content:center;
