@@ -576,7 +576,9 @@
   /* ===== 首頁 ===== */
   #home{position:absolute;inset:0;display:none;flex-direction:column;
     align-items:center;justify-content:center;z-index:50;text-align:center;
-    background:radial-gradient(120% 90% at 50% 30%,#1a1330,#07050c 90%);}
+    background:radial-gradient(120% 90% at 50% 30%,#1a1330,#07050c 90%);
+    /* 底部保留貼底 footer（Credit/原作 + 版權）的高度：置中內容不會壓到 footer */
+    padding-bottom:calc(84px + env(safe-area-inset-bottom));}
   #home.on{display:flex;}
   /* 主畫面徽記：金色透明 PNG（含 THE IV ORDER OF TESTAMENT 弧字），置中。
      微微發光呼吸：drop-shadow 光暈 + 亮度，節奏同「開始遊戲」按鈕（1.2s alternate）。 */
