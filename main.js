@@ -151,8 +151,8 @@ function preloadLateBgm(){
       SFX.unlock();   // 使用者手勢：解鎖音訊 → 主選單 BGM 開始播
       SFX.play(asset('sfx_saint'));   // SI_01（第一段已預載解碼 → 點下瞬發）
       preloadLateBgm();   // 第二段：進主選單即背景載 結算/失敗/Boss BGM
-      // 聖光散射：暖金白光暈＋放射光芒束自光圈中心緩慢綻放 →
-      //   1.6s 光暈實心蓋滿時撤遮罩 → 1.5s 淡出揭開主選單（總長 ≈3.1s，與 SI_01 3.7s 連動）
+      // 聖光綻放：暖金白光暈自光圈中心緩慢擴張（無光束）→
+      //   2.5s 光暈實心蓋滿時撤遮罩 → 1.2s 淡出揭開主選單（總長 ≈3.7s，與 SI_01 等長連動）
       const ring=$('alRing');
       const rr=ring ? ring.getBoundingClientRect() : null;
       const cx=rr ? rr.left+rr.width/2 : innerWidth/2;
@@ -161,13 +161,13 @@ function preloadLateBgm(){
       // 覆蓋全畫面所需直徑（光圈中心到最遠角 ×2）；光暈實心區佔 30% → 除以 0.30 保證實心蓋滿
       const need=2*Math.hypot(Math.max(cx,innerWidth-cx), Math.max(cy,innerHeight-cy));
       const fl=document.createElement('div'); fl.id='alFlash';
-      fl.innerHTML='<div class="fl-rays"></div><div class="fl-glow"></div>';
+      fl.innerHTML='<div class="fl-glow"></div>';
       fl.style.left=cx+'px'; fl.style.top=cy+'px'; fl.style.width=d+'px'; fl.style.height=d+'px';
       fl.style.setProperty('--fl-scale', (need/d/0.30).toFixed(2));
       document.body.appendChild(fl);
       requestAnimationFrame(()=>fl.classList.add('grow'));
-      setTimeout(()=>{ if(ov.parentNode) ov.remove(); fl.classList.add('fade'); }, 1600);  // 光暈蓋滿 → 撤遮罩、開始淡出
-      setTimeout(()=>{ if(fl.parentNode) fl.remove(); }, 3300);                            // 聖光淡出完 → 清掉
+      setTimeout(()=>{ if(ov.parentNode) ov.remove(); fl.classList.add('fade'); }, 2500);  // 光暈蓋滿 → 撤遮罩、開始淡出
+      setTimeout(()=>{ if(fl.parentNode) fl.remove(); }, 3800);                            // 聖光淡出完 → 清掉
     };
     ov.addEventListener('click', go);
     ov.addEventListener('touchstart', go, {passive:true});

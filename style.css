@@ -61,24 +61,14 @@
     50%{box-shadow:0 0 34px rgba(255,244,214,.85),inset 0 0 22px rgba(232,217,168,.45);}}
   #assetLoader.al-done .al-prog{stroke:#e8d9a8;filter:drop-shadow(0 0 8px rgba(255,244,214,.9));}
   #assetLoader.al-done #alRingCap{font-size:13px;letter-spacing:5px;opacity:1;}
-  /* 點擊後聖光散射：以光圈為中心緩慢綻放的暖金白光暈（.fl-glow，邊緣多層羽化半透明）
-     ＋自圓心放射並緩轉的光芒束（.fl-rays，圓錐漸層射線，徑向遮罩往外淡出）。
-     1.6s 綻放蓋滿 → 撤遮罩 → 1.5s 淡出揭開主選單，總長 ≈3.1s 與 SI_01(3.7s) 連動。
+  /* 點擊後聖光綻放：以光圈為中心「緩慢」擴張的暖金白光暈，邊緣多層羽化半透明、無光束。
+     2.5s 綻放蓋滿 → 撤遮罩 → 1.2s 淡出揭開主選單，總長 ≈3.7s 與 SI_01(3.7s) 等長連動。
      --fl-scale 由 JS 依螢幕算（光暈實心 30% 需蓋滿全畫面）。 */
   #alFlash{position:fixed;z-index:100000;transform:translate(-50%,-50%) scale(.85);
     opacity:1;pointer-events:none;
-    transition:transform 1.6s cubic-bezier(.2,.6,.3,1),opacity 1.5s ease;}
+    transition:transform 2.5s cubic-bezier(.3,.35,.25,1),opacity 1.2s ease;}
   #alFlash.grow{transform:translate(-50%,-50%) scale(var(--fl-scale,16));}
   #alFlash.fade{opacity:0;}
-  /* 光芒束：細長聖光射線自圓心放射（蓋在光暈下、伸出光暈邊緣外），整體緩慢旋轉 */
-  #alFlash .fl-rays{position:absolute;inset:-30%;border-radius:50%;
-    background:repeating-conic-gradient(from 0deg,
-      rgba(255,246,214,.55) 0deg 4deg,
-      rgba(255,246,214,0)   9deg 26deg);
-    -webkit-mask-image:radial-gradient(circle,#000 10%,rgba(0,0,0,.55) 42%,transparent 72%);
-    mask-image:radial-gradient(circle,#000 10%,rgba(0,0,0,.55) 42%,transparent 72%);
-    animation:flRays 7s linear infinite;}
-  @keyframes flRays{from{transform:rotate(0deg)}to{transform:rotate(36deg)}}
   /* 光暈：暖金白核心，往外多層羽化 */
   #alFlash .fl-glow{position:absolute;inset:0;border-radius:50%;
     background:radial-gradient(circle,
