@@ -281,7 +281,8 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
     const pLVH=mk('position:fixed;left:0;top:0;width:1px;height:100lvh;visibility:hidden;pointer-events:none;');
     const pSVH=mk('position:fixed;left:0;top:0;width:1px;height:100svh;visibility:hidden;pointer-events:none;');
     probes=[pT,pB,pVH,pDVH,pLVH,pSVH];
-    hud=mk('position:fixed;left:6px;bottom:6px;z-index:99998;font:11px/1.6 monospace;color:#4f4;background:rgba(0,0,0,.72);padding:5px 8px;pointer-events:none;white-space:pre;border-radius:4px;');
+    /* ⚠ HUD 放畫面上方：若底部黑帶是 iOS 蓋在頁面上的遮罩，貼底定位會被埋進黑帶看不到 */
+    hud=mk('position:fixed;left:6px;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:99998;font:11px/1.6 monospace;color:#4f4;background:rgba(0,0,0,.72);padding:5px 8px;pointer-events:none;white-space:pre;border-radius:4px;');
     const upd=()=>{
       const b=document.body.getBoundingClientRect();
       hud.textContent=
