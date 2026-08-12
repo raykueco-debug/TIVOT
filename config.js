@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於首頁版權宣告下方，每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.12-10';
+export const VERSION = 'ver 2026.08.12-11';
 
 export const GAME_CONFIG = {
 
@@ -478,11 +478,13 @@ export const ASSETS = {
   se_pistol_02:      "resources/weapon/Pistol_SE_02.mp3",
 
   // BGM（loop、不可交疊，切歌時前一首淡出）。放 resources/Stage/。
-  bgm_home:      "resources/Stage/MainMenu.mp3",       // 主選單（含次要選單）
-  bgm_battle:    "resources/Stage/Battle_01.mp3",      // 戰鬥（驅逐開始插入瞬間起播）
-  bgm_lose:      "resources/Stage/MissonFaild_01.mp3", // 任務失敗（驅逐失敗插入起播）
-  bgm_result:    "resources/Stage/Result_01.mp3",      // 結算（驅逐完成頁被點掉後起播）
-  bgm_boss:      "resources/Stage/BOSS_01.mp3",        // Boss 戰（點下迎擊起播）
+  //  BGM 一律 .m4a（AAC-LC 96k，自 128k MP3 轉檔，體積 −24%）：全平台原生支援；
+  //  .mp3 原檔保留於 resources/Stage 作母帶，需要重轉時用 ffmpeg -c:a aac -b:a 96k。
+  bgm_home:      "resources/Stage/MainMenu.m4a",       // 主選單（含次要選單）
+  bgm_battle:    "resources/Stage/Battle_01.m4a",      // 戰鬥（驅逐開始插入瞬間起播）
+  bgm_lose:      "resources/Stage/MissonFaild_01.m4a", // 任務失敗（驅逐失敗插入起播）
+  bgm_result:    "resources/Stage/Result_01.m4a",      // 結算（驅逐完成頁被點掉後起播）
+  bgm_boss:      "resources/Stage/BOSS_01.m4a",        // Boss 戰（點下迎擊起播）
   bgm_intruder:  null,   // （無獨立亂入曲；亂入＝Boss，走 bgm_boss）
 
   // 語音（每個 cut-in 各一支；檔名 VO_<情境>）
