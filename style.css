@@ -27,7 +27,40 @@
      為 webview 外完全不可視死區——100vh 撐高會讓內容伸進去被裁（戰鬥盤面遭蓋，已撤回）、
      狀態列改 black 亦遭忽略。定案：接受死區為底部邊框，html.vp-clipped（index.html 偵測）
      模式下拿回「白墊在死區裡的底部安全區」還給內容（首頁底排／結算鈕，見各處規則）。 */
-  /* 載入畫面「點擊繼續」呼吸 */
+  /* ===== 載入畫面（#assetLoader 由 main.js 動態建立）=====
+     頂部細讀取條＋百分比；中下方監察官立繪＋對話框輪播教學 Hint；底部「點擊繼續」。 */
+  #assetLoader{position:fixed;inset:0;z-index:99999;background:#0a0812;color:#d9c68a;
+    font-family:inherit;transition:opacity .5s ease;overflow:hidden;}
+  /* 頂部讀取條：貼安全區下方的細金條，不佔畫面 */
+  #assetLoader #alBarWrap{position:absolute;left:16px;right:16px;
+    top:calc(env(safe-area-inset-top,0px) + 14px);height:3px;
+    background:rgba(217,198,138,.18);border-radius:2px;overflow:hidden;}
+  #assetLoader #assetLoaderBar{display:block;height:100%;width:0;background:#d9c68a;transition:width .18s ease;}
+  #assetLoader #assetLoaderPct{position:absolute;right:16px;
+    top:calc(env(safe-area-inset-top,0px) + 22px);font-size:10px;opacity:.6;letter-spacing:1px;}
+  /* 監察官立繪舞台：吃畫面下半，立繪 contain 貼底（同結算 inspectorStage 的語言） */
+  #assetLoader #alStage{position:absolute;left:0;right:0;bottom:0;height:64%;
+    display:flex;justify-content:center;align-items:flex-end;pointer-events:none;}
+  #assetLoader #alPortrait{width:auto;max-width:88%;max-height:100%;object-fit:contain;object-position:bottom;
+    filter:drop-shadow(0 6px 24px rgba(0,0,0,.7));opacity:0;transition:opacity .6s ease;
+    -webkit-mask-image:linear-gradient(to bottom,#000 86%,transparent 100%);
+    mask-image:linear-gradient(to bottom,#000 86%,transparent 100%);}
+  #assetLoader #alPortrait.on{opacity:1;}
+  /* 對話框：疊在立繪偏下（同結算 inspectorBubble 樣式） */
+  #assetLoader #alBubble{position:absolute;left:50%;bottom:15%;transform:translateX(-50%);
+    width:82%;max-width:300px;background:rgba(16,12,24,.72);
+    border:1px solid var(--gold-dim);border-radius:8px;padding:10px 13px;text-align:left;
+    box-shadow:0 4px 20px rgba(0,0,0,.55);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);}
+  #assetLoader .al-name{font-size:11px;letter-spacing:2px;color:var(--gold);margin-bottom:5px;opacity:.9;}
+  /* Hint：整句淡入停留淡出（不打字）；min-height 兩行防換句時框體跳動 */
+  #assetLoader .al-hint{font-size:13px;letter-spacing:.5px;line-height:1.6;color:var(--ink);
+    min-height:3.2em;opacity:0;transition:opacity .4s ease;}
+  #assetLoader .al-hint.show{opacity:1;}
+  /* 底部訊息：載入中 → 點擊繼續（呼吸） */
+  #assetLoader #alMsg{position:absolute;left:0;right:0;
+    bottom:calc(env(safe-area-inset-bottom,0px) + 26px);
+    text-align:center;font-size:14px;letter-spacing:4px;}
+  html.vp-clipped #assetLoader #alMsg{bottom:26px;}   /* 視窗被裁：安全區在死區裡，白墊拿回 */
   @keyframes alPulse{0%,100%{opacity:.45}50%{opacity:1}}
   #assetLoader .al-pulse{animation:alPulse 1.5s ease-in-out infinite;}
   /* 退出確認：數字盤模糊到看不清 + 半暗遮罩 + 面板 */

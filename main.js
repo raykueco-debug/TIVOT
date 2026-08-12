@@ -71,16 +71,43 @@ function preloadLateBgm(){
     }
   }
   const total = imgs.length + sfx.length + bgm.length;
-  // 載入遮罩（動態建立，無需改 HTML）；最前層、蓋住一切
+  /* 載入遮罩（動態建立，樣式集中在 style.css 的 #assetLoader 區）：
+   *  頂部細讀取條＋百分比 → 不佔畫面；中下方監察官立繪＋對話框輪播教學 Hint
+   *  （隨機不重複、整句淡入停 5 秒淡出，不用打字機）→ 讀取時間不再乾等。 */
   const ov=document.createElement('div'); ov.id='assetLoader';
-  ov.style.cssText='position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;'
-    +'align-items:center;justify-content:center;gap:16px;background:#0a0812;color:#d9c68a;'
-    +'font-family:inherit;letter-spacing:4px;transition:opacity .5s ease;text-align:center;padding:0 24px;';
-  ov.innerHTML='<div id="alMsg" style="font-size:15px">載　入　中</div>'
-    +'<div id="alBarWrap" style="width:62%;max-width:300px;height:4px;background:rgba(217,198,138,.18);border-radius:2px;overflow:hidden">'
-    +'<i id="assetLoaderBar" style="display:block;height:100%;width:0;background:#d9c68a;transition:width .18s ease"></i></div>'
-    +'<div id="assetLoaderPct" style="font-size:11px;opacity:.7">0%</div>';
+  ov.innerHTML=
+     '<div id="alBarWrap"><i id="assetLoaderBar"></i></div>'
+    +'<div id="assetLoaderPct">0%</div>'
+    +'<div id="alStage"><img id="alPortrait" alt="">'
+    +  '<div id="alBubble"><div class="al-name"></div><div class="al-hint" id="alHint"></div></div>'
+    +'</div>'
+    +'<div id="alMsg">載　入　中</div>';
   document.body.appendChild(ov);
+  // 監察官立繪與名字（沿用結算的 Freya 資源；讀 config 不寫死）
+  {
+    const insp=(GAME_CONFIG.inspectors||{}).freya||{};
+    const img=$('alPortrait'); const nm=ov.querySelector('.al-name');
+    if(nm) nm.textContent=insp.name||'';
+    if(img && asset(insp.image)){ img.onload=()=>img.classList.add('on'); img.src=asset(insp.image); }
+  }
+  // Hint 輪播：洗牌後依序循環（=隨機且整輪不重複），淡入 → 停 hold → 淡出 → 換句
+  let hintTimer=null;
+  {
+    const list=(GAME_CONFIG.loadingHints||[]).slice();
+    for(let i=list.length-1;i>0;i--){ const j=Math.random()*(i+1)|0; [list[i],list[j]]=[list[j],list[i]]; }
+    const HOLD=GAME_CONFIG.tuning.loadingHintHoldMs, FADE=GAME_CONFIG.tuning.loadingHintFadeMs;
+    const el=$('alHint'); let hi=0;
+    const cycle=()=>{
+      if(!el || !list.length) return;
+      el.textContent=list[hi++ % list.length];
+      el.classList.add('show');                       // 淡入（CSS transition）
+      hintTimer=setTimeout(()=>{
+        el.classList.remove('show');                  // 淡出
+        hintTimer=setTimeout(cycle, FADE+50);
+      }, HOLD);
+    };
+    cycle();
+  }
   let done=0;
   const bar=$('assetLoaderBar'), pct=$('assetLoaderPct');
   const tick=()=>{ done++; const p=total?Math.round(done/total*100):100; if(bar)bar.style.width=p+'%'; if(pct)pct.textContent=p+'%'; };
@@ -94,8 +121,10 @@ function preloadLateBgm(){
     const wrap=$('alBarWrap'); if(wrap) wrap.style.display='none';
     const p2=$('assetLoaderPct'); if(p2) p2.style.display='none';
     const msg=$('alMsg'); if(msg){ msg.textContent='點　擊　繼　續'; msg.classList.add('al-pulse'); }
+    // Hint 輪播不停：載完後玩家未點擊前繼續輪教學
     const go=()=>{
       ov.removeEventListener('click',go); ov.removeEventListener('touchstart',go);
+      clearTimeout(hintTimer);   // 停輪播
       SFX.unlock();   // 使用者手勢：解鎖音訊 → 主選單 BGM 開始播
       preloadLateBgm();   // 第二段：進主選單即背景載 結算/失敗/Boss BGM
       ov.style.opacity='0'; setTimeout(()=>{ if(ov.parentNode) ov.remove(); }, 520);
