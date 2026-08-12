@@ -400,6 +400,10 @@
   /* v16：聖徒化期間敵發動攻擊（有紅點）時，盤面一樣要變紅（覆蓋金色） */
   #grid.saint.alert .cell{border-color:var(--danger);color:#ff8a8a;background:#2a1414;}
   #grid.saint.alert{filter:drop-shadow(0 0 12px var(--danger));animation:alertPulse .5s infinite alternate;}
+  /* 聖徒化中進 overkill：藍光覆蓋金色（敵已死，優先權高於 saint 金） */
+  #grid.saint.overkill .cell{border-color:var(--holy);color:#bfe6ff;background:#18202e;
+    text-shadow:0 0 10px #4fc3ff,0 0 22px rgba(79,195,255,.55);}
+  #grid.saint.overkill{filter:none;animation:overkillPulse .6s infinite alternate;}
   @keyframes saintPulse{from{filter:drop-shadow(0 0 10px var(--gold))}to{filter:drop-shadow(0 0 20px #fff)}}
 
   /* 彈殼 */

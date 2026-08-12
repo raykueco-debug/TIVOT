@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於首頁版權宣告下方，每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.13-04';
+export const VERSION = 'ver 2026.08.13-05';
 
 export const GAME_CONFIG = {
 
@@ -495,7 +495,8 @@ export const ASSETS = {
   // 開始遊戲 stinger（點下開始瞬間，蓋過 BGM 切歌的淡出/進入前段）
   sfx_start:         "resources/Stage/Start_01.mp3",
   // 聖徒化發動音效
-  sfx_saint:         "resources/Stage/SI_01.mp3",
+  //  ⚠ 素材「內容」更新但檔名不變時,在路徑加/升 ?v=N 強制手機重抓(HTTP 快取以 URL 為鍵)。
+  sfx_saint:         "resources/Stage/SI_01.mp3?v=2",
 
   // 完美防禦（完防）合成替代音（一般武器；散彈完防維持自己的槍聲）
   se_guard:          "resources/weapon/Guard_SE.m4a",

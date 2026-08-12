@@ -436,10 +436,11 @@ function enemyDamage(dmg,isCrit,silent){
         clockPause();                                       // 敵死→進 overkill：碼表暫停（overkill 不計時）
         defense.killThreatSchedule(); clearAtkBuff();
         floatDmg('OVERKILL！','50%','48%',true);
-        if(!state.saintMode) enterOverkillFx();             // 聖徒化擊殺無手動 overkill 窗口，不進演出/限時
+        enterOverkillFx();   // 聖徒化中擊殺也進 overkill（藍光/鈴鐺；限時與撤游標僅非聖徒化，見函式內）
       }
     }else{
       state.overkill+=dmg;
+      SFX.overkillBell();   // overkill 期間每一槍都帶鈴鐺（普攻/雙槍/聖徒化追打統一在此掛鉤）
       floatDmg('OVERKILL +'+dmg, (30+Math.random()*40)+'%','35%',true);
     }
   }
@@ -553,8 +554,9 @@ export function resumeFromDialog(){
 let overkillTimer=null;
 function enterOverkillFx(){
   $('grid').classList.add('overkill');            // 數字藍光（見 style.css #grid.overkill）
+  SFX.overkillBell();                             // 響亮鈴鐺（擊殺這一槍；之後每槍由 enemyDamage 補鈴）
+  if(state.saintMode) return;   // 聖徒化：盤面游標(.next)與時限由 saint 自身流程管，僅套演出
   state.cells.forEach(c=>c.classList.remove('next'));   // 免順序 → 撤下「下一格」高亮，避免誤導
-  SFX.overkillBell();                             // 響亮鈴鐺（合成音，音量適中）
   clearTimeout(overkillTimer);
   overkillTimer=setTimeout(autoClearOverkill, OVERKILL_LIMIT_MS);
 }

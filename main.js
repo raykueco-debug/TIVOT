@@ -64,8 +64,9 @@ function preloadLateBgm(){
   const imgs=[], sfx=[], bgm=[];
   for(const k of Object.keys(ASSETS)){
     const v=ASSETS[k]; if(!v) continue;
-    if(/\.(png|jpe?g|webp|gif)$/i.test(v)) imgs.push(v);
-    else if(/\.(mp3|m4a|ogg|wav)$/i.test(v)){
+    // 副檔名判斷容許 ?v=N 版本參數（素材內容更新時升版強制重抓，見 config ASSETS 註解）
+    if(/\.(png|jpe?g|webp|gif)(\?|$)/i.test(v)) imgs.push(v);
+    else if(/\.(mp3|m4a|ogg|wav)(\?|$)/i.test(v)){
       if(k.indexOf('bgm_')===0){ if(LATE_BGM_PATHS.indexOf(v)<0) bgm.push(v); }
       else sfx.push(v);
     }
