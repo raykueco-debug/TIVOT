@@ -127,6 +127,9 @@ function preloadLateBgm(){
     };
     cycle();
   }
+  // SI_01（sfx_saint，點擊繼續的揭幕音）最優先開載解碼：玩家可能等不及全載完就點擊，
+  //   這支必須先就緒。load() 以 _pending/_buffers 去重，稍後批次再含它也不會重抓。
+  SFX.preload([asset('sfx_saint')]);
   let done=0;
   const prog=$('alRingProg'), pct=$('assetLoaderPct');
   const tick=()=>{ done++; const p=total?Math.round(done/total*100):100;
