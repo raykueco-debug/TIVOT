@@ -23,9 +23,10 @@
     font-family:"Iowan Old Style","Palatino Linotype",Georgia,"Songti TC",serif;color:var(--ink);}
   /* 觸底不用 100%/100dvh：iOS「加入主畫面」(standalone) 的 dvh 會保留幽靈工具列高度，
      底部露出一截畫布死區 → 改 fixed + 四邊 inset:0 直接撐滿視窗，不經 vh/dvh 單位計算 */
-  /* iOS 26 standalone 容器 bug：視窗高 = 螢幕高 − 頂部安全區、錯錨在螢幕頂，底部 48px
-     完全不可視（曾試 100vh 撐高 → 內容伸進不可視區被裁，戰鬥盤面遭蓋，已撤回）。
-     真正解法在 index.html：狀態列改 black（不透明）讓 iOS 把視窗下移貼齊螢幕底。 */
+  /* iOS 26 standalone 容器 bug：視窗高 = 螢幕高 − 頂部安全區、錯錨在螢幕頂，底部差值區
+     為 webview 外完全不可視死區——100vh 撐高會讓內容伸進去被裁（戰鬥盤面遭蓋，已撤回）、
+     狀態列改 black 亦遭忽略。定案：接受死區為底部邊框，html.vp-clipped（index.html 偵測）
+     模式下拿回「白墊在死區裡的底部安全區」還給內容（首頁底排／結算鈕，見各處規則）。 */
   /* 載入畫面「點擊繼續」呼吸 */
   @keyframes alPulse{0%,100%{opacity:.45}50%{opacity:1}}
   #assetLoader .al-pulse{animation:alPulse 1.5s ease-in-out infinite;}
@@ -572,6 +573,8 @@
        text-indent 補償 letter-spacing 尾端空隙的水平偏移 */
     display:flex;align-items:center;justify-content:center;text-indent:6px;line-height:1;}
   #banner #rematchBtn:active{background:var(--grid-active);}
+  /* 視窗被裁（iOS 26 standalone）：底部安全區墊高白墊在死區裡 → 拿回 28px 還給監察官立繪 */
+  html.vp-clipped #banner #rematchBtn{min-height:54px;}
   /* 迎擊鈕（S 解鎖後）：變色＋發光脈動 */
   #banner #rematchBtn.intercept{color:var(--danger);border-top-color:var(--blood);
     background:rgba(60,12,18,.55);text-shadow:0 0 12px var(--blood);
@@ -650,6 +653,8 @@
   #home #homeLinks{position:absolute;left:0;right:0;
     bottom:calc(10px + env(safe-area-inset-bottom));
     display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px;padding:0 8px;}
+  /* 視窗被裁（iOS 26 standalone）：home indicator 位於不可視死區，安全區墊高全屬白墊 → 拿回 */
+  html.vp-clipped #home #homeLinks{bottom:10px;}
   #home #creditBtn, #home #originalBtn{padding:6px 18px;background:transparent;
     border:1px solid var(--gold-dim);border-radius:20px;color:var(--gold-dim);
     font-family:inherit;font-size:11px;letter-spacing:2px;flex:none;}

@@ -5,10 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover, user-scalable=no">
 <!-- iOS 加到主畫面全螢幕（隱藏 Safari 網址列/工具列） -->
 <meta name="apple-mobile-web-app-capable" content="yes">
-<!-- 狀態列 black（不透明）：iOS 26 standalone 容器 bug 會把「視窗高=螢幕−頂部安全區」
-     錯錨在螢幕頂，底部露出一截不可視黑帶；改不透明讓視窗自狀態列下方起、底邊貼齊螢幕底。
-     （black-translucent 時頁面雖可延伸到狀態列後，但底部 48px 永遠顯示不到） -->
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="聖約第四騎士團">
 <!-- Android/Chrome PWA 全螢幕 -->
 <meta name="mobile-web-app-capable" content="yes">
@@ -22,10 +19,20 @@
 <!-- 主畫面 App（standalone）偵測：首繪前在 <html> 蓋 .standalone，
      供 CSS 修 iOS 26 版面視窗少算頂部安全區高度（底部露黑帶）的問題 -->
 <script>
-  if (navigator.standalone === true ||
-      (window.matchMedia && matchMedia('(display-mode: standalone)').matches)) {
-    document.documentElement.classList.add('standalone');
-  }
+  (function(){
+    var sa = navigator.standalone === true ||
+             (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
+    if (sa) document.documentElement.classList.add('standalone');
+    /* iOS 26 standalone 容器 bug：視窗高 = 螢幕高 − 頂部安全區、錨在螢幕頂，
+       底部差值區為 webview 外不可視死區（詳見 CLAUDE/memory）。偵測到裁切時蓋
+       .vp-clipped：底部安全區墊高（home indicator 在死區裡）全屬白墊，CSS 據此
+       拿回空間給內容。健康平台（Android／未來修復的 iOS）差值≈0，自動不套用。 */
+    function clip(){
+      var clipped = sa && (screen.height - innerHeight) >= 20;
+      document.documentElement.classList.toggle('vp-clipped', clipped);
+    }
+    clip(); addEventListener('resize', clip);
+  })();
 </script>
 </head>
 <body>
