@@ -8,7 +8,7 @@
  *  聖徒化左右滑、生命歸還上滑、雙槍點計量表、換裝面板等綁定為下一輪。
  * ========================================================================== */
 
-import { GAME_CONFIG, asset, ASSETS } from './config.js';
+import { GAME_CONFIG, VERSION, asset, ASSETS } from './config.js';
 import { state } from './state.js';
 import { SFX } from './audio.js';
 import * as combat from './modules/combat.js';
@@ -137,6 +137,7 @@ bindBtn('creditClose',()=>{ const s=$('creditSheet'); if(s) s.classList.remove('
 bindBtn('originalBtn',  ()=>{ const s=$('originalSheet'); if(s) s.classList.add('on'); });
 bindBtn('originalClose',()=>{ const s=$('originalSheet'); if(s) s.classList.remove('on'); });
 weapon.refreshLoadoutLabels();                  // 開機：把當前副武器/搭檔名寫進 loadout 按鈕
+{ const v=$('homeVersion'); if(v) v.textContent=VERSION; }   // 首頁版本號（config.VERSION）
 
 window.addEventListener('resize', combat.fitGridSquare);
 window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare,200));

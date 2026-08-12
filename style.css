@@ -655,6 +655,10 @@
   #home .home-copyright{flex:0 0 100%;text-align:center;margin-top:2px;
     font-size:9.5px;letter-spacing:.5px;color:var(--gold-dim);
     opacity:.65;pointer-events:none;white-space:nowrap;}
+  /* 版本號（版權下一行）：確認裝置實際載到的版本（iOS 主畫面 App 快取排查用） */
+  #home .home-version{flex:0 0 100%;text-align:center;margin-top:1px;
+    font-size:8.5px;letter-spacing:1px;color:var(--gold-dim);
+    opacity:.4;pointer-events:none;white-space:nowrap;}
 
   /* 原作選擇面板 */
   #originalSheet{position:absolute;inset:0;display:none;align-items:center;justify-content:center;
