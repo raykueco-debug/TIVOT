@@ -213,6 +213,28 @@ function tap(num,cell,e){
     return;
   }
 
+  // Overkill（敵 HP 已歸零的追加輸出窗口）：不用管數字順序，點到未消格就算命中。
+  //   結束只有兩條路：全清（clearBoard→finish）或 3 秒逾時（autoClearOverkill）；
+  //   不再有「按錯結束」——已消格再點一律忽略。傷害/暴擊/聖能與正常命中同規格。
+  if(state.enemyHp<=0){
+    if(cell.classList.contains('done')) return;
+    SFX.gunshot(false);
+    cell.classList.add('done'); cell.classList.remove('next'); enemy.shatterCell(cell);
+    state.combo++; if(state.combo>state.maxCombo) state.maxCombo=state.combo;
+    state.correctTaps++;
+    resetIntervalDeadline(); addEnergy(ENERGY_PER_HIT);
+    let okDmg=hitDamage(); if(state.atkBuff) okDmg*=2;
+    let okCrit=false;
+    if(Math.random() < CRIT_BASE_RATE + state.critCombo*CRIT_PER_COMBO){
+      okCrit=true; okDmg*=(1 + CRIT_DMG_BASE + state.critCombo*CRIT_DMG_PER_COMBO);
+    }
+    state.critCombo++;
+    enemyDamage(Math.round(okDmg), okCrit);
+    if(state.cells.every(c=>c.classList.contains('done'))){ clearBoard(); return; }
+    updateStatus();
+    return;
+  }
+
   if(num===state.expect){
     SFX.gunshot(false);            // 普通開槍：重「碰」
     cell.classList.add('done'); cell.classList.remove('next'); enemy.shatterCell(cell);
@@ -233,13 +255,7 @@ function tap(num,cell,e){
     if(state.expect>state.N) clearBoard(); else markNext();
     updateStatus();
   }else{
-    // Overkill 期間（敵HP已歸零）按錯 → 結束 overkill → 轉下一敵 or 結算
-    if(state.enemyHp<=0){
-      SFX.clear();
-      clearAtkBuff();
-      finishEnemyOrAdvance();
-      return;
-    }
+    // （overkill 免順序已在上方分支攔截；此處必為敵存活時的按錯）
     // 按錯：紅字期間按錯 → 重擊且紅字消失；否則普通按錯
     state.boardClean=false;
     state.wrongTaps++;                    // 命中率分母（按錯格）
@@ -537,6 +553,7 @@ export function resumeFromDialog(){
 let overkillTimer=null;
 function enterOverkillFx(){
   $('grid').classList.add('overkill');            // 數字藍光（見 style.css #grid.overkill）
+  state.cells.forEach(c=>c.classList.remove('next'));   // 免順序 → 撤下「下一格」高亮，避免誤導
   SFX.overkillBell();                             // 響亮鈴鐺（合成音，音量適中）
   clearTimeout(overkillTimer);
   overkillTimer=setTimeout(autoClearOverkill, OVERKILL_LIMIT_MS);

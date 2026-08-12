@@ -54,7 +54,7 @@ export function activateSaint(dir){
   state.saintUsedThisBattle = true;   // saint 自有欄位：發動即鎖（一場一次），時序同 reference
   SFX.unlock(); SFX.ultCharge();
   SFX.play(asset('sfx_saint'));       // 聖徒化發動音效（SI_01）
-  SFX.play(asset('voice_saint_luna'));// Luna 發動語音（與音效疊播，1.7s，涵蓋降臨 cut-in）
+  SFX.play(asset('voice_saint_luna'), 1.7);// Luna 發動語音（母帶峰值 -4.9dB，增益 1.7≈+4.6dB 推近滿不破音）
   playSlash(dir);                     // 依滑動方向的橫斬特效
   playCutin(()=>{
     if(state.over) return;

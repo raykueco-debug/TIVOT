@@ -76,13 +76,26 @@ function preloadLateBgm(){
    *  （隨機不重複、整句淡入停 5 秒淡出，不用打字機）→ 讀取時間不再乾等。 */
   const ov=document.createElement('div'); ov.id='assetLoader';
   ov.innerHTML=
-     '<div id="alBarWrap"><i id="assetLoaderBar"></i></div>'
-    +'<div id="assetLoaderPct">0%</div>'
+     '<div id="alRing"><span id="assetLoaderPct">0%</span></div>'
     +'<div id="alStage"><img id="alPortrait" alt="">'
     +  '<div id="alBubble"><div class="al-name"></div><div class="al-hint" id="alHint"></div></div>'
     +'</div>'
     +'<div id="alMsg">載　入　中</div>';
   document.body.appendChild(ov);
+  /* 金色光圈對位：與首頁紋章外圓重合（圈徑≈紋章圖寬的 0.8）。
+   *  首頁 bootIdle 於本模組尾端才掛 .on、紋章圖片也要載入才有高度 → 輪詢到量得到為止；
+   *  量不到前用 CSS 預設位置（水平置中、上緣 23%）保底。 */
+  (function placeRing(){
+    const ring=$('alRing'); if(!ring || !ring.parentNode) return;
+    const em=$('homeEmblem');
+    const r=em ? em.getBoundingClientRect() : null;
+    if(r && r.width>10 && r.height>10){
+      const d=Math.round(r.width*0.8);
+      ring.style.width=d+'px'; ring.style.height=d+'px';
+      ring.style.left=Math.round(r.left+r.width/2)+'px';
+      ring.style.top =Math.round(r.top +r.height/2)+'px';
+    } else setTimeout(placeRing, 120);
+  })();
   // 監察官立繪與名字（沿用結算的 Freya 資源；讀 config 不寫死）
   {
     const insp=(GAME_CONFIG.inspectors||{}).freya||{};
@@ -118,8 +131,7 @@ function preloadLateBgm(){
   let ready=false;
   const showReady=()=>{
     if(ready) return; ready=true;
-    const wrap=$('alBarWrap'); if(wrap) wrap.style.display='none';
-    const p2=$('assetLoaderPct'); if(p2) p2.style.display='none';
+    const p2=$('assetLoaderPct'); if(p2){ p2.textContent='100%'; p2.style.opacity='0'; }   // 數字淡出，光圈留著等揭開紋章
     const msg=$('alMsg'); if(msg){ msg.textContent='點　擊　繼　續'; msg.classList.add('al-pulse'); }
     // Hint 輪播不停：載完後玩家未點擊前繼續輪教學
     const go=()=>{
