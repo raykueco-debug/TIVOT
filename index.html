@@ -5,7 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover, user-scalable=no">
 <!-- iOS 加到主畫面全螢幕（隱藏 Safari 網址列/工具列） -->
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<!-- 狀態列 black（不透明）：iOS 26 standalone 容器 bug 會把「視窗高=螢幕−頂部安全區」
+     錯錨在螢幕頂，底部露出一截不可視黑帶；改不透明讓視窗自狀態列下方起、底邊貼齊螢幕底。
+     （black-translucent 時頁面雖可延伸到狀態列後，但底部 48px 永遠顯示不到） -->
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="聖約第四騎士團">
 <!-- Android/Chrome PWA 全螢幕 -->
 <meta name="mobile-web-app-capable" content="yes">
