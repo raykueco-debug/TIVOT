@@ -47,15 +47,28 @@ combat.setup();
 // 普攻槍聲：固定用 Pistol_SE_02（不隨機）
 SFX.setShots([asset('se_pistol_02')].filter(Boolean));
 
-/* ── 進場全預載：掃 ASSETS 把所有圖＋音一次載到位，載入畫面跑完才揭開選單 ──
+/* ── 進場預載（第一段）：掃 ASSETS 載「開場就要」的圖＋音，跑完才揭開選單 ──
  *  圖 → new Image（瀏覽器快取）；BGM(bgm_*) → Blob 下載；其餘音效 → Web Audio 解碼。
- *  這樣遊戲中不再有臨時讀取間隙。音訊實際播放仍需首次手勢（primeAudio/unlock）。 */
+ *  音訊實際播放仍需首次手勢（primeAudio/unlock）。
+ *  ⚠ 分兩段載：結算/失敗/Boss BGM 開戰前用不到（最快也在一場戰鬥之後），
+ *    不揹進第一段 → 進度條輕量誠實跑完，不再被 12s 保底提前放行。
+ *    第二段於「點擊繼續」進主選單當下背景開載（出陣時再補一次保險）；
+ *    playBgm 本身會 ensureBlob 隨叫隨載，第二段沒載完頂多晚幾拍起播，不會壞。 */
+const LATE_BGM_PATHS = ['bgm_result','bgm_lose','bgm_boss'].map(k=>ASSETS[k]).filter(Boolean);
+let _lateBgmKicked = false;
+function preloadLateBgm(){
+  if(_lateBgmKicked) return; _lateBgmKicked = true;
+  SFX.preloadBgm(LATE_BGM_PATHS);   // 背景載，不擋任何流程；ensureBlob 有快取可重複呼叫
+}
 (function preloadAll(){
   const imgs=[], sfx=[], bgm=[];
   for(const k of Object.keys(ASSETS)){
     const v=ASSETS[k]; if(!v) continue;
     if(/\.(png|jpe?g|webp|gif)$/i.test(v)) imgs.push(v);
-    else if(/\.(mp3|m4a|ogg|wav)$/i.test(v)){ (k.indexOf('bgm_')===0 ? bgm : sfx).push(v); }
+    else if(/\.(mp3|m4a|ogg|wav)$/i.test(v)){
+      if(k.indexOf('bgm_')===0){ if(LATE_BGM_PATHS.indexOf(v)<0) bgm.push(v); }
+      else sfx.push(v);
+    }
   }
   const total = imgs.length + sfx.length + bgm.length;
   // 載入遮罩（動態建立，無需改 HTML）；最前層、蓋住一切
@@ -84,6 +97,7 @@ SFX.setShots([asset('se_pistol_02')].filter(Boolean));
     const go=()=>{
       ov.removeEventListener('click',go); ov.removeEventListener('touchstart',go);
       SFX.unlock();   // 使用者手勢：解鎖音訊 → 主選單 BGM 開始播
+      preloadLateBgm();   // 第二段：進主選單即背景載 結算/失敗/Boss BGM
       ov.style.opacity='0'; setTimeout(()=>{ if(ov.parentNode) ov.remove(); }, 520);
     };
     ov.addEventListener('click', go);
@@ -95,6 +109,7 @@ SFX.setShots([asset('se_pistol_02')].filter(Boolean));
 
 // 首頁：開始遊戲 → 主選單先淡出、空一拍（約 1s）Battle 才淡入（避免唐突），同時播「驅逐開始」過渡禎
 bindBtn('startBtn',     ()=>{
+  preloadLateBgm();   // 保險：若保底提前放行沒經過 go()，出陣（櫻花期間）補載第二段
   SFX.play(asset('sfx_start'));
   SFX.playBgm(asset('bgm_battle'), { fadeOutMs:800, delayMs:1000 });
   // 驅逐開始：不靠點擊、不自動計時 → 由櫻花飄完（onDone）主動推進進戰鬥
