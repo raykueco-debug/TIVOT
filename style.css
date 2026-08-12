@@ -573,8 +573,10 @@
        text-indent 補償 letter-spacing 尾端空隙的水平偏移 */
     display:flex;align-items:center;justify-content:center;text-indent:6px;line-height:1;}
   #banner #rematchBtn:active{background:var(--grid-active);}
-  /* 視窗被裁（iOS 26 standalone）：底部安全區墊高白墊在死區裡 → 拿回 28px 還給監察官立繪 */
-  html.vp-clipped #banner #rematchBtn{min-height:54px;}
+  /* 視窗被裁（iOS 26 standalone）：底部安全區墊高白墊在死區裡 → 拿回 28px 還給監察官立繪。
+     底色改純黑與死區黑帶視覺融合：按鈕(可視 54px)+死區連成一條原生風底欄，
+     字樣位置≒原生 App 底欄按鈕（home indicator 上方），黑帶讀作手勢區而非缺口。 */
+  html.vp-clipped #banner #rematchBtn{min-height:54px;background:#000;}
   /* 迎擊鈕（S 解鎖後）：變色＋發光脈動 */
   #banner #rematchBtn.intercept{color:var(--danger);border-top-color:var(--blood);
     background:rgba(60,12,18,.55);text-shadow:0 0 12px var(--blood);
