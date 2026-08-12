@@ -636,17 +636,19 @@
   #pickSheet .pick-close{padding:9px 30px;background:transparent;border:1px solid var(--gold-dim);
     color:var(--ink);border-radius:8px;font-family:inherit;font-size:13px;letter-spacing:3px;}
 
-  /* 首頁底部一排：Credit / 原作 小鈕 + 版權宣告，貼底置中（避開 home indicator 安全區） */
+  /* 首頁底部：Credit / 原作 小鈕一排，版權宣告獨立一行在其下，整組貼底置中（避開 home indicator 安全區）。
+     版權不與按鈕同排——窄機/字體較寬時會互相擠壓。 */
   #home #homeLinks{position:absolute;left:0;right:0;
-    bottom:calc(12px + env(safe-area-inset-bottom));
-    display:flex;align-items:center;justify-content:center;gap:10px;padding:0 8px;}
-  #home #creditBtn, #home #originalBtn{padding:6px 14px;background:transparent;
+    bottom:calc(10px + env(safe-area-inset-bottom));
+    display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px;padding:0 8px;}
+  #home #creditBtn, #home #originalBtn{padding:6px 18px;background:transparent;
     border:1px solid var(--gold-dim);border-radius:20px;color:var(--gold-dim);
     font-family:inherit;font-size:11px;letter-spacing:2px;flex:none;}
   #home #creditBtn:active, #home #originalBtn:active{transform:scale(.95);color:var(--gold);border-color:var(--gold);}
-  /* 版權（同排，單行不折行） */
-  #home .home-copyright{font-size:9.5px;letter-spacing:.5px;color:var(--gold-dim);
-    opacity:.65;pointer-events:none;white-space:nowrap;min-width:0;}
+  /* 版權：強制換行獨占一行（flex-basis:100%），置中、單行 */
+  #home .home-copyright{flex:0 0 100%;text-align:center;margin-top:2px;
+    font-size:9.5px;letter-spacing:.5px;color:var(--gold-dim);
+    opacity:.65;pointer-events:none;white-space:nowrap;}
 
   /* 原作選擇面板 */
   #originalSheet{position:absolute;inset:0;display:none;align-items:center;justify-content:center;
