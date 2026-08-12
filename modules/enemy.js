@@ -236,40 +236,28 @@ export function advanceToNextEnemy(done){
 /* ---------- 亂入 / Boss 遭遇（New Hustle）----------
  *  由 inspector 迎擊分流（S 解鎖 → 迎擊）注入呼叫。流程：
  *    ① 播 Boss 遭遇 cut-in（saintCutin boss 版，鎖盤面 cutinPlaying）；
- *    ② 延遲 400ms 綁點擊（避免上一動作殘留點擊直接跳過演出）；
- *    ③ 點畫面 → enterFight：設 inIntruderFight（§3.7 enemy 擁有）→ 呼叫注入的
- *       combat.startIntruderFight()（重開新場、載 witch）。
+ *    ② 演出定長 3 秒 → 自動 enterFight：設 inIntruderFight（§3.7 enemy 擁有）→
+ *       呼叫注入的 combat.startIntruderFight()（重開新場、載 witch）。不接受點擊跳過。
  *  bannerHold 為 reference 舊版自動觸發用,手動迎擊流程不使用 → 視為休眠 config,不接。 */
 export function triggerIntruder(){
   const it = GAME_CONFIG.intruder;
   // Boss BGM 已於「再度執槍（S 解鎖）」瞬間起播（見 inspector.onRematchBtn），此處不重播。
   const sc = $('saintCutin');
   $('saintCutinTitle').textContent = it.cutinText || 'NEW HUSTLE INCOMING';
-  $('saintCutinSub').textContent   = '輕觸畫面繼續';
+  $('saintCutinSub').textContent   = '';
   $('saintCutinImgBoss').src = asset('cutin_boss');   // Boss 專屬遭遇 cut-in（貝琳妲）
   sc.classList.remove('obe','execute','burst','return');
   sc.classList.add('boss','on');
   state.cutinPlaying = true;              // 鎖盤面點擊（enemy 為當下播演出的模組，允許寫 cutinPlaying）
   try{ SFX.hit && SFX.hit(); }catch(e){}
 
-  let entered=false, autoTimer=null;
   const enterFight=()=>{
-    if(entered) return; entered=true;
-    if(autoTimer) clearTimeout(autoTimer);
-    sc.removeEventListener('click', enterFight);
-    sc.removeEventListener('touchstart', onTouch);
-    $('saintCutinSub').textContent='';
     sc.classList.remove('on','boss','burst','obe','execute','return');
     $('banner').classList.remove('on','seq','lose');
     state.inIntruderFight = true;         // 3.7：標記進入 Boss 戰（結算讀此走 boss 存檔/台詞）
     api.startIntruderFight();             // combat 擁有的戰鬥重置：重開新場、載 witch
   };
-  const onTouch=e=>{ e.preventDefault(); enterFight(); };
-  setTimeout(()=>{
-    sc.addEventListener('click', enterFight);
-    sc.addEventListener('touchstart', onTouch, {passive:false});
-  }, 400);
-  autoTimer = setTimeout(enterFight, 3000);   // 3 秒內沒點 → 自動進 Boss 戰
+  setTimeout(enterFight, 3000);           // 演出 3 秒後自動進 Boss 戰
 }
 
 /* ---------- 開場：把 GAME_CONFIG 的圖/名稱套到畫面上 ---------- */

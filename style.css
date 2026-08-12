@@ -560,9 +560,11 @@
   /* retry 鈕：置底、與畫面同寬、降低高度 */
   /* 貼底大鈕：拉至畫面最底，底部內距吃掉 iOS 安全區(home indicator)→ 底下不留空 */
   #banner #rematchBtn{flex:0 0 auto;width:100%;max-width:none;margin:0;border-radius:0;
-    padding:15px 0 calc(15px + env(safe-area-inset-bottom));border:none;border-top:1px solid var(--gold-dim);
+    padding:0;min-height:calc(54px + env(safe-area-inset-bottom,0px));
+    border:none;border-top:1px solid var(--gold-dim);
     background:rgba(20,16,28,.6);color:var(--gold);letter-spacing:6px;font-size:19px;
-    /* 字樣在可視框內置中：flex 置中 + text-indent 補償 letter-spacing 尾端空隙的水平偏移 */
+    /* 字樣對整個框上下左右置中（含安全區）：不用不對稱 padding，改高度撐框 + flex 置中；
+       text-indent 補償 letter-spacing 尾端空隙的水平偏移 */
     display:flex;align-items:center;justify-content:center;text-indent:6px;line-height:1;}
   #banner #rematchBtn:active{background:var(--grid-active);}
   /* 迎擊鈕（S 解鎖後）：變色＋發光脈動 */
