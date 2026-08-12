@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於首頁版權宣告下方，每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.12-11';
+export const VERSION = 'ver 2026.08.12-12';
 
 export const GAME_CONFIG = {
 
@@ -374,6 +374,10 @@ export const GAME_CONFIG = {
     // 聖能與大絕蓄力
     energyPerHit:        2,     // 每次正確點擊給的聖能
     chargeSeconds:       4,     // 敵人大絕蓄力窗口（秒）
+
+    // Overkill 限時（敵死後的追加輸出窗口）
+    overkillLimitMs:     3000,  // 3 秒內沒清完 → 全數字磚破碎自動清盤
+    overkillNextDelayMs: 1000,  // 自動清盤後延 1 秒才插入下一盤（防連點誤觸；不計時）
 
     // 三級防禦窗口（依紅點剩餘時間比例；大=早，小=晚）
     defDefenseMin:       0.35,  // 0.35~1.0 → Defense（傷害減半）

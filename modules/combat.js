@@ -36,6 +36,7 @@ const CRIT_DMG_BASE=T.critDmgBase, CRIT_DMG_PER_COMBO=T.critDmgPerCombo; // 普�
 const DMG_WRONG=T.dmgWrong, DMG_HEAVY=T.dmgHeavy, DMG_DELAY=T.dmgDelay;
 const DMG_DUAL_MULT=T.dmgDualMult;                   // 雙槍破防窗口點擊傷害倍率（<1＝安全牌）
 const ATK_BUFF_SECONDS=T.atkBuffSeconds;
+const OVERKILL_LIMIT_MS=T.overkillLimitMs, OVERKILL_NEXT_DELAY_MS=T.overkillNextDelayMs;   // overkill 限時/收尾延遲
 const SAINT_ADVANCE_DIVISOR=T.saintAdvanceDivisor;   // 聖徒化一次「受擊」推進量＝playerMax/此值
 const CLASP_LEN=110;
 
@@ -419,6 +420,7 @@ function enemyDamage(dmg,isCrit,silent){
         clockPause();                                       // 敵死→進 overkill：碼表暫停（overkill 不計時）
         defense.killThreatSchedule(); clearAtkBuff();
         floatDmg('OVERKILL！','50%','48%',true);
+        if(!state.saintMode) enterOverkillFx();             // 聖徒化擊殺無手動 overkill 窗口，不進演出/限時
       }
     }else{
       state.overkill+=dmg;
@@ -487,6 +489,7 @@ function updateStatus(){ /* 狀態列已移出畫面（下半為純數字盤）�
 function stopAll(){
   clearInterval(state.intervalTimer);
   clearTimeout(state.atkBuffTimer);
+  endOverkillFx();       // 中途退出/結算時清 overkill 限時與藍光
   defense.stopAll();
   saint.stopTimers();    // 停聖徒化計時器（saintTimer / saintReactTimer）
   weapon.stopTimers();   // 停雙槍破防計時器（dualTimer）
@@ -526,8 +529,45 @@ export function resumeFromDialog(){
   clockResume();
 }
 
+/* ---- Overkill 演出/限時 ----
+ *  進場（擊殺瞬間，enemyDamage 呼叫）：盤面藍光 + 鈴鐺音 + 起 3 秒限時。
+ *  限時到（autoClearOverkill）：殘留格連環碎裂 → 鎖點擊 1 秒（碼表已停，天然不計時）
+ *  → finishEnemyOrAdvance。所有 overkill 結束路徑（自然清盤/按錯/逾時/聖徒化擊殺）
+ *  都經 finishEnemyOrAdvance → endOverkillFx 統一清理（冪等）。 */
+let overkillTimer=null;
+function enterOverkillFx(){
+  $('grid').classList.add('overkill');            // 數字藍光（見 style.css #grid.overkill）
+  SFX.overkillBell();                             // 響亮鈴鐺（合成音，音量適中）
+  clearTimeout(overkillTimer);
+  overkillTimer=setTimeout(autoClearOverkill, OVERKILL_LIMIT_MS);
+}
+function endOverkillFx(){
+  clearTimeout(overkillTimer); overkillTimer=null;
+  $('grid').classList.remove('overkill');
+}
+function autoClearOverkill(){
+  overkillTimer=null;
+  if(state.over||state.transitioning||state.cutinPlaying||state.enemyHp>0||state.saintMode) return;
+  // 全數字磚破碎：殘留格逐一 done+碎裂，40ms 錯開成連環爆
+  let k=0;
+  state.cells.forEach(c=>{
+    if(c.classList.contains('done')) return;
+    setTimeout(()=>{ c.classList.add('done'); c.classList.remove('next'); enemy.shatterCell(c); }, (k++)*40);
+  });
+  SFX.heavyHit();
+  clearAtkBuff();
+  if(state.dualWield) weapon.endDual();           // 雙槍窗口若橫跨 overkill，一併收掉
+  state.transitioning=true;                       // 延 1 秒插入下一盤：鎖點擊、碼表不 resume（不計時）
+  setTimeout(()=>{
+    if(state.over) return;
+    state.transitioning=false;
+    finishEnemyOrAdvance();
+  }, OVERKILL_NEXT_DELAY_MS);
+}
+
 /* ---- 敵死收尾：局內還有下一敵→轉敵、否則→結算 ---- */
 function finishEnemyOrAdvance(){
+  endOverkillFx();   // overkill 藍光/限時統一在此清理（所有結束路徑的匯流點，冪等）
   if(enemy.hasNextInLineup()){ advanceEnemy(); }
   else { win(); }
 }

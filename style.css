@@ -314,6 +314,11 @@
   /* 雙槍模式盤面外框 */
   #grid.dualwield .cell{border-color:var(--holy);}
   #grid.dualwield{filter:drop-shadow(0 0 6px var(--holy));}
+  /* Overkill 窗口（敵死後追加輸出）：數字發藍光 + 盤面冷藍脈動 */
+  #grid.overkill .cell{border-color:var(--holy);color:#bfe6ff;
+    text-shadow:0 0 10px #4fc3ff,0 0 22px rgba(79,195,255,.55);}
+  #grid.overkill{animation:overkillPulse .6s infinite alternate;}
+  @keyframes overkillPulse{from{filter:drop-shadow(0 0 8px var(--holy))}to{filter:drop-shadow(0 0 18px #7fd4ff)}}
   /* 攻擊加倍 buff 盤面金框 */
   #grid.buffed .cell{border-color:var(--gold);}
   #grid.buffed{filter:drop-shadow(0 0 8px var(--gold));}
