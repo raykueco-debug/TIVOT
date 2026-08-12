@@ -16,6 +16,14 @@
 <link rel="apple-touch-icon" href="resources/background/TIVOT_Emblem.png">
 <title>聖裁修女 · 原型 v2</title>
 <link rel="stylesheet" href="style.css">
+<!-- 主畫面 App（standalone）偵測：首繪前在 <html> 蓋 .standalone，
+     供 CSS 修 iOS 26 版面視窗少算頂部安全區高度（底部露黑帶）的問題 -->
+<script>
+  if (navigator.standalone === true ||
+      (window.matchMedia && matchMedia('(display-mode: standalone)').matches)) {
+    document.documentElement.classList.add('standalone');
+  }
+</script>
 </head>
 <body>
 <div id="app">

@@ -23,6 +23,11 @@
     font-family:"Iowan Old Style","Palatino Linotype",Georgia,"Songti TC",serif;color:var(--ink);}
   /* 觸底不用 100%/100dvh：iOS「加入主畫面」(standalone) 的 dvh 會保留幽靈工具列高度，
      底部露出一截畫布死區 → 改 fixed + 四邊 inset:0 直接撐滿視窗，不經 vh/dvh 單位計算 */
+  /* iOS 26 standalone 容器 bug：版面視窗高 = 螢幕高 − 頂部安全區（inner/dvh 少 48px），
+     inset:0 只能撐到縮水的視窗底，畫布最下方露出黑帶。實測 vh/lvh = 螢幕全高 →
+     standalone（index.html 首繪前蓋 .standalone）改錨 top + 100vh 鋪滿整塊畫布。
+     一般 Safari 不套用，避免 vh 內容被浮動工具列遮住的老問題。 */
+  html.standalone, html.standalone body{height:100vh;bottom:auto;}
   /* 載入畫面「點擊繼續」呼吸 */
   @keyframes alPulse{0%,100%{opacity:.45}50%{opacity:1}}
   #assetLoader .al-pulse{animation:alPulse 1.5s ease-in-out infinite;}
