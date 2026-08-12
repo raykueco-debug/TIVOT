@@ -266,6 +266,27 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
   window.addEventListener('mouseup', e=>end(e.clientX,e.clientY));
 })();
 
+/* ── 遠端診斷：網址帶 ?debug → 左下角顯示 viewport/安全區數值 ──
+ *  排查 iOS 主畫面 App 底部黑帶用；平時無此參數完全不執行。 */
+if(location.search.indexOf('debug')>=0){
+  const mk=(css)=>{ const el=document.createElement('div'); el.style.cssText=css; document.body.appendChild(el); return el; };
+  const pT=mk('position:fixed;left:0;top:0;width:1px;height:env(safe-area-inset-top,0px);visibility:hidden;pointer-events:none;');
+  const pB=mk('position:fixed;left:0;bottom:0;width:1px;height:env(safe-area-inset-bottom,0px);visibility:hidden;pointer-events:none;');
+  const hud=mk('position:fixed;left:6px;bottom:6px;z-index:99998;font:11px/1.6 monospace;color:#4f4;background:rgba(0,0,0,.72);padding:5px 8px;pointer-events:none;white-space:pre;border-radius:4px;');
+  const upd=()=>{
+    const b=document.body.getBoundingClientRect();
+    hud.textContent=
+      'inner  '+innerWidth+'x'+innerHeight
+      +'\nvisual '+Math.round(visualViewport.width)+'x'+Math.round(visualViewport.height)
+      +'\nscreen '+screen.width+'x'+screen.height
+      +'\nbody   '+Math.round(b.width)+'x'+Math.round(b.height)
+      +'\nsafe   top '+pT.offsetHeight+' / bottom '+pB.offsetHeight
+      +'\nstandalone '+(navigator.standalone===true || (window.matchMedia&&matchMedia('(display-mode: standalone)').matches));
+  };
+  upd(); setInterval(upd,1000);
+  window.addEventListener('resize',upd);
+}
+
 combat.bootIdle();   // over=true，建立背景盤面/血條，停在首頁
 
 console.log('[step8] 連戰 lineup 已接上（局內多敵：faceless→facelessgiant）· 首敵：', GAME_CONFIG.enemies[GAME_CONFIG.lineup[0]]?.name, '· HP', state.enemyMax);

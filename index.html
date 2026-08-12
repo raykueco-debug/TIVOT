@@ -10,6 +10,10 @@
 <!-- Android/Chrome PWA 全螢幕 -->
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0a080e">
+<!-- Web App Manifest：iOS 26 起主畫面網頁 App 的顯示模式改依 manifest 判定，
+     缺 manifest 會被保留底部控制列空間（下方一截黑帶）→ display:standalone 宣告全螢幕 -->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="resources/background/TIVOT_Emblem.png">
 <title>聖裁修女 · 原型 v2</title>
 <link rel="stylesheet" href="style.css">
 </head>
