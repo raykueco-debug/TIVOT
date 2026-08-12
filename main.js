@@ -266,26 +266,46 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
   window.addEventListener('mouseup', e=>end(e.clientX,e.clientY));
 })();
 
-/* ── 遠端診斷：網址帶 ?debug → 左下角顯示 viewport/安全區數值 ──
- *  排查 iOS 主畫面 App 底部黑帶用；平時無此參數完全不執行。 */
-if(location.search.indexOf('debug')>=0){
+/* ── 遠端診斷 HUD：網址帶 ?debug，或「快速連點首頁團徽 5 下」開關 ──
+ *  排查 iOS 主畫面 App 底部黑帶用；未觸發時不建立任何元素。 */
+(function debugHud(){
+  let hud=null, timer=null, probes=null;
   const mk=(css)=>{ const el=document.createElement('div'); el.style.cssText=css; document.body.appendChild(el); return el; };
-  const pT=mk('position:fixed;left:0;top:0;width:1px;height:env(safe-area-inset-top,0px);visibility:hidden;pointer-events:none;');
-  const pB=mk('position:fixed;left:0;bottom:0;width:1px;height:env(safe-area-inset-bottom,0px);visibility:hidden;pointer-events:none;');
-  const hud=mk('position:fixed;left:6px;bottom:6px;z-index:99998;font:11px/1.6 monospace;color:#4f4;background:rgba(0,0,0,.72);padding:5px 8px;pointer-events:none;white-space:pre;border-radius:4px;');
-  const upd=()=>{
-    const b=document.body.getBoundingClientRect();
-    hud.textContent=
-      'inner  '+innerWidth+'x'+innerHeight
-      +'\nvisual '+Math.round(visualViewport.width)+'x'+Math.round(visualViewport.height)
-      +'\nscreen '+screen.width+'x'+screen.height
-      +'\nbody   '+Math.round(b.width)+'x'+Math.round(b.height)
-      +'\nsafe   top '+pT.offsetHeight+' / bottom '+pB.offsetHeight
-      +'\nstandalone '+(navigator.standalone===true || (window.matchMedia&&matchMedia('(display-mode: standalone)').matches));
-  };
-  upd(); setInterval(upd,1000);
-  window.addEventListener('resize',upd);
-}
+  function show(){
+    if(hud){ [hud,...probes].forEach(e=>e.remove()); hud=null; clearInterval(timer); return; }   // 再觸發一次＝關閉
+    const pT=mk('position:fixed;left:0;top:0;width:1px;height:env(safe-area-inset-top,0px);visibility:hidden;pointer-events:none;');
+    const pB=mk('position:fixed;left:0;bottom:0;width:1px;height:env(safe-area-inset-bottom,0px);visibility:hidden;pointer-events:none;');
+    const pVH=mk('position:fixed;left:0;top:0;width:1px;height:100vh;visibility:hidden;pointer-events:none;');
+    const pDVH=mk('position:fixed;left:0;top:0;width:1px;height:100dvh;visibility:hidden;pointer-events:none;');
+    const pLVH=mk('position:fixed;left:0;top:0;width:1px;height:100lvh;visibility:hidden;pointer-events:none;');
+    const pSVH=mk('position:fixed;left:0;top:0;width:1px;height:100svh;visibility:hidden;pointer-events:none;');
+    probes=[pT,pB,pVH,pDVH,pLVH,pSVH];
+    hud=mk('position:fixed;left:6px;bottom:6px;z-index:99998;font:11px/1.6 monospace;color:#4f4;background:rgba(0,0,0,.72);padding:5px 8px;pointer-events:none;white-space:pre;border-radius:4px;');
+    const upd=()=>{
+      const b=document.body.getBoundingClientRect();
+      hud.textContent=
+        'inner  '+innerWidth+'x'+innerHeight
+        +'\nvisual '+Math.round(visualViewport.width)+'x'+Math.round(visualViewport.height)
+        +'\nscreen '+screen.width+'x'+screen.height+'  outer '+outerHeight
+        +'\nbody   '+Math.round(b.width)+'x'+Math.round(b.height)
+        +'\nvh '+pVH.offsetHeight+' dvh '+pDVH.offsetHeight+' lvh '+pLVH.offsetHeight+' svh '+pSVH.offsetHeight
+        +'\nsafe   top '+pT.offsetHeight+' / bottom '+pB.offsetHeight
+        +'\nstandalone '+(navigator.standalone===true || (window.matchMedia&&matchMedia('(display-mode: standalone)').matches));
+    };
+    upd(); timer=setInterval(upd,1000);
+  }
+  // 觸發一：網址帶 ?debug
+  if(location.search.indexOf('debug')>=0) show();
+  // 觸發二：首頁團徽快速連點 5 下（主畫面 App 進不了帶參數網址時用）
+  let taps=0, tapTimer=null;
+  const emblem=$('homeEmblem');
+  if(emblem){
+    const onTap=()=>{ taps++; clearTimeout(tapTimer); tapTimer=setTimeout(()=>{taps=0;},1500);
+      if(taps>=5){ taps=0; show(); } };
+    emblem.addEventListener('click', onTap);
+    emblem.addEventListener('touchstart', onTap, {passive:true});
+  }
+})();
 
 combat.bootIdle();   // over=true，建立背景盤面/血條，停在首頁
 
