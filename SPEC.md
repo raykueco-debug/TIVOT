@@ -1,7 +1,7 @@
-# 聖裁修女 · Saint Install — SPEC（單檔 HTML 原型）
+# TIVOT · Saint Install — SPEC（單檔 HTML 原型）
 
 > 依上傳的 `index.html`（單檔 2.06 MB，含內嵌 base64 立繪／cut-in）逆向整理。
-> 架構鐵律：**所有內容集中在 `GAME_CONFIG`**（資料／程式分離）；base64 素材集中在 `ASSETS`。標題為「聖裁修女 · 原型 v2」，內部數值對應 v18 系列（受擊推進式聖徒化）。
+> 架構鐵律：**所有內容集中在 `GAME_CONFIG`**（資料／程式分離）；base64 素材集中在 `ASSETS`。標題為「TIVOT · 原型 v2」（原「聖裁修女」，2026-08 更名），內部數值對應 v18 系列（受擊推進式聖徒化）。
 
 ---
 
