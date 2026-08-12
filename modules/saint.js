@@ -133,6 +133,20 @@ export function saintAdvance(amount){
  * ========================================================================== */
 export function saintTap(num, cell){
   if(cell.classList.contains('done')) return;   // 已點掉的格子不可重點
+  // Overkill（敵 HP 已歸零）：免順序追打——點到未消格即命中（同雙槍破防手感），
+  //   全清 → triggerMaxBurst（敵已死 → EXSECUTIŌ 處決收尾，回血至滿）。
+  //   倒數槽被動推進與反應時限照常施壓（拖太久推滿仍會 OBE）。
+  if(state.enemyHp<=0){
+    SFX.gunshot(true);
+    cell.classList.add('done'); cell.classList.remove('next'); api.shatterCell(cell);
+    state.combo++;
+    const okDmg=Math.round(api.hitDamage() + state.combo*SAINT_COMBO_STEP);
+    api.enemyDamage(okDmg, true);
+    state.saintDamageDealt += okDmg;
+    if(state.cells.every(c=>c.classList.contains('done'))){ triggerMaxBurst(); }
+    else startSaintReactTimer();
+    return;
+  }
   if(num===state.expect){
     SFX.gunshot(true);
     cell.classList.add('done'); cell.classList.remove('next'); api.shatterCell(cell);
@@ -205,9 +219,10 @@ function triggerMaxBurst(){
     playSaintCutin('execute', ()=>{ api.setPlayerHpRatio(1); api.onEnemyDefeated(); });
     return;
   }
-  // 敵人未死 → Maximum Burst 演出後回盤面（成功 MB 滿血獎勵，HP → 100%，D2）
+  // 敵人未死 → Maximum Burst 演出後回盤面。回血規則（2026-08-13 定案）：
+  //   EXSECUTIŌ（MB 擊殺）→ 回滿；MaxBurst（未擊殺）→ 回 50%，並自然延續到同場下一敵。
   playSaintCutin('burst', ()=>{
-    finishSaintMode(()=>api.setPlayerHpRatio(1));
+    finishSaintMode(()=>api.setPlayerHpRatio(0.5));
   });
 }
 
@@ -220,8 +235,10 @@ function triggerOBE(){
   restoreUltRate();
   api.floatDmg('O.B.E.','50%','28%',true);
   if(state.enemyHp<=0){
-    // 聖徒化期間敵 HP 已歸零、但倒數槽先推滿 → 仍播 OBE 演出，收尾直接進結算（不回死盤面）
-    playSaintCutin('obe', ()=>{ $('grid').classList.remove('saint'); api.onEnemyDefeated(); });
+    // 聖徒化期間敵 HP 已歸零、但倒數槽先推滿 → 仍播 OBE 演出，收尾轉下一敵/結算。
+    // ⚠ OBE 懲罰（HP→1）照樣套用並延續到同場下一敵——推進=回血會把血推滿，
+    //   不套懲罰會變成「OBE 後滿血接下一隻」（悖離 OBE=沒守住 的語義）。
+    playSaintCutin('obe', ()=>{ $('grid').classList.remove('saint'); api.setPlayerHpRatio(0); api.onEnemyDefeated(); });
     return;
   }
   // 全畫面 OVERWRITE BREAKER ENGAGED cut-in → 結束後回盤面（HP → 1）

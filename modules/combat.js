@@ -555,8 +555,8 @@ let overkillTimer=null;
 function enterOverkillFx(){
   $('grid').classList.add('overkill');            // 數字藍光（見 style.css #grid.overkill）
   SFX.overkillBell();                             // 響亮鈴鐺（擊殺這一槍；之後每槍由 enemyDamage 補鈴）
-  if(state.saintMode) return;   // 聖徒化：盤面游標(.next)與時限由 saint 自身流程管，僅套演出
-  state.cells.forEach(c=>c.classList.remove('next'));   // 免順序 → 撤下「下一格」高亮，避免誤導
+  state.cells.forEach(c=>c.classList.remove('next'));   // 免順序（含聖徒化追打）→ 撤下「下一格」高亮
+  if(state.saintMode) return;   // 聖徒化：3 秒限時不套（由倒數槽/反應時限施壓），saintTap 走免順序分支
   clearTimeout(overkillTimer);
   overkillTimer=setTimeout(autoClearOverkill, OVERKILL_LIMIT_MS);
 }
