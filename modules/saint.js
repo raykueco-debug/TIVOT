@@ -300,7 +300,7 @@ function playSaintCutin(kind, done){
   $('saintCutinTitle').textContent = title;
   $('saintCutinSub').textContent   = sub;
   // 依 kind 載入對應內嵌 cut-in 圖（資料放 ASSETS，程式只讀）
-  const scImgKey = { execute:'cutin_saint_luna', obe:'cutin_obe', burst:'cutin_mb', return:'cutin_return' };
+  const scImgKey = { execute:'cutin_exc', obe:'cutin_obe', burst:'cutin_mb', return:'cutin_return' };
   const scImgEl  = { execute:'saintCutinImg', obe:'saintCutinImgObe', burst:'saintCutinImgBurst', return:'saintCutinImgReturn' };
   if(scImgEl[kind]){ const el=$(scImgEl[kind]); if(el){ const src=asset(scImgKey[kind]); if(src) el.src=src; } }
   c.classList.remove('burst','obe','execute','return','on');
