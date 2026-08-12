@@ -299,15 +299,18 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
   // 觸發一：網址帶 ?debug
   if(location.search.indexOf('debug')>=0) show();
   // 觸發二：首頁團徽快速連點 5 下（主畫面 App 進不了帶參數網址時用）
-  //   ⚠ 觸控裝置一次實體點擊會連發 touchstart+click 兩事件 → 比照 bindBtn 用旗標去重，
-  //     否則一下算兩下，5 下實點＝10 次計數會把 HUD 開了又關（看起來像沒反應）。
+  //   ⚠ #homeEmblem 有 pointer-events:none（防拖曳），事件會穿透到 #home →
+  //     改在 #home 上事件委派計數，點到按鈕（出陣/換裝/Credit/原作）不算。
+  //   ⚠ 觸控裝置一次實體點擊連發 touchstart+click 兩事件 → touched 旗標去重，
+  //     否則一下算兩下，HUD 開了又關（看起來像沒反應）。
   let taps=0, tapTimer=null, touched=false;
-  const emblem=$('homeEmblem');
-  if(emblem){
-    const count=()=>{ taps++; clearTimeout(tapTimer); tapTimer=setTimeout(()=>{taps=0;},1500);
+  const homeEl=$('home');
+  if(homeEl){
+    const count=(e)=>{ if(e.target && e.target.closest && e.target.closest('button')) return;
+      taps++; clearTimeout(tapTimer); tapTimer=setTimeout(()=>{taps=0;},1500);
       if(taps>=5){ taps=0; show(); } };
-    emblem.addEventListener('touchstart', ()=>{ touched=true; count(); }, {passive:true});
-    emblem.addEventListener('click', ()=>{ if(touched){ touched=false; return; } count(); });
+    homeEl.addEventListener('touchstart', e=>{ touched=true; count(e); }, {passive:true});
+    homeEl.addEventListener('click', e=>{ if(touched){ touched=false; return; } count(e); });
   }
 })();
 
