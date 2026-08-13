@@ -325,7 +325,7 @@ function openSentouReward(){
   const per=rw.charMs || 380;
   let idx=0;
   sign.innerHTML='';
-  (rw.sign || ['銭湯','INSTALL']).forEach(txt=>{
+  (rw.sign || ['銭湯','インストール']).forEach(txt=>{
     const col=document.createElement('span'); col.className='sentou-col';
     [...txt].forEach(ch=>{
       const s=document.createElement('i'); s.textContent=ch;

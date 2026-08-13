@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於首頁版權宣告下方，每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.13-28';
+export const VERSION = 'ver 2026.08.13-29';
 
 export const GAME_CONFIG = {
 
@@ -416,8 +416,8 @@ export const GAME_CONFIG = {
     //   全圖 + 右上障子區毛筆直書（列由右而左逐字寫出）→ 寫完ツケ板（拍子木）兩聲。
     reward: {
       image:'bg_sentou',                       // 獎勵大圖（ASSETS 鑰匙）
-      btnLabel:'SAINT INSTALL',                // 變身後按鈕字樣
-      sign:['銭湯','INSTALL'],                 // 毛筆招牌：橫排兩行（左上白牆）
+      btnLabel:'SAINT INSTALL...?',            // 變身後按鈕字樣
+      sign:['銭湯','インストール'],             // 毛筆招牌：橫排兩行（左上角木框額）
       charMs:380,                              // 每字書寫間隔(ms)
     },
   },
