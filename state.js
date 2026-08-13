@@ -119,7 +119,8 @@ export const state = {
   /* ── 3.8 增益（擁有者：combat） ─────────────────────────────── */
   atkBuff: false,
   atkBuffTimer: null,
-  atkBuffPersist: false, // true＝可跨盤跨怪的攻擊加倍（馬季諾被動「高爆彈頭」）；清盤/擊殺不清、僅到時或開新場清
+  lowHpBuff: false,      // 低血量普攻加倍（馬季諾被動「高裝藥彈」）：HP≤門檻即生效、回門檻上解除。
+                         //   狀態型（無計時器），跨盤跨怪自然延續；由 partner 經 combat 的 setLowHpBuff 管道寫。
 
   /* ── UI 閘門（跨模組共享的演出鎖；擁有者：播演出的模組） ──────────
    *  cutinPlaying：cut-in／結局演出期間鎖住盤面點擊與敵大絕生成。

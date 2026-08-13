@@ -85,16 +85,17 @@ export const GAME_CONFIG = {
       cutin:'cutin_saint',     // 聖徒化演出大圖（沿用共通）
       voice:null,
       perk:'前線補給（主動）＋高爆彈頭（被動）',
-      // ── 被動技：高爆彈頭 ─────────────────────────────
-      //   成功反擊時獲得 buffSeconds 秒普攻傷害加倍；效果可跨盤面、跨敵人延續。
-      //   有 cut-in（buff 從無到有時插入；聖徒化中或 buff 刷新時只跳字不插演出，避免破壞節奏）。
+      // ── 被動技：高裝藥彈 ─────────────────────────────
+      //   玩家 HP 降至 threshold（20%）以下時發動：普攻傷害加倍，
+      //   持續到 HP 回到門檻以上（狀態型；跨盤跨怪自然延續）。發動瞬間插 cut-in。
       passive:{
-        key:'counterBuff',
-        name:'高爆彈頭',
-        buffSeconds:10,          // 普攻加倍持續秒數（跨盤跨怪）
+        key:'lowHpBuff',
+        name:'高裝藥彈',
+        en:'High-Charge Rounds', // cut-in 英文副標
+        threshold:0.20,          // 發動門檻：HP ≤ playerMax × 此值
         cutin:'cutin_malzeno_pas', // 被動 cut-in 大圖（暫代：與主動同圖，正式圖到位後換 ASSETS 指向）
-        voice:'vo_he_rounds',    // cut-in 對應語音/SE（預留槽，見 ASSETS）
-        desc:'成功反擊時，獲得 10 秒普攻傷害加倍；效果可跨盤面與敵人延續。',
+        voice:'vo_hc_rounds',    // cut-in 對應語音/SE（預留槽，見 ASSETS）
+        desc:'HP 降至 20% 以下時發動：普攻傷害加倍，直到 HP 回到 20% 以上。',
       },
       // ── 主動技：前線補給 ─────────────────────────────
       //   隨時（一般盤面或聖徒化中皆可）補滿雙槍破防值。每場一次。
@@ -102,6 +103,7 @@ export const GAME_CONFIG = {
       active:{
         key:'supplyRefill',
         name:'前線補給',
+        en:'Frontline Supply',   // cut-in 英文副標
         context:'any',           // 隨時可發（'any'＝一般盤面與聖徒化中皆可）
         oncePerBattle:true,      // 每場一次（可調：false＝不限次數）
         cutin:'cutin_malzeno_act', // 前線補給 cut-in 大圖（→ Malzeno_CI_act.png）
@@ -532,7 +534,7 @@ export const ASSETS = {
   vo_life_return:   null,   // 生命歸還（主動）          → VO_LifeReturn
   vo_death_guard:   null,   // 即死防禦（被動）          → VO_DeathGuard
   vo_supply_refill: null,   // 前線補給（馬季諾·主動）   → VO_SupplyRefill
-  vo_he_rounds:     null,   // 高爆彈頭（馬季諾·被動）   → VO_HERounds
+  vo_hc_rounds:     null,   // 高裝藥彈（馬季諾·被動）   → VO_HCRounds
   vo_dual_wield:    null,   // 雙槍破防                 → VO_DualWield
   vo_new_hustle:    null,   // Boss 遭遇 / 亂入          → VO_NewHustle
 };

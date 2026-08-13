@@ -86,9 +86,9 @@ const ACTIVE_HANDLERS = {
     if(state.over || state.cutinPlaying || state.transitioning) return false;
     const vo = asset(act && act.voice); if(vo) SFX.play(vo);   // SE（預留槽，未填則靜默）
     a.fillEnergy();
-    a.floatDmg('前線補給','50%','40%',true);
+    a.floatDmg(act.name,'50%','40%',true);
     if(!state.saintMode){
-      const label = '前線補給<span class="cutin-en">Frontline Supply</span>';
+      const label = `${act.name}<span class="cutin-en">${act.en||''}</span>`;
       a.playCutin(()=>{
         if(state.over||state.saintMode) return;
         a.resetEnemyTimers();   // cut-in 撤下瞬間重置敵大絕/延時倒數（同雙槍/即死防禦慣例）
@@ -120,43 +120,36 @@ export function tryActive(context){
 }
 
 /* ============================================================================
- *  被動技 · 高爆彈頭（counterBuff，馬季諾）
+ *  被動技 · 高裝藥彈（lowHpBuff，馬季諾）
  * ----------------------------------------------------------------------------
- *  成功反擊時（defense 的 Counter／散彈 Perfect 反擊，經 combat 包裝的 weaponCounter
- *  呼叫本函式）：獲得 buffSeconds 秒普攻傷害加倍，且可跨盤跨怪（persist 版 atkBuff）。
- *  cut-in 規則：buff 從無到有時插 cut-in；已在 buff 中（刷新時長）或聖徒化中只跳字＋SE，
- *  避免高頻反擊時演出洗版、或打斷聖徒化反應計時。
+ *  狀態型被動：玩家 HP ≤ playerMax×threshold（20%）時發動——普攻傷害加倍，
+ *  持續到 HP 回到門檻以上才解除（跨盤跨怪自然延續；HP 回升僅聖徒化結局回血等路徑）。
+ *  觸發檢查掛在 combat.updateBars（所有 HP 變動的唯一匯流點）呼叫本函式：
+ *    · 聖徒化期間不判定（血條＝倒數槽，語義不同）；結局設定血量時自然重新評估。
+ *    · HP=0（致死流程中）不發動；即死防禦保 1 HP 後的 updateBars 會接著發動。
+ *  發動瞬間插 cut-in＋SE（已有其他演出在播則只跳字）；解除時靜默。
+ *  buff 旗標 state.lowHpBuff 為 combat 擁有（3.8），經注入的 setLowHpBuff 管道寫入。
  * ========================================================================== */
-// 高爆彈頭 buff 的「是否在效」以本模組自有時間戳判定——不能讀 state.atkBuffPersist：
-//   defense 的 Counter 分支會先呼叫 triggerAtkBuff(2)（非 persist）把該旗標洗掉，讀它會誤判。
-let heBuffUntil = 0;
-
-export function onCounterSuccess(){
+export function checkLowHpBuff(){
+  if(state.saintMode || state.over) return;   // 聖徒化/結束後不判定
   const p = currentPartner();
   const pas = p && p.passive;
-  if(!pas || pas.key!=='counterBuff') return;
-  if(state.over) return;
-  const sec = pas.buffSeconds || 10;
-  const vo = asset(pas.voice); if(vo) SFX.play(vo);   // SE（預留槽，未填則靜默）
-  if(state.saintMode || Date.now() < heBuffUntil){
-    // 聖徒化中／buff 已在（刷新時長）→ 只跳字＋SE（不插演出，避免高頻反擊洗版）
-    heBuffUntil = Date.now() + sec*1000;
-    api.triggerAtkBuff(sec, true);
-    api.floatDmg('高爆彈頭','50%','34%',true);
-    return;
+  const eligible = !!(pas && pas.key==='lowHpBuff');
+  const th = (eligible && pas.threshold) || 0.20;
+  const low = eligible && state.playerHp>0 && state.playerHp <= state.playerMax*th;
+  if(low === state.lowHpBuff) return;         // 狀態未變 → 不動作
+  if(low){
+    api.setLowHpBuff(true);
+    const vo = asset(pas.voice); if(vo) SFX.play(vo);   // SE（預留槽，未填則靜默）
+    api.floatDmg(pas.name,'50%','34%',true);
+    if(!state.cutinPlaying){                  // 已有演出在播（如即死防禦 cut-in）→ 只跳字
+      api.playCutin(()=>{
+        if(state.over) return;
+        api.resetEnemyTimers();               // cut-in 撤下瞬間重置敵大絕/延時倒數（同其他 cut-in 慣例）
+        api.scheduleUlt();
+      }, `${pas.name}<span class="cutin-en">${pas.en||''}</span>`, pas.cutin);
+    }
+  }else{
+    api.setLowHpBuff(false);                  // HP 回到門檻上（聖徒化結局回血等）→ 靜默解除
   }
-  const label = '高爆彈頭<span class="cutin-en">High-Explosive Rounds</span>';
-  api.playCutin(()=>{
-    if(state.over) return;
-    heBuffUntil = Date.now() + sec*1000;
-    api.triggerAtkBuff(sec, true);   // persist＝跨盤跨怪；cut-in 撤下才起算，10 秒完整可用
-    api.resetEnemyTimers();          // cut-in 撤下瞬間重置敵大絕/延時倒數（同其他 cut-in 慣例）
-    api.scheduleUlt();
-  }, label, pas.cutin);
-}
-
-/* 全重置（combat.startGame / startIntruderFight 調度）：清被動 buff 時間戳。
- * atkBuff 本體旗標/計時器由 combat 自清；此處只清 partner 自有的判定狀態。 */
-export function reset(){
-  heBuffUntil = 0;
 }

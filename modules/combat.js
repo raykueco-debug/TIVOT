@@ -46,10 +46,7 @@ const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a
  * ========================================================================== */
 export function setup(){
   // combat 把自己擁有的狀態變動原語注入下游模組，切斷反向依賴
-  // weaponCounter 包一層：反擊事件成功後通知 partner（馬季諾被動「高爆彈頭」的觸發點；
-  //   涵蓋 Counter 與散彈 Perfect 反擊——與 counterCount 的「成功反擊」語義一致）。
-  defense.init({ enemyAttack, enemyDamage, floatDmg, triggerAtkBuff,
-    weaponCounter: (scale)=>{ weapon.weaponCounter(scale); partner.onCounterSuccess(); } });
+  defense.init({ enemyAttack, enemyDamage, floatDmg, triggerAtkBuff, weaponCounter: weapon.weaponCounter });
   // 武器：反擊演算所需（enemyDamage/floatDmg）+ 雙槍破防窗口所需（cut-in/敵計時/盤面/破防值歸零）。
   weapon.init({
     enemyDamage, floatDmg,
@@ -84,8 +81,8 @@ export function setup(){
     scheduleUlt: defense.scheduleUlt,
     playCutin: saint.playCutin,
     saintApi: { lifeReturnAbort: saint.lifeReturnAbort },
-    // 馬季諾：前線補給（直補破防值至滿）＋高爆彈頭（persist 版攻擊加倍；energy/atkBuff 為 combat 擁有，經此管道寫）
-    fillEnergy, triggerAtkBuff,
+    // 馬季諾：前線補給（直補破防值至滿）＋高裝藥彈（低血量普攻加倍；energy/lowHpBuff 為 combat 擁有，經此管道寫）
+    fillEnergy, setLowHpBuff,
   });
   // 監察官（評價/結算）：combat 擁有計時 → 算好 totalTime/avg 呼叫 inspector.settle。
   //   inspector 只 import state/config；goHome（combat）與 triggerIntruder（enemy）經此注入。
@@ -223,7 +220,7 @@ function tap(num,cell,e){
     state.combo++; if(state.combo>state.maxCombo) state.maxCombo=state.combo;
     state.correctTaps++;                 // 命中率分子（依序正確點擊）
     resetIntervalDeadline(); addEnergy(ENERGY_PER_HIT);
-    let dmg=hitDamage(); if(state.atkBuff) dmg*=2;
+    let dmg=hitDamage(); if(state.atkBuff||state.lowHpBuff) dmg*=2;   // 計時型（Counter）或低血量（高裝藥彈）皆加倍，不疊乘
     // 暴擊（普攻）：此分支必為普攻（雙槍破防走上面獨立分支，本輪 saintMode 亦 return），暴擊率/加傷隨 critCombo 成長。
     //   本擊先以「現值」擲骰再 +1（首擊＝base 暴擊率）；命中則跳紅字「暴擊」（交由 enemyDamage 的 isCrit 呈現）。
     let crit=false;
@@ -260,24 +257,29 @@ function tap(num,cell,e){
   }
 }
 
-/* 攻擊加倍 buff 清除。persist（馬季諾「高爆彈頭」）版可跨盤跨怪：
- * 清盤/擊殺等盤內收尾呼叫（不帶 force）不清 persist buff，只有 force=true
- * （開新場 startGame/startIntruderFight）才強制清。到時自然結束由 timer 收。 */
-function clearAtkBuff(force){
-  if(!force && state.atkBuffPersist) return;   // persist buff 跨盤跨怪：盤內收尾不清
-  state.atkBuff=false; state.atkBuffPersist=false; clearTimeout(state.atkBuffTimer);
-  $('grid').classList.remove('buffed');
+/* 攻擊加倍視覺（#grid buffed class）由兩個來源共用：計時型 atkBuff（Counter 2 秒）與
+ * 狀態型 lowHpBuff（高裝藥彈）。移除 class 前都要確認另一來源不在效。 */
+function clearAtkBuff(){
+  state.atkBuff=false; clearTimeout(state.atkBuffTimer);
+  if(!state.lowHpBuff) $('grid').classList.remove('buffed');
 }
-function triggerAtkBuff(sec, persist){
+function triggerAtkBuff(sec){
   state.atkBuff=true;
-  state.atkBuffPersist=!!persist;
   $('grid').classList.add('buffed');
   clearTimeout(state.atkBuffTimer);
   state.atkBuffTimer=setTimeout(()=>{
-    state.atkBuff=false; state.atkBuffPersist=false;
-    $('grid').classList.remove('buffed'); updateStatus();
+    state.atkBuff=false;
+    if(!state.lowHpBuff) $('grid').classList.remove('buffed');
+    updateStatus();
   }, (sec||ATK_BUFF_SECONDS)*1000);
   updateStatus();
+}
+/* 低血量普攻加倍（馬季諾「高裝藥彈」）開/關管道：partner.checkLowHpBuff 經注入呼叫。
+ * lowHpBuff 為 combat 擁有（3.8）；狀態型、無計時器，跨盤跨怪（clearAtkBuff 不碰它）。 */
+function setLowHpBuff(on){
+  state.lowHpBuff=!!on;
+  if(on) $('grid').classList.add('buffed');
+  else if(!state.atkBuff) $('grid').classList.remove('buffed');
 }
 
 function clearBoard(){
@@ -492,6 +494,7 @@ function updateBars(){
   $('playerHp').style.width=(ph/state.playerMax*100)+'%';
   $('playerHpNum').textContent=Math.round(ph)+' / '+state.playerMax;
   updateEnergyClasp();
+  partner.checkLowHpBuff();   // 所有 HP 變動的唯一匯流點 → 高裝藥彈門檻判定（partner 內自帶各情境守門）
 }
 function updateStatus(){ /* 狀態列已移出畫面（下半為純數字盤），保留為相容呼叫 */ }
 
@@ -612,11 +615,10 @@ function lose(){
  * ========================================================================== */
 export function startGame(){
   state.over=false; state.defeated=false; state.combo=0; state.energy=0; state.expect=1; state.boardIndex=0;
-  state.atkBuff=false; state.atkBuffPersist=false;
+  state.atkBuff=false; state.lowHpBuff=false;
   state.partnerActiveUsed=false;   // 搭檔主動技每場次數重置
   saint.reset();   // 聖徒化狀態全重置（saintMode 經 exitSaint、清計時器、關手勢層、清 saint 旗標）
   weapon.reset();  // 雙槍破防重置（清 dualWield/dualTimer + #grid dualwield class，防跨場殘留）
-  partner.reset(); // 搭檔被動 buff 判定狀態重置（高爆彈頭時間戳）
   state.overkill=0; state.killTime=0; state.transitioning=false;
   state.counterCount=0; state.counterDamage=0; state.perfectCount=0; state.sawExecution=false;
   state.maxCombo=0; state.hitsTaken=0; state.correctTaps=0; state.wrongTaps=0; state.runOverkill=0;   // 評價統計歸零
@@ -645,11 +647,10 @@ export function startGame(){
  *  故不記 DECISIONS;此為「新場」語義的顯式重置。 */
 export function startIntruderFight(){
   state.over=false; state.defeated=false; state.combo=0; state.energy=0; state.expect=1; state.boardIndex=0;
-  state.atkBuff=false; state.atkBuffPersist=false;
+  state.atkBuff=false; state.lowHpBuff=false;
   state.partnerActiveUsed=false;   // 新場：搭檔主動技每場次數重置
   saint.reset();
   weapon.reset();
-  partner.reset();
   state.overkill=0; state.killTime=0; state.transitioning=false;
   state.counterCount=0; state.counterDamage=0; state.perfectCount=0; state.sawExecution=false;
   state.maxCombo=0; state.hitsTaken=0; state.correctTaps=0; state.wrongTaps=0; state.runOverkill=0;   // 評價統計歸零
