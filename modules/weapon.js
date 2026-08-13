@@ -30,7 +30,7 @@
  * ========================================================================== */
 
 import { GAME_CONFIG, asset } from '../config.js';
-import { state, addCounter } from '../state.js';
+import { state, addCounter, setPickedPartner } from '../state.js';
 import { SFX } from '../audio.js';
 
 const $ = id => document.getElementById(id);
@@ -49,9 +49,8 @@ function critHit(base){
 let api = {};
 export function init(a){ api = a; }
 
-// 搭檔選擇（本輪顯示層：選中標記／label；「換人→能力切換」留擴充，partner.js 不動）。
-// 預設為 config defaultPartner；currentPartner 的實際技能歸屬仍讀 partner 模組（未受此影響）。
-let pickedPartner = GAME_CONFIG.defaultPartner;
+// 搭檔選擇：實選存 state.pickedPartner（partner.currentPartner 讀此值 → 換人即能力切換）。
+// 寫入一律走 state.setPickedPartner（唯一管道）。
 
 /* ============================================================================
  *  反擊武器 · 反擊演算（三段防禦 Counter／散彈 Perfect 呼叫）
@@ -159,37 +158,31 @@ export function endDual(){
  * ========================================================================== */
 export function refreshLoadoutLabels(){
   const w=WEAPONS[state.equippedWeapon];
-  const p=GAME_CONFIG.partners[pickedPartner];
+  const p=GAME_CONFIG.partners[state.pickedPartner];
   const wv=$('pickWeaponValue'), pv=$('pickPartnerValue');
   if(wv) wv.textContent = w ? w.name : '—';
   if(pv) pv.textContent = p ? p.name : '—';
 }
 
-// 開啟選擇彈層：kind='weapon'（反擊武器）| 'partner'（搭檔）。清單以 config 動態產生（多筆自動出現）。
+// 開啟選擇彈層：kind='weapon'（反擊武器，列表彈層）| 'partner'（搭檔 → 全螢幕選人畫面）。
 export function openPickSheet(kind){
-  const isWeapon = kind==='weapon';
-  const map = isWeapon ? WEAPONS : GAME_CONFIG.partners;
-  const cur = isWeapon ? state.equippedWeapon : pickedPartner;
-  $('pickSheetTitle').textContent = isWeapon ? '選擇副武器' : '選擇搭檔';
+  if(kind==='partner'){ openPartnerSheet(); return; }
+  const map = WEAPONS;
+  const cur = state.equippedWeapon;
+  $('pickSheetTitle').textContent = '選擇副武器';
   const list=$('pickSheetList'); list.innerHTML='';
   Object.keys(map).forEach(key=>{
     const it=map[key];
     const div=document.createElement('div');
     div.className='pick-item'+(key===cur?' selected':'');
-    const sub = isWeapon
-      ? `反擊勝率 ${Math.round((it.counterWin||0)*100)}% · ${it.hits||0}發×${it.dmgPerHit||0}`
-      : (it.perk||'');
+    const sub = `反擊勝率 ${Math.round((it.counterWin||0)*100)}% · ${it.hits||0}發×${it.dmgPerHit||0}`;
     // 副武器縮圖（讀 config image 鑰匙 → ASSETS；無圖則不顯示，版面自適應）
-    const imgSrc = (isWeapon && it.image) ? asset(it.image) : '';
+    const imgSrc = it.image ? asset(it.image) : '';
     const thumb = imgSrc ? `<img class="pi-thumb" src="${imgSrc}" alt="">` : '';
     div.innerHTML = `${thumb}<span class="pi-body">${it.name||key}${sub?`<span class="pi-sub">${sub}</span>`:''}</span>`;
     const choose=()=>{
       SFX.unlock(); SFX.menuClick();
-      if(isWeapon){
-        state.equippedWeapon=key;   // 反擊武器選即換、立即驅動戰鬥（三段防禦/反擊/視覺）
-      }else{
-        pickedPartner=key;          // 搭檔：本輪僅顯示層（選中標記/label）；換技留擴充，不動 partner.js
-      }
+      state.equippedWeapon=key;   // 反擊武器選即換、立即驅動戰鬥（三段防禦/反擊/視覺）
       refreshLoadoutLabels();
       closePickSheet();
     };
@@ -200,6 +193,104 @@ export function openPickSheet(kind){
   $('pickSheet').classList.add('on');
 }
 export function closePickSheet(){ $('pickSheet').classList.remove('on'); }
+
+/* ============================================================================
+ *  搭檔選人畫面（全螢幕）：大立繪左右滑動切換、卡片技能描述、底部發動說明
+ * ----------------------------------------------------------------------------
+ *  清單以 config partners 動態產生（新增搭檔自動出現）。「選擇此搭檔」→
+ *  setPickedPartner（唯一寫入管道）→ partner.currentPartner 即時切換能力。
+ * ========================================================================== */
+const PARTNER_KEYS = Object.keys(GAME_CONFIG.partners);
+let psIndex = 0;          // 目前展示中的搭檔 index
+let psBound = false;      // 手勢/按鈕只綁一次
+
+export function openPartnerSheet(){
+  psIndex = Math.max(0, PARTNER_KEYS.indexOf(state.pickedPartner));
+  bindPartnerSheet();
+  renderPartnerSheet();
+  $('partnerSheet').classList.add('on');
+}
+export function closePartnerSheet(){ $('partnerSheet').classList.remove('on'); }
+
+function psMove(dir){   // dir=+1 下一位 / -1 上一位（循環）
+  psIndex = (psIndex + dir + PARTNER_KEYS.length) % PARTNER_KEYS.length;
+  SFX.menuClick();
+  renderPartnerSheet(dir);
+}
+
+// dir 有值時給立繪一個進場滑動方向（重播 CSS 動畫）
+function renderPartnerSheet(dir){
+  const key = PARTNER_KEYS[psIndex];
+  const p = GAME_CONFIG.partners[key];
+  if(!p) return;
+  const img=$('psPortrait');
+  if(img){
+    img.src = asset(p.image) || '';
+    img.classList.remove('slide-left','slide-right');
+    if(dir){ void img.offsetWidth; img.classList.add(dir>0?'slide-left':'slide-right'); }
+  }
+  const set=(id,txt)=>{ const el=$(id); if(el) el.textContent=txt; };
+  set('psName', p.name || key);
+  set('psActiveName',  p.active  ? p.active.name  : '—');
+  set('psActiveDesc',  (p.active  && p.active.desc)  || '');
+  set('psPassiveName', p.passive ? p.passive.name : '—');
+  set('psPassiveDesc', (p.passive && p.passive.desc) || '');
+  // 圓點指示：目前頁 + 已實選標記
+  const dots=$('psDots');
+  if(dots){
+    dots.innerHTML = PARTNER_KEYS.map((k,i)=>
+      `<i class="${i===psIndex?'cur':''}${k===state.pickedPartner?' picked':''}"></i>`).join('');
+  }
+  // 選擇鈕：展示中若已是實選搭檔 → 顯示「出戰中」
+  const btn=$('psSelect');
+  if(btn){
+    const isCur = key===state.pickedPartner;
+    btn.textContent = isCur ? '出戰中' : '選擇此搭檔';
+    btn.classList.toggle('picked', isCur);
+  }
+}
+
+function bindPartnerSheet(){
+  if(psBound) return; psBound=true;
+  // 立繪區左右滑動（touch + 滑鼠拖曳）
+  const stage=$('psStage');
+  if(stage){
+    let sx=0, sy=0, tracking=false;
+    const THRESH=48;
+    const begin=(x,y)=>{ sx=x; sy=y; tracking=true; };
+    const move=(x,y)=>{
+      if(!tracking) return;
+      const dx=x-sx, dy=y-sy;
+      if(Math.abs(dx)>THRESH && Math.abs(dx)>Math.abs(dy)*1.2){
+        tracking=false;
+        psMove(dx<0 ? +1 : -1);   // 往左滑＝看下一位
+      }
+    };
+    stage.addEventListener('touchstart',e=>{ const t=e.touches[0]; begin(t.clientX,t.clientY); },{passive:true});
+    stage.addEventListener('touchmove', e=>{ const t=e.touches[0]; move(t.clientX,t.clientY); },{passive:true});
+    stage.addEventListener('touchend', ()=>{ tracking=false; });
+    let mDown=false;
+    stage.addEventListener('mousedown',e=>{ mDown=true; begin(e.clientX,e.clientY); });
+    stage.addEventListener('mousemove',e=>{ if(mDown) move(e.clientX,e.clientY); });
+    window.addEventListener('mouseup', ()=>{ mDown=false; });
+  }
+  // 左右箭頭 / 選擇 / 返回
+  const bind=(id,fn)=>{
+    const el=$(id); if(!el) return;
+    let h=false;
+    el.addEventListener('touchstart',e=>{e.preventDefault();h=true;SFX.unlock();fn();},{passive:false});
+    el.addEventListener('click',()=>{ if(h){h=false;return;} SFX.unlock(); fn(); });
+  };
+  bind('psPrev', ()=>psMove(-1));
+  bind('psNext', ()=>psMove(+1));
+  bind('psSelect', ()=>{
+    SFX.menuClick();
+    setPickedPartner(PARTNER_KEYS[psIndex]);   // 實選寫入（唯一管道）→ 能力即時切換
+    refreshLoadoutLabels();
+    renderPartnerSheet();
+  });
+  bind('psClose', ()=>{ SFX.menuClick(); closePartnerSheet(); });
+}
 
 /* ============================================================================
  *  生命週期（combat 調度）

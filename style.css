@@ -642,6 +642,58 @@
   #pickSheet .pick-close{padding:9px 30px;background:transparent;border:1px solid var(--gold-dim);
     color:var(--ink);border-radius:8px;font-family:inherit;font-size:13px;letter-spacing:3px;}
 
+  /* ── 搭檔選人畫面（全螢幕）：大立繪左右滑動 + 技能卡 + 發動說明 ── */
+  #partnerSheet{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;
+    background:rgba(6,4,12,.96);z-index:60;
+    padding:calc(14px + env(safe-area-inset-top)) 14px calc(12px + env(safe-area-inset-bottom));}
+  #partnerSheet.on{display:flex;}
+  #partnerSheet .ps-title{font-size:15px;letter-spacing:6px;color:var(--gold);text-indent:6px;
+    margin-bottom:8px;flex:none;}
+  #partnerSheet .ps-stage{position:relative;flex:1 1 auto;min-height:0;width:100%;
+    display:flex;align-items:center;justify-content:center;touch-action:pan-y;user-select:none;}
+  #partnerSheet #psPortrait{max-width:82%;max-height:100%;object-fit:contain;border-radius:10px;
+    border:1px solid var(--gold-dim);background:#0a0810;box-shadow:0 0 26px rgba(0,0,0,.7);
+    pointer-events:none;-webkit-user-drag:none;}
+  #partnerSheet #psPortrait.slide-left{animation:psSlideL .28s ease;}
+  #partnerSheet #psPortrait.slide-right{animation:psSlideR .28s ease;}
+  @keyframes psSlideL{from{transform:translateX(26px);opacity:.2;}to{transform:none;opacity:1;}}
+  @keyframes psSlideR{from{transform:translateX(-26px);opacity:.2;}to{transform:none;opacity:1;}}
+  #partnerSheet .ps-arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:2;
+    width:38px;height:56px;background:rgba(15,12,22,.55);border:1px solid var(--gold-dim);
+    color:var(--gold);border-radius:8px;font-family:inherit;font-size:24px;line-height:1;}
+  #partnerSheet .ps-arrow:active{transform:translateY(-50%) scale(.92);}
+  #partnerSheet .ps-prev{left:2px;}
+  #partnerSheet .ps-next{right:2px;}
+  #partnerSheet .ps-dots{display:flex;gap:8px;margin:8px 0 6px;flex:none;}
+  #partnerSheet .ps-dots i{width:7px;height:7px;border-radius:50%;
+    background:transparent;border:1px solid var(--gold-dim);}
+  #partnerSheet .ps-dots i.cur{background:var(--gold);border-color:var(--gold);}
+  #partnerSheet .ps-dots i.picked{box-shadow:0 0 8px var(--gold);}
+  #partnerSheet .ps-card{flex:none;width:100%;max-width:340px;background:#0f0c16;
+    border:1px solid var(--gold-dim);border-radius:12px;padding:12px 14px;text-align:left;}
+  #partnerSheet .ps-name{font-size:16px;letter-spacing:4px;color:var(--gold);text-align:center;
+    margin-bottom:8px;}
+  #partnerSheet .ps-skill{margin-top:7px;}
+  #partnerSheet .ps-k{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink);
+    letter-spacing:1px;}
+  #partnerSheet .ps-k b{color:var(--gold);font-weight:600;}
+  #partnerSheet .ps-tag{flex:none;font-size:10px;letter-spacing:2px;color:var(--gold-dim);
+    border:1px solid var(--gold-dim);border-radius:4px;padding:1px 6px;text-indent:2px;}
+  #partnerSheet .ps-d{font-size:11.5px;line-height:1.55;color:var(--gold-dim);margin:3px 0 0 2px;
+    letter-spacing:.5px;}
+  #partnerSheet .ps-howto{flex:none;width:100%;max-width:340px;margin-top:8px;
+    padding:8px 12px;border-top:1px solid rgba(217,198,138,.22);
+    font-size:10.5px;line-height:1.7;letter-spacing:.5px;color:var(--gold-dim);text-align:center;}
+  #partnerSheet .ps-btns{flex:none;display:flex;gap:12px;margin-top:6px;}
+  #partnerSheet #psSelect{padding:10px 30px;background:transparent;border:1px solid var(--gold);
+    color:var(--gold);border-radius:8px;font-family:inherit;font-size:13px;letter-spacing:3px;
+    box-shadow:0 0 12px var(--gold-dim);}
+  #partnerSheet #psSelect.picked{border-color:var(--gold-dim);color:var(--gold-dim);box-shadow:none;}
+  #partnerSheet #psSelect:active{transform:scale(.95);}
+  #partnerSheet #psClose{padding:10px 24px;background:transparent;border:1px solid var(--gold-dim);
+    color:var(--ink);border-radius:8px;font-family:inherit;font-size:13px;letter-spacing:3px;}
+  #partnerSheet #psClose:active{transform:scale(.95);}
+
   /* 首頁底部：Credit / 原作 小鈕一排，版權宣告獨立一行在其下，整組貼底置中（避開 home indicator 安全區）。
      版權不與按鈕同排——窄機/字體較寬時會互相擠壓。 */
   #home #homeLinks{position:absolute;left:0;right:0;

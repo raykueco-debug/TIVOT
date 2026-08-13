@@ -46,7 +46,10 @@ const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a
  * ========================================================================== */
 export function setup(){
   // combat 把自己擁有的狀態變動原語注入下游模組，切斷反向依賴
-  defense.init({ enemyAttack, enemyDamage, floatDmg, triggerAtkBuff, weaponCounter: weapon.weaponCounter });
+  // weaponCounter 包一層：反擊事件成功後通知 partner（馬季諾被動「高爆彈頭」的觸發點；
+  //   涵蓋 Counter 與散彈 Perfect 反擊——與 counterCount 的「成功反擊」語義一致）。
+  defense.init({ enemyAttack, enemyDamage, floatDmg, triggerAtkBuff,
+    weaponCounter: (scale)=>{ weapon.weaponCounter(scale); partner.onCounterSuccess(); } });
   // 武器：反擊演算所需（enemyDamage/floatDmg）+ 雙槍破防窗口所需（cut-in/敵計時/盤面/破防值歸零）。
   weapon.init({
     enemyDamage, floatDmg,
@@ -81,6 +84,8 @@ export function setup(){
     scheduleUlt: defense.scheduleUlt,
     playCutin: saint.playCutin,
     saintApi: { lifeReturnAbort: saint.lifeReturnAbort },
+    // 馬季諾：前線補給（直補破防值至滿）＋高爆彈頭（persist 版攻擊加倍；energy/atkBuff 為 combat 擁有，經此管道寫）
+    fillEnergy, triggerAtkBuff,
   });
   // 監察官（評價/結算）：combat 擁有計時 → 算好 totalTime/avg 呼叫 inspector.settle。
   //   inspector 只 import state/config；goHome（combat）與 triggerIntruder（enemy）經此注入。
@@ -255,16 +260,22 @@ function tap(num,cell,e){
   }
 }
 
-function clearAtkBuff(){
-  state.atkBuff=false; clearTimeout(state.atkBuffTimer);
+/* 攻擊加倍 buff 清除。persist（馬季諾「高爆彈頭」）版可跨盤跨怪：
+ * 清盤/擊殺等盤內收尾呼叫（不帶 force）不清 persist buff，只有 force=true
+ * （開新場 startGame/startIntruderFight）才強制清。到時自然結束由 timer 收。 */
+function clearAtkBuff(force){
+  if(!force && state.atkBuffPersist) return;   // persist buff 跨盤跨怪：盤內收尾不清
+  state.atkBuff=false; state.atkBuffPersist=false; clearTimeout(state.atkBuffTimer);
   $('grid').classList.remove('buffed');
 }
-function triggerAtkBuff(sec){
+function triggerAtkBuff(sec, persist){
   state.atkBuff=true;
+  state.atkBuffPersist=!!persist;
   $('grid').classList.add('buffed');
   clearTimeout(state.atkBuffTimer);
   state.atkBuffTimer=setTimeout(()=>{
-    state.atkBuff=false; $('grid').classList.remove('buffed'); updateStatus();
+    state.atkBuff=false; state.atkBuffPersist=false;
+    $('grid').classList.remove('buffed'); updateStatus();
   }, (sec||ATK_BUFF_SECONDS)*1000);
   updateStatus();
 }
@@ -404,6 +415,9 @@ export function setPlayerHpRatio(ratio){
 function setBoard(n, cols){ state.N=n; state.cols=cols; }
 // 歸零聖能並更新 C 字計量表（聖徒化開場清零破防值；energy 為 combat 擁有）。
 function resetEnergy(){ state.energy=0; updateEnergyClasp(); }
+// 直補破防值至滿（馬季諾「前線補給」經注入呼叫）。刻意繞過 addEnergy 的 saintMode 擋門——
+//   聖徒化中也可補（補滿的值待聖徒化結束後用；發動雙槍仍被 activateDual 擋 saintMode）。
+function fillEnergy(){ state.energy=100; updateEnergyClasp(); }
 
 // 對敵造成傷害（含 overkill / 擊殺凍結計時）
 function enemyDamage(dmg,isCrit,silent){
@@ -598,9 +612,11 @@ function lose(){
  * ========================================================================== */
 export function startGame(){
   state.over=false; state.defeated=false; state.combo=0; state.energy=0; state.expect=1; state.boardIndex=0;
-  state.atkBuff=false;
+  state.atkBuff=false; state.atkBuffPersist=false;
+  state.partnerActiveUsed=false;   // 搭檔主動技每場次數重置
   saint.reset();   // 聖徒化狀態全重置（saintMode 經 exitSaint、清計時器、關手勢層、清 saint 旗標）
   weapon.reset();  // 雙槍破防重置（清 dualWield/dualTimer + #grid dualwield class，防跨場殘留）
+  partner.reset(); // 搭檔被動 buff 判定狀態重置（高爆彈頭時間戳）
   state.overkill=0; state.killTime=0; state.transitioning=false;
   state.counterCount=0; state.counterDamage=0; state.perfectCount=0; state.sawExecution=false;
   state.maxCombo=0; state.hitsTaken=0; state.correctTaps=0; state.wrongTaps=0; state.runOverkill=0;   // 評價統計歸零
@@ -629,9 +645,11 @@ export function startGame(){
  *  故不記 DECISIONS;此為「新場」語義的顯式重置。 */
 export function startIntruderFight(){
   state.over=false; state.defeated=false; state.combo=0; state.energy=0; state.expect=1; state.boardIndex=0;
-  state.atkBuff=false;
+  state.atkBuff=false; state.atkBuffPersist=false;
+  state.partnerActiveUsed=false;   // 新場：搭檔主動技每場次數重置
   saint.reset();
   weapon.reset();
+  partner.reset();
   state.overkill=0; state.killTime=0; state.transitioning=false;
   state.counterCount=0; state.counterDamage=0; state.perfectCount=0; state.sawExecution=false;
   state.maxCombo=0; state.hitsTaken=0; state.correctTaps=0; state.wrongTaps=0; state.runOverkill=0;   // 評價統計歸零

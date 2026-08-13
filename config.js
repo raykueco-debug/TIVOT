@@ -47,7 +47,7 @@ export const GAME_CONFIG = {
   partners: {
     freya: {
       name:'蕾妮',
-      image:'partner_twin',    // 立繪（暫用 cut-in 圖代替）
+      image:'partner_renee',   // 選人畫面大立繪（Renee_SI_01）
       cutin:'cutin_saint',     // 聖徒化演出大圖
       voice:null,              // 語音（PARTNER_SE_SI）之後填
       perk:'即死防禦（被動）＋生命歸還（主動）',
@@ -59,19 +59,50 @@ export const GAME_CONFIG = {
         oncePerBattle:true,      // true=整場只擋一次；false=每次都擋（不建議）
         cutin:'cutin_guard',     // 即死防禦專屬大圖（→ Renee_CI_pas.jpg）；程式讀此欄，不硬寫
         voice:'vo_death_guard',  // cut-in 對應語音（預留槽，見 ASSETS；audio 未接前為 null）
+        desc:'整場一次。受到足以致死的攻擊時，改為保留 1 HP 存活。',
       },
       // ── 主動技：生命歸還 ─────────────────────────────
       //   聖徒化中，由「下往上滑」發動：強制中止聖徒化，保留當前血量（第四結局）。
       active:{
         key:'lifeReturn',
         name:'生命歸還',
-        context:'saint',         // 發動情境：'saint'＝聖徒化內 / 'board'＝一般盤面。partner 依此判定能否發
+        context:'saint',         // 發動情境：'saint'＝聖徒化內 / 'board'＝一般盤面 / 'any'＝兩者皆可
         cutin:'cutin_return',    // 生命歸還演出大圖（→ Renee_CI_act.jpg）；實際演出由 saint scImgKey.return 讀同一鑰匙
         voice:'vo_life_return',  // cut-in 對應語音（預留槽，見 ASSETS）
+        desc:'聖徒化期間發動：強制中止聖徒化，保留當前血量。',
       },
     },
-    // 例：新搭檔
-    // kerty: { name:'姬爾蒂', image:'partner_kerty', cutin:'cutin_kerty', voice:null, perk:'聖能累積更快' },
+    // ── 第二搭檔：馬季諾 Malzeno ──────────────────────────
+    malzeno: {
+      name:'馬季諾',
+      image:'partner_malzeno', // 選人畫面大立繪（Malzeno_SI_01）
+      cutin:'cutin_saint',     // 聖徒化演出大圖（沿用共通）
+      voice:null,
+      perk:'前線補給（主動）＋高爆彈頭（被動）',
+      // ── 被動技：高爆彈頭 ─────────────────────────────
+      //   成功反擊時獲得 buffSeconds 秒普攻傷害加倍；效果可跨盤面、跨敵人延續。
+      //   有 cut-in（buff 從無到有時插入；聖徒化中或 buff 刷新時只跳字不插演出，避免破壞節奏）。
+      passive:{
+        key:'counterBuff',
+        name:'高爆彈頭',
+        buffSeconds:10,          // 普攻加倍持續秒數（跨盤跨怪）
+        cutin:'cutin_malzeno_pas', // 被動 cut-in 大圖（暫代：與主動同圖，正式圖到位後換 ASSETS 指向）
+        voice:'vo_he_rounds',    // cut-in 對應語音/SE（預留槽，見 ASSETS）
+        desc:'成功反擊時，獲得 10 秒普攻傷害加倍；效果可跨盤面與敵人延續。',
+      },
+      // ── 主動技：前線補給 ─────────────────────────────
+      //   隨時（一般盤面或聖徒化中皆可）補滿雙槍破防值。每場一次。
+      //   ⚠ 聖徒化期間「不能發動雙槍破防」的原則不變——補滿的破防值須待聖徒化結束後才能使用。
+      active:{
+        key:'supplyRefill',
+        name:'前線補給',
+        context:'any',           // 隨時可發（'any'＝一般盤面與聖徒化中皆可）
+        oncePerBattle:true,      // 每場一次（可調：false＝不限次數）
+        cutin:'cutin_malzeno_act', // 前線補給 cut-in 大圖（→ Malzeno_CI_act.png）
+        voice:'vo_supply_refill',  // cut-in 對應語音/SE（預留槽，見 ASSETS）
+        desc:'隨時補滿雙槍破防值（每場一次）。聖徒化期間仍無法發動雙槍破防。',
+      },
+    },
   },
   defaultPartner: 'freya',
 
@@ -434,6 +465,12 @@ export const ASSETS = {
   cutin_mb: "resources/partner/Luna_CI_maxburst.jpg",   // Maximum Burst cut-in（Luna）
   cutin_guard: "resources/partner/Renee_CI_pas.jpg",   // 即死防禦 cut-in（蕾妮/Renee·被動；檔名 _pas＝passive）
   cutin_return: "resources/partner/Renee_CI_act.jpg",   // 生命歸還 cut-in（蕾妮/Renee·主動；檔名 _act＝active）
+  cutin_malzeno_act: "resources/partner/Malzeno_CI_act.png",   // 前線補給 cut-in（馬季諾·主動）
+  cutin_malzeno_pas: "resources/partner/Malzeno_CI_act.png",   // 高爆彈頭 cut-in（馬季諾·被動；⚠暫代主動圖，正式圖到位後改路徑）
+
+  // ── 搭檔選人畫面大立繪 ──
+  partner_renee:   "resources/partner/Renee_SI_01.png",     // 蕾妮 立繪
+  partner_malzeno: "resources/partner/Malzeno_SI_01.png",   // 馬季諾 立繪
   cutin_boss: "resources/enemy/Belinda_CI_boss.jpg",   // v18d：Boss（貝琳妲）遭遇 cut-in 專屬圖
 
   // ── 副武器圖（換裝選單縮圖）：鑰匙對應 weapons.image；檔名＝類型_武器名 ──
@@ -488,6 +525,8 @@ export const ASSETS = {
   vo_obe:           null,   // O.B.E.                   → VO_OBE
   vo_life_return:   null,   // 生命歸還（主動）          → VO_LifeReturn
   vo_death_guard:   null,   // 即死防禦（被動）          → VO_DeathGuard
+  vo_supply_refill: null,   // 前線補給（馬季諾·主動）   → VO_SupplyRefill
+  vo_he_rounds:     null,   // 高爆彈頭（馬季諾·被動）   → VO_HERounds
   vo_dual_wield:    null,   // 雙槍破防                 → VO_DualWield
   vo_new_hustle:    null,   // Boss 遭遇 / 亂入          → VO_NewHustle
 };

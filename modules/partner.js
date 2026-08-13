@@ -24,8 +24,9 @@
  *    注入 api（維持 §2 依賴方向，不反向 import）。
  * ========================================================================== */
 
-import { GAME_CONFIG } from '../config.js';
+import { GAME_CONFIG, asset } from '../config.js';
 import { state, applyDeathGuard } from '../state.js';
+import { SFX } from '../audio.js';
 
 /* combat 於啟動時注入的原語：
  *   被動技所需：updateBars / floatDmg / resetEnemyTimers / scheduleUlt / playCutin
@@ -34,9 +35,10 @@ import { state, applyDeathGuard } from '../state.js';
 let api = {};
 export function init(a){ api = a; }
 
-// 目前啟用的搭檔 config（下一輪接玩家實選 pickedPartner；先回預設）
+// 目前啟用的搭檔 config：讀玩家實選（state.pickedPartner，選人畫面經 setPickedPartner 寫入）。
+// 換 partner 即能力切換——被動/主動的歸屬判定全在本模組、全經此函式取當前搭檔。
 export function currentPartner(){
-  return GAME_CONFIG.partners[GAME_CONFIG.defaultPartner];
+  return GAME_CONFIG.partners[state.pickedPartner] || GAME_CONFIG.partners[GAME_CONFIG.defaultPartner];
 }
 
 /* ============================================================================
@@ -76,6 +78,25 @@ const ACTIVE_HANDLERS = {
     a.saintApi.lifeReturnAbort();
     return true;
   },
+  // 前線補給（馬季諾·主動）：隨時補滿雙槍破防值（fillEnergy 經 combat 注入，直寫 100）。
+  //   聖徒化中也可補（context:'any'），但「聖徒化期間不能發動雙槍破防」原則不變
+  //   （weapon.activateDual 擋 saintMode）——補滿的值待聖徒化結束後使用。
+  //   cut-in：一般盤面才插（聖徒化中插 cut-in 會打斷反應計時節奏，改只跳字＋SE）。
+  supplyRefill(a, act){
+    if(state.over || state.cutinPlaying || state.transitioning) return false;
+    const vo = asset(act && act.voice); if(vo) SFX.play(vo);   // SE（預留槽，未填則靜默）
+    a.fillEnergy();
+    a.floatDmg('前線補給','50%','40%',true);
+    if(!state.saintMode){
+      const label = '前線補給<span class="cutin-en">Frontline Supply</span>';
+      a.playCutin(()=>{
+        if(state.over||state.saintMode) return;
+        a.resetEnemyTimers();   // cut-in 撤下瞬間重置敵大絕/延時倒數（同雙槍/即死防禦慣例）
+        a.scheduleUlt();
+      }, label, act && act.cutin);
+    }
+    return true;
+  },
   // 未來擴充範例（本輪不實作）：
   //   clearThreats(a){ a.defenseApi.clearAll(); return true; }        // context:'board'，清紅圈
   //   heal(a){ a.combatApi.healPlayer(a.combatApi.playerMax*0.3); return true; }  // 回血
@@ -83,13 +104,59 @@ const ACTIVE_HANDLERS = {
 };
 
 /* 統一發動入口。context＝當前發動情境（'saint' / 'board'）。
- * 判定：當前搭檔有主動技、且該技 config 的 context 與傳入情境相符、且有對應 handler → 執行。
+ * 判定：當前搭檔有主動技、該技 config 的 context 與傳入情境相符（'any'＝皆可）、
+ * 未耗盡每場次數（oncePerBattle）、且有對應 handler → 執行。
  * 任一不符回 false（不執行）。「能否發、屬於誰」全在此——換 partner 即該技消失。 */
 export function tryActive(context){
   const p = currentPartner();
   const act = p && p.active;
-  if(!act || act.context !== context) return false;   // 無主動技 / 情境不符 → 不發
+  if(!act || (act.context !== context && act.context !== 'any')) return false;   // 無主動技 / 情境不符 → 不發
+  if(act.oncePerBattle && state.partnerActiveUsed) return false;   // 每場一次且已用 → 不發
   const handler = ACTIVE_HANDLERS[act.key];
   if(!handler) return false;                            // 尚無對應 handler → 不發
-  return handler(api) === true;
+  const ok = handler(api, act) === true;
+  if(ok && act.oncePerBattle) state.partnerActiveUsed = true;
+  return ok;
+}
+
+/* ============================================================================
+ *  被動技 · 高爆彈頭（counterBuff，馬季諾）
+ * ----------------------------------------------------------------------------
+ *  成功反擊時（defense 的 Counter／散彈 Perfect 反擊，經 combat 包裝的 weaponCounter
+ *  呼叫本函式）：獲得 buffSeconds 秒普攻傷害加倍，且可跨盤跨怪（persist 版 atkBuff）。
+ *  cut-in 規則：buff 從無到有時插 cut-in；已在 buff 中（刷新時長）或聖徒化中只跳字＋SE，
+ *  避免高頻反擊時演出洗版、或打斷聖徒化反應計時。
+ * ========================================================================== */
+// 高爆彈頭 buff 的「是否在效」以本模組自有時間戳判定——不能讀 state.atkBuffPersist：
+//   defense 的 Counter 分支會先呼叫 triggerAtkBuff(2)（非 persist）把該旗標洗掉，讀它會誤判。
+let heBuffUntil = 0;
+
+export function onCounterSuccess(){
+  const p = currentPartner();
+  const pas = p && p.passive;
+  if(!pas || pas.key!=='counterBuff') return;
+  if(state.over) return;
+  const sec = pas.buffSeconds || 10;
+  const vo = asset(pas.voice); if(vo) SFX.play(vo);   // SE（預留槽，未填則靜默）
+  if(state.saintMode || Date.now() < heBuffUntil){
+    // 聖徒化中／buff 已在（刷新時長）→ 只跳字＋SE（不插演出，避免高頻反擊洗版）
+    heBuffUntil = Date.now() + sec*1000;
+    api.triggerAtkBuff(sec, true);
+    api.floatDmg('高爆彈頭','50%','34%',true);
+    return;
+  }
+  const label = '高爆彈頭<span class="cutin-en">High-Explosive Rounds</span>';
+  api.playCutin(()=>{
+    if(state.over) return;
+    heBuffUntil = Date.now() + sec*1000;
+    api.triggerAtkBuff(sec, true);   // persist＝跨盤跨怪；cut-in 撤下才起算，10 秒完整可用
+    api.resetEnemyTimers();          // cut-in 撤下瞬間重置敵大絕/延時倒數（同其他 cut-in 慣例）
+    api.scheduleUlt();
+  }, label, pas.cutin);
+}
+
+/* 全重置（combat.startGame / startIntruderFight 調度）：清被動 buff 時間戳。
+ * atkBuff 本體旗標/計時器由 combat 自清；此處只清 partner 自有的判定狀態。 */
+export function reset(){
+  heBuffUntil = 0;
 }

@@ -281,6 +281,47 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
   window.addEventListener('mouseup', e=>end(e.clientX,e.clientY));
 })();
 
+// 搭檔主動技（一般盤面情境）：非聖徒化時，在敵人畫面「由下往上滑」發動 tryActive('board')。
+//   （馬季諾「前線補給」等 context:'board'/'any' 技的入口。聖徒化期間 #returnSwipe 手勢層
+//    蓋在最上層接管上滑 → 走 tryActive('saint')，兩入口互不重疊。）
+//   點紅點防禦不受影響：紅點自帶 touchstart/click；此處為 passive 監聽、只在明確上滑時觸發。
+(function bindBoardActiveSwipe(){
+  const zone=$('top');
+  if(!zone) return;
+  let startX=0, startY=0, tracking=false;
+  const need=()=>Math.max(48, (window.innerHeight||600)*0.125);   // 上滑 ≥ 螢幕高 12.5%（同生命歸還手勢）
+  const canTrack=()=>!(state.over||state.saintMode||state.cutinPlaying||state.transitioning);
+  zone.addEventListener('touchstart',e=>{
+    if(!canTrack()) return;
+    const t=e.touches[0]; startX=t.clientX; startY=t.clientY; tracking=true;
+  },{passive:true});
+  zone.addEventListener('touchmove',e=>{
+    if(!tracking) return;
+    const t=e.touches[0];
+    const up=startY-t.clientY;
+    if(up>need() && up>Math.abs(t.clientX-startX)*1.0){
+      tracking=false;
+      partner.tryActive('board');   // 能否發、屬於誰由 partner 判定（freya 無 board 技 → no-op）
+    }
+  },{passive:true});
+  zone.addEventListener('touchend',()=>{tracking=false;});
+  // 桌機滑鼠拖曳也支援（方便測試）
+  let mDown=false;
+  zone.addEventListener('mousedown',e=>{
+    if(!canTrack()) return;
+    mDown=true; startX=e.clientX; startY=e.clientY;
+  });
+  zone.addEventListener('mousemove',e=>{
+    if(!mDown) return;
+    const up=startY-e.clientY;
+    if(up>need() && up>Math.abs(e.clientX-startX)*1.0){
+      mDown=false;
+      partner.tryActive('board');
+    }
+  });
+  window.addEventListener('mouseup',()=>{mDown=false;});
+})();
+
 combat.bootIdle();   // over=true，建立背景盤面/血條，停在首頁
 
 console.log('[step8] 連戰 lineup 已接上（局內多敵：faceless→facelessgiant）· 首敵：', GAME_CONFIG.enemies[GAME_CONFIG.lineup[0]]?.name, '· HP', state.enemyMax);

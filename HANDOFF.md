@@ -25,8 +25,8 @@
 | `defense.js` | ✅ | 三段防禦(Counter/Perfect/Defense)+ `setUltRate` 擁有者管道 + `addPerfect` 計數。多發大絕(ULT_SHOTS/GAP)讀取端已就緒。 |
 | `enemy.js` | ✅ | 立繪 / 受擊特效 / `setEnemy`(含 witch Boss 大絕/懲罰/彈痕 config 寫入 state)。**`triggerIntruder` 已接實體**(Boss 遭遇 cut-in → enterFight → 呼叫注入的 `startIntruderFight`)。 |
 | `saint.js` | ✅ | 聖徒化三結局(MB / OBE / 生命歸還)、`lifeReturnAbort` 執行體、`markExecution`。 |
-| `partner.js` | ✅ | 被動即死防禦(`tryDeathGuard`,cut-in 讀 config)歸位接上致死鏈;主動技通用框架(單槽 `tryActive(context)` + 情境標註分派 + `ACTIVE_HANDLERS`,lifeReturn 為首個 handler)。 |
-| `weapon.js` | ✅ | 反擊武器 `weaponCounter`(mg/shotgun/sniper 三 vfx,counter 產生端已驗)、雙槍破防窗口(`activateDual`/`endDual`)、換裝面板(搭檔為顯示層)、`reset`/`stopTimers` 跨場清理。 |
+| `partner.js` | ✅ | 被動即死防禦(`tryDeathGuard`)接致死鏈;主動技框架(`tryActive(context)`,支援 `'any'` 情境與 `oncePerBattle`)。**第二搭檔馬季諾**:主動「前線補給」(`supplyRefill`,隨時補滿破防值、每場一次、cut-in+SE 預留;聖徒化不能開雙槍原則不變)+ 被動「高爆彈頭」(`onCounterSuccess`,成功反擊 → 10 秒普攻加倍、跨盤跨怪;buff 從無到有插 cut-in,刷新/聖徒化中只跳字)。`currentPartner` 讀 `state.pickedPartner`(換人即換技)。 |
+| `weapon.js` | ✅ | 反擊武器 `weaponCounter`、雙槍破防窗口(`activateDual`/`endDual`)、副武器換裝面板、`reset`/`stopTimers`。**搭檔選人畫面**(`openPartnerSheet`:全螢幕大立繪左右滑動/箭頭切換、技能描述卡、底部發動說明;「選擇此搭檔」經 `setPickedPartner` 唯一管道寫入)。 |
 | `inspector.js` | ✅ | 規則制評價(rank + EXP 顯示)、監察官結算演出(`showResultSequence` 分階段 + 處決台詞分支 + 打字機)、好感雙軌查表(`pickByThreshold`,currentFavor 固定 0)、Boss 優先 `bossDialogues`、S 解鎖 → `onRematchBtn` 迎擊分流、最佳成績雙存檔(一般 `saint_best_total_v1` / Boss `saint_best_total_boss_v1`)。**不搬 legacy `inspectorPanelHtml`**。 |
 | `main.js` | ✅ | composition root:注入、按鈕/手勢綁定、開機閒置。rematchBtn 綁 `inspector.onRematchBtn`。 |
 

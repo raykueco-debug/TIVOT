@@ -112,11 +112,14 @@ export const state = {
   intruderTriggered: false,
   inIntruderFight: false,
   deathGuardUsed: false,
+  partnerActiveUsed: false,   // 搭檔主動技「每場一次」旗標（oncePerBattle 技用；擁有者 partner，combat 於開場歸零）
+  pickedPartner: GAME_CONFIG.defaultPartner,   // 玩家實選搭檔（擁有者 partner；選人畫面經 setPickedPartner 寫入）
   lineupIndex: 0,        // 連戰序列游標（局內第幾隻敵，對應 GAME_CONFIG.lineup）
 
   /* ── 3.8 增益（擁有者：combat） ─────────────────────────────── */
   atkBuff: false,
   atkBuffTimer: null,
+  atkBuffPersist: false, // true＝可跨盤跨怪的攻擊加倍（馬季諾被動「高爆彈頭」）；清盤/擊殺不清、僅到時或開新場清
 
   /* ── UI 閘門（跨模組共享的演出鎖；擁有者：播演出的模組） ──────────
    *  cutinPlaying：cut-in／結局演出期間鎖住盤面點擊與敵大絕生成。
@@ -173,6 +176,12 @@ export function addCounter(dmg){
  * perfectCount 擁有者為 inspector；由 defense 判定 Perfect 時 +1、inspector 結算時讀。 */
 export function addPerfect(){
   state.perfectCount += 1;
+}
+
+/* 搭檔選人畫面專用：切換實選搭檔（pickedPartner 唯一寫入管道）。
+ * partner.currentPartner() 讀此值決定能力歸屬——換人即技能切換。 */
+export function setPickedPartner(key){
+  if(GAME_CONFIG.partners[key]) state.pickedPartner = key;
 }
 
 /* enemy.js 專用：載入敵人時，初始化敵方血量（3.2 combat-owned 的載入時寫入）。

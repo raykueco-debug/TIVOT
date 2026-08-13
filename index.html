@@ -201,7 +201,37 @@
     </div>
   </div>
 
-  <!-- 選擇彈層（副武器 / 搭檔 共用）-->
+  <!-- 搭檔選人畫面：大立繪左右滑動切換、卡片技能描述、底部發動說明（清單依 config.partners 動態產生）-->
+  <div id="partnerSheet">
+    <div class="ps-title">選擇搭檔</div>
+    <div class="ps-stage" id="psStage">
+      <button class="ps-arrow ps-prev" id="psPrev" aria-label="上一位">‹</button>
+      <img id="psPortrait" alt="搭檔立繪" draggable="false">
+      <button class="ps-arrow ps-next" id="psNext" aria-label="下一位">›</button>
+    </div>
+    <div class="ps-dots" id="psDots"></div>
+    <div class="ps-card">
+      <div class="ps-name" id="psName"></div>
+      <div class="ps-skill">
+        <div class="ps-k"><span class="ps-tag">主動</span><b id="psActiveName"></b></div>
+        <div class="ps-d" id="psActiveDesc"></div>
+      </div>
+      <div class="ps-skill">
+        <div class="ps-k"><span class="ps-tag">被動</span><b id="psPassiveName"></b></div>
+        <div class="ps-d" id="psPassiveDesc"></div>
+      </div>
+    </div>
+    <div class="ps-howto">
+      <div>主動技：戰鬥中於敵人畫面「由下往上滑」發動</div>
+      <div>聖徒化：敵人畫面「左右滑到底」隨時可發動——HP 越低，持續時間越長</div>
+    </div>
+    <div class="ps-btns">
+      <button id="psSelect">選擇此搭檔</button>
+      <button id="psClose">返回</button>
+    </div>
+  </div>
+
+  <!-- 選擇彈層（副武器）-->
   <div id="pickSheet">
     <div class="pick-panel">
       <div class="pick-title" id="pickSheetTitle">選擇</div>
