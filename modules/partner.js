@@ -53,7 +53,7 @@ export function tryDeathGuard(){
   if(pas.oncePerBattle && state.deathGuardUsed) return false;   // 一次性且已用掉 → 不再擋
   applyDeathGuard();          // 鎖 1 HP + 標記 deathGuardUsed（D3 契約例外的唯一入口）
   api.updateBars();           // applyDeathGuard 不碰 DOM，於此刷新血條（對齊 reference）
-  const vo = asset(pas.voice); if(vo) SFX.play(vo);   // SE 與 cut-in 同步（→ vo_death_guard）
+  const vo = asset(pas.voice); if(vo) SFX.play(vo, (GAME_CONFIG.tuning.partnerSeGain||{})[pas.voice]);   // SE 與 cut-in 同步（→ vo_death_guard；增益見 tuning.partnerSeGain）
   api.floatDmg('即死防禦','50%','40%',true);
   const label = '即死防禦<span class="cutin-en">Death Guard</span>';
   api.playCutin(()=>{
@@ -76,7 +76,7 @@ const ACTIVE_HANDLERS = {
   // 生命歸還：聖徒化中止並保留當前血量。執行能力經 saintApi 注入（saint 內部提供）。
   lifeReturn(a, act){
     if(!state.saintMode) return false;   // 保險：非聖徒化不執行
-    const vo = asset(act && act.voice); if(vo) SFX.play(vo);   // SE 與結局 cut-in 同步（→ vo_life_return；saint 不知觸發者，SE 歸 partner 播）
+    const vo = asset(act && act.voice); if(vo) SFX.play(vo, (GAME_CONFIG.tuning.partnerSeGain||{})[act.voice]);   // SE 與結局 cut-in 同步（→ vo_life_return；saint 不知觸發者，SE 歸 partner 播）
     a.saintApi.lifeReturnAbort();
     return true;
   },
@@ -86,7 +86,7 @@ const ACTIVE_HANDLERS = {
   //   cut-in：一般盤面才插（聖徒化中插 cut-in 會打斷反應計時節奏，改只跳字＋SE）。
   supplyRefill(a, act){
     if(state.over || state.cutinPlaying || state.transitioning) return false;
-    const vo = asset(act && act.voice); if(vo) SFX.play(vo);   // SE（預留槽，未填則靜默）
+    const vo = asset(act && act.voice); if(vo) SFX.play(vo, (GAME_CONFIG.tuning.partnerSeGain||{})[act.voice]);   // SE（→ vo_supply_refill；增益見 tuning.partnerSeGain）
     a.fillEnergy();
     a.floatDmg(act.name,'50%','40%',true);
     if(!state.saintMode){
@@ -157,7 +157,7 @@ export function checkLowHpBuff(){
     clearTimeout(lowHpTimer);
     lowHpTimer = setTimeout(()=>{ api.setLowHpBuff(false); lowHpTimer=null; }, sec*1000);
   };
-  const vo = asset(pas.voice); if(vo) SFX.play(vo);   // SE（預留槽，未填則靜默）
+  const vo = asset(pas.voice); if(vo) SFX.play(vo, (GAME_CONFIG.tuning.partnerSeGain||{})[pas.voice]);   // SE（→ vo_hc_rounds；增益見 tuning.partnerSeGain）
   api.floatDmg(pas.name,'50%','34%',true);
   if(state.cutinPlaying){                     // 已有演出在播（如即死防禦 cut-in）→ 只跳字、buff 立即起算
     fire();

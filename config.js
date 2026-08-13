@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於首頁版權宣告下方，每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.13-16';
+export const VERSION = 'ver 2026.08.13-17';
 
 export const GAME_CONFIG = {
 
@@ -445,7 +445,10 @@ export const GAME_CONFIG = {
     overkillNextDelayMs: 0,     // 自動清盤後直接插入下一盤（原 1000ms 防連點誤觸，手感太拖已取消）
     // 搭檔演出 SE 播放增益：母帶已重 master 至 RMS −11 dBFS（v2），播放端不再增幅；
     //   個別仍嫌大/小聲時微調這裡即可（>1 增幅、<1 衰減）
-    partnerSeGain: { se_luna_dual:1, se_luna_exc:1, se_luna_mb:1, se_luna_obe:1 },
+    //   vo_* 四支（技能 SE）：對齊 Luna 聖徒化語音的有效響度（RMS −14.4 dBFS）——
+    //   依各檔母帶 RMS 差多少補多少，峰值略超滿刻度交給 SFX 匯流 limiter 軟接（不破音）。
+    partnerSeGain: { se_luna_dual:1, se_luna_exc:1, se_luna_mb:1, se_luna_obe:1,
+                     vo_life_return:9.2, vo_death_guard:3.0, vo_supply_refill:2.7, vo_hc_rounds:3.6 },
 
     // 載入畫面教學 Hint 輪播（文案見 loadingHints）
     loadingHintHoldMs:   5000,  // 每句停留 5 秒
