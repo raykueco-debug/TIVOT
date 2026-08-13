@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於首頁版權宣告下方，每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.13-26';
+export const VERSION = 'ver 2026.08.13-27';
 
 export const GAME_CONFIG = {
 
@@ -411,6 +411,15 @@ export const GAME_CONFIG = {
     cutinText:'NEW HUSTLE INCOMING',           // 亂入 Boss 遭遇 cut-in 字樣（一律用此，不因怪而異）
     enemy:'witch',                             // v17：S 評價後遭遇的 Boss＝槍之魔女
     bannerHold:1800,                           // 結算畫面停留多久(ms)後才播 Boss cut-in
+    // ── Boss 戰 S 級獎勵（銭湯インストール）──
+    //   結算演出完畢後「再度執槍」變身金色呼吸光「SAINT INSTALL」→ 點下進獎勵畫面：
+    //   全圖 + 右上障子區毛筆直書（列由右而左逐字寫出）→ 寫完ツケ板（拍子木）兩聲。
+    reward: {
+      image:'bg_sentou',                       // 獎勵大圖（ASSETS 鑰匙）
+      btnLabel:'SAINT INSTALL',                // 變身後按鈕字樣
+      sign:['銭湯','インストール'],             // 毛筆招牌：直書列（由右而左）
+      charMs:380,                              // 每字書寫間隔(ms)
+    },
   },
 
   /* ------------------------------------------------------------------ *
@@ -542,6 +551,7 @@ export const ASSETS = {
   partner_renee:   "resources/partner/Renee_SI_01.png",     // 蕾妮 立繪
   partner_malzeno: "resources/partner/Malzeno_SI_01.png",   // 馬季諾 立繪
   cutin_boss: "resources/enemy/Belinda_CI_boss.jpg",   // v18d：Boss（貝琳妲）遭遇 cut-in 專屬圖
+  bg_sentou: "resources/background/SENTOUINSTALL.png", // Boss 戰 S 級獎勵畫面（銭湯インストール）
 
   // ── 副武器圖（換裝選單縮圖）：鑰匙對應 weapons.image；檔名＝類型_武器名 ──
   weapon_mg_squall:     "resources/weapon/MG_Squall.png",       // 重機槍 Squall

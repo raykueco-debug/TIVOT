@@ -276,6 +276,39 @@ export const SFX = {
     }catch(e){}
   },
 
+  // ツケ板（拍子木）二丁：Boss S 級獎勵演出（銭湯インストール）毛筆字寫完後「チョン、チョン」兩聲。
+  //   一聲＝極短噪聲 click（敲擊瞬態）+ 三部分音快速衰減（木質共鳴）；第二聲略強、間隔 0.55s。
+  tsuke(){
+    const c = ctx();
+    if(!c) return;
+    try{
+      const hit=(t, gain)=>{
+        // 敲擊瞬態：30ms 噪聲、平方衰減包絡、highpass 去悶
+        const nb=c.createBuffer(1, Math.floor(c.sampleRate*0.03), c.sampleRate);
+        const d=nb.getChannelData(0);
+        for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2);
+        const n=c.createBufferSource(); n.buffer=nb;
+        const nf=c.createBiquadFilter(); nf.type='highpass'; nf.frequency.value=1800;
+        const ng=c.createGain();
+        ng.gain.setValueAtTime(gain*0.9, t);
+        ng.gain.exponentialRampToValueAtTime(0.0001, t+0.03);
+        n.connect(nf); nf.connect(ng); ng.connect(busOut(c)); n.start(t);
+        // 木質共鳴：[頻率Hz, 峰值, 衰減秒]，每打微幅走音（±2%）避免機械感
+        [[2450,0.5,0.07],[1150,0.35,0.10],[3600,0.2,0.045]].forEach(p=>{
+          const o=c.createOscillator(), g=c.createGain();
+          o.type='triangle'; o.frequency.value=p[0]*(0.98+Math.random()*0.04);
+          g.gain.setValueAtTime(0.0001, t);
+          g.gain.exponentialRampToValueAtTime(gain*p[1], t+0.004);
+          g.gain.exponentialRampToValueAtTime(0.0001, t+p[2]);
+          o.connect(g); g.connect(busOut(c));
+          o.start(t); o.stop(t+p[2]+0.02);
+        });
+      };
+      const t=c.currentTime+0.02;
+      hit(t, 0.9); hit(t+0.55, 1.0);
+    }catch(e){}
+  },
+
   // 既有介面：本輪維持 no-op（合成音尚未搬回），供各模組安全呼叫、不報錯。
   sniperShot(){},
   wrong(){},

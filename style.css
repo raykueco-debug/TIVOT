@@ -709,6 +709,45 @@
   .loadout-btn:active{transform:scale(.95);}
   .loadout-btn .lb-label{font-size:11px;letter-spacing:3px;color:var(--gold-dim);}
   .loadout-btn .lb-value{font-size:13px;letter-spacing:1px;color:var(--gold);}
+  /* ── Boss 戰 S 級獎勵：銭湯インストール ── */
+  /* 毛筆字型：Yuji Boku（OFL）子集，只含「銭湯インストール」8 字（3.6KB，自託管離線可用） */
+  @font-face{ font-family:'YujiBokuSentou';
+    src:url('resources/misc/YujiBoku_sentou.woff2') format('woff2');
+    font-display:block; }
+  #sentouReward{position:absolute;inset:0;display:none;align-items:center;justify-content:center;
+    background:#050308;z-index:80;}
+  #sentouReward.on{display:flex;animation:sentouIn .8s ease;}
+  @keyframes sentouIn{from{opacity:0;}to{opacity:1;}}
+  /* 圖完整顯示（object-fit:contain 等效）：外框鎖 2/3 比例、置中，字樣以框定位（不隨視窗裁切跑位） */
+  #sentouReward .sentou-frame{position:relative;aspect-ratio:2/3;max-width:100%;max-height:100%;}
+  #sentouReward img{width:100%;height:100%;-webkit-user-drag:none;}
+  /* 毛筆招牌：右上障子區直書（不蓋人物），列由右而左（vertical-rl）、「銭湯」大字、「インストール」落款縮小 */
+  #sentouReward .sentou-sign{position:absolute;top:4.5%;right:5%;writing-mode:vertical-rl;
+    display:flex;gap:.16em;font-family:'YujiBokuSentou','Noto Serif TC',serif;
+    color:#221a12;font-size:clamp(20px, 8.5vmin, 40px);line-height:1;letter-spacing:.08em;
+    transform:rotate(.6deg);pointer-events:none;}
+  #sentouReward .sentou-col{display:block;}
+  #sentouReward .sentou-col:nth-child(2){font-size:.68em;margin-block-start:.55em;}
+  /* 逐字「寫」出：由上往下 clip 揭開 + 墨暈收乾（blur→清晰），動畫延遲由 JS 逐字排 */
+  #sentouReward .sentou-sign i{font-style:normal;opacity:0;
+    animation:sentouChar .34s ease forwards;
+    text-shadow:0 0 1px rgba(34,26,18,.55), .05em .05em .14em rgba(0,0,0,.22);}
+  @keyframes sentouChar{
+    from{opacity:0;clip-path:inset(0 0 100% 0);transform:scale(1.14);filter:blur(2.2px);}
+    60%{opacity:1;filter:blur(.5px);}
+    to{opacity:1;clip-path:inset(0 0 -12% 0);transform:scale(1);filter:blur(0);}}
+  #sentouReward .sentou-hint{position:absolute;left:0;right:0;
+    bottom:calc(14px + env(safe-area-inset-bottom));text-align:center;
+    font-size:11px;letter-spacing:4px;color:var(--gold-dim);
+    opacity:0;transition:opacity .8s;pointer-events:none;}
+  #sentouReward.done .sentou-hint{opacity:.85;}
+  /* Boss S 級：結算演出完畢後「再度執槍」變身 SAINT INSTALL（金色呼吸光） */
+  #rematchBtn.saintinstall{border-color:var(--gold);color:var(--gold);
+    animation:saintBreath 2.2s ease-in-out infinite;}
+  @keyframes saintBreath{
+    0%,100%{box-shadow:0 0 6px rgba(217,198,138,.35);text-shadow:0 0 4px rgba(217,198,138,.3);}
+    50%{box-shadow:0 0 24px rgba(217,198,138,.9);text-shadow:0 0 10px rgba(217,198,138,.8);}}
+
   /* ── 副武器選擇畫面（全螢幕）：橫式武器卡上下滑動 + 卡疊 + 武器介紹 ── */
   #weaponSheet{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;
     background:rgba(6,4,12,.96);z-index:60;

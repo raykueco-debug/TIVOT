@@ -210,6 +210,20 @@ export function settle(totalTime, stats, opts={}){
   if(it && it.enable && !state.intruderTriggered && !state.inIntruderFight && evalResult.grade==='S'){
     state.sRankUnlocked = true;
   }
+
+  // ── Boss 戰 S 級獎勵（銭湯インストール）：結算演出（rows 刷完+台詞打完 ≈3.4s）完畢後，
+  //   「再度執槍」變身金色呼吸光「SAINT INSTALL」→ 點下進獎勵畫面（onRematchBtn 'sentou' 分流）。
+  if(state.inIntruderFight && evalResult.grade==='S' && it && it.reward){
+    const img=new Image(); img.src=asset(it.reward.image);   // 預載獎勵大圖（2.3MB，變身期間先抓）
+    setTimeout(()=>{
+      const b=$('banner');
+      if(!b || !b.classList.contains('on') || state.resultMode!=='rematch') return;   // 已離開結算 → 放棄
+      state.resultMode='sentou';
+      const rb=$('rematchBtn');
+      rb.textContent = it.reward.btnLabel || 'SAINT INSTALL';
+      rb.classList.add('saintinstall');
+    }, 3600);
+  }
 }
 
 /* ============================================================================
@@ -228,7 +242,7 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose){
   state.resultMode='rematch';
   const rbtn=$('rematchBtn');
   rbtn.textContent='再度執槍';
-  rbtn.classList.remove('intercept','ready');
+  rbtn.classList.remove('intercept','ready','saintinstall');
   rbtn.style.display='';
   rbtn.style.visibility='';   // 復位：避免沿用上一場「迎擊」流程的 visibility:hidden
   $('bannerTitle').textContent=title;
@@ -290,6 +304,55 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose){
   }
 }
 
+/* ============================================================================
+ *  Boss 戰 S 級獎勵演出：銭湯インストール
+ *  ---------------------------------------------------------------------------
+ *  全圖（2/3 框完整顯示）→ 右上障子區毛筆直書（config intruder.reward.sign，
+ *  列由右而左、逐字由上往下「寫」出）→ 寫完ツケ板（拍子木）兩聲 → 顯示返回提示，
+ *  點畫面任意處回首頁。演出中（done 前）點擊無效，避免誤觸跳過。
+ * ========================================================================== */
+let _sentouTimer=null, _sentouBound=false;
+function openSentouReward(){
+  const ov=$('sentouReward');
+  if(!ov) return;
+  const rw=(GAME_CONFIG.intruder && GAME_CONFIG.intruder.reward) || {};
+  SFX.stopBgm(800);   // 靜場：墨與拍子木的留白
+  const img=$('sentouImg');
+  const src=asset(rw.image);
+  if(img && src) img.src=src;
+  // 建字：每列一個 .sentou-col、每字一個 <i>，動畫延遲逐字排 → 毛筆逐字寫出
+  const sign=$('sentouSign');
+  const per=rw.charMs || 380;
+  let idx=0;
+  sign.innerHTML='';
+  (rw.sign || ['銭湯','インストール']).forEach(txt=>{
+    const col=document.createElement('span'); col.className='sentou-col';
+    [...txt].forEach(ch=>{
+      const s=document.createElement('i'); s.textContent=ch;
+      s.style.animationDelay=(600 + idx*per)+'ms';   // 進場淡入 0.6s 後起筆
+      idx++;
+      col.appendChild(s);
+    });
+    sign.appendChild(col);
+  });
+  if(!_sentouBound){
+    _sentouBound=true;
+    ov.addEventListener('click', ()=>{
+      if(!ov.classList.contains('done')) return;   // 寫完+響板前不可離開
+      ov.classList.remove('on','done');
+      api.goHome();
+    });
+  }
+  ov.classList.remove('done');
+  ov.classList.add('on');
+  $('banner').classList.remove('on');   // 收結算畫面（獎勵層在上，直接收乾淨）
+  clearTimeout(_sentouTimer);
+  _sentouTimer=setTimeout(()=>{
+    SFX.tsuke();                // 寫完 → ツケ板兩聲（チョン、チョン）
+    ov.classList.add('done');   // 響板起 → 顯示「點擊返回」
+  }, 600 + idx*per + 420);
+}
+
 // 逐字打字機：total 毫秒內把整句顯示完
 function typeInspectorLine(el, text, total){
   clearTimeout(_inspTypeTimer);
@@ -315,6 +378,10 @@ function typeInspectorLine(el, text, total){
 export function onRematchBtn(){
   const rbtn=$('rematchBtn');
   clearTimeout(_resultAutoTimer);   // 玩家有操作 → 取消自動回首頁
+  if(state.resultMode==='sentou'){   // Boss S 級：SAINT INSTALL → 銭湯インストール獎勵畫面
+    openSentouReward();
+    return;
+  }
   if(state.resultMode==='intercept'){
     api.triggerIntruder();
     return;
