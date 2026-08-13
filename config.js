@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於首頁版權宣告下方，每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.13-24';
+export const VERSION = 'ver 2026.08.13-25';
 
 export const GAME_CONFIG = {
 
@@ -455,6 +455,13 @@ export const GAME_CONFIG = {
     partnerSeGain: { se_luna_dual:1, se_luna_exc:1, se_luna_mb:1, se_luna_obe:1,
                      vo_life_return:9.2, vo_death_guard:3.0, vo_supply_refill:2.7, vo_hc_rounds:3.6 },
 
+    // 檔案 SFX 播放增益（對 ASSETS 鑰匙；未列入＝1）。全域響度階層（有效 RMS 目標）：
+    //   語音/演出層 ≈ −14.4 dBFS（基準，vo_*/Luna 系走 partnerSeGain）
+    //   ＞ 反擊武器/受擊層 ≈ −16 ＞ 普攻槍聲 ≈ −19（最頻繁、最收斂）＞ BGM ≈ −20（bgmVol 管）。
+    //   值依各檔實測 RMS 反推（如散彈母帶 −9.5 全場最大聲 → 0.47）；峰值交給 SFX 匯流 limiter。
+    sfxGain: { se_pistol_01:0.55, se_pistol_02:0.7, se_shotgun_blast:0.47, se_sniper_falcon:0.77,
+               em_slash:0.56, em_dagger:2.0 },
+
     // BGM 播放音量（0~1，HTMLAudio.volume）：目標「有效響度」統一 ≈ −20 dBFS，
     //   即語音/技能 SE（≈−14.4）下方約 6 dB——BGM 是底、人聲在上。各曲母帶 RMS 差很大
     //   （boss −9.7 vs home −17.3），故逐曲定值（依實測 RMS 反推）；未列入的曲用 default。
@@ -613,6 +620,12 @@ export function asset(key){ return (key && ASSETS[key] != null) ? ASSETS[key] : 
 export function bgmVol(key){
   const m = GAME_CONFIG.tuning.bgmVol || {};
   return m[key] != null ? m[key] : (m.default != null ? m.default : 0.7);
+}
+
+/* ---- 小工具：檔案 SFX 逐鍵增益（tuning.sfxGain；未列入＝1）---- */
+export function sfxGain(key){
+  const m = GAME_CONFIG.tuning.sfxGain || {};
+  return m[key] != null ? m[key] : 1;
 }
 
 /* ---- 遙測後端（零維運，Supabase REST）----

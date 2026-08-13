@@ -13,7 +13,7 @@
  *    與監察官結算為下一輪；相關分支以 TODO 標註、以最小佔位不影響本輪流程。
  * ========================================================================== */
 
-import { GAME_CONFIG, asset, bgmVol } from '../config.js';
+import { GAME_CONFIG, asset, bgmVol, sfxGain } from '../config.js';
 import { state } from '../state.js';
 import { SFX } from '../audio.js';
 import { TEL } from '../telemetry.js';   // 遙測（底層純輸出，同 audio 定位；未設定後端時 no-op）
@@ -113,7 +113,7 @@ export function goNextBoard(){
   stopIntervalTimer();
   const t=$('transition'), txt=$('transText');
   txt.textContent='RELOADING';
-  SFX.play(asset('sfx_reload'));   // 清盤換彈音（RELOADING 顯示時）
+  SFX.play(asset('sfx_reload'), sfxGain('sfx_reload'));   // 清盤換彈音（RELOADING 顯示時）
   t.classList.add('on');
   txt.style.animation='none'; void txt.offsetWidth; txt.style.animation='';
   setTimeout(()=>{
@@ -361,7 +361,7 @@ function enemyAttack(dmg, kind, saintAmt){
   if(state.over) return;
   // 敵攻擊音：依 kind 播該怪對應音（ult＝大絕命中/不完美防禦格擋、delay＝太慢、wrong＝按錯）。
   const sk = state.curEnemySound && state.curEnemySound[kind];
-  if(sk) SFX.play(asset(sk));
+  if(sk) SFX.play(asset(sk), sfxGain(sk));   // 受擊層增益（全域響度階層見 tuning.sfxGain）
   if(state.saintMode){
     // 聖徒化期間敵攻擊不扣血：改推進倒數槽（推滿＝OBE）。視覺（震動/受擊特效/紅閃）留在 combat，
     //   倒數槽推進交由 saint.saintAdvance（內部走 HP API healPlayer，滿則觸發 OBE）。

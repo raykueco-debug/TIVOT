@@ -8,7 +8,7 @@
  *  聖徒化左右滑、生命歸還上滑、雙槍點計量表、換裝面板等綁定為下一輪。
  * ========================================================================== */
 
-import { GAME_CONFIG, VERSION, asset, ASSETS, bgmVol } from './config.js';
+import { GAME_CONFIG, VERSION, asset, ASSETS, bgmVol, sfxGain } from './config.js';
 import { state } from './state.js';
 import { SFX } from './audio.js';
 import { TEL } from './telemetry.js';   // 遙測（未設定後端時 no-op）
@@ -61,7 +61,7 @@ combat.setup();
 })();
 
 // 普攻槍聲：固定用 Pistol_SE_02（不隨機）
-SFX.setShots([asset('se_pistol_02')].filter(Boolean));
+SFX.setShots([asset('se_pistol_02')].filter(Boolean), sfxGain('se_pistol_02'));
 
 /* ── 進場預載（第一段）：掃 ASSETS 載「開場就要」的圖＋音，跑完才揭開選單 ──
  *  第一段內依序讓路：監察官立繪（門面最優先）→ 關鍵音效（SI_01/Start_01）→ 批次段，
@@ -270,8 +270,9 @@ bindBtn('originalClose',()=>{ const s=$('originalSheet'); if(s) s.classList.remo
 document.querySelectorAll('#originalSheet .os-link').forEach(a=>{
   a.addEventListener('click', ()=>TEL.originalClick(a.textContent.trim()));
 });
-// 後臺統計（管理員限定）：新分頁開 stats.html；顯示條件見下（簽名後 CSS 才放行）
-bindBtn('statsBtn', ()=>{ window.open('stats.html', '_blank'); });
+// 後臺統計（管理員限定）：同分頁開 stats.html（新分頁在 iOS PWA 會被丟到外部瀏覽器回不來；
+// stats.html 有「返回主頁」鈕走回 ./）。顯示條件見下（簽名後 CSS 才放行）。
+bindBtn('statsBtn', ()=>{ window.location.href = 'stats.html'; });
 if(TEL.isAdmin()) document.body.classList.add('adminsigned');   // 裝置已簽過 → 開機即顯示後臺鈕
 weapon.refreshLoadoutLabels();                  // 開機：把當前副武器/搭檔名寫進 loadout 按鈕
 TEL.visit();                                    // 來訪上報（每次開頁一筆）

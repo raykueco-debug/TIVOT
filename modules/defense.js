@@ -15,7 +15,7 @@
  *    不 import combat/weapon（維持 §2 依賴方向，不製造反向依賴）。
  * ========================================================================== */
 
-import { GAME_CONFIG, asset } from '../config.js';
+import { GAME_CONFIG, asset, sfxGain } from '../config.js';
 import { state, addPerfect } from '../state.js';
 import { SFX } from '../audio.js';
 
@@ -198,7 +198,7 @@ export function resolveThreat(th){
     }else{
       // 一般武器（如重機槍）：完全免傷（狙擊 noPerfectBand=true 時此帶消失，落入下方 Defense）。
       //   完美防禦音＝weapon 的 Guard_SE（散彈完防走自己的槍聲，不到這裡）。
-      SFX.play(asset('se_guard'));
+      SFX.play(asset('se_guard'), sfxGain('se_guard'));
       api.floatDmg('PERFECT','50%','40%',true);
     }
   }else{

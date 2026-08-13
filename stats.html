@@ -26,16 +26,21 @@
   .bar i{ display:block; height:100%; background:var(--gold); }
   #msg{ text-align:center; font-size:12px; letter-spacing:1px; color:var(--gold-dim); padding:30px 10px; line-height:2; }
   #msg code{ font-family:monospace; font-size:11px; color:var(--ink); }
-  button#refresh{ display:block; margin:0 auto 18px; padding:8px 26px; background:transparent;
+  .toolbar{ display:flex; justify-content:center; gap:12px; margin-bottom:18px; }
+  button#refresh, a#backBtn{ display:block; padding:8px 26px; background:transparent;
     border:1px solid var(--gold-dim); color:var(--gold); border-radius:8px; font-family:inherit;
-    font-size:12px; letter-spacing:3px; cursor:pointer; }
-  button#refresh:active{ transform:scale(.96); }
+    font-size:12px; letter-spacing:3px; cursor:pointer; text-decoration:none; }
+  button#refresh:active, a#backBtn:active{ transform:scale(.96); }
+  a#backBtn{ color:var(--ink); }
 </style>
 </head>
 <body>
   <h1>後 臺 統 計</h1>
   <div class="sub" id="verLine">聖約第四騎士團 · TIVOT</div>
-  <button id="refresh">重新整理</button>
+  <div class="toolbar">
+    <a id="backBtn" href="./">返回主頁</a>
+    <button id="refresh">重新整理</button>
+  </div>
   <div id="msg">載入中……</div>
   <div id="content" style="display:none">
     <div class="grid">

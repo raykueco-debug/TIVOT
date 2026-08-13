@@ -29,7 +29,7 @@
  *     buildGrid / resetEnergy），不 import combat/saint/defense（維持依賴方向）。
  * ========================================================================== */
 
-import { GAME_CONFIG, asset } from '../config.js';
+import { GAME_CONFIG, asset, sfxGain } from '../config.js';
 import { state, addCounter, setPickedPartner } from '../state.js';
 import { SFX } from '../audio.js';
 
@@ -66,13 +66,14 @@ export function weaponCounter(dmgScale){
   // 反擊武器 SE：反擊（Counter）與完美防禦（散彈 Perfect 反擊）都會出聲——散彈 blast 兩路徑皆觸發。
   //   機槍＝逐發播（搭搭搭搭搭連續感）、散彈＝一發、狙擊＝一發。散彈完防由此 SE 出聲，defense 端不再疊合成重擊。
   const se = asset(w.sound);
+  const seGain = sfxGain(w.sound);   // 反擊層增益（全域響度階層見 tuning.sfxGain）
   // 暴擊字樣：每 hit 各自 20% 擲骰，中則傷害 ×(1+加傷) 並在該發前綴紅字「暴擊」。
 
   if(w.vfx==='single'){
     // 狙擊：單發，跳一個較大的數字；暴擊則轉紅並前綴「暴擊」
     const base=Math.max(1, Math.round(w.hits*w.dmgPerHit*scale));
     const h=critHit(base);
-    SFX.play(se);                              // 狙擊：一發
+    SFX.play(se, seGain);                      // 狙擊：一發
     api.enemyDamage(h.dmg, true, true);       // 靜默扣血（含 overkill/擊殺判定）
     addCounter(h.dmg);
     api.floatDmg((h.crit?'暴擊 ':'')+h.dmg, '46%','32%', h.crit, 'snipernum');
@@ -81,7 +82,7 @@ export function weaponCounter(dmgScale){
   if(w.vfx==='burst'){
     // 散彈：所有彈丸同一瞬間、同一區塊齊發，各自獨立暴擊、各自跳出數字
     const base=Math.max(1, Math.round(w.dmgPerHit*scale));
-    SFX.play(se);                              // 散彈：一次一發（完防/反擊皆觸發）
+    SFX.play(se, seGain);                      // 散彈：一次一發（完防/反擊皆觸發）
     const bx=40+Math.random()*20;
     let sum=0;
     for(let k=0;k<w.hits;k++){
@@ -101,7 +102,7 @@ export function weaponCounter(dmgScale){
   const fire=()=>{
     if(state.over||i>=w.hits) return;
     const h=rolls[i];
-    SFX.play(se);                              // 機槍：每 hit 播一次 → 搭搭搭搭搭
+    SFX.play(se, seGain);                      // 機槍：每 hit 播一次 → 搭搭搭搭搭
     api.enemyDamage(h.dmg, true, true);        // 靜默扣血 → 由自訂 float 控制「暴擊」字樣（僅暴擊發才顯示）
     api.floatDmg((h.crit?'暴擊 ':'')+h.dmg, (30+Math.random()*40)+'%','35%', true);
     i++;
@@ -404,7 +405,7 @@ function bindWeaponSheet(){
     const key = WEAPON_KEYS[wsIndex];
     if(key !== state.equippedWeapon){   // 實際切換才播擊發聲（「裝備中」重按不播）
       state.equippedWeapon = key;       // 反擊武器選即換、立即驅動戰鬥（三段防禦/反擊/視覺）
-      const se = asset(WEAPONS[key].sound); if(se) SFX.play(se);   // 對應武器擊發聲
+      const se = asset(WEAPONS[key].sound); if(se) SFX.play(se, sfxGain(WEAPONS[key].sound));   // 對應武器擊發聲
       refreshLoadoutLabels();
     }
     renderWeaponSheet();

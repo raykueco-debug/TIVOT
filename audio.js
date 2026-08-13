@@ -94,7 +94,8 @@ function playSrc(src, vol){
   load(src).then(b => { if(b) playWhenRunning(b, vol, t0); });
 }
 
-let _shots = [];   // 普攻槍聲候選（已解析路徑，隨機播一支）
+let _shots = [];    // 普攻槍聲候選（已解析路徑，隨機播一支）
+let _shotsVol = 1;  // 普攻槍聲音量（setShots 由呼叫端連同增益傳入——維持本模組不讀 config）
 
 /* ── BGM（單一 HTMLAudio + Blob 全下載後播）───────────────────────────────────
  *  為什麼這樣：BGM 很長（如主選單 285 秒），整段 Web Audio 解碼 ≈100MB 會爆手機記憶體；
@@ -208,8 +209,8 @@ export const SFX = {
   // 播放音檔（src＝已解析路徑）。每次 new source → 可自由重疊、不限制、不打斷前一個。
   play(src, vol){ playSrc(src, vol); },
 
-  // 設定普攻槍聲候選（傳已解析路徑陣列，gunshot 隨機播其一）
-  setShots(srcs){ _shots = (srcs || []).filter(Boolean); },
+  // 設定普攻槍聲候選（傳已解析路徑陣列，gunshot 隨機播其一；vol＝播放增益，未傳＝1）
+  setShots(srcs, vol){ _shots = (srcs || []).filter(Boolean); _shotsVol = (vol==null ? 1 : vol); },
 
   // 合成「重擊感」：完防／格擋用。短促低頻衝擊 + 高頻噪音瞬態（打擊質感）。可重疊。
   heavyHit(){
@@ -243,7 +244,7 @@ export const SFX = {
   // 普攻槍聲：由 setShots 候選中隨機播一支（正確點擊/雙槍/聖徒化的主武器射擊共用）。
   gunshot(/* heavy */){
     if(!_shots.length) return;
-    playSrc(_shots[Math.floor(Math.random()*_shots.length)]);
+    playSrc(_shots[Math.floor(Math.random()*_shots.length)], _shotsVol);
   },
 
   // Overkill 進場鈴：明亮鈴鐺（基音＋泛音成串衰減＋輕微回音第二響）。
