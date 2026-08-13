@@ -24,6 +24,21 @@ import './modules/enemy.js';
 
 const $ = id => document.getElementById(id);
 
+/* ── iOS PWA（加到主畫面）版面高度怪癖 ──
+ *  standalone 啟動瞬間 100%/100dvh 可能取到舊視口值且不重算，底部留一條畫不到的黑帶。
+ *  以 JS 實測 innerHeight 直寫 html/body 高度（inline style 優先權最高），
+ *  並於旋轉/回前台/視口變化時同步；啟動後再補測一次補救慢一拍的取值。 */
+(function syncAppHeight(){
+  const sync=()=>{ const h=window.innerHeight;
+    if(h>0){ document.documentElement.style.height=h+'px'; document.body.style.height=h+'px'; } };
+  sync();
+  window.addEventListener('resize', sync);
+  window.addEventListener('orientationchange', ()=>setTimeout(sync,300));
+  window.addEventListener('pageshow', sync);
+  if(window.visualViewport) window.visualViewport.addEventListener('resize', sync);
+  setTimeout(sync, 600);
+})();
+
 // 按鈕綁定：touch/click 去重，附選單點擊音
 function bindBtn(id, fn){
   const el=$(id); if(!el) return;
