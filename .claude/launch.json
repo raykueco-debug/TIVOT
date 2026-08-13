@@ -6,6 +6,12 @@
       "runtimeExecutable": "python",
       "runtimeArgs": ["-m", "http.server", "8123"],
       "port": 8123
+    },
+    {
+      "name": "tivot2",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "8125"],
+      "port": 8125
     }
   ]
 }
