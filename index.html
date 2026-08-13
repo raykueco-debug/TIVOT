@@ -206,7 +206,8 @@
     <div class="ps-title">選擇搭檔</div>
     <div class="ps-stage" id="psStage">
       <button class="ps-arrow ps-prev" id="psPrev" aria-label="上一位">‹</button>
-      <img id="psPortrait" alt="搭檔立繪" draggable="false">
+      <!-- 取景框：立繪以 config siFit（zoom/top）縮放裁切，統一各搭檔頭部大小（以蕾妮為基準） -->
+      <div class="ps-frame" id="psFrame"><img id="psPortrait" alt="搭檔立繪" draggable="false"></div>
       <button class="ps-arrow ps-next" id="psNext" aria-label="下一位">›</button>
     </div>
     <div class="ps-dots" id="psDots"></div>

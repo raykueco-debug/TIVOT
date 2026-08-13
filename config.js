@@ -48,6 +48,9 @@ export const GAME_CONFIG = {
     freya: {
       name:'蕾妮',
       image:'partner_renee',   // 選人畫面大立繪（Renee_SI_01）
+      // 選人畫面取景（基準）：zoom=1 整張以高度貼合取景框；top=0 頭頂對齊框頂。
+      //   蕾妮原圖即膝上構圖、頭約佔畫高 22%，作為所有搭檔「頭部大小」的基準。
+      siFit:{ zoom:1, top:0 },
       cutin:'cutin_saint',     // 聖徒化演出大圖
       voice:null,              // 語音（PARTNER_SE_SI）之後填
       perk:'即死防禦（被動）＋生命歸還（主動）',
@@ -76,6 +79,9 @@ export const GAME_CONFIG = {
     malzeno: {
       name:'馬季諾',
       image:'partner_malzeno', // 選人畫面大立繪（Malzeno_SI_01）
+      // 選人畫面取景：原圖為全身立繪（頭僅約佔畫高 11%）→ 放大 1.85 倍使頭部與蕾妮基準等大，
+      //   由頭頂往下取景、下緣自然裁在膝上（不露全身）。調整框內構圖改這兩個數即可。
+      siFit:{ zoom:1.85, top:0 },
       cutin:'cutin_saint',     // 聖徒化演出大圖（沿用共通）
       voice:null,
       perk:'前線補給（主動）＋高爆彈頭（被動）',

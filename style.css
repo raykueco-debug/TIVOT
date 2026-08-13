@@ -651,11 +651,16 @@
     margin-bottom:8px;flex:none;}
   #partnerSheet .ps-stage{position:relative;flex:1 1 auto;min-height:0;width:100%;
     display:flex;align-items:center;justify-content:center;touch-action:pan-y;user-select:none;}
-  #partnerSheet #psPortrait{max-width:82%;max-height:100%;object-fit:contain;border-radius:10px;
-    border:1px solid var(--gold-dim);background:#0a0810;box-shadow:0 0 26px rgba(0,0,0,.7);
+  /* 取景框：固定 2/3 直式外框、overflow 裁切。立繪高度＝框高 × --ps-zoom（config siFit.zoom），
+     水平置中、垂直以 --ps-top（頭頂偏移）對齊——各搭檔頭部大小以蕾妮（zoom:1）為基準統一。 */
+  #partnerSheet .ps-frame{position:relative;height:100%;aspect-ratio:2/3;overflow:hidden;
+    border:1px solid var(--gold-dim);border-radius:10px;background:#0a0810;
+    box-shadow:0 0 26px rgba(0,0,0,.7);}
+  #partnerSheet #psPortrait{position:absolute;left:50%;top:0;height:calc(100% * var(--ps-zoom,1));
+    width:auto;transform:translateX(-50%) translateY(var(--ps-top,0%));
     pointer-events:none;-webkit-user-drag:none;}
-  #partnerSheet #psPortrait.slide-left{animation:psSlideL .28s ease;}
-  #partnerSheet #psPortrait.slide-right{animation:psSlideR .28s ease;}
+  #partnerSheet .ps-frame.slide-left{animation:psSlideL .28s ease;}
+  #partnerSheet .ps-frame.slide-right{animation:psSlideR .28s ease;}
   @keyframes psSlideL{from{transform:translateX(26px);opacity:.2;}to{transform:none;opacity:1;}}
   @keyframes psSlideR{from{transform:translateX(-26px);opacity:.2;}to{transform:none;opacity:1;}}
   #partnerSheet .ps-arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:2;
@@ -669,7 +674,8 @@
     background:transparent;border:1px solid var(--gold-dim);}
   #partnerSheet .ps-dots i.cur{background:var(--gold);border-color:var(--gold);}
   #partnerSheet .ps-dots i.picked{box-shadow:0 0 8px var(--gold);}
-  #partnerSheet .ps-card{flex:none;width:100%;max-width:340px;background:#0f0c16;
+  /* min-height 取各搭檔描述最長者：卡片高度固定 → 上方取景框不隨切換縮放，頭部大小才真正一致 */
+  #partnerSheet .ps-card{flex:none;width:100%;max-width:340px;min-height:182px;background:#0f0c16;
     border:1px solid var(--gold-dim);border-radius:12px;padding:12px 14px;text-align:left;}
   #partnerSheet .ps-name{font-size:16px;letter-spacing:4px;color:var(--gold);text-align:center;
     margin-bottom:8px;}

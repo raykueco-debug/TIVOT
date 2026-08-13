@@ -223,11 +223,18 @@ function renderPartnerSheet(dir){
   const key = PARTNER_KEYS[psIndex];
   const p = GAME_CONFIG.partners[key];
   if(!p) return;
-  const img=$('psPortrait');
+  const img=$('psPortrait'), frame=$('psFrame');
   if(img){
     img.src = asset(p.image) || '';
-    img.classList.remove('slide-left','slide-right');
-    if(dir){ void img.offsetWidth; img.classList.add(dir>0?'slide-left':'slide-right'); }
+    // 取景參數（config siFit：zoom＝相對框高的放大倍率、top＝垂直偏移，比例值）——
+    //   統一各搭檔頭部大小（以蕾妮 zoom:1 為基準），全身圖裁成膝上構圖。
+    const fit = p.siFit || {};
+    img.style.setProperty('--ps-zoom', fit.zoom || 1);
+    img.style.setProperty('--ps-top', ((fit.top || 0) * 100) + '%');
+  }
+  if(frame){
+    frame.classList.remove('slide-left','slide-right');
+    if(dir){ void frame.offsetWidth; frame.classList.add(dir>0?'slide-left':'slide-right'); }
   }
   const set=(id,txt)=>{ const el=$(id); if(el) el.textContent=txt; };
   set('psName', p.name || key);
