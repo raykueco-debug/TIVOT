@@ -53,6 +53,7 @@ export function tryDeathGuard(){
   if(pas.oncePerBattle && state.deathGuardUsed) return false;   // 一次性且已用掉 → 不再擋
   applyDeathGuard();          // 鎖 1 HP + 標記 deathGuardUsed（D3 契約例外的唯一入口）
   api.updateBars();           // applyDeathGuard 不碰 DOM，於此刷新血條（對齊 reference）
+  const vo = asset(pas.voice); if(vo) SFX.play(vo);   // SE 與 cut-in 同步（→ vo_death_guard）
   api.floatDmg('即死防禦','50%','40%',true);
   const label = '即死防禦<span class="cutin-en">Death Guard</span>';
   api.playCutin(()=>{
@@ -73,8 +74,9 @@ export function tryDeathGuard(){
  * ========================================================================== */
 const ACTIVE_HANDLERS = {
   // 生命歸還：聖徒化中止並保留當前血量。執行能力經 saintApi 注入（saint 內部提供）。
-  lifeReturn(a){
+  lifeReturn(a, act){
     if(!state.saintMode) return false;   // 保險：非聖徒化不執行
+    const vo = asset(act && act.voice); if(vo) SFX.play(vo);   // SE 與結局 cut-in 同步（→ vo_life_return；saint 不知觸發者，SE 歸 partner 播）
     a.saintApi.lifeReturnAbort();
     return true;
   },

@@ -323,7 +323,7 @@ function playSaintCutin(kind, done){
   c.classList.add(kind);
   void c.offsetWidth;                      // reflow → 重播動畫
   c.classList.add('on');
-  // 結局 cut-in 專屬 SE（Luna；return＝生命歸還為 Renee，尚無專屬 SE）。
+  // 結局 cut-in 專屬 SE（Luna；return＝生命歸還為 Renee，其 SE 由 partner.lifeReturn 播 vo_life_return——saint 不知觸發者）。
   //   槍聲/合成占位音已拔除——cut-in 只播專屬 SE；母帶偏小聲 → 播放端依 tuning.partnerSeGain 增幅。
   const scSeKey = { execute:'se_luna_exc', obe:'se_luna_obe', burst:'se_luna_mb' };
   if(scSeKey[kind]){

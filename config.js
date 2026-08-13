@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於首頁版權宣告下方，每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.13-15';
+export const VERSION = 'ver 2026.08.13-16';
 
 export const GAME_CONFIG = {
 
@@ -65,7 +65,7 @@ export const GAME_CONFIG = {
         name:'即死防禦',
         oncePerBattle:true,      // true=整場只擋一次；false=每次都擋（不建議）
         cutin:'cutin_guard',     // 即死防禦專屬大圖（→ Renee_CI_pas.jpg）；程式讀此欄，不硬寫
-        voice:'vo_death_guard',  // cut-in 對應語音（預留槽，見 ASSETS；audio 未接前為 null）
+        voice:'vo_death_guard',  // cut-in 對應 SE（→ Renee_SE_Pas.wav）
         desc:'整場一次。受到足以致死的攻擊時，改為保留 1 HP 存活。',
       },
       // ── 主動技：生命歸還 ─────────────────────────────
@@ -75,7 +75,7 @@ export const GAME_CONFIG = {
         name:'生命歸還',
         context:'saint',         // 發動情境：'saint'＝聖徒化內 / 'board'＝一般盤面 / 'any'＝兩者皆可
         cutin:'cutin_return',    // 生命歸還演出大圖（→ Renee_CI_act.jpg）；實際演出由 saint scImgKey.return 讀同一鑰匙
-        voice:'vo_life_return',  // cut-in 對應語音（預留槽，見 ASSETS）
+        voice:'vo_life_return',  // cut-in 對應 SE（→ Renee_SE_Act.wav）
         desc:'聖徒化期間發動：強制中止聖徒化，保留當前血量。',
       },
     },
@@ -99,8 +99,8 @@ export const GAME_CONFIG = {
         en:'High-Charge Rounds', // cut-in 英文副標
         threshold:0.50,          // 發動門檻：HP ≤ playerMax × 此值
         buffSeconds:10,          // 普攻加倍持續秒數（可跨盤）
-        cutin:'cutin_malzeno_pas', // 被動 cut-in 大圖（暫代：與主動同圖，正式圖到位後換 ASSETS 指向）
-        voice:'vo_hc_rounds',    // cut-in 對應語音/SE（預留槽，見 ASSETS）
+        cutin:'cutin_malzeno_pas', // 被動 cut-in 大圖（→ Malzeno_CI_pas.png）
+        voice:'vo_hc_rounds',    // cut-in 對應 SE（→ Malzeno_SE_Pas.wav）
         desc:'HP 降至 50% 以下時發動：10 秒普攻傷害加倍，效果可跨盤面延續。',
       },
       // ── 主動技：前線補給 ─────────────────────────────
@@ -113,7 +113,7 @@ export const GAME_CONFIG = {
         context:'any',           // 隨時可發（'any'＝一般盤面與聖徒化中皆可）
         oncePerBattle:true,      // 每場一次（可調：false＝不限次數）
         cutin:'cutin_malzeno_act', // 前線補給 cut-in 大圖（→ Malzeno_CI_act.png）
-        voice:'vo_supply_refill',  // cut-in 對應語音/SE（預留槽，見 ASSETS）
+        voice:'vo_supply_refill',  // cut-in 對應 SE（→ Malzeno_SE_Act.wav）
         desc:'隨時補滿雙槍破防值（每場一次）。聖徒化期間仍無法發動雙槍破防。',
       },
     },
@@ -516,7 +516,7 @@ export const ASSETS = {
   cutin_guard: "resources/partner/Renee_CI_pas.jpg",   // 即死防禦 cut-in（蕾妮/Renee·被動；檔名 _pas＝passive）
   cutin_return: "resources/partner/Renee_CI_act.jpg",   // 生命歸還 cut-in（蕾妮/Renee·主動；檔名 _act＝active）
   cutin_malzeno_act: "resources/partner/Malzeno_CI_act.png",   // 前線補給 cut-in（馬季諾·主動）
-  cutin_malzeno_pas: "resources/partner/Malzeno_CI_act.png",   // 高爆彈頭 cut-in（馬季諾·被動；⚠暫代主動圖，正式圖到位後改路徑）
+  cutin_malzeno_pas: "resources/partner/Malzeno_CI_pas.png",   // 高裝藥彈 cut-in（馬季諾·被動；正式圖）
 
   // ── 搭檔選人畫面大立繪 ──
   partner_renee:   "resources/partner/Renee_SI_01.png",     // 蕾妮 立繪
@@ -585,10 +585,10 @@ export const ASSETS = {
   vo_maxburst:      null,   // Maximum Burst            → VO_MaxBurst
   vo_exsectio:      null,   // EXSECUTIŌ（處決）         → VO_Exsectio
   vo_obe:           null,   // O.B.E.                   → VO_OBE
-  vo_life_return:   null,   // 生命歸還（主動）          → VO_LifeReturn
-  vo_death_guard:   null,   // 即死防禦（被動）          → VO_DeathGuard
-  vo_supply_refill: null,   // 前線補給（馬季諾·主動）   → VO_SupplyRefill
-  vo_hc_rounds:     null,   // 高裝藥彈（馬季諾·被動）   → VO_HCRounds
+  vo_life_return:   "resources/partner/Renee_SE_Act.wav",     // 生命歸還（蕾妮·主動）— partner.lifeReturn 播
+  vo_death_guard:   "resources/partner/Renee_SE_Pas.wav",     // 即死防禦（蕾妮·被動）— partner.tryDeathGuard 播
+  vo_supply_refill: "resources/partner/Malzeno_SE_Act.wav",   // 前線補給（馬季諾·主動）— partner.supplyRefill 播
+  vo_hc_rounds:     "resources/partner/Malzeno_SE_Pas.wav",   // 高裝藥彈（馬季諾·被動）— partner.checkLowHpBuff 播
   vo_dual_wield:    null,   // 雙槍破防                 → VO_DualWield
   vo_new_hustle:    null,   // Boss 遭遇 / 亂入          → VO_NewHustle
 };
