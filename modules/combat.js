@@ -13,7 +13,7 @@
  *    與監察官結算為下一輪；相關分支以 TODO 標註、以最小佔位不影響本輪流程。
  * ========================================================================== */
 
-import { GAME_CONFIG, asset } from '../config.js';
+import { GAME_CONFIG, asset, bgmVol } from '../config.js';
 import { state } from '../state.js';
 import { SFX } from '../audio.js';
 import { TEL } from '../telemetry.js';   // 遙測（底層純輸出，同 audio 定位；未設定後端時 no-op）
@@ -656,7 +656,7 @@ function win(){
   };
   // 勝利 → 先播「驅逐完成」過渡禎；被點掉（done）後才建結算面板並起播結算 BGM。
   playTransition('finish', ()=>{
-    SFX.playBgm(asset('bgm_result'));   // 驅逐完成頁被點掉後 → 結算 BGM
+    SFX.playBgm(asset('bgm_result'), { volume: bgmVol('bgm_result') });   // 驅逐完成頁被點掉後 → 結算 BGM
     inspector.settle(totalTime, stats, { isLose:false });
   });
 }
@@ -670,7 +670,7 @@ function lose(){
   if(app) app.classList.add('death-freeze');
   setTimeout(()=>{
     if(app) app.classList.remove('death-freeze');
-    SFX.playBgm(asset('bgm_lose'));   // 驅逐失敗插入瞬間 → 任務失敗 BGM
+    SFX.playBgm(asset('bgm_lose'), { volume: bgmVol('bgm_lose') });   // 驅逐失敗插入瞬間 → 任務失敗 BGM
     playTransition('fail', ()=> inspector.settle(null, null, { isLose:true }));
   }, 1000);
 }
@@ -766,7 +766,7 @@ export function goHome(){
     $('banner').classList.remove('on'); $('banner').classList.remove('lose');
     $('transition').classList.remove('on');
     $('home').classList.add('on');
-    SFX.playBgm(asset('bgm_home'));           // 主選單 BGM
+    SFX.playBgm(asset('bgm_home'), { volume: bgmVol('bgm_home') });           // 主選單 BGM
   }, 1400);
 }
 

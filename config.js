@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於首頁版權宣告下方，每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.13-23';
+export const VERSION = 'ver 2026.08.13-24';
 
 export const GAME_CONFIG = {
 
@@ -455,6 +455,11 @@ export const GAME_CONFIG = {
     partnerSeGain: { se_luna_dual:1, se_luna_exc:1, se_luna_mb:1, se_luna_obe:1,
                      vo_life_return:9.2, vo_death_guard:3.0, vo_supply_refill:2.7, vo_hc_rounds:3.6 },
 
+    // BGM 播放音量（0~1，HTMLAudio.volume）：目標「有效響度」統一 ≈ −20 dBFS，
+    //   即語音/技能 SE（≈−14.4）下方約 6 dB——BGM 是底、人聲在上。各曲母帶 RMS 差很大
+    //   （boss −9.7 vs home −17.3），故逐曲定值（依實測 RMS 反推）；未列入的曲用 default。
+    bgmVol: { default:0.5, bgm_home:0.73, bgm_battle:0.38, bgm_boss:0.31, bgm_result:0.44, bgm_lose:0.62 },
+
     // 載入畫面教學 Hint 輪播（文案見 loadingHints）
     loadingHintHoldMs:   5000,  // 每句停留 5 秒
     loadingHintFadeMs:   400,   // 淡入/淡出時間
@@ -603,6 +608,12 @@ export const ASSETS = {
 
 /* ---- 小工具：從 ASSETS 取素材（找不到回傳空字串，不會壞）---- */
 export function asset(key){ return (key && ASSETS[key] != null) ? ASSETS[key] : ""; }
+
+/* ---- 小工具：BGM 逐曲音量（tuning.bgmVol；未列入的曲用 default）---- */
+export function bgmVol(key){
+  const m = GAME_CONFIG.tuning.bgmVol || {};
+  return m[key] != null ? m[key] : (m.default != null ? m.default : 0.7);
+}
 
 /* ---- 遙測後端（零維運，Supabase REST）----
  * 玩家行為統計（來訪/挑戰/用時/配裝/原作點擊），上報端 telemetry.js、後台頁 stats.html

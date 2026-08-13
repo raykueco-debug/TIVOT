@@ -8,7 +8,7 @@
  *  聖徒化左右滑、生命歸還上滑、雙槍點計量表、換裝面板等綁定為下一輪。
  * ========================================================================== */
 
-import { GAME_CONFIG, VERSION, asset, ASSETS } from './config.js';
+import { GAME_CONFIG, VERSION, asset, ASSETS, bgmVol } from './config.js';
 import { state } from './state.js';
 import { SFX } from './audio.js';
 import { TEL } from './telemetry.js';   // 遙測（未設定後端時 no-op）
@@ -213,7 +213,7 @@ function preloadLateBgm(){
   const startBatch=()=>{
     // 主選單 BGM 掛播（自 combat.bootIdle 移來）：ensureBlob 自此才開抓，不再搶關鍵段頻寬；
     //   實際起播等 go() 手勢 unlock 補播，時序與原本相同。
-    SFX.playBgm(asset('bgm_home'));
+    SFX.playBgm(asset('bgm_home'), { volume: bgmVol('bgm_home') });
     const imgP = imgs.map(src=>new Promise(res=>{ const im=new Image(); im.onload=im.onerror=()=>{ tick(); res(); }; im.src=src; }));
     const wrapCount = (p, n)=> p.then(()=>{ for(let i=0;i<n;i++) tick(); }).catch(()=>{ for(let i=0;i<n;i++) tick(); });
     const audioP = [ wrapCount(SFX.preload(sfx), sfx.length), wrapCount(SFX.preloadBgm(bgm), bgm.length) ];
@@ -228,7 +228,7 @@ bindBtn('startBtn',     ()=>{
   // 出陣 stinger（sfx_start）已取消：手機上仍會滯後冒出、體驗更差。
   //   ⚠ 音檔 Start_01.mp3 保留不刪——聖徒化音效沿用（ASSETS.sfx_start 佔位不動）。
   preloadLateBgm();   // 保險：若保底提前放行沒經過 go()，出陣（櫻花期間）補載第二段
-  SFX.playBgm(asset('bgm_battle'), { fadeOutMs:800, delayMs:1000 });
+  SFX.playBgm(asset('bgm_battle'), { fadeOutMs:800, delayMs:1000, volume: bgmVol('bgm_battle') });
   // 驅逐開始：不靠點擊、不自動計時 → 由櫻花飄完（onDone）主動推進進戰鬥
   const tr = playTransition('start', combat.startGame, { noTap:true, noAuto:true });
   sakuraBurst({ onDone: ()=> tr.proceed() });

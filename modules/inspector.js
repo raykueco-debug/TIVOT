@@ -19,7 +19,7 @@
  *    evaluate/scoreToExp 為純函式（見下），可單獨測試；stats 由 combat.win 組裝。
  * ========================================================================== */
 
-import { GAME_CONFIG, asset } from '../config.js';
+import { GAME_CONFIG, asset, bgmVol } from '../config.js';
 import { state } from '../state.js';
 import { SFX } from '../audio.js';   // Boss BGM 於「再度執槍（S 解鎖）」瞬間起播
 
@@ -325,7 +325,7 @@ export function onRematchBtn(){
     return;
   }
   // S 評價：解鎖迎擊流程（唯一例外）
-  SFX.playBgm(asset('bgm_boss'));   // 按下再度執槍瞬間 → Boss BGM 起播（結算 BGM 淡出）
+  SFX.playBgm(asset('bgm_boss'), { volume: bgmVol('bgm_boss') });   // 按下再度執槍瞬間 → Boss BGM 起播（結算 BGM 淡出）
   state.intruderTriggered=true;  // 標記本場已進入隱藏流程
   // 用 visibility 而非 display：保留按鈕版位，避免 flex 重排讓立繪（flex:1 舞台）忽大忽小
   rbtn.style.visibility='hidden';
