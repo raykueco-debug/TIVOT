@@ -293,10 +293,7 @@ export function playCutin(done, label, imgKey, opts){
   if(label!==undefined) $('cutinText').innerHTML = label;
   if(imgKey){ const ci=$('cutinImg'); const src=asset(imgKey); if(ci && src) ci.src=src; }
   c.classList.remove('on'); void c.offsetWidth; c.classList.add('on');
-  if(!opts.noShot){                        // 聖徒化降臨傳 noShot（只留 SI_01）；雙槍破防維持槍聲
-    SFX.gunshot(true);
-    setTimeout(()=>{ SFX.gunshot(true); },200);
-  }
+  // cut-in 槍聲已全面取消：雙槍破防有 Luna_dual_se、聖徒化降臨有 SI_01，槍聲只留給盤面實際射擊
   setTimeout(()=>{
     c.classList.remove('on');
     state.cutinPlaying=false;
@@ -325,11 +322,13 @@ function playSaintCutin(kind, done){
   c.classList.add(kind);
   void c.offsetWidth;                      // reflow → 重播動畫
   c.classList.add('on');
-  // 結局 cut-in 專屬 SE（Luna；return＝生命歸還為 Renee，尚無專屬 SE 維持原音）
+  // 結局 cut-in 專屬 SE（Luna；return＝生命歸還為 Renee，尚無專屬 SE）。
+  //   槍聲/合成占位音已拔除——cut-in 只播專屬 SE；母帶偏小聲 → 播放端依 tuning.partnerSeGain 增幅。
   const scSeKey = { execute:'se_luna_exc', obe:'se_luna_obe', burst:'se_luna_mb' };
-  if(scSeKey[kind]) SFX.play(asset(scSeKey[kind]));
-  SFX.gunshot(true);
-  if(kind==='obe') setTimeout(()=>SFX.hit(), 200); else setTimeout(()=>SFX.clear(), 200);
+  if(scSeKey[kind]){
+    const k=scSeKey[kind];
+    SFX.play(asset(k), (GAME_CONFIG.tuning.partnerSeGain||{})[k]);
+  }
   const holdMs = kind==='execute' ? 3000 : 1600;   // EXSECUTIŌ 停留 3 秒
   setTimeout(()=>{
     c.classList.remove('on');
