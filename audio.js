@@ -73,6 +73,7 @@ let _bgmSrc = null;     // 目前/目標曲（邏輯路徑，非 blobURL）
 let _bgmVol = 0.7;      // 目標音量
 let _bgmTimer = null;   // 切歌間隔/待播計時器
 const _bgmBlob = {};    // path → objectURL（快取；壓縮 mp3，體積小可多留）
+const _bgmPending = {}; // path → Promise（下載中；同曲併發呼叫去重，避免重複抓整首）
 function bgmElem(){
   if(!_bgmEl){ _bgmEl = new Audio(); _bgmEl.loop = true; }
   return _bgmEl;
@@ -92,9 +93,11 @@ function bgmFade(el, to, ms, done){
 // 整首下載成 Blob（快取 objectURL）：完整在記憶體後播 → 不再串流 → 不卡頓
 function ensureBlob(src){
   if(_bgmBlob[src]) return Promise.resolve(_bgmBlob[src]);
-  return fetch(src).then(r=>r.blob())
-    .then(b=>{ const u=URL.createObjectURL(b); _bgmBlob[src]=u; return u; })
-    .catch(()=>null);
+  if(_bgmPending[src]) return _bgmPending[src];
+  _bgmPending[src] = fetch(src).then(r=>r.blob())
+    .then(b=>{ const u=URL.createObjectURL(b); _bgmBlob[src]=u; delete _bgmPending[src]; return u; })
+    .catch(()=>{ delete _bgmPending[src]; return null; });
+  return _bgmPending[src];
 }
 
 export const SFX = {

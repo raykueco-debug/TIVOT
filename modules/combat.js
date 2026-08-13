@@ -95,7 +95,8 @@ export function bootIdle(){
   state.over=true;
   loadBoard(0); updateBars();
   $('home').classList.add('on');
-  SFX.playBgm(asset('bgm_home'));   // 主選單 BGM（autoplay 被擋時由首次手勢 unlock 補播）
+  // 主選單 BGM 不在此播：playBgm 會立即開抓 1MB 檔，搶走載入畫面立繪/關鍵音效的頻寬。
+  //   改由 main.js 預載批次段呼叫（實際起播本來就要等首次手勢 unlock，時序不變）。
 }
 
 /* ============================================================================

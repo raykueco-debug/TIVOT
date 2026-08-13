@@ -48,7 +48,8 @@ combat.setup();
 SFX.setShots([asset('se_pistol_02')].filter(Boolean));
 
 /* ── 進場預載（第一段）：掃 ASSETS 載「開場就要」的圖＋音，跑完才揭開選單 ──
- *  第一段內再分「關鍵音效優先段」（SI_01/Start_01 先單獨載完）→ 批次段，見下方 critP。
+ *  第一段內依序讓路：監察官立繪（門面最優先）→ 關鍵音效（SI_01/Start_01）→ 批次段，
+ *  見下方 portraitP/critP。
  *  圖 → new Image（瀏覽器快取）；BGM(bgm_*) → Blob 下載；其餘音效 → Web Audio 解碼。
  *  音訊實際播放仍需首次手勢（primeAudio/unlock）。
  *  ⚠ 分兩段載：結算/失敗/Boss BGM 開戰前用不到（最快也在一場戰鬥之後），
@@ -104,11 +105,22 @@ function preloadLateBgm(){
     } else setTimeout(placeRing, 120);
   })();
   // 監察官立繪與名字（沿用結算的 Freya 資源；讀 config 不寫死）
+  //   立繪＝載入畫面的門面，全站最優先：載完（或 4s 保底）才輪到關鍵音效、再輪到整批。
+  let portraitP = Promise.resolve();
   {
     const insp=(GAME_CONFIG.inspectors||{}).freya||{};
     const img=$('alPortrait'); const nm=ov.querySelector('.al-name');
     if(nm) nm.textContent=insp.name||'';
-    if(img && asset(insp.image)){ img.onload=()=>img.classList.add('on'); img.src=asset(insp.image); }
+    const psrc=asset(insp.image);
+    if(img && psrc){
+      portraitP = new Promise(res=>{
+        img.fetchPriority='high';   // 壓過 HTML 預掃到的其他 <img>（徽記/敵人立繪），確保她真的第一
+        img.onload=()=>{ img.classList.add('on'); res(); };
+        img.onerror=()=>res();
+        img.src=psrc;
+        setTimeout(res, 4000);   // 保底：立繪卡住也不無限擋住後續音效/批次
+      });
+    }
   }
   // Hint 輪播：洗牌後依序循環（=隨機且整輪不重複），淡入 → 停 hold → 淡出 → 換句
   let hintTimer=null;
@@ -129,10 +141,14 @@ function preloadLateBgm(){
     cycle();
   }
   /* 關鍵音效優先段：SI_01（點擊繼續揭幕音）＋ Start_01（出陣 stinger）兩支小檔
-   *   先「單獨」載完解碼，才開整批圖片/BGM（批次 ~20MB，同時開跑會搶走這兩支的頻寬，
-   *   慢網下 12s 保底放行時它們反而還沒就緒 → 點下去沒聲音）。
-   *   load() 以 _pending/_buffers 去重，稍後批次再含它們也不會重抓。 */
-  const critP = SFX.preload([asset('sfx_saint'), asset('sfx_start')]);
+   *   排在立繪之後、整批圖片/BGM 之前「單獨」載完解碼（批次 ~20MB，同時開跑會搶走
+   *   這兩支的頻寬，慢網下 12s 保底放行時它們反而還沒就緒 → 點下去沒聲音）。
+   *   自帶 4s 保底：關鍵檔卡住也不無限擋批次。load() 以 _pending/_buffers 去重，
+   *   稍後批次再含它們也不會重抓。 */
+  const critP = portraitP.then(()=> Promise.race([
+    SFX.preload([asset('sfx_saint'), asset('sfx_start')]),
+    new Promise(r=>setTimeout(r, 4000)),
+  ]));
   let done=0;
   const prog=$('alRingProg'), pct=$('assetLoaderPct');
   const tick=()=>{ done++; const p=total?Math.round(done/total*100):100;
@@ -176,16 +192,19 @@ function preloadLateBgm(){
     ov.addEventListener('click', go);
     ov.addEventListener('touchstart', go, {passive:true});
   };
-  // 批次段：等關鍵音效就緒才開跑（保底 4s：關鍵檔卡住也不無限擋批次）。
+  // 批次段：等「立繪 → 關鍵音效」依序就緒才開跑（兩段各有 4s 保底）。
   //   12s 保底自批次開跑起算：單一資源卡住也不擋整個載入。
   const startBatch=()=>{
+    // 主選單 BGM 掛播（自 combat.bootIdle 移來）：ensureBlob 自此才開抓，不再搶關鍵段頻寬；
+    //   實際起播等 go() 手勢 unlock 補播，時序與原本相同。
+    SFX.playBgm(asset('bgm_home'));
     const imgP = imgs.map(src=>new Promise(res=>{ const im=new Image(); im.onload=im.onerror=()=>{ tick(); res(); }; im.src=src; }));
     const wrapCount = (p, n)=> p.then(()=>{ for(let i=0;i<n;i++) tick(); }).catch(()=>{ for(let i=0;i<n;i++) tick(); });
     const audioP = [ wrapCount(SFX.preload(sfx), sfx.length), wrapCount(SFX.preloadBgm(bgm), bgm.length) ];
     Promise.all([...imgP, ...audioP]).then(showReady);
     setTimeout(showReady, 12000);
   };
-  Promise.race([critP, new Promise(r=>setTimeout(r, 4000))]).then(startBatch);
+  critP.then(startBatch);
 })();
 
 // 首頁：開始遊戲 → 主選單先淡出、空一拍（約 1s）Battle 才淡入（避免唐突），同時播「驅逐開始」過渡禎
