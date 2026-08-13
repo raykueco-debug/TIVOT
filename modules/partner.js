@@ -122,34 +122,56 @@ export function tryActive(context){
 /* ============================================================================
  *  被動技 · 高裝藥彈（lowHpBuff，馬季諾）
  * ----------------------------------------------------------------------------
- *  狀態型被動：玩家 HP ≤ playerMax×threshold（20%）時發動——普攻傷害加倍，
- *  持續到 HP 回到門檻以上才解除（跨盤跨怪自然延續；HP 回升僅聖徒化結局回血等路徑）。
+ *  計時型被動：玩家 HP 降至 playerMax×threshold（20%）以下的「瞬間」發動——
+ *  普攻傷害加倍 buffSeconds（10）秒，時間到自然結束；效果可跨盤面延續
+ *  （clearAtkBuff 不碰 lowHpBuff，見 combat）。
+ *  邊緣觸發：發動後在門檻下不重複觸發；HP 回到門檻上（聖徒化結局回血等）重新上膛，
+ *  再跌破可再發動。HP 回升不提前解除進行中的 buff（時長既定 10 秒）。
  *  觸發檢查掛在 combat.updateBars（所有 HP 變動的唯一匯流點）呼叫本函式：
  *    · 聖徒化期間不判定（血條＝倒數槽，語義不同）；結局設定血量時自然重新評估。
  *    · HP=0（致死流程中）不發動；即死防禦保 1 HP 後的 updateBars 會接著發動。
- *  發動瞬間插 cut-in＋SE（已有其他演出在播則只跳字）；解除時靜默。
- *  buff 旗標 state.lowHpBuff 為 combat 擁有（3.8），經注入的 setLowHpBuff 管道寫入。
+ *  發動瞬間插 cut-in＋SE（已有其他演出在播則只跳字，buff 立即起算）；
+ *  走 cut-in 時 buff 於演出撤下才起算，10 秒完整可用。
+ *  buff 旗標 state.lowHpBuff 為 combat 擁有（3.8），經注入的 setLowHpBuff 管道寫入；
+ *  10 秒計時器為 partner 自有狀態（reset() 清理，combat 開場調度）。
  * ========================================================================== */
+let lowHpArmed = true;    // 上膛旗標：HP 在門檻上方＝已上膛；跌破發動一次即卸膛
+let lowHpTimer = null;    // 10 秒 buff 計時器
+
 export function checkLowHpBuff(){
   if(state.saintMode || state.over) return;   // 聖徒化/結束後不判定
   const p = currentPartner();
   const pas = p && p.passive;
-  const eligible = !!(pas && pas.key==='lowHpBuff');
-  const th = (eligible && pas.threshold) || 0.20;
-  const low = eligible && state.playerHp>0 && state.playerHp <= state.playerMax*th;
-  if(low === state.lowHpBuff) return;         // 狀態未變 → 不動作
-  if(low){
+  if(!(pas && pas.key==='lowHpBuff')) return; // 非馬季諾：不判定（lowHpBuff 由開場重置歸位）
+  const th = pas.threshold || 0.20;
+  const low = state.playerHp>0 && state.playerHp <= state.playerMax*th;
+  if(!low){ lowHpArmed = true; return; }      // 回到門檻上 → 重新上膛（進行中的 buff 由計時器自然收）
+  if(!lowHpArmed) return;                     // 門檻下已觸發過 → 不重複發動
+  lowHpArmed = false;
+  const sec = pas.buffSeconds || 10;
+  const fire = ()=>{                          // 起算 10 秒 buff（時間到自然結束，可跨盤）
+    if(state.over) return;
     api.setLowHpBuff(true);
-    const vo = asset(pas.voice); if(vo) SFX.play(vo);   // SE（預留槽，未填則靜默）
-    api.floatDmg(pas.name,'50%','34%',true);
-    if(!state.cutinPlaying){                  // 已有演出在播（如即死防禦 cut-in）→ 只跳字
-      api.playCutin(()=>{
-        if(state.over) return;
-        api.resetEnemyTimers();               // cut-in 撤下瞬間重置敵大絕/延時倒數（同其他 cut-in 慣例）
-        api.scheduleUlt();
-      }, `${pas.name}<span class="cutin-en">${pas.en||''}</span>`, pas.cutin);
-    }
-  }else{
-    api.setLowHpBuff(false);                  // HP 回到門檻上（聖徒化結局回血等）→ 靜默解除
+    clearTimeout(lowHpTimer);
+    lowHpTimer = setTimeout(()=>{ api.setLowHpBuff(false); lowHpTimer=null; }, sec*1000);
+  };
+  const vo = asset(pas.voice); if(vo) SFX.play(vo);   // SE（預留槽，未填則靜默）
+  api.floatDmg(pas.name,'50%','34%',true);
+  if(state.cutinPlaying){                     // 已有演出在播（如即死防禦 cut-in）→ 只跳字、buff 立即起算
+    fire();
+    return;
   }
+  api.playCutin(()=>{
+    fire();                                   // cut-in 撤下才起算，10 秒完整可用
+    if(state.over) return;
+    api.resetEnemyTimers();                   // cut-in 撤下瞬間重置敵大絕/延時倒數（同其他 cut-in 慣例）
+    api.scheduleUlt();
+  }, `${pas.name}<span class="cutin-en">${pas.en||''}</span>`, pas.cutin);
+}
+
+/* 全重置（combat.startGame / startIntruderFight 調度）：清 10 秒計時器、上膛旗標歸位。
+ * state.lowHpBuff 本體由 combat 於開場自清；此處只清 partner 自有狀態。 */
+export function reset(){
+  clearTimeout(lowHpTimer); lowHpTimer=null;
+  lowHpArmed = true;
 }
