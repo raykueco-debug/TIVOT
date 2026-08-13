@@ -48,6 +48,7 @@ combat.setup();
 SFX.setShots([asset('se_pistol_02')].filter(Boolean));
 
 /* ── 進場預載（第一段）：掃 ASSETS 載「開場就要」的圖＋音，跑完才揭開選單 ──
+ *  第一段內再分「關鍵音效優先段」（SI_01/Start_01 先單獨載完）→ 批次段，見下方 critP。
  *  圖 → new Image（瀏覽器快取）；BGM(bgm_*) → Blob 下載；其餘音效 → Web Audio 解碼。
  *  音訊實際播放仍需首次手勢（primeAudio/unlock）。
  *  ⚠ 分兩段載：結算/失敗/Boss BGM 開戰前用不到（最快也在一場戰鬥之後），
@@ -127,17 +128,16 @@ function preloadLateBgm(){
     };
     cycle();
   }
-  // SI_01（sfx_saint，點擊繼續的揭幕音）最優先開載解碼：玩家可能等不及全載完就點擊，
-  //   這支必須先就緒。load() 以 _pending/_buffers 去重，稍後批次再含它也不會重抓。
-  SFX.preload([asset('sfx_saint')]);
+  /* 關鍵音效優先段：SI_01（點擊繼續揭幕音）＋ Start_01（出陣 stinger）兩支小檔
+   *   先「單獨」載完解碼，才開整批圖片/BGM（批次 ~20MB，同時開跑會搶走這兩支的頻寬，
+   *   慢網下 12s 保底放行時它們反而還沒就緒 → 點下去沒聲音）。
+   *   load() 以 _pending/_buffers 去重，稍後批次再含它們也不會重抓。 */
+  const critP = SFX.preload([asset('sfx_saint'), asset('sfx_start')]);
   let done=0;
   const prog=$('alRingProg'), pct=$('assetLoaderPct');
   const tick=()=>{ done++; const p=total?Math.round(done/total*100):100;
     if(prog) prog.style.strokeDashoffset=(RING_C*(1-p/100)).toFixed(1);   // 沿光圈順時針推進
     if(pct) pct.textContent=p+'%'; };
-  const imgP = imgs.map(src=>new Promise(res=>{ const im=new Image(); im.onload=im.onerror=()=>{ tick(); res(); }; im.src=src; }));
-  const wrapCount = (p, n)=> p.then(()=>{ for(let i=0;i<n;i++) tick(); }).catch(()=>{ for(let i=0;i<n;i++) tick(); });
-  const audioP = [ wrapCount(SFX.preload(sfx), sfx.length), wrapCount(SFX.preloadBgm(bgm), bgm.length) ];
   // 載完 → 改「點擊繼續」：這一點＝使用者手勢，解鎖音訊並播 MainMenu，再揭開選單
   let ready=false;
   const showReady=()=>{
@@ -176,14 +176,22 @@ function preloadLateBgm(){
     ov.addEventListener('click', go);
     ov.addEventListener('touchstart', go, {passive:true});
   };
-  Promise.all([...imgP, ...audioP]).then(showReady);
-  setTimeout(showReady, 12000);   // 保底：單一資源卡住也不擋整個載入
+  // 批次段：等關鍵音效就緒才開跑（保底 4s：關鍵檔卡住也不無限擋批次）。
+  //   12s 保底自批次開跑起算：單一資源卡住也不擋整個載入。
+  const startBatch=()=>{
+    const imgP = imgs.map(src=>new Promise(res=>{ const im=new Image(); im.onload=im.onerror=()=>{ tick(); res(); }; im.src=src; }));
+    const wrapCount = (p, n)=> p.then(()=>{ for(let i=0;i<n;i++) tick(); }).catch(()=>{ for(let i=0;i<n;i++) tick(); });
+    const audioP = [ wrapCount(SFX.preload(sfx), sfx.length), wrapCount(SFX.preloadBgm(bgm), bgm.length) ];
+    Promise.all([...imgP, ...audioP]).then(showReady);
+    setTimeout(showReady, 12000);
+  };
+  Promise.race([critP, new Promise(r=>setTimeout(r, 4000))]).then(startBatch);
 })();
 
 // 首頁：開始遊戲 → 主選單先淡出、空一拍（約 1s）Battle 才淡入（避免唐突），同時播「驅逐開始」過渡禎
 bindBtn('startBtn',     ()=>{
+  SFX.play(asset('sfx_start'));   // 第一行就播：出陣 stinger 必須在點擊瞬間出聲（已於關鍵段預先解碼）
   preloadLateBgm();   // 保險：若保底提前放行沒經過 go()，出陣（櫻花期間）補載第二段
-  SFX.play(asset('sfx_start'));
   SFX.playBgm(asset('bgm_battle'), { fadeOutMs:800, delayMs:1000 });
   // 驅逐開始：不靠點擊、不自動計時 → 由櫻花飄完（onDone）主動推進進戰鬥
   const tr = playTransition('start', combat.startGame, { noTap:true, noAuto:true });

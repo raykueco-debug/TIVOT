@@ -46,14 +46,19 @@ function playBuffer(c, buf, vol){
   }catch(e){}
 }
 
-// 播放音檔（src＝已解析路徑）。已解碼→立即播；未解碼→解碼後補播。null/空→靜默略過。
+// 補播時限：play() 當下未解碼 → 解碼完成若已超過此時限就放棄不播。
+//   遲到的音效比沒播更糟——會在無關的場景突然冒出來（如揭幕音拖到進戰鬥才響）。
+const LATE_PLAY_MS = 1500;
+
+// 播放音檔（src＝已解析路徑）。已解碼→立即播；未解碼→限時補播（逾時放棄）。null/空→靜默略過。
 function playSrc(src, vol){
   if(!src) return;
   const c = ctx();
   if(!c) return;
   const buf = _buffers[src];
-  if(buf) playBuffer(c, buf, vol);
-  else load(src).then(b => { if(b) playBuffer(c, b, vol); });
+  if(buf){ playBuffer(c, buf, vol); return; }
+  const t0 = Date.now();
+  load(src).then(b => { if(b && Date.now()-t0 <= LATE_PLAY_MS) playBuffer(c, b, vol); });
 }
 
 let _shots = [];   // 普攻槍聲候選（已解析路徑，隨機播一支）
