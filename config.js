@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於首頁版權宣告下方，每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.13-29';
+export const VERSION = 'ver 2026.08.13-30';
 
 export const GAME_CONFIG = {
 
@@ -412,8 +412,8 @@ export const GAME_CONFIG = {
     enemy:'witch',                             // v17：S 評價後遭遇的 Boss＝槍之魔女
     bannerHold:1800,                           // 結算畫面停留多久(ms)後才播 Boss cut-in
     // ── Boss 戰 S 級獎勵（銭湯インストール）──
-    //   結算演出完畢後「再度執槍」變身金色呼吸光「SAINT INSTALL」→ 點下進獎勵畫面：
-    //   全圖 + 右上障子區毛筆直書（列由右而左逐字寫出）→ 寫完ツケ板（拍子木）兩聲。
+    //   兩段式：按下「再度執槍」→ 原地變身金色呼吸光「SAINT INSTALL...?」→ 再按進獎勵畫面：
+    //   全圖 + 左上角扁額毛筆字（逐字寫出）→ 寫完ツケ板（拍子木）兩聲。
     reward: {
       image:'bg_sentou',                       // 獎勵大圖（ASSETS 鑰匙）
       btnLabel:'SAINT INSTALL...?',            // 變身後按鈕字樣

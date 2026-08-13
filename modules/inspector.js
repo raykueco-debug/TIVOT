@@ -211,18 +211,12 @@ export function settle(totalTime, stats, opts={}){
     state.sRankUnlocked = true;
   }
 
-  // ── Boss 戰 S 級獎勵（銭湯インストール）：結算演出（rows 刷完+台詞打完 ≈3.4s）完畢後，
-  //   「再度執槍」變身金色呼吸光「SAINT INSTALL」→ 點下進獎勵畫面（onRematchBtn 'sentou' 分流）。
+  // ── Boss 戰 S 級獎勵（銭湯インストール）：兩段式按鈕 ──
+  //   第一按「再度執槍」→ 原地變身金色呼吸光「SAINT INSTALL...?」（resultMode 'sentou-offer'→'sentou'）
+  //   第二按 → 進獎勵畫面（openSentouReward）。分流見 onRematchBtn。
   if(state.inIntruderFight && evalResult.grade==='S' && it && it.reward){
-    const img=new Image(); img.src=asset(it.reward.image);   // 預載獎勵大圖（2.3MB，變身期間先抓）
-    setTimeout(()=>{
-      const b=$('banner');
-      if(!b || !b.classList.contains('on') || state.resultMode!=='rematch') return;   // 已離開結算 → 放棄
-      state.resultMode='sentou';
-      const rb=$('rematchBtn');
-      rb.textContent = it.reward.btnLabel || 'SAINT INSTALL';
-      rb.classList.add('saintinstall');
-    }, 3600);
+    const img=new Image(); img.src=asset(it.reward.image);   // 預載獎勵大圖（2.3MB，結算期間先抓）
+    state.resultMode='sentou-offer';   // 覆蓋 showResultSequence 預設的 'rematch'
   }
 }
 
@@ -378,7 +372,14 @@ function typeInspectorLine(el, text, total){
 export function onRematchBtn(){
   const rbtn=$('rematchBtn');
   clearTimeout(_resultAutoTimer);   // 玩家有操作 → 取消自動回首頁
-  if(state.resultMode==='sentou'){   // Boss S 級：SAINT INSTALL → 銭湯インストール獎勵畫面
+  if(state.resultMode==='sentou-offer'){   // Boss S 級第一按：「再度執槍」原地變身（金色呼吸光）
+    state.resultMode='sentou';
+    const rw=(GAME_CONFIG.intruder && GAME_CONFIG.intruder.reward) || {};
+    rbtn.textContent = rw.btnLabel || 'SAINT INSTALL...?';
+    rbtn.classList.add('saintinstall');
+    return;
+  }
+  if(state.resultMode==='sentou'){   // 第二按：SAINT INSTALL...? → 銭湯インストール獎勵畫面
     openSentouReward();
     return;
   }
