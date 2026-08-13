@@ -12,7 +12,9 @@
  * ========================================================================== */
 
 let _ctx = null;
-const _buffers = {};   // src → AudioBuffer（已解碼）
+let _needRebuild = false;   // 上次手勢 resume 沒生效（iOS 主畫面 App 常見）→ 下次手勢內重建 context
+let _unlockChk = null;      // resume 生效檢查計時器
+const _buffers = {};   // src → AudioBuffer（已解碼；AudioBuffer 不綁 context，重建後仍可播）
 const _pending = {};   // src → Promise（解碼中，避免重複 fetch）
 
 function ctx(){
@@ -50,15 +52,24 @@ function playBuffer(c, buf, vol){
 //   遲到的音效比沒播更糟——會在無關的場景突然冒出來（如揭幕音拖到進戰鬥才響）。
 const LATE_PLAY_MS = 1500;
 
+/* context 未 running（iOS 解鎖中/被中斷）時不盲目 s.start()——被排入的音源會卡到
+ * 「下一次手勢 resume」才突然冒出（=延到下一幕才響）。改輪詢等 running，
+ * LATE_PLAY_MS 內沒等到就放棄（遲到不亂響）。context 若中途重建，改用新 _ctx。 */
+function playWhenRunning(buf, vol, t0){
+  if(Date.now()-t0 > LATE_PLAY_MS) return;
+  const c = _ctx; if(!c) return;
+  if(c.state === 'running'){ playBuffer(c, buf, vol); return; }
+  setTimeout(()=>playWhenRunning(buf, vol, t0), 60);
+}
+
 // 播放音檔（src＝已解析路徑）。已解碼→立即播；未解碼→限時補播（逾時放棄）。null/空→靜默略過。
 function playSrc(src, vol){
   if(!src) return;
-  const c = ctx();
-  if(!c) return;
-  const buf = _buffers[src];
-  if(buf){ playBuffer(c, buf, vol); return; }
+  if(!ctx()) return;
   const t0 = Date.now();
-  load(src).then(b => { if(b && Date.now()-t0 <= LATE_PLAY_MS) playBuffer(c, b, vol); });
+  const buf = _buffers[src];
+  if(buf){ playWhenRunning(buf, vol, t0); return; }
+  load(src).then(b => { if(b) playWhenRunning(b, vol, t0); });
 }
 
 let _shots = [];   // 普攻槍聲候選（已解析路徑，隨機播一支）
@@ -101,10 +112,29 @@ function ensureBlob(src){
 }
 
 export const SFX = {
-  // 首次使用者手勢呼叫：喚醒 AudioContext + 於手勢當下補播被 autoplay 擋下的 BGM 元素
+  // 使用者手勢呼叫（每次按鈕/手勢都會進來）：喚醒 AudioContext + 補播被 autoplay 擋下的 BGM。
+  //  iOS（尤其主畫面 App）resume() 會靜默失敗、context 卡 suspended/interrupted →
+  //  三重保險：① 手勢內播 1-frame 無聲 buffer（WebKit 經典解鎖點火）② resume()
+  //  ③ 400ms 後仍非 running → 標記下次手勢「整顆重建 context」（手勢內新建即為 running；
+  //    已解碼的 AudioBuffer 不綁 context，重建後照播）。
   unlock(){
-    const c = ctx();
-    if(c && c.state === 'suspended') c.resume().catch(()=>{});
+    let c = ctx();
+    if(c && c.state !== 'running'){
+      if(_needRebuild){
+        try{ c.close(); }catch(e){}
+        _ctx = null; _needRebuild = false;
+        c = ctx();   // 手勢內重建：iOS 直接進 running
+      }
+      if(c){
+        try{
+          const b=c.createBuffer(1,1,22050), s=c.createBufferSource();
+          s.buffer=b; s.connect(c.destination); s.start(0);   // 無聲點火
+        }catch(e){}
+        try{ const p=c.resume(); if(p&&p.catch) p.catch(()=>{}); }catch(e){}
+        clearTimeout(_unlockChk);
+        _unlockChk=setTimeout(()=>{ if(_ctx && _ctx.state !== 'running') _needRebuild = true; }, 400);
+      }
+    }
     const el = _bgmEl;
     if(el && el.paused && el.src){ el.volume=_bgmVol; const p=el.play(); if(p&&p.catch) p.catch(()=>{}); }
   },
