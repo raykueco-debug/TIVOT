@@ -529,6 +529,7 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
   const unlock=()=>{
     circleAt=0;
     document.body.classList.add('testmode');
+    TEL.markAdmin();   // 清盤鈕簽名＝管理員：此裝置永久停止遙測上報（戰績/點擊不列入統計）
     SFX.unlock(); SFX.play(asset('sfx_saint'));   // SI_01＝解鎖回饋音
   };
   homeEl.addEventListener('pointerdown', e=>{

@@ -24,8 +24,21 @@ function cid(){
   }catch(_){ return 'anon'; }   // localStorage 不可用（私密模式等）→ 仍上報、不算獨立玩家
 }
 
+/* ── 管理員排除 ──
+ * 簽名＝首頁清盤鈕解鎖手勢（main.js testUnlockGesture → body.testmode）。解鎖瞬間
+ * markAdmin() 把標記持久化到 localStorage：這台裝置從此所有事件（含之後每次開頁的
+ * visit——它在手勢之前就發射，只靠當下 class 擋不住）都不再上報。
+ * 要恢復計數：清掉 localStorage 的 tivot_admin_v1。 */
+const ADMIN_KEY = 'tivot_admin_v1';
+function isAdmin(){
+  try{
+    return document.body.classList.contains('testmode') || localStorage.getItem(ADMIN_KEY)==='1';
+  }catch(_){ return false; }
+}
+
 function send(type, fields){
   if(!TELEMETRY.url || !TELEMETRY.anonKey) return;   // 未設定 → 靜默停用
+  if(isAdmin()) return;                              // 管理員（清盤鈕簽名）→ 不列入計數
   try{
     fetch(TELEMETRY.url.replace(/\/+$/,'') + '/rest/v1/events', {
       method: 'POST',
@@ -46,4 +59,5 @@ export const TEL = {
   runStart(f){ send('run_start', f); },
   runEnd(f){ send('run_end', f); },
   originalClick(target){ send('original_click', { result: target }); },
+  markAdmin(){ try{ localStorage.setItem(ADMIN_KEY, '1'); }catch(_){} },   // 清盤鈕解鎖時呼叫（main.js）
 };
