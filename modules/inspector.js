@@ -307,8 +307,8 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose){
 /* ============================================================================
  *  Boss 戰 S 級獎勵演出：銭湯インストール
  *  ---------------------------------------------------------------------------
- *  全圖（2/3 框完整顯示）→ 右上障子區毛筆直書（config intruder.reward.sign，
- *  列由右而左、逐字由上往下「寫」出）→ 寫完ツケ板（拍子木）兩聲 → 顯示返回提示，
+ *  全圖（2/3 框完整顯示）→ 左上白牆毛筆橫排兩行（config intruder.reward.sign，
+ *  「銭湯」＋「INSTALL」，逐字由左往右「寫」出）→ 寫完ツケ板（拍子木）兩聲 → 顯示返回提示，
  *  點畫面任意處回首頁。演出中（done 前）點擊無效，避免誤觸跳過。
  * ========================================================================== */
 let _sentouTimer=null, _sentouBound=false;
@@ -320,12 +320,12 @@ function openSentouReward(){
   const img=$('sentouImg');
   const src=asset(rw.image);
   if(img && src) img.src=src;
-  // 建字：每列一個 .sentou-col、每字一個 <i>，動畫延遲逐字排 → 毛筆逐字寫出
+  // 建字：每行一個 .sentou-col、每字一個 <i>，動畫延遲逐字排 → 毛筆逐字寫出
   const sign=$('sentouSign');
   const per=rw.charMs || 380;
   let idx=0;
   sign.innerHTML='';
-  (rw.sign || ['銭湯','インストール']).forEach(txt=>{
+  (rw.sign || ['銭湯','INSTALL']).forEach(txt=>{
     const col=document.createElement('span'); col.className='sentou-col';
     [...txt].forEach(ch=>{
       const s=document.createElement('i'); s.textContent=ch;

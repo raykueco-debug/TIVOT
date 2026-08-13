@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於首頁版權宣告下方，每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.13-27';
+export const VERSION = 'ver 2026.08.13-28';
 
 export const GAME_CONFIG = {
 
@@ -417,7 +417,7 @@ export const GAME_CONFIG = {
     reward: {
       image:'bg_sentou',                       // 獎勵大圖（ASSETS 鑰匙）
       btnLabel:'SAINT INSTALL',                // 變身後按鈕字樣
-      sign:['銭湯','インストール'],             // 毛筆招牌：直書列（由右而左）
+      sign:['銭湯','INSTALL'],                 // 毛筆招牌：橫排兩行（左上白牆）
       charMs:380,                              // 每字書寫間隔(ms)
     },
   },
@@ -617,7 +617,7 @@ export const ASSETS = {
   vo_obe:           null,   // O.B.E.                   → VO_OBE
   vo_life_return:   "resources/partner/Renee_SE_Act.wav",     // 生命歸還（蕾妮·主動）— partner.lifeReturn 播
   vo_death_guard:   "resources/partner/Renee_SE_Pas.wav",     // 即死防禦（蕾妮·被動）— partner.tryDeathGuard 播
-  vo_supply_refill: "resources/partner/Malzeno_SE_Act.wav",   // 前線補給（馬季諾·主動）— partner.supplyRefill 播
+  vo_supply_refill: "resources/partner/Malzeno_SE_Act.wav?v=2",   // 前線補給（馬季諾·主動）— partner.supplyRefill 播
   vo_hc_rounds:     "resources/partner/Malzeno_SE_Pas.wav",   // 高裝藥彈（馬季諾·被動）— partner.checkLowHpBuff 播
   vo_dual_wield:    null,   // 雙槍破防                 → VO_DualWield
   vo_new_hustle:    null,   // Boss 遭遇 / 亂入          → VO_NewHustle
