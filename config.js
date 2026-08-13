@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於首頁版權宣告下方，每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.13-08';
+export const VERSION = 'ver 2026.08.13-09';
 
 export const GAME_CONFIG = {
 
@@ -401,7 +401,7 @@ export const GAME_CONFIG = {
 
     // Overkill 限時（敵死後的追加輸出窗口）
     overkillLimitMs:     3000,  // 3 秒內沒清完 → 全數字磚破碎自動清盤
-    overkillNextDelayMs: 1000,  // 自動清盤後延 1 秒才插入下一盤（防連點誤觸；不計時）
+    overkillNextDelayMs: 0,     // 自動清盤後直接插入下一盤（原 1000ms 防連點誤觸，手感太拖已取消）
 
     // 載入畫面教學 Hint 輪播（文案見 loadingHints）
     loadingHintHoldMs:   5000,  // 每句停留 5 秒
