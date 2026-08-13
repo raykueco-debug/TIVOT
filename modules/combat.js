@@ -16,6 +16,7 @@
 import { GAME_CONFIG, asset } from '../config.js';
 import { state } from '../state.js';
 import { SFX } from '../audio.js';
+import { TEL } from '../telemetry.js';   // 遙測（底層純輸出，同 audio 定位；未設定後端時 no-op）
 import * as enemy from './enemy.js';
 import * as defense from './defense.js';
 import * as weapon from './weapon.js';
@@ -638,6 +639,8 @@ function win(){
   if(state.over || state.defeated) return;   // 戰敗優先：已判定戰敗則勝利結算一律讓位
   state.over=true; clockPause(); stopAll();
   const totalTime=clockElapsedMs()/1000;               // 只累計實打時間（overkill/轉場/cut-in 皆不計）
+  TEL.runEnd({ partner:state.pickedPartner, weapon:state.equippedWeapon,
+               boss:state.inIntruderFight, result:'win', time_ms:Math.round(totalTime*1000) });
   const totalTaps=state.correctTaps+state.wrongTaps;
   // 評價系統輸入（見 inspector.evaluate）：時間/命中率/連擊/完美反擊/overkill/受擊。
   const stats={
@@ -660,6 +663,8 @@ function win(){
 function lose(){
   if(state.over) return;
   state.over=true; clockPause(); stopAll();
+  TEL.runEnd({ partner:state.pickedPartner, weapon:state.equippedWeapon,
+               boss:state.inIntruderFight, result:'lose', time_ms:Math.round(clockElapsedMs()) });
   // HP 歸零瞬間 → 畫面黑白定格 1 秒 → 再切「驅逐失敗」過渡禎（BGM 於過渡禎插入時起播）
   const app=$('app');
   if(app) app.classList.add('death-freeze');
@@ -690,6 +695,7 @@ export function startGame(){
   state.flawlessRun=true; state.intruderTriggered=false; state.inIntruderFight=false;
   state.deathGuardUsed=false; state.sRankUnlocked=false; state.resultMode='rematch';
   enemy.startLineup();   // 局：載序列第一隻（lineupIndex=0，含 enemyHp 基準）
+  TEL.runStart({ partner:state.pickedPartner, weapon:state.equippedWeapon, boss:false });
   $('home').classList.remove('on');
   $('banner').classList.remove('on'); $('banner').classList.remove('lose');
   $('transition').classList.remove('on');
@@ -723,6 +729,7 @@ export function startIntruderFight(){
   state.flawlessRun=true; state.deathGuardUsed=false;
   state.sRankUnlocked=false; state.resultMode='rematch';
   enemy.setEnemy(GAME_CONFIG.intruder.enemy);   // 載槍之魔女（含 Boss 大絕/懲罰/彈痕 config）
+  TEL.runStart({ partner:state.pickedPartner, weapon:state.equippedWeapon, boss:true });
   $('home').classList.remove('on');
   $('banner').classList.remove('on'); $('banner').classList.remove('seq'); $('banner').classList.remove('lose');
   $('transition').classList.remove('on');

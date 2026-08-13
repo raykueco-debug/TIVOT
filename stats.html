@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>TIVOT · 後臺統計</title>
+<style>
+  :root{ --gold:#d9c68a; --gold-dim:rgba(217,198,138,.45); --ink:#cfc6b8; --bg:#07050c; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ background:var(--bg); color:var(--ink); font-family:"Noto Serif TC","Songti TC",serif;
+    padding:24px 14px calc(24px + env(safe-area-inset-bottom)); max-width:560px; margin:0 auto; }
+  h1{ font-size:17px; letter-spacing:6px; color:var(--gold); text-align:center; margin-bottom:4px; }
+  .sub{ font-size:11px; letter-spacing:1px; color:var(--gold-dim); text-align:center; margin-bottom:18px; }
+  .grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+  .tile{ background:#0f0c16; border:1px solid var(--gold-dim); border-radius:10px; padding:12px; text-align:center; }
+  .tile .v{ font-size:22px; color:var(--gold); letter-spacing:1px; }
+  .tile .k{ font-size:11px; letter-spacing:2px; color:var(--gold-dim); margin-top:4px; }
+  .panel{ background:#0f0c16; border:1px solid var(--gold-dim); border-radius:10px; padding:12px 14px; margin-bottom:14px; }
+  .panel h2{ font-size:13px; letter-spacing:3px; color:var(--gold); margin-bottom:8px; }
+  table{ width:100%; border-collapse:collapse; font-size:12px; }
+  td,th{ padding:5px 4px; border-bottom:1px solid rgba(217,198,138,.15); text-align:left; letter-spacing:.5px; }
+  td:last-child,th:last-child{ text-align:right; }
+  th{ color:var(--gold-dim); font-weight:normal; font-size:11px; letter-spacing:2px; }
+  .bar{ height:5px; background:rgba(217,198,138,.18); border-radius:3px; overflow:hidden; margin-top:3px; }
+  .bar i{ display:block; height:100%; background:var(--gold); }
+  #msg{ text-align:center; font-size:12px; letter-spacing:1px; color:var(--gold-dim); padding:30px 10px; line-height:2; }
+  #msg code{ font-family:monospace; font-size:11px; color:var(--ink); }
+  button#refresh{ display:block; margin:0 auto 18px; padding:8px 26px; background:transparent;
+    border:1px solid var(--gold-dim); color:var(--gold); border-radius:8px; font-family:inherit;
+    font-size:12px; letter-spacing:3px; cursor:pointer; }
+  button#refresh:active{ transform:scale(.96); }
+</style>
+</head>
+<body>
+  <h1>後 臺 統 計</h1>
+  <div class="sub" id="verLine">聖約第四騎士團 · TIVOT</div>
+  <button id="refresh">重新整理</button>
+  <div id="msg">載入中……</div>
+  <div id="content" style="display:none">
+    <div class="grid">
+      <div class="tile"><div class="v" id="tVisits">–</div><div class="k">來訪次數</div></div>
+      <div class="tile"><div class="v" id="tPlayers">–</div><div class="k">獨立玩家（估）</div></div>
+      <div class="tile"><div class="v" id="tRuns">–</div><div class="k">挑戰次數</div></div>
+      <div class="tile"><div class="v" id="tBossRuns">–</div><div class="k">Boss 挑戰次數</div></div>
+      <div class="tile"><div class="v" id="tWinRate">–</div><div class="k">一般勝率</div></div>
+      <div class="tile"><div class="v" id="tBossWinRate">–</div><div class="k">Boss 勝率</div></div>
+      <div class="tile"><div class="v" id="tOriginal">–</div><div class="k">原作點擊</div></div>
+      <div class="tile"><div class="v" id="tToday">–</div><div class="k">今日來訪</div></div>
+    </div>
+    <div class="panel"><h2>關卡用時（勝利場）</h2><table id="timeTable"></table></div>
+    <div class="panel"><h2>搭檔使用分布（出陣）</h2><table id="partnerTable"></table></div>
+    <div class="panel"><h2>武器使用分布（出陣）</h2><table id="weaponTable"></table></div>
+    <div class="panel"><h2>原作點擊分布</h2><table id="originalTable"></table></div>
+  </div>
+
+<script type="module">
+import { TELEMETRY, GAME_CONFIG, VERSION } from './config.js';
+
+const $ = id => document.getElementById(id);
+$('verLine').textContent = '聖約第四騎士團 · ' + VERSION;
+
+// 顯示名對照：partner/weapon 鑰匙 → config 名稱
+const P_NAME = k => (GAME_CONFIG.partners[k] && GAME_CONFIG.partners[k].name) || k || '—';
+const W_NAME = k => (GAME_CONFIG.weapons[k]  && GAME_CONFIG.weapons[k].name)  || k || '—';
+
+const fmtSec = ms => (ms/1000).toFixed(1) + ' 秒';
+const pct = (a,b) => b>0 ? Math.round(a/b*100)+'%' : '—';
+
+async function fetchAll(){
+  const base = TELEMETRY.url.replace(/\/+$/,'') + '/rest/v1/events';
+  const headers = { apikey:TELEMETRY.anonKey, Authorization:'Bearer '+TELEMETRY.anonKey };
+  // 一次拉全事件流（早期量小；破萬筆再改伺服端聚合），只取統計欄位
+  const rows = [];
+  const PAGE = 1000;
+  for(let from=0;;from+=PAGE){
+    const r = await fetch(`${base}?select=ts,type,client_id,partner,weapon,boss,result,time_ms&order=id.asc`,
+      { headers:{ ...headers, Range:`${from}-${from+PAGE-1}` } });
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const page = await r.json();
+    rows.push(...page);
+    if(page.length < PAGE) break;
+  }
+  return rows;
+}
+
+function distTable(el, pairs, total){   // pairs: [name,count][]，附比例長條
+  el.innerHTML = '<tr><th>項目</th><th>次數</th></tr>' + pairs.map(([name,c])=>
+    `<tr><td>${name}<div class="bar"><i style="width:${total>0?Math.round(c/total*100):0}%"></i></div></td><td>${c}</td></tr>`
+  ).join('') || '<tr><td>尚無資料</td><td>—</td></tr>';
+}
+
+function timeRow(label, arr){
+  if(!arr.length) return `<tr><td>${label}</td><td>—</td><td>—</td><td>0</td></tr>`;
+  const avg = arr.reduce((s,x)=>s+x,0)/arr.length, best = Math.min(...arr);
+  return `<tr><td>${label}</td><td>${fmtSec(avg)}</td><td>${fmtSec(best)}</td><td>${arr.length}</td></tr>`;
+}
+
+function count(rows, fn){ return rows.filter(fn).length; }
+
+async function render(){
+  if(!TELEMETRY.url || !TELEMETRY.anonKey){
+    $('msg').innerHTML = '後端尚未設定。<br>到 Supabase 建免費專案 → SQL Editor 跑本頁原始碼底部註解的建表 SQL →<br>把 Project URL 與 anon key 填入 <code>config.js</code> 的 <code>TELEMETRY</code> 即生效。';
+    return;
+  }
+  $('msg').textContent = '載入中……'; $('content').style.display='none';
+  let rows;
+  try{ rows = await fetchAll(); }
+  catch(e){ $('msg').textContent = '讀取失敗：'+e.message; return; }
+
+  const visits = rows.filter(r=>r.type==='visit');
+  const starts = rows.filter(r=>r.type==='run_start');
+  const ends   = rows.filter(r=>r.type==='run_end');
+  const orig   = rows.filter(r=>r.type==='original_click');
+  const today  = new Date(); today.setHours(0,0,0,0);
+
+  $('tVisits').textContent  = visits.length;
+  $('tPlayers').textContent = new Set(visits.map(r=>r.client_id).filter(c=>c&&c!=='anon')).size;
+  $('tRuns').textContent    = count(starts, r=>!r.boss);
+  $('tBossRuns').textContent= count(starts, r=>r.boss);
+  $('tWinRate').textContent     = pct(count(ends,r=>!r.boss&&r.result==='win'), count(ends,r=>!r.boss));
+  $('tBossWinRate').textContent = pct(count(ends,r=>r.boss&&r.result==='win'),  count(ends,r=>r.boss));
+  $('tOriginal').textContent = orig.length;
+  $('tToday').textContent    = count(visits, r=>new Date(r.ts)>=today);
+
+  // 關卡用時（勝利場）：一般 / Boss 分列，平均與最佳
+  const winMs  = ends.filter(r=>!r.boss && r.result==='win' && r.time_ms>0).map(r=>r.time_ms);
+  const bossMs = ends.filter(r=> r.boss && r.result==='win' && r.time_ms>0).map(r=>r.time_ms);
+  $('timeTable').innerHTML = '<tr><th>關卡</th><th>平均</th><th>最佳</th><th>樣本</th></tr>'
+    + timeRow('一般（五盤）', winMs) + timeRow('Boss（亂入）', bossMs);
+
+  // 配裝分布（以出陣事件計）
+  const tally = (arr, keyFn) => { const m={}; arr.forEach(r=>{ const k=keyFn(r); m[k]=(m[k]||0)+1; }); return Object.entries(m).sort((a,b)=>b[1]-a[1]); };
+  distTable($('partnerTable'),  tally(starts, r=>P_NAME(r.partner)), starts.length);
+  distTable($('weaponTable'),   tally(starts, r=>W_NAME(r.weapon)),  starts.length);
+  distTable($('originalTable'), tally(orig,   r=>r.result||'—'),     orig.length);
+
+  $('msg').textContent=''; $('content').style.display='';
+}
+
+$('refresh').addEventListener('click', render);
+render();
+</script>
+
+<!-- ============================================================================
+  Supabase 建表 SQL（SQL Editor 一次跑完；零維運、公開匿名寫入/讀取、不做防作弊）：
+
+    create table public.events (
+      id        bigint generated always as identity primary key,
+      ts        timestamptz not null default now(),
+      type      text not null,      -- visit | run_start | run_end | original_click
+      client_id text,               -- 匿名隨機 id（localStorage），估算獨立玩家
+      ver       text,               -- 上報當下的遊戲版本
+      partner   text,               -- 搭檔鑰匙（run_start / run_end）
+      weapon    text,               -- 武器鑰匙（run_start / run_end）
+      boss      boolean,            -- 是否 Boss（亂入）場
+      result    text,               -- run_end：win|lose；original_click：連結名
+      time_ms   integer             -- run_end：實打用時（毫秒）
+    );
+    alter table public.events enable row level security;
+    create policy "anon_insert" on public.events for insert to anon with check (true);
+    create policy "anon_select" on public.events for select to anon using (true);
+
+  之後把 Settings → API 的 Project URL 與 anon public key 填入 config.js 的 TELEMETRY。
+============================================================================ -->
+</body>
+</html>

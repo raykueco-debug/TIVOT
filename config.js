@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於首頁版權宣告下方，每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.13-19';
+export const VERSION = 'ver 2026.08.13-20';
 
 export const GAME_CONFIG = {
 
@@ -603,3 +603,13 @@ export const ASSETS = {
 
 /* ---- 小工具：從 ASSETS 取素材（找不到回傳空字串，不會壞）---- */
 export function asset(key){ return (key && ASSETS[key] != null) ? ASSETS[key] : ""; }
+
+/* ---- 遙測後端（零維運，Supabase REST）----
+ * 玩家行為統計（來訪/挑戰/用時/配裝/原作點擊），上報端 telemetry.js、後台頁 stats.html
+ * 都讀這一組設定。兩值未填時全部靜默停用（不發任何請求）。
+ * 設定步驟：Supabase 建免費專案 → SQL Editor 跑 stats.html 頁尾註解的建表 SQL →
+ * 把 Project URL 與 anon public key 填進來即生效（公開匿名寫入/讀取，不做防作弊）。 */
+export const TELEMETRY = {
+  url: '',       // 例：'https://xxxx.supabase.co'
+  anonKey: '',   // Supabase anon public key
+};

@@ -11,6 +11,7 @@
 import { GAME_CONFIG, VERSION, asset, ASSETS } from './config.js';
 import { state } from './state.js';
 import { SFX } from './audio.js';
+import { TEL } from './telemetry.js';   // 遙測（未設定後端時 no-op）
 import * as combat from './modules/combat.js';
 import * as saint from './modules/saint.js';
 import * as defense from './modules/defense.js';
@@ -263,10 +264,14 @@ bindBtn('pickPartnerBtn', ()=>weapon.openPickSheet('partner'));
 // Credit：BGM 來源
 bindBtn('creditBtn',  ()=>{ const s=$('creditSheet'); if(s) s.classList.add('on'); });
 bindBtn('creditClose',()=>{ const s=$('creditSheet'); if(s) s.classList.remove('on'); });
-// 原作：點下 → 選巴哈 / Penana（新分頁開）
+// 原作：點下 → 選巴哈 / Penana（新分頁開）；外連點擊上報（統計哪個平台被點）
 bindBtn('originalBtn',  ()=>{ const s=$('originalSheet'); if(s) s.classList.add('on'); });
 bindBtn('originalClose',()=>{ const s=$('originalSheet'); if(s) s.classList.remove('on'); });
+document.querySelectorAll('#originalSheet .os-link').forEach(a=>{
+  a.addEventListener('click', ()=>TEL.originalClick(a.textContent.trim()));
+});
 weapon.refreshLoadoutLabels();                  // 開機：把當前副武器/搭檔名寫進 loadout 按鈕
+TEL.visit();                                    // 來訪上報（每次開頁一筆）
 { const v=$('homeVersion'); if(v) v.textContent=VERSION; }   // 首頁版本號（config.VERSION）
 
 window.addEventListener('resize', combat.fitGridSquare);
