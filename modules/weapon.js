@@ -122,6 +122,7 @@ export function activateDual(){
   if(state.over||state.dualWield||state.saintMode||state.cutinPlaying||state.transitioning) return;
   if(state.energy<100) return;                 // 破防值未滿不能發動
   SFX.unlock(); SFX.ultCharge();
+  SFX.play(asset('se_luna_dual'));             // 雙槍破防發動 SE（Luna）
   api.resetEnergy();                           // 破防值歸零 + 刷新計量表（energy 為 combat 擁有）
   api.playCutin(()=>{
     if(state.over||state.saintMode) return;

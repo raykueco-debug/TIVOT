@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於首頁版權宣告下方，每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.13-11';
+export const VERSION = 'ver 2026.08.13-12';
 
 export const GAME_CONFIG = {
 
@@ -500,6 +500,12 @@ export const ASSETS = {
 
   // 完美防禦（完防）合成替代音（一般武器；散彈完防維持自己的槍聲）
   se_guard:          "resources/weapon/Guard_SE.m4a",
+
+  // 搭檔演出 SE（Luna）：發動/結局 cut-in 同步播。放 resources/partner/。
+  se_luna_dual:      "resources/partner/Luna_dual_se.wav",   // 雙槍破防發動
+  se_luna_exc:       "resources/partner/Luna_EXC_SE.wav",    // 處決 EXSECUTIŌ cut-in
+  se_luna_mb:        "resources/partner/Luna_MB_SE.wav",     // Maximum Burst cut-in
+  se_luna_obe:       "resources/partner/Luna_OBE_SE.wav",    // O.B.E. cut-in
 
   // 敵人攻擊音（依攻擊種類 kind：ult 大絕命中/不完美防禦格擋、delay 太慢、wrong 按錯）。放 resources/enemy/。
   em_slash:          "resources/enemy/EM_Slash_SE.m4a",    // 聖徒：大絕/不完美防禦/按錯

@@ -325,6 +325,9 @@ function playSaintCutin(kind, done){
   c.classList.add(kind);
   void c.offsetWidth;                      // reflow → 重播動畫
   c.classList.add('on');
+  // 結局 cut-in 專屬 SE（Luna；return＝生命歸還為 Renee，尚無專屬 SE 維持原音）
+  const scSeKey = { execute:'se_luna_exc', obe:'se_luna_obe', burst:'se_luna_mb' };
+  if(scSeKey[kind]) SFX.play(asset(scSeKey[kind]));
   SFX.gunshot(true);
   if(kind==='obe') setTimeout(()=>SFX.hit(), 200); else setTimeout(()=>SFX.clear(), 200);
   const holdMs = kind==='execute' ? 3000 : 1600;   // EXSECUTIŌ 停留 3 秒
