@@ -284,8 +284,10 @@
   #exitBtn{top:10px;left:auto;right:10px;font-size:18px;}
   /* 結算畫面（banner 開啟）時隱藏右上退出鈕：corner-btn z-37 高於 banner z-30，會浮在結算之上 */
   #app:has(#banner.on) #exitBtn{display:none;}
-  /* v17：測試人員用「清盤」鈕（左上角）。z-index 同 corner-btn，聖徒化手勢層之上，確保可點。 */
-  #testClearBtn{top:10px;left:10px;right:auto;font-size:12px;letter-spacing:1px;color:var(--holy);border-color:var(--holy);}
+  /* v17：測試人員用「清盤」鈕（左上角）。z-index 同 corner-btn，聖徒化手勢層之上，確保可點。
+   *  預設隱藏：首頁手勢解鎖（團徽畫圓→橫劃團名，見 main.js testUnlockGesture）後 body.testmode 才顯示。 */
+  #testClearBtn{top:10px;left:10px;right:auto;font-size:12px;letter-spacing:1px;color:var(--holy);border-color:var(--holy);display:none;}
+  body.testmode #testClearBtn{display:flex;}
 
   /* ===== 過渡禎：開始/結束淡入淡出全畫面轉場 ===== */
   /* 淡入淡出時長由 JS 依 config.transitions.fadeMs 寫入 --expel-fade，CSS 與 config 同步。 */

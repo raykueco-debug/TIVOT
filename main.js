@@ -430,6 +430,66 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
   }
 })();
 
+/* ── 清盤鈕手勢解鎖：首頁「團徽上畫一個圓 → 10 秒內橫向劃過『聖約第四騎士團』字樣」
+ *    → 播 SI_01 作解鎖回饋、body.testmode 開啟 → 進戰鬥後左上「清盤」鈕才顯示
+ *    （#testClearBtn 預設 display:none，見 style.css）。重整頁面即恢復隱藏。
+ *    偵測從寬：圓＝繞路徑質心累積轉角 ≥300°、頭尾收攏、範圍 ≥40px 且圓心落在團徽附近；
+ *    橫劃＝水平位移 ≥ 標題寬 60%、垂直偏移 ≤60px、高度落在字樣帶 ±40px（左右方向皆可）。 */
+(function testUnlockGesture(){
+  const homeEl=$('home'); if(!homeEl) return;
+  homeEl.style.touchAction='none';   // 拖曳穩定送 pointermove（首頁本就不捲動，不影響按鈕點擊）
+  let pts=null, pid=null, circleAt=0;
+  const isCircle=(path)=>{
+    if(path.length<10) return false;
+    let minX=1e9,maxX=-1e9,minY=1e9,maxY=-1e9,cx=0,cy=0;
+    for(const p of path){ minX=Math.min(minX,p.x); maxX=Math.max(maxX,p.x);
+      minY=Math.min(minY,p.y); maxY=Math.max(maxY,p.y); cx+=p.x; cy+=p.y; }
+    cx/=path.length; cy/=path.length;
+    const w=maxX-minX, h=maxY-minY;
+    if(w<40||h<40) return false;
+    const s=path[0], t=path[path.length-1];
+    if(Math.hypot(t.x-s.x,t.y-s.y) > Math.max(w,h)*0.45) return false;   // 頭尾要收攏才算閉合
+    const em=$('homeEmblem'), er=em?em.getBoundingClientRect():null;
+    if(er && er.width>10){ const pad=er.width*0.5;   // 圓心須落在團徽附近（放寬半個徽寬）
+      if(cx<er.left-pad||cx>er.right+pad||cy<er.top-pad||cy>er.bottom+pad) return false; }
+    let sweep=0, prev=Math.atan2(path[0].y-cy,path[0].x-cx);
+    for(let i=1;i<path.length;i++){ const a=Math.atan2(path[i].y-cy,path[i].x-cx);
+      let d=a-prev; if(d>Math.PI)d-=2*Math.PI; if(d<-Math.PI)d+=2*Math.PI; sweep+=d; prev=a; }
+    return Math.abs(sweep) >= Math.PI*5/3;   // 累積轉角 ≥300°（順逆時針皆可）
+  };
+  const isTitleSwipe=(path)=>{
+    const tl=homeEl.querySelector('.title'), tr=tl?tl.getBoundingClientRect():null;
+    if(!tr || path.length<2) return false;
+    const s=path[0], t=path[path.length-1], dx=t.x-s.x, dy=t.y-s.y;
+    if(Math.abs(dx) < tr.width*0.6) return false;      // 橫向要劃得夠長
+    if(Math.abs(dy) > 60) return false;                // 大致水平
+    const ymid=(s.y+t.y)/2;
+    return ymid > tr.top-40 && ymid < tr.bottom+40;    // 高度落在字樣帶
+  };
+  const unlock=()=>{
+    circleAt=0;
+    document.body.classList.add('testmode');
+    SFX.unlock(); SFX.play(asset('sfx_saint'));   // SI_01＝解鎖回饋音
+  };
+  homeEl.addEventListener('pointerdown', e=>{
+    if(document.body.classList.contains('testmode')) return;
+    if(e.target && e.target.closest && e.target.closest('button')) return;   // 按鈕上起手不算
+    pid=e.pointerId; pts=[{x:e.clientX,y:e.clientY}];
+  });
+  homeEl.addEventListener('pointermove', e=>{
+    if(!pts || e.pointerId!==pid) return;
+    const p=pts[pts.length-1], dx=e.clientX-p.x, dy=e.clientY-p.y;
+    if(dx*dx+dy*dy>=9) pts.push({x:e.clientX,y:e.clientY});   // 3px 取樣
+  });
+  homeEl.addEventListener('pointerup', e=>{
+    if(!pts || e.pointerId!==pid) return;
+    const path=pts; pts=null; pid=null;
+    if(isCircle(path)){ circleAt=Date.now(); return; }   // 畫圓成功（可重畫刷新時窗）
+    if(circleAt && Date.now()-circleAt<=10000 && isTitleSwipe(path)) unlock();
+  });
+  homeEl.addEventListener('pointercancel', ()=>{ pts=null; pid=null; });
+})();
+
 combat.bootIdle();   // over=true，建立背景盤面/血條，停在首頁
 
 console.log('[step8] 連戰 lineup 已接上（局內多敵：faceless→facelessgiant）· 首敵：', GAME_CONFIG.enemies[GAME_CONFIG.lineup[0]]?.name, '· HP', state.enemyMax);
