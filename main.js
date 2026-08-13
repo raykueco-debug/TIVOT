@@ -257,10 +257,9 @@ bindBtn('rematchBtn',   inspector.onRematchBtn);// 結算：依 resultMode 分�
 
 // 破防值滿 → 點計量表發動「雙槍破防」獎勵射擊窗口
 bindBtn('energyClasp',    weapon.activateDual);
-// 首頁換裝面板：副武器（反擊武器）/ 搭檔（本輪顯示層）
+// 首頁換裝面板：副武器（全螢幕卡疊，上下滑）/ 搭檔（全螢幕卡疊，左右滑）——關閉鈕各自於 sheet 內綁定
 bindBtn('pickWeaponBtn',  ()=>weapon.openPickSheet('weapon'));
 bindBtn('pickPartnerBtn', ()=>weapon.openPickSheet('partner'));
-bindBtn('pickSheetClose', weapon.closePickSheet);
 // Credit：BGM 來源
 bindBtn('creditBtn',  ()=>{ const s=$('creditSheet'); if(s) s.classList.add('on'); });
 bindBtn('creditClose',()=>{ const s=$('creditSheet'); if(s) s.classList.remove('on'); });

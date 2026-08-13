@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於首頁版權宣告下方，每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.13-18';
+export const VERSION = 'ver 2026.08.13-19';
 
 export const GAME_CONFIG = {
 
@@ -31,11 +31,14 @@ export const GAME_CONFIG = {
   //  ⚠ 武器鑰匙＝圖檔基底名（類型_武器名，同 resources/weapon/ 圖庫命名，統一代碼與檔名）。
   weapons: {
     // 重機槍 Squall：基準武器（反擊總傷 48），Perfect 帶正常、Defense 吃半傷（0.5）
-    MG_Squall:     { name:'重機槍', counterWin:0.12, hits:8, dmgPerHit:6,  vfx:null,     defenseDamageScale:0.5,  noPerfectBand:false, image:'weapon_mg_squall',     sound:'se_mg_squall' },
+    MG_Squall:     { name:'重機槍', counterWin:0.12, hits:8, dmgPerHit:6,  vfx:null,     defenseDamageScale:0.5,  noPerfectBand:false, image:'weapon_mg_squall',     sound:'se_mg_squall',
+                     desc:'全能基準機。八連發彈幕火力穩定、反擊窗口適中；格擋失手也只承受半傷，攻守均衡的可靠選擇。' },
     // 散彈槍 Blast：Counter 6發×4=24；Perfect 檔改打 6發×2=12（perfectDamageScale=0.5，傷害取代免傷）；Defense 檔吃 1/4 傷（0.25，保命但不再全免）
-    Shotgun_Blast: { name:'散彈槍', counterWin:0.20, hits:6, dmgPerHit:4,  vfx:'burst',  defenseDamageScale:0.25, noPerfectBand:false, perfectDamageScale:0.5, image:'weapon_shotgun_blast', sound:'se_shotgun_blast' },
+    Shotgun_Blast: { name:'散彈槍', counterWin:0.20, hits:6, dmgPerHit:4,  vfx:'burst',  defenseDamageScale:0.25, noPerfectBand:false, perfectDamageScale:0.5, image:'weapon_shotgun_blast', sound:'se_shotgun_blast',
+                     desc:'近身爆發。反擊窗口最寬容；完美防禦改為半傷反打、格擋僅受四分之一傷——最保命的穩健之選。' },
     // 狙擊槍 Falcon：反擊總傷 72（重機槍 1.5 倍）、單發大紅字、無 Perfect 免傷帶（高風險高回報）
-    Sniper_Falcon: { name:'狙擊槍', counterWin:0.06, hits:1, dmgPerHit:72, vfx:'single', defenseDamageScale:0.5,  noPerfectBand:true,  image:'weapon_sniper_falcon', sound:'se_sniper_falcon' },
+    Sniper_Falcon: { name:'狙擊槍', counterWin:0.06, hits:1, dmgPerHit:72, vfx:'single', defenseDamageScale:0.5,  noPerfectBand:true,  image:'weapon_sniper_falcon', sound:'se_sniper_falcon',
+                     desc:'一擊必殺。反擊窗口極窄、沒有完美防禦帶；賭上一切的單發重擊，命中即重創敵人。' },
     // 新武器：複製一段，鑰匙用「類型_武器名」（同圖檔基底名），image 指對應 ASSETS 鑰匙。
   },
   defaultWeapon: 'MG_Squall',   // 開局預設武器（填上面的鑰匙名）

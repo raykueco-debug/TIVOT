@@ -709,62 +709,69 @@
   .loadout-btn:active{transform:scale(.95);}
   .loadout-btn .lb-label{font-size:11px;letter-spacing:3px;color:var(--gold-dim);}
   .loadout-btn .lb-value{font-size:13px;letter-spacing:1px;color:var(--gold);}
-  /* 選擇彈層 */
-  #pickSheet{position:absolute;inset:0;display:none;align-items:center;justify-content:center;
-    background:rgba(4,3,8,.85);z-index:60;}
-  #pickSheet.on{display:flex;}
-  #pickSheet .pick-panel{width:82%;max-width:340px;background:#0f0c16;
-    border:1px solid var(--gold-dim);border-radius:12px;padding:18px 16px;text-align:center;
-    box-shadow:0 0 30px rgba(0,0,0,.7);}
-  #pickSheet .pick-title{font-size:15px;letter-spacing:4px;color:var(--gold);margin-bottom:14px;}
-  #pickSheet .pick-list{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
-  #pickSheet .pick-item{padding:11px 14px;background:rgba(30,24,42,.7);
-    border:1px solid var(--gold-dim);border-radius:7px;color:var(--ink);
-    font-family:inherit;font-size:14px;letter-spacing:1px;text-align:left;
-    display:flex;align-items:center;gap:12px;}
-  #pickSheet .pick-item.selected{border-color:var(--gold);color:var(--gold);
-    box-shadow:0 0 12px var(--gold-dim);}
-  #pickSheet .pick-item:active{transform:scale(.98);}
-  #pickSheet .pick-item .pi-thumb{width:52px;height:52px;flex:none;border-radius:6px;
-    object-fit:cover;background:#0a0a0e;border:1px solid var(--gold-dim);}
-  #pickSheet .pick-item .pi-body{display:flex;flex-direction:column;min-width:0;}
-  #pickSheet .pick-item .pi-sub{display:block;font-size:11px;letter-spacing:.5px;
-    color:var(--gold-dim);margin-top:3px;}
-  #pickSheet .pick-close{padding:9px 30px;background:transparent;border:1px solid var(--gold-dim);
-    color:var(--ink);border-radius:8px;font-family:inherit;font-size:13px;letter-spacing:3px;}
+  /* ── 副武器選擇畫面（全螢幕）：橫式武器卡上下滑動 + 卡疊 + 武器介紹 ── */
+  #weaponSheet{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;
+    background:rgba(6,4,12,.96);z-index:60;
+    padding:calc(14px + env(safe-area-inset-top)) 14px calc(12px + env(safe-area-inset-bottom));}
+  #weaponSheet.on{display:flex;}
+  #weaponSheet .ws-stage{position:relative;flex:1 1 auto;min-height:0;width:100%;
+    display:flex;align-items:center;justify-content:center;touch-action:pan-x;user-select:none;}
+  /* 卡疊：武器卡為橫式（16/10），各一張 .ws-frame 絕對疊放；現選在前、其餘依距離往上下墊後 */
+  #weaponSheet .ws-deck{position:relative;width:min(88%,340px);aspect-ratio:16/10;}
+  #weaponSheet .ws-frame{position:absolute;inset:0;overflow:hidden;
+    border:1px solid var(--gold-dim);border-radius:10px;background:#0a0810;
+    box-shadow:0 0 26px rgba(0,0,0,.7);
+    transition:transform .32s ease,filter .32s ease;pointer-events:none;}
+  #weaponSheet .ws-frame.back{filter:brightness(.38) saturate(.7);}
+  #weaponSheet .ws-frame img{width:100%;height:100%;object-fit:contain;-webkit-user-drag:none;}
+  #weaponSheet .ws-arrow{position:absolute;left:50%;transform:translateX(-50%);z-index:30;
+    width:56px;height:34px;background:rgba(15,12,22,.55);border:1px solid var(--gold-dim);
+    color:var(--gold);border-radius:8px;font-family:inherit;font-size:17px;line-height:1;}
+  #weaponSheet .ws-arrow:active{transform:translateX(-50%) scale(.92);}
+  #weaponSheet .ws-up{top:2px;}
+  #weaponSheet .ws-down{bottom:2px;}
+  /* 武器介紹卡（名稱／介紹／數據）。min-height 取各武器介紹最長者 → 上方卡疊不隨切換跳動 */
+  #weaponSheet .ws-card{flex:none;width:100%;max-width:340px;min-height:118px;background:#0f0c16;
+    border:1px solid var(--gold-dim);border-radius:12px;padding:12px 14px;text-align:left;}
+  #weaponSheet .ws-name{font-size:16px;letter-spacing:4px;color:var(--gold);text-align:center;
+    margin-bottom:8px;}
+  #weaponSheet .ws-desc{font-size:11.5px;line-height:1.55;color:var(--gold-dim);letter-spacing:.5px;}
+  #weaponSheet .ws-stats{margin-top:8px;font-size:11px;letter-spacing:1px;color:var(--ink);
+    text-align:center;}
 
   /* ── 搭檔選人畫面（全螢幕）：大立繪左右滑動 + 技能卡 + 發動說明 ── */
   #partnerSheet{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;
     background:rgba(6,4,12,.96);z-index:60;
     padding:calc(14px + env(safe-area-inset-top)) 14px calc(12px + env(safe-area-inset-bottom));}
   #partnerSheet.on{display:flex;}
-  #partnerSheet .ps-title{font-size:15px;letter-spacing:6px;color:var(--gold);text-indent:6px;
+  #partnerSheet .ps-title, #weaponSheet .ps-title{font-size:15px;letter-spacing:6px;color:var(--gold);text-indent:6px;
     margin-bottom:8px;flex:none;}
   #partnerSheet .ps-stage{position:relative;flex:1 1 auto;min-height:0;width:100%;
     display:flex;align-items:center;justify-content:center;touch-action:pan-y;user-select:none;}
   /* 取景框：固定 2/3 直式外框、overflow 裁切。立繪高度＝框高 × --ps-zoom（config siFit.zoom），
      水平置中、垂直以 --ps-top（頭頂偏移）對齊——各搭檔頭部大小以蕾妮（zoom:1）為基準統一。 */
-  #partnerSheet .ps-frame{position:relative;height:100%;aspect-ratio:2/3;overflow:hidden;
+  /* 卡疊容器：高度撐滿 stage、維持 2/3 直式比例；各搭檔一張 .ps-frame 絕對疊放，
+     transform 由 JS 依相對位置寫入（現選在前，其餘依距離往側後方墊、變暗） */
+  #partnerSheet .ps-deck{position:relative;height:100%;aspect-ratio:2/3;}
+  #partnerSheet .ps-frame{position:absolute;inset:0;overflow:hidden;
     border:1px solid var(--gold-dim);border-radius:10px;background:#0a0810;
-    box-shadow:0 0 26px rgba(0,0,0,.7);}
-  #partnerSheet #psPortrait{position:absolute;left:50%;top:0;height:calc(100% * var(--ps-zoom,1));
+    box-shadow:0 0 26px rgba(0,0,0,.7);
+    transition:transform .32s ease,filter .32s ease;pointer-events:none;}
+  #partnerSheet .ps-frame.back{filter:brightness(.38) saturate(.7);}
+  #partnerSheet .ps-portrait{position:absolute;left:50%;top:0;height:calc(100% * var(--ps-zoom,1));
     width:auto;transform:translateX(-50%) translateY(var(--ps-top,0%));
     pointer-events:none;-webkit-user-drag:none;}
-  #partnerSheet .ps-frame.slide-left{animation:psSlideL .28s ease;}
-  #partnerSheet .ps-frame.slide-right{animation:psSlideR .28s ease;}
-  @keyframes psSlideL{from{transform:translateX(26px);opacity:.2;}to{transform:none;opacity:1;}}
-  @keyframes psSlideR{from{transform:translateX(-26px);opacity:.2;}to{transform:none;opacity:1;}}
   #partnerSheet .ps-arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:2;
     width:38px;height:56px;background:rgba(15,12,22,.55);border:1px solid var(--gold-dim);
     color:var(--gold);border-radius:8px;font-family:inherit;font-size:24px;line-height:1;}
   #partnerSheet .ps-arrow:active{transform:translateY(-50%) scale(.92);}
   #partnerSheet .ps-prev{left:2px;}
   #partnerSheet .ps-next{right:2px;}
-  #partnerSheet .ps-dots{display:flex;gap:8px;margin:8px 0 6px;flex:none;}
-  #partnerSheet .ps-dots i{width:7px;height:7px;border-radius:50%;
+  #partnerSheet .ps-dots, #weaponSheet .ps-dots{display:flex;gap:8px;margin:8px 0 6px;flex:none;}
+  #partnerSheet .ps-dots i, #weaponSheet .ps-dots i{width:7px;height:7px;border-radius:50%;
     background:transparent;border:1px solid var(--gold-dim);}
-  #partnerSheet .ps-dots i.cur{background:var(--gold);border-color:var(--gold);}
-  #partnerSheet .ps-dots i.picked{box-shadow:0 0 8px var(--gold);}
+  #partnerSheet .ps-dots i.cur, #weaponSheet .ps-dots i.cur{background:var(--gold);border-color:var(--gold);}
+  #partnerSheet .ps-dots i.picked, #weaponSheet .ps-dots i.picked{box-shadow:0 0 8px var(--gold);}
   /* min-height 取各搭檔描述最長者：卡片高度固定 → 上方取景框不隨切換縮放，頭部大小才真正一致 */
   #partnerSheet .ps-card{flex:none;width:100%;max-width:340px;min-height:182px;background:#0f0c16;
     border:1px solid var(--gold-dim);border-radius:12px;padding:12px 14px;text-align:left;}
@@ -781,15 +788,15 @@
   #partnerSheet .ps-howto{flex:none;width:100%;max-width:340px;margin-top:8px;
     padding:8px 12px;border-top:1px solid rgba(217,198,138,.22);
     font-size:10.5px;line-height:1.7;letter-spacing:.5px;color:var(--gold-dim);text-align:center;}
-  #partnerSheet .ps-btns{flex:none;display:flex;gap:12px;margin-top:6px;}
-  #partnerSheet #psSelect{padding:10px 30px;background:transparent;border:1px solid var(--gold);
+  #partnerSheet .ps-btns, #weaponSheet .ps-btns{flex:none;display:flex;gap:12px;margin-top:6px;}
+  #partnerSheet #psSelect, #weaponSheet #wsSelect{padding:10px 30px;background:transparent;border:1px solid var(--gold);
     color:var(--gold);border-radius:8px;font-family:inherit;font-size:13px;letter-spacing:3px;
     box-shadow:0 0 12px var(--gold-dim);}
-  #partnerSheet #psSelect.picked{border-color:var(--gold-dim);color:var(--gold-dim);box-shadow:none;}
-  #partnerSheet #psSelect:active{transform:scale(.95);}
-  #partnerSheet #psClose{padding:10px 24px;background:transparent;border:1px solid var(--gold-dim);
+  #partnerSheet #psSelect.picked, #weaponSheet #wsSelect.picked{border-color:var(--gold-dim);color:var(--gold-dim);box-shadow:none;}
+  #partnerSheet #psSelect:active, #weaponSheet #wsSelect:active{transform:scale(.95);}
+  #partnerSheet #psClose, #weaponSheet #wsClose{padding:10px 24px;background:transparent;border:1px solid var(--gold-dim);
     color:var(--ink);border-radius:8px;font-family:inherit;font-size:13px;letter-spacing:3px;}
-  #partnerSheet #psClose:active{transform:scale(.95);}
+  #partnerSheet #psClose:active, #weaponSheet #wsClose:active{transform:scale(.95);}
 
   /* 首頁底部：Credit / 原作 小鈕一排，版權宣告獨立一行在其下，整組貼底置中（避開 home indicator 安全區）。
      版權不與按鈕同排——窄機/字體較寬時會互相擠壓。 */

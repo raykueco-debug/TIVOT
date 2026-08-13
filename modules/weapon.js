@@ -165,35 +165,27 @@ export function refreshLoadoutLabels(){
   if(pv) pv.textContent = p ? p.name : '—';
 }
 
-// 開啟選擇彈層：kind='weapon'（反擊武器，列表彈層）| 'partner'（搭檔 → 全螢幕選人畫面）。
+// 開啟選擇畫面：kind='weapon'（副武器 → 全螢幕卡疊，上下滑動）| 'partner'（搭檔 → 全螢幕卡疊，左右滑動）。
 export function openPickSheet(kind){
   if(kind==='partner'){ openPartnerSheet(); return; }
-  const map = WEAPONS;
-  const cur = state.equippedWeapon;
-  $('pickSheetTitle').textContent = '選擇副武器';
-  const list=$('pickSheetList'); list.innerHTML='';
-  Object.keys(map).forEach(key=>{
-    const it=map[key];
-    const div=document.createElement('div');
-    div.className='pick-item'+(key===cur?' selected':'');
-    const sub = `反擊勝率 ${Math.round((it.counterWin||0)*100)}% · ${it.hits||0}發×${it.dmgPerHit||0}`;
-    // 副武器縮圖（讀 config image 鑰匙 → ASSETS；無圖則不顯示，版面自適應）
-    const imgSrc = it.image ? asset(it.image) : '';
-    const thumb = imgSrc ? `<img class="pi-thumb" src="${imgSrc}" alt="">` : '';
-    div.innerHTML = `${thumb}<span class="pi-body">${it.name||key}${sub?`<span class="pi-sub">${sub}</span>`:''}</span>`;
-    const choose=()=>{
-      SFX.unlock(); SFX.menuClick();
-      state.equippedWeapon=key;   // 反擊武器選即換、立即驅動戰鬥（三段防禦/反擊/視覺）
-      refreshLoadoutLabels();
-      closePickSheet();
-    };
-    div.addEventListener('click',choose);
-    div.addEventListener('touchstart',e=>{e.preventDefault();choose();},{passive:false});
-    list.appendChild(div);
-  });
-  $('pickSheet').classList.add('on');
+  openWeaponSheet();
 }
-export function closePickSheet(){ $('pickSheet').classList.remove('on'); }
+
+/* ── 卡疊佈局（選人/選武器共用）──
+ * 依「與現選卡的相對距離」排前後：rel=0 在前置中；其餘依距離往後墊（axis='x' 側後方
+ * 錯位＋微轉、'y' 上下錯位），變暗縮小、z-index 遞減——像一疊卡牌只抽當前這張到面前。 */
+function deckLayout(frames, index, axis){
+  const n = frames.length;
+  frames.forEach((f,i)=>{
+    let rel=(i-index+n)%n; if(rel>n/2) rel-=n;   // 循環卡疊 → 取最短簽名距離（左右/上下對稱墊後）
+    const d=Math.abs(rel);
+    f.style.zIndex=String(20-d);
+    f.classList.toggle('back', rel!==0);
+    f.style.transform = axis==='x'
+      ? `translate(${rel*20}px, ${-d*12}px) rotate(${rel*3}deg) scale(${1-d*.07})`
+      : `translateY(${rel*22}px) rotate(${rel*-2}deg) scale(${1-d*.08})`;
+  });
+}
 
 /* ============================================================================
  *  搭檔選人畫面（全螢幕）：大立繪左右滑動切換、卡片技能描述、底部發動說明
@@ -207,6 +199,7 @@ let psBound = false;      // 手勢/按鈕只綁一次
 
 export function openPartnerSheet(){
   psIndex = Math.max(0, PARTNER_KEYS.indexOf(state.pickedPartner));
+  buildPartnerDeck();
   bindPartnerSheet();
   renderPartnerSheet();
   $('partnerSheet').classList.add('on');
@@ -216,27 +209,32 @@ export function closePartnerSheet(){ $('partnerSheet').classList.remove('on'); }
 function psMove(dir){   // dir=+1 下一位 / -1 上一位（循環）
   psIndex = (psIndex + dir + PARTNER_KEYS.length) % PARTNER_KEYS.length;
   SFX.menuClick();
-  renderPartnerSheet(dir);
+  renderPartnerSheet();
 }
 
-// dir 有值時給立繪一個進場滑動方向（重播 CSS 動畫）
-function renderPartnerSheet(dir){
+// 卡疊建立（一次）：每位搭檔一張取景框卡。取景參數（config siFit：zoom＝相對框高的
+// 放大倍率、top＝垂直偏移）於建卡時寫死在各自的 img——統一頭部大小（以蕾妮 zoom:1 為基準）。
+function buildPartnerDeck(){
+  const deck=$('psDeck');
+  if(!deck || deck.childElementCount) return;
+  PARTNER_KEYS.forEach(key=>{
+    const p=GAME_CONFIG.partners[key], fit=p.siFit||{};
+    const fr=document.createElement('div'); fr.className='ps-frame';
+    const img=document.createElement('img'); img.className='ps-portrait';
+    img.alt=p.name||key; img.draggable=false;
+    img.src=asset(p.image)||'';
+    img.style.setProperty('--ps-zoom', fit.zoom||1);
+    img.style.setProperty('--ps-top', ((fit.top||0)*100)+'%');
+    fr.appendChild(img); deck.appendChild(fr);
+  });
+}
+
+function renderPartnerSheet(){
   const key = PARTNER_KEYS[psIndex];
   const p = GAME_CONFIG.partners[key];
   if(!p) return;
-  const img=$('psPortrait'), frame=$('psFrame');
-  if(img){
-    img.src = asset(p.image) || '';
-    // 取景參數（config siFit：zoom＝相對框高的放大倍率、top＝垂直偏移，比例值）——
-    //   統一各搭檔頭部大小（以蕾妮 zoom:1 為基準），全身圖裁成膝上構圖。
-    const fit = p.siFit || {};
-    img.style.setProperty('--ps-zoom', fit.zoom || 1);
-    img.style.setProperty('--ps-top', ((fit.top || 0) * 100) + '%');
-  }
-  if(frame){
-    frame.classList.remove('slide-left','slide-right');
-    if(dir){ void frame.offsetWidth; frame.classList.add(dir>0?'slide-left':'slide-right'); }
-  }
+  const deck=$('psDeck');
+  if(deck) deckLayout([...deck.children], psIndex, 'x');   // 現選抽到面前，其餘墊後
   const set=(id,txt)=>{ const el=$(id); if(el) el.textContent=txt; };
   set('psName', p.name || key);
   set('psActiveName',  p.active  ? p.active.name  : '—');
@@ -304,6 +302,114 @@ function bindPartnerSheet(){
     renderPartnerSheet();
   });
   bind('psClose', ()=>{ SFX.menuClick(); closePartnerSheet(); });
+}
+
+/* ============================================================================
+ *  副武器選擇畫面（全螢幕）：橫式武器卡「上下滑動」切換、卡疊同選人、下方武器介紹
+ * ----------------------------------------------------------------------------
+ *  清單以 config weapons 動態產生（新增武器自動出現）。「選擇此武器」→
+ *  state.equippedWeapon（weapon 自有狀態 §3.4）選即換 + 播該武器擊發聲（config sound）。
+ * ========================================================================== */
+const WEAPON_KEYS = Object.keys(WEAPONS);
+let wsIndex = 0;          // 目前展示中的武器 index
+let wsBound = false;      // 手勢/按鈕只綁一次
+
+export function openWeaponSheet(){
+  wsIndex = Math.max(0, WEAPON_KEYS.indexOf(state.equippedWeapon));
+  buildWeaponDeck();
+  bindWeaponSheet();
+  renderWeaponSheet();
+  $('weaponSheet').classList.add('on');
+}
+export function closeWeaponSheet(){ $('weaponSheet').classList.remove('on'); }
+
+function wsMove(dir){   // dir=+1 下一把 / -1 上一把（循環；上滑＝看下一把）
+  wsIndex = (wsIndex + dir + WEAPON_KEYS.length) % WEAPON_KEYS.length;
+  SFX.menuClick();
+  renderWeaponSheet();
+}
+
+// 卡疊建立（一次）：每把武器一張橫式卡（圖 contain 置中）。
+function buildWeaponDeck(){
+  const deck=$('wsDeck');
+  if(!deck || deck.childElementCount) return;
+  WEAPON_KEYS.forEach(key=>{
+    const w=WEAPONS[key];
+    const fr=document.createElement('div'); fr.className='ws-frame';
+    const img=document.createElement('img');
+    img.alt=w.name||key; img.draggable=false;
+    img.src=asset(w.image)||'';
+    fr.appendChild(img); deck.appendChild(fr);
+  });
+}
+
+function renderWeaponSheet(){
+  const key = WEAPON_KEYS[wsIndex];
+  const w = WEAPONS[key];
+  if(!w) return;
+  const deck=$('wsDeck');
+  if(deck) deckLayout([...deck.children], wsIndex, 'y');   // 現選抽到面前，其餘往上下墊後
+  const set=(id,txt)=>{ const el=$(id); if(el) el.textContent=txt; };
+  set('wsName', w.name || key);
+  set('wsDesc', w.desc || '');
+  set('wsStats', `反擊勝率 ${Math.round((w.counterWin||0)*100)}% · ${w.hits||0} 發 × ${w.dmgPerHit||0} 傷`);
+  const dots=$('wsDots');
+  if(dots){
+    dots.innerHTML = WEAPON_KEYS.map((k,i)=>
+      `<i class="${i===wsIndex?'cur':''}${k===state.equippedWeapon?' picked':''}"></i>`).join('');
+  }
+  const btn=$('wsSelect');
+  if(btn){
+    const isCur = key===state.equippedWeapon;
+    btn.textContent = isCur ? '裝備中' : '選擇此武器';
+    btn.classList.toggle('picked', isCur);
+  }
+}
+
+function bindWeaponSheet(){
+  if(wsBound) return; wsBound=true;
+  // 武器卡區上下滑動（touch + 滑鼠拖曳；上滑＝看下一把，同直式清單直覺）
+  const stage=$('wsStage');
+  if(stage){
+    let sx=0, sy=0, tracking=false;
+    const THRESH=48;
+    const begin=(x,y)=>{ sx=x; sy=y; tracking=true; };
+    const move=(x,y)=>{
+      if(!tracking) return;
+      const dx=x-sx, dy=y-sy;
+      if(Math.abs(dy)>THRESH && Math.abs(dy)>Math.abs(dx)*1.2){
+        tracking=false;
+        wsMove(dy<0 ? +1 : -1);   // 往上滑＝看下一把
+      }
+    };
+    stage.addEventListener('touchstart',e=>{ const t=e.touches[0]; begin(t.clientX,t.clientY); },{passive:true});
+    stage.addEventListener('touchmove', e=>{ const t=e.touches[0]; move(t.clientX,t.clientY); },{passive:true});
+    stage.addEventListener('touchend', ()=>{ tracking=false; });
+    let mDown=false;
+    stage.addEventListener('mousedown',e=>{ mDown=true; begin(e.clientX,e.clientY); });
+    stage.addEventListener('mousemove',e=>{ if(mDown) move(e.clientX,e.clientY); });
+    window.addEventListener('mouseup', ()=>{ mDown=false; });
+  }
+  // 上下箭頭 / 選擇 / 返回
+  const bind=(id,fn)=>{
+    const el=$(id); if(!el) return;
+    let h=false;
+    el.addEventListener('touchstart',e=>{e.preventDefault();h=true;SFX.unlock();fn();},{passive:false});
+    el.addEventListener('click',()=>{ if(h){h=false;return;} SFX.unlock(); fn(); });
+  };
+  bind('wsUp',   ()=>wsMove(-1));
+  bind('wsDown', ()=>wsMove(+1));
+  bind('wsSelect', ()=>{
+    SFX.menuClick();
+    const key = WEAPON_KEYS[wsIndex];
+    if(key !== state.equippedWeapon){   // 實際切換才播擊發聲（「裝備中」重按不播）
+      state.equippedWeapon = key;       // 反擊武器選即換、立即驅動戰鬥（三段防禦/反擊/視覺）
+      const se = asset(WEAPONS[key].sound); if(se) SFX.play(se);   // 對應武器擊發聲
+      refreshLoadoutLabels();
+    }
+    renderWeaponSheet();
+  });
+  bind('wsClose', ()=>{ SFX.menuClick(); closeWeaponSheet(); });
 }
 
 /* ============================================================================

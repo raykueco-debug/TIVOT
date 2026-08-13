@@ -229,8 +229,9 @@
     <div class="ps-title">選擇搭檔</div>
     <div class="ps-stage" id="psStage">
       <button class="ps-arrow ps-prev" id="psPrev" aria-label="上一位">‹</button>
-      <!-- 取景框：立繪以 config siFit（zoom/top）縮放裁切，統一各搭檔頭部大小（以蕾妮為基準） -->
-      <div class="ps-frame" id="psFrame"><img id="psPortrait" alt="搭檔立繪" draggable="false"></div>
+      <!-- 卡疊：每位搭檔一張 .ps-frame（JS 依 config.partners 動態建立），現選在前、其餘墊後
+           取景框：立繪以 config siFit（zoom/top）縮放裁切，統一各搭檔頭部大小（以蕾妮為基準） -->
+      <div class="ps-deck" id="psDeck"></div>
       <button class="ps-arrow ps-next" id="psNext" aria-label="下一位">›</button>
     </div>
     <div class="ps-dots" id="psDots"></div>
@@ -255,12 +256,23 @@
     </div>
   </div>
 
-  <!-- 選擇彈層（副武器）-->
-  <div id="pickSheet">
-    <div class="pick-panel">
-      <div class="pick-title" id="pickSheetTitle">選擇</div>
-      <div class="pick-list" id="pickSheetList"></div>
-      <button class="pick-close" id="pickSheetClose">關閉</button>
+  <!-- 副武器選擇畫面：橫式武器卡「上下滑動」切換、卡疊同搭檔選人、下方武器介紹（清單依 config.weapons 動態產生）-->
+  <div id="weaponSheet">
+    <div class="ps-title">選擇副武器</div>
+    <div class="ws-stage" id="wsStage">
+      <button class="ws-arrow ws-up" id="wsUp" aria-label="上一把">∧</button>
+      <div class="ws-deck" id="wsDeck"></div>
+      <button class="ws-arrow ws-down" id="wsDown" aria-label="下一把">∨</button>
+    </div>
+    <div class="ps-dots" id="wsDots"></div>
+    <div class="ws-card">
+      <div class="ws-name" id="wsName"></div>
+      <div class="ws-desc" id="wsDesc"></div>
+      <div class="ws-stats" id="wsStats"></div>
+    </div>
+    <div class="ps-btns">
+      <button id="wsSelect">選擇此武器</button>
+      <button id="wsClose">返回</button>
     </div>
   </div>
 </div>
