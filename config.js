@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於首頁版權宣告下方，每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.13-13';
+export const VERSION = 'ver 2026.08.13-14';
 
 export const GAME_CONFIG = {
 
@@ -402,8 +402,9 @@ export const GAME_CONFIG = {
     // Overkill 限時（敵死後的追加輸出窗口）
     overkillLimitMs:     3000,  // 3 秒內沒清完 → 全數字磚破碎自動清盤
     overkillNextDelayMs: 0,     // 自動清盤後直接插入下一盤（原 1000ms 防連點誤觸，手感太拖已取消）
-    // 搭檔演出 SE 播放增益：wav 母帶偏小聲（peak −12~−17 dBFS），播放端增幅至接近滿刻度不破音
-    partnerSeGain: { se_luna_dual:6, se_luna_exc:4.5, se_luna_mb:4, se_luna_obe:3.4 },
+    // 搭檔演出 SE 播放增益：母帶已重 master 至 RMS −11 dBFS（v2），播放端不再增幅；
+    //   個別仍嫌大/小聲時微調這裡即可（>1 增幅、<1 衰減）
+    partnerSeGain: { se_luna_dual:1, se_luna_exc:1, se_luna_mb:1, se_luna_obe:1 },
 
     // 載入畫面教學 Hint 輪播（文案見 loadingHints）
     loadingHintHoldMs:   5000,  // 每句停留 5 秒
@@ -504,10 +505,11 @@ export const ASSETS = {
   se_guard:          "resources/weapon/Guard_SE.m4a",
 
   // 搭檔演出 SE（Luna）：發動/結局 cut-in 同步播。放 resources/partner/。
-  se_luna_dual:      "resources/partner/Luna_dual_se.wav",   // 雙槍破防發動
-  se_luna_exc:       "resources/partner/Luna_EXC_SE.wav",    // 處決 EXSECUTIŌ cut-in
-  se_luna_mb:        "resources/partner/Luna_MB_SE.wav",     // Maximum Burst cut-in
-  se_luna_obe:       "resources/partner/Luna_OBE_SE.wav",    // O.B.E. cut-in
+  //  v2：母帶重 master（RMS −28→−11 dBFS + 軟限幅），內容更新 → 升 ?v 強制重抓
+  se_luna_dual:      "resources/partner/Luna_dual_se.wav?v=2",   // 雙槍破防發動
+  se_luna_exc:       "resources/partner/Luna_EXC_SE.wav?v=2",    // 處決 EXSECUTIŌ cut-in
+  se_luna_mb:        "resources/partner/Luna_MB_SE.wav?v=2",     // Maximum Burst cut-in
+  se_luna_obe:       "resources/partner/Luna_OBE_SE.wav?v=2",    // O.B.E. cut-in
 
   // 敵人攻擊音（依攻擊種類 kind：ult 大絕命中/不完美防禦格擋、delay 太慢、wrong 按錯）。放 resources/enemy/。
   em_slash:          "resources/enemy/EM_Slash_SE.m4a",    // 聖徒：大絕/不完美防禦/按錯
