@@ -270,6 +270,9 @@ bindBtn('originalClose',()=>{ const s=$('originalSheet'); if(s) s.classList.remo
 document.querySelectorAll('#originalSheet .os-link').forEach(a=>{
   a.addEventListener('click', ()=>TEL.originalClick(a.textContent.trim()));
 });
+// 後臺統計（管理員限定）：新分頁開 stats.html；顯示條件見下（簽名後 CSS 才放行）
+bindBtn('statsBtn', ()=>{ window.open('stats.html', '_blank'); });
+if(TEL.isAdmin()) document.body.classList.add('adminsigned');   // 裝置已簽過 → 開機即顯示後臺鈕
 weapon.refreshLoadoutLabels();                  // 開機：把當前副武器/搭檔名寫進 loadout 按鈕
 TEL.visit();                                    // 來訪上報（每次開頁一筆）
 { const v=$('homeVersion'); if(v) v.textContent=VERSION; }   // 首頁版本號（config.VERSION）
