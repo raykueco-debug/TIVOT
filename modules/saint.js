@@ -55,6 +55,7 @@ export function activateSaint(dir){
   state.saintUsedThisBattle = true;   // saint 自有欄位：發動即鎖（一場一次），時序同 reference
   SFX.unlock(); SFX.ultCharge();
   SFX.play(asset('sfx_saint'));       // 聖徒化發動音效（SI_01）
+  SFX.play(asset('voice_saint_luna'), 1.7);// Luna 發動語音（母帶峰值 -4.9dB，增益 1.7≈+4.6dB 推近滿不破音）
   playSlash(dir);                     // 依滑動方向的橫斬特效
   playCutin(()=>{
     if(state.over) return;
@@ -133,6 +134,20 @@ export function saintAdvance(amount){
  * ========================================================================== */
 export function saintTap(num, cell){
   if(cell.classList.contains('done')) return;   // 已點掉的格子不可重點
+  // Overkill（敵 HP 已歸零）：免順序追打——點到未消格即命中（同雙槍破防手感），
+  //   全清 → triggerMaxBurst（敵已死 → EXSECUTIŌ 處決收尾，回血至滿）。
+  //   倒數槽被動推進與反應時限照常施壓（拖太久推滿仍會 OBE）。
+  if(state.enemyHp<=0){
+    SFX.gunshot(true);
+    cell.classList.add('done'); cell.classList.remove('next'); api.shatterCell(cell);
+    state.combo++;
+    const okDmg=Math.round(api.hitDamage() + state.combo*SAINT_COMBO_STEP);
+    api.enemyDamage(okDmg, true);
+    state.saintDamageDealt += okDmg;
+    if(state.cells.every(c=>c.classList.contains('done'))){ triggerMaxBurst(); }
+    else startSaintReactTimer();
+    return;
+  }
   if(num===state.expect){
     SFX.gunshot(true);
     cell.classList.add('done'); cell.classList.remove('next'); api.shatterCell(cell);
@@ -205,9 +220,10 @@ function triggerMaxBurst(){
     playSaintCutin('execute', ()=>{ api.setPlayerHpRatio(1); api.onEnemyDefeated(); });
     return;
   }
-  // 敵人未死 → Maximum Burst 演出後回盤面（成功 MB 滿血獎勵，HP → 100%，D2）
+  // 敵人未死 → Maximum Burst 演出後回盤面。回血規則（2026-08-13 定案）：
+  //   EXSECUTIŌ（MB 擊殺）→ 回滿；MaxBurst（未擊殺）→ 回 50%，並自然延續到同場下一敵。
   playSaintCutin('burst', ()=>{
-    finishSaintMode(()=>api.setPlayerHpRatio(1));
+    finishSaintMode(()=>api.setPlayerHpRatio(0.5));
   });
 }
 
@@ -220,8 +236,10 @@ function triggerOBE(){
   restoreUltRate();
   api.floatDmg('O.B.E.','50%','28%',true);
   if(state.enemyHp<=0){
-    // 聖徒化期間敵 HP 已歸零、但倒數槽先推滿 → 仍播 OBE 演出，收尾直接進結算（不回死盤面）
-    playSaintCutin('obe', ()=>{ $('grid').classList.remove('saint'); api.onEnemyDefeated(); });
+    // 聖徒化期間敵 HP 已歸零、但倒數槽先推滿 → 仍播 OBE 演出，收尾轉下一敵/結算。
+    // ⚠ OBE 懲罰（HP→1）照樣套用並延續到同場下一敵——推進=回血會把血推滿，
+    //   不套懲罰會變成「OBE 後滿血接下一隻」（悖離 OBE=沒守住 的語義）。
+    playSaintCutin('obe', ()=>{ $('grid').classList.remove('saint'); api.setPlayerHpRatio(0); api.onEnemyDefeated(); });
     return;
   }
   // 全畫面 OVERWRITE BREAKER ENGAGED cut-in → 結束後回盤面（HP → 1）
@@ -276,10 +294,7 @@ export function playCutin(done, label, imgKey, opts){
   if(label!==undefined) $('cutinText').innerHTML = label;
   if(imgKey){ const ci=$('cutinImg'); const src=asset(imgKey); if(ci && src) ci.src=src; }
   c.classList.remove('on'); void c.offsetWidth; c.classList.add('on');
-  if(!opts.noShot){                        // 聖徒化降臨傳 noShot（只留 SI_01）；雙槍破防維持槍聲
-    SFX.gunshot(true);
-    setTimeout(()=>{ SFX.gunshot(true); },200);
-  }
+  // cut-in 槍聲已全面取消：雙槍破防有 Luna_dual_se、聖徒化降臨有 SI_01，槍聲只留給盤面實際射擊
   setTimeout(()=>{
     c.classList.remove('on');
     state.cutinPlaying=false;
@@ -308,8 +323,13 @@ function playSaintCutin(kind, done){
   c.classList.add(kind);
   void c.offsetWidth;                      // reflow → 重播動畫
   c.classList.add('on');
-  SFX.gunshot(true);
-  if(kind==='obe') setTimeout(()=>SFX.hit(), 200); else setTimeout(()=>SFX.clear(), 200);
+  // 結局 cut-in 專屬 SE（Luna；return＝生命歸還為 Renee，尚無專屬 SE）。
+  //   槍聲/合成占位音已拔除——cut-in 只播專屬 SE；母帶偏小聲 → 播放端依 tuning.partnerSeGain 增幅。
+  const scSeKey = { execute:'se_luna_exc', obe:'se_luna_obe', burst:'se_luna_mb' };
+  if(scSeKey[kind]){
+    const k=scSeKey[kind];
+    SFX.play(asset(k), (GAME_CONFIG.tuning.partnerSeGain||{})[k]);
+  }
   const holdMs = kind==='execute' ? 3000 : 1600;   // EXSECUTIŌ 停留 3 秒
   setTimeout(()=>{
     c.classList.remove('on');

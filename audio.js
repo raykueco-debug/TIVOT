@@ -12,7 +12,9 @@
  * ========================================================================== */
 
 let _ctx = null;
-const _buffers = {};   // src → AudioBuffer（已解碼）
+let _needRebuild = false;   // 上次手勢 resume 沒生效（iOS 主畫面 App 常見）→ 下次手勢內重建 context
+let _unlockChk = null;      // resume 生效檢查計時器
+const _buffers = {};   // src → AudioBuffer（已解碼；AudioBuffer 不綁 context，重建後仍可播）
 const _pending = {};   // src → Promise（解碼中，避免重複 fetch）
 
 function ctx(){
@@ -46,14 +48,28 @@ function playBuffer(c, buf, vol){
   }catch(e){}
 }
 
-// 播放音檔（src＝已解析路徑）。已解碼→立即播；未解碼→解碼後補播。null/空→靜默略過。
+// 補播時限：play() 當下未解碼 → 解碼完成若已超過此時限就放棄不播。
+//   遲到的音效比沒播更糟——會在無關的場景突然冒出來（如揭幕音拖到進戰鬥才響）。
+const LATE_PLAY_MS = 1500;
+
+/* context 未 running（iOS 解鎖中/被中斷）時不盲目 s.start()——被排入的音源會卡到
+ * 「下一次手勢 resume」才突然冒出（=延到下一幕才響）。改輪詢等 running，
+ * LATE_PLAY_MS 內沒等到就放棄（遲到不亂響）。context 若中途重建，改用新 _ctx。 */
+function playWhenRunning(buf, vol, t0){
+  if(Date.now()-t0 > LATE_PLAY_MS) return;
+  const c = _ctx; if(!c) return;
+  if(c.state === 'running'){ playBuffer(c, buf, vol); return; }
+  setTimeout(()=>playWhenRunning(buf, vol, t0), 60);
+}
+
+// 播放音檔（src＝已解析路徑）。已解碼→立即播；未解碼→限時補播（逾時放棄）。null/空→靜默略過。
 function playSrc(src, vol){
   if(!src) return;
-  const c = ctx();
-  if(!c) return;
+  if(!ctx()) return;
+  const t0 = Date.now();
   const buf = _buffers[src];
-  if(buf) playBuffer(c, buf, vol);
-  else load(src).then(b => { if(b) playBuffer(c, b, vol); });
+  if(buf){ playWhenRunning(buf, vol, t0); return; }
+  load(src).then(b => { if(b) playWhenRunning(b, vol, t0); });
 }
 
 let _shots = [];   // 普攻槍聲候選（已解析路徑，隨機播一支）
@@ -68,6 +84,7 @@ let _bgmSrc = null;     // 目前/目標曲（邏輯路徑，非 blobURL）
 let _bgmVol = 0.7;      // 目標音量
 let _bgmTimer = null;   // 切歌間隔/待播計時器
 const _bgmBlob = {};    // path → objectURL（快取；壓縮 mp3，體積小可多留）
+const _bgmPending = {}; // path → Promise（下載中；同曲併發呼叫去重，避免重複抓整首）
 function bgmElem(){
   if(!_bgmEl){ _bgmEl = new Audio(); _bgmEl.loop = true; }
   return _bgmEl;
@@ -87,16 +104,37 @@ function bgmFade(el, to, ms, done){
 // 整首下載成 Blob（快取 objectURL）：完整在記憶體後播 → 不再串流 → 不卡頓
 function ensureBlob(src){
   if(_bgmBlob[src]) return Promise.resolve(_bgmBlob[src]);
-  return fetch(src).then(r=>r.blob())
-    .then(b=>{ const u=URL.createObjectURL(b); _bgmBlob[src]=u; return u; })
-    .catch(()=>null);
+  if(_bgmPending[src]) return _bgmPending[src];
+  _bgmPending[src] = fetch(src).then(r=>r.blob())
+    .then(b=>{ const u=URL.createObjectURL(b); _bgmBlob[src]=u; delete _bgmPending[src]; return u; })
+    .catch(()=>{ delete _bgmPending[src]; return null; });
+  return _bgmPending[src];
 }
 
 export const SFX = {
-  // 首次使用者手勢呼叫：喚醒 AudioContext + 於手勢當下補播被 autoplay 擋下的 BGM 元素
+  // 使用者手勢呼叫（每次按鈕/手勢都會進來）：喚醒 AudioContext + 補播被 autoplay 擋下的 BGM。
+  //  iOS（尤其主畫面 App）resume() 會靜默失敗、context 卡 suspended/interrupted →
+  //  三重保險：① 手勢內播 1-frame 無聲 buffer（WebKit 經典解鎖點火）② resume()
+  //  ③ 400ms 後仍非 running → 標記下次手勢「整顆重建 context」（手勢內新建即為 running；
+  //    已解碼的 AudioBuffer 不綁 context，重建後照播）。
   unlock(){
-    const c = ctx();
-    if(c && c.state === 'suspended') c.resume().catch(()=>{});
+    let c = ctx();
+    if(c && c.state !== 'running'){
+      if(_needRebuild){
+        try{ c.close(); }catch(e){}
+        _ctx = null; _needRebuild = false;
+        c = ctx();   // 手勢內重建：iOS 直接進 running
+      }
+      if(c){
+        try{
+          const b=c.createBuffer(1,1,22050), s=c.createBufferSource();
+          s.buffer=b; s.connect(c.destination); s.start(0);   // 無聲點火
+        }catch(e){}
+        try{ const p=c.resume(); if(p&&p.catch) p.catch(()=>{}); }catch(e){}
+        clearTimeout(_unlockChk);
+        _unlockChk=setTimeout(()=>{ if(_ctx && _ctx.state !== 'running') _needRebuild = true; }, 400);
+      }
+    }
     const el = _bgmEl;
     if(el && el.paused && el.src){ el.volume=_bgmVol; const p=el.play(); if(p&&p.catch) p.catch(()=>{}); }
   },
@@ -184,6 +222,35 @@ export const SFX = {
   gunshot(/* heavy */){
     if(!_shots.length) return;
     playSrc(_shots[Math.floor(Math.random()*_shots.length)]);
+  },
+
+  // Overkill 進場鈴：明亮鈴鐺（基音＋泛音成串衰減＋輕微回音第二響）。
+  //   峰值合計 ≈0.45，介於 heavyHit(0.5) 與一般 SFX 之間——「響亮但適中」。
+  overkillBell(){
+    const c = ctx();
+    if(!c) return;
+    try{
+      const t = c.currentTime;
+      // [頻率Hz, 峰值, 衰減秒]：B5 基音 + 八度/十二度泛音 → 教堂手鈴質感
+      const partials = [[988,0.22,1.1],[1976,0.12,0.8],[2953,0.06,0.55],[1479,0.05,0.9]];
+      partials.forEach(p=>{
+        const o=c.createOscillator(), g=c.createGain();
+        o.type='sine'; o.frequency.setValueAtTime(p[0], t);
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(p[1], t+0.008);
+        g.gain.exponentialRampToValueAtTime(0.0001, t+p[2]);
+        o.connect(g); g.connect(c.destination);
+        o.start(t); o.stop(t+p[2]+0.05);
+      });
+      // 第二響（0.16s 後、較弱）：增加「響亮」的迴盪感而不刺耳
+      const t2=t+0.16, o2=c.createOscillator(), g2=c.createGain();
+      o2.type='sine'; o2.frequency.setValueAtTime(1319, t2);
+      g2.gain.setValueAtTime(0.0001, t2);
+      g2.gain.exponentialRampToValueAtTime(0.10, t2+0.008);
+      g2.gain.exponentialRampToValueAtTime(0.0001, t2+0.9);
+      o2.connect(g2); g2.connect(c.destination);
+      o2.start(t2); o2.stop(t2+1);
+    }catch(e){}
   },
 
   // 既有介面：本輪維持 no-op（合成音尚未搬回），供各模組安全呼叫、不報錯。

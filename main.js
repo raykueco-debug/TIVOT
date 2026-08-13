@@ -8,7 +8,7 @@
  *  聖徒化左右滑、生命歸還上滑、雙槍點計量表、換裝面板等綁定為下一輪。
  * ========================================================================== */
 
-import { GAME_CONFIG, asset, ASSETS } from './config.js';
+import { GAME_CONFIG, VERSION, asset, ASSETS } from './config.js';
 import { state } from './state.js';
 import { SFX } from './audio.js';
 import * as combat from './modules/combat.js';
@@ -62,55 +62,171 @@ combat.setup();
 // 普攻槍聲：固定用 Pistol_SE_02（不隨機）
 SFX.setShots([asset('se_pistol_02')].filter(Boolean));
 
-/* ── 進場全預載：掃 ASSETS 把所有圖＋音一次載到位，載入畫面跑完才揭開選單 ──
+/* ── 進場預載（第一段）：掃 ASSETS 載「開場就要」的圖＋音，跑完才揭開選單 ──
+ *  第一段內依序讓路：監察官立繪（門面最優先）→ 關鍵音效（SI_01/Start_01）→ 批次段，
+ *  見下方 portraitP/critP。
  *  圖 → new Image（瀏覽器快取）；BGM(bgm_*) → Blob 下載；其餘音效 → Web Audio 解碼。
- *  這樣遊戲中不再有臨時讀取間隙。音訊實際播放仍需首次手勢（primeAudio/unlock）。 */
+ *  音訊實際播放仍需首次手勢（primeAudio/unlock）。
+ *  ⚠ 分兩段載：結算/失敗/Boss BGM 開戰前用不到（最快也在一場戰鬥之後），
+ *    不揹進第一段 → 進度條輕量誠實跑完，不再被 12s 保底提前放行。
+ *    第二段於「點擊繼續」進主選單當下背景開載（出陣時再補一次保險）；
+ *    playBgm 本身會 ensureBlob 隨叫隨載，第二段沒載完頂多晚幾拍起播，不會壞。 */
+const LATE_BGM_PATHS = ['bgm_result','bgm_lose','bgm_boss'].map(k=>ASSETS[k]).filter(Boolean);
+let _lateBgmKicked = false;
+function preloadLateBgm(){
+  if(_lateBgmKicked) return; _lateBgmKicked = true;
+  SFX.preloadBgm(LATE_BGM_PATHS);   // 背景載，不擋任何流程；ensureBlob 有快取可重複呼叫
+}
 (function preloadAll(){
   const imgs=[], sfx=[], bgm=[];
   for(const k of Object.keys(ASSETS)){
     const v=ASSETS[k]; if(!v) continue;
-    if(/\.(png|jpe?g|webp|gif)$/i.test(v)) imgs.push(v);
-    else if(/\.(mp3|m4a|ogg|wav)$/i.test(v)){ (k.indexOf('bgm_')===0 ? bgm : sfx).push(v); }
+    // 副檔名判斷容許 ?v=N 版本參數（素材內容更新時升版強制重抓，見 config ASSETS 註解）
+    if(/\.(png|jpe?g|webp|gif)(\?|$)/i.test(v)) imgs.push(v);
+    else if(/\.(mp3|m4a|ogg|wav)(\?|$)/i.test(v)){
+      if(k.indexOf('bgm_')===0){ if(LATE_BGM_PATHS.indexOf(v)<0) bgm.push(v); }
+      else sfx.push(v);
+    }
   }
   const total = imgs.length + sfx.length + bgm.length;
-  // 載入遮罩（動態建立，無需改 HTML）；最前層、蓋住一切
+  /* 載入遮罩（動態建立，樣式集中在 style.css 的 #assetLoader 區）：
+   *  頂部細讀取條＋百分比 → 不佔畫面；中下方監察官立繪＋對話框輪播教學 Hint
+   *  （隨機不重複、整句淡入停 5 秒淡出，不用打字機）→ 讀取時間不再乾等。 */
+  const RING_C = 301.59;   // SVG 進度圓周長（r=48, viewBox 100）
   const ov=document.createElement('div'); ov.id='assetLoader';
-  ov.style.cssText='position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;'
-    +'align-items:center;justify-content:center;gap:16px;background:#0a0812;color:#d9c68a;'
-    +'font-family:inherit;letter-spacing:4px;transition:opacity .5s ease;text-align:center;padding:0 24px;';
-  ov.innerHTML='<div id="alMsg" style="font-size:15px">載　入　中</div>'
-    +'<div id="alBarWrap" style="width:62%;max-width:300px;height:4px;background:rgba(217,198,138,.18);border-radius:2px;overflow:hidden">'
-    +'<i id="assetLoaderBar" style="display:block;height:100%;width:0;background:#d9c68a;transition:width .18s ease"></i></div>'
-    +'<div id="assetLoaderPct" style="font-size:11px;opacity:.7">0%</div>';
+  ov.innerHTML=
+     '<div id="alRing">'
+    +  '<svg viewBox="0 0 100 100"><circle class="al-rail" cx="50" cy="50" r="48"/>'
+    +  '<circle id="alRingProg" class="al-prog" cx="50" cy="50" r="48" stroke-dasharray="'+RING_C+'" stroke-dashoffset="'+RING_C+'"/></svg>'
+    +  '<div id="alRingTxt"><div id="assetLoaderPct">0%</div><div id="alRingCap">Saint Installation</div></div>'
+    +'</div>'
+    +'<div id="alStage"><img id="alPortrait" alt="">'
+    +  '<div id="alBubble"><div class="al-name"></div><div class="al-hint" id="alHint"></div></div>'
+    +'</div>'
+    +'<div id="alMsg">載　入　中</div>';
   document.body.appendChild(ov);
+  /* 金色光圈對位：與首頁紋章外圓重合（圈徑≈紋章圖寬的 0.8）。
+   *  首頁 bootIdle 於本模組尾端才掛 .on、紋章圖片也要載入才有高度 → 輪詢到量得到為止；
+   *  量不到前用 CSS 預設位置（水平置中、上緣 23%）保底。 */
+  (function placeRing(){
+    const ring=$('alRing'); if(!ring || !ring.parentNode) return;
+    const em=$('homeEmblem');
+    const r=em ? em.getBoundingClientRect() : null;
+    if(r && r.width>10 && r.height>10){
+      const d=Math.round(r.width*0.8);
+      ring.style.width=d+'px'; ring.style.height=d+'px';
+      ring.style.left=Math.round(r.left+r.width/2)+'px';
+      ring.style.top =Math.round(r.top +r.height/2)+'px';
+    } else setTimeout(placeRing, 120);
+  })();
+  // 監察官立繪與名字（沿用結算的 Freya 資源；讀 config 不寫死）
+  //   立繪＝載入畫面的門面，全站最優先：載完（或 4s 保底）才輪到關鍵音效、再輪到整批。
+  let portraitP = Promise.resolve();
+  {
+    const insp=(GAME_CONFIG.inspectors||{}).freya||{};
+    const img=$('alPortrait'); const nm=ov.querySelector('.al-name');
+    if(nm) nm.textContent=insp.name||'';
+    const psrc=asset(insp.image);
+    if(img && psrc){
+      portraitP = new Promise(res=>{
+        img.fetchPriority='high';   // 壓過 HTML 預掃到的其他 <img>（徽記/敵人立繪），確保她真的第一
+        img.onload=()=>{ img.classList.add('on'); res(); };
+        img.onerror=()=>res();
+        img.src=psrc;
+        setTimeout(res, 4000);   // 保底：立繪卡住也不無限擋住後續音效/批次
+      });
+    }
+  }
+  // Hint 輪播：洗牌後依序循環（=隨機且整輪不重複），淡入 → 停 hold → 淡出 → 換句
+  let hintTimer=null;
+  {
+    const list=(GAME_CONFIG.loadingHints||[]).slice();
+    for(let i=list.length-1;i>0;i--){ const j=Math.random()*(i+1)|0; [list[i],list[j]]=[list[j],list[i]]; }
+    const HOLD=GAME_CONFIG.tuning.loadingHintHoldMs, FADE=GAME_CONFIG.tuning.loadingHintFadeMs;
+    const el=$('alHint'); let hi=0;
+    const cycle=()=>{
+      if(!el || !list.length) return;
+      el.textContent=list[hi++ % list.length];
+      el.classList.add('show');                       // 淡入（CSS transition）
+      hintTimer=setTimeout(()=>{
+        el.classList.remove('show');                  // 淡出
+        hintTimer=setTimeout(cycle, FADE+50);
+      }, HOLD);
+    };
+    cycle();
+  }
+  /* 關鍵音效優先段：SI_01（點擊繼續揭幕音）排在立繪之後、整批圖片/BGM 之前
+   *   「單獨」載完解碼（批次 ~20MB，同時開跑會搶走頻寬，慢網下 12s 保底放行時
+   *   反而還沒就緒 → 點下去沒聲音）。（出陣 stinger 已取消，不再列關鍵）
+   *   自帶 4s 保底：關鍵檔卡住也不無限擋批次。load() 以 _pending/_buffers 去重，
+   *   稍後批次再含它也不會重抓。 */
+  const critP = portraitP.then(()=> Promise.race([
+    SFX.preload([asset('sfx_saint')]),
+    new Promise(r=>setTimeout(r, 4000)),
+  ]));
   let done=0;
-  const bar=$('assetLoaderBar'), pct=$('assetLoaderPct');
-  const tick=()=>{ done++; const p=total?Math.round(done/total*100):100; if(bar)bar.style.width=p+'%'; if(pct)pct.textContent=p+'%'; };
-  const imgP = imgs.map(src=>new Promise(res=>{ const im=new Image(); im.onload=im.onerror=()=>{ tick(); res(); }; im.src=src; }));
-  const wrapCount = (p, n)=> p.then(()=>{ for(let i=0;i<n;i++) tick(); }).catch(()=>{ for(let i=0;i<n;i++) tick(); });
-  const audioP = [ wrapCount(SFX.preload(sfx), sfx.length), wrapCount(SFX.preloadBgm(bgm), bgm.length) ];
+  const prog=$('alRingProg'), pct=$('assetLoaderPct');
+  const tick=()=>{ done++; const p=total?Math.round(done/total*100):100;
+    if(prog) prog.style.strokeDashoffset=(RING_C*(1-p/100)).toFixed(1);   // 沿光圈順時針推進
+    if(pct) pct.textContent=p+'%'; };
   // 載完 → 改「點擊繼續」：這一點＝使用者手勢，解鎖音訊並播 MainMenu，再揭開選單
   let ready=false;
   const showReady=()=>{
     if(ready) return; ready=true;
-    const wrap=$('alBarWrap'); if(wrap) wrap.style.display='none';
-    const p2=$('assetLoaderPct'); if(p2) p2.style.display='none';
+    // 讀取完成：進度圈補滿、字樣改 Complete、整圈轉為常亮發光（.al-done，見 style.css）
+    if(prog) prog.style.strokeDashoffset='0';
+    if(pct) pct.style.display='none';
+    const cap=$('alRingCap'); if(cap) cap.textContent='Complete';
+    ov.classList.add('al-done');
     const msg=$('alMsg'); if(msg){ msg.textContent='點　擊　繼　續'; msg.classList.add('al-pulse'); }
+    // Hint 輪播不停：載完後玩家未點擊前繼續輪教學
     const go=()=>{
       ov.removeEventListener('click',go); ov.removeEventListener('touchstart',go);
+      clearTimeout(hintTimer);   // 停輪播
       SFX.unlock();   // 使用者手勢：解鎖音訊 → 主選單 BGM 開始播
-      ov.style.opacity='0'; setTimeout(()=>{ if(ov.parentNode) ov.remove(); }, 520);
+      SFX.play(asset('sfx_saint'));   // SI_01（第一段已預載解碼 → 點下瞬發）
+      preloadLateBgm();   // 第二段：進主選單即背景載 結算/失敗/Boss BGM
+      // 聖光綻放：暖金白光暈自光圈中心緩慢擴張（無光束）→
+      //   2.5s 光暈實心蓋滿時撤遮罩 → 1.2s 淡出揭開主選單（總長 ≈3.7s，與 SI_01 等長連動）
+      const ring=$('alRing');
+      const rr=ring ? ring.getBoundingClientRect() : null;
+      const cx=rr ? rr.left+rr.width/2 : innerWidth/2;
+      const cy=rr ? rr.top +rr.height/2 : innerHeight*0.25;
+      const d =rr ? rr.width : 200;
+      // 覆蓋全畫面所需直徑（光圈中心到最遠角 ×2）；光暈實心區佔 30% → 除以 0.30 保證實心蓋滿
+      const need=2*Math.hypot(Math.max(cx,innerWidth-cx), Math.max(cy,innerHeight-cy));
+      const fl=document.createElement('div'); fl.id='alFlash';
+      fl.innerHTML='<div class="fl-glow"></div>';
+      fl.style.left=cx+'px'; fl.style.top=cy+'px'; fl.style.width=d+'px'; fl.style.height=d+'px';
+      fl.style.setProperty('--fl-scale', (need/d/0.30).toFixed(2));
+      document.body.appendChild(fl);
+      requestAnimationFrame(()=>fl.classList.add('grow'));
+      setTimeout(()=>{ if(ov.parentNode) ov.remove(); fl.classList.add('fade'); }, 2500);  // 光暈蓋滿 → 撤遮罩、開始淡出
+      setTimeout(()=>{ if(fl.parentNode) fl.remove(); }, 3800);                            // 聖光淡出完 → 清掉
     };
     ov.addEventListener('click', go);
     ov.addEventListener('touchstart', go, {passive:true});
   };
-  Promise.all([...imgP, ...audioP]).then(showReady);
-  setTimeout(showReady, 12000);   // 保底：單一資源卡住也不擋整個載入
+  // 批次段：等「立繪 → 關鍵音效」依序就緒才開跑（兩段各有 4s 保底）。
+  //   12s 保底自批次開跑起算：單一資源卡住也不擋整個載入。
+  const startBatch=()=>{
+    // 主選單 BGM 掛播（自 combat.bootIdle 移來）：ensureBlob 自此才開抓，不再搶關鍵段頻寬；
+    //   實際起播等 go() 手勢 unlock 補播，時序與原本相同。
+    SFX.playBgm(asset('bgm_home'));
+    const imgP = imgs.map(src=>new Promise(res=>{ const im=new Image(); im.onload=im.onerror=()=>{ tick(); res(); }; im.src=src; }));
+    const wrapCount = (p, n)=> p.then(()=>{ for(let i=0;i<n;i++) tick(); }).catch(()=>{ for(let i=0;i<n;i++) tick(); });
+    const audioP = [ wrapCount(SFX.preload(sfx), sfx.length), wrapCount(SFX.preloadBgm(bgm), bgm.length) ];
+    Promise.all([...imgP, ...audioP]).then(showReady);
+    setTimeout(showReady, 12000);
+  };
+  critP.then(startBatch);
 })();
 
 // 首頁：開始遊戲 → 主選單先淡出、空一拍（約 1s）Battle 才淡入（避免唐突），同時播「驅逐開始」過渡禎
 bindBtn('startBtn',     ()=>{
-  SFX.play(asset('sfx_start'));
+  // 出陣 stinger（sfx_start）已取消：手機上仍會滯後冒出、體驗更差。
+  //   ⚠ 音檔 Start_01.mp3 保留不刪——聖徒化音效沿用（ASSETS.sfx_start 佔位不動）。
+  preloadLateBgm();   // 保險：若保底提前放行沒經過 go()，出陣（櫻花期間）補載第二段
   SFX.playBgm(asset('bgm_battle'), { fadeOutMs:800, delayMs:1000 });
   // 驅逐開始：不靠點擊、不自動計時 → 由櫻花飄完（onDone）主動推進進戰鬥
   const tr = playTransition('start', combat.startGame, { noTap:true, noAuto:true });
@@ -152,6 +268,7 @@ bindBtn('creditClose',()=>{ const s=$('creditSheet'); if(s) s.classList.remove('
 bindBtn('originalBtn',  ()=>{ const s=$('originalSheet'); if(s) s.classList.add('on'); });
 bindBtn('originalClose',()=>{ const s=$('originalSheet'); if(s) s.classList.remove('on'); });
 weapon.refreshLoadoutLabels();                  // 開機：把當前副武器/搭檔名寫進 loadout 按鈕
+{ const v=$('homeVersion'); if(v) v.textContent=VERSION; }   // 首頁版本號（config.VERSION）
 
 window.addEventListener('resize', combat.fitGridSquare);
 window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare,200));
@@ -320,6 +437,113 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
     }
   });
   window.addEventListener('mouseup',()=>{mDown=false;});
+})();
+
+/* ── 遠端診斷 HUD：網址帶 ?debug，或「快速連點首頁團徽 5 下」開關 ──
+ *  排查 iOS 主畫面 App 底部黑帶用；未觸發時不建立任何元素。 */
+(function debugHud(){
+  let hud=null, timer=null, probes=null;
+  const mk=(css)=>{ const el=document.createElement('div'); el.style.cssText=css; document.body.appendChild(el); return el; };
+  function show(){
+    if(hud){ [hud,...probes].forEach(e=>e.remove()); hud=null; clearInterval(timer); return; }   // 再觸發一次＝關閉
+    const pT=mk('position:fixed;left:0;top:0;width:1px;height:env(safe-area-inset-top,0px);visibility:hidden;pointer-events:none;');
+    const pB=mk('position:fixed;left:0;bottom:0;width:1px;height:env(safe-area-inset-bottom,0px);visibility:hidden;pointer-events:none;');
+    const pVH=mk('position:fixed;left:0;top:0;width:1px;height:100vh;visibility:hidden;pointer-events:none;');
+    const pDVH=mk('position:fixed;left:0;top:0;width:1px;height:100dvh;visibility:hidden;pointer-events:none;');
+    const pLVH=mk('position:fixed;left:0;top:0;width:1px;height:100lvh;visibility:hidden;pointer-events:none;');
+    const pSVH=mk('position:fixed;left:0;top:0;width:1px;height:100svh;visibility:hidden;pointer-events:none;');
+    probes=[pT,pB,pVH,pDVH,pLVH,pSVH];
+    /* ⚠ HUD 放畫面上方：若底部黑帶是 iOS 蓋在頁面上的遮罩，貼底定位會被埋進黑帶看不到 */
+    hud=mk('position:fixed;left:6px;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:99998;font:11px/1.6 monospace;color:#4f4;background:rgba(0,0,0,.72);padding:5px 8px;pointer-events:none;white-space:pre;border-radius:4px;');
+    const upd=()=>{
+      const b=document.body.getBoundingClientRect();
+      hud.textContent=
+        'inner  '+innerWidth+'x'+innerHeight
+        +'\nvisual '+Math.round(visualViewport.width)+'x'+Math.round(visualViewport.height)
+        +'\nscreen '+screen.width+'x'+screen.height+'  outer '+outerHeight
+        +'\nbody   '+Math.round(b.width)+'x'+Math.round(b.height)
+        +'\nvh '+pVH.offsetHeight+' dvh '+pDVH.offsetHeight+' lvh '+pLVH.offsetHeight+' svh '+pSVH.offsetHeight
+        +'\nsafe   top '+pT.offsetHeight+' / bottom '+pB.offsetHeight
+        +'\nstandalone '+(navigator.standalone===true || (window.matchMedia&&matchMedia('(display-mode: standalone)').matches));
+    };
+    upd(); timer=setInterval(upd,1000);
+  }
+  // 觸發一：網址帶 ?debug
+  if(location.search.indexOf('debug')>=0) show();
+  // 觸發二：首頁團徽快速連點 5 下（主畫面 App 進不了帶參數網址時用）
+  //   ⚠ #homeEmblem 有 pointer-events:none（防拖曳），事件會穿透到 #home →
+  //     改在 #home 上事件委派計數，點到按鈕（出陣/換裝/Credit/原作）不算。
+  //   ⚠ 觸控裝置一次實體點擊連發 touchstart+click 兩事件 → touched 旗標去重，
+  //     否則一下算兩下，HUD 開了又關（看起來像沒反應）。
+  let taps=0, tapTimer=null, touched=false;
+  const homeEl=$('home');
+  if(homeEl){
+    const count=(e)=>{ if(e.target && e.target.closest && e.target.closest('button')) return;
+      taps++; clearTimeout(tapTimer); tapTimer=setTimeout(()=>{taps=0;},1500);
+      if(taps>=5){ taps=0; show(); } };
+    homeEl.addEventListener('touchstart', e=>{ touched=true; count(e); }, {passive:true});
+    homeEl.addEventListener('click', e=>{ if(touched){ touched=false; return; } count(e); });
+  }
+})();
+
+/* ── 清盤鈕手勢解鎖：首頁「團徽上畫一個圓 → 10 秒內橫向劃過『聖約第四騎士團』字樣」
+ *    → 播 SI_01 作解鎖回饋、body.testmode 開啟 → 進戰鬥後左上「清盤」鈕才顯示
+ *    （#testClearBtn 預設 display:none，見 style.css）。重整頁面即恢復隱藏。
+ *    偵測從寬：圓＝繞路徑質心累積轉角 ≥300°、頭尾收攏、範圍 ≥40px 且圓心落在團徽附近；
+ *    橫劃＝水平位移 ≥ 標題寬 60%、垂直偏移 ≤60px、高度落在字樣帶 ±40px（左右方向皆可）。 */
+(function testUnlockGesture(){
+  const homeEl=$('home'); if(!homeEl) return;
+  homeEl.style.touchAction='none';   // 拖曳穩定送 pointermove（首頁本就不捲動，不影響按鈕點擊）
+  let pts=null, pid=null, circleAt=0;
+  const isCircle=(path)=>{
+    if(path.length<10) return false;
+    let minX=1e9,maxX=-1e9,minY=1e9,maxY=-1e9,cx=0,cy=0;
+    for(const p of path){ minX=Math.min(minX,p.x); maxX=Math.max(maxX,p.x);
+      minY=Math.min(minY,p.y); maxY=Math.max(maxY,p.y); cx+=p.x; cy+=p.y; }
+    cx/=path.length; cy/=path.length;
+    const w=maxX-minX, h=maxY-minY;
+    if(w<40||h<40) return false;
+    const s=path[0], t=path[path.length-1];
+    if(Math.hypot(t.x-s.x,t.y-s.y) > Math.max(w,h)*0.45) return false;   // 頭尾要收攏才算閉合
+    const em=$('homeEmblem'), er=em?em.getBoundingClientRect():null;
+    if(er && er.width>10){ const pad=er.width*0.5;   // 圓心須落在團徽附近（放寬半個徽寬）
+      if(cx<er.left-pad||cx>er.right+pad||cy<er.top-pad||cy>er.bottom+pad) return false; }
+    let sweep=0, prev=Math.atan2(path[0].y-cy,path[0].x-cx);
+    for(let i=1;i<path.length;i++){ const a=Math.atan2(path[i].y-cy,path[i].x-cx);
+      let d=a-prev; if(d>Math.PI)d-=2*Math.PI; if(d<-Math.PI)d+=2*Math.PI; sweep+=d; prev=a; }
+    return Math.abs(sweep) >= Math.PI*5/3;   // 累積轉角 ≥300°（順逆時針皆可）
+  };
+  const isTitleSwipe=(path)=>{
+    const tl=homeEl.querySelector('.title'), tr=tl?tl.getBoundingClientRect():null;
+    if(!tr || path.length<2) return false;
+    const s=path[0], t=path[path.length-1], dx=t.x-s.x, dy=t.y-s.y;
+    if(Math.abs(dx) < tr.width*0.6) return false;      // 橫向要劃得夠長
+    if(Math.abs(dy) > 60) return false;                // 大致水平
+    const ymid=(s.y+t.y)/2;
+    return ymid > tr.top-40 && ymid < tr.bottom+40;    // 高度落在字樣帶
+  };
+  const unlock=()=>{
+    circleAt=0;
+    document.body.classList.add('testmode');
+    SFX.unlock(); SFX.play(asset('sfx_saint'));   // SI_01＝解鎖回饋音
+  };
+  homeEl.addEventListener('pointerdown', e=>{
+    if(document.body.classList.contains('testmode')) return;
+    if(e.target && e.target.closest && e.target.closest('button')) return;   // 按鈕上起手不算
+    pid=e.pointerId; pts=[{x:e.clientX,y:e.clientY}];
+  });
+  homeEl.addEventListener('pointermove', e=>{
+    if(!pts || e.pointerId!==pid) return;
+    const p=pts[pts.length-1], dx=e.clientX-p.x, dy=e.clientY-p.y;
+    if(dx*dx+dy*dy>=9) pts.push({x:e.clientX,y:e.clientY});   // 3px 取樣
+  });
+  homeEl.addEventListener('pointerup', e=>{
+    if(!pts || e.pointerId!==pid) return;
+    const path=pts; pts=null; pid=null;
+    if(isCircle(path)){ circleAt=Date.now(); return; }   // 畫圓成功（可重畫刷新時窗）
+    if(circleAt && Date.now()-circleAt<=10000 && isTitleSwipe(path)) unlock();
+  });
+  homeEl.addEventListener('pointercancel', ()=>{ pts=null; pid=null; });
 })();
 
 combat.bootIdle();   // over=true，建立背景盤面/血條，停在首頁

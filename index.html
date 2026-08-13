@@ -10,8 +10,30 @@
 <!-- Android/Chrome PWA 全螢幕 -->
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0a080e">
-<title>聖裁修女 · 原型 v2</title>
+<!-- Web App Manifest：iOS 26 起主畫面網頁 App 的顯示模式改依 manifest 判定，
+     缺 manifest 會被保留底部控制列空間（下方一截黑帶）→ display:standalone 宣告全螢幕 -->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="resources/background/TIVOT_Emblem.png">
+<title>TIVOT · 原型 v2</title>
 <link rel="stylesheet" href="style.css">
+<!-- 主畫面 App（standalone）偵測：首繪前在 <html> 蓋 .standalone，
+     供 CSS 修 iOS 26 版面視窗少算頂部安全區高度（底部露黑帶）的問題 -->
+<script>
+  (function(){
+    var sa = navigator.standalone === true ||
+             (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
+    if (sa) document.documentElement.classList.add('standalone');
+    /* iOS 26 standalone 容器 bug：視窗高 = 螢幕高 − 頂部安全區、錨在螢幕頂，
+       底部差值區為 webview 外不可視死區（詳見 CLAUDE/memory）。偵測到裁切時蓋
+       .vp-clipped：底部安全區墊高（home indicator 在死區裡）全屬白墊，CSS 據此
+       拿回空間給內容。健康平台（Android／未來修復的 iOS）差值≈0，自動不套用。 */
+    function clip(){
+      var clipped = sa && (screen.height - innerHeight) >= 20;
+      document.documentElement.classList.toggle('vp-clipped', clipped);
+    }
+    clip(); addEventListener('resize', clip);
+  })();
+</script>
 </head>
 <body>
 <div id="app">
@@ -156,6 +178,7 @@
       <button id="creditBtn">Credit</button>
       <button id="originalBtn">原作</button>
       <span class="home-copyright">© 2026 Eternal Original Sin (E.O.S.) · All Rights Reserved.</span>
+      <span class="home-version" id="homeVersion"></span>
     </div>
   </div>
 

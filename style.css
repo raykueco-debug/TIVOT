@@ -18,12 +18,88 @@
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;
     -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
-  html,body{margin:0;padding:0;width:100%;height:100%;background:var(--bg);
-    overflow:hidden;position:fixed;top:0;left:0;
+  html,body{margin:0;padding:0;width:auto;height:auto;background:var(--bg);
+    overflow:hidden;position:fixed;top:0;left:0;right:0;bottom:0;
     font-family:"Iowan Old Style","Palatino Linotype",Georgia,"Songti TC",serif;color:var(--ink);}
-  /* 行動裝置動態工具列：100% 可能短於實際可視高 → 用 dvh 讓畫面下移觸底，底部不留死區 */
-  @supports (height:100dvh){ html,body{height:100dvh;} }
-  /* 載入畫面「點擊繼續」呼吸 */
+  /* 觸底不用 100%/100dvh：iOS「加入主畫面」(standalone) 的 dvh 會保留幽靈工具列高度，
+     底部露出一截畫布死區 → 改 fixed + 四邊 inset:0 直接撐滿視窗，不經 vh/dvh 單位計算 */
+  /* iOS 26 standalone 容器 bug：視窗高 = 螢幕高 − 頂部安全區、錯錨在螢幕頂，底部差值區
+     為 webview 外完全不可視死區——100vh 撐高會讓內容伸進去被裁（戰鬥盤面遭蓋，已撤回）、
+     狀態列改 black 亦遭忽略。定案：接受死區為底部邊框，html.vp-clipped（index.html 偵測）
+     模式下拿回「白墊在死區裡的底部安全區」還給內容（首頁底排／結算鈕，見各處規則）。 */
+  /* ===== 載入畫面（#assetLoader 由 main.js 動態建立）=====
+     頂部細讀取條＋百分比；中下方監察官立繪＋對話框輪播教學 Hint；底部「點擊繼續」。 */
+  #assetLoader{position:fixed;inset:0;z-index:99999;background:#0a0812;color:#d9c68a;
+    font-family:inherit;transition:opacity .5s ease;overflow:hidden;}
+  /* 金色光圈讀取：與首頁紋章外圓重合（位置/圈徑由 main.js placeRing 依 #homeEmblem 實測；
+     量不到前用此處預設保底）。進度沿圈順時針推進；圈內上=百分比、下=Saint Installation。 */
+  #assetLoader #alRing{position:absolute;left:50%;top:23%;width:200px;height:200px;
+    transform:translate(-50%,-50%);border-radius:50%;
+    animation:alRingGlow 2.4s ease-in-out infinite;}
+  #assetLoader #alRing svg{position:absolute;inset:0;width:100%;height:100%;
+    transform:rotate(-90deg);overflow:visible;}   /* -90°：進度自 12 點鐘起、順時針 */
+  #assetLoader .al-rail{fill:none;stroke:rgba(217,198,138,.18);stroke-width:2.5;}
+  #assetLoader .al-prog{fill:none;stroke:var(--gold);stroke-width:2.5;stroke-linecap:round;
+    transition:stroke-dashoffset .25s ease;filter:drop-shadow(0 0 4px rgba(217,198,138,.7));}
+  @keyframes alRingGlow{
+    0%,100%{box-shadow:0 0 6px rgba(217,198,138,.18),inset 0 0 8px rgba(217,198,138,.1);}
+    50%{box-shadow:0 0 22px rgba(217,198,138,.5),inset 0 0 14px rgba(217,198,138,.25);}}
+  /* 圈內文字：上百分比、下 Saint Installation，呼吸發光 */
+  #assetLoader #alRingTxt{position:absolute;inset:0;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:7px;
+    animation:alTextBreath 2.4s ease-in-out infinite;}
+  #assetLoader #assetLoaderPct{font-size:24px;letter-spacing:2px;color:var(--gold);
+    font-variant-numeric:tabular-nums;}
+  #assetLoader #alRingCap{font-size:10.5px;letter-spacing:3px;color:var(--gold);opacity:.85;}
+  @keyframes alTextBreath{
+    0%,100%{text-shadow:0 0 4px rgba(217,198,138,.25);opacity:.8;}
+    50%{text-shadow:0 0 14px rgba(217,198,138,.85);opacity:1;}}
+  /* 讀取完成（.al-done）：整圈常亮發光、Complete 字樣 */
+  #assetLoader.al-done #alRing{animation:alRingDone 1.8s ease-in-out infinite;}
+  @keyframes alRingDone{
+    0%,100%{box-shadow:0 0 18px rgba(232,217,168,.55),inset 0 0 14px rgba(232,217,168,.3);}
+    50%{box-shadow:0 0 34px rgba(255,244,214,.85),inset 0 0 22px rgba(232,217,168,.45);}}
+  #assetLoader.al-done .al-prog{stroke:#e8d9a8;filter:drop-shadow(0 0 8px rgba(255,244,214,.9));}
+  #assetLoader.al-done #alRingCap{font-size:13px;letter-spacing:5px;opacity:1;}
+  /* 點擊後聖光綻放：以光圈為中心「緩慢」擴張的暖金白光暈，邊緣多層羽化半透明、無光束。
+     2.5s 綻放蓋滿 → 撤遮罩 → 1.2s 淡出揭開主選單，總長 ≈3.7s 與 SI_01(3.7s) 等長連動。
+     --fl-scale 由 JS 依螢幕算（光暈實心 30% 需蓋滿全畫面）。 */
+  #alFlash{position:fixed;z-index:100000;transform:translate(-50%,-50%) scale(.85);
+    opacity:1;pointer-events:none;
+    transition:transform 2.5s cubic-bezier(.3,.35,.25,1),opacity 1.2s ease;}
+  #alFlash.grow{transform:translate(-50%,-50%) scale(var(--fl-scale,16));}
+  #alFlash.fade{opacity:0;}
+  /* 光暈：暖金白核心，往外多層羽化 */
+  #alFlash .fl-glow{position:absolute;inset:0;border-radius:50%;
+    background:radial-gradient(circle,
+      #fff 0%, #fff 30%,
+      rgba(255,247,226,.92) 46%,
+      rgba(255,239,202,.55) 62%,
+      rgba(255,233,184,.24) 80%,
+      rgba(255,233,184,0)   100%);}
+  /* 監察官立繪舞台：吃畫面下半，立繪 contain 貼底（同結算 inspectorStage 的語言） */
+  #assetLoader #alStage{position:absolute;left:0;right:0;bottom:0;height:64%;
+    display:flex;justify-content:center;align-items:flex-end;pointer-events:none;}
+  #assetLoader #alPortrait{width:auto;max-width:88%;max-height:100%;object-fit:contain;object-position:bottom;
+    filter:drop-shadow(0 6px 24px rgba(0,0,0,.7));opacity:0;transition:opacity .6s ease;
+    -webkit-mask-image:linear-gradient(to bottom,#000 86%,transparent 100%);
+    mask-image:linear-gradient(to bottom,#000 86%,transparent 100%);}
+  #assetLoader #alPortrait.on{opacity:1;}
+  /* 對話框：疊在立繪偏下（同結算 inspectorBubble 樣式） */
+  #assetLoader #alBubble{position:absolute;left:50%;bottom:15%;transform:translateX(-50%);
+    width:82%;max-width:300px;background:rgba(16,12,24,.72);
+    border:1px solid var(--gold-dim);border-radius:8px;padding:10px 13px;text-align:left;
+    box-shadow:0 4px 20px rgba(0,0,0,.55);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);}
+  #assetLoader .al-name{font-size:11px;letter-spacing:2px;color:var(--gold);margin-bottom:5px;opacity:.9;}
+  /* Hint：整句淡入停留淡出（不打字）；min-height 兩行防換句時框體跳動 */
+  #assetLoader .al-hint{font-size:13px;letter-spacing:.5px;line-height:1.6;color:var(--ink);
+    min-height:3.2em;opacity:0;transition:opacity .4s ease;}
+  #assetLoader .al-hint.show{opacity:1;}
+  /* 底部訊息：載入中 → 點擊繼續（呼吸） */
+  #assetLoader #alMsg{position:absolute;left:0;right:0;
+    bottom:calc(env(safe-area-inset-bottom,0px) + 26px);
+    text-align:center;font-size:14px;letter-spacing:4px;}
+  html.vp-clipped #assetLoader #alMsg{bottom:26px;}   /* 視窗被裁：安全區在死區裡，白墊拿回 */
   @keyframes alPulse{0%,100%{opacity:.45}50%{opacity:1}}
   #assetLoader .al-pulse{animation:alPulse 1.5s ease-in-out infinite;}
   /* 退出確認：數字盤模糊到看不清 + 半暗遮罩 + 面板 */
@@ -208,8 +284,10 @@
   #exitBtn{top:10px;left:auto;right:10px;font-size:18px;}
   /* 結算畫面（banner 開啟）時隱藏右上退出鈕：corner-btn z-37 高於 banner z-30，會浮在結算之上 */
   #app:has(#banner.on) #exitBtn{display:none;}
-  /* v17：測試人員用「清盤」鈕（左上角）。z-index 同 corner-btn，聖徒化手勢層之上，確保可點。 */
-  #testClearBtn{top:10px;left:10px;right:auto;font-size:12px;letter-spacing:1px;color:var(--holy);border-color:var(--holy);}
+  /* v17：測試人員用「清盤」鈕（左上角）。z-index 同 corner-btn，聖徒化手勢層之上，確保可點。
+   *  預設隱藏：首頁手勢解鎖（團徽畫圓→橫劃團名，見 main.js testUnlockGesture）後 body.testmode 才顯示。 */
+  #testClearBtn{top:10px;left:10px;right:auto;font-size:12px;letter-spacing:1px;color:var(--holy);border-color:var(--holy);display:none;}
+  body.testmode #testClearBtn{display:flex;}
 
   /* ===== 過渡禎：開始/結束淡入淡出全畫面轉場 ===== */
   /* 淡入淡出時長由 JS 依 config.transitions.fadeMs 寫入 --expel-fade，CSS 與 config 同步。 */
@@ -310,6 +388,11 @@
   /* 雙槍模式盤面外框 */
   #grid.dualwield .cell{border-color:var(--holy);}
   #grid.dualwield{filter:drop-shadow(0 0 6px var(--holy));}
+  /* Overkill 窗口（敵死後追加輸出）：數字發藍光 + 盤面冷藍脈動 */
+  #grid.overkill .cell{border-color:var(--holy);color:#bfe6ff;
+    text-shadow:0 0 10px #4fc3ff,0 0 22px rgba(79,195,255,.55);}
+  #grid.overkill{animation:overkillPulse .6s infinite alternate;}
+  @keyframes overkillPulse{from{filter:drop-shadow(0 0 8px var(--holy))}to{filter:drop-shadow(0 0 18px #7fd4ff)}}
   /* 攻擊加倍 buff 盤面金框 */
   #grid.buffed .cell{border-color:var(--gold);}
   #grid.buffed{filter:drop-shadow(0 0 8px var(--gold));}
@@ -319,6 +402,10 @@
   /* v16：聖徒化期間敵發動攻擊（有紅點）時，盤面一樣要變紅（覆蓋金色） */
   #grid.saint.alert .cell{border-color:var(--danger);color:#ff8a8a;background:#2a1414;}
   #grid.saint.alert{filter:drop-shadow(0 0 12px var(--danger));animation:alertPulse .5s infinite alternate;}
+  /* 聖徒化中進 overkill：藍光覆蓋金色（敵已死，優先權高於 saint 金） */
+  #grid.saint.overkill .cell{border-color:var(--holy);color:#bfe6ff;background:#18202e;
+    text-shadow:0 0 10px #4fc3ff,0 0 22px rgba(79,195,255,.55);}
+  #grid.saint.overkill{filter:none;animation:overkillPulse .6s infinite alternate;}
   @keyframes saintPulse{from{filter:drop-shadow(0 0 10px var(--gold))}to{filter:drop-shadow(0 0 20px #fff)}}
 
   /* 彈殼 */
@@ -569,6 +656,10 @@
        text-indent 補償 letter-spacing 尾端空隙的水平偏移 */
     display:flex;align-items:center;justify-content:center;text-indent:6px;line-height:1;}
   #banner #rematchBtn:active{background:var(--grid-active);}
+  /* 視窗被裁（iOS 26 standalone）：底部安全區墊高白墊在死區裡 → 拿回 28px 還給監察官立繪。
+     底色改純黑與死區黑帶視覺融合：按鈕(可視 54px)+死區連成一條原生風底欄，
+     字樣位置≒原生 App 底欄按鈕（home indicator 上方），黑帶讀作手勢區而非缺口。 */
+  html.vp-clipped #banner #rematchBtn{min-height:54px;background:#000;}
   /* 迎擊鈕（S 解鎖後）：變色＋發光脈動 */
   #banner #rematchBtn.intercept{color:var(--danger);border-top-color:var(--blood);
     background:rgba(60,12,18,.55);text-shadow:0 0 12px var(--blood);
@@ -705,6 +796,8 @@
   #home #homeLinks{position:absolute;left:0;right:0;
     bottom:calc(10px + env(safe-area-inset-bottom));
     display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px;padding:0 8px;}
+  /* 視窗被裁（iOS 26 standalone）：home indicator 位於不可視死區，安全區墊高全屬白墊 → 拿回 */
+  html.vp-clipped #home #homeLinks{bottom:10px;}
   #home #creditBtn, #home #originalBtn{padding:6px 18px;background:transparent;
     border:1px solid var(--gold-dim);border-radius:20px;color:var(--gold-dim);
     font-family:inherit;font-size:11px;letter-spacing:2px;flex:none;}
@@ -713,6 +806,10 @@
   #home .home-copyright{flex:0 0 100%;text-align:center;margin-top:2px;
     font-size:9.5px;letter-spacing:.5px;color:var(--gold-dim);
     opacity:.65;pointer-events:none;white-space:nowrap;}
+  /* 版本號（版權下一行）：確認裝置實際載到的版本（iOS 主畫面 App 快取排查用） */
+  #home .home-version{flex:0 0 100%;text-align:center;margin-top:1px;
+    font-size:8.5px;letter-spacing:1px;color:var(--gold-dim);
+    opacity:.4;pointer-events:none;white-space:nowrap;}
 
   /* 原作選擇面板 */
   #originalSheet{position:absolute;inset:0;display:none;align-items:center;justify-content:center;

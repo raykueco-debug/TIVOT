@@ -6,6 +6,10 @@
  *  ASSETS 路徑已指向專案內現有的 resources/ 目錄。
  * ========================================================================== */
 
+/* 版本號：顯示於首頁版權宣告下方，每次部署遞增尾碼——
+ *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
+export const VERSION = 'ver 2026.08.13-14';
+
 export const GAME_CONFIG = {
 
   /* ------------------------------------------------------------------ *
@@ -117,6 +121,30 @@ export const GAME_CONFIG = {
   /* ------------------------------------------------------------------ *
    *  三、監察官（Inspector）— 結算畫面角色（框架預留，之後接）
    * ------------------------------------------------------------------ */
+  /* ------------------------------------------------------------------ *
+   *  載入畫面教學 Hint（監察官口吻,冷冷的大姐姐）
+   *  隨機不重複輪播:整句淡入 0.4s → 停 5s → 淡出換下一句(不用打字機)。
+   *  展示參數見 tuning.loadingHintHoldMs / loadingHintFadeMs。
+   * ------------------------------------------------------------------ */
+  loadingHints: [
+    '反擊武器的有效攻擊時間各不相同,可別手忙腳亂了。',
+    '太早反擊的話,還是會吃苦頭的。',
+    '越是危機時刻聖徒化的價值越高,覺得撐不住了的話就別猶豫。',
+    '好好與搭檔配合,戰鬥也能更加輕鬆的吧?',
+    '連擊會讓子彈越來越痛。手停下來的那一刻,一切歸零。',
+    '猶豫太久,敵人可不會站著等你。指尖別停。',
+    '按錯一格,代價是血。看清楚,再出手。',
+    '連續命中能磨利你的暴擊。失手一次,就從頭來過。',
+    '紅圈收得越小,反擊的價值越高。賭不賭,你自己決定。',
+    '防住了不代表沒事——半傷,也是傷。',
+    '計量表滿了就別捨不得,那雙槍是替你保命用的。',
+    '乾淨俐落地打出一輪,敵人的架勢就更容易崩潰。',
+    '聖徒化中受的每一擊,都在把你推向深淵。',
+    '能撐到聖徒化的最後一槍,就再多送他兩成的痛苦。',
+    '敵人倒下後的三秒,是追加審判的時間。別浪費。',
+    '傷痕太多的話,我給的評價可不會好看。',
+  ],
+
   inspectors: {
     freya: {
       name:'芙蕾雅',
@@ -410,6 +438,17 @@ export const GAME_CONFIG = {
     energyPerHit:        2,     // 每次正確點擊給的聖能
     chargeSeconds:       4,     // 敵人大絕蓄力窗口（秒）
 
+    // Overkill 限時（敵死後的追加輸出窗口）
+    overkillLimitMs:     3000,  // 3 秒內沒清完 → 全數字磚破碎自動清盤
+    overkillNextDelayMs: 0,     // 自動清盤後直接插入下一盤（原 1000ms 防連點誤觸，手感太拖已取消）
+    // 搭檔演出 SE 播放增益：母帶已重 master 至 RMS −11 dBFS（v2），播放端不再增幅；
+    //   個別仍嫌大/小聲時微調這裡即可（>1 增幅、<1 衰減）
+    partnerSeGain: { se_luna_dual:1, se_luna_exc:1, se_luna_mb:1, se_luna_obe:1 },
+
+    // 載入畫面教學 Hint 輪播（文案見 loadingHints）
+    loadingHintHoldMs:   5000,  // 每句停留 5 秒
+    loadingHintFadeMs:   400,   // 淡入/淡出時間
+
     // 三級防禦窗口（依紅點剩餘時間比例；大=早，小=晚）
     defDefenseMin:       0.35,  // 0.35~1.0 → Defense（傷害減半）
     defPerfectMin:       0.12,  // 0.12~0.35 → Perfect（免傷）
@@ -468,6 +507,7 @@ export const ASSETS = {
 
   // ── 五張 cut-in 圖（v17.7 嵌入）──
   cutin_saint_luna: "resources/partner/Luna_CI_advent.jpg",   // 聖徒化降臨 cut-in（Luna）
+  voice_saint_luna: "resources/partner/Luna_SI_SE.m4a",       // 聖徒化發動語音（Luna，1.7s；與 sfx_saint 疊播）
   cutin_exc: "resources/partner/Luna_CI_exc.png",   // 處決 EXSECUTIŌ cut-in（Luna）
   cutin_obe: "resources/partner/Luna_CI_obe.jpg",   // O.B.E. cut-in（Luna）
   cutin_mb: "resources/partner/Luna_CI_maxburst.jpg",   // Maximum Burst cut-in（Luna）
@@ -503,10 +543,18 @@ export const ASSETS = {
   // 開始遊戲 stinger（點下開始瞬間，蓋過 BGM 切歌的淡出/進入前段）
   sfx_start:         "resources/Stage/Start_01.mp3",
   // 聖徒化發動音效
-  sfx_saint:         "resources/Stage/SI_01.mp3",
+  //  ⚠ 素材「內容」更新但檔名不變時,在路徑加/升 ?v=N 強制手機重抓(HTTP 快取以 URL 為鍵)。
+  sfx_saint:         "resources/Stage/SI_01.mp3?v=2",
 
   // 完美防禦（完防）合成替代音（一般武器；散彈完防維持自己的槍聲）
   se_guard:          "resources/weapon/Guard_SE.m4a",
+
+  // 搭檔演出 SE（Luna）：發動/結局 cut-in 同步播。放 resources/partner/。
+  //  v2：母帶重 master（RMS −28→−11 dBFS + 軟限幅），內容更新 → 升 ?v 強制重抓
+  se_luna_dual:      "resources/partner/Luna_dual_se.wav?v=2",   // 雙槍破防發動
+  se_luna_exc:       "resources/partner/Luna_EXC_SE.wav?v=2",    // 處決 EXSECUTIŌ cut-in
+  se_luna_mb:        "resources/partner/Luna_MB_SE.wav?v=2",     // Maximum Burst cut-in
+  se_luna_obe:       "resources/partner/Luna_OBE_SE.wav?v=2",    // O.B.E. cut-in
 
   // 敵人攻擊音（依攻擊種類 kind：ult 大絕命中/不完美防禦格擋、delay 太慢、wrong 按錯）。放 resources/enemy/。
   em_slash:          "resources/enemy/EM_Slash_SE.m4a",    // 聖徒：大絕/不完美防禦/按錯
@@ -519,11 +567,13 @@ export const ASSETS = {
   se_pistol_02:      "resources/weapon/Pistol_SE_02.mp3",
 
   // BGM（loop、不可交疊，切歌時前一首淡出）。放 resources/Stage/。
-  bgm_home:      "resources/Stage/MainMenu.mp3",       // 主選單（含次要選單）
-  bgm_battle:    "resources/Stage/Battle_01.mp3",      // 戰鬥（驅逐開始插入瞬間起播）
-  bgm_lose:      "resources/Stage/MissonFaild_01.mp3", // 任務失敗（驅逐失敗插入起播）
-  bgm_result:    "resources/Stage/Result_01.mp3",      // 結算（驅逐完成頁被點掉後起播）
-  bgm_boss:      "resources/Stage/BOSS_01.mp3",        // Boss 戰（點下迎擊起播）
+  //  BGM 一律 .m4a（AAC-LC 96k，自 128k MP3 轉檔，體積 −24%）：全平台原生支援；
+  //  .mp3 原檔保留於 resources/Stage 作母帶，需要重轉時用 ffmpeg -c:a aac -b:a 96k。
+  bgm_home:      "resources/Stage/MainMenu.m4a",       // 主選單（含次要選單）
+  bgm_battle:    "resources/Stage/Battle_01.m4a",      // 戰鬥（驅逐開始插入瞬間起播）
+  bgm_lose:      "resources/Stage/MissonFaild_01.m4a", // 任務失敗（驅逐失敗插入起播）
+  bgm_result:    "resources/Stage/Result_01.m4a",      // 結算（驅逐完成頁被點掉後起播）
+  bgm_boss:      "resources/Stage/BOSS_01.m4a",        // Boss 戰（點下迎擊起播）
   bgm_intruder:  null,   // （無獨立亂入曲；亂入＝Boss，走 bgm_boss）
 
   // 語音（每個 cut-in 各一支；檔名 VO_<情境>）
