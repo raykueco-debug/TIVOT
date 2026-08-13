@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於首頁版權宣告下方，每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.13-17';
+export const VERSION = 'ver 2026.08.13-18';
 
 export const GAME_CONFIG = {
 
@@ -57,6 +57,7 @@ export const GAME_CONFIG = {
       siFit:{ zoom:1, top:0 },
       cutin:'cutin_saint',     // 聖徒化演出大圖
       voice:null,              // 語音（PARTNER_SE_SI）之後填
+      selectVoice:'vo_life_return', // 選人畫面「選擇此搭檔」確認 SE（→ Renee_SE_Act.wav，與生命歸還共用）
       perk:'即死防禦（被動）＋生命歸還（主動）',
       // ── 被動技：即死防禦 ─────────────────────────────
       //   整場一次性。受到足以致死的攻擊時，改為保留 1 HP，並插入 cut-in。用掉後失效。
@@ -88,6 +89,7 @@ export const GAME_CONFIG = {
       siFit:{ zoom:1.85, top:0 },
       cutin:'cutin_saint',     // 聖徒化演出大圖（沿用共通）
       voice:null,
+      selectVoice:'vo_hc_rounds',   // 選人畫面「選擇此搭檔」確認 SE（→ Malzeno_SE_Pas.wav，與高裝藥彈共用）
       perk:'前線補給（主動）＋高爆彈頭（被動）',
       // ── 被動技：高裝藥彈 ─────────────────────────────
       //   玩家 HP 降至 threshold（50%）以下的瞬間發動：普攻傷害加倍 buffSeconds 秒，

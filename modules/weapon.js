@@ -293,7 +293,13 @@ function bindPartnerSheet(){
   bind('psNext', ()=>psMove(+1));
   bind('psSelect', ()=>{
     SFX.menuClick();
-    setPickedPartner(PARTNER_KEYS[psIndex]);   // 實選寫入（唯一管道）→ 能力即時切換
+    const key = PARTNER_KEYS[psIndex];
+    if(key !== state.pickedPartner){   // 實際切換才播選人確認 SE（「出戰中」重按不播）
+      const p = GAME_CONFIG.partners[key];
+      const vo = asset(p && p.selectVoice);
+      if(vo) SFX.play(vo, (GAME_CONFIG.tuning.partnerSeGain||{})[p.selectVoice]);
+    }
+    setPickedPartner(key);   // 實選寫入（唯一管道）→ 能力即時切換
     refreshLoadoutLabels();
     renderPartnerSheet();
   });
