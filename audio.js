@@ -17,6 +17,28 @@ let _unlockChk = null;      // resume 生效檢查計時器
 const _buffers = {};   // src → AudioBuffer（已解碼；AudioBuffer 不綁 context，重建後仍可播）
 const _pending = {};   // src → Promise（解碼中，避免重複 fetch）
 
+/* ── SFX 主匯流 limiter ──
+ *  所有 SFX（音檔 + 合成音）先進 DynamicsCompressor 再到 destination：
+ *  多音疊播（語音×增益 + SI_01 + 槍聲）總和超過 0 dBFS 時，原本在輸出端硬削波
+ *  （聽感＝破/糊）；limiter 以 2ms attack 軟接峰值，疊播再多也不破音。
+ *  參數為「透明限幅」取向：threshold -6dB 之下完全不動、ratio 12 近似 brickwall。
+ *  context 可能被 unlock 重建（iOS）→ 依 context 快取，換 context 自動重建。 */
+let _bus = null, _busCtx = null;
+function busOut(c){
+  if(_bus && _busCtx === c) return _bus;
+  try{
+    const lim = c.createDynamicsCompressor();
+    lim.threshold.value = -6;    // 總和 -6dB 以下完全透明
+    lim.knee.value = 6;
+    lim.ratio.value = 12;        // 近似 brickwall
+    lim.attack.value = 0.002;    // 2ms：咬住瞬態不悶掉打擊感
+    lim.release.value = 0.12;
+    lim.connect(c.destination);
+    _bus = lim; _busCtx = c;
+    return lim;
+  }catch(e){ return c.destination; }
+}
+
 function ctx(){
   if(!_ctx){
     try{ _ctx = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){ _ctx = null; }
@@ -43,7 +65,7 @@ function playBuffer(c, buf, vol){
   try{
     const s = c.createBufferSource(); s.buffer = buf;
     const g = c.createGain(); g.gain.value = (vol==null ? 1 : vol);
-    s.connect(g); g.connect(c.destination);
+    s.connect(g); g.connect(busOut(c));
     s.start();
   }catch(e){}
 }
@@ -203,7 +225,7 @@ export const SFX = {
       g.gain.setValueAtTime(0.0001, t);
       g.gain.exponentialRampToValueAtTime(0.5, t + 0.005);
       g.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
-      o.connect(g); g.connect(c.destination);
+      o.connect(g); g.connect(busOut(c));
       o.start(t); o.stop(t + 0.2);
       // 瞬態噪音：高通後的短脈衝，增加「敲擊」咬合感
       const len = Math.floor(c.sampleRate * 0.06);
@@ -213,7 +235,7 @@ export const SFX = {
       const n = c.createBufferSource(); n.buffer = nb;
       const ng = c.createGain(); ng.gain.setValueAtTime(0.3, t); ng.gain.exponentialRampToValueAtTime(0.0001, t + 0.08);
       const hp = c.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 800;
-      n.connect(hp); hp.connect(ng); ng.connect(c.destination);
+      n.connect(hp); hp.connect(ng); ng.connect(busOut(c));
       n.start(t); n.stop(t + 0.08);
     }catch(e){}
   },
@@ -239,7 +261,7 @@ export const SFX = {
         g.gain.setValueAtTime(0.0001, t);
         g.gain.exponentialRampToValueAtTime(p[1], t+0.008);
         g.gain.exponentialRampToValueAtTime(0.0001, t+p[2]);
-        o.connect(g); g.connect(c.destination);
+        o.connect(g); g.connect(busOut(c));
         o.start(t); o.stop(t+p[2]+0.05);
       });
       // 第二響（0.16s 後、較弱）：增加「響亮」的迴盪感而不刺耳
@@ -248,7 +270,7 @@ export const SFX = {
       g2.gain.setValueAtTime(0.0001, t2);
       g2.gain.exponentialRampToValueAtTime(0.10, t2+0.008);
       g2.gain.exponentialRampToValueAtTime(0.0001, t2+0.9);
-      o2.connect(g2); g2.connect(c.destination);
+      o2.connect(g2); g2.connect(busOut(c));
       o2.start(t2); o2.stop(t2+1);
     }catch(e){}
   },

@@ -553,10 +553,12 @@ export const ASSETS = {
 
   // 搭檔演出 SE（Luna）：發動/結局 cut-in 同步播。放 resources/partner/。
   //  v2：母帶重 master（RMS −28→−11 dBFS + 軟限幅），內容更新 → 升 ?v 強制重抓
-  se_luna_dual:      "resources/partner/Luna_dual_se.wav?v=2",   // 雙槍破防發動
-  se_luna_exc:       "resources/partner/Luna_EXC_SE.wav?v=2",    // 處決 EXSECUTIŌ cut-in
-  se_luna_mb:        "resources/partner/Luna_MB_SE.wav?v=2",     // Maximum Burst cut-in
-  se_luna_obe:       "resources/partner/Luna_OBE_SE.wav?v=2",    // O.B.E. cut-in
+  // v3：改「原始檔＋純線性增益到峰值 -1dB」重製（v2 的 tanh 軟限幅有飽和失真=聽感糊）。
+  //     RMS 約 -14 dBFS；再大聲改 tuning.partnerSeGain（播放端有 limiter 匯流，不會破音）。
+  se_luna_dual:      "resources/partner/Luna_dual_se.wav?v=3",   // 雙槍破防發動
+  se_luna_exc:       "resources/partner/Luna_EXC_SE.wav?v=3",    // 處決 EXSECUTIŌ cut-in
+  se_luna_mb:        "resources/partner/Luna_MB_SE.wav?v=3",     // Maximum Burst cut-in
+  se_luna_obe:       "resources/partner/Luna_OBE_SE.wav?v=3",    // O.B.E. cut-in
 
   // 敵人攻擊音（依攻擊種類 kind：ult 大絕命中/不完美防禦格擋、delay 太慢、wrong 按錯）。放 resources/enemy/。
   em_slash:          "resources/enemy/EM_Slash_SE.m4a",    // 聖徒：大絕/不完美防禦/按錯
