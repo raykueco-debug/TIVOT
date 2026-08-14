@@ -735,15 +735,21 @@
   @keyframes sentouPlaque{from{opacity:0;transform:rotate(-1.2deg) scale(1.12);}
     to{opacity:1;transform:rotate(-1.2deg) scale(1);}}
   #sentouReward .sentou-col{display:block;}
-  #sentouReward .sentou-col:nth-child(2){font-size:.46em;letter-spacing:.2em;margin-top:.18em;}
+  /* 第二行（インストール）：字級加大＋間距收窄——13px 毛筆片假名必糊，提到 15px 上下才立得住 */
+  #sentouReward .sentou-col:nth-child(2){font-size:.54em;letter-spacing:.14em;margin-top:.18em;}
   /* 逐字「寫」出：由左往右 clip 揭開 + 墨暈收乾（blur→清晰），動畫延遲由 JS 逐字排 */
   #sentouReward .sentou-sign i{display:inline-block;font-style:normal;opacity:0;
     animation:sentouChar .34s ease forwards;
     text-shadow:0 0 1px rgba(34,26,18,.55), .05em .05em .14em rgba(0,0,0,.22);}
+  /* 小字行不吃暈染 shadow：1px 暈在小字級上只會糊成一團 */
+  #sentouReward .sentou-col:nth-child(2) i{text-shadow:none;}
   @keyframes sentouChar{
     from{opacity:0;clip-path:inset(0 100% 0 0);transform:scale(1.14);filter:blur(2.2px);}
     60%{opacity:1;filter:blur(.5px);}
     to{opacity:1;clip-path:inset(0 -12% 0 0);transform:scale(1);filter:blur(0);}}
+  /* 寫完（.done）後撤掉殘留的 filter/clip-path 合成層：帶旋轉的光柵化層會讓小字發糊，
+     改回純文字渲染求最銳利（此刻所有字動畫皆已跑完，切換無視覺跳動） */
+  #sentouReward.done .sentou-sign i{animation:none;opacity:1;clip-path:none;transform:none;filter:none;}
   #sentouReward .sentou-hint{position:absolute;left:0;right:0;
     bottom:calc(14px + env(safe-area-inset-bottom));text-align:center;
     font-size:11px;letter-spacing:4px;color:var(--gold-dim);
