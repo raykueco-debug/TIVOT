@@ -358,6 +358,8 @@ export function openWeaponSheet(){
   buildWeaponDeck();
   bindWeaponSheet();
   renderWeaponSheet();
+  // 切換到武器選單 stinger（Start_01，與出陣共用；已列第一梯關鍵預載 → 即開即響）
+  SFX.play(asset('sfx_start'), sfxGain('sfx_start'));
   $('weaponSheet').classList.add('on');
 }
 export function closeWeaponSheet(){ $('weaponSheet').classList.remove('on'); }

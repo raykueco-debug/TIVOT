@@ -156,13 +156,14 @@ function preloadLateBgm(){
     };
     cycle();
   }
-  /* 關鍵音效優先段：SI_01（點擊繼續揭幕音）排在立繪之後、整批圖片/BGM 之前
-   *   「單獨」載完解碼（批次 ~20MB，同時開跑會搶走頻寬，慢網下 12s 保底放行時
-   *   反而還沒就緒 → 點下去沒聲音）。（出陣 stinger 已取消，不再列關鍵）
+  /* 關鍵音效優先段：SI_01（點擊繼續揭幕音）＋ Start_01（出陣/武器選單 stinger）
+   *   排在立繪之後、整批圖片/BGM 之前「單獨」載完解碼（批次 ~20MB，同時開跑會搶走
+   *   頻寬，慢網下 12s 保底放行時反而還沒就緒 → 點下去沒聲音）。
+   *   Start_01 曾因手機上滯後冒出而取消——現列入第一梯預載（解碼進 buffer）後恢復使用。
    *   自帶 4s 保底：關鍵檔卡住也不無限擋批次。load() 以 _pending/_buffers 去重，
    *   稍後批次再含它也不會重抓。 */
   const critP = portraitP.then(()=> Promise.race([
-    SFX.preload([asset('sfx_saint')]),
+    SFX.preload([asset('sfx_saint'), asset('sfx_start')]),
     new Promise(r=>setTimeout(r, 4000)),
   ]));
   let done=0;
@@ -225,8 +226,9 @@ function preloadLateBgm(){
 
 // 首頁：開始遊戲 → 主選單先淡出、空一拍（約 1s）Battle 才淡入（避免唐突），同時播「驅逐開始」過渡禎
 bindBtn('startBtn',     ()=>{
-  // 出陣 stinger（sfx_start）已取消：手機上仍會滯後冒出、體驗更差。
-  //   ⚠ 音檔 Start_01.mp3 保留不刪——聖徒化音效沿用（ASSETS.sfx_start 佔位不動）。
+  // 出陣 stinger（sfx_start＝Start_01）：曾因手機上滯後冒出而取消；現已列入
+  //   第一梯關鍵預載（解碼進 Web Audio buffer，見 preloadAll critP）→ 即點即響，恢復使用。
+  SFX.play(asset('sfx_start'), sfxGain('sfx_start'));
   preloadLateBgm();   // 保險：若保底提前放行沒經過 go()，出陣（櫻花期間）補載第二段
   SFX.playBgm(asset('bgm_battle'), { fadeOutMs:800, delayMs:1000, volume: bgmVol('bgm_battle') });
   // 驅逐開始：不靠點擊、不自動計時 → 由櫻花飄完（onDone）主動推進進戰鬥
