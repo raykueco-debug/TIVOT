@@ -467,8 +467,20 @@ function enemyDamage(dmg,isCrit,silent){
  * ========================================================================== */
 function addEnergy(v){
   if(state.saintMode) return;        // 聖徒化期間不累積破防值
+  const was=state.energy;
   state.energy=Math.min(100,state.energy+v);
   updateEnergyClasp();
+  if(was<100 && state.energy>=100) energyFullBurst();   // 滿的瞬間：計量表為中心發一圈光圈
+}
+// 破防值滿瞬間演出：以 C 字計量表為中心擴散一圈半透漸層光圈（~0.85s，不擋點擊）。
+function energyFullBurst(){
+  const clasp=$('energyClasp'); if(!clasp) return;
+  const r=clasp.getBoundingClientRect();
+  const d=document.createElement('div'); d.className='energy-burst';
+  d.style.left=(r.left+r.width/2)+'px';
+  d.style.top =(r.top +r.height/2)+'px';
+  document.body.appendChild(d);
+  setTimeout(()=>d.remove(), 900);
 }
 function updateEnergyClasp(){
   const fill=$('energyClaspFill');

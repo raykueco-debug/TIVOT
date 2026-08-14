@@ -87,6 +87,7 @@ const ACTIVE_HANDLERS = {
   //   tryActive 已擋掉聖徒化入口，此處再守一道 saintMode 保險。
   supplyRefill(a, act){
     if(state.over || state.saintMode || state.dualWield || state.cutinPlaying || state.transitioning) return false;
+    if(state.enemyHp<=0) return false;   // overkill（敵已死）不可發動雙槍破防 → 技能不消耗
     const vo = asset(act && act.voice); if(vo) SFX.play(vo, (GAME_CONFIG.tuning.partnerSeGain||{})[act.voice]);   // SE（→ vo_supply_refill；增益見 tuning.partnerSeGain）
     a.floatDmg(act.name,'50%','40%',true);
     const label = `${act.name}<span class="cutin-en">${act.en||''}</span>`;

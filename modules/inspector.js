@@ -389,6 +389,7 @@ export function onRematchBtn(){
     return;
   }
   if(state.resultMode==='intercept'){
+    SFX.gunshot();   // 迎擊：普攻槍聲（setShots 候選，同盤面射擊）
     api.triggerIntruder();
     return;
   }

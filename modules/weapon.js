@@ -120,6 +120,7 @@ export function weaponCounter(dmgScale){
  * ========================================================================== */
 export function activateDual(){
   if(state.over||state.dualWield||state.saintMode||state.cutinPlaying||state.transitioning) return;
+  if(state.enemyHp<=0) return;                 // overkill（敵已死）不可發動；雙槍中殺敵觸發 overkill 則照常（見 enterOverkillFx）
   if(state.energy<100) return;                 // 破防值未滿不能發動
   SFX.unlock(); SFX.ultCharge();
   SFX.play(asset('se_luna_dual'), (GAME_CONFIG.tuning.partnerSeGain||{}).se_luna_dual);   // 雙槍破防發動 SE（Luna；母帶小聲→增幅）
@@ -137,7 +138,7 @@ export function activateDual(){
 // 的 cut-in 撤下後也經注入直接進窗（不吃破防值、不另播雙槍 cut-in）。
 // 聖徒化中不進（「聖徒化期間不能發動雙槍破防」原則的最後一道擋門）。
 export function startDualWindow(){
-  if(state.over||state.saintMode||state.dualWield) return;
+  if(state.over||state.saintMode||state.dualWield||state.enemyHp<=0) return;   // overkill 中不開窗
   state.dualWield=true;
   $('grid').classList.add('dualwield');
   api.markNext();
