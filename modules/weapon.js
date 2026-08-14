@@ -129,12 +129,20 @@ export function activateDual(){
     // cut-in 撤下瞬間 → 重置敵大絕與延時（間隔）懲罰倒數，避免發動瞬間被連段
     api.resetEnemyTimers();
     api.scheduleUlt();
-    state.dualWield=true;
-    $('grid').classList.add('dualwield');
-    api.markNext();
-    clearTimeout(state.dualTimer);
-    state.dualTimer=setTimeout(endDual, DUAL_SECONDS*1000);
+    startDualWindow();
   }, '破防・雙槍<span class="cutin-en">Guard Crushing</span>', 'cutin_saint');
+}
+
+// 進入破防射擊窗口（窗口本體）：activateDual 的 cut-in 撤下後呼叫；馬季諾「前線補給」
+// 的 cut-in 撤下後也經注入直接進窗（不吃破防值、不另播雙槍 cut-in）。
+// 聖徒化中不進（「聖徒化期間不能發動雙槍破防」原則的最後一道擋門）。
+export function startDualWindow(){
+  if(state.over||state.saintMode||state.dualWield) return;
+  state.dualWield=true;
+  $('grid').classList.add('dualwield');
+  api.markNext();
+  clearTimeout(state.dualTimer);
+  state.dualTimer=setTimeout(endDual, DUAL_SECONDS*1000);
 }
 
 // 窗口收尾（4 秒到期或清盤結束呼叫）：清旗標/計時器、移 class；盤面點一半則重建、否則重標下一格。

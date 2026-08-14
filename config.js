@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於首頁版權宣告下方，每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.13-30';
+export const VERSION = 'ver 2026.08.14-31';
 
 export const GAME_CONFIG = {
 
@@ -109,17 +109,18 @@ export const GAME_CONFIG = {
         desc:'HP 降至 50% 以下時發動：10 秒普攻傷害加倍，效果可跨盤面延續。',
       },
       // ── 主動技：前線補給 ─────────────────────────────
-      //   隨時（一般盤面或聖徒化中皆可）補滿雙槍破防值。每場一次。
-      //   ⚠ 聖徒化期間「不能發動雙槍破防」的原則不變——補滿的破防值須待聖徒化結束後才能使用。
+      //   一般盤面發動：立即進入雙槍破防射擊窗口（不吃破防值、不另播雙槍 cut-in——
+      //   馬季諾 cut-in 撤下後直接開窗）。每場一次。
+      //   ⚠ 聖徒化期間不可發動（「聖徒化不能開雙槍」原則）：context:'board' 擋掉聖徒化入口。
       active:{
         key:'supplyRefill',
         name:'前線補給',
         en:'Frontline Supply',   // cut-in 英文副標
-        context:'any',           // 隨時可發（'any'＝一般盤面與聖徒化中皆可）
+        context:'board',         // 一般盤面限定（聖徒化中不可發動）
         oncePerBattle:true,      // 每場一次（可調：false＝不限次數）
         cutin:'cutin_malzeno_act', // 前線補給 cut-in 大圖（→ Malzeno_CI_act.png）
         voice:'vo_supply_refill',  // cut-in 對應 SE（→ Malzeno_SE_Act.wav）
-        desc:'隨時補滿雙槍破防值（每場一次）。聖徒化期間仍無法發動雙槍破防。',
+        desc:'立即進入雙槍破防（每場一次）。聖徒化期間無法發動。',
       },
     },
   },

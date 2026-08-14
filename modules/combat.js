@@ -83,8 +83,8 @@ export function setup(){
     scheduleUlt: defense.scheduleUlt,
     playCutin: saint.playCutin,
     saintApi: { lifeReturnAbort: saint.lifeReturnAbort },
-    // 馬季諾：前線補給（直補破防值至滿）＋高裝藥彈（低血量普攻加倍；energy/lowHpBuff 為 combat 擁有，經此管道寫）
-    fillEnergy, setLowHpBuff,
+    // 馬季諾：前線補給（cut-in 後直接進雙槍破防窗口，窗口本體歸 weapon）＋高裝藥彈（低血量普攻加倍；lowHpBuff 為 combat 擁有，經此管道寫）
+    startDual: weapon.startDualWindow, setLowHpBuff,
   });
   // 監察官（評價/結算）：combat 擁有計時 → 算好 totalTime/avg 呼叫 inspector.settle。
   //   inspector 只 import state/config；goHome（combat）與 triggerIntruder（enemy）經此注入。
@@ -436,9 +436,6 @@ export function setPlayerHpRatio(ratio){
 function setBoard(n, cols){ state.N=n; state.cols=cols; }
 // 歸零聖能並更新 C 字計量表（聖徒化開場清零破防值；energy 為 combat 擁有）。
 function resetEnergy(){ state.energy=0; updateEnergyClasp(); }
-// 直補破防值至滿（馬季諾「前線補給」經注入呼叫）。刻意繞過 addEnergy 的 saintMode 擋門——
-//   聖徒化中也可補（補滿的值待聖徒化結束後用；發動雙槍仍被 activateDual 擋 saintMode）。
-function fillEnergy(){ state.energy=100; updateEnergyClasp(); }
 
 // 對敵造成傷害（含 overkill / 擊殺凍結計時）
 function enemyDamage(dmg,isCrit,silent){

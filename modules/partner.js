@@ -80,23 +80,22 @@ const ACTIVE_HANDLERS = {
     a.saintApi.lifeReturnAbort();
     return true;
   },
-  // 前線補給（馬季諾·主動）：隨時補滿雙槍破防值（fillEnergy 經 combat 注入，直寫 100）。
-  //   聖徒化中也可補（context:'any'），但「聖徒化期間不能發動雙槍破防」原則不變
-  //   （weapon.activateDual 擋 saintMode）——補滿的值待聖徒化結束後使用。
-  //   cut-in：一般盤面才插（聖徒化中插 cut-in 會打斷反應計時節奏，改只跳字＋SE）。
+  // 前線補給（馬季諾·主動）：發動即進入雙槍破防射擊窗口（不吃破防值、不另播雙槍
+  //   cut-in——馬季諾自己的 cut-in 撤下後經注入的 startDual 直接開窗；窗口本體/收尾
+  //   仍歸 weapon：startDualWindow/endDual）。
+  //   ⚠ 聖徒化期間不可發動（「聖徒化不能開雙槍」原則）：config context:'board' 在
+  //   tryActive 已擋掉聖徒化入口，此處再守一道 saintMode 保險。
   supplyRefill(a, act){
-    if(state.over || state.cutinPlaying || state.transitioning) return false;
+    if(state.over || state.saintMode || state.dualWield || state.cutinPlaying || state.transitioning) return false;
     const vo = asset(act && act.voice); if(vo) SFX.play(vo, (GAME_CONFIG.tuning.partnerSeGain||{})[act.voice]);   // SE（→ vo_supply_refill；增益見 tuning.partnerSeGain）
-    a.fillEnergy();
     a.floatDmg(act.name,'50%','40%',true);
-    if(!state.saintMode){
-      const label = `${act.name}<span class="cutin-en">${act.en||''}</span>`;
-      a.playCutin(()=>{
-        if(state.over||state.saintMode) return;
-        a.resetEnemyTimers();   // cut-in 撤下瞬間重置敵大絕/延時倒數（同雙槍/即死防禦慣例）
-        a.scheduleUlt();
-      }, label, act && act.cutin);
-    }
+    const label = `${act.name}<span class="cutin-en">${act.en||''}</span>`;
+    a.playCutin(()=>{
+      if(state.over||state.saintMode) return;
+      a.resetEnemyTimers();   // cut-in 撤下瞬間重置敵大絕/延時倒數（同雙槍/即死防禦慣例）
+      a.scheduleUlt();
+      a.startDual();          // cut-in 撤下 → 直接進入雙槍破防窗口
+    }, label, act && act.cutin);
     return true;
   },
   // 未來擴充範例（本輪不實作）：
