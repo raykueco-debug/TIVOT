@@ -928,13 +928,19 @@
     font-size:13px;letter-spacing:2px;}
   #creditSheet .credit-link:active{transform:scale(.97);border-color:var(--gold);box-shadow:0 0 12px var(--gold-dim);}
   #creditSheet .credit-list{list-style:none;margin:0;padding:0;}
-  #creditSheet .credit-list li{display:flex;align-items:baseline;gap:8px;padding:6px 0;
-    border-bottom:1px dashed rgba(138,109,46,.35);font-size:12.5px;}
+  #creditSheet .credit-list li{border-bottom:1px dashed rgba(138,109,46,.35);font-size:12.5px;}
   #creditSheet .credit-list li:last-child{border-bottom:none;}
+  /* 整列＝外連（前往作曲者頁面）：flex 版面掛在 a 上，整列可點、按下金框回饋 */
+  #creditSheet .cl-link{display:flex;align-items:baseline;gap:8px;padding:6px 0;
+    color:inherit;text-decoration:none;-webkit-tap-highlight-color:transparent;}
+  #creditSheet .cl-link:active .cl-name{color:var(--gold);}
   #creditSheet .cl-name{color:var(--ink);flex:1 1 auto;min-width:0;}
   #creditSheet .cl-by{color:var(--gold-dim);font-size:11px;letter-spacing:.5px;flex:none;}
   #creditSheet .cl-use{color:var(--holy);font-size:10.5px;letter-spacing:.5px;flex:none;
     opacity:.85;white-space:nowrap;}
+  /* 說明列：載明點擊曲目會前往作曲者頁面 */
+  #creditSheet .credit-tip{font-size:10.5px;letter-spacing:1px;color:var(--gold-dim);
+    text-align:center;opacity:.85;margin-top:2px;}
   #creditSheet .credit-close{margin-top:14px;flex:none;align-self:center;padding:9px 34px;
     background:transparent;border:1px solid var(--gold-dim);color:var(--ink);
     border-radius:8px;font-family:inherit;font-size:13px;letter-spacing:3px;}
