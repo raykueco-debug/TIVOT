@@ -60,8 +60,8 @@ combat.setup();
   window.addEventListener('keydown', go);
 })();
 
-// 普攻槍聲：固定用 Pistol_SE_02（不隨機）
-SFX.setShots([asset('se_pistol_02')].filter(Boolean), sfxGain('se_pistol_02'));
+// 普攻槍聲：固定用 Pistol_SE_03（不隨機）
+SFX.setShots([asset('se_pistol_03')].filter(Boolean), sfxGain('se_pistol_03'));
 
 /* ── 進場預載（第一段）：掃 ASSETS 載「開場就要」的圖＋音，跑完才揭開選單 ──
  *  第一段內依序讓路：監察官立繪（門面最優先）→ 關鍵音效（SI_01/Start_01）→ 批次段，

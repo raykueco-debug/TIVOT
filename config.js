@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於首頁版權宣告下方，每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.14-36';
+export const VERSION = 'ver 2026.08.14-37';
 
 export const GAME_CONFIG = {
 
@@ -380,8 +380,8 @@ export const GAME_CONFIG = {
       hp:500,
       attack:45,                // 大絕單點傷害（同一般怪基準）
       atkInterval:null,         // 大絕蓄力窗口（紅圈縮放時間）；null＝沿用 tuning.chargeSeconds
-      // Boss 攻擊音：大絕/不完美防禦/延時＝槍聲 EM_Shot；按錯＝匕首 EM_Dagger。
-      sound:{ ult:'em_shot', delay:'em_shot', wrong:'em_dagger' },
+      // Boss 攻擊音：大絕＝左輪 EM_Revolver；延時＝槍聲 EM_Shot；按錯＝匕首 EM_Dagger。
+      sound:{ ult:'em_revolver', delay:'em_shot', wrong:'em_dagger' },
       special:[],
       boardGrids:[9,9,16,16,16],
       // v17：Boss 專屬機制（一般怪不填＝走預設，資料/程式分離）
@@ -392,7 +392,7 @@ export const GAME_CONFIG = {
       hitFx:{
         delay:{ type:'bullet', count:1, pos:'random' },   // 延時懲罰 → 一顆彈痕
         wrong:{ type:'slash' },                            // 按錯懲罰 → 一條紅刀痕濺血
-        ult:{   type:'bullet', count:2, pos:'random' },   // 大絕 → 兩顆彈痕
+        ult:{   type:'bullet', count:1, pos:'random', scale:1.6 },   // 大絕 → 一顆大彈痕（1.6 倍）
       },
     },
     // 例：新怪
@@ -465,17 +465,22 @@ export const GAME_CONFIG = {
     partnerSeGain: { se_luna_dual:1, se_luna_exc:1, se_luna_mb:1, se_luna_obe:1,
                      vo_life_return:9.2, vo_death_guard:3.0, vo_supply_refill:2.7, vo_hc_rounds:3.6 },
 
-    // 檔案 SFX 播放增益（對 ASSETS 鑰匙；未列入＝1）。全域響度階層（有效 RMS 目標）：
-    //   語音/演出層 ≈ −14.4 dBFS（基準，vo_*/Luna 系走 partnerSeGain）
-    //   ＞ 反擊武器/受擊層 ≈ −16 ＞ 普攻槍聲 ≈ −19（最頻繁、最收斂）＞ BGM ≈ −20（bgmVol 管）。
-    //   值依各檔實測 RMS 反推（如散彈母帶 −9.5 全場最大聲 → 0.47）；峰值交給 SFX 匯流 limiter。
-    sfxGain: { se_pistol_01:0.55, se_pistol_02:0.7, se_shotgun_blast:0.47, se_sniper_falcon:0.77,
-               em_slash:0.56, em_dagger:2.0 },
+    // 檔案 SFX 播放增益（對 ASSETS 鑰匙；未列入＝1）。全域響度階層（ver -37 起）：
+    //   語音/演出層 ≈ −14.4 dBFS（基準，vo_*/Luna 系走 partnerSeGain）；
+    //   音樂與音效一律拉齊至語音的 90%（振幅 ×0.9 ≈ −15.3 dBFS），不再分層收斂。
+    //   值依各檔實測 fullRMS 反推：gain = 10^((−15.3 − RMS)/20)；峰值交給 SFX 匯流 limiter。
+    //   （em_dagger 母帶大量留白、fullRMS 失真 → 以有效 RMS −19.8 反推。）
+    sfxGain: { se_pistol_01:0.90, se_pistol_02:1.15, se_pistol_03:1.6,
+               se_mg_squall:1.3, se_shotgun_blast:0.51, se_sniper_falcon:0.85,
+               se_guard:1.0, sfx_reload:1.7, sfx_start:1.4,
+               em_slash:0.62, em_smack:1.15, em_shot:1.3, em_revolver:0.66, em_dagger:1.7 },
 
-    // BGM 播放音量（0~1，HTMLAudio.volume）：目標「有效響度」統一 ≈ −20 dBFS，
-    //   即語音/技能 SE（≈−14.4）下方約 6 dB——BGM 是底、人聲在上。各曲母帶 RMS 差很大
-    //   （boss −9.7 vs home −17.3），故逐曲定值（依實測 RMS 反推）；未列入的曲用 default。
-    bgmVol: { default:0.5, bgm_home:0.73, bgm_battle:0.38, bgm_boss:0.31, bgm_result:0.44, bgm_lose:0.62 },
+    // BGM 播放音量（0~1，HTMLAudio.volume）：目標統一＝語音基準（−14.4）的 90% ≈ −15.3 dBFS
+    //   （ver -37 起與音效同一水位）。各曲依實測 fullRMS 反推：battle −9.8 / boss −8.0 /
+    //   result −10.9 / lose −15.5 / home −16.6。
+    //   ⚠ bgm_home 母帶偏小聲，需 1.16 才到位但 HTMLAudio.volume 上限 1 → 封頂 1.0
+    //   （實得 −16.6，比其他曲低約 1.3 dB；要完全拉平需重母帶 +1.3 dB）。
+    bgmVol: { default:0.5, bgm_home:1.0, bgm_battle:0.53, bgm_boss:0.43, bgm_result:0.60, bgm_lose:1.0 },
 
     // 載入畫面教學 Hint 輪播（文案見 loadingHints）
     loadingHintHoldMs:   5000,  // 每句停留 5 秒
@@ -594,12 +599,14 @@ export const ASSETS = {
   // 敵人攻擊音（依攻擊種類 kind：ult 大絕命中/不完美防禦格擋、delay 太慢、wrong 按錯）。放 resources/enemy/。
   em_slash:          "resources/enemy/EM_Slash_SE.m4a",    // 聖徒：大絕/不完美防禦/按錯
   em_smack:          "resources/enemy/EM_Smack_SE.m4a",    // 聖徒：延時懲罰
-  em_shot:           "resources/enemy/EM_Shot_SE.mp3",     // Boss：大絕/不完美防禦/延時
+  em_shot:           "resources/enemy/EM_Shot_SE.mp3",     // Boss：延時懲罰
+  em_revolver:       "resources/enemy/EM_Revolver_SE.mp3", // Boss：大絕/不完美防禦（左輪）
   em_dagger:         "resources/enemy/EM_Dagger_SE.m4a",   // Boss：按錯
 
   // 普攻槍聲（手槍；每次正確點擊由這兩支隨機播一支，製造變化）
   se_pistol_01:      "resources/weapon/Pistol_SE_01.mp3",
   se_pistol_02:      "resources/weapon/Pistol_SE_02.mp3",
+  se_pistol_03:      "resources/weapon/Pistol_SE_03.wav",  // 普攻槍聲（現行）
 
   // BGM（loop、不可交疊，切歌時前一首淡出）。放 resources/Stage/。
   //  BGM 一律 .m4a（AAC-LC 96k，自 128k MP3 轉檔，體積 −24%）：全平台原生支援；

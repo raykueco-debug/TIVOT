@@ -104,13 +104,16 @@ HP 100。攻擊加倍 buff(Counter 反擊觸發)3 秒;與高裝藥彈(狀態型)
 
 ## 11. 音訊
 
-### 11.1 全域響度階層(有效 RMS,實測母帶反推增益)
+### 11.1 全域響度階層(有效 RMS,實測母帶反推增益;ver -37 起)
 | 層 | 目標 | 管道 |
 |---|---|---|
 | 語音/演出(技能 SE、聖徒化語音、Luna cut-in) | ≈ −14.4 dBFS(基準) | `tuning.partnerSeGain` |
-| 反擊武器/受擊 | ≈ −16 | `tuning.sfxGain` |
-| 普攻槍聲(最頻繁) | ≈ −19 | `sfxGain`(se_pistol_02:0.7) |
-| BGM | ≈ −20(逐曲拉齊) | `tuning.bgmVol`(0.31–0.73) |
+| 音效(普攻/反擊/受擊/stinger 全部) | 語音的 90% ≈ −15.3 | `tuning.sfxGain` |
+| BGM(逐曲拉齊) | 語音的 90% ≈ −15.3 | `tuning.bgmVol` |
+
+- 音樂與音效不再分層收斂,一律拉齊至語音的 90%(振幅 ×0.9)
+- ⚠ bgm_home(MainMenu)母帶偏小聲,volume 封頂 1.0 實得 −16.6(比其他曲低 1.3 dB);要完全拉平需重母帶
+- 普攻=Pistol_SE_03;Boss 大絕=EM_Revolver(單顆 1.6 倍大彈痕)、延時=EM_Shot、按錯=EM_Dagger
 
 - SFX 匯流有 limiter(threshold −6dB、ratio 12、attack 2ms):疊播/超峰不破音
 - 合成音:菜單/清盤鈴/overkill 鈴/ツケ板等由 Web Audio 即時合成

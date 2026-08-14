@@ -36,7 +36,7 @@ export function showHitFx(kind){
     case 'claw':  triggerClaw(fx.count||3, fx.angle==='random'); break;
     case 'blood': spawnBlood(fx.angle==='random'); break;
     case 'bite':  spawnBite(); break;
-    case 'bullet':spawnBullets(fx.count||1, fx.pos==='random'); break;
+    case 'bullet':spawnBullets(fx.count||1, fx.pos==='random', fx.scale); break;
     case 'slash': spawnSlash(); break;
     default:      triggerClaw();
   }
@@ -94,20 +94,26 @@ export function spawnBite(){
   addFx(d,560);
 }
 // 彈痕（玻璃碎裂）：count 顆，位置隨機。每顆用內嵌 SVG 畫中心孔＋放射裂紋＋環裂。
-export function spawnBullets(count, randomPos){
+//   scale＝彈痕放大倍率（config hitFx 可帶，如 Boss 大絕單顆大彈痕 1.6）。
+//   ⚠ 放大走 width/height（動畫 keyframe 佔用 transform，不能疊 scale）。
+export function spawnBullets(count, randomPos, scale){
+  const px = Math.round(120*(scale||1));
   for(let i=0;i<count;i++){
     const d=document.createElement('div');
     d.className='fx fx-bullet';
     const left = randomPos ? (22+Math.random()*56) : 50;
     const top  = randomPos ? (24+Math.random()*46) : 46;
     d.style.left=left+'%'; d.style.top=top+'%';
+    d.style.width=px+'px'; d.style.height=px+'px';
+    d.style.margin=(-px/2)+'px 0 0 '+(-px/2)+'px';
     d.style.animationDelay=(i*60)+'ms';
-    d.innerHTML = bulletSVG();
+    d.innerHTML = bulletSVG(px);
     addFx(d,600);
   }
 }
 // 產生一個「玻璃被擊碎」的 SVG：中心暗孔、白色高光、放射狀與環狀裂紋（隨機化角度）。
-export function bulletSVG(){
+//   px＝輸出尺寸（viewBox 固定 120，內容等比放大）。
+export function bulletSVG(px){
   const cx=60, cy=60;
   let cracks='';
   const spokes=7+Math.floor(Math.random()*3);
@@ -122,7 +128,8 @@ export function bulletSVG(){
   }
   cracks+=`<circle cx="${cx}" cy="${cy}" r="20" stroke="rgba(255,255,255,.5)" stroke-width="1" fill="none" stroke-dasharray="6 5"/>`;
   cracks+=`<circle cx="${cx}" cy="${cy}" r="34" stroke="rgba(255,255,255,.35)" stroke-width="1" fill="none" stroke-dasharray="4 7"/>`;
-  return `<svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg">
+  const sz = px||120;
+  return `<svg viewBox="0 0 120 120" width="${sz}" height="${sz}" xmlns="http://www.w3.org/2000/svg">
     <circle cx="${cx}" cy="${cy}" r="7" fill="rgba(10,10,14,.92)"/>
     <circle cx="${cx}" cy="${cy}" r="10" fill="none" stroke="rgba(255,255,255,.9)" stroke-width="1.5"/>
     ${cracks}
