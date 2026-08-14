@@ -106,8 +106,10 @@
   /* 暫停：直接隱藏整個數字盤（淡出），避免暫停時偷看盤面 */
   #grid.grid-blur{opacity:0;pointer-events:none;}
   #grid{transition:opacity .15s ease-out;}   /* 暫停隱藏/恢復顯示皆有淡入淡出 */
+  /* ⚠ 不用 backdrop-filter:iOS 對 backdrop 快照含「動畫 filter / 大範圍光暈」圖層
+     (敵亮攻框時的黃圈+alert 脈動)會把光暈爆染成整面變黃。改純半透明底加深補償。 */
   #exitConfirm{position:fixed;inset:0;z-index:9500;display:flex;align-items:center;justify-content:center;
-    background:rgba(6,4,12,.55);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);}
+    background:rgba(6,4,12,.72);}
   #exitConfirm .ec-panel{width:min(82%,320px);text-align:center;padding:22px 20px;border-radius:12px;
     background:linear-gradient(180deg,rgba(30,24,42,.98),rgba(16,12,24,.98));
     border:1px solid var(--gold-dim);box-shadow:0 12px 44px rgba(0,0,0,.6);}
@@ -385,6 +387,9 @@
   #grid.alert .cell{border-color:var(--danger);color:#ff8a8a;}
   #grid.alert{animation:alertPulse .5s infinite alternate;}
   @keyframes alertPulse{from{filter:none}to{filter:drop-shadow(0 0 8px var(--danger))}}
+  /* 暫停對話框開啟中：凍結底下的警戒脈動（動畫 filter 於 iOS 合成快照易生色偏假影；
+     盤面此時本就 grid-blur 隱藏，凍結無視覺損失） */
+  body.dlg-pause #grid.alert, body.dlg-pause #grid.saint.alert{animation:none;filter:none;}
   /* 雙槍模式盤面外框 */
   #grid.dualwield .cell{border-color:var(--holy);}
   #grid.dualwield{filter:drop-shadow(0 0 6px var(--holy));}

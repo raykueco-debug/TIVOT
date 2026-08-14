@@ -241,6 +241,7 @@ bindBtn('exitBtn',      showExitConfirm);       // 右上：退出 → 確認對
 function showExitConfirm(){
   if(state.over || state.cutinPlaying || document.getElementById('exitConfirm')) return;   // 非戰鬥中/演出中/已開 → 略過
   combat.pauseForDialog();                          // 真暫停：凍結攻擊圈縮放 + 碼表 + 停延時懲罰/新大絕/點擊
+  document.body.classList.add('dlg-pause');         // 凍結底層警戒脈動（防 iOS 合成假影，見 style.css）
   const grid=$('grid'); if(grid) grid.classList.add('grid-blur');
   const dlg=document.createElement('div'); dlg.id='exitConfirm';
   dlg.innerHTML='<div class="ec-panel">'
@@ -249,7 +250,8 @@ function showExitConfirm(){
     +'<div class="ec-btns"><button class="ec-no">繼續遊戲</button><button class="ec-yes">回主選單</button></div>'
     +'</div>';
   document.body.appendChild(dlg);
-  const close=()=>{ if(dlg.parentNode) dlg.remove(); if(grid) grid.classList.remove('grid-blur'); };
+  const close=()=>{ if(dlg.parentNode) dlg.remove(); if(grid) grid.classList.remove('grid-blur');
+    document.body.classList.remove('dlg-pause'); };
   const bind=(sel,fn)=>{ const b=dlg.querySelector(sel); const run=()=>{ SFX.unlock(); SFX.menuClick(); fn(); };
     b.addEventListener('click',run); b.addEventListener('touchstart',e=>{e.preventDefault();run();},{passive:false}); };
   bind('.ec-no', ()=>{ close(); combat.resumeFromDialog(); });  // 繼續：解除暫停、攻擊圈/碼表接回
