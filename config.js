@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於首頁版權宣告下方，每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.14-40';
+export const VERSION = 'ver 2026.08.14-41';
 
 export const GAME_CONFIG = {
 
@@ -473,6 +473,7 @@ export const GAME_CONFIG = {
     sfxGain: { se_pistol_01:0.90, se_pistol_02:1.15, se_pistol_03:1.6,
                se_mg_squall:1.3, se_shotgun_blast:0.51, se_sniper_falcon:0.85,
                se_guard:1.0, sfx_reload:1.7, sfx_start:1.4,
+               sfx_startbt:1.9,   // 長尾鈴音、fullRMS 失真 → 以有效 RMS −20.7 反推
                em_slash:0.62, em_smack:1.15, em_shot:1.3, em_revolver:0.66, em_dagger:1.7 },
 
     // BGM 播放音量（0~1，HTMLAudio.volume）：目標統一＝語音基準（−14.4）的 90% ≈ −15.3 dBFS
@@ -580,6 +581,7 @@ export const ASSETS = {
 
   // 開始遊戲 stinger（點下開始瞬間，蓋過 BGM 切歌的淡出/進入前段）
   sfx_start:         "resources/Stage/Start_01.mp3",
+  sfx_startbt:       "resources/General/StartBT_SE.mp3",   // 出陣鈕/overkill/Boss S 第一按（神楽鈴）
   // 聖徒化發動音效
   //  ⚠ 素材「內容」更新但檔名不變時,在路徑加/升 ?v=N 強制手機重抓(HTTP 快取以 URL 為鍵)。
   sfx_saint:         "resources/Stage/SI_01.mp3?v=3",

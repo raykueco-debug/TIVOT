@@ -19,7 +19,7 @@
  *    evaluate/scoreToExp 為純函式（見下），可單獨測試；stats 由 combat.win 組裝。
  * ========================================================================== */
 
-import { GAME_CONFIG, asset, bgmVol } from '../config.js';
+import { GAME_CONFIG, asset, bgmVol, sfxGain } from '../config.js';
 import { state } from '../state.js';
 import { SFX } from '../audio.js';   // Boss BGM 於「再度執槍（S 解鎖）」瞬間起播
 
@@ -377,6 +377,7 @@ export function onRematchBtn(){
   const rbtn=$('rematchBtn');
   clearTimeout(_resultAutoTimer);   // 玩家有操作 → 取消自動回首頁
   if(state.resultMode==='sentou-offer'){   // Boss S 級第一按：「再度執槍」原地變身（金色呼吸光）
+    SFX.play(asset('sfx_startbt'), sfxGain('sfx_startbt'));   // 神楽鈴（StartBT_SE，與出陣鈕同）
     state.resultMode='sentou';
     const rw=(GAME_CONFIG.intruder && GAME_CONFIG.intruder.reward) || {};
     rbtn.textContent = rw.btnLabel || 'SAINT INSTALL...?';
@@ -391,7 +392,8 @@ export function onRematchBtn(){
     api.triggerIntruder();
     return;
   }
-  // resultMode==='rematch'
+  // resultMode==='rematch'（一般的再度執槍）：Start_01
+  SFX.play(asset('sfx_start'), sfxGain('sfx_start'));
   if(!state.sRankUnlocked){
     api.goHome();               // 一律回首頁（含 Boss 戰勝/敗後）
     return;

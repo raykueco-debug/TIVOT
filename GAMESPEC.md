@@ -116,7 +116,7 @@ HP 100。攻擊加倍 buff(Counter 反擊觸發)3 秒;與高裝藥彈(狀態型)
 - 普攻=Pistol_SE_03;Boss 大絕=EM_Revolver(單顆 1.6 倍大彈痕)、延時=EM_Shot、按錯=EM_Dagger
 
 - SFX 匯流有 limiter(threshold −6dB、ratio 12、attack 2ms):疊播/超峰不破音
-- 合成音:菜單/清盤鈴/overkill 鈴/ツケ板等由 Web Audio 即時合成
+- 合成音:菜單/清盤鈴/ツケ板等由 Web Audio 即時合成;overkill 鈴改用 StartBT_SE(神楽鈴,與出陣鈕/Boss S 第一按共用);一般再度執槍=Start_01
 - iOS 對策:三重解鎖(suspended AudioContext)、遲到 >1.5s 的音放棄不播、BGM 整首 Blob 化避免串流卡頓
 - 音檔更新必升 `?v=n` 防快取
 
@@ -135,7 +135,7 @@ HP 100。攻擊加倍 buff(Counter 反擊觸發)3 秒;與高裝藥彈(狀態型)
 ## 13. 其他 UI / 系統
 
 - **首頁**:出陣/副武器/搭檔/Credit/原作(巴哈+Penana)/版權/版本號;管理員另有「後臺」
-- **載入畫面**:監察官立繪優先 → 關鍵音效(SI_01 揭幕音、Start_01 出陣/武器選單換卡 stinger)→ 批次資源;教學 hints 輪播(16 句,5s/句);「點擊繼續」揭幕(SI_01 與光暈演出同步 ≈3.7s)
+- **載入畫面**:監察官立繪優先 → 關鍵音效(SI_01 揭幕音、Start_01 武器選單換卡/一般再度執槍、StartBT_SE 出陣/overkill/Boss S 第一按)→ 批次資源;教學 hints 輪播(16 句,5s/句);「點擊繼續」揭幕(SI_01 與光暈演出同步 ≈3.7s)
 - **過渡禎**:開始/勝利/敗北三種,中文大字+英文經文,3 秒自動或輕觸繼續
 - **PWA**:iOS standalone 以 innerHeight 直寫版面高度(修底部黑帶);盤面避開螢幕圓角(上下留邊)
 - **測試工具**:清盤鈕(手勢解鎖後戰鬥中左上)、`?debug` 或首頁連點 5 下開 HUD
