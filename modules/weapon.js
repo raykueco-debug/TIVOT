@@ -182,7 +182,8 @@ export function openPickSheet(kind){
 
 /* ── 卡疊佈局（選人/選武器共用）──
  * 依「與現選卡的相對距離」排前後：rel=0 在前置中；其餘依距離往後墊（axis='x' 側後方
- * 錯位＋微轉、'y' 上下錯位），變暗縮小、z-index 遞減——像一疊卡牌只抽當前這張到面前。 */
+ * 錯位＋微轉、'y' 上下錯位），變暗縮小、z-index 遞減——像一疊卡牌只抽當前這張到面前。
+ * 抽換動畫：各卡 transform 有 CSS 過渡（.ps-frame/.ws-frame），配合 swingDeck 整疊擺轉。 */
 function deckLayout(frames, index, axis){
   const n = frames.length;
   frames.forEach((f,i)=>{
@@ -191,16 +192,26 @@ function deckLayout(frames, index, axis){
     f.style.zIndex=String(20-d);
     f.classList.toggle('back', rel!==0);
     f.style.transform = axis==='x'
-      ? `translate(${rel*20}px, ${-d*12}px) rotate(${rel*3}deg) scale(${1-d*.07})`
-      : `translateY(${rel*22}px) rotate(${rel*-2}deg) scale(${1-d*.08})`;
+      ? `translate(${rel*30}px, ${-d*14}px) rotate(${rel*5}deg) scale(${1-d*.08})`
+      : `translateY(${rel*26}px) rotate(${rel*-3}deg) scale(${1-d*.08})`;
   });
+}
+
+/* 輪轉動畫：抽換瞬間整疊往滑動方向小幅擺轉再回正（swing-a/swing-b 交替觸發 keyframe），
+ * 疊上各卡自身的 transform 過渡 → 卡疊像轉盤轉了一格。 */
+function swingDeck(deck, dir){
+  if(!deck) return;
+  deck.classList.remove('swing-a','swing-b');
+  void deck.offsetWidth;   // 重觸發動畫
+  deck.classList.add(dir>0 ? 'swing-a' : 'swing-b');
 }
 
 /* ============================================================================
  *  搭檔選人畫面（全螢幕）：大立繪左右滑動切換、卡片技能描述、底部發動說明
  * ----------------------------------------------------------------------------
- *  清單以 config partners 動態產生（新增搭檔自動出現）。「選擇此搭檔」→
+ *  清單以 config partners 動態產生（新增搭檔自動出現）。選定（點展示中的卡 / 底部鈕）→
  *  setPickedPartner（唯一寫入管道）→ partner.currentPartner 即時切換能力。
+ *  底部鈕兼返回：按下＝選定展示中的搭檔並關閉畫面（已出戰時顯示「返回」）。
  * ========================================================================== */
 const PARTNER_KEYS = Object.keys(GAME_CONFIG.partners);
 let psIndex = 0;          // 目前展示中的搭檔 index
@@ -218,6 +229,20 @@ export function closePartnerSheet(){ $('partnerSheet').classList.remove('on'); }
 function psMove(dir){   // dir=+1 下一位 / -1 上一位（循環）
   psIndex = (psIndex + dir + PARTNER_KEYS.length) % PARTNER_KEYS.length;
   SFX.menuClick();
+  swingDeck($('psDeck'), dir);   // 輪轉動畫：整疊往滑動方向擺轉一下
+  renderPartnerSheet();
+}
+
+// 實際選定第 index 位搭檔（點卡直選與底部鈕共用）：實際切換才播確認 SE（重選同一位不重播）。
+function selectPartnerAt(index){
+  const key = PARTNER_KEYS[index];
+  if(key !== state.pickedPartner){
+    const p = GAME_CONFIG.partners[key];
+    const vo = asset(p && p.selectVoice);
+    if(vo) SFX.play(vo, (GAME_CONFIG.tuning.partnerSeGain||{})[p.selectVoice]);
+    setPickedPartner(key);   // 實選寫入（唯一管道）→ 能力即時切換
+    refreshLoadoutLabels();
+  }
   renderPartnerSheet();
 }
 
@@ -256,40 +281,52 @@ function renderPartnerSheet(){
     dots.innerHTML = PARTNER_KEYS.map((k,i)=>
       `<i class="${i===psIndex?'cur':''}${k===state.pickedPartner?' picked':''}"></i>`).join('');
   }
-  // 選擇鈕：展示中若已是實選搭檔 → 顯示「出戰中」
+  // 底部鈕（選擇兼返回）：展示中已是實選搭檔 → 顯示「返回」；否則「選擇此搭檔」（按下＝選定並返回）
   const btn=$('psSelect');
   if(btn){
     const isCur = key===state.pickedPartner;
-    btn.textContent = isCur ? '出戰中' : '選擇此搭檔';
+    btn.textContent = isCur ? '返回' : '選擇此搭檔';
     btn.classList.toggle('picked', isCur);
   }
 }
 
 function bindPartnerSheet(){
   if(psBound) return; psBound=true;
-  // 立繪區左右滑動（touch + 滑鼠拖曳）
+  // 立繪區：左右滑動換卡 + 點展示中的卡直選（touch + 滑鼠拖曳）
   const stage=$('psStage');
   if(stage){
-    let sx=0, sy=0, tracking=false;
-    const THRESH=48;
-    const begin=(x,y)=>{ sx=x; sy=y; tracking=true; };
+    let sx=0, sy=0, tracking=false, swiped=false, moved=0, onBtn=false;
+    const THRESH=48, TAP_SLOP=10;
+    const begin=(x,y,target)=>{ sx=x; sy=y; moved=0; swiped=false; tracking=true;
+      onBtn = !!(target && target.closest && target.closest('button')); };   // 起點在箭頭鈕上 → 抬手不當點卡
     const move=(x,y)=>{
-      if(!tracking) return;
+      if(!tracking||swiped) return;
+      moved=Math.max(moved, Math.hypot(x-sx, y-sy));
       const dx=x-sx, dy=y-sy;
       if(Math.abs(dx)>THRESH && Math.abs(dx)>Math.abs(dy)*1.2){
-        tracking=false;
+        swiped=true;
         psMove(dx<0 ? +1 : -1);   // 往左滑＝看下一位
       }
     };
-    stage.addEventListener('touchstart',e=>{ const t=e.touches[0]; begin(t.clientX,t.clientY); },{passive:true});
+    // 抬手：整段位移很小（點擊而非滑動）且落在卡疊範圍內 → 直選展示中的搭檔（含確認 SE）
+    const end=(x,y)=>{
+      const was=tracking; tracking=false;
+      if(!was || swiped || onBtn || moved>TAP_SLOP) return;
+      const r=$('psDeck').getBoundingClientRect();
+      if(x>=r.left && x<=r.right && y>=r.top && y<=r.bottom){
+        SFX.unlock();
+        selectPartnerAt(psIndex);
+      }
+    };
+    stage.addEventListener('touchstart',e=>{ const t=e.touches[0]; begin(t.clientX,t.clientY,e.target); },{passive:true});
     stage.addEventListener('touchmove', e=>{ const t=e.touches[0]; move(t.clientX,t.clientY); },{passive:true});
-    stage.addEventListener('touchend', ()=>{ tracking=false; });
+    stage.addEventListener('touchend', e=>{ const t=(e.changedTouches&&e.changedTouches[0])||{}; end(t.clientX,t.clientY); });
     let mDown=false;
-    stage.addEventListener('mousedown',e=>{ mDown=true; begin(e.clientX,e.clientY); });
+    stage.addEventListener('mousedown',e=>{ mDown=true; begin(e.clientX,e.clientY,e.target); });
     stage.addEventListener('mousemove',e=>{ if(mDown) move(e.clientX,e.clientY); });
-    window.addEventListener('mouseup', ()=>{ mDown=false; });
+    window.addEventListener('mouseup', e=>{ if(mDown){ mDown=false; end(e.clientX,e.clientY); } });
   }
-  // 左右箭頭 / 選擇 / 返回
+  // 左右箭頭 / 選擇兼返回
   const bind=(id,fn)=>{
     const el=$(id); if(!el) return;
     let h=false;
@@ -300,24 +337,17 @@ function bindPartnerSheet(){
   bind('psNext', ()=>psMove(+1));
   bind('psSelect', ()=>{
     SFX.menuClick();
-    const key = PARTNER_KEYS[psIndex];
-    if(key !== state.pickedPartner){   // 實際切換才播選人確認 SE（「出戰中」重按不播）
-      const p = GAME_CONFIG.partners[key];
-      const vo = asset(p && p.selectVoice);
-      if(vo) SFX.play(vo, (GAME_CONFIG.tuning.partnerSeGain||{})[p.selectVoice]);
-    }
-    setPickedPartner(key);   // 實選寫入（唯一管道）→ 能力即時切換
-    refreshLoadoutLabels();
-    renderPartnerSheet();
+    selectPartnerAt(psIndex);   // 展示中尚未實選 → 按下即選定（含確認 SE）
+    closePartnerSheet();        // 選擇鈕兼返回：一律關閉畫面回主選單
   });
-  bind('psClose', ()=>{ SFX.menuClick(); closePartnerSheet(); });
 }
 
 /* ============================================================================
  *  副武器選擇畫面（全螢幕）：橫式武器卡「上下滑動」切換、卡疊同選人、下方武器介紹
  * ----------------------------------------------------------------------------
- *  清單以 config weapons 動態產生（新增武器自動出現）。「選擇此武器」→
+ *  清單以 config weapons 動態產生（新增武器自動出現）。選定（點展示中的卡 / 底部鈕）→
  *  state.equippedWeapon（weapon 自有狀態 §3.4）選即換 + 播該武器擊發聲（config sound）。
+ *  底部鈕兼返回：按下＝選定展示中的武器並關閉畫面（已裝備時顯示「返回」）。
  * ========================================================================== */
 const WEAPON_KEYS = Object.keys(WEAPONS);
 let wsIndex = 0;          // 目前展示中的武器 index
@@ -335,6 +365,18 @@ export function closeWeaponSheet(){ $('weaponSheet').classList.remove('on'); }
 function wsMove(dir){   // dir=+1 下一把 / -1 上一把（循環；上滑＝看下一把）
   wsIndex = (wsIndex + dir + WEAPON_KEYS.length) % WEAPON_KEYS.length;
   SFX.menuClick();
+  swingDeck($('wsDeck'), dir);   // 輪轉動畫：整疊往滑動方向擺轉一下
+  renderWeaponSheet();
+}
+
+// 實際選定第 index 把武器（點卡直選與底部鈕共用）：實際切換才播擊發聲（重選同一把不重播）。
+function selectWeaponAt(index){
+  const key = WEAPON_KEYS[index];
+  if(key !== state.equippedWeapon){
+    state.equippedWeapon = key;       // 反擊武器選即換、立即驅動戰鬥（三段防禦/反擊/視覺）
+    const se = asset(WEAPONS[key].sound); if(se) SFX.play(se, sfxGain(WEAPONS[key].sound));   // 對應武器擊發聲
+    refreshLoadoutLabels();
+  }
   renderWeaponSheet();
 }
 
@@ -367,39 +409,52 @@ function renderWeaponSheet(){
     dots.innerHTML = WEAPON_KEYS.map((k,i)=>
       `<i class="${i===wsIndex?'cur':''}${k===state.equippedWeapon?' picked':''}"></i>`).join('');
   }
+  // 底部鈕（選擇兼返回）：展示中已是裝備武器 → 顯示「返回」；否則「選擇此武器」（按下＝選定並返回）
   const btn=$('wsSelect');
   if(btn){
     const isCur = key===state.equippedWeapon;
-    btn.textContent = isCur ? '裝備中' : '選擇此武器';
+    btn.textContent = isCur ? '返回' : '選擇此武器';
     btn.classList.toggle('picked', isCur);
   }
 }
 
 function bindWeaponSheet(){
   if(wsBound) return; wsBound=true;
-  // 武器卡區上下滑動（touch + 滑鼠拖曳；上滑＝看下一把，同直式清單直覺）
+  // 武器卡區：上下滑動換卡（上滑＝看下一把，同直式清單直覺）+ 點展示中的卡直選（touch + 滑鼠拖曳）
   const stage=$('wsStage');
   if(stage){
-    let sx=0, sy=0, tracking=false;
-    const THRESH=48;
-    const begin=(x,y)=>{ sx=x; sy=y; tracking=true; };
+    let sx=0, sy=0, tracking=false, swiped=false, moved=0, onBtn=false;
+    const THRESH=48, TAP_SLOP=10;
+    const begin=(x,y,target)=>{ sx=x; sy=y; moved=0; swiped=false; tracking=true;
+      onBtn = !!(target && target.closest && target.closest('button')); };   // 起點在箭頭鈕上 → 抬手不當點卡
     const move=(x,y)=>{
-      if(!tracking) return;
+      if(!tracking||swiped) return;
+      moved=Math.max(moved, Math.hypot(x-sx, y-sy));
       const dx=x-sx, dy=y-sy;
       if(Math.abs(dy)>THRESH && Math.abs(dy)>Math.abs(dx)*1.2){
-        tracking=false;
+        swiped=true;
         wsMove(dy<0 ? +1 : -1);   // 往上滑＝看下一把
       }
     };
-    stage.addEventListener('touchstart',e=>{ const t=e.touches[0]; begin(t.clientX,t.clientY); },{passive:true});
+    // 抬手：整段位移很小（點擊而非滑動）且落在卡疊範圍內 → 直選展示中的武器（含擊發聲）
+    const end=(x,y)=>{
+      const was=tracking; tracking=false;
+      if(!was || swiped || onBtn || moved>TAP_SLOP) return;
+      const r=$('wsDeck').getBoundingClientRect();
+      if(x>=r.left && x<=r.right && y>=r.top && y<=r.bottom){
+        SFX.unlock();
+        selectWeaponAt(wsIndex);
+      }
+    };
+    stage.addEventListener('touchstart',e=>{ const t=e.touches[0]; begin(t.clientX,t.clientY,e.target); },{passive:true});
     stage.addEventListener('touchmove', e=>{ const t=e.touches[0]; move(t.clientX,t.clientY); },{passive:true});
-    stage.addEventListener('touchend', ()=>{ tracking=false; });
+    stage.addEventListener('touchend', e=>{ const t=(e.changedTouches&&e.changedTouches[0])||{}; end(t.clientX,t.clientY); });
     let mDown=false;
-    stage.addEventListener('mousedown',e=>{ mDown=true; begin(e.clientX,e.clientY); });
+    stage.addEventListener('mousedown',e=>{ mDown=true; begin(e.clientX,e.clientY,e.target); });
     stage.addEventListener('mousemove',e=>{ if(mDown) move(e.clientX,e.clientY); });
-    window.addEventListener('mouseup', ()=>{ mDown=false; });
+    window.addEventListener('mouseup', e=>{ if(mDown){ mDown=false; end(e.clientX,e.clientY); } });
   }
-  // 上下箭頭 / 選擇 / 返回
+  // 上下箭頭 / 選擇兼返回
   const bind=(id,fn)=>{
     const el=$(id); if(!el) return;
     let h=false;
@@ -410,15 +465,9 @@ function bindWeaponSheet(){
   bind('wsDown', ()=>wsMove(+1));
   bind('wsSelect', ()=>{
     SFX.menuClick();
-    const key = WEAPON_KEYS[wsIndex];
-    if(key !== state.equippedWeapon){   // 實際切換才播擊發聲（「裝備中」重按不播）
-      state.equippedWeapon = key;       // 反擊武器選即換、立即驅動戰鬥（三段防禦/反擊/視覺）
-      const se = asset(WEAPONS[key].sound); if(se) SFX.play(se, sfxGain(WEAPONS[key].sound));   // 對應武器擊發聲
-      refreshLoadoutLabels();
-    }
-    renderWeaponSheet();
+    selectWeaponAt(wsIndex);   // 展示中尚未裝備 → 按下即選定（含擊發聲）
+    closeWeaponSheet();        // 選擇鈕兼返回：一律關閉畫面回主選單
   });
-  bind('wsClose', ()=>{ SFX.menuClick(); closeWeaponSheet(); });
 }
 
 /* ============================================================================
