@@ -358,15 +358,14 @@ export function openWeaponSheet(){
   buildWeaponDeck();
   bindWeaponSheet();
   renderWeaponSheet();
-  // 切換到武器選單 stinger（Start_01，與出陣共用；已列第一梯關鍵預載 → 即開即響）
-  SFX.play(asset('sfx_start'), sfxGain('sfx_start'));
   $('weaponSheet').classList.add('on');
 }
 export function closeWeaponSheet(){ $('weaponSheet').classList.remove('on'); }
 
 function wsMove(dir){   // dir=+1 下一把 / -1 上一把（循環；上滑＝看下一把）
   wsIndex = (wsIndex + dir + WEAPON_KEYS.length) % WEAPON_KEYS.length;
-  SFX.menuClick();
+  // 換卡 stinger（Start_01，與出陣共用；已列第一梯關鍵預載 → 即切即響）
+  SFX.play(asset('sfx_start'), sfxGain('sfx_start'));
   swingDeck($('wsDeck'), dir);   // 輪轉動畫：整疊往滑動方向擺轉一下
   renderWeaponSheet();
 }
