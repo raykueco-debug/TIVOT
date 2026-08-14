@@ -60,5 +60,5 @@ export const TEL = {
   runEnd(f){ send('run_end', f); },
   originalClick(target){ send('original_click', { result: target }); },
   markAdmin(){ try{ localStorage.setItem(ADMIN_KEY, '1'); }catch(_){} },   // 清盤鈕解鎖時呼叫（main.js）
-  isAdmin,   // 簽名查詢（main.js 開機決定是否顯示後臺鈕）
+  isAdmin,   // 簽名查詢（目前僅內部遙測排除用；後臺鈕顯示只認 body.testmode，不讀此值）
 };

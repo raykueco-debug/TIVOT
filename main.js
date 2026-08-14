@@ -271,9 +271,11 @@ document.querySelectorAll('#originalSheet .os-link').forEach(a=>{
   a.addEventListener('click', ()=>TEL.originalClick(a.textContent.trim()));
 });
 // 後臺統計（管理員限定）：同分頁開 stats.html（新分頁在 iOS PWA 會被丟到外部瀏覽器回不來；
-// stats.html 有「返回主頁」鈕走回 ./）。顯示條件見下（簽名後 CSS 才放行）。
+// stats.html 有「返回主頁」鈕走回 ./）。
+// 顯示條件＝body.testmode（本場清盤鈕手勢解鎖後才出現，重整即隱藏）——嚴格綁定清盤鈕：
+// 沒看到清盤鈕就不會看到後臺鈕，一般使用者無從誤入。裝置的永久簽名（localStorage）
+// 只作遙測排除，不再於開機時直接顯示後臺鈕；已簽裝置要進後臺，每場重做解鎖手勢即可。
 bindBtn('statsBtn', ()=>{ window.location.href = 'stats.html'; });
-if(TEL.isAdmin()) document.body.classList.add('adminsigned');   // 裝置已簽過 → 開機即顯示後臺鈕
 weapon.refreshLoadoutLabels();                  // 開機：把當前副武器/搭檔名寫進 loadout 按鈕
 TEL.visit();                                    // 來訪上報（每次開頁一筆）
 { const v=$('homeVersion'); if(v) v.textContent=VERSION; }   // 首頁版本號（config.VERSION）

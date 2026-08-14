@@ -871,9 +871,10 @@
     border:1px solid var(--gold-dim);border-radius:20px;color:var(--gold-dim);
     font-family:inherit;font-size:11px;letter-spacing:2px;flex:none;}
   #home #creditBtn:active, #home #originalBtn:active, #home #statsBtn:active{transform:scale(.95);color:var(--gold);border-color:var(--gold);}
-  /* 後臺統計鈕（管理員限定）：清盤鈕手勢簽名後才顯示——本場解鎖（testmode）或裝置已簽過（adminsigned） */
+  /* 後臺統計鈕（管理員限定）：嚴格綁定清盤鈕——只認本場手勢解鎖（body.testmode），
+     重整即隱藏。裝置永久簽名只作遙測排除，不單獨顯示此鈕。 */
   #home #statsBtn{display:none;}
-  body.testmode #home #statsBtn, body.adminsigned #home #statsBtn{display:block;}
+  body.testmode #home #statsBtn{display:block;}
   /* 版權：強制換行獨占一行（flex-basis:100%），置中、單行 */
   #home .home-copyright{flex:0 0 100%;text-align:center;margin-top:2px;
     font-size:9.5px;letter-spacing:.5px;color:var(--gold-dim);
