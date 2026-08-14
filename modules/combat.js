@@ -762,6 +762,7 @@ export function goHome(){
     state.cutinPlaying=false;                 // 清掉可能的暫停旗標（退出確認用）
     $('banner').classList.remove('on'); $('banner').classList.remove('lose');
     $('transition').classList.remove('on');
+    const sr=$('sentouReward'); if(sr) sr.classList.remove('on','done');   // 銭湯獎勵層：黑幕全蓋後才收（見 inspector）
     $('home').classList.add('on');
     SFX.playBgm(asset('bgm_home'), { volume: bgmVol('bgm_home') });           // 主選單 BGM
   }, 1400);

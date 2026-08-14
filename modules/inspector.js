@@ -305,7 +305,7 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose){
  *  「銭湯」＋「INSTALL」，逐字由左往右「寫」出）→ 寫完ツケ板（拍子木）兩聲 → 顯示返回提示，
  *  點畫面任意處回首頁。演出中（done 前）點擊無效，避免誤觸跳過。
  * ========================================================================== */
-let _sentouTimer=null, _sentouBound=false;
+let _sentouTimer=null, _sentouBannerTimer=null, _sentouBound=false, _sentouLeaving=false;
 function openSentouReward(){
   const ov=$('sentouReward');
   if(!ov) return;
@@ -332,14 +332,18 @@ function openSentouReward(){
   if(!_sentouBound){
     _sentouBound=true;
     ov.addEventListener('click', ()=>{
-      if(!ov.classList.contains('done')) return;   // 寫完+響板前不可離開
-      ov.classList.remove('on','done');
-      api.goHome();
+      if(!ov.classList.contains('done') || _sentouLeaving) return;   // 寫完+響板前不可離開；防連點重入
+      _sentouLeaving=true;
+      api.goHome();   // 獎勵畫面續留原地，待 goHome 黑幕全蓋後（mid）才收——立即收會露出底下戰鬥畫面
     });
   }
+  _sentouLeaving=false;
   ov.classList.remove('done');
   ov.classList.add('on');
-  $('banner').classList.remove('on');   // 收結算畫面（獎勵層在上，直接收乾淨）
+  // 收結算畫面：待獎勵層淡入（sentouIn .8s）完全遮蓋後才收。
+  // 立即收會在淡入期間透出底下凍結的戰鬥畫面（banner 之下即戰場）。
+  clearTimeout(_sentouBannerTimer);
+  _sentouBannerTimer=setTimeout(()=>{ $('banner').classList.remove('on'); }, 850);
   clearTimeout(_sentouTimer);
   _sentouTimer=setTimeout(()=>{
     SFX.tsuke();                // 寫完 → ツケ板兩聲（チョン、チョン）
