@@ -571,6 +571,9 @@ let overkillTimer=null;
 function enterOverkillFx(){
   $('grid').classList.add('overkill');            // 數字藍光（見 style.css #grid.overkill）
   SFX.play(asset('sfx_startbt'), sfxGain('sfx_startbt'));   // 神楽鈴（StartBT_SE，擊殺這一槍；之後每槍由 enemyDamage 補鈴）
+  // 雙槍窗口與敵同亡：殺敵瞬間收窗（endDual 於敵死不重建盤面），追打統一走 overkill 免順序。
+  //   否則雙槍 4 秒計時器晚點到期會 buildGrid 憑空生出一整盤新 overkill 盤。
+  if(state.dualWield) weapon.endDual();
   state.cells.forEach(c=>c.classList.remove('next'));   // 免順序（含聖徒化追打）→ 撤下「下一格」高亮
   if(state.saintMode) return;   // 聖徒化：3 秒限時不套（由倒數槽/反應時限施壓），saintTap 走免順序分支
   clearTimeout(overkillTimer);

@@ -145,12 +145,15 @@ export function startDualWindow(){
   state.dualTimer=setTimeout(endDual, DUAL_SECONDS*1000);
 }
 
-// 窗口收尾（4 秒到期或清盤結束呼叫）：清旗標/計時器、移 class；盤面點一半則重建、否則重標下一格。
+// 窗口收尾（4 秒到期、清盤結束或敵死瞬間呼叫）：清旗標/計時器、移 class；
+// 盤面點一半則重建、否則重標下一格。冪等（重複呼叫無害）。
+// ⚠ 敵死（enemyHp<=0＝overkill 窗口）不重建也不標記——重建會在敵已清空時
+//   憑空冒出一整盤新 overkill 盤面；殘盤保留原樣交給 overkill 免順序追打收尾。
 export function endDual(){
   state.dualWield=false;
   clearTimeout(state.dualTimer); state.dualTimer=null;
   $('grid').classList.remove('dualwield');
-  if(!state.over && !state.saintMode){
+  if(!state.over && !state.saintMode && state.enemyHp>0){
     const cells=state.cells;
     if(cells.some(c=>c.classList.contains('done')) && !cells.every(c=>c.classList.contains('done'))){
       api.buildGrid();     // 點了一半 → 重建整盤（回到普攻依序點）
