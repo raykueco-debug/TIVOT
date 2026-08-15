@@ -317,13 +317,21 @@ function applyTutorialResult(){
   if(rbtn) rbtn.textContent = tr.buttonLabel || '回到主畫面';
   // ⚠ 用 tutorialLifeReturn 而非 partnerActiveUsed：蕾妮主動技無 oncePerBattle，後者不會被設
   const line1 = state.tutorialLifeReturn ? tr.usedLifeReturn : tr.noLifeReturn;
-  const full = [line1, tr.outro].filter(Boolean).join('\n');   // insp-line 為 pre-line：換行顯示
   const bubble=$('inspectorBubble'), lineEl=$('inspectorLine');
   clearTimeout(_inspTypeTimer);
   if(lineEl) lineEl.textContent='';
+  // 兩次對話框：第一句打完停一拍 → 對話框重彈（re-pop）→ 第二句（聖徒化豪賭 outro）
   setTimeout(()=>{
     if(bubble) bubble.classList.add('show');
-    if(lineEl) typeInspectorLine(lineEl, full, 3600);
+    if(lineEl) typeInspectorLine(lineEl, line1 || '', 2000);
+    if(tr.outro){
+      setTimeout(()=>{
+        if(state.resultMode!=='tutorial-home') return;   // 已按鈕離場（buttonLine 播放中）則讓位
+        if(bubble){ bubble.classList.remove('show'); void bubble.offsetWidth; bubble.classList.add('show'); }
+        clearTimeout(_inspTypeTimer);
+        if(lineEl) typeInspectorLine(lineEl, tr.outro, 2000);
+      }, 2000 + 1300);
+    }
   }, 1400);
 }
 

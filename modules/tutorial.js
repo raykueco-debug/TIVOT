@@ -328,8 +328,15 @@ function closeDialog(resume, silent){
     setTimeout(()=>{ if(!state.tutorialDialog) wrap.classList.remove('on'); }, 500);
   }
   if(resume){
-    api.resumeFromDialog();
-    if(!silent && id) onStepClosed(id);
+    const finish=()=>{
+      api.resumeFromDialog();
+      if(!silent && id && state.tutorialActive) onStepClosed(id);
+    };
+    if(silent){ finish(); }   // 閘門/跳過路徑：同步續戰（action 需緊接執行）
+    else{
+      // 一般收段：等立繪滑出完成才恢復操作（撤開才可點擊盤面/紅點；期間維持暫停）
+      setTimeout(()=>{ if(!state.tutorialDialog) finish(); }, 480);
+    }
   }
 }
 
@@ -371,10 +378,11 @@ function showGuide(type){
     x = 42;
     y = tr.top + tr.height*0.45;
   }else{
-    // 畫面下方由下往上指、標示向上滑動
+    // 敵人框內由下往上指（生命歸還手勢區）、標示向上滑動；偏左 1/4 處——蕾妮立繪在右側不被壓
+    const tr=$('top') ? $('top').getBoundingClientRect() : {left:0,top:0,width:innerWidth,height:innerHeight/2};
     dir='g-up'; label = labels.up || '向上滑動';
-    x = innerWidth/2;
-    y = innerHeight*0.60;
+    x = tr.left + tr.width*0.26;
+    y = tr.top + tr.height*0.52;
   }
   g.classList.add(dir);
   g.style.left = x+'px';

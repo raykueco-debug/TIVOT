@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於首頁版權宣告下方，每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.15-49';
+export const VERSION = 'ver 2026.08.15-50';
 
 export const GAME_CONFIG = {
 
@@ -212,12 +212,13 @@ export const GAME_CONFIG = {
     enemyAtkDamage: 2,     // 敵方所有攻擊（大絕/按錯/延時）基礎傷害一律此值；Defense 格擋再減半（=1）
     noUltBoards: 1,        // 前 N 盤敵人不發動大絕（第一盤純練清盤，第二盤起反擊教學）
     enemyHp: 800,          // 教學戰敵人血量覆寫：撐到腳本終盤（雙槍→三爪→聖徒化）都不會被提前打死
-    preFullEnergy: 99,     // 第二盤清盤時破防值設為此值（差 1 滿）；此前破防值也封頂於此
+    preFullEnergy: 90,     // 第二回合清盤時破防值設為此值（＝100−5 擊×energyPerHit(2)：
+                           //   第三回合點 5 個數字後才滿、滿了才跳蕾妮引導）；此前破防值也封頂於此
     finishEnemyHp: 60,     // 聖徒化結束後敵殘血上限：保證玩家「本盤」就能殺進 overkill 結束戰鬥
     // 教學期間大絕紅點的生成範圍（%），避開左右立繪與下方對話框——只在中央帶出現。
     //   first＝反擊教學第一顆紅點的固定位置（畫面正中偏上，凍結講解時不壓立繪）；
     //   教學全程一次只出一顆（有紅點在場時暫緩下一發，見 tutorial.ultSuppressed）。
-    threatSpawn: { leftMin:38, leftMax:62, topMin:25, topMax:55, first:{ left:50, top:30 } },
+    threatSpawn: { leftMin:38, leftMax:62, topMin:25, topMax:55, first:{ left:50, top:18 } },
     // 第四回合劇情殺（聖徒化前導）：玩家清滿 afterCells 格 → 監察官「小心！」→
     //   分三次擊倒（gapMs 間隔）；kinds 對應該敵 hitFx 三種受擊畫面（第二次＝三爪 ult）。
     //   dmg 為真實傷害（劇情殺不受 enemyAtkDamage=2 管制）；末段必致死 → 即死防禦保 1 HP。
@@ -263,7 +264,7 @@ export const GAME_CONFIG = {
       //   太早＝格擋（仍受一半傷害）；時機正確＝完美防禦（免傷）
       { trigger:'threat', lines:[
         { who:'partner',   text:'光圈會越縮越小——太早出手只能「擋下」，還是會受到一半傷害！' },
-        { who:'partner',   text:'等光圈收得夠小、時機正確，才能「完美防禦」，完全不受傷！' },
+        { who:'partner',   text:'等光圈收得夠小、時機正確，才能「完美防禦」，不受損傷！' },
         { who:'inspector', text:'防住給我看。' },
       ]},
       // 首次成功防下攻擊（點掉紅點）之後：反擊與副武器說明。
