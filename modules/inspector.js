@@ -328,14 +328,17 @@ function applyTutorialResult(){
       setTimeout(()=>{
         if(state.resultMode!=='tutorial-home') return;   // 已按鈕離場（buttonLine 播放中）則讓位
         if(lineEl) lineEl.textContent += '　▼';          // 待點提示
+        // ⚠ 監聽掛在 #inspectorStage：#inspectorBubble 是 pointer-events:none（結算慣例），
+        //   真實點擊會穿透對話框落在立繪/舞台上，再冒泡到 stage——掛 bubble 永遠收不到。
+        const stage=$('inspectorStage') || bubble;
         const onTap=()=>{
-          bubble.removeEventListener('pointerup', onTap);
+          stage.removeEventListener('pointerup', onTap);
           if(state.resultMode!=='tutorial-home') return;
           bubble.classList.remove('show'); void bubble.offsetWidth; bubble.classList.add('show');
           clearTimeout(_inspTypeTimer);
           if(lineEl) typeInspectorLine(lineEl, tr.outro, 2000);
         };
-        bubble.addEventListener('pointerup', onTap);
+        stage.addEventListener('pointerup', onTap);
       }, 2100);
     }
   }, 1400);
