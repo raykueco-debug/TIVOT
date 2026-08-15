@@ -143,7 +143,8 @@ export function startDualWindow(){
   $('grid').classList.add('dualwield');
   api.markNext();
   clearTimeout(state.dualTimer);
-  state.dualTimer=setTimeout(endDual, DUAL_SECONDS*1000);
+  // 教學：引導式雙槍破防不限時（清完盤才收窗）——玩家可邊讀提示邊打，不會窗口過期
+  if(!state.tutorialActive) state.dualTimer=setTimeout(endDual, DUAL_SECONDS*1000);
 }
 
 // 窗口收尾（4 秒到期、清盤結束或敵死瞬間呼叫）：清旗標/計時器、移 class；

@@ -1,16 +1,22 @@
 /* ============================================================================
- *  modules/tutorial.js — 教學關卡（首次出陣的穿插式對話教學）
+ *  modules/tutorial.js — 教學關卡（首次出陣的穿插式對話教學＋腳本化終盤）
  *  ---------------------------------------------------------------------------
  *  職責：首次判定（localStorage）、對話步驟依戰鬥節點觸發、監察官/搭檔立繪
- *    自左右移入與「說話者原色、非說話者調暗」、打字機對話框、跳過鈕。
- *  對話插入期間＝真暫停：走 combat 注入的 pauseForDialog / resumeFromDialog
- *    （既有 cutinPlaying 機制：鎖盤面點擊/延時懲罰/敵大絕生成與釋放/紅點反擊、
- *     凍結攻擊圈縮放與計時碼表），本模組不自行碰任何戰鬥計時器。
- *  內容資料一律讀 GAME_CONFIG.tutorial（台詞/角色/觸發節點/速度），不寫死。
+ *    自左右移入與「說話者原色、非說話者調暗」、打字機對話框、跳過鈕、
+ *    罵人插話（按錯/延時）、以及腳本化終盤流程：
+ *      第三盤破防值滿 → 暫停＋箭頭引導點計量表 → 雙槍破防 → 清盤
+ *      → 第四盤三爪即死 → 即死防禦 → 箭頭引導右滑聖徒化
+ *      → MB 過關 or 臨界（99）攔截引導上滑生命歸還 → 收尾殺敵 → 教學專屬結算。
+ *    引導閘門（gate）期間遊戲暫停，玩家完成指定操作（點擊/滑動）才繼續。
  *
- *  狀態擁有者：3.9（tutorialActive / tutorialDialog）。
- *  依賴：state / config / audio；combat 原語經 init 注入（維持 §2 依賴方向：
- *    combat 為協調者 import 本模組；defense 的首紅點通知經 combat 注入轉交）。
+ *  對話插入期間＝真暫停：走 combat 注入的 pauseForDialog / resumeFromDialog
+ *    （cutinPlaying 機制：鎖盤面點擊/延時懲罰/敵大絕生成與釋放/紅點反擊、
+ *     凍結攻擊圈與計時碼表；聖徒化倒數槽亦凍結，見 saint.js）。
+ *  內容資料一律讀 GAME_CONFIG.tutorial（台詞/腳本/參數），不寫死。
+ *
+ *  狀態擁有者：3.9（tutorialActive / tutorialDialog / tutorialRun）。
+ *  依賴：state / config / audio；combat/weapon/saint/partner 原語一律經 init 注入
+ *    （維持 §2 依賴方向：combat 為協調者 import 本模組並轉交所需原語）。
  * ========================================================================== */
 
 import { GAME_CONFIG, asset } from '../config.js';
@@ -20,7 +26,13 @@ import { SFX } from '../audio.js';
 const $ = id => document.getElementById(id);
 const CFG = () => GAME_CONFIG.tutorial;
 
-// combat 於啟動時注入：{ pauseForDialog, resumeFromDialog }
+/* combat 於啟動時注入：
+ *   pauseForDialog / resumeFromDialog — 真暫停/續戰
+ *   activateDual    — weapon：發動雙槍破防（引導點擊計量表後呼叫）
+ *   activateSaint   — saint：發動聖徒化（引導右滑後呼叫）
+ *   tryPartnerActive— partner：主動技統一入口（引導上滑 → 生命歸還）
+ *   lethalStrike    — combat：三爪重擊腳本（致死 → 即死防禦保 1 HP）
+ *   capEnemyHp      — combat：敵殘血封頂（聖徒化收尾保證本盤能殺完）      */
 let api = {};
 export function init(a){ api = a; bindUI(); }
 
@@ -29,13 +41,19 @@ let queue = [];                // 對話中被觸發的步驟 → 當前段講�
 let cur = null, lineIdx = 0;   // 進行中的步驟與台詞游標
 let typeTimer = null;          // 打字機計時器
 let startTimer = null;         // battleStart 延遲計時器
+let pendingGate = null;        // 當前段落講完後要進入的引導閘門
+let gate = null;               // 進行中的閘門 {type:'click'|'right'|'up', action, after}
+let defendedDone = false;      // 首次防禦成功已發生（罵人停用、延時懲罰恢復）
+let dualGuideDone = false;     // 雙槍引導已觸發（破防值封頂解除）
+let saintCritFired = false;    // 聖徒化臨界攔截已觸發（saintFail 只出一次）
+let cutinWaiters = [];         // afterCutin 輪詢計時器（teardown 清理）
 
 /* ---- 首次判定（localStorage 不可用時視為未看過：寧可多教，不漏教）---- */
 function hasSeen(){ try{ return localStorage.getItem(CFG().storageKey)==='1'; }catch(e){ return false; } }
 function markSeen(){ try{ localStorage.setItem(CFG().storageKey,'1'); }catch(e){} }
 
 /* ============================================================================
- *  進場/節點掛鉤（combat 於對應時點呼叫）
+ *  進場/節點掛鉤（combat / defense / saint 經協調者呼叫）
  * ========================================================================== */
 // startGame 於首盤載入後呼叫：首次（未看過）才啟動教學
 export function maybeStart(){
@@ -43,8 +61,12 @@ export function maybeStart(){
   if(!cfg || !cfg.steps || !cfg.steps.length) return;
   if(hasSeen() || state.tutorialActive) return;
   state.tutorialActive = true;
+  state.tutorialRun = true;         // 存續到結算（inspector 據此切教學專屬台詞/按鈕）
+  state.tutorialLifeReturn = false;
   stepsLeft = cfg.steps.slice();
   queue = [];
+  defendedDone = dualGuideDone = saintCritFired = false;
+  pendingGate = null; gate = null;
   const sk=$('tutSkipBtn'); if(sk) sk.classList.add('on');
   clearTimeout(startTimer);
   startTimer = setTimeout(()=>fire('battleStart'), cfg.startDelayMs||700);
@@ -54,26 +76,71 @@ export function onBoardLoaded(idx){ fire('board:'+idx); }
 // defense.spawnThreat 生成紅點時經注入呼叫 → 觸發 'threat' 步驟（紅點凍結於畫面講解）
 export function onThreatSpawned(){ fire('threat'); }
 // defense.resolveThreat 成功點掉紅點（Defense/Perfect/Counter 任一）→ 'defended' 步驟
-//   （首次防禦成功後的反擊/副武器說明；步驟消耗一次，之後為 no-op）
-export function onThreatResolved(){ fire('defended'); }
-// combat 於「按錯 / 延時懲罰」時呼叫 → 監察官跳出來罵人（隨機一句、可重複觸發，
-//   不佔 steps；懲罰傷害先落地才插話，罵完點擊即續戰）
+export function onThreatResolved(){
+  defendedDone = true;    // 防禦成功：延時懲罰恢復、罵人停用（「第二盤結束前不再跳任何提示」）
+  fire('defended');
+}
+// combat 於「按錯 / 延時懲罰」時呼叫 → 監察官罵人（defended 之後不再插話）
 export function onMistake(kind){
-  if(!state.tutorialActive || state.tutorialDialog || state.over) return;
+  if(!state.tutorialActive || state.tutorialDialog || state.over || defendedDone) return;
   const pool = (CFG().scold||{})[kind];
   if(!pool || !pool.length) return;
   const text = pool[Math.random()*pool.length|0];
   openStep({ lines:[{ who:'inspector', text }] });
 }
+// combat 延時懲罰前詢問：第二盤在首次防禦成功前不套延時懲罰
+export function delayPenaltySuppressed(){
+  return state.tutorialActive && state.boardIndex===1 && !defendedDone;
+}
+// combat.addEnergy 詢問：雙槍引導前破防值封頂（preFullEnergy），第三盤放行
+export function energyCapActive(){
+  return state.tutorialActive && !dualGuideDone && state.boardIndex<2;
+}
+// combat.addEnergy 於破防值滿的瞬間呼叫 → 雙槍引導（暫停＋箭頭指向計量表）
+export function onEnergyFull(){
+  if(!state.tutorialActive || dualGuideDone) return;
+  dualGuideDone = true;
+  // 反擊/防禦教學若還沒觸發（玩家一路沒防禦），至此已無意義 → 撤下殘餘步驟
+  stepsLeft = stepsLeft.filter(s=>s.trigger!=='threat' && s.trigger!=='defended');
+  openScript('dualReady', { gate:{
+    type:'click',
+    action: ()=>api.activateDual(),
+    after:  ()=>afterCutin(()=>openScript('dualGo')),
+  }});
+}
+// saint.saintAdvance 於倒數槽推至臨界（滿-1）時呼叫 → 生命歸還引導（不進 OBE）
+export function onSaintCritical(){
+  if(!state.tutorialActive || saintCritFired) return;
+  saintCritFired = true;
+  openScript('saintFail', { gate:{
+    type:'up',
+    action: ()=>api.tryPartnerActive('saint'),
+  }});
+}
+// saint 結局掛鉤：'mb'＝Maximum Burst（未擊殺）、'return'＝生命歸還。
+//   cut-in 結束後：敵殘血封頂（保證本盤殺得完）→ 收尾台詞 → 教學完成（記已看）。
+export function onSaintEnded(kind){
+  if(!state.tutorialActive) return;
+  if(kind!=='mb' && kind!=='return') return;
+  if(kind==='return') state.tutorialLifeReturn = true;   // 結算台詞分歧：發動過生命歸還
+  afterCutin(()=>{
+    if(!state.tutorialActive) return;
+    api.capEnemyHp(CFG().finishEnemyHp);
+    markSeen();
+    openScript(kind==='mb' ? 'finishMB' : 'finishLR');
+  });
+}
 
+/* ============================================================================
+ *  步驟觸發 / 腳本段落
+ * ========================================================================== */
 function fire(trigger){
   if(!state.tutorialActive) return;
   const i = stepsLeft.findIndex(s=>s.trigger===trigger);
   if(i<0) return;
   const step = stepsLeft.splice(i,1)[0];
   if(state.tutorialDialog){ queue.push(step); return; }   // 對話中觸發 → 排隊接續播
-  // 開場白尚未插入（startDelayMs 未到）就被其他節點搶先（開場保證大絕可在 3 秒內生成）
-  //   → 先講開場白，把該節點排入佇列接續，維持敘事順序。
+  // 開場白尚未插入（startDelayMs 未到）就被其他節點搶先 → 先講開場白，該節點排隊
   if(trigger!=='battleStart' && startTimer){
     clearTimeout(startTimer); startTimer=null;
     const bi = stepsLeft.findIndex(s=>s.trigger==='battleStart');
@@ -87,8 +154,48 @@ function fire(trigger){
   openStep(step);
 }
 
+// 腳本段落（config.tutorial.script[key]）：由內部流程觸發，不走 steps 的 trigger。
+//   opts.gate＝段落講完後進入的引導閘門（完成指定操作才續戰）。
+function openScript(key, opts){
+  if(!state.tutorialActive) return;
+  const lines = (CFG().script||{})[key];
+  if(!lines || !lines.length) return;
+  pendingGate = (opts && opts.gate) || null;
+  openStep({ key, lines });
+}
+
+// 段落收掉後的腳本接續（closeDialog 於 resume 時呼叫；skip/abort 走 silent 不觸發）
+function onStepClosed(id){
+  if(id==='board:3'){
+    // 「小心！」收段 → 三爪重擊（致死 → 即死防禦保 1 HP）→ cut-in 結束後聖徒化引導
+    api.lethalStrike();
+    afterCutin(()=>openScript('saintCall', { gate:{
+      type:'right',
+      action: ()=>api.activateSaint('right'),
+      after:  ()=>afterCutin(()=>openScript('saintStart')),
+    }}));
+    return;
+  }
+  if(id==='finishMB' || id==='finishLR'){
+    endTutorial();    // 教學段落全數結束（tutorialRun 續留給結算；戰鬥交還玩家收尾）
+  }
+}
+
+/* 等待當前 cut-in 演出結束再執行 fn：輪詢 cutinPlaying 的 true→false 邊緣；
+ * 若 2.5 秒內從未見到演出（如無即死防禦搭檔的退化路徑），逾時直接執行。 */
+function afterCutin(fn){
+  const t0 = Date.now();
+  let saw = state.cutinPlaying;
+  const iv = setInterval(()=>{
+    if(!state.tutorialActive){ clearInterval(iv); return; }
+    if(state.cutinPlaying){ saw = true; return; }
+    if(saw || Date.now()-t0>2500){ clearInterval(iv); fn(); }
+  }, 120);
+  cutinWaiters.push(iv);
+}
+
 /* ============================================================================
- *  對話段：開啟（真暫停+立繪移入）→ 逐句 → 關閉（立繪退場+續戰）
+ *  對話段：開啟（真暫停+立繪移入）→ 逐句 → 閘門或關閉（立繪退場+續戰）
  * ========================================================================== */
 function castOf(who){ return (CFG().cast||{})[who] || {}; }
 function portraitEl(c){ return c.side==='right' ? $('tutCastR') : $('tutCastL'); }
@@ -109,7 +216,6 @@ function openStep(step){
   state.tutorialDialog = true;
   api.pauseForDialog();                          // 真暫停：同退出確認框的機制
   document.body.classList.add('dlg-pause');      // 凍結底層警戒脈動（防 iOS 合成假影）
-  // 立繪掛圖（左右各一位；side/圖片鑰匙讀 cast 設定）
   const cast = CFG().cast || {};
   const baseH = CFG().portraitHeightPct || 88;
   for(const key of Object.keys(cast)){
@@ -125,7 +231,8 @@ function openStep(step){
   if(touch) touch.classList.add('on');
   if(wrap){
     wrap.classList.add('on');
-    requestAnimationFrame(()=>requestAnimationFrame(()=>syncCast(step)));   // 兩幀後起滑（確保初始位已繪）
+    // 起滑延遲用 setTimeout（非 rAF）：隱藏分頁 rAF 不執行，會漏掉立繪進場
+    setTimeout(()=>{ if(state.tutorialDialog && cur===step) syncCast(step); }, 30);
   }
   showLine();
 }
@@ -156,9 +263,9 @@ function showLine(){
   }, CFG().lineTypeMs||30);
 }
 
-// 點擊推進：打字中→先跳完整句；打完→下一句；最後一句→收段續戰
+// 點擊推進：打字中→先跳完整句；打完→下一句；最後一句→進閘門或收段續戰
 function advance(){
-  if(!state.tutorialDialog || !cur) return;
+  if(!state.tutorialDialog || !cur || gate) return;   // 閘門中不推進台詞
   SFX.unlock(); SFX.menuClick();
   if(typeTimer){
     clearInterval(typeTimer); typeTimer=null;
@@ -169,15 +276,18 @@ function advance(){
   }
   lineIdx++;
   if(lineIdx < cur.lines.length){ showLine(); return; }
-  if(queue.length){ cur=queue.shift(); lineIdx=0; syncCast(cur); showLine(); return; }   // 接續段：維持暫停、在場立繪差異更新
+  if(pendingGate){ enterGate(pendingGate); pendingGate=null; return; }   // 講完 → 進引導閘門（維持暫停）
+  if(queue.length){ cur=queue.shift(); lineIdx=0; syncCast(cur); showLine(); return; }   // 接續段：在場立繪差異更新
   closeDialog(true);
 }
 
-/* 收掉對話層。resume=true → 解除暫停續戰，且步驟播罄時結束教學（記已看）；
- * resume=false → 只撤 UI（goHome/勝負/重開場等呼叫端已接管流程，不記已看）。 */
-function closeDialog(resume){
+/* 收掉對話層。resume=true → 解除暫停續戰並跑腳本接續（onStepClosed）；
+ * silent=true（skip/abort）→ 只撤 UI、不觸發任何腳本接續。 */
+function closeDialog(resume, silent){
+  const id = cur && (cur.key || cur.trigger);
   cur=null; lineIdx=0;
   clearInterval(typeTimer); typeTimer=null;
+  pendingGate=null; gate=null; hideGuide();
   state.tutorialDialog=false;
   if(!document.getElementById('exitConfirm')) document.body.classList.remove('dlg-pause');
   const wrap=$('tutCast'), touch=$('tutTouch');
@@ -189,45 +299,124 @@ function closeDialog(resume){
   }
   if(resume){
     api.resumeFromDialog();
-    if(!stepsLeft.length && !queue.length) complete();   // 全部講完＝教學自然結束
+    if(!silent && id) onStepClosed(id);
   }
 }
 
-function complete(){ markSeen(); endTutorial(); }
+/* ============================================================================
+ *  引導閘門（gate）：段落講完後維持暫停，完成指定操作才續戰
+ *    click＝點破防計量表（#energyClasp 附近）；right＝向右滑；up＝向上滑。
+ *  完成 → 續戰（closeDialog）→ 同步執行 gate.action（activateDual/activateSaint/
+ *  tryPartnerActive；resume 與 action 同一 tick，凍結中的計時器來不及先動）。
+ * ========================================================================== */
+function enterGate(g){
+  gate = g;
+  showGuide(g.type);
+}
+function completeGate(){
+  const g = gate; gate = null;
+  hideGuide();
+  SFX.unlock(); SFX.menuClick();
+  closeDialog(true, true);   // silent：閘門段落的接續由 g.after 負責，不走 onStepClosed
+  if(g.action) g.action();
+  if(g.after) g.after();
+}
+
+/* ---- 引導箭頭（雪鐵龍雙箭羽依次閃滅）＋文字標示 ---- */
+function showGuide(type){
+  const g=$('tutGuide'); if(!g) return;
+  const labels = CFG().guideLabels || {};
+  g.classList.remove('g-down','g-right','g-up');
+  let x=innerWidth/2, y=innerHeight/2, dir='g-right', label='';
+  if(type==='click'){
+    // 破防計量表上方，箭頭向下指、標示 CLICK！
+    const r=$('energyClasp') ? $('energyClasp').getBoundingClientRect() : {left:20,top:innerHeight/2,width:24};
+    dir='g-down'; label = labels.click || 'CLICK！';
+    x = r.left + r.width/2 + 8;
+    y = r.top - 52;
+  }else if(type==='right'){
+    // 畫面左側往右閃、標示向右側滑動
+    const tr=$('top') ? $('top').getBoundingClientRect() : {top:0,height:innerHeight/2};
+    dir='g-right'; label = labels.right || '向右側滑動';
+    x = 86;
+    y = tr.top + tr.height*0.45;
+  }else{
+    // 畫面下方由下往上指、標示向上滑動
+    dir='g-up'; label = labels.up || '向上滑動';
+    x = innerWidth/2;
+    y = innerHeight*0.60;
+  }
+  g.classList.add(dir);
+  g.style.left = x+'px';
+  g.style.top  = y+'px';
+  const lb=g.querySelector('.tg-label'); if(lb) lb.textContent = label;
+  g.classList.add('on');
+}
+function hideGuide(){ const g=$('tutGuide'); if(g) g.classList.remove('on'); }
+
+function inClaspArea(x,y){
+  const el=$('energyClasp'); if(!el) return false;
+  const r=el.getBoundingClientRect(), pad=26;
+  return x>=r.left-pad && x<=r.right+pad && y>=r.top-pad && y<=r.bottom+pad;
+}
+
 function endTutorial(){
   state.tutorialActive=false;
   clearTimeout(startTimer); startTimer=null;
-  stepsLeft=[]; queue=[];
+  cutinWaiters.forEach(iv=>clearInterval(iv)); cutinWaiters=[];
+  stepsLeft=[]; queue=[]; pendingGate=null; gate=null;
+  hideGuide();
   const sk=$('tutSkipBtn'); if(sk) sk.classList.remove('on');
 }
 
 /* ============================================================================
  *  跳過 / 中止
  * ========================================================================== */
-// 跳過鈕：記為已看，當場無縫轉正常戰鬥（對話中按下＝收窗並解除暫停，同場繼續）
+// 跳過鈕：記為已看，當場無縫轉正常戰鬥（對話/閘門中按下＝收窗解除暫停，同場繼續）。
+//   教學規則一併解除：敵殘血封頂回該敵 config 血量、tutorialRun 歸零（結算走一般流程）。
 export function skip(){
   if(!state.tutorialActive) return;
   markSeen();
-  if(state.tutorialDialog) closeDialog(true);
+  if(state.tutorialDialog) closeDialog(true, true);   // silent：不觸發腳本接續
   endTutorial();
+  const en = GAME_CONFIG.enemies[state.currentEnemyKey];
+  if(en && api.capEnemyHp) api.capEnemyHp(en.hp);     // 教學覆寫的高血量收回正常值
+  state.tutorialRun = false;                          // 結算/連戰恢復一般規則
 }
 // 中止（combat.stopAll 調度：goHome/勝負/重開場）：只撤 UI、不記已看——
-// 中途退出的話，下次出陣仍會重新進教學（skip 才算看過）。
+// 中途退出的話，下次出陣仍會重新進教學（skip 或走到終盤才算看過）。
 export function abort(){
   if(!state.tutorialActive && !state.tutorialDialog) return;
-  if(state.tutorialDialog) closeDialog(false);
+  if(state.tutorialDialog) closeDialog(false, true);
   endTutorial();
 }
 
 /* ============================================================================
- *  UI 綁定（touch/click 去重，同 main.js bindBtn 慣例）
+ *  UI 綁定：tutTouch 走 pointer 事件（點擊推進台詞；閘門期間改判定指定操作）
  * ========================================================================== */
 function bindUI(){
   const touch=$('tutTouch');
   if(touch){
-    let h=false;
-    touch.addEventListener('touchstart',e=>{e.preventDefault();h=true;advance();},{passive:false});
-    touch.addEventListener('click',()=>{ if(h){h=false;return;} advance(); });
+    let ptr=null;   // {x,y,moved}
+    touch.addEventListener('pointerdown', e=>{ ptr={x:e.clientX, y:e.clientY, moved:false}; });
+    touch.addEventListener('pointermove', e=>{
+      if(!ptr) return;
+      const dx=e.clientX-ptr.x, dy=e.clientY-ptr.y;
+      if(Math.hypot(dx,dy)>10) ptr.moved=true;
+      if(!gate) return;
+      if(gate.type==='right' && dx>70 && dx>Math.abs(dy)){ ptr=null; completeGate(); }
+      else if(gate.type==='up' && -dy>70 && -dy>Math.abs(dx)){ ptr=null; completeGate(); }
+    });
+    touch.addEventListener('pointerup', e=>{
+      const p=ptr; ptr=null;
+      if(gate){
+        // 點擊閘門：落點在破防計量表附近才算（其餘點擊無效，遊戲不繼續）
+        if(gate.type==='click' && p && !p.moved && inClaspArea(e.clientX, e.clientY)) completeGate();
+        return;
+      }
+      advance();
+    });
+    touch.addEventListener('pointercancel', ()=>{ ptr=null; });
   }
   const sk=$('tutSkipBtn');
   if(sk){

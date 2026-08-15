@@ -128,6 +128,10 @@ export const state = {
    *    main.js 退出確認據此放行（暫停中仍可按退出）並讓位（關閉確認框不解除教學暫停）。 */
   tutorialActive: false,
   tutorialDialog: false,
+  tutorialRun: false,    // 本場為教學戰（maybeStart 設 true、combat.startGame 歸零）：
+                         //   與 tutorialActive 不同——存續到結算，inspector 據此切教學專屬台詞/按鈕
+  tutorialLifeReturn: false,   // 教學戰中發動過生命歸還（結算台詞分歧用；同 tutorialRun 存續到結算）。
+                               //   ⚠ 不可用 partnerActiveUsed 判斷——蕾妮主動技無 oncePerBattle，該旗標不會被設
 
   /* ── UI 閘門（跨模組共享的演出鎖；擁有者：播演出的模組） ──────────
    *  cutinPlaying：cut-in／結局演出期間鎖住盤面點擊與敵大絕生成。

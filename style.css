@@ -663,7 +663,7 @@
     to{opacity:1;transform:translateX(-50%) translateY(0);} }
   #inspectorBubble .insp-name{font-size:11px;letter-spacing:2px;color:var(--gold);
     margin-bottom:5px;opacity:.9;}
-  #inspectorBubble .insp-line{font-size:13px;letter-spacing:.5px;line-height:1.6;color:var(--ink);min-height:1.6em;}
+  #inspectorBubble .insp-line{font-size:13px;letter-spacing:.5px;line-height:1.6;color:var(--ink);min-height:1.6em;white-space:pre-line;}
   #inspectorBubble .insp-line .caret{opacity:.7;animation:blink .5s infinite alternate;}
   /* retry 鈕：置底、與畫面同寬、降低高度 */
   /* 貼底大鈕：拉至畫面最底，底部內距吃掉 iOS 安全區(home indicator)→ 底下不留空 */
@@ -987,10 +987,35 @@
   @keyframes tutNext{from{opacity:.25;transform:translateY(0);}to{opacity:.95;transform:translateY(2px);}}
   /* 教學對話期間（dlg-pause）：凍結中的大絕紅點提到立繪之上——threat 步驟正對著它講解 */
   body.dlg-pause #redDots{z-index:21;}
-  #tutTouch{position:fixed;inset:0;z-index:36;display:none;background:transparent;}
+  #tutTouch{position:fixed;inset:0;z-index:36;display:none;background:transparent;touch-action:none;}
   #tutTouch.on{display:block;}
   #tutSkipBtn{position:absolute;top:10px;left:10px;z-index:38;display:none;padding:7px 14px;
     border-radius:16px;background:rgba(10,8,14,.72);border:1px solid var(--gold-dim);
     color:var(--gold);font-family:inherit;font-size:12px;letter-spacing:2px;}
   #tutSkipBtn.on{display:block;}
   #tutSkipBtn:active{transform:scale(.94);}
+
+  /* ── 教學引導箭頭（雪鐵龍雙箭羽依次閃滅）──
+   *  #tutGuide 疊在 tutTouch(36) 之上、跳過鈕(38) 之下，pointer-events:none（手勢仍落在 tutTouch）。
+   *  方向由 g-down/g-right/g-up 決定：chevron 用 border 折角轉向、容器主軸沿指向排列，
+   *  依次閃滅（animation-delay 級聯）引導視線。 */
+  #tutGuide{position:fixed;z-index:37;display:none;pointer-events:none;
+    transform:translate(-50%,-50%);text-align:center;
+    filter:drop-shadow(0 0 6px rgba(212,169,74,.8));}
+  #tutGuide.on{display:block;}
+  #tutGuide .tg-chevrons{display:flex;gap:7px;align-items:center;justify-content:center;}
+  #tutGuide .tg-chevrons i{width:16px;height:16px;flex:none;
+    border-top:4px solid var(--gold);border-right:4px solid var(--gold);
+    opacity:.15;animation:tgBlink .9s infinite;}
+  #tutGuide .tg-chevrons i:nth-child(2){animation-delay:.3s;}
+  #tutGuide .tg-chevrons i:nth-child(3){animation-delay:.6s;}
+  @keyframes tgBlink{0%{opacity:.15;}30%{opacity:1;}70%{opacity:1;}100%{opacity:.15;}}
+  #tutGuide.g-right .tg-chevrons{flex-direction:row;}
+  #tutGuide.g-right .tg-chevrons i{transform:rotate(45deg);}
+  #tutGuide.g-down  .tg-chevrons{flex-direction:column;}
+  #tutGuide.g-down  .tg-chevrons i{transform:rotate(135deg);}
+  #tutGuide.g-up    .tg-chevrons{flex-direction:column-reverse;}   /* 由下往上依次閃 */
+  #tutGuide.g-up    .tg-chevrons i{transform:rotate(-45deg);}
+  #tutGuide .tg-label{margin-top:8px;font-size:13px;letter-spacing:3px;color:var(--gold);
+    text-shadow:0 0 8px rgba(212,169,74,.75);animation:tgLabel 1s ease-in-out infinite alternate;}
+  @keyframes tgLabel{from{opacity:.55;}to{opacity:1;}}

@@ -109,6 +109,7 @@ function startSaintMode(){
   clearInterval(state.saintTimer);
   state.saintTimer = setInterval(()=>{
     if(state.over||!state.saintMode){ clearInterval(state.saintTimer); state.saintTimer=null; return; }
+    if(state.cutinPlaying) return;       // 演出/教學對話暫停中凍結倒數槽（讀提示不吃聖徒化時間）
     saintAdvance(healPerTick);           // 被動推進；推滿→OBE（由 saintAdvance 內部處理）
   }, 100);
   // 大絕頻率改密集：讀現值存自有 saintPrevUlt、經 defense 擁有者管道 setUltRate 寫入
@@ -124,6 +125,16 @@ function startSaintMode(){
  * ========================================================================== */
 export function saintAdvance(amount){
   if(!state.saintMode) return;
+  // 教學：倒數槽推至臨界（滿-1，即 99）即攔截——不進 OBE，交由教學引導生命歸還
+  //   （api.onSaintCritical → tutorial.onSaintCritical，內有一次性守門；非教學不生效）
+  if(state.tutorialActive && api.onSaintCritical){
+    const cap = state.playerMax - 1;
+    if(state.playerHp + amount >= cap){
+      if(state.playerHp < cap) api.healPlayer(cap - state.playerHp);
+      api.onSaintCritical();
+      return;
+    }
+  }
   const hp = api.healPlayer(amount);     // 推進＝回血（上限裁切在 API 內）
   if(hp>=state.playerMax){ triggerOBE(); }
 }
@@ -225,6 +236,7 @@ function triggerMaxBurst(){
   playSaintCutin('burst', ()=>{
     finishSaintMode(()=>api.setPlayerHpRatio(0.5));
   });
+  if(api.onSaintEnded) api.onSaintEnded('mb');   // 教學終盤掛鉤（cut-in 結束後收尾台詞；非教學 no-op）
 }
 
 // OBE：推進到滿＝沒守住（HP → 1）。
@@ -263,6 +275,7 @@ export function lifeReturnAbort(){
   playSaintCutin('return', ()=>{
     finishSaintMode(()=>{ /* 保留當前血量：不改血 */ });
   });
+  if(api.onSaintEnded) api.onSaintEnded('return');   // 教學終盤掛鉤（非教學 no-op）
 }
 
 /* 共用收尾：回到當前 9/16 盤面，敵人排程/間隔懲罰全部歸零，恢復正常扣血攻擊。

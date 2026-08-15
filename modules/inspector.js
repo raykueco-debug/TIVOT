@@ -203,6 +203,9 @@ export function settle(totalTime, stats, opts={}){
   // ── 監察官結算展示（依評價等第挑台詞）──
   showResultSequence('聖裁', sub, rows, evalResult.grade, false);
 
+  // ── 教學戰專屬結算（tutorialRun 存續到此）：覆蓋台詞與按鈕，不進迎擊/獎勵流程 ──
+  if(state.tutorialRun){ applyTutorialResult(); return; }
+
   // ── 隱藏關（New Hustle）解鎖判定：S 評價才解鎖，不自動觸發 ──
   //   由「再度執槍 → 迎擊」流程手動進入（見 onRematchBtn）。
   const it = GAME_CONFIG.intruder;
@@ -282,8 +285,9 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose){
   setTimeout(()=>{ stats.classList.add('sweep'); }, 260);
 
   // ── 階段三＋四：rows 刷完後彈出對話框，逐字顯示台詞（2 秒內）──
+  //   教學戰（tutorialRun）：rank 台詞讓位給 applyTutorialResult 的專屬台詞
   const sweepDone = 260 + (n>0 ? (n-1)*step : 0) + 300;
-  if(insp){
+  if(insp && !state.tutorialRun){
     // 處決勝利（聖徒化 Maximum Burst 擊殺）→ 固定處決台詞，不論 rank；否則走 rank 台詞。
     // Boss 戰一律走 bossDialogues 的 rank 台詞（不套用一般處決台詞）。
     let line = (!state.inIntruderFight && state.sawExecution && insp.executionLine)
@@ -296,6 +300,31 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose){
       typeInspectorLine(lineEl, line, 2000);   // 2 秒內逐字
     }, Math.max(sweepDone, 1100));
   }
+}
+
+/* ============================================================================
+ *  教學戰專屬結算（config.tutorial.result）
+ *  ---------------------------------------------------------------------------
+ *  台詞：依「是否發動過搭檔主動技（生命歸還）」二選一 + outro 接續（同框逐字）。
+ *  按鈕：改「回到主畫面」；按下先補 buttonLine（「期待你的表現。」）再回首頁。
+ *  不進 S 迎擊/銭湯獎勵流程（教學戰不解鎖隱藏關）。
+ * ========================================================================== */
+function applyTutorialResult(){
+  const tr = (GAME_CONFIG.tutorial && GAME_CONFIG.tutorial.result) || {};
+  state.sRankUnlocked = false;
+  state.resultMode = 'tutorial-home';
+  const rbtn=$('rematchBtn');
+  if(rbtn) rbtn.textContent = tr.buttonLabel || '回到主畫面';
+  // ⚠ 用 tutorialLifeReturn 而非 partnerActiveUsed：蕾妮主動技無 oncePerBattle，後者不會被設
+  const line1 = state.tutorialLifeReturn ? tr.usedLifeReturn : tr.noLifeReturn;
+  const full = [line1, tr.outro].filter(Boolean).join('\n');   // insp-line 為 pre-line：換行顯示
+  const bubble=$('inspectorBubble'), lineEl=$('inspectorLine');
+  clearTimeout(_inspTypeTimer);
+  if(lineEl) lineEl.textContent='';
+  setTimeout(()=>{
+    if(bubble) bubble.classList.add('show');
+    if(lineEl) typeInspectorLine(lineEl, full, 3600);
+  }, 1400);
 }
 
 /* ============================================================================
@@ -376,6 +405,18 @@ function typeInspectorLine(el, text, total){
 export function onRematchBtn(){
   const rbtn=$('rematchBtn');
   clearTimeout(_resultAutoTimer);   // 玩家有操作 → 取消自動回首頁
+  if(state.resultMode==='tutorial-leaving') return;   // 教學結算離場中：防連點重入
+  if(state.resultMode==='tutorial-home'){   // 教學戰結算：「回到主畫面」→ 監察官補一句 → 回首頁
+    const tr=(GAME_CONFIG.tutorial && GAME_CONFIG.tutorial.result) || {};
+    state.resultMode='tutorial-leaving';
+    SFX.play(asset('sfx_start'), sfxGain('sfx_start'));
+    const bubble=$('inspectorBubble'), lineEl=$('inspectorLine');
+    if(bubble){ bubble.classList.remove('show'); void bubble.offsetWidth; bubble.classList.add('show'); }
+    clearTimeout(_inspTypeTimer);
+    if(lineEl) typeInspectorLine(lineEl, tr.buttonLine || '期待你的表現。', 900);
+    setTimeout(()=>{ state.tutorialRun=false; api.goHome(); }, 1600);   // 補完一句才離場
+    return;
+  }
   if(state.resultMode==='sentou-offer'){   // Boss S 級第一按：「再度執槍」原地變身（金色呼吸光）
     SFX.play(asset('sfx_startbt'), sfxGain('sfx_startbt'));   // 神楽鈴（StartBT_SE，與出陣鈕同）
     state.resultMode='sentou';

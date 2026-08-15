@@ -14,7 +14,7 @@
  * ========================================================================== */
 
 import { GAME_CONFIG, asset, bgmVol, sfxGain } from '../config.js';
-import { state } from '../state.js';
+import { state, initEnemyHp } from '../state.js';
 import { SFX } from '../audio.js';
 import { TEL } from '../telemetry.js';   // 遙測（底層純輸出，同 audio 定位；未設定後端時 no-op）
 import * as enemy from './enemy.js';
@@ -58,8 +58,15 @@ export function setup(){
   //   （defense 不 import tutorial，經此轉交）
   defense.init({ enemyAttack, enemyDamage, floatDmg, triggerAtkBuff, weaponCounter: weapon.weaponCounter,
                  onThreatSpawned: tutorial.onThreatSpawned, onThreatResolved: tutorial.onThreatResolved });
-  // 教學：真暫停/續戰原語注入（同退出確認框的 cutinPlaying 機制）
-  tutorial.init({ pauseForDialog, resumeFromDialog });
+  // 教學：真暫停/續戰＋腳本化終盤所需原語注入（雙槍/聖徒化/搭檔主動技/三爪腳本/敵血封頂）
+  tutorial.init({
+    pauseForDialog, resumeFromDialog,
+    activateDual: weapon.activateDual,
+    activateSaint: saint.activateSaint,
+    tryPartnerActive: partner.tryActive,
+    lethalStrike: tutorialLethalStrike,
+    capEnemyHp: tutorialCapEnemyHp,
+  });
   // 武器：反擊演算所需（enemyDamage/floatDmg）+ 雙槍破防窗口所需（cut-in/敵計時/盤面/破防值歸零）。
   weapon.init({
     enemyDamage, floatDmg,
@@ -73,6 +80,9 @@ export function setup(){
   saint.init({
     // 統一改血 API（Part A）
     healPlayer, setPlayerHpRatio,
+    // 教學掛鉤：倒數槽臨界攔截（引導生命歸還）＋結局通知（MB/生命歸還後的收尾台詞）
+    onSaintCritical: tutorial.onSaintCritical,
+    onSaintEnded: tutorial.onSaintEnded,
     // combat 盤面/傷害/UI 原語
     buildGrid, updateBars, startIntervalTimer, resetIntervalDeadline,
     hitDamage, enemyDamage, floatDmg, markNext, setBoard, resetEnergy,
@@ -327,6 +337,11 @@ function clearBoard(){
     addEnergy(gain);
     floatDmg('完美清盤 +'+gain,'50%','30%',false);
   }
+  // 教學：第二盤清盤的最後一槍 → 破防值直接設為只差 1 滿（第三盤首擊即滿、進雙槍引導）
+  if(state.tutorialActive && state.boardIndex===1 && GAME_CONFIG.tutorial){
+    state.energy = GAME_CONFIG.tutorial.preFullEnergy != null ? GAME_CONFIG.tutorial.preFullEnergy : 99;
+    updateEnergyClasp();
+  }
   if(state.enemyHp<=0){ finishEnemyOrAdvance(); return; }   // 敵死 → 轉下一敵 or（最後一敵）結算
   defense.resetEnemyTimers();   // 清盤瞬間即重置敵大絕與延遲懲罰（間隔懲罰由 loadBoard 重置）
   goNextBoard();
@@ -482,8 +497,15 @@ function addEnergy(v){
   if(state.saintMode) return;        // 聖徒化期間不累積破防值
   const was=state.energy;
   state.energy=Math.min(100,state.energy+v);
+  // 教學：雙槍引導前破防值封頂於 preFullEnergy（第三盤起放行 → 首擊即滿、交給教學引導）
+  if(tutorial.energyCapActive()){
+    state.energy=Math.min(state.energy, (GAME_CONFIG.tutorial && GAME_CONFIG.tutorial.preFullEnergy) || 99);
+  }
   updateEnergyClasp();
-  if(was<100 && state.energy>=100) energyFullBurst();   // 滿的瞬間：計量表為中心發一圈光圈
+  if(was<100 && state.energy>=100){
+    energyFullBurst();               // 滿的瞬間：計量表為中心發一圈光圈
+    tutorial.onEnergyFull();         // 教學：滿值瞬間插入雙槍引導（非教學為 no-op）
+  }
 }
 // 破防值滿瞬間演出：以 C 字計量表為中心擴散一圈半透漸層光圈（~0.85s，不擋點擊）。
 function energyFullBurst(){
@@ -515,6 +537,8 @@ function startIntervalTimer(){
     if(state.over){clearInterval(state.intervalTimer);return;}
     if(state.saintMode||state.cutinPlaying){resetIntervalDeadline();return;}   // 聖徒化/演出中不受間隔壓力
     if(Date.now()>=state.intervalDeadline){
+      // 教學：第二盤在首次防禦成功前不套延時懲罰（只重置期限，手感不受壓）
+      if(tutorial.delayPenaltySuppressed()){ resetIntervalDeadline(); return; }
       state.combo=0;
       // 延時懲罰傷害＝一般怪基礎 × 該怪 DELAY_PENALTY_SCALE（Boss=0.5）；時限已由 effIntervalLimit 減
       if(state.enemyHp>0){
@@ -636,7 +660,8 @@ function autoClearOverkill(){
 /* ---- 敵死收尾：局內還有下一敵→轉敵、否則→結算 ---- */
 function finishEnemyOrAdvance(){
   endOverkillFx();   // overkill 藍光/限時統一在此清理（所有結束路徑的匯流點，冪等）
-  if(enemy.hasNextInLineup()){ advanceEnemy(); }
+  // 教學戰＝單敵一場（tutorialRun 存續到結算；跳過教學則恢復一般連戰）
+  if(enemy.hasNextInLineup() && !state.tutorialRun){ advanceEnemy(); }
   else { win(); }
 }
 /* ---- 換敵（局內連戰）：延續全場狀態，只換敵＋盤序回 0，敵人區播「前進遭遇」進場 ----
@@ -731,9 +756,15 @@ export function startGame(){
   $('transition').classList.remove('on');
   $('grid').classList.remove('saint'); $('grid').classList.remove('buffed'); $('grid').classList.remove('alert');
   state.cutinPlaying=false;
+  state.tutorialRun=false; state.tutorialLifeReturn=false;   // 教學場旗標歸零（tutorial 擁有；開場統一歸零、maybeStart 啟動時設回）
   stopAll();
   loadBoard(0); updateBars();
   tutorial.maybeStart();   // 首次出陣 → 進教學（穿插式；看過/跳過後恆 no-op）
+  // 教學戰：敵人血量覆寫（撐到腳本終盤；經 initEnemyHp 具名管道）
+  if(state.tutorialActive && GAME_CONFIG.tutorial && GAME_CONFIG.tutorial.enemyHp){
+    initEnemyHp(GAME_CONFIG.tutorial.enemyHp);
+    updateBars();
+  }
 }
 /* ---- Boss 亂入：重開新「場」戰鬥（由 enemy.triggerIntruder 的 enterFight 注入呼叫）----
  *  依 場/局/敵/盤 模型:Boss 亂入＝重開新場,一切從頭 → 與 startGame 相同的完整重置
@@ -800,6 +831,25 @@ export function goHome(){
     $('home').classList.add('on');
     SFX.playBgm(asset('bgm_home'), { volume: bgmVol('bgm_home') });           // 主選單 BGM
   }, 1400);
+}
+
+/* ============================================================================
+ *  教學腳本原語（注入 tutorial 使用；非教學不會被呼叫）
+ * ========================================================================== */
+// 三爪重擊腳本：「小心！」收段後直接以 'ult' 種類施以致死攻擊（faceless 的 ult
+//   受擊特效＝三爪）→ 走 enemyAttack 致死鏈 → 蕾妮即死防禦保 1 HP＋cut-in。
+//   保險：當前搭檔無即死防禦（或已用掉）時退化為「打到剩 1 HP」，不讓教學直接戰死。
+function tutorialLethalStrike(){
+  const p=GAME_CONFIG.partners[state.pickedPartner];
+  const guardOk = p && p.passive && p.passive.key==='deathGuard' && !state.deathGuardUsed;
+  const dmg = guardOk ? state.playerHp + 50 : Math.max(1, state.playerHp - 1);
+  enemyAttack(dmg, 'ult');
+}
+// 敵殘血封頂：聖徒化收尾後把敵血壓到 finishEnemyHp 以下，保證玩家「本盤」就能殺進
+//   overkill 結束教學戰；跳過教學時也用它把覆寫的高血量收回該敵 config 值。
+function tutorialCapEnemyHp(maxHp){
+  if(maxHp==null) return;
+  if(state.enemyHp>maxHp){ state.enemyHp=maxHp; updateBars(); }
 }
 
 /* ---- 測試用「清盤」鈕：依當前應點順序逐格模擬點擊，把盤面清空走 clearBoard ---- */

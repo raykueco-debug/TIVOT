@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於首頁版權宣告下方，每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.15-47';
+export const VERSION = 'ver 2026.08.15-48';
 
 export const GAME_CONFIG = {
 
@@ -211,6 +211,9 @@ export const GAME_CONFIG = {
     // 教學戰鬥的規則調整（只在 tutorialActive 期間生效）：
     enemyAtkDamage: 2,     // 敵方所有攻擊（大絕/按錯/延時）基礎傷害一律此值；Defense 格擋再減半（=1）
     noUltBoards: 1,        // 前 N 盤敵人不發動大絕（第一盤純練清盤，第二盤起反擊教學）
+    enemyHp: 800,          // 教學戰敵人血量覆寫：撐到腳本終盤（雙槍→三爪→聖徒化）都不會被提前打死
+    preFullEnergy: 99,     // 第二盤清盤時破防值設為此值（差 1 滿）；此前破防值也封頂於此
+    finishEnemyHp: 60,     // 聖徒化結束後敵殘血上限：保證玩家「本盤」就能殺進 overkill 結束戰鬥
     // 教學期間大絕紅點的生成範圍（%），避開左右立繪與下方對話框——只在中央帶出現
     threatSpawn: { leftMin:38, leftMax:62, topMin:25, topMax:55 },
     // 立繪：portraitHeightPct＝基準高（佔敵人框高 %）；fit 逐角色取景——
@@ -253,19 +256,50 @@ export const GAME_CONFIG = {
         { who:'partner',   text:'等光圈收得夠小、時機正確，才能「完美防禦」，完全不受傷！' },
         { who:'inspector', text:'防住給我看。' },
       ]},
-      // 首次成功防下攻擊（點掉紅點）之後：反擊與副武器說明
+      // 首次成功防下攻擊（點掉紅點）之後：反擊與副武器說明。
+      //   此段結束後直到第二盤清完不再插入任何提示（罵人停用、延時懲罰恢復）。
       { trigger:'defended', lines:[
         { who:'inspector', text:'擋得不錯。記住——在敵人出手的前一瞬反擊，就能用副武器造成大量傷害。' },
         { who:'partner',   text:'不過別勉強反擊，覺得危險的話，防下來就好。' },
         { who:'inspector', text:'那樣的話，我的評價可不會留情。' },
         { who:'inspector', text:'不同副武器的效果與反擊時機各不相同。選擇能發揮自己天賦的武器吧。' },
+        { who:'inspector', text:'很好，現在全力殲滅敵人！' },
       ]},
-      // 第三盤：收尾
-      { trigger:'board:2', lines:[
-        { who:'partner',   text:'漂亮！連擊越高，子彈就越痛。保持節奏！' },
-        { who:'inspector', text:'說明到此為止。剩下的，用戰果讓我看見你的價值。' },
+      // 第四盤（雙槍破防清完後）：三爪重擊腳本的開場白（收段後立刻出爪）
+      { trigger:'board:3', lines:[
+        { who:'inspector', text:'小心！' },
       ]},
     ],
+    /* ── 腳本化段落（scripted）：由 tutorial 內部流程觸發，不走 steps 的 trigger ──
+     *  dualReady  ＝第三盤破防值滿的瞬間（暫停＋箭頭指向計量表，點下才繼續）
+     *  dualGo     ＝雙槍破防 cut-in 結束後（接著玩家無視順序清盤）
+     *  saintCall  ＝三爪即死防禦 cut-in 結束後（暫停＋左側箭頭向右，滑動才繼續）
+     *  saintStart ＝聖徒化降臨 cut-in 結束後（講完交還操作）
+     *  saintFail  ＝聖徒化倒數槽推至臨界（99）仍未清盤（暫停＋箭頭向上，上滑發動生命歸還）
+     *  finishMB   ＝Maximum Burst 結束後；finishLR＝生命歸還結束後（皆接「玩家收尾殺敵」）
+     */
+    script: {
+      dualReady:  [ { who:'partner',   text:'敵人露出破綻了！就是現在！' } ],
+      dualGo:     [ { who:'partner',   text:'敵人無法抵抗，無視順序猛攻吧！' } ],
+      saintCall:  [ { who:'inspector', text:'沒時間了，立刻聖徒化！' } ],
+      saintStart: [ { who:'inspector', text:'在熔斷前你死不了，但承受攻擊會加速熔斷！' },
+                    { who:'inspector', text:'別失誤！只要撐過這回合就有機會逆轉！' } ],
+      saintFail:  [ { who:'partner',   text:'不行了！交給我！' } ],
+      finishMB:   [ { who:'inspector', text:'總算撐過來了，體力也回復了一些，現在結束這場戰鬥吧！' } ],
+      finishLR:   [ { who:'inspector', text:'總算撐過來了，現在結束這場戰鬥吧！' } ],
+    },
+    // 引導箭頭（雪鐵龍雙箭羽依次閃滅）文字標示
+    guideLabels: { click:'CLICK！', right:'向右側滑動', up:'向上滑動' },
+    /* ── 教學專屬結算（inspector.settle 讀取；tutorialRun 旗標存續到結算）──
+     *  usedLifeReturn＝有發動蕾妮主動技（生命歸還）；noLifeReturn＝沒發動（MB 過關）。
+     *  outro 接在其後同框逐字補完；按鈕改「回到主畫面」，按下先補 buttonLine 再回首頁。 */
+    result: {
+      usedLifeReturn: '我話說在前頭，這次是蕾妮救了你，萬一熔斷就真的背水一戰了。',
+      noLifeReturn:   '身手不錯，但要存活下來也得好好依賴伙伴。',
+      outro:          '「聖徒化」是場豪賭，失敗的話就只能背水一戰，謹慎使用吧。',
+      buttonLabel:    '回到主畫面',
+      buttonLine:     '期待你的表現。',
+    },
   },
 
   /* ------------------------------------------------------------------ *
