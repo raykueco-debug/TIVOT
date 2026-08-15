@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於首頁版權宣告下方，每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.15-44';
+export const VERSION = 'ver 2026.08.15-45';
 
 export const GAME_CONFIG = {
 
@@ -208,22 +208,49 @@ export const GAME_CONFIG = {
     storageKey: 'tivot.tutorialSeen.v1',
     startDelayMs: 700,     // 開戰後多久插入第一段對話（ms）
     lineTypeMs: 30,        // 打字機每字間隔（ms）；點擊對話中先跳完整句、再點下一句
+    // 教學戰鬥的規則調整（只在 tutorialActive 期間生效）：
+    enemyAtkDamage: 2,     // 敵方所有攻擊（大絕/按錯/延時）基礎傷害一律此值；Defense 格擋再減半（=1）
+    noUltBoards: 1,        // 前 N 盤敵人不發動大絕（第一盤純練清盤，第二盤起反擊教學）
+    // 教學期間大絕紅點的生成範圍（%），避開左右立繪與下方對話框——只在中央帶出現
+    threatSpawn: { leftMin:38, leftMax:62, topMin:25, topMax:55 },
+    // 立繪：portraitHeightPct＝基準高（佔敵人框高 %）；fit.zoom 逐角色縮放——
+    //   以監察官（芙蕾雅）頭部尺寸為基準，其他角色調 zoom 使頭部等大、比例一致。
+    portraitHeightPct: 88,
     cast: {
-      inspector: { name:'芙蕾雅', image:'inspector_freya', side:'left'  },
-      partner:   { name:'蕾妮',   image:'partner_renee',   side:'right' },
+      inspector: { name:'芙蕾雅', image:'inspector_freya', side:'left',  fit:{ zoom:1 } },
+      partner:   { name:'蕾妮',   image:'partner_renee',   side:'right', fit:{ zoom:0.93 } },
+    },
+    // 罵人台詞（監察官）：教學中玩家「按錯 / 延時」即插入一句（隨機取、可重複觸發）
+    scold: {
+      wrong: [
+        '看清楚數字再出手。你的搭檔可不會替你挨這一下。',
+        '慌了？順序，是基本中的基本。',
+      ],
+      delay: [
+        '手停下來做什麼？敵人可不會等你。',
+        '猶豫的代價，記住這種痛。',
+      ],
     },
     steps: [
+      // 第一盤：純清盤教學（noUltBoards=1 → 敵人不出大絕）
       { trigger:'battleStart', lines:[
         { who:'inspector', text:'開始實戰考核。HUND，讓我看看你的基礎是否紮實。' },
         { who:'partner',   text:'別緊張！照著數字順序點擊下方的盤面，每一次命中都會對敵人開火！' },
-        { who:'partner',   text:'不過手可別停下來——猶豫太久，敵人就會趁隙反擊。' },
+        { who:'partner',   text:'這一盤敵人還不會出手——先把手感練起來。不過按錯或停太久，還是會受傷的喔。' },
       ]},
-      { trigger:'threat', lines:[
-        { who:'inspector', text:'注意，敵人正在蓄力大絕。看見那個光圈了嗎？' },
-        { who:'partner',   text:'光圈會越縮越小！在它消失前點下去就能防禦——收得越小才出手，防得越漂亮，最後一刻就是反擊的機會！' },
-      ]},
+      // 第二盤開始：反擊教學開場（此盤起敵人開始發動大絕）
       { trigger:'board:1', lines:[
-        { who:'partner',   text:'漂亮！清完一盤會立刻接著下一盤。連擊越高，子彈就越痛喔！' },
+        { who:'inspector', text:'基礎還行。接下來——敵人要開始反擊了。' },
+        { who:'partner',   text:'敵人蓄力時，畫面上會出現光圈。那就是防禦的信號！' },
+      ]},
+      // 第一顆紅點生成瞬間（凍結在畫面上講解）
+      { trigger:'threat', lines:[
+        { who:'partner',   text:'光圈會越縮越小！在它消失前點下去就能防禦——收得越小才出手，防得越漂亮，最後一刻就是反擊的機會！' },
+        { who:'inspector', text:'防住給我看。' },
+      ]},
+      // 第三盤：收尾
+      { trigger:'board:2', lines:[
+        { who:'partner',   text:'漂亮！連擊越高，子彈就越痛。保持節奏！' },
         { who:'inspector', text:'說明到此為止。剩下的，用戰果讓我看見你的價值。' },
       ]},
     ],

@@ -53,6 +53,15 @@ export function maybeStart(){
 export function onBoardLoaded(idx){ fire('board:'+idx); }
 // defense.spawnThreat 生成紅點時經注入呼叫 → 觸發 'threat' 步驟（紅點凍結於畫面講解）
 export function onThreatSpawned(){ fire('threat'); }
+// combat 於「按錯 / 延時懲罰」時呼叫 → 監察官跳出來罵人（隨機一句、可重複觸發，
+//   不佔 steps；懲罰傷害先落地才插話，罵完點擊即續戰）
+export function onMistake(kind){
+  if(!state.tutorialActive || state.tutorialDialog || state.over) return;
+  const pool = (CFG().scold||{})[kind];
+  if(!pool || !pool.length) return;
+  const text = pool[Math.random()*pool.length|0];
+  openStep({ lines:[{ who:'inspector', text }] });
+}
 
 function fire(trigger){
   if(!state.tutorialActive) return;
@@ -88,9 +97,13 @@ function openStep(step){
   document.body.classList.add('dlg-pause');      // 凍結底層警戒脈動（防 iOS 合成假影）
   // 立繪掛圖（左右各一位；side/圖片鑰匙讀 cast 設定）
   const cast = CFG().cast || {};
+  const baseH = CFG().portraitHeightPct || 88;
   for(const key of Object.keys(cast)){
     const c = cast[key], el = portraitEl(c);
-    if(el && el.dataset.castKey!==key){ el.src = asset(c.image); el.dataset.castKey = key; }
+    if(!el) continue;
+    if(el.dataset.castKey!==key){ el.src = asset(c.image); el.dataset.castKey = key; }
+    // 立繪高度＝基準高 × 逐角色 zoom（以監察官頭部尺寸為基準對齊頭部大小，見 config.cast.fit）
+    el.style.height = (baseH * ((c.fit && c.fit.zoom) || 1)) + '%';
   }
   const wrap=$('tutCast'), touch=$('tutTouch');
   if(touch) touch.classList.add('on');

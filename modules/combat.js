@@ -44,6 +44,11 @@ const CLASP_LEN=110;
 
 const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;};
 
+// 教學期間敵方攻擊基礎傷害覆寫（config.tutorial.enemyAtkDamage；一律 2）。
+//   按錯/延時懲罰經此；大絕與 Defense 格擋由 defense 的 effUltDamage 同源處理（格擋＝再減半 → 1）。
+const tutAtkDmg = dmg => (state.tutorialActive && GAME_CONFIG.tutorial && GAME_CONFIG.tutorial.enemyAtkDamage!=null)
+  ? GAME_CONFIG.tutorial.enemyAtkDamage : dmg;
+
 /* ============================================================================
  *  啟動：注入 api 與開機閒置畫面（由 main.js 調度）
  * ========================================================================== */
@@ -273,12 +278,13 @@ function tap(num,cell,e){
     state.combo=0;
     if(state.threats.length){
       defense.clearThreat();          // 攻擊點消失，不能再補救
-      enemyAttack(Math.max(1, Math.round(DMG_HEAVY*state.WRONG_PENALTY_SCALE)), 'wrong');
+      enemyAttack(tutAtkDmg(Math.max(1, Math.round(DMG_HEAVY*state.WRONG_PENALTY_SCALE))), 'wrong');
     }else{
       SFX.wrong();
-      enemyAttack(Math.max(1, Math.round(DMG_WRONG*state.WRONG_PENALTY_SCALE)), 'wrong');
+      enemyAttack(tutAtkDmg(Math.max(1, Math.round(DMG_WRONG*state.WRONG_PENALTY_SCALE))), 'wrong');
     }
     resetIntervalDeadline(); updateStatus();
+    tutorial.onMistake('wrong');      // 教學中按錯 → 監察官插話（懲罰已落地才暫停；非教學為 no-op）
   }
 }
 
@@ -510,7 +516,11 @@ function startIntervalTimer(){
     if(Date.now()>=state.intervalDeadline){
       state.combo=0;
       // 延時懲罰傷害＝一般怪基礎 × 該怪 DELAY_PENALTY_SCALE（Boss=0.5）；時限已由 effIntervalLimit 減
-      if(state.enemyHp>0){ enemyAttack(Math.max(1, Math.round(DMG_DELAY*state.DELAY_PENALTY_SCALE)), 'delay'); floatDmg('太慢','60%','55%',false); }
+      if(state.enemyHp>0){
+        enemyAttack(tutAtkDmg(Math.max(1, Math.round(DMG_DELAY*state.DELAY_PENALTY_SCALE))), 'delay');
+        floatDmg('太慢','60%','55%',false);
+        tutorial.onMistake('delay');   // 教學中延時 → 監察官插話（非教學為 no-op）
+      }
       updateStatus(); resetIntervalDeadline();
     }
   },80);

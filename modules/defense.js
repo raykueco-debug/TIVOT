@@ -31,6 +31,15 @@ const ULT_OPEN_MS = 3000;                  // 開場保證：每盤 3 秒內敵�
 let api = {};
 export function init(a){ api = a; }
 
+/* ---------- 教學調整（config.tutorial；只在 tutorialActive 期間生效）----------
+ *  effUltDamage：教學中敵大絕基礎傷害一律 enemyAtkDamage（=2）；
+ *    Defense 格擋沿用 defenseDamageScale 再減半 → 1（「除非被防禦減半」）。
+ *  按錯/延時懲罰的同款覆寫在 combat 的 tutAtkDmg（同一 config 值，兩處同源）。 */
+const TUT = () => GAME_CONFIG.tutorial || {};
+function effUltDamage(){
+  return (state.tutorialActive && TUT().enemyAtkDamage!=null) ? TUT().enemyAtkDamage : state.ULT_DAMAGE;
+}
+
 /* ---------- 大絕頻率（擁有者管道）----------
  *  ULT_MIN / ULT_MAX 為 defense 擁有（3.3）。聖徒化需暫時改密集頻率、離場再還原——
  *  saint 只「讀」現值存進自有的 saintPrevUlt，實際「寫」一律經此 setter（經 combat 注入的 api），
@@ -51,6 +60,8 @@ export function scheduleUlt(firstDelayMs){
   state.ultCheckTimer=setTimeout(()=>{
     // overkill/演出/轉場期間不生成；聖徒化期間照常出攻擊點
     if(state.over||state.enemyHp<=0||state.cutinPlaying||state.transitioning){ scheduleUlt(200); return; }
+    // 教學：前 noUltBoards 盤敵人不發動大絕（第一盤純練清盤，第二盤起反擊教學）
+    if(state.tutorialActive && state.boardIndex < (TUT().noUltBoards||0)){ scheduleUlt(200); return; }
     // cut-in／清盤後緩衝期內敵不發動，等窗口過了再排
     if(Date.now() < state.enemyAtkSuppressUntil){ scheduleUlt(state.enemyAtkSuppressUntil - Date.now() + 50); return; }
     startCharge();
@@ -122,7 +133,7 @@ export function resumeThreats(){
 export function releaseUlt(th){
   removeThreat(th);
   if(state.over||state.cutinPlaying) return;
-  api.enemyAttack(state.ULT_DAMAGE, 'ult');
+  api.enemyAttack(effUltDamage(), 'ult');   // 教學中一律 2（見 effUltDamage）
   api.floatDmg('被擊中','45%','25%',true);
 }
 // 兼容舊呼叫：結束/清除所有攻擊點
@@ -138,7 +149,13 @@ export function spawnThreat(){
   const coreDia=20+90*DEF_DEFENSE_MIN;
   const coreR=coreDia/2;
   const pxLeft=l=>l/100*lw, pxTop=t=>t/100*lh;
-  let lp=20+Math.random()*60, tp=25+Math.random()*45;
+  // 生成範圍：一般＝left 20~80% / top 25~70%；教學＝config.tutorial.threatSpawn 中央帶
+  //   （對話插入時左右立繪滑入、下方有對話框——中央帶保證紅點不被立繪覆蓋）。
+  const ts=(state.tutorialActive && TUT().threatSpawn) || null;
+  const rnd=(min,max)=>min+Math.random()*(max-min);
+  const rollL=()=> ts ? rnd(ts.leftMin,ts.leftMax) : 20+Math.random()*60;
+  const rollT=()=> ts ? rnd(ts.topMin, ts.topMax)  : 25+Math.random()*45;
+  let lp=rollL(), tp=rollT();
   for(let tries=0;tries<40;tries++){
     const cx=pxLeft(lp), cy=pxTop(tp);
     let ok=true;
@@ -149,7 +166,7 @@ export function spawnThreat(){
       if(dx*dx+dy*dy < (coreR*2)*(coreR*2)){ ok=false; break; }
     }
     if(ok) break;
-    lp=20+Math.random()*60; tp=25+Math.random()*45;
+    lp=rollL(); tp=rollT();
   }
   dot.style.left=lp+'%';
   dot.style.top=tp+'%';
@@ -218,7 +235,7 @@ export function resolveThreat(th){
       if(defScale<=0){
         api.floatDmg('BLOCK','50%','42%',false);        // 完全免傷（若有武器設 0）
       }else{
-        const dmg=Math.max(1, Math.round(state.ULT_DAMAGE*defScale));
+        const dmg=Math.max(1, Math.round(effUltDamage()*defScale));   // 教學：2 減半 → 1
         api.enemyAttack(dmg, 'ult');                     // 依武器倍率受傷（仍屬大絕受擊）
         api.floatDmg('BLOCK −'+dmg,'50%','42%',false);
       }
