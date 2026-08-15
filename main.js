@@ -248,22 +248,24 @@ bindBtn('startBtn', launchBattle);
 // 首頁「教學」鈕：強制下一場進教學（不動已看旗標），其餘流程同出陣
 bindBtn('tutorialBtn', ()=>{ tutorial.requestReplay(); launchBattle(); });
 
-/* ── 語言切換鈕（中→A→あ 循環）──
- *  選擇存 localStorage('tivot.lang')；實際字串置換待 i18n/en.js・ja.js 翻譯就位後接上
- *  （母本 i18n/zh.js）。目前先記錄選擇並更新鈕面字樣。 */
+/* ── 語言切換鈕（zh→en→ja 循環）──
+ *  鈕面顯示「按下會切換到的下一個語言」，且用該語言自己的文字——
+ *  中文介面時顯示 En（給英文使用者認）、英文時顯示 日本語、日文時顯示 中文。
+ *  選擇存 localStorage('tivot.lang')，按下重載生效（僅首頁可按，無戰局可失）。 */
 (function bindLangBtn(){
-  const LANGS=['zh','en','ja'], FACE={ zh:'中', en:'A', ja:'あ' };
+  const LANGS=['zh','en','ja'];
+  const NEXT_FACE={ zh:'En', en:'日本語', ja:'中文' };   // 鈕面＝下一個語言的自稱
   const KEY='tivot.lang';
   let cur; try{ cur=localStorage.getItem(KEY)||'zh'; }catch(e){ cur='zh'; }
   if(LANGS.indexOf(cur)<0) cur='zh';
   const btn=$('langBtn');
-  const paint=()=>{ if(btn) btn.textContent=FACE[cur]; };
+  const paint=()=>{ if(btn) btn.textContent=NEXT_FACE[cur]; };
   paint();
   bindBtn('langBtn', ()=>{
     cur=LANGS[(LANGS.indexOf(cur)+1)%LANGS.length];
     try{ localStorage.setItem(KEY, cur); }catch(e){}
     paint();
-    setTimeout(()=>location.reload(), 150);   // 切語言→重載生效（僅首頁可按，無戰局可失）
+    setTimeout(()=>location.reload(), 150);
   });
 })();
 bindBtn('exitBtn',      showExitConfirm);       // 右上：退出 → 確認對話框（盤面模糊）

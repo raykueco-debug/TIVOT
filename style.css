@@ -722,10 +722,11 @@
   #startBtn:active{transform:scale(.94);}
   /* 首頁副武器/搭檔占位入口 */
   #homeLoadout{display:flex;gap:14px;margin-top:28px;}
-  /* 語言切換鈕（首頁右上）：顯示當前語言字樣 中/A/あ，點按循環 */
+  /* 語言切換鈕（首頁右上）：鈕面＝下一個語言的自稱（En/日本語/中文），點按循環切換 */
   #langBtn{position:absolute;top:calc(var(--notch-bar-h, 0px) + 12px);right:12px;z-index:5;
-    width:44px;height:44px;border-radius:50%;background:rgba(10,8,14,.6);
-    border:1px solid var(--gold-dim);color:var(--gold);font-family:inherit;font-size:16px;}
+    min-width:44px;height:36px;padding:0 14px;border-radius:18px;background:rgba(10,8,14,.6);
+    border:1px solid var(--gold-dim);color:var(--gold);font-family:inherit;font-size:14px;
+    letter-spacing:1px;}
   #langBtn:active{transform:scale(.92);}
   /* 教學鈕：位於副武器/搭檔下方，與出陣同大小（不加呼吸光，主次分明） */
   #tutorialBtn{margin-top:16px;padding:16px 46px;background:transparent;

@@ -13,9 +13,10 @@
  * ========================================================================== */
 
 import { STRINGS as ZH } from './i18n/zh.js';
+import { STRINGS as EN } from './i18n/en.js';
 import { STRINGS as JA } from './i18n/ja.js';
 
-const PACKS = { zh: ZH, ja: JA };   // en：i18n/en.js 就位後 import 並在此加 en: EN
+const PACKS = { zh: ZH, en: EN, ja: JA };
 
 /* ---- 語言選擇（en 未到位時回退 zh，鈕面仍可循環選 A 先佔位）---- */
 export const LANG = (()=>{
