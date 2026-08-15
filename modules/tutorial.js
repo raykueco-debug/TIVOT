@@ -418,16 +418,15 @@ function endTutorial(){
 /* ============================================================================
  *  跳過 / 中止
  * ========================================================================== */
-// 跳過鈕：記為已看，當場無縫轉正常戰鬥（對話/閘門中按下＝收窗解除暫停，同場繼續）。
-//   教學規則一併解除：敵殘血封頂回該敵 config 血量、tutorialRun 歸零（結算走一般流程）。
+// 跳過鈕：跳過整段教學——中止本場教學戰、淡出回主選單，並記為已看
+//   （之後出陣不再跑教學；想重看走首頁「教學」鈕）。
 export function skip(){
   if(!state.tutorialActive) return;
-  markSeen();
-  if(state.tutorialDialog) closeDialog(true, true);   // silent：不觸發腳本接續
+  markSeen();                                          // 註記：出陣時不再跑教學
+  if(state.tutorialDialog) closeDialog(false, true);   // 只撤 UI：goHome 接管流程（會清 cutinPlaying）
   endTutorial();
-  const en = GAME_CONFIG.enemies[state.currentEnemyKey];
-  if(en && api.capEnemyHp) api.capEnemyHp(en.hp);     // 教學覆寫的高血量收回正常值
-  state.tutorialRun = false;                          // 結算/連戰恢復一般規則
+  state.tutorialRun = false;
+  if(api.goHome) api.goHome();                         // 跳過整段教學：本場廢棄 → 淡出回主選單
 }
 // 中止（combat.stopAll 調度：goHome/勝負/重開場）：只撤 UI、不記已看——
 // 中途退出的話，下次出陣仍會重新進教學（skip 或走到終盤才算看過）。
