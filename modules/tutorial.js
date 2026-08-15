@@ -90,6 +90,17 @@ function fire(trigger){
 function castOf(who){ return (CFG().cast||{})[who] || {}; }
 function portraitEl(c){ return c.side==='right' ? $('tutCastR') : $('tutCastL'); }
 
+/* 依步驟台詞決定在場立繪：只有一個人說話的段落（如罵人插話）不出現另一名角色。
+ * .in 逐立繪掛在 img 上（CSS transition 滑入/滑出）；段落接續（queue）時差異更新即可。 */
+function syncCast(step){
+  const cast = CFG().cast || {};
+  const used = new Set((step && step.lines || []).map(l=>l.who));
+  for(const key of Object.keys(cast)){
+    const el = portraitEl(cast[key]);
+    if(el) el.classList.toggle('in', used.has(key));
+  }
+}
+
 function openStep(step){
   cur = step; lineIdx = 0;
   state.tutorialDialog = true;
@@ -102,14 +113,16 @@ function openStep(step){
     const c = cast[key], el = portraitEl(c);
     if(!el) continue;
     if(el.dataset.castKey!==key){ el.src = asset(c.image); el.dataset.castKey = key; }
-    // 立繪高度＝基準高 × 逐角色 zoom（以監察官頭部尺寸為基準對齊頭部大小，見 config.cast.fit）
-    el.style.height = (baseH * ((c.fit && c.fit.zoom) || 1)) + '%';
+    const fit = c.fit || {};
+    // 取景（config.cast.fit）：zoom＝以監察官眼寬為基準的縮放；drop＝往框下緣外推裁掉下方 %
+    el.style.height = (baseH * (fit.zoom || 1)) + '%';
+    el.style.bottom = (-(fit.drop || 0)) + '%';
   }
   const wrap=$('tutCast'), touch=$('tutTouch');
   if(touch) touch.classList.add('on');
   if(wrap){
     wrap.classList.add('on');
-    requestAnimationFrame(()=>requestAnimationFrame(()=>wrap.classList.add('in')));   // 兩幀後起滑（確保初始位已繪）
+    requestAnimationFrame(()=>requestAnimationFrame(()=>syncCast(step)));   // 兩幀後起滑（確保初始位已繪）
   }
   showLine();
 }
@@ -153,7 +166,7 @@ function advance(){
   }
   lineIdx++;
   if(lineIdx < cur.lines.length){ showLine(); return; }
-  if(queue.length){ cur=queue.shift(); lineIdx=0; showLine(); return; }   // 接續段：維持暫停、立繪不退場
+  if(queue.length){ cur=queue.shift(); lineIdx=0; syncCast(cur); showLine(); return; }   // 接續段：維持暫停、在場立繪差異更新
   closeDialog(true);
 }
 
@@ -167,10 +180,8 @@ function closeDialog(resume){
   const wrap=$('tutCast'), touch=$('tutTouch');
   if(touch) touch.classList.remove('on');
   if(wrap){
-    wrap.classList.remove('in');   // 立繪滑出（CSS transition）
     const L=$('tutCastL'), R=$('tutCastR');
-    if(L) L.classList.remove('speaking');
-    if(R) R.classList.remove('speaking');
+    for(const el of [L,R]){ if(el){ el.classList.remove('in'); el.classList.remove('speaking'); } }   // 立繪滑出
     setTimeout(()=>{ if(!state.tutorialDialog) wrap.classList.remove('on'); }, 500);
   }
   if(resume){

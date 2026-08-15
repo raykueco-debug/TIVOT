@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於首頁版權宣告下方，每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.15-45';
+export const VERSION = 'ver 2026.08.15-46';
 
 export const GAME_CONFIG = {
 
@@ -213,12 +213,15 @@ export const GAME_CONFIG = {
     noUltBoards: 1,        // 前 N 盤敵人不發動大絕（第一盤純練清盤，第二盤起反擊教學）
     // 教學期間大絕紅點的生成範圍（%），避開左右立繪與下方對話框——只在中央帶出現
     threatSpawn: { leftMin:38, leftMax:62, topMin:25, topMax:55 },
-    // 立繪：portraitHeightPct＝基準高（佔敵人框高 %）；fit.zoom 逐角色縮放——
-    //   以監察官（芙蕾雅）頭部尺寸為基準，其他角色調 zoom 使頭部等大、比例一致。
+    // 立繪：portraitHeightPct＝基準高（佔敵人框高 %）；fit 逐角色取景——
+    //   zoom：以監察官（芙蕾雅）「眼睛寬度」為基準縮放，使兩人五官等大、比例一致
+    //         （兩圖同 1024×1536；實測眼寬 芙蕾雅≈53px、蕾妮≈65px → 蕾妮 53/65≈0.82）。
+    //   drop：立繪往敵人框下緣外推的 %（被裁去下方）——不以全圖置入為原則，
+    //         用來調兩人同框的站位與身高差（監察官略高）。
     portraitHeightPct: 88,
     cast: {
-      inspector: { name:'芙蕾雅', image:'inspector_freya', side:'left',  fit:{ zoom:1 } },
-      partner:   { name:'蕾妮',   image:'partner_renee',   side:'right', fit:{ zoom:0.93 } },
+      inspector: { name:'芙蕾雅', image:'inspector_freya', side:'left',  fit:{ zoom:1,    drop:10 } },
+      partner:   { name:'蕾妮',   image:'partner_renee',   side:'right', fit:{ zoom:0.82, drop:0 } },
     },
     // 罵人台詞（監察官）：教學中玩家「按錯 / 延時」即插入一句（隨機取、可重複觸發）
     scold: {

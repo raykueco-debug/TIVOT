@@ -970,9 +970,10 @@
   .tut-portrait{position:absolute;bottom:0;height:88%;max-width:62%;object-fit:contain;
     object-position:bottom;filter:brightness(.38) saturate(.75);
     transition:transform .45s ease,filter .25s ease;}
+  /* .in 逐立繪掛在 img 上：只有說到話的角色才在場（單人段落不出現另一位） */
   #tutCastL{left:-2%;transform:translateX(-108%);}
   #tutCastR{right:-2%;transform:translateX(108%);}
-  #tutCast.in #tutCastL,#tutCast.in #tutCastR{transform:translateX(0);}
+  #tutCast .tut-portrait.in{transform:translateX(0);}
   .tut-portrait.speaking{filter:brightness(1) saturate(1);}   /* 說話者原色；其餘維持調暗 */
   #tutBubble{position:absolute;left:50%;bottom:46px;transform:translateX(-50%);
     width:min(92%,360px);background:rgba(8,6,12,.9);border:1px solid var(--gold-dim);
