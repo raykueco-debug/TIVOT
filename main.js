@@ -241,6 +241,24 @@ function launchBattle(){
 bindBtn('startBtn', launchBattle);
 // 首頁「教學」鈕：強制下一場進教學（不動已看旗標），其餘流程同出陣
 bindBtn('tutorialBtn', ()=>{ tutorial.requestReplay(); launchBattle(); });
+
+/* ── 語言切換鈕（中→A→あ 循環）──
+ *  選擇存 localStorage('tivot.lang')；實際字串置換待 i18n/en.js・ja.js 翻譯就位後接上
+ *  （母本 i18n/zh.js）。目前先記錄選擇並更新鈕面字樣。 */
+(function bindLangBtn(){
+  const LANGS=['zh','en','ja'], FACE={ zh:'中', en:'A', ja:'あ' };
+  const KEY='tivot.lang';
+  let cur; try{ cur=localStorage.getItem(KEY)||'zh'; }catch(e){ cur='zh'; }
+  if(LANGS.indexOf(cur)<0) cur='zh';
+  const btn=$('langBtn');
+  const paint=()=>{ if(btn) btn.textContent=FACE[cur]; };
+  paint();
+  bindBtn('langBtn', ()=>{
+    cur=LANGS[(LANGS.indexOf(cur)+1)%LANGS.length];
+    try{ localStorage.setItem(KEY, cur); }catch(e){}
+    paint();
+  });
+})();
 bindBtn('exitBtn',      showExitConfirm);       // 右上：退出 → 確認對話框（盤面模糊）
 
 // 退出確認：暫停（cutinPlaying）+ 數字盤模糊 + 「回主選單 / 繼續」。回主選單走 goHome（淡出淡入）。
