@@ -117,7 +117,7 @@ export const STRINGS = {
 
   /* ═══ 7. 搭檔（名字／技能）＋選人選單 ═══ */
   partners: {
-    freya: {                            // （鑰匙名 freya＝蕾妮，歷史原因勿改鍵）
+    renee: {
       name:        '蕾妮',
       perk:        '即死防禦（被動）＋生命歸還（主動）',
       passiveName: '即死防禦',
@@ -289,7 +289,7 @@ export const STRINGS = {
     creditClose:  '關閉',
     creditUse: {                        // 各曲用途標籤（曲名/作者名 [KEEP] 不譯）
       mainMenu:   'Main Menu',          // [EN-STYLE]
-      missionFail:'Mission Faild',      // [EN-STYLE]
+      missionFail:'Mission Failed',     // [EN-STYLE]
       result:     '結算畫面',
       battle:     '戰鬥畫面',
       boss:       'Boss戰',

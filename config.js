@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於首頁版權宣告下方，每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.15-57';
+export const VERSION = 'ver 2026.08.15-58';
 
 export const GAME_CONFIG = {
 
@@ -58,7 +58,7 @@ export const GAME_CONFIG = {
    *  新增搭檔：複製一段，改鑰匙名與圖音即可。
    * ------------------------------------------------------------------ */
   partners: {
-    freya: {
+    renee: {
       name:'蕾妮',
       image:'partner_renee',   // 選人畫面大立繪（Renee_SI_01）
       // 選人畫面取景（基準）：zoom=1 整張以高度貼合取景框；top=0 頭頂對齊框頂。
@@ -130,7 +130,7 @@ export const GAME_CONFIG = {
       },
     },
   },
-  defaultPartner: 'freya',
+  defaultPartner: 'renee',   // 搭檔只有 renee（蕾妮）/ malzeno（馬季諾）；freya＝監察官（inspectors）
 
   /* ------------------------------------------------------------------ *
    *  三、監察官（Inspector）— 結算畫面角色（框架預留，之後接）
@@ -756,7 +756,7 @@ export const ASSETS = {
   //  .mp3 原檔保留於 resources/Stage 作母帶，需要重轉時用 ffmpeg -c:a aac -b:a 96k。
   bgm_home:      "resources/Stage/MainMenu.m4a",       // 主選單（含次要選單）
   bgm_battle:    "resources/Stage/Battle_01.m4a",      // 戰鬥（驅逐開始插入瞬間起播）
-  bgm_lose:      "resources/Stage/MissonFaild_01.m4a", // 任務失敗（驅逐失敗插入起播）
+  bgm_lose:      "resources/Stage/MissionFailed_01.m4a", // 任務失敗（驅逐失敗插入起播）
   bgm_result:    "resources/Stage/Result_01.m4a",      // 結算（驅逐完成頁被點掉後起播）
   bgm_boss:      "resources/Stage/BOSS_01.m4a",        // Boss 戰（點下迎擊起播）
   bgm_intruder:  null,   // （無獨立亂入曲；亂入＝Boss，走 bgm_boss）

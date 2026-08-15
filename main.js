@@ -458,7 +458,7 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
     const up=startY-t.clientY;
     if(up>need() && up>Math.abs(t.clientX-startX)*1.0){
       tracking=false;
-      partner.tryActive('board');   // 能否發、屬於誰由 partner 判定（freya 無 board 技 → no-op）
+      partner.tryActive('board');   // 能否發、屬於誰由 partner 判定（renee 無 board 技 → no-op）
     }
   },{passive:true});
   zone.addEventListener('touchend',()=>{tracking=false;});
