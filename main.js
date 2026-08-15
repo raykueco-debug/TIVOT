@@ -19,6 +19,7 @@ import * as partner from './modules/partner.js';   // 主動技統一入口 tryA
 import * as weapon from './modules/weapon.js';     // 雙槍破防發動 + 換裝面板
 
 import * as inspector from './modules/inspector.js';   // 結算/評價/迎擊分流
+import * as tutorial from './modules/tutorial.js';     // 首頁「教學」鈕：下一場強制進教學
 import { playTransition } from './modules/transition.js';   // 過渡禎（開始/結束淡入淡出）
 import { sakuraBurst } from './modules/sakura.js';   // 開始遊戲：全畫面櫻花飛舞（純程式）
 import './modules/enemy.js';
@@ -225,7 +226,7 @@ function preloadLateBgm(){
 })();
 
 // 首頁：開始遊戲 → 主選單先淡出、空一拍（約 1s）Battle 才淡入（避免唐突），同時播「驅逐開始」過渡禎
-bindBtn('startBtn',     ()=>{
+function launchBattle(){
   // 出陣 stinger（sfx_startbt＝StartBT_SE 神楽鈴）：列第一梯關鍵預載（見 preloadAll critP）→ 即點即響。
   SFX.play(asset('sfx_startbt'), sfxGain('sfx_startbt'));
   preloadLateBgm();   // 保險：若保底提前放行沒經過 go()，出陣（櫻花期間）補載第二段
@@ -233,7 +234,10 @@ bindBtn('startBtn',     ()=>{
   // 驅逐開始：不靠點擊、不自動計時 → 由櫻花飄完（onDone）主動推進進戰鬥
   const tr = playTransition('start', combat.startGame, { noTap:true, noAuto:true });
   sakuraBurst({ onDone: ()=> tr.proceed() });
-});
+}
+bindBtn('startBtn', launchBattle);
+// 首頁「教學」鈕：強制下一場進教學（不動已看旗標），其餘流程同出陣
+bindBtn('tutorialBtn', ()=>{ tutorial.requestReplay(); launchBattle(); });
 bindBtn('exitBtn',      showExitConfirm);       // 右上：退出 → 確認對話框（盤面模糊）
 
 // 退出確認：暫停（cutinPlaying）+ 數字盤模糊 + 「回主選單 / 繼續」。回主選單走 goHome（淡出淡入）。

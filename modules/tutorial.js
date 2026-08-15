@@ -52,6 +52,10 @@ let cutinWaiters = [];         // afterCutin 輪詢計時器（teardown 清理�
 function hasSeen(){ try{ return localStorage.getItem(CFG().storageKey)==='1'; }catch(e){ return false; } }
 function markSeen(){ try{ localStorage.setItem(CFG().storageKey,'1'); }catch(e){} }
 
+/* ---- 首頁「教學」鈕：下一場出陣強制進教學（不動已看旗標；用畢即清）---- */
+let replayRequested = false;
+export function requestReplay(){ replayRequested = true; }
+
 /* ============================================================================
  *  進場/節點掛鉤（combat / defense / saint 經協調者呼叫）
  * ========================================================================== */
@@ -59,7 +63,8 @@ function markSeen(){ try{ localStorage.setItem(CFG().storageKey,'1'); }catch(e){
 export function maybeStart(){
   const cfg = CFG();
   if(!cfg || !cfg.steps || !cfg.steps.length) return;
-  if(hasSeen() || state.tutorialActive) return;
+  if((hasSeen() && !replayRequested) || state.tutorialActive) return;
+  replayRequested = false;
   state.tutorialActive = true;
   state.tutorialRun = true;         // 存續到結算（inspector 據此切教學專屬台詞/按鈕）
   state.tutorialLifeReturn = false;
@@ -88,9 +93,30 @@ export function onMistake(kind){
   const text = pool[Math.random()*pool.length|0];
   openStep({ lines:[{ who:'inspector', text }] });
 }
-// combat 延時懲罰前詢問：第二盤在首次防禦成功前不套延時懲罰
+// combat 延時懲罰前詢問：第二回合在首次防禦成功前不套延時懲罰
 export function delayPenaltySuppressed(){
   return state.tutorialActive && state.boardIndex===1 && !defendedDone;
+}
+// defense.scheduleUlt 詢問：教學中暫緩敵大絕的情境——
+//   ① 前 noUltBoards 回合（第一回合純清盤）② 第四回合聖徒化發動前（劇情殺腳本盤）
+//   ③ 場上已有紅點（教學全程一次只出一顆，凍結講解/立繪在場時不疊點）
+export function ultSuppressed(){
+  if(!state.tutorialActive) return false;
+  if(state.boardIndex < (CFG().noUltBoards||0)) return true;
+  if(state.boardIndex===3 && !state.saintUsedThisBattle) return true;
+  if(state.threats.length>0) return true;
+  return false;
+}
+// defense.spawnThreat 詢問：反擊教學第一顆紅點未出（threat 步驟尚未觸發）→ 用固定位置
+export function firstThreatPending(){
+  return state.tutorialActive && stepsLeft.some(s=>s.trigger==='threat');
+}
+// combat.tap 每次正確消格呼叫（cleared＝本盤已消格數）：第四回合清滿 strike.afterCells
+//   → 觸發「小心！」劇情殺段
+export function onBoardProgress(cleared){
+  if(!state.tutorialActive || state.tutorialDialog) return;
+  const st = CFG().strike || {};
+  if(state.boardIndex===3 && cleared >= (st.afterCells||8)) fire('strike');
 }
 // combat.addEnergy 詢問：雙槍引導前破防值封頂（preFullEnergy），第三盤放行
 export function energyCapActive(){
@@ -158,17 +184,19 @@ function fire(trigger){
 //   opts.gate＝段落講完後進入的引導閘門（完成指定操作才續戰）。
 function openScript(key, opts){
   if(!state.tutorialActive) return;
-  const lines = (CFG().script||{})[key];
+  const raw = (CFG().script||{})[key];
+  const lines = Array.isArray(raw) ? raw : (raw && raw.lines);
   if(!lines || !lines.length) return;
   pendingGate = (opts && opts.gate) || null;
-  openStep({ key, lines });
+  openStep({ key, lines, center: !Array.isArray(raw) && !!raw.center });   // center＝立繪移畫面正中
 }
 
 // 段落收掉後的腳本接續（closeDialog 於 resume 時呼叫；skip/abort 走 silent 不觸發）
 function onStepClosed(id){
-  if(id==='board:3'){
-    // 「小心！」收段 → 三爪重擊（致死 → 即死防禦保 1 HP）→ cut-in 結束後聖徒化引導
-    api.lethalStrike();
+  if(id==='strike'){
+    // 「小心！」收段 → 劇情殺三連擊（三種受擊畫面、第二擊三爪、末擊致死 → 即死防禦保 1 HP）
+    //   → 即死防禦 cut-in 結束後聖徒化引導
+    api.strike();
     afterCutin(()=>openScript('saintCall', { gate:{
       type:'right',
       action: ()=>api.activateSaint('right'),
@@ -207,7 +235,9 @@ function syncCast(step){
   const used = new Set((step && step.lines || []).map(l=>l.who));
   for(const key of Object.keys(cast)){
     const el = portraitEl(cast[key]);
-    if(el) el.classList.toggle('in', used.has(key));
+    if(!el) continue;
+    el.classList.toggle('center', used.has(key) && !!(step && step.center));   // 正中模式（引導箭頭讓位）
+    el.classList.toggle('in', used.has(key));
   }
 }
 
@@ -294,7 +324,7 @@ function closeDialog(resume, silent){
   if(touch) touch.classList.remove('on');
   if(wrap){
     const L=$('tutCastL'), R=$('tutCastR');
-    for(const el of [L,R]){ if(el){ el.classList.remove('in'); el.classList.remove('speaking'); } }   // 立繪滑出
+    for(const el of [L,R]){ if(el){ el.classList.remove('in','speaking','center'); } }   // 立繪滑出
     setTimeout(()=>{ if(!state.tutorialDialog) wrap.classList.remove('on'); }, 500);
   }
   if(resume){
@@ -335,10 +365,10 @@ function showGuide(type){
     x = r.left + r.width/2 + 8;
     y = r.top - 52;
   }else if(type==='right'){
-    // 畫面左側往右閃、標示向右側滑動
+    // 畫面左緣往右閃、標示向右側滑動（x 貼緣：立繪已移正中，箭頭不壓立繪）
     const tr=$('top') ? $('top').getBoundingClientRect() : {top:0,height:innerHeight/2};
     dir='g-right'; label = labels.right || '向右側滑動';
-    x = 86;
+    x = 42;
     y = tr.top + tr.height*0.45;
   }else{
     // 畫面下方由下往上指、標示向上滑動

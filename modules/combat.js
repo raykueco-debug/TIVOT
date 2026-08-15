@@ -55,16 +55,18 @@ const tutAtkDmg = dmg => (state.tutorialActive && GAME_CONFIG.tutorial && GAME_C
 export function setup(){
   // combat 把自己擁有的狀態變動原語注入下游模組，切斷反向依賴
   //   onThreatSpawned/onThreatResolved：教學「首紅點/首次防禦成功」節點通知
+  //   ultSuppressed/firstThreatPending：教學暫緩大絕（一次一顆/腳本盤）與首顆固定位
   //   （defense 不 import tutorial，經此轉交）
   defense.init({ enemyAttack, enemyDamage, floatDmg, triggerAtkBuff, weaponCounter: weapon.weaponCounter,
-                 onThreatSpawned: tutorial.onThreatSpawned, onThreatResolved: tutorial.onThreatResolved });
+                 onThreatSpawned: tutorial.onThreatSpawned, onThreatResolved: tutorial.onThreatResolved,
+                 ultSuppressed: tutorial.ultSuppressed, firstThreatPending: tutorial.firstThreatPending });
   // 教學：真暫停/續戰＋腳本化終盤所需原語注入（雙槍/聖徒化/搭檔主動技/三爪腳本/敵血封頂）
   tutorial.init({
     pauseForDialog, resumeFromDialog,
     activateDual: weapon.activateDual,
     activateSaint: saint.activateSaint,
     tryPartnerActive: partner.tryActive,
-    lethalStrike: tutorialLethalStrike,
+    strike: tutorialStrike,
     capEnemyHp: tutorialCapEnemyHp,
   });
   // 武器：反擊演算所需（enemyDamage/floatDmg）+ 雙槍破防窗口所需（cut-in/敵計時/盤面/破防值歸零）。
@@ -278,6 +280,7 @@ function tap(num,cell,e){
     state.critCombo++;
     enemyDamage(Math.round(dmg),crit);   // 點擊直接扣敵血（crit=true → 敵區跳紅字「暴擊」）
     state.expect++;
+    tutorial.onBoardProgress(state.expect-1);   // 教學：第四回合清滿 N 格 → 劇情殺（非教學 no-op）
     if(state.expect>state.N) clearBoard(); else markNext();
     updateStatus();
   }else{
@@ -836,14 +839,31 @@ export function goHome(){
 /* ============================================================================
  *  教學腳本原語（注入 tutorial 使用；非教學不會被呼叫）
  * ========================================================================== */
-// 三爪重擊腳本：「小心！」收段後直接以 'ult' 種類施以致死攻擊（faceless 的 ult
-//   受擊特效＝三爪）→ 走 enemyAttack 致死鏈 → 蕾妮即死防禦保 1 HP＋cut-in。
-//   保險：當前搭檔無即死防禦（或已用掉）時退化為「打到剩 1 HP」，不讓教學直接戰死。
-function tutorialLethalStrike(){
-  const p=GAME_CONFIG.partners[state.pickedPartner];
-  const guardOk = p && p.passive && p.passive.key==='deathGuard' && !state.deathGuardUsed;
-  const dmg = guardOk ? state.playerHp + 50 : Math.max(1, state.playerHp - 1);
-  enemyAttack(dmg, 'ult');
+// 劇情殺三連擊：「小心！」收段後依 config.tutorial.strike.hits 分次攻擊——
+//   三種受擊畫面各出一次（kind 對應該敵 hitFx：delay=血痕/ult=三爪/wrong=紅刀痕），
+//   傷害為真實值（不受教學 enemyAtkDamage=2 管制）；非末擊絕不打死（至少留 1 HP），
+//   末擊必致死 → 蕾妮即死防禦保 1 HP＋cut-in。
+//   保險：當前搭檔無即死防禦（或已用掉）時末擊退化為「打到剩 1 HP」，不讓教學直接戰死。
+function tutorialStrike(){
+  const st=(GAME_CONFIG.tutorial && GAME_CONFIG.tutorial.strike) || {};
+  const hits=st.hits || [{kind:'ult', dmg:999}];
+  const gap=st.gapMs || 700;
+  hits.forEach((h,i)=>{
+    setTimeout(()=>{
+      if(state.over || state.saintMode) return;
+      const last = (i === hits.length-1);
+      let dmg = h.dmg;
+      if(!last){
+        dmg = Math.min(dmg, Math.max(0, state.playerHp-1));   // 非末擊：至少留 1 HP
+        if(dmg<=0) return;
+      }else{
+        const p=GAME_CONFIG.partners[state.pickedPartner];
+        const guardOk = p && p.passive && p.passive.key==='deathGuard' && !state.deathGuardUsed;
+        dmg = guardOk ? state.playerHp + 50 : Math.max(1, state.playerHp - 1);
+      }
+      enemyAttack(dmg, h.kind);
+    }, i*gap);
+  });
 }
 // 敵殘血封頂：聖徒化收尾後把敵血壓到 finishEnemyHp 以下，保證玩家「本盤」就能殺進
 //   overkill 結束教學戰；跳過教學時也用它把覆寫的高血量收回該敵 config 值。

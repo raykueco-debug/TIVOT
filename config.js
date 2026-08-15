@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於首頁版權宣告下方，每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.15-48';
+export const VERSION = 'ver 2026.08.15-49';
 
 export const GAME_CONFIG = {
 
@@ -214,8 +214,18 @@ export const GAME_CONFIG = {
     enemyHp: 800,          // 教學戰敵人血量覆寫：撐到腳本終盤（雙槍→三爪→聖徒化）都不會被提前打死
     preFullEnergy: 99,     // 第二盤清盤時破防值設為此值（差 1 滿）；此前破防值也封頂於此
     finishEnemyHp: 60,     // 聖徒化結束後敵殘血上限：保證玩家「本盤」就能殺進 overkill 結束戰鬥
-    // 教學期間大絕紅點的生成範圍（%），避開左右立繪與下方對話框——只在中央帶出現
-    threatSpawn: { leftMin:38, leftMax:62, topMin:25, topMax:55 },
+    // 教學期間大絕紅點的生成範圍（%），避開左右立繪與下方對話框——只在中央帶出現。
+    //   first＝反擊教學第一顆紅點的固定位置（畫面正中偏上，凍結講解時不壓立繪）；
+    //   教學全程一次只出一顆（有紅點在場時暫緩下一發，見 tutorial.ultSuppressed）。
+    threatSpawn: { leftMin:38, leftMax:62, topMin:25, topMax:55, first:{ left:50, top:30 } },
+    // 第四回合劇情殺（聖徒化前導）：玩家清滿 afterCells 格 → 監察官「小心！」→
+    //   分三次擊倒（gapMs 間隔）；kinds 對應該敵 hitFx 三種受擊畫面（第二次＝三爪 ult）。
+    //   dmg 為真實傷害（劇情殺不受 enemyAtkDamage=2 管制）；末段必致死 → 即死防禦保 1 HP。
+    strike: { afterCells:8, gapMs:700, hits:[
+      { kind:'delay', dmg:30 },    // 第一擊：血痕
+      { kind:'ult',   dmg:40 },    // 第二擊：三爪
+      { kind:'wrong', dmg:999 },   // 第三擊：紅刀痕，致死 → 即死防禦
+    ]},
     // 立繪：portraitHeightPct＝基準高（佔敵人框高 %）；fit 逐角色取景——
     //   zoom：以監察官（芙蕾雅）「眼睛寬度」為基準縮放，使兩人五官等大、比例一致
     //         （兩圖同 1024×1536；實測眼寬 芙蕾雅≈53px、蕾妮≈65px → 蕾妮 53/65≈0.82）。
@@ -242,7 +252,7 @@ export const GAME_CONFIG = {
       { trigger:'battleStart', lines:[
         { who:'inspector', text:'開始實戰考核。HUND，讓我看看你的基礎是否紮實。' },
         { who:'partner',   text:'別緊張！照著數字順序點擊下方的盤面，每一次命中都會對敵人開火！' },
-        { who:'partner',   text:'這一盤敵人還不會出手——先把手感練起來。不過按錯或停太久，還是會受傷的喔。' },
+        { who:'partner',   text:'這一回合敵人還不會出手——先把手感練起來。不過按錯或停太久，還是會受傷的喔。' },
       ]},
       // 第二盤開始：反擊教學開場（此盤起敵人開始發動大絕）
       { trigger:'board:1', lines:[
@@ -263,10 +273,9 @@ export const GAME_CONFIG = {
         { who:'partner',   text:'不過別勉強反擊，覺得危險的話，防下來就好。' },
         { who:'inspector', text:'那樣的話，我的評價可不會留情。' },
         { who:'inspector', text:'不同副武器的效果與反擊時機各不相同。選擇能發揮自己天賦的武器吧。' },
-        { who:'inspector', text:'很好，現在全力殲滅敵人！' },
       ]},
-      // 第四盤（雙槍破防清完後）：三爪重擊腳本的開場白（收段後立刻出爪）
-      { trigger:'board:3', lines:[
+      // 第四回合：玩家清滿 strike.afterCells 格後觸發（收段後劇情殺三連擊 → 聖徒化引導）
+      { trigger:'strike', lines:[
         { who:'inspector', text:'小心！' },
       ]},
     ],
@@ -281,7 +290,8 @@ export const GAME_CONFIG = {
     script: {
       dualReady:  [ { who:'partner',   text:'敵人露出破綻了！就是現在！' } ],
       dualGo:     [ { who:'partner',   text:'敵人無法抵抗，無視順序猛攻吧！' } ],
-      saintCall:  [ { who:'inspector', text:'沒時間了，立刻聖徒化！' } ],
+      // center:true → 立繪移到畫面正中（左側讓給向右滑的引導箭頭，箭頭不壓立繪）
+      saintCall:  { center:true, lines:[ { who:'inspector', text:'沒時間了，立刻聖徒化！' } ] },
       saintStart: [ { who:'inspector', text:'在熔斷前你死不了，但承受攻擊會加速熔斷！' },
                     { who:'inspector', text:'別失誤！只要撐過這回合就有機會逆轉！' } ],
       saintFail:  [ { who:'partner',   text:'不行了！交給我！' } ],

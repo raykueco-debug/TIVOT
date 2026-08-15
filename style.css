@@ -722,6 +722,11 @@
   #startBtn:active{transform:scale(.94);}
   /* 首頁副武器/搭檔占位入口 */
   #homeLoadout{display:flex;gap:14px;margin-top:28px;}
+  /* 教學鈕：位於副武器/搭檔下方，與出陣同大小（不加呼吸光，主次分明） */
+  #tutorialBtn{margin-top:16px;padding:16px 46px;background:transparent;
+    border:1px solid var(--gold-dim);color:var(--gold);border-radius:10px;
+    font-family:inherit;font-size:17px;letter-spacing:5px;}
+  #tutorialBtn:active{transform:scale(.94);}
   .loadout-btn{display:flex;flex-direction:column;align-items:center;gap:3px;
     padding:10px 20px;min-width:100px;background:transparent;border:1px solid var(--gold-dim);
     color:var(--ink);border-radius:8px;font-family:inherit;}
@@ -974,6 +979,9 @@
   #tutCastL{left:-2%;transform:translateX(-108%);}
   #tutCastR{right:-2%;transform:translateX(108%);}
   #tutCast .tut-portrait.in{transform:translateX(0);}
+  /* .center（step.center）：立繪移畫面正中——側邊讓位給引導箭頭（箭頭不壓立繪） */
+  #tutCast .tut-portrait.center{left:50%;right:auto;transform:translateX(-150%);}
+  #tutCast .tut-portrait.center.in{transform:translateX(-50%);}
   .tut-portrait.speaking{filter:brightness(1) saturate(1);}   /* 說話者原色；其餘維持調暗 */
   #tutBubble{position:absolute;left:50%;bottom:46px;transform:translateX(-50%);
     width:min(92%,360px);background:rgba(8,6,12,.9);border:1px solid var(--gold-dim);

@@ -60,8 +60,9 @@ export function scheduleUlt(firstDelayMs){
   state.ultCheckTimer=setTimeout(()=>{
     // overkill/演出/轉場期間不生成；聖徒化期間照常出攻擊點
     if(state.over||state.enemyHp<=0||state.cutinPlaying||state.transitioning){ scheduleUlt(200); return; }
-    // 教學：前 noUltBoards 盤敵人不發動大絕（第一盤純練清盤，第二盤起反擊教學）
-    if(state.tutorialActive && state.boardIndex < (TUT().noUltBoards||0)){ scheduleUlt(200); return; }
+    // 教學：暫緩大絕的情境統一問 tutorial.ultSuppressed（首回合純清盤／劇情殺盤／
+    //   場上已有紅點＝一次只出一顆），經 combat 注入轉交
+    if(api.ultSuppressed && api.ultSuppressed()){ scheduleUlt(250); return; }
     // cut-in／清盤後緩衝期內敵不發動，等窗口過了再排
     if(Date.now() < state.enemyAtkSuppressUntil){ scheduleUlt(state.enemyAtkSuppressUntil - Date.now() + 50); return; }
     startCharge();
@@ -156,6 +157,10 @@ export function spawnThreat(){
   const rollL=()=> ts ? rnd(ts.leftMin,ts.leftMax) : 20+Math.random()*60;
   const rollT=()=> ts ? rnd(ts.topMin, ts.topMax)  : 25+Math.random()*45;
   let lp=rollL(), tp=rollT();
+  // 反擊教學第一顆：固定畫面正中偏上（凍結講解時不壓左右立繪）
+  if(ts && ts.first && api.firstThreatPending && api.firstThreatPending()){
+    lp=ts.first.left; tp=ts.first.top;
+  }
   for(let tries=0;tries<40;tries++){
     const cx=pxLeft(lp), cy=pxTop(tp);
     let ok=true;
