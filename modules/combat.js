@@ -483,6 +483,12 @@ function resetEnergy(){ state.energy=0; updateEnergyClasp(); }
 
 // 對敵造成傷害（含 overkill / 擊殺凍結計時）
 function enemyDamage(dmg,isCrit,silent){
+  // 教學：段落未播完前（tutorialActive）敵不可被打死——致死傷害夾到留 1 HP。
+  //   防 EXSECUTIŌ／聖徒化中擊殺跳過最後一段教學（finishMB/LR 播完 endTutorial 後才解鎖擊殺）。
+  if(state.tutorialActive && dmg>=state.enemyHp && state.enemyHp>0){
+    dmg = state.enemyHp - 1;
+    if(dmg<=0){ $('enemyImg').classList.add('hit'); setTimeout(()=>$('enemyImg').classList.remove('hit'),80); return; }
+  }
   if(dmg>0){
     if(state.enemyHp>0){
       const after=state.enemyHp-dmg;
