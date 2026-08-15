@@ -320,17 +320,23 @@ function applyTutorialResult(){
   const bubble=$('inspectorBubble'), lineEl=$('inspectorLine');
   clearTimeout(_inspTypeTimer);
   if(lineEl) lineEl.textContent='';
-  // 兩次對話框：第一句打完停一拍 → 對話框重彈（re-pop）→ 第二句（聖徒化豪賭 outro）
+  // 兩次對話框：第一句打完 → 尾端亮「▼」→ 點擊對話框才重彈打第二句（聖徒化豪賭 outro）
   setTimeout(()=>{
     if(bubble) bubble.classList.add('show');
     if(lineEl) typeInspectorLine(lineEl, line1 || '', 2000);
-    if(tr.outro){
+    if(tr.outro && bubble){
       setTimeout(()=>{
         if(state.resultMode!=='tutorial-home') return;   // 已按鈕離場（buttonLine 播放中）則讓位
-        if(bubble){ bubble.classList.remove('show'); void bubble.offsetWidth; bubble.classList.add('show'); }
-        clearTimeout(_inspTypeTimer);
-        if(lineEl) typeInspectorLine(lineEl, tr.outro, 2000);
-      }, 2000 + 1300);
+        if(lineEl) lineEl.textContent += '　▼';          // 待點提示
+        const onTap=()=>{
+          bubble.removeEventListener('pointerup', onTap);
+          if(state.resultMode!=='tutorial-home') return;
+          bubble.classList.remove('show'); void bubble.offsetWidth; bubble.classList.add('show');
+          clearTimeout(_inspTypeTimer);
+          if(lineEl) typeInspectorLine(lineEl, tr.outro, 2000);
+        };
+        bubble.addEventListener('pointerup', onTap);
+      }, 2100);
     }
   }, 1400);
 }

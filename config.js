@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於首頁版權宣告下方，每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.15-50';
+export const VERSION = 'ver 2026.08.15-51';
 
 export const GAME_CONFIG = {
 
@@ -214,7 +214,8 @@ export const GAME_CONFIG = {
     enemyHp: 800,          // 教學戰敵人血量覆寫：撐到腳本終盤（雙槍→三爪→聖徒化）都不會被提前打死
     preFullEnergy: 90,     // 第二回合清盤時破防值設為此值（＝100−5 擊×energyPerHit(2)：
                            //   第三回合點 5 個數字後才滿、滿了才跳蕾妮引導）；此前破防值也封頂於此
-    finishEnemyHp: 60,     // 聖徒化結束後敵殘血上限：保證玩家「本盤」就能殺進 overkill 結束戰鬥
+    finishEnemyHp: 40,     // 聖徒化結束後敵殘血上限：收尾盤（16 格）約 7~9 格即擊殺，
+                           //   餘格進 overkill 追打 → 保證教學結束時打得死且有一定量 overkill
     // 教學期間大絕紅點的生成範圍（%），避開左右立繪與下方對話框——只在中央帶出現。
     //   first＝反擊教學第一顆紅點的固定位置（畫面正中偏上，凍結講解時不壓立繪）；
     //   教學全程一次只出一顆（有紅點在場時暫緩下一發，見 tutorial.ultSuppressed）。
@@ -237,7 +238,9 @@ export const GAME_CONFIG = {
       inspector: { name:'芙蕾雅', image:'inspector_freya', side:'left',  fit:{ zoom:1,    drop:10 } },
       partner:   { name:'蕾妮',   image:'partner_renee',   side:'right', fit:{ zoom:0.82, drop:0 } },
     },
-    // 罵人台詞（監察官）：教學中玩家「按錯 / 延時」即插入一句（隨機取、可重複觸發）
+    // 罵人台詞（監察官）：教學中玩家「按錯 / 延時」即插入一句（隨機取、可重複觸發；
+    //   defended 段講完後停用）。early＝太早防禦（Defense 格擋半傷）專用——不受 defended
+    //   停用限制、聖徒化期間不插（見 tutorial.onEarlyBlock）。
     scold: {
       wrong: [
         '看清楚數字再出手。你的搭檔可不會替你挨這一下。',
@@ -246,6 +249,9 @@ export const GAME_CONFIG = {
       delay: [
         '手停下來做什麼？敵人可不會等你。',
         '猶豫的代價，記住這種痛。',
+      ],
+      early: [
+        '太早了！看清楚一點！',
       ],
     },
     steps: [

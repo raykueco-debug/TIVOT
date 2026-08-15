@@ -59,6 +59,7 @@ export function setup(){
   //   （defense 不 import tutorial，經此轉交）
   defense.init({ enemyAttack, enemyDamage, floatDmg, triggerAtkBuff, weaponCounter: weapon.weaponCounter,
                  onThreatSpawned: tutorial.onThreatSpawned, onThreatResolved: tutorial.onThreatResolved,
+                 onThreatEarly: tutorial.onEarlyBlock,
                  ultSuppressed: tutorial.ultSuppressed, firstThreatPending: tutorial.firstThreatPending });
   // 教學：真暫停/續戰＋腳本化終盤所需原語注入（雙槍/聖徒化/搭檔主動技/三爪腳本/敵血封頂）
   tutorial.init({

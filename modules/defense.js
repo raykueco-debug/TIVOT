@@ -244,6 +244,7 @@ export function resolveThreat(th){
         api.enemyAttack(dmg, 'ult');                     // 依武器倍率受傷（仍屬大絕受擊）
         api.floatDmg('BLOCK −'+dmg,'50%','42%',false);
       }
+      if(api.onThreatEarly) api.onThreatEarly();   // 教學「太早防禦」插話（教學外/聖徒化為 no-op）
     }
   }
   if(api.onThreatResolved) api.onThreatResolved();   // 教學「首次防禦成功」節點通知（教學外為 no-op）

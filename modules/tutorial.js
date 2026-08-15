@@ -93,6 +93,14 @@ export function onMistake(kind){
   const text = pool[Math.random()*pool.length|0];
   openStep({ lines:[{ who:'inspector', text }] });
 }
+// defense.resolveThreat 太早防禦（Defense 格擋半傷）→ 監察官「太早了！」。
+//   不受 defended 停用限制（每次太早都提醒）；聖徒化期間不插（格擋是推進機制、節奏緊湊）。
+export function onEarlyBlock(){
+  if(!state.tutorialActive || state.tutorialDialog || state.over || state.saintMode) return;
+  const pool = (CFG().scold||{}).early;
+  if(!pool || !pool.length) return;
+  openStep({ lines:[{ who:'inspector', text: pool[Math.random()*pool.length|0] }] });
+}
 // combat 延時懲罰前詢問：第二回合在首次防禦成功前不套延時懲罰
 export function delayPenaltySuppressed(){
   return state.tutorialActive && state.boardIndex===1 && !defendedDone;
