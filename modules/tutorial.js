@@ -152,14 +152,14 @@ export function onSaintCritical(){
   }});
 }
 // saint 結局掛鉤：'mb'＝Maximum Burst（未擊殺）、'return'＝生命歸還。
-//   cut-in 結束後：敵殘血封頂（保證本盤殺得完）→ 收尾台詞 → 教學完成（記已看）。
+//   cut-in 結束後：收尾台詞 → 教學完成（記已看）。敵血不再中途壓縮——
+//   教學總血量（config.tutorial.enemyHp）開場即依終盤 overkill 條件反推固定。
 export function onSaintEnded(kind){
   if(!state.tutorialActive) return;
   if(kind!=='mb' && kind!=='return') return;
   if(kind==='return') state.tutorialLifeReturn = true;   // 結算台詞分歧：發動過生命歸還
   afterCutin(()=>{
     if(!state.tutorialActive) return;
-    api.capEnemyHp(CFG().finishEnemyHp);
     markSeen();
     openScript(kind==='mb' ? 'finishMB' : 'finishLR');
   });

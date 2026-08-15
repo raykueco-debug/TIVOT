@@ -31,13 +31,15 @@ const ULT_OPEN_MS = 3000;                  // 開場保證：每盤 3 秒內敵�
 let api = {};
 export function init(a){ api = a; }
 
-/* ---------- 教學調整（config.tutorial；只在 tutorialActive 期間生效）----------
+/* ---------- 教學調整（config.tutorial）----------
  *  effUltDamage：教學中敵大絕基礎傷害一律 enemyAtkDamage（=2）；
  *    Defense 格擋沿用 defenseDamageScale 再減半 → 1（「除非被防禦減半」）。
- *  按錯/延時懲罰的同款覆寫在 combat 的 tutAtkDmg（同一 config 值，兩處同源）。 */
+ *  按錯/延時懲罰的同款覆寫在 combat 的 tutAtkDmg（同一 config 值，兩處同源）。
+ *  ⚠ 判定用 tutorialRun（存續到勝負）：聖徒化收尾段落結束後（tutorialActive=false）
+ *    收尾盤仍是教學戰，攻擊力必須鎖 2。 */
 const TUT = () => GAME_CONFIG.tutorial || {};
 function effUltDamage(){
-  return (state.tutorialActive && TUT().enemyAtkDamage!=null) ? TUT().enemyAtkDamage : state.ULT_DAMAGE;
+  return (state.tutorialRun && TUT().enemyAtkDamage!=null) ? TUT().enemyAtkDamage : state.ULT_DAMAGE;
 }
 
 /* ---------- 大絕頻率（擁有者管道）----------

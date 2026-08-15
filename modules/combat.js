@@ -46,7 +46,9 @@ const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a
 
 // 教學期間敵方攻擊基礎傷害覆寫（config.tutorial.enemyAtkDamage；一律 2）。
 //   按錯/延時懲罰經此；大絕與 Defense 格擋由 defense 的 effUltDamage 同源處理（格擋＝再減半 → 1）。
-const tutAtkDmg = dmg => (state.tutorialActive && GAME_CONFIG.tutorial && GAME_CONFIG.tutorial.enemyAtkDamage!=null)
+//   ⚠ 判定用 tutorialRun（存續到結算）而非 tutorialActive：聖徒化收尾台詞後段落結束
+//     （tutorialActive=false）但收尾盤仍是教學戰，攻擊力必須鎖 2 直到勝負。
+const tutAtkDmg = dmg => (state.tutorialRun && GAME_CONFIG.tutorial && GAME_CONFIG.tutorial.enemyAtkDamage!=null)
   ? GAME_CONFIG.tutorial.enemyAtkDamage : dmg;
 
 /* ============================================================================
