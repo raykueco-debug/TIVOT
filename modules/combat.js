@@ -109,6 +109,7 @@ export function setup(){
     resetEnemyTimers: defense.resetEnemyTimers,
     scheduleUlt: defense.scheduleUlt,
     playCutin: saint.playCutin,
+    hintCurrentCell,   // 即死防禦後標記當前應點格（一次性續命導航）
     saintApi: { lifeReturnAbort: saint.lifeReturnAbort },
     // 馬季諾：前線補給（cut-in 後直接進雙槍破防窗口，窗口本體歸 weapon）＋高裝藥彈（低血量普攻加倍；lowHpBuff 為 combat 擁有，經此管道寫）
     startDual: weapon.startDualWindow, setLowHpBuff,
@@ -469,6 +470,13 @@ export function setPlayerHpRatio(ratio){
 }
 // 設定當前盤面格數（N/cols 為 combat 擁有；聖徒化換 16 宮格 / 收尾還原經此，維持擁有者管道）。
 function setBoard(n, cols){ state.N=n; state.cols=cols; }
+// 一次性標記「當前應點的數字格」（即死防禦續命導航經注入呼叫）：沿用 .next 高亮；
+//   點掉該格後由 tap → markNext 回到該盤原本的提示規則，不持續提示。
+function hintCurrentCell(){
+  if(state.over || state.saintMode || state.dualWield || state.enemyHp<=0) return;
+  const c=state.cells.find(x=>+x.dataset.num===state.expect && !x.classList.contains('done'));
+  if(c) c.classList.add('next');
+}
 // 歸零聖能並更新 C 字計量表（聖徒化開場清零破防值；energy 為 combat 擁有）。
 function resetEnergy(){ state.energy=0; updateEnergyClasp(); }
 

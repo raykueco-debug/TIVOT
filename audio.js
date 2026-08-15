@@ -23,7 +23,8 @@ const _pending = {};   // src → Promise（解碼中，避免重複 fetch）
  *  （聽感＝破/糊）；limiter 以 2ms attack 軟接峰值，疊播再多也不破音。
  *  參數為「透明限幅」取向：threshold -6dB 之下完全不動、ratio 12 近似 brickwall。
  *  context 可能被 unlock 重建（iOS）→ 依 context 快取，換 context 自動重建。 */
-let _bus = null, _busCtx = null;
+let _bus = null, _busCtx = null, _busMaster = null;
+let _master = 1;   // 全域主音量（setMasterVolume；呼叫端於開機從 config 設定——本模組維持不讀 config）
 function busOut(c){
   if(_bus && _busCtx === c) return _bus;
   try{
@@ -33,8 +34,10 @@ function busOut(c){
     lim.ratio.value = 12;        // 近似 brickwall
     lim.attack.value = 0.002;    // 2ms：咬住瞬態不悶掉打擊感
     lim.release.value = 0.12;
-    lim.connect(c.destination);
-    _bus = lim; _busCtx = c;
+    const mg = c.createGain();   // limiter 之後的主音量節（全 SFX/合成音統一縮放）
+    mg.gain.value = _master;
+    lim.connect(mg); mg.connect(c.destination);
+    _bus = lim; _busCtx = c; _busMaster = mg;
     return lim;
   }catch(e){ return c.destination; }
 }
@@ -159,7 +162,7 @@ export const SFX = {
       }
     }
     const el = _bgmEl;
-    if(el && el.paused && el.src){ el.volume=_bgmVol; const p=el.play(); if(p&&p.catch) p.catch(()=>{}); }
+    if(el && el.paused && el.src){ el.volume=Math.min(1,_bgmVol*_master); const p=el.play(); if(p&&p.catch) p.catch(()=>{}); }
   },
 
   /* 切換 BGM：同一元素先淡出 →（可選 delayMs 空一拍）→ 換 blobURL 起播（預設不淡入）loop。
@@ -183,10 +186,10 @@ export const SFX = {
       ensureBlob(src).then(url=>{
         if(!url || _bgmSrc !== src) return;
         try{ el.src = url; el.currentTime = 0; }catch(e){}
-        el.volume = (fadeIn > 0 ? 0 : _bgmVol);
+        el.volume = (fadeIn > 0 ? 0 : Math.min(1,_bgmVol*_master));
         const p = el.play();
         if(p && p.catch) p.catch(()=>{});   // 尚未解鎖 → 等 unlock 於手勢補播
-        if(fadeIn > 0) bgmFade(el, _bgmVol, fadeIn);
+        if(fadeIn > 0) bgmFade(el, Math.min(1,_bgmVol*_master), fadeIn);
       });
     };
     const afterOut = ()=>{ if(delay>0) _bgmTimer=setTimeout(switchTo, delay); else switchTo(); };
@@ -211,6 +214,14 @@ export const SFX = {
 
   // 設定普攻槍聲候選（傳已解析路徑陣列，gunshot 隨機播其一；vol＝播放增益，未傳＝1）
   setShots(srcs, vol){ _shots = (srcs || []).filter(Boolean); _shotsVol = (vol==null ? 1 : vol); },
+  // 全域主音量（0~1）：SFX/合成音經 limiter 後的主音量節縮放、BGM 於各寫入點乘上係數。
+  //   呼叫端（main.js）開機時從 config（tuning.masterVolume）設定；本模組維持葉節點不讀 config。
+  setMasterVolume(v){
+    _master = Math.max(0, Math.min(1, v==null ? 1 : v));
+    if(_busMaster) _busMaster.gain.value = _master;
+    const el=_bgmEl;
+    if(el && !el.paused && !el.__fade) el.volume = Math.min(1, _bgmVol*_master);   // 播放中即時套用（淡入淡出中不干預）
+  },
 
   // 合成「重擊感」：完防／格擋用。短促低頻衝擊 + 高頻噪音瞬態（打擊質感）。可重疊。
   heavyHit(){

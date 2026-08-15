@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於首頁版權宣告下方，每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.15-55';
+export const VERSION = 'ver 2026.08.15-56';
 
 export const GAME_CONFIG = {
 
@@ -76,7 +76,7 @@ export const GAME_CONFIG = {
         oncePerBattle:true,      // true=整場只擋一次；false=每次都擋（不建議）
         cutin:'cutin_guard',     // 即死防禦專屬大圖（→ Renee_CI_pas.jpg）；程式讀此欄，不硬寫
         voice:'vo_death_guard',  // cut-in 對應 SE（→ Renee_SE_Pas.wav）
-        desc:'受到足以致死的攻擊時，改為保留 1 HP 存活。',
+        desc:'受到足以致死的攻擊時，為玩家保留1hp續命。',
       },
       // ── 主動技：生命歸還 ─────────────────────────────
       //   聖徒化中，由「下往上滑」發動：強制中止聖徒化，保留當前血量（第四結局）。
@@ -565,6 +565,10 @@ export const GAME_CONFIG = {
    *  想調手感就改這裡的數字，改完存檔重開即可。
    * ------------------------------------------------------------------ */
   tuning: {
+    // 全域主音量（0~1）：所有 SFX/合成音/BGM 統一縮放（整體過大 → 下調至 70%）。
+    //   main.js 開機時經 SFX.setMasterVolume 套用；個別平衡仍走 sfxGain/bgmVol/partnerSeGain。
+    masterVolume:        0.7,
+
     // 玩家
     playerHp:            100,   // 我方血量
 

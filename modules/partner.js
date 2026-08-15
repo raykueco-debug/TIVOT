@@ -61,6 +61,9 @@ export function tryDeathGuard(){
     // 即死防禦後：cut-in 撤下瞬間重置敵大絕與延時（間隔）懲罰倒數，避免剛保命就被連段擊殺
     api.resetEnemyTimers();
     api.scheduleUlt();        // 重新排程敵大絕
+    // 續命導航：標記「當前應點的數字格」一次（玩家被救回來不必找格找到被秒）。
+    //   只提示這一格——點掉後回到該盤原本的提示規則（hint:false 盤不再標下一格）。
+    if(api.hintCurrentCell) api.hintCurrentCell();
   }, label, pas.cutin);       // 插入 cut-in（即死防禦專屬大圖，讀 config）
   return true;
 }

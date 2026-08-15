@@ -61,6 +61,9 @@ combat.setup();
   window.addEventListener('keydown', go);
 })();
 
+// 全域主音量（tuning.masterVolume＝0.7）：先於任何預載/BGM 起播套用
+SFX.setMasterVolume(GAME_CONFIG.tuning.masterVolume != null ? GAME_CONFIG.tuning.masterVolume : 1);
+
 // 普攻槍聲：固定用 Pistol_SE_03（不隨機）
 SFX.setShots([asset('se_pistol_03')].filter(Boolean), sfxGain('se_pistol_03'));
 
