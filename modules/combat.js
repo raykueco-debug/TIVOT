@@ -54,9 +54,10 @@ const tutAtkDmg = dmg => (state.tutorialActive && GAME_CONFIG.tutorial && GAME_C
  * ========================================================================== */
 export function setup(){
   // combat 把自己擁有的狀態變動原語注入下游模組，切斷反向依賴
-  //   onThreatSpawned：教學「首紅點」節點通知（defense 不 import tutorial，經此轉交）
+  //   onThreatSpawned/onThreatResolved：教學「首紅點/首次防禦成功」節點通知
+  //   （defense 不 import tutorial，經此轉交）
   defense.init({ enemyAttack, enemyDamage, floatDmg, triggerAtkBuff, weaponCounter: weapon.weaponCounter,
-                 onThreatSpawned: tutorial.onThreatSpawned });
+                 onThreatSpawned: tutorial.onThreatSpawned, onThreatResolved: tutorial.onThreatResolved });
   // 教學：真暫停/續戰原語注入（同退出確認框的 cutinPlaying 機制）
   tutorial.init({ pauseForDialog, resumeFromDialog });
   // 武器：反擊演算所需（enemyDamage/floatDmg）+ 雙槍破防窗口所需（cut-in/敵計時/盤面/破防值歸零）。

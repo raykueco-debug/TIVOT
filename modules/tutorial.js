@@ -53,6 +53,9 @@ export function maybeStart(){
 export function onBoardLoaded(idx){ fire('board:'+idx); }
 // defense.spawnThreat 生成紅點時經注入呼叫 → 觸發 'threat' 步驟（紅點凍結於畫面講解）
 export function onThreatSpawned(){ fire('threat'); }
+// defense.resolveThreat 成功點掉紅點（Defense/Perfect/Counter 任一）→ 'defended' 步驟
+//   （首次防禦成功後的反擊/副武器說明；步驟消耗一次，之後為 no-op）
+export function onThreatResolved(){ fire('defended'); }
 // combat 於「按錯 / 延時懲罰」時呼叫 → 監察官跳出來罵人（隨機一句、可重複觸發，
 //   不佔 steps；懲罰傷害先落地才插話，罵完點擊即續戰）
 export function onMistake(kind){

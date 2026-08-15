@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於首頁版權宣告下方，每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.15-46';
+export const VERSION = 'ver 2026.08.15-47';
 
 export const GAME_CONFIG = {
 
@@ -246,10 +246,19 @@ export const GAME_CONFIG = {
         { who:'inspector', text:'基礎還行。接下來——敵人要開始反擊了。' },
         { who:'partner',   text:'敵人蓄力時，畫面上會出現光圈。那就是防禦的信號！' },
       ]},
-      // 第一顆紅點生成瞬間（凍結在畫面上講解）
+      // 第一顆紅點生成瞬間（凍結在畫面上講解）——防禦分級講確實：
+      //   太早＝格擋（仍受一半傷害）；時機正確＝完美防禦（免傷）
       { trigger:'threat', lines:[
-        { who:'partner',   text:'光圈會越縮越小！在它消失前點下去就能防禦——收得越小才出手，防得越漂亮，最後一刻就是反擊的機會！' },
+        { who:'partner',   text:'光圈會越縮越小——太早出手只能「擋下」，還是會受到一半傷害！' },
+        { who:'partner',   text:'等光圈收得夠小、時機正確，才能「完美防禦」，完全不受傷！' },
         { who:'inspector', text:'防住給我看。' },
+      ]},
+      // 首次成功防下攻擊（點掉紅點）之後：反擊與副武器說明
+      { trigger:'defended', lines:[
+        { who:'inspector', text:'擋得不錯。記住——在敵人出手的前一瞬反擊，就能用副武器造成大量傷害。' },
+        { who:'partner',   text:'不過別勉強反擊，覺得危險的話，防下來就好。' },
+        { who:'inspector', text:'那樣的話，我的評價可不會留情。' },
+        { who:'inspector', text:'不同副武器的效果與反擊時機各不相同。選擇能發揮自己天賦的武器吧。' },
       ]},
       // 第三盤：收尾
       { trigger:'board:2', lines:[

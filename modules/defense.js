@@ -241,6 +241,7 @@ export function resolveThreat(th){
       }
     }
   }
+  if(api.onThreatResolved) api.onThreatResolved();   // 教學「首次防禦成功」節點通知（教學外為 no-op）
 }
 // 防禦統一閃光：color 'block'（白）或 'gold'（金）。整張敵圖微微一閃。
 export function flashDefense(color){
