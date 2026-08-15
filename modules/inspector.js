@@ -22,6 +22,7 @@
 import { GAME_CONFIG, asset, bgmVol, sfxGain } from '../config.js';
 import { state } from '../state.js';
 import { SFX } from '../audio.js';   // Boss BGM 於「再度執槍（S 解鎖）」瞬間起播
+import { L, fmt } from '../i18n.js';   // 多語言（結算標題/數據列/按鈕）
 
 const $ = id => document.getElementById(id);
 
@@ -39,7 +40,7 @@ export function init(injected){ api = { ...api, ...injected }; }
 function fmtTime(sec){
   if(sec==null || !isFinite(sec)) return '--';
   const m=Math.floor(sec/60), s=sec-m*60;
-  return m>0 ? `${m}分${s.toFixed(1)}秒` : `${s.toFixed(1)}秒`;
+  return m>0 ? fmt(L.result.timeMinSec,{m,s:s.toFixed(1)}) : fmt(L.result.timeSec,{s:s.toFixed(1)});
 }
 
 // 依「門檻 key → 值」的表，挑出不超過 current 的最高門檻對應值；找不到回 fallback。
@@ -138,22 +139,22 @@ function pickInspectorDialogue(insp, rankKey, boss){
 // 戰敗結算用：Counter（次數+累計傷害）、完美防禦（次數）
 function combatStatsRows(){
   let r='';
-  r += `<div class="row"><span>Counter 反擊</span><b>${state.counterCount} 次 · ${state.counterDamage} 傷</b></div>`;
-  r += `<div class="row"><span>完美防禦</span><b>${state.perfectCount} 次</b></div>`;
+  r += `<div class="row"><span>${L.result.rowCounter}</span><b>${fmt(L.result.timesUnit,{n:state.counterCount})} · ${fmt(L.result.dmgUnit,{n:state.counterDamage})}</b></div>`;
+  r += `<div class="row"><span>${L.result.rowPerfect}</span><b>${fmt(L.result.timesUnit,{n:state.perfectCount})}</b></div>`;
   return r;
 }
 
 // 勝利結算明細。Overkill 已在標題副行呈現、無傷改為「戰鬥用時」旁的貼標（達標才出現），故此處皆不另列。
 function ratingStatsRows(stats, totalTime){
   const accPct = Math.round(clamp01(stats.accuracy) * 100);
-  const flawlessTag = (stats.hitsTaken === 0) ? ` <span class="tag-flawless">無傷</span>` : '';
+  const flawlessTag = (stats.hitsTaken === 0) ? ` <span class="tag-flawless">${L.result.tagFlawless}</span>` : '';
   let r='';
-  r += `<div class="row"><span>連擊數</span><b>${stats.maxCombo}</b></div>`;
-  r += `<div class="row"><span>受擊數</span><b>${stats.hitsTaken}</b></div>`;
-  r += `<div class="row"><span>命中率</span><b>${accPct}%</b></div>`;
-  r += `<div class="row"><span>完美反擊</span><b>${stats.perfectCounter} 次</b></div>`;
-  r += `<div class="row"><span>反擊總傷</span><b>${Math.round(stats.counterDamage || 0)}</b></div>`;
-  r += `<div class="row"><span>戰鬥用時</span><b>${fmtTime(totalTime)}${flawlessTag}</b></div>`;
+  r += `<div class="row"><span>${L.result.rowCombo}</span><b>${stats.maxCombo}</b></div>`;
+  r += `<div class="row"><span>${L.result.rowHits}</span><b>${stats.hitsTaken}</b></div>`;
+  r += `<div class="row"><span>${L.result.rowAccuracy}</span><b>${accPct}%</b></div>`;
+  r += `<div class="row"><span>${L.result.rowPerfectCtr}</span><b>${fmt(L.result.timesUnit,{n:stats.perfectCounter})}</b></div>`;
+  r += `<div class="row"><span>${L.result.rowCtrDamage}</span><b>${Math.round(stats.counterDamage || 0)}</b></div>`;
+  r += `<div class="row"><span>${L.result.rowTime}</span><b>${fmtTime(totalTime)}${flawlessTag}</b></div>`;
   return r;
 }
 
@@ -179,7 +180,7 @@ export function settle(totalTime, stats, opts={}){
   const isLose = !!opts.isLose;
   if(isLose){
     const rows=combatStatsRows();
-    showResultSequence('聖光黯滅','HUND 倒下了…', rows, 'lose', true);
+    showResultSequence(L.result.loseTitle, L.result.loseSub, rows, 'lose', true);
     return;
   }
   // ── 勝利結算 ──
@@ -189,19 +190,19 @@ export function settle(totalTime, stats, opts={}){
   const isRecord = (prevBest==null) || (totalTime<prevBest);
   if(isRecord) saveBestTotal(totalTime, bossFight);
 
-  let sub=(($('enemyName')&&$('enemyName').textContent)||'目標')+'已淨化';
+  let sub=fmt(L.result.winSub,{name:(($('enemyName')&&$('enemyName').textContent)||'')});
   if(stats.overkill>0) sub += ` · OVERKILL ${Math.round(stats.overkill)}`;
 
   // ── 評價系統（rating）：大字等級（顯眼）+ EXP + 各數值明細 ──
   const evalResult = evaluate(stats);
   let rows='';
   rows += `<div class="grade-wrap"><b class="grade-badge rank-${evalResult.grade}">${evalResult.grade}</b>`
-        + `<span class="grade-meta"><span class="grade-cap">評價</span>`
+        + `<span class="grade-meta"><span class="grade-cap">${L.result.gradeCap}</span>`
         + `<span class="grade-exp">EXP ${evalResult.exp}</span></span></div>`;
   rows += ratingStatsRows(stats, totalTime);
-  if(isRecord) rows += `<div class="record">★ NEW RECORD ★</div>`;
+  if(isRecord) rows += `<div class="record">${L.result.newRecord}</div>`;
   // ── 監察官結算展示（依評價等第挑台詞）──
-  showResultSequence('聖裁', sub, rows, evalResult.grade, false);
+  showResultSequence(L.result.winTitle, sub, rows, evalResult.grade, false);
 
   // ── 教學戰專屬結算（tutorialRun 存續到此）：覆蓋台詞與按鈕，不進迎擊/獎勵流程 ──
   if(state.tutorialRun){ applyTutorialResult(); return; }
@@ -238,7 +239,7 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose){
   // 每次結算：按鈕歸位為「再度執槍」模式
   state.resultMode='rematch';
   const rbtn=$('rematchBtn');
-  rbtn.textContent='再度執槍';
+  rbtn.textContent=L.result.rematch;
   rbtn.classList.remove('intercept','ready','saintinstall');
   rbtn.style.display='';
   rbtn.style.visibility='';   // 復位：避免沿用上一場「迎擊」流程的 visibility:hidden
@@ -263,7 +264,7 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose){
     const pKey=pickInspectorPortrait(insp);
     portrait.src = pKey ? asset(pKey) : '';
     portrait.style.display = portrait.src ? 'block' : 'none';
-    nameEl.textContent = insp.name || '監察官';
+    nameEl.textContent = insp.name || L.inspector.fallbackName;
   }else{
     stage.style.display='none';
   }
@@ -292,7 +293,7 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose){
     // Boss 戰一律走 bossDialogues 的 rank 台詞（不套用一般處決台詞）。
     let line = (!state.inIntruderFight && state.sawExecution && insp.executionLine)
       ? insp.executionLine
-      : (pickInspectorDialogue(insp, rankKey, state.inIntruderFight) || '（監察官台詞待填）');
+      : (pickInspectorDialogue(insp, rankKey, state.inIntruderFight) || L.result.lineMissing);
     // {rand3}＝隨機 3 位數，不足 3 位以 0 補滿（如 007 / 042）。Boss 落敗台詞用。
     line = line.replace('{rand3}', String(Math.floor(Math.random()*1000)).padStart(3,'0'));
     setTimeout(()=>{
@@ -470,13 +471,13 @@ export function onRematchBtn(){
   clearTimeout(_inspTypeTimer);
   lineEl.textContent='';
   bubble.classList.add('show');
-  const warnLine = (insp && insp.interceptLine) || '慢著！有新的敵人！';
+  const warnLine = (insp && insp.interceptLine) || L.inspector.interceptLine;
   typeInspectorLine(lineEl, warnLine, 1400);
   // 台詞跳完 → 鈕變「迎擊」、變色發光
   const dur = 1400 + 300;
   setTimeout(()=>{
     state.resultMode='intercept';
-    rbtn.textContent='迎擊';
+    rbtn.textContent=L.result.intercept;
     rbtn.classList.add('intercept','ready');
     rbtn.style.visibility='';   // 復現（版位一直在，無重排 → 立繪不變大小）
   }, dur);

@@ -197,6 +197,7 @@ export const STRINGS = {
     rowCounter:   'Counter 反擊',        // 戰敗結算列
     rowPerfect:   '完美防禦',            // 戰敗結算列
     timesUnit:    '{n} 次',             // 次數單位
+    dmgUnit:      '{n} 傷',             // 傷害單位（戰敗結算列）
     timeMinSec:   '{m}分{s}秒',          // 用時格式
     timeSec:      '{s}秒',
     newRecord:    '★ NEW RECORD ★',     // [EN-STYLE]

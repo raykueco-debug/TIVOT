@@ -26,6 +26,7 @@
 import { GAME_CONFIG, asset } from '../config.js';
 import { state, enterSaint, exitSaint, markExecution } from '../state.js';
 import { SFX } from '../audio.js';
+import { L, fmt } from '../i18n.js';   // 多語言（cut-in 副標/浮動字）
 
 const $ = id => document.getElementById(id);
 const T = GAME_CONFIG.tuning;
@@ -60,7 +61,7 @@ export function activateSaint(dir){
   playCutin(()=>{
     if(state.over) return;
     startSaintMode();
-  }, '聖徒降臨！！<span class="cutin-en">SAINT INSTALL!!</span>', 'cutin_saint_luna', { noShot:true });
+  }, L.cutins.saintInstall+'<span class="cutin-en">SAINT INSTALL!!</span>', 'cutin_saint_luna', { noShot:true });
 }
 
 // 橫斬特效：dir='right' 向右斬、'left' 向左斬
@@ -100,7 +101,7 @@ function startSaintMode(){
   state.saintPrevBoard = { N:state.N, cols:state.cols };
   api.setBoard(SAINT_GRID, SAINT_GRID_COLS);   // 維持 16 宮格
   api.buildGrid();
-  api.floatDmg('SAINT MODE','50%','20%',true);
+  api.floatDmg(L.battle.saintMode,'50%','20%',true);
   // 血條＝倒數槽，被兩股力量往上推：
   //   (1) 被動回血打底：滿血/SAINT_PASSIVE_HEAL_SEC 秒定速回，無受擊時約 10 秒到 OBE；
   //   (2) 受擊額外加速：挨大絕/按錯/延時 +1s、格擋 +0.5s（見 saintAdvance / combat.enemyAttack）。
@@ -175,7 +176,7 @@ export function saintTap(num, cell){
     SFX.wrong();
     cell.classList.add('wrong'); setTimeout(()=>cell.classList.remove('wrong'),300);
     state.combo=0;
-    api.floatDmg('MISS','50%','44%',true);
+    api.floatDmg(L.battle.miss,'50%','44%',true);
     saintAdvance(state.playerMax/SAINT_ADVANCE_DIVISOR);        // 推進；推滿→OBE
     if(state.saintMode) startSaintReactTimer();                // 未推滿（仍在聖徒化）→ 重設反應時限
   }
@@ -191,7 +192,7 @@ function startSaintReactTimer(){
     if(state.over||!state.saintMode||state.cutinPlaying){ return; }
     SFX.wrong();
     state.combo=0;
-    api.floatDmg('TOO SLOW','50%','40%',true);
+    api.floatDmg(L.battle.tooSlowEn,'50%','40%',true);
     saintAdvance(state.playerMax/SAINT_ADVANCE_DIVISOR);        // 推進；推滿→OBE
     if(!state.saintMode) return;                               // 已因推滿進 OBE → 停
     state.saintReactTimer = setTimeout(tick, REACT*1000);      // 還沒點 → 繼續計時
@@ -270,7 +271,7 @@ export function lifeReturnAbort(){
   clearInterval(state.saintTimer); state.saintTimer=null;
   clearSaintReactTimer(); setReturnSwipe(false);
   restoreUltRate();
-  api.floatDmg('生命歸還','50%','28%',true);
+  api.floatDmg(L.battle.lifeReturn,'50%','28%',true);
   // 第四結局 cut-in → 結束後回盤面，血量維持當前值（saintMode 已關、計時器已停，HP 不再變動）
   playSaintCutin('return', ()=>{
     finishSaintMode(()=>{ /* 保留當前血量：不改血 */ });
@@ -322,10 +323,10 @@ function playSaintCutin(kind, done){
   const c=$('saintCutin');
   let title, sub;
   const enName=(($('enemyName')&&$('enemyName').textContent)||'目標');
-  if(kind==='burst'){ title='MAXIMUM BURST'; sub='追加聖裁 · HP 50%'; }       // MB 未擊殺＝回 50%（D2）
-  else if(kind==='execute'){ title='EXSECUTIŌ'; sub=enName+' · 消滅'; }
-  else if(kind==='return'){ title='LIFE\nRETURN'; sub='生命歸還 · 血量保留'; }
-  else { title='OVERWRITE\nBREAKER\nENGAGED'; sub='O.B.E. · HP 1'; }
+  if(kind==='burst'){ title='MAXIMUM BURST'; sub=L.cutins.mbSub; }       // MB 未擊殺＝回 50%（D2）
+  else if(kind==='execute'){ title='EXSECUTIŌ'; sub=fmt(L.cutins.executeSub,{name:enName}); }
+  else if(kind==='return'){ title='LIFE\nRETURN'; sub=L.cutins.lifeReturnSub; }
+  else { title='OVERWRITE\nBREAKER\nENGAGED'; sub=L.cutins.obeSub; }
   $('saintCutinTitle').textContent = title;
   $('saintCutinSub').textContent   = sub;
   // 依 kind 載入對應內嵌 cut-in 圖（資料放 ASSETS，程式只讀）

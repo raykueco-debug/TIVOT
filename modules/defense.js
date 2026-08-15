@@ -18,6 +18,7 @@
 import { GAME_CONFIG, asset, sfxGain } from '../config.js';
 import { state, addPerfect } from '../state.js';
 import { SFX } from '../audio.js';
+import { L, fmt } from '../i18n.js';   // 多語言（防禦浮動字）
 
 const $ = id => document.getElementById(id);
 const T = GAME_CONFIG.tuning;
@@ -137,7 +138,7 @@ export function releaseUlt(th){
   removeThreat(th);
   if(state.over||state.cutinPlaying) return;
   api.enemyAttack(effUltDamage(), 'ult');   // 教學中一律 2（見 effUltDamage）
-  api.floatDmg('被擊中','45%','25%',true);
+  api.floatDmg(L.battle.hitByUlt,'45%','25%',true);
 }
 // 兼容舊呼叫：結束/清除所有攻擊點
 export function endCharge(){ clearThreat(); }
@@ -212,7 +213,7 @@ export function resolveThreat(th){
   if(ratio < counterWin){
     // === Counter === 免傷 + 反擊武器大傷害（金色微閃）
     flashDefense('gold');
-    api.floatDmg('COUNTER！','50%','38%',true);
+    api.floatDmg(L.battle.counter,'50%','38%',true);
     api.triggerAtkBuff(2);
     api.weaponCounter();
   }else if(!(w && w.noPerfectBand) && ratio < DEF_DEFENSE_MIN){
@@ -222,13 +223,13 @@ export function resolveThreat(th){
     if(w && w.perfectDamageScale){
       // 散彈類：Perfect 檔以傷害取代免傷（打弱化反擊，不觸發 atkBuff、不免傷）。
       //   音效由 weaponCounter 的武器 blast SE 出聲（完防與反擊都會觸發散彈音效），此處不再疊合成重擊音。
-      api.floatDmg('PERFECT','50%','40%',true);
+      api.floatDmg(L.battle.perfect,'50%','40%',true);
       api.weaponCounter(w.perfectDamageScale);
     }else{
       // 一般武器（如重機槍）：完全免傷（狙擊 noPerfectBand=true 時此帶消失，落入下方 Defense）。
       //   完美防禦音＝weapon 的 Guard_SE（散彈完防走自己的槍聲，不到這裡）。
       SFX.play(asset('se_guard'), sfxGain('se_guard'));
-      api.floatDmg('PERFECT','50%','40%',true);
+      api.floatDmg(L.battle.perfect,'50%','40%',true);
     }
   }else{
     // === Defense（格擋＝不完美防禦，仍挨大絕）===（白色微閃）。攻擊音由下方 enemyAttack('ult') 出敵大絕音。
@@ -236,15 +237,15 @@ export function resolveThreat(th){
     if(state.saintMode){
       // 聖徒化期間：格擋＝推進 +0.5 秒（下一輪聖徒化才會實際生效）
       api.enemyAttack(0, 'ult', state.playerMax/SAINT_BLOCK_DIVISOR);
-      api.floatDmg('BLOCK','50%','42%',false);
+      api.floatDmg(L.battle.block,'50%','42%',false);
     }else{
       const defScale=(w && w.defenseDamageScale!=null) ? w.defenseDamageScale : 0.5;
       if(defScale<=0){
-        api.floatDmg('BLOCK','50%','42%',false);        // 完全免傷（若有武器設 0）
+        api.floatDmg(L.battle.block,'50%','42%',false);        // 完全免傷（若有武器設 0）
       }else{
         const dmg=Math.max(1, Math.round(effUltDamage()*defScale));   // 教學：2 減半 → 1
         api.enemyAttack(dmg, 'ult');                     // 依武器倍率受傷（仍屬大絕受擊）
-        api.floatDmg('BLOCK −'+dmg,'50%','42%',false);
+        api.floatDmg(fmt(L.battle.blockDmg,{n:dmg}),'50%','42%',false);
       }
       if(api.onThreatEarly) api.onThreatEarly();   // 教學「太早防禦」插話（教學外/聖徒化為 no-op）
     }

@@ -27,6 +27,7 @@
 import { GAME_CONFIG, asset } from '../config.js';
 import { state, applyDeathGuard } from '../state.js';
 import { SFX } from '../audio.js';
+import { L } from '../i18n.js';   // 多語言（即死防禦浮動字/cut-in 標題）
 
 /* combat 於啟動時注入的原語：
  *   被動技所需：updateBars / floatDmg / resetEnemyTimers / scheduleUlt / playCutin
@@ -54,8 +55,8 @@ export function tryDeathGuard(){
   applyDeathGuard();          // 鎖 1 HP + 標記 deathGuardUsed（D3 契約例外的唯一入口）
   api.updateBars();           // applyDeathGuard 不碰 DOM，於此刷新血條（對齊 reference）
   const vo = asset(pas.voice); if(vo) SFX.play(vo, (GAME_CONFIG.tuning.partnerSeGain||{})[pas.voice]);   // SE 與 cut-in 同步（→ vo_death_guard；增益見 tuning.partnerSeGain）
-  api.floatDmg('即死防禦','50%','40%',true);
-  const label = '即死防禦<span class="cutin-en">Death Guard</span>';
+  api.floatDmg(L.battle.deathGuard,'50%','40%',true);
+  const label = L.cutins.deathGuard+'<span class="cutin-en">Death Guard</span>';
   api.playCutin(()=>{
     if(state.over||state.saintMode) return;
     // 即死防禦後：cut-in 撤下瞬間重置敵大絕與延時（間隔）懲罰倒數，避免剛保命就被連段擊殺

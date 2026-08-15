@@ -16,7 +16,8 @@
 import { GAME_CONFIG, asset, bgmVol, sfxGain } from '../config.js';
 import { state, initEnemyHp } from '../state.js';
 import { SFX } from '../audio.js';
-import { TEL } from '../telemetry.js';   // 遙測（底層純輸出，同 audio 定位；未設定後端時 no-op）
+import { TEL } from '../telemetry.js';
+import { L, fmt } from '../i18n.js';   // 多語言（浮動字/RELOADING）   // 遙測（底層純輸出，同 audio 定位；未設定後端時 no-op）
 import * as enemy from './enemy.js';
 import * as defense from './defense.js';
 import * as weapon from './weapon.js';
@@ -140,7 +141,7 @@ export function goNextBoard(){
   clockPause();                // 盤面轉場（RELOADING）不計時
   stopIntervalTimer();
   const t=$('transition'), txt=$('transText');
-  txt.textContent='RELOADING';
+  txt.textContent=L.battle.reloading;
   SFX.play(asset('sfx_reload'), sfxGain('sfx_reload'));   // 清盤換彈音（RELOADING 顯示時）
   t.classList.add('on');
   txt.style.animation='none'; void txt.offsetWidth; txt.style.animation='';
@@ -343,7 +344,7 @@ function clearBoard(){
     const speed=Math.max(0.4, Math.min(1.6, ideal/Math.max(elapsed,0.1)));
     const gain=Math.round(state.N*1.8*speed);
     addEnergy(gain);
-    floatDmg('完美清盤 +'+gain,'50%','30%',false);
+    floatDmg(fmt(L.battle.perfectClear,{n:gain}),'50%','30%',false);
   }
   // 教學：第二盤清盤的最後一槍 → 破防值直接設為只差 1 滿（第三盤首擊即滿、進雙槍引導）
   if(state.tutorialActive && state.boardIndex===1 && GAME_CONFIG.tutorial){
@@ -488,18 +489,18 @@ function enemyDamage(dmg,isCrit,silent){
       if(after<0) state.overkill+=(-after);
       state.enemyHp=Math.max(0,after);
       updateBars();
-      if(!silent) floatDmg((isCrit?'暴擊 ':'')+dmg, (30+Math.random()*40)+'%','35%',isCrit);
+      if(!silent) floatDmg((isCrit?L.battle.crit:'')+dmg, (30+Math.random()*40)+'%','35%',isCrit);
       if(state.enemyHp<=0){
         if(state.killTime===0) state.killTime=Date.now();   // 敵死標記（OVERKILL 起點）
         clockPause();                                       // 敵死→進 overkill：碼表暫停（overkill 不計時）
         defense.killThreatSchedule(); clearAtkBuff();
-        floatDmg('OVERKILL！','50%','48%',true);
+        floatDmg(L.battle.overkill,'50%','48%',true);
         enterOverkillFx();   // 聖徒化中擊殺也進 overkill（藍光/鈴鐺；限時與撤游標僅非聖徒化，見函式內）
       }
     }else{
       state.overkill+=dmg;
       SFX.play(asset('sfx_startbt'), sfxGain('sfx_startbt'));   // overkill 期間每一槍帶神楽鈴（StartBT_SE；普攻/雙槍/聖徒化追打統一在此掛鉤）
-      floatDmg('OVERKILL +'+dmg, (30+Math.random()*40)+'%','35%',true);
+      floatDmg(fmt(L.battle.overkillAdd,{n:dmg}), (30+Math.random()*40)+'%','35%',true);
     }
   }
   $('enemyImg').classList.add('hit'); setTimeout(()=>$('enemyImg').classList.remove('hit'),80);
@@ -558,7 +559,7 @@ function startIntervalTimer(){
       // 延時懲罰傷害＝一般怪基礎 × 該怪 DELAY_PENALTY_SCALE（Boss=0.5）；時限已由 effIntervalLimit 減
       if(state.enemyHp>0){
         enemyAttack(tutAtkDmg(Math.max(1, Math.round(DMG_DELAY*state.DELAY_PENALTY_SCALE))), 'delay');
-        floatDmg('太慢','60%','55%',false);
+        floatDmg(L.battle.tooSlow,'60%','55%',false);
         tutorial.onMistake('delay');   // 教學中延時 → 監察官插話（非教學為 no-op）
       }
       updateStatus(); resetIntervalDeadline();

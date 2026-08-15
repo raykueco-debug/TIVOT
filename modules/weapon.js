@@ -32,6 +32,7 @@
 import { GAME_CONFIG, asset, sfxGain } from '../config.js';
 import { state, addCounter, setPickedPartner } from '../state.js';
 import { SFX } from '../audio.js';
+import { L } from '../i18n.js';   // 多語言（cut-in 標題/選單鈕/暴擊前綴）
 
 const $ = id => document.getElementById(id);
 const WEAPONS = GAME_CONFIG.weapons;
@@ -76,7 +77,7 @@ export function weaponCounter(dmgScale){
     SFX.play(se, seGain);                      // 狙擊：一發
     api.enemyDamage(h.dmg, true, true);       // 靜默扣血（含 overkill/擊殺判定）
     addCounter(h.dmg);
-    api.floatDmg((h.crit?'暴擊 ':'')+h.dmg, '46%','32%', h.crit, 'snipernum');
+    api.floatDmg((h.crit?L.battle.crit:'')+h.dmg, '46%','32%', h.crit, 'snipernum');
     return;
   }
   if(w.vfx==='burst'){
@@ -88,7 +89,7 @@ export function weaponCounter(dmgScale){
     for(let k=0;k<w.hits;k++){
       const h=critHit(base); sum+=h.dmg;
       api.enemyDamage(h.dmg, true, true);
-      api.floatDmg((h.crit?'暴擊 ':'')+h.dmg, (bx-6+k*3)+'%', (34+(k%2)*6)+'%', true);
+      api.floatDmg((h.crit?L.battle.crit:'')+h.dmg, (bx-6+k*3)+'%', (34+(k%2)*6)+'%', true);
     }
     addCounter(sum);
     return;
@@ -104,7 +105,7 @@ export function weaponCounter(dmgScale){
     const h=rolls[i];
     SFX.play(se, seGain);                      // 機槍：每 hit 播一次 → 搭搭搭搭搭
     api.enemyDamage(h.dmg, true, true);        // 靜默扣血 → 由自訂 float 控制「暴擊」字樣（僅暴擊發才顯示）
-    api.floatDmg((h.crit?'暴擊 ':'')+h.dmg, (30+Math.random()*40)+'%','35%', true);
+    api.floatDmg((h.crit?L.battle.crit:'')+h.dmg, (30+Math.random()*40)+'%','35%', true);
     i++;
     if(i<w.hits) setTimeout(fire, 90);
   };
@@ -131,7 +132,7 @@ export function activateDual(){
     api.resetEnemyTimers();
     api.scheduleUlt();
     startDualWindow();
-  }, '破防・雙槍<span class="cutin-en">Guard Crushing</span>', 'cutin_saint');
+  }, L.cutins.dualBreak+'<span class="cutin-en">Guard Crushing</span>', 'cutin_saint');
 }
 
 // 進入破防射擊窗口（窗口本體）：activateDual 的 cut-in 撤下後呼叫；馬季諾「前線補給」
@@ -290,7 +291,7 @@ function renderPartnerSheet(){
   const btn=$('psSelect');
   if(btn){
     const isCur = key===state.pickedPartner;
-    btn.textContent = isCur ? '返回' : '選擇此搭檔';
+    btn.textContent = isCur ? L.partners.back : L.partners.select;
     btn.classList.toggle('picked', isCur);
   }
 }
@@ -419,7 +420,7 @@ function renderWeaponSheet(){
   const btn=$('wsSelect');
   if(btn){
     const isCur = key===state.equippedWeapon;
-    btn.textContent = isCur ? '返回' : '選擇此武器';
+    btn.textContent = isCur ? L.weapons.back : L.weapons.select;
     btn.classList.toggle('picked', isCur);
   }
 }

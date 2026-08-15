@@ -9,6 +9,7 @@
  * ========================================================================== */
 
 import { GAME_CONFIG, VERSION, asset, ASSETS, bgmVol, sfxGain } from './config.js';
+import { L, applyToConfig, applyToDom } from './i18n.js';   // 多語言（zh/ja；en 待翻譯就位）
 import { state } from './state.js';
 import { SFX } from './audio.js';
 import { TEL } from './telemetry.js';   // 遙測（未設定後端時 no-op）
@@ -25,6 +26,11 @@ import { sakuraBurst } from './modules/sakura.js';   // 開始遊戲：全畫面
 import './modules/enemy.js';
 
 const $ = id => document.getElementById(id);
+
+// ── 多語言：最先套用（先於載入畫面/任何字串讀取）──
+//    config 內容字串就地覆寫 + index.html 靜態文字置換；語言切換＝首頁鈕→重載生效
+applyToConfig(GAME_CONFIG);
+applyToDom();
 
 /* ── iOS PWA（加到主畫面）版面高度怪癖 ──
  *  standalone 啟動瞬間 100%/100dvh 可能取到舊視口值且不重算，底部留一條畫不到的黑帶。
@@ -108,7 +114,7 @@ function preloadLateBgm(){
     +'<div id="alStage"><img id="alPortrait" alt="">'
     +  '<div id="alBubble"><div class="al-name"></div><div class="al-hint" id="alHint"></div></div>'
     +'</div>'
-    +'<div id="alMsg">載　入　中</div>';
+    +'<div id="alMsg">'+L.loading.loadingMsg+'</div>';
   document.body.appendChild(ov);
   /* 金色光圈對位：與首頁紋章外圓重合（圈徑≈紋章圖寬的 0.8）。
    *  首頁 bootIdle 於本模組尾端才掛 .on、紋章圖片也要載入才有高度 → 輪詢到量得到為止；
@@ -184,7 +190,7 @@ function preloadLateBgm(){
     if(pct) pct.style.display='none';
     const cap=$('alRingCap'); if(cap) cap.textContent='Complete';
     ov.classList.add('al-done');
-    const msg=$('alMsg'); if(msg){ msg.textContent='點　擊　繼　續'; msg.classList.add('al-pulse'); }
+    const msg=$('alMsg'); if(msg){ msg.textContent=L.loading.tapContinue; msg.classList.add('al-pulse'); }
     // Hint 輪播不停：載完後玩家未點擊前繼續輪教學
     const go=()=>{
       ov.removeEventListener('click',go); ov.removeEventListener('touchstart',go);
@@ -257,6 +263,7 @@ bindBtn('tutorialBtn', ()=>{ tutorial.requestReplay(); launchBattle(); });
     cur=LANGS[(LANGS.indexOf(cur)+1)%LANGS.length];
     try{ localStorage.setItem(KEY, cur); }catch(e){}
     paint();
+    setTimeout(()=>location.reload(), 150);   // 切語言→重載生效（僅首頁可按，無戰局可失）
   });
 })();
 bindBtn('exitBtn',      showExitConfirm);       // 右上：退出 → 確認對話框（盤面模糊）
@@ -270,9 +277,9 @@ function showExitConfirm(){
   const grid=$('grid'); if(grid) grid.classList.add('grid-blur');
   const dlg=document.createElement('div'); dlg.id='exitConfirm';
   dlg.innerHTML='<div class="ec-panel">'
-    +'<div class="ec-title">回到主選單？</div>'
-    +'<div class="ec-sub">目前這場進度不會保留</div>'
-    +'<div class="ec-btns"><button class="ec-no">繼續遊戲</button><button class="ec-yes">回主選單</button></div>'
+    +'<div class="ec-title">'+L.exitConfirm.title+'</div>'
+    +'<div class="ec-sub">'+L.exitConfirm.sub+'</div>'
+    +'<div class="ec-btns"><button class="ec-no">'+L.exitConfirm.stay+'</button><button class="ec-yes">'+L.exitConfirm.leave+'</button></div>'
     +'</div>';
   document.body.appendChild(dlg);
   const close=()=>{ if(dlg.parentNode) dlg.remove(); if(grid) grid.classList.remove('grid-blur');
