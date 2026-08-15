@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於首頁版權宣告下方，每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.15-54';
+export const VERSION = 'ver 2026.08.15-55';
 
 export const GAME_CONFIG = {
 
@@ -29,16 +29,22 @@ export const GAME_CONFIG = {
    *  新增武器：複製一整段 {...}，改鑰匙名與數值即可。
    * ------------------------------------------------------------------ */
   //  ⚠ 武器鑰匙＝圖檔基底名（類型_武器名，同 resources/weapon/ 圖庫命名，統一代碼與檔名）。
+  //  name＝選單全名；shortName＝首頁 loadout 鈕顯示的綽號（全名過長會爆版）。
+  //  desc＝選單規格文案（\n 換行，.ws-desc 為 pre-line）；暴擊率＝tuning.counterCritRate（20%）。
   weapons: {
-    // 重機槍 Squall：基準武器（反擊總傷 48），Perfect 帶正常、Defense 吃半傷（0.5）
-    MG_Squall:     { name:'重機槍', counterWin:0.12, hits:8, dmgPerHit:6,  vfx:null,     defenseDamageScale:0.5,  noPerfectBand:false, image:'weapon_mg_squall',     sound:'se_mg_squall',
-                     desc:'全能基準機。八連發彈幕火力穩定、反擊窗口適中；格擋失手也只承受半傷，攻守均衡的可靠選擇。' },
-    // 散彈槍 Blast：Counter 6發×4=24；Perfect 檔改打 6發×2=12（perfectDamageScale=0.5，傷害取代免傷）；Defense 檔吃 1/4 傷（0.25，保命但不再全免）
-    Shotgun_Blast: { name:'散彈槍', counterWin:0.20, hits:6, dmgPerHit:4,  vfx:'burst',  defenseDamageScale:0.25, noPerfectBand:false, perfectDamageScale:0.5, image:'weapon_shotgun_blast', sound:'se_shotgun_blast',
-                     desc:'近身爆發。反擊窗口最寬容；完美防禦改為半傷反打、格擋僅受四分之一傷——最保命的穩健之選。' },
-    // 狙擊槍 Falcon：反擊總傷 72（重機槍 1.5 倍）、單發大紅字、無 Perfect 免傷帶（高風險高回報）
-    Sniper_Falcon: { name:'狙擊槍', counterWin:0.06, hits:1, dmgPerHit:72, vfx:'single', defenseDamageScale:0.5,  noPerfectBand:true,  image:'weapon_sniper_falcon', sound:'se_sniper_falcon',
-                     desc:'一擊必殺。反擊窗口極窄、沒有完美防禦帶；賭上一切的單發重擊，命中即重創敵人。' },
+    // B1901 陣地機槍「絞肉機」：基準武器（反擊總傷 48），Perfect 帶正常、Defense 吃半傷（0.5）
+    MG_Squall:     { name:'B1901陣地機槍「絞肉機」', shortName:'絞肉機',
+                     counterWin:0.12, hits:8, dmgPerHit:6,  vfx:null,     defenseDamageScale:0.5,  noPerfectBand:false, image:'weapon_mg_squall',     sound:'se_mg_squall',
+                     desc:'反擊效果\n黃圈：減傷50%\n橘圈：完全防禦\n反擊：8發×6傷害\n暴擊率：20%\n攻守均衡的可靠選擇' },
+    // 雙管霰彈槍「鐵拳」：Counter 6發×4=24；Perfect 檔改打 6發×2=12（perfectDamageScale=0.5，傷害取代免傷）；Defense 檔吃 1/4 傷（0.25＝減傷75%）
+    Shotgun_Blast: { name:'雙管霰彈槍「鐵拳」', shortName:'鐵拳',
+                     counterWin:0.20, hits:6, dmgPerHit:4,  vfx:'burst',  defenseDamageScale:0.25, noPerfectBand:false, perfectDamageScale:0.5, image:'weapon_shotgun_blast', sound:'se_shotgun_blast',
+                     desc:'反擊效果\n黃圈：減傷75%\n橘圈：6發×2傷害\n反擊：6發×4傷害\n暴擊率：20%\n保命的穩健之選' },
+    // 85 式步槍「嗜心者」：反擊總傷 72（1.5 倍）、單發大紅字、無 Perfect 帶；
+    //   defenseDamageScale 1＝黃圈也無減傷（與文案一致：賭上一切，防禦全靠反擊窗）
+    Sniper_Falcon: { name:'85式步槍「嗜心者」', shortName:'嗜心者',
+                     counterWin:0.06, hits:1, dmgPerHit:72, vfx:'single', defenseDamageScale:1,    noPerfectBand:true,  image:'weapon_sniper_falcon', sound:'se_sniper_falcon',
+                     desc:'反擊效果\n黃圈：無減傷效果\n橘圈：無減傷效果\n反擊：單發72傷害\n暴擊率：20%\n賭上一切的單發重擊' },
     // 新武器：複製一段，鑰匙用「類型_武器名」（同圖檔基底名），image 指對應 ASSETS 鑰匙。
   },
   defaultWeapon: 'MG_Squall',   // 開局預設武器（填上面的鑰匙名）
@@ -70,7 +76,7 @@ export const GAME_CONFIG = {
         oncePerBattle:true,      // true=整場只擋一次；false=每次都擋（不建議）
         cutin:'cutin_guard',     // 即死防禦專屬大圖（→ Renee_CI_pas.jpg）；程式讀此欄，不硬寫
         voice:'vo_death_guard',  // cut-in 對應 SE（→ Renee_SE_Pas.wav）
-        desc:'整場一次。受到足以致死的攻擊時，改為保留 1 HP 存活。',
+        desc:'受到足以致死的攻擊時，改為保留 1 HP 存活。',
       },
       // ── 主動技：生命歸還 ─────────────────────────────
       //   聖徒化中，由「下往上滑」發動：強制中止聖徒化，保留當前血量（第四結局）。
@@ -120,7 +126,7 @@ export const GAME_CONFIG = {
         oncePerBattle:true,      // 每場一次（可調：false＝不限次數）
         cutin:'cutin_malzeno_act', // 前線補給 cut-in 大圖（→ Malzeno_CI_act.png）
         voice:'vo_supply_refill',  // cut-in 對應 SE（→ Malzeno_SE_Act.wav）
-        desc:'立即進入雙槍破防（每場一次）。聖徒化期間無法發動。',
+        desc:'立即進入雙槍破防。聖徒化期間無法發動。',
       },
     },
   },

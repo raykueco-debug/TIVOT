@@ -322,7 +322,7 @@ function playSaintCutin(kind, done){
   const c=$('saintCutin');
   let title, sub;
   const enName=(($('enemyName')&&$('enemyName').textContent)||'目標');
-  if(kind==='burst'){ title='MAXIMUM BURST'; sub='追加聖裁 · HP 100%'; }       // D2：成功 MB 回滿血
+  if(kind==='burst'){ title='MAXIMUM BURST'; sub='追加聖裁 · HP 50%'; }       // MB 未擊殺＝回 50%（D2）
   else if(kind==='execute'){ title='EXSECUTIŌ'; sub=enName+' · 消滅'; }
   else if(kind==='return'){ title='LIFE\nRETURN'; sub='生命歸還 · 血量保留'; }
   else { title='OVERWRITE\nBREAKER\nENGAGED'; sub='O.B.E. · HP 1'; }

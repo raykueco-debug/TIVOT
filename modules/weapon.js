@@ -175,7 +175,7 @@ export function refreshLoadoutLabels(){
   const w=WEAPONS[state.equippedWeapon];
   const p=GAME_CONFIG.partners[state.pickedPartner];
   const wv=$('pickWeaponValue'), pv=$('pickPartnerValue');
-  if(wv) wv.textContent = w ? w.name : '—';
+  if(wv) wv.textContent = w ? (w.shortName || w.name) : '—';   // 首頁用綽號（全名過長）
   if(pv) pv.textContent = p ? p.name : '—';
 }
 
@@ -409,7 +409,7 @@ function renderWeaponSheet(){
   const set=(id,txt)=>{ const el=$(id); if(el) el.textContent=txt; };
   set('wsName', w.name || key);
   set('wsDesc', w.desc || '');
-  set('wsStats', `反擊勝率 ${Math.round((w.counterWin||0)*100)}% · ${w.hits||0} 發 × ${w.dmgPerHit||0} 傷`);
+  set('wsStats', '');   // 規格已整合進 desc（反擊效果/減傷/暴擊率 多行文案），不再另列
   const dots=$('wsDots');
   if(dots){
     dots.innerHTML = WEAPON_KEYS.map((k,i)=>
