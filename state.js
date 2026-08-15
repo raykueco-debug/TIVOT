@@ -122,6 +122,13 @@ export const state = {
   lowHpBuff: false,      // 低血量普攻加倍（馬季諾被動「高裝藥彈」）：HP≤門檻即生效、回門檻上解除。
                          //   狀態型（無計時器），跨盤跨怪自然延續；由 partner 經 combat 的 setLowHpBuff 管道寫。
 
+  /* ── 3.9 教學關卡（擁有者：tutorial） ───────────────────────────
+   *  tutorialActive：教學進行中（含對話段之間的實戰段；首次出陣才啟動）。
+   *  tutorialDialog：對話插入中＝真暫停（走 combat.pauseForDialog / cutinPlaying）。
+   *    main.js 退出確認據此放行（暫停中仍可按退出）並讓位（關閉確認框不解除教學暫停）。 */
+  tutorialActive: false,
+  tutorialDialog: false,
+
   /* ── UI 閘門（跨模組共享的演出鎖；擁有者：播演出的模組） ──────────
    *  cutinPlaying：cut-in／結局演出期間鎖住盤面點擊與敵大絕生成。
    *  combat / defense / saint 皆需「讀」此旗標分支；寫入者為當下播演出的模組

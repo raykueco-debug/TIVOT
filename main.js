@@ -238,8 +238,9 @@ bindBtn('exitBtn',      showExitConfirm);       // 右上：退出 → 確認對
 
 // 退出確認：暫停（cutinPlaying）+ 數字盤模糊 + 「回主選單 / 繼續」。回主選單走 goHome（淡出淡入）。
 function showExitConfirm(){
-  if(state.over || state.cutinPlaying || document.getElementById('exitConfirm')) return;   // 非戰鬥中/演出中/已開 → 略過
-  combat.pauseForDialog();                          // 真暫停：凍結攻擊圈縮放 + 碼表 + 停延時懲罰/新大絕/點擊
+  // 非戰鬥中/演出中/已開 → 略過；例外：教學對話暫停中（tutorialDialog）仍可按退出
+  if(state.over || (state.cutinPlaying && !state.tutorialDialog) || document.getElementById('exitConfirm')) return;
+  combat.pauseForDialog();                          // 真暫停：凍結攻擊圈縮放 + 碼表 + 停延時懲罰/新大絕/點擊（教學中已暫停＝冪等）
   document.body.classList.add('dlg-pause');         // 凍結底層警戒脈動（防 iOS 合成假影，見 style.css）
   const grid=$('grid'); if(grid) grid.classList.add('grid-blur');
   const dlg=document.createElement('div'); dlg.id='exitConfirm';
@@ -250,10 +251,11 @@ function showExitConfirm(){
     +'</div>';
   document.body.appendChild(dlg);
   const close=()=>{ if(dlg.parentNode) dlg.remove(); if(grid) grid.classList.remove('grid-blur');
-    document.body.classList.remove('dlg-pause'); };
+    if(!state.tutorialDialog) document.body.classList.remove('dlg-pause'); };   // 教學對話仍開著 → dlg-pause 交還教學層
   const bind=(sel,fn)=>{ const b=dlg.querySelector(sel); const run=()=>{ SFX.unlock(); SFX.menuClick(); fn(); };
     b.addEventListener('click',run); b.addEventListener('touchstart',e=>{e.preventDefault();run();},{passive:false}); };
-  bind('.ec-no', ()=>{ close(); combat.resumeFromDialog(); });  // 繼續：解除暫停、攻擊圈/碼表接回
+  // 繼續：解除暫停、攻擊圈/碼表接回；教學對話中按下＝回到教學暫停（不解除，由教學收段時解除）
+  bind('.ec-no', ()=>{ close(); if(!state.tutorialDialog) combat.resumeFromDialog(); });
   bind('.ec-yes',()=>{ close(); combat.goHome(); });            // 回主選單：goHome 內會清 cutinPlaying + 淡出淡入
 }
 bindBtn('testClearBtn', combat.testClearBoard); // 左上（測試用）：一鍵清盤

@@ -73,6 +73,10 @@ export function startCharge(){
 }
 // 更新所有攻擊點的視覺與倒數；到期則釋放
 export function updateThreats(){
+  // 演出/對話暫停中一律凍結（教學對話於 spawnThreat 內觸發暫停後，
+  //   startCharge 尾端仍會重啟本 tick——沒有這道守門，紅點會在暫停中繼續縮小到被釋放）。
+  //   時間補償仍由 pauseThreats/resumeThreats 的 t0 補時處理，剩餘時間不變。
+  if(state.cutinPlaying) return;
   const threats=state.threats;
   if(!threats.length){ stopThreatTick(); return; }
   const CHARGE=state.CHARGE_SECONDS;
@@ -155,6 +159,7 @@ export function spawnThreat(){
   layer.appendChild(dot);
   state.threats.push(th);
   $('grid').classList.add('alert');
+  if(api.onThreatSpawned) api.onThreatSpawned();   // 教學「首紅點」節點通知（教學外為 no-op）
 }
 // 從清單移除單一攻擊點
 export function removeThreat(th){

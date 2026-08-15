@@ -23,6 +23,7 @@ import * as weapon from './weapon.js';
 import * as saint from './saint.js';
 import * as partner from './partner.js';
 import * as inspector from './inspector.js';
+import * as tutorial from './tutorial.js';   // 教學關卡（首次出陣穿插對話；暫停走 pauseForDialog）
 import { playTransition } from './transition.js';   // 過渡禎（勝利進結算前的「驅逐完成」）
 
 const $ = id => document.getElementById(id);
@@ -48,7 +49,11 @@ const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a
  * ========================================================================== */
 export function setup(){
   // combat 把自己擁有的狀態變動原語注入下游模組，切斷反向依賴
-  defense.init({ enemyAttack, enemyDamage, floatDmg, triggerAtkBuff, weaponCounter: weapon.weaponCounter });
+  //   onThreatSpawned：教學「首紅點」節點通知（defense 不 import tutorial，經此轉交）
+  defense.init({ enemyAttack, enemyDamage, floatDmg, triggerAtkBuff, weaponCounter: weapon.weaponCounter,
+                 onThreatSpawned: tutorial.onThreatSpawned });
+  // 教學：真暫停/續戰原語注入（同退出確認框的 cutinPlaying 機制）
+  tutorial.init({ pauseForDialog, resumeFromDialog });
   // 武器：反擊演算所需（enemyDamage/floatDmg）+ 雙槍破防窗口所需（cut-in/敵計時/盤面/破防值歸零）。
   weapon.init({
     enemyDamage, floatDmg,
@@ -145,6 +150,7 @@ export function loadBoard(idx){
   clockResume();                  // 新盤載好、可點 → 碼表起算（開場/換盤/換敵首盤共用）
   defense.scheduleOpeningUlt();   // 開場保證：每盤 3 秒內敵方就發動大絕
   updateStatus();
+  tutorial.onBoardLoaded(idx);    // 教學 'board:N' 節點（非教學中為 no-op）
 }
 function buildGrid(){
   const grid=$('grid'); grid.innerHTML=''; state.cells=[];
@@ -535,6 +541,7 @@ function stopAll(){
   clearInterval(state.intervalTimer);
   clearTimeout(state.atkBuffTimer);
   endOverkillFx();       // 中途退出/結算時清 overkill 限時與藍光
+  tutorial.abort();      // 教學中途收場（goHome/勝負/重開場）：只撤 UI，不記已看
   defense.stopAll();
   saint.stopTimers();    // 停聖徒化計時器（saintTimer / saintReactTimer）
   weapon.stopTimers();   // 停雙槍破防計時器（dualTimer）
@@ -715,6 +722,7 @@ export function startGame(){
   state.cutinPlaying=false;
   stopAll();
   loadBoard(0); updateBars();
+  tutorial.maybeStart();   // 首次出陣 → 進教學（穿插式；看過/跳過後恆 no-op）
 }
 /* ---- Boss 亂入：重開新「場」戰鬥（由 enemy.triggerIntruder 的 enterFight 注入呼叫）----
  *  依 場/局/敵/盤 模型:Boss 亂入＝重開新場,一切從頭 → 與 startGame 相同的完整重置

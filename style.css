@@ -959,3 +959,37 @@
     background:transparent;border:1px solid var(--gold-dim);color:var(--ink);
     border-radius:8px;font-family:inherit;font-size:13px;letter-spacing:3px;}
   #creditSheet .credit-close:active{transform:scale(.97);}
+
+  /* ══ 教學關卡（tutorial）══════════════════════════════════════════
+   *  立繪層 #tutCast 掛在 #top 內（overflow:hidden 天然裁切左右滑入），
+   *  z-20：壓過紅點(9)/血條(6)，低於退出鈕(37)與跳過鈕(38)。
+   *  對話框浮在立繪之上（同容器 DOM 序靠後即可），停在敵人框下緣血條之上。
+   *  #tutTouch＝對話期間全畫面點擊層（z-36 < corner-btn 37 → 退出/跳過仍可點）。 */
+  #tutCast{position:absolute;inset:0;z-index:20;display:none;pointer-events:none;}
+  #tutCast.on{display:block;}
+  .tut-portrait{position:absolute;bottom:0;height:88%;max-width:62%;object-fit:contain;
+    object-position:bottom;filter:brightness(.38) saturate(.75);
+    transition:transform .45s ease,filter .25s ease;}
+  #tutCastL{left:-2%;transform:translateX(-108%);}
+  #tutCastR{right:-2%;transform:translateX(108%);}
+  #tutCast.in #tutCastL,#tutCast.in #tutCastR{transform:translateX(0);}
+  .tut-portrait.speaking{filter:brightness(1) saturate(1);}   /* 說話者原色；其餘維持調暗 */
+  #tutBubble{position:absolute;left:50%;bottom:46px;transform:translateX(-50%);
+    width:min(92%,360px);background:rgba(8,6,12,.9);border:1px solid var(--gold-dim);
+    border-radius:10px;padding:9px 14px 12px;box-shadow:0 4px 18px rgba(0,0,0,.55);}
+  #tutBubble .tut-name{font-size:11px;letter-spacing:2px;color:var(--gold);margin-bottom:4px;}
+  #tutBubble .tut-line{font-size:13px;letter-spacing:.5px;line-height:1.7;color:var(--ink);
+    min-height:3.4em;}
+  #tutBubble .tut-next{position:absolute;right:10px;bottom:5px;font-size:9px;
+    color:var(--gold);opacity:0;}
+  #tutBubble.done .tut-next{animation:tutNext .7s ease-in-out infinite alternate;}
+  @keyframes tutNext{from{opacity:.25;transform:translateY(0);}to{opacity:.95;transform:translateY(2px);}}
+  /* 教學對話期間（dlg-pause）：凍結中的大絕紅點提到立繪之上——threat 步驟正對著它講解 */
+  body.dlg-pause #redDots{z-index:21;}
+  #tutTouch{position:fixed;inset:0;z-index:36;display:none;background:transparent;}
+  #tutTouch.on{display:block;}
+  #tutSkipBtn{position:absolute;top:10px;left:10px;z-index:38;display:none;padding:7px 14px;
+    border-radius:16px;background:rgba(10,8,14,.72);border:1px solid var(--gold-dim);
+    color:var(--gold);font-family:inherit;font-size:12px;letter-spacing:2px;}
+  #tutSkipBtn.on{display:block;}
+  #tutSkipBtn:active{transform:scale(.94);}

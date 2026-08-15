@@ -114,6 +114,18 @@
     <!-- 雙槍/開火：右下角 -->
     <!-- 聖徒化改為敵人框左右滑發動、雙槍改滿值自動，故移除舊大招鈕 -->
     <div id="chargeWarn"><!-- 倒數數字與招式名已取消，紅圈本身即為時機提示 --></div>
+    <!-- 教學關卡：監察官/搭檔立繪自左右移入 + 對話框（modules/tutorial.js 控制；台詞讀 config.tutorial） -->
+    <div id="tutCast">
+      <img class="tut-portrait" id="tutCastL" alt="">
+      <img class="tut-portrait" id="tutCastR" alt="">
+      <div id="tutBubble">
+        <div class="tut-name" id="tutName"></div>
+        <div class="tut-line" id="tutLine"></div>
+        <div class="tut-next">▼</div>
+      </div>
+    </div>
+    <!-- 教學：跳過鈕（畫面左上；僅教學期間顯示，按下＝記已看、當場轉正常戰鬥） -->
+    <button id="tutSkipBtn">跳　過</button>
   </div>
 
   <!-- 下半：純數字盤 -->
@@ -122,6 +134,9 @@
       <div id="transition"><div id="transText">RELOADING</div></div>
     </div>
   </div>
+
+  <!-- 教學：對話期間的全畫面點擊層（點任意處推進台詞；同時擋盤面/紅點反擊，退出/跳過鈕在其上仍可點） -->
+  <div id="tutTouch"></div>
 
   <!-- 雙槍 cut-in 演出 -->
   <div id="cutin">

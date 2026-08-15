@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於首頁版權宣告下方，每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.14-43';
+export const VERSION = 'ver 2026.08.15-44';
 
 export const GAME_CONFIG = {
 
@@ -189,6 +189,45 @@ export const GAME_CONFIG = {
     },
   },
   defaultInspector: 'freya',   // 填上面的鑰匙名即啟用；null＝結算畫面不顯示監察官
+
+  /* ------------------------------------------------------------------ *
+   *  三之四、教學關卡（tutorial）— 首次出陣時插入的對話教學
+   *  ------------------------------------------------------------------
+   *  首次判定：localStorage[storageKey]；「看完」或「跳過」都記為已看，
+   *  之後出陣一律直接進正常戰鬥。中途按退出回主選單＝不算看過。
+   *  型態：穿插式——教學就是一場真實戰鬥，打到 steps[].trigger 對應節點
+   *  即暫停插入對話（不計時/敵不攻擊/無延時懲罰/不可點盤面與反擊），
+   *  講完繼續打。可觸發節點（由 combat/defense 於該節點通知 tutorial）：
+   *    'battleStart' ＝開戰首盤載入後（延遲 startDelayMs 讓戰鬥畫面先浮現）
+   *    'threat'      ＝敵人首次生成大絕紅點時（紅點凍結於畫面上講解）
+   *    'board:N'     ＝第 N 盤（0-based）載入時
+   *  lines[].who 對應 cast 鑰匙；cast[].side 決定立繪自左或右移入。
+   *  ⚠ 台詞為佔位稿，之後定稿改這裡即可（資料/程式分離）。
+   * ------------------------------------------------------------------ */
+  tutorial: {
+    storageKey: 'tivot.tutorialSeen.v1',
+    startDelayMs: 700,     // 開戰後多久插入第一段對話（ms）
+    lineTypeMs: 30,        // 打字機每字間隔（ms）；點擊對話中先跳完整句、再點下一句
+    cast: {
+      inspector: { name:'芙蕾雅', image:'inspector_freya', side:'left'  },
+      partner:   { name:'蕾妮',   image:'partner_renee',   side:'right' },
+    },
+    steps: [
+      { trigger:'battleStart', lines:[
+        { who:'inspector', text:'開始實戰考核。HUND，讓我看看你的基礎是否紮實。' },
+        { who:'partner',   text:'別緊張！照著數字順序點擊下方的盤面，每一次命中都會對敵人開火！' },
+        { who:'partner',   text:'不過手可別停下來——猶豫太久，敵人就會趁隙反擊。' },
+      ]},
+      { trigger:'threat', lines:[
+        { who:'inspector', text:'注意，敵人正在蓄力大絕。看見那個光圈了嗎？' },
+        { who:'partner',   text:'光圈會越縮越小！在它消失前點下去就能防禦——收得越小才出手，防得越漂亮，最後一刻就是反擊的機會！' },
+      ]},
+      { trigger:'board:1', lines:[
+        { who:'partner',   text:'漂亮！清完一盤會立刻接著下一盤。連擊越高，子彈就越痛喔！' },
+        { who:'inspector', text:'說明到此為止。剩下的，用戰果讓我看見你的價值。' },
+      ]},
+    ],
+  },
 
   /* ------------------------------------------------------------------ *
    *  五、評價分級（EVALUATION）— 結算算分 → 六階 S/A/B/C/D/E
