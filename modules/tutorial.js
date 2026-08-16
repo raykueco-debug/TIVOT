@@ -282,8 +282,15 @@ function openStep(step){
     // 起滑延遲用 setTimeout（非 rAF）：隱藏分頁 rAF 不執行，會漏掉立繪進場
     setTimeout(()=>{ if(state.tutorialDialog && cur===step) syncCast(step); }, 30);
   }
+  syncBubbleShape(step);
   placeBubble();
   showLine();
+}
+
+/* 對話框形狀依段落調整：dualReady（點破防計量表引導）縮窄右移讓出計量表（CSS .clasp-clear） */
+function syncBubbleShape(step){
+  const b=$('tutBubble');
+  if(b) b.classList.toggle('clasp-clear', !!(step && step.key==='dualReady'));
 }
 
 /* 對話框緊貼數字盤面上方（間隔 2px）：#tutBubble 為 fixed（脫離 #top overflow 裁切），
@@ -335,7 +342,7 @@ function advance(){
   lineIdx++;
   if(lineIdx < cur.lines.length){ showLine(); return; }
   if(pendingGate){ enterGate(pendingGate); pendingGate=null; return; }   // 講完 → 進引導閘門（維持暫停）
-  if(queue.length){ cur=queue.shift(); lineIdx=0; syncCast(cur); showLine(); return; }   // 接續段：在場立繪差異更新
+  if(queue.length){ cur=queue.shift(); lineIdx=0; syncCast(cur); syncBubbleShape(cur); showLine(); return; }   // 接續段：在場立繪差異更新
   closeDialog(true);
 }
 
@@ -346,6 +353,7 @@ function closeDialog(resume, silent){
   cur=null; lineIdx=0;
   clearInterval(typeTimer); typeTimer=null;
   pendingGate=null; gate=null; hideGuide();
+  syncBubbleShape(null);   // 撤形狀調整（.clasp-clear）
   state.tutorialDialog=false;
   if(!document.getElementById('exitConfirm')) document.body.classList.remove('dlg-pause');
   const wrap=$('tutCast'), touch=$('tutTouch');
