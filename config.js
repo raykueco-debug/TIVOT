@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.16-83';
+export const VERSION = 'ver 2026.08.16-84';
 
 export const GAME_CONFIG = {
 
@@ -464,6 +464,7 @@ export const GAME_CONFIG = {
    *  attack = 大絕一擊傷害
    *  image / sound 都對應最下面 ASSETS。
    *  新增敵人：複製一段，改鑰匙名、名稱、圖、血量。
+   *  立繪檔名規約：角色_變體_CI（例 Saint_TR_CI／Saint_UG_CI／Saint_GT_CI／GunWitch_Boss_CI）。
    * ------------------------------------------------------------------ */
   enemies: {
     faceless: {
@@ -513,7 +514,7 @@ export const GAME_CONFIG = {
     //    差異：血更厚（300）＋攻擊更密（蓄力 4×1/1.2≈3.33s）；單擊傷害同一般值。
     facelessgiant: {
       name:'巨型聖徒',
-      image:'enemy_facelessgiant',   // 內嵌立繪鑰匙 → resources/enemy/Faceless_EN_02.png
+      image:'enemy_facelessgiant',   // 內嵌立繪鑰匙 → resources/enemy/Saint_GT_CI.webp
       imageBase:'facelessgiant',     // 外部目錄鑰匙（現況無 assets/ → 404 fallback 到內嵌，與其他敵同）
       hp:300,                        // 血更厚
       attack:45,                     // 大絕單擊傷害（普通值；差異在密度不在單擊）
@@ -708,12 +709,12 @@ export const GAME_CONFIG = {
 export const ASSETS = {
   // ── 圖片 ──
   home_emblem:    "resources/background/TIVOT_Emblem.png",   // 主畫面徽記（含 THE IV ORDER OF TESTAMENT 弧字）
-  enemy_faceless: "resources/enemy/Faceless_EN_01.jpg",   // 無貌者 Boss 暫代圖
+  enemy_faceless: "resources/enemy/Saint_UG_CI.jpg",   // 地下聖徒（UG=underground）
   cutin_saint:    "resources/partner/Luna_CI_saint.jpg",   // 聖徒化 cut-in 暫代圖
   partner_twin:   "resources/partner/Luna_SI_01.jpg",   // 雙槍修女立繪（暫用 cut-in 圖）
   inspector_freya: "resources/inspector/Freya_SI_01.webp",
-  enemy_witch:    "resources/enemy/Witch_EN_01.jpg",   // v17：槍之魔女（Boss）內嵌立繪
-  enemy_facelessgiant: "resources/enemy/Faceless_EN_02.webp",   // 連戰第二隻：巨型聖徒 內嵌立繪
+  enemy_witch:    "resources/enemy/GunWitch_Boss_CI.jpg",   // 槍之魔女（Boss）內嵌立繪
+  enemy_facelessgiant: "resources/enemy/Saint_GT_CI.webp",   // 連戰第二隻：巨型聖徒（GT=giant）
   enemy_trainee:  "resources/enemy/Saint_TR_CI.webp",   // 教學專用敵：訓練用聖徒
 
   // ── 五張 cut-in 圖（v17.7 嵌入）──
