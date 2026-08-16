@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.16-82';
+export const VERSION = 'ver 2026.08.16-83';
 
 export const GAME_CONFIG = {
 
@@ -711,32 +711,32 @@ export const ASSETS = {
   enemy_faceless: "resources/enemy/Faceless_EN_01.jpg",   // 無貌者 Boss 暫代圖
   cutin_saint:    "resources/partner/Luna_CI_saint.jpg",   // 聖徒化 cut-in 暫代圖
   partner_twin:   "resources/partner/Luna_SI_01.jpg",   // 雙槍修女立繪（暫用 cut-in 圖）
-  inspector_freya: "resources/inspector/Freya_SI_01.png",
+  inspector_freya: "resources/inspector/Freya_SI_01.webp",
   enemy_witch:    "resources/enemy/Witch_EN_01.jpg",   // v17：槍之魔女（Boss）內嵌立繪
-  enemy_facelessgiant: "resources/enemy/Faceless_EN_02.png",   // 連戰第二隻：巨型聖徒 內嵌立繪
-  enemy_trainee:  "resources/enemy/Saint_TR_CI.png",   // 教學專用敵：訓練用聖徒
+  enemy_facelessgiant: "resources/enemy/Faceless_EN_02.webp",   // 連戰第二隻：巨型聖徒 內嵌立繪
+  enemy_trainee:  "resources/enemy/Saint_TR_CI.webp",   // 教學專用敵：訓練用聖徒
 
   // ── 五張 cut-in 圖（v17.7 嵌入）──
   cutin_saint_luna: "resources/partner/Luna_CI_advent.jpg",   // 聖徒化降臨 cut-in（Luna）
   voice_saint_luna: "resources/partner/Luna_SI_VC.m4a",       // 聖徒化發動語音（Luna，1.7s；與 sfx_saint 疊播）
-  cutin_exc: "resources/partner/Luna_CI_exc.png",   // 處決 EXSECUTIŌ cut-in（Luna）
+  cutin_exc: "resources/partner/Luna_CI_exc.webp",   // 處決 EXSECUTIŌ cut-in（Luna）
   cutin_obe: "resources/partner/Luna_CI_obe.jpg",   // O.B.E. cut-in（Luna）
   cutin_mb: "resources/partner/Luna_CI_maxburst.jpg",   // Maximum Burst cut-in（Luna）
   cutin_guard: "resources/partner/Renee_CI_pas.jpg",   // 即死防禦 cut-in（蕾妮/Renee·被動；檔名 _pas＝passive）
   cutin_return: "resources/partner/Renee_CI_act.jpg",   // 生命歸還 cut-in（蕾妮/Renee·主動；檔名 _act＝active）
-  cutin_malzeno_act: "resources/partner/Malzeno_CI_act.png",   // 前線補給 cut-in（馬季諾·主動）
-  cutin_malzeno_pas: "resources/partner/Malzeno_CI_pas.png",   // 高裝藥彈 cut-in（馬季諾·被動；正式圖）
+  cutin_malzeno_act: "resources/partner/Malzeno_CI_act.webp",   // 前線補給 cut-in（馬季諾·主動）
+  cutin_malzeno_pas: "resources/partner/Malzeno_CI_pas.webp",   // 高裝藥彈 cut-in（馬季諾·被動；正式圖）
 
   // ── 搭檔選人畫面大立繪 ──
-  partner_renee:   "resources/partner/Renee_SI_01.png",     // 蕾妮 立繪
-  partner_malzeno: "resources/partner/Malzeno_SI_01.png",   // 馬季諾 立繪
+  partner_renee:   "resources/partner/Renee_SI_01.webp",     // 蕾妮 立繪
+  partner_malzeno: "resources/partner/Malzeno_SI_01.webp",   // 馬季諾 立繪
   cutin_boss: "resources/enemy/Belinda_CI_boss.jpg",   // v18d：Boss（貝琳妲）遭遇 cut-in 專屬圖
-  bg_sentou: "resources/background/SENTOUINSTALL.png", // Boss 戰 S 級獎勵畫面（銭湯インストール）
+  bg_sentou: "resources/background/SENTOUINSTALL.webp", // Boss 戰 S 級獎勵畫面（銭湯インストール）
 
   // ── 副武器圖（換裝選單縮圖）：鑰匙對應 weapons.image；檔名＝類型_武器名 ──
-  weapon_mg_squall:     "resources/weapon/MG_Squall.png",       // 重機槍 Squall
-  weapon_shotgun_blast: "resources/weapon/Shotgun_Blast.png",   // 散彈槍 Blast
-  weapon_sniper_falcon: "resources/weapon/Sniper_Falcon.png",   // 狙擊槍 Falcon
+  weapon_mg_squall:     "resources/weapon/MG_Squall.webp",       // 重機槍 Squall
+  weapon_shotgun_blast: "resources/weapon/Shotgun_Blast.webp",   // 散彈槍 Blast
+  weapon_sniper_falcon: "resources/weapon/Sniper_Falcon.webp",   // 狙擊槍 Falcon
 
   /* ── 音效 / BGM / 語音（預留槽）───────────────────────────────────────────
    *  目前 audio.js 為 no-op 骨架（合成音尚未搬回），這裡先掛 null 佔位；
