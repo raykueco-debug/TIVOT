@@ -201,9 +201,11 @@ export function setEnemy(key){
   state.WRONG_PENALTY_SCALE = wp.dmgScale!=null ? wp.dmgScale : 1;
   state.curEnemyHitFx = en.hitFx || null;        // 3.7：本怪受擊特效三件套
   state.curEnemySound = en.sound || null;        // 3.7：本怪攻擊音（依 kind：ult/delay/wrong）
-  // 名稱與立繪
+  // 名稱與立繪；取景（config fit.pos → object-position；未設＝回 CSS 預設 center top）
   const nameEl = $('enemyName');
   if(nameEl) nameEl.textContent = displayEnemyName(en.name);
+  const eImg = $('enemyImg');
+  if(eImg) eImg.style.objectPosition = (en.fit && en.fit.pos) || '';
   loadEnemyPortrait(en);
 }
 

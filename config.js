@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.16-88';
+export const VERSION = 'ver 2026.08.16-89';
 
 export const GAME_CONFIG = {
 
@@ -515,6 +515,8 @@ export const GAME_CONFIG = {
     facelessgiant: {
       name:'巨型聖徒',
       image:'enemy_facelessgiant',   // 內嵌立繪鑰匙 → resources/enemy/Saint_GT_CI.webp
+      // 取景：主體在圖面右下（撲擊構圖），cover 裁切錨點右移下移——爪/頭/軀幹全入鏡
+      fit:{ pos:'62% 78%' },
       imageBase:'facelessgiant',     // 外部目錄鑰匙（現況無 assets/ → 404 fallback 到內嵌，與其他敵同）
       hp:300,                        // 血更厚
       attack:45,                     // 大絕單擊傷害（普通值；差異在密度不在單擊）
