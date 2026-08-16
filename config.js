@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.16-72';
+export const VERSION = 'ver 2026.08.16-73';
 
 export const GAME_CONFIG = {
 
@@ -566,9 +566,9 @@ export const GAME_CONFIG = {
    *  想調手感就改這裡的數字，改完存檔重開即可。
    * ------------------------------------------------------------------ */
   tuning: {
-    // 全域主音量（0~1）：所有 SFX/合成音/BGM 統一縮放（整體過大 → 下調至 70%）。
+    // 全域主音量（0~1）：所有 SFX/合成音/BGM 統一縮放（0.7 仍過大 → 再取其 70%＝0.49）。
     //   main.js 開機時經 SFX.setMasterVolume 套用；個別平衡仍走 sfxGain/bgmVol/partnerSeGain。
-    masterVolume:        0.7,
+    masterVolume:        0.49,
 
     // 玩家
     playerHp:            100,   // 我方血量
