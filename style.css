@@ -698,15 +698,22 @@
     to{box-shadow:0 -2px 26px rgba(220,60,60,.6),inset 0 0 22px rgba(220,60,60,.35);} }
 
   /* ===== 首頁 ===== */
+  /* 版面策略（2026-08-16 定案）：由上而下定位、團徽為錨——不用 justify-center
+     （內容高過視窗時 center 會把團徽推出畫面頂、按鈕擠進 footer）。
+     垂直間距/團徽尺寸以 --appvh（main.js 實測視窗高寫入；iOS Safari 的 vh 恆取大視口不可信）
+     收縮：矮視窗整欄等比變緊，內容保證不壓到貼底 footer。 */
   #home{position:absolute;inset:0;display:none;flex-direction:column;
-    align-items:center;justify-content:center;z-index:50;text-align:center;
+    align-items:center;justify-content:flex-start;z-index:50;text-align:center;
     background:radial-gradient(120% 90% at 50% 30%,#1a1330,#07050c 90%);
-    /* 底部保留貼底 footer（Credit/原作 + 版權）的高度：置中內容不會壓到 footer */
-    padding-bottom:calc(84px + env(safe-area-inset-bottom));}
+    padding-top:calc(var(--appvh,1vh)*9);
+    /* 底部保留貼底 footer（Credit/原作 + 版權）的高度 */
+    padding-bottom:calc(72px + env(safe-area-inset-bottom));}
   #home.on{display:flex;}
   /* 主畫面徽記：金色透明 PNG（含 THE IV ORDER OF TESTAMENT 弧字），置中。
-     微微發光呼吸：drop-shadow 光暈 + 亮度，節奏同「開始遊戲」按鈕（1.2s alternate）。 */
-  #home #homeEmblem{width:min(64vw,300px);max-width:78%;height:auto;margin:0 0 14px;
+     微微發光呼吸：drop-shadow 光暈 + 亮度，節奏同「開始遊戲」按鈕（1.2s alternate）。
+     尺寸另設視窗高上限（30 vh 級）：矮視窗縮徽記保按鈕區。 */
+  #home #homeEmblem{width:min(64vw,300px,calc(var(--appvh,1vh)*30));max-width:78%;height:auto;
+    margin:0 0 14px;flex:none;
     user-select:none;-webkit-user-drag:none;pointer-events:none;
     animation:emblemGlow 1.2s ease-in-out infinite alternate;}
   @keyframes emblemGlow{
@@ -716,9 +723,9 @@
   #home .title{font-size:clamp(24px,7.6vw,34px);letter-spacing:.16em;color:var(--gold);
     margin:0;white-space:nowrap;
     text-shadow:0 0 20px var(--gold-dim),0 0 40px rgba(120,40,160,.5);font-weight:bold;}
-  /* 副標 SAINT INSTALL：中文標下方，金字加左右細線 */
+  /* 副標 SAINT INSTALL：中文標下方，金字加左右細線（下緣間距隨視窗高收縮） */
   #home .saint-install{display:flex;align-items:center;justify-content:center;gap:12px;
-    margin:10px 0 46px;}
+    margin:10px 0 clamp(14px, calc(var(--appvh,1vh)*4.5), 46px);}
   #home .saint-install .si-text{font-size:12px;letter-spacing:.42em;
     color:var(--holy);opacity:.92;text-indent:.42em;white-space:nowrap;
     text-shadow:0 0 12px rgba(111,179,212,.45);}
@@ -730,8 +737,8 @@
     color:var(--gold);border-radius:10px;font-family:inherit;font-size:17px;letter-spacing:5px;
     box-shadow:0 0 18px var(--gold-dim);animation:pulse 1.2s infinite alternate;}
   #startBtn:active{transform:scale(.94);}
-  /* 首頁副武器/搭檔占位入口 */
-  #homeLoadout{display:flex;gap:14px;margin-top:28px;}
+  /* 首頁副武器/搭檔占位入口（上緣間距隨視窗高收縮） */
+  #homeLoadout{display:flex;gap:14px;margin-top:clamp(10px, calc(var(--appvh,1vh)*2.6), 28px);}
   /* 語言切換鈕（首頁右上）：鈕面＝下一個語言的自稱（En/日本語/中文），點按循環切換 */
   #langBtn{position:absolute;top:calc(var(--notch-bar-h, 0px) + 12px);right:12px;z-index:5;
     min-width:44px;height:36px;padding:0 14px;border-radius:18px;background:rgba(10,8,14,.6);
@@ -739,10 +746,20 @@
     letter-spacing:1px;}
   #langBtn:active{transform:scale(.92);}
   /* 教學鈕：位於副武器/搭檔下方，與出陣同大小（不加呼吸光，主次分明） */
-  #tutorialBtn{margin-top:16px;padding:16px 46px;background:transparent;
+  #tutorialBtn{margin-top:clamp(8px, calc(var(--appvh,1vh)*1.6), 16px);padding:16px 46px;
+    background:transparent;
     border:1px solid var(--gold-dim);color:var(--gold);border-radius:10px;
     font-family:inherit;font-size:17px;letter-spacing:5px;}
   #tutorialBtn:active{transform:scale(.94);}
+  /* 極矮視窗（SE1 級/瀏覽器工具列全開）：徽記再縮、按鈕降高，保整欄不壓 footer */
+  @media (max-height:620px){
+    #home #homeEmblem{width:min(64vw,300px,calc(var(--appvh,1vh)*25));}
+    #home .saint-install{margin-bottom:12px;}
+    #startBtn, #tutorialBtn{padding:12px 40px;}
+    #homeLoadout{margin-top:10px;}
+    #tutorialBtn{margin-top:8px;}
+    .loadout-btn{padding:8px 16px;}
+  }
   .loadout-btn{display:flex;flex-direction:column;align-items:center;gap:3px;
     padding:10px 20px;min-width:100px;background:transparent;border:1px solid var(--gold-dim);
     color:var(--ink);border-radius:8px;font-family:inherit;}
@@ -939,10 +956,7 @@
   #home .home-copyright{flex:0 0 100%;text-align:center;margin-top:2px;
     font-size:9.5px;letter-spacing:.5px;color:var(--gold-dim);
     opacity:.65;pointer-events:none;white-space:nowrap;}
-  /* 版本號（版權下一行）：確認裝置實際載到的版本（iOS 主畫面 App 快取排查用） */
-  #home .home-version{flex:0 0 100%;text-align:center;margin-top:1px;
-    font-size:8.5px;letter-spacing:1px;color:var(--gold-dim);
-    opacity:.4;pointer-events:none;white-space:nowrap;}
+  /* 版本號不上首頁：改顯示於「連點團徽 5 下」的診斷 HUD（main.js debugHud） */
 
   /* 原作選擇面板 */
   #originalSheet{position:absolute;inset:0;display:none;align-items:center;justify-content:center;

@@ -60,7 +60,10 @@ applyToDom();
  *  並於旋轉/回前台/視口變化時同步；啟動後再補測一次補救慢一拍的取值。 */
 (function syncAppHeight(){
   const sync=()=>{ const h=window.innerHeight;
-    if(h>0){ document.documentElement.style.height=h+'px'; document.body.style.height=h+'px'; } };
+    if(h>0){ document.documentElement.style.height=h+'px'; document.body.style.height=h+'px';
+      // --appvh＝實測視窗高的 1%：iOS Safari 的 vh 恆取「大視口」（不扣網址列/工具列），
+      // 首頁直式版面的垂直間距一律用它換算，瀏覽器內開啟才不會下緣爆版（見 #home 系列規則）
+      document.documentElement.style.setProperty('--appvh',(h/100)+'px'); } };
   sync();
   window.addEventListener('resize', sync);
   window.addEventListener('orientationchange', ()=>setTimeout(sync,300));
@@ -141,17 +144,21 @@ function preloadLateBgm(){
   /* 金色光圈對位：與首頁紋章外圓重合（圈徑≈紋章圖寬的 0.8）。
    *  首頁 bootIdle 於本模組尾端才掛 .on、紋章圖片也要載入才有高度 → 輪詢到量得到為止；
    *  量不到前用 CSS 預設位置（水平置中、上緣 23%）保底。 */
-  (function placeRing(){
+  function placeRing(){
     const ring=$('alRing'); if(!ring || !ring.parentNode) return;
     const em=$('homeEmblem');
     const r=em ? em.getBoundingClientRect() : null;
-    if(r && r.width>10 && r.height>10){
+    // ⚠ 須等紋章「圖片本體」載完才量（naturalWidth>0）：載入中高度是佔位值，
+    //   圈會定錨在錯誤中心且不再修正。視窗變化（旋轉/工具列收合）亦重貼。
+    if(r && r.width>10 && r.height>10 && em.complete && em.naturalWidth>0){
       const d=Math.round(r.width*0.8);
       ring.style.width=d+'px'; ring.style.height=d+'px';
       ring.style.left=Math.round(r.left+r.width/2)+'px';
       ring.style.top =Math.round(r.top +r.height/2)+'px';
     } else setTimeout(placeRing, 120);
-  })();
+  }
+  placeRing();
+  window.addEventListener('resize', placeRing);
   // 監察官立繪與名字（沿用結算的 Freya 資源；讀 config 不寫死）
   //   立繪＝載入畫面的門面，全站最優先：載完（或 4s 保底）才輪到關鍵音效、再輪到整批。
   let portraitP = Promise.resolve();
@@ -339,7 +346,7 @@ document.querySelectorAll('#originalSheet .os-link').forEach(a=>{
 bindBtn('statsBtn', ()=>{ window.location.href = 'stats.html'; });
 weapon.refreshLoadoutLabels();                  // 開機：把當前副武器/搭檔名寫進 loadout 按鈕
 TEL.visit();                                    // 來訪上報（每次開頁一筆）
-{ const v=$('homeVersion'); if(v) v.textContent=VERSION; }   // 首頁版本號（config.VERSION）
+// 版本號不上首頁：於「連點團徽 5 下」的診斷 HUD 內顯示（見 debugHud）
 
 window.addEventListener('resize', combat.fitGridSquare);
 window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare,200));
@@ -529,7 +536,8 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
     const upd=()=>{
       const b=document.body.getBoundingClientRect();
       hud.textContent=
-        'inner  '+innerWidth+'x'+innerHeight
+        VERSION
+        +'\ninner  '+innerWidth+'x'+innerHeight
         +'\nvisual '+Math.round(visualViewport.width)+'x'+Math.round(visualViewport.height)
         +'\nscreen '+screen.width+'x'+screen.height+'  outer '+outerHeight
         +'\nbody   '+Math.round(b.width)+'x'+Math.round(b.height)
