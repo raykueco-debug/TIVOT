@@ -176,8 +176,10 @@ export function onEnemyHp(ratio){
 export function onEnergyFull(){
   if(!state.tutorialActive || dualGuideDone) return;
   dualGuideDone = true;
-  // 反擊/防禦教學若還沒觸發（玩家一路沒防禦），至此已無意義 → 撤下殘餘步驟
+  // 反擊/防禦教學若還沒觸發（玩家一路沒防禦），至此已無意義 → 撤下殘餘步驟，
+  // 並視同反擊教學結束（defendedDone）：延時懲罰恢復、猛點盤面/太早格擋插話停用
   stepsLeft = stepsLeft.filter(s=>s.trigger!=='threat' && s.trigger!=='defended');
+  defendedDone = true;
   openScript('dualReady', { gate:{
     type:'click', immediate:true,   // 對話彈出即亮箭頭，可直接點計量表（不必先點完台詞）
     action: ()=>api.activateDual(),
