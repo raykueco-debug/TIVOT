@@ -281,6 +281,24 @@ function launchBattle(){
   sakuraBurst({ onDone: ()=> tr.proceed() });
 }
 // 出陣 → 出擊整備頁（搭檔卡/武器卡確認）→「執槍」才真正進戰鬥（櫻花＋過渡禎）
+/* 轉場粒子：畫面下方飄起金色光點後飄散（樣式見 style.css .gold-rise；粒子參數行內隨機） */
+function goldSparkRise(){
+  const layer=document.createElement('div');
+  layer.className='gold-rise';
+  document.body.appendChild(layer);
+  for(let i=0;i<26;i++){
+    const p=document.createElement('i');
+    const sz=2+Math.random()*4;
+    p.style.width=sz+'px'; p.style.height=sz+'px';
+    p.style.left=(Math.random()*100)+'%';
+    p.style.setProperty('--dx', ((Math.random()*2-1)*70).toFixed(0)+'px');   // 水平飄散
+    p.style.setProperty('--rise', (40+Math.random()*45).toFixed(0)+'vh');    // 升幅
+    p.style.animationDuration=(1.2+Math.random()*1.4).toFixed(2)+'s';
+    p.style.animationDelay=(Math.random()*0.5).toFixed(2)+'s';
+    layer.appendChild(p);
+  }
+  setTimeout(()=>{ if(layer.parentNode) layer.remove(); }, 3400);
+}
 let prepCloseTimer=null;
 function openPrep(){
   // 出陣 stinger：SI_01（列關鍵預載 critP → 即點即響）
@@ -291,6 +309,7 @@ function openPrep(){
   s.classList.add('on');
   // 掛載後下一拍再開透明度 → 淡入（用 setTimeout 非 rAF：隱藏分頁 rAF 不執行）
   setTimeout(()=>{ if(s.classList.contains('on')) s.classList.add('vis'); }, 30);
+  goldSparkRise();   // 轉場：下方飄起金色光點
 }
 function closePrep(){
   const s=$('prepSheet'); if(!s) return;

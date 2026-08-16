@@ -759,6 +759,17 @@
   /* ── 出擊整備頁（#prepSheet）：出陣 → 本頁 → 執槍才進戰鬥 ──
      搭檔卡上（吃較多高）、武器卡下，點卡開各自的全螢幕選擇畫面（z-60 蓋本頁 z-55，
      關閉後回到本頁）。底部「執槍」規格同結算「再度執槍」貼底整寬大鈕。 */
+  /* 轉場粒子：畫面下方飄起的金色光點（main.js goldSparkRise 動態建立，純程式無素材）。
+     z-56＝蓋整備頁(55)、讓位選擇畫面(60)。位移/升幅/時長由行內 --dx/--rise 與 duration 隨機。 */
+  .gold-rise{position:fixed;inset:0;z-index:56;pointer-events:none;overflow:hidden;}
+  .gold-rise i{position:absolute;bottom:-8px;border-radius:50%;
+    background:radial-gradient(circle,#ffe9a8,rgba(212,169,74,.85) 55%,transparent 75%);
+    box-shadow:0 0 8px rgba(255,224,138,.9),0 0 16px rgba(212,169,74,.5);
+    opacity:0;animation:goldRise 1.8s ease-out forwards;}
+  @keyframes goldRise{
+    0%{opacity:0;transform:translate(0,0) scale(.6);}
+    12%{opacity:1;}
+    100%{opacity:0;transform:translate(var(--dx,0px),calc(-1*var(--rise,55vh))) scale(1.05);}}
   /* 開閉皆淡入淡出：.on 掛載（display）、.vis 控透明度（main.js 先 on 後下一幀 vis） */
   #prepSheet{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;
     background:radial-gradient(120% 90% at 50% 30%,#1a1330,#07050c 90%);z-index:55;
