@@ -118,11 +118,6 @@
     <div id="tutCast">
       <img class="tut-portrait" id="tutCastL" alt="">
       <img class="tut-portrait" id="tutCastR" alt="">
-      <div id="tutBubble">
-        <div class="tut-name" id="tutName"></div>
-        <div class="tut-line" id="tutLine"></div>
-        <div class="tut-next">▼</div>
-      </div>
     </div>
     <!-- 教學：跳過鈕（畫面左上；僅教學期間顯示，按下＝確認框 → 跳過/繼續） -->
     <button id="tutSkipBtn">SKIP</button>
@@ -139,6 +134,13 @@
   <div id="tutTouch"></div>
   <!-- 教學：引導箭頭（雪鐵龍雙箭羽依次閃滅）＋文字標示（CLICK！／向右側滑動／向上滑動） -->
   <div id="tutGuide"><div class="tg-chevrons"><i></i><i></i><i></i></div><div class="tg-label"></div></div>
+  <!-- 教學對話框：#app 直屬（非 #tutCast 內）——掛在立繪層(z-20)裡會被其堆疊脈絡壓住，
+       遭 cut-in(40)/聖徒化 cut-in(50) 等演出蓋掉。獨立於此並自帶 .on 顯示控制（見 tutorial.js）。 -->
+  <div id="tutBubble">
+    <div class="tut-name" id="tutName"></div>
+    <div class="tut-line" id="tutLine"></div>
+    <div class="tut-next">▼</div>
+  </div>
 
   <!-- 雙槍 cut-in 演出 -->
   <div id="cutin">

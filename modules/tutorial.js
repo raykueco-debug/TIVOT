@@ -338,8 +338,9 @@ function openStep(step){
     el.style.height = (baseH * (fit.zoom || 1)) + '%';
     el.style.bottom = (-(fit.drop || 0)) + '%';
   }
-  const wrap=$('tutCast'), touch=$('tutTouch');
+  const wrap=$('tutCast'), touch=$('tutTouch'), bubble=$('tutBubble');
   if(touch) touch.classList.add('on');
+  if(bubble) bubble.classList.add('on');   // 對話框已移出 #tutCast（z-8000 恆在最上層），自帶顯示控制
   if(wrap){
     wrap.classList.add('on');
     // 起滑延遲用 setTimeout（非 rAF）：隱藏分頁 rAF 不執行，會漏掉立繪進場
@@ -428,8 +429,10 @@ function closeDialog(resume, silent){
   syncBubbleShape(null);   // 撤形狀調整（.clasp-clear）
   state.tutorialDialog=false;
   if(!document.getElementById('exitConfirm')) document.body.classList.remove('dlg-pause');
-  const wrap=$('tutCast'), touch=$('tutTouch');
+  const wrap=$('tutCast'), touch=$('tutTouch'), bubble=$('tutBubble');
   if(touch) touch.classList.remove('on');
+  // 對話框與立繪同時序退場（原本隨父層 #tutCast 一起消失，維持手感）
+  if(bubble) setTimeout(()=>{ if(!state.tutorialDialog) bubble.classList.remove('on'); }, 500);
   if(wrap){
     const L=$('tutCastL'), R=$('tutCastR');
     for(const el of [L,R]){ if(el){ el.classList.remove('in','speaking','center'); } }   // 立繪滑出
@@ -526,6 +529,7 @@ function endTutorial(){
   stepsLeft=[]; queue=[]; pendingGate=null; gate=null;
   hideGuide();
   const sk=$('tutSkipBtn'); if(sk) sk.classList.remove('on');
+  const bb=$('tutBubble'); if(bb) bb.classList.remove('on','clasp-clear','done');   // 對話框保險收乾淨
 }
 
 /* ============================================================================

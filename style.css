@@ -1082,11 +1082,16 @@
   /* 對話框：緊貼數字盤面上方（間隔 2px）。#top overflow:hidden 裁不到盤面側
      → 改 fixed 脫離裁切，精確 bottom 由 tutorial.placeBubble 依 #grid 實測寫入
      （此處 bottom:52% 僅為 JS 未及執行時的保底位置）；框高增長時向上長、貼齊邊不動。 */
-  #tutBubble{position:fixed;left:50%;bottom:52%;transform:translateX(-50%);
+  /* 教學對話框：#app 直屬、z-8000＝永遠在最上層——高於所有演出層（cut-in 40／
+     聖徒化 cut-in 50／整備頁 55／轉場光點 56），低於全畫面黑幕(9000)與確認框(9500)
+     （那兩者本就該蓋住它）。顯示由自帶的 .on 控制（原本靠父層 #tutCast 的 display）。 */
+  #tutBubble{display:none;z-index:8000;
+    position:fixed;left:50%;bottom:52%;transform:translateX(-50%);
     width:min(92%,360px);background:rgba(8,6,12,.9);border:1px solid var(--gold-dim);
     border-radius:10px;padding:9px 14px 12px;box-shadow:0 4px 18px rgba(0,0,0,.55);}
   /* 雙槍引導段（dualReady，tutorial.js 掛 .clasp-clear）：縮窄並右移，
      讓出左側破防計量表——玩家要看著它點（引導箭頭也指著它） */
+  #tutBubble.on{display:block;}
   #tutBubble.clasp-clear{width:min(70%,300px);transform:translateX(-38%);}
   /* 台詞關鍵字（聖徒化／Saint Install）：金色粗字（i18n.decorateLine 包 .kw-saint） */
   .kw-saint{color:var(--gold);font-weight:bold;}
