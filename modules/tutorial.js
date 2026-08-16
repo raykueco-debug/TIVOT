@@ -489,10 +489,12 @@ function showGuide(type){
     x = r.left + r.width/2 + 8;
     y = r.top - 52;
   }else if(type==='right'){
-    // 畫面左緣往右閃、標示向右側滑動（x 貼緣：立繪已移正中，箭頭不壓立繪）
-    const tr=$('top') ? $('top').getBoundingClientRect() : {top:0,height:innerHeight/2};
+    // 敵人框左緣往右閃、標示向右側滑動（貼框緣：立繪已移正中，箭頭不壓立繪）。
+    // ⚠ #tutGuide 為 fixed（視口座標）：x 必須以 #top 的 rect.left 起算——
+    //   桌機 #app 置中（max-width 520）時，直接用 42 會落在畫框外。
+    const tr=$('top') ? $('top').getBoundingClientRect() : {left:0,top:0,height:innerHeight/2};
     dir='g-right'; label = labels.right || '向右側滑動';
-    x = 42;
+    x = (tr.left||0) + 42;
     y = tr.top + tr.height*0.45;
   }else{
     // 敵人框內由下往上指（生命歸還手勢區）、標示向上滑動；偏左 1/4 處——蕾妮立繪在右側不被壓

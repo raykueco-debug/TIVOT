@@ -190,6 +190,25 @@ export function refreshLoadoutLabels(){
   if(wi && w){ const src=asset(w.image)||''; if(wi.getAttribute('src')!==src) wi.src=src; }
 }
 
+/* ── 教學固定裝備：蕾妮＋機槍（config defaultPartner/defaultWeapon）──
+ *  教學戰開場（combat.startGame 教學分支）強制換上；玩家原選擇暫存，
+ *  回主選單（combat.goHome）還原。equippedWeapon/pickedPartner 皆本模組擁有（§3.4）。 */
+let _tutLoadoutStash = null;
+export function forceTutorialLoadout(){
+  if(_tutLoadoutStash) return;   // 教學段內重開（陣亡該段重來）不重複暫存
+  _tutLoadoutStash = { w: state.equippedWeapon, p: state.pickedPartner };
+  state.equippedWeapon = GAME_CONFIG.defaultWeapon;      // 機槍（MG_Squall）
+  setPickedPartner(GAME_CONFIG.defaultPartner);          // 蕾妮（renee）
+  refreshLoadoutLabels();
+}
+export function restoreTutorialLoadout(){
+  if(!_tutLoadoutStash) return;
+  state.equippedWeapon = _tutLoadoutStash.w;
+  setPickedPartner(_tutLoadoutStash.p);
+  _tutLoadoutStash = null;
+  refreshLoadoutLabels();
+}
+
 // 開啟選擇畫面：kind='weapon'（副武器 → 全螢幕卡疊，上下滑動）| 'partner'（搭檔 → 全螢幕卡疊，左右滑動）。
 export function openPickSheet(kind){
   if(kind==='partner'){ openPartnerSheet(); return; }

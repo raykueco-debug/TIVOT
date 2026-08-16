@@ -789,6 +789,8 @@ export function startGame(){
   loadBoard(0); updateBars();
   tutorial.maybeStart();   // 首次出陣 → 進教學（穿插式；看過/跳過後恆 no-op）
   if(state.tutorialActive && GAME_CONFIG.tutorial){
+    // 教學固定裝備：蕾妮＋機槍（原選擇暫存，goHome 還原）
+    weapon.forceTutorialLoadout();
     // 教學戰：換上教學專用敵（訓練用聖徒；單敵一場，finishEnemyOrAdvance 的 tutorialRun 守門不走 lineup）
     const tk=GAME_CONFIG.tutorial.enemyKey;
     if(tk && GAME_CONFIG.enemies[tk]) enemy.setEnemy(tk);
@@ -857,6 +859,7 @@ function fadeTransition(mid, half){
 export function goHome(onCovered){
   fadeTransition(()=>{                        // 回主選單：淡出淡入約 3 秒
     state.over=true; stopAll();
+    weapon.restoreTutorialLoadout();          // 教學固定裝備（蕾妮＋機槍）→ 還原玩家原選擇（非教學為 no-op）
     state.cutinPlaying=false;                 // 清掉可能的暫停旗標（退出確認用）
     $('banner').classList.remove('on'); $('banner').classList.remove('lose');
     $('transition').classList.remove('on');
