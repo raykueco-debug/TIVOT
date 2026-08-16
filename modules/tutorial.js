@@ -77,7 +77,7 @@ export function maybeStart(){
   state.tutorialLifeReturn = false;
   stepsLeft = cfg.steps.slice();
   queue = [];
-  defendedDone = dualGuideDone = saintCritFired = false; dualForce = false;
+  defendedDone = dualGuideDone = saintCritFired = false; dualForce = false; attackScoldCount = 0;
   pendingGate = null; gate = null;
   const sk=$('tutSkipBtn'); if(sk) sk.classList.add('on');
   clearTimeout(startTimer);
@@ -132,8 +132,19 @@ export function firstThreatPending(){
 }
 // combat.tap 每次正確消格呼叫（cleared＝本盤已消格數）：第四回合清滿 strike.afterCells
 //   → 觸發「小心！」劇情殺段
+let attackScoldCount = 0;   // 反擊教學「紅圈在場還猛點盤面」插話次數（首次罵、之後無言）
 export function onBoardProgress(cleared){
   if(!state.tutorialActive || state.tutorialDialog) return;
+  // 反擊教學未過（defended 未觸發）且紅圈在場：玩家不看字猛點盤面攻擊 →
+  //   監察官插話「你倒是防禦啊！」，第二次起改「…………」（台詞 config.scold.attackDuringThreat）
+  if(!defendedDone && state.threats.length>0){
+    const sc=(CFG().scold||{}).attackDuringThreat;
+    if(sc){
+      attackScoldCount++;
+      openStep({ lines:[{ who:'inspector', text: attackScoldCount===1 ? (sc.first||'') : (sc.rest||'…………') }] });
+      return;
+    }
+  }
   const st = CFG().strike || {};
   if(state.boardIndex===3 && cleared >= (st.afterCells||8)) fire('strike');
 }

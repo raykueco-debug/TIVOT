@@ -240,6 +240,7 @@ export const STRINGS = {
       early: [
         'Too early! Pay closer attention!',
       ],
+      attackDuringThreat: { first:'How about DEFENDING?!', rest:'.........' },
     },
     guideLabels: {
       click: 'CLICK!',
@@ -255,7 +256,7 @@ export const STRINGS = {
     result: {
       usedLifeReturn: 'Let me make this clear. Renee saved you this time. If you had suffered Meltdown, you would truly have been fighting with your back against the wall.',
       noLifeReturn:   'You did well. But if you want to survive, you must learn to rely on your partner properly.',
-      outro:          '"Saint Install" is a gamble. If you fail, you will be fighting with your back against the wall. Use it carefully.',
+      outro:          '"Saint Install" is a gamble. Fail, and there will be no way out. Use it carefully.',
       buttonLabel:    'Return to Main Screen',
       buttonLine:     'I look forward to seeing what you can do.',
     },

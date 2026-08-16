@@ -260,6 +260,7 @@ export const STRINGS = {
       early: [
         '早すぎる！　もっとよく見てなさい！',
       ],
+      attackDuringThreat: { first:'防御をしなさい！', rest:'…………' },
     },
     guideLabels: {
       click: 'CLICK！',
@@ -275,7 +276,7 @@ export const STRINGS = {
     result: {
       usedLifeReturn: '先に言っておきます。今回はレニーがあなたを救ったのです。熔断していれば、背水の戦いになっていました。',
       noLifeReturn:   'よくやりました。ですが、生き残るにはパートナーにもきちんと頼ることです。',
-      outro:          '「聖徒化」は大きな賭け。失敗すれば背水の戦いになる。慎重に使うように。',
+      outro:          '「聖徒化」は大きな賭け。失敗すれば、もう退路はない。慎重に使うように。',
       buttonLabel:    'メイン画面に戻る',
       buttonLine:     '活躍を期待している。',
     },

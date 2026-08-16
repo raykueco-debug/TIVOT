@@ -270,6 +270,8 @@ export const STRINGS = {
       early: [
         '太早了！看清楚一點！',
       ],
+      // 反擊教學：紅圈在場還猛點盤面攻擊 → 首次罵、第二次起無言
+      attackDuringThreat: { first:'你倒是防禦啊！', rest:'…………' },
     },
     // ── 引導箭頭標示 ──
     guideLabels: {
@@ -288,7 +290,7 @@ export const STRINGS = {
     result: {
       usedLifeReturn: '我話說在前頭，這次是蕾妮救了你，萬一熔斷就真的背水一戰了。',
       noLifeReturn:   '身手不錯，但要存活下來也得好好依賴伙伴。',
-      outro:          '「聖徒化」是場豪賭，失敗的話就只能背水一戰，謹慎使用吧。',
+      outro:          '「聖徒化」是場豪賭，失敗的話就再也沒有退路，謹慎使用吧。',
       buttonLabel:    '回到主畫面',
       buttonLine:     '期待你的表現。',
     },
