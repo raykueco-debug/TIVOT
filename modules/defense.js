@@ -210,14 +210,17 @@ export function resolveThreat(th){
   SFX.confirm();
 
   const counterWin = w ? w.counterWin : DEF_PERFECT_MIN;
+  let grade='block';   // 判定等級：'counter' | 'perfect' | 'block'（傳給教學層分流，見文末通知）
   if(ratio < counterWin){
     // === Counter === 免傷 + 反擊武器大傷害（金色微閃）
+    grade='counter';
     flashDefense('gold');
     api.floatDmg(L.battle.counter,'50%','38%',true);
     api.triggerAtkBuff(2);
     api.weaponCounter();
   }else if(!(w && w.noPerfectBand) && ratio < DEF_DEFENSE_MIN){
     // === Perfect Defense ===（金色微閃）
+    grade='perfect';
     addPerfect();
     flashDefense('gold');
     if(w && w.perfectDamageScale){
@@ -250,7 +253,7 @@ export function resolveThreat(th){
       if(api.onThreatEarly) api.onThreatEarly();   // 教學「太早防禦」插話（教學外/聖徒化為 no-op）
     }
   }
-  if(api.onThreatResolved) api.onThreatResolved();   // 教學「首次防禦成功」節點通知（教學外為 no-op）
+  if(api.onThreatResolved) api.onThreatResolved(grade);   // 教學「首次防禦成功」節點通知（帶判定等級；教學外為 no-op）
 }
 // 防禦統一閃光：color 'block'（白）或 'gold'（金）。整張敵圖微微一閃。
 export function flashDefense(color){

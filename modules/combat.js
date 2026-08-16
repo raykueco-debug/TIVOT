@@ -72,6 +72,7 @@ export function setup(){
     tryPartnerActive: partner.tryActive,
     strike: tutorialStrike,
     capEnemyHp: tutorialCapEnemyHp,
+    respawnThreat: defense.startCharge,   // 反擊教學：太早格擋 → 罵完重放一次反擊圈
     goHome,   // 跳過鈕：中止教學戰回主選單
   });
   // 武器：反擊演算所需（enemyDamage/floatDmg）+ 雙槍破防窗口所需（cut-in/敵計時/盤面/破防值歸零）。

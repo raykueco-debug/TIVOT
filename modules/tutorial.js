@@ -80,8 +80,11 @@ export function maybeStart(){
 export function onBoardLoaded(idx){ fire('board:'+idx); }
 // defense.spawnThreat 生成紅點時經注入呼叫 → 觸發 'threat' 步驟（紅點凍結於畫面講解）
 export function onThreatSpawned(){ fire('threat'); }
-// defense.resolveThreat 成功點掉紅點（Defense/Perfect/Counter 任一）→ 'defended' 步驟
-export function onThreatResolved(){
+// defense.resolveThreat 點掉紅點 → 'defended' 步驟（grade='counter'|'perfect'|'block'）。
+//   反擊教學階段（defended 未過）點太早（block）不算過關：監察官已插話「太早」（onEarlyBlock），
+//   收段後重放一次反擊圈（見 onStepClosed 'earlyRetry'），直到點出 Perfect / Counter 才進「防得好」段。
+export function onThreatResolved(grade){
+  if(state.tutorialActive && !defendedDone && grade==='block') return;
   defendedDone = true;    // 防禦成功：延時懲罰恢復、罵人停用（「第二盤結束前不再跳任何提示」）
   fire('defended');
 }
@@ -99,7 +102,8 @@ export function onEarlyBlock(){
   if(!state.tutorialActive || state.tutorialDialog || state.over || state.saintMode) return;
   const pool = (CFG().scold||{}).early;
   if(!pool || !pool.length) return;
-  openStep({ lines:[{ who:'inspector', text: pool[Math.random()*pool.length|0] }] });
+  // key='earlyRetry'：反擊教學階段收段後重放反擊圈（onStepClosed 分流；已過 defended 則只罵不重放）
+  openStep({ key:'earlyRetry', lines:[{ who:'inspector', text: pool[Math.random()*pool.length|0] }] });
 }
 // combat 延時懲罰前詢問：第二回合在首次防禦成功前不套延時懲罰
 export function delayPenaltySuppressed(){
@@ -201,6 +205,12 @@ function openScript(key, opts){
 
 // 段落收掉後的腳本接續（closeDialog 於 resume 時呼叫；skip/abort 走 silent 不觸發）
 function onStepClosed(id){
+  if(id==='earlyRetry'){
+    // 太早格擋收段：反擊教學未過（defended 未觸發）→ 立即重放一次反擊圈，
+    // 玩家點出 Perfect/Counter 才過關；已過 defended 的太早提醒不重放（自然排程接手）
+    if(!defendedDone && api.respawnThreat) api.respawnThreat();
+    return;
+  }
   if(id==='strike'){
     // 「小心！」收段 → 劇情殺三連擊（三種受擊畫面、第二擊三爪、末擊致死 → 即死防禦保 1 HP）
     //   → 即死防禦 cut-in 結束後聖徒化引導
