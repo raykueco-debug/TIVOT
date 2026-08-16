@@ -711,8 +711,8 @@
   #home.on{display:flex;}
   /* 主畫面徽記：金色透明 PNG（含 THE IV ORDER OF TESTAMENT 弧字），置中。
      微微發光呼吸：drop-shadow 光暈 + 亮度，節奏同「開始遊戲」按鈕（1.2s alternate）。
-     尺寸另設視窗高上限（30 vh 級）：矮視窗縮徽記保按鈕區。 */
-  #home #homeEmblem{width:min(64vw,300px,calc(var(--appvh,1vh)*30));max-width:78%;height:auto;
+     尺寸固定比例（64vw 上限 300px）不隨視窗高縮——矮視窗靠間距收縮與教學鈕移入底排騰空間。 */
+  #home #homeEmblem{width:min(64vw,300px);max-width:78%;height:auto;
     margin:0 0 14px;flex:none;
     user-select:none;-webkit-user-drag:none;pointer-events:none;
     animation:emblemGlow 1.2s ease-in-out infinite alternate;}
@@ -745,19 +745,12 @@
     border:1px solid var(--gold-dim);color:var(--gold);font-family:inherit;font-size:14px;
     letter-spacing:1px;}
   #langBtn:active{transform:scale(.92);}
-  /* 教學鈕：位於副武器/搭檔下方，與出陣同大小（不加呼吸光，主次分明） */
-  #tutorialBtn{margin-top:clamp(8px, calc(var(--appvh,1vh)*1.6), 16px);padding:16px 46px;
-    background:transparent;
-    border:1px solid var(--gold-dim);color:var(--gold);border-radius:10px;
-    font-family:inherit;font-size:17px;letter-spacing:5px;}
-  #tutorialBtn:active{transform:scale(.94);}
-  /* 極矮視窗（SE1 級/瀏覽器工具列全開）：徽記再縮、按鈕降高，保整欄不壓 footer */
+  /* 教學鈕：縮為小圓角鈕、移入底部 Credit/原作 同排（見 #homeLinks 區的共同樣式） */
+  /* 極矮視窗（SE1 級/瀏覽器工具列全開）：按鈕降高、間距收緊，保整欄不壓 footer */
   @media (max-height:620px){
-    #home #homeEmblem{width:min(64vw,300px,calc(var(--appvh,1vh)*25));}
     #home .saint-install{margin-bottom:12px;}
-    #startBtn, #tutorialBtn{padding:12px 40px;}
+    #startBtn{padding:12px 40px;}
     #homeLoadout{margin-top:10px;}
-    #tutorialBtn{margin-top:8px;}
     .loadout-btn{padding:8px 16px;}
   }
   .loadout-btn{display:flex;flex-direction:column;align-items:center;gap:3px;
@@ -944,10 +937,10 @@
     display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px;padding:0 8px;}
   /* 視窗被裁（iOS 26 standalone）：home indicator 位於不可視死區，安全區墊高全屬白墊 → 拿回 */
   html.vp-clipped #home #homeLinks{bottom:10px;}
-  #home #creditBtn, #home #originalBtn, #home #statsBtn{padding:6px 18px;background:transparent;
+  #home #tutorialBtn, #home #creditBtn, #home #originalBtn, #home #statsBtn{padding:6px 18px;background:transparent;
     border:1px solid var(--gold-dim);border-radius:20px;color:var(--gold-dim);
     font-family:inherit;font-size:11px;letter-spacing:2px;flex:none;}
-  #home #creditBtn:active, #home #originalBtn:active, #home #statsBtn:active{transform:scale(.95);color:var(--gold);border-color:var(--gold);}
+  #home #tutorialBtn:active, #home #creditBtn:active, #home #originalBtn:active, #home #statsBtn:active{transform:scale(.95);color:var(--gold);border-color:var(--gold);}
   /* 後臺統計鈕（管理員限定）：嚴格綁定清盤鈕——只認本場手勢解鎖（body.testmode），
      重整即隱藏。裝置永久簽名只作遙測排除，不單獨顯示此鈕。 */
   #home #statsBtn{display:none;}
