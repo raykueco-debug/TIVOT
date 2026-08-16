@@ -504,8 +504,9 @@ export function skip(){
   if(state.tutorialDialog) closeDialog(false, true);   // 只撤 UI：goHome 接管流程（會清 cutinPlaying）
   endTutorial();
   state.tutorialRun = false;
-  if(api.goHome) api.goHome();                         // 本場廢棄 → 淡出（黑幕蓋掉戰場、底層回主選單）
-  if(menuApi.openPrep) menuApi.openPrep();             // 直接轉進出擊整備頁（疊於主選單上、含 SI_01）
+  // 本場廢棄 → 單次淡出淡入直達整備頁：黑幕「全蓋瞬間」才開整備頁（onCovered），
+  // 揭幕時整備頁已就位——不會先閃一下整備頁又被黑幕蓋掉再轉場一次
+  if(api.goHome) api.goHome(()=>{ if(menuApi.openPrep) menuApi.openPrep(); });
 }
 // 中止（combat.stopAll 調度：goHome/勝負/重開場）：只撤 UI、不記已看——
 // 中途退出的話，下次出陣仍會重新進教學（skip 或走到終盤才算看過）。

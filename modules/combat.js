@@ -844,7 +844,9 @@ function fadeTransition(mid, half){
     setTimeout(()=>{ ov.style.pointerEvents='none'; }, ms);
   }, ms);
 }
-export function goHome(){
+// onCovered（選填）：黑幕全蓋瞬間的接續回呼——跳過教學→出擊整備用（蓋著開新畫面不露餡，
+//   單次淡出淡入直達，不會先閃一下主選單/整備頁再轉場一次）。
+export function goHome(onCovered){
   fadeTransition(()=>{                        // 回主選單：淡出淡入約 3 秒
     state.over=true; stopAll();
     state.cutinPlaying=false;                 // 清掉可能的暫停旗標（退出確認用）
@@ -853,6 +855,7 @@ export function goHome(){
     const sr=$('sentouReward'); if(sr) sr.classList.remove('on','done');   // 銭湯獎勵層：黑幕全蓋後才收（見 inspector）
     $('home').classList.add('on');
     SFX.playBgm(asset('bgm_home'), { volume: bgmVol('bgm_home') });           // 主選單 BGM
+    if(typeof onCovered==='function') onCovered();
   }, 1400);
 }
 

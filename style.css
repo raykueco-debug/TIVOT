@@ -917,9 +917,11 @@
   #weaponSheet .ws-arrow:active{transform:translateX(-50%) scale(.92);}
   #weaponSheet .ws-up{top:2px;}
   #weaponSheet .ws-down{bottom:2px;}
-  /* 武器介紹卡（名稱／介紹／數據）。min-height 取各武器介紹最長者 → 上方卡疊不隨切換跳動 */
-  #weaponSheet .ws-card{flex:none;width:100%;max-width:340px;min-height:118px;background:#0f0c16;
-    border:1px solid var(--gold-dim);border-radius:12px;padding:12px 14px;text-align:left;}
+  /* 武器介紹卡（名稱／介紹／數據）。高度固定＋卡內捲動（同搭檔卡：防 ja/en 長文擠掉選擇鈕）；
+     上方卡疊亦不隨切換跳動 */
+  #weaponSheet .ws-card{flex:none;width:100%;max-width:340px;height:150px;background:#0f0c16;
+    border:1px solid var(--gold-dim);border-radius:12px;padding:12px 14px;text-align:left;
+    overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;}
   #weaponSheet .ws-name{font-size:16px;letter-spacing:4px;color:var(--gold);text-align:center;
     margin-bottom:8px;}
   #weaponSheet .ws-desc{font-size:11.5px;line-height:1.55;color:var(--gold-dim);letter-spacing:.5px;
@@ -967,9 +969,11 @@
     background:transparent;border:1px solid var(--gold-dim);}
   #partnerSheet .ps-dots i.cur, #weaponSheet .ps-dots i.cur{background:var(--gold);border-color:var(--gold);}
   #partnerSheet .ps-dots i.picked, #weaponSheet .ps-dots i.picked{box-shadow:0 0 8px var(--gold);}
-  /* min-height 取各搭檔描述最長者：卡片高度固定 → 上方取景框不隨切換縮放，頭部大小才真正一致 */
-  #partnerSheet .ps-card{flex:none;width:100%;max-width:340px;min-height:182px;background:#0f0c16;
-    border:1px solid var(--gold-dim);border-radius:12px;padding:12px 14px;text-align:left;}
+  /* 卡片高度「固定」（非 min-height）：ja/en 描述較長會把選擇鈕擠出畫面 →
+     內容改卡內上下捲動；上方取景框也不隨切換縮放，頭部大小才真正一致 */
+  #partnerSheet .ps-card{flex:none;width:100%;max-width:340px;height:182px;background:#0f0c16;
+    border:1px solid var(--gold-dim);border-radius:12px;padding:12px 14px;text-align:left;
+    overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;}
   #partnerSheet .ps-name{font-size:16px;letter-spacing:4px;color:var(--gold);text-align:center;
     margin-bottom:8px;}
   #partnerSheet .ps-skill{margin-top:7px;}
