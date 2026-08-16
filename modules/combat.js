@@ -785,9 +785,12 @@ export function startGame(){
   stopAll();
   loadBoard(0); updateBars();
   tutorial.maybeStart();   // 首次出陣 → 進教學（穿插式；看過/跳過後恆 no-op）
-  // 教學戰：敵人血量覆寫（撐到腳本終盤；經 initEnemyHp 具名管道）
-  if(state.tutorialActive && GAME_CONFIG.tutorial && GAME_CONFIG.tutorial.enemyHp){
-    initEnemyHp(GAME_CONFIG.tutorial.enemyHp);
+  if(state.tutorialActive && GAME_CONFIG.tutorial){
+    // 教學戰：換上教學專用敵（訓練用聖徒；單敵一場，finishEnemyOrAdvance 的 tutorialRun 守門不走 lineup）
+    const tk=GAME_CONFIG.tutorial.enemyKey;
+    if(tk && GAME_CONFIG.enemies[tk]) enemy.setEnemy(tk);
+    // 敵人血量覆寫（撐到腳本終盤；經 initEnemyHp 具名管道）
+    if(GAME_CONFIG.tutorial.enemyHp) initEnemyHp(GAME_CONFIG.tutorial.enemyHp);
     updateBars();
   }
 }

@@ -151,6 +151,7 @@ export const STRINGS = {
     facelessgiant: '巨型聖徒',
     intruder:      '亂入者 · ???',
     witch:         '槍之魔女',
+    trainee:       '訓練用聖徒',   // 教學專用敵
   },
 
   /* ═══ 9. 監察官（芙蕾雅）＝結算台詞 ═══ */

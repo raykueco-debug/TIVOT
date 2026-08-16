@@ -63,7 +63,7 @@ export function applyToConfig(GC){
     if(p.active){  p.active.name=t.activeName;   p.active.desc=t.activeDesc; }
   }
   // 敵人名（保留底線後綴的作者標記語義：直接整名覆寫，displayEnemyName 取底線前半）
-  const EN_MAP={ faceless:'faceless', facelessgiant:'facelessgiant', intruderEnemy:'intruder', witch:'witch' };
+  const EN_MAP={ faceless:'faceless', facelessgiant:'facelessgiant', intruderEnemy:'intruder', witch:'witch', trainee:'trainee' };
   for(const key of Object.keys(EN_MAP)){
     if(GC.enemies && GC.enemies[key] && L.enemies[EN_MAP[key]]) GC.enemies[key].name=L.enemies[EN_MAP[key]];
   }

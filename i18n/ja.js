@@ -146,6 +146,7 @@ export const STRINGS = {
     facelessgiant: '巨型聖徒',
     intruder:      '乱入者 · ???',
     witch:         '銃の魔女',
+    trainee:       '訓練用聖徒',
   },
 
   /* ═══ 9. 監察官（フレイヤ）═══ */

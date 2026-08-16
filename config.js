@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.16-81';
+export const VERSION = 'ver 2026.08.16-82';
 
 export const GAME_CONFIG = {
 
@@ -212,6 +212,7 @@ export const GAME_CONFIG = {
    * ------------------------------------------------------------------ */
   tutorial: {
     storageKey: 'tivot.tutorialSeen.v1',
+    enemyKey: 'trainee',   // 教學專用敵（enemies.trainee＝訓練用聖徒；combat.startGame 於教學啟動時換上）
     startDelayMs: 700,     // 開戰後多久插入第一段對話（ms）
     lineTypeMs: 30,        // 打字機每字間隔（ms）；點擊對話中先跳完整句、再點下一句
     // 教學戰鬥的規則調整（只在 tutorialActive 期間生效）：
@@ -487,6 +488,26 @@ export const GAME_CONFIG = {
         ult:{   type:'claw', count:3, angle:'random' },  // 大絕 → 三爪、角度隨機
       },
     },
+    // ── 教學專用敵：訓練用聖徒（僅教學戰載入，不進 lineup）──
+    //    tutorial.enemyKey 指到這筆；戰鬥數值大多被教學規則覆寫
+    //    （攻擊一律 tutorial.enemyAtkDamage=2、總血 tutorial.enemyHp=500），
+    //    hp/attack 仍填保底值。立繪：Saint_TR_CI。
+    trainee: {
+      name:'訓練用聖徒',
+      image:'enemy_trainee',    // → resources/enemy/Saint_TR_CI.png
+      imageBase:'trainee',      // 外部目錄鑰匙（無 assets/ → 404 fallback 到內嵌，與其他敵同）
+      hp:500,
+      attack:45,
+      atkInterval:null,         // 沿用 tuning.chargeSeconds
+      sound:{ ult:'em_slash', delay:'em_smack', wrong:'em_slash' },
+      special:[],
+      boardGrids:[9,9,16,16,16],
+      hitFx:{
+        delay:{ type:'blood', angle:'random' },
+        wrong:{ type:'slash' },
+        ult:{   type:'claw', count:3, angle:'random' },
+      },
+    },
     // ── 連戰第二隻（局內序列第二敵）：巨型聖徒。完全獨立一筆，非沿用 faceless。 ──
     //    非 Boss（不填 ult/delayPenalty/wrongPenalty → 普通怪走預設：單發大絕、無半傷減時）。
     //    差異：血更厚（300）＋攻擊更密（蓄力 4×1/1.2≈3.33s）；單擊傷害同一般值。
@@ -693,6 +714,7 @@ export const ASSETS = {
   inspector_freya: "resources/inspector/Freya_SI_01.png",
   enemy_witch:    "resources/enemy/Witch_EN_01.jpg",   // v17：槍之魔女（Boss）內嵌立繪
   enemy_facelessgiant: "resources/enemy/Faceless_EN_02.png",   // 連戰第二隻：巨型聖徒 內嵌立繪
+  enemy_trainee:  "resources/enemy/Saint_TR_CI.png",   // 教學專用敵：訓練用聖徒
 
   // ── 五張 cut-in 圖（v17.7 嵌入）──
   cutin_saint_luna: "resources/partner/Luna_CI_advent.jpg",   // 聖徒化降臨 cut-in（Luna）

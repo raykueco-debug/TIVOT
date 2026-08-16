@@ -131,6 +131,7 @@ export const STRINGS = {
     facelessgiant: 'Giant Saint',
     intruder:      'Intruder · ???',
     witch:         'Gunwitch',
+    trainee:       'Training Saint',
   },
   /* ═══ 9. 監察官（Freya）═══ */
   inspector: {
