@@ -195,14 +195,19 @@ function preloadLateBgm(){
     };
     cycle();
   }
-  /* 關鍵音效優先段：SI_01（測試解鎖回饋音）＋ Start_01（武器選單換卡/一般再度執槍）
-   *   ＋ StartBT_SE（執槍/overkill/Boss S 第一按）＋ Luna_SI_SE（出陣鈕按下）
-   *   ——排在立繪之後、整批圖片/BGM 之前「單獨」載完解碼（批次 ~20MB，同時開跑會
-   *   搶走頻寬，慢網下 12s 保底放行時反而還沒就緒 → 點下去沒聲音）。
-   *   自帶 4s 保底：關鍵檔卡住也不無限擋批次。load() 以 _pending/_buffers 去重，
-   *   稍後批次再含它也不會重抓。 */
-  const critP = portraitP.then(()=> Promise.race([
-    SFX.preload([asset('sfx_saint'), asset('sfx_start'), asset('sfx_startbt'), asset('voice_saint_luna')]),
+  /* 預載優先順序（定案）：立繪 → MainMenu 音樂 → 音效 → 整批。
+   *  每段各帶 4s 保底：卡住也不無限擋下一段。load()/ensureBlob 以快取去重，
+   *  稍後批次再含同檔也不會重抓。 */
+  // 第二優先：MainMenu BGM（點擊繼續當下就要起播，Blob 先到位才無縫）
+  const menuBgmP = portraitP.then(()=> Promise.race([
+    SFX.preloadBgm([asset('bgm_home')].filter(Boolean)),
+    new Promise(r=>setTimeout(r, 4000)),
+  ]));
+  // 第三優先：關鍵音效——SI_01（出陣鈕/測試解鎖回饋）＋ Start_01（武器選單換卡/一般再度執槍）
+  //   ＋ StartBT_SE（執槍/overkill/Boss S 第一按）。批次 ~20MB 同時開跑會搶頻寬，
+  //   慢網下 12s 保底放行時反而還沒就緒 → 點下去沒聲音，故單獨先載。
+  const critP = menuBgmP.then(()=> Promise.race([
+    SFX.preload([asset('sfx_saint'), asset('sfx_start'), asset('sfx_startbt')]),
     new Promise(r=>setTimeout(r, 4000)),
   ]));
   let done=0;
@@ -275,8 +280,8 @@ function launchBattle(){
 }
 // 出陣 → 出擊整備頁（搭檔卡/武器卡確認）→「執槍」才真正進戰鬥（櫻花＋過渡禎）
 function openPrep(){
-  // 出陣 stinger：Luna_SI_SE（列關鍵預載 critP → 即點即響；增益同 saint 發動語音）
-  SFX.play(asset('voice_saint_luna'), 1.7);
+  // 出陣 stinger：SI_01（列關鍵預載 critP → 即點即響）
+  SFX.play(asset('sfx_saint'));
   weapon.refreshLoadoutLabels();
   const s=$('prepSheet'); if(s) s.classList.add('on');
 }
