@@ -22,6 +22,7 @@
 import { GAME_CONFIG, asset } from '../config.js';
 import { state } from '../state.js';
 import { SFX } from '../audio.js';
+import { L } from '../i18n.js';   // 多語言（跳過確認視窗文案）
 
 const $ = id => document.getElementById(id);
 const CFG = () => GAME_CONFIG.tutorial;
@@ -35,6 +36,9 @@ const CFG = () => GAME_CONFIG.tutorial;
  *   capEnemyHp      — combat：敵殘血封頂（聖徒化收尾保證本盤能殺完）      */
 let api = {};
 export function init(a){ api = a; bindUI(); }
+/* 選單層 api（main.js 注入）：openPrep＝開出擊整備頁（跳過教學確認「是」的去向；內含 SI_01） */
+let menuApi = {};
+export function setMenuApi(a){ menuApi = a || {}; }
 
 let stepsLeft = [];            // 尚未觸發的步驟（依 trigger 消耗，一步只觸發一次）
 let queue = [];                // 對話中被觸發的步驟 → 當前段講完直接接續（立繪不退場）
@@ -457,15 +461,43 @@ function endTutorial(){
 /* ============================================================================
  *  跳過 / 中止
  * ========================================================================== */
-// 跳過鈕：跳過整段教學——中止本場教學戰、淡出回主選單，並記為已看
-//   （之後出陣不再跑教學；想重看走首頁「教學」鈕）。
+// 跳過鈕 → 確認視窗（真暫停）：「是」＝skip()、「否」＝繼續教學。
+//   面板樣式共用 #exitConfirm 那套（style.css 已併列選擇器）。
+function showSkipConfirm(){
+  if(!state.tutorialActive) return;
+  if(document.getElementById('tutSkipConfirm') || document.getElementById('exitConfirm')) return;
+  api.pauseForDialog();                            // 真暫停（教學對話中已暫停＝冪等）
+  document.body.classList.add('dlg-pause');
+  const grid=$('grid'); if(grid) grid.classList.add('grid-blur');
+  const t=(L.tutorial && L.tutorial.skipConfirm) || {};
+  const dlg=document.createElement('div'); dlg.id='tutSkipConfirm';
+  dlg.innerHTML='<div class="ec-panel">'
+    +'<div class="ec-title">'+(t.title||'是否跳過教學？')+'</div>'
+    +'<div class="ec-sub">'+(t.sub||'')+'</div>'
+    +'<div class="ec-btns"><button class="ec-no">'+(t.no||'繼續教學')+'</button>'
+    +'<button class="ec-yes">'+(t.yes||'跳　過')+'</button></div>'
+    +'</div>';
+  document.body.appendChild(dlg);
+  const close=()=>{ if(dlg.parentNode) dlg.remove();
+    const g=$('grid'); if(g) g.classList.remove('grid-blur');
+    if(!state.tutorialDialog) document.body.classList.remove('dlg-pause'); };   // 教學對話仍開著 → dlg-pause 交還教學層
+  const bind=(sel,fn)=>{ const b=dlg.querySelector(sel);
+    const run=()=>{ SFX.unlock(); SFX.menuClick(); fn(); };
+    b.addEventListener('click',run);
+    b.addEventListener('touchstart',e=>{e.preventDefault();run();},{passive:false}); };
+  bind('.ec-no', ()=>{ close(); if(!state.tutorialDialog) api.resumeFromDialog(); });   // 否：繼續教學
+  bind('.ec-yes',()=>{ close(); skip(); });                                             // 是：跳過 → 出擊整備頁
+}
+
+// 跳過整段教學——中止本場教學戰、記為已看，轉進出擊整備頁（openPrep 內播 SI_01）。
 export function skip(){
   if(!state.tutorialActive) return;
   markSeen();                                          // 註記：出陣時不再跑教學
   if(state.tutorialDialog) closeDialog(false, true);   // 只撤 UI：goHome 接管流程（會清 cutinPlaying）
   endTutorial();
   state.tutorialRun = false;
-  if(api.goHome) api.goHome();                         // 跳過整段教學：本場廢棄 → 淡出回主選單
+  if(api.goHome) api.goHome();                         // 本場廢棄 → 淡出（黑幕蓋掉戰場、底層回主選單）
+  if(menuApi.openPrep) menuApi.openPrep();             // 直接轉進出擊整備頁（疊於主選單上、含 SI_01）
 }
 // 中止（combat.stopAll 調度：goHome/勝負/重開場）：只撤 UI、不記已看——
 // 中途退出的話，下次出陣仍會重新進教學（skip 或走到終盤才算看過）。
@@ -509,7 +541,7 @@ function bindUI(){
   const sk=$('tutSkipBtn');
   if(sk){
     let h=false;
-    const run=()=>{ SFX.unlock(); SFX.menuClick(); skip(); };
+    const run=()=>{ SFX.unlock(); SFX.menuClick(); showSkipConfirm(); };   // 先確認再跳過
     sk.addEventListener('touchstart',e=>{e.preventDefault();h=true;run();},{passive:false});
     sk.addEventListener('click',()=>{ if(h){h=false;return;} run(); });
   }

@@ -245,6 +245,12 @@ export const STRINGS = {
       right: 'SWIPE RIGHT',
       up:    'SWIPE UP',
     },
+    skipConfirm: {
+      title: 'Skip the tutorial?',
+      sub:   'You can replay it anytime via TUTORIAL on the home screen',
+      yes:   'Skip',
+      no:    'Continue',
+    },
     result: {
       usedLifeReturn: 'Let me make this clear. Renee saved you this time. If you had suffered Meltdown, you would truly have been fighting with your back against the wall.',
       noLifeReturn:   'You did well. But if you want to survive, you must learn to rely on your partner properly.',

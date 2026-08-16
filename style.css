@@ -113,18 +113,19 @@
   #grid{transition:opacity .15s ease-out;}   /* 暫停隱藏/恢復顯示皆有淡入淡出 */
   /* ⚠ 不用 backdrop-filter:iOS 對 backdrop 快照含「動畫 filter / 大範圍光暈」圖層
      (敵亮攻框時的黃圈+alert 脈動)會把光暈爆染成整面變黃。改純半透明底加深補償。 */
-  #exitConfirm{position:fixed;inset:0;z-index:9500;display:flex;align-items:center;justify-content:center;
+  /* #tutSkipConfirm（跳過教學確認，tutorial.js 動態建立）共用同一套面板樣式 */
+  #exitConfirm, #tutSkipConfirm{position:fixed;inset:0;z-index:9500;display:flex;align-items:center;justify-content:center;
     background:rgba(6,4,12,.72);}
-  #exitConfirm .ec-panel{width:min(82%,320px);text-align:center;padding:22px 20px;border-radius:12px;
+  #exitConfirm .ec-panel, #tutSkipConfirm .ec-panel{width:min(82%,320px);text-align:center;padding:22px 20px;border-radius:12px;
     background:linear-gradient(180deg,rgba(30,24,42,.98),rgba(16,12,24,.98));
     border:1px solid var(--gold-dim);box-shadow:0 12px 44px rgba(0,0,0,.6);}
-  #exitConfirm .ec-title{font-size:17px;letter-spacing:3px;color:var(--gold);margin-bottom:8px;}
-  #exitConfirm .ec-sub{font-size:11px;letter-spacing:1px;color:var(--gold-dim);margin-bottom:18px;}
-  #exitConfirm .ec-btns{display:flex;gap:12px;}
-  #exitConfirm .ec-btns button{flex:1;padding:11px 0;border-radius:8px;font-family:inherit;font-size:13px;
+  #exitConfirm .ec-title, #tutSkipConfirm .ec-title{font-size:17px;letter-spacing:3px;color:var(--gold);margin-bottom:8px;}
+  #exitConfirm .ec-sub, #tutSkipConfirm .ec-sub{font-size:11px;letter-spacing:1px;color:var(--gold-dim);margin-bottom:18px;}
+  #exitConfirm .ec-btns, #tutSkipConfirm .ec-btns{display:flex;gap:12px;}
+  #exitConfirm .ec-btns button, #tutSkipConfirm .ec-btns button{flex:1;padding:11px 0;border-radius:8px;font-family:inherit;font-size:13px;
     letter-spacing:2px;border:1px solid var(--gold-dim);background:transparent;color:var(--ink);}
-  #exitConfirm .ec-btns .ec-yes{border-color:var(--gold);color:var(--gold);}
-  #exitConfirm .ec-btns button:active{transform:scale(.97);}
+  #exitConfirm .ec-btns .ec-yes, #tutSkipConfirm .ec-btns .ec-yes{border-color:var(--gold);color:var(--gold);}
+  #exitConfirm .ec-btns button:active, #tutSkipConfirm .ec-btns button:active{transform:scale(.97);}
   #app{display:flex;flex-direction:column;height:100%;width:100%;
     max-width:520px;margin:0 auto;position:relative;
     /* 頂部保留安全區墊高：#top（底圖）與 #bottom 為 flex 子項，會被此 padding 整體下移到瀏海之下 */

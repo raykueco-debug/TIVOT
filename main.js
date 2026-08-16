@@ -291,6 +291,8 @@ bindBtn('startBtn', ()=>{
   if(tutorial.isFirstRun()){ launchBattle(); return; }
   openPrep();
 });
+// 教學「跳過」確認按「是」的去向：轉進出擊整備頁（openPrep 內播 SI_01）
+tutorial.setMenuApi({ openPrep });
 bindBtn('prepBack', closePrep);
 bindBtn('prepGo', ()=>{ closePrep(); launchBattle(); });
 // 首頁「教學」鈕：強制下一場進教學（不動已看旗標），不經整備頁直接出陣
