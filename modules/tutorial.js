@@ -112,9 +112,10 @@ export function onEarlyBlock(){
   // key='earlyRetry'：反擊教學階段收段後重放反擊圈（onStepClosed 分流；已過 defended 則只罵不重放）
   openStep({ key:'earlyRetry', lines:[{ who:'inspector', text: pool[Math.random()*pool.length|0] }] });
 }
-// combat 延時懲罰前詢問：第二回合在首次防禦成功前不套延時懲罰
+// combat 延時懲罰前詢問：整段反擊教學（第二盤起、首次防禦成功前）不套延時懲罰——
+//   玩家慢慢讀圈、等圈、重試都不受罰；第一盤（純練清盤）維持有懲罰（台詞已預告）。
 export function delayPenaltySuppressed(){
-  return state.tutorialActive && state.boardIndex===1 && !defendedDone;
+  return state.tutorialActive && state.boardIndex>=1 && !defendedDone;
 }
 // defense.scheduleUlt 詢問：教學中暫緩敵大絕的情境——
 //   ① 前 noUltBoards 回合（第一回合純清盤）② 第四回合聖徒化發動前（劇情殺腳本盤）
