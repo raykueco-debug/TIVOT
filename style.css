@@ -18,6 +18,9 @@
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;
     -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
+  /* 全域禁圖片拖拉：桌機滑鼠在圖上按住拖動會觸發原生 drag、吃掉 pointermove，
+     聖徒化左右滑/生命歸還上滑等手勢會斷（Firefox 另靠 main.js 的 dragstart 攔截） */
+  img{-webkit-user-drag:none;user-drag:none;}
   html,body{margin:0;padding:0;width:auto;height:auto;background:var(--bg);
     overflow:hidden;position:fixed;top:0;left:0;right:0;bottom:0;
     font-family:"Iowan Old Style","Palatino Linotype",Georgia,"Songti TC",serif;color:var(--ink);}

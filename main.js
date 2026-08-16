@@ -72,6 +72,14 @@ applyToDom();
   setTimeout(sync, 600);
 })();
 
+/* ── 全域禁圖片拖拉（JS 保險層）──
+ *  桌機滑鼠在 <img> 上按住拖動會啟動原生 drag → pointer 事件被取消，滑動手勢
+ *  （聖徒化左右滑/生命歸還上滑/選單換卡）中斷。CSS user-drag 蓋主流瀏覽器，
+ *  Firefox 不支援該屬性 → 一律再攔 dragstart。 */
+document.addEventListener('dragstart', e=>{
+  if(e.target && e.target.tagName==='IMG') e.preventDefault();
+});
+
 // 按鈕綁定：touch/click 去重，附選單點擊音
 function bindBtn(id, fn){
   const el=$(id); if(!el) return;
