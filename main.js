@@ -32,6 +32,28 @@ const $ = id => document.getElementById(id);
 applyToConfig(GAME_CONFIG);
 applyToDom();
 
+/* ── 首頁主標單行自適應：主標鎖單行（white-space:nowrap），但各語言長度差異大
+ *    （en「The IV Order of Testament」遠長於中日七字），clamp 下限在窄機仍可能溢出
+ *    → 以實測 scrollWidth 逐級縮字到放得下為止；字體載完/轉向後重算。 */
+(function fitHomeTitle(){
+  const fit=()=>{
+    const el=document.querySelector('#home .title');
+    if(!el || !el.parentElement) return;
+    el.style.fontSize='';                                   // 還原 CSS clamp 基準再量
+    // ⚠ #home 為 flex 直欄：溢出的 nowrap 子項會撐成 max-content（scrollWidth==clientWidth）
+    //   → 以父容器寬為準比對，留 8px 呼吸邊
+    const maxW=()=>el.parentElement.clientWidth-8;
+    let size=parseFloat(getComputedStyle(el).fontSize)||34;
+    let guard=30;                                           // 保險：最多縮 30 級
+    while(el.getBoundingClientRect().width>maxW() && size>13 && guard-->0){
+      size-=1; el.style.fontSize=size+'px';
+    }
+  };
+  fit();
+  window.addEventListener('resize', fit);
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+})();
+
 /* ── iOS PWA（加到主畫面）版面高度怪癖 ──
  *  standalone 啟動瞬間 100%/100dvh 可能取到舊視口值且不重算，底部留一條畫不到的黑帶。
  *  以 JS 實測 innerHeight 直寫 html/body 高度（inline style 優先權最高），

@@ -272,7 +272,17 @@ function openStep(step){
     // 起滑延遲用 setTimeout（非 rAF）：隱藏分頁 rAF 不執行，會漏掉立繪進場
     setTimeout(()=>{ if(state.tutorialDialog && cur===step) syncCast(step); }, 30);
   }
+  placeBubble();
   showLine();
+}
+
+/* 對話框緊貼數字盤面上方（間隔 2px）：#tutBubble 為 fixed（脫離 #top overflow 裁切），
+ * 依 #grid 視窗座標實測寫 bottom——以 bottom 錨定，台詞增行時框體向上長、貼齊邊不動。 */
+function placeBubble(){
+  const b=$('tutBubble'), g=$('grid');
+  if(!b || !g) return;
+  const r=g.getBoundingClientRect();
+  if(r.height>0) b.style.bottom = (innerHeight - r.top + 2)+'px';
 }
 
 function showLine(){
@@ -463,6 +473,8 @@ function bindUI(){
     });
     touch.addEventListener('pointercancel', ()=>{ ptr=null; });
   }
+  // 轉向/視窗變化：對話中重貼盤面上緣
+  window.addEventListener('resize', ()=>{ if(state.tutorialDialog) placeBubble(); });
   const sk=$('tutSkipBtn');
   if(sk){
     let h=false;

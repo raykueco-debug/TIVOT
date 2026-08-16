@@ -21,6 +21,11 @@
   html,body{margin:0;padding:0;width:auto;height:auto;background:var(--bg);
     overflow:hidden;position:fixed;top:0;left:0;right:0;bottom:0;
     font-family:"Iowan Old Style","Palatino Linotype",Georgia,"Songti TC",serif;color:var(--ink);}
+  /* 多語字體適配：lang 由 i18n.applyToDom 依語言寫入 <html>。日文改優先日文明朝
+     （假名/和製漢字字形與字寬正確，避免以中文宋體代打造成版面跑位） */
+  html[lang="ja"], html[lang="ja"] body{
+    font-family:"Iowan Old Style","Palatino Linotype",Georgia,"Hiragino Mincho ProN",
+      "Yu Mincho","Noto Serif JP","Songti TC",serif;}
   /* 觸底不用 100%/100dvh：iOS「加入主畫面」(standalone) 的 dvh 會保留幽靈工具列高度，
      底部露出一截畫布死區 → 改 fixed + 四邊 inset:0 直接撐滿視窗，不經 vh/dvh 單位計算 */
   /* iOS 26 standalone 容器 bug：視窗高 = 螢幕高 − 頂部安全區、錯錨在螢幕頂，底部差值區
@@ -483,8 +488,12 @@
     82%{transform:translate(-50%,-50%) scale(1.22);opacity:1;}
     100%{transform:translate(30%,-50%) scale(1.2);opacity:0;}
   }
+  /* i18n 斷行規則：keep-all＝CJK/假名連續串視為一個詞不得中斷（セイント／インストール
+     只能在空白或 \n 換行，不會斷成「～インスト／ール」）；pre-line＝語言包可用 \n 指定斷點；
+     vw 上限縮字防窄機溢出 */
   #cutinText{position:absolute;bottom:16%;left:0;right:0;text-align:center;
-    font-size:40px;font-weight:900;letter-spacing:8px;color:#fff;
+    font-size:min(40px,9vw);font-weight:900;letter-spacing:8px;color:#fff;line-height:1.2;
+    white-space:pre-line;word-break:keep-all;overflow-wrap:normal;
     text-shadow:0 0 20px #c0308a,0 0 8px #fff,3px 3px 0 #6a30c0;
     font-family:Impact,"Arial Black",sans-serif;opacity:0;transform:skewX(-10deg);}
   #cutinText .cutin-en{display:block;font-size:16px;letter-spacing:4px;font-weight:700;
@@ -560,7 +569,8 @@
   #saintCutinTitle{position:absolute;top:42%;left:0;right:0;text-align:center;
     transform:translateY(-50%) skewX(-8deg);font-weight:900;
     font-family:Impact,"Arial Black",sans-serif;line-height:1.05;
-    font-size:clamp(30px,9vw,64px);letter-spacing:4px;opacity:0;padding:0 4%;white-space:pre-line;}
+    font-size:clamp(30px,9vw,64px);letter-spacing:4px;opacity:0;padding:0 4%;white-space:pre-line;
+    word-break:keep-all;overflow-wrap:normal;}   /* i18n：不從單詞/假名串中間斷行 */
   #saintCutin.burst #saintCutinTitle{color:#fff;
     text-shadow:0 0 22px var(--holy),0 0 10px #ffe9a8,3px 3px 0 var(--gold);}
   #saintCutin.obe #saintCutinTitle{color:#fff;
@@ -837,7 +847,9 @@
   #partnerSheet.on{display:flex;}
   #partnerSheet .ps-title, #weaponSheet .ps-title{font-size:15px;letter-spacing:6px;color:var(--gold);text-indent:6px;
     margin-bottom:8px;flex:none;}
-  #partnerSheet .ps-stage{position:relative;flex:1 1 auto;min-height:0;width:100%;
+  /* 立繪舞台保底：搭檔立繪（卡疊高＝舞台高）至少佔整體畫面 1/3 高——
+     多語（en/ja）技能描述與發動說明較長時，被擠壓的是下方文字區、不是立繪 */
+  #partnerSheet .ps-stage{position:relative;flex:1 1 auto;min-height:34vh;min-height:34dvh;width:100%;
     display:flex;align-items:center;justify-content:center;touch-action:pan-y;user-select:none;}
   /* 取景框：固定 2/3 直式外框、overflow 裁切。立繪高度＝框高 × --ps-zoom（config siFit.zoom），
      水平置中、垂直以 --ps-top（頭頂偏移）對齊——各搭檔頭部大小以蕾妮（zoom:1）為基準統一。 */
@@ -884,6 +896,23 @@
   #partnerSheet .ps-howto{flex:none;width:100%;max-width:340px;margin-top:8px;
     padding:8px 12px;border-top:1px solid rgba(217,198,138,.22);
     font-size:10.5px;line-height:1.7;letter-spacing:.5px;color:var(--gold-dim);text-align:center;}
+  /* 矮視窗（小手機/橫向）：立繪舞台保底 1/3 後空間不足 → 下方文字區讓位
+     （卡片高度固定的「防切換跳動」在矮機讓位給「立繪不得過小」） */
+  @media (max-height:730px){
+    #partnerSheet .ps-card{min-height:0;padding:10px 12px;}
+    #partnerSheet .ps-howto{line-height:1.5;margin-top:5px;padding:6px 10px;}
+  }
+  /* 極矮視窗（320×568 級）：再壓一級行距/留白，保住底部選擇鈕不被裁 */
+  @media (max-height:600px){
+    #partnerSheet .ps-title{margin-bottom:4px;}
+    #partnerSheet .ps-dots{margin:4px 0 2px;}
+    #partnerSheet .ps-howto{font-size:9.5px;line-height:1.45;padding:4px 8px;}
+    #partnerSheet .ps-btns{margin-top:3px;}
+    #partnerSheet #psSelect{padding:8px 26px;}
+  }
+  /* 視窗被裁（iOS 26 standalone）：底部安全區位於不可視死區，白墊拿回還給立繪舞台 */
+  html.vp-clipped #partnerSheet, html.vp-clipped #weaponSheet{
+    padding-bottom:12px;}
   #partnerSheet .ps-btns, #weaponSheet .ps-btns{flex:none;display:flex;gap:12px;margin-top:6px;}
   #partnerSheet #psSelect, #weaponSheet #wsSelect{padding:10px 30px;background:transparent;border:1px solid var(--gold);
     color:var(--gold);border-radius:8px;font-family:inherit;font-size:13px;letter-spacing:3px;
@@ -990,7 +1019,10 @@
   #tutCast .tut-portrait.center{left:50%;right:auto;transform:translateX(-150%);}
   #tutCast .tut-portrait.center.in{transform:translateX(-50%);}
   .tut-portrait.speaking{filter:brightness(1) saturate(1);}   /* 說話者原色；其餘維持調暗 */
-  #tutBubble{position:absolute;left:50%;bottom:46px;transform:translateX(-50%);
+  /* 對話框：緊貼數字盤面上方（間隔 2px）。#top overflow:hidden 裁不到盤面側
+     → 改 fixed 脫離裁切，精確 bottom 由 tutorial.placeBubble 依 #grid 實測寫入
+     （此處 bottom:52% 僅為 JS 未及執行時的保底位置）；框高增長時向上長、貼齊邊不動。 */
+  #tutBubble{position:fixed;left:50%;bottom:52%;transform:translateX(-50%);
     width:min(92%,360px);background:rgba(8,6,12,.9);border:1px solid var(--gold-dim);
     border-radius:10px;padding:9px 14px 12px;box-shadow:0 4px 18px rgba(0,0,0,.55);}
   #tutBubble .tut-name{font-size:11px;letter-spacing:2px;color:var(--gold);margin-bottom:4px;}

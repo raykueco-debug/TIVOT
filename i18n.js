@@ -116,6 +116,8 @@ export function applyToConfig(GC){
  *  套用到 DOM（index.html 靜態文字；main.js 開機呼叫）
  * ========================================================================== */
 export function applyToDom(){
+  // <html lang>：跟隨語言（字體堆疊/斷行規則依此適配，見 style.css html[lang="ja"]）
+  document.documentElement.lang = LANG==='ja' ? 'ja' : (LANG==='en' ? 'en' : 'zh-Hant');
   const $=id=>document.getElementById(id);
   const set=(el,txt)=>{ if(el && txt!=null) el.textContent=txt; };
   const q=sel=>document.querySelector(sel);
