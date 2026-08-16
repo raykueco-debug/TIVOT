@@ -281,13 +281,23 @@ function launchBattle(){
   sakuraBurst({ onDone: ()=> tr.proceed() });
 }
 // 出陣 → 出擊整備頁（搭檔卡/武器卡確認）→「執槍」才真正進戰鬥（櫻花＋過渡禎）
+let prepCloseTimer=null;
 function openPrep(){
   // 出陣 stinger：SI_01（列關鍵預載 critP → 即點即響）
   SFX.play(asset('sfx_saint'));
   weapon.refreshLoadoutLabels();
-  const s=$('prepSheet'); if(s) s.classList.add('on');
+  const s=$('prepSheet'); if(!s) return;
+  clearTimeout(prepCloseTimer);
+  s.classList.add('on');
+  // 掛載後下一拍再開透明度 → 淡入（用 setTimeout 非 rAF：隱藏分頁 rAF 不執行）
+  setTimeout(()=>{ if(s.classList.contains('on')) s.classList.add('vis'); }, 30);
 }
-function closePrep(){ const s=$('prepSheet'); if(s) s.classList.remove('on'); }
+function closePrep(){
+  const s=$('prepSheet'); if(!s) return;
+  s.classList.remove('vis');   // 先淡出
+  clearTimeout(prepCloseTimer);
+  prepCloseTimer=setTimeout(()=>{ if(!s.classList.contains('vis')) s.classList.remove('on'); }, 420);
+}
 bindBtn('startBtn', ()=>{
   // 首次出陣（未看過教學）：跳過整備頁直接進教學——裝備固定預設，整備此時無意義
   if(tutorial.isFirstRun()){ launchBattle(); return; }

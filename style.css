@@ -759,10 +759,13 @@
   /* ── 出擊整備頁（#prepSheet）：出陣 → 本頁 → 執槍才進戰鬥 ──
      搭檔卡上（吃較多高）、武器卡下，點卡開各自的全螢幕選擇畫面（z-60 蓋本頁 z-55，
      關閉後回到本頁）。底部「執槍」規格同結算「再度執槍」貼底整寬大鈕。 */
+  /* 開閉皆淡入淡出：.on 掛載（display）、.vis 控透明度（main.js 先 on 後下一幀 vis） */
   #prepSheet{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;
     background:radial-gradient(120% 90% at 50% 30%,#1a1330,#07050c 90%);z-index:55;
-    padding:calc(var(--notch-bar-h,0px) + 12px) 16px 0;gap:12px;}
+    padding:calc(var(--notch-bar-h,0px) + 12px) 16px 0;gap:12px;
+    opacity:0;transition:opacity .4s ease;}
   #prepSheet.on{display:flex;}
+  #prepSheet.vis{opacity:1;}
   #prepSheet #prepBack{top:calc(var(--notch-bar-h,0px) + 10px);right:10px;font-size:18px;}
   #prepSheet .prep-card{position:relative;width:100%;max-width:380px;flex:1 1 0;min-height:0;
     border:1px solid var(--gold-dim);border-radius:12px;background:#0f0c16;overflow:hidden;
