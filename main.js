@@ -301,7 +301,7 @@ function goldSparkRise(){
   }
   setTimeout(()=>{ if(layer.parentNode) layer.remove(); }, 3400);
 }
-let prepCloseTimer=null;
+let prepCloseTimer=null, prepVisTimer=null;
 function openPrep(){
   // 出陣 stinger：SI_01（列關鍵預載 critP → 即點即響）
   SFX.play(asset('sfx_saint'));
@@ -310,12 +310,14 @@ function openPrep(){
   clearTimeout(prepCloseTimer);
   s.classList.add('on');
   // 掛載後下一拍再開透明度 → 淡入（用 setTimeout 非 rAF：隱藏分頁 rAF 不執行）
-  setTimeout(()=>{ if(s.classList.contains('on')) s.classList.add('vis'); }, 30);
+  clearTimeout(prepVisTimer);
+  prepVisTimer=setTimeout(()=>{ if(s.classList.contains('on')) s.classList.add('vis'); }, 30);
   goldSparkRise();   // 轉場：下方飄起金色光點
 }
 function closePrep(){
   const s=$('prepSheet'); if(!s) return;
-  s.classList.remove('vis');   // 先淡出
+  clearTimeout(prepVisTimer);   // 開後極速關（30ms 內）：取消待掛的 vis，防淡入晚到把頁面蓋回來
+  s.classList.remove('vis');    // 先淡出
   clearTimeout(prepCloseTimer);
   prepCloseTimer=setTimeout(()=>{ if(!s.classList.contains('vis')) s.classList.remove('on'); }, 420);
 }

@@ -230,16 +230,29 @@ export function advanceToNextEnemy(done){
   state.lineupIndex += 1;
   const key = (GAME_CONFIG.lineup && GAME_CONFIG.lineup[state.lineupIndex]) || state.currentEnemyKey;
   const img = $('enemyImg');
-  if(img){ img.classList.remove('enemy-enter'); img.classList.add('enemy-leave'); }
-  setTimeout(()=>{
-    setEnemy(key);            // 換立繪/名稱/血量與大絕/懲罰/hitFx config
-    api.updateBars();         // 新敵血條
-    if(img){
-      img.classList.remove('enemy-leave'); void img.offsetWidth; img.classList.add('enemy-enter');
-      setTimeout(()=>img.classList.remove('enemy-enter'), 560);
-    }
-    if(done) done();
-  }, 260);
+  // ⚠ 先把下一敵立繪解碼完成再開換敵演出：進場動畫當下才改 src，圖未就緒時
+  //   瀏覽器會續顯舊圖（「盤面已換、立繪沒換」）。decode 失敗/逾時 800ms 照樣開演（go 冪等）。
+  const en = GAME_CONFIG.enemies[key] || {};
+  const src = asset(en.image);
+  const start = ()=>{
+    if(img){ img.classList.remove('enemy-enter'); img.classList.add('enemy-leave'); }
+    setTimeout(()=>{
+      setEnemy(key);            // 換立繪/名稱/血量與大絕/懲罰/hitFx config
+      api.updateBars();         // 新敵血條
+      if(img){
+        img.classList.remove('enemy-leave'); void img.offsetWidth; img.classList.add('enemy-enter');
+        setTimeout(()=>img.classList.remove('enemy-enter'), 560);
+      }
+      if(done) done();
+    }, 260);
+  };
+  if(src){
+    let started=false;
+    const go=()=>{ if(!started){ started=true; start(); } };
+    const pre=new Image(); pre.src=src;
+    (pre.decode ? pre.decode() : Promise.resolve()).then(go, go);
+    setTimeout(go, 800);
+  } else start();
 }
 
 /* ---------- 亂入 / Boss 遭遇（New Hustle）----------
