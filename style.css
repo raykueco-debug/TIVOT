@@ -481,7 +481,8 @@
   @keyframes cutinTextIn{0%{opacity:0;transform:translateY(20px)}25%{opacity:1;transform:translateY(0)}85%{opacity:1}100%{opacity:0}}
 
   /* 雙槍 cut-in 演出 */
-  #cutin{position:absolute;inset:0;z-index:40;display:none;overflow:hidden;
+  /* z-8100：cut-in 為最上層演出（蓋過教學對話框 8000）；仍低於黑幕(9000)/確認框(9500) */
+  #cutin{position:absolute;inset:0;z-index:8100;display:none;overflow:hidden;
     background:radial-gradient(circle at 50% 50%,rgba(40,10,50,.6),rgba(5,4,10,.95));}
   #cutin.on{display:block;}
   #cutinFlash{position:absolute;inset:0;background:#fff;opacity:0;}
@@ -517,7 +518,7 @@
   @keyframes cutinStreak{from{background-position:0 0}to{background-position:40px 0}}
 
   /* ===== 聖徒化結局全畫面 cut-in ===== */
-  #saintCutin{position:absolute;inset:0;z-index:50;display:none;overflow:hidden;}
+  #saintCutin{position:absolute;inset:0;z-index:8200;display:none;overflow:hidden;}   /* 結局 cut-in：最上層 */
   /* 生命歸還手勢層：預設隱藏，聖徒化時 .on 開啟；只覆蓋上半敵畫面(高50%)，不擋下半盤面點擊 */
   #returnSwipe{position:absolute;left:0;right:0;top:0;height:50%;z-index:35;display:none;background:transparent;touch-action:none;}
   #returnSwipe.on{display:block;}
@@ -1082,9 +1083,9 @@
   /* 對話框：緊貼數字盤面上方（間隔 2px）。#top overflow:hidden 裁不到盤面側
      → 改 fixed 脫離裁切，精確 bottom 由 tutorial.placeBubble 依 #grid 實測寫入
      （此處 bottom:52% 僅為 JS 未及執行時的保底位置）；框高增長時向上長、貼齊邊不動。 */
-  /* 教學對話框：#app 直屬、z-8000＝永遠在最上層——高於所有演出層（cut-in 40／
-     聖徒化 cut-in 50／整備頁 55／轉場光點 56），低於全畫面黑幕(9000)與確認框(9500)
-     （那兩者本就該蓋住它）。顯示由自帶的 .on 控制（原本靠父層 #tutCast 的 display）。 */
+  /* 教學對話框：#app 直屬、z-8000＝第二層——高於一般演出層（整備頁 55／轉場光點 56／
+     立繪 20 等），但低於 cut-in(8100)／結局 cut-in(8200)，演出播放時讓位；
+     黑幕(9000)與確認框(9500)仍蓋住它。顯示由自帶的 .on 控制（原靠父層 #tutCast 的 display）。 */
   #tutBubble{display:none;z-index:8000;
     position:fixed;left:50%;bottom:52%;transform:translateX(-50%);
     width:min(92%,360px);background:rgba(8,6,12,.9);border:1px solid var(--gold-dim);
