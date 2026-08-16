@@ -22,7 +22,7 @@
 import { GAME_CONFIG, asset } from '../config.js';
 import { state } from '../state.js';
 import { SFX } from '../audio.js';
-import { L } from '../i18n.js';   // 多語言（跳過確認視窗文案）
+import { L, decorateLine } from '../i18n.js';   // 多語言（跳過確認文案／台詞關鍵字金色粗字）
 
 const $ = id => document.getElementById(id);
 const CFG = () => GAME_CONFIG.tutorial;
@@ -77,7 +77,7 @@ export function maybeStart(){
   state.tutorialLifeReturn = false;
   stepsLeft = cfg.steps.slice();
   queue = [];
-  defendedDone = dualGuideDone = saintCritFired = false;
+  defendedDone = dualGuideDone = saintCritFired = false; dualForce = false;
   pendingGate = null; gate = null;
   const sk=$('tutSkipBtn'); if(sk) sk.classList.add('on');
   clearTimeout(startTimer);
@@ -137,9 +137,28 @@ export function onBoardProgress(cleared){
   const st = CFG().strike || {};
   if(state.boardIndex===3 && cleared >= (st.afterCells||8)) fire('strike');
 }
-// combat.addEnergy 詢問：雙槍引導前破防值封頂（preFullEnergy），第三盤放行
+// combat.addEnergy 詢問：雙槍引導前破防值封頂（preFullEnergy），第三盤放行。
+//   dualForce＝削血保底觸發中（敵 HP ≤ dualForceHpRatio）：解除封頂讓 fillEnergy 一次填滿。
+let dualForce = false;
 export function energyCapActive(){
-  return state.tutorialActive && !dualGuideDone && state.boardIndex<2;
+  return state.tutorialActive && !dualGuideDone && !dualForce && state.boardIndex<2;
+}
+// combat.enemyDamage 每次敵掉血呼叫（非教學為 no-op）：削血保底觸發——
+//   玩家用反擊猛削血時，破防/聖徒化教學不因「還沒輪到觸發條件」而被永遠跳過。
+//   ≤ dualForceHpRatio 未進破防教學 → 填滿破防值，走原本的滿值引導路徑；
+//   ≤ strikeForceHpRatio 已過破防教學而劇情殺未觸發 → 直接觸發「小心！」段。
+export function onEnemyHp(ratio){
+  if(!state.tutorialActive || state.tutorialDialog || state.over) return;
+  if(state.dualWield || state.saintMode || state.cutinPlaying) return;
+  const t=CFG();
+  if(!dualGuideDone && ratio <= (t.dualForceHpRatio!=null ? t.dualForceHpRatio : 0.5)){
+    dualForce = true;                       // 解除 preFullEnergy 封頂
+    if(api.fillEnergy) api.fillEnergy();    // 滿值瞬間 → onEnergyFull → dualReady 引導
+    return;
+  }
+  if(dualGuideDone && ratio <= (t.strikeForceHpRatio!=null ? t.strikeForceHpRatio : 0.3)){
+    fire('strike');                         // 步驟已消耗則 no-op（與 onBoardProgress 天然去重）
+  }
 }
 // combat.addEnergy 於破防值滿的瞬間呼叫 → 雙槍引導（暫停＋箭頭指向計量表）
 export function onEnergyFull(){
@@ -172,6 +191,8 @@ export function onSaintEnded(kind){
   afterCutin(()=>{
     if(!state.tutorialActive) return;
     markSeen();
+    // 敵殘血封頂（config.finishEnemyHp）：保證收尾台詞後「一盤內」殺進 overkill 結束教學戰
+    if(api.capEnemyHp) api.capEnemyHp(CFG().finishEnemyHp);
     openScript(kind==='mb' ? 'finishMB' : 'finishLR');
   });
 }
@@ -331,7 +352,7 @@ function showLine(){
   if(lineEl) lineEl.textContent = '';
   typeTimer = setInterval(()=>{
     i++;
-    if(lineEl) lineEl.textContent = text.slice(0,i);
+    if(lineEl) lineEl.innerHTML = decorateLine(text.slice(0,i));   // 關鍵字（聖徒化）金色粗字
     if(i>=text.length){
       clearInterval(typeTimer); typeTimer=null;
       if(bubble) bubble.classList.add('done');
@@ -347,7 +368,7 @@ function advance(){
   if(typeTimer){
     clearInterval(typeTimer); typeTimer=null;
     const line=cur.lines[lineIdx]||{};
-    const lineEl=$('tutLine'); if(lineEl) lineEl.textContent = line.text || '';
+    const lineEl=$('tutLine'); if(lineEl) lineEl.innerHTML = decorateLine(line.text || '');
     const bubble=$('tutBubble'); if(bubble) bubble.classList.add('done');
     return;
   }

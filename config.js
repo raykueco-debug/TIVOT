@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.16-78';
+export const VERSION = 'ver 2026.08.16-79';
 
 export const GAME_CONFIG = {
 
@@ -225,6 +225,14 @@ export const GAME_CONFIG = {
     enemyHp: 500,
     preFullEnergy: 90,     // 第二回合清盤時破防值設為此值（＝100−5 擊×energyPerHit(2)：
                            //   第三回合點 5 個數字後才滿、滿了才跳蕾妮引導）；此前破防值也封頂於此
+    // 削血保底觸發：玩家反擊削血過快時，教學段落不因「還沒輪到」而被跳過——
+    //   敵 HP ≤ dualForceHpRatio 且破防教學未觸發 → 直接填滿破防值走原引導；
+    //   敵 HP ≤ strikeForceHpRatio 且劇情殺未觸發 → 直接觸發「小心！」（聖徒化教學）。
+    dualForceHpRatio:   0.5,
+    strikeForceHpRatio: 0.3,
+    // 聖徒化教學收尾（finishMB/finishLR 台詞開播）時敵殘血封頂：保證玩家「一盤內」殺進
+    //   overkill 結束教學戰（16 格 × 基礎傷 3＋combo 斜率 ≳ 此值）。
+    finishEnemyHp: 70,
     // 教學期間大絕紅點的生成範圍（%），避開左右立繪與下方對話框——只在中央帶出現。
     //   first＝反擊教學第一顆紅點的固定位置（畫面正中偏上，凍結講解時不壓立繪）；
     //   教學全程一次只出一顆（有紅點在場時暫緩下一發，見 tutorial.ultSuppressed）。

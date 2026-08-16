@@ -22,7 +22,7 @@
 import { GAME_CONFIG, asset, bgmVol, sfxGain } from '../config.js';
 import { state } from '../state.js';
 import { SFX } from '../audio.js';   // Boss BGM 於「再度執槍（S 解鎖）」瞬間起播
-import { L, fmt } from '../i18n.js';   // 多語言（結算標題/數據列/按鈕）
+import { L, fmt, decorateLine } from '../i18n.js';   // 多語言（結算標題/數據列/按鈕/台詞關鍵字）
 
 const $ = id => document.getElementById(id);
 
@@ -407,7 +407,7 @@ function typeInspectorLine(el, text, total){
   el.textContent='';
   const tick=()=>{
     if(i<chars.length){
-      el.textContent = chars.slice(0,i+1).join('');
+      el.innerHTML = decorateLine(chars.slice(0,i+1).join(''));   // 關鍵字（聖徒化）金色粗字
       i++;
       _inspTypeTimer=setTimeout(tick, per);
     }

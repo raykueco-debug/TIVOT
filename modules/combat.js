@@ -73,6 +73,7 @@ export function setup(){
     strike: tutorialStrike,
     capEnemyHp: tutorialCapEnemyHp,
     respawnThreat: defense.startCharge,   // 反擊教學：太早格擋 → 罵完重放一次反擊圈
+    fillEnergy: ()=>addEnergy(100),       // 削血保底：直接填滿破防值（走滿值引導路徑）
     goHome,   // 跳過鈕：中止教學戰回主選單
   });
   // 武器：反擊演算所需（enemyDamage/floatDmg）+ 雙槍破防窗口所需（cut-in/敵計時/盤面/破防值歸零）。
@@ -496,6 +497,7 @@ function enemyDamage(dmg,isCrit,silent){
       if(after<0) state.overkill+=(-after);
       state.enemyHp=Math.max(0,after);
       updateBars();
+      tutorial.onEnemyHp(state.enemyHp/state.enemyMax);   // 教學：削血保底觸發（非教學為 no-op）
       if(!silent) floatDmg((isCrit?L.battle.crit:'')+dmg, (30+Math.random()*40)+'%','35%',isCrit);
       if(state.enemyHp<=0){
         if(state.killTime===0) state.killTime=Date.now();   // 敵死標記（OVERKILL 起點）

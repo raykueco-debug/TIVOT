@@ -160,3 +160,13 @@ export function applyToDom(){
   // 銭湯獎勵
   set(q('#sentouReward .sentou-hint'), L.sentou.tapReturn);
 }
+
+/* ── 台詞關鍵字裝飾：「聖徒化」（en: Saint Install / Saint Installation）→ 金色粗字 ──
+ *  輸入為純文字（先做 HTML 轉義再包標籤，台詞不含標記故安全）；輸出 HTML 字串。
+ *  打字機逐字重繪時每步以此轉換（部分打到一半的關鍵字，補完最後一字才上色）。 */
+export function decorateLine(s){
+  const esc = String(s==null?'':s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return esc.replace(/(聖徒化|Saint Installation|Saint Install)/g,
+    '<b class="kw-saint">$1</b>');
+}

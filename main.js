@@ -9,7 +9,7 @@
  * ========================================================================== */
 
 import { GAME_CONFIG, VERSION, asset, ASSETS, bgmVol, sfxGain } from './config.js';
-import { L, applyToConfig, applyToDom } from './i18n.js';   // 多語言（zh/ja；en 待翻譯就位）
+import { L, applyToConfig, applyToDom, decorateLine } from './i18n.js';   // 多語言＋台詞關鍵字裝飾
 import { state } from './state.js';
 import { SFX } from './audio.js';
 import { TEL } from './telemetry.js';   // 遙測（未設定後端時 no-op）
@@ -190,7 +190,7 @@ function preloadLateBgm(){
     const el=$('alHint'); let hi=0;
     const cycle=()=>{
       if(!el || !list.length) return;
-      el.textContent=list[hi++ % list.length];
+      el.innerHTML=decorateLine(list[hi++ % list.length]);   // 關鍵字（聖徒化）金色粗字
       el.classList.add('show');                       // 淡入（CSS transition）
       hintTimer=setTimeout(()=>{
         el.classList.remove('show');                  // 淡出

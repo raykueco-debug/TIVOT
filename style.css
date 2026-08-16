@@ -1116,6 +1116,8 @@
   /* 雙槍引導段（dualReady，tutorial.js 掛 .clasp-clear）：縮窄並右移，
      讓出左側破防計量表——玩家要看著它點（引導箭頭也指著它） */
   #tutBubble.clasp-clear{width:min(70%,300px);transform:translateX(-38%);}
+  /* 台詞關鍵字（聖徒化／Saint Install）：金色粗字（i18n.decorateLine 包 .kw-saint） */
+  .kw-saint{color:var(--gold);font-weight:bold;}
   #tutBubble .tut-name{font-size:11px;letter-spacing:2px;color:var(--gold);margin-bottom:4px;}
   #tutBubble .tut-line{font-size:13px;letter-spacing:.5px;line-height:1.7;color:var(--ink);
     min-height:3.4em;}
