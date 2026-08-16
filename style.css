@@ -16,8 +16,12 @@
     --notch-bar-h:calc(env(safe-area-inset-top, 0px) + var(--notch-extra));
     --notch-orn:var(--gold);
   }
+  /* touch-action:manipulation＝取消「雙擊縮放」（快速連點盤面不再觸發放大；亦消 300ms 點擊延遲）。
+     viewport 的 user-scalable=no 在 iOS Safari 被無障礙政策忽略，須靠此宣告。
+     個別需要完整攔截的元素（#returnSwipe none／選單 pan-x·pan-y）具體度較高，不受影響。 */
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;
-    -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
+    -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
+    touch-action:manipulation;}
   /* 全域禁圖片拖拉：桌機滑鼠在圖上按住拖動會觸發原生 drag、吃掉 pointermove，
      聖徒化左右滑/生命歸還上滑等手勢會斷（Firefox 另靠 main.js 的 dragstart 攔截） */
   img{-webkit-user-drag:none;user-drag:none;}
