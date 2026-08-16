@@ -18,10 +18,19 @@ import { STRINGS as JA } from './i18n/ja.js';
 
 const PACKS = { zh: ZH, en: EN, ja: JA };
 
-/* ---- 語言選擇（en 未到位時回退 zh，鈕面仍可循環選 A 先佔位）---- */
+/* ---- 語言選擇 ----
+ *  優先序：使用者手動選過（localStorage）→ 地區偵測 → 預設中文。
+ *  地區偵測：僅日本特判（瀏覽器語系 ja* 或時區 Asia/Tokyo → 日文），其餘一律預設中文。
+ *  偵測結果不寫入 localStorage——只有按語言鈕的手動選擇才落地，之後恆以手選為準。 */
 export const LANG = (()=>{
-  let v='zh'; try{ v=localStorage.getItem('tivot.lang')||'zh'; }catch(e){}
-  return v;
+  let v=null; try{ v=localStorage.getItem('tivot.lang'); }catch(e){}
+  if(v==='zh'||v==='en'||v==='ja') return v;
+  try{
+    const langs=(navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language||''];
+    const tz=(Intl.DateTimeFormat().resolvedOptions().timeZone)||'';
+    if(langs.some(l=>String(l).toLowerCase().indexOf('ja')===0) || tz==='Asia/Tokyo') return 'ja';
+  }catch(e){}
+  return 'zh';
 })();
 
 /* ---- 深層合併：以 zh 為底、疊上目標語言——缺鍵自動回退母本 ---- */

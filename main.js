@@ -9,7 +9,7 @@
  * ========================================================================== */
 
 import { GAME_CONFIG, VERSION, asset, ASSETS, bgmVol, sfxGain } from './config.js';
-import { L, applyToConfig, applyToDom, decorateLine } from './i18n.js';   // 多語言＋台詞關鍵字裝飾
+import { L, LANG, applyToConfig, applyToDom, decorateLine } from './i18n.js';   // 多語言＋台詞關鍵字裝飾
 import { state } from './state.js';
 import { SFX } from './audio.js';
 import { TEL } from './telemetry.js';   // 遙測（未設定後端時 no-op）
@@ -339,7 +339,7 @@ bindBtn('tutorialBtn', ()=>{ tutorial.requestReplay(); launchBattle(); });
   const LANGS=['zh','en','ja'];
   const NEXT_FACE={ zh:'En', en:'日本語', ja:'中文' };   // 鈕面＝下一個語言的自稱
   const KEY='tivot.lang';
-  let cur; try{ cur=localStorage.getItem(KEY)||'zh'; }catch(e){ cur='zh'; }
+  let cur = LANG;                        // 現行語言（含地區偵測結果；手選後 LANG 即讀 localStorage）
   if(LANGS.indexOf(cur)<0) cur='zh';
   const btns=[$('langBtn'), $('alLangBtn')].filter(Boolean);   // 首頁鈕＋讀取畫面鈕（同步鈕面）
   const paint=()=>{ btns.forEach(b=>{ b.textContent=NEXT_FACE[cur]; }); };
