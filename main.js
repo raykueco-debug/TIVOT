@@ -286,7 +286,11 @@ function openPrep(){
   const s=$('prepSheet'); if(s) s.classList.add('on');
 }
 function closePrep(){ const s=$('prepSheet'); if(s) s.classList.remove('on'); }
-bindBtn('startBtn', openPrep);
+bindBtn('startBtn', ()=>{
+  // 首次出陣（未看過教學）：跳過整備頁直接進教學——裝備固定預設，整備此時無意義
+  if(tutorial.isFirstRun()){ launchBattle(); return; }
+  openPrep();
+});
 bindBtn('prepBack', closePrep);
 bindBtn('prepGo', ()=>{ closePrep(); launchBattle(); });
 // 首頁「教學」鈕：強制下一場進教學（不動已看旗標），不經整備頁直接出陣

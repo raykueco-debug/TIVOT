@@ -56,6 +56,9 @@ function markSeen(){ try{ localStorage.setItem(CFG().storageKey,'1'); }catch(e){
 let replayRequested = false;
 export function requestReplay(){ replayRequested = true; }
 
+/* ---- 首頁出陣分流：尚未看過教學（首次出陣會自動進教學）→ 跳過整備頁直接開戰 ---- */
+export function isFirstRun(){ return !hasSeen(); }
+
 /* ============================================================================
  *  進場/節點掛鉤（combat / defense / saint 經協調者呼叫）
  * ========================================================================== */
