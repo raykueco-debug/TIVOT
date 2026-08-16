@@ -141,7 +141,7 @@ export function onEnergyFull(){
   // 反擊/防禦教學若還沒觸發（玩家一路沒防禦），至此已無意義 → 撤下殘餘步驟
   stepsLeft = stepsLeft.filter(s=>s.trigger!=='threat' && s.trigger!=='defended');
   openScript('dualReady', { gate:{
-    type:'click',
+    type:'click', immediate:true,   // 對話彈出即亮箭頭，可直接點計量表（不必先點完台詞）
     action: ()=>api.activateDual(),
     after:  ()=>afterCutin(()=>openScript('dualGo')),
   }});
@@ -216,7 +216,7 @@ function onStepClosed(id){
     //   → 即死防禦 cut-in 結束後聖徒化引導
     api.strike();
     afterCutin(()=>openScript('saintCall', { gate:{
-      type:'right',
+      type:'right', immediate:true,   // 「沒時間了」彈出即亮箭頭，可直接右滑發動（不必先點完台詞）
       action: ()=>api.activateSaint('right'),
       after:  ()=>afterCutin(()=>openScript('saintStart')),
     }}));
@@ -284,6 +284,9 @@ function openStep(step){
   }
   syncBubbleShape(step);
   placeBubble();
+  // 即時閘門（immediate）：段落一開就進閘（箭頭同步亮起），台詞照常可點可讀——
+  // 玩家隨時完成指定操作（點計量表/滑動）即收段續戰，不必先把台詞點完。
+  if(pendingGate && pendingGate.immediate){ enterGate(pendingGate); pendingGate=null; }
   showLine();
 }
 
@@ -330,7 +333,8 @@ function showLine(){
 
 // 點擊推進：打字中→先跳完整句；打完→下一句；最後一句→進閘門或收段續戰
 function advance(){
-  if(!state.tutorialDialog || !cur || gate) return;   // 閘門中不推進台詞
+  if(!state.tutorialDialog || !cur) return;
+  if(gate && !gate.immediate) return;   // 非即時閘門中不推進台詞（即時閘門台詞照常可點）
   SFX.unlock(); SFX.menuClick();
   if(typeTimer){
     clearInterval(typeTimer); typeTimer=null;
@@ -341,6 +345,7 @@ function advance(){
   }
   lineIdx++;
   if(lineIdx < cur.lines.length){ showLine(); return; }
+  if(gate){ lineIdx = cur.lines.length-1; return; }   // 即時閘門：停在末句，等玩家完成指定操作
   if(pendingGate){ enterGate(pendingGate); pendingGate=null; return; }   // 講完 → 進引導閘門（維持暫停）
   if(queue.length){ cur=queue.shift(); lineIdx=0; syncCast(cur); syncBubbleShape(cur); showLine(); return; }   // 接續段：在場立繪差異更新
   closeDialog(true);
@@ -421,6 +426,9 @@ function showGuide(type){
     y = tr.top + tr.height*0.52;
   }
   g.classList.add(dir);
+  // 左緣保底：容器以中心定位（translate -50%），x 太靠左會把文字標示（CLICK！/向右側滑動）
+  // 推出畫面外 → 至少留半個標示寬
+  x = Math.max(x, 60);
   g.style.left = x+'px';
   g.style.top  = y+'px';
   const lb=g.querySelector('.tg-label'); if(lb) lb.textContent = label;
@@ -483,8 +491,10 @@ function bindUI(){
     touch.addEventListener('pointerup', e=>{
       const p=ptr; ptr=null;
       if(gate){
-        // 點擊閘門：落點在破防計量表附近才算（其餘點擊無效，遊戲不繼續）
-        if(gate.type==='click' && p && !p.moved && inClaspArea(e.clientX, e.clientY)) completeGate();
+        // 點擊閘門：落點在破防計量表附近才算完成
+        if(gate.type==='click' && p && !p.moved && inClaspArea(e.clientX, e.clientY)){ completeGate(); return; }
+        // 即時閘門：未命中指定操作的一般點擊照常推台詞（滑動閘的滑動由 pointermove 判定）
+        if(gate.immediate){ if(p && !p.moved) advance(); }
         return;
       }
       advance();

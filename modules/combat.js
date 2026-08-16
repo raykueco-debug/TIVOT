@@ -874,8 +874,9 @@ function tutorialStrike(){
       const last = (i === hits.length-1);
       let dmg = h.dmg;
       if(!last){
-        dmg = Math.min(dmg, Math.max(0, state.playerHp-1));   // 非末擊：至少留 1 HP
-        if(dmg<=0) return;
+        // 非末擊：至少留 1 HP。血已見底則 0 傷照打——受擊演出（第二擊三爪）必須出現，
+        // 不因玩家先前掉血過多而被跳過
+        dmg = Math.min(dmg, Math.max(0, state.playerHp-1));
       }else{
         const p=GAME_CONFIG.partners[state.pickedPartner];
         const guardOk = p && p.passive && p.passive.key==='deathGuard' && !state.deathGuardUsed;

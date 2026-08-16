@@ -195,14 +195,14 @@ function preloadLateBgm(){
     };
     cycle();
   }
-  /* 關鍵音效優先段：SI_01（點擊繼續揭幕音）＋ Start_01（武器選單換卡/一般再度執槍）
-   *   ＋ StartBT_SE（出陣/overkill/Boss S 第一按）——排在立繪之後、整批圖片/BGM 之前
-   *   「單獨」載完解碼（批次 ~20MB，同時開跑會搶走頻寬，慢網下 12s 保底放行時
-   *   反而還沒就緒 → 點下去沒聲音）。
+  /* 關鍵音效優先段：SI_01（測試解鎖回饋音）＋ Start_01（武器選單換卡/一般再度執槍）
+   *   ＋ StartBT_SE（執槍/overkill/Boss S 第一按）＋ Luna_SI_SE（出陣鈕按下）
+   *   ——排在立繪之後、整批圖片/BGM 之前「單獨」載完解碼（批次 ~20MB，同時開跑會
+   *   搶走頻寬，慢網下 12s 保底放行時反而還沒就緒 → 點下去沒聲音）。
    *   自帶 4s 保底：關鍵檔卡住也不無限擋批次。load() 以 _pending/_buffers 去重，
    *   稍後批次再含它也不會重抓。 */
   const critP = portraitP.then(()=> Promise.race([
-    SFX.preload([asset('sfx_saint'), asset('sfx_start'), asset('sfx_startbt')]),
+    SFX.preload([asset('sfx_saint'), asset('sfx_start'), asset('sfx_startbt'), asset('voice_saint_luna')]),
     new Promise(r=>setTimeout(r, 4000)),
   ]));
   let done=0;
@@ -225,7 +225,7 @@ function preloadLateBgm(){
       ov.removeEventListener('click',go); ov.removeEventListener('touchstart',go);
       clearTimeout(hintTimer);   // 停輪播
       SFX.unlock();   // 使用者手勢：解鎖音訊 → 主選單 BGM 開始播
-      SFX.play(asset('sfx_saint'));   // SI_01（第一段已預載解碼 → 點下瞬發）
+      // 讀取頁揭幕不再播 SE（原 SI_01 撤下；聖徒 stinger 移到出陣鈕＝Luna_SI_SE）
       preloadLateBgm();   // 第二段：進主選單即背景載 結算/失敗/Boss BGM
       // 聖光綻放：暖金白光暈自光圈中心緩慢擴張（無光束）→
       //   2.5s 光暈實心蓋滿時撤遮罩 → 1.2s 淡出揭開主選單（總長 ≈3.7s，與 SI_01 等長連動）
@@ -274,7 +274,12 @@ function launchBattle(){
   sakuraBurst({ onDone: ()=> tr.proceed() });
 }
 // 出陣 → 出擊整備頁（搭檔卡/武器卡確認）→「執槍」才真正進戰鬥（櫻花＋過渡禎）
-function openPrep(){ weapon.refreshLoadoutLabels(); const s=$('prepSheet'); if(s) s.classList.add('on'); }
+function openPrep(){
+  // 出陣 stinger：Luna_SI_SE（列關鍵預載 critP → 即點即響；增益同 saint 發動語音）
+  SFX.play(asset('voice_saint_luna'), 1.7);
+  weapon.refreshLoadoutLabels();
+  const s=$('prepSheet'); if(s) s.classList.add('on');
+}
 function closePrep(){ const s=$('prepSheet'); if(s) s.classList.remove('on'); }
 bindBtn('startBtn', openPrep);
 bindBtn('prepBack', closePrep);
