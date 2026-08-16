@@ -54,7 +54,7 @@ export const STRINGS = {
 
   /* ═══ 3. 戰鬥中 UI／浮動字 ═══ */
   battle: {
-    skipBtn:      '跳　過',            // 教學左上跳過鈕
+    skipBtn:      'SKIP',              // 教學左上跳過鈕（三語統一英文小字）
     testClear:    '清盤',              // 測試人員鈕（一般玩家看不到）
     reloading:    'RELOADING',        // [EN-STYLE] 換盤轉場
     perfectClear: '完美清盤 +{n}',     // 完美清盤獎勵浮字

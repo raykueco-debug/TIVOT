@@ -41,7 +41,7 @@ export const STRINGS = {
   },
   /* ═══ 3. 戰鬥中 UI／浮動字 ═══ */
   battle: {
-    skipBtn:      'S K I P',
+    skipBtn:      'SKIP',
     testClear:    'CLEAR',
     reloading:    'RELOADING',
     perfectClear: 'PERFECT CLEAR +{n}',

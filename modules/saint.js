@@ -64,6 +64,12 @@ export function activateSaint(dir){
   }, L.cutins.saintInstall+'<span class="cutin-en">SAINT INSTALL!!</span>', 'cutin_saint_luna', { noShot:true });
 }
 
+/* 聖徒化回血特效開關：玩家血條（倒數槽）轉金＋末端強光點（CSS .saint-heal） */
+function setSaintBarFx(on){
+  const b=document.querySelector('.hpbar.player-bar');
+  if(b) b.classList.toggle('saint-heal', !!on);
+}
+
 // 橫斬特效：dir='right' 向右斬、'left' 向左斬
 function playSlash(dir){
   const fx=$('slashFx');
@@ -98,6 +104,7 @@ function startSaintMode(){
   state.combo = 0;                       // 期間 saint 代理盤面游標（combat 已讓出主迴圈）
   api.resetEnergy();                     // 清零破防（雙槍）值，期間也不累積
   $('grid').classList.add('saint');
+  setSaintBarFx(true);                   // 回血特效：血條轉金＋末端強光點（見 style.css .saint-heal）
   state.saintPrevBoard = { N:state.N, cols:state.cols };
   api.setBoard(SAINT_GRID, SAINT_GRID_COLS);   // 維持 16 宮格
   api.buildGrid();
@@ -224,7 +231,7 @@ function triggerMaxBurst(){
     api.floatDmg('MAXIMUM BURST '+last,'50%','28%',true);
     SFX.clear();
   }
-  $('grid').classList.remove('saint');
+  $('grid').classList.remove('saint'); setSaintBarFx(false);
   if(state.enemyHp<=0){
     // 追加傷害讓敵人 HP 歸零 → EXSECUTIŌ 演出後 → 轉下一敵 or（最後一敵）結算。
     // 成功 MB 滿血獎勵（D2）：擊殺也回滿——連戰下 MB 秒殺一敵後帶滿血接下一隻。
@@ -252,7 +259,7 @@ function triggerOBE(){
     // 聖徒化期間敵 HP 已歸零、但倒數槽先推滿 → 仍播 OBE 演出，收尾轉下一敵/結算。
     // ⚠ OBE 懲罰（HP→1）照樣套用並延續到同場下一敵——推進=回血會把血推滿，
     //   不套懲罰會變成「OBE 後滿血接下一隻」（悖離 OBE=沒守住 的語義）。
-    playSaintCutin('obe', ()=>{ $('grid').classList.remove('saint'); api.setPlayerHpRatio(0); api.onEnemyDefeated(); });
+    playSaintCutin('obe', ()=>{ $('grid').classList.remove('saint'); setSaintBarFx(false); api.setPlayerHpRatio(0); api.onEnemyDefeated(); });
     return;
   }
   // 全畫面 OVERWRITE BREAKER ENGAGED cut-in → 結束後回盤面（HP → 1）
@@ -282,7 +289,7 @@ export function lifeReturnAbort(){
 /* 共用收尾：回到當前 9/16 盤面，敵人排程/間隔懲罰全部歸零，恢復正常扣血攻擊。
  * finalHpThunk：由各結局傳入，於此執行結局血量設定（一律走 combat 改血 API）。 */
 function finishSaintMode(finalHpThunk){
-  $('grid').classList.remove('saint');
+  $('grid').classList.remove('saint'); setSaintBarFx(false);
   restoreUltRate();                      // 保險：還原敵大絕頻率（triggerX 已還原，冪等）
   if(finalHpThunk) finalHpThunk();       // 設定結局血量（走 combat 改血 API；生命歸還為 no-op）
   const back=state.saintPrevBoard||{N:16,cols:4};
@@ -370,5 +377,5 @@ export function reset(){
   state.saintPrevUlt=null;
   state.enemyAtkSuppressUntil=0;
   setReturnSwipe(false);
-  $('grid').classList.remove('saint');
+  $('grid').classList.remove('saint'); setSaintBarFx(false);
 }

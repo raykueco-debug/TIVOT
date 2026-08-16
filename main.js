@@ -141,7 +141,9 @@ function preloadLateBgm(){
     +'<div id="alStage"><img id="alPortrait" alt="">'
     +  '<div id="alBubble"><div class="al-name"></div><div class="al-hint" id="alHint"></div></div>'
     +'</div>'
-    +'<div id="alMsg">'+L.loading.loadingMsg+'</div>';
+    +'<div id="alMsg">'+L.loading.loadingMsg+'</div>'
+    // 語言切換鈕（讀取畫面版）：與首頁 #langBtn 同款同位，載入中即可切換（bindLangBtn 一併綁定）
+    +'<button id="alLangBtn" aria-label="Language"></button>';
   document.body.appendChild(ov);
   /* 金色光圈對位：與首頁紋章外圓重合（圈徑≈紋章圖寬的 0.8）。
    *  首頁 bootIdle 於本模組尾端才掛 .on、紋章圖片也要載入才有高度 → 輪詢到量得到為止；
@@ -339,15 +341,24 @@ bindBtn('tutorialBtn', ()=>{ tutorial.requestReplay(); launchBattle(); });
   const KEY='tivot.lang';
   let cur; try{ cur=localStorage.getItem(KEY)||'zh'; }catch(e){ cur='zh'; }
   if(LANGS.indexOf(cur)<0) cur='zh';
-  const btn=$('langBtn');
-  const paint=()=>{ if(btn) btn.textContent=NEXT_FACE[cur]; };
+  const btns=[$('langBtn'), $('alLangBtn')].filter(Boolean);   // 首頁鈕＋讀取畫面鈕（同步鈕面）
+  const paint=()=>{ btns.forEach(b=>{ b.textContent=NEXT_FACE[cur]; }); };
   paint();
-  bindBtn('langBtn', ()=>{
+  const cycle=()=>{
     cur=LANGS[(LANGS.indexOf(cur)+1)%LANGS.length];
     try{ localStorage.setItem(KEY, cur); }catch(e){}
     paint();
     setTimeout(()=>location.reload(), 150);
-  });
+  };
+  bindBtn('langBtn', cycle);
+  // 讀取畫面版：自綁（不經 bindBtn）——須 stopPropagation，否則點擊會冒泡到
+  // 遮罩的「點擊繼續」監聽（載完後）誤觸揭幕
+  const al=$('alLangBtn');
+  if(al){
+    let h=false;
+    al.addEventListener('touchstart',e=>{ e.preventDefault(); e.stopPropagation(); h=true; SFX.unlock(); SFX.menuClick(); cycle(); },{passive:false});
+    al.addEventListener('click',e=>{ e.stopPropagation(); if(h){h=false;return;} SFX.unlock(); SFX.menuClick(); cycle(); });
+  }
 })();
 bindBtn('exitBtn',      showExitConfirm);       // 右上：退出 → 確認對話框（盤面模糊）
 

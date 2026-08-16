@@ -100,6 +100,12 @@
   #assetLoader .al-hint{font-size:13px;letter-spacing:.5px;line-height:1.6;color:var(--ink);
     min-height:3.2em;opacity:0;transition:opacity .4s ease;}
   #assetLoader .al-hint.show{opacity:1;}
+  /* 語言切換鈕（讀取畫面版）：與首頁 #langBtn 同款同位，讀取中即可切換語言 */
+  #assetLoader #alLangBtn{position:absolute;top:calc(var(--notch-bar-h,0px) + 12px);right:12px;
+    min-width:44px;height:36px;padding:0 14px;border-radius:18px;background:rgba(10,8,14,.6);
+    border:1px solid var(--gold-dim);color:var(--gold);font-family:inherit;font-size:14px;
+    letter-spacing:1px;}
+  #assetLoader #alLangBtn:active{transform:scale(.92);}
   /* 底部訊息：載入中 → 點擊繼續（呼吸） */
   #assetLoader #alMsg{position:absolute;left:0;right:0;
     bottom:calc(env(safe-area-inset-bottom,0px) + 26px);
@@ -199,6 +205,26 @@
   .hpbar>i{display:block;height:100%;transition:width .25s;}
   .hpbar.enemy-bar>i{background:linear-gradient(90deg,var(--blood),#d14e4e);}
   .hpbar.player-bar>i{background:linear-gradient(90deg,#2b6d9a,var(--holy));}
+  /* ── 聖徒化回血特效（saint.js 掛 .saint-heal 於 .player-bar）──
+     血條轉金；亮紋自左向右流動「聚集」到末端；末端騎在填充前緣的呼吸強光點。
+     overflow:visible 讓光點光暈溢出條外（填充改小圓角補償失去的裁切）。 */
+  .hpbar.player-bar.saint-heal{border-color:var(--gold);overflow:visible;
+    box-shadow:0 0 10px rgba(212,169,74,.55),0 0 10px #000;}
+  .hpbar.player-bar.saint-heal>i{position:relative;border-radius:2px;
+    background:linear-gradient(90deg,#8a6d2e,#ffd970 70%,#fff3c4);
+    box-shadow:0 0 8px rgba(255,224,138,.7);}
+  .hpbar.player-bar.saint-heal>i::before{content:"";position:absolute;inset:0;border-radius:2px;
+    background:repeating-linear-gradient(90deg,transparent 0 16px,rgba(255,255,255,.38) 16px 19px);
+    animation:healFlow .5s linear infinite;
+    -webkit-mask-image:linear-gradient(90deg,transparent,#000 55%);
+    mask-image:linear-gradient(90deg,transparent,#000 55%);}
+  @keyframes healFlow{from{background-position:0 0;}to{background-position:19px 0;}}
+  .hpbar.player-bar.saint-heal>i::after{content:"";position:absolute;right:-7px;top:50%;
+    width:14px;height:14px;transform:translateY(-50%);border-radius:50%;
+    background:radial-gradient(circle,#fff 0%,#ffe9a8 40%,rgba(255,224,138,.4) 65%,transparent 75%);
+    box-shadow:0 0 12px 4px rgba(255,224,138,.85),0 0 26px 8px rgba(212,169,74,.5);
+    animation:healOrb .7s ease-in-out infinite alternate;}
+  @keyframes healOrb{from{transform:translateY(-50%) scale(.85);}to{transform:translateY(-50%) scale(1.2);}}
   .hp-num{position:absolute;right:5px;top:0;height:14px;line-height:14px;
     font-size:9px;letter-spacing:1px;opacity:.9;text-shadow:0 0 4px #000,0 0 3px #000;}
 
@@ -1097,9 +1123,10 @@
   body.dlg-pause #redDots{z-index:21;}
   #tutTouch{position:fixed;inset:0;z-index:36;display:none;background:transparent;touch-action:none;}
   #tutTouch.on{display:block;}
-  #tutSkipBtn{position:absolute;top:10px;left:10px;z-index:38;display:none;padding:7px 14px;
-    border-radius:16px;background:rgba(10,8,14,.72);border:1px solid var(--gold-dim);
-    color:var(--gold);font-family:inherit;font-size:12px;letter-spacing:2px;}
+  /* 跳過鈕：小型膠囊、三語統一 SKIP（i18n battle.skipBtn） */
+  #tutSkipBtn{position:absolute;top:12px;left:10px;z-index:38;display:none;padding:4px 10px;
+    border-radius:12px;background:rgba(10,8,14,.72);border:1px solid var(--gold-dim);
+    color:var(--gold);font-family:inherit;font-size:10px;letter-spacing:1.5px;}
   #tutSkipBtn.on{display:block;}
   #tutSkipBtn:active{transform:scale(.94);}
 

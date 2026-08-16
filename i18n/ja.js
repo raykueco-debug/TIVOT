@@ -50,7 +50,7 @@ export const STRINGS = {
 
   /* ═══ 3. 戰鬥中 UI／浮動字 ═══ */
   battle: {
-    skipBtn:      'ス　キ　ッ　プ',
+    skipBtn:      'SKIP',
     testClear:    'クリア',
     reloading:    'RELOADING',
     perfectClear: 'パーフェクトクリア +{n}',
