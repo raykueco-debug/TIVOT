@@ -261,6 +261,7 @@ export const STRINGS = {
         '早すぎる！　もっとよく見てなさい！',
       ],
       attackDuringThreat: { first:'防御をしなさい！', rest:'…………' },
+      dead: '参りましたね……。やり直し！',
     },
     guideLabels: {
       click: 'CLICK！',

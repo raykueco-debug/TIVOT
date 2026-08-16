@@ -74,6 +74,7 @@ export function setup(){
     capEnemyHp: tutorialCapEnemyHp,
     respawnThreat: defense.startCharge,   // 反擊教學：太早格擋 → 罵完重放一次反擊圈
     fillEnergy: ()=>addEnergy(100),       // 削血保底：直接填滿破防值（走滿值引導路徑）
+    restartBattle: startGame,             // 教學陣亡：「重來！」收段後整場重開
     goHome,   // 跳過鈕：中止教學戰回主選單
   });
   // 武器：反擊演算所需（enemyDamage/floatDmg）+ 雙槍破防窗口所需（cut-in/敵計時/盤面/破防值歸零）。
@@ -440,7 +441,9 @@ function handlePlayerLethal(){
   // 1) 先問即死防禦（本場未用過才可用）。可用 → 已於 tryDeathGuard 內把 HP 鎖 1、續盤；
   //    這一擊若同時打死敵人＝1 HP 慘勝，照常由 clearBoard/tap 走 win（未上戰敗鎖）。
   if(partner.tryDeathGuard()) return;
-  // 2) 不可用 → 戰敗。先上鎖：即使同一瞬間敵人也歸零，win() 一律讓位（戰敗優先）。
+  // 2) 教學戰不設戰敗：監察官「服了你了。重來！」→ 收段後整場教學重來（tutorial 接手）
+  if(state.tutorialRun && tutorial.onPlayerDead()) return;
+  // 3) 不可用 → 戰敗。先上鎖：即使同一瞬間敵人也歸零，win() 一律讓位（戰敗優先）。
   state.defeated = true;
   lose();
 }

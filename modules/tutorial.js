@@ -77,7 +77,7 @@ export function maybeStart(){
   state.tutorialLifeReturn = false;
   stepsLeft = cfg.steps.slice();
   queue = [];
-  defendedDone = dualGuideDone = saintCritFired = false; dualForce = false; attackScoldCount = 0;
+  defendedDone = dualGuideDone = saintCritFired = false; dualForce = false; attackScoldCount = 0; deadHandled = false;
   pendingGate = null; gate = null;
   const sk=$('tutSkipBtn'); if(sk) sk.classList.add('on');
   clearTimeout(startTimer);
@@ -95,9 +95,22 @@ export function onThreatResolved(grade){
   defendedDone = true;    // 防禦成功：延時懲罰恢復、罵人停用（「第二盤結束前不再跳任何提示」）
   fire('defended');
 }
+// combat 致死鏈呼叫（即死防禦已用盡/不可用時）：教學戰不設戰敗——
+//   監察官「服了你了。重來！」收段後整場教學重開（restartBattle）。回傳 true＝已接手。
+let deadHandled = false;
+export function onPlayerDead(){
+  if(!state.tutorialRun) return false;
+  if(deadHandled) return true;
+  deadHandled = true;
+  queue = [];                                        // 佇列段落全廢棄：整場即將重開
+  if(state.tutorialDialog) closeDialog(false, true); // 蓋掉現開段落，確保 dead 段獨占（不被接續吃掉）
+  const line=(CFG().scold||{}).dead || '服了你了。重來！';
+  openStep({ key:'tutorialDead', lines:[{ who:'inspector', text: line }] });
+  return true;
+}
 // combat 於「按錯 / 延時懲罰」時呼叫 → 監察官罵人（defended 之後不再插話）
 export function onMistake(kind){
-  if(!state.tutorialActive || state.tutorialDialog || state.over || defendedDone) return;
+  if(!state.tutorialActive || state.tutorialDialog || state.over || defendedDone || deadHandled) return;
   const pool = (CFG().scold||{})[kind];
   if(!pool || !pool.length) return;
   const text = pool[Math.random()*pool.length|0];
@@ -106,7 +119,7 @@ export function onMistake(kind){
 // defense.resolveThreat 太早防禦（Defense 格擋半傷）→ 監察官「太早了！」。
 //   不受 defended 停用限制（每次太早都提醒）；聖徒化期間不插（格擋是推進機制、節奏緊湊）。
 export function onEarlyBlock(){
-  if(!state.tutorialActive || state.tutorialDialog || state.over || state.saintMode) return;
+  if(!state.tutorialActive || state.tutorialDialog || state.over || state.saintMode || deadHandled) return;
   const pool = (CFG().scold||{}).early;
   if(!pool || !pool.length) return;
   // key='earlyRetry'：反擊教學階段收段後重放反擊圈（onStepClosed 分流；已過 defended 則只罵不重放）
@@ -135,7 +148,7 @@ export function firstThreatPending(){
 //   → 觸發「小心！」劇情殺段
 let attackScoldCount = 0;   // 反擊教學「紅圈在場還猛點盤面」插話次數（首次罵、之後無言）
 export function onBoardProgress(cleared){
-  if(!state.tutorialActive || state.tutorialDialog) return;
+  if(!state.tutorialActive || state.tutorialDialog || deadHandled) return;
   // 反擊教學未過（defended 未觸發）且紅圈在場：玩家不看字猛點盤面攻擊 →
   //   監察官插話「你倒是防禦啊！」，第二次起改「…………」（台詞 config.scold.attackDuringThreat）
   if(!defendedDone && state.threats.length>0){
@@ -247,6 +260,15 @@ function openScript(key, opts){
 
 // 段落收掉後的腳本接續（closeDialog 於 resume 時呼叫；skip/abort 走 silent 不觸發）
 function onStepClosed(id){
+  if(id==='tutorialDead'){
+    // 教學陣亡收段：整場教學重開（未 markSeen；requestReplay 保險確保 maybeStart 重進）
+    state.tutorialRun=false;
+    endTutorial();               // tutorialActive=false → startGame 的 maybeStart 可重新啟動
+    replayRequested=true;
+    deadHandled=false;
+    if(api.restartBattle) api.restartBattle();
+    return;
+  }
   if(id==='earlyRetry'){
     // 太早格擋收段：反擊教學未過（defended 未觸發）→ 立即重放一次反擊圈，
     // 玩家點出 Perfect/Counter 才過關；已過 defended 的太早提醒不重放（自然排程接手）
@@ -388,6 +410,9 @@ function advance(){
   }
   lineIdx++;
   if(lineIdx < cur.lines.length){ showLine(); return; }
+  // 教學陣亡段：收 UI 後「同步」重開整場（不走 480ms 靜默期——期間任何晚到的插話
+  // 都會攔掉 finish，restart 就此丟失＝玩家卡 0 HP 鎖血）
+  if(cur.key==='tutorialDead'){ closeDialog(false, true); onStepClosed('tutorialDead'); return; }
   if(gate){ lineIdx = cur.lines.length-1; return; }   // 即時閘門：停在末句，等玩家完成指定操作
   if(pendingGate){ enterGate(pendingGate); pendingGate=null; return; }   // 講完 → 進引導閘門（維持暫停）
   if(queue.length){ cur=queue.shift(); lineIdx=0; syncCast(cur); syncBubbleShape(cur); showLine(); return; }   // 接續段：在場立繪差異更新
@@ -414,7 +439,8 @@ function closeDialog(resume, silent){
   if(resume){
     const finish=()=>{
       api.resumeFromDialog();
-      if(!silent && id && state.tutorialActive) onStepClosed(id);
+      // tutorialDead 不受 tutorialActive 限制：收尾盤（tutorialActive 已 false）陣亡也要能重開
+      if(!silent && id && (state.tutorialActive || id==='tutorialDead')) onStepClosed(id);
     };
     if(silent){ finish(); }   // 閘門/跳過路徑：同步續戰（action 需緊接執行）
     else{

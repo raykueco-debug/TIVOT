@@ -320,7 +320,10 @@ export function playCutin(done, label, imgKey, opts){
     c.classList.remove('on'); void c.offsetWidth; c.classList.add('on');
     setTimeout(()=>{
       c.classList.remove('on');
-      state.cutinPlaying=false;
+      // ⚠ 教學對話開著時不清暫停旗標：cut-in（如即死防禦）與教學對話重疊時，
+      //   這裡清掉會讓盤面在對話中恢復可點（懲罰/插話亂入，曾致陣亡重開流程被劫持）。
+      //   對話層收段時自會 resumeFromDialog。
+      state.cutinPlaying = !!state.tutorialDialog;
       if(done) done();
     }, 1500);
   };

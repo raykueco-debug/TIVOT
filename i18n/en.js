@@ -241,6 +241,7 @@ export const STRINGS = {
         'Too early! Pay closer attention!',
       ],
       attackDuringThreat: { first:'How about DEFENDING?!', rest:'.........' },
+      dead: 'Unbelievable. Do it over!',
     },
     guideLabels: {
       click: 'CLICK!',
