@@ -228,13 +228,10 @@
   .hp-num{position:absolute;right:5px;top:0;height:14px;line-height:14px;
     font-size:9px;letter-spacing:1px;opacity:.9;text-shadow:0 0 4px #000,0 0 3px #000;}
 
-  /* 蓄力預警 */
+  /* 蓄力預警（倒數數字/招式名已取消，紅圈即提示；容器保留供 defense 開閉） */
   #chargeWarn{position:absolute;top:52px;left:0;right:0;text-align:center;display:none;z-index:7;pointer-events:none;}
   #chargeWarn.on{display:block;}
-  .warn-text{font-size:14px;letter-spacing:4px;color:var(--danger);
-    text-shadow:0 0 12px #000,0 0 8px var(--danger);animation:blink .4s infinite alternate;}
   @keyframes blink{from{opacity:.5}to{opacity:1}}
-  .warn-count{font-size:34px;font-weight:bold;color:var(--danger);text-shadow:0 0 14px #000;}
 
   /* 特效層（槍擊命中、彈殼、爪痕、飄字都畫在這） */
   #fxTop{position:absolute;inset:0;pointer-events:none;z-index:5;overflow:hidden;}
@@ -366,13 +363,6 @@
     background:var(--bg);box-shadow:inset 0 -1px 0 rgba(212,169,74,.22);}
   #notchOrn{display:block;width:100%;height:100%;color:var(--notch-orn);
     filter:drop-shadow(0 0 1.5px rgba(212,169,74,.4));}
-  #ultBtn{bottom:12px;right:12px;width:60px;height:60px;font-size:30px;}
-  #ultBtn:disabled{opacity:.35;}
-  #ultBtn.ready{border-color:var(--holy);color:var(--holy);
-    box-shadow:0 0 16px var(--holy);animation:pulse .8s infinite alternate;}
-  #ultBtn.dual{border-color:var(--holy);color:#fff;background:rgba(60,110,150,.5);
-    box-shadow:0 0 20px var(--holy);}
-
   /* ===== 下半：純數字盤 ===== */
   #bottom{height:50%;flex:none;background:var(--panel);padding:10px 12px;
     display:flex;flex-direction:column;min-height:0;}
@@ -468,35 +458,14 @@
   @keyframes shellEject{0%{opacity:1;transform:translate(0,0) rotate(0)}
     100%{opacity:0;transform:translate(34px,40px) rotate(260deg)}}
 
-  #controls{margin-top:10px;display:flex;gap:8px;flex-shrink:0;}
   button.act{flex:1;padding:11px;background:transparent;border:1px solid var(--gold-dim);
     color:var(--gold);border-radius:8px;font-family:inherit;font-size:13px;letter-spacing:2px;}
   button.act:active{background:var(--grid-active);}
   button.act:disabled{opacity:.3;}
   button.act.ready{border-color:var(--holy);color:var(--holy);animation:pulse .8s infinite alternate;}
 
-  /* 雙槍 cut-in 演出 */
-  #cutin{position:absolute;inset:0;z-index:40;display:none;overflow:hidden;
-    background:radial-gradient(circle at 50% 50%,rgba(40,10,50,.7),rgba(5,4,10,.95));}
-  #cutin.on{display:block;}
-  #cutinImg{position:absolute;top:50%;left:50%;width:88%;max-width:460px;aspect-ratio:4/5;
-    transform:translate(-50%,-50%);
-    border:2px solid var(--gold);box-shadow:0 0 40px var(--holy),0 0 80px rgba(120,40,160,.6);
-    opacity:0;}
-  #cutin.on #cutinImg{animation:cutinSlide 1.5s cubic-bezier(.2,.8,.2,1) forwards;}
-  @keyframes cutinSlide{
-    0%{opacity:0;transform:translate(-50%,-50%) scale(1.4) rotate(-4deg);}
-    18%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(0deg);}
-    82%{opacity:1;transform:translate(-50%,-50%) scale(1.03);}
-    100%{opacity:0;transform:translate(-50%,-50%) scale(1.06);}
-  }
-  #cutinFlash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;}
-  #cutin.on #cutinFlash{animation:cutinFlash 1.5s ease-out forwards;}
-  @keyframes cutinFlash{0%{opacity:.9}12%{opacity:0}100%{opacity:0}}
-  #cutinText{position:absolute;bottom:16%;left:0;right:0;text-align:center;
-    font-size:30px;letter-spacing:10px;color:var(--gold);font-weight:bold;
-    text-shadow:0 0 16px var(--holy),0 2px 6px #000;opacity:0;}
-  #cutin.on #cutinText{animation:cutinTextIn 1.5s ease-out forwards;}
+  /* cutinTextIn：聖徒化 cut-in 副標進場用（#saintCutinSub；舊版雙槍 cut-in 首版遺留的
+     其餘規則已清除——本區塊下方的第二版定義才是現行雙槍 cut-in） */
   @keyframes cutinTextIn{0%{opacity:0;transform:translateY(20px)}25%{opacity:1;transform:translateY(0)}85%{opacity:1}100%{opacity:0}}
 
   /* 雙槍 cut-in 演出 */
@@ -702,7 +671,6 @@
   #inspectorBubble .insp-name{font-size:11px;letter-spacing:2px;color:var(--gold);
     margin-bottom:5px;opacity:.9;}
   #inspectorBubble .insp-line{font-size:13px;letter-spacing:.5px;line-height:1.6;color:var(--ink);min-height:1.6em;white-space:pre-line;}
-  #inspectorBubble .insp-line .caret{opacity:.7;animation:blink .5s infinite alternate;}
   /* retry 鈕：置底、與畫面同寬、降低高度 */
   /* 貼底大鈕：拉至畫面最底，底部內距吃掉 iOS 安全區(home indicator)→ 底下不留空 */
   #banner #rematchBtn{flex:0 0 auto;width:100%;max-width:none;margin:0;border-radius:0;
@@ -763,7 +731,6 @@
   #home .saint-install .si-rule{width:clamp(22px,9vw,44px);height:1px;
     background:linear-gradient(90deg,transparent,rgba(111,179,212,.65));}
   #home .saint-install .si-rule:last-child{background:linear-gradient(90deg,rgba(111,179,212,.65),transparent);}
-  #home .subtitle{font-size:13px;letter-spacing:3px;color:var(--holy);opacity:.85;margin-bottom:44px;}
   #startBtn{padding:16px 46px;background:transparent;border:1px solid var(--gold);
     color:var(--gold);border-radius:10px;font-family:inherit;font-size:17px;letter-spacing:5px;
     box-shadow:0 0 18px var(--gold-dim);animation:pulse 1.2s infinite alternate;}
@@ -1063,13 +1030,6 @@
   #creditSheet .credit-sec{margin-bottom:16px;}
   #creditSheet .credit-h{font-size:12px;letter-spacing:3px;color:var(--holy);
     border-bottom:1px solid var(--gold-dim);padding-bottom:5px;margin-bottom:10px;}
-  #creditSheet .credit-work{font-size:15px;letter-spacing:2px;color:var(--gold);margin-bottom:4px;}
-  #creditSheet .credit-note{font-size:11px;letter-spacing:.5px;color:var(--gold-dim);margin-bottom:10px;}
-  #creditSheet .credit-links{display:flex;gap:10px;}
-  #creditSheet .credit-link{flex:1;text-align:center;padding:10px 8px;background:rgba(30,24,42,.7);
-    border:1px solid var(--gold-dim);border-radius:8px;color:var(--gold);text-decoration:none;
-    font-size:13px;letter-spacing:2px;}
-  #creditSheet .credit-link:active{transform:scale(.97);border-color:var(--gold);box-shadow:0 0 12px var(--gold-dim);}
   #creditSheet .credit-list{list-style:none;margin:0;padding:0;}
   #creditSheet .credit-list li{border-bottom:1px dashed rgba(138,109,46,.35);font-size:12.5px;}
   #creditSheet .credit-list li:last-child{border-bottom:none;}
