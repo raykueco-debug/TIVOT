@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.16-80';
+export const VERSION = 'ver 2026.08.16-81';
 
 export const GAME_CONFIG = {
 
@@ -66,7 +66,7 @@ export const GAME_CONFIG = {
       siFit:{ zoom:1, top:0 },
       cutin:'cutin_saint',     // 聖徒化演出大圖
       voice:null,              // 語音（PARTNER_SE_SI）之後填
-      selectVoice:'vo_life_return', // 選人畫面「選擇此搭檔」確認 SE（→ Renee_SE_Act.wav，與生命歸還共用）
+      selectVoice:'vo_life_return', // 選人畫面「選擇此搭檔」確認 SE（→ Renee_VC_Act.wav，與生命歸還共用）
       perk:'即死防禦（被動）＋生命歸還（主動）',
       // ── 被動技：即死防禦 ─────────────────────────────
       //   整場一次性。受到足以致死的攻擊時，改為保留 1 HP，並插入 cut-in。用掉後失效。
@@ -75,7 +75,7 @@ export const GAME_CONFIG = {
         name:'即死防禦',
         oncePerBattle:true,      // true=整場只擋一次；false=每次都擋（不建議）
         cutin:'cutin_guard',     // 即死防禦專屬大圖（→ Renee_CI_pas.jpg）；程式讀此欄，不硬寫
-        voice:'vo_death_guard',  // cut-in 對應 SE（→ Renee_SE_Pas.wav）
+        voice:'vo_death_guard',  // cut-in 對應 SE（→ Renee_VC_Pas.wav）
         desc:'受到足以致死的攻擊時，為玩家保留1hp續命。',
       },
       // ── 主動技：生命歸還 ─────────────────────────────
@@ -85,7 +85,7 @@ export const GAME_CONFIG = {
         name:'生命歸還',
         context:'saint',         // 發動情境：'saint'＝聖徒化內 / 'board'＝一般盤面 / 'any'＝兩者皆可
         cutin:'cutin_return',    // 生命歸還演出大圖（→ Renee_CI_act.jpg）；實際演出由 saint scImgKey.return 讀同一鑰匙
-        voice:'vo_life_return',  // cut-in 對應 SE（→ Renee_SE_Act.wav）
+        voice:'vo_life_return',  // cut-in 對應 SE（→ Renee_VC_Act.wav）
         desc:'聖徒化期間發動：強制中止聖徒化，保留當前血量。',
       },
     },
@@ -98,7 +98,7 @@ export const GAME_CONFIG = {
       siFit:{ zoom:1.85, top:0 },
       cutin:'cutin_saint',     // 聖徒化演出大圖（沿用共通）
       voice:null,
-      selectVoice:'vo_hc_rounds',   // 選人畫面「選擇此搭檔」確認 SE（→ Malzeno_SE_Pas.wav，與高裝藥彈共用）
+      selectVoice:'vo_hc_rounds',   // 選人畫面「選擇此搭檔」確認 SE（→ Malzeno_VC_Pas.wav，與高裝藥彈共用）
       perk:'前線補給（主動）＋高爆彈頭（被動）',
       // ── 被動技：高裝藥彈 ─────────────────────────────
       //   玩家 HP 降至 threshold（50%）以下的瞬間發動：普攻傷害加倍 buffSeconds 秒，
@@ -111,7 +111,7 @@ export const GAME_CONFIG = {
         threshold:0.50,          // 發動門檻：HP ≤ playerMax × 此值
         buffSeconds:10,          // 普攻加倍持續秒數（可跨盤）
         cutin:'cutin_malzeno_pas', // 被動 cut-in 大圖（→ Malzeno_CI_pas.png）
-        voice:'vo_hc_rounds',    // cut-in 對應 SE（→ Malzeno_SE_Pas.wav）
+        voice:'vo_hc_rounds',    // cut-in 對應 SE（→ Malzeno_VC_Pas.wav）
         desc:'HP 降至 50% 以下時發動：10 秒普攻傷害加倍，效果可跨盤面延續。',
       },
       // ── 主動技：前線補給 ─────────────────────────────
@@ -125,7 +125,7 @@ export const GAME_CONFIG = {
         context:'board',         // 一般盤面限定（聖徒化中不可發動）
         oncePerBattle:true,      // 每場一次（可調：false＝不限次數）
         cutin:'cutin_malzeno_act', // 前線補給 cut-in 大圖（→ Malzeno_CI_act.png）
-        voice:'vo_supply_refill',  // cut-in 對應 SE（→ Malzeno_SE_Act.wav）
+        voice:'vo_supply_refill',  // cut-in 對應 SE（→ Malzeno_VC_Act.wav）
         desc:'立即進入雙槍破防。聖徒化期間無法發動。',
       },
     },
@@ -613,7 +613,7 @@ export const GAME_CONFIG = {
     //   vo_* 四支（技能 SE）：對齊 Luna 聖徒化語音的有效響度（RMS −14.4 dBFS）——
     //   依各檔母帶 RMS 差多少補多少，峰值略超滿刻度交給 SFX 匯流 limiter 軟接（不破音）。
     partnerSeGain: { se_luna_dual:1, se_luna_exc:1, se_luna_mb:1, se_luna_obe:1,
-                     vo_life_return:9.2, vo_death_guard:3.0, vo_supply_refill:2.7, vo_hc_rounds:3.6 },
+                     vo_life_return:11.5, vo_death_guard:3.75, vo_supply_refill:3.4, vo_hc_rounds:4.5 },
 
     // 檔案 SFX 播放增益（對 ASSETS 鑰匙；未列入＝1）。全域響度階層（ver -37 起）：
     //   語音/演出層 ≈ −14.4 dBFS（基準，vo_*/Luna 系走 partnerSeGain）；
@@ -696,7 +696,7 @@ export const ASSETS = {
 
   // ── 五張 cut-in 圖（v17.7 嵌入）──
   cutin_saint_luna: "resources/partner/Luna_CI_advent.jpg",   // 聖徒化降臨 cut-in（Luna）
-  voice_saint_luna: "resources/partner/Luna_SI_SE.m4a",       // 聖徒化發動語音（Luna，1.7s；與 sfx_saint 疊播）
+  voice_saint_luna: "resources/partner/Luna_SI_VC.m4a",       // 聖徒化發動語音（Luna，1.7s；與 sfx_saint 疊播）
   cutin_exc: "resources/partner/Luna_CI_exc.png",   // 處決 EXSECUTIŌ cut-in（Luna）
   cutin_obe: "resources/partner/Luna_CI_obe.jpg",   // O.B.E. cut-in（Luna）
   cutin_mb: "resources/partner/Luna_CI_maxburst.jpg",   // Maximum Burst cut-in（Luna）
@@ -779,10 +779,10 @@ export const ASSETS = {
   vo_maxburst:      null,   // Maximum Burst            → VO_MaxBurst
   vo_exsectio:      null,   // EXSECUTIŌ（處決）         → VO_Exsectio
   vo_obe:           null,   // O.B.E.                   → VO_OBE
-  vo_life_return:   "resources/partner/Renee_SE_Act.wav",     // 生命歸還（蕾妮·主動）— partner.lifeReturn 播
-  vo_death_guard:   "resources/partner/Renee_SE_Pas.wav",     // 即死防禦（蕾妮·被動）— partner.tryDeathGuard 播
-  vo_supply_refill: "resources/partner/Malzeno_SE_Act.wav?v=2",   // 前線補給（馬季諾·主動）— partner.supplyRefill 播
-  vo_hc_rounds:     "resources/partner/Malzeno_SE_Pas.wav",   // 高裝藥彈（馬季諾·被動）— partner.checkLowHpBuff 播
+  vo_life_return:   "resources/partner/Renee_VC_Act.wav",     // 生命歸還（蕾妮·主動）— partner.lifeReturn 播
+  vo_death_guard:   "resources/partner/Renee_VC_Pas.wav",     // 即死防禦（蕾妮·被動）— partner.tryDeathGuard 播
+  vo_supply_refill: "resources/partner/Malzeno_VC_Act.wav",   // 前線補給（馬季諾·主動）— partner.supplyRefill 播
+  vo_hc_rounds:     "resources/partner/Malzeno_VC_Pas.wav",   // 高裝藥彈（馬季諾·被動）— partner.checkLowHpBuff 播
   vo_dual_wield:    null,   // 雙槍破防                 → VO_DualWield
   vo_new_hustle:    null,   // Boss 遭遇 / 亂入          → VO_NewHustle
 };

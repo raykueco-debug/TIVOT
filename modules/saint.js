@@ -56,7 +56,7 @@ export function activateSaint(dir){
   state.saintUsedThisBattle = true;   // saint 自有欄位：發動即鎖（一場一次），時序同 reference
   SFX.unlock(); SFX.ultCharge();
   SFX.play(asset('sfx_saint'));       // 聖徒化發動音效（SI_01）
-  SFX.play(asset('voice_saint_luna'), 1.7);// Luna 發動語音（母帶峰值 -4.9dB，增益 1.7≈+4.6dB 推近滿不破音）
+  SFX.play(asset('voice_saint_luna'), 2.1);// Luna 發動語音（原 1.7 再 +25%＝2.1；播放端 limiter 匯流不破音）
   playSlash(dir);                     // 依滑動方向的橫斬特效
   playCutin(()=>{
     if(state.over) return;
@@ -313,14 +313,26 @@ export function playCutin(done, label, imgKey, opts){
   if(api.clockPause) api.clockPause();     // 演出期間碼表暫停（非可點不計時；聖徒化降臨/雙槍破防共用）
   const c=$('cutin');
   if(label!==undefined) $('cutinText').innerHTML = label;
-  if(imgKey){ const ci=$('cutinImg'); const src=asset(imgKey); if(ci && src) ci.src=src; }
-  c.classList.remove('on'); void c.offsetWidth; c.classList.add('on');
+  const ci=$('cutinImg');
+  const src=imgKey ? asset(imgKey) : null;
   // cut-in 槍聲已全面取消：雙槍破防有 Luna_dual_se、聖徒化降臨有 SI_01，槍聲只留給盤面實際射擊
-  setTimeout(()=>{
-    c.classList.remove('on');
-    state.cutinPlaying=false;
-    if(done) done();
-  }, 1500);
+  const start=()=>{
+    c.classList.remove('on'); void c.offsetWidth; c.classList.add('on');
+    setTimeout(()=>{
+      c.classList.remove('on');
+      state.cutinPlaying=false;
+      if(done) done();
+    }, 1500);
+  };
+  if(ci && src){
+    if(ci.getAttribute('src')!==src) ci.src=src;
+    // ⚠ 圖未解碼完就起跑＝滑入動畫中途解碼大圖卡死主執行緒（cut-in 卡在一半的主因，
+    //   手機尤甚）→ 先 decode 再開演；解碼失敗或逾時 300ms 照樣開演不擋流程（go 冪等）。
+    let started=false;
+    const go=()=>{ if(!started){ started=true; start(); } };
+    (ci.decode ? ci.decode() : Promise.resolve()).then(go, go);
+    setTimeout(go, 300);
+  } else start();
 }
 
 // 結局全畫面 cut-in（kind: 'burst' | 'obe' | 'execute' | 'return'）

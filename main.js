@@ -234,7 +234,7 @@ function preloadLateBgm(){
       ov.removeEventListener('click',go); ov.removeEventListener('touchstart',go);
       clearTimeout(hintTimer);   // 停輪播
       SFX.unlock();   // 使用者手勢：解鎖音訊 → 主選單 BGM 開始播
-      // 讀取頁揭幕不再播 SE（原 SI_01 撤下；聖徒 stinger 移到出陣鈕＝Luna_SI_SE）
+      // 讀取頁揭幕不再播 SE（原 SI_01 撤下；聖徒 stinger 移到出陣鈕）
       preloadLateBgm();   // 第二段：進主選單即背景載 結算/失敗/Boss BGM
       // 聖光綻放：暖金白光暈自光圈中心緩慢擴張（無光束）→
       //   2.5s 光暈實心蓋滿時撤遮罩 → 1.2s 淡出揭開主選單（總長 ≈3.7s，與 SI_01 等長連動）
