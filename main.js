@@ -437,15 +437,20 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
     if(state.saintMode||state.saintUsedThisBattle||state.over||state.cutinPlaying) return;
     const t=e.touches[0]; startX=t.clientX; startY=t.clientY; tracking=true;
   },{passive:true});
+  /* ⚠ non-passive：一偵測到「明顯水平意圖」就 preventDefault，宣告本手勢由頁面接管。
+     內嵌瀏覽器（巴哈 app、LINE、FB 等 WebView）的左右滑切頁/返回是原生手勢，
+     只有在手勢初期就 preventDefault 才會讓原生 recognizer 讓位——等滑到
+     THRESH 才擋已經太遲（宿主早就開始換頁動畫）。 */
   zone.addEventListener('touchmove',e=>{
     if(!tracking) return;
     const t=e.touches[0];
     const dx=t.clientX-startX, dy=t.clientY-startY;
+    if(Math.abs(dx)>8 && Math.abs(dx)>Math.abs(dy) && e.cancelable) e.preventDefault();
     if(Math.abs(dx)>THRESH && Math.abs(dx)>Math.abs(dy)*1.5){   // 水平滑動為主（避免和捲動混淆）
       tracking=false;
       saint.activateSaint(dx>0?'right':'left');
     }
-  },{passive:true});
+  },{passive:false});
   zone.addEventListener('touchend',()=>{tracking=false;});
   // 桌機滑鼠拖曳也支援（方便測試）
   let mDown=false;

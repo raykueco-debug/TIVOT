@@ -25,8 +25,10 @@
   /* 全域禁圖片拖拉：桌機滑鼠在圖上按住拖動會觸發原生 drag、吃掉 pointermove，
      聖徒化左右滑/生命歸還上滑等手勢會斷（Firefox 另靠 main.js 的 dragstart 攔截） */
   img{-webkit-user-drag:none;user-drag:none;}
+  /* overscroll-behavior:none＝斷開 overscroll 鏈結：部分瀏覽器/內嵌 WebView 以水平
+     overscroll 觸發上下頁導航，本遊戲全域不捲動故一律關閉 */
   html,body{margin:0;padding:0;width:auto;height:auto;background:var(--bg);
-    overflow:hidden;position:fixed;top:0;left:0;right:0;bottom:0;
+    overflow:hidden;overscroll-behavior:none;position:fixed;top:0;left:0;right:0;bottom:0;
     font-family:"Iowan Old Style","Palatino Linotype",Georgia,"Songti TC",serif;color:var(--ink);}
   /* 多語字體適配：lang 由 i18n.applyToDom 依語言寫入 <html>。日文改優先日文明朝
      （假名/和製漢字字形與字寬正確，避免以中文宋體代打造成版面跑位） */
@@ -148,8 +150,11 @@
     transition:filter .18s ease-out;}
 
   /* ===== 上半：敵人（固定 50%） ===== */
+  /* touch-action:none＝本區觸控全由 JS 接管（聖徒化左右滑）：內嵌瀏覽器（巴哈 app 等
+     WebView）的左右滑切頁/返回屬原生手勢，需本宣告＋touchmove preventDefault 才讓位。
+     盤面與紅點的點擊不受影響（touch-action 只管平移/縮放預設行為）。 */
   #top{height:50%;flex:none;position:relative;overflow:hidden;
-    border-bottom:2px solid var(--gold-dim);background:#000;}
+    border-bottom:2px solid var(--gold-dim);background:#000;touch-action:none;}
   #enemyImg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
     object-position:center top;transition:transform .06s;}
   #enemyImg.hit{transform:scale(1.015);}
