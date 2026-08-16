@@ -74,7 +74,7 @@ export function setup(){
     capEnemyHp: tutorialCapEnemyHp,
     respawnThreat: defense.startCharge,   // 反擊教學：太早格擋 → 罵完重放一次反擊圈
     fillEnergy: ()=>addEnergy(100),       // 削血保底：直接填滿破防值（走滿值引導路徑）
-    restartBattle: startGame,             // 教學陣亡：「重來！」收段後整場重開
+    segmentRestart: tutorialSegmentRestart, // 教學陣亡：「重來！」該段重來（滿血重建本盤，不重播已完成段落）
     goHome,   // 跳過鈕：中止教學戰回主選單
   });
   // 武器：反擊演算所需（enemyDamage/floatDmg）+ 雙槍破防窗口所需（cut-in/敵計時/盤面/破防值歸零）。
@@ -896,6 +896,17 @@ function tutorialStrike(){
       enemyAttack(dmg, h.kind);
     }, i*gap);
   });
+}
+// 教學陣亡「重來」＝該段重來：滿血、即死防禦歸還、清雙槍/威脅狀態、重建當前盤面。
+//   教學步驟旗標不動（已看過的對話不重播）；敵血維持現值（教學夾底 1 不會被誤殺）。
+function tutorialSegmentRestart(){
+  state.playerHp = state.playerMax;
+  state.deathGuardUsed = false;          // 每次重試都還原即死防禦（劇情殺腳本依賴它保命）
+  if(state.dualWield) weapon.endDual();  // 死在雙槍窗口 → 收窗（避免殘留旗標/盤面樣式）
+  defense.resetEnemyTimers();            // 清場上紅點與大絕排程（loadBoard 會重排開場保證）
+  clearAtkBuff();
+  updateBars();
+  loadBoard(state.boardIndex);           // 重建當前盤（interval/碼表/開場大絕一併重置）
 }
 // 敵殘血封頂：聖徒化收尾後把敵血壓到 finishEnemyHp 以下，保證玩家「本盤」就能殺進
 //   overkill 結束教學戰；跳過教學時也用它把覆寫的高血量收回該敵 config 值。

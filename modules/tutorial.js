@@ -96,7 +96,7 @@ export function onThreatResolved(grade){
   fire('defended');
 }
 // combat 致死鏈呼叫（即死防禦已用盡/不可用時）：教學戰不設戰敗——
-//   監察官「服了你了。重來！」收段後整場教學重開（restartBattle）。回傳 true＝已接手。
+//   監察官「服了你了。重來！」收段後該段重來（segmentRestart）。回傳 true＝已接手。
 let deadHandled = false;
 export function onPlayerDead(){
   if(!state.tutorialRun) return false;
@@ -261,12 +261,11 @@ function openScript(key, opts){
 // 段落收掉後的腳本接續（closeDialog 於 resume 時呼叫；skip/abort 走 silent 不觸發）
 function onStepClosed(id){
   if(id==='tutorialDead'){
-    // 教學陣亡收段：整場教學重開（未 markSeen；requestReplay 保險確保 maybeStart 重進）
-    state.tutorialRun=false;
-    endTutorial();               // tutorialActive=false → startGame 的 maybeStart 可重新啟動
-    replayRequested=true;
+    // 教學陣亡收段：「該段重來」——滿血重建當前盤面，已完成的教學段落不重播
+    //   （教學步驟/旗標不動；combat.tutorialSegmentRestart 負責戰鬥面重置）
     deadHandled=false;
-    if(api.restartBattle) api.restartBattle();
+    api.resumeFromDialog();      // 解除對話暫停（本段走同步收段，未經一般 finish 流程）
+    if(api.segmentRestart) api.segmentRestart();
     return;
   }
   if(id==='earlyRetry'){
