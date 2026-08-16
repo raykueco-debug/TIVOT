@@ -343,7 +343,7 @@ function showLine(){
 function advance(){
   if(!state.tutorialDialog || !cur) return;
   if(gate && !gate.immediate) return;   // 非即時閘門中不推進台詞（即時閘門台詞照常可點）
-  SFX.unlock(); SFX.menuClick();
+  SFX.unlock();   // 對話推進不出按鈕音（只保音訊解鎖）
   if(typeTimer){
     clearInterval(typeTimer); typeTimer=null;
     const line=cur.lines[lineIdx]||{};
