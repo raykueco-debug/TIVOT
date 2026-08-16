@@ -52,6 +52,11 @@ const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a
 const tutAtkDmg = dmg => (state.tutorialRun && GAME_CONFIG.tutorial && GAME_CONFIG.tutorial.enemyAtkDamage!=null)
   ? GAME_CONFIG.tutorial.enemyAtkDamage : dmg;
 
+// 教學劇情殺（tutorialStrike 三連擊）的實際擊數：腳本演出、非玩家失誤 →
+//   結算受擊數扣除（win 內 clamp 0）。逐擊累計而非固定 -3：陣亡該段重來後
+//   若再經歷一次劇情殺，扣除量同步跟上；未演到就死則不誤扣玩家真實受擊。
+let _scriptedHits = 0;
+
 /* ============================================================================
  *  啟動：注入 api 與開機閒置畫面（由 main.js 調度）
  * ========================================================================== */
@@ -735,7 +740,8 @@ function win(){
     perfectCounter: state.counterCount,                        // 完美反擊＝Counter 反擊次數（每次反擊事件 +1）
     counterDamage: state.counterDamage,                        // 反擊累計總傷（結算顯示用）
     overkill: state.runOverkill + state.overkill,              // 整場累計 overkill
-    hitsTaken: state.hitsTaken,
+    // 教學劇情殺三連擊為腳本演出，不算玩家頭上（下限 0）
+    hitsTaken: Math.max(0, state.hitsTaken - _scriptedHits),
   };
   // 勝利 → 先播「驅逐完成」過渡禎；被點掉（done）後才建結算面板並起播結算 BGM。
   playTransition('finish', ()=>{
@@ -771,6 +777,7 @@ export function startGame(){
   state.overkill=0; state.killTime=0; state.transitioning=false;
   state.counterCount=0; state.counterDamage=0; state.perfectCount=0; state.sawExecution=false;
   state.maxCombo=0; state.hitsTaken=0; state.correctTaps=0; state.wrongTaps=0; state.runOverkill=0;   // 評價統計歸零
+  _scriptedHits=0;                                     // 教學劇情殺擊數（結算受擊數扣除用）
   state.playerHp=state.playerMax;
   state.N=9; state.cols=3;
   state.runStartTime=Date.now(); resetClock();   // 計時碼表歸零（loadBoard 起算）
@@ -817,6 +824,7 @@ export function startIntruderFight(){
   state.overkill=0; state.killTime=0; state.transitioning=false;
   state.counterCount=0; state.counterDamage=0; state.perfectCount=0; state.sawExecution=false;
   state.maxCombo=0; state.hitsTaken=0; state.correctTaps=0; state.wrongTaps=0; state.runOverkill=0;   // 評價統計歸零
+  _scriptedHits=0;                                     // 教學劇情殺擊數（結算受擊數扣除用）
   state.playerHp=state.playerMax; state.enemyHp=state.enemyMax;
   state.N=9; state.cols=3;
   state.runStartTime=Date.now(); resetClock();   // 新場：計時碼表歸零
@@ -896,6 +904,7 @@ function tutorialStrike(){
         const guardOk = p && p.passive && p.passive.key==='deathGuard' && !state.deathGuardUsed;
         dmg = guardOk ? state.playerHp + 50 : Math.max(1, state.playerHp - 1);
       }
+      _scriptedHits++;            // 本擊為腳本演出（結算受擊數扣除）
       enemyAttack(dmg, h.kind);
     }, i*gap);
   });
