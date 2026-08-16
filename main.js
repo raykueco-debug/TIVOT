@@ -41,8 +41,8 @@ applyToDom();
     if(!el || !el.parentElement) return;
     el.style.fontSize='';                                   // 還原 CSS clamp 基準再量
     // ⚠ #home 為 flex 直欄：溢出的 nowrap 子項會撐成 max-content（scrollWidth==clientWidth）
-    //   → 以父容器寬為準比對，留 8px 呼吸邊
-    const maxW=()=>el.parentElement.clientWidth-8;
+    //   → 以父容器寬為準比對，留 36px 呼吸邊（貼滿整寬觀感差；en 另有字距收窄配套）
+    const maxW=()=>el.parentElement.clientWidth-36;
     let size=parseFloat(getComputedStyle(el).fontSize)||34;
     let guard=30;                                           // 保險：最多縮 30 級
     while(el.getBoundingClientRect().width>maxW() && size>13 && guard-->0){
@@ -273,8 +273,13 @@ function launchBattle(){
   const tr = playTransition('start', combat.startGame, { noTap:true, noAuto:true });
   sakuraBurst({ onDone: ()=> tr.proceed() });
 }
-bindBtn('startBtn', launchBattle);
-// 首頁「教學」鈕：強制下一場進教學（不動已看旗標），其餘流程同出陣
+// 出陣 → 出擊整備頁（搭檔卡/武器卡確認）→「執槍」才真正進戰鬥（櫻花＋過渡禎）
+function openPrep(){ weapon.refreshLoadoutLabels(); const s=$('prepSheet'); if(s) s.classList.add('on'); }
+function closePrep(){ const s=$('prepSheet'); if(s) s.classList.remove('on'); }
+bindBtn('startBtn', openPrep);
+bindBtn('prepBack', closePrep);
+bindBtn('prepGo', ()=>{ closePrep(); launchBattle(); });
+// 首頁「教學」鈕：強制下一場進教學（不動已看旗標），不經整備頁直接出陣
 bindBtn('tutorialBtn', ()=>{ tutorial.requestReplay(); launchBattle(); });
 
 /* ── 語言切換鈕（zh→en→ja 循環）──
@@ -326,9 +331,9 @@ bindBtn('rematchBtn',   inspector.onRematchBtn);// 結算：依 resultMode 分�
 
 // 破防值滿 → 點計量表發動「雙槍破防」獎勵射擊窗口
 bindBtn('energyClasp',    weapon.activateDual);
-// 首頁換裝面板：副武器（全螢幕卡疊，上下滑）/ 搭檔（全螢幕卡疊，左右滑）——關閉鈕各自於 sheet 內綁定
-bindBtn('pickWeaponBtn',  ()=>weapon.openPickSheet('weapon'));
-bindBtn('pickPartnerBtn', ()=>weapon.openPickSheet('partner'));
+// 出擊整備頁的換裝入口：副武器（全螢幕卡疊，上下滑）/ 搭檔（全螢幕卡疊，左右滑）——關閉鈕各自於 sheet 內綁定
+bindBtn('prepWeaponCard',  ()=>weapon.openPickSheet('weapon'));
+bindBtn('prepPartnerCard', ()=>weapon.openPickSheet('partner'));
 // Credit：BGM 來源
 bindBtn('creditBtn',  ()=>{ const s=$('creditSheet'); if(s) s.classList.add('on'); });
 bindBtn('creditClose',()=>{ const s=$('creditSheet'); if(s) s.classList.remove('on'); });

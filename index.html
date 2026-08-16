@@ -187,11 +187,7 @@
     <div class="title">聖約第四騎士團</div>
     <div class="saint-install"><span class="si-rule"></span><span class="si-text">SAINT&nbsp;&nbsp;INSTALL</span><span class="si-rule"></span></div>
     <button id="startBtn">出陣</button>
-    <!-- 副武器 / 搭檔 選擇入口（占位：只接 UI，暫不影響戰鬥）-->
-    <div id="homeLoadout">
-      <button class="loadout-btn" id="pickWeaponBtn"><span class="lb-label">副武器</span><span class="lb-value" id="pickWeaponValue">—</span></button>
-      <button class="loadout-btn" id="pickPartnerBtn"><span class="lb-label">搭　檔</span><span class="lb-value" id="pickPartnerValue">—</span></button>
-    </div>
+    <!-- 副武器/搭檔選單已移出首頁 → 出陣後的「出擊整備」頁（#prepSheet） -->
     <!-- 底部一排：教學 / Credit / 原作 / 版權宣告 -->
     <div id="homeLinks">
       <!-- 教學：重看教學入口（小鈕與 Credit 同排；按下＝下一場強制進教學，不動已看旗標） -->
@@ -203,6 +199,22 @@
       <span class="home-copyright">© 2026 Eternal Original Sin (E.O.S.) · All Rights Reserved.</span>
       <!-- 版本號不上首頁：連點團徽 5 下的診斷 HUD 內顯示（main.js debugHud） -->
     </div>
+  </div>
+
+  <!-- 出擊整備：出陣 → 本頁（搭檔卡上／武器卡下，點卡開各自的選擇畫面）→ 底部「執槍」才進戰鬥。
+       卡片名稱/圖由 weapon.refreshLoadoutLabels 同步（選定即更新，選擇畫面關閉後本頁仍在下層）。 -->
+  <div id="prepSheet">
+    <button id="prepBack" class="corner-btn">✕</button>
+    <div class="ps-title" id="prepTitle">出擊整備</div>
+    <button class="prep-card" id="prepPartnerCard">
+      <img id="prepPartnerImg" alt="" draggable="false">
+      <div class="prep-strip"><span class="prep-label" id="prepPartnerLabel">搭　檔</span><b id="prepPartnerName"></b><span class="prep-arrow">›</span></div>
+    </button>
+    <button class="prep-card prep-weapon" id="prepWeaponCard">
+      <img id="prepWeaponImg" alt="" draggable="false">
+      <div class="prep-strip"><span class="prep-label" id="prepWeaponLabel">副武器</span><b id="prepWeaponName"></b><span class="prep-arrow">›</span></div>
+    </button>
+    <button id="prepGo">執　槍</button>
   </div>
 
   <!-- 過渡禎：開始/結束的淡入淡出全畫面轉場（文字讀 config.transitions）。

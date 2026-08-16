@@ -23,6 +23,8 @@ export const STRINGS = {
     creditBtn:    'Credit',            // [EN-STYLE] 可不譯
     originalBtn:  '原作',
     statsBtn:     '後臺',              // 管理員限定按鈕，一般玩家看不到
+    prepTitle:    '出擊整備',          // 出陣後的整備頁標題
+    prepGo:       '執　槍',            // 整備頁底部大鈕（規格同結算「再度執槍」）
   },
 
   /* ═══ 2. 載入畫面 ═══ */

@@ -175,9 +175,13 @@ export function endDual(){
 export function refreshLoadoutLabels(){
   const w=WEAPONS[state.equippedWeapon];
   const p=GAME_CONFIG.partners[state.pickedPartner];
-  const wv=$('pickWeaponValue'), pv=$('pickPartnerValue');
-  if(wv) wv.textContent = w ? (w.shortName || w.name) : '—';   // 首頁用綽號（全名過長）
-  if(pv) pv.textContent = p ? p.name : '—';
+  // 出擊整備頁卡片（名稱＋圖）：選定即同步——選擇畫面（z-60）關閉後整備頁（z-55）仍在下層
+  const pn=$('prepPartnerName'), wn=$('prepWeaponName');
+  if(pn) pn.textContent = p ? p.name : '—';
+  if(wn) wn.textContent = w ? (w.shortName || w.name) : '—';   // 綽號（全名過長）
+  const pi=$('prepPartnerImg'), wi=$('prepWeaponImg');
+  if(pi && p){ const src=asset(p.image)||''; if(pi.getAttribute('src')!==src) pi.src=src; }
+  if(wi && w){ const src=asset(w.image)||''; if(wi.getAttribute('src')!==src) wi.src=src; }
 }
 
 // 開啟選擇畫面：kind='weapon'（副武器 → 全螢幕卡疊，上下滑動）| 'partner'（搭檔 → 全螢幕卡疊，左右滑動）。

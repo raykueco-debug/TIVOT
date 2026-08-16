@@ -13,6 +13,8 @@ export const STRINGS = {
     creditBtn:    'Credit',
     originalBtn:  'Original',
     statsBtn:     'Admin',
+    prepTitle:    'Sortie Preparation',
+    prepGo:       'Take Up Arms',
   },
   /* ═══ 2. 載入畫面 ═══ */
   loading: {

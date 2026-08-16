@@ -125,11 +125,14 @@ export function applyToDom(){
   set(q('#home .title'), L.home.title);
   set($('startBtn'),     L.home.start);
   set($('tutorialBtn'),  L.home.tutorialBtn);
-  set(q('#pickWeaponBtn .lb-label'),  L.home.weaponLabel);
-  set(q('#pickPartnerBtn .lb-label'), L.home.partnerLabel);
   set($('creditBtn'),    L.home.creditBtn);
   set($('originalBtn'),  L.home.originalBtn);
   set($('statsBtn'),     L.home.statsBtn);
+  // 出擊整備頁
+  set($('prepTitle'),        L.home.prepTitle);
+  set($('prepGo'),           L.home.prepGo);
+  set($('prepPartnerLabel'), L.home.partnerLabel);
+  set($('prepWeaponLabel'),  L.home.weaponLabel);
   // 戰鬥 UI
   set($('tutSkipBtn'),   L.battle.skipBtn);
   set($('testClearBtn'), L.battle.testClear);

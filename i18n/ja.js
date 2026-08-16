@@ -20,6 +20,8 @@ export const STRINGS = {
     creditBtn:    'Credit',
     originalBtn:  '原作',
     statsBtn:     '管理画面',
+    prepTitle:    '出撃準備',
+    prepGo:       '銃を取る',
   },
 
   /* ═══ 2. 載入畫面 ═══ */
