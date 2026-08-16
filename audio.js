@@ -327,5 +327,10 @@ export const SFX = {
   clear(){},
   ultCharge(){},
   confirm(){},
-  menuClick(){},
+  // 通用按鈕音：main.js 以 setMenuClick 注入檔案（GeneralClick_SE）——所有未指定
+  //   音效的按鈕（bindBtn/選單/對話推進）皆經 menuClick 出聲；未注入前維持無聲。
+  //   （本模組維持葉節點不讀 config，檔案路徑/增益由呼叫端解析注入。）
+  setMenuClick(src, gain){ _menuClickSrc = src || null; _menuClickGain = (gain==null ? 1 : gain); },
+  menuClick(){ if(_menuClickSrc) playSrc(_menuClickSrc, _menuClickGain); },
 };
+let _menuClickSrc = null, _menuClickGain = 1;

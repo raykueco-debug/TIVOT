@@ -324,6 +324,7 @@ function showLine(){
   // 打字機：lineTypeMs 每字；打完亮出「▼」續行提示
   const lineEl=$('tutLine'), bubble=$('tutBubble');
   if(bubble) bubble.classList.remove('done');
+  placeBubble();   // 每句重貼盤面上緣：段落開啟後盤面若重建（聖徒化 25 宮格等）不致錯位
   clearInterval(typeTimer); typeTimer=null;
   const text = line.text || '';
   let i = 0;
@@ -403,8 +404,16 @@ function completeGate(){
   hideGuide();
   SFX.unlock(); SFX.menuClick();
   closeDialog(true, true);   // silent：閘門段落的接續由 g.after 負責，不走 onStepClosed
-  if(g.action) g.action();
-  if(g.after) g.after();
+  // ⚠ 動作須等「轉場/演出」結束才執行：玩家在盤面 RELOADING（900ms）或 cut-in 期間
+  //   完成閘門時，activateSaint/activateDual 會被 transitioning/cutinPlaying 守門「無聲擋掉」
+  //   → 閘門已消耗、教學軟鎖（敵血鎖 1 永遠打不完）。改輪詢至可執行為止。
+  const fire=()=>{
+    if(state.over || !state.tutorialActive) return;
+    if(state.transitioning || state.cutinPlaying){ setTimeout(fire, 120); return; }
+    if(g.action) g.action();
+    if(g.after) g.after();
+  };
+  fire();
 }
 
 /* ---- 引導箭頭（雪鐵龍雙箭羽依次閃滅）＋文字標示 ---- */
@@ -433,9 +442,8 @@ function showGuide(type){
     y = tr.top + tr.height*0.52;
   }
   g.classList.add(dir);
-  // 左緣保底：容器以中心定位（translate -50%），x 太靠左會把文字標示（CLICK！/向右側滑動）
-  // 推出畫面外 → 至少留半個標示寬
-  x = Math.max(x, 60);
+  // 位置不做保底偏移：箭頭必須正對目標（計量表）。CLICK！標示的左緣溢出
+  // 由 CSS 縮字解決（#tutGuide.g-down .tg-label）。
   g.style.left = x+'px';
   g.style.top  = y+'px';
   const lb=g.querySelector('.tg-label'); if(lb) lb.textContent = label;

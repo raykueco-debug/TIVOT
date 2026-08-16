@@ -244,7 +244,7 @@ export function closePartnerSheet(){ $('partnerSheet').classList.remove('on'); }
 
 function psMove(dir){   // dir=+1 下一位 / -1 上一位（循環）
   psIndex = (psIndex + dir + PARTNER_KEYS.length) % PARTNER_KEYS.length;
-  SFX.menuClick();
+  SFX.play(asset('se_pageflip'), sfxGain('se_pageflip'));   // 換卡翻頁音
   swingDeck($('psDeck'), dir);   // 輪轉動畫：整疊往滑動方向擺轉一下
   renderPartnerSheet();
 }

@@ -97,6 +97,8 @@ SFX.setMasterVolume(GAME_CONFIG.tuning.masterVolume != null ? GAME_CONFIG.tuning
 
 // 普攻槍聲：固定用 Pistol_SE_03（不隨機）
 SFX.setShots([asset('se_pistol_03')].filter(Boolean), sfxGain('se_pistol_03'));
+// 通用按鈕音：所有未指定音效的按鈕（bindBtn/選單/對話推進 → SFX.menuClick）＝GeneralClick_SE
+SFX.setMenuClick(asset('se_general_click'), sfxGain('se_general_click'));
 
 /* ── 進場預載（第一段）：掃 ASSETS 載「開場就要」的圖＋音，跑完才揭開選單 ──
  *  第一段內依序讓路：監察官立繪（門面最優先）→ 關鍵音效（SI_01/Start_01）→ 批次段，

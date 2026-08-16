@@ -407,9 +407,10 @@
   #grid.alert .cell{border-color:var(--danger);color:#ff8a8a;}
   #grid.alert{animation:alertPulse .5s infinite alternate;}
   @keyframes alertPulse{from{filter:none}to{filter:drop-shadow(0 0 8px var(--danger))}}
-  /* 暫停對話框開啟中：凍結底下的警戒脈動（動畫 filter 於 iOS 合成快照易生色偏假影；
-     盤面此時本就 grid-blur 隱藏，凍結無視覺損失） */
-  body.dlg-pause #grid.alert, body.dlg-pause #grid.saint.alert{animation:none;filter:none;}
+  /* 暫停對話框開啟中：凍結底下的警戒/聖徒化脈動（動畫 filter 於 iOS 會被抬成獨立合成層，
+     蓋過 z-order 較高的教學對話框＝「盤面壓過對話框」；alert 另有色偏假影問題）。 */
+  body.dlg-pause #grid.alert, body.dlg-pause #grid.saint.alert,
+  body.dlg-pause #grid.saint{animation:none;filter:none;}
   /* 雙槍模式盤面外框 */
   #grid.dualwield .cell{border-color:var(--holy);}
   #grid.dualwield{filter:drop-shadow(0 0 6px var(--holy));}
@@ -1111,4 +1112,6 @@
   #tutGuide.g-up    .tg-chevrons i{transform:rotate(-45deg);}
   #tutGuide .tg-label{margin-top:8px;font-size:13px;letter-spacing:3px;color:var(--gold);
     text-shadow:0 0 8px rgba(212,169,74,.75);animation:tgLabel 1s ease-in-out infinite alternate;}
+  /* 點擊閘（指向左緣破防計量表）：標示縮字，置中定位時左緣不出畫面（箭頭保持正對計量表） */
+  #tutGuide.g-down .tg-label{font-size:10px;letter-spacing:1px;}
   @keyframes tgLabel{from{opacity:.55;}to{opacity:1;}}
