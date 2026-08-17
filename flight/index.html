@@ -136,6 +136,19 @@ const VIEW_F = 0.66;      // 3D 視窗佔畫面高度比例，其餘為面板
       現值：ZFAR 處中央下沉 162 世界單位、地平線邊緣比中央低約 15px。 */
 const PLANET_R = 40000;
 
+/* ── 銀月 ────────────────────────────────────────────────────────
+   銀月大陸的天上永遠掛著一輪銀色滿月，位置固定在上偏西，日夜皆在。
+   這是世界觀不是天文：它不繞行、不盈虧、白天也在，只是被日光蓋過。
+   ⚠ 因此夜晚不該是全黑，而是一片被月光洗過的銀藍 —— 夜間的環境光、
+     天空色、雲的亮度、暗角都要跟著抬起來，否則「有月亮」只是畫面上
+     多一個亮點，地面照樣看不見。 */
+const MOON_AZ  = -Math.PI*0.52;  // 方位：西（略偏西南）
+/* 仰角。⚠ 投影是 y = 地平線 − el×VIEWH×0.62，地平線只在畫面 22% 處，
+   所以 el 0.6 會落到螢幕上方 −81px（看不見）。0.24 剛好停在天空上緣。 */
+const MOON_EL  = 0.24;
+const MOON_R   = 17;             // 視直徑（滿月，比太陽還顯眼）
+const MOON_LIT = 0.34;           // 夜間的月光強度（白天會被日光壓過）
+
 /* ── 峭壁 / 瀑布 ─────────────────────────────────────────────────
    voxel-space 畫的垂直線段本來就是「崖面」，只是原本整條填地表色 →
    看起來像色塊拉絲。高度落差超過門檻就改用岩壁上色（含垂直紋理）。 */
@@ -218,6 +231,11 @@ const rnd=()=>(_s=(_s*1664525+1013904223)&0xffffffff)/0xffffffff;
 function hash(x,y){let n=x*374761393+y*668265263;n=(n^(n>>13))*1274126177;return ((n^(n>>16))&0x7fffffff)/0x7fffffff;}
 const sm=t=>t*t*(3-2*t);
 
+/* 立面的岩層紋理查表。⚠ 原本每個像素呼叫一次 hash()（數次乘法＋位移），
+   改成「每根柱子都有立面」之後那就是整個內圈最熱的一段。查 256 格的表、
+   用欄位種子錯開，視覺上分不出差別，成本從函式呼叫降到一次陣列讀取。 */
+const STRAT=new Float32Array(256);
+
 /* ── 雲海貼圖：週期性雜訊，平鋪無接縫 ─────────────────────────── */
 const CT=256, CTM=CT-1, CPER=4;
 const CLOUDTEX=new Uint32Array(CT*CT);
@@ -237,6 +255,7 @@ function genDetail(){
     DETH[y*DET_TILE+x]=clamp((n-0.5)*2*127,-127,127)|0;
   }
 }
+function genStrat(){ for(let i=0;i<256;i++) STRAT[i]=hash(i*7+13,i*3+5); }
 function genCloudTex(){
   for(let y=0;y<CT;y++) for(let x=0;x<CT;x++){
     const n=pfbm(x/CT*CPER,y/CT*CPER,5,CPER);
@@ -358,7 +377,14 @@ function resize(){
   VIEWH=Math.round(H*VIEW_F);
   cv.width=W;cv.height=H;cv.style.width=W+'px';cv.style.height=H+'px';
   ctx.imageSmoothingEnabled=false;
-  BW=clamp(Math.round(W*0.60),200,340);
+  /* 緩衝寬度佔畫面寬的比例。維持 0.60。
+     ⚠ 抗馬賽克靠的是雙線性取樣，不是解析度 —— 解析度只讓邊緣更銳，
+       成本卻隨面積平方成長。這一版已經為了畫質加了不少 per-sample 的工
+       （高度／顏色／雲海三處雙線性、每根柱子都畫立面），先把解析度的
+       額度讓出來，效能餘裕留給手機。
+     要更銳就調這個值，但**一定要在實機上看 HUD 的 fps**：
+     開發用的瀏覽器分頁一離開前景 rAF 就停，量到的數字不可信。 */
+  BW=clamp(Math.round(W*0.60),200,420);
   BH=Math.round(BW*VIEWH/W);          // 緩衝比例對齊「3D 視窗」而非整個畫面
   bcv=document.createElement('canvas');bcv.width=BW;bcv.height=BH;
   bctx=bcv.getContext('2d');
@@ -471,7 +497,9 @@ function sky(){
 }
 function skyColors(S){
   // VP1 風：天頂淡藍、地平線近乎灰白（霧色＝地平線色，遠景才會洗成同一片）
-  const nightTop=[12,15,30],  nightHz=[58,66,94];
+  // ⚠ 夜色抬高：銀月照著，天不會黑到 [12,15,30]。地平線更要亮，
+  //   因為霧色＝地平線色，壓太暗遠景會整片沉成黑幕、看不出地形輪廓。
+  const nightTop=[30,37,60],  nightHz=[96,105,133];
   const dayTop  =[96,126,164],dayHz  =[214,222,230];
   const duskTop =[58,50,96],  duskHz =[228,176,142];
   const top=[0,0,0],hz=[0,0,0];
@@ -579,18 +607,27 @@ function render(now){
      這裡的方向項刻意做弱（LIGHT_DIR_K），只負責「日月移動的味道」，
      不跟烘焙陰影打架；主要靠色溫變化表現晝夜。 */
   const LIGHT_DIR_K=0.0045;
-  const lx=Math.cos(S.az), ly=Math.sin(S.az);
-  const sunI=clamp(S.el*0.85+0.20,0.05,0.50);
-  const ambI=lerp(0.46,0.72,S.day);
-  const lightR=lerp(lerp(0.60,1.0,S.day),1.20,S.dusk);
-  const lightG=lerp(lerp(0.68,1.0,S.day),0.88,S.dusk);
-  const lightB=lerp(lerp(1.08,1.0,S.day),0.72,S.dusk);
+  /* 光源在日月之間過渡：白天跟太陽走，入夜交給固定在西邊的銀月。
+     ⚠ 方向也要換，不然夜裡的明暗面還停在太陽落下前的位置，
+       月亮明明在西邊、山的受光面卻在東邊。 */
+  const lx=lerp(Math.cos(MOON_AZ),Math.cos(S.az),S.day);
+  const ly=lerp(Math.sin(MOON_AZ),Math.sin(S.az),S.day);
+  const moonI=lerp(MOON_LIT,0.04,S.day);
+  const sunI=clamp(S.el*0.85+0.20,0.05,0.50)+moonI;
+  const ambI=lerp(0.60,0.74,S.day);
+  // 月光是銀色：冷但不藍到發紫，飽和度低於原本的夜色
+  const lightR=lerp(lerp(0.80,1.0,S.day),1.20,S.dusk);
+  const lightG=lerp(lerp(0.86,1.0,S.day),0.88,S.dusk);
+  const lightB=lerp(lerp(1.04,1.0,S.day),0.72,S.dusk);
 
   const sinp=Math.sin(cam.angle), cosp=Math.cos(cam.angle);
   const FOGS=ZFAR*FOG_START;
   const fr=SC.hz[0], fg=SC.hz[1], fb=SC.hz[2];
-  const cloudScroll=(now*0.006)|0;
-  const cloudLit=lerp(0.62,1.0,S.day);
+  /* ⚠ 不取整。原本 (now*0.006)|0 每 167ms 才跳一個地圖像素（＝20 世界單位），
+     位移是整數台階 → 看起來就是 6fps 的抽動，跟畫面的 60fps 無關。
+     速度維持不變，只是改成連續值，再配合下方的雙線性取樣才會順。 */
+  const cloudScroll=now*0.006;
+  const cloudLit=lerp(0.80,1.0,S.day);   // 銀月照著，夜裡的雲不該是灰的
 
   let z=1.0, dz=0.75;
   while(z<ZFAR){
@@ -609,10 +646,21 @@ function render(now){
       const mi=outside?0:yi*MAPW+xi;
       const th=outside?0:HGT[mi];
       if(outside||th<=CLOUD_H){
-        const ci=(((yi+cloudScroll)&CTM)*CT)+((xi+cloudScroll)&CTM);
-        hh=CLOUD_H+CLOUDH[ci];
-        const c=CLOUDTEX[ci];
-        r=(c&255)*cloudLit; g=((c>>8)&255)*cloudLit; b=((c>>16)&255)*cloudLit;
+        /* 雲海：連續位移 + 雙線性取樣。位移與取樣都不再有整數台階，
+           流動才會順（原本兩者都是整數，雲每 167ms 才動一格）。
+           ⚠ 先加 4096（CT 的倍數）確保為正：負數的 |0 是往零截斷，
+             小數部分會變成負的，內插權重就全錯了。 */
+        const cfx=mfx+cloudScroll+4096, cfy=mfy+cloudScroll+4096;
+        const cx0=cfx|0, cy0=cfy|0, cu=cfx-cx0, cv=cfy-cy0;
+        const rw0=(cy0&CTM)*CT, rw1=((cy0+1)&CTM)*CT;
+        const cA=cx0&CTM, cB=(cx0+1)&CTM;
+        const j00=rw0+cA, j10=rw0+cB, j01=rw1+cA, j11=rw1+cB;
+        const w00=(1-cu)*(1-cv), w10=cu*(1-cv), w01=(1-cu)*cv, w11=cu*cv;
+        hh=CLOUD_H+(CLOUDH[j00]*w00+CLOUDH[j10]*w10+CLOUDH[j01]*w01+CLOUDH[j11]*w11);
+        const q00=CLOUDTEX[j00], q10=CLOUDTEX[j10], q01=CLOUDTEX[j01], q11=CLOUDTEX[j11];
+        r=((q00&255)*w00+(q10&255)*w10+(q01&255)*w01+(q11&255)*w11)*cloudLit;
+        g=(((q00>>8)&255)*w00+((q10>>8)&255)*w10+((q01>>8)&255)*w01+((q11>>8)&255)*w11)*cloudLit;
+        b=(((q00>>16)&255)*w00+((q10>>16)&255)*w10+((q01>>16)&255)*w01+((q11>>16)&255)*w11)*cloudLit;
       }else{
         /* 雙線性取樣高度。⚠ 近景一個地圖像素橫跨約 33 個緩衝像素
            （MAP_SCALE 20 之後更明顯），最近鄰會把地表切成 20 世界單位寬的
@@ -622,19 +670,31 @@ function render(now){
         const x1=xi<MAPW-1?xi+1:xi, y1=yi<MAPH-1?yi+1:yi;
         const i10=yi*MAPW+x1, i01=y1*MAPW+xi, i11=y1*MAPW+x1;
         const h10=HGT[i10], h01=HGT[i01], h11=HGT[i11];
+        let cr,cg,cb;
         if(h10>CLOUD_H && h01>CLOUD_H && h11>CLOUD_H){
           const tx=mfx-xi, ty=mfy-yi;
           const a0=th+(h10-th)*tx, a1=h01+(h11-h01)*tx;
           hh=a0+(a1-a0)*ty;
-        }else hh=th;
+          /* 顏色也要內插。⚠ 只做高度不做顏色的話，地形是平順的但貼圖仍是
+             20 世界單位一格的色塊 —— 那正是「馬賽克太重」的來源，
+             而且形狀變平順之後色塊反而更顯眼。 */
+          const c00=COL[mi], c10=COL[i10], c01=COL[i01], c11=COL[i11];
+          const w00=(1-tx)*(1-ty), w10=tx*(1-ty), w01=(1-tx)*ty, w11=tx*ty;
+          cr=(c00&255)*w00+(c10&255)*w10+(c01&255)*w01+(c11&255)*w11;
+          cg=((c00>>8)&255)*w00+((c10>>8)&255)*w10+((c01>>8)&255)*w01+((c11>>8)&255)*w11;
+          cb=((c00>>16)&255)*w00+((c10>>16)&255)*w10+((c01>>16)&255)*w01+((c11>>16)&255)*w11;
+        }else{
+          hh=th;
+          const c=COL[mi];
+          cr=c&255; cg=(c>>8)&255; cb=(c>>16)&255;
+        }
         // 高頻細節：在世界座標上取樣，補回被放大糊掉的近景起伏
         const dt=DETH[(((ply|0)&DTM)*DET_TILE)+((plx|0)&DTM)];
         hh+=dt*(DET_AMP/127);
         isRiver=RIV[mi];
-        const c=COL[mi];
         const nl=clamp(0.62+(SLX[mi]*lx+SLY[mi]*ly)*LIGHT_DIR_K,0,1.5);
         const sh=(ambI+sunI*nl)*GRADE_EXPO;
-        r=(c&255)*sh*lightR; g=((c>>8)&255)*sh*lightG; b=((c>>16)&255)*sh*lightB;
+        r=cr*sh*lightR; g=cg*sh*lightG; b=cb*sh*lightB;
         // VP1 分級：往亮度收斂＝去飽和（在光照之後、霧之前，霧色才不會被連帶洗掉）
         const lum=r*0.299+g*0.587+b*0.114;
         r=lum+(r-lum)*GRADE_SAT; g=lum+(g-lum)*GRADE_SAT; b=lum+(b-lum)*GRADE_SAT;
@@ -643,20 +703,36 @@ function render(now){
       let y=(((cam.alt-hh)*invz + z*curvK[i])*scaleH+horizon)|0;
       if(y<ybuf[i]){
         if(y<0) y=0;
+        const sr=r, sg=g, sb=b;        // 未套霧的地表色，立面要從這裡推
         if(fog>0.002){ r=lerp(r,fr,fog); g=lerp(g,fg,fog); b=lerp(b,fb,fog); }
         const top=rgb(r>255?255:r|0,g>255?255:g|0,b>255?255:b|0);
         const bot=ybuf[i];
-        const drop=hh-prevH[i];        // 相對「上一個（更近的）已畫取樣」的高度落差
-        if(drop>CLIFF_DH && bot-y>2){
-          /* 崖面：這條垂直線段其實是側壁，不該整條填地表色。
-             頂端留 2px 地表，其餘走岩壁色 + 垂直紋理；河道出海口則畫成瀑布。 */
+        /* ⚠ 每幀 prevH 初始化為 -9999 代表「還沒有上一筆」。不特判的話
+           最近的那一步 drop 會是一萬多，整片畫面下緣被當成巨型崖面畫出來
+           —— 那就是會看到的破圖。 */
+        const first=prevH[i]<-9000;
+        const drop=first?0:hh-prevH[i]; // 相對「上一個（更近的）已畫取樣」的高度落差
+        /* ⚠ 遠處與極短的柱子直接填單色：柱高只有幾個像素、或已經被霧洗到
+           接近地平線色時，立面的紋理與漸暗一個都看不出來，卻要付整段
+           per-pixel 的代價。畫面大部分面積都落在這一類，這道閘門省下的
+           時間比任何其他優化都多。 */
+        if(bot-y>3 && fog<0.86){
+          /* 立面：**所有**垂直線段都走這條路，不再只有大落差才處理。
+             原本落差不到門檻就整條填單一地表色，於是每根柱子都是一道
+             純色豎條 —— 那正是「垂直立面怪怪的」。
+             顏色由該處地表色推導（雪山得到灰白的壁、森林區得到褐綠的壁），
+             加上橫向岩層條紋與往下漸暗（環境光被崖壁自身遮蔽）。
+             落差越大越混入獨立的岩石反照率：小起伏是土坡，大落差才是岩壁。 */
           const cap=y+2;
           for(let yy=y;yy<cap && yy<bot;yy++) bufU32[yy*BW+i]=top;
           const wx=xi, wy=yi;
+          const rocky=clamp((drop-16)/(CLIFF_DH*1.5),0,1);
+          const fall=isRiver && rocky>0.40;   // 河道 + 真的是斷崖 → 瀑布
+          const wamb=ambI+sunI*0.35;          // 崖面朝側，取中間調
           for(let yy=cap;yy<bot;yy++){
             const d=(yy-cap)/Math.max(1,bot-cap);      // 0＝崖頂 1＝沒入雲海
             let cr,cg,cb;
-            if(isRiver){
+            if(fall){
               /* 瀑布：河水落下。色相直接取河道自己的地貌色（COL[mi]），只是
                  被打散成白沫而提亮，往下越散越白。
                  ⚠ 先前寫死 222..255 的純白、且完全不吃日照 —— 夜裡整條瀑布
@@ -675,14 +751,20 @@ function render(now){
               const wl=cr*0.299+cg*0.587+cb*0.114;
               cr=wl+(cr-wl)*GRADE_SAT; cg=wl+(cg-wl)*GRADE_SAT; cb=wl+(cb-wl)*GRADE_SAT;
             }else{
-              /* 岩壁：用獨立的岩石反照率，不要從地表色推導——
-                 地表在背光側本來就暗，再乘一次會變成純黑的洞。
-                 橫向條紋做岩層，越往下越暗（環境光被崖壁自身遮蔽）。 */
-              const strat=hash(wx*5+wy*3,(yy>>1)*7);
-              const v=(1-d*0.38)*(0.76+strat*0.30);
-              const amb=ambI+sunI*0.35;            // 崖面朝側，取中間調
-              cr=152*v*amb*lightR; cg=138*v*amb*lightG; cb=126*v*amb*lightB;
-              if(yy-cap<2){ cr*=1.35; cg*=1.32; cb*=1.28; }   // 崖唇受光提亮
+              /* 立面色＝地表色 × 岩層條紋 × 往下漸暗。
+                 ⚠ 從地表色推導才會有「顏色變化」——各地的壁自然帶著該地
+                   的色調；用一種寫死的岩石色會讓整座大陸的側面長得一樣。
+                 大落差再往獨立的岩石反照率靠：地表在背光側本來就暗，
+                 純用地表色乘下去會變成黑洞，岩石色把它拉回來。 */
+              const strat=STRAT[(wx*5+wy*3+(yy>>1))&255];
+              const v=(1-d*0.34)*(0.88+strat*0.14);   // 條紋收斂：每根柱子都有立面了，原本的幅度會整片變雜點
+              cr=sr*v; cg=sg*v; cb=sb*v;
+              if(rocky>0.01){
+                cr=lerp(cr,152*v*wamb*lightR,rocky);
+                cg=lerp(cg,138*v*wamb*lightG,rocky);
+                cb=lerp(cb,126*v*wamb*lightB,rocky);
+              }
+              if(yy-cap<2){ cr*=1.22; cg*=1.20; cb*=1.18; }   // 崖唇受光提亮
             }
             if(fog>0.002){ cr=lerp(cr,fr,fog); cg=lerp(cg,fg,fog); cb=lerp(cb,fb,fog); }
             bufU32[yy*BW+i]=rgb(cr>255?255:cr|0,cg>255?255:cg|0,cb>255?255:cb|0);
@@ -732,7 +814,10 @@ function drawSunMoon(S,horizon,sinp,cosp){
     ctx.fillStyle=core; ctx.beginPath(); ctx.arc(x,y,R,0,Math.PI*2); ctx.fill();
   };
   body(S.az,S.el,13, S.dusk>0.35?'#ffd9a0':'#fff6dc', S.dusk>0.35?'rgba(255,168,88,.5)':'rgba(255,238,190,.34)');
-  body(S.az+Math.PI,-S.el,10,'#e8ecf6','rgba(190,206,246,.28)');
+  /* 銀月：位置固定、日夜皆在，不繞行也不盈虧。白天光暈收斂（被日光壓過），
+     夜裡放到最大 —— 它是這片大陸的名字，該是天上最顯眼的東西。 */
+  const mg=lerp(0.52,0.20,S.day);
+  body(MOON_AZ,MOON_EL,MOON_R,'#eef1fa',`rgba(198,214,252,${mg.toFixed(2)})`);
 }
 
 function drawPuffs(S,scaleH,horizon,sinp,cosp){
@@ -748,7 +833,7 @@ function drawPuffs(S,scaleH,horizon,sinp,cosp){
     list.push({p,z,s});
   });
   list.sort((a,b)=>b.z-a.z);
-  const lit=lerp(0.42,1.0,S.day), warm=S.dusk;
+  const lit=lerp(0.72,1.0,S.day), warm=S.dusk;   // 銀月照著，夜裡的雲團不該是灰的
   list.forEach(({p,z,s})=>{
     const x=((s+1)/2*BW)*sxk;
     const y=(((cam.alt-p.h)/z + z*curvAt(s))*scaleH+horizon)*syk;
@@ -1270,7 +1355,7 @@ function drawWake(now,k,spd,S,CW,CH,Z){
 function vignette(S){
   const v=ctx.createRadialGradient(W/2,VIEWH*0.5,VIEWH*0.34,W/2,VIEWH*0.5,VIEWH*1.05);
   v.addColorStop(0,'rgba(0,0,0,0)');
-  v.addColorStop(1,`rgba(0,0,0,${lerp(0.58,0.42,S.day)})`);
+  v.addColorStop(1,`rgba(0,0,0,${lerp(0.44,0.42,S.day)})`);   // 夜裡有銀月，暗角不必再壓
   ctx.fillStyle=v; ctx.fillRect(0,0,W,VIEWH);
 }
 
@@ -1374,7 +1459,7 @@ function loop(now){
 (async()=>{
   const t0=performance.now();
   try{
-    genCloudTex(); genDetail();
+    genCloudTex(); genDetail(); genStrat();
     await loadWorld();
     // 船的素材缺了也照跑（走程序圖層），所以不放進上面的 try 依賴鏈裡擋開場
     await loadShipArt();
