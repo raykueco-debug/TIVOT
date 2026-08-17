@@ -466,8 +466,11 @@ function update(dt,now){
     cam.angle-=step;                                // 角度遞減＝向右偏（見 compass 換算）
     turned=step;
   }
-  // 側傾：由「這一幀轉了多少」推目標傾角，再收斂跟隨 → 入彎慢慢壓、出彎慢慢回
-  const bankTarget=clamp(-turned/(TURN_RATE*16.67)*BANK_MAX, -BANK_MAX, BANK_MAX);
+  /* 偏艏：由「這一幀轉了多少」推目標角度，再收斂跟隨 → 入彎慢慢壓、出彎慢慢回。
+     ⚠ 這裡是**向心**（船艏指進彎道內側）。物理上大船轉彎是艉部甩出去、
+       艏部切進去，本來就該向心；先前寫成離心，玩家看到的是「往左拉、船頭
+       卻朝右」，讀不出自己在轉哪邊。飛空艇更該像飛機一樣壓進彎道。 */
+  const bankTarget=clamp(turned/(TURN_RATE*16.67)*BANK_MAX, -BANK_MAX, BANK_MAX);
   cam.bank+=(bankTarget-cam.bank)*(1-Math.pow(1-BANK_EASE, dt/16.67));
 
   /* 油門：往後拉的幅度＝速度。放開→煞停，不自動巡航。 */
@@ -786,6 +789,10 @@ const SHIP_VISUAL = {
   /* 精靈模式的放大倍率。程序船是粗線條，67px 就夠看；換成 1190px 的精描
      圖之後同樣尺寸會糊成一團，故放大。只影響顯示大小，不動任何手感參數。 */
   artZoom:  1.5,
+  /* 顆粒度：船畫在低解析畫布上再最近鄰放大。
+     1＝完全比照地形的解析度（BW/W，約 0.6），>1 較細、<1 更粗。
+     精描的船直接畫在螢幕解析度會比 voxel 背景銳利一個檔次，像貼上去的。 */
+  pixelScale: 1,
   pivot:    {x:0.50, y:0.60},    // 旋轉中心＝船身長度 60% 處（從艏往艉算）
 
   /* 甩動彈簧 —— 整套效果的核心。目標值由角速度決定，實際值用彈簧追過去，
@@ -883,27 +890,47 @@ function updateShipVisual(dt,now){
   ship.bob=(Math.sin(now*V.bobSpeed)*V.bobAmp+Math.sin(now*V.bobSpeed*0.44)*V.bobAmp*0.6)*idle;
 }
 
-/* ── 繪製 ───────────────────────────────────────────────────────── */
+/* ── 繪製 ─────────────────────────────────────────────────────────
+   船先畫在自己的低解析畫布（shipFB）上，再以最近鄰放大貼回主畫布。
+   ⚠ 這是為了讓船的顆粒與地形一致：地形是 BW×BH 的緩衝放大到 W×VIEWH
+     （約 1.67 倍、image-rendering:pixelated），船若照螢幕解析度直接畫，
+     會比背景銳利一整個檔次 —— 看起來就是「貼上去的另一張圖」。
+   ⚠ shipFB 內部仍開 imageSmoothing（精靈是 5 倍降取樣進來的，關掉會抖成
+     馬賽克）；只有最後那一次放大關掉。顆粒感要來自放大，不是取樣失真。
+   附帶好處：所有圖層的合成都在一張小畫布上完成，帆的 alpha 不會逐層
+   疊在地形上（原本 0.88 的帆會透出背景，現在只透一次）。 */
+let shipFB=null, SC=null;
 function drawShip(now){
   const V=SHIP_VISUAL;
   const k=Math.min(2.9,W/135);
-  const x=W/2, y=VIEWH*0.76+ship.bob;
   const CW=SHIP_ART?SHIP_ART.w:512, CH=SHIP_ART?SHIP_ART.h:512;
   const uk=CW/512;                      // offset 的畫布基準換算
-  const S=(24*k*(SHIP_ART?V.artZoom:1))/(CH*V.artFill);  // 畫布空間 → 螢幕（24＝程序船的高度單位）
+  const Z=SHIP_ART?V.artZoom:1;
+  const S=(24*k*Z)/(CH*V.artFill);      // 畫布空間 → 螢幕（24＝程序船的高度單位）
   const fill=clamp(cam.speed/MAX_SPD,0,1);
 
-  drawWake(now,x,y,k,fill);
+  // 外接半徑：船的對角線 + 側傾轉出來的餘裕；尾流另外往下加長
+  const R=Math.ceil(Math.hypot(CW*S*0.58, CH*S*0.64))+10;
+  const WK=Math.ceil((14+54+10)*Z);
+  const fw=R*2, fh=R*2+WK;                                  // 螢幕像素
+  const pk=clamp(BW/W*V.pixelScale,0.15,1);
+  const bw=Math.max(8,Math.round(fw*pk)), bh=Math.max(8,Math.round(fh*pk));
+  if(!shipFB || shipFB.width!==bw || shipFB.height!==bh){
+    shipFB=document.createElement('canvas'); shipFB.width=bw; shipFB.height=bh;
+    SC=shipFB.getContext('2d');
+  }
+  SC.setTransform(1,0,0,1,0,0);
+  SC.clearRect(0,0,bw,bh);
+  SC.imageSmoothingEnabled=true;
+  SC.scale(bw/fw,bh/fh);                // 之後一律用「螢幕像素」思考
+  SC.translate(R,R);                    // 錨點＝原點
 
-  ctx.save();
-  /* ⚠ resize() 為了地形緩衝把 imageSmoothing 關成 false（要的是硬像素）。
-     精靈是 5 倍降取樣進來的，沿用最近鄰會抖成馬賽克 → 這裡開回來，
-     由 ctx.restore() 還原，不影響地形。 */
-  ctx.imageSmoothingEnabled=true;
-  ctx.translate(x,y);
-  ctx.rotate(cam.bank);                 // 側傾（世界不轉、船不依 heading 自轉）
-  ctx.scale(S,S);
-  ctx.translate(-CW*V.pivot.x,-CH*V.pivot.y);   // 讓 pivot 落在原點
+  drawWake(now,k,fill,S,CW,CH,Z);
+
+  SC.save();
+  SC.rotate(cam.bank);                  // 偏艏（世界不轉、船不依 heading 自轉）
+  SC.scale(S,S);
+  SC.translate(-CW*V.pivot.x,-CH*V.pivot.y);   // 讓 pivot 落在原點
 
   for(const L of V.layers){
     const img=SHIP_ART?SHIP_IMG[L.key]:null;
@@ -911,28 +938,34 @@ function drawShip(now){
     const pv=(SHIP_ART&&L.artPivot)?L.artPivot:L.pivot;
     const px=CW*pv.x, py=CH*pv.y;
 
-    ctx.save();
-    if(L.prop){ drawPropLayer(L,img,px,py,fill,CH); ctx.restore(); continue; }
+    SC.save();
+    if(L.prop){ drawPropLayer(L,img,px,py,fill,CH); SC.restore(); continue; }
 
     const s=ship.sway*(L.delay||0);
-    ctx.translate(px,py);
+    SC.translate(px,py);
     /* ⚠ 斜切取負號：畫布 y 往下為正，帆位於錨點「前方」（靠船艏）的部分 y<0。
        要讓那一端甩得比根部更遠，就得 x += -s*skew*y。用規格上的正號會變成
        艏端往反方向落後，看起來像帆被折斷。 */
-    ctx.transform(
+    SC.transform(
       1-Math.abs(s)*V.luff, 0,
       -s*(L.skew||0)*V.swayScale, L.dim?1+fill*V.sailStretch:1,
       s*(L.offset||0)*uk*V.swayScale, 0
     );
-    ctx.translate(-px,-py);
-    if(L.dim) ctx.globalAlpha=V.sailDim[0]+fill*V.sailDim[1];
+    SC.translate(-px,-py);
+    if(L.dim) SC.globalAlpha=V.sailDim[0]+fill*V.sailDim[1];
 
     if(L.flag)      drawFlagLayer(img,now,fill,CW,CH,px,py);
-    else if(img)    ctx.drawImage(img,0,0);
+    else if(img)    SC.drawImage(img,0,0);
     else if(PROC[L.key]) PROC[L.key](CW,CH,fill);
-    ctx.restore();
+    SC.restore();
   }
-  ctx.restore();
+  SC.restore();
+
+  /* 貼回主畫布。⚠ 目的地座標取整：bob 帶小數的話，整片顆粒每幀都在
+     半格上重新取樣、邊緣糊掉 —— 剛好抵消掉我們要的效果。 */
+  const dx=Math.round(W/2-R), dy=Math.round(VIEWH*0.76+ship.bob-R);
+  ctx.imageSmoothingEnabled=false;
+  ctx.drawImage(shipFB,0,0,bw,bh,dx,dy,fw,fh);
 }
 
 /* 螺旋槳：高速時以較低 alpha 重繪兩次、角度各退一點＝殘影
@@ -943,14 +976,14 @@ function drawPropLayer(L,img,px,py,fill,CH){
   const V=SHIP_VISUAL, R=CH*0.052;
   const ghosts=fill>0.22?2:0;
   for(let g=ghosts;g>=0;g--){
-    ctx.save();
-    ctx.translate(px,py);
-    ctx.rotate((ship.propAngle-g*0.524)*L.prop);
-    ctx.translate(-px,-py);
-    if(g>0) ctx.globalAlpha=V.propBlur*(1-g*0.34)*fill;
-    if(img) ctx.drawImage(img,0,0);
+    SC.save();
+    SC.translate(px,py);
+    SC.rotate((ship.propAngle-g*0.524)*L.prop);
+    SC.translate(-px,-py);
+    if(g>0) SC.globalAlpha=V.propBlur*(1-g*0.34)*fill;
+    if(img) SC.drawImage(img,0,0);
     else    PROC.prop(px,py,R);
-    ctx.restore();
+    SC.restore();
   }
 }
 
@@ -962,7 +995,7 @@ function drawFlagLayer(img,now,fill,CW,CH,px,py){
     for(let i=0;i<strips;i++){
       const amp=Math.pow(i/strips,1.6)*5*wind*(CW/512);
       const dy=Math.sin(now*0.008-i*0.55)*amp;
-      ctx.drawImage(img, i*sw,0,sw,img.height, i*sw,dy,sw,img.height);
+      SC.drawImage(img, i*sw,0,sw,img.height, i*sw,dy,sw,img.height);
     }
     return;
   }
@@ -975,117 +1008,128 @@ function drawFlagLayer(img,now,fill,CW,CH,px,py){
    原本 ctx.scale(k,k) 下的值，所以這些數字可以整包沿用。 */
 function procSpace(CW,CH,fn){
   const V=SHIP_VISUAL;
-  ctx.save();
-  ctx.translate(CW*V.pivot.x, CH*V.pivot.y);
-  ctx.scale(CH*V.artFill/24, CH*V.artFill/24);
+  SC.save();
+  SC.translate(CW*V.pivot.x, CH*V.pivot.y);
+  SC.scale(CH*V.artFill/24, CH*V.artFill/24);
   fn();
-  ctx.restore();
+  SC.restore();
 }
 function procSail(my,mh,sw,sh){
-  ctx.strokeStyle='#2b2419'; ctx.lineWidth=0.7;
-  ctx.beginPath(); ctx.moveTo(0,my); ctx.lineTo(0,my-mh); ctx.stroke();                    // 桅
-  ctx.beginPath(); ctx.moveTo(-sw,my-mh*0.72); ctx.lineTo(sw,my-mh*0.72); ctx.stroke();    // 桁
-  ctx.fillStyle='rgba(226,219,198,.94)';
-  ctx.beginPath();
-  ctx.moveTo(-sw,my-mh*0.72);
-  ctx.quadraticCurveTo(0,my-mh*0.72+sh*0.34, sw,my-mh*0.72);
-  ctx.lineTo(sw*0.86,my-mh*0.72+sh); ctx.quadraticCurveTo(0,my-mh*0.72+sh*1.3,-sw*0.86,my-mh*0.72+sh);
-  ctx.closePath(); ctx.fill();
-  ctx.fillStyle='rgba(120,112,96,.28)';                                                    // 背光側
-  ctx.beginPath();
-  ctx.moveTo(0,my-mh*0.72); ctx.lineTo(sw,my-mh*0.72);
-  ctx.lineTo(sw*0.86,my-mh*0.72+sh); ctx.quadraticCurveTo(0,my-mh*0.72+sh*1.3,0,my-mh*0.72+sh);
-  ctx.closePath(); ctx.fill();
+  SC.strokeStyle='#2b2419'; SC.lineWidth=0.7;
+  SC.beginPath(); SC.moveTo(0,my); SC.lineTo(0,my-mh); SC.stroke();                    // 桅
+  SC.beginPath(); SC.moveTo(-sw,my-mh*0.72); SC.lineTo(sw,my-mh*0.72); SC.stroke();    // 桁
+  SC.fillStyle='rgba(226,219,198,.94)';
+  SC.beginPath();
+  SC.moveTo(-sw,my-mh*0.72);
+  SC.quadraticCurveTo(0,my-mh*0.72+sh*0.34, sw,my-mh*0.72);
+  SC.lineTo(sw*0.86,my-mh*0.72+sh); SC.quadraticCurveTo(0,my-mh*0.72+sh*1.3,-sw*0.86,my-mh*0.72+sh);
+  SC.closePath(); SC.fill();
+  SC.fillStyle='rgba(120,112,96,.28)';                                                 // 背光側
+  SC.beginPath();
+  SC.moveTo(0,my-mh*0.72); SC.lineTo(sw,my-mh*0.72);
+  SC.lineTo(sw*0.86,my-mh*0.72+sh); SC.quadraticCurveTo(0,my-mh*0.72+sh*1.3,0,my-mh*0.72+sh);
+  SC.closePath(); SC.fill();
 }
 const PROC={
   hull(CW,CH){ procSpace(CW,CH,()=>{
     // 船殼：尖艏、方艉，黑色塗裝配金線
-    ctx.fillStyle='#241f1a';
-    ctx.beginPath();
-    ctx.moveTo(0,-15); ctx.quadraticCurveTo(4.6,-8, 5.0,0);
-    ctx.lineTo(4.2,9); ctx.lineTo(-4.2,9); ctx.lineTo(-5.0,0);
-    ctx.quadraticCurveTo(-4.6,-8, 0,-15); ctx.closePath(); ctx.fill();
+    SC.fillStyle='#241f1a';
+    SC.beginPath();
+    SC.moveTo(0,-15); SC.quadraticCurveTo(4.6,-8, 5.0,0);
+    SC.lineTo(4.2,9); SC.lineTo(-4.2,9); SC.lineTo(-5.0,0);
+    SC.quadraticCurveTo(-4.6,-8, 0,-15); SC.closePath(); SC.fill();
     // 甲板
-    ctx.fillStyle='#8a7350';
-    ctx.beginPath();
-    ctx.moveTo(0,-12.4); ctx.quadraticCurveTo(3.5,-7, 3.8,0);
-    ctx.lineTo(3.2,7.4); ctx.lineTo(-3.2,7.4); ctx.lineTo(-3.8,0);
-    ctx.quadraticCurveTo(-3.5,-7, 0,-12.4); ctx.closePath(); ctx.fill();
+    SC.fillStyle='#8a7350';
+    SC.beginPath();
+    SC.moveTo(0,-12.4); SC.quadraticCurveTo(3.5,-7, 3.8,0);
+    SC.lineTo(3.2,7.4); SC.lineTo(-3.2,7.4); SC.lineTo(-3.8,0);
+    SC.quadraticCurveTo(-3.5,-7, 0,-12.4); SC.closePath(); SC.fill();
     // 舷側金線
-    ctx.strokeStyle='rgba(201,162,39,.55)'; ctx.lineWidth=0.5;
-    ctx.beginPath(); ctx.moveTo(-4.4,-1); ctx.lineTo(-3.7,8); ctx.moveTo(4.4,-1); ctx.lineTo(3.7,8); ctx.stroke();
+    SC.strokeStyle='rgba(201,162,39,.55)'; SC.lineWidth=0.5;
+    SC.beginPath(); SC.moveTo(-4.4,-1); SC.lineTo(-3.7,8); SC.moveTo(4.4,-1); SC.lineTo(3.7,8); SC.stroke();
     // 舷外浮翼（飛空艇的支撐翼）
-    ctx.fillStyle='#4a3f33';
-    ctx.beginPath(); ctx.moveTo(-4.6,1); ctx.lineTo(-12.5,4.2); ctx.lineTo(-11.8,5.8); ctx.lineTo(-4.4,4.6); ctx.closePath(); ctx.fill();
-    ctx.beginPath(); ctx.moveTo(4.6,1); ctx.lineTo(12.5,4.2); ctx.lineTo(11.8,5.8); ctx.lineTo(4.4,4.6); ctx.closePath(); ctx.fill();
+    SC.fillStyle='#4a3f33';
+    SC.beginPath(); SC.moveTo(-4.6,1); SC.lineTo(-12.5,4.2); SC.lineTo(-11.8,5.8); SC.lineTo(-4.4,4.6); SC.closePath(); SC.fill();
+    SC.beginPath(); SC.moveTo(4.6,1); SC.lineTo(12.5,4.2); SC.lineTo(11.8,5.8); SC.lineTo(4.4,4.6); SC.closePath(); SC.fill();
     // 煙囪（主桅與後桅之間）
-    ctx.fillStyle='#1c1814'; ctx.fillRect(-1.05,2.0,2.1,3.4);
-    ctx.fillStyle='#3a3128'; ctx.fillRect(-1.05,2.0,2.1,0.8);
+    SC.fillStyle='#1c1814'; SC.fillRect(-1.05,2.0,2.1,3.4);
+    SC.fillStyle='#3a3128'; SC.fillRect(-1.05,2.0,2.1,0.8);
     // 艉燈
-    ctx.fillStyle='rgba(255,206,120,.9)';
-    ctx.beginPath(); ctx.arc(0,8.2,0.75,0,Math.PI*2); ctx.fill();
+    SC.fillStyle='rgba(255,206,120,.9)';
+    SC.beginPath(); SC.arc(0,8.2,0.75,0,Math.PI*2); SC.fill();
   }); },
   /* 索具：自各桅頂拉向艏艉的支索。獨立成層才吃得到 delay 0.55 的中段延遲 */
   rigging(CW,CH){ procSpace(CW,CH,()=>{
-    ctx.strokeStyle='rgba(43,36,25,.55)'; ctx.lineWidth=0.28;
-    ctx.beginPath();
-    ctx.moveTo(0,-13.6); ctx.lineTo(0,-8.4);
-    ctx.moveTo(0,-8.5);  ctx.lineTo(-2.6,-2.2); ctx.moveTo(0,-8.5); ctx.lineTo(2.6,-2.2);
-    ctx.moveTo(0,-4.2);  ctx.lineTo(-2.4,3.4);  ctx.moveTo(0,-4.2); ctx.lineTo(2.4,3.4);
-    ctx.moveTo(0,2.0);   ctx.lineTo(-2.0,8.2);  ctx.moveTo(0,2.0);  ctx.lineTo(2.0,8.2);
-    ctx.stroke();
+    SC.strokeStyle='rgba(43,36,25,.55)'; SC.lineWidth=0.28;
+    SC.beginPath();
+    SC.moveTo(0,-13.6); SC.lineTo(0,-8.4);
+    SC.moveTo(0,-8.5);  SC.lineTo(-2.6,-2.2); SC.moveTo(0,-8.5); SC.lineTo(2.6,-2.2);
+    SC.moveTo(0,-4.2);  SC.lineTo(-2.4,3.4);  SC.moveTo(0,-4.2); SC.lineTo(2.4,3.4);
+    SC.moveTo(0,2.0);   SC.lineTo(-2.0,8.2);  SC.moveTo(0,2.0);  SC.lineTo(2.0,8.2);
+    SC.stroke();
   }); },
   sails_fore(CW,CH){ procSpace(CW,CH,()=>procSail(-6.5,6.5,3.4,3.2)); },
   sails_main(CW,CH){ procSpace(CW,CH,()=>procSail( 0.5,9.0,4.6,4.4)); },
   sails_aft (CW,CH){ procSpace(CW,CH,()=>procSail( 6.0,6.0,3.2,3.0)); },
   /* 螺旋槳：四葉黃銅。旋轉已由 drawPropLayer 套好，這裡只畫靜態外形 */
   prop(px,py,R){
-    ctx.fillStyle='#b08d3c';
+    SC.fillStyle='#b08d3c';
     for(let b=0;b<4;b++){
-      ctx.save();
-      ctx.translate(px,py); ctx.rotate(b*Math.PI/2);
-      ctx.beginPath(); ctx.ellipse(0,-R*0.60,R*0.23,R*0.60,0,0,Math.PI*2); ctx.fill();
-      ctx.restore();
+      SC.save();
+      SC.translate(px,py); SC.rotate(b*Math.PI/2);
+      SC.beginPath(); SC.ellipse(0,-R*0.60,R*0.23,R*0.60,0,0,Math.PI*2); SC.fill();
+      SC.restore();
     }
-    ctx.fillStyle='#3a3128';
-    ctx.beginPath(); ctx.arc(px,py,R*0.24,0,Math.PI*2); ctx.fill();
+    SC.fillStyle='#3a3128';
+    SC.beginPath(); SC.arc(px,py,R*0.24,0,Math.PI*2); SC.fill();
   },
   /* 艉旗：三角旗，沿長度套遞增振幅的正弦（越外擺越大） */
   flag(px,py,CH,wind,now){
     const P=CH*SHIP_VISUAL.artFill/24, len=3.2*P, segs=8;
     const off=t=>Math.sin(now*0.008-t*3.4)*Math.pow(t,1.6)*1.9*P*wind;
-    ctx.beginPath();
-    for(let i=0;i<=segs;i++){ const t=i/segs; ctx.lineTo(px+off(t)-0.40*P*(1-t*0.85), py+t*len); }
-    for(let i=segs;i>=0;i--){ const t=i/segs; ctx.lineTo(px+off(t)+0.40*P*(1-t*0.85), py+t*len); }
-    ctx.closePath();
-    ctx.fillStyle='rgba(201,162,39,.82)'; ctx.fill();
-    ctx.strokeStyle='rgba(43,36,25,.5)'; ctx.lineWidth=0.16*P; ctx.stroke();
+    SC.beginPath();
+    for(let i=0;i<=segs;i++){ const t=i/segs; SC.lineTo(px+off(t)-0.40*P*(1-t*0.85), py+t*len); }
+    for(let i=segs;i>=0;i--){ const t=i/segs; SC.lineTo(px+off(t)+0.40*P*(1-t*0.85), py+t*len); }
+    SC.closePath();
+    SC.fillStyle='rgba(201,162,39,.82)'; SC.fill();
+    SC.strokeStyle='rgba(43,36,25,.5)'; SC.lineWidth=0.16*P; SC.stroke();
   }
 };
 
-/* 尾跡：兩束細白霧自船尾劃出（SOA 飛空艇那種凝結尾）。
-   船固定在畫面上、世界在動 → 尾跡等於朝畫面下方拉，
-   側傾時整束往外偏，轉彎才看得出來。長度隨速度。 */
-function drawWake(now,x,y,k,spd){
+/* 尾跡：自兩具螺旋槳噴出的凝結尾（SOA 飛空艇那種）。
+   ⚠ 出口要跟著螺旋槳走：偏艏時艉部連同螺旋槳會甩向彎道外側，出口不跟著
+     移動的話，尾流會從船身中段憑空冒出來，而且轉彎時整束不動＝穿幫。
+     所以起點吃 cam.bank 的旋轉（＝螺旋槳的實際去處），
+     但尾巴本身留在螢幕空間往下拉 —— 那是航跡，不隨船身轉。
+   ⚠ 偏向取 −cam.bank：船艏切進彎道，走過的航跡留在彎道外側（像開車右轉時
+     後照鏡裡的路往左後方去）。與 bank 同向會看起來像整艘船在平移。
+   位置直接讀 layers 裡兩個螺旋槳層的錨點，換素材時不必再對一次。 */
+function drawWake(now,k,spd,S,CW,CH,Z){
   if(spd<=0.02) return;
-  const len=14+spd*54, segs=16;
-  ctx.save(); ctx.translate(x,y); ctx.lineCap='round';
-  for(const side of [-1,1]){
-    const x0=side*4.4*k, y0=9*k;
+  const V=SHIP_VISUAL;
+  const cb=Math.cos(cam.bank), sb=Math.sin(cam.bank);
+  const len=(14+spd*54)*Z, segs=16;
+  SC.save(); SC.lineCap='round';
+  for(const L of V.layers){
+    if(!L.prop) continue;
+    const pv=(SHIP_ART&&L.artPivot)?L.artPivot:L.pivot;
+    const lx=(pv.x-V.pivot.x)*CW*S, ly=(pv.y-V.pivot.y)*CH*S;   // 槳軸相對旋轉中心
+    const x0=lx*cb-ly*sb, y0=lx*sb+ly*cb;                        // 套上偏艏
+    const side=L.prop;
     for(let i=0;i<segs;i++){
       const a0=i/segs, a1=(i+1)/segs;
-      const wob =Math.sin(now*0.004+i*0.55+side)*1.5*a0;     // 尾端輕微擺動＝亂流
-      const wob2=Math.sin(now*0.004+(i+1)*0.55+side)*1.5*a1;
-      ctx.globalAlpha=(1-a0)*(1-a0)*0.5*spd;
-      ctx.strokeStyle='#eef2f8';
-      ctx.lineWidth=(1.9-a0*1.5)*k*0.5;
-      ctx.beginPath();
-      ctx.moveTo(x0+side*a0*5*k+wob +cam.bank*22*a0, y0+a0*len);
-      ctx.lineTo(x0+side*a1*5*k+wob2+cam.bank*22*a1, y0+a1*len);
-      ctx.stroke();
+      const wob =Math.sin(now*0.004+i*0.55+side)*1.5*a0*Z;   // 尾端輕微擺動＝亂流
+      const wob2=Math.sin(now*0.004+(i+1)*0.55+side)*1.5*a1*Z;
+      SC.globalAlpha=(1-a0)*(1-a0)*0.5*spd;
+      SC.strokeStyle='#eef2f8';
+      SC.lineWidth=(1.9-a0*1.5)*k*0.5*Z;
+      SC.beginPath();
+      SC.moveTo(x0+side*a0*5*k*Z+wob -cam.bank*22*a0*Z, y0+a0*len);
+      SC.lineTo(x0+side*a1*5*k*Z+wob2-cam.bank*22*a1*Z, y0+a1*len);
+      SC.stroke();
     }
   }
-  ctx.restore(); ctx.globalAlpha=1;
+  SC.restore(); SC.globalAlpha=1;
 }
 
 function vignette(S){
