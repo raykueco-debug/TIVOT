@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.17-124';
+export const VERSION = 'ver 2026.08.17-125';
 
 export const GAME_CONFIG = {
 
@@ -656,7 +656,10 @@ export const GAME_CONFIG = {
     //     實得約 −17.8 dBFS，比語音/音效低約 2.5 dB。
     //   ⚠ bgm_home 母帶偏小聲（原需 1.16 但 HTMLAudio.volume 上限 1 → 曾封頂），
     //     降 25% 後為 0.75，仍沿用封頂後的相對值 → 比其他曲低約 1.3 dB（要拉平需重母帶 +1.3 dB）。
-    bgmVol: { default:0.375, bgm_home:0.75, bgm_battle:0.40, bgm_boss:0.32, bgm_result:0.45, bgm_lose:0.75 },
+    //   ⚠ 再 ×0.70（全域下調，−3.1 dB）：整排等比降，曲間相對平衡仍不變。
+    //     累計為原始母帶的 0.525 倍。飛行原型的 Sail/Standby 另在
+    //     flight/index.html 的 BGM_VOL 同步套用（0.55 → 0.385）。
+    bgmVol: { default:0.2625, bgm_home:0.525, bgm_battle:0.28, bgm_boss:0.224, bgm_result:0.315, bgm_lose:0.525 },
 
     // 載入畫面教學 Hint 輪播（文案見 loadingHints）
     loadingHintHoldMs:   5000,  // 每句停留 5 秒

@@ -52,7 +52,9 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 SRC  = os.path.join(HERE, "_src", "map_01.png")
 OUT_COL = os.path.join(HERE, "silvermoon_terrain.png")
 OUT_HGT = os.path.join(HERE, "silvermoon_heightmap.png")
-OUT_VIEW= os.path.join(HERE, "map_view.webp")            # 遊戲內地圖畫面用（點開才載）
+# ⚠ 地圖畫面已改成即時烘的 2.5D 浮雕（見 index.html 的 buildRelief），
+#   這張平面圖 runtime 不再讀 → 輸出到 _src 當參考，不佔部署空間。
+OUT_VIEW= os.path.join(HERE, "_src", "map_view.webp")
 OUT_DBG = os.path.join(HERE, "_src", "map_build_debug.png")
 
 # 目標尺寸＝引擎沿用的地圖像素數（PLACES 座標、MAP_SCALE 都以此為準）
@@ -337,6 +339,12 @@ def main():
     col[~land] = np.array([46, 52, 58], np.float32)
 
     Image.fromarray(np.clip(col, 0, 255).astype(np.uint8), "RGB").save(OUT_COL)
+
+    # ⚠ 這裡曾試過自動偵測城鎮圖標（暖色小圓點）來產生聚落座標，失敗：
+    #   這張插畫的平原本身就是暖色高飽和（RGB 約 113,108,68 → r−b=45、
+    #   sat=0.40），跟金色圖標在色彩上分不開，門檻怎麼調都是 400+ 個誤判。
+    #   聚落座標改為手動編表（flight/index.html 的 SETTLEMENTS）——
+    #   總共二十幾處，人工列表比一個永遠會誤判的偵測器可靠。
 
     # ── 8. 遊戲內地圖畫面用的圖 ────────────────────────────────────
     # 直接用插畫（有地名、有圖例），裁到與地形完全同一塊 → 座標換算是直的。
