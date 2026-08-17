@@ -69,6 +69,7 @@ CRUISE_ALT = 700      # 巡航高度：峰頂必須低於此值
 # 所以地形生成端就該少做垂直面，而不是等渲染端補救。
 EDGE_W       = 26     # 大陸邊緣往內收的過渡帶（地圖像素）→ 斜坡取代斷崖
 RIVER_INSET  = 16     # 一般河流的下嵌深度（世界單位）——只是「嵌一點」
+RIVER_FLAT   = 11     # 河道兩側「不長山」的影響半徑（高斯 sigma，地圖像素）
 GORGE_XY     = (940, 740)   # 卡耶爾山谷：唯一保留峽谷的地方（地圖像素）
 GORGE_R      = 260    # 峽谷作用半徑
 
@@ -172,6 +173,16 @@ def main():
     rug = ndi.gaussian_filter(rug, 5)
     lo, hi_ = np.percentile(rug[land], 25), np.percentile(rug[land], 97)
     rn = np.clip((rug - lo) / max(1e-3, hi_ - lo), 0, 1) * land   # 0..1
+
+    # ── 河道即谷底 ──
+    # ⚠ 起伏度是從插畫的紋理推出來的，跟河畫在哪完全無關 → 不處理的話
+    #   河會直接爬上合成出來的山脊。作者把河畫在低處，高度合成必須服從。
+    #   做法是「河的附近不長山」：把河道糊開成一條影響帶，帶內的起伏度
+    #   壓掉。這比事後把河挖下去好——挖下去會在山裡切出峽谷（＝垂直面），
+    #   壓掉則是讓河兩側本來就平。
+    riv_infl = ndi.gaussian_filter(lake.astype(np.float32), RIVER_FLAT)
+    riv_infl = np.clip(riv_infl / max(1e-6, riv_infl.max()) * 3.0, 0, 1)
+    rn = rn * (1.0 - riv_infl * 0.92)
     mount = land & (rn > 0.45)
     snow  = land & (csat < 0.18) & (clum > 150)
 
@@ -203,6 +214,14 @@ def main():
     # 淺嵌：先把遮罩糊開再減，河岸就是斜的而不是一階
     shallow = ndi.gaussian_filter((lake & ~gorge).astype(np.float32), 1.8)
     h -= shallow * RIVER_INSET
+
+    # 保險：即使壓過起伏度，河仍可能落在鄰域的高處（例如兩座山之間的鞍部）。
+    # 強制河面不高於鄰域最低點 —— 河一定在谷底，不會掛在坡上。
+    wet = lake & ~gorge
+    if wet.any():
+        locmin = ndi.minimum_filter(h, size=31)
+        h = np.where(wet, np.minimum(h, locmin + 6.0), h)
+        h = ndi.gaussian_filter(h, 1.2)          # 收邊，免得壓出一圈硬邊
 
     # (e) 大陸邊緣往內收：不做台地斷崖，改成往海岸遞減的斜坡。
     # ⚠ 原本 h[dist<RIM_W] = max(h, RIM_H) 是硬把邊緣墊高 → 整圈海岸線
