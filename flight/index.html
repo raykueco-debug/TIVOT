@@ -62,7 +62,7 @@
 </div>
 <div class="hud" id="compass">北</div>
 <div id="place"><div class="nm" id="pnm"></div><div class="ty" id="pty"></div></div>
-<div id="hint">往後拉＝前進 · 拉越遠越快 · 放開停住</div>
+<div id="hint">左側拉桿＝油門（下＝前進）· 畫面左右拖曳＝轉向 · WASD</div>
 <button id="backBtn">← 返回</button>
 <div id="fps"></div>
 <div id="boot">載 入 銀 月 大 陸…<small id="bootMsg"></small></div>
@@ -367,18 +367,38 @@ const curvAt=s=>(1+s*s)/(2*PLANET_R);
 /* ── 攝影機 ─────────────────────────────────────────────────────── */
 const cam={x:1005*MAP_SCALE,y:760*MAP_SCALE,angle:0,alt:CRUISE_ALT,speed:0,bank:0};
 
-/* 操作向量（螢幕空間，已反向成「行進方向」）：
-     fwd>0＝往前走（手指往後拉）  rgt>0＝往右偏（手指往左拉） */
-let fwd=0, rgt=0, dragging=false, ox=0, oy=0, moved=0;
+/* ══ 操作 ══
+   ▍油門：左側的實體拉桿。中立在正中，往下拉＝前進、往上推＝後退。
+     ⚠ 拉桿是**有記憶**的（放手後停在原位），這是它跟拖曳最大的差別 ——
+       原本油門綁在拖曳上，手一放就掉回零，等於全程得按著才能走，
+       同時還要用同一根手指轉向：那正是「難操控」的來源。
+     拉桿位置＝目標速度，不是加速度：像船的車鐘，推到哪就走多快。
+   ▍轉向：其餘區域維持原本的「拖曳世界」——往左拉＝往右偏。
+     只是不再吃垂直分量（那已經交給拉桿了）。 */
+let rgt=0, dragging=false, ox=0, moved=0;
+let rudder=0;                               // 實際生效的舵量（含鍵盤）——只給面板顯示用
+let throttle=0, leverGrab=false;
+const REV_F=0.35;                           // 後退只有前進速度的三成半（船退得慢）
+const LEVER={x:0,y0:0,y1:0,w:0};            // 由 drawPanel 每幀更新（版面只有它知道）
 const TAP_SLOP=12;                          // 位移小於此值＝點擊而非拖曳
 const stage=document.getElementById('stage');
-stage.addEventListener('pointerdown',e=>{dragging=true;ox=e.clientX;oy=e.clientY;fwd=0;rgt=0;moved=0;});
+const inLever=(px,py)=>px>=LEVER.x-LEVER.w && px<=LEVER.x+LEVER.w &&
+                       py>=LEVER.y0-24 && py<=LEVER.y1+24;
+const setLever=py=>{
+  const t=clamp((py-LEVER.y0)/Math.max(1,LEVER.y1-LEVER.y0),0,1);
+  const v=(t-0.5)*2;                        // −1（頂端）..+1（底端）
+  throttle=Math.abs(v)<0.09?0:v;            // 中立吸附：手指不必找得那麼準
+};
+stage.addEventListener('pointerdown',e=>{
+  if(inLever(e.clientX,e.clientY)){ leverGrab=true; setLever(e.clientY); return; }
+  dragging=true; ox=e.clientX; rgt=0; moved=0;
+});
 stage.addEventListener('pointermove',e=>{
+  if(leverGrab){ setLever(e.clientY); return; }   // 抓住之後就算滑出區域也還在控
   if(!dragging) return;
-  const dx=e.clientX-ox, dy=e.clientY-oy;
-  moved=Math.max(moved,Math.hypot(dx,dy));
-  fwd=clamp( dy/DRAG_FULL,-1,1);             // 往下（往後）拉＝前進
-  rgt=clamp(-dx/DRAG_FULL,-1,1);             // 往左拉＝往右偏
+  const dx=e.clientX-ox;
+  moved=Math.max(moved,Math.abs(dx));
+  rgt=clamp(-dx/DRAG_FULL,-1,1);                  // 往左拉＝往右偏
 });
 const endDrag=e=>{
   // 幾乎沒動＝點擊：命中已展開的名牌就進入該地標
@@ -388,14 +408,24 @@ const endDrag=e=>{
       if(px>=h.x&&px<=h.x+h.w&&py>=h.y&&py<=h.y+h.h){ enterPlace(h.P); break; }
     }
   }
-  dragging=false;fwd=0;rgt=0;
+  dragging=false; leverGrab=false; rgt=0;
 };
 stage.addEventListener('pointerup',endDrag);
-stage.addEventListener('pointercancel',()=>{dragging=false;fwd=0;rgt=0;});
-// 鍵盤走傳統配置（↑推進、←→轉向），不套用拖曳世界的反向邏輯
+stage.addEventListener('pointercancel',()=>{dragging=false;leverGrab=false;rgt=0;});
+/* 鍵盤：WASD（方向鍵同義）。桌機上摸不到拉桿，W/S 就是推拉那根桿子 ——
+   ⚠ 用「持續推移」而不是一按到底：拉桿的手感就在於可以停在半速，
+     鍵盤若一按就滿舵，等於桌機玩到的是另一套操作。 */
 const keys={};
-addEventListener('keydown',e=>keys[e.key]=true);
-addEventListener('keyup',e=>keys[e.key]=false);
+addEventListener('keydown',e=>{ keys[e.key.toLowerCase()]=true; });
+addEventListener('keyup',  e=>{ keys[e.key.toLowerCase()]=false; });
+/* ⚠ 切換視窗／分頁時 keyup 收不到，鍵會卡在 true。
+   舊設計是「按著才會動」，卡鍵放開就停、看得出來；現在拉桿有記憶，
+   一個漏掉的 keyup 會把油門一路推到底並停在那，畫面上看起來像船自己在跑。
+   失焦一律清空按鍵狀態。 */
+const clearKeys=()=>{ for(const k in keys) keys[k]=false; };
+addEventListener('blur',clearKeys);
+document.addEventListener('visibilitychange',()=>{ if(document.hidden) clearKeys(); });
+const KEY_THROTTLE=0.022;                   // 每 60fps 幀的推桿量（滿行程約 0.75 秒）
 
 const clock={minutes:8*60,date:14,dist:0};
 
@@ -449,21 +479,25 @@ function skyColors(S){
 }
 
 function update(dt,now){
-  // 鍵盤：傳統配置，直接餵進同一組操作向量
-  let f=fwd, r=rgt;
-  if(keys.ArrowUp)    f=1;
-  if(keys.ArrowDown)  f=-0.5;
-  if(keys.ArrowLeft)  r=-1;
-  if(keys.ArrowRight) r=1;
-  const held = dragging || keys.ArrowUp || keys.ArrowDown || keys.ArrowLeft || keys.ArrowRight;
+  const f60=dt/16.67;
+  let r=rgt;
+  if(keys.a||keys.arrowleft)  r=-1;
+  if(keys.d||keys.arrowright) r=1;
+  if(keys.w||keys.arrowup)    throttle=clamp(throttle+KEY_THROTTLE*f60,-1,1);
+  if(keys.s||keys.arrowdown)  throttle=clamp(throttle-KEY_THROTTLE*f60,-1,1);
+  rudder=r;
 
-  /* 轉向：先求「想飛的方向」相對目前航向的夾角，再以角速度上限逼近。
-     只有在有前進意圖時才轉向——原地純橫拉不該讓船自己打轉。 */
+  /* 轉向：以角速度上限逼近想飛的方向。
+     ⚠ 門檻由「有前進意圖」改成「真的在動」——油門移到拉桿之後，
+       手指離開畫面船仍在走，這時候當然要轉得動；反過來停著就不該自轉。
+       舵效隨速度遞減：慢速時舵不吃水，這也讓低速微調變得容易。 */
   let turned=0;
-  if(held && f>0.02){
-    const want=Math.atan2(r,f);                     // 目標相對航向（0＝正前）
-    const step=clamp(want, -TURN_RATE*dt, TURN_RATE*dt);
-    cam.angle-=step;                                // 角度遞減＝向右偏（見 compass 換算）
+  const mov=Math.abs(cam.speed)/MAX_SPD;
+  if(Math.abs(r)>0.02 && mov>0.03){
+    const want=Math.atan2(r,1);                     // 目標相對航向（0＝正前）
+    const eff=clamp(mov*2.2,0,1);                   // 舵效
+    const step=clamp(want, -TURN_RATE*dt*eff, TURN_RATE*dt*eff);
+    cam.angle-=step*Math.sign(cam.speed||1);        // 角度遞減＝向右偏（見 compass 換算）
     turned=step;
   }
   /* 偏艏：由「這一幀轉了多少」推目標角度，再收斂跟隨 → 入彎慢慢壓、出彎慢慢回。
@@ -473,20 +507,24 @@ function update(dt,now){
   const bankTarget=clamp(turned/(TURN_RATE*16.67)*BANK_MAX, -BANK_MAX, BANK_MAX);
   cam.bank+=(bankTarget-cam.bank)*(1-Math.pow(1-BANK_EASE, dt/16.67));
 
-  /* 油門：往後拉的幅度＝速度。放開→煞停，不自動巡航。 */
-  //   ⚠ 用「每幀比率 → 依 dt 換算」的指數逼近，不能直接乘 dt：
-  //     直接乘會讓係數遠大於 1，變成一兩幀就到位（放開瞬間急煞，沒有慣性）。
-  const target = held ? clamp(f,0,1)*MAX_SPD : 0;
-  const rate = (target>cam.speed) ? ACCEL : BRAKE;
+  /* 油門：拉桿位置＝目標速度。中立＝不推進，靠慣性滑行到停。
+     ⚠ 用「每幀比率 → 依 dt 換算」的指數逼近，不能直接乘 dt：
+       直接乘會讓係數遠大於 1，變成一兩幀就到位（沒有慣性）。
+     ⚠ 三種情況要用不同的收斂率，否則「上推減速」按下去毫無反應：
+       中立＝惰行（BRAKE，慢慢滑）；同向加速＝ACCEL；
+       反推＝也是 ACCEL —— 那是螺旋槳實際在反轉出力，本來就該比惰行有力。 */
+  const target=(throttle>=0?throttle:throttle*REV_F)*MAX_SPD;
+  const rate=(target===0) ? BRAKE
+           : (target*cam.speed<0 || Math.abs(target)>Math.abs(cam.speed)) ? ACCEL : BRAKE;
   cam.speed += (target-cam.speed)*(1-Math.pow(1-rate, dt/16.67));
-  if(cam.speed<0.004) cam.speed=0;
+  if(Math.abs(cam.speed)<0.004) cam.speed=0;
 
   cam.alt=CRUISE_ALT;
   const fx=-Math.sin(cam.angle), fy=-Math.cos(cam.angle);
   const mv=cam.speed*dt*0.06;
   cam.x+=fx*mv; cam.y+=fy*mv;
-  clock.dist+=mv;
-  clock.minutes+=mv*0.20;
+  clock.dist+=Math.abs(mv);              // 後退也是航行距離，不該倒扣
+  clock.minutes+=Math.abs(mv)*0.20;
   while(clock.minutes>=1440){clock.minutes-=1440;clock.date++;}
   recyclePuffs();
 
@@ -586,12 +624,23 @@ function render(now){
             const d=(yy-cap)/Math.max(1,bot-cap);      // 0＝崖頂 1＝沒入雲海
             let cr,cg,cb;
             if(isRiver){
-              // 瀑布：亮白水柱，向下捲動，底部散成水霧
+              /* 瀑布：河水落下。色相直接取河道自己的地貌色（COL[mi]），只是
+                 被打散成白沫而提亮，往下越散越白。
+                 ⚠ 先前寫死 222..255 的純白、且完全不吃日照 —— 夜裡整條瀑布
+                   還是正午的白，掛在暗掉的崖面上像螢光漆。水的顏色本來就
+                   來自它反射的天光，得跟崖面同一盞燈才對得起來。
+                 sunI 給到 0.75（崖面只有 0.35）：水面朝天，接光比側向的岩壁多，
+                 這樣夜裡是「暗藍的水」而不是「被一起關燈的灰柱」。 */
+              const rc=COL[mi];
               const flow=hash(wx*3, (yy*2 - (now*FALL_SPD|0)) & 511);
-              const v=222+flow*33-d*40;
-              cr=v*0.94; cg=v*0.98; cb=v;
-              const mist=sstep(0.55,1,d);
-              cr=lerp(cr,238,mist); cg=lerp(cg,242,mist); cb=lerp(cb,248,mist);
+              const foam=clamp(0.46+flow*0.26-d*0.14+sstep(0.55,1,d)*0.34,0,1);
+              const wsh=(ambI+sunI*0.75)*GRADE_EXPO;
+              cr=lerp( rc&255,      248,foam)*wsh*lightR;
+              cg=lerp((rc>>8)&255,  250,foam)*wsh*lightG;
+              cb=lerp((rc>>16)&255, 255,foam)*wsh*lightB;
+              // 與河面走同一條分級曲線，兩者才會是同一種水
+              const wl=cr*0.299+cg*0.587+cb*0.114;
+              cr=wl+(cr-wl)*GRADE_SAT; cg=wl+(cg-wl)*GRADE_SAT; cb=wl+(cb-wl)*GRADE_SAT;
             }else{
               /* 岩壁：用獨立的岩石反照率，不要從地表色推導——
                  地表在背光側本來就暗，再乘一次會變成純黑的洞。
@@ -816,6 +865,24 @@ const SHIP_VISUAL = {
   sailStretch: 0.06,       // 滿帆時的縱向伸展
   sailDim:  [0.88, 0.12],  // 帆的不透明度＝base + fill*gain（洩風時稍暗）
 
+  /* ── 風 ──────────────────────────────────────────────────────
+     甩動只在轉向時發生，直行時帆是死的 —— 一艘靠風走的船不該這樣。
+     這裡加一層與操作無關的持續擾動：陣風強度（gust）自己緩慢起伏，
+     各層依錨點的前後位置吃不同相位 → 陣風由艏往艉掃過去。
+     ⚠ 慢帆比滿帆抖得更兇、但漣漪更慢：停船時是鬆垮地飄，
+       滿速時是繃緊了在細顫。這兩種質地的差別才是「風」的讀感，
+       單純加大振幅只會變成帆在抽搐。
+     flutter/ripple/billow 都吃 swayScale —— 同樣是為了在 100px 的顯示
+     尺寸下讀得出來，改 artZoom 時一起連動，不必逐項重調。 */
+  wind: {
+    gain:    1.00,    // 總強度，0＝完全關掉風
+    freq:    0.0021,  // 脈動頻率
+    lag:     6.0,     // 層間相位差（乘上錨點 y）→ 陣風的行進
+    flutter: 6.0,     // 縱向抖動（512 畫布像素）
+    ripple:  0.020,   // 沿帆寬的縱向錯位（skewY；左右舷反向）
+    billow:  0.16,    // 鼓脹／洩風（縱向縮放）
+  },
+
   /* offset／skew 的統一倍率。
      ⚠ 規格的 14/11/8 是照「船在螢幕上約 400px 高」訂的，佔船長約 3.5%；
        我們只有約 100px，同樣的 3.5% 剩不到 2 個像素 —— 實測三態並排完全
@@ -861,7 +928,7 @@ function loadShipArt(){
 }
 
 /* ── 視覺狀態（純表現，不影響飛行物理）──────────────────────────── */
-const ship={angVel:0,sway:0,swayVel:0,propAngle:0,bob:0,_prevHeading:0};
+const ship={angVel:0,sway:0,swayVel:0,propAngle:0,bob:0,gust:0.5,_prevHeading:0};
 function updateShipVisual(dt,now){
   const V=SHIP_VISUAL;
   /* 全程用「60fps 幀」當時間單位，和本檔其他跟隨式參數（ACCEL/BANK_EASE）
@@ -883,6 +950,12 @@ function updateShipVisual(dt,now){
   ship.sway   =clamp(ship.sway+ship.swayVel*f,-V.swayMax,V.swayMax);
 
   ship.propAngle+=(V.propBase+cam.speed*V.propGain)*f;
+
+  /* 陣風：三個不可通約的正弦疊加成 0..1 的緩慢起伏。
+     用 sin 而不是亂數，是因為亂數逐幀跳動會變成雜訊；要的是「一陣一陣」。
+     頻率彼此不成整數倍 → 合成波不會回到同一個形狀，聽不出週期。 */
+  const wt=now*V.wind.freq;
+  ship.gust=clamp(0.5+0.30*Math.sin(wt)+0.14*Math.sin(wt*2.37+1.1)+0.06*Math.sin(wt*5.13+2.7),0,1);
 
   /* 上下飄動：兩個不同週期的正弦疊加，避免規律得像機械擺動。
      停船時也持續（浮空艇本來就浮著），只是幅度小一點。 */
@@ -942,14 +1015,36 @@ function drawShip(now){
     if(L.prop){ drawPropLayer(L,img,px,py,fill,CH); SC.restore(); continue; }
 
     const s=ship.sway*(L.delay||0);
+
+    /* 風：只作用在帆，且**只走縱向**（畫面上下＝船的艏艉向）。
+       ⚠ 橫向抖動會跟轉向甩動搶同一個軸，兩者一疊就分不出哪個是風、
+         哪個是在轉彎；改成縱向之後兩者正交，各自讀得清楚。
+       錯開分兩層：
+         · 層與層：相位吃錨點 y（越靠船艉陣風越晚到）→ 由艏往艉掃過去
+         · 單層之內：skewY 讓縱向位移隨離桅杆的距離增加 → 左右舷反向，
+           像帆的外緣輪流吃到風、根部才跟上 */
+    let sy=L.dim?1+fill*V.sailStretch:1, fy=0, fb=0;
+    if(L.dim && V.wind.gain>0){
+      const Wd=V.wind, taut=fill;
+      /* ⚠ 繃緊時要「更小**也更慢**」。原本振幅隨速度變小、頻率卻變快 ——
+         小振幅＋高頻＝震動，不是風。表風壓上來、帆被壓死不再拍動，
+         剩下的是整片緩慢的呼吸；高頻細顫在 100px 上只會變成雜訊。 */
+      const ph=now*Wd.freq*2.6*(1-0.20*taut) - pv.y*Wd.lag;
+      const fl=(Math.sin(ph)+0.45*Math.sin(ph*2.31+1.7))*Wd.gain*ship.gust;
+      const slack=1-0.72*taut;              // 鬆帆晃得兇、滿帆幾乎不動
+      fy=fl*Wd.flutter*slack;               // 整片上下起伏
+      fb=fl*Wd.ripple *slack;               // 沿帆寬的縱向錯位
+      sy+=(ship.gust-0.5)*Wd.billow*Wd.gain*(0.35+0.65*taut);   // 鼓脹／洩風
+    }
+
     SC.translate(px,py);
     /* ⚠ 斜切取負號：畫布 y 往下為正，帆位於錨點「前方」（靠船艏）的部分 y<0。
        要讓那一端甩得比根部更遠，就得 x += -s*skew*y。用規格上的正號會變成
        艏端往反方向落後，看起來像帆被折斷。 */
     SC.transform(
-      1-Math.abs(s)*V.luff, 0,
-      -s*(L.skew||0)*V.swayScale, L.dim?1+fill*V.sailStretch:1,
-      s*(L.offset||0)*uk*V.swayScale, 0
+      1-Math.abs(s)*V.luff,             fb*V.swayScale,
+      -s*(L.skew||0)*V.swayScale,       sy,
+      s*(L.offset||0)*uk*V.swayScale,   fy*uk*V.swayScale
     );
     SC.translate(-px,-py);
     if(L.dim) SC.globalAlpha=V.sailDim[0]+fill*V.sailDim[1];
@@ -1140,8 +1235,9 @@ function vignette(S){
 }
 
 /* ══ 操作面板（畫面下方 1/3）══
-   左＝羅盤帶　中＝操縱桿與油門　右＝時刻/高度/距離。
-   面板本身也是拖曳區，等於把操作握把放在拇指自然位置。 */
+   左＝油門拉桿　中＝羅盤帶與舵　右＝時刻/高度/距離。
+   ⚠ 拉桿的實際判定範圍（LEVER）在這裡回寫給輸入層 —— 版面只有繪製端知道，
+     讓輸入層自己算一次座標遲早會對不上。 */
 function drawPanel(S){
   const y0=VIEWH, ph=H-VIEWH;
   const g=ctx.createLinearGradient(0,y0,0,H);
@@ -1152,49 +1248,79 @@ function drawPanel(S){
 
   const cy=y0+ph*0.5;
 
-  /* 中央：操縱桿。外圈＝可拉範圍，圓點＝目前拖曳向量（已反向成行進方向） */
-  const R=Math.min(ph*0.34,44), cx=W/2;
-  ctx.strokeStyle='rgba(201,162,39,.28)';
-  ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2); ctx.stroke();
-  ctx.strokeStyle='rgba(201,162,39,.14)';
-  ctx.beginPath(); ctx.moveTo(cx-R,cy); ctx.lineTo(cx+R,cy);
-  ctx.moveTo(cx,cy-R); ctx.lineTo(cx,cy+R); ctx.stroke();
-  const kx=clamp(rgt,-1,1), ky=clamp(fwd,-1,1);
-  ctx.strokeStyle='rgba(201,162,39,.75)'; ctx.lineWidth=2;
-  ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+kx*R*0.86,cy-ky*R*0.86); ctx.stroke();
-  ctx.fillStyle=dragging?'#c9a227':'rgba(201,162,39,.45)';
-  ctx.beginPath(); ctx.arc(cx+kx*R*0.86,cy-ky*R*0.86,4.5,0,Math.PI*2); ctx.fill();
+  /* ── 左：油門拉桿 ────────────────────────────────────────────
+     中立在正中並帶刻痕；往下＝前進、往上＝後退。
+     握把畫成實心塊而不是圓點，才看得出「這是可以抓的東西」。 */
+  const lx=W*0.13, ly0=y0+ph*0.20, ly1=y0+ph*0.84, lh=ly1-ly0;
+  LEVER.x=lx; LEVER.y0=ly0; LEVER.y1=ly1; LEVER.w=W*0.13;
+  ctx.strokeStyle='rgba(201,162,39,.16)'; ctx.lineWidth=11; ctx.lineCap='round';
+  ctx.beginPath(); ctx.moveTo(lx,ly0); ctx.lineTo(lx,ly1); ctx.stroke();
+  ctx.lineCap='butt'; ctx.lineWidth=1;
+  // 刻度：中立粗、其餘細
+  for(let i=-4;i<=4;i++){
+    const yy=cy+ (i/8)*lh, mid=(i===0);
+    ctx.strokeStyle=mid?'rgba(201,162,39,.7)':'rgba(216,205,180,.2)';
+    ctx.beginPath(); ctx.moveTo(lx+(mid?11:8),yy); ctx.lineTo(lx+(mid?17:13),yy); ctx.stroke();
+  }
+  // 中立→目前位置的填充，一眼看出推了多少、往哪推
+  const ky=cy+throttle*lh*0.5;
+  if(Math.abs(throttle)>0.01){
+    ctx.strokeStyle=throttle>0?'rgba(201,162,39,.8)':'rgba(196,120,90,.8)';
+    ctx.lineWidth=5; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(lx,cy); ctx.lineTo(lx,ky); ctx.stroke();
+    ctx.lineCap='butt'; ctx.lineWidth=1;
+  }
+  ctx.fillStyle=leverGrab?'#e6c34a':'#c9a227';
+  ctx.fillRect(lx-13,ky-6,26,12);
+  ctx.fillStyle='rgba(20,16,10,.55)'; ctx.fillRect(lx-13,ky-1,26,2);
+  ctx.font='9px "Noto Serif TC",serif'; ctx.textAlign='center';
+  ctx.fillStyle='rgba(216,205,180,.4)';
+  ctx.fillText('後退',lx,ly0-6); ctx.fillText('前進',lx,ly1+13);
 
-  /* 油門弧：目前速度佔滿速比例 */
-  const spd=clamp(cam.speed/MAX_SPD,0,1);
+  /* ── 中：舵。左右偏轉＝目前的轉向輸入，外環是速度（＝舵效） ──── */
+  const R=Math.min(ph*0.30,40), cx=W*0.53;
+  ctx.strokeStyle='rgba(201,162,39,.28)';
+  ctx.beginPath(); ctx.arc(cx,cy+6,R,0,Math.PI*2); ctx.stroke();
+  ctx.strokeStyle='rgba(201,162,39,.14)';
+  ctx.beginPath(); ctx.moveTo(cx-R,cy+6); ctx.lineTo(cx+R,cy+6);
+  ctx.moveTo(cx,cy+6-R); ctx.lineTo(cx,cy+6+R); ctx.stroke();
+  const kx=clamp(rudder,-1,1);
+  ctx.strokeStyle='rgba(201,162,39,.75)'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(cx,cy+6); ctx.lineTo(cx+kx*R*0.86,cy+6); ctx.stroke();
+  ctx.fillStyle=(dragging||Math.abs(kx)>0.02)?'#c9a227':'rgba(201,162,39,.45)';
+  ctx.beginPath(); ctx.arc(cx+kx*R*0.86,cy+6,4.5,0,Math.PI*2); ctx.fill();
+
+  /* 速度弧 */
+  const spd=clamp(Math.abs(cam.speed)/MAX_SPD,0,1);
   ctx.lineWidth=3; ctx.strokeStyle='rgba(201,162,39,.18)';
-  ctx.beginPath(); ctx.arc(cx,cy,R+9,Math.PI*0.75,Math.PI*2.25); ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx,cy+6,R+9,Math.PI*0.75,Math.PI*2.25); ctx.stroke();
   if(spd>0.001){
-    ctx.strokeStyle='#c9a227';
-    ctx.beginPath(); ctx.arc(cx,cy,R+9,Math.PI*0.75,Math.PI*0.75+Math.PI*1.5*spd); ctx.stroke();
+    ctx.strokeStyle=cam.speed<0?'#c4785a':'#c9a227';
+    ctx.beginPath(); ctx.arc(cx,cy+6,R+9,Math.PI*0.75,Math.PI*0.75+Math.PI*1.5*spd); ctx.stroke();
   }
   ctx.lineWidth=1;
 
-  /* 左：羅盤帶（以航向為中心捲動） */
+  /* 中上：羅盤帶（以航向為中心捲動） */
   const deg=((-cam.angle*180/Math.PI)%360+360)%360;
-  const bw=W*0.26, bx=W*0.045;
+  const bw=W*0.40, bx=cx-bw/2;
+  const ccy=y0+ph*0.17;
   ctx.save();
-  ctx.beginPath(); ctx.rect(bx,cy-16,bw,32); ctx.clip();
+  ctx.beginPath(); ctx.rect(bx,ccy-16,bw,32); ctx.clip();
   ctx.font='10px "Noto Serif TC",serif'; ctx.textAlign='center';
   for(let d=-90;d<=90;d+=15){
     const a=((deg+d)%360+360)%360;
     const px=bx+bw/2+d/90*(bw/2);
     const major=(a%45)<1||(a%45)>44;
     ctx.strokeStyle=major?'rgba(201,162,39,.65)':'rgba(216,205,180,.22)';
-    ctx.beginPath(); ctx.moveTo(px,cy+4); ctx.lineTo(px,cy+(major?-2:1)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(px,ccy+4); ctx.lineTo(px,ccy+(major?-2:1)); ctx.stroke();
     if(major){
       ctx.fillStyle='rgba(216,205,180,.75)';
-      ctx.fillText(['北','東北','東','東南','南','西南','西','西北'][Math.round(a/45)%8],px,cy-6);
+      ctx.fillText(['北','東北','東','東南','南','西南','西','西北'][Math.round(a/45)%8],px,ccy-6);
     }
   }
   ctx.restore();
   ctx.strokeStyle='#c9a227';
-  ctx.beginPath(); ctx.moveTo(bx+bw/2,cy-18); ctx.lineTo(bx+bw/2,cy+8); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(bx+bw/2,ccy-18); ctx.lineTo(bx+bw/2,ccy+8); ctx.stroke();
 
   /* 右：數值 */
   const rx=W*0.955;
