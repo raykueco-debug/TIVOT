@@ -65,8 +65,16 @@ import { TELEMETRY, GAME_CONFIG, VERSION } from './config.js';
 const $ = id => document.getElementById(id);
 $('verLine').textContent = '聖約第四騎士團 · ' + VERSION;
 
+/* 歷史鑰匙遷移：ver -58 以前搭檔鍵名誤用 'freya'（實體就是蕾妮，見 commit 839326f
+   「搭檔鍵名 freya→renee」），芙蕾雅本人是監察官、從來不是搭檔。那批舊事件已寫進
+   events 表無法改，若照原鑰匙顯示，後臺就會多出一個不存在的搭檔「freya」。
+   → 讀取端正規化成現行鑰匙，舊場次併入蕾妮（同一角色，資料不失真）。 */
+const PARTNER_KEY_ALIAS = { freya: 'renee' };
+const P_KEY = k => PARTNER_KEY_ALIAS[k] || k;
+
 // 顯示名對照：partner/weapon 鑰匙 → config 名稱
-const P_NAME = k => (GAME_CONFIG.partners[k] && GAME_CONFIG.partners[k].name) || k || '—';
+const P_NAME = k0 => { const k = P_KEY(k0);
+  return (GAME_CONFIG.partners[k] && GAME_CONFIG.partners[k].name) || k || '—'; };
 const W_NAME = k => (GAME_CONFIG.weapons[k]  && GAME_CONFIG.weapons[k].name)  || k || '—';
 
 const fmtSec = ms => (ms/1000).toFixed(1) + ' 秒';
