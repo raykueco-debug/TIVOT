@@ -62,7 +62,7 @@
 </div>
 <div class="hud" id="compass">北</div>
 <div id="place"><div class="nm" id="pnm"></div><div class="ty" id="pty"></div></div>
-<div id="hint">往後拉＝前進 · 拉越遠越快 · 左右偏＝轉向 · 放開停住</div>
+<div id="hint">往後拉＝前進 · 拉越遠越快 · 左右偏＝轉向 · 往前推＋左右＝原地迴轉</div>
 <button id="backBtn">← 返回</button>
 <div id="fps"></div>
 <div id="boot">載 入 銀 月 大 陸…<small id="bootMsg"></small></div>
@@ -193,6 +193,7 @@ const DRAG_FULL  = 118;   // 拉到滿油門所需的像素距離
 const TURN_RATE  = 0.0011;// 轉向角速度上限（rad/ms，約 63°/秒；越小越鈍重）
 const ACCEL      = 0.038; // 加速跟隨率（每 60fps 幀；越小越像大船，約 0.45 秒到速）
 const BRAKE      = 0.016; // 放開後的滑行衰減（約 1 秒才停，保留慣性）
+const SPIN_EFF   = 0.45;  // 原地迴轉的舵效（滿舵約 28°/秒；航行中滿舵是 63°/秒）
 const BANK_MAX   = 0.34;  // 轉向時的最大側傾（弧度）
 const BANK_EASE  = 0.035; // 側傾跟隨率：小＝入彎慢慢壓、出彎慢慢回正
 
@@ -503,12 +504,17 @@ function update(dt,now){
        配上 STEER_DEAD 的死區，那些晃動才不會變成蛇行。
      ⚠ 門檻用「真的在動」而不是「有前進意圖」：放手後船還在滑行，
        這時仍該轉得動；反過來停著就不該原地打轉。 */
+  /* 原地迴轉：把拖曳「往前推」（f<0）＝主動停住，此時橫向拖曳直接轉船身。
+     ⚠ 單純停著不該自轉（放著也會亂轉就不對了），但「往前推」是明確的
+       「我要停下來調頭」意圖，跟放手滑行是兩回事，所以只認前推。
+       迴轉率壓到 SPIN_EFF —— 靠推進器原地轉的大船本來就比航行中轉得慢。 */
   let turned=0;
   const mov=Math.abs(cam.speed)/MAX_SPD;
-  if(Math.abs(r)>0.015 && mov>0.03){
-    const eff=clamp(mov*2.2,0,1);                   // 舵效：慢速時舵不吃水
+  const spin=held && f<-0.15;
+  const eff=Math.max(spin?SPIN_EFF:0, clamp(mov*2.2,0,1));   // 舵效：慢速時舵不吃水
+  if(Math.abs(r)>0.015 && eff>0.001){
     const step=clamp(r,-1,1)*TURN_RATE*dt*eff;
-    cam.angle-=step*Math.sign(cam.speed||1);        // 角度遞減＝向右偏（見 compass 換算）
+    cam.angle-=step;                                // 角度遞減＝向右偏（見 compass 換算）
     turned=step;
   }
   /* 偏艏：由「這一幀轉了多少」推目標角度，再收斂跟隨 → 入彎慢慢壓、出彎慢慢回。
@@ -780,26 +786,31 @@ function drawPlaces(scaleH,horizon,sinp,cosp){
   list.forEach(o=>{
     const fade=clamp((ZFAR*0.92-o.z)/240,0,1);
     ctx.globalAlpha=fade;
-    const ay=clamp(o.by-30,18,VIEWH-40);           // 箭頭底端（指著地標）
-    const bob=Math.sin(performance.now()*0.004+o.bx)*2.5;
+    /* ⚠ 只有「遠處的箭頭」浮動。名牌一旦展開就整組定住 ——
+       名牌是要讀的字，2.5px 的正弦擺動在 11px 的字上等於一直在晃，
+       而且它同時是點擊熱區，會動的按鈕本來就難按。
+       座標取整：字落在半個像素上會被反鋸齒糊掉，看起來也像在抖。 */
+    const ay=Math.round(clamp(o.by-30,18,VIEWH-40));   // 箭頭底端（指著地標）
+    const bx=Math.round(o.bx);
+    const bob=o.near?0:Math.sin(performance.now()*0.004+o.bx)*2.5;
 
     // 向下箭頭
     ctx.fillStyle= o.near ? '#c9a227' : 'rgba(201,162,39,.62)';
     ctx.beginPath();
-    ctx.moveTo(o.bx, ay+bob);
-    ctx.lineTo(o.bx-6.5, ay-10+bob);
-    ctx.lineTo(o.bx+6.5, ay-10+bob);
+    ctx.moveTo(bx, ay+bob);
+    ctx.lineTo(bx-6.5, ay-10+bob);
+    ctx.lineTo(bx+6.5, ay-10+bob);
     ctx.closePath(); ctx.fill();
     ctx.strokeStyle='rgba(8,7,12,.55)'; ctx.lineWidth=1; ctx.stroke();
 
     // 近距離才展開名牌（＝可點擊）
     if(o.near){
       ctx.font='11px "Noto Serif TC",serif'; ctx.textAlign='center';
-      const tw=ctx.measureText(o.P.name).width;
-      const bx0=o.bx-tw/2-9, by0=ay-32+bob, bwid=tw+18, bhei=18;
+      const tw=Math.round(ctx.measureText(o.P.name).width);
+      const bx0=bx-((tw/2)|0)-9, by0=ay-32, bwid=tw+18, bhei=18;
       ctx.fillStyle='rgba(5,6,12,.8)'; ctx.fillRect(bx0,by0,bwid,bhei);
-      ctx.strokeStyle='#c9a227'; ctx.lineWidth=1; ctx.strokeRect(bx0,by0,bwid,bhei);
-      ctx.fillStyle='#c9a227'; ctx.fillText(o.P.name,o.bx,by0+13);
+      ctx.strokeStyle='#c9a227'; ctx.lineWidth=1; ctx.strokeRect(bx0+0.5,by0+0.5,bwid,bhei);
+      ctx.fillStyle='#c9a227'; ctx.fillText(o.P.name,bx,by0+13);
       // 點擊熱區放大一圈，手指才好按
       hotspots.push({x:bx0-8,y:by0-8,w:bwid+16,h:bhei+22,P:o.P});
     }
