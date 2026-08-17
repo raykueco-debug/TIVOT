@@ -47,10 +47,12 @@ from PIL import Image
 from scipy import ndimage as ndi
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-SRC  = os.path.join(HERE, "map_01.png")
+# _src/ 放 build 用的原始檔與除錯輸出，不會被部署；flight/ 底下只留 runtime 讀的東西
+SRC  = os.path.join(HERE, "_src", "map_01.png")
 OUT_COL = os.path.join(HERE, "silvermoon_terrain.png")
 OUT_HGT = os.path.join(HERE, "silvermoon_heightmap.png")
-OUT_DBG = os.path.join(HERE, "map_build_debug.png")
+OUT_VIEW= os.path.join(HERE, "map_view.webp")            # 遊戲內地圖畫面用（點開才載）
+OUT_DBG = os.path.join(HERE, "_src", "map_build_debug.png")
 
 # 目標尺寸＝引擎沿用的地圖像素數（PLACES 座標、MAP_SCALE 都以此為準）
 TW, TH = 2152, 1200
@@ -60,9 +62,15 @@ CROP = (11, 55, 1522, 990)
 # 與 index.html 同步的高度常數
 PEAK_SCALE = 520      # 灰階 255 → 世界高
 CLOUD_H    = 44       # 雲海高度（世界單位）
-RIM_H      = 145      # 邊緣台地高度
-RIM_W      = 34       # 抬升作用範圍（地圖像素）
 CRUISE_ALT = 700      # 巡航高度：峰頂必須低於此值
+
+# ── 垂直面的預算 ────────────────────────────────────────────────
+# voxel-space 的每一段垂直線都要 per-pixel 畫，而且是破圖最容易發生的地方。
+# 所以地形生成端就該少做垂直面，而不是等渲染端補救。
+EDGE_W       = 26     # 大陸邊緣往內收的過渡帶（地圖像素）→ 斜坡取代斷崖
+RIVER_INSET  = 16     # 一般河流的下嵌深度（世界單位）——只是「嵌一點」
+GORGE_XY     = (940, 740)   # 卡耶爾山谷：唯一保留峽谷的地方（地圖像素）
+GORGE_R      = 260    # 峽谷作用半徑
 
 g = lambda world: world / PEAK_SCALE * 255.0      # 世界高 → 灰階
 
@@ -183,12 +191,30 @@ def main():
     h = (base + ridge + forest * 18.0) * land + detail
     h = ndi.gaussian_filter(h, 1.6)
     h[~land] = 0.0
-    h[lake] = np.minimum(h[lake], CLOUD_H + 26)                  # 湖面壓低但仍高於雲海
 
-    # (d) 邊緣台地：距海岸 RIM_W 內拉到 RIM_H，斷崖才成立
-    rim = land & (dist < RIM_W)
-    h[rim] = np.maximum(h[rim], RIM_H)
-    h[land] = np.maximum(h[land], CLOUD_H + 8)                   # 陸地一律高於雲海
+    # (d) 河谷：只有 GORGE 圈內那條保留峽谷，其餘河流只做淺嵌。
+    # ⚠ 原本每條河都壓到雲海高度 → 每條河的兩岸都是垂直立面，
+    #   而立面正是破圖與 per-pixel 成本的來源。全大陸的河網加起來，
+    #   那是畫面裡數量最多的垂直面，遠多於山崖。
+    gy, gx = np.ogrid[:TH, :TW]
+    gorge = ((gx - GORGE_XY[0]) ** 2 + (gy - GORGE_XY[1]) ** 2) < GORGE_R ** 2
+    deep = lake & gorge
+    h[deep] = np.minimum(h[deep], CLOUD_H + 26)
+    # 淺嵌：先把遮罩糊開再減，河岸就是斜的而不是一階
+    shallow = ndi.gaussian_filter((lake & ~gorge).astype(np.float32), 1.8)
+    h -= shallow * RIVER_INSET
+
+    # (e) 大陸邊緣往內收：不做台地斷崖，改成往海岸遞減的斜坡。
+    # ⚠ 原本 h[dist<RIM_W] = max(h, RIM_H) 是硬把邊緣墊高 → 整圈海岸線
+    #   都是一堵 145 單位的垂直牆，那是全圖最長的一道立面。
+    #   改成在 EDGE_W 的帶寬內平滑收到雲海附近：145 的落差攤在 EDGE_W×
+    #   MAP_SCALE 的水平距離上（約 15°），完全不會產生垂直面。
+    # ⚠ 代價：邊緣瀑布沒有了 —— 瀑布靠的就是那道斷崖。
+    et = np.clip(dist / EDGE_W, 0, 1)
+    et = et * et * (3 - 2 * et)                                  # smoothstep
+    floorh = CLOUD_H + 6.0
+    h = floorh + (h - floorh) * et
+    h[land] = np.maximum(h[land], CLOUD_H + 4)                   # 陸地一律高於雲海
     h[~land] = 0.0
 
     # (e) 峰頂必須低於巡航高度，否則會撞山
@@ -248,6 +274,13 @@ def main():
     col[~land] = np.array([46, 52, 58], np.float32)
 
     Image.fromarray(np.clip(col, 0, 255).astype(np.uint8), "RGB").save(OUT_COL)
+
+    # ── 8. 遊戲內地圖畫面用的圖 ────────────────────────────────────
+    # 直接用插畫（有地名、有圖例），裁到與地形完全同一塊 → 座標換算是直的。
+    # ⚠ 壓成 WebP 且只在玩家點開地圖時才載，不進 flight 的開場載入。
+    view = Image.open(SRC).convert("RGB").crop(CROP).resize((1440, 803), Image.LANCZOS)
+    view.save(OUT_VIEW, "WEBP", quality=80, method=6)
+    print(f"地圖畫面 {OUT_VIEW}  {os.path.getsize(OUT_VIEW)/1024:.0f} KB")
 
     # ── 除錯拼圖 ───────────────────────────────────────────────────
     def tile(mask_or_img, tag):

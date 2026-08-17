@@ -37,10 +37,26 @@
     text-align:center;font-size:10px;letter-spacing:.18em;color:var(--parch);opacity:.28;}
   #fps{position:fixed;right:12px;top:calc(env(safe-area-inset-top) + 54px);
     font-size:9px;color:var(--parch);opacity:.35;}
-  #backBtn{position:fixed;top:calc(env(safe-area-inset-top) + 10px);right:12px;z-index:40;
+  #backBtn,#mapBtn{position:fixed;top:calc(env(safe-area-inset-top) + 10px);z-index:40;
     background:rgba(5,6,12,.72);border:1px solid rgba(201,162,39,.5);color:var(--gold);
     font-family:inherit;font-size:11px;letter-spacing:.14em;padding:5px 12px;cursor:pointer;}
-  #backBtn:active{background:rgba(201,162,39,.16);}
+  #backBtn{right:12px;} #mapBtn{right:78px;}
+  #backBtn:active,#mapBtn:active{background:rgba(201,162,39,.16);}
+
+  /* 地圖畫面：圖是點開才載的（見 openMap），不進開場載入 */
+  #mapView{position:fixed;inset:0;z-index:60;background:rgba(4,5,9,.94);
+    display:none;align-items:center;justify-content:center;flex-direction:column;gap:10px;}
+  #mapView.on{display:flex;}
+  #mapWrap{position:relative;width:96vw;max-width:1100px;}
+  #mapImg{display:block;width:100%;height:auto;border:1px solid rgba(201,162,39,.35);}
+  #mapMe{position:absolute;transform:translate(-50%,-50%);pointer-events:none;}
+  #mapMe .ar{width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;
+    border-bottom:17px solid var(--gold);transform-origin:50% 66%;
+    filter:drop-shadow(0 0 3px rgba(0,0,0,.9));}
+  #mapMe .rg{position:absolute;left:50%;top:50%;width:34px;height:34px;margin:-17px 0 0 -17px;
+    border:1px solid rgba(201,162,39,.55);border-radius:50%;animation:mePulse 2s infinite ease-out;}
+  @keyframes mePulse{0%{transform:scale(.55);opacity:.9}100%{transform:scale(1.5);opacity:0}}
+  #mapCap{color:var(--parch);font-size:10px;letter-spacing:.2em;opacity:.5;}
   #boot{position:fixed;inset:0;display:grid;place-items:center;background:#05060c;z-index:50;
     color:var(--gold);font-size:11px;letter-spacing:.3em;text-align:center;padding:24px;line-height:2;}
   #boot.hide{display:none;}
@@ -63,7 +79,15 @@
 <div class="hud" id="compass">北</div>
 <div id="place"><div class="nm" id="pnm"></div><div class="ty" id="pty"></div></div>
 <div id="hint">往後拉＝前進 · 拉越遠越快 · 左右偏＝轉向 · 往前推＋左右＝原地迴轉</div>
+<button id="mapBtn">地圖</button>
 <button id="backBtn">← 返回</button>
+<div id="mapView">
+  <div id="mapWrap">
+    <img id="mapImg" alt="">
+    <div id="mapMe"><div class="rg"></div><div class="ar"></div></div>
+  </div>
+  <div id="mapCap">點任意處關閉</div>
+</div>
 <div id="fps"></div>
 <div id="boot">載 入 銀 月 大 陸…<small id="bootMsg"></small></div>
 
@@ -463,6 +487,57 @@ const clock={minutes:8*60,date:14,dist:0};
 
 // 返回主頁（原型是獨立頁面，不共用遊戲的場景切換）
 document.getElementById('backBtn').addEventListener('click',()=>{ location.href='../index.html'; });
+
+/* ══ 地圖畫面 ══
+   直接用那張插畫（有地名、有圖例），裁切範圍與地形完全一致 →
+   世界座標換算成圖上位置是直的：地圖像素 ÷ (MAPW,MAPH) 就是百分比。
+   ⚠ 圖是**點開才載**（226KB）。飛行開場已經要讀高度圖與地貌圖，
+     沒有理由讓一張只在暫停時看的圖跟著擋在前面。 */
+const mapView=document.getElementById('mapView'), mapImg=document.getElementById('mapImg');
+const mapMe=document.getElementById('mapMe'), mapArrow=mapMe.querySelector('.ar');
+let mapOpen=false, mapLoaded=false;
+function updateMapMe(){
+  if(!mapOpen || !MAPW) return;
+  mapMe.style.left=(clamp(cam.x/MAP_SCALE/MAPW,0,1)*100)+'%';
+  mapMe.style.top =(clamp(cam.y/MAP_SCALE/MAPH,0,1)*100)+'%';
+  // 圖是正北朝上，箭頭直接套航向（compass 用的是同一條換算）
+  mapArrow.style.transform='rotate('+(((-cam.angle*180/Math.PI)%360+360)%360)+'deg)';
+}
+document.getElementById('mapBtn').addEventListener('click',()=>{
+  if(!mapLoaded){ mapImg.src='map_view.webp'; mapLoaded=true; }
+  mapOpen=true; mapView.classList.add('on'); updateMapMe();
+});
+mapView.addEventListener('click',()=>{ mapOpen=false; mapView.classList.remove('on'); });
+
+/* ══ 航行 BGM ══
+   Sail.mp3 循環播放：最後 FADE_OUT 秒淡出，播完回到頭再淡入。
+   ⚠ 不用 audio.loop —— loop 是無縫接回開頭，接點會有一個突兀的音量跳變
+     （尾巴還在響、開頭直接切進來）。要的是「淡出→淡入」的呼吸感，
+     所以自己管 currentTime 與音量。
+   ⚠ 自動播放會被瀏覽器擋（沒有使用者手勢）。這一頁是從首頁點「試飛」
+     換頁進來的，手勢不會延續 → 先試著播，被擋就掛一次性的
+     pointerdown/keydown 補播；玩家一碰畫面就會響。 */
+const BGM_VOL=0.55, FADE_IN=2.0, FADE_OUT=5.0;
+const bgm=new Audio('Sail.mp3');
+bgm.loop=false; bgm.volume=0; bgm.preload='auto';
+bgm.addEventListener('ended',()=>{ bgm.currentTime=0; bgm.play().catch(()=>{}); });
+function updateBgm(){
+  const d=bgm.duration;
+  if(!d || !isFinite(d)) return;
+  const t=bgm.currentTime;
+  let v=1;
+  if(t<FADE_IN)            v=t/FADE_IN;
+  else if(t>d-FADE_OUT)    v=(d-t)/FADE_OUT;
+  bgm.volume=clamp(v,0,1)*BGM_VOL;
+}
+(function startBgm(){
+  const kick=()=>{ bgm.play().then(()=>{
+    removeEventListener('pointerdown',kick); removeEventListener('keydown',kick);
+  }).catch(()=>{}); };
+  kick();                                   // 先試：有些情境（重整）手勢還在
+  addEventListener('pointerdown',kick);     // 被擋的話，第一次觸碰就補播
+  addEventListener('keydown',kick);
+})();
 
 /* ── 雲團（3D 定位，飛行時錯身而過）───────────────────────────── */
 const PUFFS=[];
@@ -1450,7 +1525,7 @@ function drawPanel(S){
 let last=performance.now(),acc=0,n=0;
 function loop(now){
   const dt=Math.min(40,now-last); last=now;
-  update(dt,now); render(now);
+  update(dt,now); render(now); updateBgm(); updateMapMe();
   acc+=dt;n++;
   if(acc>500){document.getElementById('fps').textContent=Math.round(1000/(acc/n))+' fps '+BW+'×'+BH;acc=0;n=0;}
   requestAnimationFrame(loop);
