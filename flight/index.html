@@ -448,7 +448,7 @@ function skyColors(S){
   return {top,hz};
 }
 
-function update(dt){
+function update(dt,now){
   // 鍵盤：傳統配置，直接餵進同一組操作向量
   let f=fwd, r=rgt;
   if(keys.ArrowUp)    f=1;
@@ -495,6 +495,9 @@ function update(dt){
   document.getElementById('compass').textContent=['北','東北','東','東南','南','西南','西','西北'][Math.round(deg/45)%8];
 
   // 地標名稱已改由 3D 內的名牌呈現（drawPlaces），這裡不再重複彈 DOM 提示
+
+  // 船的視覺狀態（甩帆/螺旋槳/浮動）必須在 cam.angle 定案後才算，否則角速度差一幀
+  updateShipVisual(dt,now);
 }
 
 /* ── 渲染 ───────────────────────────────────────────────────────── */
@@ -748,98 +751,341 @@ function enterPlace(P){
   setTimeout(()=>{ entering=null; pn.classList.remove('show'); },1400);
 }
 
-/* ══ 飛空艇：19 世紀蒸汽帆船（自後上方看）══
-   轉向時整艘船側傾（bank）：轉向角速度 → 傾角，收斂式跟隨所以有滯後感。
-   煙囪拖出的煙也隨側傾偏向外側。 */
-function drawShip(now){
-  const t=now;
+/* ══════════════════════════════════════════════════════════════════════
+   飛空艇：分層精靈（19 世紀蒸汽帆船，正俯視）
+
+   ▍為什麼分層
+   單張圖只能整張斜切，幅度一大船體就跟著歪。拆成「船體／帆／索具／
+   螺旋槳／旗」之後，各組帆可以獨立甩動、而且帶不同的延遲係數：轉向時
+   前帆先甩、後帆跟上，回正時同樣有先後差 —— 那個時間差才是「一艘大船
+   在轉」的讀感來源，不是幅度。
+
+   ▍素材放哪
+   ship/ 之下，全部對齊同一張畫布（512×569）、透明背景、船艏朝上（12 點）：
+     hull.png / sails_fore.png / sails_main.png / sails_aft.png
+     rigging.png / prop_l.png / prop_r.png / flag.png        （後四者可省略）
+   hull 是必要層：載得到才切進精靈模式，其餘缺哪張就跳過哪層。
+   ⚠ 現況是由 split_ship.py 從單張 Ship_FLIGHT.png 自動拆出來的（美術給的是
+     合成圖）。改圖時重跑該腳本即可；它會順便印出重心，就是下面的 artPivot。
+     目前沒有 rigging/flag 兩層 —— 索具已隨各層帆一起切走（桁與側支索本來
+     就該跟帆同動），旗子原圖沒有。
+
+   ▍沒有素材時
+   走 PROC 分支 —— 同一套動畫參數，圖層改由程序繪製（原本那艘小船拆成
+   幾層，另補上螺旋槳與艉旗）。素材抽掉也不會開天窗。
+   ⚠ 兩種模式的圖層錨點不同（程序船比例較扁、桅位不同），所以 layers 同時
+     帶 pivot（程序用）與 artPivot（精靈用）兩組。
+   ══════════════════════════════════════════════════════════════════════ */
+const SHIP_DIR = './ship/';
+
+const SHIP_VISUAL = {
+  /* 船身佔畫布高度的比例。畫布空間 → 螢幕尺寸由它換算，
+     換素材時若船在畫布裡佔比不同，只要動這一個值。
+     現行素材上下都貼齊畫布（頂＝首斜桅尖、底＝艉舵）故為 1。 */
+  artFill:  1.00,
+  /* 精靈模式的放大倍率。程序船是粗線條，67px 就夠看；換成 1190px 的精描
+     圖之後同樣尺寸會糊成一團，故放大。只影響顯示大小，不動任何手感參數。 */
+  artZoom:  1.5,
+  pivot:    {x:0.50, y:0.60},    // 旋轉中心＝船身長度 60% 處（從艏往艉算）
+
+  /* 甩動彈簧 —— 整套效果的核心。目標值由角速度決定，實際值用彈簧追過去，
+     刻意讓它 overshoot：鬆手回正時會過中線一點再擺回來。
+       回彈不夠明顯 → 降 swayDamp（0.80 附近）
+       甩動太黏     → 提 swayStiff
+       幅度不夠     → 提 swayGain                                        */
+  swayGain: 42,      // 角速度（rad／60fps 幀）→ 目標甩動量
+  swayStiff:0.055,
+  swayDamp: 0.86,
+  swayMax:  1.2,
+  luff:     0.12,    // 甩動時的橫向壓縮＝洩風
+
+  propBase: 0.35,    // 怠速轉速（rad／幀）
+  propGain: 2.8,
+  propBlur: 0.42,    // 高速殘影濃度
+
+  bobAmp:   3.0,
+  bobSpeed: 0.0016,
+
+  sailStretch: 0.06,       // 滿帆時的縱向伸展
+  sailDim:  [0.88, 0.12],  // 帆的不透明度＝base + fill*gain（洩風時稍暗）
+
+  /* offset／skew 的統一倍率。
+     ⚠ 規格的 14/11/8 是照「船在螢幕上約 400px 高」訂的，佔船長約 3.5%；
+       我們只有約 100px，同樣的 3.5% 剩不到 2 個像素 —— 實測三態並排完全
+       看不出差別。倍率拉到 3 才讀得出「帆先甩、船體不動」。
+       再往上（實測 5）桁會明顯脫離桅杆，因為桅杆屬 hull 層不跟著動。
+       改 artZoom 時這個值要跟著調：讀感取決於螢幕像素，不是畫布比例。 */
+  swayScale: 3.0,
+
+  /* 陣列順序＝繪製順序（由下往上）。
+     offset／skew 以 512 寬的畫布為基準，實際畫布不是 512 時自動等比換算。
+     ⚠ artPivot 是 split_ship.py 量出的各層重心，不是規格上的估值 ——
+       這張圖是「單桅三段橫帆」而非三根桅杆分列船身，帆的分布比規格假設的
+       更集中在前段，照抄 0.30/0.45/0.62 會讓斜切的支點落在帆外面。 */
+  layers:[
+    {key:'prop_l',     pivot:{x:.38,y:.90},                                    prop:-1, artPivot:{x:.386,y:.906}},
+    {key:'prop_r',     pivot:{x:.62,y:.90},                                    prop: 1, artPivot:{x:.613,y:.906}},
+    {key:'hull',       pivot:{x:.50,y:.60}, delay:0,    offset:0,  skew:0    },   // delay 0 → 不變形，錨點不影響
+    {key:'rigging',    pivot:{x:.50,y:.55}, delay:0.55, offset:5,  skew:0.06 },
+    {key:'sails_aft',  pivot:{x:.50,y:.79}, delay:0.70, offset:8,  skew:0.10, dim:1, artPivot:{x:.50,y:.467}},
+    {key:'sails_main', pivot:{x:.50,y:.62}, delay:0.85, offset:11, skew:0.13, dim:1, artPivot:{x:.50,y:.273}},
+    {key:'sails_fore', pivot:{x:.50,y:.39}, delay:1.00, offset:14, skew:0.16, dim:1, artPivot:{x:.50,y:.130}},
+    {key:'flag',       pivot:{x:.50,y:.84}, delay:1.20, offset:18, skew:0.22, flag:1, artPivot:{x:.50,y:.20}},
+  ]
+};
+
+/* ── 素材載入（缺圖不算失敗，該層跳過即可）─────────────────────────
+   ⚠ Console 會固定出現 rigging.png / flag.png 兩筆 404 —— 那是刻意的：
+     寧可少兩筆雜訊也要保住「把檔案丟進 ship/ 就自動生效」這件事，
+     改成讀 manifest 就得多維護一份清單、還會忘記更新。不是 bug。 */
+const SHIP_IMG={};
+let SHIP_ART=null;                 // {w,h}：hull 載到才有值＝進入精靈模式
+function loadShipArt(){
+  const one=key=>new Promise(res=>{
+    const im=new Image();
+    im.onload =()=>{ SHIP_IMG[key]=im; res(); };
+    im.onerror=()=>res();
+    im.src=SHIP_DIR+key+'.png';
+  });
+  return Promise.all(SHIP_VISUAL.layers.map(L=>one(L.key))).then(()=>{
+    const h=SHIP_IMG.hull;
+    if(h && h.naturalWidth) SHIP_ART={w:h.naturalWidth,h:h.naturalHeight};
+  });
+}
+
+/* ── 視覺狀態（純表現，不影響飛行物理）──────────────────────────── */
+const ship={angVel:0,sway:0,swayVel:0,propAngle:0,bob:0,_prevHeading:0};
+function updateShipVisual(dt,now){
+  const V=SHIP_VISUAL;
+  /* 全程用「60fps 幀」當時間單位，和本檔其他跟隨式參數（ACCEL/BANK_EASE）
+     同一套慣例。⚠ 不能照規格直接乘毫秒 dt —— 剛性 0.055 乘上 16.67 會讓
+     彈簧一幀就飛出去，畫面上是抽搐不是甩動。 */
+  const f=dt/16.67;
+
+  let d=cam.angle-ship._prevHeading;
+  while(d> Math.PI) d-=Math.PI*2;          // ±π 跨越
+  while(d<-Math.PI) d+=Math.PI*2;
+  ship._prevHeading=cam.angle;
+  ship.angVel = f>1e-4 ? d/f : 0;
+
+  /* cam.angle 遞減＝向右偏 → angVel<0 → sway<0 → 帆往畫面左方（＝彎道外側）甩。
+     正負號剛好，不必再反相。滿舵時 angVel≈0.0183，×42≈0.77，離上限還有餘裕。 */
+  const target=clamp(ship.angVel*V.swayGain,-1,1);
+  const force =(target-ship.sway)*V.swayStiff;
+  ship.swayVel=(ship.swayVel+force*f)*Math.pow(V.swayDamp,f);
+  ship.sway   =clamp(ship.sway+ship.swayVel*f,-V.swayMax,V.swayMax);
+
+  ship.propAngle+=(V.propBase+cam.speed*V.propGain)*f;
+
   /* 上下飄動：兩個不同週期的正弦疊加，避免規律得像機械擺動。
      停船時也持續（浮空艇本來就浮著），只是幅度小一點。 */
   const idle=0.55+0.45*clamp(cam.speed/MAX_SPD,0,1);
-  const bob=(Math.sin(t*0.0016)*3.0+Math.sin(t*0.00071)*1.8)*idle;
-  const x=W/2, y=VIEWH*0.76+bob;
+  ship.bob=(Math.sin(now*V.bobSpeed)*V.bobAmp+Math.sin(now*V.bobSpeed*0.44)*V.bobAmp*0.6)*idle;
+}
+
+/* ── 繪製 ───────────────────────────────────────────────────────── */
+function drawShip(now){
+  const V=SHIP_VISUAL;
   const k=Math.min(2.9,W/135);
+  const x=W/2, y=VIEWH*0.76+ship.bob;
+  const CW=SHIP_ART?SHIP_ART.w:512, CH=SHIP_ART?SHIP_ART.h:512;
+  const uk=CW/512;                      // offset 的畫布基準換算
+  const S=(24*k*(SHIP_ART?V.artZoom:1))/(CH*V.artFill);  // 畫布空間 → 螢幕（24＝程序船的高度單位）
+  const fill=clamp(cam.speed/MAX_SPD,0,1);
 
-  /* 尾跡：兩束細白霧自船尾劃出（SOA 飛空艇那種凝結尾）。
-     船固定在畫面上、世界在動 → 尾跡等於朝畫面下方拉，
-     側傾時整束往外偏，轉彎才看得出來。長度隨速度。 */
-  const spd=clamp(cam.speed/MAX_SPD,0,1);
-  if(spd>0.02){
-    const len=14+spd*54, segs=16;
-    ctx.save(); ctx.translate(x,y); ctx.lineCap='round';
-    for(const side of [-1,1]){
-      const x0=side*4.4*k, y0=9*k;
-      for(let i=0;i<segs;i++){
-        const a0=i/segs, a1=(i+1)/segs;
-        const wob=Math.sin(t*0.004+i*0.55+side)*1.5*a0;   // 尾端輕微擺動＝亂流
-        const wob2=Math.sin(t*0.004+(i+1)*0.55+side)*1.5*a1;
-        ctx.globalAlpha=(1-a0)*(1-a0)*0.5*spd;
-        ctx.strokeStyle='#eef2f8';
-        ctx.lineWidth=(1.9-a0*1.5)*k*0.5;
-        ctx.beginPath();
-        ctx.moveTo(x0+side*a0*5*k+wob+cam.bank*22*a0, y0+a0*len);
-        ctx.lineTo(x0+side*a1*5*k+wob2+cam.bank*22*a1, y0+a1*len);
-        ctx.stroke();
-      }
-    }
-    ctx.restore(); ctx.globalAlpha=1;
+  drawWake(now,x,y,k,fill);
+
+  ctx.save();
+  /* ⚠ resize() 為了地形緩衝把 imageSmoothing 關成 false（要的是硬像素）。
+     精靈是 5 倍降取樣進來的，沿用最近鄰會抖成馬賽克 → 這裡開回來，
+     由 ctx.restore() 還原，不影響地形。 */
+  ctx.imageSmoothingEnabled=true;
+  ctx.translate(x,y);
+  ctx.rotate(cam.bank);                 // 側傾（世界不轉、船不依 heading 自轉）
+  ctx.scale(S,S);
+  ctx.translate(-CW*V.pivot.x,-CH*V.pivot.y);   // 讓 pivot 落在原點
+
+  for(const L of V.layers){
+    const img=SHIP_ART?SHIP_IMG[L.key]:null;
+    if(SHIP_ART && !img) continue;               // 精靈模式缺這層＝略過
+    const pv=(SHIP_ART&&L.artPivot)?L.artPivot:L.pivot;
+    const px=CW*pv.x, py=CH*pv.y;
+
+    ctx.save();
+    if(L.prop){ drawPropLayer(L,img,px,py,fill,CH); ctx.restore(); continue; }
+
+    const s=ship.sway*(L.delay||0);
+    ctx.translate(px,py);
+    /* ⚠ 斜切取負號：畫布 y 往下為正，帆位於錨點「前方」（靠船艏）的部分 y<0。
+       要讓那一端甩得比根部更遠，就得 x += -s*skew*y。用規格上的正號會變成
+       艏端往反方向落後，看起來像帆被折斷。 */
+    ctx.transform(
+      1-Math.abs(s)*V.luff, 0,
+      -s*(L.skew||0)*V.swayScale, L.dim?1+fill*V.sailStretch:1,
+      s*(L.offset||0)*uk*V.swayScale, 0
+    );
+    ctx.translate(-px,-py);
+    if(L.dim) ctx.globalAlpha=V.sailDim[0]+fill*V.sailDim[1];
+
+    if(L.flag)      drawFlagLayer(img,now,fill,CW,CH,px,py);
+    else if(img)    ctx.drawImage(img,0,0);
+    else if(PROC[L.key]) PROC[L.key](CW,CH,fill);
+    ctx.restore();
   }
-
-  ctx.save(); ctx.translate(x,y);
-  ctx.rotate(cam.bank);            // 側傾
-  ctx.scale(k,k);
-
-  // 船殼：尖艏、方艉，黑色塗裝配金線
-  ctx.fillStyle='#241f1a';
-  ctx.beginPath();
-  ctx.moveTo(0,-15); ctx.quadraticCurveTo(4.6,-8, 5.0,0);
-  ctx.lineTo(4.2,9); ctx.lineTo(-4.2,9); ctx.lineTo(-5.0,0);
-  ctx.quadraticCurveTo(-4.6,-8, 0,-15); ctx.closePath(); ctx.fill();
-  // 甲板
-  ctx.fillStyle='#8a7350';
-  ctx.beginPath();
-  ctx.moveTo(0,-12.4); ctx.quadraticCurveTo(3.5,-7, 3.8,0);
-  ctx.lineTo(3.2,7.4); ctx.lineTo(-3.2,7.4); ctx.lineTo(-3.8,0);
-  ctx.quadraticCurveTo(-3.5,-7, 0,-12.4); ctx.closePath(); ctx.fill();
-  // 舷側金線
-  ctx.strokeStyle='rgba(201,162,39,.55)'; ctx.lineWidth=0.5;
-  ctx.beginPath(); ctx.moveTo(-4.4,-1); ctx.lineTo(-3.7,8); ctx.moveTo(4.4,-1); ctx.lineTo(3.7,8); ctx.stroke();
-
-  // 舷外浮翼（飛空艇的支撐翼）
-  ctx.fillStyle='#4a3f33';
-  ctx.beginPath(); ctx.moveTo(-4.6,1); ctx.lineTo(-12.5,4.2); ctx.lineTo(-11.8,5.8); ctx.lineTo(-4.4,4.6); ctx.closePath(); ctx.fill();
-  ctx.beginPath(); ctx.moveTo(4.6,1); ctx.lineTo(12.5,4.2); ctx.lineTo(11.8,5.8); ctx.lineTo(4.4,4.6); ctx.closePath(); ctx.fill();
-
-  // 三根桅杆 + 橫帆（前桅小、主桅大、後桅中）
-  const sail=(my,mh,sw,sh)=>{
-    ctx.strokeStyle='#2b2419'; ctx.lineWidth=0.7;
-    ctx.beginPath(); ctx.moveTo(0,my); ctx.lineTo(0,my-mh); ctx.stroke();   // 桅
-    ctx.beginPath(); ctx.moveTo(-sw,my-mh*0.72); ctx.lineTo(sw,my-mh*0.72); ctx.stroke();  // 桁
-    ctx.fillStyle='rgba(226,219,198,.94)';
-    ctx.beginPath();
-    ctx.moveTo(-sw,my-mh*0.72);
-    ctx.quadraticCurveTo(0,my-mh*0.72+sh*0.34, sw,my-mh*0.72);
-    ctx.lineTo(sw*0.86,my-mh*0.72+sh); ctx.quadraticCurveTo(0,my-mh*0.72+sh*1.3,-sw*0.86,my-mh*0.72+sh);
-    ctx.closePath(); ctx.fill();
-    ctx.fillStyle='rgba(120,112,96,.28)';                                   // 帆的背光側
-    ctx.beginPath();
-    ctx.moveTo(0,my-mh*0.72); ctx.lineTo(sw,my-mh*0.72);
-    ctx.lineTo(sw*0.86,my-mh*0.72+sh); ctx.quadraticCurveTo(0,my-mh*0.72+sh*1.3,0,my-mh*0.72+sh);
-    ctx.closePath(); ctx.fill();
-  };
-  sail(-6.5, 6.5, 3.4, 3.2);     // 前桅
-  sail( 0.5, 9.0, 4.6, 4.4);     // 主桅
-  sail( 6.0, 6.0, 3.2, 3.0);     // 後桅
-
-  // 煙囪（主桅與後桅之間）
-  ctx.fillStyle='#1c1814';
-  ctx.fillRect(-1.05, 2.0, 2.1, 3.4);
-  ctx.fillStyle='#3a3128'; ctx.fillRect(-1.05, 2.0, 2.1, 0.8);
-
-  // 艉燈
-  ctx.fillStyle='rgba(255,206,120,.9)';
-  ctx.beginPath(); ctx.arc(0,8.2,0.75,0,Math.PI*2); ctx.fill();
   ctx.restore();
+}
+
+/* 螺旋槳：高速時以較低 alpha 重繪兩次、角度各退一點＝殘影
+   ⚠ 殘影間距取 π/6：四葉槳的葉距是 π/2，三個位置（0、π/6、π/3）剛好把
+     葉距填滿成盤面。用規格的 0.25 弧度太密，滿速下每幀轉 8.7 弧度（遠大於
+     葉距）會頻閃成亂跳，補那麼一點沒有用。 */
+function drawPropLayer(L,img,px,py,fill,CH){
+  const V=SHIP_VISUAL, R=CH*0.052;
+  const ghosts=fill>0.22?2:0;
+  for(let g=ghosts;g>=0;g--){
+    ctx.save();
+    ctx.translate(px,py);
+    ctx.rotate((ship.propAngle-g*0.524)*L.prop);
+    ctx.translate(-px,-py);
+    if(g>0) ctx.globalAlpha=V.propBlur*(1-g*0.34)*fill;
+    if(img) ctx.drawImage(img,0,0);
+    else    PROC.prop(px,py,R);
+    ctx.restore();
+  }
+}
+
+/* 旗：切成 6 條垂直帶逐條套正弦位移。windGain 由速度決定（垂下 → 平展） */
+function drawFlagLayer(img,now,fill,CW,CH,px,py){
+  const wind=0.4+0.6*fill;
+  if(img){
+    const strips=6, sw=img.width/strips;
+    for(let i=0;i<strips;i++){
+      const amp=Math.pow(i/strips,1.6)*5*wind*(CW/512);
+      const dy=Math.sin(now*0.008-i*0.55)*amp;
+      ctx.drawImage(img, i*sw,0,sw,img.height, i*sw,dy,sw,img.height);
+    }
+    return;
+  }
+  PROC.flag(px,py,CH,wind,now);
+}
+
+/* ══ 程序圖層（無素材時的替身）══
+   以「原型小船」的座標系作畫：y −15（艏）..+9（艉）、x ±12.5，原點對齊
+   hull 錨點。procSpace 負責把它映射進畫布空間 —— 縮放後的線寬剛好等於
+   原本 ctx.scale(k,k) 下的值，所以這些數字可以整包沿用。 */
+function procSpace(CW,CH,fn){
+  const V=SHIP_VISUAL;
+  ctx.save();
+  ctx.translate(CW*V.pivot.x, CH*V.pivot.y);
+  ctx.scale(CH*V.artFill/24, CH*V.artFill/24);
+  fn();
+  ctx.restore();
+}
+function procSail(my,mh,sw,sh){
+  ctx.strokeStyle='#2b2419'; ctx.lineWidth=0.7;
+  ctx.beginPath(); ctx.moveTo(0,my); ctx.lineTo(0,my-mh); ctx.stroke();                    // 桅
+  ctx.beginPath(); ctx.moveTo(-sw,my-mh*0.72); ctx.lineTo(sw,my-mh*0.72); ctx.stroke();    // 桁
+  ctx.fillStyle='rgba(226,219,198,.94)';
+  ctx.beginPath();
+  ctx.moveTo(-sw,my-mh*0.72);
+  ctx.quadraticCurveTo(0,my-mh*0.72+sh*0.34, sw,my-mh*0.72);
+  ctx.lineTo(sw*0.86,my-mh*0.72+sh); ctx.quadraticCurveTo(0,my-mh*0.72+sh*1.3,-sw*0.86,my-mh*0.72+sh);
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle='rgba(120,112,96,.28)';                                                    // 背光側
+  ctx.beginPath();
+  ctx.moveTo(0,my-mh*0.72); ctx.lineTo(sw,my-mh*0.72);
+  ctx.lineTo(sw*0.86,my-mh*0.72+sh); ctx.quadraticCurveTo(0,my-mh*0.72+sh*1.3,0,my-mh*0.72+sh);
+  ctx.closePath(); ctx.fill();
+}
+const PROC={
+  hull(CW,CH){ procSpace(CW,CH,()=>{
+    // 船殼：尖艏、方艉，黑色塗裝配金線
+    ctx.fillStyle='#241f1a';
+    ctx.beginPath();
+    ctx.moveTo(0,-15); ctx.quadraticCurveTo(4.6,-8, 5.0,0);
+    ctx.lineTo(4.2,9); ctx.lineTo(-4.2,9); ctx.lineTo(-5.0,0);
+    ctx.quadraticCurveTo(-4.6,-8, 0,-15); ctx.closePath(); ctx.fill();
+    // 甲板
+    ctx.fillStyle='#8a7350';
+    ctx.beginPath();
+    ctx.moveTo(0,-12.4); ctx.quadraticCurveTo(3.5,-7, 3.8,0);
+    ctx.lineTo(3.2,7.4); ctx.lineTo(-3.2,7.4); ctx.lineTo(-3.8,0);
+    ctx.quadraticCurveTo(-3.5,-7, 0,-12.4); ctx.closePath(); ctx.fill();
+    // 舷側金線
+    ctx.strokeStyle='rgba(201,162,39,.55)'; ctx.lineWidth=0.5;
+    ctx.beginPath(); ctx.moveTo(-4.4,-1); ctx.lineTo(-3.7,8); ctx.moveTo(4.4,-1); ctx.lineTo(3.7,8); ctx.stroke();
+    // 舷外浮翼（飛空艇的支撐翼）
+    ctx.fillStyle='#4a3f33';
+    ctx.beginPath(); ctx.moveTo(-4.6,1); ctx.lineTo(-12.5,4.2); ctx.lineTo(-11.8,5.8); ctx.lineTo(-4.4,4.6); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(4.6,1); ctx.lineTo(12.5,4.2); ctx.lineTo(11.8,5.8); ctx.lineTo(4.4,4.6); ctx.closePath(); ctx.fill();
+    // 煙囪（主桅與後桅之間）
+    ctx.fillStyle='#1c1814'; ctx.fillRect(-1.05,2.0,2.1,3.4);
+    ctx.fillStyle='#3a3128'; ctx.fillRect(-1.05,2.0,2.1,0.8);
+    // 艉燈
+    ctx.fillStyle='rgba(255,206,120,.9)';
+    ctx.beginPath(); ctx.arc(0,8.2,0.75,0,Math.PI*2); ctx.fill();
+  }); },
+  /* 索具：自各桅頂拉向艏艉的支索。獨立成層才吃得到 delay 0.55 的中段延遲 */
+  rigging(CW,CH){ procSpace(CW,CH,()=>{
+    ctx.strokeStyle='rgba(43,36,25,.55)'; ctx.lineWidth=0.28;
+    ctx.beginPath();
+    ctx.moveTo(0,-13.6); ctx.lineTo(0,-8.4);
+    ctx.moveTo(0,-8.5);  ctx.lineTo(-2.6,-2.2); ctx.moveTo(0,-8.5); ctx.lineTo(2.6,-2.2);
+    ctx.moveTo(0,-4.2);  ctx.lineTo(-2.4,3.4);  ctx.moveTo(0,-4.2); ctx.lineTo(2.4,3.4);
+    ctx.moveTo(0,2.0);   ctx.lineTo(-2.0,8.2);  ctx.moveTo(0,2.0);  ctx.lineTo(2.0,8.2);
+    ctx.stroke();
+  }); },
+  sails_fore(CW,CH){ procSpace(CW,CH,()=>procSail(-6.5,6.5,3.4,3.2)); },
+  sails_main(CW,CH){ procSpace(CW,CH,()=>procSail( 0.5,9.0,4.6,4.4)); },
+  sails_aft (CW,CH){ procSpace(CW,CH,()=>procSail( 6.0,6.0,3.2,3.0)); },
+  /* 螺旋槳：四葉黃銅。旋轉已由 drawPropLayer 套好，這裡只畫靜態外形 */
+  prop(px,py,R){
+    ctx.fillStyle='#b08d3c';
+    for(let b=0;b<4;b++){
+      ctx.save();
+      ctx.translate(px,py); ctx.rotate(b*Math.PI/2);
+      ctx.beginPath(); ctx.ellipse(0,-R*0.60,R*0.23,R*0.60,0,0,Math.PI*2); ctx.fill();
+      ctx.restore();
+    }
+    ctx.fillStyle='#3a3128';
+    ctx.beginPath(); ctx.arc(px,py,R*0.24,0,Math.PI*2); ctx.fill();
+  },
+  /* 艉旗：三角旗，沿長度套遞增振幅的正弦（越外擺越大） */
+  flag(px,py,CH,wind,now){
+    const P=CH*SHIP_VISUAL.artFill/24, len=3.2*P, segs=8;
+    const off=t=>Math.sin(now*0.008-t*3.4)*Math.pow(t,1.6)*1.9*P*wind;
+    ctx.beginPath();
+    for(let i=0;i<=segs;i++){ const t=i/segs; ctx.lineTo(px+off(t)-0.40*P*(1-t*0.85), py+t*len); }
+    for(let i=segs;i>=0;i--){ const t=i/segs; ctx.lineTo(px+off(t)+0.40*P*(1-t*0.85), py+t*len); }
+    ctx.closePath();
+    ctx.fillStyle='rgba(201,162,39,.82)'; ctx.fill();
+    ctx.strokeStyle='rgba(43,36,25,.5)'; ctx.lineWidth=0.16*P; ctx.stroke();
+  }
+};
+
+/* 尾跡：兩束細白霧自船尾劃出（SOA 飛空艇那種凝結尾）。
+   船固定在畫面上、世界在動 → 尾跡等於朝畫面下方拉，
+   側傾時整束往外偏，轉彎才看得出來。長度隨速度。 */
+function drawWake(now,x,y,k,spd){
+  if(spd<=0.02) return;
+  const len=14+spd*54, segs=16;
+  ctx.save(); ctx.translate(x,y); ctx.lineCap='round';
+  for(const side of [-1,1]){
+    const x0=side*4.4*k, y0=9*k;
+    for(let i=0;i<segs;i++){
+      const a0=i/segs, a1=(i+1)/segs;
+      const wob =Math.sin(now*0.004+i*0.55+side)*1.5*a0;     // 尾端輕微擺動＝亂流
+      const wob2=Math.sin(now*0.004+(i+1)*0.55+side)*1.5*a1;
+      ctx.globalAlpha=(1-a0)*(1-a0)*0.5*spd;
+      ctx.strokeStyle='#eef2f8';
+      ctx.lineWidth=(1.9-a0*1.5)*k*0.5;
+      ctx.beginPath();
+      ctx.moveTo(x0+side*a0*5*k+wob +cam.bank*22*a0, y0+a0*len);
+      ctx.lineTo(x0+side*a1*5*k+wob2+cam.bank*22*a1, y0+a1*len);
+      ctx.stroke();
+    }
+  }
+  ctx.restore(); ctx.globalAlpha=1;
 }
 
 function vignette(S){
@@ -923,7 +1169,7 @@ function drawPanel(S){
 let last=performance.now(),acc=0,n=0;
 function loop(now){
   const dt=Math.min(40,now-last); last=now;
-  update(dt); render(now);
+  update(dt,now); render(now);
   acc+=dt;n++;
   if(acc>500){document.getElementById('fps').textContent=Math.round(1000/(acc/n))+' fps '+BW+'×'+BH;acc=0;n=0;}
   requestAnimationFrame(loop);
@@ -934,6 +1180,8 @@ function loop(now){
   try{
     genCloudTex(); genDetail();
     await loadWorld();
+    // 船的素材缺了也照跑（走程序圖層），所以不放進上面的 try 依賴鏈裡擋開場
+    await loadShipArt();
     initPuffs();
     window.__loadMs=Math.round(performance.now()-t0);
     window.__map=MAPW+'×'+MAPH;
