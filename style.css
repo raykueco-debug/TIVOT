@@ -1086,7 +1086,11 @@
   /* 教學對話框：#app 直屬、z-8000＝第二層——高於一般演出層（整備頁 55／轉場光點 56／
      立繪 20 等），但低於 cut-in(8100)／結局 cut-in(8200)，演出播放時讓位；
      黑幕(9000)與確認框(9500)仍蓋住它。顯示由自帶的 .on 控制（原靠父層 #tutCast 的 display）。 */
-  #tutBubble{display:none;z-index:8000;
+  /* ⚠ pointer-events:none 必要：對話框自 #tutCast 移出後為 #app 直屬（非 #tutTouch 的子孫），
+     z-8000 又高於全畫面點擊層 #tutTouch(z-36) → 點在對話框上會被它吃掉，事件沿 #app 冒泡
+     而非經過 #tutTouch，推進台詞的 handler 收不到＝對話框整塊變死區（玩家最直覺點的位置）。
+     框內只有文字（tut-name/tut-line/tut-next），無可互動元件，穿透不損任何功能。 */
+  #tutBubble{display:none;z-index:8000;pointer-events:none;
     position:fixed;left:50%;bottom:52%;transform:translateX(-50%);
     width:min(92%,360px);background:rgba(8,6,12,.9);border:1px solid var(--gold-dim);
     border-radius:10px;padding:9px 14px 12px;box-shadow:0 4px 18px rgba(0,0,0,.55);}
