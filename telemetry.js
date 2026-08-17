@@ -59,6 +59,9 @@ export const TEL = {
   runStart(f){ send('run_start', f); },
   runEnd(f){ send('run_end', f); },
   originalClick(target){ send('original_click', { result: target }); },
-  markAdmin(){ try{ localStorage.setItem(ADMIN_KEY, '1'); }catch(_){} },   // 清盤鈕解鎖時呼叫（main.js）
+  markAdmin(){ try{ localStorage.setItem(ADMIN_KEY, '1'); }catch(_){} },   // 手勢解鎖時呼叫（main.js）
+  // 管理人模式改為可開可關（手勢再做一次即關閉）→ 需要能撤銷簽名，恢復遙測上報
+  clearAdmin(){ try{ localStorage.removeItem(ADMIN_KEY); }catch(_){} },
+  isAdminStored(){ try{ return localStorage.getItem(ADMIN_KEY)==='1'; }catch(_){ return false; } },
   isAdmin,   // 簽名查詢（目前僅內部遙測排除用；後臺鈕顯示只認 body.testmode，不讀此值）
 };

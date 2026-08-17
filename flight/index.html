@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>TIVOT — 銀月大陸航行</title>
+<style>
+  :root{ --gold:#c9a227; --parch:#d8cdb4; }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;
+    -webkit-user-select:none;user-select:none;}
+  html,body{height:100%;overflow:hidden;background:#05060c;
+    font-family:"Noto Serif TC",-apple-system,"PingFang TC",serif;}
+  #stage{position:fixed;inset:0;touch-action:none;}
+  canvas{display:block;width:100%;height:100%;image-rendering:pixelated;}
+
+  .hud{position:fixed;pointer-events:none;color:var(--parch);text-shadow:0 1px 3px rgba(0,0,0,.9);}
+  #top{top:0;left:0;right:0;padding:calc(env(safe-area-inset-top) + 10px) 14px 10px;
+    display:flex;justify-content:space-between;align-items:flex-start;
+    background:linear-gradient(180deg,rgba(5,6,12,.7),transparent);}
+  .stat{font-size:11px;letter-spacing:.12em;line-height:1.7;}
+  .stat b{color:var(--gold);font-weight:600;}
+  .stat .lbl{opacity:.5;font-size:9px;letter-spacing:.2em;}
+  #compass{position:fixed;left:50%;transform:translateX(-50%);
+    top:calc(env(safe-area-inset-top) + 12px);font-size:10px;letter-spacing:.35em;
+    color:var(--gold);opacity:.85;}
+
+  /* 羅盤/時刻/距離已移進面板（canvas 繪製），DOM 這幾項只留日期避免重複 */
+  #compass,#topDist{display:none;}
+  /* 地標名牌與提示改貼在面板上緣之上，不壓到 3D 視窗底部 */
+  #place{position:fixed;left:0;right:0;bottom:36vh;
+    text-align:center;opacity:0;transition:opacity .4s;pointer-events:none;}
+  #place.show{opacity:1;}
+  #place .nm{font-size:15px;letter-spacing:.3em;color:var(--gold);}
+  #place .ty{font-size:9px;letter-spacing:.25em;color:var(--parch);opacity:.55;margin-top:3px;}
+
+  #hint{position:fixed;bottom:calc(34vh + 4px);left:0;right:0;
+    text-align:center;font-size:10px;letter-spacing:.18em;color:var(--parch);opacity:.28;}
+  #fps{position:fixed;right:12px;top:calc(env(safe-area-inset-top) + 54px);
+    font-size:9px;color:var(--parch);opacity:.35;}
+  #backBtn{position:fixed;top:calc(env(safe-area-inset-top) + 10px);right:12px;z-index:40;
+    background:rgba(5,6,12,.72);border:1px solid rgba(201,162,39,.5);color:var(--gold);
+    font-family:inherit;font-size:11px;letter-spacing:.14em;padding:5px 12px;cursor:pointer;}
+  #backBtn:active{background:rgba(201,162,39,.16);}
+  #boot{position:fixed;inset:0;display:grid;place-items:center;background:#05060c;z-index:50;
+    color:var(--gold);font-size:11px;letter-spacing:.3em;text-align:center;padding:24px;line-height:2;}
+  #boot.hide{display:none;}
+  #boot small{display:block;color:var(--parch);opacity:.5;font-size:10px;letter-spacing:.1em;}
+</style>
+</head>
+<body>
+<div id="stage"><canvas id="cv"></canvas></div>
+
+<div class="hud" id="top">
+  <div class="stat">
+    <div class="lbl">大陸曆 1908</div>
+    <div><b id="date">14</b> 日　<b id="clock">08:00</b></div>
+  </div>
+  <div class="stat" id="topDist" style="text-align:right">
+    <div class="lbl">航行距離</div>
+    <div><b id="dist">0</b> リーグ</div>
+  </div>
+</div>
+<div class="hud" id="compass">北</div>
+<div id="place"><div class="nm" id="pnm"></div><div class="ty" id="pty"></div></div>
+<div id="hint">往後拉＝前進 · 拉越遠越快 · 放開停住</div>
+<button id="backBtn">← 返回</button>
+<div id="fps"></div>
+<div id="boot">載 入 銀 月 大 陸…<small id="bootMsg"></small></div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════════
+   TIVOT — 銀月大陸航行（吃真實地圖版）
+
+   資料來源：terrain_generator.py 的兩張輸出
+     · silvermoon_heightmap.png  高度（灰階，0＝雲海之外）
+     · silvermoon_terrain.png    地貌色（反照率）
+   兩張同尺寸即可，不必是正方形/2 的次方。
+
+   ⚠ 必須用 http 提供（getImageData 在 file:// 會被畫布污染規則擋下）。
+     專案已有 dev_server.py / launch.json，開站後走 /flight/ 即可。
+
+   ⚠ 這是**獨立原型**，尚未併進 modules/ 的模組架構：
+     自帶迴圈與狀態、不讀 GAME_CONFIG、不經 state.js。
+     驗證完手感與美術方向後才會拆進 modules/map.js（見 CLAUDE.md §2 的依賴方向）。
+     入口：首頁「試飛」鈕，僅管理人模式可見。
+   ══════════════════════════════════════════════════════════════════════ */
+
+const HEIGHT_URL = 'silvermoon_heightmap.png';
+const COLOR_URL  = 'silvermoon_terrain.png';
+
+/* ── 世界尺度 ─────────────────────────────────────────────────────
+   MAP_SCALE＝一個高度圖像素等於幾個世界單位。放大世界＝提高這個值，
+   同時「不」等比放大視距，否則畫面完全一樣、只有數字變大（那是純換單位）。
+   真正讓大陸變大的是「一次看到的地圖比例變小」：
+     視距 900 世界單位 ÷ 10 ＝ 90 個地圖像素（原本是 760 像素）
+     橫越大陸：21520 ÷ 180(單位/秒) ≈ 120 秒（原本約 14 秒）→ 約 10 倍 */
+const MAP_SCALE  = 10;
+const INV_SCALE  = 1/MAP_SCALE;
+const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
+const CLOUD_H    = 44;    // 雲海高度：低於此高度一律是雲（大陸外緣自然沒入雲中）
+const CRUISE_ALT = 700;   // 巡航高度（定高，不隨地形起伏）
+/* 版面目標：天空 1/3、陸地 2/3，霧只是兩者之間的過渡帶。
+   ⚠ 關鍵不是霧的濃度，是「地形要畫得夠遠」：
+     地形在螢幕上的高度 ≈ (鏡頭離地 / z) × scaleH。
+     鏡頭離地約 400、若 z 只到 900，最遠地形停在 400/900×200 ≈ 89px ——
+     那是畫面中央，不是地平線。地平線到該處之間沒有任何地形可畫，
+     只能填天空/霧 → 就是「一半以上都是霧」的成因。
+     要讓陸地填到地平線附近，z 必須大到讓該值趨近 0。 */
+/*  天空占比 ≈ (地平線位置 + 地形填不到的缺口) / 視窗高。
+    視距 3600 下缺口約 31px（含曲率下沉），故 0.22 → 天空約 32%、陸地 68%。 */
+const HORIZON_F  = 0.22;
+const ZFAR       = 3600;  // 可視距離（世界單位）＝ 360 個地圖像素
+
+/* ── 版面：下方切給操作面板 ──────────────────────────────────────
+   直屏把 90° 水平視角塞進窄畫面，角解析度水平/垂直差 2.5 倍，
+   最嚴重的變形集中在畫面最下緣（近地單一取樣被放到極大）。
+   把那一段切掉當面板，等於同時解決版面與變形。 */
+const VIEW_F = 0.66;      // 3D 視窗佔畫面高度比例，其餘為面板
+
+/* ── 星球曲率 ────────────────────────────────────────────────────
+   地表高度隨距離平方下沉：drop = d²/(2R)，d＝徑向距離。
+   邊緣欄的徑向距離較長（d² = z²(1+s²)），沉得比中央快 → 地平線往兩側彎。
+   R 越小彎得越明顯；這是美術旋鈕，不是真實星球尺度。
+   副作用（好的）：地形在抵達 ZFAR 前就沉到地平線下，遠裁切自然被藏住。 */
+/*  R=1900 時：ZFAR 處中央下沉 213 世界單位，佔鏡頭對地高差(約 450)的 47%
+      → 地表急遽捲走，整片縮成球體。
+    R=6000：下沉降到 68 單位（15%），弧度只在地平線隱約可見。
+    邊緣與中央的落差（＝看得到的弧）＝ ZFAR/(2R)*scaleH，與 R 成反比。 */
+/*  ⚠ 弧度大小 ∝ ZFAR/R，所以 ZFAR 一改就必須同步改 R，否則弧度會跟著暴增。
+      ZFAR 900→3600（4 倍），R 也要放大同倍率以上才維持「隱隱有弧度」。
+      現值：ZFAR 處中央下沉 162 世界單位、地平線邊緣比中央低約 15px。 */
+const PLANET_R = 40000;
+
+/* ── 峭壁 / 瀑布 ─────────────────────────────────────────────────
+   voxel-space 畫的垂直線段本來就是「崖面」，只是原本整條填地表色 →
+   看起來像色塊拉絲。高度落差超過門檻就改用岩壁上色（含垂直紋理）。 */
+const CLIFF_DH = 75;      // 視為峭壁的高度落差
+const FALL_SPD = 0.42;    // 瀑布水流捲動速度
+
+/* ── 色調分級（VP1 風）────────────────────────────────────────────
+   參考畫面的特徵：地表暗而去飽和、遠景被高濃度大氣霧洗成灰白、天空淡藍。
+   在取樣端做，才會連崖面/雲海一起被同一套曲線吃到。 */
+const GRADE_SAT  = 0.68;  // 飽和度（1＝原色，0＝灰階）
+const GRADE_EXPO = 0.82;  // 地表整體壓暗
+/*  霧起點（佔 ZFAR 比例）。0.38 → 霧從 z≈1370 起，投影落在畫面約 51% 處，
+    往上收斂到地平線 —— 剛好是天空與陸地之間那條過渡帶，不再往前吃掉中景。 */
+const FOG_START  = 0.38;
+/*  霧上限：留一點形體，全白會把地平線的山也吃掉。
+    ⚠ 弧度放平後，地形不再於 ZFAR 前沉到地平線下 → 遠裁切邊緣會露出來，
+      靠這裡補到接近 1 才蓋得住。 */
+const FOG_MAX    = 0.94;
+
+/* ── 細節雜訊 ─────────────────────────────────────────────────────
+   世界放大 10 倍＝高度圖被放大 10 倍，原圖的高斯平滑會整片糊掉
+   （這正是最早談過的「一張圖不可能同時服務遠景與近景」）。
+   解法不是更大的圖，是在世界座標上疊一層高頻程序細節：
+   平鋪 256 世界單位、週期性雜訊無接縫，近看有起伏、遠看被霧吃掉。 */
+const DET_TILE = 256, DTM = DET_TILE-1;
+const DET_AMP  = 26;      // 細節起伏幅度（世界單位）
+const DETH = new Int8Array(DET_TILE*DET_TILE);
+
+/* ── 邊緣抬升（載入時的權宜處理）──────────────────────────────────
+   terrain_generator.py 用 distance_transform 當基礎高度：
+       base_h = np.power(dist, 0.62)      # dist 在海岸線為 0
+   於是陸地在邊界是「羽化緩降到 0」——那是海岸線的做法。
+   浮空大陸要的是**斷崖**：陸地維持高度直到邊界、然後直接斷掉。
+   實測邊緣格高度中位數只有 28（雲海高度 14），落差不足以形成崖面，
+   河流走到邊界時也早就降到雲海高度 → 不會有瀑布。
+
+   這裡在載入時把邊界一圈墊高成台地緣，讓斷崖成立。
+   ⚠ 這是渲染端的補救；正解是在生成端改一行：
+       base_h = 0.35 + 0.65*np.power(dist, 0.62)
+     邊緣保有 0.35 的高度，再被 height*land 硬切 → 天然斷崖。 */
+const RIM_H = 145;        // 邊緣台地高度（世界單位）
+const RIM_W = 34;         // 抬升作用範圍（距邊界的「地圖像素」，與世界尺度無關）
+/* ── 操作手感 ──────────────────────────────────────────────────
+   拖曳世界的模型：手指把畫面往後拉 → 船往前走（拉的是地面，不是船）。
+     往後拉    → 前進          往左後拉 → 往右前方飛
+     拉得越遠  → 油門越大      放開     → 減速停住（不自動巡航）
+   轉向以「角速度上限」收斂到目標航向，不做瞬間對齊 → 大船的慣性感。 */
+const MAX_SPD    = 3.0;   // 滿油門速度（180 世界單位/秒 → 橫越大陸約 2 分鐘）
+const DRAG_FULL  = 118;   // 拉到滿油門所需的像素距離
+const TURN_RATE  = 0.0011;// 轉向角速度上限（rad/ms，約 63°/秒；越小越鈍重）
+const ACCEL      = 0.038; // 加速跟隨率（每 60fps 幀；越小越像大船，約 0.45 秒到速）
+const BRAKE      = 0.016; // 放開後的滑行衰減（約 1 秒才停，保留慣性）
+const BANK_MAX   = 0.34;  // 轉向時的最大側傾（弧度）
+const BANK_EASE  = 0.035; // 側傾跟隨率：小＝入彎慢慢壓、出彎慢慢回正
+
+let MAPW=0, MAPH=0;
+let HGT=null, COL=null, SLX=null, SLY=null, RIV=null;
+
+/* 地標：座標＝地圖像素座標（同 terrain_generator.py 的 PLACES） */
+const PLACES=[
+  {x:1005,y:600, name:'帝都・聖王廳', type:'教廷・中樞'},
+  {x:1310,y:965, name:'薇拉馮德港',   type:'帝國・港灣'},
+  {x:985, y:858, name:'卡耶爾山谷',   type:'險地'},
+  {x:1000,y:300, name:'北方泊地',     type:'泊地'},
+  {x:2030,y:590, name:'東方泊地',     type:'泊地'},
+];
+
+const rgb=(r,g,b)=>(255<<24)|(b<<16)|(g<<8)|r;
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const sstep=(a,b,x)=>{const t=clamp((x-a)/(b-a),0,1);return t*t*(3-2*t);};
+const lerp=(a,b,t)=>a+(b-a)*t;
+let _s=1908;
+const rnd=()=>(_s=(_s*1664525+1013904223)&0xffffffff)/0xffffffff;
+function hash(x,y){let n=x*374761393+y*668265263;n=(n^(n>>13))*1274126177;return ((n^(n>>16))&0x7fffffff)/0x7fffffff;}
+const sm=t=>t*t*(3-2*t);
+
+/* ── 雲海貼圖：週期性雜訊，平鋪無接縫 ─────────────────────────── */
+const CT=256, CTM=CT-1, CPER=4;
+const CLOUDTEX=new Uint32Array(CT*CT);
+const CLOUDH=new Uint8Array(CT*CT);
+function pnoise(x,y,per){
+  const xi=Math.floor(x),yi=Math.floor(y),xf=x-xi,yf=y-yi;
+  const u=sm(xf),v=sm(yf);
+  const X0=((xi%per)+per)%per, Y0=((yi%per)+per)%per;
+  const X1=((xi+1)%per+per)%per, Y1=((yi+1)%per+per)%per;
+  const a=hash(X0,Y0),b=hash(X1,Y0),c=hash(X0,Y1),d=hash(X1,Y1);
+  return (a*(1-u)+b*u)*(1-v)+(c*(1-u)+d*u)*v;
+}
+function pfbm(x,y,oct,per){let s=0,a=.5,f=1,n=0;for(let i=0;i<oct;i++){s+=pnoise(x*f,y*f,per*f)*a;n+=a;a*=.5;f*=2;}return s/n;}
+function genDetail(){
+  for(let y=0;y<DET_TILE;y++) for(let x=0;x<DET_TILE;x++){
+    const n=pfbm(x/DET_TILE*8, y/DET_TILE*8, 4, 8);   // 週期 8 → 平鋪無接縫
+    DETH[y*DET_TILE+x]=clamp((n-0.5)*2*127,-127,127)|0;
+  }
+}
+function genCloudTex(){
+  for(let y=0;y<CT;y++) for(let x=0;x<CT;x++){
+    const n=pfbm(x/CT*CPER,y/CT*CPER,5,CPER);
+    const t=sstep(0.34,0.72,n);
+    const v=lerp(152,246,t)+(hash(x*5,y*7)-0.5)*9;
+    const b=lerp(170,252,t)+(hash(x*11,y*3)-0.5)*9;
+    CLOUDTEX[y*CT+x]=rgb(clamp(v,0,255)|0,clamp(v*0.99,0,255)|0,clamp(b,0,255)|0);
+    CLOUDH[y*CT+x]=Math.round(t*9);
+  }
+}
+
+/* ── 載入地圖 ───────────────────────────────────────────────────── */
+function loadImg(url){
+  return new Promise((res,rej)=>{
+    const im=new Image();
+    im.onload=()=>res(im);
+    im.onerror=()=>rej(new Error('載入失敗：'+url));
+    im.src=url;
+  });
+}
+async function loadWorld(){
+  const msg=document.getElementById('bootMsg');
+  msg.textContent='讀取高度圖…';
+  const [hi,ci]=await Promise.all([loadImg(HEIGHT_URL),loadImg(COLOR_URL)]);
+  if(hi.naturalWidth!==ci.naturalWidth || hi.naturalHeight!==ci.naturalHeight)
+    throw new Error(`兩張圖尺寸不一致：${hi.naturalWidth}×${hi.naturalHeight} vs ${ci.naturalWidth}×${ci.naturalHeight}`);
+  MAPW=hi.naturalWidth; MAPH=hi.naturalHeight;
+
+  const c=document.createElement('canvas'); c.width=MAPW; c.height=MAPH;
+  const g=c.getContext('2d',{willReadFrequently:true});
+
+  g.drawImage(hi,0,0);
+  const hd=g.getImageData(0,0,MAPW,MAPH).data;
+  g.clearRect(0,0,MAPW,MAPH);
+  g.drawImage(ci,0,0);
+  const cd=g.getImageData(0,0,MAPW,MAPH).data;
+
+  msg.textContent='建立高度場…';
+  const N=MAPW*MAPH;
+  // ⚠ Uint16：世界尺度放大後高度上限（PEAK_SCALE）已遠超 255
+  HGT=new Uint16Array(N); COL=new Uint32Array(N);
+  SLX=new Int8Array(N);  SLY=new Int8Array(N);
+  RIV=new Uint8Array(N);
+
+  // 高度：取紅通道（灰階三通道相同）。0＝大陸之外。
+  const raw=new Float32Array(N);
+  for(let i=0;i<N;i++) raw[i]=hd[i*4]/255;
+  let rivCnt=0;
+  for(let i=0;i<N;i++){
+    HGT[i]=clamp(Math.round(raw[i]*PEAK_SCALE),0,65535);
+    const r=cd[i*4], g=cd[i*4+1], b=cd[i*4+2];
+    COL[i]=rgb(r,g,b);
+    /* 河道偵測：terrain_generator.py 的 RIVER=(88,116,132) 經陰影與銳化後
+       仍是「藍明顯高於紅」的唯一地貌（雪/岩都是 b≤r）。
+       ⚠ 這是從成品色回推的權宜做法；hydro 的 rivers 遮罩另存一張 PNG 會精準得多。 */
+    if(b>r+16 && b>g+4 && b>70 && b<200){ RIV[i]=1; rivCnt++; }
+  }
+  window.__rivPct=(rivCnt/N*100).toFixed(2);
+  /* 邊緣抬升：先用 chamfer 兩趟求「到雲海的距離」，再把邊界一圈墊成台地緣。
+     只作用在 RIM_W 內，內陸低地保持原樣。 */
+  msg.textContent='整平大陸邊緣…';
+  {
+    const INF=1e9, dist=new Float32Array(N);
+    for(let i=0;i<N;i++) dist[i]=(HGT[i]>CLOUD_H)?INF:0;
+    for(let y=0;y<MAPH;y++) for(let x=0;x<MAPW;x++){
+      const i=y*MAPW+x; if(dist[i]===0) continue;
+      let d=dist[i];
+      if(x>0)            d=Math.min(d,dist[i-1]+1);
+      if(y>0)            d=Math.min(d,dist[i-MAPW]+1);
+      if(x>0&&y>0)       d=Math.min(d,dist[i-MAPW-1]+1.414);
+      if(x<MAPW-1&&y>0)  d=Math.min(d,dist[i-MAPW+1]+1.414);
+      dist[i]=d;
+    }
+    for(let y=MAPH-1;y>=0;y--) for(let x=MAPW-1;x>=0;x--){
+      const i=y*MAPW+x; if(dist[i]===0) continue;
+      let d=dist[i];
+      if(x<MAPW-1)          d=Math.min(d,dist[i+1]+1);
+      if(y<MAPH-1)          d=Math.min(d,dist[i+MAPW]+1);
+      if(x<MAPW-1&&y<MAPH-1)d=Math.min(d,dist[i+MAPW+1]+1.414);
+      if(x>0&&y<MAPH-1)     d=Math.min(d,dist[i+MAPW-1]+1.414);
+      dist[i]=d;
+    }
+    let lifted=0;
+    for(let i=0;i<N;i++){
+      if(HGT[i]<=CLOUD_H) continue;
+      if(dist[i]>=RIM_W) continue;
+      // raw 也要同步：下面的坡度是從 raw 差分算的，只改 HGT 會讓崖頂法線是舊的
+      if(HGT[i]<RIM_H){ HGT[i]=RIM_H; raw[i]=RIM_H/PEAK_SCALE; lifted++; }
+    }
+    window.__rimLifted=lifted;
+  }
+
+  // 坡度（給逐幀光照用）—— 必須在邊緣抬升之後，否則崖頂的法線是舊的
+  msg.textContent='計算坡度…';
+  for(let y=0;y<MAPH;y++){
+    const ym=y>0?y-1:0, yp=y<MAPH-1?y+1:MAPH-1;
+    for(let x=0;x<MAPW;x++){
+      const i=y*MAPW+x;
+      const xm=x>0?x-1:0, xp=x<MAPW-1?x+1:MAPW-1;
+      SLX[i]=clamp((raw[y*MAPW+xp]-raw[y*MAPW+xm])*760,-127,127)|0;
+      SLY[i]=clamp((raw[yp*MAPW+x]-raw[ym*MAPW+x])*760,-127,127)|0;
+    }
+  }
+  // 地標：x/y 是「地圖像素」座標 → 換算成世界座標 wx/wy 供投影使用
+  PLACES.forEach(P=>{
+    const xi=clamp(P.x|0,0,MAPW-1), yi=clamp(P.y|0,0,MAPH-1);
+    P.h=HGT[yi*MAPW+xi];
+    P.wx=P.x*MAP_SCALE; P.wy=P.y*MAP_SCALE;
+  });
+}
+
+/* ── 畫布 ───────────────────────────────────────────────────────── */
+const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+let W=0,H=0,VIEWH=0,BW=0,BH=0,buf=null,bufU32=null,bcv=null,bctx=null;
+let curvK=null;      // 每欄的曲率係數 (1+s²)/(2R)
+let prevH=null;      // 每欄「上一個畫出的取樣高度」→ 判定崖面
+function resize(){
+  W=innerWidth;H=innerHeight;
+  VIEWH=Math.round(H*VIEW_F);
+  cv.width=W;cv.height=H;cv.style.width=W+'px';cv.style.height=H+'px';
+  ctx.imageSmoothingEnabled=false;
+  BW=clamp(Math.round(W*0.60),200,340);
+  BH=Math.round(BW*VIEWH/W);          // 緩衝比例對齊「3D 視窗」而非整個畫面
+  bcv=document.createElement('canvas');bcv.width=BW;bcv.height=BH;
+  bctx=bcv.getContext('2d');
+  buf=bctx.createImageData(BW,BH);
+  bufU32=new Uint32Array(buf.data.buffer);
+  curvK=new Float32Array(BW);
+  for(let i=0;i<BW;i++){
+    const s=(i+0.5)/BW*2-1;           // 欄位在視錐內的橫向比例 −1..1
+    curvK[i]=(1+s*s)/(2*PLANET_R);    // 邊緣 s=±1 時是中央的兩倍 → 地平線兩側下彎
+  }
+  prevH=new Float32Array(BW);
+}
+addEventListener('resize',resize);resize();
+// 地標/雲團等疊加物要套同一條曲率，否則會跟地形錯開（越遠越明顯）
+const curvAt=s=>(1+s*s)/(2*PLANET_R);
+
+/* ── 攝影機 ─────────────────────────────────────────────────────── */
+const cam={x:1005*MAP_SCALE,y:760*MAP_SCALE,angle:0,alt:CRUISE_ALT,speed:0,bank:0};
+
+/* 操作向量（螢幕空間，已反向成「行進方向」）：
+     fwd>0＝往前走（手指往後拉）  rgt>0＝往右偏（手指往左拉） */
+let fwd=0, rgt=0, dragging=false, ox=0, oy=0, moved=0;
+const TAP_SLOP=12;                          // 位移小於此值＝點擊而非拖曳
+const stage=document.getElementById('stage');
+stage.addEventListener('pointerdown',e=>{dragging=true;ox=e.clientX;oy=e.clientY;fwd=0;rgt=0;moved=0;});
+stage.addEventListener('pointermove',e=>{
+  if(!dragging) return;
+  const dx=e.clientX-ox, dy=e.clientY-oy;
+  moved=Math.max(moved,Math.hypot(dx,dy));
+  fwd=clamp( dy/DRAG_FULL,-1,1);             // 往下（往後）拉＝前進
+  rgt=clamp(-dx/DRAG_FULL,-1,1);             // 往左拉＝往右偏
+});
+const endDrag=e=>{
+  // 幾乎沒動＝點擊：命中已展開的名牌就進入該地標
+  if(dragging && moved<TAP_SLOP && e && e.clientX!=null){
+    const px=e.clientX, py=e.clientY;
+    for(const h of hotspots){
+      if(px>=h.x&&px<=h.x+h.w&&py>=h.y&&py<=h.y+h.h){ enterPlace(h.P); break; }
+    }
+  }
+  dragging=false;fwd=0;rgt=0;
+};
+stage.addEventListener('pointerup',endDrag);
+stage.addEventListener('pointercancel',()=>{dragging=false;fwd=0;rgt=0;});
+// 鍵盤走傳統配置（↑推進、←→轉向），不套用拖曳世界的反向邏輯
+const keys={};
+addEventListener('keydown',e=>keys[e.key]=true);
+addEventListener('keyup',e=>keys[e.key]=false);
+
+const clock={minutes:8*60,date:14,dist:0};
+
+// 返回主頁（原型是獨立頁面，不共用遊戲的場景切換）
+document.getElementById('backBtn').addEventListener('click',()=>{ location.href='../index.html'; });
+
+/* ── 雲團（3D 定位，飛行時錯身而過）───────────────────────────── */
+const PUFFS=[];
+function initPuffs(){
+  _s=5150;
+  for(let i=0;i<48;i++) PUFFS.push({
+    x:cam.x+(rnd()-0.5)*1500, y:cam.y+(rnd()-0.5)*1500,
+    h:CLOUD_H+180+rnd()*760, r:90+rnd()*260,
+    a:0.18+rnd()*0.32, seed:rnd()
+  });
+}
+function recyclePuffs(){
+  const fx=-Math.sin(cam.angle), fy=-Math.cos(cam.angle);
+  PUFFS.forEach(p=>{
+    const dx=p.x-cam.x, dy=p.y-cam.y;
+    const z=dx*fx+dy*fy;
+    if(z<-140 || Math.hypot(dx,dy)>1250){
+      const side=(rnd()-0.5)*1100, dist=520+rnd()*560;
+      p.x=cam.x+fx*dist-fy*side; p.y=cam.y+fy*dist+fx*side;
+      p.h=CLOUD_H+180+rnd()*760; p.r=90+rnd()*260;
+      p.a=0.18+rnd()*0.32; p.seed=rnd();
+    }
+  });
+}
+
+/* ── 日月 ───────────────────────────────────────────────────────── */
+function sky(){
+  const t=clock.minutes/1440;
+  const el=Math.sin((t-0.25)*Math.PI*2);
+  const az=(t-0.25)*Math.PI*2;
+  return {t,el,az,day:clamp(el*1.5+0.5,0,1),dusk:clamp(1-Math.abs(el)*3.2,0,1)};
+}
+function skyColors(S){
+  // VP1 風：天頂淡藍、地平線近乎灰白（霧色＝地平線色，遠景才會洗成同一片）
+  const nightTop=[12,15,30],  nightHz=[58,66,94];
+  const dayTop  =[96,126,164],dayHz  =[214,222,230];
+  const duskTop =[58,50,96],  duskHz =[228,176,142];
+  const top=[0,0,0],hz=[0,0,0];
+  for(let i=0;i<3;i++){
+    top[i]=lerp(nightTop[i],dayTop[i],S.day);
+    hz[i] =lerp(nightHz[i], dayHz[i], S.day);
+    top[i]=lerp(top[i],duskTop[i],S.dusk*0.72);
+    hz[i] =lerp(hz[i], duskHz[i], S.dusk*0.80);
+  }
+  return {top,hz};
+}
+
+function update(dt){
+  // 鍵盤：傳統配置，直接餵進同一組操作向量
+  let f=fwd, r=rgt;
+  if(keys.ArrowUp)    f=1;
+  if(keys.ArrowDown)  f=-0.5;
+  if(keys.ArrowLeft)  r=-1;
+  if(keys.ArrowRight) r=1;
+  const held = dragging || keys.ArrowUp || keys.ArrowDown || keys.ArrowLeft || keys.ArrowRight;
+
+  /* 轉向：先求「想飛的方向」相對目前航向的夾角，再以角速度上限逼近。
+     只有在有前進意圖時才轉向——原地純橫拉不該讓船自己打轉。 */
+  let turned=0;
+  if(held && f>0.02){
+    const want=Math.atan2(r,f);                     // 目標相對航向（0＝正前）
+    const step=clamp(want, -TURN_RATE*dt, TURN_RATE*dt);
+    cam.angle-=step;                                // 角度遞減＝向右偏（見 compass 換算）
+    turned=step;
+  }
+  // 側傾：由「這一幀轉了多少」推目標傾角，再收斂跟隨 → 入彎慢慢壓、出彎慢慢回
+  const bankTarget=clamp(-turned/(TURN_RATE*16.67)*BANK_MAX, -BANK_MAX, BANK_MAX);
+  cam.bank+=(bankTarget-cam.bank)*(1-Math.pow(1-BANK_EASE, dt/16.67));
+
+  /* 油門：往後拉的幅度＝速度。放開→煞停，不自動巡航。 */
+  //   ⚠ 用「每幀比率 → 依 dt 換算」的指數逼近，不能直接乘 dt：
+  //     直接乘會讓係數遠大於 1，變成一兩幀就到位（放開瞬間急煞，沒有慣性）。
+  const target = held ? clamp(f,0,1)*MAX_SPD : 0;
+  const rate = (target>cam.speed) ? ACCEL : BRAKE;
+  cam.speed += (target-cam.speed)*(1-Math.pow(1-rate, dt/16.67));
+  if(cam.speed<0.004) cam.speed=0;
+
+  cam.alt=CRUISE_ALT;
+  const fx=-Math.sin(cam.angle), fy=-Math.cos(cam.angle);
+  const mv=cam.speed*dt*0.06;
+  cam.x+=fx*mv; cam.y+=fy*mv;
+  clock.dist+=mv;
+  clock.minutes+=mv*0.20;
+  while(clock.minutes>=1440){clock.minutes-=1440;clock.date++;}
+  recyclePuffs();
+
+  const h=Math.floor(clock.minutes/60),m=Math.floor(clock.minutes%60);
+  document.getElementById('clock').textContent=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
+  document.getElementById('date').textContent=clock.date;
+  document.getElementById('dist').textContent=Math.round(clock.dist);
+  const deg=((-cam.angle*180/Math.PI)+1080)%360;
+  document.getElementById('compass').textContent=['北','東北','東','東南','南','西南','西','西北'][Math.round(deg/45)%8];
+
+  // 地標名稱已改由 3D 內的名牌呈現（drawPlaces），這裡不再重複彈 DOM 提示
+}
+
+/* ── 渲染 ───────────────────────────────────────────────────────── */
+const ybuf=new Int32Array(512);
+function render(now){
+  const S=sky(), SC=skyColors(S);
+  const scaleH=BH*0.62;
+  const horizon=BH*HORIZON_F;
+
+  for(let y=0;y<BH;y++){
+    const t=clamp(y/Math.max(1,horizon),0,1), tt=t*t;
+    const c=rgb(lerp(SC.top[0],SC.hz[0],tt)|0,lerp(SC.top[1],SC.hz[1],tt)|0,lerp(SC.top[2],SC.hz[2],tt)|0);
+    const row=y*BW;
+    for(let x=0;x<BW;x++) bufU32[row+x]=c;
+  }
+  for(let i=0;i<BW;i++){ ybuf[i]=BH; prevH[i]=-9999; }
+
+  /* 光照。⚠ terrain_generator.py 已把 hillshade 烘進地貌色，
+     這裡的方向項刻意做弱（LIGHT_DIR_K），只負責「日月移動的味道」，
+     不跟烘焙陰影打架；主要靠色溫變化表現晝夜。 */
+  const LIGHT_DIR_K=0.0045;
+  const lx=Math.cos(S.az), ly=Math.sin(S.az);
+  const sunI=clamp(S.el*0.85+0.20,0.05,0.50);
+  const ambI=lerp(0.46,0.72,S.day);
+  const lightR=lerp(lerp(0.60,1.0,S.day),1.20,S.dusk);
+  const lightG=lerp(lerp(0.68,1.0,S.day),0.88,S.dusk);
+  const lightB=lerp(lerp(1.08,1.0,S.day),0.72,S.dusk);
+
+  const sinp=Math.sin(cam.angle), cosp=Math.cos(cam.angle);
+  const FOGS=ZFAR*FOG_START;
+  const fr=SC.hz[0], fg=SC.hz[1], fb=SC.hz[2];
+  const cloudScroll=(now*0.006)|0;
+  const cloudLit=lerp(0.62,1.0,S.day);
+
+  let z=1.0, dz=0.75;
+  while(z<ZFAR){
+    let plx=(-cosp*z-sinp*z)+cam.x, ply=(sinp*z-cosp*z)+cam.y;
+    const prx=(cosp*z-sinp*z)+cam.x, pry=(-sinp*z-cosp*z)+cam.y;
+    const ddx=(prx-plx)/BW, ddy=(pry-ply)/BW;
+    const fog=clamp((z-FOGS)/(ZFAR-FOGS),0,1)*FOG_MAX;
+    const invz=1/z;
+
+    for(let i=0;i<BW;i++){
+      // 世界座標 → 地圖像素
+      const xi=(plx*INV_SCALE)|0, yi=(ply*INV_SCALE)|0;
+      let hh,r,g,b,isRiver=0;
+      const outside=(xi<0||yi<0||xi>=MAPW||yi>=MAPH);
+      const mi=outside?0:yi*MAPW+xi;
+      const th=outside?0:HGT[mi];
+      if(outside||th<=CLOUD_H){
+        const ci=(((yi+cloudScroll)&CTM)*CT)+((xi+cloudScroll)&CTM);
+        hh=CLOUD_H+CLOUDH[ci];
+        const c=CLOUDTEX[ci];
+        r=(c&255)*cloudLit; g=((c>>8)&255)*cloudLit; b=((c>>16)&255)*cloudLit;
+      }else{
+        // 高頻細節：在世界座標上取樣，補回被 10 倍放大糊掉的近景起伏
+        const dt=DETH[(((ply|0)&DTM)*DET_TILE)+((plx|0)&DTM)];
+        hh=th + dt*(DET_AMP/127);
+        isRiver=RIV[mi];
+        const c=COL[mi];
+        const nl=clamp(0.62+(SLX[mi]*lx+SLY[mi]*ly)*LIGHT_DIR_K,0,1.5);
+        const sh=(ambI+sunI*nl)*GRADE_EXPO;
+        r=(c&255)*sh*lightR; g=((c>>8)&255)*sh*lightG; b=((c>>16)&255)*sh*lightB;
+        // VP1 分級：往亮度收斂＝去飽和（在光照之後、霧之前，霧色才不會被連帶洗掉）
+        const lum=r*0.299+g*0.587+b*0.114;
+        r=lum+(r-lum)*GRADE_SAT; g=lum+(g-lum)*GRADE_SAT; b=lum+(b-lum)*GRADE_SAT;
+      }
+      // 曲率：等價於把地表下沉 d²/(2R)，展開後只是加一項 z*curvK[i]
+      let y=(((cam.alt-hh)*invz + z*curvK[i])*scaleH+horizon)|0;
+      if(y<ybuf[i]){
+        if(y<0) y=0;
+        if(fog>0.002){ r=lerp(r,fr,fog); g=lerp(g,fg,fog); b=lerp(b,fb,fog); }
+        const top=rgb(r>255?255:r|0,g>255?255:g|0,b>255?255:b|0);
+        const bot=ybuf[i];
+        const drop=hh-prevH[i];        // 相對「上一個（更近的）已畫取樣」的高度落差
+        if(drop>CLIFF_DH && bot-y>2){
+          /* 崖面：這條垂直線段其實是側壁，不該整條填地表色。
+             頂端留 2px 地表，其餘走岩壁色 + 垂直紋理；河道出海口則畫成瀑布。 */
+          const cap=y+2;
+          for(let yy=y;yy<cap && yy<bot;yy++) bufU32[yy*BW+i]=top;
+          const wx=xi, wy=yi;
+          for(let yy=cap;yy<bot;yy++){
+            const d=(yy-cap)/Math.max(1,bot-cap);      // 0＝崖頂 1＝沒入雲海
+            let cr,cg,cb;
+            if(isRiver){
+              // 瀑布：亮白水柱，向下捲動，底部散成水霧
+              const flow=hash(wx*3, (yy*2 - (now*FALL_SPD|0)) & 511);
+              const v=222+flow*33-d*40;
+              cr=v*0.94; cg=v*0.98; cb=v;
+              const mist=sstep(0.55,1,d);
+              cr=lerp(cr,238,mist); cg=lerp(cg,242,mist); cb=lerp(cb,248,mist);
+            }else{
+              /* 岩壁：用獨立的岩石反照率，不要從地表色推導——
+                 地表在背光側本來就暗，再乘一次會變成純黑的洞。
+                 橫向條紋做岩層，越往下越暗（環境光被崖壁自身遮蔽）。 */
+              const strat=hash(wx*5+wy*3,(yy>>1)*7);
+              const v=(1-d*0.38)*(0.76+strat*0.30);
+              const amb=ambI+sunI*0.35;            // 崖面朝側，取中間調
+              cr=152*v*amb*lightR; cg=138*v*amb*lightG; cb=126*v*amb*lightB;
+              if(yy-cap<2){ cr*=1.35; cg*=1.32; cb*=1.28; }   // 崖唇受光提亮
+            }
+            if(fog>0.002){ cr=lerp(cr,fr,fog); cg=lerp(cg,fg,fog); cb=lerp(cb,fb,fog); }
+            bufU32[yy*BW+i]=rgb(cr>255?255:cr|0,cg>255?255:cg|0,cb>255?255:cb|0);
+          }
+        }else{
+          for(let yy=y;yy<bot;yy++) bufU32[yy*BW+i]=top;
+        }
+        ybuf[i]=y; prevH[i]=hh;
+      }
+      plx+=ddx; ply+=ddy;
+    }
+    // 視距 3600 下若沿用 0.0042 會逼近 1800 步；遠景只占幾個像素又被霧吃掉，
+    // 放寬成長率把步數壓回 ~800，畫質看不出差別但省一半以上取樣。
+    z+=dz; dz+=0.011;
+  }
+
+  bctx.putImageData(buf,0,0);
+  ctx.drawImage(bcv,0,0,BW,BH,0,0,W,VIEWH);
+
+  // 疊加物一律裁切在 3D 視窗內，不可溢出到操作面板
+  ctx.save();
+  ctx.beginPath(); ctx.rect(0,0,W,VIEWH); ctx.clip();
+  drawSunMoon(S,horizon,sinp,cosp);
+  drawPuffs(S,scaleH,horizon,sinp,cosp);
+  drawPlaces(scaleH,horizon,sinp,cosp);
+  drawShip(now);
+  vignette(S);
+  ctx.restore();
+
+  drawPanel(S);
+}
+
+function drawSunMoon(S,horizon,sinp,cosp){
+  const syk=VIEWH/BH;
+  const body=(az,el,R,core,glow)=>{
+    if(el<-0.22) return;
+    const camAz=Math.atan2(-sinp,-cosp);
+    let da=az-camAz;
+    while(da>Math.PI)da-=Math.PI*2;
+    while(da<-Math.PI)da+=Math.PI*2;
+    if(Math.abs(da)>1.05) return;
+    const x=W/2+Math.tan(da)*(W/2);
+    const y=(horizon*syk)-el*VIEWH*0.62;
+    const g=ctx.createRadialGradient(x,y,0,x,y,R*5.5);
+    g.addColorStop(0,glow); g.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,y,R*5.5,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle=core; ctx.beginPath(); ctx.arc(x,y,R,0,Math.PI*2); ctx.fill();
+  };
+  body(S.az,S.el,13, S.dusk>0.35?'#ffd9a0':'#fff6dc', S.dusk>0.35?'rgba(255,168,88,.5)':'rgba(255,238,190,.34)');
+  body(S.az+Math.PI,-S.el,10,'#e8ecf6','rgba(190,206,246,.28)');
+}
+
+function drawPuffs(S,scaleH,horizon,sinp,cosp){
+  const sxk=W/BW, syk=VIEWH/BH;
+  const fx=-sinp, fy=-cosp;
+  const list=[];
+  PUFFS.forEach(p=>{
+    const dx=p.x-cam.x, dy=p.y-cam.y;
+    const z=dx*fx+dy*fy;
+    if(z<3||z>ZFAR) return;
+    const s=(dx*cosp+dy*(-sinp))/z;
+    if(s<-2.4||s>2.4) return;
+    list.push({p,z,s});
+  });
+  list.sort((a,b)=>b.z-a.z);
+  const lit=lerp(0.42,1.0,S.day), warm=S.dusk;
+  list.forEach(({p,z,s})=>{
+    const x=((s+1)/2*BW)*sxk;
+    const y=(((cam.alt-p.h)/z + z*curvAt(s))*scaleH+horizon)*syk;
+    const R=p.r/z*scaleH*syk*0.9;
+    if(R<1.2) return;
+    const a=p.a*clamp((ZFAR-z)/(ZFAR*0.45),0,1)*clamp(z/30,0,1);
+    if(a<0.012) return;
+    const cr=Math.round(lerp(226,255,warm)*lit),
+          cg=Math.round(lerp(232,206,warm)*lit),
+          cb=Math.round(lerp(244,186,warm)*lit);
+    ctx.save(); ctx.globalAlpha=a;
+    for(let k=0;k<5;k++){
+      const ang=k/5*Math.PI*2+p.seed*6;
+      const ox2=Math.cos(ang)*R*0.42, oy2=Math.sin(ang)*R*0.17;
+      const rr=R*(0.52+((k*37)%7)/14);
+      const gg=ctx.createRadialGradient(x+ox2,y+oy2,0,x+ox2,y+oy2,rr);
+      gg.addColorStop(0,`rgba(${cr},${cg},${cb},.9)`);
+      gg.addColorStop(1,`rgba(${cr},${cg},${cb},0)`);
+      ctx.fillStyle=gg;
+      ctx.beginPath(); ctx.ellipse(x+ox2,y+oy2,rr,rr*0.62,0,0,Math.PI*2); ctx.fill();
+    }
+    ctx.restore();
+  });
+}
+
+/* ══ 地標 ══
+   遠：只有一枚向下的箭頭浮在地標上方（不透露名稱）
+   近：箭頭下方展開名牌 —— 名牌出現＝可點擊進入
+   點擊判定用 hotspots（每幀重建），tap 與拖曳靠位移量區分。 */
+const NAME_DIST = 900;    // 世界單位（＝90 地圖像素）：進入此距離才顯示名稱＝可進入
+let hotspots=[];
+function drawPlaces(scaleH,horizon,sinp,cosp){
+  const sxk=W/BW, syk=VIEWH/BH;
+  hotspots=[];
+  const list=[];
+  PLACES.forEach(P=>{
+    const dx=P.wx-cam.x, dy=P.wy-cam.y;
+    const z=dx*(-sinp)+dy*(-cosp);
+    if(z<10||z>ZFAR*0.92) return;
+    const s=(dx*cosp+dy*(-sinp))/z;
+    if(s<-1.1||s>1.1) return;
+    list.push({P,bx:((s+1)/2*BW)*sxk,
+                 by:(((cam.alt-(P.h||0))/z + z*curvAt(s))*scaleH+horizon)*syk,
+                 z, near:Math.hypot(dx,dy)<NAME_DIST});
+  });
+  list.sort((a,b)=>b.z-a.z);
+  list.forEach(o=>{
+    const fade=clamp((ZFAR*0.92-o.z)/240,0,1);
+    ctx.globalAlpha=fade;
+    const ay=clamp(o.by-30,18,VIEWH-40);           // 箭頭底端（指著地標）
+    const bob=Math.sin(performance.now()*0.004+o.bx)*2.5;
+
+    // 向下箭頭
+    ctx.fillStyle= o.near ? '#c9a227' : 'rgba(201,162,39,.62)';
+    ctx.beginPath();
+    ctx.moveTo(o.bx, ay+bob);
+    ctx.lineTo(o.bx-6.5, ay-10+bob);
+    ctx.lineTo(o.bx+6.5, ay-10+bob);
+    ctx.closePath(); ctx.fill();
+    ctx.strokeStyle='rgba(8,7,12,.55)'; ctx.lineWidth=1; ctx.stroke();
+
+    // 近距離才展開名牌（＝可點擊）
+    if(o.near){
+      ctx.font='11px "Noto Serif TC",serif'; ctx.textAlign='center';
+      const tw=ctx.measureText(o.P.name).width;
+      const bx0=o.bx-tw/2-9, by0=ay-32+bob, bwid=tw+18, bhei=18;
+      ctx.fillStyle='rgba(5,6,12,.8)'; ctx.fillRect(bx0,by0,bwid,bhei);
+      ctx.strokeStyle='#c9a227'; ctx.lineWidth=1; ctx.strokeRect(bx0,by0,bwid,bhei);
+      ctx.fillStyle='#c9a227'; ctx.fillText(o.P.name,o.bx,by0+13);
+      // 點擊熱區放大一圈，手指才好按
+      hotspots.push({x:bx0-8,y:by0-8,w:bwid+16,h:bhei+22,P:o.P});
+    }
+    ctx.globalAlpha=1;
+  });
+}
+
+/* 進入地標（目前只做確認演出；之後接場景切換） */
+let entering=null;
+function enterPlace(P){
+  entering={P,t:performance.now()};
+  const pn=document.getElementById('place');
+  document.getElementById('pnm').textContent=P.name;
+  document.getElementById('pty').textContent='—　進入　—';
+  pn.classList.add('show');
+  setTimeout(()=>{ entering=null; pn.classList.remove('show'); },1400);
+}
+
+/* ══ 飛空艇：19 世紀蒸汽帆船（自後上方看）══
+   轉向時整艘船側傾（bank）：轉向角速度 → 傾角，收斂式跟隨所以有滯後感。
+   煙囪拖出的煙也隨側傾偏向外側。 */
+function drawShip(now){
+  const t=now;
+  /* 上下飄動：兩個不同週期的正弦疊加，避免規律得像機械擺動。
+     停船時也持續（浮空艇本來就浮著），只是幅度小一點。 */
+  const idle=0.55+0.45*clamp(cam.speed/MAX_SPD,0,1);
+  const bob=(Math.sin(t*0.0016)*3.0+Math.sin(t*0.00071)*1.8)*idle;
+  const x=W/2, y=VIEWH*0.76+bob;
+  const k=Math.min(2.9,W/135);
+
+  /* 尾跡：兩束細白霧自船尾劃出（SOA 飛空艇那種凝結尾）。
+     船固定在畫面上、世界在動 → 尾跡等於朝畫面下方拉，
+     側傾時整束往外偏，轉彎才看得出來。長度隨速度。 */
+  const spd=clamp(cam.speed/MAX_SPD,0,1);
+  if(spd>0.02){
+    const len=14+spd*54, segs=16;
+    ctx.save(); ctx.translate(x,y); ctx.lineCap='round';
+    for(const side of [-1,1]){
+      const x0=side*4.4*k, y0=9*k;
+      for(let i=0;i<segs;i++){
+        const a0=i/segs, a1=(i+1)/segs;
+        const wob=Math.sin(t*0.004+i*0.55+side)*1.5*a0;   // 尾端輕微擺動＝亂流
+        const wob2=Math.sin(t*0.004+(i+1)*0.55+side)*1.5*a1;
+        ctx.globalAlpha=(1-a0)*(1-a0)*0.5*spd;
+        ctx.strokeStyle='#eef2f8';
+        ctx.lineWidth=(1.9-a0*1.5)*k*0.5;
+        ctx.beginPath();
+        ctx.moveTo(x0+side*a0*5*k+wob+cam.bank*22*a0, y0+a0*len);
+        ctx.lineTo(x0+side*a1*5*k+wob2+cam.bank*22*a1, y0+a1*len);
+        ctx.stroke();
+      }
+    }
+    ctx.restore(); ctx.globalAlpha=1;
+  }
+
+  ctx.save(); ctx.translate(x,y);
+  ctx.rotate(cam.bank);            // 側傾
+  ctx.scale(k,k);
+
+  // 船殼：尖艏、方艉，黑色塗裝配金線
+  ctx.fillStyle='#241f1a';
+  ctx.beginPath();
+  ctx.moveTo(0,-15); ctx.quadraticCurveTo(4.6,-8, 5.0,0);
+  ctx.lineTo(4.2,9); ctx.lineTo(-4.2,9); ctx.lineTo(-5.0,0);
+  ctx.quadraticCurveTo(-4.6,-8, 0,-15); ctx.closePath(); ctx.fill();
+  // 甲板
+  ctx.fillStyle='#8a7350';
+  ctx.beginPath();
+  ctx.moveTo(0,-12.4); ctx.quadraticCurveTo(3.5,-7, 3.8,0);
+  ctx.lineTo(3.2,7.4); ctx.lineTo(-3.2,7.4); ctx.lineTo(-3.8,0);
+  ctx.quadraticCurveTo(-3.5,-7, 0,-12.4); ctx.closePath(); ctx.fill();
+  // 舷側金線
+  ctx.strokeStyle='rgba(201,162,39,.55)'; ctx.lineWidth=0.5;
+  ctx.beginPath(); ctx.moveTo(-4.4,-1); ctx.lineTo(-3.7,8); ctx.moveTo(4.4,-1); ctx.lineTo(3.7,8); ctx.stroke();
+
+  // 舷外浮翼（飛空艇的支撐翼）
+  ctx.fillStyle='#4a3f33';
+  ctx.beginPath(); ctx.moveTo(-4.6,1); ctx.lineTo(-12.5,4.2); ctx.lineTo(-11.8,5.8); ctx.lineTo(-4.4,4.6); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(4.6,1); ctx.lineTo(12.5,4.2); ctx.lineTo(11.8,5.8); ctx.lineTo(4.4,4.6); ctx.closePath(); ctx.fill();
+
+  // 三根桅杆 + 橫帆（前桅小、主桅大、後桅中）
+  const sail=(my,mh,sw,sh)=>{
+    ctx.strokeStyle='#2b2419'; ctx.lineWidth=0.7;
+    ctx.beginPath(); ctx.moveTo(0,my); ctx.lineTo(0,my-mh); ctx.stroke();   // 桅
+    ctx.beginPath(); ctx.moveTo(-sw,my-mh*0.72); ctx.lineTo(sw,my-mh*0.72); ctx.stroke();  // 桁
+    ctx.fillStyle='rgba(226,219,198,.94)';
+    ctx.beginPath();
+    ctx.moveTo(-sw,my-mh*0.72);
+    ctx.quadraticCurveTo(0,my-mh*0.72+sh*0.34, sw,my-mh*0.72);
+    ctx.lineTo(sw*0.86,my-mh*0.72+sh); ctx.quadraticCurveTo(0,my-mh*0.72+sh*1.3,-sw*0.86,my-mh*0.72+sh);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle='rgba(120,112,96,.28)';                                   // 帆的背光側
+    ctx.beginPath();
+    ctx.moveTo(0,my-mh*0.72); ctx.lineTo(sw,my-mh*0.72);
+    ctx.lineTo(sw*0.86,my-mh*0.72+sh); ctx.quadraticCurveTo(0,my-mh*0.72+sh*1.3,0,my-mh*0.72+sh);
+    ctx.closePath(); ctx.fill();
+  };
+  sail(-6.5, 6.5, 3.4, 3.2);     // 前桅
+  sail( 0.5, 9.0, 4.6, 4.4);     // 主桅
+  sail( 6.0, 6.0, 3.2, 3.0);     // 後桅
+
+  // 煙囪（主桅與後桅之間）
+  ctx.fillStyle='#1c1814';
+  ctx.fillRect(-1.05, 2.0, 2.1, 3.4);
+  ctx.fillStyle='#3a3128'; ctx.fillRect(-1.05, 2.0, 2.1, 0.8);
+
+  // 艉燈
+  ctx.fillStyle='rgba(255,206,120,.9)';
+  ctx.beginPath(); ctx.arc(0,8.2,0.75,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+}
+
+function vignette(S){
+  const v=ctx.createRadialGradient(W/2,VIEWH*0.5,VIEWH*0.34,W/2,VIEWH*0.5,VIEWH*1.05);
+  v.addColorStop(0,'rgba(0,0,0,0)');
+  v.addColorStop(1,`rgba(0,0,0,${lerp(0.58,0.42,S.day)})`);
+  ctx.fillStyle=v; ctx.fillRect(0,0,W,VIEWH);
+}
+
+/* ══ 操作面板（畫面下方 1/3）══
+   左＝羅盤帶　中＝操縱桿與油門　右＝時刻/高度/距離。
+   面板本身也是拖曳區，等於把操作握把放在拇指自然位置。 */
+function drawPanel(S){
+  const y0=VIEWH, ph=H-VIEWH;
+  const g=ctx.createLinearGradient(0,y0,0,H);
+  g.addColorStop(0,'#12101a'); g.addColorStop(1,'#08070d');
+  ctx.fillStyle=g; ctx.fillRect(0,y0,W,ph);
+  ctx.strokeStyle='rgba(201,162,39,.55)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(0,y0+0.5); ctx.lineTo(W,y0+0.5); ctx.stroke();
+
+  const cy=y0+ph*0.5;
+
+  /* 中央：操縱桿。外圈＝可拉範圍，圓點＝目前拖曳向量（已反向成行進方向） */
+  const R=Math.min(ph*0.34,44), cx=W/2;
+  ctx.strokeStyle='rgba(201,162,39,.28)';
+  ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2); ctx.stroke();
+  ctx.strokeStyle='rgba(201,162,39,.14)';
+  ctx.beginPath(); ctx.moveTo(cx-R,cy); ctx.lineTo(cx+R,cy);
+  ctx.moveTo(cx,cy-R); ctx.lineTo(cx,cy+R); ctx.stroke();
+  const kx=clamp(rgt,-1,1), ky=clamp(fwd,-1,1);
+  ctx.strokeStyle='rgba(201,162,39,.75)'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+kx*R*0.86,cy-ky*R*0.86); ctx.stroke();
+  ctx.fillStyle=dragging?'#c9a227':'rgba(201,162,39,.45)';
+  ctx.beginPath(); ctx.arc(cx+kx*R*0.86,cy-ky*R*0.86,4.5,0,Math.PI*2); ctx.fill();
+
+  /* 油門弧：目前速度佔滿速比例 */
+  const spd=clamp(cam.speed/MAX_SPD,0,1);
+  ctx.lineWidth=3; ctx.strokeStyle='rgba(201,162,39,.18)';
+  ctx.beginPath(); ctx.arc(cx,cy,R+9,Math.PI*0.75,Math.PI*2.25); ctx.stroke();
+  if(spd>0.001){
+    ctx.strokeStyle='#c9a227';
+    ctx.beginPath(); ctx.arc(cx,cy,R+9,Math.PI*0.75,Math.PI*0.75+Math.PI*1.5*spd); ctx.stroke();
+  }
+  ctx.lineWidth=1;
+
+  /* 左：羅盤帶（以航向為中心捲動） */
+  const deg=((-cam.angle*180/Math.PI)%360+360)%360;
+  const bw=W*0.26, bx=W*0.045;
+  ctx.save();
+  ctx.beginPath(); ctx.rect(bx,cy-16,bw,32); ctx.clip();
+  ctx.font='10px "Noto Serif TC",serif'; ctx.textAlign='center';
+  for(let d=-90;d<=90;d+=15){
+    const a=((deg+d)%360+360)%360;
+    const px=bx+bw/2+d/90*(bw/2);
+    const major=(a%45)<1||(a%45)>44;
+    ctx.strokeStyle=major?'rgba(201,162,39,.65)':'rgba(216,205,180,.22)';
+    ctx.beginPath(); ctx.moveTo(px,cy+4); ctx.lineTo(px,cy+(major?-2:1)); ctx.stroke();
+    if(major){
+      ctx.fillStyle='rgba(216,205,180,.75)';
+      ctx.fillText(['北','東北','東','東南','南','西南','西','西北'][Math.round(a/45)%8],px,cy-6);
+    }
+  }
+  ctx.restore();
+  ctx.strokeStyle='#c9a227';
+  ctx.beginPath(); ctx.moveTo(bx+bw/2,cy-18); ctx.lineTo(bx+bw/2,cy+8); ctx.stroke();
+
+  /* 右：數值 */
+  const rx=W*0.955;
+  ctx.textAlign='right';
+  ctx.font='9px "Noto Serif TC",serif'; ctx.fillStyle='rgba(216,205,180,.45)';
+  ctx.fillText('時刻',rx,cy-16); ctx.fillText('距離',rx,cy+2); ctx.fillText('高度',rx,cy+20);
+  ctx.font='11px "Noto Serif TC",serif'; ctx.fillStyle='#c9a227';
+  const hh=Math.floor(clock.minutes/60), mm=Math.floor(clock.minutes%60);
+  ctx.fillText(String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0'),rx-30,cy-16);
+  ctx.fillText(Math.round(clock.dist)+'',rx-30,cy+2);
+  ctx.fillText(Math.round(cam.alt)+'',rx-30,cy+20);
+  ctx.textAlign='left';
+}
+
+/* ── 主迴圈 ─────────────────────────────────────────────────────── */
+let last=performance.now(),acc=0,n=0;
+function loop(now){
+  const dt=Math.min(40,now-last); last=now;
+  update(dt); render(now);
+  acc+=dt;n++;
+  if(acc>500){document.getElementById('fps').textContent=Math.round(1000/(acc/n))+' fps '+BW+'×'+BH;acc=0;n=0;}
+  requestAnimationFrame(loop);
+}
+
+(async()=>{
+  const t0=performance.now();
+  try{
+    genCloudTex(); genDetail();
+    await loadWorld();
+    initPuffs();
+    window.__loadMs=Math.round(performance.now()-t0);
+    window.__map=MAPW+'×'+MAPH;
+    document.getElementById('boot').classList.add('hide');
+    requestAnimationFrame(loop);
+  }catch(e){
+    document.getElementById('bootMsg').textContent=e.message+'（需以 http 提供，不能直接雙擊開啟）';
+  }
+})();
+</script>
+</body>
+</html>

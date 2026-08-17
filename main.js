@@ -417,6 +417,8 @@ document.querySelectorAll('#originalSheet .os-link').forEach(a=>{
 // 沒看到清盤鈕就不會看到後臺鈕，一般使用者無從誤入。裝置的永久簽名（localStorage）
 // 只作遙測排除，不再於開機時直接顯示後臺鈕；已簽裝置要進後臺，每場重做解鎖手勢即可。
 bindBtn('statsBtn', ()=>{ window.location.href = 'stats.html'; });
+// 試飛：大地圖飛行原型（管理人模式限定；鈕本身由 CSS 隱藏，見 style.css）
+bindBtn('flightBtn', ()=>{ window.location.href = 'flight/'; });
 weapon.refreshLoadoutLabels();                  // 開機：把當前副武器/搭檔名寫進 loadout 按鈕
 TEL.visit();                                    // 來訪上報（每次開頁一筆）
 // 版本號不上首頁：於「連點團徽 5 下」的診斷 HUD 內顯示（見 debugHud）
@@ -721,14 +723,20 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
     const ymid=(s.y+t.y)/2;
     return ymid > tr.top-40 && ymid < tr.bottom+40;    // 高度落在字樣帶
   };
-  const unlock=()=>{
+  /* 管理人模式＝開關式：同一組手勢再做一次即關閉。
+     狀態存 localStorage（TEL 的簽名鍵），開機時還原 → 進過一次就一直是管理人，
+     不必每次重做手勢；要退出就再畫一次圓＋橫劃。 */
+  const toggleAdmin=()=>{
     circleAt=0;
-    document.body.classList.add('testmode');
-    TEL.markAdmin();   // 清盤鈕簽名＝管理員：此裝置永久停止遙測上報（戰績/點擊不列入統計）
-    SFX.unlock(); SFX.play(asset('sfx_saint'));   // SI_01＝解鎖回饋音
+    const on=!document.body.classList.contains('testmode');
+    document.body.classList.toggle('testmode', on);
+    if(on) TEL.markAdmin();      // 簽名＝管理員：此裝置停止遙測上報（戰績/點擊不列入統計）
+    else   TEL.clearAdmin();     // 撤銷簽名 → 恢復上報
+    SFX.unlock(); SFX.play(asset('sfx_saint'));   // SI_01＝開關回饋音
   };
+  // 開機還原：簽名還在就直接進管理人模式
+  if(TEL.isAdminStored()) document.body.classList.add('testmode');
   homeEl.addEventListener('pointerdown', e=>{
-    if(document.body.classList.contains('testmode')) return;
     if(e.target && e.target.closest && e.target.closest('button')) return;   // 按鈕上起手不算
     pid=e.pointerId; pts=[{x:e.clientX,y:e.clientY}];
   });
@@ -741,7 +749,7 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
     if(!pts || e.pointerId!==pid) return;
     const path=pts; pts=null; pid=null;
     if(isCircle(path)){ circleAt=Date.now(); return; }   // 畫圓成功（可重畫刷新時窗）
-    if(circleAt && Date.now()-circleAt<=10000 && isTitleSwipe(path)) unlock();
+    if(circleAt && Date.now()-circleAt<=10000 && isTitleSwipe(path)) toggleAdmin();
   });
   homeEl.addEventListener('pointercancel', ()=>{ pts=null; pid=null; });
 })();
