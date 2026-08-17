@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.16-102';
+export const VERSION = 'ver 2026.08.17-103';
 
 export const GAME_CONFIG = {
 
@@ -651,12 +651,14 @@ export const GAME_CONFIG = {
                sfx_startbt:1.9,   // 長尾鈴音、fullRMS 失真 → 以有效 RMS −20.7 反推
                em_slash:0.62, em_smack:1.15, em_shot:1.3, em_revolver:0.66, em_dagger:1.7 },
 
-    // BGM 播放音量（0~1，HTMLAudio.volume）：目標統一＝語音基準（−14.4）的 90% ≈ −15.3 dBFS
+    // BGM 播放音量（0~1，HTMLAudio.volume）：原目標＝語音基準（−14.4）的 90% ≈ −15.3 dBFS
     //   （ver -37 起與音效同一水位）。各曲依實測 fullRMS 反推：battle −9.8 / boss −8.0 /
     //   result −10.9 / lose −15.5 / home −16.6。
-    //   ⚠ bgm_home 母帶偏小聲，需 1.16 才到位但 HTMLAudio.volume 上限 1 → 封頂 1.0
-    //   （實得 −16.6，比其他曲低約 1.3 dB；要完全拉平需重母帶 +1.3 dB）。
-    bgmVol: { default:0.5, bgm_home:1.0, bgm_battle:0.53, bgm_boss:0.43, bgm_result:0.60, bgm_lose:1.0 },
+    //   ⚠ 全體 ×0.75（−2.5 dB）：BGM 壓過語音/音效 → 整排降 25%，曲間相對平衡不變。
+    //     實得約 −17.8 dBFS，比語音/音效低約 2.5 dB。
+    //   ⚠ bgm_home 母帶偏小聲（原需 1.16 但 HTMLAudio.volume 上限 1 → 曾封頂），
+    //     降 25% 後為 0.75，仍沿用封頂後的相對值 → 比其他曲低約 1.3 dB（要拉平需重母帶 +1.3 dB）。
+    bgmVol: { default:0.375, bgm_home:0.75, bgm_battle:0.40, bgm_boss:0.32, bgm_result:0.45, bgm_lose:0.75 },
 
     // 載入畫面教學 Hint 輪播（文案見 loadingHints）
     loadingHintHoldMs:   5000,  // 每句停留 5 秒
