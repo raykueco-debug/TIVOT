@@ -260,6 +260,22 @@ const sm=t=>t*t*(3-2*t);
    用欄位種子錯開，視覺上分不出差別，成本從函式呼叫降到一次陣列讀取。 */
 const STRAT=new Float32Array(256);
 
+/* ── 抗鋸齒 ──────────────────────────────────────────────────────
+   ⚠ 畫面上的「鋸齒」有三種來源，混在一起調會調錯地方：
+     A 低解析緩衝的最近鄰放大（1.67 倍）→ 那是刻意的 PS1 味，不動。
+     B 每根柱子頂端取整（y|0）→ 相鄰柱子差一整個像素，每條稜線都是階梯。
+       **這才是要修的。**修法：頂端那一個像素依 y 的小數部分做覆蓋率混色，
+       柱子內部完全不碰 → 輪廓變順、方塊感原封不動。
+     C 霧與天空漸層的色帶 → 用有序抖動（Bayer）打散。
+   Bayer 是 PS1 當年真正在用的手法：不是把色帶磨平，而是換成網點，
+   所以結果會**更像**那個年代而不是更不像。 */
+const BAYER=new Float32Array(16);
+(function(){
+  const m=[0,8,2,10, 12,4,14,6, 3,11,1,9, 15,7,13,5];
+  for(let i=0;i<16;i++) BAYER[i]=(m[i]/16-0.469);   // −0.47..+0.47
+})();
+const DITHER=2.6;      // 抖動幅度（色階）。太大會看到網格，太小蓋不掉色帶。
+
 /* ── 雲海貼圖：週期性雜訊，平鋪無接縫 ─────────────────────────── */
 const CT=256, CTM=CT-1, CPER=4;
 const CLOUDTEX=new Uint32Array(CT*CT);
@@ -396,6 +412,8 @@ const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
 let W=0,H=0,VIEWH=0,BW=0,BH=0,buf=null,bufU32=null,bcv=null,bctx=null;
 let curvK=null;      // 每欄的曲率係數 (1+s²)/(2R)
 let prevH=null;      // 每欄「上一個畫出的取樣高度」→ 判定崖面
+let topFrac=null;    // 每欄頂端的次像素未覆蓋比例 → 收尾時做輪廓抗鋸齒
+let SKYROW=null;     // 每列的天空色，輪廓混色要拿它當背景
 function resize(){
   W=innerWidth;H=innerHeight;
   VIEWH=Math.round(H*VIEW_F);
@@ -420,6 +438,8 @@ function resize(){
     curvK[i]=(1+s*s)/(2*PLANET_R);    // 邊緣 s=±1 時是中央的兩倍 → 地平線兩側下彎
   }
   prevH=new Float32Array(BW);
+  topFrac=new Float32Array(BW);
+  SKYROW=new Uint32Array(BH);
 }
 addEventListener('resize',resize);resize();
 // 地標/雲團等疊加物要套同一條曲率，否則會跟地形錯開（越遠越明顯）
@@ -510,32 +530,68 @@ document.getElementById('mapBtn').addEventListener('click',()=>{
 mapView.addEventListener('click',()=>{ mapOpen=false; mapView.classList.remove('on'); });
 
 /* ══ 航行 BGM ══
-   Sail.mp3 循環播放：最後 FADE_OUT 秒淡出，播完回到頭再淡入。
-   ⚠ 不用 audio.loop —— loop 是無縫接回開頭，接點會有一個突兀的音量跳變
-     （尾巴還在響、開頭直接切進來）。要的是「淡出→淡入」的呼吸感，
-     所以自己管 currentTime 與音量。
-   ⚠ 自動播放會被瀏覽器擋（沒有使用者手勢）。這一頁是從首頁點「試飛」
-     換頁進來的，手勢不會延續 → 先試著播，被擋就掛一次性的
-     pointerdown/keydown 補播；玩家一碰畫面就會響。 */
-const BGM_VOL=0.55, FADE_IN=2.0, FADE_OUT=5.0;
-const bgm=new Audio('Sail.mp3');
-bgm.loop=false; bgm.volume=0; bgm.preload='auto';
-bgm.addEventListener('ended',()=>{ bgm.currentTime=0; bgm.play().catch(()=>{}); });
-function updateBgm(){
-  const d=bgm.duration;
-  if(!d || !isFinite(d)) return;
-  const t=bgm.currentTime;
-  let v=1;
-  if(t<FADE_IN)            v=t/FADE_IN;
-  else if(t>d-FADE_OUT)    v=(d-t)/FADE_OUT;
-  bgm.volume=clamp(v,0,1)*BGM_VOL;
+   停船＝Standby.mp3，航行＝Sail.mp3，兩者依速度交叉淡入淡出。
+
+   ▍為什麼要兩個 <audio> 疊著跑
+   單一元素做不到「無斷點循環」：audio.loop 是硬接回開頭（尾巴還在響、
+   開頭直接切進來 → 接點一個突兀的跳變）；自己 seek 回 0 則中間必然有一段
+   靜音。要真的沒有斷感，得在尾端 XF 秒讓**同一首的下一輪**先開始播，
+   前一輪同時淡出 —— 兩條音軌重疊那 5 秒。所以每首各準備兩個元素輪流當班。
+   ⚠ 把淡入淡出烘進音檔也可以，但那樣兩輪之間仍然是「淡出完才淡入」，
+     中間會空掉；重疊才是消除斷感的關鍵，跟音檔怎麼做無關。
+
+   ▍自動播放
+   從首頁點「試飛」是換頁，手勢不會延續 → 先試播，被擋就掛一次性的
+   pointerdown/keydown 補播；玩家一碰畫面就會響。 */
+const BGM_VOL=0.55, XFADE=5.0, MIX_RATE=0.014;   // MIX_RATE：Sail↔Standby 交叉約 2 秒
+function makeLoop(src){
+  const a=[new Audio(src), new Audio(src)];
+  a.forEach(x=>{ x.preload='auto'; x.volume=0; x.loop=false; });
+  /* ⚠ 預熱：第二個元素第一次被叫起來播時，解碼器還沒初始化 → 交棒那一刻
+     會頓一下。開場先靜音各播一瞬間再倒回去，解碼路徑就熱好了。
+     （音檔本身也已壓成單聲道 96k，Sail 1387→521KB、Standby 895→538KB，
+       檔案小一半以上，解碼與 IO 都跟著輕。） */
+  a.forEach(x=>{ const p=x.play(); if(p) p.then(()=>{ x.pause(); x.currentTime=0; }).catch(()=>{}); });
+  let cur=0, on=false;
+  a.forEach((x,i)=>x.addEventListener('ended',()=>{
+    x.pause(); x.currentTime=0; if(cur===i) cur=1-i;    // 交棒給已經在播的那個
+  }));
+  return {
+    start(){ if(on) return true; const p=a[0].play(); if(p) p.catch(()=>{}); on=true; return true; },
+    stop(){ a.forEach(x=>{x.pause();}); on=false; },
+    playing(){ return on; },
+    tick(gain){
+      if(!on) return;
+      const A=a[cur], B=a[1-cur], d=A.duration;
+      if(!d||!isFinite(d)){ A.volume=gain; return; }
+      const t=A.currentTime;
+      let va=1;
+      if(t>d-XFADE){                       // 尾端 XF 秒：A 淡出、B 同時淡入
+        va=clamp((d-t)/XFADE,0,1);
+        if(B.paused){ B.currentTime=0; const p=B.play(); if(p) p.catch(()=>{}); }
+        B.volume=(1-va)*gain;
+      }
+      A.volume=va*gain;
+    }
+  };
+}
+const bgmSail=makeLoop('Sail.mp3'), bgmIdle=makeLoop('Standby.mp3');
+let sailMix=0;                       // 0＝停船 1＝航行，收斂跟隨避免忽大忽小
+function updateBgm(dt){
+  // 門檻取很低：一有推進就切成航行曲，回到完全靜止才回待機
+  const want=(Math.abs(cam.speed)>0.06)?1:0;
+  sailMix+=(want-sailMix)*(1-Math.pow(1-MIX_RATE, dt/16.67));
+  bgmSail.tick(BGM_VOL*sailMix);
+  bgmIdle.tick(BGM_VOL*(1-sailMix));
 }
 (function startBgm(){
-  const kick=()=>{ bgm.play().then(()=>{
+  const kick=()=>{
+    bgmSail.start(); bgmIdle.start();
+    if(!bgmSail.playing()) return;
     removeEventListener('pointerdown',kick); removeEventListener('keydown',kick);
-  }).catch(()=>{}); };
-  kick();                                   // 先試：有些情境（重整）手勢還在
-  addEventListener('pointerdown',kick);     // 被擋的話，第一次觸碰就補播
+  };
+  kick();
+  addEventListener('pointerdown',kick);
   addEventListener('keydown',kick);
 })();
 
@@ -672,11 +728,16 @@ function render(now){
 
   for(let y=0;y<BH;y++){
     const t=clamp(y/Math.max(1,horizon),0,1), tt=t*t;
-    const c=rgb(lerp(SC.top[0],SC.hz[0],tt)|0,lerp(SC.top[1],SC.hz[1],tt)|0,lerp(SC.top[2],SC.hz[2],tt)|0);
-    const row=y*BW;
-    for(let x=0;x<BW;x++) bufU32[row+x]=c;
+    const sr=lerp(SC.top[0],SC.hz[0],tt), sg=lerp(SC.top[1],SC.hz[1],tt), sb=lerp(SC.top[2],SC.hz[2],tt);
+    const row=y*BW, br=(y&3)<<2;
+    SKYROW[y]=rgb(sr|0,sg|0,sb|0);        // 未抖動的純天空色，輪廓混色用
+    // 天空是整片平滑漸層 → 8bit 量化會出色帶，逐像素套 Bayer 打散
+    for(let x=0;x<BW;x++){
+      const d=BAYER[br|(x&3)]*DITHER;
+      bufU32[row+x]=rgb(clamp(sr+d,0,255)|0,clamp(sg+d,0,255)|0,clamp(sb+d,0,255)|0);
+    }
   }
-  for(let i=0;i<BW;i++){ ybuf[i]=BH; prevH[i]=-9999; }
+  for(let i=0;i<BW;i++){ ybuf[i]=BH; prevH[i]=-9999; topFrac[i]=0; }
 
   /* 光照。⚠ terrain_generator.py 已把 hillshade 烘進地貌色，
      這裡的方向項刻意做弱（LIGHT_DIR_K），只負責「日月移動的味道」，
@@ -775,12 +836,16 @@ function render(now){
         r=lum+(r-lum)*GRADE_SAT; g=lum+(g-lum)*GRADE_SAT; b=lum+(b-lum)*GRADE_SAT;
       }
       // 曲率：等價於把地表下沉 d²/(2R)，展開後只是加一項 z*curvK[i]
-      let y=(((cam.alt-hh)*invz + z*curvK[i])*scaleH+horizon)|0;
+      const yf=((cam.alt-hh)*invz + z*curvK[i])*scaleH+horizon;
+      let y=yf|0;
       if(y<ybuf[i]){
+        // 次像素：這一列有多少「沒被地形蓋到」。收尾時只拿最後的頂端來混。
+        topFrac[i]=(y>0)?clamp(yf-y,0,1):0;
         if(y<0) y=0;
         const sr=r, sg=g, sb=b;        // 未套霧的地表色，立面要從這裡推
         if(fog>0.002){ r=lerp(r,fr,fog); g=lerp(g,fg,fog); b=lerp(b,fb,fog); }
-        const top=rgb(r>255?255:r|0,g>255?255:g|0,b>255?255:b|0);
+        const dth=BAYER[((y&3)<<2)|(i&3)]*DITHER;
+        const top=rgb(clamp(r+dth,0,255)|0,clamp(g+dth,0,255)|0,clamp(b+dth,0,255)|0);
         const bot=ybuf[i];
         /* ⚠ 每幀 prevH 初始化為 -9999 代表「還沒有上一筆」。不特判的話
            最近的那一步 drop 會是一萬多，整片畫面下緣被當成巨型崖面畫出來
@@ -791,15 +856,16 @@ function render(now){
            接近地平線色時，立面的紋理與漸暗一個都看不出來，卻要付整段
            per-pixel 的代價。畫面大部分面積都落在這一類，這道閘門省下的
            時間比任何其他優化都多。 */
-        if(bot-y>3 && fog<0.86){
+        const y0=y;
+        if(bot-y0>3 && fog<0.86){
           /* 立面：**所有**垂直線段都走這條路，不再只有大落差才處理。
              原本落差不到門檻就整條填單一地表色，於是每根柱子都是一道
              純色豎條 —— 那正是「垂直立面怪怪的」。
              顏色由該處地表色推導（雪山得到灰白的壁、森林區得到褐綠的壁），
              加上橫向岩層條紋與往下漸暗（環境光被崖壁自身遮蔽）。
              落差越大越混入獨立的岩石反照率：小起伏是土坡，大落差才是岩壁。 */
-          const cap=y+2;
-          for(let yy=y;yy<cap && yy<bot;yy++) bufU32[yy*BW+i]=top;
+          const cap=y0+2;
+          for(let yy=y0;yy<cap && yy<bot;yy++) bufU32[yy*BW+i]=top;
           const wx=xi, wy=yi;
           const rocky=clamp((drop-16)/(CLIFF_DH*1.5),0,1);
           const fall=isRiver && rocky>0.40;   // 河道 + 真的是斷崖 → 瀑布
@@ -842,10 +908,11 @@ function render(now){
               if(yy-cap<2){ cr*=1.22; cg*=1.20; cb*=1.18; }   // 崖唇受光提亮
             }
             if(fog>0.002){ cr=lerp(cr,fr,fog); cg=lerp(cg,fg,fog); cb=lerp(cb,fb,fog); }
-            bufU32[yy*BW+i]=rgb(cr>255?255:cr|0,cg>255?255:cg|0,cb>255?255:cb|0);
+            const wd=BAYER[((yy&3)<<2)|(i&3)]*DITHER;
+            bufU32[yy*BW+i]=rgb(clamp(cr+wd,0,255)|0,clamp(cg+wd,0,255)|0,clamp(cb+wd,0,255)|0);
           }
         }else{
-          for(let yy=y;yy<bot;yy++) bufU32[yy*BW+i]=top;
+          for(let yy=y0;yy<bot;yy++) bufU32[yy*BW+i]=top;
         }
         ybuf[i]=y; prevH[i]=hh;
       }
@@ -854,6 +921,25 @@ function render(now){
     // 視距 3600 下若沿用 0.0042 會逼近 1800 步；遠景只占幾個像素又被霧吃掉，
     // 放寬成長率把步數壓回 ~800，畫質看不出差別但省一半以上取樣。
     z+=dz; dz+=0.011;
+  }
+
+  /* ══ 抗鋸齒 ①：輪廓的次像素混色 ══
+     z 迴圈跑完後，ybuf[i] 就是該欄地形的最高列 —— 那一列才是真正的
+     天空／地形交界，也只有它該做覆蓋率混色。
+     ⚠ 一開始我在迴圈裡「每畫一次新頂端就混一次」，結果連續斜坡上每隔
+       幾列就有一條偏天空色的亮列（因為上方當下還是天空、更遠的地形之後
+       才會補進來），逐欄相位又不同 → 整片鹽粒雜訊。
+       交界只有一條，混色也只該做一次。
+     成本 O(BW)，一幀幾百次，可以忽略。 */
+  for(let i=0;i<BW;i++){
+    const f=topFrac[i], ty=ybuf[i];
+    if(f<0.08 || ty<=0 || ty>=BH) continue;
+    const c=bufU32[ty*BW+i], s=SKYROW[ty];
+    const cr=c&255, cg=(c>>8)&255, cb=(c>>16)&255;
+    bufU32[ty*BW+i]=rgb(
+      (cr+((s&255)-cr)*f)|0,
+      (cg+(((s>>8)&255)-cg)*f)|0,
+      (cb+(((s>>16)&255)-cb)*f)|0);
   }
 
   bctx.putImageData(buf,0,0);
@@ -1525,7 +1611,7 @@ function drawPanel(S){
 let last=performance.now(),acc=0,n=0;
 function loop(now){
   const dt=Math.min(40,now-last); last=now;
-  update(dt,now); render(now); updateBgm(); updateMapMe();
+  update(dt,now); render(now); updateBgm(dt); updateMapMe();
   acc+=dt;n++;
   if(acc>500){document.getElementById('fps').textContent=Math.round(1000/(acc/n))+' fps '+BW+'×'+BH;acc=0;n=0;}
   requestAnimationFrame(loop);

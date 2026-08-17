@@ -42,6 +42,7 @@
    它會污染起伏度（被當成山脊），所以在分類之前就得處理掉。
 """
 import os
+from collections import deque
 import numpy as np
 from PIL import Image
 from scipy import ndimage as ndi
@@ -70,6 +71,8 @@ CRUISE_ALT = 700      # 巡航高度：峰頂必須低於此值
 EDGE_W       = 26     # 大陸邊緣往內收的過渡帶（地圖像素）→ 斜坡取代斷崖
 RIVER_INSET  = 16     # 一般河流的下嵌深度（世界單位）——只是「嵌一點」
 RIVER_FLAT   = 11     # 河道兩側「不長山」的影響半徑（高斯 sigma，地圖像素）
+SOURCE_H     = 150    # 最上游的水面高度（世界單位）；出海口是 CLOUD_H+10
+LAKE_R       = 22     # 源頭湖的半徑（地圖像素）
 GORGE_XY     = (940, 740)   # 卡耶爾山谷：唯一保留峽谷的地方（地圖像素）
 GORGE_R      = 260    # 峽谷作用半徑
 
@@ -215,13 +218,54 @@ def main():
     shallow = ndi.gaussian_filter((lake & ~gorge).astype(np.float32), 1.8)
     h -= shallow * RIVER_INSET
 
-    # 保險：即使壓過起伏度，河仍可能落在鄰域的高處（例如兩座山之間的鞍部）。
-    # 強制河面不高於鄰域最低點 —— 河一定在谷底，不會掛在坡上。
-    wet = lake & ~gorge
-    if wet.any():
-        locmin = ndi.minimum_filter(h, size=31)
-        h = np.where(wet, np.minimum(h, locmin + 6.0), h)
-        h = ndi.gaussian_filter(h, 1.2)          # 收邊，免得壓出一圈硬邊
+    # ── 水文：水只能向外、向下流 ──────────────────────────────────
+    # ⚠ 光把河壓到谷底還不夠 —— 河仍可能中段高、兩端低（往內流），
+    #   或沿途忽高忽低。要保證單向，水面高度必須是「到海的距離」的
+    #   單調函數。
+    # ⚠ 而且不能用直線距離：河會蜿蜒，繞回內陸的那一段直線距離反而變短，
+    #   高度就會反轉。必須沿著水路量（測地距離），所以這裡跑一次 BFS。
+    gd = np.full((TH, TW), -1, np.int32)
+    sea_adj = lake & ndi.binary_dilation(~land, np.ones((3, 3)))
+    dq = deque()
+    for yy, xx in zip(*np.where(sea_adj)):
+        gd[yy, xx] = 0
+        dq.append((yy, xx))
+    NB = ((-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1))
+    while dq:
+        yy, xx = dq.popleft()
+        nd = gd[yy, xx] + 1
+        for dy, dx in NB:
+            ny, nx = yy + dy, xx + dx
+            if 0 <= ny < TH and 0 <= nx < TW and lake[ny, nx] and gd[ny, nx] < 0:
+                gd[ny, nx] = nd
+                dq.append((ny, nx))
+    reach = gd >= 0
+    gmax = int(gd[reach].max()) if reach.any() else 1
+
+    # 源頭＝水路末端（只有一個水鄰居）且離海夠遠 → 擴成大湖
+    nbc = ndi.convolve(lake.astype(np.uint8), np.ones((3, 3), np.uint8),
+                       mode='constant') - lake.astype(np.uint8)
+    tips = reach & (nbc <= 1) & (gd > gmax * 0.30)
+    yy, xx = np.ogrid[-LAKE_R:LAKE_R + 1, -LAKE_R:LAKE_R + 1]
+    disk = (yy * yy + xx * xx) <= LAKE_R * LAKE_R
+    heads = ndi.binary_dilation(tips, disk) & land if tips.any() else np.zeros_like(land)
+
+    # 水面高度：沿水路的距離越遠越高，且開 0.85 次方讓上游不會陡升
+    gn = np.zeros((TH, TW), np.float32)
+    gn[reach] = gd[reach] / max(1, gmax)
+    wsurf = (CLOUD_H + 10.0) + np.power(gn, 0.85) * SOURCE_H
+
+    # 湖面取「最近源頭」的高度 → 整個湖是平的
+    if tips.any():
+        idx = ndi.distance_transform_edt(~tips, return_distances=False, return_indices=True)
+        wsurf = np.where(heads & ~reach, wsurf[tuple(idx)], wsurf)
+
+    wet = (lake | heads) & ~gorge
+    h = np.where(wet, wsurf, h)
+    # 河岸：把水面往外糊一點，兩側是斜坡而不是一階
+    bank = ndi.gaussian_filter(wet.astype(np.float32), 2.2)
+    h = h * (1 - bank * 0.55) + ndi.gaussian_filter(np.where(wet, wsurf, h), 3.0) * (bank * 0.55)
+    lake = lake | heads                                   # 湖也算水域（貼圖要上水色）
 
     # (e) 大陸邊緣往內收：不做台地斷崖，改成往海岸遞減的斜坡。
     # ⚠ 原本 h[dist<RIM_W] = max(h, RIM_H) 是硬把邊緣墊高 → 整圈海岸線
