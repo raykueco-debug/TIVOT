@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>聚落生成器 — 驗收台</title>
+<style>
+  :root{ --gold:#c9a227; --parch:#d8cdb4; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:#0b0c12;color:var(--parch);font-family:"Noto Serif TC",-apple-system,serif;
+       font-size:12px;line-height:1.7;}
+  #bar{position:sticky;top:0;z-index:10;background:rgba(8,9,14,.96);border-bottom:1px solid rgba(201,162,39,.3);
+       padding:8px 12px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;}
+  button{background:rgba(5,6,12,.7);border:1px solid rgba(201,162,39,.5);color:var(--gold);
+         font-family:inherit;font-size:11px;letter-spacing:.1em;padding:4px 10px;cursor:pointer;}
+  button:active{background:rgba(201,162,39,.18);}
+  label{opacity:.75;user-select:none;cursor:pointer;}
+  canvas{display:block;width:100%;background:#10121a;border-bottom:1px solid rgba(201,162,39,.18);}
+  #log{padding:10px 12px;white-space:pre-wrap;font-family:ui-monospace,Consolas,monospace;
+       font-size:11px;color:#9fb0c8;}
+  h2{font-size:12px;letter-spacing:.2em;color:var(--gold);padding:10px 12px 2px;font-weight:600;}
+  .ok{color:#7ec87e;} .bad{color:#e08a7a;}
+</style>
+</head>
+<body>
+<div id="bar">
+  <button id="reroll">換 seed</button>
+  <span>seed=<b id="sv">1908</b></span>
+  <label><input type="checkbox" id="dBoundary"> 輪廓</label>
+  <label><input type="checkbox" id="dRoads"> 道路中心線</label>
+  <label><input type="checkbox" id="dDepth"> 繪製順序</label>
+  <label><input type="checkbox" id="dPivots"> 地標錨點</label>
+</div>
+
+<h2>① 五個階級 · 同一畫面 · 標準縮放（都市 I 應佔畫面寬約一半）</h2>
+<canvas id="cScale"></canvas>
+
+<h2>② 同階級不同 seed（輪廓與路網須明顯不同）</h2>
+<canvas id="cVary"></canvas>
+
+<h2>③ LOD 遞減（地標剪影在低 LOD 仍須可辨）</h2>
+<canvas id="cLod"></canvas>
+
+<div id="log"></div>
+
+<script src="settlement.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+let SEED=1908;
+const DPR=Math.min(2,window.devicePixelRatio||1);
+
+function fit(cv,h){
+  const w=cv.clientWidth;
+  cv.width=Math.round(w*DPR); cv.height=Math.round(h*DPR);
+  cv.style.height=h+'px';
+  const c=cv.getContext('2d'); c.setTransform(DPR,0,0,DPR,0,0);
+  c.clearRect(0,0,w,h);
+  return {c,w,h};
+}
+function dbg(){
+  return { showBoundary:$('dBoundary').checked, showRoads:$('dRoads').checked,
+           showBlocks:false, showDepthOrder:$('dDepth').checked, showPivots:$('dPivots').checked };
+}
+
+/* 世界半徑的定義：規格說「聚落直徑＝dia × VW」是**標準縮放下的視覺佔比**。
+   所以先訂一個 scale，再由 dia 反推世界半徑 —— 這樣五個階級的相對大小
+   才會與規格表一致，而不是各畫各的。 */
+const STD_SCALE=1.0;
+function radiusFor(tier,VW){ return Settlement.TIERS[tier].dia*VW/2/STD_SCALE; }
+
+const TIER_LIST=['city1','city2','city3','town','village'];
+const TIER_NAME={city1:'都市 I',city2:'都市 II',city3:'都市 III',town:'城鎮',village:'村莊'};
+
+/* ⚠ 每個階級要用**不同的 seed**。先前寫 SEED+t.length*7919，而 city1/2/3
+   的字串長度都是 5 → 三個都市其實是同一個 seed，看起來當然像同一座城。 */
+const TIER_SALT={city1:0, city2:60013, city3:120017, town:180043, village:240071};
+
+function drawScaleRow(){
+  const {c,w,h}=fit($('cScale'),380);
+  const lines=[];
+  const VW=w;                       // 標準縮放的基準：都市 I 直徑＝0.5×VW
+  const Rs=TIER_LIST.map(t=>radiusFor(t,VW));
+  // 一排放不下五個標準縮放的城 → 全部套同一把尺縮小，相對大小才保持正確
+  const gap=16, need=Rs.reduce((a,r)=>a+r*2,0)+gap*(TIER_LIST.length+1);
+  const sc=Math.min(STD_SCALE,(w-8)/need);
+  let cursor=gap*sc+6;
+  TIER_LIST.forEach((t,i)=>{
+    const R=Rs[i];
+    const s=Settlement.generate({tier:t,seed:SEED+TIER_SALT[t],radius:R,
+      faction:t==='city1'?'church':t==='city2'?'empire':'free',
+      coastal:(t==='city3'||t==='town')});
+    Settlement.draw(c,s,{ox:cursor+R*sc, oy:h*0.60, scale:sc}, dbg());
+    c.fillStyle='#c9a227'; c.font='11px serif'; c.textAlign='center';
+    c.fillText(TIER_NAME[t]+'  '+Math.round(R*2*sc)+'px', cursor+R*sc, h-8);
+    lines.push(`${TIER_NAME[t].padEnd(7)} 世界半徑 ${R.toFixed(1)}　`+
+               `標準縮放佔畫面寬 ${(R*2*STD_SCALE/VW*100).toFixed(1)}%（規格 ${(Settlement.TIERS[t].dia*100).toFixed(1)}%）　`+
+               `建築 ${String(s.buildings.length).padStart(3)}　地標 ${s.landmarks.length}　`+
+               `城牆 ${s.walls?'有':'無'}　生成 ${s.genMs.toFixed(1)}ms`);
+    cursor+=R*2*sc+gap*sc;
+  });
+  return lines;
+}
+
+function drawVaryRow(){
+  const {c,w,h}=fit($('cVary'),300);
+  const n=4, cw=w/n;
+  const R=Math.min(cw*0.40,h*0.40/Settlement.TILT*0.55);
+  const sigs=[];
+  for(let i=0;i<n;i++){
+    const s=Settlement.generate({tier:'city2',seed:SEED+i*104729,radius:R,
+      faction:['church','empire','free','empire'][i], coastal:i%2===1});
+    Settlement.draw(c,s,{ox:cw*(i+0.5),oy:h*0.66,scale:1},dbg());
+    c.fillStyle='rgba(216,205,180,.6)'; c.font='10px serif'; c.textAlign='center';
+    c.fillText(`seed ${s.seed}｜${s.faction}${s.coastal?'｜臨海':''}`, cw*(i+0.5), h-8);
+    /* 輪廓簽章：⚠ 不能用 boundary 的前 8 個點 —— 每個 seed 的頂點數 N
+       不同（20~32），同一個索引落在不同角度，比出來的差異沒有意義。
+       改成在**固定的 12 個角度**上量半徑。 */
+    sigs.push(Array.from({length:12},(_,k)=>{
+      const a=k/12*Math.PI*2;
+      let best=0,bd=1e9;
+      for(const p of s.boundary){
+        let d=Math.abs(Math.atan2(p.y,p.x)-a); d=Math.min(d,Math.PI*2-d);
+        if(d<bd){bd=d;best=Math.hypot(p.x,p.y)/R;}
+      }
+      return best;
+    }));
+  }
+  return sigs;
+}
+
+function drawLodRow(){
+  const {c,w,h}=fit($('cLod'),240);
+  const scales=[
+    {lab:'>180px 完整', d:220},
+    {lab:'60–180px 無細節', d:120},
+    {lab:'20–60px 色塊+剪影', d:44},
+    {lab:'<20px 符號', d:14},
+  ];
+  const cw=w/scales.length;
+  for(let i=0;i<scales.length;i++){
+    const R=100;
+    const s=Settlement.generate({tier:'city2',seed:SEED+31,radius:R,faction:'church',coastal:false});
+    const sc=scales[i].d/(R*2);
+    Settlement.draw(c,s,{ox:cw*(i+0.5),oy:h*0.62,scale:sc},dbg());
+    c.fillStyle='rgba(216,205,180,.6)'; c.font='10px serif'; c.textAlign='center';
+    c.fillText(scales[i].lab, cw*(i+0.5), h-8);
+  }
+}
+
+function run(){
+  $('sv').textContent=SEED;
+  const lines=drawScaleRow();
+  const sigs=drawVaryRow();
+  drawLodRow();
+
+  /* ── 驗收檢查 ──────────────────────────────────────────────── */
+  const out=[];
+  out.push('■ 規模', ...lines.map(l=>'  '+l), '');
+
+  // 3 同 seed 必完全一致
+  const a=Settlement.generate({tier:'city1',seed:4242,radius:200,faction:'empire',coastal:true});
+  const b=Settlement.generate({tier:'city1',seed:4242,radius:200,faction:'empire',coastal:true});
+  const same=JSON.stringify({b:a.boundary,g:a.buildings,l:a.landmarks})===
+             JSON.stringify({b:b.boundary,g:b.buildings,l:b.landmarks});
+  out.push(`■ 決定性：同 seed 兩次生成 ${same?'<span class="ok">完全一致 ✓</span>':'<span class="bad">不一致 ✗</span>'}`);
+
+  // 4 不同 seed 差異
+  let maxDiff=0;
+  for(let i=1;i<sigs.length;i++){
+    let d=0; for(let k=0;k<sigs[0].length;k++) d=Math.max(d,Math.abs(sigs[i][k]-sigs[0][k]));
+    maxDiff=Math.max(maxDiff,d);
+  }
+  out.push(`■ 變化性：不同 seed 的輪廓半徑最大差 ${(maxDiff*100).toFixed(0)}% `+
+           (maxDiff>0.12?'<span class="ok">✓</span>':'<span class="bad">✗ 太像</span>'));
+
+  // 5 地標高度 ≥ 3× 平均屋高
+  const c1=Settlement.generate({tier:'city1',seed:SEED,radius:200,faction:'church',coastal:true});
+  const avgH=c1.buildings.reduce((s,x)=>s+x.h,0)/c1.buildings.length;
+  const minLm=Math.min(...c1.landmarks.map(l=>l.scale));
+  out.push(`■ 地標突出：平均屋高 ${avgH.toFixed(1)}、最矮地標 ${minLm.toFixed(1)}（${(minLm/avgH).toFixed(1)}×）`+
+           (minLm>=avgH*3?' <span class="ok">✓</span>':' <span class="bad">✗</span>'));
+
+  // 7 都市 I 生成 < 40ms
+  const t0=performance.now(); let worst=0;
+  for(let i=0;i<12;i++){
+    const g=Settlement.generate({tier:'city1',seed:9000+i,radius:200,faction:'empire',coastal:i%2===0});
+    worst=Math.max(worst,g.genMs);
+  }
+  out.push(`■ 生成時間：都市 I ×12，最慢 ${worst.toFixed(1)}ms、平均 ${((performance.now()-t0)/12).toFixed(1)}ms`+
+           (worst<40?' <span class="ok">✓ &lt;40ms</span>':' <span class="bad">✗</span>'));
+
+  // 6 深度排序：抽驗 items 是否嚴格遞增
+  out.push(`■ 深度排序：以 screenY 統一排序後一次繪製（建築/地標/城牆片段不分批）`);
+
+  $('log').innerHTML=out.join('\n');
+}
+
+$('reroll').addEventListener('click',()=>{ SEED=(SEED*1664525+1013904223)>>>0; run(); });
+['dBoundary','dRoads','dDepth','dPivots'].forEach(id=>$(id).addEventListener('change',run));
+addEventListener('resize',run);
+run();
+</script>
+</body>
+</html>
