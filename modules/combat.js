@@ -40,6 +40,7 @@ const DMG_WRONG=T.dmgWrong, DMG_HEAVY=T.dmgHeavy, DMG_DELAY=T.dmgDelay;
 const DMG_DUAL_MULT=T.dmgDualMult;                   // 雙槍破防窗口點擊傷害倍率（<1＝安全牌）
 const ATK_BUFF_SECONDS=T.atkBuffSeconds;
 const OVERKILL_LIMIT_MS=T.overkillLimitMs, OVERKILL_NEXT_DELAY_MS=T.overkillNextDelayMs;   // overkill 限時/收尾延遲
+const OVERKILL_ORDER_MULT=T.overkillOrderMult!=null ? T.overkillOrderMult : 1;   // overkill 照順序點的獎勵倍率
 const SAINT_ADVANCE_DIVISOR=T.saintAdvanceDivisor;   // 聖徒化一次「受擊」推進量＝playerMax/此值
 const CLASP_LEN=110;
 
@@ -108,7 +109,8 @@ export function setup(){
     endCharge: defense.endCharge, resetEnemyTimers: defense.resetEnemyTimers,
     setUltRate: defense.setUltRate,
     // 計時碼表：cut-in 演出期間暫停（playCutin/playSaintCutin 開頭呼叫），維持「非可點不計時」
-    clockPause,
+    //   clockResume 供 finishSaintMode 於三結局收尾後接回碼表（聖徒化全程不計時）
+    clockPause, clockResume,
   });
   // 搭檔：combat 注入被動技所需原語 + 主動技各 handler 的分域 api。
   //   被動（即死防禦）：updateBars / floatDmg / resetEnemyTimers / scheduleUlt / playCutin。
@@ -221,6 +223,17 @@ function markNext(){
   if(c) c.classList.add('next');
 }
 
+/* 把順序游標推到「下一個還沒被消掉的號碼」。
+ *  只有 overkill 的照順序獎勵用得到：該窗口免順序，玩家可能先跳點掉靠後的號碼，
+ *  游標若停在已消格上就再也對不上，順序鏈會永久斷掉。 */
+function advanceExpectPastCleared(){
+  while(state.expect<=state.N){
+    const c=state.cells.find(c=>+c.dataset.num===state.expect);
+    if(c && !c.classList.contains('done')) break;
+    state.expect++;
+  }
+}
+
 /* ============================================================================
  *  點擊判定
  * ========================================================================== */
@@ -258,14 +271,24 @@ function tap(num,cell,e){
   // Overkill（敵 HP 已歸零的追加輸出窗口）：不用管數字順序，點到未消格就算命中。
   //   結束只有兩條路：全清（clearBoard→finish）或 3 秒逾時（autoClearOverkill）；
   //   不再有「按錯結束」——已消格再點一律忽略。傷害/暴擊/聖能與正常命中同規格。
+  //   ⚠ 照順序獎勵：免順序是底線，但仍照數字接下去點 → 該擊 ×OVERKILL_ORDER_MULT。
+  //     敵已死時傷害 1:1 進 overkill 點數（見 enemyDamage 的 else 分支）→ 加傷即加點數。
+  //     順序斷掉不罰（仍算命中，只是 1 倍），之後接回順序即可再拿獎勵。
   if(state.enemyHp<=0){
     if(cell.classList.contains('done')) return;
     SFX.gunshot(false);
+    const inOrder = (num===state.expect);
     cell.classList.add('done'); cell.classList.remove('next'); enemy.shatterCell(cell);
     state.combo++; if(state.combo>state.maxCombo) state.maxCombo=state.combo;
     state.correctTaps++;
     resetIntervalDeadline(); addEnergy(ENERGY_PER_HIT);
     let okDmg=hitDamage(); if(state.atkBuff) okDmg*=2;
+    if(inOrder){
+      okDmg*=OVERKILL_ORDER_MULT;
+      // 游標往後推到「下一個還沒消的號碼」——玩家先跳點過的號碼不該卡住順序鏈，
+      //   否則 expect 停在已消格上，後面再也接不回順序（獎勵永久斷掉）。
+      advanceExpectPastCleared();
+    }
     let okCrit=false;
     if(Math.random() < CRIT_BASE_RATE + state.critCombo*CRIT_PER_COMBO){
       okCrit=true; okDmg*=(1 + CRIT_DMG_BASE + state.critCombo*CRIT_DMG_PER_COMBO);
@@ -615,13 +638,16 @@ function stopAll(){
   weapon.stopTimers();   // 停雙槍破防計時器（dualTimer）
 }
 
-/* ---- 計時碼表（連戰用；規則：只在「盤面可點且非 overkill」時作動）----
- *  clockResume：盤面可點才起算（敵活著、非結算/演出/轉場）。多處呼叫皆冪等（僅在暫停中才起算）。
+/* ---- 計時碼表（連戰用；規則：只在「盤面可點且非 overkill／非聖徒化」時作動）----
+ *  clockResume：盤面可點才起算（敵活著、非結算/演出/轉場/聖徒化）。多處呼叫皆冪等（僅在暫停中才起算）。
  *  clockPause ：敵死(overkill)/轉場/cut-in/結算時暫停，把這段併入 runElapsedMs。
- *  clockElapsedMs：目前累計＝已併入 + 進行中的一段。overkill 與轉場自然不計入。 */
+ *  clockElapsedMs：目前累計＝已併入 + 進行中的一段。overkill 與轉場自然不計入。
+ *  ⚠ saintMode 一併排除：聖徒化是獨立計時的演出段（倒數槽自有節奏、盤面規則不同），
+ *    不該算進「實打時間」。守在 clockResume 而非只在進場暫停一次——tap() 每次點擊都會
+ *    呼叫 clockResume，只暫停一次會被聖徒化期間的點擊立刻重新起算。 */
 function clockResume(){
   if(state.clockRunSince===0 && !state.over && state.enemyHp>0
-     && !state.cutinPlaying && !state.transitioning){
+     && !state.cutinPlaying && !state.transitioning && !state.saintMode){
     state.clockRunSince=Date.now();
   }
 }
@@ -663,6 +689,9 @@ function enterOverkillFx(){
   if(state.dualWield) weapon.endDual();
   state.cells.forEach(c=>c.classList.remove('next'));   // 免順序（含聖徒化追打）→ 撤下「下一格」高亮
   if(state.saintMode) return;   // 聖徒化：3 秒限時不套（由倒數槽/反應時限施壓），saintTap 走免順序分支
+  // 照順序獎勵的起點：擊殺這一槍可能來自雙槍/反擊（免順序清格），游標會停在已消格上
+  //   → 先推到下一個還活著的號碼，玩家一進 overkill 就接得回順序鏈。
+  advanceExpectPastCleared();
   clearTimeout(overkillTimer);
   overkillTimer=setTimeout(autoClearOverkill, OVERKILL_LIMIT_MS);
 }

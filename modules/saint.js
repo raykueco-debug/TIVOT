@@ -300,6 +300,10 @@ function finishSaintMode(finalHpThunk){
     api.resetIntervalDeadline();         // 間隔（點擊延遲）懲罰歸零
     api.startIntervalTimer();
     api.scheduleUlt();                   // 敵大絕蓄力重新計時，恢復正常扣血攻擊
+    // 聖徒化全程不計時（clockResume 內以 saintMode 擋下）→ 收尾回盤面才接回碼表。
+    //   此處 saintMode 已由各結局的 exitSaint 關閉、cutinPlaying 亦已於 cut-in 收尾清除，
+    //   故 clockResume 會真的起算（不靠玩家下一次點擊補起算，免得漏計那段空檔）。
+    if(api.clockResume) api.clockResume();
   }
 }
 

@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.17-106';
+export const VERSION = 'ver 2026.08.17-107';
 
 export const GAME_CONFIG = {
 
@@ -626,6 +626,10 @@ export const GAME_CONFIG = {
     // Overkill 限時（敵死後的追加輸出窗口）
     overkillLimitMs:     3000,  // 3 秒內沒清完 → 全數字磚破碎自動清盤
     overkillNextDelayMs: 0,     // 自動清盤後直接插入下一盤（原 1000ms 防連點誤觸，手感太拖已取消）
+    // 照順序點的獎勵倍率：overkill 本身免順序（點到未消格就算命中），但若仍照數字順序
+    //   接下去點，該擊傷害（＝overkill 點數，敵已死時傷害 1:1 進 overkill）×此值。
+    //   1＝關閉獎勵。順序斷掉不罰，只是回到 1 倍；之後接回順序即可再拿獎勵。
+    overkillOrderMult:   2,
     // 搭檔演出 SE 播放增益：母帶已重 master 至 RMS −11 dBFS（v2），播放端不再增幅；
     //   個別仍嫌大/小聲時微調這裡即可（>1 增幅、<1 衰減）
     //   vo_* 四支（技能 SE）：對齊 Luna 聖徒化語音的有效響度（RMS −14.4 dBFS）——
