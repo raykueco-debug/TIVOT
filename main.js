@@ -595,6 +595,48 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
   window.addEventListener('mouseup',()=>{mDown=false;});
 })();
 
+/* ── 鍵盤方向鍵＝上述滑動手勢的等價入口（桌機無觸控/不便拖曳時可用）──
+ *  ←/→ ＝聖徒化左右滑（方向即橫斬方向）；↑ ＝上滑。
+ *  ↑ 依情境分派，與兩個上滑手勢層的分工一致：
+ *    聖徒化中 → tryActive('saint')（生命歸還，#returnSwipe 層）
+ *    非聖徒化 → tryActive('board')（盤面主動技，#top 層）
+ *  守門條件逐條照抄各手勢的 guard，行為與滑動完全等價——不放寬、不繞過任何限制。 */
+(function bindGestureKeys(){
+  const KEYS = { ArrowLeft:'left', ArrowRight:'right', ArrowUp:'up' };
+  // 手勢只存在於戰鬥畫面：首頁顯示中（#home.on）一律不受理，避免在選單誤觸
+  const inBattle = ()=>{ const h=$('home'); return h && !h.classList.contains('on'); };
+  /* 教學正在接管輸入時讓位，範圍與 #tutTouch 全畫面層一致（對話中觸控本來就進不來，
+     鍵盤若不比照就會脫稿發動）：對話中一律不受理；閘門由 tutorial 自己的鍵盤處理收走。
+     教學的自由對打段（無對話無閘門）不在此列 → 與滑動一樣照常可用。 */
+  const tutorialCapturing = ()=>state.tutorialActive && (state.tutorialDialog || tutorial.gateActive());
+  // 焦點在輸入元件時讓給輸入（目前無此類欄位，先守著以免日後加了才發現衝突）
+  const typing = ()=>{ const a=document.activeElement;
+    return !!a && (a.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)); };
+
+  window.addEventListener('keydown', e=>{
+    const dir = KEYS[e.key];
+    if(!dir) return;
+    if(e.repeat) return;                                   // 長按不連發（一次按鍵＝一次手勢）
+    if(e.ctrlKey||e.altKey||e.metaKey||e.shiftKey) return;  // 帶輔助鍵＝瀏覽器捷徑，不攔
+    if(typing() || !inBattle() || tutorialCapturing()) return;
+    /* ⚠ 這道 guard 必須在 preventDefault 之前：結算面板（#bannerScroll）是可捲動的，
+       戰鬥已結束還吞方向鍵的話，鍵盤使用者就捲不動結算內容了。
+       戰鬥進行中則照吞（版面固定不捲動，攔下來只是避免任何殘餘捲動）。 */
+    if(state.over || state.cutinPlaying) return;
+    e.preventDefault();                                     // 擋掉方向鍵捲動頁面
+    SFX.unlock();                                           // 鍵盤也是使用者手勢：可解鎖音訊
+    if(dir==='up'){
+      // 與上滑手勢同：能否發、屬於誰一律由 partner 判定（無對應技＝no-op）
+      if(state.saintMode){ partner.tryActive('saint'); return; }
+      if(state.transitioning) return;                       // board 手勢的額外 guard（轉場中不受理）
+      partner.tryActive('board');
+    }else{
+      if(state.saintMode||state.saintUsedThisBattle) return;
+      saint.activateSaint(dir);
+    }
+  });
+})();
+
 /* ── 遠端診斷 HUD：網址帶 ?debug，或「快速連點首頁團徽 5 下」開關 ──
  *  排查 iOS 主畫面 App 底部黑帶用；未觸發時不建立任何元素。 */
 (function debugHud(){

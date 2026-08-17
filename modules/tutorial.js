@@ -462,6 +462,8 @@ function enterGate(g){
   gate = g;
   showGuide(g.type);
 }
+// 對外：閘門是否進行中（main.js 的方向鍵入口據此讓位——閘門由本檔自行收鍵）
+export function gateActive(){ return !!gate; }
 function completeGate(){
   const g = gate; gate = null;
   hideGuide();
@@ -611,6 +613,17 @@ function bindUI(){
     });
     touch.addEventListener('pointercancel', ()=>{ ptr=null; });
   }
+  /* 方向鍵＝滑動閘門的等價入口（與戰鬥中的手勢鍵盤入口同一套規則）。
+     教學期間 #tutTouch 蓋在最上層吃掉輸入，閘門是發動聖徒化/生命歸還的唯一途徑 →
+     不在這裡也收方向鍵的話，純鍵盤玩家會卡死在閘門。
+     方向對應畫面上的引導箭頭：g-right→→、g-up→↑（點計量表閘門 type:'click' 不在此列）。 */
+  window.addEventListener('keydown', e=>{
+    if(!gate || e.repeat || e.ctrlKey || e.altKey || e.metaKey || e.shiftKey) return;
+    if((gate.type==='right' && e.key==='ArrowRight') || (gate.type==='up' && e.key==='ArrowUp')){
+      e.preventDefault();
+      completeGate();
+    }
+  });
   // 轉向/視窗變化：對話中重貼盤面上緣
   window.addEventListener('resize', ()=>{ if(state.tutorialDialog) placeBubble(); });
   const sk=$('tutSkipBtn');
