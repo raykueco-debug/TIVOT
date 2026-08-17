@@ -602,7 +602,8 @@ function render(now){
 
     for(let i=0;i<BW;i++){
       // 世界座標 → 地圖像素
-      const xi=(plx*INV_SCALE)|0, yi=(ply*INV_SCALE)|0;
+      const mfx=plx*INV_SCALE, mfy=ply*INV_SCALE;
+      const xi=mfx|0, yi=mfy|0;
       let hh,r,g,b,isRiver=0;
       const outside=(xi<0||yi<0||xi>=MAPW||yi>=MAPH);
       const mi=outside?0:yi*MAPW+xi;
@@ -613,9 +614,22 @@ function render(now){
         const c=CLOUDTEX[ci];
         r=(c&255)*cloudLit; g=((c>>8)&255)*cloudLit; b=((c>>16)&255)*cloudLit;
       }else{
-        // 高頻細節：在世界座標上取樣，補回被 10 倍放大糊掉的近景起伏
+        /* 雙線性取樣高度。⚠ 近景一個地圖像素橫跨約 33 個緩衝像素
+           （MAP_SCALE 20 之後更明顯），最近鄰會把地表切成 20 世界單位寬的
+           台階，走過去像在爬樓梯。四角內插把台階變成斜面。
+           ⚠ 只在「四角都是陸地」時才內插：靠海岸時鄰格是雲海高度 0，
+             內插會把大陸邊緣拉成緩坡，斷崖就沒了 —— 那正是浮空大陸的賣點。 */
+        const x1=xi<MAPW-1?xi+1:xi, y1=yi<MAPH-1?yi+1:yi;
+        const i10=yi*MAPW+x1, i01=y1*MAPW+xi, i11=y1*MAPW+x1;
+        const h10=HGT[i10], h01=HGT[i01], h11=HGT[i11];
+        if(h10>CLOUD_H && h01>CLOUD_H && h11>CLOUD_H){
+          const tx=mfx-xi, ty=mfy-yi;
+          const a0=th+(h10-th)*tx, a1=h01+(h11-h01)*tx;
+          hh=a0+(a1-a0)*ty;
+        }else hh=th;
+        // 高頻細節：在世界座標上取樣，補回被放大糊掉的近景起伏
         const dt=DETH[(((ply|0)&DTM)*DET_TILE)+((plx|0)&DTM)];
-        hh=th + dt*(DET_AMP/127);
+        hh+=dt*(DET_AMP/127);
         isRiver=RIV[mi];
         const c=COL[mi];
         const nl=clamp(0.62+(SLX[mi]*lx+SLY[mi]*ly)*LIGHT_DIR_K,0,1.5);
