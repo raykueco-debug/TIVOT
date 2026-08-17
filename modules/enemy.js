@@ -147,31 +147,15 @@ export function ejectShell(cell){
 }
 
 /* ---------- 立繪載入 ----------
- *  優先外部目錄（imageBase → assets/enemy/<base>/portrait.<ext>），
- *  全部失敗才 fallback 到 ASSETS 內嵌暫代圖。本專案圖已放在 resources/，
- *  ASSETS 的鑰匙即指向 resources/*，故一般直接命中 fallback 即為正解。 */
-const ASSET_BASE = './assets/';
+ *  一律走 ASSETS 鑰匙（en.image → resources/*）。
+ *  註：舊版（含 reference 原型）會先探測外部目錄 assets/enemy/<imageBase>/portrait.<ext>
+ *  四種副檔名，失敗才回退到 ASSETS。本專案圖全在 resources/、無 assets/ 目錄，
+ *  那四次探測必然 404（每次換敵各噴四個無效請求），且結果永遠等於 fallback → 已移除。
+ *  CLAUDE.md §5 也指定統一走 resources/ 新結構。 */
 export function loadEnemyPortrait(en){
   const eImg = $('enemyImg');
   if(!eImg) return;
-  const fallback = asset(en.image);
-  if(fallback) eImg.src = fallback;
-  if(en.imageBase){
-    const exts = (en.imageExt ? [en.imageExt] : ['jpeg','jpg','png','webp']);
-    const base = ASSET_BASE + 'enemy/' + en.imageBase + '/portrait.';
-    let i = 0;
-    const tryNext = ()=>{
-      if(i >= exts.length){ if(!fallback) eImg.src = ''; return; }
-      const probe = new Image();
-      const url = base + exts[i++];
-      probe.onload  = ()=>{ eImg.src = url; };
-      probe.onerror = tryNext;
-      probe.src = url;
-    };
-    tryNext();
-  }else{
-    eImg.src = fallback;
-  }
+  eImg.src = asset(en.image);
 }
 
 // UI 顯示名：一律隱藏「_」之後的內容（如 '地下聖徒_A' → '地下聖徒'）。

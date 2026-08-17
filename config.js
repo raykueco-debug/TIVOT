@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.17-103';
+export const VERSION = 'ver 2026.08.17-104';
 
 export const GAME_CONFIG = {
 
@@ -168,7 +168,6 @@ export const GAME_CONFIG = {
       // S 評價點「再度執槍」時的隱藏關警告台詞
       interceptLine:'慢著！有新的敵人！',
       image:'inspector_freya',          // 單張立繪鑰匙（無 portraits 時的 fallback）
-      imageBase:'freya',                // 外部目錄鑰匙 → assets/inspector/freya/portrait.*
       portraits:{                       // 好感度門檻 → 立繪鑰匙（留空則用 image）
         // 0:'inspector_freya', 30:'inspector_freya__lv1', 60:'inspector_freya__lv2',
       },
@@ -469,8 +468,7 @@ export const GAME_CONFIG = {
   enemies: {
     faceless: {
       name:'地下聖徒_A',        // UI 只顯示底線前的「地下聖徒」；底線後（_A）僅供作者辨識、不顯示
-      image:'enemy_faceless',   // 內嵌暫代圖鑰匙（fallback，見最下方 ASSETS）
-      imageBase:'faceless',     // 外部目錄鑰匙 → assets/enemy/faceless/portrait.*（優先，載入失敗才用內嵌 image）
+      image:'enemy_faceless',   // 立繪鑰匙（見最下方 ASSETS）
       hp:200,          // 連戰第一隻（原測試值 500，v-lineup 調 200）
       attack:45,       // 大絕一擊傷害（原 ULT_DAMAGE）
       atkInterval:null,// 大絕蓄力秒數；null＝沿用 tuning.chargeSeconds（逐怪可覆寫）
@@ -496,7 +494,6 @@ export const GAME_CONFIG = {
     trainee: {
       name:'訓練用聖徒',
       image:'enemy_trainee',    // → resources/enemy/Saint_TR_CI.png
-      imageBase:'trainee',      // 外部目錄鑰匙（無 assets/ → 404 fallback 到內嵌，與其他敵同）
       hp:500,
       attack:45,
       atkInterval:null,         // 沿用 tuning.chargeSeconds
@@ -517,7 +514,6 @@ export const GAME_CONFIG = {
       image:'enemy_facelessgiant',   // 內嵌立繪鑰匙 → resources/enemy/Saint_GT_CI.webp
       // 取景：主體在圖面右下（撲擊構圖），cover 裁切錨點右移下移——爪/頭/軀幹全入鏡
       fit:{ pos:'62% 78%' },
-      imageBase:'facelessgiant',     // 外部目錄鑰匙（現況無 assets/ → 404 fallback 到內嵌，與其他敵同）
       hp:300,                        // 血更厚
       attack:45,                     // 大絕單擊傷害（普通值；差異在密度不在單擊）
       atkInterval:3.33,              // 大絕蓄力秒數：4×(1/1.2)≈3.33 → 攻擊更密（比第一隻高 20%）
@@ -534,7 +530,6 @@ export const GAME_CONFIG = {
     intruderEnemy: {
       name:'亂入者 · ???',
       image:'enemy_faceless',
-      imageBase:'faceless',
       hp:400,
       attack:50,
       atkInterval:null,
@@ -545,8 +540,7 @@ export const GAME_CONFIG = {
     // ── 槍之魔女（Boss）v17：S 評價後遭遇的隱藏 Boss ──
     witch: {
       name:'槍之魔女',
-      image:'enemy_witch',      // 內嵌立繪鑰匙（附圖）
-      imageBase:'witch',        // 外部目錄鑰匙 → assets/enemy/witch/portrait.*（優先，載入失敗才用內嵌 image）
+      image:'enemy_witch',      // 立繪鑰匙（附圖）
       hp:500,
       attack:45,                // 大絕單點傷害（同一般怪基準）
       atkInterval:null,         // 大絕蓄力窗口（紅圈縮放時間）；null＝沿用 tuning.chargeSeconds
