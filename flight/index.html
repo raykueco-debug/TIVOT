@@ -62,7 +62,7 @@
 </div>
 <div class="hud" id="compass">北</div>
 <div id="place"><div class="nm" id="pnm"></div><div class="ty" id="pty"></div></div>
-<div id="hint">左側拉桿＝油門（下＝前進）· 畫面左右拖曳＝轉向 · WASD</div>
+<div id="hint">左側車鐘＝點選檔位 · 畫面左右拖曳＝轉向（輕推慢修）· WASD</div>
 <button id="backBtn">← 返回</button>
 <div id="fps"></div>
 <div id="boot">載 入 銀 月 大 陸…<small id="bootMsg"></small></div>
@@ -368,39 +368,49 @@ const curvAt=s=>(1+s*s)/(2*PLANET_R);
 const cam={x:1005*MAP_SCALE,y:760*MAP_SCALE,angle:0,alt:CRUISE_ALT,speed:0,bank:0};
 
 /* ══ 操作 ══
-   ▍油門：左側的實體拉桿。中立在正中，往下拉＝前進、往上推＝後退。
-     ⚠ 拉桿是**有記憶**的（放手後停在原位），這是它跟拖曳最大的差別 ——
-       原本油門綁在拖曳上，手一放就掉回零，等於全程得按著才能走，
-       同時還要用同一根手指轉向：那正是「難操控」的來源。
-     拉桿位置＝目標速度，不是加速度：像船的車鐘，推到哪就走多快。
+   ▍油門：左側的**車鐘**（engine telegraph）。點一下選檔位，不用拖。
+     ⚠ 之前做成可拖的拉桿，手機上不能用：轉向也是拖曳，而拖曳一次只認
+       一根手指 —— 抓著拉桿時另一根手指的 pointermove 全被導去拉桿了。
+       車鐘是「點一下就定案」，佔用時間趨近零，兩件事就不再搶同一根手指。
+       而且它有記憶（設定後一直維持），這正是十九世紀蒸汽船的操作方式。
+     檔位由上而下：後退／停／微速／半速／全速 —— 越下面越快，與手勢一致。
    ▍轉向：其餘區域維持原本的「拖曳世界」——往左拉＝往右偏。
-     只是不再吃垂直分量（那已經交給拉桿了）。 */
-let rgt=0, dragging=false, ox=0, moved=0;
+     ⚠ 轉向綁定單一 pointerId：這樣才能一根手指按車鐘、另一根手指同時轉向。 */
+let rgt=0, dragging=false, ox=0, moved=0, dragId=null;
 let rudder=0;                               // 實際生效的舵量（含鍵盤）——只給面板顯示用
-let throttle=0, leverGrab=false;
+let throttle=0;
 const REV_F=0.35;                           // 後退只有前進速度的三成半（船退得慢）
-const LEVER={x:0,y0:0,y1:0,w:0};            // 由 drawPanel 每幀更新（版面只有它知道）
+const TELEGRAPH=[                           // 由上而下
+  {t:'後退',v:-1.00},
+  {t:'停',  v: 0.00},
+  {t:'微速',v: 0.34},
+  {t:'半速',v: 0.67},
+  {t:'全速',v: 1.00},
+];
+const TELE={x:0,y0:0,step:0,w:0,h:0};       // 由 drawPanel 每幀更新（版面只有它知道）
 const TAP_SLOP=12;                          // 位移小於此值＝點擊而非拖曳
 const stage=document.getElementById('stage');
-const inLever=(px,py)=>px>=LEVER.x-LEVER.w && px<=LEVER.x+LEVER.w &&
-                       py>=LEVER.y0-24 && py<=LEVER.y1+24;
-const setLever=py=>{
-  const t=clamp((py-LEVER.y0)/Math.max(1,LEVER.y1-LEVER.y0),0,1);
-  const v=(t-0.5)*2;                        // −1（頂端）..+1（底端）
-  throttle=Math.abs(v)<0.09?0:v;            // 中立吸附：手指不必找得那麼準
+const inTele=(px,py)=>px>=TELE.x-TELE.w && px<=TELE.x+TELE.w &&
+                      py>=TELE.y0-TELE.step*0.6 &&
+                      py<=TELE.y0+TELE.step*(TELEGRAPH.length-1)+TELE.step*0.6;
+const pickNotch=py=>{
+  const i=clamp(Math.round((py-TELE.y0)/Math.max(1,TELE.step)),0,TELEGRAPH.length-1);
+  throttle=TELEGRAPH[i].v;
 };
 stage.addEventListener('pointerdown',e=>{
-  if(inLever(e.clientX,e.clientY)){ leverGrab=true; setLever(e.clientY); return; }
-  dragging=true; ox=e.clientX; rgt=0; moved=0;
+  // 車鐘：點完就結束，完全不佔用指標 → 不會擋到同時進行的轉向
+  if(inTele(e.clientX,e.clientY)){ pickNotch(e.clientY); return; }
+  if(dragId!==null) return;                       // 已經有一根手指在轉向
+  dragId=e.pointerId; dragging=true; ox=e.clientX; rgt=0; moved=0;
 });
 stage.addEventListener('pointermove',e=>{
-  if(leverGrab){ setLever(e.clientY); return; }   // 抓住之後就算滑出區域也還在控
-  if(!dragging) return;
+  if(e.pointerId!==dragId) return;                // 只聽轉向那根手指
   const dx=e.clientX-ox;
   moved=Math.max(moved,Math.abs(dx));
   rgt=clamp(-dx/DRAG_FULL,-1,1);                  // 往左拉＝往右偏
 });
 const endDrag=e=>{
+  if(e && e.pointerId!==dragId) return;
   // 幾乎沒動＝點擊：命中已展開的名牌就進入該地標
   if(dragging && moved<TAP_SLOP && e && e.clientX!=null){
     const px=e.clientX, py=e.clientY;
@@ -408,15 +418,28 @@ const endDrag=e=>{
       if(px>=h.x&&px<=h.x+h.w&&py>=h.y&&py<=h.y+h.h){ enterPlace(h.P); break; }
     }
   }
-  dragging=false; leverGrab=false; rgt=0;
+  dragging=false; dragId=null; rgt=0;
 };
 stage.addEventListener('pointerup',endDrag);
-stage.addEventListener('pointercancel',()=>{dragging=false;leverGrab=false;rgt=0;});
+stage.addEventListener('pointercancel',endDrag);
 /* 鍵盤：WASD（方向鍵同義）。桌機上摸不到拉桿，W/S 就是推拉那根桿子 ——
    ⚠ 用「持續推移」而不是一按到底：拉桿的手感就在於可以停在半速，
      鍵盤若一按就滿舵，等於桌機玩到的是另一套操作。 */
 const keys={};
-addEventListener('keydown',e=>{ keys[e.key.toLowerCase()]=true; });
+/* W/S 是「換一格」而不是持續推移 —— 車鐘只有五個檔位，鍵盤也該跟著離散，
+   否則桌機停得到 0.43 這種手機按不出來的速度，兩邊玩到的不是同一款。 */
+const stepNotch=d=>{
+  let i=0;
+  TELEGRAPH.forEach((n,j)=>{ if(Math.abs(n.v-throttle)<Math.abs(TELEGRAPH[i].v-throttle)) i=j; });
+  throttle=TELEGRAPH[clamp(i+d,0,TELEGRAPH.length-1)].v;
+};
+addEventListener('keydown',e=>{
+  const k=e.key.toLowerCase();
+  keys[k]=true;
+  if(e.repeat) return;                      // 長按不連跳，一次一格
+  if(k==='w'||k==='arrowup')   stepNotch(+1);
+  if(k==='s'||k==='arrowdown') stepNotch(-1);
+});
 addEventListener('keyup',  e=>{ keys[e.key.toLowerCase()]=false; });
 /* ⚠ 切換視窗／分頁時 keyup 收不到，鍵會卡在 true。
    舊設計是「按著才會動」，卡鍵放開就停、看得出來；現在拉桿有記憶，
@@ -425,7 +448,6 @@ addEventListener('keyup',  e=>{ keys[e.key.toLowerCase()]=false; });
 const clearKeys=()=>{ for(const k in keys) keys[k]=false; };
 addEventListener('blur',clearKeys);
 document.addEventListener('visibilitychange',()=>{ if(document.hidden) clearKeys(); });
-const KEY_THROTTLE=0.022;                   // 每 60fps 幀的推桿量（滿行程約 0.75 秒）
 
 const clock={minutes:8*60,date:14,dist:0};
 
@@ -483,20 +505,20 @@ function update(dt,now){
   let r=rgt;
   if(keys.a||keys.arrowleft)  r=-1;
   if(keys.d||keys.arrowright) r=1;
-  if(keys.w||keys.arrowup)    throttle=clamp(throttle+KEY_THROTTLE*f60,-1,1);
-  if(keys.s||keys.arrowdown)  throttle=clamp(throttle-KEY_THROTTLE*f60,-1,1);
   rudder=r;
 
-  /* 轉向：以角速度上限逼近想飛的方向。
-     ⚠ 門檻由「有前進意圖」改成「真的在動」——油門移到拉桿之後，
-       手指離開畫面船仍在走，這時候當然要轉得動；反過來停著就不該自轉。
-       舵效隨速度遞減：慢速時舵不吃水，這也讓低速微調變得容易。 */
+  /* 轉向：舵量 → 角速度，**成比例**。
+     ⚠ 原本是 clamp(atan2(r,1), ±TURN_RATE*dt)：TURN_RATE*dt 只有 0.018 弧度，
+       而 r 只要 0.02 算出來的角度就超過它 —— 等於任何橫拉都直接夾到滿舵。
+       沒有中間值就沒辦法微調，這才是「很難對準目標前進」的真正原因，
+       跟油門怎麼給無關。改成 r 直接當舵量：輕推慢慢修、大拉才急轉。
+     ⚠ 門檻由「有前進意圖」改成「真的在動」——油門獨立之後，手指離開畫面
+       船仍在走，這時候當然要轉得動；反過來停著就不該自轉。 */
   let turned=0;
   const mov=Math.abs(cam.speed)/MAX_SPD;
-  if(Math.abs(r)>0.02 && mov>0.03){
-    const want=Math.atan2(r,1);                     // 目標相對航向（0＝正前）
-    const eff=clamp(mov*2.2,0,1);                   // 舵效
-    const step=clamp(want, -TURN_RATE*dt*eff, TURN_RATE*dt*eff);
+  if(Math.abs(r)>0.015 && mov>0.03){
+    const eff=clamp(mov*2.2,0,1);                   // 舵效：慢速時舵不吃水
+    const step=clamp(r,-1,1)*TURN_RATE*dt*eff;
     cam.angle-=step*Math.sign(cam.speed||1);        // 角度遞減＝向右偏（見 compass 換算）
     turned=step;
   }
@@ -1235,8 +1257,8 @@ function vignette(S){
 }
 
 /* ══ 操作面板（畫面下方 1/3）══
-   左＝油門拉桿　中＝羅盤帶與舵　右＝時刻/高度/距離。
-   ⚠ 拉桿的實際判定範圍（LEVER）在這裡回寫給輸入層 —— 版面只有繪製端知道，
+   左＝車鐘　中＝羅盤帶與舵　右＝時刻/高度/距離。
+   ⚠ 車鐘的實際判定範圍（TELE）在這裡回寫給輸入層 —— 版面只有繪製端知道，
      讓輸入層自己算一次座標遲早會對不上。 */
 function drawPanel(S){
   const y0=VIEWH, ph=H-VIEWH;
@@ -1248,34 +1270,27 @@ function drawPanel(S){
 
   const cy=y0+ph*0.5;
 
-  /* ── 左：油門拉桿 ────────────────────────────────────────────
-     中立在正中並帶刻痕；往下＝前進、往上＝後退。
-     握把畫成實心塊而不是圓點，才看得出「這是可以抓的東西」。 */
-  const lx=W*0.13, ly0=y0+ph*0.20, ly1=y0+ph*0.84, lh=ly1-ly0;
-  LEVER.x=lx; LEVER.y0=ly0; LEVER.y1=ly1; LEVER.w=W*0.13;
-  ctx.strokeStyle='rgba(201,162,39,.16)'; ctx.lineWidth=11; ctx.lineCap='round';
-  ctx.beginPath(); ctx.moveTo(lx,ly0); ctx.lineTo(lx,ly1); ctx.stroke();
-  ctx.lineCap='butt'; ctx.lineWidth=1;
-  // 刻度：中立粗、其餘細
-  for(let i=-4;i<=4;i++){
-    const yy=cy+ (i/8)*lh, mid=(i===0);
-    ctx.strokeStyle=mid?'rgba(201,162,39,.7)':'rgba(216,205,180,.2)';
-    ctx.beginPath(); ctx.moveTo(lx+(mid?11:8),yy); ctx.lineTo(lx+(mid?17:13),yy); ctx.stroke();
-  }
-  // 中立→目前位置的填充，一眼看出推了多少、往哪推
-  const ky=cy+throttle*lh*0.5;
-  if(Math.abs(throttle)>0.01){
-    ctx.strokeStyle=throttle>0?'rgba(201,162,39,.8)':'rgba(196,120,90,.8)';
-    ctx.lineWidth=5; ctx.lineCap='round';
-    ctx.beginPath(); ctx.moveTo(lx,cy); ctx.lineTo(lx,ky); ctx.stroke();
-    ctx.lineCap='butt'; ctx.lineWidth=1;
-  }
-  ctx.fillStyle=leverGrab?'#e6c34a':'#c9a227';
-  ctx.fillRect(lx-13,ky-6,26,12);
-  ctx.fillStyle='rgba(20,16,10,.55)'; ctx.fillRect(lx-13,ky-1,26,2);
-  ctx.font='9px "Noto Serif TC",serif'; ctx.textAlign='center';
-  ctx.fillStyle='rgba(216,205,180,.4)';
-  ctx.fillText('後退',lx,ly0-6); ctx.fillText('前進',lx,ly1+13);
+  /* ── 左：車鐘。點一下就換檔，不必拖 ─────────────────────────
+     每一格的判定範圍是整條橫列（±step/2），手指不必對準文字。 */
+  const tx=W*0.155, ty0=y0+ph*0.15, tstep=(ph*0.70)/(TELEGRAPH.length-1);
+  TELE.x=tx; TELE.y0=ty0; TELE.step=tstep; TELE.w=W*0.155;
+  ctx.strokeStyle='rgba(201,162,39,.18)'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(tx-24,ty0); ctx.lineTo(tx-24,ty0+tstep*(TELEGRAPH.length-1)); ctx.stroke();
+  ctx.lineWidth=1; ctx.font='11px "Noto Serif TC",serif';
+  TELEGRAPH.forEach((n,i)=>{
+    const yy=ty0+tstep*i, on=Math.abs(throttle-n.v)<0.02;
+    const col=n.v<0?'#c4785a':'#c9a227';
+    ctx.strokeStyle=on?col:'rgba(216,205,180,.28)';
+    ctx.beginPath(); ctx.moveTo(tx-30,yy); ctx.lineTo(tx-18,yy); ctx.stroke();
+    if(on){                                   // 指針：實心三角指著目前檔位
+      ctx.fillStyle=col;
+      ctx.beginPath(); ctx.moveTo(tx-16,yy); ctx.lineTo(tx-24,yy-5); ctx.lineTo(tx-24,yy+5);
+      ctx.closePath(); ctx.fill();
+    }
+    ctx.textAlign='left';
+    ctx.fillStyle=on?col:'rgba(216,205,180,.38)';
+    ctx.fillText(n.t,tx-10,yy+4);
+  });
 
   /* ── 中：舵。左右偏轉＝目前的轉向輸入，外環是速度（＝舵效） ──── */
   const R=Math.min(ph*0.30,40), cx=W*0.53;
