@@ -1283,15 +1283,25 @@ function drawPanel(S){
   ctx.save();
   ctx.beginPath(); ctx.rect(bx,ccy-16,bw,32); ctx.clip();
   ctx.font='10px "Noto Serif TC",serif'; ctx.textAlign='center';
-  for(let d=-90;d<=90;d+=15){
-    const a=((deg+d)%360+360)%360;
-    const px=bx+bw/2+d/90*(bw/2);
-    const major=(a%45)<1||(a%45)>44;
+  /* ⚠ 原本是「掃固定的螢幕位置 d，再問那裡剛好是不是八方位」：
+       major=(a%45)<1，而 a=deg+d、d 每 15° 一格 → 13 格裡 a%45 只有
+       {deg%45, +15, +30} 三種值，得靠航向恰好對齊才命中，
+       實測只有約 13% 的航向看得到方位字，其餘時候整條只剩刻點。
+     改成反過來掃「方位」本身，再算它此刻該落在螢幕哪裡 ——
+     羅盤卡在轉、指標不動，本來就該這樣算。a 必為 15 的倍數，
+     a%45===0 是精確的整數判定，每三格必有一格是方位。 */
+  const base=Math.round(deg/15)*15;
+  for(let k=-7;k<=7;k++){
+    const a=base+k*15;                              // 這一格代表的方位
+    const px=bx+bw/2+(a-deg)/90*(bw/2);             // 相對航向 → 螢幕位置
+    if(px<bx-4||px>bx+bw+4) continue;
+    const an=((a%360)+360)%360;
+    const major=an%45===0;
     ctx.strokeStyle=major?'rgba(201,162,39,.65)':'rgba(216,205,180,.22)';
     ctx.beginPath(); ctx.moveTo(px,ccy+4); ctx.lineTo(px,ccy+(major?-2:1)); ctx.stroke();
     if(major){
       ctx.fillStyle='rgba(216,205,180,.75)';
-      ctx.fillText(['北','東北','東','東南','南','西南','西','西北'][Math.round(a/45)%8],px,ccy-6);
+      ctx.fillText(['北','東北','東','東南','南','西南','西','西北'][(an/45)%8],px,ccy-6);
     }
   }
   ctx.restore();
