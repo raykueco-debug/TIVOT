@@ -275,7 +275,11 @@ let HGT=null, COL=null, SLX=null, SLY=null, RIV=null;
    radius 是**世界單位**：地圖像素 × MAP_SCALE。都市 I 給 55 地圖像素寬
    （≈1100 世界單位）—— 大陸寬 2152 像素，帝都佔約 2.5%，比例合理。
    tier/faction/coastal 決定生成內容（見 settlement.js）。 */
-const SETTLE_R = { city1:56, city2:38, city3:26, town:15, village:8 };   // 地圖像素
+/* 半徑（地圖像素）。⚠ 一開始照規格的「佔畫面比例」直接換算，city1 給到 56
+   → 直徑 112 像素、2240 世界單位，佔大陸寬的 5%，飛近了整座城塞不進畫面。
+   規格那組比例是給**可縮放的地圖**用的（都市 I 佔畫面一半＝放大到城市視角），
+   放到大陸尺度上必須另外定。這裡以「帝都直徑約 44 地圖像素」為準。 */
+const SETTLE_R = { city1:22, city2:15, city3:10, town:6, village:3.5 };
 const SETTLEMENTS = [
   { n:'帝都・聖王廳', x:1159, y:522, t:'city1', f:'church' },
   { n:'大教堂城',     x:1224, y:581, t:'city2', f:'church' },
@@ -495,6 +499,7 @@ let W=0,H=0,VIEWH=0,BW=0,BH=0,buf=null,bufU32=null,bcv=null,bctx=null;
 let curvK=null;      // 每欄的曲率係數 (1+s²)/(2R)
 let prevH=null;      // 每欄「上一個畫出的取樣高度」→ 判定崖面
 let topFrac=null;    // 每欄頂端的次像素未覆蓋比例 → 收尾時做輪廓抗鋸齒
+let ybufZ=null;      // 每欄「最高那一列」是在哪個深度畫的 → 聚落的遮擋判定
 let SKYROW=null;     // 每列的天空色，輪廓混色要拿它當背景
 function resize(){
   W=innerWidth;H=innerHeight;
@@ -521,6 +526,7 @@ function resize(){
   }
   prevH=new Float32Array(BW);
   topFrac=new Float32Array(BW);
+  ybufZ=new Float32Array(BW);
   SKYROW=new Uint32Array(BH);
 }
 addEventListener('resize',resize);resize();
@@ -993,7 +999,7 @@ function render(now){
       bufU32[row+x]=rgb(clamp(sr+d,0,255)|0,clamp(sg+d,0,255)|0,clamp(sb+d,0,255)|0);
     }
   }
-  for(let i=0;i<BW;i++){ ybuf[i]=BH; prevH[i]=-9999; topFrac[i]=0; }
+  for(let i=0;i<BW;i++){ ybuf[i]=BH; prevH[i]=-9999; topFrac[i]=0; ybufZ[i]=ZFAR; }
 
   /* 光照。⚠ terrain_generator.py 已把 hillshade 烘進地貌色，
      這裡的方向項刻意做弱（LIGHT_DIR_K），只負責「日月移動的味道」，
@@ -1170,7 +1176,7 @@ function render(now){
         }else{
           for(let yy=y0;yy<bot;yy++) bufU32[yy*BW+i]=top;
         }
-        ybuf[i]=y; prevH[i]=hh;
+        ybuf[i]=y; prevH[i]=hh; ybufZ[i]=z;
       }
       plx+=ddx; ply+=ddy;
     }
@@ -1206,6 +1212,7 @@ function render(now){
   ctx.beginPath(); ctx.rect(0,0,W,VIEWH); ctx.clip();
   drawSunMoon(S,horizon,sinp,cosp);
   drawPuffs(S,scaleH,horizon,sinp,cosp);
+  drawSettlements3D(scaleH,horizon,sinp,cosp);
   drawPlaces(scaleH,horizon,sinp,cosp);
   drawShip(now);
   vignette(S);
@@ -1332,6 +1339,47 @@ function drawPlaces(scaleH,horizon,sinp,cosp){
     }
     ctx.globalAlpha=1;
   });
+}
+
+/* ══ 聚落（3D 飛行畫面）══
+   聚落在世界裡是有大小的東西，不是地圖上的一枚圖釘 —— 飛過去就該看見城。
+   投影與地標同一套（drawPlaces），差別是還要換算「一個世界單位在這個
+   深度佔幾個螢幕像素」：橫向視錐在深度 z 的半寬就是 z，對應 BW 個緩衝像素，
+   所以 1 世界單位 = W/(2z) 螢幕像素。
+   ⚠ 遮擋要同時看「高度」與「深度」。ybuf 是該欄地形的最高列，但那通常是
+     **最遠**的山脊（越遠的高地投影越靠地平線＝列數越小），聚落位在它下方
+     是正常的，不代表被擋 —— 只比 ybuf 會把每一座城都判成看不見。
+     真正被擋的條件是：那一列的來源比聚落**更近**（ybufZ < z），而且它
+     壓在聚落的地面之上（ybuf < by）。兩者同時成立才是前面有山。
+   ⚠ LOD 交給 settlement.js 依螢幕直徑自己決定，遠處自動退成符號。 */
+function drawSettlements3D(scaleH,horizon,sinp,cosp){
+  if(!window.Settlement || !MAPW) return;
+  const sxk=W/BW, syk=VIEWH/BH;
+  const list=[];
+  for(const s of buildSettlements()){
+    const dx=s.mx*MAP_SCALE-cam.x, dy=s.my*MAP_SCALE-cam.y;
+    const z=dx*(-sinp)+dy*(-cosp);
+    if(z<60||z>ZFAR*0.9) continue;
+    const sv=(dx*cosp+dy*(-sinp))/z;
+    if(sv<-1.35||sv>1.35) continue;
+    const col=Math.round(((sv+1)/2)*BW);
+    if(col<0||col>=BW) continue;
+    const i=(Math.min(MAPH-1,s.my|0))*MAPW+(Math.min(MAPW-1,s.mx|0));
+    const gh=HGT[i]>CLOUD_H?HGT[i]:CLOUD_H;
+    const by=((cam.alt-gh)/z + z*curvAt(sv))*scaleH+horizon;      // 緩衝列
+    if(ybufZ[col]<z-40 && ybuf[col]<by-2) continue;                // 前面有更近的山稜擋住
+    list.push({s, z, x:((sv+1)/2*BW)*sxk, y:by*syk});
+  }
+  list.sort((a,b)=>b.z-a.z);                                       // 遠的先畫
+  for(const o of list){
+    const sc=W/(2*o.z);                                            // 世界單位 → 螢幕像素
+    const R=SETTLE_R[o.s.tier]*MAP_SCALE;                          // 半徑（世界單位）
+    if(R*2*sc<3) continue;
+    ctx.save();
+    ctx.globalAlpha=clamp((ZFAR*0.9-o.z)/(ZFAR*0.30),0,1);         // 遠處隨霧淡出
+    Settlement.draw(ctx, o.s, { ox:o.x, oy:o.y, scale:sc }, Settlement.DEBUG);
+    ctx.restore();
+  }
 }
 
 /* 進入地標（目前只做確認演出；之後接場景切換） */
@@ -1783,14 +1831,18 @@ function vignette(S){
      就要載的東西，原尺寸 PNG 會把開場拖長。
    ⚠ 基座頂盤中心的比例值 BASE_DISC 是量出來的：webp 是 bbox 裁切後縮放的，
      換圖就要重量，否則舵輪的軸心會偏離基座。 */
-const helmArt={ wheel:null, base:null };
+const helmArt={ wheel:null, base:null, pointer:null };
 (function loadHelm(){
   const one=(k,src)=>{ const im=new Image(); im.onload=()=>{helmArt[k]=im;}; im.src=src; };
-  one('wheel','Wheel.webp'); one('base','Base.webp');
+  one('wheel','Wheel.webp'); one('base','Base.webp'); one('pointer','Pointer.webp');
 })();
-const BASE_DISC={ x:0.50, y:0.205 };     // 基座頂盤中心（佔圖寬/圖高的比例）
+/* ⚠ 指針與殼體是**素材端**就拆好的兩張圖（split_base.py），不是繪製時才切
+   來源矩形 —— 那樣一旋轉就會跟殼體開縫（斷圖）。
+   指針的樞紐在它底邊中央，也就是殼體的正上方中點。 */
+const PTR_W=0.0506;                      // 指針寬度佔基座寬的比例（52/1028）
+const PTR_SWING=80*Math.PI/180;          // 擺動上限：前方 ±80°（共 160°）
 const WHEEL_SPIN=0.0052;                 // 舵量 → 舵輪角速度（rad/ms，滿舵約 0.83 轉/秒）
-const HELM_OUT=20;                       // 舵輪突出 3D 視窗的像素
+const HELM_OUT=20;                       // 舵輪突出 3D 視窗的像素（基座不突出）
 let wheelAng=0;
 
 function drawPanel(S){
@@ -1815,28 +1867,29 @@ function drawPanel(S){
   /* 基座只畫**上半**（銅製的羅經頭），立在舵輪上緣後方。
      ⚠ 下半的木柱不畫：舵輪放大之後會整根蓋掉，畫了也看不到，
        而基座真正有意義的是頭部那顆會隨航向偏轉的指針。 */
-  let headTop=y0-HELM_OUT-10;                     // 給方位計讓位用
+  /* 羅經座：**整個留在操作區內**，用素材原樣不裁切。
+     被舵輪的輪臂遮住是正常的 —— 它是裝飾，不是儀表。 */
   if(helmArt.base){
-    const B=helmArt.base, frac=0.46;              // 只取原圖上方 46%
-    const SPK=0.092;                              // 頂端銅指針佔原圖高度的比例
-    const headW=Math.min(wd*0.34, W*0.50), headH=headW*(B.height*frac)/B.width;
-    const discCy=y0-HELM_OUT-4;                   // 圓盤中心：貼在舵輪上緣之上
-    const headY=discCy-headH*(BASE_DISC.y/frac);
-    const hx=cx-headW*0.5;
-    headTop=headY;
+    const B=helmArt.base;
+    const bh=ph*0.92, bw=bh*B.width/B.height;
+    const btop=y0+ph*0.05, bxx=cx-bw*0.5;
+    ctx.drawImage(B, bxx, btop, bw, bh);
 
-    /* 銅指針：原圖頂端那根尖錐，繞圓盤中心隨航向擺動。
-       ⚠ 不另外畫一枚程序指針 —— 素材自己就有一根，畫兩根反而打架。
-         作法是把「指針」與「殼體」分成兩段來源矩形：指針那段跟著轉，
-         殼體那段不動。被輪臂遮住是正常的，它本來就是裝飾。 */
-    ctx.save();
-    ctx.translate(cx,discCy); ctx.rotate(-cam.angle); ctx.translate(-cx,-discCy);
-    ctx.drawImage(B, 0,0, B.width, B.height*SPK,
-                     hx, headY, headW, headH*(SPK/frac));
-    ctx.restore();
-    // 殼體：指針以下的部分，固定不動
-    ctx.drawImage(B, 0,B.height*SPK, B.width, B.height*(frac-SPK),
-                     hx, headY+headH*(SPK/frac), headW, headH*(1-SPK/frac));
+    /* 銅指針：繞底邊中央（＝殼體正上方）擺動，只在前方 ±80° 之間。
+       ⚠ 指針與殼體是素材端就拆好的兩張圖，不是繪製時切來源矩形 ——
+         那樣旋轉必定跟殼體開縫（斷圖）。 */
+    if(helmArt.pointer){
+      const P=helmArt.pointer;
+      const pw=bw*PTR_W*(P.width/52), phh=pw*P.height/P.width;
+      let ha=-cam.angle;
+      while(ha> Math.PI) ha-=Math.PI*2;
+      while(ha<-Math.PI) ha+=Math.PI*2;
+      const pa=clamp(ha,-PTR_SWING,PTR_SWING);
+      ctx.save();
+      ctx.translate(cx,btop); ctx.rotate(pa);
+      ctx.drawImage(P, -pw*0.5, -phh, pw, phh);
+      ctx.restore();
+    }
   }
 
   // 舵輪：隨舵量持續旋轉（角速度 ∝ 舵量），放手就停在當下的角度
@@ -1863,7 +1916,7 @@ function drawPanel(S){
      ⚠ 要避開舵輪與羅經頭突出的那一段，否則會被壓住 → 再往上抬。 */
   const deg=((-cam.angle*180/Math.PI)%360+360)%360;
   const bw2=Math.min(W*0.62,250), cbx=cx-bw2/2;      // ⚠ 不能叫 bx，上面基座已用掉
-  const ccy=headTop-20;                              // 依羅經頭實際高度讓位，不寫死
+  const ccy=y0-HELM_OUT-24;                          // 在舵輪突出線之上
   ctx.fillStyle='rgba(6,7,12,.55)';
   ctx.fillRect(cbx-6,ccy-17,bw2+12,30);
   ctx.save();

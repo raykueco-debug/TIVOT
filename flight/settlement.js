@@ -74,14 +74,19 @@ const TIERS = {
 };
 
 /* 建築型錄。fp＝佔地（相對 R）、hr＝高度（相對佔地）、ring＝可出現的環帶（距中心/R） */
+/* ⚠ 高度整體壓低：規格的 hr（townhouse 1.8、tower 3.5~5.0）畫出來像現代
+   市中心，而這是十九世紀歐洲 —— 民居兩三層、天際線平坦，突出的只有
+   教堂尖塔與鐘樓那一兩座。所以：
+     townhouse 1.8→1.35、manor 1.6→1.25、tower 3.5~5.0→2.4~3.0
+   真正的高度落差交給地標（見 LM_MIN_H），那才是該被看見的東西。 */
 const BTYPE = {
-  hovel:     { fp: [.008, .014], hr: [0.8, 0.8], ring: [0.50, 1.00], roof: 'flat' },
-  house:     { fp: [.012, .020], hr: [1.1, 1.1], ring: [0.00, 1.00], roof: 'gable' },
-  townhouse: { fp: [.014, .022], hr: [1.8, 1.8], ring: [0.10, 0.72], roof: 'steep' },
-  shop:      { fp: [.018, .028], hr: [1.3, 1.3], ring: [0.00, 0.95], roof: 'sign', onRoad: true },
-  warehouse: { fp: [.030, .050], hr: [1.0, 1.0], ring: [0.45, 1.00], roof: 'long' },
-  manor:     { fp: [.035, .055], hr: [1.6, 1.6], ring: [0.00, 0.45], roof: 'complex' },
-  tower:     { fp: [.010, .016], hr: [3.5, 5.0], ring: [0.00, 1.00], roof: 'cone' },
+  hovel:     { fp: [.008, .014], hr: [0.7, 0.7],  ring: [0.50, 1.00], roof: 'flat' },
+  house:     { fp: [.012, .020], hr: [0.95, 0.95],ring: [0.00, 1.00], roof: 'gable' },
+  townhouse: { fp: [.014, .022], hr: [1.35, 1.35],ring: [0.10, 0.72], roof: 'steep' },
+  shop:      { fp: [.018, .028], hr: [1.10, 1.10],ring: [0.00, 0.95], roof: 'sign', onRoad: true },
+  warehouse: { fp: [.030, .050], hr: [0.85, 0.85],ring: [0.45, 1.00], roof: 'long' },
+  manor:     { fp: [.035, .055], hr: [1.25, 1.25],ring: [0.00, 0.45], roof: 'complex' },
+  tower:     { fp: [.010, .016], hr: [2.4, 3.0],  ring: [0.00, 1.00], roof: 'cone' },
 };
 
 /* 地標。fac＝適用勢力（null 表不限），需 coastal 者另標。 */
