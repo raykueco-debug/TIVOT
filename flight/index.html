@@ -393,9 +393,12 @@ const SETTLEMENTS = [
      掃描城心與旋轉取吻合度最高者（1366,936,1.40 → 91.7%，原本 1335,929,1.10
      只有 89.2%）。改圖或改地形都要重跑那個搜尋。
      ⚠ 這三個值必須與 build_city.py 的 JOBS 一致。 */
+  /* veg/vegR：周邊鋪哪張林草貼圖、鋪多大一圈（地圖像素半徑，外 38% 淡出）。
+     140px＝2800 世界單位，把整平台（PAD 3.6R＝79px）整個蓋進去還有餘裕 ——
+     接縫要消失，覆蓋範圍就必須明顯大於那塊裸台，不然只是把界線往外挪。 */
   { n:'薇拉馮德港', x:1366, y:936, t:'city1', f:'empire', c:1, sea:1.90,
     plan:'city/velafonte_plan.webp', planH:'city/velafonte_h.webp',
-    planW:1050, planRot:1.40, planTall:26 },
+    planW:1050, planRot:1.40, planTall:26, veg:'geo/forest_dark.webp', vegR:140 },
   /* ⚠ planTall 別給大：這個引擎的縱向投影比橫向大約 2.9 倍
      （scaleH·syk ≈ 558 對 W/2 = 195），高度一抬就過頭，量體會把格子
      剪成長條、整座城拖曳。26 是「立得起來但不破圖」的上限。 */
@@ -441,6 +444,55 @@ let cityFB=null, CFB=null;                  // 手繪平面圖的低解析繪製
 /* 網格投影的投影點（抬升後 / 地面），每點 4 個 float：螢幕 x、螢幕 y、尺度、未夾深度。
    ⚠ 預配置、只長不縮。舊版每幀 new 出 (N+1)²×2 個小陣列（N=40 → 3362 個）
      再加 N² 個 cell 物件（1600 個）—— 桌機的 GC 吞得下，手機吞不下。 */
+/* ══ 地貌細節貼圖（林草）══
+   地形的綠是平塗底色＋烘焙陰影＋一層高度雜訊，城的綠是畫出來的樹叢 ——
+   接縫真正刺眼的地方在這個「語彙不同」，不在邊界線本身。這一層把同一位美術的
+   樹冠圖以**世界座標**平鋪到地面上，兩邊就變成「畫得細的」與「畫得粗的」之差。
+   ⚠ 目前只鋪薇拉馮德周邊（VEGW 只在那一圈填值），先驗管線與方向；全圖鋪設
+     是下一步（改成依色相分類寫 VEGW/VEGT 即可，取樣端一行都不用動）。
+   ⚠ 存成「相對自身均值的倍率」而不是顏色：這是**細節層**，實際顏色由地圖底色
+     相乘決定 —— 直接換色會把地貌的形狀與烘焙好的明暗一起洗掉，山就不是山了。
+   ⚠ 邊長 2 的次方，取樣走 & 遮罩（同雲的貼圖）。這是每幀十七萬次的內迴圈，
+     除法與取模都付不起。 */
+const GT=256, GTM=GT-1;                    // 貼圖邊長；1 texel = 1 世界單位
+let GEOK=null;                             // Float32Array(GT*GT*3)：每 texel 的 rgb 倍率
+function loadGeoTex(url){
+  return new Promise(res=>{
+    const im=new Image();
+    im.onload=()=>{
+      const c=document.createElement('canvas'); c.width=GT; c.height=GT;
+      const g=c.getContext('2d'); g.drawImage(im,0,0,GT,GT);
+      const d=g.getImageData(0,0,GT,GT).data;
+      let mr=0,mg=0,mb=0;
+      for(let i=0,j=0;i<GT*GT;i++,j+=4){ mr+=d[j]; mg+=d[j+1]; mb+=d[j+2]; }
+      mr/=GT*GT; mg/=GT*GT; mb/=GT*GT;
+      const k=new Float32Array(GT*GT*3);
+      for(let i=0,j=0,q=0;i<GT*GT;i++,j+=4,q+=3){
+        k[q  ]=d[j  ]/(mr||1);
+        k[q+1]=d[j+1]/(mg||1);
+        k[q+2]=d[j+2]/(mb||1);
+      }
+      GEOK=k; res();
+    };
+    im.onerror=()=>res();                  // 載不到就沒有這一層，其餘照常
+    setTimeout(res,4000);
+    im.src=url;
+  });
+}
+/* 每個地圖像素鋪不鋪、鋪多濃（0~255）。載入時算一次，取樣端只讀一個 byte。 */
+let VEGW=null;
+/* 反重複：每 256 單位一格，依格號選 8 種二面體變換之一。整片大陸會重複
+   一百多次，不打散的話眼睛一定抓得到節奏。查表，內迴圈成本近乎零。 */
+const GEOROT=new Uint8Array(1024);
+(function(){ for(let i=0;i<1024;i++){ let n=i*374761393; n=(n^(n>>13))*1274126177; GEOROT[i]=(n^(n>>16))&7; } })();
+/* 遠處淡出：不淡出的話高頻細節在遠景會走樣成閃爍（跟高度雜訊同一個限制），
+   而且淡出同時把成本收在近景。 */
+/* GEO_AMP＝細節層的強度（1＝完全照貼圖的起伏乘進去）。0.85 太重，地面讀起來
+   是一片深色雜點；0.5 又只剩一層薄紋。0.65 是「看得出是樹冠、但山還是山」。
+   GEO_FAR＝淡出距離。再遠一個 texel 不到一個螢幕像素，只會走樣成閃爍，
+   而且淡出同時把成本收在近景。 */
+const GEO_FAR=1500, GEO_AMP=0.65;
+
 let cityPts=null, cityGnd=null;
 let cityU=null, cityV=null;                 // 兩軸的格線（平面座標 −1..1，非均勻）
 let settleCache=null;                       // 生成結果快取（純函式，算一次就好）
@@ -752,6 +804,36 @@ async function loadWorld(){
       }
       window.__cityWater=(window.__cityWater||0)+water;
       window.__cityLand=(window.__cityLand||0)+land;
+    }
+  }
+
+  /* ── 林草覆蓋圖（VEGW）────────────────────────────────────
+     哪些地圖像素要鋪林草、鋪多濃。目前只有帶 veg 欄位的聚落周邊。
+     ⚠ 水域與河道不鋪：樹不長在水上。海（低於雲海高度）同理。
+     ⚠ 外緣要淡出，硬邊等於把「城的界線」換成「林子的界線」，白做。 */
+  step(0.74,'鋪設林草…');
+  {
+    const need=SETTLEMENTS.filter(S=>S.veg);
+    if(need.length){
+      await loadGeoTex(need[0].veg);          // 目前單一貼圖；全圖鋪設時改成一組
+      if(GEOK){
+        VEGW=new Uint8Array(MAPW*MAPH);
+        for(const S of need){
+          const r1=S.vegR||120, r0=r1*0.62;
+          const rr=Math.ceil(r1);
+          for(let dy=-rr;dy<=rr;dy++)for(let dx=-rr;dx<=rr;dx++){
+            const x=S.x+dx, y=S.y+dy;
+            if(x<0||y<0||x>=MAPW||y>=MAPH) continue;
+            const i=y*MAPW+x;
+            if(HGT[i]<=CLOUD_H||RIV[i]) continue;      // 海／河不鋪
+            const d=Math.hypot(dx,dy);
+            if(d>r1) continue;
+            const t=d<=r0?1:1-((d-r0)/(r1-r0));
+            const w=Math.round(255*(t*t*(3-2*t)));     // smoothstep 淡出
+            if(w>VEGW[i]) VEGW[i]=w;
+          }
+        }
+      }
     }
   }
 
@@ -1348,6 +1430,10 @@ function render(now){
     const ddx=(prx-plx)/BW, ddy=(pry-ply)/BW;
     const fog=clamp((z-FOGS)/(ZFAR-FOGS),0,1)*FOG_MAX;
     const invz=1/z;
+    /* 林草層的強度隨深度淡出（近景滿、GEO_FAR 之後歸零）。
+       每個 z 步進算一次就好 —— 同一步進的整排欄位深度相同。 */
+    const vegAmt=VEGW?GEO_AMP*(z<GEO_FAR?1-(z/GEO_FAR)*(z/GEO_FAR):0):0;
+    const vegOn=vegAmt>0.004;
 
     for(let i=0;i<BW;i++){
       // 世界座標 → 地圖像素
@@ -1403,6 +1489,30 @@ function render(now){
         // 高頻細節：在世界座標上取樣，補回被放大糊掉的近景起伏
         const dt=DETH[(((ply|0)&DTM)*DET_TILE)+((plx|0)&DTM)];
         hh+=dt*(DET_AMP/127);
+        /* ── 林草細節層 ─────────────────────────────────────────
+           在世界座標平鋪樹冠圖，乘進底色。乘而不換：底色帶著地貌形狀與
+           烘焙好的 hillshade，直接換成貼圖顏色會把山攤平成一張壁紙。
+           ⚠ +4096 再取整：世界座標會是負的，而 |0 是往零截斷，負數那半邊
+             的相位會整個錯開（雲的取樣也踩過同一個坑）。4096 是 GT 的倍數。
+           ⚠ 反重複：每 256 單位一格，依格號選 8 種二面體變換之一。不打散的話
+             整片大陸重複一百多次，眼睛一定抓得到那個節奏。 */
+        if(vegOn){
+          const vw=VEGW[mi];
+          if(vw){
+            const wx=plx+4096, wy=ply+4096;
+            const cxg=(wx/GT)|0, cyg=(wy/GT)|0;
+            let tx=(wx|0)&GTM, ty=(wy|0)&GTM;
+            const rot=GEOROT[((cxg*7+cyg*13)&1023)];
+            if(rot&1) tx=GTM-tx;
+            if(rot&2) ty=GTM-ty;
+            if(rot&4){ const t2=tx; tx=ty; ty=t2; }
+            const q=((ty*GT)+tx)*3;
+            const amt=(vw/255)*vegAmt;
+            cr*=1+(GEOK[q  ]-1)*amt;
+            cg*=1+(GEOK[q+1]-1)*amt;
+            cb*=1+(GEOK[q+2]-1)*amt;
+          }
+        }
         isRiver=RIV[mi];
         const nl=clamp(0.62+(SLX[mi]*lx+SLY[mi]*ly)*LIGHT_DIR_K,0,1.5);
         const sh=(ambI+sunI*nl)*GRADE_EXPO;
