@@ -730,6 +730,9 @@ const VEG_BAND=0.16;                       // 針闊葉的混合帶寬度
    而且淡出同時把成本收在近景。
    GEO_AMP＝細節層的強度。0.85 太重，地面讀起來是一片深色雜點；0.5 只剩薄紋。 */
 const GEO_FAR=1500, GEO_AMP=0.65;
+/* 瀑布撞進雲海翻起的霧。MIST_H＝往上幾列、MIST_AMT＝最濃處的白、
+   MIST_SPD＝翻騰速度（與瀑布本身的 FALL_SPD 錯開，兩者才不會同步得像貼紙）。 */
+const MIST_H=14, MIST_AMT=0.92, MIST_SPD=0.05;
 /* 當幀光照（render 每幀寫入）。城／船這些畫在離屏緩衝上的東西靠它跟地面對齊曝光。 */
 const LIT={amb:0.5,sun:0.4,r:1,g:1,b:1};
 /* build_city.py 已把 VAL 烘進插畫（見該檔的 VAL 常數）——這裡要除掉它，
@@ -1102,16 +1105,52 @@ async function loadWorld(){
         const u=t/n;
         const cx2=best.ax+(best.bx-best.ax)*u, cy2=best.ay+(best.by-best.ay)*u;
         const hz=h0+(h1-h0)*u;                               // 由城往外遞減
-        for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){
+        for(let dy=-3;dy<=3;dy++)for(let dx=-3;dx<=3;dx++){
           const x=Math.round(cx2)+dx, y=Math.round(cy2)+dy;
           if(x<0||y<0||x>=MAPW||y>=MAPH) continue;
           const d=Math.hypot(x-cx2,y-cy2);
-          if(d>1.9) continue;
+          if(d>2.6) continue;
           const i=y*MAPW+x;
           if(HGT[i]<=CLOUD_H) continue;
           const target=Math.round(hz);
           if(HGT[i]>target){ HGT[i]=target; raw[i]=target/PEAK_SCALE; }
           RIV[i]=1; COL[i]=rgb(84,120,142);
+        }
+      }
+      /* ── 把整條河擴到貼著城 ────────────────────────────────
+         接起來還不夠：城邊那條河只有兩三個地圖像素寬（40~60 世界單位），
+         從空中看仍是一條細線，讀不出「城靠著河」。這裡把城周圍那一段整條加寬，
+         而且**往城的方向偏心**（擴張中心朝城心推），河才會真的貼上去。
+         ⚠ 越靠海口越寬：出海口本來就是喇叭狀，而且寬的水面撞上大陸邊緣
+           才撐得起一道看得見的瀑布。
+         ⚠ 只降不升：加寬時只把地形壓到水面，不動比水面更低的格子 ——
+           否則會把已經在雲海高度的海岸重新墊高。 */
+      {
+        const cxm=S.x, cym=S.y, ZONE=52;
+        const seed=[];
+        for(let dy=-ZONE;dy<=ZONE;dy++)for(let dx=-ZONE;dx<=ZONE;dx++){
+          const x=cxm+dx, y=cym+dy;
+          if(x<0||y<0||x>=MAPW||y>=MAPH) continue;
+          const i=y*MAPW+x;
+          if(RIV[i]&&HGT[i]>CLOUD_H) seed.push([x,y,HGT[i]]);
+        }
+        for(const [x,y,h] of seed){
+          // 越接近雲海高度＝越靠出海口 → 越寬
+          const nearMouth=clamp(1-(h-CLOUD_H)/70,0,1);
+          const w=1.8+nearMouth*4.2;
+          // 偏心：把擴張中心往城心推一點，河因此往城靠
+          const vx=cxm-x, vy=cym-y, vl=Math.hypot(vx,vy)||1;
+          const ox=vx/vl*Math.min(1.6,vl*0.06), oy=vy/vl*Math.min(1.6,vl*0.06);
+          const rr2=Math.ceil(w)+1;
+          for(let dy=-rr2;dy<=rr2;dy++)for(let dx=-rr2;dx<=rr2;dx++){
+            const px=x+dx, py=y+dy;
+            if(px<0||py<0||px>=MAPW||py>=MAPH) continue;
+            if(Math.hypot(dx-ox,dy-oy)>w) continue;
+            const j=py*MAPW+px;
+            if(HGT[j]<=CLOUD_H) continue;                    // 已經是雲海就別碰
+            if(HGT[j]>h){ HGT[j]=h; raw[j]=h/PEAK_SCALE; }   // 只降不升
+            RIV[j]=1; COL[j]=rgb(84,120,142);
+          }
         }
       }
     }
@@ -2006,6 +2045,26 @@ function render(now){
                 cb=lerp(cb,126*v*wamb*lightB,rocky);
               }
               if(yy-cap<2){ cr*=1.22; cg*=1.20; cb*=1.18; }   // 崖唇受光提亮
+            }
+            /* ── 撞擊點的雲霧水花 ──────────────────────────────
+               瀑布掉到雲海就整條消失，看起來像被裁掉。真正該有的是**霧**：
+               水砸進雲頂翻起一片白，看不見底反而更有深度。
+               ⚠ 只能畫在撞擊點**上方**（yy<bot）。bot 以下的像素屬於更近的
+                 取樣、早就畫好了，往下寫會破壞深度順序 —— 這也是為什麼
+                 「直下雲海深處」那個方案在這個渲染器裡行不通：更近的雲會後畫、
+                 把水柱蓋掉。
+               ⚠ 霧要吃同一盞燈：白得不吃日照的話，夜裡會變成一條螢光帶。 */
+            if(fall){
+              const up=(bot-yy);                        // 距撞擊點幾列
+              if(up<MIST_H){
+                const t2=1-up/MIST_H;
+                const puff=hash(wx*7+i, (yy*3 - (now*MIST_SPD|0)) & 511);
+                const m=clamp(t2*t2*(0.55+puff*0.75),0,1)*MIST_AMT;
+                const msh=(ambI+sunI*0.80)*GRADE_EXPO;
+                cr=lerp(cr,252*msh*lightR,m);
+                cg=lerp(cg,253*msh*lightG,m);
+                cb=lerp(cb,255*msh*lightB,m);
+              }
             }
             if(fog>0.002){ cr=lerp(cr,fr,fog); cg=lerp(cg,fg,fog); cb=lerp(cb,fb,fog); }
             const wd=BAYER[((yy&3)<<2)|(i&3)]*DITHER;
