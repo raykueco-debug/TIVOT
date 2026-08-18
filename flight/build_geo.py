@@ -49,6 +49,12 @@ JOBS = [
     {'src': 'snow.png',         'dst': 'snow.webp'},
     {'src': 'water_dark.png',   'dst': 'water_dark.webp'},
     {'src': 'water_light.png',  'dst': 'water_light.webp'},
+    # 屋頂三級（近城密、往外疏）。'pix' ＝先縮到 SIZE/pix 再最近鄰放大回來：
+    # 原圖噪點多，直接縮到 256 會留下一層細碎雜訊，在低解析的世界裡讀起來是髒。
+    # 縮放像素化同時把噪點抹掉、又讓顆粒與地形一致（城的插畫也是這麼處理的）。
+    {'src': 'roof_high.png',    'dst': 'roof_high.webp', 'pix': 2},
+    {'src': 'roof_mid.png',     'dst': 'roof_mid.webp',  'pix': 2},
+    {'src': 'roof_low.png',     'dst': 'roof_low.webp',  'pix': 2},
 ]
 
 
@@ -106,7 +112,12 @@ for J in JOBS:
     after = seam_error(a)
 
     out = Image.fromarray(np.clip(a, 0, 255).astype(np.uint8))
-    out = out.resize((SIZE, SIZE), Image.LANCZOS)
+    pix = J.get('pix', 1)
+    if pix > 1:
+        out = out.resize((SIZE // pix, SIZE // pix), Image.LANCZOS)   # 先縮（抹掉噪點）
+        out = out.resize((SIZE, SIZE), Image.NEAREST)                 # 再最近鄰放大（保住硬邊）
+    else:
+        out = out.resize((SIZE, SIZE), Image.LANCZOS)
     out.save(os.path.join(DST, J['dst']), quality=QUALITY, method=6)
 
     arr = np.asarray(out).astype(np.float32)

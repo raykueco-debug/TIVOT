@@ -395,7 +395,12 @@ const SETTLEMENTS = [
      ⚠ 這三個值必須與 build_city.py 的 JOBS 一致。 */
   { n:'薇拉馮德港', x:1366, y:936, t:'city1', f:'empire', c:1, sea:1.90,
     plan:'city/velafonte_plan.webp', planH:'city/velafonte_h.webp',
-    planW:1050, planRot:1.40, planTall:26 },
+    planW:1050, planRot:1.40, planTall:26,
+    /* spurs＝插畫上放射狀街道的世界方位（rad）。由 build_city.py 沿一圈量
+       「街道色」的角度峰值偵測而來，已去掉朝海的兩條（1.78 / 2.27，那個方向
+       是外海，路修不出去）。城外的路要從這些方位延伸出去，街道才不會一出
+       圖面就斷掉。 */
+    spurs:[3.023,-2.684,-1.951,-1.235,0.143,0.650,1.086] },
   /* ⚠ planTall 別給大：這個引擎的縱向投影比橫向大約 2.9 倍
      （scaleH·syk ≈ 558 對 W/2 = 195），高度一抬就過頭，量體會把格子
      剪成長條、整座城拖曳。26 是「立得起來但不破圖」的上限。 */
@@ -437,6 +442,40 @@ const cityPlansReady=[];
   }
 })();
 
+/* ── 夜間路燈 ────────────────────────────────────────────────
+   大城入夜要亮起來。燈位不是亂灑：從插畫裡挑「街道色」（亮、低飽和）的像素，
+   所以燈自然沿著街廓排列，而不是浮在屋頂上。
+   ⚠ 只算一次，存平面座標(−1..1)；每幀只做投影與畫點。
+   ⚠ 畫成小星點就好 —— 這個尺寸下畫光暈只會糊成一團橘色霧。 */
+const cityLamps={};                         // key: plan 路徑 → Float32Array(u,v 交錯)
+function lampsFor(S,img){
+  const k=S.plan;
+  if(cityLamps[k]) return cityLamps[k];
+  const N=Math.min(160, Math.round((S.planW||600)/7));
+  const SS=128;
+  const c=document.createElement('canvas'); c.width=SS; c.height=SS;
+  const g=c.getContext('2d'); g.drawImage(img,0,0,SS,SS);
+  const d=g.getImageData(0,0,SS,SS).data;
+  const cand=[];
+  for(let y=0;y<SS;y++)for(let x=0;x<SS;x++){
+    const j=(y*SS+x)*4;
+    if(d[j+3]<80) continue;
+    const r=d[j],gg=d[j+1],b=d[j+2];
+    const mx=Math.max(r,gg,b), mn=Math.min(r,gg,b);
+    const lum=0.299*r+0.587*gg+0.114*b;
+    if(lum>92 && (mx-mn)/(mx||1)<0.32) cand.push([x/(SS-1)*2-1, y/(SS-1)*2-1]);
+  }
+  const out=new Float32Array(N*2);
+  let seed=0x9E3779B1;
+  for(let i=0;i<N;i++){
+    seed=(seed*1664525+1013904223)>>>0;
+    const p2=cand.length?cand[seed%cand.length]:[0,0];
+    out[i*2]=p2[0]; out[i*2+1]=p2[1];
+  }
+  cityLamps[k]=out;
+  return out;
+}
+
 let cityFB=null, CFB=null;                  // 手繪平面圖的低解析繪製緩衝
 /* 網格投影的投影點（抬升後 / 地面），每點 4 個 float：螢幕 x、螢幕 y、尺度、未夾深度。
    ⚠ 預配置、只長不縮。舊版每幀 new 出 (N+1)²×2 個小陣列（N=40 → 3362 個）
@@ -463,8 +502,12 @@ const GEO_SCALE=1.6, GEO_INV=1/GEO_SCALE;
    ⚠ Uint8 而非 Float32：10 張圖差 7.9MB → 2.0MB，手機上是有感的。 */
 const GEO_LIST=['forest_dark','forest_light','rock_grey','rock_brown',
                 'gravel_dark','gravel_light','waste_brown','snow',
-                'water_dark','water_light'];
-const G_FD=0,G_FL=1,G_RG=2,G_RB=3,G_GD=4,G_GL=5,G_WB=6,G_SN=7,G_WD=8,G_WL=9;
+                'water_dark','water_light','roof_high','roof_mid','roof_low'];
+const G_FD=0,G_FL=1,G_RG=2,G_RB=3,G_GD=4,G_GL=5,G_WB=6,G_SN=7,G_WD=8,G_WL=9,
+      G_RH=10,G_RM=11,G_RL=12;
+/* 屋頂的絕對均值色：郊區跟路一樣是人造物，只靠相乘的細節層會留在綠地的色相上，
+   必須把底色本身往這個顏色推。 */
+const ROOF_COL=[[80,76,69],[93,86,66],[102,91,61]];
 const GEO_STRIDE=GT*GT*3;
 let GEOK=null;                             // Uint8Array(GEO_LIST.length*GEO_STRIDE)
 let geoReady=false;
@@ -504,6 +547,10 @@ function loadGeoAll(){
      現在這樣已經讀得出「城與城相連」。 */
 const ROAD_DS=6;                              // 找路用的降取樣倍率
 let ROADW=null;                               // Uint8Array：每地圖像素的路面權重
+/* 郊區：城外由密到疏散開的屋舍。值＝密度（255＝緊鄰城區，0＝沒有）。
+   ⚠ 存成逐像素而不是「取樣時算到每座城的距離」：後者在內迴圈要對 27 座城
+     各算一次，這裡每幀跑十七萬次。載入時算一次、取樣時讀一個 byte。 */
+let SUBW=null;
 let ROAD_PATHS=[];                            // 折線（地圖座標），地圖畫面也要用
 
 /* 成本場：一步的代價。爬坡是主要成本 —— 這是讓路自己去繞河谷的關鍵。 */
@@ -569,6 +616,47 @@ function buildRoads(){
     for(let c=t0;c!==-1;c=prev[c]) pts.push([(c%W2)*ROAD_DS+ROAD_DS/2, ((c/W2)|0)*ROAD_DS+ROAD_DS/2]);
     paths.push(pts);
   }
+  /* ── 放射支線 ────────────────────────────────────────────────
+     城的插畫是放射狀街道，但那些街到圖框就斷了 —— 從空中看就是「城外沒有路」。
+     沿著同樣的方位往外接一段（同一套成本場，所以一樣會順著地勢繞）。
+     ⚠ 目標點落在雲海上就跳過：那個方位是外海，路修不出去。 */
+  const SPUR=75;                                     // 支線長度（地圖像素，≈1500 世界單位）
+  for(const S of SETTLEMENTS){
+    if(!S.spurs) continue;
+    const s0=Math.round(S.y/ROAD_DS)*W2+Math.round(S.x/ROAD_DS);
+    for(const th of S.spurs){
+      const tx=Math.round((S.x+Math.cos(th)*SPUR)/ROAD_DS);
+      const ty=Math.round((S.y+Math.sin(th)*SPUR)/ROAD_DS);
+      if(tx<0||ty<0||tx>=W2||ty>=H2) continue;
+      const t1=ty*W2+tx;
+      if(gh[t1]<=CLOUD_H) continue;                  // 朝海的方位：修不出去
+      dist.fill(Infinity); seen.fill(0); prev.fill(-1);
+      dist[s0]=0;
+      let hn2=0; heapI[0]=s0; heapD[0]=0; hn2=1;
+      while(hn2){
+        let mi=0; for(let i=1;i<hn2;i++) if(heapD[i]<heapD[mi]) mi=i;
+        const cur=heapI[mi], cd=heapD[mi];
+        hn2--; heapI[mi]=heapI[hn2]; heapD[mi]=heapD[hn2];
+        if(seen[cur]) continue;
+        seen[cur]=1;
+        if(cur===t1) break;
+        const cx2=cur%W2, cy2=(cur/W2)|0, ch=gh[cur];
+        for(const [dx,dy] of D){
+          const nx=cx2+dx, ny=cy2+dy;
+          if(nx<0||ny<0||nx>=W2||ny>=H2) continue;
+          const ni=ny*W2+nx;
+          if(seen[ni]||gh[ni]<=CLOUD_H) continue;
+          const w=roadCost(ch,gh[ni],gr[ni])*((dx&&dy)?1.414:1);
+          const nd=cd+w;
+          if(nd<dist[ni]){ dist[ni]=nd; prev[ni]=cur; heapI[hn2]=ni; heapD[hn2]=nd; hn2++; }
+        }
+      }
+      if(!seen[t1]) continue;
+      const sp=[];
+      for(let c=t1;c!==-1;c=prev[c]) sp.push([(c%W2)*ROAD_DS+ROAD_DS/2, ((c/W2)|0)*ROAD_DS+ROAD_DS/2]);
+      paths.push(sp);
+    }
+  }
   /* 折線 → 路面權重圖。⚠ 不是「畫一條 1 像素的線」：路寬只有一個地圖像素時，
      取樣端每動一下就閃爍。改成帶羽化的距離場，取樣端才能平滑地混。 */
   ROADW=new Uint8Array(MAPW*MAPH);
@@ -594,6 +682,19 @@ function buildRoads(){
   }
   ROAD_PATHS=paths;
   window.__roads=paths.length;
+}
+
+/* 郊區選級：回傳 0/1/2（高/中/低密度屋頂）或 -1（這裡沒有房子）。
+   ⚠ 門檻隨密度走 —— 靠近城區時幾乎必中（連成一片），往外門檻抬高，
+     房子就一叢一叢地散開，最後完全交還給地貌。 */
+function roofPick(mi,n){
+  const w=SUBW[mi]/255;
+  /* ⚠ 噪聲要先正規化再當門檻。VEGSEL 是 fbm，實測落在 0~0.815、均值 0.458 ——
+     直接拿它跟 (1-w) 比，外圈（w 小）幾乎永遠不中，房子只會擠在城邊那一圈，
+     散不出去。拉開成 0~1 之後密度才真的隨半徑遞減。 */
+  const n01=clamp((n-0.16)/0.60,0,1);
+  if(n01 < 1-w*1.25) return -1;               // 沒中：這一格維持原本的地貌
+  return w>0.66?0:(w>0.33?1:2);
 }
 
 /* ── 為什麼**不做**逐格旋轉／鏡射 ────────────────────────────
@@ -966,6 +1067,29 @@ async function loadWorld(){
      不然會出現路從城的台階上直直插下去。 */
   step(0.78,'鋪設道路…');
   buildRoads();
+
+  /* 郊區密度場：自城區外緣往外遞減。⚠ 起點是**插畫的外緣**不是城心 ——
+     城區本身由插畫負責，郊區要從它結束的地方接手，不然會蓋在城上。 */
+  {
+    SUBW=new Uint8Array(MAPW*MAPH);
+    for(const S of SETTLEMENTS){
+      const R=SETTLE_R[S.t];
+      const r0=(S.planW?S.planW*0.5/MAP_SCALE:R*1.15);   // 城區外緣（地圖像素）
+      const r1=r0+(S.t.indexOf('city')===0?58:26);       // 郊區能散多遠：城大則遠
+      const rr=Math.ceil(r1);
+      for(let dy=-rr;dy<=rr;dy++)for(let dx=-rr;dx<=rr;dx++){
+        const x=S.x+dx, y=S.y+dy;
+        if(x<0||y<0||x>=MAPW||y>=MAPH) continue;
+        const i=y*MAPW+x;
+        if(HGT[i]<=CLOUD_H||RIV[i]) continue;             // 海上河上不長房子
+        const d=Math.hypot(dx,dy);
+        if(d>r1||d<r0*0.86) continue;
+        const t=1-clamp((d-r0*0.86)/(r1-r0*0.86),0,1);
+        const w=Math.round(255*(t*t*(3-2*t)));
+        if(w>SUBW[i]) SUBW[i]=w;
+      }
+    }
+  }
 
   // 坡度（給逐幀光照用）—— 必須在邊緣抬升之後，否則崖頂的法線是舊的
   step(0.70,'計算坡度…');
@@ -1662,6 +1786,9 @@ function render(now){
           const nz=VEGSEL[nr0+nc0]*(1-su)*(1-sv2)+VEGSEL[nr0+nc1]*su*(1-sv2)
                   +VEGSEL[nr1+nc0]*(1-su)*sv2   +VEGSEL[nr1+nc1]*su*sv2;
           const nz2=VEGSEL[(((sy0+23)&VSM)*VS)+((sx0+37)&VSM)];   // 亮度起伏用：同場、錯開相位
+          /* 郊區的覆蓋率用中頻（週期約 1300 單位）：低頻會變成一大塊城、
+             高頻會碎成雜點，房子成「叢」才像村落。 */
+          const nz3=VEGSEL[((((syf*4)|0)&VSM)*VS)+((((sxf*4)|0)&VSM))];
           /* ── 選類別 ──
              順序即優先權：水 → 崖 → 雪 → 碎石坡 → 荒地 → 森林。
              ⚠ 界線一律用噪聲抖動而不是混色：真實的樹線雪線是不規則的鋸齒，
@@ -1678,6 +1805,16 @@ function render(now){
             tex=G_GD;                                     // 樹線～雪線：碎石坡
           }else if(nz>BIOME_WASTE){
             tex=G_WB;                                     // 荒地（刻意少量）
+          }else if(SUBW&&SUBW[mi]>18&&roofPick(mi,nz3)>=0){
+            /* 郊區：由密到疏散開的屋舍。
+               ⚠ 密度不是靠「把貼圖調淡」，是靠**覆蓋率**：拿一張中頻噪聲當門檻，
+                 密度越低門檻越高 → 房子成塊地散開、中間留給原本的地貌。
+                 調淡只會得到一片半透明的灰霧，讀不出「一棟一棟」。
+               ⚠ 同路面：郊區是人造物，底色本身要往屋頂色推。 */
+            const g=roofPick(mi,nz3);
+            tex=(g===0?G_RH:(g===1?G_RM:G_RL));
+            const rc=ROOF_COL[g], rw2=(SUBW[mi]/255)*0.55+0.30;
+            cr+=(rc[0]-cr)*rw2; cg+=(rc[1]-cg)*rw2; cb+=(rc[2]-cb)*rw2;
           }else if(ROADW&&ROADW[mi]>40){
             /* 路。⚠ 這一類不能只靠細節層：細節層是**相乘**的，底下是綠地時
                乘上礫石的起伏仍然是綠的。路是地圖底色裡沒有的人造物，
@@ -3267,6 +3404,24 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
       clipByTerrainDepth(o.z,sxk,syk,Math.floor(bx0/sxk)-1,Math.ceil(bx1/sxk)+1);
       ctx.imageSmoothingEnabled=false;
       ctx.drawImage(cityFB,0,0,bwp,bhp,Math.round(bx0),Math.round(by0),fw,fh);
+      /* 夜間路燈：城貼回去之後才畫，燈要在城上面。
+         ⚠ 距離太遠就整批跳過：那個尺寸下每盞燈不到一個像素，畫了只是把城
+           洗成一片亮斑，還要付幾百次 fillRect。 */
+      if(nightK>0.06 && o.z<1800){
+        const LM=lampsFor(o.s,planImg);
+        const hwL=o.s.planW*0.5, hhL=hwL*planImg.height/planImg.width;
+        const caL=Math.cos(o.s.planRot), saL=Math.sin(o.s.planRot);
+        const a2=clamp(nightK,0,1)*clamp((1800-o.z)/700,0,1);
+        ctx.fillStyle='rgba(255,214,150,'+(0.85*a2).toFixed(3)+')';
+        for(let i=0;i<LM.length;i+=2){
+          const x2=LM[i]*hwL, y2=LM[i+1]*hhL;
+          const q=project((x2*caL-y2*saL)/MAP_SCALE,(x2*saL+y2*caL)/MAP_SCALE,4);
+          if(q[3]<60) continue;
+          if(q[0]<bx0-4||q[0]>bx1+4||q[1]<by0-4||q[1]>by1+4) continue;
+          const sz=q[2]>0.06?2:1;                    // 近一點的燈給 2px，遠的 1px
+          ctx.fillRect(q[0]|0,q[1]|0,sz,sz);
+        }
+      }
       ctx.restore();
       continue;
     }
