@@ -1229,7 +1229,7 @@ async function loadWorld(){
             for(let dy=-4;dy<=4;dy++)for(let dx=-4;dx<=4;dx++){
               const x=Math.round(cx3)+dx, y=Math.round(cy3)+dy;
               if(x<0||y<0||x>=MAPW||y>=MAPH) continue;
-              if(Math.hypot(x-cx3,y-cy3)>5.2) continue;   // 出海段加寬：河口本來就該比河身寬
+              if(Math.hypot(x-cx3,y-cy3)>9.0) continue;   // 出海段：河口寬 18 地圖像素（360 世界單位）
               const i=y*MAPW+x;
               if(HGT[i]<=CLOUD_H) continue;                  // 已經是雲海：留著，那就是落口
               if(HGT[i]>wlOut){ HGT[i]=wlOut; raw[i]=wlOut/PEAK_SCALE; }
@@ -4442,7 +4442,16 @@ function loop(now){
   const dt=Math.min(40,now-last); last=now;
   update(dt,now); render(now); updateBgm(dt); updateMapMe();
   acc+=dt;n++;
-  if(acc>500){document.getElementById('fps').textContent=Math.round(1000/(acc/n))+' fps '+BW+'×'+BH;acc=0;n=0;}
+  /* HUD 加上**地圖座標與航向** —— 截圖時才知道人在哪。
+     先前每次回報都得靠地形猜位置，猜錯就修錯地方。座標用地圖像素
+     （與 SETTLEMENTS／build_city.py 同一套單位），可以直接拿去對資料。 */
+  if(acc>500){
+    const mx=Math.round(cam.x/MAP_SCALE), my=Math.round(cam.y/MAP_SCALE);
+    const deg=Math.round(((cam.angle*180/Math.PI)%360+360)%360);
+    document.getElementById('fps').textContent=
+      Math.round(1000/(acc/n))+' fps '+BW+'×'+BH+'  ('+mx+','+my+') '+deg+'° h'+Math.round(cam.alt);
+    acc=0;n=0;
+  }
   requestAnimationFrame(loop);
 }
 
