@@ -1999,7 +1999,14 @@ function render(now){
           let tex, mixTo=-1, mixT=0;
           const sl=(SLX[mi]<0?-SLX[mi]:SLX[mi])+(SLY[mi]<0?-SLY[mi]:SLY[mi]);
           if(RIV[mi]){
-            tex=(nz>0.5)?G_WL:G_WD;                       // 河：深淺兩種水交錯
+            /* 河。⚠ 與路面／屋頂同一個陷阱：地貌層是**相乘**的，底色是綠的
+               河道格乘上水的紋理之後仍然是綠的 —— 畫面上就是「該是河卻是森林」。
+               水在地圖底色裡不一定存在（我後來挖出來的河道尤其），
+               所以底色本身要推向水的絕對色，再套紋理。 */
+            const deep=(nz>0.5);
+            tex=deep?G_WL:G_WD;                           // 河：深淺兩種水交錯
+            const wr=deep?81:15, wg=deep?167:92, wb=deep?164:101;   // 兩張水的均值色
+            cr+=(wr-cr)*0.80; cg+=(wg-cg)*0.80; cb+=(wb-cb)*0.80;
           }else if(sl>BIOME_CLIFF+(nz-0.5)*40){
             tex=(hh>BIOME_ROCKALT)?G_RG:G_RB;             // 崖面：高處灰岩、低處褐岩
           }else if(hh>BIOME_SNOW+(nz-0.5)*2*BIOME_SNOW_J){
