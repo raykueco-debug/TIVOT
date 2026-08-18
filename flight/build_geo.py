@@ -41,6 +41,7 @@ QUALITY = 92
 JOBS = [
     {'src': 'forest_dark.png',  'dst': 'forest_dark.webp'},
     {'src': 'forest_light.png', 'dst': 'forest_light.webp'},
+    {'src': 'rock_grey.png',    'dst': 'rock_grey.webp'},
 ]
 
 
