@@ -4,32 +4,9 @@
     {
       "name": "tivot",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "http.server", "8123"],
+      "runtimeArgs": ["dev_server.py"],
+      "autoPort": true,
       "port": 8123
-    },
-    {
-      "name": "tivot2",
-      "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "http.server", "8125"],
-      "port": 8125
-    },
-    {
-      "name": "tivot3",
-      "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "http.server", "8126"],
-      "port": 8126
-    },
-    {
-      "name": "tivot4",
-      "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "http.server", "8127"],
-      "port": 8127
-    },
-    {
-      "name": "tivot5",
-      "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "http.server", "8128"],
-      "port": 8128
     }
   ]
 }
