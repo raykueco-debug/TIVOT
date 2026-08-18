@@ -78,6 +78,7 @@ JOBS = [{
     'hdst': 'holysee_h.webp',
     'mx': 934, 'my': 606, 'planW': 1100, 'planRot': 0.0,
     'landmarks': [(0.500, 0.440, 0.070, H_LAND)],     # 大聖堂
+    'towers': 1.00,                                   # 塔林立：依底圖逐棟抬高
 }, {
     'src': 'MTown_iso.png',
     'dst': 'mtown_plan.webp',
@@ -179,6 +180,23 @@ for J in JOBS:
     veg = (G > R + 6) & (G > B + 6)
     built = (~water) & (~veg) & (al[:, :, 0] > 40)
     hm = np.where(built, H_BUILT, 0.0).astype(np.float32)
+
+    # ── 依底圖把個別建物立體化（塔林立的城要用）──────────────────────
+    # 作法：取亮度的**局部對比**（原圖減去大半徑模糊）。等角視插畫裡，越高的
+    # 東西頂面越亮、旁邊的陰影越深，所以局部對比就是「這棟比鄰居高多少」的代理。
+    # ⚠ 不能直接拿亮度當高度：街道是淺色、屋頂是深色（build_city 開頭那條警告），
+    #   照亮度分會把街道抬成高地。局部**對比**沒有這個問題——它比的是鄰域，
+    #   街道整片一樣亮，對比為零。
+    # ⚠ 模糊半徑要比一棟建物大、比整個街區小，不然要嘛沒反應要嘛整片一起抬。
+    _tw = J.get('towers', 0.0)
+    if _tw > 0:
+        _lum = (rgb * np.array([0.299, 0.587, 0.114])).sum(axis=2)
+        _lo = np.asarray(Image.fromarray(np.clip(_lum, 0, 255).astype(np.uint8), 'L')
+                         .filter(ImageFilter.GaussianBlur(9.0))).astype(np.float32)
+        _hp = np.clip((_lum - _lo) / 26.0, 0, 1)          # 0＝與鄰居齊平，1＝明顯突出
+        hm = np.maximum(hm, np.where(built, H_BUILT + _hp * (_tw - H_BUILT), 0.0))
+        print('  依底圖立體化：突出面積 %.1f%%（塔頂上限 %.2f）'
+              % (100.0 * ((_hp > 0.35) & built).mean(), _tw))
     for (lu, lv, rad, hv) in J['landmarks']:
         dd = np.sqrt((xx - lu * W2) ** 2 + (yy - lv * H2) ** 2) / (rad * W2)
         hm = np.maximum(hm, np.clip(1.0 - dd, 0, 1) ** 0.6 * hv)

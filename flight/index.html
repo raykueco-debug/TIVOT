@@ -349,9 +349,14 @@ const SETTLEMENTS = [
   { n:'帝都',   x:1005, y:600, t:'city1', f:'church',
     plan:'city/capital_plan.webp', planH:'city/capital_h.webp',
     planW:1250, planRot:0.0, planTall:26 },
+  /* 聖王廳＝塔林立的聖座，量體要看得出來。planTall 100 遠高於其他城的 26 ——
+     ⚠ 使用者指定 100，但實測 100 會整座城糊成一團灰 —— 這個引擎的縱向投影約是
+       橫向的 2.9 倍，抬到 100 等於在螢幕上位移 290 個單位，網格被剪成長條。
+       40 是「量體立得出來、還沒開始拖曳」的實測上限，其他城是 26。
+       要再高就得先讓量體改走多邊形（街廓拉伸），不能靠位移網格頂點。 */
   { n:'聖王廳', x:934,  y:606, t:'city2', f:'church',
     plan:'city/holysee_plan.webp', planH:'city/holysee_h.webp',
-    planW:1100, planRot:0.0, planTall:26 },
+    planW:1100, planRot:0.0, planTall:40 },
   { n:'大教堂城',     x:1224, y:581, t:'city2', f:'church' },
   { n:'曙光城',       x:1373, y:581, t:'city3', f:'church' },
   { n:'石櫃城',       x:530,  y:311, t:'city2', f:'empire' },
@@ -1561,6 +1566,11 @@ const stage=document.getElementById('stage');
 stage.addEventListener('pointerdown',e=>{
   if(dragId!==null) return;                       // 單手操作：只認第一根手指
   dragId=e.pointerId; dragging=true;
+  /* ⚠ 一定要抓住指標。桌機上滑鼠一旦拖出操作區，pointermove 就不再進來，
+     而 pointerup 會落在游標底下的**別的元素**上 —— endDrag 永遠不執行，
+     油門與舵量卡在放手前的值，船就自己一路跑（使用者回報的「舵輪失控」）。
+     觸控裝置預設就隱含捕獲，所以只有 PC 會遇到。 */
+  try{ stage.setPointerCapture(e.pointerId); }catch(_){}
   ox=e.clientX; oy=e.clientY; fwd=0; rgt=0; moved=0;
 });
 stage.addEventListener('pointermove',e=>{
@@ -1580,10 +1590,17 @@ const endDrag=e=>{
       if(px>=h.x&&px<=h.x+h.w&&py>=h.y&&py<=h.y+h.h){ enterPlace(h.P); break; }
     }
   }
+  if(dragId!==null){ try{ stage.releasePointerCapture(dragId); }catch(_){} }
   dragging=false; dragId=null; fwd=0; rgt=0;
 };
 stage.addEventListener('pointerup',endDrag);
 stage.addEventListener('pointercancel',endDrag);
+/* 保險絲：捕獲若因故沒生效（某些瀏覽器在按住時開新視窗會丟掉捕獲），
+   視窗層級的放開與失焦一樣把手放開。寧可多停一次，也不要卡住油門。 */
+addEventListener('pointerup',endDrag);
+addEventListener('pointercancel',endDrag);
+addEventListener('blur',()=>endDrag());
+document.addEventListener('visibilitychange',()=>{ if(document.hidden) endDrag(); });
 /* 鍵盤：WASD（方向鍵同義）。桌機上摸不到拉桿，W/S 就是推拉那根桿子 ——
    ⚠ 用「持續推移」而不是一按到底：拉桿的手感就在於可以停在半速，
      鍵盤若一按就滿舵，等於桌機玩到的是另一套操作。 */
