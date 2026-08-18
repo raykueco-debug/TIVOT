@@ -1153,28 +1153,40 @@ async function loadWorld(){
           }
         }
       }
-      /* ── 出海口：沿向海方位挖到大陸邊緣 ────────────────────
-         河擴寬了還不夠 —— 它得真的走到邊緣掉下去。從城區外緣沿 `sea` 方位
-         往外挖，直到踩進雲海為止，最外那一格因此是河道格，瀑布才會生成。
-         ⚠ 水面高度沿路維持（只降不升）：一路降到雲海高度的話落差就沒了，
-           河會變成一灘貼著邊緣的水，不會有瀑布。 */
-      if(S.sea!=null){
+      /* ── 出海口：一路挖到大陸邊緣，全程不爬坡 ──────────────
+         ⚠ 方向**不能用 `sea` 那個欄位**。它是給棧橋用的「向海方位」，
+           實測薇拉馮德最近的雲海在 2.8 rad，而 sea 寫的是 1.90 —— 照它挖
+           會挖不到海（上一版就是這樣，河到邊緣前就停了）。改成直接找
+           最近的雲海格，自己校正。
+         ⚠ 河床**沿路只降不升，且不得高於城內水面**。出海口比上游高的話，
+           水要往上爬才出得去（使用者一眼看出來的就是這個）。
+           反過來把上游抬到出海口的高度也不行：城的地基才 96，抬到 136 等於
+           淹掉整座城。所以動的是下游 —— 把擋在前面的地切穿到同一個水面高度。 */
+      {
         const wlOut=Math.max(CLOUD_H+6,(S.gh||CLOUD_H+80)-9);
-        const dirx=Math.cos(S.sea), diry=Math.sin(S.sea);
-        const start=(S.planW?S.planW*0.42/MAP_SCALE:SETTLE_R[S.t]);
-        for(let r=start;r<start+90;r+=0.5){
-          const cx3=S.x+dirx*r, cy3=S.y+diry*r;
-          let hitSea=false;
-          for(let dy=-4;dy<=4;dy++)for(let dx=-4;dx<=4;dx++){
-            const x=Math.round(cx3)+dx, y=Math.round(cy3)+dy;
-            if(x<0||y<0||x>=MAPW||y>=MAPH) continue;
-            if(Math.hypot(x-cx3,y-cy3)>3.4) continue;
-            const i=y*MAPW+x;
-            if(HGT[i]<=CLOUD_H){ hitSea=true; continue; }     // 到海了：不動它
-            if(HGT[i]>wlOut){ HGT[i]=wlOut; raw[i]=wlOut/PEAK_SCALE; }
-            RIV[i]=1; COL[i]=rgb(84,120,142);
+        let tx=-1,ty=-1,td=1e9;
+        for(let dy=-120;dy<=120;dy++)for(let dx=-120;dx<=120;dx++){
+          const x=S.x+dx, y=S.y+dy;
+          if(x<0||y<0||x>=MAPW||y>=MAPH) continue;
+          if(HGT[y*MAPW+x]>CLOUD_H) continue;
+          const d2=dx*dx+dy*dy;
+          if(d2<td){ td=d2; tx=x; ty=y; }
+        }
+        if(tx>=0){
+          const n2=Math.ceil(Math.sqrt(td))*2;
+          for(let t=0;t<=n2;t++){
+            const u=t/n2;
+            const cx3=S.x+(tx-S.x)*u, cy3=S.y+(ty-S.y)*u;
+            for(let dy=-4;dy<=4;dy++)for(let dx=-4;dx<=4;dx++){
+              const x=Math.round(cx3)+dx, y=Math.round(cy3)+dy;
+              if(x<0||y<0||x>=MAPW||y>=MAPH) continue;
+              if(Math.hypot(x-cx3,y-cy3)>3.2) continue;
+              const i=y*MAPW+x;
+              if(HGT[i]<=CLOUD_H) continue;                  // 已經是雲海：留著，那就是落口
+              if(HGT[i]>wlOut){ HGT[i]=wlOut; raw[i]=wlOut/PEAK_SCALE; }
+              RIV[i]=1; COL[i]=rgb(84,120,142);
+            }
           }
-          if(hitSea) break;                                    // 已經接到雲海，收工
         }
       }
     }
