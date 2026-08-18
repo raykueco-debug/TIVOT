@@ -343,6 +343,12 @@ const SETTLEMENTS = [
   { n:'藏拉瑪德港',   x:1594, y:851, t:'city2', f:'empire', c:1 },
   { n:'南藍港',       x:1458, y:950, t:'town',  f:'free',   c:1 },
   { n:'潮沙灣',       x:362,  y:862, t:'village', f:'native', c:1 },
+  /* 薇拉馮德港：地標表（PLACES）標的 (1310,965) 是**海上**（高度 0）。
+     港都不能生在海裡，改放到最近的岸上再往內陸收半個城區半徑，
+     讓城的臨海那一側剛好搭到水邊。seaAng 是實測的向海方位
+     （岸點周圍 24px 內海格的平均方向，約 109°）——棧橋固定生在區域 +x，
+     靠這個角度把整座港轉到面向海。改地形就要重量。 */
+  { n:'薇拉馮德港', x:1335, y:929, t:'city1', f:'empire', c:1, sea:1.90 },
 ];
 let settleCache=null;                       // 生成結果快取（純函式，算一次就好）
 function buildSettlements(){
@@ -351,6 +357,7 @@ function buildSettlements(){
     const s=Settlement.generate({
       id:S.n, name:S.n, tier:S.t, seed:(0x9E3779B1*(i+1))>>>0,
       radius:SETTLE_R[S.t], faction:S.f, coastal:!!S.c, x:S.x, y:S.y,
+      seaAng:S.sea||0,               // 向海方位（弧度）；內陸聚落留 0
     });
     s.mx=S.x; s.my=S.y; return s;
   });
@@ -507,6 +514,60 @@ async function loadWorld(){
       if(HGT[i]<RIM_H){ HGT[i]=RIM_H; raw[i]=RIM_H/PEAK_SCALE; lifted++; }
     }
     window.__rimLifted=lifted;
+  }
+
+  /* ── 鏟平城下地形 ─────────────────────────────────────────────
+     聚落是貼在地表上畫的一塊平面，底下若是起伏的山坡，城就會有一半陷進
+     坡裡、另一半浮在空中。既然城是「蓋出來的」，就讓它把地基整平——
+     真實的城市本來也會削坡造地。
+     ⚠ 目標高度取**環帶中位數**（R~1.6R 的一圈），不取中心點：中心剛好
+       落在山尖或溝底時，整座城會被抬到山頂或陷進谷裡。
+     ⚠ 只鏟陸地格，海格一律不動 —— 港都的港灣要留著，填平了就沒有水岸。
+     ⚠ HGT 與 raw 都要改：下面的坡度是從 raw 差分算的，只改 HGT 會讓
+       城邊的法線還是舊坡度（同邊緣抬升那段的理由）。
+     ⚠ 外圈留一段裙帶平滑過渡，否則城界會是一圈垂直斷崖。 */
+  step(0.66,'整平城鎮地基…');
+  {
+    /* 鎏平範圍：完全整平到 2R，也就是城界外再放一個城區半徑的平地。
+       城市不是突然在山坡上停住的——郊區、耕地、道路都需要平地，
+       外圍還是崎岘地形的話，城看起來像被戴在山上。 */
+    const PAD=2.8;                       // 裙帶外緣（佔半徑倍數）
+    const FLAT=2.0;                      // 這個倍數以內完全整平
+    let flattened=0;
+    for(const S of SETTLEMENTS){
+      const R=SETTLE_R[S.t], cx=S.x|0, cy=S.y|0;
+      // 目標高度：環帶（R ~ 1.6R）內陸地的中位數
+      const ring=[];
+      const r1=Math.ceil(R*3.6);
+      for(let dy=-r1;dy<=r1;dy++)for(let dx=-r1;dx<=r1;dx++){
+        // ⚙ 環帶要取在**裙帶以外**（>PAD），不然量到的是自己剛鎏平的地
+        const d=Math.hypot(dx,dy); if(d<R*2.8||d>R*3.6) continue;
+        const x=cx+dx,y=cy+dy;
+        if(x<0||y<0||x>=MAPW||y>=MAPH) continue;
+        const h=HGT[y*MAPW+x]; if(h<=CLOUD_H) continue;
+        ring.push(h);
+      }
+      if(!ring.length) continue;
+      ring.sort((a,b)=>a-b);
+      const target=ring[ring.length>>1];
+      const rP=Math.ceil(R*PAD);
+      for(let dy=-rP;dy<=rP;dy++)for(let dx=-rP;dx<=rP;dx++){
+        const x=cx+dx,y=cy+dy;
+        if(x<0||y<0||x>=MAPW||y>=MAPH) continue;
+        const i=y*MAPW+x, h=HGT[i];
+        if(h<=CLOUD_H) continue;                       // 海不填
+        const d=Math.hypot(dx,dy)/R;
+        if(d>PAD) continue;
+        // d<=FLAT 完全整平；FLAT~PAD 之間平滑回到原地形
+        const u=(d-FLAT)/(PAD-FLAT);
+        const t=d<=FLAT?1:1-(u*u*(3-2*u));      // smoothstep（index.html 沒有這個 helper，內聯）
+        if(t<=0) continue;
+        const nh=Math.round(h+(target-h)*t);
+        if(nh===h) continue;
+        HGT[i]=nh; raw[i]=nh/PEAK_SCALE; flattened++;
+      }
+    }
+    window.__settleFlattened=flattened;
   }
 
   // 坡度（給逐幀光照用）—— 必須在邊緣抬升之後，否則崖頂的法線是舊的

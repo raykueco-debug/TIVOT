@@ -407,6 +407,30 @@ function generate(opts) {
              .map((_, i) => ROOF_TONES[randInt(rnd, 0, ROOF_TONES.length - 1)]),
   };
 
+  /* ── 八、轉向：把整份平面座標繞中心轉 seaAng ────────────────────
+     港區的棧橋是固定生在區域 +x 側的（見上方「燈塔靠海」），所以「海在哪」
+     必須由呼叫端給。原本的註解說由呼叫端旋轉，但 draw() 是 ctx.rotate(0)
+     —— 那是刻意的：斜角投影下整體旋轉畫布會讓所有屋頂一起歪掉穿幫。
+     所以旋轉要做在**資料**上：轉的是街廓、城牆、棧橋、建築的位置，
+     屋頂仍照原本的斜角規則畫，不會穿幫。
+     ⚠ 建築與地標的 rot 也一起加 seaAng：那個角度是「對齊所屬街道」算出來的，
+       街道轉了它不轉，房子就會斜著卡在路邊。 */
+  if (opts.seaAng) {
+    const ca = Math.cos(opts.seaAng), sa = Math.sin(opts.seaAng);
+    const rot = pt => { const x = pt.x, y = pt.y; pt.x = x * ca - y * sa; pt.y = x * sa + y * ca; };
+    s.boundary.forEach(rot);
+    s.roads.forEach(rd => rd.pts.forEach(rot));
+    s.buildings.forEach(b => { rot(b); b.rot += opts.seaAng; });
+    s.landmarks.forEach(l => { rot(l); l.rot += opts.seaAng; });
+    if (s.piers) s.piers.forEach(q => { rot(q); q.ang += opts.seaAng; });
+    if (s.walls) {
+      s.walls.pts.forEach(rot);
+      s.walls.towers.forEach(rot);
+      s.walls.gates.forEach(rot);
+    }
+    s.seaAng = opts.seaAng;
+  }
+
   s.genMs = ((typeof performance !== 'undefined') ? performance.now() : 0) - t0;
   return s;
 }
