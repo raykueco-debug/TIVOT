@@ -25,7 +25,8 @@
     top:calc(env(safe-area-inset-top) + 12px);font-size:10px;letter-spacing:.35em;
     color:var(--gold);opacity:.85;}
 
-  /* 羅盤/時刻/距離已移進面板（canvas 繪製），DOM 這幾項只留日期避免重複 */
+  /* 羅盤已從控制區撤掉（面板只留乾淨的機械式船舵），航向改去開地圖看；
+     時刻/距離在面板上的 canvas 繪製版。DOM 這幾項只留日期避免重複 */
   #compass,#topDist{display:none;}
   /* 地標名牌與提示改貼在面板上緣之上，不壓到 3D 視窗底部 */
   #place{position:fixed;left:0;right:0;bottom:36vh;
@@ -1873,79 +1874,82 @@ const helmArt={ wheel:null, base:null, pointer:null };
 })();
 const BORE={x:0.4481,y:0.1581};          // Base.webp 軸孔中心（佔圖寬/圖高的比例）
 const HEAD_R=0.2274;                     // 基座頭盤半徑佔基座寬的比例（95.5/420）
-const HELM_HY=0.40;                      // 輪轂在操作區內的高度比例（決定舵輪大小與基座高度）
 const WHEEL_SPIN=0.0052;                 // 舵量 → 舵輪角速度（rad/ms，滿舵約 0.83 轉/秒）
-const HELM_OUT=20;                       // 舵輪突出 3D 視窗的像素（基座不突出）
-const GAUGE_K=1.35;                      // 速度計半徑 ÷ 頭盤半徑（>1：略大於頭盤，蓋住輪轂）
-const GAUGE_SPAN=Math.PI*1.5;            // 刻度總跨角 270°
+const HELM_OUT=20;                       // 舵輪上緣突出 3D 視窗的像素
+const HELM_FOOT=4;                       // 舵軸離畫面底緣的像素（軸心壓在底緣 → 只看得到上半輪）
+const BASE_K=1.05;                       // 基座寬 ÷ 舵輪直徑（>1＝比畫面寬，左右由畫面裁掉）
+const GAUGE_K=0.85;                      // 刻度帶半徑 ÷ 頭盤半徑（<1：整條刻度都落在頭盤黃銅面上）
+const GAUGE_SPAN=Math.PI*2/3;            // 掛角 120°：10 點（零速）→ 12 點 → 2 點（滿速）
+const GAUGE_RED=0.75;                    // 紅漆自滿速的 75% 起
+const NEEDLE_W=0.26;                     // 銅針寬 ÷ 長（素材原比例 0.8 太肥，橫向壓窄）
 let wheelAng=0;
 
-/* ── 機械式速度計（裝在基座頭部）──────────────────────────────────
-   讀法是**轉盤在轉、指針不動**：銅指針固定在 12 點當索引，底下那片刻度盤
-   隨速度轉，落在指針下的刻度就是現在的速度。
-   ⚠ 指針為什麼固定：它先前綁 cam.angle（絕對航向），船一轉就整根甩，
-     那既不是航向儀也不是速度計，只是在亂轉。轉盤這種讀法反而是機械儀表
-     本來就有的做法（羅盤卡、滾筒式速度表），也就不必去做指針的偏移。
-   ⚠ 數字跟著轉盤轉，但每個數字在盤上先自轉 +θ —— 這樣「轉到指針下」的
-     那一個必定是正的，兩側才對稱地倒下去（羅盤卡就是這樣刻的）。
-   ⚠ 整組畫在舵輪之後：輪轂會轉，儀表不能跟著轉。 */
-function drawSpeedGauge(cx,cy,R){
-  const spd=clamp(cam.speed/MAX_SPD,0,1);
-  const rho=GAUGE_SPAN*0.5-spd*GAUGE_SPAN;      // 轉盤角：0 → +135°、滿速 → −135°
+/* ── 機械式速度表（基座頭盤外緣的刻度環 + 銅針）────────────────────
+   讀法是**盤不動、銅針走**：刻度環箍在基座頭盤外緣，Pointer.webp 那根銅針
+   以舵軸為樞紐擺動，10 點＝停船、12 點＝半速、2 點＝滿速（掛角 120°）。
+   ⚠ 為什麼是 120° 而不是整圈：軸心壓在畫面底緣，樞紐以下的角度全在畫面外，
+     掛角一旦超過 180° 兩端就沒入畫面外 —— 而兩端正是最該讀到的（停船／滿速）。
+   ⚠ 為什麼銅針不再綁 cam.angle：那是絕對航向，船一轉整根就甩，既不是航向儀
+     也不是速度計。控制區的方位帶已撤（要看航向去開地圖），這根專職速度。
+   ⚠ tilt：頭盤是俯視的橢圓（縱向被壓扁），刻度與針一起套同一個縱向縮放，
+     環才箍在盤上而不是浮在盤上。tilt 由素材比例自己算出來，換圖不用改。
+   ⚠ 不寫數字：刻度＋紅漆已經夠讀，數字得排到刻度環外側，那裡已經是輪輻區，
+     擠在一起反而髒。要精確值去看地圖。
+   ⚠ 分兩段畫的理由：刻度環在舵**之後**（基座本來就立在舵的另一側，被輪輻
+     遮住是對的層次，而且它不動，遮住也不影響判讀）；銅針在舵**之前**——
+     針要是也擺在後面，指到 12 點時整根被正上方那根輪輻吃掉，速度就讀不到了。 */
+function gaugeAngle(v){ return -GAUGE_SPAN*0.5+clamp(v,0,1)*GAUGE_SPAN; }   // 自 12 點順時針
+
+function drawSpeedScale(cx,cy,R,tilt){
+  const ca=a=>a-Math.PI*0.5;                      // 上式的角 → canvas arc 角
   const dir=(a,r)=>[Math.sin(a)*r,-Math.cos(a)*r];
+  ctx.save(); ctx.translate(cx,cy); ctx.scale(1,tilt);
 
-  ctx.save(); ctx.translate(cx,cy);
-
-  /* 會轉的那一片 */
-  ctx.save(); ctx.rotate(rho);
-  const g=ctx.createRadialGradient(0,-R*0.35,R*0.06,0,0,R);
-  g.addColorStop(0,'#2b2219'); g.addColorStop(1,'#100e0a');
-  ctx.beginPath(); ctx.arc(0,0,R*0.93,0,Math.PI*2); ctx.fillStyle=g; ctx.fill();
-
-  const n=Math.round(MAX_SPD*2);                 // 每 0.5 一格
   ctx.lineCap='butt';
+  // ⚙ 刻度是刻在黃銅面上的，對比不拉開整條會沉進底盤的紋路裡——
+  //   先車一道深凹槽把底壓暗，刻線才亮得起來。
+  ctx.strokeStyle='rgba(10,7,3,.82)'; ctx.lineWidth=R*0.23;
+  ctx.beginPath(); ctx.arc(0,0,R,ca(gaugeAngle(0)),ca(gaugeAngle(1))); ctx.stroke();
+  // 凹槽內外緣各一道銅線（車出來的邊）
+  ctx.strokeStyle='rgba(214,178,96,.5)'; ctx.lineWidth=Math.max(1,R*0.012);
+  for(const k of [0.885,1.115]){
+    ctx.beginPath(); ctx.arc(0,0,R*k,ca(gaugeAngle(0)),ca(gaugeAngle(1))); ctx.stroke();
+  }
+
+  // 刻線：每 0.5 一格，每 2.0 一根長刻
+  const n=Math.round(MAX_SPD*2);
   for(let i=0;i<=n;i++){
-    const v=i/2, a=-GAUGE_SPAN*0.5+v/MAX_SPD*GAUGE_SPAN;
-    const major=(i%4===0), mid=(i%2===0);
-    const r1=R*0.87, r0=R*(major?0.66:mid?0.74:0.79);
-    const p0=dir(a,r0), p1=dir(a,r1);
-    ctx.strokeStyle=major?'#d6b260':'#a88c54';
-    ctx.lineWidth=major?Math.max(1.6,R*0.055):Math.max(0.8,R*0.026);
+    const a=gaugeAngle(i/2/MAX_SPD), major=(i%4===0);
+    const p0=dir(a,R*(major?0.895:0.945)), p1=dir(a,R*1.105);
+    ctx.strokeStyle=major?'#ffe9b0':'#d8bd7e';
+    ctx.lineWidth=major?Math.max(2.2,R*0.034):Math.max(1.2,R*0.017);
     ctx.beginPath(); ctx.moveTo(p0[0],p0[1]); ctx.lineTo(p1[0],p1[1]); ctx.stroke();
-    if(major){
-      const pt=dir(a,R*0.48);
-      ctx.save(); ctx.translate(pt[0],pt[1]); ctx.rotate(a);
-      ctx.fillStyle='#e2c47c'; ctx.textAlign='center'; ctx.textBaseline='middle';
-      ctx.font=Math.round(R*0.30)+'px "Noto Serif TC",serif';
-      ctx.fillText(String(v),0,0);
-      ctx.restore();
-    }
   }
-  // 高速段紅漆（最後四分之一）
-  ctx.strokeStyle='#a83a28'; ctx.lineWidth=Math.max(1.4,R*0.05);
+
+  // 極速區段紅漆：自滿速的 GAUGE_RED 起到底，刷在凹槽外緣
+  ctx.strokeStyle='#d2452c'; ctx.lineWidth=Math.max(2,R*0.048);
   ctx.beginPath();
-  ctx.arc(0,0,R*0.845,GAUGE_SPAN*0.25-Math.PI*0.5,GAUGE_SPAN*0.5-Math.PI*0.5);
+  ctx.arc(0,0,R*1.155,ca(gaugeAngle(GAUGE_RED)),ca(gaugeAngle(1)));
   ctx.stroke();
-  ctx.restore();
+  ctx.restore(); ctx.lineWidth=1;
+}
 
-  /* 不轉的殼：銅環 + 軸帽 */
-  const ring=(k,col,w)=>{ ctx.strokeStyle=col; ctx.lineWidth=w;
-    ctx.beginPath(); ctx.arc(0,0,R*k,0,Math.PI*2); ctx.stroke(); };
-  ring(1.00,'rgba(24,18,10,.85)',Math.max(1,R*0.06));
-  ring(0.965,'#c6a254',Math.max(1.4,R*0.055));
-  ring(0.925,'rgba(20,15,8,.55)',Math.max(1,R*0.03));
-  ctx.beginPath(); ctx.arc(0,0,R*0.13,0,Math.PI*2);
+function drawSpeedNeedle(cx,cy,R,tilt){
+  const P=helmArt.pointer; if(!P) return;
+  /* 素材本身是一片寬錐形的黃銅指標，照原比例畫出來寬度會是長度的 0.8，
+     在這個尺寸下是一塊蓋住輪轂的大三角——橫向壓成 NEEDLE_W，才是指針。
+     縱向不動：錐形拉窄還是錐形，不會看出失真。
+     根部十字在輪轂上，尖端剛好指進刻度帶。 */
+  ctx.save(); ctx.translate(cx,cy); ctx.scale(1,tilt);
+  ctx.rotate(gaugeAngle(clamp(cam.speed/MAX_SPD,0,1)));
+  const ph=R*0.86, pw=ph*NEEDLE_W;
+  ctx.drawImage(P,-pw*0.5,-R*0.99,pw,ph);
+  // 針轂：蓋住針尾與輪轂的接縫
+  ctx.rotate(-gaugeAngle(clamp(cam.speed/MAX_SPD,0,1)));
+  ctx.beginPath(); ctx.arc(0,0,R*0.115,0,Math.PI*2);
   ctx.fillStyle='#96742f'; ctx.fill();
-  ctx.strokeStyle='rgba(24,18,10,.8)'; ctx.lineWidth=1; ctx.stroke();
-
-  /* 固定銅指針：樞紐在自己底邊中央，坐在轉盤上緣（12 點） */
-  const P=helmArt.pointer;
-  if(P){
-    const phh=R*0.62, pw=phh*P.width/P.height;
-    ctx.drawImage(P,-pw*0.5,-R-phh*0.55,pw,phh);
-  }
-  ctx.restore();
-  ctx.lineWidth=1;
+  ctx.strokeStyle='rgba(24,18,10,.85)'; ctx.lineWidth=1.2; ctx.stroke();
+  ctx.restore(); ctx.lineWidth=1;
 }
 
 function drawPanel(S){
@@ -1956,70 +1960,46 @@ function drawPanel(S){
   ctx.strokeStyle='rgba(201,162,39,.55)'; ctx.lineWidth=1;
   ctx.beginPath(); ctx.moveTo(0,y0+0.5); ctx.lineTo(W,y0+0.5); ctx.stroke();
 
+  /* 舵輪 + 基座：一整組「裝好的舵」，以**舵為準心**取景。
+       · 舵軸壓在畫面底緣（HELM_FOOT）→ 只看得到上半輪，把手切出畫面左右，
+         那是站在舵後的視角；整輪縮進面板會變成一張圖示。
+       · 半徑 R 由「上半輪頂端剛好突出 3D 視窗 HELM_OUT 像素」反推。
+       · 基座軸孔對準舵轂（BORE），尺寸跟著舵走（BASE_K）——比畫面寬、
+         腳也遠在畫面外，超出的部分直接讓畫面裁掉，不縮小求全。
+     ⚠ 順序：基座 → 速度計 → 舵輪。舵輪最後畫才會遮住基座與銅針的一部分，
+       那是「基座立在舵的另一側」該有的層次。 */
   const cx=W/2;
-  /* 舵輪 + 基座：一整組「裝好的舵」。
-     hy＝輪轂距 3D 視窗下緣的高度；由它同時決定
-       · 舵輪半徑 R＝hy+HELM_OUT（頂端剛好突出到 3D 視窗裡 HELM_OUT 像素）
-       · 基座高度 bh＝(ph−hy)/(1−BORE.y)（軸孔落在 hy、腳踩在操作區底緣）
-     兩者共用同一個 hy，所以怎麼調畫面比例，輪轂都還在軸孔上。 */
-  const hy=ph*HELM_HY, wcy=y0+hy, R=hy+HELM_OUT;
+  const wcy=H-HELM_FOOT;                 // 舵軸：畫面底緣
+  const R=wcy-(y0-HELM_OUT);             // 半徑：上半輪頂到 3D 視窗內 HELM_OUT
 
-  let gaugeR=R*0.30;                     // 基座沒載到時的退路：照舵輪比例給個值
+  let gaugeR=R*0.47, tilt=0.86;          // 基座沒載到時的退路
   if(helmArt.base){
     const B=helmArt.base;
-    const bh=(ph-hy)/(1-BORE.y), bw=bh*B.width/B.height;
+    const bw=R*2*BASE_K, bh=bw*B.height/B.width;
     // ⚠ 橫向用 BORE.x 而不是 0.5：軸孔本來就不在圖的正中央，
     //   用圖中心對齊會讓整座基座相對舵軸偏左。
     ctx.drawImage(B, cx-bw*BORE.x, wcy-bh*BORE.y, bw, bh);
-    gaugeR=HEAD_R*bw*GAUGE_K;
+    const headR=HEAD_R*bw;               // 頭盤橫向半徑
+    gaugeR=headR*GAUGE_K;
+    // 頭盤是俯視橢圓：縱向半徑＝軸孔到圖頂的距離，兩者相除即為縱向壓扁比例
+    tilt=clamp((BORE.y*bh)/headR,0.5,1);
   }
 
+  drawSpeedScale(cx,wcy,gaugeR,tilt);      // 刻度環：舵之後（被輪輻遮住是對的層次）
+
   // 舵輪：隨舵量持續旋轉（角速度 ∝ 舵量），放手就停在當下的角度。
-  //   ⚠ 不再裁上半圓——輪轂已經在操作區內，整輪都看得到才像裝在基座上。
+  //   ⚠ 裁掉軸心以下：底緣那 HELM_FOOT 像素不該露出下半輪的一截。
   if(helmArt.wheel){
     ctx.save();
+    ctx.beginPath(); ctx.rect(0,0,W,wcy); ctx.clip();
     ctx.translate(cx,wcy); ctx.rotate(wheelAng);
     ctx.drawImage(helmArt.wheel, -R, -R, R*2, R*2);
     ctx.restore();
   }
 
-  drawSpeedGauge(cx,wcy,gaugeR);
-
-  /* ── 方位計：移到 3D 視窗下緣（原本在面板左側）────────────────
-     ⚠ 要避開舵輪突出的那一段（HELM_OUT），否則會被壓住 → 再往上抬。 */
-  const deg=((-cam.angle*180/Math.PI)%360+360)%360;
-  const bw2=Math.min(W*0.62,250), cbx=cx-bw2/2;      // ⚠ 不能叫 bx，上面基座已用掉
-  const ccy=y0-HELM_OUT-24;                          // 在舵輪突出線之上
-  ctx.fillStyle='rgba(6,7,12,.55)';
-  ctx.fillRect(cbx-6,ccy-17,bw2+12,30);
-  ctx.save();
-  ctx.beginPath(); ctx.rect(cbx,ccy-16,bw2,32); ctx.clip();
-  ctx.font='10px "Noto Serif TC",serif'; ctx.textAlign='center';
-  /* ⚠ 原本是「掃固定的螢幕位置 d，再問那裡剛好是不是八方位」：
-       major=(a%45)<1，而 a=deg+d、d 每 15° 一格 → 13 格裡 a%45 只有
-       {deg%45, +15, +30} 三種值，得靠航向恰好對齊才命中，
-       實測只有約 13% 的航向看得到方位字，其餘時候整條只剩刻點。
-     改成反過來掃「方位」本身，再算它此刻該落在螢幕哪裡 ——
-     羅盤卡在轉、指標不動，本來就該這樣算。a 必為 15 的倍數，
-     a%45===0 是精確的整數判定，每三格必有一格是方位。 */
-  const base=Math.round(deg/15)*15;
-  for(let k=-7;k<=7;k++){
-    const a=base+k*15;                              // 這一格代表的方位
-    const px=cbx+bw2/2+(a-deg)/90*(bw2/2);           // 相對航向 → 螢幕位置
-    if(px<cbx-4||px>cbx+bw2+4) continue;
-    const an=((a%360)+360)%360;
-    const major=an%45===0;
-    ctx.strokeStyle=major?'rgba(201,162,39,.65)':'rgba(216,205,180,.22)';
-    ctx.beginPath(); ctx.moveTo(px,ccy+4); ctx.lineTo(px,ccy+(major?-2:1)); ctx.stroke();
-    if(major){
-      ctx.fillStyle='rgba(216,205,180,.75)';
-      ctx.fillText(['北','東北','東','東南','南','西南','西','西北'][(an/45)%8],px,ccy-6);
-    }
-  }
-  ctx.restore();
-  ctx.strokeStyle='#c9a227';
-  ctx.beginPath(); ctx.moveTo(cbx+bw2/2,ccy-16); ctx.lineTo(cbx+bw2/2,ccy+9); ctx.stroke();
-  ctx.textAlign='left';
+  drawSpeedNeedle(cx,wcy,gaugeR,tilt);     // 銅針：舵之前，任何角度都讀得到
+  /* 方位帶（原本畫在 3D 視窗下緣）已撤：控制區只留乾淨的機械式船舵 ——
+     舵輪、基座、銅針速度表，沒有別的浮層。要看航向去開地圖。 */
 }
 
 /* ── 主迴圈 ─────────────────────────────────────────────────────── */
@@ -2041,7 +2021,7 @@ const BOOT_HINTS=[
   '往後拉＝前進，拉得越遠越快。放開後船靠慣性滑行，不會立刻停。',
   '左右偏移＝轉向。輕推只轉幾度，中央有一段死區，手指的晃動不會讓船偏航。',
   '往前推再左右拉＝原地迴轉。停著不動時船不會自己打轉。',
-  '舵輪的轉速跟著你的偏移幅度走；輪心的速度計是轉盤在轉，指針底下那格就是現在的速度。',
+  '舵輪的轉速跟著你的偏移幅度走；基座頭盤上那根銅針就是速度表，指到紅漆那段是全速。',
   '右上角「地圖」可查看大陸全貌與自己的位置，放大可見市鎮街廓。',
   '大陸邊緣之外是雲海。低於雲海高度的地方一律沒入雲中。',
 ];
