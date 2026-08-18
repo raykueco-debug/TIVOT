@@ -1839,8 +1839,14 @@ function render(now){
            被蓋住就直接跳過**地貌層＋打光＋分級**整段。
            ⚠ `|` 的優先序低於 `>=`，`a|0 >= b` 會被解析成 `a | (0>=b)`。
              一定要自己加括號。
-           ⚠ 早退什麼都不用補：ybuf/prevH/ybufZ 本來就只在「畫得出來」時才更新。 */
-        if((((cam.alt-hh)*invz + z*curvK[i])*scaleH+horizon|0) >= ybuf[i]) continue;
+           ⚠ ybuf/prevH/ybufZ 不用補：它們本來就只在「畫得出來」時才更新。
+           ⚠⚠ 但 **plx/ply 一定要補**。這一列的世界座標是靠迴圈尾端
+             `plx+=ddx; ply+=ddy;` 一欄一欄累加出來的，直接 continue 會把那一步
+             跳掉 —— 之後整排欄位全部取樣到錯的位置，畫面是滿版破圖。
+             （這就是 ver -183 一進去就大破圖的原因。） */
+        if((((cam.alt-hh)*invz + z*curvK[i])*scaleH+horizon|0) >= ybuf[i]){
+          plx+=ddx; ply+=ddy; continue;
+        }
         /* ── 林草細節層 ─────────────────────────────────────────
            在世界座標平鋪樹冠圖，乘進底色。乘而不換：底色帶著地貌形狀與
            烘焙好的 hillshade，直接換成貼圖顏色會把山攤平成一張壁紙。
