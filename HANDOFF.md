@@ -85,6 +85,10 @@
 - **驗收**:app 內建 Browser(`mcp__Claude_Browser__*`)在 **390×844** 跑;模組化須經 http(`python -m http.server <port> --bind 127.0.0.1`,在 `TIVOT/` 下)。ES module 有快取 → **每次驗收換新 port**。
 - **測試 hook**:驗收時可在 `main.js` 暫掛 `window.__T = {…}` 供 `javascript_tool` 驅動內部函式 / 讀 state;**commit 前務必移除**、乾淨重載確認 `typeof window.__T==='undefined'`。
 - 敵立繪那幾個 404 是既有外部路徑 fallback,正常、與改動無關。
+- **版本號**:**每個 commit 都升** `config.js` 的 `VERSION`(`ver YYYY.MM.DD-NN`,NN 連號),
+  包含只動 `flight/` 的 commit。序號與 commit 訊息末尾的 `— ver -NN` 對齊。
+  ⚠ -128~-170 那段 flight-only 的 commit 沒升,HUD 版本號卡在 -127,Ray 在手機上
+  無從判斷拿到的是不是新版;-171 起補齊對齊。
 - **commit**:每模組完成即 commit,訊息末尾加
   `Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>`
 - 刻意偏離 reference 才寫 `DECISIONS.md`;照 reference 一致的不寫;逆向誤述的修正(如 SPEC §4、戰鬥層級模型)不入 DECISIONS。
