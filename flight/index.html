@@ -2714,14 +2714,24 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
         if(q[0]<bx0)bx0=q[0]; if(q[0]>bx1)bx1=q[0];
         if(q[1]<by0)by0=q[1]; if(q[1]>by1)by1=q[1];
       }
-      bx0=Math.max(bx0-2,-600); by0=Math.max(by0-2,-600);
-      bx1=Math.min(bx1+2,W+600); by1=Math.min(by1+2,VIEWH+600);
+      /* ⚠ 外框夾在**視窗內**，不是視窗外 600px。飛近時量體的投影會遠遠
+         溢出畫面，原本那個 ±600 讓緩衝長到 954×524＝約 50 萬像素 ——
+         比整個地形緩衝（234×334＝7.8 萬）還大六倍，而且多出來的部分
+         畫完就被貼到畫面外，一個像素都看不到。純浪費。 */
+      bx0=Math.max(bx0-2,-8); by0=Math.max(by0-2,-8);
+      bx1=Math.min(bx1+2,W+8); by1=Math.min(by1+2,VIEWH+8);
       const fw=Math.ceil(bx1-bx0), fh=Math.ceil(by1-by0);
       if(fw<2||fh<2||bx1<0||by1<0||bx0>W||by0>VIEWH){ ctx.restore(); continue; }
       const pk=clamp(BW/W,0.15,1);
       const bwp=Math.max(2,Math.round(fw*pk)), bhp=Math.max(2,Math.round(fh*pk));
-      if(!cityFB || cityFB.width!==bwp || cityFB.height!==bhp){
-        cityFB=document.createElement('canvas'); cityFB.width=bwp; cityFB.height=bhp;
+      /* ⚠ 緩衝**只長不縮、不逐幀重配**。原本是尺寸一變就 createElement 一張新的，
+         而飛近城的過程中外框每幀都在變 —— 實測 60 幀配置了 55 次，每次半 MPx。
+         桌機扛得住，手機是兩個症狀的共同來源：配置與 GC 把畫格時間吃光（fps 爆跌），
+         iOS 的 canvas 記憶體預算被撐爆後會把既有 canvas 丟掉（城變空白／破圖）。
+         只讀 (0,0,bwp,bhp) 這塊子區域，所以緩衝比需要的大沒有關係。 */
+      if(!cityFB || cityFB.width<bwp || cityFB.height<bhp){
+        const nw=Math.max(bwp,cityFB?cityFB.width:0), nh=Math.max(bhp,cityFB?cityFB.height:0);
+        cityFB=document.createElement('canvas'); cityFB.width=nw; cityFB.height=nh;
         CFB=cityFB.getContext('2d');
       }
       CFB.setTransform(1,0,0,1,0,0); CFB.clearRect(0,0,bwp,bhp);
@@ -2742,6 +2752,12 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
            夾過的角會被推到一個完全錯的螢幕位置，那一格就會扯成一片
            —— 這就是「城有時會破」。夾制是為了避免除零，不能拿來畫。 */
         if(A[3]<60||B[3]<60||Cc[3]<60||D2[3]<60) continue;
+        /* 整格落在外框之外就跳過。緩衝夾到視窗之後，這種格子的 drawImage
+           畫出來的是零個可見像素 —— 飛到城上空時它們是大宗（近距離量到
+           1147 次 drawImage 裡有一半以上在畫面外）。八次 min/max 換掉一次
+           帶轉換的 drawImage，很划算。 */
+        if(Math.min(A[0],B[0],Cc[0],D2[0])>bx1||Math.max(A[0],B[0],Cc[0],D2[0])<bx0||
+           Math.min(A[1],B[1],Cc[1],D2[1])>by1||Math.max(A[1],B[1],Cc[1],D2[1])<by0) continue;
         const sx=jx*sw, sy=jy*shh;
         const a1=(B[0]-A[0])/sw, b1=(B[1]-A[1])/sw;
         const c1=(Cc[0]-A[0])/shh, d1=(Cc[1]-A[1])/shh;
