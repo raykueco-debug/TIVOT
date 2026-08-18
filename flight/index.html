@@ -524,7 +524,7 @@ const G_FD=0,G_FL=1,G_RG=2,G_RB=3,G_GD=4,G_GL=5,G_WB=6,G_SN=7,G_WD=8,G_WL=9,
 /* 屋頂的絕對均值色：郊區跟路一樣是人造物，只靠相乘的細節層會留在綠地的色相上，
    必須把底色本身往這個顏色推。 */
 const ROOF_COL=[[80,76,69],[93,86,66],[102,91,61]];
-const GEO_STRIDE=GT*GT*3;
+const GEO_STRIDE=GT*GT*3, GEO_K1=1/128;
 let GEOK=null;                             // Uint8Array(GEO_LIST.length*GEO_STRIDE)
 let geoReady=false;
 function loadGeoAll(){
@@ -567,6 +567,15 @@ let ROADW=null;                               // Uint8Array：每地圖像素的
    ⚠ 存成逐像素而不是「取樣時算到每座城的距離」：後者在內迴圈要對 27 座城
      各算一次，這裡每幀跑十七萬次。載入時算一次、取樣時讀一個 byte。 */
 let SUBW=null;
+/* ── 生物群系查表 ──────────────────────────────────────────────
+   每個地圖像素一個 byte：低 4 bit＝貼圖類別、高 4 bit＝低頻亮度起伏（0~15）。
+   ⚠ 為什麼要打表：判定要讀坡度、高度、河道、郊區、路，還要對低頻噪聲做兩次
+     雙線性取樣 —— 而地形內迴圈每幀跑十幾萬次。這些輸入**幾乎都是逐地圖像素
+     的常數**，每幀重算是純粹的浪費。載入時算一次，內迴圈只剩一次陣列讀取。
+   ⚠ 代價：針葉／闊葉之間不再做混色（改成沿著噪聲的等值線硬切）。實測那條界線
+     本來就是平滑曲線，硬切讀起來就是一般的林相交界 —— 反而比糊成中間色好。
+   ⚠ 2.6MB。先前拿掉的 VEGW 也是這個量級，總量沒有增加。 */
+let BIOME=null;
 let ROAD_PATHS=[];                            // 折線（地圖座標），地圖畫面也要用
 
 /* 成本場：一步的代價。爬坡是主要成本 —— 這是讓路自己去繞河谷的關鍵。 */
@@ -703,8 +712,9 @@ function buildRoads(){
 /* 郊區選級：回傳 0/1/2（高/中/低密度屋頂）或 -1（這裡沒有房子）。
    ⚠ 門檻隨密度走 —— 靠近城區時幾乎必中（連成一片），往外門檻抬高，
      房子就一叢一叢地散開，最後完全交還給地貌。 */
-function roofPick(mi,n){
-  const w=SUBW[mi]/255;
+function roofPick(mi,n){ return roofPickW(SUBW[mi],n); }
+function roofPickW(subw,n){
+  const w=subw/255;
   /* ⚠ 噪聲要先正規化再當門檻。VEGSEL 是 fbm，實測落在 0~0.815、均值 0.458 ——
      直接拿它跟 (1-w) 比，外圈（w 小）幾乎永遠不中，房子只會擠在城邊那一圈，
      散不出去。拉開成 0~1 之後密度才真的隨半徑遞減。 */
@@ -1360,6 +1370,52 @@ async function loadWorld(){
      不然會出現路從城的台階上直直插下去。 */
   step(0.78,'鋪設道路…');
   buildRoads();
+
+  /* ── 生物群系打表 ──────────────────────────────────────── */
+  step(0.82,'判定地貌…');
+  {
+    BIOME=new Uint8Array(MAPW*MAPH);
+    for(let y=0;y<MAPH;y++){
+      for(let x=0;x<MAPW;x++){
+        const i=y*MAPW+x;
+        const hh=HGT[i];
+        if(hh<=CLOUD_H){ BIOME[i]=0; continue; }              // 雲海：用不到
+        const wx=x*MAP_SCALE+40960, wy=y*MAP_SCALE+40960;
+        const sxf=wx/VEGSEL_WORLD*VS, syf=wy/VEGSEL_WORLD*VS;
+        const sx0=sxf|0, sy0=syf|0, su=sxf-sx0, sv2=syf-sy0;
+        const nr0=(sy0&VSM)*VS, nr1=((sy0+1)&VSM)*VS;
+        const nc0=sx0&VSM, nc1=(sx0+1)&VSM;
+        const nz=VEGSEL[nr0+nc0]*(1-su)*(1-sv2)+VEGSEL[nr0+nc1]*su*(1-sv2)
+                +VEGSEL[nr1+nc0]*(1-su)*sv2   +VEGSEL[nr1+nc1]*su*sv2;
+        const nz2=VEGSEL[(((sy0+23)&VSM)*VS)+((sx0+37)&VSM)];
+        const sl=(SLX[i]<0?-SLX[i]:SLX[i])+(SLY[i]<0?-SLY[i]:SLY[i]);
+        const subw=SUBW?SUBW[i]:0;
+        let tex;
+        if(RIV[i] && sl<BIOME_WATER_SL){
+          tex=(nz>0.5)?G_WL:G_WD;
+        }else if(sl>BIOME_CLIFF+(nz-0.5)*40){
+          tex=(hh>BIOME_ROCKALT)?G_RG:G_RB;
+        }else if(hh>BIOME_SNOW+(nz-0.5)*2*BIOME_SNOW_J){
+          tex=G_SN;
+        }else if(hh>BIOME_TREE+(nz-0.5)*2*BIOME_TREE_J){
+          tex=G_GD;
+        }else if(nz>BIOME_WASTE){
+          tex=G_WB;
+        }else if(subw>18 && roofPickW(subw, VEGSEL[((((syf*4)|0)&VSM)*VS)+((((sxf*4)|0)&VSM))])>=0){
+          const g=roofPickW(subw, VEGSEL[((((syf*4)|0)&VSM)*VS)+((((sxf*4)|0)&VSM))]);
+          tex=(g===0?G_RH:(g===1?G_RM:G_RL));
+        }else if(ROADW&&ROADW[i]>40){
+          tex=G_GL;
+        }else{
+          const altk=clamp((hh-VEG_ALT_LO)/(VEG_ALT_HI-VEG_ALT_LO),0,1);
+          const sel=clamp((nz-0.5)*1.9+0.5+altk*0.55-0.18,0,1);
+          tex=(sel<0.5)?G_FL:G_FD;
+        }
+        const mot=clamp(Math.round(nz2*15),0,15);
+        BIOME[i]=tex|(mot<<4);
+      }
+    }
+  }
 
   /* 碼頭位置：城區內「水面貼著陸地」的那一圈就是濱水面。從中挑幾個彼此拉開的
      點，方向取「陸→水」的法線 —— 棧橋自然朝水裡伸，不必手工指定角度。
@@ -2146,90 +2202,34 @@ function render(now){
              的相位會整個錯開（雲的取樣也踩過同一個坑）。4096 是 GT 的倍數。
            ⚠ 反重複：每 256 單位一格，依格號選 8 種二面體變換之一。不打散的話
              整片大陸重複一百多次，眼睛一定抓得到那個節奏。 */
-        if(vegOn&&geoReady){
-          /* ⚠ +40960 再取整：世界座標會是負的，而 |0 是往零截斷，負數那半邊
-             的相位會整個錯開（雲的取樣也踩過同一個坑）。40960 是 GT 的倍數。 */
-          const wx=(plx+40960)*GEO_INV, wy=(ply+40960)*GEO_INV;
-          /* 低頻場：分區用。雙線性取樣 → 邊界是漸變不是格子。 */
-          const sxf=(plx+40960)/VEGSEL_WORLD*VS, syf=(ply+40960)/VEGSEL_WORLD*VS;
-          const sx0=sxf|0, sy0=syf|0, su=sxf-sx0, sv2=syf-sy0;
-          const nr0=(sy0&VSM)*VS, nr1=((sy0+1)&VSM)*VS;
-          const nc0=sx0&VSM, nc1=(sx0+1)&VSM;
-          const nz=VEGSEL[nr0+nc0]*(1-su)*(1-sv2)+VEGSEL[nr0+nc1]*su*(1-sv2)
-                  +VEGSEL[nr1+nc0]*(1-su)*sv2   +VEGSEL[nr1+nc1]*su*sv2;
-          const nz2=VEGSEL[(((sy0+23)&VSM)*VS)+((sx0+37)&VSM)];   // 亮度起伏用：同場、錯開相位
-          /* 郊區的覆蓋率用中頻（週期約 1300 單位）：低頻會變成一大塊城、
-             高頻會碎成雜點，房子成「叢」才像村落。 */
-          const nz3=VEGSEL[((((syf*4)|0)&VSM)*VS)+((((sxf*4)|0)&VSM))];
-          /* ── 選類別 ──
-             順序即優先權：水 → 崖 → 雪 → 碎石坡 → 荒地 → 森林。
-             ⚠ 界線一律用噪聲抖動而不是混色：真實的樹線雪線是不規則的鋸齒，
-               沿等高線切一條平滑的線反而假，而且抖動只要一次取樣。 */
-          let tex, mixTo=-1, mixT=0;
-          const sl=(SLX[mi]<0?-SLX[mi]:SLX[mi])+(SLY[mi]<0?-SLY[mi]:SLY[mi]);   // 水與崖都要用
-          /* ⚠ 水面是**平的**。原始河道遮罩是從地形圖的顏色反推的（b>r+16…），
-             本來就有雜訊，其中不少落在山坡上；ver -189 把水推成飽和青色之後，
-             那些坡上的雜訊整片亮起來 —— 使用者看到的「一片藍貼在山坡上」就是這個。
-             坡度一超過門檻就不當水看，直接交給後面的地貌分支。 */
-          if(RIV[mi] && sl<BIOME_WATER_SL){
-            /* 河。⚠ 與路面／屋頂同一個陷阱：地貌層是**相乘**的，底色是綠的
-               河道格乘上水的紋理之後仍然是綠的 —— 畫面上就是「該是河卻是森林」。
-               水在地圖底色裡不一定存在（我後來挖出來的河道尤其），
-               所以底色本身要推向水的絕對色，再套紋理。 */
-            const deep=(nz>0.5);
-            tex=deep?G_WL:G_WD;                           // 河：深淺兩種水交錯
-            /* ⚠ 推的目標**不是貼圖的均值**。兩張水貼圖是熱帶青綠
-               （81,167,164 / 15,92,101），跟這個世界去飽和的調子差太遠 ——
-               一片水面用近乎平視的角度看就成了一堵青牆。改推地圖自己的河色
-               (84,120,142)，只讓深淺兩種略微分開，紋理的起伏照舊由貼圖給。 */
+        if(vegOn&&geoReady&&BIOME){
+          /* ── 地貌細節層 ──────────────────────────────────────
+             類別與亮度起伏在載入時就打好表了（見 BIOME），這裡只讀一個 byte。
+             ⚠ 先前是每個取樣重跑整條判定（兩次低頻噪聲雙線性、坡度、五層門檻、
+               郊區覆蓋率），而那些輸入幾乎都是逐地圖像素的常數 —— 每幀十幾萬次
+               重算同一件事，正是手機掉幀的來源。 */
+          const bi=BIOME[mi];
+          const tex=bi&15;
+          /* 人造物與水：底色本身要推過去（細節層是相乘的，只靠它會留在原本的色相上）。 */
+          if(tex===G_WD||tex===G_WL){
+            const deep=(tex===G_WL);
             const wr=deep?92:66, wg=deep?126:100, wb=deep?146:124;
             cr+=(wr-cr)*0.72; cg+=(wg-cg)*0.72; cb+=(wb-cb)*0.72;
-          }else if(sl>BIOME_CLIFF+(nz-0.5)*40){
-            tex=(hh>BIOME_ROCKALT)?G_RG:G_RB;             // 崖面：高處灰岩、低處褐岩
-          }else if(hh>BIOME_SNOW+(nz-0.5)*2*BIOME_SNOW_J){
-            tex=G_SN;                                     // 雪線以上
-          }else if(hh>BIOME_TREE+(nz-0.5)*2*BIOME_TREE_J){
-            tex=G_GD;                                     // 樹線～雪線：碎石坡
-          }else if(nz>BIOME_WASTE){
-            tex=G_WB;                                     // 荒地（刻意少量）
-          }else if(SUBW&&SUBW[mi]>18&&roofPick(mi,nz3)>=0){
-            /* 郊區：由密到疏散開的屋舍。
-               ⚠ 密度不是靠「把貼圖調淡」，是靠**覆蓋率**：拿一張中頻噪聲當門檻，
-                 密度越低門檻越高 → 房子成塊地散開、中間留給原本的地貌。
-                 調淡只會得到一片半透明的灰霧，讀不出「一棟一棟」。
-               ⚠ 同路面：郊區是人造物，底色本身要往屋頂色推。 */
-            const g=roofPick(mi,nz3);
-            tex=(g===0?G_RH:(g===1?G_RM:G_RL));
-            const rc=ROOF_COL[g], rw2=(SUBW[mi]/255)*0.55+0.30;
-            cr+=(rc[0]-cr)*rw2; cg+=(rc[1]-cg)*rw2; cb+=(rc[2]-cb)*rw2;
-          }else if(ROADW&&ROADW[mi]>40){
-            /* 路。⚠ 這一類不能只靠細節層：細節層是**相乘**的，底下是綠地時
-               乘上礫石的起伏仍然是綠的。路是地圖底色裡沒有的人造物，
-               所以要把底色本身往礫石的絕對色推過去，再套它的紋理。 */
-            tex=G_GL;
+          }else if(tex===G_GL&&ROADW){
             const rw=(ROADW[mi]/255)*0.82;
-            cr+=(135-cr)*rw; cg+=(109-cg)*rw; cb+=(72-cb)*rw;   // gravel_light 的均值色
-          }else{
-            /* 森林：針葉／闊葉由低頻場＋高度決定，只有這一類做混色 ——
-               同樣是林子，硬切會看得出貼圖換了；不同地貌之間硬切反而對。 */
-            const altk=clamp((hh-VEG_ALT_LO)/(VEG_ALT_HI-VEG_ALT_LO),0,1);
-            const sel=clamp((nz-0.5)*1.9+0.5+altk*0.55-0.18,0,1);
-            if(sel<=VEG_BAND) tex=G_FL;
-            else if(sel>=1-VEG_BAND) tex=G_FD;
-            else { tex=G_FD; mixTo=G_FL; mixT=1-(sel-VEG_BAND)/(1-2*VEG_BAND); }
+            cr+=(135-cr)*rw; cg+=(109-cg)*rw; cb+=(72-cb)*rw;
+          }else if(tex>=G_RH&&SUBW){
+            const rc=ROOF_COL[tex-G_RH], rw2=(SUBW[mi]/255)*0.55+0.30;
+            cr+=(rc[0]-cr)*rw2; cg+=(rc[1]-cg)*rw2; cb+=(rc[2]-cb)*rw2;
           }
-          const off=(((wy|0)&GTM)*GT+((wx|0)&GTM))*3;
-          const q=tex*GEO_STRIDE+off;
-          let k0=GEOK[q]*(1/128), k1=GEOK[q+1]*(1/128), k2=GEOK[q+2]*(1/128);
-          if(mixTo>=0){
-            const q2=mixTo*GEO_STRIDE+off, it=1-mixT;
-            k0=k0*it+GEOK[q2]*(1/128)*mixT;
-            k1=k1*it+GEOK[q2+1]*(1/128)*mixT;
-            k2=k2*it+GEOK[q2+2]*(1/128)*mixT;
-          }
-          /* 低頻亮度起伏：取樣同一張場但相位錯開，週期（5200）與貼圖週期（410）
-             互質得夠遠 → 兩者的節奏不會對齊，重複感就散掉了。 */
-          const mot=1+((nz2-0.5)*2)*GEO_MOT*vegAmt;
+          /* ⚠ +40960 再取整：世界座標會是負的，而 |0 往零截斷，負數那半邊的
+             相位會整個錯開（雲的取樣踩過同一個坑）。40960 是 GT 的倍數。 */
+          const wx=(plx+40960)*GEO_INV, wy=(ply+40960)*GEO_INV;
+          const q=tex*GEO_STRIDE+((((wy|0)&GTM)*GT+((wx|0)&GTM))*3);
+          const k0=GEOK[q]*GEO_K1, k1=GEOK[q+1]*GEO_K1, k2=GEOK[q+2]*GEO_K1;
+          /* 低頻亮度起伏：週期與貼圖週期互質得夠遠，兩者的節奏不會對齊，
+             重複感就散掉了。量化成 4 bit 存在 BIOME 的高位。 */
+          const mot=1+(((bi>>4)/15)-0.5)*2*GEO_MOT*vegAmt;
           cr*=(1+(k0-1)*vegAmt)*mot;
           cg*=(1+(k1-1)*vegAmt)*mot;
           cb*=(1+(k2-1)*vegAmt)*mot;
