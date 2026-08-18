@@ -475,8 +475,13 @@ function shade(tone, pal, k, a) {
 function draw(ctx, s, view, dbg) {
   dbg = dbg || DEBUG;
   const { ox, oy, scale } = view;
+  /* TILT 是「地面平面在畫面上被壓扁多少」。地圖畫面是固定斜角，用常數就好；
+     3D 飛行畫面不行 —— 那裡的壓縮率隨距離變（近處地面幾乎正對鏡頭、壓得扁，
+     遠處接近地平線、壓成一條線）。固定 0.58 的結果就是整座城變成一張不隨
+     視角變形的貼紙浮在地表上。呼叫端算得出當下的真實壓縮率就傳 view.tilt。 */
+  const tilt = (view.tilt > 0) ? view.tilt : TILT;
   const X = wx => ox + wx * scale;
-  const Y = wy => oy + wy * scale * TILT;
+  const Y = wy => oy + wy * scale * tilt;
   const screenDia = s.radius * 2 * scale;
 
   /* ── LOD ────────────────────────────────────────────────────── */
@@ -551,6 +556,31 @@ function draw(ctx, s, view, dbg) {
 }
 
 /* 單棟：陰影 → 正牆 → 側牆 → 屋頂 → 細節 */
+/* 夜間燈火：窗戶亮起來的點點。
+   ⚠ 不畫在 drawBuilding 裡：那裡是逐棟畫量體，燈要蓋在所有屋頂之上，
+     不然後畫的房子會把前一棟的燈蓋掉。
+   ⚠ 亮不亮用 seed 決定（同一棟每幀一致），不是每幀擲骰 —— 每幀重擲會變成
+     整座城在閃爍。城裡不是每扇窗都亮，取三分之一左右。 */
+function drawNightLights(ctx, s, X, Y, scale, night, lod) {
+  if (night <= 0.04 || lod < 2) return;
+  const dot = Math.max(0.7, scale * 0.055);
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  for (let i = 0; i < s.buildings.length; i++) {
+    const b = s.buildings[i];
+    const h = ((s.seed ^ (i * 0x9E3779B1)) >>> 0) / 4294967296;
+    if (h > 0.34) continue;                       // 約三分之一的屋子亮著
+    const flick = 0.75 + 0.25 * (((i * 7919) % 13) / 13);
+    ctx.globalAlpha = night * flick * 0.85;
+    ctx.fillStyle = h < 0.10 ? '#ffd9a0' : '#ffbe6a';
+    // 燈開在屋子朝鏡頭那一面（＝量體下緣），不是屋頂正中
+    ctx.beginPath();
+    ctx.arc(X(b.x), Y(b.y) - b.h * scale * 0.22, dot, 0, TAU);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
 function drawBuilding(ctx, b, X, Y, scale, pal, lod) {
   const sx = X(b.x), sy = Y(b.y);
   const w = b.w * scale, d = b.d * scale * TILT, h = b.h * scale;

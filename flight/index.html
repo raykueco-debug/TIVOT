@@ -316,7 +316,11 @@ let HGT=null, COL=null, SLX=null, SLY=null, RIV=null;
    放到大陸尺度上必須另外定。這裡以「帝都直徑約 44 地圖像素」為準。 */
 const SETTLE_R = { city1:22, city2:15, city3:10, town:6, village:3.5 };
 const SETTLEMENTS = [
-  { n:'帝都・聖王廳', x:1159, y:522, t:'city1', f:'church' },
+  /* 座標採 PLACES / export_mapref 那一組（即 terrain_generator 的來源）。
+     曾經這裡寫 (1159,522)——那是從 map_01 插畫的城鎮圖標讀出來的，
+     與地標表差 154 像素，名牌會標在離城很遠的地方。以靠大陸中心者為準：
+     (1005,600) 離大陸中心 (1076,600) 只有 71px，(1159,522) 是 114px。 */
+  { n:'帝都・聖王廳', x:1005, y:600, t:'city1', f:'church' },
   { n:'大教堂城',     x:1224, y:581, t:'city2', f:'church' },
   { n:'曙光城',       x:1373, y:581, t:'city3', f:'church' },
   { n:'石櫃城',       x:530,  y:311, t:'city2', f:'empire' },
@@ -1100,7 +1104,11 @@ function render(now){
   /* 光照。⚠ terrain_generator.py 已把 hillshade 烘進地貌色，
      這裡的方向項刻意做弱（LIGHT_DIR_K），只負責「日月移動的味道」，
      不跟烘焙陰影打架；主要靠色溫變化表現晝夜。 */
-  const LIGHT_DIR_K=0.0045;
+  /* ⚠ 這個係數曾經是 0.0045，等於把方向光關掉：實測中間 50% 的地表
+     亮度只差 3%（nl 四分位距 0.587~0.653）——山不會因為朝向而亮暗，
+     立體感全靠貼圖裡烘死的 hillshade，整片大陸就成了色塊拼貼。
+     拉高到 0.030 並把環境光壓低，受光/背光才拉得開。 */
+  const LIGHT_DIR_K=0.030;
   /* 光源在日月之間過渡：白天跟太陽走，入夜交給固定在西邊的銀月。
      ⚠ 方向也要換，不然夜裡的明暗面還停在太陽落下前的位置，
        月亮明明在西邊、山的受光面卻在東邊。 */
@@ -1108,7 +1116,7 @@ function render(now){
   const ly=lerp(Math.sin(MOON_AZ),Math.sin(S.az),S.day);
   const moonI=lerp(MOON_LIT,0.04,S.day);
   const sunI=clamp(S.el*0.85+0.20,0.05,0.50)+moonI;
-  const ambI=lerp(0.60,0.74,S.day);
+  const ambI=lerp(0.46,0.52,S.day);   // 降低環境光：背光面要真的暗得下來
   // 月光是銀色：冷但不藍到發紫，飽和度低於原本的夜色
   const lightR=lerp(lerp(0.80,1.0,S.day),1.20,S.dusk);
   const lightG=lerp(lerp(0.86,1.0,S.day),0.88,S.dusk);
@@ -1451,6 +1459,7 @@ function drawPlaces(scaleH,horizon,sinp,cosp){
 function drawSettlements3D(scaleH,horizon,sinp,cosp){
   if(!window.Settlement || !MAPW) return;
   const sxk=W/BW, syk=VIEWH/BH;
+  const nightK=clamp(1-sky().day*1.25,0,1);      // 入夜程度：城裡的燈火強度
   const list=[];
   for(const s of buildSettlements()){
     const dx=s.mx*MAP_SCALE-cam.x, dy=s.my*MAP_SCALE-cam.y;
@@ -1473,13 +1482,23 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
     if(R*2*sc<3) continue;
     ctx.save();
     ctx.globalAlpha=clamp((ZFAR*0.9-o.z)/(ZFAR*0.30),0,1);         // 遠處隨霧淡出
+    /* 地面壓縮率（tilt）：讓城真的躺在地上。
+       橫向：1 世界單位 = sc 螢幕像素。
+       縱向：地面列是 ((alt-gh)/z + z*curv)*scaleH，對 z 微分得
+              (-(alt-gh)/z² + curv)*scaleH → 再乘 syk 換成螢幕像素。
+       兩者相除就是這個深度的真實壓縮率。固定 0.58 是地圖畫面用的斜角常數，
+       搬到 3D 裡就成了一張不隨視角變形的貼紙浮在地表上。
+       ⚙ 夾上下限：飛得極低時 z² 分母會把值推到失控。 */
+    const gh0=HGT[(Math.min(MAPH-1,o.s.my|0))*MAPW+(Math.min(MAPW-1,o.s.mx|0))];
+    const dydz=(-(cam.alt-(gh0>CLOUD_H?gh0:CLOUD_H))/(o.z*o.z)+curvAt(0))*scaleH*syk;
+    const tilt=clamp(Math.abs(dydz)/sc,0.06,1.10);
     /* ⚠ Settlement.draw 的 scale 是「每個**地圖像素**幾個螢幕像素」——
        s.radius 存的是地圖像素（同地圖畫面那邊傳 sc*MAP_SS）。
        sc 是每個**世界單位**幾個螢幕像素，兩者差一個 MAP_SCALE。
        直接傳 sc 的話整座城會縮小 20 倍 → screenDia 永遠 <20 → LOD 0，
        飛到城上空也只看得到一顆符號點。上面那行尺寸檢查用的 R 有乘
        MAP_SCALE，所以檢查會過、畫出來卻是點——兩邊單位不一致的典型病。 */
-    Settlement.draw(ctx, o.s, { ox:o.x, oy:o.y, scale:sc*MAP_SCALE }, Settlement.DEBUG);
+    Settlement.draw(ctx, o.s, { ox:o.x, oy:o.y, scale:sc*MAP_SCALE, tilt, night:nightK }, Settlement.DEBUG);
     ctx.restore();
   }
 }
