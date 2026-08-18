@@ -1659,7 +1659,10 @@ const ENEMY_KINDS = {
     name:'羽蛇', plan:'chain', wing:'bird', segs:26, bodyLen:280, vertical:true,
     sprite:{ dir:'enemy/FLM_Serpent/', dorsal:'view_3.webp',
              head:[0.00,0.165], wings:[0.165,0.380], body:[0.380,1.00] },
-    waveAmp:11.0, wavePhase:0.52, waveHz:0.0031, wingHz:0.019,
+    /* wingHz 0.019 → 0.008：鳥翼本來就比蟲翅慢得多。
+       wingSmooth：拍動曲線改成平滑正弦。原本兩種怪共用 |cos|，那在過零點
+       有個尖角 —— 蟲翅該有那個「啪」的頓挫，鳥翼不該，看起來會像在抽搐。 */
+    waveAmp:11.0, wavePhase:0.52, waveHz:0.0031, wingHz:0.008, wingSmooth:true,
     turnRate:0.0021, speedK:0.72,
   },
   pirate: {
@@ -1939,13 +1942,29 @@ function drawEnemy3D(scaleH,horizon,sinp,cosp,now){
     const tl=Math.hypot(tcx,tcy)||1;
     const dot=(enemy.hx*tcx+enemy.hy*tcy)/tl;
     const crs=(enemy.hx*tcy-enemy.hy*tcx)/tl;
+    /* 視角換圖要**交叉淡入**，不能過門檻就硬換。
+       船的朝向本身已經有角速度上限（turnRate），會突然變的是「用哪張圖」——
+       只有四張方位圖，40°/140° 兩個門檻上一跳，看起來就是船瞬間扭了一下。
+       在門檻兩側各留 BAND 的過渡帶，兩張疊著畫、權重線性交換。
+       ⚠ 過渡帶不能太寬：兩張圖差異大，疊太久會出現雙重影。±10°，
+         再加 smoothstep 讓權重快速通過 50/50 —— 線性的話中段停留最久，
+         而中段正是疊影最明顯的地方。 */
     const th=Math.abs(Math.atan2(crs,dot));
-    const img = th<0.70 ? set.front : th>2.44 ? set.rear : (crs>0?set.sideR:set.sideL);
+    const side=(crs>0?set.sideR:set.sideL);
+    const BAND=0.17, T1=0.70, T2=2.44;   // ±10°
+    let imgA=null, imgB=null, mix=0;
+    if(th<T1-BAND)      imgA=set.front;
+    else if(th<T1+BAND){ imgA=set.front; imgB=side;     mix=sstep(0,1,(th-(T1-BAND))/(2*BAND)); }
+    else if(th<T2-BAND)  imgA=side;
+    else if(th<T2+BAND){ imgA=side;      imgB=set.rear; mix=sstep(0,1,(th-(T2-BAND))/(2*BAND)); }
+    else                 imgA=set.rear;
+    const img=imgA;
     if(!img) return;
     const wpp=K.bodyLen/((set.sideR||img).width);     // 世界單位／來源像素（側視寬＝船長）
     const w=img.width*wpp*P[3], h=img.height*wpp*P[3];
     if(w<2) return;
-    const pad=Math.ceil(Math.max(w,h)*0.6)+6;
+    const wB=imgB?imgB.width*wpp*P[3]:0, hB=imgB?imgB.height*wpp*P[3]:0;
+    const pad=Math.ceil(Math.max(w,h,wB,hB)*0.6)+6;   // 兩張都要框得下
     const x0=Math.round(P[0]-w/2)-pad, y0=Math.round(P[1]-h/2)-pad;
     const fw=Math.ceil(w)+pad*2, fh=Math.ceil(h)+pad*2;
     const pk=clamp(BW/W*C.pixelScale,0.15,1);
@@ -1956,7 +1975,13 @@ function drawEnemy3D(scaleH,horizon,sinp,cosp,now){
     }
     EC.setTransform(1,0,0,1,0,0); EC.clearRect(0,0,bwp,bhp);
     EC.setTransform(bwp/fw,0,0,bhp/fh,-x0*bwp/fw,-y0*bhp/fh);
+    EC.globalAlpha=imgB?(1-mix):1;
     EC.drawImage(img,P[0]-w/2,P[1]-h/2,w,h);
+    if(imgB){
+      EC.globalAlpha=mix;
+      EC.drawImage(imgB,P[0]-wB/2,P[1]-hB/2,wB,hB);
+    }
+    EC.globalAlpha=1;
     ctx.save(); ctx.imageSmoothingEnabled=false;
     clipByTerrainDepth(P[2],W/BW,VIEWH/BH);   // 山也該擋住船
     ctx.drawImage(enemyFB,0,0,bwp,bhp,x0,y0,fw,fh);
@@ -2065,7 +2090,10 @@ function drawEnemy3D(scaleH,horizon,sinp,cosp,now){
     EC.restore();
   };
   const segAng=i=>Math.atan2(pts[i][1]-pts[i-1][1], pts[i][0]-pts[i-1][0]);
-  const flap=Math.abs(Math.cos(now*K.wingHz));
+  /* 拍翅曲線：蟲翅用 |cos|（過零點的尖角就是那個「啪」），
+     鳥翼用平滑正弦（0..1 之間順順地來回，沒有頓挫）。 */
+  const flap=K.wingSmooth ? 0.5+0.5*Math.sin(now*K.wingHz)
+                          : Math.abs(Math.cos(now*K.wingHz));
 
   /* ── 精靈模式（plan:'chain'）─────────────────────────────────────
      俯視圖是**筆直**畫的，所以可以沿圖高切成橫條：每個體節取 body 區間裡
