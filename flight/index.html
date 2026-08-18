@@ -1487,7 +1487,11 @@ function drawPlaces(scaleH,horizon,sinp,cosp){
    3 秒後與敵人一同消失，重新計時。戰鬥本身尚未實作。 */
 const ENEMY_CFG = {
   gapMin: 50000, gapMax: 60000,   // 刷新間隔（ms）
-  speedK: 1.20,                   // 移動速度＝玩家極速的倍數
+  /* 速度＝玩家極速的倍數。1.20 時牠整個撞上來——比玩家快的追擊者在
+     這種正面接近的幾何下沒有周旋餘地，玩家等於只能挨撞。0.60 讓牠
+     略慢於玩家，遭遇變成「牠攔在航路上」而不是「牠追上你」。 */
+  speedK: 0.60,
+  pixelScale: 1.0,                // 繪製解析度（×BW/W）——見 drawEnemy3D 的像素化
   chaseAt: 0.70,                  // 距離縮到 D0 的這個比例 → 轉主動追擊
   spawnDist: 2800,                // 生成距離（世界單位；ZFAR=3600 之內才看得到）
   spawnArc: 1.22,                 // 生成方位限制在航向 ±70°：要讓玩家看得到牠飛來
@@ -1505,6 +1509,7 @@ const ENEMY_CFG = {
   wingHz: 0.055,                  // 振翅角頻（rad/ms）——比蛇行快一個數量級才像蟲
 };
 let enemy=null;                                   // {x,y,alt,hx,hy,d0,state,tEngage}
+let enemyFB=null, EC=null;                        // 低解析繪製緩衝（見 drawEnemy3D）
 let enemyTimer=ENEMY_CFG.gapMin*0.35;             // 開場不要立刻刷
 
 function spawnEnemy(){
@@ -1600,8 +1605,34 @@ function drawEnemy3D(scaleH,horizon,sinp,cosp,now){
   const lit=clamp(0.30+S.day*0.70,0.30,1);         // 夜裡壓暗，同船與地形
   const shade=(r,g,b,a)=>'rgba('+Math.round(r*lit)+','+Math.round(g*lit)+','+Math.round(b*lit)+','+a+')';
 
-  ctx.save();
-  ctx.lineCap='round'; ctx.lineJoin='round';
+  /* ── 像素化：先縮小再放大 ─────────────────────────────────────
+     牠是用向量畫的，邊緣本來就是平滑的——貼在 234×334 上採樣的地形上，
+     整隻像一張高解析貼紙浮在馬賽克世界裡。作法同飛空艇的 shipFB：
+     先在 pk 倍的低解析緩衝上畫完，再關掉平滑用 nearest 放大貼回。
+     pk = BW/W = 0.6，剛好跟地形緩衝同一個解析度級距。
+     ⚠ 緩衝範圍要框住整隻（含翅與步足），不然邊緣會被裁掉。
+     ⚠ 提示文字不進緩衝——那是 UI，不該跟著糊。 */
+  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+  for(const P of pts){
+    const m=Math.max(6,P[3]*52);          // 翅展 sc*46 加餘裕
+    if(P[0]-m<x0)x0=P[0]-m; if(P[0]+m>x1)x1=P[0]+m;
+    if(P[1]-m<y0)y0=P[1]-m; if(P[1]+m>y1)y1=P[1]+m;
+  }
+  x0=Math.max(x0,-400); y0=Math.max(y0,-400); x1=Math.min(x1,W+400); y1=Math.min(y1,VIEWH+400);
+  const fw=Math.ceil(x1-x0), fh=Math.ceil(y1-y0);
+  if(fw<2||fh<2||x1<0||y1<0||x0>W||y0>VIEWH) return;
+  const pk=clamp(BW/W*C.pixelScale,0.15,1);
+  const bwp=Math.max(2,Math.round(fw*pk)), bhp=Math.max(2,Math.round(fh*pk));
+  if(!enemyFB || enemyFB.width!==bwp || enemyFB.height!==bhp){
+    enemyFB=document.createElement('canvas'); enemyFB.width=bwp; enemyFB.height=bhp;
+    EC=enemyFB.getContext('2d');
+  }
+  EC.setTransform(1,0,0,1,0,0);
+  EC.clearRect(0,0,bwp,bhp);
+  // 之後一律用「螢幕座標」思考：緩衝自己吸收縮放與位移
+  EC.setTransform(bwp/fw,0,0,bhp/fh,-x0*bwp/fw,-y0*bhp/fh);
+  EC.save();
+  EC.lineCap='round'; EC.lineJoin='round';
 
   /* 步足：每節兩側各一根，前後擺動的相位跟著體節走 */
   for(let i=1;i<pts.length;i++){
@@ -1610,21 +1641,21 @@ function drawEnemy3D(scaleH,horizon,sinp,cosp,now){
     const ang=Math.atan2(pts[i][1]-pts[i-1][1], pts[i][0]-pts[i-1][0]);
     const nx=Math.cos(ang+Math.PI/2), ny=Math.sin(ang+Math.PI/2);
     const sw=Math.sin(wob*1.6-i*0.7)*0.35;
-    ctx.strokeStyle=shade(214,158,32,0.95); ctx.lineWidth=Math.max(0.7,r*0.30);
+    EC.strokeStyle=shade(214,158,32,0.95); EC.lineWidth=Math.max(0.7,r*0.30);
     for(const sgn of [1,-1]){
-      ctx.beginPath(); ctx.moveTo(P[0],P[1]);
-      ctx.lineTo(P[0]+nx*sgn*r*2.3+Math.cos(ang)*sw*r*2, P[1]+ny*sgn*r*2.3+Math.sin(ang)*sw*r*2);
-      ctx.stroke();
+      EC.beginPath(); EC.moveTo(P[0],P[1]);
+      EC.lineTo(P[0]+nx*sgn*r*2.3+Math.cos(ang)*sw*r*2, P[1]+ny*sgn*r*2.3+Math.sin(ang)*sw*r*2);
+      EC.stroke();
     }
   }
 
   /* 體節：暗褐背板 + 亮邊。由尾往頭畫，頭才蓋在最上面 */
   for(let i=pts.length-1;i>=0;i--){
     const P=pts[i], sc=P[3], r=Math.max(0.9,sc*3.9);
-    ctx.fillStyle=shade(58,40,36,1);
-    ctx.beginPath(); ctx.ellipse(P[0],P[1],r*1.05,r*0.82,0,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle=shade(150,42,30,0.85);
-    ctx.beginPath(); ctx.ellipse(P[0],P[1],r*0.62,r*0.44,0,0,Math.PI*2); ctx.fill();
+    EC.fillStyle=shade(58,40,36,1);
+    EC.beginPath(); EC.ellipse(P[0],P[1],r*1.05,r*0.82,0,0,Math.PI*2); EC.fill();
+    EC.fillStyle=shade(150,42,30,0.85);
+    EC.beginPath(); EC.ellipse(P[0],P[1],r*0.62,r*0.44,0,0,Math.PI*2); EC.fill();
   }
 
   /* 翅：兩對，附在近頭端。振翅只改「展幅」——正俯視下拍動就是展幅在縮放 */
@@ -1635,13 +1666,13 @@ function drawEnemy3D(scaleH,horizon,sinp,cosp,now){
     if(span<1.2) continue;
     const ang=Math.atan2(pts[wi][1]-pts[wi-1][1], pts[wi][0]-pts[wi-1][0]);
     for(const sgn of [1,-1]){
-      ctx.save(); ctx.translate(P[0],P[1]);
-      ctx.rotate(ang+sgn*(Math.PI/2)*(0.34+flap*0.52));
-      ctx.fillStyle=shade(206,226,246,0.42);
-      ctx.beginPath(); ctx.ellipse(span*0.5,0,span*0.5,chord*(0.42+flap*0.58),0,0,Math.PI*2); ctx.fill();
-      ctx.strokeStyle=shade(226,182,86,0.55); ctx.lineWidth=Math.max(0.6,sc*1.1);
-      ctx.stroke();
-      ctx.restore();
+      EC.save(); EC.translate(P[0],P[1]);
+      EC.rotate(ang+sgn*(Math.PI/2)*(0.34+flap*0.52));
+      EC.fillStyle=shade(206,226,246,0.42);
+      EC.beginPath(); EC.ellipse(span*0.5,0,span*0.5,chord*(0.42+flap*0.58),0,0,Math.PI*2); EC.fill();
+      EC.strokeStyle=shade(226,182,86,0.55); EC.lineWidth=Math.max(0.6,sc*1.1);
+      EC.stroke();
+      EC.restore();
     }
   }
 
@@ -1649,17 +1680,22 @@ function drawEnemy3D(scaleH,horizon,sinp,cosp,now){
   {
     const P=pts[0], sc=P[3], r=Math.max(1,sc*4.2);
     const ang=Math.atan2(pts[0][1]-pts[1][1], pts[0][0]-pts[1][0]);
-    ctx.fillStyle=shade(70,46,40,1);
-    ctx.beginPath(); ctx.ellipse(P[0],P[1],r*1.15,r*0.9,0,0,Math.PI*2); ctx.fill();
-    ctx.strokeStyle=shade(168,34,26,0.95); ctx.lineWidth=Math.max(0.7,r*0.22);
+    EC.fillStyle=shade(70,46,40,1);
+    EC.beginPath(); EC.ellipse(P[0],P[1],r*1.15,r*0.9,0,0,Math.PI*2); EC.fill();
+    EC.strokeStyle=shade(168,34,26,0.95); EC.lineWidth=Math.max(0.7,r*0.22);
     for(const sgn of [1,-1]){                                  // 觸角
       const a2=ang+sgn*0.42;
-      ctx.beginPath(); ctx.moveTo(P[0],P[1]);
-      ctx.quadraticCurveTo(P[0]+Math.cos(a2)*r*3.2, P[1]+Math.sin(a2)*r*3.2,
+      EC.beginPath(); EC.moveTo(P[0],P[1]);
+      EC.quadraticCurveTo(P[0]+Math.cos(a2)*r*3.2, P[1]+Math.sin(a2)*r*3.2,
                            P[0]+Math.cos(a2+sgn*0.5)*r*5.4, P[1]+Math.sin(a2+sgn*0.5)*r*5.4);
-      ctx.stroke();
+      EC.stroke();
     }
   }
+  EC.restore();
+  // 貼回主畫布：關平滑 → 自然像素化
+  ctx.save();
+  ctx.imageSmoothingEnabled=false;
+  ctx.drawImage(enemyFB,0,0,bwp,bhp,Math.round(x0),Math.round(y0),fw,fh);
   ctx.restore();
 
   /* 進入戰鬥的提示（戰鬥本身尚未實作） */
