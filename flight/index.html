@@ -384,17 +384,39 @@ const SETTLEMENTS = [
      planRot＝圖要轉多少才讓港區朝海。插畫的港在右下（≈45°），
               這裡的向海方位是 1.90 rad（≈109°），差 ≈1.10 rad。 */
   { n:'薇拉馮德港', x:1335, y:929, t:'city1', f:'empire', c:1, sea:1.90,
-    plan:'city/velafonte_plan.webp', planW:1050, planRot:1.10 },
+    plan:'city/velafonte_plan.webp', planH:'city/velafonte_h.webp',
+    planW:1050, planRot:1.10, planTall:26 },
+  /* ⚠ planTall 別給大：這個引擎的縱向投影比橫向大約 2.9 倍
+     （scaleH·syk ≈ 558 對 W/2 = 195），高度一抬就過頭，量體會把格子
+     剪成長條、整座城拖曳。26 是「立得起來但不破圖」的上限。 */
 ];
 /* 手繪平面圖：背景載，載不到就退回程序生成的街廓（同飛空艇/怪的雙軌）。
    ⚠ 不進 loadWorld：它只影響少數幾座城的外觀，擋開場不划算。 */
 const cityPlanArt={};
+const cityHeight={};        // {w,h,d} —— 高度圖的灰階陣列
 (function loadCityPlans(){
   for(const S of SETTLEMENTS){
-    if(!S.plan) continue;
-    const im=new Image();
-    im.onload=()=>{ cityPlanArt[S.plan]=im; };
-    im.src=S.plan;
+    if(S.plan){
+      const im=new Image();
+      im.onload=()=>{ cityPlanArt[S.plan]=im; };
+      im.src=S.plan;
+    }
+    if(S.planH){
+      /* 高度圖要能**逐點取值**，所以載進來就抽成陣列。
+         ⚠ 只抽一次：每幀 getImageData 會拖垮效能，而且它本來就不會變。 */
+      const hm=new Image();
+      hm.onload=()=>{
+        const cv2=document.createElement('canvas');
+        cv2.width=hm.width; cv2.height=hm.height;
+        const c2=cv2.getContext('2d');
+        c2.drawImage(hm,0,0);
+        const d=c2.getImageData(0,0,hm.width,hm.height).data;
+        const g=new Uint8Array(hm.width*hm.height);
+        for(let i=0,j=0;i<g.length;i++,j+=4) g[i]=d[j];
+        cityHeight[S.planH]={w:hm.width,h:hm.height,d:g};
+      };
+      hm.src=S.planH;
+    }
   }
 })();
 
@@ -409,6 +431,7 @@ function buildSettlements(){
       seaAng:S.sea||0,               // 向海方位（弧度）；內陸聚落留 0
     });
     s.plan=S.plan||null; s.planW=S.planW||0; s.planRot=S.planRot||0;
+    s.planH=S.planH||null; s.planTall=S.planTall||0;
     s.mx=S.x; s.my=S.y; s.gh=(S.gh!=null?S.gh:CLOUD_H); return s;
   });
   return settleCache;
@@ -2505,13 +2528,13 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
        lx/ly 是聚落局部座標（地圖像素），先換成世界座標，再照 render() 那條
        公式算深度與螢幕位置。z 夾一個下限，免得飛到城正上方時分母爆掉。 */
     const gS=o.s.gh;
-    const project=(lx,ly)=>{
+    const project=(lx,ly,hOff)=>{
       const dx=(o.s.mx+lx)*MAP_SCALE-cam.x, dy=(o.s.my+ly)*MAP_SCALE-cam.y;
       const zRaw=dx*(-sinp)+dy*(-cosp);
       const zz=zRaw<24?24:zRaw;
       const sv=(dx*cosp+dy*(-sinp))/zz;
       return [((sv+1)/2*BW)*sxk,
-              (((cam.alt-gS)/zz + zz*curvAt(sv))*scaleH+horizon)*syk,
+              (((cam.alt-gS-(hOff||0))/zz + zz*curvAt(sv))*scaleH+horizon)*syk,
               (W/(2*zz))*MAP_SCALE,    // 第三項：該點自己的尺度（螢幕px／地圖px）
               zRaw];                   // 第四項：**未夾的**深度，格子要靠它判斷該不該畫
     };
@@ -2547,19 +2570,35 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
       /* 格數：近處一格若還有幾十像素，仿射逼近的誤差就會在格邊裂開
          （相鄰格各用自己的三個角算矩陣，第四角對不起來）。
          scr/9 讓近處一格約 9px，配合下面 1.2px 的重疊就看不出接縫。 */
-      const N=clamp(Math.round(scr*(BW/W)/9),6,24);   // 依緩衝解析度算，不是螢幕
+      /* 依緩衝解析度算，不是螢幕。上限 24 在近距離不夠——一格會有 26 螢幕像素，
+         而近處的格子橫跨的深度範圍最大，仿射逼近就在那裡崩成放射狀拖曳。
+         提到 40；成本是 N² 次 drawImage，但畫在 0.6 倍緩衝上，實測仍可接受。 */
+      const N=clamp(Math.round(scr*(BW/W)/9),6,40);
       const toL=(u,v)=>{                            // 平面座標(−1..1) → 聚落局部地圖像素
         const x=u*hw, y=v*hh;
         return [(x*ca-y*sa)/MAP_SCALE, (x*sa+y*ca)/MAP_SCALE];
       };
-      const P=[];                                   // (N+1)×(N+1) 個投影點
+      /* 兩套投影點：地面（G）與抬升後（P）。
+         抬升量取自高度圖，讓大教堂與山坡上的莊園立起來、一般屋舍稍微墊高。
+         ⚠ 立面刻意很小：這個尺寸下一格才幾像素，立面畫大了必破圖。
+         ⚠ 沒有高度圖就 G === P，等於維持原本的平貼。 */
+      const HM=o.s.planH?cityHeight[o.s.planH]:null;
+      const tall=o.s.planTall||0;
+      const hAt=(u,v)=>{
+        if(!HM||!tall) return 0;
+        const px=clamp(Math.round((u*0.5+0.5)*(HM.w-1)),0,HM.w-1);
+        const py=clamp(Math.round((v*0.5+0.5)*(HM.h-1)),0,HM.h-1);
+        return HM.d[py*HM.w+px]/255*tall;
+      };
+      const P=[], G=[];                             // (N+1)×(N+1) 個投影點
       for(let jy=0;jy<=N;jy++){
-        const v=-1+2*jy/N; const row=[];
+        const v=-1+2*jy/N; const row=[], rowG=[];
         for(let jx=0;jx<=N;jx++){
           const u=-1+2*jx/N; const L=toL(u,v);
-          row.push(project(L[0],L[1]));
+          rowG.push(project(L[0],L[1],0));
+          row.push(project(L[0],L[1],hAt(u,v)));
         }
-        P.push(row);
+        P.push(row); G.push(rowG);
       }
       /* 先畫進低解析緩衝再放大貼回。兩個理由：
          · 填充量降到 36%（0.6²）——網格投影是幾百次 drawImage，實測直接畫
@@ -2567,7 +2606,7 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
          · 城的顆粒才跟世界一致。地形是 234×334 上採樣的，城若用全解析度
            貼，會比地形銳利得多，本身就是違和點。 */
       let bx0=1e9,by0=1e9,bx1=-1e9,by1=-1e9;
-      for(const row of P) for(const q of row){
+      for(const row of P) for(const q of row){   // 抬升後的點最高，框它就夠
         if(q[0]<bx0)bx0=q[0]; if(q[0]>bx1)bx1=q[0];
         if(q[1]<by0)by0=q[1]; if(q[1]>by1)by1=q[1];
       }
@@ -2591,12 +2630,9 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
       const sw=planImg.width/N, shh=planImg.height/N;
       for(const cel of cells){
         const {jx,jy}=cel;
-        /* 水域切齊大陸邊緣：格心落在海上就不畫。
-           插畫的港灣本來就畫得比實際陸塊大，照貼會突出到雲海上方浮著。
-           逐格檢查地形，城的輪廓就自動被海岸線裁出來。 */
-        const Lc=toL(-1+2*(jx+0.5)/N, -1+2*(jy+0.5)/N);
-        const mx=(o.s.mx+Lc[0])|0, my=(o.s.my+Lc[1])|0;
-        if(mx<0||my<0||mx>=MAPW||my>=MAPH||HGT[my*MAPW+mx]<=CLOUD_H) continue;
+        /* ⚠ 這裡原本逐格判斷「格心落在海上就不畫」。格子大小隨距離變，
+           鏡頭一動哪些格被剔除就整塊整塊地跳 —— 海岸線因此鋸齒抖動。
+           已改成在 build_city.py 逐像素烘進 alpha：靜態、精確、零成本。 */
         const A=P[jy][jx], B=P[jy][jx+1], Cc=P[jy+1][jx], D2=P[jy+1][jx+1];
         /* ⚠ 任一角太近或在身後就整格跳過。project 對 z<24 做了夾制，
            夾過的角會被推到一個完全錯的螢幕位置，那一格就會扯成一片
@@ -2608,6 +2644,31 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
         if(!isFinite(a1)||!isFinite(d1)) continue;
         if(Math.abs(a1*d1-b1*c1)<1e-7) continue;     // 退化成一條線就跳過
         // 緩衝的座標系＝(螢幕座標 − 外框原點) × 縮放
+        /* 立面：把抬升後的量體與地面連起來，只畫**朝鏡頭那一邊**。
+           取深度最小的那條邊即可 —— 其餘三面被自己擋住，畫了也看不到，
+           而且會在相鄰格之間互相穿插。
+           ⚠ 用平塗暗色而不是貼圖：一格的立面只有幾像素，貼圖進去只會變雜訊；
+             暗色反而乾淨地讀成「牆在陰影裡」。 */
+        const gA=G[jy][jx], gB=G[jy][jx+1], gC=G[jy+1][jx+1], gD=G[jy+1][jx];
+        const tA=A, tB=B, tC=D2, tD=Cc;
+        const lift=Math.abs(tA[1]-gA[1])+Math.abs(tC[1]-gC[1]);
+        /* ⚠ lift 設上限：近距離時單格的立面可以長到幾十像素，
+           一堆長條暗面疊在一起就是整片拖曳。超過就不畫那一面。 */
+        if(lift>1.2 && lift<26){
+          const e=[[tA,tB,gB,gA,A[3]+B[3]],
+                   [tB,tC,gC,gB,B[3]+D2[3]],
+                   [tC,tD,gD,gC,D2[3]+Cc[3]],
+                   [tD,tA,gA,gD,Cc[3]+A[3]]];
+          let best=e[0];
+          for(const q of e) if(q[4]<best[4]) best=q;
+          CFB.setTransform(kx,0,0,ky,-bx0*kx,-by0*ky);
+          CFB.beginPath();
+          CFB.moveTo(best[0][0],best[0][1]); CFB.lineTo(best[1][0],best[1][1]);
+          CFB.lineTo(best[2][0],best[2][1]); CFB.lineTo(best[3][0],best[3][1]);
+          CFB.closePath();
+          CFB.fillStyle='rgba(34,30,26,0.62)';
+          CFB.fill();
+        }
         CFB.setTransform(a1*kx, b1*ky, c1*kx, d1*ky,
                          (A[0]-a1*sx-c1*sy-bx0)*kx, (A[1]-b1*sx-d1*sy-by0)*ky);
         CFB.drawImage(planImg, sx,sy,sw+1.2,shh+1.2, sx,sy,sw+1.2,shh+1.2);
