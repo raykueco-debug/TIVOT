@@ -356,7 +356,7 @@ const SETTLEMENTS = [
      planRot 取 0、mx/my 就是聚落座標（與 build_city.py 的 JOBS 一致）。 */
   { n:'帝都',   x:1005, y:600, t:'city1', f:'church',
     plan:'city/capital_plan.webp', planH:'city/capital_h.webp',
-    planW:1250, planRot:0.0, planTall:26 },
+    planW:1250, planRot:0.0, planTall:55 },
   /* 聖王廳＝塔林立的聖座，量體要看得出來。planTall 100 遠高於其他城的 26 ——
      ⚠ 使用者指定 100，但實測 100 會整座城糊成一團灰 —— 這個引擎的縱向投影約是
        橫向的 2.9 倍，抬到 100 等於在螢幕上位移 290 個單位，網格被剪成長條。
@@ -364,22 +364,22 @@ const SETTLEMENTS = [
        要再高就得先讓量體改走多邊形（街廓拉伸），不能靠位移網格頂點。 */
   { n:'聖王廳', x:934,  y:606, t:'city2', f:'church',
     plan:'city/holysee_plan.webp', planH:'city/holysee_h.webp',
-    planW:1100, planRot:0.0, planTall:40, noWater:true },
+    planW:1100, planRot:0.0, planTall:100, noWater:true },
   { n:'大教堂城',     x:1224, y:581, t:'city2', f:'church' },
   { n:'曙光城',       x:1373, y:581, t:'city3', f:'church' },
   { n:'石櫃城',       x:530,  y:311, t:'city2', f:'empire' },
   { n:'破廛城',       x:490,  y:526, t:'city2', f:'empire' },
   { n:'飛廬堡',       x:1636, y:347, t:'city3', f:'empire' },
   { n:'艾爾崗',       x:1226, y:306, t:'city3', f:'free'   },
-  { n:'鏡原鎮',       x:1693, y:282, t:'town',  f:'free'   , plan:'city/mtown_plan.webp', planH:'city/mtown_h.webp', planW:620, planRot:0.0, planTall:18 },
-  { n:'白露鎮',       x:1408, y:119, t:'town',  f:'free'   , plan:'city/mtown_plan.webp', planH:'city/mtown_h.webp', planW:620, planRot:0.0, planTall:18 },
-  { n:'珂爾鎮',       x:1465, y:434, t:'town',  f:'free'   , plan:'city/mtown_plan.webp', planH:'city/mtown_h.webp', planW:620, planRot:0.0, planTall:18 },
-  { n:'河畔鎮',       x:682,  y:408, t:'town',  f:'free'   , plan:'city/mtown_plan.webp', planH:'city/mtown_h.webp', planW:620, planRot:0.0, planTall:18 },
-  { n:'晨星鎮',       x:468,  y:706, t:'town',  f:'free'   , plan:'city/mtown_plan.webp', planH:'city/mtown_h.webp', planW:620, planRot:0.0, planTall:18 },
-  { n:'潮石鎮',       x:1636, y:721, t:'town',  f:'free'   , plan:'city/mtown_plan.webp', planH:'city/mtown_h.webp', planW:620, planRot:0.0, planTall:18 },
-  { n:'松涌鎮',       x:1735, y:809, t:'town',  f:'free'   , plan:'city/mtown_plan.webp', planH:'city/mtown_h.webp', planW:620, planRot:0.0, planTall:18 },
-  { n:'檀語鎮',       x:945,  y:809, t:'town',  f:'native' , plan:'city/mtown_plan.webp', planH:'city/mtown_h.webp', planW:620, planRot:0.0, planTall:18 },
-  { n:'潭垢鎮',       x:1323, y:907, t:'town',  f:'native' , plan:'city/mtown_plan.webp', planH:'city/mtown_h.webp', planW:620, planRot:0.0, planTall:18 },
+  { n:'鏡原鎮',       x:1693, y:282, t:'town',  f:'free'   , plan:'city/mtown_plan.webp', planH:'city/mtown_h.webp', planW:620, planRot:0.0, planTall:30 },
+  { n:'白露鎮',       x:1408, y:119, t:'town',  f:'free'   , plan:'city/mtown_plan.webp', planH:'city/mtown_h.webp', planW:620, planRot:0.0, planTall:30 },
+  { n:'珂爾鎮',       x:1465, y:434, t:'town',  f:'free'   , plan:'city/mtown_plan.webp', planH:'city/mtown_h.webp', planW:620, planRot:0.0, planTall:30 },
+  { n:'河畔鎮',       x:682,  y:408, t:'town',  f:'free'   , plan:'city/mtown_plan.webp', planH:'city/mtown_h.webp', planW:620, planRot:0.0, planTall:30 },
+  { n:'晨星鎮',       x:468,  y:706, t:'town',  f:'free'   , plan:'city/mtown_plan.webp', planH:'city/mtown_h.webp', planW:620, planRot:0.0, planTall:30 },
+  { n:'潮石鎮',       x:1636, y:721, t:'town',  f:'free'   , plan:'city/mtown_plan.webp', planH:'city/mtown_h.webp', planW:620, planRot:0.0, planTall:30 },
+  { n:'松涌鎮',       x:1735, y:809, t:'town',  f:'free'   , plan:'city/mtown_plan.webp', planH:'city/mtown_h.webp', planW:620, planRot:0.0, planTall:30 },
+  { n:'檀語鎮',       x:945,  y:809, t:'town',  f:'native' , plan:'city/mtown_plan.webp', planH:'city/mtown_h.webp', planW:620, planRot:0.0, planTall:30 },
+  { n:'潭垢鎮',       x:1323, y:907, t:'town',  f:'native' , plan:'city/mtown_plan.webp', planH:'city/mtown_h.webp', planW:620, planRot:0.0, planTall:30 },
   { n:'黑林村',       x:387,  y:309, t:'village', f:'native' },
   { n:'石櫃村',       x:1309, y:398, t:'village', f:'free'   },
   { n:'綠野村',       x:1536, y:517, t:'village', f:'free'   },
@@ -391,13 +391,13 @@ const SETTLEMENTS = [
   { n:'風歌港',       x:215,  y:231, t:'city3', f:'free',   c:1, sea:-1.49 },
   /* ⚠ 同上：原坐標 (241,629) 整座在海上。移 65px 到 (306,629)，陸地 60%。
      這一座是後來才發現的——先前只檢查了 city 級，銑與村漏掉了。 */
-  { n:'暮光港',       x:306,  y:629, t:'town',  f:'free',   c:1, sea:-3.04 , plan:'city/mtown_plan.webp', planH:'city/mtown_h.webp', planW:620, planRot:0.0, planTall:18 },
+  { n:'暮光港',       x:306,  y:629, t:'town',  f:'free',   c:1, sea:-3.04 , plan:'city/mtown_plan.webp', planH:'city/mtown_h.webp', planW:620, planRot:0.0, planTall:30 },
   /* ⚠ 同上：原坐標 (1936,366) 整座在海上。移 29px，陸地 56%。 */
   { n:'蒼嵐港',       x:1907, y:363, t:'city3', f:'empire', c:1, sea:0.96 },
   /* ⚠ 往岸邊推了 17px：原位置離岸 23px，而棧橋只伸到 R*1.12≈16.8px，
      整排棧橋都搭在陸地上。港都的城區要**跨在海岸線上**。 */
   { n:'藏拉瑪德港',   x:1600, y:867, t:'city2', f:'empire', c:1, sea:1.24 },
-  { n:'南藍港',       x:1455, y:943, t:'town',  f:'free',   c:1, sea:-1.97 , plan:'city/mtown_plan.webp', planH:'city/mtown_h.webp', planW:620, planRot:0.0, planTall:18 },   // 同上，推 8px
+  { n:'南藍港',       x:1455, y:943, t:'town',  f:'free',   c:1, sea:-1.97 , plan:'city/mtown_plan.webp', planH:'city/mtown_h.webp', planW:620, planRot:0.0, planTall:30 },   // 同上，推 8px
   { n:'潮沙灣',       x:359,  y:866, t:'village', f:'native', c:1, sea:2.27 },   // 同上，推 5px
   /* 薇拉馮德港：地標表（PLACES）標的 (1310,965) 是**海上**（高度 0）。
      港都不能生在海裡，改放到最近的岸上再往內陸收半個城區半徑，
@@ -416,15 +416,17 @@ const SETTLEMENTS = [
      ⚠ 這三個值必須與 build_city.py 的 JOBS 一致。 */
   { n:'薇拉馮德港', x:1366, y:936, t:'city1', f:'empire', c:1, sea:1.90,
     plan:'city/velafonte_plan.webp', planH:'city/velafonte_h.webp',
-    planW:1050, planRot:1.40, planTall:26,
+    planW:1050, planRot:1.40, planTall:50,
     /* spurs＝插畫上放射狀街道的世界方位（rad）。由 build_city.py 沿一圈量
        「街道色」的角度峰值偵測而來，已去掉朝海的兩條（1.78 / 2.27，那個方向
        是外海，路修不出去）。城外的路要從這些方位延伸出去，街道才不會一出
        圖面就斷掉。 */
     spurs:[3.023,-2.684,-1.951,-1.235,0.143,0.650,1.086] },
   /* ⚠ planTall 別給大：這個引擎的縱向投影比橫向大約 2.9 倍
-     （scaleH·syk ≈ 558 對 W/2 = 195），高度一抬就過頭，量體會把格子
-     剪成長條、整座城拖曳。26 是「立得起來但不破圖」的上限。 */
+     （scaleH·syk ≈ 558 對 W/2 = 195）。
+     ⚠ 這裡原本夾在 26：舊版抬的是**共用的**網格頂點，抬高等於把紋理整片
+       往上剪切。ver -202 改成逐街廓拉伸的獨立稜柱之後那個上限沒了
+       —— 現在純粹是美術旋鈕，想多高就多高。 */
 ];
 /* 手繪平面圖：背景載，載不到就退回程序生成的街廓（同飛空艇/怪的雙軌）。
    ⚠ 不進 loadWorld：它只影響少數幾座城的外觀，擋開場不划算。 */
