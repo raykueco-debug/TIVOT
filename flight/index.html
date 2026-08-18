@@ -435,6 +435,11 @@ const cityPlansReady=[];
 })();
 
 let cityFB=null, CFB=null;                  // 手繪平面圖的低解析繪製緩衝
+/* 網格投影的投影點（抬升後 / 地面），每點 4 個 float：螢幕 x、螢幕 y、尺度、未夾深度。
+   ⚠ 預配置、只長不縮。舊版每幀 new 出 (N+1)²×2 個小陣列（N=40 → 3362 個）
+     再加 N² 個 cell 物件（1600 個）—— 桌機的 GC 吞得下，手機吞不下。 */
+let cityPts=null, cityGnd=null;
+let cityU=null, cityV=null;                 // 兩軸的格線（平面座標 −1..1，非均勻）
 let settleCache=null;                       // 生成結果快取（純函式，算一次就好）
 function buildSettlements(){
   if(settleCache) return settleCache;
@@ -2562,9 +2567,14 @@ function drawEnemy3D(scaleH,horizon,sinp,cosp,now){
      頂列與其深度。對「山擋住城／船」這件事已經夠用。
    ⚠ 逐欄一個 rect（BW=234 個）就好，不做 run 合併：路徑建構本來就便宜，
      合併的判斷式反而比省下來的多。 */
-function clipByTerrainDepth(Z,sxk,syk){
+/* ⚠ c0/c1＝只裁「目標實際畫得到」的那幾欄。整排 BW 欄建一次路徑本身不貴，
+     貴的是**裁切路徑越複雜、之後每一次繪製都要跟著付**（手機上非矩形 clip
+     會逼出遮罩路徑）。城在畫面上通常只橫跨十幾欄，卻讓整張圖的貼回吃 234 欄的遮罩。 */
+function clipByTerrainDepth(Z,sxk,syk,c0,c1){
+  const a=(c0===undefined)?0:clamp(c0|0,0,BW-1);
+  const b=(c1===undefined)?BW-1:clamp(c1|0,0,BW-1);
   ctx.beginPath();
-  for(let i=0;i<BW;i++){
+  for(let i=a;i<=b;i++){
     const lim=(ybufZ[i]<Z)?ybuf[i]:BH;
     if(lim<=0) continue;
     ctx.rect(i*sxk,0,sxk+0.6,lim*syk);
@@ -2626,7 +2636,11 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
        （FOG_START/FOG_MAX 同源），城才會跟著地面一起沉進大氣裡。 */
     const fogS=ZFAR*FOG_START;
     const fogK=clamp((o.z-fogS)/(ZFAR-fogS),0,1)*FOG_MAX;
-    clipByTerrainDepth(o.z,sxk,syk);          // 前面的山稜要擋住城
+    /* ⚠ 手繪平面圖的城延後裁切：它畫在自己的緩衝上（不吃 ctx 的 clip），
+       真正需要裁的只有最後那一次貼回，而那時才知道實際外框是哪幾欄。
+       程序生成的城則是逐筆畫在 ctx 上，必須先裁。 */
+    const planCity=!!(o.s.plan&&cityPlanArt[o.s.plan]);
+    if(!planCity) clipByTerrainDepth(o.z,sxk,syk);   // 前面的山稜要擋住城
     ctx.globalAlpha=clamp((ZFAR*0.9-o.z)/(ZFAR*0.30),0,1)*(1-fogK);
     /* 逐點投影：城的每個點走跟地形完全同一條投影式 → 天生黏在地表上。
        lx/ly 是聚落局部座標（地圖像素），先換成世界座標，再照 render() 那條
@@ -2641,6 +2655,18 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
               (((cam.alt-gS-(hOff||0))/zz + zz*curvAt(sv))*scaleH+horizon)*syk,
               (W/(2*zz))*MAP_SCALE,    // 第三項：該點自己的尺度（螢幕px／地圖px）
               zRaw];                   // 第四項：**未夾的**深度，格子要靠它判斷該不該畫
+    };
+    /* project 的無配置版本：同一條式子，結果寫進 typed array 的 off..off+3。
+       網格投影每幀要算幾千個點，光是回傳陣列的配置就吃掉一截畫格時間。 */
+    const projectInto=(A,off,lx,ly,hOff)=>{
+      const dx=(o.s.mx+lx)*MAP_SCALE-cam.x, dy=(o.s.my+ly)*MAP_SCALE-cam.y;
+      const zRaw=dx*(-sinp)+dy*(-cosp);
+      const zz=zRaw<24?24:zRaw;
+      const sv=(dx*cosp+dy*(-sinp))/zz;
+      A[off]  =((sv+1)/2*BW)*sxk;
+      A[off+1]=(((cam.alt-gS-(hOff||0))/zz + zz*curvAt(sv))*scaleH+horizon)*syk;
+      A[off+2]=(W/(2*zz))*MAP_SCALE;
+      A[off+3]=zRaw;
     };
     /* 舊的仿射近似留著給尺寸用（建築量體大小仍以城中心的深度為準）。 */
     /* 地面壓縮率（tilt）：讓城真的躺在地上。
@@ -2662,26 +2688,65 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
          畫出來是滿畫面的斜向拖曳。二維切分才與朝向無關。
        ⚠ 每格取三個角算矩陣（仿射只能表達平行四邊形），第四角的誤差
          在一格之內可以忽略；格子越多誤差越小。
-       ⚠ 格數隨螢幕尺寸調：遠處的城只有幾十像素，切 24×24 是純浪費。
-       ⚠ 由遠而近畫：近的要蓋住遠的。project 回傳的第三項是**尺度**
-         （不是深度），尺度越大越近 → 依尺度升冪排就是由遠而近。
+       ⚠ 格距隨深度調（見下方 walk）：遠處的城只有幾十像素，切 40×40 是純浪費。
+       ⚠ 由遠而近畫：近的要蓋住遠的。深度對 (jx,jy) 是仿射的，所以這件事
+         只是兩個掃描方向，不必排序（見下方的 jx0/jy0）。
        ⚠ 相鄰格的來源矩形多取 0.6px、目的地也多畫一點：不重疊會露出格線。 */
     const planImg=o.s.plan?cityPlanArt[o.s.plan]:null;
     if(planImg){
       const hw=o.s.planW*0.5, hh=hw*planImg.height/planImg.width;
       const ca=Math.cos(o.s.planRot), sa=Math.sin(o.s.planRot);
-      const scr=o.s.planW*sc;                       // 城在螢幕上大約多寬
-      /* 格數：近處一格若還有幾十像素，仿射逼近的誤差就會在格邊裂開
+      /* ── 格距依深度分配（不是均勻切）─────────────────────────
+         一格若在螢幕上還有幾十像素，仿射逼近的誤差就會在格邊裂開
          （相鄰格各用自己的三個角算矩陣，第四角對不起來）。
-         scr/9 讓近處一格約 9px，配合下面 1.2px 的重疊就看不出接縫。 */
-      /* 依緩衝解析度算，不是螢幕。上限 24 在近距離不夠——一格會有 26 螢幕像素，
-         而近處的格子橫跨的深度範圍最大，仿射逼近就在那裡崩成放射狀拖曳。
-         提到 40；成本是 N² 次 drawImage，但畫在 0.6 倍緩衝上，實測仍可接受。 */
-      const N=clamp(Math.round(scr*(BW/W)/9),6,40);
-      const toL=(u,v)=>{                            // 平面座標(−1..1) → 聚落局部地圖像素
-        const x=u*hw, y=v*hh;
-        return [(x*ca-y*sa)/MAP_SCALE, (x*sa+y*ca)/MAP_SCALE];
+         仿射逼近的誤差看的是「一格橫跨多少深度比例」，所以格子該在**螢幕上**
+         等大，而不是在圖上等大。均勻切的話格距要遷就最近的那一排，遠處那半張
+         圖就陪著一起切細 —— 實測近距離 1600 格裡真正畫出來的只有 500 格上下，
+         其餘不是在畫面外就是在身後，而遠處那些畫出來的格子每格只有一兩像素。
+
+         深度對平面座標 (u,v) 是**仿射**的：
+           z(u,v) = zc + A·u + B·v，A＝hw·(−ca·sinp − sa·cosp)、B＝hh·(sa·sinp − ca·cosp)
+         而一格投影後的緩衝像素寬 ≈ Δu·hw·(W/2z)·pk。要它等於 T 個像素就是
+           Δu = 2T·z /(hw·W·pk)  —— 步長正比於該處的深度，z 大的地方自動跳大格。
+         ⚠ 步數要有上限（近處 z→0 時步長跟著→0），作法見下方 walk。 */
+      /* 每格目標大小（低解析緩衝的像素）。舊版是「城心那個深度 9 像素」，
+         近處的格子實際上遠比 9 大；現在是**每一格都**約這麼大，所以同樣的
+         數字會切出更多格。11 是與舊版畫面比對後取的：近景比舊版細、
+         中景略粗一點看不出來，格數少一半。 */
+      const CELL_PX=11;
+      const N_MAX=32;                               // 單軸格數上限（近距離會頂到）
+      const pkq=clamp(BW/W,0.15,1);
+      const zc=(o.s.mx*MAP_SCALE-cam.x)*(-sinp)+(o.s.my*MAP_SCALE-cam.y)*(-cosp);
+      const gradU=hw*(-ca*sinp - sa*cosp), gradV=hh*(sa*sinp - ca*cosp);
+      /* 沿一軸走出格線：從 −1 走到 +1，步長 ∝ 當地深度。回傳格數。
+
+         ⚠ 步數必須有上限，否則貼著城飛時近端 z→0，步長跟著→0，格數無底洞。
+           但**上限不能靠「切不完就退回均勻」**：均勻切等於把省下來的格子還回去。
+           改成先解出「剛好走 N_MAX 步」的步長係數，取它與理想值的較大者 ——
+           格數封頂，而且封頂時仍是依深度分配（同樣 40 格，遠處少切、近處多切），
+           嚴格優於舊版的均勻 40 格。
+           步數 M＝∫du/(K·z(u))＝ln(z_hi/z_lo)/(K·|grad|)（z 對 u 是線性的），
+           反解 K_fit＝ln(z_hi/z_lo)/(N_MAX·|grad|)；grad≈0 時退化成 2/(N_MAX·zc)。 */
+      const walk=(out,grad,half)=>{
+        const g=Math.abs(grad);
+        const zA=Math.max(60,zc-grad), zB=Math.max(60,zc+grad);
+        const zLo=Math.min(zA,zB), zHi=Math.max(zA,zB);
+        const Kfit=(g>1e-3&&zHi>zLo*1.0001) ? Math.log(zHi/zLo)/(N_MAX*g)
+                                            : 2/(N_MAX*Math.max(60,zc));
+        let K=2*CELL_PX/Math.max(1e-6,half*W*pkq);
+        if(K<Kfit*1.15) K=Kfit*1.15;              // 1.15＝夾制段（z 被壓在 60）的餘裕
+        let u=-1, k=0; out[0]=-1;
+        const cap=N_MAX+8;                         // 硬上限：夾制段讓解析解略微低估
+        while(u<1 && k<cap){
+          const z=zc+grad*u;
+          u+=K*(z>60?z:60); k++;
+          out[k]=u<1?u:1;
+        }
+        if(out[k]<1){ k++; out[k]=1; }
+        return k;
       };
+      if(!cityU){ cityU=new Float64Array(256); cityV=new Float64Array(256); }
+      const NU=walk(cityU,gradU,hw), NV=walk(cityV,gradV,hh);
       /* 兩套投影點：地面（G）與抬升後（P）。
          抬升量取自高度圖，讓大教堂與山坡上的莊園立起來、一般屋舍稍微墊高。
          ⚠ 立面刻意很小：這個尺寸下一格才幾像素，立面畫大了必破圖。
@@ -2694,15 +2759,21 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
         const py=clamp(Math.round((v*0.5+0.5)*(HM.h-1)),0,HM.h-1);
         return HM.d[py*HM.w+px]/255*tall;
       };
-      const P=[], G=[];                             // (N+1)×(N+1) 個投影點
-      for(let jy=0;jy<=N;jy++){
-        const v=-1+2*jy/N; const row=[], rowG=[];
-        for(let jx=0;jx<=N;jx++){
-          const u=-1+2*jx/N; const L=toL(u,v);
-          rowG.push(project(L[0],L[1],0));
-          row.push(project(L[0],L[1],hAt(u,v)));
+      /* (N+1)×(N+1) 個投影點，存進預配置的 typed array（PT＝抬升後、GD＝地面）。
+         ⚠ 舊版是 P/G 兩層陣列、每點一個新的四元素陣列 —— N=40 時每幀 3362 個
+           物件。手機的畫格時間有一大截是花在配置與 GC 上，不是在畫。 */
+      const NP=(NU+1)*(NV+1);
+      if(!cityPts || cityPts.length<NP*4){ cityPts=new Float64Array(NP*4); cityGnd=new Float64Array(NP*4); }
+      const PT=cityPts, GD=cityGnd;
+      for(let jy=0,q=0;jy<=NV;jy++){
+        const v=cityV[jy];
+        for(let jx=0;jx<=NU;jx++,q+=4){
+          const u=cityU[jx];
+          const x=u*hw, y=v*hh;
+          const lx=(x*ca-y*sa)/MAP_SCALE, ly=(x*sa+y*ca)/MAP_SCALE;
+          projectInto(GD,q,lx,ly,0);
+          projectInto(PT,q,lx,ly,hAt(u,v));
         }
-        P.push(row); G.push(rowG);
       }
       /* 先畫進低解析緩衝再放大貼回。兩個理由：
          · 填充量降到 36%（0.6²）——網格投影是幾百次 drawImage，實測直接畫
@@ -2710,9 +2781,10 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
          · 城的顆粒才跟世界一致。地形是 234×334 上採樣的，城若用全解析度
            貼，會比地形銳利得多，本身就是違和點。 */
       let bx0=1e9,by0=1e9,bx1=-1e9,by1=-1e9;
-      for(const row of P) for(const q of row){   // 抬升後的點最高，框它就夠
-        if(q[0]<bx0)bx0=q[0]; if(q[0]>bx1)bx1=q[0];
-        if(q[1]<by0)by0=q[1]; if(q[1]>by1)by1=q[1];
+      for(let q=0;q<NP*4;q+=4){                  // 抬升後的點最高，框它就夠
+        const px=PT[q], py=PT[q+1];
+        if(px<bx0)bx0=px; if(px>bx1)bx1=px;
+        if(py<by0)by0=py; if(py>by1)by1=py;
       }
       /* ⚠ 外框夾在**視窗內**，不是視窗外 600px。飛近時量體的投影會遠遠
          溢出畫面，原本那個 ±600 讓緩衝長到 954×524＝約 50 萬像素 ——
@@ -2724,74 +2796,91 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
       if(fw<2||fh<2||bx1<0||by1<0||bx0>W||by0>VIEWH){ ctx.restore(); continue; }
       const pk=clamp(BW/W,0.15,1);
       const bwp=Math.max(2,Math.round(fw*pk)), bhp=Math.max(2,Math.round(fh*pk));
-      /* ⚠ 緩衝**只長不縮、不逐幀重配**。原本是尺寸一變就 createElement 一張新的，
-         而飛近城的過程中外框每幀都在變 —— 實測 60 幀配置了 55 次，每次半 MPx。
-         桌機扛得住，手機是兩個症狀的共同來源：配置與 GC 把畫格時間吃光（fps 爆跌），
-         iOS 的 canvas 記憶體預算被撐爆後會把既有 canvas 丟掉（城變空白／破圖）。
+      /* ⚠ 緩衝**一次配到上限，之後永不重配**。外框已經夾在視窗內，
+         所以 (W+16)×(VIEWH+16)×pk 就是它可能長到的最大值 —— 直接配那麼大。
+         先前的「只長不縮」仍會在飛近的過程中重配十幾次，每次都是一張新的
+         GPU 貼圖：配置與 GC 吃畫格時間（fps 爆跌），iOS 的 canvas 記憶體預算
+         被撐爆後還會把既有 canvas 丟掉（城變空白／破圖）。
          只讀 (0,0,bwp,bhp) 這塊子區域，所以緩衝比需要的大沒有關係。 */
-      if(!cityFB || cityFB.width<bwp || cityFB.height<bhp){
-        const nw=Math.max(bwp,cityFB?cityFB.width:0), nh=Math.max(bhp,cityFB?cityFB.height:0);
-        cityFB=document.createElement('canvas'); cityFB.width=nw; cityFB.height=nh;
+      const capW=Math.ceil((W+16)*pk), capH=Math.ceil((VIEWH+16)*pk);
+      if(!cityFB || cityFB.width!==capW || cityFB.height!==capH){
+        cityFB=document.createElement('canvas'); cityFB.width=capW; cityFB.height=capH;
         CFB=cityFB.getContext('2d');
       }
       CFB.setTransform(1,0,0,1,0,0); CFB.clearRect(0,0,bwp,bhp);
       const kx=bwp/fw, ky=bhp/fh;
 
-      const cells=[];
-      for(let jy=0;jy<N;jy++)for(let jx=0;jx<N;jx++)
-        cells.push({jx,jy,k:P[jy][jx][2]+P[jy+1][jx+1][2]});
-      cells.sort((a,b)=>a.k-b.k);                   // 尺度小＝遠 → 先畫
-      const sw=planImg.width/N, shh=planImg.height/N;
-      for(const cel of cells){
-        const {jx,jy}=cel;
-        /* ⚠ 這裡原本逐格判斷「格心落在海上就不畫」。格子大小隨距離變，
-           鏡頭一動哪些格被剔除就整塊整塊地跳 —— 海岸線因此鋸齒抖動。
-           已改成在 build_city.py 逐像素烘進 alpha：靜態、精確、零成本。 */
-        const A=P[jy][jx], B=P[jy][jx+1], Cc=P[jy+1][jx], D2=P[jy+1][jx+1];
-        /* ⚠ 任一角太近或在身後就整格跳過。project 對 z<24 做了夾制，
-           夾過的角會被推到一個完全錯的螢幕位置，那一格就會扯成一片
-           —— 這就是「城有時會破」。夾制是為了避免除零，不能拿來畫。 */
-        if(A[3]<60||B[3]<60||Cc[3]<60||D2[3]<60) continue;
-        /* 整格落在外框之外就跳過。緩衝夾到視窗之後，這種格子的 drawImage
-           畫出來的是零個可見像素 —— 飛到城上空時它們是大宗（近距離量到
-           1147 次 drawImage 裡有一半以上在畫面外）。八次 min/max 換掉一次
-           帶轉換的 drawImage，很划算。 */
-        if(Math.min(A[0],B[0],Cc[0],D2[0])>bx1||Math.max(A[0],B[0],Cc[0],D2[0])<bx0||
-           Math.min(A[1],B[1],Cc[1],D2[1])>by1||Math.max(A[1],B[1],Cc[1],D2[1])<by0) continue;
-        const sx=jx*sw, sy=jy*shh;
-        const a1=(B[0]-A[0])/sw, b1=(B[1]-A[1])/sw;
-        const c1=(Cc[0]-A[0])/shh, d1=(Cc[1]-A[1])/shh;
-        if(!isFinite(a1)||!isFinite(d1)) continue;
-        if(Math.abs(a1*d1-b1*c1)<1e-7) continue;     // 退化成一條線就跳過
-        // 緩衝的座標系＝(螢幕座標 − 外框原點) × 縮放
-        /* 立面：把抬升後的量體與地面連起來，只畫**朝鏡頭那一邊**。
-           取深度最小的那條邊即可 —— 其餘三面被自己擋住，畫了也看不到，
-           而且會在相鄰格之間互相穿插。
-           ⚠ 用平塗暗色而不是貼圖：一格的立面只有幾像素，貼圖進去只會變雜訊；
-             暗色反而乾淨地讀成「牆在陰影裡」。 */
-        const gA=G[jy][jx], gB=G[jy][jx+1], gC=G[jy+1][jx+1], gD=G[jy+1][jx];
-        const tA=A, tB=B, tC=D2, tD=Cc;
-        const lift=Math.abs(tA[1]-gA[1])+Math.abs(tC[1]-gC[1]);
-        /* ⚠ lift 設上限：近距離時單格的立面可以長到幾十像素，
-           一堆長條暗面疊在一起就是整片拖曳。超過就不畫那一面。 */
-        if(lift>1.2 && lift<26){
-          const e=[[tA,tB,gB,gA,A[3]+B[3]],
-                   [tB,tC,gC,gB,B[3]+D2[3]],
-                   [tC,tD,gD,gC,D2[3]+Cc[3]],
-                   [tD,tA,gA,gD,Cc[3]+A[3]]];
-          let best=e[0];
-          for(const q of e) if(q[4]<best[4]) best=q;
-          CFB.setTransform(kx,0,0,ky,-bx0*kx,-by0*ky);
-          CFB.beginPath();
-          CFB.moveTo(best[0][0],best[0][1]); CFB.lineTo(best[1][0],best[1][1]);
-          CFB.lineTo(best[2][0],best[2][1]); CFB.lineTo(best[3][0],best[3][1]);
-          CFB.closePath();
-          CFB.fillStyle='rgba(34,30,26,0.62)';
-          CFB.fill();
+      /* 來源矩形改逐格算（格線非均勻）：平面座標 −1..1 → 圖上像素。 */
+      const sux=planImg.width*0.5, svy=planImg.height*0.5;
+      /* ── 由遠而近的順序：兩個掃描方向，不再排序 ────────────────
+         格點在世界裡是規則網格，而深度 z＝dx·(−sinp)+dy·(−cosp) 是世界座標的
+         線性組合 → **z 對 (jx,jy) 是仿射的**。所以「先畫遠的」不必比較大小，
+         只要沿 jx／jy 各自從 z 大的那一頭起步即可（voxel 地形光柵化的標準作法）。
+         ⚠ 這與嚴格的深度排序在「同列相隔很遠的兩格」上會有出入，但那種格子
+           本來就不重疊 —— 會互相遮的只有相鄰格，逐列由遠而近就夠。
+         換掉的是每幀 N² 個 cell 物件（N=40 → 1600 個）＋一次 sort。 */
+      const zdx=PT[1*4+3]-PT[3], zdy=PT[(NU+1)*4+3]-PT[3];
+      const jx0=zdx>0?NU-1:0, jxs=zdx>0?-1:1;
+      const jy0=zdy>0?NV-1:0, jys=zdy>0?-1:1;
+      /* 立面的顏色整批只設一次：fillStyle 每次都要重新解析字串，
+         而這個迴圈近距離會跑上千次。 */
+      CFB.fillStyle='rgba(34,30,26,0.62)';
+      const row=NU+1;
+      for(let ky2=0;ky2<NV;ky2++){
+        const jy=jy0+jys*ky2;
+        const sy=(cityV[jy]+1)*svy, shh=(cityV[jy+1]-cityV[jy])*svy;
+        for(let kx2=0;kx2<NU;kx2++){
+          const jx=jx0+jxs*kx2;
+          /* ⚠ 這裡原本逐格判斷「格心落在海上就不畫」。格子大小隨距離變，
+             鏡頭一動哪些格被剔除就整塊整塊地跳 —— 海岸線因此鋸齒抖動。
+             已改成在 build_city.py 逐像素烘進 alpha：靜態、精確、零成本。 */
+          const iA=(jy*row+jx)*4, iB=iA+4, iC=((jy+1)*row+jx)*4, iD=iC+4;
+          /* ⚠ 任一角太近或在身後就整格跳過。project 對 z<24 做了夾制，
+             夾過的角會被推到一個完全錯的螢幕位置，那一格就會扯成一片
+             —— 這就是「城有時會破」。夾制是為了避免除零，不能拿來畫。 */
+          if(PT[iA+3]<60||PT[iB+3]<60||PT[iC+3]<60||PT[iD+3]<60) continue;
+          const qax=PT[iA], qay=PT[iA+1], qbx=PT[iB], qby=PT[iB+1],
+                qcx=PT[iC], qcy=PT[iC+1], qdx=PT[iD], qdy=PT[iD+1];
+          /* 整格落在外框之外就跳過。緩衝夾到視窗之後，這種格子的 drawImage
+             畫出來的是零個可見像素 —— 飛到城上空時它們是大宗（近距離量到
+             1147 次 drawImage 裡有一半以上在畫面外）。八次 min/max 換掉一次
+             帶轉換的 drawImage，很划算。 */
+          if(Math.min(qax,qbx,qcx,qdx)>bx1||Math.max(qax,qbx,qcx,qdx)<bx0||
+             Math.min(qay,qby,qcy,qdy)>by1||Math.max(qay,qby,qcy,qdy)<by0) continue;
+          const sx=(cityU[jx]+1)*sux, sw=(cityU[jx+1]-cityU[jx])*sux;
+          const a1=(qbx-qax)/sw, b1=(qby-qay)/sw;
+          const c1=(qcx-qax)/shh, d1=(qcy-qay)/shh;
+          if(!isFinite(a1)||!isFinite(d1)) continue;
+          if(Math.abs(a1*d1-b1*c1)<1e-7) continue;     // 退化成一條線就跳過
+          /* 立面：把抬升後的量體與地面連起來，只畫**朝鏡頭那一邊**。
+             取深度最小的那條邊即可 —— 其餘三面被自己擋住，畫了也看不到，
+             而且會在相鄰格之間互相穿插。
+             ⚠ 用平塗暗色而不是貼圖：一格的立面只有幾像素，貼圖進去只會變雜訊；
+               暗色反而乾淨地讀成「牆在陰影裡」。
+             ⚠ 四條邊照 A→B→D→C 的環序，選深度和最小的那條；
+               舊版是每格 new 出一個 4×5 的巢狀陣列來比大小。 */
+          const lift=Math.abs(qay-GD[iA+1])+Math.abs(qdy-GD[iD+1]);
+          /* ⚠ lift 設上限：近距離時單格的立面可以長到幾十像素，
+             一堆長條暗面疊在一起就是整片拖曳。超過就不畫那一面。 */
+          if(lift>1.2 && lift<26){
+            const eAB=PT[iA+3]+PT[iB+3], eBD=PT[iB+3]+PT[iD+3],
+                  eDC=PT[iD+3]+PT[iC+3], eCA=PT[iC+3]+PT[iA+3];
+            let t1=iA, t2=iB, m=eAB;
+            if(eBD<m){ m=eBD; t1=iB; t2=iD; }
+            if(eDC<m){ m=eDC; t1=iD; t2=iC; }
+            if(eCA<m){ m=eCA; t1=iC; t2=iA; }
+            CFB.setTransform(kx,0,0,ky,-bx0*kx,-by0*ky);
+            CFB.beginPath();
+            CFB.moveTo(PT[t1],PT[t1+1]); CFB.lineTo(PT[t2],PT[t2+1]);
+            CFB.lineTo(GD[t2],GD[t2+1]); CFB.lineTo(GD[t1],GD[t1+1]);
+            CFB.closePath();
+            CFB.fill();
+          }
+          // 緩衝的座標系＝(螢幕座標 − 外框原點) × 縮放
+          CFB.setTransform(a1*kx, b1*ky, c1*kx, d1*ky,
+                           (qax-a1*sx-c1*sy-bx0)*kx, (qay-b1*sx-d1*sy-by0)*ky);
+          CFB.drawImage(planImg, sx,sy,sw+1.2,shh+1.2, sx,sy,sw+1.2,shh+1.2);
         }
-        CFB.setTransform(a1*kx, b1*ky, c1*kx, d1*ky,
-                         (A[0]-a1*sx-c1*sy-bx0)*kx, (A[1]-b1*sx-d1*sy-by0)*ky);
-        CFB.drawImage(planImg, sx,sy,sw+1.2,shh+1.2, sx,sy,sw+1.2,shh+1.2);
       }
       /* 依光線上色：同 drawShip 那套。素材本身已經把「固定的色調對齊」烘進去
          （build_city.py 的 SAT/VAL），這裡只加隨時間變的部分。
@@ -2812,6 +2901,9 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
           CFB.globalCompositeOperation='source-over';
         }
       }
+      /* 山稜遮擋：只有這一次貼回需要裁，而且只裁城真正佔到的那幾欄
+         （外框已經算出來了）。整排 234 欄的裁切路徑要讓這張圖每個像素都付費。 */
+      clipByTerrainDepth(o.z,sxk,syk,Math.floor(bx0/sxk)-1,Math.ceil(bx1/sxk)+1);
       ctx.imageSmoothingEnabled=false;
       ctx.drawImage(cityFB,0,0,bwp,bhp,Math.round(bx0),Math.round(by0),fw,fh);
       ctx.restore();
