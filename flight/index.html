@@ -1412,7 +1412,13 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
     if(R*2*sc<3) continue;
     ctx.save();
     ctx.globalAlpha=clamp((ZFAR*0.9-o.z)/(ZFAR*0.30),0,1);         // 遠處隨霧淡出
-    Settlement.draw(ctx, o.s, { ox:o.x, oy:o.y, scale:sc }, Settlement.DEBUG);
+    /* ⚠ Settlement.draw 的 scale 是「每個**地圖像素**幾個螢幕像素」——
+       s.radius 存的是地圖像素（同地圖畫面那邊傳 sc*MAP_SS）。
+       sc 是每個**世界單位**幾個螢幕像素，兩者差一個 MAP_SCALE。
+       直接傳 sc 的話整座城會縮小 20 倍 → screenDia 永遠 <20 → LOD 0，
+       飛到城上空也只看得到一顆符號點。上面那行尺寸檢查用的 R 有乘
+       MAP_SCALE，所以檢查會過、畫出來卻是點——兩邊單位不一致的典型病。 */
+    Settlement.draw(ctx, o.s, { ox:o.x, oy:o.y, scale:sc*MAP_SCALE }, Settlement.DEBUG);
     ctx.restore();
   }
 }
