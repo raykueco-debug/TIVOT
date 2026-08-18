@@ -324,6 +324,9 @@ let HGT=null, COL=null, SLX=null, SLY=null, RIV=null;
    規格那組比例是給**可縮放的地圖**用的（都市 I 佔畫面一半＝放大到城市視角），
    放到大陸尺度上必須另外定。這裡以「帝都直徑約 44 地圖像素」為準。 */
 const SETTLE_R = { city1:22, city2:15, city3:10, town:6, village:3.5 };
+/* ⚠ sea：向海方位（弧度）。臨海聚落**必須給**——棧橋固定生在區域 +x 側，
+   不給就會指向內陸（實測：漏給的三座棧橋入海數都是 0）。
+   值是量出來的：取城區周圍海格的平均方向。改地形就要重量。 */
 const SETTLEMENTS = [
   /* 座標採 PLACES / export_mapref 那一組（即 terrain_generator 的來源）。
      曾經這裡寫 (1159,522)——那是從 map_01 插畫的城鎮圖標讀出來的，
@@ -350,12 +353,20 @@ const SETTLEMENTS = [
   { n:'綠野村',       x:1536, y:517, t:'village', f:'free'   },
   { n:'聖泉修道院',   x:1124, y:721, t:'village', f:'church' },
   // 港口：coastal → 倉庫權重 ×3、有棧橋、可能出燈塔
-  { n:'風歌港',       x:212,  y:218, t:'city3', f:'free',   c:1 },
-  { n:'暮光港',       x:241,  y:629, t:'town',  f:'free',   c:1 },
-  { n:'蒼嵐港',       x:1936, y:366, t:'city3', f:'empire', c:1 },
-  { n:'藏拉瑪德港',   x:1594, y:851, t:'city2', f:'empire', c:1 },
-  { n:'南藍港',       x:1458, y:950, t:'town',  f:'free',   c:1 },
-  { n:'潮沙灣',       x:362,  y:862, t:'village', f:'native', c:1 },
+  /* ⚠ 原坐標 (212,218)：城區半徑內**零陸地格**，整座泡在海裡。
+     同薇拉馮德港的處理：移到最近且「城區內陸地過半」的岸點（移 13px，陸地 58%），
+     seaAng 取岸點周圍海格的平均方向。改地形就要重量。 */
+  { n:'風歌港',       x:215,  y:231, t:'city3', f:'free',   c:1, sea:-1.49 },
+  /* ⚠ 同上：原坐標 (241,629) 整座在海上。移 65px 到 (306,629)，陸地 60%。
+     這一座是後來才發現的——先前只檢查了 city 級，銑與村漏掉了。 */
+  { n:'暮光港',       x:306,  y:629, t:'town',  f:'free',   c:1, sea:-3.04 },
+  /* ⚠ 同上：原坐標 (1936,366) 整座在海上。移 29px，陸地 56%。 */
+  { n:'蒼嵐港',       x:1907, y:363, t:'city3', f:'empire', c:1, sea:0.96 },
+  /* ⚠ 往岸邊推了 17px：原位置離岸 23px，而棧橋只伸到 R*1.12≈16.8px，
+     整排棧橋都搭在陸地上。港都的城區要**跨在海岸線上**。 */
+  { n:'藏拉瑪德港',   x:1600, y:867, t:'city2', f:'empire', c:1, sea:1.24 },
+  { n:'南藍港',       x:1455, y:943, t:'town',  f:'free',   c:1, sea:-1.97 },   // 同上，推 8px
+  { n:'潮沙灣',       x:359,  y:866, t:'village', f:'native', c:1, sea:2.27 },   // 同上，推 5px
   /* 薇拉馮德港：地標表（PLACES）標的 (1310,965) 是**海上**（高度 0）。
      港都不能生在海裡，改放到最近的岸上再往內陸收半個城區半徑，
      讓城的臨海那一側剛好搭到水邊。seaAng 是實測的向海方位
@@ -1835,6 +1846,7 @@ function drawEnemy3D(scaleH,horizon,sinp,cosp,now){
     EC.setTransform(bwp/fw,0,0,bhp/fh,-x0*bwp/fw,-y0*bhp/fh);
     EC.drawImage(img,P[0]-w/2,P[1]-h/2,w,h);
     ctx.save(); ctx.imageSmoothingEnabled=false;
+    clipByTerrainDepth(P[2],W/BW,VIEWH/BH);   // 山也該擋住船
     ctx.drawImage(enemyFB,0,0,bwp,bhp,x0,y0,fw,fh);
     ctx.restore();
     if(enemy.state==='engage') drawEngagePrompt();
@@ -2184,6 +2196,7 @@ function drawEnemy3D(scaleH,horizon,sinp,cosp,now){
   // 貼回主畫布：關平滑 → 自然像素化
   ctx.save();
   ctx.imageSmoothingEnabled=false;
+  clipByTerrainDepth(zc,W/BW,VIEWH/BH);       // 山也該擋住怪
   ctx.drawImage(enemyFB,0,0,bwp,bhp,Math.round(x0),Math.round(y0),fw,fh);
   ctx.restore();
 
@@ -2202,6 +2215,24 @@ function drawEnemy3D(scaleH,horizon,sinp,cosp,now){
      真正被擋的條件是：那一列的來源比聚落**更近**（ybufZ < z），而且它
      壓在聚落的地面之上（ybuf < by）。兩者同時成立才是前面有山。
    ⚠ LOD 交給 settlement.js 依螢幕直徑自己決定，遠處自動退成符號。 */
+/* 逐欄深度遮擋：把繪圖區裁成「這個深度看得到的部分」。
+   地形是逐欄光柵化的，ybuf[i] 是該欄最上面那一列、ybufZ[i] 是畫那一列時的深度。
+   欄內越往下地形越近，所以只要**該欄的稜線比目標更近**（ybufZ<Z），
+   目標在這一欄就只能出現在稜線之上；否則整欄都可見。
+   ⚠ 這是引擎現有資訊能做到的最好近似：沒有逐像素深度緩衝，只有每欄的
+     頂列與其深度。對「山擋住城／船」這件事已經夠用。
+   ⚠ 逐欄一個 rect（BW=234 個）就好，不做 run 合併：路徑建構本來就便宜，
+     合併的判斷式反而比省下來的多。 */
+function clipByTerrainDepth(Z,sxk,syk){
+  ctx.beginPath();
+  for(let i=0;i<BW;i++){
+    const lim=(ybufZ[i]<Z)?ybuf[i]:BH;
+    if(lim<=0) continue;
+    ctx.rect(i*sxk,0,sxk+0.6,lim*syk);
+  }
+  ctx.clip();
+}
+
 function drawSettlements3D(scaleH,horizon,sinp,cosp){
   if(!window.Settlement || !MAPW) return;
   const sxk=W/BW, syk=VIEWH/BH;
@@ -2237,10 +2268,9 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
        會退回 CLOUD_H＝把城擺在雲海表面上，那就是「城飄在雲上」的來源。 */
     const gh=s.gh;
     const by=((cam.alt-gh)/zc + zc*curvAt(sv))*scaleH+horizon;    // 緩衝列
-    /* 單欄遮擋測試只在城還很小的時候有意義（整座城落在一兩欄內）。
-       城一大，中心那一欄擋不擋得住跟整座城看不看得見無關，硬套會整座誤剔。
-       大城的正確做法是逐欄深度合成，另案處理。 */
-    if(svR<0.35 && ybufZ[col]<z-40 && ybuf[col]<by-2) continue;
+    /* ⚠ 這裡不再做「整座剔除」：先前是拿城心那一欄判斷，城一大就會整座誤剔
+       （中心那一欄擋不擋得住，跟整座城看不看得見無關）。改成畫的時候
+       逐欄裁切（clipByTerrainDepth），被擋的部分自然消失、沒被擋的照畫。 */
     list.push({s, z, x:((sv+1)/2*BW)*sxk, y:by*syk});
   }
   list.sort((a,b)=>b.z-a.z);                                       // 遠的先畫
@@ -2255,6 +2285,7 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
        （FOG_START/FOG_MAX 同源），城才會跟著地面一起沉進大氣裡。 */
     const fogS=ZFAR*FOG_START;
     const fogK=clamp((o.z-fogS)/(ZFAR-fogS),0,1)*FOG_MAX;
+    clipByTerrainDepth(o.z,sxk,syk);          // 前面的山稜要擋住城
     ctx.globalAlpha=clamp((ZFAR*0.9-o.z)/(ZFAR*0.30),0,1)*(1-fogK);
     /* 逐點投影：城的每個點走跟地形完全同一條投影式 → 天生黏在地表上。
        lx/ly 是聚落局部座標（地圖像素），先換成世界座標，再照 render() 那條
