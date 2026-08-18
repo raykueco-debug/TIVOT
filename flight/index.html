@@ -1818,6 +1818,29 @@ function drawShip(now){
   }
   SC.restore();
 
+  /* ── 日照：船跟地形吃同一盞燈 ─────────────────────────────────
+     船原本完全不吃日照，夜裡還是正午的白帆掛在暗掉的大陸上，像螢光貼紙
+     （同瀑布先前的毛病，見 drawPanel 上方那段註解）。
+     ⚠ 用 source-atop：它只作用在**已經不透明**的像素上，透明區不會被塗成
+       方塊。若改用 multiply，Canvas 的 multiply 走 source-over 合成，
+       會把整張離屏緩衝填成一塊實心色。
+     ⚠ 上色在貼回主畫布**之前**、且在尾流之後 —— 尾流也是船的一部分，
+       同一盞燈照著才對得起來。
+     色調：入夜壓成銀藍（銀月是冷光），日夕之交偏暖橙。 */
+  {
+    const Sk=sky();
+    const nightA=clamp(1-Sk.day*1.2,0,1);          // 入夜程度
+    const dk=Sk.dusk;                               // 日夕之交
+    const tr=Math.round(lerp(34,255,dk)), tg=Math.round(lerp(46,142,dk)), tb=Math.round(lerp(78,72,dk));
+    const a=clamp(nightA*0.58*(1-dk*0.45)+dk*0.30,0,0.7);
+    if(a>0.01){
+      SC.setTransform(1,0,0,1,0,0);
+      SC.globalCompositeOperation='source-atop';
+      SC.fillStyle='rgba('+tr+','+tg+','+tb+','+a.toFixed(3)+')';
+      SC.fillRect(0,0,bw,bh);
+      SC.globalCompositeOperation='source-over';
+    }
+  }
   /* 貼回主畫布。⚠ 目的地座標取整：bob 帶小數的話，整片顆粒每幀都在
      半格上重新取樣、邊緣糊掉 —— 剛好抵消掉我們要的效果。 */
   const dx=Math.round(W/2-R), dy=Math.round(VIEWH*0.76+ship.bob-R);
