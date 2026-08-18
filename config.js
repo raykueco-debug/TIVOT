@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.17-126';
+export const VERSION = 'ver 2026.08.18-127';
 
 export const GAME_CONFIG = {
 
@@ -657,9 +657,11 @@ export const GAME_CONFIG = {
     //   ⚠ bgm_home 母帶偏小聲（原需 1.16 但 HTMLAudio.volume 上限 1 → 曾封頂），
     //     降 25% 後為 0.75，仍沿用封頂後的相對值 → 比其他曲低約 1.3 dB（要拉平需重母帶 +1.3 dB）。
     //   ⚠ 再 ×0.70（全域下調，−3.1 dB）：整排等比降，曲間相對平衡仍不變。
-    //     累計為原始母帶的 0.525 倍。飛行原型的 Sail/Standby 另在
-    //     flight/index.html 的 BGM_VOL 同步套用（0.55 → 0.385）。
-    bgmVol: { default:0.2625, bgm_home:0.525, bgm_battle:0.28, bgm_boss:0.224, bgm_result:0.315, bgm_lose:0.525 },
+    //   ⚠ 再 ×0.70（ver -127，又 −3.1 dB）：音樂仍蓋過語音/音效。改音樂而不是把語音推高——
+    //     語音層已在 −14.4 dBFS，再往上只會一直去咬 limiter（聽感變扁），降音樂沒有這個代價。
+    //     累計為原始母帶的 0.3675 倍。飛行原型的 Sail/Standby 另在
+    //     flight/index.html 的 BGM_VOL 同步套用（0.385 → 0.2695）。
+    bgmVol: { default:0.1838, bgm_home:0.3675, bgm_battle:0.196, bgm_boss:0.1568, bgm_result:0.2205, bgm_lose:0.3675 },
 
     // 載入畫面教學 Hint 輪播（文案見 loadingHints）
     loadingHintHoldMs:   5000,  // 每句停留 5 秒
@@ -775,10 +777,12 @@ export const ASSETS = {
   //  v2：母帶重 master（RMS −28→−11 dBFS + 軟限幅），內容更新 → 升 ?v 強制重抓
   // v3：改「原始檔＋純線性增益到峰值 -1dB」重製（v2 的 tanh 軟限幅有飽和失真=聽感糊）。
   //     RMS 約 -14 dBFS；再大聲改 tuning.partnerSeGain（播放端有 limiter 匯流，不會破音）。
-  se_luna_dual:      "resources/partner/Luna_dual_se.wav?v=3",   // 雙槍破防發動
-  se_luna_exc:       "resources/partner/Luna_EXC_SE.wav?v=3",    // 處決 EXSECUTIŌ cut-in
+  //  ⚠ 檔名的 VC＝voice（語音），與純音效的 SE 分家：這四支是搭檔的台詞，
+  //     響度基準跟語音走（partnerSeGain 對齊 −14.4 dBFS），不是音效層。
+  se_luna_dual:      "resources/partner/Luna_dual_VC.wav?v=3",   // 雙槍破防發動
+  se_luna_exc:       "resources/partner/Luna_EXC_VC.wav?v=3",    // 處決 EXSECUTIŌ cut-in
   se_luna_mb:        "resources/partner/Luna_MB_SE.wav?v=3",     // Maximum Burst cut-in
-  se_luna_obe:       "resources/partner/Luna_OBE_SE.wav?v=3",    // O.B.E. cut-in
+  se_luna_obe:       "resources/partner/Luna_OBE_VC.wav?v=3",    // O.B.E. cut-in
 
   // 敵人攻擊音（依攻擊種類 kind：ult 大絕命中/不完美防禦格擋、delay 太慢、wrong 按錯）。放 resources/enemy/。
   em_slash:          "resources/enemy/EM_Slash_SE.m4a",    // 聖徒：大絕/不完美防禦/按錯

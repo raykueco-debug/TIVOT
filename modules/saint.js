@@ -319,7 +319,7 @@ export function playCutin(done, label, imgKey, opts){
   if(label!==undefined) $('cutinText').innerHTML = label;
   const ci=$('cutinImg');
   const src=imgKey ? asset(imgKey) : null;
-  // cut-in 槍聲已全面取消：雙槍破防有 Luna_dual_se、聖徒化降臨有 SI_01，槍聲只留給盤面實際射擊
+  // cut-in 槍聲已全面取消：雙槍破防有 Luna_dual_VC、聖徒化降臨有 SI_01，槍聲只留給盤面實際射擊
   const start=()=>{
     c.classList.remove('on'); void c.offsetWidth; c.classList.add('on');
     setTimeout(()=>{
