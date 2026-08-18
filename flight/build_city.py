@@ -20,6 +20,14 @@ CITY = os.path.join(HERE, 'city')
 UNSQUASH = 1.60      # 縱向拉伸倍率（見上方）
 MAXDIM = 768         # 輸出長邊。螢幕上最大約 400px，768 已有餘裕
 QUALITY = 88
+# ── 色調對齊 ──────────────────────────────────────────────────────────
+# 插畫比遊戲裡的地形亮得多、也飽和得多，直接貼上去像一張貼紙。
+# 這兩個數字是對著地形實測值調的：近景地表 RGB≈(64,71,54)、S≈0.24、V≈0.28，
+# 而地形本身還會再吃 GRADE_SAT=0.68 的去飽和。
+# ⚠ 烘進素材而不是在 runtime 做：ctx.filter 在部分 Safari 版本沒有，
+#   而且每幀做去飽和是白費的——這是固定的色調對齊，不隨光線變。
+SAT = 0.70           # 飽和度倍率
+VAL = 0.86           # 明度倍率
 
 JOBS = [('Velafonte_iso.png', 'velafonte_plan.webp')]
 
@@ -32,5 +40,11 @@ for src, dst in JOBS:
     im = im.resize((w, int(round(h * UNSQUASH))), Image.LANCZOS)
     if max(im.size) > MAXDIM:
         im.thumbnail((MAXDIM, MAXDIM), Image.LANCZOS)
+    # 色調對齊（見上方 SAT/VAL）
+    arr = np.asarray(im).astype(np.float32)
+    rgb, al = arr[:, :, :3], arr[:, :, 3:]
+    lum = (rgb * np.array([0.299, 0.587, 0.114])).sum(axis=2, keepdims=True)
+    rgb = np.clip((lum + (rgb - lum) * SAT) * VAL, 0, 255)
+    im = Image.fromarray(np.concatenate([rgb, al], axis=2).astype(np.uint8), 'RGBA')
     im.save(os.path.join(CITY, dst), quality=QUALITY, method=6)
     print('%s  %dx%d  →  %s  %dx%d' % (src, w, h, dst, im.width, im.height))

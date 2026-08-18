@@ -626,6 +626,28 @@ async function loadWorld(){
         HGT[i]=nh; raw[i]=nh/PEAK_SCALE; flattened++;
       }
     }
+    /* 有手繪平面圖的城：把「城範圍內、緊貼海岸」的陸地格標成河道，
+       讓現成的瀑布渲染接手 —— 城的水就會從海岸台地邊緣傾瀉進雲海。
+       ⚠ 只標貼著海的那一圈（8 鄰域有海格）：整片標會變成一整面水牆。
+       ⚠ 要在坡度計算之前做完（RIV 本身不影響坡度，但和整平同一批處理較清楚）。*/
+    let brink=0;
+    for(const S of SETTLEMENTS){
+      if(!S.plan) continue;
+      const rr=Math.ceil((S.planW*0.5)/MAP_SCALE);
+      for(let dy=-rr;dy<=rr;dy++)for(let dx=-rr;dx<=rr;dx++){
+        if(dx*dx+dy*dy>rr*rr) continue;
+        const x=S.x+dx, y=S.y+dy;
+        if(x<1||y<1||x>=MAPW-1||y>=MAPH-1) continue;
+        const i=y*MAPW+x;
+        if(HGT[i]<=CLOUD_H) continue;
+        let nearSea=false;
+        for(let k=-1;k<=1&&!nearSea;k++)for(let l=-1;l<=1;l++){
+          if(HGT[(y+k)*MAPW+(x+l)]<=CLOUD_H){ nearSea=true; break; }
+        }
+        if(nearSea){ RIV[i]=1; brink++; }
+      }
+    }
+    window.__cityBrink=brink;
     window.__settleFlattened=flattened;
   }
 
@@ -2438,7 +2460,9 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
          城心還在畫面外時早該看到半座城了。
        ⚠ z 也不能用 60 當下限硬丟：飛到城上空時城心的 z 會趨近 0 甚至為負，
          但大半座城還在前方。改成「整座都在身後」才丟。 */
-    const Rw=SETTLE_R[s.tier]*MAP_SCALE;          // 城的世界半徑
+    /* ⚠ 手繪平面圖比城區半徑大（planW 1050 vs 2R 880），剔除半徑要取兩者較大，
+       否則又會變成「城心進畫面才整張冒出來」—— 跟先前那個 bug 同一個病。 */
+    const Rw=Math.max(SETTLE_R[s.tier]*MAP_SCALE, (s.planW||0)*0.72);
     if(z>ZFAR*0.9 || z<-Rw) continue;
     const zc=Math.max(z,40);                      // 角度換算用的安全深度
     const sv=(dx*cosp+dy*(-sinp))/zc;
@@ -2556,6 +2580,12 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
       const sw=planImg.width/N, shh=planImg.height/N;
       for(const cel of cells){
         const {jx,jy}=cel;
+        /* 水域切齊大陸邊緣：格心落在海上就不畫。
+           插畫的港灣本來就畫得比實際陸塊大，照貼會突出到雲海上方浮著。
+           逐格檢查地形，城的輪廓就自動被海岸線裁出來。 */
+        const Lc=toL(-1+2*(jx+0.5)/N, -1+2*(jy+0.5)/N);
+        const mx=(o.s.mx+Lc[0])|0, my=(o.s.my+Lc[1])|0;
+        if(mx<0||my<0||mx>=MAPW||my>=MAPH||HGT[my*MAPW+mx]<=CLOUD_H) continue;
         const A=P[jy][jx], B=P[jy][jx+1], Cc=P[jy+1][jx];
         const sx=jx*sw, sy=jy*shh;
         const a1=(B[0]-A[0])/sw, b1=(B[1]-A[1])/sw;
@@ -2567,7 +2597,25 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
                          (A[0]-a1*sx-c1*sy-bx0)*kx, (A[1]-b1*sx-d1*sy-by0)*ky);
         CFB.drawImage(planImg, sx,sy,sw+1.2,shh+1.2, sx,sy,sw+1.2,shh+1.2);
       }
+      /* 依光線上色：同 drawShip 那套。素材本身已經把「固定的色調對齊」烘進去
+         （build_city.py 的 SAT/VAL），這裡只加隨時間變的部分。
+         ⚠ source-atop：只作用在不透明處，透明區不會被塗成方塊。
+         ⚠ 這個世界的日夜之後不會即時推移，而是戰後結算時跳一段，
+           所以實際只會停在夜／黎明／早／黃昏四個狀態上——這條曲線
+           在那四點取值都對得起來，不必為此改成離散表。 */
       CFB.setTransform(1,0,0,1,0,0);
+      {
+        const Sk=sky();
+        const nA=clamp(1-Sk.day*1.2,0,1), dk=Sk.dusk;
+        const tr=Math.round(lerp(30,255,dk)), tg=Math.round(lerp(42,146,dk)), tb=Math.round(lerp(74,78,dk));
+        const aa=clamp(nA*0.62*(1-dk*0.45)+dk*0.34,0,0.72);
+        if(aa>0.01){
+          CFB.globalCompositeOperation='source-atop';
+          CFB.fillStyle='rgba('+tr+','+tg+','+tb+','+aa.toFixed(3)+')';
+          CFB.fillRect(0,0,bwp,bhp);
+          CFB.globalCompositeOperation='source-over';
+        }
+      }
       ctx.imageSmoothingEnabled=false;
       ctx.drawImage(cityFB,0,0,bwp,bhp,Math.round(bx0),Math.round(by0),fw,fh);
       ctx.restore();
