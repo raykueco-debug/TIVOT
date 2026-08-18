@@ -40,11 +40,12 @@
     text-align:center;font-size:10px;letter-spacing:.18em;color:var(--parch);opacity:.28;}
   #fps{position:fixed;right:12px;top:calc(env(safe-area-inset-top) + 54px);
     font-size:9px;color:var(--parch);opacity:.35;}
-  #backBtn,#mapBtn{position:fixed;top:calc(env(safe-area-inset-top) + 10px);z-index:40;
+  #backBtn,#mapBtn,#muteBtn{position:fixed;top:calc(env(safe-area-inset-top) + 10px);z-index:40;
     background:rgba(5,6,12,.72);border:1px solid rgba(201,162,39,.5);color:var(--gold);
     font-family:inherit;font-size:11px;letter-spacing:.14em;padding:5px 12px;cursor:pointer;}
-  #backBtn{right:12px;} #mapBtn{right:78px;}
-  #backBtn:active,#mapBtn:active{background:rgba(201,162,39,.16);}
+  #backBtn{right:12px;} #mapBtn{right:78px;} #muteBtn{right:144px;width:44px;padding:0;text-align:center;}
+  #backBtn:active,#mapBtn:active,#muteBtn:active{background:rgba(201,162,39,.16);}
+  #muteBtn.muted{color:#d06a60;border-color:rgba(208,106,96,.7);}
   /* 生怪鈕：開發用。放操作盤左下角——舵輪佔滿面板中央，只有兩側下緣是空的。
      ⚠ z-index 要高過面板（面板是 canvas 直接畫的，本身不佔 DOM 層級），
        但低於地圖畫面(60)，免得地圖開著還按得到。 */
@@ -146,6 +147,8 @@
 <div class="hud" id="compass">北</div>
 <div id="place"><div class="nm" id="pnm"></div><div class="ty" id="pty"></div></div>
 <button id="mapBtn">地圖</button>
+<!-- 全域靜音：與 index.html 共用 localStorage 的 tivot_mute_v1 -->
+<button id="muteBtn" aria-label="Mute">🔊</button>
 <button id="backBtn">← 返回</button>
 <button id="spawnBtn">生怪</button>
 <div id="mapView">
@@ -1122,12 +1125,28 @@ function makeLoop(src){
 }
 const bgmSail=makeLoop('Sail.mp3'), bgmIdle=makeLoop('Standby.mp3');
 let sailMix=0;                       // 0＝停船 1＝航行，收斂跟隨避免忽大忽小
+/* 全域靜音：與主程式（index.html / main.js）共用 localStorage 的同一把鑰匙。
+   ⚠ 這裡是另一個頁面、另一套 BGM（HTMLAudio 而非 audio.js 的 Web Audio），
+     所以不能靠記憶體共享狀態，只能兩邊各自讀鑰匙。 */
+const MUTE_KEY='tivot_mute_v1';
+let muted=(()=>{ try{ return localStorage.getItem(MUTE_KEY)==='1'; }catch(_){ return false; } })();
+(function bindMute(){
+  const b=document.getElementById('muteBtn'); if(!b) return;
+  const paint=()=>{ b.textContent = muted ? '🔇' : '🔊'; b.classList.toggle('muted', muted); };
+  b.addEventListener('click', ()=>{
+    muted=!muted;
+    try{ localStorage.setItem(MUTE_KEY, muted?'1':'0'); }catch(_){}
+    paint();
+  });
+  paint();
+})();
 function updateBgm(dt){
   // 門檻取很低：一有推進就切成航行曲，回到完全靜止才回待機
   const want=(Math.abs(cam.speed)>0.06)?1:0;
   sailMix+=(want-sailMix)*(1-Math.pow(1-MIX_RATE, dt/16.67));
-  bgmSail.tick(BGM_VOL*sailMix);
-  bgmIdle.tick(BGM_VOL*(1-sailMix));
+  const mk=muted?0:1;
+  bgmSail.tick(BGM_VOL*sailMix*mk);
+  bgmIdle.tick(BGM_VOL*(1-sailMix)*mk);
 }
 (function startBgm(){
   /* ⚠ 監聽器要**確認真的播出來**才移除。play() 回傳的是 Promise，
@@ -1506,8 +1525,11 @@ function render(now){
   ctx.save();
   ctx.beginPath(); ctx.rect(0,0,W,VIEWH); ctx.clip();
   drawSunMoon(S,horizon,sinp,cosp);
-  drawPuffs(S,scaleH,horizon,sinp,cosp);
+  /* 雲分兩趟畫，中間夾著城（見 drawPuffs 的說明）。 */
+  const splitZ=nearestSettleZ(sinp,cosp);
+  drawPuffs(S,scaleH,horizon,sinp,cosp,splitZ,Infinity);   // 比城遠的雲
   drawSettlements3D(scaleH,horizon,sinp,cosp);
+  drawPuffs(S,scaleH,horizon,sinp,cosp,0,splitZ);          // 比城近的雲：蓋在城上面
   drawPlaces(scaleH,horizon,sinp,cosp);
   drawFlock(scaleH,horizon,sinp,cosp,now);
   drawEnemy3D(scaleH,horizon,sinp,cosp,now);
@@ -1541,14 +1563,20 @@ function drawSunMoon(S,horizon,sinp,cosp){
   body(MOON_AZ,MOON_EL,MOON_R,'#eef1fa',`rgba(198,214,252,${mg.toFixed(2)})`);
 }
 
-function drawPuffs(S,scaleH,horizon,sinp,cosp){
+/* zLo/zHi＝只畫這段深度的雲。城是在雲之後畫的，所以城會壓在**所有**雲上面
+   —— 飛在雲上看城時，城的貼圖蓋過本該在它前面的雲團，整座城像浮在雲層之上。
+   改成分兩趟：比城遠的雲先畫、比城近的雲在城之後畫。分界取最近那座城的深度
+   （城本身橫跨上千單位，單一分界一定有取捨；雲團是軟的大團，取城心最不吃虧）。 */
+function drawPuffs(S,scaleH,horizon,sinp,cosp,zLo,zHi){
   const sxk=W/BW, syk=VIEWH/BH;
   const fx=-sinp, fy=-cosp;
+  const lo=(zLo===undefined)?0:zLo, hi=(zHi===undefined)?Infinity:zHi;
   const list=[];
   PUFFS.forEach(p=>{
     const dx=p.x-cam.x, dy=p.y-cam.y;
     const z=dx*fx+dy*fy;
     if(z<3||z>ZFAR) return;
+    if(z<lo||z>=hi) return;
     const s=(dx*cosp+dy*(-sinp))/z;
     if(s<-2.4||s>2.4) return;
     list.push({p,z,s});
@@ -2582,6 +2610,19 @@ function clipByTerrainDepth(Z,sxk,syk,c0,c1){
   ctx.clip();
 }
 
+/* 最近那座「畫得出來」的城有多深 —— 雲的分趟分界（見 render / drawPuffs）。
+   沒有城在畫面裡就回 Infinity：雲全部在城之前那一趟畫完，行為與分趟前相同。 */
+function nearestSettleZ(sinp,cosp){
+  if(!window.Settlement || !MAPW) return Infinity;
+  let best=Infinity;
+  for(const s of buildSettlements()){
+    const dx=s.mx*MAP_SCALE-cam.x, dy=s.my*MAP_SCALE-cam.y;
+    const z=dx*(-sinp)+dy*(-cosp);
+    if(z>60 && z<best && z<ZFAR*0.9) best=z;
+  }
+  return best;
+}
+
 function drawSettlements3D(scaleH,horizon,sinp,cosp){
   if(!window.Settlement || !MAPW) return;
   const sxk=W/BW, syk=VIEWH/BH;
@@ -2720,23 +2761,25 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
       const gradU=hw*(-ca*sinp - sa*cosp), gradV=hh*(sa*sinp - ca*cosp);
       /* 沿一軸走出格線：從 −1 走到 +1，步長 ∝ 當地深度。回傳格數。
 
-         ⚠ 步數必須有上限，否則貼著城飛時近端 z→0，步長跟著→0，格數無底洞。
-           但**上限不能靠「切不完就退回均勻」**：均勻切等於把省下來的格子還回去。
-           改成先解出「剛好走 N_MAX 步」的步長係數，取它與理想值的較大者 ——
-           格數封頂，而且封頂時仍是依深度分配（同樣 40 格，遠處少切、近處多切），
-           嚴格優於舊版的均勻 40 格。
-           步數 M＝∫du/(K·z(u))＝ln(z_hi/z_lo)/(K·|grad|)（z 對 u 是線性的），
-           反解 K_fit＝ln(z_hi/z_lo)/(N_MAX·|grad|)；grad≈0 時退化成 2/(N_MAX·zc)。 */
+         ⚠ 步數必須有上限（貼著城飛時近端 z→0，步長跟著→0，格數無底洞），
+           但**上限不能靠「走不完就把剩下的併成一格」**——那一格會橫跨整片深度，
+           仿射矩陣被拉成放射狀，畫面上就是「城被吸走」的拖曳。ver -171 犯過這個錯。
+           正解是先算出「走完全程要幾步」再回頭定步長：
+             步數 M = ∫ du/(K·z_eff(u))，z_eff＝max(z,60)（身後的部分夾住）
+           所以 K = I/N_MAX，I 是那個積分。z 對 u 是線性的，積分有解析解，
+           但夾制段讓它分段——直接數值積分 64 段更短且不會寫錯，成本可以忽略。 */
       const walk=(out,grad,half)=>{
-        const g=Math.abs(grad);
-        const zA=Math.max(60,zc-grad), zB=Math.max(60,zc+grad);
-        const zLo=Math.min(zA,zB), zHi=Math.max(zA,zB);
-        const Kfit=(g>1e-3&&zHi>zLo*1.0001) ? Math.log(zHi/zLo)/(N_MAX*g)
-                                            : 2/(N_MAX*Math.max(60,zc));
+        const SEG=64;
+        let I=0;
+        for(let i=0;i<SEG;i++){
+          const u=-1+2*(i+0.5)/SEG, z=zc+grad*u;
+          I+=(2/SEG)/(z>60?z:60);
+        }
         let K=2*CELL_PX/Math.max(1e-6,half*W*pkq);
-        if(K<Kfit*1.15) K=Kfit*1.15;              // 1.15＝夾制段（z 被壓在 60）的餘裕
+        const Kfit=I/N_MAX;
+        if(K<Kfit) K=Kfit;
         let u=-1, k=0; out[0]=-1;
-        const cap=N_MAX+8;                         // 硬上限：夾制段讓解析解略微低估
+        const cap=N_MAX+4;                         // 數值積分的餘量，正常走不到
         while(u<1 && k<cap){
           const z=zc+grad*u;
           u+=K*(z>60?z:60); k++;
@@ -2839,6 +2882,17 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
              夾過的角會被推到一個完全錯的螢幕位置，那一格就會扯成一片
              —— 這就是「城有時會破」。夾制是為了避免除零，不能拿來畫。 */
           if(PT[iA+3]<60||PT[iB+3]<60||PT[iC+3]<60||PT[iD+3]<60) continue;
+          /* ⚠ 保險絲：一格內的深度比例失控（近角比遠角近三倍以上）就整格不畫。
+             仿射矩陣吃不下這種格子，畫出來是一條放射狀的拖曳——寧可缺一格。
+             步長依深度分配之後正常情況不會觸發，這條是防下次再寫錯。 */
+          {
+            let zmin=PT[iA+3], zmax=zmin;
+            const zb=PT[iB+3], zcc=PT[iC+3], zd=PT[iD+3];
+            if(zb<zmin)zmin=zb; if(zb>zmax)zmax=zb;
+            if(zcc<zmin)zmin=zcc; if(zcc>zmax)zmax=zcc;
+            if(zd<zmin)zmin=zd; if(zd>zmax)zmax=zd;
+            if(zmax>zmin*3) continue;
+          }
           const qax=PT[iA], qay=PT[iA+1], qbx=PT[iB], qby=PT[iB+1],
                 qcx=PT[iC], qcy=PT[iC+1], qdx=PT[iD], qdy=PT[iD+1];
           /* 整格落在外框之外就跳過。緩衝夾到視窗之後，這種格子的 drawImage

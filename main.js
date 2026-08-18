@@ -101,7 +101,31 @@ combat.setup();
 })();
 
 // 全域主音量（tuning.masterVolume＝0.7）：先於任何預載/BGM 起播套用
-SFX.setMasterVolume(GAME_CONFIG.tuning.masterVolume != null ? GAME_CONFIG.tuning.masterVolume : 1);
+const MASTER_VOL = GAME_CONFIG.tuning.masterVolume != null ? GAME_CONFIG.tuning.masterVolume : 1;
+SFX.setMasterVolume(MASTER_VOL);
+
+/* ── 全域靜音（右上鈕，管理人模式限定）───────────────────────────
+   走 SFX.setMasterVolume(0)：SFX（合成音與取樣音經 limiter 後的主音量節）與 BGM
+   （各寫入點都乘 _master）都吃這一個係數，不必逐處攔。
+   ⚠ 狀態存 localStorage 而非記憶體：flight/ 是另一個頁面（classic script、自帶一套
+     BGM），跨頁只能靠共用鑰匙 —— 兩邊讀同一個 MUTE_KEY 才叫「全域」。 */
+const MUTE_KEY='tivot_mute_v1';
+const isMuted =()=>{ try{ return localStorage.getItem(MUTE_KEY)==='1'; }catch(_){ return false; } };
+function applyMute(){
+  const m=isMuted();
+  SFX.setMasterVolume(m ? 0 : MASTER_VOL);
+  const b=$('muteBtn');
+  if(b){ b.textContent = m ? '🔇' : '🔊'; b.classList.toggle('muted', m); }
+}
+(function bindMute(){
+  const b=$('muteBtn'); if(!b) return;
+  b.addEventListener('click', e=>{
+    e.stopPropagation();                       // 讀取畫面上按下不要順手觸發「點擊繼續」
+    try{ localStorage.setItem(MUTE_KEY, isMuted() ? '0' : '1'); }catch(_){}
+    applyMute();
+  });
+  applyMute();
+})();
 
 // 普攻槍聲：固定用 Pistol_SE_03（不隨機）
 SFX.setShots([asset('se_pistol_03')].filter(Boolean), sfxGain('se_pistol_03'));
@@ -123,6 +147,29 @@ function preloadLateBgm(){
   if(_lateBgmKicked) return; _lateBgmKicked = true;
   SFX.preloadBgm(LATE_BGM_PATHS);   // 背景載，不擋任何流程；ensureBlob 有快取可重複呼叫
 }
+/* 熱啟動旗標（見 preloadAll 內的 WARM_BOOT 說明）。
+   ⚠ 冷啟動時是在「點擊繼續」那一刻才記，不是載完就記 —— 讀到一半被中斷重整，
+     下次仍該完整跑一次。之後每次進背景都刷新時間戳，長時間遊玩後被切走也算數。 */
+const BOOT_SESS='tivot_boot_v1', BOOT_STAMP='tivot_boot_at_v1', WARM_MS=10*60*1000;
+let _booted=false;
+function markBooted(){
+  _booted=true;
+  try{ sessionStorage.setItem(BOOT_SESS,'1'); }catch(_){}
+  try{ localStorage.setItem(BOOT_STAMP, JSON.stringify({v:VERSION,t:Date.now()})); }catch(_){}
+}
+const WARM_BOOT=(function(){
+  try{ if(sessionStorage.getItem(BOOT_SESS)==='1') return true; }catch(_){}
+  try{
+    const r=JSON.parse(localStorage.getItem(BOOT_STAMP)||'null');
+    return !!(r && r.v===VERSION && Date.now()-r.t < WARM_MS);
+  }catch(_){ return false; }
+})();
+/* 進背景時刷新時間戳 —— 但**只有真的進過主畫面才算**：讀取途中被切走／重整，
+   下一次仍該完整跑一次讀取（素材根本還沒載完）。 */
+const refreshBoot=()=>{ if(_booted) markBooted(); };
+document.addEventListener('visibilitychange', ()=>{ if(document.hidden) refreshBoot(); });
+window.addEventListener('pagehide', refreshBoot);
+
 (function preloadAll(){
   const imgs=[], sfx=[], bgm=[];
   for(const k of Object.keys(ASSETS)){
@@ -135,6 +182,24 @@ function preloadLateBgm(){
     }
   }
   const total = imgs.length + sfx.length + bgm.length;
+  /* ── 熱啟動：回到前景不再跑一次讀取畫面 ─────────────────────
+     iOS 主畫面 App 切到背景後，系統常把頁面整個丟掉，回前景時是**重新載入**
+     —— 於是又看一次讀取動畫。但這時素材全在 HTTP 快取裡，那段等待是純粹的空轉。
+     判定熱啟動：① sessionStorage 有旗標（同一個分頁 session 內的重載）；
+     ② 或 localStorage 記到「同一版本、10 分鐘內剛載完過」——進程被系統殺掉時
+     sessionStorage 會一起沒，只剩這條認得出來。
+     ⚠ 版本不同一律當冷啟動：素材換過就該完整跑一次預載，不能吃到半新半舊。
+     ⚠ 10 分鐘是刻意的：隔天再開仍看得到讀取畫面（它是門面，有立繪與教學輪播），
+       被切走一下下再回來才跳過。 */
+  if(WARM_BOOT){
+    markBooted();
+    // 素材照樣補載，只是不擋畫面、不畫進度（快取命中的話幾乎瞬間完成）
+    SFX.playBgm(asset('bgm_home'), { volume: bgmVol('bgm_home') });   // 實際出聲仍等 primeAudio 的第一次手勢
+    preloadLateBgm();
+    SFX.preload(sfx); SFX.preloadBgm(bgm);
+    for(const src of imgs){ const im=new Image(); im.src=src; }
+    return;
+  }
   /* 載入遮罩（動態建立，樣式集中在 style.css 的 #assetLoader 區）：
    *  頂部細讀取條＋百分比 → 不佔畫面；中下方監察官立繪＋對話框輪播教學 Hint
    *  （隨機不重複、整句淡入停 5 秒淡出，不用打字機）→ 讀取時間不再乾等。 */
@@ -241,6 +306,7 @@ function preloadLateBgm(){
     const go=()=>{
       ov.removeEventListener('click',go); ov.removeEventListener('touchstart',go);
       clearTimeout(hintTimer);   // 停輪播
+      markBooted();   // 真的進到主畫面了才算「載過一次」（見 WARM_BOOT）
       SFX.unlock();   // 使用者手勢：解鎖音訊 → 主選單 BGM 開始播
       // 讀取頁揭幕不再播 SE（原 SI_01 撤下；聖徒 stinger 移到出陣鈕）
       preloadLateBgm();   // 第二段：進主選單即背景載 結算/失敗/Boss BGM

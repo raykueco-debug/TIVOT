@@ -41,6 +41,19 @@
      為 webview 外完全不可視死區——100vh 撐高會讓內容伸進去被裁（戰鬥盤面遭蓋，已撤回）、
      狀態列改 black 亦遭忽略。定案：接受死區為底部邊框，html.vp-clipped（index.html 偵測）
      模式下拿回「白墊在死區裡的底部安全區」還給內容（首頁底排／結算鈕，見各處規則）。 */
+  /* ===== 全域靜音鈕（管理人模式限定）=====
+     ⚠ 位置刻意排在右上「第二列」：第一列在首頁是 #langBtn、在戰鬥是 #exitBtn，
+       擠同一列必撞其中一個。z-index 壓過載入畫面（99999），讀取中也能按。 */
+  #muteBtn{display:none;position:fixed;z-index:100000;
+    top:calc(var(--notch-bar-h, 0px) + 56px);right:12px;
+    width:36px;height:36px;padding:0;border-radius:18px;
+    background:rgba(10,8,14,.6);border:1px solid var(--gold-dim);color:var(--gold);
+    font-family:inherit;font-size:15px;line-height:1;
+    align-items:center;justify-content:center;}
+  body.testmode #muteBtn{display:flex;}
+  #muteBtn.muted{color:#d06a60;border-color:rgba(208,106,96,.7);}
+  #muteBtn:active{transform:scale(.92);}
+
   /* ===== 載入畫面（#assetLoader 由 main.js 動態建立）=====
      頂部細讀取條＋百分比；中下方監察官立繪＋對話框輪播教學 Hint；底部「點擊繼續」。 */
   #assetLoader{position:fixed;inset:0;z-index:99999;background:#0a0812;color:#d9c68a;
