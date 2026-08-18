@@ -1881,75 +1881,79 @@ const BASE_K=1.05;                       // 基座寬 ÷ 舵輪直徑（>1＝比
 const GAUGE_K=0.85;                      // 刻度帶半徑 ÷ 頭盤半徑（<1：整條刻度都落在頭盤黃銅面上）
 const GAUGE_SPAN=Math.PI*2/3;            // 掛角 120°：10 點（零速）→ 12 點 → 2 點（滿速）
 const GAUGE_RED=0.75;                    // 紅漆自滿速的 75% 起
-const NEEDLE_W=0.26;                     // 銅針寬 ÷ 長（素材原比例 0.8 太肥，橫向壓窄）
+const HOOK_LEN=0.32;                     // 銅針鉤長 ÷ 刻度環半徑（只有扣過盤緣的那截看得到）
+const HOOK_W=0.42;                       // 鉤寬 ÷ 鉤長（素材原比例 0.8 太肥，橫向壓窄）
 let wheelAng=0;
 
-/* ── 機械式速度表（基座頭盤外緣的刻度環 + 銅針）────────────────────
-   讀法是**盤不動、銅針走**：刻度環箍在基座頭盤外緣，Pointer.webp 那根銅針
-   以舵軸為樞紐擺動，10 點＝停船、12 點＝半速、2 點＝滿速（掛角 120°）。
-   ⚠ 為什麼是 120° 而不是整圈：軸心壓在畫面底緣，樞紐以下的角度全在畫面外，
-     掛角一旦超過 180° 兩端就沒入畫面外 —— 而兩端正是最該讀到的（停船／滿速）。
-   ⚠ 為什麼銅針不再綁 cam.angle：那是絕對航向，船一轉整根就甩，既不是航向儀
-     也不是速度計。控制區的方位帶已撤（要看航向去開地圖），這根專職速度。
-   ⚠ tilt：頭盤是俯視的橢圓（縱向被壓扁），刻度與針一起套同一個縱向縮放，
-     環才箍在盤上而不是浮在盤上。tilt 由素材比例自己算出來，換圖不用改。
-   ⚠ 不寫數字：刻度＋紅漆已經夠讀，數字得排到刻度環外側，那裡已經是輪輻區，
-     擠在一起反而髒。要精確值去看地圖。
-   ⚠ 分兩段畫的理由：刻度環在舵**之後**（基座本來就立在舵的另一側，被輪輻
-     遮住是對的層次，而且它不動，遮住也不影響判讀）；銅針在舵**之前**——
-     針要是也擺在後面，指到 12 點時整根被正上方那根輪輻吃掉，速度就讀不到了。 */
+/* ── 機械式速度表（基座頭盤上的刻度環 + 扣在盤緣的銅針）──────────────
+   讀法是**盤不動、銅針走**：刻度環刻在基座頭盤面上，銅針隨速度沿環滑動，
+   10 點＝停船、12 點＝半速、2 點＝滿速（掛角 120°）。
+
+   ⚠ 定位：這是**給舵手看的擺設**，不是玩家要盯的儀表 —— 油門實際上大家都
+     拉到底，速度沒有判讀價值。所以它刻意做得不顯眼：對比壓低、不寫數字、
+     被舵輪遮住不補救。要精確值去看地圖。之前為了「讀得到」把刻度打亮、把
+     銅針提到舵前面，是把一個氣氛細節當成功能在做，方向就錯了。
+
+   ⚠ 銅針的裝法：它**裝在盤面的背後**，針臂整根藏在頭盤後面（所以不畫），
+     只有越過盤緣的那一小截由上方往下扣到盤面正面，扣住刻度環。畫面上看得到
+     的就只有那個鉤。這也是為什麼不能把針畫在舵輪前面 —— 那等於一根尖銅片
+     橫在舵輪與掌舵者之間，轉舵時手會掃過針尖。整組一律在舵**之後**。
+
+   ⚠ 為什麼掛角是 120° 而不是整圈：軸心壓在畫面底緣，樞紐以下的角度全在畫面
+     外，掛角一旦超過 180° 兩端就沒入畫面外。
+
+   ⚠ 為什麼銅針不綁 cam.angle：那是絕對航向，船一轉整根就甩，既不是航向儀也
+     不是速度計。控制區的方位帶已撤（要看航向去開地圖），這根專職速度。
+
+   ⚠ tilt：頭盤是俯視的橢圓（縱向被壓扁），刻度與鉤一起套同一個縱向縮放，
+     環才箍在盤上而不是浮在盤上。tilt 由素材比例自己算出來，換圖不用改。 */
 function gaugeAngle(v){ return -GAUGE_SPAN*0.5+clamp(v,0,1)*GAUGE_SPAN; }   // 自 12 點順時針
+const gaugeCA=a=>a-Math.PI*0.5;                 // 上式的角 → canvas arc 角
 
 function drawSpeedScale(cx,cy,R,tilt){
-  const ca=a=>a-Math.PI*0.5;                      // 上式的角 → canvas arc 角
   const dir=(a,r)=>[Math.sin(a)*r,-Math.cos(a)*r];
   ctx.save(); ctx.translate(cx,cy); ctx.scale(1,tilt);
-
   ctx.lineCap='butt';
-  // ⚙ 刻度是刻在黃銅面上的，對比不拉開整條會沉進底盤的紋路裡——
-  //   先車一道深凹槽把底壓暗，刻線才亮得起來。
-  ctx.strokeStyle='rgba(10,7,3,.82)'; ctx.lineWidth=R*0.23;
-  ctx.beginPath(); ctx.arc(0,0,R,ca(gaugeAngle(0)),ca(gaugeAngle(1))); ctx.stroke();
+
+  // 盤面上車出來的一道淺凹槽，刻線刻在裡面
+  ctx.strokeStyle='rgba(14,10,5,.5)'; ctx.lineWidth=R*0.18;
+  ctx.beginPath(); ctx.arc(0,0,R,gaugeCA(gaugeAngle(0)),gaugeCA(gaugeAngle(1))); ctx.stroke();
   // 凹槽內外緣各一道銅線（車出來的邊）
-  ctx.strokeStyle='rgba(214,178,96,.5)'; ctx.lineWidth=Math.max(1,R*0.012);
-  for(const k of [0.885,1.115]){
-    ctx.beginPath(); ctx.arc(0,0,R*k,ca(gaugeAngle(0)),ca(gaugeAngle(1))); ctx.stroke();
+  ctx.strokeStyle='rgba(206,172,98,.32)'; ctx.lineWidth=Math.max(1,R*0.010);
+  for(const k of [0.90,1.10]){
+    ctx.beginPath(); ctx.arc(0,0,R*k,gaugeCA(gaugeAngle(0)),gaugeCA(gaugeAngle(1))); ctx.stroke();
   }
 
-  // 刻線：每 0.5 一格，每 2.0 一根長刻
+  // 刻線：每 0.5 一格，每 2.0 一根長刻。不寫數字。
   const n=Math.round(MAX_SPD*2);
   for(let i=0;i<=n;i++){
     const a=gaugeAngle(i/2/MAX_SPD), major=(i%4===0);
-    const p0=dir(a,R*(major?0.895:0.945)), p1=dir(a,R*1.105);
-    ctx.strokeStyle=major?'#ffe9b0':'#d8bd7e';
-    ctx.lineWidth=major?Math.max(2.2,R*0.034):Math.max(1.2,R*0.017);
+    const p0=dir(a,R*(major?0.905:0.955)), p1=dir(a,R*1.09);
+    ctx.strokeStyle=major?'#dcc189':'#ac9260';
+    ctx.lineWidth=major?Math.max(1.6,R*0.026):Math.max(1,R*0.013);
     ctx.beginPath(); ctx.moveTo(p0[0],p0[1]); ctx.lineTo(p1[0],p1[1]); ctx.stroke();
   }
 
   // 極速區段紅漆：自滿速的 GAUGE_RED 起到底，刷在凹槽外緣
-  ctx.strokeStyle='#d2452c'; ctx.lineWidth=Math.max(2,R*0.048);
+  ctx.strokeStyle='#9e3625'; ctx.lineWidth=Math.max(1.4,R*0.030);
   ctx.beginPath();
-  ctx.arc(0,0,R*1.155,ca(gaugeAngle(GAUGE_RED)),ca(gaugeAngle(1)));
+  ctx.arc(0,0,R*1.135,gaugeCA(gaugeAngle(GAUGE_RED)),gaugeCA(gaugeAngle(1)));
   ctx.stroke();
   ctx.restore(); ctx.lineWidth=1;
 }
 
+/* 銅針：只畫「扣過盤緣」的那一截 —— 針臂在盤後，看不到就不畫。
+   素材原本尖端朝上，這裡上下翻轉成尖端朝盤心，鉤身往外跨過盤緣，
+   看起來就是由上方往下扣住刻度環。 */
 function drawSpeedNeedle(cx,cy,R,tilt){
   const P=helmArt.pointer; if(!P) return;
-  /* 素材本身是一片寬錐形的黃銅指標，照原比例畫出來寬度會是長度的 0.8，
-     在這個尺寸下是一塊蓋住輪轂的大三角——橫向壓成 NEEDLE_W，才是指針。
-     縱向不動：錐形拉窄還是錐形，不會看出失真。
-     根部十字在輪轂上，尖端剛好指進刻度帶。 */
+  const len=R*HOOK_LEN, pw=len*HOOK_W;
   ctx.save(); ctx.translate(cx,cy); ctx.scale(1,tilt);
   ctx.rotate(gaugeAngle(clamp(cam.speed/MAX_SPD,0,1)));
-  const ph=R*0.86, pw=ph*NEEDLE_W;
-  ctx.drawImage(P,-pw*0.5,-R*0.99,pw,ph);
-  // 針轂：蓋住針尾與輪轂的接縫
-  ctx.rotate(-gaugeAngle(clamp(cam.speed/MAX_SPD,0,1)));
-  ctx.beginPath(); ctx.arc(0,0,R*0.115,0,Math.PI*2);
-  ctx.fillStyle='#96742f'; ctx.fill();
-  ctx.strokeStyle='rgba(24,18,10,.85)'; ctx.lineWidth=1.2; ctx.stroke();
-  ctx.restore(); ctx.lineWidth=1;
+  ctx.translate(0,-R*1.15);                     // 移到盤緣：鉤跨在這條線上
+  ctx.scale(1,-1);                              // 翻轉 → 尖端朝盤心
+  ctx.drawImage(P,-pw*0.5,-len*0.5,pw,len);
+  ctx.restore();
 }
 
 function drawPanel(S){
@@ -1985,10 +1989,13 @@ function drawPanel(S){
     tilt=clamp((BORE.y*bh)/headR,0.5,1);
   }
 
-  drawSpeedScale(cx,wcy,gaugeR,tilt);      // 刻度環：舵之後（被輪輻遮住是對的層次）
+  drawSpeedScale (cx,wcy,gaugeR,tilt);     // 刻度環：刻在頭盤面上
+  drawSpeedNeedle(cx,wcy,gaugeR,tilt);     // 銅針：扣在盤緣上（針臂在盤後，不畫）
 
-  // 舵輪：隨舵量持續旋轉（角速度 ∝ 舵量），放手就停在當下的角度。
-  //   ⚠ 裁掉軸心以下：底緣那 HELM_FOOT 像素不該露出下半輪的一截。
+  /* 舵輪最後畫 —— 它在最前面，會遮住基座、刻度環與銅針的一部分。
+     那是對的層次：基座立在舵的另一側，指針裝在盤背後。任何東西浮在舵之前，
+     等於橫在舵輪與掌舵者之間，轉舵時手會掃過去。
+     ⚠ 裁掉軸心以下：底緣那 HELM_FOOT 像素不該露出下半輪的一截。 */
   if(helmArt.wheel){
     ctx.save();
     ctx.beginPath(); ctx.rect(0,0,W,wcy); ctx.clip();
@@ -1996,8 +2003,6 @@ function drawPanel(S){
     ctx.drawImage(helmArt.wheel, -R, -R, R*2, R*2);
     ctx.restore();
   }
-
-  drawSpeedNeedle(cx,wcy,gaugeR,tilt);     // 銅針：舵之前，任何角度都讀得到
   /* 方位帶（原本畫在 3D 視窗下緣）已撤：控制區只留乾淨的機械式船舵 ——
      舵輪、基座、銅針速度表，沒有別的浮層。要看航向去開地圖。 */
 }
@@ -2021,7 +2026,7 @@ const BOOT_HINTS=[
   '往後拉＝前進，拉得越遠越快。放開後船靠慣性滑行，不會立刻停。',
   '左右偏移＝轉向。輕推只轉幾度，中央有一段死區，手指的晃動不會讓船偏航。',
   '往前推再左右拉＝原地迴轉。停著不動時船不會自己打轉。',
-  '舵輪的轉速跟著你的偏移幅度走；基座頭盤上那根銅針就是速度表，指到紅漆那段是全速。',
+  '舵輪的轉速跟著你的偏移幅度走；基座頭盤上那根銅針是舵手的速度表，扣到紅漆那段就是全速。',
   '右上角「地圖」可查看大陸全貌與自己的位置，放大可見市鎮街廓。',
   '大陸邊緣之外是雲海。低於雲海高度的地方一律沒入雲中。',
 ];
