@@ -1506,6 +1506,18 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
     const fogS=ZFAR*FOG_START;
     const fogK=clamp((o.z-fogS)/(ZFAR-fogS),0,1)*FOG_MAX;
     ctx.globalAlpha=clamp((ZFAR*0.9-o.z)/(ZFAR*0.30),0,1)*(1-fogK);
+    /* 逐點投影：城的每個點走跟地形完全同一條投影式 → 天生黏在地表上。
+       lx/ly 是聚落局部座標（地圖像素），先換成世界座標，再照 render() 那條
+       公式算深度與螢幕位置。z 夾一個下限，免得飛到城正上方時分母爆掉。 */
+    const gS=o.s.gh;
+    const project=(lx,ly)=>{
+      const dx=(o.s.mx+lx)*MAP_SCALE-cam.x, dy=(o.s.my+ly)*MAP_SCALE-cam.y;
+      let zz=dx*(-sinp)+dy*(-cosp); if(zz<24) zz=24;
+      const sv=(dx*cosp+dy*(-sinp))/zz;
+      return [((sv+1)/2*BW)*sxk,
+              (((cam.alt-gS)/zz + zz*curvAt(sv))*scaleH+horizon)*syk];
+    };
+    /* 舊的仿射近似留著給尺寸用（建築量體大小仍以城中心的深度為準）。 */
     /* 地面壓縮率（tilt）：讓城真的躺在地上。
        橫向：1 世界單位 = sc 螢幕像素。
        縱向：地面列是 ((alt-gh)/z + z*curv)*scaleH，對 z 微分得
@@ -1523,7 +1535,7 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
        MAP_SCALE，所以檢查會過、畫出來卻是點——兩邊單位不一致的典型病。 */
     Settlement.draw(ctx, o.s, { ox:o.x, oy:o.y, scale:sc*MAP_SCALE, tilt, night:nightK,
                                  rot:cam.angle, groundL:30, groundA:0.28,
-                                 waterAt:seaProbe }, Settlement.DEBUG);
+                                 waterAt:seaProbe, project }, Settlement.DEBUG);
     ctx.restore();
   }
 }

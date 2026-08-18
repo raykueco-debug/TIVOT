@@ -489,8 +489,26 @@ function draw(ctx, s, view, dbg) {
   const water = view.waterAt || null;
   const rot = view.rot || 0;
   const rc = Math.cos(rot), rs = Math.sin(rot);
-  const X = (wx, wy) => ox + (wx * rc - wy * rs) * scale;
-  const Y = (wx, wy) => oy + (wx * rs + wy * rc) * scale * tilt;
+  /* 投影有兩種模式：
+     · 仿射（地圖畫面）：ox/oy/scale/tilt/rot 組成的固定斜角。平面地圖上正確。
+     · 逐點（3D 飛行畫面）：呼叫端給 view.project，城的每個點都走**跟地形
+       完全同一條投影式**算出螢幕位置。
+     為什麼 3D 不能用仿射：那條投影是 1/z 的非線性，而一座城橫跨很大的深度
+     範圍——用單一仿射矩陣在中心點做線性近似，近距離時 tilt ∝ (alt−gh)/z
+     會衝過 1（＝縱向被拉得比橫向長），整座城就「立起來」；而且無論怎麼
+     調參數，城與地形都不可能真正貼合。逐點投影沒有這個問題：城的每個點
+     與它腳下的地形用同一個公式，天生就是黏住的。
+     ⚠ X/Y 會對同一點各呼叫一次，這裡記一格快取避免算兩遍。 */
+  const proj = view.project || null;
+  let _px = NaN, _py = NaN, _pr = null;
+  const P = (wx, wy) => {
+    if (wx !== _px || wy !== _py) { _px = wx; _py = wy; _pr = proj(wx, wy); }
+    return _pr;
+  };
+  const X = proj ? ((wx, wy) => P(wx, wy)[0])
+                 : ((wx, wy) => ox + (wx * rc - wy * rs) * scale);
+  const Y = proj ? ((wx, wy) => P(wx, wy)[1])
+                 : ((wx, wy) => oy + (wx * rs + wy * rc) * scale * tilt);
   const screenDia = s.radius * 2 * scale;
 
   /* ── LOD ────────────────────────────────────────────────────── */
