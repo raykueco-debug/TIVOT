@@ -1602,9 +1602,16 @@ function updateEnemy(dt,now){
     enemy.hx=Math.cos(na); enemy.hy=Math.sin(na);
     /* 追擊時沉到玩家高度**之下**：船是固定畫在畫面 76% 高的精靈，
        敵人若與船同高，投影出來會停在地平線附近（畫面 30% 高）——
-       兩者永遠碰不到一起，逼近的壓迫感就沒了。沉下去牠才會朝船壓過來。 */
-    const wantAlt=cam.alt-C.diveAlt;
-    enemy.alt+=clamp(wantAlt-enemy.alt,-0.10*dt,0.10*dt);
+       兩者永遠碰不到一起，逼近的壓迫感就沒了。
+       ⚠ 原本是「以固定最大速率朝定值下沉」：追擊一觸發就瞬間進入最大下降率、
+         到位又突然停住，兩端各有一個速度折點 —— 看起來就是高度驟降一階。
+         改兩件事：
+           · 目標高度隨**接近程度**連續變（越近沉得越深），不是一觸發就跳到底
+           · 用指數逼近而非固定速率，起降兩端都自然收斂
+         再加一點振翅造成的上下浮動，昆蟲本來就不會飛得像條直線。 */
+    const near=clamp(1-dist/Math.max(1,enemy.d0*C.chaseAt),0,1);
+    const wantAlt=cam.alt-C.diveAlt*near;
+    enemy.alt+=(wantAlt-enemy.alt)*(1-Math.exp(-dt/420));
   }
 
   const mv=MAX_SPD*C.speedK*dt*0.06;        // 與玩家同一套積分（見 update 的 mv）
@@ -1644,9 +1651,23 @@ function drawEnemy3D(scaleH,horizon,sinp,cosp,now){
             z, W/(2*z)];
   };
   // 頭的深度先算一次：整隻在身後或太遠就不畫
-  const hp=project(enemy.x,enemy.y,enemy.alt);
+  const hp=project(enemy.x,enemy.y,enemy.alt);   // bob 只影響繪製，剔除用本體高度
   const zc=hp[2];
   if(zc>ZFAR*0.95) return;
+
+  const S=sky();
+  /* 振翅浮動：疊在繪製端而不是寫回 enemy.alt —— 寫回去會跟上面的指數逼近
+     互相拉扯，變成一邊追目標一邊被浮動推開，收斂不了。 */
+  const bob=Math.sin(now*0.0031+enemy.phase)*5.5;
+  /* 受光：跟船與地形同一盞燈。夜裡壓暗並偏冷（銀月是冷光），
+     日夕之交偏暖 —— 常數與 drawShip 的色調同源。 */
+  const nightK=clamp(1-S.day*1.2,0,1);
+  const lit=clamp(0.26+S.day*0.74,0.26,1);
+  const warmR=lerp(1,1.14,S.dusk), warmG=lerp(1,0.94,S.dusk), warmB=lerp(1,0.78,S.dusk);
+  const coolR=lerp(1,0.72,nightK), coolG=lerp(1,0.80,nightK), coolB=lerp(1,1.06,nightK);
+  const shade=(r,g,b,a)=>'rgba('+Math.round(clamp(r*lit*warmR*coolR,0,255))+','
+                               +Math.round(clamp(g*lit*warmG*coolG,0,255))+','
+                               +Math.round(clamp(b*lit*warmB*coolB,0,255))+','+a+')';
 
   /* 體節沿**軌跡**排，不是沿 −heading 拉一條直線。
      直線的話整條蟲是剛體，轉向時會像一根棒子在原地轉。沿軌跡排之後，
@@ -1673,12 +1694,9 @@ function drawEnemy3D(scaleH,horizon,sinp,cosp,now){
     let ux=base.x-aft.x, uy=base.y-aft.y;
     const ul=Math.hypot(ux,uy)||1; ux/=ul; uy/=ul;   // 該節的局部前進方向
     const off=Math.sin(wob-i*C.wavePhase)*C.waveAmp*(0.35+i/C.segs);   // 尾巴擺幅大
-    pts.push(project(base.x-uy*off, base.y+ux*off, enemy.alt));
+    pts.push(project(base.x-uy*off, base.y+ux*off, enemy.alt+bob));
   }
 
-  const S=sky();
-  const lit=clamp(0.30+S.day*0.70,0.30,1);         // 夜裡壓暗，同船與地形
-  const shade=(r,g,b,a)=>'rgba('+Math.round(r*lit)+','+Math.round(g*lit)+','+Math.round(b*lit)+','+a+')';
 
   /* ── 像素化：先縮小再放大 ─────────────────────────────────────
      牠是用向量畫的，邊緣本來就是平滑的——貼在 234×334 上採樣的地形上，
@@ -1757,6 +1775,30 @@ function drawEnemy3D(scaleH,horizon,sinp,cosp,now){
     const ang=Math.atan2(pts[0][1]-pts[1][1], pts[0][0]-pts[1][0]);
     EC.fillStyle=shade(70,46,40,1);
     EC.beginPath(); EC.ellipse(P[0],P[1],r*1.15,r*0.9,0,0,Math.PI*2); EC.fill();
+    /* 眼睛：夜裡閃紅光。
+       ⚠ 亮度不吃 shade()：那盞燈是「反射的天光」，而眼睛是**自體發光**，
+         天越暗它該越顯眼而不是越暗——照 shade 走就會跟著全身一起沉下去。
+       ⚠ 用 lighter 疊加：紅點要在暗底上「亮起來」而不是「塗上去」。
+       白天也留一點餘光，只是被日光壓過（同銀月的處理）。 */
+    {
+      const puls=0.55+0.45*Math.sin(now*0.0125+enemy.phase*3);
+      const glow=(0.16+nightK*0.84)*puls;
+      const er=r*0.30, ex=r*0.42;
+      EC.save(); EC.globalCompositeOperation='lighter';
+      for(const sgn of [1,-1]){
+        const gx=P[0]+Math.cos(ang)*ex-Math.sin(ang)*sgn*r*0.40;
+        const gy=P[1]+Math.sin(ang)*ex+Math.cos(ang)*sgn*r*0.40;
+        const gg=EC.createRadialGradient(gx,gy,0,gx,gy,Math.max(1.2,er*2.6));
+        gg.addColorStop(0,'rgba(255,'+Math.round(70*glow)+','+Math.round(40*glow)+','+(0.95*glow).toFixed(3)+')');
+        gg.addColorStop(0.35,'rgba(226,26,18,'+(0.55*glow).toFixed(3)+')');
+        gg.addColorStop(1,'rgba(180,10,8,0)');
+        EC.fillStyle=gg;
+        EC.beginPath(); EC.arc(gx,gy,Math.max(1.2,er*2.6),0,Math.PI*2); EC.fill();
+        EC.fillStyle='rgba(255,'+Math.round(150*glow+40)+','+Math.round(120*glow+30)+','+(0.9*glow+0.1).toFixed(3)+')';
+        EC.beginPath(); EC.arc(gx,gy,Math.max(0.6,er),0,Math.PI*2); EC.fill();
+      }
+      EC.restore();
+    }
     EC.strokeStyle=shade(168,34,26,0.95); EC.lineWidth=Math.max(0.7,r*0.22);
     for(const sgn of [1,-1]){                                  // 觸角
       const a2=ang+sgn*0.42;
