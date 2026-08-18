@@ -1117,10 +1117,16 @@ async function loadWorld(){
       }
       if(!best || best.d2>60*60) continue;
       const h0=HGT[best.ay*MAPW+best.ax], h1=best.bh;
-      const n=Math.max(2,Math.ceil(Math.sqrt(best.d2))*2);
+      /* ⚠ 起點往**城心方向**再退 10 像素：接點是「城內水域最外緣的那一格」，
+         從那裡起算的話，城區與水道之間仍隔著插畫邊緣那一圈陸地 ——
+         使用者看到的「城與河之間還有森林」就是這一圈。往回咬進城區才接得上。 */
+      const bx0r=best.ax+(S.x-best.ax)*0.0, by0r=best.ay+(S.y-best.ay)*0.0;
+      const backLen=10, bvx=(S.x-best.ax), bvy=(S.y-best.ay), bvl=Math.hypot(bvx,bvy)||1;
+      const sx0r=best.ax+bvx/bvl*backLen, sy0r=best.ay+bvy/bvl*backLen;
+      const n=Math.max(2,Math.ceil(Math.hypot(best.bx-sx0r,best.by-sy0r))*2);
       for(let t=0;t<=n;t++){
         const u=t/n;
-        const cx2=best.ax+(best.bx-best.ax)*u, cy2=best.ay+(best.by-best.ay)*u;
+        const cx2=sx0r+(best.bx-sx0r)*u, cy2=sy0r+(best.by-sy0r)*u;
         const hz=h0+(h1-h0)*u;                               // 由城往外遞減
         for(let dy=-3;dy<=3;dy++)for(let dx=-3;dx<=3;dx++){
           const x=Math.round(cx2)+dx, y=Math.round(cy2)+dy;
@@ -1155,32 +1161,47 @@ async function loadWorld(){
         /* ⚠ 水面**比當地岸邊略低就好**（RIVER_CUT），不要挖到某個絕對高度。
            先前是把整條河壓到種子格的高度，地勢一高就挖出一條峽谷 ——
            使用者要的是「河貼在地面上」，不是一道溝。 */
-        const RIVER_CUT=6;
+        /* ⚠ 水位由**當地岸高**決定，然後把低於它的地全部淹滿 —— 這才是
+           「水填滿河谷、只比岸低一點」。先前兩種寫法都不對：壓到固定高度會挖出
+           峽谷；只填「低於種子格」的地則讓水停在谷底、兩側谷壁裸露。
+           岸高取鄰域外圈的中位數（不是最大值：一側有山就會把水位灌到半山腰）。 */
+        const RIVER_CUT=5, RIVER_RISE=26;
         for(const [x,y,h] of seed){
           // 越接近雲海高度＝越靠出海口 → 越寬
           const nearMouth=clamp(1-(h-CLOUD_H)/70,0,1);
           const w=1.8+nearMouth*4.2;
-          // 偏心：把擴張中心往城心推一點，河因此往城靠
           const vx=cxm-x, vy=cym-y, vl=Math.hypot(vx,vy)||1;
           const ox=vx/vl*Math.min(1.6,vl*0.06), oy=vy/vl*Math.min(1.6,vl*0.06);
-          const rr2=Math.ceil(w)+1;
+          const rr2=Math.ceil(w)+2;
+          /* 岸高：取外圈（w~w+2）非河道格的中位數 */
+          const ring=[];
+          for(let dy=-rr2;dy<=rr2;dy++)for(let dx=-rr2;dx<=rr2;dx++){
+            const d2=Math.hypot(dx-ox,dy-oy);
+            if(d2<w||d2>w+2) continue;
+            const px=x+dx, py=y+dy;
+            if(px<0||py<0||px>=MAPW||py>=MAPH) continue;
+            const j=py*MAPW+px;
+            if(RIV[j]||HGT[j]<=CLOUD_H) continue;
+            ring.push(HGT[j]);
+          }
+          let lvl=h;
+          if(ring.length){
+            ring.sort((a2,b2)=>a2-b2);
+            lvl=Math.max(h, Math.min(h+RIVER_RISE, ring[ring.length>>1]-RIVER_CUT));
+          }
           for(let dy=-rr2;dy<=rr2;dy++)for(let dx=-rr2;dx<=rr2;dx++){
             const px=x+dx, py=y+dy;
             if(px<0||py<0||px>=MAPW||py>=MAPH) continue;
             if(Math.hypot(dx-ox,dy-oy)>w) continue;
             const j=py*MAPW+px;
             if(HGT[j]<=CLOUD_H) continue;                    // 已經是雲海就別碰
-            /* ⚠ **水只填低於水面的地，高過水面的就是岸。**
-               先前兩種寫法都錯：壓到固定高度會挖出峽谷；改成逐格「當地岸高 −6」
-               則讓水面跟著地勢爬上山坡 —— 水面是**水平**的，不會有坡度，
-               畫面上就是一片貼在山坡上的藍色。
-               所以這裡不再動地形高度，只判斷「這一格淹不淹得到」。 */
-            if(HGT[j]>h+RIVER_CUT) continue;                 // 比水面高：那是岸
-            if(HGT[j]<h){ HGT[j]=h; raw[j]=h/PEAK_SCALE; }   // 低窪處填到水面，水面才是平的
+            if(HGT[j]>lvl+1) continue;                       // 高過水位：那是岸，留著
+            if(HGT[j]!==lvl){ HGT[j]=lvl; raw[j]=lvl/PEAK_SCALE; }   // 淹到水位，水面才是平的
             RIV[j]=1; COL[j]=rgb(84,120,142);
           }
         }
       }
+
       /* ── 出海口：一路挖到大陸邊緣，全程不爬坡 ──────────────
          ⚠ 方向**不能用 `sea` 那個欄位**。它是給棧橋用的「向海方位」，
            實測薇拉馮德最近的雲海在 2.8 rad，而 sea 寫的是 1.90 —— 照它挖
