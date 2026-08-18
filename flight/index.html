@@ -53,32 +53,63 @@
   #mapCap{color:var(--parch);font-size:10px;letter-spacing:.2em;opacity:.5;text-align:center;}
   #mapClose{position:absolute;top:8px;right:8px;z-index:2;}
   /* ══ 載入畫面 ══
-     樣式照搬主程式的 #assetLoader（金色進度圈 + 監察官立繪 + 對話框輪播），
-     但**不共用**：這裡是獨立的一份，日後要換成船艦／航行教學，
-     改這邊不會動到戰鬥那側的載入提示。 */
-  #boot{position:fixed;inset:0;background:#05060c;z-index:50;overflow:hidden;}
+     排版與主程式的啟動讀取畫面（style.css 的 #assetLoader）**逐項對齊**：
+     圈徑/位置、立繪舞台高度、對話框寬度與錨點、底部訊息位置、字級與字距、
+     光圈呼吸與文字呼吸動畫全數一致（主程式那邊的圈後來會被 placeRing 對到
+     首頁紋章上，這裡沒紋章，吃的就是那邊 CSS 的預設保底值）。
+     色盤也在 #boot 內局部覆寫成主程式的 gold/ink，不影響飛行 HUD 自己的金色。
+     ⚙ 但**不共用同一份 DOM/提示**：這裡是獨立的一份，日後要換成船艦／航行教學，
+       改這邊不會動到戰鬥那側的載入提示。 */
+  #boot{position:fixed;inset:0;z-index:50;overflow:hidden;background:#0a0812;
+    /* 局部色盤/字體：跟主程式 style.css :root 一致，作用域限於讀取畫面 */
+    --gold:#d4a94a; --gold-dim:#8a6d2e; --ink:#ece6d8;
+    color:#d9c68a;
+    font-family:"Iowan Old Style","Palatino Linotype",Georgia,"Songti TC",serif;}
   #boot.hide{display:none;}
-  #bRing{position:absolute;left:50%;top:23%;width:132px;height:132px;transform:translate(-50%,-50%);}
-  #bRing svg{width:100%;height:100%;transform:rotate(-90deg);}
-  #bRing .rail{fill:none;stroke:rgba(201,162,39,.16);stroke-width:3;}
-  #bRing .prog{fill:none;stroke:var(--gold);stroke-width:3;stroke-linecap:round;
-    transition:stroke-dashoffset .35s ease;}
-  #bRingTxt{position:absolute;inset:0;display:grid;place-items:center;text-align:center;}
-  #bPct{color:var(--gold);font-size:19px;letter-spacing:.06em;}
-  #bCap{color:var(--parch);opacity:.45;font-size:8px;letter-spacing:.24em;margin-top:2px;}
-  #bStage{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:flex-end;
-    gap:10px;padding:0 14px calc(env(safe-area-inset-bottom) + 16px);}
-  #bPortrait{width:38%;max-width:190px;object-fit:contain;object-position:bottom;
-    filter:drop-shadow(0 6px 18px rgba(0,0,0,.7));opacity:0;transition:opacity .5s;}
+  /* 金色光圈讀取：進度沿圈自 12 點鐘起順時針推進；圈內上=百分比、下=地名字樣 */
+  #bRing{position:absolute;left:50%;top:23%;width:200px;height:200px;
+    transform:translate(-50%,-50%);border-radius:50%;
+    animation:bRingGlow 2.4s ease-in-out infinite;}
+  #bRing svg{position:absolute;inset:0;width:100%;height:100%;
+    transform:rotate(-90deg);overflow:visible;}
+  #bRing .rail{fill:none;stroke:rgba(217,198,138,.18);stroke-width:2.5;}
+  #bRing .prog{fill:none;stroke:var(--gold);stroke-width:2.5;stroke-linecap:round;
+    transition:stroke-dashoffset .25s ease;filter:drop-shadow(0 0 4px rgba(217,198,138,.7));}
+  @keyframes bRingGlow{
+    0%,100%{box-shadow:0 0 6px rgba(217,198,138,.18),inset 0 0 8px rgba(217,198,138,.1);}
+    50%{box-shadow:0 0 22px rgba(217,198,138,.5),inset 0 0 14px rgba(217,198,138,.25);}}
+  #bRingTxt{position:absolute;inset:0;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:7px;
+    animation:bTextBreath 2.4s ease-in-out infinite;}
+  #bPct{font-size:24px;letter-spacing:2px;color:var(--gold);font-variant-numeric:tabular-nums;}
+  #bCap{font-size:10.5px;letter-spacing:3px;color:var(--gold);opacity:.85;}
+  @keyframes bTextBreath{
+    0%,100%{text-shadow:0 0 4px rgba(217,198,138,.25);opacity:.8;}
+    50%{text-shadow:0 0 14px rgba(217,198,138,.85);opacity:1;}}
+  /* 立繪舞台：吃畫面下半，立繪 contain 貼底、底緣漸隱（同 #alStage） */
+  #bStage{position:absolute;left:0;right:0;bottom:0;height:64%;
+    display:flex;justify-content:center;align-items:flex-end;pointer-events:none;}
+  #bPortrait{width:auto;max-width:88%;max-height:100%;object-fit:contain;object-position:bottom;
+    filter:drop-shadow(0 6px 24px rgba(0,0,0,.7));opacity:0;transition:opacity .6s ease;
+    -webkit-mask-image:linear-gradient(to bottom,#000 86%,transparent 100%);
+    mask-image:linear-gradient(to bottom,#000 86%,transparent 100%);}
   #bPortrait.on{opacity:1;}
-  #bBubble{flex:1;background:rgba(8,9,14,.82);border:1px solid rgba(201,162,39,.42);
-    padding:9px 12px;margin-bottom:26px;min-height:74px;}
-  #bBubble .nm{color:var(--gold);font-size:10px;letter-spacing:.24em;margin-bottom:5px;}
-  #bHint{color:var(--parch);font-size:11.5px;line-height:1.85;opacity:0;transition:opacity .55s;}
-  #bHint.on{opacity:.92;}
-  #bMsg{position:absolute;left:0;right:0;top:44%;text-align:center;
-    color:var(--gold);font-size:11px;letter-spacing:.3em;}
-  #bMsg small{display:block;color:var(--parch);opacity:.5;font-size:10px;letter-spacing:.1em;margin-top:6px;}
+  /* 對話框：疊在立繪偏下（同 #alBubble） */
+  #bBubble{position:absolute;left:50%;bottom:15%;transform:translateX(-50%);
+    width:82%;max-width:300px;background:rgba(16,12,24,.72);
+    border:1px solid var(--gold-dim);border-radius:8px;padding:10px 13px;text-align:left;
+    box-shadow:0 4px 20px rgba(0,0,0,.55);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);}
+  #bBubble .nm{font-size:11px;letter-spacing:2px;color:var(--gold);margin-bottom:5px;opacity:.9;}
+  /* Hint：整句淡入停留淡出（不打字）；min-height 兩行防換句時框體跳動 */
+  #bHint{font-size:13px;letter-spacing:.5px;line-height:1.6;color:var(--ink);
+    min-height:3.2em;opacity:0;transition:opacity .4s ease;}
+  #bHint.on{opacity:1;}
+  /* 底部訊息：位置同 #alMsg（安全區 + 26px）；small 是飛行版多出的階段進度字句 */
+  #bMsg{position:absolute;left:0;right:0;
+    bottom:calc(env(safe-area-inset-bottom,0px) + 26px);
+    text-align:center;font-size:14px;letter-spacing:4px;color:var(--gold);}
+  #bMsg small{display:block;color:var(--ink);opacity:.5;font-size:10px;
+    letter-spacing:1px;margin-top:6px;}
 </style>
 </head>
 <body>
@@ -109,17 +140,18 @@
 <div id="boot">
   <div id="bRing">
     <svg viewBox="0 0 100 100">
-      <circle class="rail" cx="50" cy="50" r="46"/>
-      <circle class="prog" id="bProg" cx="50" cy="50" r="46"
-              stroke-dasharray="289.03" stroke-dashoffset="289.03"/>
+      <circle class="rail" cx="50" cy="50" r="48"/>
+      <circle class="prog" id="bProg" cx="50" cy="50" r="48"
+              stroke-dasharray="301.59" stroke-dashoffset="301.59"/>
     </svg>
-    <div id="bRingTxt"><div><div id="bPct">0%</div><div id="bCap">SILVERMOON</div></div></div>
+    <!-- 圈內文字：上百分比、下字樣（層級同 #alRingTxt，不包多餘一層） -->
+    <div id="bRingTxt"><div id="bPct">0%</div><div id="bCap">SILVERMOON</div></div>
   </div>
-  <div id="bMsg">載 入 銀 月 大 陸<small id="bootMsg"></small></div>
   <div id="bStage">
     <img id="bPortrait" alt="">
     <div id="bBubble"><div class="nm" id="bName"></div><div id="bHint"></div></div>
   </div>
+  <div id="bMsg">載 入 銀 月 大 陸<small id="bootMsg"></small></div>
 </div>
 
 <script src="settlement.js"></script>
@@ -2016,20 +2048,25 @@ const BOOT_HINTS=[
 const BOOT_NAME='監察官　フレイヤ';
 const bootUI=(()=>{
   const $=id=>document.getElementById(id);
-  const RING=289.03;
-  let hintI=Math.floor(Math.random()*BOOT_HINTS.length), timer=0;
+  const RING=301.59;   // r=48 的周長（與主程式 #alRingProg 同規格）
+  // 節奏同主程式讀取畫面：洗牌後依序循環（＝隨機且整輪不重複），
+  //   淡入 → 停 HOLD(5s) → 淡出 → FADE+50 後換句（HOLD/FADE 值同 config.tuning）
+  const HOLD=5000, FADE=400;
+  const hints=BOOT_HINTS.slice();
+  for(let i=hints.length-1;i>0;i--){ const j=Math.random()*(i+1)|0; [hints[i],hints[j]]=[hints[j],hints[i]]; }
+  let hintI=0, timer=0;
   const im=$('bPortrait');
   im.onload=()=>im.classList.add('on');
   im.src='../resources/inspector/Freya_SI_01.webp';
   $('bName').textContent=BOOT_NAME;
   function cycle(){
     const h=$('bHint');
-    h.classList.remove('on');
-    setTimeout(()=>{
-      h.textContent=BOOT_HINTS[hintI%BOOT_HINTS.length]; hintI++;
-      h.classList.add('on');
-    },560);
-    timer=setTimeout(cycle,5000);
+    h.textContent=hints[hintI++ % hints.length];
+    h.classList.add('on');                       // 淡入
+    timer=setTimeout(()=>{
+      h.classList.remove('on');                  // 淡出
+      timer=setTimeout(cycle, FADE+50);
+    }, HOLD);
   }
   cycle();
   return {
