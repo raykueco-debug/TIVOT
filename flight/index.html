@@ -1576,6 +1576,27 @@ function drawMap(){
   mctx.restore();
   mctx.strokeStyle='rgba(201,162,39,.5)'; mctx.lineWidth=1;
   mctx.beginPath(); mctx.arc(px,py,15,0,Math.PI*2); mctx.stroke();
+
+  /* 座標讀數：自機位置 ＋ 畫面中心（平移查看時就是「你在看哪裡」）。
+     單位是**地圖像素**，與 SETTLEMENTS／build_city.py 同一套 —— 截圖回報時
+     可以直接拿去對資料，不必再靠地形猜位置。 */
+  {
+    const mx=Math.round(cam.x/MAP_SCALE), my=Math.round(cam.y/MAP_SCALE);
+    const deg=Math.round(((cam.angle*180/Math.PI)%360+360)%360);
+    const t1='自機 ('+mx+','+my+')  '+deg+'°  h'+Math.round(cam.alt);
+    /* ⚠ 不顯示「畫面中心的座標」：MV.cx/cy 是**浮雕像素**，而浮雕是斜角投影
+       （reliefXY 會依高度位移），除以 MAP_SS 反推回去是錯的 —— 寧可不給，
+       也不要給一個看起來像座標的錯數字。 */
+    const t2='×'+MV.zoom.toFixed(2)+'  地圖像素';
+    mctx.font='11px "Noto Sans TC",monospace'; mctx.textAlign='left';
+    const w1=Math.max(mctx.measureText(t1).width, mctx.measureText(t2).width);
+    mctx.fillStyle='rgba(6,8,14,.72)';
+    mctx.fillRect(8,8,w1+14,36);
+    mctx.strokeStyle='rgba(201,162,39,.35)'; mctx.lineWidth=1;
+    mctx.strokeRect(8.5,8.5,w1+13,35);
+    mctx.fillStyle='#d9c68a'; mctx.fillText(t1,15,23);
+    mctx.fillStyle='rgba(217,198,138,.72)'; mctx.fillText(t2,15,37);
+  }
 }
 function updateMapMe(){ if(mapOpen) drawMap(); }
 
