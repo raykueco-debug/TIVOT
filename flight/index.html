@@ -1801,9 +1801,17 @@ function drawEnemy3D(scaleH,horizon,sinp,cosp,now){
      pk = BW/W = 0.6，剛好跟地形緩衝同一個解析度級距。
      ⚠ 緩衝範圍要框住整隻（含翅與步足），不然邊緣會被裁掉。
      ⚠ 提示文字不進緩衝——那是 UI，不該跟著糊。 */
+  /* 外框要涵蓋「實際會畫多寬」。
+     ⚠ 這個值原本寫死 52（程序翅的翅展 46 加餘裕）。換成素材之後，
+       一張俯視圖的全寬是蜈蚣 172／羽蛇 290 世界單位，半寬就已經超出 52 ——
+       結果左右被切掉、低解析緩衝被內容塞滿。改成由素材自己算。 */
+  const _art=enemyArt[enemy.kind], _sp=K.sprite;
+  const marginW=(_art&&_sp)
+    ? _art.width*(K.bodyLen/((_sp.body[1]-_sp.body[0])*_art.height))*0.62
+    : 52;
   let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
   for(const P of pts){
-    const m=Math.max(6,P[3]*52);          // 翅展 sc*46 加餘裕
+    const m=Math.max(6,P[3]*marginW);
     if(P[0]-m<x0)x0=P[0]-m; if(P[0]+m>x1)x1=P[0]+m;
     if(P[1]-m<y0)y0=P[1]-m; if(P[1]+m>y1)y1=P[1]+m;
   }
