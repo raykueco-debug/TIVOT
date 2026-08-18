@@ -80,6 +80,9 @@ JOBS = [{
     'src': 'holysee_topdown.png',
     'unsquash': 1.10,      # 已是頂視圖：只補殘餘的縱向壓縮（外框長寬比實測 1.102）
     'nowater': True,       # 藍色圓頂不是水
+    # ⚠ 試過 'texture'（局部標準差）想把白色尖塔也抓成街廓 —— 是退步：整圈環廊
+    #   連成一個 33000px 的連通區，被 30px 格硬切成方塊，圓頂反而消失。
+    #   'dark' 至少讓深藍圓頂各自立起來。真正的尖塔要等 Ray 的灰階高度圖。
     'dst': 'holysee_plan.webp',
     'hdst': 'holysee_h.webp',
     'mdst': 'holysee_mass.webp', 'jdst': 'holysee_mass.json',
@@ -127,14 +130,31 @@ POLY_MAX = 12      # 單一街廓的頂點數上限
 ATLAS_PAD = 1
 
 
-def extract_blocks(rgb, al, built, hm, name):
-    """回傳 (blocks, atlas_image)。blocks 是 dict 列表，座標都在插畫像素空間。"""
+def extract_blocks(rgb, al, built, hm, name, mode='dark'):
+    """回傳 (blocks, atlas_image)。blocks 是 dict 列表，座標都在插畫像素空間。
+
+    mode='dark'    密集市街：街道是**亮**的網、街廓是暗的塊 → 取「比鄰域暗」。
+    mode='texture' 聖王廳這種「大片平坦廣場 ＋ 四周建築」：廣場與白色尖塔都亮，
+                   亮度分不開。改用**局部紋理能量**（局部標準差）—— 廣場是平滑的
+                   鋪面（低），建築有柱列、窗、圓頂（高）。
+                   ⚠ 非用不可：'dark' 在聖王廳只會抓到深藍色的圓頂，白色尖塔
+                     因為亮而被歸成「街道」，結果整圈尖塔立不起來。
+    """
     lum = (rgb * np.array([0.299, 0.587, 0.114])).sum(axis=2)
-    lo = np.asarray(Image.fromarray(np.clip(lum, 0, 255).astype(np.uint8))
-                    .filter(ImageFilter.GaussianBlur(10.0))).astype(np.float32)
-    hp = lum - lo
-    T = float(np.percentile(hp[built], ROOF_Q))
-    roof = (built & (hp <= T)).astype(np.uint8)
+    if mode == 'texture':
+        L8 = Image.fromarray(np.clip(lum, 0, 255).astype(np.uint8))
+        mu = np.asarray(L8.filter(ImageFilter.GaussianBlur(4.0))).astype(np.float32)
+        m2 = np.asarray(Image.fromarray(np.clip(lum * lum / 255, 0, 255).astype(np.uint8))
+                        .filter(ImageFilter.GaussianBlur(4.0))).astype(np.float32) * 255
+        sd = np.sqrt(np.maximum(0.0, m2 - mu * mu))
+        T = float(np.percentile(sd[built], 100.0 - ROOF_Q))
+        roof = (built & (sd > T)).astype(np.uint8)
+    else:
+        lo = np.asarray(Image.fromarray(np.clip(lum, 0, 255).astype(np.uint8))
+                        .filter(ImageFilter.GaussianBlur(10.0))).astype(np.float32)
+        hp = lum - lo
+        T = float(np.percentile(hp[built], ROOF_Q))
+        roof = (built & (hp <= T)).astype(np.uint8)
     # 開運算去掉單像素雜訊；不做閉運算 —— 那會把窄街封起來，街廓就黏成一片
     roof = cv2.morphologyEx(roof, cv2.MORPH_OPEN, np.ones((3, 3), np.uint8))
     n, lab, st, _ = cv2.connectedComponentsWithStats(roof, 8)
@@ -349,7 +369,7 @@ for J in JOBS:
     # ── 街廓量體 ──────────────────────────────────────────────────────
     # ⚠ 用**未糊**的 hm 取高度：上面那個 5.0 的模糊是舊版位移網格頂點時的必要
     #   妥協（相鄰頂點高差太大會把格子剪成長條）。稜柱各自獨立，不需要糊。
-    blocks, atlas = extract_blocks(rgb, al, built, hm, J['dst'])
+    blocks, atlas = extract_blocks(rgb, al, built, hm, J['dst'], J.get('blockmode', 'dark'))
     atlas.save(os.path.join(CITY, J['mdst']), quality=QUALITY, method=6)
     json.dump({
         'w': W2, 'h': H2,

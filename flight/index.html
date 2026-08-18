@@ -364,7 +364,7 @@ const SETTLEMENTS = [
        要再高就得先讓量體改走多邊形（街廓拉伸），不能靠位移網格頂點。 */
   { n:'聖王廳', x:934,  y:606, t:'city2', f:'church',
     plan:'city/holysee_plan.webp', planH:'city/holysee_h.webp',
-    planW:1100, planRot:0.0, planTall:100, noWater:true },
+    planW:1100, planRot:0.0, planTall:100, noWater:true, noLamps:true },
   { n:'大教堂城',     x:1224, y:581, t:'city2', f:'church' },
   { n:'曙光城',       x:1373, y:581, t:'city3', f:'church' },
   { n:'石櫃城',       x:530,  y:311, t:'city2', f:'empire' },
@@ -869,6 +869,7 @@ function buildSettlements(){
     });
     s.plan=S.plan||null; s.planW=S.planW||0; s.planRot=S.planRot||0;
     s.planH=S.planH||null; s.planTall=S.planTall||0;
+    s.noWater=!!S.noWater; s.noLamps=!!S.noLamps;
     s.mx=S.x; s.my=S.y; s.gh=(S.gh!=null?S.gh:CLOUD_H); return s;
   });
   return settleCache;
@@ -1730,6 +1731,12 @@ function buildRelief(){
   const cv=document.createElement('canvas'); cv.width=sw; cv.height=sh;
   const c=cv.getContext('2d');
   const img=c.createImageData(sw,sh), U=new Uint32Array(img.data.buffer);
+  /* 反查表：每個浮雕像素記下「是哪個地圖像素畫的」。
+     ⚠ 非有不可：浮雕是斜角投影、還依高度往上位移，螢幕座標**沒有**解析的
+       反函式（drawMap 的讀數註解也記了這件事）。畫的時候順手記下來才是精確的。
+     ⚠ 後畫的覆蓋先畫的，而迴圈是由遠而近 —— 所以留在表上的正好是看得見的
+       那一格，不必另外做深度判斷。 */
+  const PICK=new Int32Array(sw*sh).fill(-1);
   const SEA=rgb(28,38,52);
   U.fill(0);                                            // 透明底，海另外畫
   const step=Math.round(1/MAP_SS);
@@ -1740,7 +1747,7 @@ function buildRelief(){
       const mx=Math.min(MAPW-1,(x*step)|0);
       const i=my*MAPW+mx, hh=HGT[i];
       if(hh<=CLOUD_H){                                  // 雲海／海：平的一片
-        const py=(gy|0); if(py>=0&&py<sh) U[py*sw+x]=SEA;
+        const py=(gy|0); if(py>=0&&py<sh){ U[py*sw+x]=SEA; PICK[py*sw+x]=i; }
         continue;
       }
       const rise=hh*hK;
@@ -1749,12 +1756,13 @@ function buildRelief(){
       // 頂面：地貌色。側面：同色壓暗 → 讀得出立體，又不必另做岩壁貼圖
       const r0=c0&255, g0=(c0>>8)&255, b0=(c0>>16)&255;
       const face=rgb((r0*0.62)|0,(g0*0.62)|0,(b0*0.66)|0);
-      for(let yy=Math.max(0,top);yy<bot&&yy<sh;yy++)
-        U[yy*sw+x]=(yy<top+2)?c0:face;
+      for(let yy=Math.max(0,top);yy<bot&&yy<sh;yy++){
+        U[yy*sw+x]=(yy<top+2)?c0:face; PICK[yy*sw+x]=i;
+      }
     }
   }
   c.putImageData(img,0,0);
-  relief={ cv, w:sw, h:sh, maxRise, hK, sh0 };
+  relief={ cv, w:sw, h:sh, maxRise, hK, sh0, pick:PICK };
   return relief;
 }
 /* 地圖像素 → 浮雕畫布座標（聚落要坐在地表上，用同一條換算） */
@@ -1861,14 +1869,20 @@ function drawMap(){
        （reliefXY 會依高度位移），除以 MAP_SS 反推回去是錯的 —— 寧可不給，
        也不要給一個看起來像座標的錯數字。 */
     const t2='×'+MV.zoom.toFixed(2)+'  地圖像素';
+    /* 點選讀數（開發用）：回報位置問題時直接把這組數字給我，
+       不必再從地形猜 —— HANDOFF A3 那條教訓。 */
+    const t3=MV.pick?('點選 ('+MV.pick[0]+','+MV.pick[1]+')'):null;
     mctx.font='11px "Noto Sans TC",monospace'; mctx.textAlign='left';
-    const w1=Math.max(mctx.measureText(t1).width, mctx.measureText(t2).width);
+    let w1=Math.max(mctx.measureText(t1).width, mctx.measureText(t2).width);
+    if(t3) w1=Math.max(w1, mctx.measureText(t3).width);
+    const bh2=t3?50:36;
     mctx.fillStyle='rgba(6,8,14,.72)';
-    mctx.fillRect(8,8,w1+14,36);
+    mctx.fillRect(8,8,w1+14,bh2);
     mctx.strokeStyle='rgba(201,162,39,.35)'; mctx.lineWidth=1;
-    mctx.strokeRect(8.5,8.5,w1+13,35);
+    mctx.strokeRect(8.5,8.5,w1+13,bh2-1);
     mctx.fillStyle='#d9c68a'; mctx.fillText(t1,15,23);
     mctx.fillStyle='rgba(217,198,138,.72)'; mctx.fillText(t2,15,37);
+    if(t3){ mctx.fillStyle='#7fd0a0'; mctx.fillText(t3,15,51); }
   }
 }
 function updateMapMe(){ if(mapOpen) drawMap(); }
@@ -1915,7 +1929,11 @@ mapCv.addEventListener('wheel',e=>{
   zoomAt(e.clientX-r.left, e.clientY-r.top, e.deltaY<0?1.18:1/1.18);
 },{passive:false});
 const mPts=new Map(); let mPinch=0;
-mapCv.addEventListener('pointerdown',e=>{ mapCv.setPointerCapture(e.pointerId); mPts.set(e.pointerId,{x:e.clientX,y:e.clientY}); });
+let mDown=null;
+mapCv.addEventListener('pointerdown',e=>{
+  mapCv.setPointerCapture(e.pointerId); mPts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  mDown={x:e.clientX,y:e.clientY,n:mPts.size};
+});
 mapCv.addEventListener('pointermove',e=>{
   const p=mPts.get(e.pointerId); if(!p) return;
   const dx=e.clientX-p.x, dy=e.clientY-p.y;
@@ -1932,7 +1950,26 @@ mapCv.addEventListener('pointermove',e=>{
     mPinch=d;
   }
 });
-const mUp=e=>{ mPts.delete(e.pointerId); if(mPts.size<2) mPinch=0; };
+/* 點一下讀座標：拖曳超過 4px 就不算點選（不然平移完會順便標一個點）。
+   走浮雕的反查表，不是反推 —— 見 buildRelief 的 PICK。 */
+function mapPick(cssX,cssY){
+  const { w, h, base }=mapFit(), R=relief; if(!R||!R.pick) return;
+  const sc=base*MV.zoom, ox=w/2-MV.cx*sc, oy=h/2-MV.cy*sc;
+  const rx=Math.round((cssX-ox)/sc), ry=Math.round((cssY-oy)/sc);
+  if(rx<0||ry<0||rx>=R.w||ry>=R.h){ MV.pick=null; drawMap(); return; }
+  const i=R.pick[ry*R.w+rx];
+  MV.pick = i<0 ? null : [i%MAPW, (i/MAPW)|0];
+  drawMap();
+}
+const mUp=e=>{
+  if(mDown && mDown.n===1 && mPts.size===1 &&
+     Math.abs(e.clientX-mDown.x)<4 && Math.abs(e.clientY-mDown.y)<4){
+    const r=mapCv.getBoundingClientRect();
+    mapPick(e.clientX-r.left, e.clientY-r.top);
+  }
+  mDown=null;
+  mPts.delete(e.pointerId); if(mPts.size<2) mPinch=0;
+};
 mapCv.addEventListener('pointerup',mUp);
 mapCv.addEventListener('pointercancel',mUp);
 addEventListener('resize',()=>{ if(mapOpen) drawMap(); });
@@ -4123,7 +4160,8 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
       /* 夜間路燈：城貼回去之後才畫，燈要在城上面。
          ⚠ 距離太遠就整批跳過：那個尺寸下每盞燈不到一個像素，畫了只是把城
            洗成一片亮斑，還要付幾百次 fillRect。 */
-      if(nightK>0.06 && o.z<1800){
+      /* ⚠ noLamps：聖王廳是聖座不是市街，不點市井燈火。 */
+      if(nightK>0.06 && o.z<1800 && !o.s.noLamps){
         const LM=lampsFor(o.s,planImg);
         const hwL=o.s.planW*0.5, hhL=hwL*planImg.height/planImg.width;
         const caL=Math.cos(o.s.planRot), saL=Math.sin(o.s.planRot);
