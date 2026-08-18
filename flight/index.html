@@ -1055,6 +1055,71 @@ async function loadWorld(){
      ⚠ HGT 與 raw 都要改：下面的坡度是從 raw 差分算的，只改 HGT 會讓
        城邊的法線還是舊坡度（同邊緣抬升那段的理由）。
      ⚠ 外圈留一段裙帶平滑過渡，否則城界會是一圈垂直斷崖。 */
+  /* ── 河面整平 ─────────────────────────────────────────────────
+     ⚠ 源頭在上游：terrain_generator.py 把河道刻成一個**固定灰階**（34，
+       ＝69 世界單位），所以每條河都是「平底＋垂直壁」的溝。實測三處剖面
+         (1065,636) … 184 185 | 69 ×6  | 216 224 …
+         (742,636)  … 288 290 | 69 ×15 | 334 341 …
+         (1498,498) … 385 373 | 88 90  | 355 355 …
+       兩岸落差 111~332，一格之內掉下去 —— 那是渠不是河。全圖 24.1% 的河道格
+       被切得比岸低 60 單位以上。這正是 HANDOFF C 節列的第一種錯法
+       「壓到固定高度 → 挖出峽谷」，只是它發生在資料生成階段。
+     ⚠ 修在這裡而不是重生高度圖：重生會動到整個世界的地貌。
+     ⚠ 只抬**河道格自己**。槽壁是垂直的，所以填滿槽就是一條貼著地面的河，
+       不會淹到兩側的谷地 —— 不需要（也不該）做泛洪。
+     ⚠ 岸高取低分位數而不是中位數／最大值：河貼著崖腳走時，另一側的山會
+       把水位灌到半山腰（既有的挖河段也記著同一條）。 */
+  step(0.62,'整平河面…');
+  {
+    const CUT=6;                       // 水面比岸低這麼多
+    const BANK_Q=0.35;                 // 岸高取這個分位數
+    const idx=[];
+    for(let i=0;i<MAPW*MAPH;i++) if(RIV[i]&&HGT[i]>CLOUD_H) idx.push(i);
+    const lv=new Float32Array(idx.length);
+    const ring=[];
+    for(let k=0;k<idx.length;k++){
+      const i=idx[k], x=i%MAPW, y=(i/MAPW)|0;
+      ring.length=0;
+      let minBank=1e9;
+      for(let dy=-7;dy<=7;dy++){
+        const py=y+dy; if(py<0||py>=MAPH) continue;
+        for(let dx=-7;dx<=7;dx++){
+          const d2=dx*dx+dy*dy; if(d2<16||d2>49) continue;   // 半徑 4~7 的環
+          const px=x+dx; if(px<0||px>=MAPW) continue;
+          const j=py*MAPW+px;
+          if(RIV[j]||HGT[j]<=CLOUD_H) continue;              // 只看陸上的岸
+          ring.push(HGT[j]); if(HGT[j]<minBank) minBank=HGT[j];
+        }
+      }
+      if(!ring.length){ lv[k]=HGT[i]; continue; }
+      ring.sort((a,b)=>a-b);
+      let t=ring[Math.min(ring.length-1,(ring.length*BANK_Q)|0)]-CUT;
+      if(t>minBank-2) t=minBank-2;                           // 絕不高過最低的岸
+      lv[k]=t>HGT[i]?t:HGT[i];                               // 只抬不降
+    }
+    /* 平滑：水面要平。跟**河道鄰居**取平均，橫向自然拉平、縱向變成緩降。
+       ⚠ 不能跟所有鄰居平均 —— 那會把岸的高度拌進水面。 */
+    const pos=new Map();
+    for(let k=0;k<idx.length;k++) pos.set(idx[k],k);
+    for(let it=0;it<3;it++){
+      const nx=new Float32Array(lv);
+      for(let k=0;k<idx.length;k++){
+        const i=idx[k]; let sum=lv[k], n=1;
+        for(const d of [1,-1,MAPW,-MAPW,MAPW+1,MAPW-1,-MAPW+1,-MAPW-1]){
+          const q=pos.get(i+d); if(q!==undefined){ sum+=lv[q]; n++; }
+        }
+        nx[k]=sum/n;
+      }
+      lv.set(nx);
+    }
+    let raised=0;
+    for(let k=0;k<idx.length;k++){
+      const i=idx[k], v=lv[k];
+      if(v>HGT[i]+0.5){ raised++; HGT[i]=v; raw[i]=v/PEAK_SCALE; }
+    }
+    window.__rivRaised=raised+'/'+idx.length;
+  }
+
   step(0.66,'整平城鎮地基…');
   {
     /* 鎏平範圍：完全整平到 2R，也就是城界外再放一個城區半徑的平地。
