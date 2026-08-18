@@ -454,9 +454,15 @@ let cityFB=null, CFB=null;                  // 手繪平面圖的低解析繪製
      相乘決定 —— 直接換色會把地貌的形狀與烘焙好的明暗一起洗掉，山就不是山了。
    ⚠ 邊長 2 的次方，取樣走 & 遮罩（同雲的貼圖）。這是每幀十七萬次的內迴圈，
      除法與取模都付不起。 */
-const GT=256, GTM=GT-1;                    // 貼圖邊長；1 texel = 1 世界單位
-let GEOK=null;                             // Float32Array(GT*GT*3)：每 texel 的 rgb 倍率
-function loadGeoTex(url){
+const GT=256, GTM=GT-1;                    // 貼圖邊長（2 的次方）
+/* 一個 texel 代表幾個世界單位。1.0 時整片讀起來太密、樹冠太小 ——
+   放大到 1.6 之後樹冠約 26 世界單位（≈13 公尺級的樹頂），一格貼圖 410 單位。 */
+const GEO_SCALE=1.6, GEO_INV=1/GEO_SCALE;
+/* 兩張貼圖（0＝深色針葉、1＝淺色闊葉），每 texel 存「相對自身均值的 rgb 倍率」。
+   ⚠ 存倍率不存顏色：這是細節層，實際顏色由地圖底色相乘決定 —— 直接換色會把
+     地貌的形狀與烘焙好的明暗一起洗掉，山就不是山了。 */
+let GEOK=[null,null];
+function loadGeoTex(url,slot){
   return new Promise(res=>{
     const im=new Image();
     im.onload=()=>{
@@ -472,7 +478,7 @@ function loadGeoTex(url){
         k[q+1]=d[j+1]/(mg||1);
         k[q+2]=d[j+2]/(mb||1);
       }
-      GEOK=k; res();
+      GEOK[slot]=k; res();
     };
     im.onerror=()=>res();                  // 載不到就沒有這一層，其餘照常
     setTimeout(res,4000);
@@ -481,16 +487,30 @@ function loadGeoTex(url){
 }
 /* 每個地圖像素鋪不鋪、鋪多濃（0~255）。載入時算一次，取樣端只讀一個 byte。 */
 let VEGW=null;
-/* 反重複：每 256 單位一格，依格號選 8 種二面體變換之一。整片大陸會重複
-   一百多次，不打散的話眼睛一定抓得到節奏。查表，內迴圈成本近乎零。 */
+/* 反重複：依格號選 8 種二面體變換之一。整片大陸會重複一百多次，
+   不打散的話眼睛一定抓得到節奏。查表，內迴圈成本近乎零。 */
 const GEOROT=new Uint8Array(1024);
 (function(){ for(let i=0;i<1024;i++){ let n=i*374761393; n=(n^(n>>13))*1274126177; GEOROT[i]=(n^(n>>16))&7; } })();
+
+/* ── 分區（哪一片林子是哪一種）────────────────────────────────
+   只鋪一張貼圖的話，反重複做得再好，整片林子的**統計**仍然是均勻的 ——
+   看起來就是「同一種樹密密麻麻鋪滿」。真正的林相是成片的：這一面山是針葉、
+   過了稜線換成闊葉。所以要一層**低頻**的選擇場，週期比樹冠大兩個數量級。
+   兩個來源相加：
+     · 低頻噪聲（週期 VEGSEL_WORLD，雙線性取樣 → 邊界是漸變不是格子）
+     · 高度項：越高越偏深色針葉 —— 這正是「跨山頭會變色」的來源，
+       而且它與地形綁定，不會出現「山頂山腳同一片林子」的怪事。
+   ⚠ 混合帶要窄。真實的林相交界相當清楚，全圖線性混色會糊成一片中間色，
+     反而更均勻。窄帶也順便讓「兩張都要取樣」的像素只佔一小部分。 */
+const VS=64, VSM=VS-1;                     // 選擇場的解析度（2 的次方）
+const VEGSEL_WORLD=5200;                   // 一個週期涵蓋的世界單位（≈260 地圖像素）
+const VEGSEL=new Float32Array(VS*VS);
+const VEG_ALT_LO=120, VEG_ALT_HI=300;      // 這段高度之間由闊葉過渡到針葉
+const VEG_BAND=0.16;                       // 混合帶寬度（選擇值的比例）
 /* 遠處淡出：不淡出的話高頻細節在遠景會走樣成閃爍（跟高度雜訊同一個限制），
-   而且淡出同時把成本收在近景。 */
-/* GEO_AMP＝細節層的強度（1＝完全照貼圖的起伏乘進去）。0.85 太重，地面讀起來
-   是一片深色雜點；0.5 又只剩一層薄紋。0.65 是「看得出是樹冠、但山還是山」。
-   GEO_FAR＝淡出距離。再遠一個 texel 不到一個螢幕像素，只會走樣成閃爍，
-   而且淡出同時把成本收在近景。 */
+   而且淡出同時把成本收在近景。
+   GEO_AMP＝細節層的強度（1＝完全照貼圖的起伏乘進去）。0.85 太重，地面讀起來
+   是一片深色雜點；0.5 又只剩一層薄紋。0.65 是「看得出是樹冠、但山還是山」。 */
 const GEO_FAR=1500, GEO_AMP=0.65;
 
 let cityPts=null, cityGnd=null;
@@ -569,6 +589,11 @@ function genDetail(){
   for(let y=0;y<DET_TILE;y++) for(let x=0;x<DET_TILE;x++){
     const n=pfbm(x/DET_TILE*8, y/DET_TILE*8, 4, 8);   // 週期 8 → 平鋪無接縫
     DETH[y*DET_TILE+x]=clamp((n-0.5)*2*127,-127,127)|0;
+  }
+  /* 林相的低頻選擇場。⚠ 只給 3 個週期、2 個八度：要的是「成片」，
+     不是細碎 —— 八度一多就退回雜訊，分區感就沒了。 */
+  for(let y=0;y<VS;y++) for(let x=0;x<VS;x++){
+    VEGSEL[y*VS+x]=pfbm(x/VS*3, y/VS*3, 2, 3);
   }
 }
 function genStrat(){ for(let i=0;i<256;i++) STRAT[i]=hash(i*7+13,i*3+5); }
@@ -815,8 +840,8 @@ async function loadWorld(){
   {
     const need=SETTLEMENTS.filter(S=>S.veg);
     if(need.length){
-      await loadGeoTex(need[0].veg);          // 目前單一貼圖；全圖鋪設時改成一組
-      if(GEOK){
+      await Promise.all([loadGeoTex('geo/forest_dark.webp',0), loadGeoTex('geo/forest_light.webp',1)]);
+      if(GEOK[0]&&GEOK[1]){
         VEGW=new Uint8Array(MAPW*MAPH);
         for(const S of need){
           const r1=S.vegR||120, r0=r1*0.62;
@@ -1499,8 +1524,21 @@ function render(now){
         if(vegOn){
           const vw=VEGW[mi];
           if(vw){
-            const wx=plx+4096, wy=ply+4096;
-            const cxg=(wx/GT)|0, cyg=(wy/GT)|0;
+            /* ⚠ +4096 再取整：世界座標會是負的，而 |0 是往零截斷，負數那半邊
+               的相位會整個錯開（雲的取樣也踩過同一個坑）。4096 是 GT 的倍數。 */
+            const wx=(plx+40960)*GEO_INV, wy=(ply+40960)*GEO_INV;
+            /* 分區：低頻噪聲（雙線性）＋高度項。高處偏深色針葉 —— 這就是
+               「跨山頭換顏色」的來源，而且與地形綁定，不會山頂山腳同一片林。 */
+            const sxf=(plx+40960)/VEGSEL_WORLD*VS, syf=(ply+40960)/VEGSEL_WORLD*VS;
+            const sx0=sxf|0, sy0=syf|0, su=sxf-sx0, sv=syf-sy0;
+            const r0=(sy0&VSM)*VS, r1=((sy0+1)&VSM)*VS;
+            const ca0=sx0&VSM, cb0=(sx0+1)&VSM;
+            const nz=VEGSEL[r0+ca0]*(1-su)*(1-sv)+VEGSEL[r0+cb0]*su*(1-sv)
+                    +VEGSEL[r1+ca0]*(1-su)*sv   +VEGSEL[r1+cb0]*su*sv;
+            const alt=clamp((hh-VEG_ALT_LO)/(VEG_ALT_HI-VEG_ALT_LO),0,1);
+            const sel=clamp((nz-0.5)*1.9+0.5+alt*0.55-0.18,0,1);   // 1＝深色針葉
+            /* 反重複：每格依格號選 8 種二面體變換之一。 */
+            const cxg=(wx*(1/GT))|0, cyg=(wy*(1/GT))|0;   // 格號＝貼圖格，不是 texel
             let tx=(wx|0)&GTM, ty=(wy|0)&GTM;
             const rot=GEOROT[((cxg*7+cyg*13)&1023)];
             if(rot&1) tx=GTM-tx;
@@ -1508,9 +1546,18 @@ function render(now){
             if(rot&4){ const t2=tx; tx=ty; ty=t2; }
             const q=((ty*GT)+tx)*3;
             const amt=(vw/255)*vegAmt;
-            cr*=1+(GEOK[q  ]-1)*amt;
-            cg*=1+(GEOK[q+1]-1)*amt;
-            cb*=1+(GEOK[q+2]-1)*amt;
+            /* 混合帶之外只取一張（大部分像素走這條）；帶內才兩張都取樣。 */
+            let k0,k1,k2;
+            if(sel<=VEG_BAND){        const K=GEOK[1]; k0=K[q]; k1=K[q+1]; k2=K[q+2]; }
+            else if(sel>=1-VEG_BAND){ const K=GEOK[0]; k0=K[q]; k1=K[q+1]; k2=K[q+2]; }
+            else{
+              const t=(sel-VEG_BAND)/(1-2*VEG_BAND), it=1-t;
+              const A=GEOK[0], B=GEOK[1];
+              k0=A[q]*t+B[q]*it; k1=A[q+1]*t+B[q+1]*it; k2=A[q+2]*t+B[q+2]*it;
+            }
+            cr*=1+(k0-1)*amt;
+            cg*=1+(k1-1)*amt;
+            cb*=1+(k2-1)*amt;
           }
         }
         isRiver=RIV[mi];
