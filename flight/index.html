@@ -1202,6 +1202,75 @@ async function loadWorld(){
         }
       }
 
+      /* ── 把城周圍分散的水域接成一體 ────────────────────────
+         實測 (1390,936) 一帶：西邊是城內水域、東邊是加寬後的河，中間夾著一條
+         十幾像素寬的森林帶 —— 兩塊**互不相連的水體**。使用者反覆看到的
+         「城與河之間還有森林」就是它，而我先前每次都只是把各自的水體再加寬，
+         沒有把中間那道打通。
+         作法：把城周圍的水域做連通標記，取最大的一塊當主水域，其餘只要離得夠近
+         就朝它挖一條水道。⚠ 水位取兩端較低者：接起來的水體必須是同一個水面，
+         取高的那端會讓另一端的水往上爬。 */
+      {
+        const Z=54, W2=Z*2+1;
+        const lab=new Int32Array(W2*W2).fill(-1);
+        const qx=new Int32Array(W2*W2), qy=new Int32Array(W2*W2);
+        const comps=[];
+        const idx=(dx,dy)=>(dy+Z)*W2+(dx+Z);
+        const isW=(dx,dy)=>{
+          const x=S.x+dx,y=S.y+dy;
+          if(x<0||y<0||x>=MAPW||y>=MAPH) return false;
+          const i=y*MAPW+x; return RIV[i]&&HGT[i]>CLOUD_H;
+        };
+        for(let dy=-Z;dy<=Z;dy++)for(let dx=-Z;dx<=Z;dx++){
+          if(!isW(dx,dy)||lab[idx(dx,dy)]>=0) continue;
+          const id=comps.length; let head=0, tail=0;
+          qx[tail]=dx; qy[tail]=dy; tail++; lab[idx(dx,dy)]=id;
+          const px=[];
+          while(head<tail){
+            const cx4=qx[head], cy4=qy[head]; head++;
+            px.push([cx4,cy4]);
+            for(const [ex,ey] of [[1,0],[-1,0],[0,1],[0,-1]]){
+              const nx=cx4+ex, ny=cy4+ey;
+              if(nx<-Z||ny<-Z||nx>Z||ny>Z) continue;
+              if(lab[idx(nx,ny)]>=0||!isW(nx,ny)) continue;
+              lab[idx(nx,ny)]=id; qx[tail]=nx; qy[tail]=ny; tail++;
+            }
+          }
+          comps.push(px);
+        }
+        comps.sort((a2,b2)=>b2.length-a2.length);
+        window.__waterComps=comps.map(c=>c.length);
+        if(comps.length>1){
+          const main=comps[0];
+          for(let k=1;k<comps.length;k++){
+            const c=comps[k];
+            if(c.length<12) continue;                        // 太小的水窪不必接
+            let bd=1e9, ax=0,ay=0,bx=0,by=0;
+            for(const [x1,y1] of c) for(const [x2,y2] of main){
+              const d2=(x1-x2)*(x1-x2)+(y1-y2)*(y1-y2);
+              if(d2<bd){ bd=d2; ax=x1; ay=y1; bx=x2; by=y2; }
+            }
+            if(bd>34*34) continue;                            // 太遠就不硬接
+            const ha=HGT[(S.y+ay)*MAPW+(S.x+ax)], hb=HGT[(S.y+by)*MAPW+(S.x+bx)];
+            const lvl=Math.min(ha,hb);                        // 同一個水面：取低的
+            const n3=Math.max(2,Math.ceil(Math.sqrt(bd))*2);
+            for(let t=0;t<=n3;t++){
+              const u=t/n3;
+              const cx5=S.x+ax+(bx-ax)*u, cy5=S.y+ay+(by-ay)*u;
+              for(let dy=-4;dy<=4;dy++)for(let dx=-4;dx<=4;dx++){
+                const x=Math.round(cx5)+dx, y=Math.round(cy5)+dy;
+                if(x<0||y<0||x>=MAPW||y>=MAPH) continue;
+                if(Math.hypot(x-cx5,y-cy5)>3.4) continue;
+                const i=y*MAPW+x;
+                if(HGT[i]<=CLOUD_H) continue;
+                if(HGT[i]!==lvl){ HGT[i]=lvl; raw[i]=lvl/PEAK_SCALE; }
+                RIV[i]=1; COL[i]=rgb(84,120,142);
+              }
+            }
+          }
+        }
+      }
+
       /* ── 出海口：一路挖到大陸邊緣，全程不爬坡 ──────────────
          ⚠ 方向**不能用 `sea` 那個欄位**。它是給棧橋用的「向海方位」，
            實測薇拉馮德最近的雲海在 2.8 rad，而 sea 寫的是 1.90 —— 照它挖
