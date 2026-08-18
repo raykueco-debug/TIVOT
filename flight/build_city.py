@@ -63,7 +63,28 @@ MAP_SCALE = 20
 CLOUD_H = 44
 PEAK_SCALE = 520
 
+# ⚠ 內陸城不做「拿插畫水域對真實海域」的搜尋（那是港都專用的定位法）：
+#   它們沒有海岸線可對，mx/my 直接取聚落座標、planRot 取 0。
+#   planW 依等級給：帝都級 1250、教廷級 1100、市鎮 620。
 JOBS = [{
+    'src': 'Capital_iso.png',
+    'dst': 'capital_plan.webp',
+    'hdst': 'capital_h.webp',
+    'mx': 1005, 'my': 600, 'planW': 1250, 'planRot': 0.0,
+    'landmarks': [(0.500, 0.430, 0.060, H_LAND)],     # 中央的宮殿群
+}, {
+    'src': 'TheHolySee_iso.png',
+    'dst': 'holysee_plan.webp',
+    'hdst': 'holysee_h.webp',
+    'mx': 934, 'my': 606, 'planW': 1100, 'planRot': 0.0,
+    'landmarks': [(0.500, 0.440, 0.070, H_LAND)],     # 大聖堂
+}, {
+    'src': 'MTown_iso.png',
+    'dst': 'mtown_plan.webp',
+    'hdst': 'mtown_h.webp',
+    'mx': 1693, 'my': 282, 'planW': 620, 'planRot': 0.0,
+    'landmarks': [],
+}, {
     'src': 'Velafonte_iso.png',
     'dst': 'velafonte_plan.webp',
     'hdst': 'velafonte_h.webp',
@@ -82,6 +103,27 @@ print('大陸高度圖 %dx%d，海平面灰階 %.1f' % (hmap.shape[1], hmap.shap
 
 for J in JOBS:
     im = Image.open(os.path.join(CITY, J['src'])).convert('RGBA')
+    # ⚠ 有些插畫是**不透明白底**（實測 Capital / MTown 的四角是 253,253,254,255），
+    #   直接進羽化流程會找不到邊緣，城就變成一塊硬邊的方形貼圖貼在地上。
+    #   白底改用「離白色的距離」轉成 alpha（同 build_dock.py）——單一門檻二值化
+    #   會在建物邊緣留一圈白。
+    _a0 = np.asarray(im)
+    if _a0[:, :, 3].min() > 250:
+        # 背景色由四邊外圈的中位數估出來（不假設是純白：實測 Capital 的背景是
+        # 帶灰的漸層，用「離純白的距離」去背會留下一角不透明 —— 那一角就會變成
+        # 一塊蓋在地形上的淡色方塊）。
+        _e = np.concatenate([_a0[:3, :, :3].reshape(-1, 3), _a0[-3:, :, :3].reshape(-1, 3),
+                             _a0[:, :3, :3].reshape(-1, 3), _a0[:, -3:, :3].reshape(-1, 3)])
+        _bg = np.median(_e, axis=0)
+        _d = np.abs(_a0[:, :, :3].astype(np.float32) - _bg[None, None, :]).max(axis=2)
+        # 容差由背景本身的離散度決定：Capital 的背景是 233~253 的漸層，
+        # 固定容差 8 會讓亮的那一角仍然半透明地留下來（實測 coverage 98.9%）。
+        _sp = float(np.percentile(np.abs(_e.astype(np.float32) - _bg[None, :]).max(axis=1), 92))
+        _t0 = max(10.0, _sp * 1.6)
+        _al = np.clip((_d - _t0) / 40.0, 0, 1) * 255.0
+        im = Image.fromarray(np.dstack([_a0[:, :, :3].astype(np.float32), _al]).astype(np.uint8), 'RGBA')
+        print('  %s：不透明背景 (%d,%d,%d) → 去背，保留 %.1f%%'
+              % (J['src'], _bg[0], _bg[1], _bg[2], 100.0 * (_al > 40).mean()))
     a = np.asarray(im)[:, :, 3]
     ys, xs = np.where(a >= 128)
     im = im.crop((xs.min(), ys.min(), xs.max() + 1, ys.max() + 1))
