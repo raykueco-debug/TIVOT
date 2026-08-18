@@ -737,6 +737,7 @@ const VEGSEL_WORLD=5200;                   // 一個週期涵蓋的世界單位�
 const VEGSEL=new Float32Array(VS*VS);
 const BIOME_TREE=260, BIOME_SNOW=400;      // 樹線／雪線（世界單位，會被噪聲抖動）
 const BIOME_TREE_J=70, BIOME_SNOW_J=60;    // 抖動幅度
+const BIOME_WATER_SL=26;                   // 水面的坡度上限（|SLX|+|SLY|；陸地中位約 19）
 const BIOME_CLIFF=70;                      // 崖面門檻（|SLX|+|SLY|，≈坡度 p90）
 const BIOME_ROCKALT=300;                   // 這個高度以上的崖面用灰岩，以下用褐岩
 const BIOME_WASTE=0.80;                    // 荒地門檻（噪聲高於此才是荒地）——刻意少量
@@ -1169,11 +1170,13 @@ async function loadWorld(){
             if(Math.hypot(dx-ox,dy-oy)>w) continue;
             const j=py*MAPW+px;
             if(HGT[j]<=CLOUD_H) continue;                    // 已經是雲海就別碰
-            /* 目標水面：種子格的高度與「當地岸邊略低」兩者取**高**的 ——
-               取低的就會沿路挖穿地勢，那正是峽谷的來源。 */
-            const bank=HGT[j];
-            const lvl=Math.max(h, bank-RIVER_CUT);
-            if(HGT[j]>lvl){ HGT[j]=lvl; raw[j]=lvl/PEAK_SCALE; }
+            /* ⚠ **水只填低於水面的地，高過水面的就是岸。**
+               先前兩種寫法都錯：壓到固定高度會挖出峽谷；改成逐格「當地岸高 −6」
+               則讓水面跟著地勢爬上山坡 —— 水面是**水平**的，不會有坡度，
+               畫面上就是一片貼在山坡上的藍色。
+               所以這裡不再動地形高度，只判斷「這一格淹不淹得到」。 */
+            if(HGT[j]>h+RIVER_CUT) continue;                 // 比水面高：那是岸
+            if(HGT[j]<h){ HGT[j]=h; raw[j]=h/PEAK_SCALE; }   // 低窪處填到水面，水面才是平的
             RIV[j]=1; COL[j]=rgb(84,120,142);
           }
         }
@@ -2006,16 +2009,24 @@ function render(now){
              ⚠ 界線一律用噪聲抖動而不是混色：真實的樹線雪線是不規則的鋸齒，
                沿等高線切一條平滑的線反而假，而且抖動只要一次取樣。 */
           let tex, mixTo=-1, mixT=0;
-          const sl=(SLX[mi]<0?-SLX[mi]:SLX[mi])+(SLY[mi]<0?-SLY[mi]:SLY[mi]);
-          if(RIV[mi]){
+          const sl=(SLX[mi]<0?-SLX[mi]:SLX[mi])+(SLY[mi]<0?-SLY[mi]:SLY[mi]);   // 水與崖都要用
+          /* ⚠ 水面是**平的**。原始河道遮罩是從地形圖的顏色反推的（b>r+16…），
+             本來就有雜訊，其中不少落在山坡上；ver -189 把水推成飽和青色之後，
+             那些坡上的雜訊整片亮起來 —— 使用者看到的「一片藍貼在山坡上」就是這個。
+             坡度一超過門檻就不當水看，直接交給後面的地貌分支。 */
+          if(RIV[mi] && sl<BIOME_WATER_SL){
             /* 河。⚠ 與路面／屋頂同一個陷阱：地貌層是**相乘**的，底色是綠的
                河道格乘上水的紋理之後仍然是綠的 —— 畫面上就是「該是河卻是森林」。
                水在地圖底色裡不一定存在（我後來挖出來的河道尤其），
                所以底色本身要推向水的絕對色，再套紋理。 */
             const deep=(nz>0.5);
             tex=deep?G_WL:G_WD;                           // 河：深淺兩種水交錯
-            const wr=deep?81:15, wg=deep?167:92, wb=deep?164:101;   // 兩張水的均值色
-            cr+=(wr-cr)*0.80; cg+=(wg-cg)*0.80; cb+=(wb-cb)*0.80;
+            /* ⚠ 推的目標**不是貼圖的均值**。兩張水貼圖是熱帶青綠
+               （81,167,164 / 15,92,101），跟這個世界去飽和的調子差太遠 ——
+               一片水面用近乎平視的角度看就成了一堵青牆。改推地圖自己的河色
+               (84,120,142)，只讓深淺兩種略微分開，紋理的起伏照舊由貼圖給。 */
+            const wr=deep?92:66, wg=deep?126:100, wb=deep?146:124;
+            cr+=(wr-cr)*0.72; cg+=(wg-cg)*0.72; cb+=(wb-cb)*0.72;
           }else if(sl>BIOME_CLIFF+(nz-0.5)*40){
             tex=(hh>BIOME_ROCKALT)?G_RG:G_RB;             // 崖面：高處灰岩、低處褐岩
           }else if(hh>BIOME_SNOW+(nz-0.5)*2*BIOME_SNOW_J){
@@ -2113,7 +2124,14 @@ function render(now){
              沒有別的去處。所以「前一筆（更近的）取樣是雲海」本身就是瀑布的
              充分條件，與落差無關。 */
           const overSea = !first && prevH[i]<=CLOUD_H+12;
-          const fall=isRiver && (rocky>0.40 || overSea);
+          /* ⚠ 內陸的河**預設不是瀑布**。ver -190 把河面抬到「比岸低 6」之後，
+             河相對周圍地勢變高，沿岸落差輕易超過 rocky>0.40（＝61 世界單位），
+             於是整條河的岸邊都被判成瀑布、畫成翻白的水 —— 使用者看到的
+             「河道立面藍藍的」就是這個，不是岸壁沒換色（岩褐在 else 分支，
+             那條路徑根本沒被走到）。
+             真正的瀑布只有兩種：水掉進雲海（overSea），或真的掛在斷崖上
+             （rocky>0.85＝落差 >111 單位，那是崖不是岸）。 */
+          const fall=isRiver && (overSea || rocky>0.85);
           const wamb=ambI+sunI*0.35;          // 崖面朝側，取中間調
           for(let yy=cap;yy<bot;yy++){
             const d=(yy-cap)/Math.max(1,bot-cap);      // 0＝崖頂 1＝沒入雲海
