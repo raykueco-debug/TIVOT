@@ -509,6 +509,10 @@ function draw(ctx, s, view, dbg) {
                  : ((wx, wy) => ox + (wx * rc - wy * rs) * scale);
   const Y = proj ? ((wx, wy) => P(wx, wy)[1])
                  : ((wx, wy) => oy + (wx * rs + wy * rc) * scale * tilt);
+  /* 量體尺寸要用**那一棟自己所在深度**的尺度，不是整座城共用城心的尺度。
+     共用的話近處與遠處的房子一樣大，縱深感整個消失——城看起來像一張
+     平貼的圖案而不是一片有前後的屋海。 */
+  const sAt = proj ? ((wx, wy) => P(wx, wy)[2] || scale) : (() => scale);
   const screenDia = s.radius * 2 * scale;
 
   /* ── LOD ────────────────────────────────────────────────────── */
@@ -578,8 +582,9 @@ function draw(ctx, s, view, dbg) {
     if (it.kind === 'b') {
       /* 伸出陸塊的那一段不長房子，改成碼頭棧板 —— 城的輪廓是幾何生成的
          多邊形，不認得海岸線，臨海的城必然有一部分蓋到水上。 */
-      if (water && water(s, it.o.x, it.o.y)) drawDeck(ctx, it.o, X, Y, scale, pal);
-      else drawBuilding(ctx, it.o, X, Y, scale, pal, lod);
+      const bs = sAt(it.o.x, it.o.y);
+      if (water && water(s, it.o.x, it.o.y)) drawDeck(ctx, it.o, X, Y, bs, pal);
+      else drawBuilding(ctx, it.o, X, Y, bs, pal, lod);
     }
     else if (it.kind === 'l') drawLandmark(ctx, it.o, X, Y, scale, pal, lod);
     else if (it.kind === 'w') drawWallSeg(ctx, it.o, X, Y, scale, pal);

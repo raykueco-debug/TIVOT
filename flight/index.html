@@ -1481,21 +1481,34 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
   for(const s of buildSettlements()){
     const dx=s.mx*MAP_SCALE-cam.x, dy=s.my*MAP_SCALE-cam.y;
     const z=dx*(-sinp)+dy*(-cosp);
-    if(z<60||z>ZFAR*0.9) continue;
-    const sv=(dx*cosp+dy*(-sinp))/z;
-    if(sv<-1.35||sv>1.35) continue;
-    const col=Math.round(((sv+1)/2)*BW);
-    if(col<0||col>=BW) continue;
+    /* 剔除要按「城的角半徑」放寬，不能只看城心那一點。
+       ⚠ 這裡原本是：sv 超過 ±1.35 就丟，而且 col 一旦落在 [0,BW) 之外
+         就直接 continue —— col 是由 sv 換算的，等於實質剔除線是 sv∈[-1,1]，
+         也就是**城心必須進畫面，整座城才會突然出現**。城越大越明顯：
+         帝都半徑 440 世界單位，z=500 時本身就橫跨 sv ±0.88，
+         城心還在畫面外時早該看到半座城了。
+       ⚠ z 也不能用 60 當下限硬丟：飛到城上空時城心的 z 會趨近 0 甚至為負，
+         但大半座城還在前方。改成「整座都在身後」才丟。 */
+    const Rw=SETTLE_R[s.tier]*MAP_SCALE;          // 城的世界半徑
+    if(z>ZFAR*0.9 || z<-Rw) continue;
+    const zc=Math.max(z,40);                      // 角度換算用的安全深度
+    const sv=(dx*cosp+dy*(-sinp))/zc;
+    const svR=Rw/zc;                              // 城在畫面上的角半徑
+    if(sv+svR<-1.35 || sv-svR>1.35) continue;
+    const col=clamp(Math.round(((sv+1)/2)*BW),0,BW-1);
     /* ⚠ 地面高度用整平後的地基（s.gh），不是 HGT[中心格]。原本中心格若在海裡
        會退回 CLOUD_H＝把城擺在雲海表面上，那就是「城飄在雲上」的來源。 */
     const gh=s.gh;
-    const by=((cam.alt-gh)/z + z*curvAt(sv))*scaleH+horizon;      // 緩衝列
-    if(ybufZ[col]<z-40 && ybuf[col]<by-2) continue;                // 前面有更近的山稜擋住
+    const by=((cam.alt-gh)/zc + zc*curvAt(sv))*scaleH+horizon;    // 緩衝列
+    /* 單欄遮擋測試只在城還很小的時候有意義（整座城落在一兩欄內）。
+       城一大，中心那一欄擋不擋得住跟整座城看不看得見無關，硬套會整座誤剔。
+       大城的正確做法是逐欄深度合成，另案處理。 */
+    if(svR<0.35 && ybufZ[col]<z-40 && ybuf[col]<by-2) continue;
     list.push({s, z, x:((sv+1)/2*BW)*sxk, y:by*syk});
   }
   list.sort((a,b)=>b.z-a.z);                                       // 遠的先畫
   for(const o of list){
-    const sc=W/(2*o.z);                                            // 世界單位 → 螢幕像素
+    const sc=W/(2*Math.max(o.z,40));                                // 世界單位 → 螢幕像素
     const R=SETTLE_R[o.s.tier]*MAP_SCALE;                          // 半徑（世界單位）
     if(R*2*sc<3) continue;
     ctx.save();
@@ -1515,7 +1528,8 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
       let zz=dx*(-sinp)+dy*(-cosp); if(zz<24) zz=24;
       const sv=(dx*cosp+dy*(-sinp))/zz;
       return [((sv+1)/2*BW)*sxk,
-              (((cam.alt-gS)/zz + zz*curvAt(sv))*scaleH+horizon)*syk];
+              (((cam.alt-gS)/zz + zz*curvAt(sv))*scaleH+horizon)*syk,
+              (W/(2*zz))*MAP_SCALE];   // 第三項：該點自己的尺度（螢幕px／地圖px）
     };
     /* 舊的仿射近似留著給尺寸用（建築量體大小仍以城中心的深度為準）。 */
     /* 地面壓縮率（tilt）：讓城真的躺在地上。
