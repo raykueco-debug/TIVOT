@@ -42,6 +42,13 @@ JOBS = [
     {'src': 'forest_dark.png',  'dst': 'forest_dark.webp'},
     {'src': 'forest_light.png', 'dst': 'forest_light.webp'},
     {'src': 'rock_grey.png',    'dst': 'rock_grey.webp'},
+    {'src': 'rock_brown.png',   'dst': 'rock_brown.webp'},
+    {'src': 'gravel_dark.png',  'dst': 'gravel_dark.webp'},
+    {'src': 'gravel_light.png', 'dst': 'gravel_light.webp'},
+    {'src': 'waste_brown.png',  'dst': 'waste_brown.webp'},
+    {'src': 'snow.png',         'dst': 'snow.webp'},
+    {'src': 'water_dark.png',   'dst': 'water_dark.webp'},
+    {'src': 'water_light.png',  'dst': 'water_light.webp'},
 ]
 
 

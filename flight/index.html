@@ -393,12 +393,9 @@ const SETTLEMENTS = [
      掃描城心與旋轉取吻合度最高者（1366,936,1.40 → 91.7%，原本 1335,929,1.10
      只有 89.2%）。改圖或改地形都要重跑那個搜尋。
      ⚠ 這三個值必須與 build_city.py 的 JOBS 一致。 */
-  /* veg/vegR：周邊鋪哪張林草貼圖、鋪多大一圈（地圖像素半徑，外 38% 淡出）。
-     140px＝2800 世界單位，把整平台（PAD 3.6R＝79px）整個蓋進去還有餘裕 ——
-     接縫要消失，覆蓋範圍就必須明顯大於那塊裸台，不然只是把界線往外挪。 */
   { n:'薇拉馮德港', x:1366, y:936, t:'city1', f:'empire', c:1, sea:1.90,
     plan:'city/velafonte_plan.webp', planH:'city/velafonte_h.webp',
-    planW:1050, planRot:1.40, planTall:26, veg:'geo/forest_dark.webp', vegR:140 },
+    planW:1050, planRot:1.40, planTall:26 },
   /* ⚠ planTall 別給大：這個引擎的縱向投影比橫向大約 2.9 倍
      （scaleH·syk ≈ 558 對 W/2 = 195），高度一抬就過頭，量體會把格子
      剪成長條、整座城拖曳。26 是「立得起來但不破圖」的上限。 */
@@ -448,22 +445,32 @@ let cityFB=null, CFB=null;                  // 手繪平面圖的低解析繪製
    地形的綠是平塗底色＋烘焙陰影＋一層高度雜訊，城的綠是畫出來的樹叢 ——
    接縫真正刺眼的地方在這個「語彙不同」，不在邊界線本身。這一層把同一位美術的
    樹冠圖以**世界座標**平鋪到地面上，兩邊就變成「畫得細的」與「畫得粗的」之差。
-   ⚠ 目前只鋪薇拉馮德周邊（VEGW 只在那一圈填值），先驗管線與方向；全圖鋪設
-     是下一步（改成依色相分類寫 VEGW/VEGT 即可，取樣端一行都不用動）。
+   ⚠ 全圖鋪設。哪裡鋪哪一張由取樣時的生物群系選擇器決定（高度＋坡度＋低頻噪聲），
+     不走逐像素的分類圖 —— 那要 2.6MB，而且地圖底色根本分不出這麼多類。
    ⚠ 存成「相對自身均值的倍率」而不是顏色：這是**細節層**，實際顏色由地圖底色
      相乘決定 —— 直接換色會把地貌的形狀與烘焙好的明暗一起洗掉，山就不是山了。
    ⚠ 邊長 2 的次方，取樣走 & 遮罩（同雲的貼圖）。這是每幀十七萬次的內迴圈，
      除法與取模都付不起。 */
 const GT=256, GTM=GT-1;                    // 貼圖邊長（2 的次方）
-/* 一個 texel 代表幾個世界單位。1.0 時整片讀起來太密、樹冠太小 ——
-   放大到 1.6 之後樹冠約 26 世界單位（≈13 公尺級的樹頂），一格貼圖 410 單位。 */
+/* 一個 texel 代表幾個世界單位。1.0 時整片讀起來太密、樹冠太小；
+   1.6 之後樹冠約 26 世界單位（≈13 公尺級的樹頂），一格貼圖 410 單位。 */
 const GEO_SCALE=1.6, GEO_INV=1/GEO_SCALE;
-/* 兩張貼圖（0＝深色針葉、1＝淺色闊葉），每 texel 存「相對自身均值的 rgb 倍率」。
-   ⚠ 存倍率不存顏色：這是細節層，實際顏色由地圖底色相乘決定 —— 直接換色會把
-     地貌的形狀與烘焙好的明暗一起洗掉，山就不是山了。 */
-let GEOK=[null,null];
-function loadGeoTex(url,slot){
-  return new Promise(res=>{
+/* ── 地貌貼圖表 ──────────────────────────────────────────────
+   索引就是選擇器回傳的類別。全部塞進**一條** Uint8Array（每 texel 3 byte），
+   用位移定址 —— 陣列的陣列在內迴圈要多一次間接定址，而這裡每幀跑十七萬次。
+   ⚠ 存的是「相對自身均值的倍率 ×128」而不是顏色：這是細節層，實際顏色由
+     地圖底色相乘決定。直接換色會把地貌形狀與烘焙好的明暗一起洗掉。
+   ⚠ Uint8 而非 Float32：10 張圖差 7.9MB → 2.0MB，手機上是有感的。 */
+const GEO_LIST=['forest_dark','forest_light','rock_grey','rock_brown',
+                'gravel_dark','gravel_light','waste_brown','snow',
+                'water_dark','water_light'];
+const G_FD=0,G_FL=1,G_RG=2,G_RB=3,G_GD=4,G_GL=5,G_WB=6,G_SN=7,G_WD=8,G_WL=9;
+const GEO_STRIDE=GT*GT*3;
+let GEOK=null;                             // Uint8Array(GEO_LIST.length*GEO_STRIDE)
+let geoReady=false;
+function loadGeoAll(){
+  GEOK=new Uint8Array(GEO_LIST.length*GEO_STRIDE);
+  return Promise.all(GEO_LIST.map((name,slot)=>new Promise(res=>{
     const im=new Image();
     im.onload=()=>{
       const c=document.createElement('canvas'); c.width=GT; c.height=GT;
@@ -471,46 +478,46 @@ function loadGeoTex(url,slot){
       const d=g.getImageData(0,0,GT,GT).data;
       let mr=0,mg=0,mb=0;
       for(let i=0,j=0;i<GT*GT;i++,j+=4){ mr+=d[j]; mg+=d[j+1]; mb+=d[j+2]; }
-      mr/=GT*GT; mg/=GT*GT; mb/=GT*GT;
-      const k=new Float32Array(GT*GT*3);
-      for(let i=0,j=0,q=0;i<GT*GT;i++,j+=4,q+=3){
-        k[q  ]=d[j  ]/(mr||1);
-        k[q+1]=d[j+1]/(mg||1);
-        k[q+2]=d[j+2]/(mb||1);
+      mr=(mr/(GT*GT))||1; mg=(mg/(GT*GT))||1; mb=(mb/(GT*GT))||1;
+      const base=slot*GEO_STRIDE;
+      for(let i=0,j=0,q=base;i<GT*GT;i++,j+=4,q+=3){
+        GEOK[q  ]=clamp(Math.round(d[j  ]/mr*128),0,255);
+        GEOK[q+1]=clamp(Math.round(d[j+1]/mg*128),0,255);
+        GEOK[q+2]=clamp(Math.round(d[j+2]/mb*128),0,255);
       }
-      GEOK[slot]=k; res();
+      res();
     };
-    im.onerror=()=>res();                  // 載不到就沒有這一層，其餘照常
+    im.onerror=()=>res();                  // 缺一張就那一類沒有細節，其餘照常
     setTimeout(res,4000);
-    im.src=url;
-  });
+    im.src='geo/'+name+'.webp';
+  }))).then(()=>{ geoReady=true; });
 }
-/* 每個地圖像素鋪不鋪、鋪多濃（0~255）。載入時算一次，取樣端只讀一個 byte。 */
-let VEGW=null;
 /* 反重複：依格號選 8 種二面體變換之一。整片大陸會重複一百多次，
    不打散的話眼睛一定抓得到節奏。查表，內迴圈成本近乎零。 */
 const GEOROT=new Uint8Array(1024);
 (function(){ for(let i=0;i<1024;i++){ let n=i*374761393; n=(n^(n>>13))*1274126177; GEOROT[i]=(n^(n>>16))&7; } })();
 
-/* ── 分區（哪一片林子是哪一種）────────────────────────────────
-   只鋪一張貼圖的話，反重複做得再好，整片林子的**統計**仍然是均勻的 ——
-   看起來就是「同一種樹密密麻麻鋪滿」。真正的林相是成片的：這一面山是針葉、
-   過了稜線換成闊葉。所以要一層**低頻**的選擇場，週期比樹冠大兩個數量級。
-   兩個來源相加：
-     · 低頻噪聲（週期 VEGSEL_WORLD，雙線性取樣 → 邊界是漸變不是格子）
-     · 高度項：越高越偏深色針葉 —— 這正是「跨山頭會變色」的來源，
-       而且它與地形綁定，不會出現「山頂山腳同一片林子」的怪事。
-   ⚠ 混合帶要窄。真實的林相交界相當清楚，全圖線性混色會糊成一片中間色，
-     反而更均勻。窄帶也順便讓「兩張都要取樣」的像素只佔一小部分。 */
-const VS=64, VSM=VS-1;                     // 選擇場的解析度（2 的次方）
+/* ── 生物群系（哪裡鋪哪一張）──────────────────────────────────
+   ⚠ **不靠地圖底色分類**。實測：地圖去飽和之後，一半的陸地落在「認不出是什麼」
+     的橄欖色，而褐色地帶只有 0.2% —— 照色相分會得到一片混亂。
+     改用「高度＋坡度＋低頻噪聲」這組地理量，那本來就是決定植被的東西。
+   ⚠ 界線用**抖動**不用混色：樹線雪線在真實地形上是不規則的鋸齒，
+     沿等高線切一條平滑的線反而假；抖動又只需要一次取樣，比混色便宜。
+   陸地高度分佈（實測）：p50 128、p75 204、p90 296、p97 398、max 520。
+   陸地坡度分佈（|SLX|+|SLY| 尺度）：p50 ~19、p90 ~72、p97 ~105。 */
+const VS=64, VSM=VS-1;                     // 低頻選擇場的解析度（2 的次方）
 const VEGSEL_WORLD=5200;                   // 一個週期涵蓋的世界單位（≈260 地圖像素）
 const VEGSEL=new Float32Array(VS*VS);
-const VEG_ALT_LO=120, VEG_ALT_HI=300;      // 這段高度之間由闊葉過渡到針葉
-const VEG_BAND=0.16;                       // 混合帶寬度（選擇值的比例）
+const BIOME_TREE=260, BIOME_SNOW=400;      // 樹線／雪線（世界單位，會被噪聲抖動）
+const BIOME_TREE_J=70, BIOME_SNOW_J=60;    // 抖動幅度
+const BIOME_CLIFF=70;                      // 崖面門檻（|SLX|+|SLY|，≈坡度 p90）
+const BIOME_ROCKALT=300;                   // 這個高度以上的崖面用灰岩，以下用褐岩
+const BIOME_WASTE=0.80;                    // 荒地門檻（噪聲高於此才是荒地）——刻意少量
+const VEG_ALT_LO=120, VEG_ALT_HI=300;      // 針葉／闊葉的過渡高度
+const VEG_BAND=0.16;                       // 針闊葉的混合帶寬度
 /* 遠處淡出：不淡出的話高頻細節在遠景會走樣成閃爍（跟高度雜訊同一個限制），
    而且淡出同時把成本收在近景。
-   GEO_AMP＝細節層的強度（1＝完全照貼圖的起伏乘進去）。0.85 太重，地面讀起來
-   是一片深色雜點；0.5 又只剩一層薄紋。0.65 是「看得出是樹冠、但山還是山」。 */
+   GEO_AMP＝細節層的強度。0.85 太重，地面讀起來是一片深色雜點；0.5 只剩薄紋。 */
 const GEO_FAR=1500, GEO_AMP=0.65;
 
 let cityPts=null, cityGnd=null;
@@ -832,35 +839,11 @@ async function loadWorld(){
     }
   }
 
-  /* ── 林草覆蓋圖（VEGW）────────────────────────────────────
-     哪些地圖像素要鋪林草、鋪多濃。目前只有帶 veg 欄位的聚落周邊。
-     ⚠ 水域與河道不鋪：樹不長在水上。海（低於雲海高度）同理。
-     ⚠ 外緣要淡出，硬邊等於把「城的界線」換成「林子的界線」，白做。 */
-  step(0.74,'鋪設林草…');
-  {
-    const need=SETTLEMENTS.filter(S=>S.veg);
-    if(need.length){
-      await Promise.all([loadGeoTex('geo/forest_dark.webp',0), loadGeoTex('geo/forest_light.webp',1)]);
-      if(GEOK[0]&&GEOK[1]){
-        VEGW=new Uint8Array(MAPW*MAPH);
-        for(const S of need){
-          const r1=S.vegR||120, r0=r1*0.62;
-          const rr=Math.ceil(r1);
-          for(let dy=-rr;dy<=rr;dy++)for(let dx=-rr;dx<=rr;dx++){
-            const x=S.x+dx, y=S.y+dy;
-            if(x<0||y<0||x>=MAPW||y>=MAPH) continue;
-            const i=y*MAPW+x;
-            if(HGT[i]<=CLOUD_H||RIV[i]) continue;      // 海／河不鋪
-            const d=Math.hypot(dx,dy);
-            if(d>r1) continue;
-            const t=d<=r0?1:1-((d-r0)/(r1-r0));
-            const w=Math.round(255*(t*t*(3-2*t)));     // smoothstep 淡出
-            if(w>VEGW[i]) VEGW[i]=w;
-          }
-        }
-      }
-    }
-  }
+  /* ── 地貌貼圖 ────────────────────────────────────────────
+     全圖鋪設，沒有覆蓋權重表：哪裡鋪哪一張由取樣時的生物群系選擇器決定
+     （高度＋坡度＋低頻噪聲），不需要一張 2.6MB 的逐像素分類圖。 */
+  step(0.74,'載入地貌貼圖…');
+  await loadGeoAll();
 
   // 坡度（給逐幀光照用）—— 必須在邊緣抬升之後，否則崖頂的法線是舊的
   step(0.70,'計算坡度…');
@@ -1462,7 +1445,7 @@ function render(now){
     const invz=1/z;
     /* 林草層的強度隨深度淡出（近景滿、GEO_FAR 之後歸零）。
        每個 z 步進算一次就好 —— 同一步進的整排欄位深度相同。 */
-    const vegAmt=VEGW?GEO_AMP*(z<GEO_FAR?1-(z/GEO_FAR)*(z/GEO_FAR):0):0;
+    const vegAmt=GEO_AMP*(z<GEO_FAR?1-(z/GEO_FAR)*(z/GEO_FAR):0);
     const vegOn=vegAmt>0.004;
 
     for(let i=0;i<BW;i++){
@@ -1526,44 +1509,61 @@ function render(now){
              的相位會整個錯開（雲的取樣也踩過同一個坑）。4096 是 GT 的倍數。
            ⚠ 反重複：每 256 單位一格，依格號選 8 種二面體變換之一。不打散的話
              整片大陸重複一百多次，眼睛一定抓得到那個節奏。 */
-        if(vegOn){
-          const vw=VEGW[mi];
-          if(vw){
-            /* ⚠ +4096 再取整：世界座標會是負的，而 |0 是往零截斷，負數那半邊
-               的相位會整個錯開（雲的取樣也踩過同一個坑）。4096 是 GT 的倍數。 */
-            const wx=(plx+40960)*GEO_INV, wy=(ply+40960)*GEO_INV;
-            /* 分區：低頻噪聲（雙線性）＋高度項。高處偏深色針葉 —— 這就是
-               「跨山頭換顏色」的來源，而且與地形綁定，不會山頂山腳同一片林。 */
-            const sxf=(plx+40960)/VEGSEL_WORLD*VS, syf=(ply+40960)/VEGSEL_WORLD*VS;
-            const sx0=sxf|0, sy0=syf|0, su=sxf-sx0, sv=syf-sy0;
-            const r0=(sy0&VSM)*VS, r1=((sy0+1)&VSM)*VS;
-            const ca0=sx0&VSM, cb0=(sx0+1)&VSM;
-            const nz=VEGSEL[r0+ca0]*(1-su)*(1-sv)+VEGSEL[r0+cb0]*su*(1-sv)
-                    +VEGSEL[r1+ca0]*(1-su)*sv   +VEGSEL[r1+cb0]*su*sv;
-            const alt=clamp((hh-VEG_ALT_LO)/(VEG_ALT_HI-VEG_ALT_LO),0,1);
-            const sel=clamp((nz-0.5)*1.9+0.5+alt*0.55-0.18,0,1);   // 1＝深色針葉
-            /* 反重複：每格依格號選 8 種二面體變換之一。 */
-            const cxg=(wx*(1/GT))|0, cyg=(wy*(1/GT))|0;   // 格號＝貼圖格，不是 texel
-            let tx=(wx|0)&GTM, ty=(wy|0)&GTM;
-            const rot=GEOROT[((cxg*7+cyg*13)&1023)];
-            if(rot&1) tx=GTM-tx;
-            if(rot&2) ty=GTM-ty;
-            if(rot&4){ const t2=tx; tx=ty; ty=t2; }
-            const q=((ty*GT)+tx)*3;
-            const amt=(vw/255)*vegAmt;
-            /* 混合帶之外只取一張（大部分像素走這條）；帶內才兩張都取樣。 */
-            let k0,k1,k2;
-            if(sel<=VEG_BAND){        const K=GEOK[1]; k0=K[q]; k1=K[q+1]; k2=K[q+2]; }
-            else if(sel>=1-VEG_BAND){ const K=GEOK[0]; k0=K[q]; k1=K[q+1]; k2=K[q+2]; }
-            else{
-              const t=(sel-VEG_BAND)/(1-2*VEG_BAND), it=1-t;
-              const A=GEOK[0], B=GEOK[1];
-              k0=A[q]*t+B[q]*it; k1=A[q+1]*t+B[q+1]*it; k2=A[q+2]*t+B[q+2]*it;
-            }
-            cr*=1+(k0-1)*amt;
-            cg*=1+(k1-1)*amt;
-            cb*=1+(k2-1)*amt;
+        if(vegOn&&geoReady){
+          /* ⚠ +40960 再取整：世界座標會是負的，而 |0 是往零截斷，負數那半邊
+             的相位會整個錯開（雲的取樣也踩過同一個坑）。40960 是 GT 的倍數。 */
+          const wx=(plx+40960)*GEO_INV, wy=(ply+40960)*GEO_INV;
+          /* 低頻場：分區用。雙線性取樣 → 邊界是漸變不是格子。 */
+          const sxf=(plx+40960)/VEGSEL_WORLD*VS, syf=(ply+40960)/VEGSEL_WORLD*VS;
+          const sx0=sxf|0, sy0=syf|0, su=sxf-sx0, sv2=syf-sy0;
+          const nr0=(sy0&VSM)*VS, nr1=((sy0+1)&VSM)*VS;
+          const nc0=sx0&VSM, nc1=(sx0+1)&VSM;
+          const nz=VEGSEL[nr0+nc0]*(1-su)*(1-sv2)+VEGSEL[nr0+nc1]*su*(1-sv2)
+                  +VEGSEL[nr1+nc0]*(1-su)*sv2   +VEGSEL[nr1+nc1]*su*sv2;
+          /* ── 選類別 ──
+             順序即優先權：水 → 崖 → 雪 → 碎石坡 → 荒地 → 森林。
+             ⚠ 界線一律用噪聲抖動而不是混色：真實的樹線雪線是不規則的鋸齒，
+               沿等高線切一條平滑的線反而假，而且抖動只要一次取樣。 */
+          let tex, mixTo=-1, mixT=0;
+          const sl=(SLX[mi]<0?-SLX[mi]:SLX[mi])+(SLY[mi]<0?-SLY[mi]:SLY[mi]);
+          if(RIV[mi]){
+            tex=(nz>0.5)?G_WL:G_WD;                       // 河：深淺兩種水交錯
+          }else if(sl>BIOME_CLIFF+(nz-0.5)*40){
+            tex=(hh>BIOME_ROCKALT)?G_RG:G_RB;             // 崖面：高處灰岩、低處褐岩
+          }else if(hh>BIOME_SNOW+(nz-0.5)*2*BIOME_SNOW_J){
+            tex=G_SN;                                     // 雪線以上
+          }else if(hh>BIOME_TREE+(nz-0.5)*2*BIOME_TREE_J){
+            tex=G_GD;                                     // 樹線～雪線：碎石坡
+          }else if(nz>BIOME_WASTE){
+            tex=G_WB;                                     // 荒地（刻意少量）
+          }else{
+            /* 森林：針葉／闊葉由低頻場＋高度決定，只有這一類做混色 ——
+               同樣是林子，硬切會看得出貼圖換了；不同地貌之間硬切反而對。 */
+            const altk=clamp((hh-VEG_ALT_LO)/(VEG_ALT_HI-VEG_ALT_LO),0,1);
+            const sel=clamp((nz-0.5)*1.9+0.5+altk*0.55-0.18,0,1);
+            if(sel<=VEG_BAND) tex=G_FL;
+            else if(sel>=1-VEG_BAND) tex=G_FD;
+            else { tex=G_FD; mixTo=G_FL; mixT=1-(sel-VEG_BAND)/(1-2*VEG_BAND); }
           }
+          /* 反重複：每格依格號選 8 種二面體變換之一。 */
+          const cxg=(wx*(1/GT))|0, cyg=(wy*(1/GT))|0;
+          let tx=(wx|0)&GTM, ty=(wy|0)&GTM;
+          const rot=GEOROT[((cxg*7+cyg*13)&1023)];
+          if(rot&1) tx=GTM-tx;
+          if(rot&2) ty=GTM-ty;
+          if(rot&4){ const t2=tx; tx=ty; ty=t2; }
+          const off=((ty*GT)+tx)*3;
+          const q=tex*GEO_STRIDE+off;
+          let k0=GEOK[q]*(1/128), k1=GEOK[q+1]*(1/128), k2=GEOK[q+2]*(1/128);
+          if(mixTo>=0){
+            const q2=mixTo*GEO_STRIDE+off, it=1-mixT;
+            k0=k0*it+GEOK[q2]*(1/128)*mixT;
+            k1=k1*it+GEOK[q2+1]*(1/128)*mixT;
+            k2=k2*it+GEOK[q2+2]*(1/128)*mixT;
+          }
+          cr*=1+(k0-1)*vegAmt;
+          cg*=1+(k1-1)*vegAmt;
+          cb*=1+(k2-1)*vegAmt;
         }
         isRiver=RIV[mi];
         const nl=clamp(0.62+(SLX[mi]*lx+SLY[mi]*ly)*LIGHT_DIR_K,0,1.5);
