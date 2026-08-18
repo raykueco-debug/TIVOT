@@ -1202,6 +1202,46 @@ async function loadWorld(){
         }
       }
 
+      /* ── 北側再接一條 ────────────────────────────────────────
+         實測 (1397,905)：東側的河與城的水域**只在南邊會合**，往北夾著一塊
+         楔形陸地 —— 所以河沒有沿著城的東側走，使用者說的「還差一點」是這裡。
+         再取一組「城北半邊」的最近點對接起來，河就會沿著城的東緣往下流。 */
+      {
+        const rr2=Math.ceil((S.planW*0.5/MAP_SCALE))+4;
+        let bd=1e9, ax=0,ay=0,bx=0,by=0, ok=false;
+        for(let dy=-rr2;dy<=0;dy++)for(let dx=-rr2;dx<=rr2;dx++){
+          const x=S.x+dx, y=S.y+dy;
+          if(x<0||y<0||x>=MAPW||y>=MAPH) continue;
+          if(!RIV[y*MAPW+x]||HGT[y*MAPW+x]<=CLOUD_H) continue;      // 城側的水
+          for(let ey=-46;ey<=-2;ey+=2)for(let ex=-46;ex<=46;ex+=2){
+            const rx=S.x+ex, ry=S.y+ey;
+            if(rx<0||ry<0||rx>=MAPW||ry>=MAPH) continue;
+            if(Math.hypot(ex,ey)<rr2) continue;                     // 那還是城自己的水
+            const j=ry*MAPW+rx;
+            if(!RIV[j]||HGT[j]<=CLOUD_H) continue;
+            const d2=(rx-x)*(rx-x)+(ry-y)*(ry-y);
+            if(d2<bd){ bd=d2; ax=x; ay=y; bx=rx; by=ry; ok=true; }
+          }
+        }
+        if(ok&&bd<=40*40){
+          const lvl=Math.min(HGT[ay*MAPW+ax], HGT[by*MAPW+bx]);
+          const n4=Math.max(2,Math.ceil(Math.sqrt(bd))*2);
+          for(let t=0;t<=n4;t++){
+            const u=t/n4;
+            const cx6=ax+(bx-ax)*u, cy6=ay+(by-ay)*u;
+            for(let dy=-5;dy<=5;dy++)for(let dx=-5;dx<=5;dx++){
+              const x=Math.round(cx6)+dx, y=Math.round(cy6)+dy;
+              if(x<0||y<0||x>=MAPW||y>=MAPH) continue;
+              if(Math.hypot(x-cx6,y-cy6)>4.2) continue;
+              const i=y*MAPW+x;
+              if(HGT[i]<=CLOUD_H) continue;
+              if(HGT[i]!==lvl){ HGT[i]=lvl; raw[i]=lvl/PEAK_SCALE; }
+              RIV[i]=1; COL[i]=rgb(84,120,142);
+            }
+          }
+        }
+      }
+
       /* ── 把城周圍分散的水域接成一體 ────────────────────────
          實測 (1390,936) 一帶：西邊是城內水域、東邊是加寬後的河，中間夾著一條
          十幾像素寬的森林帶 —— 兩塊**互不相連的水體**。使用者反覆看到的
@@ -1682,7 +1722,13 @@ document.getElementById('mapBtn').addEventListener('click',()=>{
   mapOpen=true; mapView.classList.add('on');
   const F=mapFit();
   MV.zoom=Math.max(1,(F.h/R.h)/F.base);
-  MV.cx=R.w/2; MV.cy=R.h/2;
+  /* 打開地圖就對準玩家 —— 開在大陸正中央的話，每次都要自己拖回來找船。
+     ⚠ 用 reliefXY 換算：浮雕是斜角投影（會依高度位移），
+       直接拿地圖像素乘縮放會偏掉幾十像素。 */
+  {
+    const me=reliefXY(cam.x/MAP_SCALE, cam.y/MAP_SCALE);
+    MV.cx=me.x; MV.cy=me.y;
+  }
   drawMap();
 });
 document.getElementById('mapClose').addEventListener('click',e=>{
