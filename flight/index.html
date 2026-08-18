@@ -1150,6 +1150,10 @@ async function loadWorld(){
           const i=y*MAPW+x;
           if(RIV[i]&&HGT[i]>CLOUD_H) seed.push([x,y,HGT[i]]);
         }
+        /* ⚠ 水面**比當地岸邊略低就好**（RIVER_CUT），不要挖到某個絕對高度。
+           先前是把整條河壓到種子格的高度，地勢一高就挖出一條峽谷 ——
+           使用者要的是「河貼在地面上」，不是一道溝。 */
+        const RIVER_CUT=6;
         for(const [x,y,h] of seed){
           // 越接近雲海高度＝越靠出海口 → 越寬
           const nearMouth=clamp(1-(h-CLOUD_H)/70,0,1);
@@ -1164,7 +1168,11 @@ async function loadWorld(){
             if(Math.hypot(dx-ox,dy-oy)>w) continue;
             const j=py*MAPW+px;
             if(HGT[j]<=CLOUD_H) continue;                    // 已經是雲海就別碰
-            if(HGT[j]>h){ HGT[j]=h; raw[j]=h/PEAK_SCALE; }   // 只降不升
+            /* 目標水面：種子格的高度與「當地岸邊略低」兩者取**高**的 ——
+               取低的就會沿路挖穿地勢，那正是峽谷的來源。 */
+            const bank=HGT[j];
+            const lvl=Math.max(h, bank-RIVER_CUT);
+            if(HGT[j]>lvl){ HGT[j]=lvl; raw[j]=lvl/PEAK_SCALE; }
             RIV[j]=1; COL[j]=rgb(84,120,142);
           }
         }
@@ -2135,7 +2143,15 @@ function render(now){
                  純用地表色乘下去會變成黑洞，岩石色把它拉回來。 */
               const strat=STRAT[(wx*5+wy*3+(yy>>1))&255];
               const v=(1-d*0.34)*(0.88+strat*0.14);   // 條紋收斂：每根柱子都有立面了，原本的幅度會整片變雜點
-              cr=sr*v; cg=sg*v; cb=sb*v;
+              /* ⚠ 河道的立面不能拿地表色去推 —— 地表色現在是水藍，推出來就是
+                 一道藍色的壁。水面下的岸壁是**岩**，用岩褐的絕對色（同 rock_brown
+                 的均值）。非河道的地方照舊由地表色推導，各地的壁才帶著該地色調。 */
+              let bsr=sr, bsg=sg, bsb=sb;
+              if(isRiver){
+                const rk=(ambI+sunI*0.5)*GRADE_EXPO;
+                bsr=109*rk*lightR; bsg=91*rk*lightG; bsb=72*rk*lightB;
+              }
+              cr=bsr*v; cg=bsg*v; cb=bsb*v;
               if(rocky>0.01){
                 cr=lerp(cr,152*v*wamb*lightR,rocky);
                 cg=lerp(cg,138*v*wamb*lightG,rocky);
