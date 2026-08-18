@@ -1125,10 +1125,11 @@ async function loadWorld(){
           const x=Math.round(cx2)+dx, y=Math.round(cy2)+dy;
           if(x<0||y<0||x>=MAPW||y>=MAPH) continue;
           const d=Math.hypot(x-cx2,y-cy2);
-          if(d>2.6) continue;
+          if(d>4.6) continue;                      // 連接段加寬：這段是主河道的一部分，不是水溝
           const i=y*MAPW+x;
           if(HGT[i]<=CLOUD_H) continue;
-          const target=Math.round(hz);
+          /* 同加寬段：比當地岸邊略低就好，不要挖成溝（見 RIVER_CUT 那段說明）。 */
+          const target=Math.max(Math.round(hz), HGT[i]-6);
           if(HGT[i]>target){ HGT[i]=target; raw[i]=target/PEAK_SCALE; }
           RIV[i]=1; COL[i]=rgb(84,120,142);
         }
@@ -1204,7 +1205,7 @@ async function loadWorld(){
             for(let dy=-4;dy<=4;dy++)for(let dx=-4;dx<=4;dx++){
               const x=Math.round(cx3)+dx, y=Math.round(cy3)+dy;
               if(x<0||y<0||x>=MAPW||y>=MAPH) continue;
-              if(Math.hypot(x-cx3,y-cy3)>3.2) continue;
+              if(Math.hypot(x-cx3,y-cy3)>5.2) continue;   // 出海段加寬：河口本來就該比河身寬
               const i=y*MAPW+x;
               if(HGT[i]<=CLOUD_H) continue;                  // 已經是雲海：留著，那就是落口
               if(HGT[i]>wlOut){ HGT[i]=wlOut; raw[i]=wlOut/PEAK_SCALE; }
