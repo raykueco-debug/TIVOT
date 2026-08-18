@@ -1976,6 +1976,13 @@ function drawPanel(S){
   const wcy=H-HELM_FOOT;                 // 舵軸：畫面底緣
   const R=wcy-(y0-HELM_OUT);             // 半徑：上半輪頂到 3D 視窗內 HELM_OUT
 
+  /* ⚙ helm 素材必須用雙線性取樣。resize() 為了地形的像素感把整個 ctx 的
+     imageSmoothingEnabled 關掉，但那對舵輪這種圓形素材是災難：512px 的圖
+     縮放到非整數倍時，最近鄰會把圓周踩成階梯——輪框外緣與輪轂的銅環
+     看起來就是「不圓」（尤其接近 1:1 的縮放比，邊緣會一格一格週期性進出）。
+     這一段畫完再關回去（見函式尾），地形的 blit 不受影響。 */
+  ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality='high';
+
   let gaugeR=R*0.47, tilt=0.86;          // 基座沒載到時的退路
   if(helmArt.base){
     const B=helmArt.base;
@@ -2003,6 +2010,7 @@ function drawPanel(S){
     ctx.drawImage(helmArt.wheel, -R, -R, R*2, R*2);
     ctx.restore();
   }
+  ctx.imageSmoothingEnabled=false;         // 還給地形 blit（像素感靠它）
   /* 方位帶（原本畫在 3D 視窗下緣）已撤：控制區只留乾淨的機械式船舵 ——
      舵輪、基座、銅針速度表，沒有別的浮層。要看航向去開地圖。 */
 }
