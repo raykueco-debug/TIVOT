@@ -1539,6 +1539,18 @@ const ENEMY_KINDS = {
     waveAmp:11.0, wavePhase:0.52, waveHz:0.0031, wingHz:0.019,
     turnRate:0.0021, speedK:0.72,
   },
+  pirate: {
+    /* 空賊：第一隻剛體怪。不變形，只有整體換視角。
+       ⚠ 剛體怪不需要「上下」那一維：實測俯角只有 2°~18°（見 diveAlt 那段），
+         玩家幾乎是平視，所以方位圖只要繞垂直軸一圈，不必俯視／仰視。
+       ⚠ 六視圖各自縮到 512 的話彼此比例會跑掉，轉向換圖時船會忽大忽小 ——
+         split_enemy.py 已改成全張共用一個縮放係數。 */
+    name:'空賊', plan:'rigid', speedK:0.85, turnRate:0.0011,
+    bodyLen:300,                    // 船長（世界單位）＝側視圖寬所代表的長度
+    sprite:{ dir:'enemy/FLH_Pirate/',
+             front:'view_4.webp', rear:'view_5.webp',
+             sideR:'view_0.webp', sideL:'view_1.webp' },
+  },
 };
 
 let enemy=null;                                   // {x,y,alt,hx,hy,d0,state,tEngage,kind}
@@ -1550,9 +1562,22 @@ const enemyArt={};
 (function loadEnemyArt(){
   for(const k of Object.keys(ENEMY_KINDS)){
     const sp=ENEMY_KINDS[k].sprite; if(!sp) continue;
-    const im=new Image();
-    im.onload=()=>{ enemyArt[k]=im; };
-    im.src=sp.dir+sp.dorsal;
+    if(ENEMY_KINDS[k].plan==='rigid'){
+      /* 剛體怪：一組方位圖。全部載齊才切精靈模式，
+         少一張就會在某個朝向上突然沒東西可畫。 */
+      const set={}; let left=0;
+      for(const key of ['front','rear','sideR','sideL']){
+        if(!sp[key]) continue;
+        left++;
+        const im=new Image();
+        im.onload=()=>{ set[key]=im; if(--left===0) enemyArt[k]=set; };
+        im.src=sp.dir+sp[key];
+      }
+    }else{
+      const im=new Image();
+      im.onload=()=>{ enemyArt[k]=im; };
+      im.src=sp.dir+sp.dorsal;
+    }
   }
 })();
 let enemyTimer=ENEMY_CFG.gapMin*0.35;             // 開場不要立刻刷
@@ -1725,9 +1750,28 @@ function drawWingsProc(EC,pts,K,flap,shade,segAng){
 }
 
 /* 逐節投影 + 程序繪製。回傳畫過就 true（給提示字用）。 */
+/* 進入戰鬥的提示（戰鬥本身尚未實作）。鏈狀與剛體兩條繪製路徑都要用，
+   所以抽成函式；文字不進低解析緩衝——那是 UI，跟著糊就成了糊掉的字。 */
+function drawEngagePrompt(){
+  ctx.save();
+  ctx.textAlign='center';
+  ctx.font='13px "Noto Serif TC",serif';
+  const yy=Math.round(VIEWH*0.30);
+  const t='遭遇　'+ENEMY_KINDS[enemy.kind].name;
+  const t2='—　進 入 戰 鬥　—';
+  ctx.fillStyle='rgba(6,7,12,.62)';
+  ctx.fillRect(W/2-92,yy-22,184,46);
+  ctx.fillStyle='rgba(216,205,180,.92)'; ctx.fillText(t,W/2,yy-4);
+  ctx.fillStyle='#c9a227'; ctx.font='12px "Noto Serif TC",serif';
+  ctx.fillText(t2,W/2,yy+16);
+  ctx.restore();
+  ctx.textAlign='left';
+}
+
 function drawEnemy3D(scaleH,horizon,sinp,cosp,now){
   if(!enemy) return;
   const C=ENEMY_CFG;
+  const K=ENEMY_KINDS[enemy.kind];   // 兩條繪製路徑都要，提到最前面宣告
   const sxk=W/BW, syk=VIEWH/BH;
   const project=(wx,wy,alt)=>{
     const dx=wx-cam.x, dy=wy-cam.y;
@@ -1756,10 +1800,50 @@ function drawEnemy3D(scaleH,horizon,sinp,cosp,now){
                                +Math.round(clamp(g*lit*warmG*coolG,0,255))+','
                                +Math.round(clamp(b*lit*warmB*coolB,0,255))+','+a+')';
 
+  /* ── 剛體怪（plan:'rigid'）─────────────────────────────────────
+     不變形、不分節，整隻依「朝向 vs 鏡頭」挑一張方位圖貼上去。
+     判準是船的朝向與「船→鏡頭」向量的夾角：
+       |θ|<40°  → 正面（朝你來）
+       |θ|>140° → 背面（背對你）
+       其餘      → 側視，左右由外積正負決定
+     ⚠ 不做螢幕旋轉：飛船是保持水平的，轉向時換的是**視角**不是傾角。
+       鏈狀怪那套 ang−π/2 的旋轉搬過來會把船轉成直立。 */
+  if(K.plan==='rigid'){
+    const set=enemyArt[enemy.kind];
+    const P=project(enemy.x,enemy.y,enemy.alt+bob);
+    if(!set || P[2]>ZFAR*0.95) return;
+    const tcx=cam.x-enemy.x, tcy=cam.y-enemy.y;
+    const tl=Math.hypot(tcx,tcy)||1;
+    const dot=(enemy.hx*tcx+enemy.hy*tcy)/tl;
+    const crs=(enemy.hx*tcy-enemy.hy*tcx)/tl;
+    const th=Math.abs(Math.atan2(crs,dot));
+    const img = th<0.70 ? set.front : th>2.44 ? set.rear : (crs>0?set.sideR:set.sideL);
+    if(!img) return;
+    const wpp=K.bodyLen/((set.sideR||img).width);     // 世界單位／來源像素（側視寬＝船長）
+    const w=img.width*wpp*P[3], h=img.height*wpp*P[3];
+    if(w<2) return;
+    const pad=Math.ceil(Math.max(w,h)*0.6)+6;
+    const x0=Math.round(P[0]-w/2)-pad, y0=Math.round(P[1]-h/2)-pad;
+    const fw=Math.ceil(w)+pad*2, fh=Math.ceil(h)+pad*2;
+    const pk=clamp(BW/W*C.pixelScale,0.15,1);
+    const bwp=Math.max(2,Math.round(fw*pk)), bhp=Math.max(2,Math.round(fh*pk));
+    if(!enemyFB || enemyFB.width!==bwp || enemyFB.height!==bhp){
+      enemyFB=document.createElement('canvas'); enemyFB.width=bwp; enemyFB.height=bhp;
+      EC=enemyFB.getContext('2d');
+    }
+    EC.setTransform(1,0,0,1,0,0); EC.clearRect(0,0,bwp,bhp);
+    EC.setTransform(bwp/fw,0,0,bhp/fh,-x0*bwp/fw,-y0*bhp/fh);
+    EC.drawImage(img,P[0]-w/2,P[1]-h/2,w,h);
+    ctx.save(); ctx.imageSmoothingEnabled=false;
+    ctx.drawImage(enemyFB,0,0,bwp,bhp,x0,y0,fw,fh);
+    ctx.restore();
+    if(enemy.state==='engage') drawEngagePrompt();
+    return;
+  }
+
   /* 體節沿**軌跡**排，不是沿 −heading 拉一條直線。
      直線的話整條蟲是剛體，轉向時會像一根棒子在原地轉。沿軌跡排之後，
      每一節都走頭曾經走過的位置 —— 轉彎自然成為一條弧，身體依序跟上。 */
-  const K=ENEMY_KINDS[enemy.kind];
   const segL=K.bodyLen/K.segs;
   const wob=now*K.waveHz+enemy.phase;
   /* 追擊/遭遇時扭得猙獰：振幅放大，並疊上兩個**不整除**的倍頻，
@@ -2103,22 +2187,8 @@ function drawEnemy3D(scaleH,horizon,sinp,cosp,now){
   ctx.drawImage(enemyFB,0,0,bwp,bhp,Math.round(x0),Math.round(y0),fw,fh);
   ctx.restore();
 
-  /* 進入戰鬥的提示（戰鬥本身尚未實作） */
-  if(enemy.state==='engage'){
-    ctx.save();
-    ctx.textAlign='center';
-    ctx.font='13px "Noto Serif TC",serif';
-    const yy=Math.round(VIEWH*0.30);
-    const t='遭遇　'+ENEMY_KINDS[enemy.kind].name;   // 名稱讀怪種表
-    const t2='—　進 入 戰 鬥　—';
-    ctx.fillStyle='rgba(6,7,12,.62)';
-    ctx.fillRect(W/2-92,yy-22,184,46);
-    ctx.fillStyle='rgba(216,205,180,.92)'; ctx.fillText(t,W/2,yy-4);
-    ctx.fillStyle='#c9a227'; ctx.font='12px "Noto Serif TC",serif';
-    ctx.fillText(t2,W/2,yy+16);
-    ctx.restore();
-    ctx.textAlign='left';
-  }
+  if(enemy.state==='engage') drawEngagePrompt();
+
 }
 
 /* ══ 聚落（3D 飛行畫面）══
