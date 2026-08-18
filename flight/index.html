@@ -1492,9 +1492,13 @@ const ENEMY_CFG = {
      略慢於玩家，遭遇變成「牠攔在航路上」而不是「牠追上你」。 */
   speedK: 0.60,
   pixelScale: 1.0,                // 繪製解析度（×BW/W）——見 drawEnemy3D 的像素化
-  chaseAt: 0.70,                  // 距離縮到 D0 的這個比例 → 轉主動追擊
+  chaseAt: 0.60,                  // 距離縮到 D0 的這個比例 → 轉主動追擊
   spawnDist: 2800,                // 生成距離（世界單位；ZFAR=3600 之內才看得到）
-  spawnArc: 1.22,                 // 生成方位限制在航向 ±70°：要讓玩家看得到牠飛來
+  /* 生成方位（偏離航向的角度範圍）。視野半角是 45°（sv∈[-1,1] ⇔ 橫向=深度），
+     所以下限取 52° 就保證生成的瞬間在畫面外；上限 105° 是「還來得及漂進畫面」
+     的界線，再往後就繞到側後方、玩家一路上都不會遇到牠。 */
+  spawnOffMin: 52*Math.PI/180,
+  spawnOffMax: 105*Math.PI/180,
   engage: 210,                    // 進入戰鬥的距離
   holdMs: 3000,                   // 提示停留後一同消失
   segs: 22,                       // 體節數
@@ -1507,6 +1511,8 @@ const ENEMY_CFG = {
   wavePhase: 0.92,                // 每節之間的相位差（rad）＝波長
   waveHz: 0.0042,                 // 蛇行角頻（rad/ms）
   wingHz: 0.055,                  // 振翅角頻（rad/ms）——比蛇行快一個數量級才像蟲
+  turnRate: 0.0016,               // 轉向角速度上限（rad/ms ≈ 92°/秒）
+  trailStep: 7,                   // 軌跡取樣間距（世界單位）——身體沿這條軌跡排
 };
 let enemy=null;                                   // {x,y,alt,hx,hy,d0,state,tEngage}
 let enemyFB=null, EC=null;                        // 低解析繪製緩衝（見 drawEnemy3D）
@@ -1514,15 +1520,48 @@ let enemyTimer=ENEMY_CFG.gapMin*0.35;             // 開場不要立刻刷
 
 function spawnEnemy(){
   const C=ENEMY_CFG;
-  // 生成方位：以玩家航向為中心的扇形，讓牠自前方遠處飛來
-  const a=cam.angle+(Math.random()*2-1)*C.spawnArc;
+  /* 生成方位：一律在**視野之外**。敵人不該在玩家眼前憑空出現 ——
+     擺到畫面外再讓牠自己漂進來，出場就有了來處。
+     （先前的作法是生成一團雲霧罩住牠，已撤：那是遮蔽而不是解決，
+       而且雲團得另外管生命週期，還跟共用的 PUFFS 回收邏輯打架。） */
+  const off=C.spawnOffMin+Math.random()*(C.spawnOffMax-C.spawnOffMin);
+  const a=cam.angle+(Math.random()<0.5?off:-off);
   const ox=-Math.sin(a), oy=-Math.cos(a);
   const x=cam.x+ox*C.spawnDist, y=cam.y+oy*C.spawnDist;
-  // 巡航朝向：鎖定「刷新當下」的玩家位置，之後不再更新（追擊階段才更新）
-  let hx=cam.x-x, hy=cam.y-y;
-  const L=Math.hypot(hx,hy)||1; hx/=L; hy/=L;
+  /* 巡航朝向：**橫向**切過視野，不是直直朝玩家飛。
+     直朝玩家的話，牠一路都是頭對著鏡頭——正俯視下只看得到一顆頭和兩片翅，
+     體節、步足、蛇行全部縮在後面看不見，玩家根本認不出那是什麼東西，
+     只知道有東西撞上來。轉成側向，牠的側面才展開給玩家看。
+     ⚠ 純 90°，**不留內收**：巡航階段牠只是橫越，不朝玩家來。
+       這代表距離不會自己縮短（自定點作垂直運動，距離只會變大），
+       追擊要靠**玩家自己接近**才會觸發——那正是要的：牠攔在航路上，
+       你可以繞開，靠太近牠才轉頭。 */
+  let tx=cam.x-x, ty=cam.y-y;
+  const L=Math.hypot(tx,ty)||1; tx/=L; ty/=L;
+  /* 橫向有兩個方向，要選**朝畫面內**那一側 —— 隨機選的話有一半機率
+     牠會往畫面外漂走，玩家一輩子看不到那隻。
+     判法：各往前試一小步，取投影橫向位置 |sv| 較小的那個。 */
+  const sinp0=Math.sin(cam.angle), cosp0=Math.cos(cam.angle);
+  const svOf=(px2,py2)=>{
+    const dx2=px2-cam.x, dy2=py2-cam.y;
+    const z2=dx2*(-sinp0)+dy2*(-cosp0);
+    return Math.abs((dx2*cosp0+dy2*(-sinp0))/(Math.abs(z2)<1?1:z2));
+  };
+  let hx=0, hy=0, best=Infinity;
+  for(const side of [1,-1]){
+    const a2=side*(Math.PI/2);
+    const cx2=tx*Math.cos(a2)-ty*Math.sin(a2);
+    const cy2=tx*Math.sin(a2)+ty*Math.cos(a2);
+    const sv2=svOf(x+cx2*260, y+cy2*260);
+    if(sv2<best){ best=sv2; hx=cx2; hy=cy2; }
+  }
   enemy={ x, y, alt:cam.alt+Math.random()*60-20, hx, hy,
-          d0:C.spawnDist, state:'cruise', tEngage:0, phase:Math.random()*6.28 };
+          d0:C.spawnDist, state:'cruise', tEngage:0, phase:Math.random()*6.28,
+          t0:performance.now(), trail:[] };
+  // 軌跡先填成一條直線，否則剛生成的那幾幀身體還沒長出來
+  for(let i=1;i<=Math.ceil(C.bodyLen/C.trailStep)+4;i++)
+    enemy.trail.push({x:x-hx*C.trailStep*i, y:y-hy*C.trailStep*i});
+
 }
 
 function updateEnemy(dt,now){
@@ -1547,18 +1586,38 @@ function updateEnemy(dt,now){
   /* 追擊判定：距離縮到刷新當下的 chaseAt 倍就轉為主動朝玩家。
      ⚠ 用刷新當下的 d0 當基準而不是固定距離——玩家可能正在遠離，
        那時 d0 本來就大，門檻要跟著放大才符合「相對距離縮短」的語意。 */
+  /* 追擊判定：距離縮到刷新當下的 chaseAt 倍才轉主動。
+     巡航是純橫向，距離不會自己縮 → 這一步實質上是「玩家自己靠太近」。 */
   if(enemy.state==='cruise' && dist<=enemy.d0*C.chaseAt) enemy.state='chase';
   if(enemy.state==='chase'){
-    const L=dist||1; enemy.hx=dx/L; enemy.hy=dy/L;
+    /* 轉向限角速度：直接把朝向換成「指著玩家」是瞬間直角轉彎，
+       一隻二十幾節的長蟲不可能那樣動。這裡只讓朝向每幀朝目標轉一小步，
+       身體再靠下面的軌跡跟上 —— 頭先轉、身體循著頭走過的路彎過去，
+       那個時間差才是「活的東西在轉身」的讀感來源（同飛空艇帆的延遲鏈）。 */
+    const want=Math.atan2(dy,dx), cur=Math.atan2(enemy.hy,enemy.hx);
+    let da=want-cur;
+    while(da>Math.PI) da-=Math.PI*2;
+    while(da<-Math.PI) da+=Math.PI*2;
+    const na=cur+clamp(da,-C.turnRate*dt,C.turnRate*dt);
+    enemy.hx=Math.cos(na); enemy.hy=Math.sin(na);
     /* 追擊時沉到玩家高度**之下**：船是固定畫在畫面 76% 高的精靈，
        敵人若與船同高，投影出來會停在地平線附近（畫面 30% 高）——
        兩者永遠碰不到一起，逼近的壓迫感就沒了。沉下去牠才會朝船壓過來。 */
-    const want=cam.alt-C.diveAlt;
-    enemy.alt+=clamp(want-enemy.alt,-0.10*dt,0.10*dt);
+    const wantAlt=cam.alt-C.diveAlt;
+    enemy.alt+=clamp(wantAlt-enemy.alt,-0.10*dt,0.10*dt);
   }
 
   const mv=MAX_SPD*C.speedK*dt*0.06;        // 與玩家同一套積分（見 update 的 mv）
   enemy.x+=enemy.hx*mv; enemy.y+=enemy.hy*mv;
+
+  /* 軌跡：每前進 trailStep 就記一點。身體是沿這條軌跡排的，
+     所以牠轉彎時身體會循著頭走過的路彎過去，而不是整條剛體一起轉。 */
+  const tl=enemy.trail, hd=tl[0];
+  if(!hd || Math.hypot(enemy.x-hd.x,enemy.y-hd.y)>=C.trailStep){
+    tl.unshift({x:enemy.x,y:enemy.y});
+    const maxN=Math.ceil(C.bodyLen/C.trailStep)+6;
+    if(tl.length>maxN) tl.length=maxN;
+  }
 
   if(dist<=C.engage){ enemy.state='engage'; enemy.tEngage=now; }
 }
@@ -1589,16 +1648,32 @@ function drawEnemy3D(scaleH,horizon,sinp,cosp,now){
   const zc=hp[2];
   if(zc>ZFAR*0.95) return;
 
-  // 體節在世界空間排好（沿 −heading 往後長），再逐節投影
-  const px=-enemy.hy, py=enemy.hx;                 // 身體的側向（世界）
+  /* 體節沿**軌跡**排，不是沿 −heading 拉一條直線。
+     直線的話整條蟲是剛體，轉向時會像一根棒子在原地轉。沿軌跡排之後，
+     每一節都走頭曾經走過的位置 —— 轉彎自然成為一條弧，身體依序跟上。 */
   const segL=C.bodyLen/C.segs;
   const wob=now*C.waveHz+enemy.phase;
+  const spine=[{x:enemy.x,y:enemy.y}].concat(enemy.trail||[]);
+  const posAt=(d)=>{
+    let acc=0;
+    for(let j=1;j<spine.length;j++){
+      const a=spine[j-1], b=spine[j];
+      const sd=Math.hypot(b.x-a.x,b.y-a.y);
+      if(acc+sd>=d){ const f=sd?(d-acc)/sd:0;
+        return {x:a.x+(b.x-a.x)*f, y:a.y+(b.y-a.y)*f}; }
+      acc+=sd;
+    }
+    const e=spine[spine.length-1]||spine[0];       // 軌跡不夠長就沿當下朝向外推
+    const rem=d-acc;
+    return {x:e.x-enemy.hx*rem, y:e.y-enemy.hy*rem};
+  };
   const pts=[];
   for(let i=0;i<C.segs;i++){
+    const base=posAt(segL*i), aft=posAt(segL*i+8);
+    let ux=base.x-aft.x, uy=base.y-aft.y;
+    const ul=Math.hypot(ux,uy)||1; ux/=ul; uy/=ul;   // 該節的局部前進方向
     const off=Math.sin(wob-i*C.wavePhase)*C.waveAmp*(0.35+i/C.segs);   // 尾巴擺幅大
-    const wx=enemy.x-enemy.hx*segL*i+px*off;
-    const wy=enemy.y-enemy.hy*segL*i+py*off;
-    pts.push(project(wx,wy,enemy.alt));
+    pts.push(project(base.x-uy*off, base.y+ux*off, enemy.alt));
   }
 
   const S=sky();
