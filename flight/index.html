@@ -363,7 +363,7 @@ function buildSettlements(){
       radius:SETTLE_R[S.t], faction:S.f, coastal:!!S.c, x:S.x, y:S.y,
       seaAng:S.sea||0,               // 向海方位（弧度）；內陸聚落留 0
     });
-    s.mx=S.x; s.my=S.y; return s;
+    s.mx=S.x; s.my=S.y; s.gh=(S.gh!=null?S.gh:CLOUD_H); return s;
   });
   return settleCache;
 }
@@ -535,17 +535,20 @@ async function loadWorld(){
     /* 鎏平範圍：完全整平到 2R，也就是城界外再放一個城區半徑的平地。
        城市不是突然在山坡上停住的——郊區、耕地、道路都需要平地，
        外圍還是崎岘地形的話，城看起來像被戴在山上。 */
-    const PAD=2.8;                       // 裙帶外緣（佔半徑倍數）
-    const FLAT=2.0;                      // 這個倍數以內完全整平
     let flattened=0;
     for(const S of SETTLEMENTS){
+      /* 大城一律是平原地貌：整平半徑放大，臨近有山有丘就鏟掉。
+         鎮／村體量小，維持較保守的範圍（暫不處理，見 TODO）。 */
+      const CITY=S.t.indexOf('city')===0;
+      const FLAT=CITY?2.6:2.0;           // 這個倍數以內完全整平
+      const PAD =CITY?3.6:2.8;           // 裙帶外緣（佔半徑倍數）
       const R=SETTLE_R[S.t], cx=S.x|0, cy=S.y|0;
       // 目標高度：環帶（R ~ 1.6R）內陸地的中位數
       const ring=[];
-      const r1=Math.ceil(R*3.6);
+      const r1=Math.ceil(R*(PAD+0.8));
       for(let dy=-r1;dy<=r1;dy++)for(let dx=-r1;dx<=r1;dx++){
-        // ⚙ 環帶要取在**裙帶以外**（>PAD），不然量到的是自己剛鎏平的地
-        const d=Math.hypot(dx,dy); if(d<R*2.8||d>R*3.6) continue;
+        // ⚙ 環帶要取在**裙帶以外**（>PAD），不然量到的是自己剛鏟平的地
+        const d=Math.hypot(dx,dy); if(d<R*PAD||d>R*(PAD+0.8)) continue;
         const x=cx+dx,y=cy+dy;
         if(x<0||y<0||x>=MAPW||y>=MAPH) continue;
         const h=HGT[y*MAPW+x]; if(h<=CLOUD_H) continue;
@@ -553,7 +556,13 @@ async function loadWorld(){
       }
       if(!ring.length) continue;
       ring.sort((a,b)=>a-b);
+      /* 目標高度取環帶中位數。⚠ 不能取平均：城旁邊只要有一座山，平均就被拉高，
+         整座城會被墊到半山腰。中位數對「一邊是山、一邊是平原」穩健得多。 */
       const target=ring[ring.length>>1];
+      /* 記下來給 3D 投影用。原本那邊是 HGT[中心格]，中心格若在海裡就退回
+         CLOUD_H —— 那等於把城擺在雲海表面上，字面意義的「飄在雲上」。
+         整平後的地基高度才是這座城真正的地面。 */
+      S.gh=target;
       const rP=Math.ceil(R*PAD);
       for(let dy=-rP;dy<=rP;dy++)for(let dx=-rP;dx<=rP;dx++){
         const x=cx+dx,y=cy+dy;
@@ -1460,6 +1469,14 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
   if(!window.Settlement || !MAPW) return;
   const sxk=W/BW, syk=VIEWH/BH;
   const nightK=clamp(1-sky().day*1.25,0,1);      // 入夜程度：城裡的燈火強度
+  /* 「這個聚落局部座標是不是落在水上」。城的輪廓是幾何生成的圓角多邊形，
+     不認得海岸線，臨海的城必然有一部分伸出陸塊 —— 那一段不能照常長房子
+     （會變成蓋在海面上的樓），改畫成碼頭。 */
+  const seaProbe=(s,lx,ly)=>{
+    const mx=(s.mx+lx)|0, my=(s.my+ly)|0;
+    if(mx<0||my<0||mx>=MAPW||my>=MAPH) return true;
+    return HGT[my*MAPW+mx]<=CLOUD_H;
+  };
   const list=[];
   for(const s of buildSettlements()){
     const dx=s.mx*MAP_SCALE-cam.x, dy=s.my*MAP_SCALE-cam.y;
@@ -1469,8 +1486,9 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
     if(sv<-1.35||sv>1.35) continue;
     const col=Math.round(((sv+1)/2)*BW);
     if(col<0||col>=BW) continue;
-    const i=(Math.min(MAPH-1,s.my|0))*MAPW+(Math.min(MAPW-1,s.mx|0));
-    const gh=HGT[i]>CLOUD_H?HGT[i]:CLOUD_H;
+    /* ⚠ 地面高度用整平後的地基（s.gh），不是 HGT[中心格]。原本中心格若在海裡
+       會退回 CLOUD_H＝把城擺在雲海表面上，那就是「城飄在雲上」的來源。 */
+    const gh=s.gh;
     const by=((cam.alt-gh)/z + z*curvAt(sv))*scaleH+horizon;      // 緩衝列
     if(ybufZ[col]<z-40 && ybuf[col]<by-2) continue;                // 前面有更近的山稜擋住
     list.push({s, z, x:((sv+1)/2*BW)*sxk, y:by*syk});
@@ -1495,8 +1513,7 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
        兩者相除就是這個深度的真實壓縮率。固定 0.58 是地圖畫面用的斜角常數，
        搬到 3D 裡就成了一張不隨視角變形的貼紙浮在地表上。
        ⚙ 夾上下限：飛得極低時 z² 分母會把值推到失控。 */
-    const gh0=HGT[(Math.min(MAPH-1,o.s.my|0))*MAPW+(Math.min(MAPW-1,o.s.mx|0))];
-    const dydz=(-(cam.alt-(gh0>CLOUD_H?gh0:CLOUD_H))/(o.z*o.z)+curvAt(0))*scaleH*syk;
+    const dydz=(-(cam.alt-o.s.gh)/(o.z*o.z)+curvAt(0))*scaleH*syk;
     const tilt=clamp(Math.abs(dydz)/sc,0.06,1.10);
     /* ⚠ Settlement.draw 的 scale 是「每個**地圖像素**幾個螢幕像素」——
        s.radius 存的是地圖像素（同地圖畫面那邊傳 sc*MAP_SS）。
@@ -1505,7 +1522,8 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
        飛到城上空也只看得到一顆符號點。上面那行尺寸檢查用的 R 有乘
        MAP_SCALE，所以檢查會過、畫出來卻是點——兩邊單位不一致的典型病。 */
     Settlement.draw(ctx, o.s, { ox:o.x, oy:o.y, scale:sc*MAP_SCALE, tilt, night:nightK,
-                                 rot:cam.angle, groundL:30, groundA:0.28 }, Settlement.DEBUG);
+                                 rot:cam.angle, groundL:30, groundA:0.28,
+                                 waterAt:seaProbe }, Settlement.DEBUG);
     ctx.restore();
   }
 }

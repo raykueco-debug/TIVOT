@@ -486,6 +486,7 @@ function draw(ctx, s, view, dbg) {
      ⚠ 旋轉做在座標映射上，不是 ctx.rotate：整體轉畫布會把建築量體與屋頂
        一起轉歪（斜角投影的屋頂必須永遠朝同一個方向）。這裡只轉「地面平面
        上的點落在哪」，量體仍照原本的螢幕方向長出來。 */
+  const water = view.waterAt || null;
   const rot = view.rot || 0;
   const rc = Math.cos(rot), rs = Math.sin(rot);
   const X = (wx, wy) => ox + (wx * rc - wy * rs) * scale;
@@ -556,7 +557,12 @@ function draw(ctx, s, view, dbg) {
 
   for (let i = 0; i < items.length; i++) {
     const it = items[i];
-    if (it.kind === 'b') drawBuilding(ctx, it.o, X, Y, scale, pal, lod);
+    if (it.kind === 'b') {
+      /* 伸出陸塊的那一段不長房子，改成碼頭棧板 —— 城的輪廓是幾何生成的
+         多邊形，不認得海岸線，臨海的城必然有一部分蓋到水上。 */
+      if (water && water(s, it.o.x, it.o.y)) drawDeck(ctx, it.o, X, Y, scale, pal);
+      else drawBuilding(ctx, it.o, X, Y, scale, pal, lod);
+    }
     else if (it.kind === 'l') drawLandmark(ctx, it.o, X, Y, scale, pal, lod);
     else if (it.kind === 'w') drawWallSeg(ctx, it.o, X, Y, scale, pal);
     else drawTower(ctx, it.o, X, Y, scale, pal);
@@ -596,6 +602,17 @@ function drawNightLights(ctx, s, X, Y, scale, night, lod) {
     ctx.fill();
   }
   ctx.restore();
+}
+
+/* 碼頭棧板：水上那一段的替代量體。木色、極薄（幾乎沒有高度），
+   邊上帶幾根樁 —— 讀起來是伸進水裡的棧橋，不是浮在水上的房子。 */
+function drawDeck(ctx, b, X, Y, scale, pal) {
+  const x = X(b.x, b.y), y = Y(b.x, b.y);
+  const w = Math.max(1.2, b.w * scale), d = Math.max(1, b.d * scale * TILT);
+  ctx.fillStyle = shade(1, pal, 0.62);
+  ctx.fillRect(x - w / 2, y - d / 2, w, d);
+  ctx.fillStyle = shade(1, pal, 0.34);
+  ctx.fillRect(x - w / 2, y + d / 2 - Math.max(0.8, d * 0.22), w, Math.max(0.8, d * 0.22));
 }
 
 function drawBuilding(ctx, b, X, Y, scale, pal, lod) {
