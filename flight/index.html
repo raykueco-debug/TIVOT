@@ -1814,9 +1814,18 @@ const ENEMY_KINDS = {
        戰鬥機那樣甩頭。轉得慢，掉轉本身才有重量，也讓每個方位停留得夠久。 */
     name:'空賊', plan:'rigid', speedK:0.85, turnRate:0.00055,
     bodyLen:300,                    // 船長（世界單位）＝側視圖寬所代表的長度
+    /* 方位圖:0°(正面)/53.6°/90°(側)/141.6°/180°(背),再鏡射補另一側＝一圈八個。
+       ⚠ 53.6/141.6 是**量出來的不是選的**:斜視圖來自另一張補充稿,
+         相機方位角本來就不對稱(先前誤以為是 45°／135°)。
+         split_enemy.py 以桅高正規化尺度後,用「寬 / 側視寬 = sinθ」反推,
+         那支腳本每次跑都會把量到的角度印出來 —— 換素材就照著改這兩個數。
+       ⚠ frontQ 的船首朝左(與 sideR 同一側)、rearQ 的船首朝右(與 sideL 同一側),
+         所以兩張各自只在一邊是原圖,另一邊要鏡射。 */
     sprite:{ dir:'enemy/FLH_Pirate/',
              front:'view_4.webp', rear:'view_5.webp',
-             sideR:'view_0.webp', sideL:'view_1.webp' },
+             sideR:'view_0.webp', sideL:'view_1.webp',
+             frontQ:'view_6.webp', rearQ:'view_7.webp' },
+    qFront:53.6*Math.PI/180, qRear:141.6*Math.PI/180,
   },
 };
 
@@ -1833,7 +1842,7 @@ const enemyArt={};
       /* 剛體怪：一組方位圖。全部載齊才切精靈模式，
          少一張就會在某個朝向上突然沒東西可畫。 */
       const set={}; let left=0;
-      for(const key of ['front','rear','sideR','sideL']){
+      for(const key of ['front','rear','sideR','sideL','frontQ','rearQ']){
         if(!sp[key]) continue;
         left++;
         const im=new Image();
@@ -2091,35 +2100,61 @@ function drawEnemy3D(scaleH,horizon,sinp,cosp,now){
     const crs=(enemy.hx*tcy-enemy.hy*tcx)/tl;
     /* 視角換圖要**交叉淡入**，不能過門檻就硬換。
        船的朝向本身已經有角速度上限（turnRate），會突然變的是「用哪張圖」——
-       只有四張方位圖，40°/140° 兩個門檻上一跳，看起來就是船瞬間扭了一下。
        在門檻兩側各留 BAND 的過渡帶，兩張疊著畫、權重線性交換。
        ⚠ 過渡帶不能太寬：兩張圖差異大，疊太久會出現雙重影。±10°，
          再加 smoothstep 讓權重快速通過 50/50 —— 線性的話中段停留最久，
-         而中段正是疊影最明顯的地方。 */
+         而中段正是疊影最明顯的地方。
+
+       ── 方位表 ─────────────────────────────────────────────
+       每張圖登記它的**原生方位角** th，門檻取相鄰兩張的中點。
+       原本只有四張、門檻在 40°/140°，一跳 90° 的形變全靠 squash 硬撐；
+       補上兩張斜視圖後成了一圈八個，最遠只差 ~27°。
+       flip：斜視圖各自只在一邊是原圖，另一邊得水平鏡射（見 sprite 的註）。
+       ⚠ 鏡射要包在 rotate 裡面：side傾是螢幕空間的，鏡的是圖不是傾角。 */
     const th=Math.abs(Math.atan2(crs,dot));
-    const side=(crs>0?set.sideR:set.sideL);
-    const BAND=0.17, T1=0.70, T2=2.44;   // ±10°
-    let imgA=null, imgB=null, mix=0;
-    if(th<T1-BAND)      imgA=set.front;
-    else if(th<T1+BAND){ imgA=set.front; imgB=side;     mix=sstep(0,1,(th-(T1-BAND))/(2*BAND)); }
-    else if(th<T2-BAND)  imgA=side;
-    else if(th<T2+BAND){ imgA=side;      imgB=set.rear; mix=sstep(0,1,(th-(T2-BAND))/(2*BAND)); }
-    else                 imgA=set.rear;
-    const img=imgA;
+    const R=(crs>0);
+    const HALFPI=Math.PI/2;
+    const VIEWS=[
+      {img:set.front,           th:0,          flip:false, fixed:true},
+      {img:set.frontQ,          th:K.qFront,   flip:!R},
+      {img:R?set.sideR:set.sideL, th:HALFPI,   flip:false},
+      {img:set.rearQ,           th:K.qRear,    flip:R},
+      {img:set.rear,            th:Math.PI,    flip:false, fixed:true},
+    ].filter(v=>v.img);
+    const BAND=0.17;                                  // ±10°
+    let ai=0;
+    while(ai<VIEWS.length-1 && th>(VIEWS[ai].th+VIEWS[ai+1].th)/2) ai++;
+    let vA=VIEWS[ai], vB=null, mix=0;
+    const bLo=ai>0 ? (VIEWS[ai-1].th+vA.th)/2 : -1e9;
+    const bHi=ai<VIEWS.length-1 ? (vA.th+VIEWS[ai+1].th)/2 : 1e9;
+    if(th<bLo+BAND){      vB=VIEWS[ai-1]; mix=sstep(0,1,(bLo+BAND-th)/(2*BAND)); }
+    else if(th>bHi-BAND){ vB=VIEWS[ai+1]; mix=sstep(0,1,(th-(bHi-BAND))/(2*BAND)); }
+    const img=vA.img;
     if(!img) return;
     const wpp=K.bodyLen/((set.sideR||img).width);     // 世界單位／來源像素（側視寬＝船長）
-    /* 側視要依夾角**橫向收縮**：船轉向鏡頭時，船身的視長 ∝ sinθ。
-       只有四個方位、中間隔 90°，光靠淡入淡出等於沒有中間形——這一步用
-       幾何補上：側視隨 θ 連續縮短，接近正面時才交給正面圖。
-       ⚠ 桅杆與帆是直立的、理論上不該跟著橫縮，但整張一起縮的誤差在
-         這個尺寸（<200px）看不出來，換來的是連續的船頭掉轉。
-       ⚠ 下限 0.30：完全縮到 0 會在交接前一刻壓成一條線。 */
-    const isSide=(img===set.sideR||img===set.sideL);
-    const squash=isSide?Math.max(0.30,Math.abs(Math.sin(th))):1;
+    /* 依夾角**橫向收縮**：船轉向鏡頭時，船身的視長 ∝ sinθ。
+       每張圖只需補「離它自己的原生角度」那一段：squash = sinθ / sin(原生θ)，
+       所以在門檻上兩張算出來的寬度**完全相等** —— 接縫不會有寬度跳動。
+       ⚠ 正面／背面圖不套（fixed）：θ=0 時船身視長為零，那張圖的寬度代表的是
+         **帆桁的展幅**不是船長，跟著 sinθ 縮會直接壓成一條線。
+       ⚠ 桅杆與帆是直立的、理論上不該跟著橫縮。只有四張圖時側視得縮到 0.30，
+         那個誤差是看得出來的；補上斜視圖後側視最多只縮到 0.90，已無妨。 */
+    /* 收縮有下限:輪廓寬其實是 max(船長·sinθ, 帆桁展幅·cosθ) —— 接近正／背面時
+       撐住寬度的是帆桁不是船長,一路照 sinθ 縮會縮到比正面圖還窄。
+       實測 150°~154° 就有一個 10% 的凹陷(斜後圖 74px 對背視圖 82px)。
+       下限取「端點視圖的寬度」:那張圖畫的正是帆桁展幅,拿它當底最省事。
+       (舊碼的 max(0.30,…) 是同一件事的土法版,0.30 是湊的,這裡有依據。) */
+    const endW=(set.front&&set.rear)?Math.min(set.front.width,set.rear.width):0;
+    const sq=(v)=>{
+      if(v.fixed) return 1;
+      const q=Math.abs(Math.sin(th))/Math.sin(v.th);
+      return endW?Math.max(q,endW/v.img.width):q;
+    };
+    const squash=sq(vA);
     const w=img.width*wpp*P[3]*squash, h=img.height*wpp*P[3];
     if(w<2) return;
-    const sqB=(imgB===set.sideR||imgB===set.sideL)?Math.max(0.30,Math.abs(Math.sin(th))):1;
-    const wB=imgB?imgB.width*wpp*P[3]*sqB:0, hB=imgB?imgB.height*wpp*P[3]:0;
+    const imgB=vB?vB.img:null;
+    const wB=imgB?imgB.width*wpp*P[3]*sq(vB):0, hB=imgB?imgB.height*wpp*P[3]:0;
     const pad=Math.ceil(Math.max(w,h,wB,hB)*0.6)+6;   // 兩張都要框得下
     const x0=Math.round(P[0]-w/2)-pad, y0=Math.round(P[1]-h/2)-pad;
     const fw=Math.ceil(w)+pad*2, fh=Math.ceil(h)+pad*2;
@@ -2134,12 +2169,17 @@ function drawEnemy3D(scaleH,horizon,sinp,cosp,now){
     /* 側傾：繞船自己的中心轉一個小角度。飛船保持水平飛行，但轉彎會外傾。 */
     const roll=(enemy.roll||0)*0.28;      // 最大約 16°
     EC.save(); EC.translate(P[0],P[1]); EC.rotate(roll);
-    EC.globalAlpha=imgB?(1-mix):1;
-    EC.drawImage(img,-w/2,-h/2,w,h);
-    if(imgB){
-      EC.globalAlpha=mix;
-      EC.drawImage(imgB,-wB/2,-hB/2,wB,hB);
-    }
+    const blit=(im,ww,hh,flip,al)=>{
+      EC.globalAlpha=al;
+      if(flip){ EC.save(); EC.scale(-1,1); EC.drawImage(im,-ww/2,-hh/2,ww,hh); EC.restore(); }
+      else EC.drawImage(im,-ww/2,-hh/2,ww,hh);
+    };
+    /* ⚠ 權重取**平方根**不是直接用 mix:兩張各畫 0.5 疊起來,覆蓋率是
+       0.5+0.5-0.25＝0.75 —— 過渡帶正中央的船會有四分之一透明度,天空
+       透出來,整艘船發白。等功率(sqrt)權重把最低覆蓋率拉到 0.91,
+       兩端仍精確收斂到 1／0,不會在門檻上跳。 */
+    blit(img,w,h,vA.flip,imgB?Math.sqrt(1-mix):1);
+    if(imgB) blit(imgB,wB,hB,vB.flip,Math.sqrt(mix));
     EC.globalAlpha=1; EC.restore();
     ctx.save(); ctx.imageSmoothingEnabled=false;
     clipByTerrainDepth(P[2],W/BW,VIEWH/BH);   // 山也該擋住船

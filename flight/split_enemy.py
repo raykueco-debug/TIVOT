@@ -14,6 +14,7 @@
 
 用法：  py flight/split_enemy.py
 """
+import math
 import os
 import numpy as np
 from PIL import Image
@@ -104,3 +105,89 @@ def split(name):
 
 for n in ['FLM_CENTIPI', 'FLM_Serpent', 'FLH_Pirate']:
     split(n)
+
+
+# ── 補充稿:斜方位圖 ────────────────────────────────────────────
+# 六視圖只給了正／背／左／右四個水平方位,間隔 90°。剛體怪靠換圖表現轉向,
+# 90° 一跳太粗,只能靠橫向收縮(index.html 的 squash)硬撐中間形。
+# 補充稿 viewex.png 多給兩個斜方位,把間隔降到 ~45°。
+#
+# ⚠ 補充稿與六視圖**不是同一台相機**:六視圖的縮放係數由那張稿自己算,
+#   補充稿得另外正規化,否則轉向換圖時船會忽大忽小。
+#
+# 正規化用**桅高**不用船長:繞垂直軸轉一圈,船長的投影長度隨方位角變
+# (∝ sinθ),桅高不變 —— 桅高才是跨方位的不變量。
+# 反過來,量出來的寬度就成了方位角的量尺:sinθ = 寬 / 側視寬。
+# 實測(見下方 print):兩張是 53.6° 與 141.6°,**不是**原先以為的 45°／135°。
+# 這也解釋了先前「寬度說兩張差 30%、高度說只差 4%」的矛盾 ——
+# 兩張其實同一台相機,只是方位角不對稱。
+EXTRA = {
+    'FLH_Pirate': {
+        'sheet': 'viewex.png',      # 放在 flight/enemy/<名稱>/ 下(不在 resources/)
+        'ref':   'view_0.webp',     # 尺度與方位的基準:側視,θ=90°
+        'out':   ['view_6.webp',    # 斜前(與 view_0 同一側:船首朝左)
+                  'view_7.webp'],   # 斜後(與 view_1 同一側:船首朝右)
+    },
+}
+PAD_OUT = 16     # 輸出空間的透明邊(留給輝光)。對稱補,不夾制 ——
+                 # 夾到畫布邊會讓補邊變不對稱,船在換圖時就會上下跳一下。
+
+
+def core_box(alpha):
+    ys, xs = np.where(alpha >= ALPHA_CORE)
+    return xs.min(), ys.min(), xs.max() + 1, ys.max() + 1
+
+
+def split_extra(name):
+    J = EXTRA.get(name)
+    if not J:
+        return
+    d = os.path.join(OUT, name)
+    im = Image.open(os.path.join(d, J['sheet'])).convert('RGBA')
+    a = np.asarray(im)
+    lab, n = ndimage.label(a[:, :, 3] >= ALPHA_CORE)
+    sizes = ndimage.sum(a[:, :, 3] >= ALPHA_CORE, lab, range(1, n + 1))
+    blobs = [i + 1 for i in np.argsort(sizes)[::-1] if sizes[i] >= MIN_PX]
+    if len(blobs) != len(J['out']):
+        print('%s/%s  ⚠ 找到 %d 塊,預期 %d 塊' % (name, J['sheet'], len(blobs), len(J['out'])))
+        return
+
+    cuts = []
+    for lb in blobs:
+        sl = ndimage.find_objects(lab == lb)[0]
+        x0, y0, x1, y1 = sl[1].start, sl[0].start, sl[1].stop, sl[0].stop
+        cut = a[y0:y1, x0:x1].copy()
+        # 外框可能框進隔壁視角的一角:只留屬於這塊的像素(連同它自己的輝光)
+        own = ndimage.binary_dilation(lab[y0:y1, x0:x1] == lb, np.ones((PAD * 2 + 1, PAD * 2 + 1)))
+        cut[:, :, 3] = np.where(own, cut[:, :, 3], 0)
+        cuts.append((x0, cut))
+    cuts.sort(key=lambda c: c[0])           # 由左而右＝斜前、斜後(稿面排法)
+    cuts = [c[1] for c in cuts]
+
+    ref = np.asarray(Image.open(os.path.join(d, J['ref'])).convert('RGBA'))
+    rx0, ry0, rx1, ry1 = core_box(ref[:, :, 3])
+    refW, refH = rx1 - rx0, ry1 - ry0
+
+    boxes = [core_box(c[:, :, 3]) for c in cuts]
+    hs = [b[3] - b[1] for b in boxes]
+    k = float(refH) / (sum(hs) / float(len(hs)))     # 共用一個縮放係數(同一台相機)
+    print('%s  補充稿 %d 塊,尺度 k=%.4f(基準 %s 桅高 %dpx)' % (name, len(cuts), k, J['ref'], refH))
+
+    for i, (cut, box) in enumerate(zip(cuts, boxes)):
+        cx0, cy0, cx1, cy1 = box
+        o = Image.fromarray(cut[cy0:cy1, cx0:cx1], 'RGBA')
+        w2 = max(1, int(round(o.width * k)))
+        h2 = max(1, int(round(o.height * k)))
+        o = o.resize((w2, h2), Image.LANCZOS)
+        pad = Image.new('RGBA', (w2 + PAD_OUT * 2, h2 + PAD_OUT * 2), (0, 0, 0, 0))
+        pad.paste(o, (PAD_OUT, PAD_OUT))
+        pad.save(os.path.join(d, J['out'][i]), quality=QUALITY, method=6)
+        th = math.degrees(math.asin(min(1.0, w2 / float(refW))))
+        if i:                                  # 斜後:sinθ 的另一解
+            th = 180.0 - th
+        print('   %s  %dx%-4d  方位角 theta=%.1f 度  (寬 %d / 側視寬 %d)'
+              % (J['out'][i], pad.width, pad.height, th, w2, refW))
+
+
+for n in ['FLH_Pirate']:
+    split_extra(n)
