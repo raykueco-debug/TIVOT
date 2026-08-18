@@ -54,6 +54,13 @@
     color:var(--gold);font-family:inherit;font-size:11px;letter-spacing:.14em;
     padding:5px 12px;cursor:pointer;}
   #spawnBtn:active{background:rgba(201,162,39,.16);}
+  /* 加速鈕：開發用。放操作盤**左上**（生怪鈕在左下，兩者不打架）。
+     top 由 JS 設成 VIEWH+12 —— 面板上緣是算出來的，CSS 這邊沒有那個數字。 */
+  #boostBtn{position:fixed;left:12px;z-index:40;background:rgba(5,6,12,.72);
+    border:1px solid rgba(201,162,39,.5);color:var(--gold);font-family:inherit;
+    font-size:11px;letter-spacing:.14em;padding:5px 12px;cursor:pointer;}
+  #boostBtn:active{background:rgba(201,162,39,.16);}
+  #boostBtn.on{color:#7fd0a0;border-color:rgba(127,208,160,.8);}
 
   /* 地圖畫面：圖是點開才載的（見 openMap），不進開場載入 */
   #mapView{position:fixed;inset:0;z-index:60;background:rgba(4,5,9,.94);display:none;}
@@ -151,6 +158,7 @@
 <button id="muteBtn" aria-label="Mute">🔊</button>
 <button id="backBtn">← 返回</button>
 <button id="spawnBtn">生怪</button>
+<button id="boostBtn">×1</button>
 <div id="mapView">
   <div id="mapWrap">
     <canvas id="mapCv"></canvas>
@@ -356,7 +364,7 @@ const SETTLEMENTS = [
        要再高就得先讓量體改走多邊形（街廓拉伸），不能靠位移網格頂點。 */
   { n:'聖王廳', x:934,  y:606, t:'city2', f:'church',
     plan:'city/holysee_plan.webp', planH:'city/holysee_h.webp',
-    planW:1100, planRot:0.0, planTall:40 },
+    planW:1100, planRot:0.0, planTall:40, noWater:true },
   { n:'大教堂城',     x:1224, y:581, t:'city2', f:'church' },
   { n:'曙光城',       x:1373, y:581, t:'city3', f:'church' },
   { n:'石櫃城',       x:530,  y:311, t:'city2', f:'empire' },
@@ -422,6 +430,69 @@ const SETTLEMENTS = [
    ⚠ 不進 loadWorld：它只影響少數幾座城的外觀，擋開場不划算。 */
 const cityPlanArt={};
 const cityHeight={};        // {w,h,d} —— 高度圖的灰階陣列
+const cityMass={};          // plan → 街廓量體（多邊形＋atlas），見 loadMass
+const cityMassArt={};       // plan → atlas 圖
+
+/* ══ 街廓量體 ══
+   舊作法是「把網格頂點依高度圖抬起來」，而網格頂點是**相鄰格共用**的 ——
+   抬任何一點都等於把整張紋理往上剪切，屋頂會拖過旁邊的街道。所以高度圖必須
+   先糊 5px、planTall 還得夾在 26（不然整座城糊成一團灰）。
+
+   改成 build_city.py 切出來的**街廓多邊形**，每塊各自拉伸成獨立的稜柱
+   （垂直牆＋平屋頂）。塊與塊不共用頂點 → 沒有剪切 → 高度沒有上限，
+   而街道自然成為塊與塊之間的谷 —— 那就是天際線。
+
+   ⚠ 為什麼不用「平面空間的規則格陣」（我的第一版）：街道只有 4~8px 寬、
+     街廓 15~40px，要用格陣解析出街道得切到 N≈60~100，那是上萬個稜柱。
+     多邊形用 283 塊就拿到精確形狀，成本是格陣的一小部分。
+   ⚠ 每塊在 atlas 上有**自己的 alpha**。直接拿 bbox 去貼會把鄰塊與街道一起
+     抬上來，那只是把舊版的剪切問題換個樣子。
+   ⚠ 由遠而近的順序**在載入時打表**：深度對平面座標 (u,v) 是仿射的，所以順序
+     只取決於 (gradU,gradV) 的方位角。切 32 個方位各存一份排序，每幀零排序。 */
+const MASS_AZ=32;                    // 方位分桶數
+function loadMass(planKey){
+  const base=planKey.replace('_plan.webp','_mass');
+  fetch(base+'.json').then(r=>r.ok?r.json():null).then(J=>{
+    if(!J||!J.b||!J.b.length) return;
+    const nb=J.b.length;
+    const cu=new Float32Array(nb), cv=new Float32Array(nb);
+    const hv=new Float32Array(nb);
+    const bb=new Float32Array(nb*4);          // atlas x,y + 寬高（插畫像素）
+    const bbx=new Float32Array(nb*4);         // bbox 在平面座標（−1..1）的四角
+    const pu=[], pv=[];                       // 每塊的多邊形（平面座標 −1..1）
+    for(let i=0;i<nb;i++){
+      const b=J.b[i], n=b.p.length>>1;
+      const au=new Float32Array(n), av=new Float32Array(n);
+      let su=0, sv=0;
+      for(let k=0;k<n;k++){
+        const u=b.p[k*2]/(J.w-1)*2-1, v=b.p[k*2+1]/(J.h-1)*2-1;
+        au[k]=u; av[k]=v; su+=u; sv+=v;
+      }
+      pu.push(au); pv.push(av);
+      cu[i]=su/n; cv[i]=sv/n; hv[i]=b.h;
+      bb[i*4]=b.at[0]; bb[i*4+1]=b.at[1]; bb[i*4+2]=b.bb[2]; bb[i*4+3]=b.bb[3];
+      bbx[i*4]  =b.bb[0]/(J.w-1)*2-1;              bbx[i*4+1]=b.bb[1]/(J.h-1)*2-1;
+      bbx[i*4+2]=(b.bb[0]+b.bb[2])/(J.w-1)*2-1;    bbx[i*4+3]=(b.bb[1]+b.bb[3])/(J.h-1)*2-1;
+    }
+    /* 方位分桶排序：key＝gradU·cu+gradV·cv，只取決於 (gradU,gradV) 的方向，
+       所以每個方位桶算一次就固定了。由遠（key 大）而近。 */
+    const ord=[];
+    for(let a=0;a<MASS_AZ;a++){
+      const th=(a+0.5)/MASS_AZ*Math.PI*2, gu=Math.cos(th), gv=Math.sin(th);
+      const idx=new Uint16Array(nb);
+      for(let i=0;i<nb;i++) idx[i]=i;
+      const key=new Float32Array(nb);
+      for(let i=0;i<nb;i++) key[i]=gu*cu[i]+gv*cv[i];
+      Array.prototype.sort.call(idx,(x,y)=>key[y]-key[x]);
+      ord.push(idx);
+    }
+    cityMass[planKey]={n:nb,pu:pu,pv:pv,h:hv,bb:bb,bbx:bbx,ord:ord,aw:J.aw,ah:J.ah};
+    const at=new Image();
+    at.onload=()=>{ cityMassArt[planKey]=at; };
+    at.src=base+'.webp';
+  }).catch(()=>{});
+}
+
 /* ⚠ 地形要依平面圖的水域去挖海／填地，所以整平 pass 必須等圖載完。
    這幾張加起來不到 400KB，擋一下開場划算——不擋的話海岸線會與城對不上。 */
 const cityPlansReady=[];
@@ -435,6 +506,7 @@ const cityPlansReady=[];
         setTimeout(res,4000);            // 保底：載不到也不能無限擋開場
       }));
       im.src=S.plan;
+      if(!(S.plan in cityMass)){ cityMass[S.plan]=null; loadMass(S.plan); }
     }
     if(S.planH){
       /* 高度圖要能**逐點取值**，所以載進來就抽成陣列。
@@ -782,7 +854,7 @@ const CITY_BAKED_VAL=0.86;
    （街道、屋瓦本來就淺），但 1.4 讀起來還是像在發光。0.88 把它收到 1.2 附近。 */
 const CITY_TRIM=0.88;
 
-let cityPts=null, cityGnd=null;
+let cityPts=null, cityGnd=null, massPts=null;   // massPts＝街廓量體的地面格點
 let cityU=null, cityV=null;                 // 兩軸的格線（平面座標 −1..1，非均勻）
 let settleCache=null;                       // 生成結果快取（純函式，算一次就好）
 function buildSettlements(){
@@ -1085,6 +1157,12 @@ async function loadWorld(){
       const hw=S.planW*0.5/MAP_SCALE, hh=hw*img.height/img.width;
       const ca=Math.cos(S.planRot), sa=Math.sin(S.planRot);
       const rr=Math.ceil(Math.max(hw,hh))+2;
+      /* ⚠ noWater：聖王廳的頂視圖是「藍色圓頂」，不是水。實測那張圖有 18.2%
+         的像素滿足下面那條「藍高於紅」的判定 —— 不擋的話這裡會把整座聖座
+         挖成一片湖（使用者回報的「聖王廳跨到河」就是這個）。
+         ⚠ 擋在 runtime 而不是把素材改色：判水的是這段程式，build 端把顏色
+           算掉並不會改變它讀到的像素。 */
+      const noW=!!S.noWater;
       const gh=S.gh||(CLOUD_H+80);
       const wl=Math.max(CLOUD_H+6, gh-9);   // 水面：壓在地基之下一點
       let water=0, land=0;
@@ -1098,7 +1176,7 @@ async function loadWorld(){
         const j2=(py*SS+px)*4;
         if(pd[j2+3]<60) continue;           // 圖上是空的就不動地形
         const i=y*MAPW+x;
-        if(pd[j2+2]>pd[j2]+8 && pd[j2+2]>50){     // 插畫說這裡是水
+        if(!noW && pd[j2+2]>pd[j2]+8 && pd[j2+2]>50){     // 插畫說這裡是水
           HGT[i]=wl; raw[i]=wl/PEAK_SCALE; RIV[i]=1; COL[i]=rgb(84,120,142); water++;
         }else if(HGT[i]<=CLOUD_H){                // 插畫說是陸、但地形是海 → 填起來
           HGT[i]=gh; raw[i]=gh/PEAK_SCALE; land++;
@@ -1516,6 +1594,8 @@ let SKYROW=null;     // 每列的天空色，輪廓混色要拿它當背景
 function resize(){
   W=innerWidth;H=innerHeight;
   VIEWH=Math.round(H*VIEW_F);
+  { const bb=document.getElementById('boostBtn');
+    if(bb) bb.style.top=(VIEWH+12)+'px'; }
   cv.width=W;cv.height=H;cv.style.width=W+'px';cv.style.height=H+'px';
   ctx.imageSmoothingEnabled=false;
   /* 緩衝寬度佔畫面寬的比例。維持 0.60。
@@ -2057,7 +2137,7 @@ function update(dt,now){
 
   cam.alt=CRUISE_ALT;
   const fx=-Math.sin(cam.angle), fy=-Math.cos(cam.angle);
-  const mv=cam.speed*dt*0.06;
+  const mv=cam.speed*dt*0.06*SPD_BOOST;
   cam.x+=fx*mv; cam.y+=fy*mv;
   clock.dist+=Math.abs(mv);              // 後退也是航行距離，不該倒扣
   /* 0.10：時間跟著「走了多少世界單位」推進，而速度與世界都加倍了，
@@ -2910,6 +2990,17 @@ function updateEnemy(dt,now){
   if(dist<=C.engage){ enemy.state='engage'; enemy.tEngage=now; }
 }
 
+/* 加速鈕（開發用）：點一下位移加倍，再點一次回復。
+   ⚠ 倍率套在**位移**（mv）而不是 cam.speed：cam.speed 同時驅動速度錶、
+     螺旋槳轉速、尾流與船身俯仰，乘上去會讓那些儀表一起說謊。要的只是
+     「同樣的操作手感，跑得比較快」，所以只放大每幀走的距離。 */
+let SPD_BOOST=1;
+document.getElementById('boostBtn').addEventListener('click',e=>{
+  SPD_BOOST = SPD_BOOST>1 ? 1 : 2;
+  e.currentTarget.textContent='×'+SPD_BOOST;
+  e.currentTarget.classList.toggle('on', SPD_BOOST>1);
+});
+
 /* 生怪鈕（開發用）：立刻換一隻新的，並把自動刷新的計時歸零重算，
    免得手動生完隔幾秒又被自動刷新蓋掉。 */
 document.getElementById('spawnBtn').addEventListener('click',()=>{
@@ -3692,7 +3783,13 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
          抬升量取自高度圖，讓大教堂與山坡上的莊園立起來、一般屋舍稍微墊高。
          ⚠ 立面刻意很小：這個尺寸下一格才幾像素，立面畫大了必破圖。
          ⚠ 沒有高度圖就 G === P，等於維持原本的平貼。 */
-      const HM=o.s.planH?cityHeight[o.s.planH]:null;
+      /* ⚠ 有量體層（MASS）時地面層就**退回平貼**：HM 留 null → hAt 恆 0 →
+         GD 與 PT 同值 → lift 為 0，下面那段立面也自動不畫。
+         抬升與立面改由量體層負責，兩邊都做就會疊出雙重牆。 */
+      /* ⚠ cityMass 是以 **plan**（色圖）為 key，不是 planH。載入時每張 plan
+         只抓一次街廓資料，而十一座市鎮共用同一張 mtown_plan。 */
+      const MASS=o.s.plan?cityMass[o.s.plan]:null;
+      const HM=(!MASS&&o.s.planH)?cityHeight[o.s.planH]:null;
       const tall=o.s.planTall||0;
       const hAt=(u,v)=>{
         if(!HM||!tall) return 0;
@@ -3721,12 +3818,17 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
            在主畫布上 render 要 51ms（≈19fps）。
          · 城的顆粒才跟世界一致。地形是 234×334 上採樣的，城若用全解析度
            貼，會比地形銳利得多，本身就是違和點。 */
-      let bx0=1e9,by0=1e9,bx1=-1e9,by1=-1e9;
+      let bx0=1e9,by0=1e9,bx1=-1e9,by1=-1e9,zmn=1e9;
       for(let q=0;q<NP*4;q+=4){                  // 抬升後的點最高，框它就夠
         const px=PT[q], py=PT[q+1];
         if(px<bx0)bx0=px; if(px>bx1)bx1=px;
         if(py<by0)by0=py; if(py>by1)by1=py;
+        if(PT[q+3]<zmn)zmn=PT[q+3];
       }
+      /* ⚠ 有量體層時上緣要再往上讓：上面那個外框是用**地面**格點算的，而稜柱
+         是往上長的 —— 不讓的話塔頂會被緩衝的上緣切平（實測帝都近距離整排
+         屋頂被削掉）。讓的量＝最高的量體在最近的那個深度投影出來的像素高度。 */
+      if(MASS&&tall>0) by0-=tall*scaleH*syk/Math.max(60,zmn);
       /* ⚠ 外框夾在**視窗內**，不是視窗外 600px。飛近時量體的投影會遠遠
          溢出畫面，原本那個 ±600 讓緩衝長到 954×524＝約 50 萬像素 ——
          比整個地形緩衝（234×334＝7.8 萬）還大六倍，而且多出來的部分
@@ -3833,6 +3935,113 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
                            (qax-a1*sx-c1*sy-bx0)*kx, (qay-b1*sx-d1*sy-by0)*ky);
           CFB.drawImage(planImg, sx,sy,sw+1.2,shh+1.2, sx,sy,sw+1.2,shh+1.2);
         }
+      }
+
+      /* ── 街廓量體 ─────────────────────────────────────────────
+         上面那層已經把平面圖平貼在地上了。這一層在它上面把每個街廓拉伸成
+         獨立的稜柱：垂直牆＋平屋頂，塊與塊不共用頂點。
+
+         ⚠ 這是與舊版最關鍵的差別。舊版抬的是共用的網格頂點，等於把紋理整片
+           往上剪切，所以高度圖要先糊 5px、planTall 要夾在 26。街廓各自獨立，
+           街道自然成為塊與塊之間的谷 —— 高度因此沒有上限。
+
+         ⚠ 頂面不必重新投影：垂直抬升不改變 sv，所以螢幕 x 與地面同值，
+           只有 y 差 (h/z)·scaleH·syk。每個頂點省一次 projectInto。
+         ⚠ 所有牆累積成**一條路徑、一次 fill**：顏色都一樣，幾百次 fill 換成
+           一次，這是這一層最大的一筆節省。 */
+      const MS=MASS, MA=cityMassArt[o.s.plan];
+      if(MS&&MA&&tall>0&&Math.max(fw,fh)*pk>=36){
+        const dyk=scaleH*syk;
+        /* 方位桶：由遠而近的順序只取決於 (gradU,gradV) 的方向（見 loadMass）。 */
+        let az=Math.atan2(gradV,gradU)/(Math.PI*2); az-=Math.floor(az);
+        const ORD=MS.ord[Math.min(MASS_AZ-1,(az*MASS_AZ)|0)];
+        const sux2=planImg.width*0.5, svy2=planImg.height*0.5;
+        if(!massPts||massPts.length<64) massPts=new Float64Array(64);
+        const MP=massPts;
+        /* 第一趟：牆。整批累積成一條路徑，最後一次 fill。 */
+        CFB.setTransform(kx,0,0,ky,-bx0*kx,-by0*ky);
+        CFB.beginPath();
+        let anyWall=false;
+        const drawn=[];
+        for(let t=0;t<MS.n;t++){
+          const bi=ORD[t], au=MS.pu[bi], av=MS.pv[bi], np2=au.length;
+          const hW=MS.h[bi]*tall;
+          if(hW<=0.5) continue;
+          /* 多邊形頂點：地面投影 + 立面高度。頂點數 ≤12（build 端簡化過）。 */
+          if(MP.length<np2*4){ massPts=new Float64Array(np2*4); }
+          const P=massPts;
+          let ok=true, S2=0, mnx=1e9,mxx=-1e9,mny=1e9,mxy=-1e9;
+          let zlo=1e9, zhi=-1e9;
+          for(let k=0;k<np2;k++){
+            const x0=au[k]*hw, y0=av[k]*hh;
+            projectInto(P,k*4,(x0*ca-y0*sa)/MAP_SCALE,(x0*sa+y0*ca)/MAP_SCALE,0);
+            const zk=P[k*4+3];
+            if(zk<60){ ok=false; break; }
+            if(zk<zlo)zlo=zk; if(zk>zhi)zhi=zk;
+          }
+          if(!ok) continue;
+          /* ⚠ 保險絲：一塊之內的深度比例失控（近端比遠端近三倍以上）就整塊不畫。
+             仿射矩陣吃不下這種形狀，畫出來是一道放射狀的拖曳 —— 低空貼近帝都時
+             會看到一條白色光柱從城裡射進天空（使用者回報的「飄圖穿過前景」）。
+             舊的網格版本有這條，我搬成多邊形時漏了。寧可缺一塊。 */
+          if(zhi>zlo*3) continue;
+          /* 頂面 y：各頂點用自己的 z（近的牆高、遠的牆矮，稜柱該有的透視）。 */
+          for(let k=0;k<np2;k++){
+            const L=hW*dyk/P[k*4+3];
+            P[k*4+2]=L;                                   // 借第三欄存立面高度
+            const ty=P[k*4+1]-L, px=P[k*4];
+            if(px<mnx)mnx=px; if(px>mxx)mxx=px;
+            if(ty<mny)mny=ty; if(P[k*4+1]>mxy)mxy=P[k*4+1];
+          }
+          if(mnx>bx1||mxx<bx0||mny>by1||mxy<by0) continue;
+          if(mxx-mnx<0.7&&mxy-mny<0.7) continue;          // 螢幕上不到一像素
+          // 頂面的螢幕帶號（shoelace）
+          for(let k=0;k<np2;k++){
+            const k2=(k+1)%np2;
+            S2+=P[k*4]*(P[k2*4+1]-P[k2*4+2])-P[k2*4]*(P[k*4+1]-P[k*4+2]);
+          }
+          /* 牆的帶號 2A=(x_q−x_p)(L_p+L_q)，與頂面**異號**的才是朝鏡頭的下緣。
+             同號的兩面被屋頂自己擋住，畫了看不到還會與鄰塊互相穿插。 */
+          for(let k=0;k<np2;k++){
+            const k2=(k+1)%np2;
+            const pxx=P[k*4], pyy=P[k*4+1], Lp=P[k*4+2];
+            const qxx=P[k2*4], qyy=P[k2*4+1], Lq=P[k2*4+2];
+            if((qxx-pxx)*S2>=0) continue;
+            CFB.moveTo(pxx,pyy-Lp); CFB.lineTo(qxx,qyy-Lq);
+            CFB.lineTo(qxx,qyy);    CFB.lineTo(pxx,pyy);
+            CFB.closePath(); anyWall=true;
+          }
+          drawn.push(bi);
+        }
+        if(anyWall) CFB.fill();                           // fillStyle 沿用地面層的暗色
+        /* 第二趟：屋頂。每塊一次 drawImage —— atlas 上那一格已經帶著自己的
+           alpha，所以不必逐塊 clip（clip 要重新光柵化路徑，幾百塊就吃掉畫格）。 */
+        for(let t=0;t<drawn.length;t++){
+          const bi=drawn[t], hW=MS.h[bi]*tall;
+          const ax2=MS.bb[bi*4], ay2=MS.bb[bi*4+1],
+                bw2=MS.bb[bi*4+2], bh2=MS.bb[bi*4+3];
+          if(bw2<1||bh2<1) continue;
+          /* 三個角定仿射：bbox 在插畫上的 (x,y)/(x+w,y)/(x,y+h)，抬到 hW。 */
+          const gx0=MS.bbx[bi*4], gy0=MS.bbx[bi*4+1],
+                gx1=MS.bbx[bi*4+2], gy1=MS.bbx[bi*4+3];
+          const c3=[[gx0,gy0],[gx1,gy0],[gx0,gy1]], sc3=[];
+          let bad=false;
+          for(let k=0;k<3;k++){
+            const x0=c3[k][0]*hw, y0=c3[k][1]*hh;
+            projectInto(MP,0,(x0*ca-y0*sa)/MAP_SCALE,(x0*sa+y0*ca)/MAP_SCALE,hW);
+            if(MP[3]<60){ bad=true; break; }
+            sc3.push([MP[0],MP[1]]);
+          }
+          if(bad) continue;
+          const a2=(sc3[1][0]-sc3[0][0])/bw2, b2=(sc3[1][1]-sc3[0][1])/bw2,
+                c2=(sc3[2][0]-sc3[0][0])/bh2, d2=(sc3[2][1]-sc3[0][1])/bh2;
+          if(!isFinite(a2)||!isFinite(d2)||Math.abs(a2*d2-b2*c2)<1e-7) continue;
+          CFB.setTransform(a2*kx, b2*ky, c2*kx, d2*ky,
+                           (sc3[0][0]-a2*ax2-c2*ay2-bx0)*kx,
+                           (sc3[0][1]-b2*ax2-d2*ay2-by0)*ky);
+          CFB.drawImage(MA, ax2,ay2,bw2,bh2, ax2,ay2,bw2,bh2);
+        }
+        CFB.setTransform(1,0,0,1,0,0);
       }
       /* 依光線上色：同 drawShip 那套。素材本身已經把「固定的色調對齊」烘進去
          （build_city.py 的 SAT/VAL），這裡只加隨時間變的部分。
