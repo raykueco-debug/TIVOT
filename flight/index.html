@@ -25,10 +25,10 @@
     top:calc(env(safe-area-inset-top) + 12px);font-size:10px;letter-spacing:.35em;
     color:var(--gold);opacity:.85;}
 
-  /* 方位：控制區那條羅盤帶已撤（面板只留乾淨的機械式船舵），
-     航向改回頂部 HUD 的 #compass（畫面上緣中央的八方位字）。
-     #topDist 仍隱：航行距離在面板上有 canvas 繪製版，畫兩次會重複。 */
-  #topDist{display:none;}
+  /* 方位改回「船與控制區之間」的橫條羅盤帶（canvas 繪於 drawPanel）。
+     頂部 HUD 的八方位字因此隱藏——同一個資訊在畫面上不該有兩份。
+     #topDist 同理：航行距離在面板上已有 canvas 繪製版。 */
+  #compass,#topDist{display:none;}
   /* 地標名牌與提示改貼在面板上緣之上，不壓到 3D 視窗底部 */
   #place{position:fixed;left:0;right:0;bottom:36vh;
     text-align:center;opacity:0;transition:opacity .4s;pointer-events:none;}
@@ -2123,8 +2123,41 @@ function drawPanel(S){
     ctx.restore();
   }
   ctx.imageSmoothingEnabled=false;         // 還給地形 blit（像素感靠它）
-  /* 方位帶（原本畫在 3D 視窗下緣）已撤：控制區只留乾淨的機械式船舵 ——
-     舵輪、基座、銅針速度表，沒有別的浮層。要看航向去開地圖。 */
+  /* ── 橫條羅盤帶：船與控制區之間 ───────────────────────────────
+     位置定在 3D 視窗下緣、舵輪突出線之上（y0−HELM_OUT−24）——
+     那正好是船的下方、面板的上方，兩者之間唯一的空檔。
+     ⚠ 要避開舵輪突出的那一段（HELM_OUT），否則會被輪緣壓住。
+     ⚠ 掃的是「方位」不是螢幕位置：先取最近的 15° 整數倍當基準，再算它
+       此刻該落在螢幕哪裡。反過來寫（掃固定螢幕位置再問那裡是不是八方位）
+       會變成 13 格裡只有三種可能值，得靠航向恰好對齊才命中方位字，
+       實測只有約 13% 的航向看得到字，其餘時候整條只剩刻點。
+       羅盤卡在轉、指標不動，本來就該這樣算。 */
+  const deg=((-cam.angle*180/Math.PI)%360+360)%360;
+  const bw2=Math.min(W*0.62,250), cbx=cx-bw2/2;      // ⚠ 不能叫 bx，上面基座已用掉
+  const ccy=y0-HELM_OUT-24;
+  ctx.fillStyle='rgba(6,7,12,.55)';
+  ctx.fillRect(cbx-6,ccy-17,bw2+12,30);
+  ctx.save();
+  ctx.beginPath(); ctx.rect(cbx,ccy-16,bw2,32); ctx.clip();
+  ctx.font='10px "Noto Serif TC",serif'; ctx.textAlign='center';
+  const base=Math.round(deg/15)*15;
+  for(let k=-7;k<=7;k++){
+    const a=base+k*15;                              // 這一格代表的方位
+    const px=cbx+bw2/2+(a-deg)/90*(bw2/2);          // 相對航向 → 螢幕位置
+    if(px<cbx-4||px>cbx+bw2+4) continue;
+    const an=((a%360)+360)%360;
+    const major=an%45===0;
+    ctx.strokeStyle=major?'rgba(201,162,39,.65)':'rgba(216,205,180,.22)';
+    ctx.beginPath(); ctx.moveTo(px,ccy+4); ctx.lineTo(px,ccy+(major?-2:1)); ctx.stroke();
+    if(major){
+      ctx.fillStyle='rgba(216,205,180,.75)';
+      ctx.fillText(['北','東北','東','東南','南','西南','西','西北'][(an/45)%8],px,ccy-6);
+    }
+  }
+  ctx.restore();
+  ctx.strokeStyle='#c9a227';                        // 中央指標（不動）
+  ctx.beginPath(); ctx.moveTo(cbx+bw2/2,ccy-16); ctx.lineTo(cbx+bw2/2,ccy+9); ctx.stroke();
+  ctx.textAlign='left';
 }
 
 /* ── 主迴圈 ─────────────────────────────────────────────────────── */
