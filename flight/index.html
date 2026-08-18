@@ -1307,7 +1307,9 @@ function skyColors(S){
   //   因為霧色＝地平線色，壓太暗遠景會整片沉成黑幕、看不出地形輪廓。
   const nightTop=[30,37,60],  nightHz=[96,105,133];
   const dayTop  =[96,126,164],dayHz  =[214,222,230];
-  const duskTop =[58,50,96],  duskHz =[228,176,142];
+  /* ⚠ duskHz 同時是**霧色**（見 render 的 fr/fg/fb）→ 它決定整片遠景的底色。
+     176 的綠配 142 的藍是偏粉的橘；抬到 198 就落在金黃。 */
+  const duskTop =[58,50,96],  duskHz =[230,198,150];
   const top=[0,0,0],hz=[0,0,0];
   for(let i=0;i<3;i++){
     top[i]=lerp(nightTop[i],dayTop[i],S.day);
@@ -1435,9 +1437,12 @@ function render(now){
   const sunI=clamp(S.el*0.85+0.20,0.05,0.50)+moonI;
   const ambI=lerp(0.46,0.52,S.day);   // 降低環境光：背光面要真的暗得下來
   // 月光是銀色：冷但不藍到發紫，飽和度低於原本的夜色
-  const lightR=lerp(lerp(0.80,1.0,S.day),1.20,S.dusk);
-  const lightG=lerp(lerp(0.86,1.0,S.day),0.88,S.dusk);
-  const lightB=lerp(lerp(1.04,1.0,S.day),0.72,S.dusk);
+  /* ⚠ 夕陽的暖色**靠抬綠**，不是靠壓綠壓藍。原本 (1.20,0.88,0.72) 的綠壓得比藍多，
+     整片地形被推向洋紅／鮭紅——那個色相在這個遊戲裡是「受擊」的訊號，
+     玩家會誤讀成正在被攻擊。改成綠只比紅低一點點，色相就落在金黃而不是紅。 */
+  const lightR=lerp(lerp(0.80,1.0,S.day),1.14,S.dusk);
+  const lightG=lerp(lerp(0.86,1.0,S.day),1.02,S.dusk);
+  const lightB=lerp(lerp(1.04,1.0,S.day),0.76,S.dusk);
 
   const sinp=Math.sin(cam.angle), cosp=Math.cos(cam.angle);
   const FOGS=ZFAR*FOG_START;
@@ -2266,7 +2271,7 @@ function drawEnemy3D(scaleH,horizon,sinp,cosp,now){
      日夕之交偏暖 —— 常數與 drawShip 的色調同源。 */
   const nightK=clamp(1-S.day*1.2,0,1);
   const lit=clamp(0.26+S.day*0.74,0.26,1);
-  const warmR=lerp(1,1.14,S.dusk), warmG=lerp(1,0.94,S.dusk), warmB=lerp(1,0.78,S.dusk);
+  const warmR=lerp(1,1.12,S.dusk), warmG=lerp(1,1.00,S.dusk), warmB=lerp(1,0.84,S.dusk);
   const coolR=lerp(1,0.72,nightK), coolG=lerp(1,0.80,nightK), coolB=lerp(1,1.06,nightK);
   const shade=(r,g,b,a)=>'rgba('+Math.round(clamp(r*lit*warmR*coolR,0,255))+','
                                +Math.round(clamp(g*lit*warmG*coolG,0,255))+','
@@ -3103,7 +3108,7 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
       {
         const Sk=sky();
         const nA=clamp(1-Sk.day*1.2,0,1), dk=Sk.dusk;
-        const tr=Math.round(lerp(30,255,dk)), tg=Math.round(lerp(42,146,dk)), tb=Math.round(lerp(74,78,dk));
+        const tr=Math.round(lerp(30,255,dk)), tg=Math.round(lerp(42,188,dk)), tb=Math.round(lerp(74,104,dk));
         const aa=clamp(nA*0.62*(1-dk*0.45)+dk*0.34,0,0.72);
         if(aa>0.01){
           CFB.globalCompositeOperation='source-atop';
@@ -3410,7 +3415,7 @@ function drawShip(now){
     const Sk=sky();
     const nightA=clamp(1-Sk.day*1.2,0,1);          // 入夜程度
     const dk=Sk.dusk;                               // 日夕之交
-    const tr=Math.round(lerp(34,255,dk)), tg=Math.round(lerp(46,142,dk)), tb=Math.round(lerp(78,72,dk));
+    const tr=Math.round(lerp(34,255,dk)), tg=Math.round(lerp(46,184,dk)), tb=Math.round(lerp(78,100,dk));
     const a=clamp(nightA*0.58*(1-dk*0.45)+dk*0.30,0,0.7);
     if(a>0.01){
       SC.setTransform(1,0,0,1,0,0);
