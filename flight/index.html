@@ -45,6 +45,14 @@
     font-family:inherit;font-size:11px;letter-spacing:.14em;padding:5px 12px;cursor:pointer;}
   #backBtn{right:12px;} #mapBtn{right:78px;}
   #backBtn:active,#mapBtn:active{background:rgba(201,162,39,.16);}
+  /* 生怪鈕：開發用。放操作盤左下角——舵輪佔滿面板中央，只有兩側下緣是空的。
+     ⚠ z-index 要高過面板（面板是 canvas 直接畫的，本身不佔 DOM 層級），
+       但低於地圖畫面(60)，免得地圖開著還按得到。 */
+  #spawnBtn{position:fixed;left:12px;bottom:calc(env(safe-area-inset-bottom) + 12px);
+    z-index:40;background:rgba(5,6,12,.72);border:1px solid rgba(201,162,39,.5);
+    color:var(--gold);font-family:inherit;font-size:11px;letter-spacing:.14em;
+    padding:5px 12px;cursor:pointer;}
+  #spawnBtn:active{background:rgba(201,162,39,.16);}
 
   /* 地圖畫面：圖是點開才載的（見 openMap），不進開場載入 */
   #mapView{position:fixed;inset:0;z-index:60;background:rgba(4,5,9,.94);
@@ -131,6 +139,7 @@
 <div id="place"><div class="nm" id="pnm"></div><div class="ty" id="pty"></div></div>
 <button id="mapBtn">地圖</button>
 <button id="backBtn">← 返回</button>
+<button id="spawnBtn">生怪</button>
 <div id="mapView">
   <div id="mapWrap">
     <canvas id="mapCv"></canvas>
@@ -1548,6 +1557,14 @@ function updateEnemy(dt,now){
 
   if(dist<=C.engage){ enemy.state='engage'; enemy.tEngage=now; }
 }
+
+/* 生怪鈕（開發用）：立刻換一隻新的，並把自動刷新的計時歸零重算，
+   免得手動生完隔幾秒又被自動刷新蓋掉。 */
+document.getElementById('spawnBtn').addEventListener('click',()=>{
+  enemy=null;
+  spawnEnemy();
+  enemyTimer=ENEMY_CFG.gapMin+Math.random()*(ENEMY_CFG.gapMax-ENEMY_CFG.gapMin);
+});
 
 /* 逐節投影 + 程序繪製。回傳畫過就 true（給提示字用）。 */
 function drawEnemy3D(scaleH,horizon,sinp,cosp,now){
