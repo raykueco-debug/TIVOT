@@ -55,12 +55,17 @@
   #spawnBtn:active{background:rgba(201,162,39,.16);}
 
   /* 地圖畫面：圖是點開才載的（見 openMap），不進開場載入 */
-  #mapView{position:fixed;inset:0;z-index:60;background:rgba(4,5,9,.94);
-    display:none;align-items:center;justify-content:center;flex-direction:column;gap:10px;}
-  #mapView.on{display:flex;}
-  #mapWrap{position:relative;width:96vw;max-width:1100px;touch-action:none;}
-  #mapCv{display:block;width:100%;border:1px solid rgba(201,162,39,.35);background:#0a0c12;}
-  #mapCap{color:var(--parch);font-size:10px;letter-spacing:.2em;opacity:.5;text-align:center;}
+  #mapView{position:fixed;inset:0;z-index:60;background:rgba(4,5,9,.94);display:none;}
+  #mapView.on{display:block;}
+  /* 地圖滿版：原本是 96vw、高度由大陸長寬比推得（1.79:1），手機直向下只佔
+     390×218 的一條 —— 大陸全貌看起來很小。改成容器吃滿視窗，初始縮放取
+     「覆蓋」而非「寬度貼合」（見 openMap），玩家仍可自行縮放到全圖。 */
+  #mapWrap{position:relative;width:100vw;height:100vh;touch-action:none;}
+  #mapCv{display:block;width:100%;height:100%;background:#0a0c12;}
+  /* 說明列改成覆蓋在底部：佔版面的話會把畫布擠掉一截 */
+  #mapCap{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom) + 10px);
+    color:var(--parch);font-size:10px;letter-spacing:.2em;opacity:.55;text-align:center;
+    text-shadow:0 1px 3px rgba(0,0,0,.9);pointer-events:none;}
   #mapClose{position:absolute;top:8px;right:8px;z-index:2;}
   /* ══ 載入畫面 ══
      排版與主程式的啟動讀取畫面（style.css 的 #assetLoader）**逐項對齊**：
@@ -796,11 +801,12 @@ const MV={ zoom:1, cx:0, cy:0, min:1, max:16 };
 function mapFit(){
   const R=buildRelief();
   const w=mapCv.clientWidth||900;
-  const h=Math.round(w*R.h/R.w);
+  /* ⚠ 高度改吃容器的實際高度，不再由大陸長寬比推 —— 畫布要滿版，
+     大陸放不放得下是由 MV.zoom 決定的，不該讓長寬比決定畫布多高。 */
+  const h=mapCv.clientHeight||Math.round(w*R.h/R.w);
   const dpr=Math.min(2,devicePixelRatio||1);
-  if(mapCv.width!==Math.round(w*dpr)){
+  if(mapCv.width!==Math.round(w*dpr)||mapCv.height!==Math.round(h*dpr)){
     mapCv.width=Math.round(w*dpr); mapCv.height=Math.round(h*dpr);
-    mapCv.style.height=h+'px';
   }
   return { w, h, dpr, base:w/R.w, R };   // base：zoom=1 時 1 浮雕像素＝幾個 CSS px
 }
@@ -858,8 +864,18 @@ function updateMapMe(){ if(mapOpen) drawMap(); }
 document.getElementById('mapBtn').addEventListener('click',()=>{
   // ⚠ 浮雕與聚落都是點開才算（2.6M 取樣 + 26 座聚落），不進飛行開場
   const R=buildRelief();
-  MV.zoom=1; MV.cx=R.w/2; MV.cy=R.h/2;
-  mapOpen=true; mapView.classList.add('on'); drawMap();
+  /* 初始縮放取「覆蓋」：base 是 zoom=1 時**寬度剛好貼合**，直向手機下
+     那只佔畫面上一條。要放滿就得讓高度也蓋滿 → zoom = (h/R.h)/base。
+     取 max(1, …) 是保險：橫向螢幕時寬度貼合本來就已經蓋滿。
+     MV.min 維持 1，玩家仍可縮回去看大陸全貌。 */
+  /* ⚠ 順序：**先顯示再量**。mapFit 讀的是 mapCv.clientWidth/Height，
+     面板還在 display:none 時量到 0，會退回預設值 900 與長寬比推得的高度，
+     算出來的 zoom 就永遠是 1（實測就是這個症狀）。 */
+  mapOpen=true; mapView.classList.add('on');
+  const F=mapFit();
+  MV.zoom=Math.max(1,(F.h/R.h)/F.base);
+  MV.cx=R.w/2; MV.cy=R.h/2;
+  drawMap();
 });
 document.getElementById('mapClose').addEventListener('click',e=>{
   e.stopPropagation(); mapOpen=false; mapView.classList.remove('on');
