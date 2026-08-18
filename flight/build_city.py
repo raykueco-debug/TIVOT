@@ -80,9 +80,7 @@ JOBS = [{
     'src': 'holysee_topdown.png',
     'unsquash': 1.10,      # 已是頂視圖：只補殘餘的縱向壓縮（外框長寬比實測 1.102）
     'nowater': True,       # 藍色圓頂不是水
-    # ⚠ 試過 'texture'（局部標準差）想把白色尖塔也抓成街廓 —— 是退步：整圈環廊
-    #   連成一個 33000px 的連通區，被 30px 格硬切成方塊，圓頂反而消失。
-    #   'dark' 至少讓深藍圓頂各自立起來。真正的尖塔要等 Ray 的灰階高度圖。
+    'classes': 'holysee',  # 圓頂／尖塔／環廊逐類別給固定高度，見 holysee_classes
     'dst': 'holysee_plan.webp',
     'hdst': 'holysee_h.webp',
     'mdst': 'holysee_mass.webp', 'jdst': 'holysee_mass.json',
@@ -130,48 +128,54 @@ POLY_MAX = 12      # 單一街廓的頂點數上限
 ATLAS_PAD = 1
 
 
-def extract_blocks(rgb, al, built, hm, name, mode='dark'):
-    """回傳 (blocks, atlas_image)。blocks 是 dict 列表，座標都在插畫像素空間。
+def holysee_classes(rgb, al, built):
+    """聖王廳專用的分類：圓頂／尖塔／環廊，各給一個固定高度（0..1）。
 
-    mode='dark'    密集市街：街道是**亮**的網、街廓是暗的塊 → 取「比鄰域暗」。
-    mode='texture' 聖王廳這種「大片平坦廣場 ＋ 四周建築」：廣場與白色尖塔都亮，
-                   亮度分不開。改用**局部紋理能量**（局部標準差）—— 廣場是平滑的
-                   鋪面（低），建築有柱列、窗、圓頂（高）。
-                   ⚠ 非用不可：'dark' 在聖王廳只會抓到深藍色的圓頂，白色尖塔
-                     因為亮而被歸成「街道」，結果整圈尖塔立不起來。
+    ⚠ 為什麼不沿用一般城的「比鄰域暗＝街廓」：那條只抓得到深藍色的圓頂，
+      白色尖塔因為**亮**而被歸成街道，整圈尖塔立不起來。
+    ⚠ 也不能用亮度硬切：廣場也是淺色石材。但實測廣場落在中間調
+      （lum 中位 ~150），尖塔是最亮的一截 —— 取最亮 20% 就切得乾淨，
+      而且切出來全是小塊（114 個，最大不到 2000px），沒有一塊是廣場。
+    高度是**捏的**，不是從圖上量的：圓頂 0.50、尖塔 1.00、環廊 0.28
+    （乘上 index.html 的 planTall=100 就是世界單位）。
     """
+    R, G, B = rgb[:, :, 0], rgb[:, :, 1], rgb[:, :, 2]
     lum = (rgb * np.array([0.299, 0.587, 0.114])).sum(axis=2)
-    if mode == 'texture':
-        L8 = Image.fromarray(np.clip(lum, 0, 255).astype(np.uint8))
-        mu = np.asarray(L8.filter(ImageFilter.GaussianBlur(4.0))).astype(np.float32)
-        m2 = np.asarray(Image.fromarray(np.clip(lum * lum / 255, 0, 255).astype(np.uint8))
-                        .filter(ImageFilter.GaussianBlur(4.0))).astype(np.float32) * 255
-        sd = np.sqrt(np.maximum(0.0, m2 - mu * mu))
-        T = float(np.percentile(sd[built], 100.0 - ROOF_Q))
-        roof = (built & (sd > T)).astype(np.uint8)
-    else:
-        lo = np.asarray(Image.fromarray(np.clip(lum, 0, 255).astype(np.uint8))
-                        .filter(ImageFilter.GaussianBlur(10.0))).astype(np.float32)
-        hp = lum - lo
-        T = float(np.percentile(hp[built], ROOF_Q))
-        roof = (built & (hp <= T)).astype(np.uint8)
-    # 開運算去掉單像素雜訊；不做閉運算 —— 那會把窄街封起來，街廓就黏成一片
-    roof = cv2.morphologyEx(roof, cv2.MORPH_OPEN, np.ones((3, 3), np.uint8))
-    n, lab, st, _ = cv2.connectedComponentsWithStats(roof, 8)
+    dome = built & (B > R + 8) & (B > 60)
+    T = float(np.percentile(lum[built], 80.0))
+    spire = built & (~dome) & (lum > T)
+    spire = cv2.morphologyEx(spire.astype(np.uint8), cv2.MORPH_OPEN,
+                             np.ones((3, 3), np.uint8)).astype(bool)
+    rest = built & (~dome) & (~spire)
+    # 廣場＝rest 裡最大的那一塊連通區。它是地面，不生量體。
+    n, lab, st, _ = cv2.connectedComponentsWithStats(rest.astype(np.uint8), 8)
+    ring = rest.copy()
+    if n > 1:
+        big = 1 + int(np.argmax(st[1:, cv2.CC_STAT_AREA]))
+        ring = rest & (lab != big)
+        print('  聖王廳：廣場 %d px（不生量體）' % st[big, cv2.CC_STAT_AREA])
+    print('  聖王廳分類：圓頂 %.1f%% / 尖塔 %.1f%% / 環廊 %.1f%%'
+          % (100 * dome.mean(), 100 * spire.mean(), 100 * ring.mean()))
+    return [(spire, 1.00), (dome, 0.50), (ring, 0.28)]
 
-    # 大連通區再切：整座城若只有幾塊巨型街廓，拉伸出來是台地不是天際線。
-    # ⚠ 用格子切而不是分水嶺：格子的結果是確定性的、邊界筆直（街廓本來就方），
-    #   而分水嶺會依距離變換的雜訊給出蜿蜒的假邊界。
-    parts = []
+
+def _components(mask8):
+    """連通標記 → [(ox, oy, sub_bool)]。太大的連通區用格子再切。
+
+    ⚠ 用格子切而不是分水嶺：格子的結果是確定性的、邊界筆直（街廓本來就方），
+      而分水嶺會依距離變換的雜訊給出蜿蜒的假邊界。
+    """
+    out = []
+    n, lab, st, _ = cv2.connectedComponentsWithStats(mask8, 8)
     for i in range(1, n):
-        area = st[i, cv2.CC_STAT_AREA]
+        area = int(st[i, cv2.CC_STAT_AREA])
         if area < BLK_MIN:
             continue
         x0, y0 = int(st[i, cv2.CC_STAT_LEFT]), int(st[i, cv2.CC_STAT_TOP])
         w0, h0 = int(st[i, cv2.CC_STAT_WIDTH]), int(st[i, cv2.CC_STAT_HEIGHT])
         sub = (lab[y0:y0 + h0, x0:x0 + w0] == i)
         if area <= BLK_SPLIT:
-            parts.append((x0, y0, sub))
+            out.append((x0, y0, sub))
             continue
         for gy in range(0, h0, BLK_CELL):
             for gx in range(0, w0, BLK_CELL):
@@ -179,17 +183,23 @@ def extract_blocks(rgb, al, built, hm, name, mode='dark'):
                 cut[gy:gy + BLK_CELL, gx:gx + BLK_CELL] = sub[gy:gy + BLK_CELL, gx:gx + BLK_CELL]
                 if cut.sum() < BLK_MIN:
                     continue
-                # 切完可能碎成幾塊，各自成為一個街廓
                 cn, cl, cs, _ = cv2.connectedComponentsWithStats(cut.astype(np.uint8), 8)
                 for k in range(1, cn):
                     if cs[k, cv2.CC_STAT_AREA] < BLK_MIN:
                         continue
-                    parts.append((x0, y0, cl == k))
+                    out.append((x0, y0, cl == k))
+    return out
 
+
+def _finish(parts, rgb, al, hm, fixed, note):
+    """把連通區變成「多邊形 ＋ 高度 ＋ atlas 上的一格」。
+
+    fixed 為 None 時高度取 hm 在該塊裡的 p80；否則用 fixed[i] 那個固定值。
+    """
     blocks = []
-    for (ox, oy, sub) in parts:
-        m = sub.astype(np.uint8)
-        cnts, _ = cv2.findContours(m, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    for n_i, (ox, oy, sub) in enumerate(parts):
+        cnts, _ = cv2.findContours(sub.astype(np.uint8), cv2.RETR_EXTERNAL,
+                                   cv2.CHAIN_APPROX_SIMPLE)
         if not cnts:
             continue
         c = max(cnts, key=cv2.contourArea)
@@ -204,15 +214,14 @@ def extract_blocks(rgb, al, built, hm, name, mode='dark'):
         ys, xs = np.where(sub)
         bx0, by0 = int(xs.min()), int(ys.min())
         bx1, by1 = int(xs.max()) + 1, int(ys.max()) + 1
-        # 高度：取 hm 在這塊裡的 p80。hm 帶著地標與塔的抬升，所以大教堂那幾塊
-        # 自然會比一般街廓高；一般街廓則落在 H_BUILT。
-        hv = float(np.percentile(hm[oy:oy + sub.shape[0], ox:ox + sub.shape[1]][sub], 80))
+        if fixed is None:
+            hv = float(np.percentile(hm[oy:oy + sub.shape[0], ox:ox + sub.shape[1]][sub], 80))
+        else:
+            hv = float(fixed[n_i])
         blocks.append({
             'poly': [(int(px) + ox, int(py) + oy) for [[px, py]] in ap],
             'bb': (int(bx0 + ox), int(by0 + oy), int(bx1 - bx0), int(by1 - by0)),
-            'h': hv,
-            'mask': sub,
-            'mo': (ox, oy),
+            'h': hv, 'mask': sub, 'mo': (ox, oy),
         })
 
     # ── Atlas ──────────────────────────────────────────────────────────
@@ -245,8 +254,38 @@ def extract_blocks(rgb, al, built, hm, name, mode='dark'):
         tile[:, :, 3] = tile[:, :, 3] * mk[by:by + bh, bx:bx + bw]
         atlas[ay:ay + bh, ax:ax + bw] = tile
         del b['mask'], b['mo']
-    print('  街廓 %d 塊（門檻 %.1f）→ atlas %dx%d' % (len(blocks), T, AW, AH))
+    print('  街廓 %d 塊%s → atlas %dx%d' % (len(blocks), note or '', AW, AH))
     return blocks, Image.fromarray(atlas, 'RGBA')
+
+
+def extract_blocks(rgb, al, built, hm, name, mode='dark', classes=None):
+    """回傳 (blocks, atlas_image)。blocks 是 dict 列表，座標都在插畫像素空間。
+
+    classes 有給就走「逐類別固定高度」（聖王廳）；否則依 mode 從圖上分街廓。
+    mode='dark' 密集市街：街道是**亮**的網、街廓是暗的塊 → 取「比鄰域暗」。
+
+    ⚠ 試過 mode='texture'（局部標準差）想在聖王廳把白色尖塔也抓成街廓 ——
+      是退步：整圈環廊連成一個 33000px 的連通區，被格子硬切成方塊，圓頂反而
+      消失。真正有效的是 holysee_classes 那種**逐類別**的分法。
+    """
+    if classes is not None:
+        parts, fixed = [], []
+        for (m, hv) in classes:
+            mm = cv2.morphologyEx(m.astype(np.uint8), cv2.MORPH_OPEN,
+                                  np.ones((3, 3), np.uint8))
+            for pc in _components(mm):
+                parts.append(pc)
+                fixed.append(hv)
+        return _finish(parts, rgb, al, hm, fixed, '（逐類別高度）')
+
+    lum = (rgb * np.array([0.299, 0.587, 0.114])).sum(axis=2)
+    lo = np.asarray(Image.fromarray(np.clip(lum, 0, 255).astype(np.uint8))
+                    .filter(ImageFilter.GaussianBlur(10.0))).astype(np.float32)
+    hp = lum - lo
+    T = float(np.percentile(hp[built], ROOF_Q))
+    roof = cv2.morphologyEx((built & (hp <= T)).astype(np.uint8), cv2.MORPH_OPEN,
+                            np.ones((3, 3), np.uint8))
+    return _finish(_components(roof), rgb, al, hm, None, '（門檻 %.1f）' % T)
 
 
 hmap = np.asarray(Image.open(HEIGHTMAP).convert('L')).astype(np.float32)
@@ -369,7 +408,9 @@ for J in JOBS:
     # ── 街廓量體 ──────────────────────────────────────────────────────
     # ⚠ 用**未糊**的 hm 取高度：上面那個 5.0 的模糊是舊版位移網格頂點時的必要
     #   妥協（相鄰頂點高差太大會把格子剪成長條）。稜柱各自獨立，不需要糊。
-    blocks, atlas = extract_blocks(rgb, al, built, hm, J['dst'], J.get('blockmode', 'dark'))
+    _cls = holysee_classes(rgb, al, built) if J.get('classes') == 'holysee' else None
+    blocks, atlas = extract_blocks(rgb, al, built, hm, J['dst'],
+                                   J.get('blockmode', 'dark'), _cls)
     atlas.save(os.path.join(CITY, J['mdst']), quality=QUALITY, method=6)
     json.dump({
         'w': W2, 'h': H2,

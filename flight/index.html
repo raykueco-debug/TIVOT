@@ -364,7 +364,8 @@ const SETTLEMENTS = [
        要再高就得先讓量體改走多邊形（街廓拉伸），不能靠位移網格頂點。 */
   { n:'聖王廳', x:934,  y:606, t:'city2', f:'church',
     plan:'city/holysee_plan.webp', planH:'city/holysee_h.webp',
-    planW:1100, planRot:0.0, planTall:100, noWater:true, noLamps:true },
+    planW:1100, planRot:0.0, planTall:100, noWater:true, noLamps:true,
+    wallCol:'rgba(226,219,198,0.50)' },
   { n:'大教堂城',     x:1224, y:581, t:'city2', f:'church' },
   { n:'曙光城',       x:1373, y:581, t:'city3', f:'church' },
   { n:'石櫃城',       x:530,  y:311, t:'city2', f:'empire' },
@@ -422,6 +423,15 @@ const SETTLEMENTS = [
        是外海，路修不出去）。城外的路要從這些方位延伸出去，街道才不會一出
        圖面就斷掉。 */
     spurs:[3.023,-2.684,-1.951,-1.235,0.143,0.650,1.086] },
+  /* ── 試作：薇拉馮德港的第二座（Ray 指定 1005,760）─────────────────
+     ⚠ 這是**試看用的**，舊的那座完成度高、先不拆。要拆的時候記得一起清掉
+       build_city.py 的 JOBS 與 PLACES 名牌。
+     ⚠ 這裡是內陸：實測 (1005,760) 半徑 50 內河道 0 px、海 0 px（最近的河在
+       80px 外）。所以不做水域搜尋、planRot 取 0 —— 沒有海岸線可對。
+       插畫自帶 19.6% 的水域會被「地形遷就插畫」挖成內陸湖，港是旱港。 */
+  { n:'薇拉馮德港·試', x:1005, y:760, t:'city1', f:'empire',
+    plan:'city/velafonte_plan.webp', planH:'city/velafonte_h.webp',
+    planW:1050, planRot:0.0, planTall:50 },
   /* ⚠ planTall 別給大：這個引擎的縱向投影比橫向大約 2.9 倍
      （scaleH·syk ≈ 558 對 W/2 = 195）。
      ⚠ 這裡原本夾在 26：舊版抬的是**共用的**網格頂點，抬高等於把紋理整片
@@ -869,7 +879,7 @@ function buildSettlements(){
     });
     s.plan=S.plan||null; s.planW=S.planW||0; s.planRot=S.planRot||0;
     s.planH=S.planH||null; s.planTall=S.planTall||0;
-    s.noWater=!!S.noWater; s.noLamps=!!S.noLamps;
+    s.noWater=!!S.noWater; s.noLamps=!!S.noLamps; s.wallCol=S.wallCol||null;
     s.mx=S.x; s.my=S.y; s.gh=(S.gh!=null?S.gh:CLOUD_H); return s;
   });
   return settleCache;
@@ -3906,7 +3916,11 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
       const jy0=zdy>0?NV-1:0, jys=zdy>0?-1:1;
       /* 立面的顏色整批只設一次：fillStyle 每次都要重新解析字串，
          而這個迴圈近距離會跑上千次。 */
-      CFB.fillStyle='rgba(34,30,26,0.62)';
+      /* ⚠ 立面顏色可逐城覆寫：一般城的牆是「屋瓦陰影」，暗色讀成牆在陰影裡；
+         聖王廳是白石建築，同一個暗色會讓整座聖座變成一團黑。米白＋較低的
+         不透明度讓它讀成「受光的石牆」。
+         ⚠ 不上貼圖：一面牆常常只有 3~8px 高，石紋進去只是雜訊。 */
+      CFB.fillStyle=o.s.wallCol||'rgba(34,30,26,0.62)';
       const row=NU+1;
       for(let ky2=0;ky2<NV;ky2++){
         const jy=jy0+jys*ky2;
