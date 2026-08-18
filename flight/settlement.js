@@ -497,7 +497,14 @@ function draw(ctx, s, view, dbg) {
   ctx.closePath();
   // 地面壓暗：建築佔地只有 R 的 1~5%，在 280px 的城市裡一棟只有 2~3px，
   // 底色若與牆面亮度接近，整座城就會糊成一片雜點看不出建築。
-  ctx.fillStyle = hsl(36 + pal.hue, 14, 17, 0.92);
+  /* 地盤：地圖畫面上這是一塊壓暗的底（讓 2~3px 的建築讀得出來）。
+     但在 3D 飛行畫面裡，一塊 L=17% 的深色圓盤蓋在橄欖綠的地表上，
+     明度差太大，整座城就成了貼在地面上的一枚貼紙 —— 那正是「懸浮感」的來源。
+     所以底色的明度與不透明度改由呼叫端給：3D 那邊傳接近地表的明度與很低的
+     alpha，讓真正的地形透上來，城才像長在地上而不是蓋在地上。 */
+  ctx.fillStyle = hsl(36 + pal.hue, 14,
+                      (view.groundL > 0 ? view.groundL : 17),
+                      (view.groundA >= 0 ? view.groundA : 0.92));
   ctx.fill();
   if (dbg.showBoundary) { ctx.strokeStyle = '#0f0'; ctx.lineWidth = 1; ctx.stroke(); }
   ctx.restore();

@@ -1481,7 +1481,13 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
     const R=SETTLE_R[o.s.tier]*MAP_SCALE;                          // 半徑（世界單位）
     if(R*2*sc<3) continue;
     ctx.save();
-    ctx.globalAlpha=clamp((ZFAR*0.9-o.z)/(ZFAR*0.30),0,1);         // 遠處隨霧淡出
+    /* 城要跟同深度的地形吃同一份霧。原本只有一個「靠近 ZFAR 才淡出」的
+       距離淡出，中景的城完全不吃霧 —— 周圍地表已經被霧洗掉一半、城還是
+       滿對比，看起來就是浮在霧前面的一張圖。這裡直接套用地形那條霧曲線
+       （FOG_START/FOG_MAX 同源），城才會跟著地面一起沉進大氣裡。 */
+    const fogS=ZFAR*FOG_START;
+    const fogK=clamp((o.z-fogS)/(ZFAR-fogS),0,1)*FOG_MAX;
+    ctx.globalAlpha=clamp((ZFAR*0.9-o.z)/(ZFAR*0.30),0,1)*(1-fogK);
     /* 地面壓縮率（tilt）：讓城真的躺在地上。
        橫向：1 世界單位 = sc 螢幕像素。
        縱向：地面列是 ((alt-gh)/z + z*curv)*scaleH，對 z 微分得
@@ -1498,7 +1504,8 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
        直接傳 sc 的話整座城會縮小 20 倍 → screenDia 永遠 <20 → LOD 0，
        飛到城上空也只看得到一顆符號點。上面那行尺寸檢查用的 R 有乘
        MAP_SCALE，所以檢查會過、畫出來卻是點——兩邊單位不一致的典型病。 */
-    Settlement.draw(ctx, o.s, { ox:o.x, oy:o.y, scale:sc*MAP_SCALE, tilt, night:nightK }, Settlement.DEBUG);
+    Settlement.draw(ctx, o.s, { ox:o.x, oy:o.y, scale:sc*MAP_SCALE, tilt, night:nightK,
+                                 groundL:30, groundA:0.28 }, Settlement.DEBUG);
     ctx.restore();
   }
 }
