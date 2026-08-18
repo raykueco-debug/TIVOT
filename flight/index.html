@@ -442,6 +442,22 @@ const cityPlansReady=[];
   }
 })();
 
+/* ══ 碼頭 ══
+   棧橋沿著城的濱水面往水裡伸。⚠ 畫進**城自己的低解析緩衝**（CFB）而不是主畫布：
+   這樣它跟城吃同一份曝光、同一份色罩、同一個顆粒 —— 不然就是一塊貼在插畫旁邊的
+   高解析木頭，正是要避免的割裂感。
+   ⚠ 投影走 project()（與城的網格同一條式子），棧橋才會真的躺在水面上。 */
+const dockArt={};
+const PIER_SEG=64, PIER_W=30, PIER_HOFF=-6;   // 一段的長、寬（世界單位）、離地基的高度
+function loadDock(){
+  return Promise.all(['dock_strip','dock_end'].map(n=>new Promise(res=>{
+    const im=new Image();
+    im.onload=()=>{ dockArt[n]=im; res(); };
+    im.onerror=()=>res(); setTimeout(res,4000);
+    im.src='city/'+n+'.webp';
+  })));
+}
+
 /* ── 夜間路燈 ────────────────────────────────────────────────
    大城入夜要亮起來。燈位不是亂灑：從插畫裡挑「街道色」（亮、低飽和）的像素，
    所以燈自然沿著街廓排列，而不是浮在屋頂上。
@@ -1202,6 +1218,38 @@ async function loadWorld(){
      不然會出現路從城的台階上直直插下去。 */
   step(0.78,'鋪設道路…');
   buildRoads();
+
+  /* 碼頭位置：城區內「水面貼著陸地」的那一圈就是濱水面。從中挑幾個彼此拉開的
+     點，方向取「陸→水」的法線 —— 棧橋自然朝水裡伸，不必手工指定角度。
+     ⚠ 挑點要強制間隔，否則會全擠在同一段岸邊。 */
+  await loadDock();
+  for(const S of SETTLEMENTS){
+    if(!S.plan) continue;
+    /* ⚠ 只找**城區之內**的濱水面。0.55 會把加寬後的河也算進來，棧橋於是蓋到
+       郊外的河岸上；0.40 收在插畫自己的港區範圍內。 */
+    const R=Math.ceil(S.planW*0.40/MAP_SCALE);
+    const cand=[];
+    for(let dy=-R;dy<=R;dy++)for(let dx=-R;dx<=R;dx++){
+      const x=S.x+dx, y=S.y+dy;
+      if(x<1||y<1||x>=MAPW-1||y>=MAPH-1) continue;
+      const i=y*MAPW+x;
+      if(!RIV[i]||HGT[i]<=CLOUD_H) continue;          // 要是城內水域
+      let nx=0, ny=0, land=0;
+      for(const [ex,ey] of [[1,0],[-1,0],[0,1],[0,-1]]){
+        const j=(y+ey)*MAPW+(x+ex);
+        if(!RIV[j]&&HGT[j]>CLOUD_H){ nx-=ex; ny-=ey; land++; }   // 陸→水的方向
+      }
+      if(land===0||land>2) continue;                   // 0＝水中央、3+＝水道太窄
+      cand.push({dx,dy,ang:Math.atan2(ny,nx)});
+    }
+    const picked=[];
+    for(const c of cand){
+      if(picked.some(q=>Math.hypot(q.dx-c.dx,q.dy-c.dy)<11)) continue;
+      picked.push(c);
+      if(picked.length>=6) break;
+    }
+    S.piersLocal=picked;
+  }
 
   /* 郊區密度場：自城區外緣往外遞減。⚠ 起點是**插畫的外緣**不是城心 ——
      城區本身由插畫負責，郊區要從它結束的地方接手，不然會蓋在城上。 */
@@ -3567,6 +3615,38 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
          ⚠ 這個世界的日夜之後不會即時推移，而是戰後結算時跳一段，
            所以實際只會停在夜／黎明／早／黃昏四個狀態上——這條曲線
            在那四點取值都對得起來，不必為此改成離散表。 */
+      /* ── 碼頭 ────────────────────────────────────────────────
+         沿濱水面往水裡伸。每一段用一個仿射矩陣把貼圖鋪到「世界上的矩形」投影出來
+         的平行四邊形上 —— 與城的網格同一套作法，所以棧橋是躺在水面上而不是
+         浮在畫面上的一張圖。
+         ⚠ 排在色罩之前：這樣棧橋跟城吃同一份曝光與夜色，不會自己一個亮度。 */
+      if(o.s.piersLocal && dockArt.dock_strip && o.z<2200){
+        const strip=dockArt.dock_strip, endp=dockArt.dock_end;
+        const segMap=PIER_SEG/MAP_SCALE, halfW=(PIER_W*0.5)/MAP_SCALE;
+        const nseg=o.s.t.indexOf('city')===0?4:3;
+        for(const pr of o.s.piersLocal){
+          const ca2=Math.cos(pr.ang), sa2=Math.sin(pr.ang);
+          for(let k2=0;k2<nseg;k2++){
+            const t0=k2*segMap;
+            // 這一段的三個角（局部地圖像素）：近端左、近端右、遠端左
+            const ax=pr.dx - sa2*halfW + ca2*t0,        ay=pr.dy + ca2*halfW + sa2*t0;
+            const bx=pr.dx + sa2*halfW + ca2*t0,        by=pr.dy - ca2*halfW + sa2*t0;
+            const cx4=pr.dx - sa2*halfW + ca2*(t0+segMap), cy4=pr.dy + ca2*halfW + sa2*(t0+segMap);
+            const A=project(ax,ay,PIER_HOFF), B=project(bx,by,PIER_HOFF), C=project(cx4,cy4,PIER_HOFF);
+            if(A[3]<60||B[3]<60||C[3]<60) continue;
+            const sw2=strip.width, sh2=strip.height;
+            const a1=(B[0]-A[0])/sw2, b1=(B[1]-A[1])/sw2;
+            const c1=(C[0]-A[0])/sh2, d1=(C[1]-A[1])/sh2;
+            if(!isFinite(a1)||!isFinite(d1)||Math.abs(a1*d1-b1*c1)<1e-7) continue;
+            CFB.setTransform(a1*kx, b1*ky, c1*kx, d1*ky,
+                             (A[0]-bx0)*kx, (A[1]-by0)*ky);
+            const img2=(k2===nseg-1&&endp)?endp:strip;
+            CFB.drawImage(img2, 0,0,img2.width,img2.height, 0,0,sw2,sh2);
+          }
+        }
+        CFB.setTransform(1,0,0,1,0,0);
+      }
+
       CFB.setTransform(1,0,0,1,0,0);
       {
         /* ── 曝光對齊 ──
