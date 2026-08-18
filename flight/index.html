@@ -25,9 +25,10 @@
     top:calc(env(safe-area-inset-top) + 12px);font-size:10px;letter-spacing:.35em;
     color:var(--gold);opacity:.85;}
 
-  /* 羅盤已從控制區撤掉（面板只留乾淨的機械式船舵），航向改去開地圖看；
-     時刻/距離在面板上的 canvas 繪製版。DOM 這幾項只留日期避免重複 */
-  #compass,#topDist{display:none;}
+  /* 方位：控制區那條羅盤帶已撤（面板只留乾淨的機械式船舵），
+     航向改回頂部 HUD 的 #compass（畫面上緣中央的八方位字）。
+     #topDist 仍隱：航行距離在面板上有 canvas 繪製版，畫兩次會重複。 */
+  #topDist{display:none;}
   /* 地標名牌與提示改貼在面板上緣之上，不壓到 3D 視窗底部 */
   #place{position:fixed;left:0;right:0;bottom:36vh;
     text-align:center;opacity:0;transition:opacity .4s;pointer-events:none;}
