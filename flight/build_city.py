@@ -28,6 +28,10 @@ QUALITY = 88
 #   而且每幀做去飽和是白費的——這是固定的色調對齊，不隨光線變。
 SAT = 0.70           # 飽和度倍率
 VAL = 0.86           # 明度倍率
+# 外緣羽化：插畫是硬邊，貼在地形上就是一塊界線分明的補丁——那正是「割裂感」
+# 的來源。把最外圈的 alpha 漸淡，讓郊區的農地與綠地融進地形。
+# ⚠ 只羽化最外 FEATHER 比例，城牆與街廓不能碰到，那是要看得清楚的東西。
+FEATHER = 0.16       # 自外緣往內羽化的比例（佔半徑）
 
 JOBS = [('Velafonte_iso.png', 'velafonte_plan.webp')]
 
@@ -45,6 +49,13 @@ for src, dst in JOBS:
     rgb, al = arr[:, :, :3], arr[:, :, 3:]
     lum = (rgb * np.array([0.299, 0.587, 0.114])).sum(axis=2, keepdims=True)
     rgb = np.clip((lum + (rgb - lum) * SAT) * VAL, 0, 255)
+    # 外緣羽化（見 FEATHER）：以圖心為原點的橢圓距離場
+    h2, w2 = al.shape[0], al.shape[1]
+    yy, xx = np.mgrid[0:h2, 0:w2].astype(np.float32)
+    d = np.sqrt(((xx - w2 * 0.5) / (w2 * 0.5)) ** 2 + ((yy - h2 * 0.5) / (h2 * 0.5)) ** 2)
+    t = np.clip((1.0 - d) / FEATHER, 0, 1)
+    t = t * t * (3 - 2 * t)                       # smoothstep
+    al = al * t[:, :, None]
     im = Image.fromarray(np.concatenate([rgb, al], axis=2).astype(np.uint8), 'RGBA')
     im.save(os.path.join(CITY, dst), quality=QUALITY, method=6)
     print('%s  %dx%d  →  %s  %dx%d' % (src, w, h, dst, im.width, im.height))

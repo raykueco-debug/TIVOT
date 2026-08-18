@@ -626,25 +626,34 @@ async function loadWorld(){
         HGT[i]=nh; raw[i]=nh/PEAK_SCALE; flattened++;
       }
     }
-    /* 有手繪平面圖的城：把「城範圍內、緊貼海岸」的陸地格標成河道，
-       讓現成的瀑布渲染接手 —— 城的水就會從海岸台地邊緣傾瀉進雲海。
-       ⚠ 只標貼著海的那一圈（8 鄰域有海格）：整片標會變成一整面水牆。
-       ⚠ 要在坡度計算之前做完（RIV 本身不影響坡度，但和整平同一批處理較清楚）。*/
+    /* 有手繪平面圖的城：在向海側開一道**出海口**，讓現成的瀑布渲染接手。
+       ⚠ 第一版把「城範圍內緊貼海岸」的整圈陸地格都標成河道 —— 那不是瀑布，
+         是一整面環繞城市的水牆，而且瀑布的色相取自 COL[該格]（陸地色），
+         畫出來是橄欖色的泡沫。實測就是「瀑布破圖」。
+       改成只取向海方位 ±22° 的一道窄口，並把那幾格的 COL 換成水色，
+       瀑布才會是藍的、也才像一條河出海。 */
     let brink=0;
     for(const S of SETTLEMENTS){
       if(!S.plan) continue;
       const rr=Math.ceil((S.planW*0.5)/MAP_SCALE);
+      const a0=S.sea||0;
       for(let dy=-rr;dy<=rr;dy++)for(let dx=-rr;dx<=rr;dx++){
-        if(dx*dx+dy*dy>rr*rr) continue;
+        const d2=dx*dx+dy*dy; if(d2>rr*rr||d2<4) continue;
+        let da=Math.atan2(dy,dx)-a0;
+        while(da>Math.PI) da-=Math.PI*2;
+        while(da<-Math.PI) da+=Math.PI*2;
+        if(Math.abs(da)>0.38) continue;              // 只取向海的一道窄口
         const x=S.x+dx, y=S.y+dy;
         if(x<1||y<1||x>=MAPW-1||y>=MAPH-1) continue;
         const i=y*MAPW+x;
         if(HGT[i]<=CLOUD_H) continue;
         let nearSea=false;
-        for(let k=-1;k<=1&&!nearSea;k++)for(let l=-1;l<=1;l++){
+        for(let k=-1;k<=1&&!nearSea;k++)for(let l=-1;l<=1;l++)
           if(HGT[(y+k)*MAPW+(x+l)]<=CLOUD_H){ nearSea=true; break; }
-        }
-        if(nearSea){ RIV[i]=1; brink++; }
+        if(!nearSea) continue;
+        RIV[i]=1;
+        COL[i]=rgb(96,132,150);                     // 水色：瀑布的色相取自這裡
+        brink++;
       }
     }
     window.__cityBrink=brink;
@@ -2498,11 +2507,13 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
     const gS=o.s.gh;
     const project=(lx,ly)=>{
       const dx=(o.s.mx+lx)*MAP_SCALE-cam.x, dy=(o.s.my+ly)*MAP_SCALE-cam.y;
-      let zz=dx*(-sinp)+dy*(-cosp); if(zz<24) zz=24;
+      const zRaw=dx*(-sinp)+dy*(-cosp);
+      const zz=zRaw<24?24:zRaw;
       const sv=(dx*cosp+dy*(-sinp))/zz;
       return [((sv+1)/2*BW)*sxk,
               (((cam.alt-gS)/zz + zz*curvAt(sv))*scaleH+horizon)*syk,
-              (W/(2*zz))*MAP_SCALE];   // 第三項：該點自己的尺度（螢幕px／地圖px）
+              (W/(2*zz))*MAP_SCALE,    // 第三項：該點自己的尺度（螢幕px／地圖px）
+              zRaw];                   // 第四項：**未夾的**深度，格子要靠它判斷該不該畫
     };
     /* 舊的仿射近似留著給尺寸用（建築量體大小仍以城中心的深度為準）。 */
     /* 地面壓縮率（tilt）：讓城真的躺在地上。
@@ -2586,7 +2597,11 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
         const Lc=toL(-1+2*(jx+0.5)/N, -1+2*(jy+0.5)/N);
         const mx=(o.s.mx+Lc[0])|0, my=(o.s.my+Lc[1])|0;
         if(mx<0||my<0||mx>=MAPW||my>=MAPH||HGT[my*MAPW+mx]<=CLOUD_H) continue;
-        const A=P[jy][jx], B=P[jy][jx+1], Cc=P[jy+1][jx];
+        const A=P[jy][jx], B=P[jy][jx+1], Cc=P[jy+1][jx], D2=P[jy+1][jx+1];
+        /* ⚠ 任一角太近或在身後就整格跳過。project 對 z<24 做了夾制，
+           夾過的角會被推到一個完全錯的螢幕位置，那一格就會扯成一片
+           —— 這就是「城有時會破」。夾制是為了避免除零，不能拿來畫。 */
+        if(A[3]<60||B[3]<60||Cc[3]<60||D2[3]<60) continue;
         const sx=jx*sw, sy=jy*shh;
         const a1=(B[0]-A[0])/sw, b1=(B[1]-A[1])/sw;
         const c1=(Cc[0]-A[0])/shh, d1=(Cc[1]-A[1])/shh;
