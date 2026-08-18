@@ -596,10 +596,16 @@ function buildRoads(){
   window.__roads=paths.length;
 }
 
-/* 反重複：依格號選 8 種二面體變換之一。整片大陸會重複一百多次，
-   不打散的話眼睛一定抓得到節奏。查表，內迴圈成本近乎零。 */
-const GEOROT=new Uint8Array(1024);
-(function(){ for(let i=0;i<1024;i++){ let n=i*374761393; n=(n^(n>>13))*1274126177; GEOROT[i]=(n^(n>>16))&7; } })();
+/* ── 為什麼**不做**逐格旋轉／鏡射 ────────────────────────────
+   曾經做過（每格依格號選 8 種二面體變換之一），結果是整片林子「太花」。量出來的原因：
+     · 轉置（swap xy）之後與鄰格的接縫差 = 紋理自身相鄰差的 **1.89 倍** → 真的斷開，
+       每 410 單位就有一條，整片變成一格一格的破碎感。
+     · 鏡射雖然接縫是連續的（量到 0.0），但它製造**對稱軸** —— 那正是 build_geo.py
+       裡刻意不用鏡射法做無縫的同一個理由，卻在 runtime 又親手加了回去。
+   無縫貼圖的正解就是照原方向平鋪（實測接縫比值 1.02，與任何一條像素邊界無異）。
+   重複感改用**與貼圖週期無關的低頻亮度起伏**打散：它不碰紋理的連續性，
+   只讓「每一塊看起來一樣亮」這件事不成立。 */
+const GEO_MOT=0.18;                        // 低頻亮度起伏的幅度
 
 /* ── 生物群系（哪裡鋪哪一張）──────────────────────────────────
    ⚠ **不靠地圖底色分類**。實測：地圖去飽和之後，一半的陸地落在「認不出是什麼」
@@ -824,12 +830,18 @@ async function loadWorld(){
       const FLAT=CITY?2.6:2.0;           // 這個倍數以內完全整平
       const PAD =CITY?3.6:2.8;           // 裙帶外緣（佔半徑倍數）
       const R=SETTLE_R[S.t], cx=S.x|0, cy=S.y|0;
+      /* ⚠ 整平範圍**不能是正圓**。城下的台子半徑 2.6R（都市級＝1144 世界單位）
+         比城本身還大一倍，玩家看到的「城」其實是這塊台子的外緣 —— 正圓的話
+         整座城就讀成一枚圖釘。用三個諧波把半徑揉成不規則的形狀（每座城各自
+         的相位由座標決定，不會全大陸長同一個樣）。 */
+      const ph1=(S.x*0.37+S.y*0.11), ph2=(S.x*0.13-S.y*0.29), ph3=(S.x*0.07+S.y*0.53);
+      const lobe=(ang)=>1 + 0.22*Math.sin(3*ang+ph1) + 0.13*Math.sin(5*ang+ph2) + 0.08*Math.sin(7*ang+ph3);
       // 目標高度：環帶（R ~ 1.6R）內陸地的中位數
       const ring=[];
-      const r1=Math.ceil(R*(PAD+0.8));
+      const r1=Math.ceil(R*(PAD+0.8)*1.45);
       for(let dy=-r1;dy<=r1;dy++)for(let dx=-r1;dx<=r1;dx++){
         // ⚙ 環帶要取在**裙帶以外**（>PAD），不然量到的是自己剛鏟平的地
-        const d=Math.hypot(dx,dy); if(d<R*PAD||d>R*(PAD+0.8)) continue;
+        const d=Math.hypot(dx,dy); if(d<R*PAD*1.45||d>R*(PAD+0.8)*1.45) continue;
         const x=cx+dx,y=cy+dy;
         if(x<0||y<0||x>=MAPW||y>=MAPH) continue;
         const h=HGT[y*MAPW+x]; if(h<=CLOUD_H) continue;
@@ -844,14 +856,15 @@ async function loadWorld(){
          CLOUD_H —— 那等於把城擺在雲海表面上，字面意義的「飄在雲上」。
          整平後的地基高度才是這座城真正的地面。 */
       S.gh=target;
-      const rP=Math.ceil(R*PAD);
+      const rP=Math.ceil(R*PAD*1.45);            // lobe 最大約 1.43，掃描範圍要含得住
       for(let dy=-rP;dy<=rP;dy++)for(let dx=-rP;dx<=rP;dx++){
         const x=cx+dx,y=cy+dy;
         if(x<0||y<0||x>=MAPW||y>=MAPH) continue;
         const i=y*MAPW+x, h=HGT[i];
         if(h<=CLOUD_H) continue;                       // 海不填
         if(RIV[i]) continue;                           // 河道不鏟——鏟了城外就沒水了
-        const d=Math.hypot(dx,dy)/R;
+        const lb=lobe(Math.atan2(dy,dx));
+        const d=Math.hypot(dx,dy)/R/lb;             // 依方位伸縮 → 不規則的外緣
         if(d>PAD) continue;
         // d<=FLAT 完全整平；FLAT~PAD 之間平滑回到原地形
         const u=(d-FLAT)/(PAD-FLAT);
@@ -1648,6 +1661,7 @@ function render(now){
           const nc0=sx0&VSM, nc1=(sx0+1)&VSM;
           const nz=VEGSEL[nr0+nc0]*(1-su)*(1-sv2)+VEGSEL[nr0+nc1]*su*(1-sv2)
                   +VEGSEL[nr1+nc0]*(1-su)*sv2   +VEGSEL[nr1+nc1]*su*sv2;
+          const nz2=VEGSEL[(((sy0+23)&VSM)*VS)+((sx0+37)&VSM)];   // 亮度起伏用：同場、錯開相位
           /* ── 選類別 ──
              順序即優先權：水 → 崖 → 雪 → 碎石坡 → 荒地 → 森林。
              ⚠ 界線一律用噪聲抖動而不是混色：真實的樹線雪線是不規則的鋸齒，
@@ -1680,14 +1694,7 @@ function render(now){
             else if(sel>=1-VEG_BAND) tex=G_FD;
             else { tex=G_FD; mixTo=G_FL; mixT=1-(sel-VEG_BAND)/(1-2*VEG_BAND); }
           }
-          /* 反重複：每格依格號選 8 種二面體變換之一。 */
-          const cxg=(wx*(1/GT))|0, cyg=(wy*(1/GT))|0;
-          let tx=(wx|0)&GTM, ty=(wy|0)&GTM;
-          const rot=GEOROT[((cxg*7+cyg*13)&1023)];
-          if(rot&1) tx=GTM-tx;
-          if(rot&2) ty=GTM-ty;
-          if(rot&4){ const t2=tx; tx=ty; ty=t2; }
-          const off=((ty*GT)+tx)*3;
+          const off=(((wy|0)&GTM)*GT+((wx|0)&GTM))*3;
           const q=tex*GEO_STRIDE+off;
           let k0=GEOK[q]*(1/128), k1=GEOK[q+1]*(1/128), k2=GEOK[q+2]*(1/128);
           if(mixTo>=0){
@@ -1696,9 +1703,12 @@ function render(now){
             k1=k1*it+GEOK[q2+1]*(1/128)*mixT;
             k2=k2*it+GEOK[q2+2]*(1/128)*mixT;
           }
-          cr*=1+(k0-1)*vegAmt;
-          cg*=1+(k1-1)*vegAmt;
-          cb*=1+(k2-1)*vegAmt;
+          /* 低頻亮度起伏：取樣同一張場但相位錯開，週期（5200）與貼圖週期（410）
+             互質得夠遠 → 兩者的節奏不會對齊，重複感就散掉了。 */
+          const mot=1+((nz2-0.5)*2)*GEO_MOT*vegAmt;
+          cr*=(1+(k0-1)*vegAmt)*mot;
+          cg*=(1+(k1-1)*vegAmt)*mot;
+          cb*=(1+(k2-1)*vegAmt)*mot;
         }
         isRiver=RIV[mi];
         const nl=clamp(0.62+(SLX[mi]*lx+SLY[mi]*ly)*LIGHT_DIR_K,0,1.5);
