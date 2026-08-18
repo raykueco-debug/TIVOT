@@ -540,15 +540,39 @@ function draw(ctx, s, view, dbg) {
   if (dbg.showBoundary) { ctx.strokeStyle = '#0f0'; ctx.lineWidth = 1; ctx.stroke(); }
   ctx.restore();
 
-  /* 道路：畫在建築之下 */
-  for (const rd of s.roads) {
-    ctx.beginPath();
-    rd.pts.forEach((p, i) => i ? ctx.lineTo(X(p.x, p.y), Y(p.x, p.y)) : ctx.moveTo(X(p.x, p.y), Y(p.x, p.y)));
-    ctx.strokeStyle = dbg.showRoads ? '#ff0'
-      : hsl(36 + pal.hue, 12, rd.kind === 'main' ? 40 : rd.kind === 'ring' ? 34 : 28, 0.9);
-    ctx.lineWidth = Math.max(0.6, rd.width * scale * (dbg.showRoads ? 0.2 : 1));
-    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-    ctx.stroke();
+  /* 道路：畫在建築之下。
+     ⚠ 逐段畫，寬度取**該段自己深度**的尺度：整條路共用城心的尺度時，
+       近處該粗的地方沒粗，遠近一樣細 —— 那就是「只有一條像素線」的來源。
+     ⚠ 顏色原本 L=40（main），而地表近景實測 L≈25 —— 路比地還亮，
+       在土黃綠的地面上就成了一條發白的刮痕。壓到 21~27 落在地表之下，
+       再加一道更暗的路肩，路才像壓進地裡而不是浮在上面。
+     ⚠ 兩趟走：先把所有路肩畫完再畫路面。同一趟畫的話，後一段的路肩會
+       蓋到前一段的路面上，接縫處出現一節一節的暗塊。 */
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  for (let pass = 0; pass < 2; pass++) {
+    for (const rd of s.roads) {
+      const pts = rd.pts;
+      for (let i = 1; i < pts.length; i++) {
+        const a = pts[i - 1], b = pts[i];
+        const ms = sAt((a.x + b.x) / 2, (a.y + b.y) / 2);
+        /* ⚠ 係數 0.5：生成器給的路寬（W_MAIN = R*0.035 ≈ 15 世界單位）
+           相對房子（b.w ≈ 5.5 單位）偏大，照實畫近景的大道會寬到吃掉整座城。
+           這裡取一半，才跟量體的視覺比例對得上。 */
+        const w = Math.max(1.1, rd.width * ms * 0.5 * (dbg.showRoads ? 0.2 : 1));
+        if (pass === 0) {                                  // 路肩
+          ctx.strokeStyle = dbg.showRoads ? '#a80' : hsl(32 + pal.hue, 16, 12, 0.45);
+          ctx.lineWidth = w + Math.max(1, w * 0.4);
+        } else {                                           // 路面
+          ctx.strokeStyle = dbg.showRoads ? '#ff0'
+            : hsl(34 + pal.hue, 16, rd.kind === 'main' ? 27 : rd.kind === 'ring' ? 24 : 21, 0.82);
+          ctx.lineWidth = w;
+        }
+        ctx.beginPath();
+        ctx.moveTo(X(a.x, a.y), Y(a.x, a.y));
+        ctx.lineTo(X(b.x, b.y), Y(b.x, b.y));
+        ctx.stroke();
+      }
+    }
   }
   if (s.piers) for (const p of s.piers) {
     ctx.beginPath();
