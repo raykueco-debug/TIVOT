@@ -1671,7 +1671,9 @@ const ENEMY_KINDS = {
          玩家幾乎是平視，所以方位圖只要繞垂直軸一圈，不必俯視／仰視。
        ⚠ 六視圖各自縮到 512 的話彼此比例會跑掉，轉向換圖時船會忽大忽小 ——
          split_enemy.py 已改成全張共用一個縮放係數。 */
-    name:'空賊', plan:'rigid', speedK:0.85, turnRate:0.0011,
+    /* turnRate 0.0011 → 0.00055（63°/秒 → 32°/秒）：一艘三桅飛船不會像
+       戰鬥機那樣甩頭。轉得慢，掉轉本身才有重量，也讓每個方位停留得夠久。 */
+    name:'空賊', plan:'rigid', speedK:0.85, turnRate:0.00055,
     bodyLen:300,                    // 船長（世界單位）＝側視圖寬所代表的長度
     sprite:{ dir:'enemy/FLH_Pirate/',
              front:'view_4.webp', rear:'view_5.webp',
@@ -1792,8 +1794,14 @@ function updateEnemy(dt,now){
     let da=want-cur;
     while(da>Math.PI) da-=Math.PI*2;
     while(da<-Math.PI) da+=Math.PI*2;
-    const na=cur+clamp(da,-K.turnRate*dt,K.turnRate*dt);
+    const step=clamp(da,-K.turnRate*dt,K.turnRate*dt);
+    const na=cur+step;
     enemy.hx=Math.cos(na); enemy.hy=Math.sin(na);
+    /* 角速度 → 側傾。船轉彎會外傾，那是「在轉」最直接的視覺線索；
+       沒有它，換視角就只是一連串靜態的圖在交替。
+       低通濾一下：直接吃瞬時角速度會隨 dt 抖。 */
+    const rollWant=clamp(step/Math.max(1,dt)/K.turnRate,-1,1);
+    enemy.roll=(enemy.roll||0)+(rollWant-(enemy.roll||0))*(1-Math.exp(-dt/260));
     /* 追擊時沉到玩家高度**之下**：船是固定畫在畫面 76% 高的精靈，
        敵人若與船同高，投影出來會停在地平線附近（畫面 30% 高）——
        兩者永遠碰不到一起，逼近的壓迫感就沒了。
@@ -1961,9 +1969,18 @@ function drawEnemy3D(scaleH,horizon,sinp,cosp,now){
     const img=imgA;
     if(!img) return;
     const wpp=K.bodyLen/((set.sideR||img).width);     // 世界單位／來源像素（側視寬＝船長）
-    const w=img.width*wpp*P[3], h=img.height*wpp*P[3];
+    /* 側視要依夾角**橫向收縮**：船轉向鏡頭時，船身的視長 ∝ sinθ。
+       只有四個方位、中間隔 90°，光靠淡入淡出等於沒有中間形——這一步用
+       幾何補上：側視隨 θ 連續縮短，接近正面時才交給正面圖。
+       ⚠ 桅杆與帆是直立的、理論上不該跟著橫縮，但整張一起縮的誤差在
+         這個尺寸（<200px）看不出來，換來的是連續的船頭掉轉。
+       ⚠ 下限 0.30：完全縮到 0 會在交接前一刻壓成一條線。 */
+    const isSide=(img===set.sideR||img===set.sideL);
+    const squash=isSide?Math.max(0.30,Math.abs(Math.sin(th))):1;
+    const w=img.width*wpp*P[3]*squash, h=img.height*wpp*P[3];
     if(w<2) return;
-    const wB=imgB?imgB.width*wpp*P[3]:0, hB=imgB?imgB.height*wpp*P[3]:0;
+    const sqB=(imgB===set.sideR||imgB===set.sideL)?Math.max(0.30,Math.abs(Math.sin(th))):1;
+    const wB=imgB?imgB.width*wpp*P[3]*sqB:0, hB=imgB?imgB.height*wpp*P[3]:0;
     const pad=Math.ceil(Math.max(w,h,wB,hB)*0.6)+6;   // 兩張都要框得下
     const x0=Math.round(P[0]-w/2)-pad, y0=Math.round(P[1]-h/2)-pad;
     const fw=Math.ceil(w)+pad*2, fh=Math.ceil(h)+pad*2;
@@ -1975,13 +1992,16 @@ function drawEnemy3D(scaleH,horizon,sinp,cosp,now){
     }
     EC.setTransform(1,0,0,1,0,0); EC.clearRect(0,0,bwp,bhp);
     EC.setTransform(bwp/fw,0,0,bhp/fh,-x0*bwp/fw,-y0*bhp/fh);
+    /* 側傾：繞船自己的中心轉一個小角度。飛船保持水平飛行，但轉彎會外傾。 */
+    const roll=(enemy.roll||0)*0.28;      // 最大約 16°
+    EC.save(); EC.translate(P[0],P[1]); EC.rotate(roll);
     EC.globalAlpha=imgB?(1-mix):1;
-    EC.drawImage(img,P[0]-w/2,P[1]-h/2,w,h);
+    EC.drawImage(img,-w/2,-h/2,w,h);
     if(imgB){
       EC.globalAlpha=mix;
-      EC.drawImage(imgB,P[0]-wB/2,P[1]-hB/2,wB,hB);
+      EC.drawImage(imgB,-wB/2,-hB/2,wB,hB);
     }
-    EC.globalAlpha=1;
+    EC.globalAlpha=1; EC.restore();
     ctx.save(); ctx.imageSmoothingEnabled=false;
     clipByTerrainDepth(P[2],W/BW,VIEWH/BH);   // 山也該擋住船
     ctx.drawImage(enemyFB,0,0,bwp,bhp,x0,y0,fw,fh);
