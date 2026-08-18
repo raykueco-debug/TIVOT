@@ -1505,7 +1505,7 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
        飛到城上空也只看得到一顆符號點。上面那行尺寸檢查用的 R 有乘
        MAP_SCALE，所以檢查會過、畫出來卻是點——兩邊單位不一致的典型病。 */
     Settlement.draw(ctx, o.s, { ox:o.x, oy:o.y, scale:sc*MAP_SCALE, tilt, night:nightK,
-                                 groundL:30, groundA:0.28 }, Settlement.DEBUG);
+                                 rot:cam.angle, groundL:30, groundA:0.28 }, Settlement.DEBUG);
     ctx.restore();
   }
 }

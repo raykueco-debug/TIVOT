@@ -480,20 +480,28 @@ function draw(ctx, s, view, dbg) {
      遠處接近地平線、壓成一條線）。固定 0.58 的結果就是整座城變成一張不隨
      視角變形的貼紙浮在地表上。呼叫端算得出當下的真實壓縮率就傳 view.tilt。 */
   const tilt = (view.tilt > 0) ? view.tilt : TILT;
-  const X = wx => ox + wx * scale;
-  const Y = wy => oy + wy * scale * tilt;
+  /* 平面旋轉：城的街廓必須跟著鏡頭航向轉，否則轉向時地形轉了、城不轉，
+     兩者當場分家 —— 那是「城是一張貼紙」最刺眼的破綻。
+     rot 由呼叫端給（地圖畫面不傳＝0，維持正北朝上）。
+     ⚠ 旋轉做在座標映射上，不是 ctx.rotate：整體轉畫布會把建築量體與屋頂
+       一起轉歪（斜角投影的屋頂必須永遠朝同一個方向）。這裡只轉「地面平面
+       上的點落在哪」，量體仍照原本的螢幕方向長出來。 */
+  const rot = view.rot || 0;
+  const rc = Math.cos(rot), rs = Math.sin(rot);
+  const X = (wx, wy) => ox + (wx * rc - wy * rs) * scale;
+  const Y = (wx, wy) => oy + (wx * rs + wy * rc) * scale * tilt;
   const screenDia = s.radius * 2 * scale;
 
   /* ── LOD ────────────────────────────────────────────────────── */
   const lod = screenDia > 180 ? 3 : screenDia > 60 ? 2 : screenDia > 20 ? 1 : 0;
-  if (lod === 0) { drawIcon(ctx, s, X(0), Y(0), scale); return; }
+  if (lod === 0) { drawIcon(ctx, s, X(0, 0), Y(0, 0), scale); return; }
 
   const pal = s.palette;
 
   /* 地面：輪廓內填土色（LOD1 以上都畫，給城市一個底） */
   ctx.save();
   ctx.beginPath();
-  s.boundary.forEach((p, i) => i ? ctx.lineTo(X(p.x), Y(p.y)) : ctx.moveTo(X(p.x), Y(p.y)));
+  s.boundary.forEach((p, i) => i ? ctx.lineTo(X(p.x, p.y), Y(p.x, p.y)) : ctx.moveTo(X(p.x, p.y), Y(p.x, p.y)));
   ctx.closePath();
   // 地面壓暗：建築佔地只有 R 的 1~5%，在 280px 的城市裡一棟只有 2~3px，
   // 底色若與牆面亮度接近，整座城就會糊成一片雜點看不出建築。
@@ -512,7 +520,7 @@ function draw(ctx, s, view, dbg) {
   /* 道路：畫在建築之下 */
   for (const rd of s.roads) {
     ctx.beginPath();
-    rd.pts.forEach((p, i) => i ? ctx.lineTo(X(p.x), Y(p.y)) : ctx.moveTo(X(p.x), Y(p.y)));
+    rd.pts.forEach((p, i) => i ? ctx.lineTo(X(p.x, p.y), Y(p.x, p.y)) : ctx.moveTo(X(p.x, p.y), Y(p.x, p.y)));
     ctx.strokeStyle = dbg.showRoads ? '#ff0'
       : hsl(36 + pal.hue, 12, rd.kind === 'main' ? 40 : rd.kind === 'ring' ? 34 : 28, 0.9);
     ctx.lineWidth = Math.max(0.6, rd.width * scale * (dbg.showRoads ? 0.2 : 1));
@@ -521,13 +529,14 @@ function draw(ctx, s, view, dbg) {
   }
   if (s.piers) for (const p of s.piers) {
     ctx.beginPath();
-    ctx.moveTo(X(p.x), Y(p.y));
-    ctx.lineTo(X(p.x + Math.cos(p.ang) * p.len), Y(p.y + Math.sin(p.ang) * p.len));
+    const ex = p.x + Math.cos(p.ang) * p.len, ey = p.y + Math.sin(p.ang) * p.len;
+    ctx.moveTo(X(p.x, p.y), Y(p.x, p.y));
+    ctx.lineTo(X(ex, ey), Y(ex, ey));
     ctx.strokeStyle = hsl(30, 18, 34); ctx.lineWidth = Math.max(0.8, s.radius * 0.012 * scale);
     ctx.stroke();
   }
   if (s.plaza) {
-    ctx.beginPath(); ctx.ellipse(X(0), Y(0), s.plaza * scale, s.plaza * scale * TILT, 0, 0, TAU);
+    ctx.beginPath(); ctx.ellipse(X(0, 0), Y(0, 0), s.plaza * scale, s.plaza * scale * tilt, 0, 0, TAU);
     ctx.fillStyle = hsl(38 + pal.hue, 12, 44, 0.8); ctx.fill();
   }
 
@@ -553,12 +562,13 @@ function draw(ctx, s, view, dbg) {
     else drawTower(ctx, it.o, X, Y, scale, pal);
     if (dbg.showDepthOrder && i % 8 === 0) {
       ctx.fillStyle = '#0ff'; ctx.font = '8px monospace';
-      ctx.fillText(i, X(it.o.x || (it.o.t ? it.o.t.x : it.o.a.x)), Y(it.sy));
+      const lx = it.o.x || (it.o.t ? it.o.t.x : it.o.a.x);
+      ctx.fillText(i, X(lx, it.sy), Y(lx, it.sy));
     }
   }
   if (dbg.showPivots) for (const l of s.landmarks) {
     ctx.fillStyle = '#f0f';
-    ctx.beginPath(); ctx.arc(X(l.x), Y(l.y), 3, 0, TAU); ctx.fill();
+    ctx.beginPath(); ctx.arc(X(l.x, l.y), Y(l.x, l.y), 3, 0, TAU); ctx.fill();
   }
 }
 
@@ -582,14 +592,14 @@ function drawNightLights(ctx, s, X, Y, scale, night, lod) {
     ctx.fillStyle = h < 0.10 ? '#ffd9a0' : '#ffbe6a';
     // 燈開在屋子朝鏡頭那一面（＝量體下緣），不是屋頂正中
     ctx.beginPath();
-    ctx.arc(X(b.x), Y(b.y) - b.h * scale * 0.22, dot, 0, TAU);
+    ctx.arc(X(b.x, b.y), Y(b.x, b.y) - b.h * scale * 0.22, dot, 0, TAU);
     ctx.fill();
   }
   ctx.restore();
 }
 
 function drawBuilding(ctx, b, X, Y, scale, pal, lod) {
-  const sx = X(b.x), sy = Y(b.y);
+  const sx = X(b.x, b.y), sy = Y(b.x, b.y);
   const w = b.w * scale, d = b.d * scale * TILT, h = b.h * scale;
   if (w < 0.7) return;
   const tone = pal.roofs[b.tone];
@@ -662,7 +672,7 @@ function drawBuilding(ctx, b, X, Y, scale, pal, lod) {
 }
 
 function drawWallSeg(ctx, o, X, Y, scale, pal) {
-  const ax = X(o.a.x), ay = Y(o.a.y), bx = X(o.b.x), by = Y(o.b.y);
+  const ax = X(o.a.x, o.a.y), ay = Y(o.a.x, o.a.y), bx = X(o.b.x, o.b.y), by = Y(o.b.x, o.b.y);
   const h = o.h * scale;
   ctx.fillStyle = hsl(34 + pal.hue, 10, 34);
   ctx.beginPath();
@@ -672,7 +682,7 @@ function drawWallSeg(ctx, o, X, Y, scale, pal) {
   ctx.fillRect(Math.min(ax, bx), Math.min(ay, by) - h - 1, Math.abs(bx - ax) || 1, 2);
 }
 function drawTower(ctx, o, X, Y, scale, pal) {
-  const x = X(o.t.x), y = Y(o.t.y), h = o.h * scale, w = h * 0.34;
+  const x = X(o.t.x, o.t.y), y = Y(o.t.x, o.t.y), h = o.h * scale, w = h * 0.34;
   ctx.fillStyle = hsl(34 + pal.hue, 10, 30);
   ctx.fillRect(x - w * 0.5, y - h, w, h);
   ctx.fillStyle = hsl(34 + pal.hue, 10, 42);
@@ -682,7 +692,7 @@ function drawTower(ctx, o, X, Y, scale, pal) {
 
 /* 地標：造型要能在剪影下辨識（LOD1 也只畫剪影，形狀必須有特徵） */
 function drawLandmark(ctx, l, X, Y, scale, pal, lod) {
-  const x = X(l.x), y = Y(l.y), H = l.scale * scale;
+  const x = X(l.x, l.y), y = Y(l.x, l.y), H = l.scale * scale;
   if (H < 2) return;
   const w = H * 0.34;
   const body = hsl(40 + pal.hue, 8, lod === 1 ? 26 : 40);
