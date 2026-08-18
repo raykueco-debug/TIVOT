@@ -377,8 +377,28 @@ const SETTLEMENTS = [
      讓城的臨海那一側剛好搭到水邊。seaAng 是實測的向海方位
      （岸點周圍 24px 內海格的平均方向，約 109°）——棧橋固定生在區域 +x，
      靠這個角度把整座港轉到面向海。改地形就要重量。 */
-  { n:'薇拉馮德港', x:1335, y:929, t:'city1', f:'empire', c:1, sea:1.90 },
+  /* plan：手繪平面圖（build_city.py 由等角視插畫反投影而來）。
+     給了就用它取代程序生成的街廓，其餘欄位（半徑、整平、棧橋）照舊。
+     planW  ＝ 圖寬代表幾個世界單位。城核約佔圖寬的 3/4，
+              半徑 440 → 440*2/0.75 ≈ 1170，取 1250 讓郊區有餘。
+     planRot＝圖要轉多少才讓港區朝海。插畫的港在右下（≈45°），
+              這裡的向海方位是 1.90 rad（≈109°），差 ≈1.10 rad。 */
+  { n:'薇拉馮德港', x:1335, y:929, t:'city1', f:'empire', c:1, sea:1.90,
+    plan:'city/velafonte_plan.webp', planW:1050, planRot:1.10 },
 ];
+/* 手繪平面圖：背景載，載不到就退回程序生成的街廓（同飛空艇/怪的雙軌）。
+   ⚠ 不進 loadWorld：它只影響少數幾座城的外觀，擋開場不划算。 */
+const cityPlanArt={};
+(function loadCityPlans(){
+  for(const S of SETTLEMENTS){
+    if(!S.plan) continue;
+    const im=new Image();
+    im.onload=()=>{ cityPlanArt[S.plan]=im; };
+    im.src=S.plan;
+  }
+})();
+
+let cityFB=null, CFB=null;                  // 手繪平面圖的低解析繪製緩衝
 let settleCache=null;                       // 生成結果快取（純函式，算一次就好）
 function buildSettlements(){
   if(settleCache) return settleCache;
@@ -388,6 +408,7 @@ function buildSettlements(){
       radius:SETTLE_R[S.t], faction:S.f, coastal:!!S.c, x:S.x, y:S.y,
       seaAng:S.sea||0,               // 向海方位（弧度）；內陸聚落留 0
     });
+    s.plan=S.plan||null; s.planW=S.planW||0; s.planRot=S.planRot||0;
     s.mx=S.x; s.my=S.y; s.gh=(S.gh!=null?S.gh:CLOUD_H); return s;
   });
   return settleCache;
@@ -2469,6 +2490,89 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
        ⚙ 夾上下限：飛得極低時 z² 分母會把值推到失控。 */
     const dydz=(-(cam.alt-o.s.gh)/(o.z*o.z)+curvAt(0))*scaleH*syk;
     const tilt=clamp(Math.abs(dydz)/sc,0.06,1.10);
+    /* ── 手繪平面圖：網格投影 ───────────────────────────────────
+       把平面圖切成 N×N 格，每格各自投影 —— 用一堆小的仿射變換去逼近
+       1/z 的非線性投影。這是用 canvas 2D 貼地面貼圖的標準作法。
+
+       ⚠ 為什麼不能只切橫條（我的第一版）：條是沿圖自己的 v 軸切的，
+         但平面圖是轉過角度的（planRot），**等 v 線不是等深度線**。
+         實測同一條的兩端深度差到 1658 vs 544，一個仿射矩陣根本吃不下，
+         畫出來是滿畫面的斜向拖曳。二維切分才與朝向無關。
+       ⚠ 每格取三個角算矩陣（仿射只能表達平行四邊形），第四角的誤差
+         在一格之內可以忽略；格子越多誤差越小。
+       ⚠ 格數隨螢幕尺寸調：遠處的城只有幾十像素，切 24×24 是純浪費。
+       ⚠ 由遠而近畫：近的要蓋住遠的。project 回傳的第三項是**尺度**
+         （不是深度），尺度越大越近 → 依尺度升冪排就是由遠而近。
+       ⚠ 相鄰格的來源矩形多取 0.6px、目的地也多畫一點：不重疊會露出格線。 */
+    const planImg=o.s.plan?cityPlanArt[o.s.plan]:null;
+    if(planImg){
+      const hw=o.s.planW*0.5, hh=hw*planImg.height/planImg.width;
+      const ca=Math.cos(o.s.planRot), sa=Math.sin(o.s.planRot);
+      const scr=o.s.planW*sc;                       // 城在螢幕上大約多寬
+      /* 格數：近處一格若還有幾十像素，仿射逼近的誤差就會在格邊裂開
+         （相鄰格各用自己的三個角算矩陣，第四角對不起來）。
+         scr/9 讓近處一格約 9px，配合下面 1.2px 的重疊就看不出接縫。 */
+      const N=clamp(Math.round(scr*(BW/W)/9),6,24);   // 依緩衝解析度算，不是螢幕
+      const toL=(u,v)=>{                            // 平面座標(−1..1) → 聚落局部地圖像素
+        const x=u*hw, y=v*hh;
+        return [(x*ca-y*sa)/MAP_SCALE, (x*sa+y*ca)/MAP_SCALE];
+      };
+      const P=[];                                   // (N+1)×(N+1) 個投影點
+      for(let jy=0;jy<=N;jy++){
+        const v=-1+2*jy/N; const row=[];
+        for(let jx=0;jx<=N;jx++){
+          const u=-1+2*jx/N; const L=toL(u,v);
+          row.push(project(L[0],L[1]));
+        }
+        P.push(row);
+      }
+      /* 先畫進低解析緩衝再放大貼回。兩個理由：
+         · 填充量降到 36%（0.6²）——網格投影是幾百次 drawImage，實測直接畫
+           在主畫布上 render 要 51ms（≈19fps）。
+         · 城的顆粒才跟世界一致。地形是 234×334 上採樣的，城若用全解析度
+           貼，會比地形銳利得多，本身就是違和點。 */
+      let bx0=1e9,by0=1e9,bx1=-1e9,by1=-1e9;
+      for(const row of P) for(const q of row){
+        if(q[0]<bx0)bx0=q[0]; if(q[0]>bx1)bx1=q[0];
+        if(q[1]<by0)by0=q[1]; if(q[1]>by1)by1=q[1];
+      }
+      bx0=Math.max(bx0-2,-600); by0=Math.max(by0-2,-600);
+      bx1=Math.min(bx1+2,W+600); by1=Math.min(by1+2,VIEWH+600);
+      const fw=Math.ceil(bx1-bx0), fh=Math.ceil(by1-by0);
+      if(fw<2||fh<2||bx1<0||by1<0||bx0>W||by0>VIEWH){ ctx.restore(); continue; }
+      const pk=clamp(BW/W,0.15,1);
+      const bwp=Math.max(2,Math.round(fw*pk)), bhp=Math.max(2,Math.round(fh*pk));
+      if(!cityFB || cityFB.width!==bwp || cityFB.height!==bhp){
+        cityFB=document.createElement('canvas'); cityFB.width=bwp; cityFB.height=bhp;
+        CFB=cityFB.getContext('2d');
+      }
+      CFB.setTransform(1,0,0,1,0,0); CFB.clearRect(0,0,bwp,bhp);
+      const kx=bwp/fw, ky=bhp/fh;
+
+      const cells=[];
+      for(let jy=0;jy<N;jy++)for(let jx=0;jx<N;jx++)
+        cells.push({jx,jy,k:P[jy][jx][2]+P[jy+1][jx+1][2]});
+      cells.sort((a,b)=>a.k-b.k);                   // 尺度小＝遠 → 先畫
+      const sw=planImg.width/N, shh=planImg.height/N;
+      for(const cel of cells){
+        const {jx,jy}=cel;
+        const A=P[jy][jx], B=P[jy][jx+1], Cc=P[jy+1][jx];
+        const sx=jx*sw, sy=jy*shh;
+        const a1=(B[0]-A[0])/sw, b1=(B[1]-A[1])/sw;
+        const c1=(Cc[0]-A[0])/shh, d1=(Cc[1]-A[1])/shh;
+        if(!isFinite(a1)||!isFinite(d1)) continue;
+        if(Math.abs(a1*d1-b1*c1)<1e-7) continue;     // 退化成一條線就跳過
+        // 緩衝的座標系＝(螢幕座標 − 外框原點) × 縮放
+        CFB.setTransform(a1*kx, b1*ky, c1*kx, d1*ky,
+                         (A[0]-a1*sx-c1*sy-bx0)*kx, (A[1]-b1*sx-d1*sy-by0)*ky);
+        CFB.drawImage(planImg, sx,sy,sw+1.2,shh+1.2, sx,sy,sw+1.2,shh+1.2);
+      }
+      CFB.setTransform(1,0,0,1,0,0);
+      ctx.imageSmoothingEnabled=false;
+      ctx.drawImage(cityFB,0,0,bwp,bhp,Math.round(bx0),Math.round(by0),fw,fh);
+      ctx.restore();
+      continue;
+    }
     /* ⚠ Settlement.draw 的 scale 是「每個**地圖像素**幾個螢幕像素」——
        s.radius 存的是地圖像素（同地圖畫面那邊傳 sc*MAP_SS）。
        sc 是每個**世界單位**幾個螢幕像素，兩者差一個 MAP_SCALE。
