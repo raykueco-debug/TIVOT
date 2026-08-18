@@ -1120,6 +1120,7 @@ function update(dt,now){
   const deg=((-cam.angle*180/Math.PI)+1080)%360;
   document.getElementById('compass').textContent=['北','東北','東','東南','南','西南','西','西北'][Math.round(deg/45)%8];
   updateEnemy(dt,now);
+  updateFlock(dt,now);
 
   // 地標名稱已改由 3D 內的名牌呈現（drawPlaces），這裡不再重複彈 DOM 提示
 
@@ -1364,6 +1365,7 @@ function render(now){
   drawPuffs(S,scaleH,horizon,sinp,cosp);
   drawSettlements3D(scaleH,horizon,sinp,cosp);
   drawPlaces(scaleH,horizon,sinp,cosp);
+  drawFlock(scaleH,horizon,sinp,cosp,now);
   drawEnemy3D(scaleH,horizon,sinp,cosp,now);
   drawShip(now);
   vignette(S);
@@ -1490,6 +1492,100 @@ function drawPlaces(scaleH,horizon,sinp,cosp){
     }
     ctx.globalAlpha=1;
   });
+}
+
+/* ══ 飛鳥群 ══════════════════════════════════════════════════════════
+   偶爾一群鳥橫過視野。純氣氛，沒有互動。
+   ⚠ 不做成「敵人」的一種：牠們不需要狀態機、不需要遭遇判定，
+     共用那套只會把敵人的邏輯撐得更複雜。
+   ⚠ 編隊用「領頭鳥 + 各自的偏移」而不是每隻獨立飛：獨立飛的話再怎麼調
+     都像一把散開的點，看不出是一群。偏移帶各自的緩慢繞行，群才會呼吸。
+   ⚠ 拍翅相位每隻錯開：整群同步拍翅非常假，那是複製貼上的讀感。 */
+const FLOCK_CFG = {
+  gapMin: 22000, gapMax: 46000,   // 兩群之間的間隔（ms）
+  n: [7, 16],                     // 每群幾隻
+  spawnDist: 900,                 // 生成距離（世界單位）——比怪近得多，要看得清
+  speed: 2.6,                     // 世界單位／(ms*0.06)，約玩家極速的 43%
+  spread: 120,                    // 編隊散佈半徑（世界單位）
+  life: 26000,                    // 活這麼久就散（ms）
+};
+let flock=null, flockTimer=FLOCK_CFG.gapMin*0.5;
+
+function spawnFlock(){
+  const C=FLOCK_CFG;
+  // 生在側前方，讓牠橫過視野；高度落在玩家上下，有時從下方掠過
+  const a=cam.angle+(Math.random()<0.5?1:-1)*(0.5+Math.random()*0.8);
+  const x=cam.x-Math.sin(a)*C.spawnDist, y=cam.y-Math.cos(a)*C.spawnDist;
+  // 航向：橫過玩家前方（不朝玩家來，也不背離）
+  const h=cam.angle+(Math.random()<0.5?1:-1)*(1.2+Math.random()*0.6);
+  const n=C.n[0]+((Math.random()*(C.n[1]-C.n[0]+1))|0);
+  const birds=[];
+  for(let i=0;i<n;i++){
+    birds.push({
+      // 編隊偏移：V 字骨架加一點亂數，免得排得太整齊像圖表
+      ox:(Math.random()-0.5)*C.spread,
+      oy:(Math.random()-0.5)*C.spread,
+      oa:(Math.random()-0.5)*70,          // 高度偏移
+      orb:Math.random()*6.28,             // 各自緩慢繞行的相位
+      wing:Math.random()*6.28,            // 拍翅相位：錯開才不像複製貼上
+      hz:0.020+Math.random()*0.010,       // 拍翅頻率也各自不同
+    });
+  }
+  flock={ x, y, alt:cam.alt+(Math.random()-0.45)*160,
+          hx:-Math.sin(h), hy:-Math.cos(h), birds, t0:performance.now() };
+}
+
+function updateFlock(dt,now){
+  const C=FLOCK_CFG;
+  if(!flock){
+    flockTimer-=dt;
+    if(flockTimer<=0) spawnFlock();
+    return;
+  }
+  const mv=C.speed*dt*0.06;
+  flock.x+=flock.hx*mv; flock.y+=flock.hy*mv;
+  const dx=flock.x-cam.x, dy=flock.y-cam.y;
+  if(now-flock.t0>C.life || Math.hypot(dx,dy)>2600){
+    flock=null;
+    flockTimer=C.gapMin+Math.random()*(C.gapMax-C.gapMin);
+  }
+}
+
+function drawFlock(scaleH,horizon,sinp,cosp,now){
+  if(!flock) return;
+  const sxk=W/BW, syk=VIEWH/BH;
+  const S=sky();
+  const lit=clamp(0.22+S.day*0.78,0.22,1);
+  const col='rgba('+Math.round(38*lit+8)+','+Math.round(34*lit+8)+','+Math.round(32*lit+10)+',';
+  ctx.save();
+  for(const b of flock.birds){
+    const orb=now*0.0009+b.orb;
+    const wx=flock.x+b.ox+Math.cos(orb)*16, wy=flock.y+b.oy+Math.sin(orb*1.3)*16;
+    const dx=wx-cam.x, dy=wy-cam.y;
+    let z=dx*(-sinp)+dy*(-cosp);
+    if(z<30||z>ZFAR*0.55) continue;                  // 太遠就看不見了，不必畫
+    const sv=(dx*cosp+dy*(-sinp))/z;
+    if(sv<-1.25||sv>1.25) continue;
+    const alt=flock.alt+b.oa+Math.sin(orb*0.8)*10;
+    const px=((sv+1)/2*BW)*sxk;
+    const py=(((cam.alt-alt)/z + z*curvAt(sv))*scaleH+horizon)*syk;
+    const sc=W/(2*z);
+    const span=Math.max(1.2, sc*22);                 // 翼展（世界單位 22）
+    if(span<1.0) continue;
+    /* 一隻鳥就是一個「M」：兩撇翅膀，拍動時改的是**上揚的幅度**。
+       這個尺寸下畫身體是浪費，剪影才是辨識點。 */
+    const f=Math.sin(now*b.hz+b.wing);
+    const up=span*0.34*f;
+    ctx.strokeStyle=col+(0.62+0.24*S.day).toFixed(2)+')';
+    ctx.lineWidth=Math.max(0.8,span*0.13);
+    ctx.lineCap='round'; ctx.lineJoin='round';
+    ctx.beginPath();
+    ctx.moveTo(px-span*0.5, py-up);
+    ctx.lineTo(px,           py+span*0.06);
+    ctx.lineTo(px+span*0.5, py-up);
+    ctx.stroke();
+  }
+  ctx.restore();
 }
 
 /* ══ 敵人：巨型蜈蚣（FLM_CENTIPI）════════════════════════════════════
