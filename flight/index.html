@@ -730,6 +730,14 @@ const VEG_BAND=0.16;                       // 針闊葉的混合帶寬度
    而且淡出同時把成本收在近景。
    GEO_AMP＝細節層的強度。0.85 太重，地面讀起來是一片深色雜點；0.5 只剩薄紋。 */
 const GEO_FAR=1500, GEO_AMP=0.65;
+/* 當幀光照（render 每幀寫入）。城／船這些畫在離屏緩衝上的東西靠它跟地面對齊曝光。 */
+const LIT={amb:0.5,sun:0.4,r:1,g:1,b:1};
+/* build_city.py 已把 VAL 烘進插畫（見該檔的 VAL 常數）——這裡要除掉它，
+   才不會把同一份壓暗算兩次。 */
+const CITY_BAKED_VAL=0.86;
+/* 再壓一點：曝光對齊之後城仍比腳下的林地亮 1.4 倍。城本來就該比森林亮
+   （街道、屋瓦本來就淺），但 1.4 讀起來還是像在發光。0.88 把它收到 1.2 附近。 */
+const CITY_TRIM=0.88;
 
 let cityPts=null, cityGnd=null;
 let cityU=null, cityV=null;                 // 兩軸的格線（平面座標 −1..1，非均勻）
@@ -1054,6 +1062,58 @@ async function loadWorld(){
       }
       window.__cityWater=(window.__cityWater||0)+water;
       window.__cityLand=(window.__cityLand||0)+land;
+    }
+  }
+
+  /* ── 把城外的河接到城內水域 ────────────────────────────────
+     東側那條河本來就從城的東緣擦身而過（實測城內水域與陸上河道最近只差
+     11.8 地圖像素＝236 世界單位），但兩者沒有接起來 —— 空中看就是「河到城邊
+     忽然不見了」。這裡把最近的一對接起來。
+     ⚠ 必須排在「地形遷就插畫」之後：城內水域是那一步挖出來的，先挖才有得接。
+     ⚠ 河床要**從城往外遞減**。城內水面 87、接點的河面 63，24 個單位落在 240
+       單位的水平距離上（約 6°）—— 順著這個方向挖才是一條往下流的河。
+       反過來（讓河往城裡爬）就是「河流爬山」，這個專案在 ver -122 修過一次。 */
+  {
+    for(const S of SETTLEMENTS){
+      if(!S.plan) continue;
+      const rr=Math.ceil((S.planW*0.5/MAP_SCALE))+4;
+      const near=Math.ceil(rr+60);
+      let best=null;
+      // 城內水域（剛挖出來的 RIV）對上城外的陸上河道，取最近的一對
+      for(let dy=-rr;dy<=rr;dy++)for(let dx=-rr;dx<=rr;dx++){
+        const x=S.x+dx, y=S.y+dy;
+        if(x<0||y<0||x>=MAPW||y>=MAPH) continue;
+        if(!RIV[y*MAPW+x]) continue;
+        for(let ey=-near;ey<=near;ey+=2)for(let ex=-near;ex<=near;ex+=2){
+          const rx=S.x+ex, ry=S.y+ey;
+          if(rx<0||ry<0||rx>=MAPW||ry>=MAPH) continue;
+          const d2=(rx-x)*(rx-x)+(ry-y)*(ry-y);
+          if(d2<1||(best&&d2>=best.d2)) continue;
+          if(Math.hypot(ex,ey)<rr) continue;                 // 那還是城自己的水
+          const j=ry*MAPW+rx;
+          if(!RIV[j]||HGT[j]<=CLOUD_H) continue;
+          best={d2, ax:x, ay:y, bx:rx, by:ry, bh:HGT[j]};
+        }
+      }
+      if(!best || best.d2>60*60) continue;
+      const h0=HGT[best.ay*MAPW+best.ax], h1=best.bh;
+      const n=Math.max(2,Math.ceil(Math.sqrt(best.d2))*2);
+      for(let t=0;t<=n;t++){
+        const u=t/n;
+        const cx2=best.ax+(best.bx-best.ax)*u, cy2=best.ay+(best.by-best.ay)*u;
+        const hz=h0+(h1-h0)*u;                               // 由城往外遞減
+        for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){
+          const x=Math.round(cx2)+dx, y=Math.round(cy2)+dy;
+          if(x<0||y<0||x>=MAPW||y>=MAPH) continue;
+          const d=Math.hypot(x-cx2,y-cy2);
+          if(d>1.9) continue;
+          const i=y*MAPW+x;
+          if(HGT[i]<=CLOUD_H) continue;
+          const target=Math.round(hz);
+          if(HGT[i]>target){ HGT[i]=target; raw[i]=target/PEAK_SCALE; }
+          RIV[i]=1; COL[i]=rgb(84,120,142);
+        }
+      }
     }
   }
 
@@ -1692,6 +1752,10 @@ function render(now){
   const lightG=lerp(lerp(0.86,1.0,S.day),1.02,S.dusk);
   const lightB=lerp(lerp(1.04,1.0,S.day),0.76,S.dusk);
 
+  /* 當幀的光照存起來：城是畫在自己的緩衝上的，拿不到這些區域變數，
+     但它必須跟地面吃**同一盞燈**，否則黎明黃昏時城會亮得像另一個時區。 */
+  LIT.amb=ambI; LIT.sun=sunI; LIT.r=lightR; LIT.g=lightG; LIT.b=lightB;
+
   const sinp=Math.sin(cam.angle), cosp=Math.cos(cam.angle);
   const FOGS=ZFAR*FOG_START;
   const fr=SC.hz[0], fg=SC.hz[1], fb=SC.hz[2];
@@ -1767,6 +1831,16 @@ function render(now){
         // 高頻細節：在世界座標上取樣，補回被放大糊掉的近景起伏
         const dt=DETH[(((ply|0)&DTM)*DET_TILE)+((plx|0)&DTM)];
         hh+=dt*(DET_AMP/127);
+        /* ── 可見性早退 ─────────────────────────────────────────
+           這個迴圈每幀跑約 17 萬次（約 744 個深度步進 × 234 欄），但真正寫進
+           畫面的只有一小部分 —— 其餘的取樣算完顏色就被更近的地形蓋掉了。
+           地貌貼圖那一層進來之後，那段浪費從「有點可惜」變成手機掉幀的主因。
+           高度已經算完，投影只要四則運算：先算出這一筆會落在哪一列，
+           被蓋住就直接跳過**地貌層＋打光＋分級**整段。
+           ⚠ `|` 的優先序低於 `>=`，`a|0 >= b` 會被解析成 `a | (0>=b)`。
+             一定要自己加括號。
+           ⚠ 早退什麼都不用補：ybuf/prevH/ybufZ 本來就只在「畫得出來」時才更新。 */
+        if((((cam.alt-hh)*invz + z*curvK[i])*scaleH+horizon|0) >= ybuf[i]) continue;
         /* ── 林草細節層 ─────────────────────────────────────────
            在世界座標平鋪樹冠圖，乘進底色。乘而不換：底色帶著地貌形狀與
            烘焙好的 hillshade，直接換成貼圖顏色會把山攤平成一張壁紙。
@@ -3388,10 +3462,29 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
            在那四點取值都對得起來，不必為此改成離散表。 */
       CFB.setTransform(1,0,0,1,0,0);
       {
+        /* ── 曝光對齊 ──
+           地面每一格都吃 (ambI+sunI*nl)*GRADE_EXPO×光色；城原本完全不吃，
+           只有一層夜/夕的色罩。實測黃昏時城比腳下的地亮兩倍以上 ——
+           使用者看到的「城的反光跟旁邊差太多」就是這個。
+           這裡用**平坦法線 0.62**（城是貼在地面上的平面）走同一條式子，
+           再除掉素材裡已經烘好的 VAL，免得同一份壓暗算兩次。
+           ⚠ 只能用 source-atop 疊黑來做乘法：Canvas 的 multiply 走 source-over，
+             會把整張緩衝連透明區一起填成實心色（這個坑 HANDOFF 記過）。
+             疊黑 alpha=1-k 的結果正好是 c×k，數學上就是乘法。 */
+        const shC=(LIT.amb+LIT.sun*0.62)*GRADE_EXPO;
+        const kC=clamp(shC/CITY_BAKED_VAL*CITY_TRIM,0,1);
+        if(kC<0.995){
+          CFB.globalCompositeOperation='source-atop';
+          CFB.fillStyle='rgba(0,0,0,'+(1-kC).toFixed(3)+')';
+          CFB.fillRect(0,0,bwp,bhp);
+          CFB.globalCompositeOperation='source-over';
+        }
+        /* 色相：亮度已經由上面那一步對齊，這裡只剩「光是什麼顏色」。
+           所以 alpha 比舊版小得多（舊版那層同時在當壓暗用，才會壓成一坨橘）。 */
         const Sk=sky();
         const nA=clamp(1-Sk.day*1.2,0,1), dk=Sk.dusk;
-        const tr=Math.round(lerp(30,255,dk)), tg=Math.round(lerp(42,188,dk)), tb=Math.round(lerp(74,104,dk));
-        const aa=clamp(nA*0.62*(1-dk*0.45)+dk*0.34,0,0.72);
+        const tr=Math.round(lerp(52,255,dk)), tg=Math.round(lerp(66,196,dk)), tb=Math.round(lerp(104,120,dk));
+        const aa=clamp(nA*0.30+dk*0.16,0,0.34);
         if(aa>0.01){
           CFB.globalCompositeOperation='source-atop';
           CFB.fillStyle='rgba('+tr+','+tg+','+tb+','+aa.toFixed(3)+')';
