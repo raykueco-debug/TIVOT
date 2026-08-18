@@ -66,7 +66,10 @@
   #mapCap{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom) + 10px);
     color:var(--parch);font-size:10px;letter-spacing:.2em;opacity:.55;text-align:center;
     text-shadow:0 1px 3px rgba(0,0,0,.9);pointer-events:none;}
-  #mapClose{position:absolute;top:8px;right:8px;z-index:2;}
+  /* ⚠ 關閉鈕原本 top:8px —— 在有瀏海／動態島的機子上會被蓋住，手指點不到
+     （同戰鬥面板那邊的處理：一律讓開 safe-area），順便把可點面積加大。 */
+  #mapClose{position:absolute;top:calc(env(safe-area-inset-top) + 10px);right:10px;z-index:2;
+    min-width:64px;min-height:40px;}
   /* ══ 載入畫面 ══
      排版與主程式的啟動讀取畫面（style.css 的 #assetLoader）**逐項對齊**：
      圈徑/位置、立繪舞台高度、對話框寬度與錨點、底部訊息位置、字級與字距、
@@ -383,9 +386,13 @@ const SETTLEMENTS = [
               半徑 440 → 440*2/0.75 ≈ 1170，取 1250 讓郊區有餘。
      planRot＝圖要轉多少才讓港區朝海。插畫的港在右下（≈45°），
               這裡的向海方位是 1.90 rad（≈109°），差 ≈1.10 rad。 */
-  { n:'薇拉馮德港', x:1335, y:929, t:'city1', f:'empire', c:1, sea:1.90,
+  /* ⚠ 位置與旋轉是**搜出來的**，不是目測：拿插畫自己的水域遮罩去對真實海域，
+     掃描城心與旋轉取吻合度最高者（1366,936,1.40 → 91.7%，原本 1335,929,1.10
+     只有 89.2%）。改圖或改地形都要重跑那個搜尋。
+     ⚠ 這三個值必須與 build_city.py 的 JOBS 一致。 */
+  { n:'薇拉馮德港', x:1366, y:936, t:'city1', f:'empire', c:1, sea:1.90,
     plan:'city/velafonte_plan.webp', planH:'city/velafonte_h.webp',
-    planW:1050, planRot:1.10, planTall:26 },
+    planW:1050, planRot:1.40, planTall:26 },
   /* ⚠ planTall 別給大：這個引擎的縱向投影比橫向大約 2.9 倍
      （scaleH·syk ≈ 558 對 W/2 = 195），高度一抬就過頭，量體會把格子
      剪成長條、整座城拖曳。26 是「立得起來但不破圖」的上限。 */
@@ -394,11 +401,18 @@ const SETTLEMENTS = [
    ⚠ 不進 loadWorld：它只影響少數幾座城的外觀，擋開場不划算。 */
 const cityPlanArt={};
 const cityHeight={};        // {w,h,d} —— 高度圖的灰階陣列
+/* ⚠ 地形要依平面圖的水域去挖海／填地，所以整平 pass 必須等圖載完。
+   這幾張加起來不到 400KB，擋一下開場划算——不擋的話海岸線會與城對不上。 */
+const cityPlansReady=[];
 (function loadCityPlans(){
   for(const S of SETTLEMENTS){
     if(S.plan){
       const im=new Image();
-      im.onload=()=>{ cityPlanArt[S.plan]=im; };
+      cityPlansReady.push(new Promise(res=>{
+        im.onload=()=>{ cityPlanArt[S.plan]=im; res(); };
+        im.onerror=()=>res();
+        setTimeout(res,4000);            // 保底：載不到也不能無限擋開場
+      }));
       im.src=S.plan;
     }
     if(S.planH){
@@ -440,7 +454,9 @@ function buildSettlements(){
 /* 地標：座標＝地圖像素座標（同 terrain_generator.py 的 PLACES） */
 const PLACES=[
   {x:1005,y:600, name:'帝都・聖王廳', type:'教廷・中樞'},
-  {x:1310,y:965, name:'薇拉馮德港',   type:'帝國・港灣'},
+  /* ⚠ 原本 (1310,965) 在海上，而且與 SETTLEMENTS 那一列差了 60px
+     —— 地圖上會看到城與名牌分家。名牌跟著城走。 */
+  {x:1366,y:936, name:'薇拉馮德港',   type:'帝國・港灣'},
   {x:985, y:858, name:'卡耶爾山谷',   type:'險地'},
   {x:1000,y:300, name:'北方泊地',     type:'泊地'},
   {x:2030,y:590, name:'東方泊地',     type:'泊地'},
@@ -600,6 +616,47 @@ async function loadWorld(){
        城邊的法線還是舊坡度（同邊緣抬升那段的理由）。
      ⚠ 外圈留一段裙帶平滑過渡，否則城界會是一圈垂直斷崖。 */
   step(0.66,'整平城鎮地基…');
+  await Promise.all(cityPlansReady);        // 手繪圖要先到位（見上方註解）
+  /* ── 地形遷就插畫 ─────────────────────────────────────────────
+     有手繪平面圖的城：依圖上的水域遮罩，把地形挖成海／填成陸。
+     ⚠ 為什麼不是反過來（拿真實海岸線去裁圖）：裁了會把城咬掉一角，插畫的城
+       就沒有全貌可言。城是美術定案的東西，地形是生成的，該讓後者遷就前者。
+     ⚠ 只在圖的覆蓋範圍內動，範圍外一格不碰。 */
+  {
+    const cvp=document.createElement('canvas'), cxp=cvp.getContext('2d');
+    for(const S of SETTLEMENTS){
+      const img=S.plan?cityPlanArt[S.plan]:null;
+      if(!img) continue;
+      const SS=192;                         // 取樣解析度：地圖上才 52px 寬，夠了
+      cvp.width=SS; cvp.height=SS;
+      cxp.clearRect(0,0,SS,SS); cxp.drawImage(img,0,0,SS,SS);
+      const pd=cxp.getImageData(0,0,SS,SS).data;
+      const hw=S.planW*0.5/MAP_SCALE, hh=hw*img.height/img.width;
+      const ca=Math.cos(S.planRot), sa=Math.sin(S.planRot);
+      const rr=Math.ceil(Math.max(hw,hh))+2;
+      let carved=0, filled=0;
+      for(let dy=-rr;dy<=rr;dy++)for(let dx=-rr;dx<=rr;dx++){
+        const x=S.x+dx, y=S.y+dy;
+        if(x<0||y<0||x>=MAPW||y>=MAPH) continue;
+        // 世界偏移 → 插畫的 (u,v)：旋轉的逆變換
+        const lx= dx*ca+dy*sa, ly=-dx*sa+dy*ca;
+        const u=lx/hw, v=ly/hh;
+        if(u<-1||u>1||v<-1||v>1) continue;
+        const px=Math.round((u*0.5+0.5)*(SS-1)), py=Math.round((v*0.5+0.5)*(SS-1));
+        const j=(py*SS+px)*4;
+        if(pd[j+3]<60) continue;            // 圖上是空的就不動地形
+        const i=y*MAPW+x;
+        const isWater=(pd[j+2]>pd[j]+8 && pd[j+2]>50);
+        if(isWater){
+          if(HGT[i]>CLOUD_H){ HGT[i]=0; raw[i]=0; carved++; }
+        }else{
+          if(HGT[i]<=CLOUD_H){ HGT[i]=CLOUD_H+80; raw[i]=HGT[i]/PEAK_SCALE; filled++; }
+        }
+      }
+      window.__cityCarve=(window.__cityCarve||0)+carved;
+      window.__cityFill=(window.__cityFill||0)+filled;
+    }
+  }
   {
     /* 鎏平範圍：完全整平到 2R，也就是城界外再放一個城區半徑的平地。
        城市不是突然在山坡上停住的——郊區、耕地、道路都需要平地，

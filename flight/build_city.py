@@ -64,7 +64,7 @@ JOBS = [{
     'dst': 'velafonte_plan.webp',
     'hdst': 'velafonte_h.webp',
     # ⚠ 與 index.html 的 SETTLEMENTS 一致
-    'mx': 1335, 'my': 929, 'planW': 1050, 'planRot': 1.10,
+    'mx': 1366, 'my': 936, 'planW': 1050, 'planRot': 1.40,
     # 地標：(u, v, 半徑佔圖寬, 高度)。圖心是 (0.5,0.5)，可對著輸出的 plan 目測。
     'landmarks': [
         (0.520, 0.360, 0.055, H_LAND),   # 大教堂（中央那座哥德式尖塔）
@@ -113,8 +113,11 @@ for J in JOBS:
     xi = np.clip(np.round(wx).astype(np.int32), 0, hmap.shape[1] - 1)
     yi = np.clip(np.round(wy).astype(np.int32), 0, hmap.shape[0] - 1)
     land = hmap[yi, xi] > SEA_LEVEL
-    al = al * land[:, :, None]
-    print('  海岸線裁切：保留 %.1f%%' % (land.mean() * 100))
+    # ⚠ 這裡**不再**用海岸線去裁 alpha。裁了會把城咬掉一角——插畫的城是完整的，
+    #   被真實陸塊切開就沒有城市全貌可言。改成反過來：讓**地形去遷就插畫**
+    #   （index.html 的整平 pass 依這張圖的水域遮罩挖海／填地），
+    #   海岸線因此自動與插畫一致，一格都不用裁。
+    print('  與大陸現況吻合：%.1f%%（不裁，改由地形遷就插畫）' % (land.mean() * 100))
 
     out = Image.fromarray(np.concatenate([rgb, al], axis=2).astype(np.uint8), 'RGBA')
     out.save(os.path.join(CITY, J['dst']), quality=QUALITY, method=6)
@@ -131,7 +134,9 @@ for J in JOBS:
     for (lu, lv, rad, hv) in J['landmarks']:
         dd = np.sqrt((xx - lu * W2) ** 2 + (yy - lv * H2) ** 2) / (rad * W2)
         hm = np.maximum(hm, np.clip(1.0 - dd, 0, 1) ** 0.6 * hv)
-    hm = hm * land                                   # 海上不長東西
+    # 海上不長東西。⚠ 用**插畫自己的**水域而不是大陸現況：
+    #   地形會被改成跟插畫一致，所以該以插畫為準。
+    hm = hm * (~water)
     hb = Image.fromarray((np.clip(hm, 0, 1) * 255).astype(np.uint8), 'L')
     # ⚙ 糊得夠多很重要：高度是用來位移網格頂點的，相鄰頂點高度差太大，
     #   那一格的仿射矩陣就會被剪成長條（實測：近距離整座城拖曳）。
