@@ -85,7 +85,14 @@ JOBS = [{
     'hdst': 'capital_h.webp',
     'mdst': 'capital_mass.webp', 'jdst': 'capital_mass.json',
     'mx': 1005, 'my': 600, 'planW': 1250, 'planRot': 0.0,
-    'landmarks': [(0.500, 0.430, 0.060, H_LAND)],     # 中央的宮殿群
+    'landmarks': [],
+    # 地標整塊合併、不進格子切分。座標是**遊戲內地圖座標**（使用者在 3D 畫面
+    # 右鍵取的）。⚠ pick3d 回報的是地形格，點在高建築屋頂上時射線會穿過去打到
+    # 後方地面，所以座標偏向遠方，半徑要給得寬鬆。
+    'landmarkMass': [
+        {'x': 1010, 'y': 595, 'r': 3.2, 'h': 1.00, 'n': '大教堂'},
+        {'x': 1004, 'y': 582, 'r': 3.2, 'h': 0.78, 'n': '皇宮'},
+    ],
 }, {
     # ver -214：換成**真正的正射俯視**。前兩版都還是「從有限高度往下看」，
     # 結構會往外傾、看得到立面 —— 而引擎畫的是平頂稜柱、屋頂貼圖直接取自平面圖，
@@ -124,6 +131,7 @@ JOBS = [{
     #   不是目測。必須與 index.html 的「聖索菲亞城」一致。
     'mx': 559, 'my': 562, 'planW': 800, 'planRot': 0.79,
     'landmarks': [],
+    'landmarkMass': [{'x': 559, 'y': 562, 'r': 3.0, 'h': 1.00, 'n': '索菲亞大教堂'}],
 }, {
     'src': 'Velafonte_iso.png',
     'dst': 'velafonte_plan.webp',
@@ -338,10 +346,13 @@ def _finish(parts, rgb, al, hm, fixed, note):
         ys, xs = np.where(sub)
         bx0, by0 = int(xs.min()), int(ys.min())
         bx1, by1 = int(xs.max()) + 1, int(ys.max()) + 1
-        if fixed is None:
+        # ⚠ fixed 允許**逐項** None：地標給固定高度、其餘照舊從 hm 量。
+        #   原本是整體判斷 fixed is None，混用就會把一般街廓的高度設成 None。
+        fv = None if fixed is None else (fixed[n_i] if n_i < len(fixed) else None)
+        if fv is None:
             hv = float(np.percentile(hm[oy:oy + sub.shape[0], ox:ox + sub.shape[1]][sub], 80))
         else:
-            hv = float(fixed[n_i])
+            hv = float(fv)
         blocks.append({
             'poly': [(int(px) + ox, int(py) + oy) for [[px, py]] in ap],
             'bb': (int(bx0 + ox), int(by0 + oy), int(bx1 - bx0), int(by1 - by0)),
@@ -382,7 +393,8 @@ def _finish(parts, rgb, al, hm, fixed, note):
     return blocks, Image.fromarray(atlas, 'RGBA')
 
 
-def extract_blocks(rgb, al, built, hm, name, mode='dark', classes=None, nosplit=False):
+def extract_blocks(rgb, al, built, hm, name, mode='dark', classes=None, nosplit=False,
+                   lmarks=None, lm_mx=0, lm_my=0, lm_hw=1, lm_hh=1):
     """回傳 (blocks, atlas_image)。blocks 是 dict 列表，座標都在插畫像素空間。
 
     classes 有給就走「逐類別固定高度」（聖王廳）；否則依 mode 從圖上分街廓。
@@ -422,7 +434,43 @@ def extract_blocks(rgb, al, built, hm, name, mode='dark', classes=None, nosplit=
     T = float(np.percentile(hp[built], ROOF_Q))
     roof = cv2.morphologyEx((built & (hp <= T)).astype(np.uint8), cv2.MORPH_OPEN,
                             np.ones((3, 3), np.uint8))
-    return _finish(_components(roof), rgb, al, hm, None, '（門檻 %.1f）' % T)
+
+    # ── 地標：整塊合併，不進格子切分 ───────────────────────────────
+    # ⚠ 為什麼要特別處理：_components 對大於 BLK_SPLIT(900px) 的連通區用 30px
+    #   格子硬切，宮殿與教堂因此各被切成十幾片。就算把高度加上去，得到的也是
+    #   「十幾根高柱」而不是一棟建築 —— 實測帝都種子附近最近的塊只有 48~90px。
+    # ⚠ 種子座標是**遊戲內地圖座標**（使用者在 3D 畫面右鍵取的），不是圖上像素。
+    #   注意 pick3d 回報的是地形格：點在高建築屋頂上時射線會穿過去打到後方地面，
+    #   所以座標會系統性偏向遠方，半徑要給得寬鬆一點。
+    parts, fixed = [], []
+    if lmarks:
+        Hh2, Ww2 = roof.shape
+        yy2, xx2 = np.mgrid[0:Hh2, 0:Ww2]
+        for L in lmarks:
+            u = (L['x'] - lm_mx) * MAP_SCALE / lm_hw
+            v = (L['y'] - lm_my) * MAP_SCALE / lm_hh
+            px = (u * 0.5 + 0.5) * (Ww2 - 1)
+            py = (v * 0.5 + 0.5) * (Hh2 - 1)
+            rp = L.get('r', 3.0) * MAP_SCALE / lm_hw * 0.5 * (Ww2 - 1)
+            disc = ((xx2 - px) ** 2 + (yy2 - py) ** 2) <= rp * rp
+            sel = disc & (roof > 0)
+            if sel.sum() < BLK_MIN:
+                print('  ⚠ 地標「%s」在 (%.0f,%.0f) 找不到屋頂像素，跳過'
+                      % (L.get('n', '?'), L['x'], L['y']))
+                continue
+            ys2, xs2 = np.where(sel)
+            bx, by = int(xs2.min()), int(ys2.min())
+            parts.append((bx, by, sel[by:ys2.max() + 1, bx:xs2.max() + 1]))
+            fixed.append(L['h'])
+            roof[disc] = 0                     # 從一般分割裡挖掉，避免重複
+            print('  地標「%s」：%d px 合併成一塊，高度 %.2f（半徑 %.1f 地圖px）'
+                  % (L.get('n', '?'), sel.sum(), L['h'], L.get('r', 3.0)))
+
+    parts += _components(roof)
+    fixed += [None] * (len(parts) - len(fixed))
+    if all(f is None for f in fixed):
+        fixed = None
+    return _finish(parts, rgb, al, hm, fixed, '（門檻 %.1f）' % T)
 
 
 hmap = np.asarray(Image.open(HEIGHTMAP).convert('L')).astype(np.float32)
@@ -621,7 +669,11 @@ for J in JOBS:
         _cls = holysee_classes(rgb, al, built) if J.get('classes') == 'holysee' else None
     blocks, atlas = extract_blocks(rgb, al, built, hm, J['dst'],
                                    J.get('blockmode', 'dark'), _cls,
-                                   nosplit=_lbl is not None)
+                                   nosplit=_lbl is not None,
+                                   lmarks=J.get('landmarkMass'),
+                                   lm_mx=J['mx'], lm_my=J['my'],
+                                   lm_hw=J['planW'] * 0.5,
+                                   lm_hh=J['planW'] * 0.5 * H2 / W2)
     atlas.save(os.path.join(CITY, J['mdst']), quality=QUALITY, method=6)
     json.dump({
         'w': W2, 'h': H2,
