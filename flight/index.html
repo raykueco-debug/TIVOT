@@ -1093,17 +1093,27 @@ const SENSE_TIRED_N   = 3;      // 一分鐘內第幾次沒結果會喊累
 const SENSE_TIRED_WIN = 60000;  // 「一分鐘內」
 const SENSE_CD_MS     = 60000;  // 喊累之後的冷卻
 const ANNA_SAY_MS     = 3200;   // 提示停留多久
-/* 立繪的取景。三個旋鈕：
-     ANNA_CROP  取插畫上緣多少（越小＝越貼近臉）
-     ANNA_H     立繪高度佔**飛行畫面（3D 視窗）**的比例
-     ANNA_CX    她的身體中線落在畫面寬的哪個位置
-   ⚠ 「人物太小」不是把整張放大能解的：這是**全身圖**，頭只佔全圖上緣 0~16%
-     （量出來的：頭寬約 250px 一路到 y=16%，18% 之後肩膀才展開）。取上半 45%
-     的話頭只佔畫面的 29%，怎麼放大都是一個小頭配一大截裙子。
-     改成胸像（0.26＝頭＋肩＋上胸），同樣畫面高度下臉就大了一倍。 */
-const ANNA_CROP = 0.26;
-const ANNA_H    = 1/3;
-const ANNA_CX   = 0.86;
+/* ══ 對話立繪的取景表 ══
+   逐角色一組，**不要共用一組數字** —— 每張插畫的構圖不同（人在畫面裡多大、
+   頭在哪裡都不一樣），而且角色本來就有身高差，那個差就是靠 h 表現的。
+
+     src   檔案
+     crop  取插畫上緣多少（1＝整張）。決定「切在身體哪裡」。
+     h     **這個角色在畫面上的高度**，佔 3D 視窗的比例。
+           ⚠ 身高差就寫在這裡：矮的角色 h 給小一點，不要每個都填一樣，
+             否則所有人在畫面上都一樣高，身高差就消失了。
+     cx    身體中線落在畫面寬的哪個位置（0~1）。
+           ⚠ 錨的是**她的身體中線**不是圖框邊緣：這些插畫左右留白很多，
+             照圖框對齊會把人推出畫面。
+
+   ⚠ 取景要看**這張圖裡人有多大**，不能憑感覺。Anna_CI_front 是全身圖，
+     頭只佔全圖上緣 0~16%（量出來的：頭寬約 250px 一路到 y=16%，18% 之後
+     肩膀才展開）—— 所以早期版本取上半 45% 時，頭只佔畫面高度的 29%，
+     怎麼放大都是一個小頭配一大截裙子。 */
+const PORTRAIT = {
+  anna: { src:'../resources/partner/Anna_CI_front.webp',
+          crop:0.62, h:0.90, cx:0.72 },   // 切在大腿，撐滿 3D 視窗
+};
 let senseMiss=[];               // 最近幾次「沒找到」的時戳
 let senseCdUntil=0;
 let annaSay=null;               // {at,text}：at＝該出現的時戳
@@ -1111,7 +1121,7 @@ let annaImg=null;
 function annaArt(){
   if(annaImg) return;
   annaImg=new Image();
-  annaImg.src='../resources/partner/Anna_CI_front.webp';
+  annaImg.src=PORTRAIT.anna.src;
 }
 
 let senseOnAt=0;                // 立繪出現（＝心跳該起播）的時戳
@@ -1286,13 +1296,12 @@ function drawAnnaSay(now){
        drawPanel 之前），那正是想要的層次。
        ⚠ 「人物大一點」是靠**收緊裁切**（0.55 → ANNA_CROP）而不是把整體放大：
          同樣的畫面高度下，取得越少臉就越大。整體高度仍守著 1/3 的指定。 */
-    const sh=Math.round(annaImg.height*ANNA_CROP);
-    const ph=Math.round(VIEWH*ANNA_H);
+    const P=PORTRAIT.anna;
+    const sh=Math.round(annaImg.height*P.crop);
+    const ph=Math.round(VIEWH*P.h);
     const pw=Math.round(ph*annaImg.width/sh);
-    /* ⚠ 水平定位錨在**她的身體中線**（原圖是置中的），不是錨在圖框邊緣：
-       胸像裁切之後左右留白很多，照圖框對齊會把她推出畫面。 */
     ctx.drawImage(annaImg, 0,0,annaImg.width,sh,
-                  Math.round(W*ANNA_CX-pw/2), Math.round(VIEWH-ph), pw, ph);
+                  Math.round(W*P.cx-pw/2), Math.round(VIEWH-ph), pw, ph);
   }
   ctx.fillStyle='rgba(10,9,16,.84)';
   ctx.fillRect(bx,by,bw,bh);
