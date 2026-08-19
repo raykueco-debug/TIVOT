@@ -137,7 +137,10 @@
     background:radial-gradient(circle, rgba(150,215,245,0) 52%, rgba(150,215,245,.4) 66%,
       rgba(205,240,255,.8) 75%, rgba(150,215,245,.3) 84%, transparent 93%);
     transform:translate(-50%,-50%) scale(.06);opacity:.95;
-    animation:senseRing .72s cubic-bezier(.2,.7,.3,1) forwards;}
+    /* ⚠ 1.15s 不是 0.72s：光圈要與最後一聲心跳「同一瞬」發生，但擴散得太快的話
+       它會在那一聲的餘韻還在時就掃完，讀起來像是搶在心跳**之前**。放慢之後
+       起點對齊、過程蓋著那一拍的尾音，才是同一瞬的感覺。 */
+    animation:senseRing 1.15s cubic-bezier(.22,.62,.3,1) forwards;}
   @keyframes senseRing{70%{opacity:.6;}100%{transform:translate(-50%,-50%) scale(1);opacity:0;}}
 
   #bMsg small{display:block;color:var(--ink);opacity:.5;font-size:10px;
@@ -1058,28 +1061,45 @@ function senseBeatT(){
   if(!a || a.paused || !isFinite(a.currentTime) || a.readyState<2) return null;
   return a.currentTime;
 }
-/* 這一刻的脈動強度 0..1：起音瞬間跳到 1，再指數衰減。
-   ⚠ 衰減 0.26s：一個週期只脈動一次，不必怕跟下一拍黏在一起，
-     放長一點才是「輪廓緩緩鼓起再收」而不是閃一下。 */
-function senseBeatPulse(){
-  const t=senseBeatT(); if(t==null) return 0;
+/* 距離上一次心跳過了多久（秒）。沒在播、或還沒到第一拍就回 null。 */
+function senseBeatAge(){
+  const t=senseBeatT(); if(t==null) return null;
   for(let i=SENSE_BEATS.length-1;i>=0;i--){
     const dt=t-SENSE_BEATS[i];
-    if(dt>=0) return Math.exp(-dt/0.26);
+    if(dt>=0) return dt;
   }
-  return 0;
+  return null;
 }
 
-/* 輪廓脈動：疊一層糊過的自己。發動時那一下與每次心跳共用同一種作法，
-   差別只在強度 —— Ray 要的就是「跟最後那一下一樣的輪廓脈動」。
-   ⚠ ctx.filter 不是每個瀏覽器都有：沒有就跳過這一層，只少一個特效，
-     不會整段掛掉（同 decode() 那個教訓）。 */
-function senseHalo(G, alpha, blur){
-  if(alpha<=0.004 || ctx.filter===undefined) return;
-  ctx.globalAlpha=alpha;
-  ctx.filter='blur('+blur.toFixed(1)+'px)';
+/* 脈動＝**她自己的半透明殘影，以胸針為圓心放大並淡掉**（Ray 指定）。
+   ⚠ 一開始做成 blur 疊影，那是「輪廓發糊」不是「放大消失」，方向就錯了。
+   ⚠ 殘影畫在清楚那層**之前**：中間被本體蓋住，只有往外撐出來的那一圈看得到
+     —— 那才是「以胸針為中心擴散」的樣子。畫在之後會整個人糊掉。
+   ⚠ 錨點自動正確：senseGeom 是以胸針定位的，放大 S 之後左上角跟著重算，
+     胸針那一點不動。與光圈的圓心是同一個點。 */
+/* 這三個就是調整殘影手感的旋鈕：
+     MS   撐開到散盡要多久
+     GROW 撐到本體的幾倍（0.45＝最大 1.45 倍）
+     A    殘影相對本體有多實
+   ⚠ 第一版 GROW 只有 0.17，實測幾乎看不出來 —— 殘影還沒離開身體就淡掉了，
+     看起來只像「她突然變厚一點」。要讀得出「放大消失」，撐開幅度必須大到
+     殘影的輪廓確實脫離本體。 */
+const SENSE_GHOST_MS   = 700;
+const SENSE_GHOST_GROW = 0.45;
+const SENSE_GHOST_A    = 0.85;
+/* p=0..1 擴散進度；base＝本體這一刻的不透明度；amp＝強度（心跳 1、發動那一下更強）。
+   ⚠ amp 只能是「強度」，不能拿 base 去兼任 —— 第一版把兩者混用，
+     放大倍率被 0.26~0.72 的 alpha 乘掉，殘影只長 8% 根本看不出來。 */
+function senseGhost(k, p, base, amp){
+  if(p>=1) return;
+  /* ⚠ 撐開走 ease-out（前段快）：等速的話前三分之一還貼在本體上，
+     那一段只會讓她變厚，不會讀成「擴散」。 */
+  const e=1-(1-p)*(1-p);
+  const a=Math.min(1, base*amp*SENSE_GHOST_A*Math.pow(1-p,1.4));
+  if(a<=0.004) return;
+  const G=senseGeom(k, 1+SENSE_GHOST_GROW*amp*e);
+  ctx.globalAlpha=a;
   ctx.drawImage(senseImg,G.left,G.top,G.S,G.S);
-  ctx.filter='none';
 }
 
 function senseCancel(){
@@ -1136,7 +1156,7 @@ function senseRingCheck(now){
     d.style.setProperty('--sz',Math.ceil(far*2/0.75)+'px');
     d.style.left=cx+'px'; d.style.top=cy+'px';
     document.body.appendChild(d);
-    setTimeout(()=>d.remove(),820);
+    setTimeout(()=>d.remove(),1250);      // 與上面的 1.15s 動畫對齊
 
     starNew=senseStars();
     starNewAt=performance.now();          // 「剛找到」的高亮從這一刻起算
@@ -1160,19 +1180,17 @@ function drawSenseCI(now){
     k=clamp((held-SENSE_SUMMON_MS)/SENSE_HOLD_MS,0,1);
     fade=clamp((held-SENSE_SUMMON_MS)/260,0,1);          // 插入時的淡入
   }
-  const pulse=senseBeatPulse();
   const G=senseGeom(k);
   const al=(SENSE_ALPHA0+(SENSE_ALPHA1-SENSE_ALPHA0)*k)*fade;
   ctx.save();
   ctx.fillStyle='rgba(3,3,7,'+(0.55*fade).toFixed(3)+')';
   ctx.fillRect(0,0,W,VIEWH);
+  /* 殘影：發動那一下與每次心跳是同一種效果，差別只在強度。 */
   if(senseFireAt){
-    // 發動那一下：同一種輪廓脈動，強度拉滿
-    const t=clamp((now-senseFireAt)/SENSE_EDGE_MS,0,1), e=Math.sin(t*Math.PI);
-    senseHalo(G, al*(0.25+0.65*e), 4+11*e);
+    senseGhost(k, clamp((now-senseFireAt)/SENSE_EDGE_MS,0,1), al, 2.2);
   }else{
-    // 每一下心跳：同一種輪廓脈動，弱得多
-    senseHalo(G, al*0.5*pulse, 5+7*pulse);
+    const age=senseBeatAge();
+    if(age!=null) senseGhost(k, age/(SENSE_GHOST_MS/1000), al, 1);
   }
   ctx.globalAlpha=al;
   ctx.drawImage(senseImg,G.left,G.top,G.S,G.S);
