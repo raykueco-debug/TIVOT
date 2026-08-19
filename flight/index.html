@@ -124,6 +124,37 @@
   #bMsg{position:absolute;left:0;right:0;
     bottom:calc(env(safe-area-inset-bottom,0px) + 26px);
     text-align:center;font-size:14px;letter-spacing:4px;color:var(--gold);}
+  /* ══ 感應演出（長按船身）══
+     節奏：按住 1s 叫出立繪 → 續按 3s，立繪持續縮小、透明度緩降 →
+     滿 3s 邊緣脈動模糊 → 由胸針放出光圈蓋滿全景 → 立繪淡出。
+     ⚠ 縮放與透明度由 JS 逐幀跟著「按住多久」算，不用 CSS transition：
+       它要跟手指同步，中途放開就得立刻停在當下的值。 */
+  #senseOv{position:fixed;inset:0;z-index:60;pointer-events:none;
+    display:flex;align-items:center;justify-content:center;
+    background:rgba(3,3,7,0);opacity:0;}
+  /* ⚠ 底圖尺寸要吃**兩軸**：只寫 height:96% 的話，直向手機（390×844）上
+     這張正方形插畫會變成 810px 寬 vs 390px 視窗，放大到 1.55 倍只看得到
+     中間三成——等於只剩一條胸口。改成 max-width/max-height 都夾住，
+     基準是「整張剛好塞得下」，SENSE_SCALE0 再從那裡往外推。 */
+  #senseOv img{position:absolute;width:auto;height:auto;max-width:96%;max-height:96%;
+    left:50%;top:50%;transform-origin:50% 50%;}
+  #senseGlow{filter:blur(0px);opacity:0;}
+  /* 發動瞬間：邊緣脈動模糊（glow 那層自己抖，sharp 那層維持清楚） */
+  @keyframes senseEdge{
+    0%{filter:blur(4px);opacity:.25;}
+    45%{filter:blur(15px);opacity:.9;}
+    100%{filter:blur(9px);opacity:.5;}}
+  #senseOv.fire #senseGlow{animation:senseEdge .42s ease-out forwards;}
+  /* 光圈：與破防提示同一份配方（style.css 的 .energy-burst），只是要蓋滿全景，
+     所以尺寸由 JS 依「胸針到最遠螢幕角」算出來塞進 --sz。 */
+  .sense-ring{position:fixed;z-index:61;pointer-events:none;border-radius:50%;
+    width:var(--sz,190px);height:var(--sz,190px);
+    background:radial-gradient(circle, rgba(150,215,245,0) 52%, rgba(150,215,245,.4) 66%,
+      rgba(205,240,255,.8) 75%, rgba(150,215,245,.3) 84%, transparent 93%);
+    transform:translate(-50%,-50%) scale(.06);opacity:.95;
+    animation:senseRing .72s cubic-bezier(.2,.7,.3,1) forwards;}
+  @keyframes senseRing{70%{opacity:.6;}100%{transform:translate(-50%,-50%) scale(1);opacity:0;}}
+
   #bMsg small{display:block;color:var(--ink);opacity:.5;font-size:10px;
     letter-spacing:1px;margin-top:6px;}
 </style>
@@ -148,6 +179,13 @@
 <button id="muteBtn" aria-label="Mute">🔊</button>
 <button id="backBtn">← 返回</button>
 <button id="spawnBtn">生怪</button>
+<!-- 感應演出：長按船身叫出安娜。整層 pointer-events:none —— 手指還按在船上，
+     疊層不能把後續的 pointermove/up 吃掉（吃掉就取消不了、也放不了手）。
+     兩張同一張圖：glow 在後（模糊，發動時脈動），sharp 在前。 -->
+<div id="senseOv">
+  <img id="senseGlow" alt="" aria-hidden="true">
+  <img id="senseCI" alt="">
+</div>
 <button id="boostBtn">×1</button>
 <div id="mapView">
   <div id="mapWrap">
@@ -940,7 +978,17 @@ const PLACES=[
    ⚠ 視距是 180 地圖像素，遠大於感應半徑 —— 這是刻意的：遠遠先看到一塊
      地形不對勁，飛過去，再按。看得到 → 飛過去 → 按，三拍。 */
 const STAR_SENSE_R = 2000;      // 感應半徑（世界單位）＝100 地圖像素
-const STAR_HOLD_MS = 550;       // 長按門檻
+/* 感應的節奏（Ray 指定）：按住船身 1 秒叫出安娜，再續按 3 秒才成立。
+   刻意做長 —— 這是一段儀式，不是一個按鈕。中途放開就白費，所以船會先停下來
+   （按住不動＝油門 0，見 stage 的 pointermove）。 */
+const SENSE_SUMMON_MS = 1000;   // 按到這裡：畫面轉暗、立繪插入
+const SENSE_HOLD_MS   = 3000;   // 立繪出現之後還要再按這麼久
+const SENSE_TOTAL_MS  = SENSE_SUMMON_MS + SENSE_HOLD_MS;
+/* 胸針在插畫上的位置（比例）。光圈從這裡放出來 —— 量出來的不是目測：
+   取「藍明顯高於紅且夠亮」的像素、限定在領結那一帶，取重心。 */
+const SENSE_BROOCH = { x:0.4934, y:0.3864 };
+const SENSE_SCALE0 = 1.55, SENSE_SCALE1 = 0.92;   // 立繪由大縮到小
+const SENSE_ALPHA0 = 0.72, SENSE_ALPHA1 = 0.26;   // 透明度緩降
 const STAR_KEY     = 'tivot_stars_v1';
 const STAR_KIND    = {峰:'孤峰',崖:'斷崖',谷:'窪谷',岬:'海岬',水:'水濱',島:'孤島'};
 let STARS=[];                   // starpoints.json 的內容
@@ -950,11 +998,107 @@ function saveStars(){ try{ localStorage.setItem(STAR_KEY,JSON.stringify([...star
 fetch('starpoints.json').then(r=>r.ok?r.json():null)
   .then(J=>{ if(J&&J.points) STARS=J.points; }).catch(()=>{});
 
-let starPing=0;                 // 感應波紋的起始時戳（0＝沒有在放）
-let starMsg=null;               // {t,text}：畫面下緣的回報
+let senseT0=0;                  // 開始按住船身的時戳（0＝沒在按）
+let senseOn=false;              // 立繪是否已經叫出來
+let senseFiring=false;          // 發動演出進行中（此時放開手也不取消）
+let starNew=[];                 // 這一次感應到的點：飛行畫面要標出來
 
-function senseStars(now){
-  starPing=now;
+/* StartBT_SE：與出陣鈕同一顆神楽鈴。先建好元素，按下去才不會等載入。
+   ⚠ 走 HTMLAudioElement 不走 WebAudio —— 這一頁沒有 AudioContext，
+     而發動的那一刻手指本來就在螢幕上（使用者手勢），播得動。 */
+const senseSE = new Audio('../resources/General/StartBT_SE.mp3');
+senseSE.preload='auto';
+
+function senseEls(){
+  return { ov:document.getElementById('senseOv'),
+           ci:document.getElementById('senseCI'),
+           gl:document.getElementById('senseGlow') };
+}
+/* 立繪不進開場的擋畫面預載，但**開場結束後要在背景先抓好**。
+   ⚠ 召喚只有 1 秒，來不及現抓：原檔 PNG 2.5MB，手機網路上那 1 秒鐘只會看到
+     一片暗畫面沒有人。轉成 webp 之後 460KB（18%），再加上開場後就先暖起來，
+     長按的時候通常已經在快取裡。 */
+let senseArtSet=false;
+function senseArt(){
+  if(senseArtSet) return;
+  senseArtSet=true;
+  const {ci,gl}=senseEls();
+  const src='../resources/partner/Anna_CI_Search.webp';
+  if(ci) ci.src=src;
+  if(gl) gl.src=src;
+}
+
+function senseCancel(){
+  if(senseFiring) return;                 // 演出中放手不算取消
+  senseT0=0; senseOn=false;
+  const {ov}=senseEls();
+  if(ov){ ov.style.opacity='0'; ov.style.background='rgba(3,3,7,0)'; }
+}
+
+/* 每幀跟著「按了多久」推進。⚠ 不用 CSS transition：它要跟手指同步，
+   中途放開必須停在當下的值，transition 會自己跑完。 */
+function senseUpdate(now){
+  if(!senseT0 || senseFiring) return;
+  const held=now-senseT0;
+  const {ov,ci,gl}=senseEls();
+  if(!ov) return;
+  if(held<SENSE_SUMMON_MS){
+    if(senseOn) senseCancel();
+    return;
+  }
+  if(!senseOn){ senseOn=true; senseArt(); }
+  // 0..1：立繪出現之後的持續時間
+  const k=clamp((held-SENSE_SUMMON_MS)/SENSE_HOLD_MS,0,1);
+  const fadeIn=clamp((held-SENSE_SUMMON_MS)/260,0,1);      // 插入時的淡入
+  const sc=SENSE_SCALE0+(SENSE_SCALE1-SENSE_SCALE0)*k;     // 緩速縮小
+  const al=(SENSE_ALPHA0+(SENSE_ALPHA1-SENSE_ALPHA0)*k)*fadeIn;
+  ov.style.opacity='1';
+  ov.style.background='rgba(3,3,7,'+(0.55*fadeIn).toFixed(3)+')';
+  if(ci){ ci.style.transform='translate(-50%,-50%) scale('+sc.toFixed(4)+')';
+          ci.style.opacity=al.toFixed(3); }
+  if(gl){ gl.style.transform='translate(-50%,-50%) scale('+sc.toFixed(4)+')'; }
+  if(held>=SENSE_TOTAL_MS) senseFire();
+}
+
+/* 發動：邊緣脈動模糊 → 胸針放出光圈蓋滿全景 → 立繪淡出 → 判定。 */
+function senseFire(){
+  senseFiring=true; senseT0=0;
+  const {ov,ci}=senseEls();
+  if(ov) ov.classList.add('fire');
+  setTimeout(()=>{
+    // 光圈的圓心＝胸針在螢幕上的實際位置（立繪是等比縮放置中的，量得到）
+    let cx=innerWidth/2, cy=innerHeight/2;
+    if(ci){ const r=ci.getBoundingClientRect();
+            cx=r.left+r.width*SENSE_BROOCH.x; cy=r.top+r.height*SENSE_BROOCH.y; }
+    /* 蓋滿全景（含操作區）：取胸針到四個角的最遠距離。光圈的亮帶落在半徑的
+       66~93%，所以外緣要放到 far/0.93 才真的掃過角落。 */
+    const far=Math.max(Math.hypot(cx,cy), Math.hypot(innerWidth-cx,cy),
+                       Math.hypot(cx,innerHeight-cy),
+                       Math.hypot(innerWidth-cx,innerHeight-cy));
+    const d=document.createElement('div');
+    d.className='sense-ring';
+    d.style.setProperty('--sz',(far*2/0.93).toFixed(0)+'px');
+    d.style.left=cx+'px'; d.style.top=cy+'px';
+    document.body.appendChild(d);
+    setTimeout(()=>d.remove(),820);
+
+    starNew=senseStars();
+    starNewAt=performance.now();     // 「剛找到」的高亮從這一刻起算
+    if(starNew.length){
+      try{ senseSE.currentTime=0; const q=senseSE.play(); if(q) q.catch(()=>{}); }catch(_){}
+    }
+    // 角色淡出
+    if(ov){ ov.style.transition='opacity .5s ease, background .5s ease';
+            ov.style.opacity='0'; ov.style.background='rgba(3,3,7,0)'; }
+    setTimeout(()=>{
+      senseFiring=false; senseOn=false;
+      if(ov){ ov.classList.remove('fire'); ov.style.transition=''; }
+    },520);
+  },380);   // 讓邊緣脈動先跑一段再放光圈
+}
+
+/* 判定：回傳這一次新發現的點（回饋由 senseFire 的演出負責）。 */
+function senseStars(){
   const R2=STAR_SENSE_R*STAR_SENSE_R;
   const hit=[];
   for(const p of STARS){
@@ -962,12 +1106,8 @@ function senseStars(now){
     const dx=p.x*MAP_SCALE-cam.x, dy=p.y*MAP_SCALE-cam.y;
     if(dx*dx+dy*dy<R2){ starFound.add(p.id); hit.push(p); }
   }
-  if(hit.length){
-    saveStars();
-    starMsg={t:now, ok:1, text:'感應到　'+hit.map(p=>STAR_KIND[p.kind]||p.kind).join('、')};
-  }else{
-    starMsg={t:now, ok:0, text:'沒有感應'};
-  }
+  if(hit.length) saveStars();
+  return hit;
 }
 
 /* 五芒星。地圖上的標記與感應成功的提示共用。 */
@@ -1856,7 +1996,7 @@ const cam={x:1005*MAP_SCALE,y:760*MAP_SCALE,angle:0,alt:CRUISE_ALT,speed:0,bank:
      那些晃動全部變成舵量，船一路蛇行。死區之外才開始計舵，且從 0 起算
      （不是從死區邊界跳到某個值），越過門檻時才不會頓一下。 */
 let fwd=0, rgt=0, dragging=false, ox=0, oy=0, moved=0, dragId=null;
-let starHold=0;                             // 長按船身的計時器（0＝沒在計）
+
 let rudder=0;                               // 實際生效的舵量（含鍵盤）——只給面板顯示用
 const STEER_DEAD=14;                        // 橫向死區（像素）
 const TAP_SLOP=12;                          // 位移小於此值＝點擊而非拖曳
@@ -1870,27 +2010,27 @@ stage.addEventListener('pointerdown',e=>{
      觸控裝置預設就隱含捕獲，所以只有 PC 會遇到。 */
   try{ stage.setPointerCapture(e.pointerId); }catch(_){}
   ox=e.clientX; oy=e.clientY; fwd=0; rgt=0; moved=0;
-  /* 長按船身＝感應隱藏點位。
-     ⚠ 與操舵不衝突：操舵是靠**位移**算油門與舵量的，按住不動 fwd/rgt 就是 0。
-       一動就取消（下面的 pointermove），所以「想轉向卻誤觸感應」不會發生。 */
-  clearTimeout(starHold);
+  /* 長按船身＝感應隱藏點位（節奏見 SENSE_SUMMON_MS/SENSE_HOLD_MS）。
+     ⚠ 與操舵不衝突：操舵是靠**位移**算油門與舵量的，按住不動 fwd/rgt 就是 0
+       —— 船會自己慢下來，正好是「停下來感應」。一動就取消（見 pointermove）。 */
+  senseT0=0;
   if(shipHit){
     const d=Math.hypot(e.clientX-shipHit.x, e.clientY-shipHit.y);
-    if(d<=shipHit.r) starHold=setTimeout(()=>{ starHold=0; senseStars(performance.now()); }, STAR_HOLD_MS);
+    if(d<=shipHit.r) senseT0=performance.now();
   }
 });
 stage.addEventListener('pointermove',e=>{
   if(e.pointerId!==dragId) return;
   const dx=e.clientX-ox, dy=e.clientY-oy;
   moved=Math.max(moved,Math.hypot(dx,dy));
-  if(moved>TAP_SLOP && starHold){ clearTimeout(starHold); starHold=0; }   // 一動就不是長按
+  if(moved>TAP_SLOP && senseT0) senseCancel();      // 一動就不是長按
   fwd=clamp(dy/DRAG_FULL,-1,1);                   // 往下（往後）拉＝前進
   const mag=Math.max(0,Math.abs(dx)-STEER_DEAD);  // 扣掉死區後才算舵量
   rgt=clamp(-Math.sign(dx)*mag/(DRAG_FULL-STEER_DEAD),-1,1);   // 往左拉＝往右偏
 });
 const endDrag=e=>{
   if(e && e.pointerId!==dragId) return;
-  if(starHold){ clearTimeout(starHold); starHold=0; }
+  if(senseT0) senseCancel();
   // 幾乎沒動＝點擊：命中已展開的名牌就進入該地標
   if(dragging && moved<TAP_SLOP && e && e.clientX!=null){
     const px=e.clientX, py=e.clientY;
@@ -2518,6 +2658,7 @@ function update(dt,now){
   document.getElementById('dist').textContent=Math.round(clock.dist);
   const deg=((-cam.angle*180/Math.PI)+1080)%360;
   document.getElementById('compass').textContent=['北','東北','東','東南','南','西南','西','西北'][Math.round(deg/45)%8];
+  senseUpdate(now);           // 長按船身的感應演出
   prefetchCityArt();          // 城的全解析插畫：飛進 PREFETCH_R 就開始載
   updateEnemy(dt,now);
   updateFlock(dt,now);
@@ -2890,8 +3031,8 @@ function render(now){
   drawPlaces(scaleH,horizon,sinp,cosp);
   drawFlock(scaleH,horizon,sinp,cosp,now);
   drawEnemy3D(scaleH,horizon,sinp,cosp,now);
+  drawStarMarks(scaleH,horizon,sinp,cosp,now);
   drawShip(now);
-  drawStarSense(now);
   vignette(S);
   drawRegionBanner(now);
   ctx.restore();
@@ -2899,56 +3040,59 @@ function render(now){
   drawPanel(S);
 }
 
-/* 感應的回饋：從船身擴散一圈波紋 ＋ 畫面下緣一行字。
-   ⚠ 波紋畫在**螢幕空間**不是地面上。地面環要走地形投影、還要吃逐欄遮擋，
-     成本與複雜度都不划算，而這裡要傳達的只是「我按了、它有反應」。
-   ⚠ 找不到東西也一定要有回饋（「沒有感應」）。沒回饋的話玩家分不出
-     「這裡沒有」與「我按法不對」，就不會再按第二次。 */
-const STAR_PING_MS=900, STAR_MSG_MS=2600;
-function drawStarSense(now){
-  if(starPing){
-    /* ⚠ t 一定要夾住。感應是由 setTimeout 以 performance.now() 記時的，而這裡的
-       now 是 rAF 的畫格時戳 —— 畫格的時戳是「該幀開始的時間」，可能**早於**
-       稍後才觸發的那個 setTimeout。t 為負時 (1-t)³ 會炸成天文數字，
-       算出負半徑，ctx.arc 直接丟 IndexSizeError 把整幀打斷。 */
-    const t=clamp((now-starPing)/STAR_PING_MS,0,1);
-    if(now-starPing>=STAR_PING_MS) starPing=0;
-    else if(shipHit){
-      const e=1-Math.pow(1-t,3);                 // 出得快、收得慢
-      const r=shipHit.r*(0.55+e*3.2);
-      ctx.save();
-      ctx.strokeStyle='rgba(255,232,120,'+((1-t)*0.55).toFixed(3)+')';
-      ctx.lineWidth=2.5-t*1.6;
-      ctx.beginPath(); ctx.arc(shipHit.x,shipHit.y,r,0,Math.PI*2); ctx.stroke();
-      ctx.restore();
+/* 已發現的隱藏點：在飛行畫面上標出來（投影與 drawPlaces 同一套）。
+   ⚠ 只畫**已發現**的 —— 沒發現的連在 3D 裡都不該露出任何痕跡。
+   ⚠ 剛感應到的那幾個先亮一段（starNew），之後轉成常駐的淡標記：
+     不區分的話玩家分不出「我剛剛找到的是哪一個」。 */
+const STAR_MARK_NEW_MS=6000;
+let starNewAt=0;
+function drawStarMarks(scaleH,horizon,sinp,cosp,now){
+  if(!STARS.length || !starFound.size) return;
+  const sxk=W/BW, syk=VIEWH/BH;
+  const fresh=new Set(starNew.map(p=>p.id));
+  const hot=(now-starNewAt)<STAR_MARK_NEW_MS;
+  const list=[];
+  for(const sp of STARS){
+    if(!starFound.has(sp.id)) continue;
+    const dx=sp.x*MAP_SCALE-cam.x, dy=sp.y*MAP_SCALE-cam.y;
+    const z=dx*(-sinp)+dy*(-cosp);
+    if(z<10||z>ZFAR*0.92) continue;
+    const sv=(dx*cosp+dy*(-sinp))/z;
+    if(sv<-1.1||sv>1.1) continue;
+    list.push({sp,z,
+      bx:((sv+1)/2*BW)*sxk,
+      by:(((cam.alt-(sp.h||0))/z + z*curvAt(sv))*scaleH+horizon)*syk,
+      isNew:hot&&fresh.has(sp.id)});
+  }
+  list.sort((a,b)=>b.z-a.z);
+  ctx.save();
+  for(const o of list){
+    const fade=clamp((ZFAR*0.92-o.z)/240,0,1);
+    const bx=Math.round(o.bx), by=Math.round(clamp(o.by-26,16,VIEWH-30));
+    // 剛找到的那幾個會脈動；其餘常駐但壓低存在感
+    const pulse=o.isNew?(0.55+0.45*Math.sin(now*0.008)):0;
+    ctx.globalAlpha=fade*(o.isNew?1:0.5);
+    if(o.isNew){
+      ctx.shadowColor='rgba(255,232,120,'+(0.9*pulse).toFixed(2)+')';
+      ctx.shadowBlur=10+8*pulse;
+    }
+    starPath(ctx,bx,by,o.isNew?9:6.5);
+    ctx.fillStyle=o.isNew?'rgba(255,240,160,.98)':'rgba(255,232,120,.8)';
+    ctx.fill();
+    ctx.shadowBlur=0;
+    ctx.strokeStyle='rgba(24,18,8,.8)'; ctx.lineWidth=1.2; ctx.stroke();
+    if(o.isNew){
+      const nm=STAR_KIND[o.sp.kind]||o.sp.kind;
+      ctx.font='11px "Noto Serif TC",serif'; ctx.textAlign='center';
+      const tw=Math.round(ctx.measureText(nm).width);
+      ctx.fillStyle='rgba(5,6,12,.8)'; ctx.fillRect(bx-tw/2-8,by-30,tw+16,17);
+      ctx.strokeStyle='rgba(255,232,120,.75)'; ctx.lineWidth=1;
+      ctx.strokeRect(bx-tw/2-7.5,by-29.5,tw+15,16);
+      ctx.fillStyle='#ffe878'; ctx.fillText(nm,bx,by-18);
     }
   }
-  if(starMsg){
-    const t=clamp((now-starMsg.t)/STAR_MSG_MS,0,1);
-    if(now-starMsg.t>=STAR_MSG_MS){ starMsg=null; return; }
-    const a=clamp(Math.min(t*6,(1-t)*4),0,1);    // 淡入快、淡出慢
-    /* ⚠ 位置貼著船的**上方**，不是畫面下緣。下緣是橫條羅盤帶的地盤，
-       而羅盤畫在 drawPanel（比這裡晚），字會被整條蓋掉 —— 實測就是這樣。 */
-    const bx=W/2, by=(shipHit? shipHit.y-shipHit.r-18 : VIEWH*0.52);
-    ctx.save();
-    ctx.globalAlpha=a;
-    ctx.font='13px "Noto Serif TC",serif';
-    const tw=ctx.measureText(starMsg.text).width;
-    const pad=12, sw=starMsg.ok?20:0;            // 命中才在框內放一顆★
-    const bwid=tw+pad*2+sw, bx0=bx-bwid/2;
-    ctx.fillStyle='rgba(6,8,14,.78)';
-    ctx.fillRect(bx0, by-14, bwid, 22);
-    ctx.strokeStyle=starMsg.ok?'rgba(255,232,120,.5)':'rgba(201,162,39,.22)';
-    ctx.lineWidth=1; ctx.strokeRect(bx0+0.5, by-13.5, bwid-1, 21);
-    if(starMsg.ok){
-      starPath(ctx, bx0+pad+7, by-3, 6.5);
-      ctx.fillStyle='rgba(255,232,120,.95)'; ctx.fill();
-    }
-    ctx.textAlign='left';
-    ctx.fillStyle=starMsg.ok?'#ffe878':'rgba(217,198,138,.72)';
-    ctx.fillText(starMsg.text, bx0+pad+sw, by+1);
-    ctx.restore();
-  }
+  ctx.restore();
+  ctx.globalAlpha=1;
 }
 
 function drawSunMoon(S,horizon,sinp,cosp){
@@ -5519,6 +5663,8 @@ const bootUI=(()=>{
     initPuffs();
     bootUI.set(1);
     window.__loadMs=Math.round(performance.now()-t0);
+    // 感應立繪：開場跑完才在背景抓（不擋開場，但長按時要已經在手上）
+    setTimeout(senseArt, 1200);
     window.__map=MAPW+'×'+MAPH;
     // 進度圈跑到滿再收，不要瞬間閃掉
     setTimeout(()=>bootUI.done(),260);
