@@ -1,0 +1,79 @@
+{
+ "w": 1076,
+ "h": 600,
+ "mapW": 2152,
+ "mapH": 1200,
+ "regions": [
+  {
+   "id": 0,
+   "zh": "無主之地",
+   "en": ""
+  },
+  {
+   "id": 1,
+   "zh": "薩梅爾帝國",
+   "en": "Samael Empire",
+   "px": 382988
+  },
+  {
+   "id": 2,
+   "zh": "瓦爾士大公國",
+   "en": "Grand Duchy of Vals",
+   "px": 182716
+  },
+  {
+   "id": 3,
+   "zh": "阿斯佩里亞王國",
+   "en": "Kingdom of Asperia",
+   "px": 123076
+  },
+  {
+   "id": 4,
+   "zh": "東埃爾比斯公國",
+   "en": "Principality of East Elbis",
+   "px": 110027
+  },
+  {
+   "id": 5,
+   "zh": "埃爾比斯王國",
+   "en": "Kingdom of Elbis",
+   "px": 93193
+  },
+  {
+   "id": 6,
+   "zh": "達爾馬提亞王國",
+   "en": "Kingdom of Dalmaria",
+   "px": 88229
+  },
+  {
+   "id": 7,
+   "zh": "澤維利亞王國",
+   "en": "Kingdom of Zevelia",
+   "px": 82961
+  },
+  {
+   "id": 8,
+   "zh": "瓦爾德尼亞王國",
+   "en": "Kingdom of Valdenia",
+   "px": 72143
+  },
+  {
+   "id": 9,
+   "zh": "恩雅王國",
+   "en": "Kingdom of Enya",
+   "px": 48922
+  },
+  {
+   "id": 10,
+   "zh": "法爾登王國",
+   "en": "Kingdom of Falden",
+   "px": 48635
+  },
+  {
+   "id": 11,
+   "zh": "馬爾維恩王國",
+   "en": "Kingdom of Malvien",
+   "px": 37308
+  }
+ ]
+}

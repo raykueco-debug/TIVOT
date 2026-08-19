@@ -4,3 +4,5 @@ resources/_originals/
 flight/city/*_preview.png
 __pycache__/
 flight/city/*_grid.png
+flight/Reference/_*
+.DS_Store

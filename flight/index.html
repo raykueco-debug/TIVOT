@@ -1623,6 +1623,9 @@ async function loadWorld(){
     P.wx=P.x*MAP_SCALE; P.wy=P.y*MAP_SCALE;
   });
 
+  step(0.92,'讀取國界…');
+  await loadRegions();
+
   step(0.94,'預熱貼圖…');
   await primeArt();
 }
@@ -2703,6 +2706,7 @@ function render(now){
   drawEnemy3D(scaleH,horizon,sinp,cosp,now);
   drawShip(now);
   vignette(S);
+  drawRegionBanner(now);
   ctx.restore();
 
   drawPanel(S);
@@ -3280,6 +3284,95 @@ function drawWingsProc(EC,pts,K,flap,shade,segAng){
 /* 逐節投影 + 程序繪製。回傳畫過就 true（給提示字用）。 */
 /* 進入戰鬥的提示（戰鬥本身尚未實作）。鏈狀與剛體兩條繪製路徑都要用，
    所以抽成函式；文字不進低解析緩衝——那是 UI，跟著糊就成了糊掉的字。 */
+/* ══ 國界 ══════════════════════════════════════════════════════════
+   國界**不畫在畫面上**，只用來定位：飛越國境時左下角淡入淡出顯示當前所在國。
+
+   資料由 build_regions.py 從 Reference/region.png 抽出來（那張是疊在
+   silvermoon_sheet.png 上畫的，疊色是線性的所以解得出來；見該檔檔頭）。
+   索引圖是半解析度：1 像素 = 2 地圖像素 = 40 世界單位，對「我在哪一國」
+   這個用途綽綽有餘，而且整張只有幾 KB。 */
+let REGION=null, REGION_W=0, REGION_H=0, REGION_NAME=[];
+let regionCur=-1, regionShownAt=0;
+const REGION_IN=420, REGION_HOLD=2600, REGION_OUT=900;   // 淡入／停留／淡出（ms）
+
+function loadRegions(){
+  return fetch('region_map.json').then(r=>r.ok?r.json():null).then(J=>{
+    if(!J) return;
+    REGION_NAME=J.regions.map(r=>r.zh);
+    return new Promise(res=>{
+      const im=new Image();
+      im.onload=()=>{
+        const c=document.createElement('canvas');
+        c.width=J.w; c.height=J.h;
+        const g=c.getContext('2d',{willReadFrequently:true});
+        g.drawImage(im,0,0);
+        const d=g.getImageData(0,0,J.w,J.h).data;
+        REGION=new Uint8Array(J.w*J.h);
+        for(let i=0,j=0;i<REGION.length;i++,j+=4) REGION[i]=d[j];
+        REGION_W=J.w; REGION_H=J.h;
+        res();
+      };
+      im.onerror=()=>res();
+      setTimeout(res,4000);
+      im.src='region_map.png';
+    });
+  }).catch(()=>{});
+}
+
+function regionAt(mx,my){
+  if(!REGION) return 0;
+  const x=(mx*REGION_W/MAPW)|0, y=(my*REGION_H/MAPH)|0;
+  if(x<0||y<0||x>=REGION_W||y>=REGION_H) return 0;
+  return REGION[y*REGION_W+x];
+}
+
+/* 每幀檢查所在國；換了就重新計時。
+   ⚠ 0（無主之地／雲海）不觸發橫幅 —— 飛出海岸線再飛回來會一直閃。
+     但仍要更新 regionCur，否則出海再回同一國不會提示。 */
+function updateRegion(now){
+  if(!REGION) return;
+  const r=regionAt(cam.x/MAP_SCALE, cam.y/MAP_SCALE);
+  if(r!==regionCur){
+    const was=regionCur;
+    regionCur=r;
+    if(r!==0 && was!==-1) regionShownAt=now;      // 開場那次不提示
+  }
+}
+
+function drawRegionBanner(now){
+  if(!regionShownAt || !REGION_NAME[regionCur]) return;
+  const t=now-regionShownAt, total=REGION_IN+REGION_HOLD+REGION_OUT;
+  if(t>total){ regionShownAt=0; return; }
+  const a=t<REGION_IN ? t/REGION_IN
+        : t<REGION_IN+REGION_HOLD ? 1
+        : 1-(t-REGION_IN-REGION_HOLD)/REGION_OUT;
+  const name=REGION_NAME[regionCur];
+  ctx.save();
+  ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+  const x=Math.round(W*0.045), y=Math.round(VIEWH*0.93);
+  /* 淡入時從左邊滑進來一小段：純 alpha 淡入在低解析度畫面上讀起來像閃爍，
+     加一點位移才有「進入某地」的方向感。 */
+  const slide=(1-Math.min(1,t/REGION_IN))*14;
+  ctx.globalAlpha=a;
+  ctx.font='15px "Noto Serif TC",serif';
+  const wTxt=ctx.measureText(name).width;
+  /* 襯底用漸層而不是實色方塊：方塊在這個尺寸下像個 UI 元件，
+     漸層才像字浮在畫面上。 */
+  const g=ctx.createLinearGradient(x-14-slide,0,x+wTxt+40-slide,0);
+  g.addColorStop(0,'rgba(6,7,12,0)');
+  g.addColorStop(0.18,'rgba(6,7,12,.55)');
+  g.addColorStop(0.72,'rgba(6,7,12,.45)');
+  g.addColorStop(1,'rgba(6,7,12,0)');
+  ctx.fillStyle=g;
+  ctx.fillRect(x-14-slide,y-19,wTxt+54,28);
+  ctx.fillStyle='#c9a227';
+  ctx.fillRect(x-slide,y-13,2,14);
+  ctx.fillStyle='rgba(224,214,190,.95)';
+  ctx.fillText(name,x-slide+9,y);
+  ctx.restore();
+  ctx.globalAlpha=1;
+}
+
 function drawEngagePrompt(){
   ctx.save();
   ctx.textAlign='center';
@@ -5080,7 +5173,7 @@ function drawPanel(S){
 let last=performance.now(),acc=0,n=0;
 function loop(now){
   const dt=Math.min(40,now-last); last=now;
-  update(dt,now); render(now); updateBgm(dt); updateMapMe();
+  update(dt,now); updateRegion(now); render(now); updateBgm(dt); updateMapMe();
   acc+=dt;n++;
   /* HUD 加上**地圖座標與航向** —— 截圖時才知道人在哪。
      先前每次回報都得靠地形猜位置，猜錯就修錯地方。座標用地圖像素
