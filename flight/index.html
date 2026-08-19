@@ -1185,12 +1185,20 @@ function drawSenseCI(now){
   ctx.save();
   ctx.fillStyle='rgba(3,3,7,'+(0.55*fade).toFixed(3)+')';
   ctx.fillRect(0,0,W,VIEWH);
-  /* 殘影：發動那一下與每次心跳是同一種效果，差別只在強度。 */
-  if(senseFireAt){
-    senseGhost(k, clamp((now-senseFireAt)/SENSE_EDGE_MS,0,1), al, 2.2);
-  }else{
-    const age=senseBeatAge();
-    if(age!=null) senseGhost(k, age/(SENSE_GHOST_MS/1000), al, 1);
+  /* 殘影：發動那一下與每次心跳是同一種效果，差別只在強度。
+     ⚠ **一律由心跳驅動**，不能由 senseFireAt 驅動。發動比光圈早
+       SENSE_RING_MS（380ms）—— 早期版本一進發動就把殘影切成「發動版」，
+       於是最後一次脈動落在心跳 3.56s、光圈落在 3.94s，中間空了 0.38 秒，
+       看起來就是「光圈慢了半拍」。實際上是脈動早了。
+     現在強度只在**光圈放出的那一刻**（senseRingDone）才升上去，
+     兩者因此是同一瞬；而 3.48~3.94 之間沒有脈動，反而給了climax 一拍留白。 */
+  const age=senseBeatAge();
+  if(age!=null){
+    senseGhost(k, age/(SENSE_GHOST_MS/1000), al, senseRingDone?2.2:1);
+  }else if(senseFireAt){
+    // 音訊不可用時的退路：改用計時，並且同樣對齊「光圈放出」那一刻
+    const t=(now-senseFireAt-SENSE_RING_MS)/SENSE_EDGE_MS;
+    if(t>=0) senseGhost(k, clamp(t,0,1), al, 2.2);
   }
   ctx.globalAlpha=al;
   ctx.drawImage(senseImg,G.left,G.top,G.S,G.S);
