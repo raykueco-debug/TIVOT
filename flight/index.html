@@ -395,8 +395,23 @@ const SETTLEMENTS = [
 ];
 /* 手繪平面圖：背景載，載不到就退回程序生成的街廓（同飛空艇/怪的雙軌）。
    ⚠ 不進 loadWorld：它只影響少數幾座城的外觀，擋開場不划算。 */
-const cityPlanArt={};
+const cityPlanArt={};       // plan → 全解析插畫（只有 3D 那面盤子在用，飛近才載）
+const cityPlanLo={};        // plan → 192px 縮圖（開場就要：地形雕刻靠它）
 const cityHeight={};        // {w,h,d} —— 高度圖的灰階陣列
+
+/* 貼圖預熱：`onload` 只保證位元組到齊，瀏覽器通常把解碼延到第一次 drawImage，
+   而第一次繪製還要付 GPU 上傳。開場那批由 primeArt 統一做；飛行中才載進來的
+   城更需要 —— 不預熱的話那筆解碼會**正好落在城進入視野的那一幀**。
+   ⚠ 畫 8×8 不畫 1×1：1×1 在某些瀏覽器走特例路徑，不保證真的上傳整張。
+   ⚠ decode() 在部分舊瀏覽器沒有，要 fallback。 */
+let PRIME_G=null;
+async function warmImage(im){
+  if(!PRIME_G){ const c=document.createElement('canvas'); c.width=c.height=8;
+                PRIME_G=c.getContext('2d'); }
+  try{ if(im.decode) await im.decode(); }catch(_){}
+  try{ PRIME_G.drawImage(im,0,0,8,8); }catch(_){}
+  return im;
+}
 const cityMass={};          // plan → 街廓量體（多邊形＋atlas），見 loadMass
 const cityMassArt={};       // plan → atlas 圖
 
@@ -460,7 +475,8 @@ function loadMass(planKey){
     /* ⚠ 屋頂 atlas 也要進預載序列。原本是射後不理，於是「第一次飛近某座城」
        那一幀才解碼＋上傳 —— 手機上就是一次幾百毫秒的頓卡。 */
     cityArtReady.push(new Promise(res=>{
-      at.onload=()=>{ cityMassArt[planKey]=at; res(); };
+      // 預熱完才公開：這張現在可能是飛行中才載的，解碼不能落在進入視野那一幀
+      at.onload=()=>{ warmImage(at).then(()=>{ cityMassArt[planKey]=at; res(); }); };
       at.onerror=()=>res();
       setTimeout(res,6000);
     }));
@@ -469,38 +485,96 @@ function loadMass(planKey){
 }
 
 /* ⚠ 地形要依平面圖的水域去挖海／填地，所以整平 pass 必須等圖載完。
-   這幾張加起來不到 400KB，擋一下開場划算——不擋的話海岸線會與城對不上。 */
+   但等的是 **192px 縮圖**（四張合計 ~89KB），不是全解析插畫（~366KB）：
+   雕刻只把圖取樣到 SS=192，地圖畫面也用不到插畫，全解析度那張唯一的客戶是
+   3D 那面盤子 —— 它可以等飛近了再載（見 ensureCityArt）。
+   ⚠ 縮圖必須與插畫**同長寬比**：下面是拿 img.height/img.width 去算城的世界
+     高度的，壓成正方形會讓臨海城的水域遮罩整個位移。build_city.py 有保。 */
 const cityPlansReady=[];
-(function loadCityPlans(){
+(function loadCityPlansLo(){
+  const seen={};
   for(const S of SETTLEMENTS){
-    if(S.plan){
-      const im=new Image();
-      cityPlansReady.push(new Promise(res=>{
-        im.onload=()=>{ cityPlanArt[S.plan]=im; res(); };
-        im.onerror=()=>res();
-        setTimeout(res,4000);            // 保底：載不到也不能無限擋開場
-      }));
-      im.src=S.plan;
-      if(!(S.plan in cityMass)){ cityMass[S.plan]=null; loadMass(S.plan); }
-    }
-    if(S.planH){
-      /* 高度圖要能**逐點取值**，所以載進來就抽成陣列。
-         ⚠ 只抽一次：每幀 getImageData 會拖垮效能，而且它本來就不會變。 */
-      const hm=new Image();
-      hm.onload=()=>{
-        const cv2=document.createElement('canvas');
-        cv2.width=hm.width; cv2.height=hm.height;
-        const c2=cv2.getContext('2d');
-        c2.drawImage(hm,0,0);
-        const d=c2.getImageData(0,0,hm.width,hm.height).data;
-        const g=new Uint8Array(hm.width*hm.height);
-        for(let i=0,j=0;i<g.length;i++,j+=4) g[i]=d[j];
-        cityHeight[S.planH]={w:hm.width,h:hm.height,d:g};
+    if(!S.plan || seen[S.plan]) continue;    // 十一座市鎮共用同一張 stown_plan
+    seen[S.plan]=1;
+    const lo=S.plan.replace('_plan.webp','_plan_lo.webp');
+    const im=new Image();
+    cityPlansReady.push(new Promise(res=>{
+      im.onload=()=>{ cityPlanLo[S.plan]=im; res(); };
+      /* 縮圖不在（例如有人重出了插畫卻沒跑新版 build_city.py）就退回抓全圖：
+         寧可開場慢一點，也不能讓地形少雕一座城的水域——那會讓海岸線與插畫對不上，
+         而那是**看得見卻查不出來**的那種壞法。 */
+      im.onerror=()=>{
+        console.warn('[city] 缺 '+lo+'，退回全解析插畫');
+        const full=new Image();
+        full.onload=()=>{ cityPlanLo[S.plan]=full; res(); };
+        full.onerror=()=>res();
+        full.src=S.plan;
       };
-      hm.src=S.planH;
-    }
+      setTimeout(res,4000);                  // 保底：載不到也不能無限擋開場
+    }));
+    im.src=lo;
   }
 })();
+
+/* ══ 城的全解析資產：飛近才載 ══
+   開場全抓在四座城時只是浪費 536KB，但城數量一上去就是線性成長的開場延遲。
+   改成距離觸發：進到 PREFETCH_R 就開始載，載好之前 drawSettlements3D 會退回
+   程序生成的聚落（`planCity` 判定），所以中途不會破圖，最壞是遠處的城暫時
+   長成方塊。
+
+   半徑怎麼定：城要到 z<ZFAR*0.9 才畫得出來，所以可用時間是
+     (PREFETCH_R − ZFAR*0.9) / 船速
+   滿油門 360 世界單位/秒 → 9600 給 16.6 秒；×2 boost（720）仍有 8.3 秒。
+   ⚠ 別用 8000：正常速 12.1 秒夠，但 boost 下只剩 6.1 秒，慢一點的手機網路
+     就會看到城先長成方塊再變成插畫。
+   ⚠ 只載不放。四座城全載進來也才 536KB 常駐；等城數量真的上去、或地圖放大
+     之後再談釋放，現在做只是猜一個還不存在的問題。 */
+const PREFETCH_R=9600;
+const cityArtWanted={};      // plan 路徑 → 已經開始載（避免重複觸發）
+const cityHgtWanted={};      // planH 路徑 → 同上
+
+function loadCityHeight(planH){
+  if(!planH || cityHgtWanted[planH]) return;
+  cityHgtWanted[planH]=1;
+  /* 高度圖要能**逐點取值**，所以載進來就抽成陣列。
+     ⚠ 只抽一次：每幀 getImageData 會拖垮效能，而且它本來就不會變。 */
+  const hm=new Image();
+  hm.onload=()=>{
+    const cv2=document.createElement('canvas');
+    cv2.width=hm.width; cv2.height=hm.height;
+    const c2=cv2.getContext('2d');
+    c2.drawImage(hm,0,0);
+    const d=c2.getImageData(0,0,hm.width,hm.height).data;
+    const g=new Uint8Array(hm.width*hm.height);
+    for(let i=0,j=0;i<g.length;i++,j+=4) g[i]=d[j];
+    cityHeight[planH]={w:hm.width,h:hm.height,d:g};
+  };
+  hm.src=planH;
+}
+
+function ensureCityArt(s){
+  const key=s.plan;
+  if(!key || cityArtWanted[key]) return;
+  cityArtWanted[key]=1;
+  const im=new Image();
+  // 預熱完才寫進 cityPlanArt：在那之前 planCity 是 false，走程序生成的退路
+  im.onload=()=>{ warmImage(im).then(()=>{ cityPlanArt[key]=im; }); };
+  im.onerror=()=>{ console.warn('[city] 載不到 '+key+'，維持程序生成'); };
+  im.src=key;
+  if(!(key in cityMass)){ cityMass[key]=null; loadMass(key); }
+  loadCityHeight(s.planH);
+}
+
+/* 每幀掃一次：26 座聚落的平方距離，成本可以忽略（buildSettlements 有快取）。 */
+function prefetchCityArt(){
+  if(!window.Settlement || !MAPW) return;
+  const R2=PREFETCH_R*PREFETCH_R;
+  for(const s of buildSettlements()){
+    if(!s.plan || cityArtWanted[s.plan]) continue;
+    const dx=s.mx*MAP_SCALE-cam.x, dy=s.my*MAP_SCALE-cam.y;
+    if(dx*dx+dy*dy<R2) ensureCityArt(s);
+  }
+}
 
 /* ══ 碼頭 ══
    棧橋沿著城的濱水面往水裡伸。⚠ 畫進**城自己的低解析緩衝**（CFB）而不是主畫布：
@@ -1185,11 +1259,11 @@ async function loadWorld(){
        畫出來是裂谷不是水（實測就是這個症狀）。正解是壓到地基之下幾單位、
        標成河道（RIV）、並把地貌色換成水色 —— 那才是「城外的水域」。
      ⚠ 只在圖的覆蓋範圍內動，範圍外一格不碰。 */
-  await Promise.all(cityPlansReady);        // 手繪圖要先到位
+  await Promise.all(cityPlansReady);        // 手繪圖的**縮圖**要先到位（見 loadCityPlansLo）
   {
     const cvp=document.createElement('canvas'), cxp=cvp.getContext('2d');
     for(const S of SETTLEMENTS){
-      const img=S.plan?cityPlanArt[S.plan]:null;
+      const img=S.plan?cityPlanLo[S.plan]:null;   // 縮圖就夠：下面只取樣到 SS=192
       if(!img) continue;
       const SS=192;                         // 取樣解析度：地圖上才 52px 寬，夠了
       cvp.width=SS; cvp.height=SS;
@@ -1644,16 +1718,13 @@ async function primeArt(){
   await Promise.all(cityArtReady);
   const imgs=[];
   const take=o=>{ for(const k in o){ const v=o[k]; if(v&&v.width) imgs.push(v); } };
-  take(cityPlanArt); take(cityMassArt); take(dockArt); take(helmArt);
+  /* ⚠ cityPlanArt 這時通常是**空的** —— 全解析插畫改成飛近才載（ensureCityArt），
+     它自己會在公開前預熱。這裡只處理開場就在手上的：縮圖、已到位的量體 atlas、
+     棧橋、舵輪。 */
+  take(cityPlanLo); take(cityPlanArt); take(cityMassArt); take(dockArt); take(helmArt);
   if(!imgs.length) return;
-  const c=document.createElement('canvas'); c.width=c.height=8;
-  const g=c.getContext('2d');
   let n=0;
-  for(const im of imgs){
-    try{ if(im.decode) await im.decode(); }catch(_){}
-    try{ g.drawImage(im,0,0,8,8); }catch(_){}
-    n++;
-  }
+  for(const im of imgs){ await warmImage(im); n++; }
   window.__primed=n;
 }
 
@@ -2367,6 +2438,7 @@ function update(dt,now){
   document.getElementById('dist').textContent=Math.round(clock.dist);
   const deg=((-cam.angle*180/Math.PI)+1080)%360;
   document.getElementById('compass').textContent=['北','東北','東','東南','南','西南','西','西北'][Math.round(deg/45)%8];
+  prefetchCityArt();          // 城的全解析插畫：飛進 PREFETCH_R 就開始載
   updateEnemy(dt,now);
   updateFlock(dt,now);
 

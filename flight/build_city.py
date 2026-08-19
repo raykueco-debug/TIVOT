@@ -618,6 +618,19 @@ for J in JOBS:
     out = Image.fromarray(np.concatenate([rgb, al], axis=2).astype(np.uint8), 'RGBA')
     out.save(os.path.join(CITY, J['dst']), quality=QUALITY, method=6)
 
+    # ── 低解析縮圖 *_plan_lo.webp ─────────────────────────────────────
+    # index.html 的地形雕刻（挖城外水域）只把這張圖取樣到 192×192 —— 全解析度
+    # 那張**唯一的客戶是 3D 那面盤子**。分出縮圖之後開場只抓縮圖，全圖延後到
+    # 玩家飛進 PREFETCH_R 才載（見 index.html 的 ensureCityArt）。
+    # ⚠ 一定要保長寬比：index.html 是拿 img.height/img.width 去算城的世界高度，
+    #   壓成正方形會讓臨海城的水域遮罩整個位移。
+    LO_W = 192
+    lo = out.resize((LO_W, max(1, int(round(LO_W * out.height / out.width)))),
+                    Image.LANCZOS)
+    lodst = J['dst'].replace('_plan.webp', '_plan_lo.webp')
+    lo.save(os.path.join(CITY, lodst), quality=QUALITY, method=6)
+    print('  縮圖 %s  %dx%d' % (lodst, lo.width, lo.height))
+
     # ── 高度圖 ────────────────────────────────────────────────────────
     # 依顏色粗分三類：水（藍）／植被（綠）／其餘＝建成區。
     # ⚠ 用色相分類而不是亮度：這張圖的街道是淺色、屋頂是深色，照亮度分會把
