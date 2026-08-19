@@ -50,10 +50,15 @@ SEA_GREY = CLOUD_H / PEAK_SCALE * 255.0      # 21.6
 # ⚠ 長度 130 不是隨便取的：沿 121° 走到 +100px 就進雲海了（實測 17 個取樣點
 #   有 3~4 個在海平面以下）。綠塊畫 124px 是有道理的，延伸太長會憑空造出新陸地
 #   —— 第一版用 300 造出 11877px 的新海岸線，城的定位與國界索引全部要重跑。
+# ⚠ 半寬與脊頂高度是一起調的：實測第一版 half=24／peak=200 的高度梯度是
+#   9.0 灰階/px，而周圍原生地形只有 1.1 —— 陡 8 倍。那種坡度會觸發引擎的
+#   立面繪製路徑，讀起來就是階梯狀的鋸齒。放寬到 34、降到 165 之後約 4 倍，
+#   還是比原生陡（山脊本來就該陡），但不再觸發階梯。
+#   再寬就會跟另一道脊疊在一起把谷填掉（兩脊間距只有 80px）。
 RIDGES = [
     # (中心x, 中心y, 主軸角度°, 長度px, 半寬px, 脊頂灰階, 起伏幅度)
-    (963, 777, 121.0, 130, 24, 200, 32),
-    (1041, 794, 121.0, 130, 24, 212, 32),
+    (963, 777, 121.0, 130, 34, 165, 28),
+    (1041, 794, 121.0, 130, 34, 176, 28),
 ]
 # ⚠ maxCut 是這裡的關鍵。第一版把谷底壓到定值 52，結果最深切了 187 灰階 ——
 #   谷心 ±40px 有 20% 的像素高於 150，那是真的山，被整片削平。
@@ -116,6 +121,9 @@ def apply_ridges(h, land0):
     #   邊緣羽化一下，免得山脊在海岸線上被切成斷面。
     lm = cv2.GaussianBlur(land0.astype(np.float32), (0, 0), 6.0)
     add *= np.clip((lm - 0.35) / 0.5, 0, 1)
+    # ⚠ 加一道小模糊：脊是解析式生成的，逐像素會有量化階。原生地形的梯度
+    #   中位只有 1.1 灰階/px，人造的規則形狀在這個尺度上特別顯眼。
+    add = cv2.GaussianBlur(add, (0, 0), 2.2)
     # ⚠ 只抬不降：既有的山比脊高的地方保持原樣（同河面整平那條規則）
     out = np.maximum(h, add)
     n = int((out > h + 0.5).sum())
@@ -150,10 +158,78 @@ def carve_valley(h):
     return out.astype(np.float32)
 
 
+def r1_masks():
+    """從 Reference/R1water.png 差分抽出湖與河的遮罩。
+
+    那張是疊在 silvermoon_sheet.png 上畫的（同 build_regions.py 的道理）。
+    ⚠ 湖與河同色而且相連，要用**侵蝕**分開：河寬約 10~14px，湖直徑約 96px，
+      侵蝕 25 之後只有湖活得下來。
+    """
+    a = np.asarray(Image.open(os.path.join(HERE, 'Reference/R1water.png'))
+                   .convert('RGB')).astype(np.float32)
+    b = np.asarray(Image.open(os.path.join(HERE, 'silvermoon_sheet.png'))
+                   .convert('RGB')).astype(np.float32)
+    if a.shape != b.shape:
+        raise SystemExit('R1water.png 與 silvermoon_sheet.png 尺寸不同')
+    m = np.abs(a - b).max(axis=2) > 25
+    hsv = cv2.cvtColor(a.astype(np.uint8), cv2.COLOR_RGB2HSV)
+    Hh, S, V = hsv[:, :, 0].astype(int), hsv[:, :, 1].astype(int), hsv[:, :, 2].astype(int)
+    blue = ((Hh > 95) & (Hh < 115) & (S > 120) & (V > 170) & m).astype(np.uint8)
+    blue = cv2.morphologyEx(blue, cv2.MORPH_CLOSE, np.ones((5, 5), np.uint8))
+    lake = cv2.erode(blue, np.ones((25, 25), np.uint8))
+    lake = cv2.dilate(lake, np.ones((25, 25), np.uint8)) & blue
+    return blue, lake, (blue & ~lake)
+
+
+# 河道：core＝河面寬度（地圖像素）。⚠ 畫上去的線寬 10~14px 是**標註**不是河寬，
+# 照著挖會得到 200~280 世界單位寬的河。取 4 讓它與大陸原有的河同一個量級。
+RIVER = dict(core=4.0, bank=9.0, depth=26.0, colour=(88, 116, 132))
+
+
+def apply_rivers(h, t, land0):
+    """沿 R1water 的河線挖河道，並把地表色換成河色。
+
+    ⚠ 兩件事都要做。河道遮罩是 index.html 從**地表色**反推的
+      （b>r+16 && b>g+4 && 70<b<200），只挖不上色的話那條溝不會被認成河，
+      loadWorld 的「河面整平」就不會作用，飛過去看到的是一條乾谷。
+    ⚠ 深度是相對**當地岸高**，不是絕對值。壓到固定高度會挖出峽谷 ——
+      這條規則在 HANDOFF 的 D 節（河面整平）已經付過學費。
+    """
+    _, _, riv = r1_masks()
+    riv = (riv > 0) & land0
+    if not riv.any():
+        return h, t
+    # 距離場：河心最深，往岸邊收斂
+    d = cv2.distanceTransform((riv).astype(np.uint8), cv2.DIST_L2, 5)
+    prof = np.clip(d / RIVER['core'], 0, 1)
+    prof = np.sin(prof * math.pi / 2) ** 0.7          # 河心平、岸邊陡
+    # 當地岸高：把地形用大核取中值，河道自己的值不會汙染岸高
+    bank = cv2.medianBlur(h.astype(np.uint8), 31).astype(np.float32)
+    target = bank - RIVER['depth']
+    out = np.where(riv, h * (1 - prof) + np.minimum(h, target) * prof, h)
+    # ⚠ 不准挖穿到雲海：那會打出直通雲海的洞（＝裂谷不是水，HANDOFF 記過）
+    out = np.where(riv, np.maximum(out, SEA_GREY + 5), out)
+
+    # 上色：核心整片河色，往外羽化，才不會是一條硬邊的藍帶
+    wcol = np.clip(d / (RIVER['core'] * 0.75), 0, 1) * 0.94
+    for c in range(3):
+        t[:, :, c] = t[:, :, c] * (1 - wcol) + RIVER['colour'][c] * wcol
+    cut = (h - out)
+    print('  河道：%d px（全圖 %.2f%%），最深 -%.0f 灰階，上色權重>0.5 的 %d px'
+          % (int(riv.sum()), 100.0 * riv.mean(), cut.max(), int((wcol > 0.5).sum())))
+    return out.astype(np.float32), t
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--only', default='')
     a = ap.parse_args()
+    # ⚠ rivers 預設關閉。R1water 畫的河線是**設計意圖**，不是沿現有的谷走 ——
+    #   實測 7 條河段每一條都有往上爬的區段（8 個分箱裡 2~4 段上升 >3 灰階，
+    #   最極端的河段 2 從 26 爬到 245）。挖固定深度會在穿過高地處切出 -176 灰階
+    #   的峽谷。正解是「照著河把地形刻出來」：沿流路強制單調下降
+    #   elev[i]=min(elev[i-1]-坡降, 地形[i])，再把地形削到那條剖面。
+    #   那支演算法還沒寫，先關著，免得地形停在壞狀態。
     steps = set(a.only.split(',')) if a.only else {'ridges'}
 
     h = np.asarray(Image.open(BASE_H).convert('L')).astype(np.float32)
@@ -165,6 +241,8 @@ def main():
     if 'ridges' in steps:
         h = apply_ridges(h, land0)
         h = carve_valley(h)
+    if 'rivers' in steps:
+        h, t = apply_rivers(h, t, land0)
 
     land1 = h > SEA_GREY
     moved = int((land1 != land0).sum())
@@ -176,16 +254,26 @@ def main():
     if 'ridges' in steps:
         rise = np.asarray(Image.open(BASE_H).convert('L')).astype(np.float32)
         d = h - rise
-        m = d > 6
-        if m.any():
-            # 依最終高度分：高處雪、中段裸岩
-            snow = m & (h > 190)
-            rock = m & ~snow
-            for msk, col, k in ((rock, (126, 120, 110), 0.72), (snow, (226, 228, 232), 0.80)):
-                if msk.any():
-                    for c in range(3):
-                        t[:, :, c][msk] = t[:, :, c][msk] * (1 - k) + col[c] * k
-            print('  地表色：裸岩 %d px、雪 %d px' % (int(rock.sum()), int(snow.sum())))
+        if (d > 3).any():
+            # ⚠ 權重要**連續**，不能用二值遮罩。第一版用 d>6 硬切，邊界處 d 中位
+            #   只有 6.5 顏色卻直接混到 0.72，那條硬邊正是鋸齒的來源之一。
+            wr = np.clip((d - 3) / 22.0, 0, 1)
+            # ⚠ 雪線也不能硬切。第一版切在 h>190，而抬升區的高度分佈 p90 是 187
+            #   —— 那條線正好穿過分佈最密的地方，鋸齒最大化。改成有過渡帶。
+            # ⚠ 雪線隨緯度變。帝都(y=600)大約是現實中羅馬的緯度(41.9°N)，
+            #   往南（y 增大）雪線升高，南部的山就不該有雪。
+            #   每往南 100px 抬高 34 灰階，到大陸南緣(y≈1000)雪線已在 285，
+            #   超過灰階上限 255 —— 等於南部山永遠沒有雪，正是要的結果。
+            yy2 = np.arange(h.shape[0], dtype=np.float32)[:, None]
+            snowline = 148.0 + np.maximum(0.0, yy2 - 600.0) * 0.34
+            ws = np.clip((h - snowline) / 38.0, 0, 1)
+            for col, w in (((126, 120, 110), wr * (1 - ws) * 0.72),
+                           ((226, 228, 232), wr * ws * 0.82)):
+                for c in range(3):
+                    t[:, :, c] = t[:, :, c] * (1 - w) + col[c] * w
+            print('  地表色：換色權重 >0.5 的 %d px（岩 %d、雪 %d）'
+                  % (int((wr > 0.5).sum()),
+                     int(((wr * (1 - ws)) > 0.5).sum()), int(((wr * ws) > 0.5).sum())))
 
     Image.fromarray(np.clip(h, 0, 255).astype(np.uint8)).save(OUT_H)
     Image.fromarray(np.clip(t, 0, 255).astype(np.uint8)).save(OUT_T)
