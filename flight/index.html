@@ -131,14 +131,16 @@
        它要跟手指同步，中途放開就得立刻停在當下的值。 */
   #senseOv{position:fixed;inset:0;z-index:60;pointer-events:none;
     background:rgba(3,3,7,0);opacity:0;}
-  /* ⚠ 底圖尺寸要吃**兩軸**：只寫 height 的話，直向手機（375×812）上這張正方形
-     插畫會比視窗寬得多，放大之後只看得到中間三成——等於只剩一條胸口。
-     ⚠ 底邊釘在 --sense-bottom（＝舵輪上緣），縮放原點取 50% 100%：
-     縮放只會往上長，**任何一刻都不會壓到面板或舵**，縮到最小時剛好貼齊那條線。
-     ⚠ max-height 也吃同一條線，不然放大時整張會從面板底下冒出來。 */
-  #senseOv img{position:absolute;width:auto;height:auto;
-    max-width:96%;max-height:var(--sense-maxh,60%);
-    left:50%;bottom:var(--sense-bottom,0px);transform-origin:50% 100%;}
+  /* 立繪**整層壓在控制面板之下**：裁到舵輪上緣為止，超出的部分直接切掉 ——
+     看起來就是她站在操作台後面。有了這道裁切，中途尺寸比落地線大也無所謂
+     （被面板擋住），只有最後那一刻的下緣要剛好落在線上。 */
+  #senseClip{position:absolute;left:0;top:0;right:0;
+    height:var(--sense-floor,60%);overflow:hidden;}
+  /* 位置與大小全部由 JS 逐幀算（見 senseUpdate 的 senseGeom）：起點與終點的
+     錨點不同（起點對齊手、終點對齊面板線），單靠 CSS 的 transform-origin 做不到。
+     這裡只固定一個基準尺寸，變換走 translate+scale（合成層，不觸發 layout）。 */
+  #senseOv img{position:absolute;left:0;top:0;width:600px;height:auto;
+    transform-origin:0 0;}
   #senseGlow{filter:blur(0px);opacity:0;}
   /* 發動瞬間：邊緣脈動模糊（glow 那層自己抖，sharp 那層維持清楚） */
   @keyframes senseEdge{
@@ -184,8 +186,10 @@
      疊層不能把後續的 pointermove/up 吃掉（吃掉就取消不了、也放不了手）。
      兩張同一張圖：glow 在後（模糊，發動時脈動），sharp 在前。 -->
 <div id="senseOv">
-  <img id="senseGlow" alt="" aria-hidden="true">
-  <img id="senseCI" alt="">
+  <div id="senseClip">
+    <img id="senseGlow" alt="" aria-hidden="true">
+    <img id="senseCI" alt="">
+  </div>
 </div>
 <button id="boostBtn">×1</button>
 <div id="mapView">
@@ -991,8 +995,30 @@ const SENSE_TOTAL_MS  = SENSE_SUMMON_MS + SENSE_HOLD_MS;
 /* 胸針在插畫上的位置（比例）。光圈從這裡放出來 —— 量出來的不是目測：
    取「藍明顯高於紅且夠亮」的像素、限定在領結那一帶，取重心。 */
 const SENSE_BROOCH = { x:0.4934, y:0.3864 };
-const SENSE_SCALE0 = 1.55, SENSE_SCALE1 = 0.92;   // 立繪由大縮到小
+/* 手的中心（比例）。起點要「放大到整個畫面、以手為中心」，所以錨的是這一點。
+   量法同胸針：手套是深棕、低飽和偏暗，限定在胸口那一帶取重心。 */
+const SENSE_HAND = { x:0.5029, y:0.5756 };
+const SENSE_ART_BASE = 600;                       // CSS 裡固定的基準尺寸
 const SENSE_ALPHA0 = 0.72, SENSE_ALPHA1 = 0.26;   // 透明度緩降
+
+/* 起點／終點的幾何。插畫是正方形，而且**四邊都有內容**（下緣 100% 不透明＝
+   裙襬直接切齊圖框，左右上緣也各有 5~15% 的髮絲），所以只要圖比視窗小，
+   邊界就會在畫面裡露出一條斷口。
+     起點：放大到蓋滿整個畫面，手的中心對齊畫面中心 → 四邊都在畫面外。
+     終點：**下緣切齊面板線**，而左右與上緣**仍在畫面外** —— 這是唯一
+           能同時滿足「底切齊」與「不露斷口」的解。
+   ⚠ 所以終點尺寸不是「整張塞得下」，而是 max(視窗寬, 落地線)。塞得下反而
+     會把髮尾的切口露出來。 */
+function senseGeom(){
+  const hx=SENSE_HAND.x, hy=SENSE_HAND.y;
+  const floorY=Math.max(40, VIEWH-HELM_OUT);      // 舵輪上緣＝立繪的落地線
+  // 起點：四個方向都要蓋過去，取最嚴格的那個；再放 3% 餘裕
+  const S0=Math.max(W/(2*hx), W/(2*(1-hx)), H/(2*hy), H/(2*(1-hy)))*1.03;
+  const S1=Math.max(W, floorY)*1.06;
+  return { floorY, S0, S1,
+           bottom0: H/2+(1-hy)*S0,                // 手對齊畫面中心時，下緣落在哪
+           cx0:     W/2-(hx-0.5)*S0 };            // 同上，圖的水平中心
+}
 const STAR_KEY     = 'tivot_stars_v1';
 const STAR_KIND    = {峰:'孤峰',崖:'斷崖',谷:'窪谷',岬:'海岬',水:'水濱',島:'孤島'};
 let STARS=[];                   // starpoints.json 的內容
@@ -1054,11 +1080,18 @@ function senseUpdate(now){
   // 0..1：立繪出現之後的持續時間
   const k=clamp((held-SENSE_SUMMON_MS)/SENSE_HOLD_MS,0,1);
   const fadeIn=clamp((held-SENSE_SUMMON_MS)/260,0,1);      // 插入時的淡入
-  const sc=SENSE_SCALE0+(SENSE_SCALE1-SENSE_SCALE0)*k;     // 緩速縮小
   const al=(SENSE_ALPHA0+(SENSE_ALPHA1-SENSE_ALPHA0)*k)*fadeIn;
+  const G=senseGeom();
+  const S=G.S0+(G.S1-G.S0)*k;                              // 緩速縮小
+  /* ⚠ 下緣是**內插**過去的，不是一開始就釘住：起點錨在手、終點錨在面板線。
+     bottom0 恰好落在畫面底（起點的尺寸就是被這一項決定的），所以整段
+     單調往上收到 floorY —— 任何一刻都不會高於面板線，也就不會露出下緣。 */
+  const bottom=G.bottom0+(G.floorY-G.bottom0)*k;
+  const cx=G.cx0+(W/2-G.cx0)*k;
+  const q=(S/SENSE_ART_BASE);
+  const tf='translate('+(cx-S/2).toFixed(1)+'px,'+(bottom-S).toFixed(1)+'px) scale('+q.toFixed(4)+')';
   ov.style.opacity='1';
   ov.style.background='rgba(3,3,7,'+(0.55*fadeIn).toFixed(3)+')';
-  const tf='translateX(-50%) scale('+sc.toFixed(4)+')';
   if(ci){ ci.style.transform=tf; ci.style.opacity=al.toFixed(3); }
   if(gl){ gl.style.transform=tf; }
   if(held>=SENSE_TOTAL_MS) senseFire();
@@ -1979,14 +2012,9 @@ function resize(){
     const s=(i+0.5)/BW*2-1;           // 欄位在視錐內的橫向比例 −1..1
     curvK[i]=(1+s*s)/(2*PLANET_R);    // 邊緣 s=±1 時是中央的兩倍 → 地平線兩側下彎
   }
-  /* 感應立繪的可用區域：**不得蓋到控制面板，也不得蓋到舵**。舵輪上緣會突出
-     3D 視窗 HELM_OUT 像素，所以落地線是 VIEWH−HELM_OUT，不是 VIEWH。
-     立繪的底邊全程釘在這條線上（見 #senseOv img 的 transform-origin），
-     縮放只往上長 —— 這樣任何一刻都不會壓到面板，而縮到最小時剛好貼齊。 */
-  { const floor=Math.max(40, VIEWH-HELM_OUT);
-    const st=document.documentElement.style;
-    st.setProperty('--sense-bottom', (H-floor)+'px');
-    st.setProperty('--sense-maxh',   floor+'px'); }
+  // 立繪裁切線＝舵輪上緣（舵輪會突出 3D 視窗 HELM_OUT 像素）
+  document.documentElement.style.setProperty(
+    '--sense-floor', Math.max(40, VIEWH-HELM_OUT)+'px');
   prevH=new Float32Array(BW);
   topFrac=new Float32Array(BW);
   ZTOP=new Int32Array(ZSLICES*BW);
