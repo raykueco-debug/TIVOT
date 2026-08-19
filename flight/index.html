@@ -2714,9 +2714,17 @@ addEventListener('resize',()=>{ if(mapOpen) drawMap(); });
    ▍自動播放
    從首頁點「試飛」是換頁，手勢不會延續 → 先試播，被擋就掛一次性的
    pointerdown/keydown 補播；玩家一碰畫面就會響。 */
-/* 三個音量旋鈕。BGM_VOL 與 config.js 的 bgmVol 同源（0.55 × 0.70 × 0.70）。
-   ⚠ AMB_VOL 壓在音樂之下一點：環境音要在，但不該蓋掉曲子。 */
-const BGM_VOL=0.2695, AMB_VOL=0.22, MIX_RATE=0.014;  // MIX_RATE：動／停交叉約 3.5 秒
+/* 音量：與 config.js 同一套響度分級（語音 −18／音效 −22／音樂 −28 LUFS，
+   量法是 BS.1770 K 加權的閘控積分響度）。這一頁不吃 masterVolume，所以下面就是最終值。
+   ⚠ 兩支環境音的母帶差 12.4 dB（航行 −30.7、停船 −18.3 LUFS），不能共用一個
+     旋鈕 —— 舊版共用，結果停船比航行還大聲，方向是反的。
+   ⚠ 航行環境音的母帶太小聲：HTMLAudio.volume 上限是 1，就算開滿也只有
+     −30.7 LUFS。要把整層墊上來得**重出母帶 +5 dB**；在那之前只能讓停船
+     跟著降下來對齊（航行比停船大 3 dB）。 */
+const BGM_VOL=0.822;          // 音樂 → −28 LUFS（母帶 −26.3，偏小聲）
+const AMB_SAIL=1.0;           // 航行環境音 → −30.7（開滿，受母帶所限）
+const AMB_IDLE=0.17;          // 停船環境音 → −33.7（比航行低 3 dB）
+const MIX_RATE=0.014;         // 動／停交叉約 3.5 秒
 /* xf＝這一首的交叉淡入秒數。⚠ 逐曲給，不共用一個常數：
    循環的實際週期是 (曲長 − xf)，所以 xf 決定了「接回去的地方落在第幾小節」。
    對不上小節線的話每循環一次就走音一次 —— 曲子越長越明顯。 */
@@ -2807,8 +2815,8 @@ function updateBgm(dt){
   sailMix+=(want-sailMix)*(1-Math.pow(1-MIX_RATE, dt/16.67));
   const mk=muted?0:1;
   bgmMain.tick(BGM_VOL*mk);                    // 音樂：不隨速度變
-  ambSail.tick(AMB_VOL*sailMix*mk);            // 環境音：動／停交叉，疊在音樂上
-  ambIdle.tick(AMB_VOL*(1-sailMix)*mk);
+  ambSail.tick(AMB_SAIL*sailMix*mk);           // 環境音：動／停交叉，疊在音樂上
+  ambIdle.tick(AMB_IDLE*(1-sailMix)*mk);
 }
 (function startBgm(){
   /* ⚠ 監聽器要**確認真的播出來**才移除。play() 回傳的是 Promise，

@@ -23,7 +23,7 @@
  *    一律由 combat 於 setup() 注入 api（維持 §2 依賴方向，不反向 import）。
  * ========================================================================== */
 
-import { GAME_CONFIG, asset } from '../config.js';
+import { GAME_CONFIG, asset, sfxGain } from '../config.js';
 import { state, enterSaint, exitSaint, markExecution } from '../state.js';
 import { SFX } from '../audio.js';
 import { L, fmt } from '../i18n.js';   // 多語言（cut-in 副標/浮動字）
@@ -56,7 +56,9 @@ export function activateSaint(dir){
   state.saintUsedThisBattle = true;   // saint 自有欄位：發動即鎖（一場一次），時序同 reference
   SFX.unlock(); SFX.ultCharge();
   SFX.play(asset('sfx_saint'));       // 聖徒化發動音效（SI_01）
-  SFX.play(asset('voice_saint_luna'), 2.1);// Luna 發動語音（原 1.7 再 +25%＝2.1；播放端 limiter 匯流不破音）
+  /* Luna 發動語音。⚠ 增益改讀 config 的語音層（tuning.partnerSeGain），
+     不再寫死在這裡 —— 全域響度分級要能一處調完，漏一支就會突出來。 */
+  SFX.play(asset('voice_saint_luna'), (T.partnerSeGain||{}).voice_saint_luna);
   playSlash(dir);                     // 依滑動方向的橫斬特效
   playCutin(()=>{
     if(state.over) return;
@@ -364,11 +366,15 @@ function playSaintCutin(kind, done){
   void c.offsetWidth;                      // reflow → 重播動畫
   c.classList.add('on');
   // 結局 cut-in 專屬 SE（Luna；return＝生命歸還為 Renee，其 SE 由 partner.lifeReturn 播 vo_life_return——saint 不知觸發者）。
-  //   槍聲/合成占位音已拔除——cut-in 只播專屬 SE；母帶偏小聲 → 播放端依 tuning.partnerSeGain 增幅。
+  /*   槍聲/合成占位音已拔除——cut-in 只播專屬 SE。
+       ⚠ 這三支**不在同一層**：exc/obe 是 Luna 的語音（走 partnerSeGain），
+         而 burst 的 se_luna_mb 是音效（走 sfxGain）。舊名 Luna_MB_SE 就已經
+         說了它是 SE，只是舊版把四支一起放進語音表。 */
   const scSeKey = { execute:'se_luna_exc', obe:'se_luna_obe', burst:'se_luna_mb' };
   if(scSeKey[kind]){
     const k=scSeKey[kind];
-    SFX.play(asset(k), (GAME_CONFIG.tuning.partnerSeGain||{})[k]);
+    const g = (T.partnerSeGain||{})[k];
+    SFX.play(asset(k), g!=null ? g : sfxGain(k));
   }
   const holdMs = kind==='execute' ? 3000 : 1600;   // EXSECUTIŌ 停留 3 秒
   setTimeout(()=>{

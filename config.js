@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.19-242';
+export const VERSION = 'ver 2026.08.19-243';
 
 export const GAME_CONFIG = {
 
@@ -634,34 +634,41 @@ export const GAME_CONFIG = {
     //   個別仍嫌大/小聲時微調這裡即可（>1 增幅、<1 衰減）
     //   vo_* 四支（技能 SE）：對齊 Luna 聖徒化語音的有效響度（RMS −14.4 dBFS）——
     //   依各檔母帶 RMS 差多少補多少，峰值略超滿刻度交給 SFX 匯流 limiter 軟接（不破音）。
-    partnerSeGain: { se_luna_dual:1, se_luna_exc:1, se_luna_mb:1, se_luna_obe:1,
-                     vo_life_return:11.5, vo_death_guard:3.75, vo_supply_refill:3.4, vo_hc_rounds:4.5 },
+    /* 語音層（VO）—— 目標 −18 LUFS。se_luna_mb 是音效不是語音，已移到 sfxGain。 */
+    partnerSeGain: { se_luna_dual:1.05, se_luna_exc:1.26, se_luna_obe:1.22,
+                     voice_saint_luna:2.02,
+                     vo_life_return:11.35, vo_death_guard:3.16,
+                     vo_supply_refill:3.02, vo_hc_rounds:4.22 },
 
-    // 檔案 SFX 播放增益（對 ASSETS 鑰匙；未列入＝1）。全域響度階層（ver -37 起）：
-    //   語音/演出層 ≈ −14.4 dBFS（基準，vo_*/Luna 系走 partnerSeGain）；
-    //   音樂與音效一律拉齊至語音的 90%（振幅 ×0.9 ≈ −15.3 dBFS），不再分層收斂。
-    //   值依各檔實測 fullRMS 反推：gain = 10^((−15.3 − RMS)/20)；峰值交給 SFX 匯流 limiter。
-    //   （em_dagger 母帶大量留白、fullRMS 失真 → 以有效 RMS −19.8 反推。）
-    sfxGain: { se_pistol_01:0.90, se_pistol_02:1.15, se_pistol_03:1.6,
-               se_mg_squall:1.3, se_shotgun_blast:0.51, se_sniper_falcon:0.85,
-               se_guard:1.0, sfx_reload:1.7, sfx_start:1.4,
-               se_general_click:1.0, se_pageflip:1.0,   // 通用按鈕音／搭檔換卡翻頁音
-               sfx_startbt:1.9,   // 長尾鈴音、fullRMS 失真 → 以有效 RMS −20.7 反推
-               em_slash:0.62, em_smack:1.15, em_shot:1.3, em_revolver:0.66, em_dagger:1.7 },
+    /* ══ 全域響度分級（ver -243 重訂）══
+       量測法：BS.1770 K 加權 + 閘控積分響度（近似 LUFS）—— 不是單純 RMS，
+       RMS 會低估人聲、高估低頻，正是舊表把槍聲調得比語音還大的原因。
 
-    // BGM 播放音量（0~1，HTMLAudio.volume）：原目標＝語音基準（−14.4）的 90% ≈ −15.3 dBFS
-    //   （ver -37 起與音效同一水位）。各曲依實測 fullRMS 反推：battle −9.8 / boss −8.0 /
-    //   result −10.9 / lose −15.5 / home −16.6。
-    //   ⚠ 全體 ×0.75（−2.5 dB）：BGM 壓過語音/音效 → 整排降 25%，曲間相對平衡不變。
-    //     實得約 −17.8 dBFS，比語音/音效低約 2.5 dB。
-    //   ⚠ bgm_home 母帶偏小聲（原需 1.16 但 HTMLAudio.volume 上限 1 → 曾封頂），
-    //     降 25% 後為 0.75，仍沿用封頂後的相對值 → 比其他曲低約 1.3 dB（要拉平需重母帶 +1.3 dB）。
-    //   ⚠ 再 ×0.70（全域下調，−3.1 dB）：整排等比降，曲間相對平衡仍不變。
-    //   ⚠ 再 ×0.70（ver -127，又 −3.1 dB）：音樂仍蓋過語音/音效。改音樂而不是把語音推高——
-    //     語音層已在 −14.4 dBFS，再往上只會一直去咬 limiter（聽感變扁），降音樂沒有這個代價。
-    //     累計為原始母帶的 0.3675 倍。飛行原型的 Sail/Standby 另在
-    //     flight/index.html 的 BGM_VOL 同步套用（0.385 → 0.2695）。
-    bgmVol: { default:0.1838, bgm_home:0.3675, bgm_battle:0.196, bgm_boss:0.1568, bgm_result:0.2205, bgm_lose:0.3675 },
+       三層目標（業界慣例：對白當錨，音效低 3~6 dB，音樂低 8~12 dB）：
+         語音 VO  −18 LUFS   基準
+         音效 SE  −22 LUFS   −4 dB
+         音樂 BGM −28 LUFS   −10 dB
+       以音效為 100%：語音 158%、音效 100%、音樂 50%。
+
+       ⚠ 舊表是**反的**：音效最大聲的 se_mg_squall／em_shot 實測 −15.9 LUFS，
+         比語音最大聲的 vo_death_guard（−16.5）還響，而且音效層內部落差 28 dB
+         （−15.9 ~ −43.9）—— 那就是「有些聲音特別大」的來源。
+       ⚠ 每個值都是實測反推：gain = 10^((目標 − 實測 LUFS)/20) ÷ masterVolume。
+         要加新音檔就照這條算，不要憑感覺填。
+       ⚠ 除以 masterVolume 是因為 SFX 匯流會再乘一次 master；BGM 走
+         HTMLAudio.volume 不吃 master，所以 bgmVol 不用除。 */
+    sfxGain: { se_pistol_01:0.47, se_pistol_02:0.77, se_pistol_03:1.36,
+               se_mg_squall:0.65, se_shotgun_blast:0.39, se_sniper_falcon:0.82,
+               se_guard:0.78, sfx_reload:0.92, sfx_start:1.04,
+               se_general_click:4.31, se_pageflip:1.93,   // 母帶偏小聲，之前幾乎聽不到
+               sfx_startbt:2.02, sfx_saint:1.01, se_luna_mb:0.80,
+               em_slash:0.46, em_smack:0.72, em_shot:0.65, em_revolver:0.51, em_dagger:2.54 },
+
+    /* 音樂層（BGM）—— 目標 −28 LUFS，比語音低 10 dB。走 HTMLAudio.volume，
+       不吃 masterVolume，所以這裡不用除。飛行頁的音樂另在 flight/index.html
+       的 BGM_VOL 同步（同一個目標）。 */
+    bgmVol: { default:0.20, bgm_home:0.37, bgm_battle:0.17, bgm_boss:0.12,
+              bgm_result:0.20, bgm_lose:0.35 },
 
     // 載入畫面教學 Hint 輪播（文案見 loadingHints）
     loadingHintHoldMs:   5000,  // 每句停留 5 秒
