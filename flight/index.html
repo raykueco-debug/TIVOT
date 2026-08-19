@@ -962,8 +962,22 @@ const STAR_SENSE_R = 2000;      // 感應半徑（世界單位）＝100 地圖�
 /* 感應的節奏（Ray 指定）：按住船身 1 秒叫出安娜，再續按 3 秒才成立。
    刻意做長 —— 這是一段儀式，不是一個按鈕。中途放開就白費，所以船會先停下來
    （按住不動＝油門 0，見 stage 的 pointermove）。 */
-const SENSE_SUMMON_MS = 1000;   // 按到這裡：畫面轉暗、立繪插入
-const SENSE_HOLD_MS   = 3000;   // 立繪出現之後還要再按這麼久
+const SENSE_SUMMON_MS = 1000;   // 按到這裡：畫面轉暗、立繪插入、心跳起
+
+/* 心跳（Anna_Beat.mp3，5.00s）的起音時間，用起音包絡量出來的：
+   0.45/0.82 · 1.61/1.99 · 2.78/3.15 · 3.94/4.31 —— 標準的 lub-dub，
+   每對相隔 0.37s、對與對之間 0.79s，週期 1.165s（≈52 BPM）。
+   前者（lub）是強拍，後者（dub）弱。立繪跟著這張表脈動。 */
+const SENSE_BEATS = [[0.45,1],[0.82,0.55],[1.61,1],[1.99,0.55],
+                     [2.78,1],[3.15,0.55],[3.94,1],[4.31,0.55]];
+/* 光圈要**對齊最後一聲心跳**（Ray 指定，以心跳音為準）。取第四個強拍 3.94s：
+   落在弱拍上收不住，而 3.94 也剛好接近原本設計的「續按三秒」。
+   ⚠ 因此 SENSE_HOLD_MS 是被心跳決定的，不是隨便取的整數：
+     發動要比光圈早 SENSE_RING_MS，所以 3940−380＝3560。
+   ⚠ 這個值只是**保底**。實際觸發看 senseBeat.currentTime（見 senseBeatT），
+     音訊被瀏覽器擋掉或延遲時才退回這條計時線。 */
+const SENSE_BEAT_CLIMAX = 3.94;
+const SENSE_HOLD_MS   = 3560;
 const SENSE_TOTAL_MS  = SENSE_SUMMON_MS + SENSE_HOLD_MS;
 /* 胸針在插畫上的位置（比例）。光圈從這裡放出來 —— 量出來的不是目測：
    取「藍明顯高於紅且夠亮」的像素、限定在領結那一帶，取重心。 */
@@ -997,11 +1011,11 @@ const SENSE_FIT = {
 const SENSE_ART_BASE = 600;                       // CSS 裡固定的基準尺寸
 const SENSE_ALPHA0 = 0.72, SENSE_ALPHA1 = 0.26;   // 透明度緩降
 
-/* k=0..1 → 這一刻的尺寸與左上角。 */
-function senseGeom(k){
+/* k=0..1 → 這一刻的尺寸與左上角。boost＝心跳脈動的額外倍率（繞胸針放大）。 */
+function senseGeom(k, boost){
   const F=SENSE_FIT, floorY=Math.max(40, VIEWH-HELM_OUT);
   const lerp2=(a,b)=>a+(b-a)*k;
-  const S=Math.max(floorY*lerp2(F.s0,F.s1), W*lerp2(F.w0,F.w1));
+  const S=Math.max(floorY*lerp2(F.s0,F.s1), W*lerp2(F.w0,F.w1))*(boost||1);
   const bx=W*lerp2(F.bx0,F.bx1), by=floorY*lerp2(F.by0,F.by1);
   return { floorY, S,
            left: bx-SENSE_BROOCH.x*S,
@@ -1011,6 +1025,7 @@ function senseGeom(k){
 let senseT0=0;                  // 開始按住船身的時戳（0＝沒在按）
 let senseOn=false;              // 立繪是否已經叫出來
 let senseFireAt=0;              // 發動演出的起始時戳（0＝沒在演）
+let senseRingDone=false;        // 這一輪的光圈放過了沒
 let starNew=[];                 // 這一次感應到的點：飛行畫面要標出來
 
 const SENSE_EDGE_MS = 420;      // 邊緣脈動模糊
@@ -1035,6 +1050,25 @@ function senseArt(){
   senseImg.src='../resources/partner/Anna_CI_Search.webp';
 }
 
+/* 心跳的播放位置（秒）；沒真的在播就回 null —— 呼叫端據此決定要不要退回計時。 */
+function senseBeatT(){
+  const a=senseBeat;
+  if(!a || a.paused || !isFinite(a.currentTime) || a.readyState<2) return null;
+  return a.currentTime;
+}
+/* 這一刻的脈動強度 0..1：每個起音瞬間跳到該拍的強度，再指數衰減。
+   ⚠ 衰減 0.11s 是配著 lub-dub 的 0.37s 間隔選的 —— 再長的話兩拍會黏成一坨，
+     就不像心跳像顫抖了。 */
+function senseBeatPulse(){
+  const t=senseBeatT(); if(t==null) return 0;
+  let best=0;
+  for(let i=SENSE_BEATS.length-1;i>=0;i--){
+    const dt=t-SENSE_BEATS[i][0];
+    if(dt>=0){ best=SENSE_BEATS[i][1]*Math.exp(-dt/0.11); break; }
+  }
+  return best;
+}
+
 function senseCancel(){
   if(senseFireAt) return;                 // 演出中放手不算取消
   senseT0=0; senseOn=false;
@@ -1043,22 +1077,39 @@ function senseCancel(){
 /* 每幀推進狀態。⚠ 這裡**不畫任何東西** —— 立繪是畫在 canvas 上的
    （見 drawSenseCI），因為它必須排在 drawPanel 之前才會被面板與舵輪蓋住。 */
 function senseUpdate(now){
-  if(!senseT0 || senseFireAt) return;
+  if(senseFireAt){ senseRingCheck(now); return; }
+  if(!senseT0) return;
   const held=now-senseT0;
   if(held<SENSE_SUMMON_MS){ if(senseOn) senseCancel(); return; }
   if(!senseOn){
     senseOn=true; senseArt();
     playSfx(senseBeat);                   // 立繪出現的同一刻起心跳
   }
-  if(held>=SENSE_TOTAL_MS) senseFire();
+  /* 發動時機**以心跳音為準**：光圈要落在最後一聲心跳上，所以提早
+     SENSE_RING_MS 進入發動。音訊沒真的在播（被擋、還沒 buffer）才退回計時。 */
+  const bt=senseBeatT();
+  const ready = (bt!=null) ? (bt >= SENSE_BEAT_CLIMAX - SENSE_RING_MS/1000)
+                           : (held >= SENSE_TOTAL_MS);
+  if(ready) senseFire();
 }
 
 /* 發動：邊緣脈動模糊 → 胸針放出光圈蓋滿全景 → 立繪淡出 → 判定。
    光圈是 DOM（要蓋過操作區，含面板與舵輪），立繪是 canvas（要被面板蓋住）—— 
    兩者刻意不同層。 */
 function senseFire(){
-  senseFireAt=performance.now(); senseT0=0;
-  setTimeout(()=>{
+  senseFireAt=performance.now(); senseT0=0; senseRingDone=false;
+}
+
+/* 光圈：**對齊最後一聲心跳**。以 senseBeat 的播放位置判定，音訊不可用時
+   才退回「發動後 SENSE_RING_MS」這條線。 */
+function senseRingCheck(now){
+  if(senseRingDone) return;
+  const bt=senseBeatT();
+  const hit = (bt!=null) ? (bt >= SENSE_BEAT_CLIMAX)
+                         : (now-senseFireAt >= SENSE_RING_MS);
+  if(!hit) return;
+  senseRingDone=true;
+  {
     const G=senseGeom(1);
     const cx=G.left+SENSE_BROOCH.x*G.S, cy=G.top+SENSE_BROOCH.y*G.S;
     /* 蓋滿全景（含操作區）：取胸針到四個螢幕角的最遠距離。
@@ -1077,7 +1128,7 @@ function senseFire(){
     starNew=senseStars();
     starNewAt=performance.now();          // 「剛找到」的高亮從這一刻起算
     if(starNew.length) playSfx(senseSE);
-  },SENSE_RING_MS);
+  }
 }
 
 /* 立繪：畫在 canvas 上，而且**排在 drawPanel 之前** —— 這樣面板與舵輪是真的
@@ -1096,8 +1147,11 @@ function drawSenseCI(now){
     k=clamp((held-SENSE_SUMMON_MS)/SENSE_HOLD_MS,0,1);
     fade=clamp((held-SENSE_SUMMON_MS)/260,0,1);          // 插入時的淡入
   }
-  const G=senseGeom(k);
-  const al=(SENSE_ALPHA0+(SENSE_ALPHA1-SENSE_ALPHA0)*k)*fade;
+  /* 隨心跳脈動：繞著**胸針**放大（senseGeom 是以胸針定位的，所以只要放大 S、
+     左上角跟著重算，錨點就自動不動）。幅度刻意小 —— 這是呼吸不是彈跳。 */
+  const pulse=senseBeatPulse();
+  const G=senseGeom(k, 1+0.022*pulse);
+  const al=(SENSE_ALPHA0+(SENSE_ALPHA1-SENSE_ALPHA0)*k)*fade*(1+0.30*pulse);
   ctx.save();
   ctx.fillStyle='rgba(3,3,7,'+(0.55*fade).toFixed(3)+')';
   ctx.fillRect(0,0,W,VIEWH);
@@ -2461,7 +2515,7 @@ mapCv.addEventListener('pointercancel',mUp);
 addEventListener('resize',()=>{ if(mapOpen) drawMap(); });
 
 /* ══ 航行 BGM ══
-   停船＝Standby.mp3，航行＝Sail.mp3，兩者依速度交叉淡入淡出。
+   停船＝Standby.mp3，航行＝OverWorld_Orchestra.mp3，兩者依速度交叉淡入淡出。
 
    ▍為什麼要兩個 <audio> 疊著跑
    單一元素做不到「無斷點循環」：audio.loop 是硬接回開頭（尾巴還在響、
@@ -2474,8 +2528,12 @@ addEventListener('resize',()=>{ if(mapOpen) drawMap(); });
    ▍自動播放
    從首頁點「試飛」是換頁，手勢不會延續 → 先試播，被擋就掛一次性的
    pointerdown/keydown 補播；玩家一碰畫面就會響。 */
-const BGM_VOL=0.2695, XFADE=5.0, MIX_RATE=0.014;  // 0.55 × 0.70 × 0.70（全域下調，與 config.js bgmVol 同步）；MIX_RATE：兩曲交叉約 3.5 秒
-function makeLoop(src){
+const BGM_VOL=0.2695, MIX_RATE=0.014;  // 0.55 × 0.70 × 0.70（全域下調，與 config.js bgmVol 同步）；MIX_RATE：兩曲交叉約 3.5 秒
+/* xf＝這一首的交叉淡入秒數。⚠ 逐曲給，不共用一個常數：
+   循環的實際週期是 (曲長 − xf)，所以 xf 決定了「接回去的地方落在第幾小節」。
+   對不上小節線的話每循環一次就走音一次 —— 曲子越長越明顯。 */
+function makeLoop(src, xf){
+  const XFADE=xf||5.0;
   const a=[new Audio(src), new Audio(src)];
   a.forEach(x=>{ x.preload='auto'; x.volume=0; x.loop=false; });
   let cur=0, on=false;
@@ -2517,7 +2575,17 @@ function makeLoop(src){
     }
   };
 }
-const bgmSail=makeLoop('Sail.mp3'), bgmIdle=makeLoop('Standby.mp3');
+/* 航行曲：OverWorld_Orchestra（PeriTune）。Ray 剪 loop 時刻意留了一小段尾巴，
+   要讓重播的頭與那段尾巴疊在一起 —— makeLoop 的尾端交叉本來就是這個機制，
+   關鍵只在長度。
+   ⚠ 4.75 不是隨手取的：這首拍長 0.47s、小節 1.88s（起音包絡自相關量出來），
+     曲長 93.11s。循環週期＝93.11−xf，要落在小節線上只有 2.87／4.75／6.63…
+     這幾個值；4.75（47 小節）最接近原本的 5.0。用 5.0 會每圈差 0.25s，
+     繞十圈就偏掉一拍半。
+   ⚠ 尾巴不是淡出：實測結尾仍有 −8dB、最後 0.37s 都還有起音，而且尾與頭的
+     波形相關是 0 —— 它是樂句延續，不是接回開頭的重複段。所以只能靠交叉，
+     不能靠對齊切點。 */
+const bgmSail=makeLoop('OverWorld_Orchestra.mp3', 4.75), bgmIdle=makeLoop('Standby.mp3', 5.0);
 let sailMix=0;                       // 0＝停船 1＝航行，收斂跟隨避免忽大忽小
 /* 全域靜音：與主程式（index.html / main.js）共用 localStorage 的同一把鑰匙。
    ⚠ 這裡是另一個頁面、另一套 BGM（HTMLAudio 而非 audio.js 的 Web Audio），
