@@ -130,14 +130,15 @@
      ⚠ 縮放與透明度由 JS 逐幀跟著「按住多久」算，不用 CSS transition：
        它要跟手指同步，中途放開就得立刻停在當下的值。 */
   #senseOv{position:fixed;inset:0;z-index:60;pointer-events:none;
-    display:flex;align-items:center;justify-content:center;
     background:rgba(3,3,7,0);opacity:0;}
-  /* ⚠ 底圖尺寸要吃**兩軸**：只寫 height:96% 的話，直向手機（390×844）上
-     這張正方形插畫會變成 810px 寬 vs 390px 視窗，放大到 1.55 倍只看得到
-     中間三成——等於只剩一條胸口。改成 max-width/max-height 都夾住，
-     基準是「整張剛好塞得下」，SENSE_SCALE0 再從那裡往外推。 */
-  #senseOv img{position:absolute;width:auto;height:auto;max-width:96%;max-height:96%;
-    left:50%;top:50%;transform-origin:50% 50%;}
+  /* ⚠ 底圖尺寸要吃**兩軸**：只寫 height 的話，直向手機（375×812）上這張正方形
+     插畫會比視窗寬得多，放大之後只看得到中間三成——等於只剩一條胸口。
+     ⚠ 底邊釘在 --sense-bottom（＝舵輪上緣），縮放原點取 50% 100%：
+     縮放只會往上長，**任何一刻都不會壓到面板或舵**，縮到最小時剛好貼齊那條線。
+     ⚠ max-height 也吃同一條線，不然放大時整張會從面板底下冒出來。 */
+  #senseOv img{position:absolute;width:auto;height:auto;
+    max-width:96%;max-height:var(--sense-maxh,60%);
+    left:50%;bottom:var(--sense-bottom,0px);transform-origin:50% 100%;}
   #senseGlow{filter:blur(0px);opacity:0;}
   /* 發動瞬間：邊緣脈動模糊（glow 那層自己抖，sharp 那層維持清楚） */
   @keyframes senseEdge{
@@ -268,6 +269,9 @@ const ZFAR       = 3600;  // 可視距離（世界單位）＝ 360 個地圖像�
    最嚴重的變形集中在畫面最下緣（近地單一取樣被放到極大）。
    把那一段切掉當面板，等於同時解決版面與變形。 */
 const VIEW_F = 0.66;      // 3D 視窗佔畫面高度比例，其餘為面板
+/* ⚠ 宣告要早於 resize()：resize 在模組初始化就跑一次，而感應立繪的落地線
+   （VIEWH−HELM_OUT）是在那裡算的 —— 留在 drawPanel 旁邊會踩到 TDZ。 */
+const HELM_OUT = 20;      // 舵輪上緣突出 3D 視窗的像素
 
 /* ── 星球曲率 ────────────────────────────────────────────────────
    地表高度隨距離平方下沉：drop = d²/(2R)，d＝徑向距離。
@@ -1054,9 +1058,9 @@ function senseUpdate(now){
   const al=(SENSE_ALPHA0+(SENSE_ALPHA1-SENSE_ALPHA0)*k)*fadeIn;
   ov.style.opacity='1';
   ov.style.background='rgba(3,3,7,'+(0.55*fadeIn).toFixed(3)+')';
-  if(ci){ ci.style.transform='translate(-50%,-50%) scale('+sc.toFixed(4)+')';
-          ci.style.opacity=al.toFixed(3); }
-  if(gl){ gl.style.transform='translate(-50%,-50%) scale('+sc.toFixed(4)+')'; }
+  const tf='translateX(-50%) scale('+sc.toFixed(4)+')';
+  if(ci){ ci.style.transform=tf; ci.style.opacity=al.toFixed(3); }
+  if(gl){ gl.style.transform=tf; }
   if(held>=SENSE_TOTAL_MS) senseFire();
 }
 
@@ -1070,14 +1074,17 @@ function senseFire(){
     let cx=innerWidth/2, cy=innerHeight/2;
     if(ci){ const r=ci.getBoundingClientRect();
             cx=r.left+r.width*SENSE_BROOCH.x; cy=r.top+r.height*SENSE_BROOCH.y; }
-    /* 蓋滿全景（含操作區）：取胸針到四個角的最遠距離。光圈的亮帶落在半徑的
-       66~93%，所以外緣要放到 far/0.93 才真的掃過角落。 */
+    /* 蓋滿全景（含操作區）：取胸針到四個螢幕角的最遠距離。
+       ⚠ 換算要對準**亮帶**不是外緣。漸層的亮帶在半徑 75% 處（84~93% 已經
+         淡到幾乎透明），照 /0.93 算的話真正發亮的那一圈只掃到 far 的八成，
+         四個角只被那條看不見的尾巴掃過 —— 看起來就是「光圈沒到邊就沒了」。
+         除以 0.75 才是亮帶自己走到角落。 */
     const far=Math.max(Math.hypot(cx,cy), Math.hypot(innerWidth-cx,cy),
                        Math.hypot(cx,innerHeight-cy),
                        Math.hypot(innerWidth-cx,innerHeight-cy));
     const d=document.createElement('div');
     d.className='sense-ring';
-    d.style.setProperty('--sz',(far*2/0.93).toFixed(0)+'px');
+    d.style.setProperty('--sz',Math.ceil(far*2/0.75)+'px');
     d.style.left=cx+'px'; d.style.top=cy+'px';
     document.body.appendChild(d);
     setTimeout(()=>d.remove(),820);
@@ -1972,6 +1979,14 @@ function resize(){
     const s=(i+0.5)/BW*2-1;           // 欄位在視錐內的橫向比例 −1..1
     curvK[i]=(1+s*s)/(2*PLANET_R);    // 邊緣 s=±1 時是中央的兩倍 → 地平線兩側下彎
   }
+  /* 感應立繪的可用區域：**不得蓋到控制面板，也不得蓋到舵**。舵輪上緣會突出
+     3D 視窗 HELM_OUT 像素，所以落地線是 VIEWH−HELM_OUT，不是 VIEWH。
+     立繪的底邊全程釘在這條線上（見 #senseOv img 的 transform-origin），
+     縮放只往上長 —— 這樣任何一刻都不會壓到面板，而縮到最小時剛好貼齊。 */
+  { const floor=Math.max(40, VIEWH-HELM_OUT);
+    const st=document.documentElement.style;
+    st.setProperty('--sense-bottom', (H-floor)+'px');
+    st.setProperty('--sense-maxh',   floor+'px'); }
   prevH=new Float32Array(BW);
   topFrac=new Float32Array(BW);
   ZTOP=new Int32Array(ZSLICES*BW);
@@ -5433,7 +5448,6 @@ const helmArt={ wheel:null, base:null, pointer:null };
 const BORE={x:0.4481,y:0.1581};          // Base.webp 軸孔中心（佔圖寬/圖高的比例）
 const HEAD_R=0.2274;                     // 基座頭盤半徑佔基座寬的比例（95.5/420）
 const WHEEL_SPIN=0.0052;                 // 舵量 → 舵輪角速度（rad/ms，滿舵約 0.83 轉/秒）
-const HELM_OUT=20;                       // 舵輪上緣突出 3D 視窗的像素
 const HELM_FOOT=4;                       // 舵軸離畫面底緣的像素（軸心壓在底緣 → 只看得到上半輪）
 const BASE_K=1.05;                       // 基座寬 ÷ 舵輪直徑（>1＝比畫面寬，左右由畫面裁掉）
 const GAUGE_K=0.85;                      // 刻度帶半徑 ÷ 頭盤半徑（<1：整條刻度都落在頭盤黃銅面上）
