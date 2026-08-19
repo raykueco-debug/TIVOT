@@ -1113,19 +1113,26 @@ const SENSE_TRY_WIN = 60000;    // 滑動視窗
      頭只佔全圖上緣 0~16%（量出來的：頭寬約 250px 一路到 y=16%，18% 之後
      肩膀才展開）—— 所以早期版本取上半 45% 時，頭只佔畫面高度的 29%，
      怎麼放大都是一個小頭配一大截裙子。 */
+/* 身高 → 畫面高度。⚠ **h 是算出來的，不要手填** —— 手填遲早會改了一個忘了
+   另一個，畫面上就變成身高差時有時無。
+   基準取**最高的索拉娜 176cm ＝ 0.95**：錨在最高的人才保證誰都不會頂到畫面
+   上緣被切頭。安娜因此從 0.90 變 0.858（−5%，幾乎看不出來），但她與索拉娜
+   的差變成 10%，對得上 159 / 176 的 9.7%。 */
+const CAST_H_PER_CM = 0.95/176;
+
 const PORTRAIT = {
-  anna:     { name:'安娜',   side:'R', src:'../resources/partner/Anna_CI_front.webp',
-              crop:0.62, h:0.90, cx:0.78 },
+  anna:     { name:'安娜',   cm:159, side:'R', src:'../resources/partner/Anna_CI_front.webp',
+              crop:0.62, cx:0.78 },
   /* ⚠ 索拉娜用 **side** 那張：front 太滿（人物橫向佔 78%），兩人同台一定疊。
-     側面那張只佔 69%，加上站位拉到 0.22，交疊就壓到最低。 */
-  sorana:   { name:'索拉娜', side:'L', src:'../resources/partner/Sorana_CI_side.webp',
-              crop:0.62, h:0.90, cx:0.22 },
-  nouvelle: { name:'諾薇兒', side:'L', src:'../resources/partner/Nouvelle_CI_front.webp',
-              crop:0.62, h:0.90, cx:0.22 },
+     側面只佔 69%，站位再拉開，交疊就壓到最低。 */
+  sorana:   { name:'索拉娜', cm:176, side:'L', src:'../resources/partner/Sorana_CI_side.webp',
+              crop:0.62, cx:0.22 },
+  nouvelle: { name:'諾薇兒', cm:165, side:'L', src:'../resources/partner/Nouvelle_CI_front.webp',
+              crop:0.62, cx:0.22 },
+  // 立繪還沒有，先把身高記著；沒有 src 的人不會上場（castEnter 會擋掉）
+  reina:    { name:'蕾娜',   cm:169, side:'L', src:null, crop:0.62, cx:0.22 },
 };
-/* ⚠ 三個人的 h 都是 0.90 ＝ 畫面上一樣高。三張插畫都是 1024×1536 的 head-to-toe
-   全身框（實測人物像素高 1520／1522／1530，差不到 1%），**圖本身給不出身高
-   資訊** —— 身高差只能由設定決定，要表現就改各自的 h。 */
+for(const k in PORTRAIT) PORTRAIT[k].h = PORTRAIT[k].cm * CAST_H_PER_CM;
 
 let senseTries=[];              // 最近幾次「按下探索」的時戳（滑動視窗）
 /* ══ 對白舞台 ══
@@ -1147,7 +1154,7 @@ const easeOut=k=>1-Math.pow(1-k,3);
 
 /* 讓某人上場。同一側已經有人就先把他推出去 —— 這就是「輪轉換卡」。 */
 function castEnter(who, now){
-  if(!PORTRAIT[who]) return;
+  if(!PORTRAIT[who] || !PORTRAIT[who].src) return;   // 還沒有立繪的人不上場
   if(cast.some(c=>c.who===who && !c.out)) return;
   const side=PORTRAIT[who].side;
   for(const c of cast) if(c.side===side && !c.out) c.out=now;
@@ -1157,7 +1164,7 @@ function castEnter(who, now){
 function castClear(now){ for(const c of cast) if(!c.out) c.out=now; }
 const portraitImg={};
 function portraitArt(who){
-  if(portraitImg[who] || !PORTRAIT[who]) return;
+  if(portraitImg[who] || !PORTRAIT[who] || !PORTRAIT[who].src) return;
   const im=new Image(); im.src=PORTRAIT[who].src;
   portraitImg[who]=im;
 }
