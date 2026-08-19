@@ -1664,7 +1664,31 @@ let PICK3D=null;   // 3D 取點的反查表；只在管理人按右鍵那一幀�
 let curvK=null;      // 每欄的曲率係數 (1+s²)/(2R)
 let prevH=null;      // 每欄「上一個畫出的取樣高度」→ 判定崖面
 let topFrac=null;    // 每欄頂端的次像素未覆蓋比例 → 收尾時做輪廓抗鋸齒
-let ybufZ=null;      // 每欄「最高那一列」是在哪個深度畫的 → 聚落的遮擋判定
+/* ── 逐欄深度階梯（ZTOP）─────────────────────────────────────────
+   聚落／船／怪要判「前面的地形有沒有擋住我」。原本只記每欄的**頂列**與
+   那一列的深度（ybufZ），但頂列幾乎永遠是**最遠**的那道山脊 —— 只要地平線
+   上有遠山（也就是絕大多數畫面），判定就變成「稜線比我遠 → 整欄都看得到」，
+   於是欄位下半段的**近景**山坡明明擋在前面，城還是照畫上去。
+   那就是「城鎮浮在前景之前」。
+
+   地形是由近而遠光柵化的（painter），每欄的 ybuf 只會單調往上縮 —— 也就是
+   「列號 → 深度」在欄內天生是單調的。所以只要在幾個深度切片上各存一次
+   ybuf 的快照，就得到一座階梯：ZTOP[b][i] ＝「比 ZS_BOUND[b] 更近的地形」
+   在第 i 欄佔到的最高列。查詢時取 bound ≤ Z 的那一層，該層之下的像素全是
+   比我近的地形（該遮），之上則是天空或比我遠的地形（該畫）。
+
+   切片用平方分佈（近密遠疏）：近處一格幾十世界單位、遠處幾百，
+   而遠處本來就被霧洗掉，誤差看不出來。
+   成本：每幀 ZSLICES×BW ≈ 5.6k 次寫入 + 每個查詢一次乘法，可忽略。 */
+const ZSLICES=24;
+const ZS_BOUND=new Float32Array(ZSLICES);
+for(let b=0;b<ZSLICES;b++){ const t=b/ZSLICES; ZS_BOUND[b]=ZFAR*t*t; }
+const zSliceOf=Z=>{
+  const b=(Math.sqrt((Z>0?Z:0)/ZFAR)*ZSLICES)|0;
+  return b<0?0:(b>=ZSLICES?ZSLICES-1:b);
+};
+let ZTOP=null;       // Int32Array(ZSLICES*BW)，見上
+let CZMIN=null;      // 逐欄「這一欄裡城最近有多近」，見 drawSettlements3D
 let SKYROW=null;     // 每列的天空色，輪廓混色要拿它當背景
 function resize(){
   W=innerWidth;H=innerHeight;
@@ -1693,7 +1717,8 @@ function resize(){
   }
   prevH=new Float32Array(BW);
   topFrac=new Float32Array(BW);
-  ybufZ=new Float32Array(BW);
+  ZTOP=new Int32Array(ZSLICES*BW);
+  CZMIN=new Float32Array(BW);
   SKYROW=new Uint32Array(BH);
 }
 addEventListener('resize',resize);resize();
@@ -2369,7 +2394,11 @@ function render(now){
       bufU32[row+x]=rgb(clamp(sr+d,0,255)|0,clamp(sg+d,0,255)|0,clamp(sb+d,0,255)|0);
     }
   }
-  for(let i=0;i<BW;i++){ ybuf[i]=BH; prevH[i]=-9999; topFrac[i]=0; ybufZ[i]=ZFAR; }
+  for(let i=0;i<BW;i++){ ybuf[i]=BH; prevH[i]=-9999; topFrac[i]=0; }
+  /* 深度階梯的快照來源。ybuf 開了 512 格（最大緩衝寬），只有前 BW 格有效，
+     整排 set 進去會把後面的垃圾一起搬走 —— 每幀取一次 view 就好。 */
+  const ybufRow=ybuf.subarray(0,BW);
+  let zsNext=0;
 
   /* 光照。⚠ terrain_generator.py 已把 hillshade 烘進地貌色，
      這裡的方向項刻意做弱（LIGHT_DIR_K），只負責「日月移動的味道」，
@@ -2410,6 +2439,9 @@ function render(now){
 
   let z=1.0, dz=0.75;
   while(z<ZFAR){
+    /* 跨過切片界線就存一次快照。此刻 ybuf 裡是所有深度 < z 的地形，
+       而 ZS_BOUND[zsNext] ≤ z，正好是「比這個界線近的東西」。 */
+    while(zsNext<ZSLICES && ZS_BOUND[zsNext]<=z){ ZTOP.set(ybufRow,zsNext*BW); zsNext++; }
     let plx=(-cosp*z-sinp*z)+cam.x, ply=(sinp*z-cosp*z)+cam.y;
     const prx=(cosp*z-sinp*z)+cam.x, pry=(-sinp*z-cosp*z)+cam.y;
     const ddx=(prx-plx)/BW, ddy=(pry-ply)/BW;
@@ -2482,7 +2514,7 @@ function render(now){
            被蓋住就直接跳過**地貌層＋打光＋分級**整段。
            ⚠ `|` 的優先序低於 `>=`，`a|0 >= b` 會被解析成 `a | (0>=b)`。
              一定要自己加括號。
-           ⚠ ybuf/prevH/ybufZ 不用補：它們本來就只在「畫得出來」時才更新。
+           ⚠ ybuf/prevH 不用補：它們本來就只在「畫得出來」時才更新。
            ⚠⚠ 但 **plx/ply 一定要補**。這一列的世界座標是靠迴圈尾端
              `plx+=ddx; ply+=ddy;` 一欄一欄累加出來的，直接 continue 會把那一步
              跳掉 —— 之後整排欄位全部取樣到錯的位置，畫面是滿版破圖。
@@ -2661,7 +2693,7 @@ function render(now){
         }else{
           for(let yy=y0;yy<bot;yy++) bufU32[yy*BW+i]=top;
         }
-        ybuf[i]=y; prevH[i]=hh; ybufZ[i]=z;
+        ybuf[i]=y; prevH[i]=hh;
       }
       plx+=ddx; ply+=ddy;
     }
@@ -2669,6 +2701,8 @@ function render(now){
     // 放寬成長率把步數壓回 ~800，畫質看不出差別但省一半以上取樣。
     z+=dz; dz+=0.011;
   }
+  // 迴圈沒跑到的尾端切片：全部沿用最終的天際線
+  while(zsNext<ZSLICES){ ZTOP.set(ybufRow,zsNext*BW); zsNext++; }
 
   /* ══ 抗鋸齒 ①：輪廓的次像素混色 ══
      z 迴圈跑完後，ybuf[i] 就是該欄地形的最高列 —— 那一列才是真正的
@@ -3887,18 +3921,20 @@ function drawEnemy3D(scaleH,horizon,sinp,cosp,now){
    投影與地標同一套（drawPlaces），差別是還要換算「一個世界單位在這個
    深度佔幾個螢幕像素」：橫向視錐在深度 z 的半寬就是 z，對應 BW 個緩衝像素，
    所以 1 世界單位 = W/(2z) 螢幕像素。
-   ⚠ 遮擋要同時看「高度」與「深度」。ybuf 是該欄地形的最高列，但那通常是
-     **最遠**的山脊（越遠的高地投影越靠地平線＝列數越小），聚落位在它下方
-     是正常的，不代表被擋 —— 只比 ybuf 會把每一座城都判成看不見。
-     真正被擋的條件是：那一列的來源比聚落**更近**（ybufZ < z），而且它
-     壓在聚落的地面之上（ybuf < by）。兩者同時成立才是前面有山。
+   ⚠ 遮擋要同時看「高度」與「深度」，而且不能只看每欄的**頂列**。
+     頂列幾乎永遠是**最遠**那道山脊（越遠的高地投影越靠地平線＝列數越小），
+     拿它的深度去判會得到「稜線比我遠 → 整欄都看得見」，於是欄位下半段的
+     **近景**山坡明明擋在前面，城還是照畫上去 —— 那就是「城鎮浮在前景之前」。
+     改查 ZTOP 深度階梯（見其定義）：取「比我近的地形」在該欄佔到的最高列，
+     那一列以下全部該遮。
    ⚠ LOD 交給 settlement.js 依螢幕直徑自己決定，遠處自動退成符號。 */
 /* 逐欄深度遮擋：把繪圖區裁成「這個深度看得到的部分」。
-   地形是逐欄光柵化的，ybuf[i] 是該欄最上面那一列、ybufZ[i] 是畫那一列時的深度。
-   欄內越往下地形越近，所以只要**該欄的稜線比目標更近**（ybufZ<Z），
-   目標在這一欄就只能出現在稜線之上；否則整欄都可見。
-   ⚠ 這是引擎現有資訊能做到的最好近似：沒有逐像素深度緩衝，只有每欄的
-     頂列與其深度。對「山擋住城／船」這件事已經夠用。
+   ZTOP[b][i] 是「比 ZS_BOUND[b] 更近的地形」在第 i 欄佔到的最高列。
+   取 bound ≤ Z 的那一層：它以下的像素全是比目標近的地形（該遮），
+   以上則是天空或比目標遠的地形（該畫）。
+   ⚠ 這不是逐像素深度緩衝，是把深度量化成 ZSLICES 層。誤差上限是一個
+     切片寬（近景幾十世界單位，遠景幾百——但那邊早被霧洗掉了）。
+   ⚠ 它只解決「地形 vs 物件」，不解決物件之間的前後，排序仍然要。
    ⚠ 逐欄一個 rect（BW=234 個）就好，不做 run 合併：路徑建構本來就便宜，
      合併的判斷式反而比省下來的多。 */
 /* ⚠ c0/c1＝只裁「目標實際畫得到」的那幾欄。整排 BW 欄建一次路徑本身不貴，
@@ -3907,9 +3943,27 @@ function drawEnemy3D(scaleH,horizon,sinp,cosp,now){
 function clipByTerrainDepth(Z,sxk,syk,c0,c1){
   const a=(c0===undefined)?0:clamp(c0|0,0,BW-1);
   const b=(c1===undefined)?BW-1:clamp(c1|0,0,BW-1);
+  const base=zSliceOf(Z)*BW;
   ctx.beginPath();
   for(let i=a;i<=b;i++){
-    const lim=(ybufZ[i]<Z)?ybuf[i]:BH;
+    const lim=ZTOP[base+i];
+    if(lim<=0) continue;
+    ctx.rect(i*sxk,0,sxk+0.6,lim*syk);
+  }
+  ctx.clip();
+}
+
+/* 城的版本：城是**貼在地面上的一大張盤子**，不是一個點 —— 拿城心深度去裁，
+   會把城自己的近半邊當成「被前面的地形擋住」而切掉（實測飛近帝都時下半座城
+   整片消失）；拿整座的最近點去裁又太寬鬆，前面明明有山也擋不住。
+   逐欄取「這一欄裡城最近的那一點」（CZMIN，由網格投影順手算出）才兩邊都對：
+   比它更近的地形，在這一欄就是真的擋在城前面。 */
+function clipByCityDepth(sxk,syk,c0,c1){
+  ctx.beginPath();
+  for(let i=c0;i<=c1;i++){
+    const z=CZMIN[i];
+    // 城沒佔到的欄位不裁：緩衝在那裡本來就是透明的
+    const lim=(z===Infinity)?BH:ZTOP[zSliceOf(z)*BW+i];
     if(lim<=0) continue;
     ctx.rect(i*sxk,0,sxk+0.6,lim*syk);
   }
@@ -3987,7 +4041,8 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
        真正需要裁的只有最後那一次貼回，而那時才知道實際外框是哪幾欄。
        程序生成的城則是逐筆畫在 ctx 上，必須先裁。 */
     const planCity=!!(o.s.plan&&cityPlanArt[o.s.plan]);
-    if(!planCity) clipByTerrainDepth(o.z,sxk,syk);   // 前面的山稜要擋住城
+    // 同理，用**近端**深度而不是城心：R 是聚落半徑（世界單位）
+    if(!planCity) clipByTerrainDepth(Math.max(o.z-R,1),sxk,syk);   // 前面的山稜要擋住城
     ctx.globalAlpha=clamp((ZFAR*0.9-o.z)/(ZFAR*0.30),0,1)*(1-fogK);
     /* 逐點投影：城的每個點走跟地形完全同一條投影式 → 天生黏在地表上。
        lx/ly 是聚落局部座標（地圖像素），先換成世界座標，再照 render() 那條
@@ -4146,6 +4201,34 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
          是往上長的 —— 不讓的話塔頂會被緩衝的上緣切平（實測帝都近距離整排
          屋頂被削掉）。讓的量＝最高的量體在最近的那個深度投影出來的像素高度。 */
       if(MASS&&tall>0) by0-=tall*scaleH*syk/Math.max(60,zmn);
+      /* 逐欄最小深度：每一格四邊形取四角的最近深度，填進它橫跨的欄位。
+         ⚠ 一開始只沿著 u 方向的橫邊填 —— 這在城的 u 軸剛好指向鏡頭時會崩：
+           那些邊投影出來幾乎是**垂直的**，一條邊只蓋到一兩欄，大片欄位拿不到
+           真正的最近值，裁出來就是一條條竖條把城挖出洞（實測帝都東向時整片街廓消失）。
+           改成逐格就跟方位無關。取四角最小值是安全邊：寧可少遮，不可誤遮。
+         PT 是抬升後的點，但抬升只改 y，x 與深度跟地面點一樣。 */
+      const cc0=clamp(Math.floor(bx0/sxk)-1,0,BW-1), cc1=clamp(Math.ceil(bx1/sxk)+1,0,BW-1);
+      for(let i=cc0;i<=cc1;i++) CZMIN[i]=Infinity;
+      const ROWQ=(NU+1)*4;
+      for(let jy=0;jy<NV;jy++){
+        const r0=jy*ROWQ, r1=r0+ROWQ;
+        for(let jx=0;jx<NU;jx++){
+          const qa=r0+jx*4, qb=qa+4, qc=r1+jx*4, qd=qc+4;
+          let mn=PT[qa], mx=mn;
+          const xb=PT[qb], xc=PT[qc], xd=PT[qd];
+          if(xb<mn)mn=xb; else if(xb>mx)mx=xb;
+          if(xc<mn)mn=xc; else if(xc>mx)mx=xc;
+          if(xd<mn)mn=xd; else if(xd>mx)mx=xd;
+          if(mx<0||mn>W) continue;                       // 整格在畫面外
+          let zm=PT[qa+3];
+          if(PT[qb+3]<zm)zm=PT[qb+3];
+          if(PT[qc+3]<zm)zm=PT[qc+3];
+          if(PT[qd+3]<zm)zm=PT[qd+3];
+          let ia=(mn/sxk)|0, ib=(mx/sxk)|0;
+          if(ia<cc0)ia=cc0; if(ib>cc1)ib=cc1;
+          for(let i=ia;i<=ib;i++) if(zm<CZMIN[i]) CZMIN[i]=zm;
+        }
+      }
       /* ⚠ 外框夾在**視窗內**，不是視窗外 600px。飛近時量體的投影會遠遠
          溢出畫面，原本那個 ±600 讓緩衝長到 954×524＝約 50 萬像素 ——
          比整個地形緩衝（234×334＝7.8 萬）還大六倍，而且多出來的部分
@@ -4476,7 +4559,7 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
       }
       /* 山稜遮擋：只有這一次貼回需要裁，而且只裁城真正佔到的那幾欄
          （外框已經算出來了）。整排 234 欄的裁切路徑要讓這張圖每個像素都付費。 */
-      clipByTerrainDepth(o.z,sxk,syk,Math.floor(bx0/sxk)-1,Math.ceil(bx1/sxk)+1);
+      clipByCityDepth(sxk,syk,cc0,cc1);
       ctx.imageSmoothingEnabled=false;
       ctx.drawImage(cityFB,0,0,bwp,bhp,Math.round(bx0),Math.round(by0),fw,fh);
       /* 夜間路燈：城貼回去之後才畫，燈要在城上面。
