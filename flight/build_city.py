@@ -25,9 +25,10 @@ UNSQUASH 是量出來的：城的輪廓在 ×1.60 時最接近正圓（×1.40 �
 import io
 import os
 import json
+import sys
 import numpy as np
 import cv2
-from PIL import Image, ImageFilter
+from PIL import Image, ImageDraw, ImageFilter
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 CITY = os.path.join(HERE, 'city')
@@ -48,6 +49,9 @@ QUALITY = 88
 #   而且每幀做去飽和是白費的——這是固定的色調對齊，不隨光線變。
 SAT = 0.70           # 飽和度倍率
 VAL = 0.86           # 明度倍率
+# ⚠ 必須與 index.html 的同名常數一致：地形每像素會再過這一道去飽和，所以
+#   「地圖上的顏色」與「畫面上的顏色」差了這個係數。逐類別對齊要用後者。
+GRADE_SAT = 0.68
 # 外緣羽化：插畫是硬邊，貼在地形上就是一塊界線分明的補丁——那正是「割裂感」
 # 的來源。把最外圈的 alpha 漸淡，讓郊區的農地與綠地融進地形。
 # ⚠ 羽化要**沿著插畫自己的輪廓**往內，不能用「以圖心為原點的橢圓距離場」。
@@ -70,29 +74,55 @@ PEAK_SCALE = 520
 #   它們沒有海岸線可對，mx/my 直接取聚落座標、planRot 取 0。
 #   planW 依等級給：帝都級 1250、教廷級 1100、市鎮 620。
 JOBS = [{
-    'src': 'Capital_iso.png',
+    # ver -216：換成接近正射的新平面圖。舊的 Capital_iso.png 是斜俯視 —— 立面
+    # 大量可見、尖塔全部往外傾，而引擎的屋頂貼圖直接取自平面圖，等於把牆畫在屋頂上。
+    # ⚠ unsquash 由輪廓長寬比推得（bbox 1.354、二階矩 1.315），取 1.35。
+    #   沒能量到可靠的圓形水景當量尺（只抓到河），所以這個值是待驗的。
+    'src': 'CapitalTD_iso.png',
+    'unsquash': 1.35,
+    'shadowCheck': 0.45,   # 中央宮殿花園一帶，量投影（只報數字）
     'dst': 'capital_plan.webp',
     'hdst': 'capital_h.webp',
     'mdst': 'capital_mass.webp', 'jdst': 'capital_mass.json',
     'mx': 1005, 'my': 600, 'planW': 1250, 'planRot': 0.0,
     'landmarks': [(0.500, 0.430, 0.060, H_LAND)],     # 中央的宮殿群
 }, {
-    'src': 'holysee_topdown.png',
-    'unsquash': 1.10,      # 已是頂視圖：只補殘餘的縱向壓縮（外框長寬比實測 1.102）
-    'nowater': True,       # 藍色圓頂不是水
-    'classes': 'holysee',  # 圓頂／尖塔／環廊逐類別給固定高度，見 holysee_classes
+    # ver -214：換成**真正的正射俯視**。前兩版都還是「從有限高度往下看」，
+    # 結構會往外傾、看得到立面 —— 而引擎畫的是平頂稜柱、屋頂貼圖直接取自平面圖，
+    # 等於把北面聖堂的正面立面（含門洞）平鋪在屋頂上。實測四個方位的裁切：
+    # 北面看得到整片牆與門洞、東西向穹頂露出鼓座、南面階梯看得到踏面。
+    # 正射版把這些全部消掉，穹頂變成正圓（偵測到 12~13 座，南面 67° 缺口＝大階梯）。
+    'src': 'HolyseeTD.png',
+    'unsquash': 1.03,      # 正射，只補殘餘；建成區外框長寬比實測 1.027
+    'nowater': True,       # 藍色圓頂不是水（實測佔本體 10.0%）
+    'shadowCheck': 0.62,   # 量廣場上還有沒有投影（只報數字，不改像素）
+    # 24 個量體、5 階高度，取代原本手捏的三階（圓頂 .50／尖塔 1.0／環廊 .28）。
+    # ⚠ holysee_classes 與 towers 一併停用 —— 那兩個是沒有高度資料時的代理。
+    'polarBlocks': 'holysee_blocks.json',
     'dst': 'holysee_plan.webp',
     'hdst': 'holysee_h.webp',
     'mdst': 'holysee_mass.webp', 'jdst': 'holysee_mass.json',
-    'mx': 934, 'my': 606, 'planW': 1100, 'planRot': 0.0,
-    'landmarks': [(0.500, 0.440, 0.070, H_LAND)],     # 大聖堂
-    'towers': 1.00,                                   # 塔林立：依底圖逐棟抬高
+    'mx': 934, 'my': 606, 'planW': 550, 'planRot': 0.0,   # ver -213 縮至 50%
+    'landmarks': [],       # 高度改由 polarBlocks 給，不再需要手填地標
 }, {
     'src': 'MTown_iso.png',
     'dst': 'mtown_plan.webp',
     'hdst': 'mtown_h.webp',
     'mdst': 'mtown_mass.webp', 'jdst': 'mtown_mass.json',
     'mx': 1693, 'my': 282, 'planW': 620, 'planRot': 0.0,
+    'landmarks': [],
+}, {
+    # 取代 MTown 成為 11 座市鎮共用的插畫（ver -208）。
+    # ⚠ 這張圖本身已帶 alpha（29.1% 透明），去背分支不會觸發。
+    # ⚠ unsquash 沿用預設 1.60：實測建成區外框 aspect=1.558、二階矩 sx/sy=1.684，
+    #   1.60 正落在兩者之間，不必逐圖覆寫。
+    'src': 'Stown_iso.png',
+    'dst': 'stown_plan.webp',
+    'hdst': 'stown_h.webp',
+    'mdst': 'stown_mass.webp', 'jdst': 'stown_mass.json',
+    # ⚠ 位置／旋轉是 place_city.py 對著地圖河道搜出來的（三個河口全接通），
+    #   不是目測。必須與 index.html 的「聖索菲亞城」一致。
+    'mx': 559, 'my': 562, 'planW': 800, 'planRot': 0.79,
     'landmarks': [],
 }, {
     'src': 'Velafonte_iso.png',
@@ -126,6 +156,100 @@ BLK_CELL = 30      # 切大街廓用的格距（插畫像素）
 POLY_EPS = 1.5     # 多邊形簡化容差（插畫像素）
 POLY_MAX = 12      # 單一街廓的頂點數上限
 ATLAS_PAD = 1
+
+
+def report_ground_shadow(rgb, al, frac=0.62, note=''):
+    """**量**地面鋪面上的投影有多重，印出來。不修改任何像素。
+
+    ▍分工
+    底圖修正是美術端的工作，不是這支腳本的。這裡只負責把「有多少投影、
+    要往哪個方向補多少」量成數字交出去 —— 專案慣例：需要素材就開口，
+    別用演算法硬湊（HANDOFF G）。
+
+    ▍為什麼量得出來
+    投影不是深色材質，是同一材質乘上一個較暗的光，而且**偏藍**（只被藍天
+    照亮）。實測聖王廳廣場：受光 (239,225,207)、陰影 (112,120,144)，
+    B/R 從 0.87 升到 1.29。用色度而不是亮度判斷，才不會把中性的深色鋪面
+    誤認成陰影 —— 亮度分位數那版就是這樣，把廣場 p95 從 234 推到 255 爆掉。
+
+    ⚠ 只看**中央鋪面圓盤內**（半徑 frac 以內）。藍色穹頂又暗又藍，任何陰影
+      偵測都會把它抓進去。
+    """
+    H2, W2 = al.shape[0], al.shape[1]
+    op = al[:, :, 0] > 40
+    ys, xs = np.where(op)
+    if len(xs) < 100:
+        return 0.0
+    cx, cy = xs.mean(), ys.mean()
+    rr = np.hypot(np.arange(W2)[None, :] - cx, np.arange(H2)[:, None] - cy)
+    R0 = np.percentile(np.hypot(xs - cx, ys - cy), 99.0)
+    disc = op & (rr < frac * R0) & (rr > 0.10 * R0)
+    if disc.sum() < 500:
+        return 0.0
+
+    lum = (rgb * np.array([0.299, 0.587, 0.114])).sum(axis=2)
+    # ⚠ 用**色度**判斷陰影，不能用亮度分位數。分位數會強制把固定比例的像素
+    #   當成陰影 —— 沒有投影的圖照樣被「校正」，鋪面的深色紋路一起被抹平。
+    #   實測第一版就是這樣：廣場 p95 從 234 被推到 255（爆掉）、p50 204→244。
+    #   陰影的指紋是**偏藍**（只被藍天照亮），與「暗」是兩回事：
+    #   實測受光 B/R=0.87、陰影 B/R=1.29。用它就不會誤傷中性的深色鋪面。
+    chroma = rgb[:, :, 2] / np.maximum(rgb[:, :, 0], 1.0)
+    cl = float(np.percentile(chroma[disc & (lum > np.percentile(lum[disc], 70))], 50))
+    ch = float(np.percentile(chroma[disc], 98))
+    if ch - cl < 0.12:
+        print('  ⚑ 底圖投影量測%s：色度差只有 %.3f，判定無投影' % (note, ch - cl))
+        return 0.0
+    t = np.clip((chroma - cl) / (ch - cl), 0, 1)
+    t = np.where(disc & (lum < np.percentile(lum[disc], 85)), t, 0)
+
+    lit = rgb[disc & (t < 0.15)].mean(axis=0)
+    shd_m = disc & (t > 0.75)
+    if shd_m.sum() < 300:
+        return 0.0
+    shd = rgb[shd_m].mean(axis=0)
+    frac_sh = float((t[disc] > 0.5).mean())
+    print('  ⚑ 底圖投影量測%s：圓盤 %d px，投影佔 %.1f%%' % (note, disc.sum(), 100 * frac_sh))
+    print('     受光 (%.0f,%.0f,%.0f)  投影 (%.0f,%.0f,%.0f)  B/R %.2f→%.2f'
+          % (lit[0], lit[1], lit[2], shd[0], shd[1], shd[2],
+             lit[2] / max(1.0, lit[0]), shd[2] / max(1.0, shd[0])))
+    print('     → 美術端補平的話，投影區約需乘 %.2f / %.2f / %.2f (R/G/B)'
+          % tuple(np.clip(lit / np.maximum(shd, 1.0), 1.0, 4.0)))
+    return frac_sh
+
+
+def polar_label(jpath, size):
+    """把極座標的量體資料畫成一張**標號圖**（來源插畫解析度）。
+
+    回傳 (標號圖 PIL 'L', [(標號, 高度), ...])。
+
+    ▍為什麼是標號圖而不是直接轉座標
+    後面的裁切／反投影／縮放是一連串 PIL 運算，自己再算一次座標變換必然對不齊
+    （少算一次 thumbnail 就整圈錯位）。把量體畫成圖、讓它跟色圖走**完全同一條**
+    管線，對齊就是免費的。
+
+    ▍為什麼量體是極座標
+    這座建築是放射對稱的環。實測讓視覺模型報絕對座標會錯得很離譜（前一版
+    24 塊裡 9 塊落在建築外、6 對互相重疊），但報「幾點鐘方向、離中心多遠」
+    很準 —— 而且環狀扇形只要角度不重疊就**不可能**相交。
+    """
+    from preview_blocks import polar_to_poly
+    J = json.load(io.open(jpath, encoding='utf-8'))
+    lv = {L['id']: L['h'] for L in J['levels']}
+    P = J['polar']
+    lbl = Image.new('L', size, 0)
+    d = ImageDraw.Draw(lbl)
+    out = []
+    n = 0
+    for b in J['blocks']:
+        h = lv.get(b['level'], 0.0)
+        if h <= 0:                      # ground 不生量體
+            continue
+        n += 1
+        d.polygon(polar_to_poly(b, P), fill=n)
+        out.append((n, h))
+    print('  極座標量體：%d 個（%d 階高度，來源 %s）'
+          % (len(out), len(set(h for _, h in out)), os.path.basename(jpath)))
+    return lbl, out
 
 
 def holysee_classes(rgb, al, built):
@@ -258,7 +382,7 @@ def _finish(parts, rgb, al, hm, fixed, note):
     return blocks, Image.fromarray(atlas, 'RGBA')
 
 
-def extract_blocks(rgb, al, built, hm, name, mode='dark', classes=None):
+def extract_blocks(rgb, al, built, hm, name, mode='dark', classes=None, nosplit=False):
     """回傳 (blocks, atlas_image)。blocks 是 dict 列表，座標都在插畫像素空間。
 
     classes 有給就走「逐類別固定高度」（聖王廳）；否則依 mode 從圖上分街廓。
@@ -273,10 +397,23 @@ def extract_blocks(rgb, al, built, hm, name, mode='dark', classes=None):
         for (m, hv) in classes:
             mm = cv2.morphologyEx(m.astype(np.uint8), cv2.MORPH_OPEN,
                                   np.ones((3, 3), np.uint8))
+            if nosplit:
+                # ⚠ 極座標量體**整塊不切**。走 _components 的話大於 BLK_SPLIT(900px)
+                #   的區塊會被 30px 格子硬切 —— 實測 24 個量體被切成 130 塊，
+                #   那正是「城看起來細碎」的來源（整輪最早診斷出來的那件事）。
+                #   這批量體是人為定義的完整結構，切了只會把它們變回碎塊。
+                ys2, xs2 = np.where(mm > 0)
+                if len(xs2) < BLK_MIN:
+                    continue
+                x0, y0 = int(xs2.min()), int(ys2.min())
+                parts.append((x0, y0, mm[y0:ys2.max() + 1, x0:xs2.max() + 1] > 0))
+                fixed.append(hv)
+                continue
             for pc in _components(mm):
                 parts.append(pc)
                 fixed.append(hv)
-        return _finish(parts, rgb, al, hm, fixed, '（逐類別高度）')
+        return _finish(parts, rgb, al, hm, fixed,
+                       '（極座標量體，整塊不切）' if nosplit else '（逐類別高度）')
 
     lum = (rgb * np.array([0.299, 0.587, 0.114])).sum(axis=2)
     lo = np.asarray(Image.fromarray(np.clip(lum, 0, 255).astype(np.uint8))
@@ -291,6 +428,11 @@ def extract_blocks(rgb, al, built, hm, name, mode='dark', classes=None):
 hmap = np.asarray(Image.open(HEIGHTMAP).convert('L')).astype(np.float32)
 SEA_LEVEL = CLOUD_H / PEAK_SCALE * 255.0     # 高度圖上的海平面灰階值
 print('大陸高度圖 %dx%d，海平面灰階 %.1f' % (hmap.shape[1], hmap.shape[0], SEA_LEVEL))
+
+_only = [a.lower() for a in sys.argv[1:]]
+if _only:
+    JOBS = [J for J in JOBS if any(a in J['src'].lower() or a in J['dst'].lower() for a in _only)]
+    print('只處理：%s' % '、'.join(J['src'] for J in JOBS))
 
 for J in JOBS:
     im = Image.open(os.path.join(CITY, J['src'])).convert('RGBA')
@@ -315,9 +457,16 @@ for J in JOBS:
         im = Image.fromarray(np.dstack([_a0[:, :, :3].astype(np.float32), _al]).astype(np.uint8), 'RGBA')
         print('  %s：不透明背景 (%d,%d,%d) → 去背，保留 %.1f%%'
               % (J['src'], _bg[0], _bg[1], _bg[2], 100.0 * (_al > 40).mean()))
+    # 極座標量體：在**裁切之前**畫成標號圖，之後跟色圖走同一條管線（見 polar_label）
+    _lbl, _lblH = (polar_label(os.path.join(CITY, J['polarBlocks']), im.size)
+                   if J.get('polarBlocks') else (None, None))
+
     a = np.asarray(im)[:, :, 3]
     ys, xs = np.where(a >= 128)
-    im = im.crop((xs.min(), ys.min(), xs.max() + 1, ys.max() + 1))
+    _box = (xs.min(), ys.min(), xs.max() + 1, ys.max() + 1)
+    im = im.crop(_box)
+    if _lbl is not None:
+        _lbl = _lbl.crop(_box)
     w, h = im.size
     # ⚠ UNSQUASH 是「等角視 → 俯視」的反投影。素材本身若已經是頂視圖就不能再套，
     #   套了會把圓形的廣場拉成橢圓。逐 JOB 可覆寫。
@@ -325,13 +474,70 @@ for J in JOBS:
     im = im.resize((w, int(round(h * _uq))), Image.LANCZOS)
     if max(im.size) > MAXDIM:
         im.thumbnail((MAXDIM, MAXDIM), Image.LANCZOS)
+    if _lbl is not None:
+        # ⚠ 一律 NEAREST：標號是類別不是顏色，插值會在兩塊之間生出不存在的標號。
+        _lbl = _lbl.resize(im.size, Image.NEAREST)
 
     arr = np.asarray(im).astype(np.float32)
     rgb, al = arr[:, :, :3], arr[:, :, 3:]
 
+    # 底圖投影量測（只印數字，不改像素 —— 修圖是美術端的工作）
+    if J.get('shadowCheck'):
+        report_ground_shadow(rgb, al, float(J['shadowCheck']))
+
     # 色調對齊（見上方 SAT/VAL）
     lum = (rgb * np.array([0.299, 0.587, 0.114])).sum(axis=2, keepdims=True)
     rgb = np.clip((lum + (rgb - lum) * SAT) * VAL, 0, 255)
+
+    # ── 逐類別色調對齊（ver -210）────────────────────────────────────
+    # ⚠ 上面那組 SAT/VAL 是**全圖一個值**，對著「近景地表均值」調的。但綠地與
+    #   屋頂要對齊的目標不同，一個全域係數不可能同時對上兩者 —— 實測聖索菲亞城
+    #   的綠地是 RGB(55,66,38)、落點周圍地圖的綠地是 (76,88,57)，暗了 26%，
+    #   所以城裡的公園讀起來是另一種植被，城與地形的接縫就浮出來。
+    # 作法：只對綠地（與水）套一組**乘法增益**，把它們的均色推到地圖在**這座城
+    #   落點附近**的同類均色。乘法而不是換色 —— 插畫自己的明暗變化要留著。
+    # ⚠ 增益夾在 [0.6,1.8]：插畫若本來就接近就幾乎不動，差太多也不會過曝。
+    # ⚠ 遮罩要羽化，否則公園邊緣會出現一圈硬色階。
+    _ring = None
+    if J.get('toneMatch', True):
+        _tr = np.asarray(Image.open(os.path.join(HERE, 'silvermoon_terrain.png'))
+                         .convert('RGB')).astype(np.float32)
+        _yy, _xx = np.mgrid[0:_tr.shape[0], 0:_tr.shape[1]]
+        _rad = J['planW'] * 0.5 / MAP_SCALE
+        _d = np.sqrt((_xx - J['mx']) ** 2 + (_yy - J['my']) ** 2)
+        _ring = _tr[(_d > _rad * 0.9) & (_d < _rad * 2.0)]     # 城外一圈
+
+    def _match(mask, pick, name):
+        """把 mask 內的像素乘一組增益，均色對上地圖同類的均色。"""
+        if _ring is None or mask.sum() < 40:
+            return
+        mr, mg, mb = _ring[:, 0], _ring[:, 1], _ring[:, 2]
+        sel = pick(mr, mg, mb)
+        if sel.sum() < 40:
+            print('  逐類別對齊：地圖城外找不到足夠的%s，跳過' % name)
+            return
+        tgt = _ring[sel].mean(axis=0)
+        # ⚠ 地圖 PNG 的顏色是**畫面上的顏色之前**的東西：地形每像素還會再過一道
+        #   GRADE_SAT 去飽和（index.html 的內迴圈）。直接拿原始色當目標，等於替
+        #   綠地把去飽和還原掉，倍率正好 1/0.68 ≈ 1.47 —— 實測畫面上城的綠比
+        #   周圍森林飽和 2~3 倍就是這麼來的（沿同一列橫掃剖面量到的）。
+        #   所以目標色要先過同一道去飽和。
+        _tl = float((tgt * np.array([0.299, 0.587, 0.114])).sum())
+        tgt = _tl + (tgt - _tl) * GRADE_SAT
+        cur = rgb[mask].mean(axis=0)
+        gain = np.clip(tgt / np.maximum(cur, 1.0), 0.6, 1.8)
+        soft = np.asarray(Image.fromarray((mask * 255).astype(np.uint8), 'L')
+                          .filter(ImageFilter.GaussianBlur(1.5))).astype(np.float32) / 255.0
+        rgb[:] = np.clip(rgb * (1 + (gain - 1) * soft[:, :, None]), 0, 255)
+        print('  逐類別對齊 %s：(%.0f,%.0f,%.0f) → (%.0f,%.0f,%.0f)  增益 %.2f/%.2f/%.2f'
+              % (name, cur[0], cur[1], cur[2], tgt[0], tgt[1], tgt[2], *gain))
+
+    _R, _G, _B = rgb[:, :, 0], rgb[:, :, 1], rgb[:, :, 2]
+    _op = al[:, :, 0] > 40
+    _mveg = (_G > _R + 6) & (_G > _B + 6) & _op
+    _mwat = (_B > _R + 8) & (_B > 50) & _op & (not J.get('nowater', False))
+    _match(_mveg, lambda r, g, b: (g > r + 6) & (g > b + 6), '綠地')
+    _match(_mwat, lambda r, g, b: (b > r + 16) & (b > g + 4) & (b > 70) & (b < 200), '水域')
 
     H2, W2 = al.shape[0], al.shape[1]
     yy, xx = np.mgrid[0:H2, 0:W2].astype(np.float32)
@@ -408,9 +614,14 @@ for J in JOBS:
     # ── 街廓量體 ──────────────────────────────────────────────────────
     # ⚠ 用**未糊**的 hm 取高度：上面那個 5.0 的模糊是舊版位移網格頂點時的必要
     #   妥協（相鄰頂點高差太大會把格子剪成長條）。稜柱各自獨立，不需要糊。
-    _cls = holysee_classes(rgb, al, built) if J.get('classes') == 'holysee' else None
+    if _lbl is not None:
+        _L = np.asarray(_lbl)
+        _cls = [(_L == k, hv) for (k, hv) in _lblH if (_L == k).sum() >= BLK_MIN]
+    else:
+        _cls = holysee_classes(rgb, al, built) if J.get('classes') == 'holysee' else None
     blocks, atlas = extract_blocks(rgb, al, built, hm, J['dst'],
-                                   J.get('blockmode', 'dark'), _cls)
+                                   J.get('blockmode', 'dark'), _cls,
+                                   nosplit=_lbl is not None)
     atlas.save(os.path.join(CITY, J['mdst']), quality=QUALITY, method=6)
     json.dump({
         'w': W2, 'h': H2,

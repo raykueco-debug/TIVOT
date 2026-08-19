@@ -1,3 +1,6 @@
 .DS_Store
 **/.DS_Store
 resources/_originals/
+flight/city/*_preview.png
+__pycache__/
+flight/city/*_grid.png

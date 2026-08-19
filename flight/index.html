@@ -347,13 +347,10 @@ const SETTLE_R = { city1:22, city2:15, city3:10, town:6, village:3.5 };
    不給就會指向內陸（實測：漏給的三座棧橋入海數都是 0）。
    值是量出來的：取城區周圍海格的平均方向。改地形就要重量。 */
 const SETTLEMENTS = [
-  /* 座標採 PLACES / export_mapref 那一組（即 terrain_generator 的來源）。
-     曾經這裡寫 (1159,522)——那是從 map_01 插畫的城鎮圖標讀出來的，
-     與地標表差 154 像素，名牌會標在離城很遠的地方。以靠大陸中心者為準：
-     (1005,600) 離大陸中心 (1076,600) 只有 71px，(1159,522) 是 114px。 */
-  /* 帝都與聖王廳分家：聖王廳在帝都西邊不遠（71 地圖像素＝1420 世界單位）。
-     兩者都有手繪平面圖 —— 內陸城不做港都那套「拿插畫水域對海岸」的定位搜尋，
-     planRot 取 0、mx/my 就是聚落座標（與 build_city.py 的 JOBS 一致）。 */
+  /* ⚠ ver -209：地圖上只留三座定案的城 —— 帝都、聖王廳、薇拉馮德港 ——
+     外加一座試放的聖索菲亞城。其餘 23 座（大教堂城／曙光城／各市鎮／各港…）
+     整批移除，等城市設計定案再逐座放回。移除的那些沒有手繪圖，是程序生成的
+     街廓，要復原直接看 git。 */
   { n:'帝都',   x:1005, y:600, t:'city1', f:'church',
     plan:'city/capital_plan.webp', planH:'city/capital_h.webp',
     planW:1250, planRot:0.0, planTall:55 },
@@ -364,50 +361,11 @@ const SETTLEMENTS = [
        要再高就得先讓量體改走多邊形（街廓拉伸），不能靠位移網格頂點。 */
   { n:'聖王廳', x:934,  y:606, t:'city2', f:'church',
     plan:'city/holysee_plan.webp', planH:'city/holysee_h.webp',
-    planW:1100, planRot:0.0, planTall:100, noWater:true, noLamps:true,
+    /* ⚠ ver -213：整體縮至 50%(1100→550)。planTall 必須同步減半，否則
+       高度/半徑比從 0.18 變成 0.36，聖座會變成一叢細高竹竿。 */
+    planW:550, planRot:0.0, planTall:50, noWater:true, noLamps:true,
     wallCol:'rgba(226,219,198,0.50)' },
-  { n:'大教堂城',     x:1224, y:581, t:'city2', f:'church' },
-  { n:'曙光城',       x:1373, y:581, t:'city3', f:'church' },
-  { n:'石櫃城',       x:530,  y:311, t:'city2', f:'empire' },
-  { n:'破廛城',       x:490,  y:526, t:'city2', f:'empire' },
-  { n:'飛廬堡',       x:1636, y:347, t:'city3', f:'empire' },
-  { n:'艾爾崗',       x:1226, y:306, t:'city3', f:'free'   },
-  { n:'鏡原鎮',       x:1693, y:282, t:'town',  f:'free'   , plan:'city/mtown_plan.webp', planH:'city/mtown_h.webp', planW:620, planRot:0.0, planTall:30 },
-  { n:'白露鎮',       x:1408, y:119, t:'town',  f:'free'   , plan:'city/mtown_plan.webp', planH:'city/mtown_h.webp', planW:620, planRot:0.0, planTall:30 },
-  { n:'珂爾鎮',       x:1465, y:434, t:'town',  f:'free'   , plan:'city/mtown_plan.webp', planH:'city/mtown_h.webp', planW:620, planRot:0.0, planTall:30 },
-  { n:'河畔鎮',       x:682,  y:408, t:'town',  f:'free'   , plan:'city/mtown_plan.webp', planH:'city/mtown_h.webp', planW:620, planRot:0.0, planTall:30 },
-  { n:'晨星鎮',       x:468,  y:706, t:'town',  f:'free'   , plan:'city/mtown_plan.webp', planH:'city/mtown_h.webp', planW:620, planRot:0.0, planTall:30 },
-  { n:'潮石鎮',       x:1636, y:721, t:'town',  f:'free'   , plan:'city/mtown_plan.webp', planH:'city/mtown_h.webp', planW:620, planRot:0.0, planTall:30 },
-  { n:'松涌鎮',       x:1735, y:809, t:'town',  f:'free'   , plan:'city/mtown_plan.webp', planH:'city/mtown_h.webp', planW:620, planRot:0.0, planTall:30 },
-  { n:'檀語鎮',       x:945,  y:809, t:'town',  f:'native' , plan:'city/mtown_plan.webp', planH:'city/mtown_h.webp', planW:620, planRot:0.0, planTall:30 },
-  { n:'潭垢鎮',       x:1323, y:907, t:'town',  f:'native' , plan:'city/mtown_plan.webp', planH:'city/mtown_h.webp', planW:620, planRot:0.0, planTall:30 },
-  { n:'黑林村',       x:387,  y:309, t:'village', f:'native' },
-  { n:'石櫃村',       x:1309, y:398, t:'village', f:'free'   },
-  { n:'綠野村',       x:1536, y:517, t:'village', f:'free'   },
-  { n:'聖泉修道院',   x:1124, y:721, t:'village', f:'church' },
-  // 港口：coastal → 倉庫權重 ×3、有棧橋、可能出燈塔
-  /* ⚠ 原坐標 (212,218)：城區半徑內**零陸地格**，整座泡在海裡。
-     同薇拉馮德港的處理：移到最近且「城區內陸地過半」的岸點（移 13px，陸地 58%），
-     seaAng 取岸點周圍海格的平均方向。改地形就要重量。 */
-  { n:'風歌港',       x:215,  y:231, t:'city3', f:'free',   c:1, sea:-1.49 },
-  /* ⚠ 同上：原坐標 (241,629) 整座在海上。移 65px 到 (306,629)，陸地 60%。
-     這一座是後來才發現的——先前只檢查了 city 級，銑與村漏掉了。 */
-  { n:'暮光港',       x:306,  y:629, t:'town',  f:'free',   c:1, sea:-3.04 , plan:'city/mtown_plan.webp', planH:'city/mtown_h.webp', planW:620, planRot:0.0, planTall:30 },
-  /* ⚠ 同上：原坐標 (1936,366) 整座在海上。移 29px，陸地 56%。 */
-  { n:'蒼嵐港',       x:1907, y:363, t:'city3', f:'empire', c:1, sea:0.96 },
-  /* ⚠ 往岸邊推了 17px：原位置離岸 23px，而棧橋只伸到 R*1.12≈16.8px，
-     整排棧橋都搭在陸地上。港都的城區要**跨在海岸線上**。 */
-  { n:'藏拉瑪德港',   x:1600, y:867, t:'city2', f:'empire', c:1, sea:1.24 },
-  { n:'南藍港',       x:1455, y:943, t:'town',  f:'free',   c:1, sea:-1.97 , plan:'city/mtown_plan.webp', planH:'city/mtown_h.webp', planW:620, planRot:0.0, planTall:30 },   // 同上，推 8px
-  { n:'潮沙灣',       x:359,  y:866, t:'village', f:'native', c:1, sea:2.27 },   // 同上，推 5px
-  /* 薇拉馮德港：地標表（PLACES）標的 (1310,965) 是**海上**（高度 0）。
-     港都不能生在海裡，改放到最近的岸上再往內陸收半個城區半徑，
-     讓城的臨海那一側剛好搭到水邊。seaAng 是實測的向海方位
-     （岸點周圍 24px 內海格的平均方向，約 109°）——棧橋固定生在區域 +x，
-     靠這個角度把整座港轉到面向海。改地形就要重量。 */
-  /* plan：手繪平面圖（build_city.py 由等角視插畫反投影而來）。
-     給了就用它取代程序生成的街廓，其餘欄位（半徑、整平、棧橋）照舊。
-     planW  ＝ 圖寬代表幾個世界單位。城核約佔圖寬的 3/4，
+  /* planW ＝ 圖寬代表幾個世界單位。城核約佔圖寬的 3/4，
               半徑 440 → 440*2/0.75 ≈ 1170，取 1250 讓郊區有餘。
      planRot＝圖要轉多少才讓港區朝海。插畫的港在右下（≈45°），
               這裡的向海方位是 1.90 rad（≈109°），差 ≈1.10 rad。 */
@@ -423,20 +381,17 @@ const SETTLEMENTS = [
        是外海，路修不出去）。城外的路要從這些方位延伸出去，街道才不會一出
        圖面就斷掉。 */
     spurs:[3.023,-2.684,-1.951,-1.235,0.143,0.650,1.086] },
-  /* ── 試作：薇拉馮德港的第二座（Ray 指定 1005,760）─────────────────
-     ⚠ 這是**試看用的**，舊的那座完成度高、先不拆。要拆的時候記得一起清掉
-       build_city.py 的 JOBS 與 PLACES 名牌。
-     ⚠ 這裡是內陸：實測 (1005,760) 半徑 50 內河道 0 px、海 0 px（最近的河在
-       80px 外）。所以不做水域搜尋、planRot 取 0 —— 沒有海岸線可對。
-       插畫自帶 19.6% 的水域會被「地形遷就插畫」挖成內陸湖，港是旱港。 */
-  { n:'薇拉馮德港·試', x:1005, y:760, t:'city1', f:'empire',
-    plan:'city/velafonte_plan.webp', planH:'city/velafonte_h.webp',
-    planW:1050, planRot:0.0, planTall:50 },
-  /* ⚠ planTall 別給大：這個引擎的縱向投影比橫向大約 2.9 倍
-     （scaleH·syk ≈ 558 對 W/2 = 195）。
-     ⚠ 這裡原本夾在 26：舊版抬的是**共用的**網格頂點，抬高等於把紋理整片
-       往上剪切。ver -202 改成逐街廓拉伸的獨立稜柱之後那個上限沒了
-       —— 現在純粹是美術旋鈕，想多高就多高。 */
+  /* ── 聖索菲亞城（試放，Stown 插畫）───────────────────────────────
+     ⚠ 位置與旋轉是**搜出來的**，不是目測：走 place_city.py 拿插畫的水域遮罩
+       去對地圖的河道。與薇拉馮德當初對海岸線同一套方法，但評分不同 ——
+       細長河道光看整片重疊率會選到「只接得上一端」的落點（實測前三名都是
+       斷頭河）。改成**逐開口**判斷有沒有地圖的河可接：這座城的插畫有 3 個
+       開口，(559,562,0.79) 是三個全接通、且河真的貫穿南北的解。
+     ⚠ 這三個值必須與 build_city.py 的 JOBS 一致；改插畫或改地形都要重跑搜尋。
+         py flight/place_city.py stown */
+  { n:'聖索菲亞城', x:559, y:562, t:'city1', f:'free',
+    plan:'city/stown_plan.webp', planH:'city/stown_h.webp',
+    planW:800, planRot:0.79, planTall:50 },
 ];
 /* 手繪平面圖：背景載，載不到就退回程序生成的街廓（同飛空艇/怪的雙軌）。
    ⚠ 不進 loadWorld：它只影響少數幾座城的外觀，擋開場不划算。 */
@@ -462,6 +417,8 @@ const cityMassArt={};       // plan → atlas 圖
    ⚠ 由遠而近的順序**在載入時打表**：深度對平面座標 (u,v) 是仿射的，所以順序
      只取決於 (gradU,gradV) 的方位角。切 32 個方位各存一份排序，每幀零排序。 */
 const MASS_AZ=32;                    // 方位分桶數
+/* 城的貼圖（屋頂 atlas、棧橋…）的載入承諾。開場的預熱步驟會等這些（見 primeArt）。 */
+const cityArtReady=[];
 function loadMass(planKey){
   const base=planKey.replace('_plan.webp','_mass');
   fetch(base+'.json').then(r=>r.ok?r.json():null).then(J=>{
@@ -500,7 +457,13 @@ function loadMass(planKey){
     }
     cityMass[planKey]={n:nb,pu:pu,pv:pv,h:hv,bb:bb,bbx:bbx,ord:ord,aw:J.aw,ah:J.ah};
     const at=new Image();
-    at.onload=()=>{ cityMassArt[planKey]=at; };
+    /* ⚠ 屋頂 atlas 也要進預載序列。原本是射後不理，於是「第一次飛近某座城」
+       那一幀才解碼＋上傳 —— 手機上就是一次幾百毫秒的頓卡。 */
+    cityArtReady.push(new Promise(res=>{
+      at.onload=()=>{ cityMassArt[planKey]=at; res(); };
+      at.onerror=()=>res();
+      setTimeout(res,6000);
+    }));
     at.src=base+'.webp';
   }).catch(()=>{});
 }
@@ -1659,11 +1622,42 @@ async function loadWorld(){
     P.h=HGT[yi*MAPW+xi];
     P.wx=P.x*MAP_SCALE; P.wy=P.y*MAP_SCALE;
   });
+
+  step(0.94,'預熱貼圖…');
+  await primeArt();
+}
+
+/* ── 貼圖預熱 ────────────────────────────────────────────────────────
+   ⚠ `img.onload` 只保證**位元組到齊**。瀏覽器通常把解碼延後到第一次
+     `drawImage`，而第一次繪製還要再付一次 CPU→GPU 上傳。所以「第一次飛近
+     某座城」那一幀要同時解碼平面圖＋屋頂 atlas —— 桌機看不太出來，手機上
+     就是使用者回報的「一進去就掉 fps」。
+   作法：開場進度條還在時，把這些圖解碼並各畫一次，把解碼與上傳的成本
+     挪到誠實的載入階段。
+   ⚠ `decode()` 在部分舊瀏覽器沒有，要 fallback（同 ctx.filter 那個教訓）。
+   ⚠ 畫 8×8 而不是 1×1：某些瀏覽器對 1px 的 drawImage 會走特例路徑，
+     不保證真的把整張上傳。 */
+async function primeArt(){
+  await Promise.all(cityArtReady);
+  const imgs=[];
+  const take=o=>{ for(const k in o){ const v=o[k]; if(v&&v.width) imgs.push(v); } };
+  take(cityPlanArt); take(cityMassArt); take(dockArt); take(helmArt);
+  if(!imgs.length) return;
+  const c=document.createElement('canvas'); c.width=c.height=8;
+  const g=c.getContext('2d');
+  let n=0;
+  for(const im of imgs){
+    try{ if(im.decode) await im.decode(); }catch(_){}
+    try{ g.drawImage(im,0,0,8,8); }catch(_){}
+    n++;
+  }
+  window.__primed=n;
 }
 
 /* ── 畫布 ───────────────────────────────────────────────────────── */
 const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
 let W=0,H=0,VIEWH=0,BW=0,BH=0,buf=null,bufU32=null,bcv=null,bctx=null;
+let PICK3D=null;   // 3D 取點的反查表；只在管理人按右鍵那一幀非 null（見 pick3dAt）
 let curvK=null;      // 每欄的曲率係數 (1+s²)/(2R)
 let prevH=null;      // 每欄「上一個畫出的取樣高度」→ 判定崖面
 let topFrac=null;    // 每欄頂端的次像素未覆蓋比例 → 收尾時做輪廓抗鋸齒
@@ -2025,8 +2019,74 @@ mapCv.addEventListener('pointermove',e=>{
     mPinch=d;
   }
 });
+/* 管理人模式：與主程式（telemetry.js）共用同一把鑰匙。
+   開法：localStorage.tivot_admin_v1='1' */
+const ADMIN=(()=>{ try{ return localStorage.getItem('tivot_admin_v1')==='1'; }
+                   catch(_){ return false; } })();
+/* 程式化傳送：tp(地圖x, 地圖y[, 航向rad])。
+   ⚠ 這支存在的理由是「驗收要能到指定座標」。cam 是 top-level const，外部注入的
+     <script> 讀不到（函式宣告才讀得到），所以每次驗收都得在檔案裡暫掛
+     window.__T 再拆掉 —— 那個來回本身就是出錯的來源。管理人模式常駐一支即可。 */
+/* 時刻直接指定。日夜不會即時推移，只會停在夜／黎明／早／黃昏四個狀態，
+   驗收時要能跳過去看 —— 尤其「城在黃昏過亮」這類只在特定時刻出現的問題。 */
+if(ADMIN) window.setTime=(min)=>{ clock.minutes=((min%1440)+1440)%1440; return clock.minutes; };
+
+/* ── 3D 畫面取點（管理人）────────────────────────────────────────
+   在 3D 視窗按右鍵，回報該點的地圖座標與高度。
+   ⚠ 為什麼不反推螢幕座標：有高度差就沒有解析反函式 —— 同一個螢幕像素可能是
+     近處的谷底、也可能是遠處的山頂，只有光線行進當下才知道打到哪一格。
+     所以走**反查表**：右鍵那一幀配置 PICK3D，讓地形迴圈把每個像素的來源
+     地圖索引寫進去，讀完就丟。平常是 null，內迴圈零成本。
+     這與地圖那邊的 buildRelief/PICK 是同一個道理（HANDOFF E）。 */
+function pick3dAt(cssX,cssY){
+  if(!BW||!BH) return null;
+  const r=cv.getBoundingClientRect();
+  const bx=Math.floor(cssX/r.width*BW);
+  const by=Math.floor(cssY/(r.height*(VIEWH/H))*BH);
+  if(bx<0||by<0||bx>=BW||by>=BH) return null;
+  PICK3D=new Int32Array(BW*BH).fill(-1);
+  try{ render(performance.now()); }finally{
+    const mi=PICK3D[by*BW+bx]; PICK3D=null;
+    if(mi<0) return null;
+    const mx=mi%MAPW, my=(mi/MAPW)|0;
+    return { x:mx, y:my, h:HGT[mi], river:!!RIV[mi],
+             dist:Math.round(Math.hypot(mx*MAP_SCALE-cam.x,my*MAP_SCALE-cam.y)) };
+  }
+}
+if(ADMIN){
+  window.pick3d=pick3dAt;
+  cv.addEventListener('contextmenu',e=>{
+    const r=cv.getBoundingClientRect();
+    const p=pick3dAt(e.clientX-r.left, e.clientY-r.top);
+    if(!p) return;                       // 點到天空／操作盤就不攔，讓瀏覽器選單照常
+    e.preventDefault();
+    const s='('+p.x+','+p.y+')  h'+p.h+(p.river?' 河':'')+'  距 '+p.dist;
+    console.log('[pick3d] '+s);
+    pickHud.textContent=s; pickHud.style.opacity='1';
+    clearTimeout(pickHud._t); pickHud._t=setTimeout(()=>{pickHud.style.opacity='0';},4000);
+  });
+}
+const pickHud=(()=>{
+  const d=document.createElement('div');
+  d.style.cssText='position:fixed;left:8px;top:8px;z-index:99;padding:4px 8px;'+
+    'background:rgba(0,0,0,.72);color:#ffe08a;font:12px/1.4 monospace;'+
+    'border:1px solid rgba(255,224,138,.4);border-radius:3px;pointer-events:none;'+
+    'opacity:0;transition:opacity .2s;';
+  document.body.appendChild(d); return d;
+})();
+if(ADMIN) window.tp=(mx,my,ang)=>{
+  cam.x=mx*MAP_SCALE; cam.y=my*MAP_SCALE;
+  if(ang!==undefined) cam.angle=ang;
+  enemy=null;
+  return {x:mx, y:my, angle:cam.angle, alt:cam.alt};
+};
+
 /* 點一下讀座標：拖曳超過 4px 就不算點選（不然平移完會順便標一個點）。
-   走浮雕的反查表，不是反推 —— 見 buildRelief 的 PICK。 */
+   走浮雕的反查表，不是反推 —— 見 buildRelief 的 PICK。
+   ⚠ 管理人模式下順便**傳送**到該座標。巡航是定高（CRUISE_ALT，不隨地形
+     起伏），所以只要改 x/y，高度與航向都不動。
+     地圖不自動關 —— 關掉的話「連點幾個地方比對」就得一直重開；留著反而
+     馬上看得到自機標記跳過去，等於即時回饋。 */
 function mapPick(cssX,cssY){
   const { w, h, base }=mapFit(), R=relief; if(!R||!R.pick) return;
   const sc=base*MV.zoom, ox=w/2-MV.cx*sc, oy=h/2-MV.cy*sc;
@@ -2034,6 +2094,12 @@ function mapPick(cssX,cssY){
   if(rx<0||ry<0||rx>=R.w||ry>=R.h){ MV.pick=null; drawMap(); return; }
   const i=R.pick[ry*R.w+rx];
   MV.pick = i<0 ? null : [i%MAPW, (i/MAPW)|0];
+  if(ADMIN && MV.pick){
+    cam.x=MV.pick[0]*MAP_SCALE; cam.y=MV.pick[1]*MAP_SCALE;
+    /* 怪是依「離自機的距離」排程的，瞬移之後留在原地的那隻會突然變成
+       幾千單位外的殘影 —— 直接回收，讓它照正常規則重新刷。 */
+    enemy=null;
+  }
   drawMap();
 }
 const mUp=e=>{
@@ -2484,6 +2550,10 @@ function render(now){
            per-pixel 的代價。畫面大部分面積都落在這一類，這道閘門省下的
            時間比任何其他優化都多。 */
         const y0=y;
+        /* 3D 取點的反查表。⚠ 只在管理人按下右鍵那一幀才配置，平常 PICK3D 是
+           null，內迴圈只多一次預測得準的分支。跟地圖的 PICK 同一個道理：
+           有高度差就沒有解析反函式，唯一準的辦法是**在畫的時候記下來**。 */
+        if(PICK3D){ const _e=bot<BH?bot:BH; for(let _y=y0<0?0:y0;_y<_e;_y++) PICK3D[_y*BW+i]=mi; }
         if(bot-y0>3 && fog<0.86){
           /* 立面：**所有**垂直線段都走這條路，不再只有大落差才處理。
              原本落差不到門檻就整條填單一地表色，於是每根柱子都是一道
@@ -3901,7 +3971,7 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
          GD 與 PT 同值 → lift 為 0，下面那段立面也自動不畫。
          抬升與立面改由量體層負責，兩邊都做就會疊出雙重牆。 */
       /* ⚠ cityMass 是以 **plan**（色圖）為 key，不是 planH。載入時每張 plan
-         只抓一次街廓資料，而十一座市鎮共用同一張 mtown_plan。 */
+         只抓一次街廓資料，而十一座市鎮共用同一張 stown_plan。 */
       const MASS=o.s.plan?cityMass[o.s.plan]:null;
       const HM=(!MASS&&o.s.planH)?cityHeight[o.s.planH]:null;
       const tall=o.s.planTall||0;
@@ -4134,30 +4204,62 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
         if(anyWall) CFB.fill();                           // fillStyle 沿用地面層的暗色
         /* 第二趟：屋頂。每塊一次 drawImage —— atlas 上那一格已經帶著自己的
            alpha，所以不必逐塊 clip（clip 要重新光柵化路徑，幾百塊就吃掉畫格）。 */
+        /* ⚠ 一塊一個仿射矩陣，只有在**塊內深度幾乎不變**時才成立 —— 投影是 1/z
+             的非線性，仿射近似不了。舊版一座城 300 多個碎塊，每塊深度比接近 1，
+             所以看不出來；換成 24 個大量體之後，實測相機在聖王廳南 25 地圖像素
+             時有 11/24 塊的深度比超過 1.5、最大 4.91，畫出來就是使用者回報的
+             「靠近時貼圖被拉伸」。
+           修法是把**屋頂的仿射**細分成幾格，各自定矩陣；牆不動，仍是一根稜柱
+           （拆幾何的話相鄰子塊的接縫會各自長出一道不該有的內牆）。
+           ⚠ 只沿**深度梯度**方向細分就夠。深度對平面座標 (u,v) 是仿射的（見
+             loadMass 的方位分桶），所以與梯度垂直的方向上深度是常數，那個方向
+             的投影本來就是仿射、切了純浪費。 */
+        const RSPLIT_MAX=6;
         for(let t=0;t<drawn.length;t++){
           const bi=drawn[t], hW=MS.h[bi]*tall;
           const ax2=MS.bb[bi*4], ay2=MS.bb[bi*4+1],
                 bw2=MS.bb[bi*4+2], bh2=MS.bb[bi*4+3];
           if(bw2<1||bh2<1) continue;
-          /* 三個角定仿射：bbox 在插畫上的 (x,y)/(x+w,y)/(x,y+h)，抬到 hW。 */
           const gx0=MS.bbx[bi*4], gy0=MS.bbx[bi*4+1],
                 gx1=MS.bbx[bi*4+2], gy1=MS.bbx[bi*4+3];
-          const c3=[[gx0,gy0],[gx1,gy0],[gx0,gy1]], sc3=[];
-          let bad=false;
-          for(let k=0;k<3;k++){
-            const x0=c3[k][0]*hw, y0=c3[k][1]*hh;
-            projectInto(MP,0,(x0*ca-y0*sa)/MAP_SCALE,(x0*sa+y0*ca)/MAP_SCALE,hW);
-            if(MP[3]<60){ bad=true; break; }
-            sc3.push([MP[0],MP[1]]);
+          /* 這一塊在兩軸上各跨多少深度 → 決定各軸要切幾格。
+             目標：每一小格的深度比 ≤ 1.25。 */
+          projectInto(MP,0,(gx0*hw*ca-gy0*hh*sa)/MAP_SCALE,(gx0*hw*sa+gy0*hh*ca)/MAP_SCALE,hW);
+          const z00=MP[3];
+          if(z00<60) continue;
+          projectInto(MP,0,(gx1*hw*ca-gy0*hh*sa)/MAP_SCALE,(gx1*hw*sa+gy0*hh*ca)/MAP_SCALE,hW);
+          const z10=MP[3];
+          projectInto(MP,0,(gx0*hw*ca-gy1*hh*sa)/MAP_SCALE,(gx0*hw*sa+gy1*hh*ca)/MAP_SCALE,hW);
+          const z01=MP[3];
+          if(z10<60||z01<60) continue;
+          const zmin=Math.max(60,Math.min(z00,z10,z01));
+          const rU=Math.abs(z10-z00)/zmin, rV=Math.abs(z01-z00)/zmin;
+          const nU=Math.min(RSPLIT_MAX,Math.max(1,Math.ceil(rU/0.25)));
+          const nV=Math.min(RSPLIT_MAX,Math.max(1,Math.ceil(rV/0.25)));
+          const sw=bw2/nU, sh=bh2/nV, du=(gx1-gx0)/nU, dv=(gy1-gy0)/nV;
+          for(let iv=0;iv<nV;iv++)for(let iu=0;iu<nU;iu++){
+            const u0=gx0+du*iu, v0=gy0+dv*iv, u1=u0+du, v1=v0+dv;
+            const c3=[[u0,v0],[u1,v0],[u0,v1]], sc3=[];
+            let bad=false;
+            for(let k=0;k<3;k++){
+              const x0=c3[k][0]*hw, y0=c3[k][1]*hh;
+              projectInto(MP,0,(x0*ca-y0*sa)/MAP_SCALE,(x0*sa+y0*ca)/MAP_SCALE,hW);
+              if(MP[3]<60){ bad=true; break; }
+              sc3.push([MP[0],MP[1]]);
+            }
+            if(bad) continue;
+            const sx=ax2+sw*iu, sy=ay2+sh*iv;
+            const a2=(sc3[1][0]-sc3[0][0])/sw, b2=(sc3[1][1]-sc3[0][1])/sw,
+                  c2=(sc3[2][0]-sc3[0][0])/sh, d2=(sc3[2][1]-sc3[0][1])/sh;
+            if(!isFinite(a2)||!isFinite(d2)||Math.abs(a2*d2-b2*c2)<1e-7) continue;
+            CFB.setTransform(a2*kx, b2*ky, c2*kx, d2*ky,
+                             (sc3[0][0]-a2*sx-c2*sy-bx0)*kx,
+                             (sc3[0][1]-b2*sx-d2*sy-by0)*ky);
+            /* ⚠ 子格要多取半像素的來源，否則相鄰格之間會露出一條縫（雙線性
+               取樣在格邊界各自夾制）。多畫的部分被下一格蓋掉，無害。 */
+            CFB.drawImage(MA, sx,sy,sw+(iu<nU-1?0.5:0),sh+(iv<nV-1?0.5:0),
+                              sx,sy,sw+(iu<nU-1?0.5:0),sh+(iv<nV-1?0.5:0));
           }
-          if(bad) continue;
-          const a2=(sc3[1][0]-sc3[0][0])/bw2, b2=(sc3[1][1]-sc3[0][1])/bw2,
-                c2=(sc3[2][0]-sc3[0][0])/bh2, d2=(sc3[2][1]-sc3[0][1])/bh2;
-          if(!isFinite(a2)||!isFinite(d2)||Math.abs(a2*d2-b2*c2)<1e-7) continue;
-          CFB.setTransform(a2*kx, b2*ky, c2*kx, d2*ky,
-                           (sc3[0][0]-a2*ax2-c2*ay2-bx0)*kx,
-                           (sc3[0][1]-b2*ax2-d2*ay2-by0)*ky);
-          CFB.drawImage(MA, ax2,ay2,bw2,bh2, ax2,ay2,bw2,bh2);
         }
         CFB.setTransform(1,0,0,1,0,0);
       }
@@ -4222,7 +4324,15 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
            所以 alpha 比舊版小得多（舊版那層同時在當壓暗用，才會壓成一坨橘）。 */
         const Sk=sky();
         const nA=clamp(1-Sk.day*1.2,0,1), dk=Sk.dusk;
-        const tr=Math.round(lerp(52,255,dk)), tg=Math.round(lerp(66,196,dk)), tb=Math.round(lerp(104,120,dk));
+        let tr=lerp(52,255,dk), tg=lerp(66,196,dk), tb=lerp(104,120,dk);
+        /* ⚠ 色罩是 source-atop，也就是**往 tint 色 lerp**。tint 色如果比城本身亮，
+           這一層就會把城**提亮** —— 而地形的光色是 r=cr*sh*lightR 的**乘法**，
+           只會壓暗。兩者方向相反，黃昏就分家了：實測城在黃昏的絕對亮度 100.1，
+           比正午的 69.9 還高（地形正確地由 84.8 降到 69.0），比值 1.45。
+           修法是把 tint 拉回同一個曝光空間：乘上城這一幀實際吃到的曝光 kC，
+           於是它只能換色、不能加亮。夜與黎明同一條式子一起修好。 */
+        const tk=clamp(kC,0,1);
+        tr=Math.round(tr*tk); tg=Math.round(tg*tk); tb=Math.round(tb*tk);
         const aa=clamp(nA*0.30+dk*0.16,0,0.34);
         if(aa>0.01){
           CFB.globalCompositeOperation='source-atop';
