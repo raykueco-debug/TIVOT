@@ -2030,6 +2030,12 @@ const ADMIN=(()=>{ try{ return localStorage.getItem('tivot_admin_v1')==='1'; }
 /* 時刻直接指定。日夜不會即時推移，只會停在夜／黎明／早／黃昏四個狀態，
    驗收時要能跳過去看 —— 尤其「城在黃昏過亮」這類只在特定時刻出現的問題。 */
 if(ADMIN) window.setTime=(min)=>{ clock.minutes=((min%1440)+1440)%1440; return clock.minutes; };
+/* 怪的狀態機驗收用：enemy 是 top-level let，外部注入的 script 讀不到。 */
+if(ADMIN) window.dbgEnemy=()=>enemy&&{state:enemy.state,x:Math.round(enemy.x),y:Math.round(enemy.y),
+  d:Math.round(Math.hypot(cam.x-enemy.x,cam.y-enemy.y)),d0:enemy.d0,
+  alt:Math.round(enemy.alt),alt0:Math.round(enemy.alt0),
+  hd:Math.round(Math.atan2(enemy.hy,enemy.hx)*57.3),
+  cruiseHd:Math.round(Math.atan2(enemy.cruiseHy,enemy.cruiseHx)*57.3)};
 
 /* ── 3D 畫面取點（管理人）────────────────────────────────────────
    在 3D 視窗按右鍵，回報該點的地圖座標與高度。
@@ -2074,10 +2080,10 @@ const pickHud=(()=>{
     'opacity:0;transition:opacity .2s;';
   document.body.appendChild(d); return d;
 })();
-if(ADMIN) window.tp=(mx,my,ang)=>{
+if(ADMIN) window.tp=(mx,my,ang,keepEnemy)=>{
   cam.x=mx*MAP_SCALE; cam.y=my*MAP_SCALE;
   if(ang!==undefined) cam.angle=ang;
-  enemy=null;
+  if(!keepEnemy) enemy=null;   // 驗收怪的狀態機時要留著（見 dbgEnemy）
   return {x:mx, y:my, angle:cam.angle, alt:cam.alt};
 };
 
@@ -2950,6 +2956,11 @@ const ENEMY_CFG = {
   speedK: 0.60,
   pixelScale: 1.0,                // 繪製解析度（×BW/W）——見 drawEnemy3D 的像素化
   chaseAt: 0.60,                  // 距離縮到 D0 的這個比例 → 轉主動追擊
+  /* 距離又被拉開到 D0 的這個比例 → 放棄追擊、回歸原本的橫向巡航。
+     ⚠ 必須大於 chaseAt：同一個門檻進出，玩家停在邊界上時會每幀在
+       cruise/chase 之間翻，朝向與高度都會抖。0.60→0.85 這條遲滯帶
+       換算成世界單位是 1680→2380，玩家要真的拉開 700 單位才脫離。 */
+  giveUpAt: 0.85,
   spawnDist: 2800,                // 生成距離（世界單位；ZFAR=3600 之內才看得到）
   /* 生成方位（偏離航向的角度範圍）。視野半角是 45°（sv∈[-1,1] ⇔ 橫向=深度），
      所以下限取 52° 就保證生成的瞬間在畫面外；上限 105° 是「還來得及漂進畫面」
@@ -3093,7 +3104,10 @@ function spawnEnemy(){
   const keys=Object.keys(ENEMY_KINDS);
   const kind=keys[(Math.random()*keys.length)|0];
   const K=ENEMY_KINDS[kind];
-  enemy={ x, y, alt:cam.alt+Math.random()*60-20, hx, hy, kind,
+  /* cruiseHx/cruiseHy、alt0＝「原本的動作」。放棄追擊時要能回到這裡，
+     而且是轉回去不是跳回去（同追擊的限角速度）。 */
+  const alt0=cam.alt+Math.random()*60-20;
+  enemy={ x, y, alt:alt0, alt0, hx, hy, cruiseHx:hx, cruiseHy:hy, kind,
           d0:C.spawnDist, state:'cruise', tEngage:0, phase:Math.random()*6.28,
           t0:performance.now(), trail:[] };
   // 軌跡先填成一條直線，否則剛生成的那幾幀身體還沒長出來
@@ -3128,6 +3142,32 @@ function updateEnemy(dt,now){
   /* 追擊判定：距離縮到刷新當下的 chaseAt 倍才轉主動。
      巡航是純橫向，距離不會自己縮 → 這一步實質上是「玩家自己靠太近」。 */
   if(enemy.state==='cruise' && dist<=enemy.d0*C.chaseAt) enemy.state='chase';
+  /* 放棄追擊：距離又被拉開到 giveUpAt 倍就回歸原本的巡航。
+     ⚠ 門檻必須比 chaseAt 大（0.85 對 0.60）——同一個門檻進出，玩家停在
+       邊界上時會每幀在 cruise/chase 之間翻，朝向與高度都會抖。這條遲滯帶
+       就是為此存在的。
+     ⚠ 只換狀態、不動朝向：轉回去交給下面的 cruise 分支限角速度慢慢轉，
+       跟追擊的轉向同一套。直接把朝向設回去是瞬間直角轉彎。 */
+  if(enemy.state==='chase' && dist>enemy.d0*C.giveUpAt) enemy.state='cruise';
+  if(enemy.state==='cruise'){
+    /* 回歸原動作：朝向轉回生成時的橫向巡航方位，高度爬回原高度。
+       兩者都用與追擊相同的收斂方式，放棄追擊看起來才像「牠失去興趣、
+       慢慢轉回去繼續走」，而不是瞬間切換成另一個東西。 */
+    const cur=Math.atan2(enemy.hy,enemy.hx), want=Math.atan2(enemy.cruiseHy,enemy.cruiseHx);
+    let da=want-cur;
+    while(da>Math.PI) da-=Math.PI*2;
+    while(da<-Math.PI) da+=Math.PI*2;
+    if(Math.abs(da)>1e-3){
+      const step=clamp(da,-K.turnRate*dt,K.turnRate*dt);
+      const na=cur+step;
+      enemy.hx=Math.cos(na); enemy.hy=Math.sin(na);
+      const rollWant=clamp(step/Math.max(1,dt)/K.turnRate,-1,1);
+      enemy.roll=(enemy.roll||0)+(rollWant-(enemy.roll||0))*(1-Math.exp(-dt/260));
+    }else{
+      enemy.roll=(enemy.roll||0)*Math.exp(-dt/260);
+    }
+    enemy.alt+=((enemy.alt0!==undefined?enemy.alt0:enemy.alt)-enemy.alt)*(1-Math.exp(-dt/420));
+  }
   if(enemy.state==='chase'){
     /* 轉向限角速度：直接把朝向換成「指著玩家」是瞬間直角轉彎，
        一隻二十幾節的長蟲不可能那樣動。這裡只讓朝向每幀朝目標轉一小步，
