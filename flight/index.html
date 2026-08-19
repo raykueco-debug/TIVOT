@@ -120,16 +120,6 @@
     -webkit-mask-image:linear-gradient(to bottom,#000 86%,transparent 100%);
     mask-image:linear-gradient(to bottom,#000 86%,transparent 100%);}
   #bPortrait.on{opacity:1;}
-  /* 對話框：疊在立繪偏下（同 #alBubble） */
-  #bBubble{position:absolute;left:50%;bottom:15%;transform:translateX(-50%);
-    width:82%;max-width:300px;background:rgba(16,12,24,.72);
-    border:1px solid var(--gold-dim);border-radius:8px;padding:10px 13px;text-align:left;
-    box-shadow:0 4px 20px rgba(0,0,0,.55);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);}
-  #bBubble .nm{font-size:11px;letter-spacing:2px;color:var(--gold);margin-bottom:5px;opacity:.9;}
-  /* Hint：整句淡入停留淡出（不打字）；min-height 兩行防換句時框體跳動 */
-  #bHint{font-size:13px;letter-spacing:.5px;line-height:1.6;color:var(--ink);
-    min-height:3.2em;opacity:0;transition:opacity .4s ease;}
-  #bHint.on{opacity:1;}
   /* 底部訊息：位置同 #alMsg（安全區 + 26px）；small 是飛行版多出的階段進度字句 */
   #bMsg{position:absolute;left:0;right:0;
     bottom:calc(env(safe-area-inset-bottom,0px) + 26px);
@@ -175,13 +165,14 @@
               stroke-dasharray="301.59" stroke-dashoffset="301.59"/>
     </svg>
     <!-- 圈內文字：上百分比、下字樣（層級同 #alRingTxt，不包多餘一層） -->
-    <div id="bRingTxt"><div id="bPct">0%</div><div id="bCap">SILVERMOON</div></div>
+    <div id="bRingTxt"><div id="bPct">0%</div><div id="bCap">SAINT INSTALL</div></div>
   </div>
   <div id="bStage">
     <img id="bPortrait" alt="">
-    <div id="bBubble"><div class="nm" id="bName"></div><div id="bHint"></div></div>
   </div>
-  <div id="bMsg">載 入 銀 月 大 陸<small id="bootMsg"></small></div>
+  <!-- ⚠ 只留錯誤訊息的容器。平時是空的 —— 讀取畫面一概只出現 SAINT INSTALL。
+       載入失敗時仍要看得到原因（多半是「用 file:// 直接開」），那不是裝飾。 -->
+  <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
 <script src="settlement.js"></script>
@@ -1066,9 +1057,8 @@ function loadImg(url){
   });
 }
 async function loadWorld(){
-  const msg={ set textContent(v){ bootUI.set(loadWorld._p||0.2, v); } };
-  const step=(p,t)=>{ loadWorld._p=p; bootUI.set(p,t); };
-  step(0.20,'讀取高度圖…');
+  const step=p=>{ loadWorld._p=p; bootUI.set(p); };
+  step(0.20);   // 讀取高度圖…
   const [hi,ci]=await Promise.all([loadImg(HEIGHT_URL),loadImg(COLOR_URL)]);
   if(hi.naturalWidth!==ci.naturalWidth || hi.naturalHeight!==ci.naturalHeight)
     throw new Error(`兩張圖尺寸不一致：${hi.naturalWidth}×${hi.naturalHeight} vs ${ci.naturalWidth}×${ci.naturalHeight}`);
@@ -1083,7 +1073,7 @@ async function loadWorld(){
   g.drawImage(ci,0,0);
   const cd=g.getImageData(0,0,MAPW,MAPH).data;
 
-  step(0.42,'建立高度場…');
+  step(0.42);   // 建立高度場…
   const N=MAPW*MAPH;
   // ⚠ Uint16：世界尺度放大後高度上限（PEAK_SCALE）已遠超 255
   HGT=new Uint16Array(N); COL=new Uint32Array(N);
@@ -1106,7 +1096,7 @@ async function loadWorld(){
   window.__rivPct=(rivCnt/N*100).toFixed(2);
   /* 邊緣抬升：先用 chamfer 兩趟求「到雲海的距離」，再把邊界一圈墊成台地緣。
      只作用在 RIM_W 內，內陸低地保持原樣。 */
-  step(0.58,'整平大陸邊緣…');
+  step(0.58);   // 整平大陸邊緣…
   {
     const INF=1e9, dist=new Float32Array(N);
     for(let i=0;i<N;i++) dist[i]=(HGT[i]>CLOUD_H)?INF:0;
@@ -1162,7 +1152,7 @@ async function loadWorld(){
        不會淹到兩側的谷地 —— 不需要（也不該）做泛洪。
      ⚠ 岸高取低分位數而不是中位數／最大值：河貼著崖腳走時，另一側的山會
        把水位灌到半山腰（既有的挖河段也記著同一條）。 */
-  step(0.62,'整平河面…');
+  step(0.62);   // 整平河面…
   {
     const CUT=6;                       // 水面比岸低這麼多
     const BANK_Q=0.35;                 // 岸高取這個分位數
@@ -1213,7 +1203,7 @@ async function loadWorld(){
     window.__rivRaised=raised+'/'+idx.length;
   }
 
-  step(0.66,'整平城鎮地基…');
+  step(0.66);   // 整平城鎮地基…
   {
     /* 鎏平範圍：完全整平到 2R，也就是城界外再放一個城區半徑的平地。
        城市不是突然在山坡上停住的——郊區、耕地、道路都需要平地，
@@ -1626,16 +1616,16 @@ async function loadWorld(){
   /* ── 地貌貼圖 ────────────────────────────────────────────
      全圖鋪設，沒有覆蓋權重表：哪裡鋪哪一張由取樣時的生物群系選擇器決定
      （高度＋坡度＋低頻噪聲），不需要一張 2.6MB 的逐像素分類圖。 */
-  step(0.74,'載入地貌貼圖…');
+  step(0.74);   // 載入地貌貼圖…
   await loadGeoAll();
 
   /* 道路網。⚠ 排在整平與「地形遷就插畫」之後：路要走**最終**的地形，
      不然會出現路從城的台階上直直插下去。 */
-  step(0.78,'鋪設道路…');
+  step(0.78);   // 鋪設道路…
   buildRoads();
 
   /* ── 生物群系打表 ──────────────────────────────────────── */
-  step(0.82,'判定地貌…');
+  step(0.82);   // 判定地貌…
   {
     BIOME=new Uint8Array(MAPW*MAPH);
     for(let y=0;y<MAPH;y++){
@@ -1736,7 +1726,7 @@ async function loadWorld(){
   }
 
   // 坡度（給逐幀光照用）—— 必須在邊緣抬升之後，否則崖頂的法線是舊的
-  step(0.70,'計算坡度…');
+  step(0.70);   // 計算坡度…
   for(let y=0;y<MAPH;y++){
     const ym=y>0?y-1:0, yp=y<MAPH-1?y+1:MAPH-1;
     for(let x=0;x<MAPW;x++){
@@ -1753,10 +1743,10 @@ async function loadWorld(){
     P.wx=P.x*MAP_SCALE; P.wy=P.y*MAP_SCALE;
   });
 
-  step(0.92,'讀取國界…');
+  step(0.92);   // 讀取國界…
   await loadRegions();
 
-  step(0.94,'預熱貼圖…');
+  step(0.94);   // 預熱貼圖…
   await primeArt();
 }
 
@@ -2917,8 +2907,12 @@ function render(now){
 const STAR_PING_MS=900, STAR_MSG_MS=2600;
 function drawStarSense(now){
   if(starPing){
-    const t=(now-starPing)/STAR_PING_MS;
-    if(t>=1) starPing=0;
+    /* ⚠ t 一定要夾住。感應是由 setTimeout 以 performance.now() 記時的，而這裡的
+       now 是 rAF 的畫格時戳 —— 畫格的時戳是「該幀開始的時間」，可能**早於**
+       稍後才觸發的那個 setTimeout。t 為負時 (1-t)³ 會炸成天文數字，
+       算出負半徑，ctx.arc 直接丟 IndexSizeError 把整幀打斷。 */
+    const t=clamp((now-starPing)/STAR_PING_MS,0,1);
+    if(now-starPing>=STAR_PING_MS) starPing=0;
     else if(shipHit){
       const e=1-Math.pow(1-t,3);                 // 出得快、收得慢
       const r=shipHit.r*(0.55+e*3.2);
@@ -2930,8 +2924,8 @@ function drawStarSense(now){
     }
   }
   if(starMsg){
-    const t=(now-starMsg.t)/STAR_MSG_MS;
-    if(t>=1){ starMsg=null; return; }
+    const t=clamp((now-starMsg.t)/STAR_MSG_MS,0,1);
+    if(now-starMsg.t>=STAR_MSG_MS){ starMsg=null; return; }
     const a=clamp(Math.min(t*6,(1-t)*4),0,1);    // 淡入快、淡出慢
     /* ⚠ 位置貼著船的**上方**，不是畫面下緣。下緣是橫條羅盤帶的地盤，
        而羅盤畫在 drawPanel（比這裡晚），字會被整條蓋掉 —— 實測就是這樣。 */
@@ -5492,60 +5486,38 @@ function loop(now){
      ＋監察官立繪＋對話框輪播），但提示內容自成一組 —— 這裡日後要放
      船艦／航行教學，跟戰鬥那側的教學是兩回事，共用的話改一邊就會動到另一邊。
    ⚠ 立繪路徑指向 ../resources/：飛行原型自己不重複放一份立繪。 */
-const BOOT_HINTS=[
-  '往後拉＝前進，拉得越遠越快。放開後船靠慣性滑行，不會立刻停。',
-  '左右偏移＝轉向。輕推只轉幾度，中央有一段死區，手指的晃動不會讓船偏航。',
-  '往前推再左右拉＝原地迴轉。停著不動時船不會自己打轉。',
-  '舵輪的轉速跟著你的偏移幅度走；基座頭盤上那根銅針是舵手的速度表，扣到紅漆那段就是全速。',
-  '右上角「地圖」可查看大陸全貌與自己的位置，放大可見市鎮街廓。',
-  '大陸邊緣之外是雲海。低於雲海高度的地方一律沒入雲中。',
-];
-const BOOT_NAME='監察官　フレイヤ';
+/* 操作說明原本輪播在讀取畫面上，已隨「只留 SAINT INSTALL」一起撤下。
+   資料是內容不是程式，先留著 —— 要放回來的話接一個說明面板即可。
+   （往後拉＝前進／左右偏移＝轉向／往前推再左右拉＝原地迴轉／右上角可開地圖） */
 const bootUI=(()=>{
   const $=id=>document.getElementById(id);
   const RING=301.59;   // r=48 的周長（與主程式 #alRingProg 同規格）
-  // 節奏同主程式讀取畫面：洗牌後依序循環（＝隨機且整輪不重複），
-  //   淡入 → 停 HOLD(5s) → 淡出 → FADE+50 後換句（HOLD/FADE 值同 config.tuning）
-  const HOLD=5000, FADE=400;
-  const hints=BOOT_HINTS.slice();
-  for(let i=hints.length-1;i>0;i--){ const j=Math.random()*(i+1)|0; [hints[i],hints[j]]=[hints[j],hints[i]]; }
-  let hintI=0, timer=0;
   const im=$('bPortrait');
   im.onload=()=>im.classList.add('on');
   im.src='../resources/inspector/Freya_SI_01.webp';
-  $('bName').textContent=BOOT_NAME;
-  function cycle(){
-    const h=$('bHint');
-    h.textContent=hints[hintI++ % hints.length];
-    h.classList.add('on');                       // 淡入
-    timer=setTimeout(()=>{
-      h.classList.remove('on');                  // 淡出
-      timer=setTimeout(cycle, FADE+50);
-    }, HOLD);
-  }
-  cycle();
   return {
-    set(p,msg){
+    /* ⚠ 只推進度，不寫字。階段名稱留在呼叫端當註解 —— 那是給讀程式的人看的，
+       不是給玩家看的（Ray 指定讀取畫面只出現 SAINT INSTALL）。 */
+    set(p){
       $('bProg').setAttribute('stroke-dashoffset', (RING*(1-clamp(p,0,1))).toFixed(1));
       $('bPct').textContent=Math.round(clamp(p,0,1)*100)+'%';
-      if(msg!=null) $('bootMsg').textContent=msg;
     },
-    done(){ clearTimeout(timer); $('boot').classList.add('hide'); },
+    done(){ $('boot').classList.add('hide'); },
   };
 })();
 
 (async()=>{
   const t0=performance.now();
   try{
-    bootUI.set(0.04,'準備雜訊貼圖…');
+    bootUI.set(0.04);   // 準備雜訊貼圖…
     genCloudTex(); genDetail(); genStrat();
-    bootUI.set(0.12,null);
+    bootUI.set(0.12);
     await loadWorld();
-    bootUI.set(0.82,'載入船艦圖層…');
+    bootUI.set(0.82);   // 載入船艦圖層…
     // 船的素材缺了也照跑（走程序圖層），所以不放進上面的 try 依賴鏈裡擋開場
     await loadShipArt();
     initPuffs();
-    bootUI.set(1,'');
+    bootUI.set(1);
     window.__loadMs=Math.round(performance.now()-t0);
     window.__map=MAPW+'×'+MAPH;
     // 進度圈跑到滿再收，不要瞬間閃掉
