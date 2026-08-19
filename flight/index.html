@@ -1044,6 +1044,23 @@ const SENSE_FIRE_MS = SENSE_RING_MS + SENSE_OUT_MS;
 const senseBeat = new Audio('Anna_Beat.mp3');           senseBeat.preload='auto';
 const senseSE   = new Audio('../resources/General/StartBT_SE.mp3'); senseSE.preload='auto';
 const playSfx=a=>{ try{ a.currentTime=0; const q=a.play(); if(q) q.catch(()=>{}); }catch(_){} };
+/* ⚠ iOS 只認**手勢當下**呼叫的 play()。心跳是按住滿 1 秒才起播的，那時早就
+   離開手勢了 —— 手機上因此完全沒聲音。而殘影又綁在音訊時鐘上，於是連脈動
+   也一起沒了（Ray 回報「沒脈動也沒心跳聲」，同一個原因）。
+   解法：手指按到船身的那一刻就先無聲 play 一次再停掉，元素解鎖之後，
+   稍後從 rAF 裡呼叫的 play() 才有效。
+   ⚠ iOS 也不理會 preload='auto' —— readyState 會一直是 0，直到有手勢驅動的
+     播放。所以這一步同時也是「把它 buffer 起來」。 */
+function senseUnlock(a){
+  if(!a || a.__unlocked) return;
+  try{
+    const v=a.volume; a.volume=0;
+    const p=a.play();
+    const done=()=>{ a.pause(); a.currentTime=0; a.volume=v; a.__unlocked=true; };
+    if(p && p.then) p.then(done).catch(()=>{ a.volume=v; });
+    else done();
+  }catch(_){ }
+}
 
 /* 立繪不進開場的擋畫面預載，但**開場結束後要在背景先抓好**。
    ⚠ 召喚只有 1 秒，來不及現抓：原檔 PNG 2.5MB，手機網路上那 1 秒鐘只會看到
@@ -1055,11 +1072,16 @@ function senseArt(){
   senseImg.src='../resources/partner/Anna_CI_Search.webp';
 }
 
-/* 心跳的播放位置（秒）；沒真的在播就回 null —— 呼叫端據此決定要不要退回計時。 */
+let senseOnAt=0;                // 立繪出現（＝心跳該起播）的時戳
+
+/* 心跳的播放位置（秒）。優先用音訊自己的時鐘（那才是真的「以心跳音為準」）；
+   ⚠ 音訊被擋、還沒 buffer、或裝置靜音時退回**牆鐘** —— 視覺絕不能因為沒聲音
+     就整個不動。手機上就是踩到這一條：沒解鎖 → 沒聲音 → 連脈動都沒有。 */
 function senseBeatT(){
   const a=senseBeat;
-  if(!a || a.paused || !isFinite(a.currentTime) || a.readyState<2) return null;
-  return a.currentTime;
+  if(a && !a.paused && isFinite(a.currentTime) && a.readyState>=2 && a.currentTime>0)
+    return a.currentTime;
+  return senseOnAt ? (performance.now()-senseOnAt)/1000 : null;
 }
 /* 距離上一次心跳過了多久（秒）。沒在播、或還沒到第一拍就回 null。 */
 function senseBeatAge(){
@@ -1104,7 +1126,8 @@ function senseGhost(k, p, base, amp){
 
 function senseCancel(){
   if(senseFireAt) return;                 // 演出中放手不算取消
-  senseT0=0; senseOn=false;
+  senseT0=0; senseOn=false; senseOnAt=0;
+  try{ senseBeat.pause(); senseBeat.currentTime=0; }catch(_){}
 }
 
 /* 每幀推進狀態。⚠ 這裡**不畫任何東西** —— 立繪是畫在 canvas 上的
@@ -1116,6 +1139,7 @@ function senseUpdate(now){
   if(held<SENSE_SUMMON_MS){ if(senseOn) senseCancel(); return; }
   if(!senseOn){
     senseOn=true; senseArt();
+    senseOnAt=now;                        // 牆鐘備援的起點（見 senseBeatT）
     playSfx(senseBeat);                   // 立繪出現的同一刻起心跳
   }
   /* 發動時機**以心跳音為準**：光圈要落在最後一聲心跳上，所以提早
@@ -1173,7 +1197,7 @@ function drawSenseCI(now){
   let k=1, fade=1;
   if(senseFireAt){
     const t=now-senseFireAt;
-    if(t>=SENSE_FIRE_MS){ senseFireAt=0; senseOn=false; return; }
+    if(t>=SENSE_FIRE_MS){ senseFireAt=0; senseOn=false; senseOnAt=0; return; }
     fade=1-clamp((t-SENSE_RING_MS)/SENSE_OUT_MS,0,1);
   }else{
     const held=now-senseT0;
@@ -2124,7 +2148,11 @@ stage.addEventListener('pointerdown',e=>{
   senseT0=0;
   if(shipHit){
     const d=Math.hypot(e.clientX-shipHit.x, e.clientY-shipHit.y);
-    if(d<=shipHit.r) senseT0=performance.now();
+    if(d<=shipHit.r){
+      senseT0=performance.now();
+      // ⚠ 一定要在這裡解鎖：這是唯一還在手勢裡的時機（見 senseUnlock）
+      senseUnlock(senseBeat); senseUnlock(senseSE);
+    }
   }
 });
 stage.addEventListener('pointermove',e=>{
