@@ -272,6 +272,7 @@ export const STRINGS = {
       result:     'Results Screen',
       battle:     'Battle Screen',
       boss:       'Boss Battle',
+      flight:     'Voyage Screen',
     },
     originalNote: '(Links to the visual novel. Both sites have completed serialization.)',
     originalBaha: 'Bahamut',

@@ -293,6 +293,7 @@ export const STRINGS = {
       result:     'リザルト画面',
       battle:     '戦闘画面',
       boss:       'Boss戦',
+      flight:     '航行画面',
     },
     originalNote: '（ビジュアルノベルへのリンク。両サイトとも連載完結済み）',
     originalBaha: 'Bahamut',

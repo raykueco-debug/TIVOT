@@ -159,8 +159,10 @@ export function applyToDom(){
   set(q('#creditSheet .credit-tip'), L.sheets.creditTip);
   set($('creditClose'), L.sheets.creditClose);
   const uses=document.querySelectorAll('#creditSheet .cl-use');
+  /* ⚠ 依 **HTML 清單的順序** 對位，不是依曲名 —— 新增曲目時兩邊要一起改。 */
   const useOrder=[L.sheets.creditUse.mainMenu, L.sheets.creditUse.missionFail,
-                  L.sheets.creditUse.result, L.sheets.creditUse.battle, L.sheets.creditUse.boss];
+                  L.sheets.creditUse.result, L.sheets.creditUse.battle,
+                  L.sheets.creditUse.flight, L.sheets.creditUse.boss];
   uses.forEach((el,i)=>{ if(useOrder[i]!=null) el.textContent=useOrder[i]; });
   // 原作面板
   set(q('#originalSheet .os-note'), L.sheets.originalNote);

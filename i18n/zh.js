@@ -307,6 +307,7 @@ export const STRINGS = {
       result:     '結算畫面',
       battle:     '戰鬥畫面',
       boss:       'Boss戰',
+      flight:     '航行畫面',
     },
     originalNote: '（圖文小說連結，兩站皆已連載完畢）',
     originalBaha: '巴哈姆特',            // 平台名，日/英版視在地慣例（Penana 不譯）
