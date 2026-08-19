@@ -125,29 +125,11 @@
     bottom:calc(env(safe-area-inset-bottom,0px) + 26px);
     text-align:center;font-size:14px;letter-spacing:4px;color:var(--gold);}
   /* ══ 感應演出（長按船身）══
-     節奏：按住 1s 叫出立繪 → 續按 3s，立繪持續縮小、透明度緩降 →
-     滿 3s 邊緣脈動模糊 → 由胸針放出光圈蓋滿全景 → 立繪淡出。
-     ⚠ 縮放與透明度由 JS 逐幀跟著「按住多久」算，不用 CSS transition：
-       它要跟手指同步，中途放開就得立刻停在當下的值。 */
-  #senseOv{position:fixed;inset:0;z-index:60;pointer-events:none;
-    background:rgba(3,3,7,0);opacity:0;}
-  /* 立繪**整層壓在控制面板之下**：裁到舵輪上緣為止，超出的部分直接切掉 ——
-     看起來就是她站在操作台後面。有了這道裁切，中途尺寸比落地線大也無所謂
-     （被面板擋住），只有最後那一刻的下緣要剛好落在線上。 */
-  #senseClip{position:absolute;left:0;top:0;right:0;
-    height:var(--sense-floor,60%);overflow:hidden;}
-  /* 位置與大小全部由 JS 逐幀算（見 senseUpdate 的 senseGeom）：起點與終點的
-     錨點不同（起點對齊手、終點對齊面板線），單靠 CSS 的 transform-origin 做不到。
-     這裡只固定一個基準尺寸，變換走 translate+scale（合成層，不觸發 layout）。 */
-  #senseOv img{position:absolute;left:0;top:0;width:600px;height:auto;
-    transform-origin:0 0;}
-  #senseGlow{filter:blur(0px);opacity:0;}
-  /* 發動瞬間：邊緣脈動模糊（glow 那層自己抖，sharp 那層維持清楚） */
-  @keyframes senseEdge{
-    0%{filter:blur(4px);opacity:.25;}
-    45%{filter:blur(15px);opacity:.9;}
-    100%{filter:blur(9px);opacity:.5;}}
-  #senseOv.fire #senseGlow{animation:senseEdge .42s ease-out forwards;}
+     節奏：按住 1s 叫出立繪（同時起心跳 Anna_Beat）→ 續按 3s，立繪持續縮小、
+     透明度緩降 → 滿 3s 邊緣脈動模糊 → 由胸針放出光圈蓋滿全景 → 立繪淡出。
+     ⚠ 立繪本身**畫在 canvas 上**（drawSenseCI），不是 DOM 疊層 —— 它必須排在
+       drawPanel 之前，面板與舵輪才是真的蓋在她身上。這裡只剩光圈是 DOM，
+       因為光圈相反：它要蓋過**所有東西**，包含面板與舵輪。 */
   /* 光圈：與破防提示同一份配方（style.css 的 .energy-burst），只是要蓋滿全景，
      所以尺寸由 JS 依「胸針到最遠螢幕角」算出來塞進 --sz。 */
   .sense-ring{position:fixed;z-index:61;pointer-events:none;border-radius:50%;
@@ -182,15 +164,6 @@
 <button id="muteBtn" aria-label="Mute">🔊</button>
 <button id="backBtn">← 返回</button>
 <button id="spawnBtn">生怪</button>
-<!-- 感應演出：長按船身叫出安娜。整層 pointer-events:none —— 手指還按在船上，
-     疊層不能把後續的 pointermove/up 吃掉（吃掉就取消不了、也放不了手）。
-     兩張同一張圖：glow 在後（模糊，發動時脈動），sharp 在前。 -->
-<div id="senseOv">
-  <div id="senseClip">
-    <img id="senseGlow" alt="" aria-hidden="true">
-    <img id="senseCI" alt="">
-  </div>
-</div>
 <button id="boostBtn">×1</button>
 <div id="mapView">
   <div id="mapWrap">
@@ -995,126 +968,105 @@ const SENSE_TOTAL_MS  = SENSE_SUMMON_MS + SENSE_HOLD_MS;
 /* 胸針在插畫上的位置（比例）。光圈從這裡放出來 —— 量出來的不是目測：
    取「藍明顯高於紅且夠亮」的像素、限定在領結那一帶，取重心。 */
 const SENSE_BROOCH = { x:0.4934, y:0.3864 };
-/* 手的中心（比例）。起點要「放大到整個畫面、以手為中心」，所以錨的是這一點。
-   量法同胸針：手套是深棕、低飽和偏暗，限定在胸口那一帶取重心。 */
-const SENSE_HAND = { x:0.5029, y:0.5756 };
-const SENSE_ART_BASE = 600;                       // CSS 裡固定的基準尺寸
-const SENSE_ALPHA0 = 0.72, SENSE_ALPHA1 = 0.26;   // 透明度緩降
-
-/* 起點／終點的幾何。插畫是正方形，而且**四邊都有內容**（下緣 100% 不透明＝
-   裙襬直接切齊圖框，左右上緣也各有 5~15% 的髮絲），所以只要圖比視窗小，
-   邊界就會在畫面裡露出一條斷口。
-     起點：放大到蓋滿整個畫面，手的中心對齊畫面中心 → 四邊都在畫面外。
-     終點：**下緣切齊面板線**，而左右與上緣**仍在畫面外** —— 這是唯一
-           能同時滿足「底切齊」與「不露斷口」的解。
-   ⚠ 所以終點尺寸不是「整張塞得下」，而是 max(視窗寬, 落地線)。塞得下反而
-     會把髮尾的切口露出來。 */
-function senseGeom(){
-  const hx=SENSE_HAND.x, hy=SENSE_HAND.y;
-  const floorY=Math.max(40, VIEWH-HELM_OUT);      // 舵輪上緣＝立繪的落地線
-  // 起點：四個方向都要蓋過去，取最嚴格的那個；再放 3% 餘裕
-  const S0=Math.max(W/(2*hx), W/(2*(1-hx)), H/(2*hy), H/(2*(1-hy)))*1.03;
-  const S1=Math.max(W, floorY)*1.06;
-  return { floorY, S0, S1,
-           bottom0: H/2+(1-hy)*S0,                // 手對齊畫面中心時，下緣落在哪
-           cx0:     W/2-(hx-0.5)*S0 };            // 同上，圖的水平中心
-}
-const STAR_KEY     = 'tivot_stars_v1';
-const STAR_KIND    = {峰:'孤峰',崖:'斷崖',谷:'窪谷',岬:'海岬',水:'水濱',島:'孤島'};
+const STAR_KEY  = 'tivot_stars_v1';
+const STAR_KIND = {峰:'孤峰',崖:'斷崖',谷:'窪谷',岬:'海岬',水:'水濱',島:'孤島'};
 let STARS=[];                   // starpoints.json 的內容
-const starFound=new Set();      // 已發現的 id
+const starFound=new Set();      // 已發現的 id（存 localStorage）
 try{ (JSON.parse(localStorage.getItem(STAR_KEY)||'[]')||[]).forEach(id=>starFound.add(id)); }catch(_){}
 function saveStars(){ try{ localStorage.setItem(STAR_KEY,JSON.stringify([...starFound])); }catch(_){} }
 fetch('starpoints.json').then(r=>r.ok?r.json():null)
   .then(J=>{ if(J&&J.points) STARS=J.points; }).catch(()=>{});
+/* 起訖構圖：由 Ray 的兩張參考圖（start.png / end.png，519×811）用 fit_ci.py
+   反解出來的，不是算的。工具走**遮罩式 NCC**比對梯度圖 —— 立繪是半透明疊上去
+   的，顏色被底下的場景拉走，但邊緣結構還在。
+     start: S=826  左上(-164,-106)  ncc=0.56
+     end:   S=526  左上(  -8,  18)  ncc=0.82
+
+   ⚠ 錨點是**胸針**不是手。兩張圖裡胸針幾乎不動（(244,213)→(252,221)，差 8px），
+     手則移了 48px —— 所以這段演出實際上是「繞著胸口縮放」。順帶一提這跟光圈
+     的圓心是同一個點，收得剛好。
+   ⚠ 尺寸鎖在 **3D 區高（floorY）** 不是視窗寬：Ray 那台是 519×811（0.64），
+     鎖寬的話在 375×812 這種瘦長機上，結束時她的裙襬會離面板 62px 遠。
+     另外壓一條「至少要有視窗寬」的下限，免得寬螢幕上左右露出髮尾的切口。 */
+const SENSE_FIT = {
+  s0:1.604, s1:1.021,      // 尺寸 ÷ floorY
+  bx0:0.470, bx1:0.486,    // 胸針 x ÷ 視窗寬
+  by0:0.414, by1:0.429,    // 胸針 y ÷ floorY
+  w0:1.10,   w1:1.005,     // 尺寸 ÷ 視窗寬 的下限（只有寬螢幕會綁到）
+};
+const SENSE_ART_BASE = 600;                       // CSS 裡固定的基準尺寸
+const SENSE_ALPHA0 = 0.72, SENSE_ALPHA1 = 0.26;   // 透明度緩降
+
+/* k=0..1 → 這一刻的尺寸與左上角。 */
+function senseGeom(k){
+  const F=SENSE_FIT, floorY=Math.max(40, VIEWH-HELM_OUT);
+  const lerp2=(a,b)=>a+(b-a)*k;
+  const S=Math.max(floorY*lerp2(F.s0,F.s1), W*lerp2(F.w0,F.w1));
+  const bx=W*lerp2(F.bx0,F.bx1), by=floorY*lerp2(F.by0,F.by1);
+  return { floorY, S,
+           left: bx-SENSE_BROOCH.x*S,
+           top:  by-SENSE_BROOCH.y*S };
+}
 
 let senseT0=0;                  // 開始按住船身的時戳（0＝沒在按）
 let senseOn=false;              // 立繪是否已經叫出來
-let senseFiring=false;          // 發動演出進行中（此時放開手也不取消）
+let senseFireAt=0;              // 發動演出的起始時戳（0＝沒在演）
 let starNew=[];                 // 這一次感應到的點：飛行畫面要標出來
 
-/* StartBT_SE：與出陣鈕同一顆神楽鈴。先建好元素，按下去才不會等載入。
+const SENSE_EDGE_MS = 420;      // 邊緣脈動模糊
+const SENSE_RING_MS = 380;      // 脈動跑一段才放光圈
+const SENSE_OUT_MS  = 520;      // 角色淡出
+const SENSE_FIRE_MS = SENSE_RING_MS + SENSE_OUT_MS;
+
+/* 音：召喚的心跳（立繪出現的同一刻）與命中的神楽鈴。
    ⚠ 走 HTMLAudioElement 不走 WebAudio —— 這一頁沒有 AudioContext，
      而發動的那一刻手指本來就在螢幕上（使用者手勢），播得動。 */
-const senseSE = new Audio('../resources/General/StartBT_SE.mp3');
-senseSE.preload='auto';
+const senseBeat = new Audio('Anna_Beat.mp3');           senseBeat.preload='auto';
+const senseSE   = new Audio('../resources/General/StartBT_SE.mp3'); senseSE.preload='auto';
+const playSfx=a=>{ try{ a.currentTime=0; const q=a.play(); if(q) q.catch(()=>{}); }catch(_){} };
 
-function senseEls(){
-  return { ov:document.getElementById('senseOv'),
-           ci:document.getElementById('senseCI'),
-           gl:document.getElementById('senseGlow') };
-}
 /* 立繪不進開場的擋畫面預載，但**開場結束後要在背景先抓好**。
    ⚠ 召喚只有 1 秒，來不及現抓：原檔 PNG 2.5MB，手機網路上那 1 秒鐘只會看到
-     一片暗畫面沒有人。轉成 webp 之後 460KB（18%），再加上開場後就先暖起來，
-     長按的時候通常已經在快取裡。 */
-let senseArtSet=false;
+     一片暗畫面沒有人。轉成 webp 之後 460KB（18%），再加上開場後就先暖起來。 */
+let senseImg=null;
 function senseArt(){
-  if(senseArtSet) return;
-  senseArtSet=true;
-  const {ci,gl}=senseEls();
-  const src='../resources/partner/Anna_CI_Search.webp';
-  if(ci) ci.src=src;
-  if(gl) gl.src=src;
+  if(senseImg) return;
+  senseImg=new Image();
+  senseImg.src='../resources/partner/Anna_CI_Search.webp';
 }
 
 function senseCancel(){
-  if(senseFiring) return;                 // 演出中放手不算取消
+  if(senseFireAt) return;                 // 演出中放手不算取消
   senseT0=0; senseOn=false;
-  const {ov}=senseEls();
-  if(ov){ ov.style.opacity='0'; ov.style.background='rgba(3,3,7,0)'; }
 }
 
-/* 每幀跟著「按了多久」推進。⚠ 不用 CSS transition：它要跟手指同步，
-   中途放開必須停在當下的值，transition 會自己跑完。 */
+/* 每幀推進狀態。⚠ 這裡**不畫任何東西** —— 立繪是畫在 canvas 上的
+   （見 drawSenseCI），因為它必須排在 drawPanel 之前才會被面板與舵輪蓋住。 */
 function senseUpdate(now){
-  if(!senseT0 || senseFiring) return;
+  if(!senseT0 || senseFireAt) return;
   const held=now-senseT0;
-  const {ov,ci,gl}=senseEls();
-  if(!ov) return;
-  if(held<SENSE_SUMMON_MS){
-    if(senseOn) senseCancel();
-    return;
+  if(held<SENSE_SUMMON_MS){ if(senseOn) senseCancel(); return; }
+  if(!senseOn){
+    senseOn=true; senseArt();
+    playSfx(senseBeat);                   // 立繪出現的同一刻起心跳
   }
-  if(!senseOn){ senseOn=true; senseArt(); }
-  // 0..1：立繪出現之後的持續時間
-  const k=clamp((held-SENSE_SUMMON_MS)/SENSE_HOLD_MS,0,1);
-  const fadeIn=clamp((held-SENSE_SUMMON_MS)/260,0,1);      // 插入時的淡入
-  const al=(SENSE_ALPHA0+(SENSE_ALPHA1-SENSE_ALPHA0)*k)*fadeIn;
-  const G=senseGeom();
-  const S=G.S0+(G.S1-G.S0)*k;                              // 緩速縮小
-  /* ⚠ 下緣是**內插**過去的，不是一開始就釘住：起點錨在手、終點錨在面板線。
-     bottom0 恰好落在畫面底（起點的尺寸就是被這一項決定的），所以整段
-     單調往上收到 floorY —— 任何一刻都不會高於面板線，也就不會露出下緣。 */
-  const bottom=G.bottom0+(G.floorY-G.bottom0)*k;
-  const cx=G.cx0+(W/2-G.cx0)*k;
-  const q=(S/SENSE_ART_BASE);
-  const tf='translate('+(cx-S/2).toFixed(1)+'px,'+(bottom-S).toFixed(1)+'px) scale('+q.toFixed(4)+')';
-  ov.style.opacity='1';
-  ov.style.background='rgba(3,3,7,'+(0.55*fadeIn).toFixed(3)+')';
-  if(ci){ ci.style.transform=tf; ci.style.opacity=al.toFixed(3); }
-  if(gl){ gl.style.transform=tf; }
   if(held>=SENSE_TOTAL_MS) senseFire();
 }
 
-/* 發動：邊緣脈動模糊 → 胸針放出光圈蓋滿全景 → 立繪淡出 → 判定。 */
+/* 發動：邊緣脈動模糊 → 胸針放出光圈蓋滿全景 → 立繪淡出 → 判定。
+   光圈是 DOM（要蓋過操作區，含面板與舵輪），立繪是 canvas（要被面板蓋住）—— 
+   兩者刻意不同層。 */
 function senseFire(){
-  senseFiring=true; senseT0=0;
-  const {ov,ci}=senseEls();
-  if(ov) ov.classList.add('fire');
+  senseFireAt=performance.now(); senseT0=0;
   setTimeout(()=>{
-    // 光圈的圓心＝胸針在螢幕上的實際位置（立繪是等比縮放置中的，量得到）
-    let cx=innerWidth/2, cy=innerHeight/2;
-    if(ci){ const r=ci.getBoundingClientRect();
-            cx=r.left+r.width*SENSE_BROOCH.x; cy=r.top+r.height*SENSE_BROOCH.y; }
+    const G=senseGeom(1);
+    const cx=G.left+SENSE_BROOCH.x*G.S, cy=G.top+SENSE_BROOCH.y*G.S;
     /* 蓋滿全景（含操作區）：取胸針到四個螢幕角的最遠距離。
-       ⚠ 換算要對準**亮帶**不是外緣。漸層的亮帶在半徑 75% 處（84~93% 已經
-         淡到幾乎透明），照 /0.93 算的話真正發亮的那一圈只掃到 far 的八成，
-         四個角只被那條看不見的尾巴掃過 —— 看起來就是「光圈沒到邊就沒了」。
-         除以 0.75 才是亮帶自己走到角落。 */
-    const far=Math.max(Math.hypot(cx,cy), Math.hypot(innerWidth-cx,cy),
-                       Math.hypot(cx,innerHeight-cy),
-                       Math.hypot(innerWidth-cx,innerHeight-cy));
+       ⚠ 換算要對準**亮帶**不是外緣。漸層的亮帶在半徑 75%（84~93% 已經淡到
+         幾乎透明），照 /0.93 算的話真正發亮的那一圈只掃到 far 的八成，
+         四個角只被那條看不見的尾巴掃過。 */
+    const far=Math.max(Math.hypot(cx,cy), Math.hypot(W-cx,cy),
+                       Math.hypot(cx,H-cy), Math.hypot(W-cx,H-cy));
     const d=document.createElement('div');
     d.className='sense-ring';
     d.style.setProperty('--sz',Math.ceil(far*2/0.75)+'px');
@@ -1123,18 +1075,46 @@ function senseFire(){
     setTimeout(()=>d.remove(),820);
 
     starNew=senseStars();
-    starNewAt=performance.now();     // 「剛找到」的高亮從這一刻起算
-    if(starNew.length){
-      try{ senseSE.currentTime=0; const q=senseSE.play(); if(q) q.catch(()=>{}); }catch(_){}
-    }
-    // 角色淡出
-    if(ov){ ov.style.transition='opacity .5s ease, background .5s ease';
-            ov.style.opacity='0'; ov.style.background='rgba(3,3,7,0)'; }
-    setTimeout(()=>{
-      senseFiring=false; senseOn=false;
-      if(ov){ ov.classList.remove('fire'); ov.style.transition=''; }
-    },520);
-  },380);   // 讓邊緣脈動先跑一段再放光圈
+    starNewAt=performance.now();          // 「剛找到」的高亮從這一刻起算
+    if(starNew.length) playSfx(senseSE);
+  },SENSE_RING_MS);
+}
+
+/* 立繪：畫在 canvas 上，而且**排在 drawPanel 之前** —— 這樣面板與舵輪是真的
+   蓋在她身上，不是靠裁切避開。差別在舵輪是圓的：裁切會留一條水平直線，
+   輪緣兩側那塊仍是 3D 畫面，她在那裡本來就該看得見。 */
+function drawSenseCI(now){
+  if(!senseOn && !senseFireAt) return;
+  if(!senseImg || !senseImg.width) return;
+  let k=1, fade=1;
+  if(senseFireAt){
+    const t=now-senseFireAt;
+    if(t>=SENSE_FIRE_MS){ senseFireAt=0; senseOn=false; return; }
+    fade=1-clamp((t-SENSE_RING_MS)/SENSE_OUT_MS,0,1);
+  }else{
+    const held=now-senseT0;
+    k=clamp((held-SENSE_SUMMON_MS)/SENSE_HOLD_MS,0,1);
+    fade=clamp((held-SENSE_SUMMON_MS)/260,0,1);          // 插入時的淡入
+  }
+  const G=senseGeom(k);
+  const al=(SENSE_ALPHA0+(SENSE_ALPHA1-SENSE_ALPHA0)*k)*fade;
+  ctx.save();
+  ctx.fillStyle='rgba(3,3,7,'+(0.55*fade).toFixed(3)+')';
+  ctx.fillRect(0,0,W,VIEWH);
+  /* 邊緣脈動模糊：發動那一下，先疊一層糊過的自己再蓋上清楚的。
+     ⚠ ctx.filter 不是每個瀏覽器都有 —— 沒有就跳過這一層，只少一個特效，
+       不會整段掛掉（同 decode() 那個教訓）。 */
+  if(senseFireAt && ctx.filter!==undefined){
+    const t=clamp((now-senseFireAt)/SENSE_EDGE_MS,0,1);
+    const b=4+11*Math.sin(t*Math.PI);
+    ctx.globalAlpha=al*(0.25+0.65*Math.sin(t*Math.PI));
+    ctx.filter='blur('+b.toFixed(1)+'px)';
+    ctx.drawImage(senseImg,G.left,G.top,G.S,G.S);
+    ctx.filter='none';
+  }
+  ctx.globalAlpha=al;
+  ctx.drawImage(senseImg,G.left,G.top,G.S,G.S);
+  ctx.restore();
 }
 
 /* 判定：回傳這一次新發現的點（回饋由 senseFire 的演出負責）。 */
@@ -2012,9 +1992,6 @@ function resize(){
     const s=(i+0.5)/BW*2-1;           // 欄位在視錐內的橫向比例 −1..1
     curvK[i]=(1+s*s)/(2*PLANET_R);    // 邊緣 s=±1 時是中央的兩倍 → 地平線兩側下彎
   }
-  // 立繪裁切線＝舵輪上緣（舵輪會突出 3D 視窗 HELM_OUT 像素）
-  document.documentElement.style.setProperty(
-    '--sense-floor', Math.max(40, VIEWH-HELM_OUT)+'px');
   prevH=new Float32Array(BW);
   topFrac=new Float32Array(BW);
   ZTOP=new Int32Array(ZSLICES*BW);
@@ -3078,6 +3055,9 @@ function render(now){
   drawShip(now);
   vignette(S);
   drawRegionBanner(now);
+  /* ⚠ 感應立繪畫在這裡：3D 內容之上、**drawPanel 之前**。順序就是層次 ——
+     之後 drawPanel 畫的面板與舵輪會蓋住她，不必也不該用裁切去避開。 */
+  drawSenseCI(now);
   ctx.restore();
 
   drawPanel(S);
@@ -5705,8 +5685,8 @@ const bootUI=(()=>{
     initPuffs();
     bootUI.set(1);
     window.__loadMs=Math.round(performance.now()-t0);
-    // 感應立繪：開場跑完才在背景抓（不擋開場，但長按時要已經在手上）
-    setTimeout(senseArt, 1200);
+    // 感應的素材：開場跑完才在背景抓（不擋開場，但長按時要已經在手上）
+    setTimeout(()=>{ senseArt(); senseBeat.load(); senseSE.load(); }, 1200);
     window.__map=MAPW+'×'+MAPH;
     // 進度圈跑到滿再收，不要瞬間閃掉
     setTimeout(()=>bootUI.done(),260);
