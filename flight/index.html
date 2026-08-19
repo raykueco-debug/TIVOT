@@ -1084,15 +1084,17 @@ function senseArt(){
 }
 
 /* ══ 探索疲勞 ══
-   一分鐘內連探三次都**沒有結果**，安娜會喊累，接著 60 秒不讓你再探。
-   ⚠ 「有成功探索就不顯示」：找到東西就把計數清掉 —— 疲勞是要擋住無腦
-     亂按，不是懲罰真的在找的人。
-   ⚠ 提示**不與探索演出重疊**：喊累那句要等立繪淡出之後才出現（見 annaSay.at）。
-     冷卻期間再按則是當場就跳，因為那時根本沒有演出。 */
-const SENSE_TIRED_N   = 3;      // 一分鐘內第幾次沒結果會喊累
-const SENSE_TIRED_WIN = 60000;  // 「一分鐘內」
-const SENSE_CD_MS     = 60000;  // 喊累之後的冷卻
-const ANNA_SAY_MS     = 3200;   // 提示停留多久
+   60 秒內按到第 4 次，那一次**不進行探索**，直接跳抱怨（Ray 指定）：
+     第 4 次      安娜「......我累了。」→ 索拉娜或諾薇兒接一句
+     第 5 次以後  安娜「讓我休息一下......」
+   ⚠ 算的是**按下的次數**不是失敗次數 —— 擋的是狂按，跟有沒有找到無關。
+   ⚠ 但**找到東西就把計數清掉**：真的在找的人不該被懲罰。
+   ⚠ 視窗是滑動的（每次都丟掉 60 秒前的），不是固定冷卻 —— 停手滿一分鐘
+     自動恢復，不必另外記到期時間。
+   ⚠ 抱怨當場跳：第 4 次根本沒有探索演出，撞不到。 */
+const SENSE_TRY_N   = 4;        // 60 秒內第幾次按下會變成抱怨
+const SENSE_TRY_WIN = 60000;    // 滑動視窗
+const ANNA_SAY_MS   = 3200;     // 每一拍停留多久
 /* ══ 對話立繪的取景表 ══
    逐角色一組，**不要共用一組數字** —— 每張插畫的構圖不同（人在畫面裡多大、
    頭在哪裡都不一樣），而且角色本來就有身高差，那個差就是靠 h 表現的。
@@ -1111,17 +1113,29 @@ const ANNA_SAY_MS     = 3200;   // 提示停留多久
      肩膀才展開）—— 所以早期版本取上半 45% 時，頭只佔畫面高度的 29%，
      怎麼放大都是一個小頭配一大截裙子。 */
 const PORTRAIT = {
-  anna: { src:'../resources/partner/Anna_CI_front.webp',
-          crop:0.62, h:0.90, cx:0.72 },   // 切在大腿，撐滿 3D 視窗
+  anna:     { name:'安娜',   src:'../resources/partner/Anna_CI_front.webp',
+              crop:0.62, h:0.90, cx:0.72 },
+  sorana:   { name:'索拉娜', src:'../resources/partner/Sorana_CI_front.webp',
+              crop:0.62, h:0.90, cx:0.26 },
+  nouvelle: { name:'諾薇兒', src:'../resources/partner/Nouvelle_CI_front.webp',
+              crop:0.62, h:0.90, cx:0.26 },
 };
-let senseMiss=[];               // 最近幾次「沒找到」的時戳
-let senseCdUntil=0;
-let annaSay=null;               // {at,text}：at＝該出現的時戳
-let annaImg=null;
-function annaArt(){
-  if(annaImg) return;
-  annaImg=new Image();
-  annaImg.src=PORTRAIT.anna.src;
+/* ⚠ 三個人現在 h 都是 0.90 ＝ **畫面上一樣高**。三張插畫都是 1024×1536 的
+   head-to-toe 全身框（實測人物像素高 1520／1522／1530，彼此差不到 1%），
+   所以**圖本身給不出身高資訊** —— 身高差只能由設定決定。
+   要表現身高差就改各自的 h（矮的給小一點），不要我猜。 */
+let senseTries=[];              // 最近幾次「按下探索」的時戳（滑動視窗）
+/* 對白是**一串拍子**不是一句：疲勞那段是安娜說完換人接話，兩拍。 */
+let sayQueue=null, sayAt=0, sayIdx=0;
+const portraitImg={};
+function portraitArt(who){
+  if(portraitImg[who] || !PORTRAIT[who]) return;
+  const im=new Image(); im.src=PORTRAIT[who].src;
+  portraitImg[who]=im;
+}
+function say(beats, at){
+  sayQueue=beats; sayIdx=0; sayAt=at;
+  for(const b of beats) portraitArt(b.who);
 }
 
 let senseOnAt=0;                // 立繪出現（＝心跳該起播）的時戳
@@ -1190,9 +1204,20 @@ function senseUpdate(now){
   const held=now-senseT0;
   if(held<SENSE_SUMMON_MS){ if(senseOn) senseCancel(); return; }
   if(!senseOn){
-    if(now<senseCdUntil){                 // 冷卻中：連召喚都不給，當場回一句
-      annaSay={at:now, text:'讓我休息一下......'};
-      annaArt(); senseT0=0; return;
+    senseTries=senseTries.filter(t=>now-t<SENSE_TRY_WIN);
+    senseTries.push(now);
+    if(senseTries.length>=SENSE_TRY_N){
+      /* 第 4 次是兩拍的對白；之後每次只回一句 —— 一直重播整段會變成懲罰
+         而不是玩笑。 */
+      if(senseTries.length===SENSE_TRY_N){
+        const chime = Math.random()<0.5
+          ? {who:'sorana',   text:'真會使喚人耶！'}
+          : {who:'nouvelle', text:'讓安娜先休息一下吧？'};
+        say([{who:'anna', text:'......我累了。'}, chime], now);
+      }else{
+        say([{who:'anna', text:'讓我休息一下......'}], now);
+      }
+      senseT0=0; return;
     }
     senseOn=true; senseArt();
     senseOnAt=now;                        // 牆鐘備援的起點（見 senseBeatT）
@@ -1243,75 +1268,65 @@ function senseRingCheck(now){
     starNewAt=tn;                         // 「剛找到」的高亮從這一刻起算
     if(starNew.length){
       playSfx(senseSE);
-      senseMiss.length=0;                 // 有成果就不算疲勞
-    }else{
-      senseMiss.push(tn);
-      senseMiss=senseMiss.filter(t=>tn-t<SENSE_TIRED_WIN);
-      if(senseMiss.length>=SENSE_TIRED_N){
-        senseMiss.length=0;
-        senseCdUntil=tn+SENSE_CD_MS;
-        // ⚠ 等立繪淡出完才出現，不與探索演出重疊
-        annaSay={at:tn+SENSE_OUT_MS+180, text:'......我累了。'};
-        annaArt();
-      }
+      senseTries.length=0;                // 有成果就把疲勞計數清掉
     }
   }
 }
 
-/* 疲勞提示：安娜半身 + 對話框。
-   ⚠ 與探索演出**互斥**：只要 senseOn/senseFireAt 還在就整段不畫（Ray 指定
-     不要重疊）。喊累那句本來就排在立繪淡出之後，這裡是第二道保險。
-   ⚠ 半身＝只取插畫上半 55%：這張是 1024×1536 的全身圖，整張塞進來頭會小到
-     看不清表情，而這個提示要的就是表情。
-   ⚠ 同樣畫在 drawPanel 之前 —— 面板與舵輪蓋在她身上，跟探索立繪一致。 */
 /* 橫條羅盤帶（方向計）的外框。
-   ⚠ drawPanel 與疲勞對話框都吃這一份 —— 兩邊各自寫死遲早會走鐘，而「對話框
-     與方向計同寬」是 Ray 指定的對齊關係，走鐘就看得出來。 */
+   ⚠ drawPanel 與對話框都吃這一份 —— 兩邊各自寫死遲早會走鐘，而「對話框與
+     方向計同寬」是 Ray 指定的對齊關係，走鐘一眼就看得出來。 */
 function compassRect(){
   const w=Math.min(W*0.62,250)+12;
   return { x:Math.round(W/2-w/2), y:Math.round(VIEWH-HELM_OUT-24-17),
            w:Math.round(w), h:30 };
 }
 
-function drawAnnaSay(now){
-  if(!annaSay) return;
-  if(senseOn || senseFireAt) return;              // 探索演出還在，讓位
-  if(now<annaSay.at) return;                      // 還沒輪到（等演出收乾淨）
-  const t=now-annaSay.at;
-  if(t>=ANNA_SAY_MS){ annaSay=null; return; }
+/* 對白：多位角色同台。
+   ⚠ 與探索演出**互斥**：只要 senseOn/senseFireAt 還在就整段不畫（Ray 指定
+     不要重疊）。探索成功那條路徑本來就排在立繪淡出之後，這裡是第二道保險。
+   ⚠ 沒在說話的人**壓暗**（VN 的老規矩）—— 兩個人一樣亮的話看不出是誰在講。
+   ⚠ 畫在 drawPanel 之前，面板與舵輪蓋在她們身上，跟探索立繪一致。 */
+function drawTalk(now){
+  if(!sayQueue) return;
+  if(senseOn || senseFireAt) return;
+  if(now<sayAt) return;
+  let t=now-sayAt;
+  while(t>=ANNA_SAY_MS && sayIdx<sayQueue.length-1){ sayIdx++; sayAt+=ANNA_SAY_MS; t-=ANNA_SAY_MS; }
+  if(t>=ANNA_SAY_MS){ sayQueue=null; return; }
   const a=clamp(Math.min(t/220,(ANNA_SAY_MS-t)/420),0,1);
-  const floorY=Math.max(40, VIEWH-HELM_OUT);
+  const speaker=sayQueue[sayIdx].who;
   const bh=Math.round(clamp(VIEWH*0.115,48,70));
-  /* 與方向計同寬、疊在它正上方（Ray 指定）。
-     ⚠ 一定要讓開羅盤帶：它畫在 drawPanel（比這裡晚），第一版框底壓到它身上，
-       台詞被整條蓋掉。 */
+  /* 對話框與方向計同寬、疊在它正上方（Ray 指定）。
+     ⚠ 一定要讓開羅盤帶：它畫在 drawPanel（比這裡晚），框底壓到它身上的話
+       台詞會被整條蓋掉。 */
   const C=compassRect();
   const bx=C.x, bw=C.w, by=C.y-8-bh;
   ctx.save();
-  ctx.globalAlpha=a;
-  // 立繪先畫、對話框後畫 —— 框要壓在她身上，不然下襬會蓋掉台詞
-  if(annaImg && annaImg.width){
-    /* ⚠ 底邊切齊**控制面板**（VIEWH），不是切齊對話框 —— 對齊面板她才站得住，
-       否則整個人浮在畫面中間。突出面板的舵輪會自然蓋住她的下襬（她畫在
-       drawPanel 之前），那正是想要的層次。
-       ⚠ 「人物大一點」是靠**收緊裁切**（0.55 → ANNA_CROP）而不是把整體放大：
-         同樣的畫面高度下，取得越少臉就越大。整體高度仍守著 1/3 的指定。 */
-    const P=PORTRAIT.anna;
-    const sh=Math.round(annaImg.height*P.crop);
+  // 已經上過場的人都留在台上；立繪先畫、對話框後畫（框要壓在她們身上）
+  for(let i=0;i<=sayIdx;i++){
+    const who=sayQueue[i].who, P=PORTRAIT[who], im=portraitImg[who];
+    if(!P || !im || !im.width) continue;
+    const sh=Math.round(im.height*P.crop);
     const ph=Math.round(VIEWH*P.h);
-    const pw=Math.round(ph*annaImg.width/sh);
-    ctx.drawImage(annaImg, 0,0,annaImg.width,sh,
+    const pw=Math.round(ph*im.width/sh);
+    ctx.globalAlpha=a*(who===speaker?1:0.45);
+    /* ⚠ 底邊切齊**控制面板**（VIEWH），不是切齊對話框 —— 對齊面板人才站得住。
+       突出面板的舵輪會自然蓋住下襬（畫在 drawPanel 之前），那正是想要的層次。
+       ⚠ 水平錨在**身體中線**不是圖框邊緣：這些插畫左右留白很多。 */
+    ctx.drawImage(im, 0,0,im.width,sh,
                   Math.round(W*P.cx-pw/2), Math.round(VIEWH-ph), pw, ph);
   }
+  ctx.globalAlpha=a;
   ctx.fillStyle='rgba(10,9,16,.84)';
   ctx.fillRect(bx,by,bw,bh);
   ctx.strokeStyle='rgba(201,162,39,.55)'; ctx.lineWidth=1;
   ctx.strokeRect(bx+0.5,by+0.5,bw-1,bh-1);
   ctx.textAlign='left';
   ctx.font='11px "Noto Serif TC",serif';
-  ctx.fillStyle='#c9a227'; ctx.fillText('安娜', bx+13, by+19);
+  ctx.fillStyle='#c9a227'; ctx.fillText(PORTRAIT[speaker].name, bx+13, by+19);
   ctx.font='15px "Noto Serif TC",serif';
-  ctx.fillStyle='#ece6d8'; ctx.fillText(annaSay.text, bx+13, by+bh-15);
+  ctx.fillStyle='#ece6d8'; ctx.fillText(sayQueue[sayIdx].text, bx+13, by+bh-15);
   ctx.restore();
 }
 
@@ -3361,7 +3376,7 @@ function render(now){
   /* ⚠ 感應立繪畫在這裡：3D 內容之上、**drawPanel 之前**。順序就是層次 ——
      之後 drawPanel 畫的面板與舵輪會蓋住她，不必也不該用裁切去避開。 */
   drawSenseCI(now);
-  drawAnnaSay(now);
+  drawTalk(now);
   ctx.restore();
 
   drawPanel(S);
@@ -5992,7 +6007,8 @@ const bootUI=(()=>{
     bootUI.set(1);
     window.__loadMs=Math.round(performance.now()-t0);
     // 感應的素材：開場跑完才在背景抓（不擋開場，但長按時要已經在手上）
-    setTimeout(()=>{ senseArt(); senseBeat.load(); senseSE.load(); }, 1200);
+    setTimeout(()=>{ senseArt(); senseBeat.load(); senseSE.load();
+                     for(const k in PORTRAIT) portraitArt(k); }, 1200);
     window.__map=MAPW+'×'+MAPH;
     // 進度圈跑到滿再收，不要瞬間閃掉
     setTimeout(()=>bootUI.done(),260);
