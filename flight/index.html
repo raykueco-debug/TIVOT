@@ -2697,8 +2697,11 @@ mapCv.addEventListener('pointerup',mUp);
 mapCv.addEventListener('pointercancel',mUp);
 addEventListener('resize',()=>{ if(mapOpen) drawMap(); });
 
-/* ══ 航行 BGM ══
-   停船＝../resources/audio/bgm/bgm_flight_idle.mp3，航行＝../resources/audio/bgm/bgm_flight_sail.mp3，兩者依速度交叉淡入淡出。
+/* ══ 航行的音 ══
+   三軓：音樂（bgm_flight）定音量一直播；航行／停船的**環境音**
+   （se_flight_sail_loop／se_flight_idle_loop）依速度交叉，**疊在音樂之上**。
+   ⚠ 舊版把那兩支環境音當成「兩首 BGM」在輮播 —— 換上真正的音樂之後
+     航行的效果音就整個消失了（它佔掉了 Sail 那一軓）。堆疊，不是輮播。
 
    ▍為什麼要兩個 <audio> 疊著跑
    單一元素做不到「無斷點循環」：audio.loop 是硬接回開頭（尾巴還在響、
@@ -2711,7 +2714,9 @@ addEventListener('resize',()=>{ if(mapOpen) drawMap(); });
    ▍自動播放
    從首頁點「試飛」是換頁，手勢不會延續 → 先試播，被擋就掛一次性的
    pointerdown/keydown 補播；玩家一碰畫面就會響。 */
-const BGM_VOL=0.2695, MIX_RATE=0.014;  // 0.55 × 0.70 × 0.70（全域下調，與 config.js bgmVol 同步）；MIX_RATE：兩曲交叉約 3.5 秒
+/* 三個音量旋鈕。BGM_VOL 與 config.js 的 bgmVol 同源（0.55 × 0.70 × 0.70）。
+   ⚠ AMB_VOL 壓在音樂之下一點：環境音要在，但不該蓋掉曲子。 */
+const BGM_VOL=0.2695, AMB_VOL=0.22, MIX_RATE=0.014;  // MIX_RATE：動／停交叉約 3.5 秒
 /* xf＝這一首的交叉淡入秒數。⚠ 逐曲給，不共用一個常數：
    循環的實際週期是 (曲長 − xf)，所以 xf 決定了「接回去的地方落在第幾小節」。
    對不上小節線的話每循環一次就走音一次 —— 曲子越長越明顯。 */
@@ -2768,7 +2773,18 @@ function makeLoop(src, xf){
    ⚠ 尾巴不是淡出：實測結尾仍有 −8dB、最後 0.37s 都還有起音，而且尾與頭的
      波形相關是 0 —— 它是樂句延續，不是接回開頭的重複段。所以只能靠交叉，
      不能靠對齊切點。 */
-const bgmSail=makeLoop('../resources/audio/bgm/bgm_flight_sail.mp3', 4.75), bgmIdle=makeLoop('../resources/audio/bgm/bgm_flight_idle.mp3', 5.0);
+/* ══ 飛行的三軌音 ══
+   ⚠ 這裡原本是錯的：Sail 與 Standby 被當成「兩首 BGM」在依速度**交叉輪播**，
+     但它們其實是**航行環境音**（動／停兩種），不是音樂。實測每秒起音
+     0.95／0.61（稀疏事件＝環境音），而真正的音樂 OverWorld 是 2.04。
+     換上 OverWorld 之後環境音就整個消失了 —— 因為它佔掉了 Sail 那一軌。
+   正解是**堆疊**不是輪播：
+     bgmMain  音樂，定音量一直播（OverWorld_Orchestra）
+     ambSail  航行環境音  ┐ 這兩軌依速度交叉，疊在音樂之上
+     ambIdle  停船環境音  ┘ */
+const bgmMain=makeLoop('../resources/audio/bgm/bgm_flight.mp3', 4.75);
+const ambSail=makeLoop('../resources/audio/se/se_flight_sail_loop.mp3', 5.0);
+const ambIdle=makeLoop('../resources/audio/se/se_flight_idle_loop.mp3', 5.0);
 let sailMix=0;                       // 0＝停船 1＝航行，收斂跟隨避免忽大忽小
 /* 全域靜音：與主程式（index.html / main.js）共用 localStorage 的同一把鑰匙。
    ⚠ 這裡是另一個頁面、另一套 BGM（HTMLAudio 而非 audio.js 的 Web Audio），
@@ -2790,16 +2806,17 @@ function updateBgm(dt){
   const want=(Math.abs(cam.speed)>0.06)?1:0;
   sailMix+=(want-sailMix)*(1-Math.pow(1-MIX_RATE, dt/16.67));
   const mk=muted?0:1;
-  bgmSail.tick(BGM_VOL*sailMix*mk);
-  bgmIdle.tick(BGM_VOL*(1-sailMix)*mk);
+  bgmMain.tick(BGM_VOL*mk);                    // 音樂：不隨速度變
+  ambSail.tick(AMB_VOL*sailMix*mk);            // 環境音：動／停交叉，疊在音樂上
+  ambIdle.tick(AMB_VOL*(1-sailMix)*mk);
 }
 (function startBgm(){
   /* ⚠ 監聽器要**確認真的播出來**才移除。play() 回傳的是 Promise，
      成功與否在下一個 tick 才知道，所以 kick 當下不能立刻判斷 ——
      每次事件都重試一次，等 playing() 轉 true 才收工。 */
   const kick=()=>{
-    bgmSail.start(); bgmIdle.start();
-    if(bgmSail.playing() && bgmIdle.playing()){
+    bgmMain.start(); ambSail.start(); ambIdle.start();
+    if(bgmMain.playing() && ambSail.playing() && ambIdle.playing()){
       removeEventListener('pointerdown',kick); removeEventListener('keydown',kick);
     }
   };
