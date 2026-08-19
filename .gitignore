@@ -6,3 +6,4 @@ __pycache__/
 flight/city/*_grid.png
 flight/Reference/_*
 .DS_Store
+flight/starpoints_preview*.png

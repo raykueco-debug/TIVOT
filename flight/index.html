@@ -934,6 +934,62 @@ const PLACES=[
   {x:2030,y:590, name:'東方泊地',     type:'泊地'},
 ];
 
+/* ══ 隱藏點位（★）══
+   build_starpoints.py 從地形挑出 40 個「地形特殊」的位置（孤峰／斷崖／窪谷／
+   海岬／水濱／孤島各 6~7 個），最小間距 118 地圖像素、避開既有地標。
+
+   規則（Ray 指定）：
+     · 平時**地圖上完全看不到** —— 沒發現的點不畫，連問號都不給。
+     · 要「感應」才會現形，感應的動作是**長按船身**。
+     · 而且船要夠近才感應得到。
+
+   ⚠ 感應半徑刻意小於點與點的間距（100 vs 中位 132 地圖像素）：一次感應
+     通常只會命中 0~1 個點。大於間距的話站在原地按一下就掃到一片，
+     「找」這件事就沒有了。
+   ⚠ 視距是 180 地圖像素，遠大於感應半徑 —— 這是刻意的：遠遠先看到一塊
+     地形不對勁，飛過去，再按。看得到 → 飛過去 → 按，三拍。 */
+const STAR_SENSE_R = 2000;      // 感應半徑（世界單位）＝100 地圖像素
+const STAR_HOLD_MS = 550;       // 長按門檻
+const STAR_KEY     = 'tivot_stars_v1';
+const STAR_KIND    = {峰:'孤峰',崖:'斷崖',谷:'窪谷',岬:'海岬',水:'水濱',島:'孤島'};
+let STARS=[];                   // starpoints.json 的內容
+const starFound=new Set();      // 已發現的 id
+try{ (JSON.parse(localStorage.getItem(STAR_KEY)||'[]')||[]).forEach(id=>starFound.add(id)); }catch(_){}
+function saveStars(){ try{ localStorage.setItem(STAR_KEY,JSON.stringify([...starFound])); }catch(_){} }
+fetch('starpoints.json').then(r=>r.ok?r.json():null)
+  .then(J=>{ if(J&&J.points) STARS=J.points; }).catch(()=>{});
+
+let starPing=0;                 // 感應波紋的起始時戳（0＝沒有在放）
+let starMsg=null;               // {t,text}：畫面下緣的回報
+
+function senseStars(now){
+  starPing=now;
+  const R2=STAR_SENSE_R*STAR_SENSE_R;
+  const hit=[];
+  for(const p of STARS){
+    if(starFound.has(p.id)) continue;
+    const dx=p.x*MAP_SCALE-cam.x, dy=p.y*MAP_SCALE-cam.y;
+    if(dx*dx+dy*dy<R2){ starFound.add(p.id); hit.push(p); }
+  }
+  if(hit.length){
+    saveStars();
+    starMsg={t:now, ok:1, text:'感應到　'+hit.map(p=>STAR_KIND[p.kind]||p.kind).join('、')};
+  }else{
+    starMsg={t:now, ok:0, text:'沒有感應'};
+  }
+}
+
+/* 五芒星。地圖上的標記與感應成功的提示共用。 */
+function starPath(g,x,y,r){
+  g.beginPath();
+  for(let i=0;i<10;i++){
+    const a=-Math.PI/2+i*Math.PI/5, rr=(i&1)?r*0.42:r;
+    const px=x+Math.cos(a)*rr, py=y+Math.sin(a)*rr;
+    if(i) g.lineTo(px,py); else g.moveTo(px,py);
+  }
+  g.closePath();
+}
+
 const rgb=(r,g,b)=>(255<<24)|(b<<16)|(g<<8)|r;
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
 const sstep=(a,b,x)=>{const t=clamp((x-a)/(b-a),0,1);return t*t*(3-2*t);};
@@ -1810,6 +1866,7 @@ const cam={x:1005*MAP_SCALE,y:760*MAP_SCALE,angle:0,alt:CRUISE_ALT,speed:0,bank:
      那些晃動全部變成舵量，船一路蛇行。死區之外才開始計舵，且從 0 起算
      （不是從死區邊界跳到某個值），越過門檻時才不會頓一下。 */
 let fwd=0, rgt=0, dragging=false, ox=0, oy=0, moved=0, dragId=null;
+let starHold=0;                             // 長按船身的計時器（0＝沒在計）
 let rudder=0;                               // 實際生效的舵量（含鍵盤）——只給面板顯示用
 const STEER_DEAD=14;                        // 橫向死區（像素）
 const TAP_SLOP=12;                          // 位移小於此值＝點擊而非拖曳
@@ -1823,17 +1880,27 @@ stage.addEventListener('pointerdown',e=>{
      觸控裝置預設就隱含捕獲，所以只有 PC 會遇到。 */
   try{ stage.setPointerCapture(e.pointerId); }catch(_){}
   ox=e.clientX; oy=e.clientY; fwd=0; rgt=0; moved=0;
+  /* 長按船身＝感應隱藏點位。
+     ⚠ 與操舵不衝突：操舵是靠**位移**算油門與舵量的，按住不動 fwd/rgt 就是 0。
+       一動就取消（下面的 pointermove），所以「想轉向卻誤觸感應」不會發生。 */
+  clearTimeout(starHold);
+  if(shipHit){
+    const d=Math.hypot(e.clientX-shipHit.x, e.clientY-shipHit.y);
+    if(d<=shipHit.r) starHold=setTimeout(()=>{ starHold=0; senseStars(performance.now()); }, STAR_HOLD_MS);
+  }
 });
 stage.addEventListener('pointermove',e=>{
   if(e.pointerId!==dragId) return;
   const dx=e.clientX-ox, dy=e.clientY-oy;
   moved=Math.max(moved,Math.hypot(dx,dy));
+  if(moved>TAP_SLOP && starHold){ clearTimeout(starHold); starHold=0; }   // 一動就不是長按
   fwd=clamp(dy/DRAG_FULL,-1,1);                   // 往下（往後）拉＝前進
   const mag=Math.max(0,Math.abs(dx)-STEER_DEAD);  // 扣掉死區後才算舵量
   rgt=clamp(-Math.sign(dx)*mag/(DRAG_FULL-STEER_DEAD),-1,1);   // 往左拉＝往右偏
 });
 const endDrag=e=>{
   if(e && e.pointerId!==dragId) return;
+  if(starHold){ clearTimeout(starHold); starHold=0; }
   // 幾乎沒動＝點擊：命中已展開的名牌就進入該地標
   if(dragging && moved<TAP_SLOP && e && e.clientX!=null){
     const px=e.clientX, py=e.clientY;
@@ -2009,6 +2076,29 @@ function drawMap(){
         mctx.fillStyle='rgba(8,7,12,.8)';
         mctx.fillRect(sx-tw/2-5, sy+dia*0.26, tw+10, 15);
         mctx.fillStyle='#e8dcbc'; mctx.fillText(s.name, sx, sy+dia*0.26+11);
+      }
+    }
+  }
+
+  /* 已發現的隱藏點：★。沒發現的一個都不畫 —— 連問號都不給，
+     不然地圖本身就變成尋寶圖，「找」的部分就被地圖代勞了。 */
+  if(STARS.length){
+    mctx.lineJoin='round';
+    for(const sp of STARS){
+      if(!starFound.has(sp.id)) continue;
+      const q=reliefXY(sp.x,sp.y);
+      const sx=ox+q.x*sc, sy=oy+q.y*sc;
+      if(sx<-24||sy<-24||sx>w+24||sy>h+24) continue;
+      const r=Math.max(6, Math.min(13, 6*Math.sqrt(MV.zoom)));
+      starPath(mctx,sx,sy,r);
+      mctx.fillStyle='rgba(255,232,120,.92)'; mctx.fill();
+      mctx.strokeStyle='rgba(24,18,8,.85)'; mctx.lineWidth=1.4; mctx.stroke();
+      if(MV.zoom>3){
+        const nm=STAR_KIND[sp.kind]||sp.kind;
+        mctx.font='10px "Noto Serif TC",serif'; mctx.textAlign='center';
+        const tw=mctx.measureText(nm).width;
+        mctx.fillStyle='rgba(8,7,12,.78)'; mctx.fillRect(sx-tw/2-4, sy+r+2, tw+8, 13);
+        mctx.fillStyle='#ffe878'; mctx.fillText(nm, sx, sy+r+12);
       }
     }
   }
@@ -2811,11 +2901,60 @@ function render(now){
   drawFlock(scaleH,horizon,sinp,cosp,now);
   drawEnemy3D(scaleH,horizon,sinp,cosp,now);
   drawShip(now);
+  drawStarSense(now);
   vignette(S);
   drawRegionBanner(now);
   ctx.restore();
 
   drawPanel(S);
+}
+
+/* 感應的回饋：從船身擴散一圈波紋 ＋ 畫面下緣一行字。
+   ⚠ 波紋畫在**螢幕空間**不是地面上。地面環要走地形投影、還要吃逐欄遮擋，
+     成本與複雜度都不划算，而這裡要傳達的只是「我按了、它有反應」。
+   ⚠ 找不到東西也一定要有回饋（「沒有感應」）。沒回饋的話玩家分不出
+     「這裡沒有」與「我按法不對」，就不會再按第二次。 */
+const STAR_PING_MS=900, STAR_MSG_MS=2600;
+function drawStarSense(now){
+  if(starPing){
+    const t=(now-starPing)/STAR_PING_MS;
+    if(t>=1) starPing=0;
+    else if(shipHit){
+      const e=1-Math.pow(1-t,3);                 // 出得快、收得慢
+      const r=shipHit.r*(0.55+e*3.2);
+      ctx.save();
+      ctx.strokeStyle='rgba(255,232,120,'+((1-t)*0.55).toFixed(3)+')';
+      ctx.lineWidth=2.5-t*1.6;
+      ctx.beginPath(); ctx.arc(shipHit.x,shipHit.y,r,0,Math.PI*2); ctx.stroke();
+      ctx.restore();
+    }
+  }
+  if(starMsg){
+    const t=(now-starMsg.t)/STAR_MSG_MS;
+    if(t>=1){ starMsg=null; return; }
+    const a=clamp(Math.min(t*6,(1-t)*4),0,1);    // 淡入快、淡出慢
+    /* ⚠ 位置貼著船的**上方**，不是畫面下緣。下緣是橫條羅盤帶的地盤，
+       而羅盤畫在 drawPanel（比這裡晚），字會被整條蓋掉 —— 實測就是這樣。 */
+    const bx=W/2, by=(shipHit? shipHit.y-shipHit.r-18 : VIEWH*0.52);
+    ctx.save();
+    ctx.globalAlpha=a;
+    ctx.font='13px "Noto Serif TC",serif';
+    const tw=ctx.measureText(starMsg.text).width;
+    const pad=12, sw=starMsg.ok?20:0;            // 命中才在框內放一顆★
+    const bwid=tw+pad*2+sw, bx0=bx-bwid/2;
+    ctx.fillStyle='rgba(6,8,14,.78)';
+    ctx.fillRect(bx0, by-14, bwid, 22);
+    ctx.strokeStyle=starMsg.ok?'rgba(255,232,120,.5)':'rgba(201,162,39,.22)';
+    ctx.lineWidth=1; ctx.strokeRect(bx0+0.5, by-13.5, bwid-1, 21);
+    if(starMsg.ok){
+      starPath(ctx, bx0+pad+7, by-3, 6.5);
+      ctx.fillStyle='rgba(255,232,120,.95)'; ctx.fill();
+    }
+    ctx.textAlign='left';
+    ctx.fillStyle=starMsg.ok?'#ffe878':'rgba(217,198,138,.72)';
+    ctx.fillText(starMsg.text, bx0+pad+sw, by+1);
+    ctx.restore();
+  }
 }
 
 function drawSunMoon(S,horizon,sinp,cosp){
@@ -4850,6 +4989,7 @@ function updateShipVisual(dt,now){
    附帶好處：所有圖層的合成都在一張小畫布上完成，帆的 alpha 不會逐層
    疊在地形上（原本 0.88 的帆會透出背景，現在只透一次）。 */
 let shipFB=null, SC=null;
+let shipHit=null;          // {x,y,r}：船在螢幕上的命中圈，每幀由 drawShip 更新
 function drawShip(now){
   const V=SHIP_VISUAL;
   const k=Math.min(2.9,W/135);
@@ -4961,6 +5101,10 @@ function drawShip(now){
   const dx=Math.round(W/2-R), dy=Math.round(VIEWH*0.76+ship.bob-R);
   ctx.imageSmoothingEnabled=false;
   ctx.drawImage(shipFB,0,0,bw,bh,dx,dy,fw,fh);
+  /* 船的螢幕命中圈 —— 長按船身要靠它（見 stage 的 pointerdown）。
+     ⚠ 半徑取 R*0.8 而不是 R：R 是外接圓，含側傾與尾流的餘裕，
+       照它算的話船邊上一大圈空白也會被當成「按在船上」。 */
+  shipHit={x:W/2, y:VIEWH*0.76+ship.bob, r:R*0.8};
 }
 
 /* 螺旋槳：高速時以較低 alpha 重繪兩次、角度各退一點＝殘影
