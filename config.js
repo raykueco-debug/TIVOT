@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.19-239';
+export const VERSION = 'ver 2026.08.19-240';
 
 export const GAME_CONFIG = {
 
@@ -726,7 +726,7 @@ export const ASSETS = {
 
   // ── 五張 cut-in 圖（v17.7 嵌入）──
   cutin_saint_luna: "resources/partner/Luna_CI_advent.jpg",   // 聖徒化降臨 cut-in（Luna）
-  voice_saint_luna: "resources/partner/Luna_SI_VC.m4a",       // 聖徒化發動語音（Luna，1.7s；與 sfx_saint 疊播）
+  voice_saint_luna: "resources/audio/vo/vo_luna_saintinstall.m4a",       // 聖徒化發動語音（Luna，1.7s；與 sfx_saint 疊播）
   cutin_exc: "resources/partner/Luna_CI_exc.webp",   // 處決 EXSECUTIŌ cut-in（Luna）
   cutin_obe: "resources/partner/Luna_CI_obe.jpg",   // O.B.E. cut-in（Luna）
   cutin_mb: "resources/partner/Luna_CI_maxburst.jpg",   // Maximum Burst cut-in（Luna）
@@ -752,26 +752,40 @@ export const ASSETS = {
    *  程式 asset(key) 已相容 null→""，故未填不會壞。
    *  命名慣例：SFX＝SE_… ／ BGM＝BGM_… ／ 語音＝VO_…（鑰匙小寫、檔名保留大小寫）  */
 
-  // 反擊武器音效（所有副武器各一支；鑰匙對應 weapons.sound）。檔名＝<類型_武器名>_SE.mp3，統一放 resources/weapon/。
-  se_mg_squall:      "resources/weapon/MG_Squall_SE.mp3",       // 重機槍 反擊（連續感：整支播一次）
-  se_shotgun_blast:  "resources/weapon/Shotgun_Blast_SE.mp3",   // 散彈槍 反擊（一次一發）
-  se_sniper_falcon:  "resources/weapon/Sniper_Falcon_SE.mp3",   // 狙擊槍 反擊（單發）
+  /* ══ 音訊：resources/audio/{bgm,se,vo} ══
+     命名規則（一看就知道是什麼，不用翻這份檔）：
+       bgm_<場合>            背景音樂，場合＝它在哪一頁／哪個狀態播
+       se_<分類>_<名稱>    音效，分類＝ui／weapon／enemy／saint／flight
+       vo_<角色>_<技能>    語音，技能用正式名稱
+     ⚠ 舊名的病灶是「看不出用途」：Renee_VC_Act / _Pas 要翻這份檔才知道
+       哪個是生命歸還、哪個是即死防禦；Battle_01 / BOSS_01 的 _01 不代表任何意思；
+       Start_01（出陣）與 StartBT_SE（神楽鈴）兩個都叫 start 却是不同的東西。
+       新名一律用**用途**當主詞，不用來源或流水號。
+     ⚠ 底線開頭的三個資料夾**不會被遊戲載入**：
+       _master＝BGM 母帶（.m4a 由它們轉出），_unused＝目前沒接線的，
+       _raw＝還沒處理的素材下載。
+     ⚠ 搬檔與改名走 tools/audio_reorg.py，別手改 —— 它會一併改寫
+       config.js 與 flight/index.html 兩邊的路徑，手改很容易漏掉後者。 */
+  // 反擊武器音效（所有副武器各一支；鑰匙對應 weapons.sound）。
+  se_mg_squall:      "resources/audio/se/se_weapon_mg_squall.mp3",       // 重機槍 反擊（連續感：整支播一次）
+  se_shotgun_blast:  "resources/audio/se/se_weapon_shotgun_blast.mp3",   // 散彈槍 反擊（一次一發）
+  se_sniper_falcon:  "resources/audio/se/se_weapon_sniper_falcon.mp3",   // 狙擊槍 反擊（單發）
 
   // 清盤換彈音（盤面清空、顯示 RELOADING 時播）
-  sfx_reload:        "resources/weapon/Reload.mp3",
+  sfx_reload:        "resources/audio/se/se_weapon_reload.mp3",
 
   // 開始遊戲 stinger（點下開始瞬間，蓋過 BGM 切歌的淡出/進入前段）
-  sfx_start:         "resources/Stage/Start_01.mp3",
-  sfx_startbt:       "resources/General/StartBT_SE.mp3",   // 出陣鈕/overkill/Boss S 第一按（神楽鈴）
+  sfx_start:         "resources/audio/se/se_ui_sortie.mp3",
+  sfx_startbt:       "resources/audio/se/se_ui_kagurabell.mp3",   // 出陣鈕/overkill/Boss S 第一按（神楽鈴）
   // 通用 UI 音：所有未指定音效的按鈕（bindBtn/menuClick 統一出口）／搭檔選人換卡翻頁
-  se_general_click:  "resources/General/GeneralClick_SE.mp3",
-  se_pageflip:       "resources/General/Pageflip_SE.mp3",
+  se_general_click:  "resources/audio/se/se_ui_click.mp3",
+  se_pageflip:       "resources/audio/se/se_ui_pageflip.mp3",
   // 聖徒化發動音效
   //  ⚠ 素材「內容」更新但檔名不變時,在路徑加/升 ?v=N 強制手機重抓(HTTP 快取以 URL 為鍵)。
-  sfx_saint:         "resources/Stage/SI_01.mp3?v=3",
+  sfx_saint:         "resources/audio/se/se_saint_install.mp3?v=3",
 
   // 完美防禦（完防）合成替代音（一般武器；散彈完防維持自己的槍聲）
-  se_guard:          "resources/weapon/Guard_SE.m4a",
+  se_guard:          "resources/audio/se/se_weapon_guard.m4a",
 
   // 搭檔演出 SE（Luna）：發動/結局 cut-in 同步播。放 resources/partner/。
   //  v2：母帶重 master（RMS −28→−11 dBFS + 軟限幅），內容更新 → 升 ?v 強制重抓
@@ -779,31 +793,31 @@ export const ASSETS = {
   //     RMS 約 -14 dBFS；再大聲改 tuning.partnerSeGain（播放端有 limiter 匯流，不會破音）。
   //  ⚠ 檔名的 VC＝voice（語音），與純音效的 SE 分家：這四支是搭檔的台詞，
   //     響度基準跟語音走（partnerSeGain 對齊 −14.4 dBFS），不是音效層。
-  se_luna_dual:      "resources/partner/Luna_dual_VC.wav?v=3",   // 雙槍破防發動
-  se_luna_exc:       "resources/partner/Luna_EXC_VC.wav?v=3",    // 處決 EXSECUTIŌ cut-in
-  se_luna_mb:        "resources/partner/Luna_MB_SE.wav?v=3",     // Maximum Burst cut-in
-  se_luna_obe:       "resources/partner/Luna_OBE_VC.wav?v=3",    // O.B.E. cut-in
+  se_luna_dual:      "resources/audio/vo/vo_luna_dualwield.wav?v=3",   // 雙槍破防發動
+  se_luna_exc:       "resources/audio/vo/vo_luna_execution.wav?v=3",    // 處決 EXSECUTIŌ cut-in
+  se_luna_mb:        "resources/audio/se/se_saint_maxburst.wav?v=3",     // Maximum Burst cut-in
+  se_luna_obe:       "resources/audio/vo/vo_luna_obe.wav?v=3",    // O.B.E. cut-in
 
-  // 敵人攻擊音（依攻擊種類 kind：ult 大絕命中/不完美防禦格擋、delay 太慢、wrong 按錯）。放 resources/enemy/。
-  em_slash:          "resources/enemy/EM_Slash_SE.m4a",    // 聖徒：大絕/不完美防禦/按錯
-  em_smack:          "resources/enemy/EM_Smack_SE.m4a",    // 聖徒：延時懲罰
-  em_shot:           "resources/enemy/EM_Shot_SE.mp3",     // Boss：延時懲罰
-  em_revolver:       "resources/enemy/EM_Revolver_SE.mp3", // Boss：大絕/不完美防禦（左輪）
-  em_dagger:         "resources/enemy/EM_Dagger_SE.m4a",   // Boss：按錯
+  // 敵人攻擊音（依攻擊種類 kind：ult 大絕命中/不完美防禦格擋、delay 太慢、wrong 按錯）。
+  em_slash:          "resources/audio/se/se_enemy_slash.m4a",    // 聖徒：大絕/不完美防禦/按錯
+  em_smack:          "resources/audio/se/se_enemy_smack.m4a",    // 聖徒：延時懲罰
+  em_shot:           "resources/audio/se/se_enemy_shot.mp3",     // Boss：延時懲罰
+  em_revolver:       "resources/audio/se/se_enemy_revolver.mp3", // Boss：大絕/不完美防禦（左輪）
+  em_dagger:         "resources/audio/se/se_enemy_dagger.m4a",   // Boss：按錯
 
   // 普攻槍聲（手槍；每次正確點擊由這兩支隨機播一支，製造變化）
-  se_pistol_01:      "resources/weapon/Pistol_SE_01.mp3",
-  se_pistol_02:      "resources/weapon/Pistol_SE_02.mp3",
-  se_pistol_03:      "resources/weapon/Pistol_SE_03.wav",  // 普攻槍聲（現行）
+  se_pistol_01:      "resources/audio/se/se_weapon_pistol_01.mp3",
+  se_pistol_02:      "resources/audio/se/se_weapon_pistol_02.mp3",
+  se_pistol_03:      "resources/audio/se/se_weapon_pistol_03.wav",  // 普攻槍聲（現行）
 
-  // BGM（loop、不可交疊，切歌時前一首淡出）。放 resources/Stage/。
+  // BGM（loop、不可交疊，切歌時前一首淡出）。
   //  BGM 一律 .m4a（AAC-LC 96k，自 128k MP3 轉檔，體積 −24%）：全平台原生支援；
-  //  .mp3 原檔保留於 resources/Stage 作母帶，需要重轉時用 ffmpeg -c:a aac -b:a 96k。
-  bgm_home:      "resources/Stage/MainMenu.m4a",       // 主選單（含次要選單）
-  bgm_battle:    "resources/Stage/Battle_01.m4a",      // 戰鬥（驅逐開始插入瞬間起播）
-  bgm_lose:      "resources/Stage/MissionFailed_01.m4a", // 任務失敗（驅逐失敗插入起播）
-  bgm_result:    "resources/Stage/Result_01.m4a",      // 結算（驅逐完成頁被點掉後起播）
-  bgm_boss:      "resources/Stage/BOSS_01.m4a",        // Boss 戰（點下迎擊起播）
+  //  .mp3 母帶在 resources/audio/bgm/_master/，需要重轉時用 ffmpeg -c:a aac -b:a 96k。
+  bgm_home:      "resources/audio/bgm/bgm_mainmenu.m4a",       // 主選單（含次要選單）
+  bgm_battle:    "resources/audio/bgm/bgm_battle.m4a",      // 戰鬥（驅逐開始插入瞬間起播）
+  bgm_lose:      "resources/audio/bgm/bgm_missionfailed.m4a", // 任務失敗（驅逐失敗插入起播）
+  bgm_result:    "resources/audio/bgm/bgm_result.m4a",      // 結算（驅逐完成頁被點掉後起播）
+  bgm_boss:      "resources/audio/bgm/bgm_boss.m4a",        // Boss 戰（點下迎擊起播）
   bgm_intruder:  null,   // （無獨立亂入曲；亂入＝Boss，走 bgm_boss）
 
   // 語音（每個 cut-in 各一支；檔名 VO_<情境>）
@@ -811,10 +825,10 @@ export const ASSETS = {
   vo_maxburst:      null,   // Maximum Burst            → VO_MaxBurst
   vo_exsectio:      null,   // EXSECUTIŌ（處決）         → VO_Exsectio
   vo_obe:           null,   // O.B.E.                   → VO_OBE
-  vo_life_return:   "resources/partner/Renee_VC_Act.wav",     // 生命歸還（蕾妮·主動）— partner.lifeReturn 播
-  vo_death_guard:   "resources/partner/Renee_VC_Pas.wav",     // 即死防禦（蕾妮·被動）— partner.tryDeathGuard 播
-  vo_supply_refill: "resources/partner/Malzeno_VC_Act.wav",   // 前線補給（馬季諾·主動）— partner.supplyRefill 播
-  vo_hc_rounds:     "resources/partner/Malzeno_VC_Pas.wav",   // 高裝藥彈（馬季諾·被動）— partner.checkLowHpBuff 播
+  vo_life_return:   "resources/audio/vo/vo_renee_lifereturn.wav",     // 生命歸還（蕾妮·主動）— partner.lifeReturn 播
+  vo_death_guard:   "resources/audio/vo/vo_renee_deathguard.wav",     // 即死防禦（蕾妮·被動）— partner.tryDeathGuard 播
+  vo_supply_refill: "resources/audio/vo/vo_malzeno_supplyrefill.wav",   // 前線補給（馬季諾·主動）— partner.supplyRefill 播
+  vo_hc_rounds:     "resources/audio/vo/vo_malzeno_hcrounds.wav",   // 高裝藥彈（馬季諾·被動）— partner.checkLowHpBuff 播
   vo_dual_wield:    null,   // 雙槍破防                 → VO_DualWield
   vo_new_hustle:    null,   // Boss 遭遇 / 亂入          → VO_NewHustle
 };

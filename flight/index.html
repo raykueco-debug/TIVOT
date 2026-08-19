@@ -967,7 +967,7 @@ const STAR_SENSE_R = 2000;      // 感應半徑（世界單位）＝100 地圖�
    （按住不動＝油門 0，見 stage 的 pointermove）。 */
 const SENSE_SUMMON_MS = 1000;   // 按到這裡：畫面轉暗、立繪插入、心跳起
 
-/* 心跳（Anna_Beat.mp3，5.00s）的起音時間，用起音包絡量出來的：
+/* 心跳（../resources/audio/se/se_flight_heartbeat.mp3，5.00s）的起音時間，用起音包絡量出來的：
    0.45/0.82 · 1.61/1.99 · 2.78/3.15 · 3.94/4.31 —— 標準的 lub-dub，
    每對相隔 0.37s、對與對之間 0.79s，週期 1.165s（≈52 BPM）。
    ⚠ 畫面**只跟強拍（lub）脈動一次**，不跟著跳兩下（Ray 指定）。弱拍（dub）
@@ -1041,8 +1041,8 @@ const SENSE_FIRE_MS = SENSE_RING_MS + SENSE_OUT_MS;
 /* 音：召喚的心跳（立繪出現的同一刻）與命中的神楽鈴。
    ⚠ 走 HTMLAudioElement 不走 WebAudio —— 這一頁沒有 AudioContext，
      而發動的那一刻手指本來就在螢幕上（使用者手勢），播得動。 */
-const senseBeat = new Audio('Anna_Beat.mp3');           senseBeat.preload='auto';
-const senseSE   = new Audio('../resources/General/StartBT_SE.mp3'); senseSE.preload='auto';
+const senseBeat = new Audio('../resources/audio/se/se_flight_heartbeat.mp3');           senseBeat.preload='auto';
+const senseSE   = new Audio('../resources/audio/se/se_ui_kagurabell.mp3'); senseSE.preload='auto';
 const playSfx=a=>{ try{ a.currentTime=0; const q=a.play(); if(q) q.catch(()=>{}); }catch(_){} };
 /* ⚠ iOS 只認**手勢當下**呼叫的 play()。心跳是按住滿 1 秒才起播的，那時早就
    離開手勢了 —— 手機上因此完全沒聲音。而殘影又綁在音訊時鐘上，於是連脈動
@@ -2577,7 +2577,7 @@ mapCv.addEventListener('pointercancel',mUp);
 addEventListener('resize',()=>{ if(mapOpen) drawMap(); });
 
 /* ══ 航行 BGM ══
-   停船＝Standby.mp3，航行＝OverWorld_Orchestra.mp3，兩者依速度交叉淡入淡出。
+   停船＝../resources/audio/bgm/bgm_flight_idle.mp3，航行＝../resources/audio/bgm/bgm_flight_sail.mp3，兩者依速度交叉淡入淡出。
 
    ▍為什麼要兩個 <audio> 疊著跑
    單一元素做不到「無斷點循環」：audio.loop 是硬接回開頭（尾巴還在響、
@@ -2647,7 +2647,7 @@ function makeLoop(src, xf){
    ⚠ 尾巴不是淡出：實測結尾仍有 −8dB、最後 0.37s 都還有起音，而且尾與頭的
      波形相關是 0 —— 它是樂句延續，不是接回開頭的重複段。所以只能靠交叉，
      不能靠對齊切點。 */
-const bgmSail=makeLoop('OverWorld_Orchestra.mp3', 4.75), bgmIdle=makeLoop('Standby.mp3', 5.0);
+const bgmSail=makeLoop('../resources/audio/bgm/bgm_flight_sail.mp3', 4.75), bgmIdle=makeLoop('../resources/audio/bgm/bgm_flight_idle.mp3', 5.0);
 let sailMix=0;                       // 0＝停船 1＝航行，收斂跟隨避免忽大忽小
 /* 全域靜音：與主程式（index.html / main.js）共用 localStorage 的同一把鑰匙。
    ⚠ 這裡是另一個頁面、另一套 BGM（HTMLAudio 而非 audio.js 的 Web Audio），
