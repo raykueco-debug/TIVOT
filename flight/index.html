@@ -76,6 +76,11 @@
     text-shadow:0 1px 3px rgba(0,0,0,.9);pointer-events:none;}
   /* ⚠ 關閉鈕原本 top:8px —— 在有瀏海／動態島的機子上會被蓋住，手指點不到
      （同戰鬥面板那邊的處理：一律讓開 safe-area），順便把可點面積加大。 */
+  #starTgl{position:absolute;top:calc(env(safe-area-inset-top) + 10px);left:10px;z-index:2;
+    padding:7px 12px;border-radius:8px;background:rgba(10,8,14,.72);
+    border:1px solid var(--gold-dim);color:var(--gold);font-family:inherit;font-size:12px;
+    letter-spacing:1px;}
+  #starTgl[hidden]{display:none;}
   #mapClose{position:absolute;top:calc(env(safe-area-inset-top) + 10px);right:10px;z-index:2;
     min-width:64px;min-height:40px;}
   /* ══ 載入畫面 ══
@@ -172,6 +177,8 @@
   <div id="mapWrap">
     <canvas id="mapCv"></canvas>
     <button id="mapClose">✕ 關閉</button>
+    <!-- 星號顯示開關：管理人限定，由 ADMIN 區塊解除 display:none -->
+    <button id="starTgl" hidden>★ 已發現</button>
   </div>
   <div id="mapCap">拖曳平移 · 滾輪／雙指縮放 · 放大可見市鎮街廓</div>
 </div>
@@ -989,6 +996,10 @@ const SENSE_TOTAL_MS  = SENSE_SUMMON_MS + SENSE_HOLD_MS;
 const SENSE_BROOCH = { x:0.4934, y:0.3864 };
 const STAR_KEY  = 'tivot_stars_v1';
 const STAR_KIND = {峰:'孤峰',崖:'斷崖',谷:'窪谷',岬:'海岬',水:'水濱',島:'孤島'};
+/* 地圖上的星號顯示：0＝全關、1＝只顯示已發現（正式行為）、2＝全部顯示。
+   ⚠ 2 是**管理人專用的驗收視角** —— 一般玩家沒有這個開關，也不該看得到
+     沒發現的點（見上面的規則）。 */
+let starShow=1;
 let STARS=[];                   // starpoints.json 的內容
 const starFound=new Set();      // 已發現的 id（存 localStorage）
 try{ (JSON.parse(localStorage.getItem(STAR_KEY)||'[]')||[]).forEach(id=>starFound.add(id)); }catch(_){}
@@ -1072,6 +1083,26 @@ function senseArt(){
   senseImg.src='../resources/partner/Anna_CI_Search.webp';
 }
 
+/* ══ 探索疲勞 ══
+   一分鐘內連探三次都**沒有結果**，安娜會喊累，接著 60 秒不讓你再探。
+   ⚠ 「有成功探索就不顯示」：找到東西就把計數清掉 —— 疲勞是要擋住無腦
+     亂按，不是懲罰真的在找的人。
+   ⚠ 提示**不與探索演出重疊**：喊累那句要等立繪淡出之後才出現（見 annaSay.at）。
+     冷卻期間再按則是當場就跳，因為那時根本沒有演出。 */
+const SENSE_TIRED_N   = 3;      // 一分鐘內第幾次沒結果會喊累
+const SENSE_TIRED_WIN = 60000;  // 「一分鐘內」
+const SENSE_CD_MS     = 60000;  // 喊累之後的冷卻
+const ANNA_SAY_MS     = 3200;   // 提示停留多久
+let senseMiss=[];               // 最近幾次「沒找到」的時戳
+let senseCdUntil=0;
+let annaSay=null;               // {at,text}：at＝該出現的時戳
+let annaImg=null;
+function annaArt(){
+  if(annaImg) return;
+  annaImg=new Image();
+  annaImg.src='../resources/partner/Anna_CI_front.webp';
+}
+
 let senseOnAt=0;                // 立繪出現（＝心跳該起播）的時戳
 
 /* 心跳的播放位置（秒）。優先用音訊自己的時鐘（那才是真的「以心跳音為準」）；
@@ -1138,6 +1169,10 @@ function senseUpdate(now){
   const held=now-senseT0;
   if(held<SENSE_SUMMON_MS){ if(senseOn) senseCancel(); return; }
   if(!senseOn){
+    if(now<senseCdUntil){                 // 冷卻中：連召喚都不給，當場回一句
+      annaSay={at:now, text:'讓我休息一下......'};
+      annaArt(); senseT0=0; return;
+    }
     senseOn=true; senseArt();
     senseOnAt=now;                        // 牆鐘備援的起點（見 senseBeatT）
     playSfx(senseBeat);                   // 立繪出現的同一刻起心跳
@@ -1183,9 +1218,74 @@ function senseRingCheck(now){
     setTimeout(()=>d.remove(),1250);      // 與上面的 1.15s 動畫對齊
 
     starNew=senseStars();
-    starNewAt=performance.now();          // 「剛找到」的高亮從這一刻起算
-    if(starNew.length) playSfx(senseSE);
+    const tn=performance.now();
+    starNewAt=tn;                         // 「剛找到」的高亮從這一刻起算
+    if(starNew.length){
+      playSfx(senseSE);
+      senseMiss.length=0;                 // 有成果就不算疲勞
+    }else{
+      senseMiss.push(tn);
+      senseMiss=senseMiss.filter(t=>tn-t<SENSE_TIRED_WIN);
+      if(senseMiss.length>=SENSE_TIRED_N){
+        senseMiss.length=0;
+        senseCdUntil=tn+SENSE_CD_MS;
+        // ⚠ 等立繪淡出完才出現，不與探索演出重疊
+        annaSay={at:tn+SENSE_OUT_MS+180, text:'......我累了。'};
+        annaArt();
+      }
+    }
   }
+}
+
+/* 疲勞提示：安娜半身 + 對話框。
+   ⚠ 與探索演出**互斥**：只要 senseOn/senseFireAt 還在就整段不畫（Ray 指定
+     不要重疊）。喊累那句本來就排在立繪淡出之後，這裡是第二道保險。
+   ⚠ 半身＝只取插畫上半 55%：這張是 1024×1536 的全身圖，整張塞進來頭會小到
+     看不清表情，而這個提示要的就是表情。
+   ⚠ 同樣畫在 drawPanel 之前 —— 面板與舵輪蓋在她身上，跟探索立繪一致。 */
+/* 橫條羅盤帶（方向計）的外框。
+   ⚠ drawPanel 與疲勞對話框都吃這一份 —— 兩邊各自寫死遲早會走鐘，而「對話框
+     與方向計同寬」是 Ray 指定的對齊關係，走鐘就看得出來。 */
+function compassRect(){
+  const w=Math.min(W*0.62,250)+12;
+  return { x:Math.round(W/2-w/2), y:Math.round(VIEWH-HELM_OUT-24-17),
+           w:Math.round(w), h:30 };
+}
+
+function drawAnnaSay(now){
+  if(!annaSay) return;
+  if(senseOn || senseFireAt) return;              // 探索演出還在，讓位
+  if(now<annaSay.at) return;                      // 還沒輪到（等演出收乾淨）
+  const t=now-annaSay.at;
+  if(t>=ANNA_SAY_MS){ annaSay=null; return; }
+  const a=clamp(Math.min(t/220,(ANNA_SAY_MS-t)/420),0,1);
+  const floorY=Math.max(40, VIEWH-HELM_OUT);
+  const bh=Math.round(clamp(VIEWH*0.115,48,70));
+  /* 與方向計同寬、疊在它正上方（Ray 指定）。
+     ⚠ 一定要讓開羅盤帶：它畫在 drawPanel（比這裡晚），第一版框底壓到它身上，
+       台詞被整條蓋掉。 */
+  const C=compassRect();
+  const bx=C.x, bw=C.w, by=C.y-8-bh;
+  ctx.save();
+  ctx.globalAlpha=a;
+  // 立繪先畫、對話框後畫 —— 框要壓在她身上，不然下襬會蓋掉台詞
+  if(annaImg && annaImg.width){
+    const sh=Math.round(annaImg.height*0.55);
+    const ph=Math.round(clamp(floorY*0.62,140,460));
+    const pw=Math.round(ph*annaImg.width/sh);
+    ctx.drawImage(annaImg, 0,0,annaImg.width,sh,
+                  Math.round(W-pw*0.70), Math.round(by-ph+10), pw, ph);
+  }
+  ctx.fillStyle='rgba(10,9,16,.84)';
+  ctx.fillRect(bx,by,bw,bh);
+  ctx.strokeStyle='rgba(201,162,39,.55)'; ctx.lineWidth=1;
+  ctx.strokeRect(bx+0.5,by+0.5,bw-1,bh-1);
+  ctx.textAlign='left';
+  ctx.font='11px "Noto Serif TC",serif';
+  ctx.fillStyle='#c9a227'; ctx.fillText('安娜', bx+13, by+19);
+  ctx.font='15px "Noto Serif TC",serif';
+  ctx.fillStyle='#ece6d8'; ctx.fillText(annaSay.text, bx+13, by+bh-15);
+  ctx.restore();
 }
 
 /* 立繪：畫在 canvas 上，而且**排在 drawPanel 之前** —— 這樣面板與舵輪是真的
@@ -2348,23 +2448,30 @@ function drawMap(){
 
   /* 已發現的隱藏點：★。沒發現的一個都不畫 —— 連問號都不給，
      不然地圖本身就變成尋寶圖，「找」的部分就被地圖代勞了。 */
-  if(STARS.length){
+  if(STARS.length && starShow){
     mctx.lineJoin='round';
     for(const sp of STARS){
-      if(!starFound.has(sp.id)) continue;
+      const found=starFound.has(sp.id);
+      if(!found && starShow<2) continue;
       const q=reliefXY(sp.x,sp.y);
       const sx=ox+q.x*sc, sy=oy+q.y*sc;
       if(sx<-24||sy<-24||sx>w+24||sy>h+24) continue;
       const r=Math.max(6, Math.min(13, 6*Math.sqrt(MV.zoom)));
       starPath(mctx,sx,sy,r);
-      mctx.fillStyle='rgba(255,232,120,.92)'; mctx.fill();
-      mctx.strokeStyle='rgba(24,18,8,.85)'; mctx.lineWidth=1.4; mctx.stroke();
+      if(found){
+        mctx.fillStyle='rgba(255,232,120,.92)'; mctx.fill();
+        mctx.strokeStyle='rgba(24,18,8,.85)'; mctx.lineWidth=1.4; mctx.stroke();
+      }else{
+        // 管理人視角的未發現點：空心，一眼分得出哪些還沒找到
+        mctx.strokeStyle='rgba(255,232,120,.55)'; mctx.lineWidth=1.4; mctx.stroke();
+      }
       if(MV.zoom>3){
         const nm=STAR_KIND[sp.kind]||sp.kind;
         mctx.font='10px "Noto Serif TC",serif'; mctx.textAlign='center';
         const tw=mctx.measureText(nm).width;
         mctx.fillStyle='rgba(8,7,12,.78)'; mctx.fillRect(sx-tw/2-4, sy+r+2, tw+8, 13);
-        mctx.fillStyle='#ffe878'; mctx.fillText(nm, sx, sy+r+12);
+        mctx.fillStyle=found?'#ffe878':'rgba(255,232,120,.6)';
+        mctx.fillText(nm, sx, sy+r+12);
       }
     }
   }
@@ -2515,6 +2622,20 @@ function pick3dAt(cssX,cssY){
   }
 }
 if(ADMIN){
+  /* 星號顯示開關：全部 → 已發現 → 關 → …（未發現的畫成空心，一眼分得出來）。
+     ⚠ 只有管理人有這個鈕：一般玩家不該看得到還沒發現的點。 */
+  const st=document.getElementById('starTgl');
+  if(st){
+    st.hidden=false;
+    const LBL=['★ 關','★ 已發現','★ 全部'];
+    st.textContent=LBL[starShow];
+    st.addEventListener('click',e=>{
+      e.stopPropagation();
+      starShow=(starShow+1)%3;
+      st.textContent=LBL[starShow];
+      drawMap();
+    });
+  }
   window.pick3d=pick3dAt;
   cv.addEventListener('contextmenu',e=>{
     const r=cv.getBoundingClientRect();
@@ -3188,6 +3309,7 @@ function render(now){
   /* ⚠ 感應立繪畫在這裡：3D 內容之上、**drawPanel 之前**。順序就是層次 ——
      之後 drawPanel 畫的面板與舵輪會蓋住她，不必也不該用裁切去避開。 */
   drawSenseCI(now);
+  drawAnnaSay(now);
   ctx.restore();
 
   drawPanel(S);
@@ -5731,10 +5853,12 @@ function drawPanel(S){
        實測只有約 13% 的航向看得到字，其餘時候整條只剩刻點。
        羅盤卡在轉、指標不動，本來就該這樣算。 */
   const deg=((-cam.angle*180/Math.PI)%360+360)%360;
-  const bw2=Math.min(W*0.62,250), cbx=cx-bw2/2;      // ⚠ 不能叫 bx，上面基座已用掉
-  const ccy=y0-HELM_OUT-24;
+  /* ⚠ 幾何走 compassRect()：疲勞對話框要與這一條同寬對齊，兩邊各寫一份會走鐘。 */
+  const CR=compassRect();
+  const bw2=CR.w-12, cbx=CR.x+6;                    // ⚠ 不能叫 bx，上面基座已用掉
+  const ccy=CR.y+17;
   ctx.fillStyle='rgba(6,7,12,.55)';
-  ctx.fillRect(cbx-6,ccy-17,bw2+12,30);
+  ctx.fillRect(CR.x,CR.y,CR.w,CR.h);
   ctx.save();
   ctx.beginPath(); ctx.rect(cbx,ccy-16,bw2,32); ctx.clip();
   ctx.font='10px "Noto Serif TC",serif'; ctx.textAlign='center';
