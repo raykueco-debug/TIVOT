@@ -1094,7 +1094,8 @@ function senseArt(){
    ⚠ 抱怨當場跳：第 4 次根本沒有探索演出，撞不到。 */
 const SENSE_TRY_N   = 4;        // 60 秒內第幾次按下會變成抱怨
 const SENSE_TRY_WIN = 60000;    // 滑動視窗
-const ANNA_SAY_MS   = 3200;     // 每一拍停留多久
+/* ⚠ 對白**不自動跳拍**（Ray 指定改成點擊推進），所以沒有「每拍停留多久」。
+   探索成功那條路徑仍要等立繪淡出才開場，那個延遲寫在觸發處。 */
 /* ══ 對話立繪的取景表 ══
    逐角色一組，**不要共用一組數字** —— 每張插畫的構圖不同（人在畫面裡多大、
    頭在哪裡都不一樣），而且角色本來就有身高差，那個差就是靠 h 表現的。
@@ -1113,20 +1114,47 @@ const ANNA_SAY_MS   = 3200;     // 每一拍停留多久
      肩膀才展開）—— 所以早期版本取上半 45% 時，頭只佔畫面高度的 29%，
      怎麼放大都是一個小頭配一大截裙子。 */
 const PORTRAIT = {
-  anna:     { name:'安娜',   src:'../resources/partner/Anna_CI_front.webp',
-              crop:0.62, h:0.90, cx:0.72 },
-  sorana:   { name:'索拉娜', src:'../resources/partner/Sorana_CI_front.webp',
-              crop:0.62, h:0.90, cx:0.26 },
-  nouvelle: { name:'諾薇兒', src:'../resources/partner/Nouvelle_CI_front.webp',
-              crop:0.62, h:0.90, cx:0.26 },
+  anna:     { name:'安娜',   side:'R', src:'../resources/partner/Anna_CI_front.webp',
+              crop:0.62, h:0.90, cx:0.78 },
+  /* ⚠ 索拉娜用 **side** 那張：front 太滿（人物橫向佔 78%），兩人同台一定疊。
+     側面那張只佔 69%，加上站位拉到 0.22，交疊就壓到最低。 */
+  sorana:   { name:'索拉娜', side:'L', src:'../resources/partner/Sorana_CI_side.webp',
+              crop:0.62, h:0.90, cx:0.22 },
+  nouvelle: { name:'諾薇兒', side:'L', src:'../resources/partner/Nouvelle_CI_front.webp',
+              crop:0.62, h:0.90, cx:0.22 },
 };
-/* ⚠ 三個人現在 h 都是 0.90 ＝ **畫面上一樣高**。三張插畫都是 1024×1536 的
-   head-to-toe 全身框（實測人物像素高 1520／1522／1530，彼此差不到 1%），
-   所以**圖本身給不出身高資訊** —— 身高差只能由設定決定。
-   要表現身高差就改各自的 h（矮的給小一點），不要我猜。 */
+/* ⚠ 三個人的 h 都是 0.90 ＝ 畫面上一樣高。三張插畫都是 1024×1536 的 head-to-toe
+   全身框（實測人物像素高 1520／1522／1530，差不到 1%），**圖本身給不出身高
+   資訊** —— 身高差只能由設定決定，要表現就改各自的 h。 */
+
 let senseTries=[];              // 最近幾次「按下探索」的時戳（滑動視窗）
-/* 對白是**一串拍子**不是一句：疲勞那段是安娜說完換人接話，兩拍。 */
-let sayQueue=null, sayAt=0, sayIdx=0;
+/* ══ 對白舞台 ══
+   沿用戰鬥教學的語彙（modules/tutorial.js + style.css 的 #tutCast）：
+     · 左右兩個站位，立繪從**自己那一側**滑入
+     · 沒說話的人調暗（brightness .38／saturate .75，與教學同值）
+     · 點畫面任何一處（按鈕除外）推進，不自動跳
+     · 說話的人先上場，接話的人**輪到他才上場**
+     · 第三、四人上場時，同一側的舊角先滑出、新角滑入（輪轉換卡）
+   ⚠ 但**畫在 canvas 不是 DOM**：立繪必須排在 drawPanel 之前才會被面板與舵輪
+     蓋住（Ray 指定），DOM 疊層做不到。所以行為照抄、實作重寫。 */
+const CAST_IN_MS = 450;    // 滑入／滑出（同教學的 .45s）
+const CAST_DIM   = 0.38;   // 非說話者亮度（同教學）
+const CAST_SAT   = 0.75;
+let sayQueue=null, sayAt=0, sayIdx=0, sayEndAt=0;
+let cast=[];               // [{who,side,t0,out}]：out＝退場起始時戳（0＝在場）
+
+const easeOut=k=>1-Math.pow(1-k,3);
+
+/* 讓某人上場。同一側已經有人就先把他推出去 —— 這就是「輪轉換卡」。 */
+function castEnter(who, now){
+  if(!PORTRAIT[who]) return;
+  if(cast.some(c=>c.who===who && !c.out)) return;
+  const side=PORTRAIT[who].side;
+  for(const c of cast) if(c.side===side && !c.out) c.out=now;
+  cast.push({who, side, t0:now, out:0});
+  portraitArt(who);
+}
+function castClear(now){ for(const c of cast) if(!c.out) c.out=now; }
 const portraitImg={};
 function portraitArt(who){
   if(portraitImg[who] || !PORTRAIT[who]) return;
@@ -1134,8 +1162,24 @@ function portraitArt(who){
   portraitImg[who]=im;
 }
 function say(beats, at){
-  sayQueue=beats; sayIdx=0; sayAt=at;
-  for(const b of beats) portraitArt(b.who);
+  sayQueue=beats; sayIdx=0; sayAt=at; sayEndAt=0;
+  cast=[];
+  for(const b of beats) portraitArt(b.who);   // 先把圖抓好，輪到誰才上場
+  castEnter(beats[0].who, at);
+}
+
+/* 推進一句。回傳 true＝這次點擊被對白吃掉（呼叫端就不要再當成操舵/感應）。 */
+function sayAdvance(now){
+  if(!sayQueue || sayEndAt) return false;
+  if(now<sayAt) return true;                  // 還沒開始顯示，但點擊仍算吃掉
+  sayIdx++;
+  if(sayIdx>=sayQueue.length){
+    sayIdx=sayQueue.length-1;                 // 停在最後一句，只是開始退場
+    sayEndAt=now; castClear(now);
+  }else{
+    castEnter(sayQueue[sayIdx].who, now);
+  }
+  return true;
 }
 
 let senseOnAt=0;                // 立繪出現（＝心跳該起播）的時戳
@@ -1282,42 +1326,51 @@ function compassRect(){
            w:Math.round(w), h:30 };
 }
 
-/* 對白：多位角色同台。
-   ⚠ 與探索演出**互斥**：只要 senseOn/senseFireAt 還在就整段不畫（Ray 指定
-     不要重疊）。探索成功那條路徑本來就排在立繪淡出之後，這裡是第二道保險。
-   ⚠ 沒在說話的人**壓暗**（VN 的老規矩）—— 兩個人一樣亮的話看不出是誰在講。
-   ⚠ 畫在 drawPanel 之前，面板與舵輪蓋在她們身上，跟探索立繪一致。 */
+/* 對白：多位角色同台。行為對齊戰鬥教學（見上方 castEnter 的說明）。
+   ⚠ 與探索演出**互斥**：senseOn/senseFireAt 還在就整段不畫。
+   ⚠ 畫在 drawPanel 之前，面板與舵輪蓋在她們身上。 */
 function drawTalk(now){
   if(!sayQueue) return;
   if(senseOn || senseFireAt) return;
   if(now<sayAt) return;
-  let t=now-sayAt;
-  while(t>=ANNA_SAY_MS && sayIdx<sayQueue.length-1){ sayIdx++; sayAt+=ANNA_SAY_MS; t-=ANNA_SAY_MS; }
-  if(t>=ANNA_SAY_MS){ sayQueue=null; return; }
-  const a=clamp(Math.min(t/220,(ANNA_SAY_MS-t)/420),0,1);
-  const speaker=sayQueue[sayIdx].who;
-  const bh=Math.round(clamp(VIEWH*0.115,48,70));
-  /* 對話框與方向計同寬、疊在它正上方（Ray 指定）。
-     ⚠ 一定要讓開羅盤帶：它畫在 drawPanel（比這裡晚），框底壓到它身上的話
-       台詞會被整條蓋掉。 */
-  const C=compassRect();
-  const bx=C.x, bw=C.w, by=C.y-8-bh;
+  // 退場跑完才真的收掉
+  if(sayEndAt && now-sayEndAt>=CAST_IN_MS){ sayQueue=null; cast=[]; return; }
+  // 退場跑完的人從名單移除，免得一路長下去
+  cast=cast.filter(c=>!c.out || now-c.out<CAST_IN_MS);
+  const beat=sayQueue[sayIdx];
+  const speaker=sayEndAt?null:beat.who;
   ctx.save();
-  // 已經上過場的人都留在台上；立繪先畫、對話框後畫（框要壓在她們身上）
-  for(let i=0;i<=sayIdx;i++){
-    const who=sayQueue[i].who, P=PORTRAIT[who], im=portraitImg[who];
+  /* 立繪：各自從自己那一側滑入／滑出。 */
+  for(const c of cast){
+    const P=PORTRAIT[c.who], im=portraitImg[c.who];
     if(!P || !im || !im.width) continue;
     const sh=Math.round(im.height*P.crop);
     const ph=Math.round(VIEWH*P.h);
     const pw=Math.round(ph*im.width/sh);
-    ctx.globalAlpha=a*(who===speaker?1:0.45);
-    /* ⚠ 底邊切齊**控制面板**（VIEWH），不是切齊對話框 —— 對齊面板人才站得住。
-       突出面板的舵輪會自然蓋住下襬（畫在 drawPanel 之前），那正是想要的層次。
-       ⚠ 水平錨在**身體中線**不是圖框邊緣：這些插畫左右留白很多。 */
-    ctx.drawImage(im, 0,0,im.width,sh,
-                  Math.round(W*P.cx-pw/2), Math.round(VIEWH-ph), pw, ph);
+    const target=Math.round(W*P.cx-pw/2);
+    const off=(c.side==='L') ? -pw-8 : W+8;      // 畫面外的停機位
+    let x;
+    if(c.out) x=lerp(target, off, easeOut(clamp((now-c.out)/CAST_IN_MS,0,1)));
+    else      x=lerp(off, target, easeOut(clamp((now-c.t0)/CAST_IN_MS,0,1)));
+    const lit=(c.who===speaker);
+    /* ⚠ ctx.filter 不是每個瀏覽器都有 —— 沒有就退回用透明度壓暗，
+       只是質感差一點，不會整段掛掉（同 decode() 那個教訓）。 */
+    if(ctx.filter!==undefined){
+      ctx.filter = lit ? 'none' : 'brightness('+CAST_DIM+') saturate('+CAST_SAT+')';
+      ctx.globalAlpha=1;
+    }else{
+      ctx.globalAlpha = lit ? 1 : 0.45;
+    }
+    ctx.drawImage(im, 0,0,im.width,sh, Math.round(x), Math.round(VIEWH-ph), pw, ph);
   }
-  ctx.globalAlpha=a;
+  if(ctx.filter!==undefined) ctx.filter='none';
+  ctx.globalAlpha=1;
+  if(sayEndAt){ ctx.restore(); return; }        // 退場時不再畫框
+  /* 對話框：與方向計同寬、疊在它正上方（Ray 指定）。
+     ⚠ 一定要讓開羅盤帶：它畫在 drawPanel（比這裡晚），框底壓上去台詞會被蓋掉。 */
+  const bh=Math.round(clamp(VIEWH*0.115,48,70));
+  const C=compassRect();
+  const bx=C.x, bw=C.w, by=C.y-8-bh;
   ctx.fillStyle='rgba(10,9,16,.84)';
   ctx.fillRect(bx,by,bw,bh);
   ctx.strokeStyle='rgba(201,162,39,.55)'; ctx.lineWidth=1;
@@ -1326,7 +1379,12 @@ function drawTalk(now){
   ctx.font='11px "Noto Serif TC",serif';
   ctx.fillStyle='#c9a227'; ctx.fillText(PORTRAIT[speaker].name, bx+13, by+19);
   ctx.font='15px "Noto Serif TC",serif';
-  ctx.fillStyle='#ece6d8'; ctx.fillText(sayQueue[sayIdx].text, bx+13, by+bh-15);
+  ctx.fillStyle='#ece6d8'; ctx.fillText(beat.text, bx+13, by+bh-15);
+  // 續行提示「▼」：同教學，告訴玩家要點一下
+  const blink=0.45+0.55*Math.abs(Math.sin(now*0.004));
+  ctx.fillStyle='rgba(201,162,39,'+blink.toFixed(2)+')';
+  ctx.textAlign='right';
+  ctx.fillText('▼', bx+bw-11, by+bh-15);
   ctx.restore();
 }
 
@@ -2276,6 +2334,10 @@ const STEER_DEAD=14;                        // 橫向死區（像素）
 const TAP_SLOP=12;                          // 位移小於此值＝點擊而非拖曳
 const stage=document.getElementById('stage');
 stage.addEventListener('pointerdown',e=>{
+  /* 對白進行中：點畫面任何一處推進一句，不進操舵也不進感應。
+     ⚠ 按鈕（地圖／返回／生怪／靜音）是 canvas 之上的 DOM，點在它們身上
+       根本不會走到這裡，所以「無按鈕處」自動成立。 */
+  if(sayQueue && sayAdvance(performance.now())) return;
   if(dragId!==null) return;                       // 單手操作：只認第一根手指
   dragId=e.pointerId; dragging=true;
   /* ⚠ 一定要抓住指標。桌機上滑鼠一旦拖出操作區，pointermove 就不再進來，
