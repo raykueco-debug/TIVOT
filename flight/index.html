@@ -1093,6 +1093,17 @@ const SENSE_TIRED_N   = 3;      // 一分鐘內第幾次沒結果會喊累
 const SENSE_TIRED_WIN = 60000;  // 「一分鐘內」
 const SENSE_CD_MS     = 60000;  // 喊累之後的冷卻
 const ANNA_SAY_MS     = 3200;   // 提示停留多久
+/* 立繪的取景。三個旋鈕：
+     ANNA_CROP  取插畫上緣多少（越小＝越貼近臉）
+     ANNA_H     立繪高度佔**飛行畫面（3D 視窗）**的比例
+     ANNA_CX    她的身體中線落在畫面寬的哪個位置
+   ⚠ 「人物太小」不是把整張放大能解的：這是**全身圖**，頭只佔全圖上緣 0~16%
+     （量出來的：頭寬約 250px 一路到 y=16%，18% 之後肩膀才展開）。取上半 45%
+     的話頭只佔畫面的 29%，怎麼放大都是一個小頭配一大截裙子。
+     改成胸像（0.26＝頭＋肩＋上胸），同樣畫面高度下臉就大了一倍。 */
+const ANNA_CROP = 0.26;
+const ANNA_H    = 1/3;
+const ANNA_CX   = 0.86;
 let senseMiss=[];               // 最近幾次「沒找到」的時戳
 let senseCdUntil=0;
 let annaSay=null;               // {at,text}：at＝該出現的時戳
@@ -1270,11 +1281,18 @@ function drawAnnaSay(now){
   ctx.globalAlpha=a;
   // 立繪先畫、對話框後畫 —— 框要壓在她身上，不然下襬會蓋掉台詞
   if(annaImg && annaImg.width){
-    const sh=Math.round(annaImg.height*0.55);
-    const ph=Math.round(clamp(floorY*0.62,140,460));
+    /* ⚠ 底邊切齊**控制面板**（VIEWH），不是切齊對話框 —— 對齊面板她才站得住，
+       否則整個人浮在畫面中間。突出面板的舵輪會自然蓋住她的下襬（她畫在
+       drawPanel 之前），那正是想要的層次。
+       ⚠ 「人物大一點」是靠**收緊裁切**（0.55 → ANNA_CROP）而不是把整體放大：
+         同樣的畫面高度下，取得越少臉就越大。整體高度仍守著 1/3 的指定。 */
+    const sh=Math.round(annaImg.height*ANNA_CROP);
+    const ph=Math.round(VIEWH*ANNA_H);
     const pw=Math.round(ph*annaImg.width/sh);
+    /* ⚠ 水平定位錨在**她的身體中線**（原圖是置中的），不是錨在圖框邊緣：
+       胸像裁切之後左右留白很多，照圖框對齊會把她推出畫面。 */
     ctx.drawImage(annaImg, 0,0,annaImg.width,sh,
-                  Math.round(W-pw*0.70), Math.round(by-ph+10), pw, ph);
+                  Math.round(W*ANNA_CX-pw/2), Math.round(VIEWH-ph), pw, ph);
   }
   ctx.fillStyle='rgba(10,9,16,.84)';
   ctx.fillRect(bx,by,bw,bh);
