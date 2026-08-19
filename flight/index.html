@@ -967,9 +967,11 @@ const SENSE_SUMMON_MS = 1000;   // 按到這裡：畫面轉暗、立繪插入、
 /* 心跳（Anna_Beat.mp3，5.00s）的起音時間，用起音包絡量出來的：
    0.45/0.82 · 1.61/1.99 · 2.78/3.15 · 3.94/4.31 —— 標準的 lub-dub，
    每對相隔 0.37s、對與對之間 0.79s，週期 1.165s（≈52 BPM）。
-   前者（lub）是強拍，後者（dub）弱。立繪跟著這張表脈動。 */
-const SENSE_BEATS = [[0.45,1],[0.82,0.55],[1.61,1],[1.99,0.55],
-                     [2.78,1],[3.15,0.55],[3.94,1],[4.31,0.55]];
+   ⚠ 畫面**只跟強拍（lub）脈動一次**，不跟著跳兩下（Ray 指定）。弱拍（dub）
+     還是聽得到，但視覺跟著跳兩下會變成顫抖，不是心跳。
+   ⚠ 最後一個強拍 3.94 就是光圈的時間點 —— 所以「最後那一下」的輪廓脈動
+     與光圈是同一拍，收在一起。 */
+const SENSE_BEATS = [0.45, 1.61, 2.78, 3.94];
 /* 光圈要**對齊最後一聲心跳**（Ray 指定，以心跳音為準）。取第四個強拍 3.94s：
    落在弱拍上收不住，而 3.94 也剛好接近原本設計的「續按三秒」。
    ⚠ 因此 SENSE_HOLD_MS 是被心跳決定的，不是隨便取的整數：
@@ -1056,17 +1058,28 @@ function senseBeatT(){
   if(!a || a.paused || !isFinite(a.currentTime) || a.readyState<2) return null;
   return a.currentTime;
 }
-/* 這一刻的脈動強度 0..1：每個起音瞬間跳到該拍的強度，再指數衰減。
-   ⚠ 衰減 0.11s 是配著 lub-dub 的 0.37s 間隔選的 —— 再長的話兩拍會黏成一坨，
-     就不像心跳像顫抖了。 */
+/* 這一刻的脈動強度 0..1：起音瞬間跳到 1，再指數衰減。
+   ⚠ 衰減 0.26s：一個週期只脈動一次，不必怕跟下一拍黏在一起，
+     放長一點才是「輪廓緩緩鼓起再收」而不是閃一下。 */
 function senseBeatPulse(){
   const t=senseBeatT(); if(t==null) return 0;
-  let best=0;
   for(let i=SENSE_BEATS.length-1;i>=0;i--){
-    const dt=t-SENSE_BEATS[i][0];
-    if(dt>=0){ best=SENSE_BEATS[i][1]*Math.exp(-dt/0.11); break; }
+    const dt=t-SENSE_BEATS[i];
+    if(dt>=0) return Math.exp(-dt/0.26);
   }
-  return best;
+  return 0;
+}
+
+/* 輪廓脈動：疊一層糊過的自己。發動時那一下與每次心跳共用同一種作法，
+   差別只在強度 —— Ray 要的就是「跟最後那一下一樣的輪廓脈動」。
+   ⚠ ctx.filter 不是每個瀏覽器都有：沒有就跳過這一層，只少一個特效，
+     不會整段掛掉（同 decode() 那個教訓）。 */
+function senseHalo(G, alpha, blur){
+  if(alpha<=0.004 || ctx.filter===undefined) return;
+  ctx.globalAlpha=alpha;
+  ctx.filter='blur('+blur.toFixed(1)+'px)';
+  ctx.drawImage(senseImg,G.left,G.top,G.S,G.S);
+  ctx.filter='none';
 }
 
 function senseCancel(){
@@ -1147,24 +1160,19 @@ function drawSenseCI(now){
     k=clamp((held-SENSE_SUMMON_MS)/SENSE_HOLD_MS,0,1);
     fade=clamp((held-SENSE_SUMMON_MS)/260,0,1);          // 插入時的淡入
   }
-  /* 隨心跳脈動：繞著**胸針**放大（senseGeom 是以胸針定位的，所以只要放大 S、
-     左上角跟著重算，錨點就自動不動）。幅度刻意小 —— 這是呼吸不是彈跳。 */
   const pulse=senseBeatPulse();
-  const G=senseGeom(k, 1+0.022*pulse);
-  const al=(SENSE_ALPHA0+(SENSE_ALPHA1-SENSE_ALPHA0)*k)*fade*(1+0.30*pulse);
+  const G=senseGeom(k);
+  const al=(SENSE_ALPHA0+(SENSE_ALPHA1-SENSE_ALPHA0)*k)*fade;
   ctx.save();
   ctx.fillStyle='rgba(3,3,7,'+(0.55*fade).toFixed(3)+')';
   ctx.fillRect(0,0,W,VIEWH);
-  /* 邊緣脈動模糊：發動那一下，先疊一層糊過的自己再蓋上清楚的。
-     ⚠ ctx.filter 不是每個瀏覽器都有 —— 沒有就跳過這一層，只少一個特效，
-       不會整段掛掉（同 decode() 那個教訓）。 */
-  if(senseFireAt && ctx.filter!==undefined){
-    const t=clamp((now-senseFireAt)/SENSE_EDGE_MS,0,1);
-    const b=4+11*Math.sin(t*Math.PI);
-    ctx.globalAlpha=al*(0.25+0.65*Math.sin(t*Math.PI));
-    ctx.filter='blur('+b.toFixed(1)+'px)';
-    ctx.drawImage(senseImg,G.left,G.top,G.S,G.S);
-    ctx.filter='none';
+  if(senseFireAt){
+    // 發動那一下：同一種輪廓脈動，強度拉滿
+    const t=clamp((now-senseFireAt)/SENSE_EDGE_MS,0,1), e=Math.sin(t*Math.PI);
+    senseHalo(G, al*(0.25+0.65*e), 4+11*e);
+  }else{
+    // 每一下心跳：同一種輪廓脈動，弱得多
+    senseHalo(G, al*0.5*pulse, 5+7*pulse);
   }
   ctx.globalAlpha=al;
   ctx.drawImage(senseImg,G.left,G.top,G.S,G.S);
