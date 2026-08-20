@@ -1249,18 +1249,35 @@ function castGeom(P, im){
    **內容全部在 flight/talks.js**（TALKS / TALK_TIMES / talkPeriod / talkPick）——
    要加台詞或加觸發條件動那一支就好，這裡只負責「湊出情境、挑一組、播出去」。 */
 let talkLastId=null;
-/* 故事進度。**預設 3**（Ray 指定，ver -269 由 1 改）；日後由存檔或劇情推進來改。
-   ⚠ 改預設值會直接讓「填了 stage 的對話」整批失效 —— 當初 18 組全填 stage:1，
-     預設一改成 3 就一組都不符合，按鈕會變成沒反應。已把一般閒聊的 stage 拿掉
-     （省略＝不限進度），只有真的分章節的對話才填。見 talks.js 檔頭。
-   管理人模式可用 setStage(n) 就地測試不同進度的對話。 */
-let STAGE=3;
+/* ══ 故事進度 STAGE（系統旗標）══
+   ⚠ 這是**跨頁面的系統狀態**，不是飛行頁的區域變數 —— 存 localStorage，
+     鑰匙與主遊戲共用（同 tivot_player_name_v1 的作法）。劇情推進時寫這裡，
+     主遊戲與飛行頁讀同一個值，不會兩邊各有一份而走鐘。
+   ⚠ **測試期間預設 3、四名同伴全部在隊**（Ray 指定）。真正的入隊/離隊章節
+     寫在 talks.js 的 PARTY 表。
+   ⚠ 改這個值會連帶改變「聽得到哪些對話」：章節由對話放在 TALKS 的第幾組決定，
+     而隊伍成員不齊時整組對話會被排除。改完用 talkDebug() 看一下各章還剩幾組，
+     不然內容缺口只會表現成「按鈕好像沒反應」，很難回頭找。 */
+const STAGE_KEY='tivot_stage_v1';
+const STAGE_DEFAULT=3;
+function gameStage(){
+  try{
+    const v=parseInt(localStorage.getItem(STAGE_KEY),10);
+    return (isFinite(v) && v>0) ? v : STAGE_DEFAULT;
+  }catch(e){ return STAGE_DEFAULT; }
+}
+function setGameStage(n){
+  n=Math.max(1, n|0);
+  try{ localStorage.setItem(STAGE_KEY, String(n)); }catch(e){}
+  return n;
+}
 
 /* ══ 主角（玩家本人）══
    17 歲，教廷聖約騎士團的騎士。主武器是大口徑雙自動手槍，有把陣地機槍整挺
    舉起來掃射的腕力。性格不設定 —— 他就是玩家本人。
-   ⚠ **他永遠沒有台詞、也沒有立繪**。要表現存在感是靠別人對他說話（見 talks.js
-     的 player-* 那幾組）。
+   ⚠⚠ **他會說話，只是台詞不顯示**（沒有他的發言框，也沒有立繪）。這是慣例、
+     **不是人設** —— 寫對話時不可以寫成「他沉默」「他只點頭」，那會把他寫成
+     第二個安雅。作法是讓別人接他的話，從反應反推（見 talks.js 的 player-*）。
    ⚠ 名字由玩家自訂，預設「托爾斯」。台詞裡寫 {P}，**顯示時才代換** ——
      存進 sayQueue 就代換的話，玩家中途改名，正在播的那段還是舊名字。
    ⚠ 鑰匙與主遊戲共用（同一個 localStorage），所以命名介面應該做在 index.html
@@ -1281,8 +1298,64 @@ function talkRegion(){
   }catch(e){ return 'ALL'; }
 }
 function talkCtx(){
-  return { region: talkRegion(), time: talkPeriod(clock.minutes), stage: STAGE };
+  return { region: talkRegion(), time: talkPeriod(clock.minutes), stage: gameStage() };
 }
+/* ══ 軟邊界：快飛出圖了，蕾娜叫你回頭 ══
+   地圖沒有硬邊界（cam.x/y 沒有被夾），船可以一路飛出去。與其擺一道看不見的牆
+   把船擋住（那會讓玩家覺得「壞了」），不如讓她碎念把人勸回來。
+   ⚠ 只在**真的靠近邊界**時念，而且要有冷卻 —— 沒有冷卻的話沿著邊界飛就會
+     每一幀都想講話。離開警戒帶再回來才會重新觸發。
+   ⚠ 她不在隊上就不念（走 talks.js 的 PARTY 表，與對話同一套判定）。
+   ⚠ 對白/探索演出進行中不插話：三者共用同一個舞台。 */
+/* ══ 世界邊界 ══
+   ⚠ 可飛的範圍**比地圖圖框大一圈**：圖框外 WORLD_PAD 那一圈是開闊的海。
+     這樣做而不是把地圖資料加大，是因為**飛出圖框本來就會渲染成雲海**
+     （見 render 的 `outside` 分支：超出範圍就走雲海路徑），所以外擴一圈
+     不必動任何資料，也就不會牽動 SETTLEMENTS／starpoints／region_map／
+     各城搜出來的座標 —— 那些一旦要平移就是一整串連鎖修改。
+   ⚠ 為什麼需要這一圈：實測陸地包圍盒離圖框只有 左11／右13／上39／下41 像素
+     （中位數雖有 137~332，但最窄處就是這麼近）。阻尼帶若貼著圖框放，
+     在那幾處會直接壓在陸地上 —— 人還在大陸上空就被空氣牆黏住。
+     外擴 260 之後，最窄處也還有 271 像素的海，阻尼帶（150）放得下。 */
+const WORLD_PAD  = 260;       // 圖框外還能飛多遠（地圖像素）＝「海外」的寬度
+const EDGE_BAND  = 150;       // 距硬界多遠開始有阻力
+const EDGE_HARD  = 8;         // 到這裡幾乎完全推不動
+const EDGE_COOL_MS = 20000;   // 同一次靠近最多念一句；離開警戒帶就重置
+
+/* 到硬界的距離（四邊取最小）。 */
+function edgeDist(mx,my){
+  return Math.min(mx+WORLD_PAD, my+WORLD_PAD,
+                  (MAPW+WORLD_PAD)-mx, (MAPH+WORLD_PAD)-my);
+}
+/* 阻尼係數 1..0。**只擋向外的那一份**，往內一律不擋 —— 否則玩家會覺得被黏住
+   轉不回來，那是「壞掉」不是「邊界」。
+   ⚠ 用航向在該軸的分量加權（不是只看正負號）：沿著邊界平飛時分量接近 0，
+     幾乎不減速，所以可以貼著邊界滑行；正對著撞才會整個被吃掉。
+   ⚠ smoothstep 不用線性：線性在進帶子的瞬間會有一下「頓」，平滑的才像
+     推進愈來愈稠的空氣。 */
+function edgeDamp(mx,my,fx,fy){
+  const ax=(d,out)=>{
+    if(out<=0.0001) return 1;
+    const t=clamp((d-EDGE_HARD)/(EDGE_BAND-EDGE_HARD),0,1);
+    return 1-out*(1-t*t*(3-2*t));
+  };
+  return Math.min(ax(mx+WORLD_PAD,-fx), ax((MAPW+WORLD_PAD)-mx, fx),
+                  ax(my+WORLD_PAD,-fy), ax((MAPH+WORLD_PAD)-my, fy));
+}
+
+let edgeNagAt=0, edgeWasIn=true;
+function edgeNag(now){
+  if(typeof TALK_EDGE==='undefined' || !MAPW || !MAPH) return;
+  const mx=cam.x/MAP_SCALE, my=cam.y/MAP_SCALE;
+  const near = edgeDist(mx,my) < EDGE_BAND;        // 開始有阻力的同一條界線
+  if(!near){ edgeWasIn=true; return; }             // 回到安全區 → 下次靠近可再念
+  if(sayQueue || senseOn || senseFireAt || senseT0 || mapOpen) return;
+  if(!inParty('renna', gameStage())) return;
+  if(edgeWasIn===false && now-edgeNagAt < EDGE_COOL_MS) return;
+  edgeWasIn=false; edgeNagAt=now;
+  say([{who:'renna', text:TALK_EDGE[(Math.random()*TALK_EDGE.length)|0]}], now);
+}
+
 function talkStart(now){
   if(typeof TALKS==='undefined') return;          // talks.js 沒載到就安靜跳過
   const t=talkPick(talkCtx(), talkLastId);
@@ -3121,7 +3194,8 @@ const ADMIN=(()=>{ try{ return localStorage.getItem('tivot_admin_v1')==='1'; }
    驗收時要能跳過去看 —— 尤其「城在黃昏過亮」這類只在特定時刻出現的問題。 */
 if(ADMIN) window.setTime=(min)=>{ clock.minutes=((min%1440)+1440)%1440; return clock.minutes; };
 /* 管理人：就地切故事進度／看目前的對話情境，測時段與 stage 觸發用。 */
-if(ADMIN) window.setStage=(n)=>{ STAGE=n|0; return STAGE; };
+if(ADMIN) window.setStage=(n)=>setGameStage(n);
+if(ADMIN) window.talkDebug=(m)=>talkDebug(m);
 if(ADMIN) window.talkInfo=()=>talkCtx();
 if(ADMIN) window.setPlayerName=(s)=>{ try{ localStorage.setItem(PLAYER_NAME_KEY, String(s||'')); }catch(e){} return playerName(); };
 /* 怪的狀態機驗收用：enemy 是 top-level let，外部注入的 script 讀不到。 */
@@ -3470,7 +3544,15 @@ function update(dt,now){
 
   cam.alt=CRUISE_ALT;
   const fx=-Math.sin(cam.angle), fy=-Math.cos(cam.angle);
-  const mv=cam.speed*dt*0.06*SPD_BOOST;
+  let mv=cam.speed*dt*0.06*SPD_BOOST;
+  /* 邊界的空氣牆：向外的位移被吃掉，而且**速度也跟著掉** ——
+     只擋位移不掉速度的話，速度計還滿著、船卻不動，那看起來像卡住了。 */
+  const ek=edgeDamp(cam.x/MAP_SCALE, cam.y/MAP_SCALE, fx, fy);
+  if(ek<1){
+    mv*=ek;
+    const bleed=1-Math.pow(1-0.10, dt/16.67);      // 每 60fps 幀約追上 10%
+    cam.speed += (cam.speed*ek - cam.speed)*bleed;
+  }
   cam.x+=fx*mv; cam.y+=fy*mv;
   clock.dist+=Math.abs(mv);              // 後退也是航行距離，不該倒扣
   /* 0.10：時間跟著「走了多少世界單位」推進，而速度與世界都加倍了，
@@ -6654,6 +6736,7 @@ function loop(now){
   const dt=Math.min(40,now-last); last=now;
   flushResize();     // 重建畫布只在這裡發生 —— 緊接著就是 render，不會露出空畫布
   talkHideStep(now); // ⚠ 方向計收合進度：一定要在這裡推，不能掛在 drawTalk（見該處說明）
+  edgeNag(now);      // 快飛出圖了 → 蕾娜叫你回頭（軟邊界）
   const wt0=performance.now();
   update(dt,now); updateRegion(now); render(now); updateBgm(dt); updateMapMe();
   qualityTick(performance.now()-wt0);
