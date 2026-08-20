@@ -152,6 +152,11 @@ let _shotsVol = 1;  // 普攻槍聲音量（setShots 由呼叫端連同增益傳
  *  而 HTMLAudio 直接串流（邊下載邊播）在手機上緩衝不足會斷斷續續。折衷：把整首 fetch 成 Blob
  *  （壓縮 mp3 留記憶體只有幾 MB）→ 從 blobURL 播（已完整在記憶體、不再走網路 → 不會串流卡頓）。
  *  單一元素：首次手勢解鎖後跨場景重用（換 src 即可，含 setTimeout 也能播）。loop、不交疊、切歌淡出。 */
+/* 已經歷過使用者手勢？armOnly 用它判斷「現在還需不需要憋著」。
+   ⚠ 沒有這個旗標會有競態：玩家在 blob 還沒上膛好之前就點下去 —— 那時 unlock()
+     看到的 el.src 還是空的、什麼也沒播，而稍後上膛完成的那一刻又因為 armOnly
+     直接 return → **BGM 永遠不會響**。有了旗標，上膛完成時若已解鎖就直接開火。 */
+let _unlocked = false;
 let _bgmEl = null;      // 單一 BGM 元素
 let _bgmSrc = null;     // 目前/目標曲（邏輯路徑，非 blobURL）
 let _bgmVol = 0.7;      // 目標音量
@@ -208,12 +213,26 @@ export const SFX = {
         _unlockChk=setTimeout(()=>{ if(_ctx && _ctx.state !== 'running') _needRebuild = true; }, 400);
       }
     }
+    _unlocked = true;
     const el = _bgmEl;
     if(el && el.paused && el.src){ el.volume=Math.min(1,_bgmVol*_master); const p=el.play(); if(p&&p.catch) p.catch(()=>{}); }
   },
 
   /* 切換 BGM：同一元素先淡出 →（可選 delayMs 空一拍）→ 換 blobURL 起播（預設不淡入）loop。
-   *  同一首播放中 → 不重播。src 空 → 不動作。opts：fadeOutMs / delayMs / volume / fadeInMs（預設 0）。 */
+   *  同一首播放中 → 不重播。src 空 → 不動作。
+   *  opts：fadeOutMs / delayMs / volume / fadeInMs（預設 0）/ armOnly。
+   *
+   *  ⚠ armOnly＝**只上膛不開火**：blob 抓好、el.src 就位、音量設好，但**不呼叫
+   *    play()**，讓元素留在 paused。之後由 unlock() 在使用者手勢裡**同步**開火
+   *    （見 unlock 尾端的 `el.paused && el.src` 那段）。
+   *
+   *    為什麼要這樣，而不是直接把 playBgm 搬到點擊處理器裡：真正的 el.play()
+   *    在 `ensureBlob(src).then(...)` 內，那已經是下一個微任務 —— **脫離使用者
+   *    手勢**，iOS 會擋掉。上膛/開火拆開，開火那一步才留在手勢的同步區段內。
+   *
+   *    為什麼不乾脆照舊「先 play()，被擋了再由 unlock 補播」：那在**政策寬鬆的
+   *    瀏覽器上會直接播出來**（桌機 Chrome 就是），於是「要不要按了才有聲音」
+   *    變成看瀏覽器臉色。Ray 指定統一成按下才播（ver -259）。 */
   playBgm(src, opts){
     opts = opts || {};
     if(!src) return;
@@ -234,6 +253,9 @@ export const SFX = {
         if(!url || _bgmSrc !== src) return;
         try{ el.src = url; el.currentTime = 0; }catch(e){}
         el.volume = (fadeIn > 0 ? 0 : Math.min(1,_bgmVol*_master));
+        // 只上膛：src 已就位、留在 paused，等 unlock() 於手勢內同步開火。
+        // 若手勢**已經**發生過（玩家點得比 blob 快），就不必再憋 —— 直接開火。
+        if(opts.armOnly && !_unlocked){ el.volume = Math.min(1,_bgmVol*_master); return; }
         const p = el.play();
         if(p && p.catch) p.catch(()=>{});   // 尚未解鎖 → 等 unlock 於手勢補播
         if(fadeIn > 0) bgmFade(el, Math.min(1,_bgmVol*_master), fadeIn);

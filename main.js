@@ -342,9 +342,13 @@ window.addEventListener('pagehide', refreshBoot);
   // 批次段：等「立繪 → 關鍵音效」依序就緒才開跑（兩段各有 4s 保底）。
   //   12s 保底自批次開跑起算：單一資源卡住也不擋整個載入。
   const startBatch=()=>{
-    // 主選單 BGM 掛播（自 combat.bootIdle 移來）：ensureBlob 自此才開抓，不再搶關鍵段頻寬；
-    //   實際起播等 go() 手勢 unlock 補播，時序與原本相同。
-    SFX.playBgm(asset('bgm_home'), { volume: bgmVol('bgm_home') });
+    /* 主選單 BGM **上膛**（armOnly）：blob 抓好、el.src 就位，但不出聲 ——
+       起播一律等 go() 那一下手勢由 unlock() 同步開火。
+       ⚠ 原本這裡是直接 playBgm（靠「沒解鎖就會被擋、之後 unlock 補播」）。
+         但那在政策寬鬆的瀏覽器上會**真的播出來** —— 桌機 Chrome 就是這樣，
+         於是讀取畫面還沒點就有音樂，「按了才有聲音」變成看瀏覽器臉色。
+         armOnly 讓兩邊一致。（Ray 指定，ver -259） */
+    SFX.playBgm(asset('bgm_home'), { volume: bgmVol('bgm_home'), armOnly:true });
     const imgP = imgs.map(src=>new Promise(res=>{ const im=new Image(); im.onload=im.onerror=()=>{ tick(); res(); }; im.src=src; }));
     const wrapCount = (p, n)=> p.then(()=>{ for(let i=0;i<n;i++) tick(); }).catch(()=>{ for(let i=0;i<n;i++) tick(); });
     const audioP = [ wrapCount(SFX.preload(sfx), sfx.length), wrapCount(SFX.preloadBgm(bgm), bgm.length) ];
