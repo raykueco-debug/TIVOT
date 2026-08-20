@@ -15,5 +15,9 @@
 ## 資料夾內容
 - CLAUDE.md         專案憲法(鐵律、模組邊界、state 契約、函式歸屬、驗收)
 - SPEC.md           行為規格
+- GAMESPEC.md       現況實裝快照(數值以 config.js 為準)
+- DECISIONS.md      架構決策紀錄
+- docs/             Ray 提供的設計文件歸檔(**規劃**,非現況實裝)
+  - docs/TIVOT_IMPL_SPEC.md   城鎮結構/好感度 tier/結局判定/諾薇兒暴走/蕾娜機制
 - reference/index.html   現行完整版,唯讀行為基準,永不修改
 - resources/        已外置的圖片(依功能分目錄)
