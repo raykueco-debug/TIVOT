@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.19-248';
+export const VERSION = 'ver 2026.08.19-250';
 
 export const GAME_CONFIG = {
 
@@ -634,11 +634,47 @@ export const GAME_CONFIG = {
     //   個別仍嫌大/小聲時微調這裡即可（>1 增幅、<1 衰減）
     //   vo_* 四支（技能 SE）：對齊 Luna 聖徒化語音的有效響度（RMS −14.4 dBFS）——
     //   依各檔母帶 RMS 差多少補多少，峰值略超滿刻度交給 SFX 匯流 limiter 軟接（不破音）。
-    /* 語音層（VO）—— 目標 −18 LUFS。se_luna_mb 是音效不是語音，已移到 sfxGain。 */
-    partnerSeGain: { se_luna_dual:1.05, se_luna_exc:1.26, se_luna_obe:1.22,
-                     voice_saint_luna:2.02,
-                     vo_life_return:11.35, vo_death_guard:3.16,
-                     vo_supply_refill:3.02, vo_hc_rounds:4.22 },
+    /* ══ 語音鏈（VO，ver -250）══
+       只有語音走這一條（SFX.playVoice → audio.js 的 voiceChain），音效與音樂不走。
+
+       為什麼要有：**耳機對了不代表手機對了**。手機單體 600 Hz 以下幾乎不發聲，
+       而這幾支語音母帶有 45~92% 的能量落在 150~500 Hz。實測（tools/audio_probe.html）
+       整層在耳機上齊平（落差 0.0 dB），到手機上卻散開成 9.7 dB：
+         vo_luna_dualwield  −18.0（耳機）→ −25.2（手機）  92% 能量在 150~500 Hz
+         vo_malzeno_hcrounds −18.0        → −22.3
+       兩支都掉到音效層（−22）以下 —— 被槍聲蓋掉，聽起來就是「糊」。
+
+       eq   切掉手機放不出來的低頻、壓渾濁段（低棚而不是戳一個點）、抬子音。
+            存在/渾濁比因此從 −8~−21 dB 拉到 +1~−10 dB。
+       comp ⚠ 不是為了更大聲，是為了**不要去踩 SFX 匯流的 limiter**
+            （threshold −6／ratio 12／release 120ms）。峰值一過門檻整句被壓住
+            120ms，那個 pumping 本身就是悶與糊。
+
+       ⚠ **沒有收尾的 limiter 一節，而且不要加**：Chrome 的 DynamicsCompressor
+         內建自動補償增益（跟 threshold 與 ratio 綁在一起），所以再串一顆
+         「限幅器」的結果是**整體變大聲、峰值反而更高**。實測把 lim 的門檻從
+         −1 降到 −4（照直覺應該壓更多），整層反而從 −17.9 變成 −16.0 LUFS、
+         最高峰從 +1.4 升到 +2.6 dBFS。補償後仍過頭的那兩支（+0.5／+1.4）交給
+         匯流 limiter 接就好 —— 那本來就是它的工作，而且只作用在瞬態。
+       ⚠ 改這裡就要同步 tools/audio_probe.html 的 VO_EQ／VO_COMP，否則量到的
+         不是實際播出的東西。 */
+    voiceChain: {
+      eq:   [ ['highpass', 130, 0.707,  0],
+              ['lowshelf', 500, 0.707, -5],
+              ['peaking', 3000, 1.00,  +4] ],
+      comp: { threshold:-26, knee:14, ratio:4, attack:0.005, release:0.12 },
+    },
+
+    /* 語音層（VO）—— 目標 −18 LUFS。se_luna_mb 是音效不是語音，已移到 sfxGain。
+       ⚠ 增益是**過完語音鏈之後**量出來反推的，不是母帶的數字 —— 動 voiceChain
+         就要整排重算（tools/audio_probe.html 會直接印出建議值）。
+       ⚠ 對的是「耳機與手機的**平均**響度」，不是只對其中一邊：只對手機的話，
+         低頻重的那幾支在耳機上會突出 4~7 dB，反而把原本對的耳機平衡打壞。
+         取平均後兩邊的殘差各自減半（耳機 3.3 dB／手機 3.3 dB，原本是 0.0／9.7）。 */
+    partnerSeGain: { se_luna_dual:1.85, se_luna_exc:1.27, se_luna_obe:1.47,
+                     voice_saint_luna:1.69,
+                     vo_life_return:4.67, vo_death_guard:1.97,
+                     vo_supply_refill:2.84, vo_hc_rounds:3.32 },
 
     /* ══ 全域響度分級（ver -243 重訂）══
        量測法：BS.1770 K 加權 + 閘控積分響度（近似 LUFS）—— 不是單純 RMS，

@@ -64,9 +64,56 @@ function load(src){
   return _pending[src];
 }
 
-function playBuffer(c, buf, vol){
+/* ── 語音鏈（VO）────────────────────────────────────────────────────
+ *  只有語音走這一條，音效與音樂不走。要解決的是**手機外放**的可懂度：
+ *  同一支語音在耳機上與手機上根本不是同一個響度——手機單體 600 Hz 以下
+ *  幾乎不發聲，而這幾支母帶有 45~92% 的能量落在 150~500 Hz。實測整層
+ *  在耳機上齊平（落差 0.0 dB）、到手機上卻散開成 9.7 dB，最慘的一支
+ *  掉到音效層以下 → 被槍聲蓋掉 → 聽起來就是「糊」。
+ *
+ *  鏈的順序（每一節都有它非在這裡不可的理由）：
+ *    EQ   切掉手機放不出來的低頻、壓渾濁段、抬子音的存在感
+ *    comp 把平均拉近峰值。⚠ 不是為了更大聲，是為了**不要去踩 SFX 匯流的
+ *         limiter**（threshold −6 / ratio 12 / release 120ms）——峰值一過門檻，
+ *         整句話會被壓住 120ms，那個 pumping 本身就是「悶、糊」。
+ *    gain 逐檔的補償增益（呼叫端從 config 給），一定在 comp **之後**：
+ *         comp 的門檻是絕對值，放前面等於每支檔案吃到不同的壓縮量。
+ *    lim  收尾的峰值限幅，接住補償後仍然過頭的那 1~2 支。
+ *
+ *  ⚠ 參數由呼叫端（main.js）從 config 推進來——本模組維持葉節點不讀 config。
+ *    沒設定時 _voice 為 null，語音就走一般路徑（不會整個掛掉）。 */
+let _voice = null;
+function setBq(b, spec){
+  const [type, freq, q, gain] = spec;
+  b.type = type; b.frequency.value = freq;
+  if(q!=null) b.Q.value = q;
+  if(gain!=null) b.gain.value = gain;
+}
+function setComp(cp, o){
+  for(const k of ['threshold','knee','ratio','attack','release'])
+    if(o[k]!=null) cp[k].value = o[k];
+}
+/* 建一條語音鏈，回傳 {head, tail}；tail 之後接匯流。 */
+function voiceChain(c, vol){
+  const V = _voice;
+  let head = null, node = null;
+  const push = n => { if(node) node.connect(n); else head = n; node = n; };
+  try{
+    for(const spec of (V.eq || [])) { const b = c.createBiquadFilter(); setBq(b, spec); push(b); }
+    if(V.comp){ const cp = c.createDynamicsCompressor(); setComp(cp, V.comp); push(cp); }
+    const g = c.createGain(); g.gain.value = (vol==null ? 1 : vol); push(g);
+    if(V.lim){ const lm = c.createDynamicsCompressor(); setComp(lm, V.lim); push(lm); }
+    return { head, tail: node };
+  }catch(e){ return null; }
+}
+
+function playBuffer(c, buf, vol, voice){
   try{
     const s = c.createBufferSource(); s.buffer = buf;
+    if(voice && _voice){
+      const ch = voiceChain(c, vol);
+      if(ch){ s.connect(ch.head); ch.tail.connect(busOut(c)); s.start(); return; }
+    }
     const g = c.createGain(); g.gain.value = (vol==null ? 1 : vol);
     s.connect(g); g.connect(busOut(c));
     s.start();
@@ -80,21 +127,21 @@ const LATE_PLAY_MS = 1500;
 /* context 未 running（iOS 解鎖中/被中斷）時不盲目 s.start()——被排入的音源會卡到
  * 「下一次手勢 resume」才突然冒出（=延到下一幕才響）。改輪詢等 running，
  * LATE_PLAY_MS 內沒等到就放棄（遲到不亂響）。context 若中途重建，改用新 _ctx。 */
-function playWhenRunning(buf, vol, t0){
+function playWhenRunning(buf, vol, t0, voice){
   if(Date.now()-t0 > LATE_PLAY_MS) return;
   const c = _ctx; if(!c) return;
-  if(c.state === 'running'){ playBuffer(c, buf, vol); return; }
-  setTimeout(()=>playWhenRunning(buf, vol, t0), 60);
+  if(c.state === 'running'){ playBuffer(c, buf, vol, voice); return; }
+  setTimeout(()=>playWhenRunning(buf, vol, t0, voice), 60);
 }
 
 // 播放音檔（src＝已解析路徑）。已解碼→立即播；未解碼→限時補播（逾時放棄）。null/空→靜默略過。
-function playSrc(src, vol){
+function playSrc(src, vol, voice){
   if(!src) return;
   if(!ctx()) return;
   const t0 = Date.now();
   const buf = _buffers[src];
-  if(buf){ playWhenRunning(buf, vol, t0); return; }
-  load(src).then(b => { if(b) playWhenRunning(b, vol, t0); });
+  if(buf){ playWhenRunning(buf, vol, t0, voice); return; }
+  load(src).then(b => { if(b) playWhenRunning(b, vol, t0, voice); });
 }
 
 let _shots = [];    // 普攻槍聲候選（已解析路徑，隨機播一支）
@@ -211,6 +258,15 @@ export const SFX = {
 
   // 播放音檔（src＝已解析路徑）。每次 new source → 可自由重疊、不限制、不打斷前一個。
   play(src, vol){ playSrc(src, vol); },
+
+  /* 播放**語音**：與 play 的差別是走語音鏈（見上方 voiceChain 的說明）。
+     ⚠ 由呼叫端決定層別，不是由 audio.js 猜檔名 —— 這一層的成員就是
+       config 的 tuning.partnerSeGain 那一張表，判斷歸屬是呼叫端的事。 */
+  playVoice(src, vol){ playSrc(src, vol, true); },
+
+  /* 語音鏈參數（main.js 開機時從 config 的 tuning.voiceChain 推進來）。
+     傳 null／不呼叫＝不裝鏈，語音走一般路徑。 */
+  setVoiceChain(cfg){ _voice = cfg || null; },
 
   // 設定普攻槍聲候選（傳已解析路徑陣列，gunshot 隨機播其一；vol＝播放增益，未傳＝1）
   setShots(srcs, vol){ _shots = (srcs || []).filter(Boolean); _shotsVol = (vol==null ? 1 : vol); },

@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>audio_probe — 響度量測（含手機喇叭模型）</title>
+<style>
+  body{font:13px/1.6 ui-monospace,Menlo,Consolas,monospace;background:#0d0f14;color:#d8cdb4;padding:16px;}
+  h1{font-size:15px;color:#c9a227;letter-spacing:2px;margin-bottom:4px;}
+  p{opacity:.7;margin-bottom:12px;max-width:78ch;}
+  table{border-collapse:collapse;font-size:12px;}
+  th,td{padding:3px 9px;border-bottom:1px solid #232735;text-align:right;white-space:nowrap;}
+  th{color:#c9a227;text-align:right;position:sticky;top:0;background:#0d0f14;}
+  td.f,th.f{text-align:left;}
+  tr.vo td{color:#9fd7ff;} tr.se td{color:#d8cdb4;} tr.bgm td{color:#c8b08a;}
+  .warn{color:#ff9a8a;}
+</style>
+</head>
+<body>
+<h1>AUDIO PROBE</h1>
+<p>量三個數字：<b>LUFS</b>（BS.1770 K 加權、閘控積分，＝耳機上的響度）、
+<b>LUFS·手機</b>（先過手機喇叭模型再量，＝手機外放上的響度）、
+兩者相差的 <b>Δ手機</b>（這一支在小喇叭上「掉了幾 dB」）。
+手機喇叭模型＝600 Hz 三階高通（18 dB/oct），近似一般手機單體的低頻滾降。
+播放增益取自 <code>config.js</code>，所以最後一欄是**實際到耳朵的**響度。</p>
+<div id="out">量測中…</div>
+
+<script>
+/* ── 設定：檔案清單與播放增益（與 config.js 同步）─────────────────────
+   ⚠ 增益改了這裡也要改，否則量到的是母帶不是實際播出的響度。 */
+const MASTER = 0.49;      // tuning.masterVolume（SFX 匯流的主音量節）
+const FILES = [
+  // [層, 檔案, 播放增益(已含 master 的話標 post)]
+  ['vo','vo/vo_luna_saintinstall.m4a', 2.02],
+  ['vo','vo/vo_luna_dualwield.wav',    1.05],
+  ['vo','vo/vo_luna_execution.wav',    1.26],
+  ['vo','vo/vo_luna_obe.wav',          1.22],
+  ['vo','vo/vo_renee_lifereturn.wav',  11.35],
+  ['vo','vo/vo_renee_deathguard.wav',  3.16],
+  ['vo','vo/vo_malzeno_supplyrefill.wav', 3.02],
+  ['vo','vo/vo_malzeno_hcrounds.wav',  4.22],
+
+  ['se','se/se_weapon_pistol_01.mp3',  0.47],
+  ['se','se/se_weapon_pistol_02.mp3',  0.77],
+  ['se','se/se_weapon_pistol_03.wav',  1.36],
+  ['se','se/se_weapon_mg_squall.mp3',  0.65],
+  ['se','se/se_weapon_shotgun_blast.mp3', 0.39],
+  ['se','se/se_weapon_sniper_falcon.mp3', 0.82],
+  ['se','se/se_weapon_guard.m4a',      0.78],
+  ['se','se/se_weapon_reload.mp3',     0.92],
+  ['se','se/se_ui_sortie.mp3',         1.04],
+  ['se','se/se_ui_click.mp3',          4.31],
+  ['se','se/se_ui_pageflip.mp3',       1.93],
+  ['se','se/se_ui_kagurabell.mp3',     2.02],
+  ['se','se/se_saint_install.mp3',     1.01],
+  ['se','se/se_saint_maxburst.wav',    0.80],
+  ['se','se/se_enemy_slash.m4a',       0.46],
+  ['se','se/se_enemy_smack.m4a',       0.72],
+  ['se','se/se_enemy_shot.mp3',        0.65],
+  ['se','se/se_enemy_revolver.mp3',    0.51],
+  ['se','se/se_enemy_dagger.m4a',      2.54],
+
+  // BGM 走 HTMLAudio.volume，不吃 master → post 標記
+  ['bgm','bgm/bgm_mainmenu.m4a',   0.37, true],
+  ['bgm','bgm/bgm_battle.m4a',     0.17, true],
+  ['bgm','bgm/bgm_boss.m4a',       0.12, true],
+  ['bgm','bgm/bgm_result.m4a',     0.20, true],
+  ['bgm','bgm/bgm_missionfailed.m4a', 0.35, true],
+  ['bgm','bgm/bgm_flight.mp3',     0.822, true],   // 飛行頁自己的 BGM_VOL，不是 config 的 bgmVol
+];
+const BASE = '../resources/audio/';
+/* config.js 的 tuning.partnerSeGain（驗收用；改了要同步）。 */
+const CFG_GAIN = {
+  'vo_luna_saintinstall.m4a':1.69, 'vo_luna_dualwield.wav':1.85,
+  'vo_luna_execution.wav':1.27,    'vo_luna_obe.wav':1.47,
+  'vo_renee_lifereturn.wav':4.67,  'vo_renee_deathguard.wav':1.97,
+  'vo_malzeno_supplyrefill.wav':2.84, 'vo_malzeno_hcrounds.wav':3.32,
+};
+
+/* ── 量測 ─────────────────────────────────────────────────────────
+   K 加權用 WebAudio 自己的 biquad：BS.1770 的兩級就是
+     ① high-shelf  fc 1681.97 Hz  +3.999 dB  Q 0.7071
+     ② high-pass   fc 38.13 Hz    Q 0.5
+   手機喇叭模型：600 Hz 高通疊三次（18 dB/oct）。 */
+/* 語音修整鏈（提案值）：切掉手機放不出來的低頻、壓渾濁、抬存在感。
+   ⚠ 這一組要跟 audio.js 的實作同步，否則量到的不是實際播出的東西。 */
+const VO_EQ = [
+  ['highpass',  130,  0.707,  0],   // 手機放不出來的低頻，只會吃掉 limiter 餘裕
+  ['lowshelf',  500,  0.707, -5],   // 壓「渾濁」整段（150~500 Hz），不是只戳一個點
+  ['peaking',  3000,  1.00,  +4],   // 子音／存在感
+];
+/* 語音壓縮：把平均拉近峰值。⚠ 這一節不是為了「更大聲」，是為了**不要去踩
+   SFX 匯流的 limiter**（threshold −6、ratio 12）—— 峰值一過門檻，整句話會被
+   壓 120ms，聽起來就是悶、糊。壓完峰值降下來，limiter 就不再作用。 */
+const VO_COMP = { threshold:-26, knee:14, ratio:4, attack:0.005, release:0.12 };
+/* ⚠ ratio 1 ＝停用。Chrome 的 DynamicsCompressor 內建自動補償增益，多串一顆
+   「限幅器」會讓整體更大聲、峰值更高（見 config 的 voiceChain 註解）。 */
+const VO_LIM  = { threshold:0, knee:2, ratio:1, attack:0.003, release:0.08 };
+{ const q=new URLSearchParams(location.search);
+  if(q.has('lth')) VO_LIM.threshold=+q.get('lth');
+  if(q.has('lat')) VO_LIM.attack=+q.get('lat');
+  if(q.has('lra')) VO_LIM.ratio=+q.get('lra'); }
+/* 網址參數可覆寫，方便一次試好幾組：?th=-26&ra=4&kn=14&hp=130&ls=-5&pk=4 */
+{ const q=new URLSearchParams(location.search);
+  if(q.has('th')) VO_COMP.threshold=+q.get('th');
+  if(q.has('ra')) VO_COMP.ratio=+q.get('ra');
+  if(q.has('kn')) VO_COMP.knee=+q.get('kn');
+  if(q.has('hp')) VO_EQ[0][1]=+q.get('hp');
+  if(q.has('ls')) VO_EQ[1][3]=+q.get('ls');
+  if(q.has('pk')) VO_EQ[2][3]=+q.get('pk'); }
+let eqGain=1;
+async function renderFiltered(buf, mode, eq){
+  const oc=new OfflineAudioContext(1, buf.length, buf.sampleRate);
+  const src=oc.createBufferSource(); src.buffer=buf;
+  let node=src;
+  if(eq){
+    for(const [t,f,q,g] of VO_EQ){
+      const b=oc.createBiquadFilter();
+      b.type=t; b.frequency.value=f; b.Q.value=q; b.gain.value=g;
+      node.connect(b); node=b;
+    }
+    const cp=oc.createDynamicsCompressor();
+    for(const k in VO_COMP) cp[k].value=VO_COMP[k];
+    node.connect(cp); node=cp;
+    if(eq==='final'){
+      /* 驗收模式：把逐檔增益與收尾限幅一起算進去 —— 這才是真的播出的東西。 */
+      const g=oc.createGain(); g.gain.value=eqGain; node.connect(g); node=g;
+      const lm=oc.createDynamicsCompressor();
+      for(const k in VO_LIM) lm[k].value=VO_LIM[k];
+      node.connect(lm); node=lm;
+    }
+  }
+  if(mode==='phone'){
+    for(let i=0;i<3;i++){
+      const hp=oc.createBiquadFilter();
+      hp.type='highpass'; hp.frequency.value=600; hp.Q.value=0.7071;
+      node.connect(hp); node=hp;
+    }
+  }
+  const sh=oc.createBiquadFilter();
+  sh.type='highshelf'; sh.frequency.value=1681.97; sh.gain.value=3.999;
+  node.connect(sh);
+  const hp=oc.createBiquadFilter();
+  hp.type='highpass'; hp.frequency.value=38.13; hp.Q.value=0.5;
+  sh.connect(hp); hp.connect(oc.destination);
+  src.start();
+  const out=await oc.startRendering();
+  return out.getChannelData(0);
+}
+
+/* 閘控積分響度：400ms 區塊、75% 重疊、絕對閘 −70 LUFS、相對閘 −10 LU。 */
+function gatedLoudness(x, sr){
+  const B=Math.round(sr*0.4), Hp=Math.round(B/4);
+  if(x.length<B) return -Infinity;
+  const L=[];
+  for(let i=0;i+B<=x.length;i+=Hp){
+    let s=0; for(let j=i;j<i+B;j++) s+=x[j]*x[j];
+    L.push(s/B);
+  }
+  const lk=m=>-0.691+10*Math.log10(m+1e-20);
+  let keep=L.filter(m=>lk(m)>-70);
+  if(!keep.length) return -Infinity;
+  const relBase=lk(keep.reduce((a,b)=>a+b,0)/keep.length)-10;
+  keep=keep.filter(m=>lk(m)>relBase);
+  if(!keep.length) return -Infinity;
+  return lk(keep.reduce((a,b)=>a+b,0)/keep.length);
+}
+
+/* ── 平均頻譜 ──────────────────────────────────────────────────────
+   Hann 窗、2048 點、半重疊，只累積**有聲**的畫格（過絕對閘）——
+   ⚠ 不過閘的話尾巴的靜音會把頻譜洗平，聽起來像每支都一樣。 */
+function fft(re, im){
+  const n=re.length;
+  for(let i=1,j=0;i<n;i++){
+    let bit=n>>1;
+    for(;j&bit;bit>>=1) j^=bit;
+    j^=bit;
+    if(i<j){ let t=re[i];re[i]=re[j];re[j]=t; t=im[i];im[i]=im[j];im[j]=t; }
+  }
+  for(let len=2;len<=n;len<<=1){
+    const ang=-2*Math.PI/len, wr=Math.cos(ang), wi=Math.sin(ang);
+    for(let i=0;i<n;i+=len){
+      let cr=1, ci=0;
+      for(let k=0;k<len/2;k++){
+        const ur=re[i+k], ui=im[i+k];
+        const vr=re[i+k+len/2]*cr-im[i+k+len/2]*ci;
+        const vi=re[i+k+len/2]*ci+im[i+k+len/2]*cr;
+        re[i+k]=ur+vr; im[i+k]=ui+vi;
+        re[i+k+len/2]=ur-vr; im[i+k+len/2]=ui-vi;
+        const nr=cr*wr-ci*wi; ci=cr*wi+ci*wr; cr=nr;
+      }
+    }
+  }
+}
+function spectrum(x, sr){
+  const N=2048, H=N/2, S=new Float64Array(N/2);
+  const win=new Float64Array(N);
+  for(let i=0;i<N;i++) win[i]=0.5-0.5*Math.cos(2*Math.PI*i/N);
+  let frames=0;
+  for(let p=0;p+N<=x.length;p+=H){
+    let e=0; for(let i=0;i<N;i++) e+=x[p+i]*x[p+i];
+    if(10*Math.log10(e/N+1e-20) < -50) continue;      // 靜音畫格不計
+    const re=new Float64Array(N), im=new Float64Array(N);
+    for(let i=0;i<N;i++) re[i]=x[p+i]*win[i];
+    fft(re,im);
+    for(let k=0;k<N/2;k++) S[k]+=re[k]*re[k]+im[k]*im[k];
+    frames++;
+  }
+  if(!frames) return null;
+  for(let k=0;k<N/2;k++) S[k]/=frames;
+  return {S, df:sr/N, frames};
+}
+/* 幾個對「小喇叭聽感」有意義的比值。 */
+function bands(sp){
+  if(!sp) return null;
+  const sum=(a,b)=>{ let s=0; for(let k=Math.max(1,Math.round(a/sp.df));k<Math.round(b/sp.df)&&k<sp.S.length;k++) s+=sp.S[k]; return s; };
+  const tot=sum(20,20000)+1e-20;
+  const mud=sum(150,500), pres=sum(2000,5000), air=sum(5000,10000);
+  return { sub:sum(20,150)/tot*100, mud:mud/tot*100, mid:sum(500,2000)/tot*100,
+           pres:pres/tot*100, air:air/tot*100,
+           pmr:10*Math.log10(pres/(mud+1e-20)) };   // 存在感／渾濁比（dB，越大越清楚）
+}
+
+function peakDb(buf){
+  const d=buf.getChannelData(0); let p=0;
+  for(let i=0;i<d.length;i++){ const v=Math.abs(d[i]); if(v>p) p=v; }
+  return 20*Math.log10(p+1e-20);
+}
+
+(async()=>{
+  const ac=new (window.AudioContext||window.webkitAudioContext)();
+  const rows=[];
+  for(const [layer,rel,gain,post] of FILES){
+    let buf;
+    try{
+      const ab=await (await fetch(BASE+rel)).arrayBuffer();
+      buf=await ac.decodeAudioData(ab);
+    }catch(e){ rows.push({layer,rel,err:String(e).slice(0,40)}); continue; }
+    const sr=buf.sampleRate;
+    const dry=gatedLoudness(await renderFiltered(buf,'flat'), sr);
+    const pho=gatedLoudness(await renderFiltered(buf,'phone'), sr);
+    const g=20*Math.log10(gain*(post?1:MASTER));
+    const B=bands(spectrum(buf.getChannelData(0), sr));
+    const r={layer, rel, sr, dur:buf.duration, gain, gdb:g, B,
+             dry, pho, dHead:dry+g, dPhone:pho+g, pk:peakDb(buf)+g};
+    if(layer==='vo'){
+      /* 過修整鏈之後重量一次：目標是讓「耳機」與「手機」兩個數字收斂，
+         收斂了才代表這一支在兩邊都是同一個響度，增益才有一個正確答案。 */
+      const e=await renderFiltered(buf,'flat',true);
+      const ep=await renderFiltered(buf,'phone',true);
+      r.eqDry=gatedLoudness(e,sr); r.eqPho=gatedLoudness(ep,sr);
+      let pk=0; for(let i=0;i<e.length;i++){ const v=Math.abs(e[i]); if(v>pk) pk=v; }
+      r.eqPeak=20*Math.log10(pk+1e-20);
+      r.eqB=bands(spectrum(e,sr));
+      /* 建議增益：以「耳機與手機的**平均**響度」對到 −18 LUFS，再除 master。
+         ⚠ 不是只對手機：只對手機的話，低頻重的那幾支在耳機上會突出 4~7 dB，
+           等於把 Ray 說「耳機上是對的」那個平衡打壞。修整鏈把兩邊的差距從
+           9.7 dB 收到 ~4 dB，取平均之後兩邊的殘差各自減半。 */
+      r.mean=(r.eqDry+r.eqPho)/2;
+      r.newGain=Math.pow(10,(-18-r.mean)/20)/MASTER;
+      const gdB=20*Math.log10(r.newGain*MASTER);
+      r.newPeak=r.eqPeak+gdB; r.outHead=r.eqDry+gdB; r.outPhone=r.eqPho+gdB;
+      /* 驗收：用 config 實際填的增益（CFG_GAIN）把整條鏈跑完再量一次。 */
+      const cfg=CFG_GAIN[rel.split('/')[1]];
+      if(cfg!=null){
+        eqGain=cfg*MASTER;
+        const fd=await renderFiltered(buf,'flat','final');
+        const fp=await renderFiltered(buf,'phone','final');
+        eqGain=1;
+        r.finHead=gatedLoudness(fd,sr); r.finPhone=gatedLoudness(fp,sr);
+        let pk=0; for(let i=0;i<fd.length;i++){ const v=Math.abs(fd[i]); if(v>pk) pk=v; }
+        r.finPeak=20*Math.log10(pk+1e-20);
+      }
+    }
+    rows.push(r);
+  }
+  const f=(v,n)=>(v==null||!isFinite(v))?'—':v.toFixed(n==null?1:n);
+  let h='<table><tr><th class="f">層</th><th class="f">檔案</th><th>sr</th><th>秒</th>'
+      + '<th>母帶LUFS</th><th>母帶·手機</th><th>Δ手機</th>'
+      + '<th>gain</th><th>播出LUFS</th><th class="warn">播出·手機</th><th>峰值dBFS</th>'
+      + '<th>低頻%</th><th>渾濁%</th><th>中%</th><th>存在%</th><th class="warn">存在/渾濁dB</th></tr>';
+  for(const r of rows){
+    if(r.err){ h+=`<tr class="${r.layer}"><td class="f">${r.layer}</td><td class="f">${r.rel}</td>`
+                + `<td colspan="9" class="f warn">${r.err}</td></tr>`; continue; }
+    h+=`<tr class="${r.layer}"><td class="f">${r.layer}</td><td class="f">${r.rel.split('/')[1]}</td>`
+     + `<td>${r.sr}</td><td>${f(r.dur,2)}</td>`
+     + `<td>${f(r.dry)}</td><td>${f(r.pho)}</td><td>${f(r.pho-r.dry)}</td>`
+     + `<td>${f(r.gain,2)}</td><td>${f(r.dHead)}</td><td class="warn">${f(r.dPhone)}</td>`
+     + `<td>${f(r.pk)}</td>`
+     + (r.B ? `<td>${f(r.B.sub)}</td><td>${f(r.B.mud)}</td><td>${f(r.B.mid)}</td><td>${f(r.B.pres)}</td><td class="warn">${f(r.B.pmr)}</td>`
+            : '<td colspan="5">—</td>') + '</tr>';
+  }
+  h+='</table>';
+  // 分層平均
+  const avg=(k,fld)=>{ const a=rows.filter(r=>r.layer===k&&!r.err&&isFinite(r[fld]));
+                       return a.reduce((s,r)=>s+r[fld],0)/a.length; };
+  h+='<p style="margin-top:14px">分層平均（播出）：';
+  for(const k of ['vo','se','bgm'])
+    h+=`　<b>${k.toUpperCase()}</b> 耳機 ${f(avg(k,'dHead'))} / 手機 ${f(avg(k,'dPhone'))}`;
+  h+='</p>';
+  document.getElementById('out').innerHTML=h;
+  window.__rows=rows;
+})();
+</script>
+</body>
+</html>

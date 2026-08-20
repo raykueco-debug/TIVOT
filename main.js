@@ -103,6 +103,8 @@ combat.setup();
 // 全域主音量（tuning.masterVolume＝0.7）：先於任何預載/BGM 起播套用
 const MASTER_VOL = GAME_CONFIG.tuning.masterVolume != null ? GAME_CONFIG.tuning.masterVolume : 1;
 SFX.setMasterVolume(MASTER_VOL);
+// 語音鏈（手機外放的可懂度；理由見 config 的 tuning.voiceChain）
+SFX.setVoiceChain(GAME_CONFIG.tuning.voiceChain);
 
 /* ── 全域靜音（右上鈕，管理人模式限定）───────────────────────────
    走 SFX.setMasterVolume(0)：SFX（合成音與取樣音經 limiter 後的主音量節）與 BGM

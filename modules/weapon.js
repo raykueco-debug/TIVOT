@@ -124,7 +124,7 @@ export function activateDual(){
   if(state.enemyHp<=0) return;                 // overkill（敵已死）不可發動；雙槍中殺敵觸發 overkill 則照常（見 enterOverkillFx）
   if(state.energy<100) return;                 // 破防值未滿不能發動
   SFX.unlock(); SFX.ultCharge();
-  SFX.play(asset('se_luna_dual'), (GAME_CONFIG.tuning.partnerSeGain||{}).se_luna_dual);   // 雙槍破防發動 SE（Luna；母帶小聲→增幅）
+  SFX.playVoice(asset('se_luna_dual'), (GAME_CONFIG.tuning.partnerSeGain||{}).se_luna_dual);   // 雙槍破防發動語音（Luna）
   api.resetEnergy();                           // 破防值歸零 + 刷新計量表（energy 為 combat 擁有）
   api.playCutin(()=>{
     if(state.over||state.saintMode) return;
@@ -274,7 +274,7 @@ function selectPartnerAt(index){
   if(key !== state.pickedPartner){
     const p = GAME_CONFIG.partners[key];
     const vo = asset(p && p.selectVoice);
-    if(vo) SFX.play(vo, (GAME_CONFIG.tuning.partnerSeGain||{})[p.selectVoice]);
+    if(vo) SFX.playVoice(vo, (GAME_CONFIG.tuning.partnerSeGain||{})[p.selectVoice]);
     setPickedPartner(key);   // 實選寫入（唯一管道）→ 能力即時切換
     refreshLoadoutLabels();
   }

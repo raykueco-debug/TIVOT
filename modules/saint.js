@@ -58,7 +58,7 @@ export function activateSaint(dir){
   SFX.play(asset('sfx_saint'));       // 聖徒化發動音效（SI_01）
   /* Luna 發動語音。⚠ 增益改讀 config 的語音層（tuning.partnerSeGain），
      不再寫死在這裡 —— 全域響度分級要能一處調完，漏一支就會突出來。 */
-  SFX.play(asset('voice_saint_luna'), (T.partnerSeGain||{}).voice_saint_luna);
+  SFX.playVoice(asset('voice_saint_luna'), (T.partnerSeGain||{}).voice_saint_luna);
   playSlash(dir);                     // 依滑動方向的橫斬特效
   playCutin(()=>{
     if(state.over) return;
@@ -373,8 +373,11 @@ function playSaintCutin(kind, done){
   const scSeKey = { execute:'se_luna_exc', obe:'se_luna_obe', burst:'se_luna_mb' };
   if(scSeKey[kind]){
     const k=scSeKey[kind];
+    /* ⚠ exc/obe 是語音（走語音鏈），burst 的 se_luna_mb 是音效（不走）——
+       判斷依據就是它在不在 partnerSeGain 那張表裡。 */
     const g = (T.partnerSeGain||{})[k];
-    SFX.play(asset(k), g!=null ? g : sfxGain(k));
+    if(g!=null) SFX.playVoice(asset(k), g);
+    else        SFX.play(asset(k), sfxGain(k));
   }
   const holdMs = kind==='execute' ? 3000 : 1600;   // EXSECUTIŌ 停留 3 秒
   setTimeout(()=>{
