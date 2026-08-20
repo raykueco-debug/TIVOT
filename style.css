@@ -115,6 +115,18 @@
     -webkit-mask-image:linear-gradient(to bottom,#000 86%,transparent 100%);
     mask-image:linear-gradient(to bottom,#000 86%,transparent 100%);}
   #assetLoader #alPortrait.on{opacity:1;}
+  /* 對話框：疊在立繪偏下（同結算 inspectorBubble 樣式）。
+     ⚠ 讀取畫面只有這裡有字 —— 圈內字樣一律 SAINT INSTALL，
+       底部的「載入中／點擊繼續」仍然不放回來（那個訊號改由 .al-done 表示）。 */
+  #assetLoader #alBubble{position:absolute;left:50%;bottom:15%;transform:translateX(-50%);
+    width:82%;max-width:300px;background:rgba(16,12,24,.72);
+    border:1px solid var(--gold-dim);border-radius:8px;padding:10px 13px;text-align:left;
+    box-shadow:0 4px 20px rgba(0,0,0,.55);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);}
+  #assetLoader .al-name{font-size:11px;letter-spacing:2px;color:var(--gold);margin-bottom:5px;opacity:.9;}
+  /* Hint：整句淡入停留淡出（不打字）；min-height 三行防換句時框體跳動 */
+  #assetLoader .al-hint{font-size:13px;letter-spacing:.5px;line-height:1.6;color:var(--ink);
+    min-height:4.8em;opacity:0;transition:opacity .4s ease;}
+  #assetLoader .al-hint.show{opacity:1;}
   /* 語言切換鈕（讀取畫面版）：與首頁 #langBtn 同款同位，讀取中即可切換語言 */
   #assetLoader #alLangBtn{position:absolute;top:calc(var(--notch-bar-h,0px) + 12px);right:12px;
     min-width:44px;height:36px;padding:0 14px;border-radius:18px;background:rgba(10,8,14,.6);

@@ -9,7 +9,7 @@
  * ========================================================================== */
 
 import { GAME_CONFIG, VERSION, asset, ASSETS, bgmVol, sfxGain } from './config.js';
-import { L, LANG, applyToConfig, applyToDom } from './i18n.js';   // 多語言（decorateLine 隨讀取畫面的 Hint 一起撤了）
+import { L, LANG, applyToConfig, applyToDom, decorateLine } from './i18n.js';   // 多語言＋台詞關鍵字裝飾
 import { state } from './state.js';
 import { SFX } from './audio.js';
 import { TEL } from './telemetry.js';   // 遙測（未設定後端時 no-op）
@@ -204,10 +204,9 @@ window.addEventListener('pagehide', refreshBoot);
   }
   /* 載入遮罩（動態建立，樣式集中在 style.css 的 #assetLoader 區）：
    *  光圈＋百分比＋SAINT INSTALL 字樣，中下方監察官立繪。
-   *  ⚠ Ray 指定：**讀取畫面一概只出現「SAINT INSTALL」，不要有其他字**。
-   *    所以這裡不再有對話框／教學 Hint／監察官名字／「載入中」「點擊繼續」
-   *    「Complete」。GAME_CONFIG.loadingHints 的資料**保留不刪**（是內容不是程式），
-   *    要放回來的話接一個說明面板即可。
+   *  ⚠ 圈內字樣一律「SAINT INSTALL」，底部的「載入中／點擊繼續」與讀完改成的
+   *    「Complete」仍然**不放回來**。但監察官的對話框與教學 Hint 輪播是有的
+   *    （Ray 指定放回，ver -251）—— 讀取要等好幾秒，那幾句是這段唯一的內容。
    *  ⚠ 「可以點了」改用**視覺**表示：光圈轉常亮（.al-done）＋字樣呼吸（.al-pulse）。
    *    那一點是解鎖音訊的使用者手勢，非有不可 —— 拿掉提示字又不給替代訊號的話，
    *    玩家會卡在一個看起來已經好了、卻沒反應的畫面上。 */
@@ -219,7 +218,9 @@ window.addEventListener('pagehide', refreshBoot);
     +  '<circle id="alRingProg" class="al-prog" cx="50" cy="50" r="48" stroke-dasharray="'+RING_C+'" stroke-dashoffset="'+RING_C+'"/></svg>'
     +  '<div id="alRingTxt"><div id="assetLoaderPct">0%</div><div id="alRingCap">SAINT INSTALL</div></div>'
     +'</div>'
-    +'<div id="alStage"><img id="alPortrait" alt=""></div>'
+    +'<div id="alStage"><img id="alPortrait" alt="">'
+    +  '<div id="alBubble"><div class="al-name"></div><div class="al-hint" id="alHint"></div></div>'
+    +'</div>'
     // 語言切換鈕（讀取畫面版）：與首頁 #langBtn 同款同位，載入中即可切換（bindLangBtn 一併綁定）
     +'<button id="alLangBtn" aria-label="Language"></button>';
   document.body.appendChild(ov);
@@ -246,7 +247,8 @@ window.addEventListener('pagehide', refreshBoot);
   let portraitP = Promise.resolve();
   {
     const insp=(GAME_CONFIG.inspectors||{}).freya||{};
-    const img=$('alPortrait');
+    const img=$('alPortrait'); const nm=ov.querySelector('.al-name');
+    if(nm) nm.textContent=insp.name||'';
     const psrc=asset(insp.image);
     if(img && psrc){
       portraitP = new Promise(res=>{
@@ -258,8 +260,26 @@ window.addEventListener('pagehide', refreshBoot);
       });
     }
   }
-  /* Hint 輪播已撤（讀取畫面只留 SAINT INSTALL）。
-     GAME_CONFIG.loadingHints 的資料仍在 config.js，沒有刪。 */
+  /* Hint 輪播：洗牌後依序循環（＝隨機且整輪不重複），淡入 → 停 hold → 淡出 → 換句。
+     文案在 config 的 loadingHints、節奏在 tuning.loadingHint*Ms —— 程式不寫死。
+     ⚠ 讀完之後**不停**：玩家還沒點下去之前，輪播要繼續。 */
+  let hintTimer=null;
+  {
+    const list=(GAME_CONFIG.loadingHints||[]).slice();
+    for(let i=list.length-1;i>0;i--){ const j=Math.random()*(i+1)|0; [list[i],list[j]]=[list[j],list[i]]; }
+    const HOLD=GAME_CONFIG.tuning.loadingHintHoldMs, FADE=GAME_CONFIG.tuning.loadingHintFadeMs;
+    const el=$('alHint'); let hi=0;
+    const cycle=()=>{
+      if(!el || !list.length) return;
+      el.innerHTML=decorateLine(list[hi++ % list.length]);   // 關鍵字（聖徒化）金色粗字
+      el.classList.add('show');                       // 淡入（CSS transition）
+      hintTimer=setTimeout(()=>{
+        el.classList.remove('show');                  // 淡出
+        hintTimer=setTimeout(cycle, FADE+50);
+      }, HOLD);
+    };
+    cycle();
+  }
   /* 預載優先順序（定案）：立繪 → MainMenu 音樂 → 音效 → 整批。
    *  每段各帶 4s 保底：卡住也不無限擋下一段。load()/ensureBlob 以快取去重，
    *  稍後批次再含同檔也不會重抓。 */
@@ -292,6 +312,7 @@ window.addEventListener('pagehide', refreshBoot);
     const cap=$('alRingCap'); if(cap) cap.classList.add('al-pulse');
     const go=()=>{
       ov.removeEventListener('click',go); ov.removeEventListener('touchstart',go);
+      clearTimeout(hintTimer);   // 停輪播
       markBooted();   // 真的進到主畫面了才算「載過一次」（見 WARM_BOOT）
       SFX.unlock();   // 使用者手勢：解鎖音訊 → 主選單 BGM 開始播
       // 讀取頁揭幕不再播 SE（原 SI_01 撤下；聖徒 stinger 移到出陣鈕）
