@@ -9,7 +9,7 @@
 
    ── 一組對話長這樣 ────────────────────────────────────────────────
      { id:'唯一名字',
-       when:{ region:'ALL', time:['黎明'], stage:1 },
+       when:{ region:'ALL', time:['黎明'] },
        lines:[ {who:'sorana', text:'…'}, {who:'anya', text:'…'} ] }
 
      when 的三個條件**都省略＝永遠符合**：
@@ -17,7 +17,20 @@
                日後要限地區就填國名，與 region_map.json 的 zh 同字串，
                例如 '薩梅爾帝國'。也可以給陣列。
        time    時段。六等份，見下方 TALK_TIMES。可給字串或陣列。
-       stage   故事進度。目前一律 1。可給數字或陣列。
+       stage   故事進度**精確符合**。可給數字或陣列，例如 stage:3 或 stage:[2,3]。
+       stageMin / stageMax  進度範圍（含端點）。「第 3 章起才聊得到」就寫 stageMin:3。
+               ⚠ 三者都省略＝不限進度。**一般閒聊請不要填 stage** ——
+                 填了就等於「只有那一章聽得到」，而預設進度已經是 3
+                 （ver -269 由 1 改）；當初把 18 組全填 stage:1，一改預設
+                 就整批失效、按鈕變成沒反應。
+
+   ── 主角（玩家本人）──────────────────────────────────────────────
+     17 歲，教廷聖約騎士團的騎士。主武器是大口徑雙自動手槍，有把陣地機槍
+     整挺舉起來掃射的腕力。**性格不設定 —— 他就是玩家本人。**
+     ⚠ **他永遠沒有台詞**，也不會有立繪。要表現他的存在感，寫別人「對他說話」
+       或「描述他做了什麼」，不要讓他開口。
+     ⚠ 名字由玩家自訂，預設「托爾斯」(Torsten)。台詞裡寫 `{P}` 會在顯示時
+       換成當前名字 —— **不要把「托爾斯」直接打進台詞**，玩家改了名就露餡。
 
    ── 角色口氣（Ray 指定，改台詞照著走）──────────────────────────────
      蕾娜   renna    21 監察官　有禮優雅但不擺架子、溫和圓滑、一點成熟的職業感
@@ -57,7 +70,7 @@ const TALKS = [
 
   /* ───────────────────────── 不限時段 ───────────────────────── */
 
-  { id:'cloud-mountains', when:{ region:'ALL', stage:1 }, lines:[
+  { id:'cloud-mountains', when:{ region:'ALL' }, lines:[
     {who:'sorana',   text:'風向轉了。這片雲海底下，是不是有山？'},
     {who:'anya',     text:'有。三座。'},
     {who:'sorana',   text:'你怎麼知道得這麼快啊你。'},
@@ -66,7 +79,7 @@ const TALKS = [
     {who:'renna',    text:'兩位都比我這個監察官管用。報告我就寫「航路由船員自行判定」。'},
   ]},
 
-  { id:'soup', when:{ region:'ALL', stage:1 }, lines:[
+  { id:'soup', when:{ region:'ALL' }, lines:[
     {who:'nouvelle', text:'今天的湯我多煮了一些，大家記得趁熱喝。'},
     {who:'sorana',   text:'太好了！我去甲板上叫安雅。'},
     {who:'anya',     text:'……已經在這裡。'},
@@ -76,7 +89,7 @@ const TALKS = [
     {who:'renna',    text:'我也分一碗好嗎？「監察官在船上蹭飯」我不會寫進去的。'},
   ]},
 
-  { id:'hound', when:{ region:'ALL', stage:1 }, lines:[
+  { id:'hound', when:{ region:'ALL' }, lines:[
     {who:'renna',    text:'安雅小姐，方才那個地方——妳是怎麼找到的？'},
     {who:'anya',     text:'感覺。說不清楚。'},
     {who:'renna',    text:'說不清楚也沒關係。教廷的紀錄裡，說得太清楚的反而少見。'},
@@ -86,7 +99,7 @@ const TALKS = [
     {who:'nouvelle', text:'索拉娜，這種誇法要看對象的。'},
   ]},
 
-  { id:'blank-map', when:{ region:'ALL', stage:1 }, lines:[
+  { id:'blank-map', when:{ region:'ALL' }, lines:[
     {who:'renna',    text:'這一帶已經出了帝國的圖了。再往東，紙上就是空白。'},
     {who:'sorana',   text:'空白最好。空白代表沒人去過。'},
     {who:'renna',    text:'也代表沒人回來過。'},
@@ -96,7 +109,7 @@ const TALKS = [
     {who:'anya',     text:'……好。我等。'},
   ]},
 
-  { id:'names', when:{ region:'ALL', stage:1 }, lines:[
+  { id:'names', when:{ region:'ALL' }, lines:[
     {who:'anya',     text:'……「索拉娜」。這樣念，對嗎。'},
     {who:'sorana',   text:'對！很標準啊。'},
     {who:'anya',     text:'太長。舌頭會累。'},
@@ -108,7 +121,7 @@ const TALKS = [
 
   /* ───────────────────────── 夜半 ───────────────────────── */
 
-  { id:'nightwatch', when:{ region:'ALL', time:'夜半', stage:1 }, lines:[
+  { id:'nightwatch', when:{ region:'ALL', time:'夜半' }, lines:[
     {who:'sorana',   text:'今晚換我守夜，你們去睡。'},
     {who:'nouvelle', text:'妳昨晚也守了。今天換我吧，好不好？'},
     {who:'sorana',   text:'我不睏。'},
@@ -117,7 +130,7 @@ const TALKS = [
     {who:'renna',    text:'那就三個人輪。我算過了，這樣每個人都睡得滿。'},
   ]},
 
-  { id:'cant-sleep', when:{ region:'ALL', time:'夜半', stage:1 }, lines:[
+  { id:'cant-sleep', when:{ region:'ALL', time:'夜半' }, lines:[
     {who:'nouvelle', text:'安雅？這麼晚了還不睡呀。'},
     {who:'anya',     text:'……船在響。'},
     {who:'nouvelle', text:'是木頭的聲音喔。船身熱脹冷縮，夜裡就會這樣叫。'},
@@ -128,7 +141,7 @@ const TALKS = [
 
   /* ───────────────────────── 黎明 ───────────────────────── */
 
-  { id:'morning-star', when:{ region:'ALL', time:'黎明', stage:1 }, lines:[
+  { id:'morning-star', when:{ region:'ALL', time:'黎明' }, lines:[
     {who:'anya',     text:'東邊。那顆。很亮。'},
     {who:'nouvelle', text:'是晨星呢。天要亮的時候，只剩它還在。'},
     {who:'sorana',   text:'獵人管它叫催工星。看到它就代表該起來了。'},
@@ -137,7 +150,7 @@ const TALKS = [
     {who:'renna',    text:'教廷的曆書上寫得雅得多，可惜沒有這句實在。'},
   ]},
 
-  { id:'dawn-fog', when:{ region:'ALL', time:'黎明', stage:1 }, lines:[
+  { id:'dawn-fog', when:{ region:'ALL', time:'黎明' }, lines:[
     {who:'sorana',   text:'霧真厚。這種天最容易撞山。'},
     {who:'renna',    text:'要不要降一點高度？貼著雲面走視野會好些。'},
     {who:'sorana',   text:'貼太近會被上升氣流頂。我寧可慢一點。'},
@@ -147,7 +160,7 @@ const TALKS = [
 
   /* ───────────────────────── 上午 ───────────────────────── */
 
-  { id:'deck-check', when:{ region:'ALL', time:'上午', stage:1 }, lines:[
+  { id:'deck-check', when:{ region:'ALL', time:'上午' }, lines:[
     {who:'nouvelle', text:'索拉娜，甲板上那捆繩子是妳放的嗎？'},
     {who:'sorana',   text:'啊，我等一下就收！'},
     {who:'anya',     text:'……會絆倒。'},
@@ -155,7 +168,7 @@ const TALKS = [
     {who:'renna',    text:'三個人。我只是還沒開口。'},
   ]},
 
-  { id:'wind-good', when:{ region:'ALL', time:'上午', stage:1 }, lines:[
+  { id:'wind-good', when:{ region:'ALL', time:'上午' }, lines:[
     {who:'sorana',   text:'今天風好順，這種日子一年沒幾天。'},
     {who:'renna',    text:'那要不要趁現在多趕一段？'},
     {who:'sorana',   text:'我就在等妳這句。'},
@@ -165,7 +178,7 @@ const TALKS = [
 
   /* ───────────────────────── 下午 ───────────────────────── */
 
-  { id:'nap', when:{ region:'ALL', time:'下午', stage:1 }, lines:[
+  { id:'nap', when:{ region:'ALL', time:'下午' }, lines:[
     {who:'nouvelle', text:'噓——安雅在打盹呢。'},
     {who:'sorana',   text:'她坐著也能睡？'},
     {who:'nouvelle', text:'很淺的。有一點聲音她就會醒。'},
@@ -174,7 +187,7 @@ const TALKS = [
     {who:'renna',    text:'那就別吵她了。這艘船上最需要休息的就是她。'},
   ]},
 
-  { id:'supplies', when:{ region:'ALL', time:'下午', stage:1 }, lines:[
+  { id:'supplies', when:{ region:'ALL', time:'下午' }, lines:[
     {who:'renna',    text:'補給清單我列好了。要看嗎？'},
     {who:'sorana',   text:'妳念，我聽。'},
     {who:'renna',    text:'水、油、鹽、繩、藥，還有妳上次弄斷的那根撐桿。'},
@@ -185,7 +198,7 @@ const TALKS = [
 
   /* ───────────────────────── 黃昏 ───────────────────────── */
 
-  { id:'sunset', when:{ region:'ALL', time:'黃昏', stage:1 }, lines:[
+  { id:'sunset', when:{ region:'ALL', time:'黃昏' }, lines:[
     {who:'nouvelle', text:'雲被染成那個顏色的時候，我總覺得該說點什麼。'},
     {who:'renna',    text:'那就什麼都別說，看著就好。'},
     {who:'sorana',   text:'難得妳說話不繞路。'},
@@ -193,7 +206,7 @@ const TALKS = [
     {who:'anya',     text:'很好看。'},
   ]},
 
-  { id:'moor', when:{ region:'ALL', time:'黃昏', stage:1 }, lines:[
+  { id:'moor', when:{ region:'ALL', time:'黃昏' }, lines:[
     {who:'sorana',   text:'天要黑了，找個背風的地方停吧。'},
     {who:'renna',    text:'前面那道谷口如何？擋風，也擋別人的視線。'},
     {who:'sorana',   text:'妳連這個都想到了。'},
@@ -204,7 +217,7 @@ const TALKS = [
 
   /* ───────────────────────── 夜晚 ───────────────────────── */
 
-  { id:'silver-moon', when:{ region:'ALL', time:'夜晚', stage:1 }, lines:[
+  { id:'silver-moon', when:{ region:'ALL', time:'夜晚' }, lines:[
     {who:'nouvelle', text:'今晚的銀月好亮。'},
     {who:'anya',     text:'在我家鄉……也看得到。'},
     {who:'sorana',   text:'你家鄉？你從來沒提過欸。'},
@@ -213,7 +226,7 @@ const TALKS = [
     {who:'nouvelle', text:'那我們就一起看月亮，什麼都不用提。'},
   ]},
 
-  { id:'stars', when:{ region:'ALL', time:'夜晚', stage:1 }, lines:[
+  { id:'stars', when:{ region:'ALL', time:'夜晚' }, lines:[
     {who:'sorana',   text:'獵手認星是為了認路。你們呢？'},
     {who:'nouvelle', text:'修道院教我們認星，是為了記得時辰。'},
     {who:'renna',    text:'教廷則是為了寫進紀錄。同一片天，三種用法。'},
@@ -221,12 +234,55 @@ const TALKS = [
     {who:'sorana',   text:'那大概是最好的用法。'},
   ]},
 
-  { id:'lantern', when:{ region:'ALL', time:'夜晚', stage:1 }, lines:[
+  { id:'lantern', when:{ region:'ALL', time:'夜晚' }, lines:[
     {who:'renna',    text:'船燈調暗一點吧。太亮，遠處看得見我們。'},
     {who:'sorana',   text:'妳是怕誰看見？'},
     {who:'renna',    text:'沒有誰。只是習慣。'},
     {who:'anya',     text:'……我也是。'},
     {who:'nouvelle', text:'那就都調暗吧。反正有月亮。'},
+  ]},
+
+  /* ─────────────── 主角在場（他沒有台詞，靠別人襯出來）─────────────── */
+
+  { id:'player-silent', when:{ region:'ALL' }, lines:[
+    {who:'sorana',   text:'{P}，你剛剛那一槍，是算好風的吧？'},
+    {who:'sorana',   text:'……你就不能給個反應嗎。'},
+    {who:'nouvelle', text:'他點頭了喔。妳沒看到而已。'},
+    {who:'sorana',   text:'他每次都只點頭！'},
+    {who:'anya',     text:'……我也是。'},
+    {who:'nouvelle', text:'所以你們兩個才這麼合得來呀。'},
+  ]},
+
+  { id:'player-strength', when:{ region:'ALL' }, lines:[
+    {who:'sorana',   text:'等等，{P}，那挺機槍是架在座上的——'},
+    {who:'sorana',   text:'……他整挺舉起來了。'},
+    {who:'nouvelle', text:'請小心腰喔。'},
+    {who:'renna',    text:'腰？那個重量，該擔心的是甲板。'},
+    {who:'anya',     text:'……很強。'},
+  ]},
+
+  { id:'player-pistols', when:{ region:'ALL' }, lines:[
+    {who:'renna',    text:'{P}，保養得真勤。那對手槍，口徑不小吧？'},
+    {who:'nouvelle', text:'他每天都擦，連休息的時候也是。'},
+    {who:'renna',    text:'騎士團的規矩？'},
+    {who:'sorana',   text:'才不是。他就是喜歡。'},
+    {who:'anya',     text:'……我懂。'},
+  ]},
+
+  { id:'player-name', when:{ region:'ALL' }, lines:[
+    {who:'anya',     text:'{P}。……這樣念，對嗎。'},
+    {who:'sorana',   text:'對啦對啦，你念得比我還標準。'},
+    {who:'anya',     text:'他點頭了。'},
+    {who:'nouvelle', text:'安雅看得懂他點頭呢。'},
+    {who:'anya',     text:'……看久了，就懂。'},
+  ]},
+
+  { id:'player-knight', when:{ region:'ALL', time:'夜晚' }, lines:[
+    {who:'renna',    text:'聖約騎士團的騎士……我只在文件上見過。'},
+    {who:'renna',    text:'{P}，本人比文件安靜得多。'},
+    {who:'sorana',   text:'妳這是誇他還是損他？'},
+    {who:'renna',    text:'誇。文件很吵的。'},
+    {who:'nouvelle', text:'呵呵……那大概是最高的評價了。'},
   ]},
 
 ];
@@ -243,6 +299,8 @@ function talkPick(ctx, lastId){
     if(useRegion && w.region && w.region!=='ALL' && !inList(w.region,ctx.region)) return false;
     if(useTime && !inList(w.time, ctx.time)) return false;
     if(!inList(w.stage, ctx.stage)) return false;
+    if(w.stageMin!=null && ctx.stage < w.stageMin) return false;
+    if(w.stageMax!=null && ctx.stage > w.stageMax) return false;
     return true;
   };
   for(const [ut,ur] of [[true,true],[false,true],[false,false]]){

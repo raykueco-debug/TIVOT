@@ -1239,9 +1239,29 @@ function castGeom(P, im){
    **內容全部在 flight/talks.js**（TALKS / TALK_TIMES / talkPeriod / talkPick）——
    要加台詞或加觸發條件動那一支就好，這裡只負責「湊出情境、挑一組、播出去」。 */
 let talkLastId=null;
-/* 故事進度。目前固定 1；日後由存檔或劇情推進來改。
+/* 故事進度。**預設 3**（Ray 指定，ver -269 由 1 改）；日後由存檔或劇情推進來改。
+   ⚠ 改預設值會直接讓「填了 stage 的對話」整批失效 —— 當初 18 組全填 stage:1，
+     預設一改成 3 就一組都不符合，按鈕會變成沒反應。已把一般閒聊的 stage 拿掉
+     （省略＝不限進度），只有真的分章節的對話才填。見 talks.js 檔頭。
    管理人模式可用 setStage(n) 就地測試不同進度的對話。 */
-let STAGE=1;
+let STAGE=3;
+
+/* ══ 主角（玩家本人）══
+   17 歲，教廷聖約騎士團的騎士。主武器是大口徑雙自動手槍，有把陣地機槍整挺
+   舉起來掃射的腕力。性格不設定 —— 他就是玩家本人。
+   ⚠ **他永遠沒有台詞、也沒有立繪**。要表現存在感是靠別人對他說話（見 talks.js
+     的 player-* 那幾組）。
+   ⚠ 名字由玩家自訂，預設「托爾斯」。台詞裡寫 {P}，**顯示時才代換** ——
+     存進 sayQueue 就代換的話，玩家中途改名，正在播的那段還是舊名字。
+   ⚠ 鑰匙與主遊戲共用（同一個 localStorage），所以命名介面應該做在 index.html
+     的開新遊戲流程，不是這一頁。這裡只負責讀與用。 */
+const PLAYER_NAME_KEY='tivot_player_name_v1';
+const PLAYER_NAME_DEFAULT='托爾斯';
+function playerName(){
+  try{ return localStorage.getItem(PLAYER_NAME_KEY) || PLAYER_NAME_DEFAULT; }
+  catch(e){ return PLAYER_NAME_DEFAULT; }
+}
+function talkText(t){ return String(t).replace(/\{P\}/g, playerName()); }
 /* 目前所在地區。地圖還沒分區，先接既有的國界查表（regionAt / REGION_NAME）——
    查不到就給 'ALL'，talks.js 的條件是「省略或 ALL ＝ 不限」，所以一定挑得到。 */
 function talkRegion(){
@@ -1649,8 +1669,10 @@ function drawTalk(now){
     if(cur) out.push(cur);
     return out;
   };
-  let fs=15, lines=wrap(beat.text,fs);
-  while(lines.length>3 && fs>12){ fs--; lines=wrap(beat.text,fs); }
+  /* ⚠ {P}→玩家名的代換要在**斷行之前**做：名字長度不同，先斷行再代換會爆框。 */
+  const btxt=talkText(beat.text);
+  let fs=15, lines=wrap(btxt,fs);
+  while(lines.length>3 && fs>12){ fs--; lines=wrap(btxt,fs); }
   const lh=Math.round(fs*1.32);
   const bh=Math.max(Math.round(clamp(VIEWH*0.115,48,70)), 26+lines.length*lh+8);
   const by=Math.round(boxBottom-bh);
@@ -3091,6 +3113,7 @@ if(ADMIN) window.setTime=(min)=>{ clock.minutes=((min%1440)+1440)%1440; return c
 /* 管理人：就地切故事進度／看目前的對話情境，測時段與 stage 觸發用。 */
 if(ADMIN) window.setStage=(n)=>{ STAGE=n|0; return STAGE; };
 if(ADMIN) window.talkInfo=()=>talkCtx();
+if(ADMIN) window.setPlayerName=(s)=>{ try{ localStorage.setItem(PLAYER_NAME_KEY, String(s||'')); }catch(e){} return playerName(); };
 /* 怪的狀態機驗收用：enemy 是 top-level let，外部注入的 script 讀不到。 */
 if(ADMIN) window.dbgEnemy=()=>enemy&&{state:enemy.state,x:Math.round(enemy.x),y:Math.round(enemy.y),
   d:Math.round(Math.hypot(cam.x-enemy.x,cam.y-enemy.y)),d0:enemy.d0,
