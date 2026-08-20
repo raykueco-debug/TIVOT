@@ -125,6 +125,17 @@
     -webkit-mask-image:linear-gradient(to bottom,#000 86%,transparent 100%);
     mask-image:linear-gradient(to bottom,#000 86%,transparent 100%);}
   #bPortrait.on{opacity:1;}
+  /* 對話框：疊在立繪偏下（同 #alBubble）。
+     ⚠ 讀取畫面只有這裡有字 —— 圈內字樣一律 SAINT INSTALL，不再放階段名稱。 */
+  #bBubble{position:absolute;left:50%;bottom:15%;transform:translateX(-50%);
+    width:82%;max-width:300px;background:rgba(16,12,24,.72);
+    border:1px solid rgba(201,162,39,.45);border-radius:8px;padding:10px 13px;text-align:left;
+    box-shadow:0 4px 20px rgba(0,0,0,.55);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);}
+  #bBubble .nm{font-size:11px;letter-spacing:2px;color:var(--gold);margin-bottom:5px;opacity:.9;}
+  /* Hint：整句淡入停留淡出（不打字）；min-height 三行防換句時框體跳動 */
+  #bHint{font-size:13px;letter-spacing:.5px;line-height:1.6;color:var(--parch);
+    min-height:4.8em;opacity:0;transition:opacity .4s ease;}
+  #bHint.on{opacity:1;}
   /* 底部訊息：位置同 #alMsg（安全區 + 26px）；small 是飛行版多出的階段進度字句 */
   #bMsg{position:absolute;left:0;right:0;
     bottom:calc(env(safe-area-inset-bottom,0px) + 26px);
@@ -195,6 +206,7 @@
   </div>
   <div id="bStage">
     <img id="bPortrait" alt="">
+    <div id="bBubble"><div class="nm" id="bName"></div><div id="bHint"></div></div>
   </div>
   <!-- ⚠ 只留錯誤訊息的容器。平時是空的 —— 讀取畫面一概只出現 SAINT INSTALL。
        載入失敗時仍要看得到原因（多半是「用 file:// 直接開」），那不是裝飾。 -->
@@ -1097,42 +1109,76 @@ const SENSE_TRY_WIN = 60000;    // 滑動視窗
 /* ⚠ 對白**不自動跳拍**（Ray 指定改成點擊推進），所以沒有「每拍停留多久」。
    探索成功那條路徑仍要等立繪淡出才開場，那個延遲寫在觸發處。 */
 /* ══ 對話立繪的取景表 ══
-   逐角色一組，**不要共用一組數字** —— 每張插畫的構圖不同（人在畫面裡多大、
-   頭在哪裡都不一樣），而且角色本來就有身高差，那個差就是靠 h 表現的。
+   逐角色一組，**不要共用一組數字** —— 每張插畫的構圖與畫風都不同。
 
      src   檔案
-     crop  取插畫上緣多少（1＝整張）。決定「切在身體哪裡」。
-     h     **這個角色在畫面上的高度**，佔 3D 視窗的比例。
-           ⚠ 身高差就寫在這裡：矮的角色 h 給小一點，不要每個都填一樣，
-             否則所有人在畫面上都一樣高，身高差就消失了。
-     cx    身體中線落在畫面寬的哪個位置（0~1）。
-           ⚠ 錨的是**她的身體中線**不是圖框邊緣：這些插畫左右留白很多，
-             照圖框對齊會把人推出畫面。
+     cm    角色設定身高。決定她**站在畫面上多高**（頭頂位置），不決定縮放。
+     eye   這張插畫裡**單眼的寬度**（原圖 1024×1536 的來源像素）。決定縮放。
+     fx    臉的中心落在圖寬的哪個比例（0~1）。橫向站位錨的是臉，不是圖框：
+           這些插畫左右留白差很多，照圖框對齊會把人推出畫面。
+     top/bot  人物在圖裡的上下緣（來源像素，由 alpha 量出來）。
 
-   ⚠ 取景要看**這張圖裡人有多大**，不能憑感覺。Anna_CI_front 是全身圖，
-     頭只佔全圖上緣 0~16%（量出來的：頭寬約 250px 一路到 y=16%，18% 之後
-     肩膀才展開）—— 所以早期版本取上半 45% 時，頭只佔畫面高度的 29%，
-     怎麼放大都是一個小頭配一大截裙子。 */
-/* 身高 → 畫面高度。⚠ **h 是算出來的，不要手填** —— 手填遲早會改了一個忘了
-   另一個，畫面上就變成身高差時有時無。
-   基準取**最高的索拉娜 176cm ＝ 0.95**：錨在最高的人才保證誰都不會頂到畫面
-   上緣被切頭。安娜因此從 0.90 變 0.858（−5%，幾乎看不出來），但她與索拉娜
-   的差變成 10%，對得上 159 / 176 的 9.7%。 */
-const CAST_H_PER_CM = 0.95/176;
+   ══ 為什麼縮放看眼寬、站位看身高 ══
+   縮放與站位是**兩個獨立的旋鈕**，各鎖各的：
 
+     · 縮放鎖**單眼寬**（Ray 指定）。眼睛是全體共通的解剖尺度，而每張插畫的
+       取景與畫風都不一樣 —— 只有讓螢幕上的眼寬一致，三個人才像是同一台
+       相機拍的。實測（同一組全身圖、身體都佔滿 1520/1536）：
+         安娜 34px　索拉娜 27px　諾薇兒 36px
+       ⚠ 索拉娜量的是 **front** 那張。side 是四分之三側面，眼睛被壓扁成
+         26px，拿去當尺會把她放大成巨人。兩張插畫的身體佔幅一致，所以
+         front 的眼寬可以直接當 side 的尺。
+
+     · 站位鎖**身高**。若縮放與站位共用同一個旋鈕，身高差就會被畫風吃掉
+       （安娜的眼睛畫得比索拉娜大 26%，換算下來反而變成安娜比較高）。
+       分開之後：所有人同一個相機距離，矮的人頭頂就落低一點 —— 那正是
+       兩個人站在同一塊地板上該有的樣子。
+
+   ⚠ 換插畫就要**重量 eye/fx/top/bot**，不能沿用。 */
 const PORTRAIT = {
   anna:     { name:'安娜',   cm:159, side:'R', src:'../resources/partner/Anna_CI_front.webp',
-              crop:0.62, cx:0.78 },
+              eye:34, fx:0.478, top:0,   bot:1530 },
   /* ⚠ 索拉娜用 **side** 那張：front 太滿（人物橫向佔 78%），兩人同台一定疊。
      側面只佔 69%，站位再拉開，交疊就壓到最低。 */
   sorana:   { name:'索拉娜', cm:176, side:'L', src:'../resources/partner/Sorana_CI_side.webp',
-              crop:0.62, cx:0.22 },
+              eye:27, fx:0.527, top:4,   bot:1522 },
   nouvelle: { name:'諾薇兒', cm:165, side:'L', src:'../resources/partner/Nouvelle_CI_front.webp',
-              crop:0.62, cx:0.22 },
+              eye:36, fx:0.542, top:2,   bot:1524 },
   // 立繪還沒有，先把身高記著；沒有 src 的人不會上場（castEnter 會擋掉）
-  reina:    { name:'蕾娜',   cm:169, side:'L', src:null, crop:0.62, cx:0.22 },
+  reina:    { name:'蕾娜',   cm:169, side:'L', src:null, eye:34, fx:0.5, top:0, bot:1530 },
 };
-for(const k in PORTRAIT) PORTRAIT[k].h = PORTRAIT[k].cm * CAST_H_PER_CM;
+
+/* ── 舞台幾何 ─────────────────────────────────────────────────────
+   CAST_TOP   最高的人頭頂能到的螢幕 y。**由左上角 HUD（大陸曆 1908）量出來**，
+              不寫死 —— 那塊的高度吃 safe-area，寫死在瀏海機上一定會撞到。
+   CAST_SHOW  最高的人露出身體上緣的幾成（沿用舊值 0.62：頭到大腿）。
+   CAST_TALL  身高基準（最高的索拉娜）。她的頭頂就貼在 CAST_TOP。 */
+const CAST_SHOW = 0.62;
+const CAST_TALL = 176;
+let CAST_TOP = 60, CAST_EYE = 30, CAST_PX_CM = 3;
+function castMeasure(){
+  const t=document.getElementById('top');
+  const hud=t ? t.getBoundingClientRect().height : 54;
+  CAST_TOP = Math.round(hud + 10);                 // HUD 底下再留 10px，不相觸
+  const P=PORTRAIT.sorana;
+  /* 最高的人：頭頂 CAST_TOP、身體露出 CAST_SHOW → 反推她的縮放，再換算成
+     「螢幕上的單眼寬」。其他人一律用同一個 CAST_EYE 去反推自己的縮放。 */
+  const s = (VIEWH-CAST_TOP) / (CAST_SHOW*(P.bot-P.top));
+  CAST_EYE = s * P.eye;
+  /* 身高 → 螢幕像素。真人單眼寬約 3cm，所以「一個眼寬 ＝ 3cm」就是這台相機
+     的比例尺 —— 不必另外挑一個係數。 */
+  CAST_PX_CM = CAST_EYE/3.0;
+}
+
+/* 某人這一刻的算繪幾何。x 由呼叫端（滑入動畫）決定，這裡只給尺寸與高度。 */
+function castGeom(P, im){
+  const s = CAST_EYE/P.eye;                        // 縮放：眼寬鎖定
+  const headY = CAST_TOP + (CAST_TALL-P.cm)*CAST_PX_CM;   // 頭頂：身高鎖定
+  const y0 = headY - P.top*s;                      // 圖的 y=0 落在螢幕哪裡
+  const w  = Math.round(im.width*s);
+  const sh = Math.min(im.height, Math.ceil((VIEWH-y0)/s));  // 只取畫得到的那一段
+  return { s, y0:Math.round(y0), w, sh, h:Math.round(sh*s) };
+}
 
 let senseTries=[];              // 最近幾次「按下探索」的時戳（滑動視窗）
 /* ══ 對白舞台 ══
@@ -1167,6 +1213,39 @@ function portraitArt(who){
   if(portraitImg[who] || !PORTRAIT[who] || !PORTRAIT[who].src) return;
   const im=new Image(); im.src=PORTRAIT[who].src;
   portraitImg[who]=im;
+}
+
+/* ── 立繪的預縮圖（LOD）─────────────────────────────────────────────
+   ⚠ 原圖 1024×1536 要縮到約 400px 寬。canvas 的 drawImage 直接縮 2.5 倍
+     只取得到**稀疏的樣本**：關掉平滑是最近鄰（頭髮與蕾絲整片閃成雜點，
+     那就是「顆粒化」），開了平滑也只是雙線性，一樣漏取樣。
+     解法是**逐次減半**再落到目標尺寸 —— 每一趟都只縮一半，雙線性就等於
+     盒式濾波，等同做了一層 mipmap。縮好之後每幀是 1:1 貼上，不再重取樣。
+   ⚠ 目標尺寸乘上 DPR：畫布本身是裝置像素，縮到 CSS 像素就等於又糊一次。 */
+const portraitLod={};
+function buildLOD(im, tw, th){
+  let src=im, sw=im.width, sh=im.height;
+  while(sw>tw*2 && sh>th*2){
+    sw=Math.max(tw,sw>>1); sh=Math.max(th,sh>>1);
+    const c=document.createElement('canvas'); c.width=sw; c.height=sh;
+    const g=c.getContext('2d');
+    g.imageSmoothingEnabled=true; g.imageSmoothingQuality='high';
+    g.drawImage(src,0,0,sw,sh); src=c;
+  }
+  const c=document.createElement('canvas'); c.width=tw; c.height=th;
+  const g=c.getContext('2d');
+  g.imageSmoothingEnabled=true; g.imageSmoothingQuality='high';
+  g.drawImage(src,0,0,tw,th);
+  return c;
+}
+/* w/h 是 CSS 像素的目標尺寸；回傳的畫布是 DPR 倍大，貼的時候照 CSS 尺寸貼。 */
+function portraitLOD(who, im, w, h){
+  const tw=Math.max(1,Math.round(w*DPR)), th=Math.max(1,Math.round(h*DPR));
+  const c=portraitLod[who];
+  if(c && c.tw===tw && c.th===th) return c.cv;
+  const cv=buildLOD(im, tw, th);
+  portraitLod[who]={tw,th,cv};
+  return cv;
 }
 function say(beats, at){
   sayQueue=beats; sayIdx=0; sayAt=at; sayEndAt=0;
@@ -1347,15 +1426,19 @@ function drawTalk(now){
   const beat=sayQueue[sayIdx];
   const speaker=sayEndAt?null:beat.who;
   ctx.save();
-  /* 立繪：各自從自己那一側滑入／滑出。 */
+  /* 立繪：各自從自己那一側滑入／滑出。
+     ⚠ 尺寸與高度一律走 castGeom（眼寬定縮放、身高定頭頂），這裡只管橫向動畫。 */
   for(const c of cast){
     const P=PORTRAIT[c.who], im=portraitImg[c.who];
     if(!P || !im || !im.width) continue;
-    const sh=Math.round(im.height*P.crop);
-    const ph=Math.round(VIEWH*P.h);
-    const pw=Math.round(ph*im.width/sh);
-    const target=Math.round(W*P.cx-pw/2);
-    const off=(c.side==='L') ? -pw-8 : W+8;      // 畫面外的停機位
+    const G=castGeom(P, im);
+    if(G.sh<=0) continue;
+    const fullH=Math.round(im.height*G.s);
+    const lod=portraitLOD(c.who, im, G.w, fullH);
+    // 站位錨的是**臉的中心**，不是圖框中心
+    const anchor=(c.side==='L') ? 0.24 : 0.76;
+    const target=Math.round(W*anchor - G.w*P.fx);
+    const off=(c.side==='L') ? -G.w-8 : W+8;     // 畫面外的停機位
     let x;
     if(c.out) x=lerp(target, off, easeOut(clamp((now-c.out)/CAST_IN_MS,0,1)));
     else      x=lerp(off, target, easeOut(clamp((now-c.t0)/CAST_IN_MS,0,1)));
@@ -1368,10 +1451,13 @@ function drawTalk(now){
     }else{
       ctx.globalAlpha = lit ? 1 : 0.45;
     }
-    ctx.drawImage(im, 0,0,im.width,sh, Math.round(x), Math.round(VIEWH-ph), pw, ph);
+    /* LOD 已經是目標尺寸，這裡是 1:1 貼上（開平滑只為了 DPR 不是整數的機器）。 */
+    ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality='high';
+    ctx.drawImage(lod, Math.round(x), G.y0, G.w, fullH);
   }
   if(ctx.filter!==undefined) ctx.filter='none';
   ctx.globalAlpha=1;
+  ctx.imageSmoothingEnabled=false;
   if(sayEndAt){ ctx.restore(); return; }        // 退場時不再畫框
   /* 對話框：與方向計同寬、疊在它正上方（Ray 指定）。
      ⚠ 一定要讓開羅盤帶：它畫在 drawPanel（比這裡晚），框底壓上去台詞會被蓋掉。 */
@@ -1432,8 +1518,11 @@ function drawSenseCI(now){
     if(t>=0) senseGhost(k, clamp(t,0,1), al, 2.2);
   }
   ctx.globalAlpha=al;
+  /* ⚠ 這張的尺寸是連續變化的（縮放動畫），做不了預縮圖快取 —— 至少要開
+     高品質平滑，否則就是最近鄰取樣，頭髮整片閃成雜點。 */
+  ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality='high';
   ctx.drawImage(senseImg,G.left,G.top,G.S,G.S);
-  ctx.restore();
+  ctx.restore();                                  // save() 已經把平滑設定收在裡面
 }
 
 /* 判定：回傳這一次新發現的點（回饋由 senseFire 的演出負責）。 */
@@ -2286,13 +2375,27 @@ const zSliceOf=Z=>{
 let ZTOP=null;       // Int32Array(ZSLICES*BW)，見上
 let CZMIN=null;      // 逐欄「這一欄裡城最近有多近」，見 drawSettlements3D
 let SKYROW=null;     // 每列的天空色，輪廓混色要拿它當背景
+/* ── 裝置像素比 ───────────────────────────────────────────────────
+   ⚠ 畫布**要開到裝置像素**，不能只開 CSS 像素。地形本來就是低解析度緩衝
+     放大上來的，看不出差別；但**立繪、對話框、所有 canvas 文字**是直接畫在
+     這張畫布上的，畫布只有 CSS 像素時整張會被瀏覽器再放大一次（雙線性），
+     於是立繪糊掉、字帶毛邊 —— 那就是「顆粒化糊化」。
+   ⚠ 上限壓在 2：手機 DPR 常是 3，那是 9 倍的填充量，而地形 blit 是全螢幕的。
+     2 已經看不出鋸齒，3 只換來掉幀。 */
+let DPR=1;
 function resize(){
   W=innerWidth;H=innerHeight;
+  DPR=Math.min(2, devicePixelRatio||1);
   VIEWH=Math.round(H*VIEW_F);
   { const bb=document.getElementById('boostBtn');
     if(bb) bb.style.top=(VIEWH+12)+'px'; }
-  cv.width=W;cv.height=H;cv.style.width=W+'px';cv.style.height=H+'px';
+  cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR);
+  cv.style.width=W+'px';cv.style.height=H+'px';
+  /* ⚠ 順序：設 width/height 會把 context 的狀態（含變換）整個重置，
+     所以 setTransform 一定要在後面。之後所有繪圖照舊用 CSS 像素座標。 */
+  ctx.setTransform(DPR,0,0,DPR,0,0);
   ctx.imageSmoothingEnabled=false;
+  castMeasure();
   /* 緩衝寬度佔畫面寬的比例。維持 0.60。
      ⚠ 抗馬賽克靠的是雙線性取樣，不是解析度 —— 解析度只讓邊緣更銳，
        成本卻隨面積平方成長。這一版已經為了畫質加了不少 per-sample 的工
@@ -4143,7 +4246,10 @@ function drawRegionBanner(now){
   const name=REGION_NAME[regionCur];
   ctx.save();
   ctx.textAlign='left'; ctx.textBaseline='alphabetic';
-  const x=Math.round(W*0.045), y=Math.round(VIEWH*0.93);
+  /* ⚠ 高度**跟著方向計走**，不要用 VIEWH 的比例硬寫：羅盤帶的位置是由
+     HELM_OUT 反推的，比例值遲早會壓到它身上（0.93 就正好疊在上面）。
+     襯底往上 19、往下 9，所以基線退到帶子上緣再留 6px 才不相觸。 */
+  const x=Math.round(W*0.045), y=compassRect().y-15;
   /* 淡入時從左邊滑進來一小段：純 alpha 淡入在低解析度畫面上讀起來像閃爍，
      加一點位移才有「進入某地」的方向感。 */
   const slide=(1-Math.min(1,t/REGION_IN))*14;
@@ -6042,15 +6148,42 @@ function loop(now){
      ＋監察官立繪＋對話框輪播），但提示內容自成一組 —— 這裡日後要放
      船艦／航行教學，跟戰鬥那側的教學是兩回事，共用的話改一邊就會動到另一邊。
    ⚠ 立繪路徑指向 ../resources/：飛行原型自己不重複放一份立繪。 */
-/* 操作說明原本輪播在讀取畫面上，已隨「只留 SAINT INSTALL」一起撤下。
-   資料是內容不是程式，先留著 —— 要放回來的話接一個說明面板即可。
-   （往後拉＝前進／左右偏移＝轉向／往前推再左右拉＝原地迴轉／右上角可開地圖） */
+/* 操作說明：輪播在讀取畫面上（Ray 指定放回來）。
+   ⚠ 只有這一份會出現字。圈內字樣仍是 SAINT INSTALL，**階段名稱不放回來** ——
+     那是給讀程式的人看的，留在呼叫端當註解就好。 */
+const BOOT_HINTS=[
+  '往後拉＝前進，拉得越遠越快。放開後船靠慣性滑行，不會立刻停。',
+  '左右偏移＝轉向。輕推只轉幾度，中央有一段死區，手指的晃動不會讓船偏航。',
+  '往前推再左右拉＝原地迴轉。停著不動時船不會自己打轉。',
+  '舵輪的轉速跟著你的偏移幅度走；基座頭盤上那根銅針是舵手的速度表，扣到紅漆那段就是全速。',
+  '右上角「地圖」可查看大陸全貌與自己的位置，放大可見市鎮街廓。',
+  '大陸邊緣之外是雲海。低於雲海高度的地方一律沒入雲中。',
+  '長按船身可請安娜感應四周；找到的地點會留在地圖上。連按會累壞她，隔一會兒再試。',
+];
+const BOOT_NAME='監察官　フレイヤ';
 const bootUI=(()=>{
   const $=id=>document.getElementById(id);
   const RING=301.59;   // r=48 的周長（與主程式 #alRingProg 同規格）
+  // 節奏同主程式讀取畫面：洗牌後依序循環（＝隨機且整輪不重複），
+  //   淡入 → 停 HOLD(5s) → 淡出 → FADE+50 後換句（HOLD/FADE 值同 config.tuning）
+  const HOLD=5000, FADE=400;
+  const hints=BOOT_HINTS.slice();
+  for(let i=hints.length-1;i>0;i--){ const j=Math.random()*(i+1)|0; [hints[i],hints[j]]=[hints[j],hints[i]]; }
+  let hintI=0, timer=0;
   const im=$('bPortrait');
   im.onload=()=>im.classList.add('on');
   im.src='../resources/inspector/Freya_SI_01.webp';
+  $('bName').textContent=BOOT_NAME;
+  function cycle(){
+    const h=$('bHint');
+    h.textContent=hints[hintI++ % hints.length];
+    h.classList.add('on');                       // 淡入
+    timer=setTimeout(()=>{
+      h.classList.remove('on');                  // 淡出
+      timer=setTimeout(cycle, FADE+50);
+    }, HOLD);
+  }
+  cycle();
   return {
     /* ⚠ 只推進度，不寫字。階段名稱留在呼叫端當註解 —— 那是給讀程式的人看的，
        不是給玩家看的（Ray 指定讀取畫面只出現 SAINT INSTALL）。 */
@@ -6058,7 +6191,7 @@ const bootUI=(()=>{
       $('bProg').setAttribute('stroke-dashoffset', (RING*(1-clamp(p,0,1))).toFixed(1));
       $('bPct').textContent=Math.round(clamp(p,0,1)*100)+'%';
     },
-    done(){ $('boot').classList.add('hide'); },
+    done(){ clearTimeout(timer); $('boot').classList.add('hide'); },
   };
 })();
 
