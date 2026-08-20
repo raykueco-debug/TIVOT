@@ -202,9 +202,10 @@ window.addEventListener('pagehide', refreshBoot);
        直接進可點狀態，素材在背景補載（快取命中幾乎瞬間完成）。 */
   /* 載入遮罩（動態建立，樣式集中在 style.css 的 #assetLoader 區）：
    *  光圈＋百分比＋SAINT INSTALL 字樣，中下方監察官立繪。
-   *  ⚠ 圈內字樣一律「SAINT INSTALL」，底部的「載入中／點擊繼續」與讀完改成的
-   *    「Complete」仍然**不放回來**。但監察官的對話框與教學 Hint 輪播是有的
-   *    （Ray 指定放回，ver -251）—— 讀取要等好幾秒，那幾句是這段唯一的內容。
+   *  ⚠ 圈內字樣：載入中是「SAINT INSTALL」，**滿 100% 後改成「COMPLETE」**
+   *    （Ray 指定，ver -261）。底部的「載入中／點擊繼續」那行仍然不放回來。
+   *    監察官的對話框與教學 Hint 輪播是有的（Ray 指定放回，ver -251）——
+   *    讀取要等好幾秒，那幾句是這段唯一的內容。
    *  ⚠ 「可以點了」改用**視覺**表示：光圈轉常亮（.al-done）＋字樣呼吸（.al-pulse）。
    *    那一點是解鎖音訊的使用者手勢，非有不可 —— 拿掉提示字又不給替代訊號的話，
    *    玩家會卡在一個看起來已經好了、卻沒反應的畫面上。 */
@@ -334,13 +335,17 @@ window.addEventListener('pagehide', refreshBoot);
   let ready=false;
   const showReady=()=>{
     if(ready) return; ready=true;
-    /* 讀取完成：進度圈補滿、整圈轉常亮發光（.al-done），字樣**不變**（維持
-       SAINT INSTALL）只加呼吸 —— 那就是「可以點了」的訊號。 */
+    /* 讀取完成：進度圈補滿、整圈轉常亮發光（.al-done），字樣換成 COMPLETE
+       並加呼吸 —— 那就是「可以點了」的訊號。 */
     if(prog) prog.style.strokeDashoffset='0';
     if(pct) pct.style.display='none';
     ov.classList.add('al-done');
-    const cap=$('alRingCap'); if(cap) cap.classList.add('al-pulse');
-    fitCap();   // .al-done 把字級 10.5→13px、字距 3→5px，字變寬了要重新量
+    const cap=$('alRingCap');
+    if(cap){ cap.textContent='COMPLETE'; cap.classList.add('al-pulse'); }
+    /* ⚠ 換完字才量：.al-done 把字級 10.5→13px、字距 3→5px（變寬），
+       而 COMPLETE 比 SAINT INSTALL 短（變窄）—— 兩邊都變了，一定要重量一次。
+       圈內字樣一律英文，不走 i18n（與 SAINT INSTALL 同一套處理）。 */
+    fitCap();
     const go=()=>{
       ov.removeEventListener('click',go); ov.removeEventListener('touchstart',go);
       clearTimeout(hintTimer);   // 停輪播
