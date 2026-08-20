@@ -1350,23 +1350,37 @@ function edgeSide(mx,my){
   let k='W'; for(const q in d) if(d[q]<d[k]) k=q;
   return k;
 }
-/* 觸牆時該打幾度舵。回傳 {amt:接管強度 0..1, rudder:-1..1}。
-   內推向量＝四邊各自「陷得多深」的加權和 —— 角落會自然得到斜向的合力。 */
+/* 觸牆自動掉頭。回傳 {amt, rudder, latched}。
+   內推向量＝四邊各自「陷得多深」的加權和 —— 角落會自然得到斜向的合力。
+
+   ⚠ **打滿舵、一次轉到位**（Ray 指定，ver -274）。原本是依角度比例的漸進接管
+     （舵量 = -da/0.6，愈接近目標舵愈小），結果是船在牆邊軟綿綿地磨很久。
+     改成**閂鎖**：一碰到帶子就把舵打到底，一路轉到船頭朝內才鬆手。
+
+   ⚠ 閂鎖的方向**在進入時就決定、中途不改**。不鎖的話 da 過零點時符號會翻，
+     舵左右擺動 —— 那是最難看的一種抖動。
+   ⚠ 解除條件要**同時**看「離開帶子」與「已經轉到位」：只看角度的話，貼著邊界
+     平飛時角度早就對了卻還在帶子裡，下一幀又重新閂鎖，一樣會抖。 */
+let wallTurn=0;        // 0＝沒在自動掉頭；±1＝正在打滿舵的方向
 function wallSteer(mx,my,ang){
   const w=d=>clamp(1-(d-EDGE_HARD)/(EDGE_BAND-EDGE_HARD),0,1);
   let ix=w(mx+WORLD_PAD) - w((MAPW+WORLD_PAD)-mx);      // 靠西→往東推，反之亦然
   let iy=w(my+WORLD_PAD) - w((MAPH+WORLD_PAD)-my);
   const amt=Math.min(1, Math.hypot(ix,iy));
-  if(amt<0.001) return {amt:0, rudder:0};
+  if(amt<0.001){ wallTurn=0; return {amt:0, rudder:0, latched:false}; }
   ix/=amt; iy/=amt;
   /* 世界方向 → 航向角：前向量是 (-sin a, -cos a)，所以 a = atan2(-dx, -dy)。 */
   const want=Math.atan2(-ix,-iy);
   let da=want-ang;
   while(da>Math.PI)da-=Math.PI*2;
   while(da<-Math.PI)da+=Math.PI*2;
-  /* 轉向那一行是 `cam.angle -= step`（角度遞減＝右轉），所以舵量取 -da。
-     除以 0.6 rad 讓「差 35 度以上」就直接滿舵，小角度才細修。 */
-  return {amt, rudder: clamp(-da/0.6, -1, 1)};
+  if(wallTurn===0){
+    /* 轉向那一行是 `cam.angle -= step`（角度遞減＝右轉），所以舵量取 -sign(da)。 */
+    if(Math.abs(da)>0.12) wallTurn = (da>0 ? -1 : 1);
+  }else if(Math.abs(da)<0.12){
+    wallTurn=0;                                        // 船頭已經朝內 → 鬆手
+  }
+  return {amt, rudder:wallTurn, latched:wallTurn!==0};
 }
 
 let edgeNagAt=0, edgeWasIn=true;
@@ -3542,7 +3556,7 @@ function update(dt,now){
      ⚠ 目標方向取「四邊各自的內推向量加權和」，不是「指向地圖中心」——
        指向中心的話在角落會轉一個大彎，而且沿著邊界平飛時也會被硬掰回去。 */
   const wall=wallSteer(cam.x/MAP_SCALE, cam.y/MAP_SCALE, cam.angle);
-  if(wall.amt>0.001) r = clamp(r*(1-wall.amt) + wall.rudder*wall.amt, -1, 1);
+  if(wall.latched) r = wall.rudder;      // 打滿舵、直接接管，不與玩家的舵混合
 
   rudder=r;
   // 舵輪：角速度 ∝ 舵量。放手就停在當下角度 —— 實體舵輪本來就不會自己回正
@@ -3564,9 +3578,10 @@ function update(dt,now){
   let turned=0;
   const mov=Math.abs(cam.speed)/MAX_SPD;
   const spin=held && f<-0.15;
-  /* ⚠ 牆接管時要給舵效下限：空氣牆把速度吃掉了，而「慢速時舵不吃水」會讓
-     自動轉舵完全轉不動 —— 變成貼在牆上動彈不得，那正是最糟的手感。 */
-  const eff=Math.max(spin?SPIN_EFF:0, clamp(mov*2.2,0,1), wall.amt*0.65);
+  /* ⚠ 自動掉頭時舵效直接給滿：空氣牆把速度吃掉了，而「慢速時舵不吃水」會讓
+     自動轉舵完全轉不動 —— 貼在牆上動彈不得，那正是最糟的手感。
+     「全速轉舵一次到位」也就是這個 1 的意思：用得到的最大角速度轉完。 */
+  const eff=Math.max(spin?SPIN_EFF:0, clamp(mov*2.2,0,1), wall.latched?1:0);
   if(Math.abs(r)>0.015 && eff>0.001){
     const step=clamp(r,-1,1)*TURN_RATE*dt*eff;
     cam.angle-=step;                                // 角度遞減＝向右偏（見 compass 換算）
