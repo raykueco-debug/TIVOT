@@ -1,4 +1,7 @@
-<!-- 由 Ray 提供的設計文件歸檔，內文一字未改。本區塊是歸檔時補的專案脈絡。 -->
+<!-- 由 Ray 提供的設計文件歸檔。本區塊是歸檔時補的專案脈絡。
+     ⚠ 內文原則上不改。已知的唯一例外：ver -262 依 Ray 指示把角色的西文名
+       **Regine 全面更名為 Renna**（原稿寫的是 Regine，含 tier_lock.regine 等
+       偽代碼識別字一併改為 renna）。除此之外一字未動。 -->
 
 > ## ⚠ 這份是「未實裝」的規劃規格
 > 與 `GAMESPEC.md`（現況實裝快照）**性質不同**，不要拿來當現行行為的依據。
@@ -11,29 +14,35 @@
 >   本規格的 tier 1..5 若要接上，是把門檻表填滿，不是另建一套。
 >
 > ### 監察官＝蕾娜（Ray 定案）
-> **蕾娜（Regine Heisenberg）就是正式版的監察官。芙蕾雅（Freya）是暫代版。**
+> **蕾娜（Renna Heisenberg）就是正式版的監察官。芙蕾雅（Freya）是暫代版。**
 > 所以本文 §5 的蕾娜機制**不是新增一個角色**，是接在現行監察官那個位子上 ——
 > 她已經是玩家每場結算都會見到的人（`inspectors` / 結算演出 / 載入畫面門面 /
 > 教學對白 `who:inspector`），這正好對上 §5「預設對話最多的人 → 好感自然到 tier2~3」。
 >
 > 正名時要動的地方（角色資料已參數化，不必改程式邏輯）：
 > ```
-> config.js   inspectors.freya → inspectors.regine（executionLine / warnLine / dialogues 全跟著）
->             defaultInspector: 'freya' → 'regine'
->             ASSETS.inspector_freya → inspector_regine（需要新立繪，見下）
+> config.js   inspectors.freya → inspectors.renna（executionLine / warnLine / dialogues 全跟著）
+>             defaultInspector: 'freya' → 'renna'
+>             ASSETS.inspector_freya → inspector_renna（需要新立繪，見下）
 >             castTable 的 inspector.name / image
 > i18n/       zh.js「芙蕾雅」· en.js「Freya」· ja.js — 三份的 inspector.name
 > main.js     ✅ 已改走 defaultInspector（原本寫死 `.freya`，ver -256 修掉）
 > ```
-> ⛔ **卡在素材**：`resources/inspector/` 目前只有 `Freya_SI_01`。蕾娜的立繪（`Regine_SI_01`）
+> ⛔ **卡在素材**：`resources/inspector/` 目前只有 `Freya_SI_01`。蕾娜的立繪（`Renna_SI_01`）
 > 還沒有 —— 沒有它就正名，結算與載入畫面會變成沒有立繪的空框。
 > 另外 §5 提到 tier3 解鎖的**眼鏡差分**，也是另一張圖。
 >
 > ### ⚠ 命名對照（極易混淆，動手前先看這裡）
 > | 本文 | 程式裡 | 說明 |
 > |---|---|---|
-> | 蕾娜 / Regine Heisenberg | 芙蕾雅 / Freya（**暫代**） | 監察官。正式版就是蕾娜，見上 |
+> | 蕾娜 / Renna Heisenberg | 芙蕾雅 / Freya（**暫代**） | 監察官。正式版就是蕾娜，見上 |
 > | — | **蕾妮** / Renee | 現行搭檔（即死防禦／生命歸還）。**與「蕾娜」是不同人** |
+>
+> ⚠⚠ **Renna（蕾娜，監察官）與 Renee（蕾妮，搭檔）是兩個人。**
+> 更名之後這兩個名字只差兩個字母、中文只差一個字，是全專案最容易寫錯的一組。
+> 蕾妮已經**實裝在程式裡**（`config.js` 的 `partners.renee`、即死防禦、生命歸還、
+> `Renee_CI_pas/act`、`vo_renee_*`）；蕾娜還不存在。看到 `renee` 一律是搭檔，
+> 不要當成監察官順手改掉。
 > | 璐娜 | Luna | 聖徒化 cut-in 的那位（`resources/partner/Luna_*`） |
 > | 諾薇兒 / 安娜 / 索拉娜 | 立繪已有（`resources/partner/`），程式未接 | 身高見 `CLAUDE.md` §6.5 |
 >
@@ -71,8 +80,8 @@ PLAZA (廣場 / 樞紐 / 入口)
 | 設施 | 功能 | 常駐角色 |
 |---|---|---|
 | INN 旅店 | 存檔、時間加速；先進功能選單(存檔/加速/離開)，有事件時選單多一個提示鈕(玩家主動選觸發，勿強制) | 私密/夜間事件場 |
-| CHURCH 教堂 | (諾薇兒/蕾娜的特定事件) | Nouvelle；Regine(事件時) |
-| CITYHALL 市政廳 | **蕾娜情報站主駐點**(玩家拿情報/推進蕾娜線固定來此) | Regine(主駐) |
+| CHURCH 教堂 | (諾薇兒/蕾娜的特定事件) | Nouvelle；Renna(事件時) |
+| CITYHALL 市政廳 | **蕾娜情報站主駐點**(玩家拿情報/推進蕾娜線固定來此) | Renna(主駐) |
 | GUNSMITH 槍坊 | 武器打造(MH模式，收集特殊素材) | — |
 | SHOP 商店 | 道具(無補血道具；賣素材/補給/好感小物，好感小物須防「用錢繞過行為」，見備註) | — |
 | TAVERN 酒館 | 情報 | Sorana |
@@ -129,7 +138,7 @@ on affection change:
 - **即時行為反饋**(如榨諾薇兒→蕾娜卡住) → 影響當前 `affection` / 通往下一 tier 進度。
 
 ### 四條軸
-`affection.novel` / `affection.ann` / `affection.sorana` / `affection.regine`
+`affection.novel` / `affection.ann` / `affection.sorana` / `affection.renna`
 互相獨立。角色反應只讀自己那條。
 
 ### 角色關鍵門檻（tier_lock）
@@ -137,14 +146,14 @@ on affection change:
 ANN(安娜):     存活 = tier4;  單人HE(紫月) = tier5   # 未達tier4 → 覺醒BOSS死
 SORANA(索拉娜): 留下 = tier4;  單人HE(懷孕) = tier5   # 未達tier4 → 離隊結局(ending非gameover)
 NOVEL(諾薇兒):  單人HE(結婚) = tier5                   # 暴走另見獨立機制
-REGINE(蕾娜):  展開諾薇兒說明/觸發挑戰璐娜 = tier4; 覆蓋三女主/真結局 = tier5
+RENNA(蕾娜):  展開諾薇兒說明/觸發挑戰璐娜 = tier4; 覆蓋三女主/真結局 = tier5
 HE入場券 = tier4; 單人/真結局 = tier5
 ```
 
 ### 稱呼系統（可選：親密度可視化）
-- Regine 正式名 `Regine Heisenberg`；暱稱 `蕾娜`。
-- 初期玩家/NPC 稱「監察官/Regine」；達某 tier 解鎖稱「蕾娜」(可做成一個事件)。
-- 類似：Regine 眼鏡差分 = tier3 解鎖(主角面前/私下戴，公開不戴)。
+- Renna 正式名 `Renna Heisenberg`；暱稱 `蕾娜`。
+- 初期玩家/NPC 稱「監察官/Renna」；達某 tier 解鎖稱「蕾娜」(可做成一個事件)。
+- 類似：Renna 眼鏡差分 = tier3 解鎖(主角面前/私下戴，公開不戴)。
 
 ---
 
@@ -168,32 +177,32 @@ if tier_lock.ann < 4:
     # 收尾按 tier 覆寫最後一幕(見下 BE2_outro)
 else:
     # 安娜存活
-    if tier_lock.regine >= 5:
+    if tier_lock.renna >= 5:
         → HE4 蕾娜線 (強制覆蓋三女主)
         # 第一輪: 告白→流淚→分道揚鑣
         # 第二輪(見§5): 關鍵道具開場tier3 + 再告白 + 格里芬戰勝第一階段 → 真結局→索拉娜遠望收尾
-    elif tier_lock.regine == 4 and challenged_luna and not luna_challenge_passed_to_5:
+    elif tier_lock.renna == 4 and challenged_luna and not luna_challenge_passed_to_5:
         → BE4 (諾薇兒被銷毀)   # tier4觸發挑戰璐娜，未達tier5
     elif tier_lock.novel>=5 and tier_lock.ann>=5 and tier_lock.sorana>=5:
-        → HE5 後宮 (綠月)       # 三伙伴皆tier5, regine未達5
-    elif exactly_one_of(novel,ann,sorana) reaches tier5 (regine<5):
+        → HE5 後宮 (綠月)       # 三伙伴皆tier5, renna未達5
+    elif exactly_one_of(novel,ann,sorana) reaches tier5 (renna<5):
         → 該角單人HE            # HE1索拉娜懷孕 / HE2安娜紫月 / HE3諾薇兒結婚
     elif multiple reach tier5:
         → resolve_by_keyevents() # 見下「同級競合」
     else:
-        → BE3 各奔東西          # 安娜存活但無人達tier5 (且regine<4)
+        → BE3 各奔東西          # 安娜存活但無人達tier5 (且renna<4)
 ```
 
 ### BE2 收尾覆寫（ending 原則：故事走完須結算關係）
 ```
 BE2_outro:  # 安娜死，主體共通，最後一幕按最高tier角色覆寫
-    if tier_lock.regine >= 4: 播 蕾娜苦味收尾(沉默/一句別人聽不到的話)
+    if tier_lock.renna >= 4: 播 蕾娜苦味收尾(沉默/一句別人聽不到的話)
     elif tier_lock.novel high: 播 諾薇兒收尾
     elif tier_lock.sorana high: 播 索拉娜收尾
     else: 併入 BE3 各奔東西通用收尾
 ```
 
-### 同級競合裁決（多人 tier5，regine<5）
+### 同級競合裁決（多人 tier5，renna<5）
 ```
 resolve_by_keyevents():
     # 不比 affection 數值(可能同級)
@@ -216,14 +225,14 @@ FLAG: sorana_gave_token   # 索拉娜給主角信物, 某好感節點觸發, 無
 |---|---|---|
 | BE1 | 諾薇兒暴走命中(§4) | gameover |
 | BE2 | ann tier<4 (安娜死) | ending(收尾覆寫) |
-| BE3 | 安娜存活+無人tier5+regine<4 | ending |
-| BE4 | 安娜存活+regine tier4挑戰璐娜+未達tier5 | ending(諾薇兒銷毀) |
+| BE3 | 安娜存活+無人tier5+renna<4 | ending |
+| BE4 | 安娜存活+renna tier4挑戰璐娜+未達tier5 | ending(諾薇兒銷毀) |
 | 離隊 | sorana tier<4 | ending(非gameover) |
 | HE1 | 安娜存活+sorana tier5(其他未突出) | 懷孕 |
 | HE2 | 安娜存活+ann tier5(其他未突出) | 紫月 |
 | HE3 | 安娜存活+novel tier5(其他未突出) | 結婚 |
-| HE4 | 安娜存活+regine tier5 | 蕾娜線(覆蓋三女主) |
-| HE5 | 安娜存活+三伙伴皆tier5(regine<5) | 後宮 |
+| HE4 | 安娜存活+renna tier5 | 蕾娜線(覆蓋三女主) |
+| HE5 | 安娜存活+三伙伴皆tier5(renna<5) | 後宮 |
 
 ---
 
@@ -278,10 +287,10 @@ on N battles without novel deployed:
 
 ---
 
-## 5. 蕾娜機制（REGINE）
+## 5. 蕾娜機制（RENNA）
 
 ### 5.0 背景（已定）
-- 本名 `Regine Heisenberg`，暱稱蕾娜。海森伯格侯爵（帝國武人勳爵，第二部東方司令部指揮官）之女。
+- 本名 `Renna Heisenberg`，暱稱蕾娜。海森伯格侯爵（帝國武人勳爵，第二部東方司令部指揮官）之女。
 - **嫡女（正室之女，身分正當）。血緣之謎永不展開：**
   - 侯爵黑髮、夫人金髮 → 生出金髮女兒，機率不高但可能。「說得通，但不好說」。
   - 侯爵常年征戰在外（不在場）→ 金髮疑點滋生 → 她不受待見 → **從小被藏進修道院**（故自然進入教廷體系，非刻意安插的間諜）。
@@ -295,7 +304,7 @@ on N battles without novel deployed:
 - **tier3→tier4 需特殊事件**(自然對話封頂 tier3；跨羈絆要契機)。→ 多數玩家停在 tier3「摯友陷阱」不自知。
 
 ### 蕾娜好感不影響其他 HE
-- 其他三線 HE 不需要 regine 好感。無蕾娜提示，玩家仍能靠自察走到別人的 HE。
+- 其他三線 HE 不需要 renna 好感。無蕾娜提示，玩家仍能靠自察走到別人的 HE。
 - 三角提醒(§下)中蕾娜的說明是「幫助」非「必要」。
 
 ### 差分 / 稱呼（親密可視化）
@@ -308,23 +317,23 @@ tier3: 解鎖 眼鏡差分(主角面前/私下戴, 公開不戴); 解鎖 暱稱�
 諾薇兒到50 → 主角(玩家)察覺異狀(看到pain差分) → 可主動找蕾娜
 蕾娜信號: 「……」(暗示來問) 或 戰後「等等來找我。」
 玩家問蕾娜:
-    if tier_lock.regine < 4: 回「讓她多休息吧。」   (不展開)
+    if tier_lock.renna < 4: 回「讓她多休息吧。」   (不展開)
     else(tier4+):            展開說明(暴走風險/規則/如何管理)
 道德閘門:
-    聽勸(諾薇兒未恢復40前不派) → regine 好感可漲
-    無視(痛苦時續派)          → regine 好感卡住
+    聽勸(諾薇兒未恢復40前不派) → renna 好感可漲
+    無視(痛苦時續派)          → renna 好感卡住
     差分恢復(40)後派          → 不影響
 註: 諾薇兒不會怪你(越用越愛你、絕不喊苦); 唯一因你榨她而扣分的是蕾娜。
 ```
 
 ### T4+ 吃醋 / 曖昧（索拉娜火藥）
 ```
-tier4+ regine:
+tier4+ renna:
     對主角與他人互動吃味 → 扭頭就走(不明說, 玩家自行讀)
     主角與他角曖昧事件後告知 → 蕾娜不安
 索拉娜火藥(助攻):
     sorana tier5 → 直接求愛(主動、公開、藏不住)
-    → 刺激蕾娜 → 蕾娜心意動搖鬆動 → 推進 regine 好感/事件(嫉妒使她更快面對自己的愛)
+    → 刺激蕾娜 → 蕾娜心意動搖鬆動 → 推進 renna 好感/事件(嫉妒使她更快面對自己的愛)
     → 蕾娜不是聖人(有慾望佔有欲); 主角只能從她的「動搖」猜心思(呼應零心之聲/測不準)
     → 機制應由玩家自行發現, 非遊戲明示(保索拉娜純粹)
 ```

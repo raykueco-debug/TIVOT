@@ -274,7 +274,7 @@ window.addEventListener('pagehide', refreshBoot);
   //   立繪＝載入畫面的門面，全站最優先：載完（或 4s 保底）才輪到關鍵音效、再輪到整批。
   // ⚠ 走 defaultInspector，不要寫死鍵名：這裡原本寫死 `.freya`，而正上方的註解
   //   說「讀 config 不寫死」—— 註解與程式不符。芙蕾雅是暫代版，正式版監察官是
-  //   蕾娜(Regine)；換人時 config 改一行就好，別再有第二處要記得改。
+  //   蕾娜(Renna)；換人時 config 改一行就好，別再有第二處要記得改。
   let portraitP = Promise.resolve();
   {
     const insp=(GAME_CONFIG.inspectors||{})[GAME_CONFIG.defaultInspector]||{};
