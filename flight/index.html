@@ -40,11 +40,12 @@
     text-align:center;font-size:10px;letter-spacing:.18em;color:var(--parch);opacity:.28;}
   #fps{position:fixed;right:12px;top:calc(env(safe-area-inset-top) + 54px);
     font-size:9px;color:var(--parch);opacity:.35;}
-  #backBtn,#mapBtn,#muteBtn{position:fixed;top:calc(env(safe-area-inset-top) + 10px);z-index:40;
+  #backBtn,#mapBtn,#muteBtn,#talkBtn{position:fixed;top:calc(env(safe-area-inset-top) + 10px);z-index:40;
     background:rgba(5,6,12,.72);border:1px solid rgba(201,162,39,.5);color:var(--gold);
     font-family:inherit;font-size:11px;letter-spacing:.14em;padding:5px 12px;cursor:pointer;}
   #backBtn{right:12px;} #mapBtn{right:78px;} #muteBtn{right:144px;width:44px;padding:0;text-align:center;}
-  #backBtn:active,#mapBtn:active,#muteBtn:active{background:rgba(201,162,39,.16);}
+  #talkBtn{right:196px;}
+  #backBtn:active,#mapBtn:active,#muteBtn:active,#talkBtn:active{background:rgba(201,162,39,.16);}
   #muteBtn.muted{color:#d06a60;border-color:rgba(208,106,96,.7);}
   /* 生怪鈕：開發用。放操作盤左下角——舵輪佔滿面板中央，只有兩側下緣是空的。
      ⚠ z-index 要高過面板（面板是 canvas 直接畫的，本身不佔 DOM 層級），
@@ -181,6 +182,7 @@
 <button id="mapBtn">地圖</button>
 <!-- 全域靜音：與 index.html 共用 localStorage 的 tivot_mute_v1 -->
 <button id="muteBtn" aria-label="Mute">🔊</button>
+<button id="talkBtn">對話</button>
 <button id="backBtn">← 返回</button>
 <button id="spawnBtn">生怪</button>
 <button id="boostBtn">×1</button>
@@ -1203,6 +1205,75 @@ function castGeom(P, im){
   return { s, y0:Math.round(y0), w, sh, h:Math.round(sh*s) };
 }
 
+/* ══ 閒聊對話（「對話」鈕）══
+   ⚠ **不是隨機生成，是隨機挑一組**（Ray 同意）。執行期沒有語言模型，
+     每人各自抽一句的話四句彼此無關，讀起來像四個人各自自言自語 ——
+     所以寫成整段的對話，一次挑一組播完。重複幾次會認得出來，這是取捨。
+
+   ⚠ 每組都讓四個人**都講到**：左側三人（索拉娜／諾薇兒／蕾娜）共用同一個
+     站位，所以一組對話會逼出兩次以上的「同側輪轉換卡」——這正是拿來調立繪的。
+
+   口氣（Ray 指定的人設，改台詞時照著走）：
+     蕾娜   21 監察官　有禮優雅但不擺架子、溫和圓滑、一點成熟的職業感
+     諾薇兒 17 修女　　溫柔溫婉、會照顧人
+     索拉娜 19 獵手　　坦蕩、直接、開朗、有一點男孩子氣
+     安雅   16 　　　　寡言少笑、用字簡短、還算有禮
+                       ⚠ 簡短是因為**非母語者**，不是冷淡；她其實是某國王女，
+                         這件事**任何台詞都不可以點破**，最多讓她閃避。 */
+const TALKS=[
+  [ {who:'sorana',   text:'風向轉了。這片雲海底下，是不是有山？'},
+    {who:'anya',     text:'有。三座。'},
+    {who:'sorana',   text:'你怎麼知道得這麼快啊你。'},
+    {who:'anya',     text:'……看雲。雲會繞開。'},
+    {who:'nouvelle', text:'安雅說得對呢。雲繞著走的地方，底下多半是硬的。'},
+    {who:'renna',    text:'兩位都比我這個監察官管用。報告我就寫「航路由船員自行判定」——這樣就不必解釋是誰看的雲了。'} ],
+
+  [ {who:'nouvelle', text:'今天的湯我多煮了一些，大家記得趁熱喝。'},
+    {who:'sorana',   text:'太好了！我去甲板上叫安雅。'},
+    {who:'anya',     text:'……已經在這裡。'},
+    {who:'sorana',   text:'哇！你什麼時候——算了，你走路沒聲音這件事我永遠習慣不了。'},
+    {who:'anya',     text:'抱歉。'},
+    {who:'nouvelle', text:'不用道歉呀。來，先坐下。'},
+    {who:'renna',    text:'我也分一碗好嗎？……放心，「監察官在船上蹭飯」我不會寫進去的。'} ],
+
+  [ {who:'renna',    text:'安雅小姐，方才那個地方——妳是怎麼找到的？'},
+    {who:'anya',     text:'感覺。說不清楚。'},
+    {who:'renna',    text:'說不清楚也沒關係。教廷的紀錄裡，說得太清楚的反而少見。'},
+    {who:'sorana',   text:'我倒覺得她是鼻子好。跟獵犬一樣。'},
+    {who:'anya',     text:'……我不是狗。'},
+    {who:'sorana',   text:'誇你啦！獵犬很厲害的！'},
+    {who:'nouvelle', text:'索拉娜，這種誇法要看對象的。'} ],
+
+  [ {who:'sorana',   text:'今晚換我守夜，你們去睡。'},
+    {who:'nouvelle', text:'妳昨晚也守了。今天換我吧，好不好？'},
+    {who:'sorana',   text:'我不睏。'},
+    {who:'anya',     text:'眼睛。紅的。'},
+    {who:'sorana',   text:'……被看穿了。'},
+    {who:'renna',    text:'那就三個人輪。我算過了，這樣每個人都睡得滿——監察官偶爾也做點有用的事。'} ],
+
+  [ {who:'renna',    text:'這一帶已經出了帝國的圖了。再往東，紙上就是空白。'},
+    {who:'sorana',   text:'空白最好。空白代表沒人去過。'},
+    {who:'renna',    text:'也代表沒人回來過。'},
+    {who:'sorana',   text:'……妳這人真會說話。'},
+    {who:'anya',     text:'我去。'},
+    {who:'nouvelle', text:'等等，安雅，先讓大家都同意再說呀。'},
+    {who:'anya',     text:'……好。我等。'} ],
+
+  [ {who:'nouvelle', text:'今晚的銀月好亮。'},
+    {who:'anya',     text:'在我家鄉……也看得到。'},
+    {who:'sorana',   text:'你家鄉？你從來沒提過欸。'},
+    {who:'anya',     text:'……沒什麼好提。'},
+    {who:'renna',    text:'誰都有不想提的事。我也有。'},
+    {who:'nouvelle', text:'那我們就一起看月亮，什麼都不用提。'} ],
+];
+let talkLast=-1;
+/* 隨機挑一組，但**不挑上一組**：連兩次同一段最容易讓人覺得「就這幾句」。 */
+function talkStart(now){
+  if(TALKS.length<2){ say(TALKS[0], now); return; }
+  let i; do{ i=(Math.random()*TALKS.length)|0; }while(i===talkLast);
+  talkLast=i; say(TALKS[i], now);
+}
+
 let senseTries=[];              // 最近幾次「按下探索」的時戳（滑動視窗）
 /* ══ 對白舞台 ══
    沿用戰鬥教學的語彙（modules/tutorial.js + style.css 的 #tutCast）：
@@ -1234,8 +1305,43 @@ function castClear(now){ for(const c of cast) if(!c.out) c.out=now; }
 const portraitImg={};
 function portraitArt(who){
   if(portraitImg[who] || !PORTRAIT[who] || !PORTRAIT[who].src) return;
-  const im=new Image(); im.src=PORTRAIT[who].src;
+  const im=new Image();
+  im.onload=()=>measureBounds(who,im);
+  im.src=PORTRAIT[who].src;
   portraitImg[who]=im;
+}
+
+/* ── 立繪的輪廓左右界（供「不可越中線」用）────────────────────────
+   ⚠ 夾中線**不能拿圖框去夾**：這些插畫左右都有大片透明留白（實測可見輪廓
+     只佔圖寬的 5~8 成），照圖框夾會把人整個推歪，而且每張推的量還不一樣。
+
+   ⚠ 也不能只量整張圖的輪廓：立繪**只畫到腰**（下緣被 VIEWH 切掉），裙襬與
+     腿那段根本不在畫面上。我第一次就是連下半身一起量，得到「四個人加起來
+     864px、塞不進 375px 螢幕」的錯誤結論；只算可見那一段其實是 328/258/298/169。
+
+   所以存的是**逐列累積**的左右界：mn[y]／mx[y] ＝ 第 0..y 列之中的最小／最大
+   非透明欄。要哪個取景就查對應的那一列，O(1)，而且改 CAST_SHOW 不必重量
+   —— 這正是不把 lft/rgt 填死在取景表裡的理由。 */
+const portraitBnd={};   // who → {mn,mx,n,k}；k＝一個樣本代表幾個來源像素
+function measureBounds(who, im){
+  if(portraitBnd[who] || !im.width) return;
+  const k=Math.max(1, Math.round(im.width/512));      // 取樣到約 512 寬就夠（誤差 ~2px）
+  const w=Math.max(1,Math.round(im.width/k)), h=Math.max(1,Math.round(im.height/k));
+  let d;
+  try{
+    const c=document.createElement('canvas'); c.width=w; c.height=h;
+    const g=c.getContext('2d',{willReadFrequently:true});
+    g.drawImage(im,0,0,w,h);
+    d=g.getImageData(0,0,w,h).data;
+  }catch(e){ return; }   // 讀不到像素就放棄夾中線，不要讓整段演出掛掉
+  const mn=new Int16Array(h), mx=new Int16Array(h);
+  let cmn=w, cmx=-1;
+  for(let y=0;y<h;y++){
+    const row=y*w*4;
+    for(let x=0;x<w;x++) if(d[row+x*4+3]>8){ if(x<cmn)cmn=x; if(x>cmx)cmx=x; }
+    mn[y]=cmn; mx[y]=cmx;
+  }
+  portraitBnd[who]={mn,mx,n:h,k};
 }
 
 /* ── 立繪的預縮圖（LOD）─────────────────────────────────────────────
@@ -1431,7 +1537,12 @@ function senseRingCheck(now){
    ⚠ drawPanel 與對話框都吃這一份 —— 兩邊各自寫死遲早會走鐘，而「對話框與
      方向計同寬」是 Ray 指定的對齊關係，走鐘一眼就看得出來。 */
 function compassRect(){
-  const w=Math.min(W*0.62,250)+12;
+  /* ⚠ 寬度 ver -265 由 0.62/250 拉到 0.84/330（Ray 指定）。方向計與對話框
+     **一起**變寬 —— 它們吃同一份幾何，這正是當初抽成共用函式的用意。
+     0.84 不是 0.9 以上：375 寬的機器留 24px 邊，避開螢幕圓角（同盤面的規矩）。
+     ⚠ 方向計的刻度是「整條寬度＝±90°」，拉寬只是把同樣的角度範圍攤得更開，
+       解析度變好，不必改換算。 */
+  const w=Math.min(W*0.84,330)+12;
   return { x:Math.round(W/2-w/2), y:Math.round(VIEWH-HELM_OUT-24-17),
            w:Math.round(w), h:30 };
 }
@@ -1461,7 +1572,24 @@ function drawTalk(now){
     const lod=portraitLOD(c.who, im, G.w, fullH);
     // 站位錨的是**臉的中心**，不是圖框中心
     const anchor=(c.side==='L') ? 0.24 : 0.76;
-    const target=Math.round(W*anchor - G.w*P.fx);
+    let target=Math.round(W*anchor - G.w*P.fx);
+    /* ⚠ 不可越中線（Ray 指定）：左側的人輪廓右緣不得超過 W/2，右側的人輪廓
+       左緣不得低於 W/2。ver -251 把立繪放大 29% 之後，四個人**全部**都在越線
+       （實測 375 寬：安雅 26px、索拉娜 26px、蕾娜 36px；只有諾薇兒沒越）。
+       ⚠ 夾的是**輪廓**不是圖框，界線查 portraitBnd 的第 G.sh 列（＝這個取景
+         實際看得到的最後一列），理由見 measureBounds。
+       ⚠ 代價：臉會被往外推（索拉娜 90→65、蕾娜 90→55、安雅 285→312），
+         外側被切掉更多。這是幾何上跑不掉的 —— 兩個人的可見輪廓加起來就是
+         比螢幕寬。 */
+    const B=portraitBnd[c.who];
+    if(B){
+      const r=clamp(Math.round(G.sh/B.k)-1, 0, B.n-1);
+      if(B.mx[r]>=0){
+        const lft=B.mn[r]*B.k*G.s, rgt=(B.mx[r]+1)*B.k*G.s;
+        target = (c.side==='L') ? Math.min(target, Math.round(W/2-rgt))
+                                : Math.max(target, Math.round(W/2-lft));
+      }
+    }
     const off=(c.side==='L') ? -G.w-8 : W+8;     // 畫面外的停機位
     let x;
     if(c.out) x=lerp(target, off, easeOut(clamp((now-c.out)/CAST_IN_MS,0,1)));
@@ -1485,18 +1613,39 @@ function drawTalk(now){
   if(sayEndAt){ ctx.restore(); return; }        // 退場時不再畫框
   /* 對話框：與方向計同寬、疊在它正上方（Ray 指定）。
      ⚠ 一定要讓開羅盤帶：它畫在 drawPanel（比這裡晚），框底壓上去台詞會被蓋掉。 */
-  const bh=Math.round(clamp(VIEWH*0.115,48,70));
+  /* ⚠ 台詞會**換行**，框高跟著行數長。原本是固定一行、固定框高 ——
+     那是因為當時的台詞都只有 7~10 個字，從來沒撞到邊。ver -265 加了整段閒聊
+     之後一寫就爆：長句直接畫出框外，還被右下角的「▼」蓋掉半個字。
+     ⚠ 框底錨在方向計上緣（Ray 指定的對齊），所以行數變多是**往上長**，
+       不會把台詞推到羅盤帶底下。
+     ⚠ 三行還放不下就縮字級（最小 12px）—— 寧可小一點也不要切字。 */
   const C=compassRect();
-  const bx=C.x, bw=C.w, by=C.y-8-bh;
+  const bx=C.x, bw=C.w, padX=13, maxW=bw-padX*2-14;   // 右邊再讓 14px 給「▼」
+  const wrap=(txt,px)=>{
+    ctx.font=px+'px "Noto Serif TC",serif';
+    const out=[]; let cur='';
+    for(const ch of txt){
+      if(ctx.measureText(cur+ch).width>maxW && cur){ out.push(cur); cur=ch; }
+      else cur+=ch;
+    }
+    if(cur) out.push(cur);
+    return out;
+  };
+  let fs=15, lines=wrap(beat.text,fs);
+  while(lines.length>3 && fs>12){ fs--; lines=wrap(beat.text,fs); }
+  const lh=Math.round(fs*1.32);
+  const bh=Math.max(Math.round(clamp(VIEWH*0.115,48,70)), 26+lines.length*lh+8);
+  const by=C.y-8-bh;
   ctx.fillStyle='rgba(10,9,16,.84)';
   ctx.fillRect(bx,by,bw,bh);
   ctx.strokeStyle='rgba(201,162,39,.55)'; ctx.lineWidth=1;
   ctx.strokeRect(bx+0.5,by+0.5,bw-1,bh-1);
   ctx.textAlign='left';
   ctx.font='11px "Noto Serif TC",serif';
-  ctx.fillStyle='#c9a227'; ctx.fillText(PORTRAIT[speaker].name, bx+13, by+19);
-  ctx.font='15px "Noto Serif TC",serif';
-  ctx.fillStyle='#ece6d8'; ctx.fillText(beat.text, bx+13, by+bh-15);
+  ctx.fillStyle='#c9a227'; ctx.fillText(PORTRAIT[speaker].name, bx+padX, by+19);
+  ctx.font=fs+'px "Noto Serif TC",serif';
+  ctx.fillStyle='#ece6d8';
+  for(let i=0;i<lines.length;i++) ctx.fillText(lines[i], bx+padX, by+26+lh*(i+1)-4);
   // 續行提示「▼」：同教學，告訴玩家要點一下
   const blink=0.45+0.55*Math.abs(Math.sin(now*0.004));
   ctx.fillStyle='rgba(201,162,39,'+blink.toFixed(2)+')';
@@ -2840,6 +2989,13 @@ function drawMap(){
 }
 function updateMapMe(){ if(mapOpen) drawMap(); }
 
+/* 「對話」鈕：隨機播一段閒聊。
+   ⚠ 與探索演出／既有對白**互斥** —— 兩者都會佔用同一組立繪與對話框，
+     疊在一起會變成兩段對白搶同一個舞台。地圖開著時也不接（看不到）。 */
+document.getElementById('talkBtn').addEventListener('click',()=>{
+  if(sayQueue || senseOn || senseFireAt || senseT0 || mapOpen) return;
+  talkStart(performance.now());
+});
 document.getElementById('mapBtn').addEventListener('click',()=>{
   // ⚠ 浮雕與聚落都是點開才算（2.6M 取樣 + 26 座聚落），不進飛行開場
   const R=buildRelief();
