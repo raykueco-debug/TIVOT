@@ -3592,6 +3592,8 @@ function render(now){
   // 疊加物一律裁切在 3D 視窗內，不可溢出到操作面板
   ctx.save();
   ctx.beginPath(); ctx.rect(0,0,W,VIEWH); ctx.clip();
+  drawStars(S,horizon,sinp,cosp,now);   // 先星後月：銀月的光暈要蓋在星星上
+  drawDawnStar(S,horizon,sinp,cosp);
   drawSunMoon(S,horizon,sinp,cosp);
   /* 雲分兩趟畫，中間夾著城（見 drawPuffs 的說明）。 */
   const splitZ=nearestSettleZ(sinp,cosp);
@@ -3676,12 +3678,172 @@ function drawStarMarks(scaleH,horizon,sinp,cosp,now){
   ctx.globalAlpha=1;
 }
 
+/* ── 星空 ────────────────────────────────────────────────────────
+   ⚠ 星星必須固定在**天球**上，不是貼在螢幕上：每顆存 (方位 az, 仰角 el)，
+     每幀依 cam.angle 重新投影。這是「有星空」與「有一層雜訊」的分界 ——
+     轉船時星星該跟著掃過去，飛行時該紋風不動（它們無限遠）。
+     投影式與日月同一套（drawSunMoon），所以星星與銀月轉起來是同步的。
+
+   ⚠ 只生成看得到的那一段仰角。地平線在畫面 22% 高、縱向尺度 0.62，
+     所以畫面上緣對應 el = 0.22/0.62 ≈ 0.355 —— 天頂根本不在視野裡。
+     均勻撒滿整個半球的話有六成五的星星永遠在畫面外，白算。
+     （el 是仰角的**正弦**，與 S.el 同一個量綱，所以「在 [0,EL] 均勻」
+       就等於「單位立體角內密度均勻」，不必再做 asin 修正。）
+
+   ⚠ 為什麼星星不多：這片天空是**被銀月照亮的**（nightTop 抬到 [30,37,60]，
+     地平線更亮到 [96,105,133]）。滿月天實際上只看得到亮星，撒得密反而假。
+     所以三件事都往「稀疏」調：總數 300（可見約 1/4）、亮度分布偏暗
+     （m=rnd()^2.4）、離銀月近的再壓一段。
+
+   ⚠ 地平線附近要淡出：那一帶天空最亮（霧色＝地平線色），星星硬畫上去
+     會在交界處看到一排突然出現的點。淡出範圍 el 0.02~0.15。 */
+/* ⚠ 命名：這份檔案裡 `STARS` / `starFound` / `drawStarMarks` 已經是
+     **隱藏點位**（starpoints.json，地圖上那些五芒星）。天上的星星一律用
+     SKYSTAR 前綴，兩者不要再混。 */
+const SKYSTAR_N=300;
+const SKYSTARS=[];
+function initStars(){
+  _s=20250820;                      // 與 initPuffs 同一套慣例：先定種子再取
+  const EL_MAX=0.36;                // 略高於可見上緣 0.355，避免頂端剛好空一條
+  for(let i=0;i<SKYSTAR_N;i++) SKYSTARS.push({
+    az:rnd()*Math.PI*2,
+    el:rnd()*EL_MAX,
+    m:Math.pow(rnd(),2.4),          // 亮度：多數暗、少數亮
+    tw:rnd()*Math.PI*2              // 閃爍相位（每顆固定，不逐幀亂數）
+  });
+}
+
+/* 天球 → 螢幕。星星、晨星共用（日月的 drawSunMoon 自己有一份，剔除條件不同）。
+   回傳 null＝在視野外或被地形擋住。
+   ⚠ 遮擋要查 ybuf[欄]（該欄地形的最高列，天空在它上面）。少了這一步，
+     夜裡的山稜線上會浮著一層星星。 */
+function skyProject(az,el,horizon,camAz){
+  /* ⚠⚠ da 是 **camAz − az**，不是 az − camAz。這一項的正負決定天空往哪邊掃，
+     而它必須跟地形一致 —— 地形每一列的右緣是 `(cosp,−sinp)`（見 render 的
+     prx/pry），那個方向的方位角比中央**小**，所以「螢幕往右 ＝ 方位角遞減」。
+     寫成 az−camAz 的話，轉船時地形往左滑、天空往右滑，整片星空會像貼在
+     螢幕上的雜訊往反方向跑。
+     ⚠ drawSunMoon 原本就是寫反的（已一併修正）。日月幾乎總在畫面中央附近，
+       鏡像誤差小到看不出來，所以一直沒被發現；星星鋪滿整個畫面寬，一轉就露餡。 */
+  let da=camAz-az;
+  while(da>Math.PI)da-=Math.PI*2;
+  while(da<-Math.PI)da+=Math.PI*2;
+  if(Math.abs(da)>0.80) return null;             // 視野半角 45°，先粗篩
+  const x=W/2+Math.tan(da)*(W/2);
+  if(x<0||x>=W) return null;
+  const syk=VIEWH/BH;
+  const y=(horizon-el*BH*0.62)*syk;
+  if(y<0) return null;
+  const ci=clamp((x/(W/BW))|0,0,BW-1);
+  if(y>=ybuf[ci]*syk) return null;               // 被地形擋住
+  return {x,y};
+}
+
+/* ── 晨星（啟明星）─────────────────────────────────────────────
+   東方（日出方位＝az 0）的一顆，天亮前最亮、也是最後一顆被天光吃掉的。
+
+   ⚠ **只在黎明那一側**。S.dusk 對日出與日落是對稱的（1-|el|*3.2），
+     光看它分不出朝暮 —— 要看 S.t：t<0.5 才是太陽在爬升的那半天。
+     不加這道閘的話，黃昏西沉時東邊也會冒出一顆「晨星」。
+
+   ⚠ 亮度不跟一般星星共用 nf。整段設計就是「別的星都沒了它還在」，
+     綁同一條曲線就沒有這個效果了：
+       up ＝後半夜才升起（太陽仰角 -0.62 → -0.34 淡入）
+       out＝日出之後才慢慢被天光吃掉（0.02 → 0.30 淡出）
+     所以它在日出當下仍接近全亮，比整片星空多撐一段。
+
+   ⚠ 不閃爍。行星的光是穩的，恆星才閃 —— 讓它定住，跟旁邊的星星就分得開，
+     不必再靠更亮去強調。 */
+/* ⚠⚠ 世界方位角 az 與**羅盤度數不是同一套**，換算沒有寫在任何地方，
+   我是從 updateHUD 的 `deg=(-cam.angle*180/PI+1080)%360` 與
+   `camAz=atan2(-sinp,-cosp)=cam.angle+PI` 兩式解出來的：
+
+       羅盤度數 = (180 − az角度) mod 360        （北=0、東=90、南=180、西=270）
+
+   驗證：MOON_AZ=-0.52π=-93.6° → 羅盤 273.6° = 西，與該處註解「方位：西」相符。
+   第一版我把 az 0 當成東，其實 az 0 是**南** —— 螢幕上晨星就跑到南邊去了。
+   要正東就是 az = π/2。
+
+⚠ 不要貼著日出點放。更早一版給的 az 離日出點只有 5.7°、el 0.165，
+   天亮時它正好坐進朝陽的光暈裡 —— 有畫等於沒畫。這裡離正東 12.6°、抬到 12°，
+   朝陽在下、晨星在斜上方，兩顆各自成立。 */
+const DAWNSTAR_AZ=Math.PI/2+0.22;   // 羅盤約 77°（東，略偏北）
+const DAWNSTAR_EL=0.21;             // 約 12°：在地平霧氣之上，離可見上緣 0.355 仍有餘裕
+function drawDawnStar(S,horizon,sinp,cosp){
+  if(S.t>=0.5) return;
+  const up =sstep(-0.62,-0.34,S.el);
+  const out=1-sstep(0.02,0.30,S.el);
+  const a=up*out;
+  if(a<0.02) return;
+  const P=skyProject(DAWNSTAR_AZ,DAWNSTAR_EL,horizon,Math.atan2(-sinp,-cosp));
+  if(!P) return;
+  const r=Math.max(1.6,2.2*DPR);
+  const g=ctx.createRadialGradient(P.x,P.y,0,P.x,P.y,r*7);
+  g.addColorStop(0,`rgba(206,224,255,${(a*0.42).toFixed(3)})`);
+  g.addColorStop(1,'rgba(206,224,255,0)');
+  ctx.fillStyle=g; ctx.beginPath(); ctx.arc(P.x,P.y,r*7,0,Math.PI*2); ctx.fill();
+  /* 十字芒：說「這顆比別的亮」最省的講法。長度只給 5 倍半徑，
+     再長就變成聖光效果，不是一顆星。 */
+  ctx.strokeStyle=`rgba(226,238,255,${(a*0.5).toFixed(3)})`;
+  ctx.lineWidth=Math.max(1,DPR*0.8);
+  const L=r*5;
+  ctx.beginPath();
+  ctx.moveTo(P.x-L,P.y); ctx.lineTo(P.x+L,P.y);
+  ctx.moveTo(P.x,P.y-L); ctx.lineTo(P.x,P.y+L);
+  ctx.stroke();
+  ctx.fillStyle=`rgba(246,250,255,${Math.min(1,a*1.05).toFixed(3)})`;
+  ctx.beginPath(); ctx.arc(P.x,P.y,r,0,Math.PI*2); ctx.fill();
+}
+
+function drawStars(S,horizon,sinp,cosp,now){
+  /* 入夜才有。S.day 在日出/日落當下是 0.5，那時天還是橘的，
+     所以門檻拉到 day<0.62 才開始，且用平方曲線讓它最後一段才真的亮起來。 */
+  const nf=Math.pow(clamp(1-S.day*1.62,0,1),1.6);
+  if(nf<0.012) return;
+  const camAz=Math.atan2(-sinp,-cosp);
+  const tw=now*0.0016;
+  ctx.save();
+  for(let i=0;i<SKYSTAR_N;i++){
+    const st=SKYSTARS[i];
+    const P=skyProject(st.az,st.el,horizon,camAz);
+    if(!P) continue;
+    const x=P.x, y=P.y;
+    /* 銀月周圍壓暗：它是天上最亮的東西，旁邊本來就看不到星。
+       仰角小（<21°），cos 修正可略，直接把 (Δ方位, Δ仰角) 當弧度算夾角。 */
+    let dm=st.az-MOON_AZ;
+    while(dm>Math.PI)dm-=Math.PI*2;
+    while(dm<-Math.PI)dm+=Math.PI*2;
+    const sep=Math.hypot(dm,st.el-MOON_EL);
+    const wash=0.28+0.72*sstep(0.16,0.62,sep);
+    /* 地平線淡出。範圍刻意窄（0.015~0.10）：可見仰角總共只到 0.355，
+       淡出吃掉 0.15 就等於吃掉下半片天，星星全擠在上緣一條。 */
+    const hz=sstep(0.015,0.10,st.el);
+    const a=Math.min(1,nf*hz*wash*(0.42+0.58*st.m)*(0.86+0.14*Math.sin(tw+st.tw))*1.15);
+    if(a<0.03) continue;
+    /* ⚠ 畫**整數像素方塊**，不畫 arc。第一版用半徑 0.5~1.65 的 arc，在 DPR=1
+       的畫面上被抗鋸齒攤成一片幾乎全透明的糊塊 —— 實測整條天空只看得到三四點。
+       方塊落在整數格上、不吃抗鋸齒，1px 就是紮實的 1px；而且硬點本來就更配
+       這個低解析緩衝的味道（地形是最近鄰放大的）。 */
+    const r=Math.max(1,Math.round((0.55+1.25*st.m)*DPR));
+    if(st.m>0.78){                               // 亮星給一圈很淡的暈
+      const R=r*3.2;
+      const g=ctx.createRadialGradient(x,y,0,x,y,R);
+      g.addColorStop(0,`rgba(214,226,255,${(a*0.30).toFixed(3)})`);
+      g.addColorStop(1,'rgba(214,226,255,0)');
+      ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,y,R,0,Math.PI*2); ctx.fill();
+    }
+    ctx.fillStyle=`rgba(238,243,255,${a.toFixed(3)})`;
+    ctx.fillRect((x-r*0.5)|0,(y-r*0.5)|0,r,r);
+  }
+  ctx.restore();
+}
+
 function drawSunMoon(S,horizon,sinp,cosp){
   const syk=VIEWH/BH;
   const body=(az,el,R,core,glow)=>{
     if(el<-0.22) return;
     const camAz=Math.atan2(-sinp,-cosp);
-    let da=az-camAz;
+    let da=camAz-az;              // ⚠ 方向與 skyProject 一致，見該處說明（原本寫反）
     while(da>Math.PI)da-=Math.PI*2;
     while(da<-Math.PI)da+=Math.PI*2;
     if(Math.abs(da)>1.05) return;
@@ -6304,6 +6466,7 @@ const bootUI=(()=>{
     // 船的素材缺了也照跑（走程序圖層），所以不放進上面的 try 依賴鏈裡擋開場
     await loadShipArt();
     initPuffs();
+    initStars();
     bootUI.set(1);
     window.__loadMs=Math.round(performance.now()-t0);
     // 感應的素材：開場跑完才在背景抓（不擋開場，但長按時要已經在手上）
