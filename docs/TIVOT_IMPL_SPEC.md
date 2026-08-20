@@ -44,7 +44,7 @@
 > `Renee_CI_pas/act`、`vo_renee_*`）；蕾娜還不存在。看到 `renee` 一律是搭檔，
 > 不要當成監察官順手改掉。
 > | 璐娜 | Luna | 聖徒化 cut-in 的那位（`resources/partner/Luna_*`） |
-> | 諾薇兒 / 安娜 / 索拉娜 | 立繪已有（`resources/partner/`），程式未接 | 身高見 `CLAUDE.md` §6.5 |
+> | 諾薇兒 / 安雅 / 索拉娜 | 立繪已有（`resources/partner/`），程式未接 | 身高見 `CLAUDE.md` §6.5 |
 >
 > ### 相關檔案
 > `CLAUDE.md`（憲法）· `GAMESPEC.md`（現況實裝）· `DECISIONS.md`（架構決策）
@@ -143,7 +143,7 @@ on affection change:
 
 ### 角色關鍵門檻（tier_lock）
 ```
-ANN(安娜):     存活 = tier4;  單人HE(紫月) = tier5   # 未達tier4 → 覺醒BOSS死
+ANN(安雅):     存活 = tier4;  單人HE(紫月) = tier5   # 未達tier4 → 覺醒BOSS死
 SORANA(索拉娜): 留下 = tier4;  單人HE(懷孕) = tier5   # 未達tier4 → 離隊結局(ending非gameover)
 NOVEL(諾薇兒):  單人HE(結婚) = tier5                   # 暴走另見獨立機制
 RENNA(蕾娜):  展開諾薇兒說明/觸發挑戰璐娜 = tier4; 覆蓋三女主/真結局 = tier5
@@ -160,7 +160,7 @@ HE入場券 = tier4; 單人/真結局 = tier5
 ## 3. 結局判定（ENDING）
 
 ### 執行時機
-- **主結算點 = 安娜戰後**(終戰BOSS=覺醒的安娜)。一次性讀 tier_lock + flags，按優先級匹配。
+- **主結算點 = 安雅戰後**(終戰BOSS=覺醒的安雅)。一次性讀 tier_lock + flags，按優先級匹配。
 - 諾薇兒暴走(見§4)為全程後台，命中則 BE1 gameover，走不到此結算點。
 - 索拉娜離隊(未達tier4)為 ending，非中途 gameover。
 
@@ -170,13 +170,13 @@ HE入場券 = tier4; 單人/真結局 = tier5
 if novel_berserk_triggered:        → BE1 (gameover, 中途結束)   # 見§4
 if tier_lock.sorana < 4:           sorana_left = true           # 影響下方後宮/單人
 
-# --- 最終結算(安娜戰後) ---
+# --- 最終結算(安雅戰後) ---
 if tier_lock.ann < 4:
-    # 安娜死 (覺醒BOSS被戰勝) → BE2, ending
-    → BE2 (安娜死)
+    # 安雅死 (覺醒BOSS被戰勝) → BE2, ending
+    → BE2 (安雅死)
     # 收尾按 tier 覆寫最後一幕(見下 BE2_outro)
 else:
-    # 安娜存活
+    # 安雅存活
     if tier_lock.renna >= 5:
         → HE4 蕾娜線 (強制覆蓋三女主)
         # 第一輪: 告白→流淚→分道揚鑣
@@ -186,16 +186,16 @@ else:
     elif tier_lock.novel>=5 and tier_lock.ann>=5 and tier_lock.sorana>=5:
         → HE5 後宮 (綠月)       # 三伙伴皆tier5, renna未達5
     elif exactly_one_of(novel,ann,sorana) reaches tier5 (renna<5):
-        → 該角單人HE            # HE1索拉娜懷孕 / HE2安娜紫月 / HE3諾薇兒結婚
+        → 該角單人HE            # HE1索拉娜懷孕 / HE2安雅紫月 / HE3諾薇兒結婚
     elif multiple reach tier5:
         → resolve_by_keyevents() # 見下「同級競合」
     else:
-        → BE3 各奔東西          # 安娜存活但無人達tier5 (且renna<4)
+        → BE3 各奔東西          # 安雅存活但無人達tier5 (且renna<4)
 ```
 
 ### BE2 收尾覆寫（ending 原則：故事走完須結算關係）
 ```
-BE2_outro:  # 安娜死，主體共通，最後一幕按最高tier角色覆寫
+BE2_outro:  # 安雅死，主體共通，最後一幕按最高tier角色覆寫
     if tier_lock.renna >= 4: 播 蕾娜苦味收尾(沉默/一句別人聽不到的話)
     elif tier_lock.novel high: 播 諾薇兒收尾
     elif tier_lock.sorana high: 播 索拉娜收尾
@@ -224,15 +224,15 @@ FLAG: sorana_gave_token   # 索拉娜給主角信物, 某好感節點觸發, 無
 | id | 條件摘要 | 類型 |
 |---|---|---|
 | BE1 | 諾薇兒暴走命中(§4) | gameover |
-| BE2 | ann tier<4 (安娜死) | ending(收尾覆寫) |
-| BE3 | 安娜存活+無人tier5+renna<4 | ending |
-| BE4 | 安娜存活+renna tier4挑戰璐娜+未達tier5 | ending(諾薇兒銷毀) |
+| BE2 | ann tier<4 (安雅死) | ending(收尾覆寫) |
+| BE3 | 安雅存活+無人tier5+renna<4 | ending |
+| BE4 | 安雅存活+renna tier4挑戰璐娜+未達tier5 | ending(諾薇兒銷毀) |
 | 離隊 | sorana tier<4 | ending(非gameover) |
-| HE1 | 安娜存活+sorana tier5(其他未突出) | 懷孕 |
-| HE2 | 安娜存活+ann tier5(其他未突出) | 紫月 |
-| HE3 | 安娜存活+novel tier5(其他未突出) | 結婚 |
-| HE4 | 安娜存活+renna tier5 | 蕾娜線(覆蓋三女主) |
-| HE5 | 安娜存活+三伙伴皆tier5(renna<5) | 後宮 |
+| HE1 | 安雅存活+sorana tier5(其他未突出) | 懷孕 |
+| HE2 | 安雅存活+ann tier5(其他未突出) | 紫月 |
+| HE3 | 安雅存活+novel tier5(其他未突出) | 結婚 |
+| HE4 | 安雅存活+renna tier5 | 蕾娜線(覆蓋三女主) |
+| HE5 | 安雅存活+三伙伴皆tier5(renna<5) | 後宮 |
 
 ---
 

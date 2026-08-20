@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""從截圖反解安娜立繪的算繪尺寸與位置（開發用工具，不進遊戲）。
+"""從截圖反解安雅立繪的算繪尺寸與位置（開發用工具，不進遊戲）。
 
   py fit_ci.py start.png end.png
 
@@ -19,7 +19,7 @@ from PIL import Image
 from scipy import ndimage as ndi
 from scipy.signal import fftconvolve
 
-ART = 'resources/partner/Anna_CI_Search.png'
+ART = 'resources/partner/Anya_CI_Search.png'
 
 def grad(a):
     return np.hypot(ndi.sobel(a, 1), ndi.sobel(a, 0))

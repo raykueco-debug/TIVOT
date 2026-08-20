@@ -63,6 +63,9 @@ MAP = {
   'resources/enemy/EM_Revolver_SE.mp3':  'resources/audio/se/se_enemy_revolver.mp3',
   'resources/enemy/EM_Dagger_SE.m4a':    'resources/audio/se/se_enemy_dagger.m4a',
   # ── SE：飛行 ───────────────────────────────────────────────────────
+  # ⚠ 左邊是**當初磁碟上的舊檔名**，不是角色名。安娜已更名為安雅（ver -263），
+  #   但這一格**不能跟著改** —— 這張表是「舊路徑 → 新路徑」的歷史對照，
+  #   改了就對不上真實存在過的檔案，重跑會找不到來源。
   'flight/Anna_Beat.mp3':                'resources/audio/se/se_flight_heartbeat.mp3',
 
   # ── VO：搭檔語音（舊名的 Act/Pas 看不出是哪個技能）───────────────────
