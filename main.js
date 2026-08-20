@@ -242,11 +242,14 @@ window.addEventListener('pagehide', refreshBoot);
   }
   placeRing();
   window.addEventListener('resize', placeRing);
-  // 監察官立繪與名字（沿用結算的 Freya 資源；讀 config 不寫死）
+  // 監察官立繪與名字（沿用結算的資源；讀 config 不寫死）
   //   立繪＝載入畫面的門面，全站最優先：載完（或 4s 保底）才輪到關鍵音效、再輪到整批。
+  // ⚠ 走 defaultInspector，不要寫死鍵名：這裡原本寫死 `.freya`，而正上方的註解
+  //   說「讀 config 不寫死」—— 註解與程式不符。芙蕾雅是暫代版，正式版監察官是
+  //   蕾娜(Regine)；換人時 config 改一行就好，別再有第二處要記得改。
   let portraitP = Promise.resolve();
   {
-    const insp=(GAME_CONFIG.inspectors||{}).freya||{};
+    const insp=(GAME_CONFIG.inspectors||{})[GAME_CONFIG.defaultInspector]||{};
     const img=$('alPortrait'); const nm=ov.querySelector('.al-name');
     if(nm) nm.textContent=insp.name||'';
     const psrc=asset(insp.image);

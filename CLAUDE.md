@@ -272,6 +272,11 @@ Ray 提供的設計文件放 `docs/`,**內文一字不改**,歸檔時只在檔�
   `config.js` 的 `dialogues[rank][好感門檻]` / `inspectors[].portraits[好感門檻]`
   查表(`pickByThreshold` 已在)。要接 tier 是**把門檻表填滿**,不是另建一套。
 
-⚠ **蕾娜(Regine)≠ 蕾妮(Renee)**。蕾妮是現行搭檔(即死防禦/生命歸還);蕾娜是設計
-  文件裡的監察官線女主,程式裡還不存在。現行唯一監察官是芙蕾雅(Freya)。
-  「蕾娜是否等於芙蕾雅換名」**未定案** —— 動監察官結算前先問 Ray,不要自己選一邊。
+**監察官＝蕾娜(Regine Heisenberg)** —— Ray 定案。**芙蕾雅(Freya)是暫代版。**
+  所以設計文件 §5 的蕾娜機制不是新增角色,是接在現行監察官那個位子上。
+  正名要動:`config.js` 的 `inspectors` 鍵/`defaultInspector`/`ASSETS`/`castTable`、
+  `i18n/` 三份的 `inspector.name`。`main.js` 已改走 `defaultInspector`(ver -256)。
+  ⛔ **卡素材**:`resources/inspector/` 只有 `Freya_SI_01`,蕾娜立繪還沒有。
+
+⚠ **蕾娜(Regine)≠ 蕾妮(Renee)**。蕾妮是現行搭檔(即死防禦/生命歸還),
+  是另一個人。兩個名字只差一個字,寫程式時最容易弄混的就是這組。

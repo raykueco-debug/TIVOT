@@ -10,17 +10,32 @@
 >   —— 查表機制已在（`pickByThreshold`），只是門檻表目前只有 0 這一檔。
 >   本規格的 tier 1..5 若要接上，是把門檻表填滿，不是另建一套。
 >
+> ### 監察官＝蕾娜（Ray 定案）
+> **蕾娜（Regine Heisenberg）就是正式版的監察官。芙蕾雅（Freya）是暫代版。**
+> 所以本文 §5 的蕾娜機制**不是新增一個角色**，是接在現行監察官那個位子上 ——
+> 她已經是玩家每場結算都會見到的人（`inspectors` / 結算演出 / 載入畫面門面 /
+> 教學對白 `who:inspector`），這正好對上 §5「預設對話最多的人 → 好感自然到 tier2~3」。
+>
+> 正名時要動的地方（角色資料已參數化，不必改程式邏輯）：
+> ```
+> config.js   inspectors.freya → inspectors.regine（executionLine / warnLine / dialogues 全跟著）
+>             defaultInspector: 'freya' → 'regine'
+>             ASSETS.inspector_freya → inspector_regine（需要新立繪，見下）
+>             castTable 的 inspector.name / image
+> i18n/       zh.js「芙蕾雅」· en.js「Freya」· ja.js — 三份的 inspector.name
+> main.js     ✅ 已改走 defaultInspector（原本寫死 `.freya`，ver -256 修掉）
+> ```
+> ⛔ **卡在素材**：`resources/inspector/` 目前只有 `Freya_SI_01`。蕾娜的立繪（`Regine_SI_01`）
+> 還沒有 —— 沒有它就正名，結算與載入畫面會變成沒有立繪的空框。
+> 另外 §5 提到 tier3 解鎖的**眼鏡差分**，也是另一張圖。
+>
 > ### ⚠ 命名對照（極易混淆，動手前先看這裡）
 > | 本文 | 程式裡 | 說明 |
 > |---|---|---|
-> | 蕾娜 / Regine Heisenberg | **尚無** | 監察官線女主。§5 |
-> | — | 芙蕾雅 / Freya | 現行唯一的監察官（`config.js` `inspectors`） |
+> | 蕾娜 / Regine Heisenberg | 芙蕾雅 / Freya（**暫代**） | 監察官。正式版就是蕾娜，見上 |
 > | — | **蕾妮** / Renee | 現行搭檔（即死防禦／生命歸還）。**與「蕾娜」是不同人** |
 > | 璐娜 | Luna | 聖徒化 cut-in 的那位（`resources/partner/Luna_*`） |
 > | 諾薇兒 / 安娜 / 索拉娜 | 立繪已有（`resources/partner/`），程式未接 | 身高見 `CLAUDE.md` §6.5 |
->
-> 「本文的蕾娜是否等於程式裡的芙蕾雅（換名）、還是另一個角色」**尚未定案** ——
-> 動到監察官結算前先問 Ray，不要自己選一邊。
 >
 > ### 相關檔案
 > `CLAUDE.md`（憲法）· `GAMESPEC.md`（現況實裝）· `DECISIONS.md`（架構決策）
