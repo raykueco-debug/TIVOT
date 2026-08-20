@@ -19,7 +19,9 @@ from PIL import Image
 from scipy import ndimage as ndi
 from scipy.signal import fftconvolve
 
-ART = 'resources/partner/Anya_CI_Search.png'
+# ⚠ 原始 PNG 已移入 resources/_originals/（.gitignore 內，不進版控）。
+#   遊戲載的是同名 .webp，在 resources/partner/；這支工具要的是**未壓縮的來源**。
+ART = 'resources/_originals/partner/Anya_CI_Search.png'
 
 def grad(a):
     return np.hypot(ndi.sobel(a, 1), ndi.sobel(a, 0))
