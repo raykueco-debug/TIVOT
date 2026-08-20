@@ -1160,7 +1160,10 @@ const PORTRAIT = {
      側面只佔 69%，站位再拉開，交疊就壓到最低。 */
   sorana:   { name:'索拉娜', cm:176, side:'L', src:'../resources/partner/Sorana_CI_side.webp',
               eye:27, fx:0.527, top:4,   bot:1522 },
-  nouvelle: { name:'諾薇兒', cm:165, side:'L', src:'../resources/partner/Nouvelle_CI_front.webp',
+  /* ⚠ ver -270 檔名由 Nouvelle_CI_front → Nouvelle_Nun_CI_front（Ray 改名，標明服裝）。
+     兩個檔**位元組完全相同**，是純改名不是換插畫 —— 所以 eye/fx/top/bot 原封不動
+     沿用，不適用「換插畫就要重量」那條規矩。 */
+  nouvelle: { name:'諾薇兒', cm:165, side:'L', src:'../resources/partner/Nouvelle_Nun_CI_front.webp',
               eye:36, fx:0.542, top:2,   bot:1524 },
   /* 蕾娜（Renna）。ver -263 拿到立繪，數字是**實測**的，不是沿用別人的：
      · eye 32 —— 與安雅同倍率(16×)、同判讀方式(可見眼白內角→外角)量出來。
