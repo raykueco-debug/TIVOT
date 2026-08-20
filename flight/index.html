@@ -3282,6 +3282,19 @@ if(ADMIN) window.talkInfo=()=>talkCtx();
 if(ADMIN) window.setPlayerName=(s)=>{ try{ localStorage.setItem(PLAYER_NAME_KEY, String(s||'')); }catch(e){} return playerName(); };
 if(ADMIN) window.setAff=(who,v)=>setAffection(who,v);
 if(ADMIN) window.aff=()=>JSON.parse(JSON.stringify(AFFECTION));
+/* ⚠ 清掉所有測試期的存檔旗標，回到「乾淨預設」。
+   為什麼需要這一個：STAGE／好感／玩家名都是**存了就蓋過預設**。測試時戳過
+   setStage/setAff 之後那台裝置就一直用存的值 —— 之後改預設值也不會生效，
+   而且畫面上完全沒有徵兆，只會覺得「怎麼跟講好的不一樣」。
+   測試期的約定是 STAGE 3、四人好感皆 10、全員在隊；要確認就先跑這個再重整。 */
+if(ADMIN) window.resetFlags=()=>{
+  try{ localStorage.removeItem(STAGE_KEY); }catch(e){}
+  try{ localStorage.removeItem(AFFECTION_KEY); }catch(e){}
+  try{ localStorage.removeItem(PLAYER_NAME_KEY); }catch(e){}
+  for(const k in AFFECTION) AFFECTION[k]=AFFECTION_DEFAULT;
+  return { stage:gameStage(), 好感:JSON.parse(JSON.stringify(AFFECTION)),
+           玩家名:playerName(), 提示:'已回到預設；重整一次最保險' };
+};
 /* 怪的狀態機驗收用：enemy 是 top-level let，外部注入的 script 讀不到。 */
 if(ADMIN) window.dbgEnemy=()=>enemy&&{state:enemy.state,x:Math.round(enemy.x),y:Math.round(enemy.y),
   d:Math.round(Math.hypot(cam.x-enemy.x,cam.y-enemy.y)),d0:enemy.d0,
