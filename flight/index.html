@@ -975,12 +975,12 @@ const PLACES=[
      · 要「感應」才會現形，感應的動作是**長按船身**。
      · 而且船要夠近才感應得到。
 
-   ⚠ 感應半徑刻意小於點與點的間距（100 vs 中位 132 地圖像素）：一次感應
-     通常只會命中 0~1 個點。大於間距的話站在原地按一下就掃到一片，
-     「找」這件事就沒有了。
+   ⚠ 感應半徑刻意小於點與點的間距（60 vs 中位 132 地圖像素）：一次感應
+     通常只會命中 0~1 個點，多半是 0。大於間距的話站在原地按一下就掃到一片，
+     「找」這件事就沒有了。（Ray 指定再縮小，ver -252：100 → 60。）
    ⚠ 視距是 180 地圖像素，遠大於感應半徑 —— 這是刻意的：遠遠先看到一塊
      地形不對勁，飛過去，再按。看得到 → 飛過去 → 按，三拍。 */
-const STAR_SENSE_R = 2000;      // 感應半徑（世界單位）＝100 地圖像素
+const STAR_SENSE_R = 1200;      // 感應半徑（世界單位）＝60 地圖像素
 /* 感應的節奏（Ray 指定）：按住船身 1 秒叫出安娜，再續按 3 秒才成立。
    刻意做長 —— 這是一段儀式，不是一個按鈕。中途放開就白費，所以船會先停下來
    （按住不動＝油門 0，見 stage 的 pointermove）。 */
@@ -1096,16 +1096,17 @@ function senseArt(){
 }
 
 /* ══ 探索疲勞 ══
-   60 秒內按到第 4 次，那一次**不進行探索**，直接跳抱怨（Ray 指定）：
-     第 4 次      安娜「......我累了。」→ 索拉娜或諾薇兒接一句
-     第 5 次以後  安娜「讓我休息一下......」
+   **一次一支**（Ray 指定，ver -252）：30 秒內按第 2 次，那一次**不進行探索**，
+   直接跳抱怨：
+     第 2 次      安娜「......我累了。」→ 索拉娜或諾薇兒接一句
+     第 3 次以後  安娜「讓我休息一下......」
    ⚠ 算的是**按下的次數**不是失敗次數 —— 擋的是狂按，跟有沒有找到無關。
    ⚠ 但**找到東西就把計數清掉**：真的在找的人不該被懲罰。
-   ⚠ 視窗是滑動的（每次都丟掉 60 秒前的），不是固定冷卻 —— 停手滿一分鐘
+   ⚠ 視窗是滑動的（每次都丟掉 30 秒前的），不是固定冷卻 —— 停手滿 30 秒
      自動恢復，不必另外記到期時間。
-   ⚠ 抱怨當場跳：第 4 次根本沒有探索演出，撞不到。 */
-const SENSE_TRY_N   = 4;        // 60 秒內第幾次按下會變成抱怨
-const SENSE_TRY_WIN = 60000;    // 滑動視窗
+   ⚠ 抱怨當場跳：第 2 次根本沒有探索演出，撞不到。 */
+const SENSE_TRY_N   = 2;        // 視窗內第幾次按下會變成抱怨（2＝只准一次）
+const SENSE_TRY_WIN = 30000;    // 滑動視窗＝冷卻 30 秒
 /* ⚠ 對白**不自動跳拍**（Ray 指定改成點擊推進），所以沒有「每拍停留多久」。
    探索成功那條路徑仍要等立繪淡出才開場，那個延遲寫在觸發處。 */
 /* ══ 對話立繪的取景表 ══
@@ -1341,8 +1342,8 @@ function senseUpdate(now){
     senseTries=senseTries.filter(t=>now-t<SENSE_TRY_WIN);
     senseTries.push(now);
     if(senseTries.length>=SENSE_TRY_N){
-      /* 第 4 次是兩拍的對白；之後每次只回一句 —— 一直重播整段會變成懲罰
-         而不是玩笑。 */
+      /* 被擋下的第一次是兩拍的對白；之後每次只回一句 —— 一直重播整段
+         會變成懲罰而不是玩笑。 */
       if(senseTries.length===SENSE_TRY_N){
         const chime = Math.random()<0.5
           ? {who:'sorana',   text:'真會使喚人耶！'}
@@ -2409,6 +2410,26 @@ const QUALITY = [
   { dpr:1,   bwf:0.48, cell:18, nmax:20, mass:100, blk:1.7 },   // 2
   { dpr:1,   bwf:0.40, cell:24, nmax:14, mass:170, blk:2.6 },   // 3 低
 ];
+/* ── 城的近裁面與仿射保險絲 ───────────────────────────────────────
+   ZCLAMP 投影時 z 的下限（避免除零）。
+   ZNEAR  比這個深度更近的格點一律不畫。**必須大於 ZCLAMP** —— 被夾過的
+          點會被推到完全錯的螢幕位置，那一格就會扯成一片。
+   ZRATIO 一格之內近角比遠角近這個倍數以上就整格不畫 —— 仿射矩陣吃不下，
+          畫出來是一條放射狀的拖曳。
+
+   ⚠ ZNEAR 原本是 60（ZCLAMP 24），那就是「聖王廳的地板在特定角度破圖」：
+     z=60 這條等深度線在畫面上是一條**水平線**，比它近的地板整排不畫，於是
+     飛低飛近時廣場會被一刀切平，下半截露出底下的地形。城越大越早發生 ——
+     聖王廳 planW 550，站在 160 世界單位外時近半座城的 z 就已經小於 60。
+   ⚠ 修法不是放寬保險絲，是把兩個值一起降到「切線落在畫面之外」：
+     14/8。實測 z≈14 的地板列已經在 3D 視窗下緣以下，看不到切線；而 14>8
+     仍然守住「不畫被夾過的點」這條。
+   ⚠ 代價量過：近距離 render 中位 11.0ms → 10.1ms（沒有變慢，因為 walk 的
+     步長本來就 ∝ z，那些近格一直有算，只是被丟掉）。
+   ⚠ 量體層（街廓稜柱）與棧橋另有自己的 <60 —— **沒有一起動**。那些是立體
+     的東西，貼到臉上才會消失，而放寬它們正是註解裡警告過的拖曳來源。 */
+let CITY_ZNEAR = 14, CITY_ZRATIO = 3, CITY_ZCLAMP = 8;
+
 let qLevel = 0, qLocked = false;
 { const m=/[?&]q=([0-3])/.exec(location.search);
   if(m){ qLevel=+m[1]; qLocked=true; } }
@@ -3580,6 +3601,13 @@ function render(now){
   drawPlaces(scaleH,horizon,sinp,cosp);
   drawFlock(scaleH,horizon,sinp,cosp,now);
   drawEnemy3D(scaleH,horizon,sinp,cosp,now);
+  /* 進入戰鬥的提示：**只看狀態，不看畫不畫得出來**（Ray 指定）。
+     原本這一行在 drawEnemy3D 裡面，而那個函式有五處 return（在身後、
+     太遠、視圖圖還沒載、投影寬度不到 2px…）—— 敵人從後面靠上來時
+     提示就整個不會出現，玩家的體感是「牠貼到臉上了卻沒有進戰鬥」。
+     遭遇判定（updateEnemy 的 dist<=engage）本來就只看距離，是這裡把它
+     綁回了視覺。 */
+  if(enemy && enemy.state==='engage') drawEngagePrompt();
   drawStarMarks(scaleH,horizon,sinp,cosp,now);
   drawShip(now);
   vignette(S);
@@ -4345,6 +4373,12 @@ function drawEnemy3D(scaleH,horizon,sinp,cosp,now){
   const hp=project(enemy.x,enemy.y,enemy.alt);   // bob 只影響繪製，剔除用本體高度
   const zc=hp[2];
   if(zc>ZFAR*0.95) return;
+  /* ⚠ 在身後也不畫，而且要用**未夾制**的深度判。project 對 z<20 做了夾制，
+     夾過之後 P[3]=W/40，一隻體長 210 的怪會算出近 2000px 的外框，
+     enemyFB 跟著配到 1000×1000 —— 一張只會被貼到畫面外的貼圖，純浪費。
+     ⚠ 這條 return 只是「不畫」。**進入戰鬥的提示不在這裡** —— 它已經搬到
+       畫格主流程，敵人在身後、被山擋住、還沒解碼立繪，都照樣要提示。 */
+  if((enemy.x-cam.x)*(-sinp)+(enemy.y-cam.y)*(-cosp) < 40) return;
 
   const S=sky();
   /* 振翅浮動：疊在繪製端而不是寫回 enemy.alt —— 寫回去會跟上面的指數逼近
@@ -4463,7 +4497,6 @@ function drawEnemy3D(scaleH,horizon,sinp,cosp,now){
     clipByTerrainDepth(P[2],W/BW,VIEWH/BH);   // 山也該擋住船
     ctx.drawImage(enemyFB,0,0,bwp,bhp,x0,y0,fw,fh);
     ctx.restore();
-    if(enemy.state==='engage') drawEngagePrompt();
     return;
   }
 
@@ -4816,9 +4849,6 @@ function drawEnemy3D(scaleH,horizon,sinp,cosp,now){
   clipByTerrainDepth(zc,W/BW,VIEWH/BH);       // 山也該擋住怪
   ctx.drawImage(enemyFB,0,0,bwp,bhp,Math.round(x0),Math.round(y0),fw,fh);
   ctx.restore();
-
-  if(enemy.state==='engage') drawEngagePrompt();
-
 }
 
 /* ══ 聚落（3D 飛行畫面）══
@@ -4956,7 +4986,7 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
     const project=(lx,ly,hOff)=>{
       const dx=(o.s.mx+lx)*MAP_SCALE-cam.x, dy=(o.s.my+ly)*MAP_SCALE-cam.y;
       const zRaw=dx*(-sinp)+dy*(-cosp);
-      const zz=zRaw<24?24:zRaw;
+      const zz=zRaw<CITY_ZCLAMP?CITY_ZCLAMP:zRaw;
       const sv=(dx*cosp+dy*(-sinp))/zz;
       return [((sv+1)/2*BW)*sxk,
               (((cam.alt-gS-(hOff||0))/zz + zz*curvAt(sv))*scaleH+horizon)*syk,
@@ -4968,7 +4998,7 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
     const projectInto=(A,off,lx,ly,hOff)=>{
       const dx=(o.s.mx+lx)*MAP_SCALE-cam.x, dy=(o.s.my+ly)*MAP_SCALE-cam.y;
       const zRaw=dx*(-sinp)+dy*(-cosp);
-      const zz=zRaw<24?24:zRaw;
+      const zz=zRaw<CITY_ZCLAMP?CITY_ZCLAMP:zRaw;
       const sv=(dx*cosp+dy*(-sinp))/zz;
       A[off]  =((sv+1)/2*BW)*sxk;
       A[off+1]=(((cam.alt-gS-(hOff||0))/zz + zz*curvAt(sv))*scaleH+horizon)*syk;
@@ -5039,7 +5069,7 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
         let I=0;
         for(let i=0;i<SEG;i++){
           const u=-1+2*(i+0.5)/SEG, z=zc+grad*u;
-          I+=(2/SEG)/(z>60?z:60);
+          I+=(2/SEG)/(z>CITY_ZNEAR?z:CITY_ZNEAR);
         }
         let K=2*CELL_PX/Math.max(1e-6,half*W*pkq);
         const Kfit=I/N_MAX;
@@ -5048,7 +5078,7 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
         const cap=N_MAX+4;                         // 數值積分的餘量，正常走不到
         while(u<1 && k<cap){
           const z=zc+grad*u;
-          u+=K*(z>60?z:60); k++;
+          u+=K*(z>CITY_ZNEAR?z:CITY_ZNEAR); k++;
           out[k]=u<1?u:1;
         }
         if(out[k]<1){ k++; out[k]=1; }
@@ -5190,7 +5220,7 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
           /* ⚠ 任一角太近或在身後就整格跳過。project 對 z<24 做了夾制，
              夾過的角會被推到一個完全錯的螢幕位置，那一格就會扯成一片
              —— 這就是「城有時會破」。夾制是為了避免除零，不能拿來畫。 */
-          if(PT[iA+3]<60||PT[iB+3]<60||PT[iC+3]<60||PT[iD+3]<60) continue;
+          if(PT[iA+3]<CITY_ZNEAR||PT[iB+3]<CITY_ZNEAR||PT[iC+3]<CITY_ZNEAR||PT[iD+3]<CITY_ZNEAR) continue;
           /* ⚠ 保險絲：一格內的深度比例失控（近角比遠角近三倍以上）就整格不畫。
              仿射矩陣吃不下這種格子，畫出來是一條放射狀的拖曳——寧可缺一格。
              步長依深度分配之後正常情況不會觸發，這條是防下次再寫錯。 */
@@ -5200,7 +5230,7 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
             if(zb<zmin)zmin=zb; if(zb>zmax)zmax=zb;
             if(zcc<zmin)zmin=zcc; if(zcc>zmax)zmax=zcc;
             if(zd<zmin)zmin=zd; if(zd>zmax)zmax=zd;
-            if(zmax>zmin*3) continue;
+            if(zmax>zmin*CITY_ZRATIO) continue;
           }
           const qax=PT[iA], qay=PT[iA+1], qbx=PT[iB], qby=PT[iB+1],
                 qcx=PT[iC], qcy=PT[iC+1], qdx=PT[iD], qdy=PT[iD+1];
