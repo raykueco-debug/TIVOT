@@ -1178,26 +1178,50 @@ const PORTRAIT = {
               ⚠ 鏡頭拉近，身高差的**像素**距離也等比放大（安雅比索拉娜低的
                 77px → 99px）。那是對的 —— 同一個相機靠近，什麼都一起放大。
    CAST_TALL  身高基準（最高的索拉娜）。她的頭頂就貼在 CAST_TOP。 */
-const CAST_SHOW = 0.48;
+/* ⚠⚠ ver -266：縮放由「鎖單眼寬」改成「**鎖身高**」（Ray 回報索拉娜太巨大、
+   安雅太小）。這推翻了 CLAUDE.md §6.5 原本寫的「縮放鎖單眼寬（Ray 指定）」，
+   兩份文件已一併更新。留下原委，免得日後有人又改回去：
+
+   鎖眼寬的問題是**它把畫風差異放大成體型差異**。四張插畫的身體都佔滿約
+   1520/1536 像素，但插畫家給的眼睛大小差很多（索拉娜 27、安雅 34）。鎖眼寬
+   ＝ 縮放 ∝ 1/eye，於是眼睛被畫小的人整個被放大：
+       實測螢幕身體高 索拉娜 983px、安雅 787px → 比值 1.249
+       但她們的身高比只有 176/159 ＝ 1.107
+   也就是索拉娜被畫得比應有的大 13%。文件裡那句「眼寬與身高反相關」講的就是
+   這件事，只是當時沒發現它會**過度**校正。
+
+   鎖身高之後 縮放 ∝ cm，比值回到 1.107；而且 CAST_PX_CM 取成與縮放自洽時，
+   **四個人的腳會落在同一條地平線上**（鎖眼寬時做不到）。
+
+   代價：臉的大小會有差（索拉娜眼寬 16.1、諾薇兒 20.1），那正是鎖眼寬原本要
+   避免的。要往回調就動 CAST_EYE_MIX。 */
+const CAST_SHOW = 0.52;    // 最高的人露出身體的幾成（越小＝鏡頭越近＝立繪越大）
 const CAST_TALL = 176;
+/* 0＝純身高（現行）、1＝純眼寬（ver -265 以前）、中間值是幾何平均的混合。
+   臉大小差得受不了就往上調一點，但別調回 1 —— 那就是索拉娜過大的那一版。 */
+const CAST_EYE_MIX = 0;
 let CAST_TOP = 60, CAST_EYE = 30, CAST_PX_CM = 3;
 function castMeasure(){
   const t=document.getElementById('top');
   const hud=t ? t.getBoundingClientRect().height : 54;
   CAST_TOP = Math.round(hud + 10);                 // HUD 底下再留 10px，不相觸
   const P=PORTRAIT.sorana;
-  /* 最高的人：頭頂 CAST_TOP、身體露出 CAST_SHOW → 反推她的縮放，再換算成
-     「螢幕上的單眼寬」。其他人一律用同一個 CAST_EYE 去反推自己的縮放。 */
+  /* 最高的人：頭頂 CAST_TOP、身體露出 CAST_SHOW → 反推她的縮放。她定義這台相機。 */
   const s = (VIEWH-CAST_TOP) / (CAST_SHOW*(P.bot-P.top));
-  CAST_EYE = s * P.eye;
-  /* 身高 → 螢幕像素。真人單眼寬約 3cm，所以「一個眼寬 ＝ 3cm」就是這台相機
-     的比例尺 —— 不必另外挑一個係數。 */
-  CAST_PX_CM = CAST_EYE/3.0;
+  CAST_EYE = s * P.eye;                            // 只有 CAST_EYE_MIX>0 才用得到
+  /* 身高 → 螢幕像素。⚠ 必須與縮放自洽（＝最高的人的身體高 ÷ 她的身高），
+     不能再用「一個眼寬≈3cm」那個估值 —— 自洽時腳才會落在同一條地平線上：
+       腳 y ＝ 頭頂 y + 身體高 ＝ [TOP+(TALL-cm)*PXCM] + PXCM*cm ＝ 定值。 */
+  CAST_PX_CM = s * (P.bot-P.top) / CAST_TALL;
 }
 
 /* 某人這一刻的算繪幾何。x 由呼叫端（滑入動畫）決定，這裡只給尺寸與高度。 */
 function castGeom(P, im){
-  const s = CAST_EYE/P.eye;                        // 縮放：眼寬鎖定
+  /* 縮放：身高鎖定（見 castMeasure 的說明）。CAST_EYE_MIX>0 時與眼寬鎖做幾何混合。 */
+  const sCm  = CAST_PX_CM * P.cm / (P.bot-P.top);
+  const s = CAST_EYE_MIX>0
+      ? Math.pow(sCm,1-CAST_EYE_MIX)*Math.pow(CAST_EYE/P.eye,CAST_EYE_MIX)
+      : sCm;
   const headY = CAST_TOP + (CAST_TALL-P.cm)*CAST_PX_CM;   // 頭頂：身高鎖定
   const y0 = headY - P.top*s;                      // 圖的 y=0 落在螢幕哪裡
   const w  = Math.round(im.width*s);
@@ -1586,8 +1610,10 @@ function drawTalk(now){
       const r=clamp(Math.round(G.sh/B.k)-1, 0, B.n-1);
       if(B.mx[r]>=0){
         const lft=B.mn[r]*B.k*G.s, rgt=(B.mx[r]+1)*B.k*G.s;
-        target = (c.side==='L') ? Math.min(target, Math.round(W/2-rgt))
-                                : Math.max(target, Math.round(W/2-lft));
+        // ⚠ 取整方向要挑對：左側往下取整、右側往上取整，否則 W/2 是 .5 時
+        //    會有半個像素壓過中線（實測安雅輪廓左緣 187 vs 中線 187.5）。
+        target = (c.side==='L') ? Math.min(target, Math.floor(W/2-rgt))
+                                : Math.max(target, Math.ceil(W/2-lft));
       }
     }
     const off=(c.side==='L') ? -G.w-8 : W+8;     // 畫面外的停機位
