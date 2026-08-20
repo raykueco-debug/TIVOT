@@ -184,24 +184,22 @@ window.addEventListener('pagehide', refreshBoot);
     }
   }
   const total = imgs.length + sfx.length + bgm.length;
-  /* ── 熱啟動：回到前景不再跑一次讀取畫面 ─────────────────────
+  /* ── 熱啟動：省掉等待，但**畫面照出** ───────────────────────
      iOS 主畫面 App 切到背景後，系統常把頁面整個丟掉，回前景時是**重新載入**
-     —— 於是又看一次讀取動畫。但這時素材全在 HTTP 快取裡，那段等待是純粹的空轉。
+     —— 於是又看一次讀取動畫。但這時素材全在 HTTP 快取裡，那段等待是純空轉。
      判定熱啟動：① sessionStorage 有旗標（同一個分頁 session 內的重載）；
      ② 或 localStorage 記到「同一版本、10 分鐘內剛載完過」——進程被系統殺掉時
      sessionStorage 會一起沒，只剩這條認得出來。
      ⚠ 版本不同一律當冷啟動：素材換過就該完整跑一次預載，不能吃到半新半舊。
-     ⚠ 10 分鐘是刻意的：隔天再開仍看得到讀取畫面（它是門面，有立繪與教學輪播），
-       被切走一下下再回來才跳過。 */
-  if(WARM_BOOT){
-    markBooted();
-    // 素材照樣補載，只是不擋畫面、不畫進度（快取命中的話幾乎瞬間完成）
-    SFX.playBgm(asset('bgm_home'), { volume: bgmVol('bgm_home') });   // 實際出聲仍等 primeAudio 的第一次手勢
-    preloadLateBgm();
-    SFX.preload(sfx); SFX.preloadBgm(bgm);
-    for(const src of imgs){ const im=new Image(); im.src=src; }
-    return;
-  }
+
+     ⚠⚠ **熱啟動不能整個跳過讀取畫面**（Ray 回報，ver -258）。
+       那一點不只是「揭幕」，它是全站**唯一**解鎖音訊的使用者手勢
+       （go() 裡的 SFX.unlock()）—— 少了它，瀏覽器的自動播放政策擋著，
+       主選單 BGM 永遠不會出聲。舊版在這裡直接 return，於是熱啟動進站
+       就是一片安靜的主選單，而且**越常重整越容易踩到**（pagehide 會刷新
+       時間戳，那 10 分鐘窗口是一直往後滑的）。
+       現在跳過的是**等待**不是畫面：見下方 WARM_BOOT 那段 —— 遮罩照建、
+       直接進可點狀態，素材在背景補載（快取命中幾乎瞬間完成）。 */
   /* 載入遮罩（動態建立，樣式集中在 style.css 的 #assetLoader 區）：
    *  光圈＋百分比＋SAINT INSTALL 字樣，中下方監察官立繪。
    *  ⚠ 圈內字樣一律「SAINT INSTALL」，底部的「載入中／點擊繼續」與讀完改成的
@@ -353,6 +351,15 @@ window.addEventListener('pagehide', refreshBoot);
     Promise.all([...imgP, ...audioP]).then(showReady);
     setTimeout(showReady, 12000);
   };
+  /* 熱啟動：跳過的是**等待**，不是畫面。
+     ⚠ 不跑 critP 那條「立繪 → BGM → 關鍵音效」的優先鏈 —— 那是冷啟動用來
+       排隊搶頻寬的；素材都在快取裡時再排一次隊只是白等。 */
+  if(WARM_BOOT){
+    markBooted();
+    startBatch();   // 照樣補載（含掛播 bgm_home），但不擋畫面
+    showReady();    // 立刻可點：光圈常亮、字樣呼吸
+    return;
+  }
   critP.then(startBatch);
 })();
 
