@@ -216,6 +216,10 @@
 </div>
 
 <script src="settlement.js"></script>
+<!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
+     ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
+       而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
+<script src="talks.js"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -1232,72 +1236,29 @@ function castGeom(P, im){
 }
 
 /* ══ 閒聊對話（「對話」鈕）══
-   ⚠ **不是隨機生成，是隨機挑一組**（Ray 同意）。執行期沒有語言模型，
-     每人各自抽一句的話四句彼此無關，讀起來像四個人各自自言自語 ——
-     所以寫成整段的對話，一次挑一組播完。重複幾次會認得出來，這是取捨。
-
-   ⚠ 每組都讓四個人**都講到**：左側三人（索拉娜／諾薇兒／蕾娜）共用同一個
-     站位，所以一組對話會逼出兩次以上的「同側輪轉換卡」——這正是拿來調立繪的。
-
-   口氣（Ray 指定的人設，改台詞時照著走）：
-     蕾娜   21 監察官　有禮優雅但不擺架子、溫和圓滑、一點成熟的職業感
-     諾薇兒 17 修女　　溫柔溫婉、會照顧人
-     索拉娜 19 獵手　　坦蕩、直接、開朗、有一點男孩子氣
-     安雅   16 　　　　寡言少笑、用字簡短、還算有禮
-                       ⚠ 簡短是因為**非母語者**，不是冷淡；她其實是某國王女，
-                         這件事**任何台詞都不可以點破**，最多讓她閃避。 */
-const TALKS=[
-  [ {who:'sorana',   text:'風向轉了。這片雲海底下，是不是有山？'},
-    {who:'anya',     text:'有。三座。'},
-    {who:'sorana',   text:'你怎麼知道得這麼快啊你。'},
-    {who:'anya',     text:'……看雲。雲會繞開。'},
-    {who:'nouvelle', text:'安雅說得對呢。雲繞著走的地方，底下多半是硬的。'},
-    {who:'renna',    text:'兩位都比我這個監察官管用。報告我就寫「航路由船員自行判定」——這樣就不必解釋是誰看的雲了。'} ],
-
-  [ {who:'nouvelle', text:'今天的湯我多煮了一些，大家記得趁熱喝。'},
-    {who:'sorana',   text:'太好了！我去甲板上叫安雅。'},
-    {who:'anya',     text:'……已經在這裡。'},
-    {who:'sorana',   text:'哇！你什麼時候——算了，你走路沒聲音這件事我永遠習慣不了。'},
-    {who:'anya',     text:'抱歉。'},
-    {who:'nouvelle', text:'不用道歉呀。來，先坐下。'},
-    {who:'renna',    text:'我也分一碗好嗎？……放心，「監察官在船上蹭飯」我不會寫進去的。'} ],
-
-  [ {who:'renna',    text:'安雅小姐，方才那個地方——妳是怎麼找到的？'},
-    {who:'anya',     text:'感覺。說不清楚。'},
-    {who:'renna',    text:'說不清楚也沒關係。教廷的紀錄裡，說得太清楚的反而少見。'},
-    {who:'sorana',   text:'我倒覺得她是鼻子好。跟獵犬一樣。'},
-    {who:'anya',     text:'……我不是狗。'},
-    {who:'sorana',   text:'誇你啦！獵犬很厲害的！'},
-    {who:'nouvelle', text:'索拉娜，這種誇法要看對象的。'} ],
-
-  [ {who:'sorana',   text:'今晚換我守夜，你們去睡。'},
-    {who:'nouvelle', text:'妳昨晚也守了。今天換我吧，好不好？'},
-    {who:'sorana',   text:'我不睏。'},
-    {who:'anya',     text:'眼睛。紅的。'},
-    {who:'sorana',   text:'……被看穿了。'},
-    {who:'renna',    text:'那就三個人輪。我算過了，這樣每個人都睡得滿——監察官偶爾也做點有用的事。'} ],
-
-  [ {who:'renna',    text:'這一帶已經出了帝國的圖了。再往東，紙上就是空白。'},
-    {who:'sorana',   text:'空白最好。空白代表沒人去過。'},
-    {who:'renna',    text:'也代表沒人回來過。'},
-    {who:'sorana',   text:'……妳這人真會說話。'},
-    {who:'anya',     text:'我去。'},
-    {who:'nouvelle', text:'等等，安雅，先讓大家都同意再說呀。'},
-    {who:'anya',     text:'……好。我等。'} ],
-
-  [ {who:'nouvelle', text:'今晚的銀月好亮。'},
-    {who:'anya',     text:'在我家鄉……也看得到。'},
-    {who:'sorana',   text:'你家鄉？你從來沒提過欸。'},
-    {who:'anya',     text:'……沒什麼好提。'},
-    {who:'renna',    text:'誰都有不想提的事。我也有。'},
-    {who:'nouvelle', text:'那我們就一起看月亮，什麼都不用提。'} ],
-];
-let talkLast=-1;
-/* 隨機挑一組，但**不挑上一組**：連兩次同一段最容易讓人覺得「就這幾句」。 */
+   **內容全部在 flight/talks.js**（TALKS / TALK_TIMES / talkPeriod / talkPick）——
+   要加台詞或加觸發條件動那一支就好，這裡只負責「湊出情境、挑一組、播出去」。 */
+let talkLastId=null;
+/* 故事進度。目前固定 1；日後由存檔或劇情推進來改。
+   管理人模式可用 setStage(n) 就地測試不同進度的對話。 */
+let STAGE=1;
+/* 目前所在地區。地圖還沒分區，先接既有的國界查表（regionAt / REGION_NAME）——
+   查不到就給 'ALL'，talks.js 的條件是「省略或 ALL ＝ 不限」，所以一定挑得到。 */
+function talkRegion(){
+  try{
+    const r=regionAt(cam.x/MAP_SCALE, cam.y/MAP_SCALE);
+    return (r && REGION_NAME[r]) ? REGION_NAME[r] : 'ALL';
+  }catch(e){ return 'ALL'; }
+}
+function talkCtx(){
+  return { region: talkRegion(), time: talkPeriod(clock.minutes), stage: STAGE };
+}
 function talkStart(now){
-  if(TALKS.length<2){ say(TALKS[0], now); return; }
-  let i; do{ i=(Math.random()*TALKS.length)|0; }while(i===talkLast);
-  talkLast=i; say(TALKS[i], now);
+  if(typeof TALKS==='undefined') return;          // talks.js 沒載到就安靜跳過
+  const t=talkPick(talkCtx(), talkLastId);
+  if(!t || !t.lines || !t.lines.length) return;
+  talkLastId=t.id;
+  say(t.lines, now);
 }
 
 let senseTries=[];              // 最近幾次「按下探索」的時戳（滑動視窗）
@@ -1562,25 +1523,29 @@ function senseRingCheck(now){
 /* 對話中把方向計收起來（Ray 提議，ver -267）。
    ⚠ 為什麼可以收：對白進行中點畫面是「推進一句」，點擊已經被 sayAdvance 吃掉、
      本來就不能操舵 —— 這時候的航向看不了也用不到，收起來零損失。
-   ⚠ 換到的空間有限，先知道數字再決定值不值得：對話框底原本卡在方向計上緣
-     （y 467），收起後可下移到舵輪上緣（y 511），**多 44px**。以安雅為例，
-     露出的身體從身高的 28.3% 變成 33.6%（腰→胯）。
-     ⚠ **這不足以露出腿**：要露到大腿得把立繪縮到現在的 77%（見 HANDOFF O 節）。 */
+   ⚠ 收起後對話框底落在**原本方向計的底部**（Ray 指定）。距離由 compassRect
+     推出來（方向計高 ＋ 原本讓開它的 8px），不寫死：實測 y 467 → 505。
+     ⚠ **這不足以露出腿**：要露到大腿得把立繪縮到現在的 77%（見 HANDOFF O 節）。
+
+   ⚠⚠ 進度**必須每幀推進，而且不能掛在 drawTalk 裡**。第一版就是掛在那裡，
+     結果對白一收掉方向計就再也回不來 —— 因為 drawTalk 第一行是
+     `if(!sayQueue) return;`，對白結束後它整個不跑，talkHide 永遠卡在 1。
+     現在由 loop() 每幀呼叫 talkHideStep()，繪製端一律只讀 talkHideEase()。 */
 const TALK_HIDE_MS=260;
-let talkHide=0;
+let talkHide=0, _talkHideT=0;
 function talkHideStep(now){
   const want=(sayQueue && !sayEndAt) ? 1 : 0;
-  const dt=now-(talkHideStep._t!=null?talkHideStep._t:now);
-  talkHideStep._t=now;
+  const dt=Math.min(100, now-(_talkHideT||now));   // 夾住：分頁切回來時 dt 會很大
+  _talkHideT=now;
   const step=dt/TALK_HIDE_MS;
   talkHide=clamp(talkHide+(want?step:-step),0,1);
-  return talkHideEase();
 }
 function talkHideEase(){
   const t=talkHide;
   return t<=0?0:(t>=1?1:t*t*(3-2*t));
 }
-const TALK_HIDE_DY=44;   // 方向計下滑／對話框下移的距離（＝方向計上緣到舵輪上緣）
+/* 下移距離：讓框底正好落在原本方向計的底部。改了方向計高度這裡自動跟著對。 */
+function talkHideDy(){ return compassRect().h + 8; }
 
 /* 橫條羅盤帶（方向計）的外框。
    ⚠ drawPanel 與對話框都吃這一份 —— 兩邊各自寫死遲早會走鐘，而「對話框與
@@ -1672,8 +1637,8 @@ function drawTalk(now){
      ⚠ 三行還放不下就縮字級（最小 12px）—— 寧可小一點也不要切字。 */
   const C=compassRect();
   const bx=C.x, bw=C.w, padX=13, maxW=bw-padX*2-14;   // 右邊再讓 14px 給「▼」
-  const hide=talkHideStep(now);                       // 方向計收起進度（見上）
-  const boxBottom=C.y-8+TALK_HIDE_DY*hide;            // 收起後框底下移到舵輪上緣
+  const hide=talkHideEase();                          // 方向計收起進度（由 loop 推進）
+  const boxBottom=C.y-8+talkHideDy()*hide;            // 收起後框底＝原方向計底部
   const wrap=(txt,px)=>{
     ctx.font=px+'px "Noto Serif TC",serif';
     const out=[]; let cur='';
@@ -3123,6 +3088,9 @@ const ADMIN=(()=>{ try{ return localStorage.getItem('tivot_admin_v1')==='1'; }
 /* 時刻直接指定。日夜不會即時推移，只會停在夜／黎明／早／黃昏四個狀態，
    驗收時要能跳過去看 —— 尤其「城在黃昏過亮」這類只在特定時刻出現的問題。 */
 if(ADMIN) window.setTime=(min)=>{ clock.minutes=((min%1440)+1440)%1440; return clock.minutes; };
+/* 管理人：就地切故事進度／看目前的對話情境，測時段與 stage 觸發用。 */
+if(ADMIN) window.setStage=(n)=>{ STAGE=n|0; return STAGE; };
+if(ADMIN) window.talkInfo=()=>talkCtx();
 /* 怪的狀態機驗收用：enemy 是 top-level let，外部注入的 script 讀不到。 */
 if(ADMIN) window.dbgEnemy=()=>enemy&&{state:enemy.state,x:Math.round(enemy.x),y:Math.round(enemy.y),
   d:Math.round(Math.hypot(cam.x-enemy.x,cam.y-enemy.y)),d0:enemy.d0,
@@ -6585,13 +6553,12 @@ function drawPanel(S){
   const deg=((-cam.angle*180/Math.PI)%360+360)%360;
   /* ⚠ 幾何走 compassRect()：疲勞對話框要與這一條同寬對齊，兩邊各寫一份會走鐘。 */
   const CR=compassRect();
-  /* 對話中往下滑出並淡掉。⚠ 用 talkHideEase() 讀**現值**，不要在這裡再推進一次
-     時間 —— 這一幀 drawTalk 已經先跑過 talkHideStep 了，推兩次等於速度加倍。 */
+  /* 對話中往下滑出並淡掉。進度由 loop() 推進，這裡只讀現值。 */
   const hid=talkHideEase();
   if(hid>=0.999) return;
   ctx.save();
   ctx.globalAlpha=1-hid;
-  ctx.translate(0,TALK_HIDE_DY*hid);
+  ctx.translate(0,talkHideDy()*hid);
   const bw2=CR.w-12, cbx=CR.x+6;                    // ⚠ 不能叫 bx，上面基座已用掉
   const ccy=CR.y+17;
   ctx.fillStyle='rgba(6,7,12,.55)';
@@ -6653,6 +6620,7 @@ function onQualityChange(){
 function loop(now){
   const dt=Math.min(40,now-last); last=now;
   flushResize();     // 重建畫布只在這裡發生 —— 緊接著就是 render，不會露出空畫布
+  talkHideStep(now); // ⚠ 方向計收合進度：一定要在這裡推，不能掛在 drawTalk（見該處說明）
   const wt0=performance.now();
   update(dt,now); updateRegion(now); render(now); updateBgm(dt); updateMapMe();
   qualityTick(performance.now()-wt0);
