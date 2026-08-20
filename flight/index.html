@@ -1282,6 +1282,36 @@ function setGameStage(n){
      存進 sayQueue 就代換的話，玩家中途改名，正在播的那段還是舊名字。
    ⚠ 鑰匙與主遊戲共用（同一個 localStorage），所以命名介面應該做在 index.html
      的開新遊戲流程，不是這一頁。這裡只負責讀與用。 */
+/* ══ 好感度（四名女角）══
+   ⚠ 與 STAGE、玩家名同一套作法：**存 localStorage、與主遊戲共用鑰匙**，
+     劇情/事件改這裡，任何畫面讀同一份，不會兩邊各有一份而走鐘。
+   ⚠ 預設 10（Ray 指定）。分級門檻 10/20/30/40/50 五段，見 talks.js 的 affBand。
+   ⚠ 與 docs/TIVOT_IMPL_SPEC.md §2 的關係：那份規格寫的是 1..50、
+     tier=floor((aff-1)/10)+1 的棘輪制。這裡先只做「值」與「分級查詢」，
+     **棘輪（tier_lock 只升不降）還沒做** —— 養成層真的開工時再補，
+     不要以為現在的 affection() 已經是那份規格的完整實作。
+   ⚠ 主遊戲的 state.currentFavor（固定 0）是舊的佔位，與這裡**還沒接起來**。 */
+const AFFECTION_KEY='tivot_affection_v1';
+const AFFECTION_DEFAULT=10;
+const AFFECTION = { renna:AFFECTION_DEFAULT, nouvelle:AFFECTION_DEFAULT,
+                    sorana:AFFECTION_DEFAULT, anya:AFFECTION_DEFAULT };
+(function loadAffection(){
+  try{
+    const j=JSON.parse(localStorage.getItem(AFFECTION_KEY)||'null');
+    if(j) for(const k in AFFECTION) if(typeof j[k]==='number') AFFECTION[k]=j[k];
+  }catch(e){}
+})();
+function affection(who){
+  const v=AFFECTION[who];
+  return (typeof v==='number') ? v : AFFECTION_DEFAULT;
+}
+function setAffection(who, v){
+  if(!(who in AFFECTION)) return null;
+  AFFECTION[who]=Math.max(0, v|0);
+  try{ localStorage.setItem(AFFECTION_KEY, JSON.stringify(AFFECTION)); }catch(e){}
+  return AFFECTION[who];
+}
+
 const PLAYER_NAME_KEY='tivot_player_name_v1';
 const PLAYER_NAME_DEFAULT='托爾斯';
 function playerName(){
@@ -1393,8 +1423,11 @@ function edgeNag(now){
   if(edgeWasIn===false && now-edgeNagAt < EDGE_COOL_MS) return;
   /* 方位池與 ANY 各半：全抽方位的話往北每次都聽到同一段；全抽 ANY 的話特地
      寫的方位梗永遠不會出現。 */
+  /* ⚠ 分級看的是**蕾娜的**好感度 —— 這整串碎念是她的戲，語氣該跟著她與玩家的
+     關係走。方位池（N/S/E/W）是群體梗，不分級。 */
   const dir=TALK_EDGE[edgeSide(mx,my)]||[];
-  const pool=(dir.length && Math.random()<0.5) ? dir : TALK_EDGE.ANY;
+  const pool=(dir.length && Math.random()<0.5) ? dir
+           : edgeAnyPool(affection('renna'));
   if(!pool || !pool.length) return;
   const lines=edgeLines(pool[(Math.random()*pool.length)|0]);
   /* ⚠ 隊上沒有這段的說話者就別播（走 PARTY 表，與一般對話同一套判定）——
@@ -3247,6 +3280,8 @@ if(ADMIN) window.setStage=(n)=>setGameStage(n);
 if(ADMIN) window.talkDebug=(m)=>talkDebug(m);
 if(ADMIN) window.talkInfo=()=>talkCtx();
 if(ADMIN) window.setPlayerName=(s)=>{ try{ localStorage.setItem(PLAYER_NAME_KEY, String(s||'')); }catch(e){} return playerName(); };
+if(ADMIN) window.setAff=(who,v)=>setAffection(who,v);
+if(ADMIN) window.aff=()=>JSON.parse(JSON.stringify(AFFECTION));
 /* 怪的狀態機驗收用：enemy 是 top-level let，外部注入的 script 讀不到。 */
 if(ADMIN) window.dbgEnemy=()=>enemy&&{state:enemy.state,x:Math.round(enemy.x),y:Math.round(enemy.y),
   d:Math.round(Math.hypot(cam.x-enemy.x,cam.y-enemy.y)),d0:enemy.d0,
