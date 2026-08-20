@@ -2,6 +2,8 @@
 
 > 每輪開工前讀本檔 + 憲法/規格。實況以 `git log` 與 `DECISIONS.md` 為準;本檔為人類可讀的進度總覽。
 > 目前狀態:**CLAUDE.md §6 開發順序第 1~5 步已完成**,下一輪為**第 6 步(全流程 ACCEPTANCE 對照 reference 收尾)**。
+> ⚠ 第 6 步已擱置一段時間了:`-208` 之後的產出幾乎都在 `flight/` 與**全站通用系統**
+> (音訊分層、對白演出、讀取畫面)。要收尾戰鬥那側的話,`ACCEPTANCE.md` 仍然不存在。
 
 ---
 
@@ -15,7 +17,7 @@
 2. `DECISIONS.md` — 已定的刻意偏離 reference 決策 **D1~D4**(D1 戰敗優先致死鏈、D2 MB 回血 50%、D3 統一改血 API、D4 saintComboStep 1.0)。
 3. `SPEC.md` — 行為規格。**§4 已修正為規則制 rank**;**§三 已補「戰鬥層級模型(場/局/敵/盤)」**(見下方三、備註)。
 4. `reference/index.html` — 唯讀行為基準,行為有疑義以它為準。
-5. `git log`(HEAD 應為 `9dc6db6` 或更新)。
+5. `git log`(本檔最後回寫於 `52c07d8` / `ver -252`)。
 
 ---
 
@@ -39,9 +41,40 @@
 
 ---
 
+## 二之二、全站通用系統(戰鬥／飛行共用,通則寫在 CLAUDE.md)
+
+這幾套**不屬於任何單一模組**,兩個頁面都吃。改之前先讀對應的通則章節,
+不要在其中一邊各寫一份。
+
+| 系統 | 通則 | 實作 | 一句話 |
+|---|---|---|---|
+| 對白演出 | `CLAUDE.md` §6.5 | `modules/tutorial.js`(DOM)／`flight/index.html` 的 `castEnter`/`drawTalk`(canvas) | 站位、明暗、點擊推進、輪轉換卡全部共用一套語彙 |
+| 立繪取景 | `CLAUDE.md` §6.5「取景」 | 同上 | **縮放鎖單眼寬、站位鎖身高**,兩個獨立旋鈕 |
+| 畫質 | `CLAUDE.md` §6.5「畫質」 | 同上 | 畫布開到裝置像素(DPR≤2);縮小超過 2 倍要走逐次減半的預縮圖 |
+| 音訊分層 | `CLAUDE.md` §6.6 | `config.js` 的 `tuning.*Gain`／`audio.js` | 語音 −18／音效 −22／音樂 −28 LUFS |
+| 語音鏈 | `CLAUDE.md` §6.6「耳機對了不代表手機對了」 | `tuning.voiceChain` → `SFX.playVoice` | 手機喇叭 600Hz 以下不發聲,語音層要**量兩次**才知道對不對 |
+| 讀取畫面 | — | `main.js` 的 `#assetLoader`／`flight/index.html` 的 `bootUI` | 圈內字樣一律 SAINT INSTALL;監察官對話框＋Hint 輪播**有**;底部「載入中／點擊繼續」**沒有** |
+
+⚠ 讀取畫面有**兩份**(`#assetLoader` 與 `#boot`),`-229` 撤字、`-251` 放回的時候
+都各改過一次 —— 只改一邊的話 Ray 會在另一邊看到舊行為(這次就是這樣被抓到的)。
+
+⚠ 量測工具:`tools/audio_probe.html`(響度,含手機喇叭模型)。瀏覽器開,
+WebAudio 解碼所以 mp3/m4a/wav 通吃。改 `voiceChain` 或增益就要重跑一次。
+
+---
+
 ## 三、Git · 關鍵 commit
 
-- **HEAD**:`9dc6db6` enemy:Boss/亂入接實體—triggerIntruder(S 解鎖→迎擊→槍之魔女 witch)。
+**近期(全站/飛行)**
+- **HEAD**:`52c07d8` fix(flight):聖王廳地板的水平切線、遭遇不再看得見才算、探索改一次 30 秒 — `-252`。
+- `36da648` feat(flight):立繪放大、讀取畫面的監察官說明放回、**畫質自適應** — `-251`。
+- `96f10c8` fix(audio):語音在手機外放上「糊」— **語音鏈** + 增益改對耳機／手機的平均響度 — `-250`。
+- `8fa967d` fix(flight):立繪的尺與畫質 — **眼寬定縮放、身高定站位**;畫布開到裝置像素 — `-249`。
+- `c90c94e` refactor(audio):全域響度重訂三層 — 語音 −18／音效 −22／音樂 −28 LUFS — `-243`。
+- `3586b34` refactor:全站音訊集中到 `resources/audio/{bgm,se,vo}` 並統一命名 — `-240`。
+
+**戰鬥模組(第 1~5 步)**
+- `9dc6db6` enemy:Boss/亂入接實體—triggerIntruder(S 解鎖→迎擊→槍之魔女 witch)。
 - `2f244e4` docs(HANDOFF):回寫進度(partner/weapon/inspector 三輪完成)。
 - `3ddaece` docs(SPEC):§4 修正 rank 規則制、tiers 為休眠 config。
 - `8af9453` inspector:評價(規則制 rank+EXP)/監察官結算演出/最佳成績雙存檔/迎擊分流。
@@ -90,6 +123,7 @@
   ⚠ -128~-170 那段 flight-only 的 commit 沒升,HUD 版本號卡在 -127,Ray 在手機上
   無從判斷拿到的是不是新版;-171 起補齊對齊。
 - **commit**:每模組完成即 commit,訊息末尾加
-  `Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>`
+  `Co-Authored-By: Claude Opus <n> <noreply@anthropic.com>`(`<n>` 寫**當下實際在跑的
+  模型版本**,不要照抄本檔 —— `-249` 起是 Opus 5)。
 - 刻意偏離 reference 才寫 `DECISIONS.md`;照 reference 一致的不寫;逆向誤述的修正(如 SPEC §4、戰鬥層級模型)不入 DECISIONS。
 - 語言:與使用者用**繁體中文**溝通。
