@@ -1343,6 +1343,32 @@ function edgeDamp(mx,my,fx,fy){
                   ax(my+WORLD_PAD,-fy), ax((MAPH+WORLD_PAD)-my, fy));
 }
 
+/* 撞到的是哪一邊。⚠ 北＝上緣(y 小)，與羅盤一致（航向 (0,-1) 就是北）。 */
+function edgeSide(mx,my){
+  const d={ W:mx+WORLD_PAD, E:(MAPW+WORLD_PAD)-mx,
+            N:my+WORLD_PAD, S:(MAPH+WORLD_PAD)-my };
+  let k='W'; for(const q in d) if(d[q]<d[k]) k=q;
+  return k;
+}
+/* 觸牆時該打幾度舵。回傳 {amt:接管強度 0..1, rudder:-1..1}。
+   內推向量＝四邊各自「陷得多深」的加權和 —— 角落會自然得到斜向的合力。 */
+function wallSteer(mx,my,ang){
+  const w=d=>clamp(1-(d-EDGE_HARD)/(EDGE_BAND-EDGE_HARD),0,1);
+  let ix=w(mx+WORLD_PAD) - w((MAPW+WORLD_PAD)-mx);      // 靠西→往東推，反之亦然
+  let iy=w(my+WORLD_PAD) - w((MAPH+WORLD_PAD)-my);
+  const amt=Math.min(1, Math.hypot(ix,iy));
+  if(amt<0.001) return {amt:0, rudder:0};
+  ix/=amt; iy/=amt;
+  /* 世界方向 → 航向角：前向量是 (-sin a, -cos a)，所以 a = atan2(-dx, -dy)。 */
+  const want=Math.atan2(-ix,-iy);
+  let da=want-ang;
+  while(da>Math.PI)da-=Math.PI*2;
+  while(da<-Math.PI)da+=Math.PI*2;
+  /* 轉向那一行是 `cam.angle -= step`（角度遞減＝右轉），所以舵量取 -da。
+     除以 0.6 rad 讓「差 35 度以上」就直接滿舵，小角度才細修。 */
+  return {amt, rudder: clamp(-da/0.6, -1, 1)};
+}
+
 let edgeNagAt=0, edgeWasIn=true;
 function edgeNag(now){
   if(typeof TALK_EDGE==='undefined' || !MAPW || !MAPH) return;
@@ -1350,10 +1376,19 @@ function edgeNag(now){
   const near = edgeDist(mx,my) < EDGE_BAND;        // 開始有阻力的同一條界線
   if(!near){ edgeWasIn=true; return; }             // 回到安全區 → 下次靠近可再念
   if(sayQueue || senseOn || senseFireAt || senseT0 || mapOpen) return;
-  if(!inParty('renna', gameStage())) return;
   if(edgeWasIn===false && now-edgeNagAt < EDGE_COOL_MS) return;
+  /* 方位池與 ANY 各半：全抽方位的話往北每次都聽到同一段；全抽 ANY 的話特地
+     寫的方位梗永遠不會出現。 */
+  const dir=TALK_EDGE[edgeSide(mx,my)]||[];
+  const pool=(dir.length && Math.random()<0.5) ? dir : TALK_EDGE.ANY;
+  if(!pool || !pool.length) return;
+  const lines=edgeLines(pool[(Math.random()*pool.length)|0]);
+  /* ⚠ 隊上沒有這段的說話者就別播（走 PARTY 表，與一般對話同一套判定）——
+     蕾娜還沒入隊時整段邊界碎念就不該存在。 */
+  const st=gameStage();
+  for(const b of lines) if(!inParty(b.who, st)) return;
   edgeWasIn=false; edgeNagAt=now;
-  say([{who:'renna', text:TALK_EDGE[(Math.random()*TALK_EDGE.length)|0]}], now);
+  say(lines, now);
 }
 
 function talkStart(now){
@@ -3498,6 +3533,17 @@ function update(dt,now){
   if(keys.d||keys.arrowright) r=1;
   const held = dragging || keys.w||keys.s||keys.a||keys.d ||
                keys.arrowup||keys.arrowdown||keys.arrowleft||keys.arrowright;
+  /* ══ 觸牆自動轉舵掉頭 ══
+     ⚠ 作法是**把舵量注入 r**，不是直接改 cam.angle。因為 r 一路餵給既有的
+       轉向、側傾(bank)、舵輪旋轉 —— 注入舵量的話那三件事自動全對；直接改
+       航向的話船會憑空平移轉向，舵輪還停在原位，一眼就假。
+     ⚠ 是**混入**不是覆蓋：wallAmt 隨深入程度由 0 漸增到 1，接管是漸進的，
+       玩家不會覺得舵突然被搶走。
+     ⚠ 目標方向取「四邊各自的內推向量加權和」，不是「指向地圖中心」——
+       指向中心的話在角落會轉一個大彎，而且沿著邊界平飛時也會被硬掰回去。 */
+  const wall=wallSteer(cam.x/MAP_SCALE, cam.y/MAP_SCALE, cam.angle);
+  if(wall.amt>0.001) r = clamp(r*(1-wall.amt) + wall.rudder*wall.amt, -1, 1);
+
   rudder=r;
   // 舵輪：角速度 ∝ 舵量。放手就停在當下角度 —— 實體舵輪本來就不會自己回正
   wheelAng+=clamp(r,-1,1)*WHEEL_SPIN*dt;
@@ -3518,7 +3564,9 @@ function update(dt,now){
   let turned=0;
   const mov=Math.abs(cam.speed)/MAX_SPD;
   const spin=held && f<-0.15;
-  const eff=Math.max(spin?SPIN_EFF:0, clamp(mov*2.2,0,1));   // 舵效：慢速時舵不吃水
+  /* ⚠ 牆接管時要給舵效下限：空氣牆把速度吃掉了，而「慢速時舵不吃水」會讓
+     自動轉舵完全轉不動 —— 變成貼在牆上動彈不得，那正是最糟的手感。 */
+  const eff=Math.max(spin?SPIN_EFF:0, clamp(mov*2.2,0,1), wall.amt*0.65);
   if(Math.abs(r)>0.015 && eff>0.001){
     const step=clamp(r,-1,1)*TURN_RATE*dt*eff;
     cam.angle-=step;                                // 角度遞減＝向右偏（見 compass 換算）
