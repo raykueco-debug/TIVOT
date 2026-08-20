@@ -2443,9 +2443,20 @@ const Q = () => QUALITY[qLevel];
    ⚠ 上限壓在 2：手機 DPR 常是 3，那是 9 倍的填充量，而地形 blit 是全螢幕的。
      2 已經看不出鋸齒，3 只換來掉幀。低配機再由 QUALITY 往下壓。 */
 let DPR=1;
-function resize(){
-  W=innerWidth;H=innerHeight;
-  DPR=Math.min(Q().dpr, devicePixelRatio||1);
+/* ⚠⚠ 這裡是**真正在重建畫布**的那一支，不要直接呼叫它 —— 呼叫 resize()（下方）。
+   理由見 resize() 的說明：設 cv.width 會把畫布清空，時機錯了就是一幀全空。 */
+function applyResize(){
+  const nw=innerWidth, nh=innerHeight;
+  const ndpr=Math.min(Q().dpr, devicePixelRatio||1);
+  /* 尺寸、DPR、緩衝寬都沒變就什麼都別做。iOS 的網址列一動就發 resize，
+     其中不少是同尺寸的重複事件；照做一遍等於白白重建 1.2M 像素的畫布與整批緩衝。
+     ⚠ 一定要**連 BW 一起比**：QUALITY 的第 2、3 級 dpr 同樣是 1，只有 bwf
+       不同（0.48 vs 0.40）。只比視窗與 DPR 的話，q2→q3 會被誤判成「沒變」而
+       整個跳過，緩衝解析度永遠降不下去 —— 調節器就形同壞掉。 */
+  const nBW=clamp(Math.round(nw*Q().bwf),160,420);
+  if(nw===W && nh===H && ndpr===DPR && nBW===BW && cv.width===Math.round(nw*ndpr)) return;
+  W=nw;H=nh;
+  DPR=ndpr;
   VIEWH=Math.round(H*VIEW_F);
   { const bb=document.getElementById('boostBtn');
     if(bb) bb.style.top=(VIEWH+12)+'px'; }
@@ -2456,6 +2467,7 @@ function resize(){
   ctx.setTransform(DPR,0,0,DPR,0,0);
   ctx.imageSmoothingEnabled=false;
   castMeasure();
+  for(const k in portraitLod) delete portraitLod[k];   // DPR/尺寸變了，預縮圖要重做
   /* 緩衝寬度佔畫面寬的比例。維持 0.60。
      ⚠ 抗馬賽克靠的是雙線性取樣，不是解析度 —— 解析度只讓邊緣更銳，
        成本卻隨面積平方成長。這一版已經為了畫質加了不少 per-sample 的工
@@ -2480,7 +2492,24 @@ function resize(){
   CZMIN=new Float32Array(BW);
   SKYROW=new Uint32Array(BH);
 }
-addEventListener('resize',resize);resize();
+/* ══ 重建畫布的時機 ══
+   ⚠⚠ 設 `cv.width` 會把畫布**清成透明**。所以重建必須緊接著一次完整的
+     render()，中間不能讓瀏覽器把畫面送出去 —— 否則那一幀就是全空的閃白。
+
+   舊寫法有兩個地方會踩到，實機上合起來就是「進飛行畫面全屏閃爍」：
+     ① `addEventListener('resize', resize)` 完全沒有防抖。iOS 進頁時工具列
+        會收合，innerHeight 一路變，resize 連發十幾次 → 連閃十幾下。
+     ② `onQualityChange()` 是在 `qualityTick()` 裡呼叫的，而那是在 `render()`
+        **之後** —— 清空的畫布就這樣被送出去，下一幀才補畫。手機剛進飛行時
+        負載最重，調節器會連降好幾檔，每一檔閃一下。
+
+   改成：resize() 只**掛一個旗標**，真正的重建在 loop() 開頭、update/render
+   之前執行。同一幀內來幾次事件都只重建一次，而且重建完必定馬上重畫。 */
+let _needResize=false;
+function resize(){ _needResize=true; }
+function flushResize(){ if(!_needResize) return; _needResize=false; applyResize(); }
+addEventListener('resize',resize);
+applyResize();   // 開場這一次要同步做完：loop 還沒開始跑，沒有「下一幀」可以等
 // 地標/雲團等疊加物要套同一條曲率，否則會跟地形錯開（越遠越明顯）
 const curvAt=s=>(1+s*s)/(2*PLANET_R);
 
@@ -6379,12 +6408,15 @@ function qualityTick(workMs){
 function onQualityChange(){
   QF.length=0;
   qCool=90;          // 換檔後靜置約 1.5 秒再評，避免 resize 那一兩幀被算進去
-  resize();          // dpr／緩衝尺寸都在這裡重建（cell/nmax 是每幀讀，不用管）
-  for(const k in portraitLod) delete portraitLod[k];   // DPR 變了，預縮圖要重做
+  resize();          // 排程重建（真正的重建在下一幀開頭，見 resize 的說明）
+  /* ⚠ 預縮圖的清除已搬進 applyResize —— 要跟 DPR **實際**改變的那一刻同步。
+     留在這裡的話，清掉之後到下一幀重建之間若有人重畫立繪，會用舊 DPR
+     再生一份並留下來。 */
 }
 
 function loop(now){
   const dt=Math.min(40,now-last); last=now;
+  flushResize();     // 重建畫布只在這裡發生 —— 緊接著就是 render，不會露出空畫布
   const wt0=performance.now();
   update(dt,now); updateRegion(now); render(now); updateBgm(dt); updateMapMe();
   qualityTick(performance.now()-wt0);

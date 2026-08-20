@@ -236,9 +236,38 @@ window.addEventListener('pagehide', refreshBoot);
       ring.style.width=d+'px'; ring.style.height=d+'px';
       ring.style.left=Math.round(r.left+r.width/2)+'px';
       ring.style.top =Math.round(r.top +r.height/2)+'px';
+      fitCap();
     } else setTimeout(placeRing, 120);
   }
+  /* 圈內字樣要**量過才知道塞不塞得下**，不能靠固定字級。
+     ⚠ 這串在不同平台根本是不同的字：字體堆疊第一順位 "Iowan Old Style" 是
+       **iOS 內建字**，桌機沒有 → 回退到 Palatino/Georgia。實測桌機
+       (Palatino, 13px + 5px 字距) 是 163px 寬，而圓的直徑只有 184px ——
+       左右各只剩 10px。iOS 的 Iowan 更寬，就凸出圈外了。
+       「在我這台看起來剛好」正是這種排版最危險的地方。
+     ⚠ letter-spacing 會在**最後一個字後面也留一格**，那一格算進寬度裡，
+       flex 置中時整串會偏左半格。用等寬的負 margin 抵掉。
+     ⚠ 量之前要先清掉自己上次寫的行內樣式 —— 否則 .al-done 換了字級之後
+       量到的是上一輪縮好的結果，會一路愈縮愈小。 */
+  function fitCap(){
+    const ring=$('alRing'), cap=$('alRingCap');
+    if(!ring || !cap) return;
+    const D=ring.getBoundingClientRect().width*0.96;   // SVG 圓 r=48/100 → 直徑是外框的 96%
+    if(D<10) return;
+    cap.style.fontSize=''; cap.style.letterSpacing=''; cap.style.marginRight='';
+    const cs=getComputedStyle(cap);
+    const fs=parseFloat(cs.fontSize)||12, ls=parseFloat(cs.letterSpacing)||0;
+    const MAX=D*0.80;          // 留兩成：貼著圓弧邊緣看起來就已經是「頂到圈」了
+    const w=cap.scrollWidth;
+    const k=(w>MAX && w>0) ? MAX/w : 1;
+    if(k<1){
+      cap.style.fontSize=(fs*k).toFixed(2)+'px';
+      cap.style.letterSpacing=(ls*k).toFixed(2)+'px';
+    }
+    cap.style.marginRight=(-(ls*k)).toFixed(2)+'px';
+  }
   placeRing();
+  fitCap();          // placeRing 還在等紋章載入時，先照 CSS 預設的圈徑量一次
   window.addEventListener('resize', placeRing);
   // 監察官立繪與名字（沿用結算的資源；讀 config 不寫死）
   //   立繪＝載入畫面的門面，全站最優先：載完（或 4s 保底）才輪到關鍵音效、再輪到整批。
@@ -311,6 +340,7 @@ window.addEventListener('pagehide', refreshBoot);
     if(pct) pct.style.display='none';
     ov.classList.add('al-done');
     const cap=$('alRingCap'); if(cap) cap.classList.add('al-pulse');
+    fitCap();   // .al-done 把字級 10.5→13px、字距 3→5px，字變寬了要重新量
     const go=()=>{
       ov.removeEventListener('click',go); ov.removeEventListener('touchstart',go);
       clearTimeout(hintTimer);   // 停輪播
