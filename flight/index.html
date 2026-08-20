@@ -1148,7 +1148,9 @@ let senseChimeI = 0;
 
    ⚠ 換插畫就要**重量 eye/fx/top/bot**，不能沿用。 */
 const PORTRAIT = {
-  anya:     { name:'安雅',   cm:159, side:'R', src:'../resources/partner/Anya_CI_front.webp',
+  /* ⚠ 身高 159→162（Ray：「安雅再高一點點」，ver -267）。縮放與站位現在都鎖身高，
+     所以這一個數字同時決定她**多大**與**頭頂多高**，不必也不該另外調位移。 */
+  anya:     { name:'安雅',   cm:162, side:'R', src:'../resources/partner/Anya_CI_front.webp',
               eye:34, fx:0.478, top:0,   bot:1530 },
   /* ⚠ 索拉娜用 **side** 那張：front 太滿（人物橫向佔 78%），兩人同台一定疊。
      側面只佔 69%，站位再拉開，交疊就壓到最低。 */
@@ -1186,7 +1188,7 @@ const PORTRAIT = {
    1520/1536 像素，但插畫家給的眼睛大小差很多（索拉娜 27、安雅 34）。鎖眼寬
    ＝ 縮放 ∝ 1/eye，於是眼睛被畫小的人整個被放大：
        實測螢幕身體高 索拉娜 983px、安雅 787px → 比值 1.249
-       但她們的身高比只有 176/159 ＝ 1.107
+       但她們的身高比只有 176/159 ＝ 1.107（當時安雅設定 159cm，ver -267 改為 162）
    也就是索拉娜被畫得比應有的大 13%。文件裡那句「眼寬與身高反相關」講的就是
    這件事，只是當時沒發現它會**過度**校正。
 
@@ -1557,6 +1559,29 @@ function senseRingCheck(now){
   }
 }
 
+/* 對話中把方向計收起來（Ray 提議，ver -267）。
+   ⚠ 為什麼可以收：對白進行中點畫面是「推進一句」，點擊已經被 sayAdvance 吃掉、
+     本來就不能操舵 —— 這時候的航向看不了也用不到，收起來零損失。
+   ⚠ 換到的空間有限，先知道數字再決定值不值得：對話框底原本卡在方向計上緣
+     （y 467），收起後可下移到舵輪上緣（y 511），**多 44px**。以安雅為例，
+     露出的身體從身高的 28.3% 變成 33.6%（腰→胯）。
+     ⚠ **這不足以露出腿**：要露到大腿得把立繪縮到現在的 77%（見 HANDOFF O 節）。 */
+const TALK_HIDE_MS=260;
+let talkHide=0;
+function talkHideStep(now){
+  const want=(sayQueue && !sayEndAt) ? 1 : 0;
+  const dt=now-(talkHideStep._t!=null?talkHideStep._t:now);
+  talkHideStep._t=now;
+  const step=dt/TALK_HIDE_MS;
+  talkHide=clamp(talkHide+(want?step:-step),0,1);
+  return talkHideEase();
+}
+function talkHideEase(){
+  const t=talkHide;
+  return t<=0?0:(t>=1?1:t*t*(3-2*t));
+}
+const TALK_HIDE_DY=44;   // 方向計下滑／對話框下移的距離（＝方向計上緣到舵輪上緣）
+
 /* 橫條羅盤帶（方向計）的外框。
    ⚠ drawPanel 與對話框都吃這一份 —— 兩邊各自寫死遲早會走鐘，而「對話框與
      方向計同寬」是 Ray 指定的對齊關係，走鐘一眼就看得出來。 */
@@ -1647,6 +1672,8 @@ function drawTalk(now){
      ⚠ 三行還放不下就縮字級（最小 12px）—— 寧可小一點也不要切字。 */
   const C=compassRect();
   const bx=C.x, bw=C.w, padX=13, maxW=bw-padX*2-14;   // 右邊再讓 14px 給「▼」
+  const hide=talkHideStep(now);                       // 方向計收起進度（見上）
+  const boxBottom=C.y-8+TALK_HIDE_DY*hide;            // 收起後框底下移到舵輪上緣
   const wrap=(txt,px)=>{
     ctx.font=px+'px "Noto Serif TC",serif';
     const out=[]; let cur='';
@@ -1661,7 +1688,7 @@ function drawTalk(now){
   while(lines.length>3 && fs>12){ fs--; lines=wrap(beat.text,fs); }
   const lh=Math.round(fs*1.32);
   const bh=Math.max(Math.round(clamp(VIEWH*0.115,48,70)), 26+lines.length*lh+8);
-  const by=C.y-8-bh;
+  const by=Math.round(boxBottom-bh);
   ctx.fillStyle='rgba(10,9,16,.84)';
   ctx.fillRect(bx,by,bw,bh);
   ctx.strokeStyle='rgba(201,162,39,.55)'; ctx.lineWidth=1;
@@ -6558,6 +6585,13 @@ function drawPanel(S){
   const deg=((-cam.angle*180/Math.PI)%360+360)%360;
   /* ⚠ 幾何走 compassRect()：疲勞對話框要與這一條同寬對齊，兩邊各寫一份會走鐘。 */
   const CR=compassRect();
+  /* 對話中往下滑出並淡掉。⚠ 用 talkHideEase() 讀**現值**，不要在這裡再推進一次
+     時間 —— 這一幀 drawTalk 已經先跑過 talkHideStep 了，推兩次等於速度加倍。 */
+  const hid=talkHideEase();
+  if(hid>=0.999) return;
+  ctx.save();
+  ctx.globalAlpha=1-hid;
+  ctx.translate(0,TALK_HIDE_DY*hid);
   const bw2=CR.w-12, cbx=CR.x+6;                    // ⚠ 不能叫 bx，上面基座已用掉
   const ccy=CR.y+17;
   ctx.fillStyle='rgba(6,7,12,.55)';
@@ -6582,6 +6616,7 @@ function drawPanel(S){
   ctx.restore();
   ctx.strokeStyle='#c9a227';                        // 中央指標（不動）
   ctx.beginPath(); ctx.moveTo(cbx+bw2/2,ccy-16); ctx.lineTo(cbx+bw2/2,ccy+9); ctx.stroke();
+  ctx.restore();          // ⚠ 對應收起動畫那個 save（translate + globalAlpha）
   ctx.textAlign='left';
 }
 
