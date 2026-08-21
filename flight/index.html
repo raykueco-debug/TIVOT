@@ -7398,8 +7398,18 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
       /* 山稜遮擋：只有這一次貼回需要裁，而且只裁城真正佔到的那幾欄
          （外框已經算出來了）。整排 234 欄的裁切路徑要讓這張圖每個像素都付費。 */
       clipByCityDepth(sxk,syk,cc0,cc1);
-      ctx.imageSmoothingEnabled=false;
+      /* ⚠⚠ 這一次貼回**要開平滑**（ver -295）。城是畫進 bwp×bhp 的低解析緩衝
+         再放大貼回的，放大比 bwp/fw 是分數，而 bx0/fw 每幀都隨相機變 ——
+         最近鄰的取樣相位因此逐幀跳動：同一個目標像素這幀取這個 texel、
+         下幀取隔壁那個，整片城就在抖。這就是「靜止看不出、一動才明顯」。
+         ⚠ 實測（相機移 1 世界單位，比較城區與同高度的地形）：
+             城區 差>30 的像素 1.28%　地形 0.01%　——  差一百倍。
+           地形是直接畫在螢幕上、不經緩衝，所以沒有這個問題。
+         ⚠ 關平滑是為了地形的像素感（見 resize），但城是**手繪插畫不是像素圖**，
+           最近鄰在它身上只會製造雜訊。畫完立刻關回去還給地形。 */
+      ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality='high';
       ctx.drawImage(cityFB,0,0,bwp,bhp,Math.round(bx0),Math.round(by0),fw,fh);
+      ctx.imageSmoothingEnabled=false;
       /* 夜間路燈：城貼回去之後才畫，燈要在城上面。
          ⚠ 距離太遠就整批跳過：那個尺寸下每盞燈不到一個像素，畫了只是把城
            洗成一片亮斑，還要付幾百次 fillRect。 */
