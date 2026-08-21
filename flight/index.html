@@ -879,28 +879,55 @@ function buildPathGrid(){
 /* 折線 → 逐像素權重圖（帶羽化的距離場）。
    ⚠ 不是「畫一條 1 像素的線」：線寬只有一個地圖像素時，取樣端每動一下就閃爍。
      羽化之後取樣端才能平滑地混。路與鐵路只差羽化半徑（鐵軌比土路窄）。 */
+/* 一枚帶羽化的圓章，蓋進既有的權重圖（取較大值，不累加 —— 累加會在折線
+   自己重疊的地方燒出一塊白斑）。 */
+function stampDisc(out, x, y, R){
+  const x0=Math.max(0,Math.floor(x-R)), x1=Math.min(MAPW-1,Math.ceil(x+R));
+  const y0=Math.max(0,Math.floor(y-R)), y1=Math.min(MAPH-1,Math.ceil(y+R));
+  for(let yy=y0;yy<=y1;yy++)for(let xx=x0;xx<=x1;xx++){
+    const d=Math.hypot(xx-x,yy-y);
+    if(d>R) continue;
+    const i=yy*MAPW+xx;
+    if(HGT[i]<=CLOUD_H) continue;
+    const w=Math.round(255*clamp(1-(d/R),0,1));
+    if(w>out[i]) out[i]=w;
+  }
+}
 function stampPaths(paths, R){
   const out=new Uint8Array(MAPW*MAPH);
-  const stamp=(x,y)=>{
-    const x0=Math.max(0,Math.floor(x-R)), x1=Math.min(MAPW-1,Math.ceil(x+R));
-    const y0=Math.max(0,Math.floor(y-R)), y1=Math.min(MAPH-1,Math.ceil(y+R));
-    for(let yy=y0;yy<=y1;yy++)for(let xx=x0;xx<=x1;xx++){
-      const d=Math.hypot(xx-x,yy-y);
-      if(d>R) continue;
-      const i=yy*MAPW+xx;
-      if(HGT[i]<=CLOUD_H) continue;
-      const w=Math.round(255*clamp(1-(d/R),0,1));
-      if(w>out[i]) out[i]=w;
-    }
-  };
   for(const pts of paths){
     for(let k=1;k<pts.length;k++){
       const ax=pts[k-1][0], ay=pts[k-1][1], bx=pts[k][0], by=pts[k][1];
       const n=Math.max(1,Math.ceil(Math.hypot(bx-ax,by-ay)));
-      for(let t=0;t<=n;t++) stamp(ax+(bx-ax)*t/n, ay+(by-ay)*t/n);
+      for(let t=0;t<=n;t++) stampDisc(out, ax+(bx-ax)*t/n, ay+(by-ay)*t/n, R);
     }
   }
   return out;
+}
+
+/* ── 車站的位置（折線上的索引）────────────────────────────────────
+   兩端各一個：火車跑到這裡就折返（見 buildTrains），路基也在這裡放大成站場
+   （見 buildRails）。**兩邊共用這一支** —— 各算各的話站場會畫在一個地方、
+   車停在另一個地方。
+   ⚠ 找的是「**最後一個還在城裡的點**」，不是「第一個跑出城的點」。鐵路進城前
+     常常繞一下，折線會先出城再彎回去；取第一個出城的點的話，中間那段又鑽回
+     市區的路照樣會被走過（實測薇拉馮德↔帝都線就是這樣，車頭停在城外 566，
+     途中卻深入到離帝都 382）。
+   ⚠ 對**所有大城**判定，不只兩端 —— 線中間經過別的城也算。 */
+function railStations(pts){
+  const inTown=(k)=>{
+    for(const S of SETTLEMENTS){
+      if(!/^city/.test(S.t||'')) continue;
+      if(Math.hypot(pts[k][0]-S.x, pts[k][1]-S.y)*MAP_SCALE < townEdgeR(S)) return true;
+    }
+    return false;
+  };
+  const half=pts.length>>1;
+  let ka=-1;         for(let k=0;k<half;k++)            if(inTown(k)) ka=k;
+  let kb=pts.length; for(let k=pts.length-1;k>=half;k--) if(inTown(k)) kb=k;
+  let a=Math.min(ka+1, pts.length-1), b=Math.max(kb-1, 0);
+  if(b<a){ const t=a; a=b; b=t; }
+  return [a,b];
 }
 
 /* 最小生成樹（Prim）：用直線距離當邊權，路徑本身之後再照地形找。 */
@@ -991,6 +1018,42 @@ function buildRails(){
      ⚠ 不能再窄。1.5 的時候地形取樣（走的是降取樣緩衝）會跨過整條線，
        畫出來是一條虛線 —— 那正是原本的羽化距離場要避免的閃爍。 */
   RAILW=stampPaths(paths, 1.9);
+  /* ── 站場：靠城那一端的路基放大一圈 ──────────────────────────
+     火車在這裡折返（railStations 同一支），所以這裡本來就該是個站場 ——
+     月台、側線、轉車盤都在這一塊，路基自然比正線寬。畫大一圈之後，
+     「軌道到這裡就結束、車在這裡掉頭」才讀得出來。
+     ⚠ 是**沿著軌道拉長的一段**，不是一顆圓點：站場是長條的，蓋一顆圓的
+       會像軌道上長了個瘤。所以沿折線走 ±YARD_HALF，半徑由中央的 4.6 兩頭
+       收回正線的 1.9。
+     ⚠ 收尾一定要收到正線寬，不能硬切 —— 硬切就是一段粗管接一段細管，
+       那個台階在空中看得一清二楚。 */
+  /* ⚠ 長度要用**弧長**量，不能用折線的點數。折線的點是 ROAD_DS(6) 地圖像素
+       一格，±9 個點就是 ±54 像素＝1080 世界單位 —— 聖王廳↔帝都那條線全長才
+       1858，整條線會被塗成一片站場（實測那條線的「正線」寬度量出來 7.0，
+       跟站場一樣寬，等於根本沒有正線）。
+     ±11 地圖像素＝220 世界單位，剛好一列車的長度（車身全長 206），
+     讀起來就是「站場裝得下一列車」。 */
+  const YARD_HALF=11, YARD_R=4.6, LINE_R=1.9;
+  for(const pts of paths){
+    for(const si of railStations(pts)){
+      /* 由車站往兩頭走，累積弧長超過 YARD_HALF 就停。 */
+      for(const dir of [-1, 1]){
+        let d=0, k=si;
+        while(d<YARD_HALF){
+          const k2=k+dir;
+          if(k2<0||k2>=pts.length) break;
+          const ax=pts[k][0], ay=pts[k][1], bx=pts[k2][0], by=pts[k2][1];
+          const seg=Math.hypot(bx-ax,by-ay), n=Math.max(1,Math.ceil(seg));
+          for(let q=0;q<=n;q++){
+            const t=1-clamp((d+seg*q/n)/YARD_HALF,0,1);   // 車站處 1、外緣 0
+            const R=LINE_R+(YARD_R-LINE_R)*t*t*(3-2*t);   // smoothstep，兩頭平滑貼回正線
+            stampDisc(RAILW, ax+(bx-ax)*q/n, ay+(by-ay)*q/n, R);
+          }
+          d+=seg; k=k2;
+        }
+      }
+    }
+  }
   window.__rails=paths.length;
 }
 
@@ -4649,24 +4712,10 @@ function buildTrains(){
        ⚠ 位置是沿著**弧長**找的，不是照節點數：兩端各往內走，直到離城心超過
          townEdgeR 為止。折線在城附近常常很曲折，照節點數抓會差很多。
        ⚠ 車頭停在外緣，車廂還在更外面 —— 整列車都在城外，正確。 */
-    /* ⚠ 判定要對**所有大城**做，而且要找「最後一個還在城裡的點」，
-         不是「第一個跑出城的點」。鐵路進城前常常繞一下，折線會先出城再彎回去；
-         取第一個出城的點當車站，中間那段又鑽回市區的路照樣會被走過 ——
-         實測薇拉馮德↔帝都線就是這樣，車頭停在城外 566 沒錯，但途中有一段
-         深入到離帝都城心 382（半徑 525），照樣開進城裡。 */
-    const inTown=(k)=>{
-      for(const S of SETTLEMENTS){
-        if(!/^city/.test(S.t||'')) continue;
-        if(Math.hypot(pts[k][0]-S.x, pts[k][1]-S.y)*MAP_SCALE < townEdgeR(S)) return true;
-      }
-      return false;
-    };
-    const half=pts.length>>1;
-    let ka=-1;            for(let k=0;k<half;k++)             if(inTown(k)) ka=k;
-    let kb=pts.length;    for(let k=pts.length-1;k>=half;k--)  if(inTown(k)) kb=k;
-    let sMin=cum[Math.min(ka+1, pts.length-1)];
-    let sMax=cum[Math.max(kb-1, 0)];
-    if(sMax<sMin){ const t3=sMin; sMin=sMax; sMax=t3; }
+    /* 車站位置與站場路基**共用 railStations** —— 各算各的話會畫在一個地方、
+       車停在另一個地方。 */
+    const st=railStations(pts);
+    const sMin=cum[st[0]], sMax=cum[st[1]];
     return { pts, cum, len, hs, sMin, sMax, s:sMin+TRAIN_SPAN, dir:1,
              wait: 6+i*23,                 // 錯開首發，三條線不要一起出車
              rnd: (0x9E3779B1*(i+1))>>>0,  // 各自的時刻表種子
