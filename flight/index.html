@@ -797,11 +797,60 @@ function roadCost(h0,h1,riv){
      山區幹線該有的樣子。
    ⚠ 渡河 90（路是 26）：鐵路橋要能吃住整列車的軸重，比土路的木橋貴得多。 */
 const RAIL_GRADE=3;
+/* 打隧道的代價（每一格）。⚠ 這一項才是「火車不爬山」的關鍵：
+   原本只有爬坡的二次懲罰，於是遇到山只有一個選擇 —— **繞**。繞不掉的時候
+   就只能硬爬（懲罰再大也是有限的），畫面上就是火車在爬山。
+   加了這一項之後，一格的代價變成「翻過去」與「鑽過去」取小的那個：
+     翻過去 = dh*0.9 + 超過極限的二次懲罰
+     鑽過去 = RAIL_TUNNEL（固定，跟山多高無關 —— 隧道就是這個性質）
+   Dijkstra 會自己挑便宜的那條。6 的意思是「為了少挖一格隧道，最多值得多繞
+   六格（720 世界單位）」—— 短的山脊直接鑽過去，長的還是繞路。 */
+const RAIL_TUNNEL=6;
 function railCost(h0,h1,riv){
   const dh=Math.abs(h1-h0);
   const over=dh-RAIL_GRADE;
-  return 1 + dh*0.9 + (over>0?over*over*0.8:0) + (riv?90:0);
+  const climb=dh*0.9 + (over>0?over*over*0.8:0);
+  return 1 + Math.min(climb, RAIL_TUNNEL) + (riv?90:0);
 }
+
+/* ── 縱斷面（設計高程）─────────────────────────────────────────────
+   真實鐵路不貼著地面走：它有自己的縱斷面，坡度受限，高過地面就是**橋／填方**、
+   低於地面就是**路塹／隧道**。這支就是在算那條線。
+   ⚠ 先前是「沿折線平滑 6 趟」。那只是把地面抹順，本質上還是**跟著地形起伏**，
+     所以山還是爬上去了。要不爬山就得**限制坡度**，讓高程自己走它的直線，
+     地面高過它的地方就成為隧道。
+   作法：先重平滑當基準，再用「往前掃＋往回掃」把坡度夾在 g 以內（兩趟都做才
+   對稱，只做一趟的話整條線會往一頭傾）。
+   ⚠ g 用的是**每格**的高度差上限，與 railCost 的 RAIL_GRADE 同一個尺度。 */
+function railProfile(pts, hgtAt){
+  const n=pts.length, h=new Float64Array(n);
+  for(let k=0;k<n;k++) h[k]=hgtAt(k);
+  for(let pass=0;pass<24;pass++){                 // 重平滑：先得到一條大勢
+    const t=h.slice();
+    for(let k=1;k<n-1;k++) h[k]=(t[k-1]+t[k]*2+t[k+1])*0.25;
+  }
+  const seg=(k)=>Math.hypot(pts[k][0]-pts[k-1][0], pts[k][1]-pts[k-1][1])/ROAD_DS;
+  const g=RAIL_GRADE;
+  for(let pass=0;pass<3;pass++){
+    for(let k=1;k<n;k++){                         // 往前：不得比上一點陡
+      const m=g*Math.max(0.2,seg(k));
+      if(h[k]>h[k-1]+m) h[k]=h[k-1]+m;
+      if(h[k]<h[k-1]-m) h[k]=h[k-1]-m;
+    }
+    for(let k=n-2;k>=0;k--){                      // 往回：對稱地再夾一次
+      const m=g*Math.max(0.2,seg(k+1));
+      if(h[k]>h[k+1]+m) h[k]=h[k+1]+m;
+      if(h[k]<h[k+1]-m) h[k]=h[k+1]-m;
+    }
+  }
+  return h;
+}
+/* 地面高過設計高程這麼多就算在山裡（＝隧道）。
+   ⚠ 門檻不能太小：地形本來就有幾個單位的雜訊，太小的話整條線會被切成一段一段
+     的假隧道。18 世界單位約是一節車廂的高度。 */
+const TUNNEL_MIN=18;
+/* 設計高程高過地面這麼多就架高架橋（與隧道同一個門檻，兩邊對稱）。 */
+const VIADUCT_MIN=18;
 
 /* ── 共用的地形尋路（Dijkstra）───────────────────────────────────────
    ⚠ 抽成一支之前這段在 buildRoads 裡**抄了兩份**（幹道一份、支線一份）。
@@ -917,10 +966,13 @@ function stampDisc(out, x, y, R){
     if(w>out[i]) out[i]=w;
   }
 }
-function stampPaths(paths, R){
+/* skipTun：這條路徑有 tun 標記時，**兩端都在山裡**的那一段不鋪 —— 那段軌道
+   在隧道內，地表看不到。只有一端在山裡的段落照鋪，洞口才不會憑空斷開。 */
+function stampPaths(paths, R, skipTun){
   const out=new Uint8Array(MAPW*MAPH);
   for(const pts of paths){
     for(let k=1;k<pts.length;k++){
+      if(skipTun && pts.tun && pts.tun[k-1] && pts.tun[k]) continue;
       const ax=pts[k-1][0], ay=pts[k-1][1], bx=pts[k][0], by=pts[k][1];
       const n=Math.max(1,Math.ceil(Math.hypot(bx-ax,by-ay)));
       for(let t=0;t<=n;t++) stampDisc(out, ax+(bx-ax)*t/n, ay+(by-ay)*t/n, R);
@@ -1036,12 +1088,34 @@ function buildRails(){
     pts.ends=[big[b2], big[a2]];
     paths.push(pts);
   }
+  /* ── 縱斷面與隧道 ────────────────────────────────────────────
+     每條線先算出受坡度限制的設計高程；地面高過它 TUNNEL_MIN 以上的那幾段
+     ＝**在山裡**，地表不鋪軌（鋪了會看到鐵軌爬過山頂）。 */
+  for(const pts of paths){
+    const prof=railProfile(pts, k=>{
+      const xi=clamp(pts[k][0]|0,0,MAPW-1), yi=clamp(pts[k][1]|0,0,MAPH-1);
+      return HGT[yi*MAPW+xi];
+    });
+    pts.prof=prof;
+    pts.tun=new Uint8Array(pts.length);
+    pts.via=new Uint8Array(pts.length);
+    for(let k=0;k<pts.length;k++){
+      const xi=clamp(pts[k][0]|0,0,MAPW-1), yi=clamp(pts[k][1]|0,0,MAPH-1);
+      const g=HGT[yi*MAPW+xi];
+      pts.tun[k]=(g > prof[k]+TUNNEL_MIN)?1:0;
+      /* 反過來：設計高程**高於地面**就是填方／高架。
+         ⚠ 這是坡度一被限制就必然出現的另一半 —— 線不再跟著地形下到谷底，
+           所以谷地那幾段它是懸空的。不畫高架的話軌道就浮在半空中。
+           實測 224 個取樣點裡有 48 個高出地面 18 以上，最多 102 個世界單位。 */
+      pts.via[k]=(prof[k] > g+VIADUCT_MIN)?1:0;
+    }
+  }
   RAIL_PATHS=paths;
   /* 羽化半徑比公路窄（2.2 → 1.9）：路基是壓實的碎石帶，比土路窄，
      而且鐵路該讀起來是**一條細而確定的線**，公路才是漫開的。
      ⚠ 不能再窄。1.5 的時候地形取樣（走的是降取樣緩衝）會跨過整條線，
        畫出來是一條虛線 —— 那正是原本的羽化距離場要避免的閃爍。 */
-  RAILW=stampPaths(paths, 1.9);
+  RAILW=stampPaths(paths, 1.9, true);   // true＝隧道段不鋪地表軌道
   /* ── 站場：靠城那一端的路基放大一圈 ──────────────────────────
      火車在這裡折返（railStations 同一支），所以這裡本來就該是個站場 ——
      月台、側線、轉車盤都在這一塊，路基自然比正線寬。畫大一圈之後，
@@ -1133,6 +1207,30 @@ function buildRails(){
       }
     }
   }
+  /* 高架橋：設計高程高過地面的那幾段鋪石材，與跨水的石橋同一層、同一個外觀 ——
+     兩者本來就是同一種東西（把軌道從地面架起來的構造物）。 */
+  for(const pts of paths){
+    if(!pts.via) continue;
+    for(let k=1;k<pts.length;k++){
+      if(!(pts.via[k-1]||pts.via[k])) continue;
+      const ax=pts[k-1][0], ay=pts[k-1][1], bx=pts[k][0], by=pts[k][1];
+      const n=Math.max(1,Math.ceil(Math.hypot(bx-ax,by-ay)));
+      for(let t=0;t<=n;t++) stampDisc(RAILBR, ax+(bx-ax)*t/n, ay+(by-ay)*t/n, 2.6);
+    }
+  }
+  /* 洞口：進出山的那一格蓋一小塊石頭。借 RAILBR 這一層 —— 它就是石材，
+     而且著色與 BIOME 都已經排在水與鐵路之前，洞口自然壓在軌道上。 */
+  let tunnels=0;
+  for(const pts of paths){
+    if(!pts.tun) continue;
+    for(let k=1;k<pts.length;k++){
+      if(pts.tun[k]===pts.tun[k-1]) continue;
+      tunnels+=pts.tun[k]?1:0;
+      const m=pts.tun[k]?k-1:k;                    // 洞口畫在山**外**那一格
+      stampDisc(RAILBR, pts[m][0], pts[m][1], 3.4);
+    }
+  }
+  window.__tunnels=tunnels;
   { let n=0; for(let i=0;i<RAILBR.length;i++) if(RAILBR[i]>40) n++; window.__railBridge=n; }
   window.__rails=paths.length;
 }
@@ -4887,6 +4985,9 @@ const TRAIN_DWELL = [30,90];    // 終點站停靠秒數的範圍＝發車間隔
      而剔除面在 2232 —— 最大只放大 1.27 倍，近距離完全是真實投影。 */
 const TRAIN_MIN_PX = 22;        // 整列車的最小螢幕長度
 const TRAIN_MIN_W  = 1.6;       // 車身最小寬（螢幕像素）
+/* 車高＝車寬的幾倍。真實車廂高寬比約 1.2，但從空中俯看時「高」是往螢幕上方
+   擠出來的那一截 —— 給足了才看得出是箱子而不是色帶。 */
+const TRAIN_BOX_H  = 0.85;
 const TRAIN_SPAN   = TRAIN_CARS*TRAIN_CAR + (TRAIN_CARS-1)*TRAIN_GAP;   // 車身總長（世界單位）
 /* ── 煙：**一朵一朵的雲塊**，不是一條連續的煙柱 ─────────────────────
    ⚠ 密集取樣（0.18 秒一團、18 團）畫出來是一根**實心白柱** —— 使用者回報的
@@ -4917,16 +5018,13 @@ function buildTrains(){
          線。所以這裡沿著折線做幾趟一維平滑，存成 hs —— 那才是「軌道面」。
        ⚠ 再抬 EMBANK：路基高出地面一點，車才是坐在軌道上而不是陷進土裡。 */
     const EMBANK=3;
+    /* 軌道面直接用 buildRails 算好的**設計高程**（受坡度限制的縱斷面）——
+       兩邊用同一條線，車才會跑在自己的軌道上。
+       ⚠ 先前這裡是自己再平滑一次地面。那條線會跟著地形爬上山頂，於是
+         「地表不鋪軌」的隧道段與「車在哪」對不起來。 */
     const hs=new Float64Array(pts.length);
-    for(let k=0;k<pts.length;k++){
-      const xi=clamp(pts[k][0]|0,0,MAPW-1), yi=clamp(pts[k][1]|0,0,MAPH-1);
-      hs[k]=HGT[yi*MAPW+xi];
-    }
-    for(let pass=0;pass<6;pass++){
-      const t2=hs.slice();
-      for(let k=1;k<pts.length-1;k++) hs[k]=(t2[k-1]+t2[k]*2+t2[k+1])*0.25;
-    }
-    for(let k=0;k<pts.length;k++) hs[k]+=EMBANK;
+    const src=pts.prof;
+    for(let k=0;k<pts.length;k++) hs[k]=(src?src[k]:HGT[clamp(pts[k][1]|0,0,MAPH-1)*MAPW+clamp(pts[k][0]|0,0,MAPW-1)])+EMBANK;
     /* ── 車站：火車跑到市區外緣就停，不開進城裡 ──────────────────
        軌道本身是鋪到城心的（城裡當然有站場），但**車**只跑到市區外緣就折返 ——
        開進城裡的話車會從手繪的屋頂上輾過去，而且那個尺度下整列車會被城蓋掉，
@@ -4970,6 +5068,8 @@ function updateTrains(dt){
     if(T.puffT>=SMOKE_DT){
       T.puffT=0;
       const h=trainAt(T,T.s);
+      if(h&&h.tun){ /* 在隧道裡不留煙：煙會留在世界座標上，山頂會冒出一條煙柱 */ }
+      else
       /* ⚠ 每團記一個抖動值 j。等間距、等速長大的煙團疊起來是一條**均勻的白繩**，
          不是煙 —— 真的蒸汽是一噴一噴、大小不一的。j 決定這一團的大小與橫向偏移，
          用各自的 LCG 生（同時刻表那條理由：重整後要長一樣）。 */
@@ -4991,8 +5091,9 @@ function trainAt(T,s){
   const seg=C[hi]-C[lo];
   const t=seg>1e-6?(s-C[lo])/seg:0;
   const x=P[lo][0]+(P[hi][0]-P[lo][0])*t, y=P[lo][1]+(P[hi][1]-P[lo][1])*t;
+  const tn=P.tun ? (P.tun[lo]||P.tun[hi]) : 0;      // 任一端在山裡就算在隧道內
   return { x, y, h:T.hs[lo]+(T.hs[hi]-T.hs[lo])*t,   // 軌道面，不是腳下的地面
-           dx:P[hi][0]-P[lo][0], dy:P[hi][1]-P[lo][1] };
+           dx:P[hi][0]-P[lo][0], dy:P[hi][1]-P[lo][1], tun:tn };
 }
 
 /* 3D 視窗裡的火車。投影與 drawPlaces 同一套；遮擋走 clipByTerrainDepth
@@ -5038,6 +5139,10 @@ function drawTrains(S,scaleH,horizon,sinp,cosp){
        ⚠ 所以淡出改綁在**投影長度**上，不是綁距離：長度掉到 TRAIN_MIN_PX 就淡完，
          剛好接上不畫的門檻，中間沒有跳變。 */
     if(spanPx<TRAIN_MIN_PX) continue;
+    /* 在隧道裡就不畫 —— 它在山肚子裡，本來就看不到。
+       ⚠ 判的是**車頭**：進洞的瞬間整列消失、出洞的瞬間整列出現，比逐節判乾淨
+         （逐節判會出現半列車卡在洞口的畫面）。 */
+    if(head.tun) continue;
     const seats=[];
     for(let c=0;c<TRAIN_CARS;c++){
       const s1=T.s - T.dir*(c*TRAIN_PITCH);
@@ -5133,25 +5238,51 @@ function drawTrains(S,scaleH,horizon,sinp,cosp){
        ⚠ 不畫車窗車輪：這個尺寸下加細節只會變成雜點。讀得出「一串一節一節的
          深色量體沿著軌道在動、前頭冒著煙」就夠了。 */
     ctx.globalAlpha=fade;
-    ctx.lineCap='butt';
     const wPx=seats[0].w;
     for(let i=0;i<seats.length;i++){
       const q=seats[i], w=q.w;
-      /* 車身抬離地面半個車高：軌道畫在地表，車該坐在軌道上而不是陷進去。 */
-      const ax=q.ax, ay=q.ay-q.up, bx=q.bx, by=q.by-q.up;
-      /* 先描一圈比車身寬一點的暗邊 —— 森林與道碴都是雜色的，沒有邊的話
-         車身會溶進背景（尤其遠處只有兩三個像素的時候）。 */
-      ctx.strokeStyle='rgba(12,12,14,.72)';
-      ctx.lineWidth=w+1.6;
-      ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,by); ctx.stroke();
-      ctx.strokeStyle = i===0 ? '#23252b' : '#4a4038';   // 機車頭比車廂黑
-      ctx.lineWidth=w;
-      ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,by); ctx.stroke();
-      /* 車頂的一道高光：讓它讀成「立體的箱子」而不是一條色帶。 */
-      if(w>=3){
-        ctx.strokeStyle = i===0 ? 'rgba(120,124,134,.55)' : 'rgba(150,132,104,.50)';
-        ctx.lineWidth=Math.max(1, w*0.30);
-        ctx.beginPath(); ctx.moveTo(ax,ay-w*0.26); ctx.lineTo(bx,by-w*0.26); ctx.stroke();
+      /* 車廂＝**真的方塊**：地面矩形往上擠出一個高度，畫「看得到的側面」＋車頂。
+         ⚠ 先前是一段粗線＋一道高光，那讀起來是**一片色帶**（Ray 回報「車廂是
+           平面」）。一條線無論怎麼描邊都沒有厚度 —— 要有體積就得真的把頂面與
+           側面分開畫、各自給不同的亮度，眼睛靠的是那個明暗差。
+         ⚠ 側面只畫**朝鏡頭的那一邊**：兩邊都畫的話遠端那面會從車頂後面露出來，
+           變成一節有兩層樓。判法與街廓量體同一套（看螢幕帶號）。 */
+      const dx=q.bx-q.ax, dy=q.by-q.ay;
+      const L=Math.hypot(dx,dy)||1;
+      const nx=-dy/L, ny=dx/L;                 // 螢幕上的車身橫向
+      const hw2=w*0.5;
+      /* 地面四角（已含 up：車坐在軌道上，不是陷進去） */
+      const gAx=q.ax+nx*hw2, gAy=q.ay-q.up+ny*hw2;
+      const gBx=q.bx+nx*hw2, gBy=q.by-q.up+ny*hw2;
+      const gCx=q.bx-nx*hw2, gCy=q.by-q.up-ny*hw2;
+      const gDx=q.ax-nx*hw2, gDy=q.ay-q.up-ny*hw2;
+      const hh2=Math.max(1.1, w*TRAIN_BOX_H);  // 車高（螢幕像素）
+      /* 側面：畫**下緣在螢幕上比較低**的那一條長邊（＝朝鏡頭那面）。 */
+      const sideAB=(gAy+gBy)>(gCy+gDy);
+      const s0x=sideAB?gAx:gCx, s0y=sideAB?gAy:gCy;
+      const s1x=sideAB?gBx:gDx, s1y=sideAB?gBy:gDy;
+      ctx.beginPath();
+      ctx.moveTo(s0x,s0y); ctx.lineTo(s1x,s1y);
+      ctx.lineTo(s1x,s1y-hh2); ctx.lineTo(s0x,s0y-hh2); ctx.closePath();
+      ctx.fillStyle = i===0 ? '#141519' : '#2b2620';        // 側面在陰影裡，最暗
+      ctx.fill();
+      /* 車頭端面：只有正對著看的時候才有面積，畫了才不會像被削掉一半。 */
+      ctx.beginPath();
+      ctx.moveTo(gAx,gAy); ctx.lineTo(gDx,gDy);
+      ctx.lineTo(gDx,gDy-hh2); ctx.lineTo(gAx,gAy-hh2); ctx.closePath();
+      ctx.fillStyle = i===0 ? '#1b1d22' : '#332d26';
+      ctx.fill();
+      /* 車頂：最亮的一面（天光直接照到），與側面的明暗差就是「這是個箱子」。 */
+      ctx.beginPath();
+      ctx.moveTo(gAx,gAy-hh2); ctx.lineTo(gBx,gBy-hh2);
+      ctx.lineTo(gCx,gCy-hh2); ctx.lineTo(gDx,gDy-hh2); ctx.closePath();
+      ctx.fillStyle = i===0 ? '#3c4048' : '#5b4f42';
+      ctx.fill();
+      /* 描邊：森林與道碴都是雜色的，沒有邊的話車身會溶進背景（遠處尤其）。
+         ⚠ 只描車頂那一圈就夠 —— 側面已經是最暗的色塊，再描等於加粗一圈黑。 */
+      if(w>=2.6){
+        ctx.strokeStyle='rgba(10,10,12,.66)'; ctx.lineWidth=1;
+        ctx.stroke();
       }
     }
     /* 機車頭正面的一點暖光（夜裡才看得出來，白天被壓掉）。 */
