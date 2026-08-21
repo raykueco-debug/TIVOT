@@ -751,6 +751,7 @@ let BIOME=null;
 let ROAD_PATHS=[];                            // 折線（地圖座標），地圖畫面也要用
 
 let RAILW=null;                               // Uint8Array：每地圖像素的鐵軌權重
+let RAILBR=null;                              // Uint8Array：石橋橋面（鐵路跨水的那幾段）
 let RAIL_PATHS=[];                            // 折線（地圖座標），地圖畫面與火車都要用
 
 /* 成本場：一步的代價。爬坡是主要成本 —— 這是讓路自己去繞河谷的關鍵。 */
@@ -1054,6 +1055,38 @@ function buildRails(){
       }
     }
   }
+  /* ── 跨水就架石橋 ────────────────────────────────────────────
+     ⚠ 不架橋的話鐵路在河上是**看不見的**：地形著色的分支順序是「水 → 鐵路」，
+       水的分支先中，鐵路那一段就整個不畫。所以河面上本來就是斷的 —— 橋不只是
+       裝飾，它是把那一段接回來的東西。
+     ⚠ 橋面要比正線寬一點（2.6 vs 1.9）：橋有欄杆與橋台，本來就比路基寬；
+       而且窄了在河面上會被水色吃掉。
+     ⚠ 兩頭各多延伸 BR_ABUT 個像素**上岸**：橋台本來就坐在岸上，切齊水線的話
+       看起來是「浮在水面上的一截灰色」，不是橋。 */
+  const BR_R=2.6, BR_ABUT=4;
+  RAILBR=new Uint8Array(MAPW*MAPH);
+  for(const pts of paths){
+    /* 以 1 像素為步長重新取樣整條線 —— 折線的點距是 6 像素，照節點判的話
+       窄河會整條被跳過。 */
+    const samp=[];
+    for(let k=1;k<pts.length;k++){
+      const ax=pts[k-1][0], ay=pts[k-1][1], bx=pts[k][0], by=pts[k][1];
+      const n=Math.max(1,Math.ceil(Math.hypot(bx-ax,by-ay)));
+      for(let q=(k===1?0:1);q<=n;q++){
+        const x=ax+(bx-ax)*q/n, y=ay+(by-ay)*q/n;
+        const xi=clamp(Math.round(x),0,MAPW-1), yi=clamp(Math.round(y),0,MAPH-1);
+        samp.push([x, y, RIV[yi*MAPW+xi]?1:0]);
+      }
+    }
+    for(let i=0;i<samp.length;){
+      if(!samp[i][2]){ i++; continue; }
+      let j=i; while(j<samp.length && samp[j][2]) j++;
+      const a=Math.max(0,i-BR_ABUT), b=Math.min(samp.length-1,j-1+BR_ABUT);
+      for(let k=a;k<=b;k++) stampDisc(RAILBR, samp[k][0], samp[k][1], BR_R);
+      i=j;
+    }
+  }
+  { let n=0; for(let i=0;i<RAILBR.length;i++) if(RAILBR[i]>40) n++; window.__railBridge=n; }
   window.__rails=paths.length;
 }
 
@@ -2794,7 +2827,9 @@ async function loadWorld(){
         const sl=(SLX[i]<0?-SLX[i]:SLX[i])+(SLY[i]<0?-SLY[i]:SLY[i]);
         const subw=SUBW?SUBW[i]:0;
         let tex;
-        if(RIV[i] && sl<BIOME_WATER_SL){
+        if(RAILBR && RAILBR[i]>40){
+          tex=G_RG;                       // 石橋：灰岩的細節貼圖
+        }else if(RIV[i] && sl<BIOME_WATER_SL){
           tex=(nz>0.5)?G_WL:G_WD;
         }else if(sl>BIOME_CLIFF+(nz-0.5)*40){
           tex=(hh>BIOME_ROCKALT)?G_RG:G_RB;
@@ -3554,13 +3589,22 @@ if(ADMIN) window.resetFlags=()=>{
    有沒有做到，看的就是這三個數。 */
 if(ADMIN) window.dbgRail=()=>({
   lines:RAIL_PATHS.length,
-  聲音:{ 目標:+trainSndTarget().toFixed(2), 實際:+trainMix.toFixed(2),
-         範圍:TRAIN_SND_NEAR+'~'+TRAIN_SND_FAR, 在播:sfxTrain.playing() },
   trains:TRAINS.map(T=>({
     軌道長:Math.round(T.len), 站間:Math.round(T.sMin)+'~'+Math.round(T.sMax),
     位置:Math.round(T.s), 方向:T.dir, 待發:Math.round(T.wait),
     進度:((T.s-T.sMin)/Math.max(1,T.sMax-T.sMin)*100).toFixed(0)+'%',
     煙:T.puffs.length })),
+});
+/* 定位音效驗收用：火車與海鷗都是「一直播、只動音量」，光聽很難確認是不是
+   真的在依距離淡入淡出 —— 這支把目標值、實際值、範圍一次列出來。 */
+if(ADMIN) window.dbgSnd=()=>({
+  火車:{ 目標:+trainSndTarget().toFixed(2), 實際:+trainMix.toFixed(2),
+         範圍:TRAIN_SND_NEAR+'~'+TRAIN_SND_FAR, 音量:TRAIN_VOL, 在播:sfxTrain.playing() },
+  海鷗:{ 目標:+gullSndTarget().toFixed(2), 實際:+gullMix.toFixed(2),
+         範圍:GULL_SND_NEAR+'~'+GULL_SND_FAR, 音量:GULL_VOL, 在播:sfxGull.playing(),
+         有鳥群:!!flock,
+         距離:flock?Math.round(Math.hypot(flock.x-cam.x,flock.y-cam.y)):null },
+  靜音:muted,
 });
 /* 怪的狀態機驗收用：enemy 是 top-level let，外部注入的 script 讀不到。 */
 if(ADMIN) window.dbgEnemy=()=>enemy&&{state:enemy.state,x:Math.round(enemy.x),y:Math.round(enemy.y),
@@ -3786,6 +3830,21 @@ const TRAIN_VOL=1.0;
      音量就滿格跳上來。NEAR 取 650（略大於那個垂直間距），正上方剛好滿音量。 */
 const TRAIN_SND_FAR=2245, TRAIN_SND_NEAR=650;
 let trainMix=0;                      // 收斂跟隨，避免車一停就硬切
+
+/* ── 海鷗 ──────────────────────────────────────────────────────────
+   鳥群（FLOCK）飛近時才聽得到，作法與火車完全一樣（一直播、只動音量）。
+   母帶實測 −31.1 LUFS（耳機）／−34.0（手機），平均 −32.5，長度 17.58 s。
+   ⚠ 這一支**不能照 LUFS 開滿**。要把平均推到 −28 需要 gain 1.69（超過上限），
+     但它的峰值是 **−1.4 dBFS** —— 海鷗叫聲是稀疏的短音，閘控積分響度會低估
+     它的實際衝擊：gain 1.0 時每一聲都幾乎打到滿刻度，在耳機上是會嚇到人的。
+     所以這裡改看峰值來訂：0.70 讓叫聲落在 −4.5 dBFS 附近，聽得清楚又不刺耳。
+     這是 §6.6 那套方法的例外情形（稀疏音），已量了兩個數字才決定。
+   ⚠ 可聞範圍取 950，剛好**略大於鳥群的生成距離 900**：於是牠出現的那一刻是
+     無聲的，飛近才叫得出來。取大了會變成「鳥一生出來就在耳邊叫」。 */
+const sfxGull=makeLoop('../resources/audio/se/se_flight_seagull.mp3', 1.0);
+const GULL_VOL=0.70;
+const GULL_SND_FAR=950, GULL_SND_NEAR=200;
+let gullMix=0;
 let sailMix=0;                       // 0＝停船 1＝航行，收斂跟隨避免忽大忽小
 /* 全域靜音：與主程式（index.html / main.js）共用 localStorage 的同一把鑰匙。
    ⚠ 這裡是另一個頁面、另一套 BGM（HTMLAudio 而非 audio.js 的 Web Audio），
@@ -3815,6 +3874,17 @@ function updateBgm(dt){
      0.05 的係數約 0.9 秒收斂完，聽起來是自然的遠去。 */
   trainMix+=(trainSndTarget()-trainMix)*(1-Math.pow(1-0.05, dt/16.67));
   sfxTrain.tick(TRAIN_VOL*trainMix*mk);
+  /* 海鷗：同一套。鳥群散掉（flock=null）時目標歸零，靠收斂跟隨淡出。 */
+  gullMix+=(gullSndTarget()-gullMix)*(1-Math.pow(1-0.05, dt/16.67));
+  sfxGull.tick(GULL_VOL*gullMix*mk);
+}
+/* 目標音量（0~1）：鳥群有多近。⚠ 鳥群的高度落在玩家上下 ±160，所以三維距離
+   與平面距離幾乎一樣 —— 但還是照算，免得日後改成高空盤旋時漏掉。 */
+function gullSndTarget(){
+  if(!flock) return 0;
+  const d=Math.hypot(flock.x-cam.x, flock.y-cam.y, (flock.alt||cam.alt)-cam.alt);
+  const t=clamp((GULL_SND_FAR-d)/(GULL_SND_FAR-GULL_SND_NEAR),0,1);
+  return t*t*(3-2*t);
 }
 /* 目標音量（0~1）：最近那一列在跑的火車有多近。 */
 function trainSndTarget(){
@@ -3835,8 +3905,9 @@ function trainSndTarget(){
      成功與否在下一個 tick 才知道，所以 kick 當下不能立刻判斷 ——
      每次事件都重試一次，等 playing() 轉 true 才收工。 */
   const kick=()=>{
-    bgmMain.start(); ambSail.start(); ambIdle.start(); sfxTrain.start();
-    if(bgmMain.playing() && ambSail.playing() && ambIdle.playing() && sfxTrain.playing()){
+    bgmMain.start(); ambSail.start(); ambIdle.start(); sfxTrain.start(); sfxGull.start();
+    if(bgmMain.playing() && ambSail.playing() && ambIdle.playing()
+       && sfxTrain.playing() && sfxGull.playing()){
       removeEventListener('pointerdown',kick); removeEventListener('keydown',kick);
     }
   };
@@ -4161,7 +4232,13 @@ function render(now){
           const bi=BIOME[mi];
           const tex=bi&15;
           /* 人造物與水：底色本身要推過去（細節層是相乘的，只靠它會留在原本的色相上）。 */
-          if(tex===G_WD||tex===G_WL){
+          if(RAILBR&&RAILBR[mi]>40){
+            /* 石橋：比道碴亮、比道碴冷的灰岩。
+               ⚠ 一定要排在**水之前**，否則整段又被水色蓋掉（那正是沒有橋的時候
+                 鐵路在河上會斷掉的原因）。 */
+            const bw=(RAILBR[mi]/255)*0.94;
+            cr+=(176-cr)*bw; cg+=(174-cg)*bw; cb+=(169-cb)*bw;
+          }else if(tex===G_WD||tex===G_WL){
             const deep=(tex===G_WL);
             const wr=deep?92:66, wg=deep?126:100, wb=deep?146:124;
             cr+=(wr-cr)*0.72; cg+=(wg-cg)*0.72; cb+=(wb-cb)*0.72;
