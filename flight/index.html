@@ -3286,6 +3286,15 @@ const MASS_ON_PX = 27;
 /* 距離遲滯：長出來之後要縮到門檻的 MASS_OFF 倍才收回去。門檻不再跳動之後，
    它只剩「別在邊界上抖」這一個用途。 */
 const MASS_OFF = 0.6;
+/* ── 量體層的淡入淡出（ver -290）────────────────────────────────────
+   ⚠ ver -285 修掉了「畫質換檔把整層抹掉」，但**越過門檻的那一下仍是瞬間全開**
+     —— 布林旗標一翻，24 塊量體同時出現，看起來就是聖王廳的立體感「啪」一聲
+     閃出來。遲滯只能讓它不要來回抖，擋不住這一下。
+   ⚠ 改法不是把門檻做成距離漸層：接近速度快的時候距離漸層一樣是一瞬間，
+     而且傳送／畫質換檔那種「距離沒變但旗標翻了」的情形完全蓋不到。
+     用**時間**推進才對每一種觸發都成立。
+   400ms：比立繪進場（450ms）短一點 —— 這是背景元素，不該比角色進場還慢。 */
+const MASS_FADE_MS = 400;
 /* ── 城的近裁面與仿射保險絲 ───────────────────────────────────────
    ZCLAMP 投影時 z 的下限（避免除零）。
    ZNEAR  比這個深度更近的格點一律不畫。**必須大於 ZCLAMP** —— 被夾過的
@@ -7039,7 +7048,20 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
       const massW=o.s.planW*W/(2*Math.max(60,Math.hypot(mdx,mdy)))*pk;
       const massT=MASS_ON_PX;
       o.s._massOn = o.s._massOn ? (massW>=massT*MASS_OFF) : (massW>=massT);
-      if(MS&&MA&&tall>0&&o.s._massOn){
+      /* 旗標仍然是「該不該有量體」的判斷（含遲滯），但畫出來的濃度走 _massA
+         這個連續值，逐幀朝旗標推進 → 淡入／淡出。
+         ⚠ dt 夾 100ms：城在畫面外時這一段不執行，_massAt 會過期；不夾的話
+           一回到畫面就是一大步，等於沒有淡入。
+         ⚠ 初值 0（不是直接等於旗標）—— 第一次看到一座城時也要淡進來。 */
+      { const nowMs=performance.now();
+        const dtm=Math.min(100, nowMs-(o.s._massAt||nowMs));
+        o.s._massAt=nowMs;
+        const tgt=o.s._massOn?1:0, stp=dtm/MASS_FADE_MS;
+        let a=(o.s._massA==null)?0:o.s._massA;
+        a = (a<tgt) ? Math.min(tgt,a+stp) : Math.max(tgt,a-stp);
+        o.s._massA=a; }
+      const massA=o.s._massA;
+      if(MS&&MA&&tall>0&&massA>0.003){
         const dyk=scaleH*syk;
         /* 方位桶：由遠而近的順序只取決於 (gradU,gradV) 的方向（見 loadMass）。 */
         let az=Math.atan2(gradV,gradU)/(Math.PI*2); az-=Math.floor(az);
@@ -7047,6 +7069,13 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
         const sux2=planImg.width*0.5, svy2=planImg.height*0.5;
         if(!massPts||massPts.length<64) massPts=new Float64Array(64);
         const MP=massPts;
+        /* ⚠ 淡入的濃度**只套在量體層**（牆＋屋頂），底下的手繪平面圖維持不透明
+           —— 兩者疊在同一個 CFB 上，所以這正好是一次交叉淡化：立體長出來的
+           同時平面圖從底下透出來，中間沒有任何一格是空的。
+           ⚠ 代價：淡化途中屋頂子格之間那 0.5px 的**刻意重疊會二次疊色**，
+             看得到一條極淡的接縫。全不透明時被蓋掉所以看不見。400ms 的過渡
+             期間可接受；真的礙眼就得把量體改畫到另一張離屏再整張合成。 */
+        CFB.globalAlpha=massA;
         /* 第一趟：牆。整批累積成一條路徑，最後一次 fill。 */
         CFB.setTransform(kx,0,0,ky,-bx0*kx,-by0*ky);
         CFB.beginPath();
@@ -7164,6 +7193,7 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
           }
         }
         CFB.setTransform(1,0,0,1,0,0);
+        CFB.globalAlpha=1;              // ⚠ CFB 是共用緩衝，一定要還回去
       }
       /* 依光線上色：同 drawShip 那套。素材本身已經把「固定的色調對齊」烘進去
          （build_city.py 的 SAT/VAL），這裡只加隨時間變的部分。
