@@ -446,6 +446,13 @@ const SETTLEMENTS = [
     /* ⚠ ver -213：整體縮至 50%(1100→550)。planTall 必須同步減半，否則
        高度/半徑比從 0.18 變成 0.36，聖座會變成一叢細高竹竿。 */
     planW:550, planRot:0.0, planTall:50, noWater:true, noLamps:true,
+    /* ⚠ podium：把地基整平成一塊實心台地（見 buildRelief 的台座段）。
+       聖王廳非開不可 —— 它蓋在起伏最大的一塊地上，不整平的話高地會頂穿
+       廣場中央的白石地板（露出底下的綠地）。
+         r     全平半徑，以圖的半寬為單位。1.05 讓台座比平面圖再寬一點，
+               平面圖的邊緣才不會正好落在坡度轉折上（Ray：「底部加厚」）。
+         skirt 裙邊寬度（地圖像素），往外平滑接回原地形，避免城緣一道崖。 */
+    podium:{ r:1.05, skirt:8 },
     wallCol:'rgba(226,219,198,0.50)' },
   /* planW ＝ 圖寬代表幾個世界單位。城核約佔圖寬的 3/4，
               半徑 440 → 440*2/0.75 ≈ 1170，取 1250 讓郊區有餘。
@@ -2748,6 +2755,36 @@ async function loadWorld(){
           HGT[i]=wl; raw[i]=wl/PEAK_SCALE; RIV[i]=1; COL[i]=rgb(84,120,142); water++;
         }else if(HGT[i]<=CLOUD_H){                // 插畫說是陸、但地形是海 → 填起來
           HGT[i]=gh; raw[i]=gh/PEAK_SCALE; land++;
+        }
+      }
+      /* ── 地基台座（podium）────────────────────────────────────
+         ⚠⚠ 上面那個迴圈**只填不削**：低於雲海的填起來，太高的完全不管。
+           那是不對稱的 —— 填解決「城浮在雲海上」，**削**才解決「地形從地板
+           穿出來」。實測聖王廳：地基 124，但 footprint 之內的地形最高超過
+           400，那塊高地就直接頂在廣場中央。
+         ⚠ 表現出來**不是**看到一座小丘，是「該白的地方冒出綠地」——
+           城的平面圖貼在地形網格上，而網格有一條保險絲
+           （zmax>zmin*CITY_ZRATIO 就整格不畫，見畫城的地方）。地形頂起來的
+           那幾格觸發保險絲被跳過，底下的地貌就露出來了。整平之後那幾格的
+           深度比回到正常，保險絲不再跳，平面圖就蓋滿了。
+         ⚠ 一定要有**裙邊**：直接切平會在城緣留下一道垂直的崖。
+           smoothstep 而不是線性 —— 線性在 R0 與 R1 兩處各留一道折線。
+         ⚠ 水面不動：RIV 的格子是上面剛判出來的水域，削平會把它填掉。
+         逐城開關（S.podium），沒填的城完全不受影響。 */
+      if(S.podium){
+        const R0=Math.max(hw,hh)*(S.podium.r||1),
+              R1=R0+(S.podium.skirt||6), R1c=Math.ceil(R1);
+        for(let dy=-R1c;dy<=R1c;dy++)for(let dx=-R1c;dx<=R1c;dx++){
+          const x=S.x+dx, y=S.y+dy;
+          if(x<0||y<0||x>=MAPW||y>=MAPH) continue;
+          const rad=Math.hypot(dx,dy);
+          if(rad>R1) continue;
+          const i=y*MAPW+x;
+          if(RIV[i]) continue;
+          const w = rad<=R0 ? 1 : 1-(rad-R0)/(R1-R0);
+          const k = w*w*(3-2*w);
+          HGT[i]=HGT[i]*(1-k)+gh*k;
+          raw[i]=HGT[i]/PEAK_SCALE;
         }
       }
       window.__cityWater=(window.__cityWater||0)+water;
