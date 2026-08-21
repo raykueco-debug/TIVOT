@@ -953,6 +953,16 @@ function buildRoads(){
     window.__roadSig=paths.length+':'+n+':'+h; }
 }
 
+/* 市區外緣的半徑（世界單位）＝火車該停在哪。
+   ⚠ 不能只用 SETTLE_R：帝都的 planW 1250（半寬 625）比 SETTLE_R 換算的 440 大，
+     只看 SETTLE_R 的話車站會落在畫出來的市區**裡面**。也不能用 drawSettlements3D
+     那個 planW*0.72 —— 那是**剔除**半徑，故意放寬的，拿來當車站會停在郊外老遠。
+   ⚠ 取兩者較大：SETTLE_R 是程序生成的城區半徑（郊區、道路都吃它），
+     planW*0.42 是手繪平面圖上市區核心的外緣（城核約佔圖寬 3/4）。 */
+function townEdgeR(S){
+  return Math.max((SETTLE_R[S.t]||6)*MAP_SCALE, (S.planW||0)*0.42);
+}
+
 /* ── 鐵路網 ─────────────────────────────────────────────────────────
    走同一張高度場、同一支尋路，只換成本函數（railCost）—— 於是鐵路自己會
    跟公路分道揚鑣：公路翻過去的那些坡，鐵路寧可沿著河谷繞一圈。這是**算出來**
@@ -969,7 +979,11 @@ function buildRails(){
   const paths=[];
   for(const [a2,b2] of mstEdges(nodes)){
     const pts=gridPath(G, railCost, nodes[a2].y*G.W2+nodes[a2].x, nodes[b2].y*G.W2+nodes[b2].x);
-    if(pts && pts.length>1) paths.push(pts);
+    if(!pts || pts.length<2) continue;
+    /* ⚠ gridPath 是**由終點回溯到起點**，所以 pts[0] 是 b2、末端是 a2。
+       兩端各記一座城，車站位置（＝火車停在哪）要靠它算。 */
+    pts.ends=[big[b2], big[a2]];
+    paths.push(pts);
   }
   RAIL_PATHS=paths;
   /* 羽化半徑比公路窄（2.2 → 1.9）：路基是壓實的碎石帶，比土路窄，
@@ -3478,8 +3492,9 @@ if(ADMIN) window.resetFlags=()=>{
 if(ADMIN) window.dbgRail=()=>({
   lines:RAIL_PATHS.length,
   trains:TRAINS.map(T=>({
-    長度:Math.round(T.len), 位置:Math.round(T.s), 方向:T.dir,
-    待發:Math.round(T.wait), 進度:(T.len?(T.s/T.len*100).toFixed(0):'0')+'%',
+    軌道長:Math.round(T.len), 站間:Math.round(T.sMin)+'~'+Math.round(T.sMax),
+    位置:Math.round(T.s), 方向:T.dir, 待發:Math.round(T.wait),
+    進度:((T.s-T.sMin)/Math.max(1,T.sMax-T.sMin)*100).toFixed(0)+'%',
     煙:T.puffs.length })),
 });
 /* 怪的狀態機驗收用：enemy 是 top-level let，外部注入的 script 讀不到。 */
@@ -4588,13 +4603,15 @@ const TRAIN_DWELL = [30,90];    // 終點站停靠秒數的範圍＝發車間隔
 const TRAIN_MIN_PX = 22;        // 整列車的最小螢幕長度
 const TRAIN_MIN_W  = 1.6;       // 車身最小寬（螢幕像素）
 const TRAIN_SPAN   = TRAIN_CARS*TRAIN_CAR + (TRAIN_CARS-1)*TRAIN_GAP;   // 車身總長（世界單位）
-/* ⚠ 出煙囪那一瞬間就要**有體積**（起始半徑 10，不是 3）。真的蒸汽一離開煙囪
-     就因為減壓而炸開，畫成由小點慢慢長大的話，車頭附近會是一串看不見的小點，
-     整條煙要拖到很後面才看得出來 —— 讀起來就是「沒在冒煙」。
-   ⚠ 取樣要夠密（0.18 秒一團，18 團）：疏了就是一串分開的球，密了才連成柱。
-     成本是每列車 18 個橢圓，可以忽略。 */
-const SMOKE_N     = 18;         // 煙柱的取樣數（＝軌跡緩衝長度）
-const SMOKE_DT    = 0.18;       // 每隔幾秒記一團煙
+/* ── 煙：**一朵一朵的雲塊**，不是一條連續的煙柱 ─────────────────────
+   ⚠ 密集取樣（0.18 秒一團、18 團）畫出來是一根**實心白柱** —— 使用者回報的
+     「看起來變成光線了」就是這個。等間距、等速長大的團疊在一起，累積不透明度
+     遠高於單團，於是整條煙糊成一根繩子，還把後面幾節車廂蓋掉。
+   ⚠ 正解是**疏而大**：0.55 秒才噴一團、總共 7 團。團與團之間隔著 66 世界單位
+     （車身全長才 206），所以看得出是一朵一朵冒出來、脹大、然後散掉。
+   ⚠ 順帶：團數少一半以上，成本也跟著降 —— 一列車的橢圓從 36 個降到 14 個。 */
+const SMOKE_N     = 7;          // 同時存在的雲塊數
+const SMOKE_DT    = 0.55;       // 每隔幾秒噴一朵
 let TRAINS=[];
 
 function buildTrains(){
@@ -4625,11 +4642,38 @@ function buildTrains(){
       for(let k=1;k<pts.length-1;k++) hs[k]=(t2[k-1]+t2[k]*2+t2[k+1])*0.25;
     }
     for(let k=0;k<pts.length;k++) hs[k]+=EMBANK;
-    return { pts, cum, len, hs, s:0, dir:1,
+    /* ── 車站：火車跑到市區外緣就停，不開進城裡 ──────────────────
+       軌道本身是鋪到城心的（城裡當然有站場），但**車**只跑到市區外緣就折返 ——
+       開進城裡的話車會從手繪的屋頂上輾過去，而且那個尺度下整列車會被城蓋掉，
+       看起來就是「憑空消失」。停在外緣反而讀得出「它到站了」。
+       ⚠ 位置是沿著**弧長**找的，不是照節點數：兩端各往內走，直到離城心超過
+         townEdgeR 為止。折線在城附近常常很曲折，照節點數抓會差很多。
+       ⚠ 車頭停在外緣，車廂還在更外面 —— 整列車都在城外，正確。 */
+    /* ⚠ 判定要對**所有大城**做，而且要找「最後一個還在城裡的點」，
+         不是「第一個跑出城的點」。鐵路進城前常常繞一下，折線會先出城再彎回去；
+         取第一個出城的點當車站，中間那段又鑽回市區的路照樣會被走過 ——
+         實測薇拉馮德↔帝都線就是這樣，車頭停在城外 566 沒錯，但途中有一段
+         深入到離帝都城心 382（半徑 525），照樣開進城裡。 */
+    const inTown=(k)=>{
+      for(const S of SETTLEMENTS){
+        if(!/^city/.test(S.t||'')) continue;
+        if(Math.hypot(pts[k][0]-S.x, pts[k][1]-S.y)*MAP_SCALE < townEdgeR(S)) return true;
+      }
+      return false;
+    };
+    const half=pts.length>>1;
+    let ka=-1;            for(let k=0;k<half;k++)             if(inTown(k)) ka=k;
+    let kb=pts.length;    for(let k=pts.length-1;k>=half;k--)  if(inTown(k)) kb=k;
+    let sMin=cum[Math.min(ka+1, pts.length-1)];
+    let sMax=cum[Math.max(kb-1, 0)];
+    if(sMax<sMin){ const t3=sMin; sMin=sMax; sMax=t3; }
+    return { pts, cum, len, hs, sMin, sMax, s:sMin+TRAIN_SPAN, dir:1,
              wait: 6+i*23,                 // 錯開首發，三條線不要一起出車
              rnd: (0x9E3779B1*(i+1))>>>0,  // 各自的時刻表種子
              puffs:[], puffT:0 };
-  }).filter(T=>T.len>TRAIN_PITCH*TRAIN_CARS*2);  // 太短的線擺不下一列車
+  /* ⚠ 濾的是**兩站之間**的距離，不是整條線的長度：軌道再長，只要兩座城的
+     市區幾乎相接，中間就擺不下一列車。 */
+  }).filter(T=>T.sMax-T.sMin>TRAIN_SPAN*1.5);
 }
 /* 每列車各自的 LCG（數值取自 Numerical Recipes），回 0..1。 */
 function trainRnd(T){ T.rnd=(T.rnd*1664525+1013904223)>>>0; return T.rnd/4294967296; }
@@ -4638,11 +4682,14 @@ function updateTrains(dt){
   for(const T of TRAINS){
     if(T.wait>0){ T.wait-=dt; continue; }
     T.s+=TRAIN_SPEED*dt*T.dir;
-    if(T.s>=T.len){        // 到站：掉頭，停一段時間再發
-      T.s=T.len; T.dir=-1;
-      T.wait=TRAIN_DWELL[0]+trainRnd(T)*(TRAIN_DWELL[1]-TRAIN_DWELL[0]);
-    }else if(T.s<=0){
-      T.s=0; T.dir=1;
+    /* 到站（市區外緣）：掉頭，停一段時間再發。
+       ⚠ 掉頭時 s 要**往回挪一整列車長**。T.s 記的是「行進方向上的**車頭**」，
+         而車廂掛在 s 的反方向；掉頭之後原本的車尾變成車頭 —— 不挪的話整列車
+         會憑空跳到另一側，也就是直接**跳進城裡**。挪完之後車佔的那一段
+         [sMax−SPAN, sMax] 完全沒變，只是換了個頭。 */
+    if(T.dir>0 ? T.s>=T.sMax : T.s<=T.sMin){
+      T.s=(T.dir>0?T.sMax:T.sMin)-T.dir*TRAIN_SPAN;
+      T.dir=-T.dir;
       T.wait=TRAIN_DWELL[0]+trainRnd(T)*(TRAIN_DWELL[1]-TRAIN_DWELL[0]);
     }
     /* 煙：把機車頭走過的位置留在**世界座標**上（不是掛在車上跟著跑）。
@@ -4652,7 +4699,10 @@ function updateTrains(dt){
     if(T.puffT>=SMOKE_DT){
       T.puffT=0;
       const h=trainAt(T,T.s);
-      if(h){ T.puffs.push({x:h.x,y:h.y,h:h.h,age:0});
+      /* ⚠ 每團記一個抖動值 j。等間距、等速長大的煙團疊起來是一條**均勻的白繩**，
+         不是煙 —— 真的蒸汽是一噴一噴、大小不一的。j 決定這一團的大小與橫向偏移，
+         用各自的 LCG 生（同時刻表那條理由：重整後要長一樣）。 */
+      if(h){ T.puffs.push({x:h.x,y:h.y,h:h.h,age:0,j:trainRnd(T)});
              if(T.puffs.length>SMOKE_N) T.puffs.shift(); }
     }
     for(const q of T.puffs) q.age+=dt;
@@ -4691,7 +4741,10 @@ function drawTrains(S,scaleH,horizon,sinp,cosp){
              z, k:(W/(2*z)) };                     // k＝1 世界單位有幾個螢幕像素
   };
   for(const T of TRAINS){
-    if(T.wait>0 && (T.s<=0 || T.s>=T.len)) continue;   // 停在站裡（城會蓋住它）
+    /* 停在站裡就不畫。⚠ 車站在市區外緣、城蓋不住它，所以這是**刻意**讓它消失：
+       一列停著不動的車跟一段軌道旁的雜物沒兩樣，反而讓「偶爾撞見一列在跑的車」
+       這件事變得廉價。要改成停著也畫，就把這一行拿掉即可（煙要一併關掉）。 */
+    if(T.wait>0) continue;
     const head=trainAt(T,T.s);
     if(!head) continue;
     const hp=proj(head.x,head.y,head.h);
@@ -4741,29 +4794,17 @@ function drawTrains(S,scaleH,horizon,sinp,cosp){
     }
     if(!seats.length) continue;
 
-    ctx.save();
-    let cx0=1e9, cx1=-1e9;
+    /* ── 煙先投影好 ────────────────────────────────────────────
+       ⚠ 一定要在**裁切之前**算完，因為裁切的欄位範圍要把煙一起框進去。
+         先前只用車身的 x 範圍去框（cx0/cx1 只掃 seats）—— 煙拖得比車身長得多，
+         超出去的那一段落在裁切路徑之外，於是整條煙被一刀垂直切斷。
+         那就是回報的「煙霧的裁點太明顯」。
+       ⚠ 每一團煙有**自己的深度**，所以淡出也要各算各的：拿車頭的 fade 套全部
+         的話，拖在最後面那幾團會在越過剔除面時整團憑空消失 —— 又是一個裁點。 */
+    const CUT0=ZFAR*0.62, FADEB=ZFAR*0.16;
+    const puffDraw=[];
+    let cx0=1e9, cx1=-1e9, zClip=hp.z;
     for(const q of seats){ cx0=Math.min(cx0,q.ax,q.bx); cx1=Math.max(cx1,q.ax,q.bx); }
-    clipByTerrainDepth(hp.z, sxk, syk, Math.floor(cx0/sxk)-2, Math.ceil(cx1/sxk)+2);
-    /* 淡出只在**接近剔除面**時做。第一版從 ZFAR*0.40 就開始淡，等於大半個可見
-       範圍內火車都是半透明的 —— 半透明的細長物體疊在會抖的地形上就是在閃。
-       ⚠ 但淡出帶也不能太窄：0.075 的時候實測在剔除面前一格還有 6% 不透明度、
-         113 個像素，下一格直接歸零 —— 那是看得出來的一下消失。0.16 讓它在
-         最後 100 單位內掉到 3% 以下，接上剔除面時已經等於不存在。 */
-    const CUT=ZFAR*0.62;
-    const fade=clamp((CUT-hp.z)/(ZFAR*0.16),0,1);
-    const lit=lerp(0.66,1.0,S.day);
-
-    /* ── 煙 ────────────────────────────────────────────────────
-       先畫，讓車頭壓在煙上（煙是從車頭噴出來往後散的，車該在最前面）。
-       ⚠ 兩層：外圈是散開的灰白蒸汽，內圈是還沒散的濃煙。單層畫出來是一顆
-         糊掉的球，兩層才有「一團一團往後拖」的樣子。 */
-    /* ⚠ 由**舊到新**畫（puffs[0] 最舊）：舊的最大最淡，該在最底下。反過來畫的話
-         那些大而淡的團會蓋在整列車上，煙就變成一塊糊掉的白斑（第一版就是，
-         後面三節整個被埋掉）。
-       ⚠ 上升要**夠快**（22/秒）。煙是留在世界座標上的，車會從自己剛才噴的煙
-         底下開過去 —— 升得不夠快就等於一路把自己塗白。22 讓一團煙在車尾追上
-         它之前已經抬到兩個車寬以上。 */
     for(let pi=0; pi<T.puffs.length; pi++){
       const q=T.puffs[pi];
       const life=q.age/(SMOKE_N*SMOKE_DT);
@@ -4772,16 +4813,58 @@ function drawTrains(S,scaleH,horizon,sinp,cosp){
       const rise=q.age*22;                         // 煙往上飄（世界單位／秒）
       const pp=proj(q.x,q.y,q.h+rise);
       if(!pp) continue;
-      const r=Math.max(0.9,(10+q.age*15)*pp.k);    // 一出煙囪就有體積，之後越散越大
-      const g=Math.round(lerp(198,240,S.day)*lit);
-      ctx.globalAlpha=a0*Math.sqrt(a0)*0.52*fade;  // 新的濃、舊的快速淡掉
-      ctx.fillStyle='rgb('+g+','+g+','+Math.round(g*0.97)+')';
-      ctx.beginPath(); ctx.ellipse(pp.x,pp.y-r*0.25,r,r*0.74,0,0,Math.PI*2); ctx.fill();
-      if(life<0.30){                               // 剛噴出來那幾團的濃核
-        const c2=Math.round(g*0.74);
-        ctx.globalAlpha=(1-life/0.30)*0.55*fade;
-        ctx.fillStyle='rgb('+c2+','+c2+','+Math.round(c2*0.99)+')';
-        ctx.beginPath(); ctx.ellipse(pp.x,pp.y-r*0.25,r*0.55,r*0.44,0,0,Math.PI*2); ctx.fill();
+      const pf=clamp((CUT0-pp.z)/FADEB,0,1);       // 這一團自己的距離淡出
+      if(pf<=0.01) continue;
+      const jt=(q.j||0);
+      /* 大小差很多才像雲塊（0.62~1.38 倍）；橫向也錯開一點，不要排成一直線。 */
+      const r=Math.max(1.1,(9+q.age*19)*(0.62+jt*0.76)*pp.k);
+      const ox=(jt-0.5)*r*0.9;
+      /* ⚠ 冒出來的那 0.16 秒要有個**淡入**。少了它，每 0.55 秒就有一朵雲憑空
+         以全不透明度出現 —— 那是硬邊的「啪」一下，看起來像閃。0.16 秒短到
+         不影響「一噴一噴」的節奏，卻足以把那個硬邊磨掉。 */
+      const born=clamp(q.age/0.16,0,1);
+      puffDraw.push({x:pp.x+ox, y:pp.y, r, a0, life, f:pf*born});
+      if(pp.x+ox-r<cx0) cx0=pp.x+ox-r;
+      if(pp.x+ox+r>cx1) cx1=pp.x+ox+r;
+      if(pp.z<zClip) zClip=pp.z;                   // 裁切取最淺的那一團，見下
+    }
+
+    /* ⚠ 裁切的深度取**整團裡最淺的**（車頭與所有煙團之中最小的 z），不是車頭的。
+       煙拖在車後，車朝著鏡頭開時煙比車遠、背對鏡頭時煙比車近；拿車頭的深度
+       一律去裁，另一半的情況就會把煙誤判成「被前面的地形擋住」而切掉一塊。
+       取最淺的是安全邊：寧可讓煙偶爾透出山一點點（它本來就是軟的、又飄在高處），
+       也不要一條硬邊。 */
+    ctx.save();
+    clipByTerrainDepth(zClip, sxk, syk, Math.floor(cx0/sxk)-2, Math.ceil(cx1/sxk)+2);
+    /* 淡出只在**接近剔除面**時做。第一版從 ZFAR*0.40 就開始淡，等於大半個可見
+       範圍內火車都是半透明的 —— 半透明的細長物體疊在會抖的地形上就是在閃。
+       ⚠ 但淡出帶也不能太窄：0.075 的時候實測在剔除面前一格還有 6% 不透明度、
+         113 個像素，下一格直接歸零 —— 那是看得出來的一下消失。0.16 讓它在
+         最後 100 單位內掉到 3% 以下，接上剔除面時已經等於不存在。 */
+    const fade=clamp((CUT0-hp.z)/FADEB,0,1);
+    const lit=lerp(0.66,1.0,S.day);
+
+    /* ── 煙 ────────────────────────────────────────────────────
+       先畫，讓車頭壓在煙上（煙是從車頭噴出來往後散的，車該在最前面）。
+       ⚠ 兩層：外圈是散開的灰白蒸汽，內圈是還沒散的濃煙。單層畫出來是一顆
+         糊掉的球，兩層才有「一團一團往後拖」的樣子。
+       ⚠ puffDraw 是由**舊到新**排的（puffs[0] 最舊）：舊的最大最淡，該在最底下。
+         反過來畫的話那些大而淡的團會蓋在整列車上，煙就變成一塊糊掉的白斑
+         （第一版就是，後面三節整個被埋掉）。 */
+    const g=Math.round(lerp(198,240,S.day)*lit);
+    const gs='rgb('+g+','+g+','+Math.round(g*0.97)+')';
+    const c2=Math.round(g*0.74), cs='rgb('+c2+','+c2+','+Math.round(c2*0.99)+')';
+    for(const q of puffDraw){
+      /* 一朵雲塊自己的生命：剛冒出來最濃，脹大的同時淡掉。
+         ⚠ 團數少了之後每一朵可以濃一點（0.34→0.46）也不會糊成一片 ——
+           糊掉的原因從來不是單團太濃，是團太多疊在一起。 */
+      ctx.globalAlpha=q.a0*Math.sqrt(q.a0)*0.46*q.f;
+      ctx.fillStyle=gs;
+      ctx.beginPath(); ctx.ellipse(q.x,q.y-q.r*0.25,q.r,q.r*0.74,0,0,Math.PI*2); ctx.fill();
+      if(q.life<0.42){                                 // 剛冒出來那幾朵的濃核
+        ctx.globalAlpha=(1-q.life/0.42)*0.42*q.f;
+        ctx.fillStyle=cs;
+        ctx.beginPath(); ctx.ellipse(q.x,q.y-q.r*0.25,q.r*0.55,q.r*0.44,0,0,Math.PI*2); ctx.fill();
       }
     }
 
