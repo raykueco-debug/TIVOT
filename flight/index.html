@@ -4567,11 +4567,34 @@ function drawPuffs(S,scaleH,horizon,sinp,cosp,zLo,zHi){
    ⚠ 發車時刻用各自的 LCG 而不是 Math.random：重整一次就換一套時刻表的話，
      「這條線大概多久一班」這件事玩家永遠感覺不到。 */
 const TRAIN_SPEED = 120;        // 世界單位／秒
-const TRAIN_LEN   = 26;         // 一節車廂的長度（世界單位）
+/* ⚠ 車廂的尺寸是「讀得出來」定的，不是比例定的。真實的車廂長寬比約 8:1，
+     從空中畫出來就是一條 2 像素寬的線 —— 使用者回報的「像條蟲、看不出節感」
+     就是這個；而 2 像素寬的線在次像素移動時會整段忽有忽無（回報的「閃滅」
+     也是同一個根）。改成約 1.8:1 的方塊，一節就是一個看得出來的量體。
+   ⚠ 空隙要**夠大**（CAR 30 / GAP 14）：節與節之間至少要留得住一個像素，
+     不然五節連成一條，節感一樣沒有。 */
+const TRAIN_CAR   = 30;         // 一節車廂的長度（世界單位）
+const TRAIN_CAR_W = 17;         // 一節車廂的寬度
+const TRAIN_GAP   = 14;         // 節與節之間的空隙
 const TRAIN_CARS  = 5;          // 機車頭＋四節
+const TRAIN_PITCH = TRAIN_CAR+TRAIN_GAP;
 const TRAIN_DWELL = [30,90];    // 終點站停靠秒數的範圍＝發車間隔
-const SMOKE_N     = 12;         // 煙柱的取樣數（＝軌跡緩衝長度）
-const SMOKE_DT    = 0.34;       // 每隔幾秒記一團煙
+/* 整列車在螢幕上的最小長度（像素）。⚠ 這是「不閃」的關鍵，但**下限要壓在
+   「整列車的長度」上，不能只壓車身的寬**：只壓寬的話遠處會變成「每節 1 像素長
+   ×2.4 像素寬」—— 比自己還胖，五節糊成一條帶子，那正是回報的「像條蟲」。
+   壓整列的長度就等於等比放大，長寬比不會被翻過來。
+   ⚠ 放大只在最後一小段距離內發生：206 世界單位的車身要 22 像素，換算 z≈1753，
+     而剔除面在 2232 —— 最大只放大 1.27 倍，近距離完全是真實投影。 */
+const TRAIN_MIN_PX = 22;        // 整列車的最小螢幕長度
+const TRAIN_MIN_W  = 1.6;       // 車身最小寬（螢幕像素）
+const TRAIN_SPAN   = TRAIN_CARS*TRAIN_CAR + (TRAIN_CARS-1)*TRAIN_GAP;   // 車身總長（世界單位）
+/* ⚠ 出煙囪那一瞬間就要**有體積**（起始半徑 10，不是 3）。真的蒸汽一離開煙囪
+     就因為減壓而炸開，畫成由小點慢慢長大的話，車頭附近會是一串看不見的小點，
+     整條煙要拖到很後面才看得出來 —— 讀起來就是「沒在冒煙」。
+   ⚠ 取樣要夠密（0.18 秒一團，18 團）：疏了就是一串分開的球，密了才連成柱。
+     成本是每列車 18 個橢圓，可以忽略。 */
+const SMOKE_N     = 18;         // 煙柱的取樣數（＝軌跡緩衝長度）
+const SMOKE_DT    = 0.18;       // 每隔幾秒記一團煙
 let TRAINS=[];
 
 function buildTrains(){
@@ -4606,7 +4629,7 @@ function buildTrains(){
              wait: 6+i*23,                 // 錯開首發，三條線不要一起出車
              rnd: (0x9E3779B1*(i+1))>>>0,  // 各自的時刻表種子
              puffs:[], puffT:0 };
-  }).filter(T=>T.len>TRAIN_LEN*TRAIN_CARS*2);   // 太短的線擺不下一列車
+  }).filter(T=>T.len>TRAIN_PITCH*TRAIN_CARS*2);  // 太短的線擺不下一列車
 }
 /* 每列車各自的 LCG（數值取自 Numerical Recipes），回 0..1。 */
 function trainRnd(T){ T.rnd=(T.rnd*1664525+1013904223)>>>0; return T.rnd/4294967296; }
@@ -4673,71 +4696,135 @@ function drawTrains(S,scaleH,horizon,sinp,cosp){
     if(!head) continue;
     const hp=proj(head.x,head.y,head.h);
     if(!hp) continue;
-    const carPx=TRAIN_LEN*hp.k;
-    if(carPx<0.8) continue;                        // 螢幕上不到一個像素
-    /* 逐節取**頭尾兩點**各自投影，車身畫成那兩點之間的一段粗線。
-       ⚠ 不能用「一個點 + 軸對齊的 fillRect」（第一版就是）：車朝著鏡頭
-         開走時，各節的深度差很大，投影出來是一串**垂直**排開的位置，而每節
-         仍是一條水平的橫槓 —— 讀起來是一把梯子，不是一列車。取頭尾兩點就
-         自動帶上了朝向：轉彎、斜著開、正對鏡頭都對，而且各節的粗細各自
-         照自己的深度算，透視是對的。
-       ⚠ 節與節之間留 0.88/1.12 的空隙，近距離才分得出是一節一節的。 */
+    /* 先看整列車在螢幕上有多長，決定走哪一條路。 */
+    const tail=trainAt(T, T.s - T.dir*TRAIN_SPAN);
+    if(!tail) continue;
+    const tp=proj(tail.x,tail.y,tail.h);
+    if(!tp) continue;
+    const spanPx=Math.hypot(hp.x-tp.x, hp.y-tp.y);
+
+    /* seats＝要畫的每一節，各自帶頭尾兩點與線寬。
+       ⚠ 逐節**各自投影**（而不是「一個點 + 軸對齊的 fillRect」）：車朝著鏡頭
+         開走時各節深度差很大，投影出來是一串垂直排開的位置，而每節仍是水平
+         橫槓的話，讀起來是一把梯子不是一列車。取頭尾兩點就自動帶上朝向：
+         轉彎、斜著開、正對鏡頭都對。 */
     const seats=[];
-    for(let c=0;c<TRAIN_CARS;c++){
-      const s1=T.s - T.dir*(c*TRAIN_LEN*1.12);
-      const q1=trainAt(T, s1), q2=trainAt(T, s1 - T.dir*TRAIN_LEN*0.88);
-      if(!q1||!q2) continue;
-      const p1=proj(q1.x,q1.y,q1.h), p2=proj(q2.x,q2.y,q2.h);
-      if(p1&&p2) seats.push({a:p1,b:p2,k:(p1.k+p2.k)*0.5});
+    if(spanPx>=TRAIN_MIN_PX){
+      /* 夠大 → 真實投影：彎道、透視、各節自己的粗細全都是真的。 */
+      for(let c=0;c<TRAIN_CARS;c++){
+        const s1=T.s - T.dir*(c*TRAIN_PITCH);
+        const q1=trainAt(T, s1), q2=trainAt(T, s1 - T.dir*TRAIN_CAR);
+        if(!q1||!q2) continue;
+        const p1=proj(q1.x,q1.y,q1.h), p2=proj(q2.x,q2.y,q2.h);
+        if(p1&&p2) seats.push({ax:p1.x,ay:p1.y,bx:p2.x,by:p2.y,
+                               w:Math.max(TRAIN_MIN_W, TRAIN_CAR_W*(p1.k+p2.k)*0.5),
+                               up:TRAIN_CAR_W*0.5*(p1.k+p2.k)*0.5});
+      }
+    }else{
+      /* 太小 → 在**螢幕空間**等比撐到 TRAIN_MIN_PX 再排。長寬比因此固定，
+         節與節之間的空隙也一定留得住，不會糊成一條。
+         ⚠ 這一段放棄了彎道（直線排），但這個尺寸下彎道本來就看不出來。 */
+      let ux=hp.x-tp.x, uy=hp.y-tp.y;
+      const d=Math.hypot(ux,uy);
+      if(d<1e-4){ ux=1; uy=0; } else { ux/=d; uy/=d; }
+      const cxm=(hp.x+tp.x)*0.5, cym=(hp.y+tp.y)*0.5;
+      const half=TRAIN_MIN_PX*0.5;
+      const fx=cxm+ux*half, fy=cym+uy*half;          // 車頭
+      const pitchPx=TRAIN_MIN_PX*TRAIN_PITCH/TRAIN_SPAN;
+      const carPx =TRAIN_MIN_PX*TRAIN_CAR  /TRAIN_SPAN;
+      const w=Math.max(TRAIN_MIN_W, carPx*TRAIN_CAR_W/TRAIN_CAR);
+      for(let c=0;c<TRAIN_CARS;c++){
+        const a0=c*pitchPx;
+        seats.push({ax:fx-ux*a0, ay:fy-uy*a0,
+                    bx:fx-ux*(a0+carPx), by:fy-uy*(a0+carPx), w, up:w*0.5});
+      }
     }
     if(!seats.length) continue;
 
     ctx.save();
     let cx0=1e9, cx1=-1e9;
-    for(const q of seats){ cx0=Math.min(cx0,q.a.x,q.b.x); cx1=Math.max(cx1,q.a.x,q.b.x); }
+    for(const q of seats){ cx0=Math.min(cx0,q.ax,q.bx); cx1=Math.max(cx1,q.ax,q.bx); }
     clipByTerrainDepth(hp.z, sxk, syk, Math.floor(cx0/sxk)-2, Math.ceil(cx1/sxk)+2);
-    const fade=clamp((ZFAR*0.62-hp.z)/(ZFAR*0.22),0,1);
-    /* 煙先畫：它在車的後上方，但被車頭壓住一點才不會糊掉車身。 */
+    /* 淡出只在**接近剔除面**時做。第一版從 ZFAR*0.40 就開始淡，等於大半個可見
+       範圍內火車都是半透明的 —— 半透明的細長物體疊在會抖的地形上就是在閃。
+       ⚠ 但淡出帶也不能太窄：0.075 的時候實測在剔除面前一格還有 6% 不透明度、
+         113 個像素，下一格直接歸零 —— 那是看得出來的一下消失。0.16 讓它在
+         最後 100 單位內掉到 3% 以下，接上剔除面時已經等於不存在。 */
+    const CUT=ZFAR*0.62;
+    const fade=clamp((CUT-hp.z)/(ZFAR*0.16),0,1);
     const lit=lerp(0.66,1.0,S.day);
-    for(const q of T.puffs){
-      const a0=clamp(1-q.age/(SMOKE_N*SMOKE_DT),0,1);
-      if(a0<=0.02) continue;
-      const rise=q.age*7;                          // 煙往上飄（世界單位）
+
+    /* ── 煙 ────────────────────────────────────────────────────
+       先畫，讓車頭壓在煙上（煙是從車頭噴出來往後散的，車該在最前面）。
+       ⚠ 兩層：外圈是散開的灰白蒸汽，內圈是還沒散的濃煙。單層畫出來是一顆
+         糊掉的球，兩層才有「一團一團往後拖」的樣子。 */
+    /* ⚠ 由**舊到新**畫（puffs[0] 最舊）：舊的最大最淡，該在最底下。反過來畫的話
+         那些大而淡的團會蓋在整列車上，煙就變成一塊糊掉的白斑（第一版就是，
+         後面三節整個被埋掉）。
+       ⚠ 上升要**夠快**（22/秒）。煙是留在世界座標上的，車會從自己剛才噴的煙
+         底下開過去 —— 升得不夠快就等於一路把自己塗白。22 讓一團煙在車尾追上
+         它之前已經抬到兩個車寬以上。 */
+    for(let pi=0; pi<T.puffs.length; pi++){
+      const q=T.puffs[pi];
+      const life=q.age/(SMOKE_N*SMOKE_DT);
+      const a0=clamp(1-life,0,1);
+      if(a0<=0.03) continue;
+      const rise=q.age*22;                         // 煙往上飄（世界單位／秒）
       const pp=proj(q.x,q.y,q.h+rise);
       if(!pp) continue;
-      const r=(3.2+q.age*9)*pp.k;
-      if(r<0.35) continue;
-      const g=Math.round(lerp(196,236,S.day)*lit);
-      ctx.globalAlpha=a0*0.42*fade;
-      ctx.fillStyle='rgb('+g+','+g+','+Math.round(g*0.98)+')';
-      ctx.beginPath(); ctx.ellipse(pp.x,pp.y,r,r*0.72,0,0,Math.PI*2); ctx.fill();
+      const r=Math.max(0.9,(10+q.age*15)*pp.k);    // 一出煙囪就有體積，之後越散越大
+      const g=Math.round(lerp(198,240,S.day)*lit);
+      ctx.globalAlpha=a0*Math.sqrt(a0)*0.52*fade;  // 新的濃、舊的快速淡掉
+      ctx.fillStyle='rgb('+g+','+g+','+Math.round(g*0.97)+')';
+      ctx.beginPath(); ctx.ellipse(pp.x,pp.y-r*0.25,r,r*0.74,0,0,Math.PI*2); ctx.fill();
+      if(life<0.30){                               // 剛噴出來那幾團的濃核
+        const c2=Math.round(g*0.74);
+        ctx.globalAlpha=(1-life/0.30)*0.55*fade;
+        ctx.fillStyle='rgb('+c2+','+c2+','+Math.round(c2*0.99)+')';
+        ctx.beginPath(); ctx.ellipse(pp.x,pp.y-r*0.25,r*0.55,r*0.44,0,0,Math.PI*2); ctx.fill();
+      }
     }
-    /* 車身：一節一段粗線。⚠ 不畫車窗車輪之類的細節 —— 這個尺寸下一節車廂
-       只有幾個像素，加細節只會變成雜點。讀得出「一串深色的東西沿著軌道
-       在動、前頭冒著煙」就夠了。 */
+
+    /* ── 車身 ──────────────────────────────────────────────────
+       一節一段粗線，**butt 端點**。⚠ 端點不能用 round：圓端會把每節往兩頭
+       各撐出半個線寬，正好把 TRAIN_GAP 那點空隙吃掉 —— 五節於是黏成一條，
+       那就是回報的「像條蟲」。
+       ⚠ 不畫車窗車輪：這個尺寸下加細節只會變成雜點。讀得出「一串一節一節的
+         深色量體沿著軌道在動、前頭冒著煙」就夠了。 */
     ctx.globalAlpha=fade;
-    ctx.lineCap='round';
+    ctx.lineCap='butt';
+    const wPx=seats[0].w;
     for(let i=0;i<seats.length;i++){
-      const q=seats[i];
-      ctx.strokeStyle = i===0 ? '#1b1c20' : '#3a332c';   // 機車頭比車廂黑
-      ctx.lineWidth   = Math.max(1.0, TRAIN_LEN*0.44*q.k);
-      /* 車身要**抬離地面半個車高**：軌道畫在地表，車該坐在軌道上而不是陷進去。 */
-      const up=TRAIN_LEN*0.22*q.k;
-      ctx.beginPath();
-      ctx.moveTo(q.a.x, q.a.y-up); ctx.lineTo(q.b.x, q.b.y-up);
-      ctx.stroke();
+      const q=seats[i], w=q.w;
+      /* 車身抬離地面半個車高：軌道畫在地表，車該坐在軌道上而不是陷進去。 */
+      const ax=q.ax, ay=q.ay-q.up, bx=q.bx, by=q.by-q.up;
+      /* 先描一圈比車身寬一點的暗邊 —— 森林與道碴都是雜色的，沒有邊的話
+         車身會溶進背景（尤其遠處只有兩三個像素的時候）。 */
+      ctx.strokeStyle='rgba(12,12,14,.72)';
+      ctx.lineWidth=w+1.6;
+      ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,by); ctx.stroke();
+      ctx.strokeStyle = i===0 ? '#23252b' : '#4a4038';   // 機車頭比車廂黑
+      ctx.lineWidth=w;
+      ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,by); ctx.stroke();
+      /* 車頂的一道高光：讓它讀成「立體的箱子」而不是一條色帶。 */
+      if(w>=3){
+        ctx.strokeStyle = i===0 ? 'rgba(120,124,134,.55)' : 'rgba(150,132,104,.50)';
+        ctx.lineWidth=Math.max(1, w*0.30);
+        ctx.beginPath(); ctx.moveTo(ax,ay-w*0.26); ctx.lineTo(bx,by-w*0.26); ctx.stroke();
+      }
     }
     /* 機車頭正面的一點暖光（夜裡才看得出來，白天被壓掉）。 */
     if(S.day<0.45 && seats[0]){
-      const p0=seats[0].a, r=Math.max(1.2, TRAIN_LEN*0.5*seats[0].k);
-      const g2=ctx.createRadialGradient(p0.x,p0.y-r*0.3,0,p0.x,p0.y-r*0.3,r*2.2);
+      const p0={x:seats[0].ax, y:seats[0].ay-seats[0].up}, r=Math.max(1.5, wPx*1.1);
+      const g2=ctx.createRadialGradient(p0.x,p0.y-r*0.3,0,p0.x,p0.y-r*0.3,r*2.4);
       g2.addColorStop(0,'rgba(255,206,132,'+(0.55*(1-S.day/0.45)).toFixed(2)+')');
       g2.addColorStop(1,'rgba(255,206,132,0)');
       ctx.fillStyle=g2;
-      ctx.beginPath(); ctx.arc(p0.x,p0.y-r*0.3,r*2.2,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(p0.x,p0.y-r*0.3,r*2.4,0,Math.PI*2); ctx.fill();
     }
     ctx.restore();
     ctx.globalAlpha=1;
+    ctx.lineCap='round';
   }
 }
 
