@@ -3554,6 +3554,8 @@ if(ADMIN) window.resetFlags=()=>{
    有沒有做到，看的就是這三個數。 */
 if(ADMIN) window.dbgRail=()=>({
   lines:RAIL_PATHS.length,
+  聲音:{ 目標:+trainSndTarget().toFixed(2), 實際:+trainMix.toFixed(2),
+         範圍:TRAIN_SND_NEAR+'~'+TRAIN_SND_FAR, 在播:sfxTrain.playing() },
   trains:TRAINS.map(T=>({
     軌道長:Math.round(T.len), 站間:Math.round(T.sMin)+'~'+Math.round(T.sMax),
     位置:Math.round(T.s), 方向:T.dir, 待發:Math.round(T.wait),
@@ -3761,6 +3763,29 @@ function makeLoop(src, xf){
 const bgmMain=makeLoop('../resources/audio/bgm/bgm_flight.mp3', 4.75);
 const ambSail=makeLoop('../resources/audio/se/se_flight_sail_loop.mp3', 5.0);
 const ambIdle=makeLoop('../resources/audio/se/se_flight_idle_loop.mp3', 5.0);
+/* ── 火車聲 ────────────────────────────────────────────────────────
+   走與環境音同一套 makeLoop（尾端交叉，兩個元素輪班）—— 交叉長度 Ray 指定 1 秒，
+   所以循環週期是 8.19−1＝7.19 秒。
+   ⚠ 這條軌是**依距離開關**的，但元素本身一直在播（音量歸零）。不能改成
+     「近了才 start()、遠了就 stop()」：start() 之後要等 play() 的 Promise 落地才
+     出聲，而且瀏覽器可能整個擋掉 —— 每次靠近都會漏掉開頭那一下。一直播、
+     只動音量，接近時才不會有延遲。
+
+   音量：母帶實測 −26.7 LUFS（耳機）／−30.2（手機喇叭模型），峰值 −10.3 dBFS。
+   照 §6.6 的算法 gain = 10^((目標 − 兩者平均)/20)，平均是 −28.5。
+   ⚠ 想推到音效層的 −22 需要 gain 2.2，而 HTMLAudio.volume 上限是 1 ——
+     跟航行環境音同一個處境（母帶太小聲）。所以開滿 1.0，實際落在 −28.5，
+     大約與音樂同層、比航行環境音高 2 dB。要更大聲得**重出母帶**，不是調這裡。 */
+const sfxTrain=makeLoop('../resources/audio/se/se_flight_train.mp3', 1.0);
+const TRAIN_VOL=1.0;
+/* 聽得到的範圍：Ray 指定「約是帝都＋聖王廳的範圍」——
+   兩城心相距 71.3 地圖像素，各自的市區半徑 26／15 像素，合計 112.3 像素
+   ＝ 2245 世界單位。FAR 就取這個數。
+   ⚠ 距離要算**三維**（含高度差）。巡航高度 700、軌道約 130，就算飛到火車正上方
+     也還隔著 570 個單位；只算平面距離的話「正上方」會變成距離 0，等於一飛過去
+     音量就滿格跳上來。NEAR 取 650（略大於那個垂直間距），正上方剛好滿音量。 */
+const TRAIN_SND_FAR=2245, TRAIN_SND_NEAR=650;
+let trainMix=0;                      // 收斂跟隨，避免車一停就硬切
 let sailMix=0;                       // 0＝停船 1＝航行，收斂跟隨避免忽大忽小
 /* 全域靜音：與主程式（index.html / main.js）共用 localStorage 的同一把鑰匙。
    ⚠ 這裡是另一個頁面、另一套 BGM（HTMLAudio 而非 audio.js 的 Web Audio），
@@ -3785,14 +3810,33 @@ function updateBgm(dt){
   bgmMain.tick(BGM_VOL*mk);                    // 音樂：不隨速度變
   ambSail.tick(AMB_SAIL*sailMix*mk);           // 環境音：動／停交叉，疊在音樂上
   ambIdle.tick(AMB_IDLE*(1-sailMix)*mk);
+  /* 火車：取最近那一列的距離換成音量。⚠ 一樣要收斂跟隨，不能直接餵目標值 ——
+     車到站（wait>0）時目標會從某個值瞬間掉到 0，硬切就是「喀」的一聲。
+     0.05 的係數約 0.9 秒收斂完，聽起來是自然的遠去。 */
+  trainMix+=(trainSndTarget()-trainMix)*(1-Math.pow(1-0.05, dt/16.67));
+  sfxTrain.tick(TRAIN_VOL*trainMix*mk);
+}
+/* 目標音量（0~1）：最近那一列在跑的火車有多近。 */
+function trainSndTarget(){
+  let best=Infinity;
+  for(const T of TRAINS){
+    if(T.wait>0) continue;                     // 停在站裡的車不出聲（與畫的判斷一致）
+    const q=trainAt(T,T.s);
+    if(!q) continue;
+    const d=Math.hypot(q.x*MAP_SCALE-cam.x, q.y*MAP_SCALE-cam.y, cam.alt-q.h);
+    if(d<best) best=d;
+  }
+  if(!isFinite(best)) return 0;
+  const t=clamp((TRAIN_SND_FAR-best)/(TRAIN_SND_FAR-TRAIN_SND_NEAR),0,1);
+  return t*t*(3-2*t);                          // smoothstep：兩頭都不會突然起落
 }
 (function startBgm(){
   /* ⚠ 監聽器要**確認真的播出來**才移除。play() 回傳的是 Promise，
      成功與否在下一個 tick 才知道，所以 kick 當下不能立刻判斷 ——
      每次事件都重試一次，等 playing() 轉 true 才收工。 */
   const kick=()=>{
-    bgmMain.start(); ambSail.start(); ambIdle.start();
-    if(bgmMain.playing() && ambSail.playing() && ambIdle.playing()){
+    bgmMain.start(); ambSail.start(); ambIdle.start(); sfxTrain.start();
+    if(bgmMain.playing() && ambSail.playing() && ambIdle.playing() && sfxTrain.playing()){
       removeEventListener('pointerdown',kick); removeEventListener('keydown',kick);
     }
   };
