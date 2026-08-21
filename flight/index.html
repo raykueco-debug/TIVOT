@@ -362,7 +362,15 @@ const DRAG_FULL  = 118;   // 拉到滿油門所需的像素距離
 const TURN_RATE  = 0.0011;// 轉向角速度上限（rad/ms，約 63°/秒；越小越鈍重）
 const ACCEL      = 0.038; // 加速跟隨率（每 60fps 幀；越小越像大船，約 0.45 秒到速）
 const BRAKE      = 0.016; // 放開後的滑行衰減（約 1 秒才停，保留慣性）
-const SPIN_EFF   = 0.45;  // 原地迴轉的舵效（滿舵約 28°/秒；航行中滿舵是 63°/秒）
+/* 原地迴轉的舵效。**推得越深轉得越快**（Ray 指定）：
+   往上推到底＝把推進器全開來甩船身，比航行中轉彎還快一點才合理 ——
+   航行中要靠舵面吃氣流，原地是直接用推力硬轉。
+     輕推（剛過 0.15 的門檻）→ SPIN_EFF     0.45 ≈ 28°/秒
+     推到底（f = −1）        → SPIN_EFF_MAX 1.15 ≈ 72°/秒（巡航滿舵是 63°/秒）
+   ⚠ 下限保留 0.45 而不是從 0 起跳：剛過門檻就幾乎不轉的話，玩家會以為
+     這個操作沒有作用，根本不會發現「推更深會更快」。 */
+const SPIN_EFF   = 0.45;
+const SPIN_EFF_MAX = 1.15;
 const BANK_MAX   = 0.34;  // 轉向時的最大側傾（弧度）
 const BANK_EASE  = 0.035; // 側傾跟隨率：小＝入彎慢慢壓、出彎慢慢回正
 
@@ -3054,7 +3062,7 @@ let SKYROW=null;     // 每列的天空色，輪廓混色要拿它當背景
      bwf   地形緩衝寬佔畫面寬的比例 → 成本 ∝ bwf²
      cell  手繪平面圖的每格目標像素（越大格越少）→ 平貼層成本 ∝ 1/cell²
      nmax  單軸格數上限（近距離會頂到）
-     mass  城的螢幕寬度到幾像素才長出 3D 量體（越大＝越晚才立起來）
+     （mass 已移出 QUALITY：見下方 MASS_ON_PX，它不再隨畫質變）
            ⚠ ver -277：量的是 **planW × W /(2z)**（由城心深度推算的寬度），
              不是舊版的 max(fw,fh) —— 那個外框被夾在視窗內（見「外框夾在
              視窗內」那段），飛近時城溢出畫面，夾過的寬度**反而變小**。
@@ -3078,15 +3086,32 @@ let SKYROW=null;     // 每列的天空色，輪廓混色要拿它當背景
      畫質每兩秒變一次比一直低畫質更難看。
    ⚠ 網址加 ?q=0..3 可鎖定畫質（測試用），鎖定後不自動調。 */
 const QUALITY = [
-  { dpr:2,   bwf:0.60, cell:11, nmax:32, mass:27,  blk:0.7 },   // 0 高（現行）
-  { dpr:1.5, bwf:0.54, cell:14, nmax:26, mass:45,  blk:1.1 },   // 1
-  { dpr:1,   bwf:0.48, cell:18, nmax:20, mass:75,  blk:1.7 },   // 2
-  { dpr:1,   bwf:0.40, cell:24, nmax:14, mass:128, blk:2.6 },   // 3 低
+  { dpr:2,   bwf:0.60, cell:11, nmax:32, blk:0.7 },   // 0 高（現行）
+  { dpr:1.5, bwf:0.54, cell:14, nmax:26, blk:1.1 },   // 1
+  { dpr:1,   bwf:0.48, cell:18, nmax:20, blk:1.7 },   // 2
+  { dpr:1,   bwf:0.40, cell:24, nmax:14, blk:2.6 },   // 3 低
 ];
-/* 量體層的遲滯：長出來之後要縮到門檻的 MASS_OFF 倍才收回去。
-   0.6 不是隨手挑的 —— 它就是**一個畫質檔位**（27/45、45/75、75/128 都是
-   0.6）。遲滯帶只要不窄於一檔，自適應畫質換一檔就不可能單靠自己把量體層
-   抹掉（新門檻 × 0.6 ≤ 舊門檻 ⇒ 原本亮著的值仍在帶內）。 */
+/* ── 量體層的門檻：**固定值，不隨自適應畫質變**（ver -285）───────────
+   ⚠⚠ 這裡原本是 QUALITY 的一欄（27/45/75/128）。那才是「聖王廳靠近會 2D 跳
+     3D」的真正原因，而 ver -277 的遲滯**沒有修掉它**。實測相機停在城南
+     (934,700) 完全不動，只改畫質檔位：
+       q0 24 塊　q1 24 塊　**q2 0 塊　q3 0 塊**
+     也就是說調節器一換檔，整座城的立體就整個消失。手機上那個調節器本來就會
+     隨負載游移（轉個方向、城進出畫面都會動它），玩家看到的就是無緣無故一下
+     平一下立體 —— 而且平掉之後，手繪平面圖上**畫好的陰影還在**，正好就是
+     回報的「塔沒出來只出了影子」。
+   ⚠ 為什麼 -277 的遲滯擋不住：遲滯帶 0.6 與畫質級距 1.67 剛好互為倒數，
+     只有**恰好落在舊門檻上**的值撐得過一次換檔；靠遲滯才亮著的值（例如
+     massW 38，介於 27 與 45 之間）一換檔就掉。要真的擋住得把帶寬壓到 0.35
+     以下，那等於「亮了就幾乎不再熄」，還不如一開始就別依畫質。
+   ⚠ 而且**省不到什麼**：實測 q2、聖王廳在 (934,700)，有量體 16.60ms／無量體
+     16.42ms —— 差 **0.18ms**。原註解說的「城的成本大半在量體層、8.2ms」量的是
+     **帝都近距離**（planW 1250、塊數多得多），不是這個情形。
+   要替低配機省，該動的是 blk（小塊先不畫，是漸進的）與 dpr/bwf ——
+   把整層一次抹掉是視覺懸崖，不是降級。 */
+const MASS_ON_PX = 27;
+/* 距離遲滯：長出來之後要縮到門檻的 MASS_OFF 倍才收回去。門檻不再跳動之後，
+   它只剩「別在邊界上抖」這一個用途。 */
 const MASS_OFF = 0.6;
 /* ── 城的近裁面與仿射保險絲 ───────────────────────────────────────
    ZCLAMP 投影時 z 的下限（避免除零）。
@@ -3107,6 +3132,8 @@ const MASS_OFF = 0.6;
    ⚠ 量體層（街廓稜柱）與棧橋另有自己的 <60 —— **沒有一起動**。那些是立體
      的東西，貼到臉上才會消失，而放寬它們正是註解裡警告過的拖曳來源。 */
 let CITY_ZNEAR = 14, CITY_ZRATIO = 3, CITY_ZCLAMP = 8;
+/* 量體層（街廓稜柱）的近裁面。可從主控台改，用來驗收。 */
+let MASS_ZNEAR = 60, MASS_ZRATIO = 3;
 
 let qLevel = 0, qLocked = false;
 { const m=/[?&]q=([0-3])/.exec(location.search);
@@ -4049,14 +4076,19 @@ function update(dt,now){
   /* 原地迴轉：把拖曳「往前推」（f<0）＝主動停住，此時橫向拖曳直接轉船身。
      ⚠ 單純停著不該自轉（放著也會亂轉就不對了），但「往前推」是明確的
        「我要停下來調頭」意圖，跟放手滑行是兩回事，所以只認前推。
-       迴轉率壓到 SPIN_EFF —— 靠推進器原地轉的大船本來就比航行中轉得慢。 */
+       迴轉率由**推的深度**決定（見 SPIN_EFF／SPIN_EFF_MAX）：輕推是慢慢挪，
+       推到底是全推力甩頭，比巡航滿舵還快一點。 */
   let turned=0;
   const mov=Math.abs(cam.speed)/MAX_SPD;
   const spin=held && f<-0.15;
+  /* 推得越深轉得越快：門檻處 SPIN_EFF、推到底 SPIN_EFF_MAX。 */
+  const spinEff=spin
+      ? SPIN_EFF+(SPIN_EFF_MAX-SPIN_EFF)*clamp((-f-0.15)/0.85,0,1)
+      : 0;
   /* ⚠ 自動掉頭時舵效直接給滿：空氣牆把速度吃掉了，而「慢速時舵不吃水」會讓
      自動轉舵完全轉不動 —— 貼在牆上動彈不得，那正是最糟的手感。
      「全速轉舵一次到位」也就是這個 1 的意思：用得到的最大角速度轉完。 */
-  const eff=Math.max(spin?SPIN_EFF:0, clamp(mov*2.2,0,1), wall.latched?1:0);
+  const eff=Math.max(spinEff, clamp(mov*2.2,0,1), wall.latched?1:0);
   if(Math.abs(r)>0.015 && eff>0.001){
     const step=clamp(r,-1,1)*TURN_RATE*dt*eff;
     cam.angle-=step;                                // 角度遞減＝向右偏（見 compass 換算）
@@ -6701,7 +6733,7 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
            物件上，逐城各自記各自的。 */
       const mdx=o.s.mx*MAP_SCALE-cam.x, mdy=o.s.my*MAP_SCALE-cam.y;
       const massW=o.s.planW*W/(2*Math.max(60,Math.hypot(mdx,mdy)))*pk;
-      const massT=Q().mass;
+      const massT=MASS_ON_PX;
       o.s._massOn = o.s._massOn ? (massW>=massT*MASS_OFF) : (massW>=massT);
       if(MS&&MA&&tall>0&&o.s._massOn){
         const dyk=scaleH*syk;
@@ -6729,15 +6761,15 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
             const x0=au[k]*hw, y0=av[k]*hh;
             projectInto(P,k*4,(x0*ca-y0*sa)/MAP_SCALE,(x0*sa+y0*ca)/MAP_SCALE,0);
             const zk=P[k*4+3];
-            if(zk<60){ ok=false; break; }
+            if(zk<MASS_ZNEAR){ ok=false; break; }
             if(zk<zlo)zlo=zk; if(zk>zhi)zhi=zk;
           }
-          if(!ok) continue;
+          if(!ok)continue;
           /* ⚠ 保險絲：一塊之內的深度比例失控（近端比遠端近三倍以上）就整塊不畫。
              仿射矩陣吃不下這種形狀，畫出來是一道放射狀的拖曳 —— 低空貼近帝都時
              會看到一條白色光柱從城裡射進天空（使用者回報的「飄圖穿過前景」）。
              舊的網格版本有這條，我搬成多邊形時漏了。寧可缺一塊。 */
-          if(zhi>zlo*3) continue;
+          if(zhi>zlo*MASS_ZRATIO)continue;
           /* 頂面 y：各頂點用自己的 z（近的牆高、遠的牆矮，稜柱該有的透視）。 */
           for(let k=0;k<np2;k++){
             const L=hW*dyk/P[k*4+3];
@@ -6779,24 +6811,25 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
            ⚠ 只沿**深度梯度**方向細分就夠。深度對平面座標 (u,v) 是仿射的（見
              loadMass 的方位分桶），所以與梯度垂直的方向上深度是常數，那個方向
              的投影本來就是仿射、切了純浪費。 */
+        
         const RSPLIT_MAX=6;
         for(let t=0;t<drawn.length;t++){
           const bi=drawn[t], hW=MS.h[bi]*tall;
           const ax2=MS.bb[bi*4], ay2=MS.bb[bi*4+1],
                 bw2=MS.bb[bi*4+2], bh2=MS.bb[bi*4+3];
-          if(bw2<1||bh2<1) continue;
+          if(bw2<1||bh2<1)continue;
           const gx0=MS.bbx[bi*4], gy0=MS.bbx[bi*4+1],
                 gx1=MS.bbx[bi*4+2], gy1=MS.bbx[bi*4+3];
           /* 這一塊在兩軸上各跨多少深度 → 決定各軸要切幾格。
              目標：每一小格的深度比 ≤ 1.25。 */
           projectInto(MP,0,(gx0*hw*ca-gy0*hh*sa)/MAP_SCALE,(gx0*hw*sa+gy0*hh*ca)/MAP_SCALE,hW);
           const z00=MP[3];
-          if(z00<60) continue;
+          if(z00<MASS_ZNEAR)continue;
           projectInto(MP,0,(gx1*hw*ca-gy0*hh*sa)/MAP_SCALE,(gx1*hw*sa+gy0*hh*ca)/MAP_SCALE,hW);
           const z10=MP[3];
           projectInto(MP,0,(gx0*hw*ca-gy1*hh*sa)/MAP_SCALE,(gx0*hw*sa+gy1*hh*ca)/MAP_SCALE,hW);
           const z01=MP[3];
-          if(z10<60||z01<60) continue;
+          if(z10<MASS_ZNEAR||z01<MASS_ZNEAR)continue;
           const zmin=Math.max(60,Math.min(z00,z10,z01));
           const rU=Math.abs(z10-z00)/zmin, rV=Math.abs(z01-z00)/zmin;
           const nU=Math.min(RSPLIT_MAX,Math.max(1,Math.ceil(rU/0.25)));
@@ -6809,10 +6842,10 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
             for(let k=0;k<3;k++){
               const x0=c3[k][0]*hw, y0=c3[k][1]*hh;
               projectInto(MP,0,(x0*ca-y0*sa)/MAP_SCALE,(x0*sa+y0*ca)/MAP_SCALE,hW);
-              if(MP[3]<60){ bad=true; break; }
+              if(MP[3]<MASS_ZNEAR){ bad=true; break; }
               sc3.push([MP[0],MP[1]]);
             }
-            if(bad) continue;
+            if(bad)continue;
             const sx=ax2+sw*iu, sy=ay2+sh*iv;
             const a2=(sc3[1][0]-sc3[0][0])/sw, b2=(sc3[1][1]-sc3[0][1])/sw,
                   c2=(sc3[2][0]-sc3[0][0])/sh, d2=(sc3[2][1]-sc3[0][1])/sh;
