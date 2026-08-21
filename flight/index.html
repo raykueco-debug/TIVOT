@@ -750,12 +750,115 @@ let SUBW=null;
 let BIOME=null;
 let ROAD_PATHS=[];                            // 折線（地圖座標），地圖畫面也要用
 
+let RAILW=null;                               // Uint8Array：每地圖像素的鐵軌權重
+let RAIL_PATHS=[];                            // 折線（地圖座標），地圖畫面與火車都要用
+
 /* 成本場：一步的代價。爬坡是主要成本 —— 這是讓路自己去繞河谷的關鍵。 */
 function roadCost(h0,h1,riv){
   const dh=Math.abs(h1-h0);
   return 1 + dh*0.22 + (riv?26:0);            // 渡河＝架橋，貴但不是不可能
 }
-function buildRoads(){
+/* 鐵路的成本場。⚠ 不是「把 roadCost 的係數調大」那麼簡單 —— 關鍵在**超線性**：
+   蒸汽機車的黏著牽引撐不住陡坡，緩坡幾乎不花錢、超過極限就等於過不去。
+   線性成本做不出這件事（貴一倍的坡走兩倍路就划算了），只有平方項才會逼出
+   鐵路該有的樣子：沿著等高線繞一大圈也不肯直接爬上去。
+   一格＝ROAD_DS(6) 地圖像素＝120 世界單位，所以 dh=3 就是 2.5% 的坡。
+   ⚠ RAIL_GRADE 是**降取樣高度場上**的門檻，不等於實際軌道的坡度：成本場看的
+     是 6×6 格的平均高度，真正的地形比它粗糙。實測沿線坡度（全解析度取樣）
+     鐵路 p99=20.8%／最大 27.5%，公路幹道 p99=40.8%／最大 56.7% —— 鐵路確實
+     只有公路的一半，但沒有真的守在 2.5%。要更準就得把 ROAD_DS 調細，那是
+     載入時間的取捨，不是改這個常數能解的。
+   ⚠ 二次項的係數 0.8 是**量出來**的：3 的時候西線繞成直線距離的 5.7 倍
+     （從空中看就是一條發瘋的蛇），0.8 之後三條線是 1.30／1.55／1.72 倍 ——
+     山區幹線該有的樣子。
+   ⚠ 渡河 90（路是 26）：鐵路橋要能吃住整列車的軸重，比土路的木橋貴得多。 */
+const RAIL_GRADE=3;
+function railCost(h0,h1,riv){
+  const dh=Math.abs(h1-h0);
+  const over=dh-RAIL_GRADE;
+  return 1 + dh*0.9 + (over>0?over*over*0.8:0) + (riv?90:0);
+}
+
+/* ── 共用的地形尋路（Dijkstra）───────────────────────────────────────
+   ⚠ 抽成一支之前這段在 buildRoads 裡**抄了兩份**（幹道一份、支線一份）。
+     鐵路是第三個要用的人 —— 再抄一份就變成三份要一起維護。
+   ⚠ pop 走**真的二元堆**。舊版是線性掃描找最小（原註解說「26 條路 × 7.2 萬格
+     已經夠快」），公路確實還撐得住 —— 但鐵路的成本是超線性的，Dijkstra 因此
+     要探到大得多的半徑才碰到終點，線性 pop 的 O(n) 就整個爆開：實測三條鐵路
+     1390ms，而七條公路只要 305ms。換成堆之後鐵路 → 一位數毫秒。
+   ⚠ 換堆有可能改變**同分時**的取出順序、讓折線挪一兩格，所以抽函式那一步
+     刻意先保留線性掃描、留下一個可比對的簽章（7:292:1115876308）。實測換堆
+     之後簽章不變 —— 公路一格都沒動，順帶從 305ms 降到 70ms。
+   回傳地圖座標的折線（由終點往起點），走不到回 null。 */
+const PF_D=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
+function gridPath(G, cost, s0, t0){
+  const gh=G.gh, gr=G.gr, W2=G.W2, H2=G.H2;
+  const dist=G.dist, prev=G.prev, seen=G.seen, heapI=G.heapI, heapD=G.heapD;
+  dist.fill(Infinity); seen.fill(0); prev.fill(-1);
+  dist[s0]=0;
+  /* 二元堆（惰性刪除：改良就再推一次，取出時靠 seen 跳過舊的）。
+     ⚠ 容量 N2*4 是舊版就有的；推入只發生在「距離真的變短」時，不是每條邊
+       一次。加一道滿了就丟的保險 —— 丟掉的是一個**較差**的候選，最短路仍然
+       會由別的候選推進，不會因此走不到。 */
+  const CAP=heapI.length;
+  let hn=0;
+  const push=(node,d)=>{
+    if(hn>=CAP) return;
+    let k=hn++;
+    heapI[k]=node; heapD[k]=d;
+    while(k>0){
+      const par=(k-1)>>1;
+      if(heapD[par]<=heapD[k]) break;
+      const ti=heapI[par], td=heapD[par];
+      heapI[par]=heapI[k]; heapD[par]=heapD[k]; heapI[k]=ti; heapD[k]=td;
+      k=par;
+    }
+  };
+  const pop=()=>{
+    const top=heapI[0];
+    hn--;
+    if(hn>0){
+      heapI[0]=heapI[hn]; heapD[0]=heapD[hn];
+      let k=0;
+      for(;;){
+        const l=k*2+1, r=l+1; let m=k;
+        if(l<hn && heapD[l]<heapD[m]) m=l;
+        if(r<hn && heapD[r]<heapD[m]) m=r;
+        if(m===k) break;
+        const ti=heapI[m], td=heapD[m];
+        heapI[m]=heapI[k]; heapD[m]=heapD[k]; heapI[k]=ti; heapD[k]=td;
+        k=m;
+      }
+    }
+    return top;
+  };
+  push(s0,0);
+  while(hn){
+    const cur=pop();
+    if(seen[cur]) continue;
+    seen[cur]=1;
+    if(cur===t0) break;
+    const cd=dist[cur];
+    const cx=cur%W2, cy=(cur/W2)|0, ch=gh[cur];
+    for(const [dx,dy] of PF_D){
+      const nx=cx+dx, ny=cy+dy;
+      if(nx<0||ny<0||nx>=W2||ny>=H2) continue;
+      const ni=ny*W2+nx;
+      if(seen[ni]||gh[ni]<=CLOUD_H) continue;     // 雲海不能走
+      const w=cost(ch,gh[ni],gr[ni])*((dx&&dy)?1.414:1);
+      const nd=cd+w;
+      if(nd<dist[ni]){ dist[ni]=nd; prev[ni]=cur; push(ni,nd); }
+    }
+  }
+  if(!seen[t0]) return null;                       // 走不到（隔著雲海）
+  const pts=[];
+  for(let c=t0;c!==-1;c=prev[c]) pts.push([(c%W2)*ROAD_DS+ROAD_DS/2, ((c/W2)|0)*ROAD_DS+ROAD_DS/2]);
+  return pts;
+}
+
+/* 降取樣的高度／河道場＋尋路用的暫存，路與鐵路共用一份（算一次就好）。 */
+let PFGRID=null;
+function buildPathGrid(){
   const W2=Math.floor(MAPW/ROAD_DS), H2=Math.floor(MAPH/ROAD_DS), N2=W2*H2;
   /* 降取樣：取每塊的中位高度會更穩，但成本高；取平均即可，路本來就是粗粒度的。 */
   const gh=new Float32Array(N2), gr=new Uint8Array(N2);
@@ -767,8 +870,41 @@ function buildRoads(){
     }
     gh[y*W2+x]=sum/n; gr[y*W2+x]=rv;
   }
-  const nodes=SETTLEMENTS.map(S=>({x:Math.round(S.x/ROAD_DS), y:Math.round(S.y/ROAD_DS), n:S.n}));
-  /* 最小生成樹（Prim）：用直線距離當邊權，路徑本身之後再照地形找。 */
+  PFGRID={ W2,H2,N2,gh,gr,
+    dist:new Float32Array(N2), prev:new Int32Array(N2), seen:new Uint8Array(N2),
+    heapI:new Int32Array(N2*4), heapD:new Float32Array(N2*4) };
+  return PFGRID;
+}
+
+/* 折線 → 逐像素權重圖（帶羽化的距離場）。
+   ⚠ 不是「畫一條 1 像素的線」：線寬只有一個地圖像素時，取樣端每動一下就閃爍。
+     羽化之後取樣端才能平滑地混。路與鐵路只差羽化半徑（鐵軌比土路窄）。 */
+function stampPaths(paths, R){
+  const out=new Uint8Array(MAPW*MAPH);
+  const stamp=(x,y)=>{
+    const x0=Math.max(0,Math.floor(x-R)), x1=Math.min(MAPW-1,Math.ceil(x+R));
+    const y0=Math.max(0,Math.floor(y-R)), y1=Math.min(MAPH-1,Math.ceil(y+R));
+    for(let yy=y0;yy<=y1;yy++)for(let xx=x0;xx<=x1;xx++){
+      const d=Math.hypot(xx-x,yy-y);
+      if(d>R) continue;
+      const i=yy*MAPW+xx;
+      if(HGT[i]<=CLOUD_H) continue;
+      const w=Math.round(255*clamp(1-(d/R),0,1));
+      if(w>out[i]) out[i]=w;
+    }
+  };
+  for(const pts of paths){
+    for(let k=1;k<pts.length;k++){
+      const ax=pts[k-1][0], ay=pts[k-1][1], bx=pts[k][0], by=pts[k][1];
+      const n=Math.max(1,Math.ceil(Math.hypot(bx-ax,by-ay)));
+      for(let t=0;t<=n;t++) stamp(ax+(bx-ax)*t/n, ay+(by-ay)*t/n);
+    }
+  }
+  return out;
+}
+
+/* 最小生成樹（Prim）：用直線距離當邊權，路徑本身之後再照地形找。 */
+function mstEdges(nodes){
   const used=[0], rest=nodes.map((_,i)=>i).slice(1), edges=[];
   while(rest.length){
     let bi=-1,bj=-1,bd=1e18;
@@ -778,40 +914,16 @@ function buildRoads(){
     }
     edges.push([bi,rest[bj]]); used.push(rest[bj]); rest.splice(bj,1);
   }
-  /* Dijkstra（二元堆）。⚠ 用 A* 會更快，但這裡 26 條路 × 7.2 萬格已經夠快，
-     而 Dijkstra 少一個啟發式函數可以少一種寫錯的方式。 */
-  const dist=new Float32Array(N2), prev=new Int32Array(N2), seen=new Uint8Array(N2);
-  const heapI=new Int32Array(N2*4), heapD=new Float32Array(N2*4);
-  const D=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
+  return edges;
+}
+
+function buildRoads(){
+  const G=PFGRID||buildPathGrid();
+  const nodes=SETTLEMENTS.map(S=>({x:Math.round(S.x/ROAD_DS), y:Math.round(S.y/ROAD_DS), n:S.n}));
   const paths=[];
-  for(const [a2,b2] of edges){
-    const s0=nodes[a2].y*W2+nodes[a2].x, t0=nodes[b2].y*W2+nodes[b2].x;
-    dist.fill(Infinity); seen.fill(0); prev.fill(-1);
-    dist[s0]=0;
-    let hn=0; heapI[0]=s0; heapD[0]=0; hn=1;
-    while(hn){
-      // pop min
-      let mi=0; for(let i=1;i<hn;i++) if(heapD[i]<heapD[mi]) mi=i;
-      const cur=heapI[mi], cd=heapD[mi];
-      hn--; heapI[mi]=heapI[hn]; heapD[mi]=heapD[hn];
-      if(seen[cur]) continue;
-      seen[cur]=1;
-      if(cur===t0) break;
-      const cx=cur%W2, cy=(cur/W2)|0, ch=gh[cur];
-      for(const [dx,dy] of D){
-        const nx=cx+dx, ny=cy+dy;
-        if(nx<0||ny<0||nx>=W2||ny>=H2) continue;
-        const ni=ny*W2+nx;
-        if(seen[ni]||gh[ni]<=CLOUD_H) continue;     // 雲海不能走
-        const w=roadCost(ch,gh[ni],gr[ni])*((dx&&dy)?1.414:1);
-        const nd=cd+w;
-        if(nd<dist[ni]){ dist[ni]=nd; prev[ni]=cur; heapI[hn]=ni; heapD[hn]=nd; hn++; }
-      }
-    }
-    if(!seen[t0]) continue;                          // 走不到（隔著雲海）→ 這條不畫
-    const pts=[];
-    for(let c=t0;c!==-1;c=prev[c]) pts.push([(c%W2)*ROAD_DS+ROAD_DS/2, ((c/W2)|0)*ROAD_DS+ROAD_DS/2]);
-    paths.push(pts);
+  for(const [a2,b2] of mstEdges(nodes)){
+    const pts=gridPath(G, roadCost, nodes[a2].y*G.W2+nodes[a2].x, nodes[b2].y*G.W2+nodes[b2].x);
+    if(pts) paths.push(pts);
   }
   /* ── 放射支線 ────────────────────────────────────────────────
      城的插畫是放射狀街道，但那些街到圖框就斷了 —— 從空中看就是「城外沒有路」。
@@ -820,65 +932,52 @@ function buildRoads(){
   const SPUR=75;                                     // 支線長度（地圖像素，≈1500 世界單位）
   for(const S of SETTLEMENTS){
     if(!S.spurs) continue;
-    const s0=Math.round(S.y/ROAD_DS)*W2+Math.round(S.x/ROAD_DS);
+    const s0=Math.round(S.y/ROAD_DS)*G.W2+Math.round(S.x/ROAD_DS);
     for(const th of S.spurs){
       const tx=Math.round((S.x+Math.cos(th)*SPUR)/ROAD_DS);
       const ty=Math.round((S.y+Math.sin(th)*SPUR)/ROAD_DS);
-      if(tx<0||ty<0||tx>=W2||ty>=H2) continue;
-      const t1=ty*W2+tx;
-      if(gh[t1]<=CLOUD_H) continue;                  // 朝海的方位：修不出去
-      dist.fill(Infinity); seen.fill(0); prev.fill(-1);
-      dist[s0]=0;
-      let hn2=0; heapI[0]=s0; heapD[0]=0; hn2=1;
-      while(hn2){
-        let mi=0; for(let i=1;i<hn2;i++) if(heapD[i]<heapD[mi]) mi=i;
-        const cur=heapI[mi], cd=heapD[mi];
-        hn2--; heapI[mi]=heapI[hn2]; heapD[mi]=heapD[hn2];
-        if(seen[cur]) continue;
-        seen[cur]=1;
-        if(cur===t1) break;
-        const cx2=cur%W2, cy2=(cur/W2)|0, ch=gh[cur];
-        for(const [dx,dy] of D){
-          const nx=cx2+dx, ny=cy2+dy;
-          if(nx<0||ny<0||nx>=W2||ny>=H2) continue;
-          const ni=ny*W2+nx;
-          if(seen[ni]||gh[ni]<=CLOUD_H) continue;
-          const w=roadCost(ch,gh[ni],gr[ni])*((dx&&dy)?1.414:1);
-          const nd=cd+w;
-          if(nd<dist[ni]){ dist[ni]=nd; prev[ni]=cur; heapI[hn2]=ni; heapD[hn2]=nd; hn2++; }
-        }
-      }
-      if(!seen[t1]) continue;
-      const sp=[];
-      for(let c=t1;c!==-1;c=prev[c]) sp.push([(c%W2)*ROAD_DS+ROAD_DS/2, ((c/W2)|0)*ROAD_DS+ROAD_DS/2]);
-      paths.push(sp);
-    }
-  }
-  /* 折線 → 路面權重圖。⚠ 不是「畫一條 1 像素的線」：路寬只有一個地圖像素時，
-     取樣端每動一下就閃爍。改成帶羽化的距離場，取樣端才能平滑地混。 */
-  ROADW=new Uint8Array(MAPW*MAPH);
-  const stamp=(x,y)=>{
-    const R=2.2;
-    const x0=Math.max(0,Math.floor(x-R)), x1=Math.min(MAPW-1,Math.ceil(x+R));
-    const y0=Math.max(0,Math.floor(y-R)), y1=Math.min(MAPH-1,Math.ceil(y+R));
-    for(let yy=y0;yy<=y1;yy++)for(let xx=x0;xx<=x1;xx++){
-      const d=Math.hypot(xx-x,yy-y);
-      if(d>R) continue;
-      const i=yy*MAPW+xx;
-      if(HGT[i]<=CLOUD_H) continue;
-      const w=Math.round(255*clamp(1-(d/R),0,1));
-      if(w>ROADW[i]) ROADW[i]=w;
-    }
-  };
-  for(const pts of paths){
-    for(let k=1;k<pts.length;k++){
-      const [ax,ay]=pts[k-1], [bx,by]=pts[k];
-      const n=Math.max(1,Math.ceil(Math.hypot(bx-ax,by-ay)));
-      for(let t=0;t<=n;t++) stamp(ax+(bx-ax)*t/n, ay+(by-ay)*t/n);
+      if(tx<0||ty<0||tx>=G.W2||ty>=G.H2) continue;
+      const t1=ty*G.W2+tx;
+      if(G.gh[t1]<=CLOUD_H) continue;                // 朝海的方位：修不出去
+      const sp=gridPath(G, roadCost, s0, t1);
+      if(sp) paths.push(sp);
     }
   }
   ROAD_PATHS=paths;
+  ROADW=stampPaths(paths, 2.2);
   window.__roads=paths.length;
+  /* 路網簽章（條數:總點數:折線雜湊）。動到 gridPath／roadCost／MST 之後拿它
+     比一下，就知道「路有沒有跟著挪」—— 抽共用尋路與換二元堆這兩步都是靠它
+     證明公路一格未動的。目前的值：7:292:1115876308 */
+  { let h=0,n=0; for(const q of paths){ n+=q.length; for(const pt of q){ h=(h*31+pt[0])|0; h=(h*31+pt[1])|0; } }
+    window.__roadSig=paths.length+':'+n+':'+h; }
+}
+
+/* ── 鐵路網 ─────────────────────────────────────────────────────────
+   走同一張高度場、同一支尋路，只換成本函數（railCost）—— 於是鐵路自己會
+   跟公路分道揚鑣：公路翻過去的那些坡，鐵路寧可沿著河谷繞一圈。這是**算出來**
+   的差異，不是把路徑抄一份再手動偏移。
+   ⚠ 只連「大城」（t 以 city 開頭）。鐵路不該像公路一樣連到每個村子 ——
+     幹線接樞紐、其餘靠公路接駁，讀起來才像鐵路網而不是第二套公路。
+   ⚠ 節點少於兩個就整個不建（RAIL_PATHS 留空），下游全部照 length 判斷，
+     不會因此壞掉。 */
+function buildRails(){
+  const big=SETTLEMENTS.filter(S=>/^city/.test(S.t||''));
+  if(big.length<2){ RAIL_PATHS=[]; RAILW=null; return; }
+  const G=PFGRID||buildPathGrid();
+  const nodes=big.map(S=>({x:Math.round(S.x/ROAD_DS), y:Math.round(S.y/ROAD_DS), n:S.n}));
+  const paths=[];
+  for(const [a2,b2] of mstEdges(nodes)){
+    const pts=gridPath(G, railCost, nodes[a2].y*G.W2+nodes[a2].x, nodes[b2].y*G.W2+nodes[b2].x);
+    if(pts && pts.length>1) paths.push(pts);
+  }
+  RAIL_PATHS=paths;
+  /* 羽化半徑比公路窄（2.2 → 1.9）：路基是壓實的碎石帶，比土路窄，
+     而且鐵路該讀起來是**一條細而確定的線**，公路才是漫開的。
+     ⚠ 不能再窄。1.5 的時候地形取樣（走的是降取樣緩衝）會跨過整條線，
+       畫出來是一條虛線 —— 那正是原本的羽化距離場要避免的閃爍。 */
+  RAILW=stampPaths(paths, 1.9);
+  window.__rails=paths.length;
 }
 
 /* 郊區選級：回傳 0/1/2（高/中/低密度屋頂）或 -1（這裡沒有房子）。
@@ -2593,6 +2692,10 @@ async function loadWorld(){
      不然會出現路從城的台階上直直插下去。 */
   step(0.78);   // 鋪設道路…
   buildRoads();
+  /* 鐵路：排在公路之後、同一張高度場。⚠ 兩者的先後不影響結果（各算各的），
+     但 RAILW 在生物群系打表時要蓋過 ROADW（平交道讀成鐵路），所以得先有。 */
+  buildRails();
+  buildTrains();          // 時刻表：軌道鋪好才排得出來
 
   /* ── 生物群系打表 ──────────────────────────────────────── */
   step(0.82);   // 判定地貌…
@@ -2627,6 +2730,11 @@ async function loadWorld(){
         }else if(subw>18 && roofPickW(subw, VEGSEL[((((syf*4)|0)&VSM)*VS)+((((sxf*4)|0)&VSM))])>=0){
           const g=roofPickW(subw, VEGSEL[((((syf*4)|0)&VSM)*VS)+((((sxf*4)|0)&VSM))]);
           tex=(g===0?G_RH:(g===1?G_RM:G_RL));
+        }else if(RAILW&&RAILW[i]>40){
+          /* 道碴＝粗粒的深色碎石，正好是 gravel_dark 這張。
+             ⚠ 排在公路之前：平交道上兩者重疊，該讀成鐵路（鐵軌是連續的，
+               公路在那裡是被切斷的那一方）。 */
+          tex=G_GD;
         }else if(ROADW&&ROADW[i]>40){
           tex=G_GL;
         }else{
@@ -3138,6 +3246,37 @@ function drawMap(){
     }
   }
 
+  /* 鐵路：畫在公路之上、聚落之下，走**製圖學的鐵路符號** ——
+     深色實線打底，上面壓一排淺色短虛線（＝枕木）。
+     ⚠ 第一版是「冷灰的細實線」，結果在地圖上跟**河**分不開（河是
+       rgb(84,120,142) 的藍灰，一條細的冷色線看起來就是支流）。虛線是關鍵：
+       自然界沒有虛線，所以那一排刻痕本身就說明了「這是人造的、而且是鐵路」。
+     ⚠ 虛線的節距要跟著縮放走，否則放大之後刻痕之間會拉開成一條斷斷續續的線。 */
+  if(RAIL_PATHS.length){
+    mctx.lineCap='butt'; mctx.lineJoin='round';
+    const trace=()=>{
+      for(const pts of RAIL_PATHS){
+        mctx.beginPath();
+        for(let k=0;k<pts.length;k++){
+          const q=reliefXY(pts[k][0], pts[k][1]);
+          if(k) mctx.lineTo(ox+q.x*sc, oy+q.y*sc); else mctx.moveTo(ox+q.x*sc, oy+q.y*sc);
+        }
+        mctx.stroke();
+      }
+    };
+    mctx.setLineDash([]);
+    mctx.strokeStyle='rgba(24,25,29,.88)';
+    mctx.lineWidth=Math.max(1.5, sc*MAP_SS*1.8);
+    trace();
+    const d=Math.max(2, sc*MAP_SS*3.2);
+    mctx.setLineDash([d*0.42, d*0.58]);
+    mctx.strokeStyle='rgba(226,222,210,.92)';
+    mctx.lineWidth=Math.max(1.0, sc*MAP_SS*1.15);
+    trace();
+    mctx.setLineDash([]);
+    mctx.lineCap='round';
+  }
+
   /* 聚落：坐在地表上（reliefXY 換算高度），交給 settlement.js 的斜角渲染器。
      它自己依螢幕直徑決定 LOD → 整張大陸時是符號，放大才長出街廓與建築。
      ⚠ 排序：畫家演算法，y 大（南、近）的後畫，否則南邊的城會被北邊的蓋住。 */
@@ -3333,6 +3472,16 @@ if(ADMIN) window.resetFlags=()=>{
   return { stage:gameStage(), 好感:JSON.parse(JSON.stringify(AFFECTION)),
            玩家名:playerName(), 提示:'已回到預設；重整一次最保險' };
 };
+/* 鐵路與火車驗收用：RAIL_PATHS／TRAINS 都是 top-level，外部讀不到。
+   回「每條線多長、現在車跑到哪、還要等多久發車」—— 要確認「偶有」這件事
+   有沒有做到，看的就是這三個數。 */
+if(ADMIN) window.dbgRail=()=>({
+  lines:RAIL_PATHS.length,
+  trains:TRAINS.map(T=>({
+    長度:Math.round(T.len), 位置:Math.round(T.s), 方向:T.dir,
+    待發:Math.round(T.wait), 進度:(T.len?(T.s/T.len*100).toFixed(0):'0')+'%',
+    煙:T.puffs.length })),
+});
 /* 怪的狀態機驗收用：enemy 是 top-level let，外部注入的 script 讀不到。 */
 if(ADMIN) window.dbgEnemy=()=>enemy&&{state:enemy.state,x:Math.round(enemy.x),y:Math.round(enemy.y),
   d:Math.round(Math.hypot(cam.x-enemy.x,cam.y-enemy.y)),d0:enemy.d0,
@@ -3894,6 +4043,17 @@ function render(now){
             const deep=(tex===G_WL);
             const wr=deep?92:66, wg=deep?126:100, wb=deep?146:124;
             cr+=(wr-cr)*0.72; cg+=(wg-cg)*0.72; cb+=(wb-cb)*0.72;
+          }else if(RAILW&&RAILW[mi]>40){
+            /* 道碴：**冷的淺灰**（公路是暖的土黃）。兩條線因此在同一片綠地上
+               分得開 —— 一條暖而漫開、一條冷而細。
+               ⚠ 第一版塗的是深灰(74,72,70)，結果在針葉林上幾乎看不見：森林
+                 本來就暗，暗上加暗等於沒畫。實測那一版整條線在畫面上只推得動
+                 1248 個像素，而且是**斷斷續續**的。碎石道碴本來就是淺色的花崗
+                 岩，改回它該有的顏色同時解決了寫實與可讀性。
+               ⚠ 判 RAILW 而不是判 tex：G_GD 同時也是林線以上的礫石地，
+                 拿類別判會把整片高山碎石地都塗成鐵軌。 */
+            const rw=(RAILW[mi]/255)*0.90;
+            cr+=(152-cr)*rw; cg+=(150-cg)*rw; cb+=(146-cb)*rw;
           }else if(tex===G_GL&&ROADW){
             const rw=(ROADW[mi]/255)*0.82;
             cr+=(135-cr)*rw; cg+=(109-cg)*rw; cb+=(72-cb)*rw;
@@ -4088,6 +4248,7 @@ function render(now){
   const splitZ=nearestSettleZ(sinp,cosp);
   drawPuffs(S,scaleH,horizon,sinp,cosp,splitZ,Infinity);   // 比城遠的雲
   drawSettlements3D(scaleH,horizon,sinp,cosp);
+  drawTrains(S,scaleH,horizon,sinp,cosp);                  // 火車跟城同一層（貼在地上）
   drawPuffs(S,scaleH,horizon,sinp,cosp,0,splitZ);          // 比城近的雲：蓋在城上面
   drawPlaces(scaleH,horizon,sinp,cosp);
   drawFlock(scaleH,horizon,sinp,cosp,now);
@@ -4393,6 +4554,191 @@ function drawPuffs(S,scaleH,horizon,sinp,cosp,zLo,zHi){
     }
     ctx.restore();
   });
+}
+
+/* ══ 蒸汽火車 ══════════════════════════════════════════════════════
+   ⚠「偶有」是規格的一部分，不是省事：每條線上**最多一列車**，跑完一趟要在
+     終點站停一段時間才再發車。所以大多數時候低頭看到的是空的軌道，偶爾才
+     追得上一列 —— 那個「撞見」才是要的東西。整條線隨時都有車在跑的話，它
+     就退成一條會動的背景裝飾了。
+   ⚠ 尺寸照**遊戲的比例**不是真實比例。這張地圖 1 世界單位 ≈ 46 公尺，真的
+     一列車只有 2 個單位，從巡航高度看等於不存在；城的插畫本來就放大了同樣
+     的倍率（一座城 550~1250 單位＝25~58 公里），火車跟著城走才協調。
+   ⚠ 發車時刻用各自的 LCG 而不是 Math.random：重整一次就換一套時刻表的話，
+     「這條線大概多久一班」這件事玩家永遠感覺不到。 */
+const TRAIN_SPEED = 120;        // 世界單位／秒
+const TRAIN_LEN   = 26;         // 一節車廂的長度（世界單位）
+const TRAIN_CARS  = 5;          // 機車頭＋四節
+const TRAIN_DWELL = [30,90];    // 終點站停靠秒數的範圍＝發車間隔
+const SMOKE_N     = 12;         // 煙柱的取樣數（＝軌跡緩衝長度）
+const SMOKE_DT    = 0.34;       // 每隔幾秒記一團煙
+let TRAINS=[];
+
+function buildTrains(){
+  TRAINS=RAIL_PATHS.map((pts,i)=>{
+    /* 累積弧長（世界單位）：靠它等速前進，也靠它把「跑了多遠」換回座標。
+       ⚠ 折線的每一段長度並不相等（斜走的一格是 1.414 格），照節點數推進的話
+         車速會隨路徑的曲折而忽快忽慢。 */
+    const cum=new Float64Array(pts.length);
+    for(let k=1;k<pts.length;k++)
+      cum[k]=cum[k-1]+Math.hypot(pts[k][0]-pts[k-1][0], pts[k][1]-pts[k-1][1])*MAP_SCALE;
+    const len=cum[pts.length-1]||0;
+    /* ── 路基高度（不是地面高度）────────────────────────────────
+       ⚠ 車不能逐節去讀腳下的 HGT。折線是在**降取樣**的高度場上找出來的，
+         全解析度的地面在它底下起伏得多；逐節照讀的結果是整列車在螢幕上
+         扭成一條蛇（實測側掠時車身橫向只有 31px，縱向卻散開 99px —— 那 99px
+         全是地面的雜訊，不是透視）。
+       ⚠ 真實的鐵路本來就不貼著地面走：填方、路塹、橋梁把路基削成一條平順的
+         線。所以這裡沿著折線做幾趟一維平滑，存成 hs —— 那才是「軌道面」。
+       ⚠ 再抬 EMBANK：路基高出地面一點，車才是坐在軌道上而不是陷進土裡。 */
+    const EMBANK=3;
+    const hs=new Float64Array(pts.length);
+    for(let k=0;k<pts.length;k++){
+      const xi=clamp(pts[k][0]|0,0,MAPW-1), yi=clamp(pts[k][1]|0,0,MAPH-1);
+      hs[k]=HGT[yi*MAPW+xi];
+    }
+    for(let pass=0;pass<6;pass++){
+      const t2=hs.slice();
+      for(let k=1;k<pts.length-1;k++) hs[k]=(t2[k-1]+t2[k]*2+t2[k+1])*0.25;
+    }
+    for(let k=0;k<pts.length;k++) hs[k]+=EMBANK;
+    return { pts, cum, len, hs, s:0, dir:1,
+             wait: 6+i*23,                 // 錯開首發，三條線不要一起出車
+             rnd: (0x9E3779B1*(i+1))>>>0,  // 各自的時刻表種子
+             puffs:[], puffT:0 };
+  }).filter(T=>T.len>TRAIN_LEN*TRAIN_CARS*2);   // 太短的線擺不下一列車
+}
+/* 每列車各自的 LCG（數值取自 Numerical Recipes），回 0..1。 */
+function trainRnd(T){ T.rnd=(T.rnd*1664525+1013904223)>>>0; return T.rnd/4294967296; }
+
+function updateTrains(dt){
+  for(const T of TRAINS){
+    if(T.wait>0){ T.wait-=dt; continue; }
+    T.s+=TRAIN_SPEED*dt*T.dir;
+    if(T.s>=T.len){        // 到站：掉頭，停一段時間再發
+      T.s=T.len; T.dir=-1;
+      T.wait=TRAIN_DWELL[0]+trainRnd(T)*(TRAIN_DWELL[1]-TRAIN_DWELL[0]);
+    }else if(T.s<=0){
+      T.s=0; T.dir=1;
+      T.wait=TRAIN_DWELL[0]+trainRnd(T)*(TRAIN_DWELL[1]-TRAIN_DWELL[0]);
+    }
+    /* 煙：把機車頭走過的位置留在**世界座標**上（不是掛在車上跟著跑）。
+       這樣過彎時煙柱會留在彎道外側、慢慢散開，跟真的一樣；掛在車上的話
+       整條煙會跟著車一起轉，看起來像一根黏在煙囪上的棍子。 */
+    T.puffT+=dt;
+    if(T.puffT>=SMOKE_DT){
+      T.puffT=0;
+      const h=trainAt(T,T.s);
+      if(h){ T.puffs.push({x:h.x,y:h.y,h:h.h,age:0});
+             if(T.puffs.length>SMOKE_N) T.puffs.shift(); }
+    }
+    for(const q of T.puffs) q.age+=dt;
+  }
+}
+
+/* 弧長 → 地圖座標＋切線方向＋地面高度。走不到就回 null。 */
+function trainAt(T,s){
+  const C=T.cum, P=T.pts, n=P.length;
+  if(n<2) return null;
+  s=clamp(s,0,T.len);
+  // 二分找所在的段
+  let lo=0, hi=n-1;
+  while(hi-lo>1){ const m=(lo+hi)>>1; if(C[m]<=s) lo=m; else hi=m; }
+  const seg=C[hi]-C[lo];
+  const t=seg>1e-6?(s-C[lo])/seg:0;
+  const x=P[lo][0]+(P[hi][0]-P[lo][0])*t, y=P[lo][1]+(P[hi][1]-P[lo][1])*t;
+  return { x, y, h:T.hs[lo]+(T.hs[hi]-T.hs[lo])*t,   // 軌道面，不是腳下的地面
+           dx:P[hi][0]-P[lo][0], dy:P[hi][1]-P[lo][1] };
+}
+
+/* 3D 視窗裡的火車。投影與 drawPlaces 同一套；遮擋走 clipByTerrainDepth
+   （山擋在前面時車要被吃掉，不能浮在山坡上）。 */
+function drawTrains(S,scaleH,horizon,sinp,cosp){
+  if(!TRAINS.length) return;
+  const sxk=W/BW, syk=VIEWH/BH;
+  /* 世界座標 → 螢幕。回 null＝在身後或太偏，不必畫。 */
+  const proj=(mx,my,h)=>{
+    const dx=mx*MAP_SCALE-cam.x, dy=my*MAP_SCALE-cam.y;
+    const z=dx*(-sinp)+dy*(-cosp);
+    if(z<40||z>ZFAR*0.62) return null;             // 遠處看不出是火車，省下來
+    const sv=(dx*cosp+dy*(-sinp))/z;
+    if(sv<-1.4||sv>1.4) return null;
+    return { x:((sv+1)/2*BW)*sxk,
+             y:(((cam.alt-h)/z + z*curvAt(sv))*scaleH+horizon)*syk,
+             z, k:(W/(2*z)) };                     // k＝1 世界單位有幾個螢幕像素
+  };
+  for(const T of TRAINS){
+    if(T.wait>0 && (T.s<=0 || T.s>=T.len)) continue;   // 停在站裡（城會蓋住它）
+    const head=trainAt(T,T.s);
+    if(!head) continue;
+    const hp=proj(head.x,head.y,head.h);
+    if(!hp) continue;
+    const carPx=TRAIN_LEN*hp.k;
+    if(carPx<0.8) continue;                        // 螢幕上不到一個像素
+    /* 逐節取**頭尾兩點**各自投影，車身畫成那兩點之間的一段粗線。
+       ⚠ 不能用「一個點 + 軸對齊的 fillRect」（第一版就是）：車朝著鏡頭
+         開走時，各節的深度差很大，投影出來是一串**垂直**排開的位置，而每節
+         仍是一條水平的橫槓 —— 讀起來是一把梯子，不是一列車。取頭尾兩點就
+         自動帶上了朝向：轉彎、斜著開、正對鏡頭都對，而且各節的粗細各自
+         照自己的深度算，透視是對的。
+       ⚠ 節與節之間留 0.88/1.12 的空隙，近距離才分得出是一節一節的。 */
+    const seats=[];
+    for(let c=0;c<TRAIN_CARS;c++){
+      const s1=T.s - T.dir*(c*TRAIN_LEN*1.12);
+      const q1=trainAt(T, s1), q2=trainAt(T, s1 - T.dir*TRAIN_LEN*0.88);
+      if(!q1||!q2) continue;
+      const p1=proj(q1.x,q1.y,q1.h), p2=proj(q2.x,q2.y,q2.h);
+      if(p1&&p2) seats.push({a:p1,b:p2,k:(p1.k+p2.k)*0.5});
+    }
+    if(!seats.length) continue;
+
+    ctx.save();
+    let cx0=1e9, cx1=-1e9;
+    for(const q of seats){ cx0=Math.min(cx0,q.a.x,q.b.x); cx1=Math.max(cx1,q.a.x,q.b.x); }
+    clipByTerrainDepth(hp.z, sxk, syk, Math.floor(cx0/sxk)-2, Math.ceil(cx1/sxk)+2);
+    const fade=clamp((ZFAR*0.62-hp.z)/(ZFAR*0.22),0,1);
+    /* 煙先畫：它在車的後上方，但被車頭壓住一點才不會糊掉車身。 */
+    const lit=lerp(0.66,1.0,S.day);
+    for(const q of T.puffs){
+      const a0=clamp(1-q.age/(SMOKE_N*SMOKE_DT),0,1);
+      if(a0<=0.02) continue;
+      const rise=q.age*7;                          // 煙往上飄（世界單位）
+      const pp=proj(q.x,q.y,q.h+rise);
+      if(!pp) continue;
+      const r=(3.2+q.age*9)*pp.k;
+      if(r<0.35) continue;
+      const g=Math.round(lerp(196,236,S.day)*lit);
+      ctx.globalAlpha=a0*0.42*fade;
+      ctx.fillStyle='rgb('+g+','+g+','+Math.round(g*0.98)+')';
+      ctx.beginPath(); ctx.ellipse(pp.x,pp.y,r,r*0.72,0,0,Math.PI*2); ctx.fill();
+    }
+    /* 車身：一節一段粗線。⚠ 不畫車窗車輪之類的細節 —— 這個尺寸下一節車廂
+       只有幾個像素，加細節只會變成雜點。讀得出「一串深色的東西沿著軌道
+       在動、前頭冒著煙」就夠了。 */
+    ctx.globalAlpha=fade;
+    ctx.lineCap='round';
+    for(let i=0;i<seats.length;i++){
+      const q=seats[i];
+      ctx.strokeStyle = i===0 ? '#1b1c20' : '#3a332c';   // 機車頭比車廂黑
+      ctx.lineWidth   = Math.max(1.0, TRAIN_LEN*0.44*q.k);
+      /* 車身要**抬離地面半個車高**：軌道畫在地表，車該坐在軌道上而不是陷進去。 */
+      const up=TRAIN_LEN*0.22*q.k;
+      ctx.beginPath();
+      ctx.moveTo(q.a.x, q.a.y-up); ctx.lineTo(q.b.x, q.b.y-up);
+      ctx.stroke();
+    }
+    /* 機車頭正面的一點暖光（夜裡才看得出來，白天被壓掉）。 */
+    if(S.day<0.45 && seats[0]){
+      const p0=seats[0].a, r=Math.max(1.2, TRAIN_LEN*0.5*seats[0].k);
+      const g2=ctx.createRadialGradient(p0.x,p0.y-r*0.3,0,p0.x,p0.y-r*0.3,r*2.2);
+      g2.addColorStop(0,'rgba(255,206,132,'+(0.55*(1-S.day/0.45)).toFixed(2)+')');
+      g2.addColorStop(1,'rgba(255,206,132,0)');
+      ctx.fillStyle=g2;
+      ctx.beginPath(); ctx.arc(p0.x,p0.y-r*0.3,r*2.2,0,Math.PI*2); ctx.fill();
+    }
+    ctx.restore();
+    ctx.globalAlpha=1;
+  }
 }
 
 /* ══ 地標 ══
@@ -6908,7 +7254,7 @@ function loop(now){
   talkHideStep(now); // ⚠ 方向計收合進度：一定要在這裡推，不能掛在 drawTalk（見該處說明）
   edgeNag(now);      // 快飛出圖了 → 蕾娜叫你回頭（軟邊界）
   const wt0=performance.now();
-  update(dt,now); updateRegion(now); render(now); updateBgm(dt); updateMapMe();
+  update(dt,now); updateRegion(now); updateTrains(dt/1000); render(now); updateBgm(dt); updateMapMe();
   qualityTick(performance.now()-wt0);
   acc+=dt;n++;
   /* HUD 加上**地圖座標與航向** —— 截圖時才知道人在哪。
