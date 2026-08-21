@@ -1451,6 +1451,7 @@ let senseTries=[];              // 最近幾次「按下探索」的時戳（滑
    沿用戰鬥教學的語彙（modules/tutorial.js + style.css 的 #tutCast）：
      · 左右兩個站位，立繪從**自己那一側**滑入
      · 沒說話的人調暗（brightness .38／saturate .75，與教學同值）
+       ⚠ 是**不透明地變暗**，不是半透明 —— 見 buildDim
      · 點畫面任何一處（按鈕除外）推進，不自動跳
      · 說話的人先上場，接話的人**輪到他才上場**
      · 第三、四人上場時，同一側的舊角先滑出、新角滑入（輪轉換卡）
@@ -1539,14 +1540,45 @@ function buildLOD(im, tw, th){
   g.drawImage(src,0,0,tw,th);
   return c;
 }
-/* w/h 是 CSS 像素的目標尺寸；回傳的畫布是 DPR 倍大，貼的時候照 CSS 尺寸貼。 */
-function portraitLOD(who, im, w, h){
+/* ── 非說話者的「壓暗版」──────────────────────────────────────────
+   ⚠ 壓暗**不是調透明度**。半透明會讓天空與地形從人身上透出來，看起來是
+     「這個人快消失了」，不是「這個人在暗處」—— 那就是回報的「效果不好」。
+     舊版只有在 ctx.filter 不存在時才退回 globalAlpha=0.45，但 canvas 的
+     ctx.filter 在 Safari 18 以前**整個沒有**，iPhone 上絕大多數時候走的
+     正是那條退路。所以退路本身要換成「不透明地變暗」。
+   作法是把整張立繪先畫進離屏畫布，再用 source-atop 蓋一層深色 ——
+   source-atop 只落在**已經有像素的地方**，等於拿立繪自己的 alpha 當遮罩，
+   輪廓外一點都不會沾到。
+   ⚠ 疊色不用純黑而是帶一點灰：out = src×(1−a) + tint×a。純黑只降亮度，
+     灰會把飽和度一起拉下來，這樣才逼近規格的 saturate(.75)。
+   ⚠ 這張是**建一次就存著**，不是每幀套 filter。每幀對整張立繪套 filter 在
+     手機上是實打實的一筆畫格時間，而這裡的結果每幀都一樣。 */
+function buildDim(src){
+  const c=document.createElement('canvas'); c.width=src.width; c.height=src.height;
+  const g=c.getContext('2d');
+  if(g.filter!==undefined){          // 有 filter 就照規格值，與戰鬥教學一致
+    g.filter='brightness('+CAST_DIM+') saturate('+CAST_SAT+')';
+    g.drawImage(src,0,0);
+    g.filter='none';
+  }else{                             // 沒有就用遮罩近似（Safari 18 以前）
+    g.drawImage(src,0,0);
+    g.globalCompositeOperation='source-atop';
+    g.fillStyle='rgba(15,15,18,'+(1-CAST_DIM*0.92)+')';
+    g.fillRect(0,0,c.width,c.height);
+    g.globalCompositeOperation='source-over';
+  }
+  return c;
+}
+/* w/h 是 CSS 像素的目標尺寸；回傳的畫布是 DPR 倍大，貼的時候照 CSS 尺寸貼。
+   dim=true 要壓暗版；壓暗版**用到才建**（獨角戲那一段沒有人被壓暗）。 */
+function portraitLOD(who, im, w, h, dim){
   const tw=Math.max(1,Math.round(w*DPR)), th=Math.max(1,Math.round(h*DPR));
-  const c=portraitLod[who];
-  if(c && c.tw===tw && c.th===th) return c.cv;
-  const cv=buildLOD(im, tw, th);
-  portraitLod[who]={tw,th,cv};
-  return cv;
+  let c=portraitLod[who];
+  if(!c || c.tw!==tw || c.th!==th){
+    c=portraitLod[who]={tw,th,cv:buildLOD(im, tw, th),dim:null};
+  }
+  if(!dim) return c.cv;
+  return c.dim || (c.dim=buildDim(c.cv));
 }
 function say(beats, at){
   sayQueue=beats; sayIdx=0; sayAt=at; sayEndAt=0;
@@ -1768,7 +1800,8 @@ function drawTalk(now){
     const G=castGeom(P, im);
     if(G.sh<=0) continue;
     const fullH=Math.round(im.height*G.s);
-    const lod=portraitLOD(c.who, im, G.w, fullH);
+    const lit=(c.who===speaker);
+    const lod=portraitLOD(c.who, im, G.w, fullH, !lit);
     // 站位錨的是**臉的中心**，不是圖框中心
     const anchor=(c.side==='L') ? 0.24 : 0.76;
     let target=Math.round(W*anchor - G.w*P.fx);
@@ -1795,20 +1828,11 @@ function drawTalk(now){
     let x;
     if(c.out) x=lerp(target, off, easeOut(clamp((now-c.out)/CAST_IN_MS,0,1)));
     else      x=lerp(off, target, easeOut(clamp((now-c.t0)/CAST_IN_MS,0,1)));
-    const lit=(c.who===speaker);
-    /* ⚠ ctx.filter 不是每個瀏覽器都有 —— 沒有就退回用透明度壓暗，
-       只是質感差一點，不會整段掛掉（同 decode() 那個教訓）。 */
-    if(ctx.filter!==undefined){
-      ctx.filter = lit ? 'none' : 'brightness('+CAST_DIM+') saturate('+CAST_SAT+')';
-      ctx.globalAlpha=1;
-    }else{
-      ctx.globalAlpha = lit ? 1 : 0.45;
-    }
-    /* LOD 已經是目標尺寸，這裡是 1:1 貼上（開平滑只為了 DPR 不是整數的機器）。 */
+    /* 亮／暗兩張都已經是目標尺寸，這裡是 1:1 貼上、**完全不透明**
+       （開平滑只為了 DPR 不是整數的機器）。 */
     ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality='high';
     ctx.drawImage(lod, Math.round(x), G.y0, G.w, fullH);
   }
-  if(ctx.filter!==undefined) ctx.filter='none';
   ctx.globalAlpha=1;
   ctx.imageSmoothingEnabled=false;
   if(sayEndAt){ ctx.restore(); return; }        // 退場時不再畫框
@@ -2763,7 +2787,13 @@ let SKYROW=null;     // 每列的天空色，輪廓混色要拿它當背景
      bwf   地形緩衝寬佔畫面寬的比例 → 成本 ∝ bwf²
      cell  手繪平面圖的每格目標像素（越大格越少）→ 平貼層成本 ∝ 1/cell²
      nmax  單軸格數上限（近距離會頂到）
-     mass  城要在畫面上多大才長出 3D 量體（越大＝越晚才立起來，只剩平貼）
+     mass  城的螢幕寬度到幾像素才長出 3D 量體（越大＝越晚才立起來）
+           ⚠ ver -277：量的是 **planW × W /(2z)**（由城心深度推算的寬度），
+             不是舊版的 max(fw,fh) —— 那個外框被夾在視窗內（見「外框夾在
+             視窗內」那段），飛近時城溢出畫面，夾過的寬度**反而變小**。
+             實測一次直線接近：帝都的 max(fw,fh) 跌了 9 次、聖王廳 1 次，
+             每跌一次就是一次「一下扁一下立體」。改用深度推算後都是 0 次。
+             數值重新標定過（舊 60 對應新 45，兩座城一致），切換距離不變。
      blk   單一量體塊小於幾像素就不畫
 
    ⚠ 城的成本**大半在量體層**（逐塊投影多邊形＋牆＋屋頂），不在平貼的網格上。
@@ -2774,15 +2804,23 @@ let SKYROW=null;     // 每列的天空色，輪廓混色要拿它當背景
    ⚠ 判斷用的是**做完一幀要多少 CPU 時間**，不是 rAF 的間隔。間隔會被
      vsync 夾在 16.7ms、被背景分頁拉到 1000ms、被 120Hz 螢幕壓到 8.3ms ——
      那些都不代表這台機器吃不吃得下。量工作量才問得到正確的問題。
+   ⚠ mass 是「整層全有或全無」的開關，所以換檔本身也會把一座城的幾十個
+     量體一次抹掉。那一層因此帶遲滯（見下方 MASS_OFF），遲滯帶剛好是
+     一個畫質檔位 —— 兩者搭起來，單一次換檔永遠不會自己把城弄成平的。
    ⚠ 升降門檻不對稱、而且升級要等更久：對稱的話會在邊界上來回跳，
      畫質每兩秒變一次比一直低畫質更難看。
    ⚠ 網址加 ?q=0..3 可鎖定畫質（測試用），鎖定後不自動調。 */
 const QUALITY = [
-  { dpr:2,   bwf:0.60, cell:11, nmax:32, mass:36,  blk:0.7 },   // 0 高（現行）
-  { dpr:1.5, bwf:0.54, cell:14, nmax:26, mass:60,  blk:1.1 },   // 1
-  { dpr:1,   bwf:0.48, cell:18, nmax:20, mass:100, blk:1.7 },   // 2
-  { dpr:1,   bwf:0.40, cell:24, nmax:14, mass:170, blk:2.6 },   // 3 低
+  { dpr:2,   bwf:0.60, cell:11, nmax:32, mass:27,  blk:0.7 },   // 0 高（現行）
+  { dpr:1.5, bwf:0.54, cell:14, nmax:26, mass:45,  blk:1.1 },   // 1
+  { dpr:1,   bwf:0.48, cell:18, nmax:20, mass:75,  blk:1.7 },   // 2
+  { dpr:1,   bwf:0.40, cell:24, nmax:14, mass:128, blk:2.6 },   // 3 低
 ];
+/* 量體層的遲滯：長出來之後要縮到門檻的 MASS_OFF 倍才收回去。
+   0.6 不是隨手挑的 —— 它就是**一個畫質檔位**（27/45、45/75、75/128 都是
+   0.6）。遲滯帶只要不窄於一檔，自適應畫質換一檔就不可能單靠自己把量體層
+   抹掉（新門檻 × 0.6 ≤ 舊門檻 ⇒ 原本亮著的值仍在帶內）。 */
+const MASS_OFF = 0.6;
 /* ── 城的近裁面與仿射保險絲 ───────────────────────────────────────
    ZCLAMP 投影時 z 的下限（避免除零）。
    ZNEAR  比這個深度更近的格點一律不畫。**必須大於 ZCLAMP** —— 被夾過的
@@ -5902,7 +5940,28 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
          ⚠ 所有牆累積成**一條路徑、一次 fill**：顏色都一樣，幾百次 fill 換成
            一次，這是這一層最大的一筆節省。 */
       const MS=MASS, MA=cityMassArt[o.s.plan];
-      if(MS&&MA&&tall>0&&Math.max(fw,fh)*pk>=Q().mass){
+      /* ── 量體層要不要長出來 ───────────────────────────────────
+         ⚠ 尺標**不能用 fw/fh** —— 那是外框，而外框在上面被夾進了視窗
+           （bx0/by1 那四行）。城一旦大到溢出畫面，夾過的外框就不再跟著
+           距離長，反而隨著城滑向邊緣**變小**。於是一次直線接近會讓這個
+           值上上下下越過門檻好幾回，整層在「全 24 塊」與「一塊都沒有」
+           之間跳 —— 那就是回報的「經過的時候一下扁一下立體」。
+           實測（375×812、由南直線接近）：帝都的 max(fw,fh) 在一次接近中
+           下跌 9 次、聖王廳 1 次；改用下面這條之後兩座都是 0 次。
+         尺標改成由城心距離推出來的螢幕寬：planW 是世界單位、投影的尺度是
+         W/(2d)，兩者相乘就是城平貼在螢幕上會有多寬。它只跟距離有關，
+         單調、不受裁切影響。d 夾住下限，飛到城正上方時分母才不會爆。
+         ⚠ 用**直線距離**而不是前向深度 zc：zc 會隨航向變（同一個位置轉一圈
+           實測 42~85），轉頭就可能越過門檻。距離對旋轉是不變的，原地打舵
+           不會改變任何一座城的層級。
+         ⚠ 還要遲滯（MASS_OFF）：門檻本身會隨自適應畫質跳檔（27→45→75→
+           128），沒有遲滯的話光是換一次檔就足以把整層抹掉。旗標存在聚落
+           物件上，逐城各自記各自的。 */
+      const mdx=o.s.mx*MAP_SCALE-cam.x, mdy=o.s.my*MAP_SCALE-cam.y;
+      const massW=o.s.planW*W/(2*Math.max(60,Math.hypot(mdx,mdy)))*pk;
+      const massT=Q().mass;
+      o.s._massOn = o.s._massOn ? (massW>=massT*MASS_OFF) : (massW>=massT);
+      if(MS&&MA&&tall>0&&o.s._massOn){
         const dyk=scaleH*syk;
         /* 方位桶：由遠而近的順序只取決於 (gradU,gradV) 的方向（見 loadMass）。 */
         let az=Math.atan2(gradV,gradU)/(Math.PI*2); az-=Math.floor(az);
