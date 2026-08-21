@@ -62,6 +62,33 @@
     font-size:11px;letter-spacing:.14em;padding:5px 12px;cursor:pointer;}
   #boostBtn:active{background:rgba(201,162,39,.16);}
   #boostBtn.on{color:#7fd0a0;border-color:rgba(127,208,160,.8);}
+  /* 進度鈕：開發用。放操作盤**右上**（與左上的加速鈕對稱）。
+     top 同樣由 JS 設成 VIEWH+12 —— 面板上緣是算出來的，CSS 沒有那個數字。
+     ⚠ 管理人限定：ARCHITECTURE §0.5 明訂**好感度不可視化**，
+       一般玩家看到數字就違反那條設計。 */
+  #progBtn{position:fixed;right:12px;z-index:40;background:rgba(5,6,12,.72);
+    border:1px solid rgba(201,162,39,.5);color:var(--gold);font-family:inherit;
+    font-size:11px;letter-spacing:.14em;padding:5px 12px;cursor:pointer;}
+  #progBtn:active{background:rgba(201,162,39,.16);}
+  #progBtn[hidden]{display:none;}
+  #progView{position:fixed;inset:0;z-index:60;display:none;
+    background:rgba(3,4,9,.82);align-items:center;justify-content:center;}
+  #progView.on{display:flex;}
+  #progPanel{width:min(90%,340px);background:rgba(8,9,16,.96);
+    border:1px solid rgba(201,162,39,.5);padding:16px 18px 14px;
+    font-size:12px;letter-spacing:.06em;color:#d8d2c4;}
+  #progPanel h3{margin:0 0 10px;font-size:12px;letter-spacing:.24em;color:var(--gold);font-weight:normal;}
+  #progPanel .pr-row{display:flex;justify-content:space-between;gap:10px;padding:4px 0;
+    border-bottom:1px solid rgba(201,162,39,.14);}
+  #progPanel .pr-row:last-of-type{border-bottom:none;}
+  #progPanel .pr-k{color:#9a927f;}
+  #progPanel .pr-v{color:#e8e2d2;font-variant-numeric:tabular-nums;}
+  #progPanel .pr-out{color:#7a6f5c;}
+  #progPanel .pr-sec{margin-top:12px;font-size:10px;letter-spacing:.2em;color:var(--gold);opacity:.75;}
+  #progPanel .pr-note{margin-top:10px;font-size:10px;line-height:1.6;color:#7a7266;}
+  #progClose{margin-top:12px;width:100%;background:transparent;border:1px solid rgba(201,162,39,.5);
+    color:var(--gold);font-family:inherit;font-size:11px;letter-spacing:.2em;padding:6px;cursor:pointer;}
+  #progClose:active{background:rgba(201,162,39,.16);}
 
   /* 地圖畫面：圖是點開才載的（見 openMap），不進開場載入 */
   #mapView{position:fixed;inset:0;z-index:60;background:rgba(4,5,9,.94);display:none;}
@@ -186,6 +213,15 @@
 <button id="backBtn">← 返回</button>
 <button id="spawnBtn">生怪</button>
 <button id="boostBtn">×1</button>
+<!-- 進度（管理人限定，由 ADMIN 區塊解除 hidden）：現 stage 與各角色好感 -->
+<button id="progBtn" hidden>進度</button>
+<div id="progView">
+  <div id="progPanel">
+    <h3>進　度</h3>
+    <div id="progBody"></div>
+    <button id="progClose">關閉</button>
+  </div>
+</div>
 <div id="mapView">
   <div id="mapWrap">
     <canvas id="mapCv"></canvas>
@@ -3272,7 +3308,9 @@ function applyResize(){
   DPR=ndpr;
   VIEWH=Math.round(H*VIEW_F);
   { const bb=document.getElementById('boostBtn');
-    if(bb) bb.style.top=(VIEWH+12)+'px'; }
+    if(bb) bb.style.top=(VIEWH+12)+'px';
+    const pb=document.getElementById('progBtn');       // 進度鈕：面板右上，與加速鈕同高
+    if(pb) pb.style.top=(VIEWH+12)+'px'; }
   cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR);
   cv.style.width=W+'px';cv.style.height=H+'px';
   /* ⚠ 順序：設 width/height 會把 context 的狀態（含變換）整個重置，
@@ -3815,6 +3853,56 @@ function pick3dAt(cssX,cssY){
     const mx=mi%MAPW, my=(mi/MAPW)|0;
     return { x:mx, y:my, h:HGT[mi], river:!!RIV[mi],
              dist:Math.round(Math.hypot(mx*MAP_SCALE-cam.x,my*MAP_SCALE-cam.y)) };
+  }
+}
+/* ══ 進度面板（管理人限定）══
+   顯示現 stage、在隊成員、四人好感與 tier。測 stage／好感觸發時用 —— 之前只能
+   在 console 敲 aff() 與 gameStage()，切到 devtools 再切回來，手機上根本沒得看。
+   ⚠ **唯讀**。要改值仍走 window.setStage / setAff（已在上面掛好），
+     面板不做增減鈕：好感是棘輪制（只升不降），做成隨手可點會把測試狀態弄髒。
+   ⚠ ARCHITECTURE §0.5 明訂**好感度不可視化** —— 玩家端靠獨坐出場順序、
+     敲門安全感、稱呼變化去感知。所以這個面板只在管理人模式出現，
+     不要因為「好用」就把它放給一般玩家。 */
+const PROG_CHARS=[['renna','蕾娜'],['nouvelle','諾薇兒'],['sorana','索拉娜'],['anya','安雅']];
+/* tier 定義見 docs/TIVOT_IMPL_SPEC.md §2：tier=floor((aff-1)/10)+1 → 1..5。
+   ⚠ 這與 talks.js 的 affBand（取「不超過現值的最高門檻」）是**兩套不同的東西**：
+     affBand 回傳門檻值（10/20/…）拿去查台詞池，tier 回傳級數（1..5）。別混用。 */
+const PROG_TIER_NAME=['同行','朋友','摯友','羈絆','愛'];
+function progTier(v){ return Math.min(5, Math.max(1, Math.floor((v-1)/10)+1)); }
+function renderProg(){
+  const b=document.getElementById('progBody'); if(!b) return;
+  const st=gameStage();
+  const rows=[];
+  rows.push(`<div class="pr-row"><span class="pr-k">章節 STAGE</span><span class="pr-v">${st}</span></div>`);
+  rows.push(`<div class="pr-row"><span class="pr-k">主角</span><span class="pr-v">${playerName()}</span></div>`);
+  rows.push('<div class="pr-sec">好　感</div>');
+  for(const [k,nm] of PROG_CHARS){
+    const v=affection(k), t=progTier(v);
+    /* 不在隊的人照樣列出來但標明 —— 「這個人這一章不在」本身就是要看的資訊。 */
+    const on=(typeof inParty==='function') ? inParty(k,st) : true;
+    rows.push(`<div class="pr-row"><span class="pr-k${on?'':' pr-out'}">${nm}${on?'':'（未入隊）'}</span>`
+            + `<span class="pr-v${on?'':' pr-out'}">${v}　tier ${t}・${PROG_TIER_NAME[t-1]}</span></div>`);
+  }
+  /* 可播閒聊組數：內容缺口只會表現成「對話鈕好像沒反應」，很難回頭找，
+     所以順手把 talkDebug 的數字放進來（talks.js 的註解就在警告這件事）。 */
+  if(typeof talksFor==='function' && typeof talkHard==='function'){
+    const n=talksFor(st).filter(t=>talkHard(t,st)).length;
+    rows.push('<div class="pr-sec">閒　聊</div>');
+    rows.push(`<div class="pr-row"><span class="pr-k">本章可播組數</span><span class="pr-v">${n}</span></div>`);
+    if(!n) rows.push('<div class="pr-note">⚠ 這一章一組都播不出來。多半是 talks.js 的 PARTY 入隊章節與對話裡開口的人對不上（整組會被硬條件排除）。</div>');
+  }
+  rows.push('<div class="pr-note">唯讀。改值用 setStage(n) / setAff(who,v)，改完重新開這個面板。</div>');
+  b.innerHTML=rows.join('');
+}
+if(ADMIN){
+  const pb=document.getElementById('progBtn'), pv=document.getElementById('progView');
+  if(pb && pv){
+    pb.hidden=false;
+    pb.addEventListener('click',e=>{ e.stopPropagation(); renderProg(); pv.classList.add('on'); });
+    const shut=e=>{ e.stopPropagation(); pv.classList.remove('on'); };
+    document.getElementById('progClose').addEventListener('click',shut);
+    /* 點面板外的暗幕也關 —— 但點面板本身不關（否則讀到一半手滑就消失）。 */
+    pv.addEventListener('click',e=>{ if(e.target===pv) shut(e); });
   }
 }
 if(ADMIN){
