@@ -716,6 +716,9 @@ function lampsFor(S,img){
 }
 
 let cityFB=null, CFB=null;                  // 手繪平面圖的低解析繪製緩衝
+/* 近裁面裁切用的四角暫存（x,y,scale,z ×4）。模組層配一次 —— 貼近城時每幀
+   會用到幾百次，逐次 new 出來就是純粹的 GC 壓力。 */
+const cityClipQ=new Float64Array(16);
 /* 網格投影的投影點（抬升後 / 地面），每點 4 個 float：螢幕 x、螢幕 y、尺度、未夾深度。
    ⚠ 預配置、只長不縮。舊版每幀 new 出 (N+1)²×2 個小陣列（N=40 → 3362 個）
      再加 N² 個 cell 物件（1600 個）—— 桌機的 GC 吞得下，手機吞不下。 */
@@ -6985,7 +6988,7 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
       const row=NU+1;
       for(let ky2=0;ky2<NV;ky2++){
         const jy=jy0+jys*ky2;
-        const sy=(cityV[jy]+1)*svy, shh=(cityV[jy+1]-cityV[jy])*svy;
+        /* ⚠ 這一組是**整列**的來源矩形，格內若發生近裁面裁切會各自重算（見下方）。 */
         for(let kx2=0;kx2<NU;kx2++){
           const jx=jx0+jxs*kx2;
           /* ⚠ 這裡原本逐格判斷「格心落在海上就不畫」。格子大小隨距離變，
@@ -6995,27 +6998,69 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
           /* ⚠ 任一角太近或在身後就整格跳過。project 對 z<24 做了夾制，
              夾過的角會被推到一個完全錯的螢幕位置，那一格就會扯成一片
              —— 這就是「城有時會破」。夾制是為了避免除零，不能拿來畫。 */
-          if(PT[iA+3]<CITY_ZNEAR||PT[iB+3]<CITY_ZNEAR||PT[iC+3]<CITY_ZNEAR||PT[iD+3]<CITY_ZNEAR) continue;
+          /* ── 近裁面裁切（ver -292）──────────────────────────────
+             ⚠⚠ 這裡原本是「有一個角比 ZNEAR 近就**整格丟掉**」。遠處沒差
+               （跨界的格子很少），**貼近城的時候那是把半座城丟掉**：實測鏡頭
+               到城心 440（城的繪製半徑 396，等於只在城緣外 44 個單位）時，
+               1855 格裡 1008 格栽在這一條，實際只畫出 175 格。
+               看到的就是「廣場中央該白的地方冒出綠地」—— 不是地形頂出來，
+               是那幾格**根本沒畫**，底下的地貌直接露出來。
+             ⚠ 不能靠調低 ZNEAR：被丟的格子裡有 840 格 z 是**負的**（幾何上
+               真的在鏡頭後方），門檻再低也救不回來。實測 14→9 反而更少。
+             正解是把格子**裁成可見的那一塊再畫**。
+             ⚠ 裁切有解析解：深度對平面座標是仿射的（z = zc + gradU·u + gradV·v，
+               見上面 walk 的說明），所以 z=ZNEAR 在 uv 平面上是一條直線。
+               把矩形往深度增加的方向縮到四角都過關即可，縮掉的是一塊楔形。
+               兩軸各縮同一個比例 f＝缺口÷可用深度 —— f·Gu + f·Gv 剛好補上缺口，
+               不必解不等式，也不會偏袒某一軸。 */
+          let cu0=cityU[jx], cu1=cityU[jx+1], cv0=cityV[jy], cv1=cityV[jy+1];
+          let PS=PT, PA=iA, PB=iB, PC=iC, PD=iD, clipped=false;
+          {
+            let zn=PT[iA+3];
+            const zb0=PT[iB+3], zc0=PT[iC+3], zd0=PT[iD+3];
+            if(zb0<zn)zn=zb0; if(zc0<zn)zn=zc0; if(zd0<zn)zn=zd0;
+            if(zn<CITY_ZNEAR){
+              const Gu=Math.abs(gradU*(cu1-cu0)), Gv=Math.abs(gradV*(cv1-cv0));
+              const G=Gu+Gv;
+              if(!(G>1e-9)) continue;
+              const f=(CITY_ZNEAR-zn)/G;
+              if(f>=1) continue;                 // 整格都在近裁面內側，真的沒得畫
+              if(gradU>0) cu0+=f*(cu1-cu0); else cu1-=f*(cu1-cu0);
+              if(gradV>0) cv0+=f*(cv1-cv0); else cv1-=f*(cv1-cv0);
+              /* ⚠ 一定要**重投影**裁過的四角，不能沿用 PT —— 原本那幾個角有的
+                 在鏡頭後面，PT 裡存的是被 CITY_ZCLAMP 夾過的假螢幕位置。 */
+              const uu0=cu0,uu1=cu1,vv0=cv0,vv1=cv1;
+              const UU=[uu0,uu1,uu0,uu1], VV=[vv0,vv0,vv1,vv1];
+              for(let k2=0;k2<4;k2++){
+                const xq=UU[k2]*hw, yq=VV[k2]*hh;
+                projectInto(cityClipQ, k2*4, (xq*ca-yq*sa)/MAP_SCALE,
+                            (xq*sa+yq*ca)/MAP_SCALE, hAt(UU[k2],VV[k2]));
+              }
+              PS=cityClipQ; PA=0; PB=4; PC=8; PD=12; clipped=true;
+            }
+          }
           /* ⚠ 保險絲：一格內的深度比例失控（近角比遠角近三倍以上）就整格不畫。
              仿射矩陣吃不下這種格子，畫出來是一條放射狀的拖曳——寧可缺一格。
              步長依深度分配之後正常情況不會觸發，這條是防下次再寫錯。 */
           {
-            let zmin=PT[iA+3], zmax=zmin;
-            const zb=PT[iB+3], zcc=PT[iC+3], zd=PT[iD+3];
+            let zmin=PS[PA+3], zmax=zmin;
+            const zb=PS[PB+3], zcc=PS[PC+3], zd=PS[PD+3];
             if(zb<zmin)zmin=zb; if(zb>zmax)zmax=zb;
             if(zcc<zmin)zmin=zcc; if(zcc>zmax)zmax=zcc;
             if(zd<zmin)zmin=zd; if(zd>zmax)zmax=zd;
             if(zmax>zmin*CITY_ZRATIO) continue;
           }
-          const qax=PT[iA], qay=PT[iA+1], qbx=PT[iB], qby=PT[iB+1],
-                qcx=PT[iC], qcy=PT[iC+1], qdx=PT[iD], qdy=PT[iD+1];
+          const qax=PS[PA], qay=PS[PA+1], qbx=PS[PB], qby=PS[PB+1],
+                qcx=PS[PC], qcy=PS[PC+1], qdx=PS[PD], qdy=PS[PD+1];
           /* 整格落在外框之外就跳過。緩衝夾到視窗之後，這種格子的 drawImage
              畫出來的是零個可見像素 —— 飛到城上空時它們是大宗（近距離量到
              1147 次 drawImage 裡有一半以上在畫面外）。八次 min/max 換掉一次
              帶轉換的 drawImage，很划算。 */
           if(Math.min(qax,qbx,qcx,qdx)>bx1||Math.max(qax,qbx,qcx,qdx)<bx0||
              Math.min(qay,qby,qcy,qdy)>by1||Math.max(qay,qby,qcy,qdy)<by0) continue;
-          const sx=(cityU[jx]+1)*sux, sw=(cityU[jx+1]-cityU[jx])*sux;
+          /* 來源矩形跟著裁過的 uv 走，否則圖會偏。sy/shh 同理（外層那組是整格的）。 */
+          const sx=(cu0+1)*sux, sw=(cu1-cu0)*sux;
+          const sy=(cv0+1)*svy, shh=(cv1-cv0)*svy;
           const a1=(qbx-qax)/sw, b1=(qby-qay)/sw;
           const c1=(qcx-qax)/shh, d1=(qcy-qay)/shh;
           if(!isFinite(a1)||!isFinite(d1)) continue;
@@ -7027,7 +7072,10 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
                暗色反而乾淨地讀成「牆在陰影裡」。
              ⚠ 四條邊照 A→B→D→C 的環序，選深度和最小的那條；
                舊版是每格 new 出一個 4×5 的巢狀陣列來比大小。 */
-          const lift=Math.abs(qay-GD[iA+1])+Math.abs(qdy-GD[iD+1]);
+          /* ⚠ 裁過的格子不畫立面：GD（地面點）沒有跟著重投影，lift 會拿裁過的
+             頂點去減整格的地面點，算出來是假的。裁切只發生在最近的那一兩排，
+             那裡的立面本來就只有幾像素。 */
+          const lift=clipped?0:(Math.abs(qay-GD[iA+1])+Math.abs(qdy-GD[iD+1]));
           /* ⚠ lift 設上限：近距離時單格的立面可以長到幾十像素，
              一堆長條暗面疊在一起就是整片拖曳。超過就不畫那一面。 */
           if(lift>1.2 && lift<26){
