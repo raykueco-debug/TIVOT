@@ -148,17 +148,25 @@ function layout(){
   shift=Math.max(0, shift);
 
   for(const o of m){
-    const a=o.a, el=o.el;
+    const a=o.a, el=o.el, NW=el.naturalWidth;
+    /* ⚠ 站到**非基準邊**要水平翻轉（見 speakers.js 的 faces）—— 這樣不管站哪邊
+       都面向畫面中央。翻轉會連帶改變臉的橫向位置與輪廓左右界：
+       fx 變 (1-fx)、輪廓界對調成 (NW-r, NW-l)。量測值本身不動，那是原圖的數字。 */
+    const flip = !a.noFlip && a.faces && o.side!==a.faces;
+    el.classList.toggle('flip', !!flip);
+    const fx = flip ? (1-a.fx) : a.fx;
+    const bl = flip ? (NW-o.b.r) : o.b.l;
+    const br = flip ? (NW-o.b.l) : o.b.r;
     /* 橫向錨的是**臉的中心**（fx），不是圖框中心 —— 插畫左右留白差很多。 */
     const faceX = solo ? W*0.5 : (o.side==='R' ? W*0.74 : W*0.26);
-    let x = faceX - o.s*a.fx*el.naturalWidth;
+    let x = faceX - o.s*fx*NW;
     if(!solo){                                        // 夾中線：夾輪廓不夾圖框
       const mid=W/2;
-      if(o.side==='L'){ const r=x+o.s*o.b.r; if(r>mid) x-=(r-mid); }
-      else            { const l=x+o.s*o.b.l; if(l<mid) x+=(mid-l); }
+      if(o.side==='L'){ const r=x+o.s*br; if(r>mid) x-=(r-mid); }
+      else            { const l=x+o.s*bl; if(l<mid) x+=(mid-l); }
       /* ⚠ 夾完再把**輪廓**拉回畫面內：夾中線只保證不互相越界，
          不保證沒被推出外緣（諾薇兒的裙襬就會把她整個頂出左邊）。 */
-      const lEdge=x+o.s*o.b.l, rEdge=x+o.s*o.b.r;
+      const lEdge=x+o.s*bl, rEdge=x+o.s*br;
       if(lEdge<0)      x -= lEdge;
       else if(rEdge>W) x -= (rEdge-W);
     }

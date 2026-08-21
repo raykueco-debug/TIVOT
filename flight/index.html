@@ -1558,6 +1558,16 @@ const PORTRAIT = {
               eye:34, fx:0.478, top:0,   bot:1530 },
   /* ⚠ 索拉娜用 **side** 那張：front 太滿（人物橫向佔 78%），兩人同台一定疊。
      側面只佔 69%，站位再拉開，交疊就壓到最低。 */
+  /* ⚠⚠ **side 欄自 ver -288 起不再決定站位**（站位改發起位制，見 castSide），
+       改為「**這張圖是為哪一側畫的**」＝人物朝向的基準邊。站到另一側就水平
+       翻轉，不管站哪邊都面向畫面中央。四個人都適用，不必逐人加旗標。
+         · 安雅 R：原圖朝向適合站右 → 站左時翻轉
+         · 蕾娜／諾薇兒／索拉娜 L → 站右時翻轉
+     ⚠ 翻轉會連帶改變臉的橫向位置與輪廓左右界（fx 變 1-fx、左右界對調），
+       drawTalk 有處理。量測值本身**不要改**，那是原圖的數字。
+     ⚠ 代價：髮旋、配件、持物會左右顛倒（蕾娜的板夾會換手）。哪一張翻了看
+       起來不對，就給那個人加 noFlip:true 個別關掉，不必動通則。
+     ⚠ 索拉娜是側面構圖，朝向最明顯 —— 站錯邊會整個背對畫面中央。 */
   sorana:   { name:'索拉娜', cm:176, side:'L', src:'../resources/partner/Sorana_CI_side.webp',
               eye:27, fx:0.527, top:4,   bot:1522 },
   /* ⚠ ver -284 Priest 換了新版插畫（Ray 重畫）。**又全部重量過**，沒有沿用上一版：
@@ -1873,11 +1883,20 @@ let cast=[];               // [{who,side,t0,out}]：out＝退場起始時戳（0
 
 const easeOut=k=>1-Math.pow(1-k,3);
 
+/* ══ 站位：右位＝該段對話的「發起位」（Ray 定案，ver -288）══
+   發起人（這段對白的第一句是誰講的）固定站右、整段不動；其他人共用左位輪替。
+   ⚠ 這**取代**了先前「站位寫在 PORTRAIT[].side、安雅固定在右」的作法。
+     舊作法的問題是站位與這段對話在講什麼無關 —— 誰起的頭讀不出來。
+   ⚠ 因此四名女角**每個人都可能站左或站右**（舊作法只有安雅會在右）。
+     立繪換邊要翻轉（面向畫面中央），見 PORTRAIT 的 side 欄。 */
+let sayLead=null;                  // 本段對白的發起人（＝站右位的人）
+function castSide(who){ return (who===sayLead) ? 'R' : 'L'; }
+
 /* 讓某人上場。同一側已經有人就先把他推出去 —— 這就是「輪轉換卡」。 */
 function castEnter(who, now){
   if(!PORTRAIT[who] || !PORTRAIT[who].src) return;   // 還沒有立繪的人不上場
   if(cast.some(c=>c.who===who && !c.out)) return;
-  const side=PORTRAIT[who].side;
+  const side=castSide(who);
   for(const c of cast) if(c.side===side && !c.out) c.out=now;
   cast.push({who, side, t0:now, out:0});
   portraitArt(who);
@@ -1991,6 +2010,7 @@ function portraitLOD(who, im, w, h, dim){
 function say(beats, at){
   sayQueue=beats; sayIdx=0; sayAt=at; sayEndAt=0;
   cast=[];
+  sayLead=beats[0] ? beats[0].who : null;     // ⚠ 發起人＝第一句是誰講的，整段固定站右
   for(const b of beats) portraitArt(b.who);   // 先把圖抓好，輪到誰才上場
   castEnter(beats[0].who, at);
 }
@@ -2210,9 +2230,16 @@ function drawTalk(now){
     const fullH=Math.round(im.height*G.s);
     const lit=(c.who===speaker);
     const lod=portraitLOD(c.who, im, G.w, fullH, !lit);
+    /* ⚠ 站到**非基準邊**要水平翻轉（見 PORTRAIT 的 side 欄）—— 這樣不管站哪邊
+       都是面向畫面中央。
+       翻轉之後臉的橫向位置變成 (1-fx)、輪廓的左右界對調 —— 底下的站位與
+       夾中線一律用翻轉後的值算，不然人會被擺到反方向去。
+       量測值本身不動，那是原圖的數字。 */
+    const flip = !P.noFlip && c.side!==P.side;    // 站到「非基準邊」就翻轉
+    const fxEff=flip ? (1-P.fx) : P.fx;
     // 站位錨的是**臉的中心**，不是圖框中心
     const anchor=(c.side==='L') ? 0.24 : 0.76;
-    let target=Math.round(W*anchor - G.w*P.fx);
+    let target=Math.round(W*anchor - G.w*fxEff);
     /* ⚠ 不可越中線（Ray 指定）：左側的人輪廓右緣不得超過 W/2，右側的人輪廓
        左緣不得低於 W/2。ver -251 把立繪放大 29% 之後，四個人**全部**都在越線
        （實測 375 寬：安雅 26px、索拉娜 26px、蕾娜 36px；只有諾薇兒沒越）。
@@ -2225,7 +2252,8 @@ function drawTalk(now){
     if(B){
       const r=clamp(Math.round(G.sh/B.k)-1, 0, B.n-1);
       if(B.mx[r]>=0){
-        const lft=B.mn[r]*B.k*G.s, rgt=(B.mx[r]+1)*B.k*G.s;
+        let lft=B.mn[r]*B.k*G.s, rgt=(B.mx[r]+1)*B.k*G.s;
+        if(flip){ const l2=G.w-rgt, r2=G.w-lft; lft=l2; rgt=r2; }   // 翻轉：左右界對調
         // ⚠ 取整方向要挑對：左側往下取整、右側往上取整，否則 W/2 是 .5 時
         //    會有半個像素壓過中線（實測安雅輪廓左緣 187 vs 中線 187.5）。
         target = (c.side==='L') ? Math.min(target, Math.floor(W/2-rgt))
@@ -2239,7 +2267,17 @@ function drawTalk(now){
     /* 亮／暗兩張都已經是目標尺寸，這裡是 1:1 貼上、**完全不透明**
        （開平滑只為了 DPR 不是整數的機器）。 */
     ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality='high';
-    ctx.drawImage(lod, Math.round(x), G.y0, G.w, fullH);
+    if(flip){
+      /* 以自己的右緣為軸鏡射。⚠ 用 save/restore 包起來 —— 這個 scale(-1,1)
+         若外洩到後面的 drawPanel，整個面板會左右顛倒。 */
+      ctx.save();
+      ctx.translate(Math.round(x)+G.w, G.y0);
+      ctx.scale(-1,1);
+      ctx.drawImage(lod, 0, 0, G.w, fullH);
+      ctx.restore();
+    }else{
+      ctx.drawImage(lod, Math.round(x), G.y0, G.w, fullH);
+    }
   }
   ctx.globalAlpha=1;
   ctx.imageSmoothingEnabled=false;
