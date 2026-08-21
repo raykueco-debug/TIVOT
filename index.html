@@ -202,6 +202,9 @@
       <button id="statsBtn">後臺</button>
       <!-- 試飛：大地圖飛行原型（flight/），同為管理人模式限定 -->
       <button id="flightBtn">試飛</button>
+      <!-- 主線劇情（管理人模式限定）：從頭跑 mainScript 的 scene 鏈。
+           存讀檔 F4/F7 即時、F5/F8 選欄（見 modules/save.js）。 -->
+      <button id="storyBtn">story</button>
       <span class="home-copyright">© 2026 Eternal Original Sin (E.O.S.) · All Rights Reserved.</span>
       <!-- 版本號不上首頁：連點團徽 5 下的診斷 HUD 內顯示（main.js debugHud） -->
     </div>
@@ -335,6 +338,43 @@
     </div>
   </div>
 </div>
+
+<!-- ══ 主線劇情舞台（modules/story.js）══
+     兩槽立繪：右＝該段對話的**發起位**（發起人固定站右），左＝其他人輪替。
+     ⚠ 這與飛行頁閒聊的「安雅固定在右」不同，是有意的：閒聊沒有發起人可言。
+     #storyTouch 是全畫面推進層，鋪在立繪之上、對話框之下（點任何一處推一句）。 -->
+<div id="storyStage">
+  <div id="storyCast">
+    <img class="story-portrait" id="storyCastL" alt="">
+    <img class="story-portrait" id="storyCastR" alt="">
+  </div>
+  <img id="storyCg" alt="">
+  <div id="storyTouch"></div>
+  <button id="storyExit" class="corner-btn" aria-label="離開劇情">✕</button>
+  <div id="storyBubble">
+    <div class="story-name" id="storyName"></div>
+    <div class="story-text" id="storyText"></div>
+    <div class="story-next">▼</div>
+  </div>
+</div>
+
+<!-- ══ 存讀檔欄位面板（modules/save.js）══
+     一頁 10 列，超出增頁。F5 存檔模式／F8 讀檔模式，同一個面板兩種用法。 -->
+<div id="saveSheet">
+  <div class="save-panel">
+    <div class="save-head">
+      <div class="save-title" id="saveTitle">存檔</div>
+      <button id="saveClose" class="corner-btn" aria-label="關閉">✕</button>
+    </div>
+    <div class="save-list" id="saveList"></div>
+    <div class="save-pager">
+      <button id="savePrev" aria-label="上一頁">∧</button>
+      <span id="savePage">1 / 1</span>
+      <button id="saveNext" aria-label="下一頁">∨</button>
+    </div>
+  </div>
+</div>
+<div id="saveToast"></div>
 
 <!-- 全域靜音（管理人模式限定）：body 直屬 → 首頁/戰鬥/結算/讀取畫面都在，
      不必逐個畫面各放一顆。狀態存 localStorage，flight/ 讀同一把鑰匙。 -->

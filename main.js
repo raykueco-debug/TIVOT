@@ -23,6 +23,8 @@ import * as inspector from './modules/inspector.js';   // 結算/評價/迎擊�
 import * as tutorial from './modules/tutorial.js';     // 首頁「教學」鈕：下一場強制進教學
 import { playTransition } from './modules/transition.js';   // 過渡禎（開始/結束淡入淡出）
 import { sakuraBurst } from './modules/sakura.js';   // 開始遊戲：全畫面櫻花飛舞（純程式）
+import * as story from './modules/story.js';   // 主線 scene 播放器（首頁 story 鈕）
+import * as saveSys from './modules/save.js';   // 劇情層存讀檔（F4/F7 即時、F5/F8 選欄）
 import './modules/enemy.js';
 
 const $ = id => document.getElementById(id);
@@ -541,6 +543,12 @@ document.querySelectorAll('#originalSheet .os-link').forEach(a=>{
 bindBtn('statsBtn', ()=>{ window.location.href = 'stats.html'; });
 // 試飛：大地圖飛行原型（管理人模式限定；鈕本身由 CSS 隱藏，見 style.css）
 bindBtn('flightBtn', ()=>{ window.location.href = 'flight/'; });
+/* 主線劇情（管理人模式限定）：從 mainScript 的 MAIN_ENTRY 開始跑 scene 鏈。
+   ⚠ 不換頁 —— 劇情舞台是蓋在首頁上的一層（#storyStage z-8300），離開就回首頁。
+     換頁的話存讀檔要跨頁還原，複雜度沒必要。
+   存讀檔：F4 即時存／F7 即時讀／F5 選欄存／F8 選欄讀（見 modules/save.js）。 */
+story.init(); saveSys.init();
+bindBtn('storyBtn', ()=>{ story.open(null); });
 weapon.refreshLoadoutLabels();                  // 開機：把當前副武器/搭檔名寫進 loadout 按鈕
 TEL.visit();                                    // 來訪上報（每次開頁一筆）
 // 版本號不上首頁：於「連點團徽 5 下」的診斷 HUD 內顯示（見 debugHud）

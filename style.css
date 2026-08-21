@@ -1011,14 +1011,14 @@
     display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px;padding:0 8px;}
   /* 視窗被裁（iOS 26 standalone）：home indicator 位於不可視死區，安全區墊高全屬白墊 → 拿回 */
   html.vp-clipped #home #homeLinks{bottom:10px;}
-  #home #tutorialBtn, #home #creditBtn, #home #originalBtn, #home #statsBtn, #home #flightBtn{padding:6px 18px;background:transparent;
+  #home #tutorialBtn, #home #creditBtn, #home #originalBtn, #home #statsBtn, #home #flightBtn, #home #storyBtn{padding:6px 18px;background:transparent;
     border:1px solid var(--gold-dim);border-radius:20px;color:var(--gold-dim);
     font-family:inherit;font-size:11px;letter-spacing:2px;flex:none;}
-  #home #tutorialBtn:active, #home #creditBtn:active, #home #originalBtn:active, #home #statsBtn:active, #home #flightBtn:active{transform:scale(.95);color:var(--gold);border-color:var(--gold);}
+  #home #tutorialBtn:active, #home #creditBtn:active, #home #originalBtn:active, #home #statsBtn:active, #home #flightBtn:active, #home #storyBtn:active{transform:scale(.95);color:var(--gold);border-color:var(--gold);}
   /* 管理人模式限定鈕（後臺／試飛）：預設隱藏，body.testmode 才出現。
      testmode 於開機時由 localStorage 還原（見 main.js adminMode），手勢可再次關閉。 */
-  #home #statsBtn, #home #flightBtn{display:none;}
-  body.testmode #home #statsBtn, body.testmode #home #flightBtn{display:block;}
+  #home #statsBtn, #home #flightBtn, #home #storyBtn{display:none;}
+  body.testmode #home #statsBtn, body.testmode #home #flightBtn, body.testmode #home #storyBtn{display:block;}
   /* 版權：強制換行獨占一行（flex-basis:100%），置中、單行 */
   #home .home-copyright{flex:0 0 100%;text-align:center;margin-top:2px;
     font-size:9.5px;letter-spacing:.5px;color:var(--gold-dim);
@@ -1157,3 +1157,78 @@
   /* 點擊閘（指向左緣破防計量表）：標示縮字，置中定位時左緣不出畫面（箭頭保持正對計量表） */
   #tutGuide.g-down .tg-label{font-size:10px;letter-spacing:1px;}
   @keyframes tgLabel{from{opacity:.55;}to{opacity:1;}}
+
+  /* ══════════════════════════════════════════════════════════════════
+     主線劇情舞台（modules/story.js）＋ 存讀檔欄位面板（modules/save.js）
+     ⚠ 立繪的 left/top/width/height 由 story.place() 以 px 寫入（鎖身高取景），
+       CSS **不要**再給 height/bottom，會打架。這裡只管顯示、滑入與壓暗。
+     ⚠ 層級：舞台 8300（高於整備頁/立繪層，低於 cut-in 8100？不，cut-in 是
+       演出中不會同時開劇情，故取 8300 蓋過首頁即可）；存檔面板 9200 疊在
+       舞台之上；提示條 9600 最上。
+     ══════════════════════════════════════════════════════════════════ */
+  #storyStage{position:fixed;inset:0;z-index:8300;display:none;overflow:hidden;
+    background:var(--bg);}
+  #storyStage.on{display:block;}
+  #storyCast{position:absolute;inset:0;z-index:1;pointer-events:none;}
+  /* 進場：從**自己那一側**滑入，450ms ease-out（CLAUDE.md §6.5）。 */
+  .story-portrait{position:absolute;object-fit:contain;pointer-events:none;
+    transition:transform .45s cubic-bezier(.16,1,.3,1),filter .25s ease;}
+  #storyCastL{transform:translateX(-140%);}
+  #storyCastR{transform:translateX(140%);}
+  #storyCast .story-portrait.on{transform:translateX(0);}
+  /* 壓暗：說話者原色，其餘 brightness(.38) saturate(.75)。
+     ⚠ CSS filter 天生不透明 —— 那條「不可用透明度代替」的警告是給 canvas 版的。 */
+  .story-portrait.dim{filter:brightness(.38) saturate(.75);}
+  #storyCg{position:absolute;inset:0;z-index:2;width:100%;height:100%;
+    object-fit:contain;display:none;pointer-events:none;}
+  #storyCg.on{display:block;}
+  /* 全畫面推進層：點任何一處推一句（退出鈕除外，它自己 stopPropagation）。 */
+  #storyTouch{position:absolute;inset:0;z-index:3;background:transparent;touch-action:none;}
+  #storyExit{position:absolute;z-index:5;top:calc(env(safe-area-inset-top,0px) + 10px);right:12px;}
+  /* 對話框：與教學同一套視覺（同色同框同字級），只是定位在畫面下緣。 */
+  #storyBubble{position:absolute;z-index:4;left:50%;transform:translateX(-50%);
+    bottom:calc(env(safe-area-inset-bottom,0px) + 22px);
+    width:min(92%,360px);background:rgba(8,6,12,.9);border:1px solid var(--gold-dim);
+    border-radius:10px;padding:9px 14px 12px;box-shadow:0 4px 18px rgba(0,0,0,.55);
+    pointer-events:none;}
+  #storyBubble .story-name{font-size:11px;letter-spacing:2px;color:var(--gold);margin-bottom:4px;}
+  #storyBubble .story-text{font-size:13px;letter-spacing:.5px;line-height:1.7;color:var(--ink);
+    min-height:3.4em;}
+  #storyBubble .story-next{position:absolute;right:10px;bottom:5px;font-size:9px;color:var(--gold);
+    animation:tutNext .7s ease-in-out infinite alternate;}
+
+  /* ── 存讀檔欄位面板：一頁 10 列，超出增頁 ── */
+  #saveSheet{position:fixed;inset:0;z-index:9200;display:none;
+    background:rgba(4,3,7,.78);backdrop-filter:blur(2px);}
+  #saveSheet.on{display:flex;align-items:center;justify-content:center;}
+  .save-panel{width:min(94%,420px);max-height:86vh;display:flex;flex-direction:column;
+    background:var(--panel);border:1px solid var(--gold-dim);border-radius:12px;
+    padding:12px 12px 8px;box-shadow:0 8px 30px rgba(0,0,0,.6);}
+  .save-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+  .save-title{font-size:14px;letter-spacing:4px;color:var(--gold);}
+  .save-head .corner-btn{position:static;}
+  .save-list{display:flex;flex-direction:column;gap:4px;overflow-y:auto;}
+  .save-row{display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+    padding:7px 10px;background:rgba(255,255,255,.03);border:1px solid transparent;
+    border-radius:7px;color:var(--ink);font:inherit;cursor:pointer;}
+  .save-row:active{transform:scale(.99);}
+  .save-row:not(:disabled):hover{border-color:var(--gold-dim);background:rgba(212,169,74,.07);}
+  .save-row:disabled{opacity:.32;cursor:default;}
+  .save-row.empty .sv-label{color:var(--gold-dim);letter-spacing:2px;}
+  .sv-no{flex:0 0 auto;font-size:12px;color:var(--gold);letter-spacing:1px;
+    font-variant-numeric:tabular-nums;}
+  .sv-body{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px;}
+  .sv-label{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .sv-meta{font-size:10px;color:var(--gold-dim);}
+  .save-pager{display:flex;align-items:center;justify-content:center;gap:14px;
+    padding-top:8px;font-size:11px;color:var(--gold-dim);letter-spacing:2px;}
+  .save-pager button{background:transparent;border:1px solid var(--gold-dim);color:var(--gold);
+    border-radius:6px;width:34px;height:24px;font:inherit;cursor:pointer;}
+  .save-pager button:active{transform:scale(.95);}
+  /* 提示條：F4/F7 的即時回饋（存了／讀了什麼）。 */
+  #saveToast{position:fixed;z-index:9600;left:50%;transform:translateX(-50%);
+    bottom:calc(env(safe-area-inset-bottom,0px) + 78px);
+    padding:7px 16px;background:rgba(8,6,12,.92);border:1px solid var(--gold-dim);
+    border-radius:20px;color:var(--ink);font-size:11px;letter-spacing:1px;
+    opacity:0;pointer-events:none;transition:opacity .2s ease;}
+  #saveToast.on{opacity:1;}
