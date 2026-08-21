@@ -5361,15 +5361,39 @@ function drawTrains(S,scaleH,horizon,sinp,cosp){
        ⚠ 所以淡出改綁在**投影長度**上，不是綁距離：長度掉到 TRAIN_MIN_PX 就淡完，
          剛好接上不畫的門檻，中間沒有跳變。 */
     if(spanPx<TRAIN_MIN_PX) continue;
-    /* 在隧道裡就不畫 —— 它在山肚子裡，本來就看不到。
-       ⚠ 判的是**車頭**：進洞的瞬間整列消失、出洞的瞬間整列出現，比逐節判乾淨
-         （逐節判會出現半列車卡在洞口的畫面）。 */
-    if(head.tun) continue;
+    /* ── 進隧道：**從車頭逐節消失**（Ray 指定，ver -293）────────────
+       ⚠ 這裡原本判的是**車頭**：`if(head.tun) continue`，車頭一進洞整列瞬間
+         不見。當時的註解說逐節判「會出現半列車卡在洞口」所以不採用 ——
+         那個判斷是錯的：**半列車卡在洞口正是火車進隧道該有的樣子**，
+         整列同時消失才是破綻。
+       ⚠ 整列都在洞裡時 seats 會是空的，下面的 `if(!seats.length) continue`
+         自然接住，不必另外判。
+       ⚠ 煙不必跟著擋：噴發端本來就有 `h.tun` 的守衛（在洞裡不留煙），
+         所以車進洞之後只會剩下先前留在洞外的那幾團慢慢淡掉 —— 那是對的。 */
     const seats=[];
     for(let c=0;c<TRAIN_CARS;c++){
-      const s1=T.s - T.dir*(c*TRAIN_PITCH);
-      const q1=trainAt(T, s1), q2=trainAt(T, s1 - T.dir*TRAIN_CAR);
+      const s1=T.s - T.dir*(c*TRAIN_PITCH), s2=s1 - T.dir*TRAIN_CAR;
+      let q1=trainAt(T, s1), q2=trainAt(T, s2);
       if(!q1||!q2) continue;
+      if(q1.tun && q2.tun) continue;                 // 整節都在山肚子裡
+      if(q1.tun || q2.tun){
+        /* 跨洞口的那一節：把在洞裡的那一端收回洞口，車就是**滑進洞裡**
+           而不是整節憑空不見。
+           ⚠ 二分找洞口而不是直接丟掉這一節 —— 一節車 30 世界單位，
+             整節丟掉在近處是看得出來的一次跳。
+           ⚠ 解析度的上限是折線的節距（tun 旗標是逐節點存的，見 trainAt），
+             約 20 世界單位，比一節車短，所以收得進去。再細也沒有資料。 */
+        let a = q1.tun ? s2 : s1;                    // 洞外那一端
+        let b = q1.tun ? s1 : s2;                    // 洞內那一端
+        for(let it=0; it<6; it++){
+          const m=(a+b)*0.5, qm=trainAt(T,m);
+          if(!qm) break;
+          if(qm.tun) b=m; else a=m;
+        }
+        const qe=trainAt(T,a);
+        if(!qe) continue;
+        if(q1.tun) q1=qe; else q2=qe;
+      }
       const p1=proj(q1.x,q1.y,q1.h), p2=proj(q2.x,q2.y,q2.h);
       if(p1&&p2) seats.push({ax:p1.x,ay:p1.y,bx:p2.x,by:p2.y,
                              w:Math.max(TRAIN_MIN_W, TRAIN_CAR_W*(p1.k+p2.k)*0.5),
