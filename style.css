@@ -1176,11 +1176,6 @@
   #storyCastL{transform:translateX(-140%);}
   #storyCastR{transform:translateX(140%);}
   #storyCast .story-portrait.on{transform:translateX(0);}
-  /* 翻轉（站到非基準邊）：與滑入位移合成同一個 transform —— transform 是單一
-     屬性，分開寫會互相覆蓋。⚠ .flip.on 的具性度要高過 .on，否則進場後翻不了。 */
-  #storyCastL.flip{transform:translateX(-140%) scaleX(-1);}
-  #storyCastR.flip{transform:translateX(140%) scaleX(-1);}
-  #storyCast .story-portrait.flip.on{transform:translateX(0) scaleX(-1);}
   /* 壓暗：說話者原色，其餘 brightness(.38) saturate(.75)。
      ⚠ CSS filter 天生不透明 —— 那條「不可用透明度代替」的警告是給 canvas 版的。 */
   .story-portrait.dim{filter:brightness(.38) saturate(.75);}

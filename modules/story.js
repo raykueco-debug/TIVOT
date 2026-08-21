@@ -4,14 +4,14 @@
    吃 script/mainScript.js 的 scene 鏈，一句一句演出來；scene 播完寫
    stage / flags，再依 next 接下一段。
 
-   ── 站位（Ray 定案，取代規格 §3 原有的逐句 pos）────────────────────
-   **右位 ＝ 該段對話的「發起位」**：發起人（scene 的 lines[0].speaker）
-   固定站右，整段不動；其他人共用左位輪替（同側換人＝舊的滑出、新的滑入）。
-   ⚠ 這推翻了 CLAUDE.md §6.5 原本寫的「站位寫在角色資料裡、安雅固定在右」——
-     那條是飛行頁閒聊的規則，主線改採發起位制。兩處行為不同是有意的：
-     閒聊沒有「發起人」可言，主線每一段都有。
-   ⚠ 因此四名女角**每個人都可能站左或站右**，取景參數兩側都要成立
-     （不像飛行頁只有安雅在右）。
+   ── 站位：固定 2/2 分邊（Ray 定案，ver -289；取代規格 §3 原有的逐句 pos）──
+     右　索拉娜・安雅　　　左　蕾娜・諾薇兒
+   站位寫在 speakers.js 的 ART[].side，**不隨台詞變動** —— 同一個人每次都站
+   同一邊，玩家才記得住誰是誰。同側換人＝舊的滑出、新的滑入。
+   ⚠ ver -288 曾短暫改成「發起位制」（發起人站右），**已退回** —— 立繪朝向是
+     畫死的，換邊必須水平翻轉，而翻轉會把髮旋、配件、持物左右顛倒
+     （實測蕾娜的板夾會換手）。正解是畫左右兩版圖，欄位見 ART[].alt。
+   ⚠ 與飛行頁閒聊是**同一條規則同一組數值**，改一邊要改兩邊。
 
    ── 明暗（CLAUDE.md §6.5）────────────────────────────────────────
    說話者原色，其餘 brightness(.38) saturate(.75)。
@@ -41,7 +41,6 @@ const TYPE_MS   = 22;           // 打字機每字間隔
 
 let cur = null;                 // 目前 scene 物件
 let lineIdx = 0;
-let initiator = null;           // 本段的發起人 id（固定站右）
 let slot = { L:null, R:null };  // 兩個位置目前站誰（角色 id）
 let shown = {};                 // 角色 id → 目前的 portrait 狀態 {expr, show}
 let typing = null;              // 打字機 timer
@@ -149,14 +148,7 @@ function layout(){
 
   for(const o of m){
     const a=o.a, el=o.el, NW=el.naturalWidth;
-    /* ⚠ 站到**非基準邊**要水平翻轉（見 speakers.js 的 faces）—— 這樣不管站哪邊
-       都面向畫面中央。翻轉會連帶改變臉的橫向位置與輪廓左右界：
-       fx 變 (1-fx)、輪廓界對調成 (NW-r, NW-l)。量測值本身不動，那是原圖的數字。 */
-    const flip = !a.noFlip && a.faces && o.side!==a.faces;
-    el.classList.toggle('flip', !!flip);
-    const fx = flip ? (1-a.fx) : a.fx;
-    const bl = flip ? (NW-o.b.r) : o.b.l;
-    const br = flip ? (NW-o.b.l) : o.b.r;
+    const fx=a.fx, bl=o.b.l, br=o.b.r;
     /* 橫向錨的是**臉的中心**（fx），不是圖框中心 —— 插畫左右留白差很多。 */
     const faceX = solo ? W*0.5 : (o.side==='R' ? W*0.74 : W*0.26);
     let x = faceX - o.s*fx*NW;
@@ -193,7 +185,7 @@ function slotEl(side){ return $(side==='R' ? 'storyCastR' : 'storyCastL'); }
 /* 讓某角色出現在他該在的位置；已在場就只更新表情。回傳他所在的 side。 */
 function ensureOn(id, expr){
   const sp = SPEAKERS[id]; if(!sp) return null;
-  const side = (id===initiator) ? 'R' : 'L';
+  const side = (artOf(id) && artOf(id).side) || 'L';   // 固定站位，見檔頭
   const el = slotEl(side); if(!el) return null;
   const src = srcFor(sp.art, expr);
   const swapping = (slot[side] && slot[side]!==id);
@@ -273,10 +265,10 @@ function renderLine(){
 
   let side = null;
   if(st.show) side = ensureOn(who, st.expr);
-  else { const s=(who===initiator)?'R':'L'; if(slot[s]===who) leaveSlot(s); }
+  else { const a2=artOf(who), s2=(a2&&a2.side)||'L'; if(slot[s2]===who) leaveSlot(s2); }
 
   /* 高亮跟著 speaker 走（speaker 與畫面上的人可以不同）。 */
-  const spSide = (line.speaker===initiator) ? 'R' : 'L';
+  const spA=artOf(line.speaker), spSide=(spA&&spA.side)||'L';
   highlight(slot[spSide]===line.speaker ? spSide : side);
 
   /* CG：全屏插圖蓋過立繪。素材不存在時不顯示（避免破圖），只記一筆。 */
@@ -322,7 +314,6 @@ function playScene(id){
   const sc = MAIN_SCRIPT[id];
   if(!sc){ console.warn('[story] 找不到 scene：', id); close(); return; }
   cur = sc; lineIdx = 0;
-  initiator = (sc.lines[0] && sc.lines[0].speaker) || null;   // 發起人固定站右
   slot={L:null,R:null}; shown={};
   leaveSlot('L'); leaveSlot('R');
   renderLine();

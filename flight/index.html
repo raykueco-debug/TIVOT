@@ -1555,21 +1555,27 @@ const PORTRAIT = {
   /* ⚠ 身高 159→162（Ray：「安雅再高一點點」，ver -267）。縮放與站位現在都鎖身高，
      所以這一個數字同時決定她**多大**與**頭頂多高**，不必也不該另外調位移。 */
   anya:     { name:'安雅',   cm:162, side:'R', src:'../resources/partner/Anya_CI_front.webp',
-              eye:34, fx:0.478, top:0,   bot:1530 },
+              eye:34, fx:0.478, top:0,   bot:1530, alt:null },
   /* ⚠ 索拉娜用 **side** 那張：front 太滿（人物橫向佔 78%），兩人同台一定疊。
      側面只佔 69%，站位再拉開，交疊就壓到最低。 */
-  /* ⚠⚠ **side 欄自 ver -288 起不再決定站位**（站位改發起位制，見 castSide），
-       改為「**這張圖是為哪一側畫的**」＝人物朝向的基準邊。站到另一側就水平
-       翻轉，不管站哪邊都面向畫面中央。四個人都適用，不必逐人加旗標。
-         · 安雅 R：原圖朝向適合站右 → 站左時翻轉
-         · 蕾娜／諾薇兒／索拉娜 L → 站右時翻轉
-     ⚠ 翻轉會連帶改變臉的橫向位置與輪廓左右界（fx 變 1-fx、左右界對調），
-       drawTalk 有處理。量測值本身**不要改**，那是原圖的數字。
-     ⚠ 代價：髮旋、配件、持物會左右顛倒（蕾娜的板夾會換手）。哪一張翻了看
-       起來不對，就給那個人加 noFlip:true 個別關掉，不必動通則。
-     ⚠ 索拉娜是側面構圖，朝向最明顯 —— 站錯邊會整個背對畫面中央。 */
-  sorana:   { name:'索拉娜', cm:176, side:'L', src:'../resources/partner/Sorana_CI_side.webp',
-              eye:27, fx:0.527, top:4,   bot:1522 },
+  /* ⚠⚠ **side ＝ 固定站位**（ver -289，Ray 定案）：
+         右　索拉娜・安雅　　　左　蕾娜・諾薇兒
+       不隨台詞變動 —— 同一個人每次都站同一邊，玩家才記得住誰是誰。
+       每側最多兩人輪替（原本左側三人輪，換卡更頻繁）。
+     ⚠ 索拉娜 ver -289 由 L 改站 **R**。她是側面構圖、朝向最明顯，
+       這張畫的是適合站右的姿勢，擺到左邊會整個背對畫面中央。
+
+     ⚠⚠ **alt ＝ 另一側專用立繪**，四個人目前都是 null（圖還沒畫）。
+       為什麼需要它：立繪的人物朝向是畫死的，同一張圖擺到另一側就背對中央。
+       ver -288 試過用水平翻轉解決，但翻轉會把髮旋、配件、持物全部左右顛倒
+       （實測蕾娜的板夾會換手），所以退回固定站位。正解是**畫左右兩版**。
+       格式：alt:{ src:'…', eye:.., fx:.., top:.., bot:.. }（cm 共用不必重填）。
+     ⚠⚠ 補圖時 **eye/fx/top/bot 四個值全部要重量** —— 那是**那一張圖**的數字，
+       不同的畫不可能沿用。沿用的話人會歪掉，而且很難看出原因。
+     ⚠ 目前**沒有任何程式路徑會用到 alt** —— 固定站位下沒有人會站到另一側。
+       它是留給日後改回發起位制的接口，不是現在的死碼。 */
+  sorana:   { name:'索拉娜', cm:176, side:'R', src:'../resources/partner/Sorana_CI_side.webp',
+              eye:27, fx:0.527, top:4,   bot:1522, alt:null },
   /* ⚠ ver -284 Priest 換了新版插畫（Ray 重畫）。**又全部重量過**，沒有沿用上一版：
        top 1 / bot 1535 —— alpha 邊界，程式量的（上一版 5 / 1534，這版頂到圖框）。
        fx 0.564 —— 兩眼中心的中點。量法：在眼框內找**低飽和**像素（虹膜是灰藍，
@@ -1589,7 +1595,7 @@ const PORTRAIT = {
      ⚠ side/back 也一併轉了 webp 備用，但**沒有量過**，要用得先量。
      Nun 版的檔案留著沒刪，日後要換裝直接改 src。 */
   nouvelle: { name:'諾薇兒', cm:165, side:'L', src:'../resources/partner/Nouvelle_Priest_CI_front.webp',
-              eye:40, fx:0.564, top:1,   bot:1535 },
+              eye:40, fx:0.564, top:1,   bot:1535, alt:null },
   /* 蕾娜（Renna）。ver -263 拿到立繪，數字是**實測**的，不是沿用別人的：
      · eye 32 —— 與安雅同倍率(16×)、同判讀方式(可見眼白內角→外角)量出來。
        先拿安雅那張校準：量到 34，與表上記載的 34 一致，確認尺是準的；
@@ -1597,10 +1603,10 @@ const PORTRAIT = {
      · fx 0.519 —— 兩眼中心的中點 531/1024。同樣先用安雅驗證這個定義：
        她算出來 0.476，表上是 0.478，對得上。
      · top/bot —— alpha 邊界，程式量的。
-     · side 'L' —— 她在疲勞對白裡跟索拉娜／諾薇兒**輪替同一個位置**，
-       所以站位要跟她們一致（安雅固定在 R）。 */
+     · side 'L' —— ver -289 起與**諾薇兒**輪替左位（索拉娜已移到右側，
+       與安雅輪替）。疲勞對白的接話者輪替不受影響，只是換卡的對象變了。 */
   renna:    { name:'蕾娜',   cm:169, side:'L', src:'../resources/partner/Renna_CI_front.webp',
-              eye:32, fx:0.519, top:1,   bot:1521 },
+              eye:32, fx:0.519, top:1,   bot:1521, alt:null },
 };
 
 /* ── 舞台幾何 ─────────────────────────────────────────────────────
@@ -1883,14 +1889,18 @@ let cast=[];               // [{who,side,t0,out}]：out＝退場起始時戳（0
 
 const easeOut=k=>1-Math.pow(1-k,3);
 
-/* ══ 站位：右位＝該段對話的「發起位」（Ray 定案，ver -288）══
-   發起人（這段對白的第一句是誰講的）固定站右、整段不動；其他人共用左位輪替。
-   ⚠ 這**取代**了先前「站位寫在 PORTRAIT[].side、安雅固定在右」的作法。
-     舊作法的問題是站位與這段對話在講什麼無關 —— 誰起的頭讀不出來。
-   ⚠ 因此四名女角**每個人都可能站左或站右**（舊作法只有安雅會在右）。
-     立繪換邊要翻轉（面向畫面中央），見 PORTRAIT 的 side 欄。 */
-let sayLead=null;                  // 本段對白的發起人（＝站右位的人）
-function castSide(who){ return (who===sayLead) ? 'R' : 'L'; }
+/* ══ 站位：固定 2/2 分邊（Ray 定案，ver -289）══
+     右　索拉娜・安雅　　　左　蕾娜・諾薇兒
+   站位寫在 PORTRAIT[].side，**不隨台詞變動** —— 同一個人每次都站同一邊，
+   玩家才記得住誰是誰。每側最多兩人輪替（原本是左側三人輪，換卡更頻繁）。
+
+   ⚠ ver -288 曾短暫改成「發起位制」（發起人站右、其他人左側輪），**已退回**。
+     退回的原因不是規則不好，是**素材做不到**：立繪的人物朝向是畫死的，換邊
+     必須水平翻轉，而翻轉會把髮旋、配件、持物全部左右顛倒（實測蕾娜的板夾
+     會換手）。代價比「看得出誰起的頭」大。
+   ⚠ 正解是**同一個角色畫左右兩版圖**（Ray 判斷）。欄位已備妥：見 PORTRAIT
+     的 alt。兩版都到位之後要不要改回發起位制，再議。 */
+function castSide(who){ return PORTRAIT[who].side; }
 
 /* 讓某人上場。同一側已經有人就先把他推出去 —— 這就是「輪轉換卡」。 */
 function castEnter(who, now){
@@ -2010,7 +2020,6 @@ function portraitLOD(who, im, w, h, dim){
 function say(beats, at){
   sayQueue=beats; sayIdx=0; sayAt=at; sayEndAt=0;
   cast=[];
-  sayLead=beats[0] ? beats[0].who : null;     // ⚠ 發起人＝第一句是誰講的，整段固定站右
   for(const b of beats) portraitArt(b.who);   // 先把圖抓好，輪到誰才上場
   castEnter(beats[0].who, at);
 }
@@ -2230,16 +2239,9 @@ function drawTalk(now){
     const fullH=Math.round(im.height*G.s);
     const lit=(c.who===speaker);
     const lod=portraitLOD(c.who, im, G.w, fullH, !lit);
-    /* ⚠ 站到**非基準邊**要水平翻轉（見 PORTRAIT 的 side 欄）—— 這樣不管站哪邊
-       都是面向畫面中央。
-       翻轉之後臉的橫向位置變成 (1-fx)、輪廓的左右界對調 —— 底下的站位與
-       夾中線一律用翻轉後的值算，不然人會被擺到反方向去。
-       量測值本身不動，那是原圖的數字。 */
-    const flip = !P.noFlip && c.side!==P.side;    // 站到「非基準邊」就翻轉
-    const fxEff=flip ? (1-P.fx) : P.fx;
     // 站位錨的是**臉的中心**，不是圖框中心
     const anchor=(c.side==='L') ? 0.24 : 0.76;
-    let target=Math.round(W*anchor - G.w*fxEff);
+    let target=Math.round(W*anchor - G.w*P.fx);
     /* ⚠ 不可越中線（Ray 指定）：左側的人輪廓右緣不得超過 W/2，右側的人輪廓
        左緣不得低於 W/2。ver -251 把立繪放大 29% 之後，四個人**全部**都在越線
        （實測 375 寬：安雅 26px、索拉娜 26px、蕾娜 36px；只有諾薇兒沒越）。
@@ -2252,8 +2254,7 @@ function drawTalk(now){
     if(B){
       const r=clamp(Math.round(G.sh/B.k)-1, 0, B.n-1);
       if(B.mx[r]>=0){
-        let lft=B.mn[r]*B.k*G.s, rgt=(B.mx[r]+1)*B.k*G.s;
-        if(flip){ const l2=G.w-rgt, r2=G.w-lft; lft=l2; rgt=r2; }   // 翻轉：左右界對調
+        const lft=B.mn[r]*B.k*G.s, rgt=(B.mx[r]+1)*B.k*G.s;
         // ⚠ 取整方向要挑對：左側往下取整、右側往上取整，否則 W/2 是 .5 時
         //    會有半個像素壓過中線（實測安雅輪廓左緣 187 vs 中線 187.5）。
         target = (c.side==='L') ? Math.min(target, Math.floor(W/2-rgt))
@@ -2267,17 +2268,7 @@ function drawTalk(now){
     /* 亮／暗兩張都已經是目標尺寸，這裡是 1:1 貼上、**完全不透明**
        （開平滑只為了 DPR 不是整數的機器）。 */
     ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality='high';
-    if(flip){
-      /* 以自己的右緣為軸鏡射。⚠ 用 save/restore 包起來 —— 這個 scale(-1,1)
-         若外洩到後面的 drawPanel，整個面板會左右顛倒。 */
-      ctx.save();
-      ctx.translate(Math.round(x)+G.w, G.y0);
-      ctx.scale(-1,1);
-      ctx.drawImage(lod, 0, 0, G.w, fullH);
-      ctx.restore();
-    }else{
-      ctx.drawImage(lod, Math.round(x), G.y0, G.w, fullH);
-    }
+    ctx.drawImage(lod, Math.round(x), G.y0, G.w, fullH);
   }
   ctx.globalAlpha=1;
   ctx.imageSmoothingEnabled=false;
