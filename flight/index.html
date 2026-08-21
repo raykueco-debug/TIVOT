@@ -452,7 +452,8 @@ const SETTLEMENTS = [
          r     全平半徑，以圖的半寬為單位。1.05 讓台座比平面圖再寬一點，
                平面圖的邊緣才不會正好落在坡度轉折上（Ray：「底部加厚」）。
          skirt 裙邊寬度（地圖像素），往外平滑接回原地形，避免城緣一道崖。 */
-    podium:{ r:1.05, skirt:8 },
+    /* lift：台座高出周圍地形多少。0 會與地形同高 → 深度裁切打平手 → 斑駁破洞。 */
+    podium:{ r:1.05, skirt:8, lift:12 },
     wallCol:'rgba(226,219,198,0.50)' },
   /* planW ＝ 圖寬代表幾個世界單位。城核約佔圖寬的 3/4，
               半徑 440 → 440*2/0.75 ≈ 1170，取 1250 讓郊區有餘。
@@ -1365,7 +1366,11 @@ function buildSettlements(){
     s.plan=S.plan||null; s.planW=S.planW||0; s.planRot=S.planRot||0;
     s.planH=S.planH||null; s.planTall=S.planTall||0;
     s.noWater=!!S.noWater; s.noLamps=!!S.noLamps; s.wallCol=S.wallCol||null;
-    s.mx=S.x; s.my=S.y; s.gh=(S.gh!=null?S.gh:CLOUD_H); return s;
+    s.mx=S.x; s.my=S.y;
+    /* ⚠ 台座墊高要與 buildRelief 的整地**同一個數字** —— 地形墊高了、城卻還畫在
+       原高度的話，整座城會陷進自己的台座裡。兩邊都由 S.podium.lift 推出來。 */
+    s.gh=(S.gh!=null?S.gh:CLOUD_H)+((S.podium&&S.podium.lift)||0);
+    return s;
   });
   return settleCache;
 }
@@ -2775,6 +2780,14 @@ async function loadWorld(){
          ⚠ 水面不動：RIV 的格子是上面剛判出來的水域，削平會把它填掉。
          逐城開關（S.podium），沒填的城完全不受影響。 */
       if(S.podium){
+        /* ⚠⚠ lift：把台座**墊高**到地形之上（Ray 指定，ver -294）。
+           整平還不夠 —— 實測聖王廳城基 126、周圍地形也是 126，兩者**同高**。
+           逐欄的地形深度裁切（clipByTerrainDepth）在同高時是打平手，哪一欄
+           被裁掉全看浮點誤差，畫面上就是斑駁的破洞（「還是破」）。
+           墊高把平手打破，城就實實在在坐在地形之上。
+           ⚠ 這個值必須與 buildSettlements 的 s.gh **同步加**，兩邊都由
+             S.podium.lift 推出來，不要各寫一個數字。差一點點就是城陷進地裡。 */
+        const ghP=gh+(S.podium.lift||0);
         const R0=Math.max(hw,hh)*(S.podium.r||1),
               R1=R0+(S.podium.skirt||6), R1c=Math.ceil(R1);
         for(let dy=-R1c;dy<=R1c;dy++)for(let dx=-R1c;dx<=R1c;dx++){
@@ -2786,7 +2799,7 @@ async function loadWorld(){
           if(RIV[i]) continue;
           const w = rad<=R0 ? 1 : 1-(rad-R0)/(R1-R0);
           const k = w*w*(3-2*w);
-          HGT[i]=HGT[i]*(1-k)+gh*k;
+          HGT[i]=HGT[i]*(1-k)+ghP*k;
           raw[i]=HGT[i]/PEAK_SCALE;
         }
       }
