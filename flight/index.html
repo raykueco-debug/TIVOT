@@ -682,6 +682,11 @@ const GT=256, GTM=GT-1;                    // 貼圖邊長（2 的次方）
 /* 一個 texel 代表幾個世界單位。1.0 時整片讀起來太密、樹冠太小；
    1.6 之後樹冠約 26 世界單位（≈13 公尺級的樹頂），一格貼圖 410 單位。 */
 const GEO_SCALE=1.6, GEO_INV=1/GEO_SCALE;
+/* 鐵軌貼圖沿軌方向的世界單位／texel。⚠ 橫越方向是「整張貼圖寬鋪滿軌道寬」
+   （軌道半徑 1.9 地圖像素＝76 世界單位寬 → 0.30 世界單位／texel）。沿軌若照
+   同樣的 0.30 走，枕木間距只有 3 個螢幕像素，在降取樣的地形緩衝裡會閃 ——
+   拉長到 0.60 讓枕木約 6 像素一根。非正方 texel 是**刻意**的。 */
+const RAIL_ALONG=0.60, RAIL_ALONG_INV=1/RAIL_ALONG;
 /* ── 地貌貼圖表 ──────────────────────────────────────────────
    索引就是選擇器回傳的類別。全部塞進**一條** Uint8Array（每 texel 3 byte），
    用位移定址 —— 陣列的陣列在內迴圈要多一次間接定址，而這裡每幀跑十七萬次。
@@ -690,9 +695,12 @@ const GEO_SCALE=1.6, GEO_INV=1/GEO_SCALE;
    ⚠ Uint8 而非 Float32：10 張圖差 7.9MB → 2.0MB，手機上是有感的。 */
 const GEO_LIST=['forest_dark','forest_light','rock_grey','rock_brown',
                 'gravel_dark','gravel_light','waste_brown','snow',
-                'water_dark','water_light','roof_high','roof_mid','roof_low'];
+                'water_dark','water_light','roof_high','roof_mid','roof_low',
+                'flight_rail','flight_bridge'];
 const G_FD=0,G_FL=1,G_RG=2,G_RB=3,G_GD=4,G_GL=5,G_WB=6,G_SN=7,G_WD=8,G_WL=9,
-      G_RH=10,G_RM=11,G_RL=12;
+      G_RH=10,G_RM=11,G_RL=12,G_RAIL=13,G_BRDG=14;
+/* ⚠ 類別編號存在 BIOME 的**低 4 bit**，上限 15 —— 現在用到 14，只剩一格。
+     再要加類別得先把 BIOME 改成兩個 byte（等於再多 2.6MB），先想清楚。 */
 /* 屋頂的絕對均值色：郊區跟路一樣是人造物，只靠相乘的細節層會留在綠地的色相上，
    必須把底色本身往這個顏色推。 */
 const ROOF_COL=[[80,76,69],[93,86,66],[102,91,61]];
@@ -752,6 +760,13 @@ let ROAD_PATHS=[];                            // 折線（地圖座標），地�
 
 let RAILW=null;                               // Uint8Array：每地圖像素的鐵軌權重
 let RAILBR=null;                              // Uint8Array：石橋橋面（鐵路跨水的那幾段）
+/* 軌道方向場（粗粒度，ROAD_DS 格）。⚠ 為什麼需要它：地貌貼圖是照**世界座標軸**
+   平鋪的，而 Ray 畫的鐵軌貼圖是**有方向的**（鐵軌直的、枕木橫的）。照世界軸貼的
+   話只有南北向的那幾段會對，其餘全是斜著切過去的雜紋。存方向就能在著色時把取樣
+   轉到軌道座標系。
+   ⚠ 只存粗粒度：軌道方向變化很慢，359×200 一個 byte＝72KB。逐地圖像素要 2.6MB，
+     而那是 BIOME／ROADW 那一級的量，不值得。 */
+let RAILDIR=null, RD_W=0, RD_H=0;
 let RAIL_PATHS=[];                            // 折線（地圖座標），地圖畫面與火車都要用
 
 /* 成本場：一步的代價。爬坡是主要成本 —— 這是讓路自己去繞河谷的關鍵。 */
@@ -1086,6 +1101,30 @@ function buildRails(){
       i=j;
     }
   }
+  /* 方向場：沿折線把每一段的方向寫進它經過的粗格。角度**對 π 取模**（軌道是
+     一條軸線，不分正反），量化成 0~255。 */
+  RD_W=Math.ceil(MAPW/ROAD_DS); RD_H=Math.ceil(MAPH/ROAD_DS);
+  RAILDIR=new Uint8Array(RD_W*RD_H);
+  for(const pts of paths){
+    for(let k=1;k<pts.length;k++){
+      const ax=pts[k-1][0], ay=pts[k-1][1], bx=pts[k][0], by=pts[k][1];
+      let th=Math.atan2(by-ay, bx-ax); th-=Math.floor(th/Math.PI)*Math.PI;   // 0..π
+      const q=1+Math.min(254, Math.round(th/Math.PI*254));                   // 0 保留給「沒有軌道」
+      const n=Math.max(1,Math.ceil(Math.hypot(bx-ax,by-ay)));
+      for(let t=0;t<=n;t++){
+        const x=ax+(bx-ax)*t/n, y=ay+(by-ay)*t/n;
+        const cx=(x/ROAD_DS)|0, cy=(y/ROAD_DS)|0;
+        if(cx<0||cy<0||cx>=RD_W||cy>=RD_H) continue;
+        /* 3×3 都寫：鐵軌的羽化半徑會溢出所屬的粗格，邊緣像素查不到方向就會
+           退回世界軸取樣，接縫上出現一圈亂紋。 */
+        for(let j=-1;j<=1;j++)for(let i2=-1;i2<=1;i2++){
+          const nx=cx+i2, ny=cy+j;
+          if(nx<0||ny<0||nx>=RD_W||ny>=RD_H) continue;
+          RAILDIR[ny*RD_W+nx]=q;
+        }
+      }
+    }
+  }
   { let n=0; for(let i=0;i<RAILBR.length;i++) if(RAILBR[i]>40) n++; window.__railBridge=n; }
   window.__rails=paths.length;
 }
@@ -1369,18 +1408,26 @@ const PORTRAIT = {
      側面只佔 69%，站位再拉開，交疊就壓到最低。 */
   sorana:   { name:'索拉娜', cm:176, side:'L', src:'../resources/partner/Sorana_CI_side.webp',
               eye:27, fx:0.527, top:4,   bot:1522 },
-  /* ⚠ ver -271 換成 Priest（白黑金十字的正式聖職服，Ray 指定）。這是**真的換插畫**，
-     所以 eye/fx/top/bot 全部重量過，沒有沿用 Nun 那一版的數字：
-       eye 36  —— 與安雅同倍率、同判讀（可見眼白內角→外角）量的近眼。
-                  與 Nun 版同樣是 36，合理：同一位畫師畫同一個角色。
-       fx 0.559 —— 雙眼中心的中點 572.5/1024。⚠ Nun 版是 0.542，**確實不同**，
-                  沿用的話她會整個偏一邊。
-       top/bot —— alpha 邊界，程式量的。
-     ⚠ 這套的裙襬張得很開：橫向佔幅由 Nun 版的 0.507 變成 0.655，所以夾中線時
-       她會被往左推得比以前多（輪廓界是逐列自動算的，不必手動調）。
+  /* ⚠ ver -284 Priest 換了新版插畫（Ray 重畫）。**又全部重量過**，沒有沿用上一版：
+       top 1 / bot 1535 —— alpha 邊界，程式量的（上一版 5 / 1534，這版頂到圖框）。
+       fx 0.564 —— 兩眼中心的中點。量法：在眼框內找**低飽和**像素（虹膜是灰藍，
+                  皮膚粉紅、頭髮褐色都是高飽和）取重心。
+                  ⚠ 先拿上一版校準過這把尺：同一支程式量舊圖得 0.5565，而表上
+                    記載 0.559 —— 差 2.6px(0.25%)，所以新圖的 0.5619 加同樣的偏移
+                    修正為 0.564。**不校準就直接用是不行的**。
+                  ⚠ 不能用「找暗像素當睫毛」那條路：實測眼框內的近黑像素會一路
+                    連到頭髮，新舊兩張都量出「寬 70」（＝整個框寬），完全沒有鑑別力。
+                    HANDOFF F 節警告過的就是這件事。
+       eye 40  —— 由頭寬比例換算（頭頂下 140 列的 alpha 寬 254→282，×1.11）。
+                  ⚠ 目視讀數落在 40~47 之間，這個值**沒有量準**；但
+                    CAST_EYE_MIX 是 0，它不參與運算 —— 哪天要調回鎖眼寬，
+                    第一件事就是重量這個數。
+     ⚠ 這版更寬：橫向佔幅 0.656 → **0.719**，夾中線時她會被再往左推一點
+       （輪廓界是逐列自動算的，不必手動調）。
+     ⚠ side/back 也一併轉了 webp 備用，但**沒有量過**，要用得先量。
      Nun 版的檔案留著沒刪，日後要換裝直接改 src。 */
   nouvelle: { name:'諾薇兒', cm:165, side:'L', src:'../resources/partner/Nouvelle_Priest_CI_front.webp',
-              eye:36, fx:0.559, top:5,   bot:1534 },
+              eye:40, fx:0.564, top:1,   bot:1535 },
   /* 蕾娜（Renna）。ver -263 拿到立繪，數字是**實測**的，不是沿用別人的：
      · eye 32 —— 與安雅同倍率(16×)、同判讀方式(可見眼白內角→外角)量出來。
        先拿安雅那張校準：量到 34，與表上記載的 34 一致，確認尺是準的；
@@ -2828,7 +2875,7 @@ async function loadWorld(){
         const subw=SUBW?SUBW[i]:0;
         let tex;
         if(RAILBR && RAILBR[i]>40){
-          tex=G_RG;                       // 石橋：灰岩的細節貼圖
+          tex=G_BRDG;                     // 石橋：Ray 給的鋪石貼圖
         }else if(RIV[i] && sl<BIOME_WATER_SL){
           tex=(nz>0.5)?G_WL:G_WD;
         }else if(sl>BIOME_CLIFF+(nz-0.5)*40){
@@ -2843,10 +2890,10 @@ async function loadWorld(){
           const g=roofPickW(subw, VEGSEL[((((syf*4)|0)&VSM)*VS)+((((sxf*4)|0)&VSM))]);
           tex=(g===0?G_RH:(g===1?G_RM:G_RL));
         }else if(RAILW&&RAILW[i]>40){
-          /* 道碴＝粗粒的深色碎石，正好是 gravel_dark 這張。
+          /* 鐵軌＋枕木＋道碴，Ray 畫的專用貼圖（取樣要對齊軌道方向，見著色端）。
              ⚠ 排在公路之前：平交道上兩者重疊，該讀成鐵路（鐵軌是連續的，
                公路在那裡是被切斷的那一方）。 */
-          tex=G_GD;
+          tex=G_RAIL;
         }else if(ROADW&&ROADW[i]>40){
           tex=G_GL;
         }else{
@@ -4233,26 +4280,27 @@ function render(now){
           const tex=bi&15;
           /* 人造物與水：底色本身要推過去（細節層是相乘的，只靠它會留在原本的色相上）。 */
           if(RAILBR&&RAILBR[mi]>40){
-            /* 石橋：比道碴亮、比道碴冷的灰岩。
+            /* 石橋：底色推到**貼圖自己的均值**(138,128,114)。細節層是相對均值的
+               倍率，底色對上均值，貼出來才是 Ray 那張鋪石本來的顏色 ——
+               先前是憑感覺填的 (176,174,169)，比貼圖亮了一截。
                ⚠ 一定要排在**水之前**，否則整段又被水色蓋掉（那正是沒有橋的時候
                  鐵路在河上會斷掉的原因）。 */
             const bw=(RAILBR[mi]/255)*0.94;
-            cr+=(176-cr)*bw; cg+=(174-cg)*bw; cb+=(169-cb)*bw;
+            cr+=(138-cr)*bw; cg+=(128-cg)*bw; cb+=(114-cb)*bw;
           }else if(tex===G_WD||tex===G_WL){
             const deep=(tex===G_WL);
             const wr=deep?92:66, wg=deep?126:100, wb=deep?146:124;
             cr+=(wr-cr)*0.72; cg+=(wg-cg)*0.72; cb+=(wb-cb)*0.72;
           }else if(RAILW&&RAILW[mi]>40){
-            /* 道碴：**冷的淺灰**（公路是暖的土黃）。兩條線因此在同一片綠地上
-               分得開 —— 一條暖而漫開、一條冷而細。
-               ⚠ 第一版塗的是深灰(74,72,70)，結果在針葉林上幾乎看不見：森林
-                 本來就暗，暗上加暗等於沒畫。實測那一版整條線在畫面上只推得動
-                 1248 個像素，而且是**斷斷續續**的。碎石道碴本來就是淺色的花崗
-                 岩，改回它該有的顏色同時解決了寫實與可讀性。
-               ⚠ 判 RAILW 而不是判 tex：G_GD 同時也是林線以上的礫石地，
-                 拿類別判會把整片高山碎石地都塗成鐵軌。 */
+            /* 鐵路：底色推到**貼圖自己的均值**(139,121,101)。細節層是相對均值的
+               倍率，底色對上均值，貼出來才是 Ray 那張軌道本來的顏色。
+               ⚠ 先前沒有專用貼圖時這裡填的是憑感覺的淺灰 (152,150,146)：那一版
+                 借 gravel_dark 當細節，所以底色只能自己湊。有了真貼圖就該對齊它，
+                 否則等於把人家畫好的顏色again 洗掉一次。
+               ⚠ 判 RAILW 而不是判 tex：橋面那幾格的 tex 已經是 G_BRDG，
+                 但它在上面那個分支就處理掉了，走不到這裡。 */
             const rw=(RAILW[mi]/255)*0.90;
-            cr+=(152-cr)*rw; cg+=(150-cg)*rw; cb+=(146-cb)*rw;
+            cr+=(139-cr)*rw; cg+=(121-cg)*rw; cb+=(101-cb)*rw;
           }else if(tex===G_GL&&ROADW){
             const rw=(ROADW[mi]/255)*0.82;
             cr+=(135-cr)*rw; cg+=(109-cg)*rw; cb+=(72-cb)*rw;
@@ -4262,8 +4310,29 @@ function render(now){
           }
           /* ⚠ +40960 再取整：世界座標會是負的，而 |0 往零截斷，負數那半邊的
              相位會整個錯開（雲的取樣踩過同一個坑）。40960 是 GT 的倍數。 */
-          const wx=(plx+40960)*GEO_INV, wy=(ply+40960)*GEO_INV;
-          const q=tex*GEO_STRIDE+((((wy|0)&GTM)*GT+((wx|0)&GTM))*3);
+          let gx, gy;
+          if(tex===G_RAIL && RAILDIR){
+            /* ── 鐵軌：轉到**軌道座標系**再取樣 ──────────────────
+               沿軌方向 u：世界座標投影到軌道方向。
+               橫越方向 v：直接由 RAILW 反推 —— 它是羽化距離場（中心 255、
+                 邊緣 0），所以 (1−w/255) 就是「離中心線多遠」的 0~1。
+               ⚠ v 是**沒有正負號**的（距離場只有大小），所以貼圖是以中線鏡射
+                 過去的。Ray 這張兩條鐵軌對稱於中線，鏡射後完全還原；換成不對稱
+                 的貼圖就會露餡，屆時得另外烘一個帶號的橫越座標。
+               ⚠ 沿軌方向刻意拉長 2 倍（RAIL_ALONG）：照正方形 texel 算，枕木間距
+                 只有 3 個螢幕像素，而地形是降取樣緩衝畫的（0.6×）—— 1.9 個緩衝
+                 像素一根枕木正好踩在取樣極限上，會閃。拉長到 6 像素就穩了。 */
+            const dq=RAILDIR[(((mi/MAPW)|0)/ROAD_DS|0)*RD_W + (((mi%MAPW)/ROAD_DS)|0)];
+            if(dq){
+              const th=(dq-1)/254*Math.PI, cs=Math.cos(th), sn=Math.sin(th);
+              const along=(plx*cs+ply*sn)*RAIL_ALONG_INV;
+              const across=128+127*(1-RAILW[mi]*(1/255));
+              gx=along+40960; gy=across;
+            }else{ gx=(plx+40960)*GEO_INV; gy=(ply+40960)*GEO_INV; }
+          }else{
+            gx=(plx+40960)*GEO_INV; gy=(ply+40960)*GEO_INV;
+          }
+          const q=tex*GEO_STRIDE+((((gy|0)&GTM)*GT+((gx|0)&GTM))*3);
           const k0=GEOK[q]*GEO_K1, k1=GEOK[q+1]*GEO_K1, k2=GEOK[q+2]*GEO_K1;
           /* 低頻亮度起伏：週期與貼圖週期互質得夠遠，兩者的節奏不會對齊，
              重複感就散掉了。量化成 4 bit 存在 BIOME 的高位。 */
@@ -4931,36 +5000,21 @@ function drawTrains(S,scaleH,horizon,sinp,cosp){
          開走時各節深度差很大，投影出來是一串垂直排開的位置，而每節仍是水平
          橫槓的話，讀起來是一把梯子不是一列車。取頭尾兩點就自動帶上朝向：
          轉彎、斜著開、正對鏡頭都對。 */
+    /* ⚠ 太小就**整列不畫**，不要硬撐到最小尺寸。ver -279 曾經在螢幕空間等比撐開
+         成一條直線排（放棄彎道），結果遠處的車轉彎時是**整根棍子在轉**——
+         Ray 回報「不如在那個距離就不要出現」，對：一個轉得不對的東西比沒有更糟。
+       ⚠ 所以淡出改綁在**投影長度**上，不是綁距離：長度掉到 TRAIN_MIN_PX 就淡完，
+         剛好接上不畫的門檻，中間沒有跳變。 */
+    if(spanPx<TRAIN_MIN_PX) continue;
     const seats=[];
-    if(spanPx>=TRAIN_MIN_PX){
-      /* 夠大 → 真實投影：彎道、透視、各節自己的粗細全都是真的。 */
-      for(let c=0;c<TRAIN_CARS;c++){
-        const s1=T.s - T.dir*(c*TRAIN_PITCH);
-        const q1=trainAt(T, s1), q2=trainAt(T, s1 - T.dir*TRAIN_CAR);
-        if(!q1||!q2) continue;
-        const p1=proj(q1.x,q1.y,q1.h), p2=proj(q2.x,q2.y,q2.h);
-        if(p1&&p2) seats.push({ax:p1.x,ay:p1.y,bx:p2.x,by:p2.y,
-                               w:Math.max(TRAIN_MIN_W, TRAIN_CAR_W*(p1.k+p2.k)*0.5),
-                               up:TRAIN_CAR_W*0.5*(p1.k+p2.k)*0.5});
-      }
-    }else{
-      /* 太小 → 在**螢幕空間**等比撐到 TRAIN_MIN_PX 再排。長寬比因此固定，
-         節與節之間的空隙也一定留得住，不會糊成一條。
-         ⚠ 這一段放棄了彎道（直線排），但這個尺寸下彎道本來就看不出來。 */
-      let ux=hp.x-tp.x, uy=hp.y-tp.y;
-      const d=Math.hypot(ux,uy);
-      if(d<1e-4){ ux=1; uy=0; } else { ux/=d; uy/=d; }
-      const cxm=(hp.x+tp.x)*0.5, cym=(hp.y+tp.y)*0.5;
-      const half=TRAIN_MIN_PX*0.5;
-      const fx=cxm+ux*half, fy=cym+uy*half;          // 車頭
-      const pitchPx=TRAIN_MIN_PX*TRAIN_PITCH/TRAIN_SPAN;
-      const carPx =TRAIN_MIN_PX*TRAIN_CAR  /TRAIN_SPAN;
-      const w=Math.max(TRAIN_MIN_W, carPx*TRAIN_CAR_W/TRAIN_CAR);
-      for(let c=0;c<TRAIN_CARS;c++){
-        const a0=c*pitchPx;
-        seats.push({ax:fx-ux*a0, ay:fy-uy*a0,
-                    bx:fx-ux*(a0+carPx), by:fy-uy*(a0+carPx), w, up:w*0.5});
-      }
+    for(let c=0;c<TRAIN_CARS;c++){
+      const s1=T.s - T.dir*(c*TRAIN_PITCH);
+      const q1=trainAt(T, s1), q2=trainAt(T, s1 - T.dir*TRAIN_CAR);
+      if(!q1||!q2) continue;
+      const p1=proj(q1.x,q1.y,q1.h), p2=proj(q2.x,q2.y,q2.h);
+      if(p1&&p2) seats.push({ax:p1.x,ay:p1.y,bx:p2.x,by:p2.y,
+                             w:Math.max(TRAIN_MIN_W, TRAIN_CAR_W*(p1.k+p2.k)*0.5),
+                             up:TRAIN_CAR_W*0.5*(p1.k+p2.k)*0.5});
     }
     if(!seats.length) continue;
 
@@ -4971,7 +5025,7 @@ function drawTrains(S,scaleH,horizon,sinp,cosp){
          那就是回報的「煙霧的裁點太明顯」。
        ⚠ 每一團煙有**自己的深度**，所以淡出也要各算各的：拿車頭的 fade 套全部
          的話，拖在最後面那幾團會在越過剔除面時整團憑空消失 —— 又是一個裁點。 */
-    const CUT0=ZFAR*0.62, FADEB=ZFAR*0.16;
+    const CUT0=ZFAR*0.62, FADEB=ZFAR*0.16;   // 煙團各自的距離淡出仍用這一組
     const puffDraw=[];
     let cx0=1e9, cx1=-1e9, zClip=hp.z;
     for(const q of seats){ cx0=Math.min(cx0,q.ax,q.bx); cx1=Math.max(cx1,q.ax,q.bx); }
@@ -5006,12 +5060,14 @@ function drawTrains(S,scaleH,horizon,sinp,cosp){
        也不要一條硬邊。 */
     ctx.save();
     clipByTerrainDepth(zClip, sxk, syk, Math.floor(cx0/sxk)-2, Math.ceil(cx1/sxk)+2);
-    /* 淡出只在**接近剔除面**時做。第一版從 ZFAR*0.40 就開始淡，等於大半個可見
-       範圍內火車都是半透明的 —— 半透明的細長物體疊在會抖的地形上就是在閃。
-       ⚠ 但淡出帶也不能太窄：0.075 的時候實測在剔除面前一格還有 6% 不透明度、
-         113 個像素，下一格直接歸零 —— 那是看得出來的一下消失。0.16 讓它在
-         最後 100 單位內掉到 3% 以下，接上剔除面時已經等於不存在。 */
-    const fade=clamp((CUT0-hp.z)/FADEB,0,1);
+    /* 淡出綁**投影長度**：spanPx 從 1.7 倍門檻掉到門檻的過程中淡完，門檻以下
+       本來就不畫，所以消失的那一刻不透明度已經是 0，沒有跳變。
+       ⚠ 淡出帶不能太窄。ver -279 用過 ZFAR*0.075 的距離帶，實測在剔除面前一格
+         還有 6% 不透明度、113 個像素，下一格直接歸零 —— 那是看得出來的一下消失。
+       ⚠ 綁長度而不是綁距離，是因為「看不看得清楚」本來就是長度的事：同樣的
+         距離，車頭朝著鏡頭時投影長只有側掠時的幾分之一。 */
+    const ft=clamp((spanPx-TRAIN_MIN_PX)/(TRAIN_MIN_PX*0.7),0,1);
+    const fade=ft*ft*(3-2*ft);
     const lit=lerp(0.66,1.0,S.day);
 
     /* ── 煙 ────────────────────────────────────────────────────
