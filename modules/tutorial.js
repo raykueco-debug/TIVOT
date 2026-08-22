@@ -58,7 +58,15 @@ function markSeen(){ try{ localStorage.setItem(CFG().storageKey,'1'); }catch(e){
 
 /* ---- 首頁「教學」鈕：下一場出陣強制進教學（不動已看旗標；用畢即清）---- */
 let replayRequested = false;
-export function requestReplay(){ replayRequested = true; }
+/* ⚠ 劇情帶起來的教學與首頁「教學」鈕是**兩件事**（Ray 指定要分開）：
+   前者是主線的一段（諾薇兒帶），後者是隨時可重看的教材（芙蕾雅／蕾妮帶）。
+   目前**只分旗標**，台詞還是同一份 —— 諾薇兒版的稿在
+   `script/TUTORIAL_LINES_NOUVELLE.md`，等 Ray 改完再依 isStoryRun() 分流。
+   ⚠ 兩者都不動「已看過」旗標（requestReplay 本來就不動），所以劇情跑過教學
+     不會讓首次出陣的自動教學消失。 */
+let storyRun = false;
+export function requestReplay(opts){ replayRequested = true; storyRun = !!(opts && opts.story); }
+export function isStoryRun(){ return storyRun; }
 
 /* ---- 首頁出陣分流：尚未看過教學（首次出陣會自動進教學）→ 跳過整備頁直接開戰 ---- */
 export function isFirstRun(){ return !hasSeen(); }

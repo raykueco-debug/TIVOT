@@ -1176,6 +1176,15 @@
   #storyCast{position:absolute;left:0;right:0;top:0;height:var(--story-top);
     z-index:1;pointer-events:none;overflow:hidden;}
   /* 下半：戰鬥盤面區。無戰鬥時放團徽（暫定）。 */
+  /* 劇情預載頁：蓋滿整個舞台（含盤面區）—— 這時候還沒有任何內容可看。 */
+  #storyLoad{position:absolute;inset:0;z-index:6;display:none;
+    flex-direction:column;align-items:center;justify-content:center;gap:14px;
+    background:var(--bg);}
+  #storyLoad.on{display:flex;}
+  #storyLoad .sl-txt{font-size:12px;letter-spacing:6px;color:var(--gold-dim);}
+  #storyLoad .sl-track{width:min(56%,220px);height:2px;background:rgba(201,162,39,.18);overflow:hidden;}
+  #storyLoad .sl-track i{display:block;height:100%;width:0;background:var(--gold);
+    transition:width .2s ease;}
   #storyBoard{position:absolute;left:0;right:0;top:var(--story-top);bottom:0;z-index:1;
     display:flex;align-items:center;justify-content:center;pointer-events:none;
     background:linear-gradient(180deg,rgba(6,5,10,.92),rgba(6,5,10,1));

@@ -549,6 +549,33 @@ bindBtn('flightBtn', ()=>{ window.location.href = 'flight/'; });
    存讀檔：F4 即時存／F7 即時讀／F5 選欄存／F8 選欄讀（見 modules/save.js）。 */
 story.init(); saveSys.init();
 bindBtn('storyBtn', ()=>{ story.open(null); });
+/* ── 劇情插入戰鬥 → 打完接回劇情（ver -321）────────────────────────────
+   story.js 不 import 戰鬥模組（單向資料流），發動與續播都由這裡負責。
+   ⚠ 「什麼時候算打完」不看戰鬥模組的內部狀態，而是看**首頁重新出現**
+     （`#home.on`）—— 勝、敗、跳過、退出確認回主選單，所有出口都會經過那裡，
+     一個訊號涵蓋全部。用 MutationObserver 監看 class，比輪詢乾淨。
+   ⚠ 一次性：接回去之後立刻 disconnect，否則之後每次回首頁都會再開一次劇情。 */
+story.setBattleHandler((battleId, resume)=>{
+  const home=document.getElementById('home');
+  if(!home){ story.open(resume); return; }
+  /* ⚠⚠ 要先**離開過首頁**才武裝。發動的當下首頁本來就是 `.on`，
+     不設這道的話任何一次 class 變動都會被當成「戰鬥打完回來了」，
+     劇情會在戰鬥還沒開始就蓋回去。 */
+  let left=false;
+  const obs=new MutationObserver(()=>{
+    const on=home.classList.contains('on');
+    if(!on){ left=true; return; }
+    if(!left) return;
+    obs.disconnect();
+    /* 稍等一拍再開：goHome 有淡入，立刻開的話劇情會蓋在轉場中間。 */
+    setTimeout(()=>story.open(resume), 420);
+  });
+  obs.observe(home, { attributes:true, attributeFilter:['class'] });
+  /* ⚠ 標成 story 場次：與首頁「教學」鈕分開（Ray 指定）。目前只分旗標，
+     台詞分流等諾薇兒版稿定案（見 modules/tutorial.js 的說明）。 */
+  tutorial.requestReplay({ story:true });
+  launchBattle();
+});
 weapon.refreshLoadoutLabels();                  // 開機：把當前副武器/搭檔名寫進 loadout 按鈕
 TEL.visit();                                    // 來訪上報（每次開頁一筆）
 // 版本號不上首頁：於「連點團徽 5 下」的診斷 HUD 內顯示（見 debugHud）

@@ -53,6 +53,7 @@ let slot = { L:null, R:null };  // 兩個位置目前站誰（角色 id）
 let shown = {};                 // 角色 id → 目前的 portrait 狀態 {expr, show}
 let typing = null;              // 打字機 timer
 let waitT  = null;              // delay：對話框延後出現的 timer（見 renderLine）
+let battleHandler = null;       // main.js 注入：遇到 {battle:id} 時怎麼發動（見 renderLine）
 let active = false;
 let onExit = null;              // 播完/退出後的回呼
 
@@ -450,10 +451,22 @@ function renderLine(){
   const line = cur.lines[lineIdx];
   if(!line) return;
 
-  /* 插入戰鬥：本輪先跳過（戰鬥接線是 battles.js 的工作，尚未實作）。 */
+  /* ── 插入戰鬥（ver -321）───────────────────────────────────────────
+     ⚠ story.js **不 import 戰鬥模組**（單向資料流：劇情不該知道戰鬥怎麼跑）。
+       改由 main.js 用 setBattleHandler 注入一支發動函式，並負責在戰鬥結束、
+       回到首頁時把劇情從 `resume` 這個位置接回去。
+     ⚠ 交棒前要先把舞台收掉，否則劇情層（z-index 8300）會蓋住戰鬥畫面。
+     ⚠ 收掉時**不要接回首頁 BGM** —— 戰鬥有自己的曲子，接回去會打架。 */
   if(line.battle){
-    console.info('[story] 遇到戰鬥插入點，本輪尚未接戰鬥系統，跳過：', line.battle);
-    return advance();
+    if(!battleHandler){
+      console.info('[story] 沒有註冊戰鬥發動器，跳過：', line.battle);
+      return advance();
+    }
+    const resume = { scene: cur.sceneId, line: lineIdx+1 };
+    const id = line.battle;
+    close({ keepBgm:true });
+    battleHandler(id, resume);
+    return;
   }
 
   applyPersist(line);
@@ -582,6 +595,52 @@ function resetStage(){
     if(el){ el.classList.remove('on','dim','fading'); el.removeAttribute('src'); } }
 }
 
+/* ══ 預載（ver -321，Ray：「story 也要放預載頁，story 相關內容在那一頁預載」）══
+   ⚠ **不併進遊戲開機的那個預載**：劇情素材是插圖與背景，一張就上百 KB，
+     全部塞進開機會把首頁的等待拉長，而大部分玩家點進去是要出陣不是看劇情。
+     改成「點 story → 自己的預載頁 → 播」，代價只落在真的要看劇情的人身上。
+   ⚠ 走**整條 scene 鏈**掃，不是只掃第一段 —— 中途才換的插圖若沒先抓，
+     切過去那一刻會是空白（圖是 display:block 之後才開始下載）。 */
+function collectAssets(startId){
+  const imgs=new Set(), bgms=new Set(), ses=new Set();
+  const seen=new Set();
+  let id=startId;
+  while(id && MAIN_SCRIPT[id] && !seen.has(id)){
+    seen.add(id);
+    const sc=MAIN_SCRIPT[id];
+    for(const ln of (sc.lines||[])){
+      if(ln.bg) imgs.add(BG_DIR+ln.bg+'.webp');
+      if(ln.cg) imgs.add(CG_DIR+ln.cg+'.webp');
+      if(ln.ci) imgs.add(SI_DIR+ln.ci+'.webp');
+      if(ln.bgm && BGM_SRC[ln.bgm]) bgms.add(BGM_SRC[ln.bgm]);
+      for(const n of [].concat(ln.se||[])){ const k=(typeof n==='string')?n:n.n;
+        if(SE_SRC[k]) ses.add(SE_SRC[k]); }
+      /* 立繪：說話者與被指定的角色都要（含表情差分）。 */
+      for(const who of [ln.speaker, ln.portrait&&ln.portrait.char].filter(Boolean)){
+        const sp=SPEAKERS[who]; if(!sp||!sp.art) continue;
+        const art=ART[sp.art]; if(!art) continue;
+        imgs.add(art.base);
+        const e=ln.portrait&&ln.portrait.expr;
+        if(e && art.expr && art.expr[e]) imgs.add(art.expr[e]);
+      }
+    }
+    id=sc.next;
+  }
+  return { imgs:[...imgs], bgms:[...bgms], ses:[...ses] };
+}
+function preloadStory(startId, onProgress){
+  const A=collectAssets(startId);
+  const jobs=[];
+  for(const src of A.imgs) jobs.push(new Promise(res=>{
+    const im=new Image(); im.onload=im.onerror=()=>res(); im.src=src; }));
+  jobs.push(SFX.preload(A.ses).catch(()=>{}));
+  jobs.push(SFX.preloadBgm(A.bgms).catch(()=>{}));
+  let done=0; const total=jobs.length;
+  const wrapped=jobs.map(p=>Promise.resolve(p).then(()=>{ done++; onProgress(done/total); }));
+  /* ⚠ 保底 8 秒：慢網下不要把人卡在預載頁。沒載完的圖會在用到時自己補載。 */
+  return Promise.race([Promise.all(wrapped), new Promise(r=>setTimeout(r,8000))]);
+}
+
 export function open(pos, done){
   const st=$('storyStage'); if(!st) return;
   resetStage();
@@ -591,11 +650,27 @@ export function open(pos, done){
   document.body.classList.add('story-on');
   SFX.unlock();
   const id = (pos && pos.scene && MAIN_SCRIPT[pos.scene]) ? pos.scene : MAIN_ENTRY;
-  playScene(id);
-  if(pos && pos.line>0 && cur && pos.line < cur.lines.length){ lineIdx=pos.line; renderLine(); }
+  /* 預載頁：先擋著，載完才開演。⚠ 從戰鬥接回來（pos.line>0）時不再擋一次 ——
+     那些圖上一輪已經抓過了，再擋一次只是多一個黑畫面。 */
+  const ld=$('storyLoad');
+  const go=()=>{
+    if(ld) ld.classList.remove('on');
+    playScene(id);
+    if(pos && pos.line>0 && cur && pos.line < cur.lines.length){ lineIdx=pos.line; renderLine(); }
+  };
+  if(pos && pos.line>0){ go(); return; }
+  if(ld){
+    ld.classList.add('on');
+    const bar=$('storyLoadBar');
+    preloadStory(id, p=>{ if(bar) bar.style.width=Math.round(p*100)+'%'; }).then(go);
+  }else go();
 }
 
-export function close(){
+/* main.js 注入戰鬥發動器：fn(battleId, resumePos)。
+   ⚠ 回來時由 main.js 呼叫 `open(resumePos)` 續播 —— story 自己不知道戰鬥何時結束。 */
+export function setBattleHandler(fn){ battleHandler = fn || null; }
+
+export function close(opts){
   clearInterval(typing); typing=null;
   clearTimeout(waitT); waitT=null;
   const b0=$('storyBubble'); if(b0) b0.style.visibility='';
@@ -606,7 +681,10 @@ export function close(){
   /* ⚠ 劇情有自己的 BGM，離場一定要把主畫面那首接回來 —— 不接的話回到首頁
      還在放劇情曲，而首頁的播放邏輯只在「進首頁」那一刻跑一次，不會自己修正。 */
   stageBgm=null;
-  try{ SFX.playBgm(HOME_BGM, {fadeInMs:600, volume:HOME_VOL}); }catch(_){}
+  /* ⚠ 交棒給戰鬥時**不要**接回首頁 BGM（keepBgm）—— 戰鬥有自己的曲子。 */
+  if(!(opts && opts.keepBgm)){
+    try{ SFX.playBgm(HOME_BGM, {fadeInMs:600, volume:HOME_VOL}); }catch(_){}
+  }
   const cb=onExit; onExit=null; if(cb) cb();
 }
 
