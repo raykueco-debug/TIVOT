@@ -3377,11 +3377,19 @@ let SKYROW=null;     // 每列的天空色，輪廓混色要拿它當背景
    ⚠ 升降門檻不對稱、而且升級要等更久：對稱的話會在邊界上來回跳，
      畫質每兩秒變一次比一直低畫質更難看。
    ⚠ 網址加 ?q=0..3 可鎖定畫質（測試用），鎖定後不自動調。 */
+/* ⚠⚠ `cell`（平面圖逐格貼圖的目標格距，單位是**緩衝像素**）ver -311 全面調細。
+     舊值是 11/14/18/24 —— **畫質越低格子越粗**，而低畫質的緩衝本來就更小，
+     兩個效應相乘，q3 實測整座城只被切成 **5×5＝25 格**（遠一點只有 2×2）。
+     用 25 個平行四邊形去逼近透視變形，格內誤差很大，而且誤差的形狀**隨相機
+     移動** —— Ray 回報的「看得到形狀、且會隨著角度與位置移動」就是這個。
+   正解是讓格子在**螢幕上**等大，也就是 cell 要**隨 bwf 等比縮小**，不是放大。
+   ⚠ 不花錢：實測 q3 由 24 改到 10（5×5 → 11×12、畫出 15 → 76 格），
+     每幀 12.36ms → 11.78ms，在噪訊內。真正的上限是 nmax，本來就擋著。 */
 const QUALITY = [
   { dpr:2,   bwf:0.60, cell:11, nmax:32, blk:0.7 },   // 0 高（現行）
-  { dpr:1.5, bwf:0.54, cell:14, nmax:26, blk:1.1 },   // 1
-  { dpr:1,   bwf:0.48, cell:18, nmax:20, blk:1.7 },   // 2
-  { dpr:1,   bwf:0.40, cell:24, nmax:14, blk:2.6 },   // 3 低
+  { dpr:1.5, bwf:0.54, cell:10, nmax:26, blk:1.1 },   // 1
+  { dpr:1,   bwf:0.48, cell: 9, nmax:20, blk:1.7 },   // 2
+  { dpr:1,   bwf:0.40, cell: 7, nmax:14, blk:2.6 },   // 3 低
 ];
 /* ── 量體層的門檻：**固定值，不隨自適應畫質變**（ver -285）───────────
    ⚠⚠ 這裡原本是 QUALITY 的一欄（27/45/75/128）。那才是「聖王廳靠近會 2D 跳
@@ -7369,7 +7377,6 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
         /* 第一趟：牆。整批累積成一條路徑，最後一次 fill。 */
         CFB.setTransform(kx,0,0,ky,-bx0*kx,-by0*ky);
         CFB.beginPath();
-        const MSTAT=window.__MSTAT={n:MS.n,near:0,ratio:0,off:0,small:0,wall:0,roof:0,rNear:0,worst:0,name:o.s.n};
         let anyWall=false;
         const drawn=[];
         for(let t=0;t<MS.n;t++){
@@ -7388,12 +7395,12 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
             if(zk<MASS_ZNEAR){ ok=false; break; }
             if(zk<zlo)zlo=zk; if(zk>zhi)zhi=zk;
           }
-          if(!ok){ MSTAT.near++; continue; }
+          if(!ok)continue;
           /* ⚠ 保險絲：一塊之內的深度比例失控（近端比遠端近三倍以上）就整塊不畫。
              仿射矩陣吃不下這種形狀，畫出來是一道放射狀的拖曳 —— 低空貼近帝都時
              會看到一條白色光柱從城裡射進天空（使用者回報的「飄圖穿過前景」）。
              舊的網格版本有這條，我搬成多邊形時漏了。寧可缺一塊。 */
-          if(zhi>zlo*MASS_ZRATIO){ MSTAT.ratio++; MSTAT.worst=Math.max(MSTAT.worst,zhi/Math.max(zlo,1e-6)); continue; }
+          if(zhi>zlo*MASS_ZRATIO)continue;
           /* 頂面 y：各頂點用自己的 z（近的牆高、遠的牆矮，稜柱該有的透視）。 */
           for(let k=0;k<np2;k++){
             const L=hW*dyk/P[k*4+3];
@@ -7402,8 +7409,8 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
             if(px<mnx)mnx=px; if(px>mxx)mxx=px;
             if(ty<mny)mny=ty; if(P[k*4+1]>mxy)mxy=P[k*4+1];
           }
-          if(mnx>bx1||mxx<bx0||mny>by1||mxy<by0){ MSTAT.off++; continue; }
-          if(mxx-mnx<Q().blk&&mxy-mny<Q().blk){ MSTAT.small++; continue; }
+          if(mnx>bx1||mxx<bx0||mny>by1||mxy<by0) continue;
+          if(mxx-mnx<Q().blk&&mxy-mny<Q().blk) continue;  // 螢幕上太小就不畫
           // 頂面的螢幕帶號（shoelace）
           for(let k=0;k<np2;k++){
             const k2=(k+1)%np2;
@@ -7437,7 +7444,7 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
             }
             CFB.closePath(); anyWall=true;
           }
-          drawn.push(bi); MSTAT.wall++;
+          drawn.push(bi);
         }
         if(anyWall) CFB.fill();                           // fillStyle 沿用地面層的暗色
         /* 第二趟：屋頂。每塊一次 drawImage —— atlas 上那一格已經帶著自己的
@@ -7465,12 +7472,12 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
              目標：每一小格的深度比 ≤ 1.25。 */
           projectInto(MP,0,(gx0*hw*ca-gy0*hh*sa)/MAP_SCALE,(gx0*hw*sa+gy0*hh*ca)/MAP_SCALE,hW);
           const z00=MP[3];
-          if(z00<MASS_ZNEAR){ MSTAT.rNear++; continue; }
+          if(z00<MASS_ZNEAR)continue;
           projectInto(MP,0,(gx1*hw*ca-gy0*hh*sa)/MAP_SCALE,(gx1*hw*sa+gy0*hh*ca)/MAP_SCALE,hW);
           const z10=MP[3];
           projectInto(MP,0,(gx0*hw*ca-gy1*hh*sa)/MAP_SCALE,(gx0*hw*sa+gy1*hh*ca)/MAP_SCALE,hW);
           const z01=MP[3];
-          if(z10<MASS_ZNEAR||z01<MASS_ZNEAR){ MSTAT.rNear++; continue; }
+          if(z10<MASS_ZNEAR||z01<MASS_ZNEAR)continue;
           const zmin=Math.max(60,Math.min(z00,z10,z01));
           const rU=Math.abs(z10-z00)/zmin, rV=Math.abs(z01-z00)/zmin;
           const nU=Math.min(RSPLIT_MAX,Math.max(1,Math.ceil(rU/0.25)));
@@ -7515,7 +7522,6 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
             const mu2=Math.hypot(a2m*kx, b2m*ky), mv2=Math.hypot(c2m*kx, d2m*ky);
             const eu=(iu<nU-1)?clamp(OVER_PX/Math.max(mu2,1e-6),0.3,6):0;
             const ev=(iv<nV-1)?clamp(OVER_PX/Math.max(mv2,1e-6),0.3,6):0;
-            MSTAT.roof++;
             CFB.drawImage(mip.img, sxm,sym,swm+eu,shm+ev, sxm,sym,swm+eu,shm+ev);
             if(GRIDDBG){
               CFB.setTransform(kx,0,0,ky,-bx0*kx,-by0*ky);
