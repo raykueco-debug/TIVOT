@@ -123,8 +123,11 @@ export const MAIN_SCRIPT = {
       { speaker:'UNKNOWN', text:'', cg:'002_SaintAssult',
         fx:'gunfire', shake:true, se:'se_lunaMG' },
       /* 回地宮。⚠ cg:null 要明寫，否則插圖會一直蓋著。 */
+      /* ⚠ 這一句**只留諾薇兒**（Ray 指定）。璐娜莉亞要明寫 hide 請下台 ——
+         立繪是持續狀態，不寫的話她會一直站在右邊。 */
       { speaker:'NOUVELLE', text:'那就是......聖約第四騎士團的......',
-        cg:null, bg:'HolyseeDungeonWhole', portrait:{ expr:'surprise' } },
+        cg:null, bg:'HolyseeDungeonWhole', hide:'UNKNOWN',
+        portrait:{ expr:'surprise' } },
       /* 璐娜莉亞的插畫：由下往上平移。 */
       { speaker:'NOUVELLE', text:'璐娜莉亞團長……！',
         cg:'003_Lunaria_Armed', cgPan:'up' },

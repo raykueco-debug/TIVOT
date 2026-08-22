@@ -35,10 +35,15 @@ const $ = id => document.getElementById(id);
 /* ── 舞台幾何 ──
    CAST_SHOW：最高的人露出身體的幾成。**這是「立繪多大」的唯一旋鈕**，
    值越小＝鏡頭越近＝立繪越大（與 flight 同義同值）。 */
-/* ⚠ ver -316 由 0.52 調到 0.44（Ray：「人物高度高放一點」）。
-   這個值是「最高的人露出身體的幾成」—— **越小＝鏡頭越近＝人越大、頭頂越高**。
-   上半舞台變矮之後（下半讓給盤面）不調的話人會顯得又小又低。 */
-const CAST_SHOW = 0.44;
+/* 「最高的人露出身體的幾成」—— **越小＝鏡頭越近＝人越大、露出的身體越少**。
+   （飛行頁的對照：0.62＝頭到大腿、0.48＝頭到腰。） */
+const CAST_SHOW = 0.56;
+/* ⚠⚠ **露出身體的上限**（ver -320，Ray：「立繪不要出全身，以膝部以上為原則，
+   不然細節看不清」）。0.72 約是頭到膝。
+   為什麼需要它：兩人同台時每人只有半屏，寬度不夠就會一路等比縮小 —— 縮到最後
+   全身都出來了，臉只剩幾十像素。這個底線讓「縮小」在膝蓋處停住，
+   **寧可兩人的輪廓稍微重疊，也不要縮到看不清臉**。 */
+const CAST_SHOW_MAX = 0.72;
 const SLIDE_MS  = 450;          // 進場滑入（CLAUDE.md §6.5：450ms ease-out）
 const TYPE_MS   = 22;           // 打字機每字間隔
 
@@ -142,13 +147,17 @@ function layout(){
     return { ...o, s, headY, yTop, b:measureBounds(o.el, visLo, visHi) };
   });
 
-  let m = calc();
-  /* ⚠ 兩人同台時每人只有半屏。用**可見段**的輪廓去比，超出才全體等比縮小
-     （維持身高比與地平線）。單人不夾中線、臉置中，預算放到 92%。 */
-  const budget = solo ? W*0.92 : W*0.5-6;
-  let cap=1;
-  for(const o of m){ const wSil=o.s*(o.b.r-o.b.l); if(wSil>budget) cap=Math.min(cap, budget/wSil); }
-  if(cap<1){ pxCm*=cap; m=calc(); }
+  const m = calc();
+  /* ⚠⚠ **不做「依人數縮放」**（ver -320，Ray：「同一張立繪不可有兩個大小」）。
+     原本的作法是：兩人同台時每人只有半屏，輪廓超出就整體等比縮小。那會讓
+     **同一張圖在不同場合有不同大小** —— 單人時大、兩人時小，換場就跳一下；
+     而且縮到最後全身都出來，臉只剩幾十像素（Ray：「細節看不清」）。
+     現在 pxCm 只由 CAST_SHOW 與畫面高決定，是個常數 → 同一張圖永遠同一個大小。
+     ⚠ 代價是兩人的輪廓會**交疊**。Ray 定案：「多少有些交疊沒關係」。
+     ⚠ 也不要改成鎖臉上的特徵（眼寬／耳寬）來解 —— 專案踩過：鎖眼寬會把
+       **畫風差異放大成體型差異**（索拉娜眼睛被畫小 → 整個人放大 13%，
+       實測螢幕身高比 1.249 vs 真實身高比 1.107）。見 flight/HANDOFF.md F 節。
+       尺要鎖**身高**，那是角色的客觀屬性，不隨畫風跑。 */
 
   /* ⚠ 垂直落點：頂線是**上限**（不撞退出鈕），不是非貼不可。
      被輪廓預算縮小之後照樣把頭頂釘在頂線的話，畫面下方會空一大塊。
@@ -177,11 +186,12 @@ function layout(){
         if(o.side==='L'){ const r=x+o.s*br; if(r>mid) x-=(r-mid); }
         else            { const l=x+o.s*bl; if(l<mid) x+=(mid-l); }
       }
-      /* ⚠ 夾完再把**輪廓**拉回畫面內：夾中線只保證不互相越界，
-         不保證沒被推出外緣（諾薇兒的裙襬就會把她整個頂出左邊）。 */
-      const lEdge=x+o.s*bl, rEdge=x+o.s*br;
-      if(lEdge<0)      x -= lEdge;
-      else if(rEdge>W) x -= (rEdge-W);
+      /* ⚠⚠ **不再把輪廓拉回畫面內**（ver -320）。
+         兩道夾制的方向是相反的：夾中線把人往外推、拉回畫面內把人往內推，
+         而後者排在後面會贏 —— 結果是兩個人被一起推回中間**疊在一起**
+         （實測重疊 197px，璐娜莉亞的頭髮蓋掉諾薇兒半個人）。
+         立繪不再依人數縮放之後，外緣本來就該讓它出畫面：`#storyCast` 有
+         overflow:hidden，裁掉的是裙襬與頭髮的邊，不是臉。 */
     }
     el.style.width  = (o.s*el.naturalWidth)+'px';
     el.style.height = (o.s*el.naturalHeight)+'px';
@@ -290,6 +300,8 @@ function typeFinish(el, text){
                                 bgm:null 停掉。與 bg 一樣是**持續**狀態。
      se:'se_steps'              音效；也可以給陣列做多發：
                                 se:[{n:'se_weapon_reload'},{n:'se_weapon_reload',delay:500}]
+     hide:'UNKNOWN'             把某個人（或陣列）請下台。⚠ portrait 一句只能指定
+                                一個人，要**同時**讓另一個人退場就用這個
      dark:true                  這一句的說話者立繪壓成暗調（剪影感，還沒表明身分）
      delay:2600                 **先不出對話框**，等這麼久再打字（等平移／演出跑完）
      shake:true                 畫面抖一下
@@ -455,6 +467,17 @@ function renderLine(){
   const st   = { expr: (p.expr!==undefined ? p.expr : prev.expr),
                  show: (p.show!==undefined ? p.show : (prev.show!==undefined ? prev.show : true)) };
   shown[who] = st;
+
+  /* 請人下台。⚠ 要在 ensureOn 之前做：同側換人時先清掉舊的，
+     新的才會走「首次上場滑入」而不是「輪轉換卡」。 */
+  if(line.hide){
+    for(const id of [].concat(line.hide)){
+      const a3=artOf(id); if(!a3) continue;
+      const s3=a3.side||'L';
+      if(slot[s3]===id) leaveSlot(s3);
+      if(shown[id]) shown[id].show=false;
+    }
+  }
 
   let side = null;
   /* ⚠ 沒有立繪資料的角色（UNKNOWN／LUNARIA）整段跳過 —— 不上場也不下場，
