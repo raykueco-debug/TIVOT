@@ -288,6 +288,8 @@ const COLOR_URL  = 'silvermoon_terrain.png';
     ⚠ 副作用：近景每個地圖像素被拉伸成兩倍，塊感加重。
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
+/* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
+const FLIGHT_VER = 'ver -307';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -2449,6 +2451,9 @@ const BAYER=new Float32Array(16);
   const m=[0,8,2,10, 12,4,14,6, 3,11,1,9, 15,7,13,5];
   for(let i=0;i<16;i++) BAYER[i]=(m[i]/16-0.469);   // −0.47..+0.47
 })();
+/* ⚠ ver -307 查過：抖動**不是**「格子狀破圖」的來源。實測把 DITHER 由 2.6
+   關到 0，城區與森林的 4 像素週期強度都沒有變化（0.752→0.740、0.641→0.675）。
+   城區那一塊本來就被城的貼圖蓋住，抖動根本露不出來。別再往這裡查。 */
 const DITHER=2.6;      // 抖動幅度（色階）。太大會看到網格，太小蓋不掉色帶。
 
 /* ── 雲海貼圖：週期性雜訊，平鋪無接縫 ─────────────────────────── */
@@ -8248,8 +8253,14 @@ function loop(now){
   if(acc>500){
     const mx=Math.round(cam.x/MAP_SCALE), my=Math.round(cam.y/MAP_SCALE);
     const deg=Math.round(((cam.angle*180/Math.PI)%360+360)%360);
+    /* ⚠ 版本號一定要在 HUD 上（ver -307）。先前有整整一輪的來回是因為分不清
+       「回報的畫面跑的是哪一版」—— 我量到改善、Ray 看到一模一樣，兩邊講的
+       其實可能不是同一份程式。截圖裡看得到版本，這一整類誤會就消失了。
+       ⚠ 這一頁是獨立的 HTML，讀不到 config.js 的 VERSION（那是 ESM），
+         所以在建置時由 tools 同步；沒同步到就會停在舊字串，看到不合的
+         版本號先查這裡。 */
     document.getElementById('fps').textContent=
-      Math.round(1000/(acc/n))+' fps '+BW+'×'+BH+' q'+qLevel+(qLocked?'!':'')
+      FLIGHT_VER+'  '+Math.round(1000/(acc/n))+' fps '+BW+'×'+BH+' q'+qLevel+(qLocked?'!':'')
       +'  ('+mx+','+my+') '+deg+'° h'+Math.round(cam.alt);
     acc=0;n=0;
   }
