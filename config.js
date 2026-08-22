@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.23-323';
+export const VERSION = 'ver 2026.08.23-324';
 
 export const GAME_CONFIG = {
 
@@ -251,6 +251,10 @@ export const GAME_CONFIG = {
     //   drop：立繪往敵人框下緣外推的 %（被裁去下方）——不以全圖置入為原則，
     //         用來調兩人同框的站位與身高差（監察官略高）。
     portraitHeightPct: 88,
+    /* 獨腳戲（台上只有一個人）時把立繪放大幾倍，頭頂釘在原處、多出來的從下面裁掉。
+       ⚠ 兩人同台不吃這個值 —— 那組尺寸是「兩人並排塞進 390 寬」逼出來的（見
+         modules/tutorial.js 的 applyPortraitFit）。劇情版教學全程只有諾薇兒。 */
+    portraitSoloScale: 1.8,
     cast: {
       inspector: { name:'芙蕾雅', image:'inspector_freya', side:'left',  fit:{ zoom:1,    drop:10 } },
       partner:   { name:'蕾妮',   image:'partner_renee',   side:'right', fit:{ zoom:0.82, drop:0 } },

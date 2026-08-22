@@ -52,6 +52,7 @@ let dualGuideDone = false;     // 雙槍引導已觸發（破防值封頂解除�
 let saintCritFired = false;    // 聖徒化臨界攔截已觸發（saintFail 只出一次）
 let cutinWaiters = [];         // afterCutin 輪詢計時器（teardown 清理）
 let cutinLine = -1;            // 已播過 cut-in 的台詞索引（重讀同一句不重播）
+let soloRun = false;           // 本場全程只有一個人講話（立繪放大；maybeStart 判定）
 
 /* ---- 首次判定（localStorage 不可用時視為未看過：寧可多教，不漏教）---- */
 function hasSeen(){ try{ return localStorage.getItem(CFG().storageKey)==='1'; }catch(e){ return false; } }
@@ -92,6 +93,7 @@ export function maybeStart(){
   state.tutorialRun = true;         // 存續到結算（inspector 據此切教學專屬台詞/按鈕）
   state.tutorialStoryRun = storyRun;   // 劇情版：inspector 據此整段跳過教學結算
   state.tutorialLifeReturn = false;
+  soloRun = computeSoloRun();       // 獨腳戲 → 立繪放大（整場一致，見 applyPortraitFit）
   stepsLeft = cfg.steps.slice();
   queue = [];
   defendedDone = dualGuideDone = saintCritFired = false; dualForce = false; attackScoldCount = 0; deadHandled = false;
@@ -377,11 +379,65 @@ function syncCast(step){
   }
 }
 
-function openStep(step){
-  cur = step; lineIdx = 0; cutinLine = -1;
-  state.tutorialDialog = true;
-  api.pauseForDialog();                          // 真暫停：同退出確認框的機制
-  document.body.classList.add('dlg-pause');      // 凍結底層警戒脈動（防 iOS 合成假影）
+/* ── 立繪取景（ver -324：獨腳戲放大到「頭到大腿」）────────────────────────
+   兩套算法共用同一組 config 值（cast.fit 的 zoom/drop）：
+
+     雙人場（原版教學：芙蕾雅＋蕾妮）
+               照舊 —— height=baseH×zoom%、bottom=−drop%。這組數字是 ver -45
+               手調到「兩人五官等大、身高差看得出來」的，不要動。
+     獨腳戲（劇情版教學：只有諾薇兒）
+               把同一組取景**放大 portraitSoloScale 倍，並把頭頂釘在原處**
+               （放大後多出來的部分全部從**下面**溢出＝裁掉腿，不是裁掉頭）。
+
+   ⚠ solo 是**整場**的屬性（computeSoloRun），不是逐段看台上幾個人 —— 理由見那裡。
+
+   ⚠ 為什麼獨腳戲要另算：兩人版的尺寸是「兩個人要並排塞進 390 寬」逼出來的，
+     台上只有一個人時那個限制不存在，卻還是照著縮 → 全身入鏡、臉只剩四十幾像素
+     （Ray：「說明立繪調大」）。劇情版教學從頭到尾只有諾薇兒一個人。
+   ⚠ 換算走**像素**不走 %：object-fit:contain 下「元素高」與「圖高」只有在
+     寬度不吃緊時才相等，%＋max-width 兩個限制同時在跑很難算準頭頂落在哪。
+     算好像素直接寫死，頭頂位置就是可預期的。
+   ⚠ 放大時要一併鬆綁 CSS 的 max-width:62%（那是兩人版怕撞在一起的護欄），
+     否則寬度先吃到上限、高度就長不上去了。 */
+/* 這一場是不是「獨腳戲」（全程只有一個人講話）。
+   ⚠ **要以整場為單位判定，不能逐段看台上幾個人**：原版教學的插話段只有芙蕾雅一個人，
+     逐段判的話她會在插話時忽然放大 1.8 倍再縮回去 —— 同一張立繪出現兩個大小
+     （Ray 在劇情頁定過同一條規矩）。
+   ⚠ 判定看**資料**不看旗標：哪天再加第三份台詞（別的角色帶）也自動吃到。 */
+function computeSoloRun(){
+  const S = storyCfg(), who = new Set();
+  const eat = arr => (arr||[]).forEach(l=>{ if(l && l.who) who.add(l.who); });
+  if(S){
+    Object.keys(S.steps||{}).forEach(k=>eat(S.steps[k]));
+    Object.keys(S.script||{}).forEach(k=>{ const r=S.script[k]; eat(Array.isArray(r)?r:(r&&r.lines)); });
+  }else{
+    (CFG().steps||[]).forEach(st=>eat(st.lines));
+    const sc=CFG().script||{};
+    Object.keys(sc).forEach(k=>{ const r=sc[k]; eat(Array.isArray(r)?r:(r&&r.lines)); });
+  }
+  return who.size<=1;
+}
+
+function applyPortraitFit(el, fit, baseH, solo){
+  const F = ($('tutCast') && $('tutCast').clientHeight) || ($('top') && $('top').clientHeight) || 0;
+  const k = solo ? (CFG().portraitSoloScale || 1) : 1;
+  if(!F || k===1){                       // 沒量到高度就退回原本的 % 寫法（不至於整個消失）
+    el.style.height = (baseH * (fit.zoom || 1)) + '%';
+    el.style.bottom = (-(fit.drop || 0)) + '%';
+    el.style.maxWidth = '';
+    return;
+  }
+  const hBase = F * (baseH/100) * (fit.zoom || 1);
+  const headY = F * (1 + (fit.drop||0)/100) - hBase;   // 兩人版這組取景的頭頂 y
+  const h = hBase * k;
+  el.style.height   = h + 'px';
+  el.style.maxWidth = 'none';
+  el.style.bottom   = (F - headY - h) + 'px';          // 負值＝往框下緣外溢（裁腿不裁頭）
+}
+
+/* 本段的在場立繪：換圖 ＋ 套取景。⚠ 段落接續（queue）時也要重跑 ——
+   上一段是兩人、這一段剩一人（或反過來）時尺寸要跟著換。 */
+function syncCastFit(step){
   const cast = CFG().cast || {};
   const baseH = CFG().portraitHeightPct || 88;
   // ⚠ 只套**本段有講話的人**：諾薇兒（劇情版）與芙蕾雅同站左側，左槽只有一個 <img>，
@@ -392,11 +448,16 @@ function openStep(step){
     const c = cast[key], el = portraitEl(c);
     if(!el) continue;
     if(el.dataset.castKey!==key){ el.src = asset(c.image); el.dataset.castKey = key; el.dataset.imgKey = c.image; }
-    const fit = c.fit || {};
-    // 取景（config.cast.fit）：zoom＝以監察官眼寬為基準的縮放；drop＝往框下緣外推裁掉下方 %
-    el.style.height = (baseH * (fit.zoom || 1)) + '%';
-    el.style.bottom = (-(fit.drop || 0)) + '%';
+    applyPortraitFit(el, c.fit || {}, baseH, soloRun);
   }
+}
+
+function openStep(step){
+  cur = step; lineIdx = 0; cutinLine = -1;
+  state.tutorialDialog = true;
+  api.pauseForDialog();                          // 真暫停：同退出確認框的機制
+  document.body.classList.add('dlg-pause');      // 凍結底層警戒脈動（防 iOS 合成假影）
+  syncCastFit(step);
   const wrap=$('tutCast'), touch=$('tutTouch'), bubble=$('tutBubble');
   if(touch) touch.classList.add('on');
   if(bubble) bubble.classList.add('on');   // 對話框已移出 #tutCast（z-8000 恆在最上層），自帶顯示控制
@@ -496,7 +557,7 @@ function advance(){
   if(cur.key==='tutorialDead'){ closeDialog(false, true); onStepClosed('tutorialDead'); return; }
   if(gate){ lineIdx = cur.lines.length-1; return; }   // 即時閘門：停在末句，等玩家完成指定操作
   if(pendingGate){ enterGate(pendingGate); pendingGate=null; return; }   // 講完 → 進引導閘門（維持暫停）
-  if(queue.length){ cur=queue.shift(); lineIdx=0; syncCast(cur); syncBubbleShape(cur); showLine(); return; }   // 接續段：在場立繪差異更新
+  if(queue.length){ cur=queue.shift(); lineIdx=0; cutinLine=-1; syncCastFit(cur); syncCast(cur); syncBubbleShape(cur); showLine(); return; }   // 接續段：在場立繪差異更新
   closeDialog(true);
 }
 
