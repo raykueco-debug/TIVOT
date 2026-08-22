@@ -71,8 +71,12 @@ export const MAIN_SCRIPT = {
       { speaker:'NOUVELLE', text:'啊！', shake:true, se:'se_Fall',
         portrait:{ expr:'cringe' } },
       /* 跌倒：切全屏插圖。⚠ cg 一上來就蓋住立繪，所以這一句不必也不要再改 expr。 */
-      { speaker:'NOUVELLE', text:'別管我！你快走！',
-        cg:'001_Nouvelle_Fell', cgPan:'down' },
+      /* ⚠ 對話框**等平移跑完再出**（Ray 指定）。2600 與 CSS 的平移時間同值 ——
+         改一邊要改另一邊（style.css 的 storyPanUp/Down）。 */
+      { speaker:'NOUVELLE', text:'別管我！你快走！', delay:2600,
+        /* ⚠ 由下往上（Ray 指定）：這張是跌倒的構圖，由上往下平移會**停在裙底**，
+           往上才會收在臉上。平移的終點就是這一格的重點，方向不能隨便給。 */
+        cg:'001_Nouvelle_Fell', cgPan:'up' },
       /* 上膛：兩聲隔 0.5 秒交疊。 */
       { speaker:'NOUVELLE', text:'你……！',
         se:[{n:'se_weapon_reload'},{n:'se_weapon_reload',delay:500}] },
@@ -87,18 +91,37 @@ export const MAIN_SCRIPT = {
     setFlags:['dungeon_cleared'],
     context:'scene',
     lines:[
-      /* 戰勝之後：聖徒咆哮。 */
+      /* 戰勝之後：聖徒咆哮。⚠ **先咆哮＋震動，立繪才出來**（Ray 指定）——
+         同一句同時上插圖、上聲音、上立繪的話，咆哮的衝擊會被她的台詞稀釋。
+         這一拍沒有台詞也沒有立繪，玩家點一下推過去。 */
+      { speaker:'NOUVELLE', text:'',
+        cg:'002_SaintAssult', se:'se_saintroar', shake:true,
+        portrait:{ char:'NOUVELLE', show:false } },
+      /* ⚠⚠ 這一句要**把插圖收掉**（cg:null）。插圖的層級在立繪之上，不收的話
+         她整個被蓋住 —— Ray 回報「『對不起，我已經……！』的立繪一直沒出來」
+         就是這個，不是位置問題。凡是要看到立繪的句子，插圖都得先讓開。 */
       { speaker:'NOUVELLE', text:'對不起，我已經……！',
-        cg:'002_SaintAssult', portrait:{ expr:'desperate' } },
+        cg:null, bg:'HolyseeDungeonWhole',
+        portrait:{ expr:'desperate', show:true } },
       /* 暗調 CI 插入。⚠ 說話的是「？？？」不是 LUNARIA —— 這一刻她還沒表明身分，
          顯示名要真的是「？？？」（見 speakers.js 的說明）。 */
-      { speaker:'UNKNOWN', text:'讓開。', ci:'Lunaria_SI_Armed' },
-      { speaker:'NOUVELLE', text:'！！', ci:null, portrait:{ expr:'scared' } },
+      /* ⚠⚠ 璐娜莉亞走**正規立繪**（右側滑入），不是全屏 CI（Ray：「她的比例明顯
+         與諾薇兒不同，戰鬥中的對話立繪版面分配一概比照飛行畫面」）。
+         走立繪系統才會鎖身高、才會與諾薇兒同一把尺 —— CI 那條路是自己一套縮放，
+         比例對不上是必然的。
+         ⚠ dark:true＝暗調（還沒表明身分的剪影感）；諾薇兒**留在畫面上**，
+           所以這一句不動她的 portrait。 */
+      { speaker:'UNKNOWN', text:'讓開。', dark:true,
+        portrait:{ char:'UNKNOWN', show:true } },
+      { speaker:'NOUVELLE', text:'！！', portrait:{ char:'NOUVELLE', expr:'scared' } },
+      /* 密集掃射：⚠ 打在**插圖上**（Ray 原稿：「002_SaintAssult 圖上出現大量密擊
+         快速槍擊點」），所以這一拍把插圖叫回來。 */
       /* 密集槍擊：命中點灑在 002 上，畫面同時抖一下。
          ⚠ 這一句沒有台詞（text 空字串）——它是**演出拍**，玩家點一下推過去。
          ⚠ 槍聲用 se_lunaMG（Ray 指定）。原稿另有「彈殼落地音」那一拍，
            但 resources/audio/se/ 裡沒有那個素材，先缺著。 */
-      { speaker:'UNKNOWN', text:'', fx:'gunfire', shake:true, se:'se_lunaMG' },
+      { speaker:'UNKNOWN', text:'', cg:'002_SaintAssult',
+        fx:'gunfire', shake:true, se:'se_lunaMG' },
       /* 回地宮。⚠ cg:null 要明寫，否則插圖會一直蓋著。 */
       { speaker:'NOUVELLE', text:'那就是......聖約第四騎士團的......',
         cg:null, bg:'HolyseeDungeonWhole', portrait:{ expr:'surprise' } },

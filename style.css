@@ -1194,6 +1194,10 @@
   /* 壓暗：說話者原色，其餘 brightness(.38) saturate(.75)。
      ⚠ CSS filter 天生不透明 —— 那條「不可用透明度代替」的警告是給 canvas 版的。 */
   .story-portrait.dim{filter:brightness(.38) saturate(.75);}
+  /* 暗調：比 dim 更黑，用在「還沒表明身分」的登場（剪影感）。
+     ⚠ 要壓過 .dim，所以寫在它後面；同樣用 filter 不用 opacity
+     （CLAUDE.md §6.5：壓暗必須不透明）。 */
+  .story-portrait.dark{filter:brightness(.16) saturate(.35) contrast(1.25);}
   /* 背景：鋪滿、cover。⚠ 在立繪**之下**（z-index 0）—— 立繪要站在場景裡。 */
   #storyBg{position:absolute;left:0;right:0;top:0;height:var(--story-top);z-index:0;
     width:100%;object-fit:cover;display:none;pointer-events:none;}
@@ -1215,10 +1219,14 @@
   @keyframes storyPanDown{ from{object-position:50% 0%;} to{object-position:50% 100%;} }
   /* 暗調 CI 插入：半身/全身圖從側邊切進來，壓暗到只剩剪影感（Ray 指定「暗調」）。
      ⚠ 壓暗用 filter 不用 opacity（CLAUDE.md §6.5：壓暗必須不透明）。 */
-  #storyCi{position:absolute;left:0;right:0;top:0;height:var(--story-top);z-index:3;
-    width:100%;object-fit:cover;display:none;pointer-events:none;
+  /* 暗調 CI 插入：⚠ **只佔右半**（Ray 指定「與 Nouvelle_SI_Desperate 同畫面，
+     右側出現」）—— 鋪滿全寬的話會把她整個蓋掉，讀不出「有人從旁邊走進來」。
+     ⚠ object-position 靠左：這些立繪的人物偏左，取右半要把人拉進框裡。
+     ⚠ 壓暗用 filter 不用 opacity（CLAUDE.md §6.5：壓暗必須不透明）。 */
+  #storyCi{position:absolute;left:46%;right:0;top:0;height:var(--story-top);z-index:3;
+    width:auto;object-fit:cover;object-position:38% 12%;display:none;pointer-events:none;
     filter:brightness(.30) saturate(.65) contrast(1.15);
-    transform:translateX(18%);opacity:0;
+    transform:translateX(28%);opacity:0;
     transition:transform .38s cubic-bezier(.16,1,.3,1),opacity .38s ease;}
   #storyCi.on{display:block;transform:translateX(0);opacity:1;}
   /* 特效層：槍擊命中點畫在這裡（CG 之上、對話框之下）。 */

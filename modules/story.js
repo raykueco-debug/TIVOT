@@ -47,6 +47,7 @@ let lineIdx = 0;
 let slot = { L:null, R:null };  // 兩個位置目前站誰（角色 id）
 let shown = {};                 // 角色 id → 目前的 portrait 狀態 {expr, show}
 let typing = null;              // 打字機 timer
+let waitT  = null;              // delay：對話框延後出現的 timer（見 renderLine）
 let active = false;
 let onExit = null;              // 播完/退出後的回呼
 
@@ -130,7 +131,11 @@ function layout(){
   const calc = ()=>on.map(o=>{
     const a=o.a;
     const s     = pxCm*a.cm/(a.bot-a.top);
-    const headY = top + (CAST_TALL-a.cm)*pxCm;
+    /* ⚠ 身高差的縱向讓位**只在兩人同台時**才做（ver -319，Ray：「立繪太低」）。
+       它的用意是「四個人的腳落在同一條地平線上」—— 台上只有一個人的時候沒有
+       對象可以對齊，那 (CAST_TALL−cm)×pxCm 就只是在頭頂上方空出一塊
+       （諾薇兒 165 vs 最高的 176，實測空掉 62px，在 494 高的立繪區裡很明顯）。 */
+    const headY = top + (solo ? 0 : (CAST_TALL-a.cm)*pxCm);
     const yTop  = headY - s*a.top;                    // 圖框上緣的螢幕 y
     const visLo = a.top;                              // 頭頂
     const visHi = Math.min(a.bot, a.top + (H-headY)/s);  // 畫面下緣對應的圖列
@@ -192,7 +197,7 @@ function topLine(){
   if(!st) return 56;
   if(!ex) return 56;
   const h = ex.getBoundingClientRect().bottom - st.getBoundingClientRect().top;
-  return Math.round((h>0 ? h : 46) + 10);      // 鈕底下再留 10px，不相觸
+  return Math.round((h>0 ? h : 46) + 4);       // 鈕底下再留 4px（ver -319 由 10 收，Ray：立繪要更高）
 }
 
 /* ══ 立繪槽 ══ */
@@ -201,6 +206,11 @@ function slotEl(side){ return $(side==='R' ? 'storyCastR' : 'storyCastL'); }
 /* 讓某角色出現在他該在的位置；已在場就只更新表情。回傳他所在的 side。 */
 function ensureOn(id, expr){
   const sp = SPEAKERS[id]; if(!sp) return null;
+  /* ⚠⚠ **沒有立繪資料的角色不准碰立繪槽**（ver -319 修）。
+     「？？？」（UNKNOWN）與璐娜莉亞的 art 是 null —— 她們只用 CG／暗調 CI 登場。
+     原本沒擋，`artOf` 回 null 之後 side 退回 'L'，於是她們去佔了左邊那個槽，
+     把站在那裡的諾薇兒**整個清掉**（Ray 回報「讓開。」那一拍她不見了）。 */
+  if(!artOf(id)) return null;
   const side = (artOf(id) && artOf(id).side) || 'L';   // 固定站位，見檔頭
   const el = slotEl(side); if(!el) return null;
   const src = srcFor(sp.art, expr);
@@ -280,6 +290,8 @@ function typeFinish(el, text){
                                 bgm:null 停掉。與 bg 一樣是**持續**狀態。
      se:'se_steps'              音效；也可以給陣列做多發：
                                 se:[{n:'se_weapon_reload'},{n:'se_weapon_reload',delay:500}]
+     dark:true                  這一句的說話者立繪壓成暗調（剪影感，還沒表明身分）
+     delay:2600                 **先不出對話框**，等這麼久再打字（等平移／演出跑完）
      shake:true                 畫面抖一下
      fx:'gunfire'               在 CG 上灑一串槍擊命中點
 
@@ -303,7 +315,9 @@ function setImg(el, src){
 }
 function applyPersist(line){
   if(line.bg!==undefined){ stageBg=line.bg; setImg($('storyBg'), line.bg?BG_DIR+line.bg+'.webp':''); }
+  let cgChanged=false;
   if(line.cg!==undefined && line.cg!==stageCg){
+    cgChanged=true;
     /* ⚠ 插圖之間也淡入淡出（Ray 指定）。已經有圖在場才需要先淡出；
        第一次上圖直接顯示，否則會有一段莫名的空白。 */
     const el=$('storyCg'), had=!!stageCg;
@@ -335,12 +349,26 @@ function applyPersist(line){
   }
   /* 平移是**這一句**的效果，不沿用 —— 每次都要先拿掉再加，否則第二次不會重播
      （同一個 class 還在，animation 不會重新開始）。 */
+  /* ── 平移 ────────────────────────────────────────────────────────
+     ⚠⚠ **沒指定 cgPan 的句子不要碰平移**（Ray：「『你……！』的時候不要重置
+       插圖平移」）。原本是每一句都先 `remove('pan-up','pan-down')` —— 平移要
+       2.6 秒，而一句台詞常常一兩秒就被點過去，於是下一句一進來就把動畫掐掉，
+       插圖「啪」一聲跳回原位。
+     規則：
+       · 這一句寫了 cgPan  → 重播那個方向（先移除再加，否則不會重新開始）
+       · 這一句**換了圖**  → 清掉（新圖不該繼承舊圖的平移）
+       · 其餘             → **不動**，讓它自己跑完
+     ⚠ `cgPan:null` 是明確要求停下來，與「沒寫」不同。 */
   const cg=$('storyCg');
-  if(cg){ cg.classList.remove('pan-up','pan-down');
+  if(cg){
     if(line.cgPan==='up' || line.cgPan==='down'){
-      void cg.offsetWidth;                       // 見上：不重設 class，animation 不會重播
+      cg.classList.remove('pan-up','pan-down');
+      void cg.offsetWidth;                       // 不重設 class，animation 不會重播
       cg.classList.add(line.cgPan==='up'?'pan-up':'pan-down');
-    } }
+    }else if(line.cgPan===null || cgChanged){
+      cg.classList.remove('pan-up','pan-down');
+    }
+  }
 }
 /* 音效：**逐支列出實際路徑**，不要用字串拼副檔名 —— 這個資料夾裡 wav/mp3/m4a
    三種都有，拼出來的路徑會靜默 404（audio.js 載不到只會 resolve(null)，不報錯）。 */
@@ -350,6 +378,7 @@ const SE_SRC={
   se_mg_squall:     'resources/audio/se/se_weapon_mg_squall.mp3',
   se_lunaMG:        'resources/audio/se/se_lunaMG.wav',
   se_Fall:          'resources/audio/se/se_Fall.mp3',
+  se_saintroar:     'resources/audio/se/Se_enemy_Saintroar.mp3',
 };
 function playSe(spec){
   const one=(n,delay)=>{ const src=SE_SRC[n];
@@ -428,24 +457,56 @@ function renderLine(){
   shown[who] = st;
 
   let side = null;
-  if(st.show) side = ensureOn(who, st.expr);
-  else { const a2=artOf(who), s2=(a2&&a2.side)||'L'; if(slot[s2]===who) leaveSlot(s2); }
+  /* ⚠ 沒有立繪資料的角色（UNKNOWN／LUNARIA）整段跳過 —— 不上場也不下場，
+     台上原本站著的人維持原樣。 */
+  if(artOf(who)){
+    if(st.show) side = ensureOn(who, st.expr);
+    else { const a2=artOf(who), s2=(a2&&a2.side)||'L'; if(slot[s2]===who) leaveSlot(s2); }
+  }
 
   /* 高亮跟著 speaker 走（speaker 與畫面上的人可以不同）。 */
-  const spA=artOf(line.speaker), spSide=(spA&&spA.side)||'L';
-  highlight(slot[spSide]===line.speaker ? spSide : side);
+  /* ⚠ 說話者沒有立繪時**誰都不亮**（傳 null）—— 台上的人不是在講話，
+     照原本的邏輯會誤把左邊那位當成說話者點亮。 */
+  const spA=artOf(line.speaker);
+  if(!spA) highlight(null);
+  else { const spSide=spA.side||'L'; highlight(slot[spSide]===line.speaker ? spSide : side); }
 
   /* CG／背景／CI 由 applyPersist 處理（上面），這裡不再重複。 */
 
+  /* 暗調：套在**這一句說話者**的立繪上。⚠ 每一句都要清一次 —— 它是句子屬性
+     不是角色屬性，不清的話下一句她還是黑的。 */
+  for(const s2 of ['L','R']){ const el=slotEl(s2); if(el) el.classList.remove('dark'); }
+  if(line.dark && side){ const el=slotEl(side); if(el) el.classList.add('dark'); }
+
   const nm=$('storyName'), tx=$('storyText');
   if(nm) nm.textContent = nameOf(line.speaker);
-  if(tx) typeOut(tx, line.text);
+  /* ⚠ delay：對話框**先不出**，等演出（平移／滑入）跑完再打字（Ray 指定）。
+     ⚠ 等待中點畫面要能**跳過等待**而不是直接推到下一句 —— 不然玩家會覺得
+       「點了沒反應」然後連點兩下，一次跳掉兩句。 */
+  const bub2=$('storyBubble');
+  clearTimeout(waitT); waitT=null;
+  if(line.delay>0){
+    if(bub2) bub2.style.visibility='hidden';
+    waitT=setTimeout(()=>{ waitT=null;
+      if(bub2) bub2.style.visibility='';
+      if(tx) typeOut(tx, line.text); }, line.delay);
+  }else{
+    if(bub2) bub2.style.visibility='';
+    if(tx) typeOut(tx, line.text);
+  }
 }
 
 /* ══ 推進 ══ */
 function advance(){
   const line = cur && cur.lines[lineIdx];
   const tx = $('storyText');
+  /* 還在等 delay → 這一下先把對話框叫出來，不推進（同「還在打字」的規矩）。 */
+  if(waitT){
+    clearTimeout(waitT); waitT=null;
+    const b=$('storyBubble'); if(b) b.style.visibility='';
+    if(tx && line) typeOut(tx, line.text);
+    return;
+  }
   /* 還在打字 → 這一下先補完，不推進（對話演出通則）。 */
   if(typing && line && tx){ typeFinish(tx, line.text); return; }
 
@@ -513,6 +574,8 @@ export function open(pos, done){
 
 export function close(){
   clearInterval(typing); typing=null;
+  clearTimeout(waitT); waitT=null;
+  const b0=$('storyBubble'); if(b0) b0.style.visibility='';
   active=false; cur=null;
   const st=$('storyStage'); if(st) st.classList.remove('on');
   document.body.classList.remove('story-on');

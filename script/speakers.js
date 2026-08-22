@@ -23,10 +23,11 @@ export const SPEAKERS = {
   /* 璐娜莉亞：第四騎士團團長。⚠ 目前只以 **CG 與暗調 CI 插入**登場，不站立繪
      —— 所以 art 是 null。真的要讓她在對話裡站台，得先量取景值（見下方 ART 的
      警告），不要隨便指一張圖。 */
-  LUNARIA:  { name:'璐娜莉亞', art:null },
+  LUNARIA:  { name:'璐娜莉亞', art:'lunaria' },
   /* 尚未表明身分時用這個 id。⚠ 不要用 LUNARIA 然後把 name 蓋成「？？？」——
-     顯示名是查表來的，蓋名會讓「這一句是誰講的」在資料上消失。 */
-  UNKNOWN:  { name:'？？？',   art:null },
+     顯示名是查表來的，蓋名會讓「這一句是誰講的」在資料上消失。
+     art 指同一張圖：畫面上是同一個人，只是玩家還不知道她是誰。 */
+  UNKNOWN:  { name:'？？？',   art:'lunaria' },
 };
 
 /* ══ 立繪素材 ＋ 取景實測值 ══
@@ -82,6 +83,16 @@ export const ART = {
   /* 璐娜：戰鬥搭檔，劇情立繪尚未指定 —— 先指 cut-in 圖，數字**沒有量過**。
      ⚠ 真的要讓她在劇情裡站台，top/bot/fx 一定要重量（cut-in 是胸像構圖，
        照 alpha 上下緣量會把人放大好幾倍，見 CLAUDE.md §6.5）。 */
+  /* 璐娜莉亞（團長）。⚠ 站**右側** —— 與諾薇兒（左）分邊，兩人同台不會疊。
+     ⚠ 數字是**量出來**的，量法照 CLAUDE.md §6.5 與 HANDOFF F 節：
+       · cm 168（Ray 指定）
+       · top/bot＝alpha 上下緣（9 / 1528）。先確認過四角 alpha 是 0、逐列輪廓寬
+         由 21% 變到 97% —— 是去背立繪不是滿版插圖，所以 alpha 邊界就是頭頂與腳底。
+       · fx 0.496 —— 量**頭部那一段**（頭頂往下 8% 圖高）的 alpha 中心得 0.483，
+         再用諾薇兒校準這把尺（同法量她得 0.551、表上 0.564，偏移 +0.013）。
+       · eye 沒量（CAST_EYE_MIX=0 不參與運算）。要改回混合模式前必須先量。 */
+  lunaria:{ cm:168, eye:32, fx:0.496, top:9, bot:1528,
+           side:'R', alt:null, base:'resources/SI/Lunaria_SI_Armed.webp', expr:{} },
   luna:   { cm:160, eye:30, fx:0.500, top:0, bot:1000,
            side:'L', alt:null, base:'resources/partner/Luna_CI_exc.webp', expr:{}, unmeasured:true },
 };
