@@ -289,7 +289,7 @@ const COLOR_URL  = 'silvermoon_terrain.png';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -312';
+const FLIGHT_VER = 'ver -313';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -1446,7 +1446,9 @@ const PLACES=[
      —— 地圖上會看到城與名牌分家。名牌跟著城走。 */
   {x:1366,y:936, name:'薇拉馮德港',   type:'帝國・港灣'},
   {x:985, y:858, name:'卡耶爾山谷',   type:'險地'},
-  {x:1000,y:300, name:'北方泊地',     type:'泊地'},
+  /* ⚠ ver -313：由 (1000,300) 移到 (1496,160)（Ray 在現場指定的座標）。
+     export_mapref.py 的 PLACES 要同步，否則地圖參考圖會標在舊位置。 */
+  {x:1496,y:160, name:'北方泊地',     type:'泊地'},
   {x:2030,y:590, name:'東方泊地',     type:'泊地'},
 ];
 
