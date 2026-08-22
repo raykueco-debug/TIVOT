@@ -6985,23 +6985,41 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
          畫完就被貼到畫面外，一個像素都看不到。純浪費。 */
       bx0=Math.max(bx0-2,-8); by0=Math.max(by0-2,-8);
       bx1=Math.min(bx1+2,W+8); by1=Math.min(by1+2,VIEWH+8);
-      const fw=Math.ceil(bx1-bx0), fh=Math.ceil(by1-by0);
+      /* ── 緩衝格柵鎖在螢幕像素上（ver -296）────────────────────────────
+         ⚠⚠ 這是「城在移動時整片抖」的真正來源。城是先畫進 bwp×bhp 的低解析
+           緩衝再放大貼回，而**放大比與原點每幀都在變**：
+             bwp = round(fw·pk) 是整數、fw 是浮點 → 比例 bwp/fw 每幀不同；
+             bx0 也是浮點，貼回時才 Math.round。
+           於是同一個世界位置每幀落在緩衝 texel 的不同相位上，重取樣的結果
+           逐幀跳動 —— 靜止看不出來，一動就整片爬行。地形沒有這個病，因為
+           它的緩衝是固定尺寸、固定對齊螢幕的。
+         正解是讓緩衝格柵**永遠**是螢幕格柵的整數倍：
+           · 縮放比取整數倒數 pk = 1/STEP（不再是任意浮點）
+           · 外框原點與尺寸都吸附到 STEP 的整數倍
+         這樣一個緩衝 texel 恆等於螢幕上固定的 STEP×STEP 一塊，相位是常數。 */
+      const pkRaw=clamp(BW/W,0.15,1);
+      const STEP=Math.max(1,Math.round(1/pkRaw));   // 一個緩衝 texel 蓋幾個螢幕像素
+      const LOCK=(window.__lockLattice!==false);   // 除錯開關：主控台設 false 可即時回到舊行為做 A/B
+      const pk=LOCK?1/STEP:pkRaw;
+      if(LOCK){ bx0=Math.floor(bx0/STEP)*STEP; by0=Math.floor(by0/STEP)*STEP; }
+      let fw=Math.ceil(bx1-bx0), fh=Math.ceil(by1-by0);
+      if(LOCK){ fw=Math.ceil(fw/STEP)*STEP; fh=Math.ceil(fh/STEP)*STEP; }
       if(fw<2||fh<2||bx1<0||by1<0||bx0>W||by0>VIEWH){ ctx.restore(); continue; }
-      const pk=clamp(BW/W,0.15,1);
-      const bwp=Math.max(2,Math.round(fw*pk)), bhp=Math.max(2,Math.round(fh*pk));
+      const bwp=LOCK?Math.max(2,fw/STEP):Math.max(2,Math.round(fw*pk)),
+            bhp=LOCK?Math.max(2,fh/STEP):Math.max(2,Math.round(fh*pk));
       /* ⚠ 緩衝**一次配到上限，之後永不重配**。外框已經夾在視窗內，
          所以 (W+16)×(VIEWH+16)×pk 就是它可能長到的最大值 —— 直接配那麼大。
          先前的「只長不縮」仍會在飛近的過程中重配十幾次，每次都是一張新的
          GPU 貼圖：配置與 GC 吃畫格時間（fps 爆跌），iOS 的 canvas 記憶體預算
          被撐爆後還會把既有 canvas 丟掉（城變空白／破圖）。
          只讀 (0,0,bwp,bhp) 這塊子區域，所以緩衝比需要的大沒有關係。 */
-      const capW=Math.ceil((W+16)*pk), capH=Math.ceil((VIEWH+16)*pk);
+      const capW=Math.ceil((W+16)*pk)+2, capH=Math.ceil((VIEWH+16)*pk)+2;
       if(!cityFB || cityFB.width!==capW || cityFB.height!==capH){
         cityFB=document.createElement('canvas'); cityFB.width=capW; cityFB.height=capH;
         CFB=cityFB.getContext('2d');
       }
       CFB.setTransform(1,0,0,1,0,0); CFB.clearRect(0,0,bwp,bhp);
-      const kx=bwp/fw, ky=bhp/fh;
+      const kx=LOCK?pk:bwp/fw, ky=LOCK?pk:bhp/fh;
 
       /* 來源矩形改逐格算（格線非均勻）：平面座標 −1..1 → 圖上像素。 */
       const sux=planImg.width*0.5, svy=planImg.height*0.5;
@@ -7167,7 +7185,7 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
            128），沒有遲滯的話光是換一次檔就足以把整層抹掉。旗標存在聚落
            物件上，逐城各自記各自的。 */
       const mdx=o.s.mx*MAP_SCALE-cam.x, mdy=o.s.my*MAP_SCALE-cam.y;
-      const massW=o.s.planW*W/(2*Math.max(60,Math.hypot(mdx,mdy)))*pk;
+      const massW=o.s.planW*W/(2*Math.max(60,Math.hypot(mdx,mdy)))*pkRaw;
       const massT=MASS_ON_PX;
       o.s._massOn = o.s._massOn ? (massW>=massT*MASS_OFF) : (massW>=massT);
       /* 旗標仍然是「該不該有量體」的判斷（含遲滯），但畫出來的濃度走 _massA
@@ -7407,8 +7425,12 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
            地形是直接畫在螢幕上、不經緩衝，所以沒有這個問題。
          ⚠ 關平滑是為了地形的像素感（見 resize），但城是**手繪插畫不是像素圖**，
            最近鄰在它身上只會製造雜訊。畫完立刻關回去還給地形。 */
+      /* ⚠ 平滑維持開啟（ver -295 起）。格柵鎖住之後放大比是整數、原點也是整數，
+         最近鄰在這裡已經是精確的；但緩衝**內部**的格線仍逐幀微動（walk 的步長
+         隨深度連續變），雙線性順手把那一截也磨掉。實測次像素爬行
+         雙線性 1.17×地形、最近鄰 1.30× —— 差不多，留原本的就好。 */
       ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality='high';
-      ctx.drawImage(cityFB,0,0,bwp,bhp,Math.round(bx0),Math.round(by0),fw,fh);
+      ctx.drawImage(cityFB,0,0,bwp,bhp,LOCK?bx0:Math.round(bx0),LOCK?by0:Math.round(by0),fw,fh);
       ctx.imageSmoothingEnabled=false;
       /* 夜間路燈：城貼回去之後才畫，燈要在城上面。
          ⚠ 距離太遠就整批跳過：那個尺寸下每盞燈不到一個像素，畫了只是把城
