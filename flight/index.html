@@ -720,6 +720,7 @@ function lampsFor(S,img){
 }
 
 let cityFB=null, CFB=null;                  // 手繪平面圖的低解析繪製緩衝
+let plateFB=null, PFB=null;                 // 底圖側面用的剪影暫存（見 PLATE_THICK）
 /* 近裁面裁切用的四角暫存（x,y,scale,z ×4）。模組層配一次 —— 貼近城時每幀
    會用到幾百次，逐次 new 出來就是純粹的 GC 壓力。 */
 const cityClipQ=new Float64Array(16);
@@ -1353,7 +1354,15 @@ let cityU=null, cityV=null;                 // 兩軸的格線（平面座標 �
    ⚠ PODIUM_CLEAR：台座整平之後地面與城的地板會**完全等高**，逐欄深度比較
      變成平手，哪一欄被裁全看浮點誤差 —— 那正是斑駁的來源。讓地板比它自己的
      台座高一點點，平手就不存在。8 在任何距離都不到一個像素，看不出來。 */
-const PODIUM_CLEAR=8;
+/* ── 白色底圖的**厚度**（世界單位，Ray 指定 50）─────────────────────────
+   城的平面圖原本是一張**無厚度的紙**貼在地面上。無厚度的後果有兩個：
+     · 它與地面同高 → 逐欄深度比較是平手 → 哪一欄被裁全看浮點誤差 → 斑駁；
+     · 就算抬起來，邊緣仍是一條線，地形從旁邊頂上來一樣穿幫。
+   給它厚度就同時解決兩件事：底圖抬到地面之上 PLATE_THICK，
+   再把底圖自己**往下擠出**同樣的厚度當側面（見 CFB 的向下抹壓）。
+   ⚠ 抬高與擠出必須是**同一個數字**：抬得比擠得高，底下就會露出一條空隙。 */
+const PLATE_THICK=50;
+const PODIUM_CLEAR=PLATE_THICK;
 function settleBaseH(S){ return (S.gh!=null? S.gh : CLOUD_H+80); }
 function settleTerrainH(S){ return settleBaseH(S)+((S.podium&&S.podium.lift)||0); }
 function settleGroundH(S){ return settleTerrainH(S)+(S.podium?PODIUM_CLEAR:0); }
@@ -1370,6 +1379,10 @@ function buildSettlements(){
     s.plan=S.plan||null; s.planW=S.planW||0; s.planRot=S.planRot||0;
     s.planH=S.planH||null; s.planTall=S.planTall||0;
     s.noWater=!!S.noWater; s.noLamps=!!S.noLamps; s.wallCol=S.wallCol||null;
+    s.plateCol=S.plateCol||null;   // 底圖側面的實色（見 PLATE_THICK）
+    /* ⚠ 底圖厚度只在**有台座**的城開：抬高走 PODIUM_CLEAR，也只有台座城會抬。
+       沒抬的城去畫側面，等於在地面下面憑空多一圈邊。 */
+    s.hasPodium=!!S.podium;
     s.mx=S.x; s.my=S.y;
     /* ⚠ 高度一律走 settleGroundH —— 與 buildRelief 的整地同一個來源。
        不要在這裡重寫算式（先前就是這樣寫出 44 vs 124 的差異）。 */
@@ -5320,6 +5333,31 @@ function drawTrains(S,scaleH,horizon,sinp,cosp){
        +25~32%），山區變成蛇行。原因是隧道**不是路徑選出來的**：縱斷面受坡度
        限制，地面高過設計高程 TUNNEL_MIN 就判定在山裡，調成本消不掉它。 */
 
+  /* ── 「開進市區了沒」──────────────────────────────────────────────
+     市區的平面圖是一張貼在地上的盤子，車開進去就該被它蓋住。但盤子是後畫的
+     （城畫在火車之前還是之後都不對：城是地景、車在地景上跑），所以這裡用
+     幾何判定而不是靠繪製順序：離城心比「盤子半徑」近就算進城了。
+     ⚠ 半徑取 planW 的一半再收 8%：平面圖的最外圈是郊區與田地，車在那裡還
+       看得見才對；收到市街緣才開始沒入。
+     ⚠ 每幀建一次（聚落數十個、只做平方比較），不快取 —— buildSettlements
+       本來就有快取，這裡只是讀它。 */
+  const CITYZ=[];
+  if(window.Settlement && MAPW){
+    for(const s of buildSettlements()){
+      if(!s.plan||!s.planW) continue;
+      const r=(s.planW*0.5/MAP_SCALE)*0.92;
+      CITYZ.push(s.mx, s.my, r*r);
+    }
+  }
+  const inCity=(mx,my)=>{
+    for(let i=0;i<CITYZ.length;i+=3){
+      const dx=mx-CITYZ[i], dy=my-CITYZ[i+1];
+      if(dx*dx+dy*dy < CITYZ[i+2]) return true;
+    }
+    return false;
+  };
+  const hideAt=q => !!(q.tun || inCity(q.x,q.y));
+
   for(const T of TRAINS){
     /* 停在站裡就不畫。⚠ 車站在市區外緣、城蓋不住它，所以這是**刻意**讓它消失：
        一列停著不動的車跟一段軌道旁的雜物沒兩樣，反而讓「偶爾撞見一列在跑的車」
@@ -5361,24 +5399,30 @@ function drawTrains(S,scaleH,horizon,sinp,cosp){
       const s1=T.s - T.dir*(c*TRAIN_PITCH), s2=s1 - T.dir*TRAIN_CAR;
       let q1=trainAt(T, s1), q2=trainAt(T, s2);
       if(!q1||!q2) continue;
-      if(q1.tun && q2.tun) continue;                 // 整節都在山肚子裡
-      if(q1.tun || q2.tun){
-        /* 跨洞口的那一節：把在洞裡的那一端收回洞口，車就是**滑進洞裡**
+      /* 「這一端該不該藏起來」：在山肚子裡（隧道）**或**已經開進市區。
+         ⚠ 進城與進隧道走**同一條路徑**（ver -300，Ray 指定「火車進城要逐節
+           消失」）—— 兩者都是「車一節一節沒入某個東西」，寫成兩套只會分岔。
+           先前進城是 `if(T.wait>0) continue` 整列瞬間不見，那正是 -293 在隧道
+           上修掉的同一個病。 */
+      const h1=hideAt(q1), h2=hideAt(q2);
+      if(h1 && h2) continue;                         // 整節都藏起來了
+      if(h1 || h2){
+        /* 跨界的那一節：把已經沒入的那一端收回交界，車就是**滑進去**
            而不是整節憑空不見。
-           ⚠ 二分找洞口而不是直接丟掉這一節 —— 一節車 30 世界單位，
+           ⚠ 二分找交界而不是直接丟掉這一節 —— 一節車 30 世界單位，
              整節丟掉在近處是看得出來的一次跳。
            ⚠ 解析度的上限是折線的節距（tun 旗標是逐節點存的，見 trainAt），
              約 20 世界單位，比一節車短，所以收得進去。再細也沒有資料。 */
-        let a = q1.tun ? s2 : s1;                    // 洞外那一端
-        let b = q1.tun ? s1 : s2;                    // 洞內那一端
+        let a = h1 ? s2 : s1;                        // 還看得到的那一端
+        let b = h1 ? s1 : s2;                        // 已經沒入的那一端
         for(let it=0; it<6; it++){
           const m=(a+b)*0.5, qm=trainAt(T,m);
           if(!qm) break;
-          if(qm.tun) b=m; else a=m;
+          if(hideAt(qm)) b=m; else a=m;
         }
         const qe=trainAt(T,a);
         if(!qe) continue;
-        if(q1.tun) q1=qe; else q2=qe;
+        if(h1) q1=qe; else q2=qe;
       }
       const p1=proj(q1.x,q1.y,q1.h), p2=proj(q2.x,q2.y,q2.h);
       if(p1&&p2) seats.push({ax:p1.x,ay:p1.y,bx:p2.x,by:p2.y,
@@ -7307,6 +7351,47 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
         }
         CFB.setTransform(1,0,0,1,0,0);
         CFB.globalAlpha=1;              // ⚠ CFB 是共用緩衝，一定要還回去
+      }
+      /* ── 白色底圖的側面：把已經畫好的內容**往下抹**出 PLATE_THICK 的厚度 ──
+         底圖抬到地面之上 PLATE_THICK（見 PODIUM_CLEAR），這裡補上它的側面，
+         否則那張紙會浮在地上。
+         ⚠ 作法是對緩衝自己做 `destination-over` 的向下位移：只填**還透明的**
+           像素，所以既長出側面，也順手把平面圖／量體之間漏掉的破洞用它正上方
+           的顏色補起來 —— Ray 要的「蓋過貼圖破出」就是這一步。
+         ⚠ 用**倍增**位移（1,2,4,8…）而不是逐像素：k 個像素只要 log2(k) 次貼圖。
+           每一趟都把已填滿的高度加倍，覆蓋是連續的、不會留條紋。
+         ⚠ 位移量要換算到緩衝座標：世界高 h 在深度 z 的螢幕位移是
+           (h/z)·scaleH·syk，再乘 ky 進緩衝。z 用城心深度就夠 —— 厚度只有 50，
+           跨越整座城的透視差在這個尺度上看不出來。
+         ⚠ 夾上限：貼近城時 50 個單位可以投影成上百像素，那會把城下緣抹成
+           一條長條。24 個緩衝像素已經足夠讀成「一塊有厚度的白石台」。 */
+      {
+        const dpx=o.s.hasPodium?Math.min(24, Math.round(PLATE_THICK/Math.max(60,o.z)*scaleH*syk*ky)):0;
+        if(dpx>0){
+          /* 側面要**實色**，不能直接把城的內容往下抹 —— 抹出來是一條條垂直
+             條紋（每一欄各自複製它正上方的顏色），讀起來像拖影不像石台。
+             作法：先在暫存畫布上取城的**剪影**（`source-in` 一次填滿），
+             再把那張剪影往下疊。 */
+          if(!plateFB || plateFB.width!==cityFB.width || plateFB.height!==cityFB.height){
+            plateFB=document.createElement('canvas');
+            plateFB.width=cityFB.width; plateFB.height=cityFB.height;
+            PFB=plateFB.getContext('2d');
+          }
+          PFB.setTransform(1,0,0,1,0,0);
+          PFB.globalCompositeOperation='source-over';
+          PFB.clearRect(0,0,bwp,bhp);
+          PFB.drawImage(cityFB,0,0,bwp,bhp,0,0,bwp,bhp);
+          PFB.globalCompositeOperation='source-in';
+          PFB.fillStyle=o.s.plateCol||'rgba(214,206,186,1)';
+          PFB.fillRect(0,0,bwp,bhp);
+          PFB.globalCompositeOperation='source-over';
+          /* ⚠ 倍增位移（1,2,4…）：k 個像素只要 log2(k) 次貼圖，而且每一趟都把
+             已填滿的高度加倍，覆蓋連續、不留條紋。 */
+          CFB.globalCompositeOperation='destination-over';
+          for(let d=1; d<=dpx; d*=2)
+            CFB.drawImage(plateFB, 0,0,bwp,bhp, 0,Math.min(d,dpx),bwp,bhp);
+          CFB.globalCompositeOperation='source-over';
+        }
       }
       /* 依光線上色：同 drawShip 那套。素材本身已經把「固定的色調對齊」烘進去
          （build_city.py 的 SAT/VAL），這裡只加隨時間變的部分。
