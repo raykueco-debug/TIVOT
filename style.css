@@ -1179,9 +1179,42 @@
   /* 壓暗：說話者原色，其餘 brightness(.38) saturate(.75)。
      ⚠ CSS filter 天生不透明 —— 那條「不可用透明度代替」的警告是給 canvas 版的。 */
   .story-portrait.dim{filter:brightness(.38) saturate(.75);}
+  /* 背景：鋪滿、cover。⚠ 在立繪**之下**（z-index 0）—— 立繪要站在場景裡。 */
+  #storyBg{position:absolute;inset:0;z-index:0;width:100%;height:100%;
+    object-fit:cover;display:none;pointer-events:none;}
+  #storyBg.on{display:block;}
+  /* CG：全屏插圖，蓋過立繪。
+     ⚠ object-fit **cover** 不是 contain：插圖是直幅、畫面是直幅，contain 會在
+       上下留黑邊，讀起來像「貼了一張圖」而不是「鏡頭切到那裡」。 */
   #storyCg{position:absolute;inset:0;z-index:2;width:100%;height:100%;
-    object-fit:contain;display:none;pointer-events:none;}
+    object-fit:cover;display:none;pointer-events:none;}
   #storyCg.on{display:block;}
+  /* CG 由下往上平移：用 object-position 推，不用 transform —— transform 會把
+     cover 的裁切一起搬走，邊緣會露出底色。 */
+  #storyCg.pan-up{animation:storyPanUp 2.6s ease-out forwards;}
+  @keyframes storyPanUp{ from{object-position:50% 100%;} to{object-position:50% 0%;} }
+  /* 暗調 CI 插入：半身/全身圖從側邊切進來，壓暗到只剩剪影感（Ray 指定「暗調」）。
+     ⚠ 壓暗用 filter 不用 opacity（CLAUDE.md §6.5：壓暗必須不透明）。 */
+  #storyCi{position:absolute;inset:0;z-index:3;width:100%;height:100%;
+    object-fit:cover;display:none;pointer-events:none;
+    filter:brightness(.30) saturate(.65) contrast(1.15);
+    transform:translateX(18%);opacity:0;
+    transition:transform .38s cubic-bezier(.16,1,.3,1),opacity .38s ease;}
+  #storyCi.on{display:block;transform:translateX(0);opacity:1;}
+  /* 特效層：槍擊命中點畫在這裡（CG 之上、對話框之下）。 */
+  #storyFx{position:absolute;inset:0;z-index:3;pointer-events:none;overflow:hidden;}
+  .story-hit{position:absolute;width:7px;height:7px;margin:-3.5px 0 0 -3.5px;border-radius:50%;
+    background:radial-gradient(circle,#fff 0 30%,#ffd76a 45%,rgba(255,150,40,0) 70%);
+    animation:storyHit .22s ease-out forwards;}
+  @keyframes storyHit{ from{transform:scale(.3);opacity:1;} to{transform:scale(2.4);opacity:0;} }
+  /* 畫面抖動：短、快、幅度小 —— 大幅度會讀成「畫面壞了」而不是「被打」。 */
+  #storyStage.shake{animation:storyShake .42s cubic-bezier(.36,.07,.19,.97);}
+  @keyframes storyShake{
+    10%{transform:translate(-4px,2px);}  20%{transform:translate(5px,-3px);}
+    30%{transform:translate(-6px,-2px);} 40%{transform:translate(4px,3px);}
+    50%{transform:translate(-3px,2px);}  60%{transform:translate(4px,-2px);}
+    70%{transform:translate(-2px,1px);}  80%{transform:translate(2px,-1px);}
+    100%{transform:translate(0,0);} }
   /* 全畫面推進層：點任何一處推一句（退出鈕除外，它自己 stopPropagation）。 */
   #storyTouch{position:absolute;inset:0;z-index:3;background:transparent;touch-action:none;}
   #storyExit{position:absolute;z-index:5;top:calc(env(safe-area-inset-top,0px) + 10px);right:12px;}

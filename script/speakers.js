@@ -20,6 +20,13 @@ export const SPEAKERS = {
   ANYA:     { name:'安雅',   art:'anya'     },
   SORANA:   { name:'索拉娜', art:'sorana'   },
   LUNA:     { name:'璐娜',   art:'luna'     },
+  /* 璐娜莉亞：第四騎士團團長。⚠ 目前只以 **CG 與暗調 CI 插入**登場，不站立繪
+     —— 所以 art 是 null。真的要讓她在對話裡站台，得先量取景值（見下方 ART 的
+     警告），不要隨便指一張圖。 */
+  LUNARIA:  { name:'璐娜莉亞', art:null },
+  /* 尚未表明身分時用這個 id。⚠ 不要用 LUNARIA 然後把 name 蓋成「？？？」——
+     顯示名是查表來的，蓋名會讓「這一句是誰講的」在資料上消失。 */
+  UNKNOWN:  { name:'？？？',   art:null },
 };
 
 /* ══ 立繪素材 ＋ 取景實測值 ══
@@ -55,8 +62,18 @@ export const SPEAKERS = {
 export const ART = {
   renna: { cm:169, eye:32, fx:0.519, top:1, bot:1521,
            side:'L', alt:null, base:'resources/SI/Renna_SI_front.webp', expr:{} },
+  /* ⚠⚠ 諾薇兒的表情差分是**不同姿勢**（跑、畏縮、驚恐、絕望、驚訝），不是換臉。
+       所以 top/bot/fx **對它們是不準的** —— 目前沿用 front 那一組，人會偏。
+       正式上線前每一張都要照 CLAUDE.md §6.5 重量四個值，並改成逐圖帶自己的
+       取景（ART 目前一個角色只有一組，屆時要擴成 expr 各自帶）。
+       先接上去是為了讓這一幕跑得起來、看得到流程。 */
   nouvelle: { cm:165, eye:40, fx:0.564, top:1, bot:1535,
-           side:'L', alt:null, base:'resources/SI/Nouvelle_SI_front.webp', expr:{} },
+           side:'L', alt:null, base:'resources/SI/Nouvelle_SI_front.webp',
+           expr:{ run:      'resources/SI/Nouvelle_SI_Run.webp',
+                  cringe:   'resources/SI/Nouvelle_SI_Cringe.webp',
+                  scared:   'resources/SI/Nouvelle_SI_Scared.webp',
+                  desperate:'resources/SI/Nouvelle_SI_Desperate.webp',
+                  surprise: 'resources/SI/Nouvelle_SI_Surprise.webp' } },
   /* ⚠ 索拉娜用 **side** 那張：front 橫向佔 78%，兩人同台一定疊；側面只佔 69%。 */
   sorana: { cm:176, eye:27, fx:0.527, top:4, bot:1522,
            side:'R', alt:null, base:'resources/SI/Sorana_SI_side.webp', expr:{} },

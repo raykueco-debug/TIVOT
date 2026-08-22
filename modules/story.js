@@ -243,6 +243,101 @@ function typeFinish(el, text){
   el.innerHTML = decorateLine(subst(text));
 }
 
+/* ══ 演出層（ver -315）══════════════════════════════════════════════
+   line 上的**演出欄位**，全部「只寫變化」：省略＝沿用上一句的狀態。
+
+     bg:'HolyseeDungeonWhole'   背景（resources/background/*.webp）。bg:null 清掉
+     cg:'001_Nouvelle_Fell'     全屏插圖（resources/illustration/*.webp）。cg:null 清掉
+     cgPan:'up'                 這一句的 CG 由下往上平移
+     ci:'Lunaria_SI_Armed'      暗調 CI 插入（resources/SI/*.webp）。ci:null 收掉
+     bgm:'PerituneMaterial_Crisis_loop'   背景音樂（resources/audio/bgm/*.m4a）
+                                bgm:null 停掉。與 bg 一樣是**持續**狀態。
+     se:'se_steps'              音效；也可以給陣列做多發：
+                                se:[{n:'se_weapon_reload'},{n:'se_weapon_reload',delay:500}]
+     shake:true                 畫面抖一下
+     fx:'gunfire'               在 CG 上灑一串槍擊命中點
+
+   ⚠ 這些是**演出**不是狀態機：`shake`／`fx`／`se` 是一次性的（每次演到就放），
+     `bg`／`cg`／`ci` 是持續的（沿用到下一次改變）。混在一起寫會很難讀，
+     所以分成 applyPersist 與 fireOneShot 兩支。 */
+const BG_DIR='resources/background/', CG_DIR='resources/illustration/', SI_DIR='resources/SI/';
+/* ⚠ BGM 逐支列出實際路徑，理由同 SE_SRC（bgm/ 裡 mp3 與 m4a 都有）。 */
+const BGM_SRC={
+  crisis: 'resources/audio/bgm/PerituneMaterial_Crisis_loop.m4a',
+};
+let stageBg=null, stageCg=null, stageCi=null, stageBgm=null;   // 目前的持續狀態
+
+function setImg(el, src){
+  if(!el) return;
+  if(src){ if(el.getAttribute('src')!==src) el.src=src; el.classList.add('on'); }
+  else   { el.classList.remove('on'); }
+}
+function applyPersist(line){
+  if(line.bg!==undefined){ stageBg=line.bg; setImg($('storyBg'), line.bg?BG_DIR+line.bg+'.webp':''); }
+  if(line.cg!==undefined){ stageCg=line.cg; setImg($('storyCg'), line.cg?CG_DIR+line.cg+'.webp':''); }
+  if(line.ci!==undefined){ stageCi=line.ci; setImg($('storyCi'), line.ci?SI_DIR+line.ci+'.webp':''); }
+  /* BGM：⚠ 同一首重複指定不會重播（playBgm 自己擋掉），所以每一句都寫也無妨；
+     但照「只寫變化」的規矩，正常只在換曲那一句寫。 */
+  if(line.bgm!==undefined && line.bgm!==stageBgm){
+    stageBgm=line.bgm;
+    try{
+      if(line.bgm){ const src=BGM_SRC[line.bgm];
+        if(src) SFX.playBgm(src, {fadeInMs:800, volume:0.62});
+        else { const tag='bgm/'+line.bgm;
+          if(!missingExpr.has(tag)){ missingExpr.add(tag); console.info('[story] 沒有這首 BGM：', line.bgm); } }
+      }else SFX.stopBgm(900);
+    }catch(_){}
+  }
+  /* 平移是**這一句**的效果，不沿用 —— 每次都要先拿掉再加，否則第二次不會重播
+     （同一個 class 還在，animation 不會重新開始）。 */
+  const cg=$('storyCg');
+  if(cg){ cg.classList.remove('pan-up');
+    if(line.cgPan==='up'){ void cg.offsetWidth; cg.classList.add('pan-up'); } }
+}
+/* 音效：**逐支列出實際路徑**，不要用字串拼副檔名 —— 這個資料夾裡 wav/mp3/m4a
+   三種都有，拼出來的路徑會靜默 404（audio.js 載不到只會 resolve(null)，不報錯）。 */
+const SE_SRC={
+  se_steps:         'resources/audio/se/se_steps.wav',
+  se_weapon_reload: 'resources/audio/se/se_weapon_reload.mp3',
+  se_mg_squall:     'resources/audio/se/se_weapon_mg_squall.mp3',
+};
+function playSe(spec){
+  const one=(n,delay)=>{ const src=SE_SRC[n];
+    if(!src){ const tag='se/'+n;
+      if(!missingExpr.has(tag)){ missingExpr.add(tag); console.info('[story] 沒有這個音效：', n); }
+      return; }
+    const go=()=>{ try{ SFX.play(src); }catch(_){} };
+    if(delay>0) setTimeout(go, delay); else go(); };
+  if(!spec) return;
+  if(Array.isArray(spec)) spec.forEach(x=> typeof x==='string' ? one(x,0) : one(x.n, x.delay||0));
+  else one(spec, 0);
+}
+/* 槍擊命中點：在 CG 上灑一串，密而快。⚠ 用**逐發延遲**而不是一次全灑：
+   一次全灑讀起來是「一片斑點」，逐發才讀得出「連射」。 */
+function fireHits(n, ms){
+  const box=$('storyFx'); if(!box) return;
+  box.innerHTML='';
+  const W=box.clientWidth||360, H=box.clientHeight||640;
+  for(let i=0;i<n;i++){
+    setTimeout(()=>{
+      const d=document.createElement('div'); d.className='story-hit';
+      /* 集中在畫面中上段（那是插圖裡聖徒的位置），不要灑滿全畫面。 */
+      d.style.left=Math.round(W*(0.18+Math.random()*0.64))+'px';
+      d.style.top =Math.round(H*(0.12+Math.random()*0.52))+'px';
+      box.appendChild(d);
+      setTimeout(()=>d.remove(), 260);
+    }, Math.round(ms*i/n));
+  }
+}
+function fireOneShot(line){
+  if(line.se) playSe(line.se);
+  if(line.shake){
+    const st=$('storyStage');
+    if(st){ st.classList.remove('shake'); void st.offsetWidth; st.classList.add('shake'); }
+  }
+  if(line.fx==='gunfire') fireHits(26, 620);
+}
+
 /* ══ 演一句 ══ */
 function renderLine(){
   const line = cur.lines[lineIdx];
@@ -253,6 +348,9 @@ function renderLine(){
     console.info('[story] 遇到戰鬥插入點，本輪尚未接戰鬥系統，跳過：', line.battle);
     return advance();
   }
+
+  applyPersist(line);
+  fireOneShot(line);
 
   const who = (line.portrait && line.portrait.char) || line.speaker;
   const p   = line.portrait || {};
@@ -271,16 +369,7 @@ function renderLine(){
   const spA=artOf(line.speaker), spSide=(spA&&spA.side)||'L';
   highlight(slot[spSide]===line.speaker ? spSide : side);
 
-  /* CG：全屏插圖蓋過立繪。素材不存在時不顯示（避免破圖），只記一筆。 */
-  const cgEl=$('storyCg');
-  if(cgEl){
-    if(line.cg){
-      const tag='cg/'+line.cg;
-      if(!missingExpr.has(tag)){ missingExpr.add(tag);
-        console.info('[story] CG 尚無素材，暫不顯示：', tag); }
-      cgEl.classList.remove('on');
-    }else cgEl.classList.remove('on');
-  }
+  /* CG／背景／CI 由 applyPersist 處理（上面），這裡不再重複。 */
 
   const nm=$('storyName'), tx=$('storyText');
   if(nm) nm.textContent = nameOf(line.speaker);

@@ -205,3 +205,52 @@ WebAudio 解碼所以 mp3/m4a/wav 通吃。改 `voiceChain` 或增益就要重�
 3. `stash@{0}`（launch.json，本機 `python3` vs 遠端 `python`）—— 確認哪個可用後 drop。
 4. 未追蹤的 `NPC/`、`resources/illustration/` —— 進版控還是進 `.gitignore`。
 5. 抖動的殘量（見 `flight/HANDOFF.md` D 節「還沒查的」）。
+
+---
+
+# 交接 · `ver -315`（劇情播放器擴充：背景／CG／暗調 CI／音效／震動／平移；地宮第一幕）
+
+## A. story.js 新增的「演出層」
+
+line 上的演出欄位，全部**只寫變化**（省略＝沿用上一句）：
+
+    bg:'HolyseeDungeonWhole'   背景（resources/background/*.webp），bg:null 清掉
+    cg:'001_Nouvelle_Fell'     全屏插圖（resources/illustration/*.webp），cg:null 清掉
+    cgPan:'up'                 這一句的 CG 由下往上平移
+    ci:'Lunaria_SI_Armed'      暗調 CI 插入（resources/SI/*.webp），ci:null 收掉
+    bgm:'crisis'               背景音樂（BGM_SRC 查表），bgm:null 停掉
+    se:'se_steps'              音效；多發寫成 [{n:'x'},{n:'x',delay:500}]
+    shake:true                 畫面抖一下
+    fx:'gunfire'               在 CG 上灑一串槍擊命中點
+
+- ⚠ **持續**（bg/cg/ci）與**一次性**（se/shake/fx）分成 `applyPersist` 與
+  `fireOneShot` 兩支處理。混在一起寫會很難讀，而且一次性的容易被誤沿用。
+- ⚠ **平移每次都要先移除 class 再加**：同一個 class 還在的話 animation 不會
+  重新開始，第二次就不會播。`void el.offsetWidth` 那一行是刻意的。
+- ⚠ **音效逐支列出實際路徑**（`SE_SRC`），不要拼副檔名 —— `resources/audio/se/`
+  裡 wav／mp3／m4a 三種都有，拼錯會**靜默 404**（audio.js 載不到只 resolve(null)，
+  不會報錯，你會以為是音量問題）。
+- ⚠ CG 用 `object-fit:cover` 不是 contain：插圖與畫面都是直幅，contain 會上下
+  留黑邊，讀起來像「貼了一張圖」而不是「鏡頭切過去」。
+- ⚠ 暗調 CI 的壓暗用 `filter` 不用 `opacity`（CLAUDE.md §6.5：壓暗必須不透明）。
+
+## B. 地宮第一幕（`dungeon_chase` → `dungeon_lunaria`）
+
+Ray 的第一段正式稿。逐句驗過：背景／跑姿／腳步聲 → 跌倒插圖 → 上膛 ×2（隔
+0.5 秒）→ 戰鬥插入點（跳過）→ 聖徒插圖 → 暗調 CI「讓開。」→ 槍擊 26 發＋抖動
+→ 回地宮 → 璐娜莉亞插畫由下往上平移 → 結束交還控制權。
+
+## C. ⚠ 三個待補，不要當成完成品
+
+1. **諾薇兒的五張表情差分是「不同姿勢」不是換臉** —— `top/bot/fx` 還沒逐張量，
+   目前沿用 front 那一組，人會偏。要照 CLAUDE.md §6.5 逐張重量，而且 `ART` 現在
+   一個角色只有一組取景，屆時要擴成 **expr 各自帶自己的取景**。
+2. **彈殼落地音沒有這個素材**。原稿指定了，`resources/audio/se/` 裡沒有。
+   我在密集槍擊那一拍暫用 `se_mg_squall`（重機槍連射），那是**我加的**，待確認。
+3. **戰鬥沒接線**。`{battle:'tutorial'}` 目前由 story.js 跳過並記 console。
+4. ⚠ `Nouvelle_SI_front.webp` 這次被**重新轉檔**了 —— Ray 放了一張新的
+   `Nouvelle_SI_front.png` 進來。如果那張畫有改構圖，`speakers.js` 與
+   `flight/index.html` 兩邊的 `top/bot/fx` 都要重量（同一組數字、兩個地方）。
+
+⚠ `MAIN_ENTRY` 暫時指到 `dungeon_chase` 方便驗這一幕，正式串主線要改回
+  `prologue_audience` 或把地宮段接進鏈裡。
