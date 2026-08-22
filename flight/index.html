@@ -825,7 +825,6 @@ let RAILBR=null;                              // Uint8Array：石橋橋面（鐵
    ⚠ 只存粗粒度：軌道方向變化很慢，359×200 一個 byte＝72KB。逐地圖像素要 2.6MB，
      而那是 BIOME／ROADW 那一級的量，不值得。 */
 let RAILDIR=null, RD_W=0, RD_H=0;
-let RAIL_PORTALS=[];                          // 隧道洞口：{x,y,h,dx,dy}（地圖座標＋切線）
 let RAIL_PATHS=[];                            // 折線（地圖座標），地圖畫面與火車都要用
 
 /* 成本場：一步的代價。爬坡是主要成本 —— 這是讓路自己去繞河谷的關鍵。 */
@@ -1269,28 +1268,16 @@ function buildRails(){
       for(let t=0;t<=n;t++) stampDisc(RAILBR, ax+(bx-ax)*t/n, ay+(by-ay)*t/n, 2.6);
     }
   }
-  /* 洞口：**就一個拱形的黑洞**（Ray 指定，不要複雜）。
-     ⚠ 先前是在地表蓋一塊石材。那是**貼在地上的**，從空中看是一小片灰色補丁 ——
-       洞口是一個**立面**，貼在地上永遠讀不出「這裡有個洞」。所以改成跟火車一樣
-       在 3D 那一層畫：站在軌道上、面朝洞外的一個拱。
-     這裡只收位置與朝向，實際畫在 drawTunnelPortals。 */
-  RAIL_PORTALS=[];
+  /* 隧道段數只留著當診斷用（洞口本身已於 ver -299 移除，見 drawTrains）。 */
   let tunnels=0;
   for(const pts of paths){
     if(!pts.tun) continue;
     for(let k=1;k<pts.length;k++){
       if(pts.tun[k]===pts.tun[k-1]) continue;
       tunnels+=pts.tun[k]?1:0;
-      const m=pts.tun[k]?k-1:k;                    // 洞口在山**外**那一格
-      /* 朝向取這一格的軌道切線（洞口面與軌道垂直）。 */
-      const a=pts[Math.max(0,m-1)], b=pts[Math.min(pts.length-1,m+1)];
-      const L=Math.hypot(b[0]-a[0], b[1]-a[1])||1;
-      RAIL_PORTALS.push({ x:pts[m][0], y:pts[m][1], h:pts.prof[m],
-                          dx:(b[0]-a[0])/L, dy:(b[1]-a[1])/L });
     }
   }
   window.__tunnels=tunnels;
-  window.__portals=RAIL_PORTALS.length;
   { let n=0; for(let i=0;i<RAILBR.length;i++) if(RAILBR[i]>40) n++; window.__railBridge=n; }
   window.__rails=paths.length;
 }
@@ -5189,16 +5176,11 @@ const TRAIN_DWELL = [30,90];    // 終點站停靠秒數的範圍＝發車間隔
    壓整列的長度就等於等比放大，長寬比不會被翻過來。
    ⚠ 放大只在最後一小段距離內發生：206 世界單位的車身要 22 像素，換算 z≈1753，
      而剔除面在 2232 —— 最大只放大 1.27 倍，近距離完全是真實投影。 */
-/* 洞口的剔除距離。⚠ 比火車遠：洞口是**地景**，一直在那裡；火車是偶爾經過的
-   東西，遠了看不清就不必畫。洞口太早剔掉的話，遠看那條軌道會莫名其妙斷一截。 */
-const CUT_PORTAL_K = 0.9;
 const TRAIN_MIN_PX = 22;        // 整列車的最小螢幕長度
 const TRAIN_MIN_W  = 1.6;       // 車身最小寬（螢幕像素）
 /* 車高＝車寬的幾倍。真實車廂高寬比約 1.2，但從空中俯看時「高」是往螢幕上方
    擠出來的那一截 —— 給足了才看得出是箱子而不是色帶。 */
 const TRAIN_BOX_H  = 0.85;
-/* 隧道洞口（世界單位）。比車廂寬一點是應該的 —— 車寬 17，洞得裝得下它還有餘裕。 */
-const PORTAL_W = 30, PORTAL_H = 34;
 const TRAIN_SPAN   = TRAIN_CARS*TRAIN_CAR + (TRAIN_CARS-1)*TRAIN_GAP;   // 車身總長（世界單位）
 /* ── 煙：**一朵一朵的雲塊**，不是一條連續的煙柱 ─────────────────────
    ⚠ 密集取樣（0.18 秒一團、18 團）畫出來是一根**實心白柱** —— 使用者回報的
@@ -5310,13 +5292,10 @@ function trainAt(T,s){
 /* 3D 視窗裡的火車。投影與 drawPlaces 同一套；遮擋走 clipByTerrainDepth
    （山擋在前面時車要被吃掉，不能浮在山坡上）。 */
 function drawTrains(S,scaleH,horizon,sinp,cosp){
-  /* ⚠ 不能因為「沒有火車」就整支 return —— 隧道洞口是**地景**，它跟有沒有車
-     完全無關（而且大部分時間車都停在站裡）。 */
-  if(!TRAINS.length && !RAIL_PORTALS.length) return;
+  if(!TRAINS.length) return;
   const sxk=W/BW, syk=VIEWH/BH;
-  const CUT_PORTAL=ZFAR*CUT_PORTAL_K;
   /* 世界座標 → 螢幕。回 null＝在身後或太偏，不必畫。
-     far＝這個東西的剔除距離（洞口比火車遠，見 CUT_PORTAL_K）。 */
+     far＝這個東西的剔除距離（不給就用火車的預設）。 */
   const proj=(mx,my,h,far)=>{
     const dx=mx*MAP_SCALE-cam.x, dy=my*MAP_SCALE-cam.y;
     const z=dx*(-sinp)+dy*(-cosp);
@@ -5327,42 +5306,19 @@ function drawTrains(S,scaleH,horizon,sinp,cosp){
              y:(((cam.alt-h)/z + z*curvAt(sv))*scaleH+horizon)*syk,
              z, k:(W/(2*z)) };                     // k＝1 世界單位有幾個螢幕像素
   };
-  /* ── 隧道洞口：一個拱形的黑洞 ──────────────────────────────────
-     ⚠ 洞口是**立面**，不能貼在地上。先前在地表蓋石材，從空中看只是一小片灰色
-       補丁，讀不出「這裡有個洞」。改成站在軌道上、面朝洞外的一個拱。
-     ⚠ 寬度用軌道的**垂直方向**取兩點各自投影（同車廂的作法），拱面才會跟著
-       軌道轉；用固定的螢幕橫向會變成無論從哪看都正對著你。
-     ⚠ 只填黑、不描邊、不畫石框 —— Ray 指定「就一個拱型的黑洞就好」。
-       山體本身就是深色的，一個更黑的拱已經足夠讀成洞。 */
-  for(const P of RAIL_PORTALS){
-    const hw=PORTAL_W*0.5/MAP_SCALE;              // 半寬，換回地圖座標
-    const nx=-P.dy*hw, ny=P.dx*hw;
-    const pa=proj(P.x+nx, P.y+ny, P.h, CUT_PORTAL),
-          pb=proj(P.x-nx, P.y-ny, P.h, CUT_PORTAL);
-    if(!pa||!pb) continue;
-    const wpx=Math.hypot(pa.x-pb.x, pa.y-pb.y);
-    if(wpx<2.5) continue;                          // 太小就不畫
-    const fadeP=clamp((CUT_PORTAL-pa.z)/(ZFAR*0.16),0,1);
-    if(fadeP<=0.02) continue;
-    const k=(pa.k+pb.k)*0.5;
-    const straight=Math.max(0.5,(PORTAL_H-PORTAL_W*0.5)*k);   // 直壁那一段
-    const rise=PORTAL_W*0.5*k*1.12;                            // 拱頂再往上多少
-    ctx.save();
-    clipByTerrainDepth(pa.z, sxk, syk,
-      Math.floor(Math.min(pa.x,pb.x)/sxk)-2, Math.ceil(Math.max(pa.x,pb.x)/sxk)+2);
-    ctx.globalAlpha=fadeP;
-    ctx.beginPath();
-    ctx.moveTo(pa.x, pa.y);
-    ctx.lineTo(pa.x, pa.y-straight);
-    ctx.quadraticCurveTo((pa.x+pb.x)*0.5, (pa.y+pb.y)*0.5-straight-rise,
-                         pb.x, pb.y-straight);
-    ctx.lineTo(pb.x, pb.y);
-    ctx.closePath();
-    ctx.fillStyle='#0a0a0c';
-    ctx.fill();
-    ctx.restore();
-    ctx.globalAlpha=1;
-  }
+  /* ── 隧道洞口：**已移除**（ver -299，Ray 指定）───────────────────────
+     曾經有一個站在軌道上、面朝洞外的拱形黑洞。拿掉的理由：它是一個**懸空的
+     平面**，貼不到真正的山壁上 —— 地形是逐欄光柵化的高度場，山壁的位置每欄
+     都不同，而洞口只有一個深度、一個朝向，兩者對不齊，看起來就是浮在山前面
+     的一片黑。要貼準得逐欄去找山壁與軌道的交線，代價遠超過它的價值。
+     ⚠ 也不要退回「在地表蓋一塊石材」那一版：那是貼在地上的，從空中看是一小片
+       灰色補丁，讀不出「這裡有個洞」。兩條路都試過了。
+     現在的行為：隧道段**不鋪地表軌道**（stampPaths），火車逐節沒入山體
+     （見下方進隧道那段）—— 軌道走到山腳自然中斷，車就開進去了。
+     ⚠ 另一條路「強迫火車繞山走」實測過**不可行**：把 RAIL_TUNNEL 由 6 拉到
+       1000，隧道只從 6 段降到 4 段，而幹線長度暴增（1929→2409、9423→12449，
+       +25~32%），山區變成蛇行。原因是隧道**不是路徑選出來的**：縱斷面受坡度
+       限制，地面高過設計高程 TUNNEL_MIN 就判定在山裡，調成本消不掉它。 */
 
   for(const T of TRAINS){
     /* 停在站裡就不畫。⚠ 車站在市區外緣、城蓋不住它，所以這是**刻意**讓它消失：
