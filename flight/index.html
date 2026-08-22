@@ -452,11 +452,15 @@ const SETTLEMENTS = [
          r     全平半徑，以圖的半寬為單位。1.05 讓台座比平面圖再寬一點，
                平面圖的邊緣才不會正好落在坡度轉折上（Ray：「底部加厚」）。
          skirt 裙邊寬度（地圖像素），往外平滑接回原地形，避免城緣一道崖。 */
-    /* lift：台座高出周圍地形多少。0 會與地形同高 → 深度裁切打平手 → 斑駁破洞。
-       ⚠ ver -297：12 不夠。Ray 回報「特定角度經過上空時廣場有洞／裂縫」，
-         12 個世界單位在近距離只有幾個螢幕像素，逐欄的地形深度裁切仍會咬到
-         城的邊緣。加到 50（約一節車廂高的 1.7 倍），台座這才真的立起來。 */
-    podium:{ r:1.05, skirt:8, lift:50 },
+    /* podium：把 footprint 整平成一塊實心台地（見 buildRelief 的台座段）。
+       ⚠⚠ **lift 回到 0**（ver -301，Ray 指定「把土包整平，墊高的只有建築」）。
+         -294~-297 一路把 lift 加到 50，是因為我把「加厚」誤解成墊高**地形**。
+         那條路是錯的：墊高地形只是在地圖上長出一個土包，破圖照舊。
+         真正該墊高的是**城的底圖**（PLATE_THICK，見 buildSettlements），
+         地形只要**平**就好，不必比周圍高。
+       ⚠ 整平仍然非開不可：聖王廳蓋在起伏最大的一塊地上，不整平的話高地會頂穿
+         廣場中央的白石地板。 */
+    podium:{ r:1.05, skirt:8, lift:0 },
     wallCol:'rgba(226,219,198,0.50)' },
   /* planW ＝ 圖寬代表幾個世界單位。城核約佔圖寬的 3/4，
               半徑 440 → 440*2/0.75 ≈ 1170，取 1250 讓郊區有餘。
@@ -7171,6 +7175,38 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
         }
       }
 
+      {
+        const dpx=o.s.hasPodium?Math.min(24, Math.round(PLATE_THICK/Math.max(60,o.z)*scaleH*syk*ky)):0;
+        if(dpx>0){
+          /* ⚠⚠ 這一段必須排在**量體層之前**（ver -301）。排在後面的話剪影會把
+             街廓的**塔**一起框進去，往下擠出就在每一根塔底下拉出一根淺色柱子
+             —— 那就是 Ray 回報的「奇怪的條紋」。側面只該由**地面那張底圖**
+             擠出來，塔是站在底圖上的東西，不參與。
+             側面要**實色**，不能直接把城的內容往下抹 —— 抹出來是一條條垂直
+             條紋（每一欄各自複製它正上方的顏色），讀起來像拖影不像石台。
+             作法：先在暫存畫布上取底圖的**剪影**（`source-in` 一次填滿），
+             再把那張剪影往下疊。 */
+          if(!plateFB || plateFB.width!==cityFB.width || plateFB.height!==cityFB.height){
+            plateFB=document.createElement('canvas');
+            plateFB.width=cityFB.width; plateFB.height=cityFB.height;
+            PFB=plateFB.getContext('2d');
+          }
+          PFB.setTransform(1,0,0,1,0,0);
+          PFB.globalCompositeOperation='source-over';
+          PFB.clearRect(0,0,bwp,bhp);
+          PFB.drawImage(cityFB,0,0,bwp,bhp,0,0,bwp,bhp);
+          PFB.globalCompositeOperation='source-in';
+          PFB.fillStyle=o.s.plateCol||'rgba(214,206,186,1)';
+          PFB.fillRect(0,0,bwp,bhp);
+          PFB.globalCompositeOperation='source-over';
+          /* ⚠ 倍增位移（1,2,4…）：k 個像素只要 log2(k) 次貼圖，而且每一趟都把
+             已填滿的高度加倍，覆蓋連續、不留條紋。 */
+          CFB.globalCompositeOperation='destination-over';
+          for(let d=1; d<=dpx; d*=2)
+            CFB.drawImage(plateFB, 0,0,bwp,bhp, 0,Math.min(d,dpx),bwp,bhp);
+          CFB.globalCompositeOperation='source-over';
+        }
+      }
       /* ── 街廓量體 ─────────────────────────────────────────────
          上面那層已經把平面圖平貼在地上了。這一層在它上面把每個街廓拉伸成
          獨立的稜柱：垂直牆＋平屋頂，塊與塊不共用頂點。
@@ -7365,34 +7401,6 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
            跨越整座城的透視差在這個尺度上看不出來。
          ⚠ 夾上限：貼近城時 50 個單位可以投影成上百像素，那會把城下緣抹成
            一條長條。24 個緩衝像素已經足夠讀成「一塊有厚度的白石台」。 */
-      {
-        const dpx=o.s.hasPodium?Math.min(24, Math.round(PLATE_THICK/Math.max(60,o.z)*scaleH*syk*ky)):0;
-        if(dpx>0){
-          /* 側面要**實色**，不能直接把城的內容往下抹 —— 抹出來是一條條垂直
-             條紋（每一欄各自複製它正上方的顏色），讀起來像拖影不像石台。
-             作法：先在暫存畫布上取城的**剪影**（`source-in` 一次填滿），
-             再把那張剪影往下疊。 */
-          if(!plateFB || plateFB.width!==cityFB.width || plateFB.height!==cityFB.height){
-            plateFB=document.createElement('canvas');
-            plateFB.width=cityFB.width; plateFB.height=cityFB.height;
-            PFB=plateFB.getContext('2d');
-          }
-          PFB.setTransform(1,0,0,1,0,0);
-          PFB.globalCompositeOperation='source-over';
-          PFB.clearRect(0,0,bwp,bhp);
-          PFB.drawImage(cityFB,0,0,bwp,bhp,0,0,bwp,bhp);
-          PFB.globalCompositeOperation='source-in';
-          PFB.fillStyle=o.s.plateCol||'rgba(214,206,186,1)';
-          PFB.fillRect(0,0,bwp,bhp);
-          PFB.globalCompositeOperation='source-over';
-          /* ⚠ 倍增位移（1,2,4…）：k 個像素只要 log2(k) 次貼圖，而且每一趟都把
-             已填滿的高度加倍，覆蓋連續、不留條紋。 */
-          CFB.globalCompositeOperation='destination-over';
-          for(let d=1; d<=dpx; d*=2)
-            CFB.drawImage(plateFB, 0,0,bwp,bhp, 0,Math.min(d,dpx),bwp,bhp);
-          CFB.globalCompositeOperation='source-over';
-        }
-      }
       /* 依光線上色：同 drawShip 那套。素材本身已經把「固定的色調對齊」烘進去
          （build_city.py 的 SAT/VAL），這裡只加隨時間變的部分。
          ⚠ source-atop：只作用在不透明處，透明區不會被塗成方塊。
