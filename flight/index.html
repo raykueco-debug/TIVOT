@@ -1365,7 +1365,7 @@ let cityU=null, cityV=null;                 // 兩軸的格線（平面座標 �
    給它厚度就同時解決兩件事：底圖抬到地面之上 PLATE_THICK，
    再把底圖自己**往下擠出**同樣的厚度當側面（見 CFB 的向下抹壓）。
    ⚠ 抬高與擠出必須是**同一個數字**：抬得比擠得高，底下就會露出一條空隙。 */
-const PLATE_THICK=50;
+const PLATE_THICK=70;   // ver -302：50 還是會破出，Ray 指定加到 70
 const PODIUM_CLEAR=PLATE_THICK;
 function settleBaseH(S){ return (S.gh!=null? S.gh : CLOUD_H+80); }
 function settleTerrainH(S){ return settleBaseH(S)+((S.podium&&S.podium.lift)||0); }
@@ -7176,7 +7176,10 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
       }
 
       {
-        const dpx=o.s.hasPodium?Math.min(24, Math.round(PLATE_THICK/Math.max(60,o.z)*scaleH*syk*ky)):0;
+        /* ⚠ 上限要跟著 PLATE_THICK 走：側面必須**剛好**補滿底圖被抬高的那一段，
+           夾太小的話底圖與地面之間會露出一條空隙 —— 那正是「圖又破出來」。
+           64 是在「貼到臉上時不要抹成一大片」與「不要露空隙」之間取的。 */
+        const dpx=o.s.hasPodium?Math.min(64, Math.round(PLATE_THICK/Math.max(60,o.z)*scaleH*syk*ky)):0;
         if(dpx>0){
           /* ⚠⚠ 這一段必須排在**量體層之前**（ver -301）。排在後面的話剪影會把
              街廓的**塔**一起框進去，往下擠出就在每一根塔底下拉出一根淺色柱子
