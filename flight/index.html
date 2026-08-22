@@ -1357,6 +1357,20 @@ const CITY_TRIM=0.88;
 
 let cityPts=null, cityGnd=null, massPts=null;   // massPts＝街廓量體的地面格點
 let cityU=null, cityV=null;                 // 兩軸的格線（平面座標 −1..1，非均勻）
+/* ── 聚落地基高度：唯一真相來源（ver -298）─────────────────────────────
+   ⚠⚠ 這兩支必須被 buildSettlements（畫城）與 buildRelief（整地）**同時**使用。
+     先前兩邊各寫一個預設：畫城用 CLOUD_H(44)、整地用 CLOUD_H+80(124) ——
+     差 80 個世界單位，等於**城的地板被埋在自己的台座下面**。城因此被畫得比
+     地面低，逐欄的地形深度裁切（clipByCityDepth）就一路把它啃成斑駁的破洞。
+     ver -294 同步了 lift，卻沒發現差異其實在**基準值**上。
+   ⚠ PODIUM_CLEAR：台座整平之後地面與城的地板會**完全等高**，逐欄深度比較
+     變成平手，哪一欄被裁全看浮點誤差 —— 那正是斑駁的來源。讓地板比它自己的
+     台座高一點點，平手就不存在。8 在任何距離都不到一個像素，看不出來。 */
+const PODIUM_CLEAR=8;
+function settleBaseH(S){ return (S.gh!=null? S.gh : CLOUD_H+80); }
+function settleTerrainH(S){ return settleBaseH(S)+((S.podium&&S.podium.lift)||0); }
+function settleGroundH(S){ return settleTerrainH(S)+(S.podium?PODIUM_CLEAR:0); }
+
 let settleCache=null;                       // 生成結果快取（純函式，算一次就好）
 function buildSettlements(){
   if(settleCache) return settleCache;
@@ -1370,9 +1384,9 @@ function buildSettlements(){
     s.planH=S.planH||null; s.planTall=S.planTall||0;
     s.noWater=!!S.noWater; s.noLamps=!!S.noLamps; s.wallCol=S.wallCol||null;
     s.mx=S.x; s.my=S.y;
-    /* ⚠ 台座墊高要與 buildRelief 的整地**同一個數字** —— 地形墊高了、城卻還畫在
-       原高度的話，整座城會陷進自己的台座裡。兩邊都由 S.podium.lift 推出來。 */
-    s.gh=(S.gh!=null?S.gh:CLOUD_H)+((S.podium&&S.podium.lift)||0);
+    /* ⚠ 高度一律走 settleGroundH —— 與 buildRelief 的整地同一個來源。
+       不要在這裡重寫算式（先前就是這樣寫出 44 vs 124 的差異）。 */
+    s.gh=settleGroundH(S);
     return s;
   });
   return settleCache;
@@ -2749,7 +2763,7 @@ async function loadWorld(){
          ⚠ 擋在 runtime 而不是把素材改色：判水的是這段程式，build 端把顏色
            算掉並不會改變它讀到的像素。 */
       const noW=!!S.noWater;
-      const gh=S.gh||(CLOUD_H+80);
+      const gh=settleBaseH(S);
       const wl=Math.max(CLOUD_H+6, gh-9);   // 水面：壓在地基之下一點
       let water=0, land=0;
       for(let dy=-rr;dy<=rr;dy++)for(let dx=-rr;dx<=rr;dx++){
@@ -2790,7 +2804,7 @@ async function loadWorld(){
            墊高把平手打破，城就實實在在坐在地形之上。
            ⚠ 這個值必須與 buildSettlements 的 s.gh **同步加**，兩邊都由
              S.podium.lift 推出來，不要各寫一個數字。差一點點就是城陷進地裡。 */
-        const ghP=gh+(S.podium.lift||0);
+        const ghP=settleTerrainH(S);
         const R0=Math.max(hw,hh)*(S.podium.r||1),
               R1=R0+(S.podium.skirt||6), R1c=Math.ceil(R1);
         for(let dy=-R1c;dy<=R1c;dy++)for(let dx=-R1c;dx<=R1c;dx++){
