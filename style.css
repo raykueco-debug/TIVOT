@@ -1169,10 +1169,25 @@
   #storyStage{position:fixed;inset:0;z-index:8300;display:none;overflow:hidden;
     background:var(--bg);}
   #storyStage.on{display:block;}
-  #storyCast{position:absolute;inset:0;z-index:1;pointer-events:none;}
+  /* ⚠ 上半立繪／下半盤面（Ray 指定，ver -316）。所有「場景層」（背景／CG／CI／
+     特效／立繪）都只佔上半，下半是固定的盤面區 —— 版面不因有沒有戰鬥而變。
+     比例寫成變數，之後接真的戰鬥盤面時只改這一個數字。 */
+  #storyStage{--story-top:56%;}
+  #storyCast{position:absolute;left:0;right:0;top:0;height:var(--story-top);
+    z-index:1;pointer-events:none;overflow:hidden;}
+  /* 下半：戰鬥盤面區。無戰鬥時放團徽（暫定）。 */
+  #storyBoard{position:absolute;left:0;right:0;top:var(--story-top);bottom:0;z-index:1;
+    display:flex;align-items:center;justify-content:center;pointer-events:none;
+    background:linear-gradient(180deg,rgba(6,5,10,.92),rgba(6,5,10,1));
+    border-top:1px solid var(--gold-dim);}
+  #storyBoardArt{max-width:58%;max-height:74%;object-fit:contain;opacity:.30;
+    filter:drop-shadow(0 0 18px rgba(201,162,39,.25));}
   /* 進場：從**自己那一側**滑入，450ms ease-out（CLAUDE.md §6.5）。 */
-  .story-portrait{position:absolute;object-fit:contain;pointer-events:none;
-    transition:transform .45s cubic-bezier(.16,1,.3,1),filter .25s ease;}
+  /* ⚠ opacity 也要進 transition：同一個人只換表情時走**淡入淡出**（Ray 指定
+     「不要直接切」）；換人才走滑入滑出（那是 transform 那一條）。 */
+  .story-portrait{position:absolute;object-fit:contain;pointer-events:none;opacity:1;
+    transition:transform .45s cubic-bezier(.16,1,.3,1),filter .25s ease,opacity .18s ease;}
+  .story-portrait.fading{opacity:0;}
   #storyCastL{transform:translateX(-140%);}
   #storyCastR{transform:translateX(140%);}
   #storyCast .story-portrait.on{transform:translateX(0);}
@@ -1180,14 +1195,17 @@
      ⚠ CSS filter 天生不透明 —— 那條「不可用透明度代替」的警告是給 canvas 版的。 */
   .story-portrait.dim{filter:brightness(.38) saturate(.75);}
   /* 背景：鋪滿、cover。⚠ 在立繪**之下**（z-index 0）—— 立繪要站在場景裡。 */
-  #storyBg{position:absolute;inset:0;z-index:0;width:100%;height:100%;
-    object-fit:cover;display:none;pointer-events:none;}
+  #storyBg{position:absolute;left:0;right:0;top:0;height:var(--story-top);z-index:0;
+    width:100%;object-fit:cover;display:none;pointer-events:none;}
   #storyBg.on{display:block;}
   /* CG：全屏插圖，蓋過立繪。
      ⚠ object-fit **cover** 不是 contain：插圖是直幅、畫面是直幅，contain 會在
        上下留黑邊，讀起來像「貼了一張圖」而不是「鏡頭切到那裡」。 */
-  #storyCg{position:absolute;inset:0;z-index:2;width:100%;height:100%;
-    object-fit:cover;display:none;pointer-events:none;}
+  /* ⚠ 插圖之間也走淡入淡出（Ray 指定「不要直接切」）—— 與立繪同一條規則。 */
+  #storyCg{position:absolute;left:0;right:0;top:0;height:var(--story-top);z-index:2;
+    width:100%;object-fit:cover;display:none;pointer-events:none;
+    opacity:1;transition:opacity .22s ease;}
+  #storyCg.fading{opacity:0;}
   #storyCg.on{display:block;}
   /* CG 由下往上平移：用 object-position 推，不用 transform —— transform 會把
      cover 的裁切一起搬走，邊緣會露出底色。 */
@@ -1195,18 +1213,34 @@
   @keyframes storyPanUp{ from{object-position:50% 100%;} to{object-position:50% 0%;} }
   /* 暗調 CI 插入：半身/全身圖從側邊切進來，壓暗到只剩剪影感（Ray 指定「暗調」）。
      ⚠ 壓暗用 filter 不用 opacity（CLAUDE.md §6.5：壓暗必須不透明）。 */
-  #storyCi{position:absolute;inset:0;z-index:3;width:100%;height:100%;
-    object-fit:cover;display:none;pointer-events:none;
+  #storyCi{position:absolute;left:0;right:0;top:0;height:var(--story-top);z-index:3;
+    width:100%;object-fit:cover;display:none;pointer-events:none;
     filter:brightness(.30) saturate(.65) contrast(1.15);
     transform:translateX(18%);opacity:0;
     transition:transform .38s cubic-bezier(.16,1,.3,1),opacity .38s ease;}
   #storyCi.on{display:block;transform:translateX(0);opacity:1;}
   /* 特效層：槍擊命中點畫在這裡（CG 之上、對話框之下）。 */
-  #storyFx{position:absolute;inset:0;z-index:3;pointer-events:none;overflow:hidden;}
-  .story-hit{position:absolute;width:7px;height:7px;margin:-3.5px 0 0 -3.5px;border-radius:50%;
-    background:radial-gradient(circle,#fff 0 30%,#ffd76a 45%,rgba(255,150,40,0) 70%);
-    animation:storyHit .22s ease-out forwards;}
-  @keyframes storyHit{ from{transform:scale(.3);opacity:1;} to{transform:scale(2.4);opacity:0;} }
+  #storyFx{position:absolute;left:0;right:0;top:0;height:var(--story-top);
+    z-index:3;pointer-events:none;overflow:hidden;}
+  /* 情境卡：背景之上蓋半透黑，文字置中。⚠ 蓋在立繪與插圖之上（z-index 4），
+     但在對話框之下 —— 有卡的那一句本來就不顯示對話框。 */
+  #storyCard{position:absolute;left:0;right:0;top:0;height:var(--story-top);z-index:4;
+    display:none;align-items:center;justify-content:center;text-align:center;
+    padding:0 26px;pointer-events:none;
+    background:rgba(4,3,8,.62);
+    /* ⚠ pre-line：腳本裡用 \n 斷行（時間一行、地點一行），不加這個會擠成一行。 */
+    white-space:pre-line;
+    font-size:15px;letter-spacing:3px;line-height:2;color:var(--ink);
+    text-shadow:0 2px 10px rgba(0,0,0,.9);}
+  #storyCard.on{display:flex;animation:storyCardIn .5s ease both;}
+  @keyframes storyCardIn{ from{opacity:0;} to{opacity:1;} }
+  /* 火花：Ray 指定「大一點」。⚠ 逐發的 scale 由 JS 給（每發大小有差才有能量感），
+     所以放大交給 width/height 與 keyframes，不要在這裡再寫死 transform。 */
+  .story-hit{position:absolute;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;
+    background:radial-gradient(circle,#fff 0 22%,#ffe9a8 38%,#ffa02a 56%,rgba(255,120,20,0) 72%);
+    box-shadow:0 0 14px 4px rgba(255,180,60,.45);
+    animation:storyHit .30s ease-out forwards;}
+  @keyframes storyHit{ from{opacity:1;} 35%{opacity:.95;} to{opacity:0;} }
   /* 畫面抖動：短、快、幅度小 —— 大幅度會讀成「畫面壞了」而不是「被打」。 */
   #storyStage.shake{animation:storyShake .42s cubic-bezier(.36,.07,.19,.97);}
   @keyframes storyShake{
@@ -1219,8 +1253,10 @@
   #storyTouch{position:absolute;inset:0;z-index:3;background:transparent;touch-action:none;}
   #storyExit{position:absolute;z-index:5;top:calc(env(safe-area-inset-top,0px) + 10px);right:12px;}
   /* 對話框：與教學同一套視覺（同色同框同字級），只是定位在畫面下緣。 */
+  /* ⚠ 對話框錨在**立繪區的下緣**（盤面之上），不是畫面底 —— 盤面是固定的，
+     框壓在盤面上會擋住戰鬥資訊。 */
   #storyBubble{position:absolute;z-index:4;left:50%;transform:translateX(-50%);
-    bottom:calc(env(safe-area-inset-bottom,0px) + 22px);
+    top:calc(var(--story-top) - 78px);
     width:min(92%,360px);background:rgba(8,6,12,.9);border:1px solid var(--gold-dim);
     border-radius:10px;padding:9px 14px 12px;box-shadow:0 4px 18px rgba(0,0,0,.55);
     pointer-events:none;}

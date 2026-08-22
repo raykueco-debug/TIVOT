@@ -54,10 +54,17 @@ export const MAIN_SCRIPT = {
     next:'dungeon_lunaria',
     context:'scene',
     lines:[
-      /* 開場：腳步聲與喘息。⚠ 第一句就把背景與立繪一起立起來 —— 先給空畫面
-         再補背景的話，玩家會先看到一片底色。 */
-      { speaker:'NOUVELLE', text:'追、追上來了！',
-        bg:'HolyseeDungeonWhole', bgm:'crisis', se:'se_steps',
+      /* 情境卡：先立背景，蓋半透黑，打時間與地點（Ray 指定）。
+         ⚠ 這一拍沒有台詞也沒有立繪 —— speaker 只是為了讓資料結構一致，
+           有 card 的句子不顯示對話框。 */
+      { speaker:'NOUVELLE', text:'',
+        bg:'HolyseeDungeonWhole', bgm:'crisis',
+        card:'1908年6月13日\n聖王廳地宮　G2 區',
+        /* ⚠ 一定要明寫 show:false —— 立繪的預設是 show:true，不寫的話她會先用
+           base 立繪站在卡片後面，下一句才換成跑姿，看起來像閃了一下。 */
+        portrait:{ char:'NOUVELLE', show:false } },
+      /* 開場：腳步聲與喘息。 */
+      { speaker:'NOUVELLE', text:'追、追上來了！', se:'se_steps',
         portrait:{ char:'NOUVELLE', expr:'run', show:true } },
       { speaker:'NOUVELLE', text:'啊！', portrait:{ expr:'cringe' } },
       /* 跌倒：切全屏插圖。⚠ cg 一上來就蓋住立繪，所以這一句不必也不要再改 expr。 */

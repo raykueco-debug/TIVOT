@@ -35,7 +35,10 @@ const $ = id => document.getElementById(id);
 /* ── 舞台幾何 ──
    CAST_SHOW：最高的人露出身體的幾成。**這是「立繪多大」的唯一旋鈕**，
    值越小＝鏡頭越近＝立繪越大（與 flight 同義同值）。 */
-const CAST_SHOW = 0.52;
+/* ⚠ ver -316 由 0.52 調到 0.44（Ray：「人物高度高放一點」）。
+   這個值是「最高的人露出身體的幾成」—— **越小＝鏡頭越近＝人越大、頭頂越高**。
+   上半舞台變矮之後（下半讓給盤面）不調的話人會顯得又小又低。 */
+const CAST_SHOW = 0.44;
 const SLIDE_MS  = 450;          // 進場滑入（CLAUDE.md §6.5：450ms ease-out）
 const TYPE_MS   = 22;           // 打字機每字間隔
 
@@ -101,7 +104,11 @@ function measureBounds(img, y0, y1){
      只縮一個人會讓身高比例當場失真。 */
 function layout(){
   const stage=$('storyStage'); if(!stage) return;
-  const W=stage.clientWidth, H=stage.clientHeight;
+  /* ⚠ 高度取**立繪區**（#storyCast）而不是整個舞台（ver -316）：下半是固定的
+     戰鬥盤面，拿整個舞台高去算的話人會被畫到盤面底下，而且「腳落地平線」
+     那條規則會落在錯的地方。 */
+  const cast=$('storyCast');
+  const W=stage.clientWidth, H=(cast?cast.clientHeight:stage.clientHeight);
   if(!W || !H) return;
   const top=topLine();
 
@@ -150,12 +157,21 @@ function layout(){
     const a=o.a, el=o.el, NW=el.naturalWidth;
     const fx=a.fx, bl=o.b.l, br=o.b.r;
     /* 橫向錨的是**臉的中心**（fx），不是圖框中心 —— 插畫左右留白差很多。 */
-    const faceX = solo ? W*0.5 : (o.side==='R' ? W*0.74 : W*0.26);
+    /* ⚠ ver -316：**單人也站自己那一側**，不置中（Ray 指定「同一人物立繪需
+       一直在同一側」）。置中的話同一個人會因為場上有幾個人而左右跳，
+       玩家就記不住誰站哪邊了 —— 那正是固定站位要解決的事。
+       單人時錨點往中間讓一點（0.38／0.62 而不是 0.26／0.74），畫面才不會太偏。 */
+    const faceX = solo ? (o.side==='R' ? W*0.62 : W*0.38)
+                       : (o.side==='R' ? W*0.74 : W*0.26);
     let x = faceX - o.s*fx*NW;
-    if(!solo){                                        // 夾中線：夾輪廓不夾圖框
+    {
+      /* ⚠ 夾中線只在**兩人同台**時做：單人時夾中線會把她壓回半邊，
+         人變小又擠在角落。單人只要不出畫面外緣就好。 */
       const mid=W/2;
-      if(o.side==='L'){ const r=x+o.s*br; if(r>mid) x-=(r-mid); }
-      else            { const l=x+o.s*bl; if(l<mid) x+=(mid-l); }
+      if(!solo){
+        if(o.side==='L'){ const r=x+o.s*br; if(r>mid) x-=(r-mid); }
+        else            { const l=x+o.s*bl; if(l<mid) x+=(mid-l); }
+      }
       /* ⚠ 夾完再把**輪廓**拉回畫面內：夾中線只保證不互相越界，
          不保證沒被推出外緣（諾薇兒的裙襬就會把她整個頂出左邊）。 */
       const lEdge=x+o.s*bl, rEdge=x+o.s*br;
@@ -197,13 +213,21 @@ function ensureOn(id, expr){
       el.dataset.who = id;
       if(el.complete && el.naturalWidth){ el.onload=null; layout(); el.classList.add('on'); }
     };
+    const first = !slot[side];
     if(swapping){
-      /* 同側換人：舊的先滑出，再換新的滑入（CLAUDE.md §6.5 的輪轉換卡）。 */
+      /* 同側換人：舊的先滑出，再換新的滑入（CLAUDE.md §6.5 的輪轉換卡，
+         與飛行畫面同一套）。 */
       el.classList.remove('on');
       setTimeout(apply, SLIDE_MS*0.45);
-    }else{
-      el.classList.remove('on');            // 重設起點，讓 transition 有東西可跑
+    }else if(first){
+      el.classList.remove('on');            // 首次上場：從自己那一側滑入
       setTimeout(apply, 16);
+    }else{
+      /* ⚠ 同一個人只換表情／換圖：走**淡入淡出**，不要滑出再滑進來
+         （Ray 指定「立繪更換時要淡入淡出，不要直接切」）。
+         人沒有離開舞台，滑一次會讀成「她走掉又走回來」。 */
+      el.classList.add('fading');
+      setTimeout(()=>{ apply(); el.classList.remove('fading'); }, 190);
     }
     slot[side]=id;
   }
@@ -250,6 +274,8 @@ function typeFinish(el, text){
      cg:'001_Nouvelle_Fell'     全屏插圖（resources/illustration/*.webp）。cg:null 清掉
      cgPan:'up'                 這一句的 CG 由下往上平移
      ci:'Lunaria_SI_Armed'      暗調 CI 插入（resources/SI/*.webp）。ci:null 收掉
+     card:'1908年6月13日，聖王廳地宮G2區'   情境卡：背景上蓋半透黑＋置中文字
+                                有 card 的那一句**不顯示對話框**（它不是台詞）
      bgm:'PerituneMaterial_Crisis_loop'   背景音樂（resources/audio/bgm/*.m4a）
                                 bgm:null 停掉。與 bg 一樣是**持續**狀態。
      se:'se_steps'              音效；也可以給陣列做多發：
@@ -265,6 +291,9 @@ const BG_DIR='resources/background/', CG_DIR='resources/illustration/', SI_DIR='
 const BGM_SRC={
   crisis: 'resources/audio/bgm/PerituneMaterial_Crisis_loop.m4a',
 };
+/* 離開劇情要**回到主畫面的曲子**（Ray 指定）。⚠ 走 config 的鍵不要寫死路徑：
+   主選單換曲時只改 config，這裡自動跟著。音量也用 config 那一份。 */
+const HOME_BGM='resources/audio/bgm/bgm_mainmenu.m4a', HOME_VOL=0.37;
 let stageBg=null, stageCg=null, stageCi=null, stageBgm=null;   // 目前的持續狀態
 
 function setImg(el, src){
@@ -274,8 +303,24 @@ function setImg(el, src){
 }
 function applyPersist(line){
   if(line.bg!==undefined){ stageBg=line.bg; setImg($('storyBg'), line.bg?BG_DIR+line.bg+'.webp':''); }
-  if(line.cg!==undefined){ stageCg=line.cg; setImg($('storyCg'), line.cg?CG_DIR+line.cg+'.webp':''); }
+  if(line.cg!==undefined && line.cg!==stageCg){
+    /* ⚠ 插圖之間也淡入淡出（Ray 指定）。已經有圖在場才需要先淡出；
+       第一次上圖直接顯示，否則會有一段莫名的空白。 */
+    const el=$('storyCg'), had=!!stageCg;
+    stageCg=line.cg;
+    const put=()=>{ setImg(el, line.cg?CG_DIR+line.cg+'.webp':''); if(el) el.classList.remove('fading'); };
+    if(had && el){ el.classList.add('fading'); setTimeout(put, 230); }
+    else put();
+  }
   if(line.ci!==undefined){ stageCi=line.ci; setImg($('storyCi'), line.ci?SI_DIR+line.ci+'.webp':''); }
+  /* 情境卡：⚠ 它是**一次性的畫面狀態**（下一句沒寫就收掉），所以每一句都要判，
+     不能只在有 card 的那一句處理。 */
+  const card=$('storyCard'), bub=$('storyBubble');
+  if(card){
+    if(line.card){ card.textContent=line.card; card.classList.add('on'); }
+    else card.classList.remove('on');
+  }
+  if(bub) bub.style.display = line.card ? 'none' : '';
   /* BGM：⚠ 同一首重複指定不會重播（playBgm 自己擋掉），所以每一句都寫也無妨；
      但照「只寫變化」的規矩，正常只在換曲那一句寫。 */
   if(line.bgm!==undefined && line.bgm!==stageBgm){
@@ -300,6 +345,7 @@ const SE_SRC={
   se_steps:         'resources/audio/se/se_steps.wav',
   se_weapon_reload: 'resources/audio/se/se_weapon_reload.mp3',
   se_mg_squall:     'resources/audio/se/se_weapon_mg_squall.mp3',
+  se_lunaMG:        'resources/audio/se/se_lunaMG.wav',
 };
 function playSe(spec){
   const one=(n,delay)=>{ const src=SE_SRC[n];
@@ -312,21 +358,30 @@ function playSe(spec){
   if(Array.isArray(spec)) spec.forEach(x=> typeof x==='string' ? one(x,0) : one(x.n, x.delay||0));
   else one(spec, 0);
 }
-/* 槍擊命中點：在 CG 上灑一串，密而快。⚠ 用**逐發延遲**而不是一次全灑：
-   一次全灑讀起來是「一片斑點」，逐發才讀得出「連射」。 */
-function fireHits(n, ms){
+/* 槍擊：**機關槍掃射**（Ray 指定）——沿著一條斜線由一端掃到另一端，火花大、
+   持續兩秒。⚠ 不是「隨機灑點」：隨機讀起來是一片斑點，沿線推進才讀得出
+   「掃過去」。線的角度每次隨機一點，不要每次都同一條。 */
+function fireHits(ms){
   const box=$('storyFx'); if(!box) return;
   box.innerHTML='';
   const W=box.clientWidth||360, H=box.clientHeight||640;
-  for(let i=0;i<n;i++){
+  const N=44;                                  // 兩秒內的發數（約 22 發/秒）
+  /* 掃射線：由左下往右上或反向，落在畫面中上段（插圖裡聖徒的位置）。 */
+  const dir=Math.random()<0.5?1:-1;
+  const x0=dir>0?W*0.14:W*0.86, x1=dir>0?W*0.86:W*0.14;
+  const y0=H*0.60, y1=H*0.18;
+  for(let i=0;i<N;i++){
     setTimeout(()=>{
-      const d=document.createElement('div'); d.className='story-hit';
-      /* 集中在畫面中上段（那是插圖裡聖徒的位置），不要灑滿全畫面。 */
-      d.style.left=Math.round(W*(0.18+Math.random()*0.64))+'px';
-      d.style.top =Math.round(H*(0.12+Math.random()*0.52))+'px';
-      box.appendChild(d);
-      setTimeout(()=>d.remove(), 260);
-    }, Math.round(ms*i/n));
+      const u=i/(N-1);
+      const d2=document.createElement('div'); d2.className='story-hit';
+      /* 沿線推進，再加一點抖動 —— 完全在線上會像雷射，不像掃射。 */
+      d2.style.left=Math.round(x0+(x1-x0)*u + (Math.random()-0.5)*W*0.13)+'px';
+      d2.style.top =Math.round(y0+(y1-y0)*u + (Math.random()-0.5)*H*0.10)+'px';
+      const sz=0.8+Math.random()*0.9;            // 火花大小有差才有能量感
+      d2.style.transform='scale('+sz.toFixed(2)+')';
+      box.appendChild(d2);
+      setTimeout(()=>d2.remove(), 320);
+    }, Math.round(ms*i/N));
   }
 }
 function fireOneShot(line){
@@ -335,7 +390,7 @@ function fireOneShot(line){
     const st=$('storyStage');
     if(st){ st.classList.remove('shake'); void st.offsetWidth; st.classList.add('shake'); }
   }
-  if(line.fx==='gunfire') fireHits(26, 620);
+  if(line.fx==='gunfire') fireHits(2000);   // Ray 指定：視覺持續兩秒
 }
 
 /* ══ 演一句 ══ */
@@ -413,8 +468,28 @@ export function isActive(){ return active; }
 /* 存檔要帶的劇情位置。 */
 export function getPosition(){ return active && cur ? { scene:cur.sceneId, line:lineIdx } : null; }
 
+/* ⚠ 每次**進劇情**都要把舞台清乾淨（ver -316 修）。
+   Bug：第二次點 story 會卡在上一次的結束畫面 —— 因為 stageBg/stageCg/stageCi
+   是模組級狀態，關閉時沒清；重開時第一句只寫了 bg，沒寫 cg，於是上一輪最後
+   那張插圖就一直蓋在上面。
+   ⚠ 清除要放在 **open** 不是 playScene：scene 之間是**接續**的，bg 要能跨場沿用，
+     每次 playScene 都清的話換場就會閃一下黑。 */
+function resetStage(){
+  stageBg=stageCg=stageCi=null; stageBgm=null;
+  for(const id of ['storyBg','storyCg','storyCi']){
+    const el=$(id); if(el){ el.classList.remove('on','fading','pan-up'); el.removeAttribute('src'); }
+  }
+  const fx=$('storyFx'); if(fx) fx.innerHTML='';
+  const card=$('storyCard'); if(card) card.classList.remove('on');
+  const st2=$('storyStage'); if(st2) st2.classList.remove('shake');
+  slot={L:null,R:null}; shown={};
+  for(const s2 of ['L','R']){ const el=slotEl(s2);
+    if(el){ el.classList.remove('on','dim','fading'); el.removeAttribute('src'); } }
+}
+
 export function open(pos, done){
   const st=$('storyStage'); if(!st) return;
+  resetStage();
   onExit = done || null;
   active = true;
   st.classList.add('on');
@@ -431,6 +506,10 @@ export function close(){
   const st=$('storyStage'); if(st) st.classList.remove('on');
   document.body.classList.remove('story-on');
   leaveSlot('L'); leaveSlot('R');
+  /* ⚠ 劇情有自己的 BGM，離場一定要把主畫面那首接回來 —— 不接的話回到首頁
+     還在放劇情曲，而首頁的播放邏輯只在「進首頁」那一刻跑一次，不會自己修正。 */
+  stageBgm=null;
+  try{ SFX.playBgm(HOME_BGM, {fadeInMs:600, volume:HOME_VOL}); }catch(_){}
   const cb=onExit; onExit=null; if(cb) cb();
 }
 
