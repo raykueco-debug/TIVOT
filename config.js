@@ -8,7 +8,7 @@
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.22-322';
+export const VERSION = 'ver 2026.08.23-323';
 
 export const GAME_CONFIG = {
 
@@ -254,6 +254,9 @@ export const GAME_CONFIG = {
     cast: {
       inspector: { name:'芙蕾雅', image:'inspector_freya', side:'left',  fit:{ zoom:1,    drop:10 } },
       partner:   { name:'蕾妮',   image:'partner_renee',   side:'right', fit:{ zoom:0.82, drop:0 } },
+      /* 劇情版教學的唯一說話者。⚠ 站**左**：與地宮那一幕同側，玩家的空間記憶才連得起來
+         （CLAUDE.md §6.5：同一個人每次都站同一邊）。 */
+      nouvelle:  { name:'諾薇兒', image:'tut_nouvelle',    side:'left',  fit:{ zoom:0.92, drop:6 } },
     },
     // 罵人台詞（監察官）：教學中玩家「按錯 / 延時」即插入一句（隨機取、可重複觸發；
     //   defended 段講完後停用）。early＝太早防禦（Defense 格擋半傷）專用——不受 defended
@@ -780,6 +783,15 @@ export const ASSETS = {
 
   // ── 搭檔選人畫面大立繪 ──
   partner_renee:   "resources/partner/Renee_SI_01.webp",     // 蕾妮 立繪
+  /* ── 教學（劇情版）的諾薇兒立繪與差分（ver -323）──────────────────────
+     ⚠ 這一組**只給劇情帶起來的教學**用（tutorial.isStoryRun()）。首頁「教學」鈕
+       那一場仍是芙蕾雅／蕾妮 —— Ray 指定兩者要分開。 */
+  tut_nouvelle:          "resources/SI/Nouvelle_SI_front.webp",
+  tut_nouvelle_cringe:   "resources/SI/Nouvelle_SI_Cringe.webp",
+  tut_nouvelle_surprise: "resources/SI/Nouvelle_SI_Surprise.webp",
+  tut_nouvelle_desperate:"resources/SI/Nouvelle_SI_Desperate.webp",
+  tut_nouvelle_saint:    "resources/SI/Nouvelle_SI_SAINTINSTALL.webp",
+  cutin_nouvelle_saint:  "resources/CI/Nouvelle_SAINTINSTALL.webp",   // 全畫面 cut-in
   partner_malzeno: "resources/partner/Malzeno_SI_01.webp",   // 馬季諾 立繪
   cutin_boss: "resources/enemy/Belinda_CI_boss.jpg",   // v18d：Boss（貝琳妲）遭遇 cut-in 專屬圖
   bg_sentou: "resources/background/SENTOUINSTALL.webp", // Boss 戰 S 級獎勵畫面（銭湯インストール）

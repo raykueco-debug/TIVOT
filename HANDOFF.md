@@ -473,8 +473,7 @@ F 節）：鎖眼寬會把**畫風差異放大成體型差異**。實測索拉�
 ## C. 兩種教學分開（Ray 指定）
 
 `tutorial.requestReplay({story:true})` → `tutorial.isStoryRun()`。
-目前**只分旗標**，台詞還是同一份 —— 諾薇兒版的稿在
-`script/TUTORIAL_LINES_NOUVELLE.md`，等 Ray 改完再依 `isStoryRun()` 分流。
+**ver -323 起台詞也分**（見下方 -323 交接）。
 ⚠ 兩者都不動「已看過」旗標（`requestReplay` 本來就不動），所以劇情跑過教學
 不會讓首次出陣的自動教學消失。
 
@@ -502,3 +501,83 @@ F 節）：鎖眼寬會把**畫風差異放大成體型差異**。實測索拉�
 正解：`.fading` 要等**新圖 onload 之後**才拿掉。
 ⚠ 還要處理「新圖已在快取」的情況 —— 那時 `onload` 不會再觸發，要靠
 `complete && naturalWidth` 這條退路（同 `ensureOn` 既有的作法）。
+
+
+---
+
+# 交接 · `ver -323`（劇情版教學：諾薇兒帶完整段）
+
+Ray 手改過的稿在 `script/TUTORIAL_LINES_NOUVELLE.md`（**那份是母本**，
+逐句附了表情差分）。這一版把它接進遊戲。
+
+## A. 只換台詞，不換流程
+
+`config.tutorial.story`（＝ `i18n/zh.js` 的 `tutorial.story`）是**整份平行的台詞**：
+`steps` / `script` / `scold` / `result`。程式端只多了四個查表器（`modules/tutorial.js`）：
+
+    storyCfg()               storyRun 且有 story 那份才回它，否則 null
+    linesForStep(trigger)    steps 的 trigger → story.steps 的鍵
+    scriptLines(key, 原本)   script.* 段落
+    scoldCfg() / scoldLine() 插話（原版是監察官，劇情版是諾薇兒）
+
+⚠ **觸發點、節奏、閘門、教的東西全部共用同一套程式碼**。教學的手感已經校過，
+另寫一份必然走鐘 —— 日後要再加第三個版本（別的角色帶）也照這個方式加一份資料就好。
+
+⚠ ja/en **沒有** story 那一份（中文母本層先定案，見 `flight/script/STYLE.md`）→
+`storyCfg()` 回 null → 自動退回芙蕾雅／蕾妮那一份。是預期行為，不是漏翻。
+
+## B. ⚠⚠ 左槽被搶：諾薇兒與芙蕾雅**同站左側**
+
+`config.tutorial.cast` 現在有三個人，但畫面上只有**左右兩個 `<img>`**。
+舊的 `openStep` / `syncCast` 是**逐角色**掃全表：
+
+- `openStep` 逐角色寫 `el.src` → 字典順序在後的那個把真正的說話者蓋掉（連取景一起蓋錯）。
+- `syncCast` 逐角色 `toggle('in')` → 沒講話的那位把講話那位的 `.in` 關掉。
+
+**兩個都改成以「槽」為單位算**：先算出本段有誰講話（`used`），
+`openStep` 只套 used 的人；`syncCast` 先把每個槽要不要亮算完再一次 toggle。
+⚠ 這類 bug 的味道是「**結果取決於物件的鍵順序**」—— 看到這種就要停下來。
+
+## C. 逐句表情差分 `img` 與全畫面 cut-in `cutin`
+
+台詞多兩個選用欄位（都是 ASSETS 鍵）：
+
+    { who:'nouvelle', img:'tut_nouvelle_cringe', text:'…' }
+    { who:'nouvelle', img:'tut_nouvelle_saint', cutin:'cutin_nouvelle_saint', text:'SAINT INSTALL......！' }
+
+- `img`：**直接換 src，不做淡入淡出**。同一角色同一槽的表情切換，淡出會讓她整個人
+  消失一拍 —— 那是「換人」的語彙，不是「換表情」的（劇情頁的淡入淡出是**換人**用的）。
+- `cutin`：**先演完 cut-in 再打字**。`#cutin` 是 z8100、對話框 z8000 ——
+  同時跑的話字被蓋住白打了一整句。走 `api.playCutin(done,label,imgKey)` 的 done 回呼接打字機。
+  ⚠ 用 `cutinLine` 記住已播過的索引：點擊「跳完整句」會重跑 `showLine` 的分支，
+  沒這個游標會**重播一次 cut-in**。
+
+## D. 劇情版**不出結算頁**（Ray 指定，對應表第八節整段刪除）
+
+擋在 `inspector.settle` 的**最前面**（`state.tutorialStoryRun`），不是擋在
+`applyTutorialResult` —— 擋在後面的話畫面會先閃一下評價再跳走。
+擋掉之後 500ms `goHome()`，由 `main.js` 那個觀察器把劇情續下去。
+
+⚠ **不能只是「不講台詞」**：結算頁停在畫面上就沒有人把劇情叫回來，玩家卡在那裡。
+
+⚠ `tutorialStoryRun` 是新的共享狀態（§3.9，擁有者 tutorial），與 `tutorialRun` 同壽命：
+`combat.startGame` 歸零、`maybeStart` 設回、`skip()` 清掉。
+`maybeStart` 另外多一道 `if(!replayRequested) storyRun = false;` ——
+不是被劇情叫起來的那一場（首次出陣自動教學）一定要是原版，否則旗標會漏到下一場。
+
+## E. 實測（390×844，走完整條）
+
+自動走了兩趟完整流程（劇情 → 教學 → 回劇情），逐句比對：
+
+- 開場三句 → board1 → threat → defended → strike → dualReady/dualGo →
+  **saintCall（`resources/CI/Nouvelle_SAINTINSTALL.webp` 全畫面 cut-in 確實播了）**
+  → saintStart ×2 → finishMB，全部是諾薇兒、差分與對應表一致。
+- 故意點錯格 → 插話「別慌……順序，慢慢來就好。」＋ Cringe 差分（不是監察官）。
+- 打完**沒有出結算頁**，直接回首頁 → 劇情從「對不起，我已經……！」續下去到收場。
+
+## F. ⚠ 還沒做：諾薇兒的差分**取景值沒有逐張量**
+
+五張差分是**不同姿勢**（跑／畏縮／驚恐／絕望／驚訝／SAINT INSTALL），
+現在共用 `config.tutorial.cast.nouvelle` 的一組 `fit`，換圖時人會上下跑一點。
+正解照 CLAUDE.md §6.5：逐張量 top/bot/fx，`cast` 擴成「每張差分各帶自己的取景」。
+劇情頁的 `script/speakers.js` 也有同一個 TODO（`ART.nouvelle.expr` 共用 front 的數字）。

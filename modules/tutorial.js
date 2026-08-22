@@ -51,6 +51,7 @@ let defendedDone = false;      // 首次防禦成功已發生（罵人停用、�
 let dualGuideDone = false;     // 雙槍引導已觸發（破防值封頂解除）
 let saintCritFired = false;    // 聖徒化臨界攔截已觸發（saintFail 只出一次）
 let cutinWaiters = [];         // afterCutin 輪詢計時器（teardown 清理）
+let cutinLine = -1;            // 已播過 cut-in 的台詞索引（重讀同一句不重播）
 
 /* ---- 首次判定（localStorage 不可用時視為未看過：寧可多教，不漏教）---- */
 function hasSeen(){ try{ return localStorage.getItem(CFG().storageKey)==='1'; }catch(e){ return false; } }
@@ -60,10 +61,14 @@ function markSeen(){ try{ localStorage.setItem(CFG().storageKey,'1'); }catch(e){
 let replayRequested = false;
 /* ⚠ 劇情帶起來的教學與首頁「教學」鈕是**兩件事**（Ray 指定要分開）：
    前者是主線的一段（諾薇兒帶），後者是隨時可重看的教材（芙蕾雅／蕾妮帶）。
-   目前**只分旗標**，台詞還是同一份 —— 諾薇兒版的稿在
-   `script/TUTORIAL_LINES_NOUVELLE.md`，等 Ray 改完再依 isStoryRun() 分流。
+   ver -323 起**台詞也分**：storyRun 時整份改讀 `config.tutorial.story`
+   （稿子與改寫依據見 script/TUTORIAL_LINES_NOUVELLE.md）。
+   ⚠ **只換台詞，不換流程** —— 觸發點、節奏、教的東西、閘門全部共用同一套程式碼。
+     這是刻意的：教學本身的手感已經校過，另寫一份必然會走鐘。
    ⚠ 兩者都不動「已看過」旗標（requestReplay 本來就不動），所以劇情跑過教學
-     不會讓首次出陣的自動教學消失。 */
+     不會讓首次出陣的自動教學消失。
+   ⚠ ja/en 沒有 story 那一份（中文母本層先定案，見 STYLE.md）→ storyCfg() 回 null
+     → 自動退回芙蕾雅／蕾妮那一份。是預期行為，不是漏翻。 */
 let storyRun = false;
 export function requestReplay(opts){ replayRequested = true; storyRun = !!(opts && opts.story); }
 export function isStoryRun(){ return storyRun; }
@@ -79,9 +84,13 @@ export function maybeStart(){
   const cfg = CFG();
   if(!cfg || !cfg.steps || !cfg.steps.length) return;
   if((hasSeen() && !replayRequested) || state.tutorialActive) return;
+  // ⚠ storyRun 只跟著「這一次的 requestReplay」走：不是被劇情叫起來的（首次出陣自動教學）
+  //   就一定是原版那一份，否則上一場劇情教學的旗標會漏到下一場。
+  if(!replayRequested) storyRun = false;
   replayRequested = false;
   state.tutorialActive = true;
   state.tutorialRun = true;         // 存續到結算（inspector 據此切教學專屬台詞/按鈕）
+  state.tutorialStoryRun = storyRun;   // 劇情版：inspector 據此整段跳過教學結算
   state.tutorialLifeReturn = false;
   stepsLeft = cfg.steps.slice();
   queue = [];
@@ -112,26 +121,26 @@ export function onPlayerDead(){
   deadHandled = true;
   queue = [];                                        // 佇列段落全廢棄：整場即將重開
   if(state.tutorialDialog) closeDialog(false, true); // 蓋掉現開段落，確保 dead 段獨占（不被接續吃掉）
-  const line=(CFG().scold||{}).dead || '服了你了。重來！';
-  openStep({ key:'tutorialDead', lines:[{ who:'inspector', text: line }] });
+  const line=scoldCfg().dead || '服了你了。重來！';
+  openStep({ key:'tutorialDead', lines:[scoldLine(line)] });
   return true;
 }
 // combat 於「按錯 / 延時懲罰」時呼叫 → 監察官罵人（defended 之後不再插話）
 export function onMistake(kind){
   if(!state.tutorialActive || state.tutorialDialog || state.over || defendedDone || deadHandled) return;
-  const pool = (CFG().scold||{})[kind];
+  const pool = scoldCfg()[kind];
   if(!pool || !pool.length) return;
   const text = pool[Math.random()*pool.length|0];
-  openStep({ lines:[{ who:'inspector', text }] });
+  openStep({ lines:[scoldLine(text)] });
 }
 // defense.resolveThreat 太早防禦（Defense 格擋半傷）→ 監察官「太早了！」。
 //   不受 defended 停用限制（每次太早都提醒）；聖徒化期間不插（格擋是推進機制、節奏緊湊）。
 export function onEarlyBlock(){
   if(!state.tutorialActive || state.tutorialDialog || state.over || state.saintMode || deadHandled) return;
-  const pool = (CFG().scold||{}).early;
+  const pool = scoldCfg().early;
   if(!pool || !pool.length) return;
   // key='earlyRetry'：反擊教學階段收段後重放反擊圈（onStepClosed 分流；已過 defended 則只罵不重放）
-  openStep({ key:'earlyRetry', lines:[{ who:'inspector', text: pool[Math.random()*pool.length|0] }] });
+  openStep({ key:'earlyRetry', lines:[scoldLine(pool[Math.random()*pool.length|0])] });
 }
 // combat 延時懲罰前詢問：整段反擊教學（第二盤起、首次防禦成功前）不套延時懲罰——
 //   玩家慢慢讀圈、等圈、重試都不受罰；第一盤（純練清盤）維持有懲罰（台詞已預告）。
@@ -160,10 +169,10 @@ export function onBoardProgress(cleared){
   // 反擊教學未過（defended 未觸發）且紅圈在場：玩家不看字猛點盤面攻擊 →
   //   監察官插話「你倒是防禦啊！」，第二次起改「…………」（台詞 config.scold.attackDuringThreat）
   if(!defendedDone && state.threats.length>0){
-    const sc=(CFG().scold||{}).attackDuringThreat;
+    const sc=scoldCfg().attackDuringThreat;
     if(sc){
       attackScoldCount++;
-      openStep({ lines:[{ who:'inspector', text: attackScoldCount===1 ? (sc.first||'') : (sc.rest||'…………') }] });
+      openStep({ lines:[scoldLine(attackScoldCount===1 ? (sc.first||'') : (sc.rest||'…………'))] });
       return;
     }
   }
@@ -248,18 +257,25 @@ function fire(trigger){
     if(bi>=0){
       const bs = stepsLeft.splice(bi,1)[0];
       queue.push(step);
-      openStep(bs);
+      openStep(withStoryLines(bs));
       return;
     }
   }
-  openStep(step);
+  openStep(withStoryLines(step));
+}
+/* 劇情版：整段換掉 lines（流程／觸發點不動，只換誰在講、講什麼）。 */
+function withStoryLines(step){
+  if(!step) return step;
+  const L=linesForStep(step.trigger, null);
+  return L ? { ...step, lines:L } : step;
 }
 
 // 腳本段落（config.tutorial.script[key]）：由內部流程觸發，不走 steps 的 trigger。
 //   opts.gate＝段落講完後進入的引導閘門（完成指定操作才續戰）。
 function openScript(key, opts){
   if(!state.tutorialActive) return;
-  const raw = (CFG().script||{})[key];
+  const raw0 = (CFG().script||{})[key];
+  const raw = scriptLines(key, raw0);
   const lines = Array.isArray(raw) ? raw : (raw && raw.lines);
   if(!lines || !lines.length) return;
   pendingGate = (opts && opts.gate) || null;
@@ -315,6 +331,30 @@ function afterCutin(fn){
  *  對話段：開啟（真暫停+立繪移入）→ 逐句 → 閘門或關閉（立繪退場+續戰）
  * ========================================================================== */
 function castOf(who){ return (CFG().cast||{})[who] || {}; }
+/* ── 劇情版教學的台詞（ver -323）──────────────────────────────────────
+   ⚠ 兩份台詞是**分開的**（Ray 指定）：劇情帶起來的那一場由諾薇兒帶
+   （`config.tutorial.story`），首頁「教學」鈕仍是芙蕾雅／蕾妮。
+   ⚠ 只換**台詞**，不換流程 —— 觸發點、節奏、教的東西完全一樣，
+     所以這裡只是查表換一份 lines，不動 steps 的結構。 */
+function storyCfg(){ return (storyRun && CFG().story) ? CFG().story : null; }
+function linesForStep(trigger, fallback){
+  const S=storyCfg(); if(!S || !S.steps) return fallback;
+  const MAP={ 'battleStart':'battleStart', 'board:1':'board1', 'threat':'threat',
+              'defended':'defended', 'strike':'strike' };
+  const k=MAP[trigger];
+  return (k && S.steps[k]) ? S.steps[k] : fallback;
+}
+function scriptLines(key, fallback){
+  const S=storyCfg(); if(!S || !S.script || !S.script[key]) return fallback;
+  return S.script[key];
+}
+function scoldCfg(){ const S=storyCfg(); return (S && S.scold) ? S.scold : (CFG().scold||{}); }
+/* 插話用的一句：劇情版是諾薇兒（配同一張差分），原版是監察官。 */
+function scoldLine(text){
+  const S=storyCfg();
+  return S ? { who:'nouvelle', img:(S.scold&&S.scold.img)||null, text }
+           : { who:'inspector', text };
+}
 function portraitEl(c){ return c.side==='right' ? $('tutCastR') : $('tutCastL'); }
 
 /* 依步驟台詞決定在場立繪：只有一個人說話的段落（如罵人插話）不出現另一名角色。
@@ -322,25 +362,36 @@ function portraitEl(c){ return c.side==='right' ? $('tutCastR') : $('tutCastL');
 function syncCast(step){
   const cast = CFG().cast || {};
   const used = new Set((step && step.lines || []).map(l=>l.who));
+  /* ⚠ 逐「槽」算，不是逐「角色」算：諾薇兒與芙蕾雅同站左側，共用同一個 <img>。
+     逐角色 toggle 的話，沒講話的那一位會把講話那一位的 .in 關掉（結果取決於
+     cast 的鍵順序 —— 這種對順序敏感的東西不要留）。 */
+  const want = new Map();
   for(const key of Object.keys(cast)){
     const el = portraitEl(cast[key]);
     if(!el) continue;
-    el.classList.toggle('center', used.has(key) && !!(step && step.center));   // 正中模式（引導箭頭讓位）
-    el.classList.toggle('in', used.has(key));
+    if(used.has(key) || !want.has(el)) want.set(el, used.has(key));
+  }
+  for(const [el, on] of want){
+    el.classList.toggle('center', on && !!(step && step.center));   // 正中模式（引導箭頭讓位）
+    el.classList.toggle('in', on);
   }
 }
 
 function openStep(step){
-  cur = step; lineIdx = 0;
+  cur = step; lineIdx = 0; cutinLine = -1;
   state.tutorialDialog = true;
   api.pauseForDialog();                          // 真暫停：同退出確認框的機制
   document.body.classList.add('dlg-pause');      // 凍結底層警戒脈動（防 iOS 合成假影）
   const cast = CFG().cast || {};
   const baseH = CFG().portraitHeightPct || 88;
+  // ⚠ 只套**本段有講話的人**：諾薇兒（劇情版）與芙蕾雅同站左側，左槽只有一個 <img>，
+  //   全表掃過去會讓字典順序在後的那個蓋掉真正的說話者（連取景一起蓋錯）。
+  const used = new Set((step && step.lines || []).map(l=>l.who));
   for(const key of Object.keys(cast)){
+    if(!used.has(key)) continue;
     const c = cast[key], el = portraitEl(c);
     if(!el) continue;
-    if(el.dataset.castKey!==key){ el.src = asset(c.image); el.dataset.castKey = key; }
+    if(el.dataset.castKey!==key){ el.src = asset(c.image); el.dataset.castKey = key; el.dataset.imgKey = c.image; }
     const fit = c.fit || {};
     // 取景（config.cast.fit）：zoom＝以監察官眼寬為基準的縮放；drop＝往框下緣外推裁掉下方 %
     el.style.height = (baseH * (fit.zoom || 1)) + '%';
@@ -386,6 +437,28 @@ function showLine(){
   const el = portraitEl(c), other = (el===L) ? R : L;
   if(el) el.classList.add('speaking');
   if(other) other.classList.remove('speaking');
+  // 逐句表情差分（line.img＝ASSETS 鍵）：沒寫就回該角色的預設立繪。
+  // ⚠ 直接換 src，不做淡入淡出——同一角色同一槽的表情切換，淡出會讓她整個人消失一拍。
+  if(el){
+    const key = line.img || c.image;
+    if(key && el.dataset.imgKey!==key){ el.dataset.imgKey = key; el.src = asset(key); }
+  }
+  // 全畫面 cut-in（line.cutin＝ASSETS 鍵）：先演完再打字，否則字被 cut-in（z8100）蓋住白打。
+  if(line.cutin && cutinLine!==lineIdx){
+    cutinLine = lineIdx;
+    if(api.playCutin){
+      api.playCutin(()=>{ if(state.tutorialDialog && cur && cur.lines[lineIdx]===line) typeLine(line); },
+                    line.text||'', line.cutin);
+      const lineEl0=$('tutLine'); if(lineEl0) lineEl0.textContent='';
+      const b0=$('tutBubble'); if(b0) b0.classList.remove('done');
+      return;
+    }
+  }
+  typeLine(line);
+}
+
+/* 打字機本體（自 showLine 拆出：cut-in 那一句要等演出結束才起跑）。 */
+function typeLine(line){
   // 打字機：lineTypeMs 每字；打完亮出「▼」續行提示
   const lineEl=$('tutLine'), bubble=$('tutBubble');
   if(bubble) bubble.classList.remove('done');
@@ -579,7 +652,7 @@ export function skip(){
   markSeen();                                          // 註記：出陣時不再跑教學
   if(state.tutorialDialog) closeDialog(false, true);   // 只撤 UI：goHome 接管流程（會清 cutinPlaying）
   endTutorial();
-  state.tutorialRun = false;
+  state.tutorialRun = false; state.tutorialStoryRun = false;
   // 本場廢棄 → 單次淡出淡入直達整備頁：黑幕「全蓋瞬間」才開整備頁（onCovered），
   // 揭幕時整備頁已就位——不會先閃一下整備頁又被黑幕蓋掉再轉場一次
   if(api.goHome) api.goHome(()=>{ if(menuApi.openPrep) menuApi.openPrep(); });

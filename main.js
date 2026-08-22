@@ -571,8 +571,9 @@ story.setBattleHandler((battleId, resume)=>{
     setTimeout(()=>story.open(resume), 420);
   });
   obs.observe(home, { attributes:true, attributeFilter:['class'] });
-  /* ⚠ 標成 story 場次：與首頁「教學」鈕分開（Ray 指定）。目前只分旗標，
-     台詞分流等諾薇兒版稿定案（見 modules/tutorial.js 的說明）。 */
+  /* ⚠ 標成 story 場次：與首頁「教學」鈕分開（Ray 指定）—— 這一場由諾薇兒帶
+     （台詞走 config.tutorial.story），且**打完不出結算頁**，直接回首頁讓上面
+     那個觀察器把劇情續下去（見 inspector.settle 開頭的 tutorialStoryRun）。 */
   tutorial.requestReplay({ story:true });
   launchBattle();
 });

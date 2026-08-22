@@ -178,6 +178,16 @@ function saveBestTotal(t, boss){
  * ========================================================================== */
 export function settle(totalTime, stats, opts={}){
   const isLose = !!opts.isLose;
+  /* 劇情版教學（諾薇兒帶的那一場）：結算頁**整個不出**（Ray 指定，見
+     script/TUTORIAL_LINES_NOUVELLE.md 第八節）—— 打完直接回主畫面，
+     由 main.js 的接手觀察器把劇情續下去。
+     ⚠ 要擋在**建結算頁之前**：擋在後面的話畫面會先閃一下評價再跳走。
+     ⚠ 勝負都擋：輸了也是回劇情（教學本身已有陣亡重來，走不到這裡）。 */
+  if(state.tutorialStoryRun){
+    state.tutorialRun=false; state.tutorialStoryRun=false;
+    setTimeout(()=>{ if(api.goHome) api.goHome(); }, 500);
+    return;
+  }
   if(isLose){
     const rows=combatStatsRows();
     showResultSequence(L.result.loseTitle, L.result.loseSub, rows, 'lose', true);

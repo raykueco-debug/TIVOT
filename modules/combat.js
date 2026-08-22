@@ -82,6 +82,7 @@ export function setup(){
     fillEnergy: ()=>addEnergy(100),       // 削血保底：直接填滿破防值（走滿值引導路徑）
     segmentRestart: tutorialSegmentRestart, // 教學陣亡：「重來！」該段重來（滿血重建本盤，不重播已完成段落）
     goHome,   // 跳過鈕：中止教學戰回主選單
+    playCutin: saint.playCutin,   // 劇情版教學：SAINT INSTALL 那一句配全畫面 cut-in
   });
   // 武器：反擊演算所需（enemyDamage/floatDmg）+ 雙槍破防窗口所需（cut-in/敵計時/盤面/破防值歸零）。
   weapon.init({
@@ -820,7 +821,7 @@ export function startGame(){
   $('transition').classList.remove('on');
   $('grid').classList.remove('saint'); $('grid').classList.remove('buffed'); $('grid').classList.remove('alert');
   state.cutinPlaying=false;
-  state.tutorialRun=false; state.tutorialLifeReturn=false;   // 教學場旗標歸零（tutorial 擁有；開場統一歸零、maybeStart 啟動時設回）
+  state.tutorialRun=false; state.tutorialStoryRun=false; state.tutorialLifeReturn=false;   // 教學場旗標歸零（tutorial 擁有；開場統一歸零、maybeStart 啟動時設回）
   stopAll();
   loadBoard(0); updateBars();
   tutorial.maybeStart();   // 首次出陣 → 進教學（穿插式；看過/跳過後恆 no-op）

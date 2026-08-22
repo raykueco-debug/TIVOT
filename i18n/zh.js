@@ -220,6 +220,72 @@ export const STRINGS = {
 
   /* ═══ 12. 教學關卡 ═══ */
   tutorial: {
+    /* ══ 劇情版教學（諾薇兒一個人帶）══════════════════════════════════
+       ⚠ 與下面那一份（芙蕾雅／蕾妮）是**兩套**，Ray 指定要分開：
+         這一份只在劇情帶起來的那一場用（tutorial.isStoryRun()），
+         首頁「教學」鈕仍走原本那一份。
+       ⚠ 每一句帶 `img`＝該句的表情差分（Ray 在對應表上逐句指定）。
+         沒寫就沿用 cast 的預設圖。
+       ⚠ 稿子的來源與改寫依據見 script/TUTORIAL_LINES_NOUVELLE.md。 */
+    story: {
+      steps: {
+        battleStart: [
+          { who:'nouvelle', img:'tut_nouvelle_cringe',
+            text:'對不起……接下來只能靠你了。我會在這裡告訴你該怎麼做。' },
+          { who:'nouvelle', img:'tut_nouvelle_surprise',
+            text:'不要緊張……照著數字的順序點下面的盤面就好。' },
+          { who:'nouvelle', img:'tut_nouvelle_surprise',
+            text:'敵人似乎還在觀查……先習慣手感就好。不過失誤、或者停太久的話，敵人還是會攻過來的！' },
+        ],
+        board1: [
+          { who:'nouvelle', img:'tut_nouvelle_surprise', text:'很好……你做得到的。小心！攻擊要來了！' },
+          { who:'nouvelle', img:'tut_nouvelle_surprise', text:'牠蓄力的時候，畫面上會出現光圈——那是要你防禦的信號。' },
+        ],
+        threat: [
+          { who:'nouvelle', img:'tut_nouvelle_surprise', text:'光圈會越縮越小。太早出手只能「擋下」，還是會受到一半的傷。' },
+          { who:'nouvelle', img:'tut_nouvelle_surprise', text:'等它縮得夠小、抓準那一瞬間，才能完美防下！' },
+          { who:'nouvelle', img:'tut_nouvelle_cringe',   text:'來了！擋下來！' },
+        ],
+        defended: [
+          { who:'nouvelle', img:'tut_nouvelle_surprise',
+            text:'擋下來了。如果在牠出手的前一瞬反擊，副武器可以打出很重的傷害。' },
+          { who:'nouvelle', img:'tut_nouvelle_surprise', text:'不要勉強。覺得危險的話，好好防下來就好。' },
+          /* ⚠ 原本芙蕾雅的「那樣的話，我的評價可不會留情。」Ray 指定**刪除** ——
+             她沒有評價玩家的立場。 */
+          { who:'nouvelle', img:'tut_nouvelle_surprise', text:'每一種副武器的效果和反擊時機都不一樣，要謹慎使用！' },
+        ],
+        strike: [
+          { who:'nouvelle', img:'tut_nouvelle_cringe', text:'危險——！' },
+        ],
+      },
+      script: {
+        dualReady:  [ { who:'nouvelle', img:'tut_nouvelle_surprise', text:'牠露出破綻了……就是現在！' } ],
+        dualGo:     [ { who:'nouvelle', img:'tut_nouvelle_surprise', text:'牠沒辦法抵抗了！不用管順序，打下去！' } ],
+        /* ⚠ 這一句配**全畫面 cut-in**（Ray 指定）。cutin 是資產鍵，見 config 的 ASSETS。 */
+        saintCall:  [ { who:'nouvelle', img:'tut_nouvelle_saint', cutin:'cutin_nouvelle_saint',
+                        text:'SAINT INSTALL......！' } ],
+        saintStart: [ { who:'nouvelle', img:'tut_nouvelle_saint',
+                        text:'在我......熔斷之前你不會死。可是每挨一下，熔斷就會更快。' },
+                      { who:'nouvelle', img:'tut_nouvelle_saint',
+                        text:'不要出錯……只要撐過這一回合，就還有機會。' } ],
+        saintFail:  [ { who:'nouvelle', img:'tut_nouvelle_saint', text:'堅持住！' } ],
+        finishMB:   [ { who:'nouvelle', img:'tut_nouvelle_desperate', text:'撐過來了……體力也回來一些了。收拾他吧！' } ],
+        finishLR:   [ { who:'nouvelle', img:'tut_nouvelle_desperate', text:'撐過來了……收拾他吧！' } ],
+      },
+      /* 插話：⚠ 由「責備」改成「她替你痛」（見對應表七節）。全部配 Cringe。 */
+      scold: {
+        wrong: ['看清楚數字……拜託你。', '別慌……順序，慢慢來就好。'],
+        delay: ['不能停下來……牠不會等你的。', '猶豫會受傷的！'],
+        early: ['太早了……再看清楚一點。'],
+        attackDuringThreat: { first:'防禦——！要來了！', rest:'…………' },
+        dead: '沒關係……我們再來一次。',
+        img: 'tut_nouvelle_cringe',
+      },
+      /* ⚠ 教學結算**整段刪除**（Ray 指定）—— 劇情版打完直接接回劇情，
+         不需要監察官的講評。 */
+      result: null,
+    },
+
     // ── 教學步驟對話（who: inspector=芙蕾雅 / partner=蕾妮）──
     steps: {
       battleStart: [

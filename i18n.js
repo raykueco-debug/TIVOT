@@ -112,6 +112,9 @@ export function applyToConfig(GC){
     tut.scold=JSON.parse(JSON.stringify(L.tutorial.scold));
     tut.guideLabels={...L.tutorial.guideLabels};
     tut.result={...L.tutorial.result};
+    /* 劇情版教學（諾薇兒）整份原樣掛上去 —— 結構與上面那份相同，
+       由 tutorial.js 依 isStoryRun() 決定讀哪一份。 */
+    tut.story = L.tutorial.story ? JSON.parse(JSON.stringify(L.tutorial.story)) : null;
     if(tut.cast){                                     // 教學立繪名牌：監察官/搭檔（蕾妮）
       if(tut.cast.inspector) tut.cast.inspector.name=L.inspector.name;
       if(tut.cast.partner)   tut.cast.partner.name=L.partners.renee.name;

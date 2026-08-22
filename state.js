@@ -130,6 +130,10 @@ export const state = {
   tutorialDialog: false,
   tutorialRun: false,    // 本場為教學戰（maybeStart 設 true、combat.startGame 歸零）：
                          //   與 tutorialActive 不同——存續到結算，inspector 據此切教學專屬台詞/按鈕
+  /* 本場教學是**劇情帶起來的那一場**（諾薇兒帶）：台詞走 tutorial.story 那一份，
+     且結算整段跳過（Ray 指定，見 script/TUTORIAL_LINES_NOUVELLE.md 第八節）。
+     ⚠ 與 tutorialRun 同壽命（開場歸零、requestReplay({story:true}) 設回）。 */
+  tutorialStoryRun: false,
   tutorialLifeReturn: false,   // 教學戰中發動過生命歸還（結算台詞分歧用；同 tutorialRun 存續到結算）。
                                //   ⚠ 不可用 partnerActiveUsed 判斷——蕾妮主動技無 oncePerBattle，該旗標不會被設
 
