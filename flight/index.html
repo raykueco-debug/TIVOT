@@ -289,7 +289,7 @@ const COLOR_URL  = 'silvermoon_terrain.png';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -307';
+const FLIGHT_VER = 'ver -308';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -651,6 +651,40 @@ function loadCityHeight(planH){
     cityHeight[planH]={w:hm.width,h:hm.height,d:g};
   };
   hm.src=planH;
+}
+
+/* ── 平面圖的預縮圖鏈（mipmap，ver -308）─────────────────────────────
+   ⚠⚠ 這是「格子狀破圖」的真因。城的平面圖是 1024px 寬，而逐格貼圖時**一格
+     只有幾個像素** —— 等於把大圖縮小十幾倍。canvas 的雙線性在縮小時只讀
+     **2×2 個 texel**，其餘 99% 的來源像素根本沒被看到：每一格各自抓到不同的
+     那 2×2，於是每格的亮度與細節都不一樣，拼起來就是一張網。
+   ⚠ 這條規則 CLAUDE.md §6.5 早就寫過（立繪縮小超過 2 倍要走逐次減半的預縮圖），
+     只是一直沒套到城的平面圖上。
+   ⚠ 一定要**逐次減半**，不能一步縮到位 —— 一步縮到位的那一步本身就是同一個
+     欠取樣問題。每次對半，雙線性的 2×2 剛好覆蓋來源的 4 個像素，資訊不漏。 */
+const cityPlanMip={};                       // plan key → [原圖, 1/2, 1/4, …]
+function planMipChain(key, img){
+  let chain=cityPlanMip[key];
+  if(chain) return chain;
+  chain=[img];
+  let w=img.width, h=img.height, src=img;
+  while(w>=32 && h>=32){
+    w=Math.max(1,w>>1); h=Math.max(1,h>>1);
+    const c=document.createElement('canvas'); c.width=w; c.height=h;
+    const g=c.getContext('2d');
+    g.imageSmoothingEnabled=true; g.imageSmoothingQuality='high';
+    g.drawImage(src,0,0,w,h);
+    chain.push(c); src=c;
+  }
+  cityPlanMip[key]=chain;
+  return chain;
+}
+/* 取「不小於實際需要」的那一層：寧可多一點解析度，也不要糊掉。 */
+function planMipFor(key, img, wantW){
+  const chain=planMipChain(key, img);
+  let i=0;
+  while(i+1<chain.length && chain[i+1].width>=wantW) i++;
+  return chain[i];
 }
 
 function ensureCityArt(s){
@@ -7046,8 +7080,14 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
       CFB.setTransform(1,0,0,1,0,0); CFB.clearRect(0,0,bwp,bhp);
       const kx=LOCK?pk:bwp/fw, ky=LOCK?pk:bhp/fh;
 
-      /* 來源矩形改逐格算（格線非均勻）：平面座標 −1..1 → 圖上像素。 */
-      const sux=planImg.width*0.5, svy=planImg.height*0.5;
+      /* ── 選預縮圖層級（見 planMipChain）───────────────────────────────
+         需要多寬：整張平面圖投影到**緩衝**上有多少像素。
+         2·hw 是世界寬度，(W/2z) 是該深度的世界→螢幕比，再乘 pk 進緩衝。 */
+      const wantW=Math.max(8, (2*hw)*(W/(2*Math.max(60,o.z)))*pk);
+      const planSrc=planMipFor(o.s.plan, planImg, wantW);
+      /* 來源矩形改逐格算（格線非均勻）：平面座標 −1..1 → 圖上像素。
+         ⚠ sux/svy 必須跟著**選到的那一層**走，不能沿用原圖尺寸。 */
+      const sux=planSrc.width*0.5, svy=planSrc.height*0.5;
       /* ── 由遠而近的順序：兩個掃描方向，不再排序 ────────────────
          格點在世界裡是規則網格，而深度 z＝dx·(−sinp)+dy·(−cosp) 是世界座標的
          線性組合 → **z 對 (jx,jy) 是仿射的**。所以「先畫遠的」不必比較大小，
@@ -7191,7 +7231,7 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
           // 緩衝的座標系＝(螢幕座標 − 外框原點) × 縮放
           CFB.setTransform(a1*kx, b1*ky, c1*kx, d1*ky,
                            (qax-a1*sx-c1*sy-bx0)*kx, (qay-b1*sx-d1*sy-by0)*ky);
-          CFB.drawImage(planImg, sx-ou*0.5, sy-ov*0.5, sw+ou, shh+ov,
+          CFB.drawImage(planSrc, sx-ou*0.5, sy-ov*0.5, sw+ou, shh+ov,
                                  sx-ou*0.5, sy-ov*0.5, sw+ou, shh+ov);
         }
       }
