@@ -477,3 +477,28 @@ F 節）：鎖眼寬會把**畫風差異放大成體型差異**。實測索拉�
 `script/TUTORIAL_LINES_NOUVELLE.md`，等 Ray 改完再依 `isStoryRun()` 分流。
 ⚠ 兩者都不動「已看過」旗標（`requestReplay` 本來就不動），所以劇情跑過教學
 不會讓首次出陣的自動教學消失。
+
+---
+
+# 交接 · `ver -322`（教學打完回到故事開頭；同角色換圖會疊影）
+
+## A. ⚠⚠ 打完教學回到**故事開頭**（Ray 回報）
+
+`resume` 是 `{scene, line: lineIdx+1}`。而戰鬥那一句是 `dungeon_chase` 的
+**最後一句**，所以 resume 的 line **剛好等於 `lines.length`**。
+舊寫法用 `pos.line < cur.lines.length` 擋掉越界 → 條件不成立 → 停在第 0 句。
+
+正解：**超出就走 `next` 接下一段**（那本來就是 `endScene` 的行為）。
+
+⚠ 這一類「剛好等於長度」的邊界很容易漏：`{battle:…}` 放在段中間時完全正常，
+只有放在**段尾**才會炸。日後任何「存位置／回位置」的機制都要想一下段尾那一格。
+
+## B. ⚠⚠ 同一角色換圖會**疊影**（Ray：「淡入淡出時不可重疊」）
+
+淡出是 CSS transition（180ms），但**載圖是非同步的**。舊寫法在 190ms 時
+`apply(); el.classList.remove('fading');` —— 移除 class 的那一瞬間元素上還是
+**舊圖**（新圖還沒載完），於是**舊圖先淡回來、新圖才蓋上去**，看起來就是兩張疊在一起。
+
+正解：`.fading` 要等**新圖 onload 之後**才拿掉。
+⚠ 還要處理「新圖已在快取」的情況 —— 那時 `onload` 不會再觸發，要靠
+`complete && naturalWidth` 這條退路（同 `ensureOn` 既有的作法）。

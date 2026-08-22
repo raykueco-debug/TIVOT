@@ -247,8 +247,20 @@ function ensureOn(id, expr){
       /* ⚠ 同一個人只換表情／換圖：走**淡入淡出**，不要滑出再滑進來
          （Ray 指定「立繪更換時要淡入淡出，不要直接切」）。
          人沒有離開舞台，滑一次會讀成「她走掉又走回來」。 */
+      /* ⚠⚠ `.fading` 要等**新圖載好**才拿掉（ver -322 修）。
+         舊寫法是換 src 之後**立刻**移除 —— 但載圖是非同步的，那一瞬間
+         元素上還是**舊圖**，於是舊圖先淡回來、新圖才蓋上去，看起來就是
+         兩張圖疊在一起（Ray：「同一角色的立繪切換淡入淡出時不可重疊」）。
+         ⚠ 也要處理「新圖已在快取」的情況：那時 onload 不會再觸發，
+           要靠 `complete && naturalWidth` 這條退路。 */
       el.classList.add('fading');
-      setTimeout(()=>{ apply(); el.classList.remove('fading'); }, 190);
+      setTimeout(()=>{
+        const back=()=>{ el.classList.remove('fading'); layout(); el.classList.add('on'); };
+        el.onload=()=>{ el.onload=null; back(); };
+        el.setAttribute('src', src);
+        el.dataset.who = id;
+        if(el.complete && el.naturalWidth){ el.onload=null; back(); }
+      }, 190);
     }
     slot[side]=id;
   }
@@ -656,7 +668,15 @@ export function open(pos, done){
   const go=()=>{
     if(ld) ld.classList.remove('on');
     playScene(id);
-    if(pos && pos.line>0 && cur && pos.line < cur.lines.length){ lineIdx=pos.line; renderLine(); }
+    if(pos && pos.line>0 && cur){
+      /* ⚠⚠ 續播位置**可能剛好等於該段的長度**（ver -322 修）。
+         戰鬥若是一段的最後一句，resume 就是 `lines.length` —— 舊寫法用
+         `pos.line < cur.lines.length` 擋掉，於是條件不成立、停在第 0 句
+         ＝**打完教學回到故事開頭**（Ray 回報）。
+         正解是「超出就走 next 接下一段」，那本來就是 endScene 的行為。 */
+      if(pos.line < cur.lines.length){ lineIdx=pos.line; renderLine(); }
+      else { lineIdx = cur.lines.length; endScene(); }
+    }
   };
   if(pos && pos.line>0){ go(); return; }
   if(ld){
