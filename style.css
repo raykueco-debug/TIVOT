@@ -1210,7 +1210,9 @@
   /* CG 由下往上平移：用 object-position 推，不用 transform —— transform 會把
      cover 的裁切一起搬走，邊緣會露出底色。 */
   #storyCg.pan-up{animation:storyPanUp 2.6s ease-out forwards;}
+  #storyCg.pan-down{animation:storyPanDown 2.6s ease-out forwards;}
   @keyframes storyPanUp{ from{object-position:50% 100%;} to{object-position:50% 0%;} }
+  @keyframes storyPanDown{ from{object-position:50% 0%;} to{object-position:50% 100%;} }
   /* 暗調 CI 插入：半身/全身圖從側邊切進來，壓暗到只剩剪影感（Ray 指定「暗調」）。
      ⚠ 壓暗用 filter 不用 opacity（CLAUDE.md §6.5：壓暗必須不透明）。 */
   #storyCi{position:absolute;left:0;right:0;top:0;height:var(--story-top);z-index:3;

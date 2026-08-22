@@ -71,7 +71,8 @@ export const MAIN_SCRIPT = {
       { speaker:'NOUVELLE', text:'啊！', shake:true, se:'se_Fall',
         portrait:{ expr:'cringe' } },
       /* 跌倒：切全屏插圖。⚠ cg 一上來就蓋住立繪，所以這一句不必也不要再改 expr。 */
-      { speaker:'NOUVELLE', text:'別管我！你快走！', cg:'001_Nouvelle_Fell' },
+      { speaker:'NOUVELLE', text:'別管我！你快走！',
+        cg:'001_Nouvelle_Fell', cgPan:'down' },
       /* 上膛：兩聲隔 0.5 秒交疊。 */
       { speaker:'NOUVELLE', text:'你……！',
         se:[{n:'se_weapon_reload'},{n:'se_weapon_reload',delay:500}] },
@@ -99,7 +100,7 @@ export const MAIN_SCRIPT = {
            但 resources/audio/se/ 裡沒有那個素材，先缺著。 */
       { speaker:'UNKNOWN', text:'', fx:'gunfire', shake:true, se:'se_lunaMG' },
       /* 回地宮。⚠ cg:null 要明寫，否則插圖會一直蓋著。 */
-      { speaker:'NOUVELLE', text:'那就是......聖約第四騎士團......！',
+      { speaker:'NOUVELLE', text:'那就是......聖約第四騎士團的......',
         cg:null, bg:'HolyseeDungeonWhole', portrait:{ expr:'surprise' } },
       /* 璐娜莉亞的插畫：由下往上平移。 */
       { speaker:'NOUVELLE', text:'璐娜莉亞團長……！',

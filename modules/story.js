@@ -272,7 +272,7 @@ function typeFinish(el, text){
 
      bg:'HolyseeDungeonWhole'   背景（resources/background/*.webp）。bg:null 清掉
      cg:'001_Nouvelle_Fell'     全屏插圖（resources/illustration/*.webp）。cg:null 清掉
-     cgPan:'up'                 這一句的 CG 由下往上平移
+     cgPan:'up' / 'down'        這一句的 CG 平移（up＝由下往上、down＝由上往下）
      ci:'Lunaria_SI_Armed'      暗調 CI 插入（resources/SI/*.webp）。ci:null 收掉
      card:'1908年6月13日，聖王廳地宮G2區'   情境卡：背景上蓋半透黑＋置中文字
                                 有 card 的那一句**不顯示對話框**（它不是台詞）
@@ -336,8 +336,11 @@ function applyPersist(line){
   /* 平移是**這一句**的效果，不沿用 —— 每次都要先拿掉再加，否則第二次不會重播
      （同一個 class 還在，animation 不會重新開始）。 */
   const cg=$('storyCg');
-  if(cg){ cg.classList.remove('pan-up');
-    if(line.cgPan==='up'){ void cg.offsetWidth; cg.classList.add('pan-up'); } }
+  if(cg){ cg.classList.remove('pan-up','pan-down');
+    if(line.cgPan==='up' || line.cgPan==='down'){
+      void cg.offsetWidth;                       // 見上：不重設 class，animation 不會重播
+      cg.classList.add(line.cgPan==='up'?'pan-up':'pan-down');
+    } }
 }
 /* 音效：**逐支列出實際路徑**，不要用字串拼副檔名 —— 這個資料夾裡 wav/mp3/m4a
    三種都有，拼出來的路徑會靜默 404（audio.js 載不到只會 resolve(null)，不報錯）。 */
@@ -389,7 +392,14 @@ function fireOneShot(line){
   if(line.se) playSe(line.se);
   if(line.shake){
     const st=$('storyStage');
-    if(st){ st.classList.remove('shake'); void st.offsetWidth; st.classList.add('shake'); }
+    if(st){
+      st.classList.remove('shake'); void st.offsetWidth; st.classList.add('shake');
+      /* ⚠⚠ 動畫跑完要**把 class 拿掉**（ver -318 修）。留著的話那些場景層一旦
+         重新顯示（插圖換圖是 display:none→block），animation 會**再跑一次** ——
+         Ray 回報「最後一格不要抖」就是這個：抖的是上一句的 shake 殘留。 */
+      clearTimeout(st.__shakeT);
+      st.__shakeT=setTimeout(()=>st.classList.remove('shake'), 460);
+    }
   }
   if(line.fx==='gunfire') fireHits(2000);   // Ray 指定：視覺持續兩秒
 }
