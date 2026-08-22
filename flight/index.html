@@ -289,7 +289,7 @@ const COLOR_URL  = 'silvermoon_terrain.png';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -310';
+const FLIGHT_VER = 'ver -311';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -3407,6 +3407,8 @@ const MASS_ON_PX = 27;
 const MASS_OFF = 0.6;
 /* 相鄰格／子格的重疊量，單位是**緩衝像素**（不是來源圖的像素，見用到的地方）。 */
 const OVER_PX = 2.0;
+/* 底圖往下的厚度（世界單位，Ray 指定 50）。見 drawSettlements3D 的「底圖的厚度」。 */
+const PLATE_DROP = 50;
 /* ── 量體層的淡入淡出（ver -290）────────────────────────────────────
    ⚠ ver -285 修掉了「畫質換檔把整層抹掉」，但**越過門檻的那一下仍是瞬間全開**
      —— 布林旗標一翻，24 塊量體同時出現，看起來就是聖王廳的立體感「啪」一聲
@@ -7101,6 +7103,40 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
          2·hw 是世界寬度，(W/2z) 是該深度的世界→螢幕比，再乘 pk 進緩衝。 */
       const wantW=Math.max(8, (2*hw)*(W/(2*Math.max(60,o.z)))*pk);
       const planSrc=planMipFor(o.s.plan, planImg, wantW);
+      /* ── 底圖的厚度：逐格往下拉一道垂直四邊形（ver -311，Ray 指定 50）──────
+         症狀：廣場上會有**幾條斜穿過去的草地**露出來 —— 平面圖是一張沒有厚度
+         的紙，只要有一小段地形比它高，那一段就從紙上冒出來，形成一條長帶。
+         ⚠⚠ **這裡必須用幾何，不能用螢幕空間的抹壓。** -300~-302 試過「取剪影
+           往下疊 N 個像素」：N 隨距離變，貼近時 50 個世界單位投影成上百像素，
+           整座城下緣被抹成一大片灰白；夾小又會露縫。兩邊都不對。
+         幾何版：每一格的四角各自往下沉 PLATE_DROP 個**世界單位**，
+         螢幕位移 = (h/z)·scaleH·syk —— 每個角用自己的 z，所以透視自動正確，
+         遠處自然變薄、近處自然變厚，不會有任何一個距離「爆掉」。
+         ⚠ 累積成一條路徑一次 fill。所有四邊形都照同一個環序送點，纏繞方向
+           一致 —— 反向的兩塊在 nonzero 規則下會**互相抵消**挖出洞（ver -304
+           在量體牆上踩過這個坑）。
+         ⚠ 排在平面圖之前：它是「底圖的側面」，平面圖要蓋在它上面。 */
+      if(o.s.hasPodium){
+        const dyk=scaleH*syk, row0=NU+1;
+        CFB.setTransform(kx,0,0,ky,-bx0*kx,-by0*ky);
+        CFB.fillStyle=o.s.plateCol||'rgba(206,198,178,1)';
+        CFB.beginPath();
+        let any=false;
+        for(let jy=0;jy<NV;jy++){
+          const r0=jy*row0*4, r1=r0+row0*4;
+          for(let jx=0;jx<NU;jx++){
+            const qa=r0+jx*4, qb=qa+4, qc=r1+jx*4, qd=qc+4;
+            const za=PT[qa+3], zb=PT[qb+3], zc2=PT[qc+3], zd=PT[qd+3];
+            if(za<CITY_ZNEAR||zb<CITY_ZNEAR||zc2<CITY_ZNEAR||zd<CITY_ZNEAR) continue;
+            const da=PLATE_DROP/za*dyk, db=PLATE_DROP/zb*dyk,
+                  dc=PLATE_DROP/zc2*dyk, dd=PLATE_DROP/zd*dyk;
+            CFB.moveTo(PT[qa],PT[qa+1]+da); CFB.lineTo(PT[qb],PT[qb+1]+db);
+            CFB.lineTo(PT[qd],PT[qd+1]+dd); CFB.lineTo(PT[qc],PT[qc+1]+dc);
+            CFB.closePath(); any=true;
+          }
+        }
+        if(any) CFB.fill();
+      }
       /* 來源矩形改逐格算（格線非均勻）：平面座標 −1..1 → 圖上像素。
          ⚠ sux/svy 必須跟著**選到的那一層**走，不能沿用原圖尺寸。 */
       const sux=planSrc.width*0.5, svy=planSrc.height*0.5;
@@ -7333,6 +7369,7 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
         /* 第一趟：牆。整批累積成一條路徑，最後一次 fill。 */
         CFB.setTransform(kx,0,0,ky,-bx0*kx,-by0*ky);
         CFB.beginPath();
+        const MSTAT=window.__MSTAT={n:MS.n,near:0,ratio:0,off:0,small:0,wall:0,roof:0,rNear:0,worst:0,name:o.s.n};
         let anyWall=false;
         const drawn=[];
         for(let t=0;t<MS.n;t++){
@@ -7351,12 +7388,12 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
             if(zk<MASS_ZNEAR){ ok=false; break; }
             if(zk<zlo)zlo=zk; if(zk>zhi)zhi=zk;
           }
-          if(!ok)continue;
+          if(!ok){ MSTAT.near++; continue; }
           /* ⚠ 保險絲：一塊之內的深度比例失控（近端比遠端近三倍以上）就整塊不畫。
              仿射矩陣吃不下這種形狀，畫出來是一道放射狀的拖曳 —— 低空貼近帝都時
              會看到一條白色光柱從城裡射進天空（使用者回報的「飄圖穿過前景」）。
              舊的網格版本有這條，我搬成多邊形時漏了。寧可缺一塊。 */
-          if(zhi>zlo*MASS_ZRATIO)continue;
+          if(zhi>zlo*MASS_ZRATIO){ MSTAT.ratio++; MSTAT.worst=Math.max(MSTAT.worst,zhi/Math.max(zlo,1e-6)); continue; }
           /* 頂面 y：各頂點用自己的 z（近的牆高、遠的牆矮，稜柱該有的透視）。 */
           for(let k=0;k<np2;k++){
             const L=hW*dyk/P[k*4+3];
@@ -7365,8 +7402,8 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
             if(px<mnx)mnx=px; if(px>mxx)mxx=px;
             if(ty<mny)mny=ty; if(P[k*4+1]>mxy)mxy=P[k*4+1];
           }
-          if(mnx>bx1||mxx<bx0||mny>by1||mxy<by0) continue;
-          if(mxx-mnx<Q().blk&&mxy-mny<Q().blk) continue;  // 螢幕上太小就不畫
+          if(mnx>bx1||mxx<bx0||mny>by1||mxy<by0){ MSTAT.off++; continue; }
+          if(mxx-mnx<Q().blk&&mxy-mny<Q().blk){ MSTAT.small++; continue; }
           // 頂面的螢幕帶號（shoelace）
           for(let k=0;k<np2;k++){
             const k2=(k+1)%np2;
@@ -7400,7 +7437,7 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
             }
             CFB.closePath(); anyWall=true;
           }
-          drawn.push(bi);
+          drawn.push(bi); MSTAT.wall++;
         }
         if(anyWall) CFB.fill();                           // fillStyle 沿用地面層的暗色
         /* 第二趟：屋頂。每塊一次 drawImage —— atlas 上那一格已經帶著自己的
@@ -7428,12 +7465,12 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
              目標：每一小格的深度比 ≤ 1.25。 */
           projectInto(MP,0,(gx0*hw*ca-gy0*hh*sa)/MAP_SCALE,(gx0*hw*sa+gy0*hh*ca)/MAP_SCALE,hW);
           const z00=MP[3];
-          if(z00<MASS_ZNEAR)continue;
+          if(z00<MASS_ZNEAR){ MSTAT.rNear++; continue; }
           projectInto(MP,0,(gx1*hw*ca-gy0*hh*sa)/MAP_SCALE,(gx1*hw*sa+gy0*hh*ca)/MAP_SCALE,hW);
           const z10=MP[3];
           projectInto(MP,0,(gx0*hw*ca-gy1*hh*sa)/MAP_SCALE,(gx0*hw*sa+gy1*hh*ca)/MAP_SCALE,hW);
           const z01=MP[3];
-          if(z10<MASS_ZNEAR||z01<MASS_ZNEAR)continue;
+          if(z10<MASS_ZNEAR||z01<MASS_ZNEAR){ MSTAT.rNear++; continue; }
           const zmin=Math.max(60,Math.min(z00,z10,z01));
           const rU=Math.abs(z10-z00)/zmin, rV=Math.abs(z01-z00)/zmin;
           const nU=Math.min(RSPLIT_MAX,Math.max(1,Math.ceil(rU/0.25)));
@@ -7478,6 +7515,7 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
             const mu2=Math.hypot(a2m*kx, b2m*ky), mv2=Math.hypot(c2m*kx, d2m*ky);
             const eu=(iu<nU-1)?clamp(OVER_PX/Math.max(mu2,1e-6),0.3,6):0;
             const ev=(iv<nV-1)?clamp(OVER_PX/Math.max(mv2,1e-6),0.3,6):0;
+            MSTAT.roof++;
             CFB.drawImage(mip.img, sxm,sym,swm+eu,shm+ev, sxm,sym,swm+eu,shm+ev);
             if(GRIDDBG){
               CFB.setTransform(kx,0,0,ky,-bx0*kx,-by0*ky);
