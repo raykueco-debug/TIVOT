@@ -346,6 +346,7 @@ const SE_SRC={
   se_weapon_reload: 'resources/audio/se/se_weapon_reload.mp3',
   se_mg_squall:     'resources/audio/se/se_weapon_mg_squall.mp3',
   se_lunaMG:        'resources/audio/se/se_lunaMG.wav',
+  se_Fall:          'resources/audio/se/se_Fall.mp3',
 };
 function playSe(spec){
   const one=(n,delay)=>{ const src=SE_SRC[n];

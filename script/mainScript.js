@@ -66,7 +66,10 @@ export const MAIN_SCRIPT = {
       /* 開場：腳步聲與喘息。 */
       { speaker:'NOUVELLE', text:'追、追上來了！', se:'se_steps',
         portrait:{ char:'NOUVELLE', expr:'run', show:true } },
-      { speaker:'NOUVELLE', text:'啊！', portrait:{ expr:'cringe' } },
+      /* ⚠ 這一拍要抖（Ray 指定）。抖的是場景各層，對話框不抖 —— 見 style.css
+         的 `#storyStage.shake` 選擇器清單。 */
+      { speaker:'NOUVELLE', text:'啊！', shake:true, se:'se_Fall',
+        portrait:{ expr:'cringe' } },
       /* 跌倒：切全屏插圖。⚠ cg 一上來就蓋住立繪，所以這一句不必也不要再改 expr。 */
       { speaker:'NOUVELLE', text:'別管我！你快走！', cg:'001_Nouvelle_Fell' },
       /* 上膛：兩聲隔 0.5 秒交疊。 */
@@ -92,9 +95,9 @@ export const MAIN_SCRIPT = {
       { speaker:'NOUVELLE', text:'！！', ci:null, portrait:{ expr:'scared' } },
       /* 密集槍擊：命中點灑在 002 上，畫面同時抖一下。
          ⚠ 這一句沒有台詞（text 空字串）——它是**演出拍**，玩家點一下推過去。
-         ⚠ 槍聲暫用重機槍的連射音（se_mg_squall）；Ray 原稿只指定了彈殼落地音，
-           而那個檔案不存在。兩者都待確認。 */
-      { speaker:'UNKNOWN', text:'', fx:'gunfire', shake:true, se:'se_mg_squall' },
+         ⚠ 槍聲用 se_lunaMG（Ray 指定）。原稿另有「彈殼落地音」那一拍，
+           但 resources/audio/se/ 裡沒有那個素材，先缺著。 */
+      { speaker:'UNKNOWN', text:'', fx:'gunfire', shake:true, se:'se_lunaMG' },
       /* 回地宮。⚠ cg:null 要明寫，否則插圖會一直蓋著。 */
       { speaker:'NOUVELLE', text:'那就是......聖約第四騎士團......！',
         cg:null, bg:'HolyseeDungeonWhole', portrait:{ expr:'surprise' } },

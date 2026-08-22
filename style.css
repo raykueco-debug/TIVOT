@@ -1241,8 +1241,18 @@
     box-shadow:0 0 14px 4px rgba(255,180,60,.45);
     animation:storyHit .30s ease-out forwards;}
   @keyframes storyHit{ from{opacity:1;} 35%{opacity:.95;} to{opacity:0;} }
-  /* 畫面抖動：短、快、幅度小 —— 大幅度會讀成「畫面壞了」而不是「被打」。 */
-  #storyStage.shake{animation:storyShake .42s cubic-bezier(.36,.07,.19,.97);}
+  /* 畫面抖動：短、快、幅度小 —— 大幅度會讀成「畫面壞了」而不是「被打」。
+     ⚠⚠ 抖的是**場景各層**，不是整個舞台（Ray 指定「對話框不要抖」）。
+       抖整個舞台會連對話框一起晃，字在跳的框裡很難讀。
+     ⚠ 新增場景層時**要記得加進這個選擇器清單** —— 漏了那一層就不會跟著抖，
+       畫面會分成「抖的」與「不抖的」兩半，比不抖還糟。 */
+  #storyStage.shake #storyBg,
+  #storyStage.shake #storyCast,
+  #storyStage.shake #storyCg,
+  #storyStage.shake #storyCi,
+  #storyStage.shake #storyFx,
+  #storyStage.shake #storyCard,
+  #storyStage.shake #storyBoard{animation:storyShake .42s cubic-bezier(.36,.07,.19,.97);}
   @keyframes storyShake{
     10%{transform:translate(-4px,2px);}  20%{transform:translate(5px,-3px);}
     30%{transform:translate(-6px,-2px);} 40%{transform:translate(4px,3px);}
