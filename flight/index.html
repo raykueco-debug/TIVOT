@@ -445,7 +445,10 @@ const SETTLEMENTS = [
     plan:'city/holysee_plan.webp', planH:'city/holysee_h.webp',
     /* ⚠ ver -213：整體縮至 50%(1100→550)。planTall 必須同步減半，否則
        高度/半徑比從 0.18 變成 0.36，聖座會變成一叢細高竹竿。 */
-    planW:550, planRot:0.0, planTall:50, noWater:true, noLamps:true,
+    /* ⚠ planTall ver -304 由 50 提到 68（Ray：「把藍頂的部份厚度加一些」）。
+       量體越厚，屋頂與地面之間那條帶越寬，四面全畫之後那條帶是實心的，
+       底下的地形就再也透不出來。 */
+    planW:550, planRot:0.0, planTall:68, noWater:true, noLamps:true,
     /* ⚠ podium：把地基整平成一塊實心台地（見 buildRelief 的台座段）。
        聖王廳非開不可 —— 它蓋在起伏最大的一塊地上，不整平的話高地會頂穿
        廣場中央的白石地板（露出底下的綠地）。
@@ -7287,9 +7290,26 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
             const k2=(k+1)%np2;
             const pxx=P[k*4], pyy=P[k*4+1], Lp=P[k*4+2];
             const qxx=P[k2*4], qyy=P[k2*4+1], Lq=P[k2*4+2];
+
+            /* 只畫朝鏡頭那一邊：其餘被自己擋住。
+               ⚠ ver -304 實測過**四面全畫**：覆蓋 3057→3078、破洞 257→273，
+                 在指標的噪訊範圍內，等於**沒有差別**，卻多一倍路徑。
+                 所以「破洞沿著街廓輪廓」不是背面牆被剔掉造成的，別再往這裡改。 */
             if((qxx-pxx)*S2>=0) continue;
-            CFB.moveTo(pxx,pyy-Lp); CFB.lineTo(qxx,qyy-Lq);
-            CFB.lineTo(qxx,qyy);    CFB.lineTo(pxx,pyy);
+            /* ⚠⚠ 纏繞方向必須**統一**。所有的牆累積成同一條路徑、最後一次
+               `fill()`，而 canvas 預設是 **nonzero** 規則 —— 兩塊反向纏繞的
+               四邊形疊在一起會**互相抵消**，挖出一個洞。剔背面時剩下的都同向
+               所以看不出來；四面全畫之後就炸了（實測覆蓋反而由 3057 掉到
+               2520、破洞 257→432）。
+               這種牆是一條「垂直帶」，纏繞方向只取決於 x 的走向，
+               所以 x 往回走的那一面照反序送點即可。 */
+            if(qxx>=pxx){
+              CFB.moveTo(pxx,pyy-Lp); CFB.lineTo(qxx,qyy-Lq);
+              CFB.lineTo(qxx,qyy);    CFB.lineTo(pxx,pyy);
+            }else{
+              CFB.moveTo(pxx,pyy);    CFB.lineTo(qxx,qyy);
+              CFB.lineTo(qxx,qyy-Lq); CFB.lineTo(pxx,pyy-Lp);
+            }
             CFB.closePath(); anyWall=true;
           }
           drawn.push(bi);
