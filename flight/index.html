@@ -289,7 +289,7 @@ const COLOR_URL  = 'silvermoon_terrain.png';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -313';
+const FLIGHT_VER = 'ver -314';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -1571,6 +1571,36 @@ function senseUnlock(a){
   }catch(_){ }
 }
 
+/* ══ Sturm（衝刺）══════════════════════════════════════════════════
+   長按**方向計**兩秒發動：十秒兩倍速，並自動前進一秒；充能一分鐘。
+   ⚠ 為什麼綁在方向計上而不是另開按鈕：那條橫帶本來就是「航向」這件事的
+     介面，衝刺是航向的延伸；而且它在單手可及的位置，不用挪手。
+   ⚠ 長按與操舵**不衝突**：操舵是靠位移算油門與舵量的，按住不動 fwd/rgt 就是 0
+     —— 一動就取消充能（同船身長按的作法，見 senseT0）。 */
+const STURM_HOLD_MS  = 1000;    // 長按多久發動（ver -314 由 2000 改 1000，Ray 指定）
+const STURM_DUR_MS   = 10000;   // 加速持續
+const STURM_AUTO_MS  = 1000;    // 自動前進（發動的推背感）
+const STURM_CD_MS    = 60000;   // 充能
+const STURM_MULT     = 2;       // 倍速
+const STURM_FLASH_MS = 500;     // 立繪閃一下（Ray：先用 0.5 秒看看）
+let sturmT0=0;        // 方向計按下的時刻（0＝沒在按）
+let sturmUntil=0;     // 加速結束
+let sturmAutoUntil=0; // 自動前進結束
+let sturmReady=0;     // 充能完成時刻
+let sturmFlash=0;     // 立繪脈動起點
+/* ⚠ 音效與立繪都要在**手勢當下**先解鎖／預抓：發動是按滿兩秒之後才發生的，
+     那時早就離開手勢，iOS 不會讓你播（同 senseUnlock 的說明）。 */
+const sturmSE = new Audio('../resources/audio/se/Sturm.mp3'); sturmSE.preload='auto';
+const sturmCI = new Image(); sturmCI.src='../resources/CI/Nouvelle_Sturm.webp';
+/* 方向計的命中框：往外放一點才好按（那條帶只有 30px 高）。 */
+function sturmHit(px,py){
+  const C=compassRect();
+  return px>=C.x-8 && px<=C.x+C.w+8 && py>=C.y-10 && py<=C.y+C.h+10;
+}
+function sturmCancel(){ sturmT0=0; }
+/* 充能進度 0..1（給面板顯示用，目前只在方向計上發光）。 */
+function sturmCharge(now){ return clamp(1-(sturmReady-now)/STURM_CD_MS,0,1); }
+
 /* 立繪不進開場的擋畫面預載，但**開場結束後要在背景先抓好**。
    ⚠ 召喚只有 1 秒，來不及現抓：原檔 PNG 2.5MB，手機網路上那 1 秒鐘只會看到
      一片暗畫面沒有人。轉成 webp 之後 460KB（18%），再加上開場後就先暖起來。 */
@@ -1950,7 +1980,11 @@ function talkStart(now){
   say(t.lines, now);
 }
 
-let senseTries=[];              // 最近幾次「按下探索」的時戳（滑動視窗）
+let senseTries=[];              // 最近幾次**完成**探索的時戳（滑動視窗，見 senseFire）
+let senseNagged=false;          // 這一輪冷卻裡已經抱怨過整段了沒
+let senseRdyFlash=0;            // 探索冷卻完成的閃光起點（船的輪廓）
+let sturmRdyFlash=0;            // Sturm 冷卻完成的閃光起點（方向計）
+const RDY_FLASH_MS=520;         // 兩者共用：就緒閃一下的長度
 /* ══ 對白舞台 ══
    沿用戰鬥教學的語彙（modules/tutorial.js + style.css 的 #tutCast）：
      · 左右兩個站位，立繪從**自己那一側**滑入
@@ -2184,12 +2218,18 @@ function senseUpdate(now){
   const held=now-senseT0;
   if(held<SENSE_SUMMON_MS){ if(senseOn) senseCancel(); return; }
   if(!senseOn){
+    /* ⚠ ver -314：**只檢查、不計數**。計數搬到 senseFire()（真的完成才算）——
+       Ray：「探索功能要『完成』才計數，不是發動就計數」。中途放手取消的
+       那些不該吃掉冷卻，否則手滑一次就要再等 30 秒。 */
     senseTries=senseTries.filter(t=>now-t<SENSE_TRY_WIN);
-    senseTries.push(now);
-    if(senseTries.length>=SENSE_TRY_N){
+    if(senseTries.length>=SENSE_TRY_N-1){
+      /* ⚠ 改成「完成才計數」之後，視窗內的次數最多是 1（第二次會被這裡擋掉），
+         所以不能再用次數去分「第一次抱怨」與「之後」—— 另外記一個旗標。
+         不記的話整段兩拍對白每次都重播，那會變成懲罰而不是玩笑。 */
       /* 被擋下的第一次是兩拍的對白；之後每次只回一句 —— 一直重播整段
          會變成懲罰而不是玩笑。 */
-      if(senseTries.length===SENSE_TRY_N){
+      if(!senseNagged){
+        senseNagged=true;
         /* ⚠ 接話的人是**輪替**不是隨機（Ray 指定「輪流出現」，ver -263）。
            原本是 Math.random() 二選一 —— 隨機會連抽到同一個人，玩家看到的
            是「又是她」，那就不叫輪流了。改成依序循環，三個人保證都會輪到。 */
@@ -2217,6 +2257,11 @@ function senseUpdate(now){
    兩者刻意不同層。 */
 function senseFire(){
   senseFireAt=performance.now(); senseT0=0; senseRingDone=false;
+  /* ⚠ 冷卻在**這裡**才計數（ver -314）：撐完整段才算用掉一次。 */
+  const now=senseFireAt;
+  senseTries=senseTries.filter(t=>now-t<SENSE_TRY_WIN);
+  senseTries.push(now);
+  senseRdyFlash=0;                     // 重新進入冷卻，把「就緒閃光」清掉
 }
 
 /* 光圈：**對齊最後一聲心跳**。以 senseBeat 的播放位置判定，音訊不可用時
@@ -3575,6 +3620,13 @@ stage.addEventListener('pointerdown',e=>{
   /* 長按船身＝感應隱藏點位（節奏見 SENSE_SUMMON_MS/SENSE_HOLD_MS）。
      ⚠ 與操舵不衝突：操舵是靠**位移**算油門與舵量的，按住不動 fwd/rgt 就是 0
        —— 船會自己慢下來，正好是「停下來感應」。一動就取消（見 pointermove）。 */
+  /* 長按方向計＝Sturm 充能。⚠ 充能未滿就不起算 —— 讓「按了沒反應」直接
+     對應到「還沒充好」，不會讓人以為是判定失靈。 */
+  sturmT0=0;
+  if(sturmHit(e.clientX,e.clientY) && performance.now()>=sturmReady){
+    sturmT0=performance.now();
+    senseUnlock(sturmSE);          // ⚠ 必須在手勢裡解鎖，見 sturmSE 的說明
+  }
   senseT0=0;
   if(shipHit){
     const d=Math.hypot(e.clientX-shipHit.x, e.clientY-shipHit.y);
@@ -3590,6 +3642,7 @@ stage.addEventListener('pointermove',e=>{
   const dx=e.clientX-ox, dy=e.clientY-oy;
   moved=Math.max(moved,Math.hypot(dx,dy));
   if(moved>TAP_SLOP && senseT0) senseCancel();      // 一動就不是長按
+  if(moved>TAP_SLOP && sturmT0) sturmCancel();       // 同上：一動就不是長按
   fwd=clamp(dy/DRAG_FULL,-1,1);                   // 往下（往後）拉＝前進
   const mag=Math.max(0,Math.abs(dx)-STEER_DEAD);  // 扣掉死區後才算舵量
   rgt=clamp(-Math.sign(dx)*mag/(DRAG_FULL-STEER_DEAD),-1,1);   // 往左拉＝往右偏
@@ -3606,6 +3659,7 @@ const endDrag=e=>{
   }
   if(dragId!==null){ try{ stage.releasePointerCapture(dragId); }catch(_){} }
   dragging=false; dragId=null; fwd=0; rgt=0;
+  sturmCancel();
 };
 stage.addEventListener('pointerup',endDrag);
 stage.addEventListener('pointercancel',endDrag);
@@ -3983,6 +4037,18 @@ if(ADMIN) window.resetFlags=()=>{
 /* 鐵路與火車驗收用：RAIL_PATHS／TRAINS 都是 top-level，外部讀不到。
    回「每條線多長、現在車跑到哪、還要等多久發車」—— 要確認「偶有」這件事
    有沒有做到，看的就是這三個數。 */
+/* Sturm 的即時狀態（調參與驗收用）。與 dbgRail／dbgSnd 同規格。 */
+/* 探索的冷卻狀態（改成「完成才計數」之後要看得到，見 senseFire）。 */
+if(ADMIN) window.dbgSense=()=>{ const t=performance.now(); return {
+  視窗內完成次數: senseTries.length,
+  冷卻剩餘: senseTries.length? Math.max(0,+((SENSE_TRY_WIN-(t-senseTries[0]))/1000).toFixed(1)) : 0,
+  抱怨過: senseNagged, 就緒閃光中: !!senseRdyFlash }; };
+if(ADMIN) window.dbgSturm=()=>{ const t=performance.now(); return {
+  充能中: sturmT0? +((t-sturmT0)/STURM_HOLD_MS).toFixed(2) : 0,
+  加速剩餘: Math.max(0,+((sturmUntil-t)/1000).toFixed(2)),
+  自動前進剩餘: Math.max(0,+((sturmAutoUntil-t)/1000).toFixed(2)),
+  充能完成剩餘: Math.max(0,+((sturmReady-t)/1000).toFixed(2)),
+  立繪剩餘: sturmFlash? Math.max(0,+((STURM_FLASH_MS-(t-sturmFlash))/1000).toFixed(2)) : 0 }; };
 if(ADMIN) window.dbgRail=()=>({
   lines:RAIL_PATHS.length,
   trains:TRAINS.map(T=>({
@@ -4413,14 +4479,39 @@ function skyColors(S){
 }
 
 function update(dt,now){
+  /* ── Sturm 發動判定 ────────────────────────────────────────────
+     ⚠ 放在 update 開頭而不是繪製裡：發動會改速度與油門，那是狀態不是畫面。 */
+  /* ── 冷卻完成：閃一下告訴玩家「可以再用了」──────────────────────
+     ⚠ 用「上一幀還沒好、這一幀好了」的邊緣觸發，不是每幀判 ready ——
+       後者會一直閃。旗標本身就是節流器。 */
+  if(sturmReady && now>=sturmReady){ sturmRdyFlash=now; sturmReady=0; }
+  if(senseTries.length){
+    const oldest=senseTries[0];
+    if(now-oldest>=SENSE_TRY_WIN){
+      senseTries=senseTries.filter(t=>now-t<SENSE_TRY_WIN);
+      if(!senseTries.length){ senseRdyFlash=now; senseNagged=false; }
+    }
+  }
+  if(sturmT0 && now-sturmT0>=STURM_HOLD_MS){
+    sturmUntil     = now + STURM_DUR_MS;
+    sturmAutoUntil = now + STURM_AUTO_MS;
+    sturmReady     = now + STURM_CD_MS;    // 充能由**發動**起算，不是由結束起算
+    sturmFlash     = now;
+    playSfx(sturmSE);                      // 不 loop（Audio 預設就是）
+    sturmT0=0;
+  }
   // 鍵盤：傳統配置（WASD／方向鍵），直接餵進同一組操作向量
   let f=fwd, r=rgt;
   if(keys.w||keys.arrowup)    f=1;
   if(keys.s||keys.arrowdown)  f=-0.5;
   if(keys.a||keys.arrowleft)  r=-1;
   if(keys.d||keys.arrowright) r=1;
-  const held = dragging || keys.w||keys.s||keys.a||keys.d ||
-               keys.arrowup||keys.arrowdown||keys.arrowleft||keys.arrowright;
+  let held = dragging || keys.w||keys.s||keys.a||keys.d ||
+             keys.arrowup||keys.arrowdown||keys.arrowleft||keys.arrowright;
+  /* 發動後自動前進一秒：把油門推滿。⚠ 要**同時**把 held 打開 —— 油門的目標值
+     是 `held ? f*MAX_SPD : 0`，只給 f 而 held 是 false 的話目標仍是 0，
+     船一動也不動。 */
+  if(now<sturmAutoUntil){ f=1; held=true; }
   /* ══ 觸牆自動轉舵掉頭 ══
      ⚠ 作法是**把舵量注入 r**，不是直接改 cam.angle。因為 r 一路餵給既有的
        轉向、側傾(bank)、舵輪旋轉 —— 注入舵量的話那三件事自動全對；直接改
@@ -4486,7 +4577,9 @@ function update(dt,now){
 
   cam.alt=CRUISE_ALT;
   const fx=-Math.sin(cam.angle), fy=-Math.cos(cam.angle);
-  let mv=cam.speed*dt*0.06*SPD_BOOST;
+  /* ⚠ Sturm 的倍率跟 SPD_BOOST 一樣套在**位移**上，不是套在 cam.speed：
+     cam.speed 同時驅動速度錶、螺旋槳、環境音與側傾，改它會讓那些一起失真。 */
+  let mv=cam.speed*dt*0.06*SPD_BOOST*(now<sturmUntil?STURM_MULT:1);
   /* 邊界的空氣牆：向外的位移被吃掉，而且**速度也跟著掉** ——
      只擋位移不掉速度的話，速度計還滿著、船卻不動，那看起來像卡住了。 */
   const ek=edgeDamp(cam.x/MAP_SCALE, cam.y/MAP_SCALE, fx, fy);
@@ -4939,10 +5032,60 @@ function render(now){
   /* ⚠ 感應立繪畫在這裡：3D 內容之上、**drawPanel 之前**。順序就是層次 ——
      之後 drawPanel 畫的面板與舵輪會蓋住她，不必也不該用裁切去避開。 */
   drawSenseCI(now);
+  drawSturmCI(now);
   drawTalk(now);
   ctx.restore();
 
   drawPanel(S);
+}
+
+/* ── Sturm 立繪：閃入閃出的脈動 ──────────────────────────────────────
+   ⚠ 畫在 3D 內容之上、**drawPanel 之前**（同 drawSenseCI）。順序就是層次：
+     面板與舵輪會蓋住她，不必也不該用裁切去避開（見 CLAUDE.md §6.5）。
+   ⚠ 立繪縮小超過 2 倍要走預縮圖（§6.7 第 3 條）—— 但這張是 **cover 鋪滿
+     3D 區**，縮放比通常 >0.5（原圖 1024×1536），縮不到 2 倍，所以直接貼。
+     哪天改成小尺寸常駐再補預縮圖。 */
+function drawSturmCI(now){
+  if(!sturmFlash) return;
+  const t=(now-sturmFlash)/STURM_FLASH_MS;
+  if(t>=1){ sturmFlash=0; return; }
+  if(!sturmCI.complete || !sturmCI.naturalWidth) return;
+  /* ── 演出（Ray 指定）：半透明、**由大縮小淡入**，然後脈動著消失 ──────
+     ⚠ 不加金色閃光。先前疊了一層 `lighter` 的金色，整個飛行畫面連人一起被
+       染成金的 —— Ray：「人不用變金色啊」。
+     ⚠ 全程半透明（上限 STURM_CI_A）：她是「力量的顯影」不是一張蓋版 CG，
+       不透明的話會整個擋住飛行畫面。
+     ⚠ 縮小走 ease-out（前段快）：等速的話前三分之一看起來是靜止的。 */
+  const STURM_CI_A = 0.62;        // 半透明上限
+  const GROW_IN    = 1.22;        // 淡入起始的放大倍率（由大縮到 1.0）
+  const IN_T       = 0.42;        // 淡入佔整段的比例
+  const GHOST_GROW = 0.45, GHOST_A = 0.85;   // 與 SENSE_GHOST_* 同值，手感一致
+  const iw=sturmCI.naturalWidth, ih=sturmCI.naturalHeight;
+  const sc0=Math.max(W/iw, VIEWH/ih);
+  const draw=(mul,alpha)=>{
+    if(alpha<=0.004) return;
+    const w=iw*sc0*mul, h=ih*sc0*mul;
+    ctx.globalAlpha=alpha;
+    /* ⚠ 上緣對齊（放大時往上多讓一半）：3D 區比立繪矮，cover 之後一定會裁掉
+       兩百多像素 —— 下緣對齊會把**頭裁掉只剩下半身**。 */
+    ctx.drawImage(sturmCI, Math.round(W/2-w/2), Math.round(-(h-ih*sc0)/2),
+                  Math.round(w), Math.round(h));
+  };
+  ctx.save();
+  ctx.beginPath(); ctx.rect(0,0,W,VIEWH); ctx.clip();
+  ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality='high';
+  if(t<IN_T){
+    // 淡入：大 → 小，透明 → 半透明
+    const u=t/IN_T, e=1-(1-u)*(1-u);
+    draw(GROW_IN+(1-GROW_IN)*e, STURM_CI_A*e);
+  }else{
+    // 消失：本體淡出，同時一次脈動往外擴散（等同 senseGhost）
+    const p=(t-IN_T)/(1-IN_T), e=1-(1-p)*(1-p);
+    const base=STURM_CI_A*(1-p);
+    draw(1, base);
+    draw(1+GHOST_GROW*e, Math.min(1, base*GHOST_A*Math.pow(1-p,1.4)));
+  }
+  ctx.restore();
 }
 
 /* 已發現的隱藏點：在飛行畫面上標出來（投影與 drawPlaces 同一套）。
@@ -7940,6 +8083,23 @@ function drawShip(now){
   const dx=Math.round(W/2-R), dy=Math.round(VIEWH*0.76+ship.bob-R);
   ctx.imageSmoothingEnabled=false;
   ctx.drawImage(shipFB,0,0,bw,bh,dx,dy,fw,fh);
+  /* ── 探索冷卻完成：船的輪廓閃一下（Ray 指定）──────────────────────
+     ⚠ 直接把**剛畫好的船緩衝**再疊一次就好 —— 它已經帶著船的 alpha，
+       用 `lighter` 疊出來就是沿著輪廓的一圈光，不必另外做遮罩或描邊。
+     ⚠ 放大一點點（1.06）才會讀成「輪廓在發光」而不是「整艘船變亮」。 */
+  if(senseRdyFlash){
+    const ft=(now-senseRdyFlash)/RDY_FLASH_MS;
+    if(ft>=1) senseRdyFlash=0;
+    else{
+      const fa=Math.sin(Math.PI*clamp(ft,0,1));
+      const gz=1.06, gw2=fw*gz, gh2=fh*gz;
+      ctx.save();
+      ctx.globalCompositeOperation='lighter';
+      ctx.globalAlpha=0.55*fa;
+      ctx.drawImage(shipFB,0,0,bw,bh, dx-(gw2-fw)/2, dy-(gh2-fh)/2, gw2, gh2);
+      ctx.restore();
+    }
+  }
   /* 船的螢幕命中圈 —— 長按船身要靠它（見 stage 的 pointerdown）。
      ⚠ 半徑取 R*0.8 而不是 R：R 是外接圓，含側傾與尾流的餘裕，
        照它算的話船邊上一大圈空白也會被當成「按在船上」。 */
@@ -8309,6 +8469,62 @@ function drawPanel(S){
     }
   }
   ctx.restore();
+  /* ── Sturm 充能：從中間向兩邊發光 ──────────────────────────────
+     ⚠ 用 `lighter` 疊加而不是實色覆蓋：方向計的刻度與方位字要透出來，
+       蓋掉的話按住的兩秒等於看不到航向。
+     ⚠ 漸層以**中線**為中心往兩側衰減，所以視覺上是「從中間長出去」，
+       而不是一整條同時變亮 —— Ray 指定的就是這個方向感。 */
+  {
+    const nowS=performance.now();
+    /* ── 冷卻中：一條**細而暗**的進度，同樣從中間往兩邊長 ────────────
+       ⚠ 與「正在充能」共用方向感（都從中間長出去），但**亮度與厚度差一個量級**
+         —— 兩者要能一眼分開：亮而滿版＝手指按著在充，暗而細＝在等冷卻。 */
+    if(sturmReady>nowS){
+      const cd=clamp(1-(sturmReady-nowS)/STURM_CD_MS,0,1);
+      const cx0=cbx+bw2/2, hf=bw2*0.5*cd;
+      const gg=ctx.createLinearGradient(cx0-hf,0,cx0+hf,0);
+      gg.addColorStop(0,'rgba(201,162,39,0)');
+      gg.addColorStop(0.5,'rgba(201,162,39,.42)');
+      gg.addColorStop(1,'rgba(201,162,39,0)');
+      ctx.fillStyle=gg;
+      ctx.fillRect(cx0-hf, CR.y+CR.h-3, hf*2, 2);
+    }
+    /* ── 冷卻完成：閃一下（Ray 指定「讓玩家知道 CD 完成」）────────────
+       ⚠ 一次性、短：邊緣觸發設的旗標，時間到就自己歸零，不會一直閃。 */
+    if(sturmRdyFlash){
+      const ft=(nowS-sturmRdyFlash)/RDY_FLASH_MS;
+      if(ft>=1) sturmRdyFlash=0;
+      else{
+        const fa=Math.sin(Math.PI*clamp(ft,0,1));
+        ctx.save();
+        ctx.globalCompositeOperation='lighter';
+        ctx.fillStyle='rgba(255,226,140,'+(0.28*fa).toFixed(3)+')';
+        ctx.fillRect(CR.x,CR.y,CR.w,CR.h);
+        ctx.restore();
+        ctx.strokeStyle='rgba(255,226,140,'+(0.95*fa).toFixed(3)+')';
+        ctx.lineWidth=1.5;
+        ctx.strokeRect(CR.x+0.75,CR.y+0.75,CR.w-1.5,CR.h-1.5);
+      }
+    }
+    const p = sturmT0 ? clamp((nowS-sturmT0)/STURM_HOLD_MS,0,1) : 0;
+    if(p>0.001){
+      const cx=cbx+bw2/2, half=bw2*0.5*p;
+      const g=ctx.createLinearGradient(cx-half,0,cx+half,0);
+      g.addColorStop(0,   'rgba(201,162,39,0)');
+      g.addColorStop(0.5, 'rgba(255,226,140,'+(0.30+0.45*p).toFixed(3)+')');
+      g.addColorStop(1,   'rgba(201,162,39,0)');
+      ctx.save();
+      ctx.globalCompositeOperation='lighter';
+      ctx.fillStyle=g;
+      ctx.fillRect(cx-half, CR.y, half*2, CR.h);
+      ctx.restore();
+      /* 充滿的那一刻把整條描一圈金邊，給一個明確的「可以放手了」。 */
+      if(p>=1){
+        ctx.strokeStyle='rgba(255,226,140,.9)'; ctx.lineWidth=1.5;
+        ctx.strokeRect(CR.x+0.75,CR.y+0.75,CR.w-1.5,CR.h-1.5);
+      }
+    }
+  }
   ctx.strokeStyle='#c9a227';                        // 中央指標（不動）
   ctx.beginPath(); ctx.moveTo(cbx+bw2/2,ccy-16); ctx.lineTo(cbx+bw2/2,ccy+9); ctx.stroke();
   ctx.restore();          // ⚠ 對應收起動畫那個 save（translate + globalAlpha）
