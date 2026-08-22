@@ -280,13 +280,23 @@ Ray 提供的設計文件放 `docs/`,**內文一字不改**,歸檔時只在檔�
 
 - `docs/TIVOT_IMPL_SPEC.md` — 城鎮結構(節點式導航)、好感度 tier 1..5(棘輪不降)、
   結局判定(BE1~4 / HE1~5 / 離隊)、諾薇兒暴走(獨立風險系統)、蕾娜機制。
+- `docs/TIVOT_AFFECTION_RULES.md` — 好感度**計算原則**：四人各自的來源(諾薇兒
+  聖徒化 +1／安雅不用聖徒化 +1、<40 用了 −1／索拉娜評價越爛越加／蕾娜只吃 S
+  且 +0.25)、時間即總資源、諾薇兒暴走螺旋、蕾娜道德鎖。與 IMPL_SPEC §2 配套。
+  ⚠ 尚未歸檔:`TIVOT_SCRIPT_ARCHITECTURE.md` 仍在專案根目錄。
 
 ⚠ **與 `GAMESPEC.md` 性質不同**:GAMESPEC 是現況實裝快照,docs/ 是還沒開工的規劃。
   判斷現行行為一律看 GAMESPEC 與 `config.js`,不要引 docs/ 當依據。
 
-⚠ **養成層目前一行都沒接**。唯一已存在的接點是 `state.currentFavor`(固定 0)與
+⚠ **養成層「一行都沒接」已經過時**(ver -298 更正)。`flight/index.html` 已有一套
+  真的好感度儲存,要接的是它、不要另建:`AFFECTION{renna,nouvelle,sorana,anya}`、
+  `AFFECTION_KEY='tivot_affection_v1'`(與主遊戲共用)、預設 10、
+  `affection()`/`setAffection()`、`progTier()`、`talks.js` 的 `affBand()`(10~50 五段)。
+  缺的是**棘輪(只升不降)**、以及蕾娜 +0.25 需要的內部 ×4 整數化
+  (`setAffection` 現在有 `v|0`,小數會被截掉)。
+  主遊戲的 `state.currentFavor`(固定 0)是更早的佔位,與上面那套**還沒接起來**;
   `config.js` 的 `dialogues[rank][好感門檻]` / `inspectors[].portraits[好感門檻]`
-  查表(`pickByThreshold` 已在)。要接 tier 是**把門檻表填滿**,不是另建一套。
+  查表(`pickByThreshold`)也還是只有 0 這一檔。
 
 **監察官＝蕾娜(Renna Heisenberg)** —— Ray 定案。**芙蕾雅(Freya)是暫代版。**
   所以設計文件 §5 的蕾娜機制不是新增角色,是接在現行監察官那個位子上。
