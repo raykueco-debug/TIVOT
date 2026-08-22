@@ -289,7 +289,7 @@ const COLOR_URL  = 'silvermoon_terrain.png';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -308';
+const FLIGHT_VER = 'ver -309';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -3432,6 +3432,13 @@ let MASS_ZNEAR = 60, MASS_ZRATIO = 3;
 let qLevel = 0, qLocked = false;
 { const m=/[?&]q=([0-3])/.exec(location.search);
   if(m){ qLevel=+m[1]; qLocked=true; } }
+/* ── 除錯：把城的逐格貼圖格線畫出來（?grid=1）──────────────────────────
+   ⚠ 這支存在的理由：使用者回報「格子狀破圖」時，城區疊了好幾層（平面圖的格／
+     量體屋頂的子格／地形 texel），三者間距不同，光看截圖分不出是哪一層。
+     把格線疊上去截一張，對不對得上一眼就知道 —— 不必要求使用者自己判斷。
+   紅＝平面圖的格，青＝量體屋頂的子格。 */
+let GRIDDBG=false;
+{ const m=/[?&]grid=1/.exec(location.search); if(m) GRIDDBG=true; }
 const Q = () => QUALITY[qLevel];
 
 /* ── 裝置像素比 ───────────────────────────────────────────────────
@@ -7233,6 +7240,14 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
                            (qax-a1*sx-c1*sy-bx0)*kx, (qay-b1*sx-d1*sy-by0)*ky);
           CFB.drawImage(planSrc, sx-ou*0.5, sy-ov*0.5, sw+ou, shh+ov,
                                  sx-ou*0.5, sy-ov*0.5, sw+ou, shh+ov);
+          if(GRIDDBG){
+            CFB.setTransform(kx,0,0,ky,-bx0*kx,-by0*ky);
+            CFB.strokeStyle='rgba(255,40,40,0.9)'; CFB.lineWidth=0.6;
+            CFB.beginPath();
+            CFB.moveTo(qax,qay); CFB.lineTo(qbx,qby);
+            CFB.lineTo(qdx,qdy); CFB.lineTo(qcx,qcy); CFB.closePath();
+            CFB.stroke();
+          }
         }
       }
 
@@ -7443,6 +7458,18 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
                  餘裕本來就很小。要再往下走得先在 build 端給每塊留 padding。 */
             CFB.drawImage(MA, sx,sy,sw+(iu<nU-1?0.5:0),sh+(iv<nV-1?0.5:0),
                               sx,sy,sw+(iu<nU-1?0.5:0),sh+(iv<nV-1?0.5:0));
+            if(GRIDDBG){
+              CFB.setTransform(kx,0,0,ky,-bx0*kx,-by0*ky);
+              CFB.strokeStyle='rgba(0,230,255,0.9)'; CFB.lineWidth=0.6;
+              CFB.beginPath();
+              CFB.moveTo(sc3[0][0],sc3[0][1]); CFB.lineTo(sc3[1][0],sc3[1][1]);
+              CFB.lineTo(sc3[1][0]+(sc3[2][0]-sc3[0][0]), sc3[1][1]+(sc3[2][1]-sc3[0][1]));
+              CFB.lineTo(sc3[2][0],sc3[2][1]); CFB.closePath();
+              CFB.stroke();
+              CFB.setTransform(a2*kx, b2*ky, c2*kx, d2*ky,
+                               (sc3[0][0]-a2*sx-c2*sy-bx0)*kx,
+                               (sc3[0][1]-b2*sx-d2*sy-by0)*ky);
+            }
           }
         }
         CFB.setTransform(1,0,0,1,0,0);
