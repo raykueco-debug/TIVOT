@@ -289,7 +289,7 @@ const COLOR_URL  = 'silvermoon_terrain.png';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -311';
+const FLIGHT_VER = 'ver -312';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -3415,8 +3415,6 @@ const MASS_ON_PX = 27;
 const MASS_OFF = 0.6;
 /* 相鄰格／子格的重疊量，單位是**緩衝像素**（不是來源圖的像素，見用到的地方）。 */
 const OVER_PX = 2.0;
-/* 底圖往下的厚度（世界單位，Ray 指定 50）。見 drawSettlements3D 的「底圖的厚度」。 */
-const PLATE_DROP = 50;
 /* ── 量體層的淡入淡出（ver -290）────────────────────────────────────
    ⚠ ver -285 修掉了「畫質換檔把整層抹掉」，但**越過門檻的那一下仍是瞬間全開**
      —— 布林旗標一翻，24 塊量體同時出現，看起來就是聖王廳的立體感「啪」一聲
@@ -7111,40 +7109,15 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
          2·hw 是世界寬度，(W/2z) 是該深度的世界→螢幕比，再乘 pk 進緩衝。 */
       const wantW=Math.max(8, (2*hw)*(W/(2*Math.max(60,o.z)))*pk);
       const planSrc=planMipFor(o.s.plan, planImg, wantW);
-      /* ── 底圖的厚度：逐格往下拉一道垂直四邊形（ver -311，Ray 指定 50）──────
-         症狀：廣場上會有**幾條斜穿過去的草地**露出來 —— 平面圖是一張沒有厚度
-         的紙，只要有一小段地形比它高，那一段就從紙上冒出來，形成一條長帶。
-         ⚠⚠ **這裡必須用幾何，不能用螢幕空間的抹壓。** -300~-302 試過「取剪影
-           往下疊 N 個像素」：N 隨距離變，貼近時 50 個世界單位投影成上百像素，
-           整座城下緣被抹成一大片灰白；夾小又會露縫。兩邊都不對。
-         幾何版：每一格的四角各自往下沉 PLATE_DROP 個**世界單位**，
-         螢幕位移 = (h/z)·scaleH·syk —— 每個角用自己的 z，所以透視自動正確，
-         遠處自然變薄、近處自然變厚，不會有任何一個距離「爆掉」。
-         ⚠ 累積成一條路徑一次 fill。所有四邊形都照同一個環序送點，纏繞方向
-           一致 —— 反向的兩塊在 nonzero 規則下會**互相抵消**挖出洞（ver -304
-           在量體牆上踩過這個坑）。
-         ⚠ 排在平面圖之前：它是「底圖的側面」，平面圖要蓋在它上面。 */
-      if(o.s.hasPodium){
-        const dyk=scaleH*syk, row0=NU+1;
-        CFB.setTransform(kx,0,0,ky,-bx0*kx,-by0*ky);
-        CFB.fillStyle=o.s.plateCol||'rgba(206,198,178,1)';
-        CFB.beginPath();
-        let any=false;
-        for(let jy=0;jy<NV;jy++){
-          const r0=jy*row0*4, r1=r0+row0*4;
-          for(let jx=0;jx<NU;jx++){
-            const qa=r0+jx*4, qb=qa+4, qc=r1+jx*4, qd=qc+4;
-            const za=PT[qa+3], zb=PT[qb+3], zc2=PT[qc+3], zd=PT[qd+3];
-            if(za<CITY_ZNEAR||zb<CITY_ZNEAR||zc2<CITY_ZNEAR||zd<CITY_ZNEAR) continue;
-            const da=PLATE_DROP/za*dyk, db=PLATE_DROP/zb*dyk,
-                  dc=PLATE_DROP/zc2*dyk, dd=PLATE_DROP/zd*dyk;
-            CFB.moveTo(PT[qa],PT[qa+1]+da); CFB.lineTo(PT[qb],PT[qb+1]+db);
-            CFB.lineTo(PT[qd],PT[qd+1]+dd); CFB.lineTo(PT[qc],PT[qc+1]+dc);
-            CFB.closePath(); any=true;
-          }
-        }
-        if(any) CFB.fill();
-      }
+      /* ── 底圖厚度（PLATE_DROP）：**已移除**（ver -312）─────────────────────
+         -311 曾經逐格往下拉一道垂直四邊形，想用厚度蓋住「從廣場穿出來的草地」。
+         ⚠⚠ 那是**治標**：真正的原因是格距太粗（見 QUALITY 的 cell 註解），
+           草地是格內的仿射誤差露出來的地形，不是地形真的比底圖高。
+         ⚠ 而且它**填的是格子的四邊形，不吃平面圖的 alpha** —— 格網是 u,v∈[-1,1]
+           的**正方形**，所以填出來是一塊圍著城的**方形台**，不是城的圓輪廓。
+           Ray：「把你加高的方型區域拿掉」。
+         格距修好之後不需要它了。日後若真的遇到地形頂穿底圖，正解是**整地**
+           （podium）或把厚度**沿平面圖的 alpha 剪影**拉，不是填整個格網。 */
       /* 來源矩形改逐格算（格線非均勻）：平面座標 −1..1 → 圖上像素。
          ⚠ sux/svy 必須跟著**選到的那一層**走，不能沿用原圖尺寸。 */
       const sux=planSrc.width*0.5, svy=planSrc.height*0.5;
