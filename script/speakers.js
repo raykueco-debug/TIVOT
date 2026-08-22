@@ -54,14 +54,14 @@ export const SPEAKERS = {
      （見 story.js 的 missingExpr），所以腳本可以先照規格寫 expr，圖到位再補這張表。 */
 export const ART = {
   renna: { cm:169, eye:32, fx:0.519, top:1, bot:1521,
-           side:'L', alt:null, base:'resources/partner/Renna_CI_front.webp', expr:{} },
+           side:'L', alt:null, base:'resources/SI/Renna_SI_front.webp', expr:{} },
   nouvelle: { cm:165, eye:40, fx:0.564, top:1, bot:1535,
-           side:'L', alt:null, base:'resources/partner/Nouvelle_Priest_CI_front.webp', expr:{} },
+           side:'L', alt:null, base:'resources/SI/Nouvelle_SI_front.webp', expr:{} },
   /* ⚠ 索拉娜用 **side** 那張：front 橫向佔 78%，兩人同台一定疊；側面只佔 69%。 */
   sorana: { cm:176, eye:27, fx:0.527, top:4, bot:1522,
-           side:'R', alt:null, base:'resources/partner/Sorana_CI_side.webp', expr:{} },
+           side:'R', alt:null, base:'resources/SI/Sorana_SI_side.webp', expr:{} },
   anya:   { cm:162, eye:34, fx:0.478, top:0, bot:1530,
-           side:'R', alt:null, base:'resources/partner/Anya_CI_front.webp', expr:{} },
+           side:'R', alt:null, base:'resources/SI/Anya_SI_front.webp', expr:{} },
   /* 璐娜：戰鬥搭檔，劇情立繪尚未指定 —— 先指 cut-in 圖，數字**沒有量過**。
      ⚠ 真的要讓她在劇情裡站台，top/bot/fx 一定要重量（cut-in 是胸像構圖，
        照 alpha 上下緣量會把人放大好幾倍，見 CLAUDE.md §6.5）。 */

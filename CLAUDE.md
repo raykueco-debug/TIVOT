@@ -123,6 +123,25 @@ SPEC.md             行為規格
 
 圖片已外置至 `resources/`,依功能分:`inspector/`(Freya_SI_01)、`partner/`(Luna 立繪+聖徒化 cut-in、Renee cut-in)、`enemy/`(Faceless/Witch/Belinda)、`weapon/vfx/background/misc`(預留空)。命名 `角色_類型_編號`(SI=立繪/CI=cut-in/EN=敵人立繪)。`config.js` 的 `ASSETS` 已改為相對路徑;音效/特效為程式合成,無檔案。
 
+**`resources/SI/` — 對話用立繪集中區（ver -305，Ray 指定「方便做差分」）**
+四位女角在對白裡用的立繪一律放這裡,檔名 `角色_SI_變體.webp`,
+一律 1024×1536。目前:
+
+    Anya_SI_front / _side / _back
+    Sorana_SI_front / _side
+    Nouvelle_SI_front / _side / _back ＋ Nouvelle_Nun_SI_front（修女裝差分）
+    Renna_SI_front
+    Luna_SI_seat
+
+- ⚠ **只放「對白裡會出現的立繪」**。戰鬥 cut-in（`Luna_CI_*`／`Renee_CI_*`／
+  `Malzeno_CI_*`）留在 `partner/`,`Anya_CI_Search` 是探索 UI 也留著 —— 那些
+  不是差分對象,混進來只會讓資料夾失去意義。
+- ⚠ 換掉或新增任何一張,`flight/index.html` 的 `PORTRAIT` 與 `script/speakers.js`
+  的 `SPEAKERS` **兩邊都要改**,而且 `eye/fx/top/bot` 四個取景值**必須重量**
+  （見 §6.5「新增立繪要量什麼」）。沿用上一張的數字人一定會歪。
+- ⚠ 露娜在對白裡目前借用 cut-in `partner/Luna_CI_exc.webp`（`speakers.js`
+  標了 `unmeasured:true`）。`Luna_SI_seat` 是坐姿,還沒接進去。
+
 ⚠️ SPEC 提到 `imageBase` 走 `assets/inspector/freya/...` 舊路徑——重寫時統一改為 `resources/` 新結構,與已完成的目錄一致。
 
 ---
