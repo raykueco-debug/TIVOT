@@ -80,6 +80,10 @@ export const MAIN_SCRIPT = {
       /* 上膛：兩聲隔 0.5 秒交疊。 */
       { speaker:'NOUVELLE', text:'你……！',
         se:[{n:'se_weapon_reload'},{n:'se_weapon_reload',delay:500}] },
+      /* ⚠ 標準讀取頁：把**下一個場景**（dungeon_lunaria）的素材先抓完。
+         插在戰鬥之前 —— 戰鬥打完回來就要立刻演，那時再抓會卡住。
+         Ray 之後會指定其餘要插讀取頁的位置，加一行 `{ load:'sceneId' }` 即可。 */
+      { load:'dungeon_lunaria' },
       /* 戰鬥教學。⚠ 戰鬥系統尚未接線，story.js 目前會跳過並在 console 記一筆。 */
       { battle:'tutorial' },
     ],
@@ -144,12 +148,16 @@ export const MAIN_SCRIPT = {
       /* 回地宮。⚠ cg:null 要明寫，否則插圖會一直蓋著。 */
       /* ⚠ 這一句**只留諾薇兒**（Ray 指定）。璐娜莉亞要明寫 hide 請下台 ——
          立繪是持續狀態，不寫的話她會一直站在右邊。 */
+      /* ⚠ `show:true` 不可省：上一拍（掃射）把兩位都 hide 了，而 show 是**沿用**的 ——
+         不明寫的話她永遠不會回來（Ray：「那一句要彈 Nouvelle_SI_Surprise 立繪」）。 */
       { speaker:'NOUVELLE', text:'那就是......聖約第四騎士團的......',
-        cg:null, bg:'HolyseeDungeonWhole', hide:'UNKNOWN',
-        portrait:{ expr:'surprise' } },
+        cg:null, bg:'HolyseeDungeonWhole',
+        portrait:{ expr:'surprise', show:true } },
       /* 璐娜莉亞的插畫：由下往上平移。 */
+      /* ⚠ 由「由下往上平移」改成**以臉為中心的緩慢放大**（Ray 指定）。
+         cgZoom 的值是**臉在圖上的位置**（0~1），story.js 拿它當 transform-origin。 */
       { speaker:'NOUVELLE', text:'璐娜莉亞團長……！',
-        cg:'003_Lunaria_Armed', cgPan:'up' },
+        cg:'003_Lunaria_Armed', cgZoom:{ x:0.53, y:0.09 } },
     ],
   },
 

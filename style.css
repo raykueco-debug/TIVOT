@@ -1284,8 +1284,19 @@
   #kerbGlow .kg-h{background:linear-gradient(180deg,
       rgba(120,220,255,0) 0%,rgba(150,235,255,.95) 46%,#eafaff 50%,rgba(150,235,255,.95) 54%,rgba(120,220,255,0) 100%);
     filter:blur(1px) drop-shadow(0 0 16px rgba(90,200,255,.9));}
+  /* 圓盤的**環狀溢光**：轉動前沿著盤緣滲出來，與門縫那道同一種光。
+     ⚠ 它與十字光一樣排在圓盤**之下** —— 圓的內側被盤擋住，只剩一圈邊緣。
+     ⚠ 半徑用 `--kg-r`（JS 依圓盤實際大小寫入），不要寫死 %：圓盤換圖會變大小。 */
+  #kerbGlow .kg-r{border-radius:50%;
+    background:radial-gradient(circle,
+      rgba(120,220,255,0) 0 62%, rgba(150,235,255,.85) 78%, rgba(120,220,255,0) 100%);
+    filter:blur(2px) drop-shadow(0 0 18px rgba(90,200,255,.85));}
   #kerb.glow #kerbGlow{opacity:1;}
   #kerb.glow #kerbGlow i{animation:kerbGlow 1.1s cubic-bezier(.1,.8,.3,1) forwards;}
+  /* ⚠ 開門之後**不要殘光**（Ray 指定）：門都開了還亮著就變成「畫面上有一條光」，
+     不是「門後面有東西」。整層淡掉，動畫也停掉（forwards 會把末影格留著）。 */
+  #kerb.open #kerbGlow{opacity:0;transition:opacity .35s ease;}
+  #kerb.open #kerbGlow i{animation:none;}
   @keyframes kerbGlow{
     0%  {opacity:0;   transform:scaleY(.2) scaleX(.6);}
     14% {opacity:1;   transform:scaleY(1)  scaleX(1.35);}   /* 撞頂那一下猛亮 */
@@ -1350,6 +1361,21 @@
      cover 的裁切一起搬走，邊緣會露出底色。 */
   #storyCg.pan-up{animation:storyPanUp 2.6s ease-out forwards;}
   #storyCg.pan-down{animation:storyPanDown 2.6s ease-out forwards;}
+  /* 緩慢推近：以**臉**為中心（transform-origin 由 JS 依 cgZoom 換算）。
+     ⚠ 用 transform 不用 object-position：推近要的是「鏡頭往前」，
+       object-position 只會平移裁切窗，畫面大小不變。 */
+  #storyCg.zoom-in{animation:storyCgZoom 6s cubic-bezier(.25,.6,.3,1) forwards;}
+  @keyframes storyCgZoom{ from{transform:scale(1);} to{transform:scale(1.16);} }
+  /* 插圖進場：淡入的同時**輕輕收一下＋去糊**，像鏡頭對焦落定 ——
+     純淡入在滿版插圖上讀起來很生硬（Ray：「插圖插入轉場不自然」）。
+     ⚠ 只在**剛換上**那一刻跑一次；跑完就把 class 拿掉，否則與平移／推近的
+       animation 互相蓋掉（同一個屬性只有一個 animation 生效）。 */
+  #storyCg.settle{animation:storyCgSettle .62s cubic-bezier(.2,.7,.25,1);}
+  @keyframes storyCgSettle{
+    from{opacity:0; transform:scale(1.05); filter:blur(6px) brightness(1.15);}
+    60% {opacity:1;}
+    to  {opacity:1; transform:scale(1);    filter:blur(0)   brightness(1);}
+  }
   @keyframes storyPanUp{ from{object-position:50% 100%;} to{object-position:50% 0%;} }
   @keyframes storyPanDown{ from{object-position:50% 0%;} to{object-position:50% 100%;} }
   /* 暗調 CI 插入：半身/全身圖從側邊切進來，壓暗到只剩剪影感（Ray 指定「暗調」）。

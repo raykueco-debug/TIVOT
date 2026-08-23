@@ -335,6 +335,9 @@ function typeFinish(el, text){
      dark:true                  這一句的說話者立繪壓成暗調（剪影感，還沒表明身分）
      delay:2600                 **先不出對話框**，等這麼久再打字（等平移／演出跑完）
      shake:true                 畫面抖一下
+     load:'sceneId'             **標準讀取頁**：擋畫面把那個場景的素材抓完再往下演。
+                                （ver -338，Ray 指定；插在哪由腳本決定）
+                                ⚠ 這一行沒有台詞也沒有演出，它就是一道閘門。
      fx:'gunfire'               在 CG 上灑一串槍擊命中點
 
    ⚠ 這些是**演出**不是狀態機：`shake`／`fx`／`se` 是一次性的（每次演到就放），
@@ -382,6 +385,20 @@ function swapImg(el, src){
     if(el.complete && el.naturalWidth) back();
   }, FADE_MS);
 }
+/* object-fit:cover 之下，把「圖上的一點」換算成「框上的百分比」。
+   ⚠ cover 會把圖等比放大到蓋滿框，再從中央裁掉多出來的那一邊 ——
+     所以圖上的 0.09 不等於框上的 0.09，直接拿來當 transform-origin 會偏。 */
+function coverOrigin(el, p){
+  const W=el.clientWidth, H=el.clientHeight;
+  const nw=el.naturalWidth||1, nh=el.naturalHeight||1;
+  if(!W||!H) return '50% 50%';
+  const s=Math.max(W/nw, H/nh);                    // cover 的縮放
+  const dw=nw*s, dh=nh*s;                          // 圖在框裡的實際大小
+  const x=(p.x*dw-(dw-W)/2)/W, y=(p.y*dh-(dh-H)/2)/H;
+  const cl=v=>Math.max(0,Math.min(1,v));
+  return (cl(x)*100).toFixed(1)+'% '+(cl(y)*100).toFixed(1)+'%';
+}
+
 function applyPersist(line){
   if(line.bg!==undefined && line.bg!==stageBg){
     stageBg=line.bg;
@@ -394,7 +411,14 @@ function applyPersist(line){
   if(line.cg!==undefined && line.cg!==stageCg){
     cgChanged=true;
     stageCg=line.cg;
-    swapImg($('storyCg'), line.cg?CG_DIR+line.cg+'.webp':'');
+    const cgEl=$('storyCg');
+    swapImg(cgEl, line.cg?CG_DIR+line.cg+'.webp':'');
+    /* 進場的「對焦落定」效果（見 style.css 的 .settle）。跑完要**把 class 拿掉** ——
+       同一個屬性只有一個 animation 生效，留著會把平移／推近蓋掉。 */
+    if(cgEl && line.cg){
+      cgEl.classList.remove('settle'); void cgEl.offsetWidth; cgEl.classList.add('settle');
+      fxTimers.push(setTimeout(()=>cgEl.classList.remove('settle'), 700));
+    }
   }
   if(line.ci!==undefined){ stageCi=line.ci; setImg($('storyCi'), line.ci?SI_DIR+line.ci+'.webp':''); }
   /* 情境卡：⚠ 它是**一次性的畫面狀態**（下一句沒寫就收掉），所以每一句都要判，
@@ -432,21 +456,29 @@ function applyPersist(line){
   const cg=$('storyCg');
   if(cg){
     if(line.cgPan==='up' || line.cgPan==='down'){
-      cg.classList.remove('pan-up','pan-down');
+      cg.classList.remove('pan-up','pan-down','zoom-in');
       void cg.offsetWidth;                       // 不重設 class，animation 不會重播
       cg.classList.add(line.cgPan==='up'?'pan-up':'pan-down');
+    }else if(line.cgZoom){
+      /* 以臉為中心緩慢推近。cgZoom 給的是**臉在圖上**的位置（0~1）——
+         要換成**元素座標**的 transform-origin，因為 object-fit:cover 會把圖裁掉一圈，
+         圖上的 0.09 不等於框上的 0.09。 */
+      cg.classList.remove('pan-up','pan-down','zoom-in');
+      const go=()=>{ cg.style.transformOrigin = coverOrigin(cg, line.cgZoom);
+                     void cg.offsetWidth; cg.classList.add('zoom-in'); };
+      if(cg.complete && cg.naturalWidth) go(); else cg.addEventListener('load', go, {once:true});
     }else if(line.cgPan===null || cgChanged){
-      cg.classList.remove('pan-up','pan-down');
+      cg.classList.remove('pan-up','pan-down','zoom-in');
     }
   }
 }
 /* 音效：**逐支列出實際路徑**，不要用字串拼副檔名 —— 這個資料夾裡 wav/mp3/m4a
    三種都有，拼出來的路徑會靜默 404（audio.js 載不到只會 resolve(null)，不報錯）。 */
 const SE_SRC={
-  se_steps:         'resources/audio/se/se_steps.wav',
+  se_steps:         'resources/audio/se/se_steps.m4a',
   se_weapon_reload: 'resources/audio/se/se_weapon_reload.mp3',
   se_mg_squall:     'resources/audio/se/se_weapon_mg_squall.mp3',
-  se_lunaMG:        'resources/audio/se/se_lunaMG.wav',
+  se_lunaMG:        'resources/audio/se/se_lunaMG.m4a',
   se_Fall:          'resources/audio/se/se_Fall.mp3',
   se_saintroar:     'resources/audio/se/Se_enemy_Saintroar.mp3',
 };
@@ -617,6 +649,12 @@ function layoutKerberos(){
            v.style.width=vw+'px'; v.style.height=Hd+'px'; }
     if(h){ h.style.left='0px'; h.style.top=(axis-hh/2)+'px';
            h.style.width=Wd+'px'; h.style.height=hh+'px'; }
+    /* 環狀溢光：比圓盤大一圈（1.16），圓心對齊圓盤圓心。 */
+    const rg=gl.querySelector('.kg-r');
+    if(rg){ const P2=KERB_META.plate, d=P2.w*Wd*1.16;
+      rg.style.width=d+'px'; rg.style.height=d+'px';
+      rg.style.left=((P2.x+P2.w/2)*Wd-d/2)+'px';
+      rg.style.top =((P2.y+P2.h/2)*Hd-d/2)+'px'; }
   }
   /* 楣：橫跨整個畫面寬。⚠ 對齊的是**中段的下緣**不是圖的下緣 ——
      兩端的鉚接塊比中間的橫桿低（dip＝差多少，佔圖高的比例），照圖的下緣對齊的話
@@ -675,7 +713,7 @@ function kerbPuff(el){
 const KERB_SE_DIR='resources/audio/se/';
 const KERB_SFX={ pop:'se_Kerberos_pop', gear:'se_Kerberos_gear',
                  open:'se_Kerberos_open', steam:'se_Kerberos_steam' };
-const KERB_SFX_EXT={ steam:'wav' };   // 預設 mp3，例外寫這裡
+const KERB_SFX_EXT={ steam:'m4a' };   // 預設 mp3，例外寫這裡（ver -338 起 wav 一律轉 m4a）
 const KERB_SE_T={ popPeak:1002, openTail:1921 };
 const KERB_T={ rise:1000, thud:420, rivet:460, arrow:340, lift:1600, open:900 };
 let kerbTimers=[];
@@ -752,6 +790,10 @@ function renderLine(){
        回到首頁時把劇情從 `resume` 這個位置接回去。
      ⚠ 交棒前要先把舞台收掉，否則劇情層（z-index 8300）會蓋住戰鬥畫面。
      ⚠ 收掉時**不要接回首頁 BGM** —— 戰鬥有自己的曲子，接回去會打架。 */
+  /* 讀取頁：`{ load:'sceneId' }` —— 擋畫面把那個場景的素材抓完再往下演。
+     ⚠ 它自己會 advance()，所以這裡直接 return，不要再走下面的演出流程。 */
+  if(line.load){ runLoadGate(line.load); return; }
+
   if(line.battle){
     if(!battleHandler){
       console.info('[story] 沒有註冊戰鬥發動器，跳過：', line.battle);
@@ -975,6 +1017,52 @@ function preloadStory(startId, onProgress){
   let done=0; const total=jobs.length;
   const wrapped=jobs.map(p=>Promise.resolve(p).then(()=>{ done++; onProgress(done/total); }));
   return Promise.race([Promise.all(wrapped), new Promise(r=>setTimeout(r,PRELOAD_CAP_MS))]);
+}
+
+/* ══ 場景之間的「標準讀取頁」（ver -338，Ray 指定）══════════════════════
+   與開機那一頁**同一個外觀**（同 id、同 CSS）：金色進度圈 ＋ 百分比 ＋ SAINT INSTALL。
+   用途是把**下一個場景**的素材先抓完再演，插在哪由腳本決定（line 的 `load` 欄位）。
+
+   ⚠ 為什麼直接重建同 id 的元素、而不是把開機那一顆留著：開機那顆在揭幕後就被
+     main.js 移除了（它掛著語言鈕與提示輪播，留著會一直吃資源）。這裡要的只是外觀，
+     重建一顆最單純 —— CSS 已經在 style.css 裡，不必再寫一份。
+   ⚠ 不掛語言鈕與提示輪播：那些是開機頁的職責，這裡是**場景之間的過場**，
+     停留通常一兩秒，掛上去只會閃一下。
+   ⚠ 進度圈的周長 301.59 與 main.js 的 RING_C 是同一個數字（r=48 的 viewBox 100）。
+     改一邊要改兩邊 —— 它是 SVG 幾何，不是設定值。 */
+const AL_RING_C = 301.59;
+function showLoader(){
+  let ov=document.getElementById('assetLoader');
+  if(!ov){
+    ov=document.createElement('div'); ov.id='assetLoader';
+    ov.innerHTML='<div id="alRing">'
+      + '<svg viewBox="0 0 100 100"><circle class="al-rail" cx="50" cy="50" r="48"/>'
+      + '<circle id="alRingProg" class="al-prog" cx="50" cy="50" r="48" stroke-dasharray="'+AL_RING_C+'" stroke-dashoffset="'+AL_RING_C+'"/></svg>'
+      + '<div id="alRingTxt"><div id="assetLoaderPct">0%</div><div id="alRingCap">SAINT INSTALL</div></div>'
+      + '</div>';
+    document.body.appendChild(ov);
+  }
+  ov.classList.remove('al-done');
+  return {
+    set(p){
+      const pr=document.getElementById('alRingProg'), pc=document.getElementById('assetLoaderPct');
+      if(pr) pr.style.strokeDashoffset=(AL_RING_C*(1-p)).toFixed(1);
+      if(pc) pc.textContent=Math.round(p*100)+'%';
+    },
+    close(){ if(ov && ov.parentNode) ov.parentNode.removeChild(ov); }
+  };
+}
+
+/* 演到 `{ load:'sceneId' }` 這一行：擋上標準讀取頁，把那個場景的素材抓完再往下走。
+   ⚠ 停留有**下限 600ms**：快取全中時只要一百多毫秒，閃一下讀起來像破圖不像在載入
+     （同 ver -327 劇情預載頁的理由）。 */
+function runLoadGate(sceneId){
+  const ui=showLoader();
+  const t0=Date.now();
+  preloadStory(sceneId, p=>ui.set(p)).then(()=>{
+    ui.set(1);
+    setTimeout(()=>{ ui.close(); advance(); }, Math.max(0, 600-(Date.now()-t0)));
+  });
 }
 
 export function open(pos, done){

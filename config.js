@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.23-337';
+export const VERSION = 'ver 2026.08.23-338';
 
 export const GAME_CONFIG = {
 
@@ -893,10 +893,10 @@ export const ASSETS = {
   //     RMS 約 -14 dBFS；再大聲改 tuning.partnerSeGain（播放端有 limiter 匯流，不會破音）。
   //  ⚠ 檔名的 VC＝voice（語音），與純音效的 SE 分家：這四支是搭檔的台詞，
   //     響度基準跟語音走（partnerSeGain 對齊 −14.4 dBFS），不是音效層。
-  se_luna_dual:      "resources/audio/vo/vo_luna_dualwield.wav?v=3",   // 雙槍破防發動
-  se_luna_exc:       "resources/audio/vo/vo_luna_execution.wav?v=3",    // 處決 EXSECUTIŌ cut-in
-  se_luna_mb:        "resources/audio/se/se_saint_maxburst.wav?v=3",     // Maximum Burst cut-in
-  se_luna_obe:       "resources/audio/vo/vo_luna_obe.wav?v=3",    // O.B.E. cut-in
+  se_luna_dual:      "resources/audio/vo/vo_luna_dualwield.m4a",   // 雙槍破防發動
+  se_luna_exc:       "resources/audio/vo/vo_luna_execution.m4a",    // 處決 EXSECUTIŌ cut-in
+  se_luna_mb:        "resources/audio/se/se_saint_maxburst.m4a",     // Maximum Burst cut-in
+  se_luna_obe:       "resources/audio/vo/vo_luna_obe.m4a",    // O.B.E. cut-in
 
   // 敵人攻擊音（依攻擊種類 kind：ult 大絕命中/不完美防禦格擋、delay 太慢、wrong 按錯）。
   em_slash:          "resources/audio/se/se_enemy_slash.m4a",    // 聖徒：大絕/不完美防禦/按錯
@@ -908,7 +908,7 @@ export const ASSETS = {
   // 普攻槍聲（手槍；每次正確點擊由這兩支隨機播一支，製造變化）
   se_pistol_01:      "resources/audio/se/se_weapon_pistol_01.mp3",
   se_pistol_02:      "resources/audio/se/se_weapon_pistol_02.mp3",
-  se_pistol_03:      "resources/audio/se/se_weapon_pistol_03.wav",  // 普攻槍聲（現行）
+  se_pistol_03:      "resources/audio/se/se_weapon_pistol_03.m4a",  // 普攻槍聲（現行）
 
   // BGM（loop、不可交疊，切歌時前一首淡出）。
   //  BGM 一律 .m4a（AAC-LC 96k，自 128k MP3 轉檔，體積 −24%）：全平台原生支援；
@@ -925,10 +925,10 @@ export const ASSETS = {
   vo_maxburst:      null,   // Maximum Burst            → VO_MaxBurst
   vo_exsectio:      null,   // EXSECUTIŌ（處決）         → VO_Exsectio
   vo_obe:           null,   // O.B.E.                   → VO_OBE
-  vo_life_return:   "resources/audio/vo/vo_renee_lifereturn.wav",     // 生命歸還（蕾妮·主動）— partner.lifeReturn 播
-  vo_death_guard:   "resources/audio/vo/vo_renee_deathguard.wav",     // 即死防禦（蕾妮·被動）— partner.tryDeathGuard 播
-  vo_supply_refill: "resources/audio/vo/vo_malzeno_supplyrefill.wav",   // 前線補給（馬季諾·主動）— partner.supplyRefill 播
-  vo_hc_rounds:     "resources/audio/vo/vo_malzeno_hcrounds.wav",   // 高裝藥彈（馬季諾·被動）— partner.checkLowHpBuff 播
+  vo_life_return:   "resources/audio/vo/vo_renee_lifereturn.m4a",     // 生命歸還（蕾妮·主動）— partner.lifeReturn 播
+  vo_death_guard:   "resources/audio/vo/vo_renee_deathguard.m4a",     // 即死防禦（蕾妮·被動）— partner.tryDeathGuard 播
+  vo_supply_refill: "resources/audio/vo/vo_malzeno_supplyrefill.m4a",   // 前線補給（馬季諾·主動）— partner.supplyRefill 播
+  vo_hc_rounds:     "resources/audio/vo/vo_malzeno_hcrounds.m4a",   // 高裝藥彈（馬季諾·被動）— partner.checkLowHpBuff 播
   vo_dual_wield:    null,   // 雙槍破防                 → VO_DualWield
   vo_new_hustle:    null,   // Boss 遭遇 / 亂入          → VO_NewHustle
 };
