@@ -323,6 +323,8 @@ function typeFinish(el, text){
      bg:'HolyseeDungeonWhole'   背景（resources/background/*.webp）。bg:null 清掉
      cg:'001_Nouvelle_Fell'     全屏插圖（resources/illustration/*.webp）。cg:null 清掉
      cgPan:'up' / 'down'        這一句的 CG 平移（up＝由下往上、down＝由上往下）
+     cgScale:1.18               插圖**直接放大**這個倍率（不做放大動畫，一上來就這麼大）；
+                                要動的話配 cgPan 一起寫。與 cgZoom 互斥（那個是推近的過程）
      ci:'Lunaria_SI_Armed'      暗調 CI 插入（resources/SI/*.webp）。ci:null 收掉
      card:'1908年6月13日，聖王廳地宮G2區'   情境卡：背景上蓋半透黑＋置中文字
                                 有 card 的那一句**不顯示對話框**（它不是台詞）
@@ -440,6 +442,21 @@ function cgFade(el, src){
   return true;
 }
 
+/* ══ 插圖「直接放大」＝**把元素加寬**，不是 transform: scale ══
+   ⚠⚠ 用 transform 放大**幾乎不會讓平移變長**：object-fit:cover 的可平移量是
+     「圖被裁掉的那一截」，transform 只是把整個裁好的窗一起放大，裁掉多少不變。
+     實測 003（1085×1450）在 375×455 的框裡只裁掉 **46px** —— 那點行程肉眼看不出在動，
+     Ray 要的「從下上移到頂」等於沒發生。
+   作法：元素寬度給 k×100%、左邊往外拉 (k−1)/2，cover 就以**更大的寬**去鋪圖 →
+     圖等比放大 k 倍、被裁掉的高度變成 k×501−455（k=1.18 時 137px，約三倍行程），
+     `storyPanUp` 那組 object-position 動畫不必改就一路推到頂。
+   ⚠ 橫向多出來的部分往兩側溢出，由舞台的 overflow 收掉 —— 這正是「放大＝裁掉兩側」。
+   ⚠ 不要順手改成改高度：高度是場景區的高（--story-top），一改對話框與楣的錨點全歪。 */
+function setCgScale(k){
+  const cg=$('storyCg'); if(!cg) return;
+  if(k && k>0 && k!==1){ cg.style.width=(k*100)+'%'; cg.style.left=(-(k-1)*50)+'%'; }
+  else { cg.style.width=''; cg.style.left=''; }
+}
 function applyPersist(line){
   let bgChanged=false;
   if(line.bg!==undefined && line.bg!==stageBg){
@@ -493,6 +510,16 @@ function applyPersist(line){
      還沒被換掉的舊圖，黑幕收起來時動畫已經跑掉一截，看起來就是「跳了一下」。 */
   const cg=$('storyCg');
   const startMove=()=>{
+    /* 直接放大（ver -343，Ray：「璐娜莉亞的插圖不要做放大效果，直接放大，
+       然後從下上移到頂」）。⚠ 它與 `cgZoom` 是**兩件事**：
+         · cgZoom  ＝推近的**過程**（6 秒的 scale 動畫）—— 滿版插圖上任何會動的
+                     縮放都會被讀成畫面在抖，這正是 Ray 要拿掉的東西。
+         · cgScale ＝**一上來就是這個大小**，不動；要動的只有平移。 */
+    if(line.cgScale!==undefined){
+      cg.classList.remove('zoom-in');
+      cg.style.transform=''; cg.style.transformOrigin='';
+      setCgScale(line.cgScale);
+    }else if(cgChanged){ cg.style.transform=''; setCgScale(0); }   // 新圖不繼承舊圖的放大
     if(line.cgPan==='up' || line.cgPan==='down'){
       cg.classList.remove('pan-up','pan-down','zoom-in');
       void cg.offsetWidth;                       // 不重設 class，animation 不會重播

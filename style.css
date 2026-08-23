@@ -1213,7 +1213,20 @@
   #kerb{position:absolute;inset:0;z-index:5;pointer-events:none;overflow:hidden;
     clip-path:inset(calc(var(--story-top) - var(--kerb-top-h, 0px)) 0 0 0);
     transition:clip-path .7s cubic-bezier(.5,0,.75,0);}
-  #kerb.full{clip-path:inset(0 0 0 0);}
+  /* ⚠⚠ 全開的終點**不是 0**（ver -343，Ray：「楣要跟槍棺同速，
+     不要被下面的槍棺吃掉」）。理由是**速度**：clip 的上緣與門的上推吃同一段
+     0.7s 同一條曲線，但走的距離不同 —— 門走 `--kerb-rise`（實測 454.7px，
+     ＝面板頂），clip 只走 `--story-top − --kerb-top-h`（412.9px），
+     兩者差的正好是楣的高（41.8px）。於是門每上推一分，clip 的上緣就少跟一分，
+     楣**從上緣被一路切掉**，看起來就是「被下面的槍棺吃掉」。
+     所以終點寫成「起點 − 門的行程」（起點 `--story-top − --kerb-top-h` 再減 `--kerb-rise`），
+     clip 的行程就**恆等於**門的行程 → 同速、同剛體，楣整片跟著出畫面。
+     ⚠ 不要寫死成 −楣高：那只在「門頂剛好等於面板頂」時才成立（目前的幾何是這樣，
+       但門有多高是 layoutKerberos 依實際尺寸解出來的，換機型／換圖就不一定）。
+     ⚠ 負的 inset 是合法的（往外擴＝那一側不裁）；#kerb 的框本來就是整個舞台，
+       擴出去的部分由舞台自己的 overflow 收掉，不會漏到畫面外。 */
+  #kerb.full{clip-path:inset(calc(var(--story-top) - var(--kerb-top-h, 0px)
+                                  - var(--kerb-rise, 0px)) 0 0 0);}
   #kerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform .7s cubic-bezier(.5,0,.75,0);}   /* 由緩到急＝像被推上來撞到頂 */
   #kerb.rise #kerbDoor{transform:translateY(calc(var(--kerb-rise) * -1));}

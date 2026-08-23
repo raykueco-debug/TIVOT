@@ -151,11 +151,15 @@ export const MAIN_SCRIPT = {
       { speaker:'NOUVELLE', text:'那就是......聖約第四騎士團的......',
         cg:null, bg:'HolyseeDungeonWhole',
         portrait:{ expr:'surprise', show:true } },
-      /* 璐娜莉亞的插畫：由下往上平移。 */
-      /* ⚠ 由「由下往上平移」改成**以臉為中心的緩慢放大**（Ray 指定）。
-         cgZoom 的值是**臉在圖上的位置**（0~1），story.js 拿它當 transform-origin。 */
+      /* 璐娜莉亞的插畫。
+         ⚠ 演變：由下往上平移（-337）→ 以臉為中心緩慢推近（-339，cgZoom）→
+           **直接放大＋由下往上移到頂**（-343，Ray 指定：「不要做放大效果，直接放大，
+           然後從下上移到頂」）。放大的**過程**在滿版插圖上會被讀成畫面在抖 ——
+           與 -340 把換圖改成黑幕是同一個道理：訊號不要碰到插圖本身。
+         ⚠ 所以 `cgScale` 是「一上來就是這麼大」，會動的只有平移；不要再配 cgZoom。
+         ⚠ 往上移的終點正好是她的臉（臉在圖上 y≈0.09，靠近頂）—— 方向不能反。 */
       { speaker:'NOUVELLE', text:'璐娜莉亞團長……！',
-        cg:'003_Lunaria_Armed', cgZoom:{ x:0.53, y:0.09 } },
+        cg:'003_Lunaria_Armed', cgScale:1.18, cgPan:'up' },
     ],
   },
 

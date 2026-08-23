@@ -158,6 +158,12 @@ def main():
                     err('%s：%s 只能是 up／down／null，收到 %r' % (tag, f, ln[f]))
             if ln.get('fx') and ln['fx'] != 'gunfire':
                 err('%s：fx 目前只有 gunfire，收到 %r' % (tag, ln['fx']))
+            if ln.get('cgScale') is not None:
+                v = ln['cgScale']
+                if not (isinstance(v, (int, float)) and 0.5 <= v <= 3):
+                    err('%s：cgScale 要是 0.5~3 的倍率，收到 %r' % (tag, v))
+                if ln.get('cgZoom'):
+                    err('%s：cgScale 與 cgZoom 互斥（一個是固定放大、一個是推近動畫）' % tag)
             if ln.get('cgZoom'):
                 z = ln['cgZoom']
                 if not (isinstance(z, dict) and 0 <= z.get('x', -1) <= 1 and 0 <= z.get('y', -1) <= 1):
