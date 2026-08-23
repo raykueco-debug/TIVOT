@@ -399,6 +399,31 @@ function coverOrigin(el, p){
   return (cl(x)*100).toFixed(1)+'% '+(cl(y)*100).toFixed(1)+'%';
 }
 
+/* 插圖換圖：**黑幕淡出 → 換圖 → 黑幕淡入**，總長 1 秒（Ray 指定）。
+   ⚠ 為什麼不用一般的淡入淡出或斜切揭幕，見 style.css 的 #storyFade。
+   ⚠ 換圖要壓在**全黑的那一刻**做：早一點或晚一點都會被看見，那就是 Ray 說的
+     「多跳了一下」。所以等 transition 的 500ms 走完才換。
+   ⚠ 場上還沒有插圖時（第一次上圖）不走黑幕 —— 開場黑一下沒有意義，
+     只會讓玩家覺得卡住。 */
+const CG_FADE_MS = 500;
+function cgFade(el, src){
+  const fade=$('storyFade');
+  /* ⚠ **插圖一出現就要走黑幕**，不是只有「插圖換插圖」才走 —— Ray 抱怨的正是
+     「插進來那一下」在跳。第一版只在場上已有插圖時才淡，於是最常見的
+     「沒有插圖 → 插入插圖」完全沒吃到，等於沒改。 */
+  if(!el || !fade){ setImg(el, src); return false; }
+  fade.classList.add('on');
+  fxTimers.push(setTimeout(()=>{
+    setImg(el, src);
+    /* 等新圖真的畫上去再收黑幕 —— 沒載完就收，會先看到一格舊圖或空白
+       （同 ver -322 立繪、ver -325 背景踩過的那個坑）。 */
+    const back=()=>{ el.onload=null; fade.classList.remove('on'); };
+    if(!src || (el.complete && el.naturalWidth)) back();
+    else { el.onload=back; fxTimers.push(setTimeout(back, 900)); }
+  }, CG_FADE_MS));
+  return true;
+}
+
 function applyPersist(line){
   if(line.bg!==undefined && line.bg!==stageBg){
     stageBg=line.bg;
@@ -407,21 +432,11 @@ function applyPersist(line){
        ⚠ 要等換圖跑完再量 —— swapImg 是先淡出、載好才換 src，太早量到的是舊圖。 */
     setTimeout(()=>matchPortraits($('storyBg'), $('storyCast')), 420);
   }
-  let cgChanged=false;
+  let cgChanged=false, cgFaded=false;
   if(line.cg!==undefined && line.cg!==stageCg){
     cgChanged=true;
     stageCg=line.cg;
-    const cgEl=$('storyCg');
-    swapImg(cgEl, line.cg?CG_DIR+line.cg+'.webp':'');
-    /* 進場的「對焦落定」效果（見 style.css 的 .settle）。跑完要**把 class 拿掉** ——
-       同一個屬性只有一個 animation 生效，留著會把平移／推近蓋掉。 */
-    if(cgEl && line.cg){
-      cgEl.classList.remove('settle'); void cgEl.offsetWidth; cgEl.classList.add('settle');
-      const sl=$('storyCgSlash');
-      if(sl){ sl.classList.remove('on'); void sl.offsetWidth; sl.classList.add('on'); }
-      fxTimers.push(setTimeout(()=>{ cgEl.classList.remove('settle');
-                                     if(sl) sl.classList.remove('on'); }, 650));
-    }
+    cgFaded = cgFade($('storyCg'), line.cg?CG_DIR+line.cg+'.webp':'');
   }
   if(line.ci!==undefined){ stageCi=line.ci; setImg($('storyCi'), line.ci?SI_DIR+line.ci+'.webp':''); }
   /* 情境卡：⚠ 它是**一次性的畫面狀態**（下一句沒寫就收掉），所以每一句都要判，
@@ -456,8 +471,10 @@ function applyPersist(line){
        · 這一句**換了圖**  → 清掉（新圖不該繼承舊圖的平移）
        · 其餘             → **不動**，讓它自己跑完
      ⚠ `cgPan:null` 是明確要求停下來，與「沒寫」不同。 */
+  /* ⚠ 走黑幕換圖時，平移／推近要**等新圖上去**才開始 —— 立刻開始的話動的是
+     還沒被換掉的舊圖，黑幕收起來時動畫已經跑掉一截，看起來就是「跳了一下」。 */
   const cg=$('storyCg');
-  if(cg){
+  const startMove=()=>{
     if(line.cgPan==='up' || line.cgPan==='down'){
       cg.classList.remove('pan-up','pan-down','zoom-in');
       void cg.offsetWidth;                       // 不重設 class，animation 不會重播
@@ -473,6 +490,10 @@ function applyPersist(line){
     }else if(line.cgPan===null || cgChanged){
       cg.classList.remove('pan-up','pan-down','zoom-in');
     }
+  };
+  if(cg){
+    if(cgFaded) fxTimers.push(setTimeout(startMove, CG_FADE_MS+20));
+    else startMove();
   }
 }
 /* 音效：**逐支列出實際路徑**，不要用字串拼副檔名 —— 這個資料夾裡 wav/mp3/m4a
