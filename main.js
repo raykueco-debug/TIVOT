@@ -405,11 +405,15 @@ window.addEventListener('pagehide', refreshBoot);
 })();
 
 // 首頁：開始遊戲 → 主選單先淡出、空一拍（約 1s）Battle 才淡入（避免唐突），同時播「驅逐開始」過渡禎
-function launchBattle(){
+function launchBattle(opts){
   // 出陣 stinger（sfx_startbt＝StartBT_SE 神楽鈴）：列第一梯關鍵預載（見 preloadAll critP）→ 即點即響。
   SFX.play(asset('sfx_startbt'), sfxGain('sfx_startbt'));
   preloadLateBgm();   // 保險：若保底提前放行沒經過 go()，出陣（櫻花期間）補載第二段
   SFX.playBgm(asset('bgm_battle'), { fadeOutMs:800, delayMs:1000, volume: bgmVol('bgm_battle') });
+  /* 劇情叫起來的那一場（ver -329）：**跳過櫻花過渡禎，直接開戰**。
+     ⚠ 因為那一場的轉場是「Kerberos 之門拉開」，門縫裡要露出的是**已經在跑的戰鬥畫面**；
+       這裡若還播自己的過渡禎，門一開露出的是櫻花，兩段轉場疊在一起。 */
+  if(opts && opts.instant){ combat.startGame(); return; }
   // 驅逐開始：不靠點擊、不自動計時 → 由櫻花飄完（onDone）主動推進進戰鬥
   const tr = playTransition('start', combat.startGame, { noTap:true, noAuto:true });
   sakuraBurst({ onDone: ()=> tr.proceed() });
@@ -570,7 +574,7 @@ story.setBattleHandler((battleId, resume)=>{
   /* ⚠ 標成 story 場次：與首頁「教學」鈕分開（Ray 指定）—— 這一場由諾薇兒帶
      （台詞走 config.tutorial.story）、不可跳過、教到破防為止。 */
   tutorial.requestReplay({ story:true });
-  launchBattle();
+  launchBattle({ instant:true });   // 轉場由 Kerberos 之門負責，不再播櫻花過渡禎
 });
 weapon.refreshLoadoutLabels();                  // 開機：把當前副武器/搭檔名寫進 loadout 按鈕
 TEL.visit();                                    // 來訪上報（每次開頁一筆）

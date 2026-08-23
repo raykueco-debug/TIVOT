@@ -1186,11 +1186,61 @@
   #storyLoad .sl-track i{display:block;height:100%;width:0;background:var(--gold);
     transition:width .2s ease;}
   #storyBoard{position:absolute;left:0;right:0;top:var(--story-top);bottom:0;z-index:1;
-    display:flex;align-items:center;justify-content:center;pointer-events:none;
-    background:linear-gradient(180deg,rgba(6,5,10,.92),rgba(6,5,10,1));
-    border-top:1px solid var(--gold-dim);}
-  #storyBoardArt{max-width:58%;max-height:74%;object-fit:contain;opacity:.30;
-    filter:drop-shadow(0 0 18px rgba(201,162,39,.25));}
+    pointer-events:none;background:#06050a;border-top:1px solid var(--gold-dim);}
+
+  /* ══ Kerberos 之門（ver -329）══════════════════════════════════════════
+     下半盤面區的門。平常只露出 --story-top 之下那一段（clip-path 夾住），
+     進戰鬥時整扇門往上升、clip 同時打開到全畫面 → 撞頂震動 → 四箭彈開 →
+     紋章浮起旋轉 180° → 門由中縫拉開，縫裡露出的就是戰鬥畫面。
+
+     ⚠ 它是**全舞台層**（inset:0）不是 #storyBoard 的子元素 —— 子元素會被面板
+       的邊界裁死，升不上去。用 clip-path 假裝被面板裁切，動畫時把 clip 打開。
+     ⚠ 幾何全部由 JS 依實際尺寸算（layoutKerberos）：門要多寬才能「紋章落在面板
+       正中」且「升到頂時蓋滿全螢幕」是解出來的，不是調出來的。 */
+  #kerb{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden;
+    clip-path:inset(var(--story-top) 0 0 0);
+    transition:clip-path .7s cubic-bezier(.5,0,.75,0);}
+  #kerb.full{clip-path:inset(0 0 0 0);}
+  #kerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
+    transition:transform .7s cubic-bezier(.5,0,.75,0);}   /* 由緩到急＝像被推上來撞到頂 */
+  #kerb.rise #kerbDoor{transform:translateY(calc(var(--kerb-rise) * -1));}
+  /* 門的兩半：同一張圖用 background-position 切，不另外出兩個檔。
+     ⚠ background-size 給 200% 是因為每一半只有門的一半寬。 */
+  .kerb-half{position:absolute;top:0;bottom:0;width:50%;
+    background-image:var(--kerb-door);background-repeat:no-repeat;background-size:200% 100%;
+    transition:transform .9s cubic-bezier(.7,0,.3,1);}
+  .kerb-half.l{left:0;background-position:left top;}
+  .kerb-half.r{right:0;background-position:right top;}
+  #kerb.open .kerb-half.l{transform:translateX(-104%);}
+  #kerb.open .kerb-half.r{transform:translateX(104%);}
+  /* 紋章圓盤：浮起＋旋轉。⚠ transform-origin 用預設的正中 —— 圖是以圓盤為中心裁的。 */
+  #kerbCrest{position:absolute;transform:translateY(0) scale(1) rotate(0deg);
+    transition:transform .9s cubic-bezier(.34,1.2,.5,1),filter .5s ease,opacity .5s ease;}
+  #kerb.lift #kerbCrest{transform:translateY(-9%) scale(1.11) rotate(180deg);
+    filter:drop-shadow(0 0 26px rgba(201,162,39,.6)) brightness(1.12);}
+  #kerb.open #kerbCrest{opacity:0;transform:translateY(-14%) scale(1.5) rotate(180deg);}
+  /* 四支箭：由紋章的四個尖端往外彈出去再淡掉。
+     ⚠ 飛出去的是**複製品**，圓盤上的箭不會消失 —— 那四支箭不是獨立零件
+       （上下兩支是同一支十字架的兩端），挖掉會把紋章弄壞。詳見 tools/kerberos_cut.py。 */
+  /* ⚠ 用 **keyframes** 不用 transition：這四片平常是隱形的（opacity:0，免得與圓盤上
+     原本的箭重疊出毛邊），要「先現形再飛出去」。transition 得先把 opacity 設成 1
+     再改回 0，中間那一幀會閃；keyframes 的 from/to 一次寫完，不會有那一幀。 */
+  .kerb-arm{position:absolute;opacity:0;}
+  #kerb.pop .kerb-arm.n{animation:kerbArmN .42s cubic-bezier(.2,.9,.3,1) forwards;}
+  #kerb.pop .kerb-arm.s{animation:kerbArmS .42s cubic-bezier(.2,.9,.3,1) forwards;}
+  #kerb.pop .kerb-arm.w{animation:kerbArmW .42s cubic-bezier(.2,.9,.3,1) forwards;}
+  #kerb.pop .kerb-arm.e{animation:kerbArmE .42s cubic-bezier(.2,.9,.3,1) forwards;}
+  @keyframes kerbArmN{from{opacity:1;transform:none;} to{opacity:0;transform:translateY(-190%) scale(1.3);}}
+  @keyframes kerbArmS{from{opacity:1;transform:none;} to{opacity:0;transform:translateY(190%)  scale(1.3);}}
+  @keyframes kerbArmW{from{opacity:1;transform:none;} to{opacity:0;transform:translateX(-150%) scale(1.3);}}
+  @keyframes kerbArmE{from{opacity:1;transform:none;} to{opacity:0;transform:translateX(150%)  scale(1.3);}}
+  /* 門在開的那一刻，舞台其餘的東西都要讓開（縫裡要露出底下的戰鬥畫面）。 */
+  #storyStage.kerb-open{background:transparent;}
+  #storyStage.kerb-open #storyBg,#storyStage.kerb-open #storyCast,
+  #storyStage.kerb-open #storyCg,#storyStage.kerb-open #storyCi,
+  #storyStage.kerb-open #storyFx,#storyStage.kerb-open #storyCard,
+  #storyStage.kerb-open #storyBoard,#storyStage.kerb-open #storyBubble,
+  #storyStage.kerb-open #storyTouch,#storyStage.kerb-open #storyExit{display:none;}
   /* 進場：從**自己那一側**滑入，450ms ease-out（CLAUDE.md §6.5）。 */
   /* ⚠ opacity 也要進 transition：同一個人只換表情時走**淡入淡出**（Ray 指定
      「不要直接切」）；換人才走滑入滑出（那是 transform 那一條）。 */
@@ -1275,7 +1325,8 @@
   #storyStage.shake #storyCi,
   #storyStage.shake #storyFx,
   #storyStage.shake #storyCard,
-  #storyStage.shake #storyBoard{animation:storyShake .42s cubic-bezier(.36,.07,.19,.97);}
+  #storyStage.shake #storyBoard,
+  #storyStage.shake #kerb{animation:storyShake .42s cubic-bezier(.36,.07,.19,.97);}
   /* ⚠ 持續抖（ver -327，Ray：「畫面抖動要連續直到射擊效果停止」）。
      單發的 .shake 是 0.42 秒跑完就停，掃射要兩秒 —— 差距太大，槍還在打畫面已經定住了。
      `.shake.hold` 把同一個 keyframes 改成無限循環，由 JS 依演出長度決定何時拿掉。 */
@@ -1285,7 +1336,8 @@
   #storyStage.shake.hold #storyCi,
   #storyStage.shake.hold #storyFx,
   #storyStage.shake.hold #storyCard,
-  #storyStage.shake.hold #storyBoard{animation-iteration-count:infinite;}
+  #storyStage.shake.hold #storyBoard,
+  #storyStage.shake.hold #kerb{animation-iteration-count:infinite;}
   @keyframes storyShake{
     10%{transform:translate(-4px,2px);}  20%{transform:translate(5px,-3px);}
     30%{transform:translate(-6px,-2px);} 40%{transform:translate(4px,3px);}

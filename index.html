@@ -358,7 +358,18 @@
   <div id="storyCard"></div>
   <!-- 劇情專用預載頁（見 modules/story.js 的 preloadStory）。 -->
   <div id="storyLoad"><div class="sl-txt">記憶重現中</div><div class="sl-track"><i id="storyLoadBar"></i></div></div>
-  <div id="storyBoard"><img id="storyBoardArt" src="resources/background/TIVOT_Emblem.png" alt=""></div>
+  <!-- 下半盤面區：Kerberos 之門。⚠ 平常只露出下半（clip-path 夾在 --story-top 之下），
+       進戰鬥時整扇門往上升、clip 同時打開到全畫面 —— 所以它是**全舞台層**不是面板的子元素。
+       幾何（門多大、擺哪裡）由 modules/story.js 的 layoutKerberos 依實際尺寸算，不寫死。 -->
+  <div id="storyBoard"></div>
+  <div id="kerb">
+    <div id="kerbDoor">
+      <i class="kerb-half l"></i><i class="kerb-half r"></i>
+      <img class="kerb-arm n" alt=""><img class="kerb-arm e" alt="">
+      <img class="kerb-arm s" alt=""><img class="kerb-arm w" alt="">
+      <img id="kerbCrest" alt="">
+    </div>
+  </div>
   <div id="storyTouch"></div>
   <button id="storyExit" class="corner-btn" aria-label="離開劇情">✕</button>
   <div id="storyBubble">

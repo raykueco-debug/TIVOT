@@ -505,6 +505,103 @@ function fireOneShot(line){
   if(line.fx==='gunfire') fireHits(GUNFIRE_MS);
 }
 
+/* ══════════════════════════════════════════════════════════════════════
+   Kerberos 之門（ver -329）
+   ──────────────────────────────────────────────────────────────────────
+   下半盤面區的門。進戰鬥時：
+     由下往上升（clip 同時打開到全畫面）→ 撞頂震動 → 四箭彈開 →
+     紋章浮起旋轉 180° → 門由中縫拉開，縫裡露出的**就是戰鬥畫面**。
+
+   ⚠ 素材是 tools/kerberos_cut.py 由 `resources/background/Kerberos.png` 切出來的。
+     來源是一張合成好的平面圖（不透明、沒有圖層），門上的凹槽是**合成的**。
+     KERB_META 的數字由那支腳本印出來，**改圖要重跑腳本再把數字貼回來**。
+   ⚠ 四支箭飛出去的是**複製品**，圓盤上的箭不會消失 —— 它們不是獨立零件
+     （上下兩支是同一支十字架的兩端），挖掉會把紋章弄壞。理由記在那支腳本裡。 */
+const KERB_DIR='resources/vfx/';
+const KERB_META={ w:853, h:1844,
+  crest:{ x:0.13365, y:0.03850, w:0.73154, h:0.33894 },
+  arms:{ n:{x:0.45721,y:0.04989,w:0.08675,h:0.08677},
+         s:{x:0.45721,y:0.29067,w:0.08675,h:0.08677},
+         w:{x:0.20633,y:0.17679,w:0.16178,h:0.05531},
+         e:{x:0.63072,y:0.17679,w:0.16178,h:0.05531} } };
+let kerbReady=false;
+
+/* 幾何：門要多寬，是**解出來的**不是調出來的 ——
+   兩個條件同時成立：①紋章圓心落在下半面板正中 ②升到頂時蓋滿整個畫面。
+     令 cy＝紋章圓心佔門高的比例、AR＝門的高寬比
+     門頂 = 面板中心y − cy·AR·Wd，要求 ≤ 面板頂 → Wd ≥ (面板高/2)/(cy·AR)
+   再與「至少要有畫面那麼寬」取大的。上升距離就是門頂那個值（升完門頂貼齊 y=0）。
+   ⚠ 每次開場與 resize 都要重算 —— 面板高吃 safe-area，寫死在瀏海機上會錯位。 */
+function layoutKerberos(){
+  const st=$('storyStage'), kb=$('kerb'), dr=$('kerbDoor'), bd=$('storyBoard');
+  if(!st || !kb || !dr || !bd) return;
+  const R=st.getBoundingClientRect(), B=bd.getBoundingClientRect();
+  const W=R.width, panelTop=B.top-R.top, panelH=B.height;
+  if(!W || !panelH) return;
+  const AR=KERB_META.h/KERB_META.w;
+  const cy=KERB_META.crest.y + KERB_META.crest.h/2;      // 紋章圓心佔門高的比例
+  const Wd=Math.max(W, (panelH/2)/(cy*AR));
+  const Hd=Wd*AR;
+  const top=panelTop + panelH/2 - cy*Hd;
+  dr.style.width=Wd+'px'; dr.style.height=Hd+'px';
+  dr.style.left=((W-Wd)/2)+'px'; dr.style.top=top+'px';
+  kb.style.setProperty('--kerb-rise', Math.max(0,top)+'px');
+  kb.style.setProperty('--kerb-door', 'url("'+KERB_DIR+'kerberos_door.webp")');
+  const put=(el,b)=>{ if(!el) return;
+    el.style.left=(b.x*Wd)+'px'; el.style.top=(b.y*Hd)+'px'; el.style.width=(b.w*Wd)+'px'; };
+  put($('kerbCrest'), KERB_META.crest);
+  for(const k of ['n','e','s','w']) put(kb.querySelector('.kerb-arm.'+k), KERB_META.arms[k]);
+  if(!kerbReady){
+    kerbReady=true;
+    const c=$('kerbCrest'); if(c) c.src=KERB_DIR+'kerberos_crest.webp';
+    for(const k of ['n','e','s','w']){
+      const el=kb.querySelector('.kerb-arm.'+k); if(el) el.src=KERB_DIR+'kerberos_arm_'+k+'.webp';
+    }
+  }
+}
+
+/* 演出。done 在**門開到一半**（縫已經拉出來）時呼叫 —— 由呼叫端決定要露出什麼。
+   ⚠ 音效還沒有素材（Ray：先不配音）。每一拍的接點留在 KERB_SFX，填路徑就會響。 */
+const KERB_SFX={ thud:null, pop:null, spin:null, open:null };
+const KERB_T={ rise:700, thud:420, pop:420, lift:900, open:900 };
+let kerbTimers=[];
+let kerbPlaying=false;   // 演出期間鎖住點擊推進（不然一點就跳到下一句，門還開著）
+function stopKerberos(){
+  kerbPlaying=false;
+  kerbTimers.forEach(clearTimeout); kerbTimers=[];
+  const kb=$('kerb'), st=$('storyStage');
+  if(kb) kb.classList.remove('rise','full','pop','lift','open');
+  if(st) st.classList.remove('kerb-open');
+}
+function playKerberos(onGap, onDone){
+  const kb=$('kerb'), st=$('storyStage');
+  if(!kb || !st){ onGap&&onGap(); onDone&&onDone(); return; }
+  stopKerberos(); layoutKerberos();
+  kerbPlaying=true;
+  const at=(ms,fn)=>kerbTimers.push(setTimeout(fn,ms));
+  const se=k=>{ if(KERB_SFX[k]) playSe(KERB_SFX[k]); };
+  let t=0;
+  kb.classList.add('rise','full');                       // ① 上升＋畫面打開
+  t+=KERB_T.rise;
+  at(t,()=>{ se('thud');                                 // ② 撞頂：震動
+    st.classList.remove('shake','hold'); void st.offsetWidth; st.classList.add('shake');
+    kerbTimers.push(setTimeout(()=>st.classList.remove('shake'), KERB_T.thud));
+  });
+  t+=180;
+  at(t,()=>{ se('pop'); kb.classList.add('pop'); });      // ③ 四箭彈開
+  t+=KERB_T.pop*0.7;
+  at(t,()=>{ se('spin'); kb.classList.add('lift'); });    // ④ 紋章浮起＋旋轉 180°
+  t+=KERB_T.lift;
+  at(t,()=>{                                             // ⑤ 讓出舞台 → 底下開戰
+    st.classList.add('kerb-open');
+    onGap&&onGap();
+  });
+  t+=260;                                                // 給底下一拍把畫面建起來
+  at(t,()=>{ se('open'); kb.classList.add('open'); });    // ⑥ 開門
+  t+=KERB_T.open;
+  at(t,()=>{ onDone&&onDone(); });
+}
+
 /* ══ 演一句 ══ */
 function renderLine(){
   const line = cur.lines[lineIdx];
@@ -524,8 +621,12 @@ function renderLine(){
     }
     const resume = { scene: cur.sceneId, line: lineIdx+1 };
     const id = line.battle;
-    close({ keepBgm:true });
-    battleHandler(id, resume);
+    /* Kerberos 之門（ver -329）：門開的**縫裡露出的就是戰鬥畫面**，所以順序反過來 ——
+       先讓底下開戰（onGap），門才拉開；門全開之後才把劇情層收掉。
+       ⚠ 舊寫法是「先 close 再交棒」，那樣門一開只會露出黑幕。
+       ⚠ close 一定要等門全開（onDone）—— 提早收掉的話門會憑空消失。 */
+    playKerberos(()=>battleHandler(id, resume),
+                 ()=>close({ keepBgm:true }));
     return;
   }
 
@@ -608,6 +709,7 @@ function renderLine(){
 
 /* ══ 推進 ══ */
 function advance(){
+  if(kerbPlaying) return;            // Kerberos 之門演出中：點擊無效（不然會跳過整段演出）
   const line = cur && cur.lines[lineIdx];
   const tx = $('storyText');
   clearTimeout(autoT); autoT=null;   // 玩家點了 → 演出拍提前收，別讓計時器再推一次
@@ -716,6 +818,9 @@ function collectAssets(startId){
 const PRELOAD_CAP_MS = 25000;
 function preloadStory(startId, onProgress){
   const A=collectAssets(startId);
+  /* ⚠ 門的素材也要預載：它是**進戰鬥那一刻**才動起來的，沒先抓的話升上去是一片空白。 */
+  for(const f of ['kerberos_door','kerberos_crest','kerberos_arm_n','kerberos_arm_e','kerberos_arm_s','kerberos_arm_w'])
+    A.imgs.push(KERB_DIR+f+'.webp');
   const jobs=[];
   for(const src of A.imgs) jobs.push(new Promise(res=>{
     const im=new Image();
@@ -734,6 +839,7 @@ function preloadStory(startId, onProgress){
 export function open(pos, done){
   const st=$('storyStage'); if(!st) return;
   resetStage();
+  stopKerberos();                       // 上一場的門要歸位（不然這次一進來門就是開的）
   onExit = done || null;
   active = true;
   st.classList.add('on');
@@ -745,6 +851,7 @@ export function open(pos, done){
   const ld=$('storyLoad');
   const go=()=>{
     if(ld) ld.classList.remove('on');
+    layoutKerberos();     // ⚠ 要在舞台已經 .on 之後量 —— display:none 的元素量出來全是 0
     playScene(id);
     if(pos && pos.line>0 && cur){
       /* ⚠⚠ 續播位置**可能剛好等於該段的長度**（ver -322 修）。
@@ -779,6 +886,7 @@ export function close(opts){
   clearTimeout(autoT); autoT=null;   // ⚠ 沒清的話劇情關掉之後還會推一句（然後在關著的舞台上演）
   const b0=$('storyBubble'); if(b0) b0.style.visibility='';
   active=false; cur=null;
+  stopKerberos();
   const st=$('storyStage'); if(st) st.classList.remove('on');
   document.body.classList.remove('story-on');
   leaveSlot('L'); leaveSlot('R');
@@ -805,5 +913,5 @@ export function init(){
   if(touch) touch.addEventListener('click', ()=>{ if(active) advance(); });
   const ex=$('storyExit');
   if(ex) ex.addEventListener('click', e=>{ e.stopPropagation(); close(); });
-  window.addEventListener('resize', ()=>{ if(active) layout(); });
+  window.addEventListener('resize', ()=>{ if(active){ layout(); layoutKerberos(); } });
 }
