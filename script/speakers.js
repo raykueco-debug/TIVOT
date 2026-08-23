@@ -159,15 +159,18 @@ export const ART = {
               全身站姿，所以 cm/standCm/faceAdj 全部沿用她站姿那一組，只覆寫取景。 */
            /* ⚠ G2 入口那一段的兩張站姿都帶自己的 `faceAdj`（Ray 逐次看實機調的）：
                 angry 1.22 → 1.10（-350「再縮 10%」）→ **0.94**（-351「G2 入口的立繪縮 15%」）
-                taunt 1.22 → **1.04**（同一段同一次的 −15%）
+                taunt 1.22 → 1.04（-351 的 −15%）→ **0.83**（-353「taunt 再縮 20%」）
               ⚠ 兩張數字不同是**刻意**的：angry 比 taunt 多縮過一輪。補的是那一張畫的
                 構圖差異，不是角色屬性 —— 要調就調這裡，**不要回頭動角色的 cm**
                 （那會連站姿基本立繪與坐姿一起變）。 */
            expr:{ angry:      { src:'resources/SI/Luna_SI_angry.webp',       top:0, bot:1536, fx:0.477, faceAdj:0.94 },
-                  taunt:      { src:'resources/SI/Luna_SI_taunt.webp',       top:0, bot:1536, fx:0.510, faceAdj:1.04 },
+                  taunt:      { src:'resources/SI/Luna_SI_taunt.webp',       top:0, bot:1536, fx:0.510, faceAdj:0.83 },
                   seat:       { src:'resources/SI/Luna_SI_seat_N.webp',     top:7, bot:1536, fx:0.448, faceAdj:0.74, standCm:155 },
                   seat_smirk: { src:'resources/SI/Luna_SI_seat_smirk.webp', top:0, bot:1536, fx:0.504, faceAdj:0.74, standCm:155 },
-                  seat_angry: { src:'resources/SI/Luna_SI_seat_angry.webp', top:0, bot:1536, fx:0.521, faceAdj:0.74, standCm:155 },
+                  /* ⚠ `seat_angry` 比其他三張坐姿再小一截：0.74 → **0.63**
+                     （-353，Ray「seat_angry 再縮 15%」）。同一組坐姿吃不同的補償是刻意的，
+                     補的是**那一張畫**的構圖差異（這張她往前傾、臉畫得比較大）。 */
+                  seat_angry: { src:'resources/SI/Luna_SI_seat_angry.webp', top:0, bot:1536, fx:0.521, faceAdj:0.63, standCm:155 },
                   seat_hand:  { src:'resources/SI/Luna_SI_seat_hand.webp',  top:3, bot:1536, fx:0.465, faceAdj:0.74, standCm:155 } } },
   luna:   { cm:160, eye:30, fx:0.500, top:0, bot:1000,
            side:'L', alt:null, base:'resources/partner/Luna_CI_exc.webp', expr:{}, unmeasured:true },

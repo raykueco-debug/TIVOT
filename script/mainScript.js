@@ -166,9 +166,13 @@ export const MAIN_SCRIPT = {
          ⚠ 換 BGM＋換背景＋收插圖都放在**卡片這一拍**：收插圖走黑幕，黑幕正好把
            「插圖消失、背景換回地宮」這兩件事一起藏起來，收乾淨才亮出卡片。
          ⚠ 卡片這一拍不出對話框（story.js 看到 `card` 就不出框），玩家點一下推進。 */
+      /* ⚠ 卡片這一拍要**清場**（ver -353，Ray：「G2入口時諾薇兒的立繪還在，撤掉，
+         說話才出來」）。上一拍她站在左邊，而立繪是持續狀態 —— 不明寫 `hide` 她會
+         留在卡片後面，情境卡就變成「有人站在旁邊的地點介紹」。
+         ⚠ `portrait` 一句只能指定一個人，要**同時**讓另一個人退場就用 `hide`。 */
       { speaker:'LUNARIA', text:'',
         cg:null, bg:'HolyseeDungeonWhole', bgm:'lunaria',
-        card:'聖王廳地宮　G2入口',
+        card:'聖王廳地宮　G2入口', hide:['NOUVELLE'],
         portrait:{ char:'LUNARIA', show:false } },
       { speaker:'LUNARIA', text:'在G2就熔斷了嗎？真是派不上用場。',
         portrait:{ char:'LUNARIA', expr:'angry', show:true } },
@@ -180,7 +184,7 @@ export const MAIN_SCRIPT = {
       { speaker:'LUNARIA', text:'算了。13th來人了，說是要來找這傢伙。',
         portrait:{ expr:'angry' } },
       { speaker:'NOUVELLE', text:' 13th……第十三騎士團嗎！？',
-        portrait:{ char:'NOUVELLE', expr:'cringe' } },
+        portrait:{ char:'NOUVELLE', expr:'surprise' } },
       { speaker:'NOUVELLE', text:'你到底又闖了什麼禍啊……', portrait:{ expr:'cringe' } },
       /* ⚠ 交界插**讀取閘門**（ver -348）：會客廳那一幕自己 2.3 MB，不該擠進開場那一道門。
          `collectAssets` 看到「這一段有 load 指向自己的 next」就**不再往下算**，
