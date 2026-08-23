@@ -502,7 +502,15 @@ function placePortraitX(el, side){
      translateX(-50%) 置中，寫死 inline left 會把它推歪半個身寬。 */
   const centered = el.classList.contains('center');
   const C = CFG();
-  const topY  = F * ((C.portraitTopPct!=null ? C.portraitTopPct : 3)/100);
+  /* ⚠⚠ 頂線不得高於左上角那顆鈕的下緣（Ray：「頭頂不能超過清盤鈕，否則會被
+     動態島吃掉」）。鈕吃 safe-area，所以**量它的實際位置**，不要寫死 ——
+     瀏海機與平頭機的 safe-area 差很多（同 §6.5 頂線由 HUD 量出來的作法）。 */
+  let topY = F * ((C.portraitTopPct!=null ? C.portraitTopPct : 3)/100);
+  const btn = $('testClearBtn') || $('exitBtn');
+  if(btn && wrap){
+    const br = btn.getBoundingClientRect(), wr = wrap.getBoundingClientRect();
+    if(br.height) topY = Math.max(topY, br.bottom - wr.top + 4);
+  }
   const pxCm  = (F - topY) / ((C.castShow||0.56) * (C.castTall||176));
   const nH    = el.naturalHeight || 1536;              // 這批立繪都是 1024×1536
   const nW    = el.naturalWidth  || 1024;

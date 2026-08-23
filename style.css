@@ -1121,7 +1121,12 @@
   #tutBubble.done .tut-next{animation:tutNext .7s ease-in-out infinite alternate;}
   @keyframes tutNext{from{opacity:.25;transform:translateY(0);}to{opacity:.95;transform:translateY(2px);}}
   /* 教學對話期間（dlg-pause）：凍結中的大絕紅點提到立繪之上——threat 步驟正對著它講解 */
-  body.dlg-pause #redDots{z-index:21;}
+  /* ⚠ 對話期間，**盤面資訊要壓在立繪之上**：紅點(21)、血條與破防計量表(21)、
+     敵人名(21)。立繪是裝飾，這些是玩家要讀的東西 —— 立繪一放大就會蓋掉它們
+     （Ray：「立繪不要蓋過血條與破防值計量」）。#tutCast 是 20。 */
+  body.dlg-pause #redDots,
+  body.dlg-pause #barsBlock,
+  body.dlg-pause #hud{z-index:21;}
   #tutTouch{position:fixed;inset:0;z-index:36;display:none;background:transparent;touch-action:none;}
   #tutTouch.on{display:block;}
   /* 跳過鈕：小型膠囊、三語統一 SKIP（i18n battle.skipBtn） */

@@ -107,7 +107,7 @@ function voiceChain(c, vol){
   }catch(e){ return null; }
 }
 
-function playBuffer(c, buf, vol, voice){
+function playBuffer(c, buf, vol, voice, handle){
   try{
     const s = c.createBufferSource(); s.buffer = buf;
     if(voice && _voice){
@@ -117,6 +117,10 @@ function playBuffer(c, buf, vol, voice){
     const g = c.createGain(); g.gain.value = (vol==null ? 1 : vol);
     s.connect(g); g.connect(busOut(c));
     s.start();
+    /* 可中止的把手（playCue 用）：演出結束時要把還在響的機械聲收掉。
+       ⚠ 直接 stop() 會有「喀」一聲 —— 一定要先把增益斜降到 0 再 stop。 */
+    if(handle){ handle.node=s; handle.gain=g; handle.ctx=c;
+      if(handle.stopAt!=null) handle.fade(handle.stopAt); }
   }catch(e){}
 }
 
@@ -127,21 +131,21 @@ const LATE_PLAY_MS = 1500;
 /* context 未 running（iOS 解鎖中/被中斷）時不盲目 s.start()——被排入的音源會卡到
  * 「下一次手勢 resume」才突然冒出（=延到下一幕才響）。改輪詢等 running，
  * LATE_PLAY_MS 內沒等到就放棄（遲到不亂響）。context 若中途重建，改用新 _ctx。 */
-function playWhenRunning(buf, vol, t0, voice){
+function playWhenRunning(buf, vol, t0, voice, handle){
   if(Date.now()-t0 > LATE_PLAY_MS) return;
   const c = _ctx; if(!c) return;
-  if(c.state === 'running'){ playBuffer(c, buf, vol, voice); return; }
-  setTimeout(()=>playWhenRunning(buf, vol, t0, voice), 60);
+  if(c.state === 'running'){ playBuffer(c, buf, vol, voice, handle); return; }
+  setTimeout(()=>playWhenRunning(buf, vol, t0, voice, handle), 60);
 }
 
 // 播放音檔（src＝已解析路徑）。已解碼→立即播；未解碼→限時補播（逾時放棄）。null/空→靜默略過。
-function playSrc(src, vol, voice){
+function playSrc(src, vol, voice, handle){
   if(!src) return;
   if(!ctx()) return;
   const t0 = Date.now();
   const buf = _buffers[src];
-  if(buf){ playWhenRunning(buf, vol, t0, voice); return; }
-  load(src).then(b => { if(b) playWhenRunning(b, vol, t0, voice); });
+  if(buf){ playWhenRunning(buf, vol, t0, voice, handle); return; }
+  load(src).then(b => { if(b) playWhenRunning(b, vol, t0, voice, handle); });
 }
 
 let _shots = [];    // 普攻槍聲候選（已解析路徑，隨機播一支）
@@ -280,6 +284,25 @@ export const SFX = {
 
   // 播放音檔（src＝已解析路徑）。每次 new source → 可自由重疊、不限制、不打斷前一個。
   play(src, vol){ playSrc(src, vol); },
+  /* 播一支**可中止**的音效，回傳把手：`.stop(fadeMs)` 收掉它。
+     用途：演出用的機械聲（Kerberos 的齒輪）必須跟著動畫收尾，不能自己響完 ——
+     素材 6.9 秒、動畫只有 1.6 秒，不收的話門都開完了齒輪還在轉。
+     ⚠ 收的時候要**斜降增益再 stop**，直接 stop 會有一聲喀。
+     ⚠ 把手在音檔還沒解碼完就可能被呼叫 stop（演出被跳過）→ 記下 stopAt，
+       等真的播起來再補做，否則會漏收。 */
+  playCue(src, vol){
+    const h = { node:null, gain:null, ctx:null, stopAt:null,
+      fade(ms){
+        const c=this.ctx, g=this.gain, n=this.node;
+        if(!c||!g||!n) return;
+        const t=c.currentTime, d=Math.max(0.02,(ms||160)/1000);
+        try{ g.gain.cancelScheduledValues(t); g.gain.setValueAtTime(g.gain.value,t);
+             g.gain.linearRampToValueAtTime(0.0001, t+d); n.stop(t+d+0.02); }catch(e){}
+      },
+      stop(ms){ if(this.node) this.fade(ms); else this.stopAt = (ms||160); } };
+    playSrc(src, vol, false, h);
+    return h;
+  },
 
   /* 播放**語音**：與 play 的差別是走語音鏈（見上方 voiceChain 的說明）。
      ⚠ 由呼叫端決定層別，不是由 audio.js 猜檔名 —— 這一層的成員就是

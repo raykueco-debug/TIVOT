@@ -147,9 +147,14 @@ function layout(){
        它的用意是「四個人的腳落在同一條地平線上」—— 台上只有一個人的時候沒有
        對象可以對齊，那 (CAST_TALL−cm)×pxCm 就只是在頭頂上方空出一塊
        （諾薇兒 165 vs 最高的 176，實測空掉 62px，在 494 高的立繪區裡很明顯）。 */
-    /* ⚠ 頭頂用 standCm（站姿身高）不用 cm：cm 是縮放的分母／分子，改它會連大小一起變。
-       彎腰的姿勢頭頂本來就該低，昂立的就該高 —— 見 speakers.js 的說明。 */
-    const headY = top + (solo ? 0 : (CAST_TALL-(a.standCm||a.cm))*pxCm);
+    /* ⚠⚠ 身高讓位**一律套用**，不再分單人／兩人（ver -336）。
+       原本單人時不讓位，於是同一張立繪在「單人那一格」與「兩人那一格」高低不同 ——
+       Ray 回報「『讓開』出來的時候諾薇兒立繪縮小了」，看到的就是這個位移
+       （實測尺寸其實一樣，697=697，但整個人往下沉 46px，讀起來就是變小）。
+       **原則：同一張立繪在任何場合都要算出同一個結果**（Ray 指定寫入原則）。
+       代價：單人時頭頂上方會空出 (CAST_TALL−身高)×每公分像素，那是身高的誠實表現。
+     ⚠ 頭頂用 standCm（站姿身高）不用 cm：cm 是縮放的分母／分子，改它連大小一起變。 */
+    const headY = top + (CAST_TALL-(a.standCm||a.cm))*pxCm;
     const yTop  = headY - s*a.top;                    // 圖框上緣的螢幕 y
     const visLo = a.top;                              // 頭頂
     const visHi = Math.min(a.bot, a.top + (H-headY)/s);  // 畫面下緣對應的圖列
@@ -529,17 +534,17 @@ const KERB_DIR='resources/vfx/';
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
      只要中心擺對，轉幾度都落在該落的地方。 */
 const KERB_META={"w":853,"h":1844,"seam":0.506,
- "plate":{"x":0.18171,"y":0.05586,"w":0.63892,"h":0.29393},
+ "plate":{"x":0.18171,"y":0.05152,"w":0.63892,"h":0.30206},
  "top":{"ar":0.11159,"dip":0.11915},
  "arrows":{"n":{"cx":0.50117,"cy":0.09138,"w":0.07737,"h":0.10033,"rot":0,  "ux":0, "uy":-1},
-           "e":{"cx":0.74342,"cy":0.20282,"w":0.07737,"h":0.10033,"rot":90, "ux":1, "uy":0},
-           "s":{"cx":0.50117,"cy":0.31426,"w":0.07737,"h":0.10033,"rot":180,"ux":0, "uy":1},
-           "w":{"cx":0.25892,"cy":0.20282,"w":0.07737,"h":0.10033,"rot":270,"ux":-1,"uy":0}},
- "rivets":{"r10":{"cx":0.24113,"cy":0.10142,"w":0.05393,"h":0.02657,"fx":1, "fy":1, "ux":-0.7646,"uy":-0.6445},
-           "r2": {"cx":0.76121,"cy":0.10142,"w":0.05393,"h":0.02657,"fx":-1,"fy":1, "ux":0.7646, "uy":-0.6445},
-           "r8": {"cx":0.24113,"cy":0.30422,"w":0.05393,"h":0.02657,"fx":1, "fy":-1,"ux":-0.7646,"uy":0.6445},
-           "r4": {"cx":0.76121,"cy":0.30422,"w":0.05393,"h":0.02657,"fx":-1,"fy":-1,"ux":0.7646, "uy":0.6445}}};
-const KERB_POP={ arrow:0.016, rivet:0.026 };   // 彈開距離，佔門寬的比例（微幅＝Ray 指定）
+           "e":{"cx":0.73632,"cy":0.20255,"w":0.07737,"h":0.10033,"rot":90, "ux":1, "uy":0},
+           "s":{"cx":0.50117,"cy":0.31372,"w":0.07737,"h":0.10033,"rot":180,"ux":0, "uy":1},
+           "w":{"cx":0.26602,"cy":0.20255,"w":0.07737,"h":0.10033,"rot":270,"ux":-1,"uy":0}},
+ "rivets":{"r10":{"cx":0.24113,"cy":0.09834,"w":0.05393,"h":0.02657,"fx":1, "fy":1, "ux":-0.7558,"uy":-0.6548},
+           "r2": {"cx":0.76121,"cy":0.09834,"w":0.05393,"h":0.02657,"fx":-1,"fy":1, "ux":0.7558, "uy":-0.6548},
+           "r8": {"cx":0.24113,"cy":0.30676,"w":0.05393,"h":0.02657,"fx":1, "fy":-1,"ux":-0.7558,"uy":0.6548},
+           "r4": {"cx":0.76121,"cy":0.30676,"w":0.05393,"h":0.02657,"fx":-1,"fy":-1,"ux":0.7558, "uy":0.6548}}};
+const KERB_POP={ arrow:0.045, rivet:0.026 };   // 彈開距離，佔門寬的比例（箭 ver -336 由 0.016 加大）
 const KERB_ARROWS=['n','e','s','w'];             // 箭：正四向
 const KERB_RIVETS=['r10','r2','r4','r8'];        // 鉚釘：10/2/4/8 點鐘，依這個順序彈開
 let kerbReady=false;
@@ -652,12 +657,27 @@ function kerbPuff(el){
 
 /* 演出。onGap 在門要拉開之前呼叫（讓底下先開戰），onDone 在門全開之後。
    ⚠ 音效還沒有素材（Ray：先不配音）。每一拍的接點留在 KERB_SFX，填路徑就會響。 */
-const KERB_SFX={ thud:null, rivet:null, arrow:null, spin:null, open:null };
-const KERB_T={ rise:700, thud:420, rivet:460, arrow:340, lift:900, open:900 };
+/* ── 音效（ver -336）────────────────────────────────────────────────
+   ⚠⚠ 這三支的**時間點是由音檔本身反推的**，不是隨便對齊動畫起點：
+     · pop  2.088 秒，撞擊峰值在 **1.002 秒** → 從演出一開始就播，
+       並把「上推」的長度定成 1000ms，讓門撞到頂的那一瞬正好是撞擊音
+       （Ray：「以槍棺撞頂的那一瞬為撞擊音回推播放時間」）。
+     · gear 6.864 秒，遠長於圓盤旋轉 → 旋轉開始播、**旋轉結束就收掉**
+       （Ray：「以圓盤轉動開始，停轉結束」）。收要斜降，直接停會有一聲喀，
+       所以走 SFX.playCue 的把手。旋轉也拉長到 1600ms，多聽到一點齒輪。
+     · open 2.376 秒、可聞段收在 **1.921 秒** → 從「門全開的時刻」往回推
+       1921ms 開始播（Ray：「以槍棺全開為結束，回推播放時間，可與 gear 重疊」）。
+   ⚠ 換音檔要**重量這三個數字**（工具：瀏覽器 decodeAudioData 後找峰值與首尾過門檻點）。 */
+const KERB_SE_DIR='resources/audio/se/';
+const KERB_SFX={ pop:'se_Kerberos_pop', gear:'se_Kerberos_gear', open:'se_Kerberos_open' };
+const KERB_SE_T={ popPeak:1002, openTail:1921 };
+const KERB_T={ rise:1000, thud:420, rivet:460, arrow:340, lift:1600, open:900 };
 let kerbTimers=[];
 let kerbPlaying=false;   // 演出期間鎖住點擊推進（不然一點就跳到下一句，門還開著）
+let kerbGear=null;       // 齒輪聲的把手（演出中止時要收掉，見 stopKerberos）
 function stopKerberos(){
   kerbPlaying=false;
+  if(kerbGear){ try{ kerbGear.stop(120); }catch(e){} kerbGear=null; }
   kerbTimers.forEach(clearTimeout); kerbTimers=[];
   const kb=$('kerb'), st=$('storyStage'), sm=$('kerbSmoke');
   if(kb) kb.classList.remove('rise','full','unlock','lift','open','glow');
@@ -670,11 +690,14 @@ function playKerberos(onGap, onDone){
   stopKerberos(); layoutKerberos();
   kerbPlaying=true;
   const at=(ms,fn)=>kerbTimers.push(setTimeout(fn,ms));
-  const se=k=>{ if(KERB_SFX[k]) playSe(KERB_SFX[k]); };
+  const src=k=>KERB_SE_DIR+KERB_SFX[k]+'.mp3';
+  const se=k=>{ try{ SFX.play(src(k), 1); }catch(e){} };
   let t=0;
+  /* ① 撞擊音：立刻播，撞擊峰值（1002ms）正好落在門撞頂那一瞬（rise 也是 1000ms）。 */
+  se('pop');
   kb.classList.add('rise','full');                       // ① 槍棺上推（楣跟著走）
   t+=KERB_T.rise;
-  at(t,()=>{ se('thud');                                 // ② 撞頂：震動＋門縫透出十字亮光
+  at(t,()=>{                                             // ② 撞頂：震動＋門縫透出十字亮光
     st.classList.remove('shake','hold'); void st.offsetWidth; st.classList.add('shake');
     kerbTimers.push(setTimeout(()=>st.classList.remove('shake'), KERB_T.thud));
     kb.classList.remove('glow'); void kb.offsetWidth; kb.classList.add('glow');
@@ -687,14 +710,25 @@ function playKerberos(onGap, onDone){
     }, i*90)));
   });
   t+=KERB_T.rivet + 90*3;
-  at(t,()=>{ se('spin'); kb.classList.add('lift'); });    // ④ 圓盤浮起＋旋轉 180°（圓心不動）
+  /* ④ 圓盤浮起＋旋轉 180°（圓心不動）。齒輪聲跟著轉動起訖 —— 素材 6.9 秒，
+     不收的話門都開完了還在轉，所以用 playCue 拿把手，轉完斜降收掉。 */
+  const spinAt = t;
+  at(t,()=>{ kb.classList.add('lift');
+    try{ kerbGear = SFX.playCue(src('gear'), 1); }catch(e){ kerbGear=null; }
+  });
   t+=KERB_T.lift;
+  at(t,()=>{ if(kerbGear){ kerbGear.stop(220); kerbGear=null; } });
   at(t,()=>{                                             // ⑤ 讓出舞台 → 底下開戰
     st.classList.add('kerb-open');
     onGap&&onGap();
   });
   t+=260;                                                // 給底下一拍把畫面建起來
-  at(t,()=>{ se('open'); kb.classList.add('open'); });    // ⑥ 開門
+  const openAt = t;
+  at(t,()=>{ kb.classList.add('open'); });               // ⑥ 開門
+  /* 開門音：可聞段收在 1921ms，要讓它**結束在門全開的那一刻** → 往回推。
+     推出來的時間點通常落在旋轉那一段，與齒輪重疊 —— Ray 說可以重疊。
+     ⚠ 夾在 0 以上：畫面時序若被縮短到比音檔還短，就從頭播（寧可提前，不要不播）。 */
+  at(Math.max(0, openAt + KERB_T.open - KERB_SE_T.openTail), ()=>se('open'));
   t+=KERB_T.open;
   at(t,()=>{ onDone&&onDone(); });
 }
@@ -918,6 +952,9 @@ function preloadStory(startId, onProgress){
   /* ⚠ 門的素材也要預載：它是**進戰鬥那一刻**才動起來的，沒先抓的話升上去是一片空白。 */
   for(const f of ['kerberos_door','kerberos_plate','kerberos_arrow','kerberos_rivet','kerberos_top'])
     A.imgs.push(KERB_DIR+f+'.webp');
+  /* ⚠ 門的三支音效也要預載：撞擊音在演出**第 0 毫秒**就要響，
+     現抓的話一定遲到（audio.js 的 LATE_PLAY_MS 是 1.5 秒，遲到就乾脆不播）。 */
+  for(const k in KERB_SFX) A.ses.push(KERB_SE_DIR+KERB_SFX[k]+'.mp3');
   const jobs=[];
   for(const src of A.imgs) jobs.push(new Promise(res=>{
     const im=new Image();

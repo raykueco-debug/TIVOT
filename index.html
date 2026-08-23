@@ -373,14 +373,16 @@
            ⚠ 箭與鉚釘在**圓盤之上**（Ray：「箭頭一開始就要在圓盤上，最上層」）。
            ⚠ 它們都是 #kerbDoor 的子元素＝與槍棺同一剛體：上頂時跟著走、開門時跟著走，
              只有「彈開」那一下是自己的 transform（Ray：「只有移動時獨立」）。 -->
+      <!-- ⚠ 十字亮光排在**圓盤之前**＝畫在圓盤之下：圓盤是不透明的，自然把中段擋住，
+           畫面上只剩「圓盤邊緣透出來的光」（Ray：「圓盤區域內不要有光，只有邊緣透光」）。
+           用遮罩去挖也做得到，但那要跟著圓盤的縮放與旋轉一起維護；靠疊序是零維護。 -->
+      <div id="kerbGlow"><i class="kg-v"></i><i class="kg-h"></i></div>
       <img id="kerbPlate" alt="">
       <img class="kerb-arrow n" alt=""><img class="kerb-arrow e" alt="">
       <img class="kerb-arrow s" alt=""><img class="kerb-arrow w" alt="">
       <img class="kerb-rivet r10" alt=""><img class="kerb-rivet r2" alt="">
       <img class="kerb-rivet r4" alt=""><img class="kerb-rivet r8" alt="">
       <div id="kerbSmoke"></div>
-      <!-- 撞頂時由門縫透出來的十字亮光（豎＝中縫，橫＝橫軸）。位置由 JS 依幾何寫入。 -->
-      <div id="kerbGlow"><i class="kg-v"></i><i class="kg-h"></i></div>
       <!-- 楣：蓋在槍棺頂端，下緣與控制區無縫貼合。是門的子元素＝同一剛體，門上推它跟著上去。 -->
       <img id="kerbTop" alt="">
     </div>

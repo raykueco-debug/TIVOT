@@ -99,8 +99,11 @@ export const MAIN_SCRIPT = {
          ⚠ `auto` = 咆哮音長（Se_enemy_Saintroar 實測 3.34 秒）＋一點餘裕：
          聲音放完自己推到下一句，於是「對話框與立繪一同出現」。玩家想快轉照樣可以點。
          ⚠ 改音檔要改這個數字 —— 沒有自動對時的機制。 */
+      /* ⚠ 002 直接當**背景**，不要當插圖（Ray 指定）。插圖層在立繪之上，
+         下一句要看到立繪就得把它收掉 —— 那一收一放就是「閃動」。
+         當背景的話它從這一拍開始**完全不動**，立繪直接疊上去。 */
       { speaker:'NOUVELLE', text:'', auto:3500,
-        cg:'002_SaintAssult', se:'se_saintroar', shake:true,
+        bg:'002_SaintAssult', se:'se_saintroar', shake:true,
         portrait:{ char:'NOUVELLE', show:false } },
       /* ⚠⚠ 這一句要**把插圖收掉**（cg:null）。插圖的層級在立繪之上，不收的話
          她整個被蓋住 —— Ray 回報「『對不起，我已經……！』的立繪一直沒出來」
@@ -108,8 +111,9 @@ export const MAIN_SCRIPT = {
       /* ⚠ 背景換成**插圖 002**（Ray 指定）——「插圖收掉」不等於「回地宮」，
          聖徒撲上來的那張要留在她背後當場景，只是要退到立繪之下才看得到她。
          story.js 的 bg 會依「NNN_ 開頭」自動去 illustration/ 找（見 imgSrc）。 */
+      /* ⚠ 這一句**什麼背景都不要寫**：上一拍已經是 002 了，再寫一次會觸發換圖
+         （即使同一張，也會走一次淡出淡入）—— Ray：「背景不要動」。 */
       { speaker:'NOUVELLE', text:'對不起，我已經……！',
-        cg:null, bg:'002_SaintAssult',
         portrait:{ expr:'desperate', show:true } },
       /* 暗調 CI 插入。⚠ 說話的是「？？？」不是 LUNARIA —— 這一刻她還沒表明身分，
          顯示名要真的是「？？？」（見 speakers.js 的說明）。 */
@@ -121,7 +125,9 @@ export const MAIN_SCRIPT = {
            所以這一句不動她的 portrait。 */
       { speaker:'UNKNOWN', text:'讓開。', dark:true,
         portrait:{ char:'UNKNOWN', show:true } },
-      { speaker:'NOUVELLE', text:'！！', portrait:{ char:'NOUVELLE', expr:'scared' } },
+      /* ⚠ 璐娜莉亞這一拍**退場**（Ray 指定）：立繪是持續狀態，不明寫 hide 她會一直站著。 */
+      { speaker:'NOUVELLE', text:'！！', hide:'UNKNOWN',
+        portrait:{ char:'NOUVELLE', expr:'scared' } },
       /* 密集掃射：⚠ 打在**插圖上**（Ray 原稿：「002_SaintAssult 圖上出現大量密擊
          快速槍擊點」），所以這一拍把插圖叫回來。 */
       /* 密集槍擊：命中點灑在 002 上，畫面同時抖一下。
@@ -131,7 +137,7 @@ export const MAIN_SCRIPT = {
       /* ⚠ 同樣是**沒有對話框**的演出拍。`auto` 略長於掃射（2 秒）——
          沒有框也沒有 ▼ 提示，不自己走的話畫面會停在那裡看起來像卡住。
          抖動由 story.js 依 fx 自動抖滿整段（Ray：「抖動要連續直到射擊效果停止」）。 */
-      { speaker:'UNKNOWN', text:'', auto:2200, cg:'002_SaintAssult',
+      { speaker:'UNKNOWN', text:'', auto:2200,
         fx:'gunfire', shake:true, se:'se_lunaMG' },
       /* 回地宮。⚠ cg:null 要明寫，否則插圖會一直蓋著。 */
       /* ⚠ 這一句**只留諾薇兒**（Ray 指定）。璐娜莉亞要明寫 hide 請下台 ——
