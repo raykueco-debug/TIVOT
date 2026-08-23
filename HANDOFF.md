@@ -1,9 +1,79 @@
 # HANDOFF — Saint Install 模組化重寫 · 進度交接
 
 > 每輪開工前讀本檔 + 憲法/規格。實況以 `git log` 與 `DECISIONS.md` 為準;本檔為人類可讀的進度總覽。
-> 目前狀態:**CLAUDE.md §6 開發順序第 1~5 步已完成**,下一輪為**第 6 步(全流程 ACCEPTANCE 對照 reference 收尾)**。
-> ⚠ 第 6 步已擱置一段時間了:`-208` 之後的產出幾乎都在 `flight/` 與**全站通用系統**
-> (音訊分層、對白演出、讀取畫面)。要收尾戰鬥那側的話,`ACCEPTANCE.md` 仍然不存在。
+> **最後回寫:`ver -341`(2026-08-23)。** 本檔後半是逐版的交接,由新到舊往下加;
+> **要快速上手請先讀下面那一段「★必讀 · 目前狀態(ver -341)」**,再依需要跳到對應版本。
+>
+> 目前狀態:CLAUDE.md §6 開發順序第 1~5 步已完成;**第 6 步(ACCEPTANCE 對照 reference)仍未動**,
+> `ACCEPTANCE.md` 至今不存在。`-208` 之後的產出集中在 `flight/`、**全站通用系統**
+> (音訊分層、對白演出、讀取畫面)與 **`-318` 起的劇情播放器**。
+
+---
+
+# ★必讀 · 目前狀態（`ver -341`）
+
+## 這一段時間做出了什麼（`-318` ~ `-341`）
+
+三塊東西，彼此獨立但接在同一條流程上：
+
+| 東西 | 在哪 | 一句話 |
+|---|---|---|
+| **劇情播放器** | `modules/story.js` ＋ `script/mainScript.js`／`speakers.js`／`progress.js` | 背景／插圖／立繪／對話框／演出拍／預載；資料與播放分離 |
+| **劇情版教學戰** | `modules/tutorial.js` ＋ `i18n/zh.js` 的 `tutorial.story` | 同一套教學流程換一份台詞（諾薇兒帶），不出結算頁 |
+| **Kerberos 之門** | `modules/story.js` 的 `playKerberos` ＋ `resources/vfx/` | 劇情進戰鬥的轉場：上推→撞頂→解鎖→旋轉→開門，門縫露出戰鬥畫面 |
+
+**完整流程**：首頁「story」→ 標準讀取頁 → 地宮第一幕 → Kerberos 之門 →
+教學戰（諾薇兒帶，教到破防為止）→ 門開回劇情 → 璐娜莉亞登場 → 收場。
+
+## 現在可以怎麼跑
+
+- 首頁 **story** 鈕。`MAIN_ENTRY` 目前是 `'dungeon_chase'`（暫時；主線接起來要改回）。
+- 開發時跳段：`(await import('/modules/story.js')).jumpTo({scene:'dungeon_lunaria', line:0})`。
+- 版本／畫質在診斷 HUD（首頁連點團徽 5 下）。
+
+## ⚠ 這一段時間反覆咬人的六件事
+
+1. **「同某某畫面」＝去讀那個畫面的程式碼**。立繪站位錯了三次，都是因為抄了
+   「另一個地方的近似值」（0.38/0.62）而不是飛行畫面真正在用的 **0.24/0.76**。
+2. **同一張立繪必須永遠算出同一個結果**（已寫進 CLAUDE.md §6.5）。踩過兩次：
+   依人數縮放、身高讓位只在兩人同台時做（位移 46px 被讀成「變小了」）。
+3. **換圖是非同步的**。淡出→換 src→淡入，中間一定要等 `onload`
+   （`complete && naturalWidth` 是快取命中的退路）。立繪、背景、插圖各踩過一次。
+4. **滿版插圖上任何會動的遮罩／縮放都會被讀成畫面在抖**。淡入、對焦落定、斜切揭幕
+   三種都失敗，最後用**黑幕**——訊號不碰到插圖本身。
+5. **transform 不會疊加**。旋轉與位移、推近與上移，都要寫在同一個 `transform` 裡；
+   分成兩條規則的話後面那條會整個蓋掉前面。
+6. **持續狀態要明寫**。立繪的 `show`、插圖的 `cg`、背景的 `bg` 都是沿用的 ——
+   `hide` 之後不寫 `show:true` 就永遠回不來。
+
+## 待辦（依優先序）
+
+1. **`MAIN_ENTRY` 改回主線**（現在寫死 `dungeon_chase`），或把地宮這一幕接進
+   `prologue_*` 那條鏈。
+2. **`ACCEPTANCE.md` 仍不存在** —— CLAUDE.md §6 第 6 步的收尾清單。這是戰鬥那側
+   欠最久的一項。
+3. **諾薇兒的差分在劇情頁還沒逐張量**：`speakers.js` 的 `ART.nouvelle.expr` 已經
+   有 top/bot/fx（`-326` 量的），但**戰鬥教學**與**劇情頁**用的是同一組值 ——
+   目前沒發現偏差，若日後補新差分要照 §6.5 重量。
+4. **監察官正名蕾娜**：卡在素材（`resources/inspector/` 只有芙蕾雅）。
+   ⚠⚠ **蕾娜 Renna ≠ 蕾妮 Renee**。
+5. **缺素材**：彈殼落地音（掃射那一拍原稿有，`se/` 裡沒有）、
+   Kerberos 的門聲以外沒有其他缺口。
+6. **`#storyLoad`（劇情自己那顆簡版預載頁）已停用**，DOM 與 CSS 還留著 ——
+   確定不用之後可以刪。
+7. **`{ load:'sceneId' }` 機制已就緒**但目前腳本裡沒有用到（開場那一次已經走完
+   整條 scene 鏈）。場景鏈變長時再插。
+
+## 這一段時間的檔案地圖
+
+    modules/story.js      劇情播放器（＋Kerberos 之門的演出與幾何）
+    modules/tone.js       立繪與背景的融合（葉節點，量背景亮度 → 濾鏡）
+    modules/tutorial.js   教學（原版＋劇情版兩份台詞；立繪走飛行畫面那一套）
+    script/mainScript.js  主線 scene 鏈（資料）
+    script/speakers.js    角色表＋立繪取景值（**唯一一份**，config.js import 它）
+    tools/kerberos_cut.py 由 Ray 的分層切出門的五件素材＋印出幾何常數
+    resources/vfx/        門的五個 webp（約 480 KB）
+    resources/_originals/ 所有原始檔（8.5MB 分層、wav 母帶）—— **不入版控**
 
 ---
 
@@ -16,8 +86,13 @@
 1. `CLAUDE.md` — 專案憲法(鐵律、目錄結構、模組邊界、§3 狀態契約與擁有者制、§4 函式歸屬、§6 開發順序)。
 2. `DECISIONS.md` — 已定的刻意偏離 reference 決策 **D1~D4**(D1 戰敗優先致死鏈、D2 MB 回血 50%、D3 統一改血 API、D4 saintComboStep 1.0)。
 3. `SPEC.md` — 行為規格。**§4 已修正為規則制 rank**;**§三 已補「戰鬥層級模型(場/局/敵/盤)」**(見下方三、備註)。
-4. `reference/index.html` — 唯讀行為基準,行為有疑義以它為準。
-5. `git log`(本檔最後回寫於 `52c07d8` / `ver -252`)。
+4. `reference/index.html` — 唯讀行為基準,**戰鬥**行為有疑義以它為準。
+   ⚠ `reference/Kerberos.png` 是 Ray 後來放的門的合成圖(＝`Kerberos_All.png`),
+     與這支 html 無關,只當美術對位基準。
+5. `docs/TIVOT_SCRIPT_ARCHITECTURE.md` — 劇情/對話系統的規劃(ver -326 歸檔)。
+   已照它做出來的:`script/mainScript.js`(資料)＋`modules/story.js`(播放器)
+   ＋`script/speakers.js`(角色表)＋`script/progress.js`(stage/flags)。
+6. `git log`(本檔最後回寫於 `ver -341`)。
 
 ---
 
