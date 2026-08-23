@@ -105,7 +105,7 @@ export const MAIN_SCRIPT = {
          下一句要看到立繪就得把它收掉 —— 那一收一放就是「閃動」。
          當背景的話它從這一拍開始**完全不動**，立繪直接疊上去。 */
       { speaker:'NOUVELLE', text:'', auto:3500,
-        bg:'002_SaintAssult', se:'se_saintroar', shake:true,
+        bg:'002_SaintAssult', bgPan:'up', se:'se_saintroar', shake:true,
         portrait:{ char:'NOUVELLE', show:false } },
       /* ⚠⚠ 這一句要**把插圖收掉**（cg:null）。插圖的層級在立繪之上，不收的話
          她整個被蓋住 —— Ray 回報「『對不起，我已經……！』的立繪一直沒出來」

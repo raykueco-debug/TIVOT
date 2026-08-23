@@ -335,6 +335,7 @@ function typeFinish(el, text){
      dark:true                  這一句的說話者立繪壓成暗調（剪影感，還沒表明身分）
      delay:2600                 **先不出對話框**，等這麼久再打字（等平移／演出跑完）
      shake:true                 畫面抖一下
+     bgPan:'up'|'down'          背景由下往上／由上往下平移（規則同 cgPan）
      load:'sceneId'             **標準讀取頁**：擋畫面把那個場景的素材抓完再往下演。
                                 （ver -338，Ray 指定；插在哪由腳本決定）
                                 ⚠ 這一行沒有台詞也沒有演出，它就是一道閘門。
@@ -425,7 +426,9 @@ function cgFade(el, src){
 }
 
 function applyPersist(line){
+  let bgChanged=false;
   if(line.bg!==undefined && line.bg!==stageBg){
+    bgChanged=true;
     stageBg=line.bg;
     swapImg($('storyBg'), line.bg?imgSrc(line.bg):'');
     /* 立繪的色調跟著背景走一點點（見 modules/tone.js）。
@@ -494,6 +497,26 @@ function applyPersist(line){
   if(cg){
     if(cgFaded) fxTimers.push(setTimeout(startMove, CG_FADE_MS+20));
     else startMove();
+  }
+  /* 背景的平移（`bgPan`）。規則與插圖那一套相同：
+       · 這一句寫了 bgPan → 重播那個方向（先移除再加，否則不會重新開始）
+       · 這一句換了背景   → 清掉（新背景不該繼承舊背景的平移）
+       · 其餘             → **不動**，讓它自己跑完
+     ⚠ 背景換圖走的是淡入淡出（swapImg，等 onload），所以要**等新圖上去才開始平移** ——
+       立刻開始的話動的是還沒換掉的舊背景。 */
+  const bgEl=$('storyBg');
+  if(bgEl){
+    const startBgMove=()=>{
+      if(line.bgPan==='up' || line.bgPan==='down'){
+        bgEl.classList.remove('pan-up','pan-down');
+        void bgEl.offsetWidth;
+        bgEl.classList.add(line.bgPan==='up'?'pan-up':'pan-down');
+      }else if(line.bgPan===null || bgChanged){
+        bgEl.classList.remove('pan-up','pan-down');
+      }
+    };
+    if(bgChanged) fxTimers.push(setTimeout(startBgMove, FADE_MS+40));
+    else startBgMove();
   }
 }
 /* 音效：**逐支列出實際路徑**，不要用字串拼副檔名 —— 這個資料夾裡 wav/mp3/m4a

@@ -1357,31 +1357,31 @@
     opacity:1;transition:opacity .22s ease;}
   #storyCg.fading{opacity:0;}
   #storyCg.on{display:block;}
-  /* CG 由下往上平移：用 object-position 推，不用 transform —— transform 會把
-     cover 的裁切一起搬走，邊緣會露出底色。 */
+  /* CG／背景由下往上平移：用 object-position 推，不用 transform —— transform 會把
+     cover 的裁切一起搬走，邊緣會露出底色。
+     ⚠ 背景也吃同一組（ver -341）：002 是當**背景**用的（立繪要疊在它前面），
+       但一樣要由下往上帶（Ray 指定）。 */
   #storyCg.pan-up{animation:storyPanUp 2.6s ease-out forwards;}
   #storyCg.pan-down{animation:storyPanDown 2.6s ease-out forwards;}
-  /* 緩慢推近：以**臉**為中心（transform-origin 由 JS 依 cgZoom 換算）。
+  #storyBg.pan-up{animation:storyPanUp 2.6s ease-out forwards;}
+  #storyBg.pan-down{animation:storyPanDown 2.6s ease-out forwards;}
+  /* 推近＋上移，以**臉**為中心（transform-origin 由 JS 依 cgZoom 換算）。
      ⚠ 用 transform 不用 object-position：推近要的是「鏡頭往前」，
-       object-position 只會平移裁切窗，畫面大小不變。 */
-  /* 推近＋上移（Ray：「一邊往上移一邊以臉為中心放大」）。
-     ⚠ 兩個都寫在**同一個 transform** 裡：分成兩條規則的話後面那條會整個蓋掉前面。
+       object-position 只會平移裁切窗，畫面大小不變。
+     ⚠ 推近與上移寫在**同一個 transform** 裡：分成兩條規則的話後面那條會整個蓋掉前面。
      ⚠ 上移用 translateY 的**負值**＝畫面往上帶（看到的是圖的下半往上跑）。 */
   #storyCg.zoom-in{animation:storyCgZoom 6s cubic-bezier(.25,.6,.3,1) forwards;}
   @keyframes storyCgZoom{
-    from{transform:translateY(4%)  scale(1);}
-    to  {transform:translateY(-4%) scale(1.18);}
+    from{transform:translateY(7%)  scale(1);}
+    to  {transform:translateY(-7%) scale(1.18);}
   }
-  /* 插圖進場：淡入的同時**輕輕收一下＋去糊**，像鏡頭對焦落定 ——
-     純淡入在滿版插圖上讀起來很生硬（Ray：「插圖插入轉場不自然」）。
-     ⚠ 只在**剛換上**那一刻跑一次；跑完就把 class 拿掉，否則與平移／推近的
-       animation 互相蓋掉（同一個屬性只有一個 animation 生效）。 */
   /* ⚠⚠ 插圖換圖走**黑幕淡出淡入**（ver -340，Ray 指定：「換成 1 秒的黑色淡入淡出」）。
      為什麼不是別的：
        · 純淡入淡出 —— 與立繪換表情長得一樣，玩家分不出「換表情」與「切插畫」。
-       · 斜切揭幕（ver -339 試過）—— 掃過去的那一下讓插圖**多跳了一下**，
-         Ray 回報「更糟」。滿版插圖上任何會動的遮罩都會被讀成畫面在抖。
-     黑幕是最乾淨的：畫面全黑一瞬＝一次剪接，插圖本身完全不動。
+       · 對焦落定（scale＋blur，-338）—— 插圖會縮一下＝在動。
+       · 斜切揭幕（clip-path＋亮線，-339）—— **更糟**，掃過去那一下讓插圖「多跳一下」。
+     滿版插圖上**任何會動的遮罩或縮放都會被讀成畫面在抖**；黑幕是唯一
+     「訊號不碰到插圖本身」的做法 —— 黑一瞬＝一次剪接。
      ⚠ 只蓋**場景區**（height:--story-top），不要蓋到楣與控制列 —— 那兩塊在黑幕
        期間仍然要在，否則整個畫面都黑掉，讀起來像當機不像剪接。
      ⚠ z-index 4 且排在 #storyCard 之後：要蓋住背景／插圖／立繪／情境卡，
@@ -1390,32 +1390,6 @@
     z-index:4;pointer-events:none;background:#000;opacity:0;
     transition:opacity .5s ease;}
   #storyFade.on{opacity:1;}
-
-  #storyCg.pan-up{animation:storyPanUp 2.6s ease-out forwards;}
-  #storyCg.pan-down{animation:storyPanDown 2.6s ease-out forwards;}
-  /* 緩慢推近：以**臉**為中心（transform-origin 由 JS 依 cgZoom 換算）。
-     ⚠ 用 transform 不用 object-position：推近要的是「鏡頭往前」，
-       object-position 只會平移裁切窗，畫面大小不變。 */
-  /* 推近＋上移（Ray：「一邊往上移一邊以臉為中心放大」）。
-     ⚠ 兩個都寫在**同一個 transform** 裡：分成兩條規則的話後面那條會整個蓋掉前面。
-     ⚠ 上移用 translateY 的**負值**＝畫面往上帶（看到的是圖的下半往上跑）。 */
-  #storyCg.zoom-in{animation:storyCgZoom 6s cubic-bezier(.25,.6,.3,1) forwards;}
-  @keyframes storyCgZoom{
-    from{transform:translateY(4%)  scale(1);}
-    to  {transform:translateY(-4%) scale(1.18);}
-  }
-  /* 插圖進場：淡入的同時**輕輕收一下＋去糊**，像鏡頭對焦落定 ——
-     純淡入在滿版插圖上讀起來很生硬（Ray：「插圖插入轉場不自然」）。
-     ⚠ 只在**剛換上**那一刻跑一次；跑完就把 class 拿掉，否則與平移／推近的
-       animation 互相蓋掉（同一個屬性只有一個 animation 生效）。 */
-  /* ⚠⚠ 插圖進場走**斜切揭幕**（ver -339，Ray：「用斜叉遮罩之類更有視覺效果的方式，
-     讓人知道這不是立繪，是插畫」）。純淡入與立繪的淡入淡出長得一樣，玩家分不出
-     「換表情」與「切插畫」——這裡要的是一個**只有插畫才會出現**的動作。
-     ⚠ 用 clip-path 的斜邊多邊形掃過去（左下→右上，約 20°）。
-       不用 mask-image：Safari 的 -webkit-mask 在動畫中會整層重繪，滿版插圖上會頓。
-     ⚠ 掃過的邊緣要有一道亮線（.cg-slash）才讀得出「被劃開」——
-       只有裁切邊界的話看起來像圖沒載完。 */
-  }
   @keyframes storyPanUp{ from{object-position:50% 100%;} to{object-position:50% 0%;} }
   @keyframes storyPanDown{ from{object-position:50% 0%;} to{object-position:50% 100%;} }
   /* 暗調 CI 插入：半身/全身圖從側邊切進來，壓暗到只剩剪影感（Ray 指定「暗調」）。
