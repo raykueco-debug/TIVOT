@@ -249,6 +249,9 @@ function topLine(){
 function slotEl(side){ return $(side==='R' ? 'storyCastR' : 'storyCastL'); }
 
 /* 讓某角色出現在他該在的位置；已在場就只更新表情。回傳他所在的 side。 */
+/* 這一拍有沒有人「滑進來」（首次上場或同側換人）。給 renderLine 決定
+   無台詞那一拍要多等多久 —— 見下方 `auto` 的說明。 */
+let slidIn = false;
 function ensureOn(id, expr){
   const sp = SPEAKERS[id]; if(!sp) return null;
   /* ⚠⚠ **沒有立繪資料的角色不准碰立繪槽**（ver -319 修）。
@@ -269,6 +272,7 @@ function ensureOn(id, expr){
       if(el.complete && el.naturalWidth){ el.onload=null; layout(); el.classList.add('on'); }
     };
     const first = !slot[side];
+    if(swapping || first) slidIn = true;
     if(swapping){
       /* 同側換人：舊的先滑出，再換新的滑入（CLAUDE.md §6.5 的輪轉換卡，
          與飛行畫面同一套）。 */
@@ -448,21 +452,38 @@ function coverOrigin(el, p){
    ⚠ 場上還沒有插圖時（第一次上圖）不走黑幕 —— 開場黑一下沒有意義，
      只會讓玩家覺得卡住。 */
 const CG_FADE_MS = 500;
+/* ⚠⚠ 黑幕的計時器**自己一組**，不掛在 `fxTimers` 上（ver -351 修）。
+     原本掛在一起，而 `renderLine` 一開頭就 `stopFx()` 把 fxTimers 全清 ——
+     玩家在 500ms 的淡黑期間點了下一句，那個「換圖並收黑幕」的計時器就被取消，
+     **黑幕永遠留在畫面上**（實測：卡片那一拍點快一點，之後整段都是黑的）。
+   現在改成：黑幕有自己的 `cgFadeT` 與 `cgFinish`，`renderLine` 進來時**先把它做完**
+     （`flushCgFade`）而不是取消 —— 玩家想快轉就立刻換好圖、收黑幕，不會卡住。
+   ⚠ `fadeOwner` 是為了分辨黑幕是誰掛上去的：場景之間的讀取閘門也用同一塊黑幕，
+     那一塊**不能**被 flush 收掉（它要蓋到新場景第一拍演完）。 */
+let cgFadeT=[], cgFinish=null, fadeOwner=null;
+function flushCgFade(){
+  cgFadeT.forEach(clearTimeout); cgFadeT=[];
+  if(cgFinish) cgFinish();
+}
 function cgFade(el, src){
   const fade=$('storyFade');
   /* ⚠ **插圖一出現就要走黑幕**，不是只有「插圖換插圖」才走 —— Ray 抱怨的正是
      「插進來那一下」在跳。第一版只在場上已有插圖時才淡，於是最常見的
      「沒有插圖 → 插入插圖」完全沒吃到，等於沒改。 */
   if(!el || !fade){ setImg(el, src); return false; }
-  fade.classList.add('on');
-  fxTimers.push(setTimeout(()=>{
+  cgFadeT.forEach(clearTimeout); cgFadeT=[];
+  fade.classList.add('on'); fadeOwner='cg';
+  cgFinish=()=>{
+    cgFinish=null;
     setImg(el, src);
     /* 等新圖真的畫上去再收黑幕 —— 沒載完就收，會先看到一格舊圖或空白
        （同 ver -322 立繪、ver -325 背景踩過的那個坑）。 */
-    const back=()=>{ el.onload=null; fade.classList.remove('on'); };
+    const back=()=>{ el.onload=null;
+      if(fadeOwner==='cg'){ fade.classList.remove('on'); fadeOwner=null; } };
     if(!src || (el.complete && el.naturalWidth)) back();
-    else { el.onload=back; fxTimers.push(setTimeout(back, 900)); }
-  }, CG_FADE_MS));
+    else { el.onload=back; cgFadeT.push(setTimeout(back, 900)); }
+  };
+  cgFadeT.push(setTimeout(()=>{ if(cgFinish) cgFinish(); }, CG_FADE_MS));
   return true;
 }
 
@@ -481,7 +502,11 @@ function setCgScale(k){
   if(k && k>0 && k!==1){ cg.style.width=(k*100)+'%'; cg.style.left=(-(k-1)*50)+'%'; }
   else { cg.style.width=''; cg.style.left=''; }
 }
+/* applyPersist 這一拍有沒有走黑幕（換插圖／收插圖）。用模組變數不用回傳值：
+   這支函式的呼叫點只有一個，回傳值改起來要動一串解構，得不償失。 */
+let persistFaded=false;
 function applyPersist(line){
+  persistFaded=false;
   let bgChanged=false;
   if(line.bg!==undefined && line.bg!==stageBg){
     bgChanged=true;
@@ -564,6 +589,7 @@ function applyPersist(line){
     if(cgFaded) fxTimers.push(setTimeout(startMove, CG_FADE_MS+20));
     else startMove();
   }
+  persistFaded = cgFaded;   // 這一拍走了黑幕 → renderLine 要等畫面全亮才放人出來
   /* 背景的平移（`bgPan`）。規則與插圖那一套相同：
        · 這一句寫了 bgPan → 重播那個方向（先移除再加，否則不會重新開始）
        · 這一句換了背景   → 清掉（新背景不該繼承舊背景的平移）
@@ -922,7 +948,8 @@ function playKerberos(onGap, onDone){
 function renderLine(){
   const line = cur.lines[lineIdx];
   if(!line) return;
-  stopFx();   // 上一拍的演出（掃射／持續抖動）到此為止，別讓它蓋到這一句上
+  stopFx();       // 上一拍的演出（掃射／持續抖動）到此為止，別讓它蓋到這一句上
+  flushCgFade();  // 上一拍的黑幕若還沒收，**立刻做完**（見 cgFade 的說明），不要取消
 
   /* ── 插入戰鬥（ver -321）───────────────────────────────────────────
      ⚠ story.js **不 import 戰鬥模組**（單向資料流：劇情不該知道戰鬥怎麼跑）。
@@ -953,6 +980,14 @@ function renderLine(){
   applyPersist(line);
   fireOneShot(line);
 
+  /* ⚠⚠ **插圖轉回對話時，要等畫面全亮才彈出角色與對話框**（ver -351，Ray 指定原則）。
+     換插圖／收插圖走的是黑幕（1 秒：淡黑 → 換圖 → 淡回），而立繪與對話框原本是
+     **這一拍一開始就上**的 —— 於是它們在黑幕還蓋著時就出現，黑幕一收，畫面上是
+     「已經站好的人」，讀起來像少了一拍。等全亮再放人出來，才是一次乾淨的剪接。
+     ⚠ 等的長度＝黑幕淡入 + 換圖 + 淡出（CG_FADE_MS×2 再留一點餘裕）。
+     ⚠ 這一段包成 `reveal()` 是為了「延後執行」，內容一行都沒改。 */
+  const reveal = ()=>{
+  slidIn = false;
   const who = (line.portrait && line.portrait.char) || line.speaker;
   const p   = line.portrait || {};
 
@@ -1026,7 +1061,14 @@ function renderLine(){
        Se_enemy_Saintroar 後與立繪一同出現」）。
        ⚠ 只給**沒有台詞**的演出拍用 —— 有台詞的一律點擊推進（CLAUDE.md §6.5
          「不自動跳拍」）。玩家想快轉照樣可以點，點了就提前推進。 */
-    if(line.auto>0) autoT=setTimeout(()=>{ autoT=null; advance(); }, line.auto);
+    /* ⚠⚠ **立繪滑入的 450ms 不算在那一秒裡**（ver -351，Ray：「璐娜說好好保護侯爵千金
+       的時候，監察官立繪撤太快」）。她的立繪要滑 450ms 才站定，若那一秒從這一拍
+       的第 0 毫秒起算，實際站定的時間只剩半秒 —— 讀起來就是「才剛出來就走了」。
+       規則：**無台詞的立繪拍，等她站定之後再停 `auto` 那麼久**。 */
+    if(line.auto>0){
+      const wait = line.auto + (slidIn ? SLIDE_MS : 0);
+      autoT=setTimeout(()=>{ autoT=null; advance(); }, wait);
+    }
     return;
   }
   if(line.delay>0){
@@ -1038,6 +1080,13 @@ function renderLine(){
     if(bub2) bub2.style.visibility='';
     if(tx) typeOut(tx, line.text);
   }
+  };   // reveal 結束
+
+  if(persistFaded){
+    /* 黑幕期間先把對話框藏起來（立繪本來就還沒上）—— 不藏的話上一句的框會留在黑幕上。 */
+    const b=$('storyBubble'); if(b) b.style.visibility='hidden';
+    fxTimers.push(setTimeout(reveal, CG_FADE_MS*2 + 140));
+  }else reveal();
 }
 
 /* ══ 推進 ══ */
@@ -1235,7 +1284,7 @@ function showLoader(){
      舊畫面殘留一格才換 —— 那正是 -340 換插圖時解過的同一個問題。 */
 function runLoadGate(sceneId){
   const fade=$('storyFade');
-  if(fade) fade.classList.add('on');
+  if(fade){ fade.classList.add('on'); fadeOwner='gate'; }   // 這一塊不給 flushCgFade 收
   const ui=showLoader();
   const t0=Date.now();
   preloadStory(sceneId, p=>ui.set(p)).then(()=>{
@@ -1243,7 +1292,7 @@ function runLoadGate(sceneId){
     setTimeout(()=>{
       ui.close();
       advance();                                   // 在黑幕底下把新場景的第一拍演出來
-      setTimeout(()=>{ if(fade) fade.classList.remove('on'); }, 120);
+      setTimeout(()=>{ if(fade){ fade.classList.remove('on'); fadeOwner=null; } }, 120);
     }, Math.max(0, 600-(Date.now()-t0)));
   });
 }

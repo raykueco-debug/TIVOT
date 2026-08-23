@@ -160,11 +160,17 @@ export const MAIN_SCRIPT = {
          ⚠ 往上移的終點正好是她的臉（臉在圖上 y≈0.09，靠近頂）—— 方向不能反。 */
       { speaker:'NOUVELLE', text:'璐娜莉亞團長……！',
         cg:'003_Lunaria_Armed', cgScale:1.18, cgPan:'up' },
-      /* ── 團長登場：插圖收掉，她本人站到畫面上（Ray 補的一段，ver -349）──
-         ⚠ 換 BGM＋換背景＋收插圖都在同一拍：插圖層在立繪之上，不收她站出來也看不到
-           （ver -319 踩過）。背景要明寫回地宮 —— 上一拍的背景是插圖 002。 */
-      { speaker:'LUNARIA', text:'在G2就熔斷了嗎？真是派不上用場。',
+      /* ── 團長登場 ──
+         先**情境卡報地點**（ver -351，Ray 指定「之後接場景介紹：聖王廳地宮 G2入口，
+         然後再進對話」）—— 與開場那張卡同一套黑透罩。
+         ⚠ 換 BGM＋換背景＋收插圖都放在**卡片這一拍**：收插圖走黑幕，黑幕正好把
+           「插圖消失、背景換回地宮」這兩件事一起藏起來，收乾淨才亮出卡片。
+         ⚠ 卡片這一拍不出對話框（story.js 看到 `card` 就不出框），玩家點一下推進。 */
+      { speaker:'LUNARIA', text:'',
         cg:null, bg:'HolyseeDungeonWhole', bgm:'lunaria',
+        card:'聖王廳地宮　G2入口',
+        portrait:{ char:'LUNARIA', show:false } },
+      { speaker:'LUNARIA', text:'在G2就熔斷了嗎？真是派不上用場。',
         portrait:{ char:'LUNARIA', expr:'angry', show:true } },
       { speaker:'NOUVELLE', text:'真的……非常抱歉！',
         portrait:{ char:'NOUVELLE', expr:'surprise', show:true } },
