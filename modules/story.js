@@ -842,8 +842,15 @@ function playKerberos(onGap, onDone){
   clearInterval(typing); typing=null;
   const bub=$('storyBubble'); if(bub) bub.style.visibility='hidden';
   const at=(ms,fn)=>kerbTimers.push(setTimeout(fn,ms));
-  const src=k=>KERB_SE_DIR+KERB_SFX[k]+'.'+(KERB_SFX_EXT[k]||'mp3');
-  const se=k=>{ try{ SFX.play(src(k), 1); }catch(e){} };
+  /* ⚠ 查不到就**不要拼路徑**（ver -344）：`se('arrow')` 沒有素材，原本會拼出
+     `resources/audio/se/undefined.mp3` → 404 → 拿到一頁 HTML 去 decodeAudioData
+     → console 一個 EncodingError。每次進戰鬥都白發一次請求。
+     缺素材是常態（門的箭聲還沒做），所以查不到＝安靜跳過，只記一次。 */
+  const src=k=>KERB_SFX[k] ? KERB_SE_DIR+KERB_SFX[k]+'.'+(KERB_SFX_EXT[k]||'mp3') : null;
+  const se=k=>{ const u=src(k); if(!u){ const tag='kerb/'+k;
+      if(!missingExpr.has(tag)){ missingExpr.add(tag); console.info('[story] 門的音效尚無素材：', k); }
+      return; }
+    try{ SFX.play(u, 1); }catch(e){} };
   let t=0;
   /* ① 撞擊音：立刻播，撞擊峰值（1002ms）正好落在門撞頂那一瞬（rise 也是 1000ms）。 */
   se('pop');
@@ -855,7 +862,7 @@ function playKerberos(onGap, onDone){
     kb.classList.remove('glow'); void kb.offsetWidth; kb.classList.add('glow');
     /* 齒輪聲**從撞頂就開始**（Ray 指定）——機關是撞到頂才被頂開的，
        聲音比畫面早一步起來才像「裡面的東西動起來了」。收在旋轉結束（見下）。 */
-    try{ kerbGear = SFX.playCue(src('gear'), 1); }catch(e){ kerbGear=null; }
+    try{ const g=src('gear'); kerbGear = g ? SFX.playCue(g, 1) : null; }catch(e){ kerbGear=null; }
   });
   t+=200;
   at(t,()=>{                                             // ③ 解鎖：四向鉚釘依次彈開＋冒煙，箭微幅外推
@@ -1111,7 +1118,7 @@ function preloadStory(startId, onProgress){
     A.imgs.push(KERB_DIR+f+'.webp');
   /* ⚠ 門的三支音效也要預載：撞擊音在演出**第 0 毫秒**就要響，
      現抓的話一定遲到（audio.js 的 LATE_PLAY_MS 是 1.5 秒，遲到就乾脆不播）。 */
-  for(const k in KERB_SFX) A.ses.push(KERB_SE_DIR+KERB_SFX[k]+'.'+(KERB_SFX_EXT[k]||'mp3'));
+  for(const k in KERB_SFX) if(KERB_SFX[k]) A.ses.push(KERB_SE_DIR+KERB_SFX[k]+'.'+(KERB_SFX_EXT[k]||'mp3'));
   const jobs=[];
   for(const src of A.imgs) jobs.push(new Promise(res=>{
     const im=new Image();

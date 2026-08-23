@@ -1,7 +1,7 @@
 # HANDOFF — Saint Install 模組化重寫 · 進度交接
 
 > 每輪開工前讀本檔 + 憲法/規格。實況以 `git log` 與 `DECISIONS.md` 為準;本檔為人類可讀的進度總覽。
-> **最後回寫:`ver -343`(2026-08-23)。** 本檔後半是逐版的交接,由新到舊往下加;
+> **最後回寫:`ver -344`(2026-08-23)。** 本檔後半是逐版的交接,由新到舊往下加;
 > **要快速上手請先讀下面那一段「★必讀 · 目前狀態(ver -341)」**（餵稿規格見 `script/SCRIPT_FORMAT.md`）,再依需要跳到對應版本。
 >
 > 目前狀態:CLAUDE.md §6 開發順序第 1~5 步已完成;**第 6 步(ACCEPTANCE 對照 reference)仍未動**,
@@ -94,7 +94,7 @@
    ＋`script/speakers.js`(角色表)＋`script/progress.js`(stage/flags)。
 6. `script/SCRIPT_FORMAT.md` — **Ray 餵稿的規格**(ver -342):寫稿格式、演出詞彙表、
    現有素材清單、一定要交代清楚的六件事。收到稿之後跑 `tools/script_lint.py` 驗。
-7. `git log`(本檔最後回寫於 `ver -343`)。
+7. `git log`(本檔最後回寫於 `ver -344`)。
 
 ---
 
@@ -1728,3 +1728,56 @@ cover 就以更大的寬去鋪圖 → 圖等比放大 k 倍，被裁掉的高度
 - `cgScale` 與 `cgZoom` **互斥**（一個是固定放大、一個是推近的過程），lint 會擋。
 - 腳本寫法：`{ cg:'003_Lunaria_Armed', cgScale:1.18, cgPan:'up' }`；
   餵稿的說法是「`放大 1.18` ＋ `平移 上`」（見 `script/SCRIPT_FORMAT.md`）。
+
+
+---
+
+# 交接 · `ver -344`（手機讀取慢：開機預載由 7.8 MB 砍到 2.4 MB；門的假音效 404）
+
+Ray 回報「手機讀非常慢」。查下來不是「卡住」，是**擋在讀取畫面前面的東西太多**。
+
+## A. 冷啟動第一段 7.81 MB → **2.37 MB**（實測轉輸 2.87 MB，含 HTML 自己抓的四張）
+
+`preloadAll` 原本掃 `ASSETS` **全部**的圖：29 張、5.30 MB，其中大半是 cut-in 與敵人立繪
+—— 那些最快也要**進戰鬥**才看得到，卻擋在「還沒到主選單」前面。加上音效 0.76 MB
+與兩首 BGM 1.75 MB，冷啟動要先吞 7.81 MB 才點得下去；手機上就是 12 秒保底跑滿還沒好。
+
+改法（`main.js`）：
+
+- 新增 `BOOT_IMG_KEYS`（目前只有 `home_emblem`）—— **只有表上的圖進第一段**，
+  其餘丟 `_restImgs`，在 `go()`（進主選單那一刻）由 `preloadRestImgs()` 背景開載，
+  出陣時再補一次保險（與 `preloadLateBgm` 同一套路）。
+- `bgm_battle`（836 KB）併入 `LATE_BGM_PATHS`：最快也要**點過出陣**才用得到，
+  而出陣前還有選武器／選搭檔／櫻花過場。
+- 進度圈只算第一段 → 誠實跑完，不再靠 12 秒保底放行。
+- ⚠ **音效維持在第一段**：27 支只有 0.76 MB，而它們要解碼（不是抓下來就能響），
+  現抓會遲到（`audio.js` 的 `LATE_PLAY_MS` 1.5 秒，遲到就乾脆不播）。圖沒這個問題。
+- ⚠ 還有 **502 KB 的圖不走這條路**：`Renee_SI_01`／`MG_Squall`／`Luna_CI_saint`／
+  `Saint_UG_CI` 是 `applyConfigToDOM` 在模組初始化時就寫進 `<img src>` 的預設戰鬥配置，
+  DOM 一掛就抓。要再瘦一層得改那裡，這一版沒動。
+
+## B. 團徽 845 KB → 542 KB（尺寸 1254 → 900，**格式不變**）
+
+版面是 `min(64vw,300px)`，DPR 3 也只要 900px —— 1254 是白給的。
+⚠ 照舊維持 PNG（`resources/_originals/background/TIVOT_Emblem_1254.png` 留了原圖）：
+金色細線＋透明轉 WebP 容易糊，而且 manifest／apple-touch-icon 需要 PNG。
+（若要再省：900px WebP q90 是 **251 KB** —— 那是換編碼，要 Ray 看過才算數。）
+
+## C. ⚠ 門的 `se('arrow')` 沒有素材 → 每次進戰鬥打一次 `undefined.mp3`
+
+`src(k)` 直接拼 `KERB_SFX[k]`，而 `arrow` 根本不在表裡 → 抓 `resources/audio/se/undefined.mp3`
+→ 404 拿回一頁 HTML → `decodeAudioData` 丟 `EncodingError`（console 那個「Uncaught (in promise)」
+就是它）。改成查不到就安靜跳過並記一次。**缺素材是常態，拼路徑前一定要先查表。**
+
+## D. 還沒動、需要 Ray 定的三件
+
+1. **三首 BGM 的位元率是別人的兩倍**：`Bgm_Lunaria` 195k／`PerituneMaterial_Crisis_loop` 174k／
+   `bgm_flight.mp3` 192k，其餘一律 96k。轉成 96k AAC 約各省一半（合計 −3.2 MB，
+   其中 Crisis 直接讓劇情那道門少 0.9 MB）。⚠ 這是**有損轉有損**，且沒有母帶
+   （`_master/` 只有那五首舊的），所以先問。
+2. **劇情預載跟著整條 `next` 鏈走**：地宮那條是 5.19 MB。只載第一幕＋門是 3.74 MB，
+   第二幕那 1.45 MB 可以用現成的 `{ load:'sceneId' }` 閘門延後。插在哪是腳本的事。
+3. **躺在 deploy 裡但沒人載的檔**：`resources/audio/bgm/_master/*.mp3`（6.9 MB，有進版控）、
+   `resources/illustration/Kerberos.png`（2.1 MB，是美術對位用的合成圖）、
+   `resources/SI/Luna_SI_angry.png`（2.4 MB，未入版控，要入的話照 §5 轉 WebP）。
+   不影響載入速度，只影響 repo 與靜態空間的大小。

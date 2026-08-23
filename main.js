@@ -145,11 +145,32 @@ SFX.setMenuClick(asset('se_general_click'), sfxGain('se_general_click'));
  *    不揹進第一段 → 進度條輕量誠實跑完，不再被 12s 保底提前放行。
  *    第二段於「點擊繼續」進主選單當下背景開載（出陣時再補一次保險）；
  *    playBgm 本身會 ensureBlob 隨叫隨載，第二段沒載完頂多晚幾拍起播，不會壞。 */
-const LATE_BGM_PATHS = ['bgm_result','bgm_lose','bgm_boss'].map(k=>ASSETS[k]).filter(Boolean);
+/* ⚠ `bgm_battle` 也進第二段（ver -344）：它 836KB，而最快也要**點過出陣**才用得到 ——
+     出陣前有選武器／選搭檔／過場櫻花，時間綽綽有餘。playBgm 自己會 ensureBlob，
+     真的沒載完頂多晚幾拍起播，不會壞。 */
+const LATE_BGM_PATHS = ['bgm_result','bgm_lose','bgm_boss','bgm_battle'].map(k=>ASSETS[k]).filter(Boolean);
 let _lateBgmKicked = false;
 function preloadLateBgm(){
   if(_lateBgmKicked) return; _lateBgmKicked = true;
   SFX.preloadBgm(LATE_BGM_PATHS);   // 背景載，不擋任何流程；ensureBlob 有快取可重複呼叫
+}
+
+/* ══ 圖片分兩段（ver -344，手機讀取太慢）══════════════════════════════
+   ⚠⚠ 原本第一段掃 ASSETS **全部**的圖 —— 實測 29 張、5.3 MB，其中大半是
+     cut-in 與敵人立繪：那些最快也要進戰鬥才看得到，卻擋在「還沒到主選單」前面。
+     加上音效與兩首 BGM，冷啟動要先吞 7.8 MB 才點得下去；手機上就是 12 秒保底
+     一路跑滿還沒好。
+   規則：**第一段只留「讀取畫面與主選單真的看得到的圖」**，其餘一律第二段，
+     進主選單那一刻（go()）背景開載，出陣時再補一次保險（同 preloadLateBgm）。
+   ⚠ 第二段沒載完不會壞：<img> 現抓即顯示，頂多晚一拍。會擋流程的只有音訊
+     （解碼要時間），所以音效**維持**在第一段 —— 27 支加起來只有 0.76 MB。
+   ⚠ 監察官立繪不在這張表裡也沒關係：她由 portraitP 直接 new Image 先載（門面最優先），
+     批次段再載一次會吃瀏覽器快取。 */
+const BOOT_IMG_KEYS = ['home_emblem'];
+let _restImgs = [], _restKicked = false;
+function preloadRestImgs(){
+  if(_restKicked) return; _restKicked = true;
+  for(const src of _restImgs){ const im = new Image(); im.src = src; }
 }
 /* 熱啟動旗標（見 preloadAll 內的 WARM_BOOT 說明）。
    ⚠ 冷啟動時是在「點擊繼續」那一刻才記，不是載完就記 —— 讀到一半被中斷重整，
@@ -179,13 +200,15 @@ window.addEventListener('pagehide', refreshBoot);
   for(const k of Object.keys(ASSETS)){
     const v=ASSETS[k]; if(!v) continue;
     // 副檔名判斷容許 ?v=N 版本參數（素材內容更新時升版強制重抓，見 config ASSETS 註解）
-    if(/\.(png|jpe?g|webp|gif)(\?|$)/i.test(v)) imgs.push(v);
+    if(/\.(png|jpe?g|webp|gif)(\?|$)/i.test(v)){
+      (BOOT_IMG_KEYS.indexOf(k)>=0 ? imgs : _restImgs).push(v);   // 見 BOOT_IMG_KEYS 的說明
+    }
     else if(/\.(mp3|m4a|ogg|wav)(\?|$)/i.test(v)){
       if(k.indexOf('bgm_')===0){ if(LATE_BGM_PATHS.indexOf(v)<0) bgm.push(v); }
       else sfx.push(v);
     }
   }
-  const total = imgs.length + sfx.length + bgm.length;
+  const total = imgs.length + sfx.length + bgm.length;   // 進度圈只算第一段 —— 誠實跑完，不靠保底放行
   /* ── 熱啟動：省掉等待，但**畫面照出** ───────────────────────
      iOS 主畫面 App 切到背景後，系統常把頁面整個丟掉，回前景時是**重新載入**
      —— 於是又看一次讀取動畫。但這時素材全在 HTTP 快取裡，那段等待是純空轉。
@@ -354,7 +377,8 @@ window.addEventListener('pagehide', refreshBoot);
       markBooted();   // 真的進到主畫面了才算「載過一次」（見 WARM_BOOT）
       SFX.unlock();   // 使用者手勢：解鎖音訊 → 主選單 BGM 開始播
       // 讀取頁揭幕不再播 SE（原 SI_01 撤下；聖徒 stinger 移到出陣鈕）
-      preloadLateBgm();   // 第二段：進主選單即背景載 結算/失敗/Boss BGM
+      preloadLateBgm();   // 第二段：進主選單即背景載 結算/失敗/Boss/戰鬥 BGM
+      preloadRestImgs();  // 第二段：cut-in／敵人立繪／武器圖等「進戰鬥才看得到」的圖
       // 聖光綻放：暖金白光暈自光圈中心緩慢擴張（無光束）→
       //   2.5s 光暈實心蓋滿時撤遮罩 → 1.2s 淡出揭開主選單（總長 ≈3.7s，與 SI_01 等長連動）
       const ring=$('alRing');
@@ -411,6 +435,7 @@ function launchBattle(opts){
        撞擊／齒輪／開門三支音；再疊一聲神楽鈴等於兩套儀式撞在一起。 */
   if(!(opts && opts.instant)) SFX.play(asset('sfx_startbt'), sfxGain('sfx_startbt'));
   preloadLateBgm();   // 保險：若保底提前放行沒經過 go()，出陣（櫻花期間）補載第二段
+  preloadRestImgs();
   SFX.playBgm(asset('bgm_battle'), { fadeOutMs:800, delayMs:1000, volume: bgmVol('bgm_battle') });
   /* 劇情叫起來的那一場（ver -329）：**跳過櫻花過渡禎，直接開戰**。
      ⚠ 因為那一場的轉場是「Kerberos 之門拉開」，門縫裡要露出的是**已經在跑的戰鬥畫面**；
