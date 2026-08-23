@@ -1,8 +1,8 @@
 # HANDOFF — Saint Install 模組化重寫 · 進度交接
 
 > 每輪開工前讀本檔 + 憲法/規格。實況以 `git log` 與 `DECISIONS.md` 為準;本檔為人類可讀的進度總覽。
-> **最後回寫:`ver -341`(2026-08-23)。** 本檔後半是逐版的交接,由新到舊往下加;
-> **要快速上手請先讀下面那一段「★必讀 · 目前狀態(ver -341)」**,再依需要跳到對應版本。
+> **最後回寫:`ver -342`(2026-08-23)。** 本檔後半是逐版的交接,由新到舊往下加;
+> **要快速上手請先讀下面那一段「★必讀 · 目前狀態(ver -341)」**（餵稿規格見 `script/SCRIPT_FORMAT.md`）,再依需要跳到對應版本。
 >
 > 目前狀態:CLAUDE.md §6 開發順序第 1~5 步已完成;**第 6 步(ACCEPTANCE 對照 reference)仍未動**,
 > `ACCEPTANCE.md` 至今不存在。`-208` 之後的產出集中在 `flight/`、**全站通用系統**
@@ -92,7 +92,9 @@
 5. `docs/TIVOT_SCRIPT_ARCHITECTURE.md` — 劇情/對話系統的規劃(ver -326 歸檔)。
    已照它做出來的:`script/mainScript.js`(資料)＋`modules/story.js`(播放器)
    ＋`script/speakers.js`(角色表)＋`script/progress.js`(stage/flags)。
-6. `git log`(本檔最後回寫於 `ver -341`)。
+6. `script/SCRIPT_FORMAT.md` — **Ray 餵稿的規格**(ver -342):寫稿格式、演出詞彙表、
+   現有素材清單、一定要交代清楚的六件事。收到稿之後跑 `tools/script_lint.py` 驗。
+7. `git log`(本檔最後回寫於 `ver -342`)。
 
 ---
 
@@ -1614,3 +1616,60 @@ ver -340 用「找起點、找終點、把中間換掉」的方式改 style.css 
 
 **教訓**：用程式改 CSS 區塊時，改完要 `grep -c` 確認關鍵選擇器**只有一份**。
 重複的規則不會報錯，只會讓下一個人改到不生效的那一份。
+
+
+---
+
+# 交接 · `ver -342`（餵稿規格立起來：格式文件＋音效表全覆蓋＋驗稿工具）
+
+這一版**沒有動演出**，動的是「Ray 交稿 → 我轉成可播的劇情」這條路上的三個卡點。
+
+## A. `script/SCRIPT_FORMAT.md` — 餵稿規格（新檔）
+
+給 Ray 看的：稿子怎麼寫、寫到什麼程度我就不必回頭問。重點是**第 5 節那六件事**
+（畫面上有誰／插圖何時收／平移的終點／空拍要不要自己走／對話框要不要等演出／新素材檔名）——
+那六件正是 `-318`~`-341` 反覆來回問的東西，寫進稿裡就省一趟。
+
+- 稿子的最小單位是**拍**，不是句：對白拍／演出拍／情境卡拍／閘門拍四種。
+- 演出詞彙表把「中文說法 → 引擎欄位」一一對上（`背景`/`插圖`/`平移 上`/`推近 臉`/
+  `抖`/`掃射`/`暗調`/`退場`/`等…再出框`/`自動…秒`/`讀取`/`戰鬥`）。
+  表上沒有的＝目前做不到，要開工才有（語音、立繪走動、選項分歧、左右平移）。
+- 也明寫**不要寫**的東西：站位、明暗、立繪大小、路徑副檔名、預載、`▼` 提示。
+- ⚠ 這份與 `modules/story.js` 的「演出層」註解是同一件事的兩面，**改一邊要改另一邊**。
+
+## B. 音效／BGM 表改成「整個資料夾都在表裡」
+
+原本 `SE_SRC` 只列了 6 支、`BGM_SRC` 只列了 1 首 —— 稿子裡想用別的音效，得先等我改程式。
+現在 `SE_FILES` / `BGM_FILES` 列出資料夾裡的**每一支**，鍵＝檔名去副檔名**轉小寫**，
+查表也轉小寫（`se_Fall` 與 `se_fall` 都找得到），另有 `SE_ALIAS`／`BGM_ALIAS` 收短名
+（`crisis`→`PerituneMaterial_Crisis_loop`、`se_saintroar`→`Se_enemy_Saintroar`…）。
+
+- ⚠ 還是**逐支列出檔名**不拼副檔名 —— 這兩個資料夾 mp3/m4a 混用，拼出來的路徑會靜默 404。
+- ⚠ 加了新音檔要同步這兩張表；漏了 `script_lint.py` 會報「表裡沒有這個檔案」。
+- 順手可用的東西變多了：`Bgm_Lunaria`（`lunaria`）先前根本叫不出來。
+
+## C. `tools/script_lint.py` — 驗稿（新檔）
+
+    python3 tools/script_lint.py
+
+檢查 scene 鏈（`next`／`load`／`MAIN_ENTRY`／孤兒場景）、角色 id、表情差分、
+背景／插圖／CI 的檔案、音效／BGM 的鍵、`cgPan`/`bgPan`/`fx`/`cgZoom` 的合法值，
+以及「空台詞又沒有 `auto`」這種會讓玩家以為當機的拍。
+
+- ⚠ 資料**不是用 regex 猜的**：借 macOS 內建的 `jsc` 把 `mainScript.js` 與 `speakers.js`
+  真的跑一次再 dump 成 JSON（兩支都是純資料）。regex 在巢狀物件與註解裡假陽性太多。
+- 目前實跑結果：地宮那兩幕**全綠**；`prologue_*`（示範用佔位稿）有 1 個錯誤
+  （`noue_fall` 這張插圖不存在）＋差分回退的提醒 —— 那段本來就是要被正式稿換掉的。
+
+## ⚠ 這一版沒有 JS runtime 可用
+
+這台機器上沒有 node/bun/deno。語法檢查改走 macOS 內建的
+`/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc`
+（去掉 import/export 後丟 `new Function` 解析）。實跑驗收照舊走瀏覽器。
+
+## 順手記一筆：開機時的兩個 console 錯誤與這一版無關
+
+`404 favicon.ico`（沒有這個檔，無害）與一支 `EncodingError: Unable to decode audio data`。
+把 `se/`、`vo/`、`bgm/` 三個資料夾的每一支都抓下來 `decodeAudioData` 過一遍 —— **全部解得開**，
+所以那支解不開的東西不在這三個資料夾裡（推測是某條帶查詢字串或動態組出來的路徑）。
+還沒查到源頭，先記著。

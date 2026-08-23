@@ -345,10 +345,25 @@ function typeFinish(el, text){
      `bg`／`cg`／`ci` 是持續的（沿用到下一次改變）。混在一起寫會很難讀，
      所以分成 applyPersist 與 fireOneShot 兩支。 */
 const BG_DIR='resources/background/', CG_DIR='resources/illustration/', SI_DIR='resources/SI/';
-/* ⚠ BGM 逐支列出實際路徑，理由同 SE_SRC（bgm/ 裡 mp3 與 m4a 都有）。 */
-const BGM_SRC={
-  crisis: 'resources/audio/bgm/PerituneMaterial_Crisis_loop.m4a',
-};
+/* ══ BGM 表 ══
+   ⚠ **逐支列出實際檔名**（不能拼副檔名）：這個資料夾裡 mp3 與 m4a 都有，
+     拼出來的路徑會靜默 404（audio.js 載不到只 resolve(null)，不報錯）。
+   鍵 ＝ 檔名去副檔名、**轉小寫**（查表也轉小寫，所以腳本裡大小寫寫錯照樣找得到）。
+   ⚠ 這份清單由 `tools/script_lint.py` 對照 resources/audio/bgm/ 檢查；
+     加了新檔案而忘了加進來，lint 會報「表裡沒有」。 */
+const BGM_FILES=[
+  'Bgm_Lunaria.m4a', 'PerituneMaterial_Crisis_loop.m4a', 'bgm_battle.m4a', 'bgm_boss.m4a',
+  'bgm_flight.mp3', 'bgm_mainmenu.m4a', 'bgm_missionfailed.m4a', 'bgm_result.m4a',
+];
+/* 別名：腳本裡慣用的短名 → 實際檔名（去副檔名）。加新別名只動這裡。 */
+const BGM_ALIAS={ crisis:'peritunematerial_crisis_loop', lunaria:'bgm_lunaria',
+                  mainmenu:'bgm_mainmenu', battle:'bgm_battle', boss:'bgm_boss',
+                  result:'bgm_result', failed:'bgm_missionfailed', flight:'bgm_flight' };
+const BGM_SRC=(()=>{ const m={};
+  for(const f of BGM_FILES) m[f.replace(/\.[^.]+$/,'').toLowerCase()]='resources/audio/bgm/'+f;
+  return m; })();
+function bgmSrc(n){ const k=String(n||'').toLowerCase();
+  return BGM_SRC[k] || BGM_SRC[BGM_ALIAS[k]] || null; }
 /* 離開劇情要**回到主畫面的曲子**（Ray 指定）。⚠ 走 config 的鍵不要寫死路徑：
    主選單換曲時只改 config，這裡自動跟著。音量也用 config 那一份。 */
 const HOME_BGM='resources/audio/bgm/bgm_mainmenu.m4a', HOME_VOL=0.37;
@@ -455,7 +470,7 @@ function applyPersist(line){
   if(line.bgm!==undefined && line.bgm!==stageBgm){
     stageBgm=line.bgm;
     try{
-      if(line.bgm){ const src=BGM_SRC[line.bgm];
+      if(line.bgm){ const src=bgmSrc(line.bgm);
         if(src) SFX.playBgm(src, {fadeInMs:800, volume:0.62});
         else { const tag='bgm/'+line.bgm;
           if(!missingExpr.has(tag)){ missingExpr.add(tag); console.info('[story] 沒有這首 BGM：', line.bgm); } }
@@ -519,18 +534,32 @@ function applyPersist(line){
     else startBgMove();
   }
 }
-/* 音效：**逐支列出實際路徑**，不要用字串拼副檔名 —— 這個資料夾裡 wav/mp3/m4a
-   三種都有，拼出來的路徑會靜默 404（audio.js 載不到只會 resolve(null)，不報錯）。 */
-const SE_SRC={
-  se_steps:         'resources/audio/se/se_steps.m4a',
-  se_weapon_reload: 'resources/audio/se/se_weapon_reload.mp3',
-  se_mg_squall:     'resources/audio/se/se_weapon_mg_squall.mp3',
-  se_lunaMG:        'resources/audio/se/se_lunaMG.m4a',
-  se_Fall:          'resources/audio/se/se_Fall.mp3',
-  se_saintroar:     'resources/audio/se/Se_enemy_Saintroar.mp3',
-};
+/* ══ 音效表 ══
+   ⚠ **逐支列出實際檔名**，不要用字串拼副檔名 —— 這個資料夾裡 mp3/m4a/wav 都有，
+     拼出來的路徑會靜默 404（audio.js 載不到只會 resolve(null)，不報錯）。
+   鍵 ＝ 檔名去副檔名、**轉小寫**（查表也轉小寫 → 腳本寫 `se_Fall` 或 `se_fall` 都行）。
+   ⚠ 這份清單由 `tools/script_lint.py` 對照 resources/audio/se/ 檢查。 */
+const SE_FILES=[
+  'Se_enemy_Saintroar.mp3', 'Sturm.mp3', 'se_Fall.mp3', 'se_Kerberos_gear.mp3',
+  'se_Kerberos_open.mp3', 'se_Kerberos_pop.mp3', 'se_Kerberos_steam.m4a', 'se_enemy_dagger.m4a',
+  'se_enemy_revolver.mp3', 'se_enemy_shot.mp3', 'se_enemy_slash.m4a', 'se_enemy_smack.m4a',
+  'se_flight_heartbeat.mp3', 'se_flight_idle_loop.mp3', 'se_flight_sail_loop.mp3',
+  'se_flight_seagull.mp3', 'se_flight_train.mp3', 'se_lunaMG.m4a', 'se_saint_install.mp3',
+  'se_saint_maxburst.m4a', 'se_steps.m4a', 'se_ui_click.mp3', 'se_ui_kagurabell.mp3',
+  'se_ui_pageflip.mp3', 'se_ui_sortie.mp3', 'se_weapon_guard.m4a', 'se_weapon_mg_squall.mp3',
+  'se_weapon_pistol_01.mp3', 'se_weapon_pistol_02.mp3', 'se_weapon_pistol_03.m4a',
+  'se_weapon_reload.mp3', 'se_weapon_shotgun_blast.mp3', 'se_weapon_sniper_falcon.mp3',
+];
+/* 別名：腳本裡慣用的短名 → 實際檔名（去副檔名）。 */
+const SE_ALIAS={ se_saintroar:'se_enemy_saintroar', se_mg_squall:'se_weapon_mg_squall',
+                 se_reload:'se_weapon_reload' };
+const SE_SRC=(()=>{ const m={};
+  for(const f of SE_FILES) m[f.replace(/\.[^.]+$/,'').toLowerCase()]='resources/audio/se/'+f;
+  return m; })();
+function seSrc(n){ const k=String(n||'').toLowerCase();
+  return SE_SRC[k] || SE_SRC[SE_ALIAS[k]] || null; }
 function playSe(spec){
-  const one=(n,delay)=>{ const src=SE_SRC[n];
+  const one=(n,delay)=>{ const src=seSrc(n);
     if(!src){ const tag='se/'+n;
       if(!missingExpr.has(tag)){ missingExpr.add(tag); console.info('[story] 沒有這個音效：', n); }
       return; }
@@ -1021,9 +1050,9 @@ function collectAssets(startId){
       if(ln.bg) imgs.add(imgSrc(ln.bg));
       if(ln.cg) imgs.add(CG_DIR+ln.cg+'.webp');
       if(ln.ci) imgs.add(SI_DIR+ln.ci+'.webp');
-      if(ln.bgm && BGM_SRC[ln.bgm]) bgms.add(BGM_SRC[ln.bgm]);
+      if(ln.bgm && bgmSrc(ln.bgm)) bgms.add(bgmSrc(ln.bgm));
       for(const n of [].concat(ln.se||[])){ const k=(typeof n==='string')?n:n.n;
-        if(SE_SRC[k]) ses.add(SE_SRC[k]); }
+        if(seSrc(k)) ses.add(seSrc(k)); }
       /* 立繪：說話者與被指定的角色都要（含表情差分）。 */
       for(const who of [ln.speaker, ln.portrait&&ln.portrait.char].filter(Boolean)){
         const sp=SPEAKERS[who]; if(!sp||!sp.art) continue;
