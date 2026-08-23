@@ -1177,7 +1177,8 @@
     z-index:1;pointer-events:none;overflow:hidden;}
   /* 下半：戰鬥盤面區。無戰鬥時放團徽（暫定）。 */
   /* 劇情預載頁：蓋滿整個舞台（含盤面區）—— 這時候還沒有任何內容可看。 */
-  #storyLoad{position:absolute;inset:0;z-index:6;display:none;
+  /* ⚠ z-index 9：要蓋過對話框(7)與門(5) —— 預載時什麼都還沒有，全部擋住。 */
+  #storyLoad{position:absolute;inset:0;z-index:9;display:none;
     flex-direction:column;align-items:center;justify-content:center;gap:14px;
     background:var(--bg);}
   #storyLoad.on{display:flex;}
@@ -1416,8 +1417,13 @@
   /* 對話框：與教學同一套視覺（同色同框同字級），只是定位在畫面下緣。 */
   /* ⚠ 對話框錨在**立繪區的下緣**（盤面之上），不是畫面底 —— 盤面是固定的，
      框壓在盤面上會擋住戰鬥資訊。 */
-  #storyBubble{position:absolute;z-index:4;left:50%;transform:translateX(-50%);
-    top:calc(var(--story-top) - 78px);
+  /* ⚠ z-index 7：要在**楣（#kerb 的 5）之上**（Ray：「對話框圖層在楣之上」）。
+     原本是 4，ver -334 把門那一層抬到 5 之後就被楣壓住了。
+     ⚠ 底邊錨在**楣的上緣**（--kerb-top-h 由 JS 寫在 #storyStage 上），不要壓到
+     控制面板（Ray：「對話框不要壓操作面板」）。用 bottom 錨定：台詞增行時
+     框往上長，底邊不動。 */
+  #storyBubble{position:absolute;z-index:7;left:50%;transform:translateX(-50%);
+    top:auto;bottom:calc(100% - var(--story-top) + var(--kerb-top-h, 0px));
     width:min(92%,360px);background:rgba(8,6,12,.9);border:1px solid var(--gold-dim);
     border-radius:10px;padding:9px 14px 12px;box-shadow:0 4px 18px rgba(0,0,0,.55);
     pointer-events:none;}
