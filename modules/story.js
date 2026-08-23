@@ -983,7 +983,10 @@ function renderLine(){
   if(line.dark && side){ const el=slotEl(side); if(el) el.classList.add('dark'); }
 
   const nm=$('storyName'), tx=$('storyText');
-  if(nm) nm.textContent = nameOf(line.speaker);
+  /* 主角沒有立繪、名字由玩家取（存檔裡），所以不走 speakers.js 的查表。
+     ⚠ 代換要在**顯示的這一刻**做（同 `{P}` 的規矩）：玩家中途改名，
+       正在播的這一段也要跟著換。 */
+  if(nm) nm.textContent = (line.speaker==='PLAYER') ? prog.getPlayerName() : nameOf(line.speaker);
   /* ⚠ delay：對話框**先不出**，等演出（平移／滑入）跑完再打字（Ray 指定）。
      ⚠ 等待中點畫面要能**跳過等待**而不是直接推到下一句 —— 不然玩家會覺得
        「點了沒反應」然後連點兩下，一次跳掉兩句。 */
@@ -993,6 +996,16 @@ function renderLine(){
   /* ⚠ **空台詞不出對話框**（ver -327，Ray：「插圖002出來的時候不要先出空白的
      諾薇兒對話框」）。那一拍是演出（咆哮／掃射），不是對白 —— 掛一個只有名字的
      空框在畫面上，讀起來像「她有話要說但沒說出來」。 */
+  /* `blank:true` ＝ **出框、但框裡沒有字**（ver -348，Ray 的稿：「主角說話空白頓點，
+     空白對話框，點擊接下句」）。主角沒有配音也沒有台詞，但「他確實開口了」這件事
+     要在畫面上有份量 —— 空框就是那個份量。
+     ⚠ 與「空台詞」是**兩回事**：空台詞是演出拍（咆哮／掃射），那一拍畫面上不該有框。
+       兩者都沒有字，差別在**有沒有人在說話**。 */
+  if(line.blank){
+    if(bub2) bub2.style.visibility='';
+    if(tx) tx.textContent='';
+    return;
+  }
   if(!line.text){
     if(bub2) bub2.style.visibility='hidden';
     if(tx) tx.textContent='';
@@ -1092,6 +1105,11 @@ function collectAssets(startId){
   while(id && MAIN_SCRIPT[id] && !seen.has(id)){
     seen.add(id);
     const sc=MAIN_SCRIPT[id];
+    /* ⚠ 這一段裡若有 `{ load:'下一段' }`，代表**下一段自己有讀取閘門**（ver -348）——
+       它的素材不該算進「這一道門」，否則開場那一頁要等整條鏈載完才開演。
+       這正是 `load` 存在的意義：把一條長鏈切成幾段各自載。 */
+    let gated=false;
+    for(const ln of (sc.lines||[])) if(ln.load && ln.load===sc.next) gated=true;
     for(const ln of (sc.lines||[])){
       if(ln.bg) imgs.add(imgSrc(ln.bg));
       if(ln.cg) imgs.add(CG_DIR+ln.cg+'.webp');
@@ -1108,7 +1126,7 @@ function collectAssets(startId){
         if(es) imgs.add(es);
       }
     }
-    id=sc.next;
+    id = gated ? null : sc.next;
   }
   return { imgs:[...imgs], bgms:[...bgms], ses:[...ses] };
 }

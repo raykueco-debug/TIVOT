@@ -89,7 +89,7 @@ export const MAIN_SCRIPT = {
 
   dungeon_lunaria: {
     sceneId:'dungeon_lunaria',
-    next:null,
+    next:'hq_audience',
     setFlags:['dungeon_cleared'],
     context:'scene',
     lines:[
@@ -160,6 +160,121 @@ export const MAIN_SCRIPT = {
          ⚠ 往上移的終點正好是她的臉（臉在圖上 y≈0.09，靠近頂）—— 方向不能反。 */
       { speaker:'NOUVELLE', text:'璐娜莉亞團長……！',
         cg:'003_Lunaria_Armed', cgScale:1.18, cgPan:'up' },
+      /* ⚠ 交界插**讀取閘門**（ver -348）：會客廳那一幕自己 2.3 MB，不該擠進開場那一道門。
+         `collectAssets` 看到「這一段有 load 指向自己的 next」就**不再往下算**，
+         所以開場只載地宮，這裡才載會客廳。 */
+      { load:'hq_audience' },
+    ],
+  },
+
+
+
+  /* ══ 第四騎士團駐地會客廳：監察官登場（Ray 的第二段正式稿，ver -348）══════
+     ⚠ 這一幕她**全程叫「監察官」**（speaker `OFFICER`），下一幕才正名蕾娜（`RENNA`）——
+       Ray 定案：「當作兩個角色就好」。所以第一句那個「？？？」不必另立 id，
+       直接用 OFFICER；玩家看到的就是「監察官」自報家門。
+     ⚠ 站位：璐娜莉亞在右，監察官與諾薇兒同在左 —— 兩人輪流上場時是「舊的滑出、
+       新的滑入」，那是固定站位的既定行為（CLAUDE.md §6.5），不是 bug。
+     ⚠ 沒有台詞的「反應拍」（只換表情、沒人說話）給 `auto`，因為沒有對話框就沒有
+       ▼ 提示，玩家會以為卡住。900ms 約是一個呼吸。 */
+  hq_audience: {
+    sceneId:'hq_audience',
+    next:null,
+    setFlags:['hq_briefed'],
+    context:'scene',
+    lines:[
+      /* 開場：她還沒露臉，先用暗調 CI 插入（Ray 指定「通用，暗調CI插入」）。 */
+      /* ⚠⚠ `show:false` 不可省 —— 立繪的預設是 **show:true**（同 dungeon_chase 開場那一拍
+         踩過的坑）。不寫的話她的**立繪**會跟著上場站在那裡，而這一拍要的只有暗調 CI。
+         實測漏寫的後果：她從第 0 拍就站在左側，一路留到後面幾拍。 */
+      { speaker:'OFFICER', text:'初次見面，我是第十三騎士團的監察官，蕾姬娜˙馮˙海森伯格。',
+        bg:'LunariaOffice', bgm:'result', ci:'Renna_SI_front', dark:true,
+        portrait:{ char:'OFFICER', show:false } },
+      /* 插圖：蕾娜撥髮。⚠ 這一拍沒有台詞 → 不出框 → 沒有 ▼，所以要 `auto` 自己走。 */
+      { speaker:'OFFICER', text:'', auto:2200, ci:null, cg:'004_Renna_intro' },
+      /* ⚠ 插圖要收掉才看得到立繪（插圖層在立繪之上，ver -319 踩過）。 */
+      { speaker:'LUNARIA', text:'海森伯格家的人嗎……哼，月桂葉的髮飾挺招搖的嘛。',
+        cg:null, portrait:{ char:'LUNARIA', expr:'seat_smirk', show:true } },
+      { speaker:'NOUVELLE', text:'璐娜莉亞大人自己還不是……',
+        portrait:{ char:'NOUVELLE', expr:'gossip1', show:true } },
+      /* 兩拍無聲的對看（Ray 的稿只給了立繪、沒有台詞）。 */
+      { speaker:'LUNARIA', text:'', auto:900, portrait:{ char:'LUNARIA', expr:'seat' } },
+      { speaker:'NOUVELLE', text:'', auto:900, portrait:{ char:'NOUVELLE', expr:'cringe' } },
+      { speaker:'OFFICER', text:'您見笑了。我一直想與璐娜莉亞大人見上一面呢。',
+        portrait:{ char:'OFFICER', expr:'smile', show:true } },
+      { speaker:'OFFICER', text:'兩年前的極東戰場，家父多得您關照了。',
+        portrait:{ expr:'bow' } },
+      { speaker:'LUNARIA', text:'兩年前……那老頭是妳爸？',
+        portrait:{ char:'LUNARIA', expr:'seat_angry' } },
+      { speaker:'OFFICER', text:'正是海森伯格侯爵。', portrait:{ char:'OFFICER', expr:'bow' } },
+      { speaker:'LUNARIA', text:'嗯——', portrait:{ char:'LUNARIA', expr:'seat' } },
+      { speaker:'LUNARIA', text:'哈哈。', portrait:{ expr:'seat_smirk' } },
+      { speaker:'LUNARIA', text:'那條黑毛老狐狸竟能生出妳這樣的美人胚子。',
+        portrait:{ expr:'seat_smirk' } },
+      { speaker:'OFFICER', text:'髮色是繼承自母親的。跟璐娜莉亞大人一樣的髮色呢，您也是北境出身的嗎？',
+        portrait:{ char:'OFFICER', expr:'smile' } },
+      { speaker:'LUNARIA', text:'……', portrait:{ char:'LUNARIA', expr:'seat_angry' } },
+      { speaker:'LUNARIA', text:'果然是那老頭的女兒嘛……', portrait:{ expr:'seat_angry' } },
+      { speaker:'NOUVELLE', text:'那個……', portrait:{ char:'NOUVELLE', expr:'awkward', show:true } },
+      { speaker:'NOUVELLE', text:'監察官大人，今天怎麼會要找我們......', portrait:{ expr:'awkward' } },
+      { speaker:'OFFICER', text:'別那麼緊張嘛，怎麼大家都把十三課當瘟神？',
+        portrait:{ char:'OFFICER', expr:'smile', show:true } },
+      { speaker:'NOUVELLE', text:'沒、沒有，只是……',
+        portrait:{ char:'NOUVELLE', expr:'surprise', show:true } },
+      { speaker:'NOUVELLE', text:'第一次碰到監察官，有點緊張。', portrait:{ expr:'shy' } },
+      /* ⚠ `expr:null` ＝ 回基本立繪（Renna_SI_front）。省略的話會沿用上一張差分。 */
+      { speaker:'OFFICER', text:'這不稀奇呀，妳不也是從第十二騎士團調來輔助他的嗎？',
+        portrait:{ char:'OFFICER', expr:null, show:true } },
+      { speaker:'NOUVELLE', text:'也是……？', portrait:{ char:'NOUVELLE', expr:'surprise', show:true } },
+      { speaker:'LUNARIA', text:'就是這麼回事了。', portrait:{ char:'LUNARIA', expr:'seat' } },
+      { speaker:'LUNARIA', text:'最近北境不太平，禍魘像蛆一樣湧出，襲擊城鎮的頻率暴增。上週就多了四十起，空陸都有。',
+        portrait:{ expr:'seat' } },
+      { speaker:'LUNARIA', text:'帶著這兩個傢伙，去看看是怎麼回事。', portrait:{ expr:'seat' } },
+      /* 主角開口，但沒有台詞：**出框、框裡沒有字**（Ray 指定）。名字取存檔裡的玩家名。 */
+      { speaker:'PLAYER', blank:true },
+      { speaker:'LUNARIA', text:'你那是什麼表情？', portrait:{ char:'LUNARIA', expr:'seat' } },
+      { speaker:'LUNARIA', text:'剛剛要不是這傢伙，你早就沒命了吧？', portrait:{ expr:'seat_smirk' } },
+      { speaker:'LUNARIA', text:'不服氣的話，就別依靠別人的力量。', portrait:{ expr:'seat_smirk' } },
+      { speaker:'NOUVELLE', text:'不，剛剛那只是我擅自——',
+        portrait:{ char:'NOUVELLE', expr:'surprise', show:true } },
+      { speaker:'LUNARIA', text:'不論如何，你們兩個，', portrait:{ char:'LUNARIA', expr:'seat_smirk' } },
+      { speaker:'LUNARIA', text:'好好保護好侯爵大人的千金。', portrait:{ expr:'seat_smirk' } },
+      /* 監察官無聲的一笑（稿上只給了立繪）。 */
+      { speaker:'OFFICER', text:'', auto:900, portrait:{ char:'OFFICER', expr:'smile', show:true } },
+      { speaker:'NOUVELLE', text:'團長不一起去嗎？',
+        portrait:{ char:'NOUVELLE', expr:'surprise', show:true } },
+      { speaker:'LUNARIA', text:'我討厭坐船。（舉起義肢）妳看我這樣子方便嗎？',
+        portrait:{ char:'LUNARIA', expr:'seat_hand' } },
+      { speaker:'OFFICER', text:'那真是可惜，有璐娜團長的話一定馬上能盪平騷亂。',
+        portrait:{ char:'OFFICER', expr:'smile', show:true } },
+      { speaker:'NOUVELLE', text:'然後順便毀了幾座村莊......',
+        portrait:{ char:'NOUVELLE', expr:'gossip1', show:true } },
+      { speaker:'LUNARIA', text:'妳們兩個竊竊私語什麼？', portrait:{ char:'LUNARIA', expr:'seat' } },
+      { speaker:'NOUVELLE', text:'沒、沒有啦！', portrait:{ char:'NOUVELLE', expr:'surprise' } },
+      { speaker:'NOUVELLE', text:'只是，監察官大人也要跟我們一起？', portrait:{ expr:null } },
+      { speaker:'OFFICER', text:'作作記錄而已，不會礙事的。',
+        portrait:{ char:'OFFICER', expr:null, show:true } },
+      { speaker:'LUNARIA', text:'話說，你在戰場上能派上什麼用場嗎？', portrait:{ char:'LUNARIA', expr:'seat' } },
+      { speaker:'OFFICER', text:'盡量不尖叫出聲吧......（乾笑）',
+        portrait:{ char:'OFFICER', expr:'awkward', show:true } },
+      { speaker:'LUNARIA', text:'......', portrait:{ char:'LUNARIA', expr:'seat' } },
+      { speaker:'LUNARIA', text:'......你自求多福吧。', portrait:{ expr:'seat' } },
+      { speaker:'NOUVELLE', text:'不要緊的，我也是個術師，我會保護監察官大人的安全！',
+        portrait:{ char:'NOUVELLE', expr:'surprise', show:true } },
+      { speaker:'OFFICER', text:'唉呀好可靠。多好的女孩呀？',
+        portrait:{ char:'OFFICER', expr:'smile', show:true } },
+      { speaker:'LUNARIA', text:'行了，要聊天的話路上聊去。', portrait:{ char:'LUNARIA', expr:'seat_angry' } },
+      { speaker:'PLAYER', blank:true },
+      { speaker:'LUNARIA', text:'怎麼去？你自己問監察官吧！', portrait:{ char:'LUNARIA', expr:'seat_angry' } },
+      { speaker:'OFFICER', text:'先到帝都去吧，交通工具已經備好了。',
+        portrait:{ char:'OFFICER', expr:null, show:true } },
+      { speaker:'OFFICER', text:'那麼，我們就出發了。', portrait:{ expr:'bow' } },
+      /* 腳步聲：兩人離場。⚠ 立繪是持續狀態，不明寫 hide 她們會一直站著。
+         ⚠ `se_walk` 有 4.06 秒，這一拍只留 1.4 秒就推走 —— 聲音會蓋到下一句，那是要的
+           （她們正走出去，璐娜莉亞從背後喊）。 */
+      { speaker:'LUNARIA', text:'', auto:1400, se:'se_walk', hide:['OFFICER','NOUVELLE'] },
+      { speaker:'LUNARIA', text:'喂！', portrait:{ char:'LUNARIA', expr:'seat', show:true } },
+      { speaker:'LUNARIA', text:'好歹是HUND出身的，別丟了第四騎士團的臉。', portrait:{ expr:'seat' } },
     ],
   },
 

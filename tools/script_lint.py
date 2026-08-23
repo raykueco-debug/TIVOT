@@ -109,8 +109,10 @@ def main():
         for i, ln in enumerate(sc.get('lines') or []):
             tag = '%s[%d]' % (sid, i)
 
-            if ln.get('load') and ln['load'] not in script:
-                err('%s：load 指到不存在的場景 %s' % (tag, ln['load']))
+            if ln.get('load'):
+                if ln['load'] not in script:
+                    err('%s：load 指到不存在的場景 %s' % (tag, ln['load']))
+                continue                      # 閘門，不是演出拍：沒有 speaker 也正常
             if ln.get('battle'):
                 continue                      # 戰鬥交棒，這一行不帶演出
 
@@ -169,7 +171,7 @@ def main():
                 if not (isinstance(z, dict) and 0 <= z.get('x', -1) <= 1 and 0 <= z.get('y', -1) <= 1):
                     err('%s：cgZoom 要是 {x,y}，兩個值都在 0~1' % tag)
             # 沒有台詞、沒有卡片、又不會自己走的拍：畫面上沒有 ▼ 提示，看起來像卡住
-            if not ln.get('text') and not ln.get('card') and not ln.get('auto'):
+            if not ln.get('text') and not ln.get('card') and not ln.get('auto') and not ln.get('blank'):
                 warn('%s：空台詞又沒有 auto —— 畫面上不會有提示，玩家可能以為卡住' % tag)
 
     for m in errs:  print('❌ ' + m)

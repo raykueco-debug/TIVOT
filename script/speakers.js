@@ -28,6 +28,11 @@ export const SPEAKERS = {
      顯示名是查表來的，蓋名會讓「這一句是誰講的」在資料上消失。
      art 指同一張圖：畫面上是同一個人，只是玩家還不知道她是誰。 */
   UNKNOWN:  { name:'？？？',   art:'lunaria' },
+  /* 主角。⚠ 顯示名**不查這裡**：他的名字在存檔裡（玩家可改），story.js 顯示那一刻
+     才去 `progress.getPlayerName()` 取。這一筆存在只是為了讓 `speaker:'PLAYER'`
+     在資料上有著落（驗稿工具會檢查 speaker 是否有登記）。
+     ⚠ `art:null` ＝ 沒有立繪：他從不站台，只有對話框（含 `blank:true` 的空框）。 */
+  PLAYER:   { name:'{P}',     art:null },
 };
 
 /* ══ 立繪素材 ＋ 取景實測值 ══
@@ -61,8 +66,14 @@ export const SPEAKERS = {
      不是漏填。story.js 查不到 expr 會**自動回退 base 立繪**並在 console 記一筆
      （見 story.js 的 missingExpr），所以腳本可以先照規格寫 expr，圖到位再補這張表。 */
 export const ART = {
+  /* ⚠ `OFFICER`（正名前，顯示「監察官」）與 `RENNA`（正名後）**共用這一組 art**——
+     同一個人、同一批立繪，只有顯示名不同（規格 §2、CLAUDE.md §8）。
+     ⚠ 取景值逐張量（ver -347，量法同下方諾薇兒那段）。 */
   renna: { cm:169, eye:32, fx:0.519, top:1, bot:1521,
-           side:'L', alt:null, base:'resources/SI/Renna_SI_front.webp', expr:{} },
+           side:'L', alt:null, base:'resources/SI/Renna_SI_front.webp',
+           expr:{ smile:   { src:'resources/SI/Renna_SI_smile.webp',   top:5, bot:1530, fx:0.518 },
+                  bow:     { src:'resources/SI/Renna_SI_bow.webp',     top:0, bot:1530, fx:0.507 },
+                  awkward: { src:'resources/SI/Renna_SI_awkwerd.webp', top:6, bot:1526, fx:0.519 } } },
   /* ⚠⚠ 諾薇兒的表情差分是**不同姿勢**（跑、畏縮、驚恐、絕望、驚訝），不是換臉，
        所以每一張**各帶自己的 top/bot/fx**（ver -325 量完）。
        ⚠ 沿用 front 那一組的後果實測過：Scared 的臉其實在 0.397，照 0.564 擺會
@@ -80,7 +91,14 @@ export const ART = {
                   cringe:   { src:'resources/SI/Nouvelle_SI_Cringe.webp',    top:5,  bot:1533, fx:0.459 },
                   scared:   { src:'resources/SI/Nouvelle_SI_Scared.webp',    top:9,  bot:1530, fx:0.397 },
                   desperate:{ src:'resources/SI/Nouvelle_SI_Desperate.webp', top:2,  bot:1532, fx:0.415 },
-                  surprise: { src:'resources/SI/Nouvelle_SI_Surprise.webp',  top:5,  bot:1524, fx:0.487 } } },
+                  surprise: { src:'resources/SI/Nouvelle_SI_Surprise.webp',  top:5,  bot:1524, fx:0.487 },
+                  /* 會客廳那一幕的四張（ver -348）。
+                     ⚠⚠ `gossip1` 的臉在 **0.710** —— 其他差分落在 0.39~0.60，這張她整個人
+                       偏右。沿用別張的 fx 會把她推出畫面，這就是「每張差分都要自己量」的活例子。 */
+                  awkward:  { src:'resources/SI/Nouvelle_SI_Awkwerd.webp',   top:2,  bot:1534, fx:0.468 },
+                  gossip1:  { src:'resources/SI/Nouvelle_SI_Gossip1.webp',   top:0,  bot:1536, fx:0.710 },
+                  gossip2:  { src:'resources/SI/Nouvelle_SI_Gossip2.webp',   top:2,  bot:1536, fx:0.603 },
+                  shy:      { src:'resources/SI/Nouvelle_SI_Shy.webp',       top:4,  bot:1533, fx:0.592 } } },
   /* ⚠ 索拉娜用 **side** 那張：front 橫向佔 78%，兩人同台一定疊；側面只佔 69%。 */
   sorana: { cm:176, eye:27, fx:0.527, top:4, bot:1522,
            side:'R', alt:null, base:'resources/SI/Sorana_SI_side.webp', expr:{} },
@@ -115,8 +133,28 @@ export const ART = {
        頭頂就該比她高（Ray 指定）。給璐娜莉亞 standCm=176（＝全場最高的基準），
        她的頭頂就貼在頂線上，與彎腰的諾薇兒拉開差距。
      ⚠ 不要改 cm 去達成這件事 —— cm 是縮放的分子，一改人就跟著變大變小。 */
+  /* ⚠⚠ 坐姿差分（會客廳那一幕，ver -348）：**不能照身高鎖**。
+       §6.5 的縮放是「pxCm × 身高cm ÷ 圖裡的像素身高」，但坐著的人那個縱向跨距
+       **不是身高** —— 四張坐姿都畫滿整張畫布（1529~1536px），畫師為了填滿畫面
+       把她畫大了約一成六（實測坐姿頭高 ≈221px、站姿 ≈190px）。照站姿那組算，
+       她的頭會比同台站著的諾薇兒大一大截。
+     兩個補償各司其職，不要混：
+       faceAdj 0.92  ＝ **大小**：把「坐姿畫得比較大」抵銷掉，讓她的臉與諾薇兒差不多大
+                      （Ray 對站姿定的標準就是這個，站姿那張因此是 1.22）。
+                      1.05 試過**偏大 14%**（實測螢幕上頭高 80px vs 諾薇兒 70px），故收到 0.92。
+       standCm 155   ＝ **高度**：坐著的人頭頂本來就比站著的人低。155 讓她的頭低於
+                      165cm 的諾薇兒約 46px —— 那正是「她坐著」的訊號。
+                      145 試過**太低**，人幾乎整個沉到對話框後面。
+     ⚠⚠ 這兩個數字是**估出來的，還沒經 Ray 確認**（§6.5 允許「看出來的補償」，
+       但要有人看過才算數）。三種自動量法都失敗，別再走一次：膚色偵測臉高會把手臂
+       胸口腿一起算進去；窄帶取膚色跨距被髮絲汙染；眼罩當剛體尺標分不出髮帶與衣服。
+       正解是渲染出來與諾薇兒並排比頭，再調這兩個值。 */
   lunaria:{ cm:168, standCm:176, eye:32, fx:0.496, top:9, bot:1528, faceAdj:1.22,
-           side:'R', alt:null, base:'resources/SI/Lunaria_SI_Armed.webp', expr:{} },
+           side:'R', alt:null, base:'resources/SI/Lunaria_SI_Armed.webp',
+           expr:{ seat:       { src:'resources/SI/Luna_SI_seat_N.webp',     top:7, bot:1536, fx:0.448, faceAdj:0.92, standCm:155 },
+                  seat_smirk: { src:'resources/SI/Luna_SI_seat_smirk.webp', top:0, bot:1536, fx:0.504, faceAdj:0.92, standCm:155 },
+                  seat_angry: { src:'resources/SI/Luna_SI_seat_angry.webp', top:0, bot:1536, fx:0.521, faceAdj:0.92, standCm:155 },
+                  seat_hand:  { src:'resources/SI/Luna_SI_seat_hand.webp',  top:3, bot:1536, fx:0.465, faceAdj:0.92, standCm:155 } } },
   luna:   { cm:160, eye:30, fx:0.500, top:0, bot:1000,
            side:'L', alt:null, base:'resources/partner/Luna_CI_exc.webp', expr:{}, unmeasured:true },
 };
