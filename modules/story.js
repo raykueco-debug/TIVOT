@@ -141,7 +141,8 @@ function layout(){
      只拿那一段量輪廓（見 measureBounds 的警告）。 */
   const calc = ()=>on.map(o=>{
     const a=o.a;
-    const s     = pxCm*a.cm/(a.bot-a.top);
+    /* 縮放：鎖身高。faceAdj＝逐張的畫風補償（見 speakers.js 的說明），沒寫就是 1。 */
+    const s     = pxCm*a.cm/(a.bot-a.top) * (a.faceAdj||1);
     /* ⚠ 身高差的縱向讓位**只在兩人同台時**才做（ver -319，Ray：「立繪太低」）。
        它的用意是「四個人的腳落在同一條地平線上」—— 台上只有一個人的時候沒有
        對象可以對齊，那 (CAST_TALL−cm)×pxCm 就只是在頭頂上方空出一塊
