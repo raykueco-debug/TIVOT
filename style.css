@@ -1364,17 +1364,42 @@
   /* 緩慢推近：以**臉**為中心（transform-origin 由 JS 依 cgZoom 換算）。
      ⚠ 用 transform 不用 object-position：推近要的是「鏡頭往前」，
        object-position 只會平移裁切窗，畫面大小不變。 */
+  /* 推近＋上移（Ray：「一邊往上移一邊以臉為中心放大」）。
+     ⚠ 兩個都寫在**同一個 transform** 裡：分成兩條規則的話後面那條會整個蓋掉前面。
+     ⚠ 上移用 translateY 的**負值**＝畫面往上帶（看到的是圖的下半往上跑）。 */
   #storyCg.zoom-in{animation:storyCgZoom 6s cubic-bezier(.25,.6,.3,1) forwards;}
-  @keyframes storyCgZoom{ from{transform:scale(1);} to{transform:scale(1.16);} }
+  @keyframes storyCgZoom{
+    from{transform:translateY(4%)  scale(1);}
+    to  {transform:translateY(-4%) scale(1.18);}
+  }
   /* 插圖進場：淡入的同時**輕輕收一下＋去糊**，像鏡頭對焦落定 ——
      純淡入在滿版插圖上讀起來很生硬（Ray：「插圖插入轉場不自然」）。
      ⚠ 只在**剛換上**那一刻跑一次；跑完就把 class 拿掉，否則與平移／推近的
        animation 互相蓋掉（同一個屬性只有一個 animation 生效）。 */
-  #storyCg.settle{animation:storyCgSettle .62s cubic-bezier(.2,.7,.25,1);}
-  @keyframes storyCgSettle{
-    from{opacity:0; transform:scale(1.05); filter:blur(6px) brightness(1.15);}
-    60% {opacity:1;}
-    to  {opacity:1; transform:scale(1);    filter:blur(0)   brightness(1);}
+  /* ⚠⚠ 插圖進場走**斜切揭幕**（ver -339，Ray：「用斜叉遮罩之類更有視覺效果的方式，
+     讓人知道這不是立繪，是插畫」）。純淡入與立繪的淡入淡出長得一樣，玩家分不出
+     「換表情」與「切插畫」——這裡要的是一個**只有插畫才會出現**的動作。
+     ⚠ 用 clip-path 的斜邊多邊形掃過去（左下→右上，約 20°）。
+       不用 mask-image：Safari 的 -webkit-mask 在動畫中會整層重繪，滿版插圖上會頓。
+     ⚠ 掃過的邊緣要有一道亮線（.cg-slash）才讀得出「被劃開」——
+       只有裁切邊界的話看起來像圖沒載完。 */
+  #storyCg.settle{animation:storyCgSlash .55s cubic-bezier(.3,.75,.25,1);}
+  @keyframes storyCgSlash{
+    from{clip-path:polygon(-40% 100%, -25% 100%, -5% 0%, -20% 0%); opacity:1;}
+    to  {clip-path:polygon(-40% 100%, 175% 100%, 155% 0%, -60% 0%); opacity:1;}
+  }
+  /* 斜切的亮線：與遮罩同時、同角度掃過去。 */
+  #storyCgSlash{position:absolute;left:0;right:0;top:0;height:var(--story-top);
+    z-index:3;pointer-events:none;display:none;overflow:hidden;}
+  #storyCgSlash.on{display:block;}
+  #storyCgSlash i{position:absolute;top:-20%;bottom:-20%;width:16%;
+    background:linear-gradient(90deg,rgba(150,235,255,0),rgba(214,246,255,.85),rgba(150,235,255,0));
+    filter:blur(3px);transform:skewX(-11deg) translateX(-160%);
+    animation:storyCgSlashSweep .55s cubic-bezier(.3,.75,.25,1) forwards;}
+  @keyframes storyCgSlashSweep{
+    from{transform:skewX(-11deg) translateX(-160%); opacity:0;}
+    18% {opacity:1;}
+    to  {transform:skewX(-11deg) translateX(760%);  opacity:0;}
   }
   @keyframes storyPanUp{ from{object-position:50% 100%;} to{object-position:50% 0%;} }
   @keyframes storyPanDown{ from{object-position:50% 0%;} to{object-position:50% 100%;} }
@@ -1454,7 +1479,7 @@
      控制面板（Ray：「對話框不要壓操作面板」）。用 bottom 錨定：台詞增行時
      框往上長，底邊不動。 */
   #storyBubble{position:absolute;z-index:7;left:50%;transform:translateX(-50%);
-    top:auto;bottom:calc(100% - var(--story-top) + var(--kerb-top-h, 0px));
+    top:auto;bottom:calc(100% - var(--story-top) + var(--kerb-top-h, 0px) + 10px);
     width:min(92%,360px);background:rgba(8,6,12,.9);border:1px solid var(--gold-dim);
     border-radius:10px;padding:9px 14px 12px;box-shadow:0 4px 18px rgba(0,0,0,.55);
     pointer-events:none;}

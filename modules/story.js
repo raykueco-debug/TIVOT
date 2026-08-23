@@ -417,7 +417,10 @@ function applyPersist(line){
        同一個屬性只有一個 animation 生效，留著會把平移／推近蓋掉。 */
     if(cgEl && line.cg){
       cgEl.classList.remove('settle'); void cgEl.offsetWidth; cgEl.classList.add('settle');
-      fxTimers.push(setTimeout(()=>cgEl.classList.remove('settle'), 700));
+      const sl=$('storyCgSlash');
+      if(sl){ sl.classList.remove('on'); void sl.offsetWidth; sl.classList.add('on'); }
+      fxTimers.push(setTimeout(()=>{ cgEl.classList.remove('settle');
+                                     if(sl) sl.classList.remove('on'); }, 650));
     }
   }
   if(line.ci!==undefined){ stageCi=line.ci; setImg($('storyCi'), line.ci?SI_DIR+line.ci+'.webp':''); }
@@ -733,6 +736,11 @@ function playKerberos(onGap, onDone){
   if(!kb || !st){ onGap&&onGap(); onDone&&onDone(); return; }
   stopKerberos(); layoutKerberos();
   kerbPlaying=true;
+  /* ⚠ 槍棺一動，對話框就要**先消失**（Ray 指定，且「以後推槍棺都要這樣處理」）——
+     門推上來會蓋掉整個畫面，框留著等於一句台詞被門壓在底下。
+     打字機也要停，不然框收了字還在跑。 */
+  clearInterval(typing); typing=null;
+  const bub=$('storyBubble'); if(bub) bub.style.visibility='hidden';
   const at=(ms,fn)=>kerbTimers.push(setTimeout(fn,ms));
   const src=k=>KERB_SE_DIR+KERB_SFX[k]+'.'+(KERB_SFX_EXT[k]||'mp3');
   const se=k=>{ try{ SFX.play(src(k), 1); }catch(e){} };
@@ -1093,16 +1101,16 @@ export function open(pos, done){
     }
   };
   if(pos && pos.line>0){ go(); return; }
-  if(ld){
-    ld.classList.add('on');
-    const bar=$('storyLoadBar');
-    /* ⚠ 最短顯示 500ms：快取全中的時候預載只要一百多毫秒，畫面會「閃一下」——
-       那讀起來像破圖，不像在載入。壓一個下限讓它看起來是完整的一拍。 */
-    const t0=Date.now();
-    preloadStory(id, p=>{ if(bar) bar.style.width=Math.round(p*100)+'%'; })
-      .then(()=>{ if(bar) bar.style.width='100%';
-                  setTimeout(go, Math.max(0, 500-(Date.now()-t0))); });
-  }else go();
+  /* ⚠ 讀取頁走**開機那一頁的標準外觀**（Ray 指定：「story 按下時就要跑讀取」）——
+     不再用劇情自己那一顆簡版（#storyLoad 已停用，DOM 與 CSS 先留著）。
+     ⚠ 最短顯示 600ms：快取全中的時候只要一百多毫秒，閃一下讀起來像破圖。 */
+  if(ld) ld.classList.remove('on');
+  const ui=showLoader();
+  const t0=Date.now();
+  preloadStory(id, p=>ui.set(p)).then(()=>{
+    ui.set(1);
+    setTimeout(()=>{ ui.close(); go(); }, Math.max(0, 600-(Date.now()-t0)));
+  });
 }
 
 /* main.js 注入戰鬥發動器：fn(battleId, resumePos)。

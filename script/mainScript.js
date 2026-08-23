@@ -80,10 +80,8 @@ export const MAIN_SCRIPT = {
       /* 上膛：兩聲隔 0.5 秒交疊。 */
       { speaker:'NOUVELLE', text:'你……！',
         se:[{n:'se_weapon_reload'},{n:'se_weapon_reload',delay:500}] },
-      /* ⚠ 標準讀取頁：把**下一個場景**（dungeon_lunaria）的素材先抓完。
-         插在戰鬥之前 —— 戰鬥打完回來就要立刻演，那時再抓會卡住。
-         Ray 之後會指定其餘要插讀取頁的位置，加一行 `{ load:'sceneId' }` 即可。 */
-      { load:'dungeon_lunaria' },
+      /* ⚠ 這裡**不插讀取頁**：開場那一頁已經把整條 scene 鏈都預載了
+         （preloadStory 跟著 next 走）。要在別處插的話寫 `{ load:'sceneId' }`。 */
       /* 戰鬥教學。⚠ 戰鬥系統尚未接線，story.js 目前會跳過並在 console 記一筆。 */
       { battle:'tutorial' },
     ],
