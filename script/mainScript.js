@@ -200,22 +200,35 @@ export const MAIN_SCRIPT = {
     context:'scene',
     lines:[
       /* 開場：她還沒露臉，先用暗調 CI 插入（Ray 指定「通用，暗調CI插入」）。 */
-      /* ⚠⚠ `show:false` 不可省 —— 立繪的預設是 **show:true**（同 dungeon_chase 開場那一拍
-         踩過的坑）。不寫的話她的**立繪**會跟著上場站在那裡，而這一拍要的只有暗調 CI。
-         實測漏寫的後果：她從第 0 拍就站在左側，一路留到後面幾拍。 */
-      { speaker:'OFFICER', text:'初次見面，我是第十三騎士團的監察官，蕾姬娜˙馮˙海森伯格。',
-        bg:'LunariaOffice', bgm:'result', ci:'Renna_SI_front', dark:true,
+      /* 情境卡：先立背景、蓋半透黑、打地點（Ray 指定「立繪出來之前先按開頭那樣黑透罩
+         介紹場景」）—— 與 dungeon_chase 開場同一套。
+         ⚠⚠ `show:false` 不可省：立繪預設 **show:true**，不寫的話監察官會先站在卡片後面，
+           下一拍才滑進來，看起來像閃了一下（dungeon_chase 開場那一拍踩過同一個坑）。 */
+      { speaker:'OFFICER', text:'',
+        bg:'LunariaOffice', bgm:'result',
+        card:'第四騎士團駐地\n會客廳',
         portrait:{ char:'OFFICER', show:false } },
+      /* ⚠⚠ 她走**正規立繪、從左側滑入**，不是全屏 CI（ver -350，Ray 指定
+         「這張立繪要在左邊滑入，不用全身，比照對話播放規則縮放」）——
+         與 -319 把璐娜莉亞從 CI 改成正規立繪是同一個決定：走立繪系統才會鎖身高、
+         才與同台的人同一把尺；CI 那條路是自己一套縮放，比例對不上是必然的。
+         ⚠ `dark:true` ＝ 暗調（還沒表明身分的剪影感），它是**句子屬性**，下一句自動清掉。
+         ⚠ 台詞在這裡**斷句**：後半「蕾姬娜˙馮˙海森伯格。」要壓在插畫上講（見下一拍）。 */
+      { speaker:'OFFICER', text:'初次見面，我是第十三騎士團的監察官，',
+        dark:true, portrait:{ char:'OFFICER', show:true } },
       /* 插圖：蕾娜撥髮。⚠ 這一拍沒有台詞 → 不出框 → 沒有 ▼，所以要 `auto` 自己走。 */
-      { speaker:'OFFICER', text:'', auto:2200, ci:null, cg:'004_Renna_intro' },
+      { speaker:'OFFICER', text:'', auto:1000, cg:'004_Renna_intro' },
+      /* 報上名字：**對話框壓在插畫上**（Ray 指定）。插圖是持續狀態，這一拍不動它，
+         框自然疊在上面（框 z-7 > 插圖 z-2）；點下去才由下一拍收掉插圖切回立繪。 */
+      { speaker:'OFFICER', text:'蕾姬娜˙馮˙海森伯格。' },
       /* ⚠ 插圖要收掉才看得到立繪（插圖層在立繪之上，ver -319 踩過）。 */
       { speaker:'LUNARIA', text:'海森伯格家的人嗎……哼，髮飾挺招搖的嘛。',
         cg:null, portrait:{ char:'LUNARIA', expr:'seat_smirk', show:true } },
       { speaker:'NOUVELLE', text:'璐娜莉亞大人自己還不是……',
         portrait:{ char:'NOUVELLE', expr:'gossip1', show:true } },
       /* 兩拍無聲的對看（Ray 的稿只給了立繪、沒有台詞）。 */
-      { speaker:'LUNARIA', text:'', auto:900, portrait:{ char:'LUNARIA', expr:'seat' } },
-      { speaker:'NOUVELLE', text:'', auto:900, portrait:{ char:'NOUVELLE', expr:'cringe' } },
+      { speaker:'LUNARIA', text:'', auto:1000, portrait:{ char:'LUNARIA', expr:'seat' } },
+      { speaker:'NOUVELLE', text:'', auto:1000, portrait:{ char:'NOUVELLE', expr:'cringe' } },
       { speaker:'OFFICER', text:'您見笑了。我一直想與璐娜莉亞大人見上一面呢。',
         portrait:{ char:'OFFICER', expr:'smile', show:true } },
       { speaker:'OFFICER', text:'兩年前的極東戰場，家父多得您關照了。',
@@ -256,7 +269,7 @@ export const MAIN_SCRIPT = {
       { speaker:'LUNARIA', text:'不論如何，你們兩個，', portrait:{ char:'LUNARIA', expr:'seat_smirk' } },
       { speaker:'LUNARIA', text:'好好保護好侯爵大人的千金。', portrait:{ expr:'seat_smirk' } },
       /* 監察官無聲的一笑（稿上只給了立繪）。 */
-      { speaker:'OFFICER', text:'', auto:900, portrait:{ char:'OFFICER', expr:'smile', show:true } },
+      { speaker:'OFFICER', text:'', auto:1000, portrait:{ char:'OFFICER', expr:'smile', show:true } },
       { speaker:'NOUVELLE', text:'團長不一起去嗎？',
         portrait:{ char:'NOUVELLE', expr:'surprise', show:true } },
       /* 稿上這一句原本帶著「（舉起義肢）」—— 那是 Ray 給自己看的舞台指示，不是台詞

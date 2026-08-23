@@ -157,7 +157,12 @@ export const ART = {
            /* 站姿差分（地宮那一幕的收尾，ver -349）。⚠ 這兩張的檔名是 `Luna_*`，
               但畫的是**璐娜莉亞**（同一套黑白洋裝＋眼罩，與 `Lunaria_SI_Armed` 同一人）。
               全身站姿，所以 cm/standCm/faceAdj 全部沿用她站姿那一組，只覆寫取景。 */
-           expr:{ angry:      { src:'resources/SI/Luna_SI_angry.webp',       top:0, bot:1536, fx:0.477 },
+           /* ⚠ `angry` 帶自己的 `faceAdj`：1.22×0.9＝**1.10**（ver -350，Ray 實機看過後
+              指定「angry 那張再縮 10%」）。同一個角色的兩張站姿差分吃不同的補償是正常的 ——
+              補的是**那一張畫**的畫風／構圖差異，不是角色屬性。
+              ⚠ `taunt` 維持 1.22（沿用角色值）。哪天覺得兩張大小不一致，要調的是這裡，
+                不要回頭去動角色的 cm（那會連站姿基本立繪一起變）。 */
+           expr:{ angry:      { src:'resources/SI/Luna_SI_angry.webp',       top:0, bot:1536, fx:0.477, faceAdj:1.10 },
                   taunt:      { src:'resources/SI/Luna_SI_taunt.webp',       top:0, bot:1536, fx:0.510 },
                   seat:       { src:'resources/SI/Luna_SI_seat_N.webp',     top:7, bot:1536, fx:0.448, faceAdj:0.74, standCm:155 },
                   seat_smirk: { src:'resources/SI/Luna_SI_seat_smirk.webp', top:0, bot:1536, fx:0.504, faceAdj:0.74, standCm:155 },

@@ -115,12 +115,18 @@ function measureBounds(img, y0, y1){
    ⚠ 不能各算各的：pxCm（每公分幾像素）是共用的，四個人的腳才會落在同一條
      地平線上（CLAUDE.md §6.5）。而「不可越中線」的縮限也必須套用到全體 ——
      只縮一個人會讓身高比例當場失真。 */
-let cam = { w:0, h:0, px:0 };
-function resetCamera(){ cam = { w:0, h:0, px:0 }; }
-function camPxCm(H, W, top){
-  if(cam.px && cam.w===W && cam.h && Math.abs(H-cam.h)/cam.h < 0.18) return cam.px;
-  cam = { w:W, h:H, px:(H-top)/(CAST_SHOW*CAST_TALL) };
-  return cam.px;
+/* ⚠⚠ 相機**連頂線一起**快取（ver -350）。ver -346 只快取了 pxCm，但頂線
+   `topLine()` 是每次都去量退出鈕的實際位置 —— 而 iOS 的 `env(safe-area-inset-top)`
+   會隨網址列收合而變（47px ↔ 0），鈕跟著動，頂線就跟著動。尺寸沒變、**整個人上下跳**，
+   讀起來還是「忽大忽小」（§6.5 早就記過：位移會被讀成縮放）。
+   規則：一場之內取景是**常數**，寬度變了（轉向）才重量。 */
+let cam = { w:0, h:0, px:0, top:0 };
+function resetCamera(){ cam = { w:0, h:0, px:0, top:0 }; }
+function camGeom(H, W, measureTop){
+  if(cam.px && cam.w===W && cam.h && Math.abs(H-cam.h)/cam.h < 0.18) return cam;
+  const top = measureTop();
+  cam = { w:W, h:H, top, px:(H-top)/(CAST_SHOW*CAST_TALL) };
+  return cam;
 }
 function layout(){
   const stage=$('storyStage'); if(!stage) return;
@@ -130,14 +136,15 @@ function layout(){
   const cast=$('storyCast');
   const W=stage.clientWidth, H=(cast?cast.clientHeight:stage.clientHeight);
   if(!W || !H) return;
-  const top=topLine();
+  const g=camGeom(H, W, topLine);
+  const top=g.top;
 
   /* 最高的人定義相機：頭頂貼頂線、身體露出 CAST_SHOW。
      ⚠⚠ 相機要**快取**（ver -346，與 modules/tutorial.js 同一個修法）：手機瀏覽器的
        工具列收合會讓 `#storyCast` 的高度變幾十像素，而這裡是**每一句**重算的 ——
        同一張立繪在相鄰兩句之間就會忽大忽小。寬度沒變、高度變化 18% 以內一律沿用；
        真的轉向（寬度變）或版面大改才重量。 */
-  let pxCm = camPxCm(H, W, top);
+  let pxCm = g.px;
 
   const on=[];
   for(const side of ['L','R']){
@@ -306,6 +313,12 @@ function highlight(side){
   for(const s of ['L','R']){
     const el=slotEl(s); if(!el) continue;
     el.classList.toggle('dim', slot[s] && s!==side);
+    /* ⚠ **說話的人一定疊在另一個人之上**（ver -350，Ray 指定）。兩人的輪廓本來就
+       允許交疊（§6.5），交疊處誰在前就成了「誰在講話」的視覺線索之一 ——
+       壓在別人身後講話會讀成「她在後面自言自語」。
+       ⚠ 用 inline z-index 不用 class：兩個槽是兄弟元素，DOM 序固定（L 在前 R 在後），
+         光靠 class 沒辦法讓 L 蓋過 R。 */
+    el.style.zIndex = (s===side) ? '2' : '1';
   }
 }
 
@@ -1214,12 +1227,24 @@ function showLoader(){
 /* 演到 `{ load:'sceneId' }` 這一行：擋上標準讀取頁，把那個場景的素材抓完再往下走。
    ⚠ 停留有**下限 600ms**：快取全中時只要一百多毫秒，閃一下讀起來像破圖不像在載入
      （同 ver -327 劇情預載頁的理由）。 */
+/* ⚠ 前後包一層**黑幕**（ver -350，Ray：「從地宮收尾到會客廳黑色淡入淡出」）：
+     黑幕淡入 → 讀取頁 → 讀完收掉讀取頁 → **在全黑之下**演出新場景的第一拍 → 黑幕淡出。
+   為什麼要包：讀取頁是硬切上來的，前一幕的畫面「啪」一聲被蓋掉、載完又「啪」一聲換成
+   新場景 —— 兩次硬切。黑幕把兩次都藏起來，讀起來是一次剪接。
+   ⚠ 新場景的第一拍要在**黑幕還蓋著的時候**演（先 advance 再淡出），否則玩家會看到
+     舊畫面殘留一格才換 —— 那正是 -340 換插圖時解過的同一個問題。 */
 function runLoadGate(sceneId){
+  const fade=$('storyFade');
+  if(fade) fade.classList.add('on');
   const ui=showLoader();
   const t0=Date.now();
   preloadStory(sceneId, p=>ui.set(p)).then(()=>{
     ui.set(1);
-    setTimeout(()=>{ ui.close(); advance(); }, Math.max(0, 600-(Date.now()-t0)));
+    setTimeout(()=>{
+      ui.close();
+      advance();                                   // 在黑幕底下把新場景的第一拍演出來
+      setTimeout(()=>{ if(fade) fade.classList.remove('on'); }, 120);
+    }, Math.max(0, 600-(Date.now()-t0)));
   });
 }
 

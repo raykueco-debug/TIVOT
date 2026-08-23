@@ -501,12 +501,20 @@ function hasFrame(el){ const f=frameOf(el); return !!(f && f.cm && f.bot > f.top
    規則：寬度沒變、高度變化在 18% 以內 → **沿用上一次的相機**。
      真的轉向（寬度變）或版面大改（>18%）才重量。
    ⚠ 進戰鬥要 `resetCamera()`，不然上一場的相機會跟著跨場沿用。 */
-let cam = { w:0, h:0, px:0 };
-function resetCamera(){ cam = { w:0, h:0, px:0 }; }
-function cameraPxCm(F, W, topY, C){
-  if(cam.px && cam.w===W && cam.h && Math.abs(F-cam.h)/cam.h < 0.18) return cam.px;
-  cam = { w:W, h:F, px:(F-topY)/((C.castShow||0.56)*(C.castTall||176)) };
-  return cam.px;
+/* ⚠⚠ **連頂線與頭頂落點一起快取**（ver -350）。ver -346 只快取了 pxCm，Ray 回報
+   手機上還是忽大忽小 —— 因為 `camTop`／`headTop` 每一句都去量那顆角落鈕的實際位置，
+   而 iOS 的 `env(safe-area-inset-top)` 會隨網址列收合而變（47px ↔ 0），`#app` 的
+   padding 跟著變、鈕跟著動、頂線就跟著動。**尺寸沒變、整個人上下跳**，讀起來一樣是
+   「忽大忽小」（§6.5 早就記過：位移會被讀成縮放）。
+   規則：一場之內取景是**常數**，寬度變了（轉向）才重量。 */
+let cam = { w:0, h:0, px:0, head:0 };
+function resetCamera(){ cam = { w:0, h:0, px:0, head:0 }; }
+function cameraGeom(F, W, C, measure){
+  if(cam.px && cam.w===W && cam.h && Math.abs(F-cam.h)/cam.h < 0.18) return cam;
+  const m = measure();
+  cam = { w:W, h:F, head:m.headTop,
+          px:(F-m.camTop)/((C.castShow||0.56)*(C.castTall||176)) };
+  return cam;
 }
 
 function placePortraitX(el, side){
@@ -531,17 +539,21 @@ function placePortraitX(el, side){
      何況立繪站左（臉錨 0.24W）、退出鈕在右上，本來就不重疊。
      實測：大小不變（541→維持原本的 479），頭頂由 58px 上移到 12px。
      ⚠ 12px 已經是這個版面的上限 —— 再上去頭會被 `#top` 的 overflow 裁掉。 */
-  const pct = (C.portraitTopPct!=null ? C.portraitTopPct : 3)/100;
-  let camTop = F * pct, headTop = F * pct;
-  const btn = $('testClearBtn') || $('exitBtn');
-  if(btn && wrap){
-    const br = btn.getBoundingClientRect(), wr = wrap.getBoundingClientRect();
-    if(br.height){
-      camTop  = Math.max(camTop,  br.bottom - wr.top + 4);
-      headTop = Math.max(headTop, br.top - wr.top);
+  const measure = ()=>{
+    const pct = (C.portraitTopPct!=null ? C.portraitTopPct : 3)/100;
+    let camTop = F * pct, headTop = F * pct;
+    const btn = $('testClearBtn') || $('exitBtn');
+    if(btn && wrap){
+      const br = btn.getBoundingClientRect(), wr = wrap.getBoundingClientRect();
+      if(br.height){
+        camTop  = Math.max(camTop,  br.bottom - wr.top + 4);
+        headTop = Math.max(headTop, br.top - wr.top);
+      }
     }
-  }
-  const pxCm  = cameraPxCm(F, W, camTop, C);
+    return { camTop, headTop };
+  };
+  const g = cameraGeom(F, W, C, measure);
+  const pxCm = g.px, headTop = g.head;
   const nH    = el.naturalHeight || 1536;              // 這批立繪都是 1024×1536
   const nW    = el.naturalWidth  || 1024;
   /* 鎖身高。⚠ 分母用**該角色基本立繪**的像素身高，不是這一張差分自己的
@@ -637,6 +649,11 @@ function showLine(){
   const el = portraitEl(c), other = (el===L) ? R : L;
   if(el) el.classList.add('speaking');
   if(other) other.classList.remove('speaking');
+  /* ⚠ **說話的人一定疊在另一個人之上**（ver -350，Ray 指定）。兩人的輪廓允許交疊，
+     交疊處誰在前就是「誰在講話」的線索之一；壓在別人身後講話會讀成她在後面自言自語。
+     ⚠ 用 inline z-index：兩個槽是兄弟元素、DOM 序固定，光靠 class 沒辦法讓左邊蓋過右邊。 */
+  if(el) el.style.zIndex='2';
+  if(other) other.style.zIndex='1';
   // 逐句表情差分（line.img＝ASSETS 鍵）：沒寫就回該角色的預設立繪。
   // ⚠ 直接換 src，不做淡入淡出——同一角色同一槽的表情切換，淡出會讓她整個人消失一拍。
   if(el){
