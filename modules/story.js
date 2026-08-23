@@ -523,17 +523,19 @@ const KERB_DIR='resources/vfx/';
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
      只要中心擺對，轉幾度都落在該落的地方。 */
 const KERB_META={"w":853,"h":1844,"seam":0.506,
- "plate":{"x":0.11254,"y":0.04121,"w":0.78077,"h":0.33839},
- "top":{"ar":0.23295},
- "arrows":{"n":{"cx":0.50293,"cy":0.09138,"w":0.07737,"h":0.10033,"rot":0},
-           "e":{"cx":0.77758,"cy":0.21041,"w":0.07737,"h":0.10033,"rot":90},
-           "s":{"cx":0.50293,"cy":0.32945,"w":0.07737,"h":0.10033,"rot":180},
-           "w":{"cx":0.22828,"cy":0.21041,"w":0.07737,"h":0.10033,"rot":270}},
- "rivets":{"n":{"cx":0.50293,"cy":0.05813,"w":0.05393,"h":0.02657,"rot":0},
-           "e":{"cx":0.85428,"cy":0.21041,"w":0.05393,"h":0.02657,"rot":90},
-           "s":{"cx":0.50293,"cy":0.36269,"w":0.05393,"h":0.02657,"rot":180},
-           "w":{"cx":0.15158,"cy":0.21041,"w":0.05393,"h":0.02657,"rot":270}}};
-const KERB_SIDES=['n','e','s','w'];        // 鉚釘依序彈開的順序（順時針）
+ "plate":{"x":0.18171,"y":0.05043,"w":0.63892,"h":0.30477},
+ "top":{"ar":0.11159,"dip":0.11915},
+ "arrows":{"n":{"cx":0.50117,"cy":0.09138,"w":0.07737,"h":0.10033,"rot":0,  "ux":0, "uy":-1},
+           "e":{"cx":0.73480,"cy":0.20282,"w":0.07737,"h":0.10033,"rot":90, "ux":1, "uy":0},
+           "s":{"cx":0.50117,"cy":0.31426,"w":0.07737,"h":0.10033,"rot":180,"ux":0, "uy":1},
+           "w":{"cx":0.26755,"cy":0.20282,"w":0.07737,"h":0.10033,"rot":270,"ux":-1,"uy":0}},
+ "rivets":{"r10":{"cx":0.24113,"cy":0.09767,"w":0.05393,"h":0.02657,"fx":1, "fy":1, "ux":-0.7529,"uy":-0.6581},
+           "r2": {"cx":0.76121,"cy":0.09767,"w":0.05393,"h":0.02657,"fx":-1,"fy":1, "ux":0.7529, "uy":-0.6581},
+           "r8": {"cx":0.24113,"cy":0.30797,"w":0.05393,"h":0.02657,"fx":1, "fy":-1,"ux":-0.7529,"uy":0.6581},
+           "r4": {"cx":0.76121,"cy":0.30797,"w":0.05393,"h":0.02657,"fx":-1,"fy":-1,"ux":0.7529, "uy":0.6581}}};
+const KERB_POP={ arrow:0.016, rivet:0.026 };   // 彈開距離，佔門寬的比例（微幅＝Ray 指定）
+const KERB_ARROWS=['n','e','s','w'];             // 箭：正四向
+const KERB_RIVETS=['r10','r2','r4','r8'];        // 鉚釘：10/2/4/8 點鐘，依這個順序彈開
 let kerbReady=false;
 
 /* 幾何：門要多寬，是**解出來的**不是調出來的 ——
@@ -570,33 +572,42 @@ function layoutKerberos(){
   const pl=$('kerbPlate');
   if(pl){ pl.style.left=(P.x*Wd)+'px'; pl.style.top=(P.y*Hd)+'px'; pl.style.width=pW+'px'; }
   /* 箭與鉚釘：擺中心。⚠ 尺寸用**未旋轉**的寬高，旋轉交給 CSS 的 --kerb-rot。 */
-  const put=(el,b)=>{ if(!el) return;
+  /* 擺件：中心對位 ＋ 外向彈開量。
+     ⚠ 彈開量寫成**父座標系**的 px（--kerb-px/py）：鉚釘是鏡射擺的，
+       若寫成 rotate 後的 translateY，下面兩顆會往內彈（見 style.css）。 */
+  const put=(el,b,pop)=>{ if(!el) return;
     const w=b.w*Wd, h=b.h*Hd;
     el.style.width=w+'px'; el.style.height=h+'px';
     el.style.left=(b.cx*Wd-w/2)+'px'; el.style.top=(b.cy*Hd-h/2)+'px';
-    el.style.setProperty('--kerb-rot', b.rot+'deg'); };
-  for(const k of KERB_SIDES){
-    put(kb.querySelector('.kerb-arrow.'+k), KERB_META.arrows[k]);
+    if(b.rot!=null) el.style.setProperty('--kerb-rot', b.rot+'deg');
+    if(b.fx!=null){ el.style.setProperty('--kerb-fx', b.fx); el.style.setProperty('--kerb-fy', b.fy); }
+    const d=pop*Wd;
+    el.style.setProperty('--kerb-px', (b.ux*d).toFixed(2)+'px');
+    el.style.setProperty('--kerb-py', (b.uy*d).toFixed(2)+'px'); };
+  for(const k of KERB_ARROWS) put(kb.querySelector('.kerb-arrow.'+k), KERB_META.arrows[k], KERB_POP.arrow);
+  KERB_RIVETS.forEach((k,i)=>{
     const rv=kb.querySelector('.kerb-rivet.'+k);
-    put(rv, KERB_META.rivets[k]);
-    if(rv) rv.style.setProperty('--kerb-d', (KERB_SIDES.indexOf(k)*90)+'ms');   // 依次，不是同時
-  }
+    put(rv, KERB_META.rivets[k], KERB_POP.rivet);
+    if(rv) rv.style.setProperty('--kerb-d', (i*90)+'ms');   // 依次，不是同時
+  });
   /* 楣：橫跨整個畫面寬，**下緣貼齊門的上緣**（往下壓 1px 免得留一條髮絲縫）。 */
+  /* 楣：橫跨整個畫面寬。⚠ 對齊的是**中段的下緣**不是圖的下緣 ——
+     兩端的鉚接塊比中間的橫桿低（dip＝差多少，佔圖高的比例），照圖的下緣對齊的話
+     中間會露一條縫（Ray：「楣還是有縫…中間不要漏」）。往下壓 dip 之後兩端會
+     壓進控制列裡 —— 楣的圖層在控制列之上（#kerb z2 > #storyBoard z1），看不出來。 */
   const tp=$('kerbTop');
   if(tp){
     const th=W*KERB_META.top.ar;
     tp.style.width=W+'px'; tp.style.height=th+'px';
-    tp.style.left=(-dx)+'px'; tp.style.top=(1-th)+'px';
+    tp.style.left=(-dx)+'px'; tp.style.top=(1-th+th*KERB_META.top.dip)+'px';
     kb.style.setProperty('--kerb-top-h', th+'px');
   }
   if(!kerbReady){
     kerbReady=true;
     const src={ kerbPlate:'kerberos_plate', kerbTop:'kerberos_top' };
     for(const id in src){ const el=$(id); if(el) el.src=KERB_DIR+src[id]+'.webp'; }
-    for(const k of KERB_SIDES){
-      const a=kb.querySelector('.kerb-arrow.'+k); if(a) a.src=KERB_DIR+'kerberos_arrow.webp';
-      const r=kb.querySelector('.kerb-rivet.'+k); if(r) r.src=KERB_DIR+'kerberos_rivet.webp';
-    }
+    for(const k of KERB_ARROWS){ const a=kb.querySelector('.kerb-arrow.'+k); if(a) a.src=KERB_DIR+'kerberos_arrow.webp'; }
+    for(const k of KERB_RIVETS){ const r=kb.querySelector('.kerb-rivet.'+k); if(r) r.src=KERB_DIR+'kerberos_rivet.webp'; }
   }
 }
 
@@ -649,7 +660,7 @@ function playKerberos(onGap, onDone){
   t+=200;
   at(t,()=>{                                             // ③ 解鎖：四向鉚釘依次彈開＋冒煙，箭微幅外推
     se('arrow'); kb.classList.add('unlock');
-    KERB_SIDES.forEach((k,i)=>kerbTimers.push(setTimeout(()=>{
+    KERB_RIVETS.forEach((k,i)=>kerbTimers.push(setTimeout(()=>{
       se('rivet'); kerbPuff(kb.querySelector('.kerb-rivet.'+k));
     }, i*90)));
   });

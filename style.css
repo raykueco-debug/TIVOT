@@ -1231,26 +1231,41 @@
   #kerb.open #kerbPlate{transform:translateX(calc(var(--kerb-open-x) * -1)) scale(1.11) rotate(180deg);
     transition:transform .9s cubic-bezier(.7,0,.3,1);}
 
-  /* ── 四向鉚釘：**依次**彈開（Ray 指定）＋冒煙 ──────────────────────
-     每一顆各自帶 --kerb-d（延遲），JS 依序給 0/90/180/270ms —— 快速接連，
-     讀起來是「四道鎖一個接一個鬆開」，不是四個同時。
-     ⚠ 旋轉（`rotate(var(--kerb-rot))`）要與位移**寫在同一個 transform**裡，
-       兩個規則各寫一半的話後面那個會整個蓋掉前面那個（transform 不會疊加）。 */
-  .kerb-rivet{position:absolute;transform:rotate(var(--kerb-rot));}
-  #kerb.unlock .kerb-rivet{animation:kerbRivet .46s cubic-bezier(.15,.85,.35,1) var(--kerb-d) both;}
-  @keyframes kerbRivet{
-    0%  {opacity:1;transform:rotate(var(--kerb-rot)) translateY(0)     scale(1);}
-    18% {opacity:1;transform:rotate(var(--kerb-rot)) translateY(6%)    scale(1.04);}  /* 先往內壓一下＝蓄力 */
-    100%{opacity:0;transform:rotate(var(--kerb-rot)) translateY(-320%) scale(1.15);}
-  }
-  /* 煙：鉚釘彈開處噴出的小煙團（JS 生成，數量與位置在 story.js）。 */
-  /* 楣：橫跨整個畫面寬，**下緣貼齊門的上緣**（JS 算位置）。
-     ⚠ 它是 #kerbDoor 的子元素 —— 門往上推時它自然跟著走，不必另外做動畫
+  /* ── 鉚釘與箭：解鎖時**往外彈一點點**，彈完留在原地 ─────────────────
+     ⚠⚠ 位移一律在**父座標系**算好（--kerb-px/py，JS 依各自的外向單位向量給），
+       不要寫 `rotate(...) translateY(-x)`。理由：鉚釘是**鏡射**擺的（見下），
+       鏡射會把 translateY 的方向弄反 —— 上面兩顆往外、下面兩顆就會往內。
+       先 translate 再 scale/rotate，位移就永遠是螢幕上的方向。
+     ⚠⚠ 鉚釘四顆是**鏡射**不是旋轉（Ray：「卯釘的角度都不對，參考 reference」）。
+       實測素材原封不動在 10 點鐘那顆的相關性 0.281（全圖最高），2 點鐘那顆的
+       最佳解是水平鏡射 —— 美術是照兩軸鏡射鋪的。照旋轉擺四顆全歪。
+     ⚠ 彈完**不消失**（Ray：「移動完成前後都是剛體，與背景同步，只有移動時獨立」）。
+       它們是 #kerbDoor 的子元素，所以彈完照樣跟著門走 —— 包含開門時往左退場。 */
+  .kerb-rivet,.kerb-arrow{position:absolute;
+    transition:transform .40s cubic-bezier(.2,1.5,.4,1) var(--kerb-d,0ms);}
+  .kerb-rivet{transform:scale(var(--kerb-fx,1),var(--kerb-fy,1));}
+  .kerb-arrow{transform:rotate(var(--kerb-rot,0deg));}
+  #kerb.unlock .kerb-rivet{
+    transform:translate(var(--kerb-px,0px),var(--kerb-py,0px)) scale(var(--kerb-fx,1),var(--kerb-fy,1));}
+  #kerb.unlock .kerb-arrow{
+    transform:translate(var(--kerb-px,0px),var(--kerb-py,0px)) rotate(var(--kerb-rot,0deg));}
+  /* 開門：整組跟著左半扇往左退場（Ray：「門打開的時候箭跟釘都是附著於門的剛體」）。 */
+  #kerb.open .kerb-rivet{
+    transform:translateX(calc(var(--kerb-open-x) * -1))
+              translate(var(--kerb-px,0px),var(--kerb-py,0px)) scale(var(--kerb-fx,1),var(--kerb-fy,1));
+    transition:transform .9s cubic-bezier(.7,0,.3,1);}
+  #kerb.open .kerb-arrow{
+    transform:translateX(calc(var(--kerb-open-x) * -1))
+              translate(var(--kerb-px,0px),var(--kerb-py,0px)) rotate(var(--kerb-rot,0deg));
+    transition:transform .9s cubic-bezier(.7,0,.3,1);}
+
+  /* 楣：橫跨整個畫面寬，下緣壓在控制列上（位置由 JS 算，見 layoutKerberos）。
+     ⚠ 它是 #kerbDoor 的子元素 —— 門往上推時自然跟著走，不必另外做動畫
        （Ray：「與槍棺同一剛體」）。 */
   #kerbTop{position:absolute;}
+  /* 煙：鉚釘彈開處噴出的小煙團（JS 生成，數量與位置在 story.js）。
+     ⚠ 顏色要**灰塵**不要白光：亮白的圓在深色門上讀起來是「閃光」不是「冒煙」。 */
   #kerbSmoke{position:absolute;inset:0;pointer-events:none;overflow:visible;}
-  /* ⚠ 顏色要**灰塵**不要白光：亮白的圓在深色門上讀起來是「閃光」不是「冒煙」。
-     實測 rgba(226,220,208,.55) 太亮，改成偏灰褐、整體不透明度也降下來。 */
   #kerbSmoke i{position:absolute;width:30px;height:30px;margin:-15px 0 0 -15px;border-radius:50%;
     background:radial-gradient(circle,rgba(176,168,152,.42) 0 32%,rgba(132,126,114,.22) 58%,rgba(110,105,96,0) 76%);
     animation:kerbSmoke .78s ease-out forwards;}
@@ -1258,15 +1273,6 @@
     from{opacity:.55; transform:translate(0,0) scale(.3);}
     to  {opacity:0;   transform:translate(var(--sx),var(--sy)) scale(1.9);}
   }
-
-  /* ── 四支箭：**微幅**向外彈開，像解鎖（Ray 指定）────────────────────
-     ⚠ 它們大半藏在圓盤底下，只有尖端露在盤外 —— 所以位移只要一點點（8%）。
-       推太遠會整支從盤底下抽出來，那是「零件掉了」不是「鎖開了」。
-     ⚠ 位移**不能用 translateY**：四支是同一張圖轉 0/90/180/270 度來的，
-       旋轉之後的 Y 軸已經跟著轉了，統一寫 translateY 就是統一「往自己的外側」推。 */
-  .kerb-arrow{position:absolute;transform:rotate(var(--kerb-rot));
-    transition:transform .34s cubic-bezier(.2,.9,.3,1);}
-  #kerb.unlock .kerb-arrow{transform:rotate(var(--kerb-rot)) translateY(-8%);}
 
   /* 門在開的那一刻，舞台其餘的東西都要讓開（縫裡要露出底下的戰鬥畫面）。 */
   #storyStage.kerb-open{background:transparent;}

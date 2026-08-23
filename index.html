@@ -262,6 +262,10 @@
             <li><a class="cl-link" href="https://www.youtube.com/channel/UCgrQkWWf_48rQm-x-dQ4_uA" target="_blank" rel="noopener noreferrer"><span class="cl-name">Royal_Baroque</span><span class="cl-by">PeriTune</span><span class="cl-use">結算畫面</span></a></li>
             <li><a class="cl-link" href="https://www.youtube.com/channel/UCgrQkWWf_48rQm-x-dQ4_uA" target="_blank" rel="noopener noreferrer"><span class="cl-name">TaishoRoman_Battle</span><span class="cl-by">PeriTune</span><span class="cl-use">戰鬥畫面</span></a></li>
             <li><a class="cl-link" href="https://www.youtube.com/channel/UCgrQkWWf_48rQm-x-dQ4_uA" target="_blank" rel="noopener noreferrer"><span class="cl-name">OverWorld Orchestra</span><span class="cl-by">PeriTune</span><span class="cl-use">航行畫面</span></a></li>
+            <li><a class="cl-link" href="https://www.youtube.com/channel/UCgrQkWWf_48rQm-x-dQ4_uA" target="_blank" rel="noopener noreferrer"><span class="cl-name">Obsession</span><span class="cl-by">PeriTune</span><span class="cl-use">Lunaria Theme</span></a></li>
+            <!-- ⚠ Crisis 早就在用（地宮那一幕的 BGM，resources/audio/bgm/PerituneMaterial_Crisis_loop.m4a）
+                 卻一直沒列在 Credit。加素材時要順手加這一列，不要等想起來。 -->
+            <li><a class="cl-link" href="https://www.youtube.com/channel/UCgrQkWWf_48rQm-x-dQ4_uA" target="_blank" rel="noopener noreferrer"><span class="cl-name">Crisis</span><span class="cl-by">PeriTune</span><span class="cl-use">地宮（劇情）</span></a></li>
             <li><a class="cl-link" href="https://www.youtube.com/channel/UCfugKZ48n5JyUHIBCH1EMVQ" target="_blank" rel="noopener noreferrer"><span class="cl-name">情動カタルシス</span><span class="cl-by">まんぼう二等兵</span><span class="cl-use">Boss戰</span></a></li>
           </ul>
         </div>
@@ -365,12 +369,15 @@
   <div id="kerb">
     <div id="kerbDoor">
       <i class="kerb-half l"></i><i class="kerb-half r"></i>
-      <!-- 疊法（由下而上）：門 → 箭 → 圓盤 → 鉚釘 → 煙。與 Kerberos_All 的疊法一致。 -->
+      <!-- 疊法（由下而上）：門 → 圓盤 → 箭 → 鉚釘 → 煙 → 楣。
+           ⚠ 箭與鉚釘在**圓盤之上**（Ray：「箭頭一開始就要在圓盤上，最上層」）。
+           ⚠ 它們都是 #kerbDoor 的子元素＝與槍棺同一剛體：上頂時跟著走、開門時跟著走，
+             只有「彈開」那一下是自己的 transform（Ray：「只有移動時獨立」）。 -->
+      <img id="kerbPlate" alt="">
       <img class="kerb-arrow n" alt=""><img class="kerb-arrow e" alt="">
       <img class="kerb-arrow s" alt=""><img class="kerb-arrow w" alt="">
-      <img id="kerbPlate" alt="">
-      <img class="kerb-rivet n" alt=""><img class="kerb-rivet e" alt="">
-      <img class="kerb-rivet s" alt=""><img class="kerb-rivet w" alt="">
+      <img class="kerb-rivet r10" alt=""><img class="kerb-rivet r2" alt="">
+      <img class="kerb-rivet r4" alt=""><img class="kerb-rivet r8" alt="">
       <div id="kerbSmoke"></div>
       <!-- 楣：蓋在槍棺頂端，下緣與控制區無縫貼合。是門的子元素＝同一剛體，門上推它跟著上去。 -->
       <img id="kerbTop" alt="">
