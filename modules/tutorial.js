@@ -449,7 +449,7 @@ function computeSoloRun(){
   return who.size<=1;
 }
 
-function applyPortraitFit(el, fit, baseH, solo){
+function applyPortraitFit(el, fit, baseH, solo, side){
   const F = ($('tutCast') && $('tutCast').clientHeight) || ($('top') && $('top').clientHeight) || 0;
   const k = solo ? (CFG().portraitSoloScale || 1) : 1;
   if(!F || k===1){                       // 沒量到高度就退回原本的 % 寫法（不至於整個消失）
@@ -465,7 +465,7 @@ function applyPortraitFit(el, fit, baseH, solo){
   el.style.height   = h + 'px';
   el.style.maxWidth = 'none';
   el.style.bottom   = (F - headY - h) + 'px';          // 負值＝往框下緣外溢（裁腿不裁頭）
-  placePortraitX(el);
+  placePortraitX(el, side);
 }
 
 /* ⚠⚠ 把**臉**釘在固定的橫向位置（ver -326）。
@@ -475,7 +475,7 @@ function applyPortraitFit(el, fit, baseH, solo){
    ⚠ 查不到取景值（芙蕾雅／蕾妮沒量過）就把 width/left 還原給 CSS，行為與以前一樣。
    ⚠ `.center`（引導箭頭讓位那個模式）不碰 left：那個 class 靠 left:50% + translateX(-50%)
      置中，寫死 inline left 會把它推歪半個身寬。 */
-function placePortraitX(el){
+function placePortraitX(el, side){
   const key = el.dataset.imgKey;
   const fr  = (CFG().portraitFrames || {})[key];
   const W   = ($('tutCast') && $('tutCast').clientWidth) || ($('top') && $('top').clientWidth) || 0;
@@ -487,7 +487,13 @@ function placePortraitX(el){
   // 寬高比：圖載好就用真的，還沒載好用這批立繪的規格（1024×1536）頂著，載好會再排一次
   const ar = (el.naturalWidth && el.naturalHeight) ? el.naturalWidth/el.naturalHeight : (1024/1536);
   const w  = h * ar;
-  const faceX = W * (CFG().portraitFaceX!=null ? CFG().portraitFaceX : 0.44);
+  /* 站哪一邊由 cast 的 side 決定（不隨台詞變動，CLAUDE.md §6.5）。
+     沒帶 side 就照元素自己是哪個槽推 —— showLine 換圖時只有元素在手上。 */
+  const sd = side || (el.id==='tutCastR' ? 'right' : 'left');
+  const fxc = CFG().portraitFaceX;
+  const anchor = (fxc && typeof fxc==='object') ? (fxc[sd]!=null ? fxc[sd] : 0.5)
+               : (fxc!=null ? fxc : 0.44);
+  const faceX = W * anchor;
   el.style.width = w + 'px';
   el.style.left  = (faceX - w*fr.fx) + 'px';
   el.style.right = 'auto';
@@ -506,7 +512,7 @@ function syncCastFit(step){
     const c = cast[key], el = portraitEl(c);
     if(!el) continue;
     if(el.dataset.castKey!==key){ el.src = asset(c.image); el.dataset.castKey = key; el.dataset.imgKey = c.image; }
-    applyPortraitFit(el, c.fit || {}, baseH, soloRun);
+    applyPortraitFit(el, c.fit || {}, baseH, soloRun, c.side);
   }
 }
 

@@ -56,6 +56,7 @@ let slotExpr = { L:null, R:null };
 let shown = {};                 // 角色 id → 目前的 portrait 狀態 {expr, show}
 let typing = null;              // 打字機 timer
 let waitT  = null;              // delay：對話框延後出現的 timer（見 renderLine）
+let autoT  = null;              // auto：沒有台詞的演出拍自己推進的 timer
 let battleHandler = null;       // main.js 注入：遇到 {battle:id} 時怎麼發動（見 renderLine）
 let active = false;
 let onExit = null;              // 播完/退出後的回呼
@@ -447,49 +448,67 @@ function playSe(spec){
 /* 槍擊：**機關槍掃射**（Ray 指定）——沿著一條斜線由一端掃到另一端，火花大、
    持續兩秒。⚠ 不是「隨機灑點」：隨機讀起來是一片斑點，沿線推進才讀得出
    「掃過去」。線的角度每次隨機一點，不要每次都同一條。 */
+/* 一次性演出的計時器（掃射的每一發、抖動的收尾）。
+   ⚠ 要能**中途收掉**：玩家可以在演出跑完之前就點掉這一拍，殘留的抖動會跟著
+     蓋到下一句上 —— 在會抖的畫面上讀字很難受。renderLine 一開頭就收一次。 */
+let fxTimers = [];
+function stopFx(){
+  fxTimers.forEach(clearTimeout); fxTimers=[];
+  const box=$('storyFx'); if(box) box.innerHTML='';
+  const st=$('storyStage');
+  if(st){ clearTimeout(st.__shakeT); st.classList.remove('shake','hold'); }
+}
 function fireHits(ms){
   const box=$('storyFx'); if(!box) return;
   box.innerHTML='';
   const W=box.clientWidth||360, H=box.clientHeight||640;
-  const N=44;                                  // 兩秒內的發數（約 22 發/秒）
+  const N=96;                                  // 兩秒內的發數（約 48 發/秒；Ray：「大量密集」）
   /* 掃射線：由左下往右上或反向，落在畫面中上段（插圖裡聖徒的位置）。 */
   const dir=Math.random()<0.5?1:-1;
   const x0=dir>0?W*0.14:W*0.86, x1=dir>0?W*0.86:W*0.14;
   const y0=H*0.60, y1=H*0.18;
   for(let i=0;i<N;i++){
-    setTimeout(()=>{
+    fxTimers.push(setTimeout(()=>{
       const u=i/(N-1);
       const d2=document.createElement('div'); d2.className='story-hit';
       /* 沿線推進，再加一點抖動 —— 完全在線上會像雷射，不像掃射。 */
       d2.style.left=Math.round(x0+(x1-x0)*u + (Math.random()-0.5)*W*0.13)+'px';
       d2.style.top =Math.round(y0+(y1-y0)*u + (Math.random()-0.5)*H*0.10)+'px';
-      const sz=0.8+Math.random()*0.9;            // 火花大小有差才有能量感
+      const sz=1.0+Math.random()*1.3;            // 火花大小有差才有能量感（Ray：「火花大一點」）
       d2.style.transform='scale('+sz.toFixed(2)+')';
       box.appendChild(d2);
-      setTimeout(()=>d2.remove(), 320);
-    }, Math.round(ms*i/N));
+      fxTimers.push(setTimeout(()=>d2.remove(), 320));
+    }, Math.round(ms*i/N)));
   }
 }
+const GUNFIRE_MS = 2000;        // 掃射演出長度（Ray 指定：視覺持續兩秒）
 function fireOneShot(line){
   if(line.se) playSe(line.se);
+  /* ⚠ 抖動要**跟著演出的長度**（ver -327，Ray：「畫面抖動要連續直到射擊效果停止」）。
+     單發 0.42 秒的抖法配上兩秒的掃射，會變成「槍還在打、畫面已經定住」。
+     有掃射就抖滿掃射的長度（`.hold`＝無限循環），沒有就照舊抖一下。 */
+  const hold = (line.fx==='gunfire') ? GUNFIRE_MS : 0;
   if(line.shake){
     const st=$('storyStage');
     if(st){
-      st.classList.remove('shake'); void st.offsetWidth; st.classList.add('shake');
+      st.classList.remove('shake','hold'); void st.offsetWidth;
+      st.classList.add('shake'); if(hold) st.classList.add('hold');
       /* ⚠⚠ 動畫跑完要**把 class 拿掉**（ver -318 修）。留著的話那些場景層一旦
          重新顯示（插圖換圖是 display:none→block），animation 會**再跑一次** ——
          Ray 回報「最後一格不要抖」就是這個：抖的是上一句的 shake 殘留。 */
       clearTimeout(st.__shakeT);
-      st.__shakeT=setTimeout(()=>st.classList.remove('shake'), 460);
+      st.__shakeT=setTimeout(()=>st.classList.remove('shake','hold'), hold || 460);
+      fxTimers.push(st.__shakeT);
     }
   }
-  if(line.fx==='gunfire') fireHits(2000);   // Ray 指定：視覺持續兩秒
+  if(line.fx==='gunfire') fireHits(GUNFIRE_MS);
 }
 
 /* ══ 演一句 ══ */
 function renderLine(){
   const line = cur.lines[lineIdx];
   if(!line) return;
+  stopFx();   // 上一拍的演出（掃射／持續抖動）到此為止，別讓它蓋到這一句上
 
   /* ── 插入戰鬥（ver -321）───────────────────────────────────────────
      ⚠ story.js **不 import 戰鬥模組**（單向資料流：劇情不該知道戰鬥怎麼跑）。
@@ -561,6 +580,20 @@ function renderLine(){
        「點了沒反應」然後連點兩下，一次跳掉兩句。 */
   const bub2=$('storyBubble');
   clearTimeout(waitT); waitT=null;
+  clearTimeout(autoT);  autoT=null;
+  /* ⚠ **空台詞不出對話框**（ver -327，Ray：「插圖002出來的時候不要先出空白的
+     諾薇兒對話框」）。那一拍是演出（咆哮／掃射），不是對白 —— 掛一個只有名字的
+     空框在畫面上，讀起來像「她有話要說但沒說出來」。 */
+  if(!line.text){
+    if(bub2) bub2.style.visibility='hidden';
+    if(tx) tx.textContent='';
+    /* auto：這一拍**自己走完**，不等玩家點（Ray：「對話框在播放完
+       Se_enemy_Saintroar 後與立繪一同出現」）。
+       ⚠ 只給**沒有台詞**的演出拍用 —— 有台詞的一律點擊推進（CLAUDE.md §6.5
+         「不自動跳拍」）。玩家想快轉照樣可以點，點了就提前推進。 */
+    if(line.auto>0) autoT=setTimeout(()=>{ autoT=null; advance(); }, line.auto);
+    return;
+  }
   if(line.delay>0){
     if(bub2) bub2.style.visibility='hidden';
     waitT=setTimeout(()=>{ waitT=null;
@@ -576,6 +609,7 @@ function renderLine(){
 function advance(){
   const line = cur && cur.lines[lineIdx];
   const tx = $('storyText');
+  clearTimeout(autoT); autoT=null;   // 玩家點了 → 演出拍提前收，別讓計時器再推一次
   /* 還在等 delay → 這一下先把對話框叫出來，不推進（同「還在打字」的規矩）。 */
   if(waitT){
     clearTimeout(waitT); waitT=null;
@@ -629,7 +663,7 @@ function resetStage(){
   }
   const fx=$('storyFx'); if(fx) fx.innerHTML='';
   const card=$('storyCard'); if(card) card.classList.remove('on');
-  const st2=$('storyStage'); if(st2) st2.classList.remove('shake');
+  const st2=$('storyStage'); if(st2) st2.classList.remove('shake','hold');
   slot={L:null,R:null}; slotExpr={L:null,R:null}; shown={};
   for(const s2 of ['L','R']){ const el=slotEl(s2);
     if(el){ el.classList.remove('on','dim','fading'); el.removeAttribute('src'); } }
@@ -668,17 +702,32 @@ function collectAssets(startId){
   }
   return { imgs:[...imgs], bgms:[...bgms], ses:[...ses] };
 }
+/* 預載：整條 scene 鏈要用到的圖／音效／音樂，**載完（且解碼完）才開演**。
+   ⚠⚠ 圖要 `decode()` 不能只等 `onload`（ver -327）。`onload` 只代表**下載完**，
+     1024×1536 的 webp 真正解碼是在第一次要畫的時候 —— 那一刻剛好是立繪滑入／
+     插圖切換，於是第一格會頓一下或空一拍。`decode()` 把解碼也搬到預載頁裡做完。
+   ⚠ SE 走 `SFX.preload`（解到 AudioBuffer）、BGM 走 `preloadBgm`（抓成 blob），
+     兩者都是真的把資料吃進來，不是只發個請求。
+   ⚠ 保底時間拉到 25 秒（原本 8 秒）：Ray 要的是「載完才開始」，8 秒在慢網下
+     常常是「還沒載完就開演」。但完全不設上限的話，一個卡住的請求會把人鎖在
+     預載頁 —— 所以保留上限，只是拉到不會誤觸的長度。
+   ⚠ 每一張圖的 promise 都不會 reject（onerror 也 resolve）：**缺一張圖不該擋住整場**。 */
+const PRELOAD_CAP_MS = 25000;
 function preloadStory(startId, onProgress){
   const A=collectAssets(startId);
   const jobs=[];
   for(const src of A.imgs) jobs.push(new Promise(res=>{
-    const im=new Image(); im.onload=im.onerror=()=>res(); im.src=src; }));
+    const im=new Image();
+    const fin=()=>res();
+    im.onerror=fin;
+    im.onload=()=>{ (im.decode ? im.decode() : Promise.resolve()).then(fin, fin); };
+    im.src=src;
+  }));
   jobs.push(SFX.preload(A.ses).catch(()=>{}));
   jobs.push(SFX.preloadBgm(A.bgms).catch(()=>{}));
   let done=0; const total=jobs.length;
   const wrapped=jobs.map(p=>Promise.resolve(p).then(()=>{ done++; onProgress(done/total); }));
-  /* ⚠ 保底 8 秒：慢網下不要把人卡在預載頁。沒載完的圖會在用到時自己補載。 */
-  return Promise.race([Promise.all(wrapped), new Promise(r=>setTimeout(r,8000))]);
+  return Promise.race([Promise.all(wrapped), new Promise(r=>setTimeout(r,PRELOAD_CAP_MS))]);
 }
 
 export function open(pos, done){
@@ -710,7 +759,12 @@ export function open(pos, done){
   if(ld){
     ld.classList.add('on');
     const bar=$('storyLoadBar');
-    preloadStory(id, p=>{ if(bar) bar.style.width=Math.round(p*100)+'%'; }).then(go);
+    /* ⚠ 最短顯示 500ms：快取全中的時候預載只要一百多毫秒，畫面會「閃一下」——
+       那讀起來像破圖，不像在載入。壓一個下限讓它看起來是完整的一拍。 */
+    const t0=Date.now();
+    preloadStory(id, p=>{ if(bar) bar.style.width=Math.round(p*100)+'%'; })
+      .then(()=>{ if(bar) bar.style.width='100%';
+                  setTimeout(go, Math.max(0, 500-(Date.now()-t0))); });
   }else go();
 }
 
@@ -721,6 +775,7 @@ export function setBattleHandler(fn){ battleHandler = fn || null; }
 export function close(opts){
   clearInterval(typing); typing=null;
   clearTimeout(waitT); waitT=null;
+  clearTimeout(autoT); autoT=null;   // ⚠ 沒清的話劇情關掉之後還會推一句（然後在關著的舞台上演）
   const b0=$('storyBubble'); if(b0) b0.style.visibility='';
   active=false; cur=null;
   const st=$('storyStage'); if(st) st.classList.remove('on');

@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.23-326';
+export const VERSION = 'ver 2026.08.23-327';
 
 export const GAME_CONFIG = {
 
@@ -263,8 +263,11 @@ export const GAME_CONFIG = {
        ⚠ 兩人同台不吃這個值 —— 那組尺寸是「兩人並排塞進 390 寬」逼出來的（見
          modules/tutorial.js 的 applyPortraitFit）。劇情版教學全程只有諾薇兒。 */
     portraitSoloScale: 1.8,
-    /* 臉的橫向落點（佔敵人框寬的比例）。⚠ 有取景值的立繪才用得到（見下方 frames）。 */
-    portraitFaceX: 0.44,
+    /* 臉的橫向落點（佔敵人框寬的比例），**依站位分左右**——
+       與飛行／劇情畫面同一組數字（story.js 的 solo 錨點 0.38／0.62），
+       Ray：「戰鬥中的說明立繪太靠中了，跟飛行畫面立繪一樣分左右邊」。
+       ⚠ 有取景值的立繪才用得到（見下方 frames）。 */
+    portraitFaceX: { left:0.38, right:0.62 },
     /* 逐張立繪的取景值：ASSETS 鍵 → speakers.js 量好的那一組。
        ⚠⚠ 沒有這張表的話，同一個角色**換表情就會橫向跳**：這些差分是不同姿勢，
          臉在圖上的位置差很多（front 0.564、Scared 0.397），而 CSS 只會把

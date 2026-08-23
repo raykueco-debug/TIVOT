@@ -94,7 +94,12 @@ export const MAIN_SCRIPT = {
       /* 戰勝之後：聖徒咆哮。⚠ **先咆哮＋震動，立繪才出來**（Ray 指定）——
          同一句同時上插圖、上聲音、上立繪的話，咆哮的衝擊會被她的台詞稀釋。
          這一拍沒有台詞也沒有立繪，玩家點一下推過去。 */
-      { speaker:'NOUVELLE', text:'',
+      /* ⚠ 這一拍**沒有台詞也沒有對話框**（ver -327，Ray：「不要先出空白的諾薇兒
+         對話框」）。story.js 看到 text 為空就不出框。
+         ⚠ `auto` = 咆哮音長（Se_enemy_Saintroar 實測 3.34 秒）＋一點餘裕：
+         聲音放完自己推到下一句，於是「對話框與立繪一同出現」。玩家想快轉照樣可以點。
+         ⚠ 改音檔要改這個數字 —— 沒有自動對時的機制。 */
+      { speaker:'NOUVELLE', text:'', auto:3500,
         cg:'002_SaintAssult', se:'se_saintroar', shake:true,
         portrait:{ char:'NOUVELLE', show:false } },
       /* ⚠⚠ 這一句要**把插圖收掉**（cg:null）。插圖的層級在立繪之上，不收的話
@@ -123,7 +128,10 @@ export const MAIN_SCRIPT = {
          ⚠ 這一句沒有台詞（text 空字串）——它是**演出拍**，玩家點一下推過去。
          ⚠ 槍聲用 se_lunaMG（Ray 指定）。原稿另有「彈殼落地音」那一拍，
            但 resources/audio/se/ 裡沒有那個素材，先缺著。 */
-      { speaker:'UNKNOWN', text:'', cg:'002_SaintAssult',
+      /* ⚠ 同樣是**沒有對話框**的演出拍。`auto` 略長於掃射（2 秒）——
+         沒有框也沒有 ▼ 提示，不自己走的話畫面會停在那裡看起來像卡住。
+         抖動由 story.js 依 fx 自動抖滿整段（Ray：「抖動要連續直到射擊效果停止」）。 */
+      { speaker:'UNKNOWN', text:'', auto:2200, cg:'002_SaintAssult',
         fx:'gunfire', shake:true, se:'se_lunaMG' },
       /* 回地宮。⚠ cg:null 要明寫，否則插圖會一直蓋著。 */
       /* ⚠ 這一句**只留諾薇兒**（Ray 指定）。璐娜莉亞要明寫 hide 請下台 ——
