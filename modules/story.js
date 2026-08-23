@@ -512,14 +512,15 @@ function fireOneShot(line){
      由下往上升（clip 同時打開到全畫面）→ 撞頂震動 → 四箭彈開 →
      紋章浮起旋轉 180° → 門由中縫拉開，縫裡露出的**就是戰鬥畫面**。
 
-   ⚠ 素材是 tools/kerberos_cut.py 由 `resources/background/Kerberos.png` 切出來的。
-     來源是一張合成好的平面圖（不透明、沒有圖層），門上的凹槽是**合成的**。
-     KERB_META 的數字由那支腳本印出來，**改圖要重跑腳本再把數字貼回來**。
+   ⚠ 門與紋章是 **Ray 畫的分件**（ver -330 換上）：門本身就已經把紋章挖掉，
+     不再是程式合成的凹槽。四支箭暫時仍由最早那張合成圖切 —— Ray 的 arm.png
+     是自己的畫布尺寸，沒有對位資訊（見 tools/kerberos_cut.py 的說明）。
+   ⚠ KERB_META 的數字由 tools/kerberos_cut.py 印出來，**改圖要重跑腳本再貼回來**。
    ⚠ 四支箭飛出去的是**複製品**，圓盤上的箭不會消失 —— 它們不是獨立零件
      （上下兩支是同一支十字架的兩端），挖掉會把紋章弄壞。理由記在那支腳本裡。 */
 const KERB_DIR='resources/vfx/';
 const KERB_META={ w:853, h:1844,
-  crest:{ x:0.13365, y:0.03850, w:0.73154, h:0.33894 },
+  crest:{ x:0.15944, y:0.04338, w:0.67526, h:0.32701 },
   arms:{ n:{x:0.45721,y:0.04989,w:0.08675,h:0.08677},
          s:{x:0.45721,y:0.29067,w:0.08675,h:0.08677},
          w:{x:0.20633,y:0.17679,w:0.16178,h:0.05531},
@@ -546,6 +547,17 @@ function layoutKerberos(){
   dr.style.width=Wd+'px'; dr.style.height=Hd+'px';
   dr.style.left=((W-Wd)/2)+'px'; dr.style.top=top+'px';
   kb.style.setProperty('--kerb-rise', Math.max(0,top)+'px');
+  /* 開門時「左半扇＋紋章」這個剛體要走多遠：兩者取大的 ——
+       ① 左扇自己出畫面：半扇寬 ×1.04
+       ② 紋章的右緣也要出畫面：紋章右緣在螢幕上的 x
+     ⚠ 用同一個 px 值餵給兩者，不能各自寫 %：% 是相對**自己**的寬度，
+       兩者寬度不同就會走不同距離、當場脫節。 */
+  /* ⚠ 要算**放大之後**的右緣：紋章在 lift 那一拍會 scale(1.11)（見 style.css），
+     照原尺寸算會短一截，門都走光了紋章還露一角在縫邊。1.14 是 1.11 再留一點餘裕。 */
+  const cW = KERB_META.crest.w*Wd;
+  const cCx = (KERB_META.crest.x + KERB_META.crest.w/2)*Wd + (W-Wd)/2;
+  const crestRightX = cCx + cW/2*1.14;
+  kb.style.setProperty('--kerb-open-x', Math.max(Wd/2*1.04, crestRightX)+'px');
   kb.style.setProperty('--kerb-door', 'url("'+KERB_DIR+'kerberos_door.webp")');
   const put=(el,b)=>{ if(!el) return;
     el.style.left=(b.x*Wd)+'px'; el.style.top=(b.y*Hd)+'px'; el.style.width=(b.w*Wd)+'px'; };

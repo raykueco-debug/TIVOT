@@ -1211,14 +1211,23 @@
     transition:transform .9s cubic-bezier(.7,0,.3,1);}
   .kerb-half.l{left:0;background-position:left top;}
   .kerb-half.r{right:0;background-position:right top;}
-  #kerb.open .kerb-half.l{transform:translateX(-104%);}
+  /* ⚠ 左半扇與紋章走**同一個 px 位移**（--kerb-open-x）—— 它們是同一個剛體：
+     紋章是嵌在門上的，門往左走它就跟著走。位移量取「左扇自己的寬」與
+     「紋章右緣到畫面左緣的距離」的大者 —— 紋章比半扇門寬，只按門寬走的話
+     門都出畫面了紋章還留在縫裡。右半扇沒東西掛著，照自己的寬走就好。 */
+  #kerb.open .kerb-half.l{transform:translateX(calc(var(--kerb-open-x) * -1));}
   #kerb.open .kerb-half.r{transform:translateX(104%);}
   /* 紋章圓盤：浮起＋旋轉。⚠ transform-origin 用預設的正中 —— 圖是以圓盤為中心裁的。 */
-  #kerbCrest{position:absolute;transform:translateY(0) scale(1) rotate(0deg);
-    transition:transform .9s cubic-bezier(.34,1.2,.5,1),filter .5s ease,opacity .5s ease;}
-  #kerb.lift #kerbCrest{transform:translateY(-9%) scale(1.11) rotate(180deg);
+  /* 紋章圓盤：**圓心不動**，只放大＋旋轉（Ray 指定：「圓盤不要位移」）。
+     ⚠ 開門時它跟著**左半扇**一起退場 —— 位移量是左扇的實際位移（門寬的一半 ×104%），
+       所以用 JS 算好的 --kerb-open-x（px），不能寫 % ：% 是相對**圓盤自己**的寬度，
+       與門的一半不同，兩者會走不同距離、脫節。 */
+  #kerbCrest{position:absolute;transform:scale(1) rotate(0deg);
+    transition:transform .9s cubic-bezier(.34,1.2,.5,1),filter .5s ease;}
+  #kerb.lift #kerbCrest{transform:scale(1.11) rotate(180deg);
     filter:drop-shadow(0 0 26px rgba(201,162,39,.6)) brightness(1.12);}
-  #kerb.open #kerbCrest{opacity:0;transform:translateY(-14%) scale(1.5) rotate(180deg);}
+  #kerb.open #kerbCrest{transform:translateX(calc(var(--kerb-open-x) * -1)) scale(1.11) rotate(180deg);
+    transition:transform .9s cubic-bezier(.7,0,.3,1);}
   /* 四支箭：由紋章的四個尖端往外彈出去再淡掉。
      ⚠ 飛出去的是**複製品**，圓盤上的箭不會消失 —— 那四支箭不是獨立零件
        （上下兩支是同一支十字架的兩端），挖掉會把紋章弄壞。詳見 tools/kerberos_cut.py。 */
