@@ -406,8 +406,10 @@ window.addEventListener('pagehide', refreshBoot);
 
 // 首頁：開始遊戲 → 主選單先淡出、空一拍（約 1s）Battle 才淡入（避免唐突），同時播「驅逐開始」過渡禎
 function launchBattle(opts){
-  // 出陣 stinger（sfx_startbt＝StartBT_SE 神楽鈴）：列第一梯關鍵預載（見 preloadAll critP）→ 即點即響。
-  SFX.play(asset('sfx_startbt'), sfxGain('sfx_startbt'));
+  /* 出陣 stinger（sfx_startbt＝神楽鈴）：列第一梯關鍵預載 → 即點即響。
+     ⚠ 劇情場次**不播**（Ray 指定）：那一場的轉場是 Kerberos 之門，門有自己的
+       撞擊／齒輪／開門三支音；再疊一聲神楽鈴等於兩套儀式撞在一起。 */
+  if(!(opts && opts.instant)) SFX.play(asset('sfx_startbt'), sfxGain('sfx_startbt'));
   preloadLateBgm();   // 保險：若保底提前放行沒經過 go()，出陣（櫻花期間）補載第二段
   SFX.playBgm(asset('bgm_battle'), { fadeOutMs:800, delayMs:1000, volume: bgmVol('bgm_battle') });
   /* 劇情叫起來的那一場（ver -329）：**跳過櫻花過渡禎，直接開戰**。

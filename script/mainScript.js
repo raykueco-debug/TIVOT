@@ -137,7 +137,9 @@ export const MAIN_SCRIPT = {
       /* ⚠ 同樣是**沒有對話框**的演出拍。`auto` 略長於掃射（2 秒）——
          沒有框也沒有 ▼ 提示，不自己走的話畫面會停在那裡看起來像卡住。
          抖動由 story.js 依 fx 自動抖滿整段（Ray：「抖動要連續直到射擊效果停止」）。 */
-      { speaker:'UNKNOWN', text:'', auto:2200,
+      /* ⚠ 掃射這一拍**畫面上不要有人**（Ray 指定）：這是「子彈打在牆上」的鏡頭，
+         不是誰在講話。兩位都要明寫 hide —— 立繪是持續狀態，不寫會一直站著。 */
+      { speaker:'UNKNOWN', text:'', auto:2200, hide:['NOUVELLE','UNKNOWN'],
         fx:'gunfire', shake:true, se:'se_lunaMG' },
       /* 回地宮。⚠ cg:null 要明寫，否則插圖會一直蓋著。 */
       /* ⚠ 這一句**只留諾薇兒**（Ray 指定）。璐娜莉亞要明寫 hide 請下台 ——

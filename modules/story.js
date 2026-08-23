@@ -29,6 +29,7 @@ import { SPEAKERS, ART, CAST_TALL, nameOf, artOf, exprSrc, frameOf } from '../sc
 import * as prog from '../script/progress.js';
 import { decorateLine } from '../i18n.js';
 import { SFX } from '../audio.js';
+import { matchPortraits } from './tone.js';
 
 const $ = id => document.getElementById(id);
 
@@ -385,6 +386,9 @@ function applyPersist(line){
   if(line.bg!==undefined && line.bg!==stageBg){
     stageBg=line.bg;
     swapImg($('storyBg'), line.bg?imgSrc(line.bg):'');
+    /* 立繪的色調跟著背景走一點點（見 modules/tone.js）。
+       ⚠ 要等換圖跑完再量 —— swapImg 是先淡出、載好才換 src，太早量到的是舊圖。 */
+    setTimeout(()=>matchPortraits($('storyBg'), $('storyCast')), 420);
   }
   let cgChanged=false;
   if(line.cg!==undefined && line.cg!==stageCg){
@@ -669,7 +673,9 @@ function kerbPuff(el){
        1921ms 開始播（Ray：「以槍棺全開為結束，回推播放時間，可與 gear 重疊」）。
    ⚠ 換音檔要**重量這三個數字**（工具：瀏覽器 decodeAudioData 後找峰值與首尾過門檻點）。 */
 const KERB_SE_DIR='resources/audio/se/';
-const KERB_SFX={ pop:'se_Kerberos_pop', gear:'se_Kerberos_gear', open:'se_Kerberos_open' };
+const KERB_SFX={ pop:'se_Kerberos_pop', gear:'se_Kerberos_gear',
+                 open:'se_Kerberos_open', steam:'se_Kerberos_steam' };
+const KERB_SFX_EXT={ steam:'wav' };   // 預設 mp3，例外寫這裡
 const KERB_SE_T={ popPeak:1002, openTail:1921 };
 const KERB_T={ rise:1000, thud:420, rivet:460, arrow:340, lift:1600, open:900 };
 let kerbTimers=[];
@@ -690,7 +696,7 @@ function playKerberos(onGap, onDone){
   stopKerberos(); layoutKerberos();
   kerbPlaying=true;
   const at=(ms,fn)=>kerbTimers.push(setTimeout(fn,ms));
-  const src=k=>KERB_SE_DIR+KERB_SFX[k]+'.mp3';
+  const src=k=>KERB_SE_DIR+KERB_SFX[k]+'.'+(KERB_SFX_EXT[k]||'mp3');
   const se=k=>{ try{ SFX.play(src(k), 1); }catch(e){} };
   let t=0;
   /* ① 撞擊音：立刻播，撞擊峰值（1002ms）正好落在門撞頂那一瞬（rise 也是 1000ms）。 */
@@ -701,21 +707,22 @@ function playKerberos(onGap, onDone){
     st.classList.remove('shake','hold'); void st.offsetWidth; st.classList.add('shake');
     kerbTimers.push(setTimeout(()=>st.classList.remove('shake'), KERB_T.thud));
     kb.classList.remove('glow'); void kb.offsetWidth; kb.classList.add('glow');
+    /* 齒輪聲**從撞頂就開始**（Ray 指定）——機關是撞到頂才被頂開的，
+       聲音比畫面早一步起來才像「裡面的東西動起來了」。收在旋轉結束（見下）。 */
+    try{ kerbGear = SFX.playCue(src('gear'), 1); }catch(e){ kerbGear=null; }
   });
   t+=200;
   at(t,()=>{                                             // ③ 解鎖：四向鉚釘依次彈開＋冒煙，箭微幅外推
     se('arrow'); kb.classList.add('unlock');
     KERB_RIVETS.forEach((k,i)=>kerbTimers.push(setTimeout(()=>{
-      se('rivet'); kerbPuff(kb.querySelector('.kerb-rivet.'+k));
+      if(i===0) se('steam');        // 噴氣聲只在**第一顆**跳開時（Ray 指定），四顆各播會糊成一片
+      kerbPuff(kb.querySelector('.kerb-rivet.'+k));
     }, i*90)));
   });
   t+=KERB_T.rivet + 90*3;
   /* ④ 圓盤浮起＋旋轉 180°（圓心不動）。齒輪聲跟著轉動起訖 —— 素材 6.9 秒，
      不收的話門都開完了還在轉，所以用 playCue 拿把手，轉完斜降收掉。 */
-  const spinAt = t;
-  at(t,()=>{ kb.classList.add('lift');
-    try{ kerbGear = SFX.playCue(src('gear'), 1); }catch(e){ kerbGear=null; }
-  });
+  at(t,()=>{ kb.classList.add('lift'); });
   t+=KERB_T.lift;
   at(t,()=>{ if(kerbGear){ kerbGear.stop(220); kerbGear=null; } });
   at(t,()=>{                                             // ⑤ 讓出舞台 → 底下開戰
@@ -954,7 +961,7 @@ function preloadStory(startId, onProgress){
     A.imgs.push(KERB_DIR+f+'.webp');
   /* ⚠ 門的三支音效也要預載：撞擊音在演出**第 0 毫秒**就要響，
      現抓的話一定遲到（audio.js 的 LATE_PLAY_MS 是 1.5 秒，遲到就乾脆不播）。 */
-  for(const k in KERB_SFX) A.ses.push(KERB_SE_DIR+KERB_SFX[k]+'.mp3');
+  for(const k in KERB_SFX) A.ses.push(KERB_SE_DIR+KERB_SFX[k]+'.'+(KERB_SFX_EXT[k]||'mp3'));
   const jobs=[];
   for(const src of A.imgs) jobs.push(new Promise(res=>{
     const im=new Image();

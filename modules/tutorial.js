@@ -23,6 +23,7 @@ import { GAME_CONFIG, asset } from '../config.js';
 import { state } from '../state.js';
 import { SFX } from '../audio.js';
 import { L, decorateLine } from '../i18n.js';   // 多語言（跳過確認文案／台詞關鍵字金色粗字）
+import { matchPortraits } from './tone.js';    // 立繪與背景的融合（葉節點）
 
 const $ = id => document.getElementById(id);
 const CFG = () => GAME_CONFIG.tutorial;
@@ -552,6 +553,8 @@ function openStep(step){
   api.pauseForDialog();                          // 真暫停：同退出確認框的機制
   document.body.classList.add('dlg-pause');      // 凍結底層警戒脈動（防 iOS 合成假影）
   syncCastFit(step);
+  /* 立繪的色調跟著**敵人底圖**走一點點（見 modules/tone.js）——戰鬥框的「背景」就是敵人那張圖。 */
+  matchPortraits($('enemyImg'), $('tutCast'));   // 敵人換人時 src 變，tone.js 會重算
   const wrap=$('tutCast'), touch=$('tutTouch'), bubble=$('tutBubble');
   if(touch) touch.classList.add('on');
   if(bubble) bubble.classList.add('on');   // 對話框已移出 #tutCast（z-8000 恆在最上層），自帶顯示控制
@@ -574,13 +577,20 @@ function syncBubbleShape(step){
   if(b) b.classList.toggle('clasp-clear', !!(step && step.key==='dualReady'));
 }
 
-/* 對話框緊貼數字盤面上方（間隔 2px）：#tutBubble 為 fixed（脫離 #top overflow 裁切），
- * 依 #grid 視窗座標實測寫 bottom——以 bottom 錨定，台詞增行時框體向上長、貼齊邊不動。 */
+/* 對話框的底邊：貼在**敵我血條的上方**，不要蓋住它們（ver -337，Ray 指定）。
+ * ⚠ 原本貼的是數字盤面（#grid）的上緣 —— 血條就在盤面與敵人框之間，
+ *   貼盤面等於把血條與破防計量表整條蓋掉。ver -336 把它們的 z-index 抬到 21
+ *   讓它們壓在立繪之上，但對話框是 z-8000，抬 z 救不了，位置本身要讓開。
+ * ⚠ #tutBubble 是 fixed（脫離 #top 的 overflow 裁切），所以用視窗座標算 bottom；
+ *   以 bottom 錨定，台詞增行時框體往上長、貼齊邊不動。
+ * ⚠ 量不到血條就退回貼盤面（保底，不要整個沒位置）。 */
 function placeBubble(){
-  const b=$('tutBubble'), g=$('grid');
-  if(!b || !g) return;
-  const r=g.getBoundingClientRect();
-  if(r.height>0) b.style.bottom = (innerHeight - r.top + 2)+'px';
+  const b=$('tutBubble');
+  if(!b) return;
+  const bars=$('barsBlock'), g=$('grid');
+  const r=(bars && bars.getBoundingClientRect().height>0) ? bars.getBoundingClientRect()
+        : (g ? g.getBoundingClientRect() : null);
+  if(r && r.height>0) b.style.bottom = (innerHeight - r.top + 4)+'px';
 }
 
 function showLine(){
