@@ -96,6 +96,7 @@ export function maybeStart(){
   state.tutorialStoryRun = storyRun;   // 劇情版：inspector 據此整段跳過教學結算
   state.tutorialLifeReturn = false;
   soloRun = computeSoloRun();       // 獨腳戲 → 立繪放大（整場一致，見 applyPortraitFit）
+  resetCamera();                    // 這一場重新量一次相機（見 cameraPxCm）
   stepsLeft = cfg.steps.slice();
   /* 劇情版**到破防教學為止**（Ray 指定）：拿掉 'strike' 這一步，
      連帶整條「劇情殺三連擊 → 即死防禦 → 聖徒化 → MB／生命歸還」都不會發生
@@ -493,6 +494,21 @@ function hasFrame(el){ const f=frameOf(el); return !!(f && f.cm && f.bot > f.top
    ⚠ 頭頂釘在頂線（portraitTopPct），**不是**把腳對齊 —— 教學的框下緣被對話框
      蓋掉一大塊，對腳等於把臉推出畫面。
    ⚠ 查不到取景值（芙蕾雅／蕾妮沒量過）就整段跳過，交給上面的舊算法。 */
+/* ══ 相機快取（ver -346）══════════════════════════════════════════════
+   ⚠⚠ `pxCm` 由 `#top` 的**當下高度**算出來，而手機瀏覽器的工具列會收合／彈回 ——
+     視口一變，`#top`（height:50%）就跟著變幾十像素。立繪是**每一句**重算的，
+     於是同一張立繪在相鄰兩句之間大小不同 ＝ Ray 回報的「戰鬥中忽大忽小」。
+   規則：寬度沒變、高度變化在 18% 以內 → **沿用上一次的相機**。
+     真的轉向（寬度變）或版面大改（>18%）才重量。
+   ⚠ 進戰鬥要 `resetCamera()`，不然上一場的相機會跟著跨場沿用。 */
+let cam = { w:0, h:0, px:0 };
+function resetCamera(){ cam = { w:0, h:0, px:0 }; }
+function cameraPxCm(F, W, topY, C){
+  if(cam.px && cam.w===W && cam.h && Math.abs(F-cam.h)/cam.h < 0.18) return cam.px;
+  cam = { w:W, h:F, px:(F-topY)/((C.castShow||0.56)*(C.castTall||176)) };
+  return cam.px;
+}
+
 function placePortraitX(el, side){
   const fr = frameOf(el);
   const wrap=$('tutCast'), topEl=$('top');
@@ -506,16 +522,34 @@ function placePortraitX(el, side){
   /* ⚠⚠ 頂線不得高於左上角那顆鈕的下緣（Ray：「頭頂不能超過清盤鈕，否則會被
      動態島吃掉」）。鈕吃 safe-area，所以**量它的實際位置**，不要寫死 ——
      瀏海機與平頭機的 safe-area 差很多（同 §6.5 頂線由 HUD 量出來的作法）。 */
-  let topY = F * ((C.portraitTopPct!=null ? C.portraitTopPct : 3)/100);
+  /* ⚠⚠ **相機的頂線**與**頭頂的落點**是兩件事（ver -346）：
+       camTop  ＝ 算 pxCm 用的取景上緣 —— 維持原本的算法（鈕的下緣），
+                 因為 castShow 0.68 是 Ray 對著這個框調出來的，動了她就變大變小。
+       headTop ＝ 頭頂真正擺哪 —— 改夾鈕的**上緣**（Ray：「站太低，再往上一個頭身」）。
+     原本兩者共用一個值，等於把整顆鈕的高度（44px）讓出來；但要閃開的只有
+     瀏海／動態島，而 `#top` 已被 `#app` 的 padding 推到瀏海之下，鈕的上緣就是安全線。
+     何況立繪站左（臉錨 0.24W）、退出鈕在右上，本來就不重疊。
+     實測：大小不變（541→維持原本的 479），頭頂由 58px 上移到 12px。
+     ⚠ 12px 已經是這個版面的上限 —— 再上去頭會被 `#top` 的 overflow 裁掉。 */
+  const pct = (C.portraitTopPct!=null ? C.portraitTopPct : 3)/100;
+  let camTop = F * pct, headTop = F * pct;
   const btn = $('testClearBtn') || $('exitBtn');
   if(btn && wrap){
     const br = btn.getBoundingClientRect(), wr = wrap.getBoundingClientRect();
-    if(br.height) topY = Math.max(topY, br.bottom - wr.top + 4);
+    if(br.height){
+      camTop  = Math.max(camTop,  br.bottom - wr.top + 4);
+      headTop = Math.max(headTop, br.top - wr.top);
+    }
   }
-  const pxCm  = (F - topY) / ((C.castShow||0.56) * (C.castTall||176));
+  const pxCm  = cameraPxCm(F, W, camTop, C);
   const nH    = el.naturalHeight || 1536;              // 這批立繪都是 1024×1536
   const nW    = el.naturalWidth  || 1024;
-  const s     = pxCm * fr.cm / (fr.bot - fr.top);      // 鎖身高
+  /* 鎖身高。⚠ 分母用**該角色基本立繪**的像素身高，不是這一張差分自己的
+     （ver -346）：差分是不同姿勢，alpha 上下緣會差 1%（諾薇兒 cringe 1528 /
+     surprise 1519），每換一次表情就縮放一次 —— 那是「同一個人忽大忽小」的另一半。
+     位置照樣吃這一張自己的 top/fx（那是取景，本來就該逐張算）。 */
+  const baseFr = (CFG().portraitFrames||{})[el.dataset.baseKey] || fr;
+  const s     = pxCm * fr.cm / (baseFr.bot - baseFr.top);
   const h     = s * nH, w = s * nW;
   const sd    = side || (el.id==='tutCastR' ? 'right' : 'left');
   const fxc   = C.portraitFaceX;
@@ -526,7 +560,7 @@ function placePortraitX(el, side){
   el.style.height = h + 'px';
   if(centered){ el.style.left=''; el.style.right=''; }
   else { el.style.left = (W*anchor - w*fr.fx) + 'px'; el.style.right = 'auto'; }
-  el.style.top    = (topY - s*fr.top) + 'px';          // 頭頂貼頂線
+  el.style.top    = (headTop - s*fr.top) + 'px';       // 頭頂貼頂線（見上面 camTop/headTop 的分工）
   el.style.bottom = 'auto';
 }
 
@@ -542,6 +576,7 @@ function syncCastFit(step){
     if(!used.has(key)) continue;
     const c = cast[key], el = portraitEl(c);
     if(!el) continue;
+    el.dataset.baseKey = c.image;   // 鎖縮放用的基準（見 placePortraitX 的說明）
     if(el.dataset.castKey!==key){ el.src = asset(c.image); el.dataset.castKey = key; el.dataset.imgKey = c.image; }
     applyPortraitFit(el, c.fit || {}, baseH, soloRun, c.side);
   }
@@ -842,6 +877,17 @@ export function abort(){
  * ========================================================================== */
 function bindUI(){
   const touch=$('tutTouch');
+  /* 轉向或視窗寬度真的變了 → 相機重量一次並重排在場立繪。
+     ⚠ 只認**寬度**：高度的小幅變動（手機工具列收合）由 cameraPxCm 吸收，
+       在這裡一併重排的話又會變成「忽大忽小」。 */
+  {
+    let lastW = innerWidth;
+    window.addEventListener('resize', ()=>{
+      if(innerWidth===lastW) return;
+      lastW = innerWidth; resetCamera();
+      if(cur) syncCastFit(cur);
+    });
+  }
   if(touch){
     let ptr=null;   // {x,y,moved}
     touch.addEventListener('pointerdown', e=>{ ptr={x:e.clientX, y:e.clientY, moved:false}; });

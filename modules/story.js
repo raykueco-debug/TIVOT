@@ -115,6 +115,13 @@ function measureBounds(img, y0, y1){
    ⚠ 不能各算各的：pxCm（每公分幾像素）是共用的，四個人的腳才會落在同一條
      地平線上（CLAUDE.md §6.5）。而「不可越中線」的縮限也必須套用到全體 ——
      只縮一個人會讓身高比例當場失真。 */
+let cam = { w:0, h:0, px:0 };
+function resetCamera(){ cam = { w:0, h:0, px:0 }; }
+function camPxCm(H, W, top){
+  if(cam.px && cam.w===W && cam.h && Math.abs(H-cam.h)/cam.h < 0.18) return cam.px;
+  cam = { w:W, h:H, px:(H-top)/(CAST_SHOW*CAST_TALL) };
+  return cam.px;
+}
 function layout(){
   const stage=$('storyStage'); if(!stage) return;
   /* ⚠ 高度取**立繪區**（#storyCast）而不是整個舞台（ver -316）：下半是固定的
@@ -125,8 +132,12 @@ function layout(){
   if(!W || !H) return;
   const top=topLine();
 
-  /* 最高的人定義相機：頭頂貼頂線、身體露出 CAST_SHOW。 */
-  let pxCm = (H-top)/(CAST_SHOW*CAST_TALL);
+  /* 最高的人定義相機：頭頂貼頂線、身體露出 CAST_SHOW。
+     ⚠⚠ 相機要**快取**（ver -346，與 modules/tutorial.js 同一個修法）：手機瀏覽器的
+       工具列收合會讓 `#storyCast` 的高度變幾十像素，而這裡是**每一句**重算的 ——
+       同一張立繪在相鄰兩句之間就會忽大忽小。寬度沒變、高度變化 18% 以內一律沿用；
+       真的轉向（寬度變）或版面大改才重量。 */
+  let pxCm = camPxCm(H, W, top);
 
   const on=[];
   for(const side of ['L','R']){
@@ -571,11 +582,12 @@ const SE_FILES=[
   'se_Kerberos_open.mp3', 'se_Kerberos_pop.mp3', 'se_Kerberos_steam.m4a', 'se_enemy_dagger.m4a',
   'se_enemy_revolver.mp3', 'se_enemy_shot.mp3', 'se_enemy_slash.m4a', 'se_enemy_smack.m4a',
   'se_flight_heartbeat.mp3', 'se_flight_idle_loop.mp3', 'se_flight_sail_loop.mp3',
-  'se_flight_seagull.mp3', 'se_flight_train.mp3', 'se_lunaMG.m4a', 'se_saint_install.mp3',
-  'se_saint_maxburst.m4a', 'se_steps.m4a', 'se_ui_click.mp3', 'se_ui_kagurabell.mp3',
-  'se_ui_pageflip.mp3', 'se_ui_sortie.mp3', 'se_weapon_guard.m4a', 'se_weapon_mg_squall.mp3',
-  'se_weapon_pistol_01.mp3', 'se_weapon_pistol_02.mp3', 'se_weapon_pistol_03.m4a',
-  'se_weapon_reload.mp3', 'se_weapon_shotgun_blast.mp3', 'se_weapon_sniper_falcon.mp3',
+  'se_flight_seagull.mp3', 'se_flight_train.mp3', 'se_lunaMG.m4a', 'se_punch.mp3',
+  'se_saint_install.mp3', 'se_saint_maxburst.m4a', 'se_steps.m4a', 'se_ui_click.mp3',
+  'se_ui_kagurabell.mp3', 'se_ui_pageflip.mp3', 'se_ui_sortie.mp3', 'se_walk.mp3',
+  'se_weapon_guard.m4a', 'se_weapon_mg_squall.mp3', 'se_weapon_pistol_01.mp3',
+  'se_weapon_pistol_02.mp3', 'se_weapon_pistol_03.m4a', 'se_weapon_reload.mp3',
+  'se_weapon_shotgun_blast.mp3', 'se_weapon_sniper_falcon.mp3',
 ];
 /* 別名：腳本裡慣用的短名 → 實際檔名（去副檔名）。 */
 const SE_ALIAS={ se_saintroar:'se_enemy_saintroar', se_mg_squall:'se_weapon_mg_squall',
@@ -1119,19 +1131,32 @@ function preloadStory(startId, onProgress){
   /* ⚠ 門的三支音效也要預載：撞擊音在演出**第 0 毫秒**就要響，
      現抓的話一定遲到（audio.js 的 LATE_PLAY_MS 是 1.5 秒，遲到就乾脆不播）。 */
   for(const k in KERB_SFX) if(KERB_SFX[k]) A.ses.push(KERB_SE_DIR+KERB_SFX[k]+'.'+(KERB_SFX_EXT[k]||'mp3'));
-  const jobs=[];
-  for(const src of A.imgs) jobs.push(new Promise(res=>{
+  /* ⚠⚠ **音效先載，圖片後載**（ver -346，Ray：「腳步聲跟跌倒音沒載到」）。
+     原本二十幾個請求一起開跑，手機的頻寬全被 3.3 MB 的圖吃掉；只要整包沒在
+     `PRELOAD_CAP_MS` 內載完（慢網下很常見），閘門就照樣放行 —— 這時圖已經在
+     快取裡、**音效卻還沒解碼完**，於是開場那兩支（`se_steps` / `se_Fall`）
+     一播就落進 `LATE_PLAY_MS`（1.5 秒）的「遲到不播」規則，整個消失。
+     音效總共只有幾百 KB，先讓它們跑完再抓圖，代價是零。
+   ⚠ 圖沒載完最多是晚一拍淡進來；音效沒載完是**直接不響**，兩者的失敗代價不對等。
+   ⚠ 音效自己也有上限（6 秒），不能讓一支卡住的音檔擋住整場。 */
+  const AUDIO_FIRST_MS = 6000;
+  const imgJobs = ()=> A.imgs.map(src=>new Promise(res=>{
     const im=new Image();
     const fin=()=>res();
     im.onerror=fin;
     im.onload=()=>{ (im.decode ? im.decode() : Promise.resolve()).then(fin, fin); };
     im.src=src;
   }));
-  jobs.push(SFX.preload(A.ses).catch(()=>{}));
-  jobs.push(SFX.preloadBgm(A.bgms).catch(()=>{}));
-  let done=0; const total=jobs.length;
-  const wrapped=jobs.map(p=>Promise.resolve(p).then(()=>{ done++; onProgress(done/total); }));
-  return Promise.race([Promise.all(wrapped), new Promise(r=>setTimeout(r,PRELOAD_CAP_MS))]);
+  const total = A.imgs.length + 2;
+  let done=0;
+  const tick = p => Promise.resolve(p).then(()=>{ done++; onProgress(done/total); });
+  const audio = Promise.all([ tick(SFX.preload(A.ses).catch(()=>{})),
+                              tick(SFX.preloadBgm(A.bgms).catch(()=>{})) ]);
+  return Promise.race([
+    Promise.race([audio, new Promise(r=>setTimeout(r, AUDIO_FIRST_MS))])
+      .then(()=> Promise.all(imgJobs().map(tick))),
+    new Promise(r=>setTimeout(r, PRELOAD_CAP_MS)),
+  ]);
 }
 
 /* ══ 場景之間的「標準讀取頁」（ver -338，Ray 指定）══════════════════════
@@ -1188,6 +1213,7 @@ export function open(pos, done){
   active = true;
   st.classList.add('on');
   document.body.classList.add('story-on');
+  resetCamera();                        // 這一場重新量一次相機（見 camPxCm）
   SFX.unlock();
   const id = (pos && pos.scene && MAIN_SCRIPT[pos.scene]) ? pos.scene : MAIN_ENTRY;
   /* 預載頁：先擋著，載完才開演。⚠ 從戰鬥接回來（pos.line>0）時不再擋一次 ——
