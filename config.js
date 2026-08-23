@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.23-332';
+export const VERSION = 'ver 2026.08.23-333';
 
 export const GAME_CONFIG = {
 
@@ -259,9 +259,13 @@ export const GAME_CONFIG = {
     //   drop：立繪往敵人框下緣外推的 %（被裁去下方）——不以全圖置入為原則，
     //         用來調兩人同框的站位與身高差（監察官略高）。
     portraitHeightPct: 88,
-    /* 獨腳戲（台上只有一個人）時把立繪放大幾倍，頭頂釘在原處、多出來的從下面裁掉。
-       ⚠ 兩人同台不吃這個值 —— 那組尺寸是「兩人並排塞進 390 寬」逼出來的（見
-         modules/tutorial.js 的 applyPortraitFit）。劇情版教學全程只有諾薇兒。 */
+    /* ⚠ 有取景值（portraitFrames）的立繪走**飛行畫面那一套**：鎖身高、頭頂貼頂線、
+       臉錨在 portraitFaceX（見 modules/tutorial.js 的 applyPortraitFit）。
+       下面這三個值就是那一套的參數，與 modules/story.js / flight 同義同值。
+       ⚠ portraitSoloScale 只留給**沒有取景值**的舊立繪（芙蕾雅／蕾妮）。 */
+    castShow: 0.56,          // 最高的人露出身體的幾成（越小＝鏡頭越近＝人越大）
+    castTall: 176,           // 最高的角色身高（索拉娜）——全域一致，換人要一起改
+    portraitTopPct: 3,       // 頂線：佔敵人框高的 %（頭頂貼在這裡）
     portraitSoloScale: 1.8,
     /* 臉的橫向落點（佔敵人框寬的比例），**依站位分左右**——
        與飛行／劇情畫面同一組數字（story.js 的 solo 錨點 0.38／0.62），
@@ -273,13 +277,18 @@ export const GAME_CONFIG = {
          臉在圖上的位置差很多（front 0.564、Scared 0.397），而 CSS 只會把
          **圖框**貼齊左緣 —— 圖框對齊 ≠ 臉對齊，實測相鄰兩句臉會位移 71px。
        ⚠ 芙蕾雅／蕾妮沒有量過，查不到就退回原本的「圖框貼邊」（行為不變）。 */
-    portraitFrames: {
-      tut_nouvelle:           ART.nouvelle,
-      tut_nouvelle_cringe:    ART.nouvelle.expr.cringe,
-      tut_nouvelle_surprise:  ART.nouvelle.expr.surprise,
-      tut_nouvelle_desperate: ART.nouvelle.expr.desperate,
-      tut_nouvelle_saint:     { top:3, bot:1525, fx:0.503 },   // 只有教學用得到，量法同 speakers.js
-    },
+    /* ⚠ 每一筆都要帶 cm（角色身高）—— 縮放是**鎖身高**算的（§6.5）。
+       speakers.js 的 expr 只帶 top/bot/fx，cm 在角色那一層，所以這裡要合進來。 */
+    portraitFrames: (()=>{
+      const N = ART.nouvelle, F = {};
+      const put = (key, v) => { F[key] = Object.assign({ cm:N.cm }, v); };
+      put('tut_nouvelle',           N);
+      put('tut_nouvelle_cringe',    N.expr.cringe);
+      put('tut_nouvelle_surprise',  N.expr.surprise);
+      put('tut_nouvelle_desperate', N.expr.desperate);
+      put('tut_nouvelle_saint',     { top:3, bot:1525, fx:0.503 });   // 只有教學用得到，量法同 speakers.js
+      return F;
+    })(),
     cast: {
       inspector: { name:'芙蕾雅', image:'inspector_freya', side:'left',  fit:{ zoom:1,    drop:10 } },
       partner:   { name:'蕾妮',   image:'partner_renee',   side:'right', fit:{ zoom:0.82, drop:0 } },

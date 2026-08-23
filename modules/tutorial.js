@@ -186,9 +186,13 @@ export function ultSuppressed(){
   if(state.threats.length>0) return true;
   return false;
 }
-// defense.spawnThreat 詢問：反擊教學第一顆紅點未出（threat 步驟尚未觸發）→ 用固定位置
+/* defense.spawnThreat 詢問：防禦教學期間的紅點用**固定位置**。
+   ⚠⚠ 條件是「防禦還沒教會」（!defendedDone），不是「threat 這一步還沒觸發」——
+     舊寫法一觸發就不算數了，於是**太早格擋、重放的那一顆會跳到別的地方**
+     （Ray：「第一個敵攻擊點固定出同一位置，失敗也不要變」）。
+     教學階段的紅點位置是教材的一部分：位置一直換，玩家會以為自己記錯了。 */
 export function firstThreatPending(){
-  return state.tutorialActive && stepsLeft.some(s=>s.trigger==='threat');
+  return state.tutorialActive && !defendedDone;
 }
 // combat.tap 每次正確消格呼叫（cleared＝本盤已消格數）：第四回合清滿 strike.afterCells
 //   → 觸發「小心！」劇情殺段
@@ -450,7 +454,11 @@ function computeSoloRun(){
 }
 
 function applyPortraitFit(el, fit, baseH, solo, side){
-  const F = ($('tutCast') && $('tutCast').clientHeight) || ($('top') && $('top').clientHeight) || 0;
+  const wrap=$('tutCast'), topEl=$('top');
+  const F = (wrap && wrap.clientHeight) || (topEl && topEl.clientHeight) || 0;
+  /* 有取景值 → 走**飛行畫面那一套**（鎖身高）。placePortraitX 會把高度也一起算，
+     所以這裡只負責「沒有取景值」的退路。 */
+  if(hasFrame(el)){ placePortraitX(el, side); return; }
   const k = solo ? (CFG().portraitSoloScale || 1) : 1;
   if(!F || k===1){                       // 沒量到高度就退回原本的 % 寫法（不至於整個消失）
     el.style.height = (baseH * (fit.zoom || 1)) + '%';
@@ -465,38 +473,52 @@ function applyPortraitFit(el, fit, baseH, solo, side){
   el.style.height   = h + 'px';
   el.style.maxWidth = 'none';
   el.style.bottom   = (F - headY - h) + 'px';          // 負值＝往框下緣外溢（裁腿不裁頭）
-  placePortraitX(el, side);
+  el.style.width=''; el.style.left=''; el.style.right='';
 }
+function frameOf(el){ return (CFG().portraitFrames || {})[el && el.dataset.imgKey]; }
+function hasFrame(el){ const f=frameOf(el); return !!(f && f.cm && f.bot > f.top); }
 
-/* ⚠⚠ 把**臉**釘在固定的橫向位置（ver -326）。
-   CSS 只會把**圖框**貼齊左緣 —— 圖框對齊 ≠ 臉對齊。諾薇兒的表情差分是不同姿勢，
-   臉在圖上的位置從 0.397 到 0.564 都有，靠圖框貼邊的話**相鄰兩句臉會橫向跳 71px**
-   （實測 390 寬、立繪 408 寬）。這種跳動讀起來像鏡頭在抖，不像換表情。
-   ⚠ 查不到取景值（芙蕾雅／蕾妮沒量過）就把 width/left 還原給 CSS，行為與以前一樣。
-   ⚠ `.center`（引導箭頭讓位那個模式）不碰 left：那個 class 靠 left:50% + translateX(-50%)
-     置中，寫死 inline left 會把它推歪半個身寬。 */
+/* ⚠⚠ 立繪的尺寸與位置**完全照飛行畫面那一套**（CLAUDE.md §6.5、modules/story.js）：
+
+     縮放  鎖**身高**：每公分像素 × 角色身高 ÷ 這張圖裡人物的像素身高。
+           每公分像素只由「頂線到底」與 castShow×castTall 決定 —— 是個常數，
+           所以**同一張立繪永遠同一個大小**（Ray：「人物同一張立繪不可改變大小」）。
+     站位  臉錨在 portraitFaceX 的左／右（`cast[key].side` 決定，不隨台詞變動）。
+           只有一個人也**固定佔自己那一邊**，不置中（Ray 指定）。
+     交疊  允許 —— 兩人同台輪廓會碰到，那是講好的代價（Ray：「可略覆蓋」）。
+
+   ⚠ 錨的是**臉的中心**（fx）不是圖框中心：這些插畫左右留白差很多，
+     圖框對齊 ≠ 臉對齊（差分之間實測會差 71px）。
+   ⚠ 頭頂釘在頂線（portraitTopPct），**不是**把腳對齊 —— 教學的框下緣被對話框
+     蓋掉一大塊，對腳等於把臉推出畫面。
+   ⚠ 查不到取景值（芙蕾雅／蕾妮沒量過）就整段跳過，交給上面的舊算法。 */
 function placePortraitX(el, side){
-  const key = el.dataset.imgKey;
-  const fr  = (CFG().portraitFrames || {})[key];
-  const W   = ($('tutCast') && $('tutCast').clientWidth) || ($('top') && $('top').clientWidth) || 0;
-  const h   = /px$/.test(el.style.height||'') ? parseFloat(el.style.height) : 0;
-  if(!fr || !W || !h || el.classList.contains('center')){
-    el.style.width=''; el.style.left=''; el.style.right='';
-    return;
-  }
-  // 寬高比：圖載好就用真的，還沒載好用這批立繪的規格（1024×1536）頂著，載好會再排一次
-  const ar = (el.naturalWidth && el.naturalHeight) ? el.naturalWidth/el.naturalHeight : (1024/1536);
-  const w  = h * ar;
-  /* 站哪一邊由 cast 的 side 決定（不隨台詞變動，CLAUDE.md §6.5）。
-     沒帶 side 就照元素自己是哪個槽推 —— showLine 換圖時只有元素在手上。 */
-  const sd = side || (el.id==='tutCastR' ? 'right' : 'left');
-  const fxc = CFG().portraitFaceX;
+  const fr = frameOf(el);
+  const wrap=$('tutCast'), topEl=$('top');
+  const F = (wrap && wrap.clientHeight) || (topEl && topEl.clientHeight) || 0;
+  const W = (wrap && wrap.clientWidth)  || (topEl && topEl.clientWidth)  || 0;
+  if(!hasFrame(el) || !F || !W){ if(!fr){ el.style.width=''; el.style.left=''; el.style.right=''; } return; }
+  /* ⚠ `.center`（引導箭頭讓位那個模式）不碰 left：那個 class 靠 left:50% +
+     translateX(-50%) 置中，寫死 inline left 會把它推歪半個身寬。 */
+  const centered = el.classList.contains('center');
+  const C = CFG();
+  const topY  = F * ((C.portraitTopPct!=null ? C.portraitTopPct : 3)/100);
+  const pxCm  = (F - topY) / ((C.castShow||0.56) * (C.castTall||176));
+  const nH    = el.naturalHeight || 1536;              // 這批立繪都是 1024×1536
+  const nW    = el.naturalWidth  || 1024;
+  const s     = pxCm * fr.cm / (fr.bot - fr.top);      // 鎖身高
+  const h     = s * nH, w = s * nW;
+  const sd    = side || (el.id==='tutCastR' ? 'right' : 'left');
+  const fxc   = C.portraitFaceX;
   const anchor = (fxc && typeof fxc==='object') ? (fxc[sd]!=null ? fxc[sd] : 0.5)
-               : (fxc!=null ? fxc : 0.44);
-  const faceX = W * anchor;
-  el.style.width = w + 'px';
-  el.style.left  = (faceX - w*fr.fx) + 'px';
-  el.style.right = 'auto';
+               : (fxc!=null ? fxc : 0.5);
+  el.style.maxWidth = 'none';
+  el.style.width  = w + 'px';
+  el.style.height = h + 'px';
+  if(centered){ el.style.left=''; el.style.right=''; }
+  else { el.style.left = (W*anchor - w*fr.fx) + 'px'; el.style.right = 'auto'; }
+  el.style.top    = (topY - s*fr.top) + 'px';          // 頭頂貼頂線
+  el.style.bottom = 'auto';
 }
 
 /* 本段的在場立繪：換圖 ＋ 套取景。⚠ 段落接續（queue）時也要重跑 ——
@@ -571,8 +593,8 @@ function showLine(){
       el.src = asset(key);
       // ⚠ 換圖必須重排橫向：每張差分的臉位置不同（見 placePortraitX）。
       //   先用規格比例排一次（不等載入＝不閃），載好再排一次修正真實寬高比。
-      placePortraitX(el);
-      el.onload = ()=>{ el.onload=null; placePortraitX(el); };
+      placePortraitX(el, c.side);
+      el.onload = ()=>{ el.onload=null; placePortraitX(el, c.side); };
     }
   }
   // 全畫面 cut-in（line.cutin＝ASSETS 鍵）：先演完再打字，否則字被 cut-in（z8100）蓋住白打。
