@@ -134,7 +134,7 @@ WebAudio 解碼所以 mp3/m4a/wav 通吃。改 `voiceChain` 或增益就要重�
 
 ## 一、新增的子系統：主線 scene 播放器 ＋ 劇情層存讀檔
 
-依 `TIVOT_SCRIPT_ARCHITECTURE.md`（Ray 提供，**尚未歸檔到 `docs/`**，見待辦）建的第一層。
+依 `docs/TIVOT_SCRIPT_ARCHITECTURE.md`（Ray 提供，ver -326 歸檔）建的第一層。
 
 | 檔案 | 內容 |
 |---|---|
@@ -194,9 +194,8 @@ WebAudio 解碼所以 mp3/m4a/wav 通吃。改 `voiceChain` 或增益就要重�
 
 ## 五、待辦（明天）
 
-1. **`TIVOT_SCRIPT_ARCHITECTURE.md` 歸檔到 `docs/`**，照 CLAUDE.md §8「內文一字不改，
-   只在檔頭補與現有程式的接點」。檔頭要列出已定案的八處調整（RENNA 命名、站位、
-   tier 對照、`{P}` 佔位符、翻譯層、支線分檔…）。
+1. ~~`TIVOT_SCRIPT_ARCHITECTURE.md` 歸檔到 `docs/`~~ —— **ver -326 完成**。
+   內文一字未改，檔頭補了「已實裝／還沒接」對照表。
 2. **`TALKS[1]→[3]` 搬遷** ＋ `PARTY` 填真正的入隊章節（安雅 `from:2`、索拉娜 `from:3`）。
    ⚠ Ray 已確認：**stage 1 的閒聊只有蕾娜＋諾薇兒且還沒寫，現有 24 組全部是 stage 3 的**。
    ⚠ 語義保留現行的「**起始章節**」（第 N 組＝第 N 章起可播），不要改成精確匹配 ——
@@ -706,3 +705,42 @@ Ray：「璐娜登場時兩人的對話立繪都太靠畫面邊緣。」兩個�
 「撐過來了……收拾他吧！」→ 殺敵 → **結算頁完全沒出現**（程式監看 `#result.on`
 全程為空）→ 劇情從「對不起，我已經……！」續下去（背景是插圖 002）→
 璐娜登場兩人的臉各在 1/3 與 2/3 處 → 跑到收場。
+
+
+---
+
+# 交接 · `ver -326`（教學立繪逐張取景；雜項歸位）
+
+## A. ⚠⚠ 教學的說明立繪：把**臉**釘住，不是把**圖框**釘住
+
+CSS 只會把圖框貼齊左緣（`left:-2%`）。但諾薇兒的表情差分是不同姿勢，
+臉在圖上的橫向位置從 **0.397（Scared）到 0.564（front）** 都有 ——
+圖框對齊 ≠ 臉對齊，實測相鄰兩句臉會位移 **71px**（390 寬、立繪 408 寬）。
+讀起來像鏡頭在抖，不像換表情。
+
+`modules/tutorial.js` 的 `placePortraitX()`：依取景值算出 `width` 與 `left`，
+讓臉一定落在 `portraitFaceX`（0.44×框寬）。換圖時呼叫兩次 ——
+先用規格比例（1024×1536）排一次不等載入（不閃），`onload` 後再排一次修正真實比例。
+
+⚠ 查不到取景值就把 `width/left/right` 還原給 CSS（芙蕾雅／蕾妮沒量過，行為不變）。
+⚠ `.center`（引導箭頭讓位那個模式）不碰 `left`：那個 class 靠
+  `left:50% + translateX(-50%)` 置中，寫死 inline left 會把它推歪半個身寬。
+
+## B. ⚠ 取景值**只有一份**：`script/speakers.js` 的 `ART`
+
+教學的說明立繪與劇情的立繪是同一批圖，量出來當然是同一組數字。
+`config.js` 直接 `import { ART }` 再組 `tutorial.portraitFrames`，**沒有抄第二份**。
+
+這個專案被「同一組數字寫在兩個地方」咬過好幾次（`speakers.js` 與 flight 的
+`PORTRAIT` 至今仍是「改一邊要改兩邊」，那是因為隔著資料夾邊界不好共用，
+不是因為抄一份比較好）。能 import 就 import。
+⚠ `speakers.js` 不 import 任何東西，所以這條相依不會成環。
+
+## C. 雜項歸位
+
+- `TIVOT_SCRIPT_ARCHITECTURE.md` → `docs/`（CLAUDE.md §8 的待辦）。內文一字未改，
+  檔頭補了「哪些已經照它做出來了／哪些還沒接」的對照表。
+- `LunariaOffice.png`（2.4 MB）與 `HolyseeDungeonLow.jpeg` 轉 WebP
+  （251 KB／87 KB），原圖進 `resources/_originals/`（不入版控）。
+  ⚠ `TIVOT_Emblem.png` 是**例外**，團徽維持 PNG。
+  ⚠ 這兩張目前**沒有任何程式引用** —— 是先備著的素材，不是漏接。

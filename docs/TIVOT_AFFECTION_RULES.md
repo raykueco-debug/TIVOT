@@ -4,7 +4,7 @@
 > 與 `GAMESPEC.md`（現況實裝快照）性質不同。判斷現行行為看 GAMESPEC 與
 > `config.js` / `flight/index.html`，不要引這份當依據。
 > 與 `docs/TIVOT_IMPL_SPEC.md` §2（好感度 tier 1..5 棘輪制）配套，
-> 與 `TIVOT_SCRIPT_ARCHITECTURE.md` §8 配套（該份目前仍在專案根目錄、未歸檔）。
+> 與 `docs/TIVOT_SCRIPT_ARCHITECTURE.md` §8 配套。
 >
 > ### 已經存在的接點（**不是**「一行都沒接」）
 > `flight/index.html` 已有一套真的好感度儲存，本規格要接的是它，不是另建一套：

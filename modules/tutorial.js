@@ -456,6 +456,7 @@ function applyPortraitFit(el, fit, baseH, solo){
     el.style.height = (baseH * (fit.zoom || 1)) + '%';
     el.style.bottom = (-(fit.drop || 0)) + '%';
     el.style.maxWidth = '';
+    el.style.width=''; el.style.left=''; el.style.right='';   // 橫向交還 CSS（圖框貼邊）
     return;
   }
   const hBase = F * (baseH/100) * (fit.zoom || 1);
@@ -464,6 +465,32 @@ function applyPortraitFit(el, fit, baseH, solo){
   el.style.height   = h + 'px';
   el.style.maxWidth = 'none';
   el.style.bottom   = (F - headY - h) + 'px';          // 負值＝往框下緣外溢（裁腿不裁頭）
+  placePortraitX(el);
+}
+
+/* ⚠⚠ 把**臉**釘在固定的橫向位置（ver -326）。
+   CSS 只會把**圖框**貼齊左緣 —— 圖框對齊 ≠ 臉對齊。諾薇兒的表情差分是不同姿勢，
+   臉在圖上的位置從 0.397 到 0.564 都有，靠圖框貼邊的話**相鄰兩句臉會橫向跳 71px**
+   （實測 390 寬、立繪 408 寬）。這種跳動讀起來像鏡頭在抖，不像換表情。
+   ⚠ 查不到取景值（芙蕾雅／蕾妮沒量過）就把 width/left 還原給 CSS，行為與以前一樣。
+   ⚠ `.center`（引導箭頭讓位那個模式）不碰 left：那個 class 靠 left:50% + translateX(-50%)
+     置中，寫死 inline left 會把它推歪半個身寬。 */
+function placePortraitX(el){
+  const key = el.dataset.imgKey;
+  const fr  = (CFG().portraitFrames || {})[key];
+  const W   = ($('tutCast') && $('tutCast').clientWidth) || ($('top') && $('top').clientWidth) || 0;
+  const h   = /px$/.test(el.style.height||'') ? parseFloat(el.style.height) : 0;
+  if(!fr || !W || !h || el.classList.contains('center')){
+    el.style.width=''; el.style.left=''; el.style.right='';
+    return;
+  }
+  // 寬高比：圖載好就用真的，還沒載好用這批立繪的規格（1024×1536）頂著，載好會再排一次
+  const ar = (el.naturalWidth && el.naturalHeight) ? el.naturalWidth/el.naturalHeight : (1024/1536);
+  const w  = h * ar;
+  const faceX = W * (CFG().portraitFaceX!=null ? CFG().portraitFaceX : 0.44);
+  el.style.width = w + 'px';
+  el.style.left  = (faceX - w*fr.fx) + 'px';
+  el.style.right = 'auto';
 }
 
 /* 本段的在場立繪：換圖 ＋ 套取景。⚠ 段落接續（queue）時也要重跑 ——
@@ -533,7 +560,14 @@ function showLine(){
   // ⚠ 直接換 src，不做淡入淡出——同一角色同一槽的表情切換，淡出會讓她整個人消失一拍。
   if(el){
     const key = line.img || c.image;
-    if(key && el.dataset.imgKey!==key){ el.dataset.imgKey = key; el.src = asset(key); }
+    if(key && el.dataset.imgKey!==key){
+      el.dataset.imgKey = key;
+      el.src = asset(key);
+      // ⚠ 換圖必須重排橫向：每張差分的臉位置不同（見 placePortraitX）。
+      //   先用規格比例排一次（不等載入＝不閃），載好再排一次修正真實寬高比。
+      placePortraitX(el);
+      el.onload = ()=>{ el.onload=null; placePortraitX(el); };
+    }
   }
   // 全畫面 cut-in（line.cutin＝ASSETS 鍵）：先演完再打字，否則字被 cut-in（z8100）蓋住白打。
   if(line.cutin && cutinLine!==lineIdx){

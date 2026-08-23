@@ -1,3 +1,30 @@
+<!-- 由 Ray 提供的設計文件歸檔。本區塊是歸檔時補的專案脈絡，**內文一字未改**。 -->
+
+> ## ⚠ 這份是「規劃」，不是現況
+> 與 `GAMESPEC.md`（現況實裝快照）性質不同。判斷現行行為看 GAMESPEC 與
+> `config.js` / `modules/story.js`，不要引這份當依據。
+>
+> ### 已經照這份做出來的部分（ver -318 起）
+> | 規格 | 實裝 |
+> |---|---|
+> | §1 檔案拆分：台詞是純資料、調度是邏輯 | `script/mainScript.js`（資料）＋ `modules/story.js`（播放器） |
+> | §2 角色表：不在腳本裡寫死人名與圖檔 | `script/speakers.js` 的 `SPEAKERS` / `ART` |
+> | §2 監察官正名前後當兩個 id | `OFFICER` / `RENNA`（art 同指蕾娜） |
+> | 台詞綁圖（立繪差分＋全屏插圖） | line 的 `portrait.expr` / `cg` / `bg` |
+> | 單向資料流：主線寫 stage/flags | `setStage` / `setFlags`，`prog` 存檔 |
+>
+> ### 還沒接的部分
+> - **好感度**：`flight/index.html` 已有一套真的儲存（`AFFECTION` /
+>   `tivot_affection_v1`），劇情這邊還沒讀它。缺棘輪與蕾娜 +0.25 的整數化，
+>   見 `docs/TIVOT_AFFECTION_RULES.md`。
+> - **閒聊／支線／旅店互動**（§1 的其餘幾個檔）：目前只有主線 `mainScript.js`。
+> - **蕾娜（監察官）的立繪**：素材還沒有，`resources/inspector/` 只有芙蕾雅。
+>
+> ⚠⚠ **蕾娜 Renna ≠ 蕾妮 Renee**。前者是監察官（本文件的角色），
+> 後者是現行戰鬥搭檔（`config.js` 的 `partners.renee`）。全專案最容易寫錯的一組。
+
+---
+
 # TIVOT 腳本架構規格
 
 對話與腳本系統的拆檔原則、資料結構、讀取邏輯。資料與邏輯分離：台詞是純資料，調度是邏輯。

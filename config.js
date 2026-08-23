@@ -1,3 +1,11 @@
+/* 立繪取景值（每張圖的 top/bot/fx）**只有一份**，就在 script/speakers.js 的 ART。
+   教學的說明立繪與劇情的立繪是同一批圖，量出來的當然是同一組數字 ——
+   ⚠ 不要在這裡再抄一份。這個專案被「同一組數字寫在兩個地方」咬過好幾次
+     （speakers.js 與 flight 的 PORTRAIT 至今仍是「改一邊要改兩邊」，
+      那是因為兩邊隔著資料夾邊界不好共用，不是因為抄一份比較好）。
+   ⚠ speakers.js 不 import 任何東西，所以這條相依不會成環。 */
+import { ART } from './script/speakers.js';
+
 /* ============================================================================
  *  config.js — 遊戲內容資料層（唯一資料來源）
  *  ---------------------------------------------------------------------------
@@ -8,7 +16,7 @@
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.23-325';
+export const VERSION = 'ver 2026.08.23-326';
 
 export const GAME_CONFIG = {
 
@@ -255,6 +263,20 @@ export const GAME_CONFIG = {
        ⚠ 兩人同台不吃這個值 —— 那組尺寸是「兩人並排塞進 390 寬」逼出來的（見
          modules/tutorial.js 的 applyPortraitFit）。劇情版教學全程只有諾薇兒。 */
     portraitSoloScale: 1.8,
+    /* 臉的橫向落點（佔敵人框寬的比例）。⚠ 有取景值的立繪才用得到（見下方 frames）。 */
+    portraitFaceX: 0.44,
+    /* 逐張立繪的取景值：ASSETS 鍵 → speakers.js 量好的那一組。
+       ⚠⚠ 沒有這張表的話，同一個角色**換表情就會橫向跳**：這些差分是不同姿勢，
+         臉在圖上的位置差很多（front 0.564、Scared 0.397），而 CSS 只會把
+         **圖框**貼齊左緣 —— 圖框對齊 ≠ 臉對齊，實測相鄰兩句臉會位移 71px。
+       ⚠ 芙蕾雅／蕾妮沒有量過，查不到就退回原本的「圖框貼邊」（行為不變）。 */
+    portraitFrames: {
+      tut_nouvelle:           ART.nouvelle,
+      tut_nouvelle_cringe:    ART.nouvelle.expr.cringe,
+      tut_nouvelle_surprise:  ART.nouvelle.expr.surprise,
+      tut_nouvelle_desperate: ART.nouvelle.expr.desperate,
+      tut_nouvelle_saint:     { top:3, bot:1525, fx:0.503 },   // 只有教學用得到，量法同 speakers.js
+    },
     cast: {
       inspector: { name:'芙蕾雅', image:'inspector_freya', side:'left',  fit:{ zoom:1,    drop:10 } },
       partner:   { name:'蕾妮',   image:'partner_renee',   side:'right', fit:{ zoom:0.82, drop:0 } },

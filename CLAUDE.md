@@ -368,7 +368,10 @@ Ray 提供的設計文件放 `docs/`,**內文一字不改**,歸檔時只在檔�
 - `docs/TIVOT_AFFECTION_RULES.md` — 好感度**計算原則**：四人各自的來源(諾薇兒
   聖徒化 +1／安雅不用聖徒化 +1、<40 用了 −1／索拉娜評價越爛越加／蕾娜只吃 S
   且 +0.25)、時間即總資源、諾薇兒暴走螺旋、蕾娜道德鎖。與 IMPL_SPEC §2 配套。
-  ⚠ 尚未歸檔:`TIVOT_SCRIPT_ARCHITECTURE.md` 仍在專案根目錄。
+- `docs/TIVOT_SCRIPT_ARCHITECTURE.md` — 對話/腳本系統的拆檔原則、資料結構、讀取邏輯。
+  ver -326 歸檔（內文一字未改,檔頭補了「哪些已實裝、哪些還沒接」的對照）。
+  已照它做出來的:`script/mainScript.js`(資料)＋`modules/story.js`(播放器)＋
+  `script/speakers.js`(角色表)＋`script/progress.js`(stage/flags)。
 
 ⚠ **與 `GAMESPEC.md` 性質不同**:GAMESPEC 是現況實裝快照,docs/ 是還沒開工的規劃。
   判斷現行行為一律看 GAMESPEC 與 `config.js`,不要引 docs/ 當依據。
