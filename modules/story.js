@@ -355,7 +355,7 @@ const BG_DIR='resources/background/', CG_DIR='resources/illustration/', SI_DIR='
      加了新檔案而忘了加進來，lint 會報「表裡沒有」。 */
 const BGM_FILES=[
   'Bgm_Lunaria.m4a', 'PerituneMaterial_Crisis_loop.m4a', 'bgm_battle.m4a', 'bgm_boss.m4a',
-  'bgm_flight.mp3', 'bgm_mainmenu.m4a', 'bgm_missionfailed.m4a', 'bgm_result.m4a',
+  'bgm_flight.m4a', 'bgm_mainmenu.m4a', 'bgm_missionfailed.m4a', 'bgm_result.m4a',
 ];
 /* 別名：腳本裡慣用的短名 → 實際檔名（去副檔名）。加新別名只動這裡。 */
 const BGM_ALIAS={ crisis:'peritunematerial_crisis_loop', lunaria:'bgm_lunaria',

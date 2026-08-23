@@ -1,7 +1,7 @@
 # HANDOFF — Saint Install 模組化重寫 · 進度交接
 
 > 每輪開工前讀本檔 + 憲法/規格。實況以 `git log` 與 `DECISIONS.md` 為準;本檔為人類可讀的進度總覽。
-> **最後回寫:`ver -344`(2026-08-23)。** 本檔後半是逐版的交接,由新到舊往下加;
+> **最後回寫:`ver -345`(2026-08-23)。** 本檔後半是逐版的交接,由新到舊往下加;
 > **要快速上手請先讀下面那一段「★必讀 · 目前狀態(ver -341)」**（餵稿規格見 `script/SCRIPT_FORMAT.md`）,再依需要跳到對應版本。
 >
 > 目前狀態:CLAUDE.md §6 開發順序第 1~5 步已完成;**第 6 步(ACCEPTANCE 對照 reference)仍未動**,
@@ -94,7 +94,7 @@
    ＋`script/speakers.js`(角色表)＋`script/progress.js`(stage/flags)。
 6. `script/SCRIPT_FORMAT.md` — **Ray 餵稿的規格**(ver -342):寫稿格式、演出詞彙表、
    現有素材清單、一定要交代清楚的六件事。收到稿之後跑 `tools/script_lint.py` 驗。
-7. `git log`(本檔最後回寫於 `ver -344`)。
+7. `git log`(本檔最後回寫於 `ver -345`)。
 
 ---
 
@@ -1781,3 +1781,62 @@ Ray 回報「手機讀非常慢」。查下來不是「卡住」，是**擋在�
    `resources/illustration/Kerberos.png`（2.1 MB，是美術對位用的合成圖）、
    `resources/SI/Luna_SI_angry.png`（2.4 MB，未入版控，要入的話照 §5 轉 WebP）。
    不影響載入速度，只影響 repo 與靜態空間的大小。
+
+
+---
+
+# 交接 · `ver -345`（三首 BGM 降到 96k；新立繪轉 WebP）
+
+## A. BGM 位元率統一 96 kbps CBR（Ray 同意轉）
+
+| | 前 | 後 |
+|---|---|---|
+| `Bgm_Lunaria.m4a` | 2255 K / 195 kbps | **1120 K** / 96 kbps |
+| `PerituneMaterial_Crisis_loop.m4a` | 1863 K / 174 kbps | **1037 K** / 96 kbps |
+| `bgm_flight.mp3` → **`bgm_flight.m4a`** | 2190 K / 192 kbps | **1111 K** / 96 kbps |
+
+合計 −3.0 MB。八首 BGM 現在全部落在 96 kbps，與既有那五首一致。
+
+- 工具是 macOS 內建的 `afconvert`（這台沒有 ffmpeg）：
+  `afconvert -f m4af -d aac -b 96000 -s 0 in out`
+  ⚠⚠ **`-s 0`（CBR）不可省**。預設的 `-s 3`（真 VBR）會把 `-b` 當成寬鬆的品質目標，
+    實測同一首吐出 1726 K ≈ 150 kbps —— 看起來「有轉」但只省了兩成。
+    `-s 0` 出來 1120 K / 96058 bps，正中目標。
+- **沒有裁短**：Ray 說可以裁到 1:30 左右，但三首本來就是 93.8 / 86.7 / 93.1 秒 ——
+  已經在 1:30 上下，裁只會動到既有的循環點，不划算。
+- 原始檔存 `resources/_originals/audio/bgm/`（不入版控，要回滾從那裡拿）。
+- ⚠ `bgm_flight` 換了副檔名，三處引用一起改：`flight/index.html` 的 `makeLoop`、
+  `modules/story.js` 的 `BGM_FILES`、`tools/audio_probe.html`。
+  （§6.6 說改名走 `tools/audio_reorg.py`，那支只管 `config.js` 與 `flight/index.html`
+  兩邊；這次還多一處探針頁，所以是手改後 grep 驗證沒有殘留 `.mp3`。）
+- 飛行頁實測 `bgm_flight.m4a` 200、循環照舊（`makeLoop` 是**交叉淡入**兩個 Audio 元素，
+  不吃 gapless，所以 AAC 的編碼器 padding 無所謂）。
+
+## B. 兩張新立繪轉 WebP
+
+`Luna_SI_angry` / `Luna_SI_taunt`：2410 K + 2407 K（PNG）→ **303 K + 276 K**（`-q 85 -alpha_q 90`），
+原 PNG 移入 `resources/_originals/SI/`。
+
+⚠⚠ **檔名寫 Luna，畫的看起來是璐娜莉亞** —— 金髮雙馬尾＋眼罩＋同一套黑白洋裝，
+與 `Lunaria_SI_Armed` 是同一個人（`Luna_SI_Front` 也是）。目前**沒有任何程式引用它們**，
+所以先只轉檔不接線。要接進 `speakers.js` 之前得先定「這是誰」——
+⚠ 提醒：`speakers.js` 現在 `luna`（搭檔）指的是 `partner/Luna_CI_exc.webp`，是修女那位。
+
+量好的取景值（照 §6.5，方法用 `Lunaria_SI_Armed` 校準過：量得 top=9/bot=1529/fx=0.495，
+表上是 9/1528/0.496）：
+
+    Luna_SI_angry   1024×1536  top=0  bot=1536  fx=0.477
+    Luna_SI_taunt   1024×1536  top=0  bot=1536  fx=0.510
+
+⚠ 兩張都**碰到畫布上下緣**（第 0 列有 12px 寬的髮絲、末列有鞋襬），所以 `top/bot`
+就是 0/1536；真正的「頭殼頂」在 y≈28 / y≈10。要是接上去覺得人偏高，改的是這一項。
+
+## C. 順手記下：飛行頁有兩個 404
+
+`flight/ship/rigging.png`、`flight/ship/flag.png` —— 與這一版無關，還沒查。
+
+## 現況數字（給下一輪對照）
+
+    開機第一段        2.37 MB（-344 之前是 7.81）
+    劇情第一道門      4.39 MB（-344 之前是 5.19；只載第一幕的話 3.0 MB）
+    resources 總量    37.2 MB（不含 _originals）
