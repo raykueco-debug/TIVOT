@@ -120,12 +120,13 @@ function measureBounds(img, y0, y1){
    會隨網址列收合而變（47px ↔ 0），鈕跟著動，頂線就跟著動。尺寸沒變、**整個人上下跳**，
    讀起來還是「忽大忽小」（§6.5 早就記過：位移會被讀成縮放）。
    規則：一場之內取景是**常數**，寬度變了（轉向）才重量。 */
-let cam = { w:0, h:0, px:0, top:0 };
-function resetCamera(){ cam = { w:0, h:0, px:0, top:0 }; }
-function camGeom(H, W, measureTop){
+let cam = { w:0, h:0, px:0, top:0, head:0 };
+function resetCamera(){ cam = { w:0, h:0, px:0, top:0, head:0 }; }
+function camGeom(H, W){
   if(cam.px && cam.w===W && cam.h && Math.abs(H-cam.h)/cam.h < 0.18) return cam;
-  const top = measureTop();
-  cam = { w:W, h:H, top, px:(H-top)/(CAST_SHOW*CAST_TALL) };
+  const t = topLines();
+  cam = { w:W, h:H, top:t.camTop, head:t.headTop,
+          px:(H-t.camTop)/(CAST_SHOW*CAST_TALL) };
   return cam;
 }
 function layout(){
@@ -136,8 +137,8 @@ function layout(){
   const cast=$('storyCast');
   const W=stage.clientWidth, H=(cast?cast.clientHeight:stage.clientHeight);
   if(!W || !H) return;
-  const g=camGeom(H, W, topLine);
-  const top=g.top;
+  const g=camGeom(H, W);
+  const top=g.head;          // 頭頂落點（相機頂線是 g.top，只給 pxCm 用）
 
   /* 最高的人定義相機：頭頂貼頂線、身體露出 CAST_SHOW。
      ⚠⚠ 相機要**快取**（ver -346，與 modules/tutorial.js 同一個修法）：手機瀏覽器的
@@ -237,12 +238,21 @@ function layout(){
 
 /* 頂線：**由退出鈕的實際位置量出來**，不寫死 —— 那顆鈕吃 safe-area，
    寫死在瀏海機上一定會撞到（作法同 flight 的 castMeasure 量 HUD）。 */
-function topLine(){
+/* ⚠⚠ **相機的頂線**與**頭頂的落點**是兩件事（ver -352，與 tutorial.js 的 -350 同一個修法）：
+     camTop  ＝ 算 pxCm 用的取景上緣（退出鈕的**下緣**再留 4px）—— 不動它，
+               CAST_SHOW 是對著這個框調出來的，一改整個人就變大變小。
+     headTop ＝ 頭頂真正擺哪，改夾退出鈕的**上緣**（Ray：「手機的對話人物太低，
+               再往上一個臉的高度」）。鈕高 44px，正好是一個臉。
+   ⚠ 手機上這一條特別有感：`#storyExit` 是 `top: env(safe-area-inset-top) + 10px`，
+     瀏海機上鈕的下緣落在 ~101px（桌機 ~58px）—— 夾下緣等於把瀏海高度**再讓一次**。
+     要閃開的是瀏海本身，鈕的上緣就是安全線。 */
+function topLines(){
   const st=$('storyStage'), ex=$('storyExit');
-  if(!st) return 56;
-  if(!ex) return 56;
-  const h = ex.getBoundingClientRect().bottom - st.getBoundingClientRect().top;
-  return Math.round((h>0 ? h : 46) + 4);       // 鈕底下再留 4px（ver -319 由 10 收，Ray：立繪要更高）
+  if(!st || !ex) return { camTop:56, headTop:56 };
+  const sr=st.getBoundingClientRect(), br=ex.getBoundingClientRect();
+  const bottom = br.bottom - sr.top, top = br.top - sr.top;
+  if(!(br.height>0)) return { camTop:56, headTop:56 };
+  return { camTop: Math.round(bottom + 4), headTop: Math.max(0, Math.round(top)) };
 }
 
 /* ══ 立繪槽 ══ */

@@ -512,8 +512,9 @@ function resetCamera(){ cam = { w:0, h:0, px:0, head:0 }; }
 function cameraGeom(F, W, C, measure){
   if(cam.px && cam.w===W && cam.h && Math.abs(F-cam.h)/cam.h < 0.18) return cam;
   const m = measure();
+  /* ⚠ 分母是 `m.Fref`（劇情頁那個框）不是 `F`（戰鬥自己的框）—— 見 placePortraitX 的說明。 */
   cam = { w:W, h:F, head:m.headTop,
-          px:(F-m.camTop)/((C.castShow||0.56)*(C.castTall||176)) };
+          px:(m.Fref-m.camTop)/((C.castShow||0.56)*(C.castTall||176)) };
   return cam;
 }
 
@@ -539,21 +540,35 @@ function placePortraitX(el, side){
      何況立繪站左（臉錨 0.24W）、退出鈕在右上，本來就不重疊。
      實測：大小不變（541→維持原本的 479），頭頂由 58px 上移到 12px。
      ⚠ 12px 已經是這個版面的上限 —— 再上去頭會被 `#top` 的 overflow 裁掉。 */
+  /* ⚠⚠ **參考框改成與劇情頁同一個**（ver -352，Ray：「手機的戰鬥對話人太小，
+       要與一般對話同比例同高度」）。
+     戰鬥的立繪層是 `#tutCast`（＝ `#top`，佔 `#app` 的 50%），劇情頁的是 `#storyCast`
+     （佔 56%）—— 拿各自的框去算 `pxCm`，同一張立繪當然一大一小（實測差 11%）。
+     現在戰鬥這邊改用**劇情頁那個框**（`#app` 高 × 56%）當分母，並且頂線也照劇情頁
+     那條（退出鈕上緣／下緣）量 —— 兩邊同一把尺，同一張圖就同一個大小。
+     ⚠ 立繪會比 `#top` 高，多出來的由 `#top` 的 `overflow:hidden` 裁掉（本來就裁膝蓋以下）。
+     ⚠ 量到的是 `#app` 座標，最後要換算回 `#tutCast` 座標（減掉兩者的 top 差）。 */
+  const app = document.getElementById('app') || wrap;
+  const ar  = app.getBoundingClientRect(), wr0 = wrap.getBoundingClientRect();
+  const RATIO = 0.56;                       // ＝ style.css 的 `#storyStage{--story-top:56%}`
   const measure = ()=>{
-    const pct = (C.portraitTopPct!=null ? C.portraitTopPct : 3)/100;
-    let camTop = F * pct, headTop = F * pct;
-    const btn = $('testClearBtn') || $('exitBtn');
-    if(btn && wrap){
-      const br = btn.getBoundingClientRect(), wr = wrap.getBoundingClientRect();
-      if(br.height){
-        camTop  = Math.max(camTop,  br.bottom - wr.top + 4);
-        headTop = Math.max(headTop, br.top - wr.top);
-      }
+    const Fref = ar.height * RATIO;
+    const pct  = (C.portraitTopPct!=null ? C.portraitTopPct : 3)/100;
+    let camTop = Fref * pct, headTop = Fref * pct;
+    const btn = $('exitBtn') || $('testClearBtn');
+    const br  = btn ? btn.getBoundingClientRect() : null;
+    if(br && br.height){
+      camTop  = Math.max(camTop,  br.bottom - ar.top + 4);
+      headTop = Math.max(headTop, br.top - ar.top);
     }
-    return { camTop, headTop };
+    return { camTop, headTop, Fref };
   };
   const g = cameraGeom(F, W, C, measure);
-  const pxCm = g.px, headTop = g.head;
+  const pxCm = g.px;
+  /* 頭頂：照劇情頁那一條（頂線 ＋ 身高讓位），再換算回 `#tutCast` 的座標系。
+     ⚠ 身高讓位一律套用（§6.5「同一張立繪＝同一個結果」）—— 少了它，同一個人
+       在戰鬥裡會比在劇情裡高一截（諾薇兒 165 vs 基準 176，差 11cm×pxCm ≈ 50px）。 */
+  const headTop = g.head + (( C.castTall||176 ) - fr.cm) * pxCm - (wr0.top - ar.top);
   const nH    = el.naturalHeight || 1536;              // 這批立繪都是 1024×1536
   const nW    = el.naturalWidth  || 1024;
   /* 鎖身高。⚠ 分母用**該角色基本立繪**的像素身高，不是這一張差分自己的

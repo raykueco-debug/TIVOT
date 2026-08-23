@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.24-351';
+export const VERSION = 'ver 2026.08.24-352';
 
 export const GAME_CONFIG = {
 
@@ -263,10 +263,13 @@ export const GAME_CONFIG = {
        臉錨在 portraitFaceX（見 modules/tutorial.js 的 applyPortraitFit）。
        下面這三個值就是那一套的參數，與 modules/story.js / flight 同義同值。
        ⚠ portraitSoloScale 只留給**沒有取景值**的舊立繪（芙蕾雅／蕾妮）。 */
-    /* ⚠ 0.68 而不是劇情頁的 0.56（Ray：「戰鬥立繪太滿，縮一下」）——
-       戰鬥框裡還有敵人、血條、紅點要看，立繪不能像劇情頁那樣壓滿。
-       值越大＝鏡頭越遠＝人越小。0.68 約是頭到膝，仍在 §6.5 的「膝部以上」原則內。 */
-    castShow: 0.68,          // 最高的人露出身體的幾成（越小＝鏡頭越近＝人越大）
+    /* ⚠⚠ **0.56，與劇情頁同值**（ver -352，Ray：「手機的戰鬥對話人太小，要與一般對話
+       同比例同高度」）。
+       歷程：0.56 → 0.68（ver -285「戰鬥立繪太滿，縮一下」）→ **0.56**（現在）。
+       ⚠ 這個值只有在「兩邊用同一個參考框」時才代表同一件事 —— 見 tutorial.js 的
+         `placePortraitX`：戰鬥那邊的分母已經改成劇情頁那個框（`#app` 高 × 56%），
+         不是 `#top` 自己的高。要動大小就動這裡，不要回頭去改分母。 */
+    castShow: 0.56,          // 最高的人露出身體的幾成（越小＝鏡頭越近＝人越大）
     castTall: 176,           // 最高的角色身高（索拉娜）——全域一致，換人要一起改
     portraitTopPct: 3,       // 頂線：佔敵人框高的 %（頭頂貼在這裡）
     portraitSoloScale: 1.8,
