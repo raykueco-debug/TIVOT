@@ -1197,8 +1197,10 @@
        的邊界裁死，升不上去。用 clip-path 假裝被面板裁切，動畫時把 clip 打開。
      ⚠ 幾何全部由 JS 依實際尺寸算（layoutKerberos）：門要多寬才能「紋章落在面板
        正中」且「升到頂時蓋滿全螢幕」是解出來的，不是調出來的。 */
+  /* ⚠ 平常的裁切要**往上多留一條楣的高度**（--kerb-top-h，JS 依實際圖高寫入）——
+     楣（Kerberos_top）掛在門的上緣之外，只夾到面板頂的話它會被整條裁掉。 */
   #kerb{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden;
-    clip-path:inset(var(--story-top) 0 0 0);
+    clip-path:inset(calc(var(--story-top) - var(--kerb-top-h, 0px)) 0 0 0);
     transition:clip-path .7s cubic-bezier(.5,0,.75,0);}
   #kerb.full{clip-path:inset(0 0 0 0);}
   #kerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
@@ -1218,31 +1220,54 @@
   #kerb.open .kerb-half.l{transform:translateX(calc(var(--kerb-open-x) * -1));}
   #kerb.open .kerb-half.r{transform:translateX(104%);}
   /* 紋章圓盤：浮起＋旋轉。⚠ transform-origin 用預設的正中 —— 圖是以圓盤為中心裁的。 */
-  /* 紋章圓盤：**圓心不動**，只放大＋旋轉（Ray 指定：「圓盤不要位移」）。
-     ⚠ 開門時它跟著**左半扇**一起退場 —— 位移量是左扇的實際位移（門寬的一半 ×104%），
+  /* 圓盤：**圓心不動**，只放大＋旋轉（Ray 指定：「圓盤不要位移」）。
+     ⚠ 開門時它跟著**左半扇**一起退場 —— 位移量是左扇的實際位移，
        所以用 JS 算好的 --kerb-open-x（px），不能寫 % ：% 是相對**圓盤自己**的寬度，
        與門的一半不同，兩者會走不同距離、脫節。 */
-  #kerbCrest{position:absolute;transform:scale(1) rotate(0deg);
+  #kerbPlate{position:absolute;transform:scale(1) rotate(0deg);
     transition:transform .9s cubic-bezier(.34,1.2,.5,1),filter .5s ease;}
-  #kerb.lift #kerbCrest{transform:scale(1.11) rotate(180deg);
+  #kerb.lift #kerbPlate{transform:scale(1.11) rotate(180deg);
     filter:drop-shadow(0 0 26px rgba(201,162,39,.6)) brightness(1.12);}
-  #kerb.open #kerbCrest{transform:translateX(calc(var(--kerb-open-x) * -1)) scale(1.11) rotate(180deg);
+  #kerb.open #kerbPlate{transform:translateX(calc(var(--kerb-open-x) * -1)) scale(1.11) rotate(180deg);
     transition:transform .9s cubic-bezier(.7,0,.3,1);}
-  /* 四支箭：由紋章的四個尖端往外彈出去再淡掉。
-     ⚠ 飛出去的是**複製品**，圓盤上的箭不會消失 —— 那四支箭不是獨立零件
-       （上下兩支是同一支十字架的兩端），挖掉會把紋章弄壞。詳見 tools/kerberos_cut.py。 */
-  /* ⚠ 用 **keyframes** 不用 transition：這四片平常是隱形的（opacity:0，免得與圓盤上
-     原本的箭重疊出毛邊），要「先現形再飛出去」。transition 得先把 opacity 設成 1
-     再改回 0，中間那一幀會閃；keyframes 的 from/to 一次寫完，不會有那一幀。 */
-  .kerb-arm{position:absolute;opacity:0;}
-  #kerb.pop .kerb-arm.n{animation:kerbArmN .42s cubic-bezier(.2,.9,.3,1) forwards;}
-  #kerb.pop .kerb-arm.s{animation:kerbArmS .42s cubic-bezier(.2,.9,.3,1) forwards;}
-  #kerb.pop .kerb-arm.w{animation:kerbArmW .42s cubic-bezier(.2,.9,.3,1) forwards;}
-  #kerb.pop .kerb-arm.e{animation:kerbArmE .42s cubic-bezier(.2,.9,.3,1) forwards;}
-  @keyframes kerbArmN{from{opacity:1;transform:none;} to{opacity:0;transform:translateY(-190%) scale(1.3);}}
-  @keyframes kerbArmS{from{opacity:1;transform:none;} to{opacity:0;transform:translateY(190%)  scale(1.3);}}
-  @keyframes kerbArmW{from{opacity:1;transform:none;} to{opacity:0;transform:translateX(-150%) scale(1.3);}}
-  @keyframes kerbArmE{from{opacity:1;transform:none;} to{opacity:0;transform:translateX(150%)  scale(1.3);}}
+
+  /* ── 四向鉚釘：**依次**彈開（Ray 指定）＋冒煙 ──────────────────────
+     每一顆各自帶 --kerb-d（延遲），JS 依序給 0/90/180/270ms —— 快速接連，
+     讀起來是「四道鎖一個接一個鬆開」，不是四個同時。
+     ⚠ 旋轉（`rotate(var(--kerb-rot))`）要與位移**寫在同一個 transform**裡，
+       兩個規則各寫一半的話後面那個會整個蓋掉前面那個（transform 不會疊加）。 */
+  .kerb-rivet{position:absolute;transform:rotate(var(--kerb-rot));}
+  #kerb.unlock .kerb-rivet{animation:kerbRivet .46s cubic-bezier(.15,.85,.35,1) var(--kerb-d) both;}
+  @keyframes kerbRivet{
+    0%  {opacity:1;transform:rotate(var(--kerb-rot)) translateY(0)     scale(1);}
+    18% {opacity:1;transform:rotate(var(--kerb-rot)) translateY(6%)    scale(1.04);}  /* 先往內壓一下＝蓄力 */
+    100%{opacity:0;transform:rotate(var(--kerb-rot)) translateY(-320%) scale(1.15);}
+  }
+  /* 煙：鉚釘彈開處噴出的小煙團（JS 生成，數量與位置在 story.js）。 */
+  /* 楣：橫跨整個畫面寬，**下緣貼齊門的上緣**（JS 算位置）。
+     ⚠ 它是 #kerbDoor 的子元素 —— 門往上推時它自然跟著走，不必另外做動畫
+       （Ray：「與槍棺同一剛體」）。 */
+  #kerbTop{position:absolute;}
+  #kerbSmoke{position:absolute;inset:0;pointer-events:none;overflow:visible;}
+  /* ⚠ 顏色要**灰塵**不要白光：亮白的圓在深色門上讀起來是「閃光」不是「冒煙」。
+     實測 rgba(226,220,208,.55) 太亮，改成偏灰褐、整體不透明度也降下來。 */
+  #kerbSmoke i{position:absolute;width:30px;height:30px;margin:-15px 0 0 -15px;border-radius:50%;
+    background:radial-gradient(circle,rgba(176,168,152,.42) 0 32%,rgba(132,126,114,.22) 58%,rgba(110,105,96,0) 76%);
+    animation:kerbSmoke .78s ease-out forwards;}
+  @keyframes kerbSmoke{
+    from{opacity:.55; transform:translate(0,0) scale(.3);}
+    to  {opacity:0;   transform:translate(var(--sx),var(--sy)) scale(1.9);}
+  }
+
+  /* ── 四支箭：**微幅**向外彈開，像解鎖（Ray 指定）────────────────────
+     ⚠ 它們大半藏在圓盤底下，只有尖端露在盤外 —— 所以位移只要一點點（8%）。
+       推太遠會整支從盤底下抽出來，那是「零件掉了」不是「鎖開了」。
+     ⚠ 位移**不能用 translateY**：四支是同一張圖轉 0/90/180/270 度來的，
+       旋轉之後的 Y 軸已經跟著轉了，統一寫 translateY 就是統一「往自己的外側」推。 */
+  .kerb-arrow{position:absolute;transform:rotate(var(--kerb-rot));
+    transition:transform .34s cubic-bezier(.2,.9,.3,1);}
+  #kerb.unlock .kerb-arrow{transform:rotate(var(--kerb-rot)) translateY(-8%);}
+
   /* 門在開的那一刻，舞台其餘的東西都要讓開（縫裡要露出底下的戰鬥畫面）。 */
   #storyStage.kerb-open{background:transparent;}
   #storyStage.kerb-open #storyBg,#storyStage.kerb-open #storyCast,

@@ -519,20 +519,30 @@ function fireOneShot(line){
    ⚠ 四支箭飛出去的是**複製品**，圓盤上的箭不會消失 —— 它們不是獨立零件
      （上下兩支是同一支十字架的兩端），挖掉會把紋章弄壞。理由記在那支腳本裡。 */
 const KERB_DIR='resources/vfx/';
-const KERB_META={ w:853, h:1844,
-  crest:{ x:0.15944, y:0.04338, w:0.67526, h:0.32701 },
-  arms:{ n:{x:0.45721,y:0.04989,w:0.08675,h:0.08677},
-         s:{x:0.45721,y:0.29067,w:0.08675,h:0.08677},
-         w:{x:0.20633,y:0.17679,w:0.16178,h:0.05531},
-         e:{x:0.63072,y:0.17679,w:0.16178,h:0.05531} } };
+/* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
+   ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
+     只要中心擺對，轉幾度都落在該落的地方。 */
+const KERB_META={"w":853,"h":1844,"seam":0.506,
+ "plate":{"x":0.11254,"y":0.04121,"w":0.78077,"h":0.33839},
+ "top":{"ar":0.23295},
+ "arrows":{"n":{"cx":0.50293,"cy":0.09138,"w":0.07737,"h":0.10033,"rot":0},
+           "e":{"cx":0.77758,"cy":0.21041,"w":0.07737,"h":0.10033,"rot":90},
+           "s":{"cx":0.50293,"cy":0.32945,"w":0.07737,"h":0.10033,"rot":180},
+           "w":{"cx":0.22828,"cy":0.21041,"w":0.07737,"h":0.10033,"rot":270}},
+ "rivets":{"n":{"cx":0.50293,"cy":0.05813,"w":0.05393,"h":0.02657,"rot":0},
+           "e":{"cx":0.85428,"cy":0.21041,"w":0.05393,"h":0.02657,"rot":90},
+           "s":{"cx":0.50293,"cy":0.36269,"w":0.05393,"h":0.02657,"rot":180},
+           "w":{"cx":0.15158,"cy":0.21041,"w":0.05393,"h":0.02657,"rot":270}}};
+const KERB_SIDES=['n','e','s','w'];        // 鉚釘依序彈開的順序（順時針）
 let kerbReady=false;
 
 /* 幾何：門要多寬，是**解出來的**不是調出來的 ——
-   兩個條件同時成立：①紋章圓心落在下半面板正中 ②升到頂時蓋滿整個畫面。
-     令 cy＝紋章圓心佔門高的比例、AR＝門的高寬比
+   兩個條件同時成立：①圓盤圓心落在下半面板正中 ②升到頂時蓋滿整個畫面。
+     令 cy＝圓心佔門高的比例、AR＝門的高寬比
      門頂 = 面板中心y − cy·AR·Wd，要求 ≤ 面板頂 → Wd ≥ (面板高/2)/(cy·AR)
    再與「至少要有畫面那麼寬」取大的。上升距離就是門頂那個值（升完門頂貼齊 y=0）。
-   ⚠ 每次開場與 resize 都要重算 —— 面板高吃 safe-area，寫死在瀏海機上會錯位。 */
+   ⚠ 每次開場與 resize 都要重算 —— 面板高吃 safe-area，寫死在瀏海機上會錯位。
+   ⚠ 要在舞台已經 `.on` 之後才量，display:none 的元素量出來全是 0。 */
 function layoutKerberos(){
   const st=$('storyStage'), kb=$('kerb'), dr=$('kerbDoor'), bd=$('storyBoard');
   if(!st || !kb || !dr || !bd) return;
@@ -540,49 +550,86 @@ function layoutKerberos(){
   const W=R.width, panelTop=B.top-R.top, panelH=B.height;
   if(!W || !panelH) return;
   const AR=KERB_META.h/KERB_META.w;
-  const cy=KERB_META.crest.y + KERB_META.crest.h/2;      // 紋章圓心佔門高的比例
+  const P=KERB_META.plate, cy=P.y+P.h/2;
   const Wd=Math.max(W, (panelH/2)/(cy*AR));
   const Hd=Wd*AR;
   const top=panelTop + panelH/2 - cy*Hd;
+  const dx=(W-Wd)/2;
   dr.style.width=Wd+'px'; dr.style.height=Hd+'px';
-  dr.style.left=((W-Wd)/2)+'px'; dr.style.top=top+'px';
+  dr.style.left=dx+'px'; dr.style.top=top+'px';
   kb.style.setProperty('--kerb-rise', Math.max(0,top)+'px');
-  /* 開門時「左半扇＋紋章」這個剛體要走多遠：兩者取大的 ——
-       ① 左扇自己出畫面：半扇寬 ×1.04
-       ② 紋章的右緣也要出畫面：紋章右緣在螢幕上的 x
-     ⚠ 用同一個 px 值餵給兩者，不能各自寫 %：% 是相對**自己**的寬度，
-       兩者寬度不同就會走不同距離、當場脫節。 */
-  /* ⚠ 要算**放大之後**的右緣：紋章在 lift 那一拍會 scale(1.11)（見 style.css），
-     照原尺寸算會短一截，門都走光了紋章還露一角在縫邊。1.14 是 1.11 再留一點餘裕。 */
-  const cW = KERB_META.crest.w*Wd;
-  const cCx = (KERB_META.crest.x + KERB_META.crest.w/2)*Wd + (W-Wd)/2;
-  const crestRightX = cCx + cW/2*1.14;
-  kb.style.setProperty('--kerb-open-x', Math.max(Wd/2*1.04, crestRightX)+'px');
   kb.style.setProperty('--kerb-door', 'url("'+KERB_DIR+'kerberos_door.webp")');
+  /* 開門時「左半扇＋圓盤」這個剛體要走多遠：兩者取大的 ——
+       ① 左扇自己出畫面：半扇寬 ×1.04
+       ② 圓盤的右緣也要出畫面（要算 lift 放大之後的，係數 1.14＝1.11 再留餘裕）
+     ⚠ 用同一個 px 值餵給兩者，不能各自寫 %：% 相對**自己**的寬度，
+       兩者寬度不同就會走不同距離、當場脫節。 */
+  const pW=P.w*Wd, pCx=(P.x+P.w/2)*Wd+dx;
+  kb.style.setProperty('--kerb-open-x', Math.max(Wd/2*1.04, pCx+pW/2*1.14)+'px');
+
+  const pl=$('kerbPlate');
+  if(pl){ pl.style.left=(P.x*Wd)+'px'; pl.style.top=(P.y*Hd)+'px'; pl.style.width=pW+'px'; }
+  /* 箭與鉚釘：擺中心。⚠ 尺寸用**未旋轉**的寬高，旋轉交給 CSS 的 --kerb-rot。 */
   const put=(el,b)=>{ if(!el) return;
-    el.style.left=(b.x*Wd)+'px'; el.style.top=(b.y*Hd)+'px'; el.style.width=(b.w*Wd)+'px'; };
-  put($('kerbCrest'), KERB_META.crest);
-  for(const k of ['n','e','s','w']) put(kb.querySelector('.kerb-arm.'+k), KERB_META.arms[k]);
+    const w=b.w*Wd, h=b.h*Hd;
+    el.style.width=w+'px'; el.style.height=h+'px';
+    el.style.left=(b.cx*Wd-w/2)+'px'; el.style.top=(b.cy*Hd-h/2)+'px';
+    el.style.setProperty('--kerb-rot', b.rot+'deg'); };
+  for(const k of KERB_SIDES){
+    put(kb.querySelector('.kerb-arrow.'+k), KERB_META.arrows[k]);
+    const rv=kb.querySelector('.kerb-rivet.'+k);
+    put(rv, KERB_META.rivets[k]);
+    if(rv) rv.style.setProperty('--kerb-d', (KERB_SIDES.indexOf(k)*90)+'ms');   // 依次，不是同時
+  }
+  /* 楣：橫跨整個畫面寬，**下緣貼齊門的上緣**（往下壓 1px 免得留一條髮絲縫）。 */
+  const tp=$('kerbTop');
+  if(tp){
+    const th=W*KERB_META.top.ar;
+    tp.style.width=W+'px'; tp.style.height=th+'px';
+    tp.style.left=(-dx)+'px'; tp.style.top=(1-th)+'px';
+    kb.style.setProperty('--kerb-top-h', th+'px');
+  }
   if(!kerbReady){
     kerbReady=true;
-    const c=$('kerbCrest'); if(c) c.src=KERB_DIR+'kerberos_crest.webp';
-    for(const k of ['n','e','s','w']){
-      const el=kb.querySelector('.kerb-arm.'+k); if(el) el.src=KERB_DIR+'kerberos_arm_'+k+'.webp';
+    const src={ kerbPlate:'kerberos_plate', kerbTop:'kerberos_top' };
+    for(const id in src){ const el=$(id); if(el) el.src=KERB_DIR+src[id]+'.webp'; }
+    for(const k of KERB_SIDES){
+      const a=kb.querySelector('.kerb-arrow.'+k); if(a) a.src=KERB_DIR+'kerberos_arrow.webp';
+      const r=kb.querySelector('.kerb-rivet.'+k); if(r) r.src=KERB_DIR+'kerberos_rivet.webp';
     }
   }
 }
 
-/* 演出。done 在**門開到一半**（縫已經拉出來）時呼叫 —— 由呼叫端決定要露出什麼。
+/* 鉚釘彈開處的煙（Ray 指定）。⚠ 掛在 #kerbSmoke（門的子元素）——
+   煙要跟著門一起動，掛在舞台上的話門在升、煙站著不動。 */
+function kerbPuff(el){
+  const box=$('kerbSmoke'), dr=$('kerbDoor');
+  if(!box || !el || !dr) return;
+  const r=el.getBoundingClientRect(), d=dr.getBoundingClientRect();
+  const cx=r.left-d.left+r.width/2, cy=r.top-d.top+r.height/2;
+  for(let i=0;i<4;i++){
+    const p=document.createElement('i');
+    p.style.left=cx+'px'; p.style.top=cy+'px';
+    p.style.setProperty('--sx', ((Math.random()*2-1)*26).toFixed(0)+'px');
+    p.style.setProperty('--sy', (-14-Math.random()*30).toFixed(0)+'px');
+    p.style.animationDelay=(i*45)+'ms';
+    box.appendChild(p);
+    fxTimers.push(setTimeout(()=>p.remove(), 900+i*45));
+  }
+}
+
+/* 演出。onGap 在門要拉開之前呼叫（讓底下先開戰），onDone 在門全開之後。
    ⚠ 音效還沒有素材（Ray：先不配音）。每一拍的接點留在 KERB_SFX，填路徑就會響。 */
-const KERB_SFX={ thud:null, pop:null, spin:null, open:null };
-const KERB_T={ rise:700, thud:420, pop:420, lift:900, open:900 };
+const KERB_SFX={ thud:null, rivet:null, arrow:null, spin:null, open:null };
+const KERB_T={ rise:700, thud:420, rivet:460, arrow:340, lift:900, open:900 };
 let kerbTimers=[];
 let kerbPlaying=false;   // 演出期間鎖住點擊推進（不然一點就跳到下一句，門還開著）
 function stopKerberos(){
   kerbPlaying=false;
   kerbTimers.forEach(clearTimeout); kerbTimers=[];
-  const kb=$('kerb'), st=$('storyStage');
-  if(kb) kb.classList.remove('rise','full','pop','lift','open');
+  const kb=$('kerb'), st=$('storyStage'), sm=$('kerbSmoke');
+  if(kb) kb.classList.remove('rise','full','unlock','lift','open');
+  if(sm) sm.innerHTML='';
   if(st) st.classList.remove('kerb-open');
 }
 function playKerberos(onGap, onDone){
@@ -593,16 +640,21 @@ function playKerberos(onGap, onDone){
   const at=(ms,fn)=>kerbTimers.push(setTimeout(fn,ms));
   const se=k=>{ if(KERB_SFX[k]) playSe(KERB_SFX[k]); };
   let t=0;
-  kb.classList.add('rise','full');                       // ① 上升＋畫面打開
+  kb.classList.add('rise','full');                       // ① 槍棺上推（楣跟著走）
   t+=KERB_T.rise;
   at(t,()=>{ se('thud');                                 // ② 撞頂：震動
     st.classList.remove('shake','hold'); void st.offsetWidth; st.classList.add('shake');
     kerbTimers.push(setTimeout(()=>st.classList.remove('shake'), KERB_T.thud));
   });
-  t+=180;
-  at(t,()=>{ se('pop'); kb.classList.add('pop'); });      // ③ 四箭彈開
-  t+=KERB_T.pop*0.7;
-  at(t,()=>{ se('spin'); kb.classList.add('lift'); });    // ④ 紋章浮起＋旋轉 180°
+  t+=200;
+  at(t,()=>{                                             // ③ 解鎖：四向鉚釘依次彈開＋冒煙，箭微幅外推
+    se('arrow'); kb.classList.add('unlock');
+    KERB_SIDES.forEach((k,i)=>kerbTimers.push(setTimeout(()=>{
+      se('rivet'); kerbPuff(kb.querySelector('.kerb-rivet.'+k));
+    }, i*90)));
+  });
+  t+=KERB_T.rivet + 90*3;
+  at(t,()=>{ se('spin'); kb.classList.add('lift'); });    // ④ 圓盤浮起＋旋轉 180°（圓心不動）
   t+=KERB_T.lift;
   at(t,()=>{                                             // ⑤ 讓出舞台 → 底下開戰
     st.classList.add('kerb-open');
@@ -831,7 +883,7 @@ const PRELOAD_CAP_MS = 25000;
 function preloadStory(startId, onProgress){
   const A=collectAssets(startId);
   /* ⚠ 門的素材也要預載：它是**進戰鬥那一刻**才動起來的，沒先抓的話升上去是一片空白。 */
-  for(const f of ['kerberos_door','kerberos_crest','kerberos_arm_n','kerberos_arm_e','kerberos_arm_s','kerberos_arm_w'])
+  for(const f of ['kerberos_door','kerberos_plate','kerberos_arrow','kerberos_rivet','kerberos_top'])
     A.imgs.push(KERB_DIR+f+'.webp');
   const jobs=[];
   for(const src of A.imgs) jobs.push(new Promise(res=>{

@@ -365,9 +365,15 @@
   <div id="kerb">
     <div id="kerbDoor">
       <i class="kerb-half l"></i><i class="kerb-half r"></i>
-      <img class="kerb-arm n" alt=""><img class="kerb-arm e" alt="">
-      <img class="kerb-arm s" alt=""><img class="kerb-arm w" alt="">
-      <img id="kerbCrest" alt="">
+      <!-- 疊法（由下而上）：門 → 箭 → 圓盤 → 鉚釘 → 煙。與 Kerberos_All 的疊法一致。 -->
+      <img class="kerb-arrow n" alt=""><img class="kerb-arrow e" alt="">
+      <img class="kerb-arrow s" alt=""><img class="kerb-arrow w" alt="">
+      <img id="kerbPlate" alt="">
+      <img class="kerb-rivet n" alt=""><img class="kerb-rivet e" alt="">
+      <img class="kerb-rivet s" alt=""><img class="kerb-rivet w" alt="">
+      <div id="kerbSmoke"></div>
+      <!-- 楣：蓋在槍棺頂端，下緣與控制區無縫貼合。是門的子元素＝同一剛體，門上推它跟著上去。 -->
+      <img id="kerbTop" alt="">
     </div>
   </div>
   <div id="storyTouch"></div>
