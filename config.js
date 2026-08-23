@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.23-333';
+export const VERSION = 'ver 2026.08.23-334';
 
 export const GAME_CONFIG = {
 
@@ -271,7 +271,11 @@ export const GAME_CONFIG = {
        與飛行／劇情畫面同一組數字（story.js 的 solo 錨點 0.38／0.62），
        Ray：「戰鬥中的說明立繪太靠中了，跟飛行畫面立繪一樣分左右邊」。
        ⚠ 有取景值的立繪才用得到（見下方 frames）。 */
-    portraitFaceX: { left:0.38, right:0.62 },
+    /* ⚠⚠ 0.24／0.76 是**飛行畫面實際在用的值**（flight/index.html 的
+       `const anchor=(c.side==='L') ? 0.24 : 0.76`）。先前抄成 0.38／0.62
+       （那是 story.js 單人時的值），臉離中線太近，Ray 連續三次回報「太靠中間」。
+       要「同飛行畫面」就抄飛行畫面那一行，不要抄別的地方的近似值。 */
+    portraitFaceX: { left:0.24, right:0.76 },
     /* 逐張立繪的取景值：ASSETS 鍵 → speakers.js 量好的那一組。
        ⚠⚠ 沒有這張表的話，同一個角色**換表情就會橫向跳**：這些差分是不同姿勢，
          臉在圖上的位置差很多（front 0.564、Scared 0.397），而 CSS 只會把

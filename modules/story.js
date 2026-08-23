@@ -147,7 +147,9 @@ function layout(){
        它的用意是「四個人的腳落在同一條地平線上」—— 台上只有一個人的時候沒有
        對象可以對齊，那 (CAST_TALL−cm)×pxCm 就只是在頭頂上方空出一塊
        （諾薇兒 165 vs 最高的 176，實測空掉 62px，在 494 高的立繪區裡很明顯）。 */
-    const headY = top + (solo ? 0 : (CAST_TALL-a.cm)*pxCm);
+    /* ⚠ 頭頂用 standCm（站姿身高）不用 cm：cm 是縮放的分母／分子，改它會連大小一起變。
+       彎腰的姿勢頭頂本來就該低，昂立的就該高 —— 見 speakers.js 的說明。 */
+    const headY = top + (solo ? 0 : (CAST_TALL-(a.standCm||a.cm))*pxCm);
     const yTop  = headY - s*a.top;                    // 圖框上緣的螢幕 y
     const visLo = a.top;                              // 頭頂
     const visHi = Math.min(a.bot, a.top + (H-headY)/s);  // 畫面下緣對應的圖列
@@ -591,6 +593,18 @@ function layoutKerberos(){
     if(rv) rv.style.setProperty('--kerb-d', (i*90)+'ms');   // 依次，不是同時
   });
   /* 楣：橫跨整個畫面寬，**下緣貼齊門的上緣**（往下壓 1px 免得留一條髮絲縫）。 */
+  /* 十字亮光：豎的沿門的中縫、橫的沿紋章的橫軸（＝箭的那一條線）。
+     ⚠ 縫的位置吃 KERB_META.seam，不是寫死 50% —— 門的中縫實測在 0.506。 */
+  const gl=$('kerbGlow');
+  if(gl){
+    const v=gl.querySelector('.kg-v'), h=gl.querySelector('.kg-h');
+    const vw=Math.max(10, Wd*0.055), hh=Math.max(10, Hd*0.024);
+    const axis=KERB_META.arrows.e.cy*Hd;                 // 橫軸＝左右兩支箭的中心線
+    if(v){ v.style.left=(KERB_META.seam*Wd-vw/2)+'px'; v.style.top='0px';
+           v.style.width=vw+'px'; v.style.height=Hd+'px'; }
+    if(h){ h.style.left='0px'; h.style.top=(axis-hh/2)+'px';
+           h.style.width=Wd+'px'; h.style.height=hh+'px'; }
+  }
   /* 楣：橫跨整個畫面寬。⚠ 對齊的是**中段的下緣**不是圖的下緣 ——
      兩端的鉚接塊比中間的橫桿低（dip＝差多少，佔圖高的比例），照圖的下緣對齊的話
      中間會露一條縫（Ray：「楣還是有縫…中間不要漏」）。往下壓 dip 之後兩端會
@@ -639,7 +653,7 @@ function stopKerberos(){
   kerbPlaying=false;
   kerbTimers.forEach(clearTimeout); kerbTimers=[];
   const kb=$('kerb'), st=$('storyStage'), sm=$('kerbSmoke');
-  if(kb) kb.classList.remove('rise','full','unlock','lift','open');
+  if(kb) kb.classList.remove('rise','full','unlock','lift','open','glow');
   if(sm) sm.innerHTML='';
   if(st) st.classList.remove('kerb-open');
 }
@@ -653,9 +667,10 @@ function playKerberos(onGap, onDone){
   let t=0;
   kb.classList.add('rise','full');                       // ① 槍棺上推（楣跟著走）
   t+=KERB_T.rise;
-  at(t,()=>{ se('thud');                                 // ② 撞頂：震動
+  at(t,()=>{ se('thud');                                 // ② 撞頂：震動＋門縫透出十字亮光
     st.classList.remove('shake','hold'); void st.offsetWidth; st.classList.add('shake');
     kerbTimers.push(setTimeout(()=>st.classList.remove('shake'), KERB_T.thud));
+    kb.classList.remove('glow'); void kb.offsetWidth; kb.classList.add('glow');
   });
   t+=200;
   at(t,()=>{                                             // ③ 解鎖：四向鉚釘依次彈開＋冒煙，箭微幅外推

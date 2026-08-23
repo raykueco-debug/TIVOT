@@ -109,7 +109,13 @@ export const ART = {
      ⚠ 不要改成鎖眼寬／鎖臉寬來自動解（CLAUDE.md §6.5 踩過）：那會把畫風差異
        **全額**放大成體型差異，四個人的腳就不會落在同一條地平線上了。
        逐張補一個係數是有上限、可控的做法。 */
-  lunaria:{ cm:168, eye:32, fx:0.496, top:9, bot:1528, faceAdj:1.22,
+  /* ⚠ standCm：**只用來算頭頂落點**的「站姿身高」，不影響縮放（ver -334）。
+       鎖身高假設的是站直的人；諾薇兒的絕望差分是**彎腰**的姿勢，畫出來的身體被壓短，
+       頭頂自然落得低 —— 那沒問題（Ray：「彎腰站位較低沒關係」）。但璐娜莉亞是昂立的，
+       頭頂就該比她高（Ray 指定）。給璐娜莉亞 standCm=176（＝全場最高的基準），
+       她的頭頂就貼在頂線上，與彎腰的諾薇兒拉開差距。
+     ⚠ 不要改 cm 去達成這件事 —— cm 是縮放的分子，一改人就跟著變大變小。 */
+  lunaria:{ cm:168, standCm:176, eye:32, fx:0.496, top:9, bot:1528, faceAdj:1.22,
            side:'R', alt:null, base:'resources/SI/Lunaria_SI_Armed.webp', expr:{} },
   luna:   { cm:160, eye:30, fx:0.500, top:0, bot:1000,
            side:'L', alt:null, base:'resources/partner/Luna_CI_exc.webp', expr:{}, unmeasured:true },

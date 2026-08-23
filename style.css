@@ -1199,7 +1199,12 @@
        正中」且「升到頂時蓋滿全螢幕」是解出來的，不是調出來的。 */
   /* ⚠ 平常的裁切要**往上多留一條楣的高度**（--kerb-top-h，JS 依實際圖高寫入）——
      楣（Kerberos_top）掛在門的上緣之外，只夾到面板頂的話它會被整條裁掉。 */
-  #kerb{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden;
+  /* ⚠ z-index 5：**只低於對話框**（8000）與預載頁（6）（Ray：「楣被遮住了，
+     在沒有 cut in 的狀況下楣的圖層應該只低於對話框」）。
+     原本是 2，被插圖(2)／情境卡(4)蓋掉。場景層都只佔上半（height:--story-top），
+     所以把門這一層抬上來不會蓋到它們該顯示的內容 —— 只有楣（在交界處）會浮上去，
+     那正是要的。 */
+  #kerb{position:absolute;inset:0;z-index:5;pointer-events:none;overflow:hidden;
     clip-path:inset(calc(var(--story-top) - var(--kerb-top-h, 0px)) 0 0 0);
     transition:clip-path .7s cubic-bezier(.5,0,.75,0);}
   #kerb.full{clip-path:inset(0 0 0 0);}
@@ -1259,6 +1264,27 @@
               translate(var(--kerb-px,0px),var(--kerb-py,0px)) rotate(var(--kerb-rot,0deg));
     transition:transform .9s cubic-bezier(.7,0,.3,1);}
 
+  /* ── 撞頂時由門縫透出來的十字亮光（Ray：「初版那個不錯，加回去，光用偏青的藍色」）──
+     豎的沿中縫、橫的沿紋章橫軸。撞頂那一下猛亮一下再收成微弱的常亮，
+     一直留到開門 —— 讀起來是「門後面有東西亮著」，不是一次性的閃光。
+     ⚠ 用 `mix-blend-mode:screen`：加色混合才像**透出來的光**；一般疊加在深色門上
+       會變成一條灰白的貼紙。
+     ⚠ 顏色偏青（rgb(120,220,255)）—— 純白會讀成反光，青藍才像門後的能量。 */
+  #kerbGlow{position:absolute;inset:0;pointer-events:none;opacity:0;mix-blend-mode:screen;}
+  #kerbGlow i{position:absolute;display:block;opacity:0;}
+  #kerbGlow .kg-v{background:linear-gradient(90deg,
+      rgba(120,220,255,0) 0%,rgba(150,235,255,.95) 46%,#eafaff 50%,rgba(150,235,255,.95) 54%,rgba(120,220,255,0) 100%);
+    filter:blur(1px) drop-shadow(0 0 16px rgba(90,200,255,.9));}
+  #kerbGlow .kg-h{background:linear-gradient(180deg,
+      rgba(120,220,255,0) 0%,rgba(150,235,255,.95) 46%,#eafaff 50%,rgba(150,235,255,.95) 54%,rgba(120,220,255,0) 100%);
+    filter:blur(1px) drop-shadow(0 0 16px rgba(90,200,255,.9));}
+  #kerb.glow #kerbGlow{opacity:1;}
+  #kerb.glow #kerbGlow i{animation:kerbGlow 1.1s cubic-bezier(.1,.8,.3,1) forwards;}
+  @keyframes kerbGlow{
+    0%  {opacity:0;   transform:scaleY(.2) scaleX(.6);}
+    14% {opacity:1;   transform:scaleY(1)  scaleX(1.35);}   /* 撞頂那一下猛亮 */
+    100%{opacity:.34; transform:scaleY(1)  scaleX(1);}      /* 收成微弱常亮，留到開門 */
+  }
   /* 楣：橫跨整個畫面寬，下緣壓在控制列上（位置由 JS 算，見 layoutKerberos）。
      ⚠ 它是 #kerbDoor 的子元素 —— 門往上推時自然跟著走，不必另外做動畫
        （Ray：「與槍棺同一剛體」）。 */
