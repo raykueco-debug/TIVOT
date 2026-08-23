@@ -1208,8 +1208,12 @@
      （CLAUDE.md §6.5：壓暗必須不透明）。 */
   .story-portrait.dark{filter:brightness(.16) saturate(.35) contrast(1.25);}
   /* 背景：鋪滿、cover。⚠ 在立繪**之下**（z-index 0）—— 立繪要站在場景裡。 */
+  /* ⚠ 背景換圖也走淡入淡出（ver -325，Ray 指定）—— 與插圖／立繪同一條規則。
+     transition 的時間要與 story.js 的 FADE_MS 同值，改一邊要改另一邊。 */
   #storyBg{position:absolute;left:0;right:0;top:0;height:var(--story-top);z-index:0;
-    width:100%;object-fit:cover;display:none;pointer-events:none;}
+    width:100%;object-fit:cover;display:none;pointer-events:none;
+    opacity:1;transition:opacity .22s ease;}
+  #storyBg.fading{opacity:0;}
   #storyBg.on{display:block;}
   /* CG：全屏插圖，蓋過立繪。
      ⚠ object-fit **cover** 不是 contain：插圖是直幅、畫面是直幅，contain 會在

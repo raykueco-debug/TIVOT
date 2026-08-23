@@ -53,6 +53,7 @@ let saintCritFired = false;    // 聖徒化臨界攔截已觸發（saintFail 只
 let cutinWaiters = [];         // afterCutin 輪詢計時器（teardown 清理）
 let cutinLine = -1;            // 已播過 cut-in 的台詞索引（重讀同一句不重播）
 let soloRun = false;           // 本場全程只有一個人講話（立繪放大；maybeStart 判定）
+let awaitDualEnd = false;      // 劇情版：破防那一盤打完就收尾（等下一盤載入）
 
 /* ---- 首次判定（localStorage 不可用時視為未看過：寧可多教，不漏教）---- */
 function hasSeen(){ try{ return localStorage.getItem(CFG().storageKey)==='1'; }catch(e){ return false; } }
@@ -95,15 +96,39 @@ export function maybeStart(){
   state.tutorialLifeReturn = false;
   soloRun = computeSoloRun();       // 獨腳戲 → 立繪放大（整場一致，見 applyPortraitFit）
   stepsLeft = cfg.steps.slice();
+  /* 劇情版**到破防教學為止**（Ray 指定）：拿掉 'strike' 這一步，
+     連帶整條「劇情殺三連擊 → 即死防禦 → 聖徒化 → MB／生命歸還」都不會發生
+     （那條鏈是掛在 onStepClosed('strike') 上的）。聖徒化留給劇情後面自己教。
+     ⚠ 不要改成「不講 saintCall 的台詞」——流程還是會跑，玩家會卡在沒有引導的閘門。 */
+  if(storyRun) stepsLeft = stepsLeft.filter(s=>s.trigger!=='strike');
+  awaitDualEnd = false;
   queue = [];
   defendedDone = dualGuideDone = saintCritFired = false; dualForce = false; attackScoldCount = 0; deadHandled = false;
   pendingGate = null; gate = null;
-  const sk=$('tutSkipBtn'); if(sk) sk.classList.add('on');
+  /* 跳過鈕：劇情帶起來的那一場**不給跳**（Ray 指定）——
+     它是主線的一段，跳掉之後劇情接不下去（後面那幕接的是「打完了」）。
+     首頁「教學」鈕那一場照舊可跳，那本來就是隨時可重看的教材。 */
+  const sk=$('tutSkipBtn'); if(sk) sk.classList.toggle('on', !storyRun);
   clearTimeout(startTimer);
   startTimer = setTimeout(()=>fire('battleStart'), cfg.startDelayMs||700);
 }
 // combat.loadBoard 每次載盤呼叫 → 觸發 'board:N' 步驟
-export function onBoardLoaded(idx){ fire('board:'+idx); }
+export function onBoardLoaded(idx){
+  /* 劇情版收尾：破防教學那一盤清完 → 下一盤載入的這一刻接「收拾他吧」。
+     ⚠ 掛在「下一盤載入」而不是「雙槍窗口關閉」：窗口會因為清盤、敵死、逾時
+       好幾種原因關掉，只有載新盤才真的代表「這一輪打完了」。 */
+  if(awaitDualEnd && !state.dualWield){ awaitDualEnd=false; finishStoryRun(); return; }
+  fire('board:'+idx);
+}
+/* 劇情版教學的收尾：封頂敵血（保證收尾台詞後一盤內殺完）→ 「撐過來了……收拾他吧！」
+   ⚠ 用 finishLR 不用 finishMB：MB 那句寫的是「體力也回來一些了」，
+     劇情版沒有聖徒化也沒有回血，講出來對不上畫面。 */
+function finishStoryRun(){
+  if(!state.tutorialActive) return;
+  markSeen();
+  if(api.capEnemyHp) api.capEnemyHp(CFG().finishEnemyHp);
+  openScript('finishLR');
+}
 // defense.spawnThreat 生成紅點時經注入呼叫 → 觸發 'threat' 步驟（紅點凍結於畫面講解）
 export function onThreatSpawned(){ fire('threat'); }
 // defense.resolveThreat 點掉紅點 → 'defended' 步驟（grade='counter'|'perfect'|'block'）。
@@ -155,7 +180,9 @@ export function delayPenaltySuppressed(){
 export function ultSuppressed(){
   if(!state.tutorialActive) return false;
   if(state.boardIndex < (CFG().noUltBoards||0)) return true;
-  if(state.boardIndex===3 && !state.saintUsedThisBattle) return true;
+  // ⚠ 劇情版沒有聖徒化腳本盤（saintUsedThisBattle 永遠 false）→ 這條會把大絕壓死，
+  //   第四盤起敵人再也不出手。只有原版教學要它。
+  if(!storyRun && state.boardIndex===3 && !state.saintUsedThisBattle) return true;
   if(state.threats.length>0) return true;
   return false;
 }
@@ -309,6 +336,10 @@ function onStepClosed(id){
       action: ()=>api.activateSaint('right'),
       after:  ()=>afterCutin(()=>openScript('saintStart')),
     }}));
+    return;
+  }
+  if(id==='dualGo' && storyRun){
+    awaitDualEnd = true;   // 劇情版：這一盤打完就收尾（見 onBoardLoaded）
     return;
   }
   if(id==='finishMB' || id==='finishLR'){

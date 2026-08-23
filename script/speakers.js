@@ -63,18 +63,24 @@ export const SPEAKERS = {
 export const ART = {
   renna: { cm:169, eye:32, fx:0.519, top:1, bot:1521,
            side:'L', alt:null, base:'resources/SI/Renna_SI_front.webp', expr:{} },
-  /* ⚠⚠ 諾薇兒的表情差分是**不同姿勢**（跑、畏縮、驚恐、絕望、驚訝），不是換臉。
-       所以 top/bot/fx **對它們是不準的** —— 目前沿用 front 那一組，人會偏。
-       正式上線前每一張都要照 CLAUDE.md §6.5 重量四個值，並改成逐圖帶自己的
-       取景（ART 目前一個角色只有一組，屆時要擴成 expr 各自帶）。
-       先接上去是為了讓這一幕跑得起來、看得到流程。 */
+  /* ⚠⚠ 諾薇兒的表情差分是**不同姿勢**（跑、畏縮、驚恐、絕望、驚訝），不是換臉，
+       所以每一張**各帶自己的 top/bot/fx**（ver -325 量完）。
+       ⚠ 沿用 front 那一組的後果實測過：Scared 的臉其實在 0.397，照 0.564 擺會
+         把她往左推 77px，人整個貼在畫面左緣（Ray：「立繪太靠畫面邊緣」）。
+       量法（照 CLAUDE.md §6.5 與 HANDOFF F 節，可重跑）：
+         · top/bot＝alpha>24 的上下緣。六張的身高 1519~1533，彼此一致 →
+           確認都是全身構圖，alpha 邊界就是頭頂與腳底。
+         · fx＝**頭部那一段**（頭頂往下 8% 身高）的 alpha 加權橫向重心 ÷ 圖寬。
+           校準：同法量 front 得 0.571（表上 0.564，差 −0.007）、璐娜莉亞得 0.494
+           （表上 0.496，差 +0.002）—— 兩個獨立校準都落在 ±0.007 內，所以直接用。
+         · eye 沒量（CAST_EYE_MIX=0 不參與運算）。 */
   nouvelle: { cm:165, eye:40, fx:0.564, top:1, bot:1535,
            side:'L', alt:null, base:'resources/SI/Nouvelle_SI_front.webp',
-           expr:{ run:      'resources/SI/Nouvelle_SI_Run.webp',
-                  cringe:   'resources/SI/Nouvelle_SI_Cringe.webp',
-                  scared:   'resources/SI/Nouvelle_SI_Scared.webp',
-                  desperate:'resources/SI/Nouvelle_SI_Desperate.webp',
-                  surprise: 'resources/SI/Nouvelle_SI_Surprise.webp' } },
+           expr:{ run:      { src:'resources/SI/Nouvelle_SI_Run.webp',       top:13, bot:1533, fx:0.418 },
+                  cringe:   { src:'resources/SI/Nouvelle_SI_Cringe.webp',    top:5,  bot:1533, fx:0.459 },
+                  scared:   { src:'resources/SI/Nouvelle_SI_Scared.webp',    top:9,  bot:1530, fx:0.397 },
+                  desperate:{ src:'resources/SI/Nouvelle_SI_Desperate.webp', top:2,  bot:1532, fx:0.415 },
+                  surprise: { src:'resources/SI/Nouvelle_SI_Surprise.webp',  top:5,  bot:1524, fx:0.487 } } },
   /* ⚠ 索拉娜用 **side** 那張：front 橫向佔 78%，兩人同台一定疊；側面只佔 69%。 */
   sorana: { cm:176, eye:27, fx:0.527, top:4, bot:1522,
            side:'R', alt:null, base:'resources/SI/Sorana_SI_side.webp', expr:{} },
@@ -104,3 +110,18 @@ export const CAST_TALL = Math.max(...Object.values(ART).filter(a=>!a.unmeasured)
 export function nameOf(id){ const s=SPEAKERS[id]; return s ? s.name : String(id||''); }
 /* 該角色的立繪資料。OFFICER 會轉指到 renna。 */
 export function artOf(id){ const s=SPEAKERS[id]; return s ? ART[s.art] : null; }
+/* 差分的圖檔路徑。expr 的值可以是字串（只有圖、沿用角色的取景）或
+   物件 `{src, top, bot, fx}`（自帶取景）—— 兩種都吃。 */
+export function exprSrc(a, expr){
+  const e = a && a.expr && a.expr[expr];
+  if(!e) return null;
+  return (typeof e === 'string') ? e : e.src;
+}
+/* **這一張圖**的取景：差分自帶的值蓋在角色基本值上。
+   ⚠ 排版一律走這個，不要直接用 artOf —— 差分是不同姿勢，用角色的基本值會歪
+     （見 ART.nouvelle 的說明）。 */
+export function frameOf(id, expr){
+  const a = artOf(id); if(!a) return null;
+  const e = a.expr && a.expr[expr];
+  return (e && typeof e === 'object') ? Object.assign({}, a, e) : a;
+}

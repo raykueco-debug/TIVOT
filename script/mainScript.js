@@ -100,8 +100,11 @@ export const MAIN_SCRIPT = {
       /* ⚠⚠ 這一句要**把插圖收掉**（cg:null）。插圖的層級在立繪之上，不收的話
          她整個被蓋住 —— Ray 回報「『對不起，我已經……！』的立繪一直沒出來」
          就是這個，不是位置問題。凡是要看到立繪的句子，插圖都得先讓開。 */
+      /* ⚠ 背景換成**插圖 002**（Ray 指定）——「插圖收掉」不等於「回地宮」，
+         聖徒撲上來的那張要留在她背後當場景，只是要退到立繪之下才看得到她。
+         story.js 的 bg 會依「NNN_ 開頭」自動去 illustration/ 找（見 imgSrc）。 */
       { speaker:'NOUVELLE', text:'對不起，我已經……！',
-        cg:null, bg:'HolyseeDungeonWhole',
+        cg:null, bg:'002_SaintAssult',
         portrait:{ expr:'desperate', show:true } },
       /* 暗調 CI 插入。⚠ 說話的是「？？？」不是 LUNARIA —— 這一刻她還沒表明身分，
          顯示名要真的是「？？？」（見 speakers.js 的說明）。 */

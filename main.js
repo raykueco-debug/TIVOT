@@ -549,31 +549,26 @@ bindBtn('flightBtn', ()=>{ window.location.href = 'flight/'; });
    存讀檔：F4 即時存／F7 即時讀／F5 選欄存／F8 選欄讀（見 modules/save.js）。 */
 story.init(); saveSys.init();
 bindBtn('storyBtn', ()=>{ story.open(null); });
-/* ── 劇情插入戰鬥 → 打完接回劇情（ver -321）────────────────────────────
+/* ── 劇情插入戰鬥 → 打完接回劇情（ver -321；-325 改成直接交棒）──────────
    story.js 不 import 戰鬥模組（單向資料流），發動與續播都由這裡負責。
-   ⚠ 「什麼時候算打完」不看戰鬥模組的內部狀態，而是看**首頁重新出現**
-     （`#home.on`）—— 勝、敗、跳過、退出確認回主選單，所有出口都會經過那裡，
-     一個訊號涵蓋全部。用 MutationObserver 監看 class，比輪詢乾淨。
-   ⚠ 一次性：接回去之後立刻 disconnect，否則之後每次回首頁都會再開一次劇情。 */
+
+   ⚠⚠ ver -325 起**不再監看首頁出現**。舊作法是 MutationObserver 盯 `#home.on`，
+     等於「先走完整條收尾流程回到首頁，再把劇情蓋上去」—— 玩家會看到
+     驅逐完成過渡禎、結算頁與結算 BGM 閃過去（Ray：「切乾淨」）。
+     現在由 combat 在勝負的第一時間直接回呼（setStoryReturn），
+     整條結算流程根本不跑。
+   ⚠ `goHome` 的黑幕全蓋瞬間（onCovered）才開劇情：首頁確實會被還原，
+     但它是在黑幕之下被劇情蓋住的，畫面上看不到。`noBgm` 讓主選單 BGM 不起播 ——
+     不然交棒那一秒會漏出半句主選單的曲子。 */
+let storyResume = null;
+combat.setStoryReturn(()=>{
+  const r = storyResume; storyResume = null;
+  combat.goHome(()=>{ if(r) story.open(r); }, { noBgm:true });
+});
 story.setBattleHandler((battleId, resume)=>{
-  const home=document.getElementById('home');
-  if(!home){ story.open(resume); return; }
-  /* ⚠⚠ 要先**離開過首頁**才武裝。發動的當下首頁本來就是 `.on`，
-     不設這道的話任何一次 class 變動都會被當成「戰鬥打完回來了」，
-     劇情會在戰鬥還沒開始就蓋回去。 */
-  let left=false;
-  const obs=new MutationObserver(()=>{
-    const on=home.classList.contains('on');
-    if(!on){ left=true; return; }
-    if(!left) return;
-    obs.disconnect();
-    /* 稍等一拍再開：goHome 有淡入，立刻開的話劇情會蓋在轉場中間。 */
-    setTimeout(()=>story.open(resume), 420);
-  });
-  obs.observe(home, { attributes:true, attributeFilter:['class'] });
+  storyResume = resume;
   /* ⚠ 標成 story 場次：與首頁「教學」鈕分開（Ray 指定）—— 這一場由諾薇兒帶
-     （台詞走 config.tutorial.story），且**打完不出結算頁**，直接回首頁讓上面
-     那個觀察器把劇情續下去（見 inspector.settle 開頭的 tutorialStoryRun）。 */
+     （台詞走 config.tutorial.story）、不可跳過、教到破防為止。 */
   tutorial.requestReplay({ story:true });
   launchBattle();
 });

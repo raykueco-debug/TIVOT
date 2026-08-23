@@ -25,7 +25,7 @@
    ══════════════════════════════════════════════════════════════════════ */
 
 import { MAIN_SCRIPT, MAIN_ENTRY } from '../script/mainScript.js';
-import { SPEAKERS, ART, CAST_TALL, nameOf, artOf } from '../script/speakers.js';
+import { SPEAKERS, ART, CAST_TALL, nameOf, artOf, exprSrc, frameOf } from '../script/speakers.js';
 import * as prog from '../script/progress.js';
 import { decorateLine } from '../i18n.js';
 import { SFX } from '../audio.js';
@@ -50,6 +50,9 @@ const TYPE_MS   = 22;           // 打字機每字間隔
 let cur = null;                 // 目前 scene 物件
 let lineIdx = 0;
 let slot = { L:null, R:null };  // 兩個位置目前站誰（角色 id）
+/* 每個槽目前用的是哪張差分。⚠ 排版要用**那一張**的取景（top/bot/fx），
+   不是角色的基本值 —— 差分是不同姿勢，見 speakers.js 的 frameOf。 */
+let slotExpr = { L:null, R:null };
 let shown = {};                 // 角色 id → 目前的 portrait 狀態 {expr, show}
 let typing = null;              // 打字機 timer
 let waitT  = null;              // delay：對話框延後出現的 timer（見 renderLine）
@@ -65,7 +68,8 @@ const missingExpr = new Set();  // 已回報過的缺圖，避免洗版
      console 那串正好就是「還缺哪些圖」的清單。 */
 function srcFor(artKey, expr){
   const a = ART[artKey]; if(!a) return '';
-  if(expr && a.expr && a.expr[expr]) return a.expr[expr];
+  const es = exprSrc(a, expr);
+  if(es) return es;
   if(expr){
     const tag = artKey+'/'+expr;
     if(!missingExpr.has(tag)){ missingExpr.add(tag);
@@ -126,7 +130,7 @@ function layout(){
   for(const side of ['L','R']){
     const el=slotEl(side), id=slot[side];
     if(!el || !id || !el.naturalWidth) continue;
-    const a=artOf(id); if(!a) continue;
+    const a=frameOf(id, slotExpr[side]); if(!a) continue;
     on.push({ el, a, side });
   }
   if(!on.length) return;
@@ -145,6 +149,9 @@ function layout(){
     const yTop  = headY - s*a.top;                    // 圖框上緣的螢幕 y
     const visLo = a.top;                              // 頭頂
     const visHi = Math.min(a.bot, a.top + (H-headY)/s);  // 畫面下緣對應的圖列
+    /* ⚠ b（輪廓左右界）ver -325 起**沒有人用**了 —— 夾中線那道拿掉之後就沒有
+       消費者。留著是因為它是唯一「量得出立繪實際佔多寬」的工具，日後要做
+       任何位置自動調整都會需要它；量一次幾百微秒，不值得為省它而刪。 */
     return { ...o, s, headY, yTop, b:measureBounds(o.el, visLo, visHi) };
   });
 
@@ -170,30 +177,25 @@ function layout(){
 
   for(const o of m){
     const a=o.a, el=o.el, NW=el.naturalWidth;
-    const fx=a.fx, bl=o.b.l, br=o.b.r;
+    const fx=a.fx;
     /* 橫向錨的是**臉的中心**（fx），不是圖框中心 —— 插畫左右留白差很多。 */
     /* ⚠ ver -316：**單人也站自己那一側**，不置中（Ray 指定「同一人物立繪需
        一直在同一側」）。置中的話同一個人會因為場上有幾個人而左右跳，
        玩家就記不住誰站哪邊了 —— 那正是固定站位要解決的事。
        單人時錨點往中間讓一點（0.38／0.62 而不是 0.26／0.74），畫面才不會太偏。 */
+    /* ⚠⚠ ver -325：兩人同台的錨點由 0.26／0.74 收到 **0.34／0.66**，
+       而且**不再夾中線**（Ray：「璐娜登場時兩人的立繪都太靠畫面邊緣」）。
+       夾中線的作法是「輪廓不准越過中線，越了就往外推」—— 這些立繪的輪廓
+       都比半個畫面寬，於是每次都推到底，兩個人各自貼著左右邊緣，臉有一半
+       被 `#storyCast` 的 overflow 裁掉。
+       現在只認錨點：臉一定落在 0.34W／0.66W，位置可預期。
+       ⚠ 代價是兩人的輪廓會在中間交疊 —— Ray 早就定過「多少有些交疊沒關係」，
+         而且交疊的是裙襬與頭髮的邊，臉各自在自己那 1/3 處，不會互相蓋住。
+       ⚠ 不要再加「把輪廓拉回畫面內」那道（ver -320 踩過）：它與錨點的方向相反，
+         排在後面會贏，結果是兩個人被一起推回中間疊成一團（實測重疊 197px）。 */
     const faceX = solo ? (o.side==='R' ? W*0.62 : W*0.38)
-                       : (o.side==='R' ? W*0.74 : W*0.26);
-    let x = faceX - o.s*fx*NW;
-    {
-      /* ⚠ 夾中線只在**兩人同台**時做：單人時夾中線會把她壓回半邊，
-         人變小又擠在角落。單人只要不出畫面外緣就好。 */
-      const mid=W/2;
-      if(!solo){
-        if(o.side==='L'){ const r=x+o.s*br; if(r>mid) x-=(r-mid); }
-        else            { const l=x+o.s*bl; if(l<mid) x+=(mid-l); }
-      }
-      /* ⚠⚠ **不再把輪廓拉回畫面內**（ver -320）。
-         兩道夾制的方向是相反的：夾中線把人往外推、拉回畫面內把人往內推，
-         而後者排在後面會贏 —— 結果是兩個人被一起推回中間**疊在一起**
-         （實測重疊 197px，璐娜莉亞的頭髮蓋掉諾薇兒半個人）。
-         立繪不再依人數縮放之後，外緣本來就該讓它出畫面：`#storyCast` 有
-         overflow:hidden，裁掉的是裙襬與頭髮的邊，不是臉。 */
-    }
+                       : (o.side==='R' ? W*0.66 : W*0.34);
+    const x = faceX - o.s*fx*NW;
     el.style.width  = (o.s*el.naturalWidth)+'px';
     el.style.height = (o.s*el.naturalHeight)+'px';
     el.style.left   = x+'px';
@@ -264,12 +266,13 @@ function ensureOn(id, expr){
     }
     slot[side]=id;
   }
+  slotExpr[side]=expr||null;
   return side;
 }
 
 function leaveSlot(side){
   const el=slotEl(side); if(!el) return;
-  el.classList.remove('on'); slot[side]=null;
+  el.classList.remove('on'); slot[side]=null; slotExpr[side]=null;
   layout();                       // ⚠ 人數變了＝預算與縮限跟著變，剩下的人要重排
 }
 
@@ -338,18 +341,43 @@ function setImg(el, src){
   if(src){ if(el.getAttribute('src')!==src) el.src=src; el.classList.add('on'); }
   else   { el.classList.remove('on'); }
 }
+/* 背景／插圖的來源路徑。⚠ **插圖也可以當背景用**（ver -325，Ray：「『對不起，
+   我已經…』的背景是插圖002」）—— 判斷靠命名慣例：插圖一律 `NNN_` 開頭
+   （001_Nouvelle_Fell…），背景是名字（HolyseeDungeonWhole…）。
+   這樣腳本裡照樣只寫一個名字，不必再記它放在哪個資料夾。 */
+function imgSrc(name){
+  return (/^\d{3}_/.test(name) ? CG_DIR : BG_DIR) + name + '.webp';
+}
+/* 換圖：淡出 → 換 → 淡入。FADE_MS 與 style.css 的 transition 同值。
+   ⚠⚠ `.fading` 要等**新圖載好**才拿掉（同 ver -322 立繪那個坑）：移除 class 的
+     那一瞬間元素上還是舊圖，於是**舊圖先淡回來、新圖才蓋上去**＝兩張疊在一起。
+   ⚠ 場上還沒有圖時直接上（不淡入淡出）—— 否則開場會先黑一段莫名的空白。 */
+const FADE_MS = 220;
+function swapImg(el, src){
+  if(!el) return;
+  const on  = el.classList.contains('on');
+  const cur = on ? el.getAttribute('src') : null;
+  if(cur===src) return;
+  if(!on){ setImg(el, src); return; }
+  el.classList.add('fading');
+  setTimeout(()=>{
+    if(!src){ el.classList.remove('on','fading'); return; }
+    const back=()=>{ el.onload=null; el.classList.remove('fading'); el.classList.add('on'); };
+    el.onload=back;
+    el.setAttribute('src', src);
+    if(el.complete && el.naturalWidth) back();
+  }, FADE_MS);
+}
 function applyPersist(line){
-  if(line.bg!==undefined){ stageBg=line.bg; setImg($('storyBg'), line.bg?BG_DIR+line.bg+'.webp':''); }
+  if(line.bg!==undefined && line.bg!==stageBg){
+    stageBg=line.bg;
+    swapImg($('storyBg'), line.bg?imgSrc(line.bg):'');
+  }
   let cgChanged=false;
   if(line.cg!==undefined && line.cg!==stageCg){
     cgChanged=true;
-    /* ⚠ 插圖之間也淡入淡出（Ray 指定）。已經有圖在場才需要先淡出；
-       第一次上圖直接顯示，否則會有一段莫名的空白。 */
-    const el=$('storyCg'), had=!!stageCg;
     stageCg=line.cg;
-    const put=()=>{ setImg(el, line.cg?CG_DIR+line.cg+'.webp':''); if(el) el.classList.remove('fading'); };
-    if(had && el){ el.classList.add('fading'); setTimeout(put, 230); }
-    else put();
+    swapImg($('storyCg'), line.cg?CG_DIR+line.cg+'.webp':'');
   }
   if(line.ci!==undefined){ stageCi=line.ci; setImg($('storyCi'), line.ci?SI_DIR+line.ci+'.webp':''); }
   /* 情境卡：⚠ 它是**一次性的畫面狀態**（下一句沒寫就收掉），所以每一句都要判，
@@ -578,7 +606,7 @@ function playScene(id){
   const sc = MAIN_SCRIPT[id];
   if(!sc){ console.warn('[story] 找不到 scene：', id); close(); return; }
   cur = sc; lineIdx = 0;
-  slot={L:null,R:null}; shown={};
+  slot={L:null,R:null}; slotExpr={L:null,R:null}; shown={};
   leaveSlot('L'); leaveSlot('R');
   renderLine();
 }
@@ -602,7 +630,7 @@ function resetStage(){
   const fx=$('storyFx'); if(fx) fx.innerHTML='';
   const card=$('storyCard'); if(card) card.classList.remove('on');
   const st2=$('storyStage'); if(st2) st2.classList.remove('shake');
-  slot={L:null,R:null}; shown={};
+  slot={L:null,R:null}; slotExpr={L:null,R:null}; shown={};
   for(const s2 of ['L','R']){ const el=slotEl(s2);
     if(el){ el.classList.remove('on','dim','fading'); el.removeAttribute('src'); } }
 }
@@ -621,7 +649,7 @@ function collectAssets(startId){
     seen.add(id);
     const sc=MAIN_SCRIPT[id];
     for(const ln of (sc.lines||[])){
-      if(ln.bg) imgs.add(BG_DIR+ln.bg+'.webp');
+      if(ln.bg) imgs.add(imgSrc(ln.bg));
       if(ln.cg) imgs.add(CG_DIR+ln.cg+'.webp');
       if(ln.ci) imgs.add(SI_DIR+ln.ci+'.webp');
       if(ln.bgm && BGM_SRC[ln.bgm]) bgms.add(BGM_SRC[ln.bgm]);
@@ -632,8 +660,8 @@ function collectAssets(startId){
         const sp=SPEAKERS[who]; if(!sp||!sp.art) continue;
         const art=ART[sp.art]; if(!art) continue;
         imgs.add(art.base);
-        const e=ln.portrait&&ln.portrait.expr;
-        if(e && art.expr && art.expr[e]) imgs.add(art.expr[e]);
+        const es=exprSrc(art, ln.portrait&&ln.portrait.expr);
+        if(es) imgs.add(es);
       }
     }
     id=sc.next;

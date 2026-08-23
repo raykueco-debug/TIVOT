@@ -753,8 +753,24 @@ function runTotalHp(){
   const lu=(GAME_CONFIG.lineup && GAME_CONFIG.lineup.length) ? GAME_CONFIG.lineup : [state.currentEnemyKey];
   return lu.reduce((sum,key)=>{ const en=GAME_CONFIG.enemies[key]; return sum + (en?en.hp:0); }, 0);
 }
+/* 劇情把戰鬥叫起來的那一場（tutorialStoryRun）：打完要**直接交還劇情**。
+   ⚠ 不能走一般收尾 —— 那條路上有「驅逐完成」過渡禎（要點一下）、結算 BGM、
+     評價頁、主選單，玩家會看到首頁與評價頁閃過去（Ray：「切乾淨」）。
+   ⚠ 勝負都走這裡：教學的即死防禦讓戰敗幾乎不可能，但收尾台詞之後盤面交還玩家，
+     那一段是真的會死的 —— 沒接的話會卡在戰敗結算頁，劇情永遠回不來。 */
+let storyReturn = null;
+export function setStoryReturn(fn){ storyReturn = fn; }
+function storyBattleEnd(){
+  if(!state.tutorialStoryRun) return false;
+  state.tutorialRun=false; state.tutorialStoryRun=false;
+  state.over=true; clockPause(); stopAll();
+  if(storyReturn) storyReturn();
+  return true;
+}
+
 function win(){
   if(state.over || state.defeated) return;   // 戰敗優先：已判定戰敗則勝利結算一律讓位
+  if(storyBattleEnd()) return;
   state.over=true; clockPause(); stopAll();
   const totalTime=clockElapsedMs()/1000;               // 只累計實打時間（overkill/轉場/cut-in 皆不計）
   TEL.runEnd({ partner:state.pickedPartner, weapon:state.equippedWeapon,
@@ -781,6 +797,7 @@ function win(){
 }
 function lose(){
   if(state.over) return;
+  if(storyBattleEnd()) return;
   state.over=true; clockPause(); stopAll();
   TEL.runEnd({ partner:state.pickedPartner, weapon:state.equippedWeapon,
                boss:state.inIntruderFight, result:'lose', time_ms:Math.round(clockElapsedMs()) });
@@ -894,7 +911,9 @@ function fadeTransition(mid, half){
 }
 // onCovered（選填）：黑幕全蓋瞬間的接續回呼——跳過教學→出擊整備用（蓋著開新畫面不露餡，
 //   單次淡出淡入直達，不會先閃一下主選單/整備頁再轉場一次）。
-export function goHome(onCovered){
+/* opts.noBgm＝黑幕下不起播主選單 BGM。劇情把戰鬥叫起來時用：黑幕之下要接的是
+   劇情自己的曲子，起了主選單 BGM 只會在交棒的那一秒漏出半句（Ray：「BGM 切乾淨」）。 */
+export function goHome(onCovered, opts){
   fadeTransition(()=>{                        // 回主選單：淡出淡入約 3 秒
     state.over=true; stopAll();
     weapon.restoreTutorialLoadout();          // 教學固定裝備（蕾妮＋機槍）→ 還原玩家原選擇（非教學為 no-op）
@@ -903,7 +922,7 @@ export function goHome(onCovered){
     $('transition').classList.remove('on');
     const sr=$('sentouReward'); if(sr) sr.classList.remove('on','done');   // 銭湯獎勵層：黑幕全蓋後才收（見 inspector）
     $('home').classList.add('on');
-    SFX.playBgm(asset('bgm_home'), { volume: bgmVol('bgm_home') });           // 主選單 BGM
+    if(!(opts && opts.noBgm)) SFX.playBgm(asset('bgm_home'), { volume: bgmVol('bgm_home') });   // 主選單 BGM
     if(typeof onCovered==='function') onCovered();
   }, 1400);
 }
