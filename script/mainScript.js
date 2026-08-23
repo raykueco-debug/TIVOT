@@ -160,6 +160,22 @@ export const MAIN_SCRIPT = {
          ⚠ 往上移的終點正好是她的臉（臉在圖上 y≈0.09，靠近頂）—— 方向不能反。 */
       { speaker:'NOUVELLE', text:'璐娜莉亞團長……！',
         cg:'003_Lunaria_Armed', cgScale:1.18, cgPan:'up' },
+      /* ── 團長登場：插圖收掉，她本人站到畫面上（Ray 補的一段，ver -349）──
+         ⚠ 換 BGM＋換背景＋收插圖都在同一拍：插圖層在立繪之上，不收她站出來也看不到
+           （ver -319 踩過）。背景要明寫回地宮 —— 上一拍的背景是插圖 002。 */
+      { speaker:'LUNARIA', text:'在G2就熔斷了嗎？真是派不上用場。',
+        cg:null, bg:'HolyseeDungeonWhole', bgm:'lunaria',
+        portrait:{ char:'LUNARIA', expr:'angry', show:true } },
+      { speaker:'NOUVELLE', text:'真的……非常抱歉！',
+        portrait:{ char:'NOUVELLE', expr:'surprise', show:true } },
+      { speaker:'LUNARIA', text:'不是在說妳。', portrait:{ char:'LUNARIA', expr:'angry' } },
+      { speaker:'LUNARIA', text:'如果你也是HUND的話，不要依賴他人的力量如何？',
+        portrait:{ expr:'taunt' } },
+      { speaker:'LUNARIA', text:'算了。13th來人了，說是要來找這傢伙。',
+        portrait:{ expr:'angry' } },
+      { speaker:'NOUVELLE', text:' 13th……第十三騎士團嗎！？',
+        portrait:{ char:'NOUVELLE', expr:'cringe' } },
+      { speaker:'NOUVELLE', text:'你到底又闖了什麼禍啊……', portrait:{ expr:'cringe' } },
       /* ⚠ 交界插**讀取閘門**（ver -348）：會客廳那一幕自己 2.3 MB，不該擠進開場那一道門。
          `collectAssets` 看到「這一段有 load 指向自己的 next」就**不再往下算**，
          所以開場只載地宮，這裡才載會客廳。 */
@@ -193,7 +209,7 @@ export const MAIN_SCRIPT = {
       /* 插圖：蕾娜撥髮。⚠ 這一拍沒有台詞 → 不出框 → 沒有 ▼，所以要 `auto` 自己走。 */
       { speaker:'OFFICER', text:'', auto:2200, ci:null, cg:'004_Renna_intro' },
       /* ⚠ 插圖要收掉才看得到立繪（插圖層在立繪之上，ver -319 踩過）。 */
-      { speaker:'LUNARIA', text:'海森伯格家的人嗎……哼，月桂葉的髮飾挺招搖的嘛。',
+      { speaker:'LUNARIA', text:'海森伯格家的人嗎……哼，髮飾挺招搖的嘛。',
         cg:null, portrait:{ char:'LUNARIA', expr:'seat_smirk', show:true } },
       { speaker:'NOUVELLE', text:'璐娜莉亞大人自己還不是……',
         portrait:{ char:'NOUVELLE', expr:'gossip1', show:true } },
@@ -243,7 +259,9 @@ export const MAIN_SCRIPT = {
       { speaker:'OFFICER', text:'', auto:900, portrait:{ char:'OFFICER', expr:'smile', show:true } },
       { speaker:'NOUVELLE', text:'團長不一起去嗎？',
         portrait:{ char:'NOUVELLE', expr:'surprise', show:true } },
-      { speaker:'LUNARIA', text:'我討厭坐船。（舉起義肢）妳看我這樣子方便嗎？',
+      /* 稿上這一句原本帶著「（舉起義肢）」—— 那是 Ray 給自己看的舞台指示，不是台詞
+         （ver -349，Ray 指定）。動作由 `seat_hand` 這張差分演，字面上不必再說一次。 */
+      { speaker:'LUNARIA', text:'我討厭坐船。妳看我這樣子方便嗎？',
         portrait:{ char:'LUNARIA', expr:'seat_hand' } },
       { speaker:'OFFICER', text:'那真是可惜，有璐娜團長的話一定馬上能盪平騷亂。',
         portrait:{ char:'OFFICER', expr:'smile', show:true } },
@@ -255,7 +273,8 @@ export const MAIN_SCRIPT = {
       { speaker:'OFFICER', text:'作作記錄而已，不會礙事的。',
         portrait:{ char:'OFFICER', expr:null, show:true } },
       { speaker:'LUNARIA', text:'話說，你在戰場上能派上什麼用場嗎？', portrait:{ char:'LUNARIA', expr:'seat' } },
-      { speaker:'OFFICER', text:'盡量不尖叫出聲吧......（乾笑）',
+      /* 同上：原稿的「（乾笑）」是舞台指示，交給 `awkward` 那張差分演。 */
+      { speaker:'OFFICER', text:'盡量不尖叫出聲吧......',
         portrait:{ char:'OFFICER', expr:'awkward', show:true } },
       { speaker:'LUNARIA', text:'......', portrait:{ char:'LUNARIA', expr:'seat' } },
       { speaker:'LUNARIA', text:'......你自求多福吧。', portrait:{ expr:'seat' } },

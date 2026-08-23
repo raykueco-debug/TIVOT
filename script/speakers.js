@@ -139,9 +139,12 @@ export const ART = {
        把她畫大了約一成六（實測坐姿頭高 ≈221px、站姿 ≈190px）。照站姿那組算，
        她的頭會比同台站著的諾薇兒大一大截。
      兩個補償各司其職，不要混：
-       faceAdj 0.92  ＝ **大小**：把「坐姿畫得比較大」抵銷掉，讓她的臉與諾薇兒差不多大
-                      （Ray 對站姿定的標準就是這個，站姿那張因此是 1.22）。
-                      1.05 試過**偏大 14%**（實測螢幕上頭高 80px vs 諾薇兒 70px），故收到 0.92。
+       faceAdj 0.74  ＝ **大小**。這條的歷程：1.05（偏大 14%，實測頭高 80px vs 諾薇兒 70px）
+                      → 0.92（頭高齊平 75/78px）→ **0.74**（Ray 看過實機後指定「再縮小 20%」，
+                      0.92×0.8）。
+                      ⚠ 所以坐姿**不是**「臉與站著的人一樣大」——她坐在遠處的椅子上，
+                        比同台站著的人小一圈才是對的。這是 Ray 的鏡頭判斷，不要用
+                        「臉要等大」的理由改回去。
        standCm 155   ＝ **高度**：坐著的人頭頂本來就比站著的人低。155 讓她的頭低於
                       165cm 的諾薇兒約 46px —— 那正是「她坐著」的訊號。
                       145 試過**太低**，人幾乎整個沉到對話框後面。
@@ -151,10 +154,15 @@ export const ART = {
        正解是渲染出來與諾薇兒並排比頭，再調這兩個值。 */
   lunaria:{ cm:168, standCm:176, eye:32, fx:0.496, top:9, bot:1528, faceAdj:1.22,
            side:'R', alt:null, base:'resources/SI/Lunaria_SI_Armed.webp',
-           expr:{ seat:       { src:'resources/SI/Luna_SI_seat_N.webp',     top:7, bot:1536, fx:0.448, faceAdj:0.92, standCm:155 },
-                  seat_smirk: { src:'resources/SI/Luna_SI_seat_smirk.webp', top:0, bot:1536, fx:0.504, faceAdj:0.92, standCm:155 },
-                  seat_angry: { src:'resources/SI/Luna_SI_seat_angry.webp', top:0, bot:1536, fx:0.521, faceAdj:0.92, standCm:155 },
-                  seat_hand:  { src:'resources/SI/Luna_SI_seat_hand.webp',  top:3, bot:1536, fx:0.465, faceAdj:0.92, standCm:155 } } },
+           /* 站姿差分（地宮那一幕的收尾，ver -349）。⚠ 這兩張的檔名是 `Luna_*`，
+              但畫的是**璐娜莉亞**（同一套黑白洋裝＋眼罩，與 `Lunaria_SI_Armed` 同一人）。
+              全身站姿，所以 cm/standCm/faceAdj 全部沿用她站姿那一組，只覆寫取景。 */
+           expr:{ angry:      { src:'resources/SI/Luna_SI_angry.webp',       top:0, bot:1536, fx:0.477 },
+                  taunt:      { src:'resources/SI/Luna_SI_taunt.webp',       top:0, bot:1536, fx:0.510 },
+                  seat:       { src:'resources/SI/Luna_SI_seat_N.webp',     top:7, bot:1536, fx:0.448, faceAdj:0.74, standCm:155 },
+                  seat_smirk: { src:'resources/SI/Luna_SI_seat_smirk.webp', top:0, bot:1536, fx:0.504, faceAdj:0.74, standCm:155 },
+                  seat_angry: { src:'resources/SI/Luna_SI_seat_angry.webp', top:0, bot:1536, fx:0.521, faceAdj:0.74, standCm:155 },
+                  seat_hand:  { src:'resources/SI/Luna_SI_seat_hand.webp',  top:3, bot:1536, fx:0.465, faceAdj:0.74, standCm:155 } } },
   luna:   { cm:160, eye:30, fx:0.500, top:0, bot:1000,
            side:'L', alt:null, base:'resources/partner/Luna_CI_exc.webp', expr:{}, unmeasured:true },
 };
