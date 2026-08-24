@@ -926,7 +926,6 @@ function playKerberos(onGap, onDone){
      打字機也要停，不然框收了字還在跑。 */
   clearInterval(typing); typing=null;
   const bub=$('storyBubble'); if(bub) bub.style.visibility='hidden';
-  riseCue();          // 戰鬥音樂：門一開始上推就起播（見 setBattleCue）
   const at=(ms,fn)=>kerbTimers.push(setTimeout(fn,ms));
   /* ⚠ 查不到就**不要拼路徑**（ver -344）：`se('arrow')` 沒有素材，原本會拼出
      `resources/audio/se/undefined.mp3` → 404 → 拿到一頁 HTML 去 decodeAudioData
@@ -943,6 +942,10 @@ function playKerberos(onGap, onDone){
   kb.classList.add('rise','full');                       // ① 槍棺上推（楣跟著走）
   t+=KERB_T.rise;
   at(t,()=>{                                             // ② 撞頂：震動＋門縫透出十字亮光
+    /* ⚠ 戰鬥音樂在**撞頂之後**才進（ver -356，Ray 指定；-355 曾放在「開始上推」那一瞬）。
+       上推那一秒還是劇情的餘韻，音樂壓在撞擊上等於把那一下的重量分掉；
+       撞頂＝門被頂開的那一刻，音樂從這裡起來才是「戰鬥開始」。 */
+    riseCue();
     st.classList.remove('shake','hold'); void st.offsetWidth; st.classList.add('shake');
     kerbTimers.push(setTimeout(()=>st.classList.remove('shake'), KERB_T.thud));
     kb.classList.remove('glow'); void kb.offsetWidth; kb.classList.add('glow');
@@ -1387,7 +1390,7 @@ export function open(pos, done){
 /* main.js 注入戰鬥發動器：fn(battleId, resumePos)。
    ⚠ 回來時由 main.js 呼叫 `open(resumePos)` 續播 —— story 自己不知道戰鬥何時結束。 */
 export function setBattleHandler(fn){ battleHandler = fn || null; }
-/* 門**開始上推**那一瞬要做的事（ver -355，Ray：「戰鬥音樂從槍棺上移的瞬間開始播放」）。
+/* 門**撞頂**那一刻要做的事（ver -356 由「開始上推」改到這裡，Ray 指定）。
    ⚠ 由 main.js 注入，story.js 不去認識「戰鬥的曲子叫什麼」——單向資料流。
    ⚠ 為什麼不放在 `battleHandler` 裡：那一支是在門**開到縫**（onGap）才呼叫的，
      距離開始上推有 3 秒多（rise 1000 ＋ 撞頂 ＋ 解鎖 ＋ 紋章浮起 1600）。 */

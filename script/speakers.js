@@ -157,14 +157,20 @@ export const ART = {
            /* 站姿差分（地宮那一幕的收尾，ver -349）。⚠ 這兩張的檔名是 `Luna_*`，
               但畫的是**璐娜莉亞**（同一套黑白洋裝＋眼罩，與 `Lunaria_SI_Armed` 同一人）。
               全身站姿，所以 cm/standCm/faceAdj 全部沿用她站姿那一組，只覆寫取景。 */
+           /* ⚠ 兩張站姿都帶 `standCm:171`（ver -356，Ray：「璐娜立姿立繪稍微下修位置，
+              往下移半張臉」）。頭頂 y ＝ `頂線 + (176 − standCm) × pxCm`，所以 standCm
+              調小 5cm ＝ 往下 5×pxCm ≈ **22px**（實測 pxCm 4.43），約半個臉（一個臉 44px）。
+              ⚠ 只寫在 `expr` 上，**不動角色的 `standCm:176`** —— 那是站姿基本立繪
+                （`Lunaria_SI_Armed`）的值，動它會連別處一起下沉。
+              ⚠ 也不要用 `cm` 去達成：`cm` 是縮放的分子，一改人就跟著變大變小。 */
            /* ⚠ G2 入口那一段的兩張站姿都帶自己的 `faceAdj`（Ray 逐次看實機調的）：
                 angry 1.22 → 1.10（-350「再縮 10%」）→ **0.94**（-351「G2 入口的立繪縮 15%」）
                 taunt 1.22 → 1.04（-351 的 −15%）→ **0.83**（-353「taunt 再縮 20%」）
               ⚠ 兩張數字不同是**刻意**的：angry 比 taunt 多縮過一輪。補的是那一張畫的
                 構圖差異，不是角色屬性 —— 要調就調這裡，**不要回頭動角色的 cm**
                 （那會連站姿基本立繪與坐姿一起變）。 */
-           expr:{ angry:      { src:'resources/SI/Luna_SI_angry.webp',       top:0, bot:1536, fx:0.477, faceAdj:0.94 },
-                  taunt:      { src:'resources/SI/Luna_SI_taunt.webp',       top:0, bot:1536, fx:0.510, faceAdj:0.83 },
+           expr:{ angry:      { src:'resources/SI/Luna_SI_angry.webp',       top:0, bot:1536, fx:0.477, faceAdj:0.94, standCm:171 },
+                  taunt:      { src:'resources/SI/Luna_SI_taunt.webp',       top:0, bot:1536, fx:0.510, faceAdj:0.83, standCm:171 },
                   seat:       { src:'resources/SI/Luna_SI_seat_N.webp',     top:7, bot:1536, fx:0.448, faceAdj:0.74, standCm:155 },
                   seat_smirk: { src:'resources/SI/Luna_SI_seat_smirk.webp', top:0, bot:1536, fx:0.504, faceAdj:0.74, standCm:155 },
                   /* ⚠ `seat_angry` 比其他三張坐姿再小一截：0.74 → **0.63**
