@@ -336,6 +336,11 @@ export const MAIN_SCRIPT = {
     sceneId:'capital_square',
     next:null,
     setFlags:['renna_named'],
+    /* ⚠ 這一幕**蕾娜站右**（ver -360，Ray 指定）。她的固定站位是左（與諾薇兒同側），
+       而這一幕全程只有她們兩個 —— 同側的話每換一個說話者就是一次滑出＋滑入，讀起來很忙。
+       ⚠ 覆寫是**整幕**的，不是逐句（逐句換邊＝ver -288 被退回的發起位制：
+         立繪朝向是畫死的，換邊要水平翻轉，髮旋與持物會左右顛倒）。 */
+    sides:{ RENNA:'R' },
     /* 好感度起算（Ray 指定，不顯示於任何 UI）。⚠ 這是**絕對值**，
        由 story.js 在 scene 收尾時寫一次（有 flag 擋，重看不會洗掉玩家的累積）。 */
     initAffection:{ renna:0, nouvelle:5, anya:0, sorana:0 },
@@ -379,13 +384,15 @@ export const MAIN_SCRIPT = {
         portrait:{ char:'NOUVELLE', expr:'surprise', show:true } },
       { speaker:'RENNA', text:'真是守規矩的孩子呢。',
         portrait:{ char:'RENNA', expr:'smile', show:true } },
-      /* 主角開口（空框），同一拍一記悶響。 */
-      { speaker:'PLAYER', blank:true, se:'se_punch' },
+      /* 主角開口（空框）。⚠ 這一拍**不配音效**（ver -360 修正）——
+         悶響是諾薇兒揍下去那一下，排在蕾娜講完之後。 */
+      { speaker:'PLAYER', blank:true },
       { speaker:'RENNA', text:'……你倒是叫得挺順口的。',
         portrait:{ char:'RENNA', expr:'stare', show:true } },
-      /* 打擊震動：稿上是獨立一拍（蕾娜講完、諾薇兒開罵之前）。
-         ⚠ 沒有台詞也沒有立繪變化 → 沒有 ▼，所以要 `auto` 自己走。 */
-      { speaker:'NOUVELLE', text:'', auto:700, shake:true },
+      /* 揍下去：諾薇兒的驚訝立繪 ＋ 畫面震動 ＋ 悶響，同一拍（Ray 指定的節奏）。
+         ⚠ 沒有台詞 → 不出框 → 沒有 ▼，所以要 `auto` 自己走；那一秒從立繪站定起算（§6.5）。 */
+      { speaker:'NOUVELLE', text:'', auto:700, shake:true, se:'se_punch',
+        portrait:{ char:'NOUVELLE', expr:'surprise', show:true } },
       { speaker:'NOUVELLE', text:'（那是侯爵的千金欸！你莊重一點！）',
         portrait:{ char:'NOUVELLE', expr:'whisper', show:true } },
       { speaker:'RENNA', text:'沒關係啦，好久沒被那樣叫，有點懷念罷了。',

@@ -274,6 +274,20 @@ function topLines(){
 /* ══ 立繪槽 ══ */
 function slotEl(side){ return $(side==='R' ? 'storyCastR' : 'storyCastL'); }
 
+/* ══ 站位（ver -360）══
+   預設是角色的固定站位（`speakers.js` 的 `ART[].side`，§6.5：同一個人每次都站同一邊）。
+   ⚠ **scene 可以覆寫**（`sides:{RENNA:'R'}`）—— 為的是「一幕裡只有兩個人、又剛好同側」
+     那種場面：每換一個說話者就是一次滑出＋滑入，讀起來很忙（Ray 在帝都那一幕回報）。
+   ⚠ 覆寫是**整幕**的，不是逐句 —— 逐句換邊就回到 ver -288 那個被退回的「發起位制」，
+     而立繪朝向是畫死的，換邊得水平翻轉、髮旋與持物會左右顛倒。
+   ⚠ 覆寫要小心與同側的人撞車：例如會客廳那一幕璐娜莉亞坐在右邊，蕾娜若也覆寫成右，
+     兩人就會互相擠掉。加覆寫前先想清楚那一幕台上有誰。 */
+let sideOverride = {};
+function sideOf(id){
+  if(sideOverride[id]) return sideOverride[id];
+  const a=artOf(id); return (a && a.side) || 'L';
+}
+
 /* 讓某角色出現在他該在的位置；已在場就只更新表情。回傳他所在的 side。 */
 /* 這一拍有沒有人「滑進來」（首次上場或同側換人）。給 renderLine 決定
    無台詞那一拍要多等多久 —— 見下方 `auto` 的說明。 */
@@ -285,7 +299,7 @@ function ensureOn(id, expr){
      原本沒擋，`artOf` 回 null 之後 side 退回 'L'，於是她們去佔了左邊那個槽，
      把站在那裡的諾薇兒**整個清掉**（Ray 回報「讓開。」那一拍她不見了）。 */
   if(!artOf(id)) return null;
-  const side = (artOf(id) && artOf(id).side) || 'L';   // 固定站位，見檔頭
+  const side = sideOf(id);                              // 固定站位（可由 scene 覆寫），見 sideOf
   const el = slotEl(side); if(!el) return null;
   const src = srcFor(sp.art, expr);
   const swapping = (slot[side] && slot[side]!==id);
@@ -1033,7 +1047,7 @@ function renderLine(){
   if(line.hide){
     for(const id of [].concat(line.hide)){
       const a3=artOf(id); if(!a3) continue;
-      const s3=a3.side||'L';
+      const s3=sideOf(id);
       if(slot[s3]===id) leaveSlot(s3);
       if(shown[id]) shown[id].show=false;
     }
@@ -1057,7 +1071,7 @@ function renderLine(){
      台上原本站著的人維持原樣。 */
   if(artOf(who)){
     if(st.show) side = ensureOn(who, st.expr);
-    else { const a2=artOf(who), s2=(a2&&a2.side)||'L'; if(slot[s2]===who) leaveSlot(s2); }
+    else { const s2=sideOf(who); if(slot[s2]===who) leaveSlot(s2); }
   }
 
   /* 高亮跟著 speaker 走（speaker 與畫面上的人可以不同）。 */
@@ -1065,7 +1079,7 @@ function renderLine(){
      照原本的邏輯會誤把左邊那位當成說話者點亮。 */
   const spA=artOf(line.speaker);
   if(!spA) highlight(null);
-  else { const spSide=spA.side||'L'; highlight(slot[spSide]===line.speaker ? spSide : side); }
+  else { const spSide=sideOf(line.speaker); highlight(slot[spSide]===line.speaker ? spSide : side); }
 
   /* CG／背景／CI 由 applyPersist 處理（上面），這裡不再重複。 */
 
@@ -1184,6 +1198,7 @@ function playScene(id){
   const sc = MAIN_SCRIPT[id];
   if(!sc){ console.warn('[story] 找不到 scene：', id); close(); return; }
   cur = sc; lineIdx = 0;
+  sideOverride = sc.sides || {};        // 這一幕的站位覆寫（見 sideOf）
   slot={L:null,R:null}; slotExpr={L:null,R:null}; shown={};
   leaveSlot('L'); leaveSlot('R');
   renderLine();
