@@ -1506,10 +1506,12 @@
   /* 全畫面推進層：點任何一處推一句（退出鈕除外，它自己 stopPropagation）。 */
   #storyTouch{position:absolute;inset:0;z-index:3;background:transparent;touch-action:none;}
   #storyExit{position:absolute;z-index:8;top:calc(env(safe-area-inset-top,0px) + 10px);right:12px;}
-  /* 跳段鈕（開發者限定）：與退出鈕同排、靠左一點。只在管理人模式（body.testmode）出現。 */
-  #storySkip{position:absolute;z-index:8;top:calc(env(safe-area-inset-top,0px) + 10px);
-    right:64px;width:auto;padding:0 12px;font-size:12px;letter-spacing:2px;
-    color:var(--holy);border-color:var(--holy);display:none;}
+  /* 跳段鈕（開發者限定）：**放在控制面盤左下**（ver -367，Ray 指定）。
+     ⚠ 不再與退出鈕同排 —— 上排留給「離開」，面盤那一排是操作區。 */
+  #storySkip{position:absolute;z-index:8;top:auto;right:auto;
+    left:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);
+    width:auto;height:34px;padding:0 14px;font-size:12px;letter-spacing:2px;
+    color:var(--holy);border-color:var(--holy);border-radius:17px;display:none;}
   body.testmode #storyStage.on #storySkip{display:flex;}
   /* 對話框：與教學同一套視覺（同色同框同字級），只是定位在畫面下緣。 */
   /* ⚠ 對話框錨在**立繪區的下緣**（盤面之上），不是畫面底 —— 盤面是固定的，
@@ -1565,6 +1567,34 @@
     font-family:inherit;font-size:13px;letter-spacing:3px;color:var(--gold);
     background:rgba(10,8,14,.7);border:1px solid var(--gold-dim);border-radius:8px;}
   #lootSheet .loot-ok:active{transform:scale(.98);}
+
+  /* ── 面盤模式提示 ＋ 已播腳本（ver -367）──────────────────────────
+     ⚠ 提示做成**面盤上緣的一條細字**，不做成浮動 badge：面盤中央是團徽／盤面，
+       壓一顆按鈕上去會擋住那張圖，而玩家的手指也正好停在那一區。 */
+  #storyStage.story-auto #storyBoard::after,
+  #storyStage.story-fast #storyBoard::after{
+    content:'AUTO';position:absolute;left:0;right:0;top:6px;text-align:center;
+    font-size:10px;letter-spacing:4px;color:var(--gold-dim);pointer-events:none;}
+  #storyStage.story-fast #storyBoard::after{content:'>>';color:var(--holy);}
+
+  #storyLog{position:fixed;inset:0;z-index:9600;display:flex;align-items:center;
+    justify-content:center;background:rgba(4,3,7,.78);backdrop-filter:blur(2px);
+    opacity:0;transition:opacity .2s ease;pointer-events:none;}
+  #storyLog.on{opacity:1;pointer-events:auto;}
+  #storyLog .log-panel{width:min(94%,420px);max-height:86vh;display:flex;flex-direction:column;
+    background:var(--panel);border:1px solid var(--gold-dim);border-radius:12px;
+    padding:12px 12px 10px;box-shadow:0 8px 30px rgba(0,0,0,.6);}
+  #storyLog .log-title{font-size:13px;letter-spacing:4px;color:var(--gold);
+    text-align:center;margin-bottom:8px;}
+  #storyLog .log-list{display:flex;flex-direction:column;gap:8px;overflow-y:auto;}
+  #storyLog .log-row{display:flex;flex-direction:column;gap:2px;padding:6px 8px;
+    background:rgba(255,255,255,.03);border-radius:8px;}
+  #storyLog .log-name{font-size:10px;letter-spacing:2px;color:var(--gold);}
+  #storyLog .log-text{font-size:12px;line-height:1.7;color:var(--ink);}
+  #storyLog .log-empty{font-size:12px;color:var(--gold-dim);text-align:center;padding:12px;}
+  #storyLog .log-ok{margin-top:10px;padding:9px 0;font-family:inherit;font-size:12px;
+    letter-spacing:3px;color:var(--gold);background:rgba(10,8,14,.7);
+    border:1px solid var(--gold-dim);border-radius:8px;}
 
   /* ── 存讀檔欄位面板：一頁 10 列，超出增頁 ── */
   #saveSheet{position:fixed;inset:0;z-index:9200;display:none;

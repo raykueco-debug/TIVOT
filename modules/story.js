@@ -65,6 +65,17 @@ let onExit = null;              // 播完/退出後的回呼
 
 const missingExpr = new Set();  // 已回報過的缺圖，避免洗版
 
+/* ══ 面盤上的三種手勢與兩種模式（ver -367，Ray 指定）══
+     按住下拉 → `fastMode`：打字加速 ＋ 自動點擊（放開就停）
+     往右滑   → `autoPlay`：唸完自動推進（再滑一次關掉）
+     往左滑   → 開啟「本場已播腳本」
+   ⚠ 三者都掛在**面盤**（`--story-top` 之下那一塊）上，上半的場景區照舊是
+     「點一下推一句」—— 手勢與推進共用同一個 `#storyTouch`，靠**起點在哪**分流。
+   ⚠ 換場（`playScene`）要把兩個模式都關掉：模式是「玩家現在的操作意圖」，
+     不是劇本狀態，跨場沿用會變成下一幕自己跑起來。 */
+let fastMode=false, autoPlay=false, autoT2=null;
+let sceneLog=[];               // 本場已播的台詞（回顧用）：{name, text}
+
 /* ══ 立繪素材解析 ══
    expr 查不到 → 回退 base 立繪，並在 console 記一筆（只記一次）。
    ⚠ 差分素材目前全部不存在，所以**每一句都會走回退**——這是預期狀態。
@@ -373,19 +384,32 @@ function highlight(side){
 function subst(t){ return String(t==null?'':t).split('{P}').join(prog.getPlayerName()); }
 
 /* ══ 打字機 ══ */
+/* 打字機。⚠ 速度吃 `typeSpeed()` —— 按住下拉的加速模式要即時變快（ver -367），
+   所以每一格都重新問一次，不是進來時決定好。
+   ⚠ 打完要回呼 `onTyped`：自動播放靠它決定「這一句唸完了，可以走下一句」。 */
+let onTyped = null, typingMs = 0;
+function typeSpeed(){ return fastMode ? 4 : TYPE_MS; }
 function typeOut(el, text){
   clearInterval(typing);
   const full = subst(text); let i=0;
   el.innerHTML='';
-  typing = setInterval(()=>{
+  const step=()=>{
     i++;
     el.innerHTML = decorateLine(full.slice(0,i));   // 逐字重繪：關鍵字補完最後一字才上色
-    if(i>=full.length){ clearInterval(typing); typing=null; }
-  }, TYPE_MS);
+    if(i>=full.length){ clearInterval(typing); typing=null; if(onTyped) onTyped(); return; }
+    /* 速度變了就換一個間隔重掛（setInterval 的間隔不能中途改）。
+       ⚠ 間隔記在**另一個變數**：瀏覽器的 `setInterval` 回傳的是 number，
+         往上面掛屬性會直接 TypeError（實測踩到）。 */
+    if(typing && typingMs!==typeSpeed()){
+      clearInterval(typing); typingMs=typeSpeed(); typing=setInterval(step, typingMs);
+    }
+  };
+  typingMs=typeSpeed(); typing=setInterval(step, typingMs);
 }
 function typeFinish(el, text){
   clearInterval(typing); typing=null;
   el.innerHTML = decorateLine(subst(text));
+  if(onTyped) onTyped();
 }
 
 /* ══ 演出層（ver -315）══════════════════════════════════════════════
@@ -1201,6 +1225,10 @@ function renderLine(){
   for(const s2 of ['L','R']){ const el=slotEl(s2); if(el) el.classList.remove('dark'); }
   if(line.dark && side){ const el=slotEl(side); if(el) el.classList.add('dark'); }
 
+  /* 本場回顧：有台詞的才記（演出拍不是台詞）。⚠ 記的是**代換後**的字，
+     玩家看到什麼、回顧就是什麼。 */
+  if(line.text) sceneLog.push({ name:(line.speaker==='PLAYER' ? prog.getPlayerName() : nameOf(line.speaker)),
+                                text:subst(line.text) });
   const nm=$('storyName'), tx=$('storyText');
   /* 主角沒有立繪、名字由玩家取（存檔裡），所以不走 speakers.js 的查表。
      ⚠ 代換要在**顯示的這一刻**做（同 `{P}` 的規矩）：玩家中途改名，
@@ -1251,6 +1279,9 @@ function renderLine(){
     if(bub2) bub2.style.visibility='';
     if(tx) typeOut(tx, line.text);
   }
+  /* 自動播放／加速：這一句唸完就排下一句。⚠ 掛在 `onTyped` 而不是固定秒數 ——
+     長句與短句該停一樣久的「讀完之後」，不是一樣久的「出現之後」。 */
+  onTyped = ()=>{ onTyped=null; scheduleAuto(); };
   };   // reveal 結束
 
   if(persistFaded){
@@ -1311,6 +1342,8 @@ function playScene(id){
   const sc = MAIN_SCRIPT[id];
   if(!sc){ console.warn('[story] 找不到 scene：', id); close(); return; }
   cur = sc; lineIdx = 0;
+  sceneLog = [];                        // 回顧只留這一場（見 showBacklog）
+  stopModes();                          // 模式不跨場（見宣告處的說明）
   sideOverride = sc.sides || {};        // 這一幕的站位覆寫（見 sideOf）
   slot={L:null,R:null}; slotExpr={L:null,R:null}; shown={};
   leaveSlot('L'); leaveSlot('R');
@@ -1549,6 +1582,7 @@ export function close(opts){
   clearTimeout(autoT); autoT=null;   // ⚠ 沒清的話劇情關掉之後還會推一句（然後在關著的舞台上演）
   const b0=$('storyBubble'); if(b0) b0.style.visibility='';
   active=false; cur=null;
+  stopModes(); clearTimeout(autoT2); autoT2=null; onTyped=null;
   stopKerberos();
   const st=$('storyStage'); if(st) st.classList.remove('on');
   document.body.classList.remove('story-on');
@@ -1591,9 +1625,85 @@ export function skipToNextGate(){
   endScene();
 }
 
+/* 自動推進的排程。fast＝按住下拉（很快）、auto＝自動播放（讀得完的節奏）。 */
+function scheduleAuto(){
+  clearTimeout(autoT2); autoT2=null;
+  if(!active) return;
+  if(!fastMode && !autoPlay) return;
+  autoT2=setTimeout(()=>{ autoT2=null; if(active && (fastMode||autoPlay)) advance(); },
+                    fastMode ? 120 : 1100);
+}
+function setFast(on){
+  if(fastMode===on) return;
+  fastMode=on;
+  const st=$('storyStage'); if(st) st.classList.toggle('story-fast', on);
+  if(on) scheduleAuto(); else { clearTimeout(autoT2); autoT2=null; }
+}
+function setAuto(on){
+  autoPlay=on;
+  const st=$('storyStage'); if(st) st.classList.toggle('story-auto', on);
+  if(on) scheduleAuto(); else { clearTimeout(autoT2); autoT2=null; }
+}
+function stopModes(){ setFast(false); setAuto(false); }
+
+/* ══ 本場已播腳本（往左滑開啟）══
+   ⚠ 只列**這一場**的：跨場的回顧要另一套資料（存檔級），現在還沒有。 */
+function showBacklog(){
+  if(document.getElementById('storyLog')) return;
+  const ov=document.createElement('div'); ov.id='storyLog';
+  const rows = sceneLog.length
+    ? sceneLog.map(r=>'<div class="log-row"><span class="log-name">'+r.name+'</span>'
+                     +'<span class="log-text">'+r.text+'</span></div>').join('')
+    : '<div class="log-empty">（這一場還沒有台詞）</div>';
+  ov.innerHTML='<div class="log-panel"><div class="log-title">已播腳本</div>'
+             + '<div class="log-list">'+rows+'</div>'
+             + '<button class="log-ok" type="button">關閉</button></div>';
+  document.body.appendChild(ov);
+  requestAnimationFrame(()=>{ ov.classList.add('on');
+    const list=ov.querySelector('.log-list'); if(list) list.scrollTop=list.scrollHeight; });
+  const close=()=>{ ov.classList.remove('on');
+    setTimeout(()=>{ if(ov.parentNode) ov.parentNode.removeChild(ov); }, 200); };
+  ov.querySelector('.log-ok').addEventListener('click', e=>{ e.stopPropagation();
+    try{ SFX.menuClick(); }catch(_){} close(); });
+}
+
 export function init(){
   const touch=$('storyTouch');
-  if(touch) touch.addEventListener('click', ()=>{ if(active) advance(); });
+  /* ══ 面盤手勢（ver -367）══
+     起點在**面盤**（`--story-top` 之下）才算手勢；起點在上半就是單純的「點一下推一句」。
+     ⚠ 用 pointer 事件自己判，不要用 click：click 沒有起點資訊，分不出「點」與「滑」。
+     ⚠ 判定門檻：橫向 40px 決定左右滑；縱向下拉 30px 進加速模式（放開即停）。
+       兩者取先達到的那一個，避免斜著滑時同時觸發。 */
+  if(touch){
+    let p0=null, mode=null;
+    /* 面盤的上緣＝立繪區的下緣。⚠ 走 `STAGE()`（鐵律 7 的單一真相），不要在這裡
+       再讀一次 config —— 那就是「同一個量兩處各算一次」。 */
+    const panelTop = ()=>{ const st=$('storyStage');
+      return st ? st.getBoundingClientRect().height*STAGE().topRatio : 0; };
+    touch.addEventListener('pointerdown', e=>{
+      if(!active) return;
+      const st=$('storyStage'); const r=st.getBoundingClientRect();
+      const onPanel = (e.clientY - r.top) > panelTop();
+      p0 = { x:e.clientX, y:e.clientY, panel:onPanel, moved:false };
+      mode = null;
+    });
+    touch.addEventListener('pointermove', e=>{
+      if(!p0 || !p0.panel) return;
+      const dx=e.clientX-p0.x, dy=e.clientY-p0.y;
+      if(!mode){
+        if(Math.abs(dx)>40 && Math.abs(dx)>Math.abs(dy)){ mode = dx>0 ? 'auto' : 'log'; p0.moved=true;
+          if(mode==='auto') setAuto(!autoPlay); else { stopModes(); showBacklog(); } }
+        else if(dy>30 && dy>Math.abs(dx)){ mode='fast'; p0.moved=true; setFast(true); }
+      }
+    });
+    const end=()=>{ if(mode==='fast') setFast(false); p0=null; mode=null; };
+    touch.addEventListener('pointerup', end);
+    touch.addEventListener('pointercancel', end);
+    /* 點擊推進：⚠ 滑動過就不算點（不然放開手會多推一句）。 */
+    touch.addEventListener('click', e=>{ if(!active) return;
+      if(mode || (p0 && p0.moved)) return;
+      advance(); });
+  }
   const ex=$('storyExit');
   if(ex) ex.addEventListener('click', e=>{ e.stopPropagation(); close(); });
   window.addEventListener('resize', ()=>{ if(active){ layout(); layoutKerberos(); } });
