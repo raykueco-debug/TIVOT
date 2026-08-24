@@ -358,7 +358,7 @@ export const STRINGS = {
       usedLifeReturn: '我話說在前頭，這次是蕾妮救了你，萬一熔斷就真的背水一戰了。',
       noLifeReturn:   '身手不錯，但要存活下來也得好好依賴伙伴。',
       outro:          '「聖徒化」是場豪賭，失敗的話就再也沒有退路，謹慎使用吧。',
-      buttonLabel:    '回到主畫面',
+      buttonLabel:    '繼續',
       buttonLine:     '期待你的表現。',
     },
   },

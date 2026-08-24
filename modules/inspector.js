@@ -338,9 +338,25 @@ function tutorialSettle(totalTime, stats){
   const rbtn=$('rematchBtn');
   if(rbtn) rbtn.textContent = tr.buttonLabel || '回到主畫面';
   state.resultMode = 'tutorial-home';
-  /* 拾得道具：結算頁站定之後才彈（同一拍彈出來會蓋掉玩家還沒看到的戰績）。
-     ⚠ 道具在 `showLoot` 裡入袋，這裡不必也不要自己再寫一次存檔。 */
-  setTimeout(()=>showLoot((GAME_CONFIG.tutorial||{}).loot || [], null), 800);
+  /* 拾得道具：**點畫面才跳出**（ver -361，Ray 指定；原本是 800ms 自動彈）。
+     讓玩家先把戰績看完，想看下一頁再點 —— 與對話推進同一個手感。
+     ⚠ 「回到主畫面」那顆鈕也會先彈道具（見 onRematchBtn）：不能讓玩家一按就走人，
+       那樣掉落等於沒發生（道具其實已經入袋，但他不知道拿到什麼）。 */
+  const loot=(GAME_CONFIG.tutorial||{}).loot || [];
+  _lootPending = loot.length ? loot : null;
+  if(_lootPending){
+    /* ⚠ 掛 `pointerup` 在捕獲階段：結算頁上有幾個 `pointer-events:none` 的層
+       （對話框、立繪舞台），事件不一定冒泡到某個特定容器，掛 document 最穩。
+       ⚠ `once:true` ＋ 旗標雙保險：連點兩下不會彈兩次。 */
+    document.addEventListener('pointerup', popLootOnce, { capture:true, once:true });
+  }
+}
+/* 拾得道具的待彈狀態（見 tutorialSettle 與 onRematchBtn）。 */
+let _lootPending = null;
+function popLootOnce(){
+  const list=_lootPending; _lootPending=null;
+  document.removeEventListener('pointerup', popLootOnce, { capture:true });
+  if(list) showLoot(list, null);
 }
 
 function applyTutorialResult(){
@@ -458,6 +474,9 @@ export function onRematchBtn(){
   clearTimeout(_resultAutoTimer);   // 玩家有操作 → 取消自動回首頁
   if(state.resultMode==='tutorial-leaving') return;   // 教學結算離場中：防連點重入
   if(state.resultMode==='tutorial-home'){   // 教學戰結算：按鈕離場
+    /* ⚠ 道具還沒彈過 → 這一按先彈道具，不離場（ver -361）。
+       玩家一按就走的話，掉落等於沒發生 —— 東西雖然已經入袋，但他不知道拿到什麼。 */
+    if(_lootPending){ popLootOnce(); return; }
     state.resultMode='tutorial-leaving';
     SFX.play(asset('sfx_start'), sfxGain('sfx_start'));
     /* ⚠ 監察官那兩句補話一起收掉（ver -358）：這一頁本來就沒有她（Ray 指定），

@@ -149,7 +149,7 @@ SFX.setMenuClick(asset('se_general_click'), sfxGain('se_general_click'));
 /* ⚠ `bgm_battle` 也進第二段（ver -344）：它 836KB，而最快也要**點過出陣**才用得到 ——
      出陣前有選武器／選搭檔／過場櫻花，時間綽綽有餘。playBgm 自己會 ensureBlob，
      真的沒載完頂多晚幾拍起播，不會壞。 */
-const LATE_BGM_PATHS = ['bgm_result','bgm_lose','bgm_boss','bgm_battle'].map(k=>ASSETS[k]).filter(Boolean);
+const LATE_BGM_PATHS = ['bgm_result','bgm_lose','bgm_boss','bgm_battle','bgm_crisis'].map(k=>ASSETS[k]).filter(Boolean);
 let _lateBgmKicked = false;
 function preloadLateBgm(){
   if(_lateBgmKicked) return; _lateBgmKicked = true;

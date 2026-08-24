@@ -801,7 +801,11 @@ function win(){
        中間插一張要點的過渡禎會把節奏切斷（同 -329「切乾淨」的理由）。
        結算頁照出 —— Ray 要的是「沒有監察官的戰績頁 ＋ 拾得道具」。 */
   const toResult = ()=>{
-    SFX.playBgm(asset('bgm_result'), { volume: bgmVol('bgm_result') });   // 驅逐完成頁被點掉後 → 結算 BGM
+    /* ⚠ **教學戰的結算不放 result BGM**（ver -361，Ray 指定）：那首是「一場驅逐打完」的
+       收束感，而教學是劇情中間的一段 —— 直接沿用地宮那條線的 crisis，情緒才接得上。
+       ⚠ 同曲重播由 playBgm 自己擋掉（劇情本來就在放 crisis 的話這裡是 no-op）。 */
+    const key = state.tutorialRun ? 'bgm_crisis' : 'bgm_result';
+    SFX.playBgm(asset(key), { volume: bgmVol(key) });
     inspector.settle(totalTime, stats, { isLose:false });
   };
   if(state.tutorialStoryRun) toResult(); else playTransition('finish', toResult);

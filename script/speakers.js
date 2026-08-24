@@ -153,7 +153,25 @@ export const ART = {
        standCm 155   ＝ **高度**：坐著的人頭頂本來就比站著的人低。155 讓她的頭低於
                       165cm 的諾薇兒約 46px —— 那正是「她坐著」的訊號。
                       145 試過**太低**，人幾乎整個沉到對話框後面。
-     ⚠⚠ 這兩個數字是**估出來的，還沒經 Ray 確認**（§6.5 允許「看出來的補償」，
+     ⚠⚠ **坐姿的 `faceAdj` 用「椅子」當尺**（ver -361，Ray：「璐娜坐姿的大小一直跳，
+       用椅子來鎖」）。四張坐姿是**各自生成**的，椅子本身就畫得不一樣大（實測像素差
+       50~96，不是同一張素材），所以「每張自己的 alpha 跨距」根本不是同一把尺 ——
+       這就是大小一直跳的原因。
+       量法（可重跑）：把每張的 alpha 輪廓對 `seat_N` 做**只比椅子帶**的縮放對位
+       （左右各 22% 欄、縱向 20~75%，避開中間的身體與手臂），求最佳縮放 k：
+           seat_N 1.000（基準） / seat_smirk 0.996 / seat_angry 1.140 / seat_hand 1.122
+       ⚠ 公式要**連 alpha 跨距一起算**（那是引擎的分母），不是只除 k：
+           `faceAdj_i = 0.74 × (bot_i−top_i)/(1536−7) ÷ k_i`
+         → seat 0.740 / smirk **0.737** / angry **0.648** / hand **0.634**。
+         這樣四張的「椅子在螢幕上的大小」才真的相等（只除 k 會殘留 3~4% 的誤差）。
+       ⚠ 交叉驗證：Ray 先前憑眼睛把 `seat_angry` 收到 **0.63**（−15%），公式算出來是 **0.648**
+         —— 兩條獨立的路落在 3% 內，所以這把尺是可信的。四張一律改用公式值，
+         方法才是一致的（Ray 的 0.63 與 0.648 肉眼難分）。
+       ⚠ **不要**改用「整張輪廓」對位：`hand` 那張手臂舉起來，輪廓變了，量出來是 1.089
+         （與椅子帶的 1.122 差 3%），而且 `angry` 會量成 1.027（差 10%，明顯錯）。
+         身體會動，椅子不會 —— 那正是「用椅子來鎖」的意思。
+
+     ⚠⚠ 下面這兩個數字是**估出來的，還沒經 Ray 確認**（§6.5 允許「看出來的補償」，
        但要有人看過才算數）。三種自動量法都失敗，別再走一次：膚色偵測臉高會把手臂
        胸口腿一起算進去；窄帶取膚色跨距被髮絲汙染；眼罩當剛體尺標分不出髮帶與衣服。
        正解是渲染出來與諾薇兒並排比頭，再調這兩個值。 */
@@ -177,12 +195,12 @@ export const ART = {
            expr:{ angry:      { src:'resources/SI/Luna_SI_angry.webp',       top:0, bot:1536, fx:0.477, faceAdj:0.94, standCm:171 },
                   taunt:      { src:'resources/SI/Luna_SI_taunt.webp',       top:0, bot:1536, fx:0.510, faceAdj:0.83, standCm:171 },
                   seat:       { src:'resources/SI/Luna_SI_seat_N.webp',     top:7, bot:1536, fx:0.448, faceAdj:0.74, standCm:155 },
-                  seat_smirk: { src:'resources/SI/Luna_SI_seat_smirk.webp', top:2, bot:1519, fx:0.539, faceAdj:0.74, standCm:155 },
+                  seat_smirk: { src:'resources/SI/Luna_SI_seat_smirk.webp', top:2, bot:1519, fx:0.539, faceAdj:0.737, standCm:155 },
                   /* ⚠ `seat_angry` 比其他三張坐姿再小一截：0.74 → **0.63**
                      （-353，Ray「seat_angry 再縮 15%」）。同一組坐姿吃不同的補償是刻意的，
                      補的是**那一張畫**的構圖差異（這張她往前傾、臉畫得比較大）。 */
-                  seat_angry: { src:'resources/SI/Luna_SI_seat_angry.webp', top:0, bot:1526, fx:0.539, faceAdj:0.63, standCm:155 },
-                  seat_hand:  { src:'resources/SI/Luna_SI_seat_hand.webp',  top:20, bot:1489, fx:0.546, faceAdj:0.74, standCm:155 } } },
+                  seat_angry: { src:'resources/SI/Luna_SI_seat_angry.webp', top:0, bot:1526, fx:0.539, faceAdj:0.648, standCm:155 },
+                  seat_hand:  { src:'resources/SI/Luna_SI_seat_hand.webp',  top:20, bot:1489, fx:0.546, faceAdj:0.634, standCm:155 } } },
   luna:   { cm:160, eye:30, fx:0.500, top:0, bot:1000,
            side:'L', alt:null, base:'resources/partner/Luna_CI_exc.webp', expr:{}, unmeasured:true },
 };

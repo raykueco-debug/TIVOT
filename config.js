@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.24-360';
+export const VERSION = 'ver 2026.08.24-361';
 
 export const GAME_CONFIG = {
 
@@ -411,7 +411,7 @@ export const GAME_CONFIG = {
       usedLifeReturn: '我話說在前頭，這次是蕾妮救了你，萬一熔斷就真的背水一戰了。',
       noLifeReturn:   '身手不錯，但要存活下來也得好好依賴伙伴。',
       outro:          '「聖徒化」是場豪賭，失敗的話就只能背水一戰，謹慎使用吧。',
-      buttonLabel:    '回到主畫面',
+      buttonLabel:    '繼續',            // ver -361：教學結算是「往下走」不是「離場」
       buttonLine:     '期待你的表現。',
     },
   },
@@ -783,8 +783,11 @@ export const GAME_CONFIG = {
     /* 音樂層（BGM）—— 目標 −28 LUFS，比語音低 10 dB。走 HTMLAudio.volume，
        不吃 masterVolume，所以這裡不用除。飛行頁的音樂另在 flight/index.html
        的 BGM_VOL 同步（同一個目標）。 */
+    /* ⚠ `bgm_crisis` 是 **0.62**，與 `modules/story.js` 播它時寫的那個 0.62 同值
+       （ver -361）。兩邊必須一致：`playBgm` 對「同曲播放中」直接 return，
+       誰先起播誰的音量就定了 —— 不一致的話同一首會因為「是誰起播的」而大小聲。 */
     bgmVol: { default:0.20, bgm_home:0.37, bgm_battle:0.17, bgm_boss:0.12,
-              bgm_result:0.20, bgm_lose:0.35 },
+              bgm_result:0.20, bgm_lose:0.35, bgm_crisis:0.62 },
 
     // 載入畫面教學 Hint 輪播（文案見 loadingHints）
     loadingHintHoldMs:   5000,  // 每句停留 5 秒
@@ -946,6 +949,7 @@ export const ASSETS = {
   //  BGM 一律 .m4a（AAC-LC 96k，自 128k MP3 轉檔，體積 −24%）：全平台原生支援；
   //  .mp3 母帶在 resources/audio/bgm/_master/，需要重轉時用 ffmpeg -c:a aac -b:a 96k。
   bgm_home:      "resources/audio/bgm/bgm_mainmenu.m4a",       // 主選單（含次要選單）
+  bgm_crisis:     "resources/audio/bgm/PerituneMaterial_Crisis_loop.m4a",   // 劇情/教學的緊張曲；教學結算也用它（ver -361，Ray：結算不要 result BGM）
   bgm_battle:    "resources/audio/bgm/bgm_battle.m4a",      // 戰鬥（驅逐開始插入瞬間起播）
   bgm_lose:      "resources/audio/bgm/bgm_missionfailed.m4a", // 任務失敗（驅逐失敗插入起播）
   bgm_result:    "resources/audio/bgm/bgm_result.m4a",      // 結算（驅逐完成頁被點掉後起播）

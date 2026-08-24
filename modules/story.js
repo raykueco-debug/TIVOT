@@ -579,6 +579,9 @@ function applyPersist(line){
     stageBgm=line.bgm;
     try{
       if(line.bgm){ const src=bgmSrc(line.bgm);
+        /* ⚠ 0.62 與 `config.js` 的 `bgmVol.bgm_crisis` 同值（ver -361）——
+           教學結算也會播這首（由 combat 起播），兩邊不一致的話同一首會因為
+           「是誰先起播」而大小聲（playBgm 對同曲播放中直接 return）。 */
         if(src) SFX.playBgm(src, {fadeInMs:800, volume:0.62});
         else { const tag='bgm/'+line.bgm;
           if(!missingExpr.has(tag)){ missingExpr.add(tag); console.info('[story] 沒有這首 BGM：', line.bgm); } }
