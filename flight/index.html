@@ -6227,8 +6227,43 @@ function updateEnemy(dt,now){
     if(tl.length>maxN) tl.length=maxN;
   }
 
-  if(dist<=C.engage){ enemy.state='engage'; enemy.tEngage=now; }
+  if(dist<=C.engage){ enemy.state='engage'; enemy.tEngage=now; toBattle(enemy.kind); }
 }
+
+/* ══ 遭遇 → 舒爾特盤（ver -382，Ray：「怪碰到船以後進入舒爾特盤」）══
+   飛行頁與主遊戲是**兩個頁面**，所以交棒走 localStorage：
+     `tivot_battle_req_v1`  這一場要打誰（`config.battles` 的鍵）
+     `tivot_flight_ret_v1`  打完回來要站在哪（座標／航向／高度）
+   主遊戲那邊由 `main.js` 在讀取頁被點掉之後接手；打贏才跳回來，
+   打輸走一般的失敗流程（Game Over → 主選單，ver -376 的規矩）。
+   ⚠ 只交棒一次：`engage` 每幀都會進來，沒有這道鎖會連跳好幾次。
+   ⚠ 留 1.1 秒讓「遭遇　◯◯」那一格看得到 —— 直接跳頁的話玩家不知道發生什麼事。 */
+let battleGoing=false;
+function toBattle(kind){
+  if(battleGoing) return;
+  battleGoing=true;
+  try{
+    localStorage.setItem('tivot_battle_req_v1', JSON.stringify({ battle:'flight_'+kind }));
+    localStorage.setItem('tivot_flight_ret_v1', JSON.stringify(
+      { x:cam.x, y:cam.y, angle:cam.angle, alt:cam.alt }));
+  }catch(e){}
+  setTimeout(()=>{ location.href='../index.html'; }, 1100);
+}
+
+/* 打完回來：把船放回離開時的位置（ver -382）。
+   ⚠ **讀了就清掉**：不清的話下次正常進飛行頁還會被拉回那個座標。
+   ⚠ 這一段要在 `cam` 宣告之後才跑得到，所以掛在這裡（生怪那一區）而不是檔頭。 */
+(function restoreFlightPos(){
+  try{
+    const j=JSON.parse(localStorage.getItem('tivot_flight_ret_v1')||'null');
+    localStorage.removeItem('tivot_flight_ret_v1');
+    if(j && isFinite(j.x) && isFinite(j.y)){
+      cam.x=j.x; cam.y=j.y;
+      if(isFinite(j.angle)) cam.angle=j.angle;
+      if(isFinite(j.alt))   cam.alt=j.alt;
+    }
+  }catch(e){}
+})();
 
 /* 加速鈕（開發用）：點一下位移加倍，再點一次回復。
    ⚠ 倍率套在**位移**（mv）而不是 cam.speed：cam.speed 同時驅動速度錶、

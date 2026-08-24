@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.24-381';
+export const VERSION = 'ver 2026.08.24-382';
 
 export const GAME_CONFIG = {
 
@@ -819,6 +819,13 @@ export const GAME_CONFIG = {
          不是教學那一場被鎖過的版本 —— 所以真的會輸，那正是分歧存在的理由。
        ⚠ 沒有禁聖徒化／搭檔技：Ray 沒說要禁。要禁再加 noSaint/noPartner。 */
     range_trainee: { enemy:'trainee', allowLose:true, record:'range' },
+    /* ══ 飛行頁的遭遇戰（ver -382）══ 怪撞上船 → 跳來這一頁打舒爾特盤。
+       ⚠⚠ 三隻怪的**敵人卡 Ray 還沒給**，所以現在**一律先借巨型聖徒**跑流程
+         （同打靶先用訓練用聖徒的作法）。卡到位之後只要改 `enemy` 這一欄。
+       ⚠ 打輸走一般的失敗流程（Game Over → 主選單），打贏才回飛行頁 —— 見 main.js。 */
+    flight_centipede: { enemy:'facelessgiant' },
+    flight_serpent:   { enemy:'facelessgiant' },
+    flight_pirate:    { enemy:'facelessgiant' },
   },
 
   /* ══ 懸賞（ver -375）══ 賞金獵人公會的委託榜。

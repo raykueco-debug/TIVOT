@@ -399,6 +399,14 @@ window.addEventListener('pagehide', refreshBoot);
       requestAnimationFrame(()=>fl.classList.add('grow'));
       setTimeout(()=>{ if(ov.parentNode) ov.remove(); fl.classList.add('fade'); }, 2500);  // 光暈蓋滿 → 撤遮罩、開始淡出
       setTimeout(()=>{ if(fl.parentNode) fl.remove(); }, 3800);                            // 聖光淡出完 → 清掉
+      /* 飛行頁交棒過來的遭遇戰：**不經主選單**，在聖光蓋滿的那一刻直接開打
+         （2500ms＝遮罩撤掉那一拍，畫面正好是全白 → 掀開就是戰鬥）。 */
+      const req = takeBattleReq();
+      if(req){
+        flightBack = true;
+        SFX.playBgm(asset('bgm_battle'), { fadeOutMs:600, volume: bgmVol('bgm_battle') });
+        setTimeout(()=>{ $('home').classList.remove('on'); combat.startScriptBattle(req.battle); }, 2500);
+      }
     };
     ov.addEventListener('click', go);
     ov.addEventListener('touchstart', go, {passive:true});
@@ -430,6 +438,21 @@ window.addEventListener('pagehide', refreshBoot);
   }
   critP.then(startBatch);
 })();
+
+/* ══ 飛行頁交棒過來的遭遇戰（ver -382，Ray：「怪碰到船以後進入舒爾特盤」）══
+   飛行頁把「要打誰」寫進 localStorage 再跳過來；讀取頁被點掉之後直接開打，不經主選單。
+   ⚠ **讀了就清掉**：不清的話重整一次又會再打一場。
+   ⚠ 打贏才跳回飛行頁（`flightBack`）；打輸走一般的失敗流程（Game Over → 主選單，
+     ver -376 的規矩），退出也一樣。 */
+const BATTLE_REQ_KEY='tivot_battle_req_v1';
+let flightBack=false;          // 這一場打完要不要跳回飛行頁
+function takeBattleReq(){
+  try{
+    const j=JSON.parse(localStorage.getItem(BATTLE_REQ_KEY)||'null');
+    localStorage.removeItem(BATTLE_REQ_KEY);
+    return (j && j.battle && GAME_CONFIG.battles && GAME_CONFIG.battles[j.battle]) ? j : null;
+  }catch(e){ return null; }
+}
 
 // 首頁：開始遊戲 → 主選單先淡出、空一拍（約 1s）Battle 才淡入（避免唐突），同時播「驅逐開始」過渡禎
 function launchBattle(opts){
@@ -550,7 +573,10 @@ function showExitConfirm(){
     b.addEventListener('click',run); b.addEventListener('touchstart',e=>{e.preventDefault();run();},{passive:false}); };
   // 繼續：解除暫停、攻擊圈/碼表接回；教學對話中按下＝回到教學暫停（不解除，由教學收段時解除）
   bind('.ec-no', ()=>{ close(); if(!state.tutorialDialog) combat.resumeFromDialog(); });
-  bind('.ec-yes',()=>{ close(); combat.goHome(); });            // 回主選單：goHome 內會清 cutinPlaying + 淡出淡入
+  /* 回主選單：goHome 內會清 cutinPlaying + 淡出淡入。
+     ⚠ 這一顆就是字面上的「回主選單」，所以要先取消「打完跳回飛行頁」（ver -382）——
+       不取消的話按退出反而會被送回天上。 */
+  bind('.ec-yes',()=>{ close(); flightBack=false; combat.goHome(); });
 }
 bindBtn('testClearBtn', combat.testClearBoard); // 左上（測試用）：一鍵清盤
 /* ⚠ 「道具」（bagBtn）與「城鎮」（townBtn）兩顆首頁鈕已於 ver -376 移除（Ray 指定）。
@@ -611,6 +637,10 @@ let storyResume = null;
 story.setTownOpener(town.open);   // scene 的 `thenTown` 由 story 呼叫（注入，story 不 import town）
 combat.setStoryClose(story.playKerberosClose);
 combat.setStoryReturn((res)=>{
+  /* 飛行頁交棒過來的那一場：打完跳回去（ver -382）。
+     ⚠ 只有**打贏**才回得去 —— 輸了在 `combat.lose()` 就走掉了（Game Over → 主選單），
+       根本不會呼叫這一支；退出則由退出確認先把 `flightBack` 關掉。 */
+  if(flightBack){ flightBack=false; location.href='flight/index.html'; return; }
   const r = storyResume; storyResume = null;
   /* ⚠ 走 `story.resumeFrom`（ver -375）：主線與城鎮的臨時段落**續播方式不同**，
      分流在 story 裡做（那裡才知道哪一種）。這裡照舊只負責把首頁收乾淨。 */

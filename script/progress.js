@@ -134,7 +134,9 @@ export function newRun(){
   /* 其他模組自己的存檔。⚠ 這裡列出來就是「它屬於一輪遊戲」的宣告 ——
      日後新增任何一輪內的存檔（例如城鎮的所在節點），**一定要加進這一行**。 */
   const tutKey = (GAME_CONFIG.tutorial||{}).storageKey;   // ⚠ 問 config，不要抄字串（鐵律 7）
-  for(const k of ['tivot_clock_v1', 'tivot_inventory_v1', 'tivot_money_v1', tutKey]) {
+  for(const k of ['tivot_clock_v1', 'tivot_inventory_v1', 'tivot_money_v1', tutKey,
+                  /* 飛行頁的交棒（ver -382）：待打的遭遇戰、以及打完要回去的座標。 */
+                  'tivot_battle_req_v1', 'tivot_flight_ret_v1']) {
     if(!k) continue;
     try{ localStorage.removeItem(k); }catch(e){}
   }
