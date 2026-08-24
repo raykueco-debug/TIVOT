@@ -596,6 +596,14 @@ combat.setStoryReturn(()=>{
   const r = storyResume; storyResume = null;
   combat.goHome(()=>{ if(r) story.open(r); }, { noBgm:true });
 });
+/* 戰鬥音樂：**門開始上推那一瞬**就起播（ver -355，Ray 指定）。
+   ⚠ 不能等 `setBattleHandler`（那是門開到縫才呼叫的，晚 3 秒多），也不要靠
+     `launchBattle` 裡那一行 —— 它帶 `delayMs:1000`，是給櫻花過渡禎用的節奏。
+   ⚠ 同一首重播由 `playBgm` 自己擋掉（同曲播放中直接 return），所以 launchBattle
+     那一行照留著不會打架。 */
+story.setBattleCue(()=>{
+  SFX.playBgm(asset('bgm_battle'), { fadeOutMs:600, volume: bgmVol('bgm_battle') });
+});
 story.setBattleHandler((battleId, resume)=>{
   storyResume = resume;
   /* ⚠ 標成 story 場次：與首頁「教學」鈕分開（Ray 指定）—— 這一場由諾薇兒帶

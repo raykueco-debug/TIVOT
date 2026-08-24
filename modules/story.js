@@ -135,7 +135,12 @@ function layout(){
      戰鬥盤面，拿整個舞台高去算的話人會被畫到盤面底下，而且「腳落地平線」
      那條規則會落在錯的地方。 */
   const cast=$('storyCast');
-  const W=stage.clientWidth, H=(cast?cast.clientHeight:stage.clientHeight);
+  const W=stage.clientWidth;
+  /* ⚠ 相機的分母用**視口高 × 56%**，不是 `#storyCast` 的即時高度（ver -355，
+     照飛行畫面那一套：一個 rect 都不逐句量）。兩者在靜止時相等，但元素的高度會在
+     轉場／網址列收合時被抓到中間值，那一瞬的值又被快取一整場。 */
+  const VH = window.innerHeight || document.documentElement.clientHeight || 0;
+  const H  = VH * 0.56;                     // ＝ style.css 的 `#storyStage{--story-top:56%}`
   if(!W || !H) return;
   const g=camGeom(H, W);
   const top=g.head;          // 頭頂落點（相機頂線是 g.top，只給 pxCm 用）
@@ -921,6 +926,7 @@ function playKerberos(onGap, onDone){
      打字機也要停，不然框收了字還在跑。 */
   clearInterval(typing); typing=null;
   const bub=$('storyBubble'); if(bub) bub.style.visibility='hidden';
+  riseCue();          // 戰鬥音樂：門一開始上推就起播（見 setBattleCue）
   const at=(ms,fn)=>kerbTimers.push(setTimeout(fn,ms));
   /* ⚠ 查不到就**不要拼路徑**（ver -344）：`se('arrow')` 沒有素材，原本會拼出
      `resources/audio/se/undefined.mp3` → 404 → 拿到一頁 HTML 去 decodeAudioData
@@ -1381,6 +1387,13 @@ export function open(pos, done){
 /* main.js 注入戰鬥發動器：fn(battleId, resumePos)。
    ⚠ 回來時由 main.js 呼叫 `open(resumePos)` 續播 —— story 自己不知道戰鬥何時結束。 */
 export function setBattleHandler(fn){ battleHandler = fn || null; }
+/* 門**開始上推**那一瞬要做的事（ver -355，Ray：「戰鬥音樂從槍棺上移的瞬間開始播放」）。
+   ⚠ 由 main.js 注入，story.js 不去認識「戰鬥的曲子叫什麼」——單向資料流。
+   ⚠ 為什麼不放在 `battleHandler` 裡：那一支是在門**開到縫**（onGap）才呼叫的，
+     距離開始上推有 3 秒多（rise 1000 ＋ 撞頂 ＋ 解鎖 ＋ 紋章浮起 1600）。 */
+function riseCue(){ if(battleCue) try{ battleCue(); }catch(e){} }
+let battleCue = null;
+export function setBattleCue(fn){ battleCue = fn || null; }
 
 export function close(opts){
   clearInterval(typing); typing=null;

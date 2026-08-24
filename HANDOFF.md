@@ -1,7 +1,7 @@
 # HANDOFF — Saint Install 模組化重寫 · 進度交接
 
 > 每輪開工前讀本檔 + 憲法/規格。實況以 `git log` 與 `DECISIONS.md` 為準;本檔為人類可讀的進度總覽。
-> **最後回寫:`ver -354`(2026-08-24)。** 本檔後半是逐版的交接,由新到舊往下加;
+> **最後回寫:`ver -355`(2026-08-24)。** 本檔後半是逐版的交接,由新到舊往下加;
 > **要快速上手請先讀下面那一段「★必讀 · 目前狀態(ver -341)」**（餵稿規格見 `script/SCRIPT_FORMAT.md`）,再依需要跳到對應版本。
 >
 > 目前狀態:CLAUDE.md §6 開發順序第 1~5 步已完成;**第 6 步(ACCEPTANCE 對照 reference)仍未動**,
@@ -94,7 +94,7 @@
    ＋`script/speakers.js`(角色表)＋`script/progress.js`(stage/flags)。
 6. `script/SCRIPT_FORMAT.md` — **Ray 餵稿的規格**(ver -342):寫稿格式、演出詞彙表、
    現有素材清單、一定要交代清楚的六件事。收到稿之後跑 `tools/script_lint.py` 驗。
-7. `git log`(本檔最後回寫於 `ver -354`)。
+7. `git log`(本檔最後回寫於 `ver -355`)。
 
 ---
 
@@ -2249,3 +2249,40 @@ clip 與門一起改成 **1s**（同 -343：要同速，看的是行程÷時間�
 
 立繪滑進來時本來就經過一次壓暗（`tone.js` 的背景調色 ＋ 非說話者的 `.dim`），
 再疊一層 `.dark` 會黑到看不出是誰（Ray：「已經有一次暗階，不用再塗黑」）。
+
+
+---
+
+# 交接 · `ver -355`（改照飛行畫面那一套：一個 rect 都不逐句量；戰鬥音樂在門上推那一瞬起播）
+
+## A. Ray：「你就不能按照飛行畫面的原則處理嗎？」—— 對，而且差別就在最後一項
+
+飛行頁的做法（`flight/index.html` 的 `castMeasure()`）：**resize 時把取景算成全域常數**
+（`CAST_TOP` / `CAST_PX_CM`），之後 `castGeom()` 只是查表 —— 畫面上**沒有任何逐句量測**。
+
+我這幾版一直在往那個方向收，但每次都留了一項還在逐句量：
+
+| 版 | 那時還在逐句量的東西 |
+|---|---|
+| -346 | 頂線（`topLine()` 量退出鈕） |
+| -350 | 頭頂落點（量鈕的上緣） |
+| -354 | `#tutCast` 的螢幕位置（`wr0.top`）、`#storyCast` 的即時高度 |
+| **-355** | **沒有了** |
+
+現在每一項都是常數：視口高（`innerHeight`）、瀏海高（`--notch-bar-h`）、
+鈕的幾何（`.corner-btn` 44px、`top:10px`）。
+`#tutCast` 的頂 ＝ `#app` 的 padding-top ＝ 瀏海高，所以「框內座標的頭頂」
+就是 `BTN_TOP + 身高讓位`，連換算都不必量。
+
+實測：劇情 h=738／頭頂 52，戰鬥 h=732／頭頂 56，跑幾次都一樣。
+**教訓：DOM 版要跟 canvas 版一樣穩，唯一的路是「所有輸入都不許是即時 rect」。**
+（已寫進 `CLAUDE.md` §6.5，連飛行頁的基準實作一起指名。）
+
+## B. 戰鬥音樂：門**開始上推**那一瞬起播
+
+新增 `story.setBattleCue(fn)`，`playKerberos` 一開頭就呼叫；main.js 注入
+`SFX.playBgm(bgm_battle, {fadeOutMs:600})`。
+⚠ 不能等 `setBattleHandler` —— 那是門開到**縫**（onGap）才呼叫的，距離開始上推
+有 3 秒多（rise 1000 ＋ 撞頂 ＋ 解鎖 ＋ 紋章浮起 1600）。
+⚠ `launchBattle` 裡原本那一行照留（帶 `delayMs:1000`，給櫻花過渡禎用）——
+`playBgm` 對「同曲播放中」直接 return，不會打架。

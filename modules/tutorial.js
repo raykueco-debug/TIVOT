@@ -554,7 +554,6 @@ function placePortraitX(el, side){
        `#storyStage`（`position:fixed; inset:0`）的 56%，也就是**視口**的 56%；
        戰鬥這邊若拿 `#app` 去乘，同一張立繪就會大 8.7%，而且 `#app` 的高在開機過程中
        還會變一次 —— 那就是「跑兩次高度 665 vs 732」的來源。 */
-  const wr0 = wrap.getBoundingClientRect();
   const RATIO = 0.56;                       // ＝ style.css 的 `#storyStage{--story-top:56%}`
   const VH = window.innerHeight || document.documentElement.clientHeight || 0;
   /* ⚠⚠ **不量鈕的即時 rect，改由 CSS 常數推**（ver -354）。量到的值取決於「第一次排版
@@ -579,7 +578,15 @@ function placePortraitX(el, side){
   /* 頭頂：照劇情頁那一條（頂線 ＋ 身高讓位），再換算回 `#tutCast` 的座標系。
      ⚠ 身高讓位一律套用（§6.5「同一張立繪＝同一個結果」）—— 少了它，同一個人
        在戰鬥裡會比在劇情裡高一截（諾薇兒 165 vs 基準 176，差 11cm×pxCm ≈ 50px）。 */
-  const headTop = g.head + (( C.castTall||176 ) - fr.cm) * pxCm - wr0.top;
+  /* ⚠⚠ **一個 rect 都不要量**（ver -355，照飛行畫面那一套）。飛行頁的做法是
+       `castMeasure()` 在 resize 時把 `CAST_TOP`／`CAST_PX_CM` 算成全域常數，之後
+       每一句只是**讀**它們 —— 畫面上不會有任何逐句量測。
+     這邊最後一個漏洞是 `wr0.top`（`#tutCast` 的螢幕位置）：它是逐句量的，而 iOS 的
+       網址列一收合，`#app` 的 padding／位置就變 → 同一組取景算出不同的 `top`，
+       **尺寸沒變、人上下跳**。
+     現在改成純常數：`#tutCast` 的頂 ＝ `#app` 的 padding-top ＝ 瀏海高，
+       所以「螢幕座標的頭頂」減掉瀏海就是「框內座標的頭頂」＝ `BTN_TOP + 身高讓位`。 */
+  const headTop = BTN_TOP + (( C.castTall||176 ) - fr.cm) * pxCm;
   const nH    = el.naturalHeight || 1536;              // 這批立繪都是 1024×1536
   const nW    = el.naturalWidth  || 1024;
   /* 鎖身高。⚠ 分母用**該角色基本立繪**的像素身高，不是這一張差分自己的
