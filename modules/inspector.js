@@ -164,13 +164,17 @@ function ratingStatsRows(stats, totalTime){
  * ========================================================================== */
 const BEST_KEY='saint_best_total_v1';
 const BEST_KEY_BOSS='saint_best_total_boss_v1';   // Boss 戰獨立最佳紀錄
+/* 最佳總用時。`boss` 為 true 走 Boss 那一格；字串則是**那一場自己的紀錄**
+   （ver -377，劇情插入戰的 `record` 欄位，例如打靶場）。 */
+function bestKey(boss){
+  if(typeof boss === 'string') return 'tivot_best_'+boss+'_v1';
+  return boss ? BEST_KEY_BOSS : BEST_KEY;
+}
 function loadBestTotal(boss){
-  const key = boss ? BEST_KEY_BOSS : BEST_KEY;
-  try{ const v=localStorage.getItem(key); return v?parseFloat(v):null; }catch(e){ return null; }
+  try{ const v=localStorage.getItem(bestKey(boss)); return v?parseFloat(v):null; }catch(e){ return null; }
 }
 function saveBestTotal(t, boss){
-  const key = boss ? BEST_KEY_BOSS : BEST_KEY;
-  try{ localStorage.setItem(key, String(t)); }catch(e){}
+  try{ localStorage.setItem(bestKey(boss), String(t)); }catch(e){}
 }
 
 /* ============================================================================
@@ -385,6 +389,19 @@ function scriptSettle(totalTime, stats){
            + '<span class="grade-meta"><span class="grade-cap">' + (L.result.gradeCap||'') + '</span>'
            + '<span class="grade-exp">EXP ' + ev.exp + '</span></span></div>';
   rows += ratingStatsRows(stats, totalTime);
+  /* ══ 這一場自己的最佳紀錄（ver -377，Ray：「紀錄最佳紀錄，破紀錄時加上 New」）══
+     ⚠ 只有卡上寫了 `record` 的場次才記（打靶場那種「一直挑戰」的）；
+       一般的劇情插入戰打一次就過去了，記它沒有意義。
+     ⚠ 紀錄的是**通關用時**（越短越好），與一般戰鬥的最佳總用時同一把尺。 */
+  const bt = (GAME_CONFIG.battles||{})[state.scriptBattleId] || {};
+  if(bt.record){
+    const prev = loadBestTotal(bt.record);
+    const isRec = (prev==null) || (totalTime < prev);
+    if(isRec) saveBestTotal(totalTime, bt.record);
+    rows += '<div class="row"><span>最佳紀錄</span><b>'
+          + fmtTime(isRec ? totalTime : prev) + '</b></div>';
+    if(isRec) rows += '<div class="record">'+L.result.newRecord+'</div>';
+  }
   const sub = fmt(L.result.winSub, { name: displayName(en.name || '') });
   showResultSequence(L.result.winTitle, sub, rows, 'tutorial', false, { noInspector:true });
   const rbtn=$('rematchBtn');

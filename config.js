@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.24-376';
+export const VERSION = 'ver 2026.08.24-377';
 
 export const GAME_CONFIG = {
 
@@ -39,20 +39,53 @@ export const GAME_CONFIG = {
   //  ⚠ 武器鑰匙＝圖檔基底名（類型_武器名，同 resources/weapon/ 圖庫命名，統一代碼與檔名）。
   //  name＝選單全名；shortName＝首頁 loadout 鈕顯示的綽號（全名過長會爆版）。
   //  desc＝選單規格文案（\n 換行，.ws-desc 為 pre-line）；暴擊率＝tuning.counterCritRate（20%）。
+  /* ══ 副武器（反擊武器）══
+     ⚠ 欄位對照 Ray 的**武器卡**（ver -377 起）：
+         分類 → `cat`（比較數值時用它找同類）
+         黃圈 → `defenseDamageScale`（1＝無減傷、0.5＝減傷 50%、0.25＝減傷 75%）
+         橘圈 → `noPerfectBand:true`＝沒有完防帶；否則免傷，或 `perfectDmgPerHit`＝改打傷害
+         紅圈 → `hits` × `dmgPerHit`
+         爆擊率 → `critRate`（沒寫才回去用 tuning.counterCritRate）
+         最大改裝等級 → `maxMod`（**資料先放著，改裝系統還沒做**）
+         價格 → `price`（沒寫＝**買不到也賣不掉**）
+     ⚠ `perfectDmgPerHit` 存的是**卡上的絕對值**（龍息橘圈 6 發 ×4），不是倍率 ——
+       倍率由 `defense.js` 現算（`perfectDmgPerHit / dmgPerHit`）。卡上寫幾就存幾（鐵律 7）。
+     ⚠ `owned:true` ＝ **開局就有**。其餘要在槍店買，持有量記在道具欄（id 就是這個鑰匙）。 */
   weapons: {
     // B1901 陣地機槍「絞肉機」：基準武器（反擊總傷 48），Perfect 帶正常、Defense 吃半傷（0.5）
-    MG_Squall:     { name:'B1901陣地機槍「絞肉機」', shortName:'絞肉機',
+    MG_Squall:     { name:'B1901陣地機槍「絞肉機」', shortName:'絞肉機', cat:'重機槍',
+                     owned:true, critRate:0.20, maxMod:5,
                      counterWin:0.12, hits:8, dmgPerHit:6,  vfx:null,     defenseDamageScale:0.5,  noPerfectBand:false, image:'weapon_mg_squall',     sound:'se_mg_squall',
-                     desc:'反擊效果\n黃圈：減傷50%\n橘圈：完全防禦\n反擊：8發×6傷害\n暴擊率：20%\n攻守均衡的可靠選擇' },
-    // 雙管霰彈槍「鐵拳」：Counter 6發×4=24；Perfect 檔改打 6發×2=12（perfectDamageScale=0.5，傷害取代免傷）；Defense 檔吃 1/4 傷（0.25＝減傷75%）
-    Shotgun_Blast: { name:'雙管霰彈槍「鐵拳」', shortName:'鐵拳',
-                     counterWin:0.20, hits:6, dmgPerHit:4,  vfx:'burst',  defenseDamageScale:0.25, noPerfectBand:false, perfectDamageScale:0.5, image:'weapon_shotgun_blast', sound:'se_shotgun_blast',
-                     desc:'反擊效果\n黃圈：減傷75%\n橘圈：6發×2傷害\n反擊：6發×4傷害\n暴擊率：20%\n保命的穩健之選' },
+                     flavor:'攻守均衡的可靠選擇' },
+    // 雙管霰彈槍「鐵拳」：Counter 6發×4=24；Perfect 檔改打 6發×2=12（perfectDmgPerHit=2，傷害取代免傷）；Defense 檔吃 1/4 傷（0.25＝減傷75%）
+    Shotgun_Blast: { name:'雙管霰彈槍「鐵拳」', shortName:'鐵拳', cat:'霰彈槍',
+                     owned:true, critRate:0.20, maxMod:5,
+                     counterWin:0.20, hits:6, dmgPerHit:4,  vfx:'burst',  defenseDamageScale:0.25, noPerfectBand:false, perfectDmgPerHit:2, image:'weapon_shotgun_blast', sound:'se_shotgun_blast',
+                     flavor:'保命的穩健之選' },
     // 85 式步槍「嗜心者」：反擊總傷 72（1.5 倍）、單發大紅字、無 Perfect 帶；
     //   defenseDamageScale 1＝黃圈也無減傷（與文案一致：賭上一切，防禦全靠反擊窗）
-    Sniper_Falcon: { name:'85式步槍「嗜心者」', shortName:'嗜心者',
+    Sniper_Falcon: { name:'85式步槍「嗜心者」', shortName:'嗜心者', cat:'步槍',
+                     owned:true, critRate:0.20, maxMod:5,
                      counterWin:0.06, hits:1, dmgPerHit:72, vfx:'single', defenseDamageScale:1,    noPerfectBand:true,  image:'weapon_sniper_falcon', sound:'se_sniper_falcon',
-                     desc:'反擊效果\n黃圈：無減傷效果\n橘圈：無減傷效果\n反擊：單發72傷害\n暴擊率：20%\n賭上一切的單發重擊' },
+                     flavor:'賭上一切的單發重擊' },
+
+    /* ── 槍店的貨（ver -377，Ray 的武器卡）──────────────────────────
+       ⚠ 這三把**沒有自己的立繪與音效**：先借同類那一把的（`image`/`sound`）。
+         素材到位就只改這兩欄。 */
+    Shotgun_Dragon:{ name:'短板霰彈槍「龍息」', shortName:'龍息', cat:'霰彈槍',
+                     critRate:0.20, maxMod:5, price:3000,
+                     counterWin:0.20, hits:6, dmgPerHit:6,  vfx:'burst',  defenseDamageScale:0.5,  noPerfectBand:false, perfectDmgPerHit:4, image:'weapon_shotgun_blast', sound:'se_shotgun_blast',
+                     flavor:'短管、近身、火力壓制' },
+    /* ⚠ 「絞肉機 改」的爆擊率是 **10%**（比原版 20% 低）—— 卡上就是這麼寫的。
+       數值面它與原版只差這一項，其餘完全相同。要調就跟 Ray 確認，不要自己改順。 */
+    MG_Squall_Kai: { name:'B1901陣地機槍「絞肉機 改」', shortName:'絞肉機改', cat:'重機槍',
+                     critRate:0.10, maxMod:5, price:4000,
+                     counterWin:0.12, hits:8, dmgPerHit:6,  vfx:null,     defenseDamageScale:0.5,  noPerfectBand:false, image:'weapon_mg_squall',     sound:'se_mg_squall',
+                     flavor:'原廠改良型' },
+    Rifle_Shahin:  { name:'Shahin栓動步槍「遊隼」', shortName:'遊隼', cat:'步槍',
+                     critRate:0.20, maxMod:5, price:5000,
+                     counterWin:0.06, hits:1, dmgPerHit:72, vfx:'single', defenseDamageScale:1,    noPerfectBand:true,  image:'weapon_sniper_falcon', sound:'se_sniper_falcon',
+                     flavor:'栓動、遠距、一擊定生死' },
     // 新武器：複製一段，鑰匙用「類型_武器名」（同圖檔基底名），image 指對應 ASSETS 鑰匙。
   },
   defaultWeapon: 'MG_Squall',   // 開局預設武器（填上面的鑰匙名）
@@ -285,6 +318,22 @@ export const GAME_CONFIG = {
     /* 各家店的貨單（節點的 `shop` 欄位指到這裡的鍵）。 */
     stock: {
       grocery: ['milk','cheese','lime_rum'],
+      /* 武器店（ver -377）。⚠ 賣的是**武器鑰匙**（`weapons` 的鍵）——武器沒有第二份
+         道具定義，價格與規格都在那張武器卡上（見 inventory.defOf 的說明）。 */
+      gunstore: ['Shotgun_Dragon','MG_Squall_Kai','Rifle_Shahin'],
+    },
+    /* 每家店的長相（ver -377）。沒登記的店走預設（買／賣兩頁、雜貨舖的店主圖）。
+         title  頁首的字
+         art    店主立繪
+         tabs   要哪幾頁：buy／sell／mod（mod＝改裝，**目前留空**，Ray 指定）
+         only   這家店只收哪一類（賣出頁的過濾）；不填＝什麼都收
+         compare 買的時候要不要跟**現有的同類**比數值（武器店要） */
+    shops: {
+      grocery:  { title:'雜貨舖', art:'resources/SI/NPC_Grocerie_SI.webp',
+                  tabs:['buy','sell'] },
+      gunstore: { title:'武器店', art:'resources/SI/NPC_Capital_Gunstore_SI.webp',
+                  tabs:['buy','sell','mod'], tabName:{ buy:'買武器', sell:'賣武器', mod:'武器改裝' },
+                  only:'weapon', compare:true },
     },
   },
 
@@ -748,6 +797,13 @@ export const GAME_CONFIG = {
        Game Over 畫面回主選單**。所以這一欄不寫＝打輸就 Game Over；
        只有「劇本要它被打輸」的場次才寫 `allowLose:true`（輸了接著演）。 */
     guild_hunter: { enemy:'guild_hunter', noSaint:true, noPartner:true },
+    /* 槍店的打靶（ver -377）。⚠ 這一場**可以輸**（`allowLose`）—— Ray 的稿子有
+       「戰敗」與「戰勝」兩支台詞，所以輸了不是 Game Over，是接另一支分歧。
+       ⚠ `record` ＝ 這一場自己的最佳紀錄（通關用時），破紀錄時結算頁加 NEW。
+       ⚠ 敵人先用**訓練用聖徒**（Ray 指定「先用」）。它是原始數值（HP 500、大絕 45），
+         不是教學那一場被鎖過的版本 —— 所以真的會輸，那正是分歧存在的理由。
+       ⚠ 沒有禁聖徒化／搭檔技：Ray 沒說要禁。要禁再加 noSaint/noPartner。 */
+    range_trainee: { enemy:'trainee', allowLose:true, record:'range' },
   },
 
   /* ══ 懸賞（ver -375）══ 賞金獵人公會的委託榜。
@@ -1090,6 +1146,33 @@ export const ASSETS = {
 };
 
 /* ---- 小工具：從 ASSETS 取素材（找不到回傳空字串，不會壞）---- */
+/* ══ 武器規格文字（ver -377）══
+   ⚠⚠ **武器的數值只有一份**：`weapons[].hits/dmgPerHit/defenseDamageScale/…`。
+     說明文字由這裡**算出來**，不要在 `desc` 裡再手寫一次數字（鐵律 7）——
+     以前那樣寫，改了數值而忘了改文案，玩家看到的規格就是錯的。
+     `flavor` 只留一句風味（「攻守均衡的可靠選擇」），那一句沒有數字。
+   ⚠ 出擊整備的卡（`weapon.js`）與槍店（`loot.js`）**共用這一支**。 */
+export function weaponStatRows(key){
+  const w=(GAME_CONFIG.weapons||{})[key]; if(!w) return [];
+  const def = (w.defenseDamageScale==null) ? 0.5 : w.defenseDamageScale;
+  const yellow = def>=1 ? '無減傷效果' : (def<=0 ? '完全防禦' : '減傷'+Math.round((1-def)*100)+'%');
+  const shots = n => (w.hits>1 ? w.hits+'發×'+n+'傷害' : '單發'+n+'傷害');
+  const orange = w.noPerfectBand ? '無減傷效果'
+    : (w.perfectDmgPerHit!=null ? shots(w.perfectDmgPerHit)
+      : (w.perfectDamageScale ? shots(Math.round(w.dmgPerHit*w.perfectDamageScale)) : '完全防禦'));
+  const crit = (w.critRate!=null ? w.critRate : GAME_CONFIG.tuning.counterCritRate);
+  const rows=[['分類', w.cat||'—'], ['黃圈', yellow], ['橘圈', orange],
+              ['反擊', shots(w.dmgPerHit)], ['暴擊率', Math.round(crit*100)+'%']];
+  if(w.maxMod) rows.push(['最大改裝等級', String(w.maxMod)]);   // 卡上就寫「5」，不加單位
+  return rows;
+}
+/* 卡片上那一段（與 -376 之前手寫的 `desc` 同樣的排版，只是現在是算出來的）。 */
+export function weaponDescText(key){
+  const w=(GAME_CONFIG.weapons||{})[key]; if(!w) return '';
+  const rows=weaponStatRows(key).filter(r=>r[0]!=='分類');
+  return '反擊效果\n' + rows.map(r=>r[0]+'：'+r[1]).join('\n') + (w.flavor ? '\n'+w.flavor : '');
+}
+
 export function asset(key){ return (key && ASSETS[key] != null) ? ASSETS[key] : ""; }
 
 /* ---- 小工具：BGM 逐曲音量（tuning.bgmVol；未列入的曲用 default）---- */

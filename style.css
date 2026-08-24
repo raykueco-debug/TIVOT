@@ -1713,6 +1713,8 @@
     gap:10px;padding:8px 10px;background:rgba(255,255,255,.03);border:1px solid transparent;
     border-radius:8px;}
   #lootSheet .shop-row.pick{border-color:var(--gold-dim);background:rgba(212,169,74,.10);}
+  /* 價格那一欄**不換行**（ver -377）：武器名長，換行之後「4000」與「G」會被拆成兩行。 */
+  #lootSheet .shop-row .loot-n{white-space:nowrap;}
   #lootSheet .shop-keeper-art{width:84px;align-self:flex-end;border-radius:8px;
     object-fit:cover;object-position:top;max-height:38vh;
     -webkit-mask-image:linear-gradient(#000 72%,transparent);
@@ -1726,6 +1728,23 @@
   #lootSheet .shop-do{color:var(--holy);border-color:var(--holy);}
   #lootSheet .shop-do.broke{opacity:.35;}
   #lootSheet .shop-talk{color:var(--gold-dim);border-style:dashed;}
+  /* 武器店（ver -377）：規格表與「對比現有」──────────────────────
+     ⚠ 兩欄的 grid（項目｜值），不是表格 —— 值的長度差很多（「6發×4傷害」vs「20%」），
+       表格會被最長的那一格撐開。
+     ⚠ 對比那張整體壓暗：玩家要一眼看出「上面是要買的、下面是手上的」。 */
+  #lootSheet .wp-stats{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;
+    margin:2px 0 4px;font-size:11px;line-height:1.6;}
+  #lootSheet .wp-k{color:var(--gold-dim);opacity:.8;letter-spacing:1px;}
+  #lootSheet .wp-v{color:var(--ink);}
+  #lootSheet .wp-stats.rival{opacity:.62;}
+  #lootSheet .wp-stats.rival .wp-v{color:var(--gold-dim);}
+  #lootSheet .wp-vs{margin-top:6px;font-size:10.5px;letter-spacing:2px;color:var(--gold);opacity:.85;}
+  #lootSheet .wp-flavor{margin-top:6px;font-size:11px;color:var(--gold-dim);opacity:.85;}
+  /* 「持有」小標：貼在品名後面，不另開一欄（價格那一欄要留給價格）。 */
+  #lootSheet .wp-have{margin-left:6px;padding:1px 5px;font-style:normal;font-size:9.5px;
+    letter-spacing:1px;color:var(--holy);border:1px solid var(--holy);border-radius:8px;opacity:.8;}
+  /* 三頁的時候字要縮一點，不然「武器改裝」四個字擠不下（實測 375 寬）。 */
+  #lootSheet .shop-tabs:has(.shop-tab:nth-child(3)) .shop-tab{font-size:11px;letter-spacing:1px;}
 
   /* ── 面盤模式提示 ＋ 已播腳本（ver -367）──────────────────────────
      ⚠ 提示做成**面盤上緣的一條細字**，不做成浮動 badge：面盤中央是團徽／盤面，

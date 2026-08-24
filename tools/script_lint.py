@@ -111,8 +111,15 @@ def main():
     #  ⚠ 抽成一支給**主線與城鎮共用**（ver -375）：規矩只寫一份，新的路徑才不會漏檢
     #    （鐵律 8 —— 城鎮節點就是這樣長出第二套的）。
     def check_lines(sid, lines, scenes_ok=True):
+        labels = {l.get('label') for l in (lines or []) if isinstance(l, dict) and l.get('label')}
         for i, ln in enumerate(lines or []):
             tag = '%s[%d]' % (sid, i)
+
+            # 跳轉拍（ver -377）：`goto` 與戰鬥的 `onLose` 都指向同一段裡的 `label`。
+            if ln.get('goto'):
+                if ln['goto'] not in labels:
+                    err('%s：goto 指到這一段裡沒有的 label：%s' % (tag, ln['goto']))
+                continue                      # 控制拍，不帶演出
 
             if ln.get('load'):
                 if ln['load'] not in script:
@@ -122,8 +129,19 @@ def main():
                 # 戰鬥交棒，這一行不帶演出。⚠ 但要驗它指得到一場戰鬥：
                 #   `config.battles` 有登記（劇情插入戰），或那是教學那一場。
                 b = ln['battle']
-                if b not in (D['cfg'].get('battles') or {}) and b != 'tutorial':
+                bt = (D['cfg'].get('battles') or {}).get(b)
+                if not bt and b != 'tutorial':
                     err('%s：battle 指到 config.battles 裡沒有的場次 %s' % (tag, b))
+                # 可戰敗的分歧：`onLose` 要指得到 label，而且那一場要真的允許戰敗
+                if ln.get('onLose'):
+                    if ln['onLose'] not in labels:
+                        err('%s：onLose 指到這一段裡沒有的 label：%s' % (tag, ln['onLose']))
+                    if bt and not bt.get('allowLose'):
+                        err('%s：寫了 onLose，但 config.battles.%s 沒有 allowLose'
+                            ' —— 那一場輸了會 Game Over，這一支分歧演不到' % (tag, b))
+                elif bt and bt.get('allowLose'):
+                    warn('%s：%s 標了 allowLose 卻沒有 onLose —— 輸了會照著贏的那一支往下演'
+                         % (tag, b))
                 continue
 
             sp = ln.get('speaker')

@@ -325,16 +325,35 @@ function applyAff(lines){
 function openShop(){
   const n=node(); if(!n || !n.shop) return;
   try{ SFX.unlock(); SFX.menuClick(); }catch(_){}
-  showShop(n.shop, n.keeper, ()=>{
-    if(!n.keeper || !n.keeper.length) return;
+  /* 店主對話有兩種（ver -377）：
+       `keeper`        一整段對白（雜貨舖：兩個人輪流講）
+       `keeperRandom`  **隨機一句**（武器店：Ray 指定「隨機出武器改裝、戰鬥相關知識」）
+     ⚠ 兩種都走同一個劇情播放器（立繪、明暗、打字機一致），差別只在「這次要播哪幾句」。 */
+  const rnd = n.keeperRandom && n.keeperRandom.length ? n.keeperRandom : null;
+  const hasTalk = (n.keeper && n.keeper.length) || rnd;
+  showShop(n.shop, hasTalk ? [1] : null, ()=>{
+    let lines = (n.keeper && n.keeper.length) ? n.keeper : null;
+    if(!lines && rnd){
+      let i=Math.floor(Math.random()*rnd.length);
+      if(rnd.length>1 && i===lastKeeper) i=(i+1)%rnd.length;   // 不要連續兩次同一句
+      lastKeeper=i;
+      const who=n.keeperWho||'SHOPKEEP';
+      lines=[{ speaker:who, text:rnd[i], portrait:{ char:who, show:true } }];
+    }
+    if(!lines) return;
     busy=true; showNav(false);
-    story.playAdhoc(n.keeper, ()=>{
+    story.playAdhoc(lines, ()=>{
       story.clearCast();                 // 鐵律 8：離開這一段就清場
       busy=false; showNav(true);
       openShop();                        // 談完回到櫃台
     });
   });
 }
+/* ⚠ `lastChat` **原本沒有宣告**（ver -377 修）：ES module 是嚴格模式，
+   `lastChat=i` 會直接丟 ReferenceError —— 也就是說酒館的路人閒聊**一句都放不出來**。
+   非嚴格模式下它會變成隱式全域，所以在別處測不出來。兩支「不要連續同一句」的游標
+   一起宣告在這裡。 */
+let lastKeeper=-1, lastChat=-1;
 
 /* 路人閒聊：**單句**，不進對話模式（Ray 指定）。再點一下換下一句。 */
 function chatter(){

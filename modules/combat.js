@@ -803,7 +803,7 @@ export function setStoryClose(fn){ storyClose = fn; }
    ⚠ 走 `storyBattleEnd()` 那條既有的「不結算直接交還劇情」路徑，不要另寫一份收尾。 */
 export function devSkipBattle(){
   if(state.over) return;
-  if(storyFramed()){ storyBattleEnd(); return; }
+  if(storyFramed()){ storyBattleEnd(state.defeated); return; }
   state.over=true; clockPause(); stopAll();
   state.tutorialRun=false;
   goHome();
@@ -815,11 +815,12 @@ export function devSkipBattle(){
    ⚠ 共用的只有框 —— 教學那一套（鎖攻擊力、敵人打不死、教學台詞結算）只看
      `tutorialRun`，不要混進來。 */
 function storyFramed(){ return state.tutorialStoryRun || state.scriptRun; }
-function storyBattleEnd(){
+function storyBattleEnd(lost){
   if(!storyFramed()) return false;
   state.tutorialRun=false; state.tutorialStoryRun=false; state.scriptRun=false;
   state.over=true; clockPause(); stopAll();
-  if(storyReturn) storyReturn();
+  /* ⚠ 把**勝負**一起交還（ver -377）：可戰敗的場次要靠它決定接哪一支分歧。 */
+  if(storyReturn) storyReturn({ lost: !!lost });
   return true;
 }
 
@@ -878,7 +879,7 @@ function lose(){
      ⚠ 城鎮那一段對白的旗標是**演完才記**的（見 town.enter），所以回頭再走一次
        還打得到 —— 不會因為輸過就永遠卡住。 */
   const _sb = state.scriptBattleId && GAME_CONFIG.battles && GAME_CONFIG.battles[state.scriptBattleId];
-  if(_sb && _sb.allowLose && storyBattleEnd()) return;
+  if(_sb && _sb.allowLose && storyBattleEnd(true)) return;
   /* 走一般失敗流程之前，把「這一場是劇情場」的旗標收掉 —— 不收的話結算會走
      教學／插入戰那一頁（那是給打贏用的），玩家輸了卻看到一頁戰績。 */
   state.scriptRun=false; state.scriptBattleId=null;

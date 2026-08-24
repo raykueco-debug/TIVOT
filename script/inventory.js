@@ -11,7 +11,7 @@
    ⚠ 分類（道具/武器/素材/裝備/特殊）也在 config，這裡不寫死 —— 要加第六類只改 config。
    ══════════════════════════════════════════════════════════════════════ */
 
-import { GAME_CONFIG } from '../config.js';
+import { GAME_CONFIG, weaponDescText } from '../config.js';
 
 const KEY = 'tivot_inventory_v1';
 const MONEY_KEY = 'tivot_money_v1';
@@ -34,10 +34,33 @@ export function all(){
 }
 export function count(id){ return all()[id] || 0; }
 
-/* 道具定義（查不到回 null —— 呼叫端要能容忍，別讓一個打錯的 id 弄壞整個道具欄）。 */
-export function defOf(id){ const d = ITEMS().defs[id]; return d || null; }
+/* 道具定義（查不到回 null —— 呼叫端要能容忍，別讓一個打錯的 id 弄壞整個道具欄）。
+   ⚠⚠ **武器沒有第二份定義**（ver -377）：`config.weapons` 那一份就是它的道具定義
+     （名稱／價格／說明都在那裡）。不要在 `items.defs` 再抄一份 —— 那是同一個東西
+     兩處各寫一次（鐵律 7），改了一邊另一邊就對不上。
+   ⚠ 武器的道具 id **就是 `config.weapons` 的鑰匙**（`Shotgun_Dragon`…），
+     所以存檔裡看到那個字串就是那把槍。 */
+export function defOf(id){
+  const d = ITEMS().defs[id];
+  if(d) return d;
+  const w = (GAME_CONFIG.weapons||{})[id];
+  return w ? { name:w.name, cat:'weapon', price:w.price, desc:weaponDescText(id) } : null;
+}
 export function nameOf(id){ const d=defOf(id); return d ? d.name : String(id); }
 export function catOf(id){ const d=defOf(id); return d ? d.cat : 'item'; }
+
+/* ══ 武器的持有 ══
+   開局就有的（`config.weapons[].owned`）＋ 買來的（道具欄裡有一份）。
+   ⚠ 這是**唯一**判斷「這把槍能不能拿去打」的地方：出擊整備的卡疊、商店的「已持有」
+     都讀它（鐵律 8：一個判斷一支函式）。 */
+export function hasWeapon(id){
+  const w=(GAME_CONFIG.weapons||{})[id];
+  if(!w) return false;
+  return !!w.owned || count(id)>0;
+}
+export function ownedWeapons(){
+  return Object.keys(GAME_CONFIG.weapons||{}).filter(hasWeapon);
+}
 
 /* 加道具。n 可為負（＝扣除），扣到 0 就從存檔裡拿掉。回傳加完之後的數量。
    ⚠ 未定義的 id **照樣收下**：素材是資料，程式不該因為 config 還沒寫就把玩家的東西吃掉。

@@ -1153,6 +1153,14 @@ function renderLine(){
      ⚠ 它自己會 advance()，所以這裡直接 return，不要再走下面的演出流程。 */
   if(line.load){ runLoadGate(line.load); return; }
 
+  /* 跳到某一個 `label`（ver -377）。用途：分歧演完之後跳過另一支、回到合流點。
+     ⚠ 找不到就當作這一段結束 —— 打錯字要看得出來，不要靜靜地演下去。 */
+  if(line.goto){
+    const at=indexOfLabel(cur.lines, line.goto);
+    if(at<0){ console.info('[story] 沒有這個 label：', line.goto); return endScene(); }
+    lineIdx=at; return renderLine();
+  }
+
   if(line.battle){
     if(!battleHandler){
       console.info('[story] 沒有註冊戰鬥發動器，跳過：', line.battle);
@@ -1163,9 +1171,12 @@ function renderLine(){
        與它的收尾回呼一起交棒，由 `resumeFrom` 分流。 */
     /* ⚠ 連**現在在放哪一首**一起交棒（ver -375）：戰鬥有自己的曲子，`close()` 會把
        `stageBgm` 歸零 —— 不帶著回來的話，打完接回劇情時整段都還在放戰鬥曲。 */
+    /* `onLose`（ver -377）：**這一場可以打輸**，輸了跳到帶那個 `label` 的拍。
+       ⚠ 只在戰鬥卡上寫了「可戰敗」（`config.battles[].allowLose`）時才走得到 ——
+         其餘場次輸了是 Game Over 回主選單（-376 的規矩），根本不會回到這裡。 */
     const resume = cur.__adhoc
-      ? { adhoc: cur.lines, line: lineIdx+1, done: cur.__done, sides: sideOverride, bgm: stageBgm }
-      : { scene: cur.sceneId, line: lineIdx+1, bgm: stageBgm };
+      ? { adhoc: cur.lines, line: lineIdx+1, done: cur.__done, sides: sideOverride, bgm: stageBgm, onLose: line.onLose }
+      : { scene: cur.sceneId, line: lineIdx+1, bgm: stageBgm, onLose: line.onLose };
     const id = line.battle;
     /* Kerberos 之門（ver -329）：門開的**縫裡露出的就是戰鬥畫面**，所以順序反過來 ——
        先讓底下開戰（onGap），門才拉開；門全開之後才把劇情層收掉。
@@ -1713,9 +1724,21 @@ export function playAdhoc(lines, done, opts){
      臨時段落走 `playAdhoc` 續播剩下的幾句 —— 城鎮的背景與導覽層都還在畫面上，
      重建一次只會把它們洗掉。
    ⚠ 續播位置**可能剛好等於長度**（戰鬥是最後一句）：那就直接收尾呼叫 done。 */
-export function resumeFrom(pos){
+export function indexOfLabel(lines, label){
+  if(!lines || !label) return -1;
+  for(let i=0;i<lines.length;i++) if(lines[i] && lines[i].label===label) return i;
+  return -1;
+}
+export function resumeFrom(pos, res){
   if(!pos) return;
   ensureBgm(pos.bgm);                       // 戰前那一首（見 renderLine 的 resume）
+  /* 打輸了而且這一場有寫 `onLose` → 從那個 label 接下去（ver -377）。 */
+  if(res && res.lost && pos.onLose){
+    const lines = pos.adhoc || ((MAIN_SCRIPT[pos.scene]||{}).lines);
+    const at = indexOfLabel(lines, pos.onLose);
+    if(at>=0) pos = Object.assign({}, pos, { line:at });
+    else console.info('[story] onLose 指到不存在的 label：', pos.onLose);
+  }
   if(pos.adhoc){
     const rest = pos.adhoc.slice(pos.line||0);
     layoutKerberos();                       // 門被戰鬥收過了，回來要重新擺（不擺是一片黑）

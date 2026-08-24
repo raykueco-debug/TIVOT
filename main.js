@@ -604,11 +604,11 @@ let storyResume = null;
    ⚠ 注入而不是 import —— combat 不認識劇情層（CLAUDE.md §2 的依賴方向）。 */
 story.setTownOpener(town.open);   // scene 的 `thenTown` 由 story 呼叫（注入，story 不 import town）
 combat.setStoryClose(story.playKerberosClose);
-combat.setStoryReturn(()=>{
+combat.setStoryReturn((res)=>{
   const r = storyResume; storyResume = null;
   /* ⚠ 走 `story.resumeFrom`（ver -375）：主線與城鎮的臨時段落**續播方式不同**，
      分流在 story 裡做（那裡才知道哪一種）。這裡照舊只負責把首頁收乾淨。 */
-  combat.goHome(()=>{ if(r) story.resumeFrom(r); }, { noBgm:true });
+  combat.goHome(()=>{ if(r) story.resumeFrom(r, res); }, { noBgm:true });
 });
 /* 戰鬥音樂：**門開始上推那一瞬**就起播（ver -355，Ray 指定）。
    ⚠ 不能等 `setBattleHandler`（那是門開到縫才呼叫的，晚 3 秒多），也不要靠

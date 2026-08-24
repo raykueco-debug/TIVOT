@@ -42,6 +42,8 @@ export const SPEAKERS = {
   /* 賞金獵人公會（ver -375）。⚠ 兩位都站**右**：與店主同一個邏輯 ——
      玩家的同伴在左，對面的人在右。 */
   HUNTER:   { name:'獵人',   art:'hunter'  },
+  /* 槍店店主（ver -377）。同樣站右。 */
+  GUNSMITH: { name:'店主',   art:'gunsmith' },
   COUNTER:  { name:'櫃台',   art:'counter' },
 };
 
@@ -239,6 +241,10 @@ export const ART = {
            expr:{ shocked:{ src:'resources/SI/NPC_GuildHunter_SI_Shocked.webp', top:0, bot:1535, fx:0.453 },
                   attack: { src:'resources/SI/NPC_GuildHunter_SI_Attack.webp',  top:0, bot:1535, fx:0.546 },
                   lost:   { src:'resources/SI/NPC_GuildHunter_SI_Lost.webp',    top:6, bot:1529, fx:0.487 } } },
+  /* 槍店店主（ver -377）。⚠ 身高是**估的**（175）；取景值是量的
+     （`tools/measure_si.py`）。 */
+  gunsmith:{ cm:175, eye:32, fx:0.476, top:6, bot:1531,
+           side:'R', alt:null, base:'resources/SI/NPC_Capital_Gunstore_SI.webp', expr:{} },
   /* 公會櫃台（ver -375）。身高同樣是估的（168）。 */
   counter:{ cm:168, eye:32, fx:0.511, top:4, bot:1526,
            side:'R', alt:null, base:'resources/SI/GuildCounterCA_SI.webp', expr:{} },

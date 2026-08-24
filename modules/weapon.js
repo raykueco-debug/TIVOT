@@ -29,19 +29,25 @@
  *     buildGrid / resetEnergy），不 import combat/saint/defense（維持依賴方向）。
  * ========================================================================== */
 
-import { GAME_CONFIG, asset, sfxGain } from '../config.js';
+import { GAME_CONFIG, asset, sfxGain, weaponDescText } from '../config.js';
 import { state, addCounter, setPickedPartner } from '../state.js';
 import { SFX } from '../audio.js';
 import { L } from '../i18n.js';   // 多語言（cut-in 標題/選單鈕/暴擊前綴）
+import * as inv from '../script/inventory.js';   // 武器持有（買來的才上得了卡疊，ver -377）
 
 const $ = id => document.getElementById(id);
 const WEAPONS = GAME_CONFIG.weapons;
 const DUAL_SECONDS = GAME_CONFIG.tuning.dualSeconds;   // 雙槍破防窗口時長（秒）
 const COUNTER_CRIT_RATE = GAME_CONFIG.tuning.counterCritRate;  // 反擊武器固定暴擊率（每 hit 獨立擲骰）
 const COUNTER_CRIT_DMG  = GAME_CONFIG.tuning.counterCritDmg;   // 反擊武器暴擊加傷（+10%）
-// 反擊單發暴擊：回傳 { dmg, crit }。crit → 該發傷害 ×(1+加傷)。
+/* 反擊單發暴擊：回傳 { dmg, crit }。crit → 該發傷害 ×(1+加傷)。
+   ⚠ 暴擊率**逐武器**（ver -377，Ray 的武器卡有這一欄）：卡上沒寫才回去用全域值。 */
+function critRate(){
+  const w = WEAPONS[state.equippedWeapon];
+  return (w && w.critRate!=null) ? w.critRate : COUNTER_CRIT_RATE;
+}
 function critHit(base){
-  const crit = Math.random() < COUNTER_CRIT_RATE;
+  const crit = Math.random() < critRate();
   const dmg = crit ? Math.max(1, Math.round(base*(1+COUNTER_CRIT_DMG))) : base;
   return { dmg, crit };
 }
@@ -384,12 +390,17 @@ function bindPartnerSheet(){
  *  state.equippedWeapon（weapon 自有狀態 §3.4）選即換 + 播該武器擊發聲（config sound）。
  *  底部鈕兼返回：按下＝選定展示中的武器並關閉畫面（已裝備時顯示「返回」）。
  * ========================================================================== */
-const WEAPON_KEYS = Object.keys(WEAPONS);
+/* ⚠ **只列持有的**（ver -377）：買來的槍才會出現在出擊整備的卡疊上。
+   ⚠ 每次開整備頁重算，不能存成模組常數 —— 玩家可能剛在槍店買了一把。 */
+function weaponKeys(){
+  const ks=inv.ownedWeapons();
+  return ks.length ? ks : Object.keys(WEAPONS).slice(0,1);   // 保險：至少留一把，不讓整備頁變空
+}
 let wsIndex = 0;          // 目前展示中的武器 index
 let wsBound = false;      // 手勢/按鈕只綁一次
 
 export function openWeaponSheet(){
-  wsIndex = Math.max(0, WEAPON_KEYS.indexOf(state.equippedWeapon));
+  wsIndex = Math.max(0, weaponKeys().indexOf(state.equippedWeapon));
   buildWeaponDeck();
   bindWeaponSheet();
   renderWeaponSheet();
@@ -398,7 +409,7 @@ export function openWeaponSheet(){
 export function closeWeaponSheet(){ $('weaponSheet').classList.remove('on'); }
 
 function wsMove(dir){   // dir=+1 下一把 / -1 上一把（循環；上滑＝看下一把）
-  wsIndex = (wsIndex + dir + WEAPON_KEYS.length) % WEAPON_KEYS.length;
+  wsIndex = (wsIndex + dir + weaponKeys().length) % weaponKeys().length;
   // 換卡 stinger（Start_01，與出陣共用；已列第一梯關鍵預載 → 即切即響）
   SFX.play(asset('sfx_start'), sfxGain('sfx_start'));
   swingDeck($('wsDeck'), dir);   // 輪轉動畫：整疊往滑動方向擺轉一下
@@ -407,7 +418,7 @@ function wsMove(dir){   // dir=+1 下一把 / -1 上一把（循環；上滑＝�
 
 // 實際選定第 index 把武器（點卡直選與底部鈕共用）：實際切換才播擊發聲（重選同一把不重播）。
 function selectWeaponAt(index){
-  const key = WEAPON_KEYS[index];
+  const key = weaponKeys()[index];
   if(key !== state.equippedWeapon){
     state.equippedWeapon = key;       // 反擊武器選即換、立即驅動戰鬥（三段防禦/反擊/視覺）
     const se = asset(WEAPONS[key].sound); if(se) SFX.play(se, sfxGain(WEAPONS[key].sound));   // 對應武器擊發聲
@@ -419,8 +430,13 @@ function selectWeaponAt(index){
 // 卡疊建立（一次）：每把武器一張橫式卡（圖 contain 置中）。
 function buildWeaponDeck(){
   const deck=$('wsDeck');
-  if(!deck || deck.childElementCount) return;
-  WEAPON_KEYS.forEach(key=>{
+  if(!deck) return;
+  /* ⚠ **持有的槍變了就重建**（ver -377）：原本是「已經有東西就不重建」，
+     於是在槍店買了一把回來，卡疊還是舊的那幾張。用一個鑰匙字串當指紋比對。 */
+  const sig=weaponKeys().join(',');
+  if(deck.childElementCount && deck.dataset.sig===sig) return;
+  deck.innerHTML=''; deck.dataset.sig=sig;
+  weaponKeys().forEach(key=>{
     const w=WEAPONS[key];
     const fr=document.createElement('div'); fr.className='ws-frame';
     const img=document.createElement('img');
@@ -431,18 +447,20 @@ function buildWeaponDeck(){
 }
 
 function renderWeaponSheet(){
-  const key = WEAPON_KEYS[wsIndex];
+  const key = weaponKeys()[wsIndex];
   const w = WEAPONS[key];
   if(!w) return;
   const deck=$('wsDeck');
   if(deck) deckLayout([...deck.children], wsIndex, 'y');   // 現選抽到面前，其餘往上下墊後
   const set=(id,txt)=>{ const el=$(id); if(el) el.textContent=txt; };
   set('wsName', w.name || key);
-  set('wsDesc', w.desc || '');
+  /* ⚠ 規格文字是**算出來的**（ver -377，見 config.weaponDescText）——
+     不要改回手寫，數值一動文案就會對不上（鐵律 7）。 */
+  set('wsDesc', weaponDescText(key));
   set('wsStats', '');   // 規格已整合進 desc（反擊效果/減傷/暴擊率 多行文案），不再另列
   const dots=$('wsDots');
   if(dots){
-    dots.innerHTML = WEAPON_KEYS.map((k,i)=>
+    dots.innerHTML = weaponKeys().map((k,i)=>
       `<i class="${i===wsIndex?'cur':''}${k===state.equippedWeapon?' picked':''}"></i>`).join('');
   }
   // 底部鈕（選擇兼返回）：展示中已是裝備武器 → 顯示「返回」；否則「選擇此武器」（按下＝選定並返回）

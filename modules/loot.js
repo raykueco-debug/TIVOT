@@ -10,7 +10,7 @@
      常駐在 index.html 裡只是多一塊沒人看的節點。
    ══════════════════════════════════════════════════════════════════════ */
 
-import { GAME_CONFIG } from '../config.js';
+import { GAME_CONFIG, weaponStatRows } from '../config.js';
 import * as inv from '../script/inventory.js';
 import { SFX } from '../audio.js';
 
@@ -110,46 +110,92 @@ export function showShop(stockKey, keeper, onTalk){
   document.body.appendChild(ov);
   const SHOP=GAME_CONFIG.shop||{};
   const stock=((SHOP.stock||{})[stockKey])||[];
-  let tab='buy', pick=null;
+  /* 這一家店的長相（ver -377）。沒登記就走預設 —— 舊的雜貨舖不必改任何呼叫端。 */
+  const cfg=((SHOP.shops||{})[stockKey])||{};
+  const TABS=(cfg.tabs&&cfg.tabs.length)?cfg.tabs:['buy','sell'];
+  const TABNAME=Object.assign({ buy:'買', sell:'賣', mod:'改裝' }, cfg.tabName||{});
+  let tab=TABS[0], pick=null;
 
   const close=()=>{ ov.classList.remove('on');
     setTimeout(()=>{ if(ov.parentNode) ov.parentNode.removeChild(ov); }, 200); };
 
+  /* 規格表（武器）。⚠ 數值一律問 `config.weaponStatRows`（唯一一處），這裡只排版。 */
+  const statTable=(id, cls)=>{
+    const rows=weaponStatRows(id);
+    if(!rows.length) return '';
+    return '<div class="wp-stats '+(cls||'')+'">'
+         + rows.map(r=>'<span class="wp-k">'+r[0]+'</span><span class="wp-v">'+r[1]+'</span>').join('')
+         + '</div>';
+  };
+  /* 「跟現有的同類比一比」（Ray 指定）：找**持有中**、分類相同、且不是同一把的武器。
+     ⚠ 只挑一把（第一把）—— 並排兩張表已經夠讀，三張以上會變成規格書。 */
+  const rivalOf=(id)=>{
+    const W=GAME_CONFIG.weapons||{}; const w=W[id]; if(!w||!cfg.compare) return null;
+    return inv.ownedWeapons().find(k=>k!==id && W[k] && W[k].cat===w.cat) || null;
+  };
+
   const render=()=>{
+    /* 賣出清單。⚠ `only` 過濾（武器店只收武器）；賣價 0 的一律不列
+       （沒定價的劇情道具、以及**開局就有的那幾把槍**——它們沒有 price）。 */
     const sellable=[];
-    for(const g of inv.grouped()) for(const r of g.rows) if(inv.sellPrice(r.id)>0) sellable.push(r);
-    const rows = (tab==='buy')
-      ? (stock.length ? stock.map(id=>{
-            const d=inv.defOf(id)||{}, price=inv.priceOf(id);
-            return '<div class="shop-row'+(pick===id?' pick':'')+'" data-id="'+id+'">'
-                 + '<span class="loot-name">'+(d.name||id)+'</span>'
-                 + '<span class="loot-n">'+price+' '+inv.moneyName()+'</span></div>';
-          }).join('') : '<div class="bag-empty">這家店沒有在賣東西。</div>')
-      : (sellable.length ? sellable.map(r=>
+    for(const g of inv.grouped()) for(const r of g.rows)
+      if(inv.sellPrice(r.id)>0 && (!cfg.only || inv.catOf(r.id)===cfg.only)) sellable.push(r);
+
+    let rows='';
+    if(tab==='buy'){
+      rows = stock.length ? stock.map(id=>{
+        const d=inv.defOf(id)||{}, price=inv.priceOf(id);
+        const has=inv.count(id)>0 || ((GAME_CONFIG.weapons||{})[id]||{}).owned;
+        return '<div class="shop-row'+(pick===id?' pick':'')+'" data-id="'+id+'">'
+             + '<span class="loot-name">'+(d.name||id)+(has?'<i class="wp-have">持有</i>':'')+'</span>'
+             + '<span class="loot-n">'+price+' '+inv.moneyName()+'</span></div>';
+      }).join('') : '<div class="bag-empty">這家店沒有在賣東西。</div>';
+    }else if(tab==='sell'){
+      rows = sellable.length ? sellable.map(r=>
             '<div class="shop-row'+(pick===r.id?' pick':'')+'" data-id="'+r.id+'">'
           + '<span class="loot-name">'+r.name+'</span>'
           + '<span class="loot-n">×'+r.n+'　'+inv.sellPrice(r.id)+' '+inv.moneyName()+'</span></div>'
-          ).join('') : '<div class="bag-empty">沒有可以賣的東西。</div>');
+          ).join('') : '<div class="bag-empty">沒有可以賣的東西。</div>';
+    }else{
+      /* 改裝：**這一頁先留空**（Ray 指定）。⚠ 不要偷偷做一個半套的出來 ——
+         留一句話讓玩家知道這裡以後有東西，比一個做一半的介面好。 */
+      rows = '<div class="bag-empty">改裝服務準備中。<br>素材帶來給店主，他說馬上能幫你打出趁手的武器。</div>';
+    }
 
     const d=pick ? (inv.defOf(pick)||{}) : null;
     const price = pick ? (tab==='buy' ? inv.priceOf(pick) : inv.sellPrice(pick)) : 0;
-    const can = pick && (tab==='buy' ? inv.getMoney()>=price : inv.count(pick)>0);
+    const owned = pick && (inv.count(pick)>0 || ((GAME_CONFIG.weapons||{})[pick]||{}).owned);
+    const can = pick && tab!=='mod' &&
+                (tab==='buy' ? (inv.getMoney()>=price && !owned) : inv.count(pick)>0);
+
+    /* 說明區：武器 → 規格表（＋同類比較）；其餘 → 文字說明。 */
+    let desc;
+    if(!pick) desc = (tab==='mod') ? '' : '選一項看說明。';
+    else if(weaponStatRows(pick).length){
+      const rk=rivalOf(pick);
+      desc = statTable(pick)
+           + (rk ? '<div class="wp-vs">對比現有：'+(GAME_CONFIG.weapons[rk].shortName||rk)+'</div>'
+                 + statTable(rk,'rival') : '')
+           + (((GAME_CONFIG.weapons||{})[pick]||{}).flavor ?
+              '<div class="wp-flavor">'+GAME_CONFIG.weapons[pick].flavor+'</div>' : '');
+    }else desc = (d.desc||'');
 
     ov.innerHTML='<div class="loot-panel shop-panel">'
-      + '<div class="loot-title">商店</div>'
+      + '<div class="loot-title">'+(cfg.title||'商店')+'</div>'
       + '<div class="bag-money">'+inv.moneyName()+'　<b>'+inv.getMoney()+'</b></div>'
       + '<div class="shop-tabs">'
-      +   '<button class="shop-tab'+(tab==='buy'?' on':'')+'" data-tab="buy" type="button">買</button>'
-      +   '<button class="shop-tab'+(tab==='sell'?' on':'')+'" data-tab="sell" type="button">賣</button>'
+      +   TABS.map(t=>'<button class="shop-tab'+(tab===t?' on':'')+'" data-tab="'+t+'" type="button">'
+                    + (TABNAME[t]||t)+'</button>').join('')
       + '</div>'
       + '<div class="shop-body">'
       +   '<div class="shop-list">'+rows+'</div>'
-      +   '<img class="shop-keeper-art" src="resources/SI/NPC_Grocerie_SI.webp" alt="">'
+      +   '<img class="shop-keeper-art" src="'+(cfg.art||'resources/SI/NPC_Grocerie_SI.webp')+'" alt="">'
       + '</div>'
-      + '<div class="shop-desc">'+(d ? (d.desc||'') : '選一項看說明。')+'</div>'
+      + '<div class="shop-desc">'+desc+'</div>'
       + '<div class="shop-acts">'
-      +   '<button class="shop-do'+(can?'':' broke')+'" type="button">'
-      +     (tab==='buy' ? '買下 '+price : '賣出 '+price)+'</button>'
+      +   (tab==='mod' ? ''
+          : '<button class="shop-do'+(can?'':' broke')+'" type="button">'
+            + (tab==='buy' ? (owned?'已持有':'買下 '+price) : '賣出 '+price)+'</button>')
       +   (keeper&&keeper.length ? '<button class="shop-talk" type="button">與店主交談</button>' : '')
       +   '<button class="loot-ok" type="button">關閉</button>'
       + '</div></div>';
@@ -163,7 +209,7 @@ export function showShop(stockKey, keeper, onTalk){
     const doBtn=ov.querySelector('.shop-do');
     if(doBtn) doBtn.addEventListener('click', e=>{
       e.stopPropagation();
-      if(!pick) return;
+      if(!pick || !can) return;
       try{ SFX.unlock(); SFX.menuClick(); }catch(_){}
       if(tab==='buy'){
         const p=inv.priceOf(pick);

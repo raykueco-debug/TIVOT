@@ -25,6 +25,7 @@ const nou = N('NOUVELLE'), ren = N('RENNA');
 /* 公會那一場的兩位（ver -375）。⚠ 兩個都站**右**（見 speakers.js）——
    玩家的同伴在左、對面的人在右，與店主同一個邏輯。 */
 const hun = N('HUNTER'), cnt = N('COUNTER');
+const gun = N('GUNSMITH');   // 槍店店主（ver -377）
 
 export const TOWNS = {
   capital: {
@@ -99,11 +100,61 @@ export const TOWNS = {
         ],
       },
 
-      /* 1. 槍店 ⚠ **還沒有稿也沒有背景**（Ray 還沒給）。店主立繪已經有了
-         （`NPC_Capital_Gunstore_SI`，取景量好了），節點先留著讓箭頭指得到。
-         ⚠ 背景名先寫著 —— `script_lint.py` 會報「沒有這張背景」，那正是我們要的提醒。 */
-      gunstore: { bg:'Capital_Gunstore', noTime:true, name:'帝都　槍店',
-                  exits:{ back:'oldtown' } },
+      /* ══ 1. 武器店 ══（ver -377）
+         ⚠ **還沒有背景**（Ray 還沒給 `Capital_Gunstore`）——`script_lint.py` 會報缺圖，
+           那正是我們要的提醒，不要為了讓 lint 全綠而把節點的背景改掉。
+         ⚠ 這一段中間插的是**可戰敗**的打靶（`config.battles.range_trainee`）：
+           輸了跳到 `range_lose` 那一拍，贏了往下演再 `goto` 合流點。
+           分歧的機制見 `modules/story.js` 的 `resumeFrom` 與 `label`/`goto`。 */
+      gunstore: {
+        /* 背景 `Capital_Firearm_Day`（Ray 於 ver -377 交件）。⚠ 基底名不含時段尾巴，
+           其餘時段的差分還沒有 —— 會退回 `_Day`（`bgFor` 會在 console 記一筆）。 */
+        bg:'Capital_Firearm', name:'帝都　武器店',
+        exits:{ back:'oldtown' },
+        shop:'gunstore', shopOnTap:true, keeperWho:'GUNSMITH',
+        lines:[
+          gun(null,'噢，小哥，你手上那把槍，我有否榮幸……'),
+          /* 空畫面：主角把槍遞過去的那一拍（稿上寫「（空畫面）」）。 */
+          { speaker:'PLAYER', text:'', auto:900, hide:['GUNSMITH'] },
+          gun(null,'點五〇口徑七……不、八連發半自動，光後座力就能殺人吧！'),
+          gun(null,'神父你是有大猩猩的腕力嗎？'),
+          nou('gossip1','差不多吧。'),
+          gun(null,'我還真沒見過有誰能自如使用這種口徑的手槍。'),
+          gun(null,'能否讓我開開眼界？', { hide:['NOUVELLE'] }),
+          /* ══ 打靶（可戰敗）══ 輸了跳 `range_lose`。 */
+          { battle:'range_trainee', onLose:'range_lose' },
+          /* —— 戰勝 —— */
+          gun(null,'了不起，我們槍匠聯盟都會為您這種身手不凡的客人提供特別客製服務。'),
+          { goto:'range_merge' },
+          /* —— 戰敗 —— */
+          Object.assign(gun(null,'果然調校不太行呢。'), { label:'range_lose' }),
+          gun(null,'不過，我們槍匠聯盟都會為您這種身手不凡的客人提供特別客製服務。'),
+          /* —— 合流 —— */
+          Object.assign(gun(null,'一般人我們可不接這種單。'), { label:'range_merge' }),
+          gun(null,'每週都有競賽，優勝者也會有獎勵喔！各大城市的聯盟槍店都可以進行挑戰。'),
+          gun(null,'那麼，就由我來看看這一對美人是否還能更上一層樓。'),
+          /* （修理音）⚠ **沒有專門的修理音**：先借 `se_metalclip`（金屬扣件）。
+             要專門的音效再說。 */
+          { speaker:'GUNSMITH', text:'', auto:1200, se:'se_metalclip',
+            portrait:{ char:'GUNSMITH', show:true } },
+          gun(null,'保養很細心，調校還不到位。如果是要獵殺『禍魘』的話，還需要若干改造才能更順手下來吧。'),
+          gun(null,'素材到手之後就送來給我吧，馬上能幫你打出趁手的武器。'),
+        ],
+        /* 店主對話鈕：**隨機一句**（Ray：「隨機出武器改裝、戰鬥相關知識」）。
+           ⚠ 與雜貨舖的 `keeper`（一整段對白）不同，所以欄位分開叫 `keeperRandom`。
+           ⚠⚠ 這幾句是**我寫的**，Ray 還沒過目 —— 要換掉直接改這裡。
+             內容刻意都是「玩得到的知識」：黃圈橘圈、暴擊怎麼擲、改裝的限制。 */
+        keeperRandom:[
+          '黃圈是硬吃，橘圈才是本事。分得清楚，命就長。',
+          '霰彈的橘圈不免傷，是拿傷害換的——近身才划算。',
+          '栓動槍沒有橘圈。要嘛全中，要嘛全挨，自己掂量。',
+          '暴擊是逐發擲的。連發槍穩，單發槍看運氣。',
+          '『禍魘』的殼比人厚。打不穿就別硬打，先想辦法破防。',
+          '改裝一級一級來。跳級的接頭我做不出來，別問。',
+          '素材決定上限。好鋼配好膛線，差一階就是差一階。',
+          '別急著換槍。手上那把改到滿，常常比新槍還順手。',
+        ],
+      },
 
       /* 2. 船塢 ⚠ 同上，還沒有稿也沒有背景。 */
       dock: { bg:'Capital_Dock', name:'帝都　船塢', exits:{ back:'oldtown' } },

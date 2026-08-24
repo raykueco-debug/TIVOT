@@ -223,11 +223,17 @@ export function resolveThreat(th){
     grade='perfect';
     addPerfect();
     flashDefense('gold');
-    if(w && w.perfectDamageScale){
+    /* 橘圈改打傷害的武器（散彈類）。⚠ 卡上寫的是**絕對值**（「橘圈 6 發 ×4」），
+       存成 `perfectDmgPerHit`；倍率是**這裡**現算的唯一一處（鐵律 7：資料存絕對值、
+       換算只有一個地方）。舊欄位 `perfectDamageScale` 仍吃，但新武器一律寫絕對值。 */
+    const perfScale = (w && w.perfectDmgPerHit!=null && w.dmgPerHit)
+      ? (w.perfectDmgPerHit / w.dmgPerHit)
+      : (w && w.perfectDamageScale);
+    if(perfScale){
       // 散彈類：Perfect 檔以傷害取代免傷（打弱化反擊，不觸發 atkBuff、不免傷）。
       //   音效由 weaponCounter 的武器 blast SE 出聲（完防與反擊都會觸發散彈音效），此處不再疊合成重擊音。
       api.floatDmg(L.battle.perfect,'50%','40%',true);
-      api.weaponCounter(w.perfectDamageScale);
+      api.weaponCounter(perfScale);
     }else{
       // 一般武器（如重機槍）：完全免傷（狙擊 noPerfectBand=true 時此帶消失，落入下方 Defense）。
       //   完美防禦音＝weapon 的 Guard_SE（散彈完防走自己的槍聲，不到這裡）。
