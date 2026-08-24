@@ -868,14 +868,21 @@ function win(){
 }
 function lose(){
   if(state.over) return;
-  /* ⚠ **劇情插入戰打輸不算過**（ver -375）：不能走「交還劇情」那一條 ——
-     那條會接著演戰鬥後的台詞（「服了！我服了！」），等於輸了也照樣獲勝。
-     輸了走一般的失敗流程（驅逐失敗 → 回首頁）。
-     ⚠ 那一段城鎮對白的旗標是**演完才記**的（見 town.enter），所以回頭再走一次
-       公會，這一場會從頭再來 —— 不會因為輸過就永遠卡住。
-     ⚠ 教學那一場維持原樣（它本來就不會真的輸：敵人攻擊力被鎖成 2）。 */
-  if(state.tutorialStoryRun && storyBattleEnd()) return;
-  if(state.scriptRun){ state.scriptRun=false; state.scriptBattleId=null; }
+  /* ══ 戰敗的去向（ver -376，Ray 定案）══
+     「**除標明劇情殺／可戰敗之外，戰敗一律接 Game Over 畫面回主選單**」。
+     所以這裡只有一個例外：那一場的卡上明寫 `allowLose`（＝劇本要它被打輸，
+     輸了要接著演）。其餘一律往下走一般的失敗流程（死亡定格 → 驅逐失敗 → 結算 → 首頁）。
+     ⚠ 劇情帶起來的那些場次**也吃這條**，包含教學 —— 教學真正的「劇情殺」是
+       另一套（`tutorial.onPlayerDead()` 在傷害落地時就攔下來了，根本走不到這裡）；
+       走到這裡就是玩家真的被打死了。
+     ⚠ 城鎮那一段對白的旗標是**演完才記**的（見 town.enter），所以回頭再走一次
+       還打得到 —— 不會因為輸過就永遠卡住。 */
+  const _sb = state.scriptBattleId && GAME_CONFIG.battles && GAME_CONFIG.battles[state.scriptBattleId];
+  if(_sb && _sb.allowLose && storyBattleEnd()) return;
+  /* 走一般失敗流程之前，把「這一場是劇情場」的旗標收掉 —— 不收的話結算會走
+     教學／插入戰那一頁（那是給打贏用的），玩家輸了卻看到一頁戰績。 */
+  state.scriptRun=false; state.scriptBattleId=null;
+  state.tutorialRun=false; state.tutorialStoryRun=false;
   state.over=true; clockPause(); stopAll();
   TEL.runEnd({ partner:state.pickedPartner, weapon:state.equippedWeapon,
                boss:state.inIntruderFight, result:'lose', time_ms:Math.round(clockElapsedMs()) });

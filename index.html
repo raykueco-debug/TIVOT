@@ -198,13 +198,13 @@
     <div id="homeLinks">
       <!-- 教學：重看教學入口（小鈕與 Credit 同排；按下＝下一場強制進教學，不動已看旗標） -->
       <button id="tutorialBtn">教學</button>
-      <!-- 道具欄（ver -358）：戰鬥掉落／商店／劇情拿到的東西都收在這裡，分五類。 -->
-      <button id="bagBtn">道具</button>
+      <!-- ⚠ 「道具」與「城鎮」兩顆鈕已於 ver -376 移除（Ray 指定）：兩者都是臨時入口，
+           正式的入口是城鎮節點（商店／懸賞榜）與主線演完自動進城。
+           ⚠ 連帶：**道具欄目前沒有別的入口**（`loot.showBag` 還在，只是沒人叫它）——
+             之後要接在城鎮或選單裡，見 HANDOFF 的缺口清單。 -->
       <!-- 商店（ver -368）：買賣只在這裡。⚠ 目前是**管理人模式限定的臨時入口**，
-           等城鎮節點做出來要改成從場景進入（見 docs/TIVOT_IMPL_SPEC.md §1）。 -->
+           正式入口是城鎮的雜貨舖節點。 -->
       <button id="shopBtn">商店</button>
-      <!-- 城鎮探索（ver -369）：管理人模式限定的臨時入口，正式入口是主線演完自動進。 -->
-      <button id="townBtn">城鎮</button>
       <button id="creditBtn">Credit</button>
       <button id="originalBtn">原作</button>
       <!-- 後臺統計（管理員限定）：預設隱藏，僅管理人模式（body.testmode）顯示 -->

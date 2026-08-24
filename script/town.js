@@ -84,16 +84,13 @@ export const TOWNS = {
         ],
       },
 
-      /* ══ 二、舊街區 ══（ver -375 由「西區街道」改名，Ray 指定）
-         左＝商店、右＝酒館、上＝賞金獵人公會、下＝廣場。
-         ⚠ 旅店暫時**接不到**（原本掛在上，被公會頂掉了）—— Ray 還沒給旅店的稿與背景，
-           等他指定要掛哪個方向再接回去；節點與背景先留著，不要刪。 */
+      /* ══ 二、舊街區 ══（ver -375；-376 由 Ray 定案出口與背景）
+         左＝槍店、右＝賞金獵人公會、上＝船塢、下＝廣場。
+         ⚠ 背景是 `Capital_Downtown`（Ray 指定）。`Capital_Uptown` 還給上街區 ——
+           -371 那次是把兩張圖對調過，現在對回來了。 */
       oldtown: {
-        /* ⚠ 背景由 `Capital_Downtown` 改為 `Capital_Uptown`（ver -371，Ray 指定）。
-           ⚠ 連帶：`uptown`（上街區）原本用的就是這張，現在**沒有自己的圖**了 ——
-             見 HANDOFF 的缺口清單。 */
-        bg:'Capital_Uptown', name:'帝都　舊街區',
-        exits:{ left:'grocery', right:'tavern', up:'guild', down:'square' },
+        bg:'Capital_Downtown', name:'帝都　舊街區',
+        exits:{ left:'gunstore', right:'guild', up:'dock', down:'square' },
         lines:[
           nou('cringe','這地方……有點可怕。'),
           nou('surprise','啊，是要去保養武器嗎？'),
@@ -101,6 +98,15 @@ export const TOWNS = {
           nou('bigsmile','沒關係，有你在啊。一起逛逛吧。'),
         ],
       },
+
+      /* 1. 槍店 ⚠ **還沒有稿也沒有背景**（Ray 還沒給）。店主立繪已經有了
+         （`NPC_Capital_Gunstore_SI`，取景量好了），節點先留著讓箭頭指得到。
+         ⚠ 背景名先寫著 —— `script_lint.py` 會報「沒有這張背景」，那正是我們要的提醒。 */
+      gunstore: { bg:'Capital_Gunstore', noTime:true, name:'帝都　槍店',
+                  exits:{ back:'oldtown' } },
+
+      /* 2. 船塢 ⚠ 同上，還沒有稿也沒有背景。 */
+      dock: { bg:'Capital_Dock', name:'帝都　船塢', exits:{ back:'oldtown' } },
 
       /* ══ 二之一、賞金獵人公會 ══（ver -375）
          ⚠ 這是第一個**帶劇情插入戰**的城鎮節點：對白中間一句 `{ battle:'guild_hunter' }`，
@@ -148,7 +154,7 @@ export const TOWNS = {
       /* 1. 酒館 ⚠ 還沒有背景素材，暫借西區街道那張（見 HANDOFF 的缺口清單）。 */
       tavern: {
         bg:'Capital_Bistro', name:'帝都　餐酒館',
-        exits:{ back:'oldtown' },
+        exits:{ back:'uptown' },
         once:true,
         lines:[
           nou('pray','感謝神，賜與我們平安與食糧。願主降福於世——'),
@@ -173,7 +179,7 @@ export const TOWNS = {
       /* 2. 商店 */
       grocery: {
         bg:'Capital_Grocerie', noTime:true, name:'帝都　雜貨舖',   // 室內：只有一張圖，不吃時段
-        exits:{ back:'oldtown' },
+        exits:{ back:'uptown' },
         shop:'grocery', shopOnTap:true,   // ⚠ 點畫面就開買賣選單（Ray 指定，不做成按鈕）
         once:true,
         lines:[
@@ -203,10 +209,31 @@ export const TOWNS = {
         ],
       },
 
-      /* ⚠ 旅店與上街區**還沒有內容**（Ray 還沒給稿）；上街區有背景、旅店連背景都沒有。
-         先留節點讓箭頭指得到，進去只有地名卡。 */
-      uptown: { bg:'Capital_Uptown', name:'帝都　上街區', exits:{ back:'square' } },
-      inn:    { bg:'Capital_Downtown', name:'帝都　旅店',  exits:{ back:'oldtown' } },
+      /* ⚠ 旅店**還沒有內容**（Ray 還沒給稿），連背景都沒有。先留節點讓箭頭指得到。 */
+      /* ══ 三、上街區 ══（ver -376，Ray：「餐廳旅店跟商店放上街區」）
+         左＝雜貨舖、右＝餐酒館、上＝旅店、下＝廣場。
+         ⚠ 這一組本來掛在「西區街道」底下；那個節點被改名成舊街區、換了出口之後，
+           三家店就跟著搬到這裡（Ray 定案）。背景也一併還原成 `Capital_Uptown`。
+         ⚠ 進場對白（肚子餓）跟著一起搬 —— 那一段是**餐酒館的前因**
+           （「剛剛才經歷一場死鬥，最後一餐差點就是黑麥麵包配豆子」），
+           留在舊街區的話後面那頓飯就沒頭沒尾。要改地方再說。 */
+      uptown: {
+        bg:'Capital_Uptown', name:'帝都　上街區',
+        exits:{ left:'grocery', right:'tavern', up:'inn', down:'square' },
+        lines:[
+          /* 肚子叫：沒有台詞的一拍（立繪＋音效），停一秒自己走（§6.5）。 */
+          { speaker:'NOUVELLE', text:'', auto:1000, se:'Se_Tummy',
+            portrait:{ char:'NOUVELLE', expr:'hungry', show:true } },
+          nou('hungry','對不起，我肚子有點餓。'),
+          { speaker:'PLAYER', blank:true },
+          nou('hungry','不、不用在意我啦。'),
+          { speaker:'PLAYER', blank:true },
+          nou('surprise','咦？你也是？'),
+          nou('awkward','也是啦……剛剛才經歷一場死鬥，最後一餐差點就是黑麥麵包配豆子了……'),
+          nou('run','走吧！', { se:'se_steps' }),
+        ],
+      },
+      inn:    { bg:'Capital_Inn', name:'帝都　旅店',  exits:{ back:'uptown' } },
     },
   },
 };

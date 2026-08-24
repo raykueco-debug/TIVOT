@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.24-375';
+export const VERSION = 'ver 2026.08.24-376';
 
 export const GAME_CONFIG = {
 
@@ -744,6 +744,9 @@ export const GAME_CONFIG = {
        同一隻怪之後在別的場次登場時，卡不必抄第二份。
        noSaint / noPartner ＝ 這一場不能用聖徒化與搭檔技（Ray 的稿子指定）。 */
   battles: {
+    /* `allowLose`（ver -376，Ray 定案）：**除標明劇情殺／可戰敗之外，戰敗一律接
+       Game Over 畫面回主選單**。所以這一欄不寫＝打輸就 Game Over；
+       只有「劇本要它被打輸」的場次才寫 `allowLose:true`（輸了接著演）。 */
     guild_hunter: { enemy:'guild_hunter', noSaint:true, noPartner:true },
   },
 

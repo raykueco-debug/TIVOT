@@ -188,7 +188,9 @@ export function settle(totalTime, stats, opts={}){
      「跳出結算畫面但沒有監察官，結算戰績及 exp，不評等級」。劇情版與一般版同一頁。
      ⚠ 以前劇情版是**整頁不出**（直接把場子交還劇情）；現在改成出這一頁，
        玩家按了按鈕才回劇情／首頁 —— 交還的動作由 `tutorialDone` 這個回呼負責。 */
-  if(state.tutorialRun){ tutorialSettle(totalTime, stats); return; }
+  /* ⚠ `!isLose`（ver -376）：教學／插入戰的結算頁是**給打贏用的**（戰績＋拾得）。
+     戰敗一律走下面那一頁（Ray：除劇情殺／可戰敗之外，戰敗一律 Game Over 回主選單）。 */
+  if(state.tutorialRun && !isLose){ tutorialSettle(totalTime, stats); return; }
   /* 劇情插入戰（ver -375）：與教學結算同一頁 —— **沒有監察官、沒有等級**，
      只有戰績、EXP 與拾得。⚠ 不是教學，所以不走教學那兩句台詞。 */
   if(state.scriptRun && !isLose){ scriptSettle(totalTime, stats); return; }

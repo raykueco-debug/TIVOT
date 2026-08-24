@@ -1032,10 +1032,10 @@
     display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px;padding:0 8px;}
   /* 視窗被裁（iOS 26 standalone）：home indicator 位於不可視死區，安全區墊高全屬白墊 → 拿回 */
   html.vp-clipped #home #homeLinks{bottom:10px;}
-  #home #tutorialBtn, #home #creditBtn, #home #originalBtn, #home #statsBtn, #home #flightBtn, #home #storyBtn, #home #bagBtn, #home #shopBtn{padding:6px 18px;background:transparent;
+  #home #tutorialBtn, #home #creditBtn, #home #originalBtn, #home #statsBtn, #home #flightBtn, #home #storyBtn, #home #shopBtn{padding:6px 18px;background:transparent;
     border:1px solid var(--gold-dim);border-radius:20px;color:var(--gold-dim);
     font-family:inherit;font-size:11px;letter-spacing:2px;flex:none;}
-  #home #tutorialBtn:active, #home #creditBtn:active, #home #originalBtn:active, #home #statsBtn:active, #home #flightBtn:active, #home #storyBtn:active, #home #bagBtn:active, #home #shopBtn:active{transform:scale(.95);color:var(--gold);border-color:var(--gold);}
+  #home #tutorialBtn:active, #home #creditBtn:active, #home #originalBtn:active, #home #statsBtn:active, #home #flightBtn:active, #home #storyBtn:active, #home #shopBtn:active{transform:scale(.95);color:var(--gold);border-color:var(--gold);}
   /* 管理人模式限定鈕（後臺／試飛）：預設隱藏，body.testmode 才出現。
      testmode 於開機時由 localStorage 還原（見 main.js adminMode），手勢可再次關閉。 */
   /* ⚠ 商店是**管理人模式限定的臨時入口**（ver -368）：正式的入口是城鎮節點，

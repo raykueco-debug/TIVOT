@@ -552,10 +552,11 @@ function showExitConfirm(){
   bind('.ec-yes',()=>{ close(); combat.goHome(); });            // 回主選單：goHome 內會清 cutinPlaying + 淡出淡入
 }
 bindBtn('testClearBtn', combat.testClearBoard); // 左上（測試用）：一鍵清盤
-bindBtn('bagBtn',       loot.showBag);          // 道具欄（ver -358，純顯示）
+/* ⚠ 「道具」（bagBtn）與「城鎮」（townBtn）兩顆首頁鈕已於 ver -376 移除（Ray 指定）。
+   `loot.showBag` 與 `town.open` 都還在（前者暫時沒有入口、後者由劇情的 `thenTown` 叫起來），
+   不要因為「沒人叫」就把它們刪掉。 */
 bindBtn('shopBtn',      ()=>loot.showShop('grocery'));   // 商店（ver -368；臨時入口，正式入口在城鎮節點）
 bindBtn('storySkip',    story.skipToNextGate);  // 跳段（開發者限定，ver -363）
-bindBtn('townBtn',      ()=>town.open('capital'));       // 城鎮探索（ver -369，管理人模式限定的臨時入口）
 bindBtn('tutDevSkip',   combat.devSkipBattle);  // 教學戰跳關（開發者限定，ver -366）
 bindBtn('rematchBtn',   inspector.onRematchBtn);// 結算：依 resultMode 分流（再度執槍/迎擊）
 
