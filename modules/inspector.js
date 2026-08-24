@@ -215,6 +215,22 @@ export function settle(totalTime, stats, opts={}){
   // ── 監察官結算展示（依評價等第挑台詞）──
   showResultSequence(L.result.winTitle, sub, rows, evalResult.grade, false);
 
+  /* ── 戰鬥掉落（ver -368，Ray：「戰鬥有機會掉落」）──────────────────
+     ⚠ 機率與範圍在 `config.battleLoot`，這裡只擲骰（鐵律 1）。
+     ⚠ 與教學同一套手感：**點畫面才彈**（`_lootPending`），不自動蓋掉戰績。
+     ⚠ Boss 加成走 `bossMul` —— 打贏 Boss 掉一樣的錢會讓那一場顯得沒有回報。 */
+  {
+    const bl=(GAME_CONFIG.battleLoot||{}).money;
+    if(bl && Math.random() < (bl.chance!=null?bl.chance:0)){
+      const lo=bl.min|0, hi=Math.max(lo, bl.max|0);
+      let gain=lo + Math.floor(Math.random()*(hi-lo+1));
+      if(state.inIntruderFight && bl.bossMul>1) gain=Math.round(gain*bl.bossMul);
+      _lootMoney = gain;
+      _lootPending = [];        // 沒有道具、只有錢也要能彈（showLoot 吃 money）
+      document.addEventListener('pointerup', popLootOnce, { capture:true, once:true });
+    }
+  }
+
   // ── 隱藏關（New Hustle）解鎖判定：S 評價才解鎖，不自動觸發 ──
   //   由「再度執槍 → 迎擊」流程手動進入（見 onRematchBtn）。
   const it = GAME_CONFIG.intruder;
@@ -351,12 +367,13 @@ function tutorialSettle(totalTime, stats){
     document.addEventListener('pointerup', popLootOnce, { capture:true, once:true });
   }
 }
-/* 拾得道具的待彈狀態（見 tutorialSettle 與 onRematchBtn）。 */
-let _lootPending = null;
+/* 拾得道具／金錢的待彈狀態（見 tutorialSettle、settle 的掉落段與 onRematchBtn）。 */
+let _lootPending = null, _lootMoney = 0;
 function popLootOnce(){
-  const list=_lootPending; _lootPending=null;
+  const list=_lootPending, money=_lootMoney;
+  _lootPending=null; _lootMoney=0;
   document.removeEventListener('pointerup', popLootOnce, { capture:true });
-  if(list) showLoot(list, null);
+  if(list || money) showLoot(list||[], null, money);
 }
 
 function applyTutorialResult(){

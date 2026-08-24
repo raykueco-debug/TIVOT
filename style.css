@@ -1017,14 +1017,17 @@
     display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px;padding:0 8px;}
   /* 視窗被裁（iOS 26 standalone）：home indicator 位於不可視死區，安全區墊高全屬白墊 → 拿回 */
   html.vp-clipped #home #homeLinks{bottom:10px;}
-  #home #tutorialBtn, #home #creditBtn, #home #originalBtn, #home #statsBtn, #home #flightBtn, #home #storyBtn{padding:6px 18px;background:transparent;
+  #home #tutorialBtn, #home #creditBtn, #home #originalBtn, #home #statsBtn, #home #flightBtn, #home #storyBtn, #home #bagBtn, #home #shopBtn{padding:6px 18px;background:transparent;
     border:1px solid var(--gold-dim);border-radius:20px;color:var(--gold-dim);
     font-family:inherit;font-size:11px;letter-spacing:2px;flex:none;}
-  #home #tutorialBtn:active, #home #creditBtn:active, #home #originalBtn:active, #home #statsBtn:active, #home #flightBtn:active, #home #storyBtn:active{transform:scale(.95);color:var(--gold);border-color:var(--gold);}
+  #home #tutorialBtn:active, #home #creditBtn:active, #home #originalBtn:active, #home #statsBtn:active, #home #flightBtn:active, #home #storyBtn:active, #home #bagBtn:active, #home #shopBtn:active{transform:scale(.95);color:var(--gold);border-color:var(--gold);}
   /* 管理人模式限定鈕（後臺／試飛）：預設隱藏，body.testmode 才出現。
      testmode 於開機時由 localStorage 還原（見 main.js adminMode），手勢可再次關閉。 */
-  #home #statsBtn, #home #flightBtn, #home #storyBtn{display:none;}
-  body.testmode #home #statsBtn, body.testmode #home #flightBtn, body.testmode #home #storyBtn{display:block;}
+  /* ⚠ 商店是**管理人模式限定的臨時入口**（ver -368）：正式的入口是城鎮節點，
+     等那個做出來就把這一條拿掉，不要讓玩家從首頁直接開商店。 */
+  #home #statsBtn, #home #flightBtn, #home #storyBtn, #home #shopBtn{display:none;}
+  body.testmode #home #statsBtn, body.testmode #home #flightBtn,
+  body.testmode #home #storyBtn, body.testmode #home #shopBtn{display:block;}
   /* 版權：強制換行獨占一行（flex-basis:100%），置中、單行 */
   #home .home-copyright{flex:0 0 100%;text-align:center;margin-top:2px;
     font-size:9.5px;letter-spacing:.5px;color:var(--gold-dim);
@@ -1563,6 +1566,20 @@
     margin:6px 0 2px;padding-left:2px;}
   #lootSheet .bag-cat:first-child{margin-top:0;}
   #lootSheet .bag-empty{font-size:11px;color:var(--gold-dim);opacity:.6;padding:2px 10px 6px;}
+  /* 金錢：拾得視窗裡是一列（金色），道具欄裡是標題下的餘額條。 */
+  #lootSheet .loot-money .loot-name,#lootSheet .loot-money .loot-n{color:var(--gold);}
+  #lootSheet .bag-money{display:flex;justify-content:flex-end;align-items:baseline;gap:2px;
+    font-size:11px;letter-spacing:2px;color:var(--gold-dim);margin:-4px 2px 8px;}
+  #lootSheet .bag-money b{font-size:15px;color:var(--gold);letter-spacing:1px;}
+  /* 變賣鈕：貼在該列右下，兩段式（第二段轉紅提示不可逆）。 */
+  #lootSheet .loot-row{position:relative;}
+  #lootSheet .bag-sell{position:absolute;right:8px;bottom:6px;padding:2px 8px;
+    font-family:inherit;font-size:10px;letter-spacing:1px;color:var(--gold);
+    background:rgba(10,8,14,.72);border:1px solid var(--gold-dim);border-radius:10px;}
+  #lootSheet .bag-sell.armed{color:#e7b4b4;border-color:var(--blood);}
+  /* ⚠ 敘述要讓開賣鈕的位置：不留白的話長敘述會**跑到鈕底下**（實測第一列就撞到）。
+     在道具欄一律留，不用 `:has()` —— 沒有鈕的那幾列多留一點白，比對齊不一致好讀。 */
+  #lootSheet.bag .loot-desc{padding-right:76px;}
   #lootSheet .loot-ok{display:block;width:100%;margin-top:12px;padding:10px 0;
     font-family:inherit;font-size:13px;letter-spacing:3px;color:var(--gold);
     background:rgba(10,8,14,.7);border:1px solid var(--gold-dim);border-radius:8px;}

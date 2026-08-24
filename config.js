@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.24-367';
+export const VERSION = 'ver 2026.08.24-368';
 
 export const GAME_CONFIG = {
 
@@ -246,12 +246,32 @@ export const GAME_CONFIG = {
   items: {
     catOrder: ['item','weapon','material','equip','special'],
     catName:  { item:'道具', weapon:'武器', material:'素材', equip:'裝備', special:'特殊' },
+    /* ⚠ `sell`＝變賣單價（ver -368）。沒寫的道具**不能賣**（劇情道具、任務物品都該如此）——
+       所以「不能賣」是預設，要賣才寫價。 */
     defs: {
-      saint_claw_low: { name:'聖徒之爪（低品質）', cat:'material',
+      saint_claw_low: { name:'聖徒之爪（低品質）', cat:'material', sell:12,
                         desc:'從訓練用聖徒上剝下來的爪。質地脆，勉強能當研磨材。' },
-      scrap_iron:     { name:'碎鐵片',             cat:'material',
+      scrap_iron:     { name:'碎鐵片',             cat:'material', sell:3,
                         desc:'地宮裡到處都有的碎片。攢多了能換點東西。' },
     },
+    /* 金錢的單位（Ray 指定：**G**）。⚠ 只有一種貨幣，不做多幣別。 */
+    moneyName: 'G',
+  },
+
+  /* 戰鬥掉落（ver -368，Ray：「戰鬥有機會掉落」）。
+     ⚠ 教學戰**不吃這張表**：那一場的掉落是腳本寫死的教材（`tutorial.loot`）。
+     ⚠ 機率與範圍都在這裡，程式不寫死（鐵律 1）。 */
+  battleLoot: {
+    money: { chance:0.7, min:12, max:48, bossMul:3 },
+  },
+
+  /* 商店（ver -368）。⚠ **買賣只能在這裡**（Ray 指定）——道具欄純顯示，不做交易。
+     ⚠ `buy` 還沒有貨單：要賣什麼、賣多少，等 Ray 給。給了就填在這裡，程式不寫死。
+     ⚠ `sellRate`＝實際收購價 ＝ `items.defs[].sell` × 這個係數（1 ＝ 照定價收）。
+       日後要做「不同城鎮不同行情」就是每家店各帶一個 rate。 */
+  shop: {
+    sellRate: 1,
+    buy: [],
   },
 
   tutorial: {

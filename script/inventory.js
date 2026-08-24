@@ -14,6 +14,7 @@
 import { GAME_CONFIG } from '../config.js';
 
 const KEY = 'tivot_inventory_v1';
+const MONEY_KEY = 'tivot_money_v1';
 
 const rd = () => { try{ return localStorage.getItem(KEY); }catch(e){ return null; } };
 const wr = v  => { try{ localStorage.setItem(KEY, JSON.stringify(v)); }catch(e){} };
@@ -82,7 +83,45 @@ export function grouped(){
   return out;
 }
 
+/* ══ 金錢（ver -368）══
+   ⚠ 與道具**分開存**（`tivot_money_v1`）：道具是 `{id:數量}`，硬把錢塞成一個假 id
+     會讓「全部道具」那類走訪多一個特例，而且分類要為它開一個假分類。
+   ⚠ 一律走 `addMoney`：扣到負數會被夾在 0（沒有欠款這回事）。 */
+export function getMoney(){
+  try{ const n=parseInt(localStorage.getItem(MONEY_KEY),10); return isFinite(n)&&n>0 ? n : 0; }
+  catch(e){ return 0; }
+}
+function setMoney(n){ try{ localStorage.setItem(MONEY_KEY, String(Math.max(0, n|0))); }catch(e){} }
+export function addMoney(n){ const v=Math.max(0, getMoney()+(n|0)); setMoney(v); return v; }
+/* 花錢：夠才扣，回傳有沒有成功（商店用）。 */
+export function spendMoney(n){
+  n=Math.max(0, n|0); const have=getMoney();
+  if(have<n) return false;
+  setMoney(have-n); return true;
+}
+export function moneyName(){ return (ITEMS().moneyName)||'克朗'; }
+
+/* ══ 變賣 ══
+   ⚠ 沒寫 `sell` 的道具**不能賣**（劇情道具／任務物品）。回傳實際賣掉的數量與入袋金額。 */
+export function sellPrice(id){ const d=defOf(id); return (d && d.sell>0) ? (d.sell|0) : 0; }
+export function canSell(id){ return sellPrice(id)>0; }
+export function sell(id, n){
+  const price=sellPrice(id); if(!price) return { n:0, gain:0 };
+  n=Math.max(1, (n==null?1:n)|0);
+  const have=count(id); if(have<=0) return { n:0, gain:0 };
+  n=Math.min(n, have);
+  add(id, -n);
+  const gain=price*n; addMoney(gain);
+  return { n, gain };
+}
+
 /* 整包讀寫（存讀檔用；與 progress.snapshot/restore 同一套慣例）。 */
-export function snapshot(){ return all(); }
-export function restore(obj){ if(obj && typeof obj==='object') wr(obj); }
-export function clear(){ wr({}); }
+export function snapshot(){ return { items:all(), money:getMoney() }; }
+export function restore(o){
+  if(!o || typeof o!=='object') return;
+  /* ⚠ 舊存檔是「直接一包道具」（沒有 items/money 兩層）—— 認得出來就照舊吃下去，
+     不要讓玩家的道具因為格式升級而消失。 */
+  if(o.items || o.money!=null){ if(o.items) wr(o.items); if(o.money!=null) setMoney(o.money); }
+  else wr(o);
+}
+export function clear(){ wr({}); setMoney(0); }

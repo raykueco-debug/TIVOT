@@ -10,21 +10,28 @@
      常駐在 index.html 裡只是多一塊沒人看的節點。
    ══════════════════════════════════════════════════════════════════════ */
 
+import { GAME_CONFIG } from '../config.js';
 import * as inv from '../script/inventory.js';
 import { SFX } from '../audio.js';
 
 /* 顯示並入袋。list＝`[{id,n},…]`；done＝按下確認之後要做的事。
    ⚠ 空清單直接跳過（連視窗都不出）—— 「你什麼都沒撿到」不需要一頁。 */
-export function showLoot(list, done){
+/* `list`＝`[{id,n},…]`；`money`＝這一次掉的錢（可省）。
+   ⚠ 金錢與道具**同一個視窗**（Ray：「併入道具欄顯示」）—— 分兩頁彈會讓玩家點兩次。 */
+export function showLoot(list, done, money){
   const rows=(list||[]).filter(x=>x && x.id && (x.n==null || x.n>0));
-  if(!rows.length){ done && done(); return; }
+  money=Math.max(0, money|0);
+  if(!rows.length && !money){ done && done(); return; }
   inv.addMany(rows);                                   // ← 真正入袋
+  if(money) inv.addMoney(money);
 
   const ov=document.createElement('div'); ov.id='lootSheet';
   ov.innerHTML =
       '<div class="loot-panel">'
     +   '<div class="loot-title">拾得道具</div>'
     +   '<div class="loot-list">'
+    +     (money ? '<div class="loot-row loot-money"><span class="loot-name">'+inv.moneyName()
+                 + '</span><span class="loot-n">＋'+money+'</span></div>' : '')
     +     rows.map(r=>{
             const n = (r.n==null?1:r.n);
             const d = inv.defOf(r.id) || {};
@@ -57,23 +64,84 @@ export function showLoot(list, done){
    ⚠ 分類順序與名稱都讀 config（`items.catOrder` / `catName`）—— 這裡不寫死五種。
    ⚠ 空的分類**照樣列出標題**：玩家要看得出「素材我還沒有」，而不是以為沒這一類。 */
 export function showBag(){
-  const groups=inv.grouped();
-  const body=groups.map(g=>{
-    const rows = g.rows.length
-      ? g.rows.map(r=>'<div class="loot-row"><span class="loot-name">'+r.name+'</span>'
-                     +'<span class="loot-n">×'+r.n+'</span>'
-                     +(r.desc?'<span class="loot-desc">'+r.desc+'</span>':'')+'</div>').join('')
-      : '<div class="bag-empty">—</div>';
-    return '<div class="bag-cat">'+g.name+'</div>'+rows;
-  }).join('');
   const ov=document.createElement('div'); ov.id='lootSheet'; ov.classList.add('bag');
-  ov.innerHTML='<div class="loot-panel"><div class="loot-title">道具欄</div>'
-             + '<div class="loot-list">'+body+'</div>'
-             + '<button class="loot-ok" type="button">關閉</button></div>';
   document.body.appendChild(ov);
-  requestAnimationFrame(()=>ov.classList.add('on'));
+  /* ⚠ 內容**重畫**而不是局部更新：賣掉最後一個時整列要消失、分類可能變空、
+     金額要跟著變 —— 局部更新要處理的分支比重畫多，而這一頁最多幾十列。 */
+  const render=()=>{
+    const body=inv.grouped().map(g=>{
+      /* ⚠ 道具欄**只顯示，不交易**（ver -368，Ray：「只有在商店能買賣」）。
+         賣東西在 `showShop()`，那一頁才有價格與確認。 */
+      const rows = g.rows.length
+        ? g.rows.map(r=>'<div class="loot-row"><span class="loot-name">'+r.name+'</span>'
+                       + '<span class="loot-n">×'+r.n+'</span>'
+                       + (r.desc?'<span class="loot-desc">'+r.desc+'</span>':'')+'</div>').join('')
+        : '<div class="bag-empty">—</div>';
+      return '<div class="bag-cat">'+g.name+'</div>'+rows;
+    }).join('');
+    ov.innerHTML='<div class="loot-panel"><div class="loot-title">道具欄</div>'
+               + '<div class="bag-money">'+inv.moneyName()+'　<b>'+inv.getMoney()+'</b></div>'
+               + '<div class="loot-list">'+body+'</div>'
+               + '<button class="loot-ok" type="button">關閉</button></div>';
+    ov.querySelector('.loot-ok').addEventListener('click', e=>{ e.stopPropagation();
+      try{ SFX.unlock(); SFX.menuClick(); }catch(_){} close(); });
+  };
   const close=()=>{ ov.classList.remove('on');
     setTimeout(()=>{ if(ov.parentNode) ov.parentNode.removeChild(ov); }, 220); };
-  ov.querySelector('.loot-ok').addEventListener('click', e=>{ e.stopPropagation();
-    try{ SFX.unlock(); SFX.menuClick(); }catch(_){} close(); });
+  render();
+  requestAnimationFrame(()=>ov.classList.add('on'));
+}
+
+/* ══ 商店（ver -368）══
+   **買賣只能在這裡**（Ray 指定；道具欄純顯示）。
+   ⚠ 目前只有「賣」：買什麼、賣多少是內容資料，`config.shop.buy` 還是空的 ——
+     Ray 給貨單就填在那裡，這一頁不必改（鐵律 1）。
+   ⚠ 賣價 ＝ `items.defs[].sell` × `config.shop.sellRate`。日後要做「不同城鎮不同行情」
+     就是每家店各帶一個 rate，不要把價錢寫進這支 UI。
+   ⚠ 沒寫 `sell` 的道具**不出現在賣的清單裡**（劇情道具／任務物品賣不掉）。 */
+export function showShop(){
+  const ov=document.createElement('div'); ov.id='lootSheet'; ov.classList.add('bag','shop');
+  document.body.appendChild(ov);
+  const rate=((GAME_CONFIG.shop||{}).sellRate!=null) ? GAME_CONFIG.shop.sellRate : 1;
+  const priceOf=id=>Math.max(0, Math.round(inv.sellPrice(id)*rate));
+  const render=()=>{
+    const sellable=[];
+    for(const g of inv.grouped()) for(const r of g.rows) if(priceOf(r.id)>0) sellable.push(r);
+    const rows = sellable.length
+      ? sellable.map(r=>'<div class="loot-row"><span class="loot-name">'+r.name+'</span>'
+                       + '<span class="loot-n">×'+r.n+'</span>'
+                       + '<button class="bag-sell" type="button" data-id="'+r.id+'">賣 '
+                       + priceOf(r.id) + '</button></div>').join('')
+      : '<div class="bag-empty">沒有可以賣的東西。</div>';
+    ov.innerHTML='<div class="loot-panel"><div class="loot-title">商店</div>'
+               + '<div class="bag-money">'+inv.moneyName()+'　<b>'+inv.getMoney()+'</b></div>'
+               + '<div class="bag-cat">收購</div>'
+               + '<div class="loot-list">'+rows+'</div>'
+               + '<button class="loot-ok" type="button">離開</button></div>';
+    ov.querySelector('.loot-ok').addEventListener('click', e=>{ e.stopPropagation();
+      try{ SFX.unlock(); SFX.menuClick(); }catch(_){} close(); });
+    /* 兩段式確認（第一下變「確定？」，2 秒沒再按就還原）。
+       ⚠ 賣東西不可逆，一下就賣掉太容易誤觸；但也不值得為它另開一個確認視窗。 */
+    ov.querySelectorAll('.bag-sell').forEach(b=>{
+      b.addEventListener('click', e=>{
+        e.stopPropagation();
+        try{ SFX.unlock(); SFX.menuClick(); }catch(_){}
+        if(b.dataset.armed!=='1'){
+          b.dataset.armed='1'; b.dataset.label=b.textContent; b.textContent='確定？';
+          b.classList.add('armed');
+          clearTimeout(b.__t); b.__t=setTimeout(()=>{
+            b.dataset.armed=''; b.textContent=b.dataset.label||'賣'; b.classList.remove('armed'); }, 2000);
+          return;
+        }
+        clearTimeout(b.__t);
+        const id=b.dataset.id, price=priceOf(id);
+        inv.remove(id, 1); inv.addMoney(price);   // ⚠ 走商店的價（含 rate），不是 inv.sell 的定價
+        render();
+      });
+    });
+  };
+  const close=()=>{ ov.classList.remove('on');
+    setTimeout(()=>{ if(ov.parentNode) ov.parentNode.removeChild(ov); }, 220); };
+  render();
+  requestAnimationFrame(()=>ov.classList.add('on'));
 }

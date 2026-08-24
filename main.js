@@ -551,7 +551,8 @@ function showExitConfirm(){
   bind('.ec-yes',()=>{ close(); combat.goHome(); });            // 回主選單：goHome 內會清 cutinPlaying + 淡出淡入
 }
 bindBtn('testClearBtn', combat.testClearBoard); // 左上（測試用）：一鍵清盤
-bindBtn('bagBtn',       loot.showBag);          // 道具欄（ver -358）
+bindBtn('bagBtn',       loot.showBag);          // 道具欄（ver -358，純顯示）
+bindBtn('shopBtn',      loot.showShop);         // 商店（ver -368，買賣只在這裡）
 bindBtn('storySkip',    story.skipToNextGate);  // 跳段（開發者限定，ver -363）
 bindBtn('tutDevSkip',   combat.devSkipBattle);  // 教學戰跳關（開發者限定，ver -366）
 bindBtn('rematchBtn',   inspector.onRematchBtn);// 結算：依 resultMode 分流（再度執槍/迎擊）
