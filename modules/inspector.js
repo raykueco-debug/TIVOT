@@ -20,6 +20,7 @@
  * ========================================================================== */
 
 import { GAME_CONFIG, asset, bgmVol, sfxGain } from '../config.js';
+import { showLoot } from './loot.js';
 import { state } from '../state.js';
 import { SFX } from '../audio.js';   // Boss BGM 於「再度執槍（S 解鎖）」瞬間起播
 import { L, fmt, decorateLine } from '../i18n.js';   // 多語言（結算標題/數據列/按鈕/台詞關鍵字）
@@ -183,7 +184,11 @@ export function settle(totalTime, stats, opts={}){
      ⚠ 正常情況下**根本走不到這裡** —— ver -325 起 combat 的 win()/lose() 在
        第一時間就把場子交還劇情（storyBattleEnd），連「驅逐完成」過渡禎都不播。
        這一道是保險：哪天多開一條通往 settle 的路，也不會突然冒出一頁評價。 */
-  if(state.tutorialStoryRun) return;
+  /* ── 教學結算（ver -358，Ray 指定）───────────────────────────────
+     「跳出結算畫面但沒有監察官，結算戰績及 exp，不評等級」。劇情版與一般版同一頁。
+     ⚠ 以前劇情版是**整頁不出**（直接把場子交還劇情）；現在改成出這一頁，
+       玩家按了按鈕才回劇情／首頁 —— 交還的動作由 `tutorialDone` 這個回呼負責。 */
+  if(state.tutorialRun){ tutorialSettle(totalTime, stats); return; }
   if(isLose){
     const rows=combatStatsRows();
     showResultSequence(L.result.loseTitle, L.result.loseSub, rows, 'lose', true);
@@ -210,9 +215,6 @@ export function settle(totalTime, stats, opts={}){
   // ── 監察官結算展示（依評價等第挑台詞）──
   showResultSequence(L.result.winTitle, sub, rows, evalResult.grade, false);
 
-  // ── 教學戰專屬結算（tutorialRun 存續到此）：覆蓋台詞與按鈕，不進迎擊/獎勵流程 ──
-  if(state.tutorialRun){ applyTutorialResult(); return; }
-
   // ── 隱藏關（New Hustle）解鎖判定：S 評價才解鎖，不自動觸發 ──
   //   由「再度執槍 → 迎擊」流程手動進入（見 onRematchBtn）。
   const it = GAME_CONFIG.intruder;
@@ -236,7 +238,9 @@ export function settle(totalTime, stats, opts={}){
  * ========================================================================== */
 let _inspTypeTimer=null;
 let _resultAutoTimer=null;   // 結算/戰敗畫面自動回首頁計時
-function showResultSequence(title, sub, statsHtml, rankKey, isLose){
+/* opts.noInspector＝這一頁**不出監察官**（ver -358，Ray 指定教學結算不要她）。
+   ⚠ 不要用「傳 isLose」來偷渡：那會連按鈕文案與 BGM 分支一起改掉。 */
+function showResultSequence(title, sub, statsHtml, rankKey, isLose, opts){
   const b=$('banner');
   // 結算/戰敗畫面：停留上限（config resultAutoMs，1:10）內沒操作 → 自動回首頁
   clearTimeout(_resultAutoTimer);
@@ -256,7 +260,8 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose){
   stats.classList.remove('sweep');
 
   // 監察官立繪＋台詞（一般失敗不跑監察官；Boss 戰失敗仍顯示監察官，播 Boss 失敗台詞）
-  const insp = (isLose && !state.inIntruderFight) ? null : getInspector();
+  const insp = (opts && opts.noInspector) ? null
+             : ((isLose && !state.inIntruderFight) ? null : getInspector());
   const stage=$('inspectorStage');
   const bubble=$('inspectorBubble');
   const portrait=$('inspectorPortrait');
@@ -316,6 +321,28 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose){
  *  按鈕：改「回到主畫面」；按下先補 buttonLine（「期待你的表現。」）再回首頁。
  *  不進 S 迎擊/銭湯獎勵流程（教學戰不解鎖隱藏關）。
  * ========================================================================== */
+/* 教學專屬結算頁。**沒有監察官、沒有等級**，只有戰績與 EXP，收尾彈拾得道具。
+   ⚠ EXP 照樣用 `evaluate()` 算 —— 不評等級指的是「不顯示 S/A/B 那個大字」，
+     不是「不算分」。等級之後要拿來解隱藏關，教學場不該污染那條線。
+   ⚠ 掉落清單在 `config.tutorial.loot`，這裡不寫死。 */
+function tutorialSettle(totalTime, stats){
+  state.sRankUnlocked = false;
+  const ev = evaluate(stats);
+  const tr = (GAME_CONFIG.tutorial && GAME_CONFIG.tutorial.result) || {};
+  let rows = '<div class="grade-wrap grade-noRank">'
+           + '<span class="grade-meta"><span class="grade-cap">' + (L.result.gradeCap||'') + '</span>'
+           + '<span class="grade-exp">EXP ' + ev.exp + '</span></span></div>';
+  rows += ratingStatsRows(stats, totalTime);
+  showResultSequence(tr.title || L.result.winTitle, tr.sub || '', rows, 'tutorial', false,
+                     { noInspector:true });
+  const rbtn=$('rematchBtn');
+  if(rbtn) rbtn.textContent = tr.buttonLabel || '回到主畫面';
+  state.resultMode = 'tutorial-home';
+  /* 拾得道具：結算頁站定之後才彈（同一拍彈出來會蓋掉玩家還沒看到的戰績）。
+     ⚠ 道具在 `showLoot` 裡入袋，這裡不必也不要自己再寫一次存檔。 */
+  setTimeout(()=>showLoot((GAME_CONFIG.tutorial||{}).loot || [], null), 800);
+}
+
 function applyTutorialResult(){
   const tr = (GAME_CONFIG.tutorial && GAME_CONFIG.tutorial.result) || {};
   state.sRankUnlocked = false;
@@ -430,15 +457,15 @@ export function onRematchBtn(){
   const rbtn=$('rematchBtn');
   clearTimeout(_resultAutoTimer);   // 玩家有操作 → 取消自動回首頁
   if(state.resultMode==='tutorial-leaving') return;   // 教學結算離場中：防連點重入
-  if(state.resultMode==='tutorial-home'){   // 教學戰結算：「回到主畫面」→ 監察官補一句 → 回首頁
-    const tr=(GAME_CONFIG.tutorial && GAME_CONFIG.tutorial.result) || {};
+  if(state.resultMode==='tutorial-home'){   // 教學戰結算：按鈕離場
     state.resultMode='tutorial-leaving';
     SFX.play(asset('sfx_start'), sfxGain('sfx_start'));
-    const bubble=$('inspectorBubble'), lineEl=$('inspectorLine');
-    if(bubble){ bubble.classList.remove('show'); void bubble.offsetWidth; bubble.classList.add('show'); }
-    clearTimeout(_inspTypeTimer);
-    if(lineEl) typeInspectorLine(lineEl, tr.buttonLine || '期待你的表現。', 900);
-    setTimeout(()=>{ state.tutorialRun=false; api.goHome(); }, 1600);   // 補完一句才離場
+    /* ⚠ 監察官那兩句補話一起收掉（ver -358）：這一頁本來就沒有她（Ray 指定），
+       留著「按鈕後補一句」等於讓一個不在場的人說話。 */
+    const story = state.tutorialStoryRun;
+    state.tutorialRun=false; state.tutorialStoryRun=false;
+    /* 劇情叫起來的那一場 → **回劇情**（不是回首頁）。交還的實體由 main.js 注入。 */
+    setTimeout(()=>{ if(story && api.storyReturn) api.storyReturn(); else api.goHome(); }, 260);
     return;
   }
   if(state.resultMode==='sentou-offer'){   // Boss S 級第一按：「再度執槍」原地變身（金色呼吸光）

@@ -1,7 +1,7 @@
 # HANDOFF — Saint Install 模組化重寫 · 進度交接
 
 > 每輪開工前讀本檔 + 憲法/規格。實況以 `git log` 與 `DECISIONS.md` 為準;本檔為人類可讀的進度總覽。
-> **最後回寫:`ver -357`(2026-08-24)。** 本檔後半是逐版的交接,由新到舊往下加;
+> **最後回寫:`ver -358`(2026-08-24)。** 本檔後半是逐版的交接,由新到舊往下加;
 > **要快速上手請先讀下面那一段「★必讀 · 目前狀態(ver -341)」**（餵稿規格見 `script/SCRIPT_FORMAT.md`）,再依需要跳到對應版本。
 >
 > 目前狀態:CLAUDE.md §6 開發順序第 1~5 步已完成;**第 6 步(ACCEPTANCE 對照 reference)仍未動**,
@@ -94,7 +94,7 @@
    ＋`script/speakers.js`(角色表)＋`script/progress.js`(stage/flags)。
 6. `script/SCRIPT_FORMAT.md` — **Ray 餵稿的規格**(ver -342):寫稿格式、演出詞彙表、
    現有素材清單、一定要交代清楚的六件事。收到稿之後跑 `tools/script_lint.py` 驗。
-7. `git log`(本檔最後回寫於 `ver -357`)。
+7. `git log`(本檔最後回寫於 `ver -358`)。
 
 ---
 
@@ -2330,3 +2330,64 @@ clip 與門一起改成 **1s**（同 -343：要同速，看的是行程÷時間�
 ⚠ **`_originals` 目前 133 MB、只在本機**。它是「可回滾」不是「異地備份」——
 要防硬碟壞掉得另外複製到雲端／外接。**要不要改成入版控由 Ray 決定**
 （repo 會多百餘 MB，push 會變慢；`http.postBuffer` 之前已設過）。
+
+
+---
+
+# 交接 · `ver -358`（道具系統／好感度計數／教學結算＋掉落）
+
+## A. 道具（`script/inventory.js` ＋ `config.js` 的 `items`）
+
+- 定義在 `config.items`：`catOrder`（道具/武器/素材/裝備/特殊，Ray 指定的五類）、
+  `catName`、`defs`（`id → {name, cat, desc}`）。
+- 存檔 `tivot_inventory_v1`，形狀是 **`{id:數量}`** —— 存 id 不存名稱，改名不動存檔。
+- API：`add/addMany/remove/count/all/grouped/defOf/nameOf/snapshot/restore/clear`。
+- ⚠ 三條來源（戰鬥後獲取、商店購買、劇情取得）**一律走 `add()`** —— 不要有第二個地方
+  記持有量。未定義的 id 照收（素材是資料），只在 console 記一筆讓漏填現形。
+- ⚠ 放 `script/` 不放 `modules/`：這是**存檔資料**，與 `progress.js` 同一層；
+  `modules/` 放的是戰鬥與演出邏輯。
+
+## B. 好感度計數（`script/progress.js`）
+
+`addAffection(who, delta)` / `affectionOf(who)` / `tierOfChar(who)`，四人（renna/nouvelle/
+sorana/anya）。三條規矩：
+
+1. **棘輪**：可以扣，但不跌破**已達 tier 的下限**（`tierFloor`）。地板另存
+   `tivot_aff_floor_v1` —— ⚠ 不能塞進 `tivot_affection_v1`，那支的形狀被
+   `flight/index.html` 讀著。
+2. **小數要留住**：蕾娜只吃 S 且一次 **+0.25**，所以一律存實數並對齊 1/4
+   （`Math.round(v*4)/4`，避免 10.249999）。
+   ⚠ `flight/index.html` 的 `setAffection` 有 `v|0` —— **讀**沒問題，哪天要在飛行頁
+     加減好感，那一行也得改。
+3. 夾在 0~50。
+
+實測：10 →（+0.25 ×2）10.5 →（+20）30.5 →（−99）**21**（tier 3 的地板，棘輪生效）。
+
+## C. 教學結算：**沒有監察官、不評等級**，收尾彈拾得道具
+
+- `inspector.settle` 一開頭改成：`state.tutorialRun` → `tutorialSettle()`。
+  該頁 `showResultSequence(..., { noInspector:true })`，戰績照列、**EXP 照算照顯示**、
+  但不畫 S/A/B 那個大字。⚠ 「不評等級」是不顯示，不是不算 —— 等級之後要拿來解隱藏關，
+  教學場不該污染那條線。
+- 掉落 `config.tutorial.loot`＝聖徒之爪（低品質）×1、碎鐵片×2，結算頁站定 800ms 後彈
+  `modules/loot.js` 的視窗。⚠ **道具是在 `showLoot` 裡入袋的**，呼叫端不要自己再寫一次。
+- ⚠⚠ 劇情版教學以前是**整頁不出**（`storyBattleEnd` 直接把場子交還劇情）。現在勝利改走
+  結算頁，**按鈕按下去才回劇情**（`inspector.init` 多注入一支 `storyReturn`）。
+  戰敗維持原樣（不給結算與掉落）。劇情版不播「驅逐完成」過渡禎（同 -329「切乾淨」）。
+- 首頁多一顆 **「道具」** 鈕 → `loot.showBag()`（五類分組，空的分類也列標題）。
+
+## D. 教學的聖徒血量
+
+- 新增 `tutorial.storyFinishEnemyHp: 90`：劇情版（教到破防為止）在破防那一盤打完時
+  壓到這個值 —— Ray：「破防結束以後可以一盤內收拾的血量」。
+  ⚠ 與 `finishEnemyHp`（70）分開：那是聖徒化＋MB 之後的殘血，劇情版沒有那一段。
+- 「破防前敵 HP 掉到 50% 以下 → 強制灌滿破防值進入破防教學」**本來就有**
+  （`dualForceHpRatio: 0.5` → `onEnemyHp` → `fillEnergy`），這一版確認沒被別的條件擋住。
+
+## E. 還沒做（Ray 的規格裡提到、這一版沒動）
+
+- **商店**：`inventory.add()` 已備妥，但沒有商店 UI 與價格資料。
+- **好感度的來源**：`addAffection` 只是計數器；四人各自的加減規則
+  （docs/TIVOT_AFFECTION_RULES.md：諾薇兒聖徒化 +1／安雅不用聖徒化 +1／索拉娜評價越爛越加／
+  蕾娜只吃 S +0.25）**還沒接到戰鬥結算上**。
+- **裝備/使用道具**：只有持有量，沒有裝備欄位與使用效果。

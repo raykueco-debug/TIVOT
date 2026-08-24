@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.24-357';
+export const VERSION = 'ver 2026.08.24-358';
 
 export const GAME_CONFIG = {
 
@@ -217,6 +217,27 @@ export const GAME_CONFIG = {
    *  lines[].who 對應 cast 鑰匙；cast[].side 決定立繪自左或右移入。
    *  ⚠ 台詞為佔位稿，之後定稿改這裡即可（資料/程式分離）。
    * ------------------------------------------------------------------ */
+  /* ------------------------------------------------------------------
+   *  道具（ver -358）
+   *  ------------------------------------------------------------------
+   *  ⚠ 資料/程式分離（鐵律 1）：**所有道具都定義在這裡**，程式只認 id。
+   *    來源有三條（戰鬥後獲取、商店購買、劇情取得），全部經 `script/inventory.js`
+   *    的 `add()` 進道具欄 —— 不要有第二個地方記「玩家有什麼」。
+   *  ⚠ 分類固定五種（Ray 指定）：道具 / 武器 / 素材 / 裝備 / 特殊。
+   *    `cat` 只能是 `catOrder` 裡的鍵；驗稿與 UI 都按這個順序排。
+   *  ⚠ 名稱先寫在這裡（中文）。要多語系再搬進 i18n —— 但**鍵名（id）永遠是英數**，
+   *    存檔存的是 id，改名不會動到存檔。 */
+  items: {
+    catOrder: ['item','weapon','material','equip','special'],
+    catName:  { item:'道具', weapon:'武器', material:'素材', equip:'裝備', special:'特殊' },
+    defs: {
+      saint_claw_low: { name:'聖徒之爪（低品質）', cat:'material',
+                        desc:'從訓練用聖徒上剝下來的爪。質地脆，勉強能當研磨材。' },
+      scrap_iron:     { name:'碎鐵片',             cat:'material',
+                        desc:'地宮裡到處都有的碎片。攢多了能換點東西。' },
+    },
+  },
+
   tutorial: {
     storageKey: 'tivot.tutorialSeen.v1',
     enemyKey: 'trainee',   // 教學專用敵（enemies.trainee＝訓練用聖徒；combat.startGame 於教學啟動時換上）
@@ -231,6 +252,14 @@ export const GAME_CONFIG = {
     //   教學段落未播完前（tutorialActive）敵血夾底 1 不可被殺（combat.enemyDamage 的教學夾傷），
     //   血量只影響收尾盤節奏。
     enemyHp: 500,
+    /* 教學戰的掉落（ver -358，Ray 指定：聖徒之爪（低品質）×1、碎鐵片×2）。
+       ⚠ 走 `items.defs` 的 id，不要在這裡寫名字 —— 改名只改上面那一處。 */
+    loot: [ { id:'saint_claw_low', n:1 }, { id:'scrap_iron', n:2 } ],
+    /* 劇情版教學（教到破防為止）在破防那一盤打完時把敵血壓到這裡（ver -358，Ray：
+       「聖徒 hp 改為破防結束以後可以一盤內收拾的血量」）。
+       ⚠ 與 `finishEnemyHp`（聖徒化收尾用的 70）分開：劇情版沒有聖徒化那一段，
+         玩家手上只有雙槍破防剛結束的普攻，一盤 16 格約打 90~120，故給 90。 */
+    storyFinishEnemyHp: 90,
     preFullEnergy: 90,     // 第二回合清盤時破防值設為此值（＝100−5 擊×energyPerHit(2)：
                            //   第三回合點 5 個數字後才滿、滿了才跳蕾妮引導）；此前破防值也封頂於此
     // 削血保底觸發：玩家反擊削血過快時，教學段落不因「還沒輪到」而被跳過——

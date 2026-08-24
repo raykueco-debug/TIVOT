@@ -1495,6 +1495,42 @@
   #storyBubble .story-next{position:absolute;right:10px;bottom:5px;font-size:9px;color:var(--gold);
     animation:tutNext .7s ease-in-out infinite alternate;}
 
+  /* ── 拾得道具視窗（ver -358）──────────────────────────────────────
+     ⚠ z-9600：要蓋過結算頁（banner 30／corner-btn 37）與劇情層（8300），
+       但低於確認框（9500）之外的東西……**不對，確認框是 9500** ——
+       這一頁是「拿到東西」的通知，蓋過它才對（玩家按了確認才會繼續）。 */
+  #lootSheet{position:fixed;inset:0;z-index:9600;display:flex;align-items:center;
+    justify-content:center;background:rgba(4,3,7,.72);backdrop-filter:blur(2px);
+    opacity:0;transition:opacity .22s ease;pointer-events:none;}
+  #lootSheet.on{opacity:1;pointer-events:auto;}
+  #lootSheet .loot-panel{width:min(92%,360px);background:var(--panel);
+    border:1px solid var(--gold-dim);border-radius:12px;padding:14px 14px 12px;
+    box-shadow:0 8px 30px rgba(0,0,0,.6);transform:translateY(8px);
+    transition:transform .22s cubic-bezier(.16,1,.3,1);}
+  #lootSheet.on .loot-panel{transform:translateY(0);}
+  #lootSheet .loot-title{font-size:14px;letter-spacing:4px;color:var(--gold);
+    text-align:center;margin-bottom:10px;}
+  #lootSheet .loot-list{display:flex;flex-direction:column;gap:8px;
+    max-height:52vh;overflow-y:auto;}
+  #lootSheet .loot-row{display:grid;grid-template-columns:1fr auto;gap:2px 10px;
+    align-items:baseline;padding:8px 10px;border:1px solid transparent;
+    background:rgba(255,255,255,.03);border-radius:8px;}
+  #lootSheet .loot-name{font-size:13px;color:var(--ink);}
+  #lootSheet .loot-n{font-size:13px;color:var(--gold);letter-spacing:1px;}
+  /* 說明佔整列（grid 第二行跨兩欄）：名稱與數量對齊，敘述在下面小字。 */
+  #lootSheet .loot-desc{grid-column:1 / -1;font-size:11px;line-height:1.6;
+    color:var(--gold-dim);}
+  /* 道具欄：分類標題（空的分類也留一條「—」，讓玩家看得出這一類存在但還沒有東西）。 */
+  #lootSheet.bag .loot-list{max-height:60vh;}
+  #lootSheet .bag-cat{font-size:11px;letter-spacing:3px;color:var(--gold-dim);
+    margin:6px 0 2px;padding-left:2px;}
+  #lootSheet .bag-cat:first-child{margin-top:0;}
+  #lootSheet .bag-empty{font-size:11px;color:var(--gold-dim);opacity:.6;padding:2px 10px 6px;}
+  #lootSheet .loot-ok{display:block;width:100%;margin-top:12px;padding:10px 0;
+    font-family:inherit;font-size:13px;letter-spacing:3px;color:var(--gold);
+    background:rgba(10,8,14,.7);border:1px solid var(--gold-dim);border-radius:8px;}
+  #lootSheet .loot-ok:active{transform:scale(.98);}
+
   /* ── 存讀檔欄位面板：一頁 10 列，超出增頁 ── */
   #saveSheet{position:fixed;inset:0;z-index:9200;display:none;
     background:rgba(4,3,7,.78);backdrop-filter:blur(2px);}

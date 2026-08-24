@@ -128,7 +128,11 @@ export function onBoardLoaded(idx){
 function finishStoryRun(){
   if(!state.tutorialActive) return;
   markSeen();
-  if(api.capEnemyHp) api.capEnemyHp(CFG().finishEnemyHp);
+  /* ⚠ 劇情版用 `storyFinishEnemyHp`（90）不是 `finishEnemyHp`（70，ver -358）：
+     那 70 是「聖徒化＋MB 之後」的殘血，劇情版沒有聖徒化那一段，玩家手上只有
+     剛學會的雙槍破防與普攻 —— Ray：「聖徒 hp 改為破防結束以後可以一盤內收拾的血量」。 */
+  const t=CFG();
+  if(api.capEnemyHp) api.capEnemyHp(t.storyFinishEnemyHp!=null ? t.storyFinishEnemyHp : t.finishEnemyHp);
   openScript('finishLR');
 }
 // defense.spawnThreat 生成紅點時經注入呼叫 → 觸發 'threat' 步驟（紅點凍結於畫面講解）

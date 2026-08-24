@@ -128,7 +128,11 @@ export function setup(){
   });
   // 監察官（評價/結算）：combat 擁有計時 → 算好 totalTime/avg 呼叫 inspector.settle。
   //   inspector 只 import state/config；goHome（combat）與 triggerIntruder（enemy）經此注入。
-  inspector.init({ goHome, triggerIntruder: enemy.triggerIntruder });
+  /* ⚠ `storyReturn` 也注入 inspector（ver -358）：劇情叫起來的教學打完會停在結算頁，
+     按鈕按下去要**回劇情**而不是回首頁 —— 交還的實體只有 combat 這裡有
+     （main.js 透過 setStoryReturn 給的）。 */
+  inspector.init({ goHome, triggerIntruder: enemy.triggerIntruder,
+                   storyReturn: ()=>{ if(storyReturn) storyReturn(); else goHome(); } });
   // 敵人：Boss 亂入的戰鬥重置（startIntruderFight，combat 擁有）+ 換敵刷血條（updateBars）注入。
   enemy.init({ startIntruderFight, updateBars });
 }
@@ -760,6 +764,10 @@ function runTotalHp(){
      那一段是真的會死的 —— 沒接的話會卡在戰敗結算頁，劇情永遠回不來。 */
 let storyReturn = null;
 export function setStoryReturn(fn){ storyReturn = fn; }
+/* ⚠ ver -358 起**只有戰敗**走這條「不結算直接交還劇情」的路。
+   勝利改成照樣上結算頁（Ray：「教學關卡結束後跳出結算畫面…並跳出拾得道具視窗」），
+   由結算頁的按鈕再把場子交還劇情（見 inspector.onRematchBtn 的 tutorial-home 分支）。
+   ⚠ 戰敗維持原樣：教學的即死防禦讓戰敗幾乎不可能，真的死了也不該給結算與掉落。 */
 function storyBattleEnd(){
   if(!state.tutorialStoryRun) return false;
   state.tutorialRun=false; state.tutorialStoryRun=false;
@@ -770,7 +778,6 @@ function storyBattleEnd(){
 
 function win(){
   if(state.over || state.defeated) return;   // 戰敗優先：已判定戰敗則勝利結算一律讓位
-  if(storyBattleEnd()) return;
   state.over=true; clockPause(); stopAll();
   const totalTime=clockElapsedMs()/1000;               // 只累計實打時間（overkill/轉場/cut-in 皆不計）
   TEL.runEnd({ partner:state.pickedPartner, weapon:state.equippedWeapon,
@@ -789,11 +796,15 @@ function win(){
     // 教學劇情殺三連擊為腳本演出，不算玩家頭上（下限 0）
     hitsTaken: Math.max(0, state.hitsTaken - _scriptedHits),
   };
-  // 勝利 → 先播「驅逐完成」過渡禎；被點掉（done）後才建結算面板並起播結算 BGM。
-  playTransition('finish', ()=>{
+  /* 勝利 → 先播「驅逐完成」過渡禎；被點掉（done）後才建結算面板並起播結算 BGM。
+     ⚠ **劇情叫起來的教學不播過渡禎**（ver -358）：那一場的進出都由劇情接手，
+       中間插一張要點的過渡禎會把節奏切斷（同 -329「切乾淨」的理由）。
+       結算頁照出 —— Ray 要的是「沒有監察官的戰績頁 ＋ 拾得道具」。 */
+  const toResult = ()=>{
     SFX.playBgm(asset('bgm_result'), { volume: bgmVol('bgm_result') });   // 驅逐完成頁被點掉後 → 結算 BGM
     inspector.settle(totalTime, stats, { isLose:false });
-  });
+  };
+  if(state.tutorialStoryRun) toResult(); else playTransition('finish', toResult);
 }
 function lose(){
   if(state.over) return;
