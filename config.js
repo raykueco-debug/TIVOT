@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.24-383';
+export const VERSION = 'ver 2026.08.24-384';
 
 export const GAME_CONFIG = {
 
@@ -1100,22 +1100,22 @@ export const ASSETS = {
      ⚠ 搬檔與改名走 tools/audio_reorg.py，別手改 —— 它會一併改寫
        config.js 與 flight/index.html 兩邊的路徑，手改很容易漏掉後者。 */
   // 反擊武器音效（所有副武器各一支；鑰匙對應 weapons.sound）。
-  se_mg_squall:      "resources/audio/se/se_weapon_mg_squall.mp3",       // 重機槍 反擊（連續感：整支播一次）
-  se_shotgun_blast:  "resources/audio/se/se_weapon_shotgun_blast.mp3",   // 散彈槍 反擊（一次一發）
-  se_sniper_falcon:  "resources/audio/se/se_weapon_sniper_falcon.mp3",   // 狙擊槍 反擊（單發）
+  se_mg_squall:      "resources/audio/se/se_weapon_mg_squall.m4a",       // 重機槍 反擊（連續感：整支播一次）
+  se_shotgun_blast:  "resources/audio/se/se_weapon_shotgun_blast.m4a",   // 散彈槍 反擊（一次一發）
+  se_sniper_falcon:  "resources/audio/se/se_weapon_sniper_falcon.m4a",   // 狙擊槍 反擊（單發）
 
   // 清盤換彈音（盤面清空、顯示 RELOADING 時播）
-  sfx_reload:        "resources/audio/se/se_weapon_reload.mp3",
+  sfx_reload:        "resources/audio/se/se_weapon_reload.m4a",
 
   // 開始遊戲 stinger（點下開始瞬間，蓋過 BGM 切歌的淡出/進入前段）
-  sfx_start:         "resources/audio/se/se_ui_sortie.mp3",
-  sfx_startbt:       "resources/audio/se/se_ui_kagurabell.mp3",   // 出陣鈕/overkill/Boss S 第一按（神楽鈴）
+  sfx_start:         "resources/audio/se/se_ui_sortie.m4a",
+  sfx_startbt:       "resources/audio/se/se_ui_kagurabell.m4a",   // 出陣鈕/overkill/Boss S 第一按（神楽鈴）
   // 通用 UI 音：所有未指定音效的按鈕（bindBtn/menuClick 統一出口）／搭檔選人換卡翻頁
-  se_general_click:  "resources/audio/se/se_ui_click.mp3",
-  se_pageflip:       "resources/audio/se/se_ui_pageflip.mp3",
+  se_general_click:  "resources/audio/se/se_ui_click.m4a",
+  se_pageflip:       "resources/audio/se/se_ui_pageflip.m4a",
   // 聖徒化發動音效
   //  ⚠ 素材「內容」更新但檔名不變時,在路徑加/升 ?v=N 強制手機重抓(HTTP 快取以 URL 為鍵)。
-  sfx_saint:         "resources/audio/se/se_saint_install.mp3?v=3",
+  sfx_saint:         "resources/audio/se/se_saint_install.m4a?v=3",
 
   // 完美防禦（完防）合成替代音（一般武器；散彈完防維持自己的槍聲）
   se_guard:          "resources/audio/se/se_weapon_guard.m4a",
@@ -1134,13 +1134,13 @@ export const ASSETS = {
   // 敵人攻擊音（依攻擊種類 kind：ult 大絕命中/不完美防禦格擋、delay 太慢、wrong 按錯）。
   em_slash:          "resources/audio/se/se_enemy_slash.m4a",    // 聖徒：大絕/不完美防禦/按錯
   em_smack:          "resources/audio/se/se_enemy_smack.m4a",    // 聖徒：延時懲罰
-  em_shot:           "resources/audio/se/se_enemy_shot.mp3",     // Boss：延時懲罰
-  em_revolver:       "resources/audio/se/se_enemy_revolver.mp3", // Boss：大絕/不完美防禦（左輪）
+  em_shot:           "resources/audio/se/se_enemy_shot.m4a",     // Boss：延時懲罰
+  em_revolver:       "resources/audio/se/se_enemy_revolver.m4a", // Boss：大絕/不完美防禦（左輪）
   em_dagger:         "resources/audio/se/se_enemy_dagger.m4a",   // Boss：按錯
 
   // 普攻槍聲（手槍；每次正確點擊由這兩支隨機播一支，製造變化）
-  se_pistol_01:      "resources/audio/se/se_weapon_pistol_01.mp3",
-  se_pistol_02:      "resources/audio/se/se_weapon_pistol_02.mp3",
+  se_pistol_01:      "resources/audio/se/se_weapon_pistol_01.m4a",
+  se_pistol_02:      "resources/audio/se/se_weapon_pistol_02.m4a",
   se_pistol_03:      "resources/audio/se/se_weapon_pistol_03.m4a",  // 普攻槍聲（現行）
 
   // BGM（loop、不可交疊，切歌時前一首淡出）。

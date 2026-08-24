@@ -140,8 +140,8 @@ SFX.setShots([asset('se_pistol_03')].filter(Boolean), sfxGain('se_pistol_03'));
 SFX.setMenuClick(asset('se_general_click'), sfxGain('se_general_click'));
 
 /* ── 進場預載（第一段）：掃 ASSETS 載「開場就要」的圖＋音，跑完才揭開選單 ──
- *  第一段內依序讓路：監察官立繪（門面最優先）→ 關鍵音效（SI_01/Start_01）→ 批次段，
- *  見下方 portraitP/critP。
+ *  第一段內的順序（ver -384，Ray 定案）：**音效全部 → 圖（立繪最先）→ 音樂**，
+ *  見下方 startBatch。
  *  圖 → new Image（瀏覽器快取）；BGM(bgm_*) → Blob 下載；其餘音效 → Web Audio 解碼。
  *  音訊實際播放仍需首次手勢（primeAudio/unlock）。
  *  ⚠ 分兩段載：結算/失敗/Boss BGM 開戰前用不到（最快也在一場戰鬥之後），
@@ -167,8 +167,8 @@ function preloadLateBgm(){
      進主選單那一刻（go()）背景開載，出陣時再補一次保險（同 preloadLateBgm）。
    ⚠ 第二段沒載完不會壞：<img> 現抓即顯示，頂多晚一拍。會擋流程的只有音訊
      （解碼要時間），所以音效**維持**在第一段 —— 27 支加起來只有 0.76 MB。
-   ⚠ 監察官立繪不在這張表裡也沒關係：她由 portraitP 直接 new Image 先載（門面最優先），
-     批次段再載一次會吃瀏覽器快取。 */
+   ⚠ 監察官立繪不在這張表裡也沒關係：她由 `loadPortrait()` 直接 new Image 載
+     （排在**圖那一段的最前面**，ver -384），批次段再載一次會吃瀏覽器快取。 */
 const BOOT_IMG_KEYS = ['home_emblem'];
 let _restImgs = [], _restKicked = false;
 function preloadRestImgs(){
@@ -303,19 +303,24 @@ window.addEventListener('pagehide', refreshBoot);
   // ⚠ 走 defaultInspector，不要寫死鍵名：這裡原本寫死 `.freya`，而正上方的註解
   //   說「讀 config 不寫死」—— 註解與程式不符。芙蕾雅是暫代版，正式版監察官是
   //   蕾娜(Renna)；換人時 config 改一行就好，別再有第二處要記得改。
-  let portraitP = Promise.resolve();
+  /* 監察官立繪：讀取畫面的門面。⚠ **不再擋在最前面**（ver -384，Ray 指定
+     「先讀音效，音效讀完讀圖，最後讀音樂」）—— 她現在屬於「圖」那一段，
+     只是排在圖的最前面（`fetchPriority=high`）。
+     ⚠ 為什麼要換順序：音效是**要解碼**的，慢網下常常還沒好玩家就點進去了，
+       開場那兩支（跑步聲／跌倒音）因此消失過好幾次；圖片沒載完頂多晚一拍出現。 */
+  let loadPortrait = ()=>Promise.resolve();
   {
     const insp=(GAME_CONFIG.inspectors||{})[GAME_CONFIG.defaultInspector]||{};
     const img=$('alPortrait'); const nm=ov.querySelector('.al-name');
     if(nm) nm.textContent=insp.name||'';
     const psrc=asset(insp.image);
     if(img && psrc){
-      portraitP = new Promise(res=>{
-        img.fetchPriority='high';   // 壓過 HTML 預掃到的其他 <img>（徽記/敵人立繪），確保她真的第一
+      loadPortrait = ()=> new Promise(res=>{
+        img.fetchPriority='high';   // 壓過 HTML 預掃到的其他 <img>（徽記/敵人立繪），確保她是圖裡的第一張
         img.onload=()=>{ img.classList.add('on'); res(); };
         img.onerror=()=>res();
         img.src=psrc;
-        setTimeout(res, 4000);   // 保底：立繪卡住也不無限擋住後續音效/批次
+        setTimeout(res, 4000);   // 保底：立繪卡住也不無限擋住後面
       });
     }
   }
@@ -339,21 +344,17 @@ window.addEventListener('pagehide', refreshBoot);
     };
     cycle();
   }
-  /* 預載優先順序（定案）：立繪 → MainMenu 音樂 → 音效 → 整批。
-   *  每段各帶 4s 保底：卡住也不無限擋下一段。load()/ensureBlob 以快取去重，
-   *  稍後批次再含同檔也不會重抓。 */
-  // 第二優先：MainMenu BGM（點擊繼續當下就要起播，Blob 先到位才無縫）
-  const menuBgmP = portraitP.then(()=> Promise.race([
-    SFX.preloadBgm([asset('bgm_home')].filter(Boolean)),
-    new Promise(r=>setTimeout(r, 4000)),
-  ]));
-  // 第三優先：關鍵音效——SI_01（出陣鈕/測試解鎖回饋）＋ Start_01（武器選單換卡/一般再度執槍）
-  //   ＋ StartBT_SE（執槍/overkill/Boss S 第一按）。批次 ~20MB 同時開跑會搶頻寬，
-  //   慢網下 12s 保底放行時反而還沒就緒 → 點下去沒聲音，故單獨先載。
-  const critP = menuBgmP.then(()=> Promise.race([
-    SFX.preload([asset('sfx_saint'), asset('sfx_start'), asset('sfx_startbt')]),
-    new Promise(r=>setTimeout(r, 4000)),
-  ]));
+  /* ══ 預載順序（ver -384，Ray 定案）══
+       **① 音效全部 → ② 圖（立繪最先）→ ③ 音樂**
+     為什麼是這個順序：
+       · **音效要解碼**（Web Audio），慢網下最容易「點進去了還沒好」——
+         開場那兩支（跑步聲／跌倒音）就因此消失過好幾次，是老問題。
+       · **圖沒載完不會壞**：`<img>` 現抓即顯示，頂多晚一拍。
+       · **音樂最不急**：`playBgm` 自己會 `ensureBlob`，晚幾拍起播而已，
+         而且它是三者裡最大的一包，擺前面等於讓音效排在它後面。
+     ⚠ 每一段各帶保底（音效 8s／圖 6s），卡住也不會無限擋下一段。
+     ⚠ 三段是**串起來的**（前一段完成才開下一段）—— 同時開跑會搶頻寬，
+       那正是「音效讀曲跟不上」的成因。 */
   let done=0;
   const prog=$('alRingProg'), pct=$('assetLoaderPct');
   const tick=()=>{ done++; const p=total?Math.round(done/total*100):100;
@@ -420,23 +421,30 @@ window.addEventListener('pagehide', refreshBoot);
          但那在政策寬鬆的瀏覽器上會**真的播出來** —— 桌機 Chrome 就是這樣，
          於是讀取畫面還沒點就有音樂，「按了才有聲音」變成看瀏覽器臉色。
          armOnly 讓兩邊一致。（Ray 指定，ver -259） */
-    SFX.playBgm(asset('bgm_home'), { volume: bgmVol('bgm_home'), armOnly:true });
-    const imgP = imgs.map(src=>new Promise(res=>{ const im=new Image(); im.onload=im.onerror=()=>{ tick(); res(); }; im.src=src; }));
     const wrapCount = (p, n)=> p.then(()=>{ for(let i=0;i<n;i++) tick(); }).catch(()=>{ for(let i=0;i<n;i++) tick(); });
-    const audioP = [ wrapCount(SFX.preload(sfx), sfx.length), wrapCount(SFX.preloadBgm(bgm), bgm.length) ];
-    Promise.all([...imgP, ...audioP]).then(showReady);
+    const cap = (p, ms)=> Promise.race([p, new Promise(r=>setTimeout(r, ms))]);
+    /* ① 音效（全部，含原本單獨先載的那三支關鍵音） */
+    const sfxP = cap(wrapCount(SFX.preload(sfx), sfx.length), 8000);
+    /* ② 圖：立繪最先，其餘同時開 */
+    const imgsP = sfxP.then(()=> cap(loadPortrait().then(()=>Promise.all(
+        imgs.map(src=>new Promise(res=>{ const im=new Image(); im.onload=im.onerror=()=>{ tick(); res(); }; im.src=src; }))
+      )), 6000));
+    /* ③ 音樂：**上膛**（armOnly）不出聲；起播一律等 go() 那一下手勢（見下方說明）。 */
+    imgsP.then(()=>{
+      SFX.playBgm(asset('bgm_home'), { volume: bgmVol('bgm_home'), armOnly:true });
+      return wrapCount(SFX.preloadBgm(bgm), bgm.length);
+    }).then(showReady);
     setTimeout(showReady, 12000);
   };
   /* 熱啟動：跳過的是**等待**，不是畫面。
-     ⚠ 不跑 critP 那條「立繪 → BGM → 關鍵音效」的優先鏈 —— 那是冷啟動用來
-       排隊搶頻寬的；素材都在快取裡時再排一次隊只是白等。 */
+     ⚠ 照樣走 `startBatch()` 的三段順序，只是素材都在快取裡、幾乎瞬間跑完。 */
   if(WARM_BOOT){
     markBooted();
     startBatch();   // 照樣補載（含掛播 bgm_home），但不擋畫面
     showReady();    // 立刻可點：光圈常亮、字樣呼吸
     return;
   }
-  critP.then(startBatch);
+  startBatch();   // ver -384：三段的順序寫在 startBatch 裡（音效 → 圖 → 音樂）
 })();
 
 /* ══ 飛行頁交棒過來的遭遇戰（ver -382，Ray：「怪碰到船以後進入舒爾特盤」）══
@@ -492,7 +500,7 @@ function goldSparkRise(){
 }
 let prepCloseTimer=null, prepVisTimer=null;
 function openPrep(){
-  // 出陣 stinger：SI_01（列關鍵預載 critP → 即點即響）
+  // 出陣 stinger：SI_01（音效在第一段就全部載完 → 即點即響）
   SFX.play(asset('sfx_saint'));
   weapon.refreshLoadoutLabels();
   const s=$('prepSheet'); if(!s) return;

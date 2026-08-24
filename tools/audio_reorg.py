@@ -38,35 +38,35 @@ MAP = {
   'resources/Stage/Result_01.mp3':       'resources/audio/bgm/_master/bgm_result.mp3',
 
   # ── SE：介面 ───────────────────────────────────────────────────────
-  'resources/General/StartBT_SE.mp3':    'resources/audio/se/se_ui_kagurabell.mp3',
-  'resources/General/GeneralClick_SE.mp3':'resources/audio/se/se_ui_click.mp3',
-  'resources/General/Pageflip_SE.mp3':   'resources/audio/se/se_ui_pageflip.mp3',
-  'resources/Stage/Start_01.mp3':        'resources/audio/se/se_ui_sortie.mp3',
+  'resources/General/StartBT_SE.mp3':    'resources/audio/se/se_ui_kagurabell.m4a',
+  'resources/General/GeneralClick_SE.mp3':'resources/audio/se/se_ui_click.m4a',
+  'resources/General/Pageflip_SE.mp3':   'resources/audio/se/se_ui_pageflip.m4a',
+  'resources/Stage/Start_01.mp3':        'resources/audio/se/se_ui_sortie.m4a',
   # ── SE：聖徒化 ─────────────────────────────────────────────────────
-  'resources/Stage/SI_01.mp3':           'resources/audio/se/se_saint_install.mp3',
+  'resources/Stage/SI_01.mp3':           'resources/audio/se/se_saint_install.m4a',
   'resources/partner/Luna_MB_SE.wav':    'resources/audio/se/se_saint_maxburst.wav',
   # ── SE：武器 ───────────────────────────────────────────────────────
-  'resources/weapon/MG_Squall_SE.mp3':      'resources/audio/se/se_weapon_mg_squall.mp3',
-  'resources/weapon/Shotgun_Blast_SE.mp3':  'resources/audio/se/se_weapon_shotgun_blast.mp3',
-  'resources/weapon/Sniper_Falcon_SE.mp3':  'resources/audio/se/se_weapon_sniper_falcon.mp3',
-  'resources/weapon/Reload.mp3':            'resources/audio/se/se_weapon_reload.mp3',
+  'resources/weapon/MG_Squall_SE.mp3':      'resources/audio/se/se_weapon_mg_squall.m4a',
+  'resources/weapon/Shotgun_Blast_SE.mp3':  'resources/audio/se/se_weapon_shotgun_blast.m4a',
+  'resources/weapon/Sniper_Falcon_SE.mp3':  'resources/audio/se/se_weapon_sniper_falcon.m4a',
+  'resources/weapon/Reload.mp3':            'resources/audio/se/se_weapon_reload.m4a',
   'resources/weapon/Guard_SE.m4a':          'resources/audio/se/se_weapon_guard.m4a',
-  'resources/weapon/Pistol_SE_01.mp3':      'resources/audio/se/se_weapon_pistol_01.mp3',
-  'resources/weapon/Pistol_SE_02.mp3':      'resources/audio/se/se_weapon_pistol_02.mp3',
+  'resources/weapon/Pistol_SE_01.mp3':      'resources/audio/se/se_weapon_pistol_01.m4a',
+  'resources/weapon/Pistol_SE_02.mp3':      'resources/audio/se/se_weapon_pistol_02.m4a',
   'resources/weapon/Pistol_SE_03.wav':      'resources/audio/se/se_weapon_pistol_03.wav',
   'resources/weapon/Pistol_SE_04.mp3':      'resources/audio/se/_unused/se_weapon_pistol_04.mp3',
   'resources/weapon/CN_75mm.mp3':           'resources/audio/se/_unused/se_weapon_cannon_75mm.mp3',
   # ── SE：敵人 ───────────────────────────────────────────────────────
   'resources/enemy/EM_Slash_SE.m4a':     'resources/audio/se/se_enemy_slash.m4a',
   'resources/enemy/EM_Smack_SE.m4a':     'resources/audio/se/se_enemy_smack.m4a',
-  'resources/enemy/EM_Shot_SE.mp3':      'resources/audio/se/se_enemy_shot.mp3',
-  'resources/enemy/EM_Revolver_SE.mp3':  'resources/audio/se/se_enemy_revolver.mp3',
+  'resources/enemy/EM_Shot_SE.mp3':      'resources/audio/se/se_enemy_shot.m4a',
+  'resources/enemy/EM_Revolver_SE.mp3':  'resources/audio/se/se_enemy_revolver.m4a',
   'resources/enemy/EM_Dagger_SE.m4a':    'resources/audio/se/se_enemy_dagger.m4a',
   # ── SE：飛行 ───────────────────────────────────────────────────────
   # ⚠ 左邊是**當初磁碟上的舊檔名**，不是角色名。安娜已更名為安雅（ver -263），
   #   但這一格**不能跟著改** —— 這張表是「舊路徑 → 新路徑」的歷史對照，
   #   改了就對不上真實存在過的檔案，重跑會找不到來源。
-  'flight/Anna_Beat.mp3':                'resources/audio/se/se_flight_heartbeat.mp3',
+  'flight/Anna_Beat.mp3':                'resources/audio/se/se_flight_heartbeat.m4a',
 
   # ── VO：搭檔語音（舊名的 Act/Pas 看不出是哪個技能）───────────────────
   'resources/partner/Luna_SI_VC.m4a':    'resources/audio/vo/vo_luna_saintinstall.m4a',

@@ -689,17 +689,17 @@ function applyPersist(line){
    鍵 ＝ 檔名去副檔名、**轉小寫**（查表也轉小寫 → 腳本寫 `se_Fall` 或 `se_fall` 都行）。
    ⚠ 這份清單由 `tools/script_lint.py` 對照 resources/audio/se/ 檢查。 */
 const SE_FILES=[
-  'Se_enemy_Saintroar.mp3', 'Sturm.mp3', 'se_Fall.mp3', 'se_Kerberos_gear.mp3',
-  'se_Kerberos_open.mp3', 'se_Kerberos_pop.mp3', 'se_Kerberos_steam.m4a', 'se_enemy_dagger.m4a',
-  'se_enemy_revolver.mp3', 'se_enemy_shot.mp3', 'se_enemy_slash.m4a', 'se_enemy_smack.m4a',
-  'se_flight_heartbeat.mp3', 'se_flight_idle_loop.mp3', 'se_flight_sail_loop.mp3',
-  'se_flight_seagull.mp3', 'se_flight_train.mp3', 'se_lunaMG.m4a', 'se_punch.mp3',
-  'se_saint_install.mp3', 'se_saint_maxburst.m4a', 'se_steps.m4a', 'se_ui_click.mp3',
-  'se_ginclick.mp3', 'Se_Tummy.mp3', 'se_metalclip.mp3', 'se_SailorShout.mp3',
-  'se_ui_kagurabell.mp3', 'se_ui_pageflip.mp3', 'se_ui_sortie.mp3', 'se_walk.mp3',
-  'se_weapon_guard.m4a', 'se_weapon_mg_squall.mp3', 'se_weapon_pistol_01.mp3',
-  'se_weapon_pistol_02.mp3', 'se_weapon_pistol_03.m4a', 'se_weapon_reload.mp3',
-  'se_weapon_shotgun_blast.mp3', 'se_weapon_sniper_falcon.mp3',
+  'Se_enemy_Saintroar.m4a', 'Sturm.m4a', 'se_Fall.m4a', 'se_Kerberos_gear.m4a',
+  'se_Kerberos_open.m4a', 'se_Kerberos_pop.m4a', 'se_Kerberos_steam.m4a', 'se_enemy_dagger.m4a',
+  'se_enemy_revolver.m4a', 'se_enemy_shot.m4a', 'se_enemy_slash.m4a', 'se_enemy_smack.m4a',
+  'se_flight_heartbeat.m4a', 'se_flight_idle_loop.mp3', 'se_flight_sail_loop.mp3',
+  'se_flight_seagull.m4a', 'se_flight_train.mp3', 'se_lunaMG.m4a', 'se_punch.m4a',
+  'se_saint_install.m4a', 'se_saint_maxburst.m4a', 'se_steps.m4a', 'se_ui_click.m4a',
+  'se_ginclick.m4a', 'Se_Tummy.m4a', 'se_metalclip.m4a', 'se_SailorShout.mp3',
+  'se_ui_kagurabell.m4a', 'se_ui_pageflip.m4a', 'se_ui_sortie.m4a', 'se_walk.m4a',
+  'se_weapon_guard.m4a', 'se_weapon_mg_squall.m4a', 'se_weapon_pistol_01.m4a',
+  'se_weapon_pistol_02.m4a', 'se_weapon_pistol_03.m4a', 'se_weapon_reload.m4a',
+  'se_weapon_shotgun_blast.m4a', 'se_weapon_sniper_falcon.m4a',
 ];
 /* 別名：腳本裡慣用的短名 → 實際檔名（去副檔名）。 */
 const SE_ALIAS={ se_saintroar:'se_enemy_saintroar', se_mg_squall:'se_weapon_mg_squall',
@@ -960,7 +960,11 @@ const KERB_SFX={ pop:'se_Kerberos_pop', gear:'se_Kerberos_gear',
                  /* 關門用（ver -366，Ray：「不要有蒸氣，原蒸氣音改為 se_metalclip」）。
                     ⚠ 只用在**關門**那一套；進場那一套維持原樣（Ray 沒要求改）。 */
                  clip:'se_metalclip' };
-const KERB_SFX_EXT={ steam:'m4a' };   // 預設 mp3，例外寫這裡（ver -338 起 wav 一律轉 m4a）
+/* ⚠ 門的五支音效**全部是 m4a**（ver -384 全部重轉 AAC，原本 256kbps 的 mp3）。
+   預設改成 m4a，例外表留著給日後不同副檔名的素材用。
+   ⚠ 改副檔名要三個地方一起改：這裡的預設、下面 `playKerberosClose` 裡那一行
+     寫死 `.mp3` 的齒輪音、以及預載清單（1469 行那一段）—— 前兩者以前不一致過。 */
+const KERB_SFX_EXT={};   // 預設 m4a，例外寫這裡
 const KERB_SE_T={ popPeak:1002, openTail:1921 };
 const KERB_T={ rise:1000, thud:420, rivet:460, arrow:340, lift:1600, open:900 };
 let kerbTimers=[];
@@ -990,7 +994,7 @@ function playKerberos(onGap, onDone){
      `resources/audio/se/undefined.mp3` → 404 → 拿到一頁 HTML 去 decodeAudioData
      → console 一個 EncodingError。每次進戰鬥都白發一次請求。
      缺素材是常態（門的箭聲還沒做），所以查不到＝安靜跳過，只記一次。 */
-  const src=k=>KERB_SFX[k] ? KERB_SE_DIR+KERB_SFX[k]+'.'+(KERB_SFX_EXT[k]||'mp3') : null;
+  const src=k=>KERB_SFX[k] ? KERB_SE_DIR+KERB_SFX[k]+'.'+(KERB_SFX_EXT[k]||'m4a') : null;
   const se=k=>{ const u=src(k); if(!u){ const tag='kerb/'+k;
       if(!missingExpr.has(tag)){ missingExpr.add(tag); console.info('[story] 門的音效尚無素材：', k); }
       return; }
@@ -1106,14 +1110,15 @@ export function playKerberosClose(onDone){
   kb.classList.remove('kerb-instant');
   kerbPlaying=true;
   const at=(ms,fn)=>kerbTimers.push(setTimeout(fn,ms));
-  const se=k=>{ const u=(KERB_SFX[k] ? KERB_SE_DIR+KERB_SFX[k]+'.'+(KERB_SFX_EXT[k]||'mp3') : null);
+  const se=k=>{ const u=(KERB_SFX[k] ? KERB_SE_DIR+KERB_SFX[k]+'.'+(KERB_SFX_EXT[k]||'m4a') : null);
     if(u) try{ SFX.play(u, 1); }catch(e){} };
   let t=0;
   at(t,()=>{ kb.classList.remove('open'); se('clip'); sparkSeam(); });     // ① 兩扇合上
   t+=KERB_T.open;
   at(t,()=>{                                                              // ② 紋章轉回並縮小
     kb.classList.remove('lift'); se('clip'); sparkPlate();
-    try{ const g=KERB_SE_DIR+KERB_SFX.gear+'.mp3'; kerbGear=SFX.playCue(g,1); }catch(e){ kerbGear=null; }
+    /* ⚠ 副檔名要跟上面那支 `se()` 同一套 —— 寫死 `.mp3` 在 -384 全部轉 m4a 之後就 404 了。 */
+    try{ const g=KERB_SE_DIR+KERB_SFX.gear+'.'+(KERB_SFX_EXT.gear||'m4a'); kerbGear=SFX.playCue(g,1); }catch(e){ kerbGear=null; }
   });
   t+=KERB_T.lift;
   at(t,()=>{ if(kerbGear){ try{ kerbGear.stop(220); }catch(e){} kerbGear=null; } });
@@ -1466,7 +1471,7 @@ function preloadStory(startId, onProgress){
     A.imgs.push(KERB_DIR+f+'.webp');
   /* ⚠ 門的三支音效也要預載：撞擊音在演出**第 0 毫秒**就要響，
      現抓的話一定遲到（audio.js 的 LATE_PLAY_MS 是 1.5 秒，遲到就乾脆不播）。 */
-  for(const k in KERB_SFX) if(KERB_SFX[k]) A.ses.push(KERB_SE_DIR+KERB_SFX[k]+'.'+(KERB_SFX_EXT[k]||'mp3'));
+  for(const k in KERB_SFX) if(KERB_SFX[k]) A.ses.push(KERB_SE_DIR+KERB_SFX[k]+'.'+(KERB_SFX_EXT[k]||'m4a'));
   /* ⚠⚠ **音效先載，圖片後載**（ver -346，Ray：「腳步聲跟跌倒音沒載到」）。
      原本二十幾個請求一起開跑，手機的頻寬全被 3.3 MB 的圖吃掉；只要整包沒在
      `PRELOAD_CAP_MS` 內載完（慢網下很常見），閘門就照樣放行 —— 這時圖已經在

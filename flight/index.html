@@ -18,6 +18,13 @@
   #top{top:0;left:0;right:0;padding:calc(env(safe-area-inset-top) + 10px) 14px 10px;
     display:flex;justify-content:space-between;align-items:flex-start;
     background:linear-gradient(180deg,rgba(5,6,12,.7),transparent);}
+  /* ⚠ **對白播放中不放時間地點**（ver -384，Ray 指定）：立繪與對話框一上來，
+     左上的大陸曆／時刻與中央的地名就該讓開 —— 那兩塊是「在飛」的儀表，
+     不是這一幕的一部分，壓在立繪旁邊會分掉注意力。
+     ⚠ 用淡出不是 display:none：對白是一段一段接的，硬切會閃。
+     ⚠ 右上那排鈕不收 —— 玩家隨時要按得到（地圖/返回/道具）。 */
+  #top,#place{transition:opacity .28s ease;}
+  body.talking #top, body.talking #place{opacity:0;}
   .stat{font-size:11px;letter-spacing:.12em;line-height:1.7;}
   .stat b{color:var(--gold);font-weight:600;}
   .stat .lbl{opacity:.5;font-size:9px;letter-spacing:.2em;}
@@ -1489,7 +1496,7 @@ const STAR_SENSE_R = 1200;      // 感應半徑（世界單位）＝60 地圖像
    （按住不動＝油門 0，見 stage 的 pointermove）。 */
 const SENSE_SUMMON_MS = 1000;   // 按到這裡：畫面轉暗、立繪插入、心跳起
 
-/* 心跳（../resources/audio/se/se_flight_heartbeat.mp3，5.00s）的起音時間，用起音包絡量出來的：
+/* 心跳（../resources/audio/se/se_flight_heartbeat.m4a，5.00s）的起音時間，用起音包絡量出來的：
    0.45/0.82 · 1.61/1.99 · 2.78/3.15 · 3.94/4.31 —— 標準的 lub-dub，
    每對相隔 0.37s、對與對之間 0.79s，週期 1.165s（≈52 BPM）。
    ⚠ 畫面**只跟強拍（lub）脈動一次**，不跟著跳兩下（Ray 指定）。弱拍（dub）
@@ -1567,8 +1574,8 @@ const SENSE_FIRE_MS = SENSE_RING_MS + SENSE_OUT_MS;
 /* 音：召喚的心跳（立繪出現的同一刻）與命中的神楽鈴。
    ⚠ 走 HTMLAudioElement 不走 WebAudio —— 這一頁沒有 AudioContext，
      而發動的那一刻手指本來就在螢幕上（使用者手勢），播得動。 */
-const senseBeat = new Audio('../resources/audio/se/se_flight_heartbeat.mp3');           senseBeat.preload='auto';
-const senseSE   = new Audio('../resources/audio/se/se_ui_kagurabell.mp3'); senseSE.preload='auto';
+const senseBeat = new Audio('../resources/audio/se/se_flight_heartbeat.m4a');           senseBeat.preload='auto';
+const senseSE   = new Audio('../resources/audio/se/se_ui_kagurabell.m4a'); senseSE.preload='auto';
 const playSfx=a=>{ try{ a.currentTime=0; const q=a.play(); if(q) q.catch(()=>{}); }catch(_){} };
 /* ⚠ iOS 只認**手勢當下**呼叫的 play()。心跳是按住滿 1 秒才起播的，那時早就
    離開手勢了 —— 手機上因此完全沒聲音。而殘影又綁在音訊時鐘上，於是連脈動
@@ -1607,7 +1614,7 @@ let sturmReady=0;     // 充能完成時刻
 let sturmFlash=0;     // 立繪脈動起點
 /* ⚠ 音效與立繪都要在**手勢當下**先解鎖／預抓：發動是按滿兩秒之後才發生的，
      那時早就離開手勢，iOS 不會讓你播（同 senseUnlock 的說明）。 */
-const sturmSE = new Audio('../resources/audio/se/Sturm.mp3'); sturmSE.preload='auto';
+const sturmSE = new Audio('../resources/audio/se/Sturm.m4a'); sturmSE.preload='auto';
 const sturmCI = new Image(); sturmCI.src='../resources/CI/Nouvelle_Sturm.webp';
 /* 方向計的命中框：往外放一點才好按（那條帶只有 30px 高）。 */
 function sturmHit(px,py){
@@ -2016,6 +2023,7 @@ const CAST_IN_MS = 450;    // 滑入／滑出（同教學的 .45s）
 const CAST_DIM   = 0.38;   // 非說話者亮度（同教學）
 const CAST_SAT   = 0.75;
 let sayQueue=null, sayAt=0, sayIdx=0, sayEndAt=0;
+let hudTalking=false;   // 目前有沒有把「時間地點」收起來（見繪製迴圈裡的同步）
 let cast=[];               // [{who,side,t0,out}]：out＝退場起始時戳（0＝在場）
 
 const easeOut=k=>1-Math.pow(1-k,3);
@@ -4370,7 +4378,7 @@ let trainMix=0;                      // 收斂跟隨，避免車一停就硬切
      這是 §6.6 那套方法的例外情形（稀疏音），已量了兩個數字才決定。
    ⚠ 可聞範圍取 950，剛好**略大於鳥群的生成距離 900**：於是牠出現的那一刻是
      無聲的，飛近才叫得出來。取大了會變成「鳥一生出來就在耳邊叫」。 */
-const sfxGull=makeLoop('../resources/audio/se/se_flight_seagull.mp3', 1.0);
+const sfxGull=makeLoop('../resources/audio/se/se_flight_seagull.m4a', 1.0);
 const GULL_VOL=0.70;
 const GULL_SND_FAR=950, GULL_SND_NEAR=200;
 let gullMix=0;
@@ -5051,6 +5059,10 @@ function render(now){
   drawSenseCI(now);
   drawSturmCI(now);
   drawTalk(now);
+  /* 對白中收掉「時間地點」那兩塊 HUD（ver -384）。⚠ 真相來源就是 `sayQueue` ——
+     不要另外記一份「現在在講話嗎」，那會與 drawTalk 的收場時機錯開。 */
+  { const on=!!sayQueue;
+    if(on!==hudTalking){ hudTalking=on; document.body.classList.toggle('talking', on); } }
   ctx.restore();
 
   drawPanel(S);

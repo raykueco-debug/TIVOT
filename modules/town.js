@@ -250,7 +250,7 @@ function go(to){
   if(!to) return;
   busy=true; showNav(false);
   document.body.classList.remove('town-nav');          // 移動中把羅盤收起來
-  try{ SFX.play('resources/audio/se/se_walk.mp3'); }catch(_){}
+  try{ SFX.play('resources/audio/se/se_walk.m4a'); }catch(_){}
   clock.advance(STEP_MIN);
   setTimeout(()=>enter(to), 260);
 }
