@@ -1622,6 +1622,13 @@
      原本的金字＋6px 模糊陰影在亮處整個糊掉，讀不出來。
      ⚠ 陰影用**四方向 1px 的實心描邊**（0 模糊）再加一層很淡的擴散：
        模糊半徑大＝把字自己也糊掉，那正是原本看不清的原因。 */
+  /* ⚠⚠ **對白播放中不放時間地點**（ver -385，Ray：「時間地點都壓人物臉上了」）。
+     這一行的高度正好是立繪的臉 —— 有人在台上、或對話框開著時一律淡出。
+     旗標由**演出層**（`modules/story.js` 的 `syncTalking`）宣告，不是由城鎮在
+     showNav 的呼叫點決定 —— 那樣任何一條沒經過那兩點的路徑（閒聊、店主對話、
+     戰鬥交棒回來…）都會漏掉，而那正是這次漏掉的原因。 */
+  body.story-talking #townInfo{opacity:0;}
+  #townInfo{transition:opacity .22s ease;}
   #townInfo{position:absolute;left:0;right:0;text-align:center;
     top:calc(env(safe-area-inset-top,0px) + 62px);
     font-size:12px;letter-spacing:4px;color:#fff;

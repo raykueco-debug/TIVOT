@@ -1308,6 +1308,7 @@ function renderLine(){
   onTyped = ()=>{ onTyped=null; scheduleAuto(); };
   };   // reveal 結束
 
+  markTalking(true);   // ver -385：這一拍開始演了（收場在 clearCast／close）
   if(persistFaded){
     /* 黑幕期間先把對話框藏起來（立繪本來就還沒上）—— 不藏的話上一句的框會留在黑幕上。 */
     const b=$('storyBubble'); if(b) b.style.visibility='hidden';
@@ -1639,6 +1640,7 @@ export function close(opts){
   if(!(opts && opts.keepBgm)){
     try{ SFX.playBgm(HOME_BGM, {fadeInMs:600, volume:HOME_VOL}); }catch(_){}
   }
+  document.body.classList.remove('story-talking');   // ver -385
   const cb=onExit; onExit=null; if(cb) cb();
 }
 
@@ -1668,10 +1670,25 @@ export function endAdhoc(){
   cur=null; active=false;
   clearCast();
 }
+/* ══ 「現在正在演對白」的旗標（ver -385）══
+   ⚠⚠ Ray：「有人物立繪、對話播放中不要放時間地點」。城鎮的地名／時刻（`#townInfo`）
+     壓在畫面上緣，正好是立繪的臉的高度。
+   ⚠ **靠狀態不靠呼叫點**：原本是由 `town.js` 在兩個 showNav 的呼叫點決定，
+     於是任何一條沒經過那兩點的路徑（閒聊、店主對話、戰鬥交棒回來…）就漏掉。
+     改成由**演出層**在每次改變畫面時宣告一次 —— 誰在演誰就負責說（鐵律 8）。
+   ⚠ 判斷條件是「對話框看得見 **或** 台上有人」，不是「在播 scene」：
+     無台詞的立繪拍沒有框，但人還站著，那時候也不該出現地名。 */
+/* ⚠⚠ **不要去「量 DOM」判斷有沒有在講話**（ver -385 踩過）：立繪的 `.on` 與對話框的
+   `visibility` 都是這一拍**稍後**才套上／撤掉的（滑入 450ms、延遲打字、滑出動畫），
+   當場量會量到上一個狀態，量出來的結果是**顛倒的**（實測：對白中 false、結束後 true）。
+   正解是**演出層自己宣告**：開始演一拍 → true，收場（clearCast／離場）→ false。 */
+export function markTalking(on){ document.body.classList.toggle('story-talking', !!on); }
+
 export function clearCast(){
   slot={L:null,R:null}; slotExpr={L:null,R:null}; shown={};
   leaveSlot('L'); leaveSlot('R');
   const b=$('storyBubble'); if(b) b.style.visibility='hidden';
+  markTalking(false);
 }
 /* 單句提示（城鎮的路人閒聊用，ver -370）：**不進對話模式**，只把一句話放進對話框。
    ⚠ 與 `playAdhoc` 是兩回事：那個會接管推進（點畫面＝下一句）；這個只是「浮一句話」，
@@ -1683,6 +1700,7 @@ export function flashLine(text, name){
   if(nm) nm.textContent=name||'';
   bub.style.visibility='';
   typeOut(tx, text||'');
+  markTalking(true);      // 路人閒聊也是對白（ver -385）
 }
 export function hideBubble(){ const b=$('storyBubble'); if(b) b.style.visibility='hidden'; }
 /* 城鎮用：確保某一首 BGM 在放（ver -375）。
