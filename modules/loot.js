@@ -99,79 +99,93 @@ export function showBag(){
    ⚠ 賣價 ＝ `items.defs[].sell` × `config.shop.sellRate`。日後要做「不同城鎮不同行情」
      就是每家店各帶一個 rate，不要把價錢寫進這支 UI。
    ⚠ 沒寫 `sell` 的道具**不出現在賣的清單裡**（劇情道具／任務物品賣不掉）。 */
-/* `stockKey`＝`config.shop.stock` 的鍵（這家店賣什麼）；`keeper`＝店主的輪播台詞。
-   ⚠ 賣什麼、多少錢**全在 config**，這一頁只負責演（鐵律 1）。 */
-export function showShop(stockKey, keeper){
+/* ══ 商店（ver -371 改版）══
+   分頁：**買 / 賣**。店主立繪在一旁，點到的品項會出說明（Ray 指定）。
+   ⚠ 賣什麼、多少錢**全在 config**，這一頁只負責演（鐵律 1）。
+   ⚠ 特殊物品不能賣 —— 那條擋在 `inv.sellPrice()`（價錢層），不是這裡（見那支的說明）。
+   ⚠ 店主對話是**一段對白**（兩個人輪流講），所以不塞進這一頁：
+     按下去先收商店，交給劇情播放器演，演完再開回來（`onTalk` 由呼叫端提供）。 */
+export function showShop(stockKey, keeper, onTalk){
   const ov=document.createElement('div'); ov.id='lootSheet'; ov.classList.add('bag','shop');
   document.body.appendChild(ov);
   const SHOP=GAME_CONFIG.shop||{};
   const stock=((SHOP.stock||{})[stockKey])||[];
-  let keepIdx=0;
+  let tab='buy', pick=null;
+
+  const close=()=>{ ov.classList.remove('on');
+    setTimeout(()=>{ if(ov.parentNode) ov.parentNode.removeChild(ov); }, 200); };
+
   const render=()=>{
-    const buyRows = stock.length
-      ? stock.map(id=>{
-          const d=inv.defOf(id)||{}, price=inv.priceOf(id);
-          const afford=inv.getMoney()>=price;
-          return '<div class="loot-row"><span class="loot-name">'+(d.name||id)+'</span>'
-               + '<span class="loot-n">'+price+' '+inv.moneyName()+'</span>'
-               + (d.desc?'<span class="loot-desc">'+d.desc+'</span>':'')
-               + '<button class="bag-sell buy'+(afford?'':' broke')+'" type="button" '
-               + 'data-buy="'+id+'">買</button></div>';
-        }).join('')
-      : '';
     const sellable=[];
     for(const g of inv.grouped()) for(const r of g.rows) if(inv.sellPrice(r.id)>0) sellable.push(r);
-    const sellRows = sellable.length
-      ? sellable.map(r=>'<div class="loot-row"><span class="loot-name">'+r.name+'</span>'
-                       + '<span class="loot-n">×'+r.n+'</span>'
-                       + '<button class="bag-sell" type="button" data-id="'+r.id+'">賣 '
-                       + inv.sellPrice(r.id) + '</button></div>').join('')
-      : '<div class="bag-empty">沒有可以賣的東西。</div>';
-    ov.innerHTML='<div class="loot-panel"><div class="loot-title">商店</div>'
-               + '<div class="bag-money">'+inv.moneyName()+'　<b>'+inv.getMoney()+'</b></div>'
-               + (keeper&&keeper.length ? '<div class="shop-keeper">'+keeper[keepIdx%keeper.length]+'</div>'
-                                        + '<button class="shop-talk" type="button">與店主交談</button>' : '')
-               + (buyRows ? '<div class="bag-cat">販售</div>'+buyRows : '')
-               + '<div class="bag-cat">收購</div>'
-               + '<div class="loot-list">'+sellRows+'</div>'
-               + '<button class="loot-ok" type="button">離開</button></div>';
+    const rows = (tab==='buy')
+      ? (stock.length ? stock.map(id=>{
+            const d=inv.defOf(id)||{}, price=inv.priceOf(id);
+            return '<div class="shop-row'+(pick===id?' pick':'')+'" data-id="'+id+'">'
+                 + '<span class="loot-name">'+(d.name||id)+'</span>'
+                 + '<span class="loot-n">'+price+' '+inv.moneyName()+'</span></div>';
+          }).join('') : '<div class="bag-empty">這家店沒有在賣東西。</div>')
+      : (sellable.length ? sellable.map(r=>
+            '<div class="shop-row'+(pick===r.id?' pick':'')+'" data-id="'+r.id+'">'
+          + '<span class="loot-name">'+r.name+'</span>'
+          + '<span class="loot-n">×'+r.n+'　'+inv.sellPrice(r.id)+' '+inv.moneyName()+'</span></div>'
+          ).join('') : '<div class="bag-empty">沒有可以賣的東西。</div>');
+
+    const d=pick ? (inv.defOf(pick)||{}) : null;
+    const price = pick ? (tab==='buy' ? inv.priceOf(pick) : inv.sellPrice(pick)) : 0;
+    const can = pick && (tab==='buy' ? inv.getMoney()>=price : inv.count(pick)>0);
+
+    ov.innerHTML='<div class="loot-panel shop-panel">'
+      + '<div class="loot-title">商店</div>'
+      + '<div class="bag-money">'+inv.moneyName()+'　<b>'+inv.getMoney()+'</b></div>'
+      + '<div class="shop-tabs">'
+      +   '<button class="shop-tab'+(tab==='buy'?' on':'')+'" data-tab="buy" type="button">買</button>'
+      +   '<button class="shop-tab'+(tab==='sell'?' on':'')+'" data-tab="sell" type="button">賣</button>'
+      + '</div>'
+      + '<div class="shop-body">'
+      +   '<div class="shop-list">'+rows+'</div>'
+      +   '<img class="shop-keeper-art" src="resources/SI/NPC_Grocerie_SI.webp" alt="">'
+      + '</div>'
+      + '<div class="shop-desc">'+(d ? (d.desc||'') : '選一項看說明。')+'</div>'
+      + '<div class="shop-acts">'
+      +   '<button class="shop-do'+(can?'':' broke')+'" type="button">'
+      +     (tab==='buy' ? '買下 '+price : '賣出 '+price)+'</button>'
+      +   (keeper&&keeper.length ? '<button class="shop-talk" type="button">與店主交談</button>' : '')
+      +   '<button class="loot-ok" type="button">關閉</button>'
+      + '</div></div>';
+
+    ov.querySelectorAll('.shop-tab').forEach(b=>b.addEventListener('click', e=>{
+      e.stopPropagation(); tab=b.dataset.tab; pick=null;
+      try{ SFX.menuClick(); }catch(_){} render(); }));
+    ov.querySelectorAll('.shop-row').forEach(b=>b.addEventListener('click', e=>{
+      e.stopPropagation(); pick=b.dataset.id;
+      try{ SFX.menuClick(); }catch(_){} render(); }));
+    const doBtn=ov.querySelector('.shop-do');
+    if(doBtn) doBtn.addEventListener('click', e=>{
+      e.stopPropagation();
+      if(!pick) return;
+      try{ SFX.unlock(); SFX.menuClick(); }catch(_){}
+      if(tab==='buy'){
+        const p=inv.priceOf(pick);
+        if(!inv.spendMoney(p)) return;        // 錢不夠：什麼都不做（鈕本來就是暗的）
+        inv.add(pick, 1);
+      }else{
+        const p=inv.sellPrice(pick);
+        if(inv.count(pick)<=0) return;
+        inv.remove(pick, 1); inv.addMoney(p);
+        if(inv.count(pick)<=0) pick=null;     // 賣光了就取消選取
+      }
+      render();
+    });
     const talk=ov.querySelector('.shop-talk');
     if(talk) talk.addEventListener('click', e=>{ e.stopPropagation();
       try{ SFX.unlock(); SFX.menuClick(); }catch(_){}
-      keepIdx++; render(); });
-    /* 買：⚠ 錢不夠就不給按（`broke`），不要等按下去才說「錢不夠」。 */
-    ov.querySelectorAll('[data-buy]').forEach(b=>{
-      b.addEventListener('click', e=>{ e.stopPropagation();
-        const id=b.dataset.buy, price=inv.priceOf(id);
-        try{ SFX.unlock(); SFX.menuClick(); }catch(_){}
-        if(!inv.spendMoney(price)) return;      // 錢不夠：什麼都不做
-        inv.add(id, 1); render();
-      });
+      close();
+      if(onTalk) onTalk();                    // 收商店 → 演對白 → 呼叫端負責開回來
     });
     ov.querySelector('.loot-ok').addEventListener('click', e=>{ e.stopPropagation();
       try{ SFX.unlock(); SFX.menuClick(); }catch(_){} close(); });
-    /* 兩段式確認（第一下變「確定？」，2 秒沒再按就還原）。
-       ⚠ 賣東西不可逆，一下就賣掉太容易誤觸；但也不值得為它另開一個確認視窗。 */
-    ov.querySelectorAll('.bag-sell').forEach(b=>{
-      b.addEventListener('click', e=>{
-        e.stopPropagation();
-        try{ SFX.unlock(); SFX.menuClick(); }catch(_){}
-        if(b.dataset.armed!=='1'){
-          b.dataset.armed='1'; b.dataset.label=b.textContent; b.textContent='確定？';
-          b.classList.add('armed');
-          clearTimeout(b.__t); b.__t=setTimeout(()=>{
-            b.dataset.armed=''; b.textContent=b.dataset.label||'賣'; b.classList.remove('armed'); }, 2000);
-          return;
-        }
-        clearTimeout(b.__t);
-        const id=b.dataset.id, price=priceOf(id);
-        inv.remove(id, 1); inv.addMoney(price);   // ⚠ 走商店的價（含 rate），不是 inv.sell 的定價
-        render();
-      });
-    });
   };
-  const close=()=>{ ov.classList.remove('on');
-    setTimeout(()=>{ if(ov.parentNode) ov.parentNode.removeChild(ov); }, 220); };
   render();
   requestAnimationFrame(()=>ov.classList.add('on'));
 }

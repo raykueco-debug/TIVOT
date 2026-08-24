@@ -77,7 +77,10 @@ export const TOWNS = {
 
       /* ══ 二、西區街道 ══ 左＝商店、右＝酒館、上＝旅店、下＝廣場 */
       westside: {
-        bg:'Capital_Downtown', name:'帝都　西區街道',
+        /* ⚠ 背景由 `Capital_Downtown` 改為 `Capital_Uptown`（ver -371，Ray 指定）。
+           ⚠ 連帶：`uptown`（上街區）原本用的就是這張，現在**沒有自己的圖**了 ——
+             見 HANDOFF 的缺口清單。 */
+        bg:'Capital_Uptown', name:'帝都　西區街道',
         exits:{ left:'grocery', right:'tavern', up:'inn', down:'square' },
         once:true,
         lines:[
@@ -96,7 +99,7 @@ export const TOWNS = {
 
       /* 1. 酒館 ⚠ 還沒有背景素材，暫借西區街道那張（見 HANDOFF 的缺口清單）。 */
       tavern: {
-        bg:'Capital_Downtown', name:'帝都　餐酒館',
+        bg:'Capital_Bistro', name:'帝都　餐酒館',
         exits:{ back:'westside' },
         once:true,
         lines:[
@@ -123,7 +126,7 @@ export const TOWNS = {
       grocery: {
         bg:'Capital_Grocerie', noTime:true, name:'帝都　雜貨舖',   // 室內：只有一張圖，不吃時段
         exits:{ back:'westside' },
-        shop:'grocery',
+        shop:'grocery', shopOnTap:true,   // ⚠ 點畫面就開買賣選單（Ray 指定，不做成按鈕）
         once:true,
         lines:[
           nou('surprise','好多東西！要是可以不穿司祭服就好了。'),
@@ -136,12 +139,19 @@ export const TOWNS = {
             portrait:{ char:'SHOPKEEP', show:true } },
           nou('awkward','還真是什麼都有耶。就是有點貴。'),
         ],
-        /* 店主對話鈕（商店頁上的按鈕，輪播）。 */
+        /* 店主對話鈕（商店頁上的按鈕）→ **一段對白**，不是輪播單句（ver -371，Ray 改稿）。
+           ⚠ 兩個人輪流講，所以走 `story.playAdhoc`（有立繪、有明暗、有推進），
+             不是 `flashLine`。 */
         keeper:[
-          '「『永夜』以來舶來品都漲翻天啦，這一年好不容易才穩定了點。」',
-          '「要想買正常的物價，去薇拉馮德比較有機會。」',
-          '「什麼極東戰爭早該結束了。北邊那些瓦爾士人還虎視耽耽地呢！」',
-          '「啊，可別說是我說的！」',
+          { speaker:'SHOPKEEP', text:'「『永夜』以來舶來品都漲翻天啦，這一年好不容易才穩定了點。」',
+            portrait:{ char:'SHOPKEEP', show:true } },
+          nou('surprise','啊，是因為海運路線都被禍魘截斷了吧？'),
+          { speaker:'SHOPKEEP', text:'「是啊。要想買正常的物價，去薇拉馮德比較有機會。」',
+            portrait:{ char:'SHOPKEEP', show:true } },
+          nou('bigsmile','薇拉馮德啊……真想去看看呢！'),
+          { speaker:'SHOPKEEP', text:'「那可是當今世界的中心，一輩子至少要去一次喔。」',
+            portrait:{ char:'SHOPKEEP', show:true } },
+          nou('sadsmile','一輩子啊……'),
         ],
       },
 

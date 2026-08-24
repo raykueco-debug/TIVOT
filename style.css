@@ -1303,6 +1303,31 @@
               translate(var(--kerb-px,0px),var(--kerb-py,0px)) rotate(var(--kerb-rot,0deg));
     transition:transform .9s cubic-bezier(.7,0,.3,1);}
 
+  /* ── 城鎮導覽：槍棺的四支箭當羅盤（ver -372，Ray 指定）──────────────
+     有目的地的方向 → 那支箭**浮起 ＋ 像指南針一樣輕輕晃 ＋ 從下面發光**。
+     ⚠⚠ 晃動與浮起**必須寫在同一個 transform 裡**，而且要把箭原本的
+       `rotate(var(--kerb-rot))` 一起帶上 —— transform 不會疊加，分成兩條規則的話
+       後面那條會整個蓋掉前面（-343／-350 已經踩過兩次，鐵律 7 的鄰居）。
+     ⚠ 浮起的方向沿用 `--kerb-px/--kerb-py`（解鎖時往外彈的那個向量）——
+       那已經是「這支箭朝外的方向」，不必另外算（鐵律 7：一個量一個計算點）。
+     ⚠ `#kerb` 是 `pointer-events:none`，所以箭要自己打開才點得到。 */
+  body.town-nav #kerb .kerb-arrow.avail{
+    pointer-events:auto;cursor:pointer;
+    filter:drop-shadow(0 0 7px rgba(212,169,74,.85)) drop-shadow(0 3px 12px rgba(212,169,74,.55));
+    animation:kerbCompass 2.6s ease-in-out infinite;}
+  @keyframes kerbCompass{
+    0%,100%{ transform:translate(calc(var(--kerb-px,0px) * .55),calc(var(--kerb-py,0px) * .55))
+                       rotate(calc(var(--kerb-rot,0deg) - 3.5deg)); }
+    50%    { transform:translate(calc(var(--kerb-px,0px) * .75),calc(var(--kerb-py,0px) * .75))
+                       rotate(calc(var(--kerb-rot,0deg) + 3.5deg)); }
+  }
+  /* 長按中：停止晃動、往外推到底、亮度再上一階（讀得出「這一支正在被按」）。 */
+  body.town-nav #kerb .kerb-arrow.avail.holding{
+    animation:none;
+    transform:translate(calc(var(--kerb-px,0px) * 1.05),calc(var(--kerb-py,0px) * 1.05))
+              rotate(var(--kerb-rot,0deg));
+    filter:drop-shadow(0 0 12px rgba(255,225,150,1)) drop-shadow(0 3px 16px rgba(212,169,74,.8));}
+
   /* ── 撞頂時由門縫透出來的十字亮光（Ray：「初版那個不錯，加回去，光用偏青的藍色」）──
      豎的沿中縫、橫的沿紋章橫軸。撞頂那一下猛亮一下再收成微弱的常亮，
      一直留到開門 —— 讀起來是「門後面有東西亮著」，不是一次性的閃光。
@@ -1589,8 +1614,9 @@
      沒有常駐箭頭（Ray：太醜）。互動是**按住往方向滑** → 那個方向浮出提示與蓄能圈
      → 滿了才走。提示浮在**該方向的邊上**：玩家的手正往那邊去，訊息出現在他看的地方。
      ⚠ z-index 6：與楣同層（立繪、插圖、情境卡之上，對話框 7 之下）。 */
-  #townNav{position:absolute;left:0;right:0;top:0;height:var(--story-top);
-    z-index:6;pointer-events:none;display:none;}
+  /* ⚠ 覆蓋**整個舞台**（不是只有上半）：羅盤的箭在下半的槍棺上，
+     長按的提示要能擺到那裡（ver -372）。 */
+  #townNav{position:absolute;inset:0;z-index:7;pointer-events:none;display:none;}
   #townNav.on{display:block;}
   #townHint{position:absolute;width:64px;height:64px;display:none;
     align-items:center;justify-content:center;opacity:0;transition:opacity .12s ease;}
@@ -1601,10 +1627,9 @@
   #townHint .th-label{font-size:11px;letter-spacing:2px;color:var(--gold);
     text-shadow:0 1px 4px rgba(0,0,0,.9);white-space:nowrap;}
   /* 四個方向的落點：貼著那一側的邊。 */
-  #townHint.dir-up   {top:14px;left:50%;transform:translateX(-50%);}
-  #townHint.dir-down {bottom:14px;left:50%;transform:translateX(-50%);}
-  #townHint.dir-left {left:16px;top:50%;transform:translateY(-50%);}
-  #townHint.dir-right{right:16px;top:50%;transform:translateY(-50%);}
+  /* 提示的位置由 JS 依「那一支箭在哪」寫 inline（ver -372）—— 箭的位置是
+     `layoutKerberos` 依實際尺寸算出來的，CSS 猜不到（鐵律 7：問算的那一支）。 */
+  #townHint.at{transform:translate(-50%,-50%);}
   /* 地名＋時間：左上角一條細字（不做成面板，城鎮的主角是背景）。 */
   #townInfo{position:absolute;left:12px;top:calc(env(safe-area-inset-top,0px) + 62px);
     font-size:11px;letter-spacing:2px;color:var(--gold-dim);
@@ -1614,14 +1639,34 @@
     background:rgba(10,8,14,.7);border:1px solid var(--gold-dim);border-radius:17px;
     display:none;pointer-events:auto;}
   #townNav .town-btn.on{display:flex;align-items:center;}
-  /* 商店：店主台詞與交談鈕。 */
-  #lootSheet .shop-keeper{font-size:12px;line-height:1.7;color:var(--ink);
-    background:rgba(255,255,255,.03);border-radius:8px;padding:8px 10px;margin-bottom:8px;}
-  #lootSheet .shop-talk{display:block;width:100%;margin:-4px 0 10px;padding:7px 0;
-    font-family:inherit;font-size:11px;letter-spacing:2px;color:var(--gold-dim);
-    background:transparent;border:1px dashed var(--gold-dim);border-radius:8px;}
-  #lootSheet .bag-sell.buy{color:var(--holy);border-color:var(--holy);}
-  #lootSheet .bag-sell.buy.broke{opacity:.35;}
+  /* ── 商店（ver -371 改版）：分頁（買/賣）＋店主立繪＋點選說明 ────────
+     ⚠ 立繪只露上半身（`object-position:top`）：全身縮進小框裡臉會只剩幾十像素，
+       而這一頁要的是「櫃台後面站著一個人」。 */
+  #lootSheet .shop-tabs{display:flex;gap:6px;margin:0 0 8px;}
+  #lootSheet .shop-tab{flex:1;padding:7px 0;font-family:inherit;font-size:12px;
+    letter-spacing:3px;color:var(--gold-dim);background:rgba(10,8,14,.6);
+    border:1px solid var(--gold-dim);border-radius:8px;}
+  #lootSheet .shop-tab.on{color:var(--gold);background:rgba(212,169,74,.12);}
+  #lootSheet .shop-body{display:flex;gap:8px;align-items:stretch;}
+  #lootSheet .shop-list{flex:1;display:flex;flex-direction:column;gap:6px;
+    max-height:38vh;overflow-y:auto;}
+  #lootSheet .shop-row{display:flex;justify-content:space-between;align-items:baseline;
+    gap:10px;padding:8px 10px;background:rgba(255,255,255,.03);border:1px solid transparent;
+    border-radius:8px;}
+  #lootSheet .shop-row.pick{border-color:var(--gold-dim);background:rgba(212,169,74,.10);}
+  #lootSheet .shop-keeper-art{width:84px;align-self:flex-end;border-radius:8px;
+    object-fit:cover;object-position:top;max-height:38vh;
+    -webkit-mask-image:linear-gradient(#000 72%,transparent);
+    mask-image:linear-gradient(#000 72%,transparent);}
+  #lootSheet .shop-desc{min-height:2.6em;margin:8px 2px 0;font-size:11px;line-height:1.7;
+    color:var(--gold-dim);}
+  #lootSheet .shop-acts{display:flex;gap:6px;margin-top:8px;}
+  #lootSheet .shop-acts button{flex:1;padding:9px 0;font-family:inherit;font-size:12px;
+    letter-spacing:2px;color:var(--gold);background:rgba(10,8,14,.7);
+    border:1px solid var(--gold-dim);border-radius:8px;}
+  #lootSheet .shop-do{color:var(--holy);border-color:var(--holy);}
+  #lootSheet .shop-do.broke{opacity:.35;}
+  #lootSheet .shop-talk{color:var(--gold-dim);border-style:dashed;}
 
   /* ── 面盤模式提示 ＋ 已播腳本（ver -367）──────────────────────────
      ⚠ 提示做成**面盤上緣的一條細字**，不做成浮動 badge：面盤中央是團徽／盤面，

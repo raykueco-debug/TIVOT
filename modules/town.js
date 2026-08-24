@@ -70,9 +70,7 @@ function ensureLayer(){
     + '<button id="townShop" class="town-btn" type="button">商店</button>';
   st.appendChild(layer);
   const sb=layer.querySelector('#townShop');
-  if(sb) sb.addEventListener('pointerup', e=>{ e.stopPropagation();
-    try{ SFX.unlock(); SFX.menuClick(); }catch(_){}
-    const n=node(); if(n && n.shop) showShop(n.shop, n.keeper); });
+  if(sb) sb.addEventListener('pointerup', e=>{ e.stopPropagation(); openShop(); });
   return layer;
 }
 
@@ -84,31 +82,108 @@ function refreshArrows(){
   if(info) info.textContent = n.name + '　' + clock.timeText();
 }
 
-function showNav(on){ if(layer) layer.classList.toggle('on', !!on); }
+/* 導覽的開關。⚠ **羅盤跟著一起開關**（ver -372）：對白播放中箭頭就不該亮、也不該能按 ——
+   不然玩家會在讀台詞的時候看到底下有東西在發光晃動，而且按下去會與推進台詞打架。 */
+function showNav(on){
+  if(layer) layer.classList.toggle('on', !!on);
+  document.body.classList.toggle('town-nav', !!on && !!townId);
+  if(on) updateCompass(); else
+    document.querySelectorAll('.kerb-arrow').forEach(a=>a.classList.remove('avail','holding'));
+}
 
-/* 方向提示：擺到該方向的邊上，標目的地名，蓄能圈歸零。 */
+/* 方向提示：擺在**那一支箭的位置**（座標由呼叫端給，因為箭的位置是
+   `layoutKerberos` 依實際尺寸算出來的），標目的地名，蓄能圈歸零。 */
 const HINT_R=19, HINT_C=2*Math.PI*HINT_R;
-function hintShow(dir, name){
+function hintShowAt(x, y, name){
   const h=layer && layer.querySelector('#townHint'); if(!h) return;
-  h.className='dir-'+dir+' on';
+  h.className='at on';
+  h.style.left=x+'px'; h.style.top=y+'px';
   const lab=h.querySelector('.th-label'); if(lab) lab.textContent=name||'';
   const pr=h.querySelector('.ta-prog');
   pr.style.strokeDasharray=HINT_C; pr.style.strokeDashoffset=HINT_C;
 }
 function hintProgress(p){
   const h=layer && layer.querySelector('#townHint'); if(!h) return;
-  const pr=h.querySelector('.ta-prog');
-  pr.style.strokeDashoffset=HINT_C*(1-Math.min(1,Math.max(0,p)));
+  h.querySelector('.ta-prog').style.strokeDashoffset=HINT_C*(1-Math.min(1,Math.max(0,p)));
 }
 function hintHide(){ const h=layer && layer.querySelector('#townHint'); if(h) h.className=''; }
 
-/* ══ 移動 ══ */
-/* ⚠ 參數是**目的地的節點 id**，不是方向（ver -370 修）：手勢那一段已經把方向
-   換算成目的地了，這裡再查一次 `exits[dir]` 只會查到 undefined（實測踩到：
+/* ══ 羅盤：槍棺的四支箭就是方向鍵（ver -372，Ray 指定）══
+   有目的地的方向 → 那支箭浮起、輕輕晃、從下面發光（CSS 的 `.avail`）。
+   **長按**那支箭 → 浮出目的地名與蓄能圈 → 滿了才走；放開就取消。
+   ⚠ 方向對應：n＝上、e＝右、s＝下、w＝左（門的箭本來就是正四向）。
+   ⚠ 室內只有 `back` 一個出口時，把它掛在**下**（s）那一支 —— 「退回」讀起來就是往下。
+   ⚠ 箭的座標要問 `getBoundingClientRect`，不要自己算：那組位置是
+     `layoutKerberos` 解出來的（鐵律 7）。 */
+const DIR_ARROW={ up:'n', right:'e', down:'s', left:'w' };
+
+function exitsOf(){
+  const n=node(); const ex=Object.assign({}, (n&&n.exits)||{});
+  /* `back` 沒有自己的箭：只有它的時候掛到「下」。 */
+  if(ex.back && !ex.down){ ex.down=ex.back; }
+  delete ex.back;
+  return ex;
+}
+function nameOfNode(id){ return ((TOWNS[townId]||{}).nodes[id]||{}).name?.replace(/^帝都　/,'')||''; }
+
+function updateCompass(){
+  const ex=exitsOf();
+  for(const dir in DIR_ARROW){
+    const el=document.querySelector('.kerb-arrow.'+DIR_ARROW[dir]);
+    if(!el) continue;
+    el.classList.toggle('avail', !!ex[dir]);
+    el.classList.remove('holding');
+    el.dataset.dir=dir;
+  }
+}
+
+function bindInput(){
+  const st=story.stageEl(); if(!st || st.__townBound) return;
+  st.__townBound=true;
+  let hold=null;          // {el, to, t0, raf, timer}
+  const cancel=()=>{
+    if(!hold) return;
+    cancelAnimationFrame(hold.raf); clearTimeout(hold.timer);
+    hold.el.classList.remove('holding');
+    hold=null; hintHide();
+  };
+  /* 長按開始：只認**有目的地**的箭。 */
+  st.addEventListener('pointerdown', e=>{
+    if(!townId || busy || story.isPlaying()) return;
+    const el=e.target.closest && e.target.closest('.kerb-arrow.avail');
+    if(!el) return;
+    e.preventDefault(); e.stopPropagation();
+    const to=exitsOf()[el.dataset.dir]; if(!to) return;
+    el.classList.add('holding');
+    const r=el.getBoundingClientRect(), sr=st.getBoundingClientRect();
+    hintShowAt(r.left-sr.left+r.width/2, r.top-sr.top+r.height/2, nameOfNode(to));
+    hold={ el, to, t0:performance.now(), raf:0, timer:0 };
+    const tick=()=>{ if(!hold) return;
+      hintProgress((performance.now()-hold.t0)/HOLD_MS);
+      if(performance.now()-hold.t0 < HOLD_MS) hold.raf=requestAnimationFrame(tick); };
+    tick();
+    hold.timer=setTimeout(()=>{ const target=hold.to; cancel(); go(target); }, HOLD_MS);
+  }, true);
+  st.addEventListener('pointerup', e=>{
+    if(hold){ cancel(); return; }               // 放太早：取消，不算點擊
+    if(!townId || busy || story.isPlaying()) return;
+    if(e.target.closest && e.target.closest('#townShop')) return;
+    /* 單純點畫面：商店節點 → 開買賣選單（Ray 指定）；其餘 → 路人閒聊。 */
+    const n=node();
+    if(n && n.shopOnTap && n.shop){ openShop(); return; }
+    chatter();
+  });
+  st.addEventListener('pointercancel', cancel);
+}
+
+/* ══ 移動 ══
+   ⚠ 參數是**目的地的節點 id**，不是方向（ver -370 修）：手勢／羅盤那一段已經把方向
+   換算成目的地了，這裡再查一次 `exits[dir]` 只會查到 undefined（實測踩過：
    提示出得來、時間也滿了，就是不會走）。 */
 function go(to){
   if(!to) return;
   busy=true; showNav(false);
+  document.body.classList.remove('town-nav');          // 移動中把羅盤收起來
   try{ SFX.play('resources/audio/se/se_walk.mp3'); }catch(_){}
   clock.advance(STEP_MIN);
   setTimeout(()=>enter(to), 260);
@@ -119,8 +194,8 @@ export function enter(id){
   const T=TOWNS[townId]; if(!T) return;
   const n=T.nodes[id]; if(!n){ console.warn('[town] 沒有這個節點：', id); busy=false; return; }
   nodeId=id;
-  /* ⚠⚠ **換節點先清場**（ver -370）：立繪是持續狀態，不清的話上一個地點的人
-     會站在新的背景前面。這是引擎層的規矩，由 `story.clearCast()` 一支負責。 */
+  /* ⚠⚠ **換節點先清場**（鐵律 8）：立繪是持續狀態，不清的話上一個地點的人
+     會站在新的背景前面。清場只有 `story.clearCast()` 一支實作。 */
   story.clearCast();
   bgFor(n.bg, n.noTime);
   ensureLayer(); bindInput(); refreshArrows(); showNav(false);
@@ -130,8 +205,7 @@ export function enter(id){
   const lines = first ? (n.lines||[]) : [];
   if(n.once && first) prog.addFlags([flag]);
   if(lines.length){
-    /* ⚠ 對白演完**把立繪全撤**，只留背景與導覽（Ray 指定）——
-       城鎮是「看得到路」的畫面，人講完話就該退場。 */
+    /* ⚠ 對白演完**把立繪全撤**，只留背景與導覽（Ray 指定）。 */
     story.playAdhoc(lines, ()=>{ applyAff(lines); story.clearCast();
       busy=false; refreshArrows(); showNav(true); });
   }else{
@@ -148,58 +222,20 @@ function applyAff(lines){
   }
 }
 
-/* ══ 輸入（ver -370）══
-   一個 pointer 手勢分兩種結果：
-     **滑動並按住** → 往那個方向移動（提示＋蓄能圈，滿了才走）
-     **只是點一下** → 路人閒聊（單句，不進對話模式）
-   ⚠ 對白播放中整組不接管（`story.isPlaying()`）—— 推進台詞是劇情層的事。 */
-const DRAG_MIN=26;        // 超過這麼多像素才算「往某個方向滑」
-let lastChat=-1;
-function dirOf(dx,dy){
-  if(Math.abs(dx)<DRAG_MIN && Math.abs(dy)<DRAG_MIN) return null;
-  return Math.abs(dx)>Math.abs(dy) ? (dx>0?'right':'left') : (dy>0?'down':'up');
-}
-function exitsOf(){ const n=node(); return (n&&n.exits)||{}; }
-function nameOfNode(id){ return ((TOWNS[townId]||{}).nodes[id]||{}).name?.replace(/^帝都　/,'')||''; }
-
-function bindInput(){
-  const st=story.stageEl(); if(!st || st.__townBound) return;
-  st.__townBound=true;
-  let p0=null, dir=null, t0=0, raf=0, timer=0;
-  const cancel=()=>{ cancelAnimationFrame(raf); clearTimeout(timer); raf=timer=0;
-    dir=null; hintHide(); };
-  st.addEventListener('pointerdown', e=>{
-    if(!townId || busy || story.isPlaying()) return;
-    if(e.target.closest && e.target.closest('#townShop')) return;
-    p0={ x:e.clientX, y:e.clientY, moved:false }; cancel();
+/* 開商店。⚠ 店主對話是**一段對白**（兩個人輪流講）—— 按下去先收商店、交給劇情播放器演、
+   演完再把商店開回來。這樣立繪與明暗都與別處一致，不必在商店頁裡另做一套對話框。 */
+function openShop(){
+  const n=node(); if(!n || !n.shop) return;
+  try{ SFX.unlock(); SFX.menuClick(); }catch(_){}
+  showShop(n.shop, n.keeper, ()=>{
+    if(!n.keeper || !n.keeper.length) return;
+    busy=true; showNav(false);
+    story.playAdhoc(n.keeper, ()=>{
+      story.clearCast();                 // 鐵律 8：離開這一段就清場
+      busy=false; showNav(true);
+      openShop();                        // 談完回到櫃台
+    });
   });
-  st.addEventListener('pointermove', e=>{
-    if(!p0 || busy) return;
-    const d=dirOf(e.clientX-p0.x, e.clientY-p0.y);
-    if(!d){ if(dir) cancel(); return; }
-    p0.moved=true;
-    if(d===dir) return;                        // 同一個方向：繼續蓄能，不要重新開始
-    cancel();
-    /* `back` 當成「沒有那個方向時的退路」：室內只有一個出口，往任何方向滑都回去。 */
-    const ex=exitsOf();
-    const to = ex[d] || (ex.back && !ex.up && !ex.down && !ex.left && !ex.right ? ex.back : null);
-    if(!to) return;
-    dir=d; t0=performance.now();
-    hintShow(d, nameOfNode(to));
-    const tick=()=>{ hintProgress((performance.now()-t0)/HOLD_MS);
-      if(performance.now()-t0 < HOLD_MS) raf=requestAnimationFrame(tick); };
-    tick();
-    timer=setTimeout(()=>{ const target=to; cancel(); go(target); }, HOLD_MS);
-  });
-  const up=e=>{
-    if(!p0) return;
-    const moved=p0.moved; p0=null;
-    const hadDir=!!dir; cancel();
-    if(moved || hadDir) return;                // 滑過就不算點
-    chatter();                                 // 單純點一下 → 路人閒聊
-  };
-  st.addEventListener('pointerup', up);
-  st.addEventListener('pointercancel', ()=>{ p0=null; cancel(); });
 }
 
 /* 路人閒聊：**單句**，不進對話模式（Ray 指定）。再點一下換下一句。 */
@@ -225,5 +261,7 @@ export function close(){
   const st=story.stageEl(); if(st) st.classList.remove('town-on');
   showNav(false);
   townId=null; nodeId=null;
+  document.body.classList.remove('town-nav');
+  document.querySelectorAll('.kerb-arrow').forEach(a=>a.classList.remove('avail','holding'));
 }
 export function isOpen(){ return !!townId; }

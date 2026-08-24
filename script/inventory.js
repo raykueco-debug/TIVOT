@@ -108,6 +108,10 @@ export function priceOf(id){ const d=defOf(id); return (d && d.price>0) ? (d.pri
 /* 收購價 ＝ 市價 × `shop.sellRate`（Ray：買收價為物價 50%）。
    ⚠ 折扣寫在店家不寫在道具 —— 一個道具只有一個數字（鐵律 7 的精神）。 */
 export function sellPrice(id){
+  /* ⚠ **特殊物品一律不能賣**（ver -371，Ray 指定）——那一類是劇情/任務物品，
+     賣掉會讓流程斷掉。這條在**價錢這一層**擋，不是在 UI 擋：日後有別的賣出入口
+     （委託、熔解…）也自動吃到。 */
+  if(catOf(id)==='special') return 0;
   const rate=((GAME_CONFIG.shop||{}).sellRate!=null) ? GAME_CONFIG.shop.sellRate : 0.5;
   return Math.max(0, Math.round(priceOf(id)*rate));
 }
