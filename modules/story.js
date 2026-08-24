@@ -695,7 +695,7 @@ const SE_FILES=[
   'se_flight_heartbeat.mp3', 'se_flight_idle_loop.mp3', 'se_flight_sail_loop.mp3',
   'se_flight_seagull.mp3', 'se_flight_train.mp3', 'se_lunaMG.m4a', 'se_punch.mp3',
   'se_saint_install.mp3', 'se_saint_maxburst.m4a', 'se_steps.m4a', 'se_ui_click.mp3',
-  'se_ginclick.mp3', 'Se_Tummy.mp3', 'se_metalclip.mp3',
+  'se_ginclick.mp3', 'Se_Tummy.mp3', 'se_metalclip.mp3', 'se_SailorShout.mp3',
   'se_ui_kagurabell.mp3', 'se_ui_pageflip.mp3', 'se_ui_sortie.mp3', 'se_walk.mp3',
   'se_weapon_guard.m4a', 'se_weapon_mg_squall.mp3', 'se_weapon_pistol_01.mp3',
   'se_weapon_pistol_02.mp3', 'se_weapon_pistol_03.m4a', 'se_weapon_reload.mp3',

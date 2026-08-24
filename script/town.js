@@ -155,8 +155,25 @@ export const TOWNS = {
         ],
       },
 
-      /* 2. 船塢 ⚠ 同上，還沒有稿也沒有背景。 */
-      dock: { bg:'Capital_Dock', name:'帝都　船塢', exits:{ back:'oldtown' } },
+      /* ══ 2. 船塢 ══（ver -379，背景 `Capital_Dock_Day` 由 Ray 交件）
+         ⚠ 「明天要搭的船」是**下一段主線的伏筆** —— 這一段只有氣氛，沒有機能。 */
+      dock: {
+        bg:'Capital_Dock', name:'帝都　船塢',
+        exits:{ back:'oldtown' },
+        lines:[
+          nou('happy','哇，好多船。'),
+          nou('happy','不知道明天要搭的船長什麼樣子。'),
+          /* 空畫面：遠處水手的吆喝。⚠ 沒有立繪、沒有框，只有聲音（§8.6 的空畫面拍）。 */
+          { speaker:'PLAYER', text:'', auto:900, se:'se_SailorShout', hide:['NOUVELLE'] },
+          /* 無台詞的立繪拍：她被那一聲嚇到，停一秒（§6.5，從立繪站定才起算）。 */
+          { speaker:'NOUVELLE', text:'', auto:1000,
+            portrait:{ char:'NOUVELLE', expr:'shocked2', show:true } },
+          nou('cringe','明天船上如果有很多人的話，我會緊張……'),
+          { speaker:'PLAYER', blank:true },
+          /* 稿上這一拍寫的是 `Nouvelle_SI_front`＝**基本立繪**（沒有表情差分）。 */
+          nou(null,'嗯，謝謝。我安心多了。'),
+        ],
+      },
 
       /* ══ 二之一、賞金獵人公會 ══（ver -375）
          ⚠ 這是第一個**帶劇情插入戰**的城鎮節點：對白中間一句 `{ battle:'guild_hunter' }`，
