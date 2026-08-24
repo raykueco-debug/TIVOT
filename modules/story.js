@@ -24,6 +24,7 @@
    輪廓界由 measureBounds 在載入時量一次。
    ══════════════════════════════════════════════════════════════════════ */
 
+import { GAME_CONFIG } from '../config.js';   // 舞台幾何常數（castStage）：鐵律 7 的單一真相
 import { MAIN_SCRIPT, MAIN_ENTRY } from '../script/mainScript.js';
 import { SPEAKERS, ART, CAST_TALL, nameOf, artOf, exprSrc, frameOf } from '../script/speakers.js';
 import * as prog from '../script/progress.js';
@@ -140,7 +141,7 @@ function layout(){
      照飛行畫面那一套：一個 rect 都不逐句量）。兩者在靜止時相等，但元素的高度會在
      轉場／網址列收合時被抓到中間值，那一瞬的值又被快取一整場。 */
   const VH = window.innerHeight || document.documentElement.clientHeight || 0;
-  const H  = VH * 0.56;                     // ＝ style.css 的 `#storyStage{--story-top:56%}`
+  const H  = VH * STAGE().topRatio;         // 單一真相：config.castStage（見鐵律 7）
   if(!W || !H) return;
   const g=camGeom(H, W);
   const top=g.head;          // 頭頂落點（相機頂線是 g.top，只給 pxCm 用）
@@ -259,7 +260,8 @@ function layout(){
    改成**由 CSS 常數推**：`.corner-btn` 是 44px、`top:10px`，退出鈕吃 `--notch-bar-h`
      （劇情層是全螢幕，鈕相對它定位；戰鬥層的鈕在 `#top` 內、已在瀏海之下，故 notch=0）。
      這樣不管什麼時候算，結果都一樣。 */
-const BTN_H = 44, BTN_TOP = 10;      // ＝ style.css 的 `.corner-btn` 與 `#storyExit/#exitBtn`
+/* 舞台幾何：**只有 config 是計算點**（鐵律 7）。這裡與 tutorial.js 都只是讀。 */
+function STAGE(){ return GAME_CONFIG.castStage || { topRatio:0.56, btnTop:10, btnH:44 }; }
 function notchPx(){
   const v = getComputedStyle(document.documentElement).getPropertyValue('--notch-bar-h');
   const n = parseFloat(v);
@@ -267,8 +269,9 @@ function notchPx(){
 }
 function topLines(){
   const notch = notchPx();
-  return { camTop: notch + BTN_TOP + BTN_H + 4,   // 相機頂線：鈕的下緣再留 4px
-           headTop: notch + BTN_TOP };            // 頭頂落點：鈕的上緣（見 -352）
+  const G=STAGE();
+  return { camTop: notch + G.btnTop + G.btnH + 4,   // 相機頂線：鈕的下緣再留 4px
+           headTop: notch + G.btnTop };             // 頭頂落點：鈕的上緣（見 -352）
 }
 
 /* ══ 立繪槽 ══ */

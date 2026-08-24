@@ -558,7 +558,8 @@ function placePortraitX(el, side){
        `#storyStage`（`position:fixed; inset:0`）的 56%，也就是**視口**的 56%；
        戰鬥這邊若拿 `#app` 去乘，同一張立繪就會大 8.7%，而且 `#app` 的高在開機過程中
        還會變一次 —— 那就是「跑兩次高度 665 vs 732」的來源。 */
-  const RATIO = 0.56;                       // ＝ style.css 的 `#storyStage{--story-top:56%}`
+  const G = GAME_CONFIG.castStage || { topRatio:0.56, btnTop:10, btnH:44 };   // 單一真相（鐵律 7）
+  const RATIO = G.topRatio;                 // 與劇情頁同一個數字，來源同一處
   const VH = window.innerHeight || document.documentElement.clientHeight || 0;
   /* ⚠⚠ **不量鈕的即時 rect，改由 CSS 常數推**（ver -354）。量到的值取決於「第一次排版
        剛好發生在哪一刻」：鈕若正好被藏起來（門還在開、結算 banner 開著）或版面還在轉場，
@@ -570,7 +571,7 @@ function placePortraitX(el, side){
   /* ⚠ 頂線用**螢幕座標**（與劇情頁同一條）：退出鈕實際落在 `瀏海 + 10px`
      —— 劇情層的鈕相對全螢幕定位、戰鬥層的鈕在 `#top` 內而 `#app` 已被 padding 讓過瀏海，
      兩者算出來是同一個 y。最後再換算回 `#tutCast` 的座標系（減掉 wrap 的 top）。 */
-  const BTN_H = 44, BTN_TOP = 10;          // ＝ style.css 的 `.corner-btn` / `#exitBtn`
+  const BTN_H = G.btnH, BTN_TOP = G.btnTop;   // 同上：讀 config，不在這裡重寫
   const notch = (()=>{ const v=parseFloat(
       getComputedStyle(document.documentElement).getPropertyValue('--notch-bar-h'));
     return isFinite(v) ? v : 0; })();

@@ -345,6 +345,8 @@
 
 
   /* 角落按鈕 */
+  /* ⚠ 44px 與 `config.js` 的 `castStage.btnH` 同值（立繪頂線靠它算），
+     `top:10px` 對應 `castStage.btnTop` —— 改一邊一定要改另一邊（鐵律 7）。 */
   .corner-btn{position:absolute;z-index:37;width:44px;height:44px;border-radius:50%;
     background:rgba(10,8,14,.7);border:1px solid var(--gold-dim);color:var(--gold);
     font-size:20px;line-height:1;display:flex;align-items:center;justify-content:center;
@@ -1177,6 +1179,8 @@
   /* ⚠ 上半立繪／下半盤面（Ray 指定，ver -316）。所有「場景層」（背景／CG／CI／
      特效／立繪）都只佔上半，下半是固定的盤面區 —— 版面不因有沒有戰鬥而變。
      比例寫成變數，之後接真的戰鬥盤面時只改這一個數字。 */
+  /* ⚠ 56% 與 `config.js` 的 `castStage.topRatio` 是**同一個數字**（鐵律 7 的但書：
+     CSS 讀不到 JS，所以這是必須存在的第二處）——**改一邊一定要改另一邊**。 */
   #storyStage{--story-top:56%;}
   #storyCast{position:absolute;left:0;right:0;top:0;height:var(--story-top);
     z-index:1;pointer-events:none;overflow:hidden;}
