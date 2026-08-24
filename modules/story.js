@@ -871,8 +871,17 @@ function layoutKerberos(){
   if(tp){
     const th=W*KERB_META.top.ar;
     tp.style.width=W+'px'; tp.style.height=th+'px';
-    tp.style.left=(-dx)+'px'; tp.style.top=(1-th+th*KERB_META.top.dip)+'px';
+    const tpTop = 1-th+th*KERB_META.top.dip;          // 楣的上緣（門座標）
+    tp.style.left=(-dx)+'px'; tp.style.top=tpTop+'px';
     kb.style.setProperty('--kerb-top-h', th+'px');
+    /* ⚠⚠ **clip 的起點要用楣的實際上緣**，不能用「面板頂 − 楣高」（ver -364）。
+       兩者只有在「門頂剛好等於面板頂」時才相等，而門多高是 layoutKerberos 依實際尺寸
+       **解出來**的 —— 這一版的視窗比例下實測門頂 447、面板頂 494，差了 47px，
+       於是 clip 從 432 開始、楣卻從 393 開始 → **楣的上緣 39px 被自己的容器切掉**。
+       Ray 回報「楣又被遮了」就是這個：不是被立繪蓋住，是被裁掉，
+       露出來的是後面的立繪與背景。 */
+    st.style.setProperty('--kerb-clip-top', (top + tpTop) + 'px');
+    kb.style.setProperty('--kerb-clip-top', (top + tpTop) + 'px');
     /* ⚠ 也寫到舞台上：對話框要拿它把底邊錨在楣的上緣（見 style.css 的 #storyBubble）。
        CSS 變數只往**子孫**繼承，寫在 #kerb 上對話框讀不到。 */
     st.style.setProperty('--kerb-top-h', th+'px');
