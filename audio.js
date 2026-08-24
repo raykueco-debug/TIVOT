@@ -279,6 +279,10 @@ export const SFX = {
 
   // 預載一批 SFX（Web Audio 解碼成 buffer）：回傳 Promise（全部解完）
   preload(srcs){ return Promise.all((srcs || []).filter(Boolean).map(load)); },
+  /* 這支音檔**已經解碼好**了嗎。呼叫端據此決定要不要走自己的退路
+     （劇情層在還沒解碼完時改用 HTMLAudio 串流，見 modules/story.js 的 playSeFallback）——
+     因為 playSrc 的補播有 LATE_PLAY_MS 1.5 秒的時限，超過就乾脆不播。 */
+  ready(src){ return !!(src && _buffers[src]); },
   // 預載一批 BGM（整首下載成 Blob，切歌即播不再下載）：回傳 Promise
   preloadBgm(srcs){ return Promise.all((srcs || []).filter(Boolean).map(ensureBlob)); },
 

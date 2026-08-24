@@ -246,13 +246,24 @@ function layout(){
    ⚠ 手機上這一條特別有感：`#storyExit` 是 `top: env(safe-area-inset-top) + 10px`，
      瀏海機上鈕的下緣落在 ~101px（桌機 ~58px）—— 夾下緣等於把瀏海高度**再讓一次**。
      要閃開的是瀏海本身，鈕的上緣就是安全線。 */
+/* ⚠⚠ **不要量那顆鈕的即時 rect**（ver -354）。量到的值取決於「第一次排版剛好發生在
+     哪一刻」—— 鈕若正好被藏起來（`kerb-open` 期間、結算 banner 開著時）或版面還在轉場，
+     `br.height` 是 0，整組取景就被那一瞬決定，而它又被快取一整場。
+     實測同一段教學跑兩次，立繪高度 665 vs 732（差 10%）—— Ray 說的「忽高忽低」有一半
+     是這個，不是手機的問題。
+   改成**由 CSS 常數推**：`.corner-btn` 是 44px、`top:10px`，退出鈕吃 `--notch-bar-h`
+     （劇情層是全螢幕，鈕相對它定位；戰鬥層的鈕在 `#top` 內、已在瀏海之下，故 notch=0）。
+     這樣不管什麼時候算，結果都一樣。 */
+const BTN_H = 44, BTN_TOP = 10;      // ＝ style.css 的 `.corner-btn` 與 `#storyExit/#exitBtn`
+function notchPx(){
+  const v = getComputedStyle(document.documentElement).getPropertyValue('--notch-bar-h');
+  const n = parseFloat(v);
+  return isFinite(n) ? n : 0;
+}
 function topLines(){
-  const st=$('storyStage'), ex=$('storyExit');
-  if(!st || !ex) return { camTop:56, headTop:56 };
-  const sr=st.getBoundingClientRect(), br=ex.getBoundingClientRect();
-  const bottom = br.bottom - sr.top, top = br.top - sr.top;
-  if(!(br.height>0)) return { camTop:56, headTop:56 };
-  return { camTop: Math.round(bottom + 4), headTop: Math.max(0, Math.round(top)) };
+  const notch = notchPx();
+  return { camTop: notch + BTN_TOP + BTN_H + 4,   // 相機頂線：鈕的下緣再留 4px
+           headTop: notch + BTN_TOP };            // 頭頂落點：鈕的上緣（見 -352）
 }
 
 /* ══ 立繪槽 ══ */
@@ -646,12 +657,20 @@ const SE_SRC=(()=>{ const m={};
   return m; })();
 function seSrc(n){ const k=String(n||'').toLowerCase();
   return SE_SRC[k] || SE_SRC[SE_ALIAS[k]] || null; }
+/* ⚠ 沒解碼完就退回 `HTMLAudio`（ver -354）。`SFX.play` 走 Web Audio，buffer 沒好時
+   它只會「限時補播」，超過 1.5 秒就乾脆不播 —— 手機上開場那兩支就是這樣消失的。
+   `new Audio(src).play()` 是串流，馬上就能出聲；而且這一下是**使用者點擊**推進的，
+   還在手勢的同步區間裡，iOS 不會擋。
+   ⚠ 只當退路：Web Audio 那條有匯流 limiter 與音量分層，能走就走那條。 */
+function playSeFallback(src){
+  try{ const a=new Audio(src); a.volume=0.9; const p=a.play(); if(p&&p.catch) p.catch(()=>{}); }catch(e){}
+}
 function playSe(spec){
   const one=(n,delay)=>{ const src=seSrc(n);
     if(!src){ const tag='se/'+n;
       if(!missingExpr.has(tag)){ missingExpr.add(tag); console.info('[story] 沒有這個音效：', n); }
       return; }
-    const go=()=>{ try{ SFX.play(src); }catch(_){} };
+    const go=()=>{ try{ if(SFX.ready && !SFX.ready(src)) playSeFallback(src); else SFX.play(src); }catch(_){} };
     if(delay>0) setTimeout(go, delay); else go(); };
   if(!spec) return;
   if(Array.isArray(spec)) spec.forEach(x=> typeof x==='string' ? one(x,0) : one(x.n, x.delay||0));
@@ -996,6 +1015,19 @@ function renderLine(){
      「已經站好的人」，讀起來像少了一拍。等全亮再放人出來，才是一次乾淨的剪接。
      ⚠ 等的長度＝黑幕淡入 + 換圖 + 淡出（CG_FADE_MS×2 再留一點餘裕）。
      ⚠ 這一段包成 `reveal()` 是為了「延後執行」，內容一行都沒改。 */
+  /* ⚠⚠ **請人下台要立刻做，不能跟著 `reveal` 延後**（ver -354，Ray：「G2 場景切換時
+     仍有諾薇兒立繪殘留」）。走黑幕的那一拍 `reveal` 會等到畫面全亮才跑，於是她是
+     **在觀眾眼前**滑出去的 —— 黑幕收起來時她還站著，然後才走。
+     要撤的人在黑幕**蓋著的時候**就該撤乾淨。 */
+  if(line.hide){
+    for(const id of [].concat(line.hide)){
+      const a3=artOf(id); if(!a3) continue;
+      const s3=a3.side||'L';
+      if(slot[s3]===id) leaveSlot(s3);
+      if(shown[id]) shown[id].show=false;
+    }
+  }
+
   const reveal = ()=>{
   slidIn = false;
   const who = (line.portrait && line.portrait.char) || line.speaker;
@@ -1007,16 +1039,7 @@ function renderLine(){
                  show: (p.show!==undefined ? p.show : (prev.show!==undefined ? prev.show : true)) };
   shown[who] = st;
 
-  /* 請人下台。⚠ 要在 ensureOn 之前做：同側換人時先清掉舊的，
-     新的才會走「首次上場滑入」而不是「輪轉換卡」。 */
-  if(line.hide){
-    for(const id of [].concat(line.hide)){
-      const a3=artOf(id); if(!a3) continue;
-      const s3=a3.side||'L';
-      if(slot[s3]===id) leaveSlot(s3);
-      if(shown[id]) shown[id].show=false;
-    }
-  }
+  /* （請人下台已在上面**立刻**做完，見那一段的說明。） */
 
   let side = null;
   /* ⚠ 沒有立繪資料的角色（UNKNOWN／LUNARIA）整段跳過 —— 不上場也不下場，
@@ -1242,9 +1265,16 @@ function preloadStory(startId, onProgress){
   const tick = p => Promise.resolve(p).then(()=>{ done++; onProgress(done/total); });
   const audio = Promise.all([ tick(SFX.preload(A.ses).catch(()=>{})),
                               tick(SFX.preloadBgm(A.bgms).catch(()=>{})) ]);
+  /* ⚠⚠ `AUDIO_FIRST_MS` 只是「圖片最多讓路這麼久」，**不是**「音效等這麼久就算了」
+     （ver -354 修）。前一版寫成 `race(audio, 6s).then(圖片)`，於是慢一點的手機上
+     6 秒一到就開始抓圖，而整個 gate 只等圖片 —— 音效還沒解碼完就開演，
+     開場那兩支照樣落進 `LATE_PLAY_MS` 被丟掉。Ray 回報「手機版仍然讀不到跑步聲與跌倒音」
+     就是這個。
+     現在：圖片最多讓路 6 秒，但**最後一定要等音效與圖片都好**（只有 25 秒總上限能中斷）。 */
+  const imgsDone = Promise.race([audio, new Promise(r=>setTimeout(r, AUDIO_FIRST_MS))])
+    .then(()=> Promise.all(imgJobs().map(tick)));
   return Promise.race([
-    Promise.race([audio, new Promise(r=>setTimeout(r, AUDIO_FIRST_MS))])
-      .then(()=> Promise.all(imgJobs().map(tick))),
+    Promise.all([audio, imgsDone]),
     new Promise(r=>setTimeout(r, PRELOAD_CAP_MS)),
   ]);
 }

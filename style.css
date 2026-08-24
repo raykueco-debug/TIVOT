@@ -1212,7 +1212,11 @@
      那正是要的。 */
   #kerb{position:absolute;inset:0;z-index:5;pointer-events:none;overflow:hidden;
     clip-path:inset(calc(var(--story-top) - var(--kerb-top-h, 0px)) 0 0 0);
-    transition:clip-path .7s cubic-bezier(.5,0,.75,0);}
+    /* ⚠ **1s 不是 .7s**（ver -354，Ray：「震動應該在觸頂的那一瞬」）。門的震動與撞擊音
+       都排在 `KERB_T.rise`＝1000ms（撞擊音 se_Kerberos_pop 的峰值實測在 1002ms），
+       而 CSS 只走 0.7 秒 —— 門 700ms 就到頂，然後靜止 300ms 才抖、才響。
+       ⚠ clip 與門要同一個時間（見 -343：同速看的是行程÷時間）。 */
+    transition:clip-path 1s cubic-bezier(.5,0,.75,0);}
   /* ⚠⚠ 全開的終點**不是 0**（ver -343，Ray：「楣要跟槍棺同速，
      不要被下面的槍棺吃掉」）。理由是**速度**：clip 的上緣與門的上推吃同一段
      0.7s 同一條曲線，但走的距離不同 —— 門走 `--kerb-rise`（實測 454.7px，
@@ -1228,7 +1232,7 @@
   #kerb.full{clip-path:inset(calc(var(--story-top) - var(--kerb-top-h, 0px)
                                   - var(--kerb-rise, 0px)) 0 0 0);}
   #kerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
-    transition:transform .7s cubic-bezier(.5,0,.75,0);}   /* 由緩到急＝像被推上來撞到頂 */
+    transition:transform 1s cubic-bezier(.5,0,.75,0);}   /* 由緩到急＝像被推上來撞到頂；1s ＝ KERB_T.rise */
   #kerb.rise #kerbDoor{transform:translateY(calc(var(--kerb-rise) * -1));}
   /* 門的兩半：同一張圖用 background-position 切，不另外出兩個檔。
      ⚠ background-size 給 200% 是因為每一半只有門的一半寬。 */
