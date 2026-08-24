@@ -73,7 +73,9 @@ export const ART = {
            side:'L', alt:null, base:'resources/SI/Renna_SI_front.webp',
            expr:{ smile:   { src:'resources/SI/Renna_SI_smile.webp',   top:5, bot:1530, fx:0.518 },
                   bow:     { src:'resources/SI/Renna_SI_bow.webp',     top:0, bot:1530, fx:0.507 },
-                  awkward: { src:'resources/SI/Renna_SI_awkwerd.webp', top:6, bot:1526, fx:0.519 } } },
+                  awkward: { src:'resources/SI/Renna_SI_awkwerd.webp', top:6, bot:1526, fx:0.519 },
+                  /* 帝都廣場那一段新增（ver -359）。`stare`＝直視／半瞇，用在她盯著人講話那幾拍。 */
+                  stare:   { src:'resources/SI/Renna_SI_stare.webp',   top:0, bot:1527, fx:0.515 } } },
   /* ⚠⚠ 諾薇兒的表情差分是**不同姿勢**（跑、畏縮、驚恐、絕望、驚訝），不是換臉，
        所以每一張**各帶自己的 top/bot/fx**（ver -325 量完）。
        ⚠ 沿用 front 那一組的後果實測過：Scared 的臉其實在 0.397，照 0.564 擺會
@@ -98,7 +100,10 @@ export const ART = {
                   awkward:  { src:'resources/SI/Nouvelle_SI_Awkwerd.webp',   top:2,  bot:1534, fx:0.468 },
                   gossip1:  { src:'resources/SI/Nouvelle_SI_Gossip1.webp',   top:0,  bot:1536, fx:0.710 },
                   gossip2:  { src:'resources/SI/Nouvelle_SI_Gossip2.webp',   top:2,  bot:1536, fx:0.603 },
-                  shy:      { src:'resources/SI/Nouvelle_SI_Shy.webp',       top:4,  bot:1533, fx:0.592 } } },
+                  shy:      { src:'resources/SI/Nouvelle_SI_Shy.webp',       top:4,  bot:1533, fx:0.592 },
+                  /* ⚠ `whisper` 的臉在 **0.697**（其他差分 0.39~0.60）——她整個人偏右，
+                     與 `gossip1`（0.710）同一類構圖。沿用別張會把她推出畫面。 */
+                  whisper:  { src:'resources/SI/Nouvelle_SI_whisper.webp',   top:8,  bot:1530, fx:0.697 } } },
   /* ⚠ 索拉娜用 **side** 那張：front 橫向佔 78%，兩人同台一定疊；側面只佔 69%。 */
   sorana: { cm:176, eye:27, fx:0.527, top:4, bot:1522,
            side:'R', alt:null, base:'resources/SI/Sorana_SI_side.webp', expr:{} },
@@ -172,7 +177,7 @@ export const ART = {
            expr:{ angry:      { src:'resources/SI/Luna_SI_angry.webp',       top:0, bot:1536, fx:0.477, faceAdj:0.94, standCm:171 },
                   taunt:      { src:'resources/SI/Luna_SI_taunt.webp',       top:0, bot:1536, fx:0.510, faceAdj:0.83, standCm:171 },
                   seat:       { src:'resources/SI/Luna_SI_seat_N.webp',     top:7, bot:1536, fx:0.448, faceAdj:0.74, standCm:155 },
-                  seat_smirk: { src:'resources/SI/Luna_SI_seat_smirk.webp', top:0, bot:1536, fx:0.504, faceAdj:0.74, standCm:155 },
+                  seat_smirk: { src:'resources/SI/Luna_SI_seat_smirk.webp', top:2, bot:1519, fx:0.539, faceAdj:0.74, standCm:155 },
                   /* ⚠ `seat_angry` 比其他三張坐姿再小一截：0.74 → **0.63**
                      （-353，Ray「seat_angry 再縮 15%」）。同一組坐姿吃不同的補償是刻意的，
                      補的是**那一張畫**的構圖差異（這張她往前傾、臉畫得比較大）。 */

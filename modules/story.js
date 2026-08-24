@@ -408,13 +408,15 @@ const BG_DIR='resources/background/', CG_DIR='resources/illustration/', SI_DIR='
    ⚠ 這份清單由 `tools/script_lint.py` 對照 resources/audio/bgm/ 檢查；
      加了新檔案而忘了加進來，lint 會報「表裡沒有」。 */
 const BGM_FILES=[
-  'Bgm_Lunaria.m4a', 'PerituneMaterial_Crisis_loop.m4a', 'bgm_battle.m4a', 'bgm_boss.m4a',
-  'bgm_flight.m4a', 'bgm_mainmenu.m4a', 'bgm_missionfailed.m4a', 'bgm_result.m4a',
+  'Bgm_Lunaria.m4a', 'PerituneMaterial_Crisis_loop.m4a', 'bgm_Capital_Day.m4a',
+  'bgm_battle.m4a', 'bgm_boss.m4a', 'bgm_flight.m4a', 'bgm_mainmenu.m4a',
+  'bgm_missionfailed.m4a', 'bgm_result.m4a',
 ];
 /* 別名：腳本裡慣用的短名 → 實際檔名（去副檔名）。加新別名只動這裡。 */
 const BGM_ALIAS={ crisis:'peritunematerial_crisis_loop', lunaria:'bgm_lunaria',
                   mainmenu:'bgm_mainmenu', battle:'bgm_battle', boss:'bgm_boss',
-                  result:'bgm_result', failed:'bgm_missionfailed', flight:'bgm_flight' };
+                  result:'bgm_result', failed:'bgm_missionfailed', flight:'bgm_flight',
+                  capital:'bgm_capital_day' };
 const BGM_SRC=(()=>{ const m={};
   for(const f of BGM_FILES) m[f.replace(/\.[^.]+$/,'').toLowerCase()]='resources/audio/bgm/'+f;
   return m; })();
@@ -1156,6 +1158,21 @@ function endScene(){
   /* scene 收尾才寫進度（規格 §0.2：主線寫，其餘讀）。 */
   if(cur.setStage!=null) prog.setStage(cur.setStage);
   if(cur.setFlags)       prog.addFlags(cur.setFlags);
+  /* ⚠ `initAffection`＝**好感度起算**（ver -359，Ray：「以下不顯示於任何玩家可見 UI，
+     僅為好感度計數起點」）。設的是**絕對值**不是加減 —— 隊伍成形的那一刻把四個人的
+     計數歸到指定值。
+     ⚠ 只設一次：用 flag 擋（`aff_init_<sceneId>`），否則重看這一幕會把玩家累積的好感洗掉。
+     ⚠ 走 `prog.setAffection`（直接寫值）而不是 `addAffection`（帶棘輪與夾限）——
+       起算點就是地板本身，不該被上一輪的棘輪擋住。 */
+  if(cur.initAffection){
+    const mark='aff_init_'+cur.sceneId;
+    if(!prog.hasFlag(mark)){
+      const aff=prog.getAffection();
+      for(const k in cur.initAffection) aff[k]=cur.initAffection[k];
+      prog.setAffection(aff);
+      prog.addFlags([mark]);
+    }
+  }
 
   const nx = cur.next;
   if(nx && MAIN_SCRIPT[nx]){ playScene(nx); return; }

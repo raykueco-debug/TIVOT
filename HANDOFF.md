@@ -1,7 +1,7 @@
 # HANDOFF — Saint Install 模組化重寫 · 進度交接
 
 > 每輪開工前讀本檔 + 憲法/規格。實況以 `git log` 與 `DECISIONS.md` 為準;本檔為人類可讀的進度總覽。
-> **最後回寫:`ver -358`(2026-08-24)。** 本檔後半是逐版的交接,由新到舊往下加;
+> **最後回寫:`ver -359`(2026-08-24)。** 本檔後半是逐版的交接,由新到舊往下加;
 > **要快速上手請先讀下面那一段「★必讀 · 目前狀態(ver -341)」**（餵稿規格見 `script/SCRIPT_FORMAT.md`）,再依需要跳到對應版本。
 >
 > 目前狀態:CLAUDE.md §6 開發順序第 1~5 步已完成;**第 6 步(ACCEPTANCE 對照 reference)仍未動**,
@@ -94,7 +94,7 @@
    ＋`script/speakers.js`(角色表)＋`script/progress.js`(stage/flags)。
 6. `script/SCRIPT_FORMAT.md` — **Ray 餵稿的規格**(ver -342):寫稿格式、演出詞彙表、
    現有素材清單、一定要交代清楚的六件事。收到稿之後跑 `tools/script_lint.py` 驗。
-7. `git log`(本檔最後回寫於 `ver -358`)。
+7. `git log`(本檔最後回寫於 `ver -359`)。
 
 ---
 
@@ -2391,3 +2391,52 @@ sorana/anya）。三條規矩：
   （docs/TIVOT_AFFECTION_RULES.md：諾薇兒聖徒化 +1／安雅不用聖徒化 +1／索拉娜評價越爛越加／
   蕾娜只吃 S +0.25）**還沒接到戰鬥結算上**。
 - **裝備/使用道具**：只有持有量，沒有裝備欄位與使用效果。
+
+
+---
+
+# 交接 · `ver -359`（帝都 攝政王廣場：正名蕾娜；好感度起算；素材批次轉檔）
+
+## A. 新場景 `capital_square`（接在 `hq_audience` 之後，交界有讀取閘門）
+
+- 她**這一幕起改叫蕾娜**（speaker `RENNA`）；上一幕是 `OFFICER`（顯示「監察官」）。
+  ⚠ 諾薇兒這一幕台詞裡仍叫「監察官大人」—— 那是**台詞內容**，與 speaker id 無關。
+- **好感度起算**：scene 上新增 `initAffection:{renna:0, nouvelle:5, anya:0, sorana:0}`，
+  由 `story.js` 在 scene 收尾寫一次。
+  ⚠ 設的是**絕對值**（走 `setAffection` 不走 `addAffection`）—— 起算點就是地板本身，
+    不該被上一輪的棘輪擋住。
+  ⚠ 用 flag `aff_init_<sceneId>` 擋住重複執行，否則重看這一幕會把玩家累積的好感洗掉。
+  ⚠ 這組值與 `progress.AFFECTION_DEFAULT`（10，flight 頁也在用）**不一致**是刻意的：
+    預設 10 是還沒接劇情時的暫定值，正式起算以這一幕為準。
+
+## B. ⚠ 稿子裡有一處欄位錯位，我改了
+
+「確實……像監察官大人說的那樣。」稿上標「蕾」＋`Renna_SI_awkwerd`，但那句是**諾薇兒**
+在附和（她口中的「監察官大人」就是蕾娜本人，蕾娜不會這樣稱呼自己），下一拍蕾娜才接
+「叫監察官好生硬耶！」。已改為 `NOUVELLE` ＋ 她的 `awkward`。**若原意真是蕾娜，說一聲改回去。**
+
+## C. ⚠ 這一幕兩個人都在左邊 → 每一句都在換卡
+
+固定站位是「左 蕾娜・諾薇兒／右 索拉娜・安雅」（§6.5）。上一幕有璐娜莉亞站右所以還好；
+這一幕**全程只有她們兩個**，於是每換一個說話者就是一次「舊的滑出、新的滑入」。
+規則上正確，但讀起來很忙。要改的話有兩條路，都要 Ray 定：
+①這一幕讓蕾娜暫時站右（破壞「同一個人永遠同一邊」）；
+②同側換人改成**不滑走**、只切換明暗（要新的演出規則）。
+
+## D. 素材批次（16 張圖 ＋ 1 首 BGM）
+
+    SI：GuildCounterCA / GuildHunter ×4 / Nouvelle_SI_whisper / Renna_SI_stare
+        ＋ Luna_SI_seat_smirk（換新版）        1523~2507K → 119~249K
+    background：Capital_{Square,Church,Cityhall,Downtown,Midtown,Uptown}_Day
+        ＋ Captal_Guild_Day                    2469~3011K → 191~347K
+    enemy：Kidd_CI                              2120K → 227K
+    bgm_Capital_Day.m4a                         174k → **96k CBR**（1453K → 809K，Ray：「壓縮作業」）
+
+取景值（新的三張）：
+
+    Renna_SI_stare       top=0  bot=1527 fx=0.515
+    Nouvelle_SI_whisper  top=8  bot=1530 fx=0.697   ⚠ 偏右，與 gossip1（0.710）同類構圖
+    Luna_SI_seat_smirk   top=2  bot=1519 fx=0.539   （換新版，舊值 0/1536/0.504）
+
+⚠ `GuildHunter_*` / `GuildCounterCA` / `Kidd_CI` / 其餘六張 Capital 背景**尚未接線**——
+  轉好放著，等後面的場景用。
