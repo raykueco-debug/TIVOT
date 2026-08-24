@@ -1,7 +1,7 @@
 # HANDOFF — Saint Install 模組化重寫 · 進度交接
 
 > 每輪開工前讀本檔 + 憲法/規格。實況以 `git log` 與 `DECISIONS.md` 為準;本檔為人類可讀的進度總覽。
-> **最後回寫:`ver -361`(2026-08-24)。** 本檔後半是逐版的交接,由新到舊往下加;
+> **最後回寫:`ver -362`(2026-08-24)。** 本檔後半是逐版的交接,由新到舊往下加;
 > **要快速上手請先讀下面那一段「★必讀 · 目前狀態(ver -341)」**（餵稿規格見 `script/SCRIPT_FORMAT.md`）,再依需要跳到對應版本。
 >
 > 目前狀態:CLAUDE.md §6 開發順序第 1~5 步已完成;**第 6 步(ACCEPTANCE 對照 reference)仍未動**,
@@ -94,7 +94,7 @@
    ＋`script/speakers.js`(角色表)＋`script/progress.js`(stage/flags)。
 6. `script/SCRIPT_FORMAT.md` — **Ray 餵稿的規格**(ver -342):寫稿格式、演出詞彙表、
    現有素材清單、一定要交代清楚的六件事。收到稿之後跑 `tools/script_lint.py` 驗。
-7. `git log`(本檔最後回寫於 `ver -361`)。
+7. `git log`(本檔最後回寫於 `ver -362`)。
 
 ---
 
@@ -2520,3 +2520,20 @@ Ray：「璐娜坐姿的大小一直跳，用椅子來鎖。」
   ⚠ `bgmVol.bgm_crisis` 設 **0.62**，與 `story.js` 播它時寫的 0.62 同值：
     `playBgm` 對「同曲播放中」直接 return，誰先起播誰的音量就定了 ——
     不一致的話同一首會因為「是誰起播」而大小聲。
+
+
+---
+
+# 交接 · `ver -362`（訓練用聖徒血量 500 → 300）
+
+Ray 指定。血量只影響**節奏**不影響流程 —— 教學段落未播完前敵血夾底 1 不可被殺
+（`combat.enemyDamage` 的教學夾傷），所以調低不會提前結束教學。
+
+連帶的門檻是**跟著血量走的比例**，不必另外改：
+
+    dualForceHpRatio  0.5 → 150 以下強制灌滿破防值進破防教學
+    strikeForceHpRatio 0.3 → 90 以下強制進劇情殺
+    storyFinishEnemyHp     → 破防那一盤打完壓到 90（劇情版收尾，一盤內可收拾）
+
+⚠ `storyFinishEnemyHp`（90）現在正好等於 `strikeForceHpRatio` 的門檻（90）——
+巧合，兩者互不干涉（劇情版沒有劇情殺那一段，那條在 `storyRun` 時已被濾掉）。

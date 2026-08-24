@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.24-361';
+export const VERSION = 'ver 2026.08.24-362';
 
 export const GAME_CONFIG = {
 
@@ -246,12 +246,15 @@ export const GAME_CONFIG = {
     // 教學戰鬥的規則調整（只在 tutorialActive 期間生效）：
     enemyAtkDamage: 2,     // 敵方所有攻擊（大絕/按錯/延時）基礎傷害一律此值；Defense 格擋再減半（=1）
     noUltBoards: 1,        // 前 N 盤敵人不發動大絕（第一盤純練清盤，第二盤起反擊教學）
-    // 教學戰敵人血量：開場固定、全程不變（不再於聖徒化後壓血）。
-    //   由「終盤 overkill」條件反推：開場四回合累計傷害 ≈190＋聖徒化+MB ≈260 → 約 450；
-    //   定 500（曾上修 550 防提前擊殺，過長 → 回調）：提前擊殺的保證在機制端——
-    //   教學段落未播完前（tutorialActive）敵血夾底 1 不可被殺（combat.enemyDamage 的教學夾傷），
-    //   血量只影響收尾盤節奏。
-    enemyHp: 500,
+    /* 教學戰敵人血量：開場固定、全程不變（不再於聖徒化後壓血）。
+       ⚠ **300**（ver -362，Ray 指定；原 500）。血量只影響**節奏**不影響流程：
+         教學段落未播完前（tutorialActive）敵血夾底 1 不可被殺
+         （見 combat.enemyDamage 的教學夾傷），所以調低不會提前結束教學。
+       ⚠ 連帶的兩個比例是**跟著血量走的**，不必另外改：
+         `dualForceHpRatio 0.5` → 150 以下強制進破防教學；
+         `strikeForceHpRatio 0.3` → 90 以下強制進劇情殺。
+       （原本的 500 是由「終盤 overkill」反推的：開場四回合 ≈190 ＋ 聖徒化+MB ≈260。） */
+    enemyHp: 300,
     /* 教學戰的掉落（ver -358，Ray 指定：聖徒之爪（低品質）×1、碎鐵片×2）。
        ⚠ 走 `items.defs` 的 id，不要在這裡寫名字 —— 改名只改上面那一處。 */
     loot: [ { id:'saint_claw_low', n:1 }, { id:'scrap_iron', n:2 } ],
