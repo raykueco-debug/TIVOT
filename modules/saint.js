@@ -52,6 +52,9 @@ export function init(a){ api = a; }
 // 敵人框左右滑到底 → 發動聖徒化（一場一次）。dir='right'|'left' 給對應橫斬特效。
 // enemyHp<=0＝overkill 狀態（敵已死、等玩家收尾）：不可發動——白耗一場一次的聖徒化且無對象。
 export function activateSaint(dir){
+  /* ⚠ `noSaint`（ver -375）：這一場不准聖徒化（劇情插入戰，見 config.battles）。
+     擋在**這一支**而不是各個入口 —— 手勢、鍵盤、日後任何新入口都會經過這裡（鐵律 8）。 */
+  if(state.noSaint) return;
   if(state.over||state.saintMode||state.cutinPlaying||state.saintUsedThisBattle||state.transitioning||state.dualWield||state.enemyHp<=0) return;
   state.saintUsedThisBattle = true;   // saint 自有欄位：發動即鎖（一場一次），時序同 reference
   SFX.unlock(); SFX.ultCharge();

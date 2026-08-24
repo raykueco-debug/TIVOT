@@ -168,9 +168,18 @@ export function goNextBoard(){
   }, 900);   // 轉場緩衝：讓手停一下、看清新盤面
 }
 // 決定第 idx 盤（0-based）的格數：① 該怪 boardGrids[idx] 覆寫 → ② 第三盤(idx>=2)起 16 格。
+/* 這一盤要查 boardGrids 的第幾格。`boardLoop` 的怪打完一輪從頭再來（ver -375，
+   敵人卡的 `33344, loop`）—— 血厚的怪不會因為盤序用完就一路停在最後一盤的難度。
+   ⚠ 盤面時限（BOARDS）也跟著繞回去，兩者要用**同一個索引**，不然難度會錯開。 */
+function boardSeqIdx(idx){
+  const en=GAME_CONFIG.enemies[state.currentEnemyKey];
+  const len=(en && en.boardGrids && en.boardGrids.length) || 0;
+  return (en && en.boardLoop && len) ? (idx % len) : idx;
+}
 function boardGridFor(idx){
   const en=GAME_CONFIG.enemies[state.currentEnemyKey];
   const bg=en && en.boardGrids;
+  idx=boardSeqIdx(idx);
   const baseBoard=BOARDS[idx]||BOARDS[BOARDS.length-1];
   let grid=(bg && bg[idx]!=null) ? bg[idx] : (idx>=2 ? 16 : baseBoard.grid);
   let cols=Math.round(Math.sqrt(grid));
@@ -180,7 +189,8 @@ function boardGridFor(idx){
 export function loadBoard(idx){
   state.boardIndex=idx;
   const g=boardGridFor(idx); state.N=g.grid; state.cols=g.cols;
-  state.intervalLimit=(BOARDS[idx]||BOARDS[BOARDS.length-1]).interval;
+  { const si=boardSeqIdx(idx);
+    state.intervalLimit=(BOARDS[si]||BOARDS[BOARDS.length-1]).interval; }
   state.boardStartTime=Date.now();
   state.boardClean=true;
   state.critCombo=0;              // 暴擊連擊為「盤內連續」：新盤（含清盤後換盤/換敵）歸零＝「清盤中斷」
@@ -334,10 +344,10 @@ function tap(num,cell,e){
     state.combo=0;
     if(state.threats.length){
       defense.clearThreat();          // 攻擊點消失，不能再補救
-      enemyAttack(tutAtkDmg(Math.max(1, Math.round(DMG_HEAVY*state.WRONG_PENALTY_SCALE))), 'wrong');
+      enemyAttack(tutAtkDmg(wrongDamage(DMG_HEAVY)), 'wrong');
     }else{
       SFX.wrong();
-      enemyAttack(tutAtkDmg(Math.max(1, Math.round(DMG_WRONG*state.WRONG_PENALTY_SCALE))), 'wrong');
+      enemyAttack(tutAtkDmg(wrongDamage(DMG_WRONG)), 'wrong');
     }
     resetIntervalDeadline(); updateStatus();
     tutorial.onMistake('wrong');      // 教學中按錯 → 監察官插話（懲罰已落地才暫停；非教學為 no-op）
@@ -603,7 +613,7 @@ function startIntervalTimer(){
       state.combo=0;
       // 延時懲罰傷害＝一般怪基礎 × 該怪 DELAY_PENALTY_SCALE（Boss=0.5）；時限已由 effIntervalLimit 減
       if(state.enemyHp>0){
-        enemyAttack(tutAtkDmg(Math.max(1, Math.round(DMG_DELAY*state.DELAY_PENALTY_SCALE))), 'delay');
+        enemyAttack(tutAtkDmg(delayDamage()), 'delay');
         floatDmg(L.battle.tooSlow,'60%','55%',false);
         tutorial.onMistake('delay');   // 教學中延時 → 監察官插話（非教學為 no-op）
       }
@@ -611,8 +621,24 @@ function startIntervalTimer(){
     }
   },80);
 }
-// 本盤實際延時時限＝盤面 intervalLimit + 該怪 DELAY_TIME_DELTA（Boss=-1）。下限 0.6 秒防呆。
-function effIntervalLimit(){ return Math.max(0.6, state.intervalLimit + state.DELAY_TIME_DELTA); }
+/* ══ 懲罰傷害：**絕對值優先**（ver -375）══
+   敵人標準卡寫的是絕對值（「延時懲罰 5 秒，攻擊力 5」）→ 有寫就直接用；
+   沒寫（null）才走舊的「tuning 基礎 × 該怪縮放」。
+   ⚠ 只有這兩支在算懲罰傷害（鐵律 7：一個量一個算式）—— 呼叫端不要自己再乘一次。 */
+function delayDamage(){
+  if(state.DELAY_DAMAGE!=null) return Math.max(1, Math.round(state.DELAY_DAMAGE));
+  return Math.max(1, Math.round(DMG_DELAY*state.DELAY_PENALTY_SCALE));
+}
+function wrongDamage(base){
+  if(state.WRONG_DAMAGE!=null) return Math.max(1, Math.round(state.WRONG_DAMAGE));
+  return Math.max(1, Math.round(base*state.WRONG_PENALTY_SCALE));
+}
+/* 本盤實際延時時限。卡上寫了絕對秒數（DELAY_SECONDS）就是那個數字，逐盤都一樣；
+   否則＝盤面 intervalLimit + 該怪 DELAY_TIME_DELTA（Boss=-1）。下限 0.6 秒防呆。 */
+function effIntervalLimit(){
+  if(state.DELAY_SECONDS!=null) return Math.max(0.6, state.DELAY_SECONDS);
+  return Math.max(0.6, state.intervalLimit + state.DELAY_TIME_DELTA);
+}
 function resetIntervalDeadline(){ state.intervalDeadline=Date.now()+effIntervalLimit()*1000; }
 function stopIntervalTimer(){ clearInterval(state.intervalTimer); }
 
@@ -728,7 +754,7 @@ function autoClearOverkill(){
 function finishEnemyOrAdvance(){
   endOverkillFx();   // overkill 藍光/限時統一在此清理（所有結束路徑的匯流點，冪等）
   // 教學戰＝單敵一場（tutorialRun 存續到結算；跳過教學則恢復一般連戰）
-  if(enemy.hasNextInLineup() && !state.tutorialRun){ advanceEnemy(); }
+  if(enemy.hasNextInLineup() && !state.tutorialRun && !state.scriptRun){ advanceEnemy(); }
   else { win(); }
 }
 /* ---- 換敵（局內連戰）：延續全場狀態，只換敵＋盤序回 0，敵人區播「前進遭遇」進場 ----
@@ -777,15 +803,21 @@ export function setStoryClose(fn){ storyClose = fn; }
    ⚠ 走 `storyBattleEnd()` 那條既有的「不結算直接交還劇情」路徑，不要另寫一份收尾。 */
 export function devSkipBattle(){
   if(state.over) return;
-  if(state.tutorialStoryRun){ storyBattleEnd(); return; }
+  if(storyFramed()){ storyBattleEnd(); return; }
   state.over=true; clockPause(); stopAll();
   state.tutorialRun=false;
   goHome();
 }
 
+/* ══ 「劇情框」的戰鬥（ver -375）══
+   ＝ 劇情帶起來的教學（tutorialStoryRun）**或** 腳本插入戰（scriptRun）。
+   兩者共用的是**框**：不播櫻花過渡禎、進出走 Kerberos 之門、打完直接交還劇情。
+   ⚠ 共用的只有框 —— 教學那一套（鎖攻擊力、敵人打不死、教學台詞結算）只看
+     `tutorialRun`，不要混進來。 */
+function storyFramed(){ return state.tutorialStoryRun || state.scriptRun; }
 function storyBattleEnd(){
-  if(!state.tutorialStoryRun) return false;
-  state.tutorialRun=false; state.tutorialStoryRun=false;
+  if(!storyFramed()) return false;
+  state.tutorialRun=false; state.tutorialStoryRun=false; state.scriptRun=false;
   state.over=true; clockPause(); stopAll();
   if(storyReturn) storyReturn();
   return true;
@@ -819,19 +851,31 @@ function win(){
     /* ⚠ **教學戰的結算不放 result BGM**（ver -361，Ray 指定）：那首是「一場驅逐打完」的
        收束感，而教學是劇情中間的一段 —— 直接沿用地宮那條線的 crisis，情緒才接得上。
        ⚠ 同曲重播由 playBgm 自己擋掉（劇情本來就在放 crisis 的話這裡是 no-op）。 */
-    const key = state.tutorialRun ? 'bgm_crisis' : 'bgm_result';
-    SFX.playBgm(asset(key), { volume: bgmVol(key) });
+    /* ⚠ 劇情插入戰（scriptRun）**不換曲**：那一場是劇情中間插進來的一段，
+       結算完就回城鎮 —— 換上 result 那首收束感的曲子等於幫這一段畫句點。
+       回城鎮時由城鎮自己把該地的 BGM 接回去（town.open/enter）。 */
+    if(!state.scriptRun){
+      const key = state.tutorialRun ? 'bgm_crisis' : 'bgm_result';
+      SFX.playBgm(asset(key), { volume: bgmVol(key) });
+    }
     inspector.settle(totalTime, stats, { isLose:false });
   };
   /* ⚠ 劇情版教學：**先演「關門」**（進場那一套的倒放）再上結算（ver -366，Ray 指定）。
      進場是門推上來、打開露出戰場；打完就該把門關回去 —— 沒有這一段，畫面會從戰鬥
      硬切到結算頁。關門的最後一步會上黑透遮罩並把劇情層收掉，才輪到結算。 */
-  if(state.tutorialStoryRun && storyClose) storyClose(toResult);
+  if(storyFramed() && storyClose) storyClose(toResult);
   else playTransition('finish', toResult);
 }
 function lose(){
   if(state.over) return;
-  if(storyBattleEnd()) return;
+  /* ⚠ **劇情插入戰打輸不算過**（ver -375）：不能走「交還劇情」那一條 ——
+     那條會接著演戰鬥後的台詞（「服了！我服了！」），等於輸了也照樣獲勝。
+     輸了走一般的失敗流程（驅逐失敗 → 回首頁）。
+     ⚠ 那一段城鎮對白的旗標是**演完才記**的（見 town.enter），所以回頭再走一次
+       公會，這一場會從頭再來 —— 不會因為輸過就永遠卡住。
+     ⚠ 教學那一場維持原樣（它本來就不會真的輸：敵人攻擊力被鎖成 2）。 */
+  if(state.tutorialStoryRun && storyBattleEnd()) return;
+  if(state.scriptRun){ state.scriptRun=false; state.scriptBattleId=null; }
   state.over=true; clockPause(); stopAll();
   TEL.runEnd({ partner:state.pickedPartner, weapon:state.equippedWeapon,
                boss:state.inIntruderFight, result:'lose', time_ms:Math.round(clockElapsedMs()) });
@@ -872,9 +916,24 @@ export function startGame(){
   $('transition').classList.remove('on');
   $('grid').classList.remove('saint'); $('grid').classList.remove('buffed'); $('grid').classList.remove('alert');
   state.cutinPlaying=false;
+  state.noSaint=false; state.noPartner=false;   // 這一場的禁令歸零（劇情插入戰於下方依卡設回）
+  /* ⚠ 劇情插入戰的旗標在**這裡**依交棒變數決定，不是靠上一場自己收乾淨 ——
+     「上一場結束時記得歸零」是會漏的（漏了就換成一般戰鬥變單敵、還不能聖徒化）。
+     開場一律先歸零、再看這一次有沒有指定，才是不會漏的寫法。 */
+  state.scriptRun=!!pendingScript; state.scriptBattleId=pendingScript; pendingScript=null;
   state.tutorialRun=false; state.tutorialStoryRun=false; state.tutorialLifeReturn=false;   // 教學場旗標歸零（tutorial 擁有；開場統一歸零、maybeStart 啟動時設回）
+  /* 劇情插入戰（ver -375）：**單敵一場**，換上卡上那隻，且這一場不能聖徒化／不能用搭檔技。
+     ⚠ 要在 `stopAll()`/`loadBoard(0)` **之前**換敵 —— 盤面配置（boardGrids/boardLoop）
+       是查「目前這隻怪」來的，換晚了第一盤會用到上一隻的格數。 */
+  const sb = state.scriptRun && GAME_CONFIG.battles && GAME_CONFIG.battles[state.scriptBattleId];
+  if(sb && GAME_CONFIG.enemies[sb.enemy]){
+    enemy.setEnemy(sb.enemy);
+    state.noSaint = !!sb.noSaint;
+    state.noPartner = !!sb.noPartner;
+  }
   stopAll();
   loadBoard(0); updateBars();
+  if(state.scriptRun){ updateBars(); return; }   // 劇情插入戰不進教學
   tutorial.maybeStart();   // 首次出陣 → 進教學（穿插式；看過/跳過後恆 no-op）
   if(state.tutorialActive && GAME_CONFIG.tutorial){
     // 教學固定裝備：蕾妮＋機槍（原選擇暫存，goHome 還原）
@@ -887,6 +946,14 @@ export function startGame(){
     updateBars();
   }
 }
+/* 劇情插入戰的入口（ver -375）：main.js 的 battleHandler 查到 `config.battles[id]` 就走這支。
+   ⚠ 旗標要在 `startGame()` **之前**設 —— 開場那一段會依它換敵、跳過教學。 */
+let pendingScript = null;   // 下一次 startGame 要開的插入戰 id（交棒用，見 startGame）
+export function startScriptBattle(id){
+  pendingScript = id;
+  startGame();
+}
+
 /* ---- Boss 亂入：重開新「場」戰鬥（由 enemy.triggerIntruder 的 enterFight 注入呼叫）----
  *  依 場/局/敵/盤 模型:Boss 亂入＝重開新場,一切從頭 → 與 startGame 相同的完整重置
  *  (含 playerHp 滿血、deathGuardUsed 歸零)。與 startGame 僅三處差異:

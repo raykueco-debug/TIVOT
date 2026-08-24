@@ -38,6 +38,9 @@ export function showHitFx(kind){
     case 'bite':  spawnBite(); break;
     case 'bullet':spawnBullets(fx.count||1, fx.pos==='random', fx.scale); break;
     case 'slash': spawnSlash(); break;
+    /* 鈍器受擊（ver -375）：不見血的悶擊 —— 一圈迅速擴散的衝擊環＋畫面一沉。
+       ⚠ 與 `bullet`（玻璃碎裂）刻意不同：那一隻獵人是拿槍托招呼你，不是開槍。 */
+    case 'blunt': spawnBlunt(fx.scale); break;
     default:      triggerClaw();
   }
 }
@@ -111,6 +114,16 @@ export function spawnBullets(count, randomPos, scale){
     addFx(d,600);
   }
 }
+/* 鈍器受擊：衝擊環（白→暗）＋短促的暗角壓迫。樣式見 style.css 的 .fx-blunt。 */
+export function spawnBlunt(scale){
+  const px = Math.round(160*(scale||1));
+  const d=document.createElement('div');
+  d.className='fx fx-blunt';
+  d.style.left=(34+Math.random()*32)+'%'; d.style.top=(30+Math.random()*34)+'%';
+  d.style.width=px+'px'; d.style.height=px+'px';
+  d.style.margin=(-px/2)+'px 0 0 '+(-px/2)+'px';
+  addFx(d,520);
+}
 // 產生一個「玻璃被擊碎」的 SVG：中心暗孔、白色高光、放射狀與環狀裂紋（隨機化角度）。
 //   px＝輸出尺寸（viewBox 固定 120，內容等比放大）。
 export function bulletSVG(px){
@@ -183,13 +196,27 @@ export function setEnemy(key){
   state.DELAY_TIME_DELTA    = dp.timeDelta!=null ? dp.timeDelta : 0;
   const wp = en.wrongPenalty || {};              // 3.3：按錯懲罰縮放
   state.WRONG_PENALTY_SCALE = wp.dmgScale!=null ? wp.dmgScale : 1;
+  /* 絕對值版（ver -375，敵人標準卡的寫法）：卡上有寫就蓋過上面那組縮放。
+     ⚠ 沒寫要寫回 null，不能留上一隻怪的值 —— setEnemy 是連戰換敵也會走的。 */
+  state.DELAY_SECONDS = dp.seconds!=null ? dp.seconds : null;
+  state.DELAY_DAMAGE  = dp.damage !=null ? dp.damage  : null;
+  state.WRONG_DAMAGE  = wp.damage !=null ? wp.damage  : null;
   state.curEnemyHitFx = en.hitFx || null;        // 3.7：本怪受擊特效三件套
   state.curEnemySound = en.sound || null;        // 3.7：本怪攻擊音（依 kind：ult/delay/wrong）
   // 名稱與立繪；取景（config fit.pos → object-position；未設＝回 CSS 預設 center top）
   const nameEl = $('enemyName');
   if(nameEl) nameEl.textContent = displayEnemyName(en.name);
   const eImg = $('enemyImg');
-  if(eImg) eImg.style.objectPosition = (en.fit && en.fit.pos) || '';
+  if(eImg){
+    eImg.style.objectPosition = (en.fit && en.fit.pos) || '';
+    /* ⚠ `fit.mode:'contain'`（ver -375）：**去背立繪**用的。滿版插圖走 cover（預設），
+       但把對話立繪借來當戰鬥立繪時，cover 會把頭裁掉 —— 那種要 contain ＋ 背景。 */
+    eImg.style.objectFit = (en.fit && en.fit.mode) || '';
+  }
+  /* 戰鬥背景（ver -375）：敵人卡的 `bg`。去背立繪身後不能是一片黑。
+     ⚠ 沒寫要清掉 —— 同 setEnemy 的其他欄位，連戰換敵不能留上一隻的。 */
+  const topEl = $('top');
+  if(topEl) topEl.style.backgroundImage = en.bg ? ('url("resources/background/'+en.bg+'.webp")') : '';
   loadEnemyPortrait(en);
 }
 

@@ -79,6 +79,15 @@ export const state = {
   DELAY_PENALTY_SCALE: 1,
   DELAY_TIME_DELTA: 0,
   WRONG_PENALTY_SCALE: 1,
+  /* ── 絕對值版的懲罰（ver -375）─────────────────────────────────
+     Ray 的「敵人資訊標準卡」寫的是**絕對值**（「延時懲罰 5 秒，攻擊力 5」），
+     不是倍率。所以卡上有寫就用這三個、沒寫（null）才回去走上面那組縮放。
+     ⚠ 不要在 config 裡把絕對值換算成倍率再存 —— 那等於把同一個量算兩次
+       （鐵律 7），而且 tuning 的基礎值一改，所有換算過的怪就全部走鐘。
+     ⚠ 擁有者同上：由 `enemy.setEnemy` 依敵人卡寫入，`combat`/`defense` 只讀。 */
+  DELAY_SECONDS: null,   // 延時懲罰的時限（秒，絕對值）；null＝走盤面的 intervalLimit + DELAY_TIME_DELTA
+  DELAY_DAMAGE: null,    // 延時懲罰傷害（絕對值）；null＝tuning.dmgDelay × DELAY_PENALTY_SCALE
+  WRONG_DAMAGE: null,    // 按錯懲罰傷害（絕對值）；null＝tuning.dmgWrong/dmgHeavy × WRONG_PENALTY_SCALE
 
   /* ── 3.4 武器/雙槍（擁有者：weapon） ─────────────────────────── */
   equippedWeapon: GAME_CONFIG.defaultWeapon,
@@ -134,6 +143,17 @@ export const state = {
      且結算整段跳過（Ray 指定，見 script/TUTORIAL_LINES_NOUVELLE.md 第八節）。
      ⚠ 與 tutorialRun 同壽命（開場歸零、requestReplay({story:true}) 設回）。 */
   tutorialStoryRun: false,
+  /* ── 劇情插入戰（ver -375；擁有者：combat）────────────────────
+     腳本 `{ battle:'guild_hunter' }` 叫起來的那種**單敵一場**：沒有教學台詞、
+     不走連戰序列、打完直接交還劇情（同 tutorialStoryRun 的框架，但沒有教學那一套）。
+     ⚠ 為什麼不沿用 `tutorialStoryRun`：那支旗標同時代表「這是教學」——
+       攻擊力會被鎖成 2、敵人打不死、結算走教學台詞。借用它就得逐條開洞。
+     ⚠ `storyFramed()`（combat 內）＝ tutorialStoryRun || scriptRun：兩者共用的是
+       **框**（門開門關、不播櫻花過渡禎、打完交還劇情），那部分才是同一件事。 */
+  scriptRun: false,      // 本場是劇情插入戰（存續到結算）
+  scriptBattleId: null,  // 是哪一場（查 config.battles）
+  noSaint: false,        // 這一場不能聖徒化（讀者：saint / main 的手勢綁定）
+  noPartner: false,      // 這一場不能用搭檔技（讀者：partner / weapon 的按鈕）
   tutorialLifeReturn: false,   // 教學戰中發動過生命歸還（結算台詞分歧用；同 tutorialRun 存續到結算）。
                                //   ⚠ 不可用 partnerActiveUsed 判斷——蕾妮主動技無 oncePerBattle，該旗標不會被設
 

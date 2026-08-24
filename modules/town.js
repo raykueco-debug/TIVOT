@@ -15,7 +15,7 @@ import { TOWNS } from '../script/town.js';
 import * as clock from '../script/clock.js';
 import * as prog from '../script/progress.js';
 import * as story from './story.js';
-import { showShop } from './loot.js';
+import { showShop, showBounty } from './loot.js';
 import { SFX } from '../audio.js';
 
 const $ = id => document.getElementById(id);
@@ -209,6 +209,12 @@ function bindInput(){
     /* 單純點畫面：商店節點 → 開買賣選單（Ray 指定）；其餘 → 路人閒聊。 */
     const n=node();
     if(n && n.shopOnTap && n.shop){ openShop(); return; }
+    /* 公會：點畫面 → 懸賞榜（Ray：「點擊櫃台進入公會介面」）。
+       ⚠ 要**登記過**才開得了 —— 沒登記就跟路人閒聊一樣什麼都沒有。 */
+    if(n && n.board && (!n.boardFlag || prog.hasFlag(n.boardFlag))){
+      try{ SFX.unlock(); SFX.menuClick(); }catch(_){}
+      showBounty(n.board); return;
+    }
     chatter();
   });
   st.addEventListener('pointercancel', cancel);
@@ -264,6 +270,10 @@ export function enter(id){
   clearTimeout(arriveT); arriveT=0;
   story.endAdhoc();
   story.clearCast();
+  /* 這座城的曲子（ver -375）。⚠ 每進一個節點都確認一次，不是只在 `open` 時放一次 ——
+     中間可能插進一場戰鬥（戰鬥有自己的曲子），回來要接得回去。
+     同曲重播由 `playBgm` 自己擋掉，所以重複呼叫是安全的。 */
+  story.ensureBgm(T.bgm);
   bgFor(n.bg, n.noTime);
   ensureLayer(); bindInput(); refreshArrows(); showNav(false);
   /* ⚠⚠ 進場對白**一律只播一次**（ver -373，Ray：「對話只觸發一次，不重複觸發」）——
@@ -272,7 +282,9 @@ export function enter(id){
   const flag='town_'+townId+'_'+id;
   const played = prog.hasFlag(flag);
   const lines = played ? [] : (n.lines||[]);
-  if(lines.length) prog.addFlags([flag]);
+  /* ⚠ 旗標**演完才記**（ver -375 由「開演就記」改過來）：這一段中間可能插一場戰鬥，
+     打輸了會被丟回首頁 —— 開演就記的話，回頭再走一次公會就整段跳過，那一場永遠打不到。
+     「沒演完就不算演過」才是對的。代價：中途離開會再看一次，那本來就該再看一次。 */
   if(lines.length){
     /* ⚠ **先停一秒再放人**（Ray 指定）：剛走到一個新地方，玩家要先看得到那是哪裡；
        立繪與對話框跟著背景一起跳出來，等於沒有「抵達」這一拍。 */
@@ -288,6 +300,10 @@ export function enter(id){
       /* ⚠ 對白演完**把立繪全撤**，只留背景與導覽（Ray 指定）。 */
       /* ⚠ `n.sides`：兩個角色同台要分左右（§6.5）——城鎮這條路徑一樣要吃得到。 */
       story.playAdhoc(play, ()=>{ applyAff(lines); story.clearCast();
+        prog.addFlags([flag]);                    // ⚠ 演完才記（見上面的說明）
+        /* 這一段演完才成立的事（ver -375）：公會登記完才開得了懸賞榜。
+           ⚠ 記在**播完**時，中途離開（或戰鬥沒打完）就不算。 */
+        if(n.boardFlag) prog.addFlags([n.boardFlag]);
         busy=false; refreshArrows(); showNav(true); }, { sides:n.sides });
     }, ARRIVE_MS);
   }else{
@@ -336,6 +352,7 @@ export function open(town){
   const st=story.stageEl(); if(st){ st.classList.add('on','town-on'); }
   document.body.classList.add('story-on');
   story.showPanel();          // 下半的面盤（不擺會是一片全黑）
+  story.ensureBgm(T.bgm);
   busy=false;
   enter(T.entry);
 }

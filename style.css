@@ -166,8 +166,11 @@
   /* touch-action:none＝本區觸控全由 JS 接管（聖徒化左右滑）：內嵌瀏覽器（巴哈 app 等
      WebView）的左右滑切頁/返回屬原生手勢，需本宣告＋touchmove preventDefault 才讓位。
      盤面與紅點的點擊不受影響（touch-action 只管平移/縮放預設行為）。 */
+  /* ⚠ `background-size:cover` 是給**戰鬥背景**用的（ver -375，`enemy.setEnemy` 依敵人卡
+     的 `bg` 寫 background-image）。沒有 bg 的怪維持一片黑（滿版立繪自己蓋滿）。 */
   #top{height:50%;flex:none;position:relative;overflow:hidden;
-    border-bottom:2px solid var(--gold-dim);background:#000;touch-action:none;}
+    border-bottom:2px solid var(--gold-dim);background:#000 center/cover no-repeat;
+    touch-action:none;}
   #enemyImg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
     object-position:center top;transition:transform .06s;}
   #enemyImg.hit{transform:scale(1.015);}
@@ -333,6 +336,18 @@
     animation:bulletHole .5s ease-out forwards;}
   @keyframes bulletHole{0%{opacity:0;transform:scale(.5)}20%{opacity:1;transform:scale(1.08)}
     40%{transform:scale(1)}100%{opacity:.92}}
+  /* 鈍器受擊（ver -375）：**不見血**的悶擊 —— 一圈由白轉暗的衝擊環迅速擴散再散掉。
+     ⚠ 刻意與彈痕（玻璃碎裂）不同質感：獵人是拿槍托招呼你，不是開槍。
+     ⚠ 不留殘影（彈痕的 100%{opacity:.92} 是「洞留在畫面上」，鈍擊沒有洞）。 */
+  .fx-blunt{opacity:0;border-radius:50%;
+    background:radial-gradient(circle at 50% 50%,
+      rgba(255,255,255,.0) 0 26%, rgba(255,240,215,.55) 34%, rgba(120,80,40,.42) 46%,
+      rgba(40,22,10,.30) 58%, transparent 70%);
+    box-shadow:0 0 26px rgba(255,225,180,.35) inset;
+    animation:bluntHit .5s cubic-bezier(.15,.75,.3,1) forwards;}
+  @keyframes bluntHit{0%{opacity:0;transform:scale(.35)}
+    18%{opacity:1;transform:scale(.9)}55%{opacity:.75;transform:scale(1.18)}
+    100%{opacity:0;transform:scale(1.32)}}
 
   /* 防禦統一閃光：整張敵圖微微一閃（不過亮）。白＝格擋；金＝完美防禦／反擊。 */
   #defFlash{position:absolute;inset:0;pointer-events:none;z-index:6;opacity:0;mix-blend-mode:screen;}
@@ -1620,6 +1635,11 @@
   /* ⚠ 敘述要讓開賣鈕的位置：不留白的話長敘述會**跑到鈕底下**（實測第一列就撞到）。
      在道具欄一律留，不用 `:has()` —— 沒有鈕的那幾列多留一點白，比對齊不一致好讀。 */
   #lootSheet.bag .loot-desc{padding-right:76px;}
+  /* 懸賞榜（ver -375）：沿用道具欄的外觀，只差**沒有賣鈕** —— 所以把那塊讓位收回來，
+     不然每一列右下都空一塊 76px 的白。金額改用血色，讀起來像懸賞不像售價。 */
+  #lootSheet.bounty .loot-desc{padding-right:0;}
+  #lootSheet.bounty .loot-n{color:#e7b4b4;}
+  #lootSheet.bounty .bounty-row{border-color:rgba(140,60,60,.35);}
   #lootSheet .loot-ok{display:block;width:100%;margin-top:12px;padding:10px 0;
     font-family:inherit;font-size:13px;letter-spacing:3px;color:var(--gold);
     background:rgba(10,8,14,.7);border:1px solid var(--gold-dim);border-radius:8px;}

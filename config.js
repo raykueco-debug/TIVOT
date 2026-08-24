@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.24-374';
+export const VERSION = 'ver 2026.08.24-375';
 
 export const GAME_CONFIG = {
 
@@ -253,6 +253,8 @@ export const GAME_CONFIG = {
     defs: {
       saint_claw_low: { name:'聖徒之爪（低品質）', cat:'material', price:24,
                         desc:'從訓練用聖徒上剝下來的爪。質地脆，勉強能當研磨材。' },
+      brass_casing:   { name:'黃銅彈殼',           cat:'material', price:8,
+                        desc:'打完的彈殼。收集起來能重新裝填，槍匠都收。' },
       scrap_iron:     { name:'碎鐵片',             cat:'material', price:6,
                         desc:'地宮裡到處都有的碎片。攢多了能換點東西。' },
       milk:           { name:'牛奶',   cat:'item', price:50,  use:{ hp:50 },
@@ -690,9 +692,71 @@ export const GAME_CONFIG = {
         ult:{   type:'bullet', count:1, pos:'random', scale:1.6 },   // 大絕 → 一顆大彈痕（1.6 倍）
       },
     },
+    /* ══ 賞金獵人（ver -375）══ 舊街區・賞金獵人公會那一場（劇情插入戰）。
+       ⚠ 這一筆是「**敵人資訊標準卡**」的第一個實例（Ray 交稿的格式，見
+         `script/SCRIPT_FORMAT.md` 的「敵人卡」一節）。卡上有的欄位這裡都要有，
+         沒實作的（抗性/弱點）也**照樣寫進資料**、標明未實作 —— 資料先齊，
+         程式後補；不要因為還沒做就把欄位丟掉（丟掉的下場是下次補做時沒人記得。） */
+    guild_hunter: {
+      name:'賞金獵人',
+      image:'enemy_guild_hunter',        // ＝ NPC_GuildHunter_SI_Attack（與對話立繪同一張）
+      /* ⚠ `bg`＝**戰鬥背景**（ver -375 新欄位）。這一隻的立繪是**去背**的
+         （對話用立繪借過來當戰鬥立繪），沒有背景的話身後是一片黑。
+         ⚠ 有 `bg` 就一定要 `fit.mode:'contain'` —— 去背立繪用 cover 會被裁掉頭。 */
+      bg:'Captal_Guild_Day',
+      fit:{ mode:'contain', pos:'center bottom' },
+      hp:200,
+      /* 蓄力攻擊（大絕）：10 傷、大彈孔。⚠ 一般怪是 45 —— 這是個街頭鬧事的獵人，
+         不是聖徒，數字低是刻意的。 */
+      attack:10,
+      atkInterval:null,                  // 沿用 tuning.chargeSeconds
+      sound:{ ult:'em_shot', delay:'em_shot', wrong:'em_smack' },
+      special:[],
+      /* 盤面配置 `33344, loop`：3＝九宮格、4＝16 宮格；**loop**＝打完五盤還沒死就從頭再來
+         （這一隻血厚 200、傷害低，是「耐力戰」的設計）。 */
+      boardGrids:[9,9,9,16,16],
+      boardLoop:true,
+      /* 延時懲罰：**5 秒**、傷害 **5**、彈孔特效。
+         ⚠ `seconds`/`damage` 是**絕對值**（ver -375 新欄位），與舊的 `dmgScale`/`timeDelta`
+           縮放並存 —— 卡上寫的是絕對值，就照絕對值存（鐵律 1：不要在腦內換算成倍率）。 */
+      delayPenalty:{ seconds:5, damage:5 },
+      wrongPenalty:{ damage:5 },         // 點錯懲罰：傷害 5、鈍器受擊特效
+      hitFx:{
+        delay:{ type:'bullet', count:1, pos:'random' },          // 彈孔
+        wrong:{ type:'blunt' },                                   // 鈍器
+        ult:{   type:'bullet', count:1, pos:'random', scale:1.8 },// 大彈孔
+      },
+      /* ⚠ 抗性／弱點武器：**卡上有、程式還沒實作**。資料先照卡放著。 */
+      resist:[], weak:[],
+      /* 掉落物（固定掉，不擲骰）：黃銅彈殼 ×6。 */
+      loot:[ { id:'brass_casing', n:6 } ],
+      /* 金錢：**HP 的 6~8 成隨機**（卡上的寫法）。所以血越厚的怪給越多錢 ——
+         這條規則寫在資料裡，程式只負責擲骰（鐵律 1）。 */
+      money:{ hpRatio:[0.6, 0.8] },
+    },
     // 例：新怪
     // giant: { name:'巨人', image:'enemy_giant', imageBase:'giant', hp:150, attack:30, atkInterval:5, sound:{}, special:[] },
   },
+  /* ══ 劇情插入戰（ver -375）══
+     腳本裡寫 `{ battle:'guild_hunter' }` 時查這張表。**單敵一場**，打完直接交還劇情。
+     ⚠ 與「教學戰」不同：教學那一場有台詞、有教到破防為止的閘門；這裡只是一場架。
+     ⚠ 欄位只放「這一場」的規則，敵人本身的數值一律在 `enemies` 那張卡上 ——
+       同一隻怪之後在別的場次登場時，卡不必抄第二份。
+       noSaint / noPartner ＝ 這一場不能用聖徒化與搭檔技（Ray 的稿子指定）。 */
+  battles: {
+    guild_hunter: { enemy:'guild_hunter', noSaint:true, noPartner:true },
+  },
+
+  /* ══ 懸賞（ver -375）══ 賞金獵人公會的委託榜。
+     ⚠ 目前**只有展示**：接單／完成／領賞都還沒做（Ray 的稿到「登記」為止）。
+       資料先照他給的樣子存著，之後接流程時不用重打。
+     ⚠ `city` ＝ 在哪一座城的公會看得到（櫃台：「各個城市的委託也會不同」）。
+     ⚠ `reward` 的單位同金錢（G，見 items.moneyName）—— 不要在文案裡再寫一次單位。 */
+  bounties: {
+    rolf: { name:'黑船洛爾夫', city:'capital', reward:500,
+            desc:'在瓦爾士大公國與法爾登王國交界出沒的空賊。' },
+  },
+
   currentEnemy: 'faceless',   // 這場開場先打誰（填上面的鑰匙名）
 
   /* 連戰陣容（局＝同場清一隻接下一隻）。依序取,打完一敵接下一敵,最後一敵清完進結算。
@@ -900,6 +964,8 @@ export const ASSETS = {
   enemy_witch:    "resources/enemy/GunWitch_Boss_CI.jpg",   // 槍之魔女（Boss）內嵌立繪
   enemy_facelessgiant: "resources/enemy/Saint_GT_CI.webp",   // 連戰第二隻：巨型聖徒（GT=giant）
   enemy_trainee:  "resources/enemy/Saint_TR_CI.webp",   // 教學專用敵：訓練用聖徒
+  /* 賞金獵人（ver -375）：戰鬥立繪＝對話立繪的 `attack` 那張（去背，配 `bg` 用）。 */
+  enemy_guild_hunter: "resources/SI/NPC_GuildHunter_SI_Attack.webp",
 
   // ── 五張 cut-in 圖（v17.7 嵌入）──
   cutin_saint_luna: "resources/partner/Luna_CI_advent.jpg",   // 聖徒化降臨 cut-in（Luna）

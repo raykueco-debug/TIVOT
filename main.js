@@ -605,7 +605,9 @@ story.setTownOpener(town.open);   // scene 的 `thenTown` 由 story 呼叫（注
 combat.setStoryClose(story.playKerberosClose);
 combat.setStoryReturn(()=>{
   const r = storyResume; storyResume = null;
-  combat.goHome(()=>{ if(r) story.open(r); }, { noBgm:true });
+  /* ⚠ 走 `story.resumeFrom`（ver -375）：主線與城鎮的臨時段落**續播方式不同**，
+     分流在 story 裡做（那裡才知道哪一種）。這裡照舊只負責把首頁收乾淨。 */
+  combat.goHome(()=>{ if(r) story.resumeFrom(r); }, { noBgm:true });
 });
 /* 戰鬥音樂：**門開始上推那一瞬**就起播（ver -355，Ray 指定）。
    ⚠ 不能等 `setBattleHandler`（那是門開到縫才呼叫的，晚 3 秒多），也不要靠
@@ -617,6 +619,14 @@ story.setBattleCue(()=>{
 });
 story.setBattleHandler((battleId, resume)=>{
   storyResume = resume;
+  /* 劇情插入戰（ver -375）：腳本寫 `{battle:'guild_hunter'}`，查得到 `config.battles`
+     就開那一場（單敵、卡上的數值、不能聖徒化／用搭檔技）。
+     ⚠ 查不到才退回教學那一場 —— 舊腳本（地宮那一段）寫的就是教學，不能被改掉。 */
+  if(GAME_CONFIG.battles && GAME_CONFIG.battles[battleId]){
+    SFX.playBgm(asset('bgm_battle'), { fadeOutMs:600, volume: bgmVol('bgm_battle') });
+    combat.startScriptBattle(battleId);
+    return;
+  }
   /* ⚠ 標成 story 場次：與首頁「教學」鈕分開（Ray 指定）—— 這一場由諾薇兒帶
      （台詞走 config.tutorial.story）、不可跳過、教到破防為止。 */
   tutorial.requestReplay({ story:true });

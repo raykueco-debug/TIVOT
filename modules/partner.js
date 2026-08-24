@@ -114,6 +114,9 @@ const ACTIVE_HANDLERS = {
  * 未耗盡每場次數（oncePerBattle）、且有對應 handler → 執行。
  * 任一不符回 false（不執行）。「能否發、屬於誰」全在此——換 partner 即該技消失。 */
 export function tryActive(context){
+  /* ⚠ `noPartner`（ver -375）：這一場不准用搭檔技（劇情插入戰）。同 saint 的作法 ——
+     擋在唯一的發動點上，不要在每個呼叫端各擋一次。 */
+  if(state.noPartner) return false;
   const p = currentPartner();
   const act = p && p.active;
   if(!act || (act.context !== context && act.context !== 'any')) return false;   // 無主動技 / 情境不符 → 不發

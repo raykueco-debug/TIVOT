@@ -189,6 +189,9 @@ export function settle(totalTime, stats, opts={}){
      ⚠ 以前劇情版是**整頁不出**（直接把場子交還劇情）；現在改成出這一頁，
        玩家按了按鈕才回劇情／首頁 —— 交還的動作由 `tutorialDone` 這個回呼負責。 */
   if(state.tutorialRun){ tutorialSettle(totalTime, stats); return; }
+  /* 劇情插入戰（ver -375）：與教學結算同一頁 —— **沒有監察官、沒有等級**，
+     只有戰績、EXP 與拾得。⚠ 不是教學，所以不走教學那兩句台詞。 */
+  if(state.scriptRun && !isLose){ scriptSettle(totalTime, stats); return; }
   if(isLose){
     const rows=combatStatsRows();
     showResultSequence(L.result.loseTitle, L.result.loseSub, rows, 'lose', true);
@@ -367,6 +370,44 @@ function tutorialSettle(totalTime, stats){
     document.addEventListener('pointerup', popLootOnce, { capture:true, once:true });
   }
 }
+/* ══ 劇情插入戰的結算（ver -375）══
+   Ray 的敵人標準卡上有「掉落物」與「金錢」兩欄 —— **掉落是固定的**（不擲骰），
+   金錢是「HP 的 6~8 成隨機」。兩者都在敵人卡上，這裡只負責擲骰與呈現（鐵律 1）。
+   ⚠ 沒有監察官、沒有等級：那一場是劇情中間插進來的一場架，不是驅逐任務。
+   ⚠ 按鈕是「繼續」→ 回劇情/城鎮（不是回主畫面）。 */
+function scriptSettle(totalTime, stats){
+  state.sRankUnlocked = false;
+  const ev = evaluate(stats);
+  const en = GAME_CONFIG.enemies[state.currentEnemyKey] || {};
+  let rows = '<div class="grade-wrap grade-noRank">'
+           + '<span class="grade-meta"><span class="grade-cap">' + (L.result.gradeCap||'') + '</span>'
+           + '<span class="grade-exp">EXP ' + ev.exp + '</span></span></div>';
+  rows += ratingStatsRows(stats, totalTime);
+  const sub = fmt(L.result.winSub, { name: displayName(en.name || '') });
+  showResultSequence(L.result.winTitle, sub, rows, 'tutorial', false, { noInspector:true });
+  const rbtn=$('rematchBtn');
+  if(rbtn) rbtn.textContent = '繼續';
+  state.resultMode = 'script-continue';
+  /* 掉落：卡上的 `loot`（固定）＋ `money.hpRatio`（HP 的幾成，隨機）。
+     ⚠ 與教學同一個手感：**點畫面才彈**，不自動蓋掉戰績。 */
+  const loot = (en.loot||[]).slice();
+  let money = 0;
+  const mr = en.money && en.money.hpRatio;
+  if(mr){
+    const lo=mr[0], hi=mr[1]!=null?mr[1]:mr[0];
+    money = Math.round((en.hp||0) * (lo + Math.random()*(hi-lo)));
+  }
+  _lootPending = (loot.length || money) ? loot : null;
+  _lootMoney = money;
+  if(_lootPending || money){
+    if(!_lootPending) _lootPending = [];
+    document.addEventListener('pointerup', popLootOnce, { capture:true, once:true });
+  }
+}
+/* 敵人顯示名：底線後是給作者辨識的，不顯示（同 enemy.displayEnemyName 的規約）。
+   ⚠ 這裡不 import enemy（依賴方向：inspector 不在 enemy 之下），字串處理很短就地做。 */
+function displayName(n){ return String(n||'').split('_')[0]; }
+
 /* 拾得道具／金錢的待彈狀態（見 tutorialSettle、settle 的掉落段與 onRematchBtn）。 */
 let _lootPending = null, _lootMoney = 0;
 function popLootOnce(){
@@ -502,6 +543,15 @@ export function onRematchBtn(){
     state.tutorialRun=false; state.tutorialStoryRun=false;
     /* 劇情叫起來的那一場 → **回劇情**（不是回首頁）。交還的實體由 main.js 注入。 */
     setTimeout(()=>{ if(story && api.storyReturn) api.storyReturn(); else api.goHome(); }, 260);
+    return;
+  }
+  /* 劇情插入戰：「繼續」→ 先彈拾得（同教學），再把場子交還劇情/城鎮。 */
+  if(state.resultMode==='script-continue'){
+    if(_lootPending){ popLootOnce(); return; }
+    state.resultMode='tutorial-leaving';        // 借用「離場中」防連點（同一個狀態機）
+    SFX.play(asset('sfx_start'), sfxGain('sfx_start'));
+    state.scriptRun=false; state.scriptBattleId=null;
+    setTimeout(()=>{ if(api.storyReturn) api.storyReturn(); else api.goHome(); }, 260);
     return;
   }
   if(state.resultMode==='sentou-offer'){   // Boss S 級第一按：「再度執槍」原地變身（金色呼吸光）

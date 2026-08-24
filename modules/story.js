@@ -695,6 +695,7 @@ const SE_FILES=[
   'se_flight_heartbeat.mp3', 'se_flight_idle_loop.mp3', 'se_flight_sail_loop.mp3',
   'se_flight_seagull.mp3', 'se_flight_train.mp3', 'se_lunaMG.m4a', 'se_punch.mp3',
   'se_saint_install.mp3', 'se_saint_maxburst.m4a', 'se_steps.m4a', 'se_ui_click.mp3',
+  'se_ginclick.mp3',
   'se_ui_kagurabell.mp3', 'se_ui_pageflip.mp3', 'se_ui_sortie.mp3', 'se_walk.mp3',
   'se_weapon_guard.m4a', 'se_weapon_mg_squall.mp3', 'se_weapon_pistol_01.mp3',
   'se_weapon_pistol_02.mp3', 'se_weapon_pistol_03.m4a', 'se_weapon_reload.mp3',
@@ -1157,7 +1158,14 @@ function renderLine(){
       console.info('[story] 沒有註冊戰鬥發動器，跳過：', line.battle);
       return advance();
     }
-    const resume = { scene: cur.sceneId, line: lineIdx+1 };
+    /* 續播位置。⚠ **臨時段落（城鎮）不是 scene**（ver -375）：`__town` 在 MAIN_SCRIPT 裡
+       查不到，照 `{scene,line}` 交棒回來會從主線開頭重播。臨時段落改帶著**那一份台詞**
+       與它的收尾回呼一起交棒，由 `resumeFrom` 分流。 */
+    /* ⚠ 連**現在在放哪一首**一起交棒（ver -375）：戰鬥有自己的曲子，`close()` 會把
+       `stageBgm` 歸零 —— 不帶著回來的話，打完接回劇情時整段都還在放戰鬥曲。 */
+    const resume = cur.__adhoc
+      ? { adhoc: cur.lines, line: lineIdx+1, done: cur.__done, sides: sideOverride, bgm: stageBgm }
+      : { scene: cur.sceneId, line: lineIdx+1, bgm: stageBgm };
     const id = line.battle;
     /* Kerberos 之門（ver -329）：門開的**縫裡露出的就是戰鬥畫面**，所以順序反過來 ——
        先讓底下開戰（onGap），門才拉開；門全開之後才把劇情層收掉。
@@ -1661,6 +1669,17 @@ export function flashLine(text, name){
   typeOut(tx, text||'');
 }
 export function hideBubble(){ const b=$('storyBubble'); if(b) b.style.visibility='hidden'; }
+/* 城鎮用：確保某一首 BGM 在放（ver -375）。
+   ⚠ 為什麼要有：城鎮中間會插進一場戰鬥，戰鬥有自己的曲子；回到城鎮時要把地方的曲子
+     接回來。**同曲重播由 `playBgm` 自己擋掉**，所以每次進節點都呼叫是安全的。
+   ⚠ 走 `stageBgm` 記帳與腳本的 `bgm:` 同一份 —— 不然兩邊會各自以為自己在放。 */
+export function ensureBgm(name){
+  if(!name) return;
+  const src=bgmSrc(name);
+  if(!src){ console.info('[story] 沒有這首 BGM：', name); return; }
+  stageBgm=name;
+  try{ SFX.playBgm(src, {fadeInMs:800, volume:0.62}); }catch(_){}
+}
 /* 城鎮用：把下半的面盤（槍棺/團徽）擺好。⚠ 不做的話面盤是一片全黑 ——
    那塊是 `layoutKerberos` 依實際尺寸算出來的，不是 CSS 就有的。 */
 export function showPanel(){ layoutKerberos(); }
@@ -1686,6 +1705,25 @@ export function playAdhoc(lines, done, opts){
   cur={ sceneId:'__town', lines, next:null, __adhoc:true, __done:done };
   lineIdx=0; sceneLog=[]; stopModes();
   renderLine();
+}
+
+/* ══ 從戰鬥接回來（ver -375）══
+   `main.js` 打完戰鬥就呼叫這一支，不必自己判斷這一段是主線還是城鎮的臨時段落。
+   ⚠ 一個入口分流兩種續播（鐵律 8）：主線走 `open(pos)`（會重建場景），
+     臨時段落走 `playAdhoc` 續播剩下的幾句 —— 城鎮的背景與導覽層都還在畫面上，
+     重建一次只會把它們洗掉。
+   ⚠ 續播位置**可能剛好等於長度**（戰鬥是最後一句）：那就直接收尾呼叫 done。 */
+export function resumeFrom(pos){
+  if(!pos) return;
+  ensureBgm(pos.bgm);                       // 戰前那一首（見 renderLine 的 resume）
+  if(pos.adhoc){
+    const rest = pos.adhoc.slice(pos.line||0);
+    layoutKerberos();                       // 門被戰鬥收過了，回來要重新擺（不擺是一片黑）
+    if(!rest.length){ const d=pos.done; if(d) d(); return; }
+    playAdhoc(rest, pos.done, { sides: pos.sides });
+    return;
+  }
+  open(pos);
 }
 
 /* 讀檔：跳到指定位置（劇情播放中或不在播都可用）。 */

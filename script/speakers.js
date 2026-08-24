@@ -39,6 +39,10 @@ export const SPEAKERS = {
   /* 背景人聲（路人閒聊）：**沒有名字也沒有立繪** —— 讀起來才像鄰桌傳來的，
      而不是「有個叫路人的角色在跟你說話」。 */
   VOICE:    { name:'',       art:null },
+  /* 賞金獵人公會（ver -375）。⚠ 兩位都站**右**：與店主同一個邏輯 ——
+     玩家的同伴在左，對面的人在右。 */
+  HUNTER:   { name:'獵人',   art:'hunter'  },
+  COUNTER:  { name:'櫃台',   art:'counter' },
 };
 
 /* ══ 立繪素材 ＋ 取景實測值 ══
@@ -117,7 +121,11 @@ export const ART = {
                   hungry:   { src:'resources/SI/Nouvelle_SI_hungry.webp',    top:0,  bot:1536, fx:0.579 },
                   shocked:  { src:'resources/SI/Nouvelle_SI_Shocked.webp',   top:3,  bot:1534, fx:0.504 },
                   lookaway: { src:'resources/SI/Nouvelle_SI_Lookaway.webp',  top:5,  bot:1529, fx:0.504 },
-                  bigsmile: { src:'resources/SI/Nouvelle_SI_bigsmile.webp',  top:4,  bot:1534, fx:0.565 } } },
+                  bigsmile: { src:'resources/SI/Nouvelle_SI_bigsmile.webp',  top:4,  bot:1534, fx:0.565 },
+                  /* 舊街區／公會那一段新增（ver -375）。取景由 `tools/measure_si.py` 量出來的。 */
+                  concern:  { src:'resources/SI/Nouvelle_SI_concern.webp',   top:6,  bot:1529, fx:0.505 },
+                  happy:    { src:'resources/SI/Nouvelle_SI_happy.webp',     top:1,  bot:1533, fx:0.578 },
+                  shocked2: { src:'resources/SI/Nouvelle_SI_Shocked2.webp',  top:3,  bot:1533, fx:0.541 } } },
   /* ⚠ 索拉娜用 **side** 那張：front 橫向佔 78%，兩人同台一定疊；側面只佔 69%。 */
   sorana: { cm:176, eye:27, fx:0.527, top:4, bot:1522,
            side:'R', alt:null, base:'resources/SI/Sorana_SI_side.webp', expr:{} },
@@ -222,6 +230,18 @@ export const ART = {
      取景值是量的。日後 Ray 給了設定再改 cm 就好，取景不用重量。 */
   shopkeep:{ cm:170, eye:32, fx:0.434, top:6, bot:1533,
            side:'R', alt:null, base:'resources/SI/NPC_Grocerie_SI.webp', expr:{} },
+  /* 賞金獵人（ver -375）。⚠ 身高是**估的**（178，成年男性獵人）——沒有設定，
+     取景值是量的（`tools/measure_si.py`）。日後有設定改 cm 即可，取景不用重量。
+     ⚠ `attack` 這張同時是**戰鬥立繪**（config.enemies.guild_hunter.image），
+       但戰鬥那邊是滿版取景、不吃這組數字 —— 同一張圖、兩套用途。 */
+  hunter: { cm:178, eye:32, fx:0.485, top:6, bot:1529,
+           side:'R', alt:null, base:'resources/SI/NPC_GuildHunter_SI.webp',
+           expr:{ shocked:{ src:'resources/SI/NPC_GuildHunter_SI_Shocked.webp', top:0, bot:1535, fx:0.453 },
+                  attack: { src:'resources/SI/NPC_GuildHunter_SI_Attack.webp',  top:0, bot:1535, fx:0.546 },
+                  lost:   { src:'resources/SI/NPC_GuildHunter_SI_Lost.webp',    top:6, bot:1529, fx:0.487 } } },
+  /* 公會櫃台（ver -375）。身高同樣是估的（168）。 */
+  counter:{ cm:168, eye:32, fx:0.511, top:4, bot:1526,
+           side:'R', alt:null, base:'resources/SI/GuildCounterCA_SI.webp', expr:{} },
   luna:   { cm:160, eye:30, fx:0.500, top:0, bot:1000,
            side:'L', alt:null, base:'resources/partner/Luna_CI_exc.webp', expr:{}, unmeasured:true },
 };

@@ -22,17 +22,23 @@
 const N = who => (expr, text, extra) => Object.assign(
   { speaker:who, text:text||'', portrait:{ char:who, expr:expr||null, show:true } }, extra||{});
 const nou = N('NOUVELLE'), ren = N('RENNA');
+/* 公會那一場的兩位（ver -375）。⚠ 兩個都站**右**（見 speakers.js）——
+   玩家的同伴在左、對面的人在右，與店主同一個邏輯。 */
+const hun = N('HUNTER'), cnt = N('COUNTER');
 
 export const TOWNS = {
   capital: {
     name: '帝都',
     entry: 'square',
+    /* 這座城的 BGM（ver -375）。⚠ 有它才能在**插入戰打完回來**時把曲子接回去 ——
+       戰鬥有自己的曲子，回城鎮時沒人接的話會一路放著戰鬥曲。 */
+    bgm: 'capital',
     nodes: {
 
       /* ══ 攝政王廣場 ══ 上＝中心區、左＝舊街區、右＝上街區（Ray 指定的三個方向） */
       square: {
         bg:'Capital_Square', name:'帝都　攝政王廣場',
-        exits:{ up:'midtown', left:'westside', right:'uptown' },
+        exits:{ up:'midtown', left:'oldtown', right:'uptown' },
         once:true,
         lines:[ nou('surprise','帝都的攝政王廣場，好壯觀。'),
                 nou('surprise','每次看都覺得很震憾呢。') ],
@@ -78,32 +84,71 @@ export const TOWNS = {
         ],
       },
 
-      /* ══ 二、西區街道 ══ 左＝商店、右＝酒館、上＝旅店、下＝廣場 */
-      westside: {
+      /* ══ 二、舊街區 ══（ver -375 由「西區街道」改名，Ray 指定）
+         左＝商店、右＝酒館、上＝賞金獵人公會、下＝廣場。
+         ⚠ 旅店暫時**接不到**（原本掛在上，被公會頂掉了）—— Ray 還沒給旅店的稿與背景，
+           等他指定要掛哪個方向再接回去；節點與背景先留著，不要刪。 */
+      oldtown: {
         /* ⚠ 背景由 `Capital_Downtown` 改為 `Capital_Uptown`（ver -371，Ray 指定）。
            ⚠ 連帶：`uptown`（上街區）原本用的就是這張，現在**沒有自己的圖**了 ——
              見 HANDOFF 的缺口清單。 */
-        bg:'Capital_Uptown', name:'帝都　西區街道',
-        exits:{ left:'grocery', right:'tavern', up:'inn', down:'square' },
-        once:true,
+        bg:'Capital_Uptown', name:'帝都　舊街區',
+        exits:{ left:'grocery', right:'tavern', up:'guild', down:'square' },
         lines:[
-          /* 肚子叫：沒有台詞的一拍（立繪＋音效），停一秒自己走（§6.5）。 */
-          { speaker:'NOUVELLE', text:'', auto:1000, se:'Se_Tummy',
-            portrait:{ char:'NOUVELLE', expr:'hungry', show:true } },
-          nou('hungry','對不起，我肚子有點餓。'),
+          nou('cringe','這地方……有點可怕。'),
+          nou('surprise','啊，是要去保養武器嗎？'),
           { speaker:'PLAYER', blank:true },
-          nou('hungry','不、不用在意我啦。'),
+          nou('bigsmile','沒關係，有你在啊。一起逛逛吧。'),
+        ],
+      },
+
+      /* ══ 二之一、賞金獵人公會 ══（ver -375）
+         ⚠ 這是第一個**帶劇情插入戰**的城鎮節點：對白中間一句 `{ battle:'guild_hunter' }`，
+           打完接著往下演（續播由 `story.resumeFrom` 負責，見那支的說明）。
+         ⚠ 背景基底寫 `Captal_Guild`（Ray 的檔名就少一個 i，**照檔名**不要自作主張改）。 */
+      guild: {
+        bg:'Captal_Guild', name:'帝都　賞金獵人公會',
+        exits:{ back:'oldtown' },
+        /* 登記完才開得了懸賞榜（旗標由 `modules/town.js` 在這段對白播完時記）。 */
+        board:'capital', boardFlag:'guild_registered',
+        lines:[
+          nou('surprise','人好多喔。'),
+          nou('cringe','『永夜』以後治安變差，好像是真的。'),
+          /* 空畫面、無立繪：諾薇兒退場，讓獵人上。⚠ 撤人與新人上場同一拍
+             （§6.5 的輪轉換卡）—— 所以 `hide` 掛在獵人第一句上。 */
+          hun(null,'生面孔啊，小子。大口徑雙槍，你以為你是那個『槍之魔女』嗎？',
+              { hide:['NOUVELLE'] }),
+          /* 主角上膛。⚠ 空畫面無立繪 → 獵人也先退場，只剩背景與聲音。 */
+          { speaker:'PLAYER', text:'', auto:900, se:'se_ginclick', hide:['HUNTER'] },
+          /* 一發。⚠ 仍是空畫面 —— 玩家只聽到槍響，下一拍才看到對方的臉。 */
+          { speaker:'PLAYER', text:'', auto:900, se:'se_weapon_pistol_03' },
+          /* 無台詞的立繪拍：停一秒（§6.5，從立繪站定才起算）。 */
+          { speaker:'HUNTER', text:'', auto:1000,
+            portrait:{ char:'HUNTER', expr:'shocked', show:true } },
+          hun('attack','你、小、子！'),
+          /* ══ 推槍棺，進入戰鬥 ══ 這一場不能聖徒化、不能用搭檔技（見 config.battles）。 */
+          { battle:'guild_hunter' },
+          hun('lost','服了！我服了！'),
+          hun('lost','小哥你其實是有名的獵人吧？'),
+          hun('lost','咦？聖約騎士團？'),
+          nou('awkward','報名號做什麼啦！'),
+          hun('lost','這年頭連教廷都要來搶生意了？你們倒是對那些『禍魘』想點辦法啊！'),
+          cnt(null,'算了，你來登記一下。盜賊也好異象也好人手都不夠，騎士也無所謂吧？有實力就好。',
+              { hide:['HUNTER'] }),
+          nou('surprise','那怎麼行！'),
           { speaker:'PLAYER', blank:true },
-          nou('surprise','咦？你也是？'),
-          nou('awkward','也是啦……剛剛才經歷一場死鬥，最後一餐差點就是黑麥麵包配豆子了……'),
-          nou('run','走吧！', { se:'se_steps' }),
+          nou('shocked','就算你這麼說……'),
+          { speaker:'PLAYER', blank:true },
+          nou('concern','……也是，情報源多多益善。'),
+          cnt(null,'常來啊，委託常常會更新。手腳得快點，盜賊都快被槍之魔女殺完了。'),
+          cnt(null,'各個城市的委託也會不同，加油吧，神父弟弟。'),
         ],
       },
 
       /* 1. 酒館 ⚠ 還沒有背景素材，暫借西區街道那張（見 HANDOFF 的缺口清單）。 */
       tavern: {
         bg:'Capital_Bistro', name:'帝都　餐酒館',
-        exits:{ back:'westside' },
+        exits:{ back:'oldtown' },
         once:true,
         lines:[
           nou('pray','感謝神，賜與我們平安與食糧。願主降福於世——'),
@@ -128,7 +173,7 @@ export const TOWNS = {
       /* 2. 商店 */
       grocery: {
         bg:'Capital_Grocerie', noTime:true, name:'帝都　雜貨舖',   // 室內：只有一張圖，不吃時段
-        exits:{ back:'westside' },
+        exits:{ back:'oldtown' },
         shop:'grocery', shopOnTap:true,   // ⚠ 點畫面就開買賣選單（Ray 指定，不做成按鈕）
         once:true,
         lines:[
@@ -161,7 +206,7 @@ export const TOWNS = {
       /* ⚠ 旅店與上街區**還沒有內容**（Ray 還沒給稿）；上街區有背景、旅店連背景都沒有。
          先留節點讓箭頭指得到，進去只有地名卡。 */
       uptown: { bg:'Capital_Uptown', name:'帝都　上街區', exits:{ back:'square' } },
-      inn:    { bg:'Capital_Downtown', name:'帝都　旅店',  exits:{ back:'westside' } },
+      inn:    { bg:'Capital_Downtown', name:'帝都　旅店',  exits:{ back:'oldtown' } },
     },
   },
 };

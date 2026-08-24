@@ -2911,3 +2911,73 @@ Ray：「不是寫入原則了嗎？怎麼還是犯錯？」
 7. 取景走同一把尺（`castStage`）
 
 ⚠ 這張表就是鐵律 8 的落地：**規矩要有實作、而且要有人在上線前逐條核對**。
+
+---
+
+# 交接 · `ver -375`（舊街區改名、賞金獵人公會、劇情插入戰、敵人標準卡、懸賞榜）
+
+## A. 這一版做了什麼
+
+Ray 交了「二、舊街區（原西區街道）」整段稿，裡面第一次出現**劇情插入戰**與
+**敵人資訊標準卡**。做出來的東西分四層：
+
+| 層 | 東西 |
+|---|---|
+| 資料 | `config.enemies.guild_hunter`（標準卡）、`config.battles`（這一場的規則）、`config.bounties`（懸賞）、道具 `brass_casing` |
+| 引擎 | `combat.startScriptBattle()`、`storyFramed()`、絕對值懲罰三支、盤面 `boardLoop`、`state.noSaint/noPartner` |
+| 演出 | 敵人卡的 `bg`＋`fit.mode:'contain'`（去背立繪要背景）、新的 `blunt` 受擊特效 |
+| 內容 | `script/town.js` 的 `oldtown`／`guild` 兩個節點；`modules/loot.js` 的懸賞榜 |
+
+## B. 敵人資訊標準卡 → 程式的對照
+
+Ray 的卡是**絕對值**寫法，所以資料就存絕對值（鐵律 7：不要換算成倍率再存）：
+
+| 卡上 | config 欄位 | 讀它的地方 |
+|---|---|---|
+| HP：200 | `hp` | `enemy.setEnemy` |
+| 延時懲罰 5 秒，攻擊力 5 | `delayPenalty:{seconds,damage}` | `combat.effIntervalLimit()` / `delayDamage()` |
+| 點錯懲罰攻擊力 5 | `wrongPenalty:{damage}` | `combat.wrongDamage()` |
+| 蓄力攻擊：10 | `attack` | `defense`（大絕） |
+| 盤面配置 33344, loop | `boardGrids` ＋ `boardLoop` | `combat.boardSeqIdx()` |
+| 背景／戰鬥立繪 | `bg` ＋ `image`＋`fit.mode` | `enemy.setEnemy` |
+| 掉落物／金錢 | `loot` ＋ `money.hpRatio` | `inspector.scriptSettle()` |
+| 抗性／弱點 | `resist`/`weak` | ⚠ **還沒實作**，資料先存著 |
+
+⚠ 三支計算函式（`delayDamage`/`wrongDamage`/`effIntervalLimit`）是**唯一**算懲罰的地方，
+呼叫端不准自己再乘一次倍率。
+
+## C. 實測（390×844）
+
+- 公會整段照順序演完：立繪換人、說話者 z-index 在前、空畫面拍沒有框。
+- 戰鬥實測值：`ULT_DAMAGE 10 / DELAY_SECONDS 5 / DELAY_DAMAGE 5 / WRONG_DAMAGE 5 /
+  N=9（第三盤仍是 9，符合 33344）/ noSaint,noPartner true / HP 200`。
+- 打完 → 關門 → 結算頁「沒有監察官、沒有等級、EXP 415」→ 鈕是「繼續」→
+  點畫面彈拾得：**黃銅彈殼 ×6 ＋ 133G**（200×0.665，落在 6~8 成內）→
+  再按「繼續」回到公會，接著演「服了！我服了！」→ 演完清場、旗標
+  `town_capital_guild` 與 `guild_registered` 都寫進去 → 點畫面開懸賞榜（黑船洛爾夫 500G）。
+- 舊街區：長按下方箭頭提示「舊街區」、時鐘 14:00→14:10、三個目的地字格
+  （賞金獵人公會／雜貨舖／餐酒館）都在。
+
+## D. ⚠ 我改了 Ray 寫法的地方（要確認）
+
+1. **「西區街道」整段進場對白被換掉了** —— Ray 這次給的是「這地方……有點可怕」那一段。
+   原本那段**肚子餓**（`Se_Tummy` ＋「剛剛才經歷一場死鬥」）現在**沒有地方演**。
+   要留的話請說要接在哪裡（我建議接在餐酒館之前，那一段禱告詞才有前因）。
+2. **旅店暫時接不到**：舊街區的「上」原本是旅店，被公會頂掉了。節點與背景都還在，
+   Ray 指定掛哪個方向就接回去。
+3. **結算頁的字**是沿用驅逐任務那一套：「聖裁／賞金獵人**已淨化**」。
+   對一個街頭獵人來說「淨化」怪怪的，要不要給插入戰另一組字？
+4. **打輸的去向**：現在走一般的失敗流程（回主畫面）。要改成「當場重來」請說。
+5. **移動一次 10 分鐘**、獵人與櫃台的**身高**（178/168）都是我給的值。
+
+## E. ⚠ 缺口（沿用上一版，加一條）
+
+1. `Nouvelle_SI_pray` 沒有（酒館第一句）。
+2. 時段背景只有 `_Day`。
+3. 旅店沒有背景；**上街區與旅店還沒有稿**；上街區的背景被舊街區借走了。
+4. `resources/SI/28e1e4e3-….webp` 是蕾娜掩嘴的差分，要 Ray 命名。
+5. `se_ginclick.mp3` 是新丟進來的，**還沒照 §6.6 量響度**（其餘音效都量過）。
+6. `NPC_Capital_Gunstore_SI`（槍店店主）已轉 WebP 並量好取景（top 6 / bot 1531 / fx 0.476），
+   但**還沒接**：Ray 還沒給槍店的稿與節點位置（舊街區的對白提到「要去保養武器嗎」，
+   看起來就是它）。
+

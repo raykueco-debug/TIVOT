@@ -189,3 +189,29 @@ export function showShop(stockKey, keeper, onTalk){
   render();
   requestAnimationFrame(()=>ov.classList.add('on'));
 }
+
+/* ══ 懸賞榜（ver -375）══
+   賞金獵人公會的委託榜。**目前只有展示** —— 接單／完成／領賞還沒做（Ray 的稿到「登記」
+   為止），所以這一頁沒有按鈕，只有一張清單與關閉。
+   ⚠ 委託內容在 `config.bounties`，這裡只負責演（鐵律 1）。要加委託就加資料，不動這支。
+   ⚠ 依 `city` 篩選：櫃台說了「各個城市的委託也會不同」，那句話得在資料上成立。 */
+export function showBounty(city){
+  const all=GAME_CONFIG.bounties||{};
+  const list=Object.keys(all).filter(k=> !city || all[k].city===city).map(k=>all[k]);
+  const unit=(GAME_CONFIG.items&&GAME_CONFIG.items.moneyName)||'G';
+  const ov=document.createElement('div'); ov.id='lootSheet'; ov.classList.add('bag','bounty');
+  document.body.appendChild(ov);
+  const body = list.length
+    ? list.map(b=>'<div class="loot-row bounty-row"><span class="loot-name">'+b.name+'</span>'
+        + '<span class="loot-n">'+b.reward+unit+'</span>'
+        + (b.desc?'<span class="loot-desc">'+b.desc+'</span>':'')+'</div>').join('')
+    : '<div class="bag-empty">目前沒有委託。</div>';
+  ov.innerHTML='<div class="loot-panel"><div class="loot-title">懸賞榜</div>'
+             + '<div class="loot-list">'+body+'</div>'
+             + '<button class="loot-ok" type="button">關閉</button></div>';
+  const close=()=>{ ov.classList.remove('on');
+    setTimeout(()=>{ if(ov.parentNode) ov.parentNode.removeChild(ov); }, 220); };
+  ov.querySelector('.loot-ok').addEventListener('click', e=>{ e.stopPropagation();
+    try{ SFX.unlock(); SFX.menuClick(); }catch(_){} close(); });
+  requestAnimationFrame(()=>ov.classList.add('on'));
+}

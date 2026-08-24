@@ -41,10 +41,13 @@ def load_data():
         print('找不到 jsc（%s）——這支工具依賴 macOS 內建的 JavaScriptCore。' % JSC)
         sys.exit(2)
     parts = []
-    for f in ('script/speakers.js', 'script/mainScript.js'):
+    # ⚠ 城鎮（`script/town.js`）與 config 也一起載（ver -375）：城鎮節點現在會帶
+    #   **劇情插入戰**與整段對白，跟主線一樣需要驗 —— 缺圖／打錯角色 id／
+    #   battle 指到不存在的場次，一樣要在這裡就抓到，不要等演到那一句。
+    for f in ('script/speakers.js', 'script/mainScript.js', 'script/town.js', 'config.js'):
         parts.append(strip_module(open(os.path.join(ROOT, f), encoding='utf-8').read()))
     parts.append('print(JSON.stringify({script:MAIN_SCRIPT, entry:MAIN_ENTRY,'
-                 ' speakers:SPEAKERS, art:ART}));')
+                 ' speakers:SPEAKERS, art:ART, towns:TOWNS, cfg:GAME_CONFIG}));')
     t = tempfile.NamedTemporaryFile('w', suffix='.js', delete=False, encoding='utf-8')
     t.write('\n'.join(parts)); t.close()
     r = subprocess.run([JSC, t.name], capture_output=True, text=True)
@@ -105,8 +108,10 @@ def main():
             warn('%s：從 MAIN_ENTRY 走不到（孤兒場景，正常嗎？）' % sid)
 
     # ── 逐句 ──
-    for sid, sc in script.items():
-        for i, ln in enumerate(sc.get('lines') or []):
+    #  ⚠ 抽成一支給**主線與城鎮共用**（ver -375）：規矩只寫一份，新的路徑才不會漏檢
+    #    （鐵律 8 —— 城鎮節點就是這樣長出第二套的）。
+    def check_lines(sid, lines, scenes_ok=True):
+        for i, ln in enumerate(lines or []):
             tag = '%s[%d]' % (sid, i)
 
             if ln.get('load'):
@@ -114,7 +119,12 @@ def main():
                     err('%s：load 指到不存在的場景 %s' % (tag, ln['load']))
                 continue                      # 閘門，不是演出拍：沒有 speaker 也正常
             if ln.get('battle'):
-                continue                      # 戰鬥交棒，這一行不帶演出
+                # 戰鬥交棒，這一行不帶演出。⚠ 但要驗它指得到一場戰鬥：
+                #   `config.battles` 有登記（劇情插入戰），或那是教學那一場。
+                b = ln['battle']
+                if b not in (D['cfg'].get('battles') or {}) and b != 'tutorial':
+                    err('%s：battle 指到 config.battles 裡沒有的場次 %s' % (tag, b))
+                continue
 
             sp = ln.get('speaker')
             if sp is None:
@@ -173,6 +183,32 @@ def main():
             # 沒有台詞、沒有卡片、又不會自己走的拍：畫面上沒有 ▼ 提示，看起來像卡住
             if not ln.get('text') and not ln.get('card') and not ln.get('auto') and not ln.get('blank'):
                 warn('%s：空台詞又沒有 auto —— 畫面上不會有提示，玩家可能以為卡住' % tag)
+
+    for sid, sc in script.items():
+        check_lines(sid, sc.get('lines'))
+
+    # ── 城鎮節點（ver -375）──
+    #  ⚠ 背景是**基底名**（時段尾巴由 clock.bgName 加），所以候選是 `_Day` 或原名，
+    #    兩個都沒有才算缺 —— 照主線那樣只找原名會全部誤報。
+    cfg = D['cfg']
+    for tid, town in (D.get('towns') or {}).items():
+        nodes = town.get('nodes') or {}
+        for nid, n in nodes.items():
+            tag = '%s.%s' % (tid, nid)
+            for d, to in (n.get('exits') or {}).items():
+                if to not in nodes:
+                    err('%s：出口 %s 指到不存在的節點 %s' % (tag, d, to))
+            bg = n.get('bg')
+            if bg and not (exists(BG_DIR + bg + '_Day.webp') or exists(BG_DIR + bg + '.webp')):
+                err('%s：沒有這張背景 %s（找 %s，含 _Day）' % (tag, bg, BG_DIR))
+            if n.get('shop') and n['shop'] not in ((cfg.get('shop') or {}).get('stock') or {}):
+                err('%s：shop 指到 config.shop.stock 裡沒有的貨單 %s' % (tag, n['shop']))
+            if n.get('board'):
+                bs = [b for b in (cfg.get('bounties') or {}).values() if b.get('city') == n['board']]
+                if not bs:
+                    warn('%s：懸賞榜 %s 目前一張委託都沒有' % (tag, n['board']))
+            for key in ('lines', 'keeper'):
+                check_lines('%s.%s' % (tag, key), n.get(key))
 
     for m in errs:  print('❌ ' + m)
     for m in warns: print('⚠  ' + m)
