@@ -18,6 +18,10 @@
 <!-- 全域鎖直向（真鎖 + 橫向擋板）；classic script，需在版面就緒前掛上 -->
 <script src="orientation.js"></script>
 <link rel="stylesheet" href="style.css">
+  <!-- 拾得道具／道具欄／商店／懸賞榜（ver -380 抽出，飛行頁共用同一份）。
+       ⚠ `data-lootsheet` 是給 `modules/loot.js` 認的：它看到已經掛過就不再掛一次。
+         飛行頁沒有這一行，由那支模組自己掛上去。 -->
+  <link rel="stylesheet" href="css/lootsheet.css" data-lootsheet="1">
 <!-- 主畫面 App（standalone）偵測：首繪前在 <html> 蓋 .standalone，
      供 CSS 修 iOS 26 版面視窗少算頂部安全區高度（底部露黑帶）的問題 -->
 <script>

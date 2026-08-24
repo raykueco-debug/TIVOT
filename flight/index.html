@@ -40,12 +40,12 @@
     text-align:center;font-size:10px;letter-spacing:.18em;color:var(--parch);opacity:.28;}
   #fps{position:fixed;right:12px;top:calc(env(safe-area-inset-top) + 54px);
     font-size:9px;color:var(--parch);opacity:.35;}
-  #backBtn,#mapBtn,#muteBtn,#talkBtn{position:fixed;top:calc(env(safe-area-inset-top) + 10px);z-index:40;
+  #backBtn,#mapBtn,#muteBtn,#talkBtn,#bagBtn{position:fixed;top:calc(env(safe-area-inset-top) + 10px);z-index:40;
     background:rgba(5,6,12,.72);border:1px solid rgba(201,162,39,.5);color:var(--gold);
     font-family:inherit;font-size:11px;letter-spacing:.14em;padding:5px 12px;cursor:pointer;}
   #backBtn{right:12px;} #mapBtn{right:78px;} #muteBtn{right:144px;width:44px;padding:0;text-align:center;}
-  #talkBtn{right:196px;}
-  #backBtn:active,#mapBtn:active,#muteBtn:active,#talkBtn:active{background:rgba(201,162,39,.16);}
+  #talkBtn{right:196px;} #bagBtn{right:248px;}
+  #backBtn:active,#mapBtn:active,#muteBtn:active,#talkBtn:active,#bagBtn:active{background:rgba(201,162,39,.16);}
   #muteBtn.muted{color:#d06a60;border-color:rgba(208,106,96,.7);}
   /* 生怪鈕：開發用。放操作盤左下角——舵輪佔滿面板中央，只有兩側下緣是空的。
      ⚠ z-index 要高過面板（面板是 canvas 直接畫的，本身不佔 DOM 層級），
@@ -210,6 +210,11 @@
 <!-- 全域靜音：與 index.html 共用 localStorage 的 tivot_mute_v1 -->
 <button id="muteBtn" aria-label="Mute">🔊</button>
 <button id="talkBtn">對話</button>
+<!-- 道具欄（ver -380，Ray：「道具欄只在飛行畫面有入口」）。
+     ⚠ 走主遊戲那一支 `modules/loot.js` —— 道具與金錢是**同一份存檔**
+       （`tivot_inventory_v1` / `tivot_money_v1`），出城打完再入城都是連續的。
+     ⚠ 樣式由那支模組自己掛（`css/lootsheet.css`），這一頁不載 `style.css`。 -->
+<button id="bagBtn">道具</button>
 <button id="backBtn">← 返回</button>
 <button id="spawnBtn">生怪</button>
 <button id="boostBtn">×1</button>
@@ -8667,6 +8672,12 @@ const bootUI=(()=>{
     document.getElementById('bootMsg').textContent=e.message+'（需以 http 提供，不能直接雙擊開啟）';
   }
 })();
+</script>
+<!-- 道具欄：主遊戲的模組（ES module，與這一頁其餘的一般 <script> 並存）。 -->
+<script type="module">
+  import { showBag } from '../modules/loot.js';
+  const b=document.getElementById('bagBtn');
+  if(b) b.addEventListener('click', e=>{ e.preventDefault(); showBag(); });
 </script>
 </body>
 </html>

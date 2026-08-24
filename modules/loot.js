@@ -14,11 +14,25 @@ import { GAME_CONFIG, weaponStatRows, weaponOf } from '../config.js';
 import * as inv from '../script/inventory.js';
 import { SFX } from '../audio.js';
 
+/* ══ 樣式（ver -380）══
+   這一套視窗的 CSS 抽在 `css/lootsheet.css`，**由這裡自己掛上來** ——
+   主遊戲與飛行頁都 import 這支模組，兩邊就都有樣式，不必逐頁記得加 <link>（鐵律 8）。
+   ⚠ 路徑由 `import.meta.url` 推出來，所以不管宿主頁面在哪一層（`/` 或 `/flight/`）都對。
+   ⚠ 掛過就不再掛（`data-lootsheet` 當指紋）。 */
+function ensureCss(){
+  if(document.querySelector('link[data-lootsheet]')) return;
+  const href=new URL('../css/lootsheet.css', import.meta.url).href;
+  const l=document.createElement('link');
+  l.rel='stylesheet'; l.href=href; l.dataset.lootsheet='1';
+  document.head.appendChild(l);
+}
+
 /* 顯示並入袋。list＝`[{id,n},…]`；done＝按下確認之後要做的事。
    ⚠ 空清單直接跳過（連視窗都不出）—— 「你什麼都沒撿到」不需要一頁。 */
 /* `list`＝`[{id,n},…]`；`money`＝這一次掉的錢（可省）。
    ⚠ 金錢與道具**同一個視窗**（Ray：「併入道具欄顯示」）—— 分兩頁彈會讓玩家點兩次。 */
 export function showLoot(list, done, money){
+  ensureCss();
   const rows=(list||[]).filter(x=>x && x.id && (x.n==null || x.n>0));
   money=Math.max(0, money|0);
   if(!rows.length && !money){ done && done(); return; }
@@ -64,6 +78,7 @@ export function showLoot(list, done, money){
    ⚠ 分類順序與名稱都讀 config（`items.catOrder` / `catName`）—— 這裡不寫死五種。
    ⚠ 空的分類**照樣列出標題**：玩家要看得出「素材我還沒有」，而不是以為沒這一類。 */
 export function showBag(){
+  ensureCss();
   const ov=document.createElement('div'); ov.id='lootSheet'; ov.classList.add('bag');
   document.body.appendChild(ov);
   /* ⚠ 內容**重畫**而不是局部更新：賣掉最後一個時整列要消失、分類可能變空、
@@ -106,6 +121,7 @@ export function showBag(){
    ⚠ 店主對話是**一段對白**（兩個人輪流講），所以不塞進這一頁：
      按下去先收商店，交給劇情播放器演，演完再開回來（`onTalk` 由呼叫端提供）。 */
 export function showShop(stockKey, keeper, onTalk){
+  ensureCss();
   const ov=document.createElement('div'); ov.id='lootSheet'; ov.classList.add('bag','shop');
   document.body.appendChild(ov);
   const SHOP=GAME_CONFIG.shop||{};
@@ -244,6 +260,7 @@ export function showShop(stockKey, keeper, onTalk){
    ⚠ 委託內容在 `config.bounties`，這裡只負責演（鐵律 1）。要加委託就加資料，不動這支。
    ⚠ 依 `city` 篩選：櫃台說了「各個城市的委託也會不同」，那句話得在資料上成立。 */
 export function showBounty(city){
+  ensureCss();
   const all=GAME_CONFIG.bounties||{};
   const list=Object.keys(all).filter(k=> !city || all[k].city===city).map(k=>all[k]);
   const unit=(GAME_CONFIG.items&&GAME_CONFIG.items.moneyName)||'G';
