@@ -22,9 +22,11 @@ const $ = id => document.getElementById(id);
 
 const HOLD_MS = 500;      // 箭頭要按住多久才走（Ray 指定 0.5 秒）
 const STEP_MIN = 10;      // 每移動一次花掉的遊戲內分鐘數
+const ARRIVE_MS = 1000;   // 抵達新地點之後、對白開演之前的停頓（Ray：「先停一秒」）
 const DIRS = ['up','down','left','right','back'];
 
 let townId=null, nodeId=null, layer=null, busy=false;
+let arriveT=0;            // 抵達停頓的計時器（換節點要取消，見 enter）
 
 /* ══ 背景：時段差分 → 退回 `_Day` → 退回無時段的原名 ══
    命名規約（Ray 指定，全城鎮通用）：`<地點>_Dawn/_Day/_Dusk/_night/_midnight`。
@@ -62,7 +64,11 @@ function ensureLayer(){
   if(layer && layer.parentNode) return layer;
   const st=story.stageEl(); if(!st) return null;
   layer=document.createElement('div'); layer.id='townNav';
-  layer.innerHTML='<div id="townHint"><svg viewBox="0 0 44 44">'
+  /* 目的地字格：**上／左／右**三個（下方不做 —— 那通常是「退回上一層」，
+     名字寫出來只是重複）。按住字格蓄能滿了才走（Ray 指定）。 */
+  layer.innerHTML=['up','left','right'].map(d=>
+      '<button class="town-dest '+d+'" data-dir="'+d+'" type="button"><span></span></button>').join('')
+    + '<div id="townHint"><svg viewBox="0 0 44 44">'
     + '<circle class="ta-rail" cx="22" cy="22" r="19"/>'
     + '<circle class="ta-prog" cx="22" cy="22" r="19"/></svg>'
     + '<span class="th-label"></span></div>'
@@ -79,7 +85,15 @@ function refreshArrows(){
   const sb=layer.querySelector('#townShop');
   if(sb) sb.classList.toggle('on', !!n.shop);
   const info=layer.querySelector('#townInfo');
-  if(info) info.textContent = n.name + '　' + clock.timeText();
+  if(info) info.innerHTML = n.name + '<span class="ti-time">' + clock.timeText() + '</span>';
+  /* 目的地字格：有那個方向才出現，字是目的地名。 */
+  const ex=exitsOf();
+  layer.querySelectorAll('.town-dest').forEach(b=>{
+    const to=ex[b.dataset.dir];
+    b.classList.toggle('on', !!to);
+    b.style.setProperty('--fill', 0);
+    const sp=b.querySelector('span'); if(sp) sp.textContent = to ? nameOfNode(to) : '';
+  });
 }
 
 /* 導覽的開關。⚠ **羅盤跟著一起開關**（ver -372）：對白播放中箭頭就不該亮、也不該能按 ——
@@ -174,6 +188,28 @@ function bindInput(){
     chatter();
   });
   st.addEventListener('pointercancel', cancel);
+
+  /* 目的地字格：與羅盤同一套「長按蓄能」，只是回饋畫在字格上（由左往右填）。
+     ⚠ 蓄能的時間常數共用 `HOLD_MS` —— 兩個入口的手感要一樣（鐵律 7）。 */
+  if(layer) layer.querySelectorAll('.town-dest').forEach(b=>{
+    let raf=0, timer=0, t0=0;
+    const stop=()=>{ cancelAnimationFrame(raf); clearTimeout(timer); raf=timer=0;
+      b.style.setProperty('--fill', 0); b.classList.remove('holding'); };
+    b.addEventListener('pointerdown', e=>{
+      if(busy || story.isPlaying()) return;
+      e.preventDefault(); e.stopPropagation();
+      const to=exitsOf()[b.dataset.dir]; if(!to) return;
+      b.classList.add('holding'); t0=performance.now();
+      const tick=()=>{ const p=Math.min(1,(performance.now()-t0)/HOLD_MS);
+        b.style.setProperty('--fill', p.toFixed(3));
+        if(p<1) raf=requestAnimationFrame(tick); };
+      tick();
+      timer=setTimeout(()=>{ stop(); go(to); }, HOLD_MS);
+    });
+    b.addEventListener('pointerup', e=>{ e.stopPropagation(); stop(); });
+    b.addEventListener('pointercancel', stop);
+    b.addEventListener('pointerleave', stop);
+  });
 }
 
 /* ══ 移動 ══
@@ -194,20 +230,34 @@ export function enter(id){
   const T=TOWNS[townId]; if(!T) return;
   const n=T.nodes[id]; if(!n){ console.warn('[town] 沒有這個節點：', id); busy=false; return; }
   nodeId=id;
-  /* ⚠⚠ **換節點先清場**（鐵律 8）：立繪是持續狀態，不清的話上一個地點的人
-     會站在新的背景前面。清場只有 `story.clearCast()` 一支實作。 */
+  /* ⚠⚠ **換節點先收乾淨**（鐵律 8）：
+       ① 還在播的臨時段落要中止 —— 不中止的話它會在新的地點上把上一段演完（實測過）；
+       ② 立繪是持續狀態，要清場，不清的話上一個地點的人會站在新的背景前面。
+     兩件事各只有一支實作（`story.endAdhoc` / `story.clearCast`）。 */
+  /* ⚠ 還有第三件：**抵達停頓的計時器**（`ARRIVE_MS`）也要取消 —— 不取消的話
+     上一個地點的對白會在**一秒後於新地點開演**（實測：從西區立刻回廣場，
+     諾薇兒的「肚子餓」就跑到廣場上演了）。 */
+  clearTimeout(arriveT); arriveT=0;
+  story.endAdhoc();
   story.clearCast();
   bgFor(n.bg, n.noTime);
   ensureLayer(); bindInput(); refreshArrows(); showNav(false);
-  /* 第一次進來才播對白（`once`）。⚠ 旗標記在 progress 的 flags —— 存檔要帶。 */
+  /* ⚠⚠ 進場對白**一律只播一次**（ver -373，Ray：「對話只觸發一次，不重複觸發」）——
+     不再看節點的 `once` 欄位：漏寫就會變成每次進去都重播，那是「預設值站錯邊」。
+     旗標記在 progress 的 flags，存檔要帶。 */
   const flag='town_'+townId+'_'+id;
-  const first = !(n.once && prog.hasFlag(flag));
-  const lines = first ? (n.lines||[]) : [];
-  if(n.once && first) prog.addFlags([flag]);
+  const played = prog.hasFlag(flag);
+  const lines = played ? [] : (n.lines||[]);
+  if(lines.length) prog.addFlags([flag]);
   if(lines.length){
-    /* ⚠ 對白演完**把立繪全撤**，只留背景與導覽（Ray 指定）。 */
-    story.playAdhoc(lines, ()=>{ applyAff(lines); story.clearCast();
-      busy=false; refreshArrows(); showNav(true); });
+    /* ⚠ **先停一秒再放人**（Ray 指定）：剛走到一個新地方，玩家要先看得到那是哪裡；
+       立繪與對話框跟著背景一起跳出來，等於沒有「抵達」這一拍。 */
+    busy=true;
+    arriveT=setTimeout(()=>{ arriveT=0;
+      /* ⚠ 對白演完**把立繪全撤**，只留背景與導覽（Ray 指定）。 */
+      story.playAdhoc(lines, ()=>{ applyAff(lines); story.clearCast();
+        busy=false; refreshArrows(); showNav(true); });
+    }, ARRIVE_MS);
   }else{
     busy=false; refreshArrows(); showNav(true);
   }

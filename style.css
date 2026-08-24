@@ -1311,22 +1311,29 @@
      ⚠ 浮起的方向沿用 `--kerb-px/--kerb-py`（解鎖時往外彈的那個向量）——
        那已經是「這支箭朝外的方向」，不必另外算（鐵律 7：一個量一個計算點）。
      ⚠ `#kerb` 是 `pointer-events:none`，所以箭要自己打開才點得到。 */
+  /* ⚠ 光用**淡藍**不用金（ver -373，Ray：「金光被底色吃了」）——
+     門是深銅金的底，金色的光疊上去等於沒有；偏青的藍（`--holy`）才跳得出來。
+     ⚠ 這與撞頂時門縫透出來的十字亮光同一個色系，讀起來是「同一種機械的光」。 */
   body.town-nav #kerb .kerb-arrow.avail{
     pointer-events:auto;cursor:pointer;
-    filter:drop-shadow(0 0 7px rgba(212,169,74,.85)) drop-shadow(0 3px 12px rgba(212,169,74,.55));
+    filter:drop-shadow(0 0 7px rgba(111,179,212,.95)) drop-shadow(0 3px 14px rgba(111,179,212,.7));
     animation:kerbCompass 2.6s ease-in-out infinite;}
+  /* ⚠ **軸心固定、只左右偏轉**（ver -373，Ray：「箭頭應該中軸心固定左右偏移像指南針，
+     不是亂飄」）：位移量在整段動畫裡是**常數**（浮起那一下是靜態的），
+     只有 `rotate` 在振盪 —— 指南針的針是繞著軸擺，不會整支飄來飄去。
+     ⚠ 位移仍要寫進同一個 transform（transform 不疊加），只是不隨影格變。 */
   @keyframes kerbCompass{
-    0%,100%{ transform:translate(calc(var(--kerb-px,0px) * .55),calc(var(--kerb-py,0px) * .55))
-                       rotate(calc(var(--kerb-rot,0deg) - 3.5deg)); }
-    50%    { transform:translate(calc(var(--kerb-px,0px) * .75),calc(var(--kerb-py,0px) * .75))
-                       rotate(calc(var(--kerb-rot,0deg) + 3.5deg)); }
+    0%,100%{ transform:translate(calc(var(--kerb-px,0px) * .6),calc(var(--kerb-py,0px) * .6))
+                       rotate(calc(var(--kerb-rot,0deg) - 4deg)); }
+    50%    { transform:translate(calc(var(--kerb-px,0px) * .6),calc(var(--kerb-py,0px) * .6))
+                       rotate(calc(var(--kerb-rot,0deg) + 4deg)); }
   }
   /* 長按中：停止晃動、往外推到底、亮度再上一階（讀得出「這一支正在被按」）。 */
   body.town-nav #kerb .kerb-arrow.avail.holding{
     animation:none;
     transform:translate(calc(var(--kerb-px,0px) * 1.05),calc(var(--kerb-py,0px) * 1.05))
               rotate(var(--kerb-rot,0deg));
-    filter:drop-shadow(0 0 12px rgba(255,225,150,1)) drop-shadow(0 3px 16px rgba(212,169,74,.8));}
+    filter:drop-shadow(0 0 14px rgba(190,235,255,1)) drop-shadow(0 3px 18px rgba(111,179,212,.9));}
 
   /* ── 撞頂時由門縫透出來的十字亮光（Ray：「初版那個不錯，加回去，光用偏青的藍色」）──
      豎的沿中縫、橫的沿紋章橫軸。撞頂那一下猛亮一下再收成微弱的常亮，
@@ -1630,10 +1637,33 @@
   /* 提示的位置由 JS 依「那一支箭在哪」寫 inline（ver -372）—— 箭的位置是
      `layoutKerberos` 依實際尺寸算出來的，CSS 猜不到（鐵律 7：問算的那一支）。 */
   #townHint.at{transform:translate(-50%,-50%);}
-  /* 地名＋時間：左上角一條細字（不做成面板，城鎮的主角是背景）。 */
-  #townInfo{position:absolute;left:12px;top:calc(env(safe-area-inset-top,0px) + 62px);
-    font-size:11px;letter-spacing:2px;color:var(--gold-dim);
-    text-shadow:0 1px 4px rgba(0,0,0,.8);pointer-events:none;}
+  /* 場景名稱：**置中在上方**（ver -373，Ray 指定）。
+     ⚠ 「注意動態島」：往下讓到角落鈕的**下緣之下**（safe-area ＋ 鈕高 44 ＋ 10 ＋ 8）——
+       置中的字如果貼著頂，瀏海機上會被動態島壓住。 */
+  #townInfo{position:absolute;left:0;right:0;text-align:center;
+    top:calc(env(safe-area-inset-top,0px) + 62px);
+    font-size:12px;letter-spacing:4px;color:var(--gold);
+    text-shadow:0 1px 6px rgba(0,0,0,.9);pointer-events:none;}
+  #townInfo .ti-time{font-size:11px;letter-spacing:2px;color:var(--gold-dim);margin-left:8px;}
+
+  /* ── 目的地字格（ver -373，Ray：「四個方向除了下方之外各自在上左右加入目的地名稱，
+     點擊時字格蓄能滿之後移動」）──
+     ⚠ 下方不做：那個方向通常是「退回上一層」，名字寫出來只是重複。
+     ⚠ 蓄能畫在**字格本身**（由左往右填），不再另外浮一個圈 —— 玩家按的是這一格，
+       回饋就該長在這一格上。 */
+  #townNav .town-dest{position:absolute;display:none;align-items:center;justify-content:center;
+    padding:6px 14px;border:1px solid var(--gold-dim);border-radius:14px;
+    background:rgba(8,6,12,.62);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);
+    font-size:12px;letter-spacing:2px;color:var(--gold);white-space:nowrap;
+    pointer-events:auto;overflow:hidden;}
+  #townNav .town-dest.on{display:flex;}
+  #townNav .town-dest::before{content:'';position:absolute;left:0;top:0;bottom:0;width:100%;
+    background:rgba(212,169,74,.30);transform:scaleX(var(--fill,0));transform-origin:left center;
+    pointer-events:none;}
+  #townNav .town-dest span{position:relative;}
+  #townNav .town-dest.up   {top:calc(env(safe-area-inset-top,0px) + 96px);left:50%;transform:translateX(-50%);}
+  #townNav .town-dest.left {left:12px;top:50%;transform:translateY(-50%);}
+  #townNav .town-dest.right{right:12px;top:50%;transform:translateY(-50%);}
   #townNav .town-btn{position:absolute;right:12px;bottom:8px;padding:0 14px;height:34px;
     font-family:inherit;font-size:12px;letter-spacing:2px;color:var(--gold);
     background:rgba(10,8,14,.7);border:1px solid var(--gold-dim);border-radius:17px;

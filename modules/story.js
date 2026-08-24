@@ -1629,6 +1629,20 @@ export function stageEl(){ return $('storyStage'); }
    於是城鎮那條**新的程式路徑**（不經過 scene 渲染）就漏掉了 —— Ray 回報「換場景時
    前一幕立繪都沒清」。規矩因此改寫成引擎層級：**任何切換場景／節點的程式路徑都要
    呼叫這一支**，而且只有這一支會清（鐵律 7：一個動作一個實作）。 */
+/* 中止還在播的**臨時段落**（城鎮換節點時用，ver -373）。
+   ⚠ 不呼叫它的話：舊那一段的推進與計時器還活著，會**在新的地點上把上一段演完**
+     （實測換節點時上一段的立繪又跑出來）。`__done` 不呼叫 —— 那一段沒有演完。
+   ⚠ 只中止臨時段落：主線 scene 有它自己的收尾（進度、next），不能被城鎮打斷。 */
+export function endAdhoc(){
+  if(!cur || !cur.__adhoc) return;
+  clearInterval(typing); typing=null;
+  clearTimeout(waitT); waitT=null;
+  clearTimeout(autoT); autoT=null;
+  clearTimeout(autoT2); autoT2=null;
+  onTyped=null; stopModes(); stopFx();
+  cur=null; active=false;
+  clearCast();
+}
 export function clearCast(){
   slot={L:null,R:null}; slotExpr={L:null,R:null}; shown={};
   leaveSlot('L'); leaveSlot('R');
