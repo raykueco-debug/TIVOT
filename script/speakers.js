@@ -85,7 +85,7 @@ export const ART = {
            校準：同法量 front 得 0.571（表上 0.564，差 −0.007）、璐娜莉亞得 0.494
            （表上 0.496，差 +0.002）—— 兩個獨立校準都落在 ±0.007 內，所以直接用。
          · eye 沒量（CAST_EYE_MIX=0 不參與運算）。 */
-  nouvelle: { cm:165, eye:40, fx:0.564, top:1, bot:1535,
+  nouvelle: { cm:165, eye:40, fx:0.582, top:3, bot:1536,
            side:'L', alt:null, base:'resources/SI/Nouvelle_SI_front.webp',
            expr:{ run:      { src:'resources/SI/Nouvelle_SI_Run.webp',       top:13, bot:1533, fx:0.418 },
                   cringe:   { src:'resources/SI/Nouvelle_SI_Cringe.webp',    top:5,  bot:1533, fx:0.459 },
@@ -176,8 +176,8 @@ export const ART = {
                   /* ⚠ `seat_angry` 比其他三張坐姿再小一截：0.74 → **0.63**
                      （-353，Ray「seat_angry 再縮 15%」）。同一組坐姿吃不同的補償是刻意的，
                      補的是**那一張畫**的構圖差異（這張她往前傾、臉畫得比較大）。 */
-                  seat_angry: { src:'resources/SI/Luna_SI_seat_angry.webp', top:0, bot:1536, fx:0.521, faceAdj:0.63, standCm:155 },
-                  seat_hand:  { src:'resources/SI/Luna_SI_seat_hand.webp',  top:3, bot:1536, fx:0.465, faceAdj:0.74, standCm:155 } } },
+                  seat_angry: { src:'resources/SI/Luna_SI_seat_angry.webp', top:0, bot:1526, fx:0.539, faceAdj:0.63, standCm:155 },
+                  seat_hand:  { src:'resources/SI/Luna_SI_seat_hand.webp',  top:20, bot:1489, fx:0.546, faceAdj:0.74, standCm:155 } } },
   luna:   { cm:160, eye:30, fx:0.500, top:0, bot:1000,
            side:'L', alt:null, base:'resources/partner/Luna_CI_exc.webp', expr:{}, unmeasured:true },
 };

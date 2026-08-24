@@ -1,7 +1,7 @@
 # HANDOFF — Saint Install 模組化重寫 · 進度交接
 
 > 每輪開工前讀本檔 + 憲法/規格。實況以 `git log` 與 `DECISIONS.md` 為準;本檔為人類可讀的進度總覽。
-> **最後回寫:`ver -356`(2026-08-24)。** 本檔後半是逐版的交接,由新到舊往下加;
+> **最後回寫:`ver -357`(2026-08-24)。** 本檔後半是逐版的交接,由新到舊往下加;
 > **要快速上手請先讀下面那一段「★必讀 · 目前狀態(ver -341)」**（餵稿規格見 `script/SCRIPT_FORMAT.md`）,再依需要跳到對應版本。
 >
 > 目前狀態:CLAUDE.md §6 開發順序第 1~5 步已完成;**第 6 步(ACCEPTANCE 對照 reference)仍未動**,
@@ -94,7 +94,7 @@
    ＋`script/speakers.js`(角色表)＋`script/progress.js`(stage/flags)。
 6. `script/SCRIPT_FORMAT.md` — **Ray 餵稿的規格**(ver -342):寫稿格式、演出詞彙表、
    現有素材清單、一定要交代清楚的六件事。收到稿之後跑 `tools/script_lint.py` 驗。
-7. `git log`(本檔最後回寫於 `ver -356`)。
+7. `git log`(本檔最後回寫於 `ver -357`)。
 
 ---
 
@@ -2302,3 +2302,31 @@ clip 與門一起改成 **1s**（同 -343：要同速，看的是行程÷時間�
   ⚠ 只寫在 `expr` 上，不動角色的 `standCm` —— 那是基本立繪（`Lunaria_SI_Armed`）的值。
   ⚠ 也不要用 `cm` 去達成：`cm` 是縮放的分子，一改人就跟著變大變小。
 - Ray 確認：**戰鬥對話的尺寸與高度已經對了**（-355 的常數化生效）。
+
+
+---
+
+# 交接 · `ver -357`（三張立繪換新版；原圖備份的規矩寫進憲法）
+
+## A. Ray 換掉三張，轉檔＋**重量取景**
+
+    Luna_SI_seat_angry   2658K → 328K   top 0→0    bot 1536→1526  fx 0.521→0.539
+    Luna_SI_seat_hand    2497K → 275K   top 3→20   bot 1536→1489  fx 0.465→0.546
+    Nouvelle_SI_front    1618K → 137K   top 1→3    bot 1535→1536  fx 0.564→0.582
+
+⚠⚠ **同名換圖一定要重量**：`seat_hand` 這一張新版的人物在畫布裡內縮了
+（`bot` 少 47px、`fx` 右移 0.08）—— 沿用舊值會歪掉一大截。
+⚠ `Nouvelle_SI_front` 是**基本立繪**：它同時是 `config.js` 的 `portraitFrames.tut_nouvelle`
+（自動跟著 ART 走，不必另改）與戰鬥那邊「鎖縮放」的分母，所以它的 `bot-top` 一變
+會影響全部諾薇兒差分的大小 —— 這次只差 1px，可忽略。
+⚠ `faceAdj` 不跟著改：那是畫風補償，與換圖無關（新版的內縮由 `top/bot` 吸收）。
+
+## B. 原圖備份的規矩（Ray 指定，已寫進 `CLAUDE.md` §5）
+
+固定三步：`cwebp` → 改 `config.js`/`speakers.js` 指 `.webp` → **原 PNG 移進
+`resources/_originals/<同層資料夾>/`**，絕不留在會被載入的目錄。
+底線開頭的資料夾不會被遊戲載入（同 `_master`/`_unused`），且已在 `.gitignore`。
+
+⚠ **`_originals` 目前 133 MB、只在本機**。它是「可回滾」不是「異地備份」——
+要防硬碟壞掉得另外複製到雲端／外接。**要不要改成入版控由 Ray 決定**
+（repo 會多百餘 MB，push 會變慢；`http.postBuffer` 之前已設過）。

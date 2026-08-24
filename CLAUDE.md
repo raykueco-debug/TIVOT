@@ -142,6 +142,17 @@ SPEC.md             行為規格
 - ⚠ 露娜在對白裡目前借用 cut-in `partner/Luna_CI_exc.webp`（`speakers.js`
   標了 `unmeasured:true`）。`Luna_SI_seat` 是坐姿,還沒接進去。
 
+**原圖備份的規矩(ver -357,Ray 指定「以後被做成 webp 的原 png 圖找個不會被讀的地方存好備份」)**
+- 轉檔流程固定三步:①`cwebp` 出 `.webp` 到原位 ②`config.js`/`speakers.js` 指 `.webp`
+  ③**原 PNG 移進 `resources/_originals/<同層資料夾>/`**,絕不留在會被載入的目錄裡。
+- 為什麼是 `_originals`:底線開頭的資料夾**不會被遊戲載入**(同 `_master`/`_unused`),
+  而且已在 `.gitignore` 裡 —— 不進版控、不上靜態空間,但本機留著可回滾。
+- ⚠ **換圖(同名覆蓋)一定要重量取景值**:`top`/`bot`/`fx` 是**那一張圖**的數字。
+  實測 ver -357 換的三張:`Luna_SI_seat_hand` 的 `bot` 由 1536 變 1489、`fx` 由 0.465 變 0.546
+  —— 沿用舊值會歪掉一大截。量法見 §6.5「新增立繪要量什麼」。
+- ⚠ **`_originals` 目前只在本機**(133 MB,gitignore)。它是「可回滾」不是「異地備份」——
+  真的要防硬碟壞掉,要另外複製到雲端/外接;要不要改成入版控由 Ray 決定(repo 會多百餘 MB)。
+
 ⚠️ SPEC 提到 `imageBase` 走 `assets/inspector/freya/...` 舊路徑——重寫時統一改為 `resources/` 新結構,與已完成的目錄一致。
 
 ---
