@@ -55,6 +55,16 @@
     color:var(--gold);font-family:inherit;font-size:11px;letter-spacing:.14em;
     padding:5px 12px;cursor:pointer;}
   #spawnBtn:active{background:rgba(201,162,39,.16);}
+  /* 免戰鈕（ver -383，Ray：「地圖設計時一直被怪打會煩死」）：
+     開著＝碰到怪只跳「遭遇」那一格，**不進戰鬥**。放生怪鈕右邊，同一排。
+     ⚠ `left` 用 `calc` 讓開生怪鈕的寬度 —— 那顆是四個中文字，寬度會隨字型變，
+       寫死像素在別的裝置上會疊到。 */
+  #peaceBtn{position:fixed;left:calc(12px + 5.4em);bottom:calc(env(safe-area-inset-bottom) + 12px);
+    z-index:40;background:rgba(5,6,12,.72);border:1px solid rgba(201,162,39,.5);
+    color:var(--gold);font-family:inherit;font-size:11px;letter-spacing:.14em;
+    padding:5px 12px;cursor:pointer;}
+  #peaceBtn:active{background:rgba(201,162,39,.16);}
+  #peaceBtn.on{color:#7fd0a0;border-color:rgba(127,208,160,.8);}
   /* 加速鈕：開發用。放操作盤**左上**（生怪鈕在左下，兩者不打架）。
      top 由 JS 設成 VIEWH+12 —— 面板上緣是算出來的，CSS 這邊沒有那個數字。 */
   #boostBtn{position:fixed;left:12px;z-index:40;background:rgba(5,6,12,.72);
@@ -217,6 +227,8 @@
 <button id="bagBtn">道具</button>
 <button id="backBtn">← 返回</button>
 <button id="spawnBtn">生怪</button>
+<!-- 免戰（ver -383）：開著就不會被拉進戰鬥，畫地圖時用。狀態記在 localStorage。 -->
+<button id="peaceBtn">免戰</button>
 <button id="boostBtn">×1</button>
 <!-- 進度（管理人限定，由 ADMIN 區塊解除 hidden）：現 stage 與各角色好感 -->
 <button id="progBtn" hidden>進度</button>
@@ -6239,7 +6251,27 @@ function updateEnemy(dt,now){
    ⚠ 只交棒一次：`engage` 每幀都會進來，沒有這道鎖會連跳好幾次。
    ⚠ 留 1.1 秒讓「遭遇　◯◯」那一格看得到 —— 直接跳頁的話玩家不知道發生什麼事。 */
 let battleGoing=false;
+/* ══ 免戰模式（ver -383，Ray 指定）══
+   開著的時候碰到怪**只演「遭遇」那一格**，不跳頁進戰鬥 —— 畫地圖時不會被打斷。
+   ⚠ 擋在 `toBattle()` 這**唯一的發動點**（鐵律 8）：日後多一條進戰鬥的路
+     （例如空賊主動撞船）也自動吃到，不必再擋一次。
+   ⚠ 狀態存 localStorage：畫地圖常常重整，每次重開都要再按一次很煩。
+     ⚠ 但也因此**它會一直記著** —— 鈕在開著的時候是綠的，那就是唯一的提醒。
+     `progress.newRun()` 不清它：那是工具開關，不是一輪遊戲的進度。 */
+const PEACE_KEY='tivot_flight_peace_v1';
+let peaceMode=(()=>{ try{ return localStorage.getItem(PEACE_KEY)==='1'; }catch(_){ return false; } })();
+{
+  const pb=document.getElementById('peaceBtn');
+  const sync=()=>{ if(pb) pb.classList.toggle('on', peaceMode); };
+  sync();
+  if(pb) pb.addEventListener('click',()=>{
+    peaceMode=!peaceMode;
+    try{ localStorage.setItem(PEACE_KEY, peaceMode?'1':'0'); }catch(_){}
+    sync();
+  });
+}
 function toBattle(kind){
+  if(peaceMode) return;      // 免戰：遭遇照演，就是不進戰鬥
   if(battleGoing) return;
   battleGoing=true;
   try{
@@ -6429,7 +6461,9 @@ function drawEngagePrompt(){
   ctx.font='13px "Noto Serif TC",serif';
   const yy=Math.round(VIEWH*0.30);
   const t='遭遇　'+ENEMY_KINDS[enemy.kind].name;
-  const t2='—　進 入 戰 鬥　—';
+  /* ⚠ 免戰時**不要騙玩家**：那一行原本寫「進入戰鬥」，開著免戰卻不會進 ——
+     字要跟著改，不然下次自己測的時候會以為交棒壞了（ver -383）。 */
+  const t2 = peaceMode ? '—　免 戰 中　—' : '—　進 入 戰 鬥　—';
   ctx.fillStyle='rgba(6,7,12,.62)';
   ctx.fillRect(W/2-92,yy-22,184,46);
   ctx.fillStyle='rgba(216,205,180,.92)'; ctx.fillText(t,W/2,yy-4);
