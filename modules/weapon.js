@@ -29,8 +29,8 @@
  *     buildGrid / resetEnergy），不 import combat/saint/defense（維持依賴方向）。
  * ========================================================================== */
 
-import { GAME_CONFIG, asset, sfxGain, weaponDescText } from '../config.js';
-import { state, addCounter, setPickedPartner } from '../state.js';
+import { GAME_CONFIG, asset, sfxGain, weaponDescText, weaponOf } from '../config.js';
+import { state, addCounter, setPickedPartner, storyMode } from '../state.js';
 import { SFX } from '../audio.js';
 import { L } from '../i18n.js';   // 多語言（cut-in 標題/選單鈕/暴擊前綴）
 import * as inv from '../script/inventory.js';   // 武器持有（買來的才上得了卡疊，ver -377）
@@ -43,7 +43,7 @@ const COUNTER_CRIT_DMG  = GAME_CONFIG.tuning.counterCritDmg;   // 反擊武器�
 /* 反擊單發暴擊：回傳 { dmg, crit }。crit → 該發傷害 ×(1+加傷)。
    ⚠ 暴擊率**逐武器**（ver -377，Ray 的武器卡有這一欄）：卡上沒寫才回去用全域值。 */
 function critRate(){
-  const w = WEAPONS[state.equippedWeapon];
+  const w = weaponOf(state.equippedWeapon, storyMode());
   return (w && w.critRate!=null) ? w.critRate : COUNTER_CRIT_RATE;
 }
 function critHit(base){
@@ -67,7 +67,8 @@ export function init(a){ api = a; }
  *  ⚠ 未來若加吸血反擊，回血走 combat.healPlayer（D3），此處不碰 playerHp。
  * ========================================================================== */
 export function weaponCounter(dmgScale){
-  const w = WEAPONS[state.equippedWeapon];
+  /* ⚠ 本篇與試玩版是**兩套數值**（ver -378）——一律走 `weaponOf`，不要直接查 WEAPONS。 */
+  const w = weaponOf(state.equippedWeapon, storyMode());
   if(!w) return;
   const scale = (dmgScale==null) ? 1 : dmgScale;
   // 反擊武器 SE：反擊（Counter）與完美防禦（散彈 Perfect 反擊）都會出聲——散彈 blast 兩路徑皆觸發。
@@ -456,7 +457,9 @@ function renderWeaponSheet(){
   set('wsName', w.name || key);
   /* ⚠ 規格文字是**算出來的**（ver -377，見 config.weaponDescText）——
      不要改回手寫，數值一動文案就會對不上（鐵律 7）。 */
-  set('wsDesc', weaponDescText(key));
+  /* ⚠ 這一頁是**試玩版的出陣整備**，所以顯示試玩版那一組數值（ver -378）。
+     日後本篇如果有自己的裝備畫面，那一頁要傳 `true`。 */
+  set('wsDesc', weaponDescText(key, false));
   set('wsStats', '');   // 規格已整合進 desc（反擊效果/減傷/暴擊率 多行文案），不再另列
   const dots=$('wsDots');
   if(dots){

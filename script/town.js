@@ -133,9 +133,8 @@ export const TOWNS = {
           Object.assign(gun(null,'一般人我們可不接這種單。'), { label:'range_merge' }),
           gun(null,'每週都有競賽，優勝者也會有獎勵喔！各大城市的聯盟槍店都可以進行挑戰。'),
           gun(null,'那麼，就由我來看看這一對美人是否還能更上一層樓。'),
-          /* （修理音）⚠ **沒有專門的修理音**：先借 `se_metalclip`（金屬扣件）。
-             要專門的音效再說。 */
-          { speaker:'GUNSMITH', text:'', auto:1200, se:'se_metalclip',
+          /* （修理音）Ray 指定用 `se_ginclick`（ver -378，原本先借的是 `se_metalclip`）。 */
+          { speaker:'GUNSMITH', text:'', auto:1200, se:'se_ginclick',
             portrait:{ char:'GUNSMITH', show:true } },
           gun(null,'保養很細心，調校還不到位。如果是要獵殺『禍魘』的話，還需要若干改造才能更順手下來吧。'),
           gun(null,'素材到手之後就送來給我吧，馬上能幫你打出趁手的武器。'),

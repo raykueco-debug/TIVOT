@@ -227,3 +227,9 @@ export function initEnemyHp(hp){
   state.enemyMax = hp;
   state.enemyHp = hp;
 }
+
+/* ══ 現在是「本篇」還是「試玩版」？（ver -378）══
+   本篇＝劇情插入戰／劇情帶起來的教學（城鎮那條線）；其餘（首頁出陣、首頁教學）＝試玩版。
+   ⚠ 武器數值分兩套（`config.weapons[].story`），**只有這一支**決定要用哪一套 ——
+     不要在各模組各判斷一次（鐵律 8）。 */
+export function storyMode(){ return !!(state.scriptRun || state.tutorialStoryRun); }

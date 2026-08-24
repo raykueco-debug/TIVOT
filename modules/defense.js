@@ -15,8 +15,8 @@
  *    不 import combat/weapon（維持 §2 依賴方向，不製造反向依賴）。
  * ========================================================================== */
 
-import { GAME_CONFIG, asset, sfxGain } from '../config.js';
-import { state, addPerfect } from '../state.js';
+import { GAME_CONFIG, asset, sfxGain, weaponOf } from '../config.js';
+import { state, addPerfect, storyMode } from '../state.js';
 import { SFX } from '../audio.js';
 import { L, fmt } from '../i18n.js';   // 多語言（防禦浮動字）
 
@@ -102,7 +102,8 @@ export function updateThreats(){
     const size=20+90*ratio;
     th.el.style.width=size+'px'; th.el.style.height=size+'px';
     th.el.style.opacity=0.5+0.5*ratio;
-    const wNP=WEAPONS[state.equippedWeapon] && WEAPONS[state.equippedWeapon].noPerfectBand;
+    const _w=weaponOf(state.equippedWeapon, storyMode());
+    const wNP=_w && _w.noPerfectBand;
     let col;
     if(ratio>=DEF_DEFENSE_MIN)      col='rgba(240,200,60';   // 黃圈：防一半
     else if(ratio>=DEF_PERFECT_MIN) col= wNP ? 'rgba(240,200,60'   // 狙擊：橘圈被黃圈取代（無 Perfect 帶）
@@ -205,7 +206,7 @@ export function resolveThreat(th){
   if(!th || state.threats.indexOf(th)<0) return;
   const left=Math.max(0,state.CHARGE_SECONDS-(Date.now()-th.t0)/1000);
   const ratio=left/state.CHARGE_SECONDS;
-  const w=WEAPONS[state.equippedWeapon];
+  const w=weaponOf(state.equippedWeapon, storyMode());   // 本篇／試玩版兩套數值（ver -378）
   removeThreat(th);
   SFX.confirm();
 

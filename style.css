@@ -1668,11 +1668,21 @@
   /* 場景名稱：**置中在上方**（ver -373，Ray 指定）。
      ⚠ 「注意動態島」：往下讓到角落鈕的**下緣之下**（safe-area ＋ 鈕高 44 ＋ 10 ＋ 8）——
        置中的字如果貼著頂，瀏海機上會被動態島壓住。 */
+  /* ⚠ 地名與時間用**白字＋不模糊的黑陰影**（ver -378，Ray 指定）：
+     這一行是壓在背景圖上的，而背景什麼顏色都有（白天的天空、雜貨舖的暖光）——
+     原本的金字＋6px 模糊陰影在亮處整個糊掉，讀不出來。
+     ⚠ 陰影用**四方向 1px 的實心描邊**（0 模糊）再加一層很淡的擴散：
+       模糊半徑大＝把字自己也糊掉，那正是原本看不清的原因。 */
   #townInfo{position:absolute;left:0;right:0;text-align:center;
     top:calc(env(safe-area-inset-top,0px) + 62px);
-    font-size:12px;letter-spacing:4px;color:var(--gold);
-    text-shadow:0 1px 6px rgba(0,0,0,.9);pointer-events:none;}
-  #townInfo .ti-time{font-size:11px;letter-spacing:2px;color:var(--gold-dim);margin-left:8px;}
+    font-size:12px;letter-spacing:4px;color:#fff;
+    text-shadow:1px 0 0 rgba(0,0,0,.92), -1px 0 0 rgba(0,0,0,.92),
+                0 1px 0 rgba(0,0,0,.92), 0 -1px 0 rgba(0,0,0,.92),
+                1px 1px 0 rgba(0,0,0,.92), -1px 1px 0 rgba(0,0,0,.92),
+                1px -1px 0 rgba(0,0,0,.92), -1px -1px 0 rgba(0,0,0,.92),
+                0 1px 3px rgba(0,0,0,.55);
+    pointer-events:none;}
+  #townInfo .ti-time{font-size:11px;letter-spacing:2px;color:#fff;opacity:.88;margin-left:8px;}
 
   /* ── 目的地字格（ver -373，Ray：「四個方向除了下方之外各自在上左右加入目的地名稱，
      點擊時字格蓄能滿之後移動」）──

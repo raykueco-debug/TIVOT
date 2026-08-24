@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.24-377';
+export const VERSION = 'ver 2026.08.24-378';
 
 export const GAME_CONFIG = {
 
@@ -50,24 +50,39 @@ export const GAME_CONFIG = {
          價格 → `price`（沒寫＝**買不到也賣不掉**）
      ⚠ `perfectDmgPerHit` 存的是**卡上的絕對值**（龍息橘圈 6 發 ×4），不是倍率 ——
        倍率由 `defense.js` 現算（`perfectDmgPerHit / dmgPerHit`）。卡上寫幾就存幾（鐵律 7）。
-     ⚠ `owned:true` ＝ **開局就有**。其餘要在槍店買，持有量記在道具欄（id 就是這個鑰匙）。 */
+     ⚠ `owned:true` ＝ **開局就有**。其餘要在槍店買，持有量記在道具欄（id 就是這個鑰匙）。
+     ⚠⚠ **`story` ＝ 本篇（劇情／城鎮）專用的數值覆寫**（ver -378，Ray 指定：
+       「修改初始特殊武器數值，但是跟試玩版的『出陣』那個分開，試玩版的不要動」）。
+       本體那一組是**試玩版**（首頁出陣、教學）在用的，一個字都不要動；
+       本篇要調就只動 `story` 裡那幾欄。讀取一律走 `weaponOf(key, story?)`（鐵律 8：
+       一個判斷一支函式）—— 不要在各處自己 `Object.assign` 一次。
+     ⚠ `value` ＝ **市價**（卡上寫的那個數字），**不是** `price`：初始武器
+       Ray 指定「不能賣」，而 `price` 一寫下去就會有賣價（見 inventory.sellPrice）。
+       兩者分開之後，卡上的數字留著給改裝／日後的估價用，但賣不掉。 */
   weapons: {
     // B1901 陣地機槍「絞肉機」：基準武器（反擊總傷 48），Perfect 帶正常、Defense 吃半傷（0.5）
     MG_Squall:     { name:'B1901陣地機槍「絞肉機」', shortName:'絞肉機', cat:'重機槍',
-                     owned:true, critRate:0.20, maxMod:5,
+                     owned:true, critRate:0.20, maxMod:5, value:4000,
                      counterWin:0.12, hits:8, dmgPerHit:6,  vfx:null,     defenseDamageScale:0.5,  noPerfectBand:false, image:'weapon_mg_squall',     sound:'se_mg_squall',
-                     flavor:'攻守均衡的可靠選擇' },
+                     flavor:'攻守均衡的可靠選擇',
+                     /* 本篇用的數值（ver -378，Ray 的「初始重機槍」卡）：紅圈 8發×3、爆擊 10%。 */
+                     story:{ hits:8, dmgPerHit:3, critRate:0.10 } },
     // 雙管霰彈槍「鐵拳」：Counter 6發×4=24；Perfect 檔改打 6發×2=12（perfectDmgPerHit=2，傷害取代免傷）；Defense 檔吃 1/4 傷（0.25＝減傷75%）
     Shotgun_Blast: { name:'雙管霰彈槍「鐵拳」', shortName:'鐵拳', cat:'霰彈槍',
-                     owned:true, critRate:0.20, maxMod:5,
+                     owned:true, critRate:0.20, maxMod:5, value:3000,
                      counterWin:0.20, hits:6, dmgPerHit:4,  vfx:'burst',  defenseDamageScale:0.25, noPerfectBand:false, perfectDmgPerHit:2, image:'weapon_shotgun_blast', sound:'se_shotgun_blast',
-                     flavor:'保命的穩健之選' },
+                     flavor:'保命的穩健之選',
+                     /* 本篇用的數值（ver -378，Ray 的「初始霰彈槍」卡）：黃圈 減傷50%、紅圈 6發×3。
+                        ⚠ 黃圈由 75% **降**到 50%（試玩版那把仍是 75%）。 */
+                     story:{ hits:6, dmgPerHit:3, defenseDamageScale:0.5, perfectDmgPerHit:2 } },
     // 85 式步槍「嗜心者」：反擊總傷 72（1.5 倍）、單發大紅字、無 Perfect 帶；
     //   defenseDamageScale 1＝黃圈也無減傷（與文案一致：賭上一切，防禦全靠反擊窗）
-    Sniper_Falcon: { name:'85式步槍「嗜心者」', shortName:'嗜心者', cat:'步槍',
-                     owned:true, critRate:0.20, maxMod:5,
+    Sniper_Falcon: { name:'85式萊福槍「嗜心者」', shortName:'嗜心者', cat:'萊福槍',
+                     owned:true, critRate:0.20, maxMod:5, value:5000,
                      counterWin:0.06, hits:1, dmgPerHit:72, vfx:'single', defenseDamageScale:1,    noPerfectBand:true,  image:'weapon_sniper_falcon', sound:'se_sniper_falcon',
-                     flavor:'賭上一切的單發重擊' },
+                     flavor:'賭上一切的單發重擊',
+                     /* 本篇用的數值（ver -378，Ray 的「初始萊福槍」卡）：紅圈 1發56。 */
+                     story:{ hits:1, dmgPerHit:56 } },
 
     /* ── 槍店的貨（ver -377，Ray 的武器卡）──────────────────────────
        ⚠ 這三把**沒有自己的立繪與音效**：先借同類那一把的（`image`/`sound`）。
@@ -82,7 +97,7 @@ export const GAME_CONFIG = {
                      critRate:0.10, maxMod:5, price:4000,
                      counterWin:0.12, hits:8, dmgPerHit:6,  vfx:null,     defenseDamageScale:0.5,  noPerfectBand:false, image:'weapon_mg_squall',     sound:'se_mg_squall',
                      flavor:'原廠改良型' },
-    Rifle_Shahin:  { name:'Shahin栓動步槍「遊隼」', shortName:'遊隼', cat:'步槍',
+    Rifle_Shahin:  { name:'Shahin栓動萊福槍「遊隼」', shortName:'遊隼', cat:'萊福槍',
                      critRate:0.20, maxMod:5, price:5000,
                      counterWin:0.06, hits:1, dmgPerHit:72, vfx:'single', defenseDamageScale:1,    noPerfectBand:true,  image:'weapon_sniper_falcon', sound:'se_sniper_falcon',
                      flavor:'栓動、遠距、一擊定生死' },
@@ -1152,8 +1167,15 @@ export const ASSETS = {
      以前那樣寫，改了數值而忘了改文案，玩家看到的規格就是錯的。
      `flavor` 只留一句風味（「攻守均衡的可靠選擇」），那一句沒有數字。
    ⚠ 出擊整備的卡（`weapon.js`）與槍店（`loot.js`）**共用這一支**。 */
-export function weaponStatRows(key){
-  const w=(GAME_CONFIG.weapons||{})[key]; if(!w) return [];
+/* ⚠⚠ **武器數值的唯一入口**（ver -378）：`story` 為真時套上本篇的覆寫。
+   試玩版（首頁出陣／教學）傳 false 或不傳 —— 那一組數值一個字都不會動。 */
+export function weaponOf(key, story){
+  const w=(GAME_CONFIG.weapons||{})[key];
+  if(!w) return null;
+  return (story && w.story) ? Object.assign({}, w, w.story) : w;
+}
+export function weaponStatRows(key, story){
+  const w=weaponOf(key, story); if(!w) return [];
   const def = (w.defenseDamageScale==null) ? 0.5 : w.defenseDamageScale;
   const yellow = def>=1 ? '無減傷效果' : (def<=0 ? '完全防禦' : '減傷'+Math.round((1-def)*100)+'%');
   const shots = n => (w.hits>1 ? w.hits+'發×'+n+'傷害' : '單發'+n+'傷害');
@@ -1167,9 +1189,9 @@ export function weaponStatRows(key){
   return rows;
 }
 /* 卡片上那一段（與 -376 之前手寫的 `desc` 同樣的排版，只是現在是算出來的）。 */
-export function weaponDescText(key){
-  const w=(GAME_CONFIG.weapons||{})[key]; if(!w) return '';
-  const rows=weaponStatRows(key).filter(r=>r[0]!=='分類');
+export function weaponDescText(key, story){
+  const w=weaponOf(key, story); if(!w) return '';
+  const rows=weaponStatRows(key, story).filter(r=>r[0]!=='分類');
   return '反擊效果\n' + rows.map(r=>r[0]+'：'+r[1]).join('\n') + (w.flavor ? '\n'+w.flavor : '');
 }
 

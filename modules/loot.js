@@ -10,7 +10,7 @@
      常駐在 index.html 裡只是多一塊沒人看的節點。
    ══════════════════════════════════════════════════════════════════════ */
 
-import { GAME_CONFIG, weaponStatRows } from '../config.js';
+import { GAME_CONFIG, weaponStatRows, weaponOf } from '../config.js';
 import * as inv from '../script/inventory.js';
 import { SFX } from '../audio.js';
 
@@ -120,8 +120,10 @@ export function showShop(stockKey, keeper, onTalk){
     setTimeout(()=>{ if(ov.parentNode) ov.parentNode.removeChild(ov); }, 200); };
 
   /* 規格表（武器）。⚠ 數值一律問 `config.weaponStatRows`（唯一一處），這裡只排版。 */
+  /* ⚠ 商店只存在於城鎮（本篇），所以規格一律顯示**本篇那一組**數值（ver -378）。
+     試玩版的出陣整備頁顯示的是另一組 —— 那是刻意的，兩邊本來就是兩套。 */
   const statTable=(id, cls)=>{
-    const rows=weaponStatRows(id);
+    const rows=weaponStatRows(id, true);
     if(!rows.length) return '';
     return '<div class="wp-stats '+(cls||'')+'">'
          + rows.map(r=>'<span class="wp-k">'+r[0]+'</span><span class="wp-v">'+r[1]+'</span>').join('')
@@ -171,7 +173,7 @@ export function showShop(stockKey, keeper, onTalk){
     /* 說明區：武器 → 規格表（＋同類比較）；其餘 → 文字說明。 */
     let desc;
     if(!pick) desc = (tab==='mod') ? '' : '選一項看說明。';
-    else if(weaponStatRows(pick).length){
+    else if(weaponStatRows(pick, true).length){
       const rk=rivalOf(pick);
       desc = statTable(pick)
            + (rk ? '<div class="wp-vs">對比現有：'+(GAME_CONFIG.weapons[rk].shortName||rk)+'</div>'

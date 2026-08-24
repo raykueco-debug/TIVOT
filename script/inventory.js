@@ -44,7 +44,9 @@ export function defOf(id){
   const d = ITEMS().defs[id];
   if(d) return d;
   const w = (GAME_CONFIG.weapons||{})[id];
-  return w ? { name:w.name, cat:'weapon', price:w.price, desc:weaponDescText(id) } : null;
+  /* ⚠ 說明用**本篇**那一組數值（道具欄與商店都在城鎮裡）。試玩版的整備頁另外走
+     `weaponDescText(key, false)`（ver -378，兩套數值的分界見 config.weapons[].story）。 */
+  return w ? { name:w.name, cat:'weapon', price:w.price, desc:weaponDescText(id, true) } : null;
 }
 export function nameOf(id){ const d=defOf(id); return d ? d.name : String(id); }
 export function catOf(id){ const d=defOf(id); return d ? d.cat : 'item'; }
