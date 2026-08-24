@@ -21,6 +21,7 @@ import * as weapon from './modules/weapon.js';     // 雙槍破防發動 + 換�
 
 import * as inspector from './modules/inspector.js';   // 結算/評價/迎擊分流
 import * as loot from './modules/loot.js';            // 拾得道具視窗 ＋ 道具欄
+import * as town from './modules/town.js';            // 城鎮探索（非線性節點）
 import * as tutorial from './modules/tutorial.js';     // 首頁「教學」鈕：下一場強制進教學
 import { playTransition } from './modules/transition.js';   // 過渡禎（開始/結束淡入淡出）
 import { sakuraBurst } from './modules/sakura.js';   // 開始遊戲：全畫面櫻花飛舞（純程式）
@@ -552,8 +553,9 @@ function showExitConfirm(){
 }
 bindBtn('testClearBtn', combat.testClearBoard); // 左上（測試用）：一鍵清盤
 bindBtn('bagBtn',       loot.showBag);          // 道具欄（ver -358，純顯示）
-bindBtn('shopBtn',      loot.showShop);         // 商店（ver -368，買賣只在這裡）
+bindBtn('shopBtn',      ()=>loot.showShop('grocery'));   // 商店（ver -368；臨時入口，正式入口在城鎮節點）
 bindBtn('storySkip',    story.skipToNextGate);  // 跳段（開發者限定，ver -363）
+bindBtn('townBtn',      ()=>town.open('capital'));       // 城鎮探索（ver -369，管理人模式限定的臨時入口）
 bindBtn('tutDevSkip',   combat.devSkipBattle);  // 教學戰跳關（開發者限定，ver -366）
 bindBtn('rematchBtn',   inspector.onRematchBtn);// 結算：依 resultMode 分流（再度執槍/迎擊）
 
@@ -599,6 +601,7 @@ bindBtn('storyBtn', ()=>{ story.open(null); });
 let storyResume = null;
 /* 關門演出（進場那一套的倒放）：由劇情層提供、combat 在教學打完時呼叫（ver -366）。
    ⚠ 注入而不是 import —— combat 不認識劇情層（CLAUDE.md §2 的依賴方向）。 */
+story.setTownOpener(town.open);   // scene 的 `thenTown` 由 story 呼叫（注入，story 不 import town）
 combat.setStoryClose(story.playKerberosClose);
 combat.setStoryReturn(()=>{
   const r = storyResume; storyResume = null;

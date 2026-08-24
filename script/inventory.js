@@ -103,7 +103,14 @@ export function moneyName(){ return (ITEMS().moneyName)||'克朗'; }
 
 /* ══ 變賣 ══
    ⚠ 沒寫 `sell` 的道具**不能賣**（劇情道具／任務物品）。回傳實際賣掉的數量與入袋金額。 */
-export function sellPrice(id){ const d=defOf(id); return (d && d.sell>0) ? (d.sell|0) : 0; }
+/* 市價（買進價）。沒寫 `price` ＝ 不能買也不能賣。 */
+export function priceOf(id){ const d=defOf(id); return (d && d.price>0) ? (d.price|0) : 0; }
+/* 收購價 ＝ 市價 × `shop.sellRate`（Ray：買收價為物價 50%）。
+   ⚠ 折扣寫在店家不寫在道具 —— 一個道具只有一個數字（鐵律 7 的精神）。 */
+export function sellPrice(id){
+  const rate=((GAME_CONFIG.shop||{}).sellRate!=null) ? GAME_CONFIG.shop.sellRate : 0.5;
+  return Math.max(0, Math.round(priceOf(id)*rate));
+}
 export function canSell(id){ return sellPrice(id)>0; }
 export function sell(id, n){
   const price=sellPrice(id); if(!price) return { n:0, gain:0 };

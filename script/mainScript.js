@@ -336,6 +336,9 @@ export const MAIN_SCRIPT = {
     sceneId:'capital_square',
     next:null,
     setFlags:['renna_named'],
+    /* 演完 → 黑幕過場 → **回到廣場開始城鎮探索**（Ray 指定，ver -369）。
+       ⚠ 探索是非線性的，不再是 scene 鏈 —— 節點資料在 `script/town.js`。 */
+    thenTown:'capital',
     /* ⚠ 這一幕**蕾娜站右**（ver -360，Ray 指定）。她的固定站位是左（與諾薇兒同側），
        而這一幕全程只有她們兩個 —— 同側的話每換一個說話者就是一次滑出＋滑入，讀起來很忙。
        ⚠ 覆寫是**整幕**的，不是逐句（逐句換邊＝ver -288 被退回的發起位制：

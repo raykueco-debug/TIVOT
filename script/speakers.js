@@ -33,6 +33,12 @@ export const SPEAKERS = {
      在資料上有著落（驗稿工具會檢查 speaker 是否有登記）。
      ⚠ `art:null` ＝ 沒有立繪：他從不站台，只有對話框（含 `blank:true` 的空框）。 */
   PLAYER:   { name:'{P}',     art:null },
+  /* 城鎮 NPC（ver -369）。⚠ 站**右**：城鎮裡玩家的同伴（諾薇兒/蕾娜）在左，
+     對面的人在右 —— 與主線的固定站位同一個邏輯。 */
+  SHOPKEEP: { name:'店主',   art:'shopkeep' },
+  /* 背景人聲（路人閒聊）：**沒有名字也沒有立繪** —— 讀起來才像鄰桌傳來的，
+     而不是「有個叫路人的角色在跟你說話」。 */
+  VOICE:    { name:'',       art:null },
 };
 
 /* ══ 立繪素材 ＋ 取景實測值 ══
@@ -75,7 +81,9 @@ export const ART = {
                   bow:     { src:'resources/SI/Renna_SI_bow.webp',     top:0, bot:1530, fx:0.507 },
                   awkward: { src:'resources/SI/Renna_SI_awkwerd.webp', top:6, bot:1526, fx:0.519 },
                   /* 帝都廣場那一段新增（ver -359）。`stare`＝直視／半瞇，用在她盯著人講話那幾拍。 */
-                  stare:   { src:'resources/SI/Renna_SI_stare.webp',   top:0, bot:1527, fx:0.515 } } },
+                  stare:   { src:'resources/SI/Renna_SI_stare.webp',   top:0, bot:1527, fx:0.515 },
+                  surprise:{ src:'resources/SI/Renna_SI_Surprise.webp',top:8, bot:1524, fx:0.498 },
+                  ask:     { src:'resources/SI/Renna_SI_ask.webp',     top:3, bot:1525, fx:0.489 } } },
   /* ⚠⚠ 諾薇兒的表情差分是**不同姿勢**（跑、畏縮、驚恐、絕望、驚訝），不是換臉，
        所以每一張**各帶自己的 top/bot/fx**（ver -325 量完）。
        ⚠ 沿用 front 那一組的後果實測過：Scared 的臉其實在 0.397，照 0.564 擺會
@@ -103,7 +111,12 @@ export const ART = {
                   shy:      { src:'resources/SI/Nouvelle_SI_Shy.webp',       top:4,  bot:1533, fx:0.592 },
                   /* ⚠ `whisper` 的臉在 **0.697**（其他差分 0.39~0.60）——她整個人偏右，
                      與 `gossip1`（0.710）同一類構圖。沿用別張會把她推出畫面。 */
-                  whisper:  { src:'resources/SI/Nouvelle_SI_whisper.webp',   top:8,  bot:1530, fx:0.697 } } },
+                  whisper:  { src:'resources/SI/Nouvelle_SI_whisper.webp',   top:8,  bot:1530, fx:0.697 },
+                  /* 城鎮探索那一段新增（ver -369）。 */
+                  sadsmile: { src:'resources/SI/Nouvelle_SI_sadsmile.webp',  top:5,  bot:1532, fx:0.587 },
+                  hungry:   { src:'resources/SI/Nouvelle_SI_hungry.webp',    top:0,  bot:1536, fx:0.579 },
+                  shocked:  { src:'resources/SI/Nouvelle_SI_Shocked.webp',   top:3,  bot:1534, fx:0.504 },
+                  lookaway: { src:'resources/SI/Nouvelle_SI_Lookaway.webp',  top:5,  bot:1529, fx:0.504 } } },
   /* ⚠ 索拉娜用 **side** 那張：front 橫向佔 78%，兩人同台一定疊；側面只佔 69%。 */
   sorana: { cm:176, eye:27, fx:0.527, top:4, bot:1522,
            side:'R', alt:null, base:'resources/SI/Sorana_SI_side.webp', expr:{} },
@@ -204,6 +217,10 @@ export const ART = {
                      補的是**那一張畫**的構圖差異（這張她往前傾、臉畫得比較大）。 */
                   seat_angry: { src:'resources/SI/Luna_SI_seat_angry.webp', top:0, bot:1526, fx:0.539, faceAdj:0.778, standCm:155 },
                   seat_hand:  { src:'resources/SI/Luna_SI_seat_hand.webp',  top:20, bot:1489, fx:0.546, faceAdj:0.634, standCm:155 } } },
+  /* 雜貨舖店主（ver -369）。⚠ 身高是**估的**（170）—— 沒有設定，先給一個中間值；
+     取景值是量的。日後 Ray 給了設定再改 cm 就好，取景不用重量。 */
+  shopkeep:{ cm:170, eye:32, fx:0.434, top:6, bot:1533,
+           side:'R', alt:null, base:'resources/SI/NPC_Grocerie_SI.webp', expr:{} },
   luna:   { cm:160, eye:30, fx:0.500, top:0, bot:1000,
            side:'L', alt:null, base:'resources/partner/Luna_CI_exc.webp', expr:{}, unmeasured:true },
 };

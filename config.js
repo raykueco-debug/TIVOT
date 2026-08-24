@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.24-368';
+export const VERSION = 'ver 2026.08.24-369';
 
 export const GAME_CONFIG = {
 
@@ -246,13 +246,21 @@ export const GAME_CONFIG = {
   items: {
     catOrder: ['item','weapon','material','equip','special'],
     catName:  { item:'道具', weapon:'武器', material:'素材', equip:'裝備', special:'特殊' },
-    /* ⚠ `sell`＝變賣單價（ver -368）。沒寫的道具**不能賣**（劇情道具、任務物品都該如此）——
-       所以「不能賣」是預設，要賣才寫價。 */
+    /* ⚠ `price`＝**市價**（買進的價）。賣出價由 `shop.sellRate` 折算（Ray：買收價為物價 50%）
+       —— 一個道具只寫一個數字，折扣是店家的事，不是道具的屬性（鐵律 7 的精神）。
+       ⚠ 沒寫 `price` 的道具**不能買也不能賣**（劇情道具、任務物品都該如此）。
+       ⚠ `use`＝使用效果（目前只有恢復體力的數值；戰鬥外的使用系統還沒做，先把資料放著）。 */
     defs: {
-      saint_claw_low: { name:'聖徒之爪（低品質）', cat:'material', sell:12,
+      saint_claw_low: { name:'聖徒之爪（低品質）', cat:'material', price:24,
                         desc:'從訓練用聖徒上剝下來的爪。質地脆，勉強能當研磨材。' },
-      scrap_iron:     { name:'碎鐵片',             cat:'material', sell:3,
+      scrap_iron:     { name:'碎鐵片',             cat:'material', price:6,
                         desc:'地宮裡到處都有的碎片。攢多了能換點東西。' },
+      milk:           { name:'牛奶',   cat:'item', price:50,  use:{ hp:50 },
+                        desc:'恢復 50 點體力。' },
+      cheese:         { name:'起司',   cat:'item', price:100, use:{ hp:100 },
+                        desc:'恢復 100 點體力。' },
+      lime_rum:       { name:'萊姆酒', cat:'item', price:200, use:{ hp:200 },
+                        desc:'恢復 200 點體力。' },
     },
     /* 金錢的單位（Ray 指定：**G**）。⚠ 只有一種貨幣，不做多幣別。 */
     moneyName: 'G',
@@ -270,8 +278,12 @@ export const GAME_CONFIG = {
      ⚠ `sellRate`＝實際收購價 ＝ `items.defs[].sell` × 這個係數（1 ＝ 照定價收）。
        日後要做「不同城鎮不同行情」就是每家店各帶一個 rate。 */
   shop: {
-    sellRate: 1,
-    buy: [],
+    /* Ray：「買收價為物價 50%」—— 店家收購時只給市價的一半。 */
+    sellRate: 0.5,
+    /* 各家店的貨單（節點的 `shop` 欄位指到這裡的鍵）。 */
+    stock: {
+      grocery: ['milk','cheese','lime_rum'],
+    },
   },
 
   tutorial: {

@@ -1313,6 +1313,14 @@ function advance(){
 }
 
 function endScene(){
+  /* 城鎮的臨時段落：不寫進度、不收舞台，把控制權交回城鎮（ver -369）。 */
+  if(cur && cur.__adhoc){
+    const cb=cur.__done; cur=null; active=false;
+    stopModes(); clearTimeout(autoT2); autoT2=null; onTyped=null;
+    const b=$('storyBubble'); if(b) b.style.visibility='hidden';
+    if(cb) cb();
+    return;
+  }
   /* scene 收尾才寫進度（規格 §0.2：主線寫，其餘讀）。 */
   if(cur.setStage!=null) prog.setStage(cur.setStage);
   if(cur.setFlags)       prog.addFlags(cur.setFlags);
@@ -1332,6 +1340,15 @@ function endScene(){
     }
   }
 
+  /* 這一段演完直接進城鎮（Ray：黑幕過場之後回到廣場，開始非線性探索）。 */
+  if(cur.thenTown && townOpener){
+    const t=cur.thenTown;
+    active=false; cur=null;
+    const fade=$('storyFade'); if(fade) fade.classList.add('on');
+    setTimeout(()=>{ townOpener(t);
+      setTimeout(()=>{ if(fade) fade.classList.remove('on'); }, 160); }, 520);
+    return;
+  }
   const nx = cur.next;
   if(nx && MAIN_SCRIPT[nx]){ playScene(nx); return; }
   if(nx) console.warn('[story] next 指向不存在的 scene：', nx);
@@ -1575,6 +1592,10 @@ export function setBattleHandler(fn){ battleHandler = fn || null; }
 function riseCue(){ if(battleCue) try{ battleCue(); }catch(e){} }
 let battleCue = null;
 export function setBattleCue(fn){ battleCue = fn || null; }
+/* scene 的 `thenTown:'capital'`：這一段演完就進城鎮探索（ver -369）。
+   ⚠ 注入而不是 import —— 城鎮不在劇情的依賴圖裡（同 battleHandler 的作法）。 */
+let townOpener = null;
+export function setTownOpener(fn){ townOpener = fn || null; }
 
 export function close(opts){
   clearInterval(typing); typing=null;
@@ -1595,6 +1616,34 @@ export function close(opts){
     try{ SFX.playBgm(HOME_BGM, {fadeInMs:600, volume:HOME_VOL}); }catch(_){}
   }
   const cb=onExit; onExit=null; if(cb) cb();
+}
+
+/* ══ 給城鎮探索用的三個接口（ver -369）══
+   城鎮是**非線性**的（玩家在節點之間走動），不走 MAIN_SCRIPT 的 scene 鏈；
+   但對白的演出（立繪取景、明暗、打字機、對話框、面盤手勢）**必須是同一套** ——
+   所以不另寫一個播放器，而是把「播一段臨時台詞」與「換背景」開出來給城鎮呼叫。
+   ⚠ `playAdhoc` 不做預載也不寫進度：城鎮的素材由城鎮自己顧，進度只有主線能寫（規格 §0.2）。 */
+export function stageEl(){ return $('storyStage'); }
+/* 城鎮用：把下半的面盤（槍棺/團徽）擺好。⚠ 不做的話面盤是一片全黑 ——
+   那塊是 `layoutKerberos` 依實際尺寸算出來的，不是 CSS 就有的。 */
+export function showPanel(){ layoutKerberos(); }
+export function isPlaying(){ return active && !!cur; }
+export function setSceneBg(name){
+  const el=$('storyBg'); if(!el) return;
+  if(name===stageBg) return;
+  stageBg=name;
+  swapImg(el, name ? imgSrc(name) : '');
+  setTimeout(()=>matchPortraits($('storyBg'), $('storyCast')), 420);
+}
+/* 播一段臨時台詞（城鎮節點的進場對白）。done 在最後一句被點掉之後呼叫。
+   ⚠ 播完**不收舞台**（城鎮還要留在畫面上），與 scene 鏈的 endScene 不同。 */
+export function playAdhoc(lines, done){
+  const st=$('storyStage'); if(!st || !lines || !lines.length){ done&&done(); return; }
+  st.classList.add('on'); document.body.classList.add('story-on');
+  active=true;
+  cur={ sceneId:'__town', lines, next:null, __adhoc:true, __done:done };
+  lineIdx=0; sceneLog=[]; stopModes();
+  renderLine();
 }
 
 /* 讀檔：跳到指定位置（劇情播放中或不在播都可用）。 */

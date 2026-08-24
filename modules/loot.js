@@ -99,25 +99,55 @@ export function showBag(){
    ⚠ 賣價 ＝ `items.defs[].sell` × `config.shop.sellRate`。日後要做「不同城鎮不同行情」
      就是每家店各帶一個 rate，不要把價錢寫進這支 UI。
    ⚠ 沒寫 `sell` 的道具**不出現在賣的清單裡**（劇情道具／任務物品賣不掉）。 */
-export function showShop(){
+/* `stockKey`＝`config.shop.stock` 的鍵（這家店賣什麼）；`keeper`＝店主的輪播台詞。
+   ⚠ 賣什麼、多少錢**全在 config**，這一頁只負責演（鐵律 1）。 */
+export function showShop(stockKey, keeper){
   const ov=document.createElement('div'); ov.id='lootSheet'; ov.classList.add('bag','shop');
   document.body.appendChild(ov);
-  const rate=((GAME_CONFIG.shop||{}).sellRate!=null) ? GAME_CONFIG.shop.sellRate : 1;
-  const priceOf=id=>Math.max(0, Math.round(inv.sellPrice(id)*rate));
+  const SHOP=GAME_CONFIG.shop||{};
+  const stock=((SHOP.stock||{})[stockKey])||[];
+  let keepIdx=0;
   const render=()=>{
+    const buyRows = stock.length
+      ? stock.map(id=>{
+          const d=inv.defOf(id)||{}, price=inv.priceOf(id);
+          const afford=inv.getMoney()>=price;
+          return '<div class="loot-row"><span class="loot-name">'+(d.name||id)+'</span>'
+               + '<span class="loot-n">'+price+' '+inv.moneyName()+'</span>'
+               + (d.desc?'<span class="loot-desc">'+d.desc+'</span>':'')
+               + '<button class="bag-sell buy'+(afford?'':' broke')+'" type="button" '
+               + 'data-buy="'+id+'">買</button></div>';
+        }).join('')
+      : '';
     const sellable=[];
-    for(const g of inv.grouped()) for(const r of g.rows) if(priceOf(r.id)>0) sellable.push(r);
-    const rows = sellable.length
+    for(const g of inv.grouped()) for(const r of g.rows) if(inv.sellPrice(r.id)>0) sellable.push(r);
+    const sellRows = sellable.length
       ? sellable.map(r=>'<div class="loot-row"><span class="loot-name">'+r.name+'</span>'
                        + '<span class="loot-n">×'+r.n+'</span>'
                        + '<button class="bag-sell" type="button" data-id="'+r.id+'">賣 '
-                       + priceOf(r.id) + '</button></div>').join('')
+                       + inv.sellPrice(r.id) + '</button></div>').join('')
       : '<div class="bag-empty">沒有可以賣的東西。</div>';
     ov.innerHTML='<div class="loot-panel"><div class="loot-title">商店</div>'
                + '<div class="bag-money">'+inv.moneyName()+'　<b>'+inv.getMoney()+'</b></div>'
+               + (keeper&&keeper.length ? '<div class="shop-keeper">'+keeper[keepIdx%keeper.length]+'</div>'
+                                        + '<button class="shop-talk" type="button">與店主交談</button>' : '')
+               + (buyRows ? '<div class="bag-cat">販售</div>'+buyRows : '')
                + '<div class="bag-cat">收購</div>'
-               + '<div class="loot-list">'+rows+'</div>'
+               + '<div class="loot-list">'+sellRows+'</div>'
                + '<button class="loot-ok" type="button">離開</button></div>';
+    const talk=ov.querySelector('.shop-talk');
+    if(talk) talk.addEventListener('click', e=>{ e.stopPropagation();
+      try{ SFX.unlock(); SFX.menuClick(); }catch(_){}
+      keepIdx++; render(); });
+    /* 買：⚠ 錢不夠就不給按（`broke`），不要等按下去才說「錢不夠」。 */
+    ov.querySelectorAll('[data-buy]').forEach(b=>{
+      b.addEventListener('click', e=>{ e.stopPropagation();
+        const id=b.dataset.buy, price=inv.priceOf(id);
+        try{ SFX.unlock(); SFX.menuClick(); }catch(_){}
+        if(!inv.spendMoney(price)) return;      // 錢不夠：什麼都不做
+        inv.add(id, 1); render();
+      });
+    });
     ov.querySelector('.loot-ok').addEventListener('click', e=>{ e.stopPropagation();
       try{ SFX.unlock(); SFX.menuClick(); }catch(_){} close(); });
     /* 兩段式確認（第一下變「確定？」，2 秒沒再按就還原）。
