@@ -552,6 +552,7 @@ function showExitConfirm(){
 }
 bindBtn('testClearBtn', combat.testClearBoard); // 左上（測試用）：一鍵清盤
 bindBtn('bagBtn',       loot.showBag);          // 道具欄（ver -358）
+bindBtn('storySkip',    story.skipToNextGate);  // 跳段（開發者限定，ver -363）
 bindBtn('rematchBtn',   inspector.onRematchBtn);// 結算：依 resultMode 分流（再度執槍/迎擊）
 
 // 破防值滿 → 點計量表發動「雙槍破防」獎勵射擊窗口

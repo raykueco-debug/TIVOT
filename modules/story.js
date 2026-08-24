@@ -1461,6 +1461,26 @@ export function jumpTo(pos){
   if(pos.line>0 && cur && pos.line<cur.lines.length){ lineIdx=pos.line; renderLine(); }
 }
 
+/* ══ 跳段（開發者限定，ver -363）══
+   「跳到下一個加載頁」＝從目前這一句往後找第一個 `{ load:… }`，直接演它
+   （那一行本身就是讀取閘門，會把下一段的素材抓完再接下去）。
+   找不到就直接收掉這一段，交給 `endScene` 走 `next`。
+   ⚠ 只在管理人模式出現（CSS 的 `body.testmode`）—— 這是開發用的梯子，不是玩家功能。
+   ⚠ 跳之前要把還在跑的東西收乾淨（打字機、等待、auto、演出計時器、黑幕），
+     否則上一句的殘留會蓋到新段落上。 */
+export function skipToNextGate(){
+  if(!active || !cur) return;
+  clearInterval(typing); typing=null;
+  clearTimeout(waitT); waitT=null;
+  clearTimeout(autoT); autoT=null;
+  stopFx(); flushCgFade();
+  const lines=cur.lines||[];
+  for(let i=lineIdx+1;i<lines.length;i++){
+    if(lines[i] && lines[i].load){ lineIdx=i; renderLine(); return; }
+  }
+  endScene();
+}
+
 export function init(){
   const touch=$('storyTouch');
   if(touch) touch.addEventListener('click', ()=>{ if(active) advance(); });

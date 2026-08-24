@@ -1210,7 +1210,10 @@
      原本是 2，被插圖(2)／情境卡(4)蓋掉。場景層都只佔上半（height:--story-top），
      所以把門這一層抬上來不會蓋到它們該顯示的內容 —— 只有楣（在交界處）會浮上去，
      那正是要的。 */
-  #kerb{position:absolute;inset:0;z-index:5;pointer-events:none;overflow:hidden;
+  /* ⚠⚠ **楣（含整片槍棺）的圖層僅次於對話框**（ver -363，Ray 指定；z-6 < 對話框 7）。
+     它是「畫框」——背景、插圖、立繪、情境卡、黑幕全部都在它之下，只有對話框在它之上。
+     ⚠ 退出鈕改成 8：它要一直點得到，不能被畫框壓住。 */
+  #kerb{position:absolute;inset:0;z-index:6;pointer-events:none;overflow:hidden;
     clip-path:inset(calc(var(--story-top) - var(--kerb-top-h, 0px)) 0 0 0);
     /* ⚠ **1s 不是 .7s**（ver -354，Ray：「震動應該在觸頂的那一瞬」）。門的震動與撞擊音
        都排在 `KERB_T.rise`＝1000ms（撞擊音 se_Kerberos_pop 的峰值實測在 1002ms），
@@ -1475,7 +1478,12 @@
     100%{transform:translate(0,0);} }
   /* 全畫面推進層：點任何一處推一句（退出鈕除外，它自己 stopPropagation）。 */
   #storyTouch{position:absolute;inset:0;z-index:3;background:transparent;touch-action:none;}
-  #storyExit{position:absolute;z-index:5;top:calc(env(safe-area-inset-top,0px) + 10px);right:12px;}
+  #storyExit{position:absolute;z-index:8;top:calc(env(safe-area-inset-top,0px) + 10px);right:12px;}
+  /* 跳段鈕（開發者限定）：與退出鈕同排、靠左一點。只在管理人模式（body.testmode）出現。 */
+  #storySkip{position:absolute;z-index:8;top:calc(env(safe-area-inset-top,0px) + 10px);
+    right:64px;width:auto;padding:0 12px;font-size:12px;letter-spacing:2px;
+    color:var(--holy);border-color:var(--holy);display:none;}
+  body.testmode #storyStage.on #storySkip{display:flex;}
   /* 對話框：與教學同一套視覺（同色同框同字級），只是定位在畫面下緣。 */
   /* ⚠ 對話框錨在**立繪區的下緣**（盤面之上），不是畫面底 —— 盤面是固定的，
      框壓在盤面上會擋住戰鬥資訊。 */

@@ -164,6 +164,9 @@ export const ART = {
            `faceAdj_i = 0.74 × (bot_i−top_i)/(1536−7) ÷ k_i`
          → seat 0.740 / smirk **0.737** / angry **0.648** / hand **0.634**。
          這樣四張的「椅子在螢幕上的大小」才真的相等（只除 k 會殘留 3~4% 的誤差）。
+       ⚠ **`seat_angry` 之後被 Ray 指定再加大 20%**（ver -363）：0.648 × 1.2 ＝ **0.778**。
+         它**刻意脫離椅子鎖** —— 那一張是她前傾發火的構圖，鎖住椅子反而讓人顯得縮在後面。
+         Ray 的眼睛優先（§6.5：補償是看出來的）。其餘三張仍在鎖上。
        ⚠ 交叉驗證：Ray 先前憑眼睛把 `seat_angry` 收到 **0.63**（−15%），公式算出來是 **0.648**
          —— 兩條獨立的路落在 3% 內，所以這把尺是可信的。四張一律改用公式值，
          方法才是一致的（Ray 的 0.63 與 0.648 肉眼難分）。
@@ -199,7 +202,7 @@ export const ART = {
                   /* ⚠ `seat_angry` 比其他三張坐姿再小一截：0.74 → **0.63**
                      （-353，Ray「seat_angry 再縮 15%」）。同一組坐姿吃不同的補償是刻意的，
                      補的是**那一張畫**的構圖差異（這張她往前傾、臉畫得比較大）。 */
-                  seat_angry: { src:'resources/SI/Luna_SI_seat_angry.webp', top:0, bot:1526, fx:0.539, faceAdj:0.648, standCm:155 },
+                  seat_angry: { src:'resources/SI/Luna_SI_seat_angry.webp', top:0, bot:1526, fx:0.539, faceAdj:0.778, standCm:155 },
                   seat_hand:  { src:'resources/SI/Luna_SI_seat_hand.webp',  top:20, bot:1489, fx:0.546, faceAdj:0.634, standCm:155 } } },
   luna:   { cm:160, eye:30, fx:0.500, top:0, bot:1000,
            side:'L', alt:null, base:'resources/partner/Luna_CI_exc.webp', expr:{}, unmeasured:true },
