@@ -931,7 +931,10 @@ function kerbPuff(el){
    ⚠ 換音檔要**重量這三個數字**（工具：瀏覽器 decodeAudioData 後找峰值與首尾過門檻點）。 */
 const KERB_SE_DIR='resources/audio/se/';
 const KERB_SFX={ pop:'se_Kerberos_pop', gear:'se_Kerberos_gear',
-                 open:'se_Kerberos_open', steam:'se_Kerberos_steam' };
+                 open:'se_Kerberos_open', steam:'se_Kerberos_steam',
+                 /* 關門用（ver -366，Ray：「不要有蒸氣，原蒸氣音改為 se_metalclip」）。
+                    ⚠ 只用在**關門**那一套；進場那一套維持原樣（Ray 沒要求改）。 */
+                 clip:'se_metalclip' };
 const KERB_SFX_EXT={ steam:'m4a' };   // 預設 mp3，例外寫這裡（ver -338 起 wav 一律轉 m4a）
 const KERB_SE_T={ popPeak:1002, openTail:1921 };
 const KERB_T={ rise:1000, thud:420, rivet:460, arrow:340, lift:1600, open:900 };
@@ -1011,6 +1014,101 @@ function playKerberos(onGap, onDone){
   at(Math.max(0, openAt + KERB_T.open - KERB_SE_T.openTail), ()=>se('open'));
   t+=KERB_T.open;
   at(t,()=>{ onDone&&onDone(); });
+}
+
+/* ══ 金屬磨擦火花（ver -366，關門演出用）══
+   ⚠ 掛在 `#kerbSmoke`（門的子元素）——與煙同一個容器，理由也一樣：火花要跟著門走，
+     掛在舞台上的話門在動、火花站著不動。
+   ⚠ 與煙的差別寫在 CSS：煙是慢的灰團，火花是**快、亮、帶重力**的細粒
+     （0.5 秒內落完），否則兩者會讀成同一種東西。 */
+function kerbSpark(cx, cy, n, spread){
+  const box=$('kerbSmoke'); if(!box) return;
+  n=n||8; spread=spread||34;
+  for(let i=0;i<n;i++){
+    const p=document.createElement('b');           // <b>＝火花，<i>＝煙（CSS 分開）
+    p.style.left=cx+'px'; p.style.top=cy+'px';
+    p.style.setProperty('--sx', ((Math.random()*2-1)*spread).toFixed(0)+'px');
+    p.style.setProperty('--sy', (-6-Math.random()*22).toFixed(0)+'px');
+    p.style.animationDelay=(Math.random()*90|0)+'ms';
+    box.appendChild(p);
+    kerbTimers.push(setTimeout(()=>p.remove(), 800));
+  }
+}
+/* 元素中心（門座標）→ 火花。 */
+function sparkAt(el, n){
+  const dr=$('kerbDoor'); if(!el||!dr) return;
+  const r=el.getBoundingClientRect(), d=dr.getBoundingClientRect();
+  kerbSpark(r.left-d.left+r.width/2, r.top-d.top+r.height/2, n||6, 26);
+}
+/* 中縫：沿著門縫灑一排（兩扇金屬互相磨過去）。 */
+function sparkSeam(){
+  const dr=$('kerbDoor'); if(!dr) return;
+  const w=dr.getBoundingClientRect().width, h=dr.getBoundingClientRect().height;
+  const x=KERB_META.seam*w;
+  for(let i=0;i<7;i++) kerbTimers.push(setTimeout(
+    ()=>kerbSpark(x, h*(0.18+0.1*i), 5, 20), i*70));
+}
+/* 圓盤：沿著紋章外緣灑一圈（機構轉回去時的摩擦）。 */
+function sparkPlate(){
+  const dr=$('kerbDoor'), pl=$('kerbPlate'); if(!dr||!pl) return;
+  const r=pl.getBoundingClientRect(), d=dr.getBoundingClientRect();
+  const cx=r.left-d.left+r.width/2, cy=r.top-d.top+r.height/2, R=r.width*0.5;
+  for(let i=0;i<8;i++){
+    const a=Math.PI*2*i/8;
+    kerbTimers.push(setTimeout(()=>kerbSpark(cx+Math.cos(a)*R, cy+Math.sin(a)*R, 4, 18), i*55));
+  }
+}
+
+/* ══ 關門：**進場那一套的倒放**（ver -366，Ray 指定）══════════════════════
+   戰鬥打完 → 兩扇從兩邊合上 → 倒置的紋章轉回並縮小 → 箭與鉚釘依次扣回
+   → 上一層黑透遮罩 → 交給結算。每一步都有金屬磨擦火花；**沒有蒸氣**。
+   ⚠ 進場結束時舞台已經被 `close({keepBgm:true})` 收掉了，所以這裡要**重新開場**：
+     `on` ＋ `kerb-open`（那個 class 會把場景各層與對話框藏起來，只留門）。
+   ⚠ 擺「門是開著的」這個起始狀態時要先關掉過場（`kerb-instant`），
+     否則一掛上 class 就會從關著的狀態演一次開門。
+   ⚠ 收尾要把舞台收掉再叫結算：劇情層是 z-8300，比結算頁（banner z-30）高，
+     不收的話門會蓋在結算上面。 */
+export function playKerberosClose(onDone){
+  const st=$('storyStage'), kb=$('kerb');
+  if(!st || !kb){ onDone&&onDone(); return; }
+  stopKerberos();
+  st.classList.add('on','kerb-open');
+  document.body.classList.add('story-on');
+  layoutKerberos();
+  kb.classList.add('kerb-instant');
+  kb.classList.add('rise','full','unlock','lift','open');
+  void kb.offsetWidth;                       // 讓「開著」的狀態先落地，再開過場
+  kb.classList.remove('kerb-instant');
+  kerbPlaying=true;
+  const at=(ms,fn)=>kerbTimers.push(setTimeout(fn,ms));
+  const se=k=>{ const u=(KERB_SFX[k] ? KERB_SE_DIR+KERB_SFX[k]+'.'+(KERB_SFX_EXT[k]||'mp3') : null);
+    if(u) try{ SFX.play(u, 1); }catch(e){} };
+  let t=0;
+  at(t,()=>{ kb.classList.remove('open'); se('clip'); sparkSeam(); });     // ① 兩扇合上
+  t+=KERB_T.open;
+  at(t,()=>{                                                              // ② 紋章轉回並縮小
+    kb.classList.remove('lift'); se('clip'); sparkPlate();
+    try{ const g=KERB_SE_DIR+KERB_SFX.gear+'.mp3'; kerbGear=SFX.playCue(g,1); }catch(e){ kerbGear=null; }
+  });
+  t+=KERB_T.lift;
+  at(t,()=>{ if(kerbGear){ try{ kerbGear.stop(220); }catch(e){} kerbGear=null; } });
+  at(t,()=>{                                                              // ③ 箭與鉚釘依次扣回
+    kb.classList.remove('unlock'); se('clip');
+    KERB_RIVETS.forEach((k,i)=>kerbTimers.push(setTimeout(
+      ()=>sparkAt(kb.querySelector('.kerb-rivet.'+k)), i*90)));
+    KERB_ARROWS.forEach((k,i)=>kerbTimers.push(setTimeout(
+      ()=>sparkAt(kb.querySelector('.kerb-arrow.'+k)), i*90)));
+  });
+  t+=KERB_T.rivet + 90*3;
+  at(t,()=>{ st.classList.add('kerb-veil'); });                           // ④ 黑透遮罩
+  t+=460;
+  at(t,()=>{                                                              // ⑤ 收舞台 → 結算
+    kerbPlaying=false;
+    st.classList.remove('on','kerb-open','kerb-veil');
+    document.body.classList.remove('story-on');
+    stopKerberos();
+    onDone&&onDone();
+  });
 }
 
 /* ══ 演一句 ══ */

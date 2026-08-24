@@ -97,6 +97,9 @@ export function maybeStart(){
   state.tutorialLifeReturn = false;
   soloRun = computeSoloRun();       // 獨腳戲 → 立繪放大（整場一致，見 applyPortraitFit）
   resetCamera();                    // 這一場重新量一次相機（見 cameraPxCm）
+  /* 教學進行中的旗標：**只給 CSS 用**（開發者跳關鈕的顯示條件，ver -366）。
+     ⚠ 不要拿它當狀態判斷 —— 狀態的真相在 `state.tutorialActive`（鐵律 2）。 */
+  document.body.classList.add('tut-on');
   stepsLeft = cfg.steps.slice();
   /* 劇情版**到破防教學為止**（Ray 指定）：拿掉 'strike' 這一步，
      連帶整條「劇情殺三連擊 → 即死防禦 → 聖徒化 → MB／生命歸還」都不會發生
@@ -869,6 +872,7 @@ function inClaspArea(x,y){
 
 function endTutorial(){
   state.tutorialActive=false;
+  document.body.classList.remove('tut-on');   // 開發者跳關鈕的顯示條件（ver -366）
   clearTimeout(startTimer); startTimer=null;
   cutinWaiters.forEach(iv=>clearInterval(iv)); cutinWaiters=[];
   stepsLeft=[]; queue=[]; pendingGate=null; gate=null;

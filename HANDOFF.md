@@ -1,7 +1,7 @@
 # HANDOFF — Saint Install 模組化重寫 · 進度交接
 
 > 每輪開工前讀本檔 + 憲法/規格。實況以 `git log` 與 `DECISIONS.md` 為準;本檔為人類可讀的進度總覽。
-> **最後回寫:`ver -365`(2026-08-24)。** 本檔後半是逐版的交接,由新到舊往下加;
+> **最後回寫:`ver -366`(2026-08-24)。** 本檔後半是逐版的交接,由新到舊往下加;
 > **要快速上手請先讀下面那一段「★必讀 · 目前狀態(ver -341)」**（餵稿規格見 `script/SCRIPT_FORMAT.md`）,再依需要跳到對應版本。
 >
 > 目前狀態:CLAUDE.md §6 開發順序第 1~5 步已完成;**第 6 步(ACCEPTANCE 對照 reference)仍未動**,
@@ -94,7 +94,7 @@
    ＋`script/speakers.js`(角色表)＋`script/progress.js`(stage/flags)。
 6. `script/SCRIPT_FORMAT.md` — **Ray 餵稿的規格**(ver -342):寫稿格式、演出詞彙表、
    現有素材清單、一定要交代清楚的六件事。收到稿之後跑 `tools/script_lint.py` 驗。
-7. `git log`(本檔最後回寫於 `ver -365`)。
+7. `git log`(本檔最後回寫於 `ver -366`)。
 
 ---
 
@@ -2624,3 +2624,41 @@ Ray：「重覆發生，低級錯誤，寫進原則確保不會再犯。」
 
 重構後實測不變：劇情 h=738／頭頂 52、戰鬥 h=732／頭頂 56、clip 393.24 ＝ 楣上緣 393。
 
+
+
+---
+
+# 交接 · `ver -366`（關門演出＝進場的倒放；教學戰的開發者跳關鈕）
+
+## A. `story.playKerberosClose(done)` —— 進場那一套倒著演
+
+Ray：「戰鬥結束後讓槍棺從兩邊閉合…倒置的團徽轉回縮小…箭頭與卯釘依次扣回，
+每一步金屬磨擦火花，不要有蒸氣，原蒸氣音改為 `se_metalclip`；關閉完成後上一層
+黑透遮罩再跑結算。簡單來說就是戰鬥入場畫面的倒放。」
+
+    ① remove('open')   兩扇合上          + 中縫火花 + se_metalclip     0.9s
+    ② remove('lift')   紋章轉回並縮小     + 圓盤外緣火花 + 齒輪聲       1.6s
+    ③ remove('unlock') 箭與鉚釘依次扣回   + 逐顆火花 + se_metalclip     0.46s+
+    ④ kerb-veil        黑透遮罩淡入                                    0.46s
+    ⑤ 收舞台 → 交給結算
+
+實測時間軸：0.35s 門合上 → 1.05s 紋章轉回 → 2.81s 箭與鉚釘 → 3.51s 遮罩 → 3.9s 收場。
+
+- ⚠ 進場結束時舞台已被 `close({keepBgm:true})` 收掉，所以這裡要**重新開場**：
+  `on` ＋ `kerb-open`（那個 class 把場景各層與對話框藏起來，只留門）。
+- ⚠ 擺「門是開著的」起始狀態時要先關掉過場（`kerb-instant`），否則一掛上 class
+  就會從關著的狀態演一次開門給你看。
+- ⚠ 收尾**一定要把舞台收掉再叫結算**：劇情層 z-8300 > 結算頁 banner z-30，
+  不收的話門會蓋在結算上面。
+- ⚠ 火花與煙**共用 `#kerbSmoke` 容器但形狀完全不同**：煙是 0.78s 的灰團往上飄（`<i>`），
+  火花是 0.5s 的亮粒先噴後落（`<b>`）。不拉開差別會讀成同一種東西。
+- ⚠ 進場那一套**沒有動**（仍有蒸氣與蒸氣音）—— Ray 只要求關門這一套改。
+- ⚠ combat **不 import story**（模組邊界）：關門由 main.js 用 `combat.setStoryClose()` 注入，
+  同 `setStoryReturn` 的作法。
+
+## B. 教學戰的開發者跳關鈕 `#tutDevSkip`
+
+`combat.devSkipBattle()`：**不演關門、不上結算、不給掉落**，直接走既有的
+`storyBattleEnd()`（不結算交還劇情）。非劇情教學則回首頁。
+顯示條件 `body.testmode.tut-on` —— `tut-on` 由 tutorial 的 start/endTutorial 掛上與清掉。
+⚠ `tut-on` **只給 CSS 用**，不要拿它當狀態判斷；狀態的真相在 `state.tutorialActive`（鐵律 2）。

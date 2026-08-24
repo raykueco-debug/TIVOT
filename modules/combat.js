@@ -764,10 +764,25 @@ function runTotalHp(){
      那一段是真的會死的 —— 沒接的話會卡在戰敗結算頁，劇情永遠回不來。 */
 let storyReturn = null;
 export function setStoryReturn(fn){ storyReturn = fn; }
+/* 關門演出（`story.playKerberosClose`）由 main.js 注入 —— combat **不 import story**
+   （模組邊界：劇情層不在戰鬥的依賴圖裡，見 CLAUDE.md §2；同 storyReturn 的作法）。 */
+let storyClose = null;
+export function setStoryClose(fn){ storyClose = fn; }
 /* ⚠ ver -358 起**只有戰敗**走這條「不結算直接交還劇情」的路。
    勝利改成照樣上結算頁（Ray：「教學關卡結束後跳出結算畫面…並跳出拾得道具視窗」），
    由結算頁的按鈕再把場子交還劇情（見 inspector.onRematchBtn 的 tutorial-home 分支）。
    ⚠ 戰敗維持原樣：教學的即死防禦讓戰敗幾乎不可能，真的死了也不該給結算與掉落。 */
+/* 開發者跳關（ver -366，Ray：「教學戰也寫個 skip 鈕，跳到下一幕」）。
+   ⚠ 不演關門、不上結算、不給掉落 —— 這是**開發用的梯子**，目的只是快點回到劇情往下看。
+   ⚠ 走 `storyBattleEnd()` 那條既有的「不結算直接交還劇情」路徑，不要另寫一份收尾。 */
+export function devSkipBattle(){
+  if(state.over) return;
+  if(state.tutorialStoryRun){ storyBattleEnd(); return; }
+  state.over=true; clockPause(); stopAll();
+  state.tutorialRun=false;
+  goHome();
+}
+
 function storyBattleEnd(){
   if(!state.tutorialStoryRun) return false;
   state.tutorialRun=false; state.tutorialStoryRun=false;
@@ -808,7 +823,11 @@ function win(){
     SFX.playBgm(asset(key), { volume: bgmVol(key) });
     inspector.settle(totalTime, stats, { isLose:false });
   };
-  if(state.tutorialStoryRun) toResult(); else playTransition('finish', toResult);
+  /* ⚠ 劇情版教學：**先演「關門」**（進場那一套的倒放）再上結算（ver -366，Ray 指定）。
+     進場是門推上來、打開露出戰場；打完就該把門關回去 —— 沒有這一段，畫面會從戰鬥
+     硬切到結算頁。關門的最後一步會上黑透遮罩並把劇情層收掉，才輪到結算。 */
+  if(state.tutorialStoryRun && storyClose) storyClose(toResult);
+  else playTransition('finish', toResult);
 }
 function lose(){
   if(state.over) return;

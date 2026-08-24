@@ -553,6 +553,7 @@ function showExitConfirm(){
 bindBtn('testClearBtn', combat.testClearBoard); // 左上（測試用）：一鍵清盤
 bindBtn('bagBtn',       loot.showBag);          // 道具欄（ver -358）
 bindBtn('storySkip',    story.skipToNextGate);  // 跳段（開發者限定，ver -363）
+bindBtn('tutDevSkip',   combat.devSkipBattle);  // 教學戰跳關（開發者限定，ver -366）
 bindBtn('rematchBtn',   inspector.onRematchBtn);// 結算：依 resultMode 分流（再度執槍/迎擊）
 
 // 破防值滿 → 點計量表發動「雙槍破防」獎勵射擊窗口
@@ -595,6 +596,9 @@ bindBtn('storyBtn', ()=>{ story.open(null); });
      但它是在黑幕之下被劇情蓋住的，畫面上看不到。`noBgm` 讓主選單 BGM 不起播 ——
      不然交棒那一秒會漏出半句主選單的曲子。 */
 let storyResume = null;
+/* 關門演出（進場那一套的倒放）：由劇情層提供、combat 在教學打完時呼叫（ver -366）。
+   ⚠ 注入而不是 import —— combat 不認識劇情層（CLAUDE.md §2 的依賴方向）。 */
+combat.setStoryClose(story.playKerberosClose);
 combat.setStoryReturn(()=>{
   const r = storyResume; storyResume = null;
   combat.goHome(()=>{ if(r) story.open(r); }, { noBgm:true });

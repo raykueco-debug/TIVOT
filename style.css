@@ -358,6 +358,10 @@
   #app:has(#banner.on) #exitBtn{display:none;}
   /* v17：測試人員用「清盤」鈕（左上角）。z-index 同 corner-btn，聖徒化手勢層之上，確保可點。
    *  預設隱藏：首頁手勢解鎖（團徽畫圓→橫劃團名，見 main.js testUnlockGesture）後 body.testmode 才顯示。 */
+  /* 教學戰跳關鈕（開發者限定）：與清盤同排、靠右一點。只在管理人模式＋教學進行中出現。 */
+  #tutDevSkip{top:10px;left:64px;right:auto;width:auto;padding:0 12px;font-size:12px;
+    letter-spacing:2px;color:var(--holy);border-color:var(--holy);display:none;}
+  body.testmode.tut-on #tutDevSkip{display:flex;}
   #testClearBtn{top:10px;left:10px;right:auto;font-size:12px;letter-spacing:1px;color:var(--holy);border-color:var(--holy);display:none;}
   body.testmode #testClearBtn{display:flex;}
 
@@ -1334,6 +1338,23 @@
   #kerbTop{position:absolute;}
   /* 煙：鉚釘彈開處噴出的小煙團（JS 生成，數量與位置在 story.js）。
      ⚠ 顏色要**灰塵**不要白光：亮白的圓在深色門上讀起來是「閃光」不是「冒煙」。 */
+  /* 關門的**金屬磨擦火花**（ver -366）。與煙同一個容器但形狀完全不同：
+     ⚠ 煙＝慢的灰團（0.78s、往上飄）；火花＝**快、亮、帶重力**的細粒（0.5s、先噴後落）。
+       不拉開差別的話兩者會讀成同一種東西。 */
+  #kerbSmoke b{position:absolute;width:3px;height:3px;margin:-1.5px 0 0 -1.5px;border-radius:50%;
+    background:#ffe6b0;box-shadow:0 0 6px 1px rgba(255,190,90,.85);
+    animation:kerbSpark .5s ease-out forwards;}
+  @keyframes kerbSpark{
+    0%  {opacity:1;transform:translate(0,0) scale(1);}
+    60% {opacity:.95;transform:translate(var(--sx),var(--sy)) scale(.9);}
+    100%{opacity:0;transform:translate(calc(var(--sx) * 1.35),calc(var(--sy) * -0.2 + 26px)) scale(.5);}
+  }
+  /* 擺起始狀態時暫時關掉過場（見 story.js 的 playKerberosClose）。 */
+  #kerb.kerb-instant,#kerb.kerb-instant *{transition:none !important;}
+  /* 關門完成後的黑透遮罩 → 再跑結算（Ray 指定）。 */
+  #storyStage.kerb-veil::after{content:'';position:absolute;inset:0;z-index:9;
+    background:rgba(4,3,7,.72);animation:kerbVeil .42s ease forwards;}
+  @keyframes kerbVeil{from{opacity:0;}to{opacity:1;}}
   #kerbSmoke{position:absolute;inset:0;pointer-events:none;overflow:visible;}
   #kerbSmoke i{position:absolute;width:30px;height:30px;margin:-15px 0 0 -15px;border-radius:50%;
     background:radial-gradient(circle,rgba(176,168,152,.42) 0 32%,rgba(132,126,114,.22) 58%,rgba(110,105,96,0) 76%);
