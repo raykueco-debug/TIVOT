@@ -1624,6 +1624,28 @@ export function close(opts){
    所以不另寫一個播放器，而是把「播一段臨時台詞」與「換背景」開出來給城鎮呼叫。
    ⚠ `playAdhoc` 不做預載也不寫進度：城鎮的素材由城鎮自己顧，進度只有主線能寫（規格 §0.2）。 */
 export function stageEl(){ return $('storyStage'); }
+/* ⚠⚠ **清場**：把兩個立繪槽清空、對話框收掉（ver -370）。
+   「換場景要清場」原本只寫成**腳本**的規矩（第一拍要 `show:false` / `hide`），
+   於是城鎮那條**新的程式路徑**（不經過 scene 渲染）就漏掉了 —— Ray 回報「換場景時
+   前一幕立繪都沒清」。規矩因此改寫成引擎層級：**任何切換場景／節點的程式路徑都要
+   呼叫這一支**，而且只有這一支會清（鐵律 7：一個動作一個實作）。 */
+export function clearCast(){
+  slot={L:null,R:null}; slotExpr={L:null,R:null}; shown={};
+  leaveSlot('L'); leaveSlot('R');
+  const b=$('storyBubble'); if(b) b.style.visibility='hidden';
+}
+/* 單句提示（城鎮的路人閒聊用，ver -370）：**不進對話模式**，只把一句話放進對話框。
+   ⚠ 與 `playAdhoc` 是兩回事：那個會接管推進（點畫面＝下一句）；這個只是「浮一句話」，
+     玩家再點一下就換下一句，不會卡在對話裡。 */
+export function flashLine(text, name){
+  const bub=$('storyBubble'), nm=$('storyName'), tx=$('storyText');
+  if(!bub||!tx) return;
+  clearInterval(typing); typing=null;
+  if(nm) nm.textContent=name||'';
+  bub.style.visibility='';
+  typeOut(tx, text||'');
+}
+export function hideBubble(){ const b=$('storyBubble'); if(b) b.style.visibility='hidden'; }
 /* 城鎮用：把下半的面盤（槍棺/團徽）擺好。⚠ 不做的話面盤是一片全黑 ——
    那塊是 `layoutKerberos` 依實際尺寸算出來的，不是 CSS 就有的。 */
 export function showPanel(){ layoutKerberos(); }
@@ -1641,6 +1663,7 @@ export function playAdhoc(lines, done){
   const st=$('storyStage'); if(!st || !lines || !lines.length){ done&&done(); return; }
   st.classList.add('on'); document.body.classList.add('story-on');
   active=true;
+  clearCast();                      // ⚠ 新的一段＝新的台上（見 clearCast 的說明）
   cur={ sceneId:'__town', lines, next:null, __adhoc:true, __done:done };
   lineIdx=0; sceneLog=[]; stopModes();
   renderLine();

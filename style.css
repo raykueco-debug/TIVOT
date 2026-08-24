@@ -1585,44 +1585,26 @@
     background:rgba(10,8,14,.7);border:1px solid var(--gold-dim);border-radius:8px;}
   #lootSheet .loot-ok:active{transform:scale(.98);}
 
-  /* ── 城鎮探索（ver -369）─────────────────────────────────────────
-     箭頭壓在場景區的四個邊，**按住 0.5 秒**才走（防誤觸）；蓄能圈畫在鈕上。
-     ⚠ z-index 6：與楣同層（在立繪、插圖、情境卡之上，對話框 7 之下）——
-       對白播放中整層 `display:none`，不會擋到框。 */
+  /* ── 城鎮探索（ver -369／手勢改版 -370）─────────────────────────
+     沒有常駐箭頭（Ray：太醜）。互動是**按住往方向滑** → 那個方向浮出提示與蓄能圈
+     → 滿了才走。提示浮在**該方向的邊上**：玩家的手正往那邊去，訊息出現在他看的地方。
+     ⚠ z-index 6：與楣同層（立繪、插圖、情境卡之上，對話框 7 之下）。 */
   #townNav{position:absolute;left:0;right:0;top:0;height:var(--story-top);
     z-index:6;pointer-events:none;display:none;}
   #townNav.on{display:block;}
-  #townNav .town-arrow{position:absolute;width:56px;height:56px;padding:0;
-    background:rgba(8,6,12,.55);border:1px solid var(--gold-dim);border-radius:50%;
-    color:var(--gold);display:none;align-items:center;justify-content:center;
-    pointer-events:auto;-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);}
-  #townNav .town-arrow.on{display:flex;}
-  #townNav .town-arrow.up   {top:8px;left:50%;transform:translateX(-50%);}
-  #townNav .town-arrow.down {bottom:8px;left:50%;transform:translateX(-50%);}
-  #townNav .town-arrow.left {left:10px;top:50%;transform:translateY(-50%);}
-  #townNav .town-arrow.right{right:10px;top:50%;transform:translateY(-50%);}
-  #townNav .town-arrow.back {left:10px;bottom:8px;}
-  /* 蓄能圈：SVG 描邊由滿到空（JS 寫 strokeDashoffset）。 */
-  #townNav .town-arrow svg{position:absolute;inset:0;width:100%;height:100%;
-    transform:rotate(-90deg);pointer-events:none;}
-  #townNav .ta-rail{fill:none;stroke:rgba(212,169,74,.18);stroke-width:2;}
-  #townNav .ta-prog{fill:none;stroke:var(--gold);stroke-width:2.5;stroke-linecap:round;}
-  #townNav .town-arrow.charging{background:rgba(20,15,28,.8);}
-  /* 箭形：用 CSS 三角，方向由各自的 rotate 決定。 */
-  #townNav .ta-tip{width:0;height:0;border-left:7px solid transparent;
-    border-right:7px solid transparent;border-bottom:11px solid currentColor;}
-  #townNav .down  .ta-tip{transform:rotate(180deg);}
-  #townNav .left  .ta-tip{transform:rotate(-90deg);}
-  #townNav .right .ta-tip{transform:rotate(90deg);}
-  #townNav .back  .ta-tip{transform:rotate(-90deg);}
-  /* 目的地名：貼在鈕外側的小字（玩家要知道那個方向通到哪）。 */
-  #townNav .ta-label{position:absolute;font-size:10px;letter-spacing:2px;
-    color:var(--gold-dim);white-space:nowrap;}
-  #townNav .up   .ta-label{top:58px;left:50%;transform:translateX(-50%);}
-  #townNav .down .ta-label{bottom:58px;left:50%;transform:translateX(-50%);}
-  #townNav .left .ta-label{left:62px;top:50%;transform:translateY(-50%);}
-  #townNav .right .ta-label{right:62px;top:50%;transform:translateY(-50%);}
-  #townNav .back .ta-label{left:62px;bottom:18px;}
+  #townHint{position:absolute;width:64px;height:64px;display:none;
+    align-items:center;justify-content:center;opacity:0;transition:opacity .12s ease;}
+  #townHint.on{display:flex;opacity:1;}
+  #townHint svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg);}
+  #townHint .ta-rail{fill:none;stroke:rgba(212,169,74,.22);stroke-width:2;}
+  #townHint .ta-prog{fill:none;stroke:var(--gold);stroke-width:3;stroke-linecap:round;}
+  #townHint .th-label{font-size:11px;letter-spacing:2px;color:var(--gold);
+    text-shadow:0 1px 4px rgba(0,0,0,.9);white-space:nowrap;}
+  /* 四個方向的落點：貼著那一側的邊。 */
+  #townHint.dir-up   {top:14px;left:50%;transform:translateX(-50%);}
+  #townHint.dir-down {bottom:14px;left:50%;transform:translateX(-50%);}
+  #townHint.dir-left {left:16px;top:50%;transform:translateY(-50%);}
+  #townHint.dir-right{right:16px;top:50%;transform:translateY(-50%);}
   /* 地名＋時間：左上角一條細字（不做成面板，城鎮的主角是背景）。 */
   #townInfo{position:absolute;left:12px;top:calc(env(safe-area-inset-top,0px) + 62px);
     font-size:11px;letter-spacing:2px;color:var(--gold-dim);

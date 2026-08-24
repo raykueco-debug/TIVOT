@@ -51,77 +51,63 @@ function bgFor(base, noTime){
 
 function node(){ return (TOWNS[townId]||{}).nodes[nodeId] || null; }
 
-/* ══ 箭頭層 ══ */
+/* ══ 方向手勢層（ver -370，Ray：「箭頭太醜了，改成畫面按住往指定方向滑，
+   該方向跳出提示，時間滿後移動」）══
+   互動：**按住 → 往某個方向滑 → 那個方向浮出提示與蓄能圈 → 滿了才走**；
+   中途放開或轉向就取消。單純點一下（沒有滑）＝路人閒聊（見 bindInput）。
+   ⚠ 提示浮在**那個方向的邊上**，不是畫面中央 —— 玩家的手正往那邊去，
+     訊息出現在他看的地方才讀得到。
+   ⚠ 不再有常駐的箭頭鈕：Ray 說醜，而且四顆鈕壓在背景上本來就搶戲。 */
 function ensureLayer(){
   if(layer && layer.parentNode) return layer;
   const st=story.stageEl(); if(!st) return null;
   layer=document.createElement('div'); layer.id='townNav';
-  layer.innerHTML=DIRS.map(d=>
-      '<button class="town-arrow '+d+'" data-dir="'+d+'" type="button">'
-    +   '<svg viewBox="0 0 40 40"><circle class="ta-rail" cx="20" cy="20" r="17"/>'
-    +   '<circle class="ta-prog" cx="20" cy="20" r="17"/></svg>'
-    +   '<i class="ta-tip"></i><span class="ta-label"></span>'
-    + '</button>').join('')
+  layer.innerHTML='<div id="townHint"><svg viewBox="0 0 44 44">'
+    + '<circle class="ta-rail" cx="22" cy="22" r="19"/>'
+    + '<circle class="ta-prog" cx="22" cy="22" r="19"/></svg>'
+    + '<span class="th-label"></span></div>'
     + '<div id="townInfo"></div>'
     + '<button id="townShop" class="town-btn" type="button">商店</button>';
   st.appendChild(layer);
-  bindArrows();
-  return layer;
-}
-
-/* 按住蓄能 → 滿了才走（防誤觸）。⚠ 放開／移出去都取消，並把圈歸零。 */
-function bindArrows(){
-  layer.querySelectorAll('.town-arrow').forEach(b=>{
-    let t0=0, raf=0, timer=0;
-    const prog2=b.querySelector('.ta-prog');
-    const C=2*Math.PI*17;
-    prog2.style.strokeDasharray=C;
-    const reset=()=>{ cancelAnimationFrame(raf); clearTimeout(timer);
-      prog2.style.strokeDashoffset=C; b.classList.remove('charging'); };
-    const tick=()=>{ const p=Math.min(1,(performance.now()-t0)/HOLD_MS);
-      prog2.style.strokeDashoffset=C*(1-p);
-      if(p<1) raf=requestAnimationFrame(tick); };
-    const start=e=>{
-      if(busy) return;
-      e.preventDefault(); e.stopPropagation();
-      t0=performance.now(); b.classList.add('charging'); tick();
-      timer=setTimeout(()=>{ reset(); go(b.dataset.dir); }, HOLD_MS);
-    };
-    b.addEventListener('pointerdown', start);
-    b.addEventListener('pointerup', e=>{ e.stopPropagation(); reset(); });
-    b.addEventListener('pointercancel', reset);
-    b.addEventListener('pointerleave', reset);
-  });
   const sb=layer.querySelector('#townShop');
   if(sb) sb.addEventListener('pointerup', e=>{ e.stopPropagation();
     try{ SFX.unlock(); SFX.menuClick(); }catch(_){}
-    const n=node(); if(n && n.shop) showShop(n.shop, (TOWNS[townId].nodes[nodeId]||{}).keeper); });
+    const n=node(); if(n && n.shop) showShop(n.shop, n.keeper); });
+  return layer;
 }
 
 function refreshArrows(){
   const n=node(); if(!n || !layer) return;
-  const names=(TOWNS[townId]||{}).nodes;
-  layer.querySelectorAll('.town-arrow').forEach(b=>{
-    const to=(n.exits||{})[b.dataset.dir];
-    b.classList.toggle('on', !!to);
-    const lab=b.querySelector('.ta-label');
-    if(lab) lab.textContent = to ? (names[to]||{}).name?.replace(/^帝都　/,'') || '' : '';
-  });
   const sb=layer.querySelector('#townShop');
   if(sb) sb.classList.toggle('on', !!n.shop);
   const info=layer.querySelector('#townInfo');
   if(info) info.textContent = n.name + '　' + clock.timeText();
 }
 
-function showNav(on){
-  if(!layer) return;
-  layer.classList.toggle('on', !!on);
+function showNav(on){ if(layer) layer.classList.toggle('on', !!on); }
+
+/* 方向提示：擺到該方向的邊上，標目的地名，蓄能圈歸零。 */
+const HINT_R=19, HINT_C=2*Math.PI*HINT_R;
+function hintShow(dir, name){
+  const h=layer && layer.querySelector('#townHint'); if(!h) return;
+  h.className='dir-'+dir+' on';
+  const lab=h.querySelector('.th-label'); if(lab) lab.textContent=name||'';
+  const pr=h.querySelector('.ta-prog');
+  pr.style.strokeDasharray=HINT_C; pr.style.strokeDashoffset=HINT_C;
 }
+function hintProgress(p){
+  const h=layer && layer.querySelector('#townHint'); if(!h) return;
+  const pr=h.querySelector('.ta-prog');
+  pr.style.strokeDashoffset=HINT_C*(1-Math.min(1,Math.max(0,p)));
+}
+function hintHide(){ const h=layer && layer.querySelector('#townHint'); if(h) h.className=''; }
 
 /* ══ 移動 ══ */
-function go(dir){
-  const n=node(); if(!n) return;
-  const to=(n.exits||{})[dir]; if(!to) return;
+/* ⚠ 參數是**目的地的節點 id**，不是方向（ver -370 修）：手勢那一段已經把方向
+   換算成目的地了，這裡再查一次 `exits[dir]` 只會查到 undefined（實測踩到：
+   提示出得來、時間也滿了，就是不會走）。 */
+function go(to){
+  if(!to) return;
   busy=true; showNav(false);
   try{ SFX.play('resources/audio/se/se_walk.mp3'); }catch(_){}
   clock.advance(STEP_MIN);
@@ -133,15 +119,21 @@ export function enter(id){
   const T=TOWNS[townId]; if(!T) return;
   const n=T.nodes[id]; if(!n){ console.warn('[town] 沒有這個節點：', id); busy=false; return; }
   nodeId=id;
+  /* ⚠⚠ **換節點先清場**（ver -370）：立繪是持續狀態，不清的話上一個地點的人
+     會站在新的背景前面。這是引擎層的規矩，由 `story.clearCast()` 一支負責。 */
+  story.clearCast();
   bgFor(n.bg, n.noTime);
-  ensureLayer(); refreshArrows(); showNav(false);
+  ensureLayer(); bindInput(); refreshArrows(); showNav(false);
   /* 第一次進來才播對白（`once`）。⚠ 旗標記在 progress 的 flags —— 存檔要帶。 */
   const flag='town_'+townId+'_'+id;
   const first = !(n.once && prog.hasFlag(flag));
   const lines = first ? (n.lines||[]) : [];
   if(n.once && first) prog.addFlags([flag]);
   if(lines.length){
-    story.playAdhoc(lines, ()=>{ applyAff(lines); busy=false; refreshArrows(); showNav(true); });
+    /* ⚠ 對白演完**把立繪全撤**，只留背景與導覽（Ray 指定）——
+       城鎮是「看得到路」的畫面，人講完話就該退場。 */
+    story.playAdhoc(lines, ()=>{ applyAff(lines); story.clearCast();
+      busy=false; refreshArrows(); showNav(true); });
   }else{
     busy=false; refreshArrows(); showNav(true);
   }
@@ -156,26 +148,68 @@ function applyAff(lines){
   }
 }
 
-/* 路人閒聊（酒館那種）：導覽開著的時候點畫面 → 隨機一句背景人聲。
-   ⚠ 用 `VOICE` 這個沒有名字、沒有立繪的說話者 —— 讀起來才像鄰桌傳來的。
-   ⚠ 只在**導覽開著**（沒有對白在播）時才算，否則會與推進台詞打架。 */
+/* ══ 輸入（ver -370）══
+   一個 pointer 手勢分兩種結果：
+     **滑動並按住** → 往那個方向移動（提示＋蓄能圈，滿了才走）
+     **只是點一下** → 路人閒聊（單句，不進對話模式）
+   ⚠ 對白播放中整組不接管（`story.isPlaying()`）—— 推進台詞是劇情層的事。 */
+const DRAG_MIN=26;        // 超過這麼多像素才算「往某個方向滑」
 let lastChat=-1;
-function bindChatter(){
-  const st=story.stageEl(); if(!st || st.__chatBound) return;
-  st.__chatBound=true;
-  st.addEventListener('click', e=>{
-    if(!townId || busy) return;
-    if(story.isPlaying()) return;                       // 對白播放中 → 交給劇情層
-    const n=node(); const list=n && n.chatter;
-    if(!list || !list.length) return;
-    if(e.target.closest && e.target.closest('#townNav')) return;   // 點在箭頭上不算
-    let i=Math.floor(Math.random()*list.length);
-    if(list.length>1 && i===lastChat) i=(i+1)%list.length;         // 不要連兩次同一句
-    lastChat=i;
-    busy=true; showNav(false);
-    story.playAdhoc([{ speaker:'VOICE', text:list[i] }],
-                    ()=>{ busy=false; showNav(true); });
+function dirOf(dx,dy){
+  if(Math.abs(dx)<DRAG_MIN && Math.abs(dy)<DRAG_MIN) return null;
+  return Math.abs(dx)>Math.abs(dy) ? (dx>0?'right':'left') : (dy>0?'down':'up');
+}
+function exitsOf(){ const n=node(); return (n&&n.exits)||{}; }
+function nameOfNode(id){ return ((TOWNS[townId]||{}).nodes[id]||{}).name?.replace(/^帝都　/,'')||''; }
+
+function bindInput(){
+  const st=story.stageEl(); if(!st || st.__townBound) return;
+  st.__townBound=true;
+  let p0=null, dir=null, t0=0, raf=0, timer=0;
+  const cancel=()=>{ cancelAnimationFrame(raf); clearTimeout(timer); raf=timer=0;
+    dir=null; hintHide(); };
+  st.addEventListener('pointerdown', e=>{
+    if(!townId || busy || story.isPlaying()) return;
+    if(e.target.closest && e.target.closest('#townShop')) return;
+    p0={ x:e.clientX, y:e.clientY, moved:false }; cancel();
   });
+  st.addEventListener('pointermove', e=>{
+    if(!p0 || busy) return;
+    const d=dirOf(e.clientX-p0.x, e.clientY-p0.y);
+    if(!d){ if(dir) cancel(); return; }
+    p0.moved=true;
+    if(d===dir) return;                        // 同一個方向：繼續蓄能，不要重新開始
+    cancel();
+    /* `back` 當成「沒有那個方向時的退路」：室內只有一個出口，往任何方向滑都回去。 */
+    const ex=exitsOf();
+    const to = ex[d] || (ex.back && !ex.up && !ex.down && !ex.left && !ex.right ? ex.back : null);
+    if(!to) return;
+    dir=d; t0=performance.now();
+    hintShow(d, nameOfNode(to));
+    const tick=()=>{ hintProgress((performance.now()-t0)/HOLD_MS);
+      if(performance.now()-t0 < HOLD_MS) raf=requestAnimationFrame(tick); };
+    tick();
+    timer=setTimeout(()=>{ const target=to; cancel(); go(target); }, HOLD_MS);
+  });
+  const up=e=>{
+    if(!p0) return;
+    const moved=p0.moved; p0=null;
+    const hadDir=!!dir; cancel();
+    if(moved || hadDir) return;                // 滑過就不算點
+    chatter();                                 // 單純點一下 → 路人閒聊
+  };
+  st.addEventListener('pointerup', up);
+  st.addEventListener('pointercancel', ()=>{ p0=null; cancel(); });
+}
+
+/* 路人閒聊：**單句**，不進對話模式（Ray 指定）。再點一下換下一句。 */
+function chatter(){
+  const n=node(); const list=n && n.chatter;
+  if(!list || !list.length) return;
+  let i=Math.floor(Math.random()*list.length);
+  if(list.length>1 && i===lastChat) i=(i+1)%list.length;
+  lastChat=i;
+  story.flashLine(list[i], '');
 }
 
 export function open(town){
@@ -184,7 +218,6 @@ export function open(town){
   const st=story.stageEl(); if(st){ st.classList.add('on','town-on'); }
   document.body.classList.add('story-on');
   story.showPanel();          // 下半的面盤（不擺會是一片全黑）
-  bindChatter();
   busy=false;
   enter(T.entry);
 }
