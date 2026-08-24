@@ -23,6 +23,9 @@ const $ = id => document.getElementById(id);
 const HOLD_MS = 500;      // 箭頭要按住多久才走（Ray 指定 0.5 秒）
 const STEP_MIN = 10;      // 每移動一次花掉的遊戲內分鐘數
 const ARRIVE_MS = 1000;   // 抵達新地點之後、對白開演之前的停頓（Ray：「先停一秒」）
+/* 立繪滑入的時間。⚠ 與 `modules/story.js` 的 `SLIDE_MS` 同值（450ms，§6.5 的 450ms ease-out）——
+   兩邊必須一致：這裡是拿它來讓對話框「等人站定」。改一邊要改另一邊（鐵律 7 的但書）。 */
+const SLIDE_MS = 450;
 const DIRS = ['up','down','left','right','back'];
 
 let townId=null, nodeId=null, layer=null, busy=false;
@@ -86,13 +89,34 @@ function refreshArrows(){
   if(sb) sb.classList.toggle('on', !!n.shop);
   const info=layer.querySelector('#townInfo');
   if(info) info.innerHTML = n.name + '<span class="ti-time">' + clock.timeText() + '</span>';
-  /* 目的地字格：有那個方向才出現，字是目的地名。 */
-  const ex=exitsOf();
+  /* 目的地字格：有那個方向才出現，字是目的地名，**位置貼著那一支箭**
+     （ver -374，Ray：「地名是放在箭頭左右上方」）。
+     ⚠ 箭的座標問 `getBoundingClientRect`，不要自己算（鐵律 7）。
+     ⚠ 上：擺在箭的**正上方**；左／右：擺在箭的**外側**再往上一點 ——
+       正對著箭會把箭遮住，那支箭正在發光晃動，是這一頁的主角。 */
+  const ex=exitsOf(), st=story.stageEl();
+  const sr=st ? st.getBoundingClientRect() : null;
   layer.querySelectorAll('.town-dest').forEach(b=>{
     const to=ex[b.dataset.dir];
     b.classList.toggle('on', !!to);
     b.style.setProperty('--fill', 0);
     const sp=b.querySelector('span'); if(sp) sp.textContent = to ? nameOfNode(to) : '';
+    if(!to || !sr) return;
+    const ar=document.querySelector('.kerb-arrow.'+DIR_ARROW[b.dataset.dir]);
+    if(!ar) return;
+    const r=ar.getBoundingClientRect();
+    const cx=r.left-sr.left+r.width/2, cy=r.top-sr.top+r.height/2;
+    const off = {                                   // 相對那支箭的偏移
+      up:   [0,  -r.height*0.95],
+      left: [-r.width*1.5, -r.height*0.75],
+      right:[ r.width*1.5, -r.height*0.75],
+    }[b.dataset.dir] || [0,0];
+    b.style.left=(cx+off[0])+'px'; b.style.top=(cy+off[1])+'px';
+    /* ⚠ 夾回畫面內：字格是 `translate(-50%,-50%)` 置中的，貼著箭放會半格出界
+       （實測左邊那格 left=-33）。量完自己的寬度再夾一次。 */
+    const bw=b.getBoundingClientRect().width/2 || 40;
+    const x=Math.min(Math.max(cx+off[0], bw+8), sr.width-bw-8);
+    b.style.left=x+'px';
   });
 }
 
@@ -254,9 +278,17 @@ export function enter(id){
        立繪與對話框跟著背景一起跳出來，等於沒有「抵達」這一拍。 */
     busy=true;
     arriveT=setTimeout(()=>{ arriveT=0;
+      /* ⚠⚠ **立繪與對話框要一起出來**（ver -374，Ray：「現在是先出對話不出立繪，這不對」）。
+         立繪滑入要 450ms，而對話框是這一拍一開始就上 —— 於是看起來是「先講話、人才到」。
+         作法：給**第一句**加 `delay`（story 的既有機制：框先不出，等這麼久再打字），
+         值就是滑入時間。⚠ 只加在第一句，後面幾句的人已經在台上了。
+         ⚠ 不改成全域規則：主線那邊的節奏是 Ray 一句一句調過的，動它會全部走鐘。 */
+      const play=lines.map((l,i)=> (i===0 && l && l.delay==null)
+        ? Object.assign({}, l, { delay:SLIDE_MS }) : l);
       /* ⚠ 對白演完**把立繪全撤**，只留背景與導覽（Ray 指定）。 */
-      story.playAdhoc(lines, ()=>{ applyAff(lines); story.clearCast();
-        busy=false; refreshArrows(); showNav(true); });
+      /* ⚠ `n.sides`：兩個角色同台要分左右（§6.5）——城鎮這條路徑一樣要吃得到。 */
+      story.playAdhoc(play, ()=>{ applyAff(lines); story.clearCast();
+        busy=false; refreshArrows(); showNav(true); }, { sides:n.sides });
     }, ARRIVE_MS);
   }else{
     busy=false; refreshArrows(); showNav(true);

@@ -1635,6 +1635,7 @@ export function stageEl(){ return $('storyStage'); }
    ⚠ 只中止臨時段落：主線 scene 有它自己的收尾（進度、next），不能被城鎮打斷。 */
 export function endAdhoc(){
   if(!cur || !cur.__adhoc) return;
+  sideOverride = {};
   clearInterval(typing); typing=null;
   clearTimeout(waitT); waitT=null;
   clearTimeout(autoT); autoT=null;
@@ -1673,11 +1674,15 @@ export function setSceneBg(name){
 }
 /* 播一段臨時台詞（城鎮節點的進場對白）。done 在最後一句被點掉之後呼叫。
    ⚠ 播完**不收舞台**（城鎮還要留在畫面上），與 scene 鏈的 endScene 不同。 */
-export function playAdhoc(lines, done){
+/* `opts.sides`＝這一段的站位覆寫（`{RENNA:'R'}`），與 scene 的 `sides` **同一個機制**
+   （ver -374）。⚠ 兩個角色同台時要分左右，那是 §6.5 的規矩 —— 城鎮這條新路徑
+   一樣要吃得到，不能只有主線 scene 有。 */
+export function playAdhoc(lines, done, opts){
   const st=$('storyStage'); if(!st || !lines || !lines.length){ done&&done(); return; }
   st.classList.add('on'); document.body.classList.add('story-on');
   active=true;
   clearCast();                      // ⚠ 新的一段＝新的台上（見 clearCast 的說明）
+  sideOverride = (opts && opts.sides) || {};
   cur={ sceneId:'__town', lines, next:null, __adhoc:true, __done:done };
   lineIdx=0; sceneLog=[]; stopModes();
   renderLine();

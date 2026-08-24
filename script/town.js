@@ -64,6 +64,9 @@ export const TOWNS = {
       cityhall: {
         bg:'Capital_Cityhall', name:'帝都　行政廳',
         exits:{ back:'midtown' },
+        /* ⚠ 蕾娜與諾薇兒**都是左側**（固定站位），這一段兩人同台 → 蕾娜暫時站右
+           （§6.5：兩個角色要分左右；與 `capital_square` 那一幕同樣的整幕覆寫）。 */
+        sides:{ RENNA:'R' },
         once:true,
         lines:[
           ren('surprise','你們兩個怎麼跑這裡來了？'),

@@ -1317,16 +1317,24 @@
   body.town-nav #kerb .kerb-arrow.avail{
     pointer-events:auto;cursor:pointer;
     filter:drop-shadow(0 0 7px rgba(111,179,212,.95)) drop-shadow(0 3px 14px rgba(111,179,212,.7));
-    animation:kerbCompass 2.6s ease-in-out infinite;}
+    animation:kerbCompass var(--sway-t,2.6s) ease-in-out infinite;
+    animation-delay:var(--sway-d,0s);}
+  /* ⚠ **四支不要同步**（ver -374，Ray：「箭頭擺幅錯開，不要太整齊」）：
+     四支一起左右擺會讀成「一個機械裝置在動」，錯開才像四根各自受磁力牽引的針。
+     每一支給不同的週期與相位（質數般的錯開，避免幾秒後又對齊）。 */
+  body.town-nav #kerb .kerb-arrow.n.avail{--sway-t:2.6s;--sway-d:0s;    --sway-a:4deg;}
+  body.town-nav #kerb .kerb-arrow.e.avail{--sway-t:3.1s;--sway-d:-.7s;  --sway-a:3deg;}
+  body.town-nav #kerb .kerb-arrow.s.avail{--sway-t:2.3s;--sway-d:-1.3s; --sway-a:5deg;}
+  body.town-nav #kerb .kerb-arrow.w.avail{--sway-t:2.9s;--sway-d:-.35s; --sway-a:3.5deg;}
   /* ⚠ **軸心固定、只左右偏轉**（ver -373，Ray：「箭頭應該中軸心固定左右偏移像指南針，
      不是亂飄」）：位移量在整段動畫裡是**常數**（浮起那一下是靜態的），
      只有 `rotate` 在振盪 —— 指南針的針是繞著軸擺，不會整支飄來飄去。
      ⚠ 位移仍要寫進同一個 transform（transform 不疊加），只是不隨影格變。 */
   @keyframes kerbCompass{
     0%,100%{ transform:translate(calc(var(--kerb-px,0px) * .6),calc(var(--kerb-py,0px) * .6))
-                       rotate(calc(var(--kerb-rot,0deg) - 4deg)); }
+                       rotate(calc(var(--kerb-rot,0deg) - var(--sway-a,4deg))); }
     50%    { transform:translate(calc(var(--kerb-px,0px) * .6),calc(var(--kerb-py,0px) * .6))
-                       rotate(calc(var(--kerb-rot,0deg) + 4deg)); }
+                       rotate(calc(var(--kerb-rot,0deg) + var(--sway-a,4deg))); }
   }
   /* 長按中：停止晃動、往外推到底、亮度再上一階（讀得出「這一支正在被按」）。 */
   body.town-nav #kerb .kerb-arrow.avail.holding{
@@ -1661,9 +1669,10 @@
     background:rgba(212,169,74,.30);transform:scaleX(var(--fill,0));transform-origin:left center;
     pointer-events:none;}
   #townNav .town-dest span{position:relative;}
-  #townNav .town-dest.up   {top:calc(env(safe-area-inset-top,0px) + 96px);left:50%;transform:translateX(-50%);}
-  #townNav .town-dest.left {left:12px;top:50%;transform:translateY(-50%);}
-  #townNav .town-dest.right{right:12px;top:50%;transform:translateY(-50%);}
+  /* ⚠ 位置由 JS 依**那一支箭在哪**寫 inline（ver -374，Ray：「地名是放在箭頭左右上方」）——
+     箭的位置是 `layoutKerberos` 解出來的，CSS 猜不到（鐵律 7：問算的那一支）。
+     這裡只給「以自己的中心對齊那個點」。 */
+  #townNav .town-dest{transform:translate(-50%,-50%);}
   #townNav .town-btn{position:absolute;right:12px;bottom:8px;padding:0 14px;height:34px;
     font-family:inherit;font-size:12px;letter-spacing:2px;color:var(--gold);
     background:rgba(10,8,14,.7);border:1px solid var(--gold-dim);border-radius:17px;
