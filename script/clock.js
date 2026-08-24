@@ -25,6 +25,8 @@ const wr = n => { try{ localStorage.setItem(KEY, String(Math.max(0, n|0))); }cat
 export function elapsed(){ return rd(); }
 export function advance(min){ const v=Math.max(0, rd()+(min|0)); wr(v); return v; }
 export function reset(){ wr(0); }
+/* 讀檔用：直接把「開局以來的分鐘數」設回去。⚠ 只有讀檔會用 —— 遊戲中一律走 `advance`。 */
+export function setElapsed(min){ wr(Math.max(0, min|0)); }
 
 /* 目前的日期時間（物件）。用真的 Date 算跨日/跨月，不要自己數。 */
 export function now(){

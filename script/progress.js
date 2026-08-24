@@ -12,6 +12,12 @@
      來 import 本檔即可。
    ══════════════════════════════════════════════════════════════════════ */
 
+import { GAME_CONFIG } from '../config.js';   // 只為了拿教學的 storageKey（不要抄第二份字串）
+/* ⚠ 「一輪遊戲」包含道具與時鐘，所以存讀檔要一起帶（見 runSnapshot）。
+   兩支都是 `script/` 的同層資料模組，沒有循環相依。 */
+import * as inv from './inventory.js';
+import * as clock from './clock.js';
+
 const K = {
   stage:     'tivot_stage_v1',
   flags:     'tivot_flags_v1',
@@ -111,6 +117,45 @@ export function tierOfChar(who){ return tierOf(affectionOf(who)); }
      改名，正在播的那段還是舊名字）。代換函式在 story.js 的 subst。 */
 export function getPlayerName(){ const v=rd(K.name); return (v && v.trim()) ? v : PLAYER_DEFAULT; }
 export function setPlayerName(v){ wr(K.name, (v||'').trim() || PLAYER_DEFAULT); }
+
+/* ══ 開新的一輪（ver -381，Ray：「劇情只跑一次是指**一輪遊戲內**只跑一次；
+   從頭開始、或從之前的存檔開始，都要跑劇情」）══
+   ⚠⚠ 「一輪遊戲」的邊界寫在**這一支**：要清哪些東西只在這裡列一次（鐵律 8）。
+     漏掉一項的下場 Ray 已經回報過 —— 從頭開始卻沒有劇情（城鎮的旗標還留著）。
+   ⚠ 清的是「這一輪打出來的東西」：旗標、階段、好感、時鐘、道具、金錢、玩家名、
+     教學看過沒。**不清**的是跨輪的設定（靜音、語言、管理人模式、最佳紀錄）——
+     那些是玩家的偏好與成績，不是劇情進度。
+   ⚠ 讀檔**不要走這一支**：讀檔是 `restore()`（把那個存檔的旗標放回來），
+     兩者是不同的事 —— 讀檔之後該演的劇情自然會演，因為那個存檔就還沒演過。 */
+export function newRun(){
+  for(const k of [K.stage, K.flags, K.affection, K.affFloor, K.name]) {
+    try{ localStorage.removeItem(k); }catch(e){}
+  }
+  /* 其他模組自己的存檔。⚠ 這裡列出來就是「它屬於一輪遊戲」的宣告 ——
+     日後新增任何一輪內的存檔（例如城鎮的所在節點），**一定要加進這一行**。 */
+  const tutKey = (GAME_CONFIG.tutorial||{}).storageKey;   // ⚠ 問 config，不要抄字串（鐵律 7）
+  for(const k of ['tivot_clock_v1', 'tivot_inventory_v1', 'tivot_money_v1', tutKey]) {
+    if(!k) continue;
+    try{ localStorage.removeItem(k); }catch(e){}
+  }
+  return true;
+}
+
+/* ══ 一輪遊戲的整包存讀（ver -381）══
+   ⚠⚠ 與 `newRun()` 是**同一張清單的兩面**：newRun 清掉的東西，這裡就要存得起來、
+     讀得回去。加了新的「一輪內」存檔，**兩支都要加**（漏一支的下場：讀了舊存檔
+     卻還帶著新一輪的錢）。
+   ⚠ 不含跨輪的東西（靜音、語言、最佳紀錄、武器/搭檔的選擇）—— 那些是玩家的偏好
+     與成績，讀檔不該把它們拉回去。 */
+export function runSnapshot(){
+  return { progress:snapshot(), clock:clock.elapsed(), inv:inv.snapshot() };
+}
+export function runRestore(s){
+  if(!s) return;
+  if(s.progress)     restore(s.progress);
+  if(s.clock!=null)  clock.setElapsed(s.clock);
+  if(s.inv)          inv.restore(s.inv);
+}
 
 /* ── 整包讀寫（存讀檔用）── */
 export function snapshot(){

@@ -27,6 +27,7 @@ import { playTransition } from './modules/transition.js';   // 過渡禎（開�
 import { sakuraBurst } from './modules/sakura.js';   // 開始遊戲：全畫面櫻花飛舞（純程式）
 import * as story from './modules/story.js';   // 主線 scene 播放器（首頁 story 鈕）
 import * as saveSys from './modules/save.js';   // 劇情層存讀檔（F4/F7 即時、F5/F8 選欄）
+import * as prog from './script/progress.js';   // 進度／旗標／「一輪遊戲」的邊界（newRun）
 import './modules/enemy.js';
 
 const $ = id => document.getElementById(id);
@@ -587,7 +588,12 @@ bindBtn('flightBtn', ()=>{ window.location.href = 'flight/'; });
      換頁的話存讀檔要跨頁還原，複雜度沒必要。
    存讀檔：F4 即時存／F7 即時讀／F5 選欄存／F8 選欄讀（見 modules/save.js）。 */
 story.init(); saveSys.init();
-bindBtn('storyBtn', ()=>{ story.open(null); });
+/* ⚠⚠ **這顆鈕就是「從頭開始」**（ver -381，Ray：「從頭開始，城鎮探索的劇情要重新出現」）：
+   `story.open(null)` 一律從 MAIN_ENTRY 演起，所以進去之前要把**這一輪**的東西清乾淨 ——
+   不清的話旗標還留著，城鎮那些「只播一次」的段落就整個消失（Ray 回報過）。
+   ⚠ 邊界定義在 `progress.newRun()` 那一支，不要在這裡列要清什麼（鐵律 8）。
+   ⚠ 讀檔是另一回事（`progress.restore()`），不走這裡。 */
+bindBtn('storyBtn', ()=>{ prog.newRun(); story.open(null); });
 /* ── 劇情插入戰鬥 → 打完接回劇情（ver -321；-325 改成直接交棒）──────────
    story.js 不 import 戰鬥模組（單向資料流），發動與續播都由這裡負責。
 

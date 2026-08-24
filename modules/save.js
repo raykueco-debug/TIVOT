@@ -13,9 +13,12 @@
      不必為了手機再寫一套。
 
    ── 存檔內容（Ray 指定：劇情層全部）──────────────────────────────
-     stage / flags / 好感 / 玩家名（progress.snapshot）＋ 目前 scene 與行號。
-     ⚠ 戰鬥整備（武器/搭檔/最佳成績）**不存** —— 那些各自有自己的
-       localStorage，重複存會有兩份真相。
+     stage / flags / 好感 / 玩家名 ＋ **時鐘 ＋ 道具與金錢** ＋ 目前 scene 與行號
+     （＝`progress.runSnapshot()`，「一輪遊戲」的整包，ver -381）。
+     ⚠ 戰鬥整備（武器/搭檔的選擇、最佳成績）**不存** —— 那些是跨輪的偏好與成績，
+       讀檔把它們拉回去反而是錯的。
+     ⚠ 這一包與 `progress.newRun()` 清掉的東西是**同一張清單**：加了新的一輪內存檔，
+       兩邊都要加。
    ══════════════════════════════════════════════════════════════════════ */
 
 import * as prog from '../script/progress.js';
@@ -26,7 +29,7 @@ import { SFX } from '../audio.js';
 const $ = id => document.getElementById(id);
 const KEY = 'tivot_save_v1';
 const ROWS_PER_PAGE = 10;
-const SAVE_VERSION = 1;
+const SAVE_VERSION = 2;   // v2：改存「一輪遊戲」整包（含時鐘與道具，ver -381）
 
 let page = 0;
 let mode = null;               // 'save' | 'load' | null（面板關閉）
@@ -49,7 +52,10 @@ function capture(){
   return {
     v: SAVE_VERSION,
     ts: Date.now(),
-    progress: prog.snapshot(),
+    /* ⚠ v2 起存的是**一輪遊戲**整包（進度＋時鐘＋道具金錢）——
+       「劇情只跑一次」是指一輪內只跑一次，所以讀檔要把那一輪的狀態整組帶回去。
+       v1 的舊存檔只有 `progress`，`apply()` 照樣吃得下（見那裡）。 */
+    run: prog.runSnapshot(),
     pos: pos,                       // null＝不在劇情中（只存了進度）
     label: labelOf(pos),
   };
@@ -64,7 +70,9 @@ function labelOf(pos){
 /* ══ 套用一筆存檔 ══ */
 function apply(rec){
   if(!rec) return false;
-  prog.restore(rec.progress);
+  /* v2＝整輪；v1 的舊存檔只有 progress 這一層，照舊吃下去（不要讓舊存檔讀不開）。 */
+  if(rec.run) prog.runRestore(rec.run);
+  else        prog.restore(rec.progress);
   if(rec.pos) story.jumpTo(rec.pos);
   return true;
 }
