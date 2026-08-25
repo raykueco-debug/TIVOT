@@ -473,6 +473,15 @@ function bindInput(){
   });
 }
 
+/* 走一步：腳步聲 ＋ **槍棺的吊墜跟著晃**（ver -412，Ray：「平常移動出腳步聲時就要晃」）。
+   ⚠ **一支函式**（鐵律 8）：走路的地方不只一處（走到隔壁節點、出航），
+     兩件事要一起發生，就不要讓呼叫端各記得一次。
+   ⚠ 幅度小（6°）：這是走路的震動，不是槍棺在動 —— 與上彈那一下（22°）要分得出來。 */
+function stepSfx(){
+  try{ SFX.play('resources/audio/se/se_walk.m4a'); }catch(_){}
+  try{ story.kerbPendSwing(6, 1.5); }catch(_){}
+}
+
 /* ══ 移動 ══
    ⚠ 參數是**目的地的節點 id**，不是方向（ver -370 修）：手勢／羅盤那一段已經把方向
    換算成目的地了，這裡再查一次 `exits[dir]` 只會查到 undefined（實測踩過：
@@ -491,7 +500,7 @@ function go(to, dir){
   pendingDir = dir || null;            // 這一次按的方向（ver -405）；enter() 取用
   busy=true; showNav(false);
   document.body.classList.remove('town-nav');          // 移動中把羅盤收起來
-  try{ SFX.play('resources/audio/se/se_walk.m4a'); }catch(_){}
+  stepSfx();
   clock.advance(STEP_MIN);
   setTimeout(()=>enter(to), 260);
 }
@@ -523,7 +532,7 @@ function setSail(){
   if(!sail.flag || prog.hasFlag(sail.flag)){
     /* 船已經到手：交給飛行頁。⚠ 城鎮的位置目前不存 —— 飛行頁那邊回來時走的是
        `tivot_flight_ret_v1`（座標），城鎮節點要不要一起存是另一件事（§6.9 的清單）。 */
-    try{ SFX.play('resources/audio/se/se_walk.m4a'); }catch(_){}
+    stepSfx();
     /* ⚠ 走注入的開啟器（ver -388）：飛行頁現在是**內嵌 iframe**，不跳頁 ——
        跳頁會讓音訊要重新解鎖（見 CLAUDE.md §6.10）。town 不 import main，所以用注入。 */
     if(flightOpener) flightOpener(); else location.href='flight/index.html';

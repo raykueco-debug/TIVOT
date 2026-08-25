@@ -2068,3 +2068,73 @@
      ⚠ 地名與時刻改由**左邊那張單子**的標題下印出來（`showShop` 的 `opts.info`）——
        讓開不等於不給，玩家還是要看得到自己在哪、幾點（店有營業時間）。 */
   body.town-shop #townInfo{opacity:0;}
+
+  /* ── 槍棺的吊墜（ver -411／-412，Ray 指定）──────────────────────────
+     掛在槍棺左上方。**吊掛點與槍棺鎖死**（它是 `#kerbDoor` 的子元素），
+     擺動是它自己繞著那個點轉。
+     ⚠⚠ **三層**，因為同一個元素疊不了三個 transform 動畫：
+        `#kerbPend` → 開門時跟著**左半扇**一起移出（與紋章、箭、鉚釘同一個剛體）
+        `.kp-swing` → 劇烈擺動（上彈／撞頂／開／閉／走路）
+        `.kp-idle`  → 一直在的微微晃動
+     ⚠ 兩層旋轉的 `transform-origin` 都要在**吊掛點**（50% 0）：origin 不同步的話
+       內外兩個旋轉會互相拉扯，看起來像鏈子在伸縮。
+     ⚠ 尺寸與位置由 `layoutKerberos` 依門的實際尺寸算（鐵律 7）——
+       要閃開的是**圓盤的圓**不是它的外框，而且吊墜自己是 X 形（最寬的地方在很上面），
+       所以那裡是拿**輪廓**去解最大寬度的。
+     ⚠ 圖層：排在鉚釘之後、煙與楣之前 → 蓋得過圓盤（它掛在門的前面），
+       但**鏈子的頂端被楣壓住**，看起來就是從楣底下垂下來的。 */
+  /* ⚠⚠ 開門：跟著左半扇走**同一個 px 位移**（`--kerb-open-x`），同一條曲線。
+     ⚠ 關門那一拍要靠 `kerb-shut` 把門的曲線借過來 —— 拿掉 `.open` 之後
+       `#kerb.open #kerbPend` 就不適用了，它會掉回自己的基準曲線、與門脫節
+       （ver -389 紋章踩過的同一個坑）。 */
+  #kerbPend{position:absolute;pointer-events:none;will-change:transform;
+    transform:translateX(0);
+    transition:transform .9s cubic-bezier(.34,1.2,.5,1);}
+  #kerb.open #kerbPend{transform:translateX(calc(var(--kerb-open-x) * -1));
+    transition:transform .9s cubic-bezier(.7,0,.3,1);}
+  #kerb.kerb-shut #kerbPend{transition:transform .9s cubic-bezier(.7,0,.3,1);}
+  #kerbPend .kp-swing,#kerbPend .kp-idle{transform-origin:50% 0;}
+  #kerbPend .kp-idle{animation:kpIdle 4.2s ease-in-out infinite alternate;}
+  #kerbPend img{display:block;width:100%;height:auto;
+    /* ⚠ 影子要夠深：吊墜與槍棺**同一個材質色**（Ray：「顏色太像了」），
+       沒有影子就整個融進門裡。動起來才看得見是另一半（見 kpIdle 的振幅）。 */
+    filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
+  /* ── 偶爾反一下光（ver -412，Ray：「偶爾讓他反光一下，像有光線高光照過」）──
+     一道斜的高光掃過金屬面。⚠ **用吊墜自己的圖當遮罩**（`mask-image` 指同一張圖）——
+       不遮的話那道光會掃在一個矩形上，看起來像有人拿手電筒照著一塊玻璃。
+     ⚠ `screen` 混色：高光是**加上去的光**不是塗上去的白漆，暗處才不會被洗白。
+     ⚠ 掃過只佔整個週期的一小段（9 秒裡的 1.1 秒）—— 「偶爾」是這個比例撐起來的，
+       不是靠把動畫放慢。 */
+  #kerbPend .kp-idle{position:relative;}
+  #kerbPend .kp-shine{position:absolute;inset:0;pointer-events:none;
+    mix-blend-mode:screen;opacity:.85;
+    -webkit-mask-image:var(--kp-mask);mask-image:var(--kp-mask);
+    -webkit-mask-size:100% 100%;mask-size:100% 100%;
+    -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
+    background:linear-gradient(114deg,
+      rgba(255,255,255,0) 40%, rgba(255,246,214,.30) 47%, rgba(255,255,255,.85) 50%,
+      rgba(255,246,214,.30) 53%, rgba(255,255,255,0) 60%);
+    background-size:260% 260%;background-position:120% 50%;
+    animation:kpShine 9s linear infinite;}
+  @keyframes kpShine{
+    0%  {background-position:130% 50%;}
+    12% {background-position:-40% 50%;}
+    100%{background-position:-40% 50%;}
+  }
+  /* 微微晃動：⚠ **±3.5°**（ver -412 由 1.5° 加大，Ray：「顏色太像了，所以要動一動
+     比較看得到」）—— 這是它平常唯一的辨識線索，太小等於沒有。 */
+  @keyframes kpIdle{ from{transform:rotate(-3.5deg);} to{transform:rotate(3.5deg);} }
+  /* 劇烈擺動：**衰減**的擺盪（振幅一次比一次小），才像真的被甩了一下。
+     ⚠ 振幅走變數 `--kp-amp`（JS 依「這一下有多重」給），曲線本身只有一條。
+     ⚠ 起手是負的（往左甩）：門是往**上**走的，吊墜因為慣性落後 → 相對往下、往外盪。 */
+  #kerbPend .kp-swing.swing{animation:kpSwing var(--kp-dur,2.2s) cubic-bezier(.33,0,.25,1) 1;}
+  @keyframes kpSwing{
+    0%  {transform:rotate(0deg);}
+    12% {transform:rotate(calc(var(--kp-amp,14deg) * -1));}
+    30% {transform:rotate(calc(var(--kp-amp,14deg) * 0.68));}
+    48% {transform:rotate(calc(var(--kp-amp,14deg) * -0.42));}
+    65% {transform:rotate(calc(var(--kp-amp,14deg) * 0.24));}
+    80% {transform:rotate(calc(var(--kp-amp,14deg) * -0.12));}
+    92% {transform:rotate(calc(var(--kp-amp,14deg) * 0.05));}
+    100%{transform:rotate(0deg);}
+  }

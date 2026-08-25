@@ -403,6 +403,14 @@
       <img class="kerb-arrow s" alt=""><img class="kerb-arrow w" alt="">
       <img class="kerb-rivet r10" alt=""><img class="kerb-rivet r2" alt="">
       <img class="kerb-rivet r4" alt=""><img class="kerb-rivet r8" alt="">
+      <!-- 吊墜（ver -411，Ray 指定）：掛在槍棺左上方。
+           ⚠ **吊掛點與槍棺鎖死** → 它是 `#kerbDoor` 的子元素（同紋章／箭／鉚釘），
+             門一動它整個跟著走；擺動是它自己繞著吊掛點轉。
+           ⚠⚠ **三層**是刻意的（同一個元素疊不了三個 transform）：
+                #kerbPend  → 開門時跟著**左半扇**一起移出（ver -412，Ray 指定）
+                .kp-swing  → 劇烈擺動（上彈／撞頂／開／閉／走路）
+                .kp-idle   → 一直在的微微晃動 -->
+      <div id="kerbPend"><div class="kp-swing"><div class="kp-idle"><img id="kerbPendImg" alt=""><i class="kp-shine"></i></div></div></div>
       <div id="kerbSmoke"></div>
       <!-- 楣：蓋在槍棺頂端，下緣與控制區無縫貼合。是門的子元素＝同一剛體，門上推它跟著上去。 -->
       <img id="kerbTop" alt="">

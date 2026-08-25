@@ -101,6 +101,38 @@
   #fkerbDoor img{position:absolute;display:block;}
   #fkerbDoor .fk-arrow{transform:rotate(var(--fk-rot,0deg));}
   #fkerbDoor .fk-rivet{transform:scale(var(--fk-fx,1),var(--fk-fy,1));}
+  /* ── 吊墜（ver -412）── ⚠ 與主遊戲 `style.css` 的 `#kerbPend` 是**同一套**，
+     改一邊要改另一邊（這一頁是非 module 的獨立文件，共用不了那份 CSS）。
+     這一頁沒有「開門」那一段（門推到頂就交棒），所以只有兩層：擺動 ＋ 微晃。 */
+  #fkerbPend{position:absolute;pointer-events:none;will-change:transform;}
+  #fkerbPend .fkp-swing,#fkerbPend .fkp-idle{transform-origin:50% 0;}
+  #fkerbPend .fkp-idle{position:relative;animation:fkpIdle 4.2s ease-in-out infinite alternate;}
+  #fkerbPend img{display:block;width:100%;height:auto;
+    filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
+  #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
+    mix-blend-mode:screen;opacity:.85;
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp");
+    -webkit-mask-size:100% 100%;mask-size:100% 100%;
+    -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
+    background:linear-gradient(114deg,
+      rgba(255,255,255,0) 40%, rgba(255,246,214,.30) 47%, rgba(255,255,255,.85) 50%,
+      rgba(255,246,214,.30) 53%, rgba(255,255,255,0) 60%);
+    background-size:260% 260%;background-position:120% 50%;
+    animation:fkpShine 9s linear infinite;}
+  @keyframes fkpShine{0%{background-position:130% 50%;}12%{background-position:-40% 50%;}
+    100%{background-position:-40% 50%;}}
+  @keyframes fkpIdle{from{transform:rotate(-3.5deg);}to{transform:rotate(3.5deg);}}
+  #fkerbPend .fkp-swing.swing{animation:fkpSwing var(--fkp-dur,2.2s) cubic-bezier(.33,0,.25,1) 1;}
+  @keyframes fkpSwing{
+    0%{transform:rotate(0deg);}
+    12%{transform:rotate(calc(var(--fkp-amp,14deg) * -1));}
+    30%{transform:rotate(calc(var(--fkp-amp,14deg) * 0.68));}
+    48%{transform:rotate(calc(var(--fkp-amp,14deg) * -0.42));}
+    65%{transform:rotate(calc(var(--fkp-amp,14deg) * 0.24));}
+    80%{transform:rotate(calc(var(--fkp-amp,14deg) * -0.12));}
+    92%{transform:rotate(calc(var(--fkp-amp,14deg) * 0.05));}
+    100%{transform:rotate(0deg);}}
   /* 加速鈕：開發用。放操作盤**左上**（生怪鈕在左下，兩者不打架）。
      top 由 JS 設成 VIEWH+12 —— 面板上緣是算出來的，CSS 這邊沒有那個數字。 */
   #boostBtn{position:fixed;left:12px;z-index:40;background:rgba(5,6,12,.72);
@@ -300,6 +332,12 @@
   <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp" alt="">
   <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp" alt="">
   <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp" alt="">
+  <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
+       ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
+         只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
+  <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
+    <img src="../resources/vfx/kerberos_pendant.webp" alt=""><i class="fkp-shine"></i>
+  </div></div></div>
   <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp" alt="">
 </div></div>
 <div id="boot">
@@ -385,6 +423,12 @@ const VIEW_F = 0.66;      // 3D 視窗佔畫面高度比例，其餘為面板
 /* Kerberos 之門的圖比例（ver -387）。⚠ 宣告在這裡是因為 `resize()` 會在指令碼求值期間
    就呼叫 `layoutFKerb()` —— 放在下面（生怪那一區）會撞上 const 的 TDZ。
    數字的來源與「為什麼兩邊各一份」見下方 `layoutFKerb` 的說明。 */
+/* 吊墜的幾何（ver -412）。⚠⚠ 與 `modules/story.js` 的 `KERB_PEND` 是**同一組數字**——
+   這一頁是非 module 的獨立文件，import 不到那一份，**改一邊要改另一邊**（鐵律 7 的但書）。 */
+const FKERB_PEND={ ar:1536/1024, bandC:0.145, maxW:0.32, drop:0.004,
+  prof:[[0.13,0.41],[0.17,0.45],[0.21,0.49],[0.25,0.45],[0.31,0.40],[0.38,0.31],
+        [0.44,0.24],[0.48,0.36],[0.52,0.25],[0.58,0.21],[0.65,0.27],[0.69,0.35],
+        [0.75,0.26],[0.78,0.18],[0.86,0.03],[1.00,0.01]] };
 const FKERB={ w:853, h:1844, seam:0.506,
  top:{ ar:0.11159, dip:0.11915 },
  plate:{ x:0.18171, y:0.05152, w:0.63892, h:0.30206 },
@@ -6451,6 +6495,22 @@ function layoutFKerb(){
     pl.style.width=(P.w*Wd)+'px'; pl.style.height='auto'; }
   for(const k in FKERB.arrows) put(dr.querySelector('.fk-arrow.'+k), FKERB.arrows[k]);
   for(const k in FKERB.rivets) put(dr.querySelector('.fk-rivet.'+k), FKERB.rivets[k]);
+  /* 吊墜：解出「與圓盤的圓保持距離」的最大寬度（同 story.js 的 layoutKerberos）。 */
+  const pd=document.getElementById('fkerbPend');
+  if(pd){
+    const P=FKERB.plate, pW=P.w*Wd;
+    const cx=(P.x+P.w/2)*Wd+dx, cy=(P.y+P.h/2)*Hd, r=pW/2;
+    const top=FKERB_PEND.drop*Hd, clear=Math.max(4, W*0.010), pcx=W*FKERB_PEND.bandC;
+    const fits=w=>{ const h=w*FKERB_PEND.ar;
+      for(const q of FKERB_PEND.prof){
+        if(Math.hypot(cx-(pcx+q[1]*w), cy-(top+q[0]*h))<=r+clear) return false; }
+      return true; };
+    let pw=0;
+    for(let w=Math.round(W*FKERB_PEND.maxW); w>=14; w--){ if(fits(w)){ pw=w; break; } }
+    pd.style.width=pw+'px'; pd.style.height=(pw*FKERB_PEND.ar)+'px';
+    pd.style.left=(pcx-pw/2-dx)+'px'; pd.style.top=top+'px';
+    pd.style.display = pw>=14 ? '' : 'none';
+  }
   tp.style.width=W+'px'; tp.style.height=th+'px';
   tp.style.left=(-dx)+'px'; tp.style.top=tpTop+'px';
   kb.style.setProperty('--fkerb-rise', doorTop+'px');
@@ -6466,6 +6526,14 @@ function layoutFKerb(){
    上推的長度也是 1000ms，兩邊同值，改一邊要改另一邊）。 */
 const kerbPopSE = new Audio('../resources/audio/se/se_Kerberos_pop.m4a'); kerbPopSE.preload='auto';
 const FKERB_RISE_MS = 1000;   // 上推時間（＝ story.js 的 KERB_T.rise，兩邊同值）
+/* 吊墜被甩一下（ver -412）。⚠ 唯一的一支（同 story.js 的 `kerbPendSwing`）。 */
+function fkerbPendSwing(amp, dur){
+  const pd=document.getElementById('fkerbPend'); if(!pd) return;
+  const sw=pd.querySelector('.fkp-swing'); if(!sw) return;
+  pd.style.setProperty('--fkp-amp', (amp||14)+'deg');
+  pd.style.setProperty('--fkp-dur', (dur||2.2)+'s');
+  sw.classList.remove('swing'); void sw.offsetWidth; sw.classList.add('swing');
+}
 
 /* ══ 內嵌模式（ver -388）══════════════════════════════════════════════════
    主遊戲把這一頁放進 **iframe**，所以進戰鬥**不再跳頁**。
@@ -6496,6 +6564,9 @@ function toBattle(kind){
      落地了，直接加 class 就會有過場。 */
   const kb=document.getElementById('fkerb');
   if(kb) kb.classList.add('rise');
+  /* 吊墜：起步輕輕甩、撞頂那一下最兇（與主遊戲同樣的兩拍，見 story.js 的 kerbPendSwing）。 */
+  fkerbPendSwing(9, 2.0);
+  setTimeout(()=>fkerbPendSwing(22, 2.6), FKERB_RISE_MS);
   setTimeout(()=>{
     if(EMBED){
       flightAudio(false);                          // 進戰鬥：這一頁的音樂與環境音收掉

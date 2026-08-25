@@ -838,6 +838,24 @@ const KERB_META={"w":853,"h":1844,"seam":0.506,
            "r8": {"cx":0.24113,"cy":0.30676,"w":0.05393,"h":0.02657,"fx":1, "fy":-1,"ux":-0.7558,"uy":0.6548},
            "r4": {"cx":0.76121,"cy":0.30676,"w":0.05393,"h":0.02657,"fx":-1,"fy":-1,"ux":0.7558, "uy":0.6548}}};
 const KERB_POP={ arrow:0.045, rivet:0.026 };   // 彈開距離，佔門寬的比例（箭 ver -336 由 0.016 加大）
+/* 吊墜（ver -411，Ray 指定）。⚠ `ar` 是**那張圖**的高寬比（1536/1024），量出來的；
+   `fill` 是「左側空隙要吃掉幾成」—— Ray：「在不擺動的狀況下不可碰觸到圓盤」，
+   所以留了 14% 的餘裕，不要調到 1。`drop` 是吊掛點往下離門頂多遠（佔門高）：
+   0 會讓鏈子的頂端正好在門頂，被楣壓住一點才像是從楣底下垂下來的。 */
+const KERB_PEND={
+  ar:1536/1024,   // 那張圖的高寬比（量出來的）
+  bandC:0.145,    // 吊墜中心在畫面寬的哪個比例（ver -412 由 0.115 往右，Ray 指定）
+  maxW:0.32,      // 最大寬度（佔畫面寬）—— 再大就變成主角，搶走紋章
+  drop:0.004,     // 吊掛點離門頂多遠（佔門高）：鏈子頂端被楣壓住一點才像從楣底下垂下來
+  /* ⚠⚠ **輪廓**（`[y佔圖高, 半寬佔圖寬]`，由那張圖的 alpha 逐列量出來）。
+     為什麼不用外框：這個吊墜是個 X 形 —— **最寬的地方在很上面**（y=0.21 半寬 0.49），
+     往下越來越窄，0.79 以下只剩一根細刺（半寬 0.03）。拿外框去閃圓盤的話，
+     等於用「右下角那一大塊空白」去頂著圓盤，吊墜會被壓成只剩一半大、細節全糊掉。
+     ⚠ 只列右半（左半對稱，而圓盤在右邊，只有右半會撞到）。 */
+  prof:[[0.13,0.41],[0.17,0.45],[0.21,0.49],[0.25,0.45],[0.31,0.40],[0.38,0.31],
+        [0.44,0.24],[0.48,0.36],[0.52,0.25],[0.58,0.21],[0.65,0.27],[0.69,0.35],
+        [0.75,0.26],[0.78,0.18],[0.86,0.03],[1.00,0.01]],
+};
 const KERB_ARROWS=['n','e','s','w'];             // 箭：正四向
 const KERB_RIVETS=['r10','r2','r4','r8'];        // 鉚釘：10/2/4/8 點鐘，依這個順序彈開
 let kerbReady=false;
@@ -901,6 +919,40 @@ function layoutKerberos(){
     put(rv, KERB_META.rivets[k], KERB_POP.rivet);
     if(rv) rv.style.setProperty('--kerb-d', (i*90)+'ms');   // 依次，不是同時
   });
+  /* ── 吊墜（ver -411）──
+     ⚠⚠ 左側能用的寬度是**「畫面左緣 → 圓盤左緣」**，那是解出來的（門比畫面寬時
+       `dx` 是負的，圓盤會往左靠）—— CSS 猜不到，所以在這裡算好寫成 inline（鐵律 7）。
+     ⚠ 吊掛點是圖的**上緣中點**（實測鏈子中心 x=511.5/1024，正好是中線），
+       所以 `transform-origin:50% 0` 就是那個點，元素本身只要擺對位置。 */
+  const pd=$('kerbPend');
+  if(pd){
+    /* ⚠⚠ **「不碰到圓盤」要對著圓、不是對著方框**（Ray 指定）。圓盤的外框左緣很靠左，
+       但吊墜掛在**它的上方**，那一段圓周是縮進去的 —— 拿方框當界線會把吊墜壓成
+       只剩一半大，細節全糊掉。所以：解出「與圓周保持 `clear` 距離」的最大寬度。
+       圓心與半徑都由圓盤那一組數字來（鐵律 7），這裡不另外量。 */
+    const cx = (P.x+P.w/2)*Wd + dx;                   // 圓心（螢幕座標）
+    const cy = (P.y+P.h/2)*Hd;
+    const r  = pW/2;
+    const top = KERB_PEND.drop*Hd;
+    const clear = Math.max(4, W*0.010);              // 與圓周的最小距離
+    const pcx = W*KERB_PEND.bandC;                   // 吊墜中心（螢幕座標）
+    const fits = w => {
+      const h = w*KERB_PEND.ar;
+      for(const [fy, fh] of KERB_PEND.prof){
+        if(Math.hypot(cx-(pcx+fh*w), cy-(top+fy*h)) <= r + clear) return false;
+      }
+      return true;
+    };
+    /* 由大往小試（步進 1px）：第一個過關的就是答案。 */
+    let pw = 0;
+    for(let w=Math.round(W*KERB_PEND.maxW); w>=14; w--){ if(fits(w)){ pw=w; break; } }
+    pd.style.width = pw+'px';
+    pd.style.height= (pw*KERB_PEND.ar)+'px';
+    /* 橫向錨在畫面左側的 `bandC`（佔畫面寬的比例）；`left` 是門座標，要把 dx 扣回去。 */
+    pd.style.left  = (pcx - pw/2 - dx)+'px';
+    pd.style.top   = top+'px';
+    pd.style.display = pw>=14 ? '' : 'none';          // 真的擠不下就不掛
+  }
   /* 楣：橫跨整個畫面寬，**下緣貼齊門的上緣**（往下壓 1px 免得留一條髮絲縫）。 */
   /* 十字亮光：豎的沿門的中縫、橫的沿紋章的橫軸（＝箭的那一條線）。
      ⚠ 縫的位置吃 KERB_META.seam，不是寫死 50% —— 門的中縫實測在 0.506。 */
@@ -950,11 +1002,28 @@ function layoutKerberos(){
   }
   if(!kerbReady){
     kerbReady=true;
-    const src={ kerbPlate:'kerberos_plate', kerbTop:'kerberos_top' };
+    const src={ kerbPlate:'kerberos_plate', kerbTop:'kerberos_top', kerbPendImg:'kerberos_pendant' };
     for(const id in src){ const el=$(id); if(el) el.src=KERB_DIR+src[id]+'.webp'; }
+    /* 高光的遮罩＝**吊墜自己那張圖**（鐵律 7：路徑只有 `KERB_DIR` 這一份）。 */
+    const pdw=$('kerbPend');
+    if(pdw) pdw.style.setProperty('--kp-mask', 'url("'+KERB_DIR+'kerberos_pendant.webp")');
     for(const k of KERB_ARROWS){ const a=kb.querySelector('.kerb-arrow.'+k); if(a) a.src=KERB_DIR+'kerberos_arrow.webp'; }
     for(const k of KERB_RIVETS){ const r=kb.querySelector('.kerb-rivet.'+k); if(r) r.src=KERB_DIR+'kerberos_rivet.webp'; }
   }
+}
+
+/* ══ 吊墜被甩一下（ver -411）══════════════════════════════════════════
+   Ray：「槍棺上彈、開、閉的時候進行自然的劇烈擺動」。
+   ⚠ **只有這一支**（鐵律 8）：三個時機都叫它，不要各寫一段動畫。
+   ⚠ `amp` 是「這一下有多重」—— 撞頂最重、開關門次之、起步最輕。
+   ⚠ 要 reflow（`void offsetWidth`）才重播得動：同一個 class 再加一次，
+     瀏覽器不會重新開始動畫。 */
+export function kerbPendSwing(amp, dur){
+  const pd=$('kerbPend'); if(!pd) return;
+  const sw=pd.querySelector('.kp-swing'); if(!sw) return;
+  pd.style.setProperty('--kp-amp', (amp||14)+'deg');
+  pd.style.setProperty('--kp-dur', (dur||2.2)+'s');
+  sw.classList.remove('swing'); void sw.offsetWidth; sw.classList.add('swing');
 }
 
 /* 鉚釘彈開處的煙（Ray 指定）。⚠ 掛在 #kerbSmoke（門的子元素）——
@@ -1049,6 +1118,8 @@ function playKerberos(onGap, onDone, opts){
     /* ① 撞擊音：立刻播，撞擊峰值（1002ms）正好落在門撞頂那一瞬（rise 也是 1000ms）。 */
     se('pop');
     kb.classList.add('rise','full');                     // ① 槍棺上推（楣跟著走）
+    /* 吊墜：門往上竄，它因為慣性落後 → 先往外盪（ver -411）。起步這一下最輕。 */
+    kerbPendSwing(9, 2.0);
     t+=KERB_T.rise;
   }
   at(t,()=>{                                             // ② 撞頂：震動＋門縫透出十字亮光
@@ -1057,6 +1128,7 @@ function playKerberos(onGap, onDone, opts){
        撞頂＝門被頂開的那一刻，音樂從這裡起來才是「戰鬥開始」。 */
     riseCue();
     hap.kerbThud();              // 撞頂：全場最重的一下（ver -398，Ray 指定）
+    kerbPendSwing(22, 2.6);      // 吊墜也是：撞頂＝甩得最兇的那一下（ver -411）
     st.classList.remove('shake','hold'); void st.offsetWidth; st.classList.add('shake');
     kerbTimers.push(setTimeout(()=>st.classList.remove('shake'), KERB_T.thud));
     kb.classList.remove('glow'); void kb.offsetWidth; kb.classList.add('glow');
@@ -1084,7 +1156,7 @@ function playKerberos(onGap, onDone, opts){
   });
   t+=260;                                                // 給底下一拍把畫面建起來
   const openAt = t;
-  at(t,()=>{ kb.classList.add('open'); });               // ⑥ 開門
+  at(t,()=>{ kb.classList.add('open'); kerbPendSwing(15, 2.2); });   // ⑥ 開門（吊墜跟著甩）
   /* 開門音：可聞段收在 1921ms，要讓它**結束在門全開的那一刻** → 往回推。
      推出來的時間點通常落在旋轉那一段，與齒輪重疊 —— Ray 說可以重疊。
      ⚠ 夾在 0 以上：畫面時序若被縮短到比音檔還短，就從頭播（寧可提前，不要不播）。 */
@@ -1201,7 +1273,7 @@ export function playKerberosClose(onDone){
   /* ① 兩扇合上。⚠ **紋章、箭、鉚釘與左半扇是同一個剛體**（Ray 指定）—— `kerb-shut`
      把門的過場曲線（與零延遲）借給那三組，不借的話它們會掉回自己那條帶回彈、帶逐顆
      延遲的曲線，四顆零件先飛回去、門才關上（見 style.css 那一段的說明）。 */
-  at(t,()=>{ kb.classList.add('kerb-shut'); kb.classList.remove('open');
+  at(t,()=>{ kb.classList.add('kerb-shut'); kb.classList.remove('open'); kerbPendSwing(15, 2.2);
              se('clip'); sparkSeam(); });                                   // ① 兩扇合上
   t+=KERB_T.open;
   at(t,()=>{                                                              // ② 紋章轉回並縮小
@@ -1581,7 +1653,8 @@ const PRELOAD_CAP_MS = 25000;
 function preloadStory(startId, onProgress){
   const A=collectAssets(startId);
   /* ⚠ 門的素材也要預載：它是**進戰鬥那一刻**才動起來的，沒先抓的話升上去是一片空白。 */
-  for(const f of ['kerberos_door','kerberos_plate','kerberos_arrow','kerberos_rivet','kerberos_top'])
+  for(const f of ['kerberos_door','kerberos_plate','kerberos_arrow','kerberos_rivet','kerberos_top',
+                  'kerberos_pendant'])
     A.imgs.push(KERB_DIR+f+'.webp');
   /* ⚠ 門的三支音效也要預載：撞擊音在演出**第 0 毫秒**就要響，
      現抓的話一定遲到（audio.js 的 LATE_PLAY_MS 是 1.5 秒，遲到就乾脆不播）。 */
