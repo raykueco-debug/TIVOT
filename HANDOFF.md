@@ -4151,3 +4151,36 @@ HP 300、**不攻擊**、點錯 **+3 秒** ＋ `se_dart_fail`（已轉 AAC）、
 `Luna_SI_seat_angry` 換新（同名覆蓋）→ 轉 WebP、原 PNG 進 `_originals/SI/`，
 並照 §5 **重量取景值**：`bot 1526→1518`、`fx 0.539→0.531`。
 ⚠ `faceAdj`／`standCm` 是那一組坐姿的補償（推導在 speakers.js 上方），**不是量出來的**，換圖不動。
+
+---
+
+# 交接 · `ver -399`（兩個回歸：音效全沒了、打完架被關在店裡）
+
+兩個都是我自己在 -397／-394 弄出來的，記在這裡當教訓。
+
+## A. 音效全部不見（-397 的分軌改動）
+
+`playSrc` → `playWhenRunning` → **`playBuffer`**。我把 `src` 一路傳到 `playWhenRunning`，
+卻**漏了最後一段**：`playBuffer(c, buf, vol, voice, handle)` 沒有 `src` 這個參數，
+而函式裡寫了 `busIn(c, layerOf(src, voice))` → `src` 是未宣告的識別字 → ReferenceError。
+
+⚠⚠ **它被 `playBuffer` 外層那個空的 `catch(e){}` 靜靜吞掉了** —— console 一行都沒有，
+音效就是全部不響。那個 catch 是刻意的（音效壞掉不該讓遊戲停），但它也會把這種低級錯誤藏起來。
+**動 `audio.js` 之後一定要真的聽一次，不要只看 console。**
+實測修好：攔 `AudioBufferSourceNode.start` 有被呼叫（修之前是 0 次）。
+
+## B. 打完靶／賞金獵人之後，商店與公會的返回鍵不見，人被關在裡面（-394 的漏收）
+
+⚠⚠ 根因：-394 為了「按選單離開時城鎮也要收」，把 `townCloser()` 放進了 `story.close()`。
+但**交棒給戰鬥走的也是 `close({keepBgm:true})`**（`playKerberos` 的 `onDone`）——
+於是推槍棺那一刻 `townId` 就被清成 null。打完回來 `resumeFrom` 雖然把舞台開回來，
+但 `showNav()`／`refreshArrows()`／`placeCounter()` 全部查不到節點 →
+**羅盤的箭與櫃台鈕都不出現**，玩家沒有任何出口。
+
+修法：收城鎮是「**離開這一切**」才做的事 → 從 `close()` 移到 `goHomeNow()`（選單那條路）。
+實測：櫃台「射擊挑戰」→ 打完 → `town.isOpen()` 仍為 true、`body.town-nav` 回來、
+`.kerb-arrow.s` 有 `avail`（返回鍵回來了）。
+
+⚠ 教訓（與鐵律 8 同一個形狀的反面）：**同一支函式被兩種語意的路徑共用時，
+不要在它裡面加「只有其中一種語意才該做」的事**。`close()` 同時是「離開」與「交棒」，
+所以收城鎮不能放在它裡面。

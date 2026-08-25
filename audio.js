@@ -140,7 +140,12 @@ function voiceChain(c, vol){
   }catch(e){ return null; }
 }
 
-function playBuffer(c, buf, vol, voice, handle){
+/* ⚠⚠ `src` **一定要傳進來**：`busIn` 要靠它判軌（`layerOf`）。
+   ver -397 忘了加這個參數，於是這裡的 `src` 是未宣告的識別字 → ReferenceError →
+   被下面那個 `catch(e){}` **靜靜吞掉** → **所有音效整個不見**（Ray 回報，ver -399 修）。
+   ⚠ 那個空的 catch 是刻意的（音效壞掉不該讓遊戲停），但它也會把這種低級錯誤藏起來
+     —— 動這一支之後**一定要真的聽一次**，不要只看 console。 */
+function playBuffer(c, buf, vol, voice, handle, src){
   try{
     const s = c.createBufferSource(); s.buffer = buf;
     if(voice && _voice){
@@ -167,7 +172,7 @@ const LATE_PLAY_MS = 1500;
 function playWhenRunning(buf, vol, t0, voice, handle, src){
   if(Date.now()-t0 > LATE_PLAY_MS) return;
   const c = _ctx; if(!c) return;
-  if(c.state === 'running'){ playBuffer(c, buf, vol, voice, handle); return; }
+  if(c.state === 'running'){ playBuffer(c, buf, vol, voice, handle, src); return; }
   setTimeout(()=>playWhenRunning(buf, vol, t0, voice, handle, src), 60);
 }
 

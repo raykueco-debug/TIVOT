@@ -1749,10 +1749,12 @@ export function close(opts){
     try{ SFX.playBgm(HOME_BGM, {fadeInMs:600, volume:HOME_VOL}); }catch(_){}
   }
   document.body.classList.remove('story-talking');   // ver -385
-  /* ⚠ 城鎮也要一起收（ver -394）：「選單」按下去是**離開這一切**，
-     不收的話 `town.isOpen()` 還是 true、`body.town-nav` 還掛著（羅盤的箭會留在
-     下一次開啟的舞台上發光）。實體由 main.js 注入 —— 劇情層不認識城鎮（§2 的依賴方向）。 */
-  if(townCloser) try{ townCloser(); }catch(_){}
+  /* ⚠⚠ **這裡不收城鎮**（ver -399 修）。ver -394 曾經在這裡呼叫 `townCloser()`，
+     結果把「交棒給戰鬥」也一起收掉了 —— 推槍棺進戰鬥時走的正是
+     `close({keepBgm:true})`（見 playKerberos 的 onDone），於是 `townId` 被清成 null；
+     打完回來 `resumeFrom` 雖然把舞台開回來，但 `showNav`／`refreshArrows` 都查不到節點
+     → **箭頭與櫃台鈕全不見，玩家被關在店裡**（Ray 回報「打完靶跟賞金獵人後返回鍵不見了」）。
+     收城鎮是「**離開這一切**」才要做的事 → 移到 `goHomeNow()`。 */
   const cb=onExit; onExit=null; if(cb) cb();
 }
 /* 城鎮的收場器（注入，同 `setTownOpener`）。 */
@@ -1770,7 +1772,12 @@ export function setTownCloser(fn){ townCloser=fn; }
    ⚠ 查不到注入的實體才退回只 `close()` —— 那是舊行為，總比什麼都不做好。 */
 let homeReturn=null;
 export function setHomeReturn(fn){ homeReturn=fn; }
-function goHomeNow(){ if(homeReturn) homeReturn(); else close(); }
+function goHomeNow(){
+  /* ⚠ 城鎮在這裡收（不是在 `close()` 裡）—— 只有「回到主選單」才是離開這一切；
+     交棒給戰鬥同樣走 `close()`，那時城鎮必須留著（見 close 的說明）。 */
+  if(townCloser) try{ townCloser(); }catch(_){}
+  if(homeReturn) homeReturn(); else close();
+}
 
 /* ══ 給城鎮探索用的三個接口（ver -369）══
    城鎮是**非線性**的（玩家在節點之間走動），不走 MAIN_SCRIPT 的 scene 鏈；
