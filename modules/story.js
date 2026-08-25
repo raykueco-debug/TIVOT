@@ -477,8 +477,12 @@ function setImg(el, src){
    我已經…』的背景是插圖002」）—— 判斷靠命名慣例：插圖一律 `NNN_` 開頭
    （001_Nouvelle_Fell…），背景是名字（HolyseeDungeonWhole…）。
    這樣腳本裡照樣只寫一個名字，不必再記它放在哪個資料夾。 */
+/* ⚠ `name` 可以自己帶副檔名（`Capital_Downtown_Day.png`）—— 城鎮的背景載入器
+   （modules/town.js 的 `bgFor`）會逐個試 `.webp` / `.png`，試到哪一個就把**那一個**
+   傳進來。沒帶就照預設補 `.webp`（§5 的規約：新圖一律轉 WebP）。 */
 function imgSrc(name){
-  return (/^\d{3}_/.test(name) ? CG_DIR : BG_DIR) + name + '.webp';
+  const dir = /^\d{3}_/.test(name) ? CG_DIR : BG_DIR;
+  return dir + name + (/\.(webp|png|jpe?g)$/i.test(name) ? '' : '.webp');
 }
 /* 換圖：淡出 → 換 → 淡入。FADE_MS 與 style.css 的 transition 同值。
    ⚠⚠ `.fading` 要等**新圖載好**才拿掉（同 ver -322 立繪那個坑）：移除 class 的

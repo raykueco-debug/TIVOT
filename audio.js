@@ -163,6 +163,12 @@ let _shotsVol = 1;  // 普攻槍聲音量（setShots 由呼叫端連同增益傳
 let _unlocked = false;
 let _bgmEl = null;      // 單一 BGM 元素
 let _bgmSrc = null;     // 目前/目標曲（邏輯路徑，非 blobURL）
+/* ⚠⚠ `_bgmSrc`（**要播哪一首**）與 `_bgmPlaying`（**真的已經掛上元素的那一首**）
+   是兩件事：換歌的那 0.9~1.9 秒之間，`_bgmSrc` 早就是新的一首了，元素上掛的還是舊的。
+   同曲判斷一定要看後者 —— 看前者會在換歌的窗口裡把「重複請求同一首」誤判成
+   「已經在播了」（見 playBgm 的說明，ver -391 的 bug）。 */
+let _bgmPlaying = null;      // 真的已經掛上 el.src 的那一首
+let _bgmSwitching = false;   // 換歌在路上（淡出中／等 delay／等 blob）
 let _bgmVol = 0.7;      // 目標音量
 let _bgmTimer = null;   // 切歌間隔/待播計時器
 const _bgmBlob = {};    // path → objectURL（快取；壓縮 mp3，體積小可多留）
@@ -241,12 +247,26 @@ export const SFX = {
     opts = opts || {};
     if(!src) return;
     const el = bgmElem();
-    if(src === _bgmSrc && !el.paused){ clearTimeout(_bgmTimer); _bgmTimer=null; return; }  // 同曲播放中
+    /* ══ 同曲判斷（ver -391 修，Ray：「BGM 不播下一首就停上一首」）══════════
+       ⚠⚠ 舊寫法是 `if(src === _bgmSrc && !el.paused){ clearTimeout(_bgmTimer); return; }`
+         —— 兩個錯疊在一起：
+           ① `_bgmSrc` 一進 playBgm 就被設成**新的一首**，但舊的那首還在淡出，
+              `el.paused` 仍然是 false。於是在換歌的那 0.9~1.9 秒裡，**再請求一次
+              同一首**（`ensureBgm`／`riseCue`／場景切換都會這樣）就會被判成
+              「已經在播了」而直接 return。
+           ② 更糟的是它順手 `clearTimeout(_bgmTimer)` —— 那個 timer 正是
+              「等一下把新的一首掛上去」的那一步。清掉之後：舊的淡到 0（聽起來像停了）、
+              新的永遠沒播。
+       正解：同曲要看**真的掛上去的那一首**（`_bgmPlaying`）；換歌在路上時
+       （`_bgmSwitching`）收到同一首的請求就**讓它走完**，一個字都不要動。 */
+    if(src === _bgmPlaying && !el.paused) return;          // 真的在播同一首：什麼都不做
+    if(src === _bgmSrc && _bgmSwitching) return;           // 已經在切往這一首：別打斷它
     const fadeOut = opts.fadeOutMs!=null ? opts.fadeOutMs : 900;
     const fadeIn  = opts.fadeInMs!=null  ? opts.fadeInMs  : 0;   // 預設不淡入
     const delay   = opts.delayMs!=null   ? opts.delayMs   : 0;
     _bgmVol = opts.volume!=null ? opts.volume : 0.7;
     _bgmSrc = src;
+    _bgmSwitching = true;
     clearTimeout(_bgmTimer); _bgmTimer=null;
     clearInterval(el.__fade); el.__fade=null;
     ensureBlob(src);   // 提早開始下載，切歌時多半已就緒
@@ -254,8 +274,14 @@ export const SFX = {
       _bgmTimer = null;
       if(_bgmSrc !== src) return;   // 已被後續切歌取代 → 放棄
       ensureBlob(src).then(url=>{
-        if(!url || _bgmSrc !== src) return;
-        try{ el.src = url; el.currentTime = 0; }catch(e){}
+        if(_bgmSrc !== src) return;        // 已被後續切歌取代（那一支自己會管旗標）
+        _bgmSwitching = false;
+        /* ⚠ 抓不到 blob 就**退回直接串流**（`el.src = src`）：整首下載失敗（離線、
+           快取被清、CORS）不該讓整段變安靜 —— 串流播得動就播，播不動也只是同樣安靜。
+           舊寫法是 `if(!url) return`，那會讓舊的一首停在音量 0、新的永遠不播。 */
+        const u = url || src;
+        try{ el.src = u; el.currentTime = 0; }catch(e){}
+        _bgmPlaying = src;
         el.volume = (fadeIn > 0 ? 0 : Math.min(1,_bgmVol*_master));
         // 只上膛：src 已就位、留在 paused，等 unlock() 於手勢內同步開火。
         // 若手勢**已經**發生過（玩家點得比 blob 快），就不必再憋 —— 直接開火。
@@ -272,7 +298,7 @@ export const SFX = {
   // 停 BGM（淡出後停）
   stopBgm(fadeOutMs){
     clearTimeout(_bgmTimer); _bgmTimer=null;
-    _bgmSrc = null;
+    _bgmSrc = null; _bgmPlaying = null; _bgmSwitching = false;
     const el = _bgmEl;
     if(el && !el.paused) bgmFade(el, 0, fadeOutMs!=null ? fadeOutMs : 700, ()=>{ try{ el.pause(); }catch(e){} });
   },

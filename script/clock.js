@@ -44,6 +44,9 @@ const p2 = n => (n<10?'0':'')+n;
 export function dateText(){ const t=now(); return t.y+'年'+t.mo+'月'+t.d+'日'; }
 export function timeText(){ const t=now(); return p2(t.h)+':'+p2(t.mi); }
 export function fullText(){ return dateText()+'　'+timeText(); }
+/* 現在的「小時」含分鐘的小數（8:30 → 8.5）。⚠ 營業時間之類的比較**一律問這支**
+   （鐵律 7：一個量一個計算點）—— 不要在別處自己 `now().h + now().mi/60`。 */
+export function hourF(){ const t=now(); return t.h + t.mi/60; }
 
 /* ── 時段 ──
    ⚠ 界線是**內容設定**，但這裡只有一組（全城鎮通用），所以放這支就好；

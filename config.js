@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.25-390';
+export const VERSION = 'ver 2026.08.25-391';
 
 export const GAME_CONFIG = {
 

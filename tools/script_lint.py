@@ -169,7 +169,11 @@ def main():
             if ln.get('bg'):
                 d = CG_DIR if re.match(r'^\d{3}_', ln['bg']) else BG_DIR
                 if not exists(d + ln['bg'] + '.webp'):
-                    err('%s：沒有這張背景 %s（找 %s）' % (tag, ln['bg'], d))
+                    # 有 PNG 沒 WebP：載得到（載入器兩個都試），但**沒照 §5 轉檔** → 提醒不是錯
+                    if exists(d + ln['bg'] + '.png'):
+                        warn('%s：背景 %s 只有 .png，還沒轉成 .webp（§5 的規約）' % (tag, ln['bg']))
+                    else:
+                        err('%s：沒有這張背景 %s（找 %s）' % (tag, ln['bg'], d))
             if ln.get('cg') and not exists(CG_DIR + ln['cg'] + '.webp'):
                 err('%s：沒有這張插圖 %s' % (tag, ln['cg']))
             if ln.get('ci') and not exists(SI_DIR + ln['ci'] + '.webp'):
@@ -218,7 +222,11 @@ def main():
                     err('%s：出口 %s 指到不存在的節點 %s' % (tag, d, to))
             bg = n.get('bg')
             if bg and not (exists(BG_DIR + bg + '_Day.webp') or exists(BG_DIR + bg + '.webp')):
-                err('%s：沒有這張背景 %s（找 %s，含 _Day）' % (tag, bg, BG_DIR))
+                # 同上：有 PNG 只是還沒轉檔（`bgFor` 兩個副檔名都試），不是「缺圖」
+                if exists(BG_DIR + bg + '_Day.png') or exists(BG_DIR + bg + '.png'):
+                    warn('%s：背景 %s 只有 .png，還沒轉成 .webp（§5 的規約）' % (tag, bg))
+                else:
+                    err('%s：沒有這張背景 %s（找 %s，含 _Day）' % (tag, bg, BG_DIR))
             if n.get('shop') and n['shop'] not in ((cfg.get('shop') or {}).get('stock') or {}):
                 err('%s：shop 指到 config.shop.stock 裡沒有的貨單 %s' % (tag, n['shop']))
             if n.get('board'):

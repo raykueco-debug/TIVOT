@@ -39,8 +39,28 @@ let arriveT=0;            // 抵達停頓的計時器（換節點要取消，見
      而 Image 本來就要載。**載到才換**，所以不會閃到破圖。
    ⚠ 退回要留一筆 console —— 否則「為什麼晚上還是白天」會查很久。 */
 const missingBg=new Set();
+/* 時段尾巴的**大小寫變體**：`_night` ⇄ `_Night`、`_Dusk` ⇄ `_dusk`…
+   ⚠ 為什麼要有：`clock.band()` 出的是 `Dawn/Day/Dusk/night/midnight`（大小寫是 Ray 定的），
+     但實際交件的檔名兩種都出現過（`Capital_Church_Night` vs `Capital_Cityhall_night`）。
+     靜態空間與多數伺服器**是分大小寫的**，猜錯就 404。與其要求檔名整齊，
+     不如在候選鏈裡把兩種都試一次 —— 這比「載不到、畫面停在白天」好查得多。 */
+function altCase(name){
+  const i=name.lastIndexOf('_'); if(i<0) return null;
+  const head=name.slice(0,i+1), tail=name.slice(i+1);
+  if(!tail) return null;
+  const alt = (tail[0]===tail[0].toUpperCase())
+    ? tail[0].toLowerCase()+tail.slice(1) : tail[0].toUpperCase()+tail.slice(1);
+  return alt===tail ? null : head+alt;
+}
+/* ⚠ 副檔名也逐個試：**規約是 WebP**（§5），但 Ray 交件常常先是 PNG ——
+   載不到就整個時段沒有背景，不如兩個都試。**先試 webp**，所以轉檔之後自動用新的。 */
+const BG_EXT=['.webp','.png'];
 function bgFor(base, noTime){
-  const cands = noTime ? [base] : [clock.bgName(base), base+'_Day', base];
+  const names=[]; const push=n=>{ if(n && names.indexOf(n)<0) names.push(n); };
+  if(noTime){ push(base); }
+  else{ const b=clock.bgName(base); push(b); push(altCase(b)); push(base+'_Day'); push(base); }
+  const cands=[];
+  for(const n of names) for(const e of BG_EXT) cands.push(n+e);
   const tryAt=(i)=>{
     if(i>=cands.length) return;
     const name=cands[i];
@@ -52,12 +72,24 @@ function bgFor(base, noTime){
       if(i>0 && !missingBg.has(cands[0])){ missingBg.add(cands[0]);
         console.info('[town] 沒有這個時段的背景，退回：', cands[0], '→', name); } };
     img.onerror=()=>tryAt(i+1);
-    img.src='resources/background/'+name+'.webp';
+    img.src='resources/background/'+name;
   };
   tryAt(0);
 }
 
 function node(){ return (TOWNS[townId]||{}).nodes[nodeId] || null; }
+
+/* ══ 營業時間（ver -391，Ray 指定）══════════════════════════════════════
+   節點寫 `hours:[開,關]`（小時，24 制）。**不寫＝全天**（旅店就是這樣）。
+   ⚠ 上界**不含**：`[8,24]` ＝ 23:59 還開著、00:00 關 —— 那正是「開到 00 時」的意思。
+   ⚠ 跨午夜（`[20,2]`）也要對，所以兩種寫法都判。
+   ⚠ 時刻只有一個計算點：`clock.hourF()`（鐵律 7）。 */
+function isOpenNow(n){
+  const h = n && n.hours;
+  if(!h || h.length<2) return true;
+  const t = clock.hourF();
+  return (h[1] > h[0]) ? (t >= h[0] && t < h[1]) : (t >= h[0] || t < h[1]);
+}
 
 /* ══ 方向手勢層（ver -370，Ray：「箭頭太醜了，改成畫面按住往指定方向滑，
    該方向跳出提示，時間滿後移動」）══
@@ -104,7 +136,9 @@ let bgNat=null;              // 目前背景圖的原始尺寸 [w,h]
 function placeCounter(){
   const b=layer && layer.querySelector('#townCounter'); if(!b) return;
   const n=node();
-  const on = !!(n && n.counter && (n.shop || (n.board && (!n.boardFlag || prog.hasFlag(n.boardFlag)))));
+  /* ⚠ 打烊就不出現（ver -391）：門是關著的，櫃台後面沒有人。 */
+  const on = !!(n && n.counter && isOpenNow(n)
+                && (n.shop || (n.board && (!n.boardFlag || prog.hasFlag(n.boardFlag)))));
   /* ⚠ **擺好了才亮**：先 `.on` 再算位置的話，量不到圖那一拍鈕會出現在畫面左上角
      （left/top 還沒寫）—— 一顆定位錯的鈕比晚一拍出現糟得多。 */
   const st=story.stageEl(), bg=document.getElementById('storyBg');
@@ -132,7 +166,10 @@ function refreshArrows(){
   const n=node(); if(!n || !layer) return;
   placeCounter();
   const info=layer.querySelector('#townInfo');
-  if(info) info.innerHTML = n.name + '<span class="ti-time">' + clock.timeText() + '</span>';
+  /* ⚠ 打烊時在時刻後面補一句（ver -391）：櫃台鈕不見了要有理由，
+     不然玩家只會覺得「按鈕怎麼消失了」。 */
+  if(info) info.innerHTML = n.name + '<span class="ti-time">' + clock.timeText()
+         + (isOpenNow(n) ? '' : '　已打烊') + '</span>';
   /* 目的地字格：有那個方向才出現，字是目的地名，**位置貼著那一支箭**
      （ver -374，Ray：「地名是放在箭頭左右上方」）。
      ⚠ 箭的座標問 `getBoundingClientRect`，不要自己算（鐵律 7）。
@@ -371,7 +408,9 @@ export function enter(id){
      旗標記在 progress 的 flags，存檔要帶。 */
   const flag='town_'+townId+'_'+id;
   const played = prog.hasFlag(flag);
-  const lines = played ? [] : (n.lines||[]);
+  /* ⚠ **打烊時不播進場對白**（ver -391）：在一間關著的店裡讓店主開口是錯的。
+     旗標也不會記，所以那一段會留到下次在營業時間內進來時才播 —— 不會漏掉。 */
+  const lines = (played || !isOpenNow(n)) ? [] : (n.lines||[]);
   /* ⚠ 旗標**演完才記**（ver -375 由「開演就記」改過來）：這一段中間可能插一場戰鬥，
      打輸了會被丟回首頁 —— 開演就記的話，回頭再走一次公會就整段跳過，那一場永遠打不到。
      「沒演完就不算演過」才是對的。代價：中途離開會再看一次，那本來就該再看一次。 */
@@ -451,7 +490,13 @@ let chatterOn=false;
 
 /* 路人單句：**單句**，不進對話模式（Ray 指定）。點一下出一句、再點一下收掉。 */
 function chatter(){
-  const n=node(); const list=n && n.chatter;
+  const n=node();
+  /* 打烊中：出那一句「關著」的描述就好，不出路人單句（ver -391）。 */
+  if(n && !isOpenNow(n)){
+    if(n.closed){ story.flashLine(n.closed, ''); chatterOn=true; }
+    return;
+  }
+  const list=n && n.chatter;
   if(!list || !list.length) return;
   let i=Math.floor(Math.random()*list.length);
   if(list.length>1 && i===lastChat) i=(i+1)%list.length;
@@ -478,3 +523,7 @@ export function close(){
   document.querySelectorAll('.kerb-arrow').forEach(a=>a.classList.remove('avail','holding'));
 }
 export function isOpen(){ return !!townId; }
+/* 把這座城的曲子接回來（ver -391）。⚠ 進飛行頁時主遊戲的 BGM 被收掉了
+   （見 main.js 的 `openFlight`：兩個 document 各有一套 BGM，不收會疊在一起），
+   從飛行頁「返回」回到城鎮時要有人把它接回來。 */
+export function resumeBgm(){ const T=TOWNS[townId]; if(T) story.ensureBgm(T.bgm); }

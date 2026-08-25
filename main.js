@@ -246,6 +246,13 @@ function flightWin(){ const f=$('flightFrame'); return f ? f.contentWindow : nul
 function openFlight(opts){
   const f=$('flightFrame');
   if(!f){ window.location.href='flight/'; return; }      // 沒有這個框就退回舊的跳頁
+  /* ⚠⚠ **主遊戲這一頁的 BGM 一定要先收掉**（ver -391，Ray：「BGM 播下一首就停上一首，
+     不要重疊」）。飛行頁自 ver -388 起是內嵌 iframe，它**有自己的一套 BGM**
+     （另一個 document、另一組 HTMLAudio）—— 跳頁的時代舊頁一走音樂自然沒了，
+     內嵌之後主選單／城鎮的曲子會**繼續播**，於是兩首疊在一起。
+     ⚠ 收在這裡（唯一的入口）而不是散在各個呼叫點（鐵律 8）：試飛、出航、
+       戰鬥打完回來，三條路都經過這一支。 */
+  try{ SFX.stopBgm(600); }catch(_){}
   const w=flightWin();
   if(!f.getAttribute('src')) f.setAttribute('src','flight/index.html');
   else if(opts && opts.resume){ if(w && w.__flightResume) w.__flightResume(); }
@@ -283,8 +290,14 @@ window.__tivotFlight = {
      從城鎮出航的話，城鎮的舞台一直在 iframe 底下開著，收掉 iframe 就回到城鎮了。 */
   close(){
     closeFlightFrame();
+    /* ⚠ 底下是誰，就把誰的曲子接回來（ver -391）—— 進飛行頁時主遊戲的 BGM 被收掉了，
+       不接回來的話回到城鎮／首頁是一片安靜。 */
     const st=$('storyStage');
-    if(!st || !st.classList.contains('on')) $('home').classList.add('on');
+    if(st && st.classList.contains('on')){ town.resumeBgm(); }
+    else{
+      $('home').classList.add('on');
+      SFX.playBgm(asset('bgm_home'), { volume: bgmVol('bgm_home') });
+    }
   },
 };
 
@@ -798,7 +811,7 @@ combat.setStoryReturn((res)=>{
     flightBack=false;
     const f=$('flightFrame');
     if(f && f.getAttribute('src')){
-      try{ SFX.stopBgm(600); }catch(_){}
+      /* ⚠ 戰鬥／結算的曲子由 `openFlight` 統一收掉（鐵律 8），這裡不再自己 stopBgm。 */
       combat.goHome(()=>openFlight({ resume:true }), { noBgm:true });
       return;
     }

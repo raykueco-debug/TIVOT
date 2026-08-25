@@ -5522,6 +5522,14 @@ const TRAIN_SPAN   = TRAIN_CARS*TRAIN_CAR + (TRAIN_CARS-1)*TRAIN_GAP;   // 車�
 const SMOKE_N     = 7;          // 同時存在的雲塊數
 const SMOKE_DT    = 0.55;       // 每隔幾秒噴一朵
 let TRAINS=[];
+/* ══ 火車的像素化緩衝（ver -391，Ray：「飛行畫面的火車進行像素化處理」）══
+   火車原本是**直接畫在主畫布上的向量圖形**（抗鋸齒、全解析度），可是它旁邊的地形
+   是低解析緩衝放大出來的像素塊 —— 一列邊緣乾乾淨淨的車貼在馬賽克山上，讀起來像貼紙。
+   作法與怪同一套（見 drawEnemy3D 的 `enemyFB`）：先畫進一張**與地形同解析度**的
+   離屏緩衝，再關掉平滑 1:1 放大貼回來。
+   ⚠ 緩衝只**長不縮**（縮到剩一半以下才重配）：一列車每幀的外框都會變一點，
+     每幀 new 一張 canvas 是白花的配置成本（怪只有一隻，火車可能好幾列）。 */
+let trainFB=null, TC=null;
 
 function buildTrains(){
   TRAINS=RAIL_PATHS.map((pts,i)=>{
@@ -5788,6 +5796,30 @@ function drawTrains(S,scaleH,horizon,sinp,cosp){
        一律去裁，另一半的情況就會把煙誤判成「被前面的地形擋住」而切掉一塊。
        取最淺的是安全邊：寧可讓煙偶爾透出山一點點（它本來就是軟的、又飄在高處），
        也不要一條硬邊。 */
+    /* ── 像素化緩衝：把整列車（含煙）畫進去，再一次貼回主畫布 ──────────
+       ⚠ 外框要把**煙**一起框進去（煙拖得比車身長很多）—— cx0/cx1 上面已經含了煙，
+         這裡再補縱向與一圈餘裕（車廂高度、車頭那盞燈的光暈）。
+       ⚠ 透明度照舊在離屏那一層處理（煙每團自己的 alpha、車身的 fade），
+         貼回來時 globalAlpha 是 1 —— 行為與原本一模一樣，只有解析度變了。 */
+    let cy0=1e9, cy1=-1e9;
+    for(const q of seats){
+      const hh=Math.max(1.1,q.w*TRAIN_BOX_H)+q.w*0.5+q.up;
+      cy0=Math.min(cy0,q.ay-hh,q.by-hh); cy1=Math.max(cy1,q.ay+q.w,q.by+q.w);
+    }
+    for(const q of puffDraw){ cy0=Math.min(cy0,q.y-q.r*1.35); cy1=Math.max(cy1,q.y+q.r*1.15); }
+    const fpad=Math.ceil(Math.max(6, seats[0].w*3.2));
+    const fx0=Math.floor(cx0)-fpad, fy0=Math.floor(cy0)-fpad;
+    const fbw=Math.ceil(cx1-cx0)+fpad*2, fbh=Math.ceil(cy1-cy0)+fpad*2;
+    if(fbw<2||fbh<2) continue;
+    const pk=clamp(BW/W,0.15,1);                       // 與地形同一個解析度
+    const bwp=Math.max(2,Math.round(fbw*pk)), bhp=Math.max(2,Math.round(fbh*pk));
+    if(!trainFB){ trainFB=document.createElement('canvas'); TC=trainFB.getContext('2d'); }
+    if(trainFB.width<bwp || trainFB.height<bhp || trainFB.width>bwp*2 || trainFB.height>bhp*2){
+      trainFB.width=bwp; trainFB.height=bhp;
+    }
+    TC.setTransform(1,0,0,1,0,0); TC.clearRect(0,0,bwp,bhp);
+    TC.setTransform(bwp/fbw,0,0,bhp/fbh,-fx0*bwp/fbw,-fy0*bhp/fbh);
+    TC.lineCap='butt';
     ctx.save();
     clipByTerrainDepth(zClip, sxk, syk, Math.floor(cx0/sxk)-2, Math.ceil(cx1/sxk)+2);
     /* 淡出綁**投影長度**：spanPx 從 1.7 倍門檻掉到門檻的過程中淡完，門檻以下
@@ -5814,13 +5846,13 @@ function drawTrains(S,scaleH,horizon,sinp,cosp){
       /* 一朵雲塊自己的生命：剛冒出來最濃，脹大的同時淡掉。
          ⚠ 團數少了之後每一朵可以濃一點（0.34→0.46）也不會糊成一片 ——
            糊掉的原因從來不是單團太濃，是團太多疊在一起。 */
-      ctx.globalAlpha=q.a0*Math.sqrt(q.a0)*0.46*q.f;
-      ctx.fillStyle=gs;
-      ctx.beginPath(); ctx.ellipse(q.x,q.y-q.r*0.25,q.r,q.r*0.74,0,0,Math.PI*2); ctx.fill();
+      TC.globalAlpha=q.a0*Math.sqrt(q.a0)*0.46*q.f;
+      TC.fillStyle=gs;
+      TC.beginPath(); TC.ellipse(q.x,q.y-q.r*0.25,q.r,q.r*0.74,0,0,Math.PI*2); TC.fill();
       if(q.life<0.42){                                 // 剛冒出來那幾朵的濃核
-        ctx.globalAlpha=(1-q.life/0.42)*0.42*q.f;
-        ctx.fillStyle=cs;
-        ctx.beginPath(); ctx.ellipse(q.x,q.y-q.r*0.25,q.r*0.55,q.r*0.44,0,0,Math.PI*2); ctx.fill();
+        TC.globalAlpha=(1-q.life/0.42)*0.42*q.f;
+        TC.fillStyle=cs;
+        TC.beginPath(); TC.ellipse(q.x,q.y-q.r*0.25,q.r*0.55,q.r*0.44,0,0,Math.PI*2); TC.fill();
       }
     }
 
@@ -5830,7 +5862,7 @@ function drawTrains(S,scaleH,horizon,sinp,cosp){
        那就是回報的「像條蟲」。
        ⚠ 不畫車窗車輪：這個尺寸下加細節只會變成雜點。讀得出「一串一節一節的
          深色量體沿著軌道在動、前頭冒著煙」就夠了。 */
-    ctx.globalAlpha=fade;
+    TC.globalAlpha=fade;
     const wPx=seats[0].w;
     for(let i=0;i<seats.length;i++){
       const q=seats[i], w=q.w;
@@ -5854,39 +5886,46 @@ function drawTrains(S,scaleH,horizon,sinp,cosp){
       const sideAB=(gAy+gBy)>(gCy+gDy);
       const s0x=sideAB?gAx:gCx, s0y=sideAB?gAy:gCy;
       const s1x=sideAB?gBx:gDx, s1y=sideAB?gBy:gDy;
-      ctx.beginPath();
-      ctx.moveTo(s0x,s0y); ctx.lineTo(s1x,s1y);
-      ctx.lineTo(s1x,s1y-hh2); ctx.lineTo(s0x,s0y-hh2); ctx.closePath();
-      ctx.fillStyle = i===0 ? '#141519' : '#2b2620';        // 側面在陰影裡，最暗
-      ctx.fill();
+      TC.beginPath();
+      TC.moveTo(s0x,s0y); TC.lineTo(s1x,s1y);
+      TC.lineTo(s1x,s1y-hh2); TC.lineTo(s0x,s0y-hh2); TC.closePath();
+      TC.fillStyle = i===0 ? '#141519' : '#2b2620';        // 側面在陰影裡，最暗
+      TC.fill();
       /* 車頭端面：只有正對著看的時候才有面積，畫了才不會像被削掉一半。 */
-      ctx.beginPath();
-      ctx.moveTo(gAx,gAy); ctx.lineTo(gDx,gDy);
-      ctx.lineTo(gDx,gDy-hh2); ctx.lineTo(gAx,gAy-hh2); ctx.closePath();
-      ctx.fillStyle = i===0 ? '#1b1d22' : '#332d26';
-      ctx.fill();
+      TC.beginPath();
+      TC.moveTo(gAx,gAy); TC.lineTo(gDx,gDy);
+      TC.lineTo(gDx,gDy-hh2); TC.lineTo(gAx,gAy-hh2); TC.closePath();
+      TC.fillStyle = i===0 ? '#1b1d22' : '#332d26';
+      TC.fill();
       /* 車頂：最亮的一面（天光直接照到），與側面的明暗差就是「這是個箱子」。 */
-      ctx.beginPath();
-      ctx.moveTo(gAx,gAy-hh2); ctx.lineTo(gBx,gBy-hh2);
-      ctx.lineTo(gCx,gCy-hh2); ctx.lineTo(gDx,gDy-hh2); ctx.closePath();
-      ctx.fillStyle = i===0 ? '#3c4048' : '#5b4f42';
-      ctx.fill();
+      TC.beginPath();
+      TC.moveTo(gAx,gAy-hh2); TC.lineTo(gBx,gBy-hh2);
+      TC.lineTo(gCx,gCy-hh2); TC.lineTo(gDx,gDy-hh2); TC.closePath();
+      TC.fillStyle = i===0 ? '#3c4048' : '#5b4f42';
+      TC.fill();
       /* 描邊：森林與道碴都是雜色的，沒有邊的話車身會溶進背景（遠處尤其）。
          ⚠ 只描車頂那一圈就夠 —— 側面已經是最暗的色塊，再描等於加粗一圈黑。 */
       if(w>=2.6){
-        ctx.strokeStyle='rgba(10,10,12,.66)'; ctx.lineWidth=1;
-        ctx.stroke();
+        TC.strokeStyle='rgba(10,10,12,.66)'; TC.lineWidth=1;
+        TC.stroke();
       }
     }
     /* 機車頭正面的一點暖光（夜裡才看得出來，白天被壓掉）。 */
     if(S.day<0.45 && seats[0]){
       const p0={x:seats[0].ax, y:seats[0].ay-seats[0].up}, r=Math.max(1.5, wPx*1.1);
-      const g2=ctx.createRadialGradient(p0.x,p0.y-r*0.3,0,p0.x,p0.y-r*0.3,r*2.4);
+      const g2=TC.createRadialGradient(p0.x,p0.y-r*0.3,0,p0.x,p0.y-r*0.3,r*2.4);
       g2.addColorStop(0,'rgba(255,206,132,'+(0.55*(1-S.day/0.45)).toFixed(2)+')');
       g2.addColorStop(1,'rgba(255,206,132,0)');
-      ctx.fillStyle=g2;
-      ctx.beginPath(); ctx.arc(p0.x,p0.y-r*0.3,r*2.4,0,Math.PI*2); ctx.fill();
+      TC.fillStyle=g2;
+      TC.beginPath(); TC.arc(p0.x,p0.y-r*0.3,r*2.4,0,Math.PI*2); TC.fill();
     }
+    /* 貼回主畫布：關掉平滑＝最近鄰，1:1 放大成與地形同一種像素塊。
+       ⚠ 主畫布的 `imageSmoothingEnabled` 在 resize 時就關掉了（地形靠它），
+         drawPanel 會暫時打開再關回去 —— 這裡在 drawPanel 之前，所以是關著的。
+         還是明寫一次，免得將來有人在中間插一段開了平滑的繪製。 */
+    TC.globalAlpha=1;                                  // 下一列車要從乾淨的狀態開始
+    ctx.imageSmoothingEnabled=false;
+    ctx.drawImage(trainFB,0,0,bwp,bhp,fx0,fy0,fbw,fbh);
     ctx.restore();
     ctx.globalAlpha=1;
     ctx.lineCap='round';
