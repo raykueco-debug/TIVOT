@@ -1045,6 +1045,24 @@ function bindUI(){
     });
     touch.addEventListener('pointercancel', ()=>{ ptr=null; });
   }
+  /* ══ 空白／Enter ＝推進台詞（ver -427，Ray：「對話推進可用空白鍵推進」）══
+     ⚠ 走**同一支** `advance()`（鐵律 8）：打字補完、閘門讓位、接續段那些規矩自動一致。
+     ⚠ **不拿空白當「完成閘門」**：閘門要的是指定的操作（點計量表／右滑／上滑），
+       用空白帶過去等於把教學跳掉。即時閘門（`immediate`）下空白照樣推台詞 ——
+       那正是觸控那邊「一般點擊照常推台詞」的同一條規矩。
+     ⚠ 焦點在輸入框時讓位。 */
+  window.addEventListener('keydown', e=>{
+    if(!state.tutorialDialog || e.repeat) return;
+    if(e.ctrlKey||e.altKey||e.metaKey) return;
+    if(!(e.key===' ' || e.key==='Spacebar' || e.key==='Enter')) return;
+    const a=document.activeElement;
+    if(a && (a.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))) return;
+    if(document.getElementById('tutSkipConfirm') || document.getElementById('exitConfirm')) return;
+    if(gate && !gate.immediate) return;      // 非即時閘門中不推進（同 advance 的守門）
+    e.preventDefault();                      // 空白鍵預設會捲動頁面
+    advance();
+  });
+
   /* 方向鍵＝滑動閘門的等價入口（與戰鬥中的手勢鍵盤入口同一套規則）。
      教學期間 #tutTouch 蓋在最上層吃掉輸入，閘門是發動聖徒化/生命歸還的唯一途徑 →
      不在這裡也收方向鍵的話，純鍵盤玩家會卡死在閘門。

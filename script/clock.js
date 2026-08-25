@@ -48,6 +48,35 @@ export function fullText(){ return dateText()+'　'+timeText(); }
    （鐵律 7：一個量一個計算點）—— 不要在別處自己 `now().h + now().mi/60`。 */
 export function hourF(){ const t=now(); return t.h + t.mi/60; }
 
+/* ══ 給「到達／經過某個時刻」的閘門用（ver -427）══════════════════════════
+   ⚠⚠ 「隔天早上七點」是**時間軸上的一個點**，不是「現在幾點」——
+     用時刻去比的話，第三天早上會再成立一次。所以換成**開局起算的分鐘數**再比，
+     判定就變成 `clock.elapsed() >= firstHourAt(7)`：**到達或經過**都算，
+     而睡覺是一口氣跳十個小時，「剛好等於」的機率是零。 */
+export function firstHourAt(h){
+  const from = EPOCH.h*60 + EPOCH.mi, to = (h|0)*60;
+  return ((to - from + 1440) % 1440) || 1440;   // 開局那一刻就是 h 點 → 算隔天
+}
+/* 把時鐘推到**今天**的 h:00；已經過了就不動（時間只會往前，它是資源）。
+   ⚠ 給「強制轉場，那一段路不算時間」用（傍晚被抓回旅店）。回傳實際推了幾分鐘。
+   ⚠ **不會倒轉**：Ray 的稿寫「時間改為當天 18:00」，但觸發時可能已經是 18:05
+     （走一步 10 分鐘）—— 倒轉會讓「時間是資源」這件事出現漏洞。 */
+/* 遊戲內第幾天（開局那天＝第 1 天）。
+   ⚠⚠ 算的是**日曆日**，不是「開局起算的 24 小時塊」（ver -427 修）：開局是 11:00，
+     用 24 小時塊算的話「第 2 天」要到隔天 **11:00** 才成立 —— 而劇本說的第二天是
+     **隔天早上**。實測 6/14 07:05 被算成第 1 天，第二日的戲整段不出來。 */
+export function dayNo(){
+  const t=now();
+  return Math.round((Date.UTC(t.y, t.mo-1, t.d)
+                   - Date.UTC(EPOCH.y, EPOCH.mo-1, EPOCH.d)) / 86400000) + 1;
+}
+export function advanceToHour(h){
+  const mins = Math.round((h - hourF())*60);
+  if(mins <= 0) return 0;
+  advance(mins);
+  return mins;
+}
+
 /* ── 時段 ──
    ⚠ 界線是**內容設定**，但這裡只有一組（全城鎮通用），所以放這支就好；
      哪天要「北境的夏天天亮得早」再搬進 config。 */

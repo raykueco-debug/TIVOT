@@ -1620,6 +1620,12 @@ function renderLine(){
   if(line.blank){
     if(bub2) bub2.style.visibility='';
     if(tx) tx.textContent='';
+    /* ⚠⚠ **空框也是快進／自動播放的對象**（ver -427，Ray：「主角的空白對話框也是
+       快進對象，不停，自動播放也不停」）。以前這裡直接 return，於是那兩個模式都
+       **卡在他這一拍**等玩家點 —— 而框裡根本沒有字可讀。
+       ⚠ 停的長度另給（`BLANK_BEAT`）不照 `autoDelayMs`：那個間隔的語意是
+         「一句**唸完**之後停多久」，而空框一出現就等於唸完了。 */
+    scheduleAuto(BLANK_BEAT);
     return;
   }
   if(!line.text){
@@ -2138,6 +2144,9 @@ function openHint(spec, done){
 /* ══ 選項面板（ver -396）══
    ⚠ 蓋在對話框**之上**並吃掉點擊：這一拍是閘門，不能點畫面跳過去。
    ⚠ 內容全在腳本上（`choice:[{text,goto}]`），這裡只負責演（鐵律 1）。 */
+/* 選項面板開著時的鍵盤操作（ver -427）。⚠ 由 `openChoice` 掛上、選完清掉 ——
+   鍵盤那一支只要問「現在有沒有選項在等」，不必自己去翻 DOM。 */
+let choiceNav=null;
 function openChoice(opts, pick){
   if($('choiceSheet') || !opts || !opts.length) return;
   const ov=document.createElement('div'); ov.id='choiceSheet';
@@ -2151,10 +2160,27 @@ function openChoice(opts, pick){
   ov.querySelectorAll('.ch-opt').forEach(b=>b.addEventListener('click', e=>{
     e.stopPropagation();
     try{ SFX.menuClick(); }catch(_){}
+    choiceNav=null;
     const o=opts[+b.dataset.i]||{};
     ov.classList.remove('on');
     setTimeout(()=>{ if(ov.parentNode) ov.parentNode.removeChild(ov); pick&&pick(o.goto); }, 180);
   }));
+  /* 鍵盤：W/S（或上下鍵）移動、空白／Enter 確定（ver -427，Ray：「空白鍵推進、選擇」）。
+     ⚠ 確定走的是**那顆鈕自己的 click**（鐵律 8）—— 不要另寫一條選定的路，
+       不然音效、關閉動畫、`pick` 的呼叫時序會有兩份。 */
+  const btns=[...ov.querySelectorAll('.ch-opt')];
+  let sel=0, armed=false;
+  const paint=()=>btns.forEach((b,i)=>b.classList.toggle('sel', armed && i===sel));
+  /* ⚠⚠ **第一下空白只是「亮出游標」，不會選下去**：玩家是一路按空白推對白進來的，
+     選項一跳出來就被下一下空白選掉是很糟的意外（而且看不出選了哪一個）。
+     `armed` 之前畫面上沒有任何高亮，所以純觸控的玩家也不會憑空多一個「已選取」的框。 */
+  choiceNav={
+    move(d){ const was=armed; armed=true;
+             if(was && btns.length>1) sel=(sel+d+btns.length)%btns.length;
+             paint(); try{ SFX.menuClick(); }catch(_){} },
+    confirm(){ if(!armed){ armed=true; paint(); try{ SFX.menuClick(); }catch(_){} return; }
+               const b=btns[sel]; if(b) b.click(); },
+  };
   requestAnimationFrame(()=>ov.classList.add('on'));
 }
 
@@ -2295,15 +2321,19 @@ export function skipToNextGate(){
   endScene();
 }
 
-/* 自動推進的排程。fast＝按住下拉（很快）、auto＝自動播放（讀得完的節奏）。 */
-function scheduleAuto(){
+/* 空框（`blank:true`）那一拍在自動播放下停多久（ver -427）。⚠ 不用 `autoDelayMs`
+   —— 那個值的語意是「**唸完**之後停多久」，而空框一出現就等於唸完了。 */
+const BLANK_BEAT = 420;
+/* 自動推進的排程。fast＝按住下拉／按住空白（很快）、auto＝自動播放（讀得完的節奏）。
+   `ms`（選填）＝這一拍改停多久，蓋掉自動播放的間隔（空框用）。加速模式不吃它。 */
+function scheduleAuto(ms){
   clearTimeout(autoT2); autoT2=null;
   if(!active) return;
   if(!fastMode && !autoPlay) return;
   /* ⚠ 自動播放的間隔改由**選單**決定（ver -397）—— 讀 `settings`，不要在這裡寫死。
      加速模式（按住下拉）維持固定的 120ms：那是「一路衝過去」，不是節奏偏好。 */
   autoT2=setTimeout(()=>{ autoT2=null; if(active && (fastMode||autoPlay)) advance(); },
-                    fastMode ? 120 : settings.autoDelayMs());
+                    fastMode ? 120 : (ms!=null ? ms : settings.autoDelayMs()));
 }
 function setFast(on){
   if(fastMode===on) return;
@@ -2385,6 +2415,39 @@ export function init(){
       if(mode || (p0 && p0.moved)) return;
       advance(); });
   }
+  /* ══ 鍵盤（ver -427，Ray 指定）══════════════════════════════════════════
+     空白／Enter ＝**推進**（＝點畫面一下）；**按住**空白＝加速（放開即停）；
+     選項面板開著時 W/S（上下鍵）選、空白確定。
+     ⚠⚠ **走同一支** `advance()` / `setFast()`（鐵律 8）：鍵盤不是另一套推進，
+       是同一套的另一個入口 —— 打字補完、等 delay、選項閘門那些規矩自動一致。
+     ⚠ 「按住」用 `e.repeat`：第一下推進，之後的自動連發轉成加速模式。
+       這樣一顆鍵同時是「點一下」與「按住」，與面盤那邊的分流（點／下拉）是同一個語意。
+     ⚠ 焦點在輸入框（取名那一拍）時整支讓位 —— 不然打字會一路推掉劇情。
+     ⚠ Esc **不在這裡**：關面板是全站的事（選單／已播腳本／存讀檔都要），
+       收在 `main.js` 那一支通用的（同一個理由：不要每個面板各綁一次）。 */
+  const inField = ()=>{ const a=document.activeElement;
+    return !!a && (a.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)); };
+  const isGo = k => (k===' ' || k==='Spacebar' || k==='Enter');
+  window.addEventListener('keydown', e=>{
+    if(!active || inField()) return;
+    if(e.ctrlKey||e.altKey||e.metaKey) return;
+    /* 選項是**閘門**：開著的時候只受理選與確定，空白不可以拿來跳過去。 */
+    if(choiceNav){
+      if(e.key==='ArrowUp'   || e.key==='w' || e.key==='W'){ e.preventDefault(); choiceNav.move(-1); return; }
+      if(e.key==='ArrowDown' || e.key==='s' || e.key==='S'){ e.preventDefault(); choiceNav.move( 1); return; }
+      if(isGo(e.key)){ e.preventDefault(); choiceNav.confirm(); }
+      return;
+    }
+    if(!isGo(e.key)) return;
+    e.preventDefault();                 // 空白鍵預設會捲動頁面
+    try{ SFX.unlock(); }catch(_){}      // 鍵盤也是使用者手勢
+    if(e.repeat){ setFast(true); return; }
+    advance();
+  });
+  window.addEventListener('keyup', e=>{ if(isGo(e.key)) setFast(false); });
+  /* ⚠ 視窗失焦要把加速關掉：按著空白切走的話 keyup 收不到，回來會一路自己播完。 */
+  window.addEventListener('blur', ()=>setFast(false));
+
   /* 「選單」（ver -394 由 ✕ 改名；-397 改成開一個真的選單）。
      ⚠ 「回到主選單」才是原本那顆 ✕ 的行為 —— 收劇情層（順帶收城鎮，見 close）。 */
   const ex=$('storyExit');

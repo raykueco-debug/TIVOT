@@ -67,6 +67,10 @@ let introFlag=null;                // 旗標名由城鎮傳進來（見 town.aft
 /* 「還沒六點」的那個六點（ver -405）。⚠ 與**傍晚的提醒**是同一個時刻
    （`TOWNS[].evening.hour`）—— 由城鎮傳進來，不要在這裡另寫一個 18（鐵律 7）。 */
 let eveningHour = 18;
+/* 傍晚那一句的旗標（ver -427）。⚠ 規則四／五：18:00 那一格若在旅店裡成立，走的是
+   下面的**分支二**（諾：「今天有點累了，我先去休息囉。」）—— 那一支演完要把
+   傍晚的旗標一起記掉，否則走出去再回來又會被城鎮抓一次。名字由城鎮傳進來（鐵律 7）。 */
+let eveningFlag = null;
 function introDone(){ return !!(introFlag && prog.hasFlag(introFlag)); }
 
 /* ══ 一次性說明（遮罩＋箭頭）══════════════════════════════════════════
@@ -275,22 +279,25 @@ function sitAlone(){
     if(host && host.refreshBg) host.refreshBg();
     refresh();
     veil.classList.remove('on');
-    setTimeout(()=>{
-      /* 坐完剛好碰上她回來的那一小時 → 演那一幕；過頭了 → 她已經回房（記旗標）。
-         ⚠ 與「走進旅店」那條路共用同一組判斷（`arrive`），規矩只有一份。 */
-      const h=clock.hourF();
-      if(stage()==='wait' && h>=RENNA_GONE){ prog.addFlags([F_MISS]); endSit(); return; }
-      if(stage()==='wait' && h>=RENNA_BACK){ playRenna(); return; }
-      endSit();
-    }, FADE_MS);
+    /* ⚠ 坐完之後**不要在這裡自己判一次**「碰到蕾娜了沒／該不該去休息」——
+       那是「現在站在旅店裡該發生什麼」，只有 `runBranch` 一支（鐵律 8）。
+       ver -427 之前這裡有一份自己的判斷，於是「坐到過 18:00」那一條漏掉了。 */
+    setTimeout(endSit, FADE_MS);
   }, FADE_MS);
 }
-/* 坐完但沒有演出：把鎖放掉、畫面接回來。 */
-function endSit(){
+/* 一個行動做完了。⚠⚠ **時鐘可能已經推過某個閘門**（stage 0 的結尾＝隔天早上七點）——
+   獨自坐坐與回房睡覺都會推時鐘，所以兩條路都走這一支問一次（鐵律 8）。
+   回傳 true ＝城鎮已經接手強制轉場（玩家要被移到別的節點），這裡就不要再收尾了：
+   `enter()` 會把大廳整個收掉。 */
+function settle(){
   busy=false;
+  if(host && host.onClock && host.onClock()) return true;
   if(host && host.lock) host.lock(false);
-  refresh();
+  runBranch();          // ⚠ 時間變了，「現在該發生什麼」要重問一次（見 runBranch）
+  return false;
 }
+/* 坐完但沒有演出：把鎖放掉、畫面接回來。 */
+function endSit(){ settle(); }
 /* 蕾娜回來那一幕。⚠ 兩條路都走這一支（坐著等到她、或走出去 20~21 點回來撞見），
    所以好感也只在這裡加一次（鐵律 8）。 */
 function playRenna(){
@@ -306,9 +313,7 @@ function finishRenna(){
   story.clearCast();
   prog.addFlags([F_RENNA]);
   prog.addAffection('renna', AFF_MEET);     // 碰到她：好感 +1（Ray 指定）
-  busy = false;
-  if(host && host.lock) host.lock(false);
-  refresh();
+  settle();                                 // ⚠ 這一幕也可能剛好把時間推過閘門
 }
 
 /* ══ 回房睡覺 ══ 推進到**隔日早上七點**、恢復體力，然後存檔。
@@ -344,37 +349,67 @@ function sleepHere(){
   let mins = Math.round((WAKE_HOUR - clock.hourF())*60);
   if(mins <= 0) mins += 24*60;
   clock.advance(mins);
+  if(host && host.refreshBg) host.refreshBg();   // 天亮了 → 換時段差分（同「獨自坐坐」）
   refresh();
-  save.open('save');
+  /* ⚠ **存檔面板收掉之後才醒來**（ver -427）：睡到隔天早上七點就是 stage 0 的結尾，
+     那一刻要被移到船塢。閘門掛在 `onClose` 而不是這裡 —— 不然轉場會與面板疊在一起。 */
+  save.open('save', { onClose: settle });
 }
 
 /* ══ 進旅店 ══ 由 `modules/town.js` 的 `afterArrive` 呼叫（進場對白演完之後）。 */
+let allSeenNow = false;         // 這一次進來時「城裡都走過了沒」（坐坐不會改變它）
 export function arrive(n, ctx){
   node = n;
   /* ⚠ 旗標名**由城鎮算好傳進來**（ver -402）：旅店已經沒有 `kind` 了，
      `kind` 版／節點版兩種只有 `town.flagOf()` 知道 —— 自己拼會拼錯城（鐵律 7）。 */
   introFlag = (ctx && ctx.introFlag) || null;
   if(ctx && ctx.eveningHour!=null) eveningHour = ctx.eveningHour;
+  eveningFlag = (ctx && ctx.eveningFlag) || null;
+  allSeenNow = !!(ctx && ctx.allSeen);
   ensureLayer();
-  /* 分支：**每次進來都判一次**（Ray 的稿子就是這樣寫的）——
-     走完城裡所有地點了沒，決定她說哪一句。已經住下了（`wait`／`slept`）就不再演。 */
-  const b = (n.innBranch) || {};
-  const lines = (ctx && ctx.allSeen) ? b.settled : b.exploring;
-  if(stage()==='none' && lines && lines.length){
+  runBranch(true);
+}
+
+/* ══⚠⚠ 「現在站在旅店裡，該發生什麼」只有這一支（ver -427，鐵律 8）══════════
+   走進來、獨自坐坐坐完、蕾娜那一幕演完，三條路都問它 —— 以前只有「走進來」那一條
+   問得到，於是**坐到過 18:00 諾薇兒不會去休息、坐到過 20:00 蕾娜不會回來**
+   （那兩件事本來各寫了一份判斷在 `sitAlone` 裡）。
+   由上往下：
+     ① 還沒住下（`none`）→ 分支一／分支二
+     ② 在等蕾娜（`wait`）→ 看時刻決定撞見她／她已經回房
+     ③ 其他            → 只重畫
+   ⚠ `arrived` ＝這一次是**走進來**（不是坐完）。分支一（「時間還早，我想去城裡逛逛呢」）
+     是**招呼**，只在走進來時講；分支二（「今天有點累了」）是**狀態轉移**，時間到了就講，
+     所以坐完也要判 —— 不分的話每坐兩小時她就把那句招呼再唸一次。 */
+function runBranch(arrived){
+  const b = (node && node.innBranch) || {};
+  /* ⚠⚠ **分支二的條件是「走完了」或「時間到了」**（ver -427，Ray 的規則四／五：
+       「若3發生而主角已在旅店，走5（諾：『今天有點累了，我先去休息囉。』）」）。
+     這與城鎮那一格傍晚的兩條**是同一件事**，所以門檻用同一個數字
+     （`eveningHour`，由城鎮傳進來，鐵律 7）。
+     ⚠ 不要只判 `allSeen`：被強制抓回旅店的那條路上時鐘正好 18:00 而地點沒走完，
+       只判 `allSeen` 的話她會說「時間還早，我想去城裡逛逛呢」—— 與剛剛那句話打架。 */
+  const settled = allSeenNow || clock.hourF() >= eveningHour;
+  const lines = settled ? b.settled : b.exploring;
+  if(stage()==='none' && lines && lines.length && (settled || arrived)){
     if(host && host.lock) host.lock(true);
-    const settled = !!(ctx && ctx.allSeen);
     if(host && host.play) host.play(lines, ()=>{
       story.clearCast();
-      if(settled) prog.addFlags([F_WAIT]);   // 住下了 → 大廳開張
+      if(settled){
+        prog.addFlags([F_WAIT]);                          // 住下了 → 大廳開張
+        if(eveningFlag) prog.addFlags([eveningFlag]);     // 傍晚那一格＝這一段（規則四／五）
+      }
       if(host && host.lock) host.lock(false);
       refresh();
     });
     return;
   }
-  /* ══ 走出旅店再回來的那條路（ver -395）══
-       20:00~21:00 進來 → **撞見她**（好感 +1）
-       ≥21:00 進來    → 她已經回房了（記旗標，隔天時鐘小於 21 也不會又冒出來）
-     ⚠ 這一段要在**進場對白之後**才判 —— 分支二那幾句還沒演完就先讓蕾娜上台會疊在一起。 */
+  /* ══ 蕾娜回來的那一小時（ver -395／-427）══
+       20:00~21:00 → **碰得到她**（好感 +1）：走進來、或坐坐坐到那一刻，都算
+                     （Ray：「不論是走進去或者是坐坐的時間會『經過』這個時段就觸發」——
+                      坐坐在等她的那一段會被夾住不准跨過 20:00，見 `sitAlone`）
+       ≥21:00      → 她已經回房了（記旗標，隔天時鐘小於 21 也不會又冒出來）
+     ⚠ 這一段要在**分支二之後**才判：那幾句還沒演完就先讓蕾娜上台會疊在一起。 */
   if(stage()==='wait'){
     const h = clock.hourF();
     if(h >= RENNA_GONE){ prog.addFlags([F_MISS]); refresh(); return; }

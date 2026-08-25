@@ -163,8 +163,13 @@ function pick(n, rec){
   }
 }
 
-export function open(m){
+/* `opts.onClose`（ver -427）：面板收掉之後要接的下一拍（旅店「回房睡覺」→ 醒來）。
+   ⚠ **只呼叫一次**（呼叫前先清掉）：存檔／讀檔／叉叉／點背景四條路都走 `close()`。
+   ⚠ 面板的 `mode` 開了就不會變，所以 `open('save')` 的回呼不會被讀檔那條路誤觸。 */
+let closeCb = null;
+export function open(m, opts){
   mode = m; page = 0;
+  closeCb = (opts && opts.onClose) || null;
   const sh=$('saveSheet'); if(!sh) return;
   render();
   sh.classList.add('on');
@@ -172,6 +177,8 @@ export function open(m){
 export function close(){
   mode=null;
   const sh=$('saveSheet'); if(sh) sh.classList.remove('on');
+  const cb=closeCb; closeCb=null;
+  if(cb) try{ cb(); }catch(e){ console.warn('[save] onClose', e); }
 }
 export function isOpen(){ return !!mode; }
 

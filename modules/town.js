@@ -127,16 +127,65 @@ function actDue(n){
   }
   return null;
 }
-/* 遊戲內第幾天（開局那天＝第 1 天）。⚠ 從時鐘推，不另存旗標（鐵律 7）。 */
-function dayNo(){ return Math.floor(clock.elapsed()/1440) + 1; }
+/* 遊戲內第幾天（開局那天＝第 1 天）。⚠ 從時鐘推，不另存旗標（鐵律 7）。
+   ⚠ 算在 `clock.dayNo()`（那裡才有 EPOCH）—— 這裡以前自己 `floor(elapsed/1440)`，
+     那是「開局起算的 24 小時塊」不是日曆日，隔天早上會被算成第 1 天（ver -427 修）。 */
+function dayNo(){ return clock.dayNo(); }
 
+/* ══ 傍晚：強制回旅店（ver -427，Ray 重寫）══════════════════════════════
+   兩條觸發、兩句台詞（資料在 `TOWNS[].evening`）：
+     · 走完所有地點、還沒到 18:00 → `bySeen`
+     · 沒走完、時間過了 18:00     → `byTime`
+   ⚠ **兩條同時成立時走 `byTime`**：那時「天色不早了」才是玩家看得到的事實。
+   ⚠ 回傳的是**攤平**的一包（`flag/hour/goto/lines`）：呼叫端只要一層就拿得到，
+     不必記得「哪一句在哪一層」。
+   ⚠ **在旅店裡不演**：那時走的是旅店自己的分支二（Ray 的規則四／五），
+     旗標由 `inn.arrive` 那一支記（見 `afterArrive` 傳進去的 `eveningFlag`）。 */
 function eveningDue(n){
   const T=TOWNS[townId], ev=T && T.evening;
-  if(!ev || !ev.lines || !ev.lines.length) return null;
+  if(!ev) return null;
   if(n && n.inn) return null;
   if(ev.flag && prog.hasFlag(ev.flag)) return null;
   const byTime = (ev.hour!=null) && (clock.hourF() >= ev.hour);
-  return (byTime || allSeen()) ? ev : null;
+  const lines = byTime ? ev.byTime : (allSeen() ? ev.bySeen : null);
+  return (lines && lines.length)
+    ? { flag:ev.flag, hour:ev.hour, goto:ev.goto, lines } : null;
+}
+
+/* ══ Stage 0 的結尾（ver -427，Ray 定案）══════════════════════════════════
+   「不論用任何方式到達／經過早上七點就進入 stage1，始於船塢。」
+   ⚠⚠ **三條路都會推時鐘**（走一步／獨自坐坐／回房睡覺），所以判定收在這一支，
+     由推完時鐘的人呼叫（鐵律 8）—— 寫在各個呼叫點一定會漏掉其中一條。
+   ⚠ 用**絕對分鐘數**比（`clock.firstHourAt`），不是「現在幾點」：那是時間軸上的
+     一個點，用時刻比會在第三天早上又成立一次。
+   ⚠ 旗標**立刻記**（不是演完才記）：這一格是狀態轉移不是對白，而且下一拍就要
+     `enter(goto)`，不先記的話那一次 enter 又會判到同一個閘門（無窮遞迴）。 */
+function stageGate(){
+  const T=TOWNS[townId], g=T && T.stage1;
+  if(!g) return null;
+  if(g.flag && prog.hasFlag(g.flag)) return null;
+  return (clock.elapsed() >= clock.firstHourAt(g.hour)) ? g : null;
+}
+/* 時鐘一動就問一次：該不該強制轉場。回傳 true ＝已經接手（呼叫端不要再做別的事）。
+   ⚠ 由 `enter()` 的收尾與旅店（`host.onClock`）呼叫 —— 那兩處涵蓋了所有會推時鐘的路。 */
+function clockGate(){
+  const g=stageGate();
+  if(!g) return false;
+  if(g.flag) prog.addFlags([g.flag]);
+  if(g.stage!=null) prog.setStage(g.stage);
+  if(!g.goto || g.goto===nodeId) return false;   // 已經站在那裡：讓原本的流程繼續（acts 會接手）
+  forceGo(g.goto);
+  return true;
+}
+/* 強制移轉：不花時間、不看營業時間、不記「來時方向」（玩家不是自己走過去的）。
+   ⚠ 走**同一支** `enter()` —— 清場、背景、對白、大廳那一整套收尾只有那一份（鐵律 8）。 */
+function forceGo(to){
+  clearTimeout(arriveT); arriveT=0;
+  busy=true; showNav(false);
+  document.body.classList.remove('town-nav');
+  stepSfx();
+  pendingDir=null;
+  setTimeout(()=>enter(to), 260);
 }
 
 /* ══ 營業時間（ver -391，Ray 指定）══════════════════════════════════════
@@ -431,13 +480,13 @@ function bindInput(){
     hold.el.classList.remove('holding');
     hold=null; hintHide();
   };
-  /* 長按開始：只認**有目的地**的箭。 */
-  st.addEventListener('pointerdown', e=>{
-    if(!townId || busy || story.isPlaying()) return;
-    const el=e.target.closest && e.target.closest('.kerb-arrow.avail');
-    if(!el) return;
-    e.preventDefault(); e.stopPropagation();
-    const to=exitsOf()[el.dataset.dir]; if(!to) return;
+  /* 長按開始：只認**有目的地**的箭。
+     ⚠ 抽成一支（ver -427）：滑動與鍵盤（WASD）走的是**同一條**長按 —— 蓄能圈、
+       目的地字格、0.5 秒的門檻只有這一份（鐵律 8）。 */
+  const startHold=(el)=>{
+    if(!townId || busy || story.isPlaying() || hold) return false;
+    if(!el || !el.classList.contains('avail')) return false;
+    const to=exitsOf()[el.dataset.dir]; if(!to) return false;
     el.classList.add('holding');
     const r=el.getBoundingClientRect(), sr=st.getBoundingClientRect();
     hintShowAt(r.left-sr.left+r.width/2, r.top-sr.top+r.height/2, nameOfNode(to));
@@ -447,7 +496,40 @@ function bindInput(){
       if(performance.now()-hold.t0 < HOLD_MS) hold.raf=requestAnimationFrame(tick); };
     tick();
     hold.timer=setTimeout(()=>{ const target=hold.to, d=hold.dir; cancel(); go(target, d); }, HOLD_MS);
+    return true;
+  };
+  st.addEventListener('pointerdown', e=>{
+    const el=e.target.closest && e.target.closest('.kerb-arrow.avail');
+    if(!el) return;
+    if(!startHold(el)) return;
+    e.preventDefault(); e.stopPropagation();
   }, true);
+
+  /* ══ 鍵盤：WASD ＝走（ver -427，Ray 指定）══════════════════════════════
+     ⚠⚠ **走同一支** `startHold`：按住 0.5 秒才走、蓄能圈、目的地字格全部照舊 ——
+       鍵盤不是第二條移動路徑，是同一條的另一個入口（鐵律 8）。
+     ⚠ `e.repeat` 一定要濾掉：按住不放會連發 keydown，每一發都重開一次長按，
+       進度圈永遠從頭算，結果是「按住 WASD 走不動」。
+     ⚠ 焦點在輸入框時讓位；帶輔助鍵（Ctrl/Alt/Meta）是瀏覽器捷徑，不攔。
+     ⚠ 對白播放中不受理 —— 那是 `startHold` 自己的守門（`story.isPlaying()`），
+       這裡不要再判一次。 */
+  const KEY_DIR = { w:'up', a:'left', s:'down', d:'right' };
+  const inField = ()=>{ const a=document.activeElement;
+    return !!a && (a.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)); };
+  window.addEventListener('keydown', e=>{
+    if(e.repeat || e.ctrlKey || e.altKey || e.metaKey || inField()) return;
+    const dir=KEY_DIR[(e.key||'').toLowerCase()]; if(!dir) return;
+    const el=st.querySelector('.kerb-arrow[data-dir="'+dir+'"]');
+    if(!startHold(el)) return;
+    e.preventDefault();
+    try{ SFX.unlock(); }catch(_){}          // 鍵盤也是使用者手勢
+  });
+  window.addEventListener('keyup', e=>{
+    const dir=KEY_DIR[(e.key||'').toLowerCase()];
+    if(dir && hold && hold.dir===dir) cancel();   // 放太早：取消（同滑動）
+  });
+  /* ⚠ 視窗失焦要取消：按著鍵切走的話 keyup 收不到，回來會憑空走一步。 */
+  window.addEventListener('blur', cancel);
   st.addEventListener('pointerup', e=>{
     if(hold){ cancel(); return; }               // 放太早：取消，不算點擊
     if(!townId || busy || story.isPlaying()) return;
@@ -640,7 +722,14 @@ export function enter(id){
       /* ⚠ `n.sides`：兩個角色同台要分左右（§6.5）——城鎮這條路徑一樣要吃得到。 */
       story.playAdhoc(play, ()=>{ story.clearCast();
         if(act){ if(act.flag) prog.addFlags([act.flag]); }        // 主線段落：只演一次
-        else if(ev){ if(ev.flag) prog.addFlags([ev.flag]); }   // 傍晚的提醒：只演一次
+        else if(ev){
+          if(ev.flag) prog.addFlags([ev.flag]);                  // 傍晚那一句：只演一次
+          /* ⚠ **強制移轉到旅店**（ver -427，Ray：「然後強制移轉到旅店，時間改為當天18:00」）。
+             時鐘先推到 18:00 再走 —— 那一段路是被跳過去的，花掉的不是走路的時間。
+             ⚠ `advanceToHour` **不會倒轉**：觸發時可能已經 18:05（走一步 10 分鐘）。 */
+          if(ev.hour!=null) clock.advanceToHour(ev.hour);
+          if(ev.goto && ev.goto!==nodeId){ forceGo(ev.goto); return; }
+        }
         else{
           applyAff(lines);
           prog.addFlags([flag]);                  // ⚠ 演完才記（見上面的說明）
@@ -649,10 +738,14 @@ export function enter(id){
           if(n.boardFlag) prog.addFlags([n.boardFlag]);
         }
         busy=false; refreshArrows(); showNav(true);
+        /* ⚠ 時鐘閘門要在**對白演完之後**才判（ver -427）：那一段可能就是把時間推過
+           七點的那一段（例如旅店的分支二）。放在開演前判會把演出腰斬。 */
+        if(clockGate()) return;
         afterArrive(n); }, { sides:(act && act.sides) || n.sides });
     }, ARRIVE_MS);
   }else{
     busy=false; refreshArrows(); showNav(true);
+    if(clockGate()) return;
     afterArrive(n);
   }
 }
@@ -665,7 +758,11 @@ function afterArrive(n){
   if(n && n.inn) inn.arrive(n, { allSeen: allSeen(), introFlag: flagOf(n, nodeId),
                                  /* 「還沒六點呢」的那個六點＝傍晚提醒的時刻（ver -405）。
                                     ⚠ 同一個數字只有這一處（鐵律 7）。 */
-                                 eveningHour: ((TOWNS[townId]||{}).evening||{}).hour });
+                                 eveningHour: ((TOWNS[townId]||{}).evening||{}).hour,
+                                 /* 規則四／五（ver -427）：傍晚那一格若在旅店裡成立，
+                                    走的是旅店自己的分支二 —— 那一支演完要**把傍晚的旗標
+                                    一起記掉**，否則走出去再回來又會被抓一次。 */
+                                 eveningFlag: ((TOWNS[townId]||{}).evening||{}).flag });
   else inn.close();
   shopEnter();              // 店舖畫面（ver -404）：進場對白演完才擺，不然會壓在對白上
 }
@@ -770,6 +867,10 @@ inn.setup({
   /* 依**現在的時刻**重新挑一次背景（旅店「獨自坐坐」過完兩小時要換時段差分）。
      ⚠ 走同一支 `bgFor`（候選鏈只有那一份，鐵律 7）。 */
   refreshBg(){ const n=node(); if(n) bgFor(n.bg, n.noTime); },
+  /* 時鐘動過了 → 問一次強制轉場的閘門（ver -427）。⚠ 旅店是**唯一**在城鎮之外
+     推時鐘的地方（獨自坐坐／回房睡覺），所以那兩支推完都要叫這一支（鐵律 8）。
+     回傳 true ＝已經接手轉場，呼叫端不要再收尾。 */
+  onClock(){ return clockGate(); },
 });
 
 export function open(town){

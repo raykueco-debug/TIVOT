@@ -1128,6 +1128,41 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
   });
 })();
 
+/* ══ Esc ＝關掉最上面那一層面板（ver -427，Ray：「esc 可關閉選單」）══════════
+   ⚠⚠ **一支通用的**（鐵律 8）：面板不必各自綁一次 Esc，也就不會有人漏綁 ——
+     每一層只要有一顆「關閉」鈕，這裡就按得到它。走那顆鈕自己的 click，所以音效、
+     關閉動畫、`onClose` 回呼的時序與用手點完全一樣，不會有第二份收尾。
+   ⚠ 由上往下試，**第一個開著的就關掉**（z-index 高的排前面）。
+   ⚠⚠ **閘門不關**：選項（`#choiceSheet`）與取名（`#nameSheet`）是非選不可的，
+     關掉會讓劇情卡在一拍沒有出口的地方。確認框（`#exitConfirm` / `#tutSkipConfirm`）
+     的「否」＝取消，那才是 Esc 該做的事，所以它們在表上。
+   ⚠ 新增面板時**加一列**就好；漏加的代價只是「那一層 Esc 沒反應」，不會壞。 */
+(function bindEscClose(){
+  const PANELS = [
+    ['#tutSkipConfirm', '.ec-no'],      // 跳過教學：Esc ＝繼續教學
+    ['#exitConfirm',    '.ec-no'],      // 退出確認：Esc ＝繼續玩
+    ['#gameMenu',       '.gm-close'],   // 選單（Ray 指名的那一個）
+    ['#storyLog',       '.log-ok'],     // 本場已播腳本
+    ['#saveSheet.on',   '#saveClose'],  // 存讀檔
+    ['#lootSheet',      '.loot-ok'],    // 道具欄／商店／拾得
+    ['#gearSheet.on',   '.gs-close'],   // 整備頁
+  ];
+  window.addEventListener('keydown', e=>{
+    if(e.key!=='Escape' || e.repeat) return;
+    if(e.ctrlKey||e.altKey||e.metaKey) return;
+    const a=document.activeElement;
+    if(a && (a.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))) return;
+    for(const [panel, btn] of PANELS){
+      const p=document.querySelector(panel); if(!p) continue;
+      const b=p.querySelector(btn) || document.querySelector(btn);
+      if(!b) continue;
+      e.preventDefault();
+      b.click();
+      return;                            // 一次只關一層
+    }
+  });
+})();
+
 /* ── 遠端診斷 HUD：網址帶 ?debug，或「快速連點首頁團徽 5 下」開關 ──
  *  排查 iOS 主畫面 App 底部黑帶用；未觸發時不建立任何元素。 */
 (function debugHud(){

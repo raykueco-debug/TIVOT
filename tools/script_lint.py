@@ -298,8 +298,19 @@ def main():
                 check_lines('%s.acts[%d]' % (tag, i), a.get('lines'))
             # 傍晚的提醒掛在**城**上不是節點上，所以在外層另外驗（見下）。
 
-        ev = (town.get("evening") or {}).get("lines")
-        if ev: check_lines('%s.evening' % tid, ev)
+        # 傍晚那一格有**兩句**（ver -427）：走完了 `bySeen`／時間到了 `byTime`。
+        ev = town.get("evening") or {}
+        for k in ('bySeen', 'byTime'):
+            if ev.get(k): check_lines('%s.evening.%s' % (tid, k), ev[k])
+        if ev and not (ev.get('bySeen') or ev.get('byTime')):
+            err('%s.evening：兩句都沒有（bySeen／byTime）' % tid)
+        # 強制移轉的目的地要真的存在（傍晚回旅店、stage 0 的結尾去船塢）。
+        for tag, g in (('evening', ev), ('stage1', town.get('stage1') or {})):
+            if g.get('goto') and g['goto'] not in nodes:
+                err('%s.%s：goto 指到不存在的節點 %s' % (tid, tag, g['goto']))
+        g1 = town.get('stage1') or {}
+        if g1 and (g1.get('hour') is None or not g1.get('flag')):
+            err('%s.stage1：要有 hour 與 flag（見 modules/town.js 的 stageGate）' % tid)
 
     # ── 戰鬥內的短教學／插話（ver -426：`config.battles[*].talk`）────────────
     #  ⚠ 它走的是**教學那一支**對話實作（modules/tutorial.js 的 openStep），所以

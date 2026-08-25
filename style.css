@@ -1891,6 +1891,11 @@
     background:rgba(10,8,14,.86);border:1px solid var(--gold-dim);border-radius:10px;
     -webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);}
   #choiceSheet .ch-opt:active{background:rgba(212,169,74,.22);}
+  /* 鍵盤選到的那一項（ver -427）。⚠ 要**按過鍵**才會出現（見 story.js 的 `armed`）——
+     純觸控的玩家不會憑空多出一個「已選取」的框，而且第一下空白只是把它亮出來，
+     不會直接選下去。 */
+  #choiceSheet .ch-opt.sel{background:rgba(212,169,74,.16);border-color:var(--gold);
+    box-shadow:0 0 0 1px var(--gold-dim) inset;}
 
   /* ── 輸入主角名與暱稱（ver -395）──────────────────────────────────
      ⚠ 蓋在**最上層**並吃掉點擊：這一拍是閘門，面板開著時不能點畫面跳過去。
