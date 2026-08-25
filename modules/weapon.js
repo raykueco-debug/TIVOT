@@ -30,6 +30,7 @@
  * ========================================================================== */
 
 import { GAME_CONFIG, asset, sfxGain, weaponDescText, weaponOf } from '../config.js';
+import * as hap from './haptics.js';   // 震動（ver -398）
 import { state, addCounter, setPickedPartner, storyMode } from '../state.js';
 import { SFX } from '../audio.js';
 import { L } from '../i18n.js';   // 多語言（cut-in 標題/選單鈕/暴擊前綴）
@@ -82,6 +83,7 @@ export function weaponCounter(dmgScale){
     const base=Math.max(1, Math.round(w.hits*w.dmgPerHit*scale));
     const h=critHit(base);
     SFX.play(se, seGain);                      // 狙擊：一發
+    hap.shot();
     api.enemyDamage(h.dmg, true, true);       // 靜默扣血（含 overkill/擊殺判定）
     addCounter(h.dmg);
     api.floatDmg((h.crit?L.battle.crit:'')+h.dmg, '46%','32%', h.crit, 'snipernum');
@@ -91,6 +93,7 @@ export function weaponCounter(dmgScale){
     // 散彈：所有彈丸同一瞬間、同一區塊齊發，各自獨立暴擊、各自跳出數字
     const base=Math.max(1, Math.round(w.dmgPerHit*scale));
     SFX.play(se, seGain);                      // 散彈：一次一發（完防/反擊皆觸發）
+    hap.shot();
     const bx=40+Math.random()*20;
     let sum=0;
     for(let k=0;k<w.hits;k++){
@@ -106,6 +109,11 @@ export function weaponCounter(dmgScale){
   const rolls=[]; let sum=0;                   // 先擲定全彈（全彈必中，此期間 over 不會被觸發）→ 一次記總傷
   for(let k=0;k<w.hits;k++){ const h=critHit(base); rolls.push(h); sum+=h.dmg; }
   addCounter(sum);
+  /* ⚠ 機槍反擊：**一條連續的震動，長度＝整串的持續時間**（ver -398，Ray 指定）——
+     不是每發各震一下：手機會把密集的短震合併成一串黏在一起的抖動，讀起來比一條長震還糊。
+     長度＝(發數−1)×間隔 ＋ 最後一發的尾巴。間隔就是下面 `setTimeout(fire, 90)` 的 90ms，
+     兩處同源，改一邊要改另一邊。 */
+  hap.burst((w.hits-1)*90 + 60);
   let i=0;
   const fire=()=>{
     if(state.over||i>=w.hits) return;

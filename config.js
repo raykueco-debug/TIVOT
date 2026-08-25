@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.25-397';
+export const VERSION = 'ver 2026.08.25-398';
 
 export const GAME_CONFIG = {
 
@@ -346,9 +346,14 @@ export const GAME_CONFIG = {
     shops: {
       grocery:  { title:'雜貨舖', art:'resources/SI/NPC_Grocerie_SI.webp',
                   tabs:['buy','sell'] },
+      /* ⚠ `challenge` ＝ 這一家店的櫃台可以**再挑戰**哪一場（ver -398，Ray：「槍店的選單
+         要增加一個射擊挑戰的選項」）。值是 `battles` 的鑰匙 —— 打靶那一場本來只有
+         劇情裡打得到一次，而它有最佳紀錄，本來就該能再來（見 script/town.js 的
+         `challengeLines`）。 */
       gunstore: { title:'武器店', art:'resources/SI/NPC_Capital_Gunstore_SI.webp',
                   tabs:['buy','sell','mod'], tabName:{ buy:'買武器', sell:'賣武器', mod:'武器改裝' },
-                  only:'weapon', compare:true },
+                  only:'weapon', compare:true,
+                  challenge:'range_trainee', challengeLabel:'射擊挑戰' },
     },
   },
 

@@ -252,6 +252,18 @@ export const TOWNS = {
            ⚠ 與雜貨舖的 `keeper`（一整段對白）不同，所以欄位分開叫 `keeperRandom`。
            ⚠⚠ 這幾句是**我寫的**，Ray 還沒過目 —— 要換掉直接改這裡。
              內容刻意都是「玩得到的知識」：黃圈橘圈、暴擊怎麼擲、改裝的限制。 */
+        /* ══ 再挑戰（ver -398，Ray：「槍店的選單要增加一個射擊挑戰的選項」）══
+           櫃台 →「射擊挑戰」→ 走的是**同一場** `range_trainee`（同一份最佳紀錄）。
+           ⚠⚠ 這三句是**我寫的**（Ray 只說要加那個選項）—— 要換掉直接改這裡。
+           ⚠ 超過標準時間走 `retry_lose`，與劇情那一次共用同一條分歧路。 */
+        challengeLines:[
+          gun(null,'又想活動筋骨了？靶就在那兒。', { portrait:{ char:'GUNSMITH', show:true } }),
+          { battle:'range_trainee', onLose:'retry_lose' },
+          gun(null,'漂亮。這才是我想看的手。'),
+          { goto:'retry_end' },
+          Object.assign(gun(null,'手生了啊。多來幾趟吧。'), { label:'retry_lose' }),
+          Object.assign(gun(null,'隨時歡迎。'), { label:'retry_end' }),
+        ],
         keeperRandom:[
           '黃圈是硬吃，橘圈才是本事。分得清楚，命就長。',
           '霰彈的橘圈不免傷，是拿傷害換的——近身才划算。',

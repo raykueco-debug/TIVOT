@@ -103,7 +103,8 @@
      樣式一併移除；要找歷史請看 git。 */
   #lootSheet .shop-desc{min-height:2.6em;margin:8px 2px 0;font-size:11px;line-height:1.7;
     color:var(--gold-dim);}
-  #lootSheet .shop-acts{display:flex;gap:6px;margin-top:8px;}
+  /* ⚠ 三顆鈕（買/賣 + 交談 + 挑戰 + 關閉）擠一排會太窄 → 允許換行（ver -398）。 */
+  #lootSheet .shop-acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
   #lootSheet .shop-acts button{flex:1;padding:9px 0;font-family:inherit;font-size:12px;
     letter-spacing:2px;color:var(--gold);background:rgba(10,8,14,.7);
     border:1px solid var(--gold-dim);border-radius:8px;}

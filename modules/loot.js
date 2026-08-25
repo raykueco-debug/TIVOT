@@ -120,7 +120,10 @@ export function showBag(){
    ⚠ 特殊物品不能賣 —— 那條擋在 `inv.sellPrice()`（價錢層），不是這裡（見那支的說明）。
    ⚠ 店主對話是**一段對白**（兩個人輪流講），所以不塞進這一頁：
      按下去先收商店，交給劇情播放器演，演完再開回來（`onTalk` 由呼叫端提供）。 */
-export function showShop(stockKey, keeper, onTalk){
+/* `onChallenge`（ver -398）：這一家店的「再挑戰」（槍店的射擊挑戰）。
+   ⚠ 與 `onTalk` 同一個作法：**先收商店**，交給呼叫端去演，演完由呼叫端決定要不要開回來 ——
+     戰鬥會蓋掉整個畫面，商店留在底下只會在回來時閃一格。 */
+export function showShop(stockKey, keeper, onTalk, onChallenge){
   ensureCss();
   const ov=document.createElement('div'); ov.id='lootSheet'; ov.classList.add('bag','shop');
   document.body.appendChild(ov);
@@ -219,6 +222,8 @@ export function showShop(stockKey, keeper, onTalk){
           : '<button class="shop-do'+(can?'':' broke')+'" type="button">'
             + (tab==='buy' ? (owned?'已持有':'買下 '+price) : '賣出 '+price)+'</button>')
       +   (keeper&&keeper.length ? '<button class="shop-talk" type="button">與店主交談</button>' : '')
+      +   ((cfg.challenge && onChallenge)
+          ? '<button class="shop-challenge" type="button">'+(cfg.challengeLabel||'挑戰')+'</button>' : '')
       +   '<button class="loot-ok" type="button">關閉</button>'
       + '</div></div>';
 
@@ -250,6 +255,12 @@ export function showShop(stockKey, keeper, onTalk){
       try{ SFX.unlock(); SFX.menuClick(); }catch(_){}
       close();
       if(onTalk) onTalk();                    // 收商店 → 演對白 → 呼叫端負責開回來
+    });
+    const ch=ov.querySelector('.shop-challenge');
+    if(ch) ch.addEventListener('click', e=>{ e.stopPropagation();
+      try{ SFX.unlock(); SFX.menuClick(); }catch(_){}
+      close();
+      if(onChallenge) onChallenge(cfg.challenge);   // 收商店 → 開打 → 呼叫端負責收尾
     });
     ov.querySelector('.loot-ok').addEventListener('click', e=>{ e.stopPropagation();
       try{ SFX.unlock(); SFX.menuClick(); }catch(_){} close(); });

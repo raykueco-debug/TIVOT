@@ -347,7 +347,10 @@ export const MAIN_SCRIPT = {
        而這一幕全程只有她們兩個 —— 同側的話每換一個說話者就是一次滑出＋滑入，讀起來很忙。
        ⚠ 覆寫是**整幕**的，不是逐句（逐句換邊＝ver -288 被退回的發起位制：
          立繪朝向是畫死的，換邊要水平翻轉，髮旋與持物會左右顛倒）。 */
-    sides:{ RENNA:'R' },
+    /* ⚠ **正名前後是兩個 id**（ver -398，Ray：「在蕾娜說出以海森伯格之名請求妳之前，
+       用監查官代指，可以視作不同角色」）—— 所以覆寫要**兩個都寫**，
+       不然前半段（OFFICER）不吃這一幕的右側覆寫，會跑回她的固定站位（左）。 */
+    sides:{ RENNA:'R', OFFICER:'R' },
     /* 好感度起算（Ray 指定，不顯示於任何 UI）。⚠ 這是**絕對值**，
        由 story.js 在 scene 收尾時寫一次（有 flag 擋，重看不會洗掉玩家的累積）。 */
     initAffection:{ renna:0, nouvelle:5, anya:0, sorana:0 },
@@ -361,12 +364,12 @@ export const MAIN_SCRIPT = {
       { speaker:'NOUVELLE', text:'哇，好久沒有來了。',
         portrait:{ char:'NOUVELLE', expr:'surprise', show:true } },
       { speaker:'NOUVELLE', text:'不過倒是沒什麼變化。', portrait:{ expr:null } },
-      { speaker:'RENNA', text:'你們先隨便逛逛吧，我去行政廳辦些許可文件，明天一早應該就能出航了。',
-        portrait:{ char:'RENNA', expr:null, show:true } },
+      { speaker:'OFFICER', text:'你們先隨便逛逛吧，我去行政廳辦些許可文件，明天一早應該就能出航了。',
+        portrait:{ char:'OFFICER', expr:null, show:true } },
       { speaker:'NOUVELLE', text:'出航？要搭船嗎？',
         portrait:{ char:'NOUVELLE', expr:'surprise', show:true } },
-      { speaker:'RENNA', text:'是啊。他身上一堆武器，搭火車過不了國境線吧？',
-        portrait:{ char:'RENNA', expr:null, show:true } },
+      { speaker:'OFFICER', text:'是啊。他身上一堆武器，搭火車過不了國境線吧？',
+        portrait:{ char:'OFFICER', expr:null, show:true } },
       /* ⚠⚠ 稿上這一句標的是「蕾」，但內容是**諾薇兒**在附和（她口中的「監察官大人」
          就是蕾娜本人，蕾娜不會這樣稱呼自己），下一拍蕾娜才接「叫監察官好生硬耶！」。
          判斷是抄稿時的欄位錯位，已改為 NOUVELLE ＋ 她的 `awkward` 差分（稿上寫的
@@ -374,19 +377,19 @@ export const MAIN_SCRIPT = {
       { speaker:'NOUVELLE', text:'確實……像監察官大人說的那樣。',
         portrait:{ char:'NOUVELLE', expr:'awkward', show:true } },
       /* 無台詞的一拍：她盯著人看（§6.5：停一秒或點擊推進，那一秒從立繪站定起算）。 */
-      { speaker:'RENNA', text:'', auto:1000,
-        portrait:{ char:'RENNA', expr:'stare', show:true } },
-      { speaker:'RENNA', text:'叫監察官好生硬耶！叫我蕾姬娜就好了。', portrait:{ expr:'awkward' } },
+      { speaker:'OFFICER', text:'', auto:1000,
+        portrait:{ char:'OFFICER', expr:'stare', show:true } },
+      { speaker:'OFFICER', text:'叫監察官好生硬耶！叫我蕾姬娜就好了。', portrait:{ expr:'awkward' } },
       { speaker:'NOUVELLE', text:'那怎麼可以！直呼貴族名諱太不敬了。',
         portrait:{ char:'NOUVELLE', expr:'surprise', show:true } },
-      { speaker:'RENNA', text:'都1908年了沒有那麼多規矩啦，旅途還很長呢。',
-        portrait:{ char:'RENNA', expr:'awkward', show:true } },
-      { speaker:'RENNA', text:'真的那麼在意的話……就叫我蕾娜吧？', portrait:{ expr:'awkward' } },
+      { speaker:'OFFICER', text:'都1908年了沒有那麼多規矩啦，旅途還很長呢。',
+        portrait:{ char:'OFFICER', expr:'awkward', show:true } },
+      { speaker:'OFFICER', text:'真的那麼在意的話……就叫我蕾娜吧？', portrait:{ expr:'awkward' } },
       { speaker:'NOUVELLE', text:'蕾娜？',
         portrait:{ char:'NOUVELLE', expr:'surprise', show:true } },
-      { speaker:'RENNA', text:'我的小名。這樣就沒問題了吧？',
-        portrait:{ char:'RENNA', expr:null, show:true } },
-      { speaker:'RENNA', text:'我以海森伯格之名請求妳，喔。', portrait:{ expr:'stare' } },
+      { speaker:'OFFICER', text:'我的小名。這樣就沒問題了吧？',
+        portrait:{ char:'OFFICER', expr:null, show:true } },
+      { speaker:'OFFICER', text:'我以海森伯格之名請求妳，喔。', portrait:{ expr:'stare' } },
       { speaker:'NOUVELLE', text:'好、好的，蕾娜小姐。',
         portrait:{ char:'NOUVELLE', expr:'surprise', show:true } },
       { speaker:'RENNA', text:'真是守規矩的孩子呢。',

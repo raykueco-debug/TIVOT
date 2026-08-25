@@ -32,6 +32,7 @@ import { decorateLine } from '../i18n.js';
 import { SFX } from '../audio.js';
 import { matchPortraits } from './tone.js';
 import * as settings from './settings.js';   // 選單（音量／自動播放速度）；葉節點，只依賴 audio
+import * as hap from './haptics.js';        // 震動（ver -398）
 
 const $ = id => document.getElementById(id);
 
@@ -435,7 +436,8 @@ function typeFinish(el, text){
                                 一個人，要**同時**讓另一個人退場就用這個
      dark:true                  這一句的說話者立繪壓成暗調（剪影感，還沒表明身分）
      delay:2600                 **先不出對話框**，等這麼久再打字（等平移／演出跑完）
-     shake:true                 畫面抖一下
+     shake:true                 畫面抖一下（**同時震動**，ver -398）
+     vibrate:true               只震動、畫面不抖（腳本上備註「震動」時用）
      bgPan:'up'|'down'          背景由下往上／由上往下平移（規則同 cgPan）
      nameInput:true             **輸入主角名與暱稱**（ver -395）。這一拍沒有台詞、
                                 不出對話框 —— 它是一道閘門：填完按確定才往下走。
@@ -784,7 +786,11 @@ function fireOneShot(line){
      單發 0.42 秒的抖法配上兩秒的掃射，會變成「槍還在打、畫面已經定住」。
      有掃射就抖滿掃射的長度（`.hold`＝無限循環），沒有就照舊抖一下。 */
   const hold = (line.fx==='gunfire') ? GUNFIRE_MS : 0;
+  /* 腳本備註「震動」但畫面不抖（ver -398，Ray：「我備註震動時震動」）。
+     ⚠ 與 `shake` 分開：有時候要的是「手上感覺到」而不是「畫面在晃」。 */
+  if(line.vibrate) hap.shake();
   if(line.shake){
+    hap.shake();                 // 畫面震動＝手上也震（Ray 指定）
     const st=$('storyStage');
     if(st){
       st.classList.remove('shake','hold'); void st.offsetWidth;
@@ -1045,6 +1051,7 @@ function playKerberos(onGap, onDone, opts){
        上推那一秒還是劇情的餘韻，音樂壓在撞擊上等於把那一下的重量分掉；
        撞頂＝門被頂開的那一刻，音樂從這裡起來才是「戰鬥開始」。 */
     riseCue();
+    hap.kerbThud();              // 撞頂：全場最重的一下（ver -398，Ray 指定）
     st.classList.remove('shake','hold'); void st.offsetWidth; st.classList.add('shake');
     kerbTimers.push(setTimeout(()=>st.classList.remove('shake'), KERB_T.thud));
     kb.classList.remove('glow'); void kb.offsetWidth; kb.classList.add('glow');
@@ -1752,6 +1759,19 @@ export function close(opts){
 let townCloser=null;
 export function setTownCloser(fn){ townCloser=fn; }
 
+/* ══ 「回到主選單」（ver -398）══════════════════════════════════════════
+   ⚠⚠ **只收劇情層是不夠的**（Ray 回報「回到主選單的畫面一直變成試玩版戰鬥畫面」）：
+     劇情層底下是 `#app`，而 `#home` 早就被別的路徑關掉了（`combat.startGame`、
+     `openFlight`、飛行頁交棒…都會 `home.classList.remove('on')`）。只 `close()` 的話
+     掀開來就是那一場戰鬥的盤面。
+   ⚠ 正解是走**唯一那支「回主選單」**（`combat.goHome`，注入進來）——
+     它會把 banner／過渡禎／獎勵層收乾淨、把 `#home` 開回來、接回主選單 BGM，
+     而且自帶黑幕。劇情層在**黑幕全蓋的那一刻**才收，所以看不到中間那一格（同交棒的作法）。
+   ⚠ 查不到注入的實體才退回只 `close()` —— 那是舊行為，總比什麼都不做好。 */
+let homeReturn=null;
+export function setHomeReturn(fn){ homeReturn=fn; }
+function goHomeNow(){ if(homeReturn) homeReturn(); else close(); }
+
 /* ══ 給城鎮探索用的三個接口（ver -369）══
    城鎮是**非線性**的（玩家在節點之間走動），不走 MAIN_SCRIPT 的 scene 鏈；
    但對白的演出（立繪取景、明暗、打字機、對話框、面盤手勢）**必須是同一套** ——
@@ -1844,7 +1864,11 @@ function openChoice(opts, pick){
 function openNameInput(done){
   if($('nameSheet')) return;
   const ov=document.createElement('div'); ov.id='nameSheet';
-  const nm=prog.getPlayerName(), nk=prog.getPlayerNick();
+  /* ⚠ 輸入框裡預填的是**預設名**（凱勞諾斯／凱），不是現在顯示的那個 ——
+     取名之前顯示的是 `HUND`（見 progress.js），把它填進去等於要玩家自己刪掉。 */
+  const named = prog.isNamed();
+  const nm = named ? prog.getPlayerName() : prog.PLAYER_DEFAULT;
+  const nk = named ? prog.getPlayerNick() : prog.NICK_DEFAULT;
   ov.innerHTML='<div class="ns-panel">'
     + '<div class="ns-title">請問您的名字是？</div>'
     + '<label class="ns-row"><span>名　字</span>'
@@ -2063,6 +2087,6 @@ export function init(){
      ⚠ 「回到主選單」才是原本那顆 ✕ 的行為 —— 收劇情層（順帶收城鎮，見 close）。 */
   const ex=$('storyExit');
   if(ex) ex.addEventListener('click', e=>{ e.stopPropagation();
-    settings.open({ onHome: ()=>close() }); });
+    settings.open({ onHome: goHomeNow }); });
   window.addEventListener('resize', ()=>{ if(active){ layout(); layoutKerberos(); } });
 }

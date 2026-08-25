@@ -27,6 +27,7 @@ import { playTransition } from './modules/transition.js';   // 過渡禎（開�
 import { sakuraBurst } from './modules/sakura.js';   // 開始遊戲：全畫面櫻花飛舞（純程式）
 import * as story from './modules/story.js';   // 主線 scene 播放器（首頁 story 鈕）
 import * as saveSys from './modules/save.js';   // 劇情層存讀檔（F4/F7 即時、F5/F8 選欄）
+import * as settings from './modules/settings.js';   // 選單：分軌音量／自動播放速度（玩家偏好）
 import * as prog from './script/progress.js';   // 進度／旗標／「一輪遊戲」的邊界（newRun）
 import './modules/enemy.js';
 
@@ -107,6 +108,9 @@ combat.setup();
 
 // 全域主音量（tuning.masterVolume＝0.7）：先於任何預載/BGM 起播套用
 const MASTER_VOL = GAME_CONFIG.tuning.masterVolume != null ? GAME_CONFIG.tuning.masterVolume : 1;
+/* 玩家在選單裡調過的分軌音量（BGM／SE／語音）。⚠ 要在任何預載／起播之前套用，
+   不然開機那一首會用預設音量響出來再被改小。 */
+settings.apply();
 SFX.setMasterVolume(MASTER_VOL);
 // 語音鏈（手機外放的可懂度；理由見 config 的 tuning.voiceChain）
 SFX.setVoiceChain(GAME_CONFIG.tuning.voiceChain);
@@ -796,6 +800,15 @@ let storyResume = null;
    ⚠ 注入而不是 import —— combat 不認識劇情層（CLAUDE.md §2 的依賴方向）。 */
 story.setTownOpener(town.open);   // scene 的 `thenTown` 由 story 呼叫（注入，story 不 import town）
 story.setTownCloser(town.close);  // 「選單」離開劇情層時，城鎮也要一起收（ver -394）
+/* 「回到主選單」（ver -398）：走**唯一那支**回主選單（`combat.goHome`），劇情層在黑幕
+   全蓋的那一刻才收 —— 只 `story.close()` 的話，底下露出來的是上一場戰鬥的盤面
+   （`#home` 早就被 startGame／openFlight 關掉了）。 */
+story.setHomeReturn(()=>{
+  flightBack=false;                       // 這一趟不回飛行頁了
+  const f=$('flightFrame'); if(f) f.classList.remove('on');
+  document.body.classList.remove('flight-on');
+  combat.goHome(()=>story.close());
+});
 /* 城鎮的「出航」→ 開飛行頁（注入，town 不 import main；同 setTownOpener 的作法）。 */
 town.setFlightOpener(()=>openFlight());   // 城鎮出航＝「進入」，讀取頁要跑（ver -389）
 combat.setStoryClose(story.playKerberosClose);

@@ -521,6 +521,17 @@ function openShop(){
      ⚠ 兩種都走同一個劇情播放器（立繪、明暗、打字機一致），差別只在「這次要播哪幾句」。 */
   const rnd = n.keeperRandom && n.keeperRandom.length ? n.keeperRandom : null;
   const hasTalk = (n.keeper && n.keeper.length) || rnd;
+  /* 「再挑戰」（ver -398）：把那一段（含 `{battle:…}`）交給劇情播放器演 ——
+     它自己會推槍棺、打完接回來（`resumeFrom`），與劇情裡那一次走同一條路（鐵律 8）。
+     ⚠ 演完**回到櫃台**（同「與店主交談」的作法）：玩家本來就站在那裡。 */
+  const onChallenge = (n.challengeLines && n.challengeLines.length) ? ()=>{
+    busy=true; showNav(false);
+    story.playAdhoc(n.challengeLines, ()=>{
+      story.clearCast();
+      busy=false; showNav(true);
+      openShop();
+    });
+  } : null;
   showShop(n.shop, hasTalk ? [1] : null, ()=>{
     let lines = (n.keeper && n.keeper.length) ? n.keeper : null;
     if(!lines && rnd){
@@ -537,7 +548,7 @@ function openShop(){
       busy=false; showNav(true);
       openShop();                        // 談完回到櫃台
     });
-  });
+  }, onChallenge);
 }
 /* ⚠ `lastChat` **原本沒有宣告**（ver -377 修）：ES module 是嚴格模式，
    `lastChat=i` 會直接丟 ReferenceError —— 也就是說酒館的路人閒聊**一句都放不出來**。

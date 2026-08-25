@@ -229,7 +229,12 @@ export const ART = {
                   /* ⚠ `seat_angry` 比其他三張坐姿再小一截：0.74 → **0.63**
                      （-353，Ray「seat_angry 再縮 15%」）。同一組坐姿吃不同的補償是刻意的，
                      補的是**那一張畫**的構圖差異（這張她往前傾、臉畫得比較大）。 */
-                  seat_angry: { src:'resources/SI/Luna_SI_seat_angry.webp', top:0, bot:1526, fx:0.539, faceAdj:0.778, standCm:155 },
+                  /* ⚠ 取景值於 ver -398 **重量過**（Ray 換了新的一張，同名覆蓋）：
+                     `bot 1526→1518`、`fx 0.539→0.531`。§5 的規矩：換圖一定要重量，
+                     沿用舊值會歪 —— 這張的下緣少了 8px、臉往左移了 0.8%。
+                     ⚠ `faceAdj`／`standCm` 是**這一組坐姿的補償**（見上方那段推導），
+                       不是量出來的，換圖不動它。 */
+                  seat_angry: { src:'resources/SI/Luna_SI_seat_angry.webp', top:0, bot:1518, fx:0.531, faceAdj:0.778, standCm:155 },
                   seat_hand:  { src:'resources/SI/Luna_SI_seat_hand.webp',  top:20, bot:1489, fx:0.546, faceAdj:0.634, standCm:155 } } },
   /* 雜貨舖店主（ver -369）。⚠ 身高是**估的**（170）—— 沒有設定，先給一個中間值；
      取景值是量的。日後 Ray 給了設定再改 cm 就好，取景不用重量。 */

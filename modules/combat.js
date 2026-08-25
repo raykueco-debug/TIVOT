@@ -19,6 +19,7 @@ import { SFX } from '../audio.js';
 import { TEL } from '../telemetry.js';
 import { L, fmt } from '../i18n.js';   // 多語言（浮動字/RELOADING）   // 遙測（底層純輸出，同 audio 定位；未設定後端時 no-op）
 import * as enemy from './enemy.js';
+import * as hap from './haptics.js';   // 震動（葉節點：只依賴 settings/瀏覽器 API）
 import * as defense from './defense.js';
 import * as weapon from './weapon.js';
 import * as saint from './saint.js';
@@ -271,6 +272,7 @@ function tap(num,cell,e){
     resetIntervalDeadline();
     const dmg=hitDamage()*DMG_DUAL_MULT;
     SFX.gunshot(true);
+    hap.shot();                        // 破防窗口：**每一發**都震（ver -398，Ray 指定）
     enemyDamage(Math.round(dmg), false);
     if(state.cells.every(c=>c.classList.contains('done'))){
       SFX.clear(); clearAtkBuff(); weapon.endDual();
@@ -456,6 +458,9 @@ function enemyAttack(dmg, kind, saintAmt){
   /* ⚠ 計時挑戰：靶子**不攻擊**（ver -396）。守在這裡是因為所有會扣玩家血的路徑
      （大絕／延時懲罰／按錯懲罰／格擋）都經過這一支 —— 守一次就全關掉（鐵律 8）。 */
   if(state.timeAttack) return;
+  /* 受到敵人主動攻擊 → 震一下（ver -398，Ray 指定）。⚠ 守在這裡就涵蓋了所有扣血路徑
+     （大絕／延時／按錯／格擋），與這一支「唯一入口」的定位一致（鐵律 8）。 */
+  hap.hit();
   if(state.over) return;
   // 敵攻擊音：依 kind 播該怪對應音（ult＝大絕命中/不完美防禦格擋、delay＝太慢、wrong＝按錯）。
   const sk = state.curEnemySound && state.curEnemySound[kind];

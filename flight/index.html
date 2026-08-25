@@ -1938,7 +1938,10 @@ const PLAYER_NAME_KEY='tivot_player_name_v1';
 /* ⚠ 與 `script/progress.js` 的 `PLAYER_DEFAULT` **是同一個值**（ver -395 由「托爾斯」
    改成「凱勞諾斯」）。飛行頁是非 module 的獨立文件，import 不到那一份 ——
    **改一邊要改另一邊**（鐵律 7 的但書）。 */
-const PLAYER_NAME_DEFAULT='凱勞諾斯';
+/* ⚠ 取名之前叫 `HUND`（ver -398，與 `script/progress.js` 的 `NAME_BEFORE` 同值）——
+   飛行頁是非 module 的獨立文件，import 不到那一份，改一邊要改另一邊（鐵律 7 的但書）。
+   ⚠ 這裡**不用**「凱勞諾斯」：那是輸入框的預填值，玩家按確定才成立。 */
+const PLAYER_NAME_DEFAULT='HUND';
 function playerName(){
   try{ return localStorage.getItem(PLAYER_NAME_KEY) || PLAYER_NAME_DEFAULT; }
   catch(e){ return PLAYER_NAME_DEFAULT; }

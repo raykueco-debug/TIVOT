@@ -41,6 +41,11 @@ export const AFFECTION_DEFAULT = 10;
    與玩家自己輸入的名字**脫鉤** —— 不要拿玩家輸入的字去拼路徑。 */
 export const PLAYER_DEFAULT = '凱勞諾斯';
 export const NICK_DEFAULT   = '凱';
+/* ⚠⚠ **取名之前一律叫 `HUND`**（ver -398，Ray 指定）—— 那是蕾娜在還不知道他名字時
+   對他的稱呼（德語「犬」）。所以「還沒取名」與「取了名」是**兩個不同的顯示**，
+   不是「預設值」：預設值（凱勞諾斯／凱）是**輸入框裡的預填**，玩家按確定才成立。
+   ⚠ `{P}` 與 `{N}` 在取名之前都代換成 HUND —— 台詞裡不必為此寫兩套。 */
+export const NAME_BEFORE = 'HUND';
 export const CHARS = ['renna','nouvelle','sorana','anya'];
 
 const rd = k => { try{ return localStorage.getItem(k); }catch(e){ return null; } };
@@ -122,9 +127,15 @@ export function tierOfChar(who){ return tierOf(affectionOf(who)); }
 /* ── 玩家名 ──
    ⚠ 台詞裡寫 {P}，**顯示的那一刻才代換**（存進播放佇列就換的話，玩家中途
      改名，正在播的那段還是舊名字）。代換函式在 story.js 的 subst。 */
-export function getPlayerName(){ const v=rd(K.name); return (v && v.trim()) ? v : PLAYER_DEFAULT; }
+/* 取過名了沒。⚠ 判的是**鑰匙存不存在**，不是「等不等於預設值」——
+   玩家真的把自己取名叫「凱勞諾斯」也該算取過名。 */
+export function isNamed(){ const v=rd(K.name); return !!(v && v.trim()); }
+export function getPlayerName(){ const v=rd(K.name); return (v && v.trim()) ? v : NAME_BEFORE; }
 export function setPlayerName(v){ wr(K.name, (v||'').trim() || PLAYER_DEFAULT); }
-export function getPlayerNick(){ const v=rd(K.nick); return (v && v.trim()) ? v : NICK_DEFAULT; }
+export function getPlayerNick(){
+  const v=rd(K.nick); if(v && v.trim()) return v;
+  return isNamed() ? NICK_DEFAULT : NAME_BEFORE;   // 還沒取名 → HUND
+}
 export function setPlayerNick(v){ wr(K.nick, (v||'').trim() || NICK_DEFAULT); }
 
 /* ══ 開新的一輪（ver -381，Ray：「劇情只跑一次是指**一輪遊戲內**只跑一次；
