@@ -93,6 +93,14 @@ def check_audio_table(files, folder, label):
 
 def exists(rel):  return os.path.exists(os.path.join(ROOT, rel))
 
+# `hint` 拍認得的目標代號。⚠ 與 `modules/story.js` 的 `HINT_TARGET` 是同一份 ——
+#   那邊加了新代號，這裡也要加（否則 lint 會誤報）。
+def hint_targets():
+    s = open(os.path.join(ROOT, 'modules/story.js'), encoding='utf-8').read()
+    m = re.search(r'const HINT_TARGET\s*=\s*\{(.*?)\};', s, re.S)
+    return set(re.findall(r'(\w+)\s*:', m.group(1))) if m else set()
+HINT_TARGETS = hint_targets()
+
 def main():
     D = load_data()
     script, entry, speakers, art = D['script'], D['entry'], D['speakers'], D['art']
@@ -146,6 +154,18 @@ def main():
                 continue
             # 輸入主角名的閘門（ver -395）：沒有台詞也沒有 speaker，不必驗演出欄位。
             if ln.get('nameInput'):
+                continue
+            # 操作提示（ver -424）：閘門拍。⚠ `at` 要是 story.js 認得的代號，
+            #   打錯的話那一拍會直接放行（教學等於沒演），所以在這裡就擋下來。
+            if ln.get('hint'):
+                h = ln['hint']
+                at = h if isinstance(h, str) else (h or {}).get('at')
+                if at not in HINT_TARGETS:
+                    err('%s：hint 的 at 不是認得的代號（%s）：%s'
+                        % (tag, '／'.join(sorted(HINT_TARGETS)), at))
+                continue
+            # 出航（ver -424）：閘門拍，交給啟動層開飛行頁。
+            if ln.get('goFlight'):
                 continue
             if ln.get('load'):
                 if ln['load'] not in script:
@@ -269,8 +289,16 @@ def main():
                 bs = [b for b in (cfg.get('bounties') or {}).values() if b.get('city') == n['board']]
                 if not bs:
                     warn('%s：懸賞榜 %s 目前一張委託都沒有' % (tag, n['board']))
-            for key in ('lines', 'keeper'):
+            for key in ('lines', 'keeper', 'challengeLines', 'innEarly', 'innRenna'):
                 check_lines('%s.%s' % (tag, key), n.get(key))
+            # ⚠ `acts`（主線段落，ver -424）也要驗 —— 那裡面才是真正的劇情，
+            #   漏掉的話缺圖／打錯角色 id 要等演到那一句才發現。
+            for i, a in enumerate(n.get('acts') or []):
+                check_lines('%s.acts[%d]' % (tag, i), a.get('lines'))
+            # 傍晚的提醒掛在**城**上不是節點上，所以在外層另外驗（見下）。
+
+        ev = (town.get("evening") or {}).get("lines")
+        if ev: check_lines('%s.evening' % tid, ev)
 
     for m in errs:  print('❌ ' + m)
     for m in warns: print('⚠  ' + m)

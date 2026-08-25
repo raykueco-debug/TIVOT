@@ -115,6 +115,21 @@ function allSeen(){
    「拜訪過所有地點後走到下一個場景時**或**時間抵或過 18:00」。
    ⚠ 回傳 `evening` 這一段本身（不是布林）—— 呼叫端要拿它的 `lines` 去演。
    ⚠ **在旅店裡不演**：站在旅店裡說「我們先回旅店吧」是錯的。 */
+/* 這個節點現在該演哪一段主線戲（`acts`）。⚠ 條件現在只有 `day`（遊戲內第幾天，
+   由開局日推出來 —— 時鐘是唯一的真相，不另存「第幾天」的旗標）。
+   ⚠ 由上往下取**第一個**沒演過又符合條件的，所以資料的順序就是劇情的順序。 */
+function actDue(n){
+  for(const a of (n && n.acts) || []){
+    if(a.flag && prog.hasFlag(a.flag)) continue;
+    if(a.need && !prog.hasFlag(a.need)) continue;
+    if(a.day && dayNo() < a.day) continue;
+    if(a.lines && a.lines.length) return a;
+  }
+  return null;
+}
+/* 遊戲內第幾天（開局那天＝第 1 天）。⚠ 從時鐘推，不另存旗標（鐵律 7）。 */
+function dayNo(){ return Math.floor(clock.elapsed()/1440) + 1; }
+
 function eveningDue(n){
   const T=TOWNS[townId], ev=T && T.evening;
   if(!ev || !ev.lines || !ev.lines.length) return null;
@@ -597,8 +612,15 @@ export function enter(id){
      旗標也不會記，所以那一段會留到下次在營業時間內進來時才播 —— 不會漏掉。 */
   /* ⚠ **傍晚的提醒優先所有事件**（ver -392，Ray 指定）：它**取代**這一次抵達原本要演的
      進場對白，而那一段的旗標不會記 —— 下次再進來還是會演（同上面「打烊不播」的作法）。 */
-  const ev = eveningDue(n);
-  const lines = ev ? ev.lines : ((played || !isOpenNow(n)) ? [] : (n.lines||[]));
+  /* ══ 主線段落（`acts`，ver -424）══════════════════════════════════════
+     節點可以掛**好幾段**主線戲，各自帶旗標與條件（目前只有 `day`：遊戲內第幾天）。
+     ⚠ **優先於傍晚提醒與進場對白** —— 那兩者是氣氛，這是主線，順序不能反。
+     ⚠ 旗標同樣**演完才記**（見下方的收尾）：中間可能插一場戰鬥，打輸會被丟回首頁。 */
+  const act = actDue(n);
+  const ev = act ? null : eveningDue(n);
+  const lines = act ? act.lines
+              : ev ? ev.lines
+              : ((played || !isOpenNow(n)) ? [] : (n.lines||[]));
   /* ⚠ 旗標**演完才記**（ver -375 由「開演就記」改過來）：這一段中間可能插一場戰鬥，
      打輸了會被丟回首頁 —— 開演就記的話，回頭再走一次公會就整段跳過，那一場永遠打不到。
      「沒演完就不算演過」才是對的。代價：中途離開會再看一次，那本來就該再看一次。 */
@@ -617,7 +639,8 @@ export function enter(id){
       /* ⚠ 對白演完**把立繪全撤**，只留背景與導覽（Ray 指定）。 */
       /* ⚠ `n.sides`：兩個角色同台要分左右（§6.5）——城鎮這條路徑一樣要吃得到。 */
       story.playAdhoc(play, ()=>{ story.clearCast();
-        if(ev){ if(ev.flag) prog.addFlags([ev.flag]); }   // 傍晚的提醒：只演一次
+        if(act){ if(act.flag) prog.addFlags([act.flag]); }        // 主線段落：只演一次
+        else if(ev){ if(ev.flag) prog.addFlags([ev.flag]); }   // 傍晚的提醒：只演一次
         else{
           applyAff(lines);
           prog.addFlags([flag]);                  // ⚠ 演完才記（見上面的說明）
@@ -626,7 +649,7 @@ export function enter(id){
           if(n.boardFlag) prog.addFlags([n.boardFlag]);
         }
         busy=false; refreshArrows(); showNav(true);
-        afterArrive(n); }, { sides:n.sides });
+        afterArrive(n); }, { sides:(act && act.sides) || n.sides });
     }, ARRIVE_MS);
   }else{
     busy=false; refreshArrows(); showNav(true);

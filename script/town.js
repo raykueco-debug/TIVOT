@@ -288,6 +288,49 @@ export const TOWNS = {
           /* 稿上這一拍寫的是 `Nouvelle_SI_front`＝**基本立繪**（沒有表情差分）。 */
           nou(null,'嗯，謝謝。我安心多了。'),
         ],
+        /* ══ 第二日：出航（ver -424，Ray 交稿）══════════════════════════════
+           ⚠ `acts` 是**主線段落**（見 modules/town.js 的 `actDue`）：優先於傍晚提醒
+             與進場對白，各自帶旗標與條件。`day:2` ＝遊戲內第二天（由時鐘推）。
+           ⚠ 兩段是刻意的：第一段演完整場戲，最後問一次「準備出航」；玩家說「再等等」
+             的話旗標照樣記下（那一場戲看過了），下次再來只演**第二段**那一句問答 ——
+             不然玩家每次回船塢都要重看一次全部台詞。 */
+        acts:[
+          { flag:'dock_day2', day:2, sides:{ RENNA:'R' },
+            lines:[
+              ren('watch','28號碼頭的白帆三桅船……有了。'),
+              /* 插圖：船。⚠ 無台詞的插圖拍要 `auto`（沒有框就沒有 ▼，§6.5）。 */
+              { speaker:'RENNA', text:'', auto:1400, cg:'006_Ship', se:'se_flight_seagull' },
+              nou('happy','哇，是木造船！好大喔！'),
+              ren(null,'瓦爾士戰爭留下來的輕砲艦，這還算小的呢。'),
+              ren('watch','雖然是舊式船體，姑且還是裝載了甲板滑膛砲跟速射砲。'),
+              ren('watch','航行途中碰到狀況，也不致於無法應對。'),
+              nou('shocked','可是…..這麼大的船要多少人才開得動啊？'),
+              ren('watch','機械套索的，有個舵手就能動，至於帆手……這個季節沒有驟風，應該無所謂。'),
+              ren('smile','船底有教廷紋章，不用擔心被防空砲打下來。'),
+              ren('bow','操舵就交給你囉，整備完成了嗎？'),
+              /* 操作提示：雪鐵龍箭指著**吊墜**（Ray 指定）。點下去開整備頁，
+                 關掉之後這一拍才過。 */
+              { hint:{ at:'pend', text:'點槍棺左上的吊墜　→　整備（選搭檔、換副武器）' } },
+              /* 主角的回答（他不出聲，這是他點的頭）。 */
+              { choice:[ { text:'準備出航', goto:'sail_go' },
+                         { text:'再等一下', goto:'sail_wait' } ] },
+              Object.assign(ren(null,'那麼，前往第一個目的地，北方泊地。'), { label:'sail_go' }),
+              { goFlight:true },
+              Object.assign(ren('smile','不急，準備好再叫我。'), { label:'sail_wait' }),
+            ] },
+          /* 第二段：戲看過了，只剩那一句問答。⚠ `need` ＝要先有第一段的旗標；
+             自己的旗標**故意與第一段同一個**不行（會被 `actDue` 跳過），所以另給一個
+             —— 但它**永遠不記**（下面沒有 flag），因為出航前每次回來都要問得到。 */
+          { need:'dock_day2', day:2, sides:{ RENNA:'R' },
+            lines:[
+              ren('bow','整備完成了嗎？'),
+              { choice:[ { text:'準備出航', goto:'sail_go2' },
+                         { text:'再等一下', goto:'sail_wait2' } ] },
+              Object.assign(ren(null,'那麼，前往第一個目的地，北方泊地。'), { label:'sail_go2' }),
+              { goFlight:true },
+              Object.assign(ren('smile','不急，準備好再叫我。'), { label:'sail_wait2' }),
+            ] },
+        ],
         /* 路人單句：**地理情報**線（ver -387）。⚠ 這一條要對得上飛行頁的世界 ——
            講的是航線、風、哪裡有東西，玩家出航之後真的用得上。 */
         chatter:[

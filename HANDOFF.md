@@ -5012,3 +5012,48 @@ Ray 交了第一場**船艦戰**的敵人卡。這一版把卡上**每一欄**�
 
 第二日的船塢劇情、Stage1 的地圖限制（無探索／無加速、只開帝都與北方泊地、
 其餘點了彈蕾娜）、出薩梅爾上空 1.5 倍速刷怪、艦鬥短教學。
+
+---
+
+# 交接 · `ver -424`（第二日的船塢：出航前那一場戲）
+
+## 新的資料結構：`acts`（節點的主線段落）
+
+節點可以掛好幾段主線戲，各自帶旗標與條件：
+
+    acts:[{ flag:'dock_day2', day:2, sides:{RENNA:'R'}, lines:[...] },
+          { need:'dock_day2', day:2, lines:[...] }]
+
+- **優先於傍晚提醒與進場對白** —— 那兩者是氣氛，這是主線。
+- `day` ＝遊戲內第幾天，**由時鐘推**（`clock.elapsed()/1440`）—— 不另存「第幾天」的旗標（鐵律 7）。
+- 旗標同樣**演完才記**（中間可能插戰鬥，打輸會被丟回首頁）。
+- ⚠ 船塢那一段刻意分成兩條：第一段演完整場戲、最後問一次「準備出航」；玩家選「再等一下」
+  旗標照樣記下（戲看過了），下次再來只演第二段那一句問答 —— 不然每次回船塢都要重看全部台詞。
+  第二段**沒有 flag**（永遠可以再問）。
+
+## 兩個新的拍
+
+- **`hint`（操作提示）** —— 雪鐵龍箭指著畫面上的東西 ＋ 一句說明，點那個東西才過關。
+  目標寫**代號**（`pend`／`gear`）不是選擇器：腳本不該知道 DOM 的 id。
+  對照表 `HINT_TARGET` 在 story.js，`script_lint.py` **會去讀那一份**來驗代號有沒有打錯。
+  ⚠⚠ **被指的那顆要抬到遮罩之上**，但吊墜與齒輪住在 `#kerb`（z-6）裡，而 `#kerb` 自己
+    就是一個堆疊脈絡 —— 在子元素上寫 `z-index` 是沒有用的。要抬就得抬 `#kerb` 那一整層
+    （`#storyStage:has(#storyHint) #kerb{z-index:10}`）。
+- **`goFlight`** —— 交給啟動層開飛行頁（`story.setFlightOpener`，走同一支 `openFlight`）。
+
+## 素材
+
+Ray 交的立繪都轉了 webp 並**逐張量取景值**（`tools/measure_si.py`）：
+蕾娜 `watch／shocked／run／scared／surprised／tired／writing`、諾薇兒 `steady`。
+⚠ 差分是**不同姿勢**不是換臉，所以每一張各帶自己的 `top/bot/fx`（§6.5）。
+
+## `script_lint.py` 補強
+
+`acts` / `challengeLines` / `innEarly` / `innRenna` / 城的 `evening` 現在都會驗；
+`hint` / `goFlight` 列進控制拍的白名單，`hint.at` 對著 story.js 那份代號表檢查。
+
+## ⚠ 還沒做（下一輪）
+
+Stage1 的地圖限制（無探索／無加速、只開帝都與北方泊地、其餘點了彈蕾娜）、
+出薩梅爾上空 1.5 倍速刷怪、艦鬥短教學（諾薇兒那兩句）。
+⚠ 仍缺 `se_weapon_cannon_120mm`（`_unused/se_weapon_spitCannon.mp3` 是不是它？）。

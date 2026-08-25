@@ -96,7 +96,16 @@ export const ART = {
                   /* 帝都廣場那一段新增（ver -359）。`stare`＝直視／半瞇，用在她盯著人講話那幾拍。 */
                   stare:   { src:'resources/SI/Renna_SI_stare.webp',   top:0, bot:1527, fx:0.515 },
                   surprise:{ src:'resources/SI/Renna_SI_Surprise.webp',top:8, bot:1524, fx:0.498 },
-                  ask:     { src:'resources/SI/Renna_SI_ask.webp',     top:3, bot:1525, fx:0.489 } } },
+                  ask:     { src:'resources/SI/Renna_SI_ask.webp',     top:3, bot:1525, fx:0.489 },
+                  /* 船塢那一段新增（ver -424，Ray 交件）。取景值是 `tools/measure_si.py`
+                     量的，**每一張各自帶**（差分是不同姿勢，不是換臉，§6.5）。 */
+                  watch:    { src:'resources/SI/Renna_SI_watch.webp',    top:7, bot:1530, fx:0.492 },
+                  shocked:  { src:'resources/SI/Renna_SI_shocked.webp',  top:3, bot:1530, fx:0.492 },
+                  run:      { src:'resources/SI/Renna_SI_run.webp',      top:3, bot:1532, fx:0.611 },
+                  scared:   { src:'resources/SI/Renna_SI_scared.webp',   top:5, bot:1528, fx:0.498 },
+                  surprised:{ src:'resources/SI/Renna_SI_surprised.webp',top:0, bot:1522, fx:0.502 },
+                  tired:    { src:'resources/SI/Renna_SI_tired.webp',    top:7, bot:1522, fx:0.495 },
+                  writing:  { src:'resources/SI/Renna_SI_writting.webp', top:4, bot:1524, fx:0.507 } } },
   /* ⚠⚠ 諾薇兒的表情差分是**不同姿勢**（跑、畏縮、驚恐、絕望、驚訝），不是換臉，
        所以每一張**各帶自己的 top/bot/fx**（ver -325 量完）。
        ⚠ 沿用 front 那一組的後果實測過：Scared 的臉其實在 0.397，照 0.564 擺會
@@ -110,7 +119,9 @@ export const ART = {
          · eye 沒量（CAST_EYE_MIX=0 不參與運算）。 */
   nouvelle: { cm:165, eye:40, fx:0.582, top:3, bot:1536,
            side:'L', alt:null, base:'resources/SI/Nouvelle_SI_front.webp',
-           expr:{ run:      { src:'resources/SI/Nouvelle_SI_Run.webp',       top:13, bot:1533, fx:0.418 },
+           expr:{ /* 艦鬥教學那幾拍（ver -424，Ray 交件）：她穩住陣腳的姿勢。 */
+                  steady:   { src:'resources/SI/Nouvelle_SI_steady.webp',   top:8,  bot:1529, fx:0.534 },
+                  run:      { src:'resources/SI/Nouvelle_SI_Run.webp',       top:13, bot:1533, fx:0.418 },
                   cringe:   { src:'resources/SI/Nouvelle_SI_Cringe.webp',    top:5,  bot:1533, fx:0.459 },
                   scared:   { src:'resources/SI/Nouvelle_SI_Scared.webp',    top:9,  bot:1530, fx:0.397 },
                   desperate:{ src:'resources/SI/Nouvelle_SI_Desperate.webp', top:2,  bot:1532, fx:0.415 },

@@ -2283,3 +2283,28 @@
     font-family:inherit;font-size:10px;letter-spacing:1px;color:var(--gold);
     background:rgba(10,8,14,.72);border:1px solid var(--gold-dim);border-radius:10px;}
   #lootSheet .bag-eq.cur{color:var(--holy);border-color:var(--holy);opacity:.85;}
+
+  /* ── 劇情裡的操作提示（`hint` 拍，ver -424）───────────────────────
+     雪鐵龍箭指著畫面上的一個東西 ＋ 一句說明；點那個東西才過關。
+     ⚠ z-index 9：在對話框（7）與楣（6）之上 —— 它要蓋過所有東西才看得見；
+       但被指的那顆要抬得比遮罩更高（`.hint-spot`），否則玩家看著一片暗不知道在指什麼。
+     ⚠ 箭的浮動走**自己的** keyframes：它是 `translate(-50%,-100%)`，
+       沿用別處 `-50%,-50%` 的那一支會整個跳位（同 ver -402 的坑）。 */
+  #storyHint{position:absolute;inset:0;z-index:9;background:rgba(4,3,7,.62);
+    pointer-events:auto;}
+  #storyHint .sh-arrow{position:absolute;transform:translate(-50%,-100%);font-style:normal;
+    font-size:20px;color:var(--holy);text-shadow:0 0 10px rgba(111,179,212,.9);
+    animation:shPoint 1s ease-in-out infinite alternate;}
+  @keyframes shPoint{from{transform:translate(-50%,-100%) translateY(0);}
+    to{transform:translate(-50%,-100%) translateY(-8px);}}
+  #storyHint .sh-txt{position:absolute;left:16px;right:16px;text-align:center;
+    font-size:12px;line-height:1.8;color:#fff;
+    text-shadow:1px 0 0 rgba(0,0,0,.92),-1px 0 0 rgba(0,0,0,.92),
+                0 1px 0 rgba(0,0,0,.92),0 -1px 0 rgba(0,0,0,.92),0 1px 4px rgba(0,0,0,.7);}
+  /* ⚠⚠ 被指的那顆要**在遮罩之上**，否則玩家看著一片暗不知道在指什麼。
+     ⚠ 吊墜與齒輪都住在 `#kerb`（z-6）裡，而 `#kerb` 自己就是一個堆疊脈絡 ——
+       在子元素上寫 `z-index:10` 是**沒有用的**，它永遠跟著父層一起被壓在遮罩下。
+       要抬就得抬 `#kerb` 那一整層（用 `:has()` 只在提示開著的那一拍抬）。 */
+  #storyStage:has(#storyHint) #kerb{z-index:10;}
+  .hint-spot{position:relative;}
+  #kerbPend.hint-spot,#storyExit.hint-spot{filter:drop-shadow(0 0 14px rgba(111,179,212,.95));}

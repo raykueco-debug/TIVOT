@@ -718,6 +718,8 @@ bindBtn('prepGo', ()=>{ const st=prepStoryMode; closePrep(); if(!st) launchBattl
 /* ⚠ 吊墜開的是**本篇的整備頁**（`modules/gear.js`），不是試玩版的出陣整備
    （ver -422，Ray：「整備畫面錯了，開啟全畫面視窗，有三個功能」）。 */
 story.setPrepOpener(()=>gear.open());
+/* 劇情裡的「出航」那一拍（ver -424）：交給同一支 `openFlight`（唯一的入口，鐵律 8）。 */
+story.setFlightOpener(()=>openFlight());
 // 首頁「教學」鈕：強制下一場進教學（不動已看旗標），不經整備頁直接出陣
 bindBtn('tutorialBtn', ()=>{ tutorial.requestReplay(); launchBattle(); });
 

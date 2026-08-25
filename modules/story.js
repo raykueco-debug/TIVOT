@@ -1484,6 +1484,21 @@ function renderLine(){
     return;
   }
 
+  /* ══ 操作提示（`hint`，ver -424，Ray：「操作提示，雪鐵龍指示點擊吊飾進入整備畫面」）══
+     一個**閘門拍**：指著畫面上某個東西，玩家真的去點過（或點掉提示）才往下走。
+     ⚠ 目標寫成**代號**（`pend`／`gear`）不是選擇器 —— 腳本不該知道 DOM 的 id。 */
+  if(line.hint){
+    applyPersist(line);
+    openHint(line.hint, ()=>advance());
+    return;
+  }
+  /* 出航：交給啟動層開飛行頁（`setFlightOpener` 注入）。⚠ 這一拍之後劇情就結束了。 */
+  if(line.goFlight){
+    if(flightOpener){ endScene(); try{ flightOpener(line.goFlight); }catch(_){} return; }
+    console.info('[story] 沒有註冊飛行頁開啟器，跳過 goFlight');
+    return advance();
+  }
+
   if(line.battle){
     if(!battleHandler){
       console.info('[story] 沒有註冊戰鬥發動器，跳過：', line.battle);
@@ -1976,6 +1991,9 @@ export function setTownCloser(fn){ townCloser=fn; }
 /* 點吊墜 → 整備頁（ver -421，Ray 指定）。⚠ 由 main.js 注入：劇情層不認識啟動層。 */
 let prepOpener=null;
 export function setPrepOpener(fn){ prepOpener=fn; }
+/* 出航（`goFlight` 那一拍）：由 main.js 注入 —— 劇情層不認識啟動層。 */
+let flightOpener=null;
+export function setFlightOpener(fn){ flightOpener=fn; }
 
 /* ══ 「回到主選單」（ver -398）══════════════════════════════════════════
    ⚠⚠ **只收劇情層是不夠的**（Ray 回報「回到主選單的畫面一直變成試玩版戰鬥畫面」）：
@@ -2071,6 +2089,42 @@ export function flashLine(text, name){
 /* 收掉對話框。⚠ 順便宣告「現在沒有在演」（ver -387）—— `flashLine` 開場時
    `markTalking(true)`，收場就該由**同一個層**關掉（§6.5：誰在演，誰負責宣告）。
    不關的話城鎮的地名／時刻會一直讓開，玩家看不到自己在哪、幾點。 */
+/* ══ 操作提示（ver -424）══════════════════════════════════════════════
+   雪鐵龍箭指著畫面上的一個東西 ＋ 一句說明；點那個東西（或點說明）才過關。
+   ⚠ 目標的代號 → DOM 的對照**只有這一張表**（腳本只寫代號，鐵律 7）。
+   ⚠ 箭與文字的位置**每次現量**：這一頁的元素位置是 `layoutKerberos` 解出來的，
+     而且會隨轉向變。⚠ 量不到（還沒排版）就直接放行 —— 卡住比沒教學糟得多。 */
+const HINT_TARGET = { pend:'kerbPend', gear:'storyExit' };
+function openHint(spec, done){
+  const o = (typeof spec==='string') ? { at:spec } : (spec||{});
+  const tgt = document.getElementById(HINT_TARGET[o.at] || o.at);
+  const st = $('storyStage');
+  if(!tgt || !st){ done && done(); return; }
+  const r = tgt.getBoundingClientRect();
+  if(!r.width){ done && done(); return; }
+  const sr = st.getBoundingClientRect();
+  const ov = document.createElement('div'); ov.id='storyHint';
+  ov.innerHTML = '<i class="sh-arrow">▼</i><div class="sh-txt">'+(o.text||'')+'</div>';
+  st.appendChild(ov);
+  const a = ov.querySelector('.sh-arrow');
+  a.style.left = (r.left - sr.left + r.width/2)+'px';
+  a.style.top  = (r.top  - sr.top  - 6)+'px';
+  ov.querySelector('.sh-txt').style.top = Math.max(8, r.top - sr.top - 62)+'px';
+  tgt.classList.add('hint-spot');
+  let fired=false;
+  const finish=()=>{ if(fired) return; fired=true;
+    tgt.classList.remove('hint-spot');
+    tgt.removeEventListener('click', onTgt, true);
+    if(ov.parentNode) ov.parentNode.removeChild(ov);
+    done && done();
+  };
+  /* ⚠ 點**目標**才算學會（那是這一拍要教的動作）；點提示本身只是收掉它，
+     一樣放行 —— 不要把玩家鎖在教學裡。 */
+  const onTgt = ()=>setTimeout(finish, 60);
+  tgt.addEventListener('click', onTgt, true);
+  ov.addEventListener('click', e=>{ e.stopPropagation(); finish(); });
+}
+
 /* ══ 選項面板（ver -396）══
    ⚠ 蓋在對話框**之上**並吃掉點擊：這一拍是閘門，不能點畫面跳過去。
    ⚠ 內容全在腳本上（`choice:[{text,goto}]`），這裡只負責演（鐵律 1）。 */
