@@ -381,7 +381,10 @@ function highlight(side){
 }
 
 /* ══ {P} 代換：**顯示的這一刻才換**（玩家中途改名，下一句就會是新名字）══ */
-function subst(t){ return String(t==null?'':t).split('{P}').join(prog.getPlayerName()); }
+/* `{P}`＝名字、`{N}`＝暱稱（ver -395）。⚠ **顯示的那一刻才代換**（見 progress.js）。 */
+function subst(t){ return String(t==null?'':t)
+  .split('{P}').join(prog.getPlayerName())
+  .split('{N}').join(prog.getPlayerNick()); }
 
 /* ══ 打字機 ══ */
 /* 打字機。⚠ 速度吃 `typeSpeed()` —— 按住下拉的加速模式要即時變快（ver -367），
@@ -433,6 +436,9 @@ function typeFinish(el, text){
      delay:2600                 **先不出對話框**，等這麼久再打字（等平移／演出跑完）
      shake:true                 畫面抖一下
      bgPan:'up'|'down'          背景由下往上／由上往下平移（規則同 cgPan）
+     nameInput:true             **輸入主角名與暱稱**（ver -395）。這一拍沒有台詞、
+                                不出對話框 —— 它是一道閘門：填完按確定才往下走。
+                                台詞裡用 `{P}`（名字）／`{N}`（暱稱）取用。
      load:'sceneId'             **標準讀取頁**：擋畫面把那個場景的素材抓完再往下演。
                                 （ver -338，Ray 指定；插在哪由腳本決定）
                                 ⚠ 這一行沒有台詞也沒有演出，它就是一道閘門。
@@ -1238,6 +1244,14 @@ function renderLine(){
     lineIdx=at; return renderLine();
   }
 
+  /* ══ 輸入主角名與暱稱（ver -395）══ 這一拍是**閘門**：不出對話框，
+     填完按確定才往下走。⚠ 只演一次由腳本自己保證（它在 `once` 的段落裡）。 */
+  if(line.nameInput){
+    applyPersist(line);            // 這一拍還是可以帶背景／立繪的變化
+    openNameInput(()=>advance());
+    return;
+  }
+
   if(line.battle){
     if(!battleHandler){
       console.info('[story] 沒有註冊戰鬥發動器，跳過：', line.battle);
@@ -1784,6 +1798,38 @@ export function flashLine(text, name){
 /* 收掉對話框。⚠ 順便宣告「現在沒有在演」（ver -387）—— `flashLine` 開場時
    `markTalking(true)`，收場就該由**同一個層**關掉（§6.5：誰在演，誰負責宣告）。
    不關的話城鎮的地名／時刻會一直讓開，玩家看不到自己在哪、幾點。 */
+/* ══ 輸入主角名與暱稱（ver -395，Ray 交稿：「輸入主角名及暱稱／默認為凱勞諾斯、暱稱為凱」）══
+   ⚠ 預設值問 `progress`（`PLAYER_DEFAULT` / `NICK_DEFAULT`），**不要在這裡再打一次字串**
+     （鐵律 7）。留空按確定＝沿用預設。
+   ⚠ 這一拍**鎖住推進**：面板開著時點畫面不能跳過去（`kerbPlaying` 那一套的理由相同），
+     所以面板自己蓋在最上層並吃掉點擊。 */
+function openNameInput(done){
+  if($('nameSheet')) return;
+  const ov=document.createElement('div'); ov.id='nameSheet';
+  const nm=prog.getPlayerName(), nk=prog.getPlayerNick();
+  ov.innerHTML='<div class="ns-panel">'
+    + '<div class="ns-title">請問您的名字是？</div>'
+    + '<label class="ns-row"><span>名　字</span>'
+    +   '<input id="nsName" type="text" maxlength="12" value="'+nm.replace(/"/g,'&quot;')+'"></label>'
+    + '<label class="ns-row"><span>暱　稱</span>'
+    +   '<input id="nsNick" type="text" maxlength="8" value="'+nk.replace(/"/g,'&quot;')+'"></label>'
+    + '<button class="ns-ok" type="button">確　定</button></div>';
+  document.body.appendChild(ov);
+  ov.addEventListener('pointerdown', e=>e.stopPropagation());
+  ov.addEventListener('click', e=>e.stopPropagation());
+  const ok=()=>{
+    prog.setPlayerName(($('nsName')||{}).value);
+    prog.setPlayerNick(($('nsNick')||{}).value);
+    try{ SFX.menuClick(); }catch(_){}
+    ov.classList.remove('on');
+    setTimeout(()=>{ if(ov.parentNode) ov.parentNode.removeChild(ov); done&&done(); }, 200);
+  };
+  ov.querySelector('.ns-ok').addEventListener('click', e=>{ e.stopPropagation(); ok(); });
+  ov.querySelectorAll('input').forEach(i=>i.addEventListener('keydown', e=>{
+    if(e.key==='Enter'){ e.preventDefault(); ok(); } }));
+  requestAnimationFrame(()=>ov.classList.add('on'));
+}
+
 export function hideBubble(){
   const b=$('storyBubble'); if(b) b.style.visibility='hidden';
   markTalking(false);

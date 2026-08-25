@@ -229,7 +229,11 @@ export const MAIN_SCRIPT = {
       { speaker:'OFFICER', text:'初次見面，我是第十三騎士團的監察官，',
         portrait:{ char:'OFFICER', show:true } },
       /* 插圖：蕾娜撥髮。⚠ 這一拍沒有台詞 → 不出框 → 沒有 ▼，所以要 `auto` 自己走。 */
-      { speaker:'OFFICER', text:'', auto:1000, cg:'004_Renna_intro' },
+      /* ⚠ `cgPan:'up'`（ver -395，Ray：「蕾娜插圖由下往上平移」）—— 由下往上帶上來，
+         停在她的臉。平移是 2.6 秒、這一拍只停 1 秒，**平移會延續到下一拍**
+         （沒寫 `cgPan` 的句子不碰平移，見 renderLine 的說明），那正是要的：
+         她報上名字的時候鏡頭還在走。 */
+      { speaker:'OFFICER', text:'', auto:1000, cg:'004_Renna_intro', cgPan:'up' },
       /* 報上名字：**對話框壓在插畫上**（Ray 指定）。插圖是持續狀態，這一拍不動它，
          框自然疊在上面（框 z-7 > 插圖 z-2）；點下去才由下一拍收掉插圖切回立繪。 */
       { speaker:'OFFICER', text:'蕾姬娜˙馮˙海森伯格。' },

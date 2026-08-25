@@ -27,13 +27,20 @@ const K = {
        （`{renna:10,…}` 純數字）是 flight/index.html 也在讀的，不能動。 */
   affFloor:  'tivot_aff_floor_v1',
   name:      'tivot_player_name_v1',
+  /* 暱稱（ver -395）：蕾娜之後會用暱稱叫他。⚠ 另開一支鑰匙而不是塞進 name ——
+     兩個是分開輸入、分開顯示的（`{P}` 名字／`{N}` 暱稱）。 */
+  nick:      'tivot_player_nick_v1',
 };
 
 /* ⚠ 測試期間預設 3（Ray 指定，與 flight/index.html 的 STAGE_DEFAULT 一致）。
    改這個值會連帶改變閒聊聽得到哪些內容 —— 兩邊要一起改。 */
 export const STAGE_DEFAULT = 3;
 export const AFFECTION_DEFAULT = 10;
-export const PLAYER_DEFAULT = '托爾斯';
+/* ⚠⚠ 預設名（ver -395，Ray 定案）：**凱勞諾斯／凱**。
+   西文的 `Keraunos` / `Ky` 是**檔名與程式用的**（插圖、素材、id），
+   與玩家自己輸入的名字**脫鉤** —— 不要拿玩家輸入的字去拼路徑。 */
+export const PLAYER_DEFAULT = '凱勞諾斯';
+export const NICK_DEFAULT   = '凱';
 export const CHARS = ['renna','nouvelle','sorana','anya'];
 
 const rd = k => { try{ return localStorage.getItem(k); }catch(e){ return null; } };
@@ -117,6 +124,8 @@ export function tierOfChar(who){ return tierOf(affectionOf(who)); }
      改名，正在播的那段還是舊名字）。代換函式在 story.js 的 subst。 */
 export function getPlayerName(){ const v=rd(K.name); return (v && v.trim()) ? v : PLAYER_DEFAULT; }
 export function setPlayerName(v){ wr(K.name, (v||'').trim() || PLAYER_DEFAULT); }
+export function getPlayerNick(){ const v=rd(K.nick); return (v && v.trim()) ? v : NICK_DEFAULT; }
+export function setPlayerNick(v){ wr(K.nick, (v||'').trim() || NICK_DEFAULT); }
 
 /* ══ 開新的一輪（ver -381，Ray：「劇情只跑一次是指**一輪遊戲內**只跑一次；
    從頭開始、或從之前的存檔開始，都要跑劇情」）══
@@ -128,7 +137,7 @@ export function setPlayerName(v){ wr(K.name, (v||'').trim() || PLAYER_DEFAULT); 
    ⚠ 讀檔**不要走這一支**：讀檔是 `restore()`（把那個存檔的旗標放回來），
      兩者是不同的事 —— 讀檔之後該演的劇情自然會演，因為那個存檔就還沒演過。 */
 export function newRun(){
-  for(const k of [K.stage, K.flags, K.affection, K.affFloor, K.name]) {
+  for(const k of [K.stage, K.flags, K.affection, K.affFloor, K.name, K.nick]) {
     try{ localStorage.removeItem(k); }catch(e){}
   }
   /* 其他模組自己的存檔。⚠ 這裡列出來就是「它屬於一輪遊戲」的宣告 ——
@@ -162,7 +171,7 @@ export function runRestore(s){
 /* ── 整包讀寫（存讀檔用）── */
 export function snapshot(){
   return { stage:getStage(), flags:getFlags(), affection:getAffection(),
-           affFloor:getFloors(), player:getPlayerName() };
+           affFloor:getFloors(), player:getPlayerName(), nick:getPlayerNick() };
 }
 export function restore(s){
   if(!s) return;
@@ -171,4 +180,5 @@ export function restore(s){
   if(s.affection)       setAffection(s.affection);
   if(s.affFloor)        wr(K.affFloor, JSON.stringify(s.affFloor));
   if(s.player)          setPlayerName(s.player);
+  if(s.nick)            setPlayerNick(s.nick);
 }

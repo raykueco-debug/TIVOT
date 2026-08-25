@@ -26,9 +26,19 @@ const $ = id => document.getElementById(id);
 
 /* 旗標。⚠ 名字要與 `progress.newRun()` 清掉的那一組同源（flags 整組清，所以不必列名）。 */
 const F_WAIT  = 'inn_wait';    // 分支二演完＝諾薇兒去休息了，玩家在等蕾娜
-const F_RENNA = 'inn_renna';   // 蕾娜回來、道過晚安了
+const F_RENNA = 'inn_renna';   // 蕾娜回來、碰到了、道過晚安
+const F_MISS  = 'inn_missed';  // 過了時間才回來 → 她已經在房裡，碰不到
 
-const SIT_HOURS = 2;           // 「獨自坐坐」過掉的時間（Ray：「時間經過兩小時」）
+/* ══ 蕾娜的回店時刻（ver -395，Ray 交稿）══════════════════════════════
+   「獨自坐坐會自動將時間推至 8 點；如果玩家選擇走出旅店，在 8~9 點時進去仍碰得到蕾娜，
+     有碰到的話好感 +1，沒碰到的話蕾娜就已經在房內了。」
+   ⚠ 8 點＝**晚上八點**（20:00）：城裡的店也是這個時間打烊，她辦完事回來剛好。
+   ⚠ 所以「獨自坐坐」不是加固定時數，是**把時鐘推到 20:00**（已經過了就不動）。
+   ⚠ 錯過（≥21:00 才進來）是**記旗標**的，不是每次看時鐘算 —— 隔天早上時鐘又會小於 21，
+     不記的話她會「重新出現在大廳等你」。 */
+const RENNA_BACK = 20;         // 她回到旅店的時刻
+const RENNA_GONE = 21;         // 過了就回房了（碰不到）
+const AFF_MEET   = 1;          // 碰到她：好感 +1（Ray 指定）
 const FADE_MS   = 520;         // 暗去／亮起各一段
 
 /* 四個門位。⚠ **格數固定四格**（Ray：「共有四人，留出適當空間。目前只有一人」）——
@@ -44,7 +54,7 @@ export function setup(api){ host = api || null; }
 
 /* ══ 進度 ══ 由旗標推出來，不另存狀態（讀檔回來才對得上）。 */
 function stage(){
-  if(prog.hasFlag(F_RENNA)) return 'slept';
+  if(prog.hasFlag(F_RENNA) || prog.hasFlag(F_MISS)) return 'slept';
   if(prog.hasFlag(F_WAIT))  return 'wait';
   return 'none';
 }
@@ -116,8 +126,10 @@ function refresh(){
   relayout();
   /* 教學提示（Ray 稿上的兩句舞台指示）。⚠ 只在該做那件事的時候出現，不常駐。 */
   const hint = layer.querySelector('.inn-hint');
+  /* ⚠ **不要寫「敲敲伙伴的門」**（ver -395，Ray 指定）—— 敲門是玩家自己會去試的事，
+     寫出來反而像在派任務。這一行只留「現在該做什麼」。 */
   if(hint) hint.textContent =
-      st==='wait'  ? '敲敲伙伴的門，或坐下來消磨時間。'
+      st==='wait'  ? '坐下來消磨時間吧。'
     : st==='slept' ? '大家都睡了。回房休息吧。'
     : '';
   layer.classList.toggle('on', st!=='none');
@@ -135,7 +147,7 @@ function knock(i){
   if(host && host.say) host.say(line, (SPEAKERS[who]||{}).name || '');
 }
 
-/* ══ 獨自坐坐 ══ 暗去 → 過兩小時 → 亮起 → 蕾娜回來那一幕。 */
+/* ══ 獨自坐坐 ══ 暗去 → 時鐘推到 20:00 → 亮起 → 蕾娜回來那一幕。 */
 let busy = false;
 function sitAlone(){
   if(busy || stage()!=='wait') return;
@@ -146,22 +158,30 @@ function sitAlone(){
   const veil = layer.querySelector('.inn-veil');
   veil.classList.add('on');
   setTimeout(()=>{
-    clock.advance(SIT_HOURS*60);          // 時間是資源：坐著也要花掉
+    /* ⚠ 推到 20:00，不是加固定時數（Ray：「自動將時間推至 8 點」）。
+       已經過 20:00 才坐下就不動時鐘 —— 時間只能往前，不能倒退。 */
+    const mins = Math.max(0, Math.round((RENNA_BACK - clock.hourF())*60));
+    if(mins>0) clock.advance(mins);
     refresh();
     veil.classList.remove('on');
-    setTimeout(()=>{
-      const lines = (node && node.innRenna) || [];
-      if(!lines.length){ finishRenna(); return; }
-      /* ⚠ 蕾娜站**右**：這一段她與玩家對話，台上只有她一個人，但沿用城鎮那一幕的
-         整幕覆寫比較不會與日後多人同台打架（§6.5 的固定站位）。 */
-      if(host && host.play) host.play(lines, finishRenna, { sides:{ RENNA:'R' } });
-      else finishRenna();
-    }, FADE_MS);
+    setTimeout(()=>playRenna(), FADE_MS);
   }, FADE_MS);
+}
+/* 蕾娜回來那一幕。⚠ 兩條路都走這一支（坐著等到她、或走出去 20~21 點回來撞見），
+   所以好感也只在這裡加一次（鐵律 8）。 */
+function playRenna(){
+  busy = true;
+  if(host && host.lock) host.lock(true);
+  const lines = (node && node.innRenna) || [];
+  if(!lines.length || !host || !host.play){ finishRenna(); return; }
+  /* ⚠ 蕾娜站**右**：這一段她與玩家對話，台上只有她一個人，但沿用城鎮那一幕的
+     整幕覆寫比較不會與日後多人同台打架（§6.5 的固定站位）。 */
+  host.play(lines, finishRenna, { sides:{ RENNA:'R' } });
 }
 function finishRenna(){
   story.clearCast();
   prog.addFlags([F_RENNA]);
+  prog.addAffection('renna', AFF_MEET);     // 碰到她：好感 +1（Ray 指定）
   busy = false;
   if(host && host.lock) host.lock(false);
   refresh();
@@ -194,6 +214,15 @@ export function arrive(n, ctx){
       refresh();
     });
     return;
+  }
+  /* ══ 走出旅店再回來的那條路（ver -395）══
+       20:00~21:00 進來 → **撞見她**（好感 +1）
+       ≥21:00 進來    → 她已經回房了（記旗標，隔天時鐘小於 21 也不會又冒出來）
+     ⚠ 這一段要在**進場對白之後**才判 —— 分支二那幾句還沒演完就先讓蕾娜上台會疊在一起。 */
+  if(stage()==='wait'){
+    const h = clock.hourF();
+    if(h >= RENNA_GONE){ prog.addFlags([F_MISS]); refresh(); return; }
+    if(h >= RENNA_BACK){ refresh(); playRenna(); return; }
   }
   refresh();
 }

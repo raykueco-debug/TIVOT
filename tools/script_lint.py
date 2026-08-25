@@ -121,6 +121,9 @@ def main():
                     err('%s：goto 指到這一段裡沒有的 label：%s' % (tag, ln['goto']))
                 continue                      # 控制拍，不帶演出
 
+            # 輸入主角名的閘門（ver -395）：沒有台詞也沒有 speaker，不必驗演出欄位。
+            if ln.get('nameInput'):
+                continue
             if ln.get('load'):
                 if ln['load'] not in script:
                     err('%s：load 指到不存在的場景 %s' % (tag, ln['load']))
