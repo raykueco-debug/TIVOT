@@ -1466,6 +1466,14 @@
     z-index:8200;background:#05060c;display:none;}
   #flightFrame.on{display:block;}
   body.flight-on #muteBtn{display:none;}
+  /* ⚠⚠ **飛行畫面開著時要把劇情層藏起來**（ver -428，Ray 回報「準備出航之後沒有成功
+     進到飛行頁面，卡插圖」）。原因就是上面那一條：iframe 是 8200、劇情層是 8300 ——
+     從**城鎮／劇情**出航時劇情層是開著的，於是玩家看到的是那張船的插圖蓋在飛行畫面上。
+     ⚠ **不要改 z-index 去解**：8200 < 8300 是刻意的（交棒那一刻槍棺要蓋在飛行畫面之上）。
+     ⚠⚠ 用 `visibility` **不要用 `display:none`**：交棒時 `showKerbGate()` 是在收 iframe
+       **之前**擺門的，那時這一層還藏著 —— `display:none` 量到 0×0，整組門的幾何就毀了
+       （§6.5.4「量 rect 之前先確認那個東西真的顯示著」的另一面：visibility 照樣有 box）。 */
+  body.flight-on #storyStage{visibility:hidden;}
 
   /* ── 飛行頁交棒過來時的「開棺」提示（ver -387）─────────────────────
      這條路徑沒有讀取遮罩：畫面上就是蓋滿螢幕的槍棺，讀取藏在門背後跑。

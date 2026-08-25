@@ -1559,6 +1559,14 @@ function renderLine(){
        `config.loadingHost.flag` 當場判的（`set_sail` → 蕾娜）。寫在後面的話
        那一頁已經決定好說明者了，這一趟還是芙蕾雅。 */
     applyPersist(line);
+    /* ⚠⚠ **走之前把插圖清掉**（ver -428）：插圖是**持續狀態**（§6.5）——
+       不清的話飛行頁一收（按返回／打完回來）畫面上就是那張船的插圖卡在城鎮前面。
+       這一拍之後劇情就結束了，清場是**這一拍**的責任，不要求腳本記得寫 `cg:null`
+       （鐵律 8：一個動作一支實作）。
+       ⚠ 不走 `cgFade`：那要 CG_FADE_MS 才收得掉，而下一格畫面就是飛行頁的讀取頁 ——
+         直接拿掉最乾淨（Ray：「用加載頁洗掉」）。 */
+    flushCgFade(); stageCg=null; setImg($('storyCg'), '');
+    clearCast(); hideBubble();
     if(flightOpener){ endScene(); try{ flightOpener(line.goFlight); }catch(_){} return; }
     console.info('[story] 沒有註冊飛行頁開啟器，跳過 goFlight');
     return advance();
