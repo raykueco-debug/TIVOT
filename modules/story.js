@@ -1129,6 +1129,7 @@ function layoutKerberos(){
     /* 高光的遮罩＝**吊墜自己那張圖**（鐵律 7：路徑只有 `KERB_DIR` 這一份）。 */
     const pdw=$('kerbPend');
     if(pdw) pdw.style.setProperty('--kp-mask', 'url("'+KERB_DIR+'kerberos_pendant.webp")');
+    bindPend();
     for(const k of KERB_ARROWS){ const a=kb.querySelector('.kerb-arrow.'+k); if(a) a.src=KERB_DIR+'kerberos_arrow.webp'; }
     for(const k of KERB_RIVETS){ const r=kb.querySelector('.kerb-rivet.'+k); if(r) r.src=KERB_DIR+'kerberos_rivet.webp'; }
   }
@@ -1140,6 +1141,18 @@ function layoutKerberos(){
    ⚠ `amp` 是「這一下有多重」—— 撞頂最重、開關門次之、起步最輕。
    ⚠ 要 reflow（`void offsetWidth`）才重播得動：同一個 class 再加一次，
      瀏覽器不會重新開始動畫。 */
+/* 吊墜按下去 ＝ 開整備頁（換搭檔／換副武器）。
+   ⚠ 綁一次就好（`__bound`）：`layoutKerberos` 每次 resize 都會跑。
+   ⚠ 推棺之後不能按（CSS 的 `#kerb.rise #kerbPend`），與齒輪同一條規矩。 */
+function bindPend(){
+  const pd=$('kerbPend'); if(!pd || pd.__bound) return;
+  pd.__bound=true;
+  pd.addEventListener('click', e=>{ e.stopPropagation();
+    try{ SFX.unlock(); }catch(_){}
+    if(prepOpener) prepOpener();
+  });
+}
+
 export function kerbPendSwing(amp, dur){
   const pd=$('kerbPend'); if(!pd) return;
   const sw=pd.querySelector('.kp-swing'); if(!sw) return;
@@ -1960,6 +1973,9 @@ export function close(opts){
 /* 城鎮的收場器（注入，同 `setTownOpener`）。 */
 let townCloser=null;
 export function setTownCloser(fn){ townCloser=fn; }
+/* 點吊墜 → 整備頁（ver -421，Ray 指定）。⚠ 由 main.js 注入：劇情層不認識啟動層。 */
+let prepOpener=null;
+export function setPrepOpener(fn){ prepOpener=fn; }
 
 /* ══ 「回到主選單」（ver -398）══════════════════════════════════════════
    ⚠⚠ **只收劇情層是不夠的**（Ray 回報「回到主選單的畫面一直變成試玩版戰鬥畫面」）：

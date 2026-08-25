@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.25-420';
+export const VERSION = 'ver 2026.08.26-421';
 
 export const GAME_CONFIG = {
 
@@ -866,8 +866,15 @@ export const GAME_CONFIG = {
          —— 對腳本而言「超時」與「打輸了」是同一件事，共用那條分歧路（鐵律 8）。
        ⚠ `record:'range'` 是既有機制（`modules/inspector.js` 的 `scriptSettle`）：
          存這一場自己的最佳用時、破了就掛 New Record —— 不必另寫一套。 */
+    /* ⚠⚠ `prizeSec` / `prize`（ver -421，Ray：「30 秒內清完槍店的靶送你一支龍息」）：
+         **破了紀錄就給獎品**，而店主台詞裡說的「目前最佳紀錄」就是這個數字 ——
+         兩邊同源（`script/town.js` 的台詞由 `rangeParText()` 產生），改這裡台詞跟著改。
+       ⚠ 與 `parSec` 是兩條線：`parSec`（50）＝**沒過關**的分歧；
+         `prizeSec`（30）＝**拿獎品**的門檻。中間那一段是「過關但沒獎品」。
+       ⚠ 已經有那把槍就不再給（見 inspector.scriptSettle）。 */
     range_trainee: { enemy:'dart_target', record:'range',
-                     timeAttack:{ wrongPenaltySec:3, se:'se_dart_fail', parSec:50 } },
+                     timeAttack:{ wrongPenaltySec:3, se:'se_dart_fail', parSec:50,
+                                  prizeSec:30, prize:'Shotgun_Dragon' } },
     /* ══ 飛行頁的遭遇戰（ver -382）══ 怪撞上船 → 跳來這一頁打舒爾特盤。
        ⚠⚠ 三隻怪的**敵人卡 Ray 還沒給**，所以現在**一律先借巨型聖徒**跑流程
          （同打靶先用訓練用聖徒的作法）。卡到位之後只要改 `enemy` 這一欄。

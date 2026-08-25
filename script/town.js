@@ -213,6 +213,12 @@ export const TOWNS = {
                但**超過 50 秒算沒過關**（`config.battles.range_trainee` 的 `parSec`），
                走的就是下面 `range_lose` 這一支（與打輸共用同一條分歧路）。 */
           Object.assign(gun(null,'好！那邊那個靶，儘管打。'), { label:'range_yes' }),
+          /* ⚠⚠ 「三十秒」是 `config.battles.range_trainee.timeAttack.prizeSec`
+             （ver -421，Ray：「讓槍店老闆在台詞中提出目前最佳紀錄是 30 秒，
+             能突破的話可以得到獎品」）。**改那個數字要改這一句**（兩邊註解互指）——
+             獎品也是卡上的 `prize`（現在是短板霰彈槍「龍息」）。 */
+          gun(null,'先說好，聯盟這一區的最佳紀錄是三十秒。'),
+          gun(null,'破得了的話，牆上那支短板霰彈槍「龍息」就是你的。'),
           { battle:'range_trainee', onLose:'range_lose' },
           /* —— 過關（50 秒內）—— */
           gun(null,'了不起，我們槍匠聯盟都會為您這種身手不凡的客人提供特別客製服務。'),
@@ -243,6 +249,9 @@ export const TOWNS = {
            ⚠ 超過標準時間走 `retry_lose`，與劇情那一次共用同一條分歧路。 */
         challengeLines:[
           gun(null,'又想活動筋骨了？靶就在那兒。', { portrait:{ char:'GUNSMITH', show:true } }),
+          /* ⚠ 同上：三十秒＝`prizeSec`，獎品＝`prize`。獎品只給一次（已持有就不再發，
+             見 `modules/inspector.js` 的 `scriptSettle`），所以這一句寫成「還在檯面上」。 */
+          gun(null,'三十秒。破得了，「龍息」歸你。'),
           { battle:'range_trainee', onLose:'retry_lose' },
           gun(null,'漂亮。這才是我想看的手。'),
           { goto:'retry_end' },

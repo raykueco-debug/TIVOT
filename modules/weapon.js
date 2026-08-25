@@ -526,6 +526,11 @@ function weaponKeys(){
   const ks=inv.ownedWeapons();
   return ks.length ? ks : Object.keys(WEAPONS).slice(0,1);   // 保險：至少留一把，不讓整備頁變空
 }
+/* 這一次開整備頁是**本篇**還是試玩版的出陣（ver -421）。
+   ⚠ 兩套數值（§6.5.3）：試玩版的出陣整備顯示 `weapons[key]` 本體，
+     本篇（點吊墜開的那一頁）顯示 `story:{…}` 覆寫過的那一組。 */
+let prepStory = false;
+export function setPrepStory(v){ prepStory = !!v; }
 let wsIndex = 0;          // 目前展示中的武器 index
 let wsBound = false;      // 手勢/按鈕只綁一次
 
@@ -586,9 +591,9 @@ function renderWeaponSheet(){
   set('wsName', w.name || key);
   /* ⚠ 規格文字是**算出來的**（ver -377，見 config.weaponDescText）——
      不要改回手寫，數值一動文案就會對不上（鐵律 7）。 */
-  /* ⚠ 這一頁是**試玩版的出陣整備**，所以顯示試玩版那一組數值（ver -378）。
-     日後本篇如果有自己的裝備畫面，那一頁要傳 `true`。 */
-  set('wsDesc', weaponDescText(key, false));
+  /* ⚠ 顯示哪一組數值看**這一次是從哪裡開的**（ver -421）：試玩版的出陣整備走本體，
+     本篇（點吊墜開的整備頁）走 `story:{…}` 覆寫（§6.5.3）。 */
+  set('wsDesc', weaponDescText(key, prepStory));
   set('wsStats', '');   // 規格已整合進 desc（反擊效果/減傷/暴擊率 多行文案），不再另列
   const dots=$('wsDots');
   if(dots){

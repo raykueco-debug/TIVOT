@@ -1505,7 +1505,8 @@
      藏掉的話這條路徑（船戰交棒過來的那一場）**只剩小齒輪在轉**，看起來就像大齒輪
      憑空縮小了（Ray 回報「開棺轉動時會變小齒輪」）。齒輪要留著轉，只是不能按 ——
      這條路徑背後沒有劇情可回，按下去會讓玩家從儀式裡逃走。 */
-  #storyStage.kerb-gate #storyExit{pointer-events:none !important;}
+  #storyStage.kerb-gate #storyExit,
+  #storyStage.kerb-gate #kerbPend{pointer-events:none !important;}
 
   /* 門在開的那一刻，舞台其餘的東西都要讓開（縫裡要露出底下的戰鬥畫面）。 */
   #storyStage.kerb-open{background:transparent;}
@@ -1716,7 +1717,7 @@
     transition:transform .9s cubic-bezier(.7,0,.3,1);}
   /* ⚠ 推上之後就**不能按**了（接下來是戰鬥）：ver -405 是把鈕滑出去，
      現在它是門的一部分不能滑走 —— 改成只鎖住點擊，畫面上它還要繼續轉給人看。 */
-  #kerb.rise #storyExit{pointer-events:none;}
+  #kerb.rise #storyExit,#kerb.rise #kerbPend{pointer-events:none;}
   /* 偶爾反一下光（同吊墜，Ray：「大尺輪跟吊飾一樣偶爾有閃光」）。 */
   #storyExit .ke-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.8;
@@ -2120,7 +2121,10 @@
      ⚠ 關門那一拍要靠 `kerb-shut` 把門的曲線借過來 —— 拿掉 `.open` 之後
        `#kerb.open #kerbPend` 就不適用了，它會掉回自己的基準曲線、與門脫節
        （ver -389 紋章踩過的同一個坑）。 */
-  #kerbPend{position:absolute;pointer-events:none;will-change:transform;
+  /* ⚠ 吊墜**可以點**（ver -421，Ray：「點擊吊飾時進入整備畫面」）——
+     它與齒輪是槍棺上的兩顆功能鍵：左邊整備、右邊選單。
+     ⚠ 推棺之後就不能按（下面那條），與齒輪同一條規矩：接下來是戰鬥。 */
+  #kerbPend{position:absolute;pointer-events:auto;cursor:pointer;will-change:transform;
     transform:translateX(0);
     transition:transform .9s cubic-bezier(.34,1.2,.5,1);}
   #kerb.open #kerbPend{transform:translateX(calc(var(--kerb-open-x) * -1));
@@ -2171,3 +2175,13 @@
     92% {transform:rotate(calc(var(--kp-amp,14deg) * 0.05));}
     100%{transform:rotate(0deg);}
   }
+
+  /* ── 本篇的整備頁：抬到劇情層之上（ver -421）───────────────────────
+     ⚠⚠ 整備頁與它的兩張選擇畫面本來是**首頁的東西**（`#app` 裡的 z-55／z-60）——
+       從劇情層（`#storyStage` z-8300）點吊墜叫出來的話，它們會被壓在底下，
+       畫面上什麼都不會發生。開在劇情上時要 `position:fixed` ＋ 抬到 8300 之上。
+     ⚠ 只在 `body.prep-over` 時抬（由 `main.js` 的 `openPrep({story:true})` 掛）——
+       試玩版的出陣流程不能動：那一頁是蓋在 `#home` 上的，抬上去反而會蓋到別的東西。
+     ⚠ 上限：低於拾得視窗（9600）與選單（9500）。 */
+  body.prep-over #prepSheet{position:fixed;z-index:8400;}
+  body.prep-over #weaponSheet,body.prep-over #partnerSheet{position:fixed;z-index:8420;}

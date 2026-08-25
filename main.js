@@ -671,10 +671,21 @@ function goldSparkRise(){
   setTimeout(()=>{ if(layer.parentNode) layer.remove(); }, 3400);
 }
 let prepCloseTimer=null, prepVisTimer=null;
-function openPrep(){
+let prepStoryMode=false;      // 這一次是本篇的整備（點吊墜開的），不是試玩版的出陣
+/* `opts.story` ＝ 本篇的整備頁（ver -421，Ray：「點擊吊飾時進入整備畫面」）。
+   ⚠ 差別只有三件：標題、底部那顆鈕的字與行為（不出陣，按了就關）、
+     以及武器規格顯示**本篇**那一組數值（§6.5.3）。版面共用同一頁，不另做一個。 */
+function openPrep(opts){
+  prepStoryMode = !!(opts && opts.story);
+  weapon.setPrepStory(prepStoryMode);
   // 出陣 stinger：SI_01（音效在第一段就全部載完 → 即點即響）
   SFX.play(asset('sfx_saint'));
   weapon.refreshLoadoutLabels();
+  /* ⚠ 開在劇情層上時要把整備頁抬起來（見 style.css 的 `body.prep-over`）。 */
+  document.body.classList.toggle('prep-over', prepStoryMode);
+  const ti=$('prepTitle'), go=$('prepGo');
+  if(ti) ti.textContent = prepStoryMode ? '整　備' : '出擊整備';
+  if(go) go.textContent = prepStoryMode ? '完　成' : '執　槍';
   const s=$('prepSheet'); if(!s) return;
   clearTimeout(prepCloseTimer);
   s.classList.add('on');
@@ -684,6 +695,7 @@ function openPrep(){
   goldSparkRise();   // 轉場：下方飄起金色光點
 }
 function closePrep(){
+  document.body.classList.remove('prep-over');
   const s=$('prepSheet'); if(!s) return;
   clearTimeout(prepVisTimer);   // 開後極速關（30ms 內）：取消待掛的 vis，防淡入晚到把頁面蓋回來
   s.classList.remove('vis');    // 先淡出
@@ -698,7 +710,11 @@ bindBtn('startBtn', ()=>{
 // 教學「跳過」確認按「是」的去向：轉進出擊整備頁（openPrep 內播 SI_01）
 tutorial.setMenuApi({ openPrep });
 bindBtn('prepBack', closePrep);
-bindBtn('prepGo', ()=>{ closePrep(); launchBattle(); });
+/* ⚠ 本篇的整備頁按下去只是**關掉**（那裡不是出陣口）—— 這一顆是同一個 DOM，
+   所以行為要看 `prepStoryMode`，不要另做一顆鈕（鐵律 8）。 */
+bindBtn('prepGo', ()=>{ const st=prepStoryMode; closePrep(); if(!st) launchBattle(); });
+/* 劇情層（槍棺上的吊墜）開整備頁：story 不 import main，所以用注入。 */
+story.setPrepOpener(()=>openPrep({ story:true }));
 // 首頁「教學」鈕：強制下一場進教學（不動已看旗標），不經整備頁直接出陣
 bindBtn('tutorialBtn', ()=>{ tutorial.requestReplay(); launchBattle(); });
 

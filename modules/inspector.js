@@ -21,6 +21,7 @@
 
 import { GAME_CONFIG, asset, bgmVol, sfxGain } from '../config.js';
 import { showLoot } from './loot.js';
+import * as inv from '../script/inventory.js';   // 破紀錄的獎品要先問「是不是已經有了」
 import { state } from '../state.js';
 import { SFX } from '../audio.js';   // Boss BGM 於「再度執槍（S 解鎖）」瞬間起播
 import { L, fmt, decorateLine } from '../i18n.js';   // 多語言（結算標題/數據列/按鈕/台詞關鍵字）
@@ -394,6 +395,14 @@ function scriptSettle(totalTime, stats){
        一般的劇情插入戰打一次就過去了，記它沒有意義。
      ⚠ 紀錄的是**通關用時**（越短越好），與一般戰鬥的最佳總用時同一把尺。 */
   const bt = (GAME_CONFIG.battles||{})[state.scriptBattleId] || {};
+  /* ══ 破紀錄的獎品（ver -421，Ray：「30 秒內清完槍店的靶送你一支龍息」）══
+     ⚠ 門檻與獎品都在戰鬥卡上（`timeAttack.prizeSec` / `prize`）—— 這裡只負責發，
+       不寫死是哪一場、也不寫死是哪把槍（鐵律 1）。
+     ⚠ **已經有了就不再給**：那是一把槍不是消耗品，重複拿沒有意義。
+     ⚠ 走既有的「拾得」那一條（`_lootPending`）—— 入袋、彈窗、音效全部沿用（鐵律 8）。 */
+  const ta = bt.timeAttack || {};
+  let prize = null;
+  if(ta.prize && ta.prizeSec>0 && totalTime < ta.prizeSec && !inv.hasWeapon(ta.prize)) prize = ta.prize;
   if(bt.record){
     const prev = loadBestTotal(bt.record);
     const isRec = (prev==null) || (totalTime < prev);
@@ -410,6 +419,7 @@ function scriptSettle(totalTime, stats){
   /* 掉落：卡上的 `loot`（固定）＋ `money.hpRatio`（HP 的幾成，隨機）。
      ⚠ 與教學同一個手感：**點畫面才彈**，不自動蓋掉戰績。 */
   const loot = (en.loot||[]).slice();
+  if(prize) loot.push({ id:prize, n:1 });
   let money = 0;
   const mr = en.money && en.money.hpRatio;
   if(mr){
