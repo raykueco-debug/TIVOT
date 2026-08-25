@@ -129,8 +129,16 @@ function ensureLayer(){
     + '</div>'
     /* ⚠ 兩顆鈕**各自定位在背景的家具上**（ver -394）：位置由 `relayout()` 依
        `innSpots` 換算後寫 inline，所以這裡不需要一個排版用的容器。 */
-    +   '<button class="inn-btn" data-act="sit" type="button">獨自坐坐</button>'
-    +   '<button class="inn-btn" data-act="sleep" type="button">回房睡覺</button>'
+    /* ⚠⚠ 兩顆鈕要**一眼看得出不是同一組**（ver -407，Ray：「兩顆都留，但擺開／改樣式」）：
+       它們的份量差很多 —— 一個是消磨兩小時，一個是結束今天並存檔。
+       作法是①各帶一行**時間成本**（時間是資源，按之前就該看得到代價）、
+       ②睡覺那顆走實心的「主要動作」樣式、③位置拉到對角（見 script/town.js 的 innSpots）。
+       ⚠ 成本那一行的字**寫在這裡**而不是資料上：它是那顆鈕的行為說明（`SIT_MIN` /
+         `WAKE_HOUR` 就在這一支），不是內容 —— 改常數就要改字，放在一起才不會走鐘。 */
+    +   '<button class="inn-btn" data-act="sit" type="button">'
+    +     '<b>獨自坐坐</b><i>消磨 '+(SIT_MIN/60)+' 小時</i></button>'
+    +   '<button class="inn-btn primary" data-act="sleep" type="button">'
+    +     '<b>回房睡覺</b><i>到隔日 '+WAKE_HOUR+':00・存檔</i></button>'
     /* ⚠ 常駐的雪鐵龍箭與說明**都撤掉了**（ver -401 撤說明、-402 撤箭，
        Ray：「說明都是一次性的」「雪鐵龍箭也都是一次性說明」）——
        箭與文字現在都只在下面 `.inn-guide` 那個一次性遮罩裡出現一次。 */
@@ -384,12 +392,32 @@ let wantSit=false, wantSleep=false;
 export function relayout(){
   if(!layer) return;
   const spots = (node && node.innSpots) || {};
+  /* 伙伴門那一排是**貼著畫面右緣**的（CSS 定位），而兩顆行動鈕是**貼著背景圖**的
+     （`bgPoint`，會隨機器長寬比在圖上滑動）—— 兩套座標系，所以要真的量一次才知道會不會撞。
+     ⚠ 回傳門欄的左緣（沒有門就回 null）。 */
+  const doorLeft=()=>{
+    const ds=[...layer.querySelectorAll('.inn-door')].filter(d=>!d.classList.contains('empty'));
+    if(!ds.length) return null;
+    return Math.min(...ds.map(d=>d.getBoundingClientRect().left));
+  };
   const put=(sel, want, sp)=>{
     const b=layer.querySelector(sel); if(!b) return;
     const p = (want && sp && host && host.bgPoint) ? host.bgPoint(sp.x, sp.y) : null;
     if(!p){ b.classList.remove('on'); return; }
     b.style.left=p.x+'px'; b.style.top=p.y+'px';
     b.classList.add('on');
+    /* ⚠⚠ **擺好之後夾一次**（ver -407）：鈕錨在背景圖上、門欄錨在畫面右緣，
+       兩套座標系在不同長寬比的機器上會撞在一起（實測 390×844：睡覺鈕右緣 338、
+       門欄左緣 328 —— 疊了 10px）。夾的是**畫面內** ＋ **不進門欄**。
+       ⚠ 要在 `.on` 之後量：沒顯示的元素量到 0×0（同 §6.5.4 那個字格的坑）。 */
+    const st=story.stageEl(); if(!st) return;
+    const sr=st.getBoundingClientRect(), br=b.getBoundingClientRect();
+    if(!br.width) return;
+    const half=br.width/2;
+    let right = sr.width - half - 8;
+    const dl = doorLeft();
+    if(dl!=null) right = Math.min(right, dl - sr.left - half - 8);
+    b.style.left = Math.min(Math.max(p.x, half+8), Math.max(half+8, right)) + 'px';
   };
   put('[data-act="sit"]',   wantSit,   spots.sit);
   put('[data-act="sleep"]', wantSleep, spots.sleep);
