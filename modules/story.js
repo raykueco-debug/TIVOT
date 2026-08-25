@@ -1173,15 +1173,15 @@ export function playKerberosClose(onDone){
   const se=k=>{ const u=(KERB_SFX[k] ? KERB_SE_DIR+KERB_SFX[k]+'.'+(KERB_SFX_EXT[k]||'m4a') : null);
     if(u) try{ SFX.play(u, 1); }catch(e){} };
   let t=0;
-  /* ① 兩扇合上。⚠ **紋章與左半扇是同一個剛體**（Ray 指定）—— `kerb-shut` 把門的
-     過場曲線借給紋章，不借的話它會掉回自己那條帶回彈的曲線，兩者當場脫節
-     （見 style.css 那一段的說明）。 */
+  /* ① 兩扇合上。⚠ **紋章、箭、鉚釘與左半扇是同一個剛體**（Ray 指定）—— `kerb-shut`
+     把門的過場曲線（與零延遲）借給那三組，不借的話它們會掉回自己那條帶回彈、帶逐顆
+     延遲的曲線，四顆零件先飛回去、門才關上（見 style.css 那一段的說明）。 */
   at(t,()=>{ kb.classList.add('kerb-shut'); kb.classList.remove('open');
              se('clip'); sparkSeam(); });                                   // ① 兩扇合上
   t+=KERB_T.open;
   at(t,()=>{                                                              // ② 紋章轉回並縮小
-    /* ⚠ `kerb-shut` 與 `lift` 一起拿掉：這一拍是紋章自己轉回並縮小，該用它本來那條
-       帶回彈的曲線（借門的曲線只到上一拍為止）。 */
+    /* ⚠ `kerb-shut` 與 `lift` 一起拿掉：接下來兩拍（紋章轉回並縮小、箭與鉚釘依次扣回）
+       各自該用本來那條帶回彈、帶逐顆延遲的曲線 —— 借門的曲線只到上一拍為止。 */
     kb.classList.remove('kerb-shut','lift'); se('clip'); sparkPlate();
     /* ⚠ 副檔名要跟上面那支 `se()` 同一套 —— 寫死 `.mp3` 在 -384 全部轉 m4a 之後就 404 了。 */
     try{ const g=KERB_SE_DIR+KERB_SFX.gear+'.'+(KERB_SFX_EXT.gear||'m4a'); kerbGear=SFX.playCue(g,1); }catch(e){ kerbGear=null; }
