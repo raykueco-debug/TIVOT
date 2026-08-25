@@ -12,10 +12,12 @@
      once:true                對白只播第一次（旗標記在 progress 的 flags）
      shop:'grocery'           這個節點是商店（貨單見 config.shop）
      counter:{x,y,label}      櫃台鈕的位置（**背景圖上的比例**，不是螢幕比例）與字樣
-     kind:'tavern'            **這種地方**的識別（ver -401）。初見劇情的旗標吃它 ——
-                              「第一次走進這種店」才演，別的城的同一種店不重播；
-                              沒看到的話下次回來或到別城的同一種店還看得到。
-                              ⚠ 不寫＝旗標退回「這一城的這一個節點」（劇情專屬的地方）
+     kind:'gunstore'          **這種店**的識別（ver -401；-402 由 Ray 縮到三家）。
+                              寫了它，初見劇情的旗標就是「第一次走進**這種店**」——
+                              在帝都沒看到的，到別的城的同一種店還會演；看過就不再重播。
+                              ⚠⚠ **只有公會／槍店／雜貨舖有**（Ray 指定）。
+                                餐酒館、船塢、行政廳那些是**這一座城自己的戲**：
+                                跳過就跳過了，不會在別的城重現 —— 所以不要給它們 `kind`。
      hours:[開,關]            營業時間（小時，24 制；不寫＝全天）。跨午夜寫 [20,2] 也對
      closed:'…'              打烊時點畫面出現的那一句（沒寫就什麼都不出）
      sail:{flag,blocked}      這個節點的下方是「出航」（見 square）
@@ -81,7 +83,7 @@ export const TOWNS = {
 
       /* ══ 攝政王廣場 ══ 上＝中心區、左＝舊街區、右＝上街區（Ray 指定的三個方向） */
       square: {
-        bg:'Capital_Square', name:'帝都　攝政王廣場', kind:'square',
+        bg:'Capital_Square', name:'帝都　攝政王廣場',
         exits:{ up:'midtown', left:'oldtown', right:'uptown' },
         once:true,
         lines:[ nou('surprise','帝都的攝政王廣場，好壯觀。'),
@@ -105,13 +107,13 @@ export const TOWNS = {
 
       /* ══ 一、中心區 ══ 左＝行政廳、右＝教堂、下＝廣場 */
       midtown: {
-        bg:'Capital_Midtown', name:'帝都　中心區', kind:'midtown',
+        bg:'Capital_Midtown', name:'帝都　中心區',
         exits:{ left:'cityhall', right:'church', down:'square' },
       },
 
       /* (1) 教堂 */
       church: {
-        bg:'Capital_Church', name:'帝都　大教堂', kind:'church',
+        bg:'Capital_Church', name:'帝都　大教堂',
         exits:{ back:'midtown' },
         once:true,
         lines:[
@@ -132,12 +134,13 @@ export const TOWNS = {
           '「比起先皇，達米西安陛下與教廷的關係更緊密了。」',
           '「要不是有騎士團，就連這帝都也會「禍魘」橫行吧？」',
           '「聽說東邊有個小村子整個被「禍魘」吞噬了。啊，神啊！」',
+          '「這「永夜」究竟要持續到什麼時候......該死的夜之魔女！」',
         ],
       },
 
       /* (2) 行政廳 */
       cityhall: {
-        bg:'Capital_Cityhall', name:'帝都　行政廳', kind:'cityhall',
+        bg:'Capital_Cityhall', name:'帝都　行政廳',
         exits:{ back:'midtown' },
         /* ⚠ 蕾娜與諾薇兒**都是左側**（固定站位），這一段兩人同台 → 蕾娜暫時站右
            （§6.5：兩個角色要分左右；與 `capital_square` 那一幕同樣的整幕覆寫）。 */
@@ -174,13 +177,13 @@ export const TOWNS = {
         ],
         /* 路人單句：**政治**線（ver -387）。 */
         chatter:[
-          '「北方的兵役令，議會又把表決推遲了一次。」',
-          '「攝政王殿下半年沒公開露面了，你不覺得奇怪嗎？」',
-          '「瓦爾士那邊加了關稅，商會鬧翻天。」',
+          '「雖然蒼月戰爭結束了，可是帝國海軍又擴編了。」',
+          '「「永夜」之後各國把大部份的軍力都用來確保航線，沒空打仗了吧。」',
+          '「又是「禍魘」嗎？不知道這個帝都守不守得住......」',
           '「文件下個月再來吧，蓋章的那位休假。」',
-          '「教廷插手軍務——十年前這是不可想像的。」',
-          '「小聲點。這裡的牆有耳朵。」',
-          '「預算全砍到護衛艦上了，道路修繕？做夢。」',
+          '「教廷插手軍務——換前任皇帝根本不可能。」',
+          '「小聲點。帝都裡連路燈都有長耳朵。」',
+          '「稅跟物價都越來越高了......這個國家到底怎麼了？」',
         ],
       },
 
@@ -189,10 +192,10 @@ export const TOWNS = {
          ⚠ 背景是 `Capital_Downtown`（Ray 指定）。`Capital_Uptown` 還給上街區 ——
            -371 那次是把兩張圖對調過，現在對回來了。 */
       oldtown: {
-        bg:'Capital_Downtown', name:'帝都　舊街區', kind:'oldtown',
+        bg:'Capital_Downtown', name:'帝都　舊街區',
         exits:{ left:'gunstore', right:'guild', up:'dock', down:'square' },
         lines:[
-          nou('cringe','這地方……有點可怕。'),
+          nou('cringe','這地方……好像很複雜。'),
           nou('surprise','啊，是要去保養武器嗎？'),
           { speaker:'PLAYER', blank:true },
           nou('bigsmile','沒關係，有你在啊。一起逛逛吧。'),
@@ -213,9 +216,9 @@ export const TOWNS = {
         shop:'gunstore', keeperWho:'GUNSMITH',
         /* 櫃台在圖的正中偏上（老槍匠站的那一格）。座標是**這張背景圖上的比例**。 */
         counter:{ x:0.51, y:0.55, label:'櫃　台' },
-        hours:[8,20], closed:'鐵捲門拉下來了。門邊的牌子寫著「八點開門」。',
+        hours:[8,20], closed:'鐵門拉下來了。門邊的牌子寫著「八點開門」。',
         lines:[
-          gun(null,'噢，小哥，你手上那把槍，我有否榮幸……'),
+          gun(null,'噢，客人，你腰上那把槍，我有否榮幸……'),
           /* 空畫面：主角把槍遞過去的那一拍（稿上寫「（空畫面）」）。 */
           { speaker:'PLAYER', text:'', auto:900, hide:['GUNSMITH'] },
           gun(null,'點五〇口徑七……不、八連發半自動，光後座力就能殺人吧！'),
@@ -225,8 +228,8 @@ export const TOWNS = {
           gun(null,'能否讓我開開眼界？', { hide:['NOUVELLE'] }),
           /* ══ 試槍的邀請：**要／不要**（ver -396，Ray 指定）══
              ⚠ 兩個選項的字是**主角的回答**，所以用他的口吻寫（他不出聲，這是他點的頭）。 */
-          { choice:[ { text:'（點頭）那就獻醜了。', goto:'range_yes' },
-                     { text:'（搖頭）下次吧。',     goto:'range_no' } ] },
+          { choice:[ { text:'答應', goto:'range_yes' },
+                     { text:'拒絕',     goto:'range_no' } ] },
           /* —— 答應 ——
              ⚠ 這一場是**計時挑戰**（固定立靶，不攻擊、點錯加 3 秒）——「戰敗」不存在，
                但**超過 50 秒算沒過關**（`config.battles.range_trainee` 的 `parSec`），
@@ -269,21 +272,21 @@ export const TOWNS = {
           Object.assign(gun(null,'隨時歡迎。'), { label:'retry_end' }),
         ],
         keeperRandom:[
-          '黃圈是硬吃，橘圈才是本事。分得清楚，命就長。',
-          '霰彈的橘圈不免傷，是拿傷害換的——近身才划算。',
-          '栓動槍沒有橘圈。要嘛全中，要嘛全挨，自己掂量。',
-          '暴擊是逐發擲的。連發槍穩，單發槍看運氣。',
-          '『禍魘』的殼比人厚。打不穿就別硬打，先想辦法破防。',
-          '改裝一級一級來。跳級的接頭我做不出來，別問。',
+          '黃圈是硬扛、橘圈保命、紅圈才是真本事。分得清楚，命就長。',
+          '霰彈容錯率高，防禦同時也能造成傷害，穩妥的選擇。',
+          '栓動步槍沒有沒有容錯。要嘛全中，要嘛全挨，自己掂量。',
+          '重機槍一梭子彈下去，打中痛點的機會也多了呢。',
+          '『禍魘』可不比人類。本事不夠就躲遠一點吧。',
+          '有不錯的素材就來問問，說不定還能將武器改裝一番。。',
           '素材決定上限。好鋼配好膛線，差一階就是差一階。',
-          '別急著換槍。手上那把改到滿，常常比新槍還順手。',
+          '每把槍都有自己的個性，選自己喜歡的吧。',
         ],
       },
 
       /* ══ 2. 船塢 ══（ver -379，背景 `Capital_Dock_Day` 由 Ray 交件）
          ⚠ 「明天要搭的船」是**下一段主線的伏筆** —— 這一段只有氣氛，沒有機能。 */
       dock: {
-        bg:'Capital_Dock', name:'帝都　船塢', kind:'dock',
+        bg:'Capital_Dock', name:'帝都　船塢',
         exits:{ back:'oldtown' },
         lines:[
           nou('happy','哇，好多船。'),
@@ -305,8 +308,8 @@ export const TOWNS = {
           '「這季節北邊的雲層不能飛，掉下去連骨頭都找不到。」',
           '「法爾登的港封了，貨全積在這裡。」',
           '「銀月山脈那一段有東西出沒，過那裡就飛高一點。」',
-          '「風向轉了，明天出港的都得再等一天。」',
-          '「三號塢那艘新船？聽說是騎士團訂的。」',
+          '「。」',
+          '「三代艦滿天飛，帝都這種舊河港也不合時宜了。」',
           '「跑遠洋的都知道：夜裡別關航燈，關了就再也沒人找得到你。」',
         ],
       },
@@ -359,7 +362,7 @@ export const TOWNS = {
 
       /* 1. 酒館 ⚠ 還沒有背景素材，暫借西區街道那張（見 HANDOFF 的缺口清單）。 */
       tavern: {
-        bg:'Capital_Bistro', name:'帝都　餐酒館', kind:'tavern',
+        bg:'Capital_Bistro', name:'帝都　餐酒館',
         exits:{ back:'uptown' },
         /* 開到午夜（Ray 指定）。⚠ `[8,24]` 的意思是 23:59 還開著、00:00 就關 —— 見
            modules/town.js 的 `isOpenNow`（上界是**不含**的）。 */
@@ -433,7 +436,7 @@ export const TOWNS = {
            （「剛剛才經歷一場死鬥，最後一餐差點就是黑麥麵包配豆子」），
            留在舊街區的話後面那頓飯就沒頭沒尾。要改地方再說。 */
       uptown: {
-        bg:'Capital_Uptown', name:'帝都　上街區', kind:'uptown',
+        bg:'Capital_Uptown', name:'帝都　上街區',
         exits:{ left:'grocery', right:'tavern', up:'inn', down:'square' },
         lines:[
           /* 肚子叫：沒有台詞的一拍（立繪＋音效），停一秒自己走（§6.5）。 */
@@ -455,7 +458,7 @@ export const TOWNS = {
          ⚠ `inn:true` ＝ 這個節點有**旅店大廳**（伙伴門／獨自坐坐／回房睡覺），
            實作在 `modules/inn.js`。 */
       inn: {
-        bg:'Capital_Hotel', name:'帝都　旅店', exits:{ back:'uptown' }, kind:'inn',
+        bg:'Capital_Hotel', name:'帝都　旅店', exits:{ back:'uptown' },
         inn:true,
         /* 兩顆行動鈕擺在**背景裡的家具上**（ver -394，Ray：「獨自坐坐按鈕移到茶桌上，
            回房睡覺移到櫃台桌面上方」）。座標是**背景圖上的比例**，同櫃台鈕

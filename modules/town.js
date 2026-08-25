@@ -469,7 +469,7 @@ export function enter(id){
      ⚠ 沒寫 `kind` 的節點照舊用「這一城的這一個節點」當旗標（劇情專屬的地方）。
      ⚠⚠ 換旗標名等於**舊存檔的那幾段會再演一次** —— 開發期可接受，上線前若要保留
        舊存檔，得在 `progress` 做一次搬遷。 */
-  const flag = n.kind ? ('town_kind_'+n.kind) : ('town_'+townId+'_'+id);
+  const flag = flagOf(n, id);
   const played = prog.hasFlag(flag);
   /* ⚠ **打烊時不播進場對白**（ver -391）：在一間關著的店裡讓店主開口是錯的。
      旗標也不會記，所以那一段會留到下次在營業時間內進來時才播 —— 不會漏掉。 */
@@ -515,9 +515,13 @@ export function enter(id){
 /* 進場對白（或傍晚的提醒）演完之後才成立的事。目前只有旅店大廳。
    ⚠ 兩條路（有對白／沒對白）都要呼叫它 —— 漏一條就是「有時候有大廳、有時候沒有」。 */
 function afterArrive(n){
-  if(n && n.inn) inn.arrive(n, { allSeen: allSeen() });
+  /* ⚠ `introFlag` 由城鎮算好傳進去（ver -402）：旅店已經沒有 `kind` 了，
+     旗標名只有 `enter()` 那一支知道（`kind` 版／節點版兩種）—— inn 自己拼會拼錯城。 */
+  if(n && n.inn) inn.arrive(n, { allSeen: allSeen(), introFlag: flagOf(n, nodeId) });
   else inn.close();
 }
+/* 初見劇情的旗標名。⚠ **只有這一支在決定**（鐵律 7）：`enter()` 與 `afterArrive()` 都問它。 */
+function flagOf(n, id){ return (n && n.kind) ? ('town_kind_'+n.kind) : ('town_'+townId+'_'+id); }
 
 /* 對白裡的好感度加減（`line.aff`）。⚠ 在**播完**時一次記帳：
    中途離開就不算，也不會因為重看而重複（`once` 的段落只播一次）。 */

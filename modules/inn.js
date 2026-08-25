@@ -63,9 +63,8 @@ function stage(){
 /* 旅店的初入對白演過了沒 —— 「獨自坐坐」從那一刻起就能用（ver -401，Ray 指定）。
    ⚠ 問的是**節點自己的旗標**（`kind` 版），與 `stage()` 是兩件事：
      stage 管的是「蕾娜那條線走到哪」，這裡管的是「這個大廳開張了沒」。 */
-function introDone(){
-  return !!(node && prog.hasFlag(node.kind ? ('town_kind_'+node.kind) : 'town_capital_inn'));
-}
+let introFlag=null;                // 旗標名由城鎮傳進來（見 town.afterArrive）
+function introDone(){ return !!(introFlag && prog.hasFlag(introFlag)); }
 
 /* ══ 一次性說明（遮罩＋箭頭）══════════════════════════════════════════
    ⚠ **一次性**（Ray 指定）：旗標記在 progress，看過就不再擋路。
@@ -129,11 +128,9 @@ function ensureLayer(){
        `innSpots` 換算後寫 inline，所以這裡不需要一個排版用的容器。 */
     +   '<button class="inn-btn" data-act="sit" type="button">獨自坐坐</button>'
     +   '<button class="inn-btn" data-act="sleep" type="button">回房睡覺</button>'
-    /* 雪鐵龍箭 ＋ 說明（ver -396，Ray 指定）：指著「回房睡覺」，並說清楚按下去會發生什麼。 */
-    +   '<div class="inn-point"><i></i><i></i></div>'
-    /* ⚠ 常駐的那一行說明於 ver -401 拿掉：Ray 指定「說明都是一次性的」，
-       文字改由 `TIPS.sleep` 那個遮罩演一次。**雪鐵龍箭留著** —— 它不是說明，
-       是「現在該按這個」的指示。 */
+    /* ⚠ 常駐的雪鐵龍箭與說明**都撤掉了**（ver -401 撤說明、-402 撤箭，
+       Ray：「說明都是一次性的」「雪鐵龍箭也都是一次性說明」）——
+       箭與文字現在都只在下面 `.inn-guide` 那個一次性遮罩裡出現一次。 */
     + '<div class="inn-hint"></div>'
     /* 一次性說明（ver -401，Ray：「用遮罩跟箭頭說明…說明都是一次性的」）。
        ⚠ 遮罩壓暗全場、被說明的那顆抬到遮罩之上（`.spot`），箭頭指著它。點一下收掉。 */
@@ -313,6 +310,9 @@ function sleepHere(){
 /* ══ 進旅店 ══ 由 `modules/town.js` 的 `afterArrive` 呼叫（進場對白演完之後）。 */
 export function arrive(n, ctx){
   node = n;
+  /* ⚠ 旗標名**由城鎮算好傳進來**（ver -402）：旅店已經沒有 `kind` 了，
+     `kind` 版／節點版兩種只有 `town.flagOf()` 知道 —— 自己拼會拼錯城（鐵律 7）。 */
+  introFlag = (ctx && ctx.introFlag) || null;
   ensureLayer();
   /* 分支：**每次進來都判一次**（Ray 的稿子就是這樣寫的）——
      走完城裡所有地點了沒，決定她說哪一句。已經住下了（`wait`／`slept`）就不再演。 */
@@ -364,13 +364,6 @@ export function relayout(){
   put('[data-act="sit"]',   wantSit,   spots.sit);
   put('[data-act="sleep"]', wantSleep, spots.sleep);
   maybeGuide();                      // 鈕剛擺好 → 現在才量得到位置（見 showGuide 的說明）
-  /* 雪鐵龍箭在鈕的**上方**（往下指），說明在鈕的**下方**（那是「按下去會發生什麼」）。
-     ⚠ 偏移量對的是鈕的中心（鈕高 32、`translate(-50%,-50%)`），所以上 34／下 24。 */
-  const p = (wantSleep && spots.sleep && host && host.bgPoint)
-          ? host.bgPoint(spots.sleep.x, spots.sleep.y) : null;
-  const arw=layer.querySelector('.inn-point');
-  if(arw){ arw.classList.toggle('on', !!p);
-    if(p){ arw.style.left=p.x+'px'; arw.style.top=(p.y-34)+'px'; } }
 }
 
 export function close(){
