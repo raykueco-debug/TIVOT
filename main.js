@@ -795,6 +795,7 @@ let storyResume = null;
 /* 關門演出（進場那一套的倒放）：由劇情層提供、combat 在教學打完時呼叫（ver -366）。
    ⚠ 注入而不是 import —— combat 不認識劇情層（CLAUDE.md §2 的依賴方向）。 */
 story.setTownOpener(town.open);   // scene 的 `thenTown` 由 story 呼叫（注入，story 不 import town）
+story.setTownCloser(town.close);  // 「選單」離開劇情層時，城鎮也要一起收（ver -394）
 /* 城鎮的「出航」→ 開飛行頁（注入，town 不 import main；同 setTownOpener 的作法）。 */
 town.setFlightOpener(()=>openFlight());   // 城鎮出航＝「進入」，讀取頁要跑（ver -389）
 combat.setStoryClose(story.playKerberosClose);

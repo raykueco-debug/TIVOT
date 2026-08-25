@@ -76,7 +76,7 @@ function bgFor(base, noTime){
       story.setSceneBg(name);
       /* 櫃台鈕要靠圖的原始比例換算位置（見 placeCounter），所以在這裡記下來 ——
          這一支本來就要載那張圖，不必另外再抓一次（鐵律 7：算的那一支發佈出去）。 */
-      bgNat=[img.naturalWidth, img.naturalHeight]; placeCounter();
+      bgNat=[img.naturalWidth, img.naturalHeight]; placeCounter(); inn.relayout();
       if(i>0 && !missingBg.has(cands[0])){ missingBg.add(cands[0]);
         console.info('[town] 沒有這個時段的背景，退回：', cands[0], '→', name); } };
     img.onerror=()=>{ if(my===bgSeq) tryAt(i+1); };
@@ -168,6 +168,19 @@ function ensureLayer(){
      背景是非同步載進來的，所以在 `bgFor` 載到的那一刻記下來（`bgNat`）。
    ⚠ 量不到圖（還沒載完）就先不擺 —— 擺在錯的地方比晚一拍出現糟得多。 */
 let bgNat=null;              // 目前背景圖的原始尺寸 [w,h]
+/* ⚠⚠ **背景圖上的一點 → 舞台座標，只有這一支**（鐵律 7）：櫃台鈕與旅店的兩顆行動鈕
+   都問它。量不到圖（還沒載完）就回 `null`，呼叫端據此決定「先不要擺」。 */
+export function bgPoint(fx, fy){
+  const st=story.stageEl(), bg=document.getElementById('storyBg');
+  if(!st || !bg || !bgNat) return null;
+  const br=bg.getBoundingClientRect();
+  if(!br.width || !br.height) return null;
+  const sr=st.getBoundingClientRect();
+  const k=Math.max(br.width/bgNat[0], br.height/bgNat[1]);
+  const w=bgNat[0]*k, h=bgNat[1]*k;
+  return { x: br.left-sr.left + (br.width-w)/2 + fx*w,
+           y: br.top -sr.top  + (br.height-h)/2 + fy*h };
+}
 function placeCounter(){
   const b=layer && layer.querySelector('#townCounter'); if(!b) return;
   const n=node();
@@ -176,15 +189,10 @@ function placeCounter(){
                 && (n.shop || (n.board && (!n.boardFlag || prog.hasFlag(n.boardFlag)))));
   /* ⚠ **擺好了才亮**：先 `.on` 再算位置的話，量不到圖那一拍鈕會出現在畫面左上角
      （left/top 還沒寫）—— 一顆定位錯的鈕比晚一拍出現糟得多。 */
-  const st=story.stageEl(), bg=document.getElementById('storyBg');
-  const br=bg ? bg.getBoundingClientRect() : null;
-  if(!on || !st || !bgNat || !br || !br.width || !br.height){ b.classList.remove('on'); return; }
+  const p = on ? bgPoint(n.counter.x, n.counter.y) : null;
+  if(!p){ b.classList.remove('on'); return; }
   b.textContent = n.counter.label || '櫃　台';
-  const sr=st.getBoundingClientRect();
-  const k=Math.max(br.width/bgNat[0], br.height/bgNat[1]);
-  const w=bgNat[0]*k, h=bgNat[1]*k;
-  b.style.left=(br.left-sr.left + (br.width-w)/2 + n.counter.x*w)+'px';
-  b.style.top =(br.top -sr.top  + (br.height-h)/2 + n.counter.y*h)+'px';
+  b.style.left=p.x+'px'; b.style.top=p.y+'px';
   b.classList.add('on');
 }
 /* 櫃台鈕按下去開哪個選單：商店 → 買賣；公會 → 懸賞榜。 */
@@ -569,6 +577,9 @@ inn.setup({
   say(text, name){ story.flashLine(text, name||''); chatterOn=true; },
   lock(on){ busy=!!on; showNav(!on); },
   play(lines, done, opts){ story.playAdhoc(lines, done, opts); },
+  /* 背景圖上的一點 → 舞台座標（旅店的兩顆鈕擺在茶桌／櫃台上，見 `innSpots`）。
+     ⚠ 走**同一支** `bgPoint` —— 櫃台鈕也是它算的（鐵律 7）。 */
+  bgPoint,
 });
 
 export function open(town){

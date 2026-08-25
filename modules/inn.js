@@ -61,10 +61,10 @@ function ensureLayer(){
         +   '<i class="inn-lamp"></i><span class="inn-face"></span>'
         +   '<b class="inn-name"></b></button>').join('')
     + '</div>'
-    + '<div class="inn-acts">'
+    /* ⚠ 兩顆鈕**各自定位在背景的家具上**（ver -394）：位置由 `relayout()` 依
+       `innSpots` 換算後寫 inline，所以這裡不需要一個排版用的容器。 */
     +   '<button class="inn-btn" data-act="sit" type="button">獨自坐坐</button>'
     +   '<button class="inn-btn" data-act="sleep" type="button">回房睡覺</button>'
-    + '</div>'
     + '<div class="inn-hint"></div>'
     + '<div class="inn-veil"></div>';
   st.appendChild(layer);
@@ -111,10 +111,9 @@ function refresh(){
           nm.textContent = (SPEAKERS[who]||{}).name || ''; }
   });
   /* 兩顆鈕各自的出場時機：等蕾娜的那一段才有「獨自坐坐」，她回來之後才有「回房睡覺」。 */
-  const sit   = layer.querySelector('[data-act="sit"]');
-  const sleep = layer.querySelector('[data-act="sleep"]');
-  if(sit)   sit.classList.toggle('on',   st==='wait');
-  if(sleep) sleep.classList.toggle('on', st==='slept');
+  wantSit   = (st==='wait');
+  wantSleep = (st==='slept');
+  relayout();
   /* 教學提示（Ray 稿上的兩句舞台指示）。⚠ 只在該做那件事的時候出現，不常駐。 */
   const hint = layer.querySelector('.inn-hint');
   if(hint) hint.textContent =
@@ -197,6 +196,27 @@ export function arrive(n, ctx){
     return;
   }
   refresh();
+}
+
+/* ══ 把兩顆鈕擺到背景的家具上（ver -394）══
+   ⚠ 座標是**背景圖上的比例**（`innSpots`），換算走城鎮注入的 `bgPoint` ——
+     那是全專案唯一一支「圖上的一點 → 螢幕座標」（鐵律 7）。
+   ⚠ **擺好了才亮**：背景還沒載完時 `bgPoint` 回 null，這時先不要顯示 ——
+     一顆定位錯的鈕比晚一拍出現糟得多（同櫃台鈕的作法）。
+   ⚠ 背景載完（`bgFor` 的 onload）會再呼叫一次，所以晚到的圖也擺得到。 */
+let wantSit=false, wantSleep=false;
+export function relayout(){
+  if(!layer) return;
+  const spots = (node && node.innSpots) || {};
+  const put=(sel, want, sp)=>{
+    const b=layer.querySelector(sel); if(!b) return;
+    const p = (want && sp && host && host.bgPoint) ? host.bgPoint(sp.x, sp.y) : null;
+    if(!p){ b.classList.remove('on'); return; }
+    b.style.left=p.x+'px'; b.style.top=p.y+'px';
+    b.classList.add('on');
+  };
+  put('[data-act="sit"]',   wantSit,   spots.sit);
+  put('[data-act="sleep"]', wantSleep, spots.sleep);
 }
 
 export function close(){

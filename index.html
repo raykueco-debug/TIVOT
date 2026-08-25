@@ -403,7 +403,10 @@
     </div>
   </div>
   <div id="storyTouch"></div>
-  <button id="storyExit" class="corner-btn" aria-label="離開劇情">✕</button>
+  <!-- 「選單」（ver -394，Ray 指定）：由右上角的 ✕ 改成**槍棺右上角的金屬鈕**。
+       ⚠ 位置吃 `--kerb-clip-top` / `--kerb-top-h`（`layoutKerberos` 量出來寫在舞台上）——
+         槍棺多高、楣在哪是**解出來**的，CSS 猜不到（鐵律 7）。 -->
+  <button id="storyExit" class="kerb-btn" aria-label="回到選單">選單</button>
   <!-- 跳段（開發者限定，ver -363）：跳到下一個讀取頁＝下一段的開頭。body.testmode 才出現。 -->
   <button id="storySkip" class="corner-btn" aria-label="跳到下一段">SKIP</button>
   <div id="storyBubble">

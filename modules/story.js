@@ -1713,8 +1713,15 @@ export function close(opts){
     try{ SFX.playBgm(HOME_BGM, {fadeInMs:600, volume:HOME_VOL}); }catch(_){}
   }
   document.body.classList.remove('story-talking');   // ver -385
+  /* ⚠ 城鎮也要一起收（ver -394）：「選單」按下去是**離開這一切**，
+     不收的話 `town.isOpen()` 還是 true、`body.town-nav` 還掛著（羅盤的箭會留在
+     下一次開啟的舞台上發光）。實體由 main.js 注入 —— 劇情層不認識城鎮（§2 的依賴方向）。 */
+  if(townCloser) try{ townCloser(); }catch(_){}
   const cb=onExit; onExit=null; if(cb) cb();
 }
+/* 城鎮的收場器（注入，同 `setTownOpener`）。 */
+let townCloser=null;
+export function setTownCloser(fn){ townCloser=fn; }
 
 /* ══ 給城鎮探索用的三個接口（ver -369）══
    城鎮是**非線性**的（玩家在節點之間走動），不走 MAIN_SCRIPT 的 scene 鏈；

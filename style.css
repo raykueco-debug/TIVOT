@@ -44,8 +44,12 @@
   /* ===== 全域靜音鈕（管理人模式限定）=====
      ⚠ 位置刻意排在右上「第二列」：第一列在首頁是 #langBtn、在戰鬥是 #exitBtn，
        擠同一列必撞其中一個。z-index 壓過載入畫面（99999），讀取中也能按。 */
+  /* ⚠ 靜音鈕在**整個畫面的左上**（ver -394，Ray 指定；原本在右上，那裡讓給了
+     槍棺的「選單」鈕）。⚠ 縱向留在 `notch + 56`：正上方是管理人模式的「清盤」鈕
+     （`#testClearBtn`，top:10 高 44 → 下緣 54），兩顆都是 testmode 限定，
+     擺同一格會疊在一起。 */
   #muteBtn{display:none;position:fixed;z-index:100000;
-    top:calc(var(--notch-bar-h, 0px) + 56px);right:12px;
+    top:calc(var(--notch-bar-h, 0px) + 56px);left:12px;right:auto;
     width:36px;height:36px;padding:0;border-radius:18px;
     background:rgba(10,8,14,.6);border:1px solid var(--gold-dim);color:var(--gold);
     font-family:inherit;font-size:15px;line-height:1;
@@ -1634,7 +1638,28 @@
     100%{transform:translate(0,0);} }
   /* 全畫面推進層：點任何一處推一句（退出鈕除外，它自己 stopPropagation）。 */
   #storyTouch{position:absolute;inset:0;z-index:3;background:transparent;touch-action:none;}
-  #storyExit{position:absolute;z-index:8;top:calc(env(safe-area-inset-top,0px) + 10px);right:12px;}
+  /* ── 「選單」鈕（ver -394，Ray：「返回鈕『X』改成『選單』，做成一個合槍棺風格的
+       金屬鈕放在槍棺的右上角」）────────────────────────────────────────
+     ⚠ 位置錨在**楣的下緣**（`--kerb-clip-top` ＋ `--kerb-top-h`）—— 那兩個變數是
+       `layoutKerberos` 依實際尺寸解出來寫在 `#storyStage` 上的（鐵律 7：問算的那一支）。
+       沒量到之前用與 `#kerb` 同一條退路，免得第一幀跳一下。
+     ⚠ 質感照槍棺：深槍鐵底＋古銅邊＋上緣一道高光、下緣一道陰影（沖壓件的斷面），
+       字用凹刻（深色陰影在上、亮色在下）。與門的鉚釘、箭同一個材質語言。 */
+  #storyExit{position:absolute;z-index:8;right:12px;
+    top:calc(var(--kerb-clip-top, calc(var(--story-top) - var(--kerb-top-h, 0px)))
+             + var(--kerb-top-h, 0px) + 9px);}
+  .kerb-btn{padding:0 13px;height:30px;border-radius:5px;
+    font-family:inherit;font-size:12px;letter-spacing:3px;
+    display:flex;align-items:center;justify-content:center;
+    color:#e6cf96;
+    background:linear-gradient(180deg,#3a3a42 0%,#232329 46%,#17171c 54%,#2b2b31 100%);
+    border:1px solid #6d5a33;
+    box-shadow:inset 0 1px 0 rgba(226,201,142,.34), inset 0 -1px 0 rgba(0,0,0,.75),
+               0 1px 3px rgba(0,0,0,.6);
+    text-shadow:0 -1px 0 rgba(0,0,0,.85), 0 1px 0 rgba(226,201,142,.22);}
+  .kerb-btn:active{transform:translateY(1px);
+    background:linear-gradient(180deg,#23232a 0%,#1a1a20 50%,#2f2f36 100%);
+    box-shadow:inset 0 2px 4px rgba(0,0,0,.8);}
   /* 跳段鈕（開發者限定）：**放在控制面盤左下**（ver -367，Ray 指定）。
      ⚠ 不再與退出鈕同排 —— 上排留給「離開」，面盤那一排是操作區。 */
   #storySkip{position:absolute;z-index:8;top:auto;right:auto;
@@ -1792,12 +1817,16 @@
   #innLobby .inn-door.awake .inn-lamp{background:#f0c469;box-shadow:0 0 7px rgba(240,196,105,.9);}
   #innLobby .inn-door:active{background:rgba(212,169,74,.22);}
 
-  #innLobby .inn-acts{position:absolute;left:0;right:0;bottom:108px;
-    display:flex;justify-content:center;gap:10px;pointer-events:auto;}
-  #innLobby .inn-btn{display:none;padding:0 16px;height:32px;
+  /* ── 行動鈕：**擺在背景的家具上**（ver -394，Ray：「獨自坐坐按鈕移到茶桌上，
+       回房睡覺移到櫃台桌面上方」）─────────────────────────────────────
+     ⚠ 位置由 JS 依 `innSpots`（**背景圖上的比例**）換算後寫 inline —— 走的是
+       櫃台鈕那一支 `bgPoint`（鐵律 7）。這裡只給「以自己的中心對齊那個點」。 */
+  #innLobby .inn-btn{position:absolute;transform:translate(-50%,-50%);
+    display:none;padding:0 16px;height:32px;white-space:nowrap;pointer-events:auto;
     font-family:inherit;font-size:12px;letter-spacing:2px;color:var(--gold);
-    background:rgba(10,8,14,.72);border:1px solid var(--gold-dim);border-radius:16px;}
-  #innLobby .inn-btn.on{display:flex;align-items:center;}
+    background:rgba(10,8,14,.72);border:1px solid var(--gold-dim);border-radius:16px;
+    -webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);}
+  #innLobby .inn-btn.on{display:flex;align-items:center;justify-content:center;}
   #innLobby .inn-btn:active{background:rgba(212,169,74,.22);}
   /* ⚠ 提示壓在背景圖上，而背景什麼顏色都有（旅店的白天大廳是很亮的）——
      用**白字＋不模糊的黑描邊**（同 `#townInfo` 的處理），金字在亮處讀不出來。 */
