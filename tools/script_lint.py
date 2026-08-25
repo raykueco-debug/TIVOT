@@ -343,12 +343,19 @@ def main():
             if not (st.get('lines') or []):
                 err('%s：沒有台詞' % tag)
             for j, ln in enumerate(st.get('lines') or []):
+                # 主角的空白對話框（`blank:true`）：沒有 who、沒有台詞，那是它的定義。
+                if ln.get('blank'):
+                    if ln.get('who') or ln.get('img'):
+                        err('%s.lines[%d]：blank 那一拍不該有 who／img（他沒有立繪）' % (tag, j))
+                    continue
                 who = ln.get('who')
                 if who not in tcast:
                     err('%s.lines[%d]：who「%s」不在 config.tutorial.cast 裡' % (tag, j, who))
                 img = ln.get('img')
                 if img and img not in assets:
                     err('%s.lines[%d]：img「%s」不在 ASSETS 裡' % (tag, j, img))
+                if ln.get('se') and not audio_ok(ln['se'], se_map, se_alias):
+                    err('%s.lines[%d]：沒有這個音效 %s' % (tag, j, ln['se']))
                 if not str(ln.get('text') or '').strip():
                     err('%s.lines[%d]：空台詞' % (tag, j))
 

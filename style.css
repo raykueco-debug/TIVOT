@@ -1065,17 +1065,18 @@
     display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px;padding:0 8px;}
   /* 視窗被裁（iOS 26 standalone）：home indicator 位於不可視死區，安全區墊高全屬白墊 → 拿回 */
   html.vp-clipped #home #homeLinks{bottom:10px;}
-  #home #tutorialBtn, #home #creditBtn, #home #originalBtn, #home #statsBtn, #home #flightBtn, #home #storyBtn, #home #shopBtn{padding:6px 18px;background:transparent;
+  #home #tutorialBtn, #home #creditBtn, #home #originalBtn, #home #statsBtn, #home #flightBtn, #home #storyBtn, #home #shopBtn, #home #chapterBtn{padding:6px 18px;background:transparent;
     border:1px solid var(--gold-dim);border-radius:20px;color:var(--gold-dim);
     font-family:inherit;font-size:11px;letter-spacing:2px;flex:none;}
-  #home #tutorialBtn:active, #home #creditBtn:active, #home #originalBtn:active, #home #statsBtn:active, #home #flightBtn:active, #home #storyBtn:active, #home #shopBtn:active{transform:scale(.95);color:var(--gold);border-color:var(--gold);}
+  #home #tutorialBtn:active, #home #creditBtn:active, #home #originalBtn:active, #home #statsBtn:active, #home #flightBtn:active, #home #storyBtn:active, #home #shopBtn:active, #home #chapterBtn:active{transform:scale(.95);color:var(--gold);border-color:var(--gold);}
   /* 管理人模式限定鈕（後臺／試飛）：預設隱藏，body.testmode 才出現。
      testmode 於開機時由 localStorage 還原（見 main.js adminMode），手勢可再次關閉。 */
   /* ⚠ 商店是**管理人模式限定的臨時入口**（ver -368）：正式的入口是城鎮節點，
      等那個做出來就把這一條拿掉，不要讓玩家從首頁直接開商店。 */
-  #home #statsBtn, #home #flightBtn, #home #storyBtn, #home #shopBtn{display:none;}
+  #home #statsBtn, #home #flightBtn, #home #storyBtn, #home #shopBtn, #home #chapterBtn{display:none;}
   body.testmode #home #statsBtn, body.testmode #home #flightBtn,
-  body.testmode #home #storyBtn, body.testmode #home #shopBtn{display:block;}
+  body.testmode #home #storyBtn, body.testmode #home #shopBtn,
+  body.testmode #home #chapterBtn{display:block;}
   /* 版權：強制換行獨占一行（flex-basis:100%），置中、單行 */
   #home .home-copyright{flex:0 0 100%;text-align:center;margin-top:2px;
     font-size:9.5px;letter-spacing:.5px;color:var(--gold-dim);
@@ -1847,11 +1848,11 @@
     background:rgba(4,3,7,.74);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);
     opacity:0;transition:opacity .22s ease;}
   #gameMenu.on{opacity:1;}
-  #gameMenu .gm-panel{width:100%;max-width:330px;padding:16px 18px 14px;
+  #gameMenu .gm-panel,#chapterSheet .gm-panel{width:100%;max-width:330px;padding:16px 18px 14px;
     background:var(--panel,rgba(14,11,20,.96));
     border:1px solid var(--gold-dim);border-radius:12px;
     box-shadow:0 10px 34px rgba(0,0,0,.6);}
-  #gameMenu .gm-title{text-align:center;font-size:14px;letter-spacing:6px;
+  #gameMenu .gm-title,#chapterSheet .gm-title{text-align:center;font-size:14px;letter-spacing:6px;
     color:var(--gold);margin-bottom:12px;}
   #gameMenu .gm-sec{font-size:10px;letter-spacing:3px;color:var(--gold-dim);
     margin:12px 0 6px;border-bottom:1px solid rgba(212,169,74,.22);padding-bottom:4px;}
@@ -1880,11 +1881,11 @@
   /* 回到主選單的確認頁（ver -398）。⚠ 用面板**換頁**不疊第二層 —— 疊兩層很難點得準。 */
   #gameMenu .gm-warn{margin:14px 2px 2px;font-size:12px;line-height:1.9;text-align:center;
     color:var(--parch,#d8cdb4);}
-  #gameMenu .gm-acts{display:flex;gap:8px;margin-top:14px;}
-  #gameMenu .gm-btn{flex:1;height:36px;font-family:inherit;font-size:12px;letter-spacing:2px;
+  #gameMenu .gm-acts,#chapterSheet .gm-acts{display:flex;gap:8px;margin-top:14px;}
+  #gameMenu .gm-btn,#chapterSheet .gm-btn{flex:1;height:36px;font-family:inherit;font-size:12px;letter-spacing:2px;
     color:var(--gold);background:rgba(10,8,14,.7);
     border:1px solid var(--gold-dim);border-radius:18px;}
-  #gameMenu .gm-btn:active{background:rgba(212,169,74,.22);}
+  #gameMenu .gm-btn:active,#chapterSheet .gm-btn:active{background:rgba(212,169,74,.22);}
 
   /* ── 選項（ver -396）──────────────────────────────────────────────
      ⚠ 蓋在對話框**之上**（z 9800，同取名面板）並吃掉點擊：這一拍是閘門。
@@ -1904,6 +1905,21 @@
      不會直接選下去。 */
   #choiceSheet .ch-opt.sel{background:rgba(212,169,74,.16);border-color:var(--gold);
     box-shadow:0 0 0 1px var(--gold-dim) inset;}
+
+  /* ── 章節（ver -429，管理人限定的跳關）──────────────────────────
+     ⚠ 版面**借選單那一套**（`.gm-panel` / `.gm-title` / `.gm-acts` / `.gm-btn`）——
+       同一種面板不要有第二套樣式，改配色時才不會漏掉一邊。 */
+  #chapterSheet{position:fixed;inset:0;z-index:9500;display:flex;
+    align-items:center;justify-content:center;padding:0 22px;
+    background:rgba(4,3,7,.62);opacity:0;transition:opacity .18s ease;}
+  #chapterSheet.on{opacity:1;}
+  #chapterSheet .ch-row{display:block;width:100%;margin:0 0 8px;padding:11px 14px;
+    font-family:inherit;text-align:left;color:var(--gold);
+    background:rgba(10,8,14,.86);border:1px solid var(--gold-dim);border-radius:10px;}
+  #chapterSheet .ch-row b{display:block;font-size:14px;letter-spacing:3px;font-weight:600;}
+  #chapterSheet .ch-row i{display:block;margin-top:3px;font-size:11px;font-style:normal;
+    letter-spacing:1px;color:rgba(217,198,138,.66);}
+  #chapterSheet .ch-row:active{background:rgba(212,169,74,.2);border-color:var(--gold);}
 
   /* ── 輸入主角名與暱稱（ver -395）──────────────────────────────────
      ⚠ 蓋在**最上層**並吃掉點擊：這一拍是閘門，面板開著時不能點畫面跳過去。

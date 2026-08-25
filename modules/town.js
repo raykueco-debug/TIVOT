@@ -732,6 +732,28 @@ export function enter(id){
 
 /* 進場對白（或傍晚的提醒）演完之後才成立的事。目前只有旅店大廳。
    ⚠ 兩條路（有對白／沒對白）都要呼叫它 —— 漏一條就是「有時候有大廳、有時候沒有」。 */
+/* ══ 一次性的操作提示（ver -429）══════════════════════════════════════════
+   資料在 `TOWNS[].tips`：`need` 的旗標到齊了就在**下一次抵達、對白演完之後**
+   彈一次雪鐵龍箭，彈過就記 `flag` 不再出現。
+   ⚠ 為什麼不做成腳本裡的 `hint` 那一拍：那一拍是**位置固定**的，而「取得龍息」
+     是有條件的（30 秒內、而且還沒有那把槍）—— 腳本沒有條件式的拍。掛旗標才對得上。
+   ⚠ 由上往下取第一個到期的，一次只演一個（同旅店大廳那三個提示的作法）。
+   ⚠ 彈之前要確認**被指的那顆真的在畫面上**（吊墜住在槍棺裡）—— `openHint` 自己會
+     檢查 rect（量不到就直接跳過），所以這裡不必再判一次。 */
+function tipDue(){
+  for(const t of (TOWNS[townId]||{}).tips || []){
+    if(t.flag && prog.hasFlag(t.flag)) continue;
+    if(t.need && !prog.hasFlag(t.need)) continue;
+    return t;
+  }
+  return null;
+}
+function showTip(){
+  const t=tipDue(); if(!t) return;
+  if(t.flag) prog.addFlags([t.flag]);
+  story.showHint({ at:t.at, text:t.text });
+}
+
 function afterArrive(n){
   /* ⚠ `introFlag` 由城鎮算好傳進去（ver -402）：旅店已經沒有 `kind` 了，
      旗標名只有 `enter()` 那一支知道（`kind` 版／節點版兩種）—— inn 自己拼會拼錯城。 */
@@ -745,6 +767,7 @@ function afterArrive(n){
                                  eveningFlag: ((TOWNS[townId]||{}).evening||{}).flag });
   else inn.close();
   shopEnter();              // 店舖畫面（ver -404）：進場對白演完才擺，不然會壓在對白上
+  showTip();                // 一次性的操作提示（ver -429）：對白與店舖都就位了才彈
 }
 /* 初見劇情的旗標名。⚠ **只有這一支在決定**（鐵律 7）：`enter()` 與 `afterArrive()` 都問它。 */
 function flagOf(n, id){ return (n && n.kind) ? ('town_kind_'+n.kind) : ('town_'+townId+'_'+id); }
@@ -853,7 +876,9 @@ inn.setup({
   onClock(){ return clockGate(); },
 });
 
-export function open(town){
+/* `node`（選填，ver -429）＝從哪一格開始，不寫就是城的入口。
+   目前只有「章節」那顆跳關鈕在用；日後要記住離開時站在哪（§6.9 的清單）也走這裡。 */
+export function open(town, node){
   townId = town || 'capital';
   const T=TOWNS[townId]; if(!T) return;
   const st=story.stageEl(); if(st){ st.classList.add('on','town-on'); }
@@ -861,7 +886,7 @@ export function open(town){
   story.showPanel();          // 下半的面盤（不擺會是一片全黑）
   story.ensureBgm(T.bgm);
   busy=false;
-  enter(T.entry);
+  enter((node && T.nodes[node]) ? node : T.entry);
 }
 export function close(){
   const st=story.stageEl(); if(st) st.classList.remove('town-on');

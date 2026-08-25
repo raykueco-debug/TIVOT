@@ -793,7 +793,10 @@ function seSrc(n){ const k=String(n||'').toLowerCase();
 function playSeFallback(src){
   try{ const a=new Audio(src); a.volume=0.9; const p=a.play(); if(p&&p.catch) p.catch(()=>{}); }catch(e){}
 }
-function playSe(spec){
+/* ⚠ `export`（ver -429）：戰鬥內的對白（`modules/tutorial.js`）也要放音效，而
+   **音效名 → 檔案的那張表只有這裡一份**（`SE_FILES`／`SE_ALIAS`，鐵律 7）。
+   抄一份到 tutorial 去必然走鐘（改了檔名只改得到一邊）。 */
+export function playSe(spec){
   const one=(n,delay)=>{ const src=seSrc(n);
     if(!src){ const tag='se/'+n;
       if(!missingExpr.has(tag)){ missingExpr.add(tag); console.info('[story] 沒有這個音效：', n); }
@@ -2179,6 +2182,9 @@ export function flashLine(text, name){
    ⚠ 箭與文字的位置**每次現量**：這一頁的元素位置是 `layoutKerberos` 解出來的，
      而且會隨轉向變。⚠ 量不到（還沒排版）就直接放行 —— 卡住比沒教學糟得多。 */
 const HINT_TARGET = { pend:'kerbPend', gear:'storyExit' };
+/* 城鎮的一次性提示（ver -429）：與腳本的 `hint` 那一拍**走同一支**（鐵律 8）——
+   遮罩、箭、抬層、關掉才過那一套只有一份。差別只在沒有「下一拍」要接。 */
+export function showHint(spec, done){ openHint(spec, done || (()=>{})); }
 function openHint(spec, done){
   const o = (typeof spec==='string') ? { at:spec } : (spec||{});
   const tgt = document.getElementById(HINT_TARGET[o.at] || o.at);

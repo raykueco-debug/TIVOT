@@ -445,7 +445,7 @@ const COLOR_URL  = 'silvermoon_terrain.png';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -428';
+const FLIGHT_VER = 'ver -429';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -8417,9 +8417,27 @@ function doLand(){
 }
 document.getElementById('landBtn').addEventListener('click', e=>{ e.stopPropagation(); doLand(); });
 
+/* ══ Stage 1 的地圖限制（ver -429，Ray 指定）══════════════════════════════
+   「出地圖以後除了北方泊地之外所有地圖點入蕾娜都會說『別晃了，趕快往北方泊地去！』」
+   ⚠⚠ 擋在 `enterPlace()` 這**唯一的入口**（鐵律 8）：日後多一條進地標的路
+     （地圖上點、選單裡選…）也自動吃到，不必再擋一次。
+   ⚠ 只在 **stage 1** 擋 —— 那正是「前往北方泊地」這一段任務還開著的時候。
+     `gameStage()` 由主遊戲那一邊在 stage 0 結束時推到 1（§6.5.4.1）。
+   ⚠ **降落（`doLand`）不擋**：那是回帝都的路，擋掉會把玩家困在天上。 */
+const STAGE1_DEST = '北方泊地';
+const STAGE1_NAG  = [{ who:'renna', text:'別晃了，趕快往北方泊地去！' }];
+function stage1Blocked(P){
+  return gameStage()===1 && P && P.name!==STAGE1_DEST;
+}
+
 /* 進入地標（目前只做確認演出；之後接場景切換） */
 let entering=null;
 function enterPlace(P){
+  if(stage1Blocked(P)){
+    /* ⚠ 已經在演別的對白就不插隊（同「對話」鈕的規矩）——兩段搶同一個舞台會疊在一起。 */
+    if(!sayQueue) say(STAGE1_NAG, performance.now());
+    return;
+  }
   entering={P,t:performance.now()};
   const pn=document.getElementById('place');
   document.getElementById('pnm').textContent=P.name;

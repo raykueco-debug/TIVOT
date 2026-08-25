@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.26-428';
+export const VERSION = 'ver 2026.08.26-429';
 
 export const GAME_CONFIG = {
 
@@ -502,13 +502,21 @@ export const GAME_CONFIG = {
     /* ⚠ 每一筆都要帶 cm（角色身高）—— 縮放是**鎖身高**算的（§6.5）。
        speakers.js 的 expr 只帶 top/bot/fx，cm 在角色那一層，所以這裡要合進來。 */
     portraitFrames: (()=>{
-      const N = ART.nouvelle, F = {};
-      const put = (key, v) => { F[key] = Object.assign({ cm:N.cm }, v); };
+      const N = ART.nouvelle, R = ART.renna, F = {};
+      /* ⚠ 取景值一律**抄 `ART`**（speakers.js 量的那一份，鐵律 7）——
+         不要在這裡另填一組數字。`cm` 在角色那一層、expr 只帶 top/bot/fx，所以合起來。 */
+      const put = (key, A, v) => { F[key] = Object.assign({ cm:A.cm }, v || A); };
       put('tut_nouvelle',           N);
-      put('tut_nouvelle_cringe',    N.expr.cringe);
-      put('tut_nouvelle_surprise',  N.expr.surprise);
-      put('tut_nouvelle_desperate', N.expr.desperate);
-      put('tut_nouvelle_saint',     { top:3, bot:1525, fx:0.503 });   // 只有教學用得到，量法同 speakers.js
+      put('tut_nouvelle_cringe',    N, N.expr.cringe);
+      put('tut_nouvelle_surprise',  N, N.expr.surprise);
+      put('tut_nouvelle_desperate', N, N.expr.desperate);
+      put('tut_nouvelle_saint',     N, { top:3, bot:1525, fx:0.503 });  // 只有教學用得到，量法同 speakers.js
+      /* 船艦戰的戰鬥內對白（ver -429，Ray 交稿）用到的差分。 */
+      put('tut_nouvelle_steady',    N, N.expr.steady);
+      put('tut_nouvelle_run',       N, N.expr.run);
+      put('tut_renna',              R);
+      put('tut_renna_shocked',      R, R.expr.shocked);
+      put('tut_renna_run',          R, R.expr.run);
       return F;
     })(),
     cast: {
@@ -517,6 +525,12 @@ export const GAME_CONFIG = {
       /* 劇情版教學的唯一說話者。⚠ 站**左**：與地宮那一幕同側，玩家的空間記憶才連得起來
          （CLAUDE.md §6.5：同一個人每次都站同一邊）。 */
       nouvelle:  { name:'諾薇兒', image:'tut_nouvelle',    side:'left',  fit:{ zoom:0.92, drop:6 } },
+      /* 蕾娜（ver -429，船艦戰的戰鬥內對白）。
+         ⚠⚠ 站**右**：她與諾薇兒在 `speakers.js` 裡**都是左**（左 蕾娜・諾薇兒），
+           兩個人同台會一直互相擠掉 —— 這是 §6.5 那條「一幕裡只有兩個人又剛好同側時
+           可以整幕覆寫」的同一個情形。船塢那一幕（`sides:{RENNA:'R'}`）已經把她擺右，
+           這裡跟著同一個安排，玩家的空間記憶才連得起來。 */
+      renna:     { name:'蕾娜',   image:'tut_renna',       side:'right', fit:{ zoom:0.92, drop:6 } },
     },
     // 罵人台詞（監察官）：教學中玩家「按錯 / 延時」即插入一句（隨機取、可重複觸發；
     //   defended 段講完後停用）。early＝太早防禦（Defense 格擋半傷）專用——不受 defended
@@ -1002,15 +1016,33 @@ export const GAME_CONFIG = {
                                       Sniper_Falcon:'se_ship_cannon' },
                         talkOnce:'taught_ship_counter',
                         talk:[
-                          /* 開戰：普通武器打不動這種體型 —— 講在玩家第一次揮空之前。 */
+                          /* ══ 進場（ver -429，Ray 交稿，一字未改）══
+                             ⚠ 蜈蚣的吼聲＋畫面震動掛在**第一拍**：牠先出聲，蕾娜才反應。
+                             ⚠ `sides` 不必寫 —— 站位在 `config.tutorial.cast`
+                               （蕾娜右／諾薇兒左），那是整場一致的安排。 */
                           { trigger:'battleStart', lines:[
+                            { who:'renna',    img:'tut_renna_shocked',   se:'se_enemy_centipi', shake:true,
+                              text:'竟然在內陸碰到這麼巨大的禍魘……' },
+                            { who:'nouvelle', img:'tut_nouvelle_steady', text:'交給我們！' },
+                            { who:'nouvelle', img:'tut_nouvelle_steady', text:'大型敵人就要靠重武器！' },
+                            /* 主角的空白對話框（他開口了，但沒有台詞 —— §6.5 的慣例）。 */
+                            { blank:true },
+                            { who:'renna',    img:'tut_renna_shocked',   text:'騙人的吧……單手就把艦砲……！' },
+                            { who:'nouvelle', img:'tut_nouvelle_run',    text:'蕾娜小姐！請穩住船身！' },
+                            { who:'nouvelle', img:'tut_nouvelle_run',    text:'這樣的話，那種東西對他來說就只是靶子！' },
+                            { who:'renna',    img:'tut_renna_run',       text:'知道了！拜託了！' },
+                          ]},
+                          /* ══ 反擊短教學（諾薇兒帶，Ray 交稿）══
+                             第一顆紅點生成的瞬間（對話會真暫停，圈就凍在畫面上）——
+                             「抓準時機」要指著那個正在縮的圈講，講完才有東西可指。
+                             ⚠ 兩句都擺在這裡（ver -429 由「開戰＋紅點」各一句移過來）：
+                               進場那一段已經有諾薇兒「大型敵人就要靠重武器！」，
+                               緊接著再講「用普通武器很難應付」會讀成她忘了自己剛說過。
+                               隔著一段實際戰鬥再講，就變成「剛才你也試過了吧」。 */
+                          { trigger:'threat', lines:[
                             { who:'nouvelle', img:'tut_nouvelle_cringe',
                               text:'大型敵人用普通武器很難應付！' },
-                          ]},
-                          /* 第一顆紅點生成的瞬間（對話會真暫停，圈就凍在畫面上）——
-                             「抓準時機」要指著那個正在縮的圈講，講完才有東西可指。 */
-                          { trigger:'threat', lines:[
-                            { who:'nouvelle',
+                            { who:'nouvelle', img:'tut_nouvelle_steady',
                               text:'抓準時機，在敵人攻擊前的一瞬間用艦載武器反擊！' },
                           ]},
                         ] },
@@ -1376,6 +1408,26 @@ export const ASSETS = {
   vo_dual_wield:    null,   // 雙槍破防                 → VO_DualWield
   vo_new_hustle:    null,   // Boss 遭遇 / 亂入          → VO_NewHustle
 };
+
+/* ══ 戰鬥對白用的立繪鍵（ver -429）══════════════════════════════════════
+   ⚠⚠ **路徑不在這裡寫死**：`script/speakers.js` 的 `ART` 才是立繪的唯一真相
+     （檔名、取景值都在那邊，鐵律 7）。這裡只是把「戰鬥對白要用到的那幾張」
+     掛上 ASSETS 鍵 —— `modules/tutorial.js` 的 `asset(key)` 與
+     `config.tutorial.portraitFrames` 都以鍵查表。
+   ⚠ **只列真的用得到的**：`ART` 每個角色有二十幾張差分，整批掛上去等於讓開機
+     預載多抓幾十張圖（`main.js` 是走 `Object.keys(ASSETS)` 的）。
+   ⚠ 加一句新台詞要用新差分時，在這裡補一筆就好，取景值會自己跟著來。 */
+(function tutPortraits(){
+  const need = { nouvelle:['steady','run'], renna:['shocked','run'] };
+  for(const who in need){
+    const A = ART[who]; if(!A) continue;
+    ASSETS['tut_'+who] = A.base;
+    for(const e of need[who]){
+      const v = A.expr && A.expr[e];
+      if(v && v.src) ASSETS['tut_'+who+'_'+e] = v.src;
+    }
+  }
+})();
 
 /* ---- 小工具：從 ASSETS 取素材（找不到回傳空字串，不會壞）---- */
 /* ══ 武器規格文字（ver -377）══

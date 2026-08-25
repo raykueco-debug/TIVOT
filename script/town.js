@@ -90,6 +90,19 @@ export const TOWNS = {
       bySeen: [ nou(null,'時間差不多了，回旅店吧。') ],
       byTime: [ nou(null,'天色不早了，我們先回廣場旅店吧？') ],
     },
+    /* ══ 一次性的操作提示（ver -429）══════════════════════════════════════
+       `need` 的旗標到齊了 → 下一次「走到某個地點、對白演完」時彈一次雪鐵龍箭，
+       彈過就記 `flag` 不再出現。判定在 `modules/town.js` 的 `tipDue()`。
+       ⚠⚠ 整備教學**移到取得「龍息」之後**（Ray 指定；原本掛在出航前那一幕）——
+         那時玩家手上才真的多了一把可以換的槍，教他去換副武器才有意義。
+       ⚠ `got_Shotgun_Dragon` 是**發獎品時記的**（`modules/inspector.js` 的 `scriptSettle`，
+         旗標名由武器 id 推出來，不寫死是哪一把，鐵律 1）。
+       ⚠ 為什麼不做成腳本裡的 `hint` 那一拍：獎品是**有條件**的（30 秒內、而且還沒有），
+         而腳本沒有條件式的拍 —— 掛在旗標上才不會「沒拿到也教你去換」。 */
+    tips: [
+      { need:'got_Shotgun_Dragon', flag:'tip_gear',
+        at:'pend', text:'點槍棺左上的吊墜　→　整備（選搭檔、換副武器）' },
+    ],
     /* ══ Stage 0 的結尾（ver -427，Ray 定案）══════════════════════════════
        「不論用任何方式到達／經過早上七點就進入 stage1，始於船塢。」
        ＝ 睡覺、獨自坐坐、在城裡亂逛通宵，三條路都算 —— 判定收在
@@ -333,30 +346,15 @@ export const TOWNS = {
               nou('shocked','可是…..這麼大的船要多少人才開得動啊？'),
               ren('watch','機械套索的，有個舵手就能動，至於帆手……這個季節沒有驟風，應該無所謂。'),
               ren('smile','船底有教廷紋章，不用擔心被防空砲打下來。'),
-              ren('bow','操舵就交給你囉，整備完成了嗎？'),
-              /* 操作提示：雪鐵龍箭指著**吊墜**（Ray 指定）。點下去開整備頁，
-                 關掉之後這一拍才過。 */
-              { hint:{ at:'pend', text:'點槍棺左上的吊墜　→　整備（選搭檔、換副武器）' } },
-              /* 主角的回答（他不出聲，這是他點的頭）。 */
-              { choice:[ { text:'準備出航', goto:'sail_go' },
-                         { text:'再等一下', goto:'sail_wait' } ] },
-              Object.assign(ren(null,'那麼，前往第一個目的地，北方泊地。'), { label:'sail_go' }),
-              /* ⚠ `set_sail` ＝讀取頁的說明者換成蕾娜的那一刻（`config.loadingHost`）。 */
-              { goFlight:true, flags:['set_sail'] },
-              Object.assign(ren('smile','不急，準備好再叫我。'), { label:'sail_wait' }),
-            ] },
-          /* 第二段：戲看過了，只剩那一句問答。⚠ `need` ＝要先有第一段的旗標；
-             自己的旗標**故意與第一段同一個**不行（會被 `actDue` 跳過），所以另給一個
-             —— 但它**永遠不記**（下面沒有 flag），因為出航前每次回來都要問得到。 */
-          { need:'dock_day2', sides:{ RENNA:'R' },
-            lines:[
-              ren('bow','整備完成了嗎？'),
-              { choice:[ { text:'準備出航', goto:'sail_go2' },
-                         { text:'再等一下', goto:'sail_wait2' } ] },
-              Object.assign(ren(null,'那麼，前往第一個目的地，北方泊地。'), { label:'sail_go2' }),
-              /* ⚠ `set_sail` ＝讀取頁的說明者換成蕾娜的那一刻（`config.loadingHost`）。 */
-              { goFlight:true, flags:['set_sail'] },
-              Object.assign(ren('smile','不急，準備好再叫我。'), { label:'sail_wait2' }),
+              ren('bow','操舵就交給你囉。'),
+              ren(null,'那麼，前往第一個目的地，北方泊地。'),
+              /* ⚠⚠ **不再問「準備出航／再等一下」，講完就走**（ver -429，Ray 指定）。
+                 整備的操作提示也**移到取得「龍息」之後**（見 `TOWNS.capital.tips`）——
+                 那時玩家手上才真的多了一把可以換的槍，教他去換才有意義。
+                 ⚠ `set_sail` ＝讀取頁的說明者換成蕾娜的那一刻（`config.loadingHost`）。
+                 ⚠ `got_ship` ＝廣場那一格「往下走＝出航」從此打得開 —— 這是**回程的路**：
+                   從飛行頁回來之後要能再出航一次，而船塢這一段只演一次。 */
+              { goFlight:true, flags:['set_sail','got_ship'] },
             ] },
         ],
         /* 路人單句：**地理情報**線（ver -387）。⚠ 這一條要對得上飛行頁的世界 ——

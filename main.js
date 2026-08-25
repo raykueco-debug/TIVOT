@@ -29,7 +29,8 @@ import { sakuraBurst } from './modules/sakura.js';   // 開始遊戲：全畫面
 import * as story from './modules/story.js';   // 主線 scene 播放器（首頁 story 鈕）
 import * as saveSys from './modules/save.js';   // 劇情層存讀檔（F4/F7 即時、F5/F8 選欄）
 import * as settings from './modules/settings.js';   // 選單：分軌音量／自動播放速度（玩家偏好）
-import * as prog from './script/progress.js';   // 進度／旗標／「一輪遊戲」的邊界（newRun）
+import * as prog from './script/progress.js';
+import * as clock from './script/clock.js';   // 章節的起始時刻（firstHourAt）   // 進度／旗標／「一輪遊戲」的邊界（newRun）
 import './modules/enemy.js';
 
 const $ = id => document.getElementById(id);
@@ -831,6 +832,47 @@ story.init(); saveSys.init();
    ⚠ 邊界定義在 `progress.newRun()` 那一支，不要在這裡列要清什麼（鐵律 8）。
    ⚠ 讀檔是另一回事（`progress.restore()`），不走這裡。 */
 bindBtn('storyBtn', ()=>{ prog.newRun(); story.open(null); });
+/* ══ 章節（ver -429，Ray 指定）══════════════════════════════════════════
+   管理人限定的跳關工具：每一章都先 `newRun()`（＝從頭開始的唯一那一支，§6.9），
+   再把「這一章開始時本來就該有的東西」放回去，然後由這裡把入口打開。
+   ⚠ 章節**內容是資料**（`script/progress.js` 的 `CHAPTERS`）—— 這裡只負責演，
+     加一章不必動這一段（鐵律 1）。
+   ⚠ 入口寫成代號（`story`／`town`）不是函式：資料層不該認識啟動層。 */
+bindBtn('chapterBtn', ()=>{
+  if(document.getElementById('chapterSheet')) return;
+  const ov=document.createElement('div'); ov.id='chapterSheet';
+  ov.innerHTML='<div class="gm-panel"><div class="gm-title">章　節</div>'
+    + prog.CHAPTERS.map((c,i)=>'<button class="ch-row" type="button" data-i="'+i+'">'
+        + '<b>'+c.name+'</b><i>'+(c.sub||'')+'</i></button>').join('')
+    + '<div class="gm-acts"><button class="gm-btn gm-close" type="button">關　閉</button></div></div>';
+  document.body.appendChild(ov);
+  ov.addEventListener('click', e=>e.stopPropagation());
+  const close=()=>{ ov.classList.remove('on');
+    setTimeout(()=>{ if(ov.parentNode) ov.parentNode.removeChild(ov); }, 200); };
+  ov.querySelector('.gm-close').addEventListener('click', close);
+  ov.querySelectorAll('.ch-row').forEach(b=>b.addEventListener('click', ()=>{
+    try{ SFX.unlock(); SFX.menuClick(); }catch(_){}
+    startChapter(prog.CHAPTERS[+b.dataset.i]); close();
+  }));
+  requestAnimationFrame(()=>ov.classList.add('on'));
+});
+function startChapter(c){
+  if(!c) return;
+  prog.newRun();                                   // ⚠ 唯一的「從頭開始」（§6.9）
+  if(c.named){ prog.setPlayerName(''); prog.setPlayerNick(''); }   // 空字串＝套預設（凱勞諾斯／凱）
+  if(c.flags && c.flags.length) prog.addFlags(c.flags);
+  if(c.stage!=null) prog.setStage(c.stage);
+  /* ⚠ 時刻問 `clock.firstHourAt`，不要寫死分鐘數（鐵律 7）——
+     開局時刻改了，章節的起點要跟著改。 */
+  if(c.clockHour!=null) clock.setElapsed(clock.firstHourAt(c.clockHour));
+  if(c.enter==='town'){
+    markBooted();
+    $('home').classList.remove('on');
+    town.open(c.town||'capital', c.node);
+  }else{
+    story.open(null);
+  }
+}
 /* ── 劇情插入戰鬥 → 打完接回劇情（ver -321；-325 改成直接交棒）──────────
    story.js 不 import 戰鬥模組（單向資料流），發動與續播都由這裡負責。
 
@@ -1142,6 +1184,7 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
     ['#tutSkipConfirm', '.ec-no'],      // 跳過教學：Esc ＝繼續教學
     ['#exitConfirm',    '.ec-no'],      // 退出確認：Esc ＝繼續玩
     ['#gameMenu',       '.gm-close'],   // 選單（Ray 指名的那一個）
+    ['#chapterSheet',   '.gm-close'],   // 章節（管理人限定的跳關）
     ['#storyLog',       '.log-ok'],     // 本場已播腳本
     ['#saveSheet.on',   '#saveClose'],  // 存讀檔
     ['#lootSheet',      '.loot-ok'],    // 道具欄／商店／拾得

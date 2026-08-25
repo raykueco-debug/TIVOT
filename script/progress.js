@@ -148,6 +148,23 @@ export function setPlayerNick(v){ wr(K.nick, (v||'').trim() || NICK_DEFAULT); }
      那些是玩家的偏好與成績，不是劇情進度。
    ⚠ 讀檔**不要走這一支**：讀檔是 `restore()`（把那個存檔的旗標放回來），
      兩者是不同的事 —— 讀檔之後該演的劇情自然會演，因為那個存檔就還沒演過。 */
+/* ══ 章節（ver -429，Ray：「首頁插入管理員鈕『章節』，進去可直接選章節開始」）══
+   ⚠⚠ **管理人限定的跳關工具**，不是正式流程 —— 每一章都先 `newRun()`（＝從頭開始的
+     那一支，§6.9 的唯一邊界），再把「這一章開始時本來就該有的東西」放回去。
+   ⚠ `flags` 只列**擋路的那幾個**：進場對白會不會重播、演出會不會插隊。
+     列太多反而難維護，而且這是除錯工具 —— 重播一段對白不致命。
+   ⚠ `clockMin` ＝開局起算的分鐘數（`script/clock.js` 的 EPOCH 是 6/13 11:00）。
+     stage 1 是「隔天早上七點」，所以問 `clock.firstHourAt(7)` **不要寫死 1200**（鐵律 7）。
+   ⚠ `enter` 由 `main.js` 執行（劇情／城鎮的入口在啟動層，這裡不認識它們）。 */
+export const CHAPTERS = [
+  { id:'stage0', name:'Stage 0', sub:'地宮 → 帝都探索 → 旅店睡覺',
+    enter:'story' },
+  { id:'stage1', name:'Stage 1', sub:'第二日・船塢 → 出航 → 北方泊地',
+    stage:1, clockHour:7, named:true,
+    flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open'],
+    enter:'town', town:'capital', node:'dock' },
+];
+
 export function newRun(){
   for(const k of [K.stage, K.flags, K.affection, K.affFloor, K.name, K.nick]) {
     try{ localStorage.removeItem(k); }catch(e){}

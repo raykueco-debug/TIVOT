@@ -25,6 +25,10 @@ import { SFX } from '../audio.js';
 import { L, decorateLine } from '../i18n.js';   // 多語言（跳過確認文案／台詞關鍵字金色粗字）
 import { matchPortraits } from './tone.js';    // 立繪與背景的融合（葉節點）
 import * as progress from '../script/progress.js';   // 旗標（戰鬥內短教學的「講過了」）
+/* ⚠ 只借**兩支演出原語**：音效名→檔案的表（`SE_FILES`）只有 story.js 一份（鐵律 7），
+   抄過來必然走鐘。story.js 不 import 本檔，所以沒有循環相依。 */
+import { playSe } from './story.js';
+import * as hap from './haptics.js';        // 畫面震動＝手上也震（§6.5.6）
 
 const $ = id => document.getElementById(id);
 const CFG = () => GAME_CONFIG.tutorial;
@@ -754,8 +758,34 @@ function placeBubble(){
   if(r && r.height>0) b.style.bottom = (innerHeight - r.top + 4)+'px';
 }
 
+/* 畫面抖一下（ver -429）：戰鬥畫面沒有劇情層的 `#storyStage.shake`，借敵人框既有的
+   `camShake`（`#enemyImg.shake`，受擊特效在用的同一條）。
+   ⚠ 抖的是**敵人框**不是整個 App：下半的數字盤面要能點，抖起來很難按。
+   ⚠ 畫面震動＝手上也震（§6.5.6 的規矩，呼叫點只有具名函式那一支）。 */
+function shakeScreen(){
+  hap.shake();
+  const el=$('enemyImg'); if(!el) return;
+  el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake');
+  setTimeout(()=>el.classList.remove('shake'), 340);
+}
+
 function showLine(){
   const line = cur.lines[lineIdx] || {};
+  /* 演出：音效與畫面震動（ver -429）。⚠ 一次性 —— 每次演到就放，不是狀態（同 story.js）。 */
+  if(line.se) playSe(line.se);
+  if(line.shake) shakeScreen();
+  /* ⚠⚠ **主角的空白對話框**（`blank:true`，ver -429）：框要出、裡面沒字。
+     他沒有立繪也沒有配音，但「他確實開口了」這件事要在畫面上有份量（同 story.js §6.5）。
+     ⚠ **不動立繪**：台上的人維持原樣（誰亮誰暗都不變）—— 他不在台上，
+       他說話不代表別人要換位或換明暗。
+     ⚠ 名字欄放**暱稱**：隊上的人平常就是這樣叫他的（同 story.js 的作法）。 */
+  if(line.blank){
+    const nm0=$('tutName'); if(nm0) nm0.textContent = progress.getPlayerNick();
+    const lineEl0=$('tutLine'); if(lineEl0) lineEl0.textContent='';
+    const b0=$('tutBubble'); if(b0){ b0.classList.add('done'); }
+    clearInterval(typeTimer); typeTimer=null;
+    return;
+  }
   const c = castOf(line.who);
   const nm=$('tutName'); if(nm) nm.textContent = c.name || '';
   // 說話者保持原色，另一位色階調暗

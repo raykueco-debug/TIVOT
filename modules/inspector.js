@@ -22,6 +22,7 @@
 import { GAME_CONFIG, asset, bgmVol, sfxGain } from '../config.js';
 import { showLoot } from './loot.js';
 import * as inv from '../script/inventory.js';   // 破紀錄的獎品要先問「是不是已經有了」
+import * as prog from '../script/progress.js';   // 拿到獎品記一個旗標（城鎮的一次性提示掛在它上面）
 import { state } from '../state.js';
 import { SFX } from '../audio.js';   // Boss BGM 於「再度執槍（S 解鎖）」瞬間起播
 import { L, fmt, decorateLine } from '../i18n.js';   // 多語言（結算標題/數據列/按鈕/台詞關鍵字）
@@ -420,7 +421,12 @@ function scriptSettle(totalTime, stats){
   /* 掉落：卡上的 `loot`（固定）＋ `money.hpRatio`（HP 的幾成，隨機）。
      ⚠ 與教學同一個手感：**點畫面才彈**，不自動蓋掉戰績。 */
   const loot = rollLoot(en);
-  if(prize) loot.push({ id:prize, n:1 });
+  if(prize){
+    loot.push({ id:prize, n:1 });
+    /* 「拿到獎品了」記一個旗標（ver -429）：城鎮那邊的一次性提示掛在它上面
+       （取得「龍息」之後才教整備）。⚠ 旗標名**由武器 id 推**，不寫死是哪一把（鐵律 1）。 */
+    prog.addFlags(['got_'+prize]);
+  }
   let money = 0;
   const mr = en.money && en.money.hpRatio;
   if(mr){
