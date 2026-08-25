@@ -938,6 +938,11 @@ function layoutKerberos(){
        Ray 回報「楣又被遮了」就是這個：不是被立繪蓋住，是被裁掉，
        露出來的是後面的立繪與背景。 */
     st.style.setProperty('--kerb-clip-top', (top + tpTop) + 'px');
+    /* ⚠ 也發佈到 `:root`（ver -404）：城鎮店舖那張靠左停的單子（`#lootSheet.dock-left`）
+       是 body 底下的兄弟元素，讀不到 `#storyStage` 上的變數，而它的高度上限正是
+       「楣的上緣」。**同一個解，兩個地方讀**（鐵律 7：算的那一支發佈出去，
+       不要讓別人用等價的式子再算一次）。 */
+    document.documentElement.style.setProperty('--kerb-clip-top', (top + tpTop) + 'px');
     kb.style.setProperty('--kerb-clip-top', (top + tpTop) + 'px');
     /* ⚠ 也寫到舞台上：對話框要拿它把底邊錨在楣的上緣（見 style.css 的 #storyBubble）。
        CSS 變數只往**子孫**繼承，寫在 #kerb 上對話框讀不到。 */
@@ -1818,6 +1823,21 @@ export function endAdhoc(){
    當場量會量到上一個狀態，量出來的結果是**顛倒的**（實測：對白中 false、結束後 true）。
    正解是**演出層自己宣告**：開始演一拍 → true，收場（clearCast／離場）→ false。 */
 export function markTalking(on){ document.body.classList.toggle('story-talking', !!on); }
+
+/* ══ 常駐立繪（ver -404）══════════════════════════════════════════════
+   把**一個**角色放上台、保持原色，另一側清空。**不接管推進** ——
+   給「店裡的店主一直站在那裡」這種**持續狀態**用（城鎮的店舖畫面）。
+   ⚠⚠ 走的是與對白**同一支** `ensureOn`、同一把尺（§6.5：同一張立繪＝同一個結果，
+     不因場合而變大小或站位）。店舖不准另算一次（鐵律 7）。
+   ⚠ 收場走 `clearCast()` —— 它同時收對話框與「正在演」的旗標，是唯一的收尾（鐵律 8）。 */
+export function castSolo(id, expr){
+  const side = ensureOn(id, expr||null);
+  if(!side) return null;
+  const other = side==='R' ? 'L' : 'R';
+  if(slot[other]) leaveSlot(other);
+  highlight(side);
+  return side;
+}
 
 export function clearCast(){
   slot={L:null,R:null}; slotExpr={L:null,R:null}; shown={};

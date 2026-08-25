@@ -123,9 +123,17 @@ export function showBag(){
 /* `onChallenge`（ver -398）：這一家店的「再挑戰」（槍店的射擊挑戰）。
    ⚠ 與 `onTalk` 同一個作法：**先收商店**，交給呼叫端去演，演完由呼叫端決定要不要開回來 ——
      戰鬥會蓋掉整個畫面，商店留在底下只會在回來時閃一格。 */
-export function showShop(stockKey, keeper, onTalk, onChallenge){
+/* `opts.dock:'left'`（ver -404，Ray：「直接右店主左選單」）：這一張單子**靠左停**、
+   背景不壓黑、也**不吃掉畫面其他地方的點擊** —— 因為右邊站著店主、底下的面盤還要
+   能走出店門。⚠ 只有城鎮的店舖會給這個參數；拾得／道具欄仍是置中的強制視窗。
+   `opts.info`：標題右邊那一行小字（地名＋時刻）。⚠ 停靠模式會蓋掉上緣的 `#townInfo`，
+   所以那兩個資訊要在這張單子上找得到（見 modules/town.js 的說明）。
+   回傳 `close` —— 呼叫端（走出店門、進戰鬥）要收得掉它。 */
+export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
   ensureCss();
+  const o=opts||{};
   const ov=document.createElement('div'); ov.id='lootSheet'; ov.classList.add('bag','shop');
+  if(o.dock) ov.classList.add('dock-'+o.dock);
   document.body.appendChild(ov);
   const SHOP=GAME_CONFIG.shop||{};
   const stock=((SHOP.stock||{})[stockKey])||[];
@@ -135,8 +143,12 @@ export function showShop(stockKey, keeper, onTalk, onChallenge){
   const TABNAME=Object.assign({ buy:'買', sell:'賣', mod:'改裝' }, cfg.tabName||{});
   let tab=TABS[0], pick=null;
 
+  /* ⚠ `o.onClose`（ver -404）：**任何**收掉這張單子的路徑都要通知呼叫端 ——
+     城鎮那邊記著「單子開著沒」，不通知的話玩家按了關閉之後就再也開不回來。
+     `close` 是唯一的收尾（鐵律 8），所以掛在這裡就夠。 */
   const close=()=>{ ov.classList.remove('on');
-    setTimeout(()=>{ if(ov.parentNode) ov.parentNode.removeChild(ov); }, 200); };
+    setTimeout(()=>{ if(ov.parentNode) ov.parentNode.removeChild(ov); }, 200);
+    if(o.onClose){ const f=o.onClose; o.onClose=null; try{ f(); }catch(_){} } };
 
   /* 規格表（武器）。⚠ 數值一律問 `config.weaponStatRows`（唯一一處），這裡只排版。 */
   /* ⚠ 商店只存在於城鎮（本篇），所以規格一律顯示**本篇那一組**數值（ver -378）。
@@ -202,7 +214,9 @@ export function showShop(stockKey, keeper, onTalk, onChallenge){
     }else desc = (d.desc||'');
 
     ov.innerHTML='<div class="loot-panel shop-panel">'
-      + '<div class="loot-title">'+(cfg.title||'商店')+'</div>'
+      + '<div class="loot-title">'+(cfg.title||'商店')
+      +   (o.info ? '<span class="shop-info">'+o.info+'</span>' : '')+'</div>'
+      + (o.dock ? '<i class="lt-exp">'+(ov.classList.contains('dock-'+o.dock)?'⤢':'⤡')+'</i>' : '')
       + '<div class="bag-money">'+inv.moneyName()+'　<b>'+inv.getMoney()+'</b></div>'
       + '<div class="shop-tabs">'
       +   TABS.map(t=>'<button class="shop-tab'+(tab===t?' on':'')+'" data-tab="'+t+'" type="button">'
@@ -221,12 +235,23 @@ export function showShop(stockKey, keeper, onTalk, onChallenge){
       +   (tab==='mod' ? ''
           : '<button class="shop-do'+(can?'':' broke')+'" type="button">'
             + (tab==='buy' ? (owned?'已持有':'買下 '+price) : '賣出 '+price)+'</button>')
-      +   (keeper&&keeper.length ? '<button class="shop-talk" type="button">與店主交談</button>' : '')
+      /* ⚠ 字短一點（ver -404 由「與店主交談」改）：靠左停的窄單子上，四顆鈕
+         （買下／交談／挑戰／關閉）要排進一列，五個字會被擠成兩行。店主就站在右邊，
+         「交談」跟誰交談不會有疑義。 */
+      +   (keeper&&keeper.length ? '<button class="shop-talk" type="button">交　談</button>' : '')
       +   ((cfg.challenge && onChallenge)
           ? '<button class="shop-challenge" type="button">'+(cfg.challengeLabel||'挑戰')+'</button>' : '')
       +   '<button class="loot-ok" type="button">關閉</button>'
       + '</div></div>';
 
+    /* 點標題 → 靠左停 ⇄ 全寬（ver -404，Ray 指定）。⚠ 只是加減 `dock-left` 這個
+       class，版面兩邊都用這一份的既有規則（鐵律 8）。 */
+    if(o.dock){
+      const t=ov.querySelector('.loot-title');
+      if(t) t.addEventListener('click', e=>{ e.stopPropagation();
+        try{ SFX.menuClick(); }catch(_){}
+        ov.classList.toggle('dock-'+o.dock); render(); });
+    }
     ov.querySelectorAll('.shop-tab').forEach(b=>b.addEventListener('click', e=>{
       e.stopPropagation(); tab=b.dataset.tab; pick=null;
       try{ SFX.menuClick(); }catch(_){} render(); }));
@@ -267,6 +292,7 @@ export function showShop(stockKey, keeper, onTalk, onChallenge){
   };
   render();
   requestAnimationFrame(()=>ov.classList.add('on'));
+  return close;
 }
 
 /* ══ 懸賞榜（ver -375）══
@@ -274,24 +300,38 @@ export function showShop(stockKey, keeper, onTalk, onChallenge){
    為止），所以這一頁沒有按鈕，只有一張清單與關閉。
    ⚠ 委託內容在 `config.bounties`，這裡只負責演（鐵律 1）。要加委託就加資料，不動這支。
    ⚠ 依 `city` 篩選：櫃台說了「各個城市的委託也會不同」，那句話得在資料上成立。 */
-export function showBounty(city){
+export function showBounty(city, opts){
   ensureCss();
+  const o=opts||{};
   const all=GAME_CONFIG.bounties||{};
   const list=Object.keys(all).filter(k=> !city || all[k].city===city).map(k=>all[k]);
   const unit=(GAME_CONFIG.items&&GAME_CONFIG.items.moneyName)||'G';
   const ov=document.createElement('div'); ov.id='lootSheet'; ov.classList.add('bag','bounty');
+  if(o.dock) ov.classList.add('dock-'+o.dock);
   document.body.appendChild(ov);
   const body = list.length
     ? list.map(b=>'<div class="loot-row bounty-row"><span class="loot-name">'+b.name+'</span>'
         + '<span class="loot-n">'+b.reward+unit+'</span>'
         + (b.desc?'<span class="loot-desc">'+b.desc+'</span>':'')+'</div>').join('')
     : '<div class="bag-empty">目前沒有委託。</div>';
-  ov.innerHTML='<div class="loot-panel"><div class="loot-title">懸賞榜</div>'
+  ov.innerHTML='<div class="loot-panel"><div class="loot-title">懸賞榜'
+             + (o.info ? '<span class="shop-info">'+o.info+'</span>' : '')+'</div>'
+             + (o.dock ? '<i class="lt-exp">⤢</i>' : '')
              + '<div class="loot-list">'+body+'</div>'
              + '<button class="loot-ok" type="button">關閉</button></div>';
   const close=()=>{ ov.classList.remove('on');
-    setTimeout(()=>{ if(ov.parentNode) ov.parentNode.removeChild(ov); }, 220); };
+    setTimeout(()=>{ if(ov.parentNode) ov.parentNode.removeChild(ov); }, 220);
+    if(o.onClose){ const f=o.onClose; o.onClose=null; try{ f(); }catch(_){} } };
   ov.querySelector('.loot-ok').addEventListener('click', e=>{ e.stopPropagation();
     try{ SFX.unlock(); SFX.menuClick(); }catch(_){} close(); });
+  /* 點標題 → 靠左停 ⇄ 全寬（同 showShop）。 */
+  if(o.dock){
+    const t=ov.querySelector('.loot-title'), ic=ov.querySelector('.lt-exp');
+    if(t) t.addEventListener('click', e=>{ e.stopPropagation();
+      try{ SFX.menuClick(); }catch(_){}
+      const on=ov.classList.toggle('dock-'+o.dock);
+      if(ic) ic.textContent = on ? '⤢' : '⤡'; });
+  }
   requestAnimationFrame(()=>ov.classList.add('on'));
+  return close;
 }

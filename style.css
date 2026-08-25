@@ -1755,25 +1755,9 @@
      箭的位置是 `layoutKerberos` 解出來的，CSS 猜不到（鐵律 7：問算的那一支）。
      這裡只給「以自己的中心對齊那個點」。 */
   #townNav .town-dest{transform:translate(-50%,-50%);}
-  /* ── 櫃台鈕（ver -387，Ray：「商店、武器店、賞金獵人公會的櫃臺放置按鈕以進入各別選單」）──
-     ⚠ 位置由 JS 依**背景圖上的比例**換算後寫 inline（見 modules/town.js 的 `placeCounter`）——
-       每張背景的櫃台在不同地方，而且 `object-fit:cover` 還會裁掉一部分，CSS 猜不到
-       （鐵律 7：問算的那一支）。這裡只給「以自己的中心對齊那個點」。
-     ⚠ 要**看得出來可以按**：櫃台本來就在背景圖裡，鈕若只是一圈細線會讀成裝飾，
-       所以給一點呼吸的外光暈。 */
-  #townNav .town-btn{position:absolute;transform:translate(-50%,-50%);
-    padding:0 14px;height:32px;white-space:nowrap;
-    font-family:inherit;font-size:12px;letter-spacing:2px;color:var(--gold);
-    background:rgba(10,8,14,.72);border:1px solid var(--gold-dim);border-radius:16px;
-    display:none;pointer-events:auto;}
-  #townNav .town-btn.on{display:flex;align-items:center;justify-content:center;
-    animation:townCounterPulse 2.4s ease-in-out infinite;}
-  #townNav .town-btn:active{background:rgba(212,169,74,.22);}
-  @keyframes townCounterPulse{
-    0%,100%{ box-shadow:0 0 0 rgba(212,169,74,0); }
-    50%    { box-shadow:0 0 12px rgba(212,169,74,.45); }
-  }
-
+  /* ⚠ 櫃台鈕（ver -387 的 `.town-btn`）**已經拿掉**（ver -404）：店舖畫面改成
+     「走進去就是右店主立繪＋左選單」，不再有那顆鈕。樣式一併刪，留著只會讓人以為
+     還有第二個入口（鐵律 8）。單子的樣式在 `css/lootsheet.css` 的 `.dock-left`。 */
 
   /* ── 選單（ver -397）──────────────────────────────────────────────
      回到主選單／分軌音量（音樂・音效・語音）／自動播放間隔。
@@ -2022,3 +2006,13 @@
     border-radius:20px;color:var(--ink);font-size:11px;letter-spacing:1px;
     opacity:0;pointer-events:none;transition:opacity .2s ease;}
   #saveToast.on{opacity:1;}
+
+  /* ── 店舖模式（ver -404）────────────────────────────────────────────
+     商店／武器店／公會：**右邊店主立繪、左邊選單**，沒有對話框
+     （Ray：「店主不用放對話框想要買點什麼嗎？騰空間出來給選單」）。
+     ⚠ 上緣的地名／時刻要**讓開** —— 那一行的高度正好是立繪的臉（§6.5 的 -385，
+       同一個理由）。這裡是持續狀態不是對白，所以不走 `story-talking`，
+       另給一個 `town-shop`；開關只有一支（`modules/town.js` 的 `setShopOn`，鐵律 8）。
+     ⚠ 地名與時刻改由**左邊那張單子**的標題下印出來（`showShop` 的 `opts.info`）——
+       讓開不等於不給，玩家還是要看得到自己在哪、幾點（店有營業時間）。 */
+  body.town-shop #townInfo{opacity:0;}

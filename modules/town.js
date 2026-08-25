@@ -82,9 +82,10 @@ function bgFor(base, noTime){
     img.onload =()=>{
       if(my!==bgSeq) return;                 // 已經被後面那一次換掉了 → 這一張作廢
       story.setSceneBg(name);
-      /* 櫃台鈕要靠圖的原始比例換算位置（見 placeCounter），所以在這裡記下來 ——
-         這一支本來就要載那張圖，不必另外再抓一次（鐵律 7：算的那一支發佈出去）。 */
-      bgNat=[img.naturalWidth, img.naturalHeight]; placeCounter(); inn.relayout();
+      /* 旅店那兩顆行動鈕（獨自坐坐／回房睡覺）要靠圖的原始比例換算位置（見 bgPoint），
+         所以在這裡記下來 —— 這一支本來就要載那張圖，不必另外再抓一次
+         （鐵律 7：算的那一支發佈出去）。 */
+      bgNat=[img.naturalWidth, img.naturalHeight]; inn.relayout();
       if(i>0 && !missingBg.has(cands[0])){ missingBg.add(cands[0]);
         console.info('[town] 沒有這個時段的背景，退回：', cands[0], '→', name); } };
     img.onerror=()=>{ if(my===bgSeq) tryAt(i+1); };
@@ -156,14 +157,12 @@ function ensureLayer(){
     + '<circle class="ta-prog" cx="22" cy="22" r="19"/></svg>'
     + '<span class="th-label"></span></div>'
     + '<div id="townInfo"></div>'
-    /* 櫃台鈕（ver -387，Ray：「商店、武器店、賞金獵人公會的櫃臺放置按鈕以進入各別選單」）。
-       ⚠ **一顆鈕、一支實作**（鐵律 8）：商店、武器店、公會共用它，差別只在開哪個選單。
-         原本「點畫面就開商店」（`shopOnTap`）已經拿掉 —— 兩個入口做同一件事，
-         其中一個一定會被忘記維護。 */
-    + '<button id="townCounter" class="town-btn" type="button"></button>';
+    ;
+  /* ⚠⚠ **櫃台鈕沒有了**（ver -404，Ray：「不用點擊，直接右店主左選單」）。
+     走進店裡就是店舖畫面：右邊店主立繪、左邊選單，兩樣一起出來（見 shopEnter）。
+     ver -387 的那顆 `#townCounter`（連同節點上的 `counter:{x,y}`）整個撤掉 ——
+     留著就是第二個入口，其中一個一定會被忘記維護（鐵律 8）。 */
   st.appendChild(layer);
-  const sb=layer.querySelector('#townCounter');
-  if(sb) sb.addEventListener('pointerup', e=>{ e.stopPropagation(); openCounter(); });
   return layer;
 }
 
@@ -189,36 +188,78 @@ export function bgPoint(fx, fy){
   return { x: br.left-sr.left + (br.width-w)/2 + fx*w,
            y: br.top -sr.top  + (br.height-h)/2 + fy*h };
 }
-function placeCounter(){
-  const b=layer && layer.querySelector('#townCounter'); if(!b) return;
-  const n=node();
-  /* ⚠ 打烊就不出現（ver -391）：門是關著的，櫃台後面沒有人。 */
-  const on = !!(n && n.counter && isOpenNow(n)
-                && (n.shop || (n.board && (!n.boardFlag || prog.hasFlag(n.boardFlag)))));
-  /* ⚠ **擺好了才亮**：先 `.on` 再算位置的話，量不到圖那一拍鈕會出現在畫面左上角
-     （left/top 還沒寫）—— 一顆定位錯的鈕比晚一拍出現糟得多。 */
-  const p = on ? bgPoint(n.counter.x, n.counter.y) : null;
-  if(!p){ b.classList.remove('on'); return; }
-  b.textContent = n.counter.label || '櫃　台';
-  b.style.left=p.x+'px'; b.style.top=p.y+'px';
-  b.classList.add('on');
+/* ══ 店舖畫面（ver -404，Ray：「把各商店的櫃台按鈕改成店主立繪，並讓店主常駐對話框，
+   直接右店主左選單」）════════════════════════════════════════════════════
+   走進商店／武器店／公會 ＝ **右邊店主立繪（常駐）＋ 常駐招呼語 ＋ 左邊選單**，
+   不必按任何東西。走出店門（面盤的箭）才收。
+   ⚠⚠ 立繪走 `story.castSolo` —— 與對白**同一把尺**（§6.5：同一張立繪＝同一個結果）。
+     店舖不准另算大小或站位；NPC 的 `side` 本來就是 'R'，所以「右店主」是既有規則的
+     結果，不是這裡寫死的。
+   ⚠⚠ **店主不放常駐對話框**（ver -404，Ray：「店主不用放對話框想要買點什麼嗎？
+     騰空間出來給選單」）—— 那一條全寬的框會吃掉 80px，而一張完整的商店單子
+     在 390×844 上就要 306px，留著就塞不下。
+   ⚠ 上緣的地名／時刻仍要讓開立繪的臉（`body.town-shop`，§6.5 的 -385 同一個理由），
+     所以那兩個資訊改印在單子的標題下（`opts.info`）。
+   ⚠ 玩家把單子關掉之後，**點畫面任何一處**再開回來（見 bindInput）——
+     那是同一支 `openMenu`，不是第二個入口。 */
+let shopOn=false;          // 現在是不是站在店裡（狀態，不從畫面反推 —— §6.5 的 -385）
+let sheetClose=null;       // 左邊那張單子的收尾（開著才有值）
+/* ⚠ 店舖模式的開關**只有這一支**（鐵律 8）：它同時管旗標與 `body.town-shop`
+   （上緣的地名／時刻要讓開立繪的臉）。按下「與店主交談」進入真正的對白時要先關掉 ——
+   那一段是普通對白，地名本來就會由 `story-talking` 接手讓開。 */
+function setShopOn(v){
+  shopOn=!!v;
+  document.body.classList.toggle('town-shop', shopOn);
 }
-/* 櫃台鈕按下去開哪個選單：商店 → 買賣；公會 → 懸賞榜。 */
-function openCounter(){
-  const n=node(); if(!n) return;
+
+/* 這一家店的「店主」是誰。⚠ 資料上寫 `keeperWho` 就用它；沒寫就依店的種類給預設 ——
+   不要在三個地方各判一次（鐵律 8）。 */
+function keeperOf(n){
+  if(!n) return null;
+  if(n.keeperWho) return n.keeperWho;
+  if(n.shop) return 'SHOPKEEP';
+  if(n.board) return 'COUNTER';
+  return null;
+}
+/* 這個節點現在有沒有店舖畫面：要是店（或已登記的公會），而且**在營業時間內**。 */
+function shopReady(n){
+  if(!n || !isOpenNow(n)) return false;
+  if(n.shop) return true;
+  return !!(n.board && (!n.boardFlag || prog.hasFlag(n.boardFlag)));
+}
+function shopEnter(){
+  const n=node(); if(!shopReady(n)) return;
+  setShopOn(true);
+  const who=keeperOf(n);
+  if(who) story.castSolo(who);
+  openMenu();
+}
+/* 收店舖畫面。⚠ 立繪與對話框交給 `story.clearCast()`（唯一的收尾，鐵律 8）——
+   這裡只負責把單子收掉、把狀態歸零。 */
+function shopClose(){
+  setShopOn(false);
+  if(sheetClose){ try{ sheetClose(); }catch(_){} sheetClose=null; }
+}
+/* 左邊那張單子：商店 → 買賣；公會 → 懸賞榜。 */
+function openMenu(){
+  const n=node(); if(!shopReady(n)) return;
+  if(sheetClose) return;                       // 已經開著
   if(n.shop){ openShop(); return; }
-  if(n.board && (!n.boardFlag || prog.hasFlag(n.boardFlag))){
-    try{ SFX.unlock(); SFX.menuClick(); }catch(_){}
-    showBounty(n.board);
-  }
+  try{ SFX.unlock(); SFX.menuClick(); }catch(_){}
+  sheetClose = showBounty(n.board, { dock:'left', info:infoText(n),
+                                     onClose:()=>{ sheetClose=null; } });
+}
+/* 單子標題下那一行：地名＋時刻（＋打烊）。⚠ 與上緣的 `#townInfo` 是**同一組字**，
+   所以由同一支算（鐵律 7）—— 那一行在店裡被招呼語讓開了，資訊要在這裡找得到。 */
+function infoText(n){
+  return (n ? n.name : '') + '　' + clock.timeText() + (isOpenNow(n) ? '' : '　已打烊');
 }
 
 function refreshArrows(){
   const n=node(); if(!n || !layer) return;
-  placeCounter();
   const info=layer.querySelector('#townInfo');
-  /* ⚠ 打烊時在時刻後面補一句（ver -391）：櫃台鈕不見了要有理由，
-     不然玩家只會覺得「按鈕怎麼消失了」。 */
+  /* ⚠ 打烊時在時刻後面補一句（ver -391）：店裡沒有人、選單也開不出來，要有理由 ——
+     不然玩家只會覺得「這家店怎麼什麼都沒有」。 */
   if(info) info.innerHTML = n.name + '<span class="ti-time">' + clock.timeText()
          + (isOpenNow(n) ? '' : '　已打烊') + '</span>';
   /* 目的地字格：有那個方向才出現，字是目的地名，**位置貼著那一支箭**
@@ -354,11 +395,15 @@ function bindInput(){
   st.addEventListener('pointerup', e=>{
     if(hold){ cancel(); return; }               // 放太早：取消，不算點擊
     if(!townId || busy || story.isPlaying()) return;
-    if(e.target.closest && e.target.closest('#townCounter')) return;
+    /* ══ 店裡：點畫面 ＝ 把左邊那張單子開回來（ver -404）══
+       單子是走進來就開著的；玩家關掉之後總得有辦法再開。⚠ 走的是**同一支**
+       `openMenu`（鐵律 8），而且已經開著時它自己會 return，所以不會疊第二張。
+       ⚠ 店裡沒有路人單句（`chatter` 只寫在餐酒館／教堂／行政廳／船塢），
+         所以兩者不會打架；真要兩者兼有時，店舖優先。 */
+    if(shopOn){ openMenu(); return; }
     /* ══ 單純點畫面 ＝ 路人單句（ver -387，Ray 指定四個地方都有）══
        節奏是**點一下出一句、再點一下收掉**，收掉之前不出下一句 ——
-       一直點就一直換句的話，玩家永遠讀不完一句。
-       ⚠ 商店／公會不再「點畫面就開選單」：入口改成櫃台鈕（鐵律 8，見 ensureLayer）。 */
+       一直點就一直換句的話，玩家永遠讀不完一句。 */
     if(chatterOn){ story.hideBubble(); chatterOn=false; return; }
     chatter();
   });
@@ -448,7 +493,8 @@ export function enter(id){
   story.clearCast();
   chatterOn=false;          // ⚠ 第四件：上一個地點的路人單句（見 §6.5 的新路徑檢查表）
   inn.close();              // ⚠ 第五件：上一個地點的旅店大廳（同一張檢查表）
-  bgNat=null;               // 背景要重載，舊的尺寸不能拿來擺新的櫃台鈕
+  shopClose();              // ⚠ 第六件：上一個地點的店舖選單（ver -404，同一張檢查表）
+  bgNat=null;               // 背景要重載，舊的尺寸不能拿來擺旅店那兩顆行動鈕
   /* 這座城的曲子（ver -375）。⚠ 每進一個節點都確認一次，不是只在 `open` 時放一次 ——
      中間可能插進一場戰鬥（戰鬥有自己的曲子），回來要接得回去。
      同曲重播由 `playBgm` 自己擋掉，所以重複呼叫是安全的。 */
@@ -519,6 +565,7 @@ function afterArrive(n){
      旗標名只有 `enter()` 那一支知道（`kind` 版／節點版兩種）—— inn 自己拼會拼錯城。 */
   if(n && n.inn) inn.arrive(n, { allSeen: allSeen(), introFlag: flagOf(n, nodeId) });
   else inn.close();
+  shopEnter();              // 店舖畫面（ver -404）：進場對白演完才擺，不然會壓在對白上
 }
 /* 初見劇情的旗標名。⚠ **只有這一支在決定**（鐵律 7）：`enter()` 與 `afterArrive()` 都問它。 */
 function flagOf(n, id){ return (n && n.kind) ? ('town_kind_'+n.kind) : ('town_'+townId+'_'+id); }
@@ -547,14 +594,15 @@ function openShop(){
      它自己會推槍棺、打完接回來（`resumeFrom`），與劇情裡那一次走同一條路（鐵律 8）。
      ⚠ 演完**回到櫃台**（同「與店主交談」的作法）：玩家本來就站在那裡。 */
   const onChallenge = (n.challengeLines && n.challengeLines.length) ? ()=>{
+    setShopOn(false);                    // 進真正的對白：地名交回 `story-talking` 管
     busy=true; showNav(false);
     story.playAdhoc(n.challengeLines, ()=>{
       story.clearCast();
       busy=false; showNav(true);
-      openShop();
+      shopEnter();                       // ⚠ 回到店裡＝把整個店舖畫面擺回來（立繪＋招呼語＋單子）
     });
   } : null;
-  showShop(n.shop, hasTalk ? [1] : null, ()=>{
+  sheetClose = showShop(n.shop, hasTalk ? [1] : null, ()=>{
     let lines = (n.keeper && n.keeper.length) ? n.keeper : null;
     if(!lines && rnd){
       let i=Math.floor(Math.random()*rnd.length);
@@ -564,13 +612,15 @@ function openShop(){
       lines=[{ speaker:who, text:rnd[i], portrait:{ char:who, show:true } }];
     }
     if(!lines) return;
+    setShopOn(false);                    // 同上：交談是普通對白，不是店舖模式
     busy=true; showNav(false);
     story.playAdhoc(lines, ()=>{
       story.clearCast();                 // 鐵律 8：離開這一段就清場
       busy=false; showNav(true);
-      openShop();                        // 談完回到櫃台
+      shopEnter();                       // 談完回到店裡（立繪＋招呼語＋單子一起回來）
     });
-  }, onChallenge);
+  }, onChallenge, { dock:'left', info:infoText(n),
+                    onClose:()=>{ sheetClose=null; } });
 }
 /* ⚠ `lastChat` **原本沒有宣告**（ver -377 修）：ES module 是嚴格模式，
    `lastChat=i` 會直接丟 ReferenceError —— 也就是說酒館的路人閒聊**一句都放不出來**。

@@ -128,3 +128,73 @@
     letter-spacing:1px;color:var(--holy);border:1px solid var(--holy);border-radius:8px;opacity:.8;}
   /* 三頁的時候字要縮一點，不然「武器改裝」四個字擠不下（實測 375 寬）。 */
   #lootSheet .shop-tabs:has(.shop-tab:nth-child(3)) .shop-tab{font-size:11px;letter-spacing:1px;}
+
+  /* ══ 靠左停的店舖單子（ver -404，Ray：「不用點擊，直接右店主左選單」）══
+     店舖畫面 ＝ **右邊店主立繪、左邊選單**，一走進去就是這個樣子。
+     ⚠⚠ 停靠模式**不可以吃掉整個畫面的點擊**：右邊站著店主，底下的槍棺面盤還要能
+       長按箭頭走出店門。所以罩子 `pointer-events:none`、只有單子本身收點擊；
+       背景也不壓黑（那是「強制視窗」的語彙，這一張是常駐的擺設）。
+     ⚠ 寬度給到 62%：**允許**壓到店主左緣一點點 —— 立繪不越中線（§6.5）是給
+       兩人同台用的，這裡單子是前景的實體物件，疊上去讀起來就是「單子在他前面」。
+       再窄下去品名＋價錢就要折行了（實測 390px 寬的機器上 58% 已經開始折）。
+     ⚠ 只改版面，**不改任何字級與顏色** —— 同一張單子在道具欄／拾得視窗裡是置中的，
+       兩種模式要長得一樣，只是站的位置不同。 */
+  #lootSheet.dock-left{background:none;backdrop-filter:none;-webkit-backdrop-filter:none;
+    justify-content:flex-start;align-items:flex-start;pointer-events:none;}
+  #lootSheet.dock-left.on{pointer-events:none;}
+  #lootSheet.dock-left .loot-panel{pointer-events:auto;
+    display:flex;flex-direction:column;
+    width:min(64%,250px);
+    /* ⚠ 上緣要**閃開左上角的靜音鈕**（ver -394 Ray 把它移到整個畫面左上；實測
+       y 56..92）—— 壓在鈕上面的話那顆鈕就按不到了。 */
+    margin:calc(env(safe-area-inset-top,0px) + 100px) 0 0 10px;
+    background:rgba(18,15,26,.94);box-shadow:0 10px 34px rgba(0,0,0,.72);
+    /* ⚠⚠ 下界是**楣的上緣** `--kerb-clip-top` —— 由 `layoutKerberos` 解出來、順手發佈到
+       `:root` 的那一個值（鐵律 7：不要在這裡用「56vh − 楣高」再算一次）。
+       ⚠ 店舖模式**沒有對話框**（Ray：「騰空間出來給選單」），所以這張單子一路用到楣。
+         試過留一條全寬的常駐招呼語：單子只剩 225px，而完整的一張商店單子要 306px
+         （實測 390×844），怎麼壓都塞不下 —— 那一句就是那 80px 的代價。 */
+    max-height:calc(var(--kerb-clip-top, 56vh) - env(safe-area-inset-top,0px) - 108px);
+    overflow:hidden;}
+  /* 清單吃剩下的空間、自己捲；**那排鈕永遠看得到**（不然玩家關不掉單子）。
+     ⚠ `min-height:0` 兩層都要給：flex 子項預設 `min-height:auto`，不給的話它不肯縮，
+       整張單子會撐爆 `max-height`，最下面那排鈕就被 `overflow:hidden` 吃掉。 */
+  #lootSheet.dock-left .shop-body{flex:1 1 auto;min-height:0;}
+  #lootSheet.dock-left .shop-list,
+  #lootSheet.dock-left .loot-list{max-height:none;min-height:0;overflow-y:auto;}
+  #lootSheet.dock-left .shop-tabs,
+  #lootSheet.dock-left .shop-desc,
+  #lootSheet.dock-left .shop-acts,
+  #lootSheet.dock-left .loot-ok{flex:0 0 auto;}
+  #lootSheet.dock-left .shop-desc{max-height:4.6em;overflow-y:auto;}
+  /* ⚠ 窄單子的細部壓縮：**省下來的每一格都給清單**（不壓的話只看得到 1.5 列商品）。
+     標題／金額讓行高、頁籤與鈕讓內距、字距收掉 —— 這些是這個模式專屬的，
+     置中模式（拾得／道具欄）維持原樣。 */
+  #lootSheet.dock-left .loot-title{font-size:13px;letter-spacing:3px;margin-bottom:5px;}
+  #lootSheet.dock-left .bag-money{margin:-2px 2px 5px;}
+  #lootSheet.dock-left .shop-tabs{margin-bottom:6px;}
+  #lootSheet.dock-left .shop-tab{padding:6px 0;}
+  #lootSheet.dock-left .shop-row{padding:7px 9px;}
+  #lootSheet.dock-left .shop-desc{margin-top:6px;min-height:1.8em;}
+  #lootSheet.dock-left .shop-acts{margin-top:6px;gap:5px;}
+  /* ⚠ 鈕**擠一排**：字級 11px、字距歸零、不換行，鈕的字也縮短了（`showShop` 的
+     「交　談」）。武器店最多四顆（買下／交談／射擊挑戰／關閉），250px 的單子每顆
+     約 55px，剛好排得下。換行的話多吃 45px，那 45px 等於清單的一列半。 */
+  #lootSheet.dock-left .shop-acts button{flex:1 1 0;min-width:0;white-space:nowrap;
+    padding:8px 0;font-size:11px;letter-spacing:0;}
+  /* 買／賣那一顆要放得下「買下 3000」，比其他幾顆寬一點。 */
+  #lootSheet.dock-left .shop-do{flex:1.7 1 0;}
+
+  /* ══ 點標題 → 展開全寬（ver -404，Ray：「點擊選單可展開全寬」）══
+     靠左停的單子看得到店主但欄位窄；要細看規格（武器店的規格表、同類比較）就展開。
+     ⚠ 展開＝**把 `dock-left` 拿掉**，回到這一份原本那張置中的視窗 —— 不另做一套版面
+       （鐵律 8）。所以展開之後的樣子與道具欄／拾得視窗一致。
+     ⚠ 點的是**標題列**：清單的每一列與那排鈕都有自己的動作，整張單子都能點的話
+       會誤觸。標題右邊給一個 `⤢`／`⤡` 讓人知道可以點。 */
+  #lootSheet.dock-left .loot-title{cursor:pointer;}
+  #lootSheet .lt-exp{position:absolute;right:12px;top:12px;
+    font-size:12px;color:var(--gold-dim);font-style:normal;}
+  #lootSheet .loot-panel{position:relative;}
+  /* 標題右邊的地名／時刻：停靠模式蓋掉了上緣的 `#townInfo`，資訊要在這裡找得到。 */
+  #lootSheet .shop-info{display:block;margin-top:3px;
+    font-size:10px;letter-spacing:2px;color:var(--gold-dim);}
