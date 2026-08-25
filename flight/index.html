@@ -476,8 +476,9 @@ const VIEW_F = 0.66;      // 3D 視窗佔畫面高度比例，其餘為面板
 /* 齒輪的幾何（ver -413）。⚠ 與 `modules/story.js` 的 `KERB_GEAR` 同一組，改一邊要改另一邊。 */
 /* ⚠ 只剩 `bite`：位置與大小都是解出來的（同 story.js 的 KERB_GEAR）。 */
 /* ⚠ 與 `modules/story.js` 的 `KERB_GEAR` 同一組（門圖上的比例），改一邊要改另一邊。 */
-const FKERB_GEAR={ cx:0.800, cy:0.040, d:0.121, smD:0.065, smAngle:60 };
-const FKERB_PEND={ ar:1536/1024, bandC:0.145, maxW:0.32, rel:1.15, drop:0.004,
+/* ⚠ 與 `modules/story.js` 的 `KERB_GEAR` 同一組，改一邊要改另一邊。 */
+const FKERB_GEAR={ rel:0.92, smRel:0.55, smAngle:60, bodyC:0.45 };
+const FKERB_PEND={ ar:1536/1024, bandC:0.145, maxW:0.32, wantW:0.155, drop:0.004,
   prof:[[0.13,0.41],[0.17,0.45],[0.21,0.49],[0.25,0.45],[0.31,0.40],[0.38,0.31],
         [0.44,0.24],[0.48,0.36],[0.52,0.25],[0.58,0.21],[0.65,0.27],[0.69,0.35],
         [0.75,0.26],[0.78,0.18],[0.86,0.03],[1.00,0.01]] };
@@ -6549,17 +6550,9 @@ function layoutFKerb(){
     pl.style.width=(P.w*Wd)+'px'; pl.style.height='auto'; }
   for(const k in FKERB.arrows) put(dr.querySelector('.fk-arrow.'+k), FKERB.arrows[k]);
   for(const k in FKERB.rivets) put(dr.querySelector('.fk-rivet.'+k), FKERB.rivets[k]);
-  /* 齒輪（ver -417）：位置與大小由 Ray 在門圖上標定，這裡只做換算（同主遊戲）。 */
-  const gb=document.getElementById('fkerbGear'), gsm=document.getElementById('fkerbGearSm');
-  if(gb){ const gr=FKERB_GEAR.d*Wd/2;
-    gb.style.width=(gr*2)+'px'; gb.style.height=(gr*2)+'px';
-    gb.style.left=(FKERB_GEAR.cx*Wd-gr)+'px'; gb.style.top=(FKERB_GEAR.cy*Hd-gr)+'px'; }
-  if(gsm){ const P=FKERB.plate, er=P.w*Wd/2, sr=FKERB_GEAR.smD*Wd/2, bite=4;
-    const t=FKERB_GEAR.smAngle*Math.PI/180, d0=er+sr-bite;
-    const ecx=(P.x+P.w/2)*Wd, ecy=(P.y+P.h/2)*Hd;
-    gsm.style.width=(sr*2)+'px'; gsm.style.height=(sr*2)+'px';
-    gsm.style.left=(ecx+d0*Math.cos(t)-sr)+'px'; gsm.style.top=(ecy+d0*Math.sin(t)-sr)+'px'; }
-  /* 吊墜：解出「與圓盤的圓保持距離」的最大寬度（同 story.js 的 layoutKerberos）。 */
+  /* 吊墜：解出「與圓盤的圓保持距離」的最大寬度（同 story.js 的 layoutKerberos）。
+     ⚠ 它是那一組配件的**基準** —— 齒輪的大小與位置都從它推（見下）。 */
+  let pendW=0, pendCx=0, pendTop=0;
   const pd=document.getElementById('fkerbPend');
   if(pd){
     const P=FKERB.plate, pW=P.w*Wd;
@@ -6570,12 +6563,29 @@ function layoutFKerb(){
         if(Math.hypot(cx-(pcx+q[1]*w), cy-(top+q[0]*h))<=r+clear) return false; }
       return true; };
     let pw=0;
-    const want=Math.min(W*FKERB_PEND.maxW, FKERB_GEAR.d*Wd*FKERB_PEND.rel);
+    const want=Math.min(W*FKERB_PEND.maxW, W*FKERB_PEND.wantW);
     for(let w=Math.round(want); w>=14; w--){ if(fits(w)){ pw=w; break; } }
     pd.style.width=pw+'px'; pd.style.height=(pw*FKERB_PEND.ar)+'px';
     pd.style.left=(pcx-pw/2-dx)+'px'; pd.style.top=top+'px';
     pd.style.display = pw>=14 ? '' : 'none';
+    pendW=pw; pendCx=pcx; pendTop=top;
   }
+  /* 齒輪（ver -419）：大小與位置**由吊墜推出來**（同 story.js 的 layoutKerberos）。 */
+  const gb=document.getElementById('fkerbGear'), gsm=document.getElementById('fkerbGearSm');
+  if(gb && pendW>0){
+    const P=FKERB.plate, pW=P.w*Wd, er=pW/2;
+    const gr=pendW*FKERB_GEAR.rel/2;
+    const gcx=(W-pendCx)-dx, gcy=pendTop + FKERB_GEAR.bodyC*pendW*FKERB_PEND.ar;
+    gb.style.width=(gr*2)+'px'; gb.style.height=(gr*2)+'px';
+    gb.style.left=(gcx-gr)+'px'; gb.style.top=(gcy-gr)+'px'; gb.style.display='';
+    if(gsm){
+      const sr=gr*FKERB_GEAR.smRel, bite=4, t=FKERB_GEAR.smAngle*Math.PI/180, d0=er+sr-bite;
+      const ecx=(P.x+P.w/2)*Wd, ecy=(P.y+P.h/2)*Hd;
+      gsm.style.width=(sr*2)+'px'; gsm.style.height=(sr*2)+'px';
+      gsm.style.left=(ecx+d0*Math.cos(t)-sr)+'px';
+      gsm.style.top =(ecy+d0*Math.sin(t)-sr)+'px'; gsm.style.display='';
+    }
+  }else if(gb){ gb.style.display='none'; if(gsm) gsm.style.display='none'; }
   tp.style.width=W+'px'; tp.style.height=th+'px';
   tp.style.left=(-dx)+'px'; tp.style.top=tpTop+'px';
   kb.style.setProperty('--fkerb-rise', doorTop+'px');
