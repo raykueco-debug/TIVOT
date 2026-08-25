@@ -161,9 +161,11 @@ export function spawnThreat(){
   const coreDia=20+90*DEF_DEFENSE_MIN;
   const coreR=coreDia/2;
   const pxLeft=l=>l/100*lw, pxTop=t=>t/100*lh;
-  // 生成範圍：一般＝left 20~80% / top 25~70%；教學＝config.tutorial.threatSpawn 中央帶
-  //   （對話插入時左右立繪滑入、下方有對話框——中央帶保證紅點不被立繪覆蓋）。
-  const ts=(state.tutorialActive && TUT().threatSpawn) || null;
+  // 生成範圍：一般＝left 20~80% / top 25~70%；**會插對話的場次**＝中央帶
+  //   （左右立繪滑入、下方有對話框——中央帶保證紅點不被蓋住）。
+  //   ⚠ 「這一場會不會插對話」由 tutorial 那一層回答（教學／戰鬥內短教學同一支，
+  //     ver -426）——這裡不去認識那兩種場次的差別。
+  const ts=(api.threatBand && api.threatBand()) || null;
   const rnd=(min,max)=>min+Math.random()*(max-min);
   const rollL=()=> ts ? rnd(ts.leftMin,ts.leftMax) : 20+Math.random()*60;
   const rollT=()=> ts ? rnd(ts.topMin, ts.topMax)  : 25+Math.random()*45;

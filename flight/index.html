@@ -445,7 +445,7 @@ const COLOR_URL  = 'silvermoon_terrain.png';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -314';
+const FLIGHT_VER = 'ver -426';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -1991,6 +1991,25 @@ function setGameStage(n){
   n=Math.max(1, n|0);
   try{ localStorage.setItem(STAGE_KEY, String(n)); }catch(e){}
   return n;
+}
+
+/* ══ 劇情旗標（ver -426）══════════════════════════════════════════════════
+   ⚠ 鑰匙與主遊戲共用（`script/progress.js` 的 `K.flags`，§6.10）。這一頁是非 module
+     的獨立文件，import 不到那一支，所以只能自己讀寫 —— 但**只有這一份**：
+     這一頁任何要問旗標的地方（讀取頁的說明者、劇本遭遇）一律走 `flagOn`，
+     不要各自 `JSON.parse` 一次（鐵律 7）。
+   ⚠ 寫入是**加**不是覆蓋：主遊戲隨時可能在同一把鑰匙裡放別的旗標。 */
+const FLAGS_KEY='tivot_flags_v1';
+function flagList(){
+  try{ const a=JSON.parse(localStorage.getItem(FLAGS_KEY)||'[]'); return Array.isArray(a)?a:[]; }
+  catch(e){ return []; }
+}
+function flagOn(f){ return flagList().indexOf(f)>=0; }
+function addFlag(f){
+  const a=flagList();
+  if(a.indexOf(f)>=0) return;
+  a.push(f);
+  try{ localStorage.setItem(FLAGS_KEY, JSON.stringify(a)); }catch(e){}
 }
 
 /* ══ 主角（玩家本人）══
@@ -6332,13 +6351,50 @@ const enemyArt={};
 })();
 let enemyTimer=ENEMY_CFG.gapMin*0.35;             // 開場不要立刻刷
 
-function spawnEnemy(){
+/* ══ 劇本遭遇（ver -426，Ray：「出薩梅爾上空立刻刷怪，正前方，1.5 倍速，強行進入艦戰」）══
+   主線指定的**強制**遭遇：不等刷新計時、不走橫向巡航 —— 條件一到就在**正前方**
+   生一隻，直接進追擊而且不會放棄，玩家繞不開。
+   ⚠ 條件與內容全是資料（鐵律 1）：`flag` 要有、`done` 還沒有、而且**已經離開**
+     `outOf` 那個國界。「出薩梅爾上空」＝ `regionAt` 不再回薩梅爾帝國（region id 1）——
+     那是既有的國界查表（`talkRegion` 讀的同一份），不要另外拿座標畫一個圈（鐵律 7）。
+   ⚠ 速度寫成「平時的幾倍」（`speedMul`）而不是絕對值：平時的速度是
+     `ENEMY_KINDS[kind].speedK`，那才是「平時」的唯一定義。 */
+const SCRIPTED_ENCOUNTERS = [
+  /* 第二日出航：出了薩梅爾上空立刻被巨型蜈蚣攔下。 */
+  { flag:'set_sail', done:'flight_centipede_met', outOf:1,
+    kind:'centipede', speedMul:1.5 },
+];
+/* 這一趟要不要演劇本遭遇：**開場算一次**。旗標不會在航行途中改變 —— 會改它的是
+   主遊戲，而主遊戲在演的時候這一頁是停著的；每幀去 parse 一次 localStorage 是白花的。
+   ⚠ 用完就地清成 null（連免戰模式也清）：免戰下不寫旗標，重整一次就能再測一遍。 */
+let scriptPending = SCRIPTED_ENCOUNTERS.find(S=>flagOn(S.flag) && !flagOn(S.done)) || null;
+function scriptedDue(){
+  if(!scriptPending) return null;
+  /* ⚠ 國界圖還沒載完就不判：`regionAt` 這時一律回 0（無主之地），
+     那會被讀成「已經出薩梅爾了」→ 一開場就在船塢上空刷怪。 */
+  if(!REGION) return null;
+  if(scriptPending.outOf!=null &&
+     regionAt(cam.x/MAP_SCALE, cam.y/MAP_SCALE)===scriptPending.outOf) return null;
+  return scriptPending;
+}
+function spawnScripted(S){
+  spawnEnemy({ kind:S.kind, ahead:true, speedMul:S.speedMul, script:S });
+}
+
+/* opt（全部選填，劇本遭遇用；不給就是平時那隻隨機刷的）：
+     kind      指定怪種      ahead  生在正前方並直接朝玩家撲（state 直接進 chase）
+     speedMul  速度倍率      script 這一隻是哪一條劇本遭遇（交棒時要記旗標） */
+function spawnEnemy(opt){
+  opt=opt||{};
   const C=ENEMY_CFG;
   /* 生成方位：一律在**視野之外**。敵人不該在玩家眼前憑空出現 ——
      擺到畫面外再讓牠自己漂進來，出場就有了來處。
      （先前的作法是生成一團雲霧罩住牠，已撤：那是遮蔽而不是解決，
        而且雲團得另外管生命週期，還跟共用的 PUFFS 回收邏輯打架。） */
-  const off=C.spawnOffMin+Math.random()*(C.spawnOffMax-C.spawnOffMin);
+  /* ⚠ 劇本遭遇是**正前方**：偏移角 0 ＝玩家的航向，所以牠一定在畫面正中，
+     而且距離會隨玩家自己前進一起縮短（不像平時那隻是橫著切過去的）。 */
+  const off=opt.ahead ? 0
+          : C.spawnOffMin+Math.random()*(C.spawnOffMax-C.spawnOffMin);
   const a=cam.angle+(Math.random()<0.5?off:-off);
   const ox=-Math.sin(a), oy=-Math.cos(a);
   const x=cam.x+ox*C.spawnDist, y=cam.y+oy*C.spawnDist;
@@ -6361,23 +6417,33 @@ function spawnEnemy(){
     const z2=dx2*(-sinp0)+dy2*(-cosp0);
     return Math.abs((dx2*cosp0+dy2*(-sinp0))/(Math.abs(z2)<1?1:z2));
   };
-  let hx=0, hy=0, best=Infinity;
-  for(const side of [1,-1]){
-    const a2=side*(Math.PI/2);
-    const cx2=tx*Math.cos(a2)-ty*Math.sin(a2);
-    const cy2=tx*Math.sin(a2)+ty*Math.cos(a2);
-    const sv2=svOf(x+cx2*260, y+cy2*260);
-    if(sv2<best){ best=sv2; hx=cx2; hy=cy2; }
+  let hx=0, hy=0;
+  if(opt.ahead){
+    /* 劇本遭遇：朝向直接指著玩家（狀態也直接進 chase）—— 牠是來攔你的，不是路過。 */
+    hx=tx; hy=ty;
+  }else{
+    let best=Infinity;
+    for(const side of [1,-1]){
+      const a2=side*(Math.PI/2);
+      const cx2=tx*Math.cos(a2)-ty*Math.sin(a2);
+      const cy2=tx*Math.sin(a2)+ty*Math.cos(a2);
+      const sv2=svOf(x+cx2*260, y+cy2*260);
+      if(sv2<best){ best=sv2; hx=cx2; hy=cy2; }
+    }
   }
   const keys=Object.keys(ENEMY_KINDS);
-  const kind=keys[(Math.random()*keys.length)|0];
+  const kind=(opt.kind && ENEMY_KINDS[opt.kind]) ? opt.kind : keys[(Math.random()*keys.length)|0];
   const K=ENEMY_KINDS[kind];
   /* cruiseHx/cruiseHy、alt0＝「原本的動作」。放棄追擊時要能回到這裡，
      而且是轉回去不是跳回去（同追擊的限角速度）。 */
-  const alt0=cam.alt+Math.random()*60-20;
+  const alt0=opt.ahead ? cam.alt : cam.alt+Math.random()*60-20;
   enemy={ x, y, alt:alt0, alt0, hx, hy, cruiseHx:hx, cruiseHy:hy, kind,
-          d0:C.spawnDist, state:'cruise', tEngage:0, phase:Math.random()*6.28,
-          t0:performance.now(), trail:[] };
+          d0:C.spawnDist, state:opt.ahead?'chase':'cruise', tEngage:0, phase:Math.random()*6.28,
+          t0:performance.now(), trail:[],
+          /* ⚠ 速度**只在這裡算一次**（鐵律 7）：`K.speedK` 是平時的倍率，劇本遭遇再乘
+             卡上的 `speedMul`。updateEnemy 的位移一律讀 `enemy.spdK`，那邊不再乘第二次。 */
+          spdK:K.speedK*(opt.speedMul||1),
+          script:opt.script||null };
   // 軌跡先填成一條直線，否則剛生成的那幾幀身體還沒長出來
   for(let i=1;i<=Math.ceil(K.bodyLen/C.trailStep)+4;i++)
     enemy.trail.push({x:x-hx*C.trailStep*i, y:y-hy*C.trailStep*i});
@@ -6388,9 +6454,18 @@ function updateEnemy(dt,now){
   const C=ENEMY_CFG;
   const K=enemy?ENEMY_KINDS[enemy.kind]:null;
   if(!enemy){
+    /* 劇本遭遇**優先於自動刷新**：條件到了就立刻生，不等計時器（Ray：「立刻刷怪」）。 */
+    const S=scriptedDue();
+    if(S){ spawnScripted(S); return; }
     enemyTimer-=dt;
     if(enemyTimer<=0) spawnEnemy();
     return;
+  }
+  /* 條件在「場上已經有一隻平時的怪」時才到（玩家繞路繞久了）：換掉牠。
+     ⚠ 已經在交棒（engage）的那一隻不能動 —— 牠正要進戰鬥。 */
+  if(!enemy.script && enemy.state!=='engage'){
+    const S=scriptedDue();
+    if(S){ spawnScripted(S); return; }
   }
   const dx=cam.x-enemy.x, dy=cam.y-enemy.y;
   const dist=Math.hypot(dx,dy);
@@ -6416,7 +6491,9 @@ function updateEnemy(dt,now){
        就是為此存在的。
      ⚠ 只換狀態、不動朝向：轉回去交給下面的 cruise 分支限角速度慢慢轉，
        跟追擊的轉向同一套。直接把朝向設回去是瞬間直角轉彎。 */
-  if(enemy.state==='chase' && dist>enemy.d0*C.giveUpAt) enemy.state='cruise';
+  /* ⚠ 劇本遭遇**不放棄**（`強行進入艦戰`）：牠是正面撲上來的，生成當下 dist 就等於
+     d0，一律大於 giveUpAt·d0 —— 不擋這一條的話牠第一幀就「放棄」轉去橫向巡航了。 */
+  if(enemy.state==='chase' && !enemy.script && dist>enemy.d0*C.giveUpAt) enemy.state='cruise';
   if(enemy.state==='cruise'){
     /* 回歸原動作：朝向轉回生成時的橫向巡航方位，高度爬回原高度。
        兩者都用與追擊相同的收斂方式，放棄追擊看起來才像「牠失去興趣、
@@ -6467,7 +6544,8 @@ function updateEnemy(dt,now){
     enemy.alt+=(wantAlt-enemy.alt)*(1-Math.exp(-dt/420));
   }
 
-  const mv=MAX_SPD*K.speedK*dt*0.06;        // 與玩家同一套積分（見 update 的 mv）
+  const mv=MAX_SPD*enemy.spdK*dt*0.06;      // 與玩家同一套積分（見 update 的 mv）
+                                          // ⚠ spdK 在 spawnEnemy 算好（含劇本遭遇的倍率），這裡只讀
   enemy.x+=enemy.hx*mv; enemy.y+=enemy.hy*mv;
 
   /* 軌跡：每前進 trailStep 就記一點。身體是沿這條軌跡排的，
@@ -6646,8 +6724,15 @@ function embedded(){ try{ return window.parent!==window && !!window.parent.__tiv
                      catch(_){ return false; } }
 
 function toBattle(kind){
+  /* 劇本遭遇：**真的交棒的那一刻**才記旗標（ver -426）。
+     ⚠ 不在生成時記：免戰模式根本不進戰鬥，記了就再也刷不出來、測不了。
+     ⚠ 打輸走 Game Over → 回主選單 → 讀檔，那個存檔的旗標本來就還沒有它，
+       所以「記在進戰鬥前」不會害玩家跳過這一場（§6.9）。 */
+  const SC=enemy && enemy.script;
+  scriptPending=null;        // 這一頁這一趟不再刷（免戰模式也是；重整就能再測一遍）
   if(peaceMode) return;      // 免戰：遭遇照演，就是不進戰鬥
   if(battleGoing) return;
+  if(SC && SC.done) addFlag(SC.done);
   battleGoing=true;          // 這一刻起船也停住（見 update() 的那一行）
   /* ⚠⚠ **立刻彈棺，不再等一拍**（ver -389，Ray：「在敵撞上玩家空氣壁之前就要彈槍棺」）。
      -387 那裡先停 700ms 是為了讓「遭遇　◯◯」那一格讀得到 —— 那一格已經拿掉了，
@@ -9160,9 +9245,7 @@ const BOOT_HOST = {
   after: { name:'蕾娜',            img:'../resources/SI/Renna_SI_front.webp' },
 };
 function bootHost(){
-  let on=false;
-  try{ on=(JSON.parse(localStorage.getItem('tivot_flags_v1')||'[]')||[]).indexOf(BOOT_HOST.flag)>=0; }catch(e){}
-  return on ? BOOT_HOST.after : BOOT_HOST.before;
+  return flagOn(BOOT_HOST.flag) ? BOOT_HOST.after : BOOT_HOST.before;
 }
 const bootUI=(()=>{
   const $=id=>document.getElementById(id);

@@ -24,6 +24,7 @@ import { state } from '../state.js';
 import { SFX } from '../audio.js';
 import { L, decorateLine } from '../i18n.js';   // 多語言（跳過確認文案／台詞關鍵字金色粗字）
 import { matchPortraits } from './tone.js';    // 立繪與背景的融合（葉節點）
+import * as progress from '../script/progress.js';   // 旗標（戰鬥內短教學的「講過了」）
 
 const $ = id => document.getElementById(id);
 const CFG = () => GAME_CONFIG.tutorial;
@@ -55,6 +56,68 @@ let cutinWaiters = [];         // afterCutin 輪詢計時器（teardown 清理�
 let cutinLine = -1;            // 已播過 cut-in 的台詞索引（重讀同一句不重播）
 let soloRun = false;           // 本場全程只有一個人講話（立繪放大；maybeStart 判定）
 let awaitDualEnd = false;      // 劇情版：破防那一盤打完就收尾（等下一盤載入）
+
+/* ── 戰鬥內的短教學／插話（ver -426）─────────────────────────────────────
+   `config.battles[<場次>].talk` ＝**那一場自己的**幾句話，掛在既有的 trigger 上
+   （`battleStart` / `board:N` / `threat` / `defended`）。
+   ⚠⚠ **共用同一支對話實作**（openStep 那一條，鐵律 8）：立繪、打字機、真暫停、
+     退場時序全部不另寫一份 —— 另寫一份必然與教學的手感走鐘。
+   ⚠⚠ 但**與教學是兩回事**：教學那一整套（鎖攻擊力 2、敵人打不死、教學結算、
+     引導閘門、罵人插話）一律只看 `state.tutorialActive`，這裡從頭到尾不碰它
+     （§6.5.2「框是共用的，教學那一套不是」）。
+   ⚠ `once:'<旗標>'`＝這一輪遊戲只講一次（走 `progress` 的旗標，所以讀檔會跟著回去，
+     §6.9）。不寫就是每次打都講。 */
+let talkLeft = [];             // 這一場還沒觸發的 talk 步驟（同 stepsLeft，一步只觸發一次）
+let talkOnceFlag = null;       // 講完要記的旗標（null＝不記）
+let talkTimer = null;          // battleStart 延遲計時器（同 startTimer，兩者不會同時存在）
+export function startBattleTalk(list, opts){
+  clearTimeout(talkTimer); talkTimer=null;
+  talkLeft = []; talkOnceFlag = null;
+  if(!list || !list.length) return;
+  const once = opts && opts.once;
+  if(once && progress.hasFlag(once)) return;    // 這一輪講過了
+  talkLeft = list.slice();
+  talkOnceFlag = once || null;
+  soloRun = computeTalkSolo(talkLeft);          // 只有一個人講 → 立繪放大（同教學的規矩）
+  resetCamera();                                // 這一場重新量一次相機（見 cameraPxCm）
+  talkTimer = setTimeout(()=>{ talkTimer=null; fire('battleStart'); }, CFG().startDelayMs||700);
+}
+/* 獨腳戲判定同 computeSoloRun：**以整場為單位**，不逐段看台上幾個人 ——
+   逐段判的話同一張立繪會在插話時忽然放大再縮回去（ver -324 定過的規矩）。 */
+function computeTalkSolo(list){
+  const who=new Set();
+  (list||[]).forEach(st=>(st.lines||[]).forEach(l=>{ if(l && l.who) who.add(l.who); }));
+  return who.size<=1;
+}
+function talkFire(trigger){
+  if(!talkLeft.length) return;
+  const i=talkLeft.findIndex(s=>s.trigger===trigger);
+  if(i<0) return;
+  const step=talkTake(i);
+  /* 開場白還沒插入就被別的節點搶先 → 先講開場白，這一段排隊接上（同 fire 的作法）。
+     ⚠ 這條路是**常態不是例外**：開場的大絕是 0~3 秒內隨機排的（`scheduleOpeningUlt`），
+       而開場白要等 `startDelayMs`（700ms）—— 紅點先到的機率不低。 */
+  if(trigger!=='battleStart' && talkTimer){
+    clearTimeout(talkTimer); talkTimer=null;
+    const bi=talkLeft.findIndex(s=>s.trigger==='battleStart');
+    if(bi>=0){ queue.push(step); openStep(talkTake(bi)); return; }
+  }
+  if(state.tutorialDialog){ queue.push(step); return; }
+  openStep(step);
+}
+/* 取走一段。⚠⚠ `once` 的旗標記在**最後一段被取走**的這一刻，而不是「講完」——
+   取走＝那一段一定會播（不是現在播就是接在 queue 後面），而「講完」有好幾條出口
+   （queue 接續、被 abort、被下一段蓋掉），掛在其中一條一定會漏（實測就漏了）。
+   ⚠ 早記不會害玩家跳過：打輸走 Game Over → 讀檔，旗標跟著那個存檔回去（§6.9）。 */
+function talkTake(i){
+  const st=talkLeft.splice(i,1)[0];
+  if(!talkLeft.length && talkOnceFlag){ progress.addFlags([talkOnceFlag]); talkOnceFlag=null; }
+  return st;
+}
+function endBattleTalk(){
+  clearTimeout(talkTimer); talkTimer=null;
+  talkLeft=[]; talkOnceFlag=null;
+}
 
 /* ---- 首次判定（localStorage 不可用時視為未看過：寧可多教，不漏教）---- */
 function hasSeen(){ try{ return localStorage.getItem(CFG().storageKey)==='1'; }catch(e){ return false; } }
@@ -201,8 +264,18 @@ export function ultSuppressed(){
      （Ray：「第一個敵攻擊點固定出同一位置，失敗也不要變」）。
      教學階段的紅點位置是教材的一部分：位置一直換，玩家會以為自己記錯了。 */
 export function firstThreatPending(){
-  return state.tutorialActive && !defendedDone;
+  return (state.tutorialActive && !defendedDone) || talkPendingThreat();
 }
+/* 紅點的**生成帶**：只要這一場會有對話插進來（教學／戰鬥內短教學），紅點就一律走
+   中央帶 —— 左右是立繪、下方是對話框，落在那些地方的紅點在講解時根本看不見。
+   ⚠⚠ 兩者共用同一組數字（`config.tutorial.threatSpawn`，鐵律 7）：立繪與對話框的
+     位置本來就是同一套版面，另訂一組必然走鐘。放在 tutorial 那一節下面是因為
+     那組數字是**對著這個對話框**量的，不是因為它「只給教學用」。
+   ⚠ 回 null ＝不限制（一般戰鬥照舊 left 20~80 / top 25~70）。 */
+export function threatBand(){
+  return (state.tutorialActive || talkPendingThreat()) ? (CFG().threatSpawn||null) : null;
+}
+function talkPendingThreat(){ return talkLeft.some(st=>st.trigger==='threat'); }
 // combat.tap 每次正確消格呼叫（cleared＝本盤已消格數）：第四回合清滿 strike.afterCells
 //   → 觸發「小心！」劇情殺段
 let attackScoldCount = 0;   // 反擊教學「紅圈在場還猛點盤面」插話次數（首次罵、之後無言）
@@ -287,7 +360,7 @@ export function onSaintEnded(kind){
  *  步驟觸發 / 腳本段落
  * ========================================================================== */
 function fire(trigger){
-  if(!state.tutorialActive) return;
+  if(!state.tutorialActive){ talkFire(trigger); return; }
   const i = stepsLeft.findIndex(s=>s.trigger===trigger);
   if(i<0) return;
   const step = stepsLeft.splice(i,1)[0];
@@ -926,6 +999,7 @@ export function skip(){
 // 中止（combat.stopAll 調度：goHome/勝負/重開場）：只撤 UI、不記已看——
 // 中途退出的話，下次出陣仍會重新進教學（skip 或走到終盤才算看過）。
 export function abort(){
+  endBattleTalk();   // 戰鬥內短教學（ver -426）也隨場次結束收乾淨
   if(!state.tutorialActive && !state.tutorialDialog) return;
   if(state.tutorialDialog) closeDialog(false, true);
   endTutorial();

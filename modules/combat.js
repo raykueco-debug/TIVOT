@@ -74,7 +74,8 @@ export function setup(){
                     所以由 combat 這個協調者把兩件事串起來。 */
                  onThreatResolved: (g)=>{ weapon.onThreatResolved(); tutorial.onThreatResolved(g); },
                  onThreatEarly: tutorial.onEarlyBlock,
-                 ultSuppressed: tutorial.ultSuppressed, firstThreatPending: tutorial.firstThreatPending });
+                 ultSuppressed: tutorial.ultSuppressed, firstThreatPending: tutorial.firstThreatPending,
+                 threatBand: tutorial.threatBand });
   // 教學：真暫停/續戰＋腳本化終盤所需原語注入（雙槍/聖徒化/搭檔主動技/三爪腳本/敵血封頂）
   tutorial.init({
     pauseForDialog, resumeFromDialog,
@@ -995,6 +996,10 @@ export function startGame(){
     state.weaponSound = sb.weaponSound || null;  // 這一場的武器音覆寫（ver -423，船艦戰）
   }
   stopAll();
+  /* 這一場自己的戰鬥內對話（ver -426，例：船艦戰的反擊短教學）。
+     ⚠ 要在 `stopAll()` **之後**掛：`stopAll` 會叫 `tutorial.abort()`，那一支會把它收掉。
+     ⚠ 也要在 `loadBoard(0)` **之前**：loadBoard 會觸發 `board:0`，晚掛就吃不到那個節點。 */
+  if(state.scriptRun && sb) tutorial.startBattleTalk(sb.talk, { once:sb.talkOnce });
   loadBoard(0); updateBars();
   if(state.scriptRun){ updateBars(); return; }   // 劇情插入戰不進教學
   tutorial.maybeStart();   // 首次出陣 → 進教學（穿插式；看過/跳過後恆 no-op）

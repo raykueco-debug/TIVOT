@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.26-424';
+export const VERSION = 'ver 2026.08.26-426';
 
 export const GAME_CONFIG = {
 
@@ -990,10 +990,30 @@ export const GAME_CONFIG = {
     /* ⚠ 船艦戰的武器音**整組換掉**（ver -423，Ray 指定）：機槍→重機槍音、
        霰彈→手槍音同時六聲、步槍→艦砲。`weaponSound` 是「這一場」的覆寫，
        武器卡本身不動（同一把槍在陸戰還是原本的聲音）。 */
+    /* ⚠ `talk` ＝**這一場自己的**戰鬥內對話（ver -426）。走的是教學那一支對話實作
+       （`modules/tutorial.js` 的 openStep，鐵律 8），但**不是教學** —— 鎖攻擊力、
+       敵人打不死、教學結算那一整套只看 `tutorialActive`，這裡一律不碰。
+       ⚠ trigger 沿用既有那幾個節點：`battleStart`／`board:N`／`threat`／`defended`。
+       ⚠ `talkOnce` ＝這一輪遊戲只講一次（旗標走 `progress`，所以讀檔會跟著回去，§6.9）。
+       ⚠⚠ 反擊短教學由**諾薇兒**帶，就這兩句（Ray 交稿，一字未改）。 */
     flight_centipede: { enemy:'centipi',
                         weaponSound:{ MG_Squall:'se_ship_heavygun',
                                       Shotgun_Blast:{ key:'se_pistol_01', times:6 },
-                                      Sniper_Falcon:'se_ship_cannon' } },
+                                      Sniper_Falcon:'se_ship_cannon' },
+                        talkOnce:'taught_ship_counter',
+                        talk:[
+                          /* 開戰：普通武器打不動這種體型 —— 講在玩家第一次揮空之前。 */
+                          { trigger:'battleStart', lines:[
+                            { who:'nouvelle', img:'tut_nouvelle_cringe',
+                              text:'大型敵人用普通武器很難應付！' },
+                          ]},
+                          /* 第一顆紅點生成的瞬間（對話會真暫停，圈就凍在畫面上）——
+                             「抓準時機」要指著那個正在縮的圈講，講完才有東西可指。 */
+                          { trigger:'threat', lines:[
+                            { who:'nouvelle',
+                              text:'抓準時機，在敵人攻擊前的一瞬間用艦載武器反擊！' },
+                          ]},
+                        ] },
     flight_serpent:   { enemy:'facelessgiant' },
     flight_pirate:    { enemy:'facelessgiant' },
   },

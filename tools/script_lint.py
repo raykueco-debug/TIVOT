@@ -64,7 +64,8 @@ def load_data():
     for f in SRC_FILES:
         parts.append(strip_module(open(os.path.join(ROOT, f), encoding='utf-8').read()))
     parts.append('print(JSON.stringify({script:MAIN_SCRIPT, entry:MAIN_ENTRY,'
-                 ' speakers:SPEAKERS, art:ART, towns:TOWNS, cfg:GAME_CONFIG}));')
+                 ' speakers:SPEAKERS, art:ART, towns:TOWNS, cfg:GAME_CONFIG,'
+                 ' assets:ASSETS}));')
     t = tempfile.NamedTemporaryFile('w', suffix='.js', delete=False, encoding='utf-8')
     t.write('\n'.join(parts)); t.close()
     r = subprocess.run([JSC, t.name], capture_output=True, text=True)
@@ -299,6 +300,34 @@ def main():
 
         ev = (town.get("evening") or {}).get("lines")
         if ev: check_lines('%s.evening' % tid, ev)
+
+    # ── 戰鬥內的短教學／插話（ver -426：`config.battles[*].talk`）────────────
+    #  ⚠ 它走的是**教學那一支**對話實作（modules/tutorial.js 的 openStep），所以
+    #    角色要在 `config.tutorial.cast` 裡、表情差分要在 ASSETS 裡 ——
+    #    打錯的話要等真的打到那一場才發現，那通常是好幾個畫面之後的事。
+    TALK_TRIGGERS = ('battleStart', 'threat', 'defended')
+    tcast  = ((cfg.get('tutorial') or {}).get('cast') or {})
+    assets = D.get('assets') or {}
+    for bid, b in (cfg.get('battles') or {}).items():
+        if b.get('talkOnce') and not (b.get('talk') or []):
+            warn('battles.%s：寫了 talkOnce 卻沒有 talk' % bid)
+        for i, st in enumerate(b.get('talk') or []):
+            tag = 'battles.%s.talk[%d]' % (bid, i)
+            tr  = st.get('trigger')
+            if not (tr in TALK_TRIGGERS or (isinstance(tr, str) and tr.startswith('board:'))):
+                err('%s：trigger「%s」不是既有的節點（%s 或 board:N）'
+                    % (tag, tr, '／'.join(TALK_TRIGGERS)))
+            if not (st.get('lines') or []):
+                err('%s：沒有台詞' % tag)
+            for j, ln in enumerate(st.get('lines') or []):
+                who = ln.get('who')
+                if who not in tcast:
+                    err('%s.lines[%d]：who「%s」不在 config.tutorial.cast 裡' % (tag, j, who))
+                img = ln.get('img')
+                if img and img not in assets:
+                    err('%s.lines[%d]：img「%s」不在 ASSETS 裡' % (tag, j, img))
+                if not str(ln.get('text') or '').strip():
+                    err('%s.lines[%d]：空台詞' % (tag, j))
 
     for m in errs:  print('❌ ' + m)
     for m in warns: print('⚠  ' + m)
