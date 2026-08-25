@@ -457,7 +457,8 @@ const VIEW_F = 0.66;      // 3D 視窗佔畫面高度比例，其餘為面板
 /* 吊墜的幾何（ver -412）。⚠⚠ 與 `modules/story.js` 的 `KERB_PEND` 是**同一組數字**——
    這一頁是非 module 的獨立文件，import 不到那一份，**改一邊要改另一邊**（鐵律 7 的但書）。 */
 /* 齒輪的幾何（ver -413）。⚠ 與 `modules/story.js` 的 `KERB_GEAR` 同一組，改一邊要改另一邊。 */
-const FKERB_GEAR={ bandC:0.78, size:0.145, gap:0.002, bite:4 };
+/* ⚠ 只剩 `bite`：位置與大小都是解出來的（同 story.js 的 KERB_GEAR）。 */
+const FKERB_GEAR={ bite:4 };
 const FKERB_PEND={ ar:1536/1024, bandC:0.145, maxW:0.32, drop:0.004,
   prof:[[0.13,0.41],[0.17,0.45],[0.21,0.49],[0.25,0.45],[0.31,0.40],[0.38,0.31],
         [0.44,0.24],[0.48,0.36],[0.52,0.25],[0.58,0.21],[0.65,0.27],[0.69,0.35],
@@ -6528,24 +6529,54 @@ function layoutFKerb(){
     pl.style.width=(P.w*Wd)+'px'; pl.style.height='auto'; }
   for(const k in FKERB.arrows) put(dr.querySelector('.fk-arrow.'+k), FKERB.arrows[k]);
   for(const k in FKERB.rivets) put(dr.querySelector('.fk-rivet.'+k), FKERB.rivets[k]);
-  /* 齒輪：大的嵌右上角，小的咬在它與團徽之間（半徑由相切條件解出來，同主遊戲）。 */
+  /* 齒輪（ver -414）：大的＝右上三角區的**內接圓**、小的＝避開鉚釘的最小惰輪。
+     ⚠ 與 `modules/story.js` 的 layoutKerberos 是**同一套解法**，改一邊要改另一邊。 */
   const gb=document.getElementById('fkerbGear'), gs=document.getElementById('fkerbGearSm');
   if(gb){
     const P=FKERB.plate, pW=P.w*Wd;
-    const gr=W*FKERB_GEAR.size/2;
-    const gcx=W*FKERB_GEAR.bandC-dx, gcy=(1+th*FKERB.top.dip)+W*FKERB_GEAR.gap+gr;
+    const topY=1+th*FKERB.top.dip, rightX=W-dx;
+    const ecx=(P.x+P.w/2)*Wd, ecy=(P.y+P.h/2)*Hd, er=pW/2;
+    const RV=[];
+    for(const k in FKERB.rivets){ const b=FKERB.rivets[k];
+      RV.push([b.cx*Wd, b.cy*Hd, Math.max(b.w*Wd, b.h*Hd)/2]); }
+    const M=Math.max(4, W*0.015);
+    const room=(x,y)=>{ let v=Math.min(rightX-M-x, y-(topY+M), Math.hypot(x-ecx,y-ecy)-er-M);
+      for(const q of RV) v=Math.min(v, Math.hypot(x-q[0],y-q[1])-q[2]-M); return v; };
+    let bx=rightX-W*0.12, by=topY+W*0.12, bv=room(bx,by);
+    let x0=ecx,x1=rightX,y0=topY,y1=ecy;
+    for(let pass=0;pass<4;pass++){
+      const nx=(x1-x0)/24, ny=(y1-y0)/24;
+      for(let i=0;i<=24;i++) for(let j=0;j<=24;j++){
+        const x=x0+i*nx, y=y0+j*ny, v=room(x,y);
+        if(v>bv){ bv=v; bx=x; by=y; } }
+      x0=bx-nx*1.5; x1=bx+nx*1.5; y0=by-ny*1.5; y1=by+ny*1.5;
+    }
+    const gr=Math.max(10, bv*0.94), gcx=bx, gcy=by;
     gb.style.width=(gr*2)+'px'; gb.style.height=(gr*2)+'px';
     gb.style.left=(gcx-gr)+'px'; gb.style.top=(gcy-gr)+'px';
-    const ecx=(P.x+P.w/2)*Wd, ecy=(P.y+P.h/2)*Hd, er=pW/2;
-    const bite=FKERB_GEAR.bite||0;
-    const d=Math.hypot(gcx-ecx, gcy-ecy), sr=(d-er-gr)/2+bite;
-    if(gs){
-      if(sr>3){ const t=(er+sr-bite)/d;
-        gs.style.width=(sr*2)+'px'; gs.style.height=(sr*2)+'px';
-        gs.style.left=(ecx+(gcx-ecx)*t-sr)+'px'; gs.style.top=(ecy+(gcy-ecy)*t-sr)+'px';
-        gs.style.display='';
-      }else gs.style.display='none';
+    const D=Math.hypot(gcx-ecx, gcy-ecy), sMin=(D-er-gr)/2;
+    let sol=null, bestScore=-1e9, bestSol=null;
+    for(let k=0;k<=90 && !sol;k++){
+      const sr=sMin+k*Math.max(0.5, W*0.0015), r1=er+sr, r2=sr+gr;
+      if(r1+r2<D) continue;
+      const a=(r1*r1-r2*r2+D*D)/(2*D), h2=r1*r1-a*a;
+      if(h2<0) continue;
+      const h=Math.sqrt(h2), mx=ecx+a*(gcx-ecx)/D, my=ecy+a*(gcy-ecy)/D;
+      for(const sg of [1,-1]){
+        const sx=mx+sg*h*(gcy-ecy)/D, sy=my-sg*h*(gcx-ecx)/D;
+        let cl=Math.min(rightX-M-sx-sr, sy-(topY+M)-sr);
+        for(const q of RV) cl=Math.min(cl, Math.hypot(sx-q[0],sy-q[1])-q[2]-sr-M*0.5);
+        if(cl>bestScore){ bestScore=cl; bestSol={sr,sx,sy}; }
+        if(cl>0){ sol={sr,sx,sy}; break; }
+      }
     }
+    const S=sol||bestSol;
+    if(gs && S && S.sr>3){
+      const bite=FKERB_GEAR.bite||0, t=(er+S.sr-bite)/(er+S.sr);
+      gs.style.width=(S.sr*2)+'px'; gs.style.height=(S.sr*2)+'px';
+      gs.style.left=(ecx+(S.sx-ecx)*t-S.sr)+'px'; gs.style.top=(ecy+(S.sy-ecy)*t-S.sr)+'px';
+      gs.style.display='';
+    }else if(gs) gs.style.display='none';
   }
   /* 吊墜：解出「與圓盤的圓保持距離」的最大寬度（同 story.js 的 layoutKerberos）。 */
   const pd=document.getElementById('fkerbPend');

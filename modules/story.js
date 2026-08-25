@@ -842,15 +842,15 @@ const KERB_POP={ arrow:0.045, rivet:0.026 };   // 彈開距離，佔門寬的比
    `fill` 是「左側空隙要吃掉幾成」—— Ray：「在不擺動的狀況下不可碰觸到圓盤」，
    所以留了 14% 的餘裕，不要調到 1。`drop` 是吊掛點往下離門頂多遠（佔門高）：
    0 會讓鏈子的頂端正好在門頂，被楣壓住一點才像是從楣底下垂下來的。 */
-/* 齒輪（ver -413，Ray 指定）。⚠ `bandC/size/gap` 佔**畫面寬**（大齒輪嵌在右上角）；
-   小齒輪的半徑不是填的 —— 由「團徽外緣 → 小齒輪 → 大齒輪 三個剛好相切」解出來。
-   ⚠⚠ `bandC` 由 0.875 收到 **0.78**、`gap` 收到 0.002（ver -413b，Ray：「大小齒輪都往左
-     一點，不要碰到卯釘」）—— 2 點鐘那顆鉚釘（`r2`）正好落在「團徽 → 右上角」那條線上，
-     原本的位置小齒輪會壓在它身上。往左並且往上收之後，兩顆齒輪與 r2 都留有 6px 以上。
-     **改 bandC／size 之前先算一次與 `KERB_META.rivets.r2` 的距離**（見下方 layout 的驗算）。
-   ⚠ `bite`＝小齒輪要**咬進**團徽與大齒輪多少 px（Ray：「小齒輪的邊要稍稍被團徽壓到」）——
+/* 齒輪（ver -413／-414，Ray 指定）。⚠⚠ **這裡沒有位置與大小** —— 兩顆齒輪的圓心與半徑
+   都是 `layoutKerberos` 解出來的（大：右上三角區的內接圓；小：同時咬住團徽與大齒輪、
+   且避開鉚釘的最小惰輪）。
+   ⚠ `bite`＝小齒輪要**咬進**團徽多少 px（Ray：「小齒輪的邊要稍稍被團徽壓到」）——
      它排在 `#kerbPlate` 之前，所以壓過去的那一小段自然被團徽蓋住，看起來就是嵌進去的。 */
-const KERB_GEAR={ bandC:0.78, size:0.145, gap:0.002, bite:4 };
+/* ⚠ `bandC`／`size`／`gap` 於 ver -414 **拿掉了** —— 大齒輪的位置與大小改成
+   「右上三角區的內接圓」解出來的（見 layoutKerberos），不再有可調的落點。
+   剩下的只有 `bite`：小齒輪要咬進團徽多少 px（Ray：「邊要稍稍被團徽壓到」）。 */
+const KERB_GEAR={ bite:4 };
 const KERB_PEND={
   ar:1536/1024,   // 那張圖的高寬比（量出來的）
   bandC:0.145,    // 吊墜中心在畫面寬的哪個比例（ver -412 由 0.115 往右，Ray 指定）
@@ -963,48 +963,89 @@ function layoutKerberos(){
     pd.style.top   = top+'px';
     pd.style.display = pw>=14 ? '' : 'none';          // 真的擠不下就不掛
   }
-  /* ── 齒輪（ver -413）──
-     大齒輪嵌在右上角、小齒輪咬在它與團徽之間。
-     ⚠⚠ 小齒輪的半徑是**解出來的**：三個圓要串成一條咬合鏈，
-       `r小 = (兩圓心距 − r團徽 − r大)/2`；串不起來（算出來 ≤0）就不放小齒輪。
-     ⚠⚠ 轉速由**半徑比**決定（嚙合的兩輪 ω ∝ 1/r），而且**方向相反** ——
-       團徽轉 180°，小齒輪 −180·(r團徽/r小)、大齒輪 +180·(r團徽/r大)。
-       「越小轉越快」是這條式子的結果，不是調出來的。
-     ⚠ 位置寫**門座標**（inline），因為它們是門的子元素。 */
+  /* ── 齒輪（ver -413／-414）────────────────────────────────────────
+     Ray（-414）：「以邊界為基準，應該讓大齒輪落在**右上三角區的最中心**，不要觸邊、
+     不要觸釘；小齒輪如果沒辦法一次不觸釘就連到團徽，可以放兩個」。
+
+     ⚠⚠ 所以大齒輪的位置與大小都**不是填的數字**，是解出來的：右上那一塊被
+       ①畫面右緣 ②楣的下緣 ③團徽的圓 ④鉚釘 圍成一個三角形，
+       取它的**內接圓**（Chebyshev 中心 ＝ 離所有邊界最遠的那一點）。
+       「最中心」與「不要觸邊／觸釘」是同一個解 —— 內接圓的圓心就是離每一邊都最遠的點。
+     ⚠ 解法是網格搜尋 ＋ 三輪局部收斂（只在 resize 時跑一次，成本可以忽略）。
+       不用閉式解：邊界有四種（兩條直線、兩個圓），寫閉式解會比這段長三倍還難改。
+
+     ⚠⚠ 小齒輪**不能擺在連線上**：2 點鐘那顆鉚釘（`r2`）是**貼在團徽環上**的
+       （實測團徽圓心到它 145.9，而 er+鉚釘半徑 = 147.7 —— 它與團徽本來就重疊），
+       所以「團徽 → 右上角」那條直線上根本沒有縫可以鑽。
+       正解是**把惰輪撐大、讓它滾到線的一側**：同時咬住團徽與大齒輪的圓心軌跡有兩支，
+       半徑越大離連線越遠。所以由最小可行半徑往上加，第一個「離鉚釘與邊界都夠遠」的就是答案。
+       實測單顆就夠（不必放兩顆）。 */
   const gb=$('storyExit'), gs=$('kerbGearSm');
   if(gb){
-    const gr   = W*KERB_GEAR.size/2;                       // 大齒輪半徑
     const topY = 1 + (W*KERB_META.top.ar)*KERB_META.top.dip;   // 楣的下緣（門座標）
-    const gcx  = W*KERB_GEAR.bandC - dx;                   // 大齒輪圓心（門座標）
-    const gcy  = topY + W*KERB_GEAR.gap + gr;
+    const rightX = W - dx;                                     // 畫面右緣（門座標）
+    const ecx=(P.x+P.w/2)*Wd, ecy=(P.y+P.h/2)*Hd, er=pW/2;     // 團徽圓心與半徑
+    const RV=[];                                               // 鉚釘（當成圓）
+    for(const k of KERB_RIVETS){ const b=KERB_META.rivets[k];
+      RV.push([b.cx*Wd, b.cy*Hd, Math.max(b.w*Wd, b.h*Hd)/2]); }
+    const M = Math.max(4, W*0.015);                            // 與每一邊的最小空隙
+    /* 離所有邊界最近的距離（＝這一點放得下多大的圓）。 */
+    const room=(x,y)=>{
+      let v=Math.min(rightX-M-x, y-(topY+M), Math.hypot(x-ecx,y-ecy)-er-M);
+      for(const [rx,ry,rr] of RV) v=Math.min(v, Math.hypot(x-rx,y-ry)-rr-M);
+      return v;
+    };
+    /* 網格搜尋 ＋ 局部收斂 → 內接圓的圓心。 */
+    let bx=rightX-W*0.12, by=topY+W*0.12, bv=room(bx,by);
+    let x0=ecx, x1=rightX, y0=topY, y1=ecy;
+    for(let pass=0; pass<4; pass++){
+      const nx=(x1-x0)/24, ny=(y1-y0)/24;
+      for(let i=0;i<=24;i++) for(let j=0;j<=24;j++){
+        const x=x0+i*nx, y=y0+j*ny, v=room(x,y);
+        if(v>bv){ bv=v; bx=x; by=y; }
+      }
+      x0=bx-nx*1.5; x1=bx+nx*1.5; y0=by-ny*1.5; y1=by+ny*1.5;
+    }
+    /* ⚠ 再收一點（0.94）：內接圓是**剛好貼到**三個邊界的那一顆，Ray 要「不要觸邊」。 */
+    const gr = Math.max(10, bv*0.94), gcx=bx, gcy=by;
     gb.style.width=(gr*2)+'px'; gb.style.height=(gr*2)+'px';
     gb.style.left=(gcx-gr)+'px'; gb.style.top=(gcy-gr)+'px';
-    /* 團徽圓心（門座標）與半徑 */
-    const ecx=(P.x+P.w/2)*Wd, ecy=(P.y+P.h/2)*Hd, er=pW/2;
-    const d  = Math.hypot(gcx-ecx, gcy-ecy);
-    /* ⚠ 相切解再**加上 `bite`**：小齒輪長大一點、又往團徽靠一點，兩邊各壓進去 `bite` px。
-       Ray：「小齒輪的邊要稍稍被團徽壓到」—— 齒輪排在團徽之前，壓過去那一小段自然被蓋住。 */
-    const bite = KERB_GEAR.bite||0;
-    const sr = (d - er - gr)/2 + bite;                     // 小齒輪半徑（咬合解 ＋ 咬入量）
-    if(gs){
-      if(sr>3){
-        const t=(er+sr-bite)/d;                            // 沿兩圓心連線，離團徽 er+sr−bite
-        const sx=ecx+(gcx-ecx)*t, sy=ecy+(gcy-ecy)*t;
-        gs.style.width=(sr*2)+'px'; gs.style.height=(sr*2)+'px';
-        gs.style.left=(sx-sr)+'px'; gs.style.top=(sy-sr)+'px';
-        gs.style.display='';
-        kb.style.setProperty('--kerb-gear-rot-s', (-180*er/sr).toFixed(1)+'deg');
-      }else gs.style.display='none';
+
+    /* ── 惰輪（小齒輪）── 同時咬住團徽與大齒輪；半徑由小往大試，
+       第一個「離鉚釘與邊界都夠遠」的就採用。⚠ 兩支軌跡各試一次（線的上下兩側）。 */
+    const D=Math.hypot(gcx-ecx, gcy-ecy);
+    const sMin=(D-er-gr)/2;
+    let sol=null, bestScore=-1e9, bestSol=null;
+    for(let k=0; k<=90 && !sol; k++){
+      const sr=sMin + k*Math.max(0.5, W*0.0015);
+      const r1=er+sr, r2=sr+gr;
+      if(r1+r2 < D) continue;
+      const a=(r1*r1-r2*r2+D*D)/(2*D), h2=r1*r1-a*a;
+      if(h2<0) continue;
+      const h=Math.sqrt(h2);
+      const mx=ecx+a*(gcx-ecx)/D, my=ecy+a*(gcy-ecy)/D;
+      for(const sg of [1,-1]){
+        const sx=mx+sg*h*(gcy-ecy)/D, sy=my-sg*h*(gcx-ecx)/D;
+        let cl=Math.min(rightX-M-sx-sr, sy-(topY+M)-sr);
+        for(const [rx,ry,rr] of RV) cl=Math.min(cl, Math.hypot(sx-rx,sy-ry)-rr-sr-M*0.5);
+        if(cl>bestScore){ bestScore=cl; bestSol={sr,sx,sy}; }
+        if(cl>0){ sol={sr,sx,sy}; break; }
+      }
     }
+    const S = sol || bestSol;
+    if(gs && S && S.sr>3){
+      /* `bite`：往團徽再靠一點，邊緣被團徽壓住（Ray 指定）。 */
+      const bite=KERB_GEAR.bite||0;
+      const t=(er+S.sr-bite)/(er+S.sr);            // |S−E| 恰好是 er+sr，等比縮短 bite
+      const sx=ecx+(S.sx-ecx)*t, sy=ecy+(S.sy-ecy)*t;
+      gs.style.width=(S.sr*2)+'px'; gs.style.height=(S.sr*2)+'px';
+      gs.style.left=(sx-S.sr)+'px'; gs.style.top=(sy-S.sr)+'px';
+      gs.style.display='';
+      kb.style.setProperty('--kerb-gear-rot-s', (-180*er/S.sr).toFixed(1)+'deg');
+      if(!kerbGearWarned && !sol){ kerbGearWarned=true;
+        console.warn('[kerb] 小齒輪找不到不碰鉚釘的位置，用了最寬鬆的那一個'); }
+    }else if(gs) gs.style.display='none';
     kb.style.setProperty('--kerb-gear-rot', (180*er/gr).toFixed(1)+'deg');
-    /* ⚠ 驗算：兩顆齒輪都不可以碰到鉚釘（Ray 指定）。鉚釘當成圓（外框近似正方形），
-       撞到就在 console 記一筆 —— 改 `bandC`／`size` 的人才知道自己弄壞了什麼。 */
-    if(!kerbGearWarned){
-      const R2=KERB_META.rivets.r2, rvr=Math.max(R2.w*Wd, R2.h*Hd)/2;
-      const rvx=R2.cx*Wd, rvy=R2.cy*Hd;
-      const hit=(x,y,r)=>Math.hypot(x-rvx, y-rvy) < r+rvr;
-      if(hit(gcx,gcy,gr)) { kerbGearWarned=true; console.warn('[kerb] 大齒輪壓到鉚釘 r2 —— 調 KERB_GEAR.bandC/size'); }
-    }
     /* 右半扇開門走的距離（左半扇是 `--kerb-open-x`）：`.kerb-half.r` 是 `translateX(104%)`
        而它的寬度是門的一半 —— 齒輪要跟著它走，就得換算成同一個 px（% 是相對自己的寬）。 */
     kb.style.setProperty('--kerb-open-rx', (Wd/2*1.04)+'px');
