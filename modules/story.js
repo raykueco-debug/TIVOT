@@ -842,6 +842,15 @@ const KERB_POP={ arrow:0.045, rivet:0.026 };   // 彈開距離，佔門寬的比
    `fill` 是「左側空隙要吃掉幾成」—— Ray：「在不擺動的狀況下不可碰觸到圓盤」，
    所以留了 14% 的餘裕，不要調到 1。`drop` 是吊掛點往下離門頂多遠（佔門高）：
    0 會讓鏈子的頂端正好在門頂，被楣壓住一點才像是從楣底下垂下來的。 */
+/* 齒輪（ver -413，Ray 指定）。⚠ `bandC/size/gap` 佔**畫面寬**（大齒輪嵌在右上角）；
+   小齒輪的半徑不是填的 —— 由「團徽外緣 → 小齒輪 → 大齒輪 三個剛好相切」解出來。
+   ⚠⚠ `bandC` 由 0.875 收到 **0.78**、`gap` 收到 0.002（ver -413b，Ray：「大小齒輪都往左
+     一點，不要碰到卯釘」）—— 2 點鐘那顆鉚釘（`r2`）正好落在「團徽 → 右上角」那條線上，
+     原本的位置小齒輪會壓在它身上。往左並且往上收之後，兩顆齒輪與 r2 都留有 6px 以上。
+     **改 bandC／size 之前先算一次與 `KERB_META.rivets.r2` 的距離**（見下方 layout 的驗算）。
+   ⚠ `bite`＝小齒輪要**咬進**團徽與大齒輪多少 px（Ray：「小齒輪的邊要稍稍被團徽壓到」）——
+     它排在 `#kerbPlate` 之前，所以壓過去的那一小段自然被團徽蓋住，看起來就是嵌進去的。 */
+const KERB_GEAR={ bandC:0.78, size:0.145, gap:0.002, bite:4 };
 const KERB_PEND={
   ar:1536/1024,   // 那張圖的高寬比（量出來的）
   bandC:0.145,    // 吊墜中心在畫面寬的哪個比例（ver -412 由 0.115 往右，Ray 指定）
@@ -859,6 +868,7 @@ const KERB_PEND={
 const KERB_ARROWS=['n','e','s','w'];             // 箭：正四向
 const KERB_RIVETS=['r10','r2','r4','r8'];        // 鉚釘：10/2/4/8 點鐘，依這個順序彈開
 let kerbReady=false;
+let kerbGearWarned=false;    // 齒輪撞鉚釘只警告一次（layout 每次 resize 都會跑）
 
 /* 幾何：門要多寬，是**解出來的**不是調出來的 ——
    兩個條件同時成立：①圓盤圓心落在下半面板正中 ②升到頂時蓋滿整個畫面。
@@ -953,6 +963,52 @@ function layoutKerberos(){
     pd.style.top   = top+'px';
     pd.style.display = pw>=14 ? '' : 'none';          // 真的擠不下就不掛
   }
+  /* ── 齒輪（ver -413）──
+     大齒輪嵌在右上角、小齒輪咬在它與團徽之間。
+     ⚠⚠ 小齒輪的半徑是**解出來的**：三個圓要串成一條咬合鏈，
+       `r小 = (兩圓心距 − r團徽 − r大)/2`；串不起來（算出來 ≤0）就不放小齒輪。
+     ⚠⚠ 轉速由**半徑比**決定（嚙合的兩輪 ω ∝ 1/r），而且**方向相反** ——
+       團徽轉 180°，小齒輪 −180·(r團徽/r小)、大齒輪 +180·(r團徽/r大)。
+       「越小轉越快」是這條式子的結果，不是調出來的。
+     ⚠ 位置寫**門座標**（inline），因為它們是門的子元素。 */
+  const gb=$('storyExit'), gs=$('kerbGearSm');
+  if(gb){
+    const gr   = W*KERB_GEAR.size/2;                       // 大齒輪半徑
+    const topY = 1 + (W*KERB_META.top.ar)*KERB_META.top.dip;   // 楣的下緣（門座標）
+    const gcx  = W*KERB_GEAR.bandC - dx;                   // 大齒輪圓心（門座標）
+    const gcy  = topY + W*KERB_GEAR.gap + gr;
+    gb.style.width=(gr*2)+'px'; gb.style.height=(gr*2)+'px';
+    gb.style.left=(gcx-gr)+'px'; gb.style.top=(gcy-gr)+'px';
+    /* 團徽圓心（門座標）與半徑 */
+    const ecx=(P.x+P.w/2)*Wd, ecy=(P.y+P.h/2)*Hd, er=pW/2;
+    const d  = Math.hypot(gcx-ecx, gcy-ecy);
+    /* ⚠ 相切解再**加上 `bite`**：小齒輪長大一點、又往團徽靠一點，兩邊各壓進去 `bite` px。
+       Ray：「小齒輪的邊要稍稍被團徽壓到」—— 齒輪排在團徽之前，壓過去那一小段自然被蓋住。 */
+    const bite = KERB_GEAR.bite||0;
+    const sr = (d - er - gr)/2 + bite;                     // 小齒輪半徑（咬合解 ＋ 咬入量）
+    if(gs){
+      if(sr>3){
+        const t=(er+sr-bite)/d;                            // 沿兩圓心連線，離團徽 er+sr−bite
+        const sx=ecx+(gcx-ecx)*t, sy=ecy+(gcy-ecy)*t;
+        gs.style.width=(sr*2)+'px'; gs.style.height=(sr*2)+'px';
+        gs.style.left=(sx-sr)+'px'; gs.style.top=(sy-sr)+'px';
+        gs.style.display='';
+        kb.style.setProperty('--kerb-gear-rot-s', (-180*er/sr).toFixed(1)+'deg');
+      }else gs.style.display='none';
+    }
+    kb.style.setProperty('--kerb-gear-rot', (180*er/gr).toFixed(1)+'deg');
+    /* ⚠ 驗算：兩顆齒輪都不可以碰到鉚釘（Ray 指定）。鉚釘當成圓（外框近似正方形），
+       撞到就在 console 記一筆 —— 改 `bandC`／`size` 的人才知道自己弄壞了什麼。 */
+    if(!kerbGearWarned){
+      const R2=KERB_META.rivets.r2, rvr=Math.max(R2.w*Wd, R2.h*Hd)/2;
+      const rvx=R2.cx*Wd, rvy=R2.cy*Hd;
+      const hit=(x,y,r)=>Math.hypot(x-rvx, y-rvy) < r+rvr;
+      if(hit(gcx,gcy,gr)) { kerbGearWarned=true; console.warn('[kerb] 大齒輪壓到鉚釘 r2 —— 調 KERB_GEAR.bandC/size'); }
+    }
+    /* 右半扇開門走的距離（左半扇是 `--kerb-open-x`）：`.kerb-half.r` 是 `translateX(104%)`
+       而它的寬度是門的一半 —— 齒輪要跟著它走，就得換算成同一個 px（% 是相對自己的寬）。 */
+    kb.style.setProperty('--kerb-open-rx', (Wd/2*1.04)+'px');
+  }
   /* 楣：橫跨整個畫面寬，**下緣貼齊門的上緣**（往下壓 1px 免得留一條髮絲縫）。 */
   /* 十字亮光：豎的沿門的中縫、橫的沿紋章的橫軸（＝箭的那一條線）。
      ⚠ 縫的位置吃 KERB_META.seam，不是寫死 50% —— 門的中縫實測在 0.506。 */
@@ -1002,8 +1058,13 @@ function layoutKerberos(){
   }
   if(!kerbReady){
     kerbReady=true;
-    const src={ kerbPlate:'kerberos_plate', kerbTop:'kerberos_top', kerbPendImg:'kerberos_pendant' };
+    const src={ kerbPlate:'kerberos_plate', kerbTop:'kerberos_top', kerbPendImg:'kerberos_pendant',
+                kerbGearImg:'kerberos_gear' };
     for(const id in src){ const el=$(id); if(el) el.src=KERB_DIR+src[id]+'.webp'; }
+    const gsi=$('kerbGearSm'); const gsimg=gsi && gsi.querySelector('img');
+    if(gsimg) gsimg.src=KERB_DIR+'kerberos_gear.webp';
+    const gbb=$('storyExit');
+    if(gbb) gbb.style.setProperty('--kg-mask', 'url("'+KERB_DIR+'kerberos_gear.webp")');
     /* 高光的遮罩＝**吊墜自己那張圖**（鐵律 7：路徑只有 `KERB_DIR` 這一份）。 */
     const pdw=$('kerbPend');
     if(pdw) pdw.style.setProperty('--kp-mask', 'url("'+KERB_DIR+'kerberos_pendant.webp")');
@@ -1654,7 +1715,7 @@ function preloadStory(startId, onProgress){
   const A=collectAssets(startId);
   /* ⚠ 門的素材也要預載：它是**進戰鬥那一刻**才動起來的，沒先抓的話升上去是一片空白。 */
   for(const f of ['kerberos_door','kerberos_plate','kerberos_arrow','kerberos_rivet','kerberos_top',
-                  'kerberos_pendant'])
+                  'kerberos_pendant','kerberos_gear'])
     A.imgs.push(KERB_DIR+f+'.webp');
   /* ⚠ 門的三支音效也要預載：撞擊音在演出**第 0 毫秒**就要響，
      現抓的話一定遲到（audio.js 的 LATE_PLAY_MS 是 1.5 秒，遲到就乾脆不播）。 */

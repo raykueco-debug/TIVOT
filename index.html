@@ -398,6 +398,17 @@
            畫面上只剩「圓盤邊緣透出來的光」（Ray：「圓盤區域內不要有光，只有邊緣透光」）。
            用遮罩去挖也做得到，但那要跟著圓盤的縮放與旋轉一起維護；靠疊序是零維護。 -->
       <div id="kerbGlow"><i class="kg-v"></i><i class="kg-h"></i><i class="kg-r"></i></div>
+      <!-- ══ 齒輪（ver -413，Ray 指定）══════════════════════════════════
+           「選單」鈕改成 Kerberos_Gear，嵌在槍棺右上角；旁邊一顆小齒輪咬住團徽。
+           ⚠⚠ **排在 `#kerbPlate` 之前** ＝ 畫在團徽之下、槍棺之上（Ray 指定的圖層）。
+           ⚠⚠ 兩顆都是 `#kerbDoor` 的子元素 ＝ **與槍棺同一剛體**（同進同出）——
+             這也取代了 ver -405 的「推上時鈕往外撤出」：它現在是門的一部分，
+             跟著門走就對了（推上期間只是**不能按**，見 CSS）。
+           ⚠ 「凹槽」（`.ke-well`）是**加深齒輪底部**用的，讓它讀起來像嵌在鐵板裡。 -->
+      <button id="storyExit" type="button" aria-label="回到選單">
+        <i class="ke-well"></i><img id="kerbGearImg" alt=""><i class="ke-shine"></i>
+      </button>
+      <div id="kerbGearSm"><i class="ke-well"></i><img alt=""></div>
       <img id="kerbPlate" alt="">
       <img class="kerb-arrow n" alt=""><img class="kerb-arrow e" alt="">
       <img class="kerb-arrow s" alt=""><img class="kerb-arrow w" alt="">
@@ -417,10 +428,6 @@
     </div>
   </div>
   <div id="storyTouch"></div>
-  <!-- 「選單」（ver -394，Ray 指定）：由右上角的 ✕ 改成**槍棺右上角的金屬鈕**。
-       ⚠ 位置吃 `--kerb-clip-top` / `--kerb-top-h`（`layoutKerberos` 量出來寫在舞台上）——
-         槍棺多高、楣在哪是**解出來**的，CSS 猜不到（鐵律 7）。 -->
-  <button id="storyExit" class="kerb-btn" aria-label="回到選單">選單</button>
   <!-- 跳段（開發者限定，ver -363）：跳到下一個讀取頁＝下一段的開頭。body.testmode 才出現。 -->
   <button id="storySkip" class="corner-btn" aria-label="跳到下一段">SKIP</button>
   <div id="storyBubble">

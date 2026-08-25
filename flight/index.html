@@ -101,6 +101,30 @@
   #fkerbDoor img{position:absolute;display:block;}
   #fkerbDoor .fk-arrow{transform:rotate(var(--fk-rot,0deg));}
   #fkerbDoor .fk-rivet{transform:scale(var(--fk-fx,1),var(--fk-fy,1));}
+  /* ── 齒輪（ver -413）── ⚠ 與主遊戲 `style.css` 的 `#storyExit`／`#kerbGearSm` 同一套，
+     改一邊要改另一邊。這一頁是純裝飾（沒有選單鈕），所以不吃點擊、也不轉
+     （這一頁的團徽不轉，門推到頂就交棒了）。 */
+  #fkerbGear,#fkerbGearSm{position:absolute;pointer-events:none;}
+  #fkerbGear img,#fkerbGearSm img{position:absolute;inset:0;width:100%;height:100%;
+    display:block;filter:drop-shadow(0 2px 4px rgba(0,0,0,.85));}
+  #fkerbGear .fkg-well,#fkerbGearSm .fkg-well{position:absolute;inset:-9%;border-radius:50%;
+    background:
+      radial-gradient(circle at 50% 62%, rgba(0,0,0,.86) 52%, rgba(0,0,0,.55) 74%,
+                      rgba(0,0,0,.18) 88%, rgba(0,0,0,0) 100%),
+      radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
+    box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
+  #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp");
+    mask-image:url("../resources/vfx/kerberos_gear.webp");
+    -webkit-mask-size:100% 100%;mask-size:100% 100%;
+    -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
+    background:linear-gradient(114deg,
+      rgba(255,255,255,0) 40%, rgba(255,246,214,.28) 47%, rgba(255,255,255,.8) 50%,
+      rgba(255,246,214,.28) 53%, rgba(255,255,255,0) 60%);
+    background-size:260% 260%;background-position:130% 50%;
+    animation:fkgShine 11s linear infinite;}
+  @keyframes fkgShine{0%{background-position:130% 50%;}11%{background-position:-40% 50%;}
+    100%{background-position:-40% 50%;}}
   /* ── 吊墜（ver -412）── ⚠ 與主遊戲 `style.css` 的 `#kerbPend` 是**同一套**，
      改一邊要改另一邊（這一頁是非 module 的獨立文件，共用不了那份 CSS）。
      這一頁沒有「開門」那一段（門推到頂就交棒），所以只有兩層：擺動 ＋ 微晃。 */
@@ -323,6 +347,13 @@
      Ray：「推上的時候要連紋章，箭、釘、楣一起剛體推上」）。只推底圖的話上推的是一片鐵板，
      不是那扇門。疊法由下而上：門（容器的背景）→ 紋章 → 箭 → 鉚釘 → 楣，與主遊戲同序。 -->
 <div id="fkerb"><div id="fkerbDoor">
+  <!-- 齒輪（ver -413）：與主遊戲同一套，**純裝飾**（這一頁沒有選單鈕）。
+       ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
+       ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
+  <div id="fkerbGear"><i class="fkg-well"></i>
+    <img src="../resources/vfx/kerberos_gear.webp" alt=""><i class="fkg-shine"></i></div>
+  <div id="fkerbGearSm"><i class="fkg-well"></i>
+    <img src="../resources/vfx/kerberos_gear.webp" alt=""></div>
   <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp" alt="">
   <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp" alt="">
   <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp" alt="">
@@ -425,6 +456,8 @@ const VIEW_F = 0.66;      // 3D 視窗佔畫面高度比例，其餘為面板
    數字的來源與「為什麼兩邊各一份」見下方 `layoutFKerb` 的說明。 */
 /* 吊墜的幾何（ver -412）。⚠⚠ 與 `modules/story.js` 的 `KERB_PEND` 是**同一組數字**——
    這一頁是非 module 的獨立文件，import 不到那一份，**改一邊要改另一邊**（鐵律 7 的但書）。 */
+/* 齒輪的幾何（ver -413）。⚠ 與 `modules/story.js` 的 `KERB_GEAR` 同一組，改一邊要改另一邊。 */
+const FKERB_GEAR={ bandC:0.78, size:0.145, gap:0.002, bite:4 };
 const FKERB_PEND={ ar:1536/1024, bandC:0.145, maxW:0.32, drop:0.004,
   prof:[[0.13,0.41],[0.17,0.45],[0.21,0.49],[0.25,0.45],[0.31,0.40],[0.38,0.31],
         [0.44,0.24],[0.48,0.36],[0.52,0.25],[0.58,0.21],[0.65,0.27],[0.69,0.35],
@@ -6495,6 +6528,25 @@ function layoutFKerb(){
     pl.style.width=(P.w*Wd)+'px'; pl.style.height='auto'; }
   for(const k in FKERB.arrows) put(dr.querySelector('.fk-arrow.'+k), FKERB.arrows[k]);
   for(const k in FKERB.rivets) put(dr.querySelector('.fk-rivet.'+k), FKERB.rivets[k]);
+  /* 齒輪：大的嵌右上角，小的咬在它與團徽之間（半徑由相切條件解出來，同主遊戲）。 */
+  const gb=document.getElementById('fkerbGear'), gs=document.getElementById('fkerbGearSm');
+  if(gb){
+    const P=FKERB.plate, pW=P.w*Wd;
+    const gr=W*FKERB_GEAR.size/2;
+    const gcx=W*FKERB_GEAR.bandC-dx, gcy=(1+th*FKERB.top.dip)+W*FKERB_GEAR.gap+gr;
+    gb.style.width=(gr*2)+'px'; gb.style.height=(gr*2)+'px';
+    gb.style.left=(gcx-gr)+'px'; gb.style.top=(gcy-gr)+'px';
+    const ecx=(P.x+P.w/2)*Wd, ecy=(P.y+P.h/2)*Hd, er=pW/2;
+    const bite=FKERB_GEAR.bite||0;
+    const d=Math.hypot(gcx-ecx, gcy-ecy), sr=(d-er-gr)/2+bite;
+    if(gs){
+      if(sr>3){ const t=(er+sr-bite)/d;
+        gs.style.width=(sr*2)+'px'; gs.style.height=(sr*2)+'px';
+        gs.style.left=(ecx+(gcx-ecx)*t-sr)+'px'; gs.style.top=(ecy+(gcy-ecy)*t-sr)+'px';
+        gs.style.display='';
+      }else gs.style.display='none';
+    }
+  }
   /* 吊墜：解出「與圓盤的圓保持距離」的最大寬度（同 story.js 的 layoutKerberos）。 */
   const pd=document.getElementById('fkerbPend');
   if(pd){

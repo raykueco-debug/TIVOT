@@ -1509,7 +1509,10 @@
   #storyStage.kerb-open #storyCg,#storyStage.kerb-open #storyCi,
   #storyStage.kerb-open #storyFx,#storyStage.kerb-open #storyCard,
   #storyStage.kerb-open #storyBoard,#storyStage.kerb-open #storyBubble,
-  #storyStage.kerb-open #storyTouch,#storyStage.kerb-open #storyExit{display:none;}
+  /* ⚠ ver -413 起 `#storyExit` **不在這一列**：它已經是門的一部分（齒輪），
+     開門那一拍要跟著右半扇滑出去，`display:none` 會讓它在門開之前先憑空消失。
+     滑出去之後由 `#kerb` 的 `overflow:hidden` 收掉，點擊則早在 `.rise` 就鎖住了。 */
+  #storyStage.kerb-open #storyTouch{display:none;}
   /* 進場：從**自己那一側**滑入，450ms ease-out（CLAUDE.md §6.5）。 */
   /* ⚠ opacity 也要進 transition：同一個人只換表情時走**淡入淡出**（Ray 指定
      「不要直接切」）；換人才走滑入滑出（那是 transform 那一條）。 */
@@ -1667,132 +1670,64 @@
     100%{transform:translate(0,0);} }
   /* 全畫面推進層：點任何一處推一句（退出鈕除外，它自己 stopPropagation）。 */
   #storyTouch{position:absolute;inset:0;z-index:3;background:transparent;touch-action:none;}
-  /* ── 「選單」鈕（ver -394，Ray：「返回鈕『X』改成『選單』，做成一個合槍棺風格的
-       金屬鈕放在槍棺的右上角」）────────────────────────────────────────
-     ⚠ 位置錨在**楣的下緣**（`--kerb-clip-top` ＋ `--kerb-top-h`）—— 那兩個變數是
-       `layoutKerberos` 依實際尺寸解出來寫在 `#storyStage` 上的（鐵律 7：問算的那一支）。
-       沒量到之前用與 `#kerb` 同一條退路，免得第一幀跳一下。
-     ⚠ 質感照槍棺：深槍鐵底＋古銅邊＋上緣一道高光、下緣一道陰影（沖壓件的斷面），
-       字用凹刻（深色陰影在上、亮色在下）。與門的鉚釘、箭同一個材質語言。 */
-  #storyExit{position:absolute;z-index:8;right:12px;
-    top:calc(var(--kerb-clip-top, calc(var(--story-top) - var(--kerb-top-h, 0px)))
-             + var(--kerb-top-h, 0px) + 9px);
-    transition:transform .45s cubic-bezier(.7,0,.3,1), opacity .3s ease;}
-  /* ⚠ **槍棺一上推，這顆鈕就往外撤出**（ver -405，Ray 指定）。
-     它是錨在楣的下緣的，門一動它就跟著往上跑 —— 那一秒它會壓過正在上升的門面，
-     而且那一刻它也不該能按（接下來是戰鬥）。撤出去比留在原地跟著飄好讀。
-     ⚠ 用 `:has()` 讀門自己的狀態，不另外掛一個 class —— 「門推上來了沒」只有
-       `#kerb.rise` 一個真相（鐵律 8）。`:has()` 這一份 CSS 已經在別處用過。
-     ⚠ 曲線與門同一條（.7,0,.3,1）：兩個東西同時動，用不同的曲線會看起來各走各的。 */
-  #storyStage:has(#kerb.rise) #storyExit{
-    transform:translateX(calc(100% + 24px));opacity:0;pointer-events:none;}
-  .kerb-btn{padding:0 13px;height:30px;border-radius:5px;
-    font-family:inherit;font-size:12px;letter-spacing:3px;
-    display:flex;align-items:center;justify-content:center;
-    color:#e6cf96;
-    background:linear-gradient(180deg,#3a3a42 0%,#232329 46%,#17171c 54%,#2b2b31 100%);
-    border:1px solid #6d5a33;
-    box-shadow:inset 0 1px 0 rgba(226,201,142,.34), inset 0 -1px 0 rgba(0,0,0,.75),
-               0 1px 3px rgba(0,0,0,.6);
-    text-shadow:0 -1px 0 rgba(0,0,0,.85), 0 1px 0 rgba(226,201,142,.22);}
-  .kerb-btn:active{transform:translateY(1px);
-    background:linear-gradient(180deg,#23232a 0%,#1a1a20 50%,#2f2f36 100%);
-    box-shadow:inset 0 2px 4px rgba(0,0,0,.8);}
-  /* 跳段鈕（開發者限定）：**放在控制面盤左下**（ver -367，Ray 指定）。
-     ⚠ 不再與退出鈕同排 —— 上排留給「離開」，面盤那一排是操作區。 */
-  #storySkip{position:absolute;z-index:8;top:auto;right:auto;
-    left:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);
-    width:auto;height:34px;padding:0 14px;font-size:12px;letter-spacing:2px;
-    color:var(--holy);border-color:var(--holy);border-radius:17px;display:none;}
-  body.testmode #storyStage.on #storySkip{display:flex;}
-  /* 對話框：與教學同一套視覺（同色同框同字級），只是定位在畫面下緣。 */
-  /* ⚠ 對話框錨在**立繪區的下緣**（盤面之上），不是畫面底 —— 盤面是固定的，
-     框壓在盤面上會擋住戰鬥資訊。 */
-  /* ⚠ z-index 7：要在**楣（#kerb 的 5）之上**（Ray：「對話框圖層在楣之上」）。
-     原本是 4，ver -334 把門那一層抬到 5 之後就被楣壓住了。
-     ⚠ 底邊錨在**楣的上緣**（--kerb-top-h 由 JS 寫在 #storyStage 上），不要壓到
-     控制面板（Ray：「對話框不要壓操作面板」）。用 bottom 錨定：台詞增行時
-     框往上長，底邊不動。 */
-  #storyBubble{position:absolute;z-index:7;left:50%;transform:translateX(-50%);
-    top:auto;bottom:calc(100% - var(--story-top) + var(--kerb-top-h, 0px) + 10px);
-    width:min(92%,360px);background:rgba(8,6,12,.9);border:1px solid var(--gold-dim);
-    border-radius:10px;padding:9px 14px 12px;box-shadow:0 4px 18px rgba(0,0,0,.55);
-    pointer-events:none;}
-  #storyBubble .story-name{font-size:11px;letter-spacing:2px;color:var(--gold);margin-bottom:4px;}
-  #storyBubble .story-text{font-size:13px;letter-spacing:.5px;line-height:1.7;color:var(--ink);
-    min-height:3.4em;}
-  #storyBubble .story-next{position:absolute;right:10px;bottom:5px;font-size:9px;color:var(--gold);
-    animation:tutNext .7s ease-in-out infinite alternate;}
+  /* ── 齒輪＝「選單」鈕（ver -413，Ray：「把選單鈕改成 Kerberos_Gear，置於槍棺右上角，
+       並且加深齒輪範圍的底部，讓齒輪看起來像嵌在槍棺內」）──────────────
+     ⚠⚠ 它現在是 `#kerbDoor` 的子元素 ＝ **與槍棺同一剛體**。這**取代**了 ver -405 的
+       「推上時鈕往外撤出」—— 它是門的一部分，跟著門走才對；推上期間只是**不能按**。
+     ⚠ 位置與大小由 `layoutKerberos` 依門的實際尺寸解出來寫成 inline（鐵律 7）：
+       小齒輪的半徑是**咬合條件**解出來的（團徽外緣 → 小齒輪 → 大齒輪 三個剛好相切），
+       不是填的數字。
+     ⚠ 轉速由**半徑比**決定（`--kerb-gear-rot` / `--kerb-gear-rot-s`，JS 算）：
+       嚙合的兩輪 ω ∝ 1/r，所以越小轉越快、而且**方向相反**（Ray 指定）。
+     ⚠ 圖層：排在 `#kerbPlate` 之前 ＝ 槍棺之上、團徽之下（Ray 指定）。 */
+  #storyExit{position:absolute;padding:0;border:0;background:none;
+    pointer-events:auto;touch-action:manipulation;cursor:pointer;
+    transform:rotate(0deg);
+    transition:transform .9s cubic-bezier(.34,1.2,.5,1),opacity .3s ease;}
+  #kerbGearSm{position:absolute;pointer-events:none;
+    transform:rotate(0deg);
+    transition:transform .9s cubic-bezier(.34,1.2,.5,1),opacity .3s ease;}
+  #storyExit img,#kerbGearSm img{position:absolute;inset:0;width:100%;height:100%;
+    display:block;filter:drop-shadow(0 2px 4px rgba(0,0,0,.85));}
+  /* 凹槽：**加深齒輪底部**（Ray 指定）—— 一圈由外往內收的暗，讀起來就是鐵板上挖了個孔。
+     ⚠ 要比齒輪大一圈（`inset:-9%`）：等大的話邊緣的暗被齒尖蓋住，看不出是凹的。
+     ⚠ 上緣多壓一點暗（第二層 radial 往上偏）—— 光從上面來，凹槽的上壁才是暗的那一側。 */
+  #storyExit .ke-well,#kerbGearSm .ke-well{position:absolute;inset:-9%;border-radius:50%;
+    pointer-events:none;
+    background:
+      radial-gradient(circle at 50% 62%, rgba(0,0,0,.86) 52%, rgba(0,0,0,.55) 74%,
+                      rgba(0,0,0,.18) 88%, rgba(0,0,0,0) 100%),
+      radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
+    box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
+  /* 團徽一轉，齒輪跟著轉（`lift` 就是團徽轉 180° 那一拍）。
+     ⚠ 開／關門那兩拍要**借門的曲線**，同紋章（ver -389 的坑）。 */
+  #kerb.lift #storyExit{transform:rotate(var(--kerb-gear-rot,0deg));}
+  #kerb.lift #kerbGearSm{transform:rotate(var(--kerb-gear-rot-s,0deg));}
+  #kerb.open #storyExit{transform:translateX(var(--kerb-open-rx,0px)) rotate(var(--kerb-gear-rot,0deg));
+    transition:transform .9s cubic-bezier(.7,0,.3,1);}
+  /* ⚠ 小齒輪也跟著**右**半扇：它咬著團徽，但它**裝在右半那片門板上**（實測落在
+     中縫右邊）—— 門一開兩者本來就會分開，那正是雙開門該有的樣子。 */
+  #kerb.open #kerbGearSm{transform:translateX(var(--kerb-open-rx,0px)) rotate(var(--kerb-gear-rot-s,0deg));
+    transition:transform .9s cubic-bezier(.7,0,.3,1);}
+  #kerb.kerb-shut #storyExit,#kerb.kerb-shut #kerbGearSm{
+    transition:transform .9s cubic-bezier(.7,0,.3,1);}
+  /* ⚠ 推上之後就**不能按**了（接下來是戰鬥）：ver -405 是把鈕滑出去，
+     現在它是門的一部分不能滑走 —— 改成只鎖住點擊，畫面上它還要繼續轉給人看。 */
+  #kerb.rise #storyExit{pointer-events:none;}
+  /* 偶爾反一下光（同吊墜，Ray：「大尺輪跟吊飾一樣偶爾有閃光」）。 */
+  #storyExit .ke-shine{position:absolute;inset:0;pointer-events:none;
+    mix-blend-mode:screen;opacity:.8;
+    -webkit-mask-image:var(--kg-mask);mask-image:var(--kg-mask);
+    -webkit-mask-size:100% 100%;mask-size:100% 100%;
+    -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
+    background:linear-gradient(114deg,
+      rgba(255,255,255,0) 40%, rgba(255,246,214,.28) 47%, rgba(255,255,255,.8) 50%,
+      rgba(255,246,214,.28) 53%, rgba(255,255,255,0) 60%);
+    background-size:260% 260%;background-position:130% 50%;
+    animation:kgShine 11s linear infinite;}
+  @keyframes kgShine{0%{background-position:130% 50%;}11%{background-position:-40% 50%;}
+    100%{background-position:-40% 50%;}}
 
-  /* ⚠ 拾得道具／道具欄／商店／懸賞榜的樣式已抽到 `css/lootsheet.css`（ver -380）：
-     飛行頁也要用同一套（道具欄的入口在那裡），而 `style.css` 整份掛過去會把那一頁的
-     版面洗掉。由 `modules/loot.js` 自己掛上來，兩個頁面共用同一份。 */
-
-  /* ── 城鎮探索（ver -369／手勢改版 -370）─────────────────────────
-     沒有常駐箭頭（Ray：太醜）。互動是**按住往方向滑** → 那個方向浮出提示與蓄能圈
-     → 滿了才走。提示浮在**該方向的邊上**：玩家的手正往那邊去，訊息出現在他看的地方。
-     ⚠ z-index 6：與楣同層（立繪、插圖、情境卡之上，對話框 7 之下）。 */
-  /* ⚠ 覆蓋**整個舞台**（不是只有上半）：羅盤的箭在下半的槍棺上，
-     長按的提示要能擺到那裡（ver -372）。 */
-  #townNav{position:absolute;inset:0;z-index:7;pointer-events:none;display:none;}
-  #townNav.on{display:block;}
-  #townHint{position:absolute;width:64px;height:64px;display:none;
-    align-items:center;justify-content:center;opacity:0;transition:opacity .12s ease;}
-  #townHint.on{display:flex;opacity:1;}
-  #townHint svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg);}
-  #townHint .ta-rail{fill:none;stroke:rgba(212,169,74,.22);stroke-width:2;}
-  #townHint .ta-prog{fill:none;stroke:var(--gold);stroke-width:3;stroke-linecap:round;}
-  #townHint .th-label{font-size:11px;letter-spacing:2px;color:var(--gold);
-    text-shadow:0 1px 4px rgba(0,0,0,.9);white-space:nowrap;}
-  /* 四個方向的落點：貼著那一側的邊。 */
-  /* 提示的位置由 JS 依「那一支箭在哪」寫 inline（ver -372）—— 箭的位置是
-     `layoutKerberos` 依實際尺寸算出來的，CSS 猜不到（鐵律 7：問算的那一支）。 */
-  #townHint.at{transform:translate(-50%,-50%);}
-  /* 場景名稱：**置中在上方**（ver -373，Ray 指定）。
-     ⚠ 「注意動態島」：往下讓到角落鈕的**下緣之下**（safe-area ＋ 鈕高 44 ＋ 10 ＋ 8）——
-       置中的字如果貼著頂，瀏海機上會被動態島壓住。 */
-  /* ⚠ 地名與時間用**白字＋不模糊的黑陰影**（ver -378，Ray 指定）：
-     這一行是壓在背景圖上的，而背景什麼顏色都有（白天的天空、雜貨舖的暖光）——
-     原本的金字＋6px 模糊陰影在亮處整個糊掉，讀不出來。
-     ⚠ 陰影用**四方向 1px 的實心描邊**（0 模糊）再加一層很淡的擴散：
-       模糊半徑大＝把字自己也糊掉，那正是原本看不清的原因。 */
-  /* ⚠⚠ **對白播放中不放時間地點**（ver -385，Ray：「時間地點都壓人物臉上了」）。
-     這一行的高度正好是立繪的臉 —— 有人在台上、或對話框開著時一律淡出。
-     旗標由**演出層**（`modules/story.js` 的 `syncTalking`）宣告，不是由城鎮在
-     showNav 的呼叫點決定 —— 那樣任何一條沒經過那兩點的路徑（閒聊、店主對話、
-     戰鬥交棒回來…）都會漏掉，而那正是這次漏掉的原因。 */
-  body.story-talking #townInfo{opacity:0;}
-  #townInfo{transition:opacity .22s ease;}
-  #townInfo{position:absolute;left:0;right:0;text-align:center;
-    top:calc(env(safe-area-inset-top,0px) + 62px);
-    font-size:12px;letter-spacing:4px;color:#fff;
-    text-shadow:1px 0 0 rgba(0,0,0,.92), -1px 0 0 rgba(0,0,0,.92),
-                0 1px 0 rgba(0,0,0,.92), 0 -1px 0 rgba(0,0,0,.92),
-                1px 1px 0 rgba(0,0,0,.92), -1px 1px 0 rgba(0,0,0,.92),
-                1px -1px 0 rgba(0,0,0,.92), -1px -1px 0 rgba(0,0,0,.92),
-                0 1px 3px rgba(0,0,0,.55);
-    pointer-events:none;}
-  #townInfo .ti-time{font-size:11px;letter-spacing:2px;color:#fff;opacity:.88;margin-left:8px;}
-
-  /* ── 目的地字格（ver -373，Ray：「四個方向除了下方之外各自在上左右加入目的地名稱，
-     點擊時字格蓄能滿之後移動」）──
-     ⚠ 下方不做：那個方向通常是「退回上一層」，名字寫出來只是重複。
-     ⚠ 蓄能畫在**字格本身**（由左往右填），不再另外浮一個圈 —— 玩家按的是這一格，
-       回饋就該長在這一格上。 */
-  #townNav .town-dest{position:absolute;display:none;align-items:center;justify-content:center;
-    padding:6px 14px;border:1px solid var(--gold-dim);border-radius:14px;
-    background:rgba(8,6,12,.62);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);
-    font-size:12px;letter-spacing:2px;color:var(--gold);white-space:nowrap;
-    pointer-events:auto;overflow:hidden;}
-  #townNav .town-dest.on{display:flex;}
-  #townNav .town-dest::before{content:'';position:absolute;left:0;top:0;bottom:0;width:100%;
-    background:rgba(212,169,74,.30);transform:scaleX(var(--fill,0));transform-origin:left center;
-    pointer-events:none;}
-  #townNav .town-dest span{position:relative;}
-  /* ⚠ 位置由 JS 依**那一支箭在哪**寫 inline（ver -374，Ray：「地名是放在箭頭左右上方」）——
-     箭的位置是 `layoutKerberos` 解出來的，CSS 猜不到（鐵律 7：問算的那一支）。
-     這裡只給「以自己的中心對齊那個點」。 */
-  #townNav .town-dest{transform:translate(-50%,-50%);}
   /* ⚠ 櫃台鈕（ver -387 的 `.town-btn`）**已經拿掉**（ver -404）：店舖畫面改成
      「走進去就是右店主立繪＋左選單」，不再有那顆鈕。樣式一併刪，留著只會讓人以為
      還有第二個入口（鐵律 8）。單子的樣式在 `css/lootsheet.css` 的 `.dock-left`。 */
