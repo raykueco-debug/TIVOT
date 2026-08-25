@@ -1750,6 +1750,60 @@
   }
 
 
+  /* ── 旅店大廳（ver -392）──────────────────────────────────────────
+     伙伴門 ×4（亮起＝房裡有人、燈亮＝醒著、燈熄＝睡了）＋ 兩顆行動鈕。
+     ⚠ 擺在**場景區的下緣**（`--story-top` 之上）：那是背景裡「櫃台前的大廳」那一段，
+       擺中間會壓到背景的主體，擺到面盤上就跟槍棺的羅盤打架了。
+     ⚠ z-index 與 `#townNav` 同層（7）：立繪之上、對話框之下 —— 有人在講話時
+       對話框要蓋得住這一排。 */
+  #innLobby{position:absolute;left:0;right:0;top:0;height:var(--story-top);
+    z-index:7;display:none;pointer-events:none;}
+  /* ⚠⚠ **跟著導覽一起開關**（`body.town-nav`）：對白播放中這一排就不該在 ——
+     不然「獨自坐坐」與提示會壓在對話框上（實測蕾娜那一幕整個疊在一起）。
+     這與羅盤／目的地字格是**同一個開關**（`showNav`），不要另寫一套（鐵律 8）。 */
+  body.town-nav #innLobby.on{display:block;}
+  /* ⚠ 縱向留得比直覺高：`#innLobby` 的框是**整個場景區**（`--story-top`），
+     而它的下緣正好被**楣**壓住一截（楣的上緣在場景區底往上約 60px）。
+     bottom 給到 150/108/86 才不會有東西鑽到楣底下（實測 bottom:12 的提示整行看不見）。 */
+  #innLobby .inn-doors{position:absolute;left:0;right:0;bottom:150px;
+    display:flex;justify-content:center;gap:10px;pointer-events:auto;}
+  /* 一格門：上緣一盞小燈，中間是頭像，下面是名字。空位留著（Ray：「留出適當空間」）。 */
+  #innLobby .inn-door{position:relative;width:56px;height:78px;padding:0;
+    border:1px solid var(--gold-dim);border-radius:8px;
+    background:rgba(8,6,12,.66);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);
+    display:flex;flex-direction:column;align-items:center;overflow:hidden;}
+  #innLobby .inn-door.empty{opacity:.34;border-style:dashed;}
+  #innLobby .inn-face{display:block;width:100%;height:56px;background-repeat:no-repeat;}
+  /* 睡了＝壓暗。⚠ 用**不透明**的壓暗不是透明度（§6.5 的規矩：半透明會讀成「快消失了」）。 */
+  #innLobby .inn-door.asleep .inn-face{filter:brightness(.38) saturate(.75);}
+  #innLobby .inn-name{font-size:9px;letter-spacing:1px;line-height:20px;
+    color:var(--gold);font-weight:400;}
+  /* 燈：醒著是暖黃常亮，睡了是暗的。 */
+  #innLobby .inn-lamp{position:absolute;left:50%;top:4px;transform:translateX(-50%);
+    width:5px;height:5px;border-radius:50%;background:#3a3630;z-index:2;}
+  #innLobby .inn-door.awake .inn-lamp{background:#f0c469;box-shadow:0 0 7px rgba(240,196,105,.9);}
+  #innLobby .inn-door:active{background:rgba(212,169,74,.22);}
+
+  #innLobby .inn-acts{position:absolute;left:0;right:0;bottom:108px;
+    display:flex;justify-content:center;gap:10px;pointer-events:auto;}
+  #innLobby .inn-btn{display:none;padding:0 16px;height:32px;
+    font-family:inherit;font-size:12px;letter-spacing:2px;color:var(--gold);
+    background:rgba(10,8,14,.72);border:1px solid var(--gold-dim);border-radius:16px;}
+  #innLobby .inn-btn.on{display:flex;align-items:center;}
+  #innLobby .inn-btn:active{background:rgba(212,169,74,.22);}
+  /* ⚠ 提示壓在背景圖上，而背景什麼顏色都有（旅店的白天大廳是很亮的）——
+     用**白字＋不模糊的黑描邊**（同 `#townInfo` 的處理），金字在亮處讀不出來。 */
+  #innLobby .inn-hint{position:absolute;left:0;right:0;bottom:86px;text-align:center;
+    font-size:10px;letter-spacing:2px;color:#fff;pointer-events:none;
+    text-shadow:1px 0 0 rgba(0,0,0,.92), -1px 0 0 rgba(0,0,0,.92),
+                0 1px 0 rgba(0,0,0,.92), 0 -1px 0 rgba(0,0,0,.92),
+                0 1px 3px rgba(0,0,0,.6);}
+  /* 「獨自坐坐」的暗場：暗去 → 過兩小時 → 亮起。
+     ⚠ 蓋**整個舞台**（不是只有場景區）：時間過去了，面盤那一半也該一起黑。 */
+  #innLobby .inn-veil{position:fixed;inset:0;z-index:8;background:#000;
+    opacity:0;pointer-events:none;transition:opacity .52s ease;}
+  #innLobby .inn-veil.on{opacity:1;pointer-events:auto;}
+
   /* ── 面盤模式提示 ＋ 已播腳本（ver -367）──────────────────────────
      ⚠ 提示做成**面盤上緣的一條細字**，不做成浮動 badge：面盤中央是團徽／盤面，
        壓一顆按鈕上去會擋住那張圖，而玩家的手指也正好停在那一區。 */

@@ -45,6 +45,8 @@ export const SPEAKERS = {
   /* 槍店店主（ver -377）。同樣站右。 */
   GUNSMITH: { name:'店主',   art:'gunsmith' },
   COUNTER:  { name:'櫃台',   art:'counter' },
+  /* 旅店前台（ver -392）。同樣站右（玩家的同伴在左、對面的人在右）。 */
+  CLERK:    { name:'前台',   art:'clerk' },
 };
 
 /* ══ 立繪素材 ＋ 取景實測值 ══
@@ -248,6 +250,11 @@ export const ART = {
   /* 公會櫃台（ver -375）。身高同樣是估的（168）。 */
   counter:{ cm:168, eye:32, fx:0.511, top:4, bot:1526,
            side:'R', alt:null, base:'resources/SI/GuildCounterCA_SI.webp', expr:{} },
+  /* 旅店前台（ver -392）。⚠ 身高是**估的**（168）；取景值是量的（`tools/measure_si.py`）。
+     ⚠ `top:0 / bot:1535` 不是漏量 —— 這張是**滿版取景**：髮髻碰到上緣、靴子碰到下緣
+       （實測 row 0 與 row 1535 都有不透明像素）。 */
+  clerk:  { cm:168, eye:32, fx:0.494, top:0, bot:1535,
+           side:'R', alt:null, base:'resources/SI/NPC_Hotel_Capital.webp', expr:{} },
   luna:   { cm:160, eye:30, fx:0.500, top:0, bot:1000,
            side:'L', alt:null, base:'resources/partner/Luna_CI_exc.webp', expr:{}, unmeasured:true },
 };

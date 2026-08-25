@@ -59,6 +59,18 @@ export const TOWNS = {
     /* 這座城的 BGM（ver -375）。⚠ 有它才能在**插入戰打完回來**時把曲子接回去 ——
        戰鬥有自己的曲子，回城鎮時沒人接的話會一路放著戰鬥曲。 */
     bgm: 'capital',
+    /* ══ 傍晚的提醒（ver -392，Ray 交稿）══════════════════════════════════
+       「拜訪過所有地點後走到下一個場景時**或**時間抵或過 18:00：
+         （現有地點，優先所有事件）諾：『天色不早了，我們先回廣場旅店吧？』」
+       ⚠ **優先所有事件**：這一段會**取代**那一次抵達原本要演的進場對白 ——
+         那一段的旗標不會記，所以下次再進來還是會演（同「打烊不播」的作法）。
+       ⚠ 只演一次（旗標 `town_evening_nudge`）：它是一句提醒，不是每走一步都要唸的。
+       ⚠ `allSeen` 不算旅店自己（那是目的地）。 */
+    evening: {
+      hour: 18,
+      flag: 'town_evening_nudge',
+      lines: [ nou(null,'天色不早了，我們先回廣場旅店吧？') ],
+    },
     nodes: {
 
       /* ══ 攝政王廣場 ══ 上＝中心區、左＝舊街區、右＝上街區（Ray 指定的三個方向） */
@@ -258,6 +270,7 @@ export const TOWNS = {
         exits:{ back:'oldtown' },
         /* 登記完才開得了懸賞榜（旗標由 `modules/town.js` 在這段對白播完時記）。 */
         board:'capital', boardFlag:'guild_registered',
+        hours:[8,20], closed:'大門上了閂。委託要等明天早上八點。',
         /* 櫃台＝接待員站的那一格。⚠ 沒登記過就不出現（旗標由這一段對白演完才記）。 */
         counter:{ x:0.52, y:0.58, label:'委　託' },
         lines:[
@@ -382,8 +395,67 @@ export const TOWNS = {
           nou('run','走吧！', { se:'se_steps' }),
         ],
       },
-      /* ⚠ 旅店**不寫 `hours`＝全天**（Ray：「旅店24小時開門」）—— 不是忘了填。 */
-      inn:    { bg:'Capital_Inn', name:'帝都　旅店',  exits:{ back:'uptown' } },
+      /* ══ 旅店 ══（ver -392，Ray 交稿）
+         ⚠ 旅店**不寫 `hours`＝全天**（Ray：「旅店24小時開門」）—— 不是忘了填。
+         ⚠ 背景基底改成 `Capital_Hotel`（Ray 交件的檔名；原本寫 `Capital_Inn`，
+           那張圖從來就不存在）。晨／黃昏／夜的差分由 `bgFor` 的候選鏈自己挑。
+         ⚠ `inn:true` ＝ 這個節點有**旅店大廳**（伙伴門／獨自坐坐／回房睡覺），
+           實作在 `modules/inn.js`。 */
+      inn: {
+        bg:'Capital_Hotel', name:'帝都　旅店', exits:{ back:'uptown' },
+        inn:true,
+        /* 初訪那一幕。⚠ 中間三拍是**演出**不是台詞：
+             ① 畫面抖＋槍棺落地聲（無立繪）
+             ② 插圖 `005_Kerberos` 由下往上平移（無立繪）
+             ③ 收插圖，回到旅店大廳
+           `hide` 要明寫 —— 立繪是持續狀態（§6.5）。 */
+        lines:[
+          { speaker:'CLERK', text:'歡迎光臨。兩位投宿……呃、客人、那個是……',
+            portrait:{ char:'CLERK', show:true } },
+          { speaker:'CLERK', text:'', auto:900, shake:true, se:'se_kerberos_drop',
+            hide:['CLERK'] },
+          { speaker:'CLERK', text:'棺材……？', cg:'005_Kerberos', cgPan:'up', delay:600 },
+          { speaker:'CLERK', text:'那麼大件的行李，小店恐怕……', cg:null,
+            portrait:{ char:'CLERK', show:true } },
+          { speaker:'PLAYER', blank:true },
+          { speaker:'CLERK', text:'欸、武器……？',
+            portrait:{ char:'CLERK', show:true } },
+          nou('surprise','啊、啊啊——我們是聖王廳的僧侶，這不是棺材啦！'),
+          nou('surprise','這是受過祝福的聖櫃！能帶來好運的！'),
+          { speaker:'CLERK', text:'聖櫃……？', portrait:{ char:'CLERK', show:true } },
+          nou('awkward','對對！停留過的地方都會生意昌隆喔！'),
+          { speaker:'CLERK', text:'是、是嗎？', portrait:{ char:'CLERK', show:true } },
+          nou('lookaway','我以二等司祭之名起誓！'),
+          { speaker:'CLERK', text:'那……好吧。這邊請。', portrait:{ char:'CLERK', show:true } },
+          nou('concern','唉……', { hide:['CLERK'] }),
+          nou('concern','跟你在一起我越來越會胡說八道了。'),
+        ],
+        /* ══ 分支：**每次進來都判一次**（不是只判一次）══
+           走完城裡所有地點了沒，決定她說哪一句。判定在 `modules/town.js`（`allSeen`）。 */
+        innBranch:{
+          exploring:[ nou(null,'時間還早，我想去城裡逛逛呢。') ],
+          settled:[
+            nou(null,'今天有點累了，我先去休息囉。'),
+            nou(null,'你還不累的話，可以在這邊等一下蕾娜小姐嗎？'),
+          ],
+        },
+        /* 敲門的回應：**單句、沒有立繪**（Ray：「未開門無立繪」），可以一直敲。
+           `wait`＝還在等蕾娜的那一段；`slept`＝蕾娜回來、大家睡了之後。 */
+        innKnock:{
+          wait:  { NOUVELLE:'怎麼了？蕾娜小姐回來了嗎？' },
+          slept: { NOUVELLE:'……', RENNA:'有事明天再說吧。' },
+        },
+        /* 蕾娜回來那一幕（「獨自坐坐」兩小時之後）。
+           ⚠ 第二句是**回答主角的**（「是嗎？她今天也很累了呢。」）—— 稿上沒寫那一拍，
+             但沒有它這句話沒有對象，所以補一個主角的空框（§6.5 的慣例）。 */
+        innRenna:[
+          ren('surprise','唉呀，你在等我嗎？真不好意思。'),
+          { speaker:'PLAYER', blank:true },
+          ren('stare','是嗎？她今天也很累了呢。'),
+          ren('smile','時間不早了，你也早點休息吧。明天一早就要出航了喔。'),
+          ren('stare','晚安。'),
+        ],
+      },
     },
   },
 };

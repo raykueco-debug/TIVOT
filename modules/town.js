@@ -15,6 +15,7 @@ import { TOWNS } from '../script/town.js';
 import * as clock from '../script/clock.js';
 import * as prog from '../script/progress.js';
 import * as story from './story.js';
+import * as inn from './inn.js';                 // 旅店大廳（伙伴門／獨自坐坐／回房睡覺）
 import { showShop, showBounty } from './loot.js';
 import { SFX } from '../audio.js';
 
@@ -55,7 +56,12 @@ function altCase(name){
 /* ⚠ 副檔名也逐個試：**規約是 WebP**（§5），但 Ray 交件常常先是 PNG ——
    載不到就整個時段沒有背景，不如兩個都試。**先試 webp**，所以轉檔之後自動用新的。 */
 const BG_EXT=['.webp','.png'];
+/* ⚠ 換節點的**流水號**：背景是非同步載的，快速連走兩個節點時，前一個的 `onload`
+   可能**晚於**後一個才回來 —— 那時它會把已經換好的背景又蓋回舊的那一張
+   （實測：開城 → 立刻進大教堂，畫面停在廣場）。載完先確認自己還是最新的那一次。 */
+let bgSeq=0;
 function bgFor(base, noTime){
+  const my=++bgSeq;
   const names=[]; const push=n=>{ if(n && names.indexOf(n)<0) names.push(n); };
   if(noTime){ push(base); }
   else{ const b=clock.bgName(base); push(b); push(altCase(b)); push(base+'_Day'); push(base); }
@@ -65,19 +71,48 @@ function bgFor(base, noTime){
     if(i>=cands.length) return;
     const name=cands[i];
     const img=new Image();
-    img.onload =()=>{ story.setSceneBg(name);
+    img.onload =()=>{
+      if(my!==bgSeq) return;                 // 已經被後面那一次換掉了 → 這一張作廢
+      story.setSceneBg(name);
       /* 櫃台鈕要靠圖的原始比例換算位置（見 placeCounter），所以在這裡記下來 ——
          這一支本來就要載那張圖，不必另外再抓一次（鐵律 7：算的那一支發佈出去）。 */
       bgNat=[img.naturalWidth, img.naturalHeight]; placeCounter();
       if(i>0 && !missingBg.has(cands[0])){ missingBg.add(cands[0]);
         console.info('[town] 沒有這個時段的背景，退回：', cands[0], '→', name); } };
-    img.onerror=()=>tryAt(i+1);
+    img.onerror=()=>{ if(my===bgSeq) tryAt(i+1); };
     img.src='resources/background/'+name;
   };
   tryAt(0);
 }
 
 function node(){ return (TOWNS[townId]||{}).nodes[nodeId] || null; }
+
+/* ══ 走到過的地點（ver -392）══════════════════════════════════════════
+   ⚠ 與「進場對白播過了」（`town_<城>_<節點>`）是**兩件事**：有的節點根本沒有對白
+     （中心區），有的對白被打烊擋掉 —— 那些也算走到過。所以另開一組旗標。 */
+function markSeen(id){ prog.addFlags(['seen_'+townId+'_'+id]); }
+/* 城裡的地點都走過了嗎。⚠ **不算旅店自己** —— 那是「走完之後要去的地方」，
+   把它算進去的話玩家永遠等不到那句提醒。 */
+function allSeen(){
+  const T=TOWNS[townId]; if(!T) return false;
+  for(const k in T.nodes){
+    if(T.nodes[k].inn) continue;
+    if(!prog.hasFlag('seen_'+townId+'_'+k)) return false;
+  }
+  return true;
+}
+/* ══ 傍晚的提醒（ver -392，Ray 交稿）══
+   「拜訪過所有地點後走到下一個場景時**或**時間抵或過 18:00」。
+   ⚠ 回傳 `evening` 這一段本身（不是布林）—— 呼叫端要拿它的 `lines` 去演。
+   ⚠ **在旅店裡不演**：站在旅店裡說「我們先回旅店吧」是錯的。 */
+function eveningDue(n){
+  const T=TOWNS[townId], ev=T && T.evening;
+  if(!ev || !ev.lines || !ev.lines.length) return null;
+  if(n && n.inn) return null;
+  if(ev.flag && prog.hasFlag(ev.flag)) return null;
+  const byTime = (ev.hour!=null) && (clock.hourF() >= ev.hour);
+  return (byTime || allSeen()) ? ev : null;
+}
 
 /* ══ 營業時間（ver -391，Ray 指定）══════════════════════════════════════
    節點寫 `hours:[開,關]`（小時，24 制）。**不寫＝全天**（旅店就是這樣）。
@@ -396,6 +431,7 @@ export function enter(id){
   story.endAdhoc();
   story.clearCast();
   chatterOn=false;          // ⚠ 第四件：上一個地點的路人單句（見 §6.5 的新路徑檢查表）
+  inn.close();              // ⚠ 第五件：上一個地點的旅店大廳（同一張檢查表）
   bgNat=null;               // 背景要重載，舊的尺寸不能拿來擺新的櫃台鈕
   /* 這座城的曲子（ver -375）。⚠ 每進一個節點都確認一次，不是只在 `open` 時放一次 ——
      中間可能插進一場戰鬥（戰鬥有自己的曲子），回來要接得回去。
@@ -406,11 +442,15 @@ export function enter(id){
   /* ⚠⚠ 進場對白**一律只播一次**（ver -373，Ray：「對話只觸發一次，不重複觸發」）——
      不再看節點的 `once` 欄位：漏寫就會變成每次進去都重播，那是「預設值站錯邊」。
      旗標記在 progress 的 flags，存檔要帶。 */
+  markSeen(id);                       // 走到過（給「走完城裡所有地點」用，ver -392）
   const flag='town_'+townId+'_'+id;
   const played = prog.hasFlag(flag);
   /* ⚠ **打烊時不播進場對白**（ver -391）：在一間關著的店裡讓店主開口是錯的。
      旗標也不會記，所以那一段會留到下次在營業時間內進來時才播 —— 不會漏掉。 */
-  const lines = (played || !isOpenNow(n)) ? [] : (n.lines||[]);
+  /* ⚠ **傍晚的提醒優先所有事件**（ver -392，Ray 指定）：它**取代**這一次抵達原本要演的
+     進場對白，而那一段的旗標不會記 —— 下次再進來還是會演（同上面「打烊不播」的作法）。 */
+  const ev = eveningDue(n);
+  const lines = ev ? ev.lines : ((played || !isOpenNow(n)) ? [] : (n.lines||[]));
   /* ⚠ 旗標**演完才記**（ver -375 由「開演就記」改過來）：這一段中間可能插一場戰鬥，
      打輸了會被丟回首頁 —— 開演就記的話，回頭再走一次公會就整段跳過，那一場永遠打不到。
      「沒演完就不算演過」才是對的。代價：中途離開會再看一次，那本來就該再看一次。 */
@@ -428,16 +468,29 @@ export function enter(id){
         ? Object.assign({}, l, { delay:SLIDE_MS }) : l);
       /* ⚠ 對白演完**把立繪全撤**，只留背景與導覽（Ray 指定）。 */
       /* ⚠ `n.sides`：兩個角色同台要分左右（§6.5）——城鎮這條路徑一樣要吃得到。 */
-      story.playAdhoc(play, ()=>{ applyAff(lines); story.clearCast();
-        prog.addFlags([flag]);                    // ⚠ 演完才記（見上面的說明）
-        /* 這一段演完才成立的事（ver -375）：公會登記完才開得了懸賞榜。
-           ⚠ 記在**播完**時，中途離開（或戰鬥沒打完）就不算。 */
-        if(n.boardFlag) prog.addFlags([n.boardFlag]);
-        busy=false; refreshArrows(); showNav(true); }, { sides:n.sides });
+      story.playAdhoc(play, ()=>{ story.clearCast();
+        if(ev){ if(ev.flag) prog.addFlags([ev.flag]); }   // 傍晚的提醒：只演一次
+        else{
+          applyAff(lines);
+          prog.addFlags([flag]);                  // ⚠ 演完才記（見上面的說明）
+          /* 這一段演完才成立的事（ver -375）：公會登記完才開得了懸賞榜。
+             ⚠ 記在**播完**時，中途離開（或戰鬥沒打完）就不算。 */
+          if(n.boardFlag) prog.addFlags([n.boardFlag]);
+        }
+        busy=false; refreshArrows(); showNav(true);
+        afterArrive(n); }, { sides:n.sides });
     }, ARRIVE_MS);
   }else{
     busy=false; refreshArrows(); showNav(true);
+    afterArrive(n);
   }
+}
+
+/* 進場對白（或傍晚的提醒）演完之後才成立的事。目前只有旅店大廳。
+   ⚠ 兩條路（有對白／沒對白）都要呼叫它 —— 漏一條就是「有時候有大廳、有時候沒有」。 */
+function afterArrive(n){
+  if(n && n.inn) inn.arrive(n, { allSeen: allSeen() });
+  else inn.close();
 }
 
 /* 對白裡的好感度加減（`line.aff`）。⚠ 在**播完**時一次記帳：
@@ -504,6 +557,19 @@ function chatter(){
   story.flashLine(list[i], '');
   chatterOn=true;
 }
+
+/* ⚠ 旅店大廳要用到城鎮這邊的三件事，用**注入**而不是讓 inn 反過來 import town
+   （那會變成循環相依）：
+     say   單句（沒有立繪）＋ 把 `chatterOn` 打開 —— 不打開的話那一句會一直留在畫面上
+           （城鎮的「再點一下收掉」是靠這個旗標，見 bindInput）
+     lock  演出期間鎖住導覽（同對白）
+     play  一段有立繪的對白（走同一個劇情播放器）
+   ⚠ `inn.setup` 只呼叫一次（模組載入時），不要放進 `open()` —— 那會每進一次城疊一次。 */
+inn.setup({
+  say(text, name){ story.flashLine(text, name||''); chatterOn=true; },
+  lock(on){ busy=!!on; showNav(!on); },
+  play(lines, done, opts){ story.playAdhoc(lines, done, opts); },
+});
 
 export function open(town){
   townId = town || 'capital';
