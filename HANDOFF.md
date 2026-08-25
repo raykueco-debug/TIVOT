@@ -4740,3 +4740,50 @@ Ray：「大齒輪的中心大約落在紅點位置，**以邊界為基準**應�
 
 ⚠ 找不到解時（別的長寬比）用「最寬鬆的那一個」並在 console 警告，不要讓小齒輪消失。
 ⚠ 飛行頁是同一套解法的第二份，改一邊要改另一邊。
+
+---
+
+# 交接 · `ver -415`（兩個回報：對話框全不見了／船戰又要開棺）
+
+## A. ⚠⚠ 對話框全不見了 —— 是我 `-413` 改 CSS 時**誤刪了一大段**
+
+改「選單鈕 → 齒輪」時，我用「從舊註解到下一個註解」的範圍去換掉 `#storyExit` 與
+`.kerb-btn` —— 但那個範圍**一路吃到**下面這些，全部被刪掉了：
+
+    #storySkip / #storyBubble（含 .story-name/.story-text/.story-next）
+    #townNav / #townHint / #townInfo / .town-dest …
+
+於是對話框沒有 `position:absolute`，變成畫面最上面一條 390×68 的白框（實測），
+地名、目的地字格也一起不見。已由 `b970a22~1` 還原，再**只**重新套上那兩項改動；
+`git diff` 對過，現在與改動前只差那兩處。
+
+⚠⚠ **教訓（下次改 CSS 一定要照做）**：用「起點註解 → 終點註解」框範圍替換 CSS 是危險的
+—— 兩個註解之間可能還住著別人。動手前先 `assert` 那一段裡**沒有**不該碰的選擇器：
+
+```py
+removed = s[a:b]
+assert '#storySkip' not in removed and '#storyBubble' not in removed, '範圍太大'
+```
+
+（這次補上了那道 assert 才發現原本的範圍吃掉 1700 個字元。）
+
+## B. 船戰又要開棺 —— `EMBED` 是「載入那一刻算一次」的
+
+`flight/index.html` 原本寫 `const EMBED = (window.parent!==window && !!window.parent.__tivotFlight)`
+—— **指令碼求值那一刻**算一次。只要那一刻父頁的掛鉤還沒掛上去（或那一頁是被別的路徑
+載進來的），這一頁就會**一輩子**以為自己是獨立開的 → 遭遇時走「寫 localStorage ＋ 跳頁」
+那一套 → 主遊戲開機看到 `gate:'kerb'` → 「開棺」又冒出來。
+
+改成 `embedded()` **每次用的時候現查**。掛鉤的有無是執行期的事實，不是載入期的常數。
+
+⚠ 順帶修一個更糟的後果：獨立路徑原本 `location.href='../index.html'`。如果其實是在
+iframe 裡（只是掛鉤不見了），那會把主遊戲載進**那個小框裡** —— 畫面上是「遊戲開在遊戲裡」，
+而且那條路徑上還有開棺。改成跳 `window.top`，並用絕對 URL（`window.top.location` 的
+相對路徑是相對最外層那一頁解的）。
+
+⚠ 現行版本實測（試飛 → 遭遇）：不寫 localStorage、沒有 `#gateTip`、
+舞台直接進 `kerb-gate` 演完整套 —— **沒有開棺**。
+⚠ 若手上那台還會跳開棺，是**舊的交棒鑰匙**留在 localStorage：
+`localStorage.removeItem('tivot_battle_req_v1')` 清掉即可（它讀了就清，只會再出現一次）。
+⚠ **直接開 `flight/index.html`**（開發用）那條路徑上「開棺」**還在，而且是對的** ——
+那真的是新的 document，音訊要那一頁自己的手勢才解得開（§6.10）。

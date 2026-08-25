@@ -6628,8 +6628,12 @@ function fkerbPendSwing(amp, dur){
      而且 `tivot_flight_ret_v1` 這條回程鑰匙在內嵌模式下用不到。
    ⚠ **獨立開啟仍然要能用**（開發時直接開 `flight/index.html`）：查不到父頁的掛鉤就
      退回原本的 localStorage ＋ 跳頁那一套（那條路徑上「開棺」那一顆還在）。 */
-const EMBED=(function(){ try{ return window.parent!==window && !!window.parent.__tivotFlight; }
-                         catch(_){ return false; } })();
+/* ⚠⚠ **每次用的時候才問，不要在載入時就決定**（ver -415）。原本寫成
+   `const EMBED = …`（指令碼求值那一刻算一次）—— 只要那一刻父頁的掛鉤還沒掛上去，
+   這一頁就會**一輩子**以為自己是獨立開的，遭遇時走跳頁那一套，於是「開棺」又冒出來
+   （Ray 回報「船戰又叫我開棺了」）。掛鉤的有無是**執行期的事實**，要現查。 */
+function embedded(){ try{ return window.parent!==window && !!window.parent.__tivotFlight; }
+                     catch(_){ return false; } }
 
 function toBattle(kind){
   if(peaceMode) return;      // 免戰：遭遇照演，就是不進戰鬥
@@ -6651,7 +6655,7 @@ function toBattle(kind){
   fkerbPendSwing(9, 2.0);
   setTimeout(()=>fkerbPendSwing(22, 2.6), FKERB_RISE_MS);
   setTimeout(()=>{
-    if(EMBED){
+    if(embedded()){
       flightAudio(false);                          // 進戰鬥：這一頁的音樂與環境音收掉
       window.parent.__tivotFlight.battle({ battle:'flight_'+kind, geom:fkerbGeom });
       return;
@@ -6663,7 +6667,12 @@ function toBattle(kind){
       localStorage.setItem('tivot_flight_ret_v1', JSON.stringify(
         { x:cam.x, y:cam.y, angle:cam.angle, alt:cam.alt }));
     }catch(e){}
-    location.href='../index.html';
+    /* ⚠⚠ **跳最外層那一頁**（ver -415）：如果其實是在 iframe 裡（只是父頁的掛鉤不見了），
+       用 `location.href` 會把主遊戲載進**這個小框裡** —— 畫面上就是「遊戲開在遊戲裡」，
+       而且那條路徑上還有「開棺」。跳 `window.top` 才是對的。
+       ⚠ 用絕對 URL：`window.top.location.href` 的相對路徑是相對**最外層**那一頁解的。 */
+    const url=new URL('../index.html', location.href).href;
+    try{ (window.top||window).location.href=url; }catch(_){ location.href=url; }
   }, FKERB_RISE_MS+150);
 }
 
