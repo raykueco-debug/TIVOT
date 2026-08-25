@@ -194,11 +194,91 @@ const WARM_BOOT=(function(){
 })();
 /* 進背景時刷新時間戳 —— 但**只有真的進過主畫面才算**：讀取途中被切走／重整，
    下一次仍該完整跑一次讀取（素材根本還沒載完）。 */
+/* ══ 飛行頁交棒過來的遭遇戰（ver -382，Ray：「怪碰到船以後進入舒爾特盤」）══
+   飛行頁把「要打誰」寫進 localStorage 再跳過來；讀取頁被點掉之後直接開打，不經主選單。
+   ⚠ **讀了就清掉**：不清的話重整一次又會再打一場。
+   ⚠ 打贏才跳回飛行頁（`flightBack`）；打輸走一般的失敗流程（Game Over → 主選單，
+     ver -376 的規矩），退出也一樣。 */
+const BATTLE_REQ_KEY='tivot_battle_req_v1';
+let flightBack=false;          // 這一場打完要不要跳回飛行頁
+function takeBattleReq(){
+  try{
+    const j=JSON.parse(localStorage.getItem(BATTLE_REQ_KEY)||'null');
+    localStorage.removeItem(BATTLE_REQ_KEY);
+    return (j && j.battle && GAME_CONFIG.battles && GAME_CONFIG.battles[j.battle]) ? j : null;
+  }catch(e){ return null; }
+}
+
+/* ══ 飛行頁交棒過來時的開機（ver -387，Ray：「遭遇敵人時槍棺彈出，進入戰鬥畫面，
+     彈出瞬間優先加載敵立繪、其次音效、最後音樂」）══════════════════════════
+   飛行頁那一半：楣常駐在操控面板底緣，遭遇時整扇槍棺推上來蓋滿畫面才跳頁。
+   這一半接手時門**已經在頂上**，所以：
+     ① 一開機就把門擺成「已推到頂」（`story.showKerbGate`）—— 跳頁前後畫面上是同一個東西
+     ② 讀取藏在門背後跑，順序**敵立繪 → 音效 → 音樂**（三段串接，不併行：
+        併行會搶頻寬，那正是「點進去了音效還沒好」的成因，同 startBatch 的理由）
+     ③ 點一下 → 演完剩下的門（撞頂 → 解鎖 → 圓盤 → 開門），縫裡露出的就是戰鬥畫面
+   ⚠⚠ 那一顆「點一下」**不能省**：跳頁＝新的 document，音訊要**這一頁的**使用者手勢
+     才解得開（iOS 一定要）。門的齒輪／開門音與戰鬥 BGM 全靠它，少了它整段是靜音的。
+   ⚠ 不走讀取遮罩，所以 `markBooted()` 要自己記一次 —— 否則下次冷啟動會多跑一遍完整預載。 */
+function bootBattleGate(req){
+  markBooted();
+  flightBack = true;                       // 打贏跳回飛行頁（見 setStoryReturn）
+  story.showKerbGate();
+  /* 提示：做成門上的一行字，不是一顆鈕 —— 這一拍是儀式的一部分，不是一個對話框。
+     ⚠ 讀取還沒到位時不亮：亮了才點得有意義（同讀取頁 `.al-done` 的作法）。 */
+  const tip=document.createElement('div'); tip.id='gateTip';
+  tip.innerHTML='<span>開　棺</span>';
+  document.body.appendChild(tip);
+
+  const en=(GAME_CONFIG.enemies||{})[((GAME_CONFIG.battles||{})[req.battle]||{}).enemy]||{};
+  const cap=(p,ms)=>Promise.race([p, new Promise(r=>setTimeout(r,ms))]);
+  const one=src=>new Promise(res=>{ if(!src) return res();
+    const im=new Image(); im.onload=im.onerror=()=>res(); im.fetchPriority='high'; im.src=src; });
+  /* ① 敵立繪（這一場真正看得到的那一張）→ ② 音效全部 → ③ 戰鬥 BGM。 */
+  const p1=cap(one(asset(en.image)), 4000);
+  const p2=p1.then(()=>cap(SFX.preload(_sfxPaths()).catch(()=>{}), 8000));
+  p1.then(()=>{ const t=$('gateTip'); if(t) t.classList.add('on'); });   // 立繪到位就可以點
+  p2.then(()=>SFX.preloadBgm([asset('bgm_battle')]).catch(()=>{}));
+  setTimeout(()=>{ const t=$('gateTip'); if(t) t.classList.add('on'); }, 5000);   // 保底：卡住也點得下去
+
+  let fired=false;
+  const open=()=>{
+    if(fired) return; fired=true;
+    document.removeEventListener('pointerdown', open);
+    const t=$('gateTip'); if(t && t.parentNode) t.parentNode.removeChild(t);
+    SFX.unlock();                         // 這一頁唯一的使用者手勢
+    preloadRestImgs();                    // 其餘的圖背景補載（cut-in／武器圖…）
+    preloadLateBgm();                     // 結算／失敗／Boss 那幾首（打完或打輸才用得到）
+    story.playKerberosFromRisen(
+      ()=>{ $('home').classList.remove('on'); combat.startScriptBattle(req.battle); },
+      ()=>story.close({ keepBgm:true }));
+  };
+  document.addEventListener('pointerdown', open);
+}
+/* 音效清單：與 preloadAll 同一條規則（ASSETS 裡非 bgm_ 的音檔）。
+   ⚠ 抽成函式而不是抄一份陣列 —— 兩份清單一定會走鐘（鐵律 7）。 */
+function _sfxPaths(){
+  const out=[];
+  for(const k of Object.keys(ASSETS)){
+    const v=ASSETS[k]; if(!v) continue;
+    if(k.indexOf('bgm_')===0) continue;
+    if(/\.(mp3|m4a|ogg|wav)(\?|$)/i.test(v)) out.push(v);
+  }
+  return out;
+}
+
 const refreshBoot=()=>{ if(_booted) markBooted(); };
 document.addEventListener('visibilitychange', ()=>{ if(document.hidden) refreshBoot(); });
 window.addEventListener('pagehide', refreshBoot);
 
 (function preloadAll(){
+  /* ══ 飛行頁交棒過來的遭遇戰（ver -387）══
+     門**已經在飛行頁推上來了**，所以這一條路徑**不走讀取遮罩**：一開機畫面上就是
+     蓋滿螢幕的槍棺，讀取藏在它背後跑（Ray：「彈出瞬間優先加載敵立繪、其次音效、
+     最後音樂」）。舊格式（沒有 `gate`）照走原本的聖光那一套，不動它。
+     ⚠ 交棒紀錄**在這裡就取走**（`takeBattleReq` 讀了就清），下面 `go()` 用的是同一份。 */
+  const REQ = takeBattleReq();
+  if(REQ && REQ.gate==='kerb'){ bootBattleGate(REQ); return; }
   const imgs=[], sfx=[], bgm=[];
   for(const k of Object.keys(ASSETS)){
     const v=ASSETS[k]; if(!v) continue;
@@ -402,7 +482,7 @@ window.addEventListener('pagehide', refreshBoot);
       setTimeout(()=>{ if(fl.parentNode) fl.remove(); }, 3800);                            // 聖光淡出完 → 清掉
       /* 飛行頁交棒過來的遭遇戰：**不經主選單**，在聖光蓋滿的那一刻直接開打
          （2500ms＝遮罩撤掉那一拍，畫面正好是全白 → 掀開就是戰鬥）。 */
-      const req = takeBattleReq();
+      const req = REQ;                        // 開機時就取走了（見 IIFE 開頭）
       if(req){
         flightBack = true;
         SFX.playBgm(asset('bgm_battle'), { fadeOutMs:600, volume: bgmVol('bgm_battle') });
@@ -446,21 +526,6 @@ window.addEventListener('pagehide', refreshBoot);
   }
   startBatch();   // ver -384：三段的順序寫在 startBatch 裡（音效 → 圖 → 音樂）
 })();
-
-/* ══ 飛行頁交棒過來的遭遇戰（ver -382，Ray：「怪碰到船以後進入舒爾特盤」）══
-   飛行頁把「要打誰」寫進 localStorage 再跳過來；讀取頁被點掉之後直接開打，不經主選單。
-   ⚠ **讀了就清掉**：不清的話重整一次又會再打一場。
-   ⚠ 打贏才跳回飛行頁（`flightBack`）；打輸走一般的失敗流程（Game Over → 主選單，
-     ver -376 的規矩），退出也一樣。 */
-const BATTLE_REQ_KEY='tivot_battle_req_v1';
-let flightBack=false;          // 這一場打完要不要跳回飛行頁
-function takeBattleReq(){
-  try{
-    const j=JSON.parse(localStorage.getItem(BATTLE_REQ_KEY)||'null');
-    localStorage.removeItem(BATTLE_REQ_KEY);
-    return (j && j.battle && GAME_CONFIG.battles && GAME_CONFIG.battles[j.battle]) ? j : null;
-  }catch(e){ return null; }
-}
 
 // 首頁：開始遊戲 → 主選單先淡出、空一拍（約 1s）Battle 才淡入（避免唐突），同時播「驅逐開始」過渡禎
 function launchBattle(opts){

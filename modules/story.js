@@ -804,6 +804,9 @@ const KERB_DIR='resources/vfx/';
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
      只要中心擺對，轉幾度都落在該落的地方。 */
+/* ⚠⚠ `top.ar` / `top.dip` 與 `flight/index.html` 的 `FKERB` **是同一組數字** ——
+   飛行頁是另一個 HTML（非 module），import 不到這一份，只能各存一份。
+   **改圖重跑 tools/kerberos_cut.py 之後，兩邊都要貼**（鐵律 7 的但書：兩邊註解互指）。 */
 const KERB_META={"w":853,"h":1844,"seam":0.506,
  "plate":{"x":0.18171,"y":0.05152,"w":0.63892,"h":0.30206},
  "top":{"ar":0.11159,"dip":0.11915},
@@ -979,9 +982,14 @@ function stopKerberos(){
   if(sm) sm.innerHTML='';
   if(st) st.classList.remove('kerb-open');
 }
-function playKerberos(onGap, onDone){
+/* `opts.fromRisen`（ver -387）：**門已經在飛行頁推上來了** —— 從「已推到頂」的狀態
+   接下去演（撞頂 → 解鎖 → 圓盤 → 開門），不重演上推、也不再播一次撞擊音。
+   ⚠ 起始狀態要在 `kerb-instant` 之下擺（同 `playKerberosClose`），否則一掛上 class
+     就會從沉在底下的狀態演一次上推。 */
+function playKerberos(onGap, onDone, opts){
   const kb=$('kerb'), st=$('storyStage');
   if(!kb || !st){ onGap&&onGap(); onDone&&onDone(); return; }
+  const fromRisen = !!(opts && opts.fromRisen);
   stopKerberos(); layoutKerberos();
   kerbPlaying=true;
   /* ⚠ 槍棺一動，對話框就要**先消失**（Ray 指定，且「以後推槍棺都要這樣處理」）——
@@ -1000,10 +1008,18 @@ function playKerberos(onGap, onDone){
       return; }
     try{ SFX.play(u, 1); }catch(e){} };
   let t=0;
-  /* ① 撞擊音：立刻播，撞擊峰值（1002ms）正好落在門撞頂那一瞬（rise 也是 1000ms）。 */
-  se('pop');
-  kb.classList.add('rise','full');                       // ① 槍棺上推（楣跟著走）
-  t+=KERB_T.rise;
+  if(fromRisen){
+    /* ①' 飛行頁已經推完了：直接擺成「推到頂」，撞擊音也已經在那邊播過。 */
+    kb.classList.add('kerb-instant');
+    kb.classList.add('rise','full');
+    void kb.offsetWidth;
+    kb.classList.remove('kerb-instant');
+  }else{
+    /* ① 撞擊音：立刻播，撞擊峰值（1002ms）正好落在門撞頂那一瞬（rise 也是 1000ms）。 */
+    se('pop');
+    kb.classList.add('rise','full');                     // ① 槍棺上推（楣跟著走）
+    t+=KERB_T.rise;
+  }
   at(t,()=>{                                             // ② 撞頂：震動＋門縫透出十字亮光
     /* ⚠ 戰鬥音樂在**撞頂之後**才進（ver -356，Ray 指定；-355 曾放在「開始上推」那一瞬）。
        上推那一秒還是劇情的餘韻，音樂壓在撞擊上等於把那一下的重量分掉；
@@ -1043,6 +1059,38 @@ function playKerberos(onGap, onDone){
   at(Math.max(0, openAt + KERB_T.open - KERB_SE_T.openTail), ()=>se('open'));
   t+=KERB_T.open;
   at(t,()=>{ onDone&&onDone(); });
+}
+
+/* ══ 飛行頁交棒過來的那一場：門是**在飛行頁推上來的**（ver -387）══════════
+   飛行頁與主遊戲是兩個 HTML，中間隔著一次跳頁 —— 所以上推在那邊演完，這邊接手時
+   槍棺已經蓋滿畫面。這兩支就是那個交棒：
+     `showKerbGate()`        擺出「已推到頂」的靜止畫面（讀取期間玩家看到的就是它）
+     `playKerberosFromRisen` 接著演完（撞頂 → 解鎖 → 圓盤 → 開門）
+   ⚠ 為什麼要有一顆「點一下」擋在中間：跳頁＝新的 document，音訊要**這一頁的**
+     使用者手勢才解得開（iOS 一定要）。門的齒輪／開門音、戰鬥 BGM 全靠它。
+   ⚠ 舞台要自己開（`on` ＋ `story-on`）：這條路徑不經過 `open()`，劇情層本來是收著的。 */
+export function showKerbGate(){
+  const st=$('storyStage'), kb=$('kerb');
+  if(!st || !kb) return;
+  stopKerberos();
+  st.classList.add('on');
+  /* ⚠ `kerb-gate`：這一段**沒有劇情**，所以對話框、離開鈕、跳段鈕都要收掉 ——
+     舞台一 `.on` 那三個是預設出現的（空的對話框浮在門中間、✕ 讓玩家逃出這一拍）。
+     一路留到門全開才拿掉（見 playKerberosFromRisen）。 */
+  st.classList.add('kerb-gate');
+  document.body.classList.add('story-on');
+  layoutKerberos();
+  kb.classList.add('kerb-instant');
+  kb.classList.add('rise','full');
+  void kb.offsetWidth;
+  kb.classList.remove('kerb-instant');
+}
+export function playKerberosFromRisen(onGap, onDone){
+  const st=$('storyStage');
+  if(st) st.classList.add('on','kerb-gate');
+  document.body.classList.add('story-on');
+  playKerberos(onGap, ()=>{ if(st) st.classList.remove('kerb-gate'); onDone&&onDone(); },
+               { fromRisen:true });
 }
 
 /* ══ 金屬磨擦火花（ver -366，關門演出用）══
@@ -1702,7 +1750,13 @@ export function flashLine(text, name){
   typeOut(tx, text||'');
   markTalking(true);      // 路人閒聊也是對白（ver -385）
 }
-export function hideBubble(){ const b=$('storyBubble'); if(b) b.style.visibility='hidden'; }
+/* 收掉對話框。⚠ 順便宣告「現在沒有在演」（ver -387）—— `flashLine` 開場時
+   `markTalking(true)`，收場就該由**同一個層**關掉（§6.5：誰在演，誰負責宣告）。
+   不關的話城鎮的地名／時刻會一直讓開，玩家看不到自己在哪、幾點。 */
+export function hideBubble(){
+  const b=$('storyBubble'); if(b) b.style.visibility='hidden';
+  markTalking(false);
+}
 /* 城鎮用：確保某一首 BGM 在放（ver -375）。
    ⚠ 為什麼要有：城鎮中間會插進一場戰鬥，戰鬥有自己的曲子；回到城鎮時要把地方的曲子
      接回來。**同曲重播由 `playBgm` 自己擋掉**，所以每次進節點都呼叫是安全的。

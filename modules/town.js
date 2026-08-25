@@ -46,6 +46,9 @@ function bgFor(base, noTime){
     const name=cands[i];
     const img=new Image();
     img.onload =()=>{ story.setSceneBg(name);
+      /* 櫃台鈕要靠圖的原始比例換算位置（見 placeCounter），所以在這裡記下來 ——
+         這一支本來就要載那張圖，不必另外再抓一次（鐵律 7：算的那一支發佈出去）。 */
+      bgNat=[img.naturalWidth, img.naturalHeight]; placeCounter();
       if(i>0 && !missingBg.has(cands[0])){ missingBg.add(cands[0]);
         console.info('[town] 沒有這個時段的背景，退回：', cands[0], '→', name); } };
     img.onerror=()=>tryAt(i+1);
@@ -67,26 +70,67 @@ function ensureLayer(){
   if(layer && layer.parentNode) return layer;
   const st=story.stageEl(); if(!st) return null;
   layer=document.createElement('div'); layer.id='townNav';
-  /* 目的地字格：**上／左／右**三個（下方不做 —— 那通常是「退回上一層」，
-     名字寫出來只是重複）。按住字格蓄能滿了才走（Ray 指定）。 */
-  layer.innerHTML=['up','left','right'].map(d=>
+  /* 目的地字格：上／左／右三個一律有；**下方只有「出航」時才有**（ver -387）——
+     下方通常是「退回上一層」，寫出名字只是重複；但出航是城外，玩家非得看到那兩個字
+     才知道那一支箭是幹什麼的（Ray：「預設的城鎮入口下方為『出航』」）。
+     按住字格蓄能滿了才走（Ray 指定）。 */
+  layer.innerHTML=['up','left','right','down'].map(d=>
       '<button class="town-dest '+d+'" data-dir="'+d+'" type="button"><span></span></button>').join('')
     + '<div id="townHint"><svg viewBox="0 0 44 44">'
     + '<circle class="ta-rail" cx="22" cy="22" r="19"/>'
     + '<circle class="ta-prog" cx="22" cy="22" r="19"/></svg>'
     + '<span class="th-label"></span></div>'
     + '<div id="townInfo"></div>'
-    + '<button id="townShop" class="town-btn" type="button">商店</button>';
+    /* 櫃台鈕（ver -387，Ray：「商店、武器店、賞金獵人公會的櫃臺放置按鈕以進入各別選單」）。
+       ⚠ **一顆鈕、一支實作**（鐵律 8）：商店、武器店、公會共用它，差別只在開哪個選單。
+         原本「點畫面就開商店」（`shopOnTap`）已經拿掉 —— 兩個入口做同一件事，
+         其中一個一定會被忘記維護。 */
+    + '<button id="townCounter" class="town-btn" type="button"></button>';
   st.appendChild(layer);
-  const sb=layer.querySelector('#townShop');
-  if(sb) sb.addEventListener('pointerup', e=>{ e.stopPropagation(); openShop(); });
+  const sb=layer.querySelector('#townCounter');
+  if(sb) sb.addEventListener('pointerup', e=>{ e.stopPropagation(); openCounter(); });
   return layer;
+}
+
+/* ══ 櫃台鈕 ══════════════════════════════════════════════════════════
+   位置寫在節點的 `counter:{x,y}`，而那組座標是**背景圖上的比例** ——
+   要換算成螢幕座標就得知道 `object-fit:cover` 把圖裁掉了多少。
+   ⚠ cover ＝ 等比放大到蓋滿框，多出來的部分（左右或上下）**置中裁掉**。
+     所以縮放係數是 `max(框寬/圖寬, 框高/圖高)`，偏移是 `(框 − 放大後)/2`。
+   ⚠ 圖的原始比例要**問那張圖**（`naturalWidth/Height`），不能假設每張背景都一樣。
+     背景是非同步載進來的，所以在 `bgFor` 載到的那一刻記下來（`bgNat`）。
+   ⚠ 量不到圖（還沒載完）就先不擺 —— 擺在錯的地方比晚一拍出現糟得多。 */
+let bgNat=null;              // 目前背景圖的原始尺寸 [w,h]
+function placeCounter(){
+  const b=layer && layer.querySelector('#townCounter'); if(!b) return;
+  const n=node();
+  const on = !!(n && n.counter && (n.shop || (n.board && (!n.boardFlag || prog.hasFlag(n.boardFlag)))));
+  /* ⚠ **擺好了才亮**：先 `.on` 再算位置的話，量不到圖那一拍鈕會出現在畫面左上角
+     （left/top 還沒寫）—— 一顆定位錯的鈕比晚一拍出現糟得多。 */
+  const st=story.stageEl(), bg=document.getElementById('storyBg');
+  const br=bg ? bg.getBoundingClientRect() : null;
+  if(!on || !st || !bgNat || !br || !br.width || !br.height){ b.classList.remove('on'); return; }
+  b.textContent = n.counter.label || '櫃　台';
+  const sr=st.getBoundingClientRect();
+  const k=Math.max(br.width/bgNat[0], br.height/bgNat[1]);
+  const w=bgNat[0]*k, h=bgNat[1]*k;
+  b.style.left=(br.left-sr.left + (br.width-w)/2 + n.counter.x*w)+'px';
+  b.style.top =(br.top -sr.top  + (br.height-h)/2 + n.counter.y*h)+'px';
+  b.classList.add('on');
+}
+/* 櫃台鈕按下去開哪個選單：商店 → 買賣；公會 → 懸賞榜。 */
+function openCounter(){
+  const n=node(); if(!n) return;
+  if(n.shop){ openShop(); return; }
+  if(n.board && (!n.boardFlag || prog.hasFlag(n.boardFlag))){
+    try{ SFX.unlock(); SFX.menuClick(); }catch(_){}
+    showBounty(n.board);
+  }
 }
 
 function refreshArrows(){
   const n=node(); if(!n || !layer) return;
-  const sb=layer.querySelector('#townShop');
-  if(sb) sb.classList.toggle('on', !!n.shop);
+  placeCounter();
   const info=layer.querySelector('#townInfo');
   if(info) info.innerHTML = n.name + '<span class="ti-time">' + clock.timeText() + '</span>';
   /* 目的地字格：有那個方向才出現，字是目的地名，**位置貼著那一支箭**
@@ -98,7 +142,10 @@ function refreshArrows(){
   const sr=st ? st.getBoundingClientRect() : null;
   layer.querySelectorAll('.town-dest').forEach(b=>{
     const to=ex[b.dataset.dir];
-    b.classList.toggle('on', !!to);
+    /* ⚠ 下方那一格只給出航：一般的「退回上一層」不標名字（見 ensureLayer）。 */
+    const show = b.dataset.dir==='down' ? (to===SAIL_ID) : !!to;
+    b.classList.toggle('on', show);
+    if(!show){ b.style.setProperty('--fill', 0); return; }
     b.style.setProperty('--fill', 0);
     const sp=b.querySelector('span'); if(sp) sp.textContent = to ? nameOfNode(to) : '';
     if(!to || !sr) return;
@@ -110,13 +157,18 @@ function refreshArrows(){
       up:   [0,  -r.height*0.95],
       left: [-r.width*1.5, -r.height*0.75],
       right:[ r.width*1.5, -r.height*0.75],
+      /* 下：擺在箭的**正上方**。⚠ 不能擺下面 —— 那支箭本來就快貼到畫面底了
+         （實測箭心 y=742、箭底 787，而舞台只有 812 高），字格擺下去會被切掉一半。 */
+      down: [0,  -r.height*0.75],
     }[b.dataset.dir] || [0,0];
     b.style.left=(cx+off[0])+'px'; b.style.top=(cy+off[1])+'px';
     /* ⚠ 夾回畫面內：字格是 `translate(-50%,-50%)` 置中的，貼著箭放會半格出界
        （實測左邊那格 left=-33）。量完自己的寬度再夾一次。 */
-    const bw=b.getBoundingClientRect().width/2 || 40;
+    const br2=b.getBoundingClientRect();
+    const bw=br2.width/2 || 40, bh=br2.height/2 || 16;
     const x=Math.min(Math.max(cx+off[0], bw+8), sr.width-bw-8);
-    b.style.left=x+'px';
+    const y=Math.min(Math.max(cy+off[1], bh+8), sr.height-bh-8);
+    b.style.left=x+'px'; b.style.top=y+'px';
   });
 }
 
@@ -160,9 +212,18 @@ function exitsOf(){
   /* `back` 沒有自己的箭：只有它的時候掛到「下」。 */
   if(ex.back && !ex.down){ ex.down=ex.back; }
   delete ex.back;
+  /* ══ 出航（ver -387，Ray：「預設的城鎮入口下方為『出航』」）══
+     ⚠ 走**同一套**方向出口（長按那一支箭／字格），不另做一顆鈕 —— 對玩家而言
+       「往下走」與「出航」是同一個動作，只是目的地在城外（鐵律 8）。
+     ⚠ 目的地 id 用 `__sail` 這個保留字，由 `go()` 攔下來分流。 */
+  if(n && n.sail && !ex.down) ex.down=SAIL_ID;
   return ex;
 }
-function nameOfNode(id){ return ((TOWNS[townId]||{}).nodes[id]||{}).name?.replace(/^帝都　/,'')||''; }
+const SAIL_ID='__sail';
+function nameOfNode(id){
+  if(id===SAIL_ID) return '出航';
+  return ((TOWNS[townId]||{}).nodes[id]||{}).name?.replace(/^帝都　/,'')||'';
+}
 
 function updateCompass(){
   const ex=exitsOf();
@@ -205,16 +266,12 @@ function bindInput(){
   st.addEventListener('pointerup', e=>{
     if(hold){ cancel(); return; }               // 放太早：取消，不算點擊
     if(!townId || busy || story.isPlaying()) return;
-    if(e.target.closest && e.target.closest('#townShop')) return;
-    /* 單純點畫面：商店節點 → 開買賣選單（Ray 指定）；其餘 → 路人閒聊。 */
-    const n=node();
-    if(n && n.shopOnTap && n.shop){ openShop(); return; }
-    /* 公會：點畫面 → 懸賞榜（Ray：「點擊櫃台進入公會介面」）。
-       ⚠ 要**登記過**才開得了 —— 沒登記就跟路人閒聊一樣什麼都沒有。 */
-    if(n && n.board && (!n.boardFlag || prog.hasFlag(n.boardFlag))){
-      try{ SFX.unlock(); SFX.menuClick(); }catch(_){}
-      showBounty(n.board); return;
-    }
+    if(e.target.closest && e.target.closest('#townCounter')) return;
+    /* ══ 單純點畫面 ＝ 路人單句（ver -387，Ray 指定四個地方都有）══
+       節奏是**點一下出一句、再點一下收掉**，收掉之前不出下一句 ——
+       一直點就一直換句的話，玩家永遠讀不完一句。
+       ⚠ 商店／公會不再「點畫面就開選單」：入口改成櫃台鈕（鐵律 8，見 ensureLayer）。 */
+    if(chatterOn){ story.hideBubble(); chatterOn=false; return; }
     chatter();
   });
   st.addEventListener('pointercancel', cancel);
@@ -248,11 +305,37 @@ function bindInput(){
    提示出得來、時間也滿了，就是不會走）。 */
 function go(to){
   if(!to) return;
+  if(to===SAIL_ID){ setSail(); return; }
   busy=true; showNav(false);
   document.body.classList.remove('town-nav');          // 移動中把羅盤收起來
   try{ SFX.play('resources/audio/se/se_walk.m4a'); }catch(_){}
   clock.advance(STEP_MIN);
   setTimeout(()=>enter(to), 260);
+}
+
+/* ══ 出航（ver -387，Ray 指定）══════════════════════════════════════════
+   「在到達取得船支的劇情前，點擊出航諾薇兒會要求要等蕾娜，船還沒好。」
+   ⚠ 旗標由**主線**（拿到船的那一幕）立起來，這裡只讀 —— progress.js 的資料流是
+     「主線寫、其餘讀」。旗標名寫在節點資料上（`sail.flag`），不寫死在程式裡。
+   ⚠ 攔下來的那一段照樣走劇情播放器（立繪、明暗、打字機一致），演完把台上收乾淨、
+     導覽開回來 —— 與城鎮其他每一段對白同一套收尾（鐵律 8）。 */
+function setSail(){
+  const n=node(), sail=n && n.sail; if(!sail) return;
+  if(!sail.flag || prog.hasFlag(sail.flag)){
+    /* 船已經到手：交給飛行頁。⚠ 城鎮的位置目前不存 —— 飛行頁那邊回來時走的是
+       `tivot_flight_ret_v1`（座標），城鎮節點要不要一起存是另一件事（§6.9 的清單）。 */
+    try{ SFX.play('resources/audio/se/se_walk.m4a'); }catch(_){}
+    location.href='flight/index.html';
+    return;
+  }
+  if(!sail.blocked || !sail.blocked.length) return;
+  busy=true; showNav(false);
+  if(chatterOn){ story.hideBubble(); chatterOn=false; }
+  /* 第一句等立繪站定（同 enter 的作法：立繪滑入 450ms，框太早上就變成「先講話人才到」）。 */
+  const play=sail.blocked.map((l,i)=> (i===0 && l && l.delay==null)
+    ? Object.assign({}, l, { delay:SLIDE_MS }) : l);
+  story.playAdhoc(play, ()=>{ story.clearCast();
+    busy=false; refreshArrows(); showNav(true); }, { sides:n.sides });
 }
 
 /* ══ 進節點 ══ */
@@ -270,6 +353,8 @@ export function enter(id){
   clearTimeout(arriveT); arriveT=0;
   story.endAdhoc();
   story.clearCast();
+  chatterOn=false;          // ⚠ 第四件：上一個地點的路人單句（見 §6.5 的新路徑檢查表）
+  bgNat=null;               // 背景要重載，舊的尺寸不能拿來擺新的櫃台鈕
   /* 這座城的曲子（ver -375）。⚠ 每進一個節點都確認一次，不是只在 `open` 時放一次 ——
      中間可能插進一場戰鬥（戰鬥有自己的曲子），回來要接得回去。
      同曲重播由 `playBgm` 自己擋掉，所以重複呼叫是安全的。 */
@@ -354,8 +439,12 @@ function openShop(){
    非嚴格模式下它會變成隱式全域，所以在別處測不出來。兩支「不要連續同一句」的游標
    一起宣告在這裡。 */
 let lastKeeper=-1, lastChat=-1;
+/* 現在畫面上有沒有一句路人單句（ver -387）。**這是一個狀態，不要從畫面反推** ——
+   對話框的 `visibility` 是這一拍稍後才套上／撤掉的，當場量會量到上一個狀態
+   （§6.5 的 -385 那個坑）。換節點要歸零（見 enter）。 */
+let chatterOn=false;
 
-/* 路人閒聊：**單句**，不進對話模式（Ray 指定）。再點一下換下一句。 */
+/* 路人單句：**單句**，不進對話模式（Ray 指定）。點一下出一句、再點一下收掉。 */
 function chatter(){
   const n=node(); const list=n && n.chatter;
   if(!list || !list.length) return;
@@ -363,6 +452,7 @@ function chatter(){
   if(list.length>1 && i===lastChat) i=(i+1)%list.length;
   lastChat=i;
   story.flashLine(list[i], '');
+  chatterOn=true;
 }
 
 export function open(town){

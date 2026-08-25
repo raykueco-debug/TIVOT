@@ -57,7 +57,10 @@
   /* 生怪鈕：開發用。放操作盤左下角——舵輪佔滿面板中央，只有兩側下緣是空的。
      ⚠ z-index 要高過面板（面板是 canvas 直接畫的，本身不佔 DOM 層級），
        但低於地圖畫面(60)，免得地圖開著還按得到。 */
-  #spawnBtn{position:fixed;left:12px;bottom:calc(env(safe-area-inset-bottom) + 12px);
+  /* ⚠ 底下那一排鈕要**讓開楣**（ver -387）：楣常駐在畫面最底，高度是 JS 依圖比例
+     算出來的（`--fkerb-top-h`），寫死像素在別的螢幕寬度上一定蓋到。 */
+  #spawnBtn{position:fixed;left:12px;
+    bottom:calc(env(safe-area-inset-bottom) + 12px + var(--fkerb-top-h,0px));
     z-index:40;background:rgba(5,6,12,.72);border:1px solid rgba(201,162,39,.5);
     color:var(--gold);font-family:inherit;font-size:11px;letter-spacing:.14em;
     padding:5px 12px;cursor:pointer;}
@@ -66,12 +69,34 @@
      開著＝碰到怪只跳「遭遇」那一格，**不進戰鬥**。放生怪鈕右邊，同一排。
      ⚠ `left` 用 `calc` 讓開生怪鈕的寬度 —— 那顆是四個中文字，寬度會隨字型變，
        寫死像素在別的裝置上會疊到。 */
-  #peaceBtn{position:fixed;left:calc(12px + 5.4em);bottom:calc(env(safe-area-inset-bottom) + 12px);
+  #peaceBtn{position:fixed;left:calc(12px + 5.4em);
+    bottom:calc(env(safe-area-inset-bottom) + 12px + var(--fkerb-top-h,0px));
     z-index:40;background:rgba(5,6,12,.72);border:1px solid rgba(201,162,39,.5);
     color:var(--gold);font-family:inherit;font-size:11px;letter-spacing:.14em;
     padding:5px 12px;cursor:pointer;}
   #peaceBtn:active{background:rgba(201,162,39,.16);}
   #peaceBtn.on{color:#7fd0a0;border-color:rgba(127,208,160,.8);}
+  /* ══ Kerberos 之門（ver -387，Ray：「飛行畫面時將楣常置於操控面板底部，
+       遭遇敵人時槍棺彈出，進入戰鬥畫面」）══
+     平常：整扇槍棺沉在畫面之下，只有**楣**露在操控面板的底緣 —— 那是「棺就在腳下」
+     的提示，也讓飛行頁與戰鬥頁共用同一個畫框。
+     遭遇：整扇往上推蓋滿畫面（1000ms，與主遊戲的 `KERB_T.rise` 同值），推完才跳頁。
+     ⚠ 幾何**全部由 JS 解**（見 `layoutFKerb`）：門要多寬是「至少蓋得滿畫面」反推的，
+       CSS 猜不到那個數字（同主遊戲 `layoutKerberos` 的理由，鐵律 7）。
+     ⚠ z-index **兩段**：平常 45（壓過 HUD 鈕 40，但**低於**開機頁 50 與地圖 60 ——
+       楣是「在飛的時候」的畫框，不該蓋在讀取頁或地圖上）；推起來時抬到 90，
+       那一刻它就該蓋掉一切。
+     ⚠ 平常 `pointer-events:none`：楣只是一條裝飾，不能吃掉舵輪下緣的操作。 */
+  #fkerb{position:fixed;inset:0;z-index:45;overflow:hidden;pointer-events:none;}
+  #fkerb.rise{z-index:90;pointer-events:auto;}
+  #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
+    transition:transform 1s cubic-bezier(.22,.9,.25,1);
+    background-image:url('../resources/vfx/kerberos_door.webp');
+    background-repeat:no-repeat;background-size:100% 100%;}
+  #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
+  /* 楣：橫跨整個畫面寬，蓋在門的上緣。是門的子元素＝同一剛體，門上推它跟著上去
+     （同主遊戲 `#kerbTop` 的作法）。 */
+  #fkerbTop{position:absolute;display:block;}
   /* 加速鈕：開發用。放操作盤**左上**（生怪鈕在左下，兩者不打架）。
      top 由 JS 設成 VIEWH+12 —— 面板上緣是算出來的，CSS 這邊沒有那個數字。 */
   #boostBtn{position:fixed;left:12px;z-index:40;background:rgba(5,6,12,.72);
@@ -256,6 +281,11 @@
   <div id="mapCap">拖曳平移 · 滾輪／雙指縮放 · 放大可見市鎮街廓</div>
 </div>
 <div id="fps"></div>
+<!-- Kerberos 之門（ver -387）：楣常駐在操控面板底緣；遭遇敵人時整扇槍棺推上來蓋滿畫面，
+     推完才跳去戰鬥頁。幾何由 `layoutFKerb()` 解出來寫成 inline style。 -->
+<div id="fkerb"><div id="fkerbDoor">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp" alt="">
+</div></div>
 <div id="boot">
   <div id="bRing">
     <svg viewBox="0 0 100 100">
@@ -336,6 +366,10 @@ const ZFAR       = 3600;  // 可視距離（世界單位）＝ 360 個地圖像�
    最嚴重的變形集中在畫面最下緣（近地單一取樣被放到極大）。
    把那一段切掉當面板，等於同時解決版面與變形。 */
 const VIEW_F = 0.66;      // 3D 視窗佔畫面高度比例，其餘為面板
+/* Kerberos 之門的圖比例（ver -387）。⚠ 宣告在這裡是因為 `resize()` 會在指令碼求值期間
+   就呼叫 `layoutFKerb()` —— 放在下面（生怪那一區）會撞上 const 的 TDZ。
+   數字的來源與「為什麼兩邊各一份」見下方 `layoutFKerb` 的說明。 */
+const FKERB={ w:853, h:1844, top:{ ar:0.11159, dip:0.11915 } };
 /* ⚠ 宣告要早於 resize()：resize 在模組初始化就跑一次，而感應立繪的落地線
    （VIEWH−HELM_OUT）是在那裡算的 —— 留在 drawPanel 旁邊會踩到 TDZ。 */
 const HELM_OUT = 20;      // 舵輪上緣突出 3D 視窗的像素
@@ -3557,6 +3591,7 @@ function applyResize(){
     if(bb) bb.style.top=(VIEWH+12)+'px';
     const pb=document.getElementById('progBtn');       // 進度鈕：面板右上，與加速鈕同高
     if(pb) pb.style.top=(VIEWH+12)+'px'; }
+  layoutFKerb();          // 楣／槍棺的幾何（ver -387）：寬高由畫面比例反推，見那一支
   cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR);
   cv.style.width=W+'px';cv.style.height=H+'px';
   /* ⚠ 順序：設 width/height 會把 context 的狀態（含變換）整個重置，
@@ -4607,6 +4642,14 @@ function update(dt,now){
   let mv=cam.speed*dt*0.06*SPD_BOOST*(now<sturmUntil?STURM_MULT:1);
   /* 邊界的空氣牆：向外的位移被吃掉，而且**速度也跟著掉** ——
      只擋位移不掉速度的話，速度計還滿著、船卻不動，那看起來像卡住了。 */
+  /* ⚠⚠ 遭遇交棒等待期間**船也要停**（ver -387）：敵人一進 engage 就停住了，
+     但船沒停 —— 那 1.1 秒的等待夠船走掉近 400 單位，比 engage 半徑還遠，
+     於是玩家看到的是「牠貼到船上了才跳頁」。停的是**位移**不是 cam.speed：
+     速度錶／螺旋槳／尾流照樣讀 cam.speed，改它會讓那些儀表一起說謊
+     （同 SPD_BOOST／Sturm 的作法）。
+     ⚠ 只在**真的要進戰鬥**時停（`battleGoing`）；免戰模式下遭遇照演但不跳頁，
+       那時把船停住只會在畫地圖時擋路。 */
+  if(battleGoing) mv=0;
   const ek=edgeDamp(cam.x/MAP_SCALE, cam.y/MAP_SCALE, fx, fy);
   if(ek<1){
     mv*=ek;
@@ -6007,7 +6050,14 @@ const ENEMY_CFG = {
      的界線，再往後就繞到側後方、玩家一路上都不會遇到牠。 */
   spawnOffMin: 52*Math.PI/180,
   spawnOffMax: 105*Math.PI/180,
-  engage: 210,                    // 進入戰鬥的距離
+  /* 進入戰鬥的距離（ver -387 由 210 加大到 480，Ray：「不可讓敵接觸玩家的船，
+     那代表太近，在適當距離進入戰鬥」）。
+     ⚠⚠ 光加大距離**不夠**：真正讓牠貼到臉上的是那 1.1 秒 —— 敵人一進 engage 就停住了
+       （updateEnemy 提早 return），但**船還在全速前進**：MAX_SPD 6.0 × dt × 0.06
+       ≈ 360 世界單位/秒，1.1 秒就走掉近 400，比整個 engage 距離還遠。
+       所以交棒等待期間要一併把船停住（見 update() 的 `battleGoing` 那一行）。
+     ⚠ 判定本來就是 `hypot(dx,dy)`＝全向的（Ray：「不論前後左右」），這裡只調半徑。 */
+  engage: 480,
   holdMs: 3000,                   // 提示停留後一同消失
   segs: 22,                       // 體節數
   /* 體長：120 時整隻讀起來像蜻蜓——翅展跟身體差不多長，蟲的比例就出不來。
@@ -6282,16 +6332,66 @@ let peaceMode=(()=>{ try{ return localStorage.getItem(PEACE_KEY)==='1'; }catch(_
     sync();
   });
 }
+/* ══ Kerberos 之門（飛行頁這一半，ver -387）══════════════════════════════
+   ⚠⚠ 這裡的 `top.ar` / `top.dip` 與主遊戲 `modules/story.js` 的 `KERB_META` **是同一組
+     數字**（由 tools/kerberos_cut.py 印出來的）。飛行頁是另一個 HTML、非 module，
+     import 不到那一份，所以只能抄一份 —— **改圖重跑腳本之後兩邊都要貼**
+     （鐵律 7 的但書：真的必須出現在兩邊時，兩邊註解互指）。
+   幾何是**解出來的**：
+     · 門寬 `Wd = max(畫面寬, 畫面高 / 高寬比)` —— 推到頂時要蓋得滿整個畫面，
+       高度不夠就靠加寬補（同主遊戲 layoutKerberos 的 `Math.max`）。
+     · 門頂 `doorTop` 由「**楣的下緣貼齊畫面底**」反推 —— 楣的上緣在門頂之上
+       `1 − th + th·dip`（負值），所以 `doorTop = H − 1 − th·dip`。
+       平常整扇門沉在畫面之下，露出來的就只有那一條楣。
+     · 上推距離就是 `doorTop`（推完門頂貼齊 y=0）。 */
+/* ⚠ 這一組常數宣告在檔頭（見 VIEW_F 那一區）—— `resize()` 在指令碼求值期間就會跑，
+   宣告留在這裡的話 `layoutFKerb` 會撞上 TDZ（實測：Cannot access 'FKERB' before initialization）。 */
+function layoutFKerb(){
+  const kb=document.getElementById('fkerb'), dr=document.getElementById('fkerbDoor'),
+        tp=document.getElementById('fkerbTop');
+  if(!kb || !dr || !tp || !W || !H) return;
+  const AR=FKERB.h/FKERB.w;
+  const Wd=Math.max(W, H/AR), Hd=Wd*AR, dx=(W-Wd)/2;
+  const th=W*FKERB.top.ar;                     // 楣：橫跨整個畫面寬
+  const tpTop=1-th+th*FKERB.top.dip;           // 楣的上緣（門座標，負值＝在門頂之上）
+  const doorTop=H-1-th*FKERB.top.dip;          // 由「楣的下緣貼齊畫面底」反推
+  dr.style.width=Wd+'px'; dr.style.height=Hd+'px';
+  dr.style.left=dx+'px'; dr.style.top=doorTop+'px';
+  tp.style.width=W+'px'; tp.style.height=th+'px';
+  tp.style.left=(-dx)+'px'; tp.style.top=tpTop+'px';
+  kb.style.setProperty('--fkerb-rise', doorTop+'px');
+  /* 底下那一排鈕靠它讓開楣（見 CSS）。⚠ 掛在 :root —— 那些鈕是 position:fixed，
+     不是 #fkerb 的子孫，CSS 變數繼承不過去。 */
+  document.documentElement.style.setProperty('--fkerb-top-h', th+'px');
+}
+/* 撞擊音：與主遊戲同一支素材（峰值在 1002ms，正好落在門撞頂那一瞬 —— 所以
+   上推的長度也是 1000ms，兩邊同值，改一邊要改另一邊）。 */
+const kerbPopSE = new Audio('../resources/audio/se/se_Kerberos_pop.m4a'); kerbPopSE.preload='auto';
+const FKERB_HOLD_MS = 700;    // 先讓「遭遇　◯◯」那一格看得到，再推棺
+const FKERB_RISE_MS = 1000;   // 上推時間（＝ story.js 的 KERB_T.rise，兩邊同值）
+
 function toBattle(kind){
   if(peaceMode) return;      // 免戰：遭遇照演，就是不進戰鬥
   if(battleGoing) return;
-  battleGoing=true;
+  battleGoing=true;          // 這一刻起船也停住（見 update() 的那一行）
   try{
-    localStorage.setItem('tivot_battle_req_v1', JSON.stringify({ battle:'flight_'+kind }));
+    /* `gate:'kerb'` 告訴主遊戲「門已經推上來了」—— 那邊接手時不從頭演上推，
+       而是**由已推到頂的狀態接下去**（解鎖 → 圓盤 → 開門），畫面才連得起來。 */
+    localStorage.setItem('tivot_battle_req_v1', JSON.stringify({ battle:'flight_'+kind, gate:'kerb' }));
     localStorage.setItem('tivot_flight_ret_v1', JSON.stringify(
       { x:cam.x, y:cam.y, angle:cam.angle, alt:cam.alt }));
   }catch(e){}
-  setTimeout(()=>{ location.href='../index.html'; }, 1100);
+  /* 槍棺彈出：先停一拍讓玩家讀到遭遇了誰，再整扇推上來蓋滿畫面，推完才跳頁。 */
+  setTimeout(()=>{
+    layoutFKerb();                                   // 推之前重量一次（轉向過就會變）
+    if(!muted) playSfx(kerbPopSE);
+    /* ⚠ 不要用 `requestAnimationFrame` 掛這個 class：分頁在背景時 rAF **完全不跑**，
+       於是門不推、時間到了直接跳頁（實測就是這樣漏掉的）。門的起始狀態早就在 DOM 裡
+       落地了，直接加 class 就會有過場。 */
+    const kb=document.getElementById('fkerb');
+    if(kb) kb.classList.add('rise');
+    setTimeout(()=>{ location.href='../index.html'; }, FKERB_RISE_MS+150);
+  }, FKERB_HOLD_MS);
 }
 
 /* 打完回來：把船放回離開時的位置（ver -382）。

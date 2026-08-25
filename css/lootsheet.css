@@ -98,10 +98,9 @@
   #lootSheet .shop-row.pick{border-color:var(--gold-dim);background:rgba(212,169,74,.10);}
   /* 價格那一欄**不換行**（ver -377）：武器名長，換行之後「4000」與「G」會被拆成兩行。 */
   #lootSheet .shop-row .loot-n{white-space:nowrap;}
-  #lootSheet .shop-keeper-art{width:84px;align-self:flex-end;border-radius:8px;
-    object-fit:cover;object-position:top;max-height:38vh;
-    -webkit-mask-image:linear-gradient(#000 72%,transparent);
-    mask-image:linear-gradient(#000 72%,transparent);}
+  /* ⚠ `.shop-keeper-art` 已於 ver -387 撤掉（Ray：「商店內展開購買視窗時不要放店主立繪」）——
+     店主畫在背景的櫃台後面，這一頁是疊在他前面的一張單子，不必再放一次同一個人。
+     樣式一併移除；要找歷史請看 git。 */
   #lootSheet .shop-desc{min-height:2.6em;margin:8px 2px 0;font-size:11px;line-height:1.7;
     color:var(--gold-dim);}
   #lootSheet .shop-acts{display:flex;gap:6px;margin-top:8px;}

@@ -205,9 +205,13 @@ export function showShop(stockKey, keeper, onTalk){
       +   TABS.map(t=>'<button class="shop-tab'+(tab===t?' on':'')+'" data-tab="'+t+'" type="button">'
                     + (TABNAME[t]||t)+'</button>').join('')
       + '</div>'
+      /* ⚠ **買賣視窗裡不放店主立繪**（ver -387，Ray 指定）：店主本來就畫在背景的
+         櫃台後面，買賣視窗是**疊在他前面**的一張單子 —— 單子上再放一次同一個人，
+         等於同一個角色在畫面上有兩份，而且把清單擠成半寬。
+         ⚠ `config.shop.shops[].art` 這個欄位先留著（別家店日後要用得到），
+           只是這一頁不再讀它。 */
       + '<div class="shop-body">'
       +   '<div class="shop-list">'+rows+'</div>'
-      +   '<img class="shop-keeper-art" src="'+(cfg.art||'resources/SI/NPC_Grocerie_SI.webp')+'" alt="">'
       + '</div>'
       + '<div class="shop-desc">'+desc+'</div>'
       + '<div class="shop-acts">'

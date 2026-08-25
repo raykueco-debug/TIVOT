@@ -1409,6 +1409,21 @@
   }
   /* 擺起始狀態時暫時關掉過場（見 story.js 的 playKerberosClose）。 */
   #kerb.kerb-instant,#kerb.kerb-instant *{transition:none !important;}
+  /* ── 飛行頁交棒過來時的「開棺」提示（ver -387）─────────────────────
+     這條路徑沒有讀取遮罩：畫面上就是蓋滿螢幕的槍棺，讀取藏在門背後跑。
+     那一點是**這一頁唯一**解鎖音訊的使用者手勢，非有不可 —— 所以要有訊號，
+     但做成門上的一行字而不是一顆鈕（這一拍是儀式的一部分）。
+     ⚠ 讀取到位（敵立繪載完）才亮，同讀取頁 `.al-done` 的邏輯。
+     ⚠ z-index 要高過 #storyStage（8300）。 */
+  #gateTip{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 9%);
+    z-index:8400;text-align:center;pointer-events:none;
+    opacity:0;transition:opacity .5s ease;}
+  #gateTip.on{opacity:1;}
+  #gateTip span{display:inline-block;padding:7px 22px;
+    font-size:13px;letter-spacing:6px;color:var(--gold);
+    text-shadow:0 1px 4px rgba(0,0,0,.95);
+    animation:gateTipPulse 1.8s ease-in-out infinite;}
+  @keyframes gateTipPulse{0%,100%{opacity:.45;}50%{opacity:1;}}
   /* 關門完成後的黑透遮罩 → 再跑結算（Ray 指定）。 */
   #storyStage.kerb-veil::after{content:'';position:absolute;inset:0;z-index:9;
     background:rgba(4,3,7,.72);animation:kerbVeil .42s ease forwards;}
@@ -1421,6 +1436,14 @@
     from{opacity:.55; transform:translate(0,0) scale(.3);}
     to  {opacity:0;   transform:translate(var(--sx),var(--sy)) scale(1.9);}
   }
+
+  /* ── 飛行頁交棒過來的那一扇門（ver -387）──────────────────────────
+     這一段**沒有劇情**：只有一扇已經推到頂的槍棺與「開棺」提示。舞台一 `.on`
+     就會冒出來的那三個（空的對話框、離開鈕✕、跳段鈕）在這裡全是錯的 ——
+     尤其✕：那顆會讓玩家從這一拍逃走，但這條路徑背後根本沒有劇情可回。 */
+  #storyStage.kerb-gate #storyBubble,
+  #storyStage.kerb-gate #storyExit,
+  #storyStage.kerb-gate #storySkip{display:none !important;}
 
   /* 門在開的那一刻，舞台其餘的東西都要讓開（縫裡要露出底下的戰鬥畫面）。 */
   #storyStage.kerb-open{background:transparent;}
@@ -1659,11 +1682,24 @@
      箭的位置是 `layoutKerberos` 解出來的，CSS 猜不到（鐵律 7：問算的那一支）。
      這裡只給「以自己的中心對齊那個點」。 */
   #townNav .town-dest{transform:translate(-50%,-50%);}
-  #townNav .town-btn{position:absolute;right:12px;bottom:8px;padding:0 14px;height:34px;
+  /* ── 櫃台鈕（ver -387，Ray：「商店、武器店、賞金獵人公會的櫃臺放置按鈕以進入各別選單」）──
+     ⚠ 位置由 JS 依**背景圖上的比例**換算後寫 inline（見 modules/town.js 的 `placeCounter`）——
+       每張背景的櫃台在不同地方，而且 `object-fit:cover` 還會裁掉一部分，CSS 猜不到
+       （鐵律 7：問算的那一支）。這裡只給「以自己的中心對齊那個點」。
+     ⚠ 要**看得出來可以按**：櫃台本來就在背景圖裡，鈕若只是一圈細線會讀成裝飾，
+       所以給一點呼吸的外光暈。 */
+  #townNav .town-btn{position:absolute;transform:translate(-50%,-50%);
+    padding:0 14px;height:32px;white-space:nowrap;
     font-family:inherit;font-size:12px;letter-spacing:2px;color:var(--gold);
-    background:rgba(10,8,14,.7);border:1px solid var(--gold-dim);border-radius:17px;
+    background:rgba(10,8,14,.72);border:1px solid var(--gold-dim);border-radius:16px;
     display:none;pointer-events:auto;}
-  #townNav .town-btn.on{display:flex;align-items:center;}
+  #townNav .town-btn.on{display:flex;align-items:center;justify-content:center;
+    animation:townCounterPulse 2.4s ease-in-out infinite;}
+  #townNav .town-btn:active{background:rgba(212,169,74,.22);}
+  @keyframes townCounterPulse{
+    0%,100%{ box-shadow:0 0 0 rgba(212,169,74,0); }
+    50%    { box-shadow:0 0 12px rgba(212,169,74,.45); }
+  }
 
 
   /* ── 面盤模式提示 ＋ 已播腳本（ver -367）──────────────────────────
