@@ -10,7 +10,7 @@
      常駐在 index.html 裡只是多一塊沒人看的節點。
    ══════════════════════════════════════════════════════════════════════ */
 
-import { GAME_CONFIG, weaponStatRows, weaponOf } from '../config.js';
+import { GAME_CONFIG, weaponStatRows, weaponOf, weaponDescText } from '../config.js';
 import * as inv from '../script/inventory.js';
 import * as shopStock from '../script/shopstock.js';   // 店鋪存貨（ver -405）
 import { SFX } from '../audio.js';
@@ -78,34 +78,73 @@ export function showLoot(list, done, money){
    同一套外觀（共用 `#lootSheet` 的 CSS），差別只在「分類分組、可捲動、沒有入袋動作」。
    ⚠ 分類順序與名稱都讀 config（`items.catOrder` / `catName`）—— 這裡不寫死五種。
    ⚠ 空的分類**照樣列出標題**：玩家要看得出「素材我還沒有」，而不是以為沒這一類。 */
-export function showBag(){
+/* `opts`（ver -422，整備頁用）：
+     cat      只列這一個分類（武器的分類就是 `重機槍`／`霰彈槍`／`萊福槍`）
+     equip    每一列多一顆「裝　備」（目前使用中的那一把顯示「使用中」）
+     onEquip  按下去回呼（由整備頁決定要把它記到哪一個順位）
+     top      z-index 覆寫（從劇情層叫出來時要抬到 8300 之上）
+   ⚠ 道具欄本來是**只顯示不交易**（ver -368，買賣只在商店）——「裝備」不是交易，
+     所以放這裡是對的；買賣那條規矩不受影響。 */
+export function showBag(opts){
   ensureCss();
+  const o=opts||{};
   const ov=document.createElement('div'); ov.id='lootSheet'; ov.classList.add('bag');
+  if(o.top) ov.style.zIndex=o.top;
   document.body.appendChild(ov);
   /* ⚠ 內容**重畫**而不是局部更新：賣掉最後一個時整列要消失、分類可能變空、
      金額要跟著變 —— 局部更新要處理的分支比重畫多，而這一頁最多幾十列。 */
   const render=()=>{
-    const body=inv.grouped().map(g=>{
+    /* ⚠⚠ **裝備清單不能用 `inv.grouped()`**（ver -422）：那一支走的是道具袋
+       （`{id:數量}`），而**開局就有的那三把槍從來沒進過袋子**（config 的 `owned:true`）
+       —— 用它列的話玩家只看得到買來的槍，換不回原本那把。
+       持有與否只有一支真相：`inv.hasWeapon()`／`inv.ownedWeapons()`（§6.5.3）。 */
+    let groups;
+    if(o.equip && o.cat){
+      const WP=GAME_CONFIG.weapons||{};
+      const ids=inv.ownedWeapons().filter(k=>WP[k] && WP[k].cat===o.cat);
+      groups=[{ name:o.cat, rows:ids.map(id=>({ id, name:inv.nameOf(id), n:1,
+                 /* 規格用**本篇**那一組（這一頁只在城鎮／劇情裡開得到，§6.5.3）。 */
+                 desc:weaponDescText(id, true) })) }];
+    }else groups=inv.grouped().filter(g=>!o.cat || g.name===o.cat);
+    const body=groups.map(g=>{
       /* ⚠ 道具欄**只顯示，不交易**（ver -368，Ray：「只有在商店能買賣」）。
          賣東西在 `showShop()`，那一頁才有價格與確認。 */
       const rows = g.rows.length
-        ? g.rows.map(r=>'<div class="loot-row"><span class="loot-name">'+r.name+'</span>'
-                       + '<span class="loot-n">×'+r.n+'</span>'
-                       + (r.desc?'<span class="loot-desc">'+r.desc+'</span>':'')+'</div>').join('')
+        ? g.rows.map(r=>{
+            /* ⚠ 「裝備」只給**武器**：`inv.defOf` 查不到的道具沒有 `cat` 對得上，
+               而且裝備的概念只存在於副武器（鐵律 8：不要讓別的道具也長出這顆鈕）。 */
+            const isW = !!(GAME_CONFIG.weapons||{})[r.id];
+            const cur = o.equip && isW && o.current===r.id;
+            const btn = (o.equip && isW)
+              ? '<button class="bag-eq'+(cur?' cur':'')+'" data-id="'+r.id+'" type="button">'
+                + (cur?'使用中':'裝　備')+'</button>' : '';
+            return '<div class="loot-row"><span class="loot-name">'+r.name+'</span>'
+                 + (o.equip ? '' : '<span class="loot-n">×'+r.n+'</span>')
+                 + (r.desc?'<span class="loot-desc">'+r.desc+'</span>':'')+btn+'</div>';
+          }).join('')
         : '<div class="bag-empty">—</div>';
       return '<div class="bag-cat">'+g.name+'</div>'+rows;
     }).join('');
-    ov.innerHTML='<div class="loot-panel"><div class="loot-title">道具欄</div>'
+    ov.innerHTML='<div class="loot-panel"><div class="loot-title">'+(o.cat||'道具欄')+'</div>'
                + '<div class="bag-money">'+inv.moneyName()+'　<b>'+inv.getMoney()+'</b></div>'
                + '<div class="loot-list">'+body+'</div>'
                + '<button class="loot-ok" type="button">關閉</button></div>';
     ov.querySelector('.loot-ok').addEventListener('click', e=>{ e.stopPropagation();
       try{ SFX.unlock(); SFX.menuClick(); }catch(_){} close(); });
+    ov.querySelectorAll('.bag-eq').forEach(b=>b.addEventListener('click', e=>{
+      e.stopPropagation();
+      try{ SFX.unlock(); SFX.menuClick(); }catch(_){}
+      o.current=b.dataset.id;
+      if(o.onEquip) o.onEquip(b.dataset.id);
+      render();                       // 重畫：「使用中」要換到新的那一列
+    }));
   };
   const close=()=>{ ov.classList.remove('on');
-    setTimeout(()=>{ if(ov.parentNode) ov.parentNode.removeChild(ov); }, 220); };
+    setTimeout(()=>{ if(ov.parentNode) ov.parentNode.removeChild(ov); }, 220);
+    if(o.onClose) o.onClose(); };
   render();
   requestAnimationFrame(()=>ov.classList.add('on'));
+  return close;
 }
 
 /* ══ 商店（ver -368）══

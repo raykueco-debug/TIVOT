@@ -22,6 +22,7 @@ import * as weapon from './modules/weapon.js';     // 雙槍破防發動 + 換�
 import * as inspector from './modules/inspector.js';   // 結算/評價/迎擊分流
 import * as loot from './modules/loot.js';            // 拾得道具視窗 ＋ 道具欄
 import * as town from './modules/town.js';            // 城鎮探索（非線性節點）
+import * as gear from './modules/gear.js';           // 本篇的整備畫面（吊墜叫出來）
 import * as tutorial from './modules/tutorial.js';     // 首頁「教學」鈕：下一場強制進教學
 import { playTransition } from './modules/transition.js';   // 過渡禎（開始/結束淡入淡出）
 import { sakuraBurst } from './modules/sakura.js';   // 開始遊戲：全畫面櫻花飛舞（純程式）
@@ -714,7 +715,9 @@ bindBtn('prepBack', closePrep);
    所以行為要看 `prepStoryMode`，不要另做一顆鈕（鐵律 8）。 */
 bindBtn('prepGo', ()=>{ const st=prepStoryMode; closePrep(); if(!st) launchBattle(); });
 /* 劇情層（槍棺上的吊墜）開整備頁：story 不 import main，所以用注入。 */
-story.setPrepOpener(()=>openPrep({ story:true }));
+/* ⚠ 吊墜開的是**本篇的整備頁**（`modules/gear.js`），不是試玩版的出陣整備
+   （ver -422，Ray：「整備畫面錯了，開啟全畫面視窗，有三個功能」）。 */
+story.setPrepOpener(()=>gear.open());
 // 首頁「教學」鈕：強制下一場進教學（不動已看旗標），不經整備頁直接出陣
 bindBtn('tutorialBtn', ()=>{ tutorial.requestReplay(); launchBattle(); });
 

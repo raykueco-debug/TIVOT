@@ -2185,3 +2185,101 @@
      ⚠ 上限：低於拾得視窗（9600）與選單（9500）。 */
   body.prep-over #prepSheet{position:fixed;z-index:8400;}
   body.prep-over #weaponSheet,body.prep-over #partnerSheet{position:fixed;z-index:8420;}
+
+  /* ══ 本篇的整備畫面（ver -422，Ray 指定；點槍棺上的吊墜叫出來）══════════
+     ⚠ z-index 8450：在劇情層（8300）之上、選單（9500）與拾得（9600）之下。
+       它叫出來的道具欄再抬一階（8460，`showBag` 的 `top`）。
+     ⚠ 版面：**左邊三格順位＋開關、右邊搭檔卡**（Ray 指定的分割）。
+       窄螢幕上右邊會被擠扁，所以 480px 以下改成上下堆。 */
+  #gearSheet{position:fixed;inset:0;z-index:8450;display:none;flex-direction:column;
+    background:radial-gradient(120% 90% at 50% 25%,#1a1330,#07050c 90%);
+    padding:calc(env(safe-area-inset-top,0px) + 12px) 14px
+            calc(env(safe-area-inset-bottom,0px) + 12px);
+    opacity:0;transition:opacity .3s ease;
+    font-family:inherit;color:var(--ink);-webkit-tap-highlight-color:transparent;}
+  #gearSheet.on{display:flex;}
+  #gearSheet.vis{opacity:1;}
+  #gearSheet .gs-close{position:absolute;right:12px;top:calc(env(safe-area-inset-top,0px) + 10px);
+    width:40px;height:40px;border-radius:50%;background:rgba(10,8,14,.7);
+    border:1px solid var(--gold-dim);color:var(--gold);font-size:16px;cursor:pointer;}
+  #gearSheet .gs-title{text-align:center;font-size:15px;letter-spacing:6px;color:var(--gold);
+    margin:2px 0 12px;}
+  #gearSheet .gs-body{flex:1 1 auto;min-height:0;display:flex;gap:12px;}
+  #gearSheet .gs-left{flex:1 1 0;min-width:0;display:flex;flex-direction:column;}
+  #gearSheet .gs-right{flex:1 1 0;min-width:0;display:flex;flex-direction:column;}
+  /* ⚠ 靜音鈕（`position:fixed` 左上角）會壓在第一格順位上 —— 這一頁蓋滿畫面，
+     那顆鈕在這裡沒有意義，直接收起來。 */
+  body:has(#gearSheet.on) #muteBtn{display:none;}
+  #gearSheet .gs-sec{font-size:10px;letter-spacing:3px;color:var(--gold-dim);margin-bottom:6px;}
+  /* ── 三個順位 ── */
+  #gearSheet .gs-slots{display:flex;flex-direction:column;gap:8px;}
+  /* ⚠ `touch-action:none`：拖曳是自己用 pointer 做的，不關掉的話瀏覽器會先把
+     縱向位移當成捲動，手指一動格子就不跟了。 */
+  #gearSheet .gs-slot{position:relative;display:flex;align-items:center;gap:8px;
+    padding:8px 10px;border:1px solid var(--gold-dim);border-radius:10px;
+    background:rgba(10,8,14,.6);cursor:pointer;touch-action:none;
+    transition:transform .16s ease,border-color .2s ease,background .2s ease;}
+  #gearSheet .gs-slot.drag{transition:none;border-color:var(--gold);
+    background:rgba(212,169,74,.14);box-shadow:0 6px 20px rgba(0,0,0,.6);z-index:2;}
+  #gearSheet .gs-slot.spot{border-color:var(--holy);box-shadow:0 0 14px rgba(111,179,212,.8);}
+  #gearSheet .gs-no{flex:none;width:20px;height:20px;border-radius:50%;font-style:normal;
+    display:flex;align-items:center;justify-content:center;
+    font-size:11px;color:#1a1410;background:var(--gold);}
+  #gearSheet .gs-slot img{flex:none;width:52px;height:26px;object-fit:contain;}
+  #gearSheet .gs-none{flex:none;width:52px;text-align:center;color:var(--gold-dim);}
+  #gearSheet .gs-txt{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:1px;}
+  #gearSheet .gs-cat{font-size:9.5px;letter-spacing:2px;color:var(--gold-dim);}
+  #gearSheet .gs-txt b{font-size:12px;font-weight:normal;color:var(--ink);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  #gearSheet .gs-arrow{flex:none;color:var(--gold-dim);font-size:14px;}
+  #gearSheet .gs-hint{font-size:9.5px;color:var(--gold-dim);opacity:.7;margin:6px 0 0;}
+  /* ── 模式開關 ── */
+  #gearSheet .gs-mode{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;}
+  #gearSheet .gs-mode span{font-size:10.5px;letter-spacing:1px;color:var(--gold-dim);}
+  #gearSheet .gs-mode span.on{color:var(--gold);}
+  #gearSheet .gs-sw{position:relative;width:52px;height:26px;border-radius:13px;
+    background:rgba(10,8,14,.8);border:1px solid var(--gold-dim);cursor:pointer;padding:0;}
+  #gearSheet .gs-sw i{position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;
+    background:var(--gold);transition:left .2s cubic-bezier(.4,1.4,.5,1);}
+  #gearSheet .gs-sw.right i{left:28px;}
+  #gearSheet .gs-modedesc{margin-top:8px;font-size:10px;line-height:1.7;color:var(--gold-dim);}
+  /* ── 搭檔卡 ── */
+  #gearSheet .gs-pcard{position:relative;flex:1 1 auto;min-height:120px;overflow:hidden;
+    border:1px solid var(--gold-dim);border-radius:10px;background:rgba(10,8,14,.6);}
+  /* 取景與出擊整備那一張同一套：以高度貼合、頭頂對齊框頂再依 siFit 微調。 */
+  #gearSheet .gs-pimg{position:absolute;left:50%;top:var(--gp-top,0%);
+    height:calc(100% * var(--gp-zoom,1));transform:translateX(-50%);
+    object-fit:contain;object-position:top center;}
+  #gearSheet .gs-pname{position:absolute;left:0;right:0;bottom:0;padding:6px 10px;
+    font-size:12px;letter-spacing:3px;color:var(--gold);
+    background:linear-gradient(180deg,rgba(8,6,12,0),rgba(8,6,12,.9) 60%);}
+  #gearSheet .gs-perk{margin-top:8px;font-size:10px;line-height:1.65;color:var(--gold-dim);}
+  #gearSheet .gs-perk b{display:block;font-weight:normal;color:var(--gold);margin-bottom:1px;}
+  /* ── 一次性教學（雪鐵龍箭，同旅店那一套）── */
+  #gearSheet .gs-tip{position:fixed;inset:0;z-index:3;background:rgba(4,3,7,.62);}
+  #gearSheet .gt-arrow{position:absolute;transform:translate(-50%,-100%);font-style:normal;
+    font-size:18px;color:var(--holy);text-shadow:0 0 10px rgba(111,179,212,.9);
+    animation:gsPoint 1s ease-in-out infinite alternate;}
+  /* ⚠ 浮動要走**自己的** keyframes：這支箭是 `translate(-50%,-100%)`，
+     沿用別處 `-50%,-50%` 的那一支會讓它整個跳位（同 ver -402 的坑）。 */
+  @keyframes gsPoint{from{transform:translate(-50%,-100%) translateY(0);}
+    to{transform:translate(-50%,-100%) translateY(-7px);}}
+  #gearSheet .gt-txt{position:absolute;left:14px;right:14px;text-align:center;
+    font-size:11.5px;line-height:1.8;color:#fff;
+    text-shadow:1px 0 0 rgba(0,0,0,.92),-1px 0 0 rgba(0,0,0,.92),
+                0 1px 0 rgba(0,0,0,.92),0 -1px 0 rgba(0,0,0,.92);}
+  #gearSheet .gs-slot.spot{z-index:4;}
+  /* 窄螢幕：左右改成上下（右邊那張卡本來就只放一張立繪與兩段字）。 */
+  @media (max-width:480px){
+    /* ⚠ 上下堆的時候左欄**不要伸展**（`flex:0 0 auto`）—— 伸展的話模式說明與搭檔卡
+       之間會空出一大塊；右欄才是該吃掉剩餘高度的那一邊（立繪自己會撐）。 */
+    #gearSheet .gs-body{flex-direction:column;gap:10px;overflow-y:auto;}
+    #gearSheet .gs-left{flex:0 0 auto;}
+    #gearSheet .gs-right{flex:1 1 auto;min-height:0;}
+    #gearSheet .gs-pcard{min-height:200px;}
+  }
+  /* 道具欄裡的「裝　備」（ver -422）：整備頁點一格進來時才有。 */
+  #lootSheet .bag-eq{position:absolute;right:8px;bottom:6px;padding:3px 10px;
+    font-family:inherit;font-size:10px;letter-spacing:1px;color:var(--gold);
+    background:rgba(10,8,14,.72);border:1px solid var(--gold-dim);border-radius:10px;}
+  #lootSheet .bag-eq.cur{color:var(--holy);border-color:var(--holy);opacity:.85;}

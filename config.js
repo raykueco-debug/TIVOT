@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.26-421';
+export const VERSION = 'ver 2026.08.26-422';
 
 export const GAME_CONFIG = {
 
@@ -144,6 +144,31 @@ export const GAME_CONFIG = {
         voice:'vo_life_return',  // cut-in 對應 SE（→ Renee_VC_Act.wav）
         desc:'聖徒化期間發動：強制中止聖徒化，保留當前血量。',
       },
+    },
+    /* ── 諾薇兒（ver -422，Ray：「延用蕾妮的能力，CI 之後再補」）───────────
+       ⚠⚠ **能力鑰匙沿用蕾妮的**（`deathGuard` / `lifeReturn`）—— 那兩支的實作在
+         `modules/partner.js` 與 `modules/saint.js`，`key` 是程式認的字串。
+         給新鑰匙等於要新寫一支技能，不是改資料（Ray 指定先延用）。
+       ⚠ `cutin` / `voice` 也**暫時借蕾妮的**（Ray：「CI 之後再補」）——
+         換成她自己的圖時，改這裡三個欄位就好，程式不必動。
+       ⚠ 本篇的整備頁**只列她一個**（見 modules/gear.js 的 `partnerKeys`）；
+         試玩版的選人畫面照舊列全部。 */
+    nouvelle: {
+      name:'諾薇兒',
+      image:'partner_nouvelle',
+      /* 取景：她的立繪是全身直幅（1024×1536），蕾妮那張是膝上構圖 ——
+         同樣的框要放到「頭大小相當」，得往下推並放大。⚠ 這是估的，Ray 換圖時要重量。 */
+      siFit:{ zoom:1.6, top:0.01 },
+      cutin:'cutin_saint',
+      voice:null,
+      selectVoice:'vo_life_return',
+      perk:'即死防禦（被動）＋生命歸還（主動）',
+      passive:{ key:'deathGuard', name:'即死防禦', oncePerBattle:true,
+                cutin:'cutin_guard', voice:'vo_death_guard',
+                desc:'受到足以致死的攻擊時，為玩家保留1hp續命。' },
+      active:{ key:'lifeReturn', name:'生命歸還', context:'saint',
+               cutin:'cutin_return', voice:'vo_life_return',
+               desc:'聖徒化期間發動：強制中止聖徒化，保留當前血量。' },
     },
     // ── 第二搭檔：馬季諾 Malzeno ──────────────────────────
     malzeno: {
@@ -1121,6 +1146,9 @@ export const ASSETS = {
 
   // ── 搭檔選人畫面大立繪 ──
   partner_renee:   "resources/partner/Renee_SI_01.webp",     // 蕾妮 立繪
+  /* 諾薇兒的搭檔立繪（ver -422）：先借對白用的正面全身圖。
+     ⚠ 換成專屬的選人立繪時，`partners.nouvelle.siFit` 要重量（那是**那一張圖**的數字）。 */
+  partner_nouvelle:"resources/SI/Nouvelle_SI_front.webp",     // 諾薇兒 立繪（暫用對白圖）
   /* ── 教學（劇情版）的諾薇兒立繪與差分（ver -323）──────────────────────
      ⚠ 這一組**只給劇情帶起來的教學**用（tutorial.isStoryRun()）。首頁「教學」鈕
        那一場仍是芙蕾雅／蕾妮 —— Ray 指定兩者要分開。 */

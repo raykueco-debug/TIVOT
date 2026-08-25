@@ -68,7 +68,11 @@ export function setup(){
   //   ultSuppressed/firstThreatPending：教學暫緩大絕（一次一顆/腳本盤）與首顆固定位
   //   （defense 不 import tutorial，經此轉交）
   defense.init({ enemyAttack, enemyDamage, floatDmg, triggerAtkBuff, weaponCounter: weapon.weaponCounter,
-                 onThreatSpawned: tutorial.onThreatSpawned, onThreatResolved: tutorial.onThreatResolved,
+                 onThreatSpawned: tutorial.onThreatSpawned,
+                 /* ⚠ 一次防禦判完 → **固定模式的副武器歸位一順位**（ver -422，Ray 指定）。
+                    這裡是唯一的呼叫點（鐵律 8）：defense 不 import weapon，
+                    所以由 combat 這個協調者把兩件事串起來。 */
+                 onThreatResolved: (g)=>{ weapon.onThreatResolved(); tutorial.onThreatResolved(g); },
                  onThreatEarly: tutorial.onEarlyBlock,
                  ultSuppressed: tutorial.ultSuppressed, firstThreatPending: tutorial.firstThreatPending });
   // 教學：真暫停/續戰＋腳本化終盤所需原語注入（雙槍/聖徒化/搭檔主動技/三爪腳本/敵血封頂）

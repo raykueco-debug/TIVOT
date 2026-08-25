@@ -35,6 +35,7 @@ import { state, addCounter, setPickedPartner, storyMode } from '../state.js';
 import { SFX } from '../audio.js';
 import { L } from '../i18n.js';   // 多語言（cut-in 標題/選單鈕/暴擊前綴）
 import * as inv from '../script/inventory.js';   // 武器持有（買來的才上得了卡疊，ver -377）
+import * as load from '../script/loadout.js';    // 副武器的編成（整備頁排的順序與模式，ver -422）
 
 const $ = id => document.getElementById(id);
 const WEAPONS = GAME_CONFIG.weapons;
@@ -189,55 +190,49 @@ export function endDual(){
 }
 
 /* ============================================================================
- *  戰鬥中的副武器切換（ver -410，Ray 指定）
+ *  戰鬥中的副武器切換（ver -410；-422 接上整備頁的編成）
  * ----------------------------------------------------------------------------
- *  血條右側一顆牌卡，按一下換下一個**類別**（重機槍 → 霰彈槍 → 萊福槍 → …）。
- *  「按一下換霰彈、兩下換步槍」＝ 同一顆鈕連按的結果，不是兩種手勢。
+ *  血條右側一顆牌卡。**順序與模式都讀 `script/loadout.js`**（整備頁排的那一份）——
+ *  這裡不再自己決定類別順序，也不自己記「每個類別拿哪一把」（鐵律 7：一個量一個來源）。
  *
- *  ⚠⚠ **輪換的是「類別」不是「武器」**：Ray 講的是機槍／霰彈／步槍三種。
- *    類別的順序**由 `config.weapons` 的出現順序推出來**，不在程式裡寫死中文字串（鐵律 1）。
- *    每個類別要拿哪一把，記在 `lastByCat` —— 玩家在整備頁選過哪一把，這裡就給哪一把
- *    （買了「絞肉機 改」之後，機槍那一格自然變成它）。
- *  ⚠⚠ **發射中可切換，但要等發動中的反擊結束才生效**（Ray 指定）：
- *    重機槍那一串是 8 發 × 90ms，中途換槍會讓後半串用到新槍的暴擊率
- *    （`critRate()` 是**每發現查** `state.equippedWeapon` 的）—— 那一串就會變成兩把槍
- *    混出來的傷害。所以按下去只是排隊，`flushPending()` 才真的換。
- *  ⚠ 卡面**立刻**翻成新的那一把（要有回饋），邊框呼吸表示「還沒生效」。
+ *  兩種模式（Ray 指定，整備頁下方那個開關）：
+ *    `rotate`（預設）按一下換下一順位，一直輪下去。
+ *    `fixed`  永遠從**一順位**開始；**連按 N 下切到第 N 順位**（350ms 內算連按），
+ *             發射完（或吃了黃／橘圈）自動歸位一順位。
+ *    ⚠ 「連按 N 下＝第 N 順位」是我依「快速按兩下二順位」推的一般化寫法，
+ *      三順位就是連按三下。要改成別的手勢就改 `tapSlot()` 這一支。
+ *
+ *  ⚠⚠ **發射中可切換，但要等發動中的反擊結束才生效**（ver -410，Ray 指定）：
+ *    `critRate()` 是每一發現查 `state.equippedWeapon` 的，重機槍那一串是 8 發 × 90ms ——
+ *    中途換槍，後半串就用新槍的暴擊率，同一次反擊變成兩把槍混出來的傷害。
+ *    所以按下去只寫進 `pendingWeapon`，`flushPending()` 才真的換。
  * ========================================================================== */
 const WS_FLIP_MS = 340;      // 牌卡翻面時間。⚠ 與 style.css 的 `wsFlip` 同源，改一邊要改另一邊
-let lastByCat = {};          // 類別 → 玩家在那個類別用的那一把
+const WS_TAP_MS  = 350;      // 連按的判定窗（固定模式）
 let counterBusy = false;     // 反擊正在打（重機槍那一串）
 let pendingWeapon = null;    // 排隊中的切換
 let wsFlipT = 0;
+let tapN = 0, tapAt = 0;     // 固定模式的連按計數
 
-/* 類別的順序：**config 的出現順序**（鐵律 1，不要在這裡寫中文字串）。 */
-function catOrder(){
-  const out=[];
-  for(const k in WEAPONS){ const c=WEAPONS[k].cat; if(c && out.indexOf(c)<0) out.push(c); }
-  return out;
+/* 現在這把槍在編成裡的第幾順位（1 起算；不在編成裡回 0）。 */
+function slotNow(){
+  const w=WEAPONS[state.equippedWeapon];
+  if(!w) return 0;
+  return load.activeCats().indexOf(w.cat) + 1;
 }
-/* 這個類別現在該給哪一把：玩家用過的優先，其餘取持有清單裡的第一把。
-   ⚠ 只認**持有中**的（`inv.hasWeapon`）—— 沒買的槍不能靠這顆鈕拿到。 */
-function pickInCat(cat){
-  const owned = inv.ownedWeapons().filter(k => WEAPONS[k] && WEAPONS[k].cat===cat);
-  if(!owned.length) return null;
-  if(lastByCat[cat] && owned.indexOf(lastByCat[cat])>=0) return lastByCat[cat];
-  return owned[0];
-}
-/* 下一把：從現在這一把的類別往後找**第一個有持有武器的類別**。
-   ⚠ 只有一個類別有槍時回 null（沒得換，鈕就不出現）。 */
+/* 輪轉：下一順位。⚠ 只有一個類別有槍時回 null（沒得換，鈕就不出現）。 */
 function nextWeaponKey(){
-  const cur = WEAPONS[pendingWeapon || state.equippedWeapon];
-  const cats = catOrder().filter(c => !!pickInCat(c));
-  if(cats.length<2) return null;
-  const i = cur ? cats.indexOf(cur.cat) : -1;
-  return pickInCat(cats[(i+1+cats.length) % cats.length]);
+  const cs=load.activeCats();
+  if(cs.length<2) return null;
+  const i=slotNow();                       // 0（不在編成裡）→ 從第一順位開始
+  return load.weaponAt(i>=cs.length ? 1 : i+1);
 }
-/* 真的換上去。⚠ 記進 `lastByCat` —— 下次輪回這個類別要回到同一把。 */
+/* 真的換上去。⚠ 順手把「這個類別現在拿哪一把」記回編成 —— 試玩版的出擊整備
+   也是改 `state.equippedWeapon`，記回去兩邊才不會各說各話。 */
 function applyWeapon(key){
   if(!key || !WEAPONS[key]) return;
   state.equippedWeapon = key;
-  lastByCat[WEAPONS[key].cat] = key;
+  const c=WEAPONS[key].cat; if(c) load.setPick(c, key);
   refreshLoadoutLabels();
 }
 /* 反擊打完（或中斷）→ 把排隊中的那一把換上去。 */
@@ -248,51 +243,84 @@ function flushPending(){
   applyWeapon(key);
   const b=$('wpSwitch'); if(b) b.classList.remove('pending');
 }
+/* 換上去（或排隊）。反擊中只排隊，卡面立刻翻成新的那一把（要有回饋）。 */
+function useWeapon(key){
+  if(!key || key===(pendingWeapon||state.equippedWeapon)) return false;
+  const b=$('wpSwitch');
+  if(counterBusy){
+    pendingWeapon = key;
+    if(b) b.classList.add('pending');
+  }else applyWeapon(key);
+  return true;
+}
+/* ⚠ **固定模式：一次防禦結束就歸位一順位**（Ray：「發射完畢後或發射失敗
+   （點了黃橘圈）歸位一順位」）。由 `combat` 在三段防禦判完時呼叫（唯一的呼叫點）。
+   ⚠ 走 `useWeapon` → 反擊還在打的話一樣排隊，不會打斷那一串。 */
+export function onThreatResolved(){
+  if(load.mode()!=='fixed') return;
+  tapN = 0;
+  const first=load.firstWeapon();
+  if(first && useWeapon(first)){ flip(); setTimeout(renderSwitch, WS_FLIP_MS/2); }
+}
 /* 開一場新的戰鬥／回主選單時歸零 —— 排隊中的切換不可以跨場留著。 */
 export function resetWeaponSwitch(){
-  counterBusy=false; pendingWeapon=null;
+  counterBusy=false; pendingWeapon=null; tapN=0; tapAt=0;
   const b=$('wpSwitch'); if(b) b.classList.remove('pending','flip');
-  const w=WEAPONS[state.equippedWeapon]; if(w) lastByCat[w.cat]=state.equippedWeapon;
+  /* ⚠ 把現在這把記回編成：試玩版的出擊整備是直接改 `state.equippedWeapon` 的，
+     不記回去的話整備頁與戰鬥裡會各說各話。 */
+  const w=WEAPONS[state.equippedWeapon];
+  if(w && w.cat) load.setPick(w.cat, state.equippedWeapon);
+  /* 固定模式：**永遠從一順位開始**（Ray 指定）。輪轉模式沿用玩家帶進來的那一把。 */
+  if(load.mode()==='fixed'){ const f=load.firstWeapon(); if(f) applyWeapon(f); }
   renderSwitch();
 }
 
-/* 卡面：武器圖 ＋ 類別的第一個字（「重機槍」→「重」）。
+/* 卡面：武器圖 ＋ 類別的第一個字（「重機槍」→「重」）＋ 固定模式的順位數字。
    ⚠ 標籤取 `cat` 的字，不另建一張對照表（鐵律 1／7）—— 加新類別自動有字。
    ⚠ 只有一個類別有槍時整顆藏起來：一顆按了不會變的鈕比沒有還糟。
-   ⚠⚠ **教學戰不出現**：那一場的裝備是**鎖死的**（`stashTutorialLoadout` 強制換上機槍，
-     ver 更早就定了），而教學正是在教機槍那一串反擊 —— 中途換槍會讓引導與手上的槍對不上。
-     這不是新規矩，是照既有的那個鎖。 */
+   ⚠⚠ **教學戰不出現**：那一場的裝備是**鎖死的**（`stashTutorialLoadout` 強制換上機槍），
+     而教學正是在教機槍那一串反擊 —— 中途換槍會讓引導與手上的槍對不上。 */
 function renderSwitch(){
   const b=$('wpSwitch'); if(!b) return;
   const key = pendingWeapon || state.equippedWeapon;
   const w = WEAPONS[key];
-  const has = !!nextWeaponKey();
+  const has = load.activeCats().length>1;
   b.style.display = (w && has && !state.tutorialRun) ? '' : 'none';
   if(!w) return;
   const img=$('wpSwitchImg'), tag=$('wpSwitchTag');
   const src=asset(w.image)||'';
   if(img && img.getAttribute('src')!==src) img.src=src;
-  if(tag) tag.textContent = (w.cat||'').charAt(0);
+  if(tag){
+    const n=load.activeCats().indexOf(w.cat)+1;
+    tag.textContent = (load.mode()==='fixed' && n) ? String(n) : (w.cat||'').charAt(0);
+  }
+}
+
+function flip(){
+  const b=$('wpSwitch'); if(!b) return;
+  b.classList.remove('flip'); void b.offsetWidth; b.classList.add('flip');
+  clearTimeout(wsFlipT);
+  wsFlipT = setTimeout(renderSwitch, WS_FLIP_MS/2);   // 翻到 90°（看不見卡面）才換內容
 }
 
 /* 按下去。⚠ **不擋**（Ray：「發射中可切換」）—— 反擊中只是排隊。 */
 function tapSwitch(){
-  const key = nextWeaponKey(); if(!key) return;
+  const cs=load.activeCats();
+  if(cs.length<2) return;
+  let key;
+  if(load.mode()==='fixed'){
+    /* 連按 N 下 → 第 N 順位。⚠ 超過順位數就回到最後一個（`weaponAt` 自己夾）。 */
+    const t=performance.now();
+    tapN = (t - tapAt < WS_TAP_MS) ? tapN+1 : 1;
+    tapAt = t;
+    key = load.weaponAt(tapN);
+  }else key = nextWeaponKey();
+  if(!key) return;
   SFX.unlock();
   SFX.play(asset('sfx_start'), sfxGain('sfx_start'));   // se_ui_sortie（Ray 指定）
-  const b=$('wpSwitch');
-  if(b){ b.classList.remove('flip'); void b.offsetWidth; b.classList.add('flip');
-         clearTimeout(wsFlipT);
-         /* 翻到一半（90°，卡面看不見的那一格）才換內容 —— 才像同一張卡翻過去。 */
-         wsFlipT = setTimeout(()=>{ pendingWeapon = pendingWeapon || null; renderSwitch(); }, WS_FLIP_MS/2); }
-  if(counterBusy){
-    pendingWeapon = key;                 // 排隊：等這一串反擊打完
-    if(b) b.classList.add('pending');
-    setTimeout(renderSwitch, WS_FLIP_MS/2);
-  }else{
-    applyWeapon(key);
-    setTimeout(renderSwitch, WS_FLIP_MS/2);
-  }
+  flip();
+  useWeapon(key);
+  setTimeout(renderSwitch, WS_FLIP_MS/2);
 }
 export function bindWeaponSwitch(){
   const b=$('wpSwitch'); if(!b || b.__bound) return;
