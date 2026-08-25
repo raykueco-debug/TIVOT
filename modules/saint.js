@@ -166,7 +166,7 @@ export function saintTap(num, cell){
     cell.classList.add('done'); cell.classList.remove('next'); api.shatterCell(cell);
     state.combo++;
     const okDmg=Math.round(api.hitDamage() + state.combo*SAINT_COMBO_STEP);
-    api.enemyDamage(okDmg, true);
+    api.enemyDamage(okDmg, true, false, 'saint');
     state.saintDamageDealt += okDmg;
     if(state.cells.every(c=>c.classList.contains('done'))){ triggerMaxBurst(); }
     else startSaintReactTimer();
@@ -178,7 +178,7 @@ export function saintTap(num, cell){
     state.combo++;
     const dmg=api.hitDamage() + state.combo*SAINT_COMBO_STEP;   // 疊傷無上限
     const d=Math.round(dmg);
-    api.enemyDamage(d, true);
+    api.enemyDamage(d, true, false, 'saint');
     state.saintDamageDealt += d;                 // 累計期間傷害（供最後一擊追加）
     state.expect++;
     if(state.expect>state.N){ triggerMaxBurst(); }              // 推滿前點完全盤 → Maximum Burst
@@ -232,7 +232,7 @@ function triggerMaxBurst(){
   restoreUltRate();
   if(state.saintDamageDealt>0){
     const last=Math.round(state.saintDamageDealt*SAINT_LAST_HIT_RATIO);
-    api.enemyDamage(last, true);
+    api.enemyDamage(last, true, false, 'saint');
     api.floatDmg('MAXIMUM BURST '+last,'50%','28%',true);
     SFX.clear();
   }

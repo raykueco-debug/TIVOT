@@ -75,17 +75,27 @@ export function weaponCounter(dmgScale){
   const scale = (dmgScale==null) ? 1 : dmgScale;
   // 反擊武器 SE：反擊（Counter）與完美防禦（散彈 Perfect 反擊）都會出聲——散彈 blast 兩路徑皆觸發。
   //   機槍＝逐發播（搭搭搭搭搭連續感）、散彈＝一發、狙擊＝一發。散彈完防由此 SE 出聲，defense 端不再疊合成重擊。
-  const se = asset(w.sound);
-  const seGain = sfxGain(w.sound);   // 反擊層增益（全域響度階層見 tuning.sfxGain）
+  /* ⚠ 「這一場」可以覆寫武器音（ver -423，Ray：船艦戰的機槍／霰彈／步槍各換一支）——
+     覆寫的是**場次**不是武器卡，同一把槍在陸戰還是原本的聲音。
+     ⚠ 值可以是 `'se_key'` 或 `{key, times}`（`times`＝同一瞬間疊播幾聲，
+       Ray：「霰彈槍換成 se_weapon_pistol_01 **同時播放 6 聲**」）。 */
+  const ov = state.weaponSound && state.weaponSound[state.equippedWeapon];
+  const soundKey = ov ? (ov.key || ov) : w.sound;
+  const soundTimes = (ov && ov.times) ? ov.times : 1;
+  const se = asset(soundKey);
+  const seGain = sfxGain(soundKey);   // 反擊層增益（全域響度階層見 tuning.sfxGain）
+  /* 疊播：同一瞬間播 N 聲（音量分攤，否則 6 支疊起來會撞到 limiter）。 */
+  const playSe = ()=>{ for(let i=0;i<soundTimes;i++)
+    SFX.play(se, seGain * (soundTimes>1 ? 1/Math.sqrt(soundTimes) : 1)); };
   // 暴擊字樣：每 hit 各自 20% 擲骰，中則傷害 ×(1+加傷) 並在該發前綴紅字「暴擊」。
 
   if(w.vfx==='single'){
     // 狙擊：單發，跳一個較大的數字；暴擊則轉紅並前綴「暴擊」
     const base=Math.max(1, Math.round(w.hits*w.dmgPerHit*scale));
     const h=critHit(base);
-    SFX.play(se, seGain);                      // 狙擊：一發
+    playSe();                      // 狙擊：一發
     hap.shot();
-    api.enemyDamage(h.dmg, true, true);       // 靜默扣血（含 overkill/擊殺判定）
+    api.enemyDamage(h.dmg, true, true, 'counter');   // 靜默扣血（含 overkill/擊殺判定）
     addCounter(h.dmg);
     api.floatDmg((h.crit?L.battle.crit:'')+h.dmg, '46%','32%', h.crit, 'snipernum');
     flushPending();                            // 單發：一瞬間就結束，排隊中的切換立刻生效
@@ -94,13 +104,13 @@ export function weaponCounter(dmgScale){
   if(w.vfx==='burst'){
     // 散彈：所有彈丸同一瞬間、同一區塊齊發，各自獨立暴擊、各自跳出數字
     const base=Math.max(1, Math.round(w.dmgPerHit*scale));
-    SFX.play(se, seGain);                      // 散彈：一次一發（完防/反擊皆觸發）
+    playSe();                      // 散彈：一次一發（完防/反擊皆觸發）
     hap.shot();
     const bx=40+Math.random()*20;
     let sum=0;
     for(let k=0;k<w.hits;k++){
       const h=critHit(base); sum+=h.dmg;
-      api.enemyDamage(h.dmg, true, true);
+      api.enemyDamage(h.dmg, true, true, 'counter');
       api.floatDmg((h.crit?L.battle.crit:'')+h.dmg, (bx-6+k*3)+'%', (34+(k%2)*6)+'%', true);
     }
     addCounter(sum);
@@ -125,8 +135,8 @@ export function weaponCounter(dmgScale){
   const fire=()=>{
     if(state.over||i>=w.hits){ flushPending(); return; }
     const h=rolls[i];
-    SFX.play(se, seGain);                      // 機槍：每 hit 播一次 → 搭搭搭搭搭
-    api.enemyDamage(h.dmg, true, true);        // 靜默扣血 → 由自訂 float 控制「暴擊」字樣（僅暴擊發才顯示）
+    playSe();                      // 機槍：每 hit 播一次 → 搭搭搭搭搭
+    api.enemyDamage(h.dmg, true, true, 'counter'); // 靜默扣血 → 由自訂 float 控制「暴擊」字樣（僅暴擊發才顯示）
     api.floatDmg((h.crit?L.battle.crit:'')+h.dmg, (30+Math.random()*40)+'%','35%', true);
     i++;
     if(i<w.hits) setTimeout(fire, 90);

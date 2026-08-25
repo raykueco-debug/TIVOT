@@ -13,6 +13,7 @@
  *    受擊特效為純 DOM 輸出，不寫任何狀態。
  * ========================================================================== */
 
+import * as clock from '../script/clock.js';   // 立繪的時段差分（ver -423）
 import { GAME_CONFIG, asset } from '../config.js';
 import { state, initEnemyHp } from '../state.js';
 import { SFX } from '../audio.js';
@@ -165,10 +166,25 @@ export function ejectShell(cell){
  *  四種副檔名，失敗才回退到 ASSETS。本專案圖全在 resources/、無 assets/ 目錄，
  *  那四次探測必然 404（每次換敵各噴四個無效請求），且結果永遠等於 fallback → 已移除。
  *  CLAUDE.md §5 也指定統一走 resources/ 新結構。 */
+/* ══ 敵人立繪的**時段差分**（ver -423，Ray：「上午下午用 day、晚上用 night、
+   黃昏黎明用 dd」）══════════════════════════════════════════════════════
+   卡上的 `image` 可以是字串（一張）或 `{day, dd, night}`（三張）。
+   ⚠⚠ **時段 → 槽的對應只有這一處**（鐵律 7）：`clock.band()` 出的是
+     `Dawn/Day/Dusk/night/midnight`，這裡把黎明與黃昏併成 `dd`、深夜併進 `night`。
+   ⚠ 缺哪一張就往 `day` 退，`day` 也沒有就取物件裡的第一個 —— 不要讓立繪變空白。 */
+export function enemyImage(en){
+  const im = en && en.image;
+  if(!im) return '';
+  if(typeof im === 'string') return asset(im);
+  const b = clock.band();
+  const slot = (b==='Day') ? 'day' : (b==='night'||b==='midnight') ? 'night' : 'dd';
+  const key = im[slot] || im.day || im[Object.keys(im)[0]];
+  return asset(key);
+}
 export function loadEnemyPortrait(en){
   const eImg = $('enemyImg');
   if(!eImg) return;
-  eImg.src = asset(en.image);
+  eImg.src = enemyImage(en);
 }
 
 // UI 顯示名：一律隱藏「_」之後的內容（如 '地下聖徒_A' → '地下聖徒'）。
@@ -185,12 +201,25 @@ export function setEnemy(key){
   state.currentEnemyKey = key;                 // 3.7：記住目前怪 key，供 boardGridFor 查每盤格數
   initEnemyHp(en.hp);                           // 3.2：敵血基準（載入時 setter）
   state.ULT_DAMAGE = en.attack;                 // 3.3：大絕單擊傷害
+  /* 蓄力秒數。⚠ 卡上可以給**區間**（`[3,5]`，ver -423 的巨型蜈蚣）——
+     那時候每次排程各自擲一次（見 `defense.scheduleUlt`），所以這裡存的是整個欄位。 */
   state.CHARGE_SECONDS = (en.atkInterval!=null) ? en.atkInterval : GAME_CONFIG.tuning.chargeSeconds;
+  /* 這一隻的「打起來的手感」欄位（ver -423 的敵人卡）。⚠ 一律**每次換敵都寫**，
+     沒寫要寫回預設 —— setEnemy 是連戰換敵也會走的（同下面那組絕對值的理由）。 */
+  state.enemyResist    = en.resist || null;
+  state.enemyWeak      = en.weak || null;
+  state.enemyDualBonus = en.dualBonus || 0;
+  state.enemyNoStack   = !!en.noStack;
+  state.enemyCounterBuff = en.counterBuff || null;
+  state.enemyCounterStun = en.counterStun || 0;
   const u = en.ult || {};                        // 3.3：Boss 專屬大絕參數（缺欄位＝一般怪預設）
   state.ULT_SHOTS  = u.shots!=null ? u.shots : 1;
   state.ULT_GAP_MS = u.gapMs!=null ? u.gapMs : 0;
-  state.ULT_MIN    = u.minMs!=null ? u.minMs : 4000;
-  state.ULT_MAX    = u.maxMs!=null ? u.maxMs : 8000;
+  /* 發動頻率。⚠ 卡上的 `ultEvery:[3,5]`（**秒**）是最好讀的寫法（ver -423），
+     舊的 `ult.minMs/maxMs`（毫秒）仍然吃 —— 兩者都在，卡上寫哪個用哪個。 */
+  const ue = Array.isArray(en.ultEvery) ? en.ultEvery : null;
+  state.ULT_MIN    = ue ? ue[0]*1000 : (u.minMs!=null ? u.minMs : 4000);
+  state.ULT_MAX    = ue ? ue[1]*1000 : (u.maxMs!=null ? u.maxMs : 8000);
   const dp = en.delayPenalty || {};              // 3.3：延時懲罰縮放（Boss=0.5 / -1）
   state.DELAY_PENALTY_SCALE = dp.dmgScale!=null ? dp.dmgScale : 1;
   state.DELAY_TIME_DELTA    = dp.timeDelta!=null ? dp.timeDelta : 0;
@@ -244,7 +273,7 @@ export function advanceToNextEnemy(done){
   // ⚠ 先把下一敵立繪解碼完成再開換敵演出：進場動畫當下才改 src，圖未就緒時
   //   瀏覽器會續顯舊圖（「盤面已換、立繪沒換」）。decode 失敗/逾時 800ms 照樣開演（go 冪等）。
   const en = GAME_CONFIG.enemies[key] || {};
-  const src = asset(en.image);
+  const src = enemyImage(en);
   const start = ()=>{
     if(img){ img.classList.remove('enemy-enter'); img.classList.add('enemy-leave'); }
     setTimeout(()=>{

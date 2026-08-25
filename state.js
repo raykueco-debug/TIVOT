@@ -90,6 +90,18 @@ export const state = {
   WRONG_DAMAGE: null,    // 按錯懲罰傷害（絕對值）；null＝tuning.dmgWrong/dmgHeavy × WRONG_PENALTY_SCALE
 
   /* ── 3.4 武器/雙槍（擁有者：weapon） ─────────────────────────── */
+  /* ── 這一隻怪的「打起來的手感」（ver -423 的敵人卡；擁有者：enemy）──
+     ⚠ 每次 `setEnemy` 都要重寫，沒寫的回預設 —— 連戰換敵也會走那一支。 */
+  enemyResist: null,        // { basic:0.20 } 之類：**減傷**的成數，依傷害來源
+  enemyWeak: null,          // { counter:1.00 }：**增傷**的成數，依傷害來源
+  enemyDualBonus: 0,        // 破防（雙槍窗口）期間的增傷成數
+  enemyNoStack: false,      // 紅點不疊加（場上同時只有一個）
+  enemyCounterBuff: null,   // { mult, seconds }：被反擊後玩家的普攻增益
+  enemyCounterStun: 0,      // 被反擊後幾秒才發起下一次主動攻擊
+  /* 「這一場」的武器音覆寫（ver -423，船艦戰）：`{武器鑰匙: 'se_key' | {key,times}}`。
+     ⚠ 覆寫的是**場次**不是武器 —— 同一把槍在陸戰還是原本的聲音（擁有者：combat）。 */
+  weaponSound: null,
+
   equippedWeapon: GAME_CONFIG.defaultWeapon,
   grenades: T.grenades,
   dualWield: false,

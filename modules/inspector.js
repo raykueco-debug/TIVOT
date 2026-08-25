@@ -211,7 +211,8 @@ export function settle(totalTime, stats, opts={}){
   const isRecord = (prevBest==null) || (totalTime<prevBest);
   if(isRecord) saveBestTotal(totalTime, bossFight);
 
-  let sub=fmt(L.result.winSub,{name:(($('enemyName')&&$('enemyName').textContent)||'')});
+  let sub=fmt(winSubOf(GAME_CONFIG.enemies[state.currentEnemyKey]),
+              {name:(($('enemyName')&&$('enemyName').textContent)||'')});
   if(stats.overkill>0) sub += ` · OVERKILL ${Math.round(stats.overkill)}`;
 
   // ── 評價系統（rating）：大字等級（顯眼）+ EXP + 各數值明細 ──
@@ -411,14 +412,14 @@ function scriptSettle(totalTime, stats){
           + fmtTime(isRec ? totalTime : prev) + '</b></div>';
     if(isRec) rows += '<div class="record">'+L.result.newRecord+'</div>';
   }
-  const sub = fmt(L.result.winSub, { name: displayName(en.name || '') });
+  const sub = fmt(winSubOf(en), { name: displayName(en.name || '') });
   showResultSequence(L.result.winTitle, sub, rows, 'tutorial', false, { noInspector:true });
   const rbtn=$('rematchBtn');
   if(rbtn) rbtn.textContent = '繼續';
   state.resultMode = 'script-continue';
   /* 掉落：卡上的 `loot`（固定）＋ `money.hpRatio`（HP 的幾成，隨機）。
      ⚠ 與教學同一個手感：**點畫面才彈**，不自動蓋掉戰績。 */
-  const loot = (en.loot||[]).slice();
+  const loot = rollLoot(en);
   if(prize) loot.push({ id:prize, n:1 });
   let money = 0;
   const mr = en.money && en.money.hpRatio;
@@ -433,9 +434,25 @@ function scriptSettle(totalTime, stats){
     document.addEventListener('pointerup', popLootOnce, { capture:true, once:true });
   }
 }
+/* 結算副標：**依敵人卡的 `kind` 換用詞**（ver -423，Ray：「禍魘＝已淨化、人類＝已擊敗、
+   船隻＝已擊沉」）。⚠ 只有這一支在決定（鐵律 7）—— 兩個結算路徑都問它。
+   ⚠ 卡上沒寫 `kind`、或那一版語言沒有對照表，就退回原本那一句（舊怪不受影響）。 */
+function winSubOf(en){
+  const by = L.result.winSubBy;
+  const k = en && en.kind;
+  return (by && k && by[k]) ? by[k] : L.result.winSub;
+}
+
 /* 敵人顯示名：底線後是給作者辨識的，不顯示（同 enemy.displayEnemyName 的規約）。
    ⚠ 這裡不 import enemy（依賴方向：inspector 不在 enemy 之下），字串處理很短就地做。 */
 function displayName(n){ return String(n||'').split('_')[0]; }
+
+/* 掉落：卡上的 `loot`，**每一項各自擲骰**（ver -423，Ray：「可能都掉，可能都不掉」）。
+   ⚠ `p` 沒寫＝必掉（舊卡不受影響）。⚠ 只有這一支在擲（鐵律 7）。 */
+function rollLoot(en){
+  return (en && en.loot ? en.loot : []).filter(r=>!(r.p>0) || Math.random()<r.p)
+                                       .map(r=>({ id:r.id, n:r.n }));
+}
 
 /* 拾得道具／金錢的待彈狀態（見 tutorialSettle、settle 的掉落段與 onRematchBtn）。 */
 let _lootPending = null, _lootMoney = 0;

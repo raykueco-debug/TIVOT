@@ -4976,3 +4976,39 @@ Ray：「整備畫面錯了。開啟全畫面視窗，有三個功能：①選�
 —— 那兩支的實作在 `partner.js`／`saint.js`，`key` 是程式認的字串，換鑰匙等於要新寫技能。
 CI 圖也暫時借蕾妮的（Ray：「CI 之後再補」），換的時候改那三個欄位就好。
 ⚠ 立繪先用對白圖 `Nouvelle_SI_front`；換成專屬選人立繪時 `siFit` 要重量。
+
+---
+
+# 交接 · `ver -423`（巨型蜈蚣的敵人卡＋卡上那些欄位真的生效了）
+
+Ray 交了第一場**船艦戰**的敵人卡。這一版把卡上**每一欄**都接成程式（之前
+`resist`/`weak` 是「卡上有、程式沒實作」的狀態）。
+
+## 新機制（都只有一個計算點）
+
+| 卡上的欄位 | 實作 |
+|---|---|
+| 戰鬥立繪三差分 | `image:{day,dd,night}` ＋ `enemy.enemyImage()`：`clock.band()` → 槽的對應**只有那一支** |
+| 類型（禍魘／人類／船隻） | `kind` → 結算副標（`inspector.winSubOf`，i18n 三語各一組 `winSubBy`） |
+| 3~5 秒發動一次 | `ultEvery:[3,5]`（**秒**）→ `ULT_MIN/MAX`。⚠ 與 `atkInterval`（紅點給你幾秒反應）**不是同一件事** |
+| 不疊加 | `noStack` → `scheduleUlt` 場上有紅點就**重排**（不是丟掉，丟掉會整場不再攻擊） |
+| 抗性／弱點／破防增傷 | `resist{src}` / `weak{src}` / `dualBonus` → `combat.applyEnemyMods`，掛在 `enemyDamage` 那**一個**入口 |
+| 反擊攻擊增益 2 倍 5 秒 | `counterBuff:{mult,seconds}` → `defense` 讀它給 `triggerAtkBuff` |
+| 反擊硬直 3 秒 | `counterStun` → 借既有的 `enemyAtkSuppressUntil`（本來就是「這段時間不排大絕」的唯一旗標） |
+| 掉落各自擲骰 | `loot[].p` → `inspector.rollLoot`（沒寫 `p` ＝必掉，舊卡不受影響） |
+| 船戰的武器音 | 戰鬥卡的 `weaponSound:{武器:'se_key'\|{key,times}}` —— 覆寫的是**場次**不是武器卡 |
+
+⚠⚠ **傷害來源（`src`）**：`enemyDamage(dmg, isCrit, silent, src)`，
+`basic`／`counter`／`dual`／`saint`。抗性與弱點是依來源算的，所以每個呼叫端都要標。
+
+## ⚠ 缺的素材（degrade 了，沒有擋住）
+
+- **立繪差分四張**：`Renna_SI_watch`／`Renna_SI_shocked`／`Renna_SI_run`／`Nouvelle_SI_steady`
+  —— 劇本那一段要用。缺的話 `script_lint.py` 會警告並**回退基本立繪**（不會壞）。
+- **`se_weapon_cannon_120mm`** —— 沒有這個檔。步槍與艦砲那兩支**暫時指到
+  `se_weapon_heavygun`**（ASSETS 的 `se_ship_cannon`）。檔案補進來改那一行就好。
+
+## 這一批**還沒做**的部分（下一輪）
+
+第二日的船塢劇情、Stage1 的地圖限制（無探索／無加速、只開帝都與北方泊地、
+其餘點了彈蕾娜）、出薩梅爾上空 1.5 倍速刷怪、艦鬥短教學。

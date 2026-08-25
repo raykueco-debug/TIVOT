@@ -277,7 +277,7 @@ function tap(num,cell,e){
     const dmg=hitDamage()*DMG_DUAL_MULT;
     SFX.gunshot(true);
     hap.shot();                        // 破防窗口：**每一發**都震（ver -398，Ray 指定）
-    enemyDamage(Math.round(dmg), false);
+    enemyDamage(Math.round(dmg), false, false, 'dual');   // 破防窗口的射擊（ver -423：來源別）
     if(state.cells.every(c=>c.classList.contains('done'))){
       SFX.clear(); clearAtkBuff(); weapon.endDual();
       recordBoardTime((Date.now()-state.boardStartTime)/1000);
@@ -315,7 +315,7 @@ function tap(num,cell,e){
       okCrit=true; okDmg*=(1 + CRIT_DMG_BASE + state.critCombo*CRIT_DMG_PER_COMBO);
     }
     state.critCombo++;
-    enemyDamage(Math.round(okDmg), okCrit);
+    enemyDamage(Math.round(okDmg), okCrit, false, 'saint');
     if(state.cells.every(c=>c.classList.contains('done'))){ clearBoard(); return; }
     updateStatus();
     return;
@@ -336,7 +336,7 @@ function tap(num,cell,e){
       crit=true; dmg*=(1 + CRIT_DMG_BASE + cc*CRIT_DMG_PER_COMBO);
     }
     state.critCombo++;
-    enemyDamage(Math.round(dmg),crit);   // 點擊直接扣敵血（crit=true → 敵區跳紅字「暴擊」）
+    enemyDamage(Math.round(dmg),crit,false,'basic');   // 點擊直接扣敵血（crit=true → 敵區跳紅字「暴擊」）
     state.expect++;
     tutorial.onBoardProgress(state.expect-1);   // 教學：第四回合清滿 N 格 → 劇情殺（非教學 no-op）
     if(state.expect>state.N) clearBoard(); else markNext();
@@ -554,7 +554,24 @@ function hintCurrentCell(){
 function resetEnergy(){ state.energy=0; updateEnergyClasp(); }
 
 // 對敵造成傷害（含 overkill / 擊殺凍結計時）
-function enemyDamage(dmg,isCrit,silent){
+/* ══ 抗性／弱點／破防增傷（ver -423，Ray 的敵人卡）══════════════════════
+   ⚠⚠ **只有這一處在算**（鐵律 7）：所有打到敵人的傷害都走 `enemyDamage`，
+     所以修正也只掛在這裡 —— 不要在反擊、普攻、雙槍那三邊各乘一次。
+   ⚠ `src` ＝傷害來源（`basic`／`counter`／`dual`／`saint`…）。卡上的
+     `resist[src]` 是減傷成數、`weak[src]` 是增傷成數，兩者相加後套一次。
+   ⚠ `dualBonus` 是**破防窗口期間**的額外增傷（與來源無關，卡上分開寫的一欄）。
+   ⚠ 至少留 1 點：減傷 100% 也不該變成打不動（那會讓玩家以為卡住）。 */
+function applyEnemyMods(dmg, src){
+  if(!(dmg>0)) return dmg;
+  let k = 1;
+  const R=state.enemyResist, Wk=state.enemyWeak;
+  if(R && R[src]) k -= R[src];
+  if(Wk && Wk[src]) k += Wk[src];
+  if(state.dualWield && state.enemyDualBonus) k += state.enemyDualBonus;
+  return Math.max(1, Math.round(dmg * Math.max(0, k)));
+}
+function enemyDamage(dmg,isCrit,silent,src){
+  dmg = applyEnemyMods(dmg, src||'basic');
   // 教學：段落未播完前（tutorialActive）敵不可被打死——致死傷害夾到留 1 HP。
   //   防 EXSECUTIŌ／聖徒化中擊殺跳過最後一段教學（finishMB/LR 播完 endTutorial 後才解鎖擊殺）。
   if(state.tutorialActive && dmg>=state.enemyHp && state.enemyHp>0){
@@ -969,11 +986,13 @@ export function startGame(){
        是查「目前這隻怪」來的，換晚了第一盤會用到上一隻的格數。 */
   const sb = state.scriptRun && GAME_CONFIG.battles && GAME_CONFIG.battles[state.scriptBattleId];
   state.timeAttack = null; state.timeOver = false;   // 開場先歸零（同 noSaint：不要靠上一場收乾淨）
+  state.weaponSound = null;                          // 武器音覆寫也是（ver -423）
   if(sb && GAME_CONFIG.enemies[sb.enemy]){
     enemy.setEnemy(sb.enemy);
     state.noSaint = !!sb.noSaint;
     state.noPartner = !!sb.noPartner;
     state.timeAttack = sb.timeAttack || null;    // 計時挑戰（ver -396，打靶場）
+    state.weaponSound = sb.weaponSound || null;  // 這一場的武器音覆寫（ver -423，船艦戰）
   }
   stopAll();
   loadBoard(0); updateBars();

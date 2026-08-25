@@ -69,6 +69,10 @@ export function scheduleUlt(firstDelayMs){
     // 教學：暫緩大絕的情境統一問 tutorial.ultSuppressed（首回合純清盤／劇情殺盤／
     //   場上已有紅點＝一次只出一顆），經 combat 注入轉交
     if(api.ultSuppressed && api.ultSuppressed()){ scheduleUlt(250); return; }
+    /* ⚠ 「不疊加」（ver -423 的敵人卡 `noStack`）：場上還有紅點就不再生一顆，
+       等它被解掉。⚠ 用**重排**不是丟掉 —— 丟掉的話這一隻怪會在玩家慢一拍之後
+       整場不再攻擊。 */
+    if(state.enemyNoStack && state.threats && state.threats.length){ scheduleUlt(300); return; }
     // cut-in／清盤後緩衝期內敵不發動，等窗口過了再排
     if(Date.now() < state.enemyAtkSuppressUntil){ scheduleUlt(state.enemyAtkSuppressUntil - Date.now() + 50); return; }
     startCharge();
@@ -220,7 +224,16 @@ export function resolveThreat(th){
     grade='counter';
     flashDefense('gold');
     api.floatDmg(L.battle.counter,'50%','38%',true);
-    api.triggerAtkBuff(2);
+    /* 反擊之後的兩件事，都讀**這一隻怪的卡**（ver -423）：
+         `counterBuff.seconds` 普攻增益持續幾秒（沒寫＝沿用預設 2 秒）
+         `counterStun`         被反擊後幾秒才發起下一次主動攻擊（硬直）
+       ⚠ 硬直借用既有的 `enemyAtkSuppressUntil`（cut-in 之後不發動用的那一支）——
+         那本來就是「這段時間內不要排大絕」的唯一旗標（鐵律 8）。 */
+    const cb=state.enemyCounterBuff;
+    api.triggerAtkBuff(cb && cb.seconds ? cb.seconds : 2);
+    if(state.enemyCounterStun>0)
+      state.enemyAtkSuppressUntil = Math.max(state.enemyAtkSuppressUntil,
+                                             Date.now() + state.enemyCounterStun*1000);
     api.weaponCounter();
   }else if(!(w && w.noPerfectBand) && ratio < DEF_DEFENSE_MIN){
     // === Perfect Defense ===（金色微閃）

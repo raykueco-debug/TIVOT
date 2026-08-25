@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.26-422';
+export const VERSION = 'ver 2026.08.26-423';
 
 export const GAME_CONFIG = {
 
@@ -326,6 +326,16 @@ export const GAME_CONFIG = {
     defs: {
       saint_claw_low: { name:'聖徒之爪（低品質）', cat:'material', price:24,
                         desc:'從訓練用聖徒上剝下來的爪。質地脆，勉強能當研磨材。' },
+      /* 巨型蜈蚣的掉落（ver -423，Ray 的卡）。⚠ **價格是我填的**（卡上沒寫）——
+         照既有素材的量級：常見的 6~8、稀有的 24 以上。要改直接動這裡。 */
+      venom_fang:     { name:'毒牙',               cat:'material', price:30,
+                        desc:'蜈蚣型禍魘的毒牙。稀有，硝製後可作彈頭。' },
+      venom_claw:     { name:'毒爪',               cat:'material', price:12,
+                        desc:'蜈蚣型禍魘的節肢末端。仍帶著麻痺性的體液。' },
+      chitin_wing:    { name:'飛翅',               cat:'material', price:26,
+                        desc:'極少數個體才長得出的薄翅。輕而不折。' },
+      chitin_shell:   { name:'殼甲',               cat:'material', price:10,
+                        desc:'蜈蚣型禍魘的節甲。硬度足以擋下小口徑彈。' },
       brass_casing:   { name:'黃銅彈殼',           cat:'material', price:8,
                         desc:'打完的彈殼。收集起來能重新裝填，槍匠都收。' },
       scrap_iron:     { name:'碎鐵片',             cat:'material', price:6,
@@ -860,6 +870,63 @@ export const GAME_CONFIG = {
          這條規則寫在資料裡，程式只負責擲骰（鐵律 1）。 */
       money:{ hpRatio:[0.6, 0.8] },
     },
+    /* ══ 巨型蜈蚣（ver -423，Ray 的敵人卡）══════════════════════════════
+       第一場**船艦戰**的怪。卡上的每一欄都照抄成絕對值（鐵律 1／§6.5.2）。 */
+    centipi: {
+      name:'巨型蜈蚣',
+      /* ⚠⚠ **三張時段差分**（Ray：「上午下午用 Centipi_day，晚上用 night，
+         黃昏黎明用 Centipi_dd」）。寫成 `{day,dd,night}` 三個槽，時段→槽的對應
+         只有一處：`modules/enemy.js` 的 `enemyImage()`（鐵律 7）。 */
+      image:{ day:'enemy_centipi_day', dd:'enemy_centipi_dd', night:'enemy_centipi_night' },
+      /* ⚠ `kind` ＝ 結算頁的用詞（Ray 指定）：`harm`＝禍魘→「已淨化」、
+         `human`→「已擊敗」、`ship`→「已擊沉」。對照表在 `modules/inspector.js`。 */
+      kind:'harm',
+      hp:500,
+      /* 蓄力攻擊（紅點那一發）：傷害 20、**3~5 秒發動一次**、不疊加。
+         ⚠ `atkInterval` 給**區間**（陣列）＝每次隨機；給數字＝固定（舊卡不受影響）。 */
+      attack:20,
+      /* ⚠⚠ 「3~5 秒發動一次」是**發動頻率**不是蓄力長度 —— 所以走 `ultEvery`
+         （＝`ULT_MIN`/`ULT_MAX`），不是 `atkInterval`（那是紅點給你幾秒反應）。
+         兩個都叫「秒」但意思完全不同，混用會讓怪要嘛不打人、要嘛打不完。 */
+      atkInterval:null,
+      ultEvery:[3,5],
+      /* ⚠ 「不疊加」＝場上同時只有一個紅點（見 defense.scheduleUlt 的 `noStack`）。 */
+      noStack:true,
+      sound:{ ult:'se_enemy_centipi', delay:'em_smack', wrong:'em_smack' },
+      special:[],
+      /* 盤面配置 `33344, loop`：3＝九宮格、4＝16 宮格，打完五盤沒死就從頭再來。 */
+      boardGrids:[9,9,9,16,16],
+      boardLoop:true,
+      /* 延時懲罰：4 秒、傷害 10、**單爪**特效。點錯：傷害 5、鈍器特效。 */
+      delayPenalty:{ seconds:4, damage:10 },
+      wrongPenalty:{ damage:5 },
+      hitFx:{
+        delay:{ type:'claw', count:1, angle:'random' },
+        wrong:{ type:'blunt' },
+        ult:{   type:'claw', count:3, angle:'random' },
+      },
+      /* ⚠⚠ **抗性／弱點／破防增傷**（ver -423 起真的生效，之前只是放著）：
+         值是**加減成**，套在 `combat.enemyDamage` 那一個計算點上（鐵律 7）。
+           resist.basic   普攻減傷 20%
+           weak.counter   全反擊武器增傷 100%
+           dualBonus      破防（雙槍窗口）增傷 20% */
+      resist:{ basic:0.20 },
+      weak:{ counter:1.00 },
+      dualBonus:0.20,
+      /* 反擊之後的兩件事（卡上分開寫，程式也分開讀）：
+           counterBuff  反擊攻擊增益：普攻 ×2、持續 5 秒
+           counterStun  反擊硬直：被反擊後 3 秒才發起下一次主動攻擊 */
+      counterBuff:{ mult:2, seconds:5 },
+      counterStun:3,
+      /* 掉落物：**各自擲骰**（Ray：「可能都掉，可能都不掉」）——
+         `p` 是機率，沒寫＝必掉（舊卡不受影響）。 */
+      loot:[ { id:'venom_fang',   n:1, p:0.10 },
+             { id:'venom_claw',   n:1, p:0.33 },
+             { id:'chitin_wing',  n:1, p:0.10 },
+             { id:'chitin_shell', n:1, p:0.33 } ],
+      /* 金錢：HP 的 120%~150%。 */
+      money:{ hpRatio:[1.2, 1.5] },
+    },
     // 例：新怪
     // giant: { name:'巨人', image:'enemy_giant', imageBase:'giant', hp:150, attack:30, atkInterval:5, sound:{}, special:[] },
   },
@@ -904,7 +971,13 @@ export const GAME_CONFIG = {
        ⚠⚠ 三隻怪的**敵人卡 Ray 還沒給**，所以現在**一律先借巨型聖徒**跑流程
          （同打靶先用訓練用聖徒的作法）。卡到位之後只要改 `enemy` 這一欄。
        ⚠ 打輸走一般的失敗流程（Game Over → 主選單），打贏才回飛行頁 —— 見 main.js。 */
-    flight_centipede: { enemy:'facelessgiant' },
+    /* ⚠ 船艦戰的武器音**整組換掉**（ver -423，Ray 指定）：機槍→重機槍音、
+       霰彈→手槍音同時六聲、步槍→艦砲。`weaponSound` 是「這一場」的覆寫，
+       武器卡本身不動（同一把槍在陸戰還是原本的聲音）。 */
+    flight_centipede: { enemy:'centipi',
+                        weaponSound:{ MG_Squall:'se_ship_heavygun',
+                                      Shotgun_Blast:{ key:'se_pistol_01', times:6 },
+                                      Sniper_Falcon:'se_ship_cannon' } },
     flight_serpent:   { enemy:'facelessgiant' },
     flight_pirate:    { enemy:'facelessgiant' },
   },
@@ -1163,6 +1236,12 @@ export const ASSETS = {
   bg_sentou: "resources/background/SENTOUINSTALL.webp", // Boss 戰 S 級獎勵畫面（銭湯インストール）
 
   // ── 副武器圖（換裝選單縮圖）：鑰匙對應 weapons.image；檔名＝類型_武器名 ──
+  /* 巨型蜈蚣（ver -423）：**三張時段差分**（Ray 指定：上午下午 day、晚上 night、
+     黃昏黎明 dd）。解析在 `modules/enemy.js` 的 `enemyImage()`，那裡是唯一一處。 */
+  enemy_centipi_day:   "resources/enemy/Centipi_day.webp",
+  enemy_centipi_night: "resources/enemy/Centipi_night.webp",
+  enemy_centipi_dd:    "resources/enemy/Centipi_DD.webp",
+  cg_006_ship:         "resources/illustration/006_Ship.webp",     // 插圖：白帆三桅船
   weapon_mg_squall:     "resources/weapon/MG_Squall.webp",       // 重機槍 Squall
   weapon_shotgun_blast: "resources/weapon/Shotgun_Blast.webp",   // 散彈槍 Blast
   weapon_sniper_falcon: "resources/weapon/Sniper_Falcon.webp",   // 狙擊槍 Falcon
@@ -1188,6 +1267,12 @@ export const ASSETS = {
      ⚠ 搬檔與改名走 tools/audio_reorg.py，別手改 —— 它會一併改寫
        config.js 與 flight/index.html 兩邊的路徑，手改很容易漏掉後者。 */
   // 反擊武器音效（所有副武器各一支；鑰匙對應 weapons.sound）。
+  /* 船艦戰用的武器音（ver -423，Ray 指定）。⚠ **缺 `se_weapon_cannon_120mm`** ——
+     素材還沒給，所以步槍與艦砲那兩支暫時指到 `se_weapon_heavygun`（有聲音總比沒有好）。
+     檔案補進來之後把下面兩行改回 `se_weapon_cannon_120mm.m4a` 就好。 */
+  se_ship_cannon:    "resources/audio/se/se_weapon_heavygun.m4a",       // ⚠ 代用：本來要 cannon_120mm
+  se_ship_heavygun:  "resources/audio/se/se_weapon_heavygun.m4a",       // 船戰的機槍
+  se_enemy_centipi:  "resources/audio/se/Se_enemy_centipi.m4a",         // 巨型蜈蚣（登場／攻擊）
   se_mg_squall:      "resources/audio/se/se_weapon_mg_squall.m4a",       // 重機槍 反擊（連續感：整支播一次）
   se_shotgun_blast:  "resources/audio/se/se_weapon_shotgun_blast.m4a",   // 散彈槍 反擊（一次一發）
   se_sniper_falcon:  "resources/audio/se/se_weapon_sniper_falcon.m4a",   // 狙擊槍 反擊（單發）
