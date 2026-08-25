@@ -17,6 +17,7 @@ import * as prog from '../script/progress.js';
 import * as story from './story.js';
 import * as inn from './inn.js';                 // 旅店大廳（伙伴門／獨自坐坐／回房睡覺）
 import { showShop, showBounty } from './loot.js';
+import { SPEAKERS } from '../script/speakers.js';
 import { SFX } from '../audio.js';
 
 const $ = id => document.getElementById(id);
@@ -336,16 +337,32 @@ function hintHide(){ const h=layer && layer.querySelector('#townHint'); if(h) h.
      `layoutKerberos` 解出來的（鐵律 7）。 */
 const DIR_ARROW={ up:'n', right:'e', down:'s', left:'w' };
 
+/* ══ 「回去」掛在哪一支箭（ver -405，Ray：「從哪個方向過來，回去就按方向」）══
+   往上走進去的地方，往下就退得回來；往左走進去的，往右退回來。
+   ⚠ **記的是「這一次是按哪個方向進來的」**（`backDir` ＝ 來時方向的反向），
+     不是節點資料上的東西 —— 同一個地方可以從不同的路走到（日後多城時尤其），
+     寫死在資料上一定會有一邊是反的。
+   ⚠ 沒有記錄時（開城第一格、戰鬥交棒回來、讀檔）退回舊行為「掛在下」。 */
+const OPPOSITE = { up:'down', down:'up', left:'right', right:'left' };
+let pendingDir = null;   // go() 記下這一次按的方向，enter() 取用後清掉
+let backDir    = null;   // 「回去」該掛在哪一支箭
+
 function exitsOf(){
   const n=node(); const ex=Object.assign({}, (n&&n.exits)||{});
-  /* `back` 沒有自己的箭：只有它的時候掛到「下」。 */
-  if(ex.back && !ex.down){ ex.down=ex.back; }
-  delete ex.back;
+  const back=ex.back; delete ex.back;
   /* ══ 出航（ver -387，Ray：「預設的城鎮入口下方為『出航』」）══
      ⚠ 走**同一套**方向出口（長按那一支箭／字格），不另做一顆鈕 —— 對玩家而言
        「往下走」與「出航」是同一個動作，只是目的地在城外（鐵律 8）。
-     ⚠ 目的地 id 用 `__sail` 這個保留字，由 `go()` 攔下來分流。 */
+     ⚠ 目的地 id 用 `__sail` 這個保留字，由 `go()` 攔下來分流。
+     ⚠ **先擺出航再擺 back**：出航是「下」那一格的既定用途（Ray 指定），
+       不能被「回去」擠掉。 */
   if(n && n.sail && !ex.down) ex.down=SAIL_ID;
+  if(back){
+    /* 首選＝來時方向的反向；那一格已經有別的出口就退回「下」，再不行就找一格空的。 */
+    const want = (backDir && !ex[backDir]) ? backDir
+               : (!ex.down ? 'down' : ['up','left','right','down'].find(d=>!ex[d]));
+    if(want) ex[want]=back;
+  }
   return ex;
 }
 const SAIL_ID='__sail';
@@ -385,12 +402,12 @@ function bindInput(){
     el.classList.add('holding');
     const r=el.getBoundingClientRect(), sr=st.getBoundingClientRect();
     hintShowAt(r.left-sr.left+r.width/2, r.top-sr.top+r.height/2, nameOfNode(to));
-    hold={ el, to, t0:performance.now(), raf:0, timer:0 };
+    hold={ el, to, dir:el.dataset.dir, t0:performance.now(), raf:0, timer:0 };
     const tick=()=>{ if(!hold) return;
       hintProgress((performance.now()-hold.t0)/HOLD_MS);
       if(performance.now()-hold.t0 < HOLD_MS) hold.raf=requestAnimationFrame(tick); };
     tick();
-    hold.timer=setTimeout(()=>{ const target=hold.to; cancel(); go(target); }, HOLD_MS);
+    hold.timer=setTimeout(()=>{ const target=hold.to, d=hold.dir; cancel(); go(target, d); }, HOLD_MS);
   }, true);
   st.addEventListener('pointerup', e=>{
     if(hold){ cancel(); return; }               // 放太早：取消，不算點擊
@@ -424,7 +441,7 @@ function bindInput(){
         b.style.setProperty('--fill', p.toFixed(3));
         if(p<1) raf=requestAnimationFrame(tick); };
       tick();
-      timer=setTimeout(()=>{ stop(); go(to); }, HOLD_MS);
+      timer=setTimeout(()=>{ stop(); go(to, b.dataset.dir); }, HOLD_MS);
     });
     b.addEventListener('pointerup', e=>{ e.stopPropagation(); stop(); });
     b.addEventListener('pointercancel', stop);
@@ -436,9 +453,10 @@ function bindInput(){
    ⚠ 參數是**目的地的節點 id**，不是方向（ver -370 修）：手勢／羅盤那一段已經把方向
    換算成目的地了，這裡再查一次 `exits[dir]` 只會查到 undefined（實測踩過：
    提示出得來、時間也滿了，就是不會走）。 */
-function go(to){
+function go(to, dir){
   if(!to) return;
   if(to===SAIL_ID){ setSail(); return; }
+  pendingDir = dir || null;            // 這一次按的方向（ver -405）；enter() 取用
   busy=true; showNav(false);
   document.body.classList.remove('town-nav');          // 移動中把羅盤收起來
   try{ SFX.play('resources/audio/se/se_walk.m4a'); }catch(_){}
@@ -481,6 +499,10 @@ export function enter(id){
   const T=TOWNS[townId]; if(!T) return;
   const n=T.nodes[id]; if(!n){ console.warn('[town] 沒有這個節點：', id); busy=false; return; }
   nodeId=id;
+  /* 「回去」該掛哪一支箭（ver -405）：來時方向的反向。走別的路徑進來（開城第一格、
+     戰鬥交棒回來）時 `pendingDir` 是空的 → `backDir` 歸零，退回「掛在下」。 */
+  backDir = pendingDir ? (OPPOSITE[pendingDir] || null) : null;
+  pendingDir = null;
   /* ⚠⚠ **換節點先收乾淨**（鐵律 8）：
        ① 還在播的臨時段落要中止 —— 不中止的話它會在新的地點上把上一段演完（實測過）；
        ② 立繪是持續狀態，要清場，不清的話上一個地點的人會站在新的背景前面。
@@ -563,7 +585,10 @@ export function enter(id){
 function afterArrive(n){
   /* ⚠ `introFlag` 由城鎮算好傳進去（ver -402）：旅店已經沒有 `kind` 了，
      旗標名只有 `enter()` 那一支知道（`kind` 版／節點版兩種）—— inn 自己拼會拼錯城。 */
-  if(n && n.inn) inn.arrive(n, { allSeen: allSeen(), introFlag: flagOf(n, nodeId) });
+  if(n && n.inn) inn.arrive(n, { allSeen: allSeen(), introFlag: flagOf(n, nodeId),
+                                 /* 「還沒六點呢」的那個六點＝傍晚提醒的時刻（ver -405）。
+                                    ⚠ 同一個數字只有這一處（鐵律 7）。 */
+                                 eveningHour: ((TOWNS[townId]||{}).evening||{}).hour });
   else inn.close();
   shopEnter();              // 店舖畫面（ver -404）：進場對白演完才擺，不然會壓在對白上
 }
@@ -645,7 +670,9 @@ function chatter(){
   let i=Math.floor(Math.random()*list.length);
   if(list.length>1 && i===lastChat) i=(i+1)%list.length;
   lastChat=i;
-  story.flashLine(list[i], '');
+  /* ⚠ 名字欄標「路人」（ver -405，Ray 指定）。字串問 `SPEAKERS.VOICE.name`，
+     不要寫死在這裡（鐵律 7）—— 那是那個角色的顯示名，只有一份。 */
+  story.flashLine(list[i], (SPEAKERS.VOICE||{}).name||'');
   chatterOn=true;
 }
 

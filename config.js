@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.25-404';
+export const VERSION = 'ver 2026.08.25-405';
 
 export const GAME_CONFIG = {
 
@@ -330,12 +330,22 @@ export const GAME_CONFIG = {
   shop: {
     /* Ray：「買收價為物價 50%」—— 店家收購時只給市價的一半。 */
     sellRate: 0.5,
-    /* 各家店的貨單（節點的 `shop` 欄位指到這裡的鍵）。 */
+    /* 各家店的貨單（節點的 `shop` 欄位指到這裡的鍵）。
+       ⚠⚠ **一筆＝`{id, n}`**（ver -405，Ray：「給店鋪加入存貨數量」）：`n` 是**開店時
+         的存貨量**。寫成單純的字串＝**不限量**（那一項永遠買得到，也不記帳）。
+       ⚠ 賣光了不會自動補貨 —— **玩家賣給店家才會入庫再賣**（Ray 指定）。
+         現在還剩幾個由 `script/shopstock.js` 記帳，這裡只有初始值（鐵律 1）。 */
     stock: {
-      grocery: ['milk','cheese','lime_rum'],
+      grocery: [ { id:'milk',     n:8 },
+                 { id:'cheese',   n:5 },
+                 { id:'lime_rum', n:3 } ],
       /* 武器店（ver -377）。⚠ 賣的是**武器鑰匙**（`weapons` 的鍵）——武器沒有第二份
-         道具定義，價格與規格都在那張武器卡上（見 inventory.defOf 的說明）。 */
-      gunstore: ['Shotgun_Dragon','MG_Squall_Kai','Rifle_Shahin'],
+         道具定義，價格與規格都在那張武器卡上（見 inventory.defOf 的說明）。
+         ⚠⚠ **每把都只有 1 支**（ver -405，Ray 指定）：這些是成品槍不是量產品，
+           賣掉就沒了；要再有一把，得有人賣回來。 */
+      gunstore: [ { id:'Shotgun_Dragon', n:1 },
+                  { id:'MG_Squall_Kai',  n:1 },
+                  { id:'Rifle_Shahin',   n:1 } ],
     },
     /* 每家店的長相（ver -377）。沒登記的店走預設（買／賣兩頁、雜貨舖的店主圖）。
          title  頁首的字

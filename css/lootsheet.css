@@ -92,12 +92,34 @@
   #lootSheet .shop-body{display:flex;gap:8px;align-items:stretch;}
   #lootSheet .shop-list{flex:1;display:flex;flex-direction:column;gap:6px;
     max-height:38vh;overflow-y:auto;}
-  #lootSheet .shop-row{display:flex;justify-content:space-between;align-items:baseline;
-    gap:10px;padding:8px 10px;background:rgba(255,255,255,.03);border:1px solid transparent;
+  /* ⚠ **格線不是 flex**（ver -405）：品名長會換行，flex 的話第二行會鑽到右邊價錢底下
+     （實測武器名那幾列，「持有」的框被拆成兩半夾著價錢）。格線給品名一欄、價錢一欄，
+     標籤自己佔滿第二列。 */
+  #lootSheet .shop-row{display:grid;grid-template-columns:1fr auto;gap:3px 10px;
+    align-items:baseline;
+    padding:8px 10px;background:rgba(255,255,255,.03);border:1px solid transparent;
     border-radius:8px;}
+  #lootSheet .shop-tags{grid-column:1 / -1;display:flex;flex-wrap:wrap;gap:6px;}
   #lootSheet .shop-row.pick{border-color:var(--gold-dim);background:rgba(212,169,74,.10);}
   /* 價格那一欄**不換行**（ver -377）：武器名長，換行之後「4000」與「G」會被拆成兩行。 */
   #lootSheet .shop-row .loot-n{white-space:nowrap;}
+  /* ── 存貨（ver -405）──
+     ⚠ 標在**品名後面**不是價錢那一欄：價錢那欄要保持「一個數字」才掃得快。
+     ⚠ 售完那一列整列變暗**而且點不動**（JS 那邊擋）—— 只變暗的話玩家會一直戳。 */
+  #lootSheet .wp-stock{font-size:10px;font-style:normal;white-space:nowrap;
+    letter-spacing:1px;color:var(--gold-dim);}
+  #lootSheet .shop-row.out{opacity:.42;}
+  #lootSheet .shop-row.out .wp-stock{color:var(--blood);}
+  /* ── 購買數量（ver -405，Ray：「購買時可選擇購買數量」）──
+     ⚠ 只在買得到兩個以上時才出現（見 loot.js）；`／n` 標的是**這一次最多能買幾個**
+       ——「店裡剩幾個」與「錢夠買幾個」取小，玩家不必自己算。 */
+  #lootSheet .shop-qty{display:flex;align-items:center;justify-content:center;gap:10px;
+    margin:8px 0 0;}
+  #lootSheet .shop-qty button{width:34px;height:28px;font-family:inherit;font-size:15px;
+    line-height:1;color:var(--gold);background:rgba(10,8,14,.7);
+    border:1px solid var(--gold-dim);border-radius:7px;}
+  #lootSheet .shop-qty b{min-width:2.2em;text-align:center;font-size:16px;color:var(--ink);}
+  #lootSheet .shop-qty .qty-max{font-size:11px;color:var(--gold-dim);letter-spacing:1px;}
   /* ⚠ `.shop-keeper-art` 已於 ver -387 撤掉（Ray：「商店內展開購買視窗時不要放店主立繪」）——
      店主畫在背景的櫃台後面，這一頁是疊在他前面的一張單子，不必再放一次同一個人。
      樣式一併移除；要找歷史請看 git。 */
@@ -124,7 +146,7 @@
   #lootSheet .wp-vs{margin-top:6px;font-size:10.5px;letter-spacing:2px;color:var(--gold);opacity:.85;}
   #lootSheet .wp-flavor{margin-top:6px;font-size:11px;color:var(--gold-dim);opacity:.85;}
   /* 「持有」小標：貼在品名後面，不另開一欄（價格那一欄要留給價格）。 */
-  #lootSheet .wp-have{margin-left:6px;padding:1px 5px;font-style:normal;font-size:9.5px;
+  #lootSheet .wp-have{padding:1px 5px;white-space:nowrap;font-style:normal;font-size:9.5px;
     letter-spacing:1px;color:var(--holy);border:1px solid var(--holy);border-radius:8px;opacity:.8;}
   /* 三頁的時候字要縮一點，不然「武器改裝」四個字擠不下（實測 375 寬）。 */
   #lootSheet .shop-tabs:has(.shop-tab:nth-child(3)) .shop-tab{font-size:11px;letter-spacing:1px;}
@@ -176,6 +198,8 @@
   #lootSheet.dock-left .shop-tab{padding:6px 0;}
   #lootSheet.dock-left .shop-row{padding:7px 9px;}
   #lootSheet.dock-left .shop-desc{margin-top:6px;min-height:1.8em;}
+  #lootSheet.dock-left .shop-qty{margin-top:6px;gap:8px;}
+  #lootSheet.dock-left .shop-qty button{width:30px;height:25px;}
   #lootSheet.dock-left .shop-acts{margin-top:6px;gap:5px;}
   /* ⚠ 鈕**擠一排**：字級 11px、字距歸零、不換行，鈕的字也縮短了（`showShop` 的
      「交　談」）。武器店最多四顆（買下／交談／射擊挑戰／關閉），250px 的單子每顆

@@ -16,6 +16,7 @@ import { GAME_CONFIG } from '../config.js';   // 只為了拿教學的 storageKe
 /* ⚠ 「一輪遊戲」包含道具與時鐘，所以存讀檔要一起帶（見 runSnapshot）。
    兩支都是 `script/` 的同層資料模組，沒有循環相依。 */
 import * as inv from './inventory.js';
+import * as shopStock from './shopstock.js';   // 店鋪存貨（ver -405）
 import * as clock from './clock.js';
 
 const K = {
@@ -155,6 +156,7 @@ export function newRun(){
      日後新增任何一輪內的存檔（例如城鎮的所在節點），**一定要加進這一行**。 */
   const tutKey = (GAME_CONFIG.tutorial||{}).storageKey;   // ⚠ 問 config，不要抄字串（鐵律 7）
   for(const k of ['tivot_clock_v1', 'tivot_inventory_v1', 'tivot_money_v1', tutKey,
+                  shopStock.KEY,                            // 店鋪存貨（ver -405）
                   /* 飛行頁的交棒（ver -382）：待打的遭遇戰、以及打完要回去的座標。 */
                   'tivot_battle_req_v1', 'tivot_flight_ret_v1']) {
     if(!k) continue;
@@ -170,13 +172,17 @@ export function newRun(){
    ⚠ 不含跨輪的東西（靜音、語言、最佳紀錄、武器/搭檔的選擇）—— 那些是玩家的偏好
      與成績，讀檔不該把它們拉回去。 */
 export function runSnapshot(){
-  return { progress:snapshot(), clock:clock.elapsed(), inv:inv.snapshot() };
+  return { progress:snapshot(), clock:clock.elapsed(), inv:inv.snapshot(),
+           shop:shopStock.snapshot() };
 }
 export function runRestore(s){
   if(!s) return;
   if(s.progress)     restore(s.progress);
   if(s.clock!=null)  clock.setElapsed(s.clock);
   if(s.inv)          inv.restore(s.inv);
+  /* ⚠ 店鋪存貨**沒有也要清**（給舊存檔用）：不清的話讀了一個「還沒買過東西」的檔，
+     貨架卻停在上一輪買空的狀態（§6.9 的兩面）。 */
+  shopStock.restore(s.shop || {});
 }
 
 /* ── 整包讀寫（存讀檔用）── */

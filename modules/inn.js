@@ -64,6 +64,9 @@ function stage(){
    ⚠ 問的是**節點自己的旗標**（`kind` 版），與 `stage()` 是兩件事：
      stage 管的是「蕾娜那條線走到哪」，這裡管的是「這個大廳開張了沒」。 */
 let introFlag=null;                // 旗標名由城鎮傳進來（見 town.afterArrive）
+/* 「還沒六點」的那個六點（ver -405）。⚠ 與**傍晚的提醒**是同一個時刻
+   （`TOWNS[].evening.hour`）—— 由城鎮傳進來，不要在這裡另寫一個 18（鐵律 7）。 */
+let eveningHour = 18;
 function introDone(){ return !!(introFlag && prog.hasFlag(introFlag)); }
 
 /* ══ 一次性說明（遮罩＋箭頭）══════════════════════════════════════════
@@ -185,11 +188,14 @@ function refresh(){
     else{ face.style.cssText = faceStyle(who);
           nm.textContent = (SPEAKERS[who]||{}).name || ''; }
   });
-  /* 兩顆鈕各自的出場時機（ver -401 改）：
-       獨自坐坐 —— **初入對白演完就有**（Ray 指定），睡下之後才收起來
-       回房睡覺 —— 蕾娜那條線收了之後才有 */
+  /* 兩顆鈕各自的出場時機（ver -405 改）：
+       獨自坐坐 —— **初入對白演完就有**（ver -401），睡下之後才收起來
+       回房睡覺 —— **也是初入就有**（ver -405，Ray：「初入旅店除了坐坐之外
+                    也可以選擇直接去睡覺」）
+     ⚠ 「太早」不是靠**藏起鈕**擋，而是按下去由諾薇兒擋（見 sleepHere）——
+       鈕不見了玩家只會以為還不能睡；她開口說「還沒六點呢」才知道為什麼。 */
   wantSit   = introDone() && st!=='slept';
-  wantSleep = (st==='slept');
+  wantSleep = introDone();
   relayout();
   /* 教學提示（Ray 稿上的兩句舞台指示）。⚠ 只在該做那件事的時候出現，不常駐。 */
   const hint = layer.querySelector('.inn-hint');
@@ -209,9 +215,13 @@ function refresh(){
 function maybeGuide(){
   if(guideKey || !layer) return;
   const st=stage();
-  if(wantSleep)        showGuide('sleep');
+  /* ⚠ 順序是**玩家會先碰到的那一個在前**（ver -405 調）：坐 → 睡 → 敲門。
+     兩顆鈕現在同時出現，所以不能再靠「誰在場」分先後；而敲門要等分支演完
+     （`wait`）才有意義。⚠ 已經看過的那一個 `showGuide` 自己會 return，
+     所以這串會自然往下掉到還沒看過的那一個。 */
+  if(wantSit)          showGuide('sit');
+  else if(wantSleep)   showGuide('sleep');
   else if(st==='wait') showGuide('knock');
-  else if(wantSit)     showGuide('sit');
 }
 
 /* ══ 敲門 ══ 單句、沒有立繪（Ray：「未開門無立繪」），可以一直敲。 */
@@ -295,9 +305,28 @@ function finishRenna(){
    ⚠⚠ **「恢復體力」目前沒有實體**：這個專案還沒有體力／疲勞系統（戰鬥的 HP 是每場重置的）。
      那一句話先照 Ray 的字寫在鈕的說明上，等體力系統做出來時**接在這裡**（就這一支）。 */
 function sleepHere(){
-  if(busy || stage()!=='slept') return;
+  if(busy || !wantSleep) return;
   try{ SFX.unlock(); SFX.menuClick(); }catch(_){}
   story.hideBubble();
+  /* ══ 太早（ver -405，Ray：「在晚上6點之前點的話會彈出諾薇兒 front
+     『再逛一下嘛，還沒六點呢。』」）══
+     ⚠ 那個時刻與**傍晚的提醒**是同一個（`TOWNS[].evening.hour`，18:00）——
+       她說的「還沒六點」就是那條線，所以**問同一個地方**（鐵律 7），
+       不要在這裡再寫一個 18。 */
+  if(clock.hourF() < eveningHour){
+    const lines = (node && node.innEarly) || [];
+    if(lines.length && host && host.play){
+      busy = true;
+      if(host.lock) host.lock(true);
+      host.play(lines, ()=>{ story.clearCast(); busy=false;
+        if(host.lock) host.lock(false); refresh(); });
+    }
+    return;
+  }
+  /* ⚠ 蕾娜還沒回來就先去睡 → 記「錯過」（ver -405）：她 20:00 才進門，人睡著了
+     自然碰不到。不記的話 `stage()` 會卡在 `wait`／`none`，隔天早上大廳的狀態
+     與「已經過了一夜」對不上（§6.9 那張清單：狀態要推得出來，不要留空窗）。 */
+  if(stage()!=='slept') prog.addFlags([F_MISS]);
   /* 推進到**下一個** 07:00：晚上 21:00 睡 → 隔天 07:00（+10h）；
      凌晨 01:00 睡 → 同一天 07:00（+6h，那本來就已經是「隔日」了）。 */
   let mins = Math.round((WAKE_HOUR - clock.hourF())*60);
@@ -313,6 +342,7 @@ export function arrive(n, ctx){
   /* ⚠ 旗標名**由城鎮算好傳進來**（ver -402）：旅店已經沒有 `kind` 了，
      `kind` 版／節點版兩種只有 `town.flagOf()` 知道 —— 自己拼會拼錯城（鐵律 7）。 */
   introFlag = (ctx && ctx.introFlag) || null;
+  if(ctx && ctx.eveningHour!=null) eveningHour = ctx.eveningHour;
   ensureLayer();
   /* 分支：**每次進來都判一次**（Ray 的稿子就是這樣寫的）——
      走完城裡所有地點了沒，決定她說哪一句。已經住下了（`wait`／`slept`）就不再演。 */

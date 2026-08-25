@@ -1647,7 +1647,16 @@
        字用凹刻（深色陰影在上、亮色在下）。與門的鉚釘、箭同一個材質語言。 */
   #storyExit{position:absolute;z-index:8;right:12px;
     top:calc(var(--kerb-clip-top, calc(var(--story-top) - var(--kerb-top-h, 0px)))
-             + var(--kerb-top-h, 0px) + 9px);}
+             + var(--kerb-top-h, 0px) + 9px);
+    transition:transform .45s cubic-bezier(.7,0,.3,1), opacity .3s ease;}
+  /* ⚠ **槍棺一上推，這顆鈕就往外撤出**（ver -405，Ray 指定）。
+     它是錨在楣的下緣的，門一動它就跟著往上跑 —— 那一秒它會壓過正在上升的門面，
+     而且那一刻它也不該能按（接下來是戰鬥）。撤出去比留在原地跟著飄好讀。
+     ⚠ 用 `:has()` 讀門自己的狀態，不另外掛一個 class —— 「門推上來了沒」只有
+       `#kerb.rise` 一個真相（鐵律 8）。`:has()` 這一份 CSS 已經在別處用過。
+     ⚠ 曲線與門同一條（.7,0,.3,1）：兩個東西同時動，用不同的曲線會看起來各走各的。 */
+  #storyStage:has(#kerb.rise) #storyExit{
+    transform:translateX(calc(100% + 24px));opacity:0;pointer-events:none;}
   .kerb-btn{padding:0 13px;height:30px;border-radius:5px;
     font-family:inherit;font-size:12px;letter-spacing:3px;
     display:flex;align-items:center;justify-content:center;

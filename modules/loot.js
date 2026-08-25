@@ -12,6 +12,7 @@
 
 import { GAME_CONFIG, weaponStatRows, weaponOf } from '../config.js';
 import * as inv from '../script/inventory.js';
+import * as shopStock from '../script/shopstock.js';   // 店鋪存貨（ver -405）
 import { SFX } from '../audio.js';
 
 /* ══ 樣式（ver -380）══
@@ -136,12 +137,17 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
   if(o.dock) ov.classList.add('dock-'+o.dock);
   document.body.appendChild(ov);
   const SHOP=GAME_CONFIG.shop||{};
-  const stock=((SHOP.stock||{})[stockKey])||[];
+  /* ⚠ 貨架問 `shopStock`，不要直接讀 `config.shop.stock`（ver -405）——
+     那裡只有**開店時**的數量，賣掉幾個、玩家又賣回來幾個是那一支在記帳（鐵律 7）。 */
+  const shelf=()=>shopStock.list(stockKey);
   /* 這一家店的長相（ver -377）。沒登記就走預設 —— 舊的雜貨舖不必改任何呼叫端。 */
   const cfg=((SHOP.shops||{})[stockKey])||{};
   const TABS=(cfg.tabs&&cfg.tabs.length)?cfg.tabs:['buy','sell'];
   const TABNAME=Object.assign({ buy:'買', sell:'賣', mod:'改裝' }, cfg.tabName||{});
   let tab=TABS[0], pick=null;
+  /* 購買數量（ver -405，Ray：「購買時可選擇購買數量」）。⚠ 換頁籤／換選取一律歸 1 ——
+     沿用上一項的數量會讓「買下 3000」變成「買下 9000」，那是會出人命的預設值。 */
+  let qty=1;
 
   /* ⚠ `o.onClose`（ver -404）：**任何**收掉這張單子的路徑都要通知呼叫端 ——
      城鎮那邊記著「單子開著沒」，不通知的話玩家按了關閉之後就再也開不回來。
@@ -174,14 +180,23 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
     for(const g of inv.grouped()) for(const r of g.rows)
       if(inv.sellPrice(r.id)>0 && (!cfg.only || inv.catOf(r.id)===cfg.only)) sellable.push(r);
 
+    const shelfNow = shelf();
     let rows='';
     if(tab==='buy'){
-      rows = stock.length ? stock.map(id=>{
-        const d=inv.defOf(id)||{}, price=inv.priceOf(id);
+      rows = shelfNow.length ? shelfNow.map(e=>{
+        const id=e.id, d=inv.defOf(id)||{}, price=inv.priceOf(id);
         const has=inv.count(id)>0 || ((GAME_CONFIG.weapons||{})[id]||{}).owned;
-        return '<div class="shop-row'+(pick===id?' pick':'')+'" data-id="'+id+'">'
-             + '<span class="loot-name">'+(d.name||id)+(has?'<i class="wp-have">持有</i>':'')+'</span>'
-             + '<span class="loot-n">'+price+' '+inv.moneyName()+'</span></div>';
+        /* 存貨：不限量的不標（標了反而讓人以為那是一個數字）；賣完的整列變暗、不能選。 */
+        const out=(e.n<=0);
+        const left = isFinite(e.n) ? ('<i class="wp-stock">'+(out?'售完':'庫存 '+e.n)+'</i>') : '';
+        /* ⚠ 標籤（持有／庫存）自己一列（ver -405）：塞在品名後面的話，長品名一換行
+           就會與右邊的價錢疊在一起（實測「短板霰彈槍『龍息』」那一列，
+           `持有` 的框被拆成兩半夾著 3000 G）。 */
+        const tags = (has?'<i class="wp-have">持有</i>':'') + left;
+        return '<div class="shop-row'+(pick===id?' pick':'')+(out?' out':'')+'" data-id="'+id+'">'
+             + '<span class="loot-name">'+(d.name||id)+'</span>'
+             + '<span class="loot-n">'+price+' '+inv.moneyName()+'</span>'
+             + (tags ? '<span class="shop-tags">'+tags+'</span>' : '')+'</div>';
       }).join('') : '<div class="bag-empty">這家店沒有在賣東西。</div>';
     }else if(tab==='sell'){
       rows = sellable.length ? sellable.map(r=>
@@ -198,8 +213,20 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
     const d=pick ? (inv.defOf(pick)||{}) : null;
     const price = pick ? (tab==='buy' ? inv.priceOf(pick) : inv.sellPrice(pick)) : 0;
     const owned = pick && (inv.count(pick)>0 || ((GAME_CONFIG.weapons||{})[pick]||{}).owned);
+    /* ══ 一次最多買幾個（ver -405）══
+       三個上限取最小：**店裡還有幾個**、**錢夠買幾個**、以及武器的 1。
+       ⚠ 武器夾在 1：`hasWeapon` 是布林（持有／沒有），買第二把在資料上根本表達不出來。
+       ⚠ 價格 0 的東西不讓它算出無限 —— 夾一個 99 的上限。 */
+    const isWeapon = pick && !!(GAME_CONFIG.weapons||{})[pick];
+    const left  = pick ? shopStock.count(stockKey, pick) : 0;
+    const afford= (price>0) ? Math.floor(inv.getMoney()/price) : 99;
+    const maxQty= pick && tab==='buy'
+                ? Math.max(0, Math.min(isWeapon?1:99, isFinite(left)?left:99, afford)) : 1;
+    if(qty>maxQty) qty=Math.max(1, maxQty);
     const can = pick && tab!=='mod' &&
-                (tab==='buy' ? (inv.getMoney()>=price && !owned) : inv.count(pick)>0);
+                (tab==='buy' ? (maxQty>0 && !owned) : inv.count(pick)>0);
+    /* 買下的總價（賣出仍是一次一個）。 */
+    const total = (tab==='buy') ? price*qty : price;
 
     /* 說明區：武器 → 規格表（＋同類比較）；其餘 → 文字說明。 */
     let desc;
@@ -231,10 +258,20 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
       +   '<div class="shop-list">'+rows+'</div>'
       + '</div>'
       + '<div class="shop-desc">'+desc+'</div>'
+      /* 數量（ver -405）。⚠ **只有買得到兩個以上時才出現**：武器永遠是 1、
+         只剩一個的東西也是 1 —— 那時候一列不能動的加減號只是噪音。 */
+      + ((tab==='buy' && pick && maxQty>1)
+         ? '<div class="shop-qty"><button class="qty-m" type="button">−</button>'
+         + '<b>'+qty+'</b><button class="qty-p" type="button">＋</button>'
+         + '<span class="qty-max">／'+maxQty+'</span></div>' : '')
       + '<div class="shop-acts">'
       +   (tab==='mod' ? ''
           : '<button class="shop-do'+(can?'':' broke')+'" type="button">'
-            + (tab==='buy' ? (owned?'已持有':'買下 '+price) : '賣出 '+price)+'</button>')
+            /* ⚠ 「售完」與「錢不夠」是兩件事（ver -405）：店裡沒貨才寫售完；
+               買得起買不起由鈕**暗掉**表示（`.broke`），字仍然是「買下 N」——
+               玩家要看得到還差多少錢。 */
+            + (tab==='buy' ? (owned?'已持有':((pick && left<=0)?'售完':'買下 '+total))
+                           : '賣出 '+total)+'</button>')
       /* ⚠ 字短一點（ver -404 由「與店主交談」改）：靠左停的窄單子上，四顆鈕
          （買下／交談／挑戰／關閉）要排進一列，五個字會被擠成兩行。店主就站在右邊，
          「交談」跟誰交談不會有疑義。 */
@@ -253,24 +290,40 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
         ov.classList.toggle('dock-'+o.dock); render(); });
     }
     ov.querySelectorAll('.shop-tab').forEach(b=>b.addEventListener('click', e=>{
-      e.stopPropagation(); tab=b.dataset.tab; pick=null;
+      e.stopPropagation(); tab=b.dataset.tab; pick=null; qty=1;
       try{ SFX.menuClick(); }catch(_){} render(); }));
     ov.querySelectorAll('.shop-row').forEach(b=>b.addEventListener('click', e=>{
-      e.stopPropagation(); pick=b.dataset.id;
+      e.stopPropagation();
+      if(b.classList.contains('out')) return;      // 售完的那一列點不動
+      pick=b.dataset.id; qty=1;
       try{ SFX.menuClick(); }catch(_){} render(); }));
+    const qm=ov.querySelector('.qty-m'), qp=ov.querySelector('.qty-p');
+    if(qm) qm.addEventListener('click', e=>{ e.stopPropagation();
+      if(qty<=1) return; qty--; try{ SFX.menuClick(); }catch(_){} render(); });
+    if(qp) qp.addEventListener('click', e=>{ e.stopPropagation();
+      if(qty>=maxQty) return; qty++; try{ SFX.menuClick(); }catch(_){} render(); });
     const doBtn=ov.querySelector('.shop-do');
     if(doBtn) doBtn.addEventListener('click', e=>{
       e.stopPropagation();
       if(!pick || !can) return;
       try{ SFX.unlock(); SFX.menuClick(); }catch(_){}
       if(tab==='buy'){
-        const p=inv.priceOf(pick);
-        if(!inv.spendMoney(p)) return;        // 錢不夠：什麼都不做（鈕本來就是暗的）
-        inv.add(pick, 1);
+        /* ⚠ **先扣店裡的貨再扣錢**（ver -405）：`take` 回傳「真的買到幾個」——
+           兩個入口同時買不會發生（單機），但這樣寫的話「貨不夠」永遠只會少賣，
+           不會發生「錢扣了東西沒拿到」。 */
+        const got=shopStock.take(stockKey, pick, qty);
+        if(got<=0) return;
+        const p=inv.priceOf(pick)*got;
+        if(!inv.spendMoney(p)){ shopStock.give(stockKey, pick, got); return; }  // 錢不夠：貨放回去
+        inv.add(pick, got);
+        qty=1;
       }else{
         const p=inv.sellPrice(pick);
         if(inv.count(pick)<=0) return;
         inv.remove(pick, 1); inv.addMoney(p);
+        /* ⚠ **賣給店家＝入庫**（Ray 指定：「除非玩家賣給他才會入庫再賣」）——
+           武器店那三把各只有一支，賣掉之後想反悔就得靠這一條。 */
+        shopStock.give(stockKey, pick, 1);
         if(inv.count(pick)<=0) pick=null;     // 賣光了就取消選取
       }
       render();

@@ -317,7 +317,7 @@ export const TOWNS = {
           /* 一發。⚠ 仍是空畫面 —— 玩家只聽到槍響，下一拍才看到對方的臉。 */
           { speaker:'PLAYER', text:'', auto:900, se:'se_weapon_pistol_03' },
           /* 無台詞的立繪拍：停一秒（§6.5，從立繪站定才起算）。 */
-          { speaker:'HUNTER', text:'', auto:1000,
+          { speaker:'HUNTER', text:'',
             portrait:{ char:'HUNTER', expr:'shocked', show:true } },
           hun('attack','你、小、子！'),
           /* ══ 推槍棺，進入戰鬥 ══ 這一場不能聖徒化、不能用搭檔技（見 config.battles）。 */
@@ -350,20 +350,20 @@ export const TOWNS = {
         lines:[
           nou('pray','感謝神，賜與我們平安與食糧。願主降福於世——'),
           nou('surprise','你怎麼已經開始吃了？禱詞還沒——'),
-          { speaker:'NOUVELLE', text:'', auto:1000,
+          { speaker:'NOUVELLE', text:'',
             portrait:{ char:'NOUVELLE', expr:'shocked', show:true } },
           nou('lookaway','好好吃。'),
         ],
         /* 點畫面隨機一句（Ray：「隨便生個幾串輪播」）。⚠ 這些是**背景人聲**，
            沒有立繪、沒有名字 —— 讀起來才像鄰桌傳來的。 */
         chatter:[
-          '——所以我說啊，那批貨根本進不了港。',
-          '聽說第四騎士團又出動了。地宮那邊封了一整天。',
+          '——那批貨到底是被劫了還是被「禍魘」襲擊了，根本沒人知道！',
+          '莫塔鎮那間餐酒館真的太棒了，店員小姐也好可愛。',
           '永夜之後什麼都貴，連麥酒都摻水了。',
-          '北邊的兵役令下來了，我家老二躲不掉囉。',
+          '好像又要徵兵了......明明沒有在打仗呢。',
           '別提戰爭了，喝你的。',
-          '那位小姐是修女吧？來這種地方？',
-          '噓——人家聽得見。',
+          '唉，南境葡萄酒變得好貴。',
+          '那邊那個修女，好可愛啊。',
         ],
       },
 
@@ -479,6 +479,12 @@ export const TOWNS = {
             nou(null,'你還不累的話，可以在這邊等一下蕾娜小姐嗎？'),
           ],
         },
+        /* ══ 太早就想睡（ver -405，Ray 交稿）══
+           「回房睡覺」從初入就按得到，但**六點以前**按下去由諾薇兒擋回來。
+           ⚠ 那個「六點」＝這座城 `evening.hour` 的同一個數字，由 `modules/town.js`
+             傳進 `inn.arrive`（鐵律 7）—— 改集合時間只改 `evening.hour` 那一處。
+           ⚠ Ray 指定 **front**（基本立繪），所以 expr 給 null。 */
+        innEarly:[ nou(null,'再逛一下嘛，還沒六點呢。') ],
         /* 敲門的回應：**單句、沒有立繪**（Ray：「未開門無立繪」），可以一直敲。
            `wait`＝還在等蕾娜的那一段；`slept`＝蕾娜回來、大家睡了之後。 */
         innKnock:{
