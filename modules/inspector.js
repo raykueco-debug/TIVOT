@@ -570,7 +570,10 @@ export function onRematchBtn(){
     state.resultMode='tutorial-leaving';        // 借用「離場中」防連點（同一個狀態機）
     SFX.play(asset('sfx_start'), sfxGain('sfx_start'));
     state.scriptRun=false; state.scriptBattleId=null;
-    setTimeout(()=>{ if(api.storyReturn) api.storyReturn(); else api.goHome(); }, 260);
+    /* ⚠ 計時挑戰的「超時」要帶出去（ver -396）：對腳本而言它與「打輸了」是同一件事
+       —— 接 `onLose` 那一支台詞。判定在 `combat.win()`，這裡只負責轉交。 */
+    const over = !!state.timeOver;
+    setTimeout(()=>{ if(api.storyReturn) api.storyReturn({ lost:over }); else api.goHome(); }, 260);
     return;
   }
   if(state.resultMode==='sentou-offer'){   // Boss S 級第一按：「再度執槍」原地變身（金色呼吸光）

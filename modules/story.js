@@ -31,6 +31,7 @@ import * as prog from '../script/progress.js';
 import { decorateLine } from '../i18n.js';
 import { SFX } from '../audio.js';
 import { matchPortraits } from './tone.js';
+import * as settings from './settings.js';   // 選單（音量／自動播放速度）；葉節點，只依賴 audio
 
 const $ = id => document.getElementById(id);
 
@@ -1244,6 +1245,18 @@ function renderLine(){
     lineIdx=at; return renderLine();
   }
 
+  /* ══ 選項（ver -396）══ 這一拍是**閘門**：列出幾個選擇，點下去跳到那個 `label`。
+     ⚠ 不出對話框 —— 前一句就是問句，選項是**回答**，再包一層框只會多一次點擊。 */
+  if(line.choice){
+    applyPersist(line);
+    openChoice(line.choice, to=>{
+      const at=indexOfLabel(cur.lines, to);
+      if(at<0){ console.info('[story] choice 指到不存在的 label：', to); return advance(); }
+      lineIdx=at; renderLine();
+    });
+    return;
+  }
+
   /* ══ 輸入主角名與暱稱（ver -395）══ 這一拍是**閘門**：不出對話框，
      填完按確定才往下走。⚠ 只演一次由腳本自己保證（它在 `once` 的段落裡）。 */
   if(line.nameInput){
@@ -1337,13 +1350,15 @@ function renderLine(){
 
   /* 本場回顧：有台詞的才記（演出拍不是台詞）。⚠ 記的是**代換後**的字，
      玩家看到什麼、回顧就是什麼。 */
-  if(line.text) sceneLog.push({ name:(line.speaker==='PLAYER' ? prog.getPlayerName() : nameOf(line.speaker)),
+  if(line.text) sceneLog.push({ name:(line.speaker==='PLAYER' ? prog.getPlayerNick() : nameOf(line.speaker)),
                                 text:subst(line.text) });
   const nm=$('storyName'), tx=$('storyText');
   /* 主角沒有立繪、名字由玩家取（存檔裡），所以不走 speakers.js 的查表。
      ⚠ 代換要在**顯示的這一刻**做（同 `{P}` 的規矩）：玩家中途改名，
        正在播的這一段也要跟著換。 */
-  if(nm) nm.textContent = (line.speaker==='PLAYER') ? prog.getPlayerName() : nameOf(line.speaker);
+  /* ⚠ 主角的名牌用**暱稱**（ver -396，Ray：「主角的空對話格用暱稱」）——
+     隊上的人平常就是這樣叫他的；全名只在正式場合／台詞裡用 `{P}` 明寫。 */
+  if(nm) nm.textContent = (line.speaker==='PLAYER') ? prog.getPlayerNick() : nameOf(line.speaker);
   /* ⚠ delay：對話框**先不出**，等演出（平移／滑入）跑完再打字（Ray 指定）。
      ⚠ 等待中點畫面要能**跳過等待**而不是直接推到下一句 —— 不然玩家會覺得
        「點了沒反應」然後連點兩下，一次跳掉兩句。 */
@@ -1798,6 +1813,29 @@ export function flashLine(text, name){
 /* 收掉對話框。⚠ 順便宣告「現在沒有在演」（ver -387）—— `flashLine` 開場時
    `markTalking(true)`，收場就該由**同一個層**關掉（§6.5：誰在演，誰負責宣告）。
    不關的話城鎮的地名／時刻會一直讓開，玩家看不到自己在哪、幾點。 */
+/* ══ 選項面板（ver -396）══
+   ⚠ 蓋在對話框**之上**並吃掉點擊：這一拍是閘門，不能點畫面跳過去。
+   ⚠ 內容全在腳本上（`choice:[{text,goto}]`），這裡只負責演（鐵律 1）。 */
+function openChoice(opts, pick){
+  if($('choiceSheet') || !opts || !opts.length) return;
+  const ov=document.createElement('div'); ov.id='choiceSheet';
+  ov.innerHTML='<div class="ch-panel">'
+    + opts.map((o,i)=>'<button class="ch-opt" type="button" data-i="'+i+'">'
+                    + String(o.text||'').replace(/</g,'&lt;')+'</button>').join('')
+    + '</div>';
+  document.body.appendChild(ov);
+  ov.addEventListener('pointerdown', e=>e.stopPropagation());
+  ov.addEventListener('click', e=>e.stopPropagation());
+  ov.querySelectorAll('.ch-opt').forEach(b=>b.addEventListener('click', e=>{
+    e.stopPropagation();
+    try{ SFX.menuClick(); }catch(_){}
+    const o=opts[+b.dataset.i]||{};
+    ov.classList.remove('on');
+    setTimeout(()=>{ if(ov.parentNode) ov.parentNode.removeChild(ov); pick&&pick(o.goto); }, 180);
+  }));
+  requestAnimationFrame(()=>ov.classList.add('on'));
+}
+
 /* ══ 輸入主角名與暱稱（ver -395，Ray 交稿：「輸入主角名及暱稱／默認為凱勞諾斯、暱稱為凱」）══
    ⚠ 預設值問 `progress`（`PLAYER_DEFAULT` / `NICK_DEFAULT`），**不要在這裡再打一次字串**
      （鐵律 7）。留空按確定＝沿用預設。
@@ -1936,8 +1974,10 @@ function scheduleAuto(){
   clearTimeout(autoT2); autoT2=null;
   if(!active) return;
   if(!fastMode && !autoPlay) return;
+  /* ⚠ 自動播放的間隔改由**選單**決定（ver -397）—— 讀 `settings`，不要在這裡寫死。
+     加速模式（按住下拉）維持固定的 120ms：那是「一路衝過去」，不是節奏偏好。 */
   autoT2=setTimeout(()=>{ autoT2=null; if(active && (fastMode||autoPlay)) advance(); },
-                    fastMode ? 120 : 1100);
+                    fastMode ? 120 : settings.autoDelayMs());
 }
 function setFast(on){
   if(fastMode===on) return;
@@ -1974,6 +2014,15 @@ function showBacklog(){
 }
 
 export function init(){
+  /* ⚠⚠ **立繪的色調要綁在背景「真的載好」那一刻**（ver -396，Ray：「全場景角色立繪
+     都要依背景調整亮度」）。原本是換背景之後 `setTimeout(…, 420)` 去量 ——
+     但 `swapImg` 是**先預載、載好才換 src**，慢一點的圖 420ms 還沒換上去，
+     於是量到的是**上一張**，而且會用上一張的 src 當快取鍵存起來 →
+     那張新背景從此再也不會被量到（沒有人會再叫它一次）。
+     綁 `load` 事件就沒有這個問題：換幾次量幾次，主線／城鎮／旅店全部一體適用。
+     ⚠ 原本那兩處 `setTimeout` 留著不礙事（同一張圖有快取，第二次是 no-op）。 */
+  const bgEl=$('storyBg');
+  if(bgEl) bgEl.addEventListener('load', ()=>matchPortraits(bgEl, $('storyCast')));
   const touch=$('storyTouch');
   /* ══ 面盤手勢（ver -367）══
      起點在**面盤**（`--story-top` 之下）才算手勢；起點在上半就是單純的「點一下推一句」。
@@ -2010,7 +2059,10 @@ export function init(){
       if(mode || (p0 && p0.moved)) return;
       advance(); });
   }
+  /* 「選單」（ver -394 由 ✕ 改名；-397 改成開一個真的選單）。
+     ⚠ 「回到主選單」才是原本那顆 ✕ 的行為 —— 收劇情層（順帶收城鎮，見 close）。 */
   const ex=$('storyExit');
-  if(ex) ex.addEventListener('click', e=>{ e.stopPropagation(); close(); });
+  if(ex) ex.addEventListener('click', e=>{ e.stopPropagation();
+    settings.open({ onHome: ()=>close() }); });
   window.addEventListener('resize', ()=>{ if(active){ layout(); layoutKerberos(); } });
 }

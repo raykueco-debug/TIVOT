@@ -29,10 +29,11 @@ export const SPEAKERS = {
      art 指同一張圖：畫面上是同一個人，只是玩家還不知道她是誰。 */
   UNKNOWN:  { name:'？？？',   art:'lunaria' },
   /* 主角。⚠ 顯示名**不查這裡**：他的名字在存檔裡（玩家可改），story.js 顯示那一刻
-     才去 `progress.getPlayerName()` 取。這一筆存在只是為了讓 `speaker:'PLAYER'`
-     在資料上有著落（驗稿工具會檢查 speaker 是否有登記）。
+     才去取 —— 而且取的是**暱稱**（ver -396，Ray：「主角的空對話格用暱稱」）：
+     隊上的人平常就是這樣叫他的，全名只在正式場合／台詞裡用 `{P}` 明寫。
+     這一筆存在只是為了讓 `speaker:'PLAYER'` 在資料上有著落（驗稿工具會檢查）。
      ⚠ `art:null` ＝ 沒有立繪：他從不站台，只有對話框（含 `blank:true` 的空框）。 */
-  PLAYER:   { name:'{P}',     art:null },
+  PLAYER:   { name:'{N}',     art:null },
   /* 城鎮 NPC（ver -369）。⚠ 站**右**：城鎮裡玩家的同伴（諾薇兒/蕾娜）在左，
      對面的人在右 —— 與主線的固定站位同一個邏輯。 */
   SHOPKEEP: { name:'店主',   art:'shopkeep' },

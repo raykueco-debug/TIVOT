@@ -219,12 +219,23 @@ export const TOWNS = {
           nou('gossip1','差不多吧。'),
           gun(null,'我還真沒見過有誰能自如使用這種口徑的手槍。'),
           gun(null,'能否讓我開開眼界？', { hide:['NOUVELLE'] }),
-          /* ══ 打靶（可戰敗）══ 輸了跳 `range_lose`。 */
+          /* ══ 試槍的邀請：**要／不要**（ver -396，Ray 指定）══
+             ⚠ 兩個選項的字是**主角的回答**，所以用他的口吻寫（他不出聲，這是他點的頭）。 */
+          { choice:[ { text:'（點頭）那就獻醜了。', goto:'range_yes' },
+                     { text:'（搖頭）下次吧。',     goto:'range_no' } ] },
+          /* —— 答應 ——
+             ⚠ 這一場是**計時挑戰**（固定立靶，不攻擊、點錯加 3 秒）——「戰敗」不存在，
+               但**超過 50 秒算沒過關**（`config.battles.range_trainee` 的 `parSec`），
+               走的就是下面 `range_lose` 這一支（與打輸共用同一條分歧路）。 */
+          Object.assign(gun(null,'好！那邊那個靶，儘管打。'), { label:'range_yes' }),
           { battle:'range_trainee', onLose:'range_lose' },
-          /* —— 戰勝 —— */
+          /* —— 過關（50 秒內）—— */
           gun(null,'了不起，我們槍匠聯盟都會為您這種身手不凡的客人提供特別客製服務。'),
           { goto:'range_merge' },
-          /* —— 戰敗 —— */
+          /* —— 婉拒（Ray 交稿）—— */
+          Object.assign(gun(null,'是嗎？真可惜。'), { label:'range_no' }),
+          { goto:'range_merge' },
+          /* —— 沒過關（超過 50 秒）—— */
           Object.assign(gun(null,'果然調校不太行呢。'), { label:'range_lose' }),
           gun(null,'不過，我們槍匠聯盟都會為您這種身手不凡的客人提供特別客製服務。'),
           /* —— 合流 —— */

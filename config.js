@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.25-395';
+export const VERSION = 'ver 2026.08.25-397';
 
 export const GAME_CONFIG = {
 
@@ -703,6 +703,28 @@ export const GAME_CONFIG = {
         ult:{   type:'claw', count:3, angle:'random' },
       },
     },
+    /* ══ 固定立靶（ver -396，Ray 交件 `Dart_timeattack`）══
+       打靶場的**計時挑戰**用靶。⚠ 它不是「弱到打不痛人」的怪 —— 它**根本不攻擊**：
+       那件事由戰鬥卡的 `timeAttack` 關掉整條攻擊路徑（見 config.battles.range_trainee），
+       不是靠把 `attack` 調成 0（調成 0 的話大絕紅點、延時懲罰、蓄力槽照樣會演）。
+       ⚠ `attack` 仍留一個值只是為了資料完整；沒有任何一條路會讀到它。 */
+    dart_target: {
+      name:'固定立靶',
+      image:'enemy_dart_target',     // → resources/enemy/Dart_timeattack.webp
+      hp:300,                        // Ray 指定
+      attack:0,
+      atkInterval:null,
+      sound:{ ult:'em_slash', delay:'em_smack', wrong:'em_slash' },
+      special:[],
+      boardGrids:[9,9,16,16,16],
+      hitFx:{
+        /* ⚠ 沙袋靶不噴血：受擊只有**碎屑**（沿用 slash 的刀痕當彈著），
+           大絕與延時的特效根本不會演到（它不攻擊）。 */
+        delay:{ type:'slash' },
+        wrong:{ type:'slash' },
+        ult:{   type:'slash' },
+      },
+    },
     // ── 連戰第二隻（局內序列第二敵）：巨型聖徒。完全獨立一筆，非沿用 faceless。 ──
     //    非 Boss（不填 ult/delayPenalty/wrongPenalty → 普通怪走預設：單發大絕、無半傷減時）。
     //    差異：血更厚（300）＋攻擊更密（蓄力 4×1/1.2≈3.33s）；單擊傷害同一般值。
@@ -818,7 +840,19 @@ export const GAME_CONFIG = {
        ⚠ 敵人先用**訓練用聖徒**（Ray 指定「先用」）。它是原始數值（HP 500、大絕 45），
          不是教學那一場被鎖過的版本 —— 所以真的會輸，那正是分歧存在的理由。
        ⚠ 沒有禁聖徒化／搭檔技：Ray 沒說要禁。要禁再加 noSaint/noPartner。 */
-    range_trainee: { enemy:'trainee', allowLose:true, record:'range' },
+    /* ══ 打靶場的計時挑戰（ver -396，Ray 改寫）══════════════════════════
+       「敵 hp 300、**不攻擊**、點錯**加 3 秒**、播 se_dart_fail、
+         敵 hp 清零結算時間、記錄玩家個人時間、破紀錄加 New Record 標籤」
+       ⚠ `timeAttack` 一開就把**整條攻擊路徑**關掉（大絕排程、延時懲罰、按錯扣血）——
+         見 `modules/combat.js` 的 `enemyAttack` 與 `modules/defense.js` 的 `scheduleUlt`。
+         這樣紅點、蓄力槽、血條變化通通不會演，畫面上只剩「打靶」。
+       ⚠ 因此**不可能戰敗**（`allowLose` 不寫）。但**有「沒過關」**：`parSec` ＝ 標準時間，
+         超過就走腳本的 `onLose` 那一支台詞（ver -396，Ray：「時間超過 50 秒出失敗分支的台詞」）
+         —— 對腳本而言「超時」與「打輸了」是同一件事，共用那條分歧路（鐵律 8）。
+       ⚠ `record:'range'` 是既有機制（`modules/inspector.js` 的 `scriptSettle`）：
+         存這一場自己的最佳用時、破了就掛 New Record —— 不必另寫一套。 */
+    range_trainee: { enemy:'dart_target', record:'range',
+                     timeAttack:{ wrongPenaltySec:3, se:'se_dart_fail', parSec:50 } },
     /* ══ 飛行頁的遭遇戰（ver -382）══ 怪撞上船 → 跳來這一頁打舒爾特盤。
        ⚠⚠ 三隻怪的**敵人卡 Ray 還沒給**，所以現在**一律先借巨型聖徒**跑流程
          （同打靶先用訓練用聖徒的作法）。卡到位之後只要改 `enemy` 這一欄。
@@ -974,7 +1008,10 @@ export const GAME_CONFIG = {
                se_guard:0.78, sfx_reload:0.92, sfx_start:1.04,
                se_general_click:4.31, se_pageflip:1.93,   // 母帶偏小聲，之前幾乎聽不到
                sfx_startbt:2.02, sfx_saint:1.01, se_luna_mb:0.80,
-               em_slash:0.46, em_smack:0.72, em_shot:0.65, em_revolver:0.51, em_dagger:2.54 },
+               em_slash:0.46, em_smack:0.72, em_shot:0.65, em_revolver:0.51, em_dagger:2.54,
+               /* 打靶失手（ver -396）。⚠ 沒實測過響度，暫用 1.0 —— 覺得大小聲不對
+                  就照 §6.6 的公式反推（`tools/audio_probe.html` 會直接印建議值）。 */
+               se_dart_fail:1.00 },
 
     /* 音樂層（BGM）—— 目標 −28 LUFS，比語音低 10 dB。走 HTMLAudio.volume，
        不吃 masterVolume，所以這裡不用除。飛行頁的音樂另在 flight/index.html
@@ -1045,6 +1082,7 @@ export const ASSETS = {
   enemy_witch:    "resources/enemy/GunWitch_Boss_CI.jpg",   // 槍之魔女（Boss）內嵌立繪
   enemy_facelessgiant: "resources/enemy/Saint_GT_CI.webp",   // 連戰第二隻：巨型聖徒（GT=giant）
   enemy_trainee:  "resources/enemy/Saint_TR_CI.webp",   // 教學專用敵：訓練用聖徒
+  enemy_dart_target: "resources/enemy/Dart_timeattack.webp",   // 打靶場：固定立靶（ver -396）
   /* 賞金獵人（ver -375）：戰鬥立繪＝對話立繪的 `attack` 那張（去背，配 `bg` 用）。 */
   enemy_guild_hunter: "resources/SI/NPC_GuildHunter_SI_Attack.webp",
 
@@ -1112,6 +1150,7 @@ export const ASSETS = {
   sfx_startbt:       "resources/audio/se/se_ui_kagurabell.m4a",   // 出陣鈕/overkill/Boss S 第一按（神楽鈴）
   // 通用 UI 音：所有未指定音效的按鈕（bindBtn/menuClick 統一出口）／搭檔選人換卡翻頁
   se_general_click:  "resources/audio/se/se_ui_click.m4a",
+  se_dart_fail:      "resources/audio/se/se_dart_fail.m4a",   // 打靶失手（ver -396）
   se_pageflip:       "resources/audio/se/se_ui_pageflip.m4a",
   // 聖徒化發動音效
   //  ⚠ 素材「內容」更新但檔名不變時,在路徑加/升 ?v=N 強制手機重抓(HTTP 快取以 URL 為鍵)。

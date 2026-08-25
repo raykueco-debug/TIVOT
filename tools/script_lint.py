@@ -121,6 +121,12 @@ def main():
                     err('%s：goto 指到這一段裡沒有的 label：%s' % (tag, ln['goto']))
                 continue                      # 控制拍，不帶演出
 
+            # 選項（ver -396）：閘門拍，沒有 speaker。每一個 goto 都要指得到 label。
+            if ln.get('choice'):
+                for o in (ln['choice'] or []):
+                    if o.get('goto') not in labels:
+                        err('%s：choice 的 goto 指到這一段裡沒有的 label：%s' % (tag, o.get('goto')))
+                continue
             # 輸入主角名的閘門（ver -395）：沒有台詞也沒有 speaker，不必驗演出欄位。
             if ln.get('nameInput'):
                 continue
@@ -139,9 +145,12 @@ def main():
                 if ln.get('onLose'):
                     if ln['onLose'] not in labels:
                         err('%s：onLose 指到這一段裡沒有的 label：%s' % (tag, ln['onLose']))
-                    if bt and not bt.get('allowLose'):
-                        err('%s：寫了 onLose，但 config.battles.%s 沒有 allowLose'
-                            ' —— 那一場輸了會 Game Over，這一支分歧演不到' % (tag, b))
+                    # 計時挑戰用 `timeAttack.parSec`（超時＝沒過關）走同一條分歧路，
+                    # 那種場次不需要（也不該有）allowLose。
+                    ta = (bt or {}).get('timeAttack') or {}
+                    if bt and not bt.get('allowLose') and not ta.get('parSec'):
+                        err('%s：寫了 onLose，但 config.battles.%s 既沒有 allowLose'
+                            ' 也沒有 timeAttack.parSec —— 這一支分歧演不到' % (tag, b))
                 elif bt and bt.get('allowLose'):
                     warn('%s：%s 標了 allowLose 卻沒有 onLose —— 輸了會照著贏的那一支往下演'
                          % (tag, b))

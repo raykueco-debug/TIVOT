@@ -342,7 +342,19 @@ function tap(num,cell,e){
     state.wrongTaps++;                    // 命中率分母（按錯格）
     cell.classList.add('wrong'); setTimeout(()=>cell.classList.remove('wrong'),300);
     state.combo=0;
-    if(state.threats.length){
+    /* ══ 計時挑戰（ver -396）：唯一的懲罰是**時間**══
+       按錯 → 碼表直接加秒數（`runElapsedMs` 是碼表的累計，加在那裡就等於「多花了那麼久」），
+       並播那一場自己的失手音。⚠ 不走 `enemyAttack` —— 那條路上有扣血、受擊特效、
+       致死判定，而這一場的靶子根本不會攻擊。 */
+    if(state.timeAttack){
+      const pen = state.timeAttack.wrongPenaltySec;
+      if(pen>0) state.runElapsedMs += Math.round(pen*1000);
+      const se = state.timeAttack.se;
+      if(se && asset(se)) SFX.play(asset(se), sfxGain(se)); else SFX.wrong();
+      /* 罰了多少秒要**看得見**，不然玩家只覺得「時間怎麼變慢了」。 */
+      floatDmg('+'+pen+'s', '50%', '46%', true);
+      if(state.threats.length) defense.clearThreat();
+    }else if(state.threats.length){
       defense.clearThreat();          // 攻擊點消失，不能再補救
       enemyAttack(tutAtkDmg(wrongDamage(DMG_HEAVY)), 'wrong');
     }else{
@@ -441,6 +453,9 @@ function floatDmg(txt,left,top,crit,extraClass){
 }
 // 被攻擊：扣玩家血 + 受擊特效 + 震動（saintMode 分支下一輪接）
 function enemyAttack(dmg, kind, saintAmt){
+  /* ⚠ 計時挑戰：靶子**不攻擊**（ver -396）。守在這裡是因為所有會扣玩家血的路徑
+     （大絕／延時懲罰／按錯懲罰／格擋）都經過這一支 —— 守一次就全關掉（鐵律 8）。 */
+  if(state.timeAttack) return;
   if(state.over) return;
   // 敵攻擊音：依 kind 播該怪對應音（ult＝大絕命中/不完美防禦格擋、delay＝太慢、wrong＝按錯）。
   const sk = state.curEnemySound && state.curEnemySound[kind];
@@ -603,6 +618,10 @@ function updateEnergyClasp(){
  * ========================================================================== */
 function startIntervalTimer(){
   clearInterval(state.intervalTimer);
+  /* ⚠ 計時挑戰：**沒有延時懲罰**（ver -396，Ray 指定）—— 靶子不會催你，
+     唯一的壓力是碼表本身。連計時器都不起，「太慢了」那一格也就不會跳。
+     （光靠 `enemyAttack` 守門只擋得住扣血，那行字與 combo 歸零還是會演。） */
+  if(state.timeAttack) return;
   state.intervalDeadline=Date.now()+effIntervalLimit()*1000;
   state.intervalTimer=setInterval(()=>{
     if(state.over){clearInterval(state.intervalTimer);return;}
@@ -828,6 +847,11 @@ function win(){
   if(state.over || state.defeated) return;   // 戰敗優先：已判定戰敗則勝利結算一律讓位
   state.over=true; clockPause(); stopAll();
   const totalTime=clockElapsedMs()/1000;               // 只累計實打時間（overkill/轉場/cut-in 皆不計）
+  /* ══ 計時挑戰：超過標準時間就算「沒過關」（ver -396，Ray：「時間超過 50 秒出失敗分支的台詞」）══
+     ⚠ 它**不是戰敗** —— 靶子不會攻擊，打完一定是 win()。這裡只是把「超時」翻譯成
+       腳本看得懂的那個布林值（`onLose` 的分歧），交棒由 inspector 帶出去。 */
+  state.timeOver = !!(state.timeAttack && state.timeAttack.parSec>0
+                      && totalTime > state.timeAttack.parSec);
   TEL.runEnd({ partner:state.pickedPartner, weapon:state.equippedWeapon,
                boss:state.inIntruderFight, result:'win', time_ms:Math.round(totalTime*1000) });
   const totalTaps=state.correctTaps+state.wrongTaps;
@@ -934,10 +958,12 @@ export function startGame(){
      ⚠ 要在 `stopAll()`/`loadBoard(0)` **之前**換敵 —— 盤面配置（boardGrids/boardLoop）
        是查「目前這隻怪」來的，換晚了第一盤會用到上一隻的格數。 */
   const sb = state.scriptRun && GAME_CONFIG.battles && GAME_CONFIG.battles[state.scriptBattleId];
+  state.timeAttack = null; state.timeOver = false;   // 開場先歸零（同 noSaint：不要靠上一場收乾淨）
   if(sb && GAME_CONFIG.enemies[sb.enemy]){
     enemy.setEnemy(sb.enemy);
     state.noSaint = !!sb.noSaint;
     state.noPartner = !!sb.noPartner;
+    state.timeAttack = sb.timeAttack || null;    // 計時挑戰（ver -396，打靶場）
   }
   stopAll();
   loadBoard(0); updateBars();

@@ -1775,6 +1775,55 @@
   }
 
 
+  /* ── 選單（ver -397）──────────────────────────────────────────────
+     回到主選單／分軌音量（音樂・音效・語音）／自動播放間隔。
+     ⚠ 拉桿要 `-webkit-appearance:none` 才吃得到自訂樣式；`accent-color` 是備援。 */
+  #gameMenu{position:fixed;inset:0;z-index:9900;display:flex;
+    align-items:center;justify-content:center;padding:24px;
+    background:rgba(4,3,7,.74);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);
+    opacity:0;transition:opacity .22s ease;}
+  #gameMenu.on{opacity:1;}
+  #gameMenu .gm-panel{width:100%;max-width:330px;padding:16px 18px 14px;
+    background:var(--panel,rgba(14,11,20,.96));
+    border:1px solid var(--gold-dim);border-radius:12px;
+    box-shadow:0 10px 34px rgba(0,0,0,.6);}
+  #gameMenu .gm-title{text-align:center;font-size:14px;letter-spacing:6px;
+    color:var(--gold);margin-bottom:12px;}
+  #gameMenu .gm-sec{font-size:10px;letter-spacing:3px;color:var(--gold-dim);
+    margin:12px 0 6px;border-bottom:1px solid rgba(212,169,74,.22);padding-bottom:4px;}
+  #gameMenu .gm-row{display:flex;align-items:center;gap:10px;margin:8px 0;}
+  #gameMenu .gm-row span{flex:0 0 auto;width:44px;font-size:11px;letter-spacing:1px;
+    color:var(--gold-dim);}
+  #gameMenu .gm-row b{flex:0 0 auto;width:34px;text-align:right;font-size:11px;
+    font-weight:400;color:var(--gold);}
+  #gameMenu input[type=range]{flex:1;min-width:0;height:22px;background:transparent;
+    -webkit-appearance:none;appearance:none;accent-color:var(--gold);}
+  #gameMenu input[type=range]::-webkit-slider-runnable-track{height:3px;border-radius:2px;
+    background:rgba(212,169,74,.28);}
+  #gameMenu input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;
+    width:15px;height:15px;margin-top:-6px;border-radius:50%;
+    background:var(--gold);border:1px solid rgba(0,0,0,.5);}
+  #gameMenu .gm-note{margin:4px 0 2px;font-size:10px;line-height:1.6;color:var(--gold-dim);}
+  #gameMenu .gm-acts{display:flex;gap:8px;margin-top:14px;}
+  #gameMenu .gm-btn{flex:1;height:36px;font-family:inherit;font-size:12px;letter-spacing:2px;
+    color:var(--gold);background:rgba(10,8,14,.7);
+    border:1px solid var(--gold-dim);border-radius:18px;}
+  #gameMenu .gm-btn:active{background:rgba(212,169,74,.22);}
+
+  /* ── 選項（ver -396）──────────────────────────────────────────────
+     ⚠ 蓋在對話框**之上**（z 9800，同取名面板）並吃掉點擊：這一拍是閘門。
+     ⚠ 擺在**畫面偏下**（對話框上方）：問句還在框裡，眼睛剛讀完就落在選項上。 */
+  #choiceSheet{position:fixed;inset:0;z-index:9800;display:flex;
+    align-items:flex-end;justify-content:center;padding:0 22px 30vh;
+    background:rgba(4,3,7,.34);opacity:0;transition:opacity .18s ease;}
+  #choiceSheet.on{opacity:1;}
+  #choiceSheet .ch-panel{width:100%;max-width:320px;display:flex;flex-direction:column;gap:10px;}
+  #choiceSheet .ch-opt{width:100%;min-height:42px;padding:10px 14px;
+    font-family:inherit;font-size:13px;letter-spacing:2px;line-height:1.5;color:var(--gold);
+    background:rgba(10,8,14,.86);border:1px solid var(--gold-dim);border-radius:10px;
+    -webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);}
+  #choiceSheet .ch-opt:active{background:rgba(212,169,74,.22);}
+
   /* ── 輸入主角名與暱稱（ver -395）──────────────────────────────────
      ⚠ 蓋在**最上層**並吃掉點擊：這一拍是閘門，面板開著時不能點畫面跳過去。
      ⚠ 輸入框要 `-webkit-user-select:auto`：全站為了防誤選把 user-select 關掉了，
@@ -1857,6 +1906,27 @@
   #innLobby .inn-btn:active{background:rgba(212,169,74,.22);}
   /* ⚠ 提示壓在背景圖上，而背景什麼顏色都有（旅店的白天大廳是很亮的）——
      用**白字＋不模糊的黑描邊**（同 `#townInfo` 的處理），金字在亮處讀不出來。 */
+  /* ── 「回房睡覺」的指標（ver -396，Ray：「放個雪鐵龍箭指回房睡覺」）──────
+     兩道 V 形疊起來（雪鐵龍那個雙人字），從鈕的上方往下指，慢慢上下浮動。
+     ⚠ 位置由 JS 跟著鈕一起擺（鈕本身是 `bgPoint` 算出來的）。
+     ⚠ 說明擺在鈕**下面**：那是「按下去會發生什麼」，不是標題。 */
+  #innLobby .inn-point{position:absolute;transform:translate(-50%,-50%);
+    display:none;pointer-events:none;
+    animation:innPoint 1.5s ease-in-out infinite;}
+  #innLobby .inn-point.on{display:block;}
+  #innLobby .inn-point i{display:block;width:18px;height:18px;margin:-6px auto 0;
+    border-right:2px solid var(--gold);border-bottom:2px solid var(--gold);
+    transform:rotate(45deg);opacity:.85;}
+  #innLobby .inn-point i:first-child{opacity:.45;}
+  @keyframes innPoint{0%,100%{transform:translate(-50%,-50%) translateY(-3px);}
+                      50%   {transform:translate(-50%,-50%) translateY(3px);}}
+  #innLobby .inn-tip{position:absolute;transform:translate(-50%,0);
+    display:none;white-space:nowrap;pointer-events:none;
+    font-size:10px;letter-spacing:1px;color:#fff;
+    text-shadow:1px 0 0 rgba(0,0,0,.92), -1px 0 0 rgba(0,0,0,.92),
+                0 1px 0 rgba(0,0,0,.92), 0 -1px 0 rgba(0,0,0,.92),
+                0 1px 3px rgba(0,0,0,.6);}
+  #innLobby .inn-tip.on{display:block;}
   #innLobby .inn-hint{position:absolute;left:0;right:0;bottom:86px;text-align:center;
     font-size:10px;letter-spacing:2px;color:#fff;pointer-events:none;
     text-shadow:1px 0 0 rgba(0,0,0,.92), -1px 0 0 rgba(0,0,0,.92),

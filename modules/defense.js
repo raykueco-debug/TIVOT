@@ -58,6 +58,9 @@ export function scheduleOpeningUlt(){ scheduleUlt(ULT_OPEN_MS*Math.random()); }
 
 export function scheduleUlt(firstDelayMs){
   clearTimeout(state.ultCheckTimer);
+  /* ⚠ 計時挑戰：靶子**不攻擊**（ver -396）—— 連排程都不要開，不然紅點與蓄力槽
+     還是會演一遍（`enemyAttack` 只擋得住扣血，擋不住畫面）。 */
+  if(state.timeAttack) return;
   const delay = (firstDelayMs!=null) ? firstDelayMs
                                      : state.ULT_MIN+Math.random()*(state.ULT_MAX-state.ULT_MIN);
   state.ultCheckTimer=setTimeout(()=>{

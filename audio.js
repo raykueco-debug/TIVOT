@@ -42,6 +42,39 @@ function busOut(c){
   }catch(e){ return c.destination; }
 }
 
+/* ══ 分軌音量（ver -397，Ray：「音量分 BGM／SE／語音」）══════════════════
+   ⚠ 分軌**要在 limiter 之前**：limiter 是所有聲音的共同入口（`busOut`），
+     在它之後只有一顆總音量，切不開軌。所以每一軌各掛一顆 gain 接進 limiter，
+     發聲端改連 `busIn(c, 軌)`。
+   ⚠ context 會被 `unlock()` 重建（iOS）—— 節點跟著重建，所以用 `_layerCtx` 記住是哪一個。
+   ⚠ BGM 不走 Web Audio（它是 HTMLAudio），所以那一軌是在 `bgmTargetVol()` 乘進去的。
+   ⚠ 這一層是**玩家的偏好**，與 `config` 那份「每一支音檔的實測增益」是兩回事：
+     那份負責把三層拉齊（§6.6），這一層負責讓玩家再調整。兩者相乘。 */
+const _layerVol = { bgm:1, se:1, vo:1 };
+let _layerCtx = null, _layerNode = {};
+function busIn(c, layer){
+  const out = busOut(c);
+  if(out === c.destination) return out;        // 建不出 limiter 的退路：不分軌
+  if(_layerCtx !== c){ _layerCtx = c; _layerNode = {}; }
+  if(!_layerNode[layer]){
+    try{
+      const g = c.createGain();
+      g.gain.value = _layerVol[layer]!=null ? _layerVol[layer] : 1;
+      g.connect(out);
+      _layerNode[layer] = g;
+    }catch(e){ return out; }
+  }
+  return _layerNode[layer];
+}
+/* 這支音檔屬於哪一軌：走**資料夾**判（§6.6 的命名規約），不靠呼叫端記得傳。 */
+function layerOf(src, voice){
+  if(voice) return 'vo';
+  const p = String(src||'');
+  return /\/audio\/vo\//.test(p) ? 'vo' : 'se';
+}
+/* BGM 元素的目標音量：曲子自己的音量 × 主音量 × BGM 軌。 */
+function bgmTargetVol(){ return Math.min(1, _bgmVol * _master * _layerVol.bgm); }
+
 function ctx(){
   if(!_ctx){
     try{ _ctx = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){ _ctx = null; }
@@ -112,10 +145,10 @@ function playBuffer(c, buf, vol, voice, handle){
     const s = c.createBufferSource(); s.buffer = buf;
     if(voice && _voice){
       const ch = voiceChain(c, vol);
-      if(ch){ s.connect(ch.head); ch.tail.connect(busOut(c)); s.start(); return; }
+      if(ch){ s.connect(ch.head); ch.tail.connect(busIn(c,'vo')); s.start(); return; }
     }
     const g = c.createGain(); g.gain.value = (vol==null ? 1 : vol);
-    s.connect(g); g.connect(busOut(c));
+    s.connect(g); g.connect(busIn(c, layerOf(src, voice)));
     s.start();
     /* 可中止的把手（playCue 用）：演出結束時要把還在響的機械聲收掉。
        ⚠ 直接 stop() 會有「喀」一聲 —— 一定要先把增益斜降到 0 再 stop。 */
@@ -131,11 +164,11 @@ const LATE_PLAY_MS = 1500;
 /* context 未 running（iOS 解鎖中/被中斷）時不盲目 s.start()——被排入的音源會卡到
  * 「下一次手勢 resume」才突然冒出（=延到下一幕才響）。改輪詢等 running，
  * LATE_PLAY_MS 內沒等到就放棄（遲到不亂響）。context 若中途重建，改用新 _ctx。 */
-function playWhenRunning(buf, vol, t0, voice, handle){
+function playWhenRunning(buf, vol, t0, voice, handle, src){
   if(Date.now()-t0 > LATE_PLAY_MS) return;
   const c = _ctx; if(!c) return;
   if(c.state === 'running'){ playBuffer(c, buf, vol, voice, handle); return; }
-  setTimeout(()=>playWhenRunning(buf, vol, t0, voice, handle), 60);
+  setTimeout(()=>playWhenRunning(buf, vol, t0, voice, handle, src), 60);
 }
 
 // 播放音檔（src＝已解析路徑）。已解碼→立即播；未解碼→限時補播（逾時放棄）。null/空→靜默略過。
@@ -144,8 +177,8 @@ function playSrc(src, vol, voice, handle){
   if(!ctx()) return;
   const t0 = Date.now();
   const buf = _buffers[src];
-  if(buf){ playWhenRunning(buf, vol, t0, voice, handle); return; }
-  load(src).then(b => { if(b) playWhenRunning(b, vol, t0, voice, handle); });
+  if(buf){ playWhenRunning(buf, vol, t0, voice, handle, src); return; }
+  load(src).then(b => { if(b) playWhenRunning(b, vol, t0, voice, handle, src); });
 }
 
 let _shots = [];    // 普攻槍聲候選（已解析路徑，隨機播一支）
@@ -225,7 +258,7 @@ export const SFX = {
     }
     _unlocked = true;
     const el = _bgmEl;
-    if(el && el.paused && el.src){ el.volume=Math.min(1,_bgmVol*_master); const p=el.play(); if(p&&p.catch) p.catch(()=>{}); }
+    if(el && el.paused && el.src){ el.volume=bgmTargetVol(); const p=el.play(); if(p&&p.catch) p.catch(()=>{}); }
   },
 
   /* 切換 BGM：同一元素先淡出 →（可選 delayMs 空一拍）→ 換 blobURL 起播（預設不淡入）loop。
@@ -282,13 +315,13 @@ export const SFX = {
         const u = url || src;
         try{ el.src = u; el.currentTime = 0; }catch(e){}
         _bgmPlaying = src;
-        el.volume = (fadeIn > 0 ? 0 : Math.min(1,_bgmVol*_master));
+        el.volume = (fadeIn > 0 ? 0 : bgmTargetVol());
         // 只上膛：src 已就位、留在 paused，等 unlock() 於手勢內同步開火。
         // 若手勢**已經**發生過（玩家點得比 blob 快），就不必再憋 —— 直接開火。
-        if(opts.armOnly && !_unlocked){ el.volume = Math.min(1,_bgmVol*_master); return; }
+        if(opts.armOnly && !_unlocked){ el.volume = bgmTargetVol(); return; }
         const p = el.play();
         if(p && p.catch) p.catch(()=>{});   // 尚未解鎖 → 等 unlock 於手勢補播
-        if(fadeIn > 0) bgmFade(el, Math.min(1,_bgmVol*_master), fadeIn);
+        if(fadeIn > 0) bgmFade(el, bgmTargetVol(), fadeIn);
       });
     };
     const afterOut = ()=>{ if(delay>0) _bgmTimer=setTimeout(switchTo, delay); else switchTo(); };
@@ -347,11 +380,24 @@ export const SFX = {
   setShots(srcs, vol){ _shots = (srcs || []).filter(Boolean); _shotsVol = (vol==null ? 1 : vol); },
   // 全域主音量（0~1）：SFX/合成音經 limiter 後的主音量節縮放、BGM 於各寫入點乘上係數。
   //   呼叫端（main.js）開機時從 config（tuning.masterVolume）設定；本模組維持葉節點不讀 config。
+  /* 分軌音量（ver -397）：`'bgm' | 'se' | 'vo'`，0~1。玩家的偏好，與 config 的
+     每支增益相乘（那份負責把三層拉齊，這一層負責讓玩家再調）。 */
+  setLayerVolume(layer, v){
+    if(!(layer in _layerVol)) return;
+    _layerVol[layer] = Math.max(0, Math.min(1, v==null ? 1 : v));
+    const g=_layerNode[layer]; if(g) try{ g.gain.value=_layerVol[layer]; }catch(e){}
+    if(layer==='bgm'){
+      const el=_bgmEl;
+      if(el && !el.paused && !el.__fade) el.volume = bgmTargetVol();
+    }
+  },
+  getLayerVolume(layer){ return _layerVol[layer]!=null ? _layerVol[layer] : 1; },
+
   setMasterVolume(v){
     _master = Math.max(0, Math.min(1, v==null ? 1 : v));
     if(_busMaster) _busMaster.gain.value = _master;
     const el=_bgmEl;
-    if(el && !el.paused && !el.__fade) el.volume = Math.min(1, _bgmVol*_master);   // 播放中即時套用（淡入淡出中不干預）
+    if(el && !el.paused && !el.__fade) el.volume = bgmTargetVol();   // 播放中即時套用（淡入淡出中不干預）
   },
 
   // 合成「重擊感」：完防／格擋用。短促低頻衝擊 + 高頻噪音瞬態（打擊質感）。可重疊。
@@ -368,7 +414,7 @@ export const SFX = {
       g.gain.setValueAtTime(0.0001, t);
       g.gain.exponentialRampToValueAtTime(0.5, t + 0.005);
       g.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
-      o.connect(g); g.connect(busOut(c));
+      o.connect(g); g.connect(busIn(c,'se'));
       o.start(t); o.stop(t + 0.2);
       // 瞬態噪音：高通後的短脈衝，增加「敲擊」咬合感
       const len = Math.floor(c.sampleRate * 0.06);
@@ -378,7 +424,7 @@ export const SFX = {
       const n = c.createBufferSource(); n.buffer = nb;
       const ng = c.createGain(); ng.gain.setValueAtTime(0.3, t); ng.gain.exponentialRampToValueAtTime(0.0001, t + 0.08);
       const hp = c.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 800;
-      n.connect(hp); hp.connect(ng); ng.connect(busOut(c));
+      n.connect(hp); hp.connect(ng); ng.connect(busIn(c,'se'));
       n.start(t); n.stop(t + 0.08);
     }catch(e){}
   },
@@ -404,7 +450,7 @@ export const SFX = {
         g.gain.setValueAtTime(0.0001, t);
         g.gain.exponentialRampToValueAtTime(p[1], t+0.008);
         g.gain.exponentialRampToValueAtTime(0.0001, t+p[2]);
-        o.connect(g); g.connect(busOut(c));
+        o.connect(g); g.connect(busIn(c,'se'));
         o.start(t); o.stop(t+p[2]+0.05);
       });
       // 第二響（0.16s 後、較弱）：增加「響亮」的迴盪感而不刺耳
@@ -413,7 +459,7 @@ export const SFX = {
       g2.gain.setValueAtTime(0.0001, t2);
       g2.gain.exponentialRampToValueAtTime(0.10, t2+0.008);
       g2.gain.exponentialRampToValueAtTime(0.0001, t2+0.9);
-      o2.connect(g2); g2.connect(busOut(c));
+      o2.connect(g2); g2.connect(busIn(c,'se'));
       o2.start(t2); o2.stop(t2+1);
     }catch(e){}
   },
@@ -434,7 +480,7 @@ export const SFX = {
         const ng=c.createGain();
         ng.gain.setValueAtTime(gain*0.9, t);
         ng.gain.exponentialRampToValueAtTime(0.0001, t+0.03);
-        n.connect(nf); nf.connect(ng); ng.connect(busOut(c)); n.start(t);
+        n.connect(nf); nf.connect(ng); ng.connect(busIn(c,'se')); n.start(t);
         // 木質共鳴：[頻率Hz, 峰值, 衰減秒]，每打微幅走音（±2%）避免機械感
         [[2450,0.5,0.07],[1150,0.35,0.10],[3600,0.2,0.045]].forEach(p=>{
           const o=c.createOscillator(), g=c.createGain();
@@ -442,7 +488,7 @@ export const SFX = {
           g.gain.setValueAtTime(0.0001, t);
           g.gain.exponentialRampToValueAtTime(gain*p[1], t+0.004);
           g.gain.exponentialRampToValueAtTime(0.0001, t+p[2]);
-          o.connect(g); g.connect(busOut(c));
+          o.connect(g); g.connect(busIn(c,'se'));
           o.start(t); o.stop(t+p[2]+0.02);
         });
       };

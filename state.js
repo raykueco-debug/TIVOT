@@ -152,6 +152,16 @@ export const state = {
        **框**（門開門關、不播櫻花過渡禎、打完交還劇情），那部分才是同一件事。 */
   scriptRun: false,      // 本場是劇情插入戰（存續到結算）
   scriptBattleId: null,  // 是哪一場（查 config.battles）
+  /* ══ 計時挑戰（ver -396，打靶場）══
+     戰鬥卡的 `timeAttack` 直接放這裡（`{wrongPenaltySec, se}`；不是那種場次就是 null）。
+     ⚠ 它一開就把**整條攻擊路徑**關掉（`enemyAttack` 與 `defense.scheduleUlt` 各自守門），
+       所以大絕紅點、蓄力槽、延時懲罰、按錯扣血通通不會演 —— 畫面上只剩「打靶」。
+     ⚠ 唯一的懲罰是**時間**：按錯 → 碼表加 `wrongPenaltySec` 秒（見 combat 的 tap）。 */
+  timeAttack: null,
+  /* 這一場的計時挑戰**有沒有超過標準時間**（ver -396）。
+     ⚠ 它借用既有的「打輸了」那條分歧路（`onLose`）—— 對腳本而言「超時」與「戰敗」
+       是同一件事：接另一支台詞。由 `combat.win()` 判定、`inspector` 交棒時帶出去。 */
+  timeOver: false,
   noSaint: false,        // 這一場不能聖徒化（讀者：saint / main 的手勢綁定）
   noPartner: false,      // 這一場不能用搭檔技（讀者：partner / weapon 的按鈕）
   tutorialLifeReturn: false,   // 教學戰中發動過生命歸還（結算台詞分歧用；同 tutorialRun 存續到結算）。

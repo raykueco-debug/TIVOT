@@ -38,6 +38,7 @@ const F_MISS  = 'inn_missed';  // 過了時間才回來 → 她已經在房裡�
      不記的話她會「重新出現在大廳等你」。 */
 const RENNA_BACK = 20;         // 她回到旅店的時刻
 const RENNA_GONE = 21;         // 過了就回房了（碰不到）
+const WAKE_HOUR  = 7;          // 「回房睡覺」推進到隔日的這個時刻（Ray 指定）
 const AFF_MEET   = 1;          // 碰到她：好感 +1（Ray 指定）
 const FADE_MS   = 520;         // 暗去／亮起各一段
 
@@ -75,6 +76,9 @@ function ensureLayer(){
        `innSpots` 換算後寫 inline，所以這裡不需要一個排版用的容器。 */
     +   '<button class="inn-btn" data-act="sit" type="button">獨自坐坐</button>'
     +   '<button class="inn-btn" data-act="sleep" type="button">回房睡覺</button>'
+    /* 雪鐵龍箭 ＋ 說明（ver -396，Ray 指定）：指著「回房睡覺」，並說清楚按下去會發生什麼。 */
+    +   '<div class="inn-point"><i></i><i></i></div>'
+    +   '<div class="inn-tip">推進時間至隔日早上七點，並恢復體力。</div>'
     + '<div class="inn-hint"></div>'
     + '<div class="inn-veil"></div>';
   st.appendChild(layer);
@@ -128,10 +132,10 @@ function refresh(){
   const hint = layer.querySelector('.inn-hint');
   /* ⚠ **不要寫「敲敲伙伴的門」**（ver -395，Ray 指定）—— 敲門是玩家自己會去試的事，
      寫出來反而像在派任務。這一行只留「現在該做什麼」。 */
-  if(hint) hint.textContent =
-      st==='wait'  ? '坐下來消磨時間吧。'
-    : st==='slept' ? '大家都睡了。回房休息吧。'
-    : '';
+  /* ⚠ **「大家都睡了。回房休息吧。」拿掉**（ver -396，Ray 指定）——
+     那一段的引導改用**指著鈕的雪鐵龍箭 ＋ 一句說明**（見 relayout），
+     比一行浮在半空的字明確得多。 */
+  if(hint) hint.textContent = (st==='wait') ? '坐下來消磨時間吧。' : '';
   layer.classList.toggle('on', st!=='none');
 }
 
@@ -187,12 +191,21 @@ function finishRenna(){
   refresh();
 }
 
-/* ══ 回房睡覺 ══ 存檔（Ray：「回房睡覺鈕。存檔」）。
-   ⚠ 走既有的存檔欄位面板（F5 那一套），不另做一個 —— 存檔的規矩只有一份。 */
+/* ══ 回房睡覺 ══ 推進到**隔日早上七點**、恢復體力，然後存檔。
+   （ver -392 只有存檔；-396 依 Ray 補上時間與體力：「推進時間至隔日早上七點，並恢復體力。」）
+   ⚠ 走既有的存檔欄位面板（F5 那一套），不另做一個 —— 存檔的規矩只有一份。
+   ⚠⚠ **「恢復體力」目前沒有實體**：這個專案還沒有體力／疲勞系統（戰鬥的 HP 是每場重置的）。
+     那一句話先照 Ray 的字寫在鈕的說明上，等體力系統做出來時**接在這裡**（就這一支）。 */
 function sleepHere(){
   if(busy || stage()!=='slept') return;
   try{ SFX.unlock(); SFX.menuClick(); }catch(_){}
   story.hideBubble();
+  /* 推進到**下一個** 07:00：晚上 21:00 睡 → 隔天 07:00（+10h）；
+     凌晨 01:00 睡 → 同一天 07:00（+6h，那本來就已經是「隔日」了）。 */
+  let mins = Math.round((WAKE_HOUR - clock.hourF())*60);
+  if(mins <= 0) mins += 24*60;
+  clock.advance(mins);
+  refresh();
   save.open('save');
 }
 
@@ -246,6 +259,15 @@ export function relayout(){
   };
   put('[data-act="sit"]',   wantSit,   spots.sit);
   put('[data-act="sleep"]', wantSleep, spots.sleep);
+  /* 雪鐵龍箭在鈕的**上方**（往下指），說明在鈕的**下方**（那是「按下去會發生什麼」）。
+     ⚠ 偏移量對的是鈕的中心（鈕高 32、`translate(-50%,-50%)`），所以上 34／下 24。 */
+  const p = (wantSleep && spots.sleep && host && host.bgPoint)
+          ? host.bgPoint(spots.sleep.x, spots.sleep.y) : null;
+  const arw=layer.querySelector('.inn-point'), tip=layer.querySelector('.inn-tip');
+  if(arw){ arw.classList.toggle('on', !!p);
+    if(p){ arw.style.left=p.x+'px'; arw.style.top=(p.y-34)+'px'; } }
+  if(tip){ tip.classList.toggle('on', !!p);
+    if(p){ tip.style.left=p.x+'px'; tip.style.top=(p.y+24)+'px'; } }
 }
 
 export function close(){
