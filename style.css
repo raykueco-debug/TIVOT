@@ -1689,12 +1689,14 @@
     pointer-events:auto;touch-action:manipulation;cursor:pointer;
     transform:rotate(0deg);
     transition:transform .9s cubic-bezier(.34,1.2,.5,1),opacity .3s ease;}
-    #storyExit img{position:absolute;inset:0;width:100%;height:100%;
+    #kerbGearSm{position:absolute;pointer-events:none;transform:rotate(0deg);
+    transition:transform .9s cubic-bezier(.34,1.2,.5,1),opacity .3s ease;}
+  #storyExit img,#kerbGearSm img{position:absolute;inset:0;width:100%;height:100%;
     display:block;filter:drop-shadow(0 2px 4px rgba(0,0,0,.85));}
   /* 凹槽：**加深齒輪底部**（Ray 指定）—— 一圈由外往內收的暗，讀起來就是鐵板上挖了個孔。
      ⚠ 要比齒輪大一圈（`inset:-9%`）：等大的話邊緣的暗被齒尖蓋住，看不出是凹的。
      ⚠ 上緣多壓一點暗（第二層 radial 往上偏）—— 光從上面來，凹槽的上壁才是暗的那一側。 */
-  #storyExit .ke-well{position:absolute;inset:-9%;border-radius:50%;
+  #storyExit .ke-well,#kerbGearSm .ke-well{position:absolute;inset:-9%;border-radius:50%;
     pointer-events:none;
     background:
       radial-gradient(circle at 50% 62%, rgba(0,0,0,.86) 52%, rgba(0,0,0,.55) 74%,
@@ -1704,9 +1706,13 @@
   /* 團徽一轉，齒輪跟著轉（`lift` 就是團徽轉 180° 那一拍）。
      ⚠ 開／關門那兩拍要**借門的曲線**，同紋章（ver -389 的坑）。 */
   #kerb.lift #storyExit{transform:rotate(var(--kerb-gear-rot,0deg));}
+  #kerb.lift #kerbGearSm{transform:rotate(var(--kerb-gear-rot-s,0deg));}
   #kerb.open #storyExit{transform:translateX(var(--kerb-open-rx,0px)) rotate(var(--kerb-gear-rot,0deg));
     transition:transform .9s cubic-bezier(.7,0,.3,1);}
-  #kerb.kerb-shut #storyExit{
+  /* ⚠ 小齒輪咬在團徽**右下**，落在中縫右邊 → 跟著**右**半扇走（同大齒輪）。 */
+  #kerb.open #kerbGearSm{transform:translateX(var(--kerb-open-rx,0px)) rotate(var(--kerb-gear-rot-s,0deg));
+    transition:transform .9s cubic-bezier(.7,0,.3,1);}
+  #kerb.kerb-shut #storyExit,#kerb.kerb-shut #kerbGearSm{
     transition:transform .9s cubic-bezier(.7,0,.3,1);}
   /* ⚠ 推上之後就**不能按**了（接下來是戰鬥）：ver -405 是把鈕滑出去，
      現在它是門的一部分不能滑走 —— 改成只鎖住點擊，畫面上它還要繼續轉給人看。 */

@@ -857,15 +857,21 @@ const KERB_POP={ arrow:0.045, rivet:0.026 };   // 彈開距離，佔門寬的比
    ⚠⚠ **不要再解「內接圓」了**（ver -414~-416 那一套已經拿掉）：Ray 的指示是
      「**先以 UI 美觀做大小位置放置準則**」—— 位置與大小是**設計決定**，
      不是幾何最佳化的結果。解出來的那顆又大又居中，他退了兩次。
-   ⚠⚠ **小齒輪整組拿掉**（Ray：「兩個小齒輪太醜了」）。團徽轉的時候大齒輪照樣跟著轉
-     （轉速仍由半徑比算），只是沒有畫出來的齒輪鏈。要再加回去的話，
-     那是「一顆、而且要好看」，不是為了幾何咬合硬塞。
-     cx/cy 佔門的寬／高，d 佔門寬。 */
-const KERB_GEAR={ cx:0.800, cy:0.040, d:0.121 };
+   ⚠ **小齒輪只有一顆**（ver -418，Ray：「兩個小齒輪太醜了」→「還是要有一個小齒輪
+     接到團徽下方」）。它咬在團徽的**右下**（`smAngle`＝從水平往下量的角度），
+     ⚠ 為什麼不放正下方：門的中縫在 0.506，正下方會**跨在縫上** —— 開門那一拍
+       小齒輪會被撕成兩半。放右下就整顆待在右半扇上。
+     ⚠ 角度也要閃開 4 點鐘那顆鉚釘（`r4`）：60° 時距離 48.6，需要 24.75，很寬裕。
+     cx/cy 佔門的寬／高，d／smD 佔門寬，smAngle 是度。 */
+const KERB_GEAR={ cx:0.800, cy:0.040, d:0.121, smD:0.065, smAngle:60 };
 const KERB_PEND={
   ar:1536/1024,   // 那張圖的高寬比（量出來的）
   bandC:0.145,    // 吊墜中心在畫面寬的哪個比例（ver -412 由 0.115 往右，Ray 指定）
-  maxW:0.32,      // 最大寬度（佔畫面寬）—— 再大就變成主角，搶走紋章
+  /* ⚠⚠ 寬度**綁著齒輪的直徑**（ver -418，Ray：「把吊墜縮得跟齒輪大小協調一點」）——
+     兩個都是掛在門上的小配件，大小該是一組的。寫成倍率而不是各填一個數字，
+     以後動齒輪，吊墜自己跟著走（鐵律 7：一個量一個來源）。 */
+  rel:1.15,       // 吊墜寬 ÷ 大齒輪直徑
+  maxW:0.32,      // 上限（佔畫面寬）—— 空間不夠時由輪廓那一段再往下收
   drop:0.004,     // 吊掛點離門頂多遠（佔門高）：鏈子頂端被楣壓住一點才像從楣底下垂下來
   /* ⚠⚠ **輪廓**（`[y佔圖高, 半寬佔圖寬]`，由那張圖的 alpha 逐列量出來）。
      為什麼不用外框：這個吊墜是個 X 形 —— **最寬的地方在很上面**（y=0.21 半寬 0.49），
@@ -964,9 +970,12 @@ function layoutKerberos(){
       }
       return true;
     };
-    /* 由大往小試（步進 1px）：第一個過關的就是答案。 */
+    /* 由大往小試（步進 1px）：第一個過關的就是答案。
+       ⚠ 起點是**齒輪那一組給的寬度**（`rel × 齒輪直徑`），`maxW` 只是保險上限 ——
+         空間不夠時才會被輪廓那一段往下收。 */
+    const want = Math.min(W*KERB_PEND.maxW, KERB_GEAR.d*Wd*KERB_PEND.rel);
     let pw = 0;
-    for(let w=Math.round(W*KERB_PEND.maxW); w>=14; w--){ if(fits(w)){ pw=w; break; } }
+    for(let w=Math.round(want); w>=14; w--){ if(fits(w)){ pw=w; break; } }
     pd.style.width = pw+'px';
     pd.style.height= (pw*KERB_PEND.ar)+'px';
     /* 橫向錨在畫面左側的 `bandC`（佔畫面寬的比例）；`left` 是門座標，要把 dx 扣回去。 */
@@ -986,6 +995,20 @@ function layoutKerberos(){
     gb.style.left=(gcx-gr)+'px'; gb.style.top=(gcy-gr)+'px';
     const er=pW/2;
     kb.style.setProperty('--kerb-gear-rot', (-180*er/gr).toFixed(1)+'deg');
+    /* 小齒輪：咬在團徽右下（ver -418）。⚠ 位置是「團徽圓心 ＋ (er+sr) 沿著 smAngle」——
+       所以它一定**貼著**團徽，不必另外調；`bite` 讓邊緣被團徽壓住（Ray 早前指定）。 */
+    const gs=$('kerbGearSm');
+    if(gs){
+      const sr=KERB_GEAR.smD*Wd/2, bite=4;
+      const t=KERB_GEAR.smAngle*Math.PI/180;
+      const ecx=(P.x+P.w/2)*Wd, ecy=(P.y+P.h/2)*Hd;
+      const d0=er+sr-bite;
+      const sx=ecx+d0*Math.cos(t), sy=ecy+d0*Math.sin(t);
+      gs.style.width=(sr*2)+'px'; gs.style.height=(sr*2)+'px';
+      gs.style.left=(sx-sr)+'px'; gs.style.top=(sy-sr)+'px';
+      /* 嚙合：方向與團徽相反、轉速 ∝ 1/r（越小轉越快）。 */
+      kb.style.setProperty('--kerb-gear-rot-s', (-180*er/sr).toFixed(1)+'deg');
+    }
     /* 右半扇開門走的距離（左半扇是 `--kerb-open-x`）：`.kerb-half.r` 是 `translateX(104%)`
        而它的寬度是門的一半 —— 齒輪要跟著它走，就得換算成同一個 px（% 是相對自己的寬）。 */
     kb.style.setProperty('--kerb-open-rx', (Wd/2*1.04)+'px');
@@ -1051,6 +1074,8 @@ function layoutKerberos(){
     const src={ kerbPlate:'kerberos_plate', kerbTop:'kerberos_top', kerbPendImg:'kerberos_pendant',
                 kerbGearImg:'kerberos_gear' };
     for(const id in src){ const el=$(id); if(el) el.src=KERB_DIR+src[id]+'.webp'; }
+    const gsi=$('kerbGearSm'), gsimg=gsi && gsi.querySelector('img');
+    if(gsimg) gsimg.src=KERB_DIR+'kerberos_gear.webp';
     const gbb=$('storyExit');
     if(gbb) gbb.style.setProperty('--kg-mask', 'url("'+KERB_DIR+'kerberos_gear.webp")');
     /* 高光的遮罩＝**吊墜自己那張圖**（鐵律 7：路徑只有 `KERB_DIR` 這一份）。 */

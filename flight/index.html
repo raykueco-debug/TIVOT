@@ -119,10 +119,10 @@
   /* ── 齒輪（ver -413）── ⚠ 與主遊戲 `style.css` 的 `#storyExit` 同一套，
      改一邊要改另一邊。這一頁是純裝飾（沒有選單鈕），所以不吃點擊、也不轉
      （這一頁的團徽不轉，門推到頂就交棒了）。 */
-  #fkerbGear{position:absolute;pointer-events:none;}
-  #fkerbGear img{position:absolute;inset:0;width:100%;height:100%;
+  #fkerbGear,#fkerbGearSm{position:absolute;pointer-events:none;}
+  #fkerbGear img,#fkerbGearSm img{position:absolute;inset:0;width:100%;height:100%;
     display:block;filter:drop-shadow(0 2px 4px rgba(0,0,0,.85));}
-  #fkerbGear .fkg-well{position:absolute;inset:-9%;border-radius:50%;
+  #fkerbGear .fkg-well,#fkerbGearSm .fkg-well{position:absolute;inset:-9%;border-radius:50%;
     background:
       radial-gradient(circle at 50% 62%, rgba(0,0,0,.86) 52%, rgba(0,0,0,.55) 74%,
                       rgba(0,0,0,.18) 88%, rgba(0,0,0,0) 100%),
@@ -369,6 +369,8 @@
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
     <img src="../resources/vfx/kerberos_gear.webp" alt=""><i class="fkg-shine"></i></div>
+  <div id="fkerbGearSm"><i class="fkg-well"></i>
+    <img src="../resources/vfx/kerberos_gear.webp" alt=""></div>
   <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp" alt="">
   <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp" alt="">
   <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp" alt="">
@@ -474,8 +476,8 @@ const VIEW_F = 0.66;      // 3D 視窗佔畫面高度比例，其餘為面板
 /* 齒輪的幾何（ver -413）。⚠ 與 `modules/story.js` 的 `KERB_GEAR` 同一組，改一邊要改另一邊。 */
 /* ⚠ 只剩 `bite`：位置與大小都是解出來的（同 story.js 的 KERB_GEAR）。 */
 /* ⚠ 與 `modules/story.js` 的 `KERB_GEAR` 同一組（門圖上的比例），改一邊要改另一邊。 */
-const FKERB_GEAR={ cx:0.800, cy:0.040, d:0.121 };
-const FKERB_PEND={ ar:1536/1024, bandC:0.145, maxW:0.32, drop:0.004,
+const FKERB_GEAR={ cx:0.800, cy:0.040, d:0.121, smD:0.065, smAngle:60 };
+const FKERB_PEND={ ar:1536/1024, bandC:0.145, maxW:0.32, rel:1.15, drop:0.004,
   prof:[[0.13,0.41],[0.17,0.45],[0.21,0.49],[0.25,0.45],[0.31,0.40],[0.38,0.31],
         [0.44,0.24],[0.48,0.36],[0.52,0.25],[0.58,0.21],[0.65,0.27],[0.69,0.35],
         [0.75,0.26],[0.78,0.18],[0.86,0.03],[1.00,0.01]] };
@@ -6548,10 +6550,15 @@ function layoutFKerb(){
   for(const k in FKERB.arrows) put(dr.querySelector('.fk-arrow.'+k), FKERB.arrows[k]);
   for(const k in FKERB.rivets) put(dr.querySelector('.fk-rivet.'+k), FKERB.rivets[k]);
   /* 齒輪（ver -417）：位置與大小由 Ray 在門圖上標定，這裡只做換算（同主遊戲）。 */
-  const gb=document.getElementById('fkerbGear');
+  const gb=document.getElementById('fkerbGear'), gsm=document.getElementById('fkerbGearSm');
   if(gb){ const gr=FKERB_GEAR.d*Wd/2;
     gb.style.width=(gr*2)+'px'; gb.style.height=(gr*2)+'px';
     gb.style.left=(FKERB_GEAR.cx*Wd-gr)+'px'; gb.style.top=(FKERB_GEAR.cy*Hd-gr)+'px'; }
+  if(gsm){ const P=FKERB.plate, er=P.w*Wd/2, sr=FKERB_GEAR.smD*Wd/2, bite=4;
+    const t=FKERB_GEAR.smAngle*Math.PI/180, d0=er+sr-bite;
+    const ecx=(P.x+P.w/2)*Wd, ecy=(P.y+P.h/2)*Hd;
+    gsm.style.width=(sr*2)+'px'; gsm.style.height=(sr*2)+'px';
+    gsm.style.left=(ecx+d0*Math.cos(t)-sr)+'px'; gsm.style.top=(ecy+d0*Math.sin(t)-sr)+'px'; }
   /* 吊墜：解出「與圓盤的圓保持距離」的最大寬度（同 story.js 的 layoutKerberos）。 */
   const pd=document.getElementById('fkerbPend');
   if(pd){
@@ -6563,7 +6570,8 @@ function layoutFKerb(){
         if(Math.hypot(cx-(pcx+q[1]*w), cy-(top+q[0]*h))<=r+clear) return false; }
       return true; };
     let pw=0;
-    for(let w=Math.round(W*FKERB_PEND.maxW); w>=14; w--){ if(fits(w)){ pw=w; break; } }
+    const want=Math.min(W*FKERB_PEND.maxW, FKERB_GEAR.d*Wd*FKERB_PEND.rel);
+    for(let w=Math.round(want); w>=14; w--){ if(fits(w)){ pw=w; break; } }
     pd.style.width=pw+'px'; pd.style.height=(pw*FKERB_PEND.ar)+'px';
     pd.style.left=(pcx-pw/2-dx)+'px'; pd.style.top=top+'px';
     pd.style.display = pw>=14 ? '' : 'none';
