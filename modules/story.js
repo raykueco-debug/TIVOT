@@ -830,6 +830,13 @@ let kerbReady=false;
    再與「至少要有畫面那麼寬」取大的。上升距離就是門頂那個值（升完門頂貼齊 y=0）。
    ⚠ 每次開場與 resize 都要重算 —— 面板高吃 safe-area，寫死在瀏海機上會錯位。
    ⚠ 要在舞台已經 `.on` 之後才量，display:none 的元素量出來全是 0。 */
+/* ══ 幾何覆寫（ver -388）══════════════════════════════════════════════
+   飛行頁交棒過來的那一場：門是**在飛行頁解出來的**（那一頁沒有「下半面板」，
+   它的條件是「推到頂要蓋得滿畫面」）。這邊照自己的公式再算一次會得到不同的寬度
+   （實測差 8.6%），交棒那一格紋章就會忽然變大 —— 那正是鐵律 7 說的「兩處各算一次」。
+   所以：**算的那一支發佈出去，這邊只讀**（`fkerbGeom` → `showKerbGate(geom)`）。
+   ⚠ 用完要清（`clearKerbForce`），否則之後的劇情場次會沿用飛行頁那組尺寸。 */
+let kerbForce=null;
 function layoutKerberos(){
   const st=$('storyStage'), kb=$('kerb'), dr=$('kerbDoor'), bd=$('storyBoard');
   if(!st || !kb || !dr || !bd) return;
@@ -838,9 +845,9 @@ function layoutKerberos(){
   if(!W || !panelH) return;
   const AR=KERB_META.h/KERB_META.w;
   const P=KERB_META.plate, cy=P.y+P.h/2;
-  const Wd=Math.max(W, (panelH/2)/(cy*AR));
+  const Wd=kerbForce ? kerbForce.Wd : Math.max(W, (panelH/2)/(cy*AR));
   const Hd=Wd*AR;
-  const top=panelTop + panelH/2 - cy*Hd;
+  const top=kerbForce ? kerbForce.top : (panelTop + panelH/2 - cy*Hd);
   const dx=(W-Wd)/2;
   dr.style.width=Wd+'px'; dr.style.height=Hd+'px';
   dr.style.left=dx+'px'; dr.style.top=top+'px';
@@ -1069,9 +1076,11 @@ function playKerberos(onGap, onDone, opts){
    ⚠ 為什麼要有一顆「點一下」擋在中間：跳頁＝新的 document，音訊要**這一頁的**
      使用者手勢才解得開（iOS 一定要）。門的齒輪／開門音、戰鬥 BGM 全靠它。
    ⚠ 舞台要自己開（`on` ＋ `story-on`）：這條路徑不經過 `open()`，劇情層本來是收著的。 */
-export function showKerbGate(){
+export function showKerbGate(geom){
   const st=$('storyStage'), kb=$('kerb');
   if(!st || !kb) return;
+  /* 飛行頁量好的門幾何（內嵌模式會帶過來）。沒帶就照自己的公式算。 */
+  kerbForce = (geom && geom.Wd>0 && isFinite(geom.top)) ? { Wd:geom.Wd, top:geom.top } : null;
   stopKerberos();
   st.classList.add('on');
   /* ⚠ `kerb-gate`：這一段**沒有劇情**，所以對話框、離開鈕、跳段鈕都要收掉 ——
@@ -1089,8 +1098,11 @@ export function playKerberosFromRisen(onGap, onDone){
   const st=$('storyStage');
   if(st) st.classList.add('on','kerb-gate');
   document.body.classList.add('story-on');
-  playKerberos(onGap, ()=>{ if(st) st.classList.remove('kerb-gate'); onDone&&onDone(); },
-               { fromRisen:true });
+  playKerberos(onGap, ()=>{
+    if(st) st.classList.remove('kerb-gate');
+    kerbForce=null;                 // ⚠ 用完就清：不清的話之後的劇情場次會沿用飛行頁那組尺寸
+    onDone&&onDone();
+  }, { fromRisen:true });
 }
 
 /* ══ 金屬磨擦火花（ver -366，關門演出用）══

@@ -94,9 +94,13 @@
     background-image:url('../resources/vfx/kerberos_door.webp');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
-  /* 楣：橫跨整個畫面寬，蓋在門的上緣。是門的子元素＝同一剛體，門上推它跟著上去
-     （同主遊戲 `#kerbTop` 的作法）。 */
-  #fkerbTop{position:absolute;display:block;}
+  /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
+     （同主遊戲 `#kerbTop` / `#kerbPlate` / `.kerb-arrow` / `.kerb-rivet` 的作法）。
+     ⚠ 箭是**同一張圖轉四個方向**、鉚釘是**同一張圖鏡射四個角**（與主遊戲同一套素材與作法）。
+       位置一律由 `layoutFKerb` 寫 inline，這裡只給旋轉／鏡射。 */
+  #fkerbDoor img{position:absolute;display:block;}
+  #fkerbDoor .fk-arrow{transform:rotate(var(--fk-rot,0deg));}
+  #fkerbDoor .fk-rivet{transform:scale(var(--fk-fx,1),var(--fk-fy,1));}
   /* 加速鈕：開發用。放操作盤**左上**（生怪鈕在左下，兩者不打架）。
      top 由 JS 設成 VIEWH+12 —— 面板上緣是算出來的，CSS 這邊沒有那個數字。 */
   #boostBtn{position:fixed;left:12px;z-index:40;background:rgba(5,6,12,.72);
@@ -283,7 +287,19 @@
 <div id="fps"></div>
 <!-- Kerberos 之門（ver -387）：楣常駐在操控面板底緣；遭遇敵人時整扇槍棺推上來蓋滿畫面，
      推完才跳去戰鬥頁。幾何由 `layoutFKerb()` 解出來寫成 inline style。 -->
+<!-- ⚠⚠ 紋章／箭／鉚釘／楣**全部是 #fkerbDoor 的子元素**＝與槍棺同一剛體（ver -388，
+     Ray：「推上的時候要連紋章，箭、釘、楣一起剛體推上」）。只推底圖的話上推的是一片鐵板，
+     不是那扇門。疊法由下而上：門（容器的背景）→ 紋章 → 箭 → 鉚釘 → 楣，與主遊戲同序。 -->
 <div id="fkerb"><div id="fkerbDoor">
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp" alt="">
   <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp" alt="">
 </div></div>
 <div id="boot">
@@ -369,7 +385,21 @@ const VIEW_F = 0.66;      // 3D 視窗佔畫面高度比例，其餘為面板
 /* Kerberos 之門的圖比例（ver -387）。⚠ 宣告在這裡是因為 `resize()` 會在指令碼求值期間
    就呼叫 `layoutFKerb()` —— 放在下面（生怪那一區）會撞上 const 的 TDZ。
    數字的來源與「為什麼兩邊各一份」見下方 `layoutFKerb` 的說明。 */
-const FKERB={ w:853, h:1844, top:{ ar:0.11159, dip:0.11915 } };
+const FKERB={ w:853, h:1844, seam:0.506,
+ top:{ ar:0.11159, dip:0.11915 },
+ plate:{ x:0.18171, y:0.05152, w:0.63892, h:0.30206 },
+ arrows:{ n:{cx:0.50117,cy:0.09138,w:0.07737,h:0.10033,rot:0},
+          e:{cx:0.73632,cy:0.20255,w:0.07737,h:0.10033,rot:90},
+          s:{cx:0.50117,cy:0.31372,w:0.07737,h:0.10033,rot:180},
+          w:{cx:0.26602,cy:0.20255,w:0.07737,h:0.10033,rot:270} },
+ rivets:{ r10:{cx:0.24113,cy:0.09834,w:0.05393,h:0.02657,fx:1, fy:1},
+          r2: {cx:0.76121,cy:0.09834,w:0.05393,h:0.02657,fx:-1,fy:1},
+          r8: {cx:0.24113,cy:0.30676,w:0.05393,h:0.02657,fx:1, fy:-1},
+          r4: {cx:0.76121,cy:0.30676,w:0.05393,h:0.02657,fx:-1,fy:-1} } };
+/* 解出來的門幾何 {Wd,Hd,top}：交棒給主遊戲時要帶著（見 toBattle）。
+   ⚠ 與 FKERB 一樣宣告在檔頭 —— `resize()` 在指令碼求值期間就會呼叫 `layoutFKerb()`，
+     宣告留在下面會撞上 TDZ。 */
+let fkerbGeom=null;
 /* ⚠ 宣告要早於 resize()：resize 在模組初始化就跑一次，而感應立繪的落地線
    （VIEWH−HELM_OUT）是在那裡算的 —— 留在 drawPanel 旁邊會踩到 TDZ。 */
 const HELM_OUT = 20;      // 舵輪上緣突出 3D 視窗的像素
@@ -3746,7 +3776,12 @@ document.addEventListener('visibilitychange',()=>{ if(document.hidden) clearKeys
 const clock={minutes:8*60,date:14,dist:0};
 
 // 返回主頁（原型是獨立頁面，不共用遊戲的場景切換）
-document.getElementById('backBtn').addEventListener('click',()=>{ location.href='../index.html'; });
+document.getElementById('backBtn').addEventListener('click',()=>{
+  /* 內嵌時交給父頁收（不跳頁，見 toBattle 上方那段說明）。 */
+  try{ if(window.parent!==window && window.parent.__tivotFlight){
+    window.parent.__tivotFlight.close(); return; } }catch(_){}
+  location.href='../index.html';
+});
 
 /* ══ 地圖畫面 ══
    直接用那張插畫（有地名、有圖例），裁切範圍與地形完全一致 →
@@ -6357,12 +6392,31 @@ function layoutFKerb(){
   const doorTop=H-1-th*FKERB.top.dip;          // 由「楣的下緣貼齊畫面底」反推
   dr.style.width=Wd+'px'; dr.style.height=Hd+'px';
   dr.style.left=dx+'px'; dr.style.top=doorTop+'px';
+  /* 紋章／箭／鉚釘：擺在門座標的比例位置上（同主遊戲 layoutKerberos 的 `put`）。
+     ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的寬高 —— CSS 的 rotate 繞元素中心轉，
+       中心擺對了轉幾度都落在該落的地方。 */
+  const put=(el,b)=>{ if(!el) return;
+    const w=b.w*Wd, h=b.h*Hd;
+    el.style.width=w+'px'; el.style.height=h+'px';
+    el.style.left=(b.cx*Wd-w/2)+'px'; el.style.top=(b.cy*Hd-h/2)+'px';
+    if(b.rot!=null) el.style.setProperty('--fk-rot', b.rot+'deg');
+    if(b.fx!=null){ el.style.setProperty('--fk-fx', b.fx); el.style.setProperty('--fk-fy', b.fy); } };
+  const pl=dr.querySelector('.fk-plate');
+  if(pl){ const P=FKERB.plate;
+    pl.style.left=(P.x*Wd)+'px'; pl.style.top=(P.y*Hd)+'px';
+    pl.style.width=(P.w*Wd)+'px'; pl.style.height='auto'; }
+  for(const k in FKERB.arrows) put(dr.querySelector('.fk-arrow.'+k), FKERB.arrows[k]);
+  for(const k in FKERB.rivets) put(dr.querySelector('.fk-rivet.'+k), FKERB.rivets[k]);
   tp.style.width=W+'px'; tp.style.height=th+'px';
   tp.style.left=(-dx)+'px'; tp.style.top=tpTop+'px';
   kb.style.setProperty('--fkerb-rise', doorTop+'px');
   /* 底下那一排鈕靠它讓開楣（見 CSS）。⚠ 掛在 :root —— 那些鈕是 position:fixed，
      不是 #fkerb 的子孫，CSS 變數繼承不過去。 */
   document.documentElement.style.setProperty('--fkerb-top-h', th+'px');
+  /* ⚠⚠ **發佈出去**（鐵律 7）：主遊戲接手時要用**這一組**數字重建同一扇門，
+     否則兩邊各算一次（它的公式是「紋章圓心落在下半面板正中」，實測差 8.6%），
+     交棒那一格紋章會忽然變大。 */
+  fkerbGeom={ Wd, Hd, top:doorTop };
 }
 /* 撞擊音：與主遊戲同一支素材（峰值在 1002ms，正好落在門撞頂那一瞬 —— 所以
    上推的長度也是 1000ms，兩邊同值，改一邊要改另一邊）。 */
@@ -6370,18 +6424,24 @@ const kerbPopSE = new Audio('../resources/audio/se/se_Kerberos_pop.m4a'); kerbPo
 const FKERB_HOLD_MS = 700;    // 先讓「遭遇　◯◯」那一格看得到，再推棺
 const FKERB_RISE_MS = 1000;   // 上推時間（＝ story.js 的 KERB_T.rise，兩邊同值）
 
+/* ══ 內嵌模式（ver -388）══════════════════════════════════════════════════
+   主遊戲把這一頁放進 **iframe**，所以進戰鬥**不再跳頁**。
+   ⚠⚠ 為什麼要這樣改（Ray：「想辦法克服」）：跳頁＝新的 document，音訊要**那一頁自己的**
+     使用者手勢才解得開（iOS 一定要）—— 於是進戰鬥前非得多一顆「點一下」不可，
+     否則門的齒輪／開門音與戰鬥 BGM 整段是靜音的。留在同一個 document 裡，
+     父頁開機時那一點就一直有效，那顆鈕就不需要存在了。
+   ⚠ 順帶解決另外兩件事：打完回來**不必重載這一頁**（沒有第二次讀取頁，`cam` 也還在原處），
+     而且 `tivot_flight_ret_v1` 這條回程鑰匙在內嵌模式下用不到。
+   ⚠ **獨立開啟仍然要能用**（開發時直接開 `flight/index.html`）：查不到父頁的掛鉤就
+     退回原本的 localStorage ＋ 跳頁那一套（那條路徑上「開棺」那一顆還在）。 */
+const EMBED=(function(){ try{ return window.parent!==window && !!window.parent.__tivotFlight; }
+                         catch(_){ return false; } })();
+
 function toBattle(kind){
   if(peaceMode) return;      // 免戰：遭遇照演，就是不進戰鬥
   if(battleGoing) return;
   battleGoing=true;          // 這一刻起船也停住（見 update() 的那一行）
-  try{
-    /* `gate:'kerb'` 告訴主遊戲「門已經推上來了」—— 那邊接手時不從頭演上推，
-       而是**由已推到頂的狀態接下去**（解鎖 → 圓盤 → 開門），畫面才連得起來。 */
-    localStorage.setItem('tivot_battle_req_v1', JSON.stringify({ battle:'flight_'+kind, gate:'kerb' }));
-    localStorage.setItem('tivot_flight_ret_v1', JSON.stringify(
-      { x:cam.x, y:cam.y, angle:cam.angle, alt:cam.alt }));
-  }catch(e){}
-  /* 槍棺彈出：先停一拍讓玩家讀到遭遇了誰，再整扇推上來蓋滿畫面，推完才跳頁。 */
+  /* 槍棺彈出：先停一拍讓玩家讀到遭遇了誰，再整扇推上來蓋滿畫面，推完才交棒。 */
   setTimeout(()=>{
     layoutFKerb();                                   // 推之前重量一次（轉向過就會變）
     if(!muted) playSfx(kerbPopSE);
@@ -6390,9 +6450,41 @@ function toBattle(kind){
        落地了，直接加 class 就會有過場。 */
     const kb=document.getElementById('fkerb');
     if(kb) kb.classList.add('rise');
-    setTimeout(()=>{ location.href='../index.html'; }, FKERB_RISE_MS+150);
+    setTimeout(()=>{
+      if(EMBED){
+        flightAudio(false);                          // 進戰鬥：這一頁的音樂與環境音收掉
+        window.parent.__tivotFlight.battle({ battle:'flight_'+kind, geom:fkerbGeom });
+        return;
+      }
+      /* 獨立模式：照舊寫交棒鑰匙再跳頁。`gate:'kerb'` 告訴主遊戲門已經推到頂了。 */
+      try{
+        localStorage.setItem('tivot_battle_req_v1',
+          JSON.stringify({ battle:'flight_'+kind, gate:'kerb', geom:fkerbGeom }));
+        localStorage.setItem('tivot_flight_ret_v1', JSON.stringify(
+          { x:cam.x, y:cam.y, angle:cam.angle, alt:cam.alt }));
+      }catch(e){}
+      location.href='../index.html';
+    }, FKERB_RISE_MS+150);
   }, FKERB_HOLD_MS);
 }
+
+/* 這一頁的音樂與環境音：內嵌時由父頁開關（戰鬥期間要安靜，回來要接回去）。
+   ⚠ 不能只靠「iframe 藏起來 rAF 就停」：rAF 停了 `updateBgm` 也不再跑，
+     那幾個 <audio> 會**維持當時的音量繼續播**。要明確停。 */
+function flightAudio(on){
+  const loops=[bgmMain, ambSail, ambIdle, sfxTrain, sfxGull];
+  for(const L of loops){ try{ on ? L.start() : L.stop(); }catch(_){} }
+}
+/* 父頁在戰鬥打完、要把畫面交還這一頁時呼叫（ver -388）。
+   ⚠ `battleGoing` 一定要歸零：不歸零的話船永遠停著（見 update 的那一行），
+     而且下一次遭遇的交棒鎖也解不開。 */
+window.__flightResume=function(){
+  battleGoing=false;
+  const kb=document.getElementById('fkerb'); if(kb) kb.classList.remove('rise');
+  layoutFKerb();
+  flightAudio(true);
+};
+window.__flightPause=function(){ flightAudio(false); };
 
 /* 打完回來：把船放回離開時的位置（ver -382）。
    ⚠ **讀了就清掉**：不清的話下次正常進飛行頁還會被拉回那個座標。

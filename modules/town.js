@@ -319,13 +319,18 @@ function go(to){
      「主線寫、其餘讀」。旗標名寫在節點資料上（`sail.flag`），不寫死在程式裡。
    ⚠ 攔下來的那一段照樣走劇情播放器（立繪、明暗、打字機一致），演完把台上收乾淨、
      導覽開回來 —— 與城鎮其他每一段對白同一套收尾（鐵律 8）。 */
+/* 開飛行頁的實體由 main.js 注入（模組邊界：城鎮不認識啟動層）。 */
+let flightOpener=null;
+export function setFlightOpener(fn){ flightOpener=fn; }
 function setSail(){
   const n=node(), sail=n && n.sail; if(!sail) return;
   if(!sail.flag || prog.hasFlag(sail.flag)){
     /* 船已經到手：交給飛行頁。⚠ 城鎮的位置目前不存 —— 飛行頁那邊回來時走的是
        `tivot_flight_ret_v1`（座標），城鎮節點要不要一起存是另一件事（§6.9 的清單）。 */
     try{ SFX.play('resources/audio/se/se_walk.m4a'); }catch(_){}
-    location.href='flight/index.html';
+    /* ⚠ 走注入的開啟器（ver -388）：飛行頁現在是**內嵌 iframe**，不跳頁 ——
+       跳頁會讓音訊要重新解鎖（見 CLAUDE.md §6.10）。town 不 import main，所以用注入。 */
+    if(flightOpener) flightOpener(); else location.href='flight/index.html';
     return;
   }
   if(!sail.blocked || !sail.blocked.length) return;

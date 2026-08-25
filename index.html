@@ -435,6 +435,14 @@
      不必逐個畫面各放一顆。狀態存 localStorage，flight/ 讀同一把鑰匙。 -->
 <button id="muteBtn" aria-label="Mute">🔊</button>
 
+<!-- ══ 飛行頁（ver -388）══ 以 **iframe 內嵌**，不再跳頁。
+     ⚠⚠ 為什麼：跳頁＝新的 document，音訊要那一頁自己的使用者手勢才解得開（iOS 一定要），
+       於是遭遇進戰鬥前非得多一顆「點一下」不可。留在同一個 document 裡，開機那一點
+       就一直有效 —— 門的齒輪／開門音與戰鬥 BGM 直接就有聲音。
+     ⚠ 順帶：打完回來不必重載飛行頁（沒有第二次讀取頁，船也還在原處）。
+     ⚠ src 是**按下去才給**的（lazy）：不然每次開機都要多載一整個飛行頁。 -->
+<iframe id="flightFrame" title="飛行"></iframe>
+
 <script type="module" src="main.js"></script>
 </body>
 </html>

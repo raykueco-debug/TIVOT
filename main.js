@@ -217,13 +217,73 @@ function takeBattleReq(){
      ② 讀取藏在門背後跑，順序**敵立繪 → 音效 → 音樂**（三段串接，不併行：
         併行會搶頻寬，那正是「點進去了音效還沒好」的成因，同 startBatch 的理由）
      ③ 點一下 → 演完剩下的門（撞頂 → 解鎖 → 圓盤 → 開門），縫裡露出的就是戰鬥畫面
-   ⚠⚠ 那一顆「點一下」**不能省**：跳頁＝新的 document，音訊要**這一頁的**使用者手勢
-     才解得開（iOS 一定要）。門的齒輪／開門音與戰鬥 BGM 全靠它，少了它整段是靜音的。
+   ⚠⚠ **這條路徑只剩「獨立開啟飛行頁」時會走到**（ver -388）：正常情況下飛行頁是
+     內嵌在 `#flightFrame` 裡的，根本不跳頁 —— 因為跳頁＝新的 document，音訊要**那一頁的**
+     使用者手勢才解得開（iOS 一定要），才會需要「開棺」那一顆。內嵌之後那顆就不見了。
+     這一支留著是給開發時直接開 `flight/index.html` 用的，不要刪。
    ⚠ 不走讀取遮罩，所以 `markBooted()` 要自己記一次 —— 否則下次冷啟動會多跑一遍完整預載。 */
+/* ══ 飛行頁：內嵌 iframe（ver -388，Ray：「想辦法克服」那一顆開棺鈕）══════════
+   飛行頁不再是「跳過去的另一頁」，而是蓋在主遊戲上的一個滿版 iframe。
+   於是三件事一起解決：
+     ① **音訊不用再解鎖一次** —— 戰鬥跑在**父頁**，而父頁在開機那一點就解鎖過了。
+        （同源 iframe 的使用者手勢也會往上傳給父頁，所以怎麼玩都不會失效。）
+     ② **打完回來不必重載飛行頁** —— 它一直活著，船還在原處，沒有第二次讀取頁
+        （Ray：「戰鬥結束不要另跑預載頁」）。
+     ③ 回程鑰匙 `tivot_flight_ret_v1` 在這條路徑上用不到（座標根本沒丟過）。
+   ⚠ iframe 的 `src` **按下去才給**：不然每次開機都要多載一整個飛行頁。
+   ⚠ 飛行頁自己有音樂與環境音；戰鬥期間要明確收掉（`__flightPause`）——
+     只把 iframe 藏起來是不夠的，rAF 停了它的 `updateBgm` 也停了，
+     那幾個 <audio> 會維持當時的音量繼續播。 */
+function flightWin(){ const f=$('flightFrame'); return f ? f.contentWindow : null; }
+function openFlight(){
+  const f=$('flightFrame');
+  if(!f){ window.location.href='flight/'; return; }      // 沒有這個框就退回舊的跳頁
+  if(!f.getAttribute('src')) f.setAttribute('src','flight/index.html');
+  else { const w=flightWin(); if(w && w.__flightResume) w.__flightResume(); }
+  f.classList.add('on');
+  document.body.classList.add('flight-on');
+  $('home').classList.remove('on');
+}
+function closeFlightFrame(){
+  const w=flightWin(); if(w && w.__flightPause) w.__flightPause();
+  const f=$('flightFrame'); if(f) f.classList.remove('on');
+  document.body.classList.remove('flight-on');
+}
+/* 飛行頁（iframe 內）呼叫得到的掛鉤。⚠ 掛在 window 上是**刻意**的 ——
+   那一頁是非 module 的獨立文件，import 不到這裡的任何東西。 */
+window.__tivotFlight = {
+  /* 遭遇 → 進戰鬥。門已經在飛行頁推到頂了，這裡**接著演**（撞頂 → 解鎖 → 圓盤 → 開門）。 */
+  battle(req){
+    const id = req && req.battle;
+    if(!id || !GAME_CONFIG.battles || !GAME_CONFIG.battles[id]){ closeFlightFrame(); return; }
+    flightBack = true;                    // 打完回飛行頁（見 setStoryReturn）
+    try{ SFX.unlock(); }catch(_){}        // 父頁早就解鎖過，這裡只是確保 context 是 running
+    /* ⚠ 順序：**先把門擺上去，再收 iframe** —— 反過來的話中間會閃一格飛行畫面。
+       門在劇情層（z 8300）＞ iframe（8200），所以蓋得住。
+       ⚠ 幾何用飛行頁量好的那一組（`req.geom`）：兩邊各算一次會差 8.6%，
+         交棒那一格紋章會忽然變大（鐵律 7）。 */
+    story.showKerbGate(req.geom);
+    closeFlightFrame();
+    preloadRestImgs(); preloadLateBgm();
+    story.playKerberosFromRisen(
+      ()=>{ $('home').classList.remove('on'); combat.startScriptBattle(id); },
+      ()=>story.close({ keepBgm:true }));
+  },
+  /* 飛行頁的「返回」。⚠ 只有在**底下沒有別的畫面**時才把首頁叫回來 ——
+     從城鎮出航的話，城鎮的舞台一直在 iframe 底下開著，收掉 iframe 就回到城鎮了。 */
+  close(){
+    closeFlightFrame();
+    const st=$('storyStage');
+    if(!st || !st.classList.contains('on')) $('home').classList.add('on');
+  },
+};
+
 function bootBattleGate(req){
   markBooted();
   flightBack = true;                       // 打贏跳回飛行頁（見 setStoryReturn）
-  story.showKerbGate();
+  /* ⚠ 幾何用飛行頁量好的那一組（交棒鑰匙帶過來的）：兩邊各算一次會差 8.6%，
+     跳頁那一格紋章會忽然變大（鐵律 7）。 */
+  story.showKerbGate(req.geom);
   /* 提示：做成門上的一行字，不是一顆鈕 —— 這一拍是儀式的一部分，不是一個對話框。
      ⚠ 讀取還沒到位時不亮：亮了才點得有意義（同讀取頁 `.al-done` 的作法）。 */
   const tip=document.createElement('div'); tip.id='gateTip';
@@ -529,6 +589,9 @@ window.addEventListener('pagehide', refreshBoot);
 
 // 首頁：開始遊戲 → 主選單先淡出、空一拍（約 1s）Battle 才淡入（避免唐突），同時播「驅逐開始」過渡禎
 function launchBattle(opts){
+  /* ⚠ 這一場不是飛行頁交棒過來的 → 清掉回程旗標（ver -388）。
+     不清的話「飛行遭遇打輸 → 回主選單 → 再打一場劇情戰打贏」會被錯誤地送去飛行頁。 */
+  flightBack = false;
   /* 出陣 stinger（sfx_startbt＝神楽鈴）：列第一梯關鍵預載 → 即點即響。
      ⚠ 劇情場次**不播**（Ray 指定）：那一場的轉場是 Kerberos 之門，門有自己的
        撞擊／齒輪／開門三支音；再疊一聲神楽鈴等於兩套儀式撞在一起。 */
@@ -681,7 +744,7 @@ document.querySelectorAll('#originalSheet .os-link').forEach(a=>{
 // 只作遙測排除，不再於開機時直接顯示後臺鈕；已簽裝置要進後臺，每場重做解鎖手勢即可。
 bindBtn('statsBtn', ()=>{ window.location.href = 'stats.html'; });
 // 試飛：大地圖飛行原型（管理人模式限定；鈕本身由 CSS 隱藏，見 style.css）
-bindBtn('flightBtn', ()=>{ window.location.href = 'flight/'; });
+bindBtn('flightBtn', openFlight);   // ver -388：內嵌 iframe，不再跳頁（見 openFlight 的說明）
 /* 主線劇情（管理人模式限定）：從 mainScript 的 MAIN_ENTRY 開始跑 scene 鏈。
    ⚠ 不換頁 —— 劇情舞台是蓋在首頁上的一層（#storyStage z-8300），離開就回首頁。
      換頁的話存讀檔要跨頁還原，複雜度沒必要。
@@ -708,12 +771,28 @@ let storyResume = null;
 /* 關門演出（進場那一套的倒放）：由劇情層提供、combat 在教學打完時呼叫（ver -366）。
    ⚠ 注入而不是 import —— combat 不認識劇情層（CLAUDE.md §2 的依賴方向）。 */
 story.setTownOpener(town.open);   // scene 的 `thenTown` 由 story 呼叫（注入，story 不 import town）
+/* 城鎮的「出航」→ 開飛行頁（注入，town 不 import main；同 setTownOpener 的作法）。 */
+town.setFlightOpener(openFlight);
 combat.setStoryClose(story.playKerberosClose);
 combat.setStoryReturn((res)=>{
   /* 飛行頁交棒過來的那一場：打完跳回去（ver -382）。
      ⚠ 只有**打贏**才回得去 —— 輸了在 `combat.lose()` 就走掉了（Game Over → 主選單），
        根本不會呼叫這一支；退出則由退出確認先把 `flightBack` 關掉。 */
-  if(flightBack){ flightBack=false; location.href='flight/index.html'; return; }
+  /* ⚠ 內嵌模式（ver -388）：飛行頁一直活著 —— **不重載**，在黑幕全蓋的那一刻把它顯示回來
+     就好（沒有第二次讀取頁，船也還在原處，Ray：「戰鬥結束不要另跑預載頁」）。
+     ⚠ 戰鬥／結算的曲子要收掉，不然回到飛行畫面還在放（飛行頁自己的曲子由
+       `__flightResume` 接回去）。
+     ⚠ 還沒內嵌過（`src` 是空的）＝這一場是從獨立飛行頁跳過來的 → 照舊跳頁回去。 */
+  if(flightBack){
+    flightBack=false;
+    const f=$('flightFrame');
+    if(f && f.getAttribute('src')){
+      try{ SFX.stopBgm(600); }catch(_){}
+      combat.goHome(openFlight, { noBgm:true });
+      return;
+    }
+    location.href='flight/index.html'; return;
+  }
   const r = storyResume; storyResume = null;
   /* ⚠ 走 `story.resumeFrom`（ver -375）：主線與城鎮的臨時段落**續播方式不同**，
      分流在 story 裡做（那裡才知道哪一種）。這裡照舊只負責把首頁收乾淨。 */
@@ -729,6 +808,7 @@ story.setBattleCue(()=>{
 });
 story.setBattleHandler((battleId, resume)=>{
   storyResume = resume;
+  flightBack = false;   // 劇情/城鎮的插入戰不是飛行頁交棒過來的（同 launchBattle 的理由）
   /* 劇情插入戰（ver -375）：腳本寫 `{battle:'guild_hunter'}`，查得到 `config.battles`
      就開那一場（單敵、卡上的數值、不能聖徒化／用搭檔技）。
      ⚠ 查不到才退回教學那一場 —— 舊腳本（地宮那一段）寫的就是教學，不能被改掉。 */

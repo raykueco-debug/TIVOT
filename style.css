@@ -1409,6 +1409,16 @@
   }
   /* 擺起始狀態時暫時關掉過場（見 story.js 的 playKerberosClose）。 */
   #kerb.kerb-instant,#kerb.kerb-instant *{transition:none !important;}
+  /* ── 飛行頁（ver -388）：內嵌 iframe，滿版 ──────────────────────────
+     ⚠ z-index 8200：壓過首頁與戰鬥畫面，但**低於劇情層 8300** —— 交棒那一刻
+       槍棺（在劇情層裡）要蓋在飛行畫面之上，收 iframe 才不會閃一格。
+     ⚠ 全域靜音鈕在飛行畫面上要收起來：那一頁自己有一顆（同一把 localStorage 鑰匙），
+       兩顆疊在一起只會讓人以為壞了。 */
+  #flightFrame{position:fixed;inset:0;width:100%;height:100%;border:0;margin:0;
+    z-index:8200;background:#05060c;display:none;}
+  #flightFrame.on{display:block;}
+  body.flight-on #muteBtn{display:none;}
+
   /* ── 飛行頁交棒過來時的「開棺」提示（ver -387）─────────────────────
      這條路徑沒有讀取遮罩：畫面上就是蓋滿螢幕的槍棺，讀取藏在門背後跑。
      那一點是**這一頁唯一**解鎖音訊的使用者手勢，非有不可 —— 所以要有訊號，
