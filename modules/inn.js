@@ -417,11 +417,20 @@ export function relayout(){
     const st=story.stageEl(); if(!st) return;
     const sr=st.getBoundingClientRect(), br=b.getBoundingClientRect();
     if(!br.width) return;
-    const half=br.width/2;
+    const half=br.width/2, halfH=br.height/2;
     let right = sr.width - half - 8;
     const dl = doorLeft();
     if(dl!=null) right = Math.min(right, dl - sr.left - half - 8);
     b.style.left = Math.min(Math.max(p.x, half+8), Math.max(half+8, right)) + 'px';
+    /* ⚠⚠ **下界是對話框的上緣**（ver -409，Ray：「獨自坐坐壓到對話框了」）。
+       敲門的回話、路人單句都會把對話框叫出來，而鈕是常駐的 —— 壓在框上就點不到、
+       也擋住台詞。對話框的位置是 `layoutKerberos` 那組變數解出來的，**問它不要自己算**
+       （鐵律 7）：`visibility:hidden` 的元素照樣量得到 box，所以框沒顯示時也夾得準。 */
+    const bub=document.getElementById('storyBubble');
+    let bottom = sr.height - halfH - 8;
+    if(bub){ const r=bub.getBoundingClientRect();
+      if(r.height) bottom = Math.min(bottom, r.top - sr.top - halfH - 8); }
+    b.style.top = Math.min(Math.max(p.y, halfH+8), Math.max(halfH+8, bottom)) + 'px';
   };
   put('[data-act="sit"]',   wantSit,   spots.sit);
   put('[data-act="sleep"]', wantSleep, spots.sleep);
