@@ -33,6 +33,7 @@ import { SFX } from '../audio.js';
 import { matchPortraits } from './tone.js';
 import * as settings from './settings.js';   // 選單（音量／自動播放速度）；葉節點，只依賴 audio
 import * as hap from './haptics.js';        // 震動（ver -398）
+import * as clock from '../script/clock.js';   // 時段（插圖／背景的差分候選鏈，ver -427）
 
 const $ = id => document.getElementById(id);
 
@@ -482,6 +483,41 @@ function setImg(el, src){
   if(src){ if(el.getAttribute('src')!==src) el.src=src; el.classList.add('on'); }
   else   { el.classList.remove('on'); }
 }
+
+/* ══ 時段差分的候選鏈（ver -427，鐵律 7／8 的單一真相）══════════════════════
+   ⚠⚠ 這條規矩本來只長在 `modules/town.js` 的 `bgFor` 裡（背景用）；Ray ver -427
+     把**插圖**也拆成時段差分（`005_Kerberos_day` / `_dusk`），所以規矩要抽出來 ——
+     兩邊各寫一份的話一定會走鐘（其中一份漏了大小寫變體、或漏了 `.png` 那一級）。
+     town 的 `bgFor` 現在讀這一支，插圖那一支也讀這一支。
+   順序：`<base>_<時段>` → 大小寫變體 → `_Day`（＋變體）→ 無時段；
+   每個名字再試 `.webp` → `.png`。
+   ⚠ 為什麼要大小寫變體：`clock.band()` 出的是 `Dawn/Day/Dusk/night/midnight`
+     （大小寫是 Ray 定的），但交件的檔名兩種都出現過。**macOS 不分大小寫，靜態空間分**
+     —— 本機測不出來，上線才 404。
+   ⚠ 為什麼要兩種副檔名：規約是 WebP（§5），但交件常常先是 PNG。
+   ⚠ `noTime` ＝這張圖沒有時段差分（室內背景），只試原名。 */
+const BAND_EXT = ['.webp', '.png'];
+function altCase(name){
+  const i=name.lastIndexOf('_'); if(i<0) return null;
+  const head=name.slice(0,i+1), tail=name.slice(i+1);
+  if(!tail) return null;
+  const alt = (tail[0]===tail[0].toUpperCase())
+    ? tail[0].toLowerCase()+tail.slice(1) : tail[0].toUpperCase()+tail.slice(1);
+  return alt===tail ? null : head+alt;
+}
+export function bandNames(base, noTime){
+  const names=[]; const push=n=>{ if(n && names.indexOf(n)<0) names.push(n); };
+  if(noTime){ push(base); }
+  else{
+    const b=clock.bgName(base);
+    push(b); push(altCase(b));
+    push(base+'_Day'); push(altCase(base+'_Day'));
+    push(base);
+  }
+  const out=[];
+  for(const n of names) for(const e of BAND_EXT) out.push(n+e);
+  return out;
+}
 /* 背景／插圖的來源路徑。⚠ **插圖也可以當背景用**（ver -325，Ray：「『對不起，
    我已經…』的背景是插圖002」）—— 判斷靠命名慣例：插圖一律 `NNN_` 開頭
    （001_Nouvelle_Fell…），背景是名字（HolyseeDungeonWhole…）。
@@ -543,10 +579,14 @@ const CG_FADE_MS = 500;
    ⚠ `fadeOwner` 是為了分辨黑幕是誰掛上去的：場景之間的讀取閘門也用同一塊黑幕，
      那一塊**不能**被 flush 收掉（它要蓋到新場景第一拍演完）。 */
 let cgFadeT=[], cgFinish=null, fadeOwner=null;
+const missingCg=new Set();   // 退回過的插圖：只提示一次，不然每一句都印一行
 function flushCgFade(){
   cgFadeT.forEach(clearTimeout); cgFadeT=[];
   if(cgFinish) cgFinish();
 }
+/* `src` 可以是一個**候選陣列**（時段差分，ver -427）：由前往後試，第一張載得起來的
+   就是它。⚠ 試的那一次**就是**要用的那一次載入（設 `el.src` 再看 onload/onerror），
+   不另外開一輪探測 —— 那等於同一張圖抓兩次。 */
 function cgFade(el, src){
   const fade=$('storyFade');
   /* ⚠ **插圖一出現就要走黑幕**，不是只有「插圖換插圖」才走 —— Ray 抱怨的正是
@@ -557,13 +597,24 @@ function cgFade(el, src){
   fade.classList.add('on'); fadeOwner='cg';
   cgFinish=()=>{
     cgFinish=null;
-    setImg(el, src);
+    const list = Array.isArray(src) ? src : (src ? [src] : []);
     /* 等新圖真的畫上去再收黑幕 —— 沒載完就收，會先看到一格舊圖或空白
        （同 ver -322 立繪、ver -325 背景踩過的那個坑）。 */
-    const back=()=>{ el.onload=null;
+    const back=()=>{ el.onload=null; el.onerror=null;
       if(fadeOwner==='cg'){ fade.classList.remove('on'); fadeOwner=null; } };
-    if(!src || (el.complete && el.naturalWidth)) back();
-    else { el.onload=back; cgFadeT.push(setTimeout(back, 900)); }
+    const tryAt=(i)=>{
+      if(i>=list.length){ setImg(el, ''); back(); return; }   // 一張都載不到：等於沒有插圖
+      setImg(el, list[i]);
+      if(el.complete && el.naturalWidth) { back(); return; }
+      el.onload=back;
+      el.onerror=()=>{ el.onload=null; el.onerror=null;
+        if(i===0 && !missingCg.has(list[0])){ missingCg.add(list[0]);
+          console.info('[story] 沒有這個時段的插圖，往下試：', list[0]); }
+        tryAt(i+1); };
+    };
+    if(!list.length){ setImg(el, ''); back(); return; }
+    cgFadeT.push(setTimeout(back, 900));    // 保險：候選全都很慢時別把黑幕卡住
+    tryAt(0);
   };
   cgFadeT.push(setTimeout(()=>{ if(cgFinish) cgFinish(); }, CG_FADE_MS));
   return true;
@@ -606,7 +657,11 @@ function applyPersist(line){
   if(line.cg!==undefined && line.cg!==stageCg){
     cgChanged=true;
     stageCg=line.cg;
-    cgFaded = cgFade($('storyCg'), line.cg?CG_DIR+line.cg+'.webp':'');
+    /* ⚠ 插圖**也吃時段差分**（ver -427，Ray 指定）：`005_Kerberos` →
+       `005_Kerberos_dusk` / `_day` 由 `clock.band()` 挑，走與背景**同一條**候選鏈。
+       ⚠ `cgNoTime:true` ＝這張沒有差分（多數插圖都是），只試原名。 */
+    cgFaded = cgFade($('storyCg'),
+      line.cg ? bandNames(line.cg, line.cgNoTime).map(n=>CG_DIR+n) : '');
   }
   if(line.ci!==undefined){ stageCi=line.ci; setImg($('storyCi'), line.ci?SI_DIR+line.ci+'.webp':''); }
   /* 情境卡：⚠ 它是**一次性的畫面狀態**（下一句沒寫就收掉），所以每一句都要判，
@@ -1787,7 +1842,12 @@ function collectAssets(startId){
     for(const ln of (sc.lines||[])) if(ln.load && ln.load===sc.next) gated=true;
     for(const ln of (sc.lines||[])){
       if(ln.bg) imgs.add(imgSrc(ln.bg));
-      if(ln.cg) imgs.add(CG_DIR+ln.cg+'.webp');
+      /* 插圖有時段差分（ver -427）→ 預載把**這一刻的三個 webp 候選**都排進去
+         （時段／大小寫變體／原名）。多出來的兩個必然 404，但預載器對錯誤是容忍的
+         （`im.onload=im.onerror=…`），而少排的代價是「真的要演時才開始下載」。
+         ⚠ 不排 `.png` 那一級：規約是 WebP（§5），PNG 只是交件過渡，
+           真的遇到時 `cgFade` 會自己往下試，只是少一次快取。 */
+      if(ln.cg) for(const n of bandNames(ln.cg)) if(n.endsWith('.webp')) imgs.add(CG_DIR+n);
       if(ln.ci) imgs.add(SI_DIR+ln.ci+'.webp');
       if(ln.bgm && bgmSrc(ln.bgm)) bgms.add(bgmSrc(ln.bgm));
       for(const n of [].concat(ln.se||[])){ const k=(typeof n==='string')?n:n.n;

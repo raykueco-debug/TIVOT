@@ -106,6 +106,11 @@ export const ART = {
                   surprised:{ src:'resources/SI/Renna_SI_surprised.webp',top:0, bot:1522, fx:0.502 },
                   tired:    { src:'resources/SI/Renna_SI_tired.webp',    top:7, bot:1522, fx:0.495 },
                   writing:  { src:'resources/SI/Renna_SI_writting.webp', top:4, bot:1524, fx:0.507 },
+                  /* ver -427 交件。`talkserious`＝正色說明、`talkwork`＝談公事、
+                     `thinking`＝思索。取景值一張一張量（§6.5）。 */
+                  talkserious:{src:'resources/SI/Renna_SI_talkserious.webp',top:3, bot:1516, fx:0.509 },
+                  talkwork: { src:'resources/SI/Renna_SI_talkwork.webp',   top:3, bot:1519, fx:0.509 },
+                  thinking: { src:'resources/SI/Renna_SI_thinking.webp',   top:4, bot:1530, fx:0.515 },
                   /* ver -425 交件。`covermouth`＝掩口（驚訝／忍笑）、`cringe`＝尷尬皺眉。 */
                   covermouth:{src:'resources/SI/Renna_SI_covermouth.webp',top:2, bot:1528, fx:0.512 },
                   cringe:   { src:'resources/SI/Renna_SI_cringe.webp',    top:3, bot:1524, fx:0.502 },
@@ -127,6 +132,8 @@ export const ART = {
            side:'L', alt:null, base:'resources/SI/Nouvelle_SI_front.webp',
            expr:{ /* 艦鬥教學那幾拍（ver -424，Ray 交件）：她穩住陣腳的姿勢。 */
                   steady:   { src:'resources/SI/Nouvelle_SI_steady.webp',   top:8,  bot:1529, fx:0.534 },
+                  /* ver -427 交件：酒館第一句要的那張（在此之前一直回退基本立繪）。 */
+                  pray:     { src:'resources/SI/Nouvelle_SI_pray.webp',     top:0,  bot:1533, fx:0.535 },
                   run:      { src:'resources/SI/Nouvelle_SI_Run.webp',       top:13, bot:1533, fx:0.418 },
                   cringe:   { src:'resources/SI/Nouvelle_SI_Cringe.webp',    top:5,  bot:1533, fx:0.459 },
                   scared:   { src:'resources/SI/Nouvelle_SI_Scared.webp',    top:9,  bot:1530, fx:0.397 },

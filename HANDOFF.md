@@ -5359,7 +5359,22 @@ Stage1 的地圖限制（無探索／無加速、只開帝都與北方泊地、�
 ⚠ 測試時注意：瀏覽器工具的「按一下空白」實際上送出的是**長按**（一串 `repeat`），
 所以會直接進加速模式。要測單次推進得自己 `dispatchEvent` 一個 `repeat:false` 的 keydown。
 
-## ⚠⚠ Ray 在這一輪中途丟進 repo 的素材（**還沒處理**）
+## 四、插圖也吃時段差分了（Ray 定案，同一輪補上）
+
+`005_Kerberos` 被 Ray 拆成 `_day` / `_dusk`（原檔刪掉），所以插圖也走**時段候選鏈**。
+
+- ⚠⚠ **候選鏈抽成一份**：`modules/story.js` 的 `bandNames()`（時段 → 大小寫變體 →
+  `_Day`＋變體 → 原名，每個名字再試 `.webp`／`.png`）。它本來只長在 `town.bgFor` 裡；
+  多一個使用者就抽出來，**不要抄第二份**（抄的那一份一定會漏掉大小寫變體或 `.png` 那一級）。
+  `town.bgFor` 現在讀它。
+- 腳本照樣只寫 `cg:'005_Kerberos'`；`cgNoTime:true` 可以明講「這張沒有差分」。
+- **探測就是那一次載入**（設 `el.src` 看 onload/onerror），不另開一輪 —— 那等於抓兩次圖。
+- `script_lint.py` 的插圖檢查改成「**有任何一個時段在**就算數」。
+- ⚠⚠ **本機測不出大小寫問題**：Ray 給的是 `_dusk`（小寫）而 `clock.band()` 出 `Dusk`（大寫），
+  實測 `src` 停在 `005_Kerberos_Dusk.webp` **照樣顯示得出來** —— macOS 的檔案系統不分大小寫。
+  靜態空間會分。候選鏈裡的大小寫變體就是為此存在的（§6.5.4 那條老規矩）。
+
+## ⚠⚠ Ray 在這一輪中途丟進 repo 的素材
 
 ```
 resources/SI/Nouvelle_SI_pray.png          （補上一直缺的那張，酒館第一句本來會回退）
@@ -5371,12 +5386,14 @@ resources/illustration/005_Kerberos_dusk.png
 resources/illustration/005_Kerberos.webp   ← **被刪掉了**
 ```
 
-- ⚠⚠ **`005_Kerberos` 現在是斷的**：旅店初訪那一幕的 `cg:'005_Kerberos'` 指到一個
-  不存在的檔（`script_lint.py` 已經在報）。看起來 Ray 要的是**插圖也吃時段差分**
-  （`_day`／`_dusk`，同背景那條候選鏈）—— 但那是猜的，**等他定案再做**。
-  順帶：`_dusk` 還是 PNG，照 §5 要轉 webp。
-- 四張立繪要走既有的流程：轉 webp → `tools/measure_si.py` 量 `top/bot/fx` →
-  進 `ASSETS` 與 `script/speakers.js` → 原 PNG 進 `_originals`。**這一輪沒做。**
+**全部處理完了**（Ray 當場定案「插圖也吃時段」）：
+
+- `005_Kerberos_dusk.png` → webp，原 PNG 進 `resources/_originals/illustration/`。
+- 四張立繪轉 webp、`tools/measure_si.py` 逐張量、進 `script/speakers.js`，
+  原 PNG 進 `resources/_originals/SI/`：
+  `NOUVELLE.pray`（`top:0 bot:1533 fx:0.535`，酒館第一句本來一直回退基本立繪，現在補上了）、
+  `RENNA.talkserious` / `.talkwork` / `.thinking`。
+- ⚠ `005-1_Kerberos.webp` 還沒有人用（腳本裡沒有引用），不確定是什麼，**留著沒動**。
 
 ## ⚠ 還沒做（延續 -426）
 

@@ -41,41 +41,21 @@ let arriveT=0;            // 抵達停頓的計時器（換節點要取消，見
      而 Image 本來就要載。**載到才換**，所以不會閃到破圖。
    ⚠ 退回要留一筆 console —— 否則「為什麼晚上還是白天」會查很久。 */
 const missingBg=new Set();
-/* 時段尾巴的**大小寫變體**：`_night` ⇄ `_Night`、`_Dusk` ⇄ `_dusk`…
-   ⚠ 為什麼要有：`clock.band()` 出的是 `Dawn/Day/Dusk/night/midnight`（大小寫是 Ray 定的），
-     但實際交件的檔名兩種都出現過（`Capital_Church_Night` vs `Capital_Cityhall_night`）。
-     靜態空間與多數伺服器**是分大小寫的**，猜錯就 404。與其要求檔名整齊，
-     不如在候選鏈裡把兩種都試一次 —— 這比「載不到、畫面停在白天」好查得多。 */
-function altCase(name){
-  const i=name.lastIndexOf('_'); if(i<0) return null;
-  const head=name.slice(0,i+1), tail=name.slice(i+1);
-  if(!tail) return null;
-  const alt = (tail[0]===tail[0].toUpperCase())
-    ? tail[0].toLowerCase()+tail.slice(1) : tail[0].toUpperCase()+tail.slice(1);
-  return alt===tail ? null : head+alt;
-}
-/* ⚠ 副檔名也逐個試：**規約是 WebP**（§5），但 Ray 交件常常先是 PNG ——
-   載不到就整個時段沒有背景，不如兩個都試。**先試 webp**，所以轉檔之後自動用新的。 */
-const BG_EXT=['.webp','.png'];
+/* ⚠⚠ 候選鏈本身（時段尾巴的大小寫變體、`.webp`／`.png` 兩種副檔名、退回 `_Day`
+   與原名）**搬到 `modules/story.js` 的 `bandNames`** 了（ver -427）——
+   Ray 把插圖也拆成時段差分之後，那條規矩有兩個使用者，抄兩份必然走鐘（鐵律 7）。
+   為什麼需要那些變體與副檔名，見那一支的註解。 */
 /* ⚠ 換節點的**流水號**：背景是非同步載的，快速連走兩個節點時，前一個的 `onload`
    可能**晚於**後一個才回來 —— 那時它會把已經換好的背景又蓋回舊的那一張
    （實測：開城 → 立刻進大教堂，畫面停在廣場）。載完先確認自己還是最新的那一次。 */
 let bgSeq=0;
 function bgFor(base, noTime){
   const my=++bgSeq;
-  const names=[]; const push=n=>{ if(n && names.indexOf(n)<0) names.push(n); };
-  if(noTime){ push(base); }
-  else{
-    const b=clock.bgName(base);
-    push(b); push(altCase(b));
-    /* ⚠ `_Day` 這一級**也要試大小寫變體**（ver -400）：交件的檔名 `_Day` / `_day`
-       兩種都出現過，而這一級是「這個時段沒有圖」時的退路 —— 它自己再漏掉一次，
-       夜裡就整片沒有背景。 */
-    push(base+'_Day'); push(altCase(base+'_Day'));
-    push(base);
-  }
-  const cands=[];
-  for(const n of names) for(const e of BG_EXT) cands.push(n+e);
+  /* ⚠⚠ 候選鏈**只有一份**（ver -427）：`modules/story.js` 的 `bandNames`。
+     Ray 把插圖也拆成時段差分之後，這條規矩（時段 → 大小寫變體 → `_Day` → 原名，
+     每個名字再試 `.webp`／`.png`）就有兩個使用者了 —— 抄一份到那邊必然走鐘
+     （其中一份會漏掉大小寫變體、或漏掉 `.png` 那一級）。鐵律 7。 */
+  const cands=story.bandNames(base, noTime);
   const tryAt=(i)=>{
     if(i>=cands.length) return;
     const name=cands[i];

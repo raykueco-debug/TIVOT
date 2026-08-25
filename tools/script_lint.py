@@ -224,8 +224,20 @@ def main():
                         warn('%s：背景 %s 只有 .png，還沒轉成 .webp（§5 的規約）' % (tag, ln['bg']))
                     else:
                         err('%s：沒有這張背景 %s（找 %s）' % (tag, ln['bg'], d))
-            if ln.get('cg') and not exists(CG_DIR + ln['cg'] + '.webp'):
-                err('%s：沒有這張插圖 %s' % (tag, ln['cg']))
+            if ln.get('cg'):
+                # 插圖也吃時段差分（ver -427）：`005_Kerberos` 可能只有
+                # `_day` / `_dusk` 這些檔，原名反而不存在 —— 只要**有一個時段**在就算數。
+                # ⚠ 這裡不重算候選鏈（那在 modules/story.js 的 `bandNames`）——
+                #   只是「有沒有任何一張」的存在性檢查，不決定播的時候挑哪一張。
+                cg = ln['cg']
+                bands = ('', '_Dawn', '_Day', '_Dusk', '_night', '_midnight',
+                         '_dawn', '_day', '_dusk', '_Night', '_Midnight')
+                got = [b for b in bands
+                       if exists(CG_DIR + cg + b + '.webp') or exists(CG_DIR + cg + b + '.png')]
+                if not got:
+                    err('%s：沒有這張插圖 %s' % (tag, cg))
+                elif all(not exists(CG_DIR + cg + b + '.webp') for b in got):
+                    warn('%s：插圖 %s 只有 .png，還沒轉成 .webp（§5 的規約）' % (tag, cg))
             if ln.get('ci') and not exists(SI_DIR + ln['ci'] + '.webp'):
                 err('%s：沒有這張 CI %s' % (tag, ln['ci']))
 
