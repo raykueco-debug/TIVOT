@@ -64,7 +64,15 @@ function bgFor(base, noTime){
   const my=++bgSeq;
   const names=[]; const push=n=>{ if(n && names.indexOf(n)<0) names.push(n); };
   if(noTime){ push(base); }
-  else{ const b=clock.bgName(base); push(b); push(altCase(b)); push(base+'_Day'); push(base); }
+  else{
+    const b=clock.bgName(base);
+    push(b); push(altCase(b));
+    /* ⚠ `_Day` 這一級**也要試大小寫變體**（ver -400）：交件的檔名 `_Day` / `_day`
+       兩種都出現過，而這一級是「這個時段沒有圖」時的退路 —— 它自己再漏掉一次，
+       夜裡就整片沒有背景。 */
+    push(base+'_Day'); push(altCase(base+'_Day'));
+    push(base);
+  }
   const cands=[];
   for(const n of names) for(const e of BG_EXT) cands.push(n+e);
   const tryAt=(i)=>{

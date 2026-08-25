@@ -233,7 +233,14 @@ def main():
                 if to not in nodes:
                     err('%s：出口 %s 指到不存在的節點 %s' % (tag, d, to))
             bg = n.get('bg')
-            if bg and not (exists(BG_DIR + bg + '_Day.webp') or exists(BG_DIR + bg + '.webp')):
+            # ⚠ `noTime` 的節點吃的是**基底檔**（沒有時段尾巴）——不能拿 `_Day` 當通過條件：
+            #   ver -400 踩過：Ray 換成 `_day`/`_dusk` 之後基底檔沒了，lint 因為看到 `_Day`
+            #   就放行，遊戲卻整片沒有背景（`noTime` 的候選鏈根本不找 `_Day`）。
+            if bg and n.get('noTime') and not (exists(BG_DIR + bg + '.webp')
+                                               or exists(BG_DIR + bg + '.png')):
+                err('%s：noTime 的節點要有**基底**背景 %s（找 %s，不含時段尾巴）'
+                    % (tag, bg, BG_DIR))
+            elif bg and not n.get('noTime') and not (exists(BG_DIR + bg + '_Day.webp') or exists(BG_DIR + bg + '.webp')):
                 # 同上：有 PNG 只是還沒轉檔（`bgFor` 兩個副檔名都試），不是「缺圖」
                 if exists(BG_DIR + bg + '_Day.png') or exists(BG_DIR + bg + '.png'):
                     warn('%s：背景 %s 只有 .png，還沒轉成 .webp（§5 的規約）' % (tag, bg))

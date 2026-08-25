@@ -383,7 +383,10 @@ export const TOWNS = {
 
       /* 2. 商店 */
       grocery: {
-        bg:'Capital_Grocerie', noTime:true, name:'帝都　雜貨舖',   // 室內：只有一張圖，不吃時段
+        /* ⚠ ver -400：Ray 交了時段差分（`_day` / `_dusk`），所以**拿掉 `noTime`** ——
+           留著的話候選鏈只會找沒有時段尾巴的 `Capital_Grocerie`，而那張已經不存在了
+           → 背景整個不見（Ray 回報「雜貨舖的背景圖不見了」）。 */
+        bg:'Capital_Grocerie', name:'帝都　雜貨舖',
         exits:{ back:'uptown' },
         shop:'grocery',
         /* 櫃台＝店主站的那一格（ver -387 由「點畫面就開」改成櫃台鈕，Ray 指定）。 */
