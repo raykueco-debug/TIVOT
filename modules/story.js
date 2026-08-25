@@ -705,7 +705,7 @@ const SE_FILES=[
   'Se_enemy_Saintroar.m4a', 'Sturm.m4a', 'se_Fall.m4a', 'se_Kerberos_gear.m4a',
   'se_Kerberos_open.m4a', 'se_Kerberos_pop.m4a', 'se_Kerberos_steam.m4a',
   'se_kerberos_drop.m4a',                                    // 槍棺落地（旅店那一幕，ver -392）
-  'se_enemy_dagger.m4a',
+  'se_enemy_dagger.m4a', 'se_dart_fail.m4a',                 // 固定立靶點錯（ver -397）
   'se_enemy_revolver.m4a', 'se_enemy_shot.m4a', 'se_enemy_slash.m4a', 'se_enemy_smack.m4a',
   'se_flight_heartbeat.m4a', 'se_flight_idle_loop.mp3', 'se_flight_sail_loop.mp3',
   'se_flight_seagull.m4a', 'se_flight_train.mp3', 'se_lunaMG.m4a', 'se_punch.m4a',

@@ -36,15 +36,32 @@ def strip_module(src):
     src = re.sub(r'^\s*export\s*\{[^}]*\};?', '', src, flags=re.M)
     return src
 
+# ⚠ **先逐檔驗語法，再合起來跑**（ver -403）。合起來跑也會抓到語法錯，但行號是
+#   「串起來那個暫存檔」的行號，對不回原檔 —— Ray 手改稿子時最需要的正是
+#   「哪一個檔、第幾行」。逐檔 `--module-file` 一次就給得出來。
+SRC_FILES = ('script/speakers.js', 'script/mainScript.js', 'script/town.js', 'config.js')
+
+def check_syntax():
+    bad = 0
+    for f in SRC_FILES:
+        r = subprocess.run([JSC, '--module-file=' + os.path.join(ROOT, f)],
+                           capture_output=True, text=True)
+        msg = (r.stdout or '') + (r.stderr or '')
+        if 'SyntaxError' in msg:
+            print('❌ %s 語法錯誤：\n%s' % (f, msg.strip())); bad += 1
+    if bad:
+        print('\n先修語法，其他檢查跳過。'); sys.exit(2)
+
 def load_data():
     if not os.path.exists(JSC):
         print('找不到 jsc（%s）——這支工具依賴 macOS 內建的 JavaScriptCore。' % JSC)
         sys.exit(2)
+    check_syntax()
     parts = []
     # ⚠ 城鎮（`script/town.js`）與 config 也一起載（ver -375）：城鎮節點現在會帶
     #   **劇情插入戰**與整段對白，跟主線一樣需要驗 —— 缺圖／打錯角色 id／
     #   battle 指到不存在的場次，一樣要在這裡就抓到，不要等演到那一句。
-    for f in ('script/speakers.js', 'script/mainScript.js', 'script/town.js', 'config.js'):
+    for f in SRC_FILES:
         parts.append(strip_module(open(os.path.join(ROOT, f), encoding='utf-8').read()))
     parts.append('print(JSON.stringify({script:MAIN_SCRIPT, entry:MAIN_ENTRY,'
                  ' speakers:SPEAKERS, art:ART, towns:TOWNS, cfg:GAME_CONFIG}));')

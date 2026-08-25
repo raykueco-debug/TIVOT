@@ -4285,3 +4285,59 @@ Ray 指定：**賞金獵人公會／槍店／雜貨舖**才是「這種店」的
 都變成「等玩家點一下」。**建議整個不寫**（少一個會被誤讀成「有設定」的欄位）。
 ⚠ 空台詞的那一拍本來就不出對話框，但**點畫面照樣推得動**（推進掛在 `#storyTouch`，
 不是掛在對話框上），所以無台詞＋不寫 `auto` ＝「停在這一格，等玩家點」。
+
+---
+
+# 交接 · `ver -403`（主頁全白／圖讀不進去 —— 稿子的語法錯會炸掉整個開機）
+
+## A. 症狀與成因
+
+Ray 回報「主頁壞了，圖讀不進去」。實際狀況是**所有** `<img>` 的 `src` 都是 `null`，
+`resource` 清單裡連一筆 404 都沒有 —— 因為**根本沒人去設 src**。
+
+主控台只有一行 `Uncaught SyntaxError: Unexpected token ':'`。
+`index.html` 是**單一 module 圖**：`main.js → config.js / modules/* / script/*`。
+其中**任何一支**語法錯，整張圖就不會 evaluate，`applyConfigToDOM()` 沒跑過，
+於是每一張圖都是空的、開機遮罩也不出現 —— 畫面看起來「圖讀不進去」，
+但那只是唯一看得見的症狀，實際上**整個 JS 都沒跑**。
+
+⚠ **不要從「圖」開始查**。判斷順序是：
+①`document.images` 的 `src` 是不是 `null`（是 → 不是網路問題，是 JS 沒跑）
+②主控台第一行錯誤 ③逐檔驗語法。
+
+錯的是 Ray 手改的兩支稿子：
+
+| 檔 | 寫成 | 應該是 |
+|---|---|---|
+| `script/town.js` cityhall | `nou('run','啊——！'),se:'se_steps'` | `nou('run','啊——！', { se:'se_steps' })` |
+| `script/mainScript.js` capital_square | 貼進了 `ren(...)`／`nou(...)` | 那兩個簡寫**只有 `town.js` 有**；mainScript 要寫 `{ speaker:'RENNA', text:…, portrait:{…} }` |
+
+⚠ `ren()` / `nou()` 是 `script/town.js` 檔頭自己定義的小工具，**mainScript.js 沒有**。
+  兩份稿子的寫法不同 —— 從一支複製到另一支要換格式（或哪天把那組工具抽成共用的）。
+
+## B. 取名那一段搬家了（Ray 這次的實際改動）
+
+原本在 `TOWNS.capital.cityhall` 的取名戲整段拿掉，接回 `MAIN_SCRIPT.capital_square`
+（那一幕本來就有前半段：「好、好的，蕾娜小姐」→ 手刀 → 「沒關係啦」）。
+現在 `capital_square` 是完整的一段：`…沒關係啦 → 不過……我該怎麼稱呼你好呢 →
+{nameInput:true} → 那麼，晚上六點回旅店集合`。
+cityhall 收在 `nou('run','啊——！', {se:'se_steps'})`。
+⚠ 全專案的 `nameInput` 閘門**只剩這一個**（grep 過）。
+
+## C. `script_lint.py` 加了「逐檔驗語法」
+
+以前它把四支檔串成一個暫存檔再交給 jsc，語法錯雖然抓得到，但行號是**暫存檔**的行號，
+對不回原檔。現在 `check_syntax()` 先逐檔 `jsc --module-file=` 跑一次，直接印
+「哪一支、第幾行」，有錯就停在那裡不往下驗。
+
+**手改完 `mainScript.js` / `town.js` / `speakers.js` / `config.js` 一定要跑：**
+```
+python3 tools/script_lint.py
+```
+
+## D. 順帶
+
+- `se_dart_fail.m4a` 補進 `modules/story.js` 的 `SE_FILES`（ver -397 漏了 → 預載不到）。
+- `Capital_Uptown_Dusk/night/midnight` 轉 webp，原 PNG 進 `_originals/background/`
+  （8.3 MB → 0.93 MB）。⚠ `-402` 那次 `git add -A` 把兩張 PNG 直接進版控了 ——
+  **新圖進來一律先轉檔再 commit**（見 CLAUDE.md §5 的轉檔三步）。

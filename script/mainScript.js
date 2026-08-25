@@ -407,6 +407,12 @@ export const MAIN_SCRIPT = {
         portrait:{ char:'NOUVELLE', expr:'whisper', show:true } },
       { speaker:'RENNA', text:'沒關係啦，好久沒被那樣叫，有點懷念罷了。',
         portrait:{ char:'RENNA', expr:'smile', show:true } },
+      /* ⚠ `HUND` 是她一直以來的叫法（德語「犬」），**照原文**不要翻。 */
+      { speaker:'RENNA', text:'不過……我該怎麼稱呼你好呢？總不能一直叫你 HUND 吧？',
+        portrait:{ char:'RENNA', expr:'smile', show:true } },
+      /* 閘門：輸入名字與暱稱（預設凱勞諾斯／凱，見 progress.js）。
+         ⚠ 這一拍**沒有台詞、不出框**，由 `story.js` 開輸入面板擋住推進。 */
+      { nameInput:true },
       { speaker:'RENNA', text:'那麼，晚上六點回旅店集合。明早出發。', portrait:{ expr:null } },
       { speaker:'NOUVELLE', text:'好。',
         portrait:{ char:'NOUVELLE', expr:null, show:true } },
