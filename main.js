@@ -235,11 +235,21 @@ function takeBattleReq(){
      只把 iframe 藏起來是不夠的，rAF 停了它的 `updateBgm` 也停了，
      那幾個 <audio> 會維持當時的音量繼續播。 */
 function flightWin(){ const f=$('flightFrame'); return f ? f.contentWindow : null; }
-function openFlight(){
+/* ══ 預載分流（ver -389，Ray 指定）══════════════════════════════════════
+   進飛行畫面有**兩條路**，讀取頁只有其中一條要跑：
+     · **進入**（主選單「試飛」／城鎮「出航」）→ **跑**飛行頁自己的讀取頁。
+       那是一趟新的航行：素材重新備齊、狀態從頭來，而且那一頁本身就是「起飛」的那一拍。
+     · **戰鬥結束回來**（`{resume:true}`）→ **不跑**。iframe 從頭到尾沒卸載過，
+       船還在原座標（ver -388，Ray：「戰鬥結束不要另跑預載頁」）。
+   ⚠ 兩條路的差別只有一件事：進入時把 iframe **重載**，回程只是把它顯示回來。
+   ⚠ 重載要走 `contentWindow.location.reload()` —— 把 `src` 設成同一個字串**不會**重載。 */
+function openFlight(opts){
   const f=$('flightFrame');
   if(!f){ window.location.href='flight/'; return; }      // 沒有這個框就退回舊的跳頁
+  const w=flightWin();
   if(!f.getAttribute('src')) f.setAttribute('src','flight/index.html');
-  else { const w=flightWin(); if(w && w.__flightResume) w.__flightResume(); }
+  else if(opts && opts.resume){ if(w && w.__flightResume) w.__flightResume(); }
+  else { try{ w.location.reload(); }catch(_){ f.setAttribute('src','flight/index.html'); } }
   f.classList.add('on');
   document.body.classList.add('flight-on');
   $('home').classList.remove('on');
@@ -744,7 +754,8 @@ document.querySelectorAll('#originalSheet .os-link').forEach(a=>{
 // 只作遙測排除，不再於開機時直接顯示後臺鈕；已簽裝置要進後臺，每場重做解鎖手勢即可。
 bindBtn('statsBtn', ()=>{ window.location.href = 'stats.html'; });
 // 試飛：大地圖飛行原型（管理人模式限定；鈕本身由 CSS 隱藏，見 style.css）
-bindBtn('flightBtn', openFlight);   // ver -388：內嵌 iframe，不再跳頁（見 openFlight 的說明）
+// ver -388：內嵌 iframe，不再跳頁；ver -389：「進入」這條路會跑讀取頁（見 openFlight）
+bindBtn('flightBtn', ()=>openFlight());
 /* 主線劇情（管理人模式限定）：從 mainScript 的 MAIN_ENTRY 開始跑 scene 鏈。
    ⚠ 不換頁 —— 劇情舞台是蓋在首頁上的一層（#storyStage z-8300），離開就回首頁。
      換頁的話存讀檔要跨頁還原，複雜度沒必要。
@@ -772,7 +783,7 @@ let storyResume = null;
    ⚠ 注入而不是 import —— combat 不認識劇情層（CLAUDE.md §2 的依賴方向）。 */
 story.setTownOpener(town.open);   // scene 的 `thenTown` 由 story 呼叫（注入，story 不 import town）
 /* 城鎮的「出航」→ 開飛行頁（注入，town 不 import main；同 setTownOpener 的作法）。 */
-town.setFlightOpener(openFlight);
+town.setFlightOpener(()=>openFlight());   // 城鎮出航＝「進入」，讀取頁要跑（ver -389）
 combat.setStoryClose(story.playKerberosClose);
 combat.setStoryReturn((res)=>{
   /* 飛行頁交棒過來的那一場：打完跳回去（ver -382）。
@@ -788,7 +799,7 @@ combat.setStoryReturn((res)=>{
     const f=$('flightFrame');
     if(f && f.getAttribute('src')){
       try{ SFX.stopBgm(600); }catch(_){}
-      combat.goHome(openFlight, { noBgm:true });
+      combat.goHome(()=>openFlight({ resume:true }), { noBgm:true });
       return;
     }
     location.href='flight/index.html'; return;

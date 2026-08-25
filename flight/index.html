@@ -5121,13 +5121,12 @@ function render(now){
   drawPlaces(scaleH,horizon,sinp,cosp);
   drawFlock(scaleH,horizon,sinp,cosp,now);
   drawEnemy3D(scaleH,horizon,sinp,cosp,now);
-  /* 進入戰鬥的提示：**只看狀態，不看畫不畫得出來**（Ray 指定）。
-     原本這一行在 drawEnemy3D 裡面，而那個函式有五處 return（在身後、
-     太遠、視圖圖還沒載、投影寬度不到 2px…）—— 敵人從後面靠上來時
-     提示就整個不會出現，玩家的體感是「牠貼到臉上了卻沒有進戰鬥」。
-     遭遇判定（updateEnemy 的 dist<=engage）本來就只看距離，是這裡把它
-     綁回了視覺。 */
-  if(enemy && enemy.state==='engage') drawEngagePrompt();
+  /* 遭遇提示：**正常遭遇不再顯示**（ver -389，Ray：「這個對話框可以完全移除了」）——
+     現在一撞到遭遇距離槍棺就立刻彈上來蓋滿畫面，那一格字只會被門壓在底下閃一眼。
+     ⚠ **免戰模式留著**（那是開發用的狀態）：開著免戰時不會進戰鬥，沒有這一格就完全
+       看不出遭遇有沒有觸發 —— ver -383 加這行字正是為了這件事（「不改的話下次自己測
+       會以為交棒壞了」）。 */
+  if(enemy && enemy.state==='engage' && peaceMode) drawEngagePrompt();
   drawStarMarks(scaleH,horizon,sinp,cosp,now);
   drawShip(now);
   vignette(S);
@@ -6421,7 +6420,6 @@ function layoutFKerb(){
 /* 撞擊音：與主遊戲同一支素材（峰值在 1002ms，正好落在門撞頂那一瞬 —— 所以
    上推的長度也是 1000ms，兩邊同值，改一邊要改另一邊）。 */
 const kerbPopSE = new Audio('../resources/audio/se/se_Kerberos_pop.m4a'); kerbPopSE.preload='auto';
-const FKERB_HOLD_MS = 700;    // 先讓「遭遇　◯◯」那一格看得到，再推棺
 const FKERB_RISE_MS = 1000;   // 上推時間（＝ story.js 的 KERB_T.rise，兩邊同值）
 
 /* ══ 內嵌模式（ver -388）══════════════════════════════════════════════════
@@ -6441,31 +6439,33 @@ function toBattle(kind){
   if(peaceMode) return;      // 免戰：遭遇照演，就是不進戰鬥
   if(battleGoing) return;
   battleGoing=true;          // 這一刻起船也停住（見 update() 的那一行）
-  /* 槍棺彈出：先停一拍讓玩家讀到遭遇了誰，再整扇推上來蓋滿畫面，推完才交棒。 */
+  /* ⚠⚠ **立刻彈棺，不再等一拍**（ver -389，Ray：「在敵撞上玩家空氣壁之前就要彈槍棺」）。
+     -387 那裡先停 700ms 是為了讓「遭遇　◯◯」那一格讀得到 —— 那一格已經拿掉了，
+     停著只會讓怪停在船前面被看個仔細。現在是「碰到遭遇距離」與「棺開始上推」同一拍。
+     ⚠ 敵人與船在這一刻都已經停住（`engage` 提早 return ＋ `battleGoing` 讓 mv=0），
+       所以推棺的那一秒不會再有任何位移 —— 撞不到。 */
+  layoutFKerb();                                   // 推之前重量一次（轉向過就會變）
+  if(!muted) playSfx(kerbPopSE);
+  /* ⚠ 不要用 `requestAnimationFrame` 掛這個 class：分頁在背景時 rAF **完全不跑**，
+     於是門不推、時間到了直接跳頁（實測就是這樣漏掉的）。門的起始狀態早就在 DOM 裡
+     落地了，直接加 class 就會有過場。 */
+  const kb=document.getElementById('fkerb');
+  if(kb) kb.classList.add('rise');
   setTimeout(()=>{
-    layoutFKerb();                                   // 推之前重量一次（轉向過就會變）
-    if(!muted) playSfx(kerbPopSE);
-    /* ⚠ 不要用 `requestAnimationFrame` 掛這個 class：分頁在背景時 rAF **完全不跑**，
-       於是門不推、時間到了直接跳頁（實測就是這樣漏掉的）。門的起始狀態早就在 DOM 裡
-       落地了，直接加 class 就會有過場。 */
-    const kb=document.getElementById('fkerb');
-    if(kb) kb.classList.add('rise');
-    setTimeout(()=>{
-      if(EMBED){
-        flightAudio(false);                          // 進戰鬥：這一頁的音樂與環境音收掉
-        window.parent.__tivotFlight.battle({ battle:'flight_'+kind, geom:fkerbGeom });
-        return;
-      }
-      /* 獨立模式：照舊寫交棒鑰匙再跳頁。`gate:'kerb'` 告訴主遊戲門已經推到頂了。 */
-      try{
-        localStorage.setItem('tivot_battle_req_v1',
-          JSON.stringify({ battle:'flight_'+kind, gate:'kerb', geom:fkerbGeom }));
-        localStorage.setItem('tivot_flight_ret_v1', JSON.stringify(
-          { x:cam.x, y:cam.y, angle:cam.angle, alt:cam.alt }));
-      }catch(e){}
-      location.href='../index.html';
-    }, FKERB_RISE_MS+150);
-  }, FKERB_HOLD_MS);
+    if(EMBED){
+      flightAudio(false);                          // 進戰鬥：這一頁的音樂與環境音收掉
+      window.parent.__tivotFlight.battle({ battle:'flight_'+kind, geom:fkerbGeom });
+      return;
+    }
+    /* 獨立模式：照舊寫交棒鑰匙再跳頁。`gate:'kerb'` 告訴主遊戲門已經推到頂了。 */
+    try{
+      localStorage.setItem('tivot_battle_req_v1',
+        JSON.stringify({ battle:'flight_'+kind, gate:'kerb', geom:fkerbGeom }));
+      localStorage.setItem('tivot_flight_ret_v1', JSON.stringify(
+        { x:cam.x, y:cam.y, angle:cam.angle, alt:cam.alt }));
+    }catch(e){}
+    location.href='../index.html';
+  }, FKERB_RISE_MS+150);
 }
 
 /* 這一頁的音樂與環境音：內嵌時由父頁開關（戰鬥期間要安靜，回來要接回去）。
@@ -6665,9 +6665,8 @@ function drawEngagePrompt(){
   ctx.font='13px "Noto Serif TC",serif';
   const yy=Math.round(VIEWH*0.30);
   const t='遭遇　'+ENEMY_KINDS[enemy.kind].name;
-  /* ⚠ 免戰時**不要騙玩家**：那一行原本寫「進入戰鬥」，開著免戰卻不會進 ——
-     字要跟著改，不然下次自己測的時候會以為交棒壞了（ver -383）。 */
-  const t2 = peaceMode ? '—　免 戰 中　—' : '—　進 入 戰 鬥　—';
+  /* ⚠ 只剩免戰版（ver -389）：正常遭遇根本不畫這一格（見呼叫端）。 */
+  const t2 = '—　免 戰 中　—';
   ctx.fillStyle='rgba(6,7,12,.62)';
   ctx.fillRect(W/2-92,yy-22,184,46);
   ctx.fillStyle='rgba(216,205,180,.92)'; ctx.fillText(t,W/2,yy-4);

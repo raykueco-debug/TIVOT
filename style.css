@@ -1289,6 +1289,14 @@
     filter:drop-shadow(0 0 26px rgba(201,162,39,.6)) brightness(1.12);}
   #kerb.open #kerbPlate{transform:translateX(calc(var(--kerb-open-x) * -1)) scale(1.11) rotate(180deg);
     transition:transform .9s cubic-bezier(.7,0,.3,1);}
+  /* ⚠⚠ **關門那一拍也要同一條曲線**（ver -389，Ray：「閉棺的時候記得紋章是跟左側的門
+     一起剛體進入」）。CSS 的過場吃的是**新狀態**的 transition —— 拿掉 `.open` 之後
+     `#kerb.open #kerbPlate` 那一條（門的曲線）就不適用了，紋章會掉回自己的基準
+     `cubic-bezier(.34,1.2,.5,1)`（帶回彈的浮起曲線）→ 與左半扇走不同的節奏，
+     兩者當場脫節。所以關門那一拍另外掛 `kerb-shut` 把門的曲線借過來。
+     ⚠ `kerb-shut` 只罩**第一拍**（兩扇合上）：下一拍是紋章自己轉回並縮小，
+       那一拍本來就該用回彈曲線，所以要跟 `.lift` 一起拿掉。 */
+  #kerb.kerb-shut #kerbPlate{transition:transform .9s cubic-bezier(.7,0,.3,1);}
 
   /* ── 鉚釘與箭：解鎖時**往外彈一點點**，彈完留在原地 ─────────────────
      ⚠⚠ 位移一律在**父座標系**算好（--kerb-px/py，JS 依各自的外向單位向量給），
