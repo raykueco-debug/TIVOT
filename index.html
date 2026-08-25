@@ -113,6 +113,12 @@
           <div class="hp-num" id="playerHpNum"></div>
         </div>
       </div>
+      <!-- 副武器切換（ver -410，Ray 指定）：血條右側，大小與左側的破防計量表同一量級。
+           一按換下一個類別（重機槍→霰彈槍→萊福槍→…），切換走牌卡翻面。
+           ⚠ 反擊發動中按下去只是**排隊**，等那一串打完才生效（見 modules/weapon.js）。 -->
+      <button id="wpSwitch" type="button" aria-label="切換副武器">
+        <span class="ws-card"><img id="wpSwitchImg" alt=""><i id="wpSwitchTag"></i></span>
+      </button>
     </div>
     <!-- 退出：右上角 → 回到首頁 -->
     <button id="exitBtn" class="corner-btn">✕</button>

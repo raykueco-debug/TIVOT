@@ -935,6 +935,7 @@ export function startGame(){
   state.partnerActiveUsed=false;   // 搭檔主動技每場次數重置
   saint.reset();   // 聖徒化狀態全重置（saintMode 經 exitSaint、清計時器、關手勢層、清 saint 旗標）
   weapon.reset();  // 雙槍破防重置（清 dualWield/dualTimer + #grid dualwield class，防跨場殘留）
+  weapon.resetWeaponSwitch();   // 副武器切換鈕（ver -410）：排隊中的切換不可以跨場留著
   partner.reset(); // 搭檔被動重置（高裝藥彈 10 秒計時器清除、上膛旗標歸位）
   state.overkill=0; state.killTime=0; state.transitioning=false;
   state.counterCount=0; state.counterDamage=0; state.perfectCount=0; state.sawExecution=false;

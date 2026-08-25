@@ -227,6 +227,35 @@
   #energyClasp .clasp-fill{fill:none;stroke:var(--gold);stroke-width:6;stroke-linecap:round;
     transition:stroke-dashoffset .25s;}
   #energyClasp.full .clasp-fill{stroke:#ffe08a;animation:pulse .6s infinite alternate;}
+  /* ── 副武器切換鈕（ver -410，Ray：「在敵我血條右側加入副武器切換鈕，大小同破防值」）──
+     左邊是破防計量表、右邊是這一顆，兩側對稱夾著血條。
+     ⚠ `#barsBlock` 整塊是 `pointer-events:none`（它只是 HUD），所以這一顆要自己打開。
+     ⚠ **牌卡輪換**：翻面到一半才換內容（`wsFlip` 的 50%），看起來才是同一張卡翻過去
+       而不是兩張卡疊著換。時間常數與 `weapon.js` 的 `WS_FLIP_MS` 同源，改一邊要改另一邊。
+     ⚠ `.pending` ＝ 按了但還沒生效（反擊還在打）—— 卡已經翻成新的那一把，
+       但邊框在呼吸，告訴玩家「等這一串打完」。 */
+  #wpSwitch{flex:none;align-self:stretch;width:30px;padding:0;
+    background:rgba(0,0,0,.62);border:1px solid var(--gold-dim);border-radius:4px;
+    pointer-events:auto;touch-action:manipulation;cursor:pointer;
+    box-shadow:0 0 10px #000;overflow:hidden;perspective:120px;}
+  #wpSwitch:active{background:rgba(212,169,74,.22);}
+  #wpSwitch .ws-card{display:flex;flex-direction:column;align-items:center;justify-content:center;
+    width:100%;height:100%;gap:1px;transform-style:preserve-3d;backface-visibility:hidden;}
+  #wpSwitch img{display:block;width:26px;height:15px;object-fit:contain;
+    filter:drop-shadow(0 1px 2px #000);}
+  #wpSwitch i{font-style:normal;font-size:9px;line-height:1;letter-spacing:0;color:var(--gold);
+    text-shadow:0 1px 2px #000;}
+  #wpSwitch.flip .ws-card{animation:wsFlip .34s ease;}
+  @keyframes wsFlip{
+    0%  {transform:rotateY(0deg)   scale(1);}
+    50% {transform:rotateY(90deg)  scale(.86);}
+    100%{transform:rotateY(0deg)   scale(1);}
+  }
+  #wpSwitch.pending{border-color:var(--holy);
+    animation:wsPending .7s ease-in-out infinite alternate;}
+  @keyframes wsPending{from{box-shadow:0 0 4px rgba(111,179,212,.4);}
+    to{box-shadow:0 0 12px rgba(111,179,212,.95);}}
+
   /* 兩條橫向血條 */
   #barStack{flex:1 1 0;display:flex;flex-direction:column;gap:5px;min-width:0;}
   .hrow{position:relative;}

@@ -861,6 +861,7 @@ story.setBattleHandler((battleId, resume)=>{
   launchBattle({ instant:true });   // 轉場由 Kerberos 之門負責，不再播櫻花過渡禎
 });
 weapon.refreshLoadoutLabels();                  // 開機：把當前副武器/搭檔名寫進 loadout 按鈕
+weapon.bindWeaponSwitch();                     // 戰鬥 HUD 的副武器切換鈕（ver -410）
 TEL.visit();                                    // 來訪上報（每次開頁一筆）
 // 版本號不上首頁：於「連點團徽 5 下」的診斷 HUD 內顯示（見 debugHud）
 
