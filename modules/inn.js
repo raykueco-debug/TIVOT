@@ -36,6 +36,7 @@ const F_MISS  = 'inn_missed';  // 過了時間才回來 → 她已經在房裡�
    ⚠ 所以「獨自坐坐」不是加固定時數，是**把時鐘推到 20:00**（已經過了就不動）。
    ⚠ 錯過（≥21:00 才進來）是**記旗標**的，不是每次看時鐘算 —— 隔天早上時鐘又會小於 21，
      不記的話她會「重新出現在大廳等你」。 */
+const SIT_MIN    = 120;        // 「獨自坐坐」一次消磨多久（Ray：「消磨時間：2小時」）
 const RENNA_BACK = 20;         // 她回到旅店的時刻
 const RENNA_GONE = 21;         // 過了就回房了（碰不到）
 const WAKE_HOUR  = 7;          // 「回房睡覺」推進到隔日的這個時刻（Ray 指定）
@@ -59,6 +60,58 @@ function stage(){
   if(prog.hasFlag(F_WAIT))  return 'wait';
   return 'none';
 }
+/* 旅店的初入對白演過了沒 —— 「獨自坐坐」從那一刻起就能用（ver -401，Ray 指定）。
+   ⚠ 問的是**節點自己的旗標**（`kind` 版），與 `stage()` 是兩件事：
+     stage 管的是「蕾娜那條線走到哪」，這裡管的是「這個大廳開張了沒」。 */
+function introDone(){
+  return !!(node && prog.hasFlag(node.kind ? ('town_kind_'+node.kind) : 'town_capital_inn'));
+}
+
+/* ══ 一次性說明（遮罩＋箭頭）══════════════════════════════════════════
+   ⚠ **一次性**（Ray 指定）：旗標記在 progress，看過就不再擋路。
+   ⚠ 被說明的那顆要**抬到遮罩之上**（`.spot`），否則玩家看著一片暗、不知道在指什麼。
+   ⚠ 一次只演一個：三個提示（坐、敲門、睡）會在不同時機到齊，排隊比疊在一起清楚。 */
+const TIPS = {
+  sit:   { flag:'inn_tip_sit',   sel:'[data-act="sit"]',   text:'坐下來消磨時間。一次過兩個小時。' },
+  knock: { flag:'inn_tip_knock', sel:'.inn-door.awake, .inn-door.asleep',
+           text:'敲敲伙伴的門，看看他們在做什麼。' },
+  sleep: { flag:'inn_tip_sleep', sel:'[data-act="sleep"]',
+           text:'推進時間至隔日早上七點，恢復體力並存檔。' },
+};
+let guideKey=null;
+function showGuide(key){
+  const t=TIPS[key]; if(!t || !layer || guideKey) return;
+  if(prog.hasFlag(t.flag)) return;
+  const tgt=layer.querySelector(t.sel); if(!tgt) return;
+  /* ⚠ **量不到就先不要演**（ver -401 修）：被說明的那顆若還沒被 `relayout()` 擺好
+     （背景還沒載完 → `bgPoint` 回 null → 鈕是隱藏的），rect 會是 0×0，
+     說明文字就被算到畫面外（實測 `top:-74px`，整行看不見）。
+     擺好之後 `relayout()` 會再叫一次（見那一支的收尾）。 */
+  const r0=tgt.getBoundingClientRect();
+  if(!r0.width || !r0.height) return;
+  const g=layer.querySelector('.inn-guide'); if(!g) return;
+  guideKey=key;
+  tgt.classList.add('spot');
+  g.querySelector('.ig-text').textContent=t.text;
+  /* 箭頭擺在目標的**正上方**（同雪鐵龍箭的作法）。位置問 rect，不要自己算。 */
+  const st=story.stageEl(), sr=st.getBoundingClientRect(), r=tgt.getBoundingClientRect();
+  const cx=r.left-sr.left+r.width/2, top=r.top-sr.top;
+  const arw=g.querySelector('.ig-arrow');
+  arw.style.left=cx+'px'; arw.style.top=(top-16)+'px';
+  const tx=g.querySelector('.ig-text');
+  tx.style.left='0px'; tx.style.right='0px'; tx.style.top=(top-74)+'px';
+  g.classList.add('on');
+}
+function closeGuide(){
+  if(!guideKey || !layer) return;
+  const t=TIPS[guideKey];
+  prog.addFlags([t.flag]);
+  layer.querySelectorAll('.spot').forEach(e=>e.classList.remove('spot'));
+  const g=layer.querySelector('.inn-guide'); if(g) g.classList.remove('on');
+  guideKey=null;
+  try{ SFX.menuClick(); }catch(_){}
+  refresh();                       // 收掉之後看看還有沒有下一個要演
+}
 
 /* ══ 版面 ══ 掛在劇情舞台上（與 `#townNav` 同一層）。 */
 function ensureLayer(){
@@ -78,8 +131,14 @@ function ensureLayer(){
     +   '<button class="inn-btn" data-act="sleep" type="button">回房睡覺</button>'
     /* 雪鐵龍箭 ＋ 說明（ver -396，Ray 指定）：指著「回房睡覺」，並說清楚按下去會發生什麼。 */
     +   '<div class="inn-point"><i></i><i></i></div>'
-    +   '<div class="inn-tip">推進時間至隔日早上七點，並恢復體力。</div>'
+    /* ⚠ 常駐的那一行說明於 ver -401 拿掉：Ray 指定「說明都是一次性的」，
+       文字改由 `TIPS.sleep` 那個遮罩演一次。**雪鐵龍箭留著** —— 它不是說明，
+       是「現在該按這個」的指示。 */
     + '<div class="inn-hint"></div>'
+    /* 一次性說明（ver -401，Ray：「用遮罩跟箭頭說明…說明都是一次性的」）。
+       ⚠ 遮罩壓暗全場、被說明的那顆抬到遮罩之上（`.spot`），箭頭指著它。點一下收掉。 */
+    + '<div class="inn-guide"><div class="ig-arrow"><i></i><i></i></div>'
+    +   '<div class="ig-text"></div><div class="ig-go">點一下繼續</div></div>'
     + '<div class="inn-veil"></div>';
   st.appendChild(layer);
   /* ⚠ 這一層的每一顆都要 `stopPropagation`：舞台上還有城鎮的「點一下＝路人單句／
@@ -90,6 +149,8 @@ function ensureLayer(){
   layer.querySelectorAll('.inn-btn').forEach(b=>
     b.addEventListener('pointerup', e=>{ e.stopPropagation();
       if(b.dataset.act==='sit') sitAlone(); else sleepHere(); }));
+  const g=layer.querySelector('.inn-guide');
+  if(g) g.addEventListener('pointerup', e=>{ e.stopPropagation(); closeGuide(); });
   return layer;
 }
 
@@ -107,6 +168,9 @@ function faceStyle(who){
 /* 這一格現在是什麼狀態：`empty`（還沒有這個人）／`awake`／`asleep`。 */
 function doorState(who){
   const st = stage();
+  /* ⚠ 大廳可能在**還沒住下**（`none`）時就開了（獨自坐坐從初入對白就能用，ver -401）——
+     那時候還沒有人回房，四扇門都該是空的。不擋的話諾薇兒的門會在她還站在旁邊時就亮著。 */
+  if(st==='none') return 'empty';
   if(who==='NOUVELLE') return st==='slept' ? 'asleep' : 'awake';
   if(who==='RENNA')    return st==='slept' ? 'asleep' : 'empty';
   return 'empty';
@@ -124,8 +188,10 @@ function refresh(){
     else{ face.style.cssText = faceStyle(who);
           nm.textContent = (SPEAKERS[who]||{}).name || ''; }
   });
-  /* 兩顆鈕各自的出場時機：等蕾娜的那一段才有「獨自坐坐」，她回來之後才有「回房睡覺」。 */
-  wantSit   = (st==='wait');
+  /* 兩顆鈕各自的出場時機（ver -401 改）：
+       獨自坐坐 —— **初入對白演完就有**（Ray 指定），睡下之後才收起來
+       回房睡覺 —— 蕾娜那條線收了之後才有 */
+  wantSit   = introDone() && st!=='slept';
   wantSleep = (st==='slept');
   relayout();
   /* 教學提示（Ray 稿上的兩句舞台指示）。⚠ 只在該做那件事的時候出現，不常駐。 */
@@ -136,7 +202,19 @@ function refresh(){
      那一段的引導改用**指著鈕的雪鐵龍箭 ＋ 一句說明**（見 relayout），
      比一行浮在半空的字明確得多。 */
   if(hint) hint.textContent = (st==='wait') ? '坐下來消磨時間吧。' : '';
-  layer.classList.toggle('on', st!=='none');
+  layer.classList.toggle('on', introDone() || st!=='none');
+  /* 一次性說明：**一次排一個**，依「現在畫面上真的有那顆東西」決定演哪一個。
+     ⚠ 要在 `relayout()` 之後 —— 鈕還沒擺好就量不到位置。 */
+  maybeGuide();
+}
+/* 現在該演哪一個一次性說明。⚠ `refresh()` 與 `relayout()` 都會叫 —— 後者是為了
+   「背景晚一步載完、鈕才被擺好」那一拍（那時 refresh 已經跑過了）。 */
+function maybeGuide(){
+  if(guideKey || !layer) return;
+  const st=stage();
+  if(wantSleep)        showGuide('sleep');
+  else if(st==='wait') showGuide('knock');
+  else if(wantSit)     showGuide('sit');
 }
 
 /* ══ 敲門 ══ 單句、沒有立繪（Ray：「未開門無立繪」），可以一直敲。 */
@@ -154,7 +232,10 @@ function knock(i){
 /* ══ 獨自坐坐 ══ 暗去 → 時鐘推到 20:00 → 亮起 → 蕾娜回來那一幕。 */
 let busy = false;
 function sitAlone(){
-  if(busy || stage()!=='wait') return;
+  /* ⚠ 守門看的是**那顆鈕現在在不在**（`wantSit`），不是 `stage()==='wait'`（ver -401 修）——
+     ver -395 那個守門是「只有在等蕾娜時才能坐」寫的，但 Ray 已經把它改成
+     「初入對白演完就能用」，再用舊守門的話按下去什麼都不會發生。 */
+  if(busy || !wantSit) return;
   busy = true;
   if(host && host.lock) host.lock(true);
   try{ SFX.unlock(); SFX.menuClick(); }catch(_){}
@@ -162,14 +243,34 @@ function sitAlone(){
   const veil = layer.querySelector('.inn-veil');
   veil.classList.add('on');
   setTimeout(()=>{
-    /* ⚠ 推到 20:00，不是加固定時數（Ray：「自動將時間推至 8 點」）。
-       已經過 20:00 才坐下就不動時鐘 —— 時間只能往前，不能倒退。 */
-    const mins = Math.max(0, Math.round((RENNA_BACK - clock.hourF())*60));
-    if(mins>0) clock.advance(mins);
+    /* ⚠⚠ 一次**兩小時**（ver -401，Ray：「消磨時間：2小時」）——
+       但**還在等蕾娜時不准跨過她回來的那一刻**：從 19:00 一口氣坐到 21:00 就整個錯過她了。
+       所以在等她的那一段，這一次最多只坐到 20:00。 */
+    let mins = SIT_MIN;
+    if(stage()==='wait'){
+      const toBack = Math.round((RENNA_BACK - clock.hourF())*60);
+      if(toBack > 0) mins = Math.min(mins, toBack);
+    }
+    clock.advance(Math.max(1, mins));
+    /* 時間變了 → **背景換成新時段的差分**（Ray 指定）。走城鎮那一支候選鏈。 */
+    if(host && host.refreshBg) host.refreshBg();
     refresh();
     veil.classList.remove('on');
-    setTimeout(()=>playRenna(), FADE_MS);
+    setTimeout(()=>{
+      /* 坐完剛好碰上她回來的那一小時 → 演那一幕；過頭了 → 她已經回房（記旗標）。
+         ⚠ 與「走進旅店」那條路共用同一組判斷（`arrive`），規矩只有一份。 */
+      const h=clock.hourF();
+      if(stage()==='wait' && h>=RENNA_GONE){ prog.addFlags([F_MISS]); endSit(); return; }
+      if(stage()==='wait' && h>=RENNA_BACK){ playRenna(); return; }
+      endSit();
+    }, FADE_MS);
   }, FADE_MS);
+}
+/* 坐完但沒有演出：把鎖放掉、畫面接回來。 */
+function endSit(){
+  busy=false;
+  if(host && host.lock) host.lock(false);
+  refresh();
 }
 /* 蕾娜回來那一幕。⚠ 兩條路都走這一支（坐著等到她、或走出去 20~21 點回來撞見），
    所以好感也只在這裡加一次（鐵律 8）。 */
@@ -240,6 +341,9 @@ export function arrive(n, ctx){
   refresh();
 }
 
+/* 初入對白剛演完 → 大廳開張（`introDone()` 是問旗標的，而旗標是**演完才記**的，
+   所以 `town.enter` 的收尾要再叫一次 refresh —— 那正是 `arrive` 被呼叫的時機）。 */
+
 /* ══ 把兩顆鈕擺到背景的家具上（ver -394）══
    ⚠ 座標是**背景圖上的比例**（`innSpots`），換算走城鎮注入的 `bgPoint` ——
      那是全專案唯一一支「圖上的一點 → 螢幕座標」（鐵律 7）。
@@ -259,15 +363,14 @@ export function relayout(){
   };
   put('[data-act="sit"]',   wantSit,   spots.sit);
   put('[data-act="sleep"]', wantSleep, spots.sleep);
+  maybeGuide();                      // 鈕剛擺好 → 現在才量得到位置（見 showGuide 的說明）
   /* 雪鐵龍箭在鈕的**上方**（往下指），說明在鈕的**下方**（那是「按下去會發生什麼」）。
      ⚠ 偏移量對的是鈕的中心（鈕高 32、`translate(-50%,-50%)`），所以上 34／下 24。 */
   const p = (wantSleep && spots.sleep && host && host.bgPoint)
           ? host.bgPoint(spots.sleep.x, spots.sleep.y) : null;
-  const arw=layer.querySelector('.inn-point'), tip=layer.querySelector('.inn-tip');
+  const arw=layer.querySelector('.inn-point');
   if(arw){ arw.classList.toggle('on', !!p);
     if(p){ arw.style.left=p.x+'px'; arw.style.top=(p.y-34)+'px'; } }
-  if(tip){ tip.classList.toggle('on', !!p);
-    if(p){ tip.style.left=p.x+'px'; tip.style.top=(p.y+24)+'px'; } }
 }
 
 export function close(){

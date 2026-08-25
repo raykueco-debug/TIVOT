@@ -1932,18 +1932,36 @@
   #innLobby .inn-point i:first-child{opacity:.45;}
   @keyframes innPoint{0%,100%{transform:translate(-50%,-50%) translateY(-3px);}
                       50%   {transform:translate(-50%,-50%) translateY(3px);}}
-  #innLobby .inn-tip{position:absolute;transform:translate(-50%,0);
-    display:none;white-space:nowrap;pointer-events:none;
-    font-size:10px;letter-spacing:1px;color:#fff;
-    text-shadow:1px 0 0 rgba(0,0,0,.92), -1px 0 0 rgba(0,0,0,.92),
-                0 1px 0 rgba(0,0,0,.92), 0 -1px 0 rgba(0,0,0,.92),
-                0 1px 3px rgba(0,0,0,.6);}
-  #innLobby .inn-tip.on{display:block;}
+  /* ⚠ `.inn-tip`（常駐在鈕下方的那一行說明）於 ver -401 撤掉 —— Ray 指定
+     「說明都是一次性的」，改由下面的 `.inn-guide` 遮罩演一次。雪鐵龍箭留著。 */
   #innLobby .inn-hint{position:absolute;left:0;right:0;bottom:86px;text-align:center;
     font-size:10px;letter-spacing:2px;color:#fff;pointer-events:none;
     text-shadow:1px 0 0 rgba(0,0,0,.92), -1px 0 0 rgba(0,0,0,.92),
                 0 1px 0 rgba(0,0,0,.92), 0 -1px 0 rgba(0,0,0,.92),
                 0 1px 3px rgba(0,0,0,.6);}
+  /* ── 一次性說明（遮罩＋箭頭，ver -401，Ray 指定）────────────────────
+     ⚠ 遮罩壓暗**整個舞台**、被說明的那顆抬到遮罩之上（`.spot`）——
+       只壓暗不抬的話玩家看著一片暗，不知道在指什麼。
+     ⚠ 說明是**一次性**的：旗標記在 progress，看過就不再擋路。 */
+  #innLobby .inn-guide{position:fixed;inset:0;z-index:7;display:none;pointer-events:auto;
+    background:rgba(4,3,7,.68);}
+  #innLobby .inn-guide.on{display:block;}
+  #innLobby .ig-arrow{position:absolute;transform:translate(-50%,-100%);
+    animation:innPoint 1.5s ease-in-out infinite;}
+  #innLobby .ig-arrow i{display:block;width:18px;height:18px;margin:-6px auto 0;
+    border-right:2px solid var(--gold);border-bottom:2px solid var(--gold);
+    transform:rotate(45deg);opacity:.85;}
+  #innLobby .ig-arrow i:first-child{opacity:.45;}
+  #innLobby .ig-text{position:absolute;text-align:center;padding:0 26px;
+    font-size:13px;line-height:1.8;letter-spacing:1px;color:#f2e8d0;
+    text-shadow:0 1px 4px rgba(0,0,0,.95);}
+  #innLobby .ig-go{position:absolute;left:0;right:0;bottom:16%;text-align:center;
+    font-size:10px;letter-spacing:4px;color:var(--gold-dim);
+    animation:gateTipPulse 1.8s ease-in-out infinite;}
+  /* 被說明的那一顆：抬到遮罩之上並鑲一圈光。 */
+  #innLobby .spot{position:absolute;z-index:8;
+    box-shadow:0 0 0 2px rgba(240,196,105,.8), 0 0 18px rgba(240,196,105,.55);}
+
   /* 「獨自坐坐」的暗場：暗去 → 過兩小時 → 亮起。
      ⚠ 蓋**整個舞台**（不是只有場景區）：時間過去了，面盤那一半也該一起黑。 */
   #innLobby .inn-veil{position:fixed;inset:0;z-index:8;background:#000;

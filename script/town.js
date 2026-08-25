@@ -12,6 +12,10 @@
      once:true                對白只播第一次（旗標記在 progress 的 flags）
      shop:'grocery'           這個節點是商店（貨單見 config.shop）
      counter:{x,y,label}      櫃台鈕的位置（**背景圖上的比例**，不是螢幕比例）與字樣
+     kind:'tavern'            **這種地方**的識別（ver -401）。初見劇情的旗標吃它 ——
+                              「第一次走進這種店」才演，別的城的同一種店不重播；
+                              沒看到的話下次回來或到別城的同一種店還看得到。
+                              ⚠ 不寫＝旗標退回「這一城的這一個節點」（劇情專屬的地方）
      hours:[開,關]            營業時間（小時，24 制；不寫＝全天）。跨午夜寫 [20,2] 也對
      closed:'…'              打烊時點畫面出現的那一句（沒寫就什麼都不出）
      sail:{flag,blocked}      這個節點的下方是「出航」（見 square）
@@ -77,7 +81,7 @@ export const TOWNS = {
 
       /* ══ 攝政王廣場 ══ 上＝中心區、左＝舊街區、右＝上街區（Ray 指定的三個方向） */
       square: {
-        bg:'Capital_Square', name:'帝都　攝政王廣場',
+        bg:'Capital_Square', name:'帝都　攝政王廣場', kind:'square',
         exits:{ up:'midtown', left:'oldtown', right:'uptown' },
         once:true,
         lines:[ nou('surprise','帝都的攝政王廣場，好壯觀。'),
@@ -101,13 +105,13 @@ export const TOWNS = {
 
       /* ══ 一、中心區 ══ 左＝行政廳、右＝教堂、下＝廣場 */
       midtown: {
-        bg:'Capital_Midtown', name:'帝都　中心區',
+        bg:'Capital_Midtown', name:'帝都　中心區', kind:'midtown',
         exits:{ left:'cityhall', right:'church', down:'square' },
       },
 
       /* (1) 教堂 */
       church: {
-        bg:'Capital_Church', name:'帝都　大教堂',
+        bg:'Capital_Church', name:'帝都　大教堂', kind:'church',
         exits:{ back:'midtown' },
         once:true,
         lines:[
@@ -121,19 +125,19 @@ export const TOWNS = {
         ],
         /* 路人單句：**教廷**線（ver -387）。 */
         chatter:[
-          '「聖王廳又派視察官下來了，這個月第二個。」',
-          '「主教大人這禮拜第三次閉門祈禱了。」',
+          '「永夜以來，聖約騎士團變得比帝國軍還可靠呢。」',
+          '「軍隊好像拿那些「禍魘」一點辦法都沒有。果然，還是要靠神的力量啊！」',
           '「『永夜』之後來告解的人多了一倍，長椅都不夠坐。」',
-          '「第四騎士團？就是專門處理那些東西的人吧。」',
-          '「教典裡可沒寫過『禍魘』。別亂講。」',
-          '「奉獻箱最近空得很，神也是要吃飯的。」',
-          '「聽說有司祭被派去前線隨軍了。隨軍啊。」',
+          '「將聖約騎士團投入戰鬥，換作兩年前根本無法想像。」',
+          '「比起先皇，達米西安陛下與教廷的關係更緊密了。」',
+          '「要不是有騎士團，就連這帝都也會「禍魘」橫行吧？」',
+          '「聽說東邊有個小村子整個被「禍魘」吞噬了。啊，神啊！」',
         ],
       },
 
       /* (2) 行政廳 */
       cityhall: {
-        bg:'Capital_Cityhall', name:'帝都　行政廳',
+        bg:'Capital_Cityhall', name:'帝都　行政廳', kind:'cityhall',
         exits:{ back:'midtown' },
         /* ⚠ 蕾娜與諾薇兒**都是左側**（固定站位），這一段兩人同台 → 蕾娜暫時站右
            （§6.5：兩個角色要分左右；與 `capital_square` 那一幕同樣的整幕覆寫）。 */
@@ -185,7 +189,7 @@ export const TOWNS = {
          ⚠ 背景是 `Capital_Downtown`（Ray 指定）。`Capital_Uptown` 還給上街區 ——
            -371 那次是把兩張圖對調過，現在對回來了。 */
       oldtown: {
-        bg:'Capital_Downtown', name:'帝都　舊街區',
+        bg:'Capital_Downtown', name:'帝都　舊街區', kind:'oldtown',
         exits:{ left:'gunstore', right:'guild', up:'dock', down:'square' },
         lines:[
           nou('cringe','這地方……有點可怕。'),
@@ -204,7 +208,7 @@ export const TOWNS = {
       gunstore: {
         /* 背景 `Capital_Firearm_Day`（Ray 於 ver -377 交件）。⚠ 基底名不含時段尾巴，
            其餘時段的差分還沒有 —— 會退回 `_Day`（`bgFor` 會在 console 記一筆）。 */
-        bg:'Capital_Firearm', name:'帝都　武器店',
+        bg:'Capital_Firearm', name:'帝都　武器店', kind:'gunstore',
         exits:{ back:'oldtown' },
         shop:'gunstore', keeperWho:'GUNSMITH',
         /* 櫃台在圖的正中偏上（老槍匠站的那一格）。座標是**這張背景圖上的比例**。 */
@@ -279,7 +283,7 @@ export const TOWNS = {
       /* ══ 2. 船塢 ══（ver -379，背景 `Capital_Dock_Day` 由 Ray 交件）
          ⚠ 「明天要搭的船」是**下一段主線的伏筆** —— 這一段只有氣氛，沒有機能。 */
       dock: {
-        bg:'Capital_Dock', name:'帝都　船塢',
+        bg:'Capital_Dock', name:'帝都　船塢', kind:'dock',
         exits:{ back:'oldtown' },
         lines:[
           nou('happy','哇，好多船。'),
@@ -312,7 +316,7 @@ export const TOWNS = {
            打完接著往下演（續播由 `story.resumeFrom` 負責，見那支的說明）。
          ⚠ 背景基底寫 `Captal_Guild`（Ray 的檔名就少一個 i，**照檔名**不要自作主張改）。 */
       guild: {
-        bg:'Captal_Guild', name:'帝都　賞金獵人公會',
+        bg:'Captal_Guild', name:'帝都　賞金獵人公會', kind:'guild',
         exits:{ back:'oldtown' },
         /* 登記完才開得了懸賞榜（旗標由 `modules/town.js` 在這段對白播完時記）。 */
         board:'capital', boardFlag:'guild_registered',
@@ -355,7 +359,7 @@ export const TOWNS = {
 
       /* 1. 酒館 ⚠ 還沒有背景素材，暫借西區街道那張（見 HANDOFF 的缺口清單）。 */
       tavern: {
-        bg:'Capital_Bistro', name:'帝都　餐酒館',
+        bg:'Capital_Bistro', name:'帝都　餐酒館', kind:'tavern',
         exits:{ back:'uptown' },
         /* 開到午夜（Ray 指定）。⚠ `[8,24]` 的意思是 23:59 還開著、00:00 就關 —— 見
            modules/town.js 的 `isOpenNow`（上界是**不含**的）。 */
@@ -386,7 +390,7 @@ export const TOWNS = {
         /* ⚠ ver -400：Ray 交了時段差分（`_day` / `_dusk`），所以**拿掉 `noTime`** ——
            留著的話候選鏈只會找沒有時段尾巴的 `Capital_Grocerie`，而那張已經不存在了
            → 背景整個不見（Ray 回報「雜貨舖的背景圖不見了」）。 */
-        bg:'Capital_Grocerie', name:'帝都　雜貨舖',
+        bg:'Capital_Grocerie', name:'帝都　雜貨舖', kind:'grocery',
         exits:{ back:'uptown' },
         shop:'grocery',
         /* 櫃台＝店主站的那一格（ver -387 由「點畫面就開」改成櫃台鈕，Ray 指定）。 */
@@ -429,7 +433,7 @@ export const TOWNS = {
            （「剛剛才經歷一場死鬥，最後一餐差點就是黑麥麵包配豆子」），
            留在舊街區的話後面那頓飯就沒頭沒尾。要改地方再說。 */
       uptown: {
-        bg:'Capital_Uptown', name:'帝都　上街區',
+        bg:'Capital_Uptown', name:'帝都　上街區', kind:'uptown',
         exits:{ left:'grocery', right:'tavern', up:'inn', down:'square' },
         lines:[
           /* 肚子叫：沒有台詞的一拍（立繪＋音效），停一秒自己走（§6.5）。 */
@@ -451,7 +455,7 @@ export const TOWNS = {
          ⚠ `inn:true` ＝ 這個節點有**旅店大廳**（伙伴門／獨自坐坐／回房睡覺），
            實作在 `modules/inn.js`。 */
       inn: {
-        bg:'Capital_Hotel', name:'帝都　旅店', exits:{ back:'uptown' },
+        bg:'Capital_Hotel', name:'帝都　旅店', exits:{ back:'uptown' }, kind:'inn',
         inn:true,
         /* 兩顆行動鈕擺在**背景裡的家具上**（ver -394，Ray：「獨自坐坐按鈕移到茶桌上，
            回房睡覺移到櫃台桌面上方」）。座標是**背景圖上的比例**，同櫃台鈕
