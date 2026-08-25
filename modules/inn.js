@@ -196,13 +196,14 @@ function refresh(){
     else{ face.style.cssText = faceStyle(who);
           nm.textContent = (SPEAKERS[who]||{}).name || ''; }
   });
-  /* 兩顆鈕各自的出場時機（ver -405 改）：
-       獨自坐坐 —— **初入對白演完就有**（ver -401），睡下之後才收起來
-       回房睡覺 —— **也是初入就有**（ver -405，Ray：「初入旅店除了坐坐之外
-                    也可以選擇直接去睡覺」）
-     ⚠ 「太早」不是靠**藏起鈕**擋，而是按下去由諾薇兒擋（見 sleepHere）——
-       鈕不見了玩家只會以為還不能睡；她開口說「還沒六點呢」才知道為什麼。 */
-  wantSit   = introDone() && st!=='slept';
+  /* 兩顆鈕的出場時機（ver -408 統一）：**初入對白演完就都有，之後一直都在**。
+     ⚠⚠ 坐坐原本睡下之後（`slept`）就收起來 —— Ray 回報「獨自坐坐又不見了」。
+       那個限制是 ver -392 寫的（當時它的用途只有「等蕾娜」），但**消磨兩小時本身
+       就是一個行動**：城裡的店有營業時間、打烊了走不進去（ver -406），
+       「在旅店坐到店開門」是玩家真的需要的一步。
+     ⚠ 「還不能做」一律**不是靠藏起鈕**擋，而是按下去由角色擋回來（見 sleepHere 的
+       諾薇兒）—— 鈕不見了玩家只會以為壞了。 */
+  wantSit   = introDone();
   wantSleep = introDone();
   relayout();
   /* 教學提示（Ray 稿上的兩句舞台指示）。⚠ 只在該做那件事的時候出現，不常駐。 */
@@ -223,13 +224,16 @@ function refresh(){
 function maybeGuide(){
   if(guideKey || !layer) return;
   const st=stage();
-  /* ⚠ 順序是**玩家會先碰到的那一個在前**（ver -405 調）：坐 → 睡 → 敲門。
-     兩顆鈕現在同時出現，所以不能再靠「誰在場」分先後；而敲門要等分支演完
-     （`wait`）才有意義。⚠ 已經看過的那一個 `showGuide` 自己會 return，
-     所以這串會自然往下掉到還沒看過的那一個。 */
-  if(wantSit)          showGuide('sit');
-  else if(wantSleep)   showGuide('sleep');
-  else if(st==='wait') showGuide('knock');
+  /* 順序是**玩家會先碰到的那一個在前**：坐 → 睡 → 敲門。
+     ⚠⚠ 要**逐個試到真的開起來為止**（ver -408 修）——不能寫成 `else if` 鏈：
+       `showGuide` 在「已經看過」或「量不到位置」時是**靜靜地 return**，
+       而 else-if 只看前一個條件成不成立，於是第一個候選一旦永遠成立
+       （ver -408 起坐坐一直都在），後面兩個就再也輪不到了。 */
+  const q=[];
+  if(wantSit)     q.push('sit');
+  if(wantSleep)   q.push('sleep');
+  if(st==='wait') q.push('knock');
+  for(const k of q){ showGuide(k); if(guideKey) return; }
 }
 
 /* ══ 敲門 ══ 單句、沒有立繪（Ray：「未開門無立繪」），可以一直敲。 */
