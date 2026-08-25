@@ -290,6 +290,15 @@ window.__tivotFlight = {
       ()=>{ $('home').classList.remove('on'); combat.startScriptBattle(id); },
       ()=>story.close({ keepBgm:true }));
   },
+  /* 降落（ver -416，Ray：「靠近城鎮時加入降落按鈕，點擊進入城鎮預設畫面」）。
+     ⚠ 走**同一支** `town.open()`（＝從入口節點開始），不另做一條「降落專用」的進城路徑。
+     ⚠ 城鎮的 BGM 由 `town.open` 自己接（`story.ensureBgm`）—— 進飛行頁時主遊戲的
+       曲子被 `openFlight` 收掉了，不接回來會一片安靜。 */
+  land(id){
+    closeFlightFrame();
+    $('home').classList.remove('on');
+    town.open(id || 'capital');
+  },
   /* 飛行頁的「返回」。⚠ 只有在**底下沒有別的畫面**時才把首頁叫回來 ——
      從城鎮出航的話，城鎮的舞台一直在 iframe 底下開著，收掉 iframe 就回到城鎮了。 */
   close(){
@@ -366,6 +375,14 @@ window.addEventListener('pagehide', refreshBoot);
      ⚠ 交棒紀錄**在這裡就取走**（`takeBattleReq` 讀了就清），下面 `go()` 用的是同一份。 */
   const REQ = takeBattleReq();
   if(REQ && REQ.gate==='kerb'){ bootBattleGate(REQ); return; }
+  /* 飛行頁**獨立模式**的降落（ver -416）：內嵌時走 `__tivotFlight.land`，
+     跳頁那條路就靠這把鑰匙。⚠ **讀了就清**（同交棒鑰匙）—— 不清的話下次開機
+     又被丟進城裡。 */
+  try{
+    const L=JSON.parse(localStorage.getItem('tivot_land_req_v1')||'null');
+    localStorage.removeItem('tivot_land_req_v1');
+    if(L && L.town){ markBooted(); $('home').classList.remove('on'); town.open(L.town); return; }
+  }catch(e){}
   const imgs=[], sfx=[], bgm=[];
   for(const k of Object.keys(ASSETS)){
     const v=ASSETS[k]; if(!v) continue;

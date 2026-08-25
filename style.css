@@ -1500,8 +1500,12 @@
      就會冒出來的那三個（空的對話框、離開鈕✕、跳段鈕）在這裡全是錯的 ——
      尤其✕：那顆會讓玩家從這一拍逃走，但這條路徑背後根本沒有劇情可回。 */
   #storyStage.kerb-gate #storyBubble,
-  #storyStage.kerb-gate #storyExit,
   #storyStage.kerb-gate #storySkip{display:none !important;}
+  /* ⚠⚠ `#storyExit` **不在上面那一列**（ver -416）：它自 ver -413 起就是門上的大齒輪，
+     藏掉的話這條路徑（船戰交棒過來的那一場）**只剩小齒輪在轉**，看起來就像大齒輪
+     憑空縮小了（Ray 回報「開棺轉動時會變小齒輪」）。齒輪要留著轉，只是不能按 ——
+     這條路徑背後沒有劇情可回，按下去會讓玩家從儀式裡逃走。 */
+  #storyStage.kerb-gate #storyExit{pointer-events:none !important;}
 
   /* 門在開的那一刻，舞台其餘的東西都要讓開（縫裡要露出底下的戰鬥畫面）。 */
   #storyStage.kerb-open{background:transparent;}
@@ -1674,25 +1678,23 @@
        並且加深齒輪範圍的底部，讓齒輪看起來像嵌在槍棺內」）──────────────
      ⚠⚠ 它現在是 `#kerbDoor` 的子元素 ＝ **與槍棺同一剛體**。這**取代**了 ver -405 的
        「推上時鈕往外撤出」—— 它是門的一部分，跟著門走才對；推上期間只是**不能按**。
-     ⚠ 位置與大小由 `layoutKerberos` 依門的實際尺寸解出來寫成 inline（鐵律 7）：
-       小齒輪的半徑是**咬合條件**解出來的（團徽外緣 → 小齒輪 → 大齒輪 三個剛好相切），
-       不是填的數字。
-     ⚠ 轉速由**半徑比**決定（`--kerb-gear-rot` / `--kerb-gear-rot-s`，JS 算）：
-       嚙合的兩輪 ω ∝ 1/r，所以越小轉越快、而且**方向相反**（Ray 指定）。
+     ⚠ 位置與大小是**設計決定**（Ray 直接在門圖上標的比例，見 story.js 的 `KERB_GEAR`），
+       由 `layoutKerberos` 換算成門座標寫成 inline —— 不是幾何最佳化解出來的
+       （-414~-416 解過三版，都被退回）。
+     ⚠ 小齒輪於 ver -417 整組拿掉（Ray：「兩個小齒輪太醜了」）。
+     ⚠ 轉速由**半徑比**決定（`--kerb-gear-rot`，JS 算）：嚙合 ω ∝ 1/r，
+       所以齒輪比團徽轉得快、方向相反。
      ⚠ 圖層：排在 `#kerbPlate` 之前 ＝ 槍棺之上、團徽之下（Ray 指定）。 */
   #storyExit{position:absolute;padding:0;border:0;background:none;
     pointer-events:auto;touch-action:manipulation;cursor:pointer;
     transform:rotate(0deg);
     transition:transform .9s cubic-bezier(.34,1.2,.5,1),opacity .3s ease;}
-  #kerbGearSm{position:absolute;pointer-events:none;
-    transform:rotate(0deg);
-    transition:transform .9s cubic-bezier(.34,1.2,.5,1),opacity .3s ease;}
-  #storyExit img,#kerbGearSm img{position:absolute;inset:0;width:100%;height:100%;
+    #storyExit img{position:absolute;inset:0;width:100%;height:100%;
     display:block;filter:drop-shadow(0 2px 4px rgba(0,0,0,.85));}
   /* 凹槽：**加深齒輪底部**（Ray 指定）—— 一圈由外往內收的暗，讀起來就是鐵板上挖了個孔。
      ⚠ 要比齒輪大一圈（`inset:-9%`）：等大的話邊緣的暗被齒尖蓋住，看不出是凹的。
      ⚠ 上緣多壓一點暗（第二層 radial 往上偏）—— 光從上面來，凹槽的上壁才是暗的那一側。 */
-  #storyExit .ke-well,#kerbGearSm .ke-well{position:absolute;inset:-9%;border-radius:50%;
+  #storyExit .ke-well{position:absolute;inset:-9%;border-radius:50%;
     pointer-events:none;
     background:
       radial-gradient(circle at 50% 62%, rgba(0,0,0,.86) 52%, rgba(0,0,0,.55) 74%,
@@ -1702,14 +1704,9 @@
   /* 團徽一轉，齒輪跟著轉（`lift` 就是團徽轉 180° 那一拍）。
      ⚠ 開／關門那兩拍要**借門的曲線**，同紋章（ver -389 的坑）。 */
   #kerb.lift #storyExit{transform:rotate(var(--kerb-gear-rot,0deg));}
-  #kerb.lift #kerbGearSm{transform:rotate(var(--kerb-gear-rot-s,0deg));}
   #kerb.open #storyExit{transform:translateX(var(--kerb-open-rx,0px)) rotate(var(--kerb-gear-rot,0deg));
     transition:transform .9s cubic-bezier(.7,0,.3,1);}
-  /* ⚠ 小齒輪也跟著**右**半扇：它咬著團徽，但它**裝在右半那片門板上**（實測落在
-     中縫右邊）—— 門一開兩者本來就會分開，那正是雙開門該有的樣子。 */
-  #kerb.open #kerbGearSm{transform:translateX(var(--kerb-open-rx,0px)) rotate(var(--kerb-gear-rot-s,0deg));
-    transition:transform .9s cubic-bezier(.7,0,.3,1);}
-  #kerb.kerb-shut #storyExit,#kerb.kerb-shut #kerbGearSm{
+  #kerb.kerb-shut #storyExit{
     transition:transform .9s cubic-bezier(.7,0,.3,1);}
   /* ⚠ 推上之後就**不能按**了（接下來是戰鬥）：ver -405 是把鈕滑出去，
      現在它是門的一部分不能滑走 —— 改成只鎖住點擊，畫面上它還要繼續轉給人看。 */

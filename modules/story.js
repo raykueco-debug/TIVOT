@@ -850,7 +850,18 @@ const KERB_POP={ arrow:0.045, rivet:0.026 };   // 彈開距離，佔門寬的比
 /* ⚠ `bandC`／`size`／`gap` 於 ver -414 **拿掉了** —— 大齒輪的位置與大小改成
    「右上三角區的內接圓」解出來的（見 layoutKerberos），不再有可調的落點。
    剩下的只有 `bite`：小齒輪要咬進團徽多少 px（Ray：「邊要稍稍被團徽壓到」）。 */
-const KERB_GEAR={ bite:4 };
+/* ══ 齒輪（ver -417，Ray 直接在門的圖上標了位置與大小）══════════════════
+   ⚠⚠ **座標是「門圖上的比例」，不是螢幕比例**（同紋章／箭／鉚釘那一套）——
+     Ray 給的是一張門的貼圖，上面畫著齒輪該在哪、多大。門比畫面寬（`Wd ≥ W`），
+     拿螢幕比例去擺會隨機器長寬比在門上滑動。
+   ⚠⚠ **不要再解「內接圓」了**（ver -414~-416 那一套已經拿掉）：Ray 的指示是
+     「**先以 UI 美觀做大小位置放置準則**」—— 位置與大小是**設計決定**，
+     不是幾何最佳化的結果。解出來的那顆又大又居中，他退了兩次。
+   ⚠⚠ **小齒輪整組拿掉**（Ray：「兩個小齒輪太醜了」）。團徽轉的時候大齒輪照樣跟著轉
+     （轉速仍由半徑比算），只是沒有畫出來的齒輪鏈。要再加回去的話，
+     那是「一顆、而且要好看」，不是為了幾何咬合硬塞。
+     cx/cy 佔門的寬／高，d 佔門寬。 */
+const KERB_GEAR={ cx:0.800, cy:0.040, d:0.121 };
 const KERB_PEND={
   ar:1536/1024,   // 那張圖的高寬比（量出來的）
   bandC:0.145,    // 吊墜中心在畫面寬的哪個比例（ver -412 由 0.115 往右，Ray 指定）
@@ -963,92 +974,30 @@ function layoutKerberos(){
     pd.style.top   = top+'px';
     pd.style.display = pw>=14 ? '' : 'none';          // 真的擠不下就不掛
   }
-  /* ── 齒輪（ver -413／-414）────────────────────────────────────────
-     Ray（-414）：「以邊界為基準，應該讓大齒輪落在**右上三角區的最中心**，不要觸邊、
-     不要觸釘；小齒輪如果沒辦法一次不觸釘就連到團徽，可以放兩個」。
-
-     ⚠⚠ 所以大齒輪的位置與大小都**不是填的數字**，是解出來的：右上那一塊被
-       ①畫面右緣 ②楣的下緣 ③團徽的圓 ④鉚釘 圍成一個三角形，
-       取它的**內接圓**（Chebyshev 中心 ＝ 離所有邊界最遠的那一點）。
-       「最中心」與「不要觸邊／觸釘」是同一個解 —— 內接圓的圓心就是離每一邊都最遠的點。
-     ⚠ 解法是網格搜尋 ＋ 三輪局部收斂（只在 resize 時跑一次，成本可以忽略）。
-       不用閉式解：邊界有四種（兩條直線、兩個圓），寫閉式解會比這段長三倍還難改。
-
-     ⚠⚠ 小齒輪**不能擺在連線上**：2 點鐘那顆鉚釘（`r2`）是**貼在團徽環上**的
-       （實測團徽圓心到它 145.9，而 er+鉚釘半徑 = 147.7 —— 它與團徽本來就重疊），
-       所以「團徽 → 右上角」那條直線上根本沒有縫可以鑽。
-       正解是**把惰輪撐大、讓它滾到線的一側**：同時咬住團徽與大齒輪的圓心軌跡有兩支，
-       半徑越大離連線越遠。所以由最小可行半徑往上加，第一個「離鉚釘與邊界都夠遠」的就是答案。
-       實測單顆就夠（不必放兩顆）。 */
-  const gb=$('storyExit'), gs=$('kerbGearSm');
+  /* ── 齒輪（ver -417）── 位置與大小由 Ray 在門圖上標定（見 KERB_GEAR）。
+     ⚠ 這裡**沒有解算**，只有換算：門座標比例 × 門的實際尺寸。
+     ⚠ 轉速仍由半徑比來（嚙合 ω ∝ 1/r）：團徽轉 180°，齒輪轉 180·(r團徽/r齒輪)。
+       小齒輪拿掉之後鏈上只剩一級，所以方向與團徽相反。 */
+  const gb=$('storyExit');
   if(gb){
-    const topY = 1 + (W*KERB_META.top.ar)*KERB_META.top.dip;   // 楣的下緣（門座標）
-    const rightX = W - dx;                                     // 畫面右緣（門座標）
-    const ecx=(P.x+P.w/2)*Wd, ecy=(P.y+P.h/2)*Hd, er=pW/2;     // 團徽圓心與半徑
-    const RV=[];                                               // 鉚釘（當成圓）
-    for(const k of KERB_RIVETS){ const b=KERB_META.rivets[k];
-      RV.push([b.cx*Wd, b.cy*Hd, Math.max(b.w*Wd, b.h*Hd)/2]); }
-    const M = Math.max(4, W*0.015);                            // 與每一邊的最小空隙
-    /* 離所有邊界最近的距離（＝這一點放得下多大的圓）。 */
-    const room=(x,y)=>{
-      let v=Math.min(rightX-M-x, y-(topY+M), Math.hypot(x-ecx,y-ecy)-er-M);
-      for(const [rx,ry,rr] of RV) v=Math.min(v, Math.hypot(x-rx,y-ry)-rr-M);
-      return v;
-    };
-    /* 網格搜尋 ＋ 局部收斂 → 內接圓的圓心。 */
-    let bx=rightX-W*0.12, by=topY+W*0.12, bv=room(bx,by);
-    let x0=ecx, x1=rightX, y0=topY, y1=ecy;
-    for(let pass=0; pass<4; pass++){
-      const nx=(x1-x0)/24, ny=(y1-y0)/24;
-      for(let i=0;i<=24;i++) for(let j=0;j<=24;j++){
-        const x=x0+i*nx, y=y0+j*ny, v=room(x,y);
-        if(v>bv){ bv=v; bx=x; by=y; }
-      }
-      x0=bx-nx*1.5; x1=bx+nx*1.5; y0=by-ny*1.5; y1=by+ny*1.5;
-    }
-    /* ⚠ 再收一點（0.94）：內接圓是**剛好貼到**三個邊界的那一顆，Ray 要「不要觸邊」。 */
-    const gr = Math.max(10, bv*0.94), gcx=bx, gcy=by;
+    const gr  = KERB_GEAR.d*Wd/2;
+    const gcx = KERB_GEAR.cx*Wd, gcy = KERB_GEAR.cy*Hd;
     gb.style.width=(gr*2)+'px'; gb.style.height=(gr*2)+'px';
     gb.style.left=(gcx-gr)+'px'; gb.style.top=(gcy-gr)+'px';
-
-    /* ── 惰輪（小齒輪）── 同時咬住團徽與大齒輪；半徑由小往大試，
-       第一個「離鉚釘與邊界都夠遠」的就採用。⚠ 兩支軌跡各試一次（線的上下兩側）。 */
-    const D=Math.hypot(gcx-ecx, gcy-ecy);
-    const sMin=(D-er-gr)/2;
-    let sol=null, bestScore=-1e9, bestSol=null;
-    for(let k=0; k<=90 && !sol; k++){
-      const sr=sMin + k*Math.max(0.5, W*0.0015);
-      const r1=er+sr, r2=sr+gr;
-      if(r1+r2 < D) continue;
-      const a=(r1*r1-r2*r2+D*D)/(2*D), h2=r1*r1-a*a;
-      if(h2<0) continue;
-      const h=Math.sqrt(h2);
-      const mx=ecx+a*(gcx-ecx)/D, my=ecy+a*(gcy-ecy)/D;
-      for(const sg of [1,-1]){
-        const sx=mx+sg*h*(gcy-ecy)/D, sy=my-sg*h*(gcx-ecx)/D;
-        let cl=Math.min(rightX-M-sx-sr, sy-(topY+M)-sr);
-        for(const [rx,ry,rr] of RV) cl=Math.min(cl, Math.hypot(sx-rx,sy-ry)-rr-sr-M*0.5);
-        if(cl>bestScore){ bestScore=cl; bestSol={sr,sx,sy}; }
-        if(cl>0){ sol={sr,sx,sy}; break; }
-      }
-    }
-    const S = sol || bestSol;
-    if(gs && S && S.sr>3){
-      /* `bite`：往團徽再靠一點，邊緣被團徽壓住（Ray 指定）。 */
-      const bite=KERB_GEAR.bite||0;
-      const t=(er+S.sr-bite)/(er+S.sr);            // |S−E| 恰好是 er+sr，等比縮短 bite
-      const sx=ecx+(S.sx-ecx)*t, sy=ecy+(S.sy-ecy)*t;
-      gs.style.width=(S.sr*2)+'px'; gs.style.height=(S.sr*2)+'px';
-      gs.style.left=(sx-S.sr)+'px'; gs.style.top=(sy-S.sr)+'px';
-      gs.style.display='';
-      kb.style.setProperty('--kerb-gear-rot-s', (-180*er/S.sr).toFixed(1)+'deg');
-      if(!kerbGearWarned && !sol){ kerbGearWarned=true;
-        console.warn('[kerb] 小齒輪找不到不碰鉚釘的位置，用了最寬鬆的那一個'); }
-    }else if(gs) gs.style.display='none';
-    kb.style.setProperty('--kerb-gear-rot', (180*er/gr).toFixed(1)+'deg');
+    const er=pW/2;
+    kb.style.setProperty('--kerb-gear-rot', (-180*er/gr).toFixed(1)+'deg');
     /* 右半扇開門走的距離（左半扇是 `--kerb-open-x`）：`.kerb-half.r` 是 `translateX(104%)`
        而它的寬度是門的一半 —— 齒輪要跟著它走，就得換算成同一個 px（% 是相對自己的寬）。 */
     kb.style.setProperty('--kerb-open-rx', (Wd/2*1.04)+'px');
+    /* ⚠ 驗算：不可以壓到鉚釘（Ray 指定）。撞到只警告一次 —— 動 KERB_GEAR 的人
+       才知道自己弄壞了什麼。 */
+    if(!kerbGearWarned){
+      for(const k of KERB_RIVETS){ const b2=KERB_META.rivets[k];
+        const rr=Math.max(b2.w*Wd, b2.h*Hd)/2;
+        if(Math.hypot(gcx-b2.cx*Wd, gcy-b2.cy*Hd) < gr+rr){
+          kerbGearWarned=true; console.warn('[kerb] 齒輪壓到鉚釘', k, '—— 調 KERB_GEAR.cx/cy/d'); }
+      }
+    }
   }
   /* 楣：橫跨整個畫面寬，**下緣貼齊門的上緣**（往下壓 1px 免得留一條髮絲縫）。 */
   /* 十字亮光：豎的沿門的中縫、橫的沿紋章的橫軸（＝箭的那一條線）。
@@ -1102,8 +1051,6 @@ function layoutKerberos(){
     const src={ kerbPlate:'kerberos_plate', kerbTop:'kerberos_top', kerbPendImg:'kerberos_pendant',
                 kerbGearImg:'kerberos_gear' };
     for(const id in src){ const el=$(id); if(el) el.src=KERB_DIR+src[id]+'.webp'; }
-    const gsi=$('kerbGearSm'); const gsimg=gsi && gsi.querySelector('img');
-    if(gsimg) gsimg.src=KERB_DIR+'kerberos_gear.webp';
     const gbb=$('storyExit');
     if(gbb) gbb.style.setProperty('--kg-mask', 'url("'+KERB_DIR+'kerberos_gear.webp")');
     /* 高光的遮罩＝**吊墜自己那張圖**（鐵律 7：路徑只有 `KERB_DIR` 這一份）。 */
