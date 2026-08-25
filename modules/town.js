@@ -307,7 +307,17 @@ function refreshArrows(){
 function showNav(on){
   if(layer) layer.classList.toggle('on', !!on);
   document.body.classList.toggle('town-nav', !!on && !!townId);
-  if(on) updateCompass(); else
+  if(on){
+    updateCompass();
+    /* ⚠⚠ **字格的位置要在 `.on` 之後才量**（ver -406 修）：`#townNav` 沒有 `.on`
+       時整層是 `display:none`，那時候量目的地字格得到的是 **0×0** —— 夾回畫面內那一段
+       就退回預設的半寬 40px，字格於是被擺在錯的地方（實測「武器店（已打烊）」
+       左緣 −23，第一個字被切掉）。
+       ⚠ 以前看不出來是因為字短（「武器店」剛好塞得進錯誤的位置）；ver -406 的
+         「（已打烊）」後綴一加就露餡了。**這是量 rect 的通病**：量之前先確認那個東西
+         真的顯示著（同 §6.5 那條「量不到就先不要擺」）。 */
+    refreshArrows();
+  }else
     document.querySelectorAll('.kerb-arrow').forEach(a=>a.classList.remove('avail','holding'));
 }
 
@@ -368,7 +378,21 @@ function exitsOf(){
 const SAIL_ID='__sail';
 function nameOfNode(id){
   if(id===SAIL_ID) return '出航';
-  return ((TOWNS[townId]||{}).nodes[id]||{}).name?.replace(/^帝都　/,'')||'';
+  const n=(TOWNS[townId]||{}).nodes[id];
+  if(!n) return '';
+  /* ⚠ 打烊的地方在**目的地字格上就標出來**（ver -406）：走過去才發現關門是白走一趟，
+     而移動要花掉遊戲內時間（時間是資源）。標在這裡＝所有顯示目的地名的地方
+     （字格、蓄能提示）都吃得到，只有這一支在決定（鐵律 7）。 */
+  const nm=(n.name||'').replace(/^帝都　/,'');
+  return isOpenNow(n) ? nm : (nm+'（已打烊）');
+}
+/* 營業時間那一行。⚠ 只有這一支在把 `hours` 排成字（鐵律 7）—— 打烊提示與日後
+   任何要顯示營業時間的地方都問它。 */
+function hoursText(n){
+  const h=n && n.hours;
+  if(!h || h.length<2) return '';
+  const p2=v=>(v<10?'0':'')+v;
+  return '營業時間　'+p2(h[0])+':00 – '+p2(h[1]%24)+':00';
 }
 
 function updateCompass(){
@@ -456,12 +480,33 @@ function bindInput(){
 function go(to, dir){
   if(!to) return;
   if(to===SAIL_ID){ setSail(); return; }
+  /* ══ 打烊的店**進不去**（ver -406，Ray 指定）══
+     原本會走進去、站在一間關著的店裡（沒有店主、沒有選單），而且白花掉 10 分鐘
+     ——「時間是資源」，走一趟空的就是實質的懲罰。改成**擋在門口**：不移動、
+     不推進時鐘，就地報店名與營業時間。
+     ⚠ 判定走**同一支** `isOpenNow`（鐵律 8）—— 目的地字格上的「（已打烊）」、
+       進去之後的地名後綴、店主與選單出不出來，全部是它。 */
+  const nx=((TOWNS[townId]||{}).nodes||{})[to];
+  if(nx && !isOpenNow(nx)){ knockClosed(nx); return; }
   pendingDir = dir || null;            // 這一次按的方向（ver -405）；enter() 取用
   busy=true; showNav(false);
   document.body.classList.remove('town-nav');          // 移動中把羅盤收起來
   try{ SFX.play('resources/audio/se/se_walk.m4a'); }catch(_){}
   clock.advance(STEP_MIN);
   setTimeout(()=>enter(to), 260);
+}
+
+/* 吃了閉門羹：就地浮一句「哪一家、幾點開」。
+   ⚠ 走**路人單句那一套**（`flashLine` ＋ `chatterOn`），所以「再點一下收掉」的節奏
+     與城鎮其他單句一致（鐵律 8）—— 不另做一個提示框。
+   ⚠ 名字欄放**店名**：這一句不是誰在講話，是「你站在這扇門前看到的事」。 */
+function knockClosed(n){
+  try{ SFX.unlock(); SFX.menuClick(); }catch(_){}
+  const parts=[];
+  if(n.closed) parts.push(n.closed);
+  const ht=hoursText(n); if(ht) parts.push(ht);
+  story.flashLine(parts.join('　'), (n.name||'').replace(/^帝都　/,''));
+  chatterOn=true;
 }
 
 /* ══ 出航（ver -387，Ray 指定）══════════════════════════════════════════
