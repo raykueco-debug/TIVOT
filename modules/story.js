@@ -871,7 +871,16 @@ const KERB_POP={ arrow:0.045, rivet:0.026 };   // 彈開距離，佔門寬的比
      smAngle 小齒輪咬在團徽的哪個角度（度，從水平往下量；60°＝右下，Ray 指定「團徽下方」）
    ⚠ 位置：**橫向鏡射吊墜的中心**（左緣到吊墜 ＝ 右緣到齒輪），
      **縱向對齊吊墜的「身體中心」**（不是圖框中心 —— 圖的上面 12% 是鏈子）。 */
-const KERB_GEAR={ rel:0.92, smRel:0.55, smAngle:60, bodyC:0.45 };
+/* ⚠⚠ **小齒輪是惰輪：同時咬住團徽與大齒輪**（ver -420，Ray：「小齒輪要連結大齒輪跟
+   團徽啊」）。所以它的半徑與位置**不能填**，是解出來的：兩個圓都相切 →
+   圓心落在兩條軌跡的交點，半徑越大離「兩圓心連線」越遠。
+   ⚠⚠ **為什麼它沒辦法很小**：2 點鐘那顆鉚釘（`r2`）幾乎正好落在「團徽圓心 → 右上角」
+     那條線上（實測鉚釘在 −40.8°、大齒輪在 −45.8°，只差 5°），而惰輪最小的時候正好
+     **在那條線上** —— 一定壓到它。要閃開就得把惰輪撐大讓它滾到線的一側。
+     實測最小可行半徑 20.3（＝大齒輪的 0.74 倍）。
+   ⚠ `smAllowRivet:true` ＝ 允許壓過鉚釘，惰輪就能縮到 0.61 倍（⌀34）。
+     兩者只能二選一（見 HANDOFF 的說明），開關留在這裡。 */
+const KERB_GEAR={ rel:0.92, bodyC:0.45, smAllowRivet:false };
 const KERB_PEND={
   ar:1536/1024,   // 那張圖的高寬比（量出來的）
   bandC:0.145,    // 吊墜中心在畫面寬的哪個比例（ver -412 由 0.115 往右，Ray 指定）
@@ -1012,13 +1021,42 @@ function layoutKerberos(){
     /* 小齒輪：咬在團徽上（`smAngle`）。⚠ 位置是「團徽圓心 ＋ (er+sr−bite) 沿那個角度」，
        所以它一定貼著團徽；`bite` 讓邊緣被團徽壓住（齒輪排在團徽之前）。 */
     if(gsm){
-      const sr=gr*KERB_GEAR.smRel, bite=4, t=KERB_GEAR.smAngle*Math.PI/180;
-      const d0=er+sr-bite;
-      gsm.style.width=(sr*2)+'px'; gsm.style.height=(sr*2)+'px';
-      gsm.style.left=(ecx+d0*Math.cos(t)-sr)+'px';
-      gsm.style.top =(ecy+d0*Math.sin(t)-sr)+'px';
-      gsm.style.display='';
-      kb.style.setProperty('--kerb-gear-rot-s', (-180*er/sr).toFixed(1)+'deg');
+      /* 惰輪：同時與團徽、大齒輪相切。半徑由最小可行值往上加，
+         第一個「離鉚釘與邊界都夠遠」的就是答案（允許壓鉚釘時第一個就成立）。 */
+      const RV=[];
+      for(const k of KERB_RIVETS){ const b2=KERB_META.rivets[k];
+        RV.push([b2.cx*Wd, b2.cy*Hd, Math.max(b2.w*Wd, b2.h*Hd)/2]); }
+      const M=Math.max(3, W*0.008), rightX=W-dx;
+      const topY=1 + (W*KERB_META.top.ar)*KERB_META.top.dip;
+      const D=Math.hypot(gcx-ecx, gcy-ecy), sMin=(D-er-gr)/2;
+      let sol=null;
+      for(let i=0; i<=140 && !sol; i++){
+        const sr=sMin + i*Math.max(0.4, W*0.0012);
+        const r1=er+sr, r2=sr+gr;
+        if(r1+r2 < D) continue;
+        const a2=(r1*r1-r2*r2+D*D)/(2*D), h2=r1*r1-a2*a2;
+        if(h2<0) continue;
+        const h=Math.sqrt(h2), mx=ecx+a2*(gcx-ecx)/D, my=ecy+a2*(gcy-ecy)/D;
+        for(const sg of [1,-1]){
+          const sx=mx+sg*h*(gcy-ecy)/D, sy=my-sg*h*(gcx-ecx)/D;
+          let cl=Math.min(rightX-M-sx-sr, sy-(topY+M)-sr);
+          if(!KERB_GEAR.smAllowRivet)
+            for(const [rx,ry,rr] of RV) cl=Math.min(cl, Math.hypot(sx-rx,sy-ry)-rr-sr-M);
+          if(cl>0){ sol={sr,sx,sy}; break; }
+        }
+      }
+      if(sol){
+        gsm.style.width=(sol.sr*2)+'px'; gsm.style.height=(sol.sr*2)+'px';
+        gsm.style.left=(sol.sx-sol.sr)+'px'; gsm.style.top=(sol.sy-sol.sr)+'px';
+        gsm.style.display='';
+        kb.style.setProperty('--kerb-gear-rot-s', (-180*er/sol.sr).toFixed(1)+'deg');
+        /* 惰輪在鏈上多一級 → 大齒輪的方向要翻回來（團徽 + → 惰輪 − → 大齒輪 +）。 */
+        kb.style.setProperty('--kerb-gear-rot', (180*er/gr).toFixed(1)+'deg');
+      }else{
+        gsm.style.display='none';
+        if(!kerbGearWarned){ kerbGearWarned=true;
+          console.warn('[kerb] 找不到能同時咬住團徽與大齒輪、又閃得開鉚釘的惰輪'); }
+      }
     }
     /* 右半扇開門走的距離（左半扇是 `--kerb-open-x`）：`.kerb-half.r` 是 `translateX(104%)`
        而它的寬度是門的一半 —— 齒輪要跟著它走，就得換算成同一個 px（% 是相對自己的寬）。 */

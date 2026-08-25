@@ -477,7 +477,7 @@ const VIEW_F = 0.66;      // 3D 視窗佔畫面高度比例，其餘為面板
 /* ⚠ 只剩 `bite`：位置與大小都是解出來的（同 story.js 的 KERB_GEAR）。 */
 /* ⚠ 與 `modules/story.js` 的 `KERB_GEAR` 同一組（門圖上的比例），改一邊要改另一邊。 */
 /* ⚠ 與 `modules/story.js` 的 `KERB_GEAR` 同一組，改一邊要改另一邊。 */
-const FKERB_GEAR={ rel:0.92, smRel:0.55, smAngle:60, bodyC:0.45 };
+const FKERB_GEAR={ rel:0.92, bodyC:0.45, smAllowRivet:false };
 const FKERB_PEND={ ar:1536/1024, bandC:0.145, maxW:0.32, wantW:0.155, drop:0.004,
   prof:[[0.13,0.41],[0.17,0.45],[0.21,0.49],[0.25,0.45],[0.31,0.40],[0.38,0.31],
         [0.44,0.24],[0.48,0.36],[0.52,0.25],[0.58,0.21],[0.65,0.27],[0.69,0.35],
@@ -6579,11 +6579,29 @@ function layoutFKerb(){
     gb.style.width=(gr*2)+'px'; gb.style.height=(gr*2)+'px';
     gb.style.left=(gcx-gr)+'px'; gb.style.top=(gcy-gr)+'px'; gb.style.display='';
     if(gsm){
-      const sr=gr*FKERB_GEAR.smRel, bite=4, t=FKERB_GEAR.smAngle*Math.PI/180, d0=er+sr-bite;
+      /* 惰輪：同時咬住團徽與大齒輪（同 story.js 的解法，改一邊要改另一邊）。 */
       const ecx=(P.x+P.w/2)*Wd, ecy=(P.y+P.h/2)*Hd;
-      gsm.style.width=(sr*2)+'px'; gsm.style.height=(sr*2)+'px';
-      gsm.style.left=(ecx+d0*Math.cos(t)-sr)+'px';
-      gsm.style.top =(ecy+d0*Math.sin(t)-sr)+'px'; gsm.style.display='';
+      const RV=[]; for(const k in FKERB.rivets){ const b2=FKERB.rivets[k];
+        RV.push([b2.cx*Wd, b2.cy*Hd, Math.max(b2.w*Wd,b2.h*Hd)/2]); }
+      const M=Math.max(3,W*0.008), rightX=W-dx, topY=1+th*FKERB.top.dip;
+      const D=Math.hypot(gcx-ecx,gcy-ecy), sMin=(D-er-gr)/2;
+      let sol=null;
+      for(let i=0;i<=140 && !sol;i++){
+        const sr=sMin+i*Math.max(0.4,W*0.0012), r1=er+sr, r2=sr+gr;
+        if(r1+r2<D) continue;
+        const a2=(r1*r1-r2*r2+D*D)/(2*D), h2=r1*r1-a2*a2; if(h2<0) continue;
+        const h=Math.sqrt(h2), mx=ecx+a2*(gcx-ecx)/D, my=ecy+a2*(gcy-ecy)/D;
+        for(const sg of [1,-1]){
+          const sx=mx+sg*h*(gcy-ecy)/D, sy=my-sg*h*(gcx-ecx)/D;
+          let cl=Math.min(rightX-M-sx-sr, sy-(topY+M)-sr);
+          if(!FKERB_GEAR.smAllowRivet)
+            for(const q of RV) cl=Math.min(cl, Math.hypot(sx-q[0],sy-q[1])-q[2]-sr-M);
+          if(cl>0){ sol={sr,sx,sy}; break; }
+        }
+      }
+      if(sol){ gsm.style.width=(sol.sr*2)+'px'; gsm.style.height=(sol.sr*2)+'px';
+        gsm.style.left=(sol.sx-sol.sr)+'px'; gsm.style.top=(sol.sy-sol.sr)+'px'; gsm.style.display=''; }
+      else gsm.style.display='none';
     }
   }else if(gb){ gb.style.display='none'; if(gsm) gsm.style.display='none'; }
   tp.style.width=W+'px'; tp.style.height=th+'px';
