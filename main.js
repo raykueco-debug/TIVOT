@@ -495,7 +495,11 @@ window.addEventListener('pagehide', refreshBoot);
        開場那兩支（跑步聲／跌倒音）因此消失過好幾次；圖片沒載完頂多晚一拍出現。 */
   let loadPortrait = ()=>Promise.resolve();
   {
-    const insp=(GAME_CONFIG.inspectors||{})[GAME_CONFIG.defaultInspector]||{};
+    /* 說明者：出航之後換成蕾娜（ver -425）。規則在 `config.loadingHost`，
+       這裡只負責問 —— 換人只要改 config 那一行（鐵律 7）。 */
+    const lh=GAME_CONFIG.loadingHost||{};
+    const hostKey=(lh.flag && lh.then && prog.hasFlag(lh.flag)) ? lh.then : GAME_CONFIG.defaultInspector;
+    const insp=(GAME_CONFIG.inspectors||{})[hostKey]||{};
     const img=$('alPortrait'); const nm=ov.querySelector('.al-name');
     if(nm) nm.textContent=insp.name||'';
     const psrc=asset(insp.image);
@@ -541,9 +545,14 @@ window.addEventListener('pagehide', refreshBoot);
      ⚠ 三段是**串起來的**（前一段完成才開下一段）—— 同時開跑會搶頻寬，
        那正是「音效讀曲跟不上」的成因。 */
   let done=0;
-  const prog=$('alRingProg'), pct=$('assetLoaderPct');
+  /* ⚠ 這個區域變數本來叫 `prog`，**與 `import * as prog`（進度／旗標）同名** ——
+     同一個函式作用域裡的 `const` 會把整個 import 遮成 TDZ，於是同一支函式裡
+     **前面**用到 `prog.hasFlag` 的地方在執行期直接丟
+     「Cannot access 'prog' before initialization」（ver -425 踩到，整個開機掛掉）。
+     改名成 `ringEl`：進度圈是 DOM，不是「進度」。 */
+  const ringEl=$('alRingProg'), pct=$('assetLoaderPct');
   const tick=()=>{ done++; const p=total?Math.round(done/total*100):100;
-    if(prog) prog.style.strokeDashoffset=(RING_C*(1-p/100)).toFixed(1);   // 沿光圈順時針推進
+    if(ringEl) ringEl.style.strokeDashoffset=(RING_C*(1-p/100)).toFixed(1);   // 沿光圈順時針推進
     if(pct) pct.textContent=p+'%'; };
   // 載完 → 改「點擊繼續」：這一點＝使用者手勢，解鎖音訊並播 MainMenu，再揭開選單
   let ready=false;
@@ -551,7 +560,7 @@ window.addEventListener('pagehide', refreshBoot);
     if(ready) return; ready=true;
     /* 讀取完成：進度圈補滿、整圈轉常亮發光（.al-done），字樣換成 COMPLETE
        並加呼吸 —— 那就是「可以點了」的訊號。 */
-    if(prog) prog.style.strokeDashoffset='0';
+    if(ringEl) ringEl.style.strokeDashoffset='0';
     if(pct) pct.style.display='none';
     ov.classList.add('al-done');
     const cap=$('alRingCap');

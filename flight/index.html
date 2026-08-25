@@ -9150,7 +9150,20 @@ const BOOT_HINTS=[
   '大陸邊緣之外是雲海。低於雲海高度的地方一律沒入雲中。',
   '長按船身可請安雅感應四周；找到的地點會留在地圖上。連按會累壞她，隔一會兒再試。',
 ];
-const BOOT_NAME='監察官　フレイヤ';
+/* ══ 讀取頁的說明者（ver -425，Ray：「出航之後換成蕾娜」）══════════════════
+   ⚠⚠ 這是 `config.loadingHost` 的**第二份**（這一頁是非 module 的獨立文件，
+     import 不到那一份）—— **改一邊要改另一邊**（鐵律 7 的但書）。
+   ⚠ 旗標與主遊戲共用同一把鑰匙（`tivot_flags_v1`，§6.10）。 */
+const BOOT_HOST = {
+  flag:'set_sail',
+  before:{ name:'監察官　フレイヤ', img:'../resources/inspector/Freya_SI_01.webp' },
+  after: { name:'蕾娜',            img:'../resources/SI/Renna_SI_front.webp' },
+};
+function bootHost(){
+  let on=false;
+  try{ on=(JSON.parse(localStorage.getItem('tivot_flags_v1')||'[]')||[]).indexOf(BOOT_HOST.flag)>=0; }catch(e){}
+  return on ? BOOT_HOST.after : BOOT_HOST.before;
+}
 const bootUI=(()=>{
   const $=id=>document.getElementById(id);
   const RING=301.59;   // r=48 的周長（與主程式 #alRingProg 同規格）
@@ -9162,8 +9175,9 @@ const bootUI=(()=>{
   let hintI=0, timer=0;
   const im=$('bPortrait');
   im.onload=()=>im.classList.add('on');
-  im.src='../resources/inspector/Freya_SI_01.webp';
-  $('bName').textContent=BOOT_NAME;
+  const host=bootHost();
+  im.src=host.img;
+  $('bName').textContent=host.name;
   function cycle(){
     const h=$('bHint');
     h.textContent=hints[hintI++ % hints.length];

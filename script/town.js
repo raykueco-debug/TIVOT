@@ -315,7 +315,8 @@ export const TOWNS = {
               { choice:[ { text:'準備出航', goto:'sail_go' },
                          { text:'再等一下', goto:'sail_wait' } ] },
               Object.assign(ren(null,'那麼，前往第一個目的地，北方泊地。'), { label:'sail_go' }),
-              { goFlight:true },
+              /* ⚠ `set_sail` ＝讀取頁的說明者換成蕾娜的那一刻（`config.loadingHost`）。 */
+              { goFlight:true, flags:['set_sail'] },
               Object.assign(ren('smile','不急，準備好再叫我。'), { label:'sail_wait' }),
             ] },
           /* 第二段：戲看過了，只剩那一句問答。⚠ `need` ＝要先有第一段的旗標；
@@ -327,7 +328,8 @@ export const TOWNS = {
               { choice:[ { text:'準備出航', goto:'sail_go2' },
                          { text:'再等一下', goto:'sail_wait2' } ] },
               Object.assign(ren(null,'那麼，前往第一個目的地，北方泊地。'), { label:'sail_go2' }),
-              { goFlight:true },
+              /* ⚠ `set_sail` ＝讀取頁的說明者換成蕾娜的那一刻（`config.loadingHost`）。 */
+              { goFlight:true, flags:['set_sail'] },
               Object.assign(ren('smile','不急，準備好再叫我。'), { label:'sail_wait2' }),
             ] },
         ],

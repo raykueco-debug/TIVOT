@@ -588,6 +588,10 @@ function setCgScale(k){
    這支函式的呼叫點只有一個，回傳值改起來要動一串解構，得不償失。 */
 let persistFaded=false;
 function applyPersist(line){
+  /* ⚠ **這一拍要立的旗標**（ver -425）：`flags:['set_sail']`。
+     scene 有 `setFlags`（收尾才寫），但城鎮的 `acts` 不是 scene —— 這一條是逐拍的。
+     ⚠ 演到就記（不是演完），所以只放「這一刻確實發生了」的事（出航、拿到東西…）。 */
+  if(line.flags && line.flags.length) prog.addFlags(line.flags);
   persistFaded=false;
   let bgChanged=false;
   if(line.bg!==undefined && line.bg!==stageBg){
@@ -706,6 +710,8 @@ const SE_FILES=[
   'se_Kerberos_open.m4a', 'se_Kerberos_pop.m4a', 'se_Kerberos_steam.m4a',
   'se_kerberos_drop.m4a',                                    // 槍棺落地（旅店那一幕，ver -392）
   'se_enemy_dagger.m4a', 'se_dart_fail.m4a',                 // 固定立靶點錯（ver -397）
+  /* 船艦戰（ver -423／-425）：蜈蚣的攻擊音、艦砲、船戰用的機槍。 */
+  'Se_enemy_centipi.m4a', 'se_weapon_cannon_120mm.m4a', 'se_weapon_heavygun.m4a',
   'se_enemy_revolver.m4a', 'se_enemy_shot.m4a', 'se_enemy_slash.m4a', 'se_enemy_smack.m4a',
   'se_flight_heartbeat.m4a', 'se_flight_idle_loop.mp3', 'se_flight_sail_loop.mp3',
   'se_flight_seagull.m4a', 'se_flight_train.mp3', 'se_lunaMG.m4a', 'se_punch.m4a',
@@ -1494,6 +1500,10 @@ function renderLine(){
   }
   /* 出航：交給啟動層開飛行頁（`setFlightOpener` 注入）。⚠ 這一拍之後劇情就結束了。 */
   if(line.goFlight){
+    /* ⚠ 旗標要**在開飛行頁之前**寫下去（ver -425）：讀取頁的說明者是由
+       `config.loadingHost.flag` 當場判的（`set_sail` → 蕾娜）。寫在後面的話
+       那一頁已經決定好說明者了，這一趟還是芙蕾雅。 */
+    applyPersist(line);
     if(flightOpener){ endScene(); try{ flightOpener(line.goFlight); }catch(_){} return; }
     console.info('[story] 沒有註冊飛行頁開啟器，跳過 goFlight');
     return advance();

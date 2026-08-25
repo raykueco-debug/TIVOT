@@ -241,6 +241,17 @@ export const GAME_CONFIG = {
   ],
 
   inspectors: {
+    /* 蕾娜（ver -425）：**讀取頁的說明者**，出航之後接手。
+       ⚠ 結算畫面的監察官還是 `defaultInspector`（freya）—— 正名是另一件事（§8），
+         這裡只換讀取頁那一張臉。
+       ⚠ 立繪先借對白用的正面圖（`resources/SI/Renna_SI_front.webp`）；
+         日後有專屬的讀取頁立繪就改 `image` 那一行。 */
+    renna: {
+      name:'蕾娜',
+      tier:'rookie',
+      image:'inspector_renna',
+      portraits:{}, dialogues:{},
+    },
     freya: {
       name:'芙蕾雅',
       tier:'rookie',
@@ -275,6 +286,11 @@ export const GAME_CONFIG = {
     },
   },
   defaultInspector: 'freya',   // 填上面的鑰匙名即啟用；null＝結算畫面不顯示監察官
+  /* ══ 讀取頁的**說明者**（ver -425，Ray：「從這個時點開始讀取頁的說明者變成蕾娜」）══
+     出航那一刻起換人。⚠ 規則寫在資料上（旗標名 ＋ 換成誰），程式只負責問 ——
+     主遊戲的讀取頁與**飛行頁自己的讀取頁**是兩個 document，兩邊都讀這一條
+     （飛行頁那一份是第二份，改一邊要改另一邊，見 flight/index.html 的 BOOT_HOST）。 */
+  loadingHost: { flag:'set_sail', then:'renna' },
 
   /* ------------------------------------------------------------------ *
    *  三之四、教學關卡（tutorial）— 首次出陣時插入的對話教學
@@ -1241,7 +1257,7 @@ export const ASSETS = {
   enemy_centipi_day:   "resources/enemy/Centipi_day.webp",
   enemy_centipi_night: "resources/enemy/Centipi_night.webp",
   enemy_centipi_dd:    "resources/enemy/Centipi_DD.webp",
-  cg_006_ship:         "resources/illustration/006_Ship.webp",     // 插圖：白帆三桅船
+  inspector_renna:     "resources/SI/Renna_SI_front.webp",         // 讀取頁的說明者（出航後）
   weapon_mg_squall:     "resources/weapon/MG_Squall.webp",       // 重機槍 Squall
   weapon_shotgun_blast: "resources/weapon/Shotgun_Blast.webp",   // 散彈槍 Blast
   weapon_sniper_falcon: "resources/weapon/Sniper_Falcon.webp",   // 狙擊槍 Falcon
@@ -1267,10 +1283,10 @@ export const ASSETS = {
      ⚠ 搬檔與改名走 tools/audio_reorg.py，別手改 —— 它會一併改寫
        config.js 與 flight/index.html 兩邊的路徑，手改很容易漏掉後者。 */
   // 反擊武器音效（所有副武器各一支；鑰匙對應 weapons.sound）。
-  /* 船艦戰用的武器音（ver -423，Ray 指定）。⚠ **缺 `se_weapon_cannon_120mm`** ——
-     素材還沒給，所以步槍與艦砲那兩支暫時指到 `se_weapon_heavygun`（有聲音總比沒有好）。
-     檔案補進來之後把下面兩行改回 `se_weapon_cannon_120mm.m4a` 就好。 */
-  se_ship_cannon:    "resources/audio/se/se_weapon_heavygun.m4a",       // ⚠ 代用：本來要 cannon_120mm
+  /* 船艦戰用的武器音（ver -423／-425 補齊，Ray 指定）。
+     ⚠ 艦砲的素材原檔叫 `se_weapon_spitCannon`（本來放在 `_unused/`）——
+       Ray 確認「是要當艦砲用的」，轉檔時一併正名成 `se_weapon_cannon_120mm`。 */
+  se_ship_cannon:    "resources/audio/se/se_weapon_cannon_120mm.m4a",   // 艦砲（步槍在船戰也用它）
   se_ship_heavygun:  "resources/audio/se/se_weapon_heavygun.m4a",       // 船戰的機槍
   se_enemy_centipi:  "resources/audio/se/Se_enemy_centipi.m4a",         // 巨型蜈蚣（登場／攻擊）
   se_mg_squall:      "resources/audio/se/se_weapon_mg_squall.m4a",       // 重機槍 反擊（連續感：整支播一次）
