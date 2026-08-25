@@ -108,7 +108,10 @@ export const ART = {
                   writing:  { src:'resources/SI/Renna_SI_writting.webp', top:4, bot:1524, fx:0.507 },
                   /* ver -425 交件。`covermouth`＝掩口（驚訝／忍笑）、`cringe`＝尷尬皺眉。 */
                   covermouth:{src:'resources/SI/Renna_SI_covermouth.webp',top:2, bot:1528, fx:0.512 },
-                  cringe:   { src:'resources/SI/Renna_SI_cringe.webp',    top:3, bot:1524, fx:0.502 } } },
+                  cringe:   { src:'resources/SI/Renna_SI_cringe.webp',    top:3, bot:1524, fx:0.502 },
+                  cutescare:{ src:'resources/SI/Renna_SI_cutescare.webp', top:0, bot:1530, fx:0.537 },
+                  dying:    { src:'resources/SI/Renna_SI_dying.webp',     top:2, bot:1518, fx:0.543 },
+                  relief:   { src:'resources/SI/Renna_SI_relief.webp',    top:3, bot:1525, fx:0.518 } } },
   /* ⚠⚠ 諾薇兒的表情差分是**不同姿勢**（跑、畏縮、驚恐、絕望、驚訝），不是換臉，
        所以每一張**各帶自己的 top/bot/fx**（ver -325 量完）。
        ⚠ 沿用 front 那一組的後果實測過：Scared 的臉其實在 0.397，照 0.564 擺會
