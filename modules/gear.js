@@ -211,7 +211,11 @@ export function open(){
   render();
   el.classList.add('on');
   requestAnimationFrame(()=>{ el.classList.add('vis'); maybeTip(); });
-  try{ SFX.play(asset('sfx_saint')); }catch(_){}
+  /* ⚠ **一般的 click 音就好**（ver -433，Ray 指定）。原本用 `sfx_saint`（聖徒化那一支）——
+     那是「發動」的聲音，開一頁裝備管理配不上那個份量，而且它比其他 UI 音都響。
+     ⚠ 走 `SFX.menuClick()`（＝ `se_general_click`，所有按鈕的統一出口）——
+       這一頁裡其他三處本來就是它，這一行是唯一的例外。 */
+  try{ SFX.menuClick(); }catch(_){}
 }
 export function close(){
   if(!el) return;
