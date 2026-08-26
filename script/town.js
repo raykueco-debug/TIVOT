@@ -456,15 +456,16 @@ export const TOWNS = {
         hours:[8,20], closed:'櫥窗裡的燈熄了，門板上掛著「已打烊」。',
         once:true,
         lines:[
-          nou('surprise','好多東西！要是可以不穿司祭服就好了。'),
+            nou('surprise', '好多東西！連衣服都有！'),
+            nou('awkwerd', '要是可以不穿用司祭服就好了。'),
           { speaker:'PLAYER', blank:true },
           /* 好感度 +1（Ray 指定）。⚠ 走 `aff` 這個欄位，由 modules/town.js 在演到這一拍時記帳；
              ⚠ **只加一次**：`once:true` 的節點對白本來就只播一次，所以不必另外擋。 */
           Object.assign(nou('shy','討厭啦，真會說話。要當神父的人油嘴滑舌可不行喔。'),
                         { aff:{ nouvelle:1 } }),
-          { speaker:'SHOPKEEP', text:'歡迎光臨。小店應有盡有，請慢慢看。',
+            {
+                        speaker: 'SHOPKEEP', text: '歡迎光臨。最近航道受阻，貨物不那麼齊全，請見諒。',
             portrait:{ char:'SHOPKEEP', show:true } },
-          nou('awkward','還真是什麼都有耶。就是有點貴。'),
         ],
         /* 店主對話鈕（商店頁上的按鈕）→ **一段對白**，不是輪播單句（ver -371，Ray 改稿）。
            ⚠ 兩個人輪流講，所以走 `story.playAdhoc`（有立繪、有明暗、有推進），
