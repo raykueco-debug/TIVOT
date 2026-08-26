@@ -1745,7 +1745,24 @@ const SENSE_FIRE_MS = SENSE_RING_MS + SENSE_OUT_MS;
      而發動的那一刻手指本來就在螢幕上（使用者手勢），播得動。 */
 const senseBeat = new Audio('../resources/audio/se/se_flight_heartbeat.m4a');           senseBeat.preload='auto';
 const senseSE   = new Audio('../resources/audio/se/se_ui_kagurabell.m4a'); senseSE.preload='auto';
-const playSfx=a=>{ try{ a.currentTime=0; const q=a.play(); if(q) q.catch(()=>{}); }catch(_){} };
+/* ══ 玩家的分軌音量（ver -436，Ray：「音量調節鈕是裝飾沒有效果」）════════════
+   ⚠⚠ **這一頁的音訊完全不經過主遊戲的 `SFX`**：它是另一個 document，用的是自己的
+     一組 `HTMLAudio`（`makeLoop` 的音樂與環境音、心跳、神楽鈴、Sturm、槍棺）。
+     所以選單裡那三支滑桿以前**對這一頁一點作用都沒有** —— 而大地圖正是最常待著的地方。
+   ⚠ 鑰匙與主遊戲**共用**（§6.10：跨頁狀態走 localStorage、鑰匙共用），
+     所以不必再做一份 UI，調完飛過來就生效。
+   ⚠ 每次要用的時候現讀：設定可能在這一頁藏著的時候被改（`__flightResume` 也會重讀）。
+   ⚠ 與 `muted` 是**兩件事**，兩者相乘：靜音鈕是一鍵全關，滑桿是分軌強弱。 */
+const VOL_KEY={ bgm:'tivot_vol_bgm_v1', se:'tivot_vol_se_v1', vo:'tivot_vol_vo_v1' };
+function volOf(layer){
+  try{ const n=parseFloat(localStorage.getItem(VOL_KEY[layer]));
+       return isFinite(n) ? Math.max(0, Math.min(1, n)) : 1; }
+  catch(_){ return 1; }
+}
+/* ⚠ 音效一律走這一支（唯一的播放點，鐵律 8）—— 音量在這裡乘進去，
+   呼叫端不必記得，日後多一支音效也自動吃到。 */
+const playSfx=a=>{ try{ a.currentTime=0; a.volume=(a.__baseVol!=null?a.__baseVol:1)*volOf('se')*(muted?0:1);
+  const q=a.play(); if(q) q.catch(()=>{}); }catch(_){} };
 /* ⚠ iOS 只認**手勢當下**呼叫的 play()。心跳是按住滿 1 秒才起播的，那時早就
    離開手勢了 —— 手機上因此完全沒聲音。而殘影又綁在音訊時鐘上，於是連脈動
    也一起沒了（Ray 回報「沒脈動也沒心跳聲」，同一個原因）。
@@ -4724,18 +4741,21 @@ function updateBgm(dt){
   // 門檻取很低：一有推進就切成航行曲，回到完全靜止才回待機
   const want=(Math.abs(cam.speed)>0.06)?1:0;
   sailMix+=(want-sailMix)*(1-Math.pow(1-MIX_RATE, dt/16.67));
-  const mk=muted?0:1;
-  bgmMain.tick(BGM_VOL*mk);                    // 音樂：不隨速度變
-  ambSail.tick(AMB_SAIL*sailMix*mk);           // 環境音：動／停交叉，疊在音樂上
-  ambIdle.tick(AMB_IDLE*(1-sailMix)*mk);
+  /* ⚠ `mk` 是靜音鈕（一鍵全關），`vb`／`vs` 是玩家的分軌滑桿（ver -436）——
+     兩者相乘。⚠ 環境音（航行／停船）與火車、海鷗算**音效**那一軌，不是音樂：
+     它們是「世界的聲音」，跟著 SE 的滑桿走才符合玩家的預期。 */
+  const mk=muted?0:1, vb=volOf('bgm'), vs=volOf('se');
+  bgmMain.tick(BGM_VOL*mk*vb);                    // 音樂：不隨速度變
+  ambSail.tick(AMB_SAIL*sailMix*mk*vs);           // 環境音：動／停交叉，疊在音樂上
+  ambIdle.tick(AMB_IDLE*(1-sailMix)*mk*vs);
   /* 火車：取最近那一列的距離換成音量。⚠ 一樣要收斂跟隨，不能直接餵目標值 ——
      車到站（wait>0）時目標會從某個值瞬間掉到 0，硬切就是「喀」的一聲。
      0.05 的係數約 0.9 秒收斂完，聽起來是自然的遠去。 */
   trainMix+=(trainSndTarget()-trainMix)*(1-Math.pow(1-0.05, dt/16.67));
-  sfxTrain.tick(TRAIN_VOL*trainMix*mk);
+  sfxTrain.tick(TRAIN_VOL*trainMix*mk*vs);
   /* 海鷗：同一套。鳥群散掉（flock=null）時目標歸零，靠收斂跟隨淡出。 */
   gullMix+=(gullSndTarget()-gullMix)*(1-Math.pow(1-0.05, dt/16.67));
-  sfxGull.tick(GULL_VOL*gullMix*mk);
+  sfxGull.tick(GULL_VOL*gullMix*mk*vs);
 }
 /* 目標音量（0~1）：鳥群有多近。⚠ 鳥群的高度落在玩家上下 ±160，所以三維距離
    與平面距離幾乎一樣 —— 但還是照算，免得日後改成高空盤旋時漏掉。 */
