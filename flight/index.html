@@ -318,8 +318,9 @@
 
 <div class="hud" id="top">
   <div class="stat">
-    <div class="lbl">大陸曆 1908</div>
-    <div><b id="date">14</b> 日　<b id="clock">08:00</b></div>
+    <!-- 年月由主時鐘算出來（ver -435）：以前「大陸曆 1908」與日期都是寫死的。 -->
+    <div class="lbl" id="era">大陸曆 1908年6月</div>
+    <div><b id="date">13</b> 日　<b id="clock">11:00</b></div>
   </div>
   <div class="stat" id="topDist" style="text-align:right">
     <div class="lbl">航行距離</div>
@@ -3964,7 +3965,57 @@ const clearKeys=()=>{ for(const k in keys) keys[k]=false; };
 addEventListener('blur',clearKeys);
 document.addEventListener('visibilitychange',()=>{ if(document.hidden) clearKeys(); });
 
-const clock={minutes:8*60,date:14,dist:0};
+/* ══ 時間（ver -435，Ray 定案）══════════════════════════════════════════
+   「第一次進入城鎮的時間是 1908年6月13日 11:00，從這個時間點開始計時。
+     程式內的活動就用現在的計時方式，大地圖則是**一場戰鬥 1 小時、進入其他城鎮或
+     地圖 1 小時**，時間線性往前推進。」
+
+   ⚠⚠ **這一頁以前有一個自己的假時鐘**（`{minutes:8*60, date:14}` 寫死，
+     再靠航行距離 `mv*0.10` 往前推）—— 它與主遊戲的時鐘完全沒有關係，
+     所以城裡是 6/13 傍晚、飛上天卻永遠是「14 日 08:00」。ver -435 拆掉了：
+     這一頁改成**讀主遊戲那一份**（`tivot_clock_v1`，開局起算的分鐘數）。
+   ⚠⚠ **飛行本身不再花時間**：時間只在「打一場」與「進一個地方」時各 +1 小時。
+     那正是 Ray 說的「線性往前推進」—— 時間跟著**事件**走，不跟著你繞了多少圈走。
+     連帶：晝夜（`sky()` 讀 `clock.minutes`）在飛行途中不再流動，
+     過了那一小時才跳一格。這是規則改了之後的結果，不是壞掉。
+   ⚠⚠ `EPOCH` 與 `script/clock.js` 的那一份是**同一組數字**（1908-06-13 11:00）——
+     這一頁是非 module 的獨立文件，import 不到那一份，**改一邊要改另一邊**
+     （鐵律 7 的但書）。 */
+const CLOCK_KEY='tivot_clock_v1';
+const CLOCK_EPOCH={ y:1908, mo:6, d:13, h:11, mi:0 };
+const HOUR=60;                       // 大地圖上「一件事」的時間單位（Ray 指定 1 小時）
+function clockElapsed(){
+  try{ const n=parseInt(localStorage.getItem(CLOCK_KEY),10); return isFinite(n)&&n>0?n:0; }
+  catch(e){ return 0; }
+}
+/* ⚠ 推進走這一支（唯一的寫入點，鐵律 8）：戰鬥交棒與進入地點都叫它。 */
+function clockAdvance(min){
+  const v=Math.max(0, clockElapsed()+(min|0));
+  try{ localStorage.setItem(CLOCK_KEY, String(v)); }catch(e){}
+  syncClock();
+  return v;
+}
+/* 目前的年月日時分。⚠ 用真的 Date 算跨日／跨月，不要自己數（同 script/clock.js）。 */
+function clockNow(){
+  const d=new Date(Date.UTC(CLOCK_EPOCH.y, CLOCK_EPOCH.mo-1, CLOCK_EPOCH.d,
+                            CLOCK_EPOCH.h, CLOCK_EPOCH.mi));
+  d.setUTCMinutes(d.getUTCMinutes()+clockElapsed());
+  return { y:d.getUTCFullYear(), mo:d.getUTCMonth()+1, d:d.getUTCDate(),
+           h:d.getUTCHours(), mi:d.getUTCMinutes() };
+}
+/* `clock` 這個物件仍然存在，因為晝夜（`sky()`）與閒聊時段（`talkPeriod`）都讀它 ——
+   但它現在是**主時鐘的投影**，不是自己在跑。`dist` 還是這一頁自己的（航行距離）。 */
+const clock={minutes:0,date:0,dist:0};
+function syncClock(){
+  const t=clockNow();
+  clock.minutes=t.h*60+t.mi;
+  clock.date=t.d;
+  const dEl=document.getElementById('date');   if(dEl) dEl.textContent=t.d;
+  const cEl=document.getElementById('clock');  if(cEl)
+    cEl.textContent=String(t.h).padStart(2,'0')+':'+String(t.mi).padStart(2,'0');
+  const yEl=document.getElementById('era');    if(yEl) yEl.textContent='大陸曆 '+t.y+'年'+t.mo+'月';
+}
+syncClock();
 
 // 返回主頁（原型是獨立頁面，不共用遊戲的場景切換）
 document.getElementById('backBtn').addEventListener('click',()=>{
@@ -4299,7 +4350,11 @@ const ADMIN=(()=>{ try{ return localStorage.getItem('tivot_admin_v1')==='1'; }
      window.__T 再拆掉 —— 那個來回本身就是出錯的來源。管理人模式常駐一支即可。 */
 /* 時刻直接指定。日夜不會即時推移，只會停在夜／黎明／早／黃昏四個狀態，
    驗收時要能跳過去看 —— 尤其「城在黃昏過亮」這類只在特定時刻出現的問題。 */
-if(ADMIN) window.setTime=(min)=>{ clock.minutes=((min%1440)+1440)%1440; return clock.minutes; };
+/* ⚠ ver -435：時刻現在是**主時鐘的投影**，直接改 `clock.minutes` 下一次 `syncClock()`
+   就被蓋回去了 —— 要真的跳時間就推主時鐘（推到今天的那個時刻，只往前）。 */
+if(ADMIN) window.setTime=(h)=>{ const t=clockNow();
+  const want=((h|0)*60 - (t.h*60+t.mi) + 1440) % 1440;
+  clockAdvance(want || 1440); return clock.minutes; };
 /* 管理人：就地切故事進度／看目前的對話情境，測時段與 stage 觸發用。 */
 if(ADMIN) window.setStage=(n)=>setGameStage(n);
 /* ⚠⚠ **不要寫成 `window.talkDebug=(m)=>talkDebug(m)`**（ver -432 修）：
@@ -4890,16 +4945,13 @@ function update(dt,now){
   }
   cam.x+=fx*mv; cam.y+=fy*mv;
   clock.dist+=Math.abs(mv);              // 後退也是航行距離，不該倒扣
-  /* 0.10：時間跟著「走了多少世界單位」推進，而速度與世界都加倍了，
-     沿用 0.20 會讓一日從 40 秒縮成 20 秒。晝夜的節奏是照真實秒數調的
-     （太快會像縮時攝影），與世界尺度無關，所以要對半補回來。 */
-  clock.minutes+=Math.abs(mv)*0.10;
-  while(clock.minutes>=1440){clock.minutes-=1440;clock.date++;}
+  /* ⚠⚠ **航行本身不再推進時間**（ver -435，Ray 定案）。以前是
+     `clock.minutes += |mv| * 0.10` —— 時間跟著「走了多少世界單位」跑，
+     於是繞圈子也會天黑，而且那個時鐘與主遊戲的完全是兩回事。
+     現在時間只在**事件**上走：一場戰鬥 1 小時、進一個地方 1 小時
+     （見 `clockAdvance` 的兩個呼叫點），日期與時刻由 `syncClock()` 從主時鐘投影。 */
   recyclePuffs();
 
-  const h=Math.floor(clock.minutes/60),m=Math.floor(clock.minutes%60);
-  document.getElementById('clock').textContent=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
-  document.getElementById('date').textContent=clock.date;
   document.getElementById('dist').textContent=Math.round(clock.dist);
   const deg=((-cam.angle*180/Math.PI)+1080)%360;
   document.getElementById('compass').textContent=['北','東北','東','東南','南','西南','西','西北'][Math.round(deg/45)%8];
@@ -6806,6 +6858,9 @@ function toBattle(kind){
   if(peaceMode) return;      // 免戰：遭遇照演，就是不進戰鬥
   if(battleGoing) return;
   if(SC && SC.done) addFlag(SC.done);
+  /* ⚠ **一場戰鬥 1 小時**（ver -435，Ray 指定）。記在**真的要打**的這一刻：
+     免戰模式與重複觸發都已經在上面 return 掉了，所以不會多算。 */
+  clockAdvance(HOUR);
   battleGoing=true;          // 這一刻起船也停住（見 update() 的那一行）
   /* ⚠⚠ **立刻彈棺，不再等一拍**（ver -389，Ray：「在敵撞上玩家空氣壁之前就要彈槍棺」）。
      -387 那裡先停 700ms 是為了讓「遭遇　◯◯」那一格讀得到 —— 那一格已經拿掉了，
@@ -6856,6 +6911,9 @@ function flightAudio(on){
      而且下一次遭遇的交棒鎖也解不開。 */
 window.__flightResume=function(opts){
   battleGoing=false;
+  /* ⚠ 時鐘要重讀（ver -435）：這一頁藏著的期間，戰鬥／城鎮那一邊可能推過時間
+     （一場戰鬥 1 小時就是在 `toBattle` 記的）—— 不同步的話 HUD 與晝夜還停在出發前。 */
+  syncClock();
   const kb=document.getElementById('fkerb'); if(kb) kb.classList.remove('rise');
   layoutFKerb();
   flightAudio(true);
@@ -8486,6 +8544,10 @@ function updateLandBtn(){
 }
 function doLand(){
   const S=landTarget; if(!S || !S.town) return;
+  /* ⚠ **進入城鎮 1 小時**（ver -435，Ray：「進入其他城鎮或地圖 1 小時」）。
+     ⚠ 記在這裡而不是進城之後：城鎮那一邊的計時是「每走一步 10 分鐘」，
+       那是**城裡**的規矩；「飛過去降落」花掉的是大地圖的時間，兩者不能混（鐵律 7）。 */
+  clockAdvance(HOUR);
   /* 內嵌：交給父頁開城鎮（同遭遇戰的作法，走 `__tivotFlight`）。 */
   if(embedded()){
     flightAudio(false);
@@ -8540,6 +8602,9 @@ function enterPlace(P){
     if(!sayQueue) say(STAGE1_NAG, performance.now());
     return;
   }
+  /* ⚠ **進入地圖上的地標 1 小時**（ver -435，Ray 指定）。
+     ⚠ 擋下來的那一支（`stage1Blocked`）在上面就 return 了 —— 沒進去就不該收時間。 */
+  clockAdvance(HOUR);
   entering={P,t:performance.now()};
   const pn=document.getElementById('place');
   document.getElementById('pnm').textContent=P.name;

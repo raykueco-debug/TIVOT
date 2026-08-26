@@ -352,8 +352,16 @@ function refreshArrows(){
   const info=layer.querySelector('#townInfo');
   /* ⚠ 打烊時在時刻後面補一句（ver -391）：店裡沒有人、選單也開不出來，要有理由 ——
      不然玩家只會覺得「這家店怎麼什麼都沒有」。 */
-  if(info) info.innerHTML = n.name + '<span class="ti-time">' + clock.timeText()
-         + (isOpenNow(n) ? '' : '　已打烊') + '</span>';
+  /* ⚠⚠ **上方日期、下方時間**（ver -435，Ray 指定）：以前只有一行「地名＋時刻」，
+     現在多一行日期在最上面 —— 玩家要看得到「今天是幾號」，時間才成得了資源。
+     ⚠ 地名留在下面那一行（它一直都在這裡，而「已打烊」是掛在它後面的）。
+     ⚠ 整塊往上提（見 style.css 的 `#townInfo`）：原本壓在立繪的臉上。 */
+  if(info) info.innerHTML =
+      '<span class="ti-date">' + clock.dateText() + '</span>'
+    + '<span class="ti-line">' + n.name
+    +   '<span class="ti-time">' + clock.timeText() + '</span>'
+    +   (isOpenNow(n) ? '' : '<span class="ti-shut">已打烊</span>')
+    + '</span>';
   /* 目的地字格：有那個方向才出現，字是目的地名，**位置貼著那一支箭**
      （ver -374，Ray：「地名是放在箭頭左右上方」）。
      ⚠ 箭的座標問 `getBoundingClientRect`，不要自己算（鐵律 7）。

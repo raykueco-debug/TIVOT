@@ -1841,7 +1841,8 @@
   body.story-talking #townInfo{opacity:0;}
   #townInfo{transition:opacity .22s ease;}
   #townInfo{position:absolute;left:0;right:0;text-align:center;
-    top:calc(env(safe-area-inset-top,0px) + 62px);
+    /* ⚠ ver -435 由 `+62px` 提到 `+16px`（Ray：「高度放高一點，不然會遮到人物立繪」）。 */
+    top:calc(env(safe-area-inset-top,0px) + 16px);
     font-size:12px;letter-spacing:4px;color:#fff;
     text-shadow:1px 0 0 rgba(0,0,0,.92), -1px 0 0 rgba(0,0,0,.92),
                 0 1px 0 rgba(0,0,0,.92), 0 -1px 0 rgba(0,0,0,.92),
@@ -1849,7 +1850,17 @@
                 1px -1px 0 rgba(0,0,0,.92), -1px -1px 0 rgba(0,0,0,.92),
                 0 1px 3px rgba(0,0,0,.55);
     pointer-events:none;}
+  /* ⚠⚠ **兩行：上日期、下「地名＋時刻」**（ver -435，Ray 指定）。
+     ⚠ 整塊由 `+62px` 提到 `+16px`（Ray：「高度放高一點，不然會遮到人物立繪」）——
+       62px 正好落在立繪的**臉**上；16px 是兩顆角落鈕之間那條空的，
+       只會壓到最高那位的**頭髮**（立繪的頂線就是角落鈕的上緣，見 §6.5）。
+     ⚠ 多一行就多一份高度，所以日期那一行刻意做小、行高收緊 —— 提上去的量要
+       蓋得過長出來的量，不然等於沒改。 */
+  #townInfo .ti-date{display:block;font-size:10px;letter-spacing:2px;opacity:.72;
+    line-height:1.25;}
+  #townInfo .ti-line{display:block;line-height:1.3;}
   #townInfo .ti-time{font-size:11px;letter-spacing:2px;color:#fff;opacity:.88;margin-left:8px;}
+  #townInfo .ti-shut{font-size:11px;letter-spacing:2px;color:#fff;opacity:.88;margin-left:8px;}
 
   /* ── 目的地字格（ver -373，Ray：「四個方向除了下方之外各自在上左右加入目的地名稱，
      點擊時字格蓄能滿之後移動」）──
