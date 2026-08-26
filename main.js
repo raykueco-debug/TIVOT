@@ -787,7 +787,9 @@ function showExitConfirm(){
   /* 回主選單：goHome 內會清 cutinPlaying + 淡出淡入。
      ⚠ 這一顆就是字面上的「回主選單」，所以要先取消「打完跳回飛行頁」（ver -382）——
        不取消的話按退出反而會被送回天上。 */
-  bind('.ec-yes',()=>{ close(); flightBack=false; combat.goHome(); });
+  /* ⚠ 續播位置也要丟掉（ver -430）：退出＝這一段不玩了，留著的話下一次從戰鬥回來
+     會憑空續播它 —— 而且戰敗那一頁的鈕是看 `storyResume` 決定要不要給「再戰」的。 */
+  bind('.ec-yes',()=>{ close(); flightBack=false; storyResume=null; combat.goHome(); });
 }
 bindBtn('testClearBtn', combat.testClearBoard); // 左上（測試用）：一鍵清盤
 /* ⚠ 「道具」（bagBtn）與「城鎮」（townBtn）兩顆首頁鈕已於 ver -376 移除（Ray 指定）。
@@ -796,7 +798,8 @@ bindBtn('testClearBtn', combat.testClearBoard); // 左上（測試用）：一�
 bindBtn('shopBtn',      ()=>loot.showShop('grocery'));   // 商店（ver -368；臨時入口，正式入口在城鎮節點）
 bindBtn('storySkip',    story.skipToNextGate);  // 跳段（開發者限定，ver -363）
 bindBtn('tutDevSkip',   combat.devSkipBattle);  // 教學戰跳關（開發者限定，ver -366）
-bindBtn('rematchBtn',   inspector.onRematchBtn);// 結算：依 resultMode 分流（再度執槍/迎擊）
+bindBtn('rematchBtn',   inspector.onRematchBtn);// 結算：依 resultMode 分流（再度執槍/迎擊/繼續/再戰）
+bindBtn('giveupBtn',    inspector.onGiveupBtn); // 戰敗：放棄 → 回主畫面（ver -430）
 
 // 破防值滿 → 點計量表發動「雙槍破防」獎勵射擊窗口
 bindBtn('energyClasp',    weapon.activateDual);
@@ -826,6 +829,37 @@ bindBtn('flightBtn', ()=>openFlight());
      換頁的話存讀檔要跨頁還原，複雜度沒必要。
    存讀檔：F4 即時存／F7 即時讀／F5 選欄存／F8 選欄讀（見 modules/save.js）。 */
 story.init(); saveSys.init();
+/* ══ 存讀檔要知道的兩件城鎮的事（ver -430）══════════════════════════════════
+   存檔的「人在哪」不只是劇情的行號 —— 城鎮探索時劇情播放器根本沒在跑，
+   而旅店睡覺存的檔正是在城裡存的。所以：存的時候問城鎮人在哪一格，
+   讀的時候把那座城開在那一格。
+   ⚠ 注入而不是讓 save 去 import town：那是啟動層的畫面編排（同 `setTownOpener`）。
+   ⚠ `openTown` 與「章節」跳關走的是**同一組動作**（收首頁 → `town.open`）——
+     抽成一支具名函式，兩邊都叫它（鐵律 8）。 */
+function openTownAt(t, n){
+  markBooted();
+  $('home').classList.remove('on');
+  town.open(t||'capital', n);
+}
+saveSys.setHost({
+  townPos:   ()=>town.getPosition(),
+  placeName: (pos)=>town.placeName(pos),
+  openTown:  openTownAt,
+  onChange:  ()=>refreshContinue(),
+});
+/* ══ 首頁的「繼續」（ver -430，Ray：「按 continue 進入最新存檔點（旅店）」）══════
+   ⚠ 讀檔的實作只有 `save` 那一份（鐵律 8）：這裡只負責「有沒有存檔 → 鈕出不出來」
+     與「按下去叫它」。要改讀檔會做什麼事，改那邊。
+   ⚠ 沒有存檔時整顆不出現 —— 按了沒反應比沒有那顆鈕更糟。 */
+function refreshContinue(){
+  const b=$('continueBtn'); if(!b) return;
+  b.classList.toggle('on', saveSys.hasSave());
+}
+refreshContinue();
+bindBtn('continueBtn', ()=>{ if(!saveSys.loadLatest()) refreshContinue(); });
+/* 整備頁收掉了通知城鎮（ver -430）：武器店的整備教學要等玩家真的換完裝備，
+   才把商店的單子擺出來（見 `modules/town.js` 的 `showTip`）。 */
+town.setGearWatch(gear.onceClosed);
 /* ⚠⚠ **這顆鈕就是「從頭開始」**（ver -381，Ray：「從頭開始，城鎮探索的劇情要重新出現」）：
    `story.open(null)` 一律從 MAIN_ENTRY 演起，所以進去之前要把**這一輪**的東西清乾淨 ——
    不清的話旗標還留著，城鎮那些「只播一次」的段落就整個消失（Ray 回報過）。
@@ -866,9 +900,7 @@ function startChapter(c){
      開局時刻改了，章節的起點要跟著改。 */
   if(c.clockHour!=null) clock.setElapsed(clock.firstHourAt(c.clockHour));
   if(c.enter==='town'){
-    markBooted();
-    $('home').classList.remove('on');
-    town.open(c.town||'capital', c.node);
+    openTownAt(c.town, c.node);   // ⚠ 與讀檔走同一支（ver -430，鐵律 8）
   }else{
     story.open(null);
   }
@@ -894,6 +926,9 @@ story.setTownCloser(town.close);  // 「選單」離開劇情層時，城鎮也�
    （`#home` 早就被 startGame／openFlight 關掉了）。 */
 story.setHomeReturn(()=>{
   flightBack=false;                       // 這一趟不回飛行頁了
+  /* ⚠ 續播位置也要丟掉（ver -430）：留著的話下一次從戰鬥回主選單時會憑空續播
+     上一段劇情（戰敗那一頁的「放棄」走的就是這一支）。 */
+  storyResume=null;
   const f=$('flightFrame'); if(f) f.classList.remove('on');
   document.body.classList.remove('flight-on');
   combat.goHome(()=>story.close());
@@ -901,10 +936,25 @@ story.setHomeReturn(()=>{
 /* 城鎮的「出航」→ 開飛行頁（注入，town 不 import main；同 setTownOpener 的作法）。 */
 town.setFlightOpener(()=>openFlight());   // 城鎮出航＝「進入」，讀取頁要跑（ver -389）
 combat.setStoryClose(story.playKerberosClose);
+/* ══ 戰敗那一頁按了哪一顆（ver -430，Ray 定案）══════════════════════════════
+   「船戰死亡點擊繼續回到戰鬥前的飛行畫面進度；其餘戰鬥死亡點再戰回到該幕對話的
+     開頭，點放棄回到主畫面。」
+   ⚠⚠ 三顆鈕**都走既有的交棒出口**（`setStoryReturn`）—— 那一支本來就知道
+     「這一場是誰叫起來的、回去要接什麼」。另開一條回程必然與它走鐘（鐵律 8）。
+     · `continue` → 什麼都不必做：底下 `flightBack` 那一段就是「回飛行畫面」
+     · `retry`    → 一路帶到 `story.resumeFrom`，由它跳回那一幕的第 0 句
+     · `giveup`   → 走**唯一那支**「離開這一切」（`story.leaveToHome`）
+   ⚠ 這一頁該長什麼樣由 `setLoseKind` 回答 —— 判定點只有這一處（鐵律 7）。 */
+combat.setLoseKind(()=> flightBack ? 'flight' : (storyResume ? 'story' : 'home'));
 combat.setStoryReturn((res)=>{
+  /* 「放棄」：回主畫面。⚠ 走 `story.leaveToHome()` 而不是自己 `combat.goHome()` ——
+     那一支還會**收掉城鎮**（`townCloser`），漏了的話下一次進城會接在舊節點上。
+     `storyResume`／`flightBack` 由它呼叫的 `setHomeReturn` 一併清掉（見上面）。 */
+  if(res && res.lose==='giveup'){ story.leaveToHome(); return; }
   /* 飛行頁交棒過來的那一場：打完跳回去（ver -382）。
-     ⚠ 只有**打贏**才回得去 —— 輸了在 `combat.lose()` 就走掉了（Game Over → 主選單），
-       根本不會呼叫這一支；退出則由退出確認先把 `flightBack` 關掉。 */
+     ⚠ ver -430 起**打輸按「繼續」也走這裡**（Ray 指定：回到戰鬥前的飛行畫面進度）——
+       iframe 從頭到尾沒卸載過，船就還在遭遇發生的那個座標上，什麼都不必還原。
+     ⚠ 退出確認那顆鈕字面上是「回主選單」，所以它會先把 `flightBack` 關掉。 */
   /* ⚠ 內嵌模式（ver -388）：飛行頁一直活著 —— **不重載**，在黑幕全蓋的那一刻把它顯示回來
      就好（沒有第二次讀取頁，船也還在原處，Ray：「戰鬥結束不要另跑預載頁」）。
      ⚠ 戰鬥／結算的曲子要收掉，不然回到飛行畫面還在放（飛行頁自己的曲子由

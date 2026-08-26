@@ -138,7 +138,13 @@ export function setup(){
      按鈕按下去要**回劇情**而不是回首頁 —— 交還的實體只有 combat 這裡有
      （main.js 透過 setStoryReturn 給的）。 */
   inspector.init({ goHome, triggerIntruder: enemy.triggerIntruder,
-                   storyReturn: ()=>{ if(storyReturn) storyReturn(); else goHome(); } });
+                   /* ⚠ **參數要往下傳**（ver -430 修）：舊寫法 `()=>storyReturn()` 把結算頁
+                      帶出來的 `res` 整個吃掉 —— 計時挑戰的「超時＝打輸」（`{lost:true}`）
+                      因此接不上 `onLose` 那一支分歧，戰敗那三顆鈕也送不出去。 */
+                   storyReturn: (res)=>{ if(storyReturn) storyReturn(res); else goHome(); },
+                   /* 戰敗那一頁該給哪幾顆鈕（ver -430）：只有啟動層知道這一場是飛行頁
+                      交棒過來的（船艦戰）、還是劇情插進來的（見 main.js 的 setLoseKind）。 */
+                   loseKind: ()=> (loseKind ? loseKind() : 'home') });
   // 敵人：Boss 亂入的戰鬥重置（startIntruderFight，combat 擁有）+ 換敵刷血條（updateBars）注入。
   enemy.init({ startIntruderFight, updateBars });
 }
@@ -836,6 +842,11 @@ function runTotalHp(){
      那一段是真的會死的 —— 沒接的話會卡在戰敗結算頁，劇情永遠回不來。 */
 let storyReturn = null;
 export function setStoryReturn(fn){ storyReturn = fn; }
+/* 「這一場輸了要給哪幾顆鈕」的判定器（ver -430，由 main.js 注入；轉交給 inspector）。
+   ⚠ combat 不認識 `flightBack`／`storyResume` —— 那兩個是啟動層的交棒狀態。
+   ⚠ 只是**轉交**，這裡不加任何判斷：加了就變成第二個判定點（鐵律 7）。 */
+let loseKind = null;
+export function setLoseKind(fn){ loseKind = fn; }
 /* 關門演出（`story.playKerberosClose`）由 main.js 注入 —— combat **不 import story**
    （模組邊界：劇情層不在戰鬥的依賴圖裡，見 CLAUDE.md §2；同 storyReturn 的作法）。 */
 let storyClose = null;

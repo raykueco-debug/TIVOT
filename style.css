@@ -695,7 +695,7 @@
   /* 大標＋retry 同時進場：淡入＋輕微下沉 */
   @keyframes bannerHeadIn{ from{opacity:0;transform:translateY(-10px);} to{opacity:1;transform:none;} }
   #banner.seq h1, #banner.seq p{animation:bannerHeadIn .35s ease-out both;}
-  #banner.seq #rematchBtn{animation:bannerHeadIn .35s ease-out both;}
+  #banner.seq #bannerActs{animation:bannerHeadIn .35s ease-out both;}
   /* 結算數據列（緊湊：留出立繪全身空間） */
   #resultStats{margin:0 0 6px;font-size:12.5px;letter-spacing:1px;line-height:1.5;color:var(--ink);
     min-width:230px;flex:0 0 auto;}
@@ -753,18 +753,27 @@
   #inspectorBubble .insp-line{font-size:13px;letter-spacing:.5px;line-height:1.6;color:var(--ink);min-height:1.6em;white-space:pre-line;}
   /* retry 鈕：置底、與畫面同寬、降低高度 */
   /* 貼底大鈕：拉至畫面最底，底部內距吃掉 iOS 安全區(home indicator)→ 底下不留空 */
-  #banner #rematchBtn{flex:0 0 auto;width:100%;max-width:none;margin:0;border-radius:0;
+  /* 底鈕的殼（ver -430）：平時一顆、劇情戰敗兩顆。⚠ 只有一顆時 flex:1 撐滿整寬，
+     與舊版的 width:100% 完全一樣 —— 加這一層不改單鈕的版面。 */
+  #bannerActs{flex:0 0 auto;width:100%;display:flex;}
+  #banner #bannerActs .act{flex:1 1 0;width:auto;max-width:none;margin:0;border-radius:0;
     padding:0;min-height:calc(54px + env(safe-area-inset-bottom,0px));
     border:none;border-top:1px solid var(--gold-dim);
     background:rgba(20,16,28,.6);color:var(--gold);letter-spacing:6px;font-size:19px;
     /* 字樣對整個框上下左右置中（含安全區）：不用不對稱 padding，改高度撐框 + flex 置中；
        text-indent 補償 letter-spacing 尾端空隙的水平偏移 */
     display:flex;align-items:center;justify-content:center;text-indent:6px;line-height:1;}
-  #banner #rematchBtn:active{background:var(--grid-active);}
+  #banner #bannerActs .act:active{background:var(--grid-active);}
+  /* 「放棄」平時不在（只有劇情場次戰敗才給兩顆）。 */
+  #bannerActs:not(.two) #giveupBtn{display:none;}
+  /* 兩顆並排：中間一條分隔線；「放棄」是次要動作 → 字暗一階、字距收窄，
+     份量差看得出來（同旅店那兩顆行動鈕的原則：長得一樣會被讀成同一組）。 */
+  #bannerActs.two #giveupBtn{border-right:1px solid var(--gold-dim);
+    color:var(--gold-dim);letter-spacing:4px;font-size:17px;background:rgba(12,10,18,.6);}
   /* 視窗被裁（iOS 26 standalone）：底部安全區墊高白墊在死區裡 → 拿回 28px 還給監察官立繪。
      底色改純黑與死區黑帶視覺融合：按鈕(可視 54px)+死區連成一條原生風底欄，
      字樣位置≒原生 App 底欄按鈕（home indicator 上方），黑帶讀作手勢區而非缺口。 */
-  html.vp-clipped #banner #rematchBtn{min-height:54px;background:#000;}
+  html.vp-clipped #banner #bannerActs .act{min-height:54px;background:#000;}
   /* 迎擊鈕（S 解鎖後）：變色＋發光脈動 */
   #banner #rematchBtn.intercept{color:var(--danger);border-top-color:var(--blood);
     background:rgba(60,12,18,.55);text-shadow:0 0 12px var(--blood);
@@ -815,6 +824,15 @@
     color:var(--gold);border-radius:10px;font-family:inherit;font-size:17px;letter-spacing:5px;
     box-shadow:0 0 18px var(--gold-dim);animation:pulse 1.2s infinite alternate;}
   #startBtn:active{transform:scale(.94);}
+  /* 繼續（ver -430）：接在「出陣」之下的**次要動作** —— 不呼吸、不發光、字暗一階，
+     份量差看得出來（同結算那兩顆的原則）。⚠ 預設不出現：沒有存檔時 `main.js`
+     不給它 `.on`，按了沒反應比沒有那顆鈕更糟。 */
+  #continueBtn{display:none;margin-top:10px;padding:11px 34px;background:transparent;
+    border:1px solid var(--gold-dim);color:var(--gold-dim);border-radius:10px;
+    font-family:inherit;font-size:14px;letter-spacing:4px;}
+  #continueBtn.on{display:block;}
+  #continueBtn:active{transform:scale(.94);}
+  @media (max-height:620px){ #continueBtn{margin-top:7px;padding:9px 30px;} }
   /* 副武器/搭檔選單已移出首頁 → 出擊整備頁（#prepSheet，見下方區塊） */
   /* 語言切換鈕（首頁右上）：鈕面＝下一個語言的自稱（En/日本語/中文），點按循環切換 */
   #langBtn{position:absolute;top:calc(var(--notch-bar-h, 0px) + 12px);right:12px;z-index:5;

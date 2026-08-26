@@ -8,6 +8,7 @@ export const STRINGS = {
     title:        'The IV Order of Testament',
     start:        'DEPLOY',
     tutorialBtn:  'TUTORIAL',
+    continueBtn:  'CONTINUE',             // 首頁：進最新存檔（ver -430）
     weaponLabel:  'Sub-Weapon',
     partnerLabel: 'PARTNER',
     creditBtn:    'Credit',
@@ -182,6 +183,9 @@ export const STRINGS = {
     timeSec:      '{s}s',
     newRecord:    '★ NEW RECORD ★',
     rematch:      'Take Up Arms Again',
+    loseContinue: 'Continue',
+    loseRetry:    'Fight Again',
+    loseGiveUp:   'Give Up',
     intercept:    'Intercept',
     lineMissing:  '(Inspector line pending)',
   },

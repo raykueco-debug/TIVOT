@@ -15,6 +15,7 @@ export const STRINGS = {
     title:        '聖約第四騎士団',
     start:        '出撃',
     tutorialBtn:  'チュートリアル',
+    continueBtn:  'つづきから',           // 首頁：進最新存檔（ver -430）
     weaponLabel:  '副武装',
     partnerLabel: 'パートナー',
     creditBtn:    'Credit',
@@ -199,6 +200,9 @@ export const STRINGS = {
     timeSec:      '{s}秒',
     newRecord:    '★ NEW RECORD ★',
     rematch:      '再び銃を取る',
+    loseContinue: 'つづける',
+    loseRetry:    '再戦',
+    loseGiveUp:   'あきらめる',
     intercept:    '迎撃',
     lineMissing:  '（監察官の台詞・未定）',
   },

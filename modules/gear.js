@@ -218,4 +218,21 @@ export function close(){
   closeTip();
   el.classList.remove('vis');
   setTimeout(()=>{ if(el) el.classList.remove('on'); }, 300);
+  /* ⚠ 通知**在這裡發**（唯一的收場，鐵律 8），不等 300ms 的動畫 ——
+     等待者要接的是「玩家換完裝備了」這件事，不是滑出動畫的最後一格。 */
+  const cbs=closedCbs; closedCbs=[];
+  for(const cb of cbs){ try{ cb(); }catch(e){ console.warn('[gear] onceClosed', e); } }
+}
+/* ══ 「這一頁收掉了通知我」（ver -430）══════════════════════════════════
+   城鎮的整備教學要等玩家**真的換完裝備**才把商店的單子擺出來（Ray 指定），
+   而「換完」＝這一頁被收掉。
+   ⚠ **沒開著就立刻放行**：玩家可能直接把提示點掉、根本沒按吊墜 ——
+     不能把他鎖在教學裡（同 `story.openHint` 的原則）。
+   ⚠ 一次性：叫過就從清單上拿掉，不會下次開整備頁又觸發一次。 */
+let closedCbs=[];
+export function isOpen(){ return !!(el && el.classList.contains('on')); }
+export function onceClosed(cb){
+  if(typeof cb!=='function') return;
+  if(!isOpen()){ cb(); return; }
+  closedCbs.push(cb);
 }

@@ -34,7 +34,7 @@ const $ = id => document.getElementById(id);
  *    goHome         — combat 擁有：結算後回首頁。
  *    triggerIntruder— enemy 擁有：迎擊 → 進 Boss 戰（本輪為 no-op，待第 5 步）。
  * ------------------------------------------------------------------------- */
-let api = { goHome(){}, triggerIntruder(){} };
+let api = { goHome(){}, triggerIntruder(){}, loseKind(){ return 'home'; } };
 export function init(injected){ api = { ...api, ...injected }; }
 
 /* ============================================================================
@@ -203,6 +203,7 @@ export function settle(totalTime, stats, opts={}){
   if(isLose){
     const rows=combatStatsRows();
     showResultSequence(L.result.loseTitle, L.result.loseSub, rows, 'lose', true);
+    setupLoseNav();
     return;
   }
   // ── 勝利結算 ──
@@ -260,6 +261,51 @@ export function settle(totalTime, stats, opts={}){
   }
 }
 
+/* ══ 戰敗那一頁的去向（ver -430，Ray 定案）══════════════════════════════════
+   「船戰死亡點擊繼續回到戰鬥前的飛行畫面進度；其餘戰鬥死亡點再戰回到該幕對話的
+     開頭，點放棄回到主畫面。」
+   三種場次、三張臉：
+     'flight'  船艦戰（飛行頁交棒過來的）→ 一顆「繼續」：回飛行畫面，船還在原處
+     'story'   劇情／城鎮插進來的那一場   → 兩顆「放棄／再戰」
+     'home'    出陣（試玩版）             → 維持原樣（一顆「再度執槍」→ 回首頁）
+   ⚠ **是哪一種由啟動層回答**（`api.loseKind`）：只有它知道這一場是誰叫起來的。
+     這裡不從 `state` 反推（那會變成第二個判定點，鐵律 7）。
+   ⚠ **有去處時取消「自動回首頁」**：那個計時器是給看戰績用的，
+     現在這一頁是個要玩家做決定的岔路 —— 時間到了自己走人會把玩家的選擇吃掉，
+     而且飛行頁的交棒狀態也跟著被丟掉。 */
+function setupLoseNav(){
+  const kind = api.loseKind ? api.loseKind() : 'home';
+  const acts=$('bannerActs'), rbtn=$('rematchBtn'), gbtn=$('giveupBtn');
+  if(kind==='home') return;                 // 出陣：showResultSequence 已經擺成「再度執槍」
+  clearTimeout(_resultAutoTimer);
+  if(kind==='flight'){
+    state.resultMode='lose-continue';
+    if(rbtn) rbtn.textContent=L.result.loseContinue;
+    return;
+  }
+  state.resultMode='lose-retry';
+  if(rbtn) rbtn.textContent=L.result.loseRetry;
+  if(gbtn) gbtn.textContent=L.result.loseGiveUp;
+  if(acts) acts.classList.add('two');
+}
+/* 戰敗那一頁的兩顆鈕**共用這一支**（鐵律 8）：防連點、音效、離場延遲只有一份。
+   ⚠ 借用 `'tutorial-leaving'` 當「離場中」旗標 —— 那本來就是這個狀態機的擋門磚。 */
+function leaveLose(action){
+  clearTimeout(_resultAutoTimer);
+  state.resultMode='tutorial-leaving';
+  SFX.play(asset('sfx_start'), sfxGain('sfx_start'));
+  /* ⚠ 走**同一個**交棒出口（`storyReturn`）：去哪裡是啟動層的事，
+     這裡只負責把「玩家按了哪一顆」送出去。 */
+  setTimeout(()=>{ if(api.storyReturn) api.storyReturn({ lost:true, lose:action });
+                   else api.goHome(); }, 260);
+}
+/* 「放棄」（ver -430）。⚠ 只有兩顆鈕那一頁按得到 —— 其餘狀態下它根本不顯示，
+   這一道是防止鍵盤／誤觸在別的結算頁把玩家踢回首頁。 */
+export function onGiveupBtn(){
+  if(state.resultMode!=='lose-retry') return;
+  leaveLose('giveup');
+}
+
 /* ============================================================================
  *  結算畫面分階段序列：
  *   T0 立繪＋retry＋大標同時進場 → rows 由上往下刷（1s 內）→ 對話框彈出 → 逐字台詞（2s 內）
@@ -276,6 +322,9 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose, opts){
   if(_autoMs>0) _resultAutoTimer=setTimeout(()=>{ if(api.goHome) api.goHome(); }, _autoMs);
   // 每次結算：按鈕歸位為「再度執槍」模式
   state.resultMode='rematch';
+  /* ⚠ 兩顆鈕的版面也要歸位（ver -430）：上一場戰敗留下的 `.two` 不收的話，
+     下一場打贏的結算頁會多出一顆「放棄」。同 rbtn 那幾行的理由 —— 開場一律先歸零。 */
+  const acts=$('bannerActs'); if(acts) acts.classList.remove('two');
   const rbtn=$('rematchBtn');
   rbtn.textContent=L.result.rematch;
   rbtn.classList.remove('intercept','ready','saintinstall');
@@ -583,6 +632,10 @@ export function onRematchBtn(){
   const rbtn=$('rematchBtn');
   clearTimeout(_resultAutoTimer);   // 玩家有操作 → 取消自動回首頁
   if(state.resultMode==='tutorial-leaving') return;   // 教學結算離場中：防連點重入
+  /* 戰敗那一頁（ver -430）：右邊那一顆＝「繼續」（船艦戰）或「再戰」（劇情場次）。
+     ⚠ 兩者送出的動作不同、去處也不同，但離場的手續是同一份（見 leaveLose）。 */
+  if(state.resultMode==='lose-continue'){ leaveLose('continue'); return; }
+  if(state.resultMode==='lose-retry'){    leaveLose('retry');    return; }
   if(state.resultMode==='tutorial-home'){   // 教學戰結算：按鈕離場
     /* ⚠ 道具還沒彈過 → 這一按先彈道具，不離場（ver -361）。
        玩家一按就走的話，掉落等於沒發生 —— 東西雖然已經入袋，但他不知道拿到什麼。 */

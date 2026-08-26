@@ -29,10 +29,24 @@ import { SFX } from '../audio.js';
 const $ = id => document.getElementById(id);
 const KEY = 'tivot_save_v1';
 const ROWS_PER_PAGE = 10;
-const SAVE_VERSION = 2;   // v2：改存「一輪遊戲」整包（含時鐘與道具，ver -381）
+/* v3：多存「人在哪座城的哪一格」（ver -430）—— 旅店睡覺存的檔要讀得回旅店，
+   不然讀檔只把旗標與時鐘放回去，畫面還停在原地（首頁的「繼續」就沒有去處）。
+   ⚠ 舊檔照吃：`apply()` 沒有 `town` 就退回原本的「只跳劇情位置」。 */
+const SAVE_VERSION = 3;
 
 let page = 0;
 let mode = null;               // 'save' | 'load' | null（面板關閉）
+
+/* ══ 啟動層注入（ver -430）══════════════════════════════════════════════
+   存檔要知道「人在哪座城」、讀檔要能把那座城開回來 —— 那兩件事住在 `modules/town.js`
+   與 `main.js`，而 save 是劇情層的工具，不該反過來 import 它們（依賴方向）。
+     townPos()            現在人在城裡的哪一格（不在城裡回 null）
+     placeName(pos)       那一格的顯示名（存檔欄位上印給玩家看）
+     openTown(town,node)  把那座城開在那一格（首頁「繼續」與讀檔共用，鐵律 8）
+     onChange()           存檔庫寫過了 —— 首頁的「繼續」鈕要跟著亮起來
+   ⚠ 沒注入時整支照舊只管劇情位置（開發時單獨測 save 面板不會炸）。 */
+let host = {};
+export function setHost(h){ host = { ...host, ...(h||{}) }; }
 
 /* ══ 存檔庫讀寫 ══
    結構：{ quick: 存檔物件|null, slots: { "1": 存檔物件, … } }
@@ -44,36 +58,73 @@ function load(){
   }catch(e){}
   return { quick:null, slots:{} };
 }
-function store(db){ try{ localStorage.setItem(KEY, JSON.stringify(db)); }catch(e){} }
+function store(db){
+  try{ localStorage.setItem(KEY, JSON.stringify(db)); }catch(e){}
+  /* 存檔庫變了 → 通知啟動層（首頁的「繼續」鈕）。⚠ 寫入點只有這一支，
+     所以通知也只掛這一處（鐵律 8）——`quickSave` 與欄位存檔都經過它。 */
+  if(host.onChange) try{ host.onChange(); }catch(e){}
+}
 
 /* ══ 目前狀態 → 一筆存檔 ══ */
 function capture(){
   const pos = story.getPosition();
+  /* 人在城裡的哪一格（ver -430）。⚠ 與 `pos` 是**同一件事的兩面**：城鎮探索時
+     劇情播放器根本沒在跑（`getPosition()` 回 null），沒有這一欄的話旅店睡覺存的檔
+     讀回來就沒有去處。讀檔時 `town` 優先（見 `apply`）。 */
+  const twn = host.townPos ? host.townPos() : null;
   return {
     v: SAVE_VERSION,
     ts: Date.now(),
+    town: twn,
     /* ⚠ v2 起存的是**一輪遊戲**整包（進度＋時鐘＋道具金錢）——
        「劇情只跑一次」是指一輪內只跑一次，所以讀檔要把那一輪的狀態整組帶回去。
        v1 的舊存檔只有 `progress`，`apply()` 照樣吃得下（見那裡）。 */
     run: prog.runSnapshot(),
     pos: pos,                       // null＝不在劇情中（只存了進度）
-    label: labelOf(pos),
+    label: labelOf(pos, twn),
   };
 }
-function labelOf(pos){
+function labelOf(pos, twn){
+  /* 在城裡就印地名（玩家看得懂的），在劇情裡才印 scene／行號（那是開發用的座標）。 */
+  if(twn) return (host.placeName ? host.placeName(twn) : '') || twn.node || '城鎮';
   if(!pos) return '（劇情外）';
   const sc = MAIN_SCRIPT[pos.scene];
   const total = sc ? sc.lines.length : '?';
   return `${pos.scene}  ${pos.line+1}/${total}`;
 }
 
-/* ══ 套用一筆存檔 ══ */
+/* ══ 套用一筆存檔 ══
+   ⚠⚠ **讀檔與首頁「繼續」走同一支**（ver -430，鐵律 8）：兩者要做的事完全一樣
+     ——把那一輪放回去、再把玩家擺回存檔當時的位置。分兩份寫必然走鐘。 */
 function apply(rec){
   if(!rec) return false;
   /* v2＝整輪；v1 的舊存檔只有 progress 這一層，照舊吃下去（不要讓舊存檔讀不開）。 */
   if(rec.run) prog.runRestore(rec.run);
   else        prog.restore(rec.progress);
+  /* 位置：城鎮優先（v3 起才有）。⚠ 城鎮不是劇情的一個位置，`story.jumpTo` 帶不回去。 */
+  if(rec.town && host.openTown){ host.openTown(rec.town.town, rec.town.node); return true; }
   if(rec.pos) story.jumpTo(rec.pos);
+  return true;
+}
+
+/* ══ 最新的一筆（首頁的「繼續」用，ver -430）══════════════════════════════
+   即時存檔欄與一般欄位一起比，**看時間戳**取最新的那一筆 —— 玩家心裡的「上次玩到哪」
+   就是最後一次存的那一個，不分是哪一種欄位。 */
+export function latest(){
+  const db=load();
+  let best=null;
+  for(const rec of [db.quick, ...Object.keys(db.slots).map(k=>db.slots[k])]){
+    if(!rec) continue;
+    if(!best || (rec.ts||0) > (best.ts||0)) best=rec;
+  }
+  return best;
+}
+export function hasSave(){ return !!latest(); }
+/* 首頁「繼續」：讀最新的那一筆。回傳 false＝根本沒有存檔（呼叫端不必自己再查一次）。 */
+export function loadLatest(){
+  const rec=latest();
+  if(!rec) return false;
+  apply(rec);
   return true;
 }
 
@@ -131,7 +182,10 @@ function render(){
       const a=document.createElement('span'); a.className='sv-label';
       a.textContent = rec.label || '—';
       const b=document.createElement('span'); b.className='sv-meta';
-      const st=rec.progress ? rec.progress.stage : '?';
+      /* ⚠ 章數住在 `run.progress`（v2 起），v1 的舊檔才在 `rec.progress` ——
+         兩種都問，不然新檔的章數一律印成「?」（ver -430 修）。 */
+      const pg=(rec.run && rec.run.progress) || rec.progress;
+      const st=pg ? pg.stage : '?';
       b.textContent = `第 ${st} 章 · ${fmtTime(rec.ts)}`;
       body.appendChild(a); body.appendChild(b);
     }else{

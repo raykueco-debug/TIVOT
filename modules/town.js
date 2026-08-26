@@ -32,6 +32,14 @@ const DIRS = ['up','down','left','right','back'];
 
 let townId=null, nodeId=null, layer=null, busy=false;
 let arriveT=0;            // 抵達停頓的計時器（換節點要取消，見 enter）
+/* ⚠⚠ 傍晚那一格**讓過一次**了嗎（ver -430，Ray：「要等角色先把原有的場景對話講完
+   才觸發，移動到下一個場景才強制觸發」）。ver -427 的作法是「優先所有事件」——
+   它會把這一次抵達原本要演的進場對白整段吃掉，玩家等於被搶走一段戲。
+   現在改成：到期的那一次**讓給**節點自己的對白，記下來；**下一次抵達**才強制觸發。
+   ⚠ 只讓一次 —— 不設這個旗標的話，一路走過還沒看過的地點會永遠讓下去。
+   ⚠ 主線段落（`acts`）本來就是這個行為（`ev` 在有 act 時是 null），
+     這一版只是讓進場對白享有同樣的待遇。 */
+let eveningHeld=false;
 
 /* ══ 背景：時段差分 → 退回 `_Day` → 退回無時段的原名 ══
    命名規約（Ray 指定，全城鎮通用）：`<地點>_Dawn/_Day/_Dusk/_night/_midnight`。
@@ -272,12 +280,16 @@ function shopReady(n){
   if(n.shop) return true;
   return !!(n.board && (!n.boardFlag || prog.hasFlag(n.boardFlag)));
 }
-function shopEnter(){
+/* `opts.noMenu`＝只擺店主，**先不開左邊那張單子**（ver -430，Ray：「武器店的裝備教學
+   先彈出，裝備完才跳出武器店的選單」）。單子停在畫面左邊，正好蓋住教學要指的那顆
+   吊墜，也擋在整備頁前面 —— 等玩家真的換完裝備才由 `afterArrive` 補開（見那裡）。
+   ⚠ 讓開的是**單子**不是整個店舖畫面：店主照舊立刻上場，不然玩家會以為走錯地方。 */
+function shopEnter(opts){
   const n=node(); if(!shopReady(n)) return;
   setShopOn(true);
   const who=keeperOf(n);
   if(who) story.castSolo(who);
-  openMenu();
+  if(!(opts && opts.noMenu)) openMenu();
 }
 /* 收店舖畫面。⚠ 立繪與對話框交給 `story.clearCast()`（唯一的收尾，鐵律 8）——
    這裡只負責把單子收掉、把狀態歸零。 */
@@ -672,17 +684,26 @@ export function enter(id){
   const played = prog.hasFlag(flag);
   /* ⚠ **打烊時不播進場對白**（ver -391）：在一間關著的店裡讓店主開口是錯的。
      旗標也不會記，所以那一段會留到下次在營業時間內進來時才播 —— 不會漏掉。 */
-  /* ⚠ **傍晚的提醒優先所有事件**（ver -392，Ray 指定）：它**取代**這一次抵達原本要演的
-     進場對白，而那一段的旗標不會記 —— 下次再進來還是會演（同上面「打烊不播」的作法）。 */
+  /* ⚠⚠ **傍晚的提醒讓過一次才強制**（ver -430 改，Ray：「要等角色先把原有的場景對話
+     講完才觸發，移動到下一個場景才強制觸發」）：到期的那一次若這個地點還有自己的
+     進場對白，就讓它先講完（記 `eveningHeld`）；**下一次抵達**才不由分說地插隊。
+     插隊的那一次仍**取代**該次的進場對白，而那一段的旗標不會記 —— 下次再進來還是
+     會演（同上面「打烊不播」的作法）。 */
   /* ══ 主線段落（`acts`，ver -424）══════════════════════════════════════
      節點可以掛**好幾段**主線戲，各自帶旗標與條件（目前只有 `day`：遊戲內第幾天）。
      ⚠ **優先於傍晚提醒與進場對白** —— 那兩者是氣氛，這是主線，順序不能反。
      ⚠ 旗標同樣**演完才記**（見下方的收尾）：中間可能插一場戰鬥，打輸會被丟回首頁。 */
   const act = actDue(n);
-  const ev = act ? null : eveningDue(n);
+  let ev = act ? null : eveningDue(n);
+  /* 這一次抵達**原本**要演的進場對白（打烊或演過了就是空的）。 */
+  const own = (played || !isOpenNow(n)) ? [] : (n.lines||[]);
+  /* ⚠⚠ **傍晚那一格不搶這一段戲**（ver -430，Ray 指定）：讓節點自己的對白先講完，
+     移動到**下一個地點**才強制觸發。⚠ 只讓一次（`eveningHeld`）—— 否則一路走過
+     還沒看過的地點會永遠讓下去，「強制」就名存實亡。 */
+  if(ev && !eveningHeld && own.length){ eveningHeld=true; ev=null; }
   const lines = act ? act.lines
               : ev ? ev.lines
-              : ((played || !isOpenNow(n)) ? [] : (n.lines||[]));
+              : own;
   /* ⚠ 旗標**演完才記**（ver -375 由「開演就記」改過來）：這一段中間可能插一場戰鬥，
      打輸了會被丟回首頁 —— 開演就記的話，回頭再走一次公會就整段跳過，那一場永遠打不到。
      「沒演完就不算演過」才是對的。代價：中途離開會再看一次，那本來就該再看一次。 */
@@ -748,11 +769,24 @@ function tipDue(){
   }
   return null;
 }
-function showTip(){
-  const t=tipDue(); if(!t) return;
+/* `done`＝這一則提示**做完**之後要接的下一拍（ver -430，目前是「把店舖的單子擺出來」）。
+   「做完」的定義分兩級：
+     ① 點到被指的那個東西（`showHint` 的回呼）→ 通常那一下就把整備頁開起來了
+     ② 那一頁**收掉**（`gearWatch`）＝ 玩家真的把裝備換完了（Ray 指定的那一刻）
+   ⚠ 玩家也可能直接把提示點掉、不去按吊墜 —— 那時 `gearWatch` 查到整備頁根本沒開，
+     會立刻放行。**不能把玩家鎖在教學裡**（同 `openHint` 的原則）。 */
+function showTip(t, done){
+  if(!t){ if(done) done(); return; }
   if(t.flag) prog.addFlags([t.flag]);
-  story.showHint({ at:t.at, text:t.text });
+  story.showHint({ at:t.at, text:t.text }, ()=>{
+    if(gearWatch) gearWatch(done || (()=>{}));
+    else if(done) done();
+  });
 }
+/* 整備頁的「收掉了通知我」（`modules/gear.js` 的 `onceClosed`，由 main.js 注入）。
+   ⚠ 注入而不是 import：城鎮不認識啟動層的畫面（同 `setFlightOpener`）。 */
+let gearWatch=null;
+export function setGearWatch(fn){ gearWatch=fn||null; }
 
 function afterArrive(n){
   /* ⚠ `introFlag` 由城鎮算好傳進去（ver -402）：旅店已經沒有 `kind` 了，
@@ -766,8 +800,14 @@ function afterArrive(n){
                                     一起記掉**，否則走出去再回來又會被抓一次。 */
                                  eveningFlag: ((TOWNS[townId]||{}).evening||{}).flag });
   else inn.close();
-  shopEnter();              // 店舖畫面（ver -404）：進場對白演完才擺，不然會壓在對白上
-  showTip();                // 一次性的操作提示（ver -429）：對白與店舖都就位了才彈
+  /* ⚠⚠ **教學先、選單後**（ver -430，Ray：「武器店的裝備教學先彈出，裝備完才跳出
+     武器店的選單」）。有到期的提示時，店舖只擺店主、單子押後 —— 那張單子停在畫面
+     左邊，正好蓋住要教的那顆吊墜，而且整備頁一開它還在底下佔著版面。
+     ⚠ 兩條路都要把單子擺出來（有提示走 `showTip` 的回呼、沒提示走這裡），
+       而開單子的實作只有 `openMenu()` 那一支（鐵律 8）。 */
+  const tip=tipDue();       // 一次性的操作提示（ver -429）：對白與店舖都就位了才彈
+  shopEnter(tip ? { noMenu:true } : null);   // 店舖畫面（ver -404）：進場對白演完才擺
+  showTip(tip, tip ? openMenu : null);
 }
 /* 初見劇情的旗標名。⚠ **只有這一支在決定**（鐵律 7）：`enter()` 與 `afterArrive()` 都問它。 */
 function flagOf(n, id){ return (n && n.kind) ? ('town_kind_'+n.kind) : ('town_'+townId+'_'+id); }
@@ -881,6 +921,7 @@ inn.setup({
 export function open(town, node){
   townId = town || 'capital';
   const T=TOWNS[townId]; if(!T) return;
+  eveningHeld=false;          // 傍晚那一格的「讓過一次」是這一趟城鎮探索的狀態（ver -430）
   const st=story.stageEl(); if(st){ st.classList.add('on','town-on'); }
   document.body.classList.add('story-on');
   story.showPanel();          // 下半的面盤（不擺會是一片全黑）
@@ -896,6 +937,17 @@ export function close(){
   document.querySelectorAll('.kerb-arrow').forEach(a=>a.classList.remove('avail','holding'));
 }
 export function isOpen(){ return !!townId; }
+/* 存檔要帶的「人在哪」（ver -430）。⚠ 與 `story.getPosition()` 是同一件事的兩面：
+   在城裡就有這個、在劇情裡就有那個 —— 存檔兩個都問，讀檔挑有值的那一個。
+   ⚠ 這是**存在存檔紀錄裡**的欄位，不是 localStorage 的一輪內鑰匙，
+     所以 §6.9 的 `newRun()`／`runSnapshot()` 那張清單不必動。 */
+export function getPosition(){ return townId ? { town:townId, node:nodeId } : null; }
+/* 節點的顯示名（存檔欄位上要印「人在哪」）。查不到就回城名。 */
+export function placeName(pos){
+  const T=TOWNS[(pos&&pos.town)||townId]; if(!T) return '';
+  const n=T.nodes[(pos&&pos.node)||nodeId];
+  return (n && n.name) || T.name || '';
+}
 /* 把這座城的曲子接回來（ver -391）。⚠ 進飛行頁時主遊戲的 BGM 被收掉了
    （見 main.js 的 `openFlight`：兩個 document 各有一套 BGM，不收會疊在一起），
    從飛行頁「返回」回到城鎮時要有人把它接回來。 */

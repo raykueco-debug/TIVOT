@@ -1759,7 +1759,14 @@ function endScene(){
   if(cur && cur.__adhoc){
     const cb=cur.__done; cur=null; active=false;
     stopModes(); clearTimeout(autoT2); autoT2=null; onTyped=null;
-    const b=$('storyBubble'); if(b) b.style.visibility='hidden';
+    /* ⚠⚠ **一段對白演完就清場**（ver -430，Ray 指定寫進憲法 §6.5）。
+       立繪是**持續狀態**：不撤的話上一段的人會站在下一個畫面前面。
+       ⚠ 以前這裡只收對話框，清場交給各個呼叫端的 `done` 自己記得做 ——
+         那正是鐵律 8 說的「規矩寫給呼叫端」：目前四個呼叫端剛好都寫對了，
+         但下一條新路徑一定會漏。**收在這一支唯一的出口**才不會漏。
+       ⚠ `clearCast()` 同時收對話框與「正在演」的旗標，所以不必再自己藏一次框；
+         呼叫端已經寫了的那幾支照留著不必刪（它是冪等的）。 */
+    clearCast();
     if(cb) cb();
     return;
   }
@@ -2093,6 +2100,11 @@ export function setFlightOpener(fn){ flightOpener=fn; }
    ⚠ 查不到注入的實體才退回只 `close()` —— 那是舊行為，總比什麼都不做好。 */
 let homeReturn=null;
 export function setHomeReturn(fn){ homeReturn=fn; }
+/* ⚠⚠ **「離開這一切回主選單」只有這一支**（ver -430 改成匯出，鐵律 8）：
+   選單的「回到主選單」與戰敗那一頁的「放棄」走的是同一件事 —— 收城鎮、收劇情層、
+   走 `combat.goHome`。兩邊各寫一份的話，其中一邊遲早會漏掉收城鎮那一步
+   （ver -399 就是這樣讓玩家被關在店裡的）。 */
+export function leaveToHome(){ goHomeNow(); }
 function goHomeNow(){
   /* ⚠ 城鎮在這裡收（不是在 `close()` 裡）—— 只有「回到主選單」才是離開這一切；
      交棒給戰鬥同樣走 `close()`，那時城鎮必須留著（見 close 的說明）。 */
@@ -2350,6 +2362,23 @@ export function indexOfLabel(lines, label){
 export function resumeFrom(pos, res){
   if(!pos) return;
   ensureBgm(pos.bgm);                       // 戰前那一首（見 renderLine 的 resume）
+  /* ══ 戰敗後按「再戰」（ver -430，Ray：「回到該幕對話的開頭」）══════════════
+     回的是**這一幕的第一句**，不是戰鬥前那一句 —— 玩家要重看的是那一段戲的鋪陳，
+     而且從頭走一次才會再走到那一拍 `{battle:…}`。
+     ⚠ 主線 scene 走 `open({scene, line:0})`（＝整幕重建：舞台、背景、立繪全部歸零）；
+       城鎮那種臨時段落沒有 scene，就把手上這一份台詞從第 0 句重播。
+     ⚠ 要擋在 `onLose` 那一支**前面**：`res.lost` 兩者都是真，順序反了「再戰」會被
+       當成劇本分歧跳到別的 label 去。（可戰敗的場次根本走不到這裡 —— 那些在
+       `combat.lose()` 就交棒了，所以兩條規則實際上不會同時成立。） */
+  if(res && res.lose==='retry'){
+    if(pos.adhoc){
+      layoutKerberos();                     // 門被戰鬥收過了，回來要重新擺（同下面那一支）
+      playAdhoc(pos.adhoc, pos.done, { sides: pos.sides });
+      return;
+    }
+    open({ scene: pos.scene, line: 0 });
+    return;
+  }
   /* 打輸了而且這一場有寫 `onLose` → 從那個 label 接下去（ver -377）。 */
   if(res && res.lost && pos.onLose){
     const lines = pos.adhoc || ((MAIN_SCRIPT[pos.scene]||{}).lines);

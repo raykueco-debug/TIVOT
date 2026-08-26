@@ -18,6 +18,7 @@ export const STRINGS = {
     title:        '聖約第四騎士團',
     start:        '出陣',
     tutorialBtn:  '教學',
+    continueBtn:  '繼　續',              // 首頁：進最新存檔（ver -430）
     weaponLabel:  '副武器',
     partnerLabel: '搭　檔',
     creditBtn:    'Credit',            // [EN-STYLE] 可不譯
@@ -208,6 +209,11 @@ export const STRINGS = {
     timeSec:      '{s}秒',
     newRecord:    '★ NEW RECORD ★',     // [EN-STYLE]
     rematch:      '再度執槍',
+    /* 戰敗的三顆（ver -430，Ray 定案）：船艦戰＝繼續（回飛行畫面）；
+       其餘劇情場次＝再戰（回該幕對話的開頭）／放棄（回主畫面）。 */
+    loseContinue: '繼　續',
+    loseRetry:    '再　戰',
+    loseGiveUp:   '放　棄',
     intercept:    '迎擊',
     lineMissing:  '（監察官台詞待填）',
   },

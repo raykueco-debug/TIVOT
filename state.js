@@ -123,6 +123,14 @@ export const state = {
   perfectCount: 0,
   sawExecution: false,
   sRankUnlocked: false,
+  /* 結算頁那顆（或那兩顆）底鈕現在是什麼意思。`modules/inspector.js` 擁有它，
+     `onRematchBtn`／`onGiveupBtn` 依它分流：
+       rematch          再度執槍 → 回首頁（出陣，試玩版）
+       sentou-offer / sentou / intercept    Boss 那條 S 級的兩段式
+       tutorial-home / tutorial-leaving     教學結算的離場（leaving 同時是防連點的擋門磚）
+       script-continue  劇情插入戰打贏 → 交還劇情
+       lose-continue    ver -430：船艦戰戰敗 → 一顆「繼續」，回飛行畫面
+       lose-retry       ver -430：劇情場次戰敗 → 兩顆「放棄／再戰」 */
   resultMode: 'rematch',
   currentFavor: 0,
 
