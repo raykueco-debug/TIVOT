@@ -112,7 +112,13 @@ export const TOWNS = {
        ⚠ `stage:1` ＝ 同時把 `progress` 的章節推到 1（測試期間的預設是 3）。
        ⚠ 掛在**這座城**上：stage 0 整段都發生在帝都。日後別的城要有自己的閘門
          就在那座城上寫一個。 */
-    stage1: { hour: 7, stage: 1, flag: 'stage1_open', goto: 'dock' },
+    /* ⚠ `lines`（ver -438，Ray：「讓蕾娜在旅店先講一句『好囉，該出發囉』
+         再淡入淡出轉到下一幕」）：閘門成立時**先演這一段**，演完才強制移轉。
+       ⚠ 睡醒那一刻黑幕還蓋著（旅店的睡覺演出留下來的）—— `clockGate()` 會先把
+         畫面亮回來再放她上場，所以這裡不必寫任何演出指示。
+       ⚠ 台詞一字照 Ray 的稿。 */
+    stage1: { hour: 7, stage: 1, flag: 'stage1_open', goto: 'dock',
+              lines: [ ren(null,'好囉，該出發囉') ] },
     nodes: {
 
       /* ══ 攝政王廣場 ══ 上＝中心區、左＝舊街區、右＝上街區（Ray 指定的三個方向） */

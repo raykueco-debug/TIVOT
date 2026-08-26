@@ -162,18 +162,47 @@ function clockGate(){
   if(g.flag) prog.addFlags([g.flag]);
   if(g.stage!=null) prog.setStage(g.stage);
   if(!g.goto || g.goto===nodeId) return false;   // 已經站在那裡：讓原本的流程繼續（acts 會接手）
+  /* ⚠⚠ **先講一句再轉場**（ver -438，Ray：「讓蕾娜在旅店先講一句『好囉，該出發囉』
+     再淡入淡出轉到下一幕」）。台詞在資料上（`TOWNS[].stage1.lines`，鐵律 1）。
+     ⚠ 睡醒那一刻**黑幕還蓋著**（旅店的睡覺演出留下來的）—— 要先把畫面亮回來，
+       她才有舞台可站；不亮的話那一句是在一片全黑裡講的。
+     ⚠ 亮完再放人：立繪滑入 450ms，黑幕還在淡的時候就上場會從黑裡浮出來（§6.5）。
+     ⚠ 第一句給 `delay:SLIDE_MS` —— 對話框要等立繪站定（同 `enter()` 的作法）。
+     ⚠ 這一支照樣回傳 true：呼叫端只要知道「我接手了」，不必知道中間演了什麼。 */
+  if(g.lines && g.lines.length){
+    clearTimeout(arriveT); arriveT=0;
+    busy=true; showNav(false);
+    const lit = story.veilOn();
+    if(lit) story.veil(false, CUT_MS);
+    const play=g.lines.map((l,i)=> (i===0 && l && l.delay==null)
+      ? Object.assign({}, l, { delay:SLIDE_MS }) : l);
+    setTimeout(()=>{
+      story.playAdhoc(play, ()=>{ story.clearCast(); forceGo(g.goto); }, { sides:g.sides });
+    }, lit ? CUT_MS+80 : 0);
+    return true;
+  }
   forceGo(g.goto);
   return true;
 }
 /* 強制移轉：不花時間、不看營業時間、不記「來時方向」（玩家不是自己走過去的）。
    ⚠ 走**同一支** `enter()` —— 清場、背景、對白、大廳那一整套收尾只有那一份（鐵律 8）。 */
+/* ══ 換景一律走淡入淡出（ver -438，Ray：「所有切景都用淡入淡出轉場」）══════
+   ⚠⚠ 走 `story.veil()` —— **唯一那一片黑幕**（ver -430 起，鐵律 8），不要另貼一片。
+   ⚠ `enter()` 要在**全黑之下**跑（同 §6.5「場景與場景之間走黑幕」）：
+     不然會看到舊畫面殘留一格才換。
+   ⚠⚠ **亮回來不在這裡收，交給 `enter()`**：背景是非同步載的（`bgFor`），
+     只有它知道新的一景什麼時候擺好。兩邊都收就會有兩段淡入互相打架。
+   ⚠ 這一支取代了 `go()` 與 `forceGo()` 各寫一次的 `setTimeout(()=>enter(to),260)`
+     —— 那 260ms 本來就是為換場留的空檔，只是當時什麼都沒演。 */
+const CUT_MS = 280;       // 淡出／淡入各一段（同一個數字，切景的節奏才一致）
+function sceneCut(to){ story.veil(true, CUT_MS); setTimeout(()=>enter(to), CUT_MS); }
 function forceGo(to){
   clearTimeout(arriveT); arriveT=0;
   busy=true; showNav(false);
   document.body.classList.remove('town-nav');
   stepSfx();
   pendingDir=null;
-  setTimeout(()=>enter(to), 260);
+  sceneCut(to);
 }
 
 /* ══ 營業時間（ver -391，Ray 指定）══════════════════════════════════════
@@ -640,7 +669,7 @@ function go(to, dir){
   document.body.classList.remove('town-nav');          // 移動中把羅盤收起來
   stepSfx();
   clock.advance(STEP_MIN);
-  setTimeout(()=>enter(to), 260);
+  sceneCut(to);          // 換景走淡入淡出（ver -438，見 sceneCut）
 }
 
 /* 吃了閉門羹：就地浮一句「哪一家、幾點開」。
@@ -712,11 +741,12 @@ export function enter(id){
   chatterOn=false;          // ⚠ 第四件：上一個地點的路人單句（見 §6.5 的新路徑檢查表）
   inn.close();              // ⚠ 第五件：上一個地點的旅店大廳（同一張檢查表）
   shopClose();              // ⚠ 第六件：上一個地點的店舖選單（ver -404，同一張檢查表）
-  /* ⚠ 第七件（ver -430）：**上一段留下的黑幕要亮回來**。旅店睡到隔天七點是在
-     **黑幕蓋著**的狀態下被強制移到船塢的（`forceGo`）—— 新的地點擺好了才亮，
-     就是一次乾淨的剪接；不收的話玩家會停在一片全黑上。
-     ⚠ 等一拍再亮：背景是非同步載的（`bgFor`），立刻亮會看到上一張圖。 */
-  if(story.veilOn()) setTimeout(()=>story.veil(false, 700), 300);
+  /* ⚠⚠ 第七件：**黑幕在這裡亮回來**（ver -430；-438 起每一次換景都會蓋著進來）。
+     `sceneCut()` 只負責淡出，因為只有這裡知道新的一景什麼時候擺好 ——
+     兩邊都收就會有兩段淡入互相打架。
+     ⚠ 等一拍再亮：背景是非同步載的（`bgFor`），立刻亮會看到上一張圖。
+     ⚠ 睡到隔天七點被強制移到船塢那一次也走這裡（那時黑幕是旅店留下來的）。 */
+  if(story.veilOn()) setTimeout(()=>story.veil(false, CUT_MS), 300);
   bgNat=null;               // 背景要重載，舊的尺寸不能拿來擺旅店那兩顆行動鈕
   /* 這座城的曲子（ver -375）。⚠ 每進一個節點都確認一次，不是只在 `open` 時放一次 ——
      中間可能插進一場戰鬥（戰鬥有自己的曲子），回來要接得回去。
@@ -985,6 +1015,10 @@ export function open(town, node){
   eveningHeld=false;          // 傍晚那一格的「讓過一次」是這一趟城鎮探索的狀態（ver -430）
   const st=story.stageEl(); if(st){ st.classList.add('on','town-on'); }
   document.body.classList.add('story-on');
+  /* ⚠ 進城也是**切景**（ver -438）：先蓋上黑幕（`0ms`＝立刻，因為這一層本來就是
+     硬切上來的），第一景擺好之後由 `enter()` 淡回來 —— 玩家看到的是一次淡入，
+     不是「啪」一聲換上一張還沒載完的背景。 */
+  story.veil(true, 0);
   story.showPanel();          // 下半的面盤（不擺會是一片全黑）
   story.ensureBgm(T.bgm);
   busy=false;
