@@ -2240,6 +2240,42 @@ function castEnter(who, now){
 }
 function castClear(now){ for(const c of cast) if(!c.out) c.out=now; }
 const portraitImg={};
+/* ══ 表情差分（ver -432）══════════════════════════════════════════════════
+   台詞的 `who` 可以寫成 **`renna/relief`**（本尊／差分鍵）。第一次用到就**合成
+   一筆 PORTRAIT**：沿用本尊的 name/side/cm，換掉 src 與那一張自己量出來的
+   `fx/top/bot`。於是既有的每一支（castEnter／portraitArt／measureBounds／
+   portraitLOD／drawTalk）都照舊只認一個字串鍵，**一行都不必改**（鐵律 8）。
+   ⚠⚠ 取景值是**那一張圖**的數字，與 `script/speakers.js` 的 `ART.renna.expr`
+     是**同一組**（同樣的圖、同樣的量測）—— 改一邊要改兩邊（§5 的規矩）。
+   ⚠ `eye` 沿用本尊的：`CAST_EYE_MIX=0`（鎖身高不鎖眼寬），它不參與運算。
+   ⚠ 查不到差分就退回本尊 —— 台詞照播，只是表情沒換（同 story.js 的 missingExpr）。 */
+const PORTRAIT_EXPR = {
+  renna: {
+    relief:    { src:'../resources/SI/Renna_SI_relief.webp',     fx:0.518, top:3, bot:1525 },
+    covermouth:{ src:'../resources/SI/Renna_SI_covermouth.webp', fx:0.512, top:2, bot:1528 },
+    smile:     { src:'../resources/SI/Renna_SI_smile.webp',      fx:0.518, top:5, bot:1530 },
+  },
+  nouvelle: {
+    surprise:  { src:'../resources/SI/Nouvelle_SI_Surprise.webp',fx:0.487, top:5, bot:1524 },
+    awkward:   { src:'../resources/SI/Nouvelle_SI_Awkwerd.webp', fx:0.468, top:2, bot:1534 },
+  },
+};
+/* `renna/relief` → 本尊 id。⚠ **入隊判定（`inParty`）一定要走這一支**：
+   直接拿 `renna/relief` 去問 PARTY 查不到，而 `inParty` 對查不到的人一律放行
+   —— 那等於整組對話悄悄繞過「這個人在不在船上」的硬條件。 */
+function baseWho(who){ const i=String(who).indexOf('/'); return i<0 ? who : who.slice(0,i); }
+/* 台詞裡的 `who` → 真正拿得到 PORTRAIT 的鍵（必要時當場合成那一筆）。 */
+function pkey(who){
+  if(PORTRAIT[who]) return who;
+  const i=String(who).indexOf('/'); if(i<0) return who;
+  const base=who.slice(0,i), ex=who.slice(i+1);
+  const B=PORTRAIT[base], E=PORTRAIT_EXPR[base] && PORTRAIT_EXPR[base][ex];
+  if(!B) return who;
+  if(!E) return base;                       // 沒有這張差分 → 退回本尊
+  PORTRAIT[who]={ name:B.name, cm:B.cm, side:B.side, eye:B.eye, alt:null,
+                  src:E.src, fx:E.fx, top:E.top, bot:E.bot };
+  return who;
+}
 function portraitArt(who){
   if(portraitImg[who] || !PORTRAIT[who] || !PORTRAIT[who].src) return;
   const im=new Image();
@@ -2345,6 +2381,9 @@ function portraitLOD(who, im, w, h, dim){
   return c.dim || (c.dim=buildDim(c.cv));
 }
 function say(beats, at){
+  /* ⚠ 差分鍵在**這一支**展開（唯一的入口，鐵律 8）：之後每一支都只看得到
+     一個查得到 PORTRAIT 的字串，castEnter／drawTalk／LOD 一行都不必改。 */
+  beats = beats.map(b => (b.who && b.who!==pkey(b.who)) ? Object.assign({}, b, { who:pkey(b.who) }) : b);
   sayQueue=beats; sayIdx=0; sayAt=at; sayEndAt=0;
   cast=[];
   for(const b of beats) portraitArt(b.who);   // 先把圖抓好，輪到誰才上場
@@ -2646,7 +2685,11 @@ function drawTalk(now){
   ctx.strokeRect(bx+0.5,by+0.5,bw-1,bh-1);
   ctx.textAlign='left';
   ctx.font='11px "Noto Serif TC",serif';
-  ctx.fillStyle='#c9a227'; ctx.fillText(PORTRAIT[speaker].name, bx+padX, by+19);
+  /* ⚠ 說話的人**不一定有立繪**（ver -432）：主角的空白對話框（`who:'player'`）
+     只有名字沒有台詞、也不動台上的人（§6.5「blank 那一拍不動立繪」）。
+     查不到 PORTRAIT 就退回玩家自己的名字 —— 不要讓它在這裡爆掉。 */
+  const spkName = (speaker && PORTRAIT[speaker]) ? PORTRAIT[speaker].name : playerName();
+  ctx.fillStyle='#c9a227'; ctx.fillText(spkName, bx+padX, by+19);
   ctx.font=fs+'px "Noto Serif TC",serif';
   ctx.fillStyle='#ece6d8';
   for(let i=0;i<lines.length;i++) ctx.fillText(lines[i], bx+padX, by+26+lh*(i+1)-4);
@@ -3800,7 +3843,15 @@ applyResize();   // 開場這一次要同步做完：loop 還沒開始跑，沒�
 const curvAt=s=>(1+s*s)/(2*PLANET_R);
 
 /* ── 攝影機 ─────────────────────────────────────────────────────── */
-const cam={x:1005*MAP_SCALE,y:760*MAP_SCALE,angle:0,alt:CRUISE_ALT,speed:0,bank:0};
+/* ⚠⚠ **從帝都出航的起點固定在 (1049, 622)**（ver -432，Ray 指定）——
+   那是帝都（1005,600）東南邊的出港位。以前是 (1005,760)，正南方一大段外海，
+   出航第一眼看不到自己剛離開的城。
+   ⚠ 這是**地圖座標**，要乘 `MAP_SCALE` 才是世界座標（同下面每一處用 cam.x 的地方）。
+   ⚠ 打完仗回來會被 `restoreFlightPos` 覆寫成離開時的座標 —— 那是刻意的，
+     這裡只是「一趟新航行從哪裡開始」。 */
+const SAIL_FROM_CAPITAL = { x:1049, y:622 };
+const cam={x:SAIL_FROM_CAPITAL.x*MAP_SCALE,y:SAIL_FROM_CAPITAL.y*MAP_SCALE,
+           angle:0,alt:CRUISE_ALT,speed:0,bank:0};
 
 /* ══ 操作：單手拖曳世界 ══
    手指把畫面往後拉 → 船往前走（拉的是地面，不是船）。
@@ -4235,7 +4286,13 @@ const ADMIN=(()=>{ try{ return localStorage.getItem('tivot_admin_v1')==='1'; }
 if(ADMIN) window.setTime=(min)=>{ clock.minutes=((min%1440)+1440)%1440; return clock.minutes; };
 /* 管理人：就地切故事進度／看目前的對話情境，測時段與 stage 觸發用。 */
 if(ADMIN) window.setStage=(n)=>setGameStage(n);
-if(ADMIN) window.talkDebug=(m)=>talkDebug(m);
+/* ⚠⚠ **不要寫成 `window.talkDebug=(m)=>talkDebug(m)`**（ver -432 修）：
+   `talkDebug` 是 `talks.js` 的**頂層函式宣告**，而那一頁是非 module 的一般 script
+   —— 它本來就已經在 `window` 上。同名的箭頭函式一覆寫上去，內文的 `talkDebug(m)`
+   就解析回它自己 → **無限遞迴**（實測一叫就 RangeError，整支除錯工具是壞的）。
+   ⚠ 這一類「包一層同名的」在這一頁還有好幾個（`setStage`／`talkInfo`…），
+     那些沒事是因為**包的與被包的不同名**。要包就換名字，不要同名。 */
+if(ADMIN) window.talkDebug=talkDebug;
 if(ADMIN) window.talkInfo=()=>talkCtx();
 if(ADMIN) window.setPlayerName=(s)=>{ try{ localStorage.setItem(PLAYER_NAME_KEY, String(s||'')); }catch(e){} return playerName(); };
 if(ADMIN) window.setAff=(who,v)=>setAffection(who,v);
@@ -6781,11 +6838,20 @@ function flightAudio(on){
 /* 父頁在戰鬥打完、要把畫面交還這一頁時呼叫（ver -388）。
    ⚠ `battleGoing` 一定要歸零：不歸零的話船永遠停著（見 update 的那一行），
      而且下一次遭遇的交棒鎖也解不開。 */
-window.__flightResume=function(){
+window.__flightResume=function(opts){
   battleGoing=false;
   const kb=document.getElementById('fkerb'); if(kb) kb.classList.remove('rise');
   layoutFKerb();
   flightAudio(true);
+  /* ⚠⚠ **打贏才接那一段對白**（ver -432）：ver -430 起打輸也會回到這一頁
+     （戰敗頁的「繼續」），而那一段的第一句是「小命保住了」——
+     輸了聽到這句是錯的。勝負由父頁告訴我們（`{won:true}`）。
+     ⚠ 等門收完再演（`FKERB_MS`）：槍棺還蓋著半個畫面時放人出來，
+       立繪會從門後面滑出來。 */
+  if(!(opts && opts.won)) return;
+  if(flagOn(AFTER_SHIP_FLAG)) return;
+  addFlag(AFTER_SHIP_FLAG);
+  setTimeout(()=>{ if(!sayQueue) say(AFTER_SHIP_TALK, performance.now()); }, 900);
 };
 window.__flightPause=function(){ flightAudio(false); };
 
@@ -8424,11 +8490,31 @@ document.getElementById('landBtn').addEventListener('click', e=>{ e.stopPropagat
    ⚠ 只在 **stage 1** 擋 —— 那正是「前往北方泊地」這一段任務還開著的時候。
      `gameStage()` 由主遊戲那一邊在 stage 0 結束時推到 1（§6.5.4.1）。
    ⚠ **降落（`doLand`）不擋**：那是回帝都的路，擋掉會把玩家困在天上。 */
-const STAGE1_DEST = '北方泊地';
+/* ⚠⚠ **帝都也放行**（ver -432，Ray：「除了帝都與北方泊地都還不能進去」）——
+   那是他剛出發的地方，擋掉等於回不了家。⚠ 寫成清單不是單一字串：
+   日後多開一個地方只加一項（鐵律 1）。 */
+const STAGE1_DEST = ['北方泊地', '帝都'];
 const STAGE1_NAG  = [{ who:'renna', text:'別晃了，趕快往北方泊地去！' }];
 function stage1Blocked(P){
-  return gameStage()===1 && P && P.name!==STAGE1_DEST;
+  return gameStage()===1 && P && STAGE1_DEST.indexOf(P.name) < 0;
 }
+
+/* ══ 第一場艦戰打完的那一段（ver -432，Ray 交稿，一字未改）══════════════
+   蕾娜說溜嘴、諾薇兒接話。⚠ **只在打贏之後**演（`__flightResume({won:true})`）：
+   ver -430 起打輸也會回到這一頁，而這一段的第一句是「小命保住了」。
+   ⚠ 一輪只演一次 —— 旗標記在 `progress` 的 flags，所以讀檔會跟著回去（§6.9）。
+   ⚠ `who` 帶表情差分（`renna/relief`），展開在 `say()`（見 pkey）。
+   ⚠ `who:'player'` ＝**主角的空白對話框**：只有名字、沒有台詞，而且**不動台上的人**
+     （§6.5：他不在台上，他說話不代表別人要換位）。 */
+const AFTER_SHIP_FLAG = 'renna_recommend_talk';
+const AFTER_SHIP_TALK = [
+  { who:'renna/relief',       text:'不愧是璐娜莉亞團長推薦的人呢。小命保住了。' },
+  { who:'nouvelle/surprise',  text:'咦？是團長推薦的嗎？' },
+  { who:'renna/covermouth',   text:'啊，好像不該說出來。' },
+  { who:'player',             text:'' },
+  { who:'nouvelle/awkward',   text:'不會啦，她對任何人都那樣吧，尤其是男性。' },
+  { who:'renna/smile',        text:'嗯，別想太多。' },
+];
 
 /* 進入地標（目前只做確認演出；之後接場景切換） */
 let entering=null;

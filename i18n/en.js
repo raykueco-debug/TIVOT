@@ -163,7 +163,8 @@ export const STRINGS = {
   result: {
     winTitle:     'Judgment',
     winSub:       '{name} Purified',
-    winSubBy:     { harm:'{name} Purified', human:'{name} Defeated', ship:'{name} Sunk' },
+    winSubBy:     { harm:'{name} Purified', human:'{name} Defeated', ship:'{name} Sunk',
+                    target:'{name} Destroyed', beast:'{name} Hunted' },
     loseTitle:    'The Light Fades',
     loseSub:      'HUND has fallen...',
     gradeCap:     'RATING',

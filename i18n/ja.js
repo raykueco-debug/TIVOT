@@ -180,7 +180,8 @@ export const STRINGS = {
   result: {
     winTitle:     '聖裁',
     winSub:       '{name}を浄化',
-    winSubBy:     { harm:'{name}を浄化', human:'{name}を撃破', ship:'{name}を撃沈' },
+    winSubBy:     { harm:'{name}を浄化', human:'{name}を撃破', ship:'{name}を撃沈',
+                    target:'{name}を破壊', beast:'{name}を狩猟' },
     loseTitle:    '聖光消滅',
     loseSub:      'HUND、倒れる…',
     gradeCap:     '評価',

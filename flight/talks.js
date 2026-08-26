@@ -66,13 +66,26 @@
    ⚠ 目前四個人都寫 from:1（預設進度已是 3，四人皆在）。真正的入隊/離隊章節
      等劇情定案再填 —— 填錯會讓一整批對話無聲消失，改這裡務必連帶測一下
      talkDebug() 看各 stage 還剩幾組。 */
+/* ⚠⚠ **第 1 章船上只有蕾娜與諾薇兒**（ver -432）：主線走到這裡，出航的就是他們三個
+   —— 索拉娜與安雅還沒登場。所以上面那 23 組（四人同台的日常）在第 1、2 章
+   自動整批消失，第 1 章聽到的是下面新寫的那 20 組蕾／諾對話。
+   ⚠⚠ **`from:3` 是暫填的**（Ray 還沒定案她們哪一章入隊）：填 3 是因為
+     `STAGE_DEFAULT` 就是 3 —— **預設進度下的行為與 ver -431 完全一樣**，
+     四人同台的那 23 組照舊聽得到，只有真的在第 1、2 章時才會被擋下。
+     真正的入隊章節定了就改這兩個數字，其餘什麼都不必動。 */
 const PARTY = {
-  sorana:   { from: 1 },
+  sorana:   { from: 3 },
   nouvelle: { from: 1 },
-  anya:     { from: 1 },
+  anya:     { from: 3 },
   renna:    { from: 1 },
 };
 function inParty(who, stage){
+  /* ⚠ 台詞的 `who` 可能帶表情差分（`renna/relief`，ver -432）—— 先切回本尊再問。
+     不切的話 `PARTY['renna/relief']` 查不到，而查不到一律放行 ＝ **整組對話悄悄
+     繞過「這個人在不在船上」這條硬條件**（那是劇情穿幫，不是小瑕疵）。
+     ⚠ `baseWho` 住在 `flight/index.html`（差分那一段）；這一頁是非 module 的
+       獨立文件，兩個檔共用同一個全域函式，不要在這裡抄第二份（鐵律 7）。 */
+  who = (typeof baseWho==='function') ? baseWho(who) : who;
   const p = PARTY[who];
   if (!p) return true;                 // 沒登記的人（例如日後的客串）一律視為在場
   if (p.from != null && stage < p.from) return false;
@@ -324,6 +337,186 @@ const TALKS = {
       {who:'sorana',   text:'妳這是誇他還是損他？'},
       {who:'renna',    text:'誇。文件很無趣的。'},
       {who:'nouvelle', text:'呵呵……那大概是最高的評價了。'},
+    ]},
+
+    /* ══════════════════════════════════════════════════════════════════
+       第 1 章的船上閒聊（ver -432，Ray：「生成 20 組蕾、諾二人的船上對話」）
+       ──────────────────────────────────────────────────────────────────
+       這一章船上只有**蕾娜與諾薇兒**（索拉娜與安雅還沒入隊，見上方 PARTY）——
+       所以這 20 組都只有她們兩個開口，主角照慣例**由別人接他的話**。
+       ⚠ 時空背景：剛從帝都出航，往北方泊地。蕾娜是新上船的監察官（隨身板夾寫報告），
+         諾薇兒是照顧人的那一個。第一場艦戰已經打完（她剛看過他的實力）。
+       ⚠ **不要寫到還沒發生的事**：北方泊地那邊有什麼、璐娜莉亞為什麼推薦他，
+         都還沒揭曉 —— 最多讓蕾娜含糊帶過。
+       ══════════════════════════════════════════════════════════════════ */
+
+    /* ───────────────────────── 不限時段 ───────────────────────── */
+
+    { id:'s1-report', when:{ region:'ALL' }, lines:[
+      {who:'renna',    text:'那個……可以問一下你的年紀嗎？報告要填。'},
+      {who:'nouvelle', text:'蕾娜小姐，那一欄真的有人看嗎？'},
+      {who:'renna',    text:'我看。填不完整，教廷會退回來。'},
+      {who:'nouvelle', text:'那就是蕾娜小姐要重寫一次囉？'},
+      {who:'renna',    text:'……所以我才問得這麼認真。'},
+    ]},
+
+    { id:'s1-coffin', when:{ region:'ALL' }, lines:[
+      {who:'renna',    text:'那口棺材……真的要一直帶在身上嗎？'},
+      {who:'nouvelle', text:'那是槍櫃喔。裡面是他的武器。'},
+      {who:'renna',    text:'我知道是槍櫃。我是說，它比我還重。'},
+      {who:'nouvelle', text:'他一個人就抬得動，不用擔心。'},
+      {who:'renna',    text:'我擔心的是甲板。'},
+    ]},
+
+    { id:'s1-recommend', when:{ region:'ALL' }, lines:[
+      {who:'nouvelle', text:'蕾娜小姐，剛才那件事……'},
+      {who:'renna',    text:'我什麼都沒說。'},
+      {who:'nouvelle', text:'可是妳說了呀。'},
+      {who:'renna',    text:'……那就當作我在對海風說話。'},
+      {who:'nouvelle', text:'呵呵。海風的記性好像不太好呢。'},
+    ]},
+
+    { id:'s1-north-cold', when:{ region:'ALL' }, lines:[
+      {who:'nouvelle', text:'越往北越冷了。要不要加件衣服？'},
+      {who:'renna',    text:'不用，我還撐得住。'},
+      {who:'nouvelle', text:'撐得住跟不冷是兩回事喔。'},
+      {who:'renna',    text:'……那，麻煩妳了。'},
+      {who:'nouvelle', text:'好。順便給你也拿一件。'},
+    ]},
+
+    { id:'s1-first-voyage', when:{ region:'ALL' }, lines:[
+      {who:'renna',    text:'老實說，這是我第一次上船這麼久。'},
+      {who:'nouvelle', text:'看不出來耶，妳站得很穩。'},
+      {who:'renna',    text:'監察官不能在被監察的人面前跌倒。'},
+      {who:'nouvelle', text:'那如果只有我看到呢？'},
+      {who:'renna',    text:'……那我會考慮跌一次。'},
+    ]},
+
+    { id:'s1-hund', when:{ region:'ALL' }, lines:[
+      {who:'renna',    text:'我一直叫你 HUND，你不介意吧？'},
+      {who:'nouvelle', text:'那是教廷給的編號吧？聽起來好硬。'},
+      {who:'renna',    text:'是舊制的稱呼。我用習慣了。'},
+      {who:'player',   text:''},
+      {who:'renna',    text:'……好。那我再想想別的叫法。'},
+    ]},
+
+    { id:'s1-mending', when:{ region:'ALL' }, lines:[
+      {who:'nouvelle', text:'袖子破了。脫下來我幫你補。'},
+      {who:'renna',    text:'諾薇兒小姐連針線都帶著？'},
+      {who:'nouvelle', text:'修女院什麼都自己來的。'},
+      {who:'renna',    text:'真好。我只會補文件上的破洞。'},
+      {who:'nouvelle', text:'那也是很重要的技能呀。'},
+    ]},
+
+    { id:'s1-regine', when:{ region:'ALL' }, lines:[
+      {who:'nouvelle', text:'蕾娜小姐的名字，是本名嗎？'},
+      {who:'renna',    text:'不是。本名太長，念起來很累。'},
+      {who:'nouvelle', text:'我覺得長的名字也很好聽耶。'},
+      {who:'renna',    text:'……那等哪天你們幫得上忙，我再告訴你們。'},
+      {who:'nouvelle', text:'那我要記在心上囉。'},
+    ]},
+
+    { id:'s1-quiet-sea', when:{ region:'ALL' }, lines:[
+      {who:'renna',    text:'安靜得有點不習慣。'},
+      {who:'nouvelle', text:'帝都太吵了嘛。'},
+      {who:'renna',    text:'不是那個意思。是……太順利了。'},
+      {who:'nouvelle', text:'蕾娜小姐，別把不好的事說出口喔。'},
+      {who:'renna',    text:'抱歉。職業病。'},
+    ]},
+
+    { id:'s1-ration', when:{ region:'ALL' }, lines:[
+      {who:'nouvelle', text:'乾糧還夠三天，水多一點。'},
+      {who:'renna',    text:'妳連這個都算好了？'},
+      {who:'nouvelle', text:'不然半路餓肚子的是我們三個呀。'},
+      {who:'renna',    text:'……我把「後勤良好」寫進去。'},
+      {who:'nouvelle', text:'欸，這個要寫嗎？'},
+    ]},
+
+    /* ───────────────────────── 黎明・上午 ───────────────────────── */
+
+    { id:'s1-morning-prayer', when:{ region:'ALL', time:['黎明'] }, lines:[
+      {who:'nouvelle', text:'早安。今天也平安無事就好了。'},
+      {who:'renna',    text:'諾薇兒小姐每天都禱告嗎？'},
+      {who:'nouvelle', text:'嗯。習慣了，不做反而怪怪的。'},
+      {who:'renna',    text:'那……可以順便替我求一份嗎？'},
+      {who:'nouvelle', text:'早就有妳的份囉。'},
+    ]},
+
+    { id:'s1-breakfast', when:{ region:'ALL', time:['黎明','上午'] }, lines:[
+      {who:'nouvelle', text:'湯好了。趁熱喝。'},
+      {who:'renna',    text:'船上還能煮湯，我真的沒想到。'},
+      {who:'nouvelle', text:'只要有火有鍋子就可以呀。'},
+      {who:'player',   text:''},
+      {who:'nouvelle', text:'……你這樣講，我下次會多煮一鍋喔。'},
+    ]},
+
+    { id:'s1-logbook', when:{ region:'ALL', time:['上午'] }, lines:[
+      {who:'renna',    text:'航海日誌我先幫忙記著了。'},
+      {who:'nouvelle', text:'咦，那不是監察官的工作吧？'},
+      {who:'renna',    text:'閒著也是閒著。而且字比較好看。'},
+      {who:'nouvelle', text:'這句我要記下來，等他回來給他看。'},
+      {who:'renna',    text:'……別。'},
+    ]},
+
+    /* ───────────────────────── 下午・黃昏 ───────────────────────── */
+
+    { id:'s1-laundry', when:{ region:'ALL', time:['上午','下午'] }, lines:[
+      {who:'nouvelle', text:'風這麼好，衣服晾一下就乾了。'},
+      {who:'renna',    text:'掛在船首會不會被吹走？'},
+      {who:'nouvelle', text:'我打的結，不會的。'},
+      {who:'renna',    text:'……修女院真的什麼都教。'},
+      {who:'nouvelle', text:'不教的話會沒衣服穿嘛。'},
+    ]},
+
+    { id:'s1-seabirds', when:{ region:'ALL', time:['下午'] }, lines:[
+      {who:'nouvelle', text:'那些鳥一直跟著我們耶。'},
+      {who:'renna',    text:'牠們在等廚餘。'},
+      {who:'nouvelle', text:'哇，好現實喔。'},
+      {who:'renna',    text:'不過有鳥跟著，通常代表航路沒錯。'},
+      {who:'nouvelle', text:'那還是謝謝牠們好了。'},
+    ]},
+
+    { id:'s1-tea', when:{ region:'ALL', time:['下午','黃昏'] }, lines:[
+      {who:'renna',    text:'……這茶，是教廷配給的那一種嗎？'},
+      {who:'nouvelle', text:'嗯。難喝吧？'},
+      {who:'renna',    text:'我什麼都沒說。'},
+      {who:'nouvelle', text:'蕾娜小姐的表情已經說完了。'},
+      {who:'renna',    text:'下次靠港，我請客。'},
+    ]},
+
+    { id:'s1-sunset', when:{ region:'ALL', time:['黃昏'] }, lines:[
+      {who:'nouvelle', text:'從這裡看夕陽，跟在地面上不一樣呢。'},
+      {who:'renna',    text:'嗯。地面上看不到雲的背面。'},
+      {who:'nouvelle', text:'蕾娜小姐也會看這種東西啊。'},
+      {who:'renna',    text:'……監察官也是人。'},
+      {who:'nouvelle', text:'呵呵，我知道啦。'},
+    ]},
+
+    /* ───────────────────────── 夜晚・夜半 ───────────────────────── */
+
+    { id:'s1-night-watch', when:{ region:'ALL', time:['夜晚'] }, lines:[
+      {who:'renna',    text:'守夜我來吧。反正我也睡不著。'},
+      {who:'nouvelle', text:'那我陪妳。一個人看夜太久會胡思亂想。'},
+      {who:'renna',    text:'……妳很懂嘛。'},
+      {who:'nouvelle', text:'因為我以前也常常這樣。'},
+      {who:'renna',    text:'那就一起。謝謝。'},
+    ]},
+
+    { id:'s1-stars', when:{ region:'ALL', time:['夜晚','夜半'] }, lines:[
+      {who:'nouvelle', text:'星星好多。這樣真的認得出方向嗎？'},
+      {who:'renna',    text:'認得。北邊那一顆一整年都不動。'},
+      {who:'nouvelle', text:'好厲害……這也是監察官要學的？'},
+      {who:'renna',    text:'不是。是小時候我父親教的。'},
+      {who:'nouvelle', text:'……那一定是很好的回憶呢。'},
+    ]},
+
+    { id:'s1-midnight', when:{ region:'ALL', time:['夜半'] }, lines:[
+      {who:'renna',    text:'這個時間還醒著，明天會很難受喔。'},
+      {who:'nouvelle', text:'蕾娜小姐自己不也是。'},
+      {who:'renna',    text:'我在寫報告。'},
+      {who:'player',   text:''},
+      {who:'renna',    text:'……好啦。我收一收就去睡。'},
+      {who:'nouvelle', text:'講得動她耶，好厲害。'},
     ]},
 ],
 

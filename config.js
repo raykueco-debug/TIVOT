@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.26-431';
+export const VERSION = 'ver 2026.08.26-432';
 
 export const GAME_CONFIG = {
 
@@ -790,6 +790,9 @@ export const GAME_CONFIG = {
        ⚠ `attack` 仍留一個值只是為了資料完整；沒有任何一條路會讀到它。 */
     dart_target: {
       name:'固定立靶',
+      /* 結算副標的用詞（ver -432，Ray：「『靶』為已擊破」）。⚠ 對照表在 `i18n` 的
+         `result.winSubBy`，這裡只標這一隻是哪一類（鐵律 1）。 */
+      kind:'target',
       image:'enemy_dart_target',     // → resources/enemy/Dart_timeattack.webp
       hp:300,                        // Ray 指定
       attack:0,
@@ -865,6 +868,7 @@ export const GAME_CONFIG = {
          程式後補；不要因為還沒做就把欄位丟掉（丟掉的下場是下次補做時沒人記得。） */
     guild_hunter: {
       name:'賞金獵人',
+      kind:'human',                      // 結算副標「已擊敗」（ver -432）
       image:'enemy_guild_hunter',        // ＝ NPC_GuildHunter_SI_Attack（與對話立繪同一張）
       /* ⚠ `bg`＝**戰鬥背景**（ver -375 新欄位）。這一隻的立繪是**去背**的
          （對話用立繪借過來當戰鬥立繪），沒有背景的話身後是一片黑。
@@ -1011,6 +1015,11 @@ export const GAME_CONFIG = {
        ⚠ `talkOnce` ＝這一輪遊戲只講一次（旗標走 `progress`，所以讀檔會跟著回去，§6.9）。
        ⚠⚠ 反擊短教學由**諾薇兒**帶，就這兩句（Ray 交稿，一字未改）。 */
     flight_centipede: { enemy:'centipi',
+                        /* ⚠⚠ **這一場開啟蕾娜的結算評價**（ver -432，Ray：「第一次艦戰後
+                           開啟蕾娜評價」）。旗標由 `inspector.pickEvaluator` 在結算那一刻記，
+                           所以**這一場自己那一次就評得到**，之後每一場都有（打靶除外）。
+                           ⚠ 寫在卡上不寫死是哪一場（鐵律 1）：日後改成別場開啟只動這一欄。 */
+                        evalFrom:true,
                         weaponSound:{ MG_Squall:'se_ship_heavygun',
                                       Shotgun_Blast:{ key:'se_pistol_01', times:6 },
                                       Sniper_Falcon:'se_ship_cannon' },

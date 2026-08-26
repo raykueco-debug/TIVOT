@@ -23,6 +23,9 @@ import { GAME_CONFIG, asset, bgmVol, sfxGain } from '../config.js';
 import { showLoot } from './loot.js';
 import * as inv from '../script/inventory.js';   // 破紀錄的獎品要先問「是不是已經有了」
 import * as prog from '../script/progress.js';   // 拿到獎品記一個旗標（城鎮的一次性提示掛在它上面）
+/* 蕾娜的結算評價（ver -432）：內容全在那一檔，這裡只負責挑與演（鐵律 1）。 */
+import { EVALUATOR, EVAL_FLAG, EVAL_SKIP, LINES as EVAL_LINES } from '../script/evaluation.js';
+import { SPEAKERS, ART } from '../script/speakers.js';   // 評價者的顯示名與立繪＝與對白同一份
 import { state } from '../state.js';
 import { SFX } from '../audio.js';   // Boss BGM 於「再度執槍（S 解鎖）」瞬間起播
 import { L, fmt, decorateLine } from '../i18n.js';   // 多語言（結算標題/數據列/按鈕/台詞關鍵字）
@@ -121,6 +124,35 @@ function getInspector(){
 }
 
 // 依監察官 + 好感度挑立繪鑰匙（無 portraits 則用單張 image）
+/* ══ 蕾娜的結算評價（ver -432，Ray 交稿）══════════════════════════════════
+   「第一次艦戰後開啟蕾娜評價，之後除了打靶之外蕾娜都會在結算畫面評價。」
+   ⚠ **這一支是唯一的判定點**（鐵律 7）：要不要出現、出誰、講哪一句，全在這裡；
+     `scriptSettle` 只問一次然後照演。
+   ⚠ 開啟的**時機寫在戰鬥卡上**（`config.battles[x].evalFrom`）不寫死是哪一場 ——
+     所以第一場艦戰自己那一次就看得到（旗標在這裡順手記下去，之後每一場都有）。
+   ⚠ 回傳 `{name, portrait, line}`＝ `showResultSequence` 的 `opts.speaker` 契約；
+     `portrait` 是**直接路徑**不是 ASSETS 鍵（立繪住在 `speakers.js`，不進 ASSETS）。 */
+function pickEvaluator(rankKey, battleId){
+  const bt = (GAME_CONFIG.battles||{})[battleId] || {};
+  /* 這一場負責開啟評價 → 現在就記，於是**這一次就評得到**（Ray：「第一次艦戰後開啟」）。 */
+  if(bt.evalFrom && !prog.hasFlag(EVAL_FLAG)) prog.addFlags([EVAL_FLAG]);
+  if(!prog.hasFlag(EVAL_FLAG)) return null;
+  if(EVAL_SKIP.indexOf(battleId) >= 0) return null;          // 打靶不評（Ray 指定）
+  /* 章節 → 好感，兩層都是**門檻**（取不超過現值的最高那一格，同 `dialogues` 的查表法）。 */
+  const byStage = pickByThreshold(EVAL_LINES, prog.getStage(), null);
+  if(!byStage) return null;
+  const who = SPEAKERS[EVALUATOR] || {};
+  const aff = (prog.getAffection() || {})[(who.art||'')] ;
+  const byAff = pickByThreshold(byStage, (aff==null ? 0 : aff), null);
+  const one = byAff && byAff[rankKey];
+  if(!one) return null;
+  const art = ART[who.art] || {};
+  const ex  = (art.expr||{})[one.expr];
+  return { name: who.name || '',
+           portrait: (ex && ex.src) || art.base || '',
+           line: one.text || '' };
+}
+
 function pickInspectorPortrait(insp){
   if(!insp) return null;
   return pickByThreshold(insp.portraits, state.currentFavor, insp.image||null);
@@ -336,8 +368,15 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose, opts){
   stats.innerHTML=statsHtml||'';
   stats.classList.remove('sweep');
 
+  /* ⚠ `opts.speaker`＝**這一頁由別人來講**（ver -432，蕾娜的結算評價）：
+     `{name, portrait, line}` 三樣都給齊，於是這裡不再問 `getInspector()`，
+     台詞也不走 `pickInspectorDialogue` —— 那一整套是監察官（芙蕾雅）的，
+     兩者共用的只有**這個版面**，不是那份資料（同「框是共用的，教學那一套不是」）。
+     ⚠ `portrait` 是**直接路徑**不是 ASSETS 鍵：立繪住在 `speakers.js`，沒進 ASSETS。 */
+  const spk = (opts && opts.speaker) || null;
   // 監察官立繪＋台詞（一般失敗不跑監察官；Boss 戰失敗仍顯示監察官，播 Boss 失敗台詞）
-  const insp = (opts && opts.noInspector) ? null
+  const insp = spk ? null
+             : (opts && opts.noInspector) ? null
              : ((isLose && !state.inIntruderFight) ? null : getInspector());
   const stage=$('inspectorStage');
   const bubble=$('inspectorBubble');
@@ -347,12 +386,13 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose, opts){
   clearTimeout(_inspTypeTimer);
   bubble.classList.remove('show');
   lineEl.textContent='';
-  if(insp){
+  if(insp || spk){
     stage.style.display='flex';
-    const pKey=pickInspectorPortrait(insp);
-    portrait.src = pKey ? asset(pKey) : '';
+    const pKey = spk ? spk.portrait : pickInspectorPortrait(insp);
+    /* ⚠ 監察官的立繪是 ASSETS 鍵，評價者的是直接路徑 —— 兩者都可能是空字串。 */
+    portrait.src = spk ? (pKey||'') : (pKey ? asset(pKey) : '');
     portrait.style.display = portrait.src ? 'block' : 'none';
-    nameEl.textContent = insp.name || L.inspector.fallbackName;
+    nameEl.textContent = spk ? spk.name : (insp.name || L.inspector.fallbackName);
   }else{
     stage.style.display='none';
   }
@@ -376,10 +416,11 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose, opts){
   // ── 階段三＋四：rows 刷完後彈出對話框，逐字顯示台詞（2 秒內）──
   //   教學戰（tutorialRun）：rank 台詞讓位給 applyTutorialResult 的專屬台詞
   const sweepDone = 260 + (n>0 ? (n-1)*step : 0) + 300;
-  if(insp && !state.tutorialRun){
+  if((insp || spk) && !state.tutorialRun){
     // 處決勝利（聖徒化 Maximum Burst 擊殺）→ 固定處決台詞，不論 rank；否則走 rank 台詞。
     // Boss 戰一律走 bossDialogues 的 rank 台詞（不套用一般處決台詞）。
-    let line = (!state.inIntruderFight && state.sawExecution && insp.executionLine)
+    let line = spk ? spk.line
+      : (!state.inIntruderFight && state.sawExecution && insp.executionLine)
       ? insp.executionLine
       : (pickInspectorDialogue(insp, rankKey, state.inIntruderFight) || L.result.lineMissing);
     // {rand3}＝隨機 3 位數，不足 3 位以 0 補滿（如 007 / 042）。Boss 落敗台詞用。
@@ -437,9 +478,18 @@ function scriptSettle(totalTime, stats){
   state.sRankUnlocked = false;
   const ev = evaluate(stats);
   const en = GAME_CONFIG.enemies[state.currentEnemyKey] || {};
-  let rows = '<div class="grade-wrap grade-noRank">'
-           + '<span class="grade-meta"><span class="grade-cap">' + (L.result.gradeCap||'') + '</span>'
-           + '<span class="grade-exp">EXP ' + ev.exp + '</span></span></div>';
+  /* ══ 蕾娜的結算評價（ver -432，Ray 交稿）══════════════════════════════
+     ⚠ **有人評 → 才有等第**：這一頁本來刻意不給等級（`grade-noRank`，教學那一套），
+       但「評價」的意思就是評出一個等第 —— 沒有那個字母，她那句話就沒有著落。
+     ⚠ 評分公式**用試玩版那一套**（Ray 指定）＝ 上面那個 `evaluate()`，不另訂。 */
+  const spk = pickEvaluator(ev.grade, state.scriptBattleId);
+  let rows = spk
+    ? ('<div class="grade-wrap"><b class="grade-badge rank-'+ev.grade+'">'+ev.grade+'</b>'
+       + '<span class="grade-meta"><span class="grade-cap">' + (L.result.gradeCap||'') + '</span>'
+       + '<span class="grade-exp">EXP ' + ev.exp + '</span></span></div>')
+    : ('<div class="grade-wrap grade-noRank">'
+       + '<span class="grade-meta"><span class="grade-cap">' + (L.result.gradeCap||'') + '</span>'
+       + '<span class="grade-exp">EXP ' + ev.exp + '</span></span></div>');
   rows += ratingStatsRows(stats, totalTime);
   /* ══ 這一場自己的最佳紀錄（ver -377，Ray：「紀錄最佳紀錄，破紀錄時加上 New」）══
      ⚠ 只有卡上寫了 `record` 的場次才記（打靶場那種「一直挑戰」的）；
@@ -463,7 +513,9 @@ function scriptSettle(totalTime, stats){
     if(isRec) rows += '<div class="record">'+L.result.newRecord+'</div>';
   }
   const sub = fmt(winSubOf(en), { name: displayName(en.name || '') });
-  showResultSequence(L.result.winTitle, sub, rows, 'tutorial', false, { noInspector:true });
+  /* ⚠ 有評價者就把版面交給她（`speaker`）；沒有才是原本那一頁「沒有監察官」的結算。 */
+  showResultSequence(L.result.winTitle, sub, rows, ev.grade, false,
+                     spk ? { speaker:spk } : { noInspector:true });
   const rbtn=$('rematchBtn');
   if(rbtn) rbtn.textContent = '繼續';
   state.resultMode = 'script-continue';

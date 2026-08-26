@@ -261,7 +261,10 @@ function openFlight(opts){
   try{ SFX.stopBgm(600); }catch(_){}
   const w=flightWin();
   if(!f.getAttribute('src')) f.setAttribute('src','flight/index.html');
-  else if(opts && opts.resume){ if(w && w.__flightResume) w.__flightResume(); }
+  /* ⚠ **勝負要帶過去**（ver -432）：飛行頁那一邊有「第一場艦戰打完」的一段對白，
+     而 ver -430 起**打輸也會回到這一頁** —— 那段的第一句是「小命保住了」，
+     輸了聽到它是錯的。判斷在啟動層（只有這裡知道玩家按的是「繼續」還是打贏回來）。 */
+  else if(opts && opts.resume){ if(w && w.__flightResume) w.__flightResume({ won: !!opts.won }); }
   else { try{ w.location.reload(); }catch(_){ f.setAttribute('src','flight/index.html'); } }
   f.classList.add('on');
   document.body.classList.add('flight-on');
@@ -978,9 +981,12 @@ combat.setStoryReturn((res)=>{
   if(flightBack){
     flightBack=false;
     const f=$('flightFrame');
+    /* 打贏了沒。⚠ 戰敗頁的「繼續」帶的是 `{lose:'continue'}`（ver -430）——
+       飛行頁那一段「小命保住了」的對白只在打贏之後演（ver -432）。 */
+    const won = !(res && res.lose);
     if(f && f.getAttribute('src')){
       /* ⚠ 戰鬥／結算的曲子由 `openFlight` 統一收掉（鐵律 8），這裡不再自己 stopBgm。 */
-      combat.goHome(()=>openFlight({ resume:true }), { noBgm:true });
+      combat.goHome(()=>openFlight({ resume:true, won }), { noBgm:true });
       return;
     }
     location.href='flight/index.html'; return;

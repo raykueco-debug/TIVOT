@@ -189,7 +189,10 @@ export const STRINGS = {
     winSub:       '{name}已淨化',        // {name}=敵名
     /* 依敵人卡的 `kind` 換用詞（ver -423，Ray 指定）：禍魘＝已淨化、人類＝已擊敗、
        船隻＝已擊沉。⚠ 卡上沒寫 `kind` 就用上面那一句（舊怪不受影響）。 */
-    winSubBy:     { harm:'{name}已淨化', human:'{name}已擊敗', ship:'{name}已擊沉' },
+    /* 結算副標的用詞，依敵人卡的 `kind`（ver -423；-432 補齊五類，Ray 指定）。
+       ⚠ 沒寫 `kind` 的怪退回 `winSub` 那一句，不會壞。 */
+    winSubBy:     { harm:'{name}已淨化', human:'{name}已擊敗', ship:'{name}已擊沉',
+                    target:'{name}已擊破', beast:'{name}已獵殺' },
     loseTitle:    '聖光黯滅',
     loseSub:      'HUND 倒下了…',
     gradeCap:     '評價',
