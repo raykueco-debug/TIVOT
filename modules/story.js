@@ -334,10 +334,10 @@ function ensureOn(id, expr){
       /* 同側換人：舊的先滑出，再換新的滑入（CLAUDE.md §6.5 的輪轉換卡，
          與飛行畫面同一套）。 */
       el.classList.remove('on');
-      setTimeout(apply, SLIDE_MS*0.45);
+      slotT[side]=setTimeout(apply, SLIDE_MS*0.45);
     }else if(first){
       el.classList.remove('on');            // 首次上場：從自己那一側滑入
-      setTimeout(apply, 16);
+      slotT[side]=setTimeout(apply, 16);
     }else{
       /* ⚠ 同一個人只換表情／換圖：走**淡入淡出**，不要滑出再滑進來
          （Ray 指定「立繪更換時要淡入淡出，不要直接切」）。
@@ -349,7 +349,7 @@ function ensureOn(id, expr){
          ⚠ 也要處理「新圖已在快取」的情況：那時 onload 不會再觸發，
            要靠 `complete && naturalWidth` 這條退路。 */
       el.classList.add('fading');
-      setTimeout(()=>{
+      slotT[side]=setTimeout(()=>{
         const back=()=>{ el.classList.remove('fading'); layout(); el.classList.add('on'); };
         el.onload=()=>{ el.onload=null; back(); };
         el.setAttribute('src', src);
@@ -363,9 +363,21 @@ function ensureOn(id, expr){
   return side;
 }
 
+/* ⚠⚠ **上場是「延後」執行的，所以撤場一定要把那個延後取消掉**（ver -433 修，
+   Ray：「感覺是馬上點到路人對話立繪會卡」）。
+   `ensureOn` 把真正 `classList.add('on')` 的那一步包在 `setTimeout`（首次上場 16ms、
+   同側換人 203ms、換表情 190ms）與 `el.onload` 裡 —— 那兩個都**跑在 `leaveSlot`
+   之後**。於是：對白最後一句剛把人放上來、玩家立刻點掉 → `clearCast()` 撤場（槽清空、
+   `.on` 拿掉）→ 那個還在路上的 `apply()` 又把 `.on` 加回去。
+   結果是**畫面上有人、資料上沒有人** —— 沒有人會再撤她，她就一直站在那裡。
+   ⚠ `el.onload` 也要拔掉：圖還在載的話，載完那一刻同樣會補上 `.on`。 */
+let slotT = { L:0, R:0 };
 function leaveSlot(side){
   const el=slotEl(side); if(!el) return;
-  el.classList.remove('on'); slot[side]=null; slotExpr[side]=null;
+  clearTimeout(slotT[side]); slotT[side]=0;
+  el.onload=null;
+  el.classList.remove('on'); el.classList.remove('fading');
+  slot[side]=null; slotExpr[side]=null;
   layout();                       // ⚠ 人數變了＝預算與縮限跟著變，剩下的人要重排
 }
 
@@ -587,6 +599,46 @@ function flushCgFade(){
 /* `src` 可以是一個**候選陣列**（時段差分，ver -427）：由前往後試，第一張載得起來的
    就是它。⚠ 試的那一次**就是**要用的那一次載入（設 `el.src` 再看 onload/onerror），
    不另外開一輪探測 —— 那等於同一張圖抓兩次。 */
+/* ══ 插圖的候選解析（ver -433）══════════════════════════════════════════
+   ⚠⚠ **問題**：`bandNames` 對一張沒有時段差分的插圖會生出六個候選
+   （`_Day` / `_day` / 原名 × `.webp`/`.png`），而 `cgFade` 是**顯示的當下**才逐個試 ——
+   於是每次演到那一拍都要先吃 4~5 個 404 才輪到真的那一張。慢網下這比
+   「黑幕最多蓋 900ms」還久，黑幕先掀開了、插圖還沒到 ＝ **插圖沒出現**
+   （Ray：「插畫載入有問題」）。
+   **作法**：解析一次就記起來，之後只請求那一張；而且**在預載那一段就先解析好**，
+   所以第一次演到也是一個請求。
+   ⚠⚠ 快取的鑰匙是**第一個候選**（`list[0]`）不是基底名 —— 它已經把「現在是哪個時段」
+     編進去了。用基底名當鑰匙的話，天亮之後還會拿出黃昏那一張（時段差分整個失效）。
+   ⚠ 一個都載不到就記 `null`（＝這張插圖不存在），下次不必再試一輪。 */
+const cgResolved = new Map();
+function cgList(base, noTime){ return bandNames(base, noTime).map(n=>CG_DIR+n); }
+/* 顯示時要試哪幾個：解析過就只回那一個，沒解析過就回整串（照舊逐個試）。 */
+function cgCandidates(base, noTime){
+  const list = cgList(base, noTime);
+  if(!list.length) return list;
+  if(cgResolved.has(list[0])){ const r=cgResolved.get(list[0]); return r ? [r] : []; }
+  return list;
+}
+/* 預載時先把它解出來（回傳 Promise，解完才算這一張載好）。 */
+function resolveCg(base, noTime){
+  const list = cgList(base, noTime);
+  if(!list.length) return Promise.resolve(null);
+  if(cgResolved.has(list[0])) return Promise.resolve(cgResolved.get(list[0]));
+  return new Promise(res=>{
+    const step=(i)=>{
+      if(i>=list.length){
+        cgResolved.set(list[0], null);
+        console.info('[story] 這張插圖一個候選都載不到：', base);
+        res(null); return;
+      }
+      const im=new Image();
+      im.onload =()=>{ cgResolved.set(list[0], list[i]); res(list[i]); };
+      im.onerror=()=>step(i+1);
+      im.src=list[i];
+    };
+    step(0);
+  });
+}
 function cgFade(el, src){
   const fade=$('storyFade');
   /* ⚠ **插圖一出現就要走黑幕**，不是只有「插圖換插圖」才走 —— Ray 抱怨的正是
@@ -602,11 +654,14 @@ function cgFade(el, src){
        （同 ver -322 立繪、ver -325 背景踩過的那個坑）。 */
     const back=()=>{ el.onload=null; el.onerror=null;
       if(fadeOwner==='cg'){ fade.classList.remove('on'); fadeOwner=null; } };
+    /* ⚠ 試出來的結果要**記起來**（ver -433）：下一次演到同一張就只請求那一張。
+       鑰匙是 `list[0]`（已經把時段編進去了，見 cgCandidates 的說明）。 */
+    const win=(src2)=>{ if(list.length) cgResolved.set(list[0], src2||null); };
     const tryAt=(i)=>{
-      if(i>=list.length){ setImg(el, ''); back(); return; }   // 一張都載不到：等於沒有插圖
+      if(i>=list.length){ win(null); setImg(el, ''); back(); return; }   // 一張都載不到：等於沒有插圖
       setImg(el, list[i]);
-      if(el.complete && el.naturalWidth) { back(); return; }
-      el.onload=back;
+      if(el.complete && el.naturalWidth) { win(list[i]); back(); return; }
+      el.onload=()=>{ win(list[i]); back(); };
       el.onerror=()=>{ el.onload=null; el.onerror=null;
         if(i===0 && !missingCg.has(list[0])){ missingCg.add(list[0]);
           console.info('[story] 沒有這個時段的插圖，往下試：', list[0]); }
@@ -660,8 +715,10 @@ function applyPersist(line){
     /* ⚠ 插圖**也吃時段差分**（ver -427，Ray 指定）：`005_Kerberos` →
        `005_Kerberos_dusk` / `_day` 由 `clock.band()` 挑，走與背景**同一條**候選鏈。
        ⚠ `cgNoTime:true` ＝這張沒有差分（多數插圖都是），只試原名。 */
+    /* ⚠ 走 `cgCandidates`（ver -433）：已經解析過就只請求那一張，
+       不必每次把四五個 404 再走一遍（見那一支的說明）。 */
     cgFaded = cgFade($('storyCg'),
-      line.cg ? bandNames(line.cg, line.cgNoTime).map(n=>CG_DIR+n) : '');
+      line.cg ? cgCandidates(line.cg, line.cgNoTime) : '');
   }
   if(line.ci!==undefined){ stageCi=line.ci; setImg($('storyCi'), line.ci?SI_DIR+line.ci+'.webp':''); }
   /* 情境卡：⚠ 它是**一次性的畫面狀態**（下一句沒寫就收掉），所以每一句都要判，
@@ -785,6 +842,16 @@ const SE_SRC=(()=>{ const m={};
   return m; })();
 function seSrc(n){ const k=String(n||'').toLowerCase();
   return SE_SRC[k] || SE_SRC[SE_ALIAS[k]] || null; }
+/* ⚠⚠ **劇情用的音效要一起進開機預載**（ver -433，Ray：「為什麼不能把 se 放在預載
+   第一位？se 永遠都出不來，一開始的 step 跟 fall 在手機從來沒播過」）。
+   ⚠ 真正的原因**不是順序**：`main.js` 的開機批次是從 `ASSETS` 掃出來的，而
+     `se_steps` / `se_Fall` 這 20 幾支**根本不在 `ASSETS` 裡**（它們只登記在這裡的
+     `SE_FILES`）—— 所以那一批從頭到尾就沒有它們，排第一也沒用。
+     它們原本只在 `story.preloadStory` 那一道門才抓，慢網下第一次演到就來不及
+     （`LATE_PLAY_MS` 1.5 秒沒等到就乾脆不播）。
+   ⚠ **不要把它們抄一份進 `ASSETS`**（鐵律 7）：那會變成兩張表，改檔名只改得到一邊。
+     開機那邊 import 這一支，兩邊永遠一致。 */
+export function seSources(){ return Object.keys(SE_SRC).map(k=>SE_SRC[k]); }
 /* ⚠ 沒解碼完就退回 `HTMLAudio`（ver -354）。`SFX.play` 走 Web Audio，buffer 沒好時
    它只會「限時補播」，超過 1.5 秒就乾脆不播 —— 手機上開場那兩支就是這樣消失的。
    `new Audio(src).play()` 是串流，馬上就能出聲；而且這一下是**使用者點擊**推進的，
@@ -1884,6 +1951,7 @@ function resetStage(){
      切過去那一刻會是空白（圖是 display:block 之後才開始下載）。 */
 function collectAssets(startId){
   const imgs=new Set(), bgms=new Set(), ses=new Set();
+  const cgs=new Map();   // 插圖基底名 → 有沒有 cgNoTime（ver -433，見下方 resolveCg）
   const seen=new Set();
   let id=startId;
   while(id && MAIN_SCRIPT[id] && !seen.has(id)){
@@ -1896,12 +1964,11 @@ function collectAssets(startId){
     for(const ln of (sc.lines||[])) if(ln.load && ln.load===sc.next) gated=true;
     for(const ln of (sc.lines||[])){
       if(ln.bg) imgs.add(imgSrc(ln.bg));
-      /* 插圖有時段差分（ver -427）→ 預載把**這一刻的三個 webp 候選**都排進去
-         （時段／大小寫變體／原名）。多出來的兩個必然 404，但預載器對錯誤是容忍的
-         （`im.onload=im.onerror=…`），而少排的代價是「真的要演時才開始下載」。
-         ⚠ 不排 `.png` 那一級：規約是 WebP（§5），PNG 只是交件過渡，
-           真的遇到時 `cgFade` 會自己往下試，只是少一次快取。 */
-      if(ln.cg) for(const n of bandNames(ln.cg)) if(n.endsWith('.webp')) imgs.add(CG_DIR+n);
+      /* 插圖有時段差分（ver -427）。⚠⚠ ver -433 起**不再把候選整批丟進圖片清單** ——
+         那樣預載會抓一堆必然 404 的名字，而且**顯示的當下還要再試一次**（那一輪
+         404 才是「插圖沒出現」的成因，見 `resolveCg`）。改成收基底名，
+         預載時解析**一次**，之後顯示只請求解出來的那一張。 */
+      if(ln.cg && !cgs.has(ln.cg)) cgs.set(ln.cg, !!ln.cgNoTime);
       if(ln.ci) imgs.add(SI_DIR+ln.ci+'.webp');
       if(ln.bgm && bgmSrc(ln.bgm)) bgms.add(bgmSrc(ln.bgm));
       for(const n of [].concat(ln.se||[])){ const k=(typeof n==='string')?n:n.n;
@@ -1917,7 +1984,7 @@ function collectAssets(startId){
     }
     id = gated ? null : sc.next;
   }
-  return { imgs:[...imgs], bgms:[...bgms], ses:[...ses] };
+  return { imgs:[...imgs], bgms:[...bgms], ses:[...ses], cgs };
 }
 /* 預載：整條 scene 鏈要用到的圖／音效／音樂，**載完（且解碼完）才開演**。
    ⚠⚠ 圖要 `decode()` 不能只等 `onload`（ver -327）。`onload` 只代表**下載完**，
@@ -1959,7 +2026,19 @@ function preloadStory(startId, onProgress){
     im.onload=()=>{ (im.decode ? im.decode() : Promise.resolve()).then(fin, fin); };
     im.src=src;
   }));
-  const total = A.imgs.length + 2;
+  /* 插圖：**先解析出哪一個候選真的存在**，解出來的那一張就是這一次要載的（ver -433）。
+     ⚠ 這一步取代了以前「把六個候選整批丟進圖片清單」的作法 —— 那樣不但預載會抓一堆
+       必然 404 的名字，**顯示的當下還要再試一輪**，那一輪才是「插圖沒出現」的成因。
+     ⚠ 算在圖片那一段（第②段）：它就是圖。 */
+  const cgJobs = ()=> [...A.cgs.keys()].map(base=>
+    resolveCg(base, A.cgs.get(base)).then(src=> src ? new Promise(res=>{
+      const im=new Image();
+      const fin=()=>res();
+      im.onerror=fin;
+      im.onload=()=>{ (im.decode ? im.decode() : Promise.resolve()).then(fin, fin); };
+      im.src=src;
+    }) : null));
+  const total = A.imgs.length + A.cgs.size + 2;
   let done=0;
   const tick = p => Promise.resolve(p).then(()=>{ done++; onProgress(done/total); });
   /* ① 音效：**沒有時限**（Ray：「音效不載完不放行」）。 */
@@ -1968,7 +2047,7 @@ function preloadStory(startId, onProgress){
      —— 音效真的卡住時圖片還是要動，不然整頁看起來是死的。
      ⚠ 它**不是**「音效等這麼久就算了」（ver -354 的坑）：下面的 gate 仍然等 `sfxDone`。 */
   const imgsDone = Promise.race([sfxDone, new Promise(r=>setTimeout(r, AUDIO_FIRST_MS))])
-    .then(()=> Promise.all(imgJobs().map(tick)));
+    .then(()=> Promise.all([...imgJobs(), ...cgJobs()].map(tick)));
   /* ③ 音樂：排最後。⚠ 晚到不會壞 —— `playBgm` 自己會 `ensureBlob`，最多晚幾百毫秒起播。 */
   const bgmDone = imgsDone.then(()=> tick(SFX.preloadBgm(A.bgms).catch(()=>{})));
   /* ⚠⚠ **總上限只罩後兩段**（ver -430）：25 秒一到就放行的話，那正是
@@ -2003,15 +2082,32 @@ function showLoader(){
     document.body.appendChild(ov);
   }
   ov.classList.remove('al-done');
+  /* ⚠⚠ **進出都走黑色淡入淡出**（ver -433，Ray 指定）。以前是 `appendChild` /
+     `removeChild` 硬切：前一幕「啪」一聲被蓋掉、載完又「啪」一聲換成新場景 ——
+     兩次硬切。⚠ `#assetLoader` 的底色本來就是近黑（`#0a0812`）、`transition:opacity`
+     也早就在 CSS 上，這裡只是給它一個起點與終點。
+     ⚠ 淡入要**隔一幀**才拿掉起始的 `.al-fade`：同一幀加上又拿掉的話瀏覽器會把兩次
+       計算合併，過場整個跳掉（同 `story.veil` 那一支的 `offsetWidth` 理由）。 */
+  ov.classList.add('al-fade');
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    if(ov && ov.parentNode) ov.classList.remove('al-fade'); }));
   return {
     set(p){
       const pr=document.getElementById('alRingProg'), pc=document.getElementById('assetLoaderPct');
       if(pr) pr.style.strokeDashoffset=(AL_RING_C*(1-p)).toFixed(1);
       if(pc) pc.textContent=Math.round(p*100)+'%';
     },
-    close(){ if(ov && ov.parentNode) ov.parentNode.removeChild(ov); }
+    /* 淡出，淡完才真的拿掉。⚠ 呼叫端（`runLoadGate`）要把黑幕留到淡完，
+       否則讀取頁還在淡出、底下的黑幕就先掀開了。 */
+    close(){ if(!ov) return;
+      ov.classList.add('al-fade');
+      setTimeout(()=>{ if(ov && ov.parentNode) ov.parentNode.removeChild(ov); }, AL_FADE_MS+60); }
   };
 }
+/* 讀取頁淡入／淡出的長度。⚠ 與 `style.css` 的 `#assetLoader{transition:opacity .5s}`
+   是同一個量，這裡取略短一點當「什麼時候可以拿掉」的依據（鐵律 7 的但書：
+   改一邊要看另一邊）。 */
+const AL_FADE_MS = 420;
 
 /* 演到 `{ load:'sceneId' }` 這一行：擋上標準讀取頁，把那個場景的素材抓完再往下走。
    ⚠ 停留有**下限 600ms**：快取全中時只要一百多毫秒，閃一下讀起來像破圖不像在載入
@@ -2030,9 +2126,11 @@ function runLoadGate(sceneId){
   preloadStory(sceneId, p=>ui.set(p)).then(()=>{
     ui.set(1);
     setTimeout(()=>{
-      ui.close();
+      ui.close();                                  // 讀取頁開始淡出（ver -433）
       advance();                                   // 在黑幕底下把新場景的第一拍演出來
-      setTimeout(()=>{ if(fade){ fade.classList.remove('on'); fadeOwner=null; } }, 120);
+      /* ⚠ 黑幕要等**讀取頁淡完**才掀（ver -433）：以前 120ms 就掀，那時讀取頁還沒
+         淡走 —— 現在它是淡的，先掀黑幕會看到「讀取頁疊在新場景上一起變淡」。 */
+      setTimeout(()=>{ if(fade){ fade.classList.remove('on'); fadeOwner=null; } }, AL_FADE_MS+120);
     }, Math.max(0, 600-(Date.now()-t0)));
   });
 }
@@ -2237,6 +2335,27 @@ export function clearCast(){
   leaveSlot('L'); leaveSlot('R');
   const b=$('storyBubble'); if(b) b.style.visibility='hidden';
   markTalking(false);
+  verifyCastCleared();
+}
+/* ⚠⚠ **撤場之後再驗收一次台上真的空了**（ver -433，Ray：「在播放結束後放一個檢查，
+   清除所有立繪」）。`leaveSlot` 已經把該取消的都取消了，這一支是**保險**：
+   滑出動畫跑完之後，若畫面上還有人掛著 `.on`、而資料上那個槽是空的 —— 就是漏了。
+   ⚠ 判斷看**資料**（`slot[side]`）不是看畫面：撤場之後有人可能立刻被**合法地**
+     放上來（店主 `castSolo`、下一段對白的第一拍），那時槽是有值的，不能一起清掉。
+   ⚠ 這是「驗收」不是「規矩」：真的驗到東西就是上游有 bug，順手記一筆 console，
+     不要靜靜地修掉 —— 靜靜地修會讓下一個同類 bug 永遠查不出來。 */
+function verifyCastCleared(){
+  clearTimeout(verifyCastCleared._t);
+  verifyCastCleared._t = setTimeout(()=>{
+    for(const s of ['L','R']){
+      if(slot[s]) continue;                       // 有人合法站著 → 不動
+      const el=slotEl(s); if(!el) continue;
+      if(!el.classList.contains('on')) continue;
+      console.info('[story] 撤場後仍有立繪殘留，已清除：', s, el.dataset.who||'');
+      clearTimeout(slotT[s]); slotT[s]=0; el.onload=null;
+      el.classList.remove('on','fading');
+    }
+  }, SLIDE_MS+80);
 }
 /* 單句提示（城鎮的路人閒聊用，ver -370）：**不進對話模式**，只把一句話放進對話框。
    ⚠ 與 `playAdhoc` 是兩回事：那個會接管推進（點畫面＝下一句）；這個只是「浮一句話」，

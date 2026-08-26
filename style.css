@@ -65,6 +65,11 @@
        .al-done（光圈常亮）＋ .al-pulse 掛在字樣上表示。 */
   #assetLoader{position:fixed;inset:0;z-index:99999;background:#0a0812;color:#d9c68a;
     font-family:inherit;transition:opacity .5s ease;overflow:hidden;}
+  /* ⚠ 進出都走**黑色淡入淡出**（ver -433，Ray 指定）：劇情場景那一頁以前是
+     `appendChild`／`removeChild` 硬切。底色本來就是近黑，所以「淡入淡出」＝
+     淡這一整層就好，不必另外疊一片黑（見 modules/story.js 的 showLoader）。
+     ⚠ 開機那一頁**不受影響**：它的離場是 Ray 設計的聖光綻放，那是另一件事。 */
+  #assetLoader.al-fade{opacity:0;}
   /* 金色光圈讀取：與首頁紋章外圓重合（位置/圈徑由 main.js placeRing 依 #homeEmblem 實測；
      量不到前用此處預設保底）。進度沿圈順時針推進；圈內上=百分比、下=SAINT INSTALL。 */
   #assetLoader #alRing{position:absolute;left:50%;top:23%;width:200px;height:200px;

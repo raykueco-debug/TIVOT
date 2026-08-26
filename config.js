@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.26-432';
+export const VERSION = 'ver 2026.08.26-433';
 
 export const GAME_CONFIG = {
 
@@ -704,7 +704,10 @@ export const GAME_CONFIG = {
   transitions: {
     fadeMs: 300,
     hint: '輕觸畫面繼續',
-    resultAutoMs: 70000,   // 結算/戰敗畫面停留上限（1:10 內沒操作 → 自動回首頁）
+    /* ⚠ **已停用**（ver -433，Ray：「戰鬥結算畫面放置過久會自動退回主頁，取消此機制」）。
+       欄位留著當紀錄，`modules/inspector.js` 已經沒有人讀它 —— ver -430 之後這一頁
+       常常是岔路（繼續／再戰／放棄），時間到了自己走人等於幫玩家做了決定。 */
+    resultAutoMs: 70000,
     start: {
       cn: '驅逐開始',
       autoMs: 3000,     // 3 秒內沒點 → 強制進入戰鬥
@@ -745,6 +748,9 @@ export const GAME_CONFIG = {
   enemies: {
     faceless: {
       name:'地下聖徒_A',        // UI 只顯示底線前的「地下聖徒」；底線後（_A）僅供作者辨識、不顯示
+      /* 聖徒系列的結算副標是「已擊殺」（ver -432，Ray 指定）。⚠ 對照表在 i18n 的
+         `result.winSubBy`，這裡只標這一隻是哪一類（鐵律 1）。三種聖徒同一類。 */
+      kind:'slay',
       image:'enemy_faceless',   // 立繪鑰匙（見最下方 ASSETS）
       hp:200,          // 連戰第一隻（原測試值 500，v-lineup 調 200）
       attack:45,       // 大絕一擊傷害（原 ULT_DAMAGE）
@@ -770,6 +776,7 @@ export const GAME_CONFIG = {
     //    hp/attack 仍填保底值。立繪：Saint_TR_CI。
     trainee: {
       name:'訓練用聖徒',
+      kind:'slay',                   // 聖徒系列＝已擊殺（ver -432）
       image:'enemy_trainee',    // → resources/enemy/Saint_TR_CI.png
       hp:500,
       attack:45,
@@ -813,6 +820,7 @@ export const GAME_CONFIG = {
     //    差異：血更厚（300）＋攻擊更密（蓄力 4×1/1.2≈3.33s）；單擊傷害同一般值。
     facelessgiant: {
       name:'巨型聖徒',
+      kind:'slay',                   // 聖徒系列＝已擊殺（ver -432）
       image:'enemy_facelessgiant',   // 內嵌立繪鑰匙 → resources/enemy/Saint_GT_CI.webp
       // 取景：主體在圖面右下（撲擊構圖），cover 裁切錨點右移下移——爪/頭/軀幹全入鏡
       fit:{ pos:'62% 78%' },
@@ -842,6 +850,7 @@ export const GAME_CONFIG = {
     // ── 槍之魔女（Boss）v17：S 評價後遭遇的隱藏 Boss ──
     witch: {
       name:'槍之魔女',
+      kind:'human',                  // 槍之魔女是人類 → 已擊敗（ver -432，Ray 指定）
       image:'enemy_witch',      // 立繪鑰匙（附圖）
       hp:500,
       attack:45,                // 大絕單點傷害（同一般怪基準）

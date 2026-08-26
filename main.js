@@ -371,6 +371,9 @@ function _sfxPaths(){
     if(k.indexOf('bgm_')===0) continue;
     if(/\.(mp3|m4a|ogg|wav)(\?|$)/i.test(v)) out.push(v);
   }
+  /* 劇情層那一份也要（ver -433，同 startBatch 的理由）：門的三支音效就在那張表上，
+     `ASSETS` 掃不到 —— 少了它們，交棒進戰鬥時撞頂／齒輪／開門是靜音的。 */
+  for(const v of story.seSources()) if(out.indexOf(v)<0) out.push(v);
   return out;
 }
 
@@ -406,6 +409,13 @@ window.addEventListener('pagehide', refreshBoot);
       else sfx.push(v);
     }
   }
+  /* ⚠⚠ **劇情層的音效也要進這一批**（ver -433，Ray：「一開始的 step 跟 fall 在手機
+     從來沒播過」）。`ASSETS` 掃不到它們 —— `se_steps`／`se_Fall` 那 20 幾支只登記在
+     `modules/story.js` 的 `SE_FILES`，所以這一批**從頭到尾就沒有它們**，
+     排不排第一都一樣。以前只有 `preloadStory` 那一道門會抓，慢網下第一次演到
+     就來不及（`LATE_PLAY_MS` 1.5 秒沒等到就乾脆不播）。
+     ⚠ 兩張表不合併成一張（鐵律 7）：跟那邊要清單，不要在這裡抄一份檔名。 */
+  for(const v of story.seSources()) if(sfx.indexOf(v)<0) sfx.push(v);
   const total = imgs.length + sfx.length + bgm.length;   // 進度圈只算第一段 —— 誠實跑完，不靠保底放行
   /* ── 熱啟動：省掉等待，但**畫面照出** ───────────────────────
      iOS 主畫面 App 切到背景後，系統常把頁面整個丟掉，回前景時是**重新載入**

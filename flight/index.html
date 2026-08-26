@@ -241,6 +241,11 @@
     --gold:#d4a94a; --gold-dim:#8a6d2e; --ink:#ece6d8;
     color:#d9c68a;
     font-family:"Iowan Old Style","Palatino Linotype",Georgia,"Songti TC",serif;}
+  /* ⚠ 進出都走**黑色淡入淡出**（ver -433，Ray 指定）：以前是 `display:none` 硬切，
+     載完那一格是「啪」一聲換成飛行畫面。⚠ 淡完才 `display:none` —— 只給 opacity
+     的話這一層還蓋在上面吃掉所有點擊（`pointer-events` 也一併收掉）。 */
+  #boot{opacity:1;transition:opacity .45s ease;}
+  #boot.fade{opacity:0;pointer-events:none;}
   #boot.hide{display:none;}
   /* 金色光圈讀取：進度沿圈自 12 點鐘起順時針推進；圈內上=百分比、下=地名字樣 */
   #bRing{position:absolute;left:50%;top:23%;width:200px;height:200px;
@@ -1757,6 +1762,17 @@ function senseUnlock(a){
     else done();
   }catch(_){ }
 }
+
+/* ══ 能力的解鎖章節（ver -433，Ray：「現在出航是 stage 0，不應該有加速跟探索」）══
+   加速（Sturm）與探索（感應）是**能力**不是操作 —— 劇情還沒給，玩家就不該按得動。
+   ⚠⚠ 擋在**發動的那一點**（`pointerdown` 那兩個長按的起點，鐵律 8）：
+     兩者的畫面回饋（充能條、冷卻完成的閃光）本來就是**用過才會出現**的邊緣觸發，
+     所以擋住起點不會留下「亮著卻按不動」的死介面 —— 那是 §6.5.5 明令要避免的。
+   ⚠⚠ **暫填 3（＝`STAGE_DEFAULT`）**：預設進度下行為與 ver -432 完全一樣，
+     只有真的在第 1、2 章才擋得到。真正解鎖的章節 Ray 定了就改這兩個數字
+     （同 `flight/talks.js` 的 `PARTY`，那裡也是暫填 3）。 */
+const FEATURE_FROM = { sturm: 3, sense: 3 };
+function featureOn(k){ return gameStage() >= (FEATURE_FROM[k] || 1); }
 
 /* ══ Sturm（衝刺）══════════════════════════════════════════════════
    長按**方向計**兩秒發動：十秒兩倍速，並自動前進一秒；充能一分鐘。
@@ -3888,12 +3904,12 @@ stage.addEventListener('pointerdown',e=>{
   /* 長按方向計＝Sturm 充能。⚠ 充能未滿就不起算 —— 讓「按了沒反應」直接
      對應到「還沒充好」，不會讓人以為是判定失靈。 */
   sturmT0=0;
-  if(sturmHit(e.clientX,e.clientY) && performance.now()>=sturmReady){
+  if(featureOn('sturm') && sturmHit(e.clientX,e.clientY) && performance.now()>=sturmReady){
     sturmT0=performance.now();
     senseUnlock(sturmSE);          // ⚠ 必須在手勢裡解鎖，見 sturmSE 的說明
   }
   senseT0=0;
-  if(shipHit){
+  if(featureOn('sense') && shipHit){
     const d=Math.hypot(e.clientX-shipHit.x, e.clientY-shipHit.y);
     if(d<=shipHit.r){
       senseT0=performance.now();
@@ -9382,7 +9398,10 @@ const bootUI=(()=>{
       $('bProg').setAttribute('stroke-dashoffset', (RING*(1-clamp(p,0,1))).toFixed(1));
       $('bPct').textContent=Math.round(clamp(p,0,1)*100)+'%';
     },
-    done(){ clearTimeout(timer); $('boot').classList.add('hide'); },
+    /* ⚠ 黑色淡出（ver -433）：先淡，淡完才 `display:none`（見那一段 CSS）。 */
+    done(){ clearTimeout(timer); const b=$('boot'); if(!b) return;
+      b.classList.add('fade');
+      setTimeout(()=>b.classList.add('hide'), 480); },
   };
 })();
 

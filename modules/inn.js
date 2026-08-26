@@ -51,7 +51,10 @@ const AFF_MEET   = 1;          // 碰到她：好感 +1（Ray 指定）
      「醒來亮回去」那一段的時間，以及音效還沒解碼完時的退路。 */
 const SIT_FADE_MS = 700;       // 獨自坐坐：暗去／亮起各一段
 const SIT_HOLD_MS = 1600;      // 全黑停留 → 700 + 1600 + 700 = 3.0 秒
-const WAKE_FADE_MS = 900;      // 醒來：淡入回旅店
+const WAKE_FADE_MS = 450;      // 醒來：淡入回旅店（ver -433 由 900 減半）
+/* 睡覺的淡出佔音檔長度的幾成（ver -433，Ray：「時間過長，減半，SE 不用改動」）。
+   ⚠ 音效**照樣整支播完** —— 減的只有畫面漸暗的長度。 */
+const SLEEP_FADE_RATIO = 0.5;
 const SLEEP_FADE_FALLBACK = 3000;   // 拿不到音檔長度時的退路（正常不會走到，見 §6.6 預載）
 
 /* 四個門位。⚠ **格數固定四格**（Ray：「共有四人，留出適當空間。目前只有一人」）——
@@ -404,7 +407,11 @@ function sleepHere(){
   /* 睡覺音 ＋ 與它等長的淡出至黑（Ray 指定「配合音檔時間淡出至黑」）。 */
   const src = asset('se_sleep');
   try{ SFX.play(src, sfxGain('se_sleep')); }catch(_){}
-  const ms = SFX.duration(src) || SLEEP_FADE_FALLBACK;
+  /* ⚠⚠ **淡出只走音檔長度的一半**（ver -433，Ray：「睡覺淡入淡出時間過長，減半，
+     SE 不用改動」）—— 音效照樣整支播完（它是那一段的聲音），畫面不必陪它等：
+     9.9 秒的漸暗讀起來是卡住，不是入睡。
+     ⚠ 長度仍然**從音檔推**（鐵律 7）：換一支音檔這裡不必改，比例還是一半。 */
+  const ms = Math.round((SFX.duration(src) || SLEEP_FADE_FALLBACK) * SLEEP_FADE_RATIO);
   story.veil(true, ms);
   setTimeout(()=>{
     /* ⚠ 蕾娜還沒回來就先去睡 → 記「錯過」（ver -405）：她 20:00 才進門，人睡著了

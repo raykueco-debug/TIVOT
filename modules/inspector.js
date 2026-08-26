@@ -348,10 +348,14 @@ let _resultAutoTimer=null;   // 結算/戰敗畫面自動回首頁計時
    ⚠ 不要用「傳 isLose」來偷渡：那會連按鈕文案與 BGM 分支一起改掉。 */
 function showResultSequence(title, sub, statsHtml, rankKey, isLose, opts){
   const b=$('banner');
-  // 結算/戰敗畫面：停留上限（config resultAutoMs，1:10）內沒操作 → 自動回首頁
+  /* ⚠⚠ **結算畫面不再自動回首頁**（ver -433，Ray：「戰鬥結算畫面放置過久會自動退回
+     主頁，取消此機制」）。那個計時器原本是給看戰績用的保險，但它會在玩家還在讀
+     台詞／還在決定要按哪一顆時把人帶走 —— 而 ver -430 之後這一頁常常是**岔路**
+     （繼續／再戰／放棄），時間到了自己走人等於幫玩家做了決定。
+     ⚠ `_resultAutoTimer` 與各處的 `clearTimeout` 留著：那幾行是冪等的，
+       而且哪天要做「展示模式」時這條線還在。`config.transitions.resultAutoMs`
+       也留著當紀錄，**但現在沒有人讀它**。 */
   clearTimeout(_resultAutoTimer);
-  const _autoMs = (GAME_CONFIG.transitions && GAME_CONFIG.transitions.resultAutoMs) || 0;
-  if(_autoMs>0) _resultAutoTimer=setTimeout(()=>{ if(api.goHome) api.goHome(); }, _autoMs);
   // 每次結算：按鈕歸位為「再度執槍」模式
   state.resultMode='rematch';
   /* ⚠ 兩顆鈕的版面也要歸位（ver -430）：上一場戰敗留下的 `.two` 不收的話，

@@ -446,7 +446,10 @@ export const MAIN_SCRIPT = {
     lines:[
       { speaker:'NOUVELLE', text:'竟然，會有那麼巨型的聖徒！',
         portrait:{ char:'NOUVELLE', expr:'pain', show:true } },
-      { speaker:'NOUVELLE', text:'啊！', cg:'noue_fall' },
+      /* ⚠ `noue_fall` **是不存在的檔名**（ver -433 修）：那是檔頭範例裡的假名字，
+         被抄進真的腳本了 —— 演到這一拍時六個候選全部 404，畫面上什麼插圖都沒有。
+         真正的檔案是 `resources/illustration/001_Nouvelle_Fell.webp`（她跌倒那張）。 */
+      { speaker:'NOUVELLE', text:'啊！', cg:'001_Nouvelle_Fell' },
       { speaker:'NOUVELLE', text:'別管我！快走！' },
       { speaker:'OFFICER', text:'……{P}。這種時候，不要問我該怎麼辦。',
         portrait:{ char:'OFFICER', expr:'fluster', show:true } },
