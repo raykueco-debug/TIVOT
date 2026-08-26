@@ -49,14 +49,18 @@ let host = {};
 export function setHost(h){ host = { ...host, ...(h||{}) }; }
 
 /* ══ 存檔庫讀寫 ══
-   結構：{ quick: 存檔物件|null, slots: { "1": 存檔物件, … } }
-   ⚠ 欄位鍵是**字串化的 1-based 序號**，不是陣列 —— 中間可以有空欄。 */
+   結構：{ main: 玩家的那一份|null, quick: 即時存檔|null, slots: { "1": …, … } }
+   ⚠ 欄位鍵是**字串化的 1-based 序號**，不是陣列 —— 中間可以有空欄。
+   ⚠⚠ `main` 是**玩家唯一的存檔**（ver -430，Ray：「只有單檔，睡覺就是建立唯一存檔」）。
+     `quick`（F4）與 `slots`（F5/F8）都是 `body.testmode` 限定的開發梯子 ——
+     所以 `main` 要**另開一格**，不能借用 `quick`：借過來的話管理人隨手按一下 F4
+     就把玩家的進度蓋掉了。 */
 function load(){
   try{
     const j=JSON.parse(localStorage.getItem(KEY)||'null');
-    if(j && typeof j==='object') return { quick:j.quick||null, slots:j.slots||{} };
+    if(j && typeof j==='object') return { main:j.main||null, quick:j.quick||null, slots:j.slots||{} };
   }catch(e){}
-  return { quick:null, slots:{} };
+  return { main:null, quick:null, slots:{} };
 }
 function store(db){
   try{ localStorage.setItem(KEY, JSON.stringify(db)); }catch(e){}
@@ -113,11 +117,22 @@ function apply(rec){
 export function latest(){
   const db=load();
   let best=null;
-  for(const rec of [db.quick, ...Object.keys(db.slots).map(k=>db.slots[k])]){
+  for(const rec of [db.main, db.quick, ...Object.keys(db.slots).map(k=>db.slots[k])]){
     if(!rec) continue;
     if(!best || (rec.ts||0) > (best.ts||0)) best=rec;
   }
   return best;
+}
+/* ══ 玩家的那一份（ver -430，Ray：「不要給存檔欄位，只有單檔，睡覺就是建立唯一存檔」）══
+   旅店「回房睡覺」呼叫它 —— **不開面板、不問要存哪一格**：這個遊戲對玩家而言
+   只有一份存檔，那一份就是「上次睡覺的地方」。
+   ⚠ 覆蓋不必確認：那正是「睡一覺＝存檔」的語意，問一次反而是在暗示有別的選擇。
+   ⚠ 面板（F5/F8）照舊留著 —— 那是 `body.testmode` 限定的開發梯子，玩家看不到。 */
+export function storySave(){
+  const db=load();
+  db.main=capture();
+  store(db);
+  return db.main;
 }
 export function hasSave(){ return !!latest(); }
 /* 首頁「繼續」：讀最新的那一筆。回傳 false＝根本沒有存檔（呼叫端不必自己再查一次）。 */

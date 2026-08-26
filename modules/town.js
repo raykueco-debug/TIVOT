@@ -210,6 +210,14 @@ function ensureLayer(){
     + '<circle class="ta-prog" cx="22" cy="22" r="19"/></svg>'
     + '<span class="th-label"></span></div>'
     + '<div id="townInfo"></div>'
+    /* ⚠⚠ **店舖的入口是一顆大鈕，不是一張常駐的單子**（ver -430，Ray：「龍息事件
+       仍然被買賣視窗蓋著，把買賣窗變成一個大的按鈕，點下去開全畫面窗」）。
+       ver -404 的「左單子右店主」把整張清單一直攤在畫面左邊，於是**任何要指著
+       畫面的演出都會被它蓋住**（整備教學指的吊墜就在它底下）——
+       而那張單子窄到只看得到一兩列商品，本來就要點標題展開才好用。
+       現在：走進店裡＝店主 ＋ 這一顆鈕；點下去開**全畫面**的那張窗（同一份 CSS，
+       只是不帶 `dock-left`，鐵律 8）。 */
+    + '<button id="townShopBtn" type="button"><b></b><i>點一下開啟</i></button>'
     ;
   /* ⚠⚠ **櫃台鈕沒有了**（ver -404，Ray：「不用點擊，直接右店主左選單」）。
      走進店裡就是店舖畫面：右邊店主立繪、左邊選單，兩樣一起出來（見 shopEnter）。
@@ -253,8 +261,13 @@ export function bgPoint(fx, fy){
      在 390×844 上就要 306px，留著就塞不下。
    ⚠ 上緣的地名／時刻仍要讓開立繪的臉（`body.town-shop`，§6.5 的 -385 同一個理由），
      所以那兩個資訊改印在單子的標題下（`opts.info`）。
-   ⚠ 玩家把單子關掉之後，**點畫面任何一處**再開回來（見 bindInput）——
-     那是同一支 `openMenu`，不是第二個入口。 */
+   ⚠⚠ **ver -430 改：走進去出現的是一顆大鈕，不是那張單子**（Ray：「把買賣窗變成
+     一個大的按鈕，點下去開全畫面窗」）。常駐的窄單子會蓋住畫面左半 —— 任何要指著
+     畫面的演出（整備教學指的吊墜）都被壓在底下，而且窄到只看得到一兩列商品。
+     現在：`openMenu()` ＝把鈕交還給玩家、`openSheet()` ＝點下去開**全畫面**那張窗
+     （同一份 CSS，只是不帶 `dock:'left'`）。
+   ⚠ 玩家把窗關掉之後鈕會自己回來（`onClose`），**點畫面任何一處**也能把它叫回來
+     （見 bindInput）—— 那是同一支 `openMenu`，不是第二個入口。 */
 let shopOn=false;          // 現在是不是站在店裡（狀態，不從畫面反推 —— §6.5 的 -385）
 let sheetClose=null;       // 左邊那張單子的收尾（開著才有值）
 /* ⚠ 店舖模式的開關**只有這一支**（鐵律 8）：它同時管旗標與 `body.town-shop`
@@ -280,10 +293,9 @@ function shopReady(n){
   if(n.shop) return true;
   return !!(n.board && (!n.boardFlag || prog.hasFlag(n.boardFlag)));
 }
-/* `opts.noMenu`＝只擺店主，**先不開左邊那張單子**（ver -430，Ray：「武器店的裝備教學
-   先彈出，裝備完才跳出武器店的選單」）。單子停在畫面左邊，正好蓋住教學要指的那顆
-   吊墜，也擋在整備頁前面 —— 等玩家真的換完裝備才由 `afterArrive` 補開（見那裡）。
-   ⚠ 讓開的是**單子**不是整個店舖畫面：店主照舊立刻上場，不然玩家會以為走錯地方。 */
+/* `opts.noMenu`＝只擺店主，**那顆鈕先不出來**（ver -430，Ray：「武器店的裝備教學
+   先彈出，裝備完才跳出武器店的選單」）—— 等玩家真的換完裝備才由 `afterArrive` 補上。
+   ⚠ 讓開的是**選單**不是整個店舖畫面：店主照舊立刻上場，不然玩家會以為走錯地方。 */
 function shopEnter(opts){
   const n=node(); if(!shopReady(n)) return;
   setShopOn(true);
@@ -292,19 +304,42 @@ function shopEnter(opts){
   if(!(opts && opts.noMenu)) openMenu();
 }
 /* 收店舖畫面。⚠ 立繪與對話框交給 `story.clearCast()`（唯一的收尾，鐵律 8）——
-   這裡只負責把單子收掉、把狀態歸零。 */
+   這裡只負責把鈕與單子收掉、把狀態歸零。 */
 function shopClose(){
   setShopOn(false);
+  showShopBtn(false);
   if(sheetClose){ try{ sheetClose(); }catch(_){} sheetClose=null; }
 }
-/* 左邊那張單子：商店 → 買賣；公會 → 懸賞榜。 */
+/* ══ 店舖的入口鈕（ver -430）══════════════════════════════════════════
+   ⚠⚠ 走進店裡出現的是**這一顆**，不是那張單子（Ray：「把買賣窗變成一個大的按鈕，
+     點下去開全畫面窗」）。理由見 `ensureLayer` 那一段：常駐的單子會蓋住任何
+     要指著畫面的演出（整備教學指的吊墜就在它底下）。
+   ⚠ 鈕上寫**這一家店在做什麼**（買賣／懸賞榜），不是店名 —— 店名已經在上緣那一行。 */
+function showShopBtn(on){
+  const b=layer && layer.querySelector('#townShopBtn'); if(!b) return;
+  const n=node();
+  if(on && n){
+    b.querySelector('b').textContent = n.shop ? '買　賣' : '懸賞榜';
+  }
+  b.classList.toggle('on', !!on);
+}
+/* 這一格的「選單」＝把那顆鈕擺出來。⚠ 名字沿用 `openMenu` —— 呼叫端（`afterArrive`、
+   整備教學的回呼、談完話回到店裡）要的是同一件事：「把這家店的入口交還給玩家」。 */
 function openMenu(){
   const n=node(); if(!shopReady(n)) return;
+  showShopBtn(true);
+}
+/* ⚠⚠ **真正的那張窗：全畫面**（ver -430）。與 dock-left 是**同一份 CSS**，
+   差別只是不帶 `dock:'left'`（鐵律 8：不要為了全螢幕再寫一套版面）。
+   ⚠ 開著的時候把鈕收起來：它在窗底下，點不到也不該看得到。 */
+function openSheet(){
+  const n=node(); if(!shopReady(n)) return;
   if(sheetClose) return;                       // 已經開著
+  showShopBtn(false);
   if(n.shop){ openShop(); return; }
   try{ SFX.unlock(); SFX.menuClick(); }catch(_){}
-  sheetClose = showBounty(n.board, { dock:'left', info:infoText(n),
-                                     onClose:()=>{ sheetClose=null; } });
+  sheetClose = showBounty(n.board, { info:infoText(n),
+                                     onClose:()=>{ sheetClose=null; openMenu(); } });
 }
 /* 單子標題下那一行：地名＋時刻（＋打烊）。⚠ 與上緣的 `#townInfo` 是**同一組字**，
    所以由同一支算（鐵律 7）—— 那一行在店裡被招呼語讓開了，資訊要在這裡找得到。 */
@@ -496,6 +531,13 @@ function bindInput(){
     if(!startHold(el)) return;
     e.preventDefault(); e.stopPropagation();
   }, true);
+  /* 店舖的入口鈕（ver -430）：點下去開全畫面那張窗。
+     ⚠ 一定要 `stopPropagation` —— 舞台上還有「點一下＝把入口交還玩家／路人單句」，
+       不擋的話這一下會被那一支再吃一次（同 `#innLobby` 那一層的作法）。 */
+  if(layer){
+    const sb=layer.querySelector('#townShopBtn');
+    if(sb) sb.addEventListener('pointerup', e=>{ e.stopPropagation(); openSheet(); });
+  }
 
   /* ══ 鍵盤：WASD ＝走（ver -427，Ray 指定）══════════════════════════════
      ⚠⚠ **走同一支** `startHold`：按住 0.5 秒才走、蓄能圈、目的地字格全部照舊 ——
@@ -525,9 +567,8 @@ function bindInput(){
   st.addEventListener('pointerup', e=>{
     if(hold){ cancel(); return; }               // 放太早：取消，不算點擊
     if(!townId || busy || story.isPlaying()) return;
-    /* ══ 店裡：點畫面 ＝ 把左邊那張單子開回來（ver -404）══
-       單子是走進來就開著的；玩家關掉之後總得有辦法再開。⚠ 走的是**同一支**
-       `openMenu`（鐵律 8），而且已經開著時它自己會 return，所以不會疊第二張。
+    /* ══ 店裡：點畫面 ＝ 把入口鈕交還給玩家（ver -404；-430 改成鈕）══
+       ⚠ 走的是**同一支** `openMenu`（鐵律 8），而且已經在畫面上時它只是重設一次。
        ⚠ 店裡沒有路人單句（`chatter` 只寫在餐酒館／教堂／行政廳／船塢），
          所以兩者不會打架；真要兩者兼有時，店舖優先。 */
     if(shopOn){ openMenu(); return; }
@@ -659,6 +700,11 @@ export function enter(id){
   chatterOn=false;          // ⚠ 第四件：上一個地點的路人單句（見 §6.5 的新路徑檢查表）
   inn.close();              // ⚠ 第五件：上一個地點的旅店大廳（同一張檢查表）
   shopClose();              // ⚠ 第六件：上一個地點的店舖選單（ver -404，同一張檢查表）
+  /* ⚠ 第七件（ver -430）：**上一段留下的黑幕要亮回來**。旅店睡到隔天七點是在
+     **黑幕蓋著**的狀態下被強制移到船塢的（`forceGo`）—— 新的地點擺好了才亮，
+     就是一次乾淨的剪接；不收的話玩家會停在一片全黑上。
+     ⚠ 等一拍再亮：背景是非同步載的（`bgFor`），立刻亮會看到上一張圖。 */
+  if(story.veilOn()) setTimeout(()=>story.veil(false, 700), 300);
   bgNat=null;               // 背景要重載，舊的尺寸不能拿來擺旅店那兩顆行動鈕
   /* 這座城的曲子（ver -375）。⚠ 每進一個節點都確認一次，不是只在 `open` 時放一次 ——
      中間可能插進一場戰鬥（戰鬥有自己的曲子），回來要接得回去。
@@ -801,10 +847,10 @@ function afterArrive(n){
                                  eveningFlag: ((TOWNS[townId]||{}).evening||{}).flag });
   else inn.close();
   /* ⚠⚠ **教學先、選單後**（ver -430，Ray：「武器店的裝備教學先彈出，裝備完才跳出
-     武器店的選單」）。有到期的提示時，店舖只擺店主、單子押後 —— 那張單子停在畫面
-     左邊，正好蓋住要教的那顆吊墜，而且整備頁一開它還在底下佔著版面。
-     ⚠ 兩條路都要把單子擺出來（有提示走 `showTip` 的回呼、沒提示走這裡），
-       而開單子的實作只有 `openMenu()` 那一支（鐵律 8）。 */
+     武器店的選單」）。有到期的提示時，店舖只擺店主、那顆入口鈕押後 ——
+     等玩家真的把裝備換完（整備頁收掉）才交還給他。
+     ⚠ 兩條路都要把入口交還（有提示走 `showTip` 的回呼、沒提示走這裡），
+       而它的實作只有 `openMenu()` 那一支（鐵律 8）。 */
   const tip=tipDue();       // 一次性的操作提示（ver -429）：對白與店舖都就位了才彈
   shopEnter(tip ? { noMenu:true } : null);   // 店舖畫面（ver -404）：進場對白演完才擺
   showTip(tip, tip ? openMenu : null);
@@ -861,8 +907,11 @@ function openShop(){
       busy=false; showNav(true);
       shopEnter();                       // 談完回到店裡（立繪＋招呼語＋單子一起回來）
     });
-  }, onChallenge, { dock:'left', info:infoText(n),
-                    onClose:()=>{ sheetClose=null; } });
+  /* ⚠ **不帶 `dock`＝全畫面**（ver -430）：這張窗現在是「點那顆鈕才開」的，
+     開了就該看得清楚。收掉之後把鈕交還給玩家（`openMenu`）—— 兩者是同一個入口的
+     兩個狀態，不要讓玩家關掉窗之後就沒得再開。 */
+  }, onChallenge, { info:infoText(n),
+                    onClose:()=>{ sheetClose=null; openMenu(); } });
 }
 /* ⚠ `lastChat` **原本沒有宣告**（ver -377 修）：ES module 是嚴格模式，
    `lastChat=i` 會直接丟 ReferenceError —— 也就是說酒館的路人閒聊**一句都放不出來**。

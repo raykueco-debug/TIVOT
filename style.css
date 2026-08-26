@@ -1634,6 +1634,17 @@
     z-index:4;pointer-events:none;background:#000;opacity:0;
     transition:opacity .5s ease;}
   #storyFade.on{opacity:1;}
+  /* ⚠⚠ 全畫面黑幕（ver -430，`story.veil()`）—— 與上面那一片是**兩件事**：
+     `#storyFade` 只蓋場景區（`--story-top`）、z-4，壓在立繪與面盤之下，那是插圖
+     換圖用的；這一片蓋**整個舞台**（面盤、旅店那排鈕、導覽全部一起黑），z-20。
+     ⚠ 舊版旅店那一片（`#innLobby .inn-veil`）**根本沒顯示過**：它住在 `#innLobby`
+       裡，而那一層是 `body.town-nav #innLobby.on` 才 display —— 演出一開始就
+       `lock(true)` 收掉導覽，於是連同黑幕一起被藏起來（ver -430 修）。
+       **這就是為什麼黑幕不能住在會被收掉的那一層裡。**
+     ⚠ 時間寫在這裡當**預設**，呼叫端可以逐次 inline 覆寫（睡覺＝音檔的長度）。 */
+  #storyVeil{position:absolute;inset:0;z-index:20;pointer-events:none;background:#000;
+    opacity:0;transition:opacity .5s ease;}
+  #storyVeil.on{opacity:1;pointer-events:auto;}
   @keyframes storyPanUp{ from{object-position:50% 100%;} to{object-position:50% 0%;} }
   @keyframes storyPanDown{ from{object-position:50% 0%;} to{object-position:50% 100%;} }
   /* 暗調 CI 插入：半身/全身圖從側邊切進來，壓暗到只剩剪影感（Ray 指定「暗調」）。
@@ -2067,14 +2078,23 @@
     font-size:10px;letter-spacing:4px;color:var(--gold-dim);
     animation:gateTipPulse 1.8s ease-in-out infinite;}
   /* 被說明的那一顆：抬到遮罩之上並鑲一圈光。 */
-  #innLobby .spot{position:absolute;z-index:8;
+  /* ⚠ **不要在這裡寫 `position`**（ver -430）：兩種目標本來就都定位過了
+     （`.inn-btn` 是 absolute、`.inn-door` 是 relative）—— 硬塞 `position:absolute`
+     會把門從那一欄的排版裡抽出來，敲門那一則說明一開，那扇門就跳到左上角。 */
+  #innLobby .spot{z-index:8;
     box-shadow:0 0 0 2px rgba(240,196,105,.8), 0 0 18px rgba(240,196,105,.55);}
+  /* ⚠⚠ **說明開著時，可按的東西全部留在遮罩之上**（ver -430，Ray：「教學雪鐵龍狀態下
+     按鈕不作動」）。遮罩是**說明**不是**鎖** —— 它壓暗的是背景與立繪；把玩家真正
+     要按的那幾顆一起關掉的話（想按睡覺，卻被指著坐坐的遮罩吃掉），讀起來就是壞了。
+     ⚠ 只有 `.spot` 有那圈金光 —— 「指的是這一顆」的線索交給光，不是交給「別的按不動」。
+     ⚠ 空白處照舊點一下收掉說明（遮罩自己那個 `pointerup`）。 */
+  #innLobby.guiding .inn-btn.on,
+  #innLobby.guiding .inn-door{z-index:8;}
 
-  /* 「獨自坐坐」的暗場：暗去 → 過兩小時 → 亮起。
-     ⚠ 蓋**整個舞台**（不是只有場景區）：時間過去了，面盤那一半也該一起黑。 */
-  #innLobby .inn-veil{position:fixed;inset:0;z-index:8;background:#000;
-    opacity:0;pointer-events:none;transition:opacity .52s ease;}
-  #innLobby .inn-veil.on{opacity:1;pointer-events:auto;}
+  /* 「獨自坐坐」／「回房睡覺」的暗場走 `story.veil()`（`#storyVeil`，ver -430）——
+     這裡原本有一片 `#innLobby .inn-veil`，但它住在 `body.town-nav #innLobby.on`
+     底下，而演出一開始就 `lock(true)` 收掉導覽 → **整層 display:none，黑幕從來沒亮過**。
+     已整片移除，不要再加回來。 */
 
   /* ── 面盤模式提示 ＋ 已播腳本（ver -367）──────────────────────────
      ⚠ 提示做成**面盤上緣的一條細字**，不做成浮動 badge：面盤中央是團徽／盤面，
@@ -2149,6 +2169,26 @@
      ⚠ 地名與時刻改由**左邊那張單子**的標題下印出來（`showShop` 的 `opts.info`）——
        讓開不等於不給，玩家還是要看得到自己在哪、幾點（店有營業時間）。 */
   body.town-shop #townInfo{opacity:0;}
+
+  /* ── 店舖的入口鈕（ver -430，Ray：「把買賣窗變成一個大的按鈕，點下去開全畫面窗」）──
+     取代 ver -404 那張常駐在畫面左邊的窄單子。⚠ 那張單子的問題不是好不好看，
+     是它**一直蓋著畫面左半**：任何要指著畫面的演出（整備教學指的吊墜）都被壓在底下，
+     而且窄到只看得到一兩列商品，本來就得點標題展開才好用。
+     ⚠ 落點：**左上、地名那一行之下**。右邊站著店主（`castSolo` 固定 `side:'R'`），
+       下半是槍棺與吊墜 —— 左上是這一頁唯一沒有東西的角落。
+     ⚠ `#townNav` 是 `pointer-events:none`，子元素要自己開回來。 */
+  #townShopBtn{position:absolute;display:none;pointer-events:auto;
+    left:12px;top:calc(env(safe-area-inset-top,0px) + 92px);
+    width:min(46%,168px);padding:13px 12px 11px;
+    background:rgba(18,15,26,.92);border:1px solid var(--gold-dim);border-radius:10px;
+    box-shadow:0 8px 26px rgba(0,0,0,.6);
+    font-family:inherit;text-align:center;color:var(--gold);}
+  #townShopBtn.on{display:block;}
+  #townShopBtn:active{background:var(--grid-active);transform:scale(.97);}
+  #townShopBtn b{display:block;font-size:17px;letter-spacing:5px;font-weight:normal;
+    text-indent:5px;}
+  #townShopBtn i{display:block;margin-top:5px;font-size:10px;letter-spacing:2px;
+    font-style:normal;color:var(--gold-dim);}
 
   /* ── 槍棺的吊墜（ver -411／-412，Ray 指定）──────────────────────────
      掛在槍棺左上方。**吊掛點與槍棺鎖死**（它是 `#kerbDoor` 的子元素），

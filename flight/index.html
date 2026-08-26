@@ -9300,13 +9300,33 @@ const bootUI=(()=>{
   };
 })();
 
+/* ⚠⚠ **音效全部 → 圖 → BGM，音效不載完不放行**（ver -430，Ray 指定的全域規則，
+   憲法 §6.6）。這一頁以前是**反過來的**：地形與船艦圖先跑完、讀取頁收掉，
+   感應心跳／神楽鈴／Sturm 那幾支要等 1.2 秒後才在背景抓 —— 慢網下長按感應時
+   心跳根本還沒到手。
+   ⚠ 這一頁的音效走 **HTMLAudio**（不是主遊戲的 WebAudio 解碼），所以「載完」＝
+     `canplaythrough`。逐支給 8 秒的保底：一支抓不到不能把整頁擋死。
+   ⚠ 環境音與 BGM **不在這一段**：它們排在最後（`makeLoop` 自己 `preload='auto'`），
+     而且晚到只是晚幾百毫秒起播。 */
+function preloadSfx(){
+  const list=[senseBeat, senseSE, sturmSE, kerbPopSE].filter(Boolean);
+  return Promise.all(list.map(a=>new Promise(res=>{
+    if(a.readyState>=4) return res();
+    const fin=()=>{ a.removeEventListener('canplaythrough',fin); a.removeEventListener('error',fin); res(); };
+    a.addEventListener('canplaythrough',fin); a.addEventListener('error',fin);
+    setTimeout(fin, 8000);            // 保底：一支卡住不能擋死整頁
+    try{ a.load(); }catch(_){ fin(); }
+  })));
+}
 (async()=>{
   const t0=performance.now();
   try{
-    bootUI.set(0.04);   // 準備雜訊貼圖…
+    bootUI.set(0.04);   // ① 音效（不設總時限，見 preloadSfx）
+    await preloadSfx();
+    bootUI.set(0.10);   // 準備雜訊貼圖…
     genCloudTex(); genDetail(); genStrat();
-    bootUI.set(0.12);
-    await loadWorld();
+    bootUI.set(0.16);
+    await loadWorld();  // ② 圖
     bootUI.set(0.82);   // 載入船艦圖層…
     // 船的素材缺了也照跑（走程序圖層），所以不放進上面的 try 依賴鏈裡擋開場
     await loadShipArt();
@@ -9314,8 +9334,8 @@ const bootUI=(()=>{
     initStars();
     bootUI.set(1);
     window.__loadMs=Math.round(performance.now()-t0);
-    // 感應的素材：開場跑完才在背景抓（不擋開場，但長按時要已經在手上）
-    setTimeout(()=>{ senseArt(); senseBeat.load(); senseSE.load();
+    // 感應的立繪與各角色立繪：開場跑完才在背景抓（圖晚到不會壞，音效已經在上面等過了）
+    setTimeout(()=>{ senseArt();
                      for(const k in PORTRAIT) portraitArt(k); }, 1200);
     window.__map=MAPW+'×'+MAPH;
     // 進度圈跑到滿再收，不要瞬間閃掉

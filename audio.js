@@ -347,6 +347,11 @@ export const SFX = {
      （劇情層在還沒解碼完時改用 HTMLAudio 串流，見 modules/story.js 的 playSeFallback）——
      因為 playSrc 的補播有 LATE_PLAY_MS 1.5 秒的時限，超過就乾脆不播。 */
   ready(src){ return !!(src && _buffers[src]); },
+  /* 這支音檔有多長（毫秒）；還沒解碼就回 null（ver -430）。
+     ⚠⚠ 存在的理由是**鐵律 7**：「淡出至黑要跟音檔一樣長」這種需求，
+       如果把秒數抄一份寫在演出那邊，換一支音檔就會走鐘 —— 音檔自己就是那個真相，
+       問它就好。呼叫端拿到 null 時要有自己的退路（音效可能還沒載完）。 */
+  duration(src){ const b = src && _buffers[src]; return b ? b.duration*1000 : null; },
   // 預載一批 BGM（整首下載成 Blob，切歌即播不再下載）：回傳 Promise
   preloadBgm(srcs){ return Promise.all((srcs || []).filter(Boolean).map(ensureBlob)); },
 

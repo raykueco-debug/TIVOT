@@ -450,6 +450,12 @@
     <div class="story-text" id="storyText"></div>
     <div class="story-next">▼</div>
   </div>
+  <!-- ⚠⚠ 全畫面黑幕（ver -430）：「暗下去 → 做點事 → 亮回來」只有這一片
+       （`story.veil()`，鐵律 8）。與 `#storyFade` 是**兩件事**：那一片是插圖換圖用的，
+       只蓋場景區、而且壓在立繪與面盤之下；這一片要蓋住**整個畫面**（含面盤、
+       旅店那一排鈕、導覽），所以擺在舞台的最上層。
+       ⚠ 淡出的長度由呼叫端逐次指定（inline 覆寫）—— 睡覺是「音檔多長就多長」。 -->
+  <div id="storyVeil"></div>
 </div>
 
 <!-- ══ 存讀檔欄位面板（modules/save.js）══

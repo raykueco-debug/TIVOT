@@ -332,12 +332,18 @@ function bootBattleGate(req){
   const cap=(p,ms)=>Promise.race([p, new Promise(r=>setTimeout(r,ms))]);
   const one=src=>new Promise(res=>{ if(!src) return res();
     const im=new Image(); im.onload=im.onerror=()=>res(); im.fetchPriority='high'; im.src=src; });
-  /* ① 敵立繪（這一場真正看得到的那一張）→ ② 音效全部 → ③ 戰鬥 BGM。 */
-  const p1=cap(one(asset(en.image)), 4000);
-  const p2=p1.then(()=>cap(SFX.preload(_sfxPaths()).catch(()=>{}), 8000));
-  p1.then(()=>{ const t=$('gateTip'); if(t) t.classList.add('on'); });   // 立繪到位就可以點
+  /* ⚠⚠ **① 音效全部 → ② 敵立繪 → ③ 戰鬥 BGM**（ver -430 改順序，Ray：「全域都是
+     優先預載音效、然後圖、然後 BGM，音效不載完不放行」）。
+     ⚠ 這裡原本是「立繪 → 音效 → 音樂」（ver -387 Ray 對這一條路徑的指定），
+       而且音效罩著 8 秒的時限、「開棺」那顆在**立繪到位**就亮 —— 於是慢網下點進去
+       戰鬥，門的齒輪／開門音與敵人的攻擊音整段是靜音的。全域規則覆蓋掉那個特例。
+     ⚠ 音效**不設時限**（同 startBatch）；圖與音樂照舊可以罩時限。 */
+  const p1=SFX.preload(_sfxPaths()).catch(()=>{});
+  const p2=p1.then(()=>cap(one(asset(en.image)), 4000));
+  p2.then(()=>{ const t=$('gateTip'); if(t) t.classList.add('on'); });   // 音效＋立繪到位才可以點
   p2.then(()=>SFX.preloadBgm([asset('bgm_battle')]).catch(()=>{}));
-  setTimeout(()=>{ const t=$('gateTip'); if(t) t.classList.add('on'); }, 5000);   // 保底：卡住也點得下去
+  /* 保底：**掛在音效之後**（同 startBatch 那道）—— 從頭計時的話又變成「時間到就放行」。 */
+  p1.then(()=>setTimeout(()=>{ const t=$('gateTip'); if(t) t.classList.add('on'); }, 5000));
 
   let fired=false;
   const open=()=>{
@@ -618,9 +624,15 @@ window.addEventListener('pagehide', refreshBoot);
          armOnly 讓兩邊一致。（Ray 指定，ver -259） */
     const wrapCount = (p, n)=> p.then(()=>{ for(let i=0;i<n;i++) tick(); }).catch(()=>{ for(let i=0;i<n;i++) tick(); });
     const cap = (p, ms)=> Promise.race([p, new Promise(r=>setTimeout(r, ms))]);
-    /* ① 音效（全部，含原本單獨先載的那三支關鍵音） */
-    const sfxP = cap(wrapCount(SFX.preload(sfx), sfx.length), 8000);
-    /* ② 圖：立繪最先，其餘同時開 */
+    /* ① 音效（全部，含原本單獨先載的那三支關鍵音）。
+       ⚠⚠ **不設時限**（ver -430，Ray：「音效不載完不放行」）：這一段以前罩著
+         `cap(…, 8000)`，於是慢網下 8 秒一到就放行 —— 玩家點進去，開場的跑步聲
+         與跌倒音整段沒有（那正是憲法 §6.6 那條「音效讀曲跟不上」的成因）。
+       ⚠ 卡不死：`SFX.load()` 對 404／解碼失敗一律 `catch → null`，
+         真的無限等只有「請求整個停住」那一種，那時下面那道保底才會動。 */
+    const sfxP = wrapCount(SFX.preload(sfx), sfx.length);
+    /* ② 圖：立繪最先，其餘同時開。⚠ 圖**可以**設時限 —— 沒載完不會壞
+       （`<img>` 現抓即顯示），而音效沒載完是真的沒聲音。 */
     const imgsP = sfxP.then(()=> cap(loadPortrait().then(()=>Promise.all(
         imgs.map(src=>new Promise(res=>{ const im=new Image(); im.onload=im.onerror=()=>{ tick(); res(); }; im.src=src; }))
       )), 6000));
@@ -629,7 +641,10 @@ window.addEventListener('pagehide', refreshBoot);
       SFX.playBgm(asset('bgm_home'), { volume: bgmVol('bgm_home'), armOnly:true });
       return wrapCount(SFX.preloadBgm(bgm), bgm.length);
     }).then(showReady);
-    setTimeout(showReady, 12000);
+    /* 保底：圖或音樂卡住也要放行。⚠⚠ **掛在 `sfxP` 之後**（ver -430）——
+       以前是從批次開跑就計時 12 秒，那等於「音效不載完不放行」的破口：
+       時間到照樣放行，而那時音效可能還在解碼。現在它只保護第②③段。 */
+    sfxP.then(()=>setTimeout(showReady, 12000));
   };
   /* 熱啟動：跳過的是**等待**，不是畫面。
      ⚠ 照樣走 `startBatch()` 的三段順序，只是素材都在快取裡、幾乎瞬間跑完。 */

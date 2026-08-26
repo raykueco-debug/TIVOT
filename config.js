@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.26-430';
+export const VERSION = 'ver 2026.08.26-431';
 
 export const GAME_CONFIG = {
 
@@ -1199,7 +1199,12 @@ export const GAME_CONFIG = {
                em_slash:0.46, em_smack:0.72, em_shot:0.65, em_revolver:0.51, em_dagger:2.54,
                /* 打靶失手（ver -396）。⚠ 沒實測過響度，暫用 1.0 —— 覺得大小聲不對
                   就照 §6.6 的公式反推（`tools/audio_probe.html` 會直接印建議值）。 */
-               se_dart_fail:1.00 },
+               se_dart_fail:1.00,
+               /* 旅店睡覺（ver -430）。實測：耳機 −20.43 LUFS、手機模型 −16.47、
+                  峰值 −1.62 dBFS、9.90 秒、48 kHz 立體聲。
+                  照 §6.6「增益對的是**耳機與手機的平均**」：平均 −18.45 →
+                  10^((−22 −(−18.45))/20) ÷ 0.49 = 1.36。 */
+               se_sleep:1.36 },
 
     /* 音樂層（BGM）—— 目標 −28 LUFS，比語音低 10 dB。走 HTMLAudio.volume，
        不吃 masterVolume，所以這裡不用除。飛行頁的音樂另在 flight/index.html
@@ -1355,6 +1360,12 @@ export const ASSETS = {
   se_general_click:  "resources/audio/se/se_ui_click.m4a",
   se_dart_fail:      "resources/audio/se/se_dart_fail.m4a",   // 打靶失手（ver -396）
   se_pageflip:       "resources/audio/se/se_ui_pageflip.m4a",
+  /* 旅店「回房睡覺」（ver -430，Ray 交件）。⚠⚠ **淡出至黑的長度就是這支的長度** ——
+     不要在別處寫一個秒數（鐵律 7）：`modules/inn.js` 問 `SFX.duration()` 拿實測值。
+     ⚠ 它還是 **mp3**（316 KB）；§6.6 規約是 AAC/m4a，但這台機器沒有轉檔工具。
+       轉檔時**檔名別改**（改了 ASSETS 與這一行的註解都要跟著動），
+       而且轉檔不改響度，所以下面那個增益不必重算。 */
+  se_sleep:          "resources/audio/se/Se_sleep.mp3",
   // 聖徒化發動音效
   //  ⚠ 素材「內容」更新但檔名不變時,在路徑加/升 ?v=N 強制手機重抓(HTTP 快取以 URL 為鍵)。
   sfx_saint:         "resources/audio/se/se_saint_install.m4a?v=3",

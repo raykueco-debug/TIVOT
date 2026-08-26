@@ -1509,6 +1509,14 @@ function renderLine(){
   if(!line) return;
   stopFx();       // 上一拍的演出（掃射／持續抖動）到此為止，別讓它蓋到這一句上
   flushCgFade();  // 上一拍的黑幕若還沒收，**立刻做完**（見 cgFade 的說明），不要取消
+  /* ⚠ 上一拍**還沒演的立繪指令**要先補完（ver -430）：`stopFx()` 只是把計時器清掉，
+     那一拍的「誰上台、誰下台」還在 `pendingReveal` 手上 —— 不補就是立繪殘留。
+     ⚠ 正常路徑上 `advance()` 已經先補過了，這一道是給**不經過 advance** 的入口
+       （`goto`／`label` 跳轉、讀取閘門自己 advance）用的保險。
+     ⚠ 補完要把打字機收掉：`reveal` 的尾巴會開始打**上一句**的字，而這一句若是
+       空框／演出拍就只寫 `textContent=''`、不會去停那個 interval —— 舊句子會一個字
+       一個字爬回新的框上。 */
+  if(flushReveal()){ clearInterval(typing); typing=null; onTyped=null; }
 
   /* ── 插入戰鬥（ver -321）───────────────────────────────────────────
      ⚠ story.js **不 import 戰鬥模組**（單向資料流：劇情不該知道戰鬥怎麼跑）。
@@ -1729,8 +1737,25 @@ function renderLine(){
   if(persistFaded){
     /* 黑幕期間先把對話框藏起來（立繪本來就還沒上）—— 不藏的話上一句的框會留在黑幕上。 */
     const b=$('storyBubble'); if(b) b.style.visibility='hidden';
-    fxTimers.push(setTimeout(reveal, CG_FADE_MS*2 + 140));
+    /* ⚠⚠ **這一拍還沒演的部分要記下來**（ver -430，Ray：「對話點擊太快（或者點到箭頭）
+       會有立繪殘留」）。`reveal` 裡面才是「誰上台、誰下台、誰高亮」——
+       它被延後了，而玩家在黑幕那一秒是**點得動**的（那時既沒在打字也沒在等 delay），
+       於是 `advance()` 直接跳到下一句、`renderLine` 的 `stopFx()` 把這個計時器清掉：
+       **這一拍的立繪指令整段沒有執行**。上一個人於是留在台上（`shown[who]` 還是舊的）。
+       正解與「還在打字就先補完」是同一條規矩：**點下去先把這一拍演完，不推進**。 */
+    pendingReveal = reveal;
+    fxTimers.push(setTimeout(flushReveal, CG_FADE_MS*2 + 140));
   }else reveal();
+}
+/* 黑幕期間還沒跑的 `reveal`（見上）。⚠ 只有一個 —— `renderLine` 一開頭就歸零，
+   所以不會累積成一疊。 */
+let pendingReveal = null;
+/* 把還沒演的那一拍**立刻演完**。回傳 true ＝真的有東西被補上（呼叫端據此吃掉這一下點擊）。 */
+function flushReveal(){
+  const r = pendingReveal; if(!r) return false;
+  pendingReveal = null;
+  r();
+  return true;
 }
 
 /* ══ 推進 ══ */
@@ -1739,6 +1764,13 @@ function advance(){
   const line = cur && cur.lines[lineIdx];
   const tx = $('storyText');
   clearTimeout(autoT); autoT=null;   // 玩家點了 → 演出拍提前收，別讓計時器再推一次
+  /* ⚠⚠ 這一拍還在黑幕底下沒演完 → **先把它演完，不推進**（ver -430，Ray：「對話點擊
+     太快（或者點到箭頭）會有立繪殘留」）。
+     黑幕那一秒既沒在打字、也沒在等 `delay`，所以舊寫法會直接跳到下一句 ——
+     而「誰上台、誰下台」全在那個還沒跑的 `reveal` 裡，於是上一個人就留在台上了。
+     ⚠ 這與下面兩條（等 delay／還在打字）是**同一條規矩**：點下去先把這一拍做完。
+     ⚠ 順序要在它們之前：黑幕期間那兩個都還沒開始。 */
+  if(flushReveal()) return;
   /* 還在等 delay → 這一下先把對話框叫出來，不推進（同「還在打字」的規矩）。 */
   if(waitT){
     clearTimeout(waitT); waitT=null;
@@ -1808,6 +1840,10 @@ function playScene(id){
   const sc = MAIN_SCRIPT[id];
   if(!sc){ console.warn('[story] 找不到 scene：', id); close(); return; }
   cur = sc; lineIdx = 0;
+  /* ⚠ 換場要**丟掉**上一幕還沒演的那一拍（ver -430），不是補演它 ——
+     下面立刻就把台上清空了，補演等於把上一幕的人又請回來。
+     （`renderLine` 那一道保險是給「同一段之內」用的，換場走這裡。） */
+  pendingReveal = null;
   sceneLog = [];                        // 回顧只留這一場（見 showBacklog）
   stopModes();                          // 模式不跨場（見宣告處的說明）
   sideOverride = sc.sides || {};        // 這一幕的站位覆寫（見 sideOf）
@@ -1910,7 +1946,11 @@ function preloadStory(startId, onProgress){
      一播就落進 `LATE_PLAY_MS`（1.5 秒）的「遲到不播」規則，整個消失。
      音效總共只有幾百 KB，先讓它們跑完再抓圖，代價是零。
    ⚠ 圖沒載完最多是晚一拍淡進來；音效沒載完是**直接不響**，兩者的失敗代價不對等。
-   ⚠ 音效自己也有上限（6 秒），不能讓一支卡住的音檔擋住整場。 */
+   ⚠⚠ **ver -430 收斂成全域那一條**（Ray：「全域都是優先預載音效、然後圖、然後 BGM，
+     音效不載完不放行」）：`音效 → 圖 → BGM` 三段串接，而且**總上限只罩後兩段**。
+     以前 BGM 與音效綁在同一個 `audio` 一起等，圖片讓路 6 秒之後就開跑；
+     現在音樂排到最後（`playBgm` 自己會 `ensureBlob`，晚一點只是晚幾百毫秒起播），
+     省下來的頻寬全給音效。 */
   const AUDIO_FIRST_MS = 6000;
   const imgJobs = ()=> A.imgs.map(src=>new Promise(res=>{
     const im=new Image();
@@ -1922,20 +1962,21 @@ function preloadStory(startId, onProgress){
   const total = A.imgs.length + 2;
   let done=0;
   const tick = p => Promise.resolve(p).then(()=>{ done++; onProgress(done/total); });
-  const audio = Promise.all([ tick(SFX.preload(A.ses).catch(()=>{})),
-                              tick(SFX.preloadBgm(A.bgms).catch(()=>{})) ]);
-  /* ⚠⚠ `AUDIO_FIRST_MS` 只是「圖片最多讓路這麼久」，**不是**「音效等這麼久就算了」
-     （ver -354 修）。前一版寫成 `race(audio, 6s).then(圖片)`，於是慢一點的手機上
-     6 秒一到就開始抓圖，而整個 gate 只等圖片 —— 音效還沒解碼完就開演，
-     開場那兩支照樣落進 `LATE_PLAY_MS` 被丟掉。Ray 回報「手機版仍然讀不到跑步聲與跌倒音」
-     就是這個。
-     現在：圖片最多讓路 6 秒，但**最後一定要等音效與圖片都好**（只有 25 秒總上限能中斷）。 */
-  const imgsDone = Promise.race([audio, new Promise(r=>setTimeout(r, AUDIO_FIRST_MS))])
+  /* ① 音效：**沒有時限**（Ray：「音效不載完不放行」）。 */
+  const sfxDone = tick(SFX.preload(A.ses).catch(()=>{}));
+  /* ② 圖：音效好了才開跑。⚠ `AUDIO_FIRST_MS` 是「圖片**最多**讓路這麼久」
+     —— 音效真的卡住時圖片還是要動，不然整頁看起來是死的。
+     ⚠ 它**不是**「音效等這麼久就算了」（ver -354 的坑）：下面的 gate 仍然等 `sfxDone`。 */
+  const imgsDone = Promise.race([sfxDone, new Promise(r=>setTimeout(r, AUDIO_FIRST_MS))])
     .then(()=> Promise.all(imgJobs().map(tick)));
-  return Promise.race([
-    Promise.all([audio, imgsDone]),
+  /* ③ 音樂：排最後。⚠ 晚到不會壞 —— `playBgm` 自己會 `ensureBlob`，最多晚幾百毫秒起播。 */
+  const bgmDone = imgsDone.then(()=> tick(SFX.preloadBgm(A.bgms).catch(()=>{})));
+  /* ⚠⚠ **總上限只罩後兩段**（ver -430）：25 秒一到就放行的話，那正是
+     「音效不載完不放行」的破口。閘門一律等 `sfxDone`。 */
+  return sfxDone.then(()=> Promise.race([
+    Promise.all([imgsDone, bgmDone]),
     new Promise(r=>setTimeout(r, PRELOAD_CAP_MS)),
-  ]);
+  ]));
 }
 
 /* ══ 場景之間的「標準讀取頁」（ver -338，Ray 指定）══════════════════════
@@ -2054,6 +2095,7 @@ export function setTownOpener(fn){ townOpener = fn || null; }
 
 export function close(opts){
   clearInterval(typing); typing=null;
+  pendingReveal=null;                // ⚠ 離場：還沒演的那一拍**丟掉**（同 playScene，ver -430）
   clearTimeout(waitT); waitT=null;
   clearTimeout(autoT); autoT=null;   // ⚠ 沒清的話劇情關掉之後還會推一句（然後在關著的舞台上演）
   const b0=$('storyBubble'); if(b0) b0.style.visibility='';
@@ -2063,6 +2105,9 @@ export function close(opts){
   const st=$('storyStage'); if(st) st.classList.remove('on');
   document.body.classList.remove('story-on');
   leaveSlot('L'); leaveSlot('R');
+  /* ⚠ 黑幕歸位（ver -430）：它是持續狀態，離場時還蓋著的話下次一進來就是一片全黑。
+     ⚠ **0ms**：這是重置不是演出 —— 舞台已經收掉了，沒有人看得到它淡出。 */
+  veil(false, 0);
   /* ⚠ 劇情有自己的 BGM，離場一定要把主畫面那首接回來 —— 不接的話回到首頁
      還在放劇情曲，而首頁的播放邏輯只在「進首頁」那一刻跑一次，不會自己修正。 */
   stageBgm=null;
@@ -2166,6 +2211,26 @@ export function castSolo(id, expr){
   highlight(side);
   return side;
 }
+
+/* ══ 全畫面黑幕（ver -430）══════════════════════════════════════════════
+   「暗下去 → 做點事 → 亮回來」**只有這一支**（鐵律 8）：旅店的睡覺／獨自坐坐是
+   第一批用它的，日後任何畫面要同樣的轉場都叫它，不要各自再貼一片黑。
+     on  true＝暗下去、false＝亮回來
+     ms  這一次要花多久（毫秒）；不給就用 CSS 的預設。
+   ⚠ 黑幕**不能住在會被收掉的那一層裡**：旅店舊版那一片在 `#innLobby` 底下，
+     而演出一開始就 `lock(true)` 收掉導覽 → 整層 `display:none` → 黑幕從來沒亮過。
+   ⚠ 時間是**逐次**指定的（inline 覆寫），因為它由呼叫端的事件決定 ——
+     睡覺那一次就是「音檔多長就多長」（鐵律 7：長度的真相在音檔身上）。 */
+export function veil(on, ms){
+  const v=$('storyVeil'); if(!v) return;
+  v.style.transitionDuration = (ms!=null) ? (ms+'ms') : '';
+  /* ⚠ 從「沒掛過」到「掛上」要讓瀏覽器先看到起始狀態，否則同一幀改 duration ＋ 加 class
+     會被合併成一次計算，過場直接跳掉（實測：黑幕瞬間全黑，沒有淡入）。 */
+  void v.offsetWidth;
+  v.classList.toggle('on', !!on);
+}
+/* 黑幕現在蓋著嗎（收場時要確認有沒有人忘了亮回來）。 */
+export function veilOn(){ const v=$('storyVeil'); return !!(v && v.classList.contains('on')); }
 
 export function clearCast(){
   slot={L:null,R:null}; slotExpr={L:null,R:null}; shown={};
@@ -2414,6 +2479,7 @@ export function jumpTo(pos){
 export function skipToNextGate(){
   if(!active || !cur) return;
   clearInterval(typing); typing=null;
+  pendingReveal=null;                // ⚠ 跳段：還沒演的那一拍丟掉（同 playScene，ver -430）
   clearTimeout(waitT); waitT=null;
   clearTimeout(autoT); autoT=null;
   stopFx(); flushCgFade();
