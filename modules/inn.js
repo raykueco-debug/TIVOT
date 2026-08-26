@@ -201,6 +201,15 @@ function ensureLayer(){
   layer.querySelectorAll('.inn-btn').forEach(b=>
     b.addEventListener('pointerup', e=>{ e.stopPropagation();
       const act = (b.dataset.act==='sit') ? 'sit' : 'sleep';
+      /* ⚠⚠ **說明開著時，「獨自坐坐」只收說明、不做事**（ver -439，Ray：「免得誤點」）。
+         ver -430 把「說明開著時可按的東西全部留在遮罩之上」，那對睡覺／敲門是對的
+         （它們就是被指的那個動作），但坐坐**花掉兩個小時而且收不回來** ——
+         玩家其實只是想把遮罩點掉的那一下，就這麼過了兩小時。
+         `closeGuide()`（不帶 quiet）會把這一則記成看過再 `refresh()`，於是下一則
+         （回房睡覺）自己接上來 —— 這一按的效果就只是**推進到下一個雪鐵龍**。
+         ⚠ 睡覺不在此列：它是不可逆的沒錯，但它自己就是那一則說明指著的動作，
+           擋掉的話玩家會以為鈕壞了（那正是 -430 修掉的病）。 */
+      if(act==='sit' && guideKey){ closeGuide(); return; }
       learnTip(act); closeGuide(true);
       if(act==='sit') sitAlone(); else sleepHere(); }));
   const g=layer.querySelector('.inn-guide');
@@ -259,7 +268,12 @@ function refresh(){
   /* ⚠ **「大家都睡了。回房休息吧。」拿掉**（ver -396，Ray 指定）——
      那一段的引導改用**指著鈕的雪鐵龍箭 ＋ 一句說明**（見 relayout），
      比一行浮在半空的字明確得多。 */
-  if(hint) hint.textContent = (st==='wait') ? '坐下來消磨時間吧。' : '';
+  /* ⚠⚠ **「坐下來消磨時間吧。」也撤掉了**（ver -439，Ray 指定）—— 這一行是最後
+     一句常駐提示。坐坐那顆鈕自己帶著「消磨 2 小時」的成本說明、又有一次性的雪鐵龍
+     說明指過它，再浮一行字在半空只是重複第三次。
+     ⚠ `.inn-hint` 這個節點先留著（CSS 與版面都掛在它身上）：日後真的有「現在該做
+       什麼」要講時，寫回這一行就好。 */
+  if(hint) hint.textContent = '';
   layer.classList.toggle('on', introDone() || st!=='none');
   /* 一次性說明：**一次排一個**，依「現在畫面上真的有那顆東西」決定演哪一個。
      ⚠ 要在 `relayout()` 之後 —— 鈕還沒擺好就量不到位置。 */
@@ -338,23 +352,32 @@ function sitAlone(){
    獨自坐坐與回房睡覺都會推時鐘，所以兩條路都走這一支問一次（鐵律 8）。
    回傳 true ＝城鎮已經接手強制轉場（玩家要被移到別的節點），這裡就不要再收尾了：
    `enter()` 會把大廳整個收掉。 */
-function settle(){
+/* ⚠ `sat` ＝這一次是**坐坐坐到的**（ver -439）：蕾娜的第一句話要分兩種說法
+   （見 `playRenna`），而「怎麼碰到她的」只有呼叫端知道 —— 不要事後從時鐘反推。 */
+function settle(sat){
   busy=false;
   if(host && host.onClock && host.onClock()) return true;
   if(host && host.lock) host.lock(false);
-  runBranch();          // ⚠ 時間變了，「現在該發生什麼」要重問一次（見 runBranch）
+  runBranch(false, sat);   // ⚠ 時間變了，「現在該發生什麼」要重問一次（見 runBranch）
   return false;
 }
 /* 坐完但沒有演出：把鎖放掉、畫面接回來。
    ⚠ **要把 `settle()` 的回傳帶出去**（ver -430）：true ＝城鎮已經接手強制轉場，
      呼叫端就不該再把黑幕亮回來（新地點還沒擺好）。 */
-function endSit(){ return settle(); }
+function endSit(){ return settle(true); }   // ⚠ true ＝坐坐坐到的（見 settle 的 `sat`）
 /* 蕾娜回來那一幕。⚠ 兩條路都走這一支（坐著等到她、或走出去 20~21 點回來撞見），
    所以好感也只在這裡加一次（鐵律 8）。 */
-function playRenna(){
+/* ⚠⚠ `sat` ＝**坐坐坐到她回來**（ver -439，Ray 指定）：那時玩家確實是在等她，
+   她那句「你在等我嗎？」才有著落。走出旅店辦別的事、20~21 點才晃回來撞見的那一條
+   沒有人在等 —— 她改說「真巧啊」。**兩支台詞都在資料上**（`innRenna.waited` /
+   `.passing`，鐵律 1），這裡只負責挑哪一支。
+   ⚠ 舊資料是一個陣列（沒有分支）→ 照舊直接用，不必為了改一句話動遍所有城的稿。 */
+function playRenna(sat){
   busy = true;
   if(host && host.lock) host.lock(true);
-  const lines = (node && node.innRenna) || [];
+  const tbl = (node && node.innRenna) || [];
+  const lines = Array.isArray(tbl) ? tbl
+              : ((sat ? tbl.waited : tbl.passing) || tbl.waited || []);
   if(!lines.length || !host || !host.play){ finishRenna(); return; }
   /* ⚠ 蕾娜站**右**：這一段她與玩家對話，台上只有她一個人，但沿用城鎮那一幕的
      整幕覆寫比較不會與日後多人同台打架（§6.5 的固定站位）。 */
@@ -460,7 +483,7 @@ export function arrive(n, ctx){
    ⚠ `arrived` ＝這一次是**走進來**（不是坐完）。分支一（「時間還早，我想去城裡逛逛呢」）
      是**招呼**，只在走進來時講；分支二（「今天有點累了」）是**狀態轉移**，時間到了就講，
      所以坐完也要判 —— 不分的話每坐兩小時她就把那句招呼再唸一次。 */
-function runBranch(arrived){
+function runBranch(arrived, sat){
   const b = (node && node.innBranch) || {};
   /* ⚠⚠ **分支二的條件是「走完了」或「時間到了」**（ver -427，Ray 的規則四／五：
        「若3發生而主角已在旅店，走5（諾：『今天有點累了，我先去休息囉。』）」）。
@@ -492,7 +515,7 @@ function runBranch(arrived){
   if(stage()==='wait'){
     const h = clock.hourF();
     if(h >= RENNA_GONE){ prog.addFlags([F_MISS]); refresh(); return; }
-    if(h >= RENNA_BACK){ refresh(); playRenna(); return; }
+    if(h >= RENNA_BACK){ refresh(); playRenna(sat); return; }
   }
   refresh();
 }

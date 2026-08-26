@@ -252,9 +252,10 @@ export function settle(totalTime, stats, opts={}){
   // ── 評價系統（rating）：大字等級（顯眼）+ EXP + 各數值明細 ──
   const evalResult = evaluate(stats);
   let rows='';
+  /* ⚠ **EXP 不在這一行了**（ver -439）：它與金錢同一列，印在戰利品那一頁（Ray 指定）。
+     這一行只剩等第 —— 那是「打得好不好」，與「拿到什麼」本來就是兩件事。 */
   rows += `<div class="grade-wrap"><b class="grade-badge rank-${evalResult.grade}">${evalResult.grade}</b>`
-        + `<span class="grade-meta"><span class="grade-cap">${L.result.gradeCap}</span>`
-        + `<span class="grade-exp">EXP ${evalResult.exp}</span></span></div>`;
+        + `<span class="grade-meta"><span class="grade-cap">${L.result.gradeCap}</span></span></div>`;
   rows += ratingStatsRows(stats, totalTime);
   if(isRecord) rows += `<div class="record">${L.result.newRecord}</div>`;
   // ── 監察官結算展示（依評價等第挑台詞）──
@@ -271,7 +272,13 @@ export function settle(totalTime, stats, opts={}){
       let gain=lo + Math.floor(Math.random()*(hi-lo+1));
       if(state.inIntruderFight && bl.bossMul>1) gain=Math.round(gain*bl.bossMul);
       _lootMoney = gain;
-      _lootPending = [];        // 沒有道具、只有錢也要能彈（showLoot 吃 money）
+    }
+    /* ⚠⚠ **EXP 也走這一條**（ver -439）：所以待彈的登記要在骰子**外面** ——
+       擲不中金錢的那一場照樣有 EXP，登記漏掉的話那一頁整個不出、EXP 就消失了
+       （它已經不在結算頁那一行上）。 */
+    _lootExp = evalResult.exp|0;
+    if(_lootMoney || _lootExp){
+      _lootPending = [];        // 沒有道具、只有錢／EXP 也要能彈（showLoot 吃得下）
       document.addEventListener('pointerup', popLootOnce, { capture:true, once:true });
     }
   }
@@ -390,6 +397,10 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose, opts){
   clearTimeout(_inspTypeTimer);
   bubble.classList.remove('show');
   lineEl.textContent='';
+  /* ⚠ **膝部以上只給評價者那一頁**（ver -439，Ray 指定）：裁切的比例是照
+     `speakers.js` 那組立繪量的（見 style.css 的 `--knee`），監察官（芙蕾雅）用的是
+     另一組圖，沒量過就不要一起套。裁多少寫在 CSS，這裡只負責掛不掛那個 class。 */
+  stage.classList.toggle('knee', !!spk);
   if(insp || spk){
     stage.style.display='flex';
     const pKey = spk ? spk.portrait : pickInspectorPortrait(insp);
@@ -465,6 +476,10 @@ function tutorialSettle(totalTime, stats){
      ⚠ 「回到主畫面」那顆鈕也會先彈道具（見 onRematchBtn）：不能讓玩家一按就走人，
        那樣掉落等於沒發生（道具其實已經入袋，但他不知道拿到什麼）。 */
   const loot=(GAME_CONFIG.tutorial||{}).loot || [];
+  /* ⚠ 錢與 EXP 要**明著歸零**（ver -439）：上一場若沒被點開（玩家直接離場），
+     那兩個模組變數還留著上一場的值 —— 教學這一頁不給錢也不給 EXP，
+     不歸零的話會把別場的數字端上來。 */
+  _lootMoney = 0; _lootExp = 0;
   _lootPending = loot.length ? loot : null;
   if(_lootPending){
     /* ⚠ 掛 `pointerup` 在捕獲階段：結算頁上有幾個 `pointer-events:none` 的層
@@ -487,19 +502,27 @@ function scriptSettle(totalTime, stats){
        但「評價」的意思就是評出一個等第 —— 沒有那個字母，她那句話就沒有著落。
      ⚠ 評分公式**用試玩版那一套**（Ray 指定）＝ 上面那個 `evaluate()`，不另訂。 */
   const spk = pickEvaluator(ev.grade, state.scriptBattleId);
+  /* ══⚠⚠ **打靶不給 EXP 也不給錢**（ver -439，Ray：「靶不要給 exp 跟錢」）══════
+     那是一場可以重打到膩的計時挑戰 —— 給獎勵等於開了一台印鈔機，而它的回報本來
+     就是**紀錄**與**破紀錄的獎品**（`timeAttack.prize`，龍息），那兩樣照舊。
+     ⚠ 判斷寫在**戰鬥卡**上（`noReward`），不是在這裡認 `range_trainee`（鐵律 1）——
+       日後多一場練習用的場次只要在卡上加一欄。 */
+  const bt = (GAME_CONFIG.battles||{})[state.scriptBattleId] || {};
+  const noReward = !!bt.noReward;
+  /* ⚠ **EXP 不在這一行了**（ver -439）：搬到戰利品那一頁與金錢同一列（同一般結算）。
+     ⚠ 沒有評價者、又沒有等第可印時整塊就不要出 —— 一個只寫著「評價」兩個字的空行
+       比沒有還糟（打靶就是這一種）。 */
   let rows = spk
     ? ('<div class="grade-wrap"><b class="grade-badge rank-'+ev.grade+'">'+ev.grade+'</b>'
        + '<span class="grade-meta"><span class="grade-cap">' + (L.result.gradeCap||'') + '</span>'
-       + '<span class="grade-exp">EXP ' + ev.exp + '</span></span></div>')
-    : ('<div class="grade-wrap grade-noRank">'
-       + '<span class="grade-meta"><span class="grade-cap">' + (L.result.gradeCap||'') + '</span>'
-       + '<span class="grade-exp">EXP ' + ev.exp + '</span></span></div>');
+       + '</span></div>')
+    : '';
   rows += ratingStatsRows(stats, totalTime);
   /* ══ 這一場自己的最佳紀錄（ver -377，Ray：「紀錄最佳紀錄，破紀錄時加上 New」）══
      ⚠ 只有卡上寫了 `record` 的場次才記（打靶場那種「一直挑戰」的）；
        一般的劇情插入戰打一次就過去了，記它沒有意義。
-     ⚠ 紀錄的是**通關用時**（越短越好），與一般戰鬥的最佳總用時同一把尺。 */
-  const bt = (GAME_CONFIG.battles||{})[state.scriptBattleId] || {};
+     ⚠ 紀錄的是**通關用時**（越短越好），與一般戰鬥的最佳總用時同一把尺。
+     ⚠ `bt` 這一份卡在上面（`noReward` 那一段）就取好了，不再取第二次。 */
   /* ══ 破紀錄的獎品（ver -421，Ray：「30 秒內清完槍店的靶送你一支龍息」）══
      ⚠ 門檻與獎品都在戰鬥卡上（`timeAttack.prizeSec` / `prize`）—— 這裡只負責發，
        不寫死是哪一場、也不寫死是哪把槍（鐵律 1）。
@@ -534,14 +557,15 @@ function scriptSettle(totalTime, stats){
   }
   let money = 0;
   const mr = en.money && en.money.hpRatio;
-  if(mr){
+  if(mr && !noReward){
     const lo=mr[0], hi=mr[1]!=null?mr[1]:mr[0];
     money = Math.round((en.hp||0) * (lo + Math.random()*(hi-lo)));
   }
-  _lootPending = (loot.length || money) ? loot : null;
+  /* ⚠ 獎品（龍息）**不受 `noReward` 影響**：它是這一場的目的，不是它的報酬。 */
   _lootMoney = money;
-  if(_lootPending || money){
-    if(!_lootPending) _lootPending = [];
+  _lootExp = noReward ? 0 : (ev.exp|0);
+  _lootPending = (loot.length || money || _lootExp) ? loot : null;
+  if(_lootPending){
     document.addEventListener('pointerup', popLootOnce, { capture:true, once:true });
   }
 }
@@ -565,13 +589,26 @@ function rollLoot(en){
                                        .map(r=>({ id:r.id, n:r.n }));
 }
 
-/* 拾得道具／金錢的待彈狀態（見 tutorialSettle、settle 的掉落段與 onRematchBtn）。 */
-let _lootPending = null, _lootMoney = 0;
+/* 戰利品的待彈狀態（見 tutorialSettle、settle 的掉落段與 onRematchBtn）。
+   ⚠ `_lootExp`（ver -439）：EXP 從結算頁那一行搬到這一頁，與金錢同一列 —— 見
+     `modules/loot.js` 的 `showLoot`。 */
+let _lootPending = null, _lootMoney = 0, _lootExp = 0;
 function popLootOnce(){
-  const list=_lootPending, money=_lootMoney;
-  _lootPending=null; _lootMoney=0;
+  const list=_lootPending, money=_lootMoney, exp=_lootExp;
+  _lootPending=null; _lootMoney=0; _lootExp=0;
   document.removeEventListener('pointerup', popLootOnce, { capture:true });
-  if(list || money) showLoot(list||[], null, money);
+  if(list || money || exp) showLoot(list||[], afterLoot, money, { exp, title:'戰利品' });
+}
+/* ══⚠⚠ 「戰利品確認完點擊後就離開結算頁」（ver -439，Ray 指定）══════════════
+   以前要按兩次：確認戰利品收掉視窗 → 再按一次「繼續」才走。但戰利品本來就是這一頁
+   的最後一件事，看完就沒有別的可看了。
+   ⚠ **只有劇情／城鎮那一場（`script-continue`）自動走**：
+     · `rematch`（試玩版出陣）拿到 S 之後那一按是「迎擊」的岔路 —— 自動按下去會替
+       玩家把那個選擇做掉。
+     · `tutorial-home` 的結算頁後面還有監察官的第二句（outro）要點出來。
+     兩者都留給玩家自己按。 */
+function afterLoot(){
+  if(state.resultMode==='script-continue') onRematchBtn();
 }
 
 function applyTutorialResult(){

@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.26-438';
+export const VERSION = 'ver 2026.08.26-439';
 
 export const GAME_CONFIG = {
 
@@ -1007,7 +1007,12 @@ export const GAME_CONFIG = {
        ⚠ 與 `parSec` 是兩條線：`parSec`（50）＝**沒過關**的分歧；
          `prizeSec`（30）＝**拿獎品**的門檻。中間那一段是「過關但沒獎品」。
        ⚠ 已經有那把槍就不再給（見 inspector.scriptSettle）。 */
-    range_trainee: { enemy:'dart_target', record:'range',
+    /* ⚠⚠ `noReward`（ver -439，Ray：「靶不要給 exp 跟錢」）：這一場**不給 EXP、
+         不給金錢**。它可以重打到膩 —— 給獎勵就是一台印鈔機，而且「被評一次分」
+         本來就已經免了（`EVAL_SKIP`）。
+       ⚠ **破紀錄的獎品照給**（`timeAttack.prize`）：那是這一場的目的，不是報酬。
+       ⚠ 判定在 `modules/inspector.js` 的 `scriptSettle` 讀這一欄，不認場次名。 */
+    range_trainee: { enemy:'dart_target', record:'range', noReward:true,
                      timeAttack:{ wrongPenaltySec:3, se:'se_dart_fail', parSec:50,
                                   prizeSec:30, prize:'Shotgun_Dragon' } },
     /* ══ 飛行頁的遭遇戰（ver -382）══ 怪撞上船 → 跳來這一頁打舒爾特盤。

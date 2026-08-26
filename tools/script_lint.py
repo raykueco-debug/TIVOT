@@ -303,7 +303,15 @@ def main():
                 if not bs:
                     warn('%s：懸賞榜 %s 目前一張委託都沒有' % (tag, n['board']))
             for key in ('lines', 'keeper', 'challengeLines', 'innEarly', 'innRenna'):
-                check_lines('%s.%s' % (tag, key), n.get(key))
+                v = n.get(key)
+                # ⚠ `innRenna` 自 ver -439 起是**分支表**（waited／passing，見
+                #   script/town.js）：一支一支驗，不要把 dict 丟進 check_lines
+                #   （它會 enumerate 出鑰匙字串然後在 `ln.get` 炸掉）。
+                if isinstance(v, dict):
+                    for k2, v2 in v.items():
+                        check_lines('%s.%s.%s' % (tag, key, k2), v2)
+                else:
+                    check_lines('%s.%s' % (tag, key), v)
             # ⚠ `acts`（主線段落，ver -424）也要驗 —— 那裡面才是真正的劇情，
             #   漏掉的話缺圖／打錯角色 id 要等演到那一句才發現。
             for i, a in enumerate(n.get('acts') or []):

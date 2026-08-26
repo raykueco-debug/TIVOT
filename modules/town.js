@@ -343,12 +343,25 @@ function shopClose(){
    ⚠⚠ 走進店裡出現的是**這一顆**，不是那張單子（Ray：「把買賣窗變成一個大的按鈕，
      點下去開全畫面窗」）。理由見 `ensureLayer` 那一段：常駐的單子會蓋住任何
      要指著畫面的演出（整備教學指的吊墜就在它底下）。
-   ⚠ 鈕上寫**這一家店在做什麼**（買賣／懸賞榜），不是店名 —— 店名已經在上緣那一行。 */
+   ⚠⚠ **鈕上寫店名**（ver -439，Ray：「把各店舖的『買賣』按鈕改成店名」）——
+     -430 那一版寫的是「這一家店在做什麼」（買　賣），理由是店名已經在上緣那一行；
+     但玩家走進店裡看到的第一個東西是這顆鈕，而上緣那一行在店舖模式下是**讓開臉**
+     的（`body.town-shop`）—— 於是三家店走進去長得一模一樣，都寫著「買　賣」。
+     寫店名才認得出自己站在哪。
+   ⚠ 公會的懸賞榜**不改**：那顆鈕開的不是買賣而是榜單，寫「懸賞榜」才對得上它做的事。
+   ⚠ 節點名是「帝都　武器店」（城名＋店名，全形空格分隔）—— 鈕上只要**後面那一段**：
+     玩家知道自己在哪座城，鈕上再寫一次只是把字擠小。分隔符與 `TOWNS[].nodes[].name`
+     同源，所以取最後一段就好，不必在這裡另存一份店名（鐵律 7）。 */
+function shopBtnName(n){
+  const s=String((n && n.name) || '');
+  const parts=s.split('　').filter(Boolean);
+  return parts.length ? parts[parts.length-1] : s;
+}
 function showShopBtn(on){
   const b=layer && layer.querySelector('#townShopBtn'); if(!b) return;
   const n=node();
   if(on && n){
-    b.querySelector('b').textContent = n.shop ? '買　賣' : '懸賞榜';
+    b.querySelector('b').textContent = n.shop ? (shopBtnName(n) || '買　賣') : '懸賞榜';
   }
   b.classList.toggle('on', !!on);
 }

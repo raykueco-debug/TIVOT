@@ -2072,6 +2072,9 @@ function preloadStory(startId, onProgress){
 const AL_RING_C = 301.59;
 function showLoader(){
   let ov=document.getElementById('assetLoader');
+  /* ⚠ 撿回**正在收**的那一顆：把它的收尾計時器取消，否則等一下它會被移除
+     （見 `close()` 的說明）。 */
+  if(ov && ov.__closeT){ ov.__closeT.forEach(clearTimeout); ov.__closeT=null; }
   if(!ov){
     ov=document.createElement('div'); ov.id='assetLoader';
     ov.innerHTML='<div id="alRing">'
@@ -2087,10 +2090,18 @@ function showLoader(){
      兩次硬切。⚠ `#assetLoader` 的底色本來就是近黑（`#0a0812`）、`transition:opacity`
      也早就在 CSS 上，這裡只是給它一個起點與終點。
      ⚠ 淡入要**隔一幀**才拿掉起始的 `.al-fade`：同一幀加上又拿掉的話瀏覽器會把兩次
-       計算合併，過場整個跳掉（同 `story.veil` 那一支的 `offsetWidth` 理由）。 */
-  ov.classList.add('al-fade');
+       計算合併，過場整個跳掉（同 `story.veil` 那一支的 `offsetWidth` 理由）。
+     ⚠⚠ **兩段**（ver -439，Ray：「進預載頁、結束預載頁都要黑色淡入淡出」）：
+       `.al-blank` ＝這一層已經全黑、但光圈還沒亮。-433 那一版只淡整層，於是
+       光圈與底色一起淡進來 ＝ 城鎮的畫面與金色光圈半透明地疊在一起，
+       那是溶接不是轉場。順序改成「城鎮 → 黑 → 光圈」、出場反過來走。 */
+  ov.classList.add('al-fade','al-blank');
   requestAnimationFrame(()=>requestAnimationFrame(()=>{
-    if(ov && ov.parentNode) ov.classList.remove('al-fade'); }));
+    if(!ov || !ov.parentNode) return;
+    ov.classList.remove('al-fade');                       // ① 黑幕淡入
+    setTimeout(()=>{ if(ov && ov.parentNode) ov.classList.remove('al-blank'); },
+               AL_FADE_MS);                               // ② 全黑之後才亮光圈
+  }));
   return {
     set(p){
       const pr=document.getElementById('alRingProg'), pc=document.getElementById('assetLoaderPct');
@@ -2098,16 +2109,37 @@ function showLoader(){
       if(pc) pc.textContent=Math.round(p*100)+'%';
     },
     /* 淡出，淡完才真的拿掉。⚠ 呼叫端（`runLoadGate`）要把黑幕留到淡完，
-       否則讀取頁還在淡出、底下的黑幕就先掀開了。 */
+       否則讀取頁還在淡出、底下的黑幕就先掀開了。
+       ⚠ 兩段（ver -439）：**先收光圈剩一片黑，再把黑掀開** —— 直接淡整層的話
+         玩家會看到光圈與新場景疊在一起。整段的長度是 `AL_CLOSE_MS`，
+         呼叫端要等的是那一個，不是 `AL_FADE_MS`。 */
+    /* ⚠⚠ 收場的計時器**掛在元素身上**（`__closeT`）：收一次要花 `AL_CLOSE_MS`，
+       這段期間若又有一道讀取閘門開起來，`showLoader()` 會撿到這一顆**正在死的**
+       元素當成新的用 —— 然後舊的收尾計時器一到就把它整個移除，新的讀取頁等於
+       沒出現過（實測連按兩下 SKIP 就會撞到）。撿回去的那一支負責把它們清掉。 */
     close(){ if(!ov) return;
-      ov.classList.add('al-fade');
-      setTimeout(()=>{ if(ov && ov.parentNode) ov.parentNode.removeChild(ov); }, AL_FADE_MS+60); }
+      const T=[]; ov.__closeT=T;
+      ov.classList.add('al-blank');                       // ① 光圈淡掉，只剩全黑
+      T.push(setTimeout(()=>{
+        if(!ov || !ov.parentNode) return;
+        ov.classList.add('al-fade');                      // ② 黑幕淡出，揭開新畫面
+        T.push(setTimeout(()=>{
+          if(ov && ov.parentNode) ov.parentNode.removeChild(ov);
+          if(ov) ov.__closeT=null;
+        }, AL_FADE_MS+60));
+      }, AL_BLANK_MS)); }
   };
 }
 /* 讀取頁淡入／淡出的長度。⚠ 與 `style.css` 的 `#assetLoader{transition:opacity .5s}`
    是同一個量，這裡取略短一點當「什麼時候可以拿掉」的依據（鐵律 7 的但書：
    改一邊要看另一邊）。 */
 const AL_FADE_MS = 420;
+/* 光圈自己淡進／淡出的長度。⚠ 與 `style.css` 的 `#alRing{transition:opacity .26s}`
+   同一個量（同 `AL_FADE_MS` 的但書：改一邊要看另一邊）。 */
+const AL_BLANK_MS = 260;
+/* 收掉讀取頁**整段**要多久（收光圈 ＋ 掀黑幕）。⚠ 呼叫端等的是這一個 ——
+   等成 `AL_FADE_MS` 的話黑幕會在光圈還沒收完時就先掀開。 */
+const AL_CLOSE_MS = AL_BLANK_MS + AL_FADE_MS;
 
 /* 演到 `{ load:'sceneId' }` 這一行：擋上標準讀取頁，把那個場景的素材抓完再往下走。
    ⚠ 停留有**下限 600ms**：快取全中時只要一百多毫秒，閃一下讀起來像破圖不像在載入
@@ -2130,7 +2162,7 @@ function runLoadGate(sceneId){
       advance();                                   // 在黑幕底下把新場景的第一拍演出來
       /* ⚠ 黑幕要等**讀取頁淡完**才掀（ver -433）：以前 120ms 就掀，那時讀取頁還沒
          淡走 —— 現在它是淡的，先掀黑幕會看到「讀取頁疊在新場景上一起變淡」。 */
-      setTimeout(()=>{ if(fade){ fade.classList.remove('on'); fadeOwner=null; } }, AL_FADE_MS+120);
+      setTimeout(()=>{ if(fade){ fade.classList.remove('on'); fadeOwner=null; } }, AL_CLOSE_MS+120);
     }, Math.max(0, 600-(Date.now()-t0)));
   });
 }

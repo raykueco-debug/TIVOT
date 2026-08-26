@@ -249,7 +249,25 @@ function flightWin(){ const f=$('flightFrame'); return f ? f.contentWindow : nul
        船還在原座標（ver -388，Ray：「戰鬥結束不要另跑預載頁」）。
    ⚠ 兩條路的差別只有一件事：進入時把 iframe **重載**，回程只是把它顯示回來。
    ⚠ 重載要走 `contentWindow.location.reload()` —— 把 `src` 設成同一個字串**不會**重載。 */
+/* 出航／試飛 → 飛行頁的**黑色淡入**（ver -439，Ray：「進預載頁、結束預載頁都要
+   黑色淡入淡出」）。⚠ 走 `story.veil()`（唯一那一片黑幕，鐵律 8）：城鎮就演在
+   劇情舞台上，蓋它的那一片本來就在。黑幕蓋滿之後才把 iframe 換上來 ——
+   iframe 的底色是近黑，於是玩家看到的是「城鎮 → 黑 → 讀取頁的光圈亮起」一次剪接，
+   而不是城鎮被一格黑畫面「啪」地換掉。
+   ⚠ 黑幕**不必收**：`body.flight-on` 會把整個劇情層藏起來（visibility），
+     連黑幕一起收走 —— 收回來時城鎮那邊自己會重新蓋上（`town.open` 的 `veil(true,0)`）。
+   ⚠ 打完戰鬥回飛行頁（`opts.resume`）**不走這一段**：那時畫面上是結算頁不是城鎮，
+     劇情舞台是關著的 —— 黑幕看不見，只會白等 280ms。 */
+const FLIGHT_VEIL_MS = 280;
 function openFlight(opts){
+  if(!(opts && opts.resume) && !openFlight.__veiling){
+    openFlight.__veiling = true;
+    story.veil(true, FLIGHT_VEIL_MS);
+    /* ⚠⚠ 旗標要**在遞迴回來之後**才放掉：先放的話第二次進來守門又成立，
+       於是每 280ms 蓋一次黑幕、永遠開不了飛行頁（實測就這樣卡在全黑的槍棺上）。 */
+    setTimeout(()=>{ try{ openFlight(opts); } finally { openFlight.__veiling=false; } }, FLIGHT_VEIL_MS);
+    return;
+  }
   const f=$('flightFrame');
   if(!f){ window.location.href='flight/'; return; }      // 沒有這個框就退回舊的跳頁
   /* ⚠⚠ **主遊戲這一頁的 BGM 一定要先收掉**（ver -391，Ray：「BGM 播下一首就停上一首，

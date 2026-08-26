@@ -30,23 +30,43 @@ function ensureCss(){
 
 /* 顯示並入袋。list＝`[{id,n},…]`；done＝按下確認之後要做的事。
    ⚠ 空清單直接跳過（連視窗都不出）—— 「你什麼都沒撿到」不需要一頁。 */
-/* `list`＝`[{id,n},…]`；`money`＝這一次掉的錢（可省）。
-   ⚠ 金錢與道具**同一個視窗**（Ray：「併入道具欄顯示」）—— 分兩頁彈會讓玩家點兩次。 */
-export function showLoot(list, done, money){
+/* `list`＝`[{id,n},…]`；`money`＝這一次掉的錢（可省）；`opts`＝`{exp,title}`（可省）。
+   ⚠ 金錢與道具**同一個視窗**（Ray：「併入道具欄顯示」）—— 分兩頁彈會讓玩家點兩次。
+   ⚠⚠ **EXP 也在這一頁，而且與金錢同一列**（ver -439，Ray：「把獲得的錢跟 exp
+     放同一排」）。原本 EXP 印在結算頁的等第那一行、金錢印在這一頁 —— 同樣是
+     「這一場拿到什麼」，卻分在兩個畫面上。合成一列之後這一頁就是**這一場的收穫**，
+     結算頁那一行只剩等第。
+   ⚠ `title` 可換（戰後叫「戰利品」、商店／劇情取得仍是「拾得道具」）—— 那是
+     **來源**的差別，不是這一頁的職責變了，所以是參數不是第二支實作（鐵律 8）。
+   ⚠ 有 EXP 就一定要彈這一頁：拿不到錢也拿不到道具的那一場，EXP 是唯一的收穫。 */
+export function showLoot(list, done, money, opts){
   ensureCss();
+  const o=opts||{};
   const rows=(list||[]).filter(x=>x && x.id && (x.n==null || x.n>0));
   money=Math.max(0, money|0);
-  if(!rows.length && !money){ done && done(); return; }
+  const exp=Math.max(0, o.exp|0);
+  if(!rows.length && !money && !exp){ done && done(); return; }
   inv.addMany(rows);                                   // ← 真正入袋
   if(money) inv.addMoney(money);
+
+  /* 金錢＋EXP 那一列。⚠ 兩個都沒有就整列不出（例如打靶只拿到獎品那一次）。
+     ⚠ 用 `.loot-gain` 這個新類，不沿用 `.loot-money`：那個類是「名稱＋數量」的
+       兩欄版面，這一列是**兩組**名稱＋數量並排，撐不進同一份樣式。 */
+  const gain = (money || exp)
+    ? '<div class="loot-row loot-gain">'
+      + (money ? '<span class="lg-item"><span class="loot-name">'+inv.moneyName()
+               + '</span><span class="loot-n">＋'+money+'</span></span>' : '')
+      + (exp   ? '<span class="lg-item"><span class="loot-name">EXP</span>'
+               + '<span class="loot-n">＋'+exp+'</span></span>' : '')
+      + '</div>'
+    : '';
 
   const ov=document.createElement('div'); ov.id='lootSheet';
   ov.innerHTML =
       '<div class="loot-panel">'
-    +   '<div class="loot-title">拾得道具</div>'
+    +   '<div class="loot-title">'+(o.title || '拾得道具')+'</div>'
     +   '<div class="loot-list">'
-    +     (money ? '<div class="loot-row loot-money"><span class="loot-name">'+inv.moneyName()
-                 + '</span><span class="loot-n">＋'+money+'</span></div>' : '')
+    +     gain
     +     rows.map(r=>{
             const n = (r.n==null?1:r.n);
             const d = inv.defOf(r.id) || {};

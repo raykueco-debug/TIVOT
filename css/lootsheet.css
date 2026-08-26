@@ -59,6 +59,15 @@
   #lootSheet .bag-empty{font-size:11px;color:var(--gold-dim);opacity:.6;padding:2px 10px 6px;}
   /* 金錢：拾得視窗裡是一列（金色），道具欄裡是標題下的餘額條。 */
   #lootSheet .loot-money .loot-name,#lootSheet .loot-money .loot-n{color:var(--gold);}
+  /* ══ 「這一場拿到什麼」那一列（ver -439）══════════════════════════════════
+     金錢與 EXP **並排在同一列**（Ray 指定）。⚠ 版面覆寫掉 `.loot-row` 的兩欄 grid：
+     那一份是「名稱在左、數量在右」，而這一列是**兩組**名稱＋數量，要靠 flex 平分。
+     ⚠ 只有一種收穫（打靶只有 EXP、或只有錢）時就只出一格，靠 `flex:1` 自己撐滿。
+     ⚠ 兩組都用金色：它們是獎勵不是道具，與底下的道具列要一眼分得開。 */
+  #lootSheet .loot-gain{display:flex;gap:10px;}
+  #lootSheet .loot-gain .lg-item{flex:1 1 0;display:flex;justify-content:space-between;
+    align-items:baseline;gap:8px;min-width:0;}
+  #lootSheet .loot-gain .loot-name,#lootSheet .loot-gain .loot-n{color:var(--gold);}
   #lootSheet .bag-money{display:flex;justify-content:flex-end;align-items:baseline;gap:2px;
     font-size:11px;letter-spacing:2px;color:var(--gold-dim);margin:-4px 2px 8px;}
   #lootSheet .bag-money b{font-size:15px;color:var(--gold);letter-spacing:1px;}

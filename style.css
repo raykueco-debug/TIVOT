@@ -70,6 +70,18 @@
      淡這一整層就好，不必另外疊一片黑（見 modules/story.js 的 showLoader）。
      ⚠ 開機那一頁**不受影響**：它的離場是 Ray 設計的聖光綻放，那是另一件事。 */
   #assetLoader.al-fade{opacity:0;}
+  /* ══⚠⚠ **先黑，才有內容；先收內容，才掀黑**（ver -439，Ray：「進預載頁、結束
+     預載頁都要黑色淡入淡出」）══════════════════════════════════════════════
+     -433 那一版只淡「整層」，於是光圈與底色是**一起**淡進來的 —— 畫面上看到的是
+     城鎮的背景與金色光圈疊在一起半透明地互換，那讀起來是溶接不是轉場。
+     多一段 `.al-blank`（＝這一層已經全黑、但內容還沒亮）之後順序才對：
+       進：城鎮 → 黑 → 光圈亮起
+       出：光圈淡掉 → 黑 → 新畫面
+     ⚠ 內容淡的是 `#alRing`（光圈、百分比、SAINT INSTALL 都在它底下），不是整層 ——
+       整層一淡底色就跟著透，黑就破了。
+     ⚠ 開機那一頁**不受影響**：它從一片黑開始，而且離場是 Ray 設計的聖光綻放。 */
+  #assetLoader #alRing{transition:opacity .26s ease;}
+  #assetLoader.al-blank #alRing{opacity:0;}
   /* 金色光圈讀取：與首頁紋章外圓重合（位置/圈徑由 main.js placeRing 依 #homeEmblem 實測；
      量不到前用此處預設保底）。進度沿圈順時針推進；圈內上=百分比、下=SAINT INSTALL。 */
   #assetLoader #alRing{position:absolute;left:50%;top:23%;width:200px;height:200px;
@@ -741,6 +753,31 @@
     opacity:0;transform:translateY(14px) scale(.98);
     -webkit-mask-image:linear-gradient(to bottom,#000 86%,transparent 100%);
     mask-image:linear-gradient(to bottom,#000 86%,transparent 100%);}
+  /* ══⚠⚠ **膝部以上**（ver -439，Ray：「蕾娜的結算畫面不用全身，膝部以上」）══════
+     全身站在這個只有三百多像素高的舞台上，臉小到讀不出表情 —— 而這一頁她整段
+     都在講評語，表情就是內容。
+     作法：**把圖放大再把下半裁掉**，不是換一張半身圖（沒有那張圖，而且立繪的
+     取景值只有 `speakers.js` 那一份，§6.5 —— 不要為了結算頁另量一組）。
+       · `--knee`＝人物從頭頂到膝蓋佔全圖的幾成（實測 Renna_SI_* 站姿：頭頂 y≈0、
+         腳底 y≈1521 / 1536，膝約 y≈1105 → 0.72）。所有差分同一個姿勢比例，共用一個值。
+       · 圖高給 `100%/--knee` ＝ 可見的那 100% 剛好是頭頂到膝；`flex-start` 讓它靠上，
+         溢出的小腿由舞台的 `overflow:hidden` 收掉。
+     ⚠⚠ `max-width` **也要解掉**：這個舞台比立繪窄（340×592 vs 2:3），要讓頭到膝
+       撐滿 592px，圖就得寬到 549px ＝ 比舞台寬 209px，兩側各溢出約 104px 由
+       `overflow` 收掉（她的頭髮左右緣剛好還在框內）。不解的話寬度被夾回 340，
+       `object-fit:contain` 會**把圖縮小再上下留白**，可見的那 72% 有一大截是空的 ——
+       實測裁在大腿而不是膝（等於沒對準）。
+     ⚠ `max-height` 同理要解掉：不解的話高度被夾回 100%，等於沒放大。
+     ⚠ 下緣那道漸隱要**搬到舞台上**：原本掛在 `<img>` 上，而 86% 的位置現在落在
+       裁切線之外（看不到）—— 不搬的話膝蓋處會是一條硬邊。
+     ⚠ 只給 `opts.speaker` 那一頁（蕾娜）。監察官（芙蕾雅）用的是另一組立繪，
+       取景不同，沒量過就不要一起套。 */
+  #inspectorStage.knee{overflow:hidden;align-items:flex-start;--knee:.72;
+    -webkit-mask-image:linear-gradient(to bottom,#000 86%,transparent 100%);
+    mask-image:linear-gradient(to bottom,#000 86%,transparent 100%);}
+  #inspectorStage.knee #inspectorPortrait{max-width:none;max-height:none;
+    width:auto;height:calc(100% / var(--knee));
+    -webkit-mask-image:none;mask-image:none;}
   #banner.seq #inspectorPortrait{animation:portraitIn .5s cubic-bezier(.2,.7,.3,1) both;}
   @keyframes portraitIn{ from{opacity:0;transform:translateY(14px) scale(.98);}
     to{opacity:1;transform:none;} }
@@ -1650,6 +1687,8 @@
   #storyVeil{position:absolute;inset:0;z-index:20;pointer-events:none;background:#000;
     opacity:0;transition:opacity .5s ease;}
   #storyVeil.on{opacity:1;pointer-events:auto;}
+  /* 槍棺與楣不隨切景一起黑（ver -439）—— 規則排在 `#storyStage:has(#storyHint) #kerb`
+     之後才蓋得過它（同權重比先後），見那一行下面。 */
   @keyframes storyPanUp{ from{object-position:50% 100%;} to{object-position:50% 0%;} }
   @keyframes storyPanDown{ from{object-position:50% 0%;} to{object-position:50% 100%;} }
   /* 暗調 CI 插入：半身/全身圖從側邊切進來，壓暗到只剩剪影感（Ray 指定「暗調」）。
@@ -2409,5 +2448,19 @@
        在子元素上寫 `z-index:10` 是**沒有用的**，它永遠跟著父層一起被壓在遮罩下。
        要抬就得抬 `#kerb` 那一整層（用 `:has()` 只在提示開著的那一拍抬）。 */
   #storyStage:has(#storyHint) #kerb{z-index:10;}
+  /* ══⚠⚠ **槍棺與楣不在淡入淡出的範圍內**（ver -439，Ray 指定）══════════════
+     切景時黑掉的是**上半的那一景**（背景、立繪、導覽、旅店那排鈕）；下半的槍棺是
+     **玩家的機體**，它不隨場景換 —— 跟著一起黑等於每走一步整台機器都重開一次。
+     作法是把 `#kerb` 抬到黑幕之上（21 > 20），不是把黑幕改成只蓋上半：
+     黑幕要能吃掉導覽與大廳那些**浮在畫面各處**的鈕，夾成上半就漏掉它們了。
+     ⚠ 楣（`#kerbTop`）與吊墜、齒輪都是 `#kerb` 的子孫 ＝ 同一個剛體，一起留下。
+     ⚠⚠ **抬上去之後要把那兩顆可按的關掉**：齒輪（`#storyExit`）與吊墜（`#kerbPend`）
+       自己帶 `pointer-events`，黑幕已經在它們底下擋不住了 —— 不關的話玩家會在
+       轉場途中按開選單／整備頁，落在一個正在換的場景上。
+     ⚠ 這一條要排在 `#storyStage:has(#storyHint) #kerb` 之後（同權重，後者才蓋得過）。 */
+  #storyStage:has(#storyVeil.on) #kerb{z-index:21;}
+  #storyStage:has(#storyVeil.on) #storyExit,
+  #storyStage:has(#storyVeil.on) #kerbPend{pointer-events:none;}
+
   .hint-spot{position:relative;}
   #kerbPend.hint-spot,#storyExit.hint-spot{filter:drop-shadow(0 0 14px rgba(111,179,212,.95));}

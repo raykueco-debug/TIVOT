@@ -247,6 +247,18 @@
   #boot{opacity:1;transition:opacity .45s ease;}
   #boot.fade{opacity:0;pointer-events:none;}
   #boot.hide{display:none;}
+  /* ══⚠⚠ **先黑，才有內容；先收內容，才掀黑**（ver -439，Ray：「進預載頁、結束
+     預載頁都要黑色淡入淡出」）══════════════════════════════════════════════
+     -433 那一版只淡「整層」，於是收場時光圈與飛行畫面是**疊在一起**淡出的 ——
+     那是溶接不是轉場。多一段 `.blank`（這一層還是全黑、但光圈與立繪已經收掉）
+     之後順序才對：
+       進：黑 → 光圈與立繪亮起
+       出：光圈與立繪淡掉 → 剩一片黑 → 掀開飛行畫面
+     ⚠ 淡的是**內容**（`#bRing` / `#bStage` / `#bMsg`）不是整層：整層一淡底色就跟著
+       透，黑就破了。⚠ 與主程式那一份（style.css 的 `#assetLoader.al-blank`）是同一套
+       作法的**第二份** —— 這一頁 import 不到那邊（鐵律 7 的但書：改一邊要看另一邊）。 */
+  #boot #bRing,#boot #bStage,#boot #bMsg{transition:opacity .26s ease;}
+  #boot.blank #bRing,#boot.blank #bStage,#boot.blank #bMsg{opacity:0;}
   /* 金色光圈讀取：進度沿圈自 12 點鐘起順時針推進；圈內上=百分比、下=地名字樣 */
   #bRing{position:absolute;left:50%;top:23%;width:200px;height:200px;
     transform:translate(-50%,-50%);border-radius:50%;
@@ -9458,6 +9470,9 @@ const bootUI=(()=>{
   // 節奏同主程式讀取畫面：洗牌後依序循環（＝隨機且整輪不重複），
   //   淡入 → 停 HOLD(5s) → 淡出 → FADE+50 後換句（HOLD/FADE 值同 config.tuning）
   const HOLD=5000, FADE=400;
+  /* 光圈／立繪自己淡進淡出的長度。⚠ 與上面 CSS 的 `#boot #bRing{transition:.26s}`
+     同一個量（改一邊要看另一邊）。 */
+  const BLANK_MS=260;
   const hints=BOOT_HINTS.slice();
   for(let i=hints.length-1;i>0;i--){ const j=Math.random()*(i+1)|0; [hints[i],hints[j]]=[hints[j],hints[i]]; }
   let hintI=0, timer=0;
@@ -9476,6 +9491,17 @@ const bootUI=(()=>{
     }, HOLD);
   }
   cycle();
+  /* 進場：這一層本來就是全黑的（`#boot` 的底色），先把內容藏起來、隔一幀再亮 ——
+     於是玩家看到的是「黑 → 光圈浮出來」，而不是連黑帶光圈一起硬切上來。
+     ⚠ 要隔一幀（`requestAnimationFrame` 兩次）才拿得掉，同主程式 showLoader 的理由：
+       同一幀加上又拿掉會被合併成一次計算，過場整個跳掉。 */
+  {
+    const b=$('boot');
+    if(b){
+      b.classList.add('blank');
+      requestAnimationFrame(()=>requestAnimationFrame(()=>b.classList.remove('blank')));
+    }
+  }
   return {
     /* ⚠ 只推進度，不寫字。階段名稱留在呼叫端當註解 —— 那是給讀程式的人看的，
        不是給玩家看的（Ray 指定讀取畫面只出現 SAINT INSTALL）。 */
@@ -9483,10 +9509,15 @@ const bootUI=(()=>{
       $('bProg').setAttribute('stroke-dashoffset', (RING*(1-clamp(p,0,1))).toFixed(1));
       $('bPct').textContent=Math.round(clamp(p,0,1)*100)+'%';
     },
-    /* ⚠ 黑色淡出（ver -433）：先淡，淡完才 `display:none`（見那一段 CSS）。 */
+    /* ⚠ 黑色淡出（ver -433）：先淡，淡完才 `display:none`（見那一段 CSS）。
+       ⚠⚠ **兩段**（ver -439）：先把光圈與立繪收掉（`.blank`，剩一片黑），
+         再把黑掀開 —— 直接淡整層的話玩家會看到光圈與飛行畫面疊在一起。 */
     done(){ clearTimeout(timer); const b=$('boot'); if(!b) return;
-      b.classList.add('fade');
-      setTimeout(()=>b.classList.add('hide'), 480); },
+      b.classList.add('blank');
+      setTimeout(()=>{
+        b.classList.add('fade');
+        setTimeout(()=>b.classList.add('hide'), 480);
+      }, BLANK_MS); },
   };
 })();
 
