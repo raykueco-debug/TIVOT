@@ -671,6 +671,10 @@ function setSail(){
     /* 船已經到手：交給飛行頁。⚠ 城鎮的位置目前不存 —— 飛行頁那邊回來時走的是
        `tivot_flight_ret_v1`（座標），城鎮節點要不要一起存是另一件事（§6.9 的清單）。 */
     stepSfx();
+    /* ⚠⚠ **先把城鎮的介面收起來**（ver -437）：`flight-on` 只是把舞台藏起來，
+       交棒進戰鬥那一刻它會被拿掉 —— 不收的話方向箭頭與地名就從槍棺底下冒出來
+       （見 `suspend()` 的說明）。狀態留著，回來時 `resume()` 接回去。 */
+    suspend();
     /* ⚠ 走注入的開啟器（ver -388）：飛行頁現在是**內嵌 iframe**，不跳頁 ——
        跳頁會讓音訊要重新解鎖（見 CLAUDE.md §6.10）。town 不 import main，所以用注入。 */
     if(flightOpener) flightOpener(); else location.href='flight/index.html';
@@ -994,6 +998,32 @@ export function close(){
   document.querySelectorAll('.kerb-arrow').forEach(a=>a.classList.remove('avail','holding'));
 }
 export function isOpen(){ return !!townId; }
+/* ══ 出航：把城鎮的介面收起來，但**不關掉城鎮**（ver -437）══════════════
+   Ray：「飛行畫面閉棺時下方出現城鎮的移動選項…飛行畫面城鎮的時間地點殘留。」
+   ⚠⚠ 成因：出航之後 `body.flight-on` 只是把 `#storyStage` **藏起來**
+     （`visibility:hidden`，§6.10 刻意不用 `display:none`）—— 城鎮那一層還原封不動
+     掛在上面。而遭遇交棒進戰鬥時 `closeFlightFrame()` 會把 `flight-on` 拿掉，
+     那一刻城鎮的方向箭頭與地名／時刻就從槍棺底下冒出來。
+   ⚠⚠ **不能用 `close()`**：那會清掉 `townId`，打完回來就沒有節點可回（§6.10 的舊傷
+     「打完靶跟賞金獵人後返回鍵不見了」就是這個）。所以收的是**介面**不是狀態。
+   ⚠ 收的四樣與換節點那張檢查表同源（§6.5 的新路徑檢查表）：導覽、店舖、旅店、立繪。 */
+export function suspend(){
+  clearTimeout(arriveT); arriveT=0;
+  story.endAdhoc();
+  chatterOn=false;
+  showNav(false);
+  shopClose();
+  inn.close();
+  story.clearCast();
+  story.hideBubble();
+}
+/* 從飛行頁回到城鎮：把介面接回來。⚠ **不重跑 `afterArrive`** —— 那一支會再叫一次
+   `inn.arrive`（旅店的招呼會重播）與 `showTip`。回來只要看得到路與店就好。 */
+export function resume(){
+  if(!townId) return;
+  bindInput(); refreshArrows(); showNav(true);
+  shopEnter();
+}
 /* 存檔要帶的「人在哪」（ver -430）。⚠ 與 `story.getPosition()` 是同一件事的兩面：
    在城裡就有這個、在劇情裡就有那個 —— 存檔兩個都問，讀檔挑有值的那一個。
    ⚠ 這是**存在存檔紀錄裡**的欄位，不是 localStorage 的一輪內鑰匙，

@@ -311,7 +311,10 @@ window.__tivotFlight = {
     /* ⚠ 底下是誰，就把誰的曲子接回來（ver -391）—— 進飛行頁時主遊戲的 BGM 被收掉了，
        不接回來的話回到城鎮／首頁是一片安靜。 */
     const st=$('storyStage');
-    if(st && st.classList.contains('on')){ town.resumeBgm(); }
+    /* ⚠ 回到城鎮：曲子與**介面**都要接回來（ver -437）—— 出航時 `town.suspend()`
+       把導覽／店舖／立繪收掉了（見那一支的說明），不接回來玩家會停在一個
+       沒有路也沒有店的城裡。 */
+    if(st && st.classList.contains('on')){ town.resumeBgm(); town.resume(); }
     else{
       $('home').classList.add('on');
       SFX.playBgm(asset('bgm_home'), { volume: bgmVol('bgm_home') });
@@ -757,7 +760,10 @@ bindBtn('prepGo', ()=>{ const st=prepStoryMode; closePrep(); if(!st) launchBattl
    （ver -422，Ray：「整備畫面錯了，開啟全畫面視窗，有三個功能」）。 */
 story.setPrepOpener(()=>gear.open());
 /* 劇情裡的「出航」那一拍（ver -424）：交給同一支 `openFlight`（唯一的入口，鐵律 8）。 */
-story.setFlightOpener(()=>openFlight());
+/* ⚠ 腳本的 `goFlight` 那一拍（主線的出航）也要先收城鎮的介面（ver -437）——
+   與城鎮自己那顆「出航」走同一條規矩（鐵律 8）：`town.suspend()` 只收介面不收狀態，
+   城鎮沒開著時它自己 no-op。不收的話交棒進戰鬥那一刻方向箭頭會從槍棺底下冒出來。 */
+story.setFlightOpener(()=>{ town.suspend(); openFlight(); });
 // 首頁「教學」鈕：強制下一場進教學（不動已看旗標），不經整備頁直接出陣
 bindBtn('tutorialBtn', ()=>{ tutorial.requestReplay(); launchBattle(); });
 
