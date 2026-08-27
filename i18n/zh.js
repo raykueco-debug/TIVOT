@@ -16,7 +16,7 @@ export const STRINGS = {
   /* ═══ 1. 首頁 ═══ */
   home: {
     title:        '聖約第四騎士團',
-    start:        '出陣',
+    start:        '挑戰',   // ver -471（Ray：「試玩版的出陣現在改成挑戰」）
     tutorialBtn:  '教學',
     continueBtn:  '繼　續',              // 首頁：進最新存檔（ver -430）
     weaponLabel:  '副武器',

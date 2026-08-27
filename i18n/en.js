@@ -6,7 +6,7 @@ export const STRINGS = {
   /* ═══ 1. 首頁 ═══ */
   home: {
     title:        'The IV Order of Testament',
-    start:        'DEPLOY',
+    start:        'CHALLENGE',   // ver -471：出陣→挑戰
     tutorialBtn:  'TUTORIAL',
     continueBtn:  'CONTINUE',             // 首頁：進最新存檔（ver -430）
     weaponLabel:  'Sub-Weapon',

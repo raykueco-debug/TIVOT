@@ -13,7 +13,7 @@ export const STRINGS = {
   /* ═══ 1. 首頁 ═══ */
   home: {
     title:        '聖約第四騎士団',
-    start:        '出撃',
+    start:        '挑戦',   // ver -471：出陣→挑戰
     tutorialBtn:  'チュートリアル',
     continueBtn:  'つづきから',           // 首頁：進最新存檔（ver -430）
     weaponLabel:  '副武装',

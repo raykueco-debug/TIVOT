@@ -117,8 +117,11 @@ export function evaluate(stats, cfg = GAME_CONFIG.rating){
  *  監察官挑選 / 立繪 / 對白
  * ========================================================================== */
 // 取得當前啟用的監察官 config（無則 null）
-function getInspector(){
-  const key=GAME_CONFIG.defaultInspector;
+/* `bossWin`＝Boss 戰**打贏**的那一頁（ver -471，Ray：「挑戰的boss戰結算畫面
+   原本是監察官，改成璐娜莉亞」）→ 改用 config.bossInspector（luna）。
+   戰敗、迎擊警告（interceptLine）、其他一切照 defaultInspector（芙蕾雅）。 */
+function getInspector(bossWin){
+  const key=(bossWin && GAME_CONFIG.bossInspector) || GAME_CONFIG.defaultInspector;
   if(!key) return null;
   return GAME_CONFIG.inspectors[key] || null;
 }
@@ -153,8 +156,11 @@ function pickEvaluator(rankKey, battleId){
            line: one.text || '' };
 }
 
-function pickInspectorPortrait(insp){
+function pickInspectorPortrait(insp, rankKey){
   if(!insp) return null;
+  /* 逐等第差分優先（ver -471，璐娜莉亞）：portraitsByRank[等第]；
+     沒有這一組（芙蕾雅）才走原本的好感門檻表。 */
+  if(insp.portraitsByRank && rankKey && insp.portraitsByRank[rankKey]) return insp.portraitsByRank[rankKey];
   return pickByThreshold(insp.portraits, state.currentFavor, insp.image||null);
 }
 
@@ -383,7 +389,7 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose, opts){
   // 監察官立繪＋台詞（一般失敗不跑監察官；Boss 戰失敗仍顯示監察官，播 Boss 失敗台詞）
   const insp = spk ? null
              : (opts && opts.noInspector) ? null
-             : ((isLose && !state.inIntruderFight) ? null : getInspector());
+             : ((isLose && !state.inIntruderFight) ? null : getInspector(state.inIntruderFight && !isLose));
   const stage=$('inspectorStage');
   const bubble=$('inspectorBubble');
   const portrait=$('inspectorPortrait');
@@ -398,7 +404,7 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose, opts){
   stage.classList.toggle('knee', !!spk);
   if(insp || spk){
     stage.style.display='flex';
-    const pKey = spk ? spk.portrait : pickInspectorPortrait(insp);
+    const pKey = spk ? spk.portrait : pickInspectorPortrait(insp, rankKey);
     /* ⚠ 監察官的立繪是 ASSETS 鍵，評價者的是直接路徑 —— 兩者都可能是空字串。 */
     portrait.src = spk ? (pKey||'') : (pKey ? asset(pKey) : '');
     portrait.style.display = portrait.src ? 'block' : 'none';

@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.27-470';
+export const VERSION = 'ver 2026.08.27-471';
 
 export const GAME_CONFIG = {
 
@@ -284,8 +284,34 @@ export const GAME_CONFIG = {
         lose:{ 0:['......確認HUND {rand3}號機能停止。辛苦了。'] },   // {rand3}＝隨機 3 位數（零補），由 inspector 代入
       },
     },
+    /* ══ 璐娜莉亞（ver -471，Ray 交稿）：**挑戰的 Boss 戰打贏**的結算評價者 ══
+       「挑戰的boss戰結算畫面原本是監察官，改成璐娜莉亞」—— 那一場是夢裡的對決，
+       醒來評語的是她自己。逐**等第**換立繪差分（portraitsByRank，S/A 共用 smirk）。
+       ⚠ **戰敗仍是芙蕾雅**（Ray 只交了 S~E 六句）：lose 的「機能停止」那句是
+         監察官的行話，混不進這一組。 */
+    luna: {
+      name:'璐娜莉亞',
+      tier:'rookie',
+      image:'inspector_luna_n',            // 保險 fallback（portraitsByRank 缺該等第時）
+      portraitsByRank:{
+        S:'inspector_luna_smirk', A:'inspector_luna_smirk',
+        B:'inspector_luna_n',     C:'inspector_luna_lookdown',
+        D:'inspector_luna_angry', E:'inspector_luna_hand',
+      },
+      portraits:{},
+      dialogues:{
+        S:{ 0:['做了場好夢呢。'] },
+        A:{ 0:['是夢啊......？ 真想再跟那傢伙打一場啊。'] },
+        B:{ 0:['只是夢啊......現在的我可不會輸。'] },
+        C:{ 0:['連在夢裡都那麼討人厭。'] },
+        D:{ 0:['......只是場夢而已嗎？'] },
+        E:{ 0:['手......又開始痛了。'] },
+      },
+    },
   },
   defaultInspector: 'freya',   // 填上面的鑰匙名即啟用；null＝結算畫面不顯示監察官
+  /* Boss 戰**打贏**的結算改由這一位評（ver -471）；戰敗與其他一切照 defaultInspector。 */
+  bossInspector: 'luna',
   /* ══ 讀取頁的**說明者**（ver -425，Ray：「從這個時點開始讀取頁的說明者變成蕾娜」）══
      出航那一刻起換人。⚠ 規則寫在資料上（旗標名 ＋ 換成誰），程式只負責問 ——
      主遊戲的讀取頁與**飛行頁自己的讀取頁**是兩個 document，兩邊都讀這一條
@@ -1335,6 +1361,13 @@ export const ASSETS = {
   cutin_saint:    "resources/partner/Luna_CI_saint.jpg",   // 聖徒化 cut-in 暫代圖
   partner_twin:   "resources/partner/Luna_SI_01.jpg",   // 雙槍修女立繪（暫用 cut-in 圖）
   inspector_freya: "resources/inspector/Freya_SI_01.webp",
+  /* Boss 戰（挑戰的槍之魔女）勝利結算評價者：璐娜莉亞（ver -471，Ray 交稿）——
+     坐姿立繪逐**等第**差分（S/A 共用 smirk）。lose 仍是芙蕾雅，這五張只有打贏用。 */
+  inspector_luna_smirk:    "resources/SI/Luna_SI_seat_smirk.webp",
+  inspector_luna_n:        "resources/SI/Luna_SI_seat_N.webp",
+  inspector_luna_lookdown: "resources/SI/Luna_SI_seat_lookdown.webp",
+  inspector_luna_angry:    "resources/SI/Luna_SI_seat_angry.webp",
+  inspector_luna_hand:     "resources/SI/Luna_SI_seat_hand.webp",
   enemy_witch:    "resources/enemy/GunWitch_Boss_CI.jpg",   // 槍之魔女（Boss）內嵌立繪
   enemy_facelessgiant: "resources/enemy/Saint_GT_CI.webp",   // 連戰第二隻：巨型聖徒（GT=giant）
   enemy_trainee:  "resources/enemy/Saint_TR_CI.webp",   // 教學專用敵：訓練用聖徒
