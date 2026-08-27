@@ -249,39 +249,34 @@ export function settle(totalTime, stats, opts={}){
               {name:(($('enemyName')&&$('enemyName').textContent)||'')});
   if(stats.overkill>0) sub += ` · OVERKILL ${Math.round(stats.overkill)}`;
 
-  // ── 評價系統（rating）：大字等級（顯眼）+ EXP + 各數值明細 ──
+  // ── 評價系統（rating）：大字等級（顯眼）+ 各數值明細 + EXP／金錢 ──
   const evalResult = evaluate(stats);
   let rows='';
-  /* ⚠ **EXP 不在這一行了**（ver -439）：它與金錢同一列，印在戰利品那一頁（Ray 指定）。
-     這一行只剩等第 —— 那是「打得好不好」，與「拿到什麼」本來就是兩件事。 */
   rows += `<div class="grade-wrap"><b class="grade-badge rank-${evalResult.grade}">${evalResult.grade}</b>`
         + `<span class="grade-meta"><span class="grade-cap">${L.result.gradeCap}</span></span></div>`;
   rows += ratingStatsRows(stats, totalTime);
-  if(isRecord) rows += `<div class="record">${L.result.newRecord}</div>`;
-  // ── 監察官結算展示（依評價等第挑台詞）──
-  showResultSequence(L.result.winTitle, sub, rows, evalResult.grade, false);
-
-  /* ── 戰鬥掉落（ver -368，Ray：「戰鬥有機會掉落」）──────────────────
-     ⚠ 機率與範圍在 `config.battleLoot`，這裡只擲骰（鐵律 1）。
-     ⚠ 與教學同一套手感：**點畫面才彈**（`_lootPending`），不自動蓋掉戰績。
-     ⚠ Boss 加成走 `bossMul` —— 打贏 Boss 掉一樣的錢會讓那一場顯得沒有回報。 */
+  /* ══⚠⚠ EXP 與金錢**直接放在結算頁、當場入帳**（ver -470，Ray：「exp跟金錢
+     不要放在戰利品，直接在結算計算」）══
+     與劇情結算（scriptSettle，ver -453）同一套。-439 曾把兩者搬去戰利品那一頁，
+     -453 只改了劇情場 —— 這裡是最後一條還在彈窗的路。
+     ⚠ 掉錢的機率與範圍照舊在 `config.battleLoot`（鐵律 1），這裡只擲骰；
+       Boss 加成走 `bossMul`。一般戰沒有道具掉落，戰利品視窗因此整個不彈。 */
+  let gainMoney = 0;
   {
     const bl=(GAME_CONFIG.battleLoot||{}).money;
     if(bl && Math.random() < (bl.chance!=null?bl.chance:0)){
       const lo=bl.min|0, hi=Math.max(lo, bl.max|0);
-      let gain=lo + Math.floor(Math.random()*(hi-lo+1));
-      if(state.inIntruderFight && bl.bossMul>1) gain=Math.round(gain*bl.bossMul);
-      _lootMoney = gain;
-    }
-    /* ⚠⚠ **EXP 也走這一條**（ver -439）：所以待彈的登記要在骰子**外面** ——
-       擲不中金錢的那一場照樣有 EXP，登記漏掉的話那一頁整個不出、EXP 就消失了
-       （它已經不在結算頁那一行上）。 */
-    _lootExp = evalResult.exp|0;
-    if(_lootMoney || _lootExp){
-      _lootPending = [];        // 沒有道具、只有錢／EXP 也要能彈（showLoot 吃得下）
-      document.addEventListener('pointerup', popLootOnce, { capture:true, once:true });
+      gainMoney=lo + Math.floor(Math.random()*(hi-lo+1));
+      if(state.inIntruderFight && bl.bossMul>1) gainMoney=Math.round(gainMoney*bl.bossMul);
+      inv.addMoney(gainMoney);
     }
   }
+  if(evalResult.exp|0) rows += '<div class="row"><span>EXP</span><b>＋'+(evalResult.exp|0)+'</b></div>';
+  if(gainMoney)        rows += '<div class="row"><span>'+inv.moneyName()+'</span><b>＋'+gainMoney+'</b></div>';
+  if(isRecord) rows += `<div class="record">${L.result.newRecord}</div>`;
+  // ── 監察官結算展示（依評價等第挑台詞）──
+  showResultSequence(L.result.winTitle, sub, rows, evalResult.grade, false);
+  _lootMoney = 0; _lootExp = 0;   // 金錢與 EXP 不再走戰利品那一頁
 
   // ── 隱藏關（New Hustle）解鎖判定：S 評價才解鎖，不自動觸發 ──
   //   由「再度執槍 → 迎擊」流程手動進入（見 onRematchBtn）。
