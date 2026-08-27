@@ -467,7 +467,7 @@ const COLOR_URL  = 'silvermoon_terrain.png';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -429';
+const FLIGHT_VER = 'ver -444';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -719,6 +719,26 @@ const SETTLEMENTS = [
   { n:'聖索菲亞城', x:559, y:562, t:'city1', f:'free',
     plan:'city/stown_plan.webp', planH:'city/stown_h.webp',
     planW:800, planRot:0.79, planTall:50 },
+  /* ── 北方泊地（ver -444，Ray 交件 `Northport1516,150.png`）──────────────
+     ⚠ 座標由 Ray 指定（檔名自帶）。地形對過：那裡是一個**朝北的海灣**，
+       岸線在 y≈140 一帶，城心往南一點、碼頭那一側朝海 —— 正是這張圖的構圖。
+     ⚠ **圖上方朝北** → `planRot:0`（Ray 指定）。這張是正俯視、碼頭畫在上緣，
+       轉任何角度都會讓碼頭離開海灣。
+     ⚠ 三個值（mx/my/planW/planRot）必須與 `flight/build_city.py` 的 JOBS 一致，
+       否則海岸線對不上（見那一支的檔頭）。
+     ⚠ **整地照聖王廳那一套**（ver -443 的結論）：不整平的話平面圖會貼在起伏的
+       地形上，格子的深度比失控 → 保險絲逐格跳過 → 城裡透出地貌。
+       它也是港城，所以那一段的「海不整平」守門同樣吃得到。
+     ⚠ `planTall` 給 40：這是碼頭市鎮不是聖座，塔樓不多；帝都 55、聖王廳 68。 */
+  /* ⚠ `plateThick:20`＝**底圖厚度 20**（Ray 指定），立面顏色＝插畫的邊緣色
+       （`buildPlanSkirt` 量出來的）。
+     ⚠ `noLandFill`＝**海底下不填成陸**：碼頭那一段本來就伸出海灣之上
+       （Ray：「碼頭可突出地塊」）—— 照其他城把「插畫說是陸」的海填起來，
+       碼頭就變成貼在新長出來的陸地上，不是懸在水面上了。 */
+  { n:'北方泊地', x:1516, y:150, t:'city2', f:'free', c:1, sea:0.0,
+    plan:'city/northport_plan.webp', planH:'city/northport_h.webp',
+    planW:700, planRot:0.0, planTall:40, plateThick:20, noLandFill:true,
+    podium:{ r:1.05, skirt:8, lift:0 } },
 ];
 /* 手繪平面圖：背景載，載不到就退回程序生成的街廓（同飛空艇/怪的雙軌）。
    ⚠ 不進 loadWorld：它只影響少數幾座城的外觀，擋開場不划算。 */
@@ -922,13 +942,44 @@ function massMipFor(key, img, scale){
   return { img:chain[i], ms:chain[i].width/img.width };
 }
 
+/* ══ 底圖厚度的「裙邊」貼圖（ver -444，Ray：「底圖厚度 20，立面顏色同邊緣色」）══
+   把平面圖的 **alpha 剪影**填上邊緣色 —— 畫的時候整格往下位移一段（見 cell 迴圈），
+   露出來的那一圈就是「厚度的立面」。
+   ⚠ 這正是 ver -312 結案時寫的正解（「把厚度沿平面圖的 alpha 剪影拉」）——
+     被拿掉的那一版（PLATE_DROP）錯在填的是**格網的正方形**，不吃 alpha。
+   ⚠ 邊緣色是**量出來的**（alpha 邊界像素的平均色），不是填死一個色碼 ——
+     Ray 指定「同邊緣色」，而每張插畫的岸邊顏色都不同。 */
+function buildPlanSkirt(im){
+  const cv=document.createElement('canvas'); cv.width=im.width; cv.height=im.height;
+  const g=cv.getContext('2d');
+  g.drawImage(im,0,0);
+  const d=g.getImageData(0,0,cv.width,cv.height).data;
+  let r=0,gg=0,b=0,n=0;
+  const W2=cv.width,H2=cv.height;
+  for(let y=1;y<H2-1;y+=2)for(let x=1;x<W2-1;x+=2){
+    const i=(y*W2+x)*4;
+    if(d[i+3]<128) continue;
+    /* 邊界＝自己不透明、四鄰有透明的 */
+    if(d[i-4+3]<128||d[i+4+3]<128||d[i-W2*4+3]<128||d[i+W2*4+3]<128){
+      r+=d[i]; gg+=d[i+1]; b+=d[i+2]; n++;
+    }
+  }
+  if(!n){ r=gg=90; b=70; n=1; }
+  /* 立面壓暗一點（×0.72）：它是「側面」，與受光的頂面同亮會讀成一片平的。 */
+  const col='rgb('+((r/n*0.72)|0)+','+((gg/n*0.72)|0)+','+((b/n*0.72)|0)+')';
+  g.globalCompositeOperation='source-in';
+  g.fillStyle=col; g.fillRect(0,0,cv.width,cv.height);
+  return cv;
+}
+const cityPlanSkirt={};     // plan → 裙邊剪影（只有帶 plateThick 的城會建）
 function ensureCityArt(s){
   const key=s.plan;
   if(!key || cityArtWanted[key]) return;
   cityArtWanted[key]=1;
   const im=new Image();
   // 預熱完才寫進 cityPlanArt：在那之前 planCity 是 false，走程序生成的退路
-  im.onload=()=>{ warmImage(im).then(()=>{ cityPlanArt[key]=im; }); };
+  im.onload=()=>{ warmImage(im).then(()=>{ cityPlanArt[key]=im;
+    if(s.plateThick) try{ cityPlanSkirt[key]=buildPlanSkirt(im); }catch(e){} }); };
   im.onerror=()=>{ console.warn('[city] 載不到 '+key+'，維持程序生成'); };
   im.src=key;
   if(!(key in cityMass)){ cityMass[key]=null; loadMass(key); }
@@ -1652,6 +1703,7 @@ function buildSettlements(){
     s.plan=S.plan||null; s.planW=S.planW||0; s.planRot=S.planRot||0;
     s.planH=S.planH||null; s.planTall=S.planTall||0;
     s.noWater=!!S.noWater; s.noLamps=!!S.noLamps; s.wallCol=S.wallCol||null;
+    s.plateThick=S.plateThick||0;      // 底圖厚度（世界單位，ver -444；0＝無）
     /* ⚠ 底圖厚度只在**有台座**的城開：抬高走 PODIUM_CLEAR，也只有台座城會抬。
        沒抬的城去畫側面，等於在地面下面憑空多一圈邊。 */
     s.hasPodium=!!S.podium;
@@ -1672,9 +1724,10 @@ const PLACES=[
      —— 地圖上會看到城與名牌分家。名牌跟著城走。 */
   {x:1366,y:936, name:'薇拉馮德港',   type:'帝國・港灣'},
   {x:985, y:858, name:'卡耶爾山谷',   type:'險地'},
-  /* ⚠ ver -313：由 (1000,300) 移到 (1496,160)（Ray 在現場指定的座標）。
+  /* ⚠ ver -313 由 Ray 現場指定 (1496,160)；ver -444 城的插畫落地在 (1516,150)
+     （檔名自帶座標），名牌跟著城走（同薇拉馮德那一條的理由）。
      export_mapref.py 的 PLACES 要同步，否則地圖參考圖會標在舊位置。 */
-  {x:1496,y:160, name:'北方泊地',     type:'泊地'},
+  {x:1516,y:150, name:'北方泊地',     type:'泊地'},
   {x:2030,y:590, name:'東方泊地',     type:'泊地'},
 ];
 
@@ -3224,7 +3277,10 @@ async function loadWorld(){
         const i=y*MAPW+x;
         if(!noW && pd[j2+2]>pd[j2]+8 && pd[j2+2]>50){     // 插畫說這裡是水
           HGT[i]=wl; raw[i]=wl/PEAK_SCALE; RIV[i]=1; COL[i]=rgb(84,120,142); water++;
-        }else if(HGT[i]<=CLOUD_H){                // 插畫說是陸、但地形是海 → 填起來
+        }else if(HGT[i]<=CLOUD_H && !S.noLandFill){  // 插畫說是陸、但地形是海 → 填起來
+          /* ⚠ `noLandFill`（ver -444，北方泊地）：**不填** —— 碼頭那一段就該
+             懸在海灣之上（Ray：「碼頭可突出地塊」），填了它就貼在新長出來的
+             陸地上。厚度的立面（plateThick）會把懸空的那一圈畫成實心的緣。 */
           HGT[i]=gh; raw[i]=gh/PEAK_SCALE; land++;
         }
       }
@@ -8117,6 +8173,8 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
          2·hw 是世界寬度，(W/2z) 是該深度的世界→螢幕比，再乘 pk 進緩衝。 */
       const wantW=Math.max(8, (2*hw)*(W/(2*Math.max(60,o.z)))*pk);
       const planSrc=planMipFor(o.s.plan, planImg, wantW);
+      /* 底圖厚度的裙邊剪影（ver -444）：只有帶 `plateThick` 的城才有，見 buildPlanSkirt。 */
+      const SKIRT=(o.s.plateThick>0 && cityPlanSkirt[o.s.plan]) || null;
       /* ── 底圖厚度（PLATE_DROP）：**已移除**（ver -312）─────────────────────
          -311 曾經逐格往下拉一道垂直四邊形，想用厚度蓋住「從廣場穿出來的草地」。
          ⚠⚠ 那是**治標**：真正的原因是格距太粗（見 QUALITY 的 cell 註解），
@@ -8269,6 +8327,25 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
           const su=Math.hypot(a1*kx, b1*ky), sv2=Math.hypot(c1*kx, d1*ky);
           const ou=clamp(OVER_PX/Math.max(su,1e-6), 0.6, 24);
           const ov=clamp(OVER_PX/Math.max(sv2,1e-6), 0.6, 24);
+          /* ── 底圖厚度（ver -444，Ray：「底圖厚度 20，立面顏色同邊緣色」）──
+             先把**邊緣色的剪影**（`cityPlanSkirt`）畫在往下位移一段的位置，
+             再讓頂面蓋上去 —— 內部被蓋住，露出來的那一圈就是厚度的立面。
+             位移量＝`plateThick × scaleH×syk ÷ z`，逐角自己的 z（近角位移大，
+             遠角小 —— 那是厚度該有的透視）。
+             ⚠ 這是 ver -312 結案時寫的正解（「沿平面圖的 alpha 剪影拉」）：
+               它吃 alpha，所以碼頭懸在海上那一段也有緣，而且不是方形台。
+             ⚠ 只在帶 `plateThick` 的城多這一筆 drawImage，其他城零成本。
+             ⚠ 裙邊是全解析的剪影，來源座標要換算（`planSrc` 可能是縮圖）。 */
+          if(SKIRT){
+            const dko=o.s.plateThick*scaleH*syk;
+            const La=dko/PS[PA+3], Lb=dko/PS[PB+3], Lc=dko/PS[PC+3];
+            const b1s=((qby+Lb)-(qay+La))/sw, d1s=((qcy+Lc)-(qay+La))/shh;
+            const ks=SKIRT.width/(sux*2);
+            CFB.setTransform(a1*kx/ks, b1s*ky/ks, c1*kx/ks, d1s*ky/ks,
+                             (qax-a1*sx-c1*sy-bx0)*kx, (qay+La-b1s*sx-d1s*sy-by0)*ky);
+            CFB.drawImage(SKIRT, (sx-ou*0.5)*ks, (sy-ov*0.5)*ks, (sw+ou)*ks, (shh+ov)*ks,
+                                 (sx-ou*0.5)*ks, (sy-ov*0.5)*ks, (sw+ou)*ks, (shh+ov)*ks);
+          }
           // 緩衝的座標系＝(螢幕座標 − 外框原點) × 縮放
           CFB.setTransform(a1*kx, b1*ky, c1*kx, d1*ky,
                            (qax-a1*sx-c1*sy-bx0)*kx, (qay-b1*sx-d1*sy-by0)*ky);

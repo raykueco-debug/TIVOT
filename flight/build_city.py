@@ -144,6 +144,21 @@ JOBS = [{
         (0.520, 0.360, 0.055, H_LAND),   # 大教堂（中央那座哥德式尖塔）
         (0.300, 0.090, 0.070, H_LAND),   # 山坡上的莊園／城堡群
     ],
+}, {
+    # ── 北方泊地（ver -444，Ray 交件）────────────────────────────────
+    # ⚠ 檔名自帶座標（`Northport1516,150.png`）＝ Ray 指定的落點。
+    # ⚠ **圖上方朝北**（Ray 指定）→ planRot 0：這張是正俯視、碼頭畫在圖的上緣，
+    #   轉任何角度都會讓碼頭離開北邊的海灣。
+    # ⚠ unsquash 1.0：它已經是正俯視（不是等角視），不必反投影 ——
+    #   照預設 1.60 拉伸會把整座城拉成長條。
+    'src': 'Northport1516,150.png',
+    'unsquash': 1.00,
+    'dst': 'northport_plan.webp',
+    'hdst': 'northport_h.webp',
+    'mdst': 'northport_mass.webp', 'jdst': 'northport_mass.json',
+    # ⚠ 必須與 index.html 的 SETTLEMENTS 一致（見檔頭）。
+    'mx': 1516, 'my': 150, 'planW': 700, 'planRot': 0.0,
+    'landmarks': [],
 }]
 
 # ── 街廓量體（index.html 的量體層用）──────────────────────────────────
