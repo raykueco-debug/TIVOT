@@ -6984,11 +6984,14 @@ const SCRIPTED_ENCOUNTERS = [
 let scriptPending = SCRIPTED_ENCOUNTERS.find(S=>flagOn(S.flag) && !flagOn(S.done)) || null;
 function scriptedDue(){
   if(!scriptPending) return null;
-  /* ⚠ 國界圖還沒載完就不判：`regionAt` 這時一律回 0（無主之地），
-     那會被讀成「已經出薩梅爾了」→ 一開場就在船塢上空刷怪。 */
-  if(!REGION) return null;
-  if(scriptPending.outOf!=null &&
-     regionAt(cam.x/MAP_SCALE, cam.y/MAP_SCALE)===scriptPending.outOf) return null;
+  /* ⚠ 「現在在哪一國」讀 updateRegion 發佈的 `regionCur`（ver -484，Ray：「遊戲
+     本來就會自行判定國界」）—— 以前這裡自己再 regionAt 一次＝同一個量兩個計算點
+     （鐵律 7）。過境的判定只有 updateRegion 那一份；國界一變（regionCur 換值、
+     蕾娜的過境提示也是吃它），下一幀這裡就放行＝一離境馬上生成。
+     ⚠ -1＝國界圖還沒載完／還沒判過 → 不判（0 是「無主之地」，沒載完就判會被
+       讀成「已經出薩梅爾了」，一開場就在船塢上空刷怪）。 */
+  if(regionCur===-1) return null;
+  if(scriptPending.outOf!=null && regionCur===scriptPending.outOf) return null;
   return scriptPending;
 }
 function spawnScripted(S){
