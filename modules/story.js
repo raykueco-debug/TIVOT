@@ -1275,9 +1275,26 @@ function layoutKerberos(){
 /* 吊墜按下去 ＝ 開整備頁（換搭檔／換副武器）。
    ⚠ 綁一次就好（`__bound`）：`layoutKerberos` 每次 resize 都會跑。
    ⚠ 推棺之後不能按（CSS 的 `#kerb.rise #kerbPend`），與齒輪同一條規矩。 */
+/* ══⚠⚠ 槍棺上那兩顆功能鍵**不是「點畫面」**（ver -440）══════════════════
+   Ray：「在槍店的整備教學點吊墜第一下會先跳買賣出來，應該直接跳整備畫面。」
+   ⚠⚠ 成因：`stopPropagation` 只擋了 **click**，而「點畫面」聽的是 **pointerup** ——
+     城鎮那一支（`modules/town.js` 的 `st.pointerup`：店裡點畫面＝把買賣鈕交還）
+     與劇情的推進都在那一發上。於是按吊墜等於同時按了畫面：買賣鈕先跳出來，
+     而教學要的「先整備、單子押後」整個被繞過去。
+   ⚠ 三種事件一起擋（down/up/click）：面盤的手勢（按住下拉＝加速、右滑＝自動）
+     是從 pointerdown 起算的，從鈕上起手不該被算成手勢。
+   ⚠ 收成**一支**（鐵律 8）：吊墜、齒輪、日後任何長在槍棺上的鈕都叫它，
+     不要每顆各記得擋一次 —— 漏掉的那一顆就是下一個同款 bug。 */
+function swallowTap(el){
+  if(!el || el.__swallow) return;
+  el.__swallow=true;
+  el.addEventListener('pointerdown', e=>e.stopPropagation());
+  el.addEventListener('pointerup',   e=>e.stopPropagation());
+}
 function bindPend(){
   const pd=$('kerbPend'); if(!pd || pd.__bound) return;
   pd.__bound=true;
+  swallowTap(pd);
   pd.addEventListener('click', e=>{ e.stopPropagation();
     try{ SFX.unlock(); }catch(_){}
     if(prepOpener) prepOpener();
@@ -2440,6 +2457,11 @@ function openHint(spec, done){
      一樣放行 —— 不要把玩家鎖在教學裡。 */
   const onTgt = ()=>setTimeout(finish, 60);
   tgt.addEventListener('click', onTgt, true);
+  /* ⚠ 遮罩自己也要吃掉 pointer 那一發（ver -440，同 `swallowTap` 的理由）：
+     它蓋在整個舞台上，不擋的話點遮罩＝順手點了畫面（在店裡就把買賣鈕叫出來、
+     在劇情裡就多推一句）。 */
+  ov.addEventListener('pointerdown', e=>e.stopPropagation());
+  ov.addEventListener('pointerup',   e=>e.stopPropagation());
   ov.addEventListener('click', e=>{ e.stopPropagation(); finish(); });
 }
 
@@ -2771,6 +2793,8 @@ export function init(){
   /* 「選單」（ver -394 由 ✕ 改名；-397 改成開一個真的選單）。
      ⚠ 「回到主選單」才是原本那顆 ✕ 的行為 —— 收劇情層（順帶收城鎮，見 close）。 */
   const ex=$('storyExit');
+  /* ⚠ 齒輪與吊墜同一條規矩（ver -440）：它不是「點畫面」，見 `swallowTap`。 */
+  swallowTap(ex);
   if(ex) ex.addEventListener('click', e=>{ e.stopPropagation();
     settings.open({ onHome: goHomeNow }); });
   window.addEventListener('resize', ()=>{ if(active){ layout(); layoutKerberos(); } });

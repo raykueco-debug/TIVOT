@@ -522,6 +522,13 @@ export const TOWNS = {
           nou('awkward','也是啦……剛剛才經歷一場死鬥，最後一餐差點就是黑麥麵包配豆子了……'),
           nou('run','走吧！', { se:'se_steps' }),
         ],
+        /* ══ 她說餓了，你下一步去哪（ver -440，Ray 交稿）══════════════════
+           「不去其它地方而是**直接**往餐酒館走 → 諾薇兒好感 +1，反之不動。」
+           ⚠ 這一段對白**演完**才開這一次機會，**下一次抵達**結算 ——
+             判定在 `modules/town.js` 的 `armFavor` / `resolveFavor`（鐵律 8）。
+           ⚠ 「反之」是**不動**不是扣分（Ray 明寫）：沒帶她去吃飯不是壞事，
+             只是沒有那一分。 */
+        nextFavor:{ to:'tavern', aff:{ nouvelle:1 }, flag:'fav_capital_meal' },
       },
       /* ══ 旅店 ══（ver -392，Ray 交稿）
          ⚠ 旅店**不寫 `hours`＝全天**（Ray：「旅店24小時開門」）—— 不是忘了填。
@@ -594,6 +601,10 @@ export const TOWNS = {
              傳進 `inn.arrive`（鐵律 7）—— 改集合時間只改 `evening.hour` 那一處。
            ⚠ Ray 指定 **front**（基本立繪），所以 expr 給 null。 */
         innEarly:[ nou(null,'再逛一下嘛，還沒六點呢。') ],
+        /* ══ 一次性說明開著時按到「獨自坐坐」（ver -440，Ray 交稿）══
+           那一下多半是「想把遮罩點掉」的誤點，而坐坐要花掉兩個小時 ——
+           由她問一句擋回來（§6.5.5：不要靜靜地把那一下吃掉）。 */
+        innGuideSit:[ nou('surprise','咦？你累了嗎？') ],
         /* 敲門的回應：**單句、沒有立繪**（Ray：「未開門無立繪」），可以一直敲。
            `wait`＝還在等蕾娜的那一段；`slept`＝蕾娜回來、大家睡了之後。 */
         innKnock:{

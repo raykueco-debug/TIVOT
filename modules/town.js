@@ -41,6 +41,32 @@ let arriveT=0;            // 抵達停頓的計時器（換節點要取消，見
      這一版只是讓進場對白享有同樣的待遇。 */
 let eveningHeld=false;
 
+/* ══ 「她開口了，你下一步去哪」（ver -440，Ray 交稿）══════════════════════
+   「諾薇兒在上街區表示肚子餓時，不去其它地方而是**直接**往餐酒館走 → 好感 +1，
+     反之不動。」
+   節點寫 `nextFavor:{ to, aff, flag }`：那一段進場對白**演完**就開一次機會，
+   **下一次抵達**結算 —— 去的是 `to` 就加，去別的地方就把機會用掉（不加也不扣）。
+   ⚠⚠ 結算收在 `enter()` **唯一**那個入口（鐵律 8）：走一步、強制轉場、
+     從旅店被抓回去…每一條進節點的路都經過它，寫在 `go()` 一定會漏掉其他路徑。
+   ⚠ 「已經拿過了」看 `flag`（進 progress，存檔帶得走）；`pendingFavor` 只是
+     **這一趟探索**的暫存（`open()` 歸零），不進存檔 —— 它是「你剛剛聽她說了那句話」，
+     不是一輪遊戲的進度。
+   ⚠ 打烊的店走不進去（`go()` 擋在門口、不移動）→ 機會還留著，那是對的：
+     玩家確實是往餐酒館走的。 */
+let pendingFavor=null;
+function armFavor(n){
+  const f = n && n.nextFavor; if(!f) return;
+  if(f.flag && prog.hasFlag(f.flag)) return;      // 這一輪已經拿過了
+  pendingFavor = f;
+}
+function resolveFavor(to){
+  const f = pendingFavor; if(!f) return;
+  pendingFavor = null;                            // 機會只有一次，去哪裡都用掉
+  if(to !== f.to) return;                         // 去了別的地方 → 不加也不扣
+  for(const who in (f.aff||{})) prog.addAffection(who, f.aff[who]);
+  if(f.flag) prog.addFlags([f.flag]);
+}
+
 /* ══ 背景：時段差分 → 退回 `_Day` → 退回無時段的原名 ══
    命名規約（Ray 指定，全城鎮通用）：`<地點>_Dawn/_Day/_Dusk/_night/_midnight`。
    ⚠ **室內不吃時段**（雜貨舖、酒館內部…）：那些圖只有一張，檔名沒有尾巴 ——
@@ -737,6 +763,9 @@ export function enter(id){
   const T=TOWNS[townId]; if(!T) return;
   const n=T.nodes[id]; if(!n){ console.warn('[town] 沒有這個節點：', id); busy=false; return; }
   nodeId=id;
+  /* ⚠ 上一個地點開出來的「下一步去哪」在這裡結算（ver -440，見 `resolveFavor`）——
+     要在演任何東西之前，好感度是這一步的結果，不是這一段對白的結果。 */
+  resolveFavor(id);
   /* 「回去」該掛哪一支箭（ver -405）：來時方向的反向。走別的路徑進來（開城第一格、
      戰鬥交棒回來）時 `pendingDir` 是空的 → `backDir` 歸零，退回「掛在下」。 */
   backDir = pendingDir ? (OPPOSITE[pendingDir] || null) : null;
@@ -838,6 +867,10 @@ export function enter(id){
           /* 這一段演完才成立的事（ver -375）：公會登記完才開得了懸賞榜。
              ⚠ 記在**播完**時，中途離開（或戰鬥沒打完）就不算。 */
           if(n.boardFlag) prog.addFlags([n.boardFlag]);
+          /* 這一段演完才開的那一次機會（ver -440）：下一步走去 `to` 就加好感。
+             ⚠ 與旗標同一個時機（**演完**才算）—— 中途離開就沒聽完那句話，
+               那時她還沒說她餓。 */
+          armFavor(n);
         }
         busy=false; refreshArrows(); showNav(true);
         /* ⚠ 時鐘閘門要在**對白演完之後**才判（ver -427）：那一段可能就是把時間推過
@@ -1026,6 +1059,7 @@ export function open(town, node){
   townId = town || 'capital';
   const T=TOWNS[townId]; if(!T) return;
   eveningHeld=false;          // 傍晚那一格的「讓過一次」是這一趟城鎮探索的狀態（ver -430）
+  pendingFavor=null;          // 「下一步去哪」也是（ver -440，見 armFavor）
   const st=story.stageEl(); if(st){ st.classList.add('on','town-on'); }
   document.body.classList.add('story-on');
   /* ⚠ 進城也是**切景**（ver -438）：先蓋上黑幕（`0ms`＝立刻，因為這一層本來就是
