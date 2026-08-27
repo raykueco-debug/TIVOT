@@ -1066,15 +1066,6 @@ export function startGame(){
   state.maxCombo=0; state.hitsTaken=0; state.correctTaps=0; state.wrongTaps=0; state.runOverkill=0;   // 評價統計歸零
   _scriptedHits=0;                                     // 教學劇情殺擊數（結算受擊數扣除用）
   state.playerHp=state.playerMax;
-  /* ══⚠⚠ 本篇的 HP 是**延續的**（ver -481，Ray：「hp除非回旅店睡覺或者用道具補血，
-     否則會延續上一場」）══ storyFramed 的場次（劇情插入戰／船戰／劇情教學）開場
-     讀 progress 的持久 HP；沒有鑰匙＝滿血（開局／睡醒）。
-     ⚠ **挑戰（試玩版）不吃**：storyFramed 為 false，照舊每場滿血。
-     ⚠ 打輸不寫回（storyBattleEnd 只在交還時寫）＝重生帶著**進場前**的殘量再打。 */
-  if(storyFramed()){
-    const ph=prog.getHp();
-    if(ph!=null) state.playerHp=Math.max(1, Math.min(state.playerMax, ph));
-  }
   state.N=9; state.cols=3;
   state.runStartTime=Date.now(); resetClock();   // 計時碼表歸零（loadBoard 起算）
   state.boardTimes=[]; state.boardsCompleted=0;
@@ -1113,6 +1104,18 @@ export function startGame(){
      ⚠ 要在 `stopAll()` **之後**掛：`stopAll` 會叫 `tutorial.abort()`，那一支會把它收掉。
      ⚠ 也要在 `loadBoard(0)` **之前**：loadBoard 會觸發 `board:0`，晚掛就吃不到那個節點。 */
   if(state.scriptRun && sb) tutorial.startBattleTalk(sb.talk, { once:sb.talkOnce });
+  /* ══⚠⚠ 本篇的 HP 是**延續的**（ver -481；-490 修位置）══
+     讀 progress 的持久 HP；沒有鑰匙＝滿血（開局／睡醒）。挑戰（試玩版）不吃。
+     ⚠⚠ 一定要在 `state.scriptRun`（上面 1094）**設好之後**才讀 —— -481 把它放在
+       函式開頭，那時 storyFramed() 讀到的是**上一場**的殘值（正常收場後是 false）
+       → 讀取永遠被跳過、每場滿血。Ray 連報兩次「血量沒有繼承」就是這個；
+       先前實測會過是僥倖（上一場沒收乾淨、旗標殘留 true）。
+     ⚠ 劇情教學（tutorialStoryRun）在下面 maybeStart 才設 —— 那一場是本篇的
+       **第一場**戰鬥，本來就該滿血開場，不必讀。 */
+  if(storyFramed()){
+    const ph=prog.getHp();
+    if(ph!=null) state.playerHp=Math.max(1, Math.min(state.playerMax, ph));
+  }
   loadBoard(0); updateBars();
   if(state.scriptRun){ updateBars(); return; }   // 劇情插入戰不進教學
   tutorial.maybeStart();   // 首次出陣 → 進教學（穿插式；看過/跳過後恆 no-op）
