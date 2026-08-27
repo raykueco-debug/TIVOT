@@ -490,7 +490,7 @@ const COLOR_URL  = 'silvermoon_terrain.png';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -452';
+const FLIGHT_VER = 'ver -453';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -7146,6 +7146,7 @@ function updateEnemy(dt,now){
    ⚠ 只交棒一次：`engage` 每幀都會進來，沒有這道鎖會連跳好幾次。
    ⚠ 留 1.1 秒讓「遭遇　◯◯」那一格看得到 —— 直接跳頁的話玩家不知道發生什麼事。 */
 let battleGoing=false;
+let lastBattleScripted=false;   // 剛打的那一場是不是劇本遭遇（見 toBattle 與 __flightResume）
 /* ══ 免戰模式（ver -383，Ray 指定）══
    開著的時候碰到怪**只演「遭遇」那一格**，不跳頁進戰鬥 —— 畫地圖時不會被打斷。
    ⚠ 擋在 `toBattle()` 這**唯一的發動點**（鐵律 8）：日後多一條進戰鬥的路
@@ -7354,6 +7355,10 @@ function toBattle(kind){
   if(peaceMode) return;      // 免戰：遭遇照演，就是不進戰鬥
   if(battleGoing) return;
   if(SC && SC.done) addFlag(SC.done);
+  /* 這一場是不是**劇本遭遇**（＝第一場船戰）：打贏回來那一段「小命保住了」
+     只掛在它身上（ver -453，Ray：「不要每次船戰都跳…只有第一場船戰結束會跳」）。
+     見 `__flightResume`。 */
+  lastBattleScripted = !!SC;
   /* ⚠ **一場戰鬥 1 小時**（ver -435，Ray 指定）。記在**真的要打**的這一刻：
      免戰模式與重複觸發都已經在上面 return 掉了，所以不會多算。 */
   clockAdvance(HOUR);
@@ -7423,6 +7428,13 @@ window.__flightResume=function(opts){
      ⚠ 等門收完再演（`FKERB_MS`）：槍棺還蓋著半個畫面時放人出來，
        立繪會從門後面滑出來。 */
   if(!(opts && opts.won)) return;
+  /* ⚠⚠ **只有第一場船戰（劇本遭遇的蜈蚣）打贏才演**（ver -453，Ray：「不要每次
+     船戰都跳…只有第一場船戰結束會跳」）。旗標守門本來就有，但它綁的是
+     **這一輪有沒有演過** —— 讀檔／跳章之後旗標歸零，隨便哪一場隨機遭遇打贏
+     都會把這段「初次見面」的戲演出來。現在**雙重綁**：這一場必須是劇本遭遇
+     （`lastBattleScripted`，`toBattle` 記的）＋ 旗標沒演過 —— 隨機遭遇永遠不演。 */
+  const wasScripted = lastBattleScripted; lastBattleScripted = false;
+  if(!wasScripted) return;
   if(flagOn(AFTER_SHIP_FLAG)) return;
   addFlag(AFTER_SHIP_FLAG);
   setTimeout(()=>{ if(!sayQueue) say(AFTER_SHIP_TALK, performance.now()); }, 900);

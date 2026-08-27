@@ -38,7 +38,9 @@ function ensureCss(){
      結算頁那一行只剩等第。
    ⚠ `title` 可換（戰後叫「戰利品」、商店／劇情取得仍是「拾得道具」）—— 那是
      **來源**的差別，不是這一頁的職責變了，所以是參數不是第二支實作（鐵律 8）。
-   ⚠ 有 EXP 就一定要彈這一頁：拿不到錢也拿不到道具的那一場，EXP 是唯一的收穫。 */
+   ⚠ ver -453 起**戰鬥的金錢與 EXP 不再走這一頁**（Ray：「exp 跟 g 直接放結算頁，
+     有戰利品才跳」）—— 兩者印在結算頁、錢也在那裡入帳（inspector.scriptSettle）。
+     money/exp 這兩個參數留著給日後別的來源用，battle 路徑一律傳 0。 */
 export function showLoot(list, done, money, opts){
   ensureCss();
   const o=opts||{};

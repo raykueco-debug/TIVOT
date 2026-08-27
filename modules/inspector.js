@@ -509,8 +509,23 @@ function scriptSettle(totalTime, stats){
        日後多一場練習用的場次只要在卡上加一欄。 */
   const bt = (GAME_CONFIG.battles||{})[state.scriptBattleId] || {};
   const noReward = !!bt.noReward;
-  /* ⚠ **EXP 不在這一行了**（ver -439）：搬到戰利品那一頁與金錢同一列（同一般結算）。
-     ⚠ 沒有評價者、又沒有等第可印時整塊就不要出 —— 一個只寫著「評價」兩個字的空行
+  /* ══⚠⚠ EXP 與金錢**直接放在結算頁**（ver -453，Ray：「exp 跟 g 直接放結算頁，
+     不要另外跳視窗顯示，有戰利品才跳」）══
+     -439 曾把兩者搬去戰利品那一頁 —— 於是**每一場**打完都要多點一頁，
+     而大多數場次根本沒有道具。現在：
+       · EXP／金錢 ＝ 這裡兩列，**當場入帳**（錢在下面 `inv.addMoney`）
+       · 戰利品視窗只在**真的有道具**時彈（見下方 `_lootPending`）
+     ⚠ 金錢要在**這裡**入帳：以前是 `showLoot` 入的，視窗不彈就沒人入了。 */
+  const en2loot = rollLoot(en);
+  let money = 0;
+  const mr = en.money && en.money.hpRatio;
+  if(mr && !noReward){
+    const lo=mr[0], hi=mr[1]!=null?mr[1]:mr[0];
+    money = Math.round((en.hp||0) * (lo + Math.random()*(hi-lo)));
+  }
+  const exp = noReward ? 0 : (ev.exp|0);
+  if(money) inv.addMoney(money);
+  /* ⚠ 沒有評價者、又沒有等第可印時整塊就不要出 —— 一個只寫著「評價」兩個字的空行
        比沒有還糟（打靶就是這一種）。 */
   let rows = spk
     ? ('<div class="grade-wrap"><b class="grade-badge rank-'+ev.grade+'">'+ev.grade+'</b>'
@@ -518,6 +533,8 @@ function scriptSettle(totalTime, stats){
        + '</span></div>')
     : '';
   rows += ratingStatsRows(stats, totalTime);
+  if(exp)   rows += '<div class="row"><span>EXP</span><b>＋'+exp+'</b></div>';
+  if(money) rows += '<div class="row"><span>'+inv.moneyName()+'</span><b>＋'+money+'</b></div>';
   /* ══ 這一場自己的最佳紀錄（ver -377，Ray：「紀錄最佳紀錄，破紀錄時加上 New」）══
      ⚠ 只有卡上寫了 `record` 的場次才記（打靶場那種「一直挑戰」的）；
        一般的劇情插入戰打一次就過去了，記它沒有意義。
@@ -546,25 +563,20 @@ function scriptSettle(totalTime, stats){
   const rbtn=$('rematchBtn');
   if(rbtn) rbtn.textContent = '繼續';
   state.resultMode = 'script-continue';
-  /* 掉落：卡上的 `loot`（固定）＋ `money.hpRatio`（HP 的幾成，隨機）。
+  /* 掉落：卡上的 `loot`（在上面就擲好了 —— 金錢與 EXP 要先印上結算頁）。
+     ⚠ **有道具才彈視窗**（ver -453，Ray 指定）：金錢與 EXP 已經在結算頁上、
+       也已經入帳，這一頁只剩「你撿到了什麼東西」。
      ⚠ 與教學同一個手感：**點畫面才彈**，不自動蓋掉戰績。 */
-  const loot = rollLoot(en);
+  const loot = en2loot;
   if(prize){
     loot.push({ id:prize, n:1 });
     /* 「拿到獎品了」記一個旗標（ver -429）：城鎮那邊的一次性提示掛在它上面
        （取得「龍息」之後才教整備）。⚠ 旗標名**由武器 id 推**，不寫死是哪一把（鐵律 1）。 */
     prog.addFlags(['got_'+prize]);
   }
-  let money = 0;
-  const mr = en.money && en.money.hpRatio;
-  if(mr && !noReward){
-    const lo=mr[0], hi=mr[1]!=null?mr[1]:mr[0];
-    money = Math.round((en.hp||0) * (lo + Math.random()*(hi-lo)));
-  }
   /* ⚠ 獎品（龍息）**不受 `noReward` 影響**：它是這一場的目的，不是它的報酬。 */
-  _lootMoney = money;
-  _lootExp = noReward ? 0 : (ev.exp|0);
-  _lootPending = (loot.length || money || _lootExp) ? loot : null;
+  _lootMoney = 0; _lootExp = 0;         // 金錢與 EXP 不再走這一頁（見上面）
+  _lootPending = loot.length ? loot : null;
   if(_lootPending){
     document.addEventListener('pointerup', popLootOnce, { capture:true, once:true });
   }
