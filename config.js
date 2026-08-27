@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.27-440';
+export const VERSION = 'ver 2026.08.27-441';
 
 export const GAME_CONFIG = {
 
@@ -1114,7 +1114,7 @@ export const GAME_CONFIG = {
    * ------------------------------------------------------------------ */
   tuning: {
     // 全域主音量（0~1）：所有 SFX/合成音/BGM 統一縮放（0.7 仍過大 → 再取其 70%＝0.49）。
-    //   main.js 開機時經 SFX.setMasterVolume 套用；個別平衡仍走 sfxGain/bgmVol/partnerSeGain。
+    //   main.js 開機時經 SFX.setMasterVolume 套用；逐支的平衡走 fileGain（見下）。
     masterVolume:        0.49,
 
     // 玩家
@@ -1186,57 +1186,92 @@ export const GAME_CONFIG = {
       comp: { threshold:-26, knee:14, ratio:4, attack:0.005, release:0.12 },
     },
 
-    /* 語音層（VO）—— 目標 −18 LUFS。se_luna_mb 是音效不是語音，已移到 sfxGain。
-       ⚠ 增益是**過完語音鏈之後**量出來反推的，不是母帶的數字 —— 動 voiceChain
-         就要整排重算（tools/audio_probe.html 會直接印出建議值）。
-       ⚠ 對的是「耳機與手機的**平均**響度」，不是只對其中一邊：只對手機的話，
-         低頻重的那幾支在耳機上會突出 4~7 dB，反而把原本對的耳機平衡打壞。
-         取平均後兩邊的殘差各自減半（耳機 3.3 dB／手機 3.3 dB，原本是 0.0／9.7）。 */
-    partnerSeGain: { se_luna_dual:1.85, se_luna_exc:1.27, se_luna_obe:1.47,
-                     voice_saint_luna:1.69,
-                     vo_life_return:4.67, vo_death_guard:1.97,
-                     vo_supply_refill:2.84, vo_hc_rounds:3.32 },
+    /* ══════════════════════════════════════════════════════════════════
+       全域響度：**每一支拉平到同一個目標，三層之間再給一組比例**
+       （ver -441 重訂，Ray：「全域音效 bgm 語音響度拉平，語音 100%、
+         音效 90%、音樂 80%」）。
+       ──────────────────────────────────────────────────────────────────
+       量測法沒變：BS.1770 K 加權 + 閘控積分響度（近似 LUFS），不是 RMS
+       （RMS 低估人聲、高估低頻，那正是舊表把槍聲調得比語音還大的原因）。
+       ⚠ 量兩次：**耳機**（原始）與**手機**（600 Hz 三階高通的小喇叭模型），
+         反推用的是**兩者的平均** —— 只對其中一邊會把另一邊的平衡打壞（§6.6）。
+       ⚠ 語音要**過完 voiceChain 之後**才量：它真正播出去是走那條鏈。
+         動 voiceChain 就要把 vo 那幾支重算。
 
-    /* ══ 全域響度分級（ver -243 重訂）══
-       量測法：BS.1770 K 加權 + 閘控積分響度（近似 LUFS）—— 不是單純 RMS，
-       RMS 會低估人聲、高估低頻，正是舊表把槍聲調得比語音還大的原因。
+       ver -243 那套「VO −18／SE −22／BGM −28」的**分級已經取消** ——
+       現在是一個目標 `targetLufs` 把 62 支全部拉平，層與層的關係
+       只由 `layer` 這三個數字決定（改比例只改這三個，不必重算 60 幾支）。
 
-       三層目標（業界慣例：對白當錨，音效低 3~6 dB，音樂低 8~12 dB）：
-         語音 VO  −18 LUFS   基準
-         音效 SE  −22 LUFS   −4 dB
-         音樂 BGM −28 LUFS   −10 dB
-       以音效為 100%：語音 158%、音效 100%、音樂 50%。
+       ⚠⚠ 分層基準**不乘進逐支的增益**：它在匯流那一節乘一次
+         （audio.js 的 `_layerBase`，由 main.js 推進來）—— 一個量一個計算點。
+       ⚠ 逐支的公式：gain = 10^((targetLufs − 平均LUFS)/20) ÷ masterVolume。
+         除 master 是因為 SFX 匯流會再乘一次；**BGM 現在也吃 master**
+         （audio.js 的 `bgmTargetVol`，ver -397 起），所以兩層同一條式子。
+       ⚠ `peakCeilDb`：增益推到峰值超過這條線就**夾住**（表上標 CAP）。
+         匯流的 limiter 門檻是 −6 dB／ratio 12，再往上推也只是被壓扁，
+         不會更大聲，只會多一份失真。被夾住的那幾支（實測 8 支，多半是
+         母帶動態很大的環境音）會低於目標，那是母帶的極限不是算錯。
+       ⚠ 重量／新增音檔一律跑 `tools/audio_scan.html`：它現場列目錄、
+         逐支量完直接印建議值，**不要憑感覺填**。 */
+    loudness: {
+      targetLufs: -20,       // 拉平的共同目標
+      peakCeilDb: 2,         // 增益後的峰值上限（dBFS）
+      layer: { vo:1.00, se:0.90, bgm:0.80 },   // Ray 指定的三層比例
+    },
 
-       ⚠ 舊表是**反的**：音效最大聲的 se_mg_squall／em_shot 實測 −15.9 LUFS，
-         比語音最大聲的 vo_death_guard（−16.5）還響，而且音效層內部落差 28 dB
-         （−15.9 ~ −43.9）—— 那就是「有些聲音特別大」的來源。
-       ⚠ 每個值都是實測反推：gain = 10^((目標 − 實測 LUFS)/20) ÷ masterVolume。
-         要加新音檔就照這條算，不要憑感覺填。
-       ⚠ 除以 masterVolume 是因為 SFX 匯流會再乘一次 master；BGM 走
-         HTMLAudio.volume 不吃 master，所以 bgmVol 不用除。 */
-    sfxGain: { se_pistol_01:0.47, se_pistol_02:0.77, se_pistol_03:1.36,
-               se_mg_squall:0.65, se_shotgun_blast:0.39, se_sniper_falcon:0.82,
-               se_guard:0.78, sfx_reload:0.92, sfx_start:1.04,
-               se_general_click:4.31, se_pageflip:1.93,   // 母帶偏小聲，之前幾乎聽不到
-               sfx_startbt:2.02, sfx_saint:1.01, se_luna_mb:0.80,
-               em_slash:0.46, em_smack:0.72, em_shot:0.65, em_revolver:0.51, em_dagger:2.54,
-               /* 打靶失手（ver -396）。⚠ 沒實測過響度，暫用 1.0 —— 覺得大小聲不對
-                  就照 §6.6 的公式反推（`tools/audio_probe.html` 會直接印建議值）。 */
-               se_dart_fail:1.00,
-               /* 旅店睡覺（ver -430）。實測：耳機 −20.43 LUFS、手機模型 −16.47、
-                  峰值 −1.62 dBFS、9.90 秒、48 kHz 立體聲。
-                  照 §6.6「增益對的是**耳機與手機的平均**」：平均 −18.45 →
-                  10^((−22 −(−18.45))/20) ÷ 0.49 = 1.36。 */
-               se_sleep:1.36 },
+    /* 哪幾個 ASSETS 鍵是**語音**（走 voiceChain）。⚠ 這是**歸屬**不是增益 ——
+       ver -441 之前這件事是靠「在不在 partnerSeGain 那張表裡」判的，
+       增益一搬家那個判斷就會憑空消失。 */
+    voiceKeys: ['se_luna_dual','se_luna_exc','se_luna_obe','voice_saint_luna',
+                'vo_life_return','vo_death_guard','vo_supply_refill','vo_hc_rounds'],
 
-    /* 音樂層（BGM）—— 目標 −28 LUFS，比語音低 10 dB。走 HTMLAudio.volume，
-       不吃 masterVolume，所以這裡不用除。飛行頁的音樂另在 flight/index.html
-       的 BGM_VOL 同步（同一個目標）。 */
-    /* ⚠ `bgm_crisis` 是 **0.62**，與 `modules/story.js` 播它時寫的那個 0.62 同值
-       （ver -361）。兩邊必須一致：`playBgm` 對「同曲播放中」直接 return，
-       誰先起播誰的音量就定了 —— 不一致的話同一首會因為「是誰起播的」而大小聲。 */
-    bgmVol: { default:0.20, bgm_home:0.37, bgm_battle:0.17, bgm_boss:0.12,
-              bgm_result:0.20, bgm_lose:0.35, bgm_crisis:0.62 },
+    /* ══ 逐支增益：鑰匙是**檔名**（去副檔名、轉小寫）══════════════════
+       ⚠⚠ 鑰匙用檔名不用 ASSETS 鍵（ver -441）：**一支音檔只有一個響度**，
+         而同一支檔案在專案裡有好幾種叫法（`sfx_saint` 與 `se_saint_install`
+         是同一支；劇情層的 `SE_FILES` 根本沒有 ASSETS 鍵 —— 那正是
+         `se_steps`／`se_Fall` 一直以 gain 1 播出、比別人小 12 dB 的原因）。
+       ⚠ 沒列在這裡的檔案 ＝ 1（等於沒量過）。加音檔請跑 audio_scan 補一列。
+       實測日期 ver -441；`CAP` 標記見上面 `peakCeilDb` 的說明。 */
+    fileGain: {
+      /* ── 語音（過 voiceChain 後量）── */
+      vo_luna_dualwield:1.483, vo_luna_execution:1.013, vo_luna_obe:1.163,
+      vo_luna_saintinstall:1.345, vo_malzeno_hcrounds:2.647,
+      vo_malzeno_supplyrefill:2.261, vo_renee_deathguard:1.563,
+      vo_renee_lifereturn:3.712,
+
+      /* ── 武器 ── */
+      se_weapon_pistol_01:0.607, se_weapon_pistol_02:1.165, se_weapon_pistol_03:1.751,
+      se_weapon_mg_squall:0.854, se_weapon_shotgun_blast:0.530,
+      se_weapon_sniper_falcon:1.023, se_weapon_guard:1.254, se_weapon_reload:1.143,
+      se_weapon_cannon_120mm:0.839, se_weapon_heavygun:0.411,
+      /* ── 敵人 ── */
+      se_enemy_slash:0.602, se_enemy_smack:1.173, se_enemy_shot:0.854,
+      se_enemy_revolver:0.732, se_enemy_dagger:3.959, se_enemy_centipi:1.272,
+      se_enemy_saintroar:2.910,
+      /* ── 聖徒化／搭檔 ── */
+      se_saint_install:1.059, se_saint_maxburst:0.955, se_lunamg:2.066,
+      /* ── UI ── */
+      se_ui_click:4.750, se_ui_kagurabell:2.530, se_ui_pageflip:2.359,
+      se_ui_sortie:1.184, se_ginclick:1.106, se_metalclip:1.139,
+      se_dart_fail:2.792,
+      /* ── 劇情／城鎮（這一批以前完全沒有增益，見上面的說明）── */
+      se_steps:7.198, se_walk:4.481, se_fall:3.724, se_punch:1.596,
+      se_tummy:8.268, se_sailorshout:2.048, se_sleep:1.708,
+      se_kerberos_open:1.558, se_kerberos_pop:1.479, se_kerberos_steam:1.301,
+      se_kerberos_gear:6.179, se_kerberos_drop:1.550,
+      /* ── 飛行頁（那一頁用 HTMLAudio，讀同一張表，見 flight/index.html）── */
+      se_flight_heartbeat:5.064, se_flight_idle_loop:2.848,
+      se_flight_sail_loop:7.928, se_flight_seagull:3.353, se_flight_train:5.059,
+      sturm:1.709,
+
+      /* ── 音樂 ── */
+      bgm_mainmenu:1.735, bgm_battle:0.849, bgm_boss:0.665, bgm_result:0.855,
+      bgm_missionfailed:1.995, bgm_capital_day:1.213, bgm_lunaria:1.230,
+      peritunematerial_crisis_loop:1.077,
+      /* ⚠ 母帶太小聲（−26 LUFS）：×master×層之後會撞上 HTMLAudio 的 1.0 上限，
+         實際只到 −26 而不是目標的 −21.9。要救得重做母帶。 */
+      bgm_flight:4.056,
+    },
 
     // 載入畫面教學 Hint 輪播（文案見 loadingHints）
     loadingHintHoldMs:   5000,  // 每句停留 5 秒
@@ -1399,9 +1434,9 @@ export const ASSETS = {
   // 搭檔演出 SE（Luna）：發動/結局 cut-in 同步播。放 resources/partner/。
   //  v2：母帶重 master（RMS −28→−11 dBFS + 軟限幅），內容更新 → 升 ?v 強制重抓
   // v3：改「原始檔＋純線性增益到峰值 -1dB」重製（v2 的 tanh 軟限幅有飽和失真=聽感糊）。
-  //     RMS 約 -14 dBFS；再大聲改 tuning.partnerSeGain（播放端有 limiter 匯流，不會破音）。
+  //     RMS 約 -14 dBFS；再大聲改 tuning.fileGain（播放端有 limiter 匯流，不會破音）。
   //  ⚠ 檔名的 VC＝voice（語音），與純音效的 SE 分家：這四支是搭檔的台詞，
-  //     響度基準跟語音走（partnerSeGain 對齊 −14.4 dBFS），不是音效層。
+  //     響度基準跟語音走（fileGain 拉平到 targetLufs），不是音效層。
   se_luna_dual:      "resources/audio/vo/vo_luna_dualwield.m4a",   // 雙槍破防發動
   se_luna_exc:       "resources/audio/vo/vo_luna_execution.m4a",    // 處決 EXSECUTIŌ cut-in
   se_luna_mb:        "resources/audio/se/se_saint_maxburst.m4a",     // Maximum Burst cut-in
@@ -1500,16 +1535,26 @@ export function weaponDescText(key, story){
 
 export function asset(key){ return (key && ASSETS[key] != null) ? ASSETS[key] : ""; }
 
-/* ---- 小工具：BGM 逐曲音量（tuning.bgmVol；未列入的曲用 default）---- */
-export function bgmVol(key){
-  const m = GAME_CONFIG.tuning.bgmVol || {};
-  return m[key] != null ? m[key] : (m.default != null ? m.default : 0.7);
+/* ══ 逐支音檔的增益（ver -441）══════════════════════════════════════════
+   ⚠⚠ **一支音檔只有一個響度**，所以查表的鑰匙是**檔名**（去副檔名、去 `?v=`、
+     轉小寫），不是呼叫端手上的那個名字。傳 ASSETS 鍵或直接傳路徑都行 ——
+     兩者都會被解析成同一個檔名（鐵律 7：一個量一個計算點）。
+   ⚠ 未列入 ＝ 1（＝還沒量過）。加音檔請跑 `tools/audio_scan.html` 補一列。 */
+export function fileGain(keyOrPath){
+  const raw = (keyOrPath && ASSETS[keyOrPath] != null) ? ASSETS[keyOrPath] : keyOrPath;
+  const name = String(raw||'').split('/').pop().split('?')[0].replace(/\.[^.]+$/,'').toLowerCase();
+  const m = GAME_CONFIG.tuning.fileGain || {};
+  return m[name] != null ? m[name] : 1;
 }
+/* 這兩支是**同一件事的兩個舊名字**，留著讓呼叫端讀起來仍然是「這是音效／這是音樂」。
+   ⚠ 不要再往裡面加第二張表 —— 分層的差別在 `tuning.loudness.layer`（匯流那一節）。 */
+export const bgmVol  = fileGain;
+export const sfxGain = fileGain;
 
-/* ---- 小工具：檔案 SFX 逐鍵增益（tuning.sfxGain；未列入＝1）---- */
-export function sfxGain(key){
-  const m = GAME_CONFIG.tuning.sfxGain || {};
-  return m[key] != null ? m[key] : 1;
+/* 這個 ASSETS 鍵是不是**語音**（走 voiceChain）。⚠ 歸屬與增益是兩件事，
+   見 tuning.voiceKeys 的說明。 */
+export function isVoiceKey(key){
+  return (GAME_CONFIG.tuning.voiceKeys||[]).indexOf(key) >= 0;
 }
 
 /* ---- 遙測後端（零維運，Supabase REST）----

@@ -1771,6 +1771,32 @@ function volOf(layer){
        return isFinite(n) ? Math.max(0, Math.min(1, n)) : 1; }
   catch(_){ return 1; }
 }
+/* ══ 全域響度：逐支拉平 ＋ 分層比例（ver -441）════════════════════════════
+   ⚠⚠ 這一頁是**另一個 document**，import 不到 `config.js` —— 以下三組是
+     config 的 `tuning.masterVolume`／`tuning.loudness.layer`／`tuning.fileGain`
+     的**第二份**，**改一邊要改另一邊**（§6.10 的跨頁慣例，兩邊註解互指）。
+     只列這一頁真的用得到的那幾支。
+   ⚠ 以前這一頁**不吃 masterVolume**（註解上還寫著「下面就是最終值」）——
+     於是同一支音檔在天上比在地面響 6 dB。現在兩邊走同一條式子。
+   ⚠ 數字是量出來的（`tools/audio_scan.html`），不要憑感覺改：
+     gain = 10^((−20 − 平均LUFS)/20) ÷ master。 */
+const AUDIO_MASTER = 0.49;                          // ＝ config tuning.masterVolume
+const LAYER_BASE   = { bgm:0.80, se:0.90, vo:1.00 };// ＝ config tuning.loudness.layer
+const FILE_GAIN = {
+  bgm_flight:4.056, se_flight_sail_loop:7.928, se_flight_idle_loop:2.848,
+  se_flight_train:5.059, se_flight_seagull:3.353, se_flight_heartbeat:5.064,
+  se_ui_kagurabell:2.530, sturm:1.709, se_kerberos_pop:1.479,
+};
+/* 這一支音檔最後該用多大的 volume。⚠ `Math.min(1,…)` 是 HTMLAudio 的硬上限：
+   母帶太小聲的那幾支（航行環境音、飛行曲）會被夾住、拉不到目標 —— 那是母帶的
+   極限，不是算錯（要救得重出母帶）。 */
+const fileVol=(name, layer)=>
+  Math.min(1, (FILE_GAIN[name]||1) * AUDIO_MASTER * (LAYER_BASE[layer||'se']||1));
+/* 上面那兩支是在 `fileVol` 之前宣告的（它們要跟立繪擺在一起讀），所以增益在這裡補。
+   ⚠ 新增一次性音效時**記得補一行** —— 沒補就是以母帶的響度播出（gain 1），
+   那正是主遊戲那一批劇情音效一直太小聲的原因（ver -441 修）。 */
+senseBeat.__baseVol = fileVol('se_flight_heartbeat');
+senseSE.__baseVol   = fileVol('se_ui_kagurabell');
 /* ⚠ 音效一律走這一支（唯一的播放點，鐵律 8）—— 音量在這裡乘進去，
    呼叫端不必記得，日後多一支音效也自動吃到。 */
 const playSfx=a=>{ try{ a.currentTime=0; a.volume=(a.__baseVol!=null?a.__baseVol:1)*volOf('se')*(muted?0:1);
@@ -1824,6 +1850,7 @@ let sturmFlash=0;     // 立繪脈動起點
 /* ⚠ 音效與立繪都要在**手勢當下**先解鎖／預抓：發動是按滿兩秒之後才發生的，
      那時早就離開手勢，iOS 不會讓你播（同 senseUnlock 的說明）。 */
 const sturmSE = new Audio('../resources/audio/se/Sturm.m4a'); sturmSE.preload='auto';
+sturmSE.__baseVol = fileVol('sturm');   // 逐支增益（ver -441，見 fileVol）
 const sturmCI = new Image(); sturmCI.src='../resources/CI/Nouvelle_Sturm.webp';
 /* 方向計的命中框：往外放一點才好按（那條帶只有 30px 高）。 */
 function sturmHit(px,py){
@@ -4616,16 +4643,17 @@ addEventListener('resize',()=>{ if(mapOpen) drawMap(); });
    ▍自動播放
    從首頁點「試飛」是換頁，手勢不會延續 → 先試播，被擋就掛一次性的
    pointerdown/keydown 補播；玩家一碰畫面就會響。 */
-/* 音量：與 config.js 同一套響度分級（語音 −18／音效 −22／音樂 −28 LUFS，
-   量法是 BS.1770 K 加權的閘控積分響度）。這一頁不吃 masterVolume，所以下面就是最終值。
-   ⚠ 兩支環境音的母帶差 12.4 dB（航行 −30.7、停船 −18.3 LUFS），不能共用一個
-     旋鈕 —— 舊版共用，結果停船比航行還大聲，方向是反的。
-   ⚠ 航行環境音的母帶太小聲：HTMLAudio.volume 上限是 1，就算開滿也只有
-     −30.7 LUFS。要把整層墊上來得**重出母帶 +5 dB**；在那之前只能讓停船
-     跟著降下來對齊（航行比停船大 3 dB）。 */
-const BGM_VOL=0.822;          // 音樂 → −28 LUFS（母帶 −26.3，偏小聲）
-const AMB_SAIL=1.0;           // 航行環境音 → −30.7（開滿，受母帶所限）
-const AMB_IDLE=0.17;          // 停船環境音 → −33.7（比航行低 3 dB）
+/* 音量：與主遊戲同一套（ver -441 起是「逐支拉平到 −20 LUFS ＋ 分層比例」，
+   見上面 `fileVol` 那一段）。⚠ 兩支環境音的母帶差 8.8 dB（航行 −31.8、
+   停船 −23.0 LUFS），不能共用一個旋鈕 —— 舊版共用，結果停船比航行還大聲。
+   ⚠⚠ **航行那一支拉不到目標**：母帶 −31.8，乘完撞上 HTMLAudio 的 1.0 上限，
+     還差 11 dB。所以停船那一支要**對齊航行的實際響度**（而不是對齊目標），
+     不然一停船就爆音。要把這一對墊上來得重出母帶。 */
+const BGM_VOL  = fileVol('bgm_flight','bgm');            // 撞上限（母帶 −26.0）
+const AMB_SAIL = fileVol('se_flight_sail_loop');         // 撞上限（母帶 −31.8）
+/* 停船 ＝ 航行的實際響度：10^((−31.79 −(−23.04))/20)。⚠ 這兩個數字是量出來的
+   （audio_scan），不是憑感覺 —— 母帶換掉就要重量。 */
+const AMB_IDLE = AMB_SAIL * Math.pow(10, (-31.79 - (-23.04))/20);
 const MIX_RATE=0.014;         // 動／停交叉約 3.5 秒
 /* xf＝這一首的交叉淡入秒數。⚠ 逐曲給，不共用一個常數：
    循環的實際週期是 (曲長 − xf)，所以 xf 決定了「接回去的地方落在第幾小節」。
@@ -4709,7 +4737,7 @@ const ambIdle=makeLoop('../resources/audio/se/se_flight_idle_loop.mp3', 5.0);
      跟航行環境音同一個處境（母帶太小聲）。所以開滿 1.0，實際落在 −28.5，
      大約與音樂同層、比航行環境音高 2 dB。要更大聲得**重出母帶**，不是調這裡。 */
 const sfxTrain=makeLoop('../resources/audio/se/se_flight_train.mp3', 1.0);
-const TRAIN_VOL=1.0;
+const TRAIN_VOL=fileVol('se_flight_train');   // ver -441：走同一條式子（母帶 −27.9，會撞上限）
 /* 聽得到的範圍：Ray 指定「約是帝都＋聖王廳的範圍」——
    兩城心相距 71.3 地圖像素，各自的市區半徑 26／15 像素，合計 112.3 像素
    ＝ 2245 世界單位。FAR 就取這個數。
@@ -4730,7 +4758,7 @@ let trainMix=0;                      // 收斂跟隨，避免車一停就硬切
    ⚠ 可聞範圍取 950，剛好**略大於鳥群的生成距離 900**：於是牠出現的那一刻是
      無聲的，飛近才叫得出來。取大了會變成「鳥一生出來就在耳邊叫」。 */
 const sfxGull=makeLoop('../resources/audio/se/se_flight_seagull.m4a', 1.0);
-const GULL_VOL=0.70;
+const GULL_VOL=Math.min(0.70, fileVol('se_flight_seagull'));   // ⚠ 0.70 是**峰值**訂的上限（見上），拉平的結果比它大就照舊夾住（ver -441）
 const GULL_SND_FAR=950, GULL_SND_NEAR=200;
 let gullMix=0;
 let sailMix=0;                       // 0＝停船 1＝航行，收斂跟隨避免忽大忽小
@@ -6853,6 +6881,7 @@ function layoutFKerb(){
 /* 撞擊音：與主遊戲同一支素材（峰值在 1002ms，正好落在門撞頂那一瞬 —— 所以
    上推的長度也是 1000ms，兩邊同值，改一邊要改另一邊）。 */
 const kerbPopSE = new Audio('../resources/audio/se/se_Kerberos_pop.m4a'); kerbPopSE.preload='auto';
+kerbPopSE.__baseVol = fileVol('se_kerberos_pop');   // 逐支增益（ver -441，見 fileVol）
 const FKERB_RISE_MS = 1000;   // 上推時間（＝ story.js 的 KERB_T.rise，兩邊同值）
 /* 吊墜被甩一下（ver -412）。⚠ 唯一的一支（同 story.js 的 `kerbPendSwing`）。 */
 function fkerbPendSwing(amp, dur){

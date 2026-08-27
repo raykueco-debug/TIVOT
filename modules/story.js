@@ -24,7 +24,7 @@
    輪廓界由 measureBounds 在載入時量一次。
    ══════════════════════════════════════════════════════════════════════ */
 
-import { GAME_CONFIG } from '../config.js';   // 舞台幾何常數（castStage）：鐵律 7 的單一真相
+import { GAME_CONFIG, fileGain } from '../config.js';   // 舞台幾何常數（castStage）與逐支音量（fileGain）：鐵律 7 的單一真相
 import { MAIN_SCRIPT, MAIN_ENTRY } from '../script/mainScript.js';
 import { SPEAKERS, ART, CAST_TALL, nameOf, artOf, exprSrc, frameOf } from '../script/speakers.js';
 import * as prog from '../script/progress.js';
@@ -487,7 +487,7 @@ function bgmSrc(n){ const k=String(n||'').toLowerCase();
   return BGM_SRC[k] || BGM_SRC[BGM_ALIAS[k]] || null; }
 /* 離開劇情要**回到主畫面的曲子**（Ray 指定）。⚠ 走 config 的鍵不要寫死路徑：
    主選單換曲時只改 config，這裡自動跟著。音量也用 config 那一份。 */
-const HOME_BGM='resources/audio/bgm/bgm_mainmenu.m4a', HOME_VOL=0.37;
+const HOME_BGM='resources/audio/bgm/bgm_mainmenu.m4a';   // ⚠ 音量問 fileGain(HOME_BGM)，不要在這裡記第二份（ver -441）
 let stageBg=null, stageCg=null, stageCi=null, stageBgm=null;   // 目前的持續狀態
 
 function setImg(el, src){
@@ -735,10 +735,12 @@ function applyPersist(line){
     stageBgm=line.bgm;
     try{
       if(line.bgm){ const src=bgmSrc(line.bgm);
-        /* ⚠ 0.62 與 `config.js` 的 `bgmVol.bgm_crisis` 同值（ver -361）——
-           教學結算也會播這首（由 combat 起播），兩邊不一致的話同一首會因為
-           「是誰先起播」而大小聲（playBgm 對同曲播放中直接 return）。 */
-        if(src) SFX.playBgm(src, {fadeInMs:800, volume:0.62});
+        /* ⚠⚠ 音量**問 config**（ver -441）：以前這裡寫死 0.62，於是**每一首**
+           劇情曲都用同一個數字播 —— 母帶差 6 dB 的兩首曲子就差 6 dB。
+           現在逐曲的增益只有 `tuning.fileGain` 那一份（鐵律 7），
+           而且與別處起播同一首時算出來的值一定相同（playBgm 對同曲直接 return，
+           誰先起播誰的音量就定了 —— 兩邊不一致就會「看是誰起播的」而大小聲）。 */
+        if(src) SFX.playBgm(src, {fadeInMs:800, volume:fileGain(src)});
         else { const tag='bgm/'+line.bgm;
           if(!missingExpr.has(tag)){ missingExpr.add(tag); console.info('[story] 沒有這首 BGM：', line.bgm); } }
       }else SFX.stopBgm(900);
@@ -857,8 +859,14 @@ export function seSources(){ return Object.keys(SE_SRC).map(k=>SE_SRC[k]); }
    `new Audio(src).play()` 是串流，馬上就能出聲；而且這一下是**使用者點擊**推進的，
    還在手勢的同步區間裡，iOS 不會擋。
    ⚠ 只當退路：Web Audio 那條有匯流 limiter 與音量分層，能走就走那條。 */
-function playSeFallback(src){
-  try{ const a=new Audio(src); a.volume=0.9; const p=a.play(); if(p&&p.catch) p.catch(()=>{}); }catch(e){}
+function playSeFallback(src, gain){
+  /* ⚠ 退路也要吃逐支增益（ver -441），不然「解碼好了」與「還沒好」是兩個響度。
+     ⚠ HTMLAudio 的 volume 只能 0~1，而增益可以大於 1 —— 夾住就是了：
+       這條路本來就是「先出聲比較重要」的權宜之計。
+     ⚠ 這裡不乘 master 與分軌音量：那兩個在 Web Audio 匯流上，HTMLAudio 走不到。
+       近似值比沒有聲音好，但**別把它當成正規路徑**。 */
+  try{ const a=new Audio(src); a.volume=Math.max(0, Math.min(1, (gain==null?0.9:gain)));
+       const p=a.play(); if(p&&p.catch) p.catch(()=>{}); }catch(e){}
 }
 /* ⚠ `export`（ver -429）：戰鬥內的對白（`modules/tutorial.js`）也要放音效，而
    **音效名 → 檔案的那張表只有這裡一份**（`SE_FILES`／`SE_ALIAS`，鐵律 7）。
@@ -868,7 +876,14 @@ export function playSe(spec){
     if(!src){ const tag='se/'+n;
       if(!missingExpr.has(tag)){ missingExpr.add(tag); console.info('[story] 沒有這個音效：', n); }
       return; }
-    const go=()=>{ try{ if(SFX.ready && !SFX.ready(src)) playSeFallback(src); else SFX.play(src); }catch(_){} };
+    /* ⚠⚠ **增益要帶**（ver -441）：以前這裡是 `SFX.play(src)`＝增益 1，
+       而這一批（`SE_FILES`）沒有 ASSETS 鍵、拿不到舊的 `sfxGain` ——
+       於是整批以母帶的響度播出。實測 `se_steps` −32 LUFS、`se_walk` −34，
+       比拉平後的目標低了 12~14 dB ＝ **在手機上根本聽不見**
+       （Ray：「跌倒音跟跑步音永遠不出來」，一直被當成預載沒趕上）。
+       ⚠ `fileGain` 的鑰匙是檔名，所以路徑丟進去就有值（鐵律 7）。 */
+    const g=fileGain(src);
+    const go=()=>{ try{ if(SFX.ready && !SFX.ready(src)) playSeFallback(src, g); else SFX.play(src, g); }catch(_){} };
     if(delay>0) setTimeout(go, delay); else go(); };
   if(!spec) return;
   if(Array.isArray(spec)) spec.forEach(x=> typeof x==='string' ? one(x,0) : one(x.n, x.delay||0));
@@ -1389,7 +1404,7 @@ function playKerberos(onGap, onDone, opts){
   const se=k=>{ const u=src(k); if(!u){ const tag='kerb/'+k;
       if(!missingExpr.has(tag)){ missingExpr.add(tag); console.info('[story] 門的音效尚無素材：', k); }
       return; }
-    try{ SFX.play(u, 1); }catch(e){} };
+    try{ SFX.play(u, fileGain(u)); }catch(e){} };   // 逐支增益：config 那一份（ver -441）
   let t=0;
   if(fromRisen){
     /* ①' 飛行頁已經推完了：直接擺成「推到頂」，撞擊音也已經在那邊播過。 */
@@ -1551,7 +1566,7 @@ export function playKerberosClose(onDone){
   kerbPlaying=true;
   const at=(ms,fn)=>kerbTimers.push(setTimeout(fn,ms));
   const se=k=>{ const u=(KERB_SFX[k] ? KERB_SE_DIR+KERB_SFX[k]+'.'+(KERB_SFX_EXT[k]||'m4a') : null);
-    if(u) try{ SFX.play(u, 1); }catch(e){} };
+    if(u) try{ SFX.play(u, fileGain(u)); }catch(e){} };   // 同上（ver -441）
   let t=0;
   /* ① 兩扇合上。⚠ **紋章、箭、鉚釘與左半扇是同一個剛體**（Ray 指定）—— `kerb-shut`
      把門的過場曲線（與零延遲）借給那三組，不借的話它們會掉回自己那條帶回彈、帶逐顆
@@ -2260,7 +2275,7 @@ export function close(opts){
   stageBgm=null;
   /* ⚠ 交棒給戰鬥時**不要**接回首頁 BGM（keepBgm）—— 戰鬥有自己的曲子。 */
   if(!(opts && opts.keepBgm)){
-    try{ SFX.playBgm(HOME_BGM, {fadeInMs:600, volume:HOME_VOL}); }catch(_){}
+    try{ SFX.playBgm(HOME_BGM, {fadeInMs:600, volume:fileGain(HOME_BGM)}); }catch(_){}
   }
   document.body.classList.remove('story-talking');   // ver -385
   /* ⚠⚠ **這裡不收城鎮**（ver -399 修）。ver -394 曾經在這裡呼叫 `townCloser()`，
@@ -2557,7 +2572,7 @@ export function ensureBgm(name){
   const src=bgmSrc(name);
   if(!src){ console.info('[story] 沒有這首 BGM：', name); return; }
   stageBgm=name;
-  try{ SFX.playBgm(src, {fadeInMs:800, volume:0.62}); }catch(_){}
+  try{ SFX.playBgm(src, {fadeInMs:800, volume:fileGain(src)}); }catch(_){}   // 逐曲增益只有 config 那一份（ver -441）
 }
 /* 城鎮用：把下半的面盤（槍棺/團徽）擺好。⚠ 不做的話面盤是一片全黑 ——
    那塊是 `layoutKerberos` 依實際尺寸算出來的，不是 CSS 就有的。 */

@@ -51,7 +51,25 @@ function busOut(c){
    ⚠ 這一層是**玩家的偏好**，與 `config` 那份「每一支音檔的實測增益」是兩回事：
      那份負責把三層拉齊（§6.6），這一層負責讓玩家再調整。兩者相乘。 */
 const _layerVol = { bgm:1, se:1, vo:1 };
+/* ⚠⚠ **分層基準**（ver -441，Ray：「語音 100%／音效 90%／音樂 80%」）——
+   與上面那一組是**兩件事**：這一組是**設計**（三層之間的相對關係），
+   上面那一組是**玩家的偏好**（設定裡的三支滑桿）。兩者相乘。
+   ⚠ 為什麼不把 80% 乘進每一支音檔的增益：那等於把同一個數字寫 60 幾遍 ——
+     日後要把音樂再壓 5% 就得整批重算（鐵律 7）。這裡乘一次就好。
+   ⚠ 值由 main.js 開機時從 config 推進來（本模組維持葉節點不讀 config）。 */
+const _layerBase = { bgm:1, se:1, vo:1 };
+const layerGain = l => (_layerVol[l]!=null?_layerVol[l]:1) * (_layerBase[l]!=null?_layerBase[l]:1);
 let _layerCtx = null, _layerNode = {};
+/* 這一軌的音量變了 → 套到已經建好的節點上（BGM 那一軌走 HTMLAudio 的 volume）。
+   ⚠ 只有一支（鐵律 8）：`setLayerVolume` 與 `setLayerBase` 都叫它，
+     不然改基準時已經在響的那一軌不會跟著動。 */
+function applyLayer(layer){
+  const g=_layerNode[layer]; if(g) try{ g.gain.value=layerGain(layer); }catch(e){}
+  if(layer==='bgm'){
+    const el=_bgmEl;
+    if(el && !el.paused && !el.__fade) el.volume = bgmTargetVol();
+  }
+}
 function busIn(c, layer){
   const out = busOut(c);
   if(out === c.destination) return out;        // 建不出 limiter 的退路：不分軌
@@ -59,7 +77,7 @@ function busIn(c, layer){
   if(!_layerNode[layer]){
     try{
       const g = c.createGain();
-      g.gain.value = _layerVol[layer]!=null ? _layerVol[layer] : 1;
+      g.gain.value = layerGain(layer);
       g.connect(out);
       _layerNode[layer] = g;
     }catch(e){ return out; }
@@ -72,8 +90,11 @@ function layerOf(src, voice){
   const p = String(src||'');
   return /\/audio\/vo\//.test(p) ? 'vo' : 'se';
 }
-/* BGM 元素的目標音量：曲子自己的音量 × 主音量 × BGM 軌。 */
-function bgmTargetVol(){ return Math.min(1, _bgmVol * _master * _layerVol.bgm); }
+/* BGM 元素的目標音量：曲子自己的增益 × 主音量 × BGM 軌（分層基準 × 玩家偏好）。
+   ⚠ `Math.min(1,…)` 是 HTMLAudio 的硬上限：母帶特別小聲的曲子（實測
+     `bgm_flight` −26 LUFS）會被這一條夾住、拉不到目標 —— 那不是算錯，
+     是那一支要重新做母帶才救得回來。 */
+function bgmTargetVol(){ return Math.min(1, _bgmVol * _master * layerGain('bgm')); }
 
 function ctx(){
   if(!_ctx){
@@ -379,7 +400,7 @@ export const SFX = {
 
   /* 播放**語音**：與 play 的差別是走語音鏈（見上方 voiceChain 的說明）。
      ⚠ 由呼叫端決定層別，不是由 audio.js 猜檔名 —— 這一層的成員就是
-       config 的 tuning.partnerSeGain 那一張表，判斷歸屬是呼叫端的事。 */
+       config 的 tuning.voiceKeys 那一份名單，判斷歸屬是呼叫端的事。 */
   playVoice(src, vol){ playSrc(src, vol, true); },
 
   /* 語音鏈參數（main.js 開機時從 config 的 tuning.voiceChain 推進來）。
@@ -395,10 +416,15 @@ export const SFX = {
   setLayerVolume(layer, v){
     if(!(layer in _layerVol)) return;
     _layerVol[layer] = Math.max(0, Math.min(1, v==null ? 1 : v));
-    const g=_layerNode[layer]; if(g) try{ g.gain.value=_layerVol[layer]; }catch(e){}
-    if(layer==='bgm'){
-      const el=_bgmEl;
-      if(el && !el.paused && !el.__fade) el.volume = bgmTargetVol();
+    applyLayer(layer);
+  },
+  /* 分層基準（ver -441）：`{vo,se,bgm}`，開機時由 main.js 從 config 推進來。
+     ⚠ 與 `setLayerVolume` 是兩件事（見 `_layerBase` 的說明），兩者相乘。 */
+  setLayerBase(obj){
+    if(!obj) return;
+    for(const l in _layerBase) if(obj[l]!=null){
+      _layerBase[l] = Math.max(0, +obj[l] || 0);
+      applyLayer(l);
     }
   },
   getLayerVolume(layer){ return _layerVol[layer]!=null ? _layerVol[layer] : 1; },

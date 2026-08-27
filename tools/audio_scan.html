@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>audio_scan — 全庫響度掃描與增益反推</title>
+<style>
+  body{font:13px/1.6 ui-monospace,Menlo,Consolas,monospace;background:#0d0f14;color:#d8cdb4;padding:16px;}
+  h1{font-size:15px;color:#c9a227;letter-spacing:2px;margin-bottom:4px;}
+  p{opacity:.75;margin-bottom:10px;max-width:86ch;}
+  table{border-collapse:collapse;font-size:12px;}
+  th,td{padding:2px 8px;border-bottom:1px solid #232735;text-align:right;white-space:nowrap;}
+  th{color:#c9a227;position:sticky;top:0;background:#0d0f14;}
+  td.f,th.f{text-align:left;}
+  tr.vo td{color:#9fd7ff;} tr.se td{color:#d8cdb4;} tr.bgm td{color:#c8b08a;}
+  .warn{color:#ff9a8a;}
+  pre{background:#12151d;padding:10px;white-space:pre-wrap;font-size:11px;color:#a9c9a0;}
+</style>
+</head>
+<body>
+<h1>AUDIO SCAN</h1>
+<p>把 <code>resources/audio/{bgm,se,vo}</code> <b>整個資料夾</b>掃過一遍，逐支量
+BS.1770 K 加權的閘控積分響度（LUFS），並反推「要拉平到同一個目標，這一支該給多少增益」。
+清單是**現場列目錄**得到的（走開發伺服器的目錄索引）—— 不在這裡抄一份檔名，
+新增音檔不必改這支工具。增益的現值由 <code>config.js</code> 直接 import，
+所以「表上寫的」永遠就是「程式在用的」。</p>
+<p>⚠ 量兩次：<b>耳機</b>（原始）與<b>手機</b>（過 600 Hz 三階高通的小喇叭模型）。
+反推用的是**兩者的平均**（CLAUDE.md §6.6：只對其中一邊會把另一邊的平衡打壞）。</p>
+<div id="out">量測中…（62 支，約需一分鐘）</div>
+
+<script type="module">
+import { GAME_CONFIG, ASSETS } from '../config.js';
+
+const BASE = '../resources/audio/';
+const DIRS = ['vo','se','bgm'];
+const MASTER = GAME_CONFIG.tuning.masterVolume;
+/* 拉平的共同目標與分層基準（Ray 指定：語音 100%／音效 90%／音樂 80%）。
+   ⚠ 這裡讀 config，不要在工具裡另填一組 —— 兩張表一定走鐘（鐵律 7）。 */
+const VOICE = GAME_CONFIG.tuning.voiceChain;
+const LOUD = GAME_CONFIG.tuning.loudness
+          || { targetLufs:-20, layer:{ vo:1, se:0.9, bgm:0.8 } };
+
+/* ── 現值：ASSETS 的路徑 → 那一支現在吃到的增益 ─────────────────────── */
+const curOf = (()=>{
+  const t=GAME_CONFIG.tuning;
+  const byFile={};
+  const put=(path,g)=>{ if(!path) return;
+    const f=String(path).split('/').pop().split('?')[0].toLowerCase(); byFile[f]=g; };
+  for(const k in ASSETS){
+    const v=ASSETS[k]; if(!v || !/\.(mp3|m4a|wav|ogg)/i.test(v)) continue;
+    if(k.indexOf('bgm_')===0) put(v, (t.bgmVol||{})[k] != null ? t.bgmVol[k] : (t.bgmVol||{}).default);
+    else put(v, (t.sfxGain||{})[k]!=null ? t.sfxGain[k] : ((t.fileGain||{})[k]!=null ? t.fileGain[k] : 1));
+  }
+  for(const k in (t.partnerSeGain||{})) put((ASSETS[k]||''), t.partnerSeGain[k]);
+  return f => byFile[String(f).toLowerCase()];
+})();
+
+/* ── 列目錄（開發伺服器的索引頁）───────────────────────────────────── */
+async function listDir(d){
+  const html = await (await fetch(BASE+d+'/')).text();
+  const out=[];
+  for(const m of html.matchAll(/href="([^"?]+)"/g)){
+    const n=decodeURIComponent(m[1]).replace(/^.*\//,'');
+    if(/\.(mp3|m4a|wav|ogg)$/i.test(n)) out.push(n);
+  }
+  return out.sort();
+}
+
+/* ── 量測（與 audio_probe.html 同一組式子）──────────────────────────
+   K 加權 ＝ ① high-shelf 1681.97 Hz +3.999 dB ② high-pass 38.13 Hz Q 0.5
+   手機喇叭模型 ＝ 600 Hz 高通疊三次（18 dB/oct）。 */
+async function render(buf, mode, voice){
+  const oc=new OfflineAudioContext(1, buf.length, buf.sampleRate);
+  const src=oc.createBufferSource(); src.buffer=buf;
+  let node=src;
+  /* ⚠ 語音要**過完語音鏈之後**才量（§6.6）：它真正播出去是走 `voiceChain`
+     （切低頻、壓渾濁、抬子音、壓縮），量母帶等於量了一個沒有人會聽到的東西。
+     ⚠ 參數 import 自 config，不要在工具裡抄一份（鐵律 7）。 */
+  if(voice && VOICE){
+    for(const [t,f,q,g] of (VOICE.eq||[])){
+      const b=oc.createBiquadFilter();
+      b.type=t; b.frequency.value=f; if(q!=null) b.Q.value=q; if(g!=null) b.gain.value=g;
+      node.connect(b); node=b;
+    }
+    if(VOICE.comp){
+      const cp=oc.createDynamicsCompressor();
+      for(const k in VOICE.comp) if(cp[k]) cp[k].value=VOICE.comp[k];
+      node.connect(cp); node=cp;
+    }
+  }
+  if(mode==='phone'){
+    for(let i=0;i<3;i++){
+      const hp=oc.createBiquadFilter();
+      hp.type='highpass'; hp.frequency.value=600; hp.Q.value=0.7071;
+      node.connect(hp); node=hp;
+    }
+  }
+  const sh=oc.createBiquadFilter();
+  sh.type='highshelf'; sh.frequency.value=1681.97; sh.gain.value=3.999;
+  node.connect(sh);
+  const hp=oc.createBiquadFilter();
+  hp.type='highpass'; hp.frequency.value=38.13; hp.Q.value=0.5;
+  sh.connect(hp); hp.connect(oc.destination);
+  src.start();
+  return (await oc.startRendering()).getChannelData(0);
+}
+/* 閘控積分響度：400ms 區塊、75% 重疊、絕對閘 −70 LUFS、相對閘 −10 LU。 */
+function lufs(x, sr){
+  const B=Math.round(sr*0.4), Hp=Math.round(B/4);
+  /* ⚠ **比一個區塊還短的音檔要另外量**（UI 的喀噠聲只有 0.1~0.3 秒）：
+     照原式子會回 −Infinity → 那一支就沒有建議增益，而它們正是最需要拉平的
+     （母帶通常很小聲）。短檔就整支當一個區塊、不做閘控 —— 它本來就只有一拍。 */
+  if(x.length<B){
+    let s=0; for(let j=0;j<x.length;j++) s+=x[j]*x[j];
+    return -0.691+10*Math.log10(s/Math.max(1,x.length)+1e-20);
+  }
+  const L=[];
+  for(let i=0;i+B<=x.length;i+=Hp){
+    let s=0; for(let j=i;j<i+B;j++) s+=x[j]*x[j];
+    L.push(s/B);
+  }
+  const lk=m=>-0.691+10*Math.log10(m+1e-20);
+  let keep=L.filter(m=>lk(m)>-70);
+  if(!keep.length) return -Infinity;
+  const rel=lk(keep.reduce((a,b)=>a+b,0)/keep.length)-10;
+  keep=keep.filter(m=>lk(m)>rel);
+  if(!keep.length) return -Infinity;
+  return lk(keep.reduce((a,b)=>a+b,0)/keep.length);
+}
+function peakDb(buf){
+  let p=0;
+  for(let ch=0; ch<buf.numberOfChannels; ch++){
+    const d=buf.getChannelData(ch);
+    for(let i=0;i<d.length;i++){ const v=Math.abs(d[i]); if(v>p) p=v; }
+  }
+  return 20*Math.log10(p+1e-20);
+}
+
+(async()=>{
+  const ac=new (window.AudioContext||window.webkitAudioContext)();
+  const rows=[];
+  for(const dir of DIRS){
+    let files=[];
+    try{ files=await listDir(dir); }
+    catch(e){ rows.push({layer:dir, file:'(列目錄失敗)', err:String(e).slice(0,60)}); continue; }
+    for(const file of files){
+      let buf;
+      try{
+        const ab=await (await fetch(BASE+dir+'/'+file)).arrayBuffer();
+        buf=await ac.decodeAudioData(ab);
+      }catch(e){ rows.push({layer:dir, file, err:String(e).slice(0,60)}); continue; }
+      const sr=buf.sampleRate;
+      const vo = (dir==='vo');
+      const head=lufs(await render(buf,'flat', vo), sr);
+      const pho =lufs(await render(buf,'phone', vo), sr);
+      const mean=(head+pho)/2;
+      /* 反推：把這一支拉到共同目標。分層基準**不算在這裡** —— 它在匯流那一節
+         乘一次就好（一個量一個計算點）。BGM 走 HTMLAudio 但 `bgmTargetVol()`
+         也乘 master，所以兩邊都要除 master。 */
+      const want=Math.pow(10,(LOUD.targetLufs-mean)/20)/MASTER;
+      rows.push({ layer:dir, file, sr, dur:buf.duration, head, pho, mean,
+                  pk:peakDb(buf), cur:curOf(file), want });
+    }
+  }
+  const f=(v,n)=>(v==null||!isFinite(v))?'—':(+v).toFixed(n==null?1:n);
+  let h='<table><tr><th class="f">層</th><th class="f">檔案</th><th>秒</th>'
+      + '<th>耳機LUFS</th><th>手機LUFS</th><th>平均</th><th>峰值dBFS</th>'
+      + '<th>現值</th><th class="warn">建議增益</th><th>差(dB)</th></tr>';
+  for(const r of rows){
+    if(r.err){ h+=`<tr class="${r.layer}"><td class="f">${r.layer}</td><td class="f">${r.file}</td>`
+                + `<td colspan="8" class="f warn">${r.err}</td></tr>`; continue; }
+    const d=(r.cur!=null&&r.cur>0)?20*Math.log10(r.want/r.cur):null;
+    h+=`<tr class="${r.layer}"><td class="f">${r.layer}</td><td class="f">${r.file}</td>`
+     + `<td>${f(r.dur,2)}</td><td>${f(r.head)}</td><td>${f(r.pho)}</td><td>${f(r.mean)}</td>`
+     + `<td>${f(r.pk)}</td><td>${f(r.cur,2)}</td><td class="warn">${f(r.want,2)}</td>`
+     + `<td>${d==null?'—':f(d)}</td></tr>`;
+  }
+  h+='</table>';
+  h+='<pre>'+JSON.stringify(rows.filter(r=>!r.err).map(r=>
+        [r.layer, r.file, +r.head.toFixed(2), +r.pho.toFixed(2), +r.mean.toFixed(2),
+         +r.pk.toFixed(2), +r.want.toFixed(3)]))+'</pre>';
+  document.getElementById('out').innerHTML=h;
+  window.__rows=rows;
+  window.__done=true;
+})();
+</script>
+</body>
+</html>

@@ -114,6 +114,12 @@ const MASTER_VOL = GAME_CONFIG.tuning.masterVolume != null ? GAME_CONFIG.tuning.
    不然開機那一首會用預設音量響出來再被改小。 */
 settings.apply();
 SFX.setMasterVolume(MASTER_VOL);
+/* 三層的**設計比例**（ver -441，Ray：語音 100%／音效 90%／音樂 80%）。
+   ⚠ 與上面那一支是兩件事：`settings.apply()` 套的是**玩家的滑桿**，這一支是
+     全域基準（config 的 `tuning.loudness.layer`）。兩者在 audio.js 相乘。
+   ⚠ 順序無所謂（`setLayerBase` 會把已經建好的節點一起更新），但擺在這裡讀起來
+     才是「先立基準、再讓玩家調」。 */
+SFX.setLayerBase((GAME_CONFIG.tuning.loudness||{}).layer);
 // 語音鏈（手機外放的可懂度；理由見 config 的 tuning.voiceChain）
 SFX.setVoiceChain(GAME_CONFIG.tuning.voiceChain);
 
@@ -739,7 +745,7 @@ function openPrep(opts){
   prepStoryMode = !!(opts && opts.story);
   weapon.setPrepStory(prepStoryMode);
   // 出陣 stinger：SI_01（音效在第一段就全部載完 → 即點即響）
-  SFX.play(asset('sfx_saint'));
+  SFX.play(asset('sfx_saint'), sfxGain('sfx_saint'));
   weapon.refreshLoadoutLabels();
   /* ⚠ 開在劇情層上時要把整備頁抬起來（見 style.css 的 `body.prep-over`）。 */
   document.body.classList.toggle('prep-over', prepStoryMode);
@@ -1404,7 +1410,7 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
     document.body.classList.toggle('testmode', on);
     if(on) TEL.markAdmin();      // 簽名＝管理員：此裝置停止遙測上報（戰績/點擊不列入統計）
     else   TEL.clearAdmin();     // 撤銷簽名 → 恢復上報
-    SFX.unlock(); SFX.play(asset('sfx_saint'));   // SI_01＝開關回饋音
+    SFX.unlock(); SFX.play(asset('sfx_saint'), sfxGain('sfx_saint'));   // SI_01＝開關回饋音
   };
   // 開機還原：簽名還在就直接進管理人模式
   if(TEL.isAdminStored()) document.body.classList.add('testmode');

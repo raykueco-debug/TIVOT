@@ -10,7 +10,7 @@
    ⚠ 每次移動：`se_walk` ＋ 時鐘前進（時間是資源）。
    ══════════════════════════════════════════════════════════════════════ */
 
-import { GAME_CONFIG } from '../config.js';
+import { GAME_CONFIG, fileGain } from '../config.js';
 import { TOWNS } from '../script/town.js';
 import * as clock from '../script/clock.js';
 import * as prog from '../script/progress.js';
@@ -684,7 +684,7 @@ function bindInput(){
      兩件事要一起發生，就不要讓呼叫端各記得一次。
    ⚠ 幅度小（6°）：這是走路的震動，不是槍棺在動 —— 與上彈那一下（22°）要分得出來。 */
 function stepSfx(){
-  try{ SFX.play('resources/audio/se/se_walk.m4a'); }catch(_){}
+  try{ const w='resources/audio/se/se_walk.m4a'; SFX.play(w, fileGain(w)); }catch(_){}   // ⚠ 增益要帶（ver -441）
   try{ story.kerbPendSwing(6, 1.5); }catch(_){}
 }
 
