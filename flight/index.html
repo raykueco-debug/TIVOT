@@ -467,7 +467,7 @@ const COLOR_URL  = 'silvermoon_terrain.png';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -448';
+const FLIGHT_VER = 'ver -449';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -5664,12 +5664,19 @@ function render(now){
   drawDawnStar(S,horizon,sinp,cosp);
   drawSunMoon(S,horizon,sinp,cosp);
   /* 雲分兩趟畫，中間夾著城（見 drawPuffs 的說明）。 */
-  const splitZ=nearestSettleZ(sinp,cosp);
-  drawPuffs(S,scaleH,horizon,sinp,cosp,splitZ,Infinity);   // 比城遠的雲
+  /* ⚠⚠ 雲**整批**畫在城之後（ver -448，Ray：「帝都的城鎮陰影、樹影好像在雲的
+     圖層之上」）。以前分兩趟、以最近那座城的深度當分界 —— 那是**貼盤子時代**
+     的必要之惡（盤子跨上千單位，總得有取捨），而分界取城心讓「城心～遠緣」
+     上空的雲被後畫的量體（暗色屋頂）壓過去，就是 Ray 看到的陰影蓋雲。
+     A 案（ver -445）之後地面歸地形管、這一層只剩量體與炊煙，而雲團的高度是
+     CLOUD_H+180~940（224~984）—— **永遠高過屋頂**（地基 126~145＋量體幾十）：
+     沒有任何一朵雲該被城蓋住，夾層的理由整個消失。
+     ⚠ 代價只有一種邊角：遠方的雲從高塔背後飄過時不會被塔剪影 —— 雲比塔高，
+       重疊只有幾個像素、又是軟的，看不出來。 */
   drawSettlements3D(scaleH,horizon,sinp,cosp);
   drawTrains(S,scaleH,horizon,sinp,cosp);                  // 火車跟城同一層（貼在地上）
   drawCitySmoke(S,scaleH,horizon,sinp,cosp,now);           // 炊煙蓋在城上（ver -446）
-  drawPuffs(S,scaleH,horizon,sinp,cosp,0,splitZ);          // 比城近的雲：蓋在城上面
+  drawPuffs(S,scaleH,horizon,sinp,cosp,0,Infinity);        // 雲蓋在城與煙上
   drawPlaces(scaleH,horizon,sinp,cosp);
   drawFlock(scaleH,horizon,sinp,cosp,now);
   drawEnemy3D(scaleH,horizon,sinp,cosp,now);
@@ -8139,16 +8146,8 @@ function clipByCityDepth(sxk,syk,c0,c1){
 
 /* 最近那座「畫得出來」的城有多深 —— 雲的分趟分界（見 render / drawPuffs）。
    沒有城在畫面裡就回 Infinity：雲全部在城之前那一趟畫完，行為與分趟前相同。 */
-function nearestSettleZ(sinp,cosp){
-  if(!window.Settlement || !MAPW) return Infinity;
-  let best=Infinity;
-  for(const s of buildSettlements()){
-    const dx=s.mx*MAP_SCALE-cam.x, dy=s.my*MAP_SCALE-cam.y;
-    const z=dx*(-sinp)+dy*(-cosp);
-    if(z>60 && z<best && z<ZFAR*0.9) best=z;
-  }
-  return best;
-}
+/* nearestSettleZ：**已退役**（ver -448）。它是雲與城分兩趟畫時的分界 ——
+   A 案之後地面歸地形管、雲永遠高過屋頂，雲整批畫在城之後即可（見 render）。 */
 
 function drawSettlements3D(scaleH,horizon,sinp,cosp){
   if(!window.Settlement || !MAPW) return;
