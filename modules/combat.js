@@ -1033,7 +1033,7 @@ export function startGame(){
   $('home').classList.remove('on');
   $('banner').classList.remove('on'); $('banner').classList.remove('lose');
   $('transition').classList.remove('on');
-  $('grid').classList.remove('saint'); $('grid').classList.remove('buffed'); $('grid').classList.remove('alert');
+  $('grid').classList.remove('saint'); $('grid').classList.remove('buffed'); $('grid').classList.remove('alert','hot');
   state.cutinPlaying=false;
   state.noSaint=false; state.noPartner=false;   // 這一場的禁令歸零（劇情插入戰於下方依卡設回）
   /* ⚠ 劇情插入戰的旗標在**這裡**依交棒變數決定，不是靠上一場自己收乾淨 ——
@@ -1111,7 +1111,7 @@ export function startIntruderFight(){
   $('home').classList.remove('on');
   $('banner').classList.remove('on'); $('banner').classList.remove('seq'); $('banner').classList.remove('lose');
   $('transition').classList.remove('on');
-  $('grid').classList.remove('saint'); $('grid').classList.remove('buffed'); $('grid').classList.remove('alert');
+  $('grid').classList.remove('saint'); $('grid').classList.remove('buffed'); $('grid').classList.remove('alert','hot');
   state.cutinPlaying=false;
   stopAll();
   loadBoard(0); updateBars();   // loadBoard 內含 scheduleOpeningUlt → 重啟敵大絕排程

@@ -530,9 +530,15 @@
     background:radial-gradient(circle,rgba(255,70,70,.7),rgba(200,20,20,.3) 60%,transparent 72%);
     border:2px solid rgba(255,100,100,.9);box-shadow:0 0 22px rgba(255,40,40,.85),inset 0 0 12px rgba(255,80,80,.6);
     transform:translate(-50%,-50%);}
-  /* 盤面警戒：紅點出現時數字盤變紅，提醒玩家抬頭看敵人 */
-  #grid.alert .cell{border-color:var(--danger);color:#ff8a8a;}
-  #grid.alert{animation:alertPulse .5s infinite alternate;}
+  /* 盤面警戒兩段（ver -462，Ray：「亮黃圈時數字盤亮橘光，亮橘圈的時候數字盤轉紅光」）
+     alert＝黃圈帶（橘光）、alert.hot＝橘圈帶起（紅光，紅圈維持）。.hot 由
+     defense.updateThreats 依圈的同一條門檻（defDefenseMin）切換——唯一切換點。
+     橘光的色相取圈的橘（240,140,40），玩家才讀得出「盤面在預告圈的下一段」。 */
+  #grid.alert .cell{border-color:#c87d2e;color:#ffc27e;}
+  #grid.alert{animation:alertPulseAmber .5s infinite alternate;}
+  @keyframes alertPulseAmber{from{filter:none}to{filter:drop-shadow(0 0 8px rgba(240,140,40,.9))}}
+  #grid.alert.hot .cell{border-color:var(--danger);color:#ff8a8a;}
+  #grid.alert.hot{animation:alertPulse .5s infinite alternate;}
   @keyframes alertPulse{from{filter:none}to{filter:drop-shadow(0 0 8px var(--danger))}}
   /* 暫停對話框開啟中：凍結底下的警戒/聖徒化脈動（動畫 filter 於 iOS 會被抬成獨立合成層，
      蓋過 z-order 較高的教學對話框＝「盤面壓過對話框」；alert 另有色偏假影問題）。 */
@@ -552,9 +558,12 @@
   /* 聖徒化盤面（金色神聖） */
   #grid.saint .cell{border-color:var(--gold);background:#2a2418;color:#ffe9a8;}
   #grid.saint{filter:drop-shadow(0 0 14px var(--gold));animation:saintPulse .8s infinite alternate;}
-  /* v16：聖徒化期間敵發動攻擊（有紅點）時，盤面一樣要變紅（覆蓋金色） */
-  #grid.saint.alert .cell{border-color:var(--danger);color:#ff8a8a;background:#2a1414;}
-  #grid.saint.alert{filter:drop-shadow(0 0 12px var(--danger));animation:alertPulse .5s infinite alternate;}
+  /* v16：聖徒化期間敵發動攻擊（有紅點）時，盤面一樣要變色（覆蓋金色）——
+     兩段與一般警戒同步（ver -462）：黃圈帶橘光、橘圈帶起紅光 */
+  #grid.saint.alert .cell{border-color:#c87d2e;color:#ffc27e;background:#2a1e12;}
+  #grid.saint.alert{filter:drop-shadow(0 0 12px rgba(240,140,40,.85));animation:alertPulseAmber .5s infinite alternate;}
+  #grid.saint.alert.hot .cell{border-color:var(--danger);color:#ff8a8a;background:#2a1414;}
+  #grid.saint.alert.hot{filter:drop-shadow(0 0 12px var(--danger));animation:alertPulse .5s infinite alternate;}
   /* 聖徒化中進 overkill：藍光覆蓋金色（敵已死，優先權高於 saint 金） */
   #grid.saint.overkill .cell{border-color:var(--holy);color:#bfe6ff;background:#18202e;
     text-shadow:0 0 10px #4fc3ff,0 0 22px rgba(79,195,255,.55);}

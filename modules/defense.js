@@ -102,6 +102,7 @@ export function updateThreats(){
   const threats=state.threats;
   if(!threats.length){ stopThreatTick(); return; }
   const CHARGE=state.CHARGE_SECONDS;
+  let hot=false;   // 盤面警戒第二段（ver -462）：任一顆已縮過黃圈帶 → 盤面轉紅光
   for(let i=threats.length-1;i>=0;i--){
     const th=threats[i];
     const left=Math.max(0,CHARGE-(Date.now()-th.t0)/1000);
@@ -116,11 +117,16 @@ export function updateThreats(){
     else if(ratio>=DEF_PERFECT_MIN) col= wNP ? 'rgba(240,200,60'   // 狙擊：橘圈被黃圈取代（無 Perfect 帶）
                                               : 'rgba(240,140,40';  // 橘圈：Perfect 免傷
     else                            col='rgba(240,50,50';    // 紅圈：反擊窗
+    if(ratio<DEF_DEFENSE_MIN) hot=true;   // 與圈的分帶同一條門檻；狙擊圈色不同但門檻同一個
     th.el.style.background=`radial-gradient(circle,${col},.75),${col},.3) 60%,transparent 72%)`;
     th.el.style.borderColor=col+',.95)';
     th.el.style.boxShadow=`0 0 22px ${col},.85),inset 0 0 12px ${col},.6)`;
     if(left<=0){ releaseUlt(th); }
   }
+  /* 盤面警戒跟著圈走（ver -462，Ray：「亮黃圈時數字盤亮橘光，亮橘圈的時候
+     數字盤轉紅光」）：alert（橘光）自 spawnThreat 起、.hot（紅光）自進橘圈帶起
+     （紅圈維持紅光）。這裡是唯一的切換點（鐵律 8）——移除一律跟著 alert 一起。 */
+  $('grid').classList.toggle('hot', hot);
 }
 export function stopThreatTick(){
   clearInterval(state.threatTick); state.threatTick=null;
@@ -201,13 +207,13 @@ export function removeThreat(th){
   if(th.el && th.el.parentNode) th.el.remove();
   const i=state.threats.indexOf(th);
   if(i>=0) state.threats.splice(i,1);
-  if(!state.threats.length){ $('grid').classList.remove('alert'); stopThreatTick(); }
+  if(!state.threats.length){ $('grid').classList.remove('alert','hot'); stopThreatTick(); }
 }
 // 清除全部攻擊點（清盤/overkill/聖徒化結束等）
 export function clearThreat(){
   state.threats.forEach(th=>{ if(th.el && th.el.parentNode) th.el.remove(); });
   state.threats=[];
-  $('grid').classList.remove('alert');
+  $('grid').classList.remove('alert','hot');
   stopThreatTick();
 }
 // 點掉單一攻擊點 → 依剩餘時間判定 Counter / Perfect / Defense
