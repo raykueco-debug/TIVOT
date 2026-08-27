@@ -467,7 +467,7 @@ const COLOR_URL  = 'silvermoon_terrain.png';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -447';
+const FLIGHT_VER = 'ver -448';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -6232,11 +6232,12 @@ function drawCitySmoke(S,scaleH,horizon,sinp,cosp,now){
              z, k:(W/(2*z)) };
   };
   const lit=lerp(0.66,1.0,S.day);
-  /* 黑煙（ver -447，Ray：「煙是黑煙」）：外圈是散開的暗灰、內核近黑。
-     ⚠ 仍吃日夜的 lit —— 夜裡整團再暗一階（黑煙在夜空裡本來就只剩輪廓）。 */
-  const g=Math.round(lerp(58,88,S.day)*lit);
-  const gs='rgb('+g+','+g+','+Math.round(g*1.04)+')';
-  const c2=Math.round(g*0.52), cs='rgb('+c2+','+c2+','+Math.round(c2*1.06)+')';
+  /* 白煙（ver -447b，Ray：「黑煙不清楚 還是白煙吧 大一點」）——
+     黑煙在暗色屋頂上隱形，只有襯著天空那一截讀得出來；白煙兩邊都清楚。
+     外圈灰白、內核稍濃（同火車的兩層作法），照吃日夜的 lit。 */
+  const g=Math.round(lerp(200,242,S.day)*lit);
+  const gs='rgb('+g+','+g+','+Math.round(g*0.97)+')';
+  const c2=Math.round(g*0.78), cs='rgb('+c2+','+c2+','+Math.round(c2*0.99)+')';
   for(const s of buildSettlements()){
     if(!s.smoke) continue;
     const dxs=s.mx*MAP_SCALE-cam.x, dys=s.my*MAP_SCALE-cam.y;
@@ -6260,7 +6261,7 @@ function drawCitySmoke(S,scaleH,horizon,sinp,cosp,now){
         const pf=clamp((CS_FAR-pp.z)/CS_FADEB,0,1);
         if(pf<=0.01) continue;
         const born=clamp(q.age/0.2,0,1);                    // 冒出來那 0.2 秒淡入（同火車）
-        const r=Math.max(0.9,(4.6+q.age*4.0)*(0.66+q.j*0.68)*pp.k);   // 大一點（ver -447，Ray 指定）
+        const r=Math.max(0.9,(5.4+q.age*4.6)*(0.66+q.j*0.68)*pp.k);   // 再大一點（ver -447b，Ray 指定）
         const ox=(q.j-0.5)*r*0.8;
         draw.push({x:pp.x+ox,y:pp.y,r,a0,life:q.age/CS_LIFE,f:pf*born});
         if(pp.x+ox-r<cx0)cx0=pp.x+ox-r; if(pp.x+ox+r>cx1)cx1=pp.x+ox+r;
