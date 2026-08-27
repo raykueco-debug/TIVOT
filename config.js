@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.27-453';
+export const VERSION = 'ver 2026.08.27-454';
 
 export const GAME_CONFIG = {
 
@@ -1361,7 +1361,15 @@ export const ASSETS = {
   tut_nouvelle_surprise: "resources/SI/Nouvelle_SI_Surprise.webp",
   tut_nouvelle_desperate:"resources/SI/Nouvelle_SI_Desperate.webp",
   tut_nouvelle_saint:    "resources/SI/Nouvelle_SI_SAINTINSTALL.webp",
-  cutin_nouvelle_saint:  "resources/CI/Nouvelle_SAINTINSTALL.webp",   // 全畫面 cut-in
+  /* ⚠ 檔名 ver -454 由 Ray 改為 `CI_` 前綴（`Nouvelle_SAINTINSTALL` → 同名加前綴）。 */
+  cutin_nouvelle_saint:  "resources/CI/CI_Nouvelle_SAINTINSTALL.webp",   // 全畫面 cut-in
+  /* ══ 本篇（story）的 cut-in 差分（ver -454，Ray 指定三張）══════════════
+     試玩版照舊用 Luna／Renee 那一組；分流都走 `storyMode()`（鐵律 8）：
+       破防     → weapon.activateDual
+       聖徒化   → saint.activateSaint（搭檔為諾薇兒時）
+       生命歸還 → saint.playSaintCutin('return') */
+  cutin_dual_torsten:    "resources/CI/CI_Torsten_Dualcrush.webp",
+  cutin_return_nouvelle: "resources/CI/Nouvelle_Sturm.webp",
   partner_malzeno: "resources/partner/Malzeno_SI_01.webp",   // 馬季諾 立繪
   cutin_boss: "resources/enemy/Belinda_CI_boss.jpg",   // v18d：Boss（貝琳妲）遭遇 cut-in 專屬圖
   bg_sentou: "resources/background/SENTOUINSTALL.webp", // Boss 戰 S 級獎勵畫面（銭湯インストール）

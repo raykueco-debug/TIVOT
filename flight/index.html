@@ -490,7 +490,7 @@ const COLOR_URL  = 'silvermoon_terrain.png';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -453';
+const FLIGHT_VER = 'ver -454';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -7034,6 +7034,11 @@ function updateEnemy(dt,now){
     /* 劇本遭遇**優先於自動刷新**：條件到了就立刻生，不等計時器（Ray：「立刻刷怪」）。 */
     const S=scriptedDue();
     if(S){ spawnScripted(S); return; }
+    /* ⚠⚠ 劇本遭遇**還在排隊**（旗標到了、但人還在 outOf 的國界內）→ 一隻雜怪
+       都不刷（ver -454，Ray：「第一場船戰必出蜈蚣，在第一場結束前不出其他怪」）。
+       不擋的話出航那一段可能先撞上隨機怪 —— 第一場船戰就不是蜈蚣了。
+       `scriptPending` 在交棒那一刻清空（toBattle），打完（贏或輸）自然放行。 */
+    if(scriptPending) return;
     enemyTimer-=dt;
     if(enemyTimer<=0) spawnEnemy();
     return;

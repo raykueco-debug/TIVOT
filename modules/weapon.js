@@ -165,7 +165,11 @@ export function activateDual(){
     api.resetEnemyTimers();
     api.scheduleUlt();
     startDualWindow();
-  }, L.cutins.dualBreak+'<span class="cutin-en">Guard Crushing</span>', 'cutin_saint');
+  }, L.cutins.dualBreak+'<span class="cutin-en">Guard Crushing</span>',
+     /* 破防 cut-in 分流（ver -454，Ray：「story 版的破防 CI 換成這一張
+        CI_Torsten_Dualcrush」）：本篇＝托爾斯滕、試玩版照舊 Luna。
+        ⚠ 走 `storyMode()`（＝scriptRun || tutorialStoryRun，唯一的判定，鐵律 8）。 */
+     storyMode() ? 'cutin_dual_torsten' : 'cutin_saint');
 }
 
 // 進入破防射擊窗口（窗口本體）：activateDual 的 cut-in 撤下後呼叫；馬季諾「前線補給」

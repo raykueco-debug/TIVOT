@@ -24,7 +24,7 @@
  * ========================================================================== */
 
 import { GAME_CONFIG, asset, sfxGain, isVoiceKey } from '../config.js';
-import { state, enterSaint, exitSaint, markExecution } from '../state.js';
+import { state, enterSaint, exitSaint, markExecution, storyMode } from '../state.js';
 import { SFX } from '../audio.js';
 import { L, fmt } from '../i18n.js';   // 多語言（cut-in 副標/浮動字）
 
@@ -66,7 +66,13 @@ export function activateSaint(dir){
   playCutin(()=>{
     if(state.over) return;
     startSaintMode();
-  }, L.cutins.saintInstall+'<span class="cutin-en">SAINT INSTALL!!</span>', 'cutin_saint_luna', { noShot:true });
+  }, L.cutins.saintInstall+'<span class="cutin-en">SAINT INSTALL!!</span>',
+     /* 聖徒化 cut-in 分流（ver -454，Ray：「story 版搭檔為諾薇兒時聖徒化用
+        CI_Nouvelle_SAINTINSTALL」）：本篇＋搭檔諾薇兒＝她的那一張；
+        其餘（試玩版、或日後本篇換搭檔）照舊 Luna。 */
+     (storyMode() && state.pickedPartner==='nouvelle') ? 'cutin_nouvelle_saint'
+                                                       : 'cutin_saint_luna',
+     { noShot:true });
 }
 
 /* 聖徒化回血特效開關：玩家血條（倒數槽）轉金＋末端強光點（CSS .saint-heal） */
@@ -361,7 +367,11 @@ function playSaintCutin(kind, done){
   $('saintCutinTitle').textContent = title;
   $('saintCutinSub').textContent   = sub;
   // 依 kind 載入對應內嵌 cut-in 圖（資料放 ASSETS，程式只讀）
-  const scImgKey = { execute:'cutin_exc', obe:'cutin_obe', burst:'cutin_mb', return:'cutin_return' };
+  /* ⚠ 生命歸還在**本篇**換成諾薇兒那一張（ver -454，Ray：「story 版的生命歸還 CI
+     換成 Nouvelle_Sturm」）：本篇的搭檔是諾薇兒，演出裡出現蕾妮是錯的人。
+     試玩版照舊 Renee。 */
+  const scImgKey = { execute:'cutin_exc', obe:'cutin_obe', burst:'cutin_mb',
+                     return: storyMode() ? 'cutin_return_nouvelle' : 'cutin_return' };
   const scImgEl  = { execute:'saintCutinImg', obe:'saintCutinImgObe', burst:'saintCutinImgBurst', return:'saintCutinImgReturn' };
   if(scImgEl[kind]){ const el=$(scImgEl[kind]); if(el){ const src=asset(scImgKey[kind]); if(src) el.src=src; } }
   c.classList.remove('burst','obe','execute','return','on');
