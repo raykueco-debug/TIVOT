@@ -1159,7 +1159,10 @@ function layoutKerberos(){
     /* 橫向錨在畫面左側的 `bandC`（佔畫面寬的比例）；`left` 是門座標，要把 dx 扣回去。 */
     pd.style.left  = (pcx - pw/2 - dx)+'px';
     pd.style.top   = top+'px';
-    pd.style.display = pw>=14 ? '' : 'none';          // 真的擠不下就不掛
+    /* ⚠ **飛行交棒來的門不掛吊墜**（ver -485，Ray：「飛行畫面彈出的槍棺不應該有
+       掛飾」——飛行頁那一半自 -481 起吊墜固定在面板上，接手的這一半也不掛，
+       交棒前後才是同一扇門）。尺寸照算（齒輪的大小位置由它推，鐵律 7），只藏顯示。 */
+    pd.style.display = (pw>=14 && !kerbNoPend) ? '' : 'none';
     pendW=pw; pendCx=pcx; pendTop=top;                // 發佈給齒輪（鐵律 7：算的那一支發佈）
   }
   /* ── 齒輪（ver -419）── **大小與位置都由吊墜推出來**（Ray：「依據吊墜調整，
@@ -1396,6 +1399,9 @@ let kerbGear=null;       // 齒輪聲的把手（演出中止時要收掉，見 
    （story 不 import combat，維持依賴方向）。 */
 let gateHold=null;       // {pause, resume}
 let kerbHeld=false;      // 門正押著戰鬥（中止演出時要放行，否則戰鬥凍死）
+/* 這一扇門是**飛行交棒來的** → 不掛吊墜（ver -485）：showKerbGate／FromRisen 設，
+   回到劇情側的門（playKerberos 非 fromRisen）清。layoutKerberos 讀它決定顯示。 */
+let kerbNoPend=false;
 export function setGateHold(o){ gateHold = o || null; }
 function gatePause(){ if(gateHold && !kerbHeld){ kerbHeld=true; gateHold.pause(); } }
 function gateResume(){ if(kerbHeld){ kerbHeld=false; gateHold && gateHold.resume(); } }
@@ -1417,6 +1423,7 @@ function playKerberos(onGap, onDone, opts){
   const kb=$('kerb'), st=$('storyStage');
   if(!kb || !st){ onGap&&onGap(); onDone&&onDone(); return; }
   const fromRisen = !!(opts && opts.fromRisen);
+  if(!fromRisen) kerbNoPend=false;   // 劇情側自己的門：吊墜照掛（ver -485）
   stopKerberos(); layoutKerberos();
   kerbPlaying=true;
   /* ⚠ 槍棺一動，對話框就要**先消失**（Ray 指定，且「以後推槍棺都要這樣處理」）——
@@ -1506,6 +1513,7 @@ export function showKerbGate(geom){
   if(!st || !kb) return;
   /* 飛行頁量好的門幾何（內嵌模式會帶過來）。沒帶就照自己的公式算。 */
   kerbForce = (geom && geom.Wd>0 && isFinite(geom.top)) ? { Wd:geom.Wd, top:geom.top } : null;
+  kerbNoPend = true;   // 飛行交棒來的門不掛吊墜（ver -485，Ray 指定）
   stopKerberos();
   st.classList.add('on');
   /* ⚠ `kerb-gate`：這一段**沒有劇情**，所以對話框、離開鈕、跳段鈕都要收掉 ——
@@ -2293,6 +2301,7 @@ export function close(opts){
   const b0=$('storyBubble'); if(b0) b0.style.visibility='';
   active=false; cur=null;
   stopModes(); clearTimeout(autoT2); autoT2=null; onTyped=null;
+  kerbNoPend=false;   // 飛行門的「不掛吊墜」只到這一幕為止（ver -485）——城鎮的吊墜是整備入口，不能被殘留旗標藏掉
   stopKerberos();
   const st=$('storyStage'); if(st) st.classList.remove('on');
   document.body.classList.remove('story-on');
