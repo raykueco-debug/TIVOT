@@ -86,15 +86,35 @@
      降落是這一頁最重要的一個動作，擺在 3D 視窗的正中央才一眼看得到。
      ⚠ 縱向的中線是 `VIEWH/2`（面板上緣是算出來的，CSS 這邊沒有那個數字）——
        由 JS 在 resize 時寫進 `top`，同 `#boostBtn` 的作法。 */
+  /* ── 樣式（ver -449，Ray：「降落帝都的按鍵改好看點 並在下方加入往下的雪鐵龍箭」）──
+     牌匾風：深底、雙線金框（外框＋內框）、金字 —— 與這一頁的 HUD 同一族
+     （深底金線），不再是一塊實心金磚壓在畫面正中。
+     鈕的下方掛一組**往下的雪鐵龍箭**（兩枚疊置的 chevron，上淡下濃，
+     同旅店說明的 `.ig-arrow` 那一套），上下浮動 —— 指著腳下的城：往下＝降落。 */
   #landBtn{position:fixed;left:50%;transform:translate(-50%,-50%) translateY(8px);
-    z-index:41;font-family:inherit;font-size:12.5px;letter-spacing:.22em;
-    padding:8px 20px;border-radius:6px;cursor:pointer;
-    color:#1a1410;border:1px solid rgba(217,198,138,.9);
-    background:linear-gradient(180deg,#e2c98e 0%,#d4a94a 52%,#b98d34 100%);
-    box-shadow:0 2px 12px rgba(212,169,74,.4);
+    z-index:41;font-family:inherit;font-size:13.5px;letter-spacing:.30em;
+    padding:9px 26px 9px calc(26px + .30em);border-radius:3px;cursor:pointer;
+    color:#f0d9a0;border:1px solid rgba(217,198,138,.85);
+    background:rgba(10,9,16,.78);
+    box-shadow:inset 0 0 0 3px rgba(10,9,16,.9), inset 0 0 0 4px rgba(217,198,138,.45),
+               0 2px 14px rgba(0,0,0,.55), 0 0 18px rgba(212,169,74,.28);
+    text-shadow:0 0 8px rgba(240,196,105,.5);
     opacity:0;pointer-events:none;transition:opacity .25s ease,transform .25s ease;}
   #landBtn.on{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) translateY(0);}
-  #landBtn:active{background:linear-gradient(180deg,#c9ad68 0%,#b8912f 100%);}
+  #landBtn:active{background:rgba(201,162,39,.28);color:#ffedc2;}
+  /* 雪鐵龍箭：鈕的正下方，穿透點擊（點到箭也算點到鈕的話反而誤觸畫面）。
+     ⚠ 掛在鈕**裡面**（絕對定位往下探出），跟著鈕一起淡入淡出與定位，
+       不必再算第二份座標（鐵律 7）。 */
+  #landBtn .land-arrow{position:absolute;left:50%;top:100%;margin-top:10px;
+    transform:translateX(-50%);pointer-events:none;
+    animation:landPoint 1.5s ease-in-out infinite;}
+  @keyframes landPoint{0%,100%{transform:translateX(-50%) translateY(-3px);}
+                       50%    {transform:translateX(-50%) translateY(4px);}}
+  #landBtn .land-arrow i{display:block;width:20px;height:20px;margin:-8px auto 0;
+    border-right:2.5px solid var(--gold);border-bottom:2.5px solid var(--gold);
+    transform:rotate(45deg);opacity:.9;
+    filter:drop-shadow(0 0 6px rgba(240,196,105,.6));}
+  #landBtn .land-arrow i:first-child{opacity:.45;}
   /* ══ Kerberos 之門（ver -387，Ray：「飛行畫面時將楣常置於操控面板底部，
        遭遇敵人時槍棺彈出，進入戰鬥畫面」）══
      平常：整扇槍棺沉在畫面之下，只有**楣**露在操控面板的底緣 —— 那是「棺就在腳下」
@@ -359,7 +379,8 @@
 <!-- 免戰（ver -383）：開著就不會被拉進戰鬥，畫地圖時用。狀態記在 localStorage。 -->
 <button id="peaceBtn">免戰</button>
 <!-- 降落（ver -416）：靠近有城鎮資料的聚落時才亮。 -->
-<button id="landBtn"><span id="landTxt">降　落</span></button>
+<button id="landBtn"><span id="landTxt">降　落</span>
+  <span class="land-arrow"><i></i><i></i></span></button>
 <button id="boostBtn">×1</button>
 <!-- 進度（管理人限定，由 ADMIN 區塊解除 hidden）：現 stage 與各角色好感 -->
 <button id="progBtn" hidden>進度</button>
@@ -467,7 +488,7 @@ const COLOR_URL  = 'silvermoon_terrain.png';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -449';
+const FLIGHT_VER = 'ver -450';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
