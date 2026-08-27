@@ -81,15 +81,19 @@
      ⚠ 位置：畫面下緣正中、楣之上。左右兩側下緣已經被生怪／免戰佔著（開發鈕），
        正中是唯一空的一塊，而且那裡正好在舵輪的正上方 —— 手已經在那裡了。
      ⚠ 比那兩顆開發鈕**明顯**：這是玩家真的要按的東西，實心金底。 */
-  #landBtn{position:fixed;left:50%;transform:translateX(-50%) translateY(8px);
-    bottom:calc(env(safe-area-inset-bottom) + 12px + var(--fkerb-top-h,0px));
+  /* ⚠⚠ **改放飛行畫面正中間**（ver -443，Ray 指定）。原本在畫面下緣正中、楣之上，
+     那裡與舵輪、開發鈕擠在一起，而且是**視線最少經過**的一條邊；
+     降落是這一頁最重要的一個動作，擺在 3D 視窗的正中央才一眼看得到。
+     ⚠ 縱向的中線是 `VIEWH/2`（面板上緣是算出來的，CSS 這邊沒有那個數字）——
+       由 JS 在 resize 時寫進 `top`，同 `#boostBtn` 的作法。 */
+  #landBtn{position:fixed;left:50%;transform:translate(-50%,-50%) translateY(8px);
     z-index:41;font-family:inherit;font-size:12.5px;letter-spacing:.22em;
     padding:8px 20px;border-radius:6px;cursor:pointer;
     color:#1a1410;border:1px solid rgba(217,198,138,.9);
     background:linear-gradient(180deg,#e2c98e 0%,#d4a94a 52%,#b98d34 100%);
     box-shadow:0 2px 12px rgba(212,169,74,.4);
     opacity:0;pointer-events:none;transition:opacity .25s ease,transform .25s ease;}
-  #landBtn.on{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0);}
+  #landBtn.on{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) translateY(0);}
   #landBtn:active{background:linear-gradient(180deg,#c9ad68 0%,#b8912f 100%);}
   /* ══ Kerberos 之門（ver -387，Ray：「飛行畫面時將楣常置於操控面板底部，
        遭遇敵人時槍棺彈出，進入戰鬥畫面」）══
@@ -496,6 +500,13 @@ const VIEW_F = 0.66;      // 3D 視窗佔畫面高度比例，其餘為面板
 /* ⚠ 與 `modules/story.js` 的 `KERB_GEAR` 同一組（門圖上的比例），改一邊要改另一邊。 */
 /* ⚠ 與 `modules/story.js` 的 `KERB_GEAR` 同一組，改一邊要改另一邊。 */
 const FKERB_GEAR={ rel:0.92, bodyC:0.45, smAllowRivet:false };
+/* 吊墜掛在哪（ver -443）：實作見 `placeFkerbPend`。
+   ⚠⚠ 宣告要放在**這裡**，不能跟那支函式擺在一起：`layoutFKerb()` 在開機的
+     resize 就會跑到，那時檔案後半的 `let` 還在 TDZ —— 實測整頁掛掉
+     （`Cannot access 'fkerbPendDoor' before initialization`），同本檔
+     `VIEWH−HELM_OUT` 那一條的理由。 */
+let fkerbPendDoor=null, fkerbPendOnDoor=false;
+const FKERB_PEND_PAD=12;     // 面板左緣的邊距（＝加速鈕原本的 left）
 const FKERB_PEND={ ar:1536/1024, bandC:0.145, maxW:0.32, wantW:0.155, drop:0.004,
   prof:[[0.13,0.41],[0.17,0.45],[0.21,0.49],[0.25,0.45],[0.31,0.40],[0.38,0.31],
         [0.44,0.24],[0.48,0.36],[0.52,0.25],[0.58,0.21],[0.65,0.27],[0.69,0.35],
@@ -3874,7 +3885,11 @@ function applyResize(){
   { const bb=document.getElementById('boostBtn');
     if(bb) bb.style.top=(VIEWH+12)+'px';
     const pb=document.getElementById('progBtn');       // 進度鈕：面板右上，與加速鈕同高
-    if(pb) pb.style.top=(VIEWH+12)+'px'; }
+    if(pb) pb.style.top=(VIEWH+12)+'px';
+    /* 降落鈕：**3D 視窗的正中央**（ver -443，Ray 指定）。面板上緣是算出來的，
+       所以縱向由這裡寫進去（同上面那兩顆）。 */
+    const lb=document.getElementById('landBtn');
+    if(lb) lb.style.top=Math.round(VIEWH/2)+'px'; }
   layoutFKerb();          // 楣／槍棺的幾何（ver -387）：寬高由畫面比例反推，見那一支
   cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR);
   cv.style.width=W+'px';cv.style.height=H+'px';
@@ -6843,9 +6858,18 @@ function layoutFKerb(){
     const want=Math.min(W*FKERB_PEND.maxW, W*FKERB_PEND.wantW);
     for(let w=Math.round(want); w>=14; w--){ if(fits(w)){ pw=w; break; } }
     pd.style.width=pw+'px'; pd.style.height=(pw*FKERB_PEND.ar)+'px';
-    pd.style.left=(pcx-pw/2-dx)+'px'; pd.style.top=top+'px';
     pd.style.display = pw>=14 ? '' : 'none';
     pendW=pw; pendCx=pcx; pendTop=top;
+    /* ⚠⚠ **解出來的位置與「掛在哪」是兩件事**（ver -443）：上面那一段仍然要跑 ——
+       齒輪的大小與位置是**由吊墜推出來**的（ver -419），拿掉就沒有基準了。
+       這裡只決定那個 DOM 掛到哪裡去（見 `placeFkerbPend`）。 */
+    fkerbPendDoor={ x:(pcx-pw/2-dx), y:top };
+    placeFkerbPend();
+    /* 加速鈕（開發用）本來也在面板左上 —— 吊墜掛上去之後讓它往右挪，
+       兩個東西不要疊在一起。⚠ 讓路的是**開發鈕**不是吊墜（ver -443）。 */
+    { const bb=document.getElementById('boostBtn');
+      if(bb) bb.style.left=(fkerbPendOnDoor ? FKERB_PEND_PAD
+                                            : FKERB_PEND_PAD+pw+10)+'px'; }
   }
   /* 齒輪（ver -419）：大小與位置**由吊墜推出來**（同 story.js 的 layoutKerberos）。 */
   const gb=document.getElementById('fkerbGear'), gsm=document.getElementById('fkerbGearSm');
@@ -6898,6 +6922,40 @@ const kerbPopSE = new Audio('../resources/audio/se/se_Kerberos_pop.m4a'); kerbPo
 kerbPopSE.__baseVol = fileVol('se_kerberos_pop');   // 逐支增益（ver -441，見 fileVol）
 const FKERB_RISE_MS = 1000;   // 上推時間（＝ story.js 的 KERB_T.rise，兩邊同值）
 /* 吊墜被甩一下（ver -412）。⚠ 唯一的一支（同 story.js 的 `kerbPendSwing`）。 */
+/* ══ 吊墜掛在哪（ver -443，Ray：「飛行畫面時把吊墜掛在控制面板的左上方，
+     飛行畫面時槍棺無吊墜」）══════════════════════════════════════════════
+   兩個位置，一支函式（鐵律 8）：
+     · **飛行中**：掛在控制面板的**左上角**（`position:fixed`，縱向由 `VIEWH` 推）——
+       那是這一頁唯一一塊空的角落，而槍棺在飛行時只露出楣，掛在那裡看不到。
+     · **推棺那一刻**：回到門上。⚠⚠ 這一條是 §6.10 的規矩：交棒之後接手的是
+       **主遊戲那一半的門**，而它有吊墜 —— 飛行頁這一半不掛的話，交棒那一格
+       會憑空多出一個東西。所以「槍棺無吊墜」只到門開始上推為止。
+   ⚠ 尺寸兩邊共用**同一個解**（見 layoutFKerb）：換位置不換大小，
+     玩家才讀得出「同一個吊墜換了地方掛」。 */
+function placeFkerbPend(onDoor){
+  if(onDoor!=null) fkerbPendOnDoor=!!onDoor;
+  const pd=document.getElementById('fkerbPend'); if(!pd) return;
+  const door=document.getElementById('fkerbDoor');
+  if(fkerbPendOnDoor){
+    /* ⚠⚠ 掛回門上要**真的把節點搬回去**：門是靠 `transform` 推上去的，
+       不是它的子孫就不會跟著走（那一秒會看到吊墜留在原地）。 */
+    if(door && pd.parentNode!==door) door.appendChild(pd);
+    if(!fkerbPendDoor) return;
+    pd.style.position='absolute'; pd.style.zIndex='';
+    pd.style.left=fkerbPendDoor.x+'px'; pd.style.top=fkerbPendDoor.y+'px';
+    return;
+  }
+  /* 面板左上。⚠⚠ **一定要先把節點搬出門外**：`#fkerbDoor` 有 `transform`，
+     而有 transform 的祖先會讓 `position:fixed` 變成相對它定位 —— 留在門裡的話
+     這幾個座標會落在完全錯的地方（CSS 的老坑）。
+   ⚠ 面板上緣（`VIEWH`）是**算出來的**，CSS 沒有那個數字 —— 同 `#boostBtn` 的作法。
+   ⚠ z-index 44：壓過 HUD 那排鈕（40），但**低於**槍棺（45）—— 楣是畫框，
+     吊墜掛在面板上不該蓋過它。 */
+  if(pd.parentNode!==document.body) document.body.appendChild(pd);
+  pd.style.position='fixed'; pd.style.zIndex='44';
+  pd.style.left=FKERB_PEND_PAD+'px';
+  pd.style.top=VIEWH+'px';
+}
 function fkerbPendSwing(amp, dur){
   const pd=document.getElementById('fkerbPend'); if(!pd) return;
   const sw=pd.querySelector('.fkp-swing'); if(!sw) return;
@@ -6949,6 +7007,10 @@ function toBattle(kind){
      落地了，直接加 class 就會有過場。 */
   const kb=document.getElementById('fkerb');
   if(kb) kb.classList.add('rise');
+  /* ⚠ 吊墜回到門上（ver -443）：飛行時它掛在控制面板，但**交棒之後接手的是
+     主遊戲那一半的門，而那一半有吊墜** —— 不掛回去的話交棒那一格會憑空多一個
+     東西（§6.10）。見 `placeFkerbPend`。 */
+  placeFkerbPend(true);
   /* 吊墜：起步輕輕甩、撞頂那一下最兇（與主遊戲同樣的兩拍，見 story.js 的 kerbPendSwing）。 */
   fkerbPendSwing(9, 2.0);
   setTimeout(()=>fkerbPendSwing(22, 2.6), FKERB_RISE_MS);
