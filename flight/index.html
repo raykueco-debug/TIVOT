@@ -7449,16 +7449,16 @@ function embedded(){ try{ return window.parent!==window && !!window.parent.__tiv
                      catch(_){ return false; } }
 
 function toBattle(kind){
-  /* 劇本遭遇：**真的交棒的那一刻**才記旗標（ver -426）。
-     ⚠ 不在生成時記：免戰模式根本不進戰鬥，記了就再也刷不出來、測不了。
-     ⚠ 打輸走 Game Over → 回主選單 → 讀檔，那個存檔的旗標本來就還沒有它，
-       所以「記在進戰鬥前」不會害玩家跳過這一場（§6.9）。 */
+  /* ⚠⚠ 劇本遭遇的 done 旗標**打贏才記**（ver -487；-426 曾記在交棒那一刻）——
+     憲法 §6.5.2「劇情戰敗北＝回捲到戰前」的正解：與其記了再退（-480/-486 的
+     回捲跨兩個文件靠執行期掛鉤，主頁沒重整就版本錯開、整個漏掉——實測就漏了），
+     不如**根本不記**：敗北從結構上就等於「這一場還沒發生過」。
+     記錄點在 __flightResume({won:true})。 */
   const SC=enemy && enemy.script;
   scriptPending=null;        // 這一頁這一趟不再刷（免戰模式也是；重整就能再測一遍）
   if(peaceMode) return;      // 免戰：遭遇照演，就是不進戰鬥
   if(battleGoing) return;
-  if(SC && SC.done) addFlag(SC.done);
-  lastScriptS = SC || null;  // 打輸重生要「再來一次」（ver -480）——退旗標時要認得是哪一條
+  lastScriptS = SC || null;  // 這一場是哪一條劇本遭遇（打贏記 done／打輸重掛 pending 用）
   /* 這一場是不是**劇本遭遇**（＝第一場船戰）：打贏回來那一段「小命保住了」
      只掛在它身上（ver -453，Ray：「不要每次船戰都跳…只有第一場船戰結束會跳」）。
      見 `__flightResume`。 */
@@ -7536,9 +7536,21 @@ window.__flightResume=function(opts){
      ⚠ 等門收完再演（`FKERB_MS`）：槍棺還蓋著半個畫面時放人出來，
        立繪會從門後面滑出來。 */
   const wasScripted = lastBattleScripted; lastBattleScripted = false;
-  /* ⚠ 打輸的回捲（done 旗標退掉＋scriptPending 重掛）**不在這裡**（ver -486）——
-     它搬去 __flightLoseRollback，由父頁在「戰敗」那一刻呼叫：連敗第三場走
-     「送回旅店」那條路不經過本函式，掛在這裡會漏（實測就漏了）。 */
+  /* ══ 劇本遭遇的勝負記帳（ver -487，唯一的記錄點）══
+     · 打贏：**這一刻**才記 done（-426 的「交棒就記」廢除 —— 敗北要等於沒發生過，
+       憲法 §6.5.2）。
+     · 打輸：pending 重掛（in-page 記憶；done 從來沒記，旗標不必退）——
+       人還在國境外的話下一幀就再遭遇。順手退一次 done 是**治舊檔**：
+       舊版在交棒時記過的殘留旗標藉此洗掉。
+     · 連敗第三場走「送回旅店」不經過這裡 —— 沒關係：done 沒記過，下次出航
+       重載本頁時 scriptPending 由旗標重算，自然又掛上。 */
+  if(wasScripted && lastScriptS){
+    if(opts && opts.won){ if(lastScriptS.done) addFlag(lastScriptS.done); }
+    else{
+      if(lastScriptS.done) removeFlag(lastScriptS.done);   // 治舊檔（見上）
+      scriptPending = lastScriptS;
+    }
+  }
   if(!(opts && opts.won)) return;
   /* ⚠⚠ **只有第一場船戰（劇本遭遇的蜈蚣）打贏才演**（ver -453，Ray：「不要每次
      船戰都跳…只有第一場船戰結束會跳」）。旗標守門本來就有，但它綁的是
@@ -7553,18 +7565,16 @@ window.__flightResume=function(opts){
   setTimeout(()=>{ if(!sayQueue) say(AFTER_SHIP_TALK, performance.now(), { sides:{ renna:'R' } }); }, 900);
 };
 window.__flightPause=function(){ extPaused=true; flightAudio(false); };
-/* ══ 強制戰打輸的回捲（ver -480 建、-486 抽成掛鉤）══
-   把交棒時記的 done 旗標退掉、scriptPending 重掛 —— 重生回到「蜈蚣戰前」的狀態：
-   雜怪禁令（-483，看 done 旗標）跟著生效、一在國境外就再遭遇（scriptedDue）。
-   ⚠ 由**父頁**在戰敗那一刻呼叫（main 的 flightBack 分支）：不管接下來是
-     「繼續回飛行」還是「連敗三場送回旅店」，兩條路都要回捲 ——
-     掛在 __flightResume 裡的話旅店那條不經過、會漏（ver -486 的修正原因）。 */
+/* ══ 強制戰打輸的回捲（ver -480 建、-486 抽鉤、-487 起**幾乎不再需要**）══
+   -487 起 done 旗標「打贏才記」（見 toBattle／__flightResume）—— 敗北從結構上
+   就是「沒發生過」，不必退旗標。這支保留兩個理由：
+     ① 治舊檔：舊版在交棒時記過的 done 藉此洗掉
+     ② 舊版 main 相容：-486 的 main 會呼叫它，行為與 resume 的敗北分支一致（冪等） */
 window.__flightLoseRollback=function(){
   if(lastScriptS){
     if(lastScriptS.done) removeFlag(lastScriptS.done);
     scriptPending = lastScriptS;
   }
-  lastBattleScripted=false;
 };
 /* 整備窗／設定窗蓋在飛行畫面上（ver -481，Ray：「開整備窗、設定窗就直接暫停
    飛行畫面一切動作」）：與 __flightPause 同一個開關，只是它有「放開」的一半。
