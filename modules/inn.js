@@ -591,6 +591,24 @@ export function relayout(){
   };
   put('[data-act="sit"]',   wantSit,   spots.sit);
   put('[data-act="sleep"]', wantSleep, spots.sleep);
+  /* ⚠⚠ **兩顆行動鈕互不相疊**（ver -478，Ray：「不要跟其他按鍵互相干擾」）：
+     各自夾完畫面/門欄/對話框之後，可能被推進同一個夾角（實測就是這樣疊上的）。
+     疊了就把「坐坐」往「睡覺」左側挪；左邊塞不下才改右側。
+     ⚠ 夾完才量（同上：沒顯示量到 0×0）。 */
+  {
+    const bs=layer.querySelector('[data-act="sit"]'), bp=layer.querySelector('[data-act="sleep"]');
+    if(bs && bp && bs.classList.contains('on') && bp.classList.contains('on')){
+      const a=bs.getBoundingClientRect(), c=bp.getBoundingClientRect();
+      if(a.width && c.width &&
+         a.left < c.right+6 && a.right > c.left-6 && a.top < c.bottom+6 && a.bottom > c.top-6){
+        const st=story.stageEl(), sr=st.getBoundingClientRect();
+        const half=a.width/2;
+        let nx=(c.left-sr.left)-half-10;                                   // 睡覺左側
+        if(nx < half+8) nx=Math.min(sr.width-half-8, (c.right-sr.left)+half+10);  // 塞不下改右側
+        bs.style.left=nx+'px';
+      }
+    }
+  }
   maybeGuide();                      // 鈕剛擺好 → 現在才量得到位置（見 showGuide 的說明）
 }
 

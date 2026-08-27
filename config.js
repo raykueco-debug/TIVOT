@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.27-477';
+export const VERSION = 'ver 2026.08.27-478';
 
 export const GAME_CONFIG = {
 
@@ -626,7 +626,8 @@ export const GAME_CONFIG = {
       finishLR:   [ { who:'inspector', text:'總算撐過來了，現在結束這場戰鬥吧！' } ],
     },
     // 引導箭頭（雪鐵龍雙箭羽依次閃滅）文字標示
-    guideLabels: { click:'CLICK！', right:'向右側滑動', up:'向上滑動' },
+    guideLabels: { click:'CLICK！', right:'向右側滑動', up:'向上滑動',
+                   wswitch:'點擊切換' },   // 副武器切換教學（ver -478）
     /* ── 教學專屬結算（inspector.settle 讀取；tutorialRun 旗標存續到結算）──
      *  usedLifeReturn＝有發動蕾妮主動技（生命歸還）；noLifeReturn＝沒發動（MB 過關）。
      *  outro 接在其後同框逐字補完；按鈕改「回到主畫面」，按下先補 buttonLine 再回首頁。 */
@@ -1073,12 +1074,16 @@ export const GAME_CONFIG = {
                         counterGapMs:180,
                         talkOnce:'taught_ship_counter',
                         talk:[
-                          /* ══ 進場（ver -429，Ray 交稿，一字未改）══
-                             ⚠ 蜈蚣的吼聲＋畫面震動掛在**第一拍**：牠先出聲，蕾娜才反應。
+                          /* ══ 進場（ver -429，Ray 交稿，一字未改；-478 改分鏡）══
+                             ⚠ 分鏡（ver -478，Ray：「先進戰鬥畫面，咆哮震動再彈蕾娜
+                               然後再彈諾薇兒 分左右」）：第一拍是**演出拍**（無人無框，
+                               只有吼聲＋震動），蕾娜下一拍才滑入、諾薇兒再下一拍 ——
+                               逐拍進場由 tutorial 的 syncCast(upto) 做，這裡只排拍。
                              ⚠ `sides` 不必寫 —— 站位在 `config.tutorial.cast`
                                （蕾娜右／諾薇兒左），那是整場一致的安排。 */
                           { trigger:'battleStart', lines:[
-                            { who:'renna',    img:'tut_renna_shocked',   se:'se_enemy_centipi', shake:true,
+                            { se:'se_enemy_centipi', shake:true, hold:900 },   // 演出拍：牠先出聲
+                            { who:'renna',    img:'tut_renna_shocked',
                               text:'竟然在內陸碰到這麼巨大的禍魘……' },
                             { who:'nouvelle', img:'tut_nouvelle_steady', text:'交給我們！' },
                             { who:'nouvelle', img:'tut_nouvelle_steady', text:'大型敵人就要靠重武器！' },
@@ -1101,6 +1106,14 @@ export const GAME_CONFIG = {
                               text:'大型敵人用普通武器很難應付！' },
                             { who:'nouvelle', img:'tut_nouvelle_steady',
                               text:'抓準時機，在敵人攻擊前的一瞬間用艦載武器反擊！' },
+                          ]},
+                          /* ══ 副武器切換教學（ver -478，Ray：「反擊教學加一段
+                             副武器切換教學雪鐵龍」）：首次防禦成功後接一句，
+                             雪鐵龍箭（guide:'wswitch'）指著血條右側的切換鈕。
+                             ⚠ 台詞是暫擬的 —— Ray 要換稿直接改這一行。 */
+                          { trigger:'defended', lines:[
+                            { who:'nouvelle', img:'tut_nouvelle_steady', guide:'wswitch',
+                              text:'點血條旁的武器圖可以切換艦載武器，反擊的時機與威力各有不同！' },
                           ]},
                         ] },
     flight_serpent:   { enemy:'facelessgiant' },

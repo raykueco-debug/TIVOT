@@ -356,6 +356,13 @@ def main():
                     if ln.get('who') or ln.get('img'):
                         err('%s.lines[%d]：blank 那一拍不該有 who／img（他沒有立繪）' % (tag, j))
                     continue
+                # 演出拍（ver -478）：只有 se/shake、沒有 who 也沒有 text —— 那是它的定義
+                # （無人無框，停 hold 自動接下一拍）。音效鍵照樣要驗。
+                if not ln.get('who') and not str(ln.get('text') or '').strip() \
+                   and (ln.get('se') or ln.get('shake')):
+                    if ln.get('se') and not audio_ok(ln['se'], se_map, se_alias):
+                        err('%s.lines[%d]：沒有這個音效 %s' % (tag, j, ln['se']))
+                    continue
                 who = ln.get('who')
                 if who not in tcast:
                     err('%s.lines[%d]：who「%s」不在 config.tutorial.cast 裡' % (tag, j, who))

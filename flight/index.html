@@ -2498,7 +2498,15 @@ const easeOut=k=>1-Math.pow(1-k,3);
      會換手）。代價比「看得出誰起的頭」大。
    ⚠ 正解是**同一個角色畫左右兩版圖**（Ray 判斷）。欄位已備妥：見 PORTRAIT
      的 alt。兩版都到位之後要不要改回發起位制，再議。 */
-function castSide(who){ return PORTRAIT[who].side; }
+/* 整幕站位覆寫（ver -478，Ray：「蕾娜與諾薇兒的『小命保住』對話要分左右」）——
+   與主遊戲 scene 的 `sides` 同一個語意（§6.5：例外只能到「整幕」為止，不可逐句換邊）。
+   `say()` 的 opts.sides 設定、對白整段退場時清掉。鍵用**本尊 id**（差分鍵先 baseWho）。 */
+let saySides=null;
+function castSide(who){
+  const b=baseWho(who);
+  if(saySides && saySides[b]) return saySides[b];
+  return PORTRAIT[who].side;
+}
 
 /* 讓某人上場。同一側已經有人就先把他推出去 —— 這就是「輪轉換卡」。 */
 function castEnter(who, now){
@@ -2651,10 +2659,11 @@ function portraitLOD(who, im, w, h, dim){
   if(!dim) return c.cv;
   return c.dim || (c.dim=buildDim(c.cv));
 }
-function say(beats, at){
+function say(beats, at, opts){
   /* ⚠ 差分鍵在**這一支**展開（唯一的入口，鐵律 8）：之後每一支都只看得到
      一個查得到 PORTRAIT 的字串，castEnter／drawTalk／LOD 一行都不必改。 */
   beats = beats.map(b => (b.who && b.who!==pkey(b.who)) ? Object.assign({}, b, { who:pkey(b.who) }) : b);
+  saySides = (opts && opts.sides) || null;   // 整幕站位覆寫（ver -478）
   sayQueue=beats; sayIdx=0; sayAt=at; sayEndAt=0;
   cast=[];
   for(const b of beats) portraitArt(b.who);   // 先把圖抓好，輪到誰才上場
@@ -2871,7 +2880,7 @@ function drawTalk(now){
   if(senseOn || senseFireAt) return;
   if(now<sayAt) return;
   // 退場跑完才真的收掉
-  if(sayEndAt && now-sayEndAt>=CAST_IN_MS){ sayQueue=null; cast=[]; return; }
+  if(sayEndAt && now-sayEndAt>=CAST_IN_MS){ sayQueue=null; cast=[]; saySides=null; return; }
   // 退場跑完的人從名單移除，免得一路長下去
   cast=cast.filter(c=>!c.out || now-c.out<CAST_IN_MS);
   const beat=sayQueue[sayIdx];
@@ -2903,6 +2912,12 @@ function drawTalk(now){
       const r=clamp(Math.round(G.sh/B.k)-1, 0, B.n-1);
       if(B.mx[r]>=0){
         const lft=B.mn[r]*B.k*G.s, rgt=(B.mx[r]+1)*B.k*G.s;
+        /* ⚠ 外緣讓位（ver -478，Ray：「蕾娜不要被邊框吃掉太多」）：臉錨（0.24/0.76）
+           會把寬幅立繪推出畫面外緣 —— 先把輪廓外緣拉回畫面內（留 6px），
+           再套中線鐵則。順序是刻意的：兩個約束打架時**中線贏**（它是 Math.min/max
+           的最後一手），被吃掉的量收斂到幾何上的最小值（輪廓寬 − 半個畫面）。 */
+        target = (c.side==='L') ? Math.max(target, Math.round(6 - lft))
+                                : Math.min(target, Math.round(W - rgt - 6));
         // ⚠ 取整方向要挑對：左側往下取整、右側往上取整，否則 W/2 是 .5 時
         //    會有半個像素壓過中線（實測安雅輪廓左緣 187 vs 中線 187.5）。
         target = (c.side==='L') ? Math.min(target, Math.floor(W/2-rgt))
@@ -7023,8 +7038,12 @@ function spawnEnemy(opt){
   /* cruiseHx/cruiseHy、alt0＝「原本的動作」。放棄追擊時要能回到這裡，
      而且是轉回去不是跳回去（同追擊的限角速度）。 */
   const alt0=opt.ahead ? cam.alt : cam.alt+Math.random()*60-20;
+  /* ⚠⚠ **只要生成就追**（ver -478，Ray：「怪只要生成就會追到進戰鬥為止」）：
+     平時那隻也直接進 chase —— 朝向仍是橫向起步（上面挑好的 hx/hy），
+     追擊的限角速度會把牠劃一道弧彎過來，側面照樣先展開給玩家看。
+     cruiseHx/cruiseHy 留著給「掉頭離開」（flee）當反向的基準。 */
   enemy={ x, y, alt:alt0, alt0, hx, hy, cruiseHx:hx, cruiseHy:hy, kind,
-          d0:sd, state:opt.ahead?'chase':'cruise', tEngage:0, phase:Math.random()*6.28,
+          d0:sd, state:'chase', tEngage:0, phase:Math.random()*6.28,
           t0:performance.now(), trail:[],
           /* ⚠ 速度**只在這裡算一次**（鐵律 7）：`K.speedK` 是平時的倍率，劇本遭遇再乘
              卡上的 `speedMul`。updateEnemy 的位移一律讀 `enemy.spdK`，那邊不再乘第二次。 */
@@ -7052,11 +7071,13 @@ function updateEnemy(dt,now){
     if(enemyTimer<=0) spawnEnemy();
     return;
   }
-  /* 條件在「場上已經有一隻平時的怪」時才到（玩家繞路繞久了）：換掉牠。
+  /* 條件在「場上已經有一隻平時的怪」時才到（玩家繞路繞久了）：
+     牠**掉頭離開**（ver -478，Ray：「有劇情怪的話就掉頭」）—— 不是原地消失：
+     轉身飛遠、拉開到生成距離就撤場；槽位空了，下一幀上面 `!enemy` 那一支
+     自然把劇本怪刷出來。
      ⚠ 已經在交棒（engage）的那一隻不能動 —— 牠正要進戰鬥。 */
-  if(!enemy.script && enemy.state!=='engage'){
-    const S=scriptedDue();
-    if(S){ spawnScripted(S); return; }
+  if(!enemy.script && enemy.state!=='engage' && enemy.state!=='flee'){
+    if(scriptedDue()) enemy.state='flee';
   }
   const dx=cam.x-enemy.x, dy=cam.y-enemy.y;
   const dist=Math.hypot(dx,dy);
@@ -7070,21 +7091,26 @@ function updateEnemy(dt,now){
     return;
   }
 
-  /* 追擊判定：距離縮到刷新當下的 chaseAt 倍就轉為主動朝玩家。
-     ⚠ 用刷新當下的 d0 當基準而不是固定距離——玩家可能正在遠離，
-       那時 d0 本來就大，門檻要跟著放大才符合「相對距離縮短」的語意。 */
-  /* 追擊判定：距離縮到刷新當下的 chaseAt 倍才轉主動。
-     巡航是純橫向，距離不會自己縮 → 這一步實質上是「玩家自己靠太近」。 */
-  if(enemy.state==='cruise' && dist<=enemy.d0*C.chaseAt) enemy.state='chase';
-  /* 放棄追擊：距離又被拉開到 giveUpAt 倍就回歸原本的巡航。
-     ⚠ 門檻必須比 chaseAt 大（0.85 對 0.60）——同一個門檻進出，玩家停在
-       邊界上時會每幀在 cruise/chase 之間翻，朝向與高度都會抖。這條遲滯帶
-       就是為此存在的。
-     ⚠ 只換狀態、不動朝向：轉回去交給下面的 cruise 分支限角速度慢慢轉，
-       跟追擊的轉向同一套。直接把朝向設回去是瞬間直角轉彎。 */
-  /* ⚠ 劇本遭遇**不放棄**（`強行進入艦戰`）：牠是正面撲上來的，生成當下 dist 就等於
-     d0，一律大於 giveUpAt·d0 —— 不擋這一條的話牠第一幀就「放棄」轉去橫向巡航了。 */
-  if(enemy.state==='chase' && !enemy.script && dist>enemy.d0*C.giveUpAt) enemy.state='cruise';
+  /* ⚠⚠ **不放棄追擊**（ver -478，Ray：「只要生成就會追到進戰鬥為止」）——
+     原本的 giveUpAt（拉開到 0.85·d0 回歸巡航）整段撤掉；chaseAt 也不再有事做
+     （生成即 chase）。追擊只在三個出口結束：進戰鬥（engage/交棒）、
+     劇本怪要上場（flee，見上）、降落進城（doLand 清場）。
+     giveUpAt/chaseAt 兩個常數留在 ENEMY_CFG 當紀錄。 */
+  /* 掉頭離開（flee，ver -478）：往遠離玩家的方向轉（同追擊的限角速度——
+     直接反轉朝向是瞬間直角轉彎），爬回原高度，拉開到生成距離就撤場。 */
+  if(enemy.state==='flee'){
+    const cur=Math.atan2(enemy.hy,enemy.hx), want=Math.atan2(-dy,-dx);
+    let da=want-cur;
+    while(da>Math.PI) da-=Math.PI*2;
+    while(da<-Math.PI) da+=Math.PI*2;
+    const step=clamp(da,-K.turnRate*dt,K.turnRate*dt);
+    const na=cur+step;
+    enemy.hx=Math.cos(na); enemy.hy=Math.sin(na);
+    const rollWant=clamp(step/Math.max(1,dt)/K.turnRate,-1,1);
+    enemy.roll=(enemy.roll||0)+(rollWant-(enemy.roll||0))*(1-Math.exp(-dt/260));
+    enemy.alt+=((enemy.alt0!==undefined?enemy.alt0:enemy.alt)-enemy.alt)*(1-Math.exp(-dt/420));
+    if(dist>Math.max(enemy.d0, C.spawnDist)){ enemy=null; return; }
+  }
   if(enemy.state==='cruise'){
     /* 回歸原動作：朝向轉回生成時的橫向巡航方位，高度爬回原高度。
        兩者都用與追擊相同的收斂方式，放棄追擊看起來才像「牠失去興趣、
@@ -7153,7 +7179,9 @@ function updateEnemy(dt,now){
      逼近的那幾秒裡轉了向，牠就從側後方追上：距離到了、畫面上卻沒有牠。
      沒看到就**先不交棒**，牠繼續追著咬（本來就不放棄）；玩家一回頭看到牠，
      下一幀就進戰鬥。⚠ 只管劇本遭遇：平時的怪照舊「不論前後左右」（Ray 舊規）。 */
-  if(dist<=C.engage){
+  /* ⚠ 掉頭中的那一隻**不交棒**（ver -478）：牠正在讓位給劇本怪，
+     玩家追上去貼臉也不該把牠打下來 —— 那一場注定是劇本怪的。 */
+  if(dist<=C.engage && enemy.state!=='flee'){
     if(enemy.script){
       /* ⚠ 上面的 dx/dy 是「玩家−敵人」，投影要的是「敵人−鏡頭」＝取負。 */
       const ex=-dx, ey=-dy;
@@ -7465,7 +7493,9 @@ window.__flightResume=function(opts){
   if(!wasScripted) return;
   if(flagOn(AFTER_SHIP_FLAG)) return;
   addFlag(AFTER_SHIP_FLAG);
-  setTimeout(()=>{ if(!sayQueue) say(AFTER_SHIP_TALK, performance.now()); }, 900);
+  /* 站位：蕾娜右／諾薇兒左（ver -478，Ray：「要分左右」）——
+     與船戰內對白（config.tutorial.cast）同一個安排，玩家的空間記憶才連得起來。 */
+  setTimeout(()=>{ if(!sayQueue) say(AFTER_SHIP_TALK, performance.now(), { sides:{ renna:'R' } }); }, 900);
 };
 window.__flightPause=function(){ flightAudio(false); };
 
@@ -9124,6 +9154,10 @@ function updateLandBtn(){
 }
 function doLand(){
   const S=landTarget; if(!S || !S.town) return;
+  /* ⚠ **進入城鎮＝終止追擊**（ver -478，Ray：「進入城鎮也會終止追擊」）——
+     追兵清掉、刷新計時重排；不清的話出城那一刻牠還貼在船尾，等於降落白降。 */
+  enemy=null;
+  enemyTimer=ENEMY_CFG.gapMin+Math.random()*(ENEMY_CFG.gapMax-ENEMY_CFG.gapMin);
   /* ⚠ **進入城鎮 1 小時**（ver -435，Ray：「進入其他城鎮或地圖 1 小時」）。
      ⚠ 記在這裡而不是進城之後：城鎮那一邊的計時是「每走一步 10 分鐘」，
        那是**城裡**的規矩；「飛過去降落」花掉的是大地圖的時間，兩者不能混（鐵律 7）。 */

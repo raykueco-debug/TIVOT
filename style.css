@@ -2126,7 +2126,12 @@
     display:none;padding:5px 14px;white-space:nowrap;pointer-events:auto;
     font-family:inherit;letter-spacing:2px;color:var(--gold);
     background:rgba(10,8,14,.78);border:1px solid var(--gold-dim);border-radius:12px;
-    -webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);}
+    -webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);
+    transition:opacity .3s ease;}
+  /* ⚠ 對白播放中行動鈕讓開（ver -478，Ray：「獨自坐坐壓到對話框了」）——
+     與地名/時刻同一條規矩（§6.5 的 -385，`story-talking` 由演出層宣告）：
+     對話框只在對白中存在，鈕淡出讓位、對白收了再回來，夾位怎麼夾都不會再壓到框。 */
+  body.story-talking #innLobby .inn-btn{opacity:0;pointer-events:none;}
   #innLobby .inn-btn.on{display:flex;flex-direction:column;align-items:center;
     justify-content:center;gap:1px;}
   #innLobby .inn-btn b{font-weight:normal;font-size:12px;}

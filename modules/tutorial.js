@@ -50,6 +50,8 @@ let stepsLeft = [];            // 尚未觸發的步驟（依 trigger 消耗，�
 let queue = [];                // 對話中被觸發的步驟 → 當前段講完直接接續（立繪不退場）
 let cur = null, lineIdx = 0;   // 進行中的步驟與台詞游標
 let typeTimer = null;          // 打字機計時器
+let fxTimer = null;            // 演出拍的自動接續計時器（ver -478；收段時要一起清）
+let lineGuideOn = false;       // 逐句雪鐵龍箭亮著（ver -478；下一句/收段時收掉）
 let startTimer = null;         // battleStart 延遲計時器
 let pendingGate = null;        // 當前段落講完後要進入的引導閘門
 let gate = null;               // 進行中的閘門 {type:'click'|'right'|'up', action, after}
@@ -84,7 +86,14 @@ export function startBattleTalk(list, opts){
   talkOnceFlag = once || null;
   soloRun = computeTalkSolo(talkLeft);          // 只有一個人講 → 立繪放大（同教學的規矩）
   resetCamera();                                // 這一場重新量一次相機（見 cameraPxCm）
-  talkTimer = setTimeout(()=>{ talkTimer=null; fire('battleStart'); }, CFG().startDelayMs||700);
+  /* ⚠⚠ 開場白要等**玩家看得到戰鬥畫面**（ver -478，Ray：「先進戰鬥畫面，
+     咆哮震動再彈蕾娜」）：槍棺還在開（gateHold 的真暫停＝cutinPlaying）就等門 ——
+     否則吼聲與震動在門後面就演掉了。只等開場這一次；之後各節點的插話照舊。 */
+  const fireStart=()=>{
+    if(state.cutinPlaying){ talkTimer=setTimeout(fireStart, 120); return; }
+    talkTimer=null; fire('battleStart');
+  };
+  talkTimer = setTimeout(fireStart, CFG().startDelayMs||700);
 }
 /* 獨腳戲判定同 computeSoloRun：**以整場為單位**，不逐段看台上幾個人 ——
    逐段判的話同一張立繪會在插話時忽然放大再縮回去（ver -324 定過的規矩）。 */
@@ -482,9 +491,14 @@ function portraitEl(c){ return c.side==='right' ? $('tutCastR') : $('tutCastL');
 
 /* 依步驟台詞決定在場立繪：只有一個人說話的段落（如罵人插話）不出現另一名角色。
  * .in 逐立繪掛在 img 上（CSS transition 滑入/滑出）；段落接續（queue）時差異更新即可。 */
-function syncCast(step){
+/* `uptoIdx`＝只讓**已經輪到過**的人上場（ver -478，落實 §6.5「說話的人先上場，
+   接話的人輪到他那一拍才上場」——原本是整段的人一口氣全上）。
+   不傳＝整段（舊行為，沒有別的呼叫端在用了，留著當保底）。 */
+function syncCast(step, uptoIdx){
   const cast = CFG().cast || {};
-  const used = new Set((step && step.lines || []).map(l=>l.who));
+  const lines = (step && step.lines) || [];
+  const upto = (uptoIdx==null) ? lines.length-1 : uptoIdx;
+  const used = new Set(lines.slice(0, upto+1).map(l=>l.who));
   /* ⚠ 逐「槽」算，不是逐「角色」算：諾薇兒與芙蕾雅同站左側，共用同一個 <img>。
      逐角色 toggle 的話，沒講話的那一位會把講話那一位的 .in 關掉（結果取決於
      cast 的鍵順序 —— 這種對順序敏感的東西不要留）。 */
@@ -726,7 +740,7 @@ function openStep(step){
   if(wrap){
     wrap.classList.add('on');
     // 起滑延遲用 setTimeout（非 rAF）：隱藏分頁 rAF 不執行，會漏掉立繪進場
-    setTimeout(()=>{ if(state.tutorialDialog && cur===step) syncCast(step); }, 30);
+    setTimeout(()=>{ if(state.tutorialDialog && cur===step) syncCast(step, lineIdx); }, 30);
   }
   syncBubbleShape(step);
   placeBubble();
@@ -774,6 +788,28 @@ function showLine(){
   /* 演出：音效與畫面震動（ver -429）。⚠ 一次性 —— 每次演到就放，不是狀態（同 story.js）。 */
   if(line.se) playSe(line.se);
   if(line.shake) shakeScreen();
+  /* ⚠⚠ **演出拍**（ver -478，Ray：「先進戰鬥畫面，咆哮震動再彈蕾娜」）：
+     只有 se/shake、沒有 who 也沒有 text —— 框藏起來、台上不動人，
+     停 `hold`（預設 900ms）自動接下一拍；提前點擊也可以跳過（advance 照常吃）。
+     ⚠ 自動接的計時器要驗「還是同一拍」——玩家先點掉的話它不能再推一次。 */
+  if(!line.who && !line.text && !line.blank){
+    const b0=$('tutBubble'); if(b0) b0.classList.remove('on','done');
+    clearInterval(typeTimer); typeTimer=null;
+    clearTimeout(fxTimer);
+    fxTimer=setTimeout(()=>{ fxTimer=null;
+      if(state.tutorialDialog && cur && cur.lines[lineIdx]===line) advance();
+    }, line.hold||900);
+    return;
+  }
+  /* 演出拍之後的第一句：把框請回來（演出拍把 `on` 收掉了）。 */
+  { const b0=$('tutBubble'); if(b0 && !b0.classList.contains('on')) b0.classList.add('on'); }
+  /* 逐拍進場（ver -478，§6.5：接話的人輪到他那一拍才上場）。
+     ⚠ 第 0 拍不在這裡叫：openStep 的 30ms 延遲那一發才觸發得了滑入過場。 */
+  if(lineIdx>0) syncCast(cur, lineIdx);
+  /* 逐句的雪鐵龍箭（ver -478，副武器切換教學）：`guide:'wswitch'` 那一句亮、
+     下一句自動收。⚠ 不與閘門（gate）混用：閘門的箭有自己的生命週期。 */
+  if(line.guide && !gate){ showGuide(line.guide); lineGuideOn=true; }
+  else if(lineGuideOn){ hideGuide(); lineGuideOn=false; }
   /* ⚠⚠ **主角的空白對話框**（`blank:true`，ver -429）：框要出、裡面沒字。
      他沒有立繪也沒有配音，但「他確實開口了」這件事要在畫面上有份量（同 story.js §6.5）。
      ⚠ **不動立繪**：台上的人維持原樣（誰亮誰暗都不變）—— 他不在台上，
@@ -864,7 +900,7 @@ function advance(){
   if(cur.key==='tutorialDead'){ closeDialog(false, true); onStepClosed('tutorialDead'); return; }
   if(gate){ lineIdx = cur.lines.length-1; return; }   // 即時閘門：停在末句，等玩家完成指定操作
   if(pendingGate){ enterGate(pendingGate); pendingGate=null; return; }   // 講完 → 進引導閘門（維持暫停）
-  if(queue.length){ cur=queue.shift(); lineIdx=0; cutinLine=-1; syncCastFit(cur); syncCast(cur); syncBubbleShape(cur); showLine(); return; }   // 接續段：在場立繪差異更新
+  if(queue.length){ cur=queue.shift(); lineIdx=0; cutinLine=-1; syncCastFit(cur); syncCast(cur, 0); syncBubbleShape(cur); showLine(); return; }   // 接續段：在場立繪差異更新（逐拍進場，ver -478）
   closeDialog(true);
 }
 
@@ -874,6 +910,8 @@ function closeDialog(resume, silent){
   const id = cur && (cur.key || cur.trigger);
   cur=null; lineIdx=0;
   clearInterval(typeTimer); typeTimer=null;
+  clearTimeout(fxTimer); fxTimer=null;
+  lineGuideOn=false;
   pendingGate=null; gate=null; hideGuide();
   syncBubbleShape(null);   // 撤形狀調整（.clasp-clear）
   state.tutorialDialog=false;
@@ -941,6 +979,12 @@ function showGuide(type){
     const r=$('energyClasp') ? $('energyClasp').getBoundingClientRect() : {left:20,top:innerHeight/2,width:24};
     dir='g-down'; label = labels.click || 'CLICK！';
     x = r.left + r.width/2 + 8;
+    y = r.top - 52;
+  }else if(type==='wswitch'){
+    // 副武器切換鈕（血條右側的槍圖）上方，箭頭向下指（ver -478，切換教學）
+    const r=$('wpSwitch') ? $('wpSwitch').getBoundingClientRect() : {left:innerWidth-80,top:innerHeight/2,width:60};
+    dir='g-down'; label = labels.wswitch || '點擊切換';
+    x = r.left + r.width/2;
     y = r.top - 52;
   }else if(type==='right'){
     // 敵人框左緣往右閃、標示向右側滑動（貼框緣：立繪已移正中，箭頭不壓立繪）。
