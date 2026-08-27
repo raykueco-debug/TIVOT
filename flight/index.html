@@ -2278,6 +2278,13 @@ function addFlag(f){
   a.push(f);
   try{ localStorage.setItem(FLAGS_KEY, JSON.stringify(a)); }catch(e){}
 }
+/* 退旗標（ver -480）：強制戰打輸、重生要「再來一次」時，把交棒當下記的 done 退掉。 */
+function removeFlag(f){
+  const a=flagList(), i=a.indexOf(f);
+  if(i<0) return;
+  a.splice(i,1);
+  try{ localStorage.setItem(FLAGS_KEY, JSON.stringify(a)); }catch(e){}
+}
 
 /* ══ 主角（玩家本人）══
    17 歲，教廷聖約騎士團的騎士。主武器是大口徑雙自動手槍，有把陣地機槍整挺
@@ -7203,6 +7210,7 @@ function updateEnemy(dt,now){
    ⚠ 留 1.1 秒讓「遭遇　◯◯」那一格看得到 —— 直接跳頁的話玩家不知道發生什麼事。 */
 let battleGoing=false;
 let lastBattleScripted=false;   // 剛打的那一場是不是劇本遭遇（見 toBattle 與 __flightResume）
+let lastScriptS=null;           // 那一場是哪一條劇本遭遇（打輸重生要重掛，ver -480）
 /* ══ 免戰模式（ver -383，Ray 指定）══
    開著的時候碰到怪**只演「遭遇」那一格**，不跳頁進戰鬥 —— 畫地圖時不會被打斷。
    ⚠ 擋在 `toBattle()` 這**唯一的發動點**（鐵律 8）：日後多一條進戰鬥的路
@@ -7411,6 +7419,7 @@ function toBattle(kind){
   if(peaceMode) return;      // 免戰：遭遇照演，就是不進戰鬥
   if(battleGoing) return;
   if(SC && SC.done) addFlag(SC.done);
+  lastScriptS = SC || null;  // 打輸重生要「再來一次」（ver -480）——退旗標時要認得是哪一條
   /* 這一場是不是**劇本遭遇**（＝第一場船戰）：打贏回來那一段「小命保住了」
      只掛在它身上（ver -453，Ray：「不要每次船戰都跳…只有第一場船戰結束會跳」）。
      見 `__flightResume`。 */
@@ -7483,13 +7492,24 @@ window.__flightResume=function(opts){
      輸了聽到這句是錯的。勝負由父頁告訴我們（`{won:true}`）。
      ⚠ 等門收完再演（`FKERB_MS`）：槍棺還蓋著半個畫面時放人出來，
        立繪會從門後面滑出來。 */
-  if(!(opts && opts.won)) return;
+  const wasScripted = lastBattleScripted; lastBattleScripted = false;
+  if(!(opts && opts.won)){
+    /* ⚠⚠ **強制戰打輸 → 重生要再來一次**（ver -480，Ray：「強制戰死亡，重生時
+       要再來一次，劇情也要再跑一次」）：把交棒時記的 done 旗標退掉、
+       scriptPending 重新掛回 —— 牠會照同一條規則再刷（正前方、同倍速）。
+       戰鬥內的對白旗標（talkOnce）由主遊戲那邊在 lose 時退（兩邊各退自己記的，
+       同一把 flags 鑰匙）。 */
+    if(wasScripted && lastScriptS){
+      if(lastScriptS.done) removeFlag(lastScriptS.done);
+      scriptPending = lastScriptS;
+    }
+    return;
+  }
   /* ⚠⚠ **只有第一場船戰（劇本遭遇的蜈蚣）打贏才演**（ver -453，Ray：「不要每次
      船戰都跳…只有第一場船戰結束會跳」）。旗標守門本來就有，但它綁的是
      **這一輪有沒有演過** —— 讀檔／跳章之後旗標歸零，隨便哪一場隨機遭遇打贏
      都會把這段「初次見面」的戲演出來。現在**雙重綁**：這一場必須是劇本遭遇
      （`lastBattleScripted`，`toBattle` 記的）＋ 旗標沒演過 —— 隨機遭遇永遠不演。 */
-  const wasScripted = lastBattleScripted; lastBattleScripted = false;
   if(!wasScripted) return;
   if(flagOn(AFTER_SHIP_FLAG)) return;
   addFlag(AFTER_SHIP_FLAG);

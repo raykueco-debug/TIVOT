@@ -71,6 +71,13 @@ export function addFlags(list){
   const out=[...s]; setFlags(out); return out;
 }
 export function hasFlag(f){ return getFlags().indexOf(f)>=0; }
+/* 退旗標（ver -480）：強制戰打輸、重生要「劇情再跑一次」時，把取段當下記的
+   talkOnce 那類旗標退掉。⚠ 只給「打輸重來」這種回捲用 —— 一般進度旗標不退。 */
+export function removeFlags(list){
+  if(!list || !list.length) return getFlags();
+  const s=new Set(getFlags()); for(const f of list) s.delete(f);
+  const out=[...s]; setFlags(out); return out;
+}
 
 /* ── 好感 ──
    ⚠ tier 界線 10/20/30/40/50，**棘輪只升不降**（docs/TIVOT_IMPL_SPEC.md §2）。

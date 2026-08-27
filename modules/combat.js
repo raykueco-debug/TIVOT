@@ -27,6 +27,7 @@ import * as partner from './partner.js';
 import * as inspector from './inspector.js';
 import * as tutorial from './tutorial.js';   // 教學關卡（首次出陣穿插對話；暫停走 pauseForDialog）
 import { playTransition } from './transition.js';   // 過渡禎（勝利進結算前的「驅逐完成」）
+import * as prog from '../script/progress.js';      // 強制戰打輸退 talkOnce（ver -480；葉節點，無循環）
 
 const $ = id => document.getElementById(id);
 const T = GAME_CONFIG.tuning;
@@ -1018,6 +1019,12 @@ function lose(){
        還打得到 —— 不會因為輸過就永遠卡住。 */
   const _sb = state.scriptBattleId && GAME_CONFIG.battles && GAME_CONFIG.battles[state.scriptBattleId];
   if(_sb && _sb.allowLose && storyBattleEnd(true)) return;
+  /* ⚠⚠ 強制戰打輸 → **劇情要再跑一次**（ver -480，Ray）：戰鬥內對白的 talkOnce
+     旗標是「取段當下」就記的（§6.5.2）—— 重生再打這一場時它已經在了，
+     開場白整段不演。在這裡退掉；飛行頁那邊同一時刻退的是劇本遭遇的 done
+     （兩邊各退自己記的，同一把 flags 鑰匙）。allowLose 的場次不經過這裡（上面
+     return 了）—— 那種輸法是劇本的一部分，不是重來。 */
+  if(_sb && _sb.talkOnce) prog.removeFlags([_sb.talkOnce]);
   /* 走一般失敗流程之前，把「這一場是劇情場」的旗標收掉 —— 不收的話結算會走
      教學／插入戰那一頁（那是給打贏用的），玩家輸了卻看到一頁戰績。 */
   state.scriptRun=false; state.scriptBattleId=null;
