@@ -2682,6 +2682,24 @@ function say(beats, at, opts){
      一個查得到 PORTRAIT 的字串，castEnter／drawTalk／LOD 一行都不必改。 */
   beats = beats.map(b => (b.who && b.who!==pkey(b.who)) ? Object.assign({}, b, { who:pkey(b.who) }) : b);
   saySides = (opts && opts.sides) || null;   // 整幕站位覆寫（ver -478）
+  /* ⚠⚠ **兩人以上的對話自動分左右**（ver -489，Ray 指定）：PORTRAIT 的固定站位
+     蕾娜／諾薇兒同左、安雅／索拉娜同右 —— 同側的兩人對話會一直輪轉換卡，
+     讀起來很忙。沒有明給 sides 時，依**首次開口順序**交錯指派：
+     第一位用自己的固定側，之後每一位站前一位的對側。覆寫是**整幕**的
+     （§6.5：例外只能到整幕為止，不可逐句換邊）。 */
+  if(!saySides){
+    const order=[];
+    for(const b of beats){
+      const w = b.who ? baseWho(b.who) : null;
+      if(w && PORTRAIT[w] && PORTRAIT[w].src && order.indexOf(w)<0) order.push(w);
+    }
+    if(order.length>=2){
+      const sides={};
+      let s = (PORTRAIT[order[0]].side==='R') ? 'R' : 'L';
+      for(const w of order){ sides[w]=s; s=(s==='L')?'R':'L'; }
+      saySides=sides;
+    }
+  }
   sayQueue=beats; sayIdx=0; sayAt=at; sayEndAt=0;
   cast=[];
   for(const b of beats) portraitArt(b.who);   // 先把圖抓好，輪到誰才上場

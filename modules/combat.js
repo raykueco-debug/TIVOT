@@ -958,6 +958,11 @@ function storyBattleEnd(lost){
 
 function win(){
   if(state.over || state.defeated) return;   // 戰敗優先：已判定戰敗則勝利結算一律讓位
+  /* ⚠⚠ 持久 HP 寫回（ver -489 修）：-481 誤掛在 storyBattleEnd —— 正常勝利走的是
+     **這一支**（win → 結算頁 → 繼續交還），storyBattleEnd 只有 devSkip 與
+     allowLose 在用，於是血量從來沒繼承過（Ray：「血量沒有繼承上一場的傷害」）。
+     storyBattleEnd 那一份留著（它照顧自己那兩條路）。 */
+  if(storyFramed()) prog.setHp(Math.max(1, state.playerHp));
   state.over=true; clockPause(); stopAll();
   const totalTime=clockElapsedMs()/1000;               // 只累計實打時間（overkill/轉場/cut-in 皆不計）
   /* ══ 計時挑戰：超過標準時間就算「沒過關」（ver -396，Ray：「時間超過 50 秒出失敗分支的台詞」）══
