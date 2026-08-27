@@ -105,16 +105,18 @@
   /* 雪鐵龍箭：鈕的正下方，穿透點擊（點到箭也算點到鈕的話反而誤觸畫面）。
      ⚠ 掛在鈕**裡面**（絕對定位往下探出），跟著鈕一起淡入淡出與定位，
        不必再算第二份座標（鐵律 7）。 */
+  /* ⚠ ver -450b（Ray：「雪鐵龍箭用由上往下亮 loop，不要用上下飄的」）：
+     位置固定，改成**亮度由上往下跑**的循環 —— 上面那枚先亮、下面那枚
+     隔一拍接上，讀起來是「光往下走」＝往下降。 */
   #landBtn .land-arrow{position:absolute;left:50%;top:100%;margin-top:10px;
-    transform:translateX(-50%);pointer-events:none;
-    animation:landPoint 1.5s ease-in-out infinite;}
-  @keyframes landPoint{0%,100%{transform:translateX(-50%) translateY(-3px);}
-                       50%    {transform:translateX(-50%) translateY(4px);}}
+    transform:translateX(-50%);pointer-events:none;}
   #landBtn .land-arrow i{display:block;width:20px;height:20px;margin:-8px auto 0;
     border-right:2.5px solid var(--gold);border-bottom:2.5px solid var(--gold);
-    transform:rotate(45deg);opacity:.9;
-    filter:drop-shadow(0 0 6px rgba(240,196,105,.6));}
-  #landBtn .land-arrow i:first-child{opacity:.45;}
+    transform:rotate(45deg);opacity:.18;
+    filter:drop-shadow(0 0 6px rgba(240,196,105,.6));
+    animation:landChev 1.4s linear infinite;}
+  #landBtn .land-arrow i:last-child{animation-delay:.35s;}
+  @keyframes landChev{0%{opacity:.18;} 18%{opacity:1;} 55%{opacity:.18;} 100%{opacity:.18;}}
   /* ══ Kerberos 之門（ver -387，Ray：「飛行畫面時將楣常置於操控面板底部，
        遭遇敵人時槍棺彈出，進入戰鬥畫面」）══
      平常：整扇槍棺沉在畫面之下，只有**楣**露在操控面板的底緣 —— 那是「棺就在腳下」
@@ -488,7 +490,7 @@ const COLOR_URL  = 'silvermoon_terrain.png';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -450';
+const FLIGHT_VER = 'ver -451';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
