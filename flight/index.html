@@ -2199,24 +2199,35 @@ const PORTRAIT = {
 
    代價：臉的大小會有差（索拉娜眼寬 16.1、諾薇兒 20.1），那正是鎖眼寬原本要
    避免的。要往回調就動 CAST_EYE_MIX。 */
-const CAST_SHOW = 0.52;    // 最高的人露出身體的幾成（越小＝鏡頭越近＝立繪越大）
+/* ⚠⚠ ver -488（Ray：「把飛行畫面立繪大小位置比例改成與城鎮一樣」）：
+   整台相機照抄劇情層 —— CAST_SHOW 與 story.js 的同名常數**同值**（0.56），
+   框高與頂線也改用劇情層的公式（見 castMeasure）。改 story 那邊要改這裡
+   （§6.10 的兩份，註解互指：modules/story.js 的 CAST_SHOW／topLines／camGeom）。 */
+const CAST_SHOW = 0.56;    // 最高的人露出身體的幾成（越小＝鏡頭越近＝立繪越大）＝story.js 同值
 const CAST_TALL = 176;
 /* 0＝純身高（現行）、1＝純眼寬（ver -265 以前）、中間值是幾何平均的混合。
    臉大小差得受不了就往上調一點，但別調回 1 —— 那就是索拉娜過大的那一版。 */
 const CAST_EYE_MIX = 0;
 let CAST_TOP = 60, CAST_EYE = 30, CAST_PX_CM = 3;
 function castMeasure(){
+  /* ⚠⚠ ver -488：整台相機照抄劇情層（Ray：「大小位置比例改成與城鎮一樣」）——
+     公式＝story.js 的 topLines()＋camGeom()：
+       頭頂落點 CAST_TOP ＝ notch + btnTop(10)          （角落鈕的**上緣**，-352）
+       相機頂線 camTop   ＝ notch + 10 + 44 + 4          （鈕下緣再留 4px）
+       框高    H         ＝ 視口高 × 0.56               （castStage.topRatio）
+       每公分像素        ＝ (H − camTop) / (CAST_SHOW × CAST_TALL)
+     notch 由 #top 的 padding-top 反推（它就是 env(safe-area-inset-top)+10）。
+     ⚠ 這一頁的操作面板蓋在下半 —— 立繪畫得比面板頂低沒關係，本來就畫在面板之下
+       （§6.5 的層次）。 */
   const t=document.getElementById('top');
-  const hud=t ? t.getBoundingClientRect().height : 54;
-  CAST_TOP = Math.round(hud + 10);                 // HUD 底下再留 10px，不相觸
+  let notch=0;
+  try{ notch=Math.max(0, (parseFloat(getComputedStyle(t).paddingTop)||10)-10); }catch(e){}
+  CAST_TOP = Math.round(notch + 10);
+  const camTop = notch + 10 + 44 + 4;
+  const H = (window.innerHeight||800) * 0.56;
+  CAST_PX_CM = (H - camTop) / (CAST_SHOW * CAST_TALL);
   const P=PORTRAIT.sorana;
-  /* 最高的人：頭頂 CAST_TOP、身體露出 CAST_SHOW → 反推她的縮放。她定義這台相機。 */
-  const s = (VIEWH-CAST_TOP) / (CAST_SHOW*(P.bot-P.top));
-  CAST_EYE = s * P.eye;                            // 只有 CAST_EYE_MIX>0 才用得到
-  /* 身高 → 螢幕像素。⚠ 必須與縮放自洽（＝最高的人的身體高 ÷ 她的身高），
-     不能再用「一個眼寬≈3cm」那個估值 —— 自洽時腳才會落在同一條地平線上：
-       腳 y ＝ 頭頂 y + 身體高 ＝ [TOP+(TALL-cm)*PXCM] + PXCM*cm ＝ 定值。 */
-  CAST_PX_CM = s * (P.bot-P.top) / CAST_TALL;
+  CAST_EYE = CAST_PX_CM * CAST_TALL / (P.bot-P.top) * P.eye;   // 只有 CAST_EYE_MIX>0 用；與縮放自洽
 }
 
 /* 某人這一刻的算繪幾何。x 由呼叫端（滑入動畫）決定，這裡只給尺寸與高度。 */
@@ -2914,33 +2925,12 @@ function drawTalk(now){
        ⚠ 代價：臉會被往外推（索拉娜 90→65、蕾娜 90→55、安雅 285→312），
          外側被切掉更多。這是幾何上跑不掉的 —— 兩個人的可見輪廓加起來就是
          比螢幕寬。 */
-    const B=portraitBnd[c.who];
-    if(B){
-      const r=clamp(Math.round(G.sh/B.k)-1, 0, B.n-1);
-      if(B.mx[r]>=0){
-        const lft=B.mn[r]*B.k*G.s, rgt=(B.mx[r]+1)*B.k*G.s;
-        /* ⚠⚠ **單人在台上不套中線鐵則**（ver -481，Ray：「立繪被邊框裁切嚴重」）——
-           中線是「不壓到對面那個人」的規矩，台上只有一個人時根本沒有對面：
-           照套的話蕾娜（輪廓 0.719 圖寬）會被硬塞進半個畫面、外側整片切掉
-           （實測單人 nag 那一句左緣 −102px）。單人＝把輪廓整個拉回畫面內
-           （右緣優先讓、再保左緣；塞不下才吃邊）。雙人照舊：外緣先讓、中線最後手。 */
-        const soloOn = cast.filter(k=>!k.out).length<=1;
-        if(soloOn){
-          target = Math.min(target, Math.round(W - rgt - 6));
-          target = Math.max(target, Math.round(6 - lft));
-        }else{
-          /* ⚠ 外緣讓位（ver -478）：臉錨（0.24/0.76）會把寬幅立繪推出畫面外緣 ——
-             先把輪廓外緣拉回畫面內（留 6px），再套中線鐵則。順序是刻意的：
-             兩個約束打架時**中線贏**，被吃掉的量收斂到幾何上的最小值。 */
-          target = (c.side==='L') ? Math.max(target, Math.round(6 - lft))
-                                  : Math.min(target, Math.round(W - rgt - 6));
-          // ⚠ 取整方向要挑對：左側往下取整、右側往上取整，否則 W/2 是 .5 時
-          //    會有半個像素壓過中線（實測安雅輪廓左緣 187 vs 中線 187.5）。
-          target = (c.side==='L') ? Math.min(target, Math.floor(W/2-rgt))
-                                  : Math.max(target, Math.ceil(W/2-lft));
-        }
-      }
-    }
+    /* ⚠⚠ **不再夾中線、也不再拉邊**（ver -488，照抄劇情層 -325 的定案）：
+       只認臉錨（0.24W／0.76W），位置可預期；兩人的輪廓在中間交疊
+       （Ray 定過「多少有些交疊沒關係」），臉各在自己那 1/3 處不互蓋。
+       -478 的外緣讓位與 -481 的單人放寬全部退場 —— 那兩道與錨點方向相反，
+       疊在一起就是劇情層 -320 踩過的「兩個人被推回中間疊成一團」。
+       （portraitBnd 仍在量：它是唯一量得出輪廓實寬的工具，日後要用。） */
     const off=(c.side==='L') ? -G.w-8 : W+8;     // 畫面外的停機位
     let x;
     if(c.out) x=lerp(target, off, easeOut(clamp((now-c.out)/CAST_IN_MS,0,1)));
@@ -4924,13 +4914,18 @@ function makeLoop(src, xf){
        結果就是整趟飛行完全沒有聲音。 */
     start(){
       if(on) return;
-      const p=a[0].play();
+      /* ⚠⚠ 恢復播放要播 **a[cur]**，不是寫死 a[0]（ver -488，Ray：「飛行戰鬥結束後
+         有時會無音樂音效」）。輪播若正輪到 a[1] 時被 stop（戰鬥／收頁），寫死 a[0]
+         的話：tick 盯著暫停中的 a[cur]=a[1] 調音量、真正在播的 a[0] 音量永遠停在
+         尾端淡出的 0 —— 整段靜音。「有時」＝取決於停下當刻輪到哪一個（約每圈輪替）。 */
+      const A=a[cur];
+      const p=A.play();
       if(p && p.then) p.then(()=>{
         on=true;
-        /* 順手預熱第二個元素：這是**確定播得動之後**才做，不會跟 start()
+        /* 順手預熱另一個元素：這是**確定播得動之後**才做，不會跟 start()
            搶同一個元素（先前在建構時就預熱，它的 pause() 有機會晚於
            start() 的 play() 執行，反而把剛起播的曲子按停）。 */
-        const B=a[1], q=B.play();
+        const B=a[1-cur], q=B.play();
         if(q && q.then) q.then(()=>{ B.pause(); B.currentTime=0; }).catch(()=>{});
       }).catch(()=>{});
       else on=true;
