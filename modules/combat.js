@@ -679,8 +679,10 @@ function ringTick(){
   ringRaf=requestAnimationFrame(ringTick);
   const sv=ensureDelayRing(); if(!sv) return;
   const lim=effIntervalLimit()*1000;
-  /* 聖徒化／演出中時限不斷被重置（見 interval 那一支）→ 光圈自然停在起點。 */
-  let t=state.intervalDeadline ? 1-((state.intervalDeadline-Date.now())/lim) : 0;
+  /* 聖徒化／overkill／cut-in 中時限不斷被重置（見 interval 那一支）→ 光圈自然停在起點。
+     對話真暫停（_intPausedAt）→ 拿暫停時刻當「現在」＝光圈凍結在當下（ver -464）。 */
+  const now=_intPausedAt||Date.now();
+  let t=state.intervalDeadline ? 1-((state.intervalDeadline-now)/lim) : 0;
   t=Math.max(0, Math.min(1, t));
   const p=sv.querySelector('.dr-prog');
   p.style.strokeDashoffset=String(100*(1-t));
@@ -700,9 +702,16 @@ function startIntervalTimer(){
   if(state.timeAttack) return;
   ringRaf=requestAnimationFrame(ringTick);
   state.intervalDeadline=Date.now()+effIntervalLimit()*1000;
+  if(_intPausedAt) _intPausedAt=Date.now();   // 對話凍結中換盤：期限是新的，補時從此刻重新起算
   state.intervalTimer=setInterval(()=>{
     if(state.over){clearInterval(state.intervalTimer);return;}
-    if(state.saintMode||state.cutinPlaying){resetIntervalDeadline();return;}   // 聖徒化/演出中不受間隔壓力
+    /* 聖徒化／overkill（敵已死的追擊窗口，ver -464 Ray 指定）不受間隔壓力：
+       期限每 tick 回滿＝倒數（與光圈）停在起點。⚠ overkill 不能只擋扣血——
+       期限走到頭那一下還會把 combo 歸零，追擊的連段會被憑空打斷。 */
+    if(state.saintMode||state.enemyHp<=0){resetIntervalDeadline();return;}
+    /* 對話真暫停（pauseForDialog）＝凍結在當下，補時在 resumeFromDialog（ver -464）；
+       其他演出（雙槍/搭檔 cut-in）維持每 tick 回滿、撤下重走（發動瞬間不被連段）。 */
+    if(state.cutinPlaying){ if(!_intPausedAt) resetIntervalDeadline(); return; }
     if(Date.now()>=state.intervalDeadline){
       // 教學：第二盤在首次防禦成功前不套延時懲罰（只重置期限，手感不受壓）
       if(tutorial.delayPenaltySuppressed()){ resetIntervalDeadline(); return; }
@@ -756,7 +765,7 @@ function updateStatus(){ /* 狀態列已移出畫面（下半為純數字盤）�
  *  勝負 / 結算（combat 擁有計時 → 算 totalTime/avg → 交 inspector.settle 演出）
  * ========================================================================== */
 function stopAll(){
-  clearInterval(state.intervalTimer);
+  stopIntervalTimer();   // 含光圈（ver -464 修：raw clearInterval 會把 rAF 留著抱過期 deadline 繼續畫）
   clearTimeout(state.atkBuffTimer);
   endOverkillFx();       // 中途退出/結算時清 overkill 限時與藍光
   tutorial.abort();      // 教學中途收場（goHome/勝負/重開場）：只撤 UI，不記已看
@@ -789,17 +798,27 @@ function clockElapsedMs(){
 }
 function resetClock(){ state.runElapsedMs=0; state.clockRunSince=0; }
 
-/* 退出確認框：真暫停／續玩。cutinPlaying 已擋新大絕/敵傷害/點擊/間隔懲罰；
- *  這裡再凍結攻擊圈縮放 + 碼表，續玩時原樣接回（clockResume 需在清旗標後呼叫）。 */
+/* 退出確認框／戰鬥中對話：真暫停／續玩。cutinPlaying 已擋新大絕/敵傷害/點擊/間隔懲罰；
+ *  這裡再凍結攻擊圈縮放 + 碼表 + 延時（間隔）倒數，續玩時原樣接回
+ *  （clockResume 需在清旗標後呼叫）。
+ *  延時倒數的凍結（ver -464，Ray：「跑對話的時候延時懲罰條不要動，停在當下位置，
+ *  對話解除才繼續」）：與 defense.pauseThreats 同一套補時慣例 —— 記下暫停時刻，
+ *  續玩把暫停時長加回 intervalDeadline ＝ 剩餘時間不變；光圈（ringTick）在凍結中
+ *  拿暫停時刻當「現在」，畫面就停在當下。
+ *  ⚠ 只凍對話（走這兩支的路徑）；cut-in（雙槍/搭檔）不走這裡，維持原本
+ *    「演出中每 tick 歸零、撤下重走」的設計（發動瞬間不被連段）。 */
+let _intPausedAt = 0;
 export function pauseForDialog(){
   state.cutinPlaying = true;
   clockPause();
   defense.pauseThreats();
+  if(!_intPausedAt) _intPausedAt = Date.now();   // 疊次暫停取最早那一刻（教學中已暫停＝冪等）
 }
 export function resumeFromDialog(){
   state.cutinPlaying = false;
   defense.resumeThreats();
   clockResume();
+  if(_intPausedAt){ state.intervalDeadline += Date.now()-_intPausedAt; _intPausedAt = 0; }
 }
 
 /* ---- Overkill 演出/限時 ----
