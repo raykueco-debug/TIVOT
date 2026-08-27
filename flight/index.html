@@ -3814,6 +3814,12 @@ const MASS_ON_PX = 27;
 /* 距離遲滯：長出來之後要縮到門檻的 MASS_OFF 倍才收回去。門檻不再跳動之後，
    它只剩「別在邊界上抖」這一個用途。 */
 const MASS_OFF = 0.6;
+/* 太近就收掉量體（ver -444）：城的投影寬度大到這個程度＝你已經在城的上空，
+   最近那幾塊的牆會各自長成一片蓋滿畫面的暗板（見畫量體那一段的說明）。
+   ⚠ 單位是**緩衝像素**，與 `MASS_ON_PX` 同一把尺。實測（帝都 planW 1250、
+     BW 225）：距城心 840 → 168px（量體正常、好看）；280 → 503px（牆已經蓋掉
+     整片地面）。取 380 落在兩者之間，且離「好看」那一端有兩倍餘裕。 */
+const MASS_TOO_PX = 380;
 /* 相鄰格／子格的重疊量，單位是**緩衝像素**（不是來源圖的像素，見用到的地方）。 */
 const OVER_PX = 2.0;
 /* ── 量體層的淡入淡出（ver -290）────────────────────────────────────
@@ -8320,7 +8326,20 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
       const mdx=o.s.mx*MAP_SCALE-cam.x, mdy=o.s.my*MAP_SCALE-cam.y;
       const massW=o.s.planW*W/(2*Math.max(60,Math.hypot(mdx,mdy)))*pkRaw;
       const massT=MASS_ON_PX;
-      o.s._massOn = o.s._massOn ? (massW>=massT*MASS_OFF) : (massW>=massT);
+      /* ⚠⚠ **太近也要收掉**（ver -444，Ray：「經過、離開畫面時底圖被拉伸」）。
+         量體是一根根稜柱，牆的螢幕高度是 `牆高 × dyk ÷ z` —— z 一小就爆炸：
+         實測飛到城的上空時，最近那幾塊的牆各自是**一整片蓋滿畫面的暗色板**，
+         把底下的平面圖整個蓋掉（看起來就是「底圖被拉伸／城不見了」）。
+         ⚠ 這不是 `MASS_ZNEAR`／`MASS_ZRATIO` 擋得住的：那兩條看的是**塊內**的
+           深度差，而這些塊本身深度很一致，只是**整塊都太近**。
+         ⚠ 判斷用**投影寬度**不是距離：那是螢幕上的量，與畫質、視野、城的大小
+           都無關（同 `MASS_ON_PX` 的理由，那一條也是這樣訂的）。
+         ⚠ 收掉之後看到的是**平面圖**，而屋頂本來就畫在平面圖上 ——
+           從正上方看見的就該是屋頂，缺的只有牆，而那個角度本來也看不到牆。
+         ⚠ 走既有的 `_massA` 淡出（400ms），不是硬切。 */
+      const tooNear = massW >= MASS_TOO_PX;
+      o.s._massOn = tooNear ? false
+                            : (o.s._massOn ? (massW>=massT*MASS_OFF) : (massW>=massT));
       /* 旗標仍然是「該不該有量體」的判斷（含遲滯），但畫出來的濃度走 _massA
          這個連續值，逐幀朝旗標推進 → 淡入／淡出。
          ⚠ dt 夾 100ms：城在畫面外時這一段不執行，_massAt 會過期；不夾的話
