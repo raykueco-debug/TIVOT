@@ -7079,10 +7079,13 @@ function updateEnemy(dt,now){
     /* 劇本遭遇**優先於自動刷新**：條件到了就立刻生，不等計時器（Ray：「立刻刷怪」）。 */
     const S=scriptedDue();
     if(S){ spawnScripted(S); return; }
-    /* ⚠⚠ 劇本遭遇**還在排隊**（旗標到了、但人還在 outOf 的國界內）→ 一隻雜怪
-       都不刷（ver -454，Ray：「第一場船戰必出蜈蚣，在第一場結束前不出其他怪」）。
-       不擋的話出航那一段可能先撞上隨機怪 —— 第一場船戰就不是蜈蚣了。
-       `scriptPending` 在交棒那一刻清空（toBattle），打完（贏或輸）自然放行。 */
+    /* ⚠⚠ **第一隻劇本蜈蚣打完之前，一隻雜怪都不刷**（ver -483，Ray：「在第一隻
+       蜈蚣出場前不要有其他怪」；-454 只擋「排隊中」——旗標還沒立的試飛時段、
+       打輸重生等待再刷的空檔都漏）。判準是**還有劇本遭遇沒打完**（done 旗標）。
+       ⚠ 開發時要怪就按「生怪」鈕（它走 spawnEnemy 直達，不經這裡）。
+       ⚠ 日後加了更後期的劇本遭遇，這一條會把雜怪一路封到那一場打完 ——
+         到時把判準改成「旗標已立而未打完」（加回 flagOn(S.flag)）。 */
+    if(SCRIPTED_ENCOUNTERS.some(S=>!flagOn(S.done))) return;
     if(scriptPending) return;
     enemyTimer-=dt;
     if(enemyTimer<=0) spawnEnemy();
@@ -7556,8 +7559,11 @@ window.__flightResume=function(opts){
 };
 window.__flightPause=function(){ extPaused=true; flightAudio(false); };
 /* 整備窗／設定窗蓋在飛行畫面上（ver -481，Ray：「開整備窗、設定窗就直接暫停
-   飛行畫面一切動作」）：與 __flightPause 同一個開關，只是它有「放開」的一半。 */
-window.__flightHold=function(on){ extPaused=!!on; flightAudio(!on); };
+   飛行畫面一切動作」）：與 __flightPause 同一個開關，只是它有「放開」的一半。
+   ⚠ **音樂不凍**（ver -483，Ray：「音樂不要凍結」）：只凍模擬，不動音訊 ——
+     loop 整幀跳過會讓 updateBgm 停手，但 HTMLAudio 自己會照放（音量凍在當下）。
+     真的要收音的只有 __flightPause（戰鬥／畫面收起 —— 那時換別頁的曲子上場）。 */
+window.__flightHold=function(on){ extPaused=!!on; };
 
 /* 打完回來：把船放回離開時的位置（ver -382）。
    ⚠ **讀了就清掉**：不清的話下次正常進飛行頁還會被拉回那個座標。
