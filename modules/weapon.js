@@ -289,25 +289,23 @@ export function resetWeaponSwitch(){
   renderSwitch();
 }
 
-/* 卡面：武器圖 ＋ 類別的第一個字（「重機槍」→「重」）＋ 固定模式的順位數字。
-   ⚠ 標籤取 `cat` 的字，不另建一張對照表（鐵律 1／7）—— 加新類別自動有字。
+/* 卡面：武器的 Alpha 圖，無框無字無底色（ver -465，Ray：「切換介面不要用格，
+   也不要有字，也不需有底色 直接放Alpha圖」）—— 樣式在 style.css，這裡只換圖。
    ⚠ 只有一個類別有槍時整顆藏起來：一顆按了不會變的鈕比沒有還糟。
-   ⚠⚠ **教學戰不出現**：那一場的裝備是**鎖死的**（`stashTutorialLoadout` 強制換上機槍），
-     而教學正是在教機槍那一串反擊 —— 中途換槍會讓引導與手上的槍對不上。 */
+   ⚠ **試玩版教學戰不出現**：那一場的裝備是**鎖死的**（forceTutorialLoadout 強制換上
+     機槍），教學正是在教機槍那一串反擊 —— 中途換槍會讓引導與手上的槍對不上。
+     **story 帶起來的教學戰（tutorialStoryRun）要出現**（ver -465，Ray 指定）——
+     本篇的裝備是玩家自己的編成，教學照講、槍隨玩家換。 */
 function renderSwitch(){
   const b=$('wpSwitch'); if(!b) return;
   const key = pendingWeapon || state.equippedWeapon;
   const w = WEAPONS[key];
   const has = load.activeCats().length>1;
-  b.style.display = (w && has && !state.tutorialRun) ? '' : 'none';
+  b.style.display = (w && has && (!state.tutorialRun || state.tutorialStoryRun)) ? '' : 'none';
   if(!w) return;
-  const img=$('wpSwitchImg'), tag=$('wpSwitchTag');
+  const img=$('wpSwitchImg');
   const src=asset(w.image)||'';
   if(img && img.getAttribute('src')!==src) img.src=src;
-  if(tag){
-    const n=load.activeCats().indexOf(w.cat)+1;
-    tag.textContent = (load.mode()==='fixed' && n) ? String(n) : (w.cat||'').charAt(0);
-  }
 }
 
 function flip(){
