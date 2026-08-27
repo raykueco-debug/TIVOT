@@ -467,7 +467,7 @@ const COLOR_URL  = 'silvermoon_terrain.png';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -446';
+const FLIGHT_VER = 'ver -447';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -6190,9 +6190,9 @@ function trainAt(T,s){
      煙跟著走，不必重填。`area` 可把煙囪限制在某一塊（北方泊地讓開北緣的碼頭）。
    ⚠ 只在 `CS_FAR` 之內更新與畫：太遠一朵煙不到一個像素，白付幾十次 ellipse。
      age 用夾過的 dt 推（同量體淡入那一條）—— 離開畫面再回來不會爆一大步。 */
-const CS_LIFE=6.5;             // 一朵活多久（秒）
+const CS_LIFE=8.0;             // 一朵活多久（秒）—— 柱子要長到屋脊線之上（ver -447）
 const CS_DT=2.1;               // 每根煙囪隔幾秒吐一朵（再乘逐根的抖動）
-const CS_RISE=15;              // 上升（世界單位／秒）
+const CS_RISE=19;              // 上升（世界單位／秒）
 const CS_WINDX=6, CS_WINDY=2.5;// 風（世界單位／秒）：微微往東南飄
 const CS_FAR=ZFAR*0.5, CS_FADEB=ZFAR*0.14;
 let citySmokeFB=null, CSC=null, csLast=0;
@@ -6232,9 +6232,11 @@ function drawCitySmoke(S,scaleH,horizon,sinp,cosp,now){
              z, k:(W/(2*z)) };
   };
   const lit=lerp(0.66,1.0,S.day);
-  const g=Math.round(lerp(198,238,S.day)*lit);
-  const gs='rgb('+g+','+g+','+Math.round(g*0.97)+')';
-  const c2=Math.round(g*0.76), cs='rgb('+c2+','+c2+','+Math.round(c2*0.99)+')';
+  /* 黑煙（ver -447，Ray：「煙是黑煙」）：外圈是散開的暗灰、內核近黑。
+     ⚠ 仍吃日夜的 lit —— 夜裡整團再暗一階（黑煙在夜空裡本來就只剩輪廓）。 */
+  const g=Math.round(lerp(58,88,S.day)*lit);
+  const gs='rgb('+g+','+g+','+Math.round(g*1.04)+')';
+  const c2=Math.round(g*0.52), cs='rgb('+c2+','+c2+','+Math.round(c2*1.06)+')';
   for(const s of buildSettlements()){
     if(!s.smoke) continue;
     const dxs=s.mx*MAP_SCALE-cam.x, dys=s.my*MAP_SCALE-cam.y;
@@ -6247,7 +6249,7 @@ function drawCitySmoke(S,scaleH,horizon,sinp,cosp,now){
       c.t-=dt;
       if(c.t<=0){ c.t=CS_DT*c.jit*(0.7+Math.random()*0.6);
         c.puffs.push({age:0, j:Math.random()});
-        if(c.puffs.length>5) c.puffs.shift(); }
+        if(c.puffs.length>6) c.puffs.shift(); }
       for(const q of c.puffs){
         q.age+=dt;
         const a0=clamp(1-q.age/CS_LIFE,0,1);
@@ -6258,7 +6260,7 @@ function drawCitySmoke(S,scaleH,horizon,sinp,cosp,now){
         const pf=clamp((CS_FAR-pp.z)/CS_FADEB,0,1);
         if(pf<=0.01) continue;
         const born=clamp(q.age/0.2,0,1);                    // 冒出來那 0.2 秒淡入（同火車）
-        const r=Math.max(0.9,(3.4+q.age*2.8)*(0.66+q.j*0.68)*pp.k);
+        const r=Math.max(0.9,(4.6+q.age*4.0)*(0.66+q.j*0.68)*pp.k);   // 大一點（ver -447，Ray 指定）
         const ox=(q.j-0.5)*r*0.8;
         draw.push({x:pp.x+ox,y:pp.y,r,a0,life:q.age/CS_LIFE,f:pf*born});
         if(pp.x+ox-r<cx0)cx0=pp.x+ox-r; if(pp.x+ox+r>cx1)cx1=pp.x+ox+r;
@@ -6280,7 +6282,7 @@ function drawCitySmoke(S,scaleH,horizon,sinp,cosp,now){
     CSC.setTransform(1,0,0,1,0,0); CSC.clearRect(0,0,bwp,bhp);
     CSC.setTransform(bwp/fbw,0,0,bhp/fbh,-fx0*bwp/fbw,-fy0*bhp/fbh);
     for(const q of draw){
-      CSC.globalAlpha=q.a0*Math.sqrt(q.a0)*0.48*q.f;
+      CSC.globalAlpha=q.a0*Math.sqrt(q.a0)*0.52*q.f;
       CSC.fillStyle=gs;
       CSC.beginPath(); CSC.ellipse(q.x,q.y-q.r*0.25,q.r,q.r*0.74,0,0,Math.PI*2); CSC.fill();
       if(q.life<0.4){
