@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.27-475';
+export const VERSION = 'ver 2026.08.27-476';
 
 export const GAME_CONFIG = {
 
@@ -1068,6 +1068,9 @@ export const GAME_CONFIG = {
                         weaponSound:{ MG_Squall:'se_ship_heavygun',
                                       Shotgun_Blast:{ key:'se_pistol_01', times:6 },
                                       Sniper_Falcon:'se_ship_cannon' },
+                        /* 船戰的速射砲（機槍反擊）連射間隔（ver -476，Ray：「連射速度
+                           調降50%」）：預設 90ms → 180ms。絕對值寫卡上（同敵人卡慣例）。 */
+                        counterGapMs:180,
                         talkOnce:'taught_ship_counter',
                         talk:[
                           /* ══ 進場（ver -429，Ray 交稿，一字未改）══
@@ -1274,7 +1277,8 @@ export const GAME_CONFIG = {
       se_weapon_pistol_01:0.607, se_weapon_pistol_02:1.165, se_weapon_pistol_03:1.751,
       se_weapon_mg_squall:0.854, se_weapon_shotgun_blast:0.530,
       se_weapon_sniper_falcon:1.023, se_weapon_guard:1.254, se_weapon_reload:1.143,
-      se_weapon_cannon_120mm:0.839, se_weapon_heavygun:0.411,
+      /* se_weapon_heavygun ver -476 換新檔重量：平均（耳機/手機模型）−13.2 LUFS → 0.738 */
+      se_weapon_cannon_120mm:0.839, se_weapon_heavygun:0.738,
       /* ── 敵人 ── */
       se_enemy_slash:0.602, se_enemy_smack:1.173, se_enemy_shot:0.854,
       se_enemy_revolver:0.732, se_enemy_dagger:3.959, se_enemy_centipi:1.272,

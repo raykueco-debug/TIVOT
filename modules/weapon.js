@@ -122,11 +122,14 @@ export function weaponCounter(dmgScale){
   const rolls=[]; let sum=0;                   // 先擲定全彈（全彈必中，此期間 over 不會被觸發）→ 一次記總傷
   for(let k=0;k<w.hits;k++){ const h=critHit(base); rolls.push(h); sum+=h.dmg; }
   addCounter(sum);
+  /* 連射間隔：預設 90ms；場次可覆寫（ver -476，Ray：「船戰的速射砲連射速度
+     調降50%」→ flight 船戰卡 counterGapMs:180）。同 weaponSound 的機制：
+     覆寫的是**場次**不是武器卡。震動長度與 setTimeout 都讀這一個變數（鐵律 7）。 */
+  const gap = state.counterGapMs || 90;
   /* ⚠ 機槍反擊：**一條連續的震動，長度＝整串的持續時間**（ver -398，Ray 指定）——
      不是每發各震一下：手機會把密集的短震合併成一串黏在一起的抖動，讀起來比一條長震還糊。
-     長度＝(發數−1)×間隔 ＋ 最後一發的尾巴。間隔就是下面 `setTimeout(fire, 90)` 的 90ms，
-     兩處同源，改一邊要改另一邊。 */
-  hap.burst((w.hits-1)*90 + 60);
+     長度＝(發數−1)×間隔 ＋ 最後一發的尾巴。 */
+  hap.burst((w.hits-1)*gap + 60);
   /* ⚠⚠ **這一串期間不換槍**（ver -410）：`critRate()` 是每發現查 `state.equippedWeapon` 的，
      中途換掉的話後半串會用新槍的暴擊率 —— 同一次反擊變成兩把槍混出來的傷害。
      玩家照樣按得動那顆鈕，只是排隊（見 tapSwitch）。 */
@@ -139,7 +142,7 @@ export function weaponCounter(dmgScale){
     api.enemyDamage(h.dmg, true, true, 'counter'); // 靜默扣血 → 由自訂 float 控制「暴擊」字樣（僅暴擊發才顯示）
     api.floatDmg((h.crit?L.battle.crit:'')+h.dmg, (30+Math.random()*40)+'%','35%', true);
     i++;
-    if(i<w.hits) setTimeout(fire, 90);
+    if(i<w.hits) setTimeout(fire, gap);
     else flushPending();                       // 打完最後一發 → 排隊中的切換生效
   };
   fire();

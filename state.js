@@ -101,6 +101,10 @@ export const state = {
   /* 「這一場」的武器音覆寫（ver -423，船艦戰）：`{武器鑰匙: 'se_key' | {key,times}}`。
      ⚠ 覆寫的是**場次**不是武器 —— 同一把槍在陸戰還是原本的聲音（擁有者：combat）。 */
   weaponSound: null,
+  /* 「這一場」的機槍反擊連射間隔覆寫（ms；ver -476，Ray：「船戰的速射砲連射
+     速度調降50%」＝ 90→180）。同 weaponSound：場次的屬性不是武器卡的，
+     卡上寫**絕對值**（counterGapMs），null＝預設 90（擁有者：combat）。 */
+  counterGapMs: null,
 
   equippedWeapon: GAME_CONFIG.defaultWeapon,
   grenades: T.grenades,

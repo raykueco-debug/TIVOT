@@ -1075,12 +1075,14 @@ export function startGame(){
   const sb = state.scriptRun && GAME_CONFIG.battles && GAME_CONFIG.battles[state.scriptBattleId];
   state.timeAttack = null; state.timeOver = false;   // 開場先歸零（同 noSaint：不要靠上一場收乾淨）
   state.weaponSound = null;                          // 武器音覆寫也是（ver -423）
+  state.counterGapMs = null;                         // 連射間隔覆寫也是（ver -476）
   if(sb && GAME_CONFIG.enemies[sb.enemy]){
     enemy.setEnemy(sb.enemy);
     state.noSaint = !!sb.noSaint;
     state.noPartner = !!sb.noPartner;
     state.timeAttack = sb.timeAttack || null;    // 計時挑戰（ver -396，打靶場）
     state.weaponSound = sb.weaponSound || null;  // 這一場的武器音覆寫（ver -423，船艦戰）
+    state.counterGapMs = sb.counterGapMs || null;// 這一場的機槍連射間隔（ver -476，船艦戰）
   }
   stopAll();
   /* 這一場自己的戰鬥內對話（ver -426，例：船艦戰的反擊短教學）。
