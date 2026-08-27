@@ -253,18 +253,22 @@
        但邊框在呼吸，告訴玩家「等這一串打完」。 */
   /* ver -465（Ray：「不要用格，也不要有字，也不需有底色 直接放Alpha圖」）：
      無框無底、只剩武器的 Alpha 圖；順位/類別字（#wpSwitchTag）整個不出。
-     `.pending` 的回饋改掛在圖的 drop-shadow 上（原本是邊框呼吸，框沒了）。 */
-  #wpSwitch{flex:none;align-self:stretch;width:60px;padding:0;
+     `.pending` 的回饋改掛在圖的 drop-shadow 上（原本是邊框呼吸，框沒了）。
+     ver -469（Ray：「副武器圖都太小，不要用外框，用實際的圖來放，
+     只要不壓hp條跟盤面就好」）：圖放到 110×84 ——
+     · **底緣錨在血條列的底**、只往**上**長（浮進敵人立繪區）＝不壓盤面；
+     · 槽位寬＝圖寬（血條 flex 自己讓位）＝不壓 HP 條。
+     ⚠ barsBlock 是浮在 #top 底部的 HUD（bottom:6px），圖往上疊在敵圖上是刻意的。 */
+  #wpSwitch{flex:none;align-self:stretch;width:110px;padding:0;position:relative;
     background:transparent;border:none;border-radius:0;
     pointer-events:auto;touch-action:manipulation;cursor:pointer;
-    overflow:visible;perspective:120px;}
-  #wpSwitch:active .ws-card{transform:scale(.88);}
-  #wpSwitch .ws-card{display:flex;flex-direction:column;align-items:center;justify-content:center;
-    width:100%;height:100%;transform-style:preserve-3d;backface-visibility:hidden;
-    transition:transform .08s;}
-  /* ver -466（Ray：「切換圖放大兩倍」）：30×22 → 60×44，鈕寬跟著 60。 */
-  #wpSwitch img{display:block;width:60px;height:44px;object-fit:contain;
-    filter:drop-shadow(0 1px 2px #000);}
+    overflow:visible;perspective:200px;}
+  #wpSwitch:active .ws-card{transform:scale(.9);}
+  #wpSwitch .ws-card{position:absolute;inset:0;display:block;
+    transform-style:preserve-3d;backface-visibility:hidden;transition:transform .08s;}
+  #wpSwitch img{position:absolute;left:50%;bottom:0;transform:translateX(-50%);
+    width:110px;height:84px;object-fit:contain;object-position:center bottom;
+    filter:drop-shadow(0 2px 4px #000);}
   #wpSwitchTag{display:none;}
   #wpSwitch.flip .ws-card{animation:wsFlip .34s ease;}
   @keyframes wsFlip{
