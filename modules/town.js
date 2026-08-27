@@ -54,6 +54,34 @@ let eveningHeld=false;
    ⚠ 打烊的店走不進去（`go()` 擋在門口、不移動）→ 機會還留著，那是對的：
      玩家確實是往餐酒館走的。 */
 let pendingFavor=null;
+
+/* ══ 夥伴回房休息 → 他相關的對白不再觸發（ver -459，Ray 定案）══════════════
+   「夥伴只要已經進入旅店休息，就不會在其他地方觸發該夥伴相關的劇情。
+     所以諾薇兒說出她要休息之後，就不會再觸發城鎮與她相關的對話。」
+   資料一張表：`on` 的任一旗標成立＝這個人回房了；`until` 成立＝那一夜過去了
+   （stage 0 是 07:00 的閘門立 `stage1_open`，隔天她又跟在身邊）。
+   ⚠ 「相關」看**這一段對白有沒有她**（speaker 或 portrait.char）—— 不是看地點。
+   ⚠ 被擋掉的段落**旗標不記**（同「打烊不播」的先例）：她回到隊上之後
+     再走到那裡，該演的照演。 */
+const RESTING = [
+  { who:'NOUVELLE', on:['inn_wait','inn_renna','inn_missed'], until:'stage1_open' },
+];
+function restingSet(){
+  const s={};
+  for(const r of RESTING){
+    if(r.until && prog.hasFlag(r.until)) continue;
+    if(r.on.some(f=>prog.hasFlag(f))) s[r.who]=1;
+  }
+  return s;
+}
+function linesBlockedByRest(lines){
+  const rs=restingSet();
+  for(const k in rs){
+    if((lines||[]).some(l=>l && (l.speaker===k || (l.portrait && l.portrait.char===k))))
+      return true;
+  }
+  return false;
+}
 function armFavor(n){
   const f = n && n.nextFavor; if(!f) return;
   if(f.flag && prog.hasFlag(f.flag)) return;      // 這一輪已經拿過了
@@ -861,10 +889,14 @@ export function enter(id){
      節點可以掛**好幾段**主線戲，各自帶旗標與條件（目前只有 `day`：遊戲內第幾天）。
      ⚠ **優先於傍晚提醒與進場對白** —— 那兩者是氣氛，這是主線，順序不能反。
      ⚠ 旗標同樣**演完才記**（見下方的收尾）：中間可能插一場戰鬥，打輸會被丟回首頁。 */
-  const act = actDue(n);
+  /* ⚠ 主線段落也一樣看休息（ver -459）：段落裡有回房的人就先不演、旗標不記 ——
+     她回到隊上再經過時照演。 */
+  const act0 = actDue(n);
+  const act = (act0 && linesBlockedByRest(act0.lines)) ? null : act0;
   let ev = act ? null : eveningDue(n);
-  /* 這一次抵達**原本**要演的進場對白（打烊或演過了就是空的）。 */
-  const own = (played || !isOpenNow(n)) ? [] : (n.lines||[]);
+  /* 這一次抵達**原本**要演的進場對白（打烊、演過了、或段落裡有**回房休息的夥伴**
+     （ver -459，見 linesBlockedByRest）就是空的 —— 後者旗標不記，之後照演）。 */
+  const own = (played || !isOpenNow(n) || linesBlockedByRest(n.lines)) ? [] : (n.lines||[]);
   /* ⚠⚠ **傍晚那一格不搶這一段戲**（ver -430，Ray 指定）：讓節點自己的對白先講完，
      移動到**下一個地點**才強制觸發。⚠ 只讓一次（`eveningHeld`）—— 否則一路走過
      還沒看過的地點會永遠讓下去，「強制」就名存實亡。 */
@@ -1003,7 +1035,10 @@ function openShop(){
        `keeperRandom`  **隨機一句**（武器店：Ray 指定「隨機出武器改裝、戰鬥相關知識」）
      ⚠ 兩種都走同一個劇情播放器（立繪、明暗、打字機一致），差別只在「這次要播哪幾句」。 */
   const rnd = n.keeperRandom && n.keeperRandom.length ? n.keeperRandom : null;
-  const hasTalk = (n.keeper && n.keeper.length) || rnd;
+  /* ⚠ 店主對話裡有**回房休息的夥伴**（諾薇兒常在裡面插話）→ 這一次沒有對談
+     （ver -459）：她不在場，那一段演不成。keeperRandom（店主單人隨機句）不受影響。 */
+  const keeperOk = !(n.keeper && n.keeper.length && linesBlockedByRest(n.keeper));
+  const hasTalk = (keeperOk && n.keeper && n.keeper.length) || rnd;
   /* 「再挑戰」（ver -398）：把那一段（含 `{battle:…}`）交給劇情播放器演 ——
      它自己會推槍棺、打完接回來（`resumeFrom`），與劇情裡那一次走同一條路（鐵律 8）。
      ⚠ 演完**回到櫃台**（同「與店主交談」的作法）：玩家本來就站在那裡。 */
@@ -1017,7 +1052,7 @@ function openShop(){
     });
   } : null;
   sheetClose = showShop(n.shop, hasTalk ? [1] : null, ()=>{
-    let lines = (n.keeper && n.keeper.length) ? n.keeper : null;
+    let lines = (keeperOk && n.keeper && n.keeper.length) ? n.keeper : null;
     if(!lines && rnd){
       let i=Math.floor(Math.random()*rnd.length);
       if(rnd.length>1 && i===lastKeeper) i=(i+1)%rnd.length;   // 不要連續兩次同一句
