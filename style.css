@@ -254,7 +254,7 @@
   /* ver -465（Ray：「不要用格，也不要有字，也不需有底色 直接放Alpha圖」）：
      無框無底、只剩武器的 Alpha 圖；順位/類別字（#wpSwitchTag）整個不出。
      `.pending` 的回饋改掛在圖的 drop-shadow 上（原本是邊框呼吸，框沒了）。 */
-  #wpSwitch{flex:none;align-self:stretch;width:30px;padding:0;
+  #wpSwitch{flex:none;align-self:stretch;width:60px;padding:0;
     background:transparent;border:none;border-radius:0;
     pointer-events:auto;touch-action:manipulation;cursor:pointer;
     overflow:visible;perspective:120px;}
@@ -262,7 +262,8 @@
   #wpSwitch .ws-card{display:flex;flex-direction:column;align-items:center;justify-content:center;
     width:100%;height:100%;transform-style:preserve-3d;backface-visibility:hidden;
     transition:transform .08s;}
-  #wpSwitch img{display:block;width:30px;height:22px;object-fit:contain;
+  /* ver -466（Ray：「切換圖放大兩倍」）：30×22 → 60×44，鈕寬跟著 60。 */
+  #wpSwitch img{display:block;width:60px;height:44px;object-fit:contain;
     filter:drop-shadow(0 1px 2px #000);}
   #wpSwitchTag{display:none;}
   #wpSwitch.flip .ws-card{animation:wsFlip .34s ease;}

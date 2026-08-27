@@ -1387,8 +1387,21 @@ const KERB_T={ rise:1000, thud:420, rivet:460, arrow:340, lift:1600, open:900 };
 let kerbTimers=[];
 let kerbPlaying=false;   // 演出期間鎖住點擊推進（不然一點就跳到下一句，門還開著）
 let kerbGear=null;       // 齒輪聲的把手（演出中止時要收掉，見 stopKerberos）
+/* ══ 門開期間戰鬥不計時（ver -466，Ray：「槍棺動畫的時候延時就在偷跑了，
+   要在槍棺全開以後才開始計時」）══
+   onGap（底下開戰）那一拍立刻把戰鬥真暫停，門全開才放行 —— 延時倒數、攻擊圈、
+   碼表、敵大絕排程全部等門。掛在 playKerberos **這一支**（鐵律 8）：
+   開門演出的所有路徑（劇情插入戰、飛行頁交棒）都經過這裡，各呼叫端不必自己記。
+   由 main.js 用 setGateHold 注入 combat 的 pauseForDialog/resumeFromDialog
+   （story 不 import combat，維持依賴方向）。 */
+let gateHold=null;       // {pause, resume}
+let kerbHeld=false;      // 門正押著戰鬥（中止演出時要放行，否則戰鬥凍死）
+export function setGateHold(o){ gateHold = o || null; }
+function gatePause(){ if(gateHold && !kerbHeld){ kerbHeld=true; gateHold.pause(); } }
+function gateResume(){ if(kerbHeld){ kerbHeld=false; gateHold && gateHold.resume(); } }
 function stopKerberos(){
   kerbPlaying=false;
+  gateResume();          // 演出被中止：把押著的戰鬥放行（冪等；正常結束時已放行過）
   if(kerbGear){ try{ kerbGear.stop(120); }catch(e){} kerbGear=null; }
   kerbTimers.forEach(clearTimeout); kerbTimers=[];
   const kb=$('kerb'), st=$('storyStage'), sm=$('kerbSmoke');
@@ -1467,6 +1480,7 @@ function playKerberos(onGap, onDone, opts){
   at(t,()=>{                                             // ⑤ 讓出舞台 → 底下開戰
     st.classList.add('kerb-open');
     onGap&&onGap();
+    gatePause();   // 開戰即押住（同一拍，計時器一毫秒都不偷跑）；門全開放行（ver -466）
   });
   t+=260;                                                // 給底下一拍把畫面建起來
   const openAt = t;
@@ -1476,7 +1490,7 @@ function playKerberos(onGap, onDone, opts){
      ⚠ 夾在 0 以上：畫面時序若被縮短到比音檔還短，就從頭播（寧可提前，不要不播）。 */
   at(Math.max(0, openAt + KERB_T.open - KERB_SE_T.openTail), ()=>se('open'));
   t+=KERB_T.open;
-  at(t,()=>{ onDone&&onDone(); });
+  at(t,()=>{ gateResume(); onDone&&onDone(); });          // 門全開 → 計時開始（ver -466）
 }
 
 /* ══ 飛行頁交棒過來的那一場：門是**在飛行頁推上來的**（ver -387）══════════

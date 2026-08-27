@@ -1000,6 +1000,14 @@ story.setHomeReturn(()=>{
 /* 城鎮的「出航」→ 開飛行頁（注入，town 不 import main；同 setTownOpener 的作法）。 */
 town.setFlightOpener(()=>openFlight());   // 城鎮出航＝「進入」，讀取頁要跑（ver -389）
 combat.setStoryClose(story.playKerberosClose);
+/* 門開期間戰鬥不計時（ver -466）：story 的開門演出押住／放行戰鬥。
+   ⚠ 放行要讓位給教學對話：門還在開時教學的第一句可能已經插進來
+   （startDelayMs 的計時器）—— 那個暫停歸教學層擁有，由它自己的關閉流程放行
+   （同 exitConfirm 的 close 慣例，見上方 `!state.tutorialDialog`）。 */
+story.setGateHold({
+  pause: combat.pauseForDialog,
+  resume: ()=>{ if(!state.tutorialDialog) combat.resumeFromDialog(); },
+});
 /* ══ 戰敗那一頁按了哪一顆（ver -430，Ray 定案）══════════════════════════════
    「船戰死亡點擊繼續回到戰鬥前的飛行畫面進度；其餘戰鬥死亡點再戰回到該幕對話的
      開頭，點放棄回到主畫面。」
