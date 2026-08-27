@@ -107,6 +107,21 @@ export function showLoot(list, done, money, opts){
      top      z-index 覆寫（從劇情層叫出來時要抬到 8300 之上）
    ⚠ 道具欄本來是**只顯示不交易**（ver -368，買賣只在商店）——「裝備」不是交易，
      所以放這裡是對的；買賣那條規矩不受影響。 */
+/* 道具清單（分類標題＋逐列）的 HTML —— **只有這一份**（鐵律 8）：
+   `showBag`（獨立視窗）與整備頁的「道具」分頁（ver -457）都用它。
+   純顯示、不含裝備鈕（裝備那一版有自己的分支，見 showBag 的 equip 段）。 */
+export function bagListHtml(catFilter){
+  ensureCss();
+  return inv.grouped().filter(g=>!catFilter || g.name===catFilter).map(g=>{
+    const rows=g.rows.length
+      ? g.rows.map(r=>'<div class="loot-row"><span class="loot-name">'+r.name+'</span>'
+                    + '<span class="loot-n">×'+r.n+'</span>'
+                    + (r.desc?'<span class="loot-desc">'+r.desc+'</span>':'')+'</div>').join('')
+      : '<div class="bag-empty">—</div>';
+    return '<div class="bag-cat">'+g.name+'</div>'+rows;
+  }).join('');
+}
+
 export function showBag(opts){
   ensureCss();
   const o=opts||{};
@@ -127,8 +142,8 @@ export function showBag(opts){
       groups=[{ name:o.cat, rows:ids.map(id=>({ id, name:inv.nameOf(id), n:1,
                  /* 規格用**本篇**那一組（這一頁只在城鎮／劇情裡開得到，§6.5.3）。 */
                  desc:weaponDescText(id, true) })) }];
-    }else groups=inv.grouped().filter(g=>!o.cat || g.name===o.cat);
-    const body=groups.map(g=>{
+    }else groups=null;   // 一般（非裝備）視圖 → 共用 bagListHtml（見上）
+    const body=(groups||[]).map(g=>{
       /* ⚠ 道具欄**只顯示，不交易**（ver -368，Ray：「只有在商店能買賣」）。
          賣東西在 `showShop()`，那一頁才有價格與確認。 */
       const rows = g.rows.length
@@ -146,7 +161,7 @@ export function showBag(opts){
           }).join('')
         : '<div class="bag-empty">—</div>';
       return '<div class="bag-cat">'+g.name+'</div>'+rows;
-    }).join('');
+    }).join('') || bagListHtml(o.cat);
     ov.innerHTML='<div class="loot-panel"><div class="loot-title">'+(o.cat||'道具欄')+'</div>'
                + '<div class="bag-money">'+inv.moneyName()+'　<b>'+inv.getMoney()+'</b></div>'
                + '<div class="loot-list">'+body+'</div>'

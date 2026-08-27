@@ -2346,6 +2346,33 @@
     border:1px solid var(--gold-dim);color:var(--gold);font-size:16px;cursor:pointer;}
   #gearSheet .gs-title{text-align:center;font-size:15px;letter-spacing:6px;color:var(--gold);
     margin:2px 0 12px;}
+  /* ══ 分頁（ver -457，Ray：「在整備頁面加入道具分頁，道具要分類」）══
+     兩顆分頁鈕取代原本的標題（它們就是標題）。 */
+  #gearSheet .gs-tabs{display:flex;justify-content:center;gap:14px;margin:2px 0 12px;}
+  #gearSheet .gs-tab{background:transparent;border:none;border-bottom:2px solid transparent;
+    color:var(--gold-dim);font-family:inherit;font-size:15px;letter-spacing:6px;
+    padding:2px 6px 6px;cursor:pointer;}
+  #gearSheet .gs-tab.on{color:var(--gold);border-bottom-color:var(--gold);}
+  /* 道具分頁：清單自己捲，分類與列的樣式**照道具欄那一套**——
+     ⚠ lootsheet.css 的規則鎖在 `#lootSheet` 底下，進不來這一頁，所以這裡照抄
+       同一組數值（與 `css/lootsheet.css` 互指：改一邊要改另一邊）。 */
+  #gearSheet .gs-items{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;}
+  #gearSheet .bag-money{display:flex;justify-content:flex-end;align-items:baseline;gap:2px;
+    font-size:12px;color:var(--gold-dim);letter-spacing:1px;margin-bottom:6px;}
+  #gearSheet .bag-money b{font-size:15px;color:var(--gold);letter-spacing:1px;}
+  #gearSheet .gs-itemlist{flex:1 1 auto;min-height:0;overflow-y:auto;
+    -webkit-overflow-scrolling:touch;padding-bottom:8px;}
+  #gearSheet .gs-itemlist .bag-cat{font-size:11px;letter-spacing:3px;color:var(--gold-dim);
+    margin:12px 0 4px;border-bottom:1px solid rgba(217,198,138,.2);padding-bottom:3px;}
+  #gearSheet .gs-itemlist .bag-cat:first-child{margin-top:0;}
+  #gearSheet .gs-itemlist .bag-empty{font-size:11px;color:var(--gold-dim);opacity:.6;
+    padding:2px 10px 6px;}
+  #gearSheet .gs-itemlist .loot-row{display:grid;grid-template-columns:1fr auto;gap:2px 10px;
+    padding:5px 4px;border-bottom:1px solid rgba(217,198,138,.10);}
+  #gearSheet .gs-itemlist .loot-name{font-size:13px;color:var(--ink,#cfc6b8);letter-spacing:1px;}
+  #gearSheet .gs-itemlist .loot-n{font-size:12px;color:var(--gold);}
+  #gearSheet .gs-itemlist .loot-desc{grid-column:1 / -1;font-size:11px;line-height:1.6;
+    color:rgba(207,198,184,.62);}
   #gearSheet .gs-body{flex:1 1 auto;min-height:0;display:flex;gap:12px;}
   #gearSheet .gs-left{flex:1 1 0;min-width:0;display:flex;flex-direction:column;}
   #gearSheet .gs-right{flex:1 1 0;min-width:0;display:flex;flex-direction:column;}

@@ -20,7 +20,7 @@ import * as load from '../script/loadout.js';
 import * as inv from '../script/inventory.js';
 import * as prog from '../script/progress.js';
 import { setPickedPartner, state } from '../state.js';
-import { showBag } from './loot.js';
+import { showBag, bagListHtml } from './loot.js';
 import { SFX } from '../audio.js';
 
 const $ = id => document.getElementById(id);
@@ -31,6 +31,9 @@ const W = () => GAME_CONFIG.weapons||{};
 const STORY_PARTNERS = ['nouvelle'];
 
 let el=null, dragging=null;
+/* 現在開著哪一個分頁（ver -457，Ray：「在整備頁面加入道具分頁，道具要分類」）。
+   ⚠ 不進存檔：這是「玩家現在在看哪一頁」，關掉重開回到整備即可。 */
+let tab='gear';
 
 function ensure(){
   if(el && el.parentNode) return el;
@@ -59,10 +62,21 @@ function render(){
   const p=GAME_CONFIG.partners[pk]||{};
   const fit=p.siFit||{};
   const rot = load.mode()==='rotate';
+  /* 道具分頁（ver -457）：清單走 `bagListHtml`（與道具欄同一份實作，鐵律 8），
+     分類（道具／武器／素材…）由 `inv.grouped` 照 config 的 `catOrder` 排。 */
+  const itemsBody =
+      '<div class="gs-items">'
+    +   '<div class="bag-money">'+inv.moneyName()+'　<b>'+inv.getMoney()+'</b></div>'
+    +   '<div class="gs-itemlist">'+bagListHtml()+'</div>'
+    + '</div>';
   el.innerHTML =
       '<button class="gs-close" type="button" aria-label="關閉">✕</button>'
-    + '<div class="gs-title">整　備</div>'
-    + '<div class="gs-body">'
+    + '<div class="gs-tabs">'
+    +   '<button class="gs-tab'+(tab==='gear' ?' on':'')+'" data-tab="gear"  type="button">整　備</button>'
+    +   '<button class="gs-tab'+(tab==='items'?' on':'')+'" data-tab="items" type="button">道　具</button>'
+    + '</div>'
+    + (tab==='items' ? itemsBody :
+      '<div class="gs-body">'
     +   '<div class="gs-left">'
     +     '<div class="gs-sec">副武器・順位</div>'
     +     '<div class="gs-slots">' + cats.map((c,i)=>slotHtml(c,i+1)).join('') + '</div>'
@@ -89,7 +103,7 @@ function render(){
     +     (p.active  ? '<div class="gs-perk"><b>'+p.active.name+'（主動）</b>'
                      + '<span>'+p.active.desc+'</span></div>' : '')
     +   '</div>'
-    + '</div>';
+    + '</div>');
   bind();
   /* ⚠ 提示要**等這一頁真的顯示了**才擺（`.on` 之前量到的 rect 全是 0，同 §6.5.4 的坑）——
      所以延到下一拍；`open()` 那邊也會在掛上 `.on` 之後再叫一次。 */
@@ -99,7 +113,13 @@ function render(){
 /* ── 綁事件 ── */
 function bind(){
   el.querySelector('.gs-close').addEventListener('click', e=>{ e.stopPropagation(); close(); });
-  el.querySelector('.gs-sw').addEventListener('click', e=>{ e.stopPropagation();
+  el.querySelectorAll('.gs-tab').forEach(b=>b.addEventListener('click', e=>{ e.stopPropagation();
+    if(b.dataset.tab===tab) return;
+    try{ SFX.menuClick(); }catch(_){}
+    tab=b.dataset.tab; render();
+  }));
+  const sw=el.querySelector('.gs-sw');
+  if(sw) sw.addEventListener('click', e=>{ e.stopPropagation();
     try{ SFX.menuClick(); }catch(_){}
     load.setMode(load.mode()==='rotate' ? 'fixed' : 'rotate');
     render();
@@ -205,6 +225,7 @@ function closeTip(){
 
 export function open(){
   ensure();
+  tab='gear';        // 每次開都回到整備 —— 吊墜的語意是「整備」，道具是它的第二頁
   /* 本篇的搭檔固定是諾薇兒（Ray 指定）。⚠ 走 `setPickedPartner`（唯一管道，§3.6）。 */
   const pk=STORY_PARTNERS[0];
   if(GAME_CONFIG.partners[pk] && state.pickedPartner!==pk) setPickedPartner(pk);
