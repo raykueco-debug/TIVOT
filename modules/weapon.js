@@ -160,11 +160,10 @@ export function activateDual(){
   if(state.enemyHp<=0) return;                 // overkill（敵已死）不可發動；雙槍中殺敵觸發 overkill 則照常（見 enterOverkillFx）
   if(state.energy<100) return;                 // 破防值未滿不能發動
   SFX.unlock(); SFX.ultCharge();
-  /* 雙槍破防發動語音：試玩版＝Luna；**本篇暫代**＝馬季諾的高裝藥彈那一句
-     （ver -475，Ray：「story的破防vo暫時先換成vo_malzeno_hcrounds」）——
-     托爾斯滕自己的破防語音還沒有素材，有了再換回專屬那一支。
+  /* 雙槍破防發動語音：試玩版＝Luna；本篇＝托爾斯坦專屬（ver -479，Ray 交檔
+     vo_Torsten_DualCrush；-475 曾暫借馬季諾的高裝藥彈語音）。
      分流同 cut-in 圖（下面那行）：走 storyMode()（鐵律 8：唯一的判定）。 */
-  const dualVo = storyMode() ? 'vo_hc_rounds' : 'se_luna_dual';
+  const dualVo = storyMode() ? 'vo_dual_torsten' : 'se_luna_dual';
   SFX.playVoice(asset(dualVo), sfxGain(dualVo));
   api.resetEnergy();                           // 破防值歸零 + 刷新計量表（energy 為 combat 擁有）
   api.playCutin(()=>{

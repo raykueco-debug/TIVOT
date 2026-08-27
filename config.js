@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.27-478';
+export const VERSION = 'ver 2026.08.27-479';
 
 export const GAME_CONFIG = {
 
@@ -1270,7 +1270,8 @@ export const GAME_CONFIG = {
        ver -441 之前這件事是靠「在不在 partnerSeGain 那張表裡」判的，
        增益一搬家那個判斷就會憑空消失。 */
     voiceKeys: ['se_luna_dual','se_luna_exc','se_luna_obe','voice_saint_luna',
-                'vo_life_return','vo_death_guard','vo_supply_refill','vo_hc_rounds'],
+                'vo_life_return','vo_death_guard','vo_supply_refill','vo_hc_rounds',
+                'vo_dual_torsten'],
 
     /* ══ 逐支增益：鑰匙是**檔名**（去副檔名、轉小寫）══════════════════
        ⚠⚠ 鑰匙用檔名不用 ASSETS 鍵（ver -441）：**一支音檔只有一個響度**，
@@ -1285,6 +1286,9 @@ export const GAME_CONFIG = {
       vo_luna_saintinstall:1.345, vo_malzeno_hcrounds:2.647,
       vo_malzeno_supplyrefill:2.261, vo_renee_deathguard:1.563,
       vo_renee_lifereturn:3.712,
+      /* ver -479 入表（本篇破防）：語音鏈近似（130Hz 高通）耳機 −18.7／手機 −20.7
+         → 平均 −19.7 LUFS → 2.482 */
+      vo_torsten_dualcrush:2.482,
 
       /* ── 武器 ── */
       se_weapon_pistol_01:0.607, se_weapon_pistol_02:1.165, se_weapon_pistol_03:1.751,
@@ -1501,6 +1505,9 @@ export const ASSETS = {
   //  ⚠ 檔名的 VC＝voice（語音），與純音效的 SE 分家：這四支是搭檔的台詞，
   //     響度基準跟語音走（fileGain 拉平到 targetLufs），不是音效層。
   se_luna_dual:      "resources/audio/vo/vo_luna_dualwield.m4a",   // 雙槍破防發動
+  /* 本篇的破防發動語音（ver -479，Ray 交檔 vo_Torsten_DualCrush）——
+     -475 曾暫借馬季諾的高裝藥彈語音，正主到了。檔名照規約轉小寫（靜態空間分大小寫）。 */
+  vo_dual_torsten:   "resources/audio/vo/vo_torsten_dualcrush.m4a",
   se_luna_exc:       "resources/audio/vo/vo_luna_execution.m4a",    // 處決 EXSECUTIŌ cut-in
   se_luna_mb:        "resources/audio/se/se_saint_maxburst.m4a",     // Maximum Burst cut-in
   se_luna_obe:       "resources/audio/vo/vo_luna_obe.m4a",    // O.B.E. cut-in
