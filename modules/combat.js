@@ -705,14 +705,22 @@ function startIntervalTimer(){
   if(_intPausedAt) _intPausedAt=Date.now();   // 對話凍結中換盤：期限是新的，補時從此刻重新起算
   state.intervalTimer=setInterval(()=>{
     if(state.over){clearInterval(state.intervalTimer);return;}
-    /* 聖徒化／overkill（敵已死的追擊窗口，ver -464 Ray 指定）不受間隔壓力：
-       期限每 tick 回滿＝倒數（與光圈）停在起點。⚠ overkill 不能只擋扣血——
-       期限走到頭那一下還會把 combo 歸零，追擊的連段會被憑空打斷。 */
-    if(state.saintMode||state.enemyHp<=0){resetIntervalDeadline();return;}
+    /* 聖徒化／overkill（敵已死的追擊窗口）不受間隔壓力：**期限清成 0＝沒有倒數**
+       （ver -468，Ray：「一直重覆歸零，要讓他完全不跑才行」—— 每 tick 回滿的話，
+       兩次 tick 之間光圈還是會在左上角冒出一小截又縮回去，看起來像在閃）。
+       deadline=0 時 ringTick 的 t 恆為 0，光圈穩定全空。
+       離開這些狀態的路都會把期限接回來：換盤 loadBoard→startIntervalTimer、
+       聖徒化收尾 saint.finishSaintMode→resetIntervalDeadline、盤內點格 tap→reset
+       （聖徒化中點格會被下一 tick 再清回 0，無妨）。
+       ⚠ overkill 不能只擋扣血——期限走到頭那一下還會把 combo 歸零，
+       追擊的連段會被憑空打斷。 */
+    if(state.saintMode||state.enemyHp<=0){state.intervalDeadline=0;return;}
     /* 對話真暫停（pauseForDialog）＝凍結在當下，補時在 resumeFromDialog（ver -464）；
        其他演出（雙槍/搭檔 cut-in）維持每 tick 回滿、撤下重走（發動瞬間不被連段）。 */
     if(state.cutinPlaying){ if(!_intPausedAt) resetIntervalDeadline(); return; }
-    if(Date.now()>=state.intervalDeadline){
+    /* deadline=0＝「沒有倒數」的哨兵（上面兩個狀態清的）：不算到期 ——
+       否則 overkill 收尾、敵血已回而新盤未載的那一格會誤發懲罰。 */
+    if(state.intervalDeadline && Date.now()>=state.intervalDeadline){
       // 教學：第二盤在首次防禦成功前不套延時懲罰（只重置期限，手感不受壓）
       if(tutorial.delayPenaltySuppressed()){ resetIntervalDeadline(); return; }
       state.combo=0;
