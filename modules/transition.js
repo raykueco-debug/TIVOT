@@ -18,7 +18,10 @@ import { GAME_CONFIG } from '../config.js';
 const $ = id => document.getElementById(id);
 
 /* opts.noTap  ＝不接受輕觸/點擊/按鍵繼續（不顯示提示），改由外部呼叫回傳的 proceed 推進。
- * opts.noAuto ＝停用 autoMs 自動繼續。回傳 { proceed }：外部（如櫻花飄完）可主動推進。 */
+ * opts.noAuto ＝停用 autoMs 自動繼續。回傳 { proceed }：外部（如櫻花飄完）可主動推進。
+ * opts.onRevealed ＝淡出完成（遮罩收掉、底下畫面完全露出）那一刻的回呼（ver -467）：
+ *   給「可操作才開始計時」用 —— done() 是在遮罩仍近不透明時呼叫的，戰鬥在那一刻
+ *   就開始跑；要等玩家真的看得到畫面才放行計時，就掛這裡。 */
 export function playTransition(kind, done, opts){
   opts = opts || {};
   const cfg = GAME_CONFIG.transitions;
@@ -68,7 +71,8 @@ export function playTransition(kind, done, opts){
     el.style.setProperty('--expel-fade', fadeOut+'ms');// 淡出改用各自時長（失敗淡入慢、淡出仍正常）
     el.classList.remove('vis','ready');                // 開始淡出
     if(done) done();                                   // 遮罩仍近不透明 → 在其後切換底下畫面
-    setTimeout(()=>{ el.classList.remove('show'); }, fadeOut);
+    setTimeout(()=>{ el.classList.remove('show');
+      if(opts.onRevealed) opts.onRevealed(); }, fadeOut);
   }
   function onTap(e){ if(e && e.preventDefault) e.preventDefault(); proceed(); }
   function onKey(e){ if(e.key==='Enter' || e.key===' ' || e.key==='Spacebar'){ e.preventDefault(); proceed(); } }

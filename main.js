@@ -714,7 +714,13 @@ function launchBattle(opts){
        這裡若還播自己的過渡禎，門一開露出的是櫻花，兩段轉場疊在一起。 */
   if(opts && opts.instant){ combat.startGame(); return; }
   // 驅逐開始：不靠點擊、不自動計時 → 由櫻花飄完（onDone）主動推進進戰鬥
-  const tr = playTransition('start', combat.startGame, { noTap:true, noAuto:true });
+  /* 可操作才開始計時（ver -467，同槍棺 setGateHold 的語意）：done 是在遮罩仍近
+     不透明時呼叫的 —— 開戰即押住，淡出完成（畫面真的露出）才放行。
+     放行讓位給教學對話（`!state.tutorialDialog`，同 setGateHold 的守門）。 */
+  const tr = playTransition('start',
+    ()=>{ combat.startGame(); combat.pauseForDialog(); },
+    { noTap:true, noAuto:true,
+      onRevealed: ()=>{ if(!state.tutorialDialog) combat.resumeFromDialog(); } });
   sakuraBurst({ onDone: ()=> tr.proceed() });
 }
 // 出陣 → 出擊整備頁（搭檔卡/武器卡確認）→「執槍」才真正進戰鬥（櫻花＋過渡禎）
