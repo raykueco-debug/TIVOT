@@ -225,6 +225,9 @@ function closeTip(){
 
 export function open(){
   ensure();
+  /* 蓋在飛行畫面上 → 底下整個暫停（ver -481，Ray 指定）。收場（close）放開。
+     掛鉤走 window（main.js 掛的）：這一支是葉模組，構不到 iframe。 */
+  if(document.body.classList.contains('flight-on') && window.__flightHoldToggle) window.__flightHoldToggle(true);
   tab='gear';        // 每次開都回到整備 —— 吊墜的語意是「整備」，道具是它的第二頁
   /* 本篇的搭檔固定是諾薇兒（Ray 指定）。⚠ 走 `setPickedPartner`（唯一管道，§3.6）。 */
   const pk=STORY_PARTNERS[0];
@@ -241,6 +244,7 @@ export function open(){
 export function close(){
   if(!el) return;
   closeTip();
+  if(document.body.classList.contains('flight-on') && window.__flightHoldToggle) window.__flightHoldToggle(false);
   el.classList.remove('vis');
   setTimeout(()=>{ if(el) el.classList.remove('on'); }, 300);
   /* ⚠ 通知**在這裡發**（唯一的收場，鐵律 8），不等 300ms 的動畫 ——

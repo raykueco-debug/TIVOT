@@ -251,37 +251,37 @@
        而不是兩張卡疊著換。時間常數與 `weapon.js` 的 `WS_FLIP_MS` 同源，改一邊要改另一邊。
      ⚠ `.pending` ＝ 按了但還沒生效（反擊還在打）—— 卡已經翻成新的那一把，
        但邊框在呼吸，告訴玩家「等這一串打完」。 */
-  /* ver -465（Ray：「不要用格，也不要有字，也不需有底色 直接放Alpha圖」）：
-     無框無底、只剩武器的 Alpha 圖；順位/類別字（#wpSwitchTag）整個不出。
-     `.pending` 的回饋改掛在圖的 drop-shadow 上（原本是邊框呼吸，框沒了）。
-     ver -469（Ray：「不要用外框，用實際的圖來放，只要不壓hp條跟盤面就好」）：
-     · **底緣錨在血條列的底**、只往**上**長（浮進敵人立繪區）＝不壓盤面；
-     · 槽位寬＝圖寬（血條 flex 自己讓位）＝不壓 HP 條。
-     ver -470（Ray：「副武器的位置跟大小與破防技量相對，要平衡」）：
-     尺寸縮到與左側破防計量表（20px 槽＋46×70 光暈）相稱的量級 —— 兩側對稱
-     夾著血條，視覺份量對等。圖太小的個案（散彈槍）由**原圖**去填滿畫布解決
-     （Ray 自己放大原圖），不再把容器撐大。
-     ⚠ barsBlock 是浮在 #top 底部的 HUD（bottom:6px），圖往上疊在敵圖上是刻意的。 */
-  #wpSwitch{flex:none;align-self:stretch;width:76px;padding:0;position:relative;
+  /* ver -481（Ray：「把選槍鈕換成圓的，用簡單易懂清楚可辨的『連射武器』『散射武器』
+     『單發高威力武器』圖示代替，與破防計量保持平衡」）：
+     · **圓鈕 46px**（＝左側破防計量表光暈的寬），金環＋深底＋金色圖示，
+       兩側對稱夾著血條，視覺份量對等。
+     · 圖示由 weapon.js 的 renderSwitch 依類別填入（config.weaponCatIcons 對照）。
+     · 翻卡動畫照舊（換類別時翻面）；`.pending`（反擊中排隊）＝藍環呼吸。
+     （-465 Alpha 槍圖／-469 大圖／-470 平衡版的歷史見 git —— Ray 最終要圖示。） */
+  #wpSwitch{flex:none;align-self:stretch;width:52px;padding:0;
     background:transparent;border:none;border-radius:0;
+    display:flex;align-items:center;justify-content:center;
     pointer-events:auto;touch-action:manipulation;cursor:pointer;
     overflow:visible;perspective:200px;}
-  #wpSwitch:active .ws-card{transform:scale(.9);}
-  #wpSwitch .ws-card{position:absolute;inset:0;display:block;
+  #wpSwitch .ws-card{width:46px;height:46px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    color:var(--gold);background:rgba(10,8,14,.66);
+    border:1px solid var(--gold-dim);
+    box-shadow:0 0 10px rgba(0,0,0,.6), inset 0 0 8px rgba(240,196,105,.14);
     transform-style:preserve-3d;backface-visibility:hidden;transition:transform .08s;}
-  #wpSwitch img{position:absolute;left:50%;bottom:0;transform:translateX(-50%);
-    width:76px;height:60px;object-fit:contain;object-position:center bottom;
-    filter:drop-shadow(0 2px 4px #000);}
-  #wpSwitchTag{display:none;}
+  #wpSwitch .ws-card svg{width:26px;height:26px;display:block;
+    filter:drop-shadow(0 1px 2px #000);}
+  #wpSwitch:active .ws-card{transform:scale(.9);}
   #wpSwitch.flip .ws-card{animation:wsFlip .34s ease;}
   @keyframes wsFlip{
     0%  {transform:rotateY(0deg)   scale(1);}
     50% {transform:rotateY(90deg)  scale(.86);}
     100%{transform:rotateY(0deg)   scale(1);}
   }
-  #wpSwitch.pending img{animation:wsPending .7s ease-in-out infinite alternate;}
-  @keyframes wsPending{from{filter:drop-shadow(0 0 2px rgba(111,179,212,.5));}
-    to{filter:drop-shadow(0 0 9px rgba(111,179,212,1));}}
+  #wpSwitch.pending .ws-card{border-color:var(--holy);
+    animation:wsPending .7s ease-in-out infinite alternate;}
+  @keyframes wsPending{from{box-shadow:0 0 4px rgba(111,179,212,.4);}
+    to{box-shadow:0 0 12px rgba(111,179,212,.95);}}
 
   /* 兩條橫向血條 */
   #barStack{flex:1 1 0;display:flex;flex-direction:column;gap:5px;min-width:0;}

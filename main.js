@@ -294,6 +294,9 @@ function openFlight(opts){
   document.body.classList.add('flight-on');
   $('home').classList.remove('on');
 }
+/* 整備／設定窗蓋在飛行畫面上時暫停底下的模擬（ver -481）。掛在 window 給葉模組
+   （gear/settings）用 —— 它們構不到 iframe（同 __tivotFlight 掛 window 的理由）。 */
+window.__flightHoldToggle = on => { const w=flightWin(); if(w && w.__flightHold) w.__flightHold(!!on); };
 function closeFlightFrame(){
   const w=flightWin(); if(w && w.__flightPause) w.__flightPause();
   const f=$('flightFrame'); if(f) f.classList.remove('on');
@@ -1044,6 +1047,21 @@ combat.setStoryReturn((res)=>{
     /* 打贏了沒。⚠ 戰敗頁的「繼續」帶的是 `{lose:'continue'}`（ver -430）——
        飛行頁那一段「小命保住了」的對白只在打贏之後演（ver -432）。 */
     const won = !(res && res.lose);
+    /* ══⚠⚠ 飛行遭遇**連敗三場 → 送回上一次睡覺的旅店**（ver -481，Ray 指定）══
+       贏一場歸零；第三敗不回飛行畫面 —— 追兵清場（closeFlightFrame 已把模擬凍住），
+       人直接落在旅店節點（town.open 帶 node）。HP 不在這裡回復：
+       他是被抬回旅店的，要**睡一覺**才滿血（睡覺那一支會把連敗一併歸零）。 */
+    if(won){ prog.setFlightLossCount(0); }
+    else{
+      const n = prog.flightLossCount()+1;
+      if(n>=3){
+        prog.setFlightLossCount(0);
+        const inn = prog.getLastInn() || { town:'capital', node:'inn' };   // 沒睡過＝帝都旅店（開局的家）
+        combat.goHome(()=>town.open(inn.town, inn.node), { noBgm:true });
+        return;
+      }
+      prog.setFlightLossCount(n);
+    }
     if(f && f.getAttribute('src')){
       /* ⚠ 戰鬥／結算的曲子由 `openFlight` 統一收掉（鐵律 8），這裡不再自己 stopBgm。 */
       combat.goHome(()=>openFlight({ resume:true, won }), { noBgm:true });

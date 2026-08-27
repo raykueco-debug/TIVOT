@@ -1001,6 +1001,9 @@ function afterArrive(n){
   /* ⚠ `introFlag` 由城鎮算好傳進去（ver -402）：旅店已經沒有 `kind` 了，
      旗標名只有 `enter()` 那一支知道（`kind` 版／節點版兩種）—— inn 自己拼會拼錯城。 */
   if(n && n.inn) inn.arrive(n, { allSeen: allSeen(), introFlag: flagOf(n, nodeId),
+                                 /* 這是哪一座城的哪個節點（ver -481）：睡覺那一刻要記
+                                    「上一次睡覺的旅店」——連敗三場送回來用。 */
+                                 where: { town: townId, node: nodeId },
                                  /* 「還沒六點呢」的那個六點＝傍晚提醒的時刻（ver -405）。
                                     ⚠ 同一個數字只有這一處（鐵律 7）。 */
                                  eveningHour: ((TOWNS[townId]||{}).evening||{}).hour,

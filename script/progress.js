@@ -31,6 +31,14 @@ const K = {
   /* 暱稱（ver -395）：蕾娜之後會用暱稱叫他。⚠ 另開一支鑰匙而不是塞進 name ——
      兩個是分開輸入、分開顯示的（`{P}` 名字／`{N}` 暱稱）。 */
   nick:      'tivot_player_nick_v1',
+  /* ══ 本篇的持久 HP（ver -481，Ray：「hp除非回旅店睡覺或者用道具補血，
+     否則會延續上一場」）══ 沒有這把鑰匙＝滿血（開局／睡醒）。
+     ⚠ 只有**本篇**（storyFramed 的場次）讀寫；挑戰（試玩版）每場照舊滿血。 */
+  hp:        'tivot_php_v1',
+  /* 上一次睡覺的旅店（ver -481：「連敗三場被送到上一次睡覺的旅店」）。 */
+  innLast:   'tivot_inn_last_v1',
+  /* 飛行遭遇的連敗數（ver -481）：贏一場歸零、第三敗送回旅店並歸零。 */
+  flightLoss:'tivot_flight_losses_v1',
 };
 
 /* ⚠ 測試期間預設 3（Ray 指定，與 flight/index.html 的 STAGE_DEFAULT 一致）。
@@ -71,6 +79,30 @@ export function addFlags(list){
   const out=[...s]; setFlags(out); return out;
 }
 export function hasFlag(f){ return getFlags().indexOf(f)>=0; }
+/* ══ 本篇的持久 HP（ver -481）══ null＝滿血（鑰匙不存在）。
+   讀寫點：combat.startGame（讀）、combat.storyBattleEnd（勝場寫回殘量）、
+   inn.sleepHere（睡覺 clear＝滿血）、日後的補血道具（用時 setHp）。 */
+export function getHp(){
+  const v = parseInt(rd(K.hp), 10);
+  return isFinite(v) && v>0 ? v : null;
+}
+export function setHp(v){ wr(K.hp, String(Math.max(1, Math.round(v)))); }
+export function clearHp(){ try{ localStorage.removeItem(K.hp); }catch(e){} }
+
+/* ══ 上一次睡覺的旅店（ver -481）══ 睡覺那一刻記；連敗三場送回這裡。 */
+export function setLastInn(town, node){ wr(K.innLast, JSON.stringify({ town, node })); }
+export function getLastInn(){
+  try{ const j=JSON.parse(rd(K.innLast)||'null');
+       return (j && j.town && j.node) ? j : null; }catch(e){ return null; }
+}
+
+/* ══ 飛行遭遇的連敗數（ver -481）══ */
+export function flightLossCount(){ const v=parseInt(rd(K.flightLoss),10); return isFinite(v)?v:0; }
+export function setFlightLossCount(n){
+  if(n>0) wr(K.flightLoss, String(n));
+  else { try{ localStorage.removeItem(K.flightLoss); }catch(e){} }
+}
+
 /* 退旗標（ver -480）：強制戰打輸、重生要「劇情再跑一次」時，把取段當下記的
    talkOnce 那類旗標退掉。⚠ 只給「打輸重來」這種回捲用 —— 一般進度旗標不退。 */
 export function removeFlags(list){
@@ -174,7 +206,8 @@ export const CHAPTERS = [
 ];
 
 export function newRun(){
-  for(const k of [K.stage, K.flags, K.affection, K.affFloor, K.name, K.nick]) {
+  for(const k of [K.stage, K.flags, K.affection, K.affFloor, K.name, K.nick,
+                  K.hp, K.innLast, K.flightLoss]) {   // 持久 HP／上次旅店／連敗數（ver -481）
     try{ localStorage.removeItem(k); }catch(e){}
   }
   /* 其他模組自己的存檔。⚠ 這裡列出來就是「它屬於一輪遊戲」的宣告 ——
@@ -213,7 +246,9 @@ export function runRestore(s){
 /* ── 整包讀寫（存讀檔用）── */
 export function snapshot(){
   return { stage:getStage(), flags:getFlags(), affection:getAffection(),
-           affFloor:getFloors(), player:getPlayerName(), nick:getPlayerNick() };
+           affFloor:getFloors(), player:getPlayerName(), nick:getPlayerNick(),
+           /* 持久 HP／上次旅店／連敗數（ver -481；§6.9 兩面：newRun 清的這裡就要帶） */
+           hp:getHp(), innLast:getLastInn(), fLoss:flightLossCount() };
 }
 export function restore(s){
   if(!s) return;
@@ -223,4 +258,9 @@ export function restore(s){
   if(s.affFloor)        wr(K.affFloor, JSON.stringify(s.affFloor));
   if(s.player)          setPlayerName(s.player);
   if(s.nick)            setPlayerNick(s.nick);
+  /* ⚠ 沒有也要清（舊存檔）：讀「還沒受傷」的檔不能帶著這一輪的殘血（§6.9 兩面）。 */
+  if(s.hp!=null) setHp(s.hp); else clearHp();
+  if(s.innLast) setLastInn(s.innLast.town, s.innLast.node);
+  else { try{ localStorage.removeItem(K.innLast); }catch(e){} }
+  setFlightLossCount(s.fLoss||0);
 }

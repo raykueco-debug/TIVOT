@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.27-480';
+export const VERSION = 'ver 2026.08.28-481';
 
 export const GAME_CONFIG = {
 
@@ -104,6 +104,11 @@ export const GAME_CONFIG = {
     // 新武器：複製一段，鑰匙用「類型_武器名」（同圖檔基底名），image 指對應 ASSETS 鑰匙。
   },
   defaultWeapon: 'MG_Squall',   // 開局預設武器（填上面的鑰匙名）
+  /* 副武器類別 → 切換鈕的圖示（ver -481，Ray：「用簡單易懂清楚可辨的
+     『連射武器』『散射武器』『單發高威力武器』圖示代替」）。
+     圖示本體（SVG）在 weapon.js 的 WS_ICONS —— 這裡只記「哪一類用哪一個」，
+     加新類別補一行（鐵律 1）。 */
+  weaponCatIcons: { '重機槍':'rapid', '霰彈槍':'spread', '萊福槍':'single' },
 
   /* ------------------------------------------------------------------ *
    *  二、搭檔（修女 Partner）— 改變戰鬥規則的角色

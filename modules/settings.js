@@ -58,7 +58,11 @@ export function open(opts){
   ov.addEventListener('pointerdown', e=>e.stopPropagation());
   ov.addEventListener('click', e=>e.stopPropagation());
   const panel = ov.querySelector('.gm-panel');
+  /* 蓋在飛行畫面上 → 底下整個暫停（ver -481，Ray 指定；同 gear.open 的作法）。 */
+  const overFlight = document.body.classList.contains('flight-on');
+  if(overFlight && window.__flightHoldToggle) window.__flightHoldToggle(true);
   const close = ()=>{ ov.classList.remove('on');
+    if(overFlight && window.__flightHoldToggle) window.__flightHoldToggle(false);
     setTimeout(()=>{ if(ov.parentNode) ov.parentNode.removeChild(ov); }, 200); };
 
   /* ⚠ 面板是**換頁**的（主頁 ⇄ 確認頁），所以每一頁各自 render＋綁事件 ——

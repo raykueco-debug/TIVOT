@@ -946,6 +946,9 @@ export function devSkipBattle(){
 function storyFramed(){ return state.tutorialStoryRun || state.scriptRun; }
 function storyBattleEnd(lost){
   if(!storyFramed()) return false;
+  /* 持久 HP 寫回（ver -481）：打贏（或 allowLose 的劇本輸）把殘量帶去下一場。
+     真正的戰敗不經過這裡（lose() 直接走失敗流程）＝重生仍是進場前的殘量。 */
+  prog.setHp(Math.max(1, state.playerHp));
   state.tutorialRun=false; state.tutorialStoryRun=false; state.scriptRun=false;
   state.over=true; clockPause(); stopAll();
   /* ⚠ 把**勝負**一起交還（ver -377）：可戰敗的場次要靠它決定接哪一支分歧。 */
@@ -1058,6 +1061,15 @@ export function startGame(){
   state.maxCombo=0; state.hitsTaken=0; state.correctTaps=0; state.wrongTaps=0; state.runOverkill=0;   // 評價統計歸零
   _scriptedHits=0;                                     // 教學劇情殺擊數（結算受擊數扣除用）
   state.playerHp=state.playerMax;
+  /* ══⚠⚠ 本篇的 HP 是**延續的**（ver -481，Ray：「hp除非回旅店睡覺或者用道具補血，
+     否則會延續上一場」）══ storyFramed 的場次（劇情插入戰／船戰／劇情教學）開場
+     讀 progress 的持久 HP；沒有鑰匙＝滿血（開局／睡醒）。
+     ⚠ **挑戰（試玩版）不吃**：storyFramed 為 false，照舊每場滿血。
+     ⚠ 打輸不寫回（storyBattleEnd 只在交還時寫）＝重生帶著**進場前**的殘量再打。 */
+  if(storyFramed()){
+    const ph=prog.getHp();
+    if(ph!=null) state.playerHp=Math.max(1, Math.min(state.playerMax, ph));
+  }
   state.N=9; state.cols=3;
   state.runStartTime=Date.now(); resetClock();   // 計時碼表歸零（loadBoard 起算）
   state.boardTimes=[]; state.boardsCompleted=0;

@@ -296,8 +296,29 @@ export function resetWeaponSwitch(){
   renderSwitch();
 }
 
-/* 卡面：武器的 Alpha 圖，無框無字無底色（ver -465，Ray：「切換介面不要用格，
-   也不要有字，也不需有底色 直接放Alpha圖」）—— 樣式在 style.css，這裡只換圖。
+/* ══ 切換鈕的圖示（ver -481，Ray：「把選槍鈕換成圓的，用簡單易懂清楚可辨的
+   『連射武器』『散射武器』『單發高威力武器』圖示代替，與破防計量保持平衡」）══
+   類別 → 圖示鍵在 config.weaponCatIcons（鐵律 1）；SVG 本體在這裡（純呈現）。
+     rapid  連射＝三發並排的彈頭
+     spread 散射＝擴散錐＋彈粒
+     single 單發高威力＝一發大彈頭＋兩道速度線 */
+const WS_ICONS = {
+  rapid:  '<svg viewBox="0 0 24 24" aria-hidden="true">'
+        +   '<path fill="currentColor" d="M2.8 20v-8L5 8l2.2 4v8z'
+        +     'M9.8 20v-8L12 8l2.2 4v8zM16.8 20v-8L19 8l2.2 4v8z"/>'
+        + '</svg>',
+  spread: '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">'
+        +   '<path d="M12 20 5 6M12 20 12 4M12 20 19 6"/>'
+        +   '<circle cx="5"  cy="4.6" r="1.7" fill="currentColor" stroke="none"/>'
+        +   '<circle cx="12" cy="2.6" r="1.7" fill="currentColor" stroke="none"/>'
+        +   '<circle cx="19" cy="4.6" r="1.7" fill="currentColor" stroke="none"/>'
+        + '</svg>',
+  single: '<svg viewBox="0 0 24 24" aria-hidden="true">'
+        +   '<path fill="currentColor" d="M8.6 21V9.5L12 3l3.4 6.5V21z"/>'
+        +   '<path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M5 8v6M19 8v6"/>'
+        + '</svg>',
+};
+/* 卡面：圓鈕＋類別圖示（ver -481；-465 的 Alpha 槍圖已退場 —— Ray 改要圖示）。
    ⚠ 只有一個類別有槍時整顆藏起來：一顆按了不會變的鈕比沒有還糟。
    ⚠ **試玩版教學戰不出現**：那一場的裝備是**鎖死的**（forceTutorialLoadout 強制換上
      機槍），教學正是在教機槍那一串反擊 —— 中途換槍會讓引導與手上的槍對不上。
@@ -310,9 +331,9 @@ function renderSwitch(){
   const has = load.activeCats().length>1;
   b.style.display = (w && has && (!state.tutorialRun || state.tutorialStoryRun)) ? '' : 'none';
   if(!w) return;
-  const img=$('wpSwitchImg');
-  const src=asset(w.image)||'';
-  if(img && img.getAttribute('src')!==src) img.src=src;
+  const card=$('wpSwitchCard');
+  const ic=(GAME_CONFIG.weaponCatIcons||{})[w.cat] || 'rapid';
+  if(card && card.dataset.icon!==ic){ card.dataset.icon=ic; card.innerHTML=WS_ICONS[ic]||''; }
 }
 
 function flip(){

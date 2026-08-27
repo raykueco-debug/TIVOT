@@ -78,6 +78,7 @@ function stage(){
    ⚠ 問的是**節點自己的旗標**（`kind` 版），與 `stage()` 是兩件事：
      stage 管的是「蕾娜那條線走到哪」，這裡管的是「這個大廳開張了沒」。 */
 let introFlag=null;                // 旗標名由城鎮傳進來（見 town.afterArrive）
+let where=null;                    // {town,node}：這是哪座城的哪個旅店（ver -481）
 /* 「還沒六點」的那個六點（ver -405）。⚠ 與**傍晚的提醒**是同一個時刻
    （`TOWNS[].evening.hour`）—— 由城鎮傳進來，不要在這裡另寫一個 18（鐵律 7）。 */
 let eveningHour = 18;
@@ -466,6 +467,13 @@ function sleepHere(){
     let mins = Math.round((WAKE_HOUR - clock.hourF())*60);
     if(mins <= 0) mins += 24*60;
     clock.advance(mins);
+    /* ══ 睡覺＝體力回滿＋記「上一次睡覺的旅店」（ver -481，Ray：「hp除非回旅店睡覺
+       或者用道具補血，否則會延續上一場」「連敗三場被送到上一次睡覺的旅店」）══
+       持久 HP 的鑰匙清掉＝滿血（combat.startGame 讀不到就開滿）。
+       -430 那段「恢復體力目前沒有實體」的註記從此作廢 —— 實體就是這兩行。 */
+    prog.clearHp();
+    if(where) prog.setLastInn(where.town, where.node);
+    prog.setFlightLossCount(0);   // 睡一覺＝連敗歸零（重新來過）
     if(host && host.refreshBg) host.refreshBg();   // 天亮了 → 換時段差分（同「獨自坐坐」）
     refresh();
     /* ⚠ 存檔要在**時鐘推完之後**：存的是「醒來的那一刻」，不是躺下的那一刻 ——
@@ -485,6 +493,7 @@ export function arrive(n, ctx){
   /* ⚠ 旗標名**由城鎮算好傳進來**（ver -402）：旅店已經沒有 `kind` 了，
      `kind` 版／節點版兩種只有 `town.flagOf()` 知道 —— 自己拼會拼錯城（鐵律 7）。 */
   introFlag = (ctx && ctx.introFlag) || null;
+  where = (ctx && ctx.where) || null;   // 這是哪座城的哪個節點（ver -481，睡覺時記檔用）
   if(ctx && ctx.eveningHour!=null) eveningHour = ctx.eveningHour;
   eveningFlag = (ctx && ctx.eveningFlag) || null;
   allSeenNow = !!(ctx && ctx.allSeen);

@@ -2919,16 +2919,26 @@ function drawTalk(now){
       const r=clamp(Math.round(G.sh/B.k)-1, 0, B.n-1);
       if(B.mx[r]>=0){
         const lft=B.mn[r]*B.k*G.s, rgt=(B.mx[r]+1)*B.k*G.s;
-        /* ⚠ 外緣讓位（ver -478，Ray：「蕾娜不要被邊框吃掉太多」）：臉錨（0.24/0.76）
-           會把寬幅立繪推出畫面外緣 —— 先把輪廓外緣拉回畫面內（留 6px），
-           再套中線鐵則。順序是刻意的：兩個約束打架時**中線贏**（它是 Math.min/max
-           的最後一手），被吃掉的量收斂到幾何上的最小值（輪廓寬 − 半個畫面）。 */
-        target = (c.side==='L') ? Math.max(target, Math.round(6 - lft))
-                                : Math.min(target, Math.round(W - rgt - 6));
-        // ⚠ 取整方向要挑對：左側往下取整、右側往上取整，否則 W/2 是 .5 時
-        //    會有半個像素壓過中線（實測安雅輪廓左緣 187 vs 中線 187.5）。
-        target = (c.side==='L') ? Math.min(target, Math.floor(W/2-rgt))
-                                : Math.max(target, Math.ceil(W/2-lft));
+        /* ⚠⚠ **單人在台上不套中線鐵則**（ver -481，Ray：「立繪被邊框裁切嚴重」）——
+           中線是「不壓到對面那個人」的規矩，台上只有一個人時根本沒有對面：
+           照套的話蕾娜（輪廓 0.719 圖寬）會被硬塞進半個畫面、外側整片切掉
+           （實測單人 nag 那一句左緣 −102px）。單人＝把輪廓整個拉回畫面內
+           （右緣優先讓、再保左緣；塞不下才吃邊）。雙人照舊：外緣先讓、中線最後手。 */
+        const soloOn = cast.filter(k=>!k.out).length<=1;
+        if(soloOn){
+          target = Math.min(target, Math.round(W - rgt - 6));
+          target = Math.max(target, Math.round(6 - lft));
+        }else{
+          /* ⚠ 外緣讓位（ver -478）：臉錨（0.24/0.76）會把寬幅立繪推出畫面外緣 ——
+             先把輪廓外緣拉回畫面內（留 6px），再套中線鐵則。順序是刻意的：
+             兩個約束打架時**中線贏**，被吃掉的量收斂到幾何上的最小值。 */
+          target = (c.side==='L') ? Math.max(target, Math.round(6 - lft))
+                                  : Math.min(target, Math.round(W - rgt - 6));
+          // ⚠ 取整方向要挑對：左側往下取整、右側往上取整，否則 W/2 是 .5 時
+          //    會有半個像素壓過中線（實測安雅輪廓左緣 187 vs 中線 187.5）。
+          target = (c.side==='L') ? Math.min(target, Math.floor(W/2-rgt))
+                                  : Math.max(target, Math.ceil(W/2-lft));
+        }
       }
     }
     const off=(c.side==='L') ? -G.w-8 : W+8;     // 畫面外的停機位
@@ -6831,7 +6841,7 @@ function drawFlock(scaleH,horizon,sinp,cosp,now){
    距離縮至 0.7·D0 轉為主動追擊 → 進船身一定範圍顯示「進入戰鬥」→
    3 秒後與敵人一同消失，重新計時。戰鬥本身尚未實作。 */
 const ENEMY_CFG = {
-  gapMin: 50000, gapMax: 60000,   // 刷新間隔（ms）
+  gapMin: 30000, gapMax: 40000,   // 刷新間隔（ms；ver -481，Ray：「30~40秒刷一隻」）
   /* 速度＝玩家極速的倍數。1.20 時牠整個撞上來——比玩家快的追擊者在
      這種正面接近的幾何下沒有周旋餘地，玩家等於只能挨撞。0.60 讓牠
      略慢於玩家，遭遇變成「牠攔在航路上」而不是「牠追上你」。 */
@@ -7211,6 +7221,13 @@ function updateEnemy(dt,now){
 let battleGoing=false;
 let lastBattleScripted=false;   // 剛打的那一場是不是劇本遭遇（見 toBattle 與 __flightResume）
 let lastScriptS=null;           // 那一場是哪一條劇本遭遇（打輸重生要重掛，ver -480）
+/* ⚠⚠ **父頁說停＝整個模擬凍住**（ver -481，Ray：「飛行畫面一旦關閉就要全部關掉，
+   切頁要乾淨」「戰鬥中飛行畫面是暫停的，不會有怪產生」）。
+   以前 __flightPause 只收音訊 —— iframe 藏起來之後 rAF 照跑，怪照生、照追、
+   照 toBattle：玩家在城鎮跑劇情，背景的飛行頁把棺彈出來（Ray 就撞到這個）。
+   extPaused 由 __flightPause／__flightHold 設、__flightResume 清；
+   loop() 一開頭就整幀跳過（連畫都不畫 —— 反正看不見）。 */
+let extPaused=false;
 /* ══ 免戰模式（ver -383，Ray 指定）══
    開著的時候碰到怪**只演「遭遇」那一格**，不跳頁進戰鬥 —— 畫地圖時不會被打斷。
    ⚠ 擋在 `toBattle()` 這**唯一的發動點**（鐵律 8）：日後多一條進戰鬥的路
@@ -7440,11 +7457,10 @@ function toBattle(kind){
      落地了，直接加 class 就會有過場。 */
   const kb=document.getElementById('fkerb');
   if(kb) kb.classList.add('rise');
-  /* ⚠ 吊墜回到門上（ver -443）：飛行時它掛在控制面板，但**交棒之後接手的是
-     主遊戲那一半的門，而那一半有吊墜** —— 不掛回去的話交棒那一格會憑空多一個
-     東西（§6.10）。見 `placeFkerbPend`。 */
-  placeFkerbPend(true);
-  /* 吊墜：起步輕輕甩、撞頂那一下最兇（與主遊戲同樣的兩拍，見 story.js 的 kerbPendSwing）。 */
+  /* ⚠⚠ 吊墜**留在面板左上，不掛回門上**（ver -481，Ray：「飛行畫面的吊墜是固定
+     吊在操作面版左上方的，所以飛行畫面彈槍棺出來的時候槍棺上不會有吊墜」——
+     推翻 -443「推棺那一刻回到門上」）。交棒後主遊戲那一半的門帶著吊墜出現，
+     那一格的差異 Ray 知情。棺上推的震動仍讓面板上的吊墜甩一下（慣性）。 */
   fkerbPendSwing(9, 2.0);
   setTimeout(()=>fkerbPendSwing(22, 2.6), FKERB_RISE_MS);
   setTimeout(()=>{
@@ -7480,11 +7496,16 @@ function flightAudio(on){
    ⚠ `battleGoing` 一定要歸零：不歸零的話船永遠停著（見 update 的那一行），
      而且下一次遭遇的交棒鎖也解不開。 */
 window.__flightResume=function(opts){
+  extPaused=false;   // 父頁把畫面還回來（ver -481：extPaused 是「畫面收起」的凍結）
   battleGoing=false;
   /* ⚠ 時鐘要重讀（ver -435）：這一頁藏著的期間，戰鬥／城鎮那一邊可能推過時間
      （一場戰鬥 1 小時就是在 `toBattle` 記的）—— 不同步的話 HUD 與晝夜還停在出發前。 */
   syncClock();
   const kb=document.getElementById('fkerb'); if(kb) kb.classList.remove('rise');
+  /* ⚠⚠ 吊墜掛回**控制面板**（ver -481，Ray：「飛行畫面的吊飾不見了」）——
+     交棒時 toBattle 把它掛回門上（placeFkerbPend(true)），打完回來門沉下去了，
+     它還是門的子節點＝跟著沉出畫面外。回到飛行＝回到面板左上（ver -443 的家）。 */
+  placeFkerbPend(false);
   layoutFKerb();
   flightAudio(true);
   /* ⚠⚠ **打贏才接那一段對白**（ver -432）：ver -430 起打輸也會回到這一頁
@@ -7517,7 +7538,10 @@ window.__flightResume=function(opts){
      與船戰內對白（config.tutorial.cast）同一個安排，玩家的空間記憶才連得起來。 */
   setTimeout(()=>{ if(!sayQueue) say(AFTER_SHIP_TALK, performance.now(), { sides:{ renna:'R' } }); }, 900);
 };
-window.__flightPause=function(){ flightAudio(false); };
+window.__flightPause=function(){ extPaused=true; flightAudio(false); };
+/* 整備窗／設定窗蓋在飛行畫面上（ver -481，Ray：「開整備窗、設定窗就直接暫停
+   飛行畫面一切動作」）：與 __flightPause 同一個開關，只是它有「放開」的一半。 */
+window.__flightHold=function(on){ extPaused=!!on; flightAudio(!on); };
 
 /* 打完回來：把船放回離開時的位置（ver -382）。
    ⚠ **讀了就清掉**：不清的話下次正常進飛行頁還會被拉回那個座標。
@@ -10009,8 +10033,17 @@ function onQualityChange(){
 
 function loop(now){
   const dt=Math.min(40,now-last); last=now;
+  /* ⚠⚠ 父頁說停（畫面收起／戰鬥中／整備・設定窗蓋著）＝整幀跳過（ver -481）：
+     不更新也不畫 —— 反正看不見。dt 已經吃掉（last=now），恢復那一幀不會補跑。 */
+  if(extPaused){ requestAnimationFrame(loop); return; }
   flushResize();     // 重建畫布只在這裡發生 —— 緊接著就是 render，不會露出空畫布
   talkHideStep(now); // ⚠ 方向計收合進度：一定要在這裡推，不能掛在 drawTalk（見該處說明）
+  /* ⚠⚠ **對話中＝遊戲暫停**（ver -481，Ray：「對話期間不要生怪…一邊點對話一邊怪
+     往我衝過來，對話都點不完」）：世界不推（船、怪、刷新計時、火車、軟邊界），
+     只畫（立繪與框在 render 裡）＋ 音樂淡接照走。對白一收，下一幀世界接著動 ——
+     出薩梅爾的劇本蜈蚣也是在那一幀立刻刷（scriptedDue 不排隊）。 */
+  const talking = !!(sayQueue && !sayEndAt);
+  if(talking){ render(now); updateBgm(dt); requestAnimationFrame(loop); return; }
   edgeNag(now);      // 快飛出圖了 → 蕾娜叫你回頭（軟邊界）
   const wt0=performance.now();
   update(dt,now); updateRegion(now); updateTrains(dt/1000); render(now); updateBgm(dt); updateMapMe();
