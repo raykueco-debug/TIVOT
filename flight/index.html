@@ -467,7 +467,7 @@ const COLOR_URL  = 'silvermoon_terrain.png';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -444';
+const FLIGHT_VER = 'ver -445';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -730,14 +730,14 @@ const SETTLEMENTS = [
        地形上，格子的深度比失控 → 保險絲逐格跳過 → 城裡透出地貌。
        它也是港城，所以那一段的「海不整平」守門同樣吃得到。
      ⚠ `planTall` 給 40：這是碼頭市鎮不是聖座，塔樓不多；帝都 55、聖王廳 68。 */
-  /* ⚠ `plateThick:20`＝**底圖厚度 20**（Ray 指定），立面顏色＝插畫的邊緣色
-       （`buildPlanSkirt` 量出來的）。
-     ⚠ `noLandFill`＝**海底下不填成陸**：碼頭那一段本來就伸出海灣之上
-       （Ray：「碼頭可突出地塊」）—— 照其他城把「插畫說是陸」的海填起來，
-       碼頭就變成貼在新長出來的陸地上，不是懸在水面上了。 */
+  /* ⚠ ver -445（A 案）之後「厚度」的作法變了：底圖改在地形取樣迴圈裡畫，
+       插畫是**跟著地形表面走**的 —— 所以碼頭底下的海照一般規則**填到地基高**，
+       填出來的平台邊緣由 voxel 渲染器自己畫出垂直立面（顏色從表面色推導
+       ＝就是碼頭邊緣的顏色），視覺上是一道實心的碼頭岸壁。
+       -444 的 `plateThick`／`noLandFill`（貼盤子時代的厚度與懸空）因此退役。 */
   { n:'北方泊地', x:1516, y:150, t:'city2', f:'free', c:1, sea:0.0,
     plan:'city/northport_plan.webp', planH:'city/northport_h.webp',
-    planW:700, planRot:0.0, planTall:40, plateThick:20, noLandFill:true,
+    planW:700, planRot:0.0, planTall:40,
     podium:{ r:1.05, skirt:8, lift:0 } },
 ];
 /* 手繪平面圖：背景載，載不到就退回程序生成的街廓（同飛空艇/怪的雙軌）。
@@ -837,6 +837,95 @@ function loadMass(planKey){
    3D 那面盤子 —— 它可以等飛近了再載（見 ensureCityArt）。
    ⚠ 縮圖必須與插畫**同長寬比**：下面是拿 img.height/img.width 去算城的世界
      高度的，壓成正方形會讓臨海城的水域遮罩整個位移。build_city.py 有保。 */
+/* ══ 城的底圖：逐像素取樣（ver -445，Ray 拍板「A 案」）═══════════════════
+   城不再是「貼在地形上的一張盤子」（Canvas 2D 只有仿射，用幾百個小格逼近透視，
+   貼近就拉伸 —— -226/-292/-296/-306/-311/-312 修的全是它的副作用），
+   改成**在地形的射線取樣迴圈裡直接取樣城的插畫**：射線打到城的範圍，就拿
+   插畫的顏色取代地形色。這是 Comanche/VoxelSpace 的正宗作法 —— 地形怎麼不會
+   拉伸，城就怎麼不會拉伸；遮擋、霧、雲海、日夜光照全部自動與地形一致
+   （Ray 的「遠距離用雲霧遮擋」因此不必另做：城與地形吃同一份逐深度的霧）。
+
+   資料結構：
+     CITY_PYR[plan]   逐次減半的取樣金字塔（Uint32，ABGR 同 COL）。
+                      開機先用 192px 縮圖建（永遠有得取樣，不存在「還沒載完」
+                      的空窗），全解析插畫飛近載到後**換上**。
+     CITYMASK[cell]   地圖格 → 第幾座城（0＝無）。粗遮罩，內迴圈一次陣列讀
+                      就知道「這一格要不要試」；精確的邊緣交給插畫自己的 alpha。
+     CITY_SAMPS[i]    逐城的取樣參數（中心、旋轉、半寬倒數）——「世界座標 →
+                      圖上 uv」的逆變換，與畫盤子那一套同一組數字（鐵律 7）。
+   ⚠ 舊的格網那一套**還在**：金字塔沒建好（極早期）或哪座城沒有遮罩時退回去畫。 */
+const CITY_PYR={};
+let CITYMASK=null, CITY_SAMPS=null;
+function buildCityPyramid(key, img, full){
+  const had=CITY_PYR[key];
+  if(had && had.full && !full) return;       // 全解析已經在了，縮圖不要蓋回去
+  try{
+    const levels=[];
+    let w=img.width, h=img.height;
+    let cv=document.createElement('canvas'); cv.width=w; cv.height=h;
+    let g=cv.getContext('2d'); g.drawImage(img,0,0);
+    /* ⚠⚠ **反分級**（一次烘進金字塔）：插畫的色調是對著**貼盤子的舊路**校過的
+       （SAT/VAL 烘在素材裡、貼上去時**不吃** GRADE_SAT，只除掉 VAL、乘 TRIM）。
+       取樣路把城當地形畫，會再吃一次 GRADE_SAT 的去飽和 —— 不反轉的話
+       飽和度變成 0.70×0.68≈0.48，整座城洗成灰白（實測就是）。
+       這裡把兩件事的逆變換烘進來：①飽和 ÷GRADE_SAT ②亮度 ×TRIM÷BAKED_VAL，
+       於是「取樣→光照→分級」跑完，落點與舊路校準過的樣子一致（鐵律 7：
+       校準只有一份，住在這裡）。 */
+    {
+      const id=g.getImageData(0,0,w,h), d=id.data;
+      const invS=1/GRADE_SAT, kv=CITY_TRIM/CITY_BAKED_VAL;
+      for(let p=0;p<d.length;p+=4){
+        if(!d[p+3]) continue;
+        const r0=d[p], g0=d[p+1], b0=d[p+2];
+        const lum=r0*0.299+g0*0.587+b0*0.114;
+        d[p]  =Math.max(0,Math.min(255,(lum+(r0-lum)*invS)*kv));
+        d[p+1]=Math.max(0,Math.min(255,(lum+(g0-lum)*invS)*kv));
+        d[p+2]=Math.max(0,Math.min(255,(lum+(b0-lum)*invS)*kv));
+      }
+      g.putImageData(id,0,0);
+    }
+    levels.push({ w, h, d:new Uint32Array(g.getImageData(0,0,w,h).data.buffer) });
+    /* 逐次減半（canvas 的縮小是箱型均值，夠用）：遠距離取樣要走低層，
+       不然一個螢幕像素橫跨幾十個 texel，移動時整片閃（§6.7 的通則）。 */
+    while(w>24 && h>24){
+      const w2=Math.max(1,w>>1), h2=Math.max(1,h>>1);
+      const cv2=document.createElement('canvas'); cv2.width=w2; cv2.height=h2;
+      const g2=cv2.getContext('2d');
+      g2.drawImage(cv,0,0,w,h,0,0,w2,h2);
+      levels.push({ w:w2, h:h2, d:new Uint32Array(g2.getImageData(0,0,w2,h2).data.buffer) });
+      cv=cv2; w=w2; h=h2;
+    }
+    CITY_PYR[key]={ levels, full:!!full };
+  }catch(e){ console.warn('[city] 取樣金字塔建不出來：', key, e); }
+}
+/* 遮罩與逐城參數。⚠ 要等 MAPW 有值、縮圖載完（半高要圖的長寬比）——
+   由 buildRelief 的收尾呼叫（那時兩者都齊了）。 */
+function buildCityMask(){
+  if(!MAPW) return;
+  CITYMASK=new Uint8Array(MAPW*MAPH);
+  CITY_SAMPS=[];
+  for(const S of SETTLEMENTS){
+    if(!S.plan) continue;
+    const img=cityPlanLo[S.plan]; if(!img) continue;   // 沒縮圖＝退回舊格網
+    const hw=S.planW*0.5, hh=hw*img.height/img.width;  // 世界單位的半寬/半高
+    const rot=S.planRot||0, ca=Math.cos(rot), sa=Math.sin(rot);
+    const idx=CITY_SAMPS.length;
+    if(idx>=255) break;
+    CITY_SAMPS.push({ key:S.plan, planW:S.planW,
+                      wx:S.x*MAP_SCALE, wy:S.y*MAP_SCALE,
+                      ca, sa, iw:0.5/hw, ih:0.5/hh, cur:null });
+    /* 粗遮罩：整張圖的外接矩形（含旋轉）。角落的透明像素只是白讀一次 alpha，
+       比逐格去問縮圖的 alpha 便宜也穩（精確邊緣本來就該由全解析的 alpha 決定）。 */
+    const rr=Math.ceil(Math.max(hw,hh)/MAP_SCALE)+2;
+    for(let dy=-rr;dy<=rr;dy++)for(let dx=-rr;dx<=rr;dx++){
+      const x=S.x+dx, y=S.y+dy;
+      if(x<0||y<0||x>=MAPW||y>=MAPH) continue;
+      const wx2=dx*MAP_SCALE, wy2=dy*MAP_SCALE;
+      const lx=wx2*ca+wy2*sa, ly=-wx2*sa+wy2*ca;
+      if(Math.abs(lx)<=hw*1.03 && Math.abs(ly)<=hh*1.03) CITYMASK[y*MAPW+x]=idx+1;
+    }
+  }
+}
 const cityPlansReady=[];
 (function loadCityPlansLo(){
   const seen={};
@@ -846,14 +935,16 @@ const cityPlansReady=[];
     const lo=S.plan.replace('_plan.webp','_plan_lo.webp');
     const im=new Image();
     cityPlansReady.push(new Promise(res=>{
-      im.onload=()=>{ cityPlanLo[S.plan]=im; res(); };
+      im.onload=()=>{ cityPlanLo[S.plan]=im;
+        try{ buildCityPyramid(S.plan, im, false); }catch(_){}
+        res(); };
       /* 縮圖不在（例如有人重出了插畫卻沒跑新版 build_city.py）就退回抓全圖：
          寧可開場慢一點，也不能讓地形少雕一座城的水域——那會讓海岸線與插畫對不上，
          而那是**看得見卻查不出來**的那種壞法。 */
       im.onerror=()=>{
         console.warn('[city] 缺 '+lo+'，退回全解析插畫');
         const full=new Image();
-        full.onload=()=>{ cityPlanLo[S.plan]=full; res(); };
+        full.onload=()=>{ cityPlanLo[S.plan]=full; try{ buildCityPyramid(S.plan, full, true); }catch(_){} res(); };
         full.onerror=()=>res();
         full.src=S.plan;
       };
@@ -979,6 +1070,8 @@ function ensureCityArt(s){
   const im=new Image();
   // 預熱完才寫進 cityPlanArt：在那之前 planCity 是 false，走程序生成的退路
   im.onload=()=>{ warmImage(im).then(()=>{ cityPlanArt[key]=im;
+    /* 全解析到手 → 取樣金字塔換成高解析版（ver -445，近距離的細節從這裡來）。 */
+    try{ buildCityPyramid(key, im, true); }catch(_){}
     if(s.plateThick) try{ cityPlanSkirt[key]=buildPlanSkirt(im); }catch(e){} }); };
   im.onerror=()=>{ console.warn('[city] 載不到 '+key+'，維持程序生成'); };
   im.src=key;
@@ -3277,10 +3370,10 @@ async function loadWorld(){
         const i=y*MAPW+x;
         if(!noW && pd[j2+2]>pd[j2]+8 && pd[j2+2]>50){     // 插畫說這裡是水
           HGT[i]=wl; raw[i]=wl/PEAK_SCALE; RIV[i]=1; COL[i]=rgb(84,120,142); water++;
-        }else if(HGT[i]<=CLOUD_H && !S.noLandFill){  // 插畫說是陸、但地形是海 → 填起來
-          /* ⚠ `noLandFill`（ver -444，北方泊地）：**不填** —— 碼頭那一段就該
-             懸在海灣之上（Ray：「碼頭可突出地塊」），填了它就貼在新長出來的
-             陸地上。厚度的立面（plateThick）會把懸空的那一圈畫成實心的緣。 */
+        }else if(HGT[i]<=CLOUD_H){                // 插畫說是陸、但地形是海 → 填起來
+          /* ⚠ ver -445：北方泊地的碼頭也走這條（-444 的 `noLandFill` 退役）——
+             A 案的底圖跟著地形表面走，填出來的平台邊緣由 voxel 的立面渲染
+             畫成岸壁，顏色自然取自碼頭邊緣的表面色。 */
           HGT[i]=gh; raw[i]=gh/PEAK_SCALE; land++;
         }
       }
@@ -3739,6 +3832,10 @@ async function loadWorld(){
 
   step(0.92);   // 讀取國界…
   await loadRegions();
+
+  /* 城的取樣遮罩（ver -445）：要等 MAPW 有值＋縮圖到位（上面 cityPlansReady
+     已 await 過），放在這裡兩者都齊。 */
+  try{ buildCityMask(); }catch(e){ console.warn('[city] 遮罩建不出來', e); }
 
   step(0.94);   // 預熱貼圖…
   await primeArt();
@@ -5183,6 +5280,19 @@ function render(now){
     /* 跨過切片界線就存一次快照。此刻 ybuf 裡是所有深度 < z 的地形，
        而 ZS_BOUND[zsNext] ≤ z，正好是「比這個界線近的東西」。 */
     while(zsNext<ZSLICES && ZS_BOUND[zsNext]<=z){ ZTOP.set(ybufRow,zsNext*BW); zsNext++; }
+    /* 城的取樣層級（ver -445）：每個深度步進挑一次就好 —— 同一步進整排欄位
+       深度相同。準則同 §6.7 的預縮圖通則：texel 的世界尺寸 ≥ 這個深度下
+       一個緩衝像素的世界寬（2z/BW），否則一個像素跨多個 texel，移動就閃。 */
+    if(CITY_SAMPS){
+      const wpp=2*z/BW;
+      for(let c9=0;c9<CITY_SAMPS.length;c9++){
+        const C9=CITY_SAMPS[c9], P9=CITY_PYR[C9.key];
+        if(!P9){ C9.cur=null; continue; }
+        const Ls=P9.levels; let li=0;
+        while(li+1<Ls.length && (C9.planW/Ls[li].w)<wpp*0.85) li++;
+        C9.cur=Ls[li];
+      }
+    }
     let plx=(-cosp*z-sinp*z)+cam.x, ply=(sinp*z-cosp*z)+cam.y;
     const prx=(cosp*z-sinp*z)+cam.x, pry=(-sinp*z-cosp*z)+cam.y;
     const ddx=(prx-plx)/BW, ddy=(pry-ply)/BW;
@@ -5340,6 +5450,43 @@ function render(now){
           cr*=(1+(k0-1)*vegAmt)*mot;
           cg*=(1+(k1-1)*vegAmt)*mot;
           cb*=(1+(k2-1)*vegAmt)*mot;
+        }
+        /* ── 城的底圖：逐像素取樣（ver -445，A 案的本體）──────────────────
+           射線打到城的範圍 → 拿插畫的顏色取代地形色。透視由取樣天生正確
+           （每個像素都是打出來的），永不拉伸；後面的光照、分級、霧、雲海
+           全部照常套用 —— 城與地形從此吃同一套規則。
+           ⚠ 插在**地貌細節之後、光照之前**：art 直接蓋掉底色與林草
+             （街道上不該有樹冠的紋理），而日夜與霧要跟地形同一份。
+           ⚠ 邊緣看 alpha（插畫的羽化邊）：半透明處與地形色混合，
+             城的外緣自然融進地貌，不必再有「格線」或「接縫」這種東西。
+           ⚠ 雙線性：與 COL／雲海同一等級的取樣品質；只在挑好的那一層
+             金字塔上做（層級每個深度步進挑一次，見 z 迴圈頭）。 */
+        if(CITYMASK){
+          const c8=CITYMASK[mi];
+          if(c8){
+            const C8=CITY_SAMPS[c8-1], L8=C8.cur;
+            if(L8){
+              const rx8=plx-C8.wx, ry8=ply-C8.wy;
+              const u8=(rx8*C8.ca+ry8*C8.sa)*C8.iw+0.5;
+              if(u8>=0&&u8<1){
+                const v8=(-rx8*C8.sa+ry8*C8.ca)*C8.ih+0.5;
+                if(v8>=0&&v8<1){
+                  const fx8=u8*(L8.w-1), fy8=v8*(L8.h-1);
+                  const x8=fx8|0, y8=fy8|0, tx8=fx8-x8, ty8=fy8-y8;
+                  const r8=y8*L8.w+x8, r9=r8+(y8<L8.h-1?L8.w:0), x9=(x8<L8.w-1?1:0);
+                  const q00=L8.d[r8], q10=L8.d[r8+x9], q01=L8.d[r9], q11=L8.d[r9+x9];
+                  const wA=(1-tx8)*(1-ty8), wB=tx8*(1-ty8), wC=(1-tx8)*ty8, wD=tx8*ty8;
+                  const a8=((q00>>>24)*wA+(q10>>>24)*wB+(q01>>>24)*wC+(q11>>>24)*wD)*(1/255);
+                  if(a8>0.02){
+                    const pr=(q00&255)*wA+(q10&255)*wB+(q01&255)*wC+(q11&255)*wD;
+                    const pg=((q00>>8)&255)*wA+((q10>>8)&255)*wB+((q01>>8)&255)*wC+((q11>>8)&255)*wD;
+                    const pb=((q00>>16)&255)*wA+((q10>>16)&255)*wB+((q01>>16)&255)*wC+((q11>>16)&255)*wD;
+                    cr+=(pr-cr)*a8; cg+=(pg-cg)*a8; cb+=(pb-cb)*a8;
+                  }
+                }
+              }
+            }
+          }
         }
         isRiver=RIV[mi];
         const nl=clamp(0.62+(SLX[mi]*lx+SLY[mi]*ly)*LIGHT_DIR_K,0,1.5);
@@ -7937,7 +8084,10 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
     /* ⚠ 手繪平面圖的城延後裁切：它畫在自己的緩衝上（不吃 ctx 的 clip），
        真正需要裁的只有最後那一次貼回，而那時才知道實際外框是哪幾欄。
        程序生成的城則是逐筆畫在 ctx 上，必須先裁。 */
-    const planCity=!!(o.s.plan&&cityPlanArt[o.s.plan]);
+    /* ⚠ ver -445：底圖改在地形取樣迴圈裡畫之後，「這座城有手繪圖」的判定要把
+       **取樣金字塔**也算進去 —— 縮圖開機就建好了，地面從第一幀就是插畫；
+       只認全解析（飛近才載）的話，載到之前程序生成的白色小房子會疊在插畫上。 */
+    const planCity=!!(o.s.plan&&(cityPlanArt[o.s.plan]||(CITYMASK&&CITY_PYR[o.s.plan])));
     // 同理，用**近端**深度而不是城心：R 是聚落半徑（世界單位）
     if(!planCity) clipByTerrainDepth(Math.max(o.z-R,1),sxk,syk);   // 前面的山稜要擋住城
     ctx.globalAlpha=clamp((ZFAR*0.9-o.z)/(ZFAR*0.30),0,1)*(1-fogK);
@@ -8205,6 +8355,12 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
          ⚠ 不上貼圖：一面牆常常只有 3~8px 高，石紋進去只是雜訊。 */
       CFB.fillStyle=o.s.wallCol||'rgba(34,30,26,0.62)';
       const row=NU+1;
+      /* ⚠⚠ **底圖已改在地形取樣迴圈裡畫**（ver -445，A 案）—— 取樣器活著時
+         這整段格網**不畫**（畫了會疊兩份，而且它正是拉伸的來源）。
+         這裡只留兩個用途：①取樣器還沒就緒（極早期）當退路 ②上面那段 CZMIN
+         （逐欄最小深度）照算 —— 量體層貼回時的遮擋裁切還靠它。 */
+      const groundSampled=!!(CITYMASK && CITY_PYR[o.s.plan]);
+      if(!groundSampled)
       for(let ky2=0;ky2<NV;ky2++){
         const jy=jy0+jys*ky2;
         /* ⚠ 這一組是**整列**的來源矩形，格內若發生近裁面裁切會各自重算（見下方）。 */
@@ -8730,6 +8886,11 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
       ctx.restore();
       continue;
     }
+    /* ⚠ ver -445：底圖已由取樣層畫在地形上 —— 全解析插畫還沒載到（planImg null）
+       時也**不要**退回程序生成的小房子，那會疊在插畫的街廓上（實測北方泊地
+       遠看是一片白色小點蓋著插畫）。量體（牆與屋頂）等全解析與 atlas 到了才有，
+       中間那一小段是「只有地面的城」—— 遠距離看不出差別。 */
+    if(planCity){ ctx.restore(); continue; }
     /* ⚠ Settlement.draw 的 scale 是「每個**地圖像素**幾個螢幕像素」——
        s.radius 存的是地圖像素（同地圖畫面那邊傳 sc*MAP_SS）。
        sc 是每個**世界單位**幾個螢幕像素，兩者差一個 MAP_SCALE。
