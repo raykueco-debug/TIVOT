@@ -850,6 +850,12 @@ function showExitConfirm(){
   bind('.ec-yes',()=>{ close(); flightBack=false; storyResume=null; combat.goHome(); });
 }
 bindBtn('testClearBtn', combat.testClearBoard); // 左上（測試用）：一鍵清盤
+// 鎖血（管理人測試，ver -463）：切換 state.hpLock，開著時 enemyAttack 不扣玩家血。
+//   跨場沿用（測試工具），亮金＝開啟。
+bindBtn('hpLockBtn', ()=>{
+  state.hpLock = !state.hpLock;
+  const b=document.getElementById('hpLockBtn'); if(b) b.classList.toggle('on', state.hpLock);
+});
 /* ⚠ 「道具」（bagBtn）與「城鎮」（townBtn）兩顆首頁鈕已於 ver -376 移除（Ray 指定）。
    `loot.showBag` 與 `town.open` 都還在（前者暫時沒有入口、後者由劇情的 `thenTown` 叫起來），
    不要因為「沒人叫」就把它們刪掉。 */

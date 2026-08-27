@@ -423,12 +423,17 @@
   #app:has(#banner.on) #exitBtn{display:none;}
   /* v17：測試人員用「清盤」鈕（左上角）。z-index 同 corner-btn，聖徒化手勢層之上，確保可點。
    *  預設隱藏：首頁手勢解鎖（團徽畫圓→橫劃團名，見 main.js testUnlockGesture）後 body.testmode 才顯示。 */
-  /* 教學戰跳關鈕（開發者限定）：與清盤同排、靠右一點。只在管理人模式＋教學進行中出現。 */
-  #tutDevSkip{top:10px;left:64px;right:auto;width:auto;padding:0 12px;font-size:12px;
+  /* 教學戰跳關鈕（開發者限定）：與清盤/鎖血同排、再靠右。只在管理人模式＋教學進行中出現。 */
+  #tutDevSkip{top:10px;left:118px;right:auto;width:auto;padding:0 12px;font-size:12px;
     letter-spacing:2px;color:var(--holy);border-color:var(--holy);display:none;}
   body.testmode.tut-on #tutDevSkip{display:flex;}
   #testClearBtn{top:10px;left:10px;right:auto;font-size:12px;letter-spacing:1px;color:var(--holy);border-color:var(--holy);display:none;}
   body.testmode #testClearBtn{display:flex;}
+  /* 鎖血鈕（管理人測試，ver -463）：清盤右側。開啟＝亮金（.on）。 */
+  #hpLockBtn{top:10px;left:64px;right:auto;font-size:12px;letter-spacing:1px;color:var(--holy);border-color:var(--holy);display:none;}
+  body.testmode #hpLockBtn{display:flex;}
+  #hpLockBtn.on{color:var(--gold);border-color:var(--gold);
+    box-shadow:0 0 10px var(--gold-dim),inset 0 0 8px rgba(240,196,105,.35);}
 
   /* ===== 過渡禎：開始/結束淡入淡出全畫面轉場 ===== */
   /* 淡入淡出時長由 JS 依 config.transitions.fadeMs 寫入 --expel-fade，CSS 與 config 同步。 */

@@ -182,6 +182,10 @@ export const state = {
      ⚠ 它借用既有的「打輸了」那條分歧路（`onLose`）—— 對腳本而言「超時」與「戰敗」
        是同一件事：接另一支台詞。由 `combat.win()` 判定、`inspector` 交棒時帶出去。 */
   timeOver: false,
+  /* 鎖血（ver -463，管理人測試用）：左上「鎖血」鈕切換，開著時玩家不掉血＝打不死。
+     ⚠ 只擋 HP 扣除那一行（combat.enemyAttack 唯一入口，鐵律 8）——受擊特效／音／震動／
+       combo 歸零照演，測的手感不失真。跨場沿用（測試工具，不隨 startGame 歸零）。 */
+  hpLock: false,
   noSaint: false,        // 這一場不能聖徒化（讀者：saint / main 的手勢綁定）
   noPartner: false,      // 這一場不能用搭檔技（讀者：partner / weapon 的按鈕）
   tutorialLifeReturn: false,   // 教學戰中發動過生命歸還（結算台詞分歧用；同 tutorialRun 存續到結算）。
