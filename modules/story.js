@@ -546,16 +546,32 @@ function imgSrc(name){
      那一瞬間元素上還是舊圖，於是**舊圖先淡回來、新圖才蓋上去**＝兩張疊在一起。
    ⚠ 場上還沒有圖時直接上（不淡入淡出）—— 否則開場會先黑一段莫名的空白。 */
 const FADE_MS = 220;
-function swapImg(el, src){
-  if(!el) return;
+/* 這個 `<img>` 真的把圖畫上去了嗎 —— 沒載完就等 `onload`（載不到也要放行，
+   不能讓等它的人卡住）。⚠ 只有一支（鐵律 8）：凡是「等新圖上去了再做事」都叫它。 */
+function whenPainted(el, fn){
+  if(!el || !el.getAttribute('src')){ fn && fn(); return; }
+  if(el.complete && el.naturalWidth){ fn && fn(); return; }
+  el.onload =()=>{ el.onload=null; el.onerror=null; fn && fn(); };
+  el.onerror=()=>{ el.onload=null; el.onerror=null; fn && fn(); };
+}
+/* `done`＝**新圖真的在畫面上了**（ver -442）。城鎮的切景要靠它才知道什麼時候
+   可以把黑幕掀開 —— 見 modules/town.js 的 `reveal`。 */
+function swapImg(el, src, done){
+  const fin=()=>{ if(done) done(); };
+  if(!el){ fin(); return; }
   const on  = el.classList.contains('on');
   const cur = on ? el.getAttribute('src') : null;
-  if(cur===src) return;
-  if(!on){ setImg(el, src); return; }
+  if(cur===src){ fin(); return; }
+  /* ⚠⚠ **黑幕蓋著就直接換，不要再淡一次**（ver -442，Ray：「城鎮場景切換都會
+     多閃一下原場景」）。那一片黑本身就是這一次的轉場，在它底下淡出淡入
+     沒有人看得到，卻要多花 `FADE_MS`：於是「換好了」比實際晚 220ms 才成立 ——
+     黑幕先掀開，畫面上還是**上一個地點**，一下子才換成新的 ＝ 那一下閃。
+     ⚠ 場上還沒有圖時本來就直接上（否則開場會先黑一段空白），兩種情形同一條路。 */
+  if(!on || veilOn()){ setImg(el, src); whenPainted(el, fin); return; }
   el.classList.add('fading');
   setTimeout(()=>{
-    if(!src){ el.classList.remove('on','fading'); return; }
-    const back=()=>{ el.onload=null; el.classList.remove('fading'); el.classList.add('on'); };
+    if(!src){ el.classList.remove('on','fading'); fin(); return; }
+    const back=()=>{ el.onload=null; el.classList.remove('fading'); el.classList.add('on'); fin(); };
     el.onload=back;
     el.setAttribute('src', src);
     if(el.complete && el.naturalWidth) back();
@@ -2578,11 +2594,13 @@ export function ensureBgm(name){
    那塊是 `layoutKerberos` 依實際尺寸算出來的，不是 CSS 就有的。 */
 export function showPanel(){ layoutKerberos(); }
 export function isPlaying(){ return active && !!cur; }
-export function setSceneBg(name){
-  const el=$('storyBg'); if(!el) return;
-  if(name===stageBg) return;
+/* `done`＝新圖真的上去了（ver -442，見 `swapImg`）。⚠ 同一張圖時要**立刻**回報：
+   那就是「已經擺好了」，等它等不到第二次（城鎮的黑幕會一直蓋著）。 */
+export function setSceneBg(name, done){
+  const el=$('storyBg'); if(!el){ done&&done(); return; }
+  if(name===stageBg){ done&&done(); return; }
   stageBg=name;
-  swapImg(el, name ? imgSrc(name) : '');
+  swapImg(el, name ? imgSrc(name) : '', done);
   setTimeout(()=>matchPortraits($('storyBg'), $('storyCast')), 420);
 }
 /* 播一段臨時台詞（城鎮節點的進場對白）。done 在最後一句被點掉之後呼叫。

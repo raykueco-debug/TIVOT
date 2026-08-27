@@ -83,20 +83,38 @@ const missingBg=new Set();
    可能**晚於**後一個才回來 —— 那時它會把已經換好的背景又蓋回舊的那一張
    （實測：開城 → 立刻進大教堂，畫面停在廣場）。載完先確認自己還是最新的那一次。 */
 let bgSeq=0;
-function bgFor(base, noTime){
+/* 候選鏈第一個名字（＝已編進時段）→ 真的載得到的那一張（ver -442，見 `bgFor`）。 */
+const bgResolved=new Map();
+/* `done`＝**這一景的背景真的擺好了**（ver -442）。切景的黑幕要等它才掀 ——
+   見 `enter()` 的 `reveal`。⚠ 一定要在**每一條出口**都叫（載到了／候選全部
+   404 了），漏掉哪一條，那一次就只剩保底計時器在撐。 */
+function bgFor(base, noTime, done){
   const my=++bgSeq;
+  const fin=()=>{ if(my===bgSeq && done) done(); };
   /* ⚠⚠ 候選鏈**只有一份**（ver -427）：`modules/story.js` 的 `bandNames`。
      Ray 把插圖也拆成時段差分之後，這條規矩（時段 → 大小寫變體 → `_Day` → 原名，
      每個名字再試 `.webp`／`.png`）就有兩個使用者了 —— 抄一份到那邊必然走鐘
      （其中一份會漏掉大小寫變體、或漏掉 `.png` 那一級）。鐵律 7。 */
-  const cands=story.bandNames(base, noTime);
+  const all=story.bandNames(base, noTime);
+  /* ⚠⚠ **試出來的結果要記起來**（ver -442，同插圖那一份 `cgResolved`／ver -433）：
+     沒有該時段差分的地點會生出 4~6 個候選，而**每一次抵達都從頭試一遍** ——
+     實測 07:00（Dawn 帶）進一個節點要先吃 4 個 404，切景的黑幕就得蓋著等它們，
+     等於每走一步多黑一秒。記住贏家之後，同一個地點同一個時段只請求那一張。
+     ⚠ 鑰匙用 `all[0]`（已經把時段編進去了），不是基底名 —— 用基底名的話天亮之後
+       還會拿出黃昏那一張，時段差分整個失效（cgResolved 也是踩過才寫下這一條）。
+     ⚠ 只記**贏的**：全部載不到就不記，下次再試一遍（素材補進來要看得到）。 */
+  const hit=bgResolved.get(all[0]);
+  const cands=hit ? [hit] : all;
   const tryAt=(i)=>{
-    if(i>=cands.length) return;
+    if(i>=cands.length){ fin(); return; }     // 一個都載不到 → 照樣放行（不能把玩家留在全黑裡）
     const name=cands[i];
     const img=new Image();
     img.onload =()=>{
       if(my!==bgSeq) return;                 // 已經被後面那一次換掉了 → 這一張作廢
-      story.setSceneBg(name);
+      bgResolved.set(all[0], name);          // 這一個時段就是它，下次不必再試一輪
+      /* ⚠ 回報的時機是**它真的畫上去**，不是「叫了 setSceneBg」（ver -442）：
+         那一支底下可能還要淡一段（`swapImg`），早報就會在舊圖上把黑幕掀開。 */
+      story.setSceneBg(name, fin);
       /* 旅店那兩顆行動鈕（獨自坐坐／回房睡覺）要靠圖的原始比例換算位置（見 bgPoint），
          所以在這裡記下來 —— 這一支本來就要載那張圖，不必另外再抓一次
          （鐵律 7：算的那一支發佈出去）。 */
@@ -221,6 +239,9 @@ function clockGate(){
    ⚠ 這一支取代了 `go()` 與 `forceGo()` 各寫一次的 `setTimeout(()=>enter(to),260)`
      —— 那 260ms 本來就是為換場留的空檔，只是當時什麼都沒演。 */
 const CUT_MS = 280;       // 淡出／淡入各一段（同一個數字，切景的節奏才一致）
+/* 黑幕最多蓋多久（ver -442）：背景載不到／請求卡住時的保底 —— 見 `enter()` 的 `reveal`。 */
+const REVEAL_CAP_MS = 1800;
+let enterSeq = 0;         // 第幾次 enter（保底計時器要認得出自己是不是已經過期）
 function sceneCut(to){ story.veil(true, CUT_MS); setTimeout(()=>enter(to), CUT_MS); }
 function forceGo(to){
   clearTimeout(arriveT); arriveT=0;
@@ -787,14 +808,31 @@ export function enter(id){
      `sceneCut()` 只負責淡出，因為只有這裡知道新的一景什麼時候擺好 ——
      兩邊都收就會有兩段淡入互相打架。
      ⚠ 等一拍再亮：背景是非同步載的（`bgFor`），立刻亮會看到上一張圖。
-     ⚠ 睡到隔天七點被強制移到船塢那一次也走這裡（那時黑幕是旅店留下來的）。 */
-  if(story.veilOn()) setTimeout(()=>story.veil(false, CUT_MS), 300);
+     ⚠ 睡到隔天七點被強制移到船塢那一次也走這裡（那時黑幕是旅店留下來的）。
+     ⚠⚠ **等新的背景真的擺好才掀**（ver -442，Ray：「城鎮場景切換都會多閃一下
+       原場景」）。-438 是「換景之後固定 300ms 掀」，但背景是**非同步**載的：
+       候選鏈要逐個試（沒有該時段的差分時，先吃 4 個 404 才退回 `_Day`），
+       慢網下更久。時間到了圖還沒到 → 掀開來看到的是**上一個地點**的背景，
+       一格之後才換掉 ＝ 那一下閃。
+     ⚠ 保底 `REVEAL_CAP_MS`：請求整個卡住也要亮回來，不能把玩家留在全黑裡。
+     ⚠ 只掀一次，而且**這一次 enter 專屬**（`my!==enterSeq` 就作廢）——
+       連走兩步時，前一次的保底計時器不該把後一次的黑幕掀掉。 */
+  const my=++enterSeq;
+  const needReveal = story.veilOn();
+  let revealed=false;
+  const reveal=()=>{
+    if(revealed || my!==enterSeq) return;
+    revealed=true;
+    /* ⚠ 隔一幀再掀：`setSceneBg` 那一下只是換 `src`，讓瀏覽器先畫出來再淡。 */
+    requestAnimationFrame(()=>{ if(my===enterSeq) story.veil(false, CUT_MS); });
+  };
+  if(needReveal) setTimeout(reveal, REVEAL_CAP_MS);
   bgNat=null;               // 背景要重載，舊的尺寸不能拿來擺旅店那兩顆行動鈕
   /* 這座城的曲子（ver -375）。⚠ 每進一個節點都確認一次，不是只在 `open` 時放一次 ——
      中間可能插進一場戰鬥（戰鬥有自己的曲子），回來要接得回去。
      同曲重播由 `playBgm` 自己擋掉，所以重複呼叫是安全的。 */
   story.ensureBgm(T.bgm);
-  bgFor(n.bg, n.noTime);
+  bgFor(n.bg, n.noTime, needReveal ? reveal : null);
   ensureLayer(); bindInput(); refreshArrows(); showNav(false);
   /* ⚠⚠ 進場對白**一律只播一次**（ver -373，Ray：「對話只觸發一次，不重複觸發」）——
      不再看節點的 `once` 欄位：漏寫就會變成每次進去都重播，那是「預設值站錯邊」。
