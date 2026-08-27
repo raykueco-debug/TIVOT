@@ -467,7 +467,7 @@ const COLOR_URL  = 'silvermoon_terrain.png';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -445';
+const FLIGHT_VER = 'ver -446';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -735,9 +735,12 @@ const SETTLEMENTS = [
        填出來的平台邊緣由 voxel 渲染器自己畫出垂直立面（顏色從表面色推導
        ＝就是碼頭邊緣的顏色），視覺上是一道實心的碼頭岸壁。
        -444 的 `plateThick`／`noLandFill`（貼盤子時代的厚度與懸空）因此退役。 */
+  /* `smoke`（ver -446，Ray：「讓北方泊地城鎮冒煙」）：煙囪數與種子；
+     `area` 是煙囪落點的局部範圍（-1..1）—— 上緣是碼頭與海灣，煙囪讓開它。 */
   { n:'北方泊地', x:1516, y:150, t:'city2', f:'free', c:1, sea:0.0,
     plan:'city/northport_plan.webp', planH:'city/northport_h.webp',
     planW:700, planRot:0.0, planTall:40,
+    smoke:{ n:8, seed:11, area:[-0.55,0.55,-0.15,0.55] },
     podium:{ r:1.05, skirt:8, lift:0 } },
 ];
 /* 手繪平面圖：背景載，載不到就退回程序生成的街廓（同飛空艇/怪的雙軌）。
@@ -1797,6 +1800,7 @@ function buildSettlements(){
     s.planH=S.planH||null; s.planTall=S.planTall||0;
     s.noWater=!!S.noWater; s.noLamps=!!S.noLamps; s.wallCol=S.wallCol||null;
     s.plateThick=S.plateThick||0;      // 底圖厚度（世界單位，ver -444；0＝無）
+    s.smoke=S.smoke||null;             // 炊煙（ver -446，見 drawCitySmoke）
     /* ⚠ 底圖厚度只在**有台座**的城開：抬高走 PODIUM_CLEAR，也只有台座城會抬。
        沒抬的城去畫側面，等於在地面下面憑空多一圈邊。 */
     s.hasPodium=!!S.podium;
@@ -5664,6 +5668,7 @@ function render(now){
   drawPuffs(S,scaleH,horizon,sinp,cosp,splitZ,Infinity);   // 比城遠的雲
   drawSettlements3D(scaleH,horizon,sinp,cosp);
   drawTrains(S,scaleH,horizon,sinp,cosp);                  // 火車跟城同一層（貼在地上）
+  drawCitySmoke(S,scaleH,horizon,sinp,cosp,now);           // 炊煙蓋在城上（ver -446）
   drawPuffs(S,scaleH,horizon,sinp,cosp,0,splitZ);          // 比城近的雲：蓋在城上面
   drawPlaces(scaleH,horizon,sinp,cosp);
   drawFlock(scaleH,horizon,sinp,cosp,now);
@@ -6176,6 +6181,121 @@ function trainAt(T,s){
 
 /* 3D 視窗裡的火車。投影與 drawPlaces 同一套；遮擋走 clipByTerrainDepth
    （山擋在前面時車要被吃掉，不能浮在山坡上）。 */
+/* ══ 城的炊煙（ver -446，Ray：「讓北方泊地城鎮冒煙」）═══════════════════
+   資料掛在 SETTLEMENTS 的 `smoke:{n,seed,area}`（鐵律 1）—— 目前只有北方泊地。
+   作法照**火車的煙**那一套（一朵一朵的雲塊、世界座標上長高、兩層濃淡、
+   §6.7 的像素化緩衝、逐欄地形遮擋），差別只在噴發端是**固定的煙囪**：
+   位置由種子從城的內圈生出來、跟著城的旋轉走，每根有自己的節奏與抖動。
+   ⚠ 煙囪的位置是**城的局部座標**（-1..1，同取樣的 uv）—— 城搬家、轉向，
+     煙跟著走，不必重填。`area` 可把煙囪限制在某一塊（北方泊地讓開北緣的碼頭）。
+   ⚠ 只在 `CS_FAR` 之內更新與畫：太遠一朵煙不到一個像素，白付幾十次 ellipse。
+     age 用夾過的 dt 推（同量體淡入那一條）—— 離開畫面再回來不會爆一大步。 */
+const CS_LIFE=6.5;             // 一朵活多久（秒）
+const CS_DT=2.1;               // 每根煙囪隔幾秒吐一朵（再乘逐根的抖動）
+const CS_RISE=15;              // 上升（世界單位／秒）
+const CS_WINDX=6, CS_WINDY=2.5;// 風（世界單位／秒）：微微往東南飄
+const CS_FAR=ZFAR*0.5, CS_FADEB=ZFAR*0.14;
+let citySmokeFB=null, CSC=null, csLast=0;
+function chimneysOf(s){
+  if(s._chim) return s._chim;
+  const lo=cityPlanLo[s.plan]; if(!lo) return null;         // 要圖的長寬比才擺得準
+  const sm=s.smoke, n=sm.n||6;
+  const hw=s.planW*0.5, hh=hw*lo.height/lo.width;
+  const rot=s.planRot||0, ca=Math.cos(rot), sa=Math.sin(rot);
+  const A=sm.area||[-0.55,0.55,-0.2,0.5];                   // 預設：內圈偏下（讓開上緣）
+  let r0=(sm.seed||7)|0;
+  const rnd=()=>((r0=(r0*1103515245+12345)&0x7fffffff)/0x7fffffff);
+  const out=[];
+  for(let i=0;i<n;i++){
+    const u=A[0]+rnd()*(A[1]-A[0]), v=A[2]+rnd()*(A[3]-A[2]);
+    const lx=u*hw, ly=v*hh;
+    out.push({ mx:s.mx+(lx*ca-ly*sa)/MAP_SCALE,             // 地圖像素座標（proj 吃這個）
+               my:s.my+(lx*sa+ly*ca)/MAP_SCALE,
+               h0:10+rnd()*14,                              // 煙囪口高（屋頂上一點）
+               jit:0.6+rnd()*0.8,                           // 這一根的節奏抖動
+               t:rnd()*CS_DT, puffs:[] });
+  }
+  s._chim=out; return out;
+}
+function drawCitySmoke(S,scaleH,horizon,sinp,cosp,now){
+  if(!window.Settlement||!MAPW) return;
+  const dt=csLast?clamp((now-csLast)/1000,0,0.1):0.016; csLast=now;
+  const sxk=W/BW, syk=VIEWH/BH;
+  const proj=(mx,my,h)=>{
+    const dx=mx*MAP_SCALE-cam.x, dy=my*MAP_SCALE-cam.y;
+    const z=dx*(-sinp)+dy*(-cosp);
+    if(z<40||z>CS_FAR+400) return null;
+    const sv=(dx*cosp+dy*(-sinp))/z;
+    if(sv<-1.4||sv>1.4) return null;
+    return { x:((sv+1)/2*BW)*sxk,
+             y:(((cam.alt-h)/z + z*curvAt(sv))*scaleH+horizon)*syk,
+             z, k:(W/(2*z)) };
+  };
+  const lit=lerp(0.66,1.0,S.day);
+  const g=Math.round(lerp(198,238,S.day)*lit);
+  const gs='rgb('+g+','+g+','+Math.round(g*0.97)+')';
+  const c2=Math.round(g*0.76), cs='rgb('+c2+','+c2+','+Math.round(c2*0.99)+')';
+  for(const s of buildSettlements()){
+    if(!s.smoke) continue;
+    const dxs=s.mx*MAP_SCALE-cam.x, dys=s.my*MAP_SCALE-cam.y;
+    const zs=dxs*(-sinp)+dys*(-cosp);
+    if(zs>CS_FAR || zs<-s.planW*0.7) continue;
+    const ch=chimneysOf(s); if(!ch) continue;
+    /* 更新（只在看得到的範圍內跑，age 走夾過的 dt）＋收集要畫的雲塊。 */
+    const draw=[]; let cx0=1e9,cx1=-1e9,cy0=1e9,cy1=-1e9,zClip=1e9;
+    for(const c of ch){
+      c.t-=dt;
+      if(c.t<=0){ c.t=CS_DT*c.jit*(0.7+Math.random()*0.6);
+        c.puffs.push({age:0, j:Math.random()});
+        if(c.puffs.length>5) c.puffs.shift(); }
+      for(const q of c.puffs){
+        q.age+=dt;
+        const a0=clamp(1-q.age/CS_LIFE,0,1);
+        if(a0<=0.03) continue;
+        const drift=q.age/MAP_SCALE;
+        const pp=proj(c.mx+CS_WINDX*drift, c.my+CS_WINDY*drift, s.gh+c.h0+q.age*CS_RISE);
+        if(!pp) continue;
+        const pf=clamp((CS_FAR-pp.z)/CS_FADEB,0,1);
+        if(pf<=0.01) continue;
+        const born=clamp(q.age/0.2,0,1);                    // 冒出來那 0.2 秒淡入（同火車）
+        const r=Math.max(0.9,(3.4+q.age*2.8)*(0.66+q.j*0.68)*pp.k);
+        const ox=(q.j-0.5)*r*0.8;
+        draw.push({x:pp.x+ox,y:pp.y,r,a0,life:q.age/CS_LIFE,f:pf*born});
+        if(pp.x+ox-r<cx0)cx0=pp.x+ox-r; if(pp.x+ox+r>cx1)cx1=pp.x+ox+r;
+        if(pp.y-r*1.3<cy0)cy0=pp.y-r*1.3; if(pp.y+r>cy1)cy1=pp.y+r;
+        if(pp.z<zClip)zClip=pp.z;
+      }
+      c.puffs=c.puffs.filter(q=>q.age<CS_LIFE);
+    }
+    if(!draw.length) continue;
+    /* 像素化緩衝＋逐欄遮擋（§6.7 通則；裁切深度取整團最淺的，同火車的理由）。 */
+    const fpad=8, fx0=Math.floor(cx0)-fpad, fy0=Math.floor(cy0)-fpad;
+    const fbw=Math.ceil(cx1-cx0)+fpad*2, fbh=Math.ceil(cy1-cy0)+fpad*2;
+    if(fbw<2||fbh<2) continue;
+    const pk=clamp(BW/W,0.15,1);
+    const bwp=Math.max(2,Math.round(fbw*pk)), bhp=Math.max(2,Math.round(fbh*pk));
+    if(!citySmokeFB){ citySmokeFB=document.createElement('canvas'); CSC=citySmokeFB.getContext('2d'); }
+    if(citySmokeFB.width<bwp||citySmokeFB.height<bhp||citySmokeFB.width>bwp*2||citySmokeFB.height>bhp*2){
+      citySmokeFB.width=bwp; citySmokeFB.height=bhp; }
+    CSC.setTransform(1,0,0,1,0,0); CSC.clearRect(0,0,bwp,bhp);
+    CSC.setTransform(bwp/fbw,0,0,bhp/fbh,-fx0*bwp/fbw,-fy0*bhp/fbh);
+    for(const q of draw){
+      CSC.globalAlpha=q.a0*Math.sqrt(q.a0)*0.48*q.f;
+      CSC.fillStyle=gs;
+      CSC.beginPath(); CSC.ellipse(q.x,q.y-q.r*0.25,q.r,q.r*0.74,0,0,Math.PI*2); CSC.fill();
+      if(q.life<0.4){
+        CSC.globalAlpha=(1-q.life/0.4)*0.42*q.f;
+        CSC.fillStyle=cs;
+        CSC.beginPath(); CSC.ellipse(q.x,q.y-q.r*0.25,q.r*0.55,q.r*0.44,0,0,Math.PI*2); CSC.fill();
+      }
+    }
+    CSC.globalAlpha=1;
+    ctx.save();
+    clipByTerrainDepth(zClip, sxk, syk, clamp(Math.floor(cx0/sxk)-2,0,BW-1), clamp(Math.ceil(cx1/sxk)+2,0,BW-1));
+    ctx.drawImage(citySmokeFB,0,0,bwp,bhp,fx0,fy0,fbw,fbh);
+    ctx.restore();
+  }
+}
 function drawTrains(S,scaleH,horizon,sinp,cosp){
   if(!TRAINS.length) return;
   const sxk=W/BW, syk=VIEWH/BH;
