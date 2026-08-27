@@ -2285,7 +2285,7 @@ function addFlag(f){
    ⚠⚠ **他會說話，只是台詞不顯示**（沒有他的發言框，也沒有立繪）。這是慣例、
      **不是人設** —— 寫對話時不可以寫成「他沉默」「他只點頭」，那會把他寫成
      第二個安雅。作法是讓別人接他的話，從反應反推（見 talks.js 的 player-*）。
-   ⚠ 名字由玩家自訂，預設「凱勞諾斯」。台詞裡寫 {P}，**顯示時才代換** ——
+   ⚠ 名字由玩家自訂，預設「托爾斯坦」（ver -477）。台詞一律寫 {N}（暱稱），**顯示時才代換** ——
      存進 sayQueue 就代換的話，玩家中途改名，正在播的那段還是舊名字。
    ⚠ 鑰匙與主遊戲共用（同一個 localStorage），所以命名介面應該做在 index.html
      的開新遊戲流程，不是這一頁。這裡只負責讀與用。 */
@@ -2320,18 +2320,22 @@ function setAffection(who, v){
 }
 
 const PLAYER_NAME_KEY='tivot_player_name_v1';
-/* ⚠ 與 `script/progress.js` 的 `PLAYER_DEFAULT` **是同一個值**（ver -395 由「托爾斯」
-   改成「凱勞諾斯」）。飛行頁是非 module 的獨立文件，import 不到那一份 ——
-   **改一邊要改另一邊**（鐵律 7 的但書）。 */
+const PLAYER_NICK_KEY='tivot_player_nick_v1';   // 暱稱（ver -477：台詞一律用 {N}）
 /* ⚠ 取名之前叫 `HUND`（ver -398，與 `script/progress.js` 的 `NAME_BEFORE` 同值）——
    飛行頁是非 module 的獨立文件，import 不到那一份，改一邊要改另一邊（鐵律 7 的但書）。
-   ⚠ 這裡**不用**「凱勞諾斯」：那是輸入框的預填值，玩家按確定才成立。 */
+   ⚠ 這裡**不用**預設名（托爾斯坦／托爾）：那是輸入框的預填值，玩家按確定才成立
+   （鑰匙沒寫入＝還沒取名＝HUND）。 */
 const PLAYER_NAME_DEFAULT='HUND';
 function playerName(){
   try{ return localStorage.getItem(PLAYER_NAME_KEY) || PLAYER_NAME_DEFAULT; }
   catch(e){ return PLAYER_NAME_DEFAULT; }
 }
-function talkText(t){ return String(t).replace(/\{P\}/g, playerName()); }
+function playerNick(){
+  try{ return localStorage.getItem(PLAYER_NICK_KEY) || PLAYER_NAME_DEFAULT; }
+  catch(e){ return PLAYER_NAME_DEFAULT; }
+}
+/* {P}＝全名（特別標註的正式場合用）、{N}＝暱稱（故事文本的預設，ver -477）。 */
+function talkText(t){ return String(t).replace(/\{P\}/g, playerName()).replace(/\{N\}/g, playerNick()); }
 /* 目前所在地區。地圖還沒分區，先接既有的國界查表（regionAt / REGION_NAME）——
    查不到就給 'ALL'，talks.js 的條件是「省略或 ALL ＝ 不限」，所以一定挑得到。 */
 function talkRegion(){

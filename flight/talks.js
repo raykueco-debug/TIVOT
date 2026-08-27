@@ -37,7 +37,8 @@
        正確作法：讓別人**接他的話**，從對方的反應反推他說了什麼。
          ✗ 索拉娜「……你就不能給個反應嗎。」
          ✓ 索拉娜「……你就這樣說得像在講天氣。」（他答了，只是玩家沒看到）
-     ⚠ 名字由玩家自訂，預設「凱勞諾斯」(Keraunos，ver -395 由「托爾斯」改)。
+     ⚠ 名字由玩家自訂，預設「托爾斯坦」（ver -477；-395 曾是凱勞諾斯）。
+     ⚠ 台詞一律用暱稱 `{N}`（ver -477，Ray：「故事中用到名字都用暱稱」）。
        台詞裡寫 `{P}` 會在顯示時換成當前名字 —— **不要把名字直接打進台詞**，
        玩家改了名就露餡。西文只是檔名／程式用的 id，與玩家輸入脫鉤。
 
@@ -299,7 +300,7 @@ const TALKS = {
     /* ─────────────── 主角在場（他沒有台詞，靠別人襯出來）─────────────── */
 
     { id:'player-wind', when:{ region:'ALL' }, lines:[
-      {who:'sorana',   text:'{P}，你剛剛那一槍，是算好風的吧？'},
+      {who:'sorana',   text:'{N}，你剛剛那一槍，是算好風的吧？'},
       {who:'sorana',   text:'……你講得像在說今天天氣如何。'},
       {who:'nouvelle', text:'他一向這樣呀。做得到的事，說起來就輕。'},
       {who:'sorana',   text:'可惡，我這招練了三年。'},
@@ -308,7 +309,7 @@ const TALKS = {
     ]},
 
     { id:'player-strength', when:{ region:'ALL' }, lines:[
-      {who:'sorana',   text:'等等，{P}，那挺機槍是架在座上的——'},
+      {who:'sorana',   text:'等等，{N}，那挺機槍是架在座上的——'},
       {who:'sorana',   text:'……你就這樣抱起來了。還說「這樣比較快」。'},
       {who:'nouvelle', text:'請小心腰喔。'},
       {who:'renna',    text:'腰？那個重量，該擔心的是甲板。'},
@@ -316,7 +317,7 @@ const TALKS = {
     ]},
 
     { id:'player-pistols', when:{ region:'ALL' }, lines:[
-      {who:'renna',    text:'{P}，保養得真勤。那對手槍，口徑不小吧？'},
+      {who:'renna',    text:'{N}，保養得真勤。那對手槍，口徑不小吧？'},
       {who:'renna',    text:'……原來還能這樣改。我記下來了。'},
       {who:'sorana',   text:'妳連這種事都要寫進報告？'},
       {who:'renna',    text:'不寫。是我自己想知道。'},
@@ -324,7 +325,7 @@ const TALKS = {
     ]},
 
     { id:'player-name', when:{ region:'ALL' }, lines:[
-      {who:'anya',     text:'{P}。……這樣念，對嗎。'},
+      {who:'anya',     text:'{N}。……這樣念，對嗎。'},
       {who:'anya',     text:'……嗯。謝謝。'},
       {who:'sorana',   text:'你們兩個講話都好省。'},
       {who:'nouvelle', text:'省歸省，聽得懂就好呀。'},
@@ -333,7 +334,7 @@ const TALKS = {
 
     { id:'player-knight', when:{ region:'ALL', time:'夜晚' }, lines:[
       {who:'renna',    text:'聖約騎士團的騎士……我只在文件上見過。'},
-      {who:'renna',    text:'{P}，本人和文件上寫的差得真多。'},
+      {who:'renna',    text:'{N}，本人和文件上寫的差得真多。'},
       {who:'sorana',   text:'妳這是誇他還是損他？'},
       {who:'renna',    text:'誇。文件很無趣的。'},
       {who:'nouvelle', text:'呵呵……那大概是最高的評價了。'},

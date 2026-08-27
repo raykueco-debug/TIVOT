@@ -2553,7 +2553,7 @@ function openChoice(opts, pick){
   requestAnimationFrame(()=>ov.classList.add('on'));
 }
 
-/* ══ 輸入主角名與暱稱（ver -395，Ray 交稿：「輸入主角名及暱稱／默認為凱勞諾斯、暱稱為凱」）══
+/* ══ 輸入主角名與暱稱（ver -395，Ray 交稿：「輸入主角名及暱稱／默認為凱勞諾斯、暱稱為凱」；ver -477 預設改托爾斯坦／托爾）══
    ⚠ 預設值問 `progress`（`PLAYER_DEFAULT` / `NICK_DEFAULT`），**不要在這裡再打一次字串**
      （鐵律 7）。留空按確定＝沿用預設。
    ⚠ 這一拍**鎖住推進**：面板開著時點畫面不能跳過去（`kerbPlaying` 那一套的理由相同），
@@ -2561,7 +2561,7 @@ function openChoice(opts, pick){
 function openNameInput(done){
   if($('nameSheet')) return;
   const ov=document.createElement('div'); ov.id='nameSheet';
-  /* ⚠ 輸入框裡預填的是**預設名**（凱勞諾斯／凱），不是現在顯示的那個 ——
+  /* ⚠ 輸入框裡預填的是**預設名**（托爾斯坦／托爾），不是現在顯示的那個 ——
      取名之前顯示的是 `HUND`（見 progress.js），把它填進去等於要玩家自己刪掉。 */
   const named = prog.isNamed();
   const nm = named ? prog.getPlayerName() : prog.PLAYER_DEFAULT;

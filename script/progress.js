@@ -37,14 +37,15 @@ const K = {
    改這個值會連帶改變閒聊聽得到哪些內容 —— 兩邊要一起改。 */
 export const STAGE_DEFAULT = 3;
 export const AFFECTION_DEFAULT = 10;
-/* ⚠⚠ 預設名（ver -395，Ray 定案）：**凱勞諾斯／凱**。
-   西文的 `Keraunos` / `Ky` 是**檔名與程式用的**（插圖、素材、id），
-   與玩家自己輸入的名字**脫鉤** —— 不要拿玩家輸入的字去拼路徑。 */
-export const PLAYER_DEFAULT = '凱勞諾斯';
-export const NICK_DEFAULT   = '凱';
+/* ⚠⚠ 預設名（ver -477，Ray 定案）：**托爾斯坦／托爾**（-395 曾是凱勞諾斯／凱）。
+   ⚠ 故事文本**一律用暱稱 `{N}`**，除非 Ray 的稿特別標註使用全名（ver -477 同批指定）。
+   西文的檔名/id（素材、插圖）與玩家自己輸入的名字**脫鉤** ——
+   不要拿玩家輸入的字去拼路徑。 */
+export const PLAYER_DEFAULT = '托爾斯坦';
+export const NICK_DEFAULT   = '托爾';
 /* ⚠⚠ **取名之前一律叫 `HUND`**（ver -398，Ray 指定）—— 那是蕾娜在還不知道他名字時
    對他的稱呼（德語「犬」）。所以「還沒取名」與「取了名」是**兩個不同的顯示**，
-   不是「預設值」：預設值（凱勞諾斯／凱）是**輸入框裡的預填**，玩家按確定才成立。
+   不是「預設值」：預設值（托爾斯坦／托爾）是**輸入框裡的預填**，玩家按確定才成立。
    ⚠ `{P}` 與 `{N}` 在取名之前都代換成 HUND —— 台詞裡不必為此寫兩套。 */
 export const NAME_BEFORE = 'HUND';
 export const CHARS = ['renna','nouvelle','sorana','anya'];
@@ -129,7 +130,7 @@ export function tierOfChar(who){ return tierOf(affectionOf(who)); }
    ⚠ 台詞裡寫 {P}，**顯示的那一刻才代換**（存進播放佇列就換的話，玩家中途
      改名，正在播的那段還是舊名字）。代換函式在 story.js 的 subst。 */
 /* 取過名了沒。⚠ 判的是**鑰匙存不存在**，不是「等不等於預設值」——
-   玩家真的把自己取名叫「凱勞諾斯」也該算取過名。 */
+   玩家真的把自己取名叫「托爾斯坦」也該算取過名。 */
 export function isNamed(){ const v=rd(K.name); return !!(v && v.trim()); }
 export function getPlayerName(){ const v=rd(K.name); return (v && v.trim()) ? v : NAME_BEFORE; }
 export function setPlayerName(v){ wr(K.name, (v||'').trim() || PLAYER_DEFAULT); }

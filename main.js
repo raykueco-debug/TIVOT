@@ -963,7 +963,7 @@ bindBtn('chapterBtn', ()=>{
 function startChapter(c){
   if(!c) return;
   prog.newRun();                                   // ⚠ 唯一的「從頭開始」（§6.9）
-  if(c.named){ prog.setPlayerName(''); prog.setPlayerNick(''); }   // 空字串＝套預設（凱勞諾斯／凱）
+  if(c.named){ prog.setPlayerName(''); prog.setPlayerNick(''); }   // 空字串＝套預設（托爾斯坦／托爾）
   if(c.flags && c.flags.length) prog.addFlags(c.flags);
   if(c.stage!=null) prog.setStage(c.stage);
   /* ⚠ 時刻問 `clock.firstHourAt`，不要寫死分鐘數（鐵律 7）——

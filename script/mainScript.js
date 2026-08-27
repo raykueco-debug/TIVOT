@@ -410,7 +410,7 @@ export const MAIN_SCRIPT = {
       /* ⚠ `HUND` 是她一直以來的叫法（德語「犬」），**照原文**不要翻。 */
       { speaker:'RENNA', text:'不過……我該怎麼稱呼你好呢？總不能一直叫你 HUND 吧？',
         portrait:{ char:'RENNA', expr:'smile', show:true } },
-      /* 閘門：輸入名字與暱稱（預設凱勞諾斯／凱，見 progress.js）。
+      /* 閘門：輸入名字與暱稱（預設托爾斯坦／托爾，見 progress.js）。
          ⚠ 這一拍**沒有台詞、不出框**，由 `story.js` 開輸入面板擋住推進。 */
       { nameInput:true },
       { speaker:'RENNA', text:'那麼，晚上六點回旅店集合。明早出發。', portrait:{ expr:null } },
@@ -426,7 +426,7 @@ export const MAIN_SCRIPT = {
     setStage:1,
     context:'scene',
     lines:[
-      { speaker:'OFFICER', text:'第四騎士團，{P}。教廷的敕令已經下來了。',
+      { speaker:'OFFICER', text:'第四騎士團，{N}。教廷的敕令已經下來了。',
         portrait:{ char:'OFFICER', expr:'smile', show:true } },
       { speaker:'OFFICER', text:'從今天起，我會跟著你們的船。' },
       { speaker:'OFFICER', text:'名義上是監察。實際上……也是監察。',
@@ -451,7 +451,7 @@ export const MAIN_SCRIPT = {
          真正的檔案是 `resources/illustration/001_Nouvelle_Fell.webp`（她跌倒那張）。 */
       { speaker:'NOUVELLE', text:'啊！', cg:'001_Nouvelle_Fell' },
       { speaker:'NOUVELLE', text:'別管我！快走！' },
-      { speaker:'OFFICER', text:'……{P}。這種時候，不要問我該怎麼辦。',
+      { speaker:'OFFICER', text:'……{N}。這種時候，不要問我該怎麼辦。',
         portrait:{ char:'OFFICER', expr:'fluster', show:true } },
     ],
   },
