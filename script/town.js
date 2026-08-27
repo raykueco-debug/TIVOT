@@ -315,6 +315,10 @@ export const TOWNS = {
       dock: {
         bg:'Capital_Dock', name:'帝都　船塢',
         exits:{ back:'oldtown' },
+        /* ⚠ 進場對白綁著**第一天**（「不知道**明天**要搭的船長什麼樣」）——
+           夜一過就作廢（ver -460，Ray：「碼頭也是」）。第二天的出航戲在下面的
+           `acts`，有自己的條件與旗標，不受這一條管。 */
+        expire:'stage1_open',
         lines:[
           nou('happy','哇，好多船。'),
           nou('happy','不知道明天要搭的船長什麼樣子。'),
@@ -441,6 +445,8 @@ export const TOWNS = {
            modules/town.js 的 `isOpenNow`（上界是**不含**的）。 */
         hours:[8,24], closed:'椅子都翻上桌了。今晚的最後一輪早就結束。',
         once:true,
+        /* ⚠ 那頓飯是上街區「肚子餓」的下文，同樣綁著第一天（ver -460，同上）。 */
+        expire:'stage1_open',
         lines:[
           nou('pray','感謝神，賜與我們平安與食糧。願主降福於世——'),
           nou('surprise','你怎麼已經開始吃了？禱詞還沒——'),
@@ -529,6 +535,9 @@ export const TOWNS = {
            ⚠ 「反之」是**不動**不是扣分（Ray 明寫）：沒帶她去吃飯不是壞事，
              只是沒有那一分。 */
         nextFavor:{ to:'tavern', aff:{ nouvelle:1 }, flag:'fav_capital_meal' },
+        /* ⚠ 這一段綁著**第一天**（「剛剛才經歷一場死鬥」）—— 夜一過就作廢，
+           不留到隔天重播（ver -460，Ray 指定；expire 的機制見 modules/town.js）。 */
+        expire:'stage1_open',
       },
       /* ══ 旅店 ══（ver -392，Ray 交稿）
          ⚠ 旅店**不寫 `hours`＝全天**（Ray：「旅店24小時開門」）—— 不是忘了填。

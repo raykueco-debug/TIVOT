@@ -895,8 +895,13 @@ export function enter(id){
   const act = (act0 && linesBlockedByRest(act0.lines)) ? null : act0;
   let ev = act ? null : eveningDue(n);
   /* 這一次抵達**原本**要演的進場對白（打烊、演過了、或段落裡有**回房休息的夥伴**
-     （ver -459，見 linesBlockedByRest）就是空的 —— 後者旗標不記，之後照演）。 */
-  const own = (played || !isOpenNow(n) || linesBlockedByRest(n.lines)) ? [] : (n.lines||[]);
+     （ver -459，見 linesBlockedByRest）就是空的 —— 後者旗標不記，之後照演）。
+     ⚠ `expire:<旗標>`（ver -460，Ray：「肚子餓跟餐酒館的劇情過了就沒有了，
+       回頭也不會再觸發」）：這一段**綁著某個當下**（上街區的肚子餓與餐酒館那頓飯
+       是第一天的戲），那個旗標一立（stage 0 的夜過去＝stage1_open）就永遠不演 ——
+       與 -459「保留到他回隊」相反，哪一種由**節點自己**宣告。 */
+  const expired = !!(n.expire && prog.hasFlag(n.expire));
+  const own = (played || expired || !isOpenNow(n) || linesBlockedByRest(n.lines)) ? [] : (n.lines||[]);
   /* ⚠⚠ **傍晚那一格不搶這一段戲**（ver -430，Ray 指定）：讓節點自己的對白先講完，
      移動到**下一個地點**才強制觸發。⚠ 只讓一次（`eveningHeld`）—— 否則一路走過
      還沒看過的地點會永遠讓下去，「強制」就名存實亡。 */
