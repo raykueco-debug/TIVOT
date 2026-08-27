@@ -1058,6 +1058,11 @@ combat.setStoryReturn((res)=>{
        他是被抬回旅店的，要**睡一覺**才滿血（睡覺那一支會把連敗一併歸零）。 */
     if(won){ prog.setFlightLossCount(0); }
     else{
+      /* ⚠⚠ 敗北回捲（ver -486，Ray：「劇情蜈蚣戰敗北後應該回到蜈蚣戰前的狀態」）：
+         叫飛行頁把劇本遭遇的 done 旗標退掉、pending 重掛。**在分流之前**呼叫 ——
+         「繼續回飛行」與「連敗三場送回旅店」兩條路都要回捲（掛在 __flightResume
+         裡的話旅店那條不經過，實際就漏了）。 */
+      try{ const w=flightWin(); if(w && w.__flightLoseRollback) w.__flightLoseRollback(); }catch(_){}
       const n = prog.flightLossCount()+1;
       if(n>=3){
         prog.setFlightLossCount(0);
