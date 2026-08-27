@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.27-473';
+export const VERSION = 'ver 2026.08.27-474';
 
 export const GAME_CONFIG = {
 
@@ -1314,7 +1314,7 @@ export const GAME_CONFIG = {
                                 // 0~0.12 → Counter（免傷+武器反擊）
 
     // 雙槍
-    dualSeconds:         4,     // 破防模式時長（秒）
+    dualSeconds:         6,     // 破防模式時長（秒）。ver -474：4→6（Ray：「雙槍破防時間＋2秒」）
 
     // 聖徒化（受擊競賽爆發）
     // v18：由「回血計時器」改為「受擊推進計時器」。血條＝倒數槽；只有真正受擊才推進，
