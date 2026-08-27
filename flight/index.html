@@ -490,7 +490,7 @@ const COLOR_URL  = 'silvermoon_terrain.png';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -454';
+const FLIGHT_VER = 'ver -455';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -6938,8 +6938,9 @@ let enemyTimer=ENEMY_CFG.gapMin*0.35;             // 開場不要立刻刷
      `ENEMY_KINDS[kind].speedK`，那才是「平時」的唯一定義。 */
 const SCRIPTED_ENCOUNTERS = [
   /* 第二日出航：出了薩梅爾上空立刻被巨型蜈蚣攔下。 */
+  /* `dist`＝生成距離覆寫（ver -455）：要在視野的清楚段正面現身，不泡在霧裡。 */
   { flag:'set_sail', done:'flight_centipede_met', outOf:1,
-    kind:'centipede', speedMul:1.5 },
+    kind:'centipede', speedMul:1.5, dist:1800 },
 ];
 /* 這一趟要不要演劇本遭遇：**開場算一次**。旗標不會在航行途中改變 —— 會改它的是
    主遊戲，而主遊戲在演的時候這一頁是停著的；每幀去 parse 一次 localStorage 是白花的。
@@ -6955,7 +6956,7 @@ function scriptedDue(){
   return scriptPending;
 }
 function spawnScripted(S){
-  spawnEnemy({ kind:S.kind, ahead:true, speedMul:S.speedMul, script:S });
+  spawnEnemy({ kind:S.kind, ahead:true, speedMul:S.speedMul, script:S, spawnDist:S.dist });
 }
 
 /* opt（全部選填，劇本遭遇用；不給就是平時那隻隨機刷的）：
@@ -6974,7 +6975,11 @@ function spawnEnemy(opt){
           : C.spawnOffMin+Math.random()*(C.spawnOffMax-C.spawnOffMin);
   const a=cam.angle+(Math.random()<0.5?off:-off);
   const ox=-Math.sin(a), oy=-Math.cos(a);
-  const x=cam.x+ox*C.spawnDist, y=cam.y+oy*C.spawnDist;
+  /* 生成距離可逐次覆寫（ver -455）：劇本遭遇要生得近一點 —— 2800 幾乎貼著
+     ZFAR 的霧，玩家看到的是一顆霧裡的小點；1800 在視野的清楚段，
+     「有東西正面撲過來」第一眼就成立。 */
+  const sd=opt.spawnDist||C.spawnDist;
+  const x=cam.x+ox*sd, y=cam.y+oy*sd;
   /* 巡航朝向：**橫向**切過視野，不是直直朝玩家飛。
      直朝玩家的話，牠一路都是頭對著鏡頭——正俯視下只看得到一顆頭和兩片翅，
      體節、步足、蛇行全部縮在後面看不見，玩家根本認不出那是什麼東西，
@@ -7015,7 +7020,7 @@ function spawnEnemy(opt){
      而且是轉回去不是跳回去（同追擊的限角速度）。 */
   const alt0=opt.ahead ? cam.alt : cam.alt+Math.random()*60-20;
   enemy={ x, y, alt:alt0, alt0, hx, hy, cruiseHx:hx, cruiseHy:hy, kind,
-          d0:C.spawnDist, state:opt.ahead?'chase':'cruise', tEngage:0, phase:Math.random()*6.28,
+          d0:sd, state:opt.ahead?'chase':'cruise', tEngage:0, phase:Math.random()*6.28,
           t0:performance.now(), trail:[],
           /* ⚠ 速度**只在這裡算一次**（鐵律 7）：`K.speedK` 是平時的倍率，劇本遭遇再乘
              卡上的 `speedMul`。updateEnemy 的位移一律讀 `enemy.spdK`，那邊不再乘第二次。 */
@@ -7139,7 +7144,21 @@ function updateEnemy(dt,now){
     if(tl.length>maxN) tl.length=maxN;
   }
 
-  if(dist<=C.engage){ enemy.state='engage'; enemy.tEngage=now; toBattle(enemy.kind); }
+  /* ⚠⚠ 劇本遭遇**看得到才進戰鬥**（ver -455，Ray：「確保玩家不會是在沒看到
+     蜈蚣的狀況下進入戰鬥」）。牠是正面刷出、直奔而來的 —— 但玩家可能在牠
+     逼近的那幾秒裡轉了向，牠就從側後方追上：距離到了、畫面上卻沒有牠。
+     沒看到就**先不交棒**，牠繼續追著咬（本來就不放棄）；玩家一回頭看到牠，
+     下一幀就進戰鬥。⚠ 只管劇本遭遇：平時的怪照舊「不論前後左右」（Ray 舊規）。 */
+  if(dist<=C.engage){
+    if(enemy.script){
+      /* ⚠ 上面的 dx/dy 是「玩家−敵人」，投影要的是「敵人−鏡頭」＝取負。 */
+      const ex=-dx, ey=-dy;
+      const zE=ex*(-Math.sin(cam.angle))+ey*(-Math.cos(cam.angle));
+      const svE=zE>40 ? Math.abs((ex*Math.cos(cam.angle)+ey*(-Math.sin(cam.angle)))/zE) : 9;
+      if(zE<=40 || svE>1.15) return;          // 在身後／畫面外 → 先不進
+    }
+    enemy.state='engage'; enemy.tEngage=now; toBattle(enemy.kind);
+  }
 }
 
 /* ══ 遭遇 → 舒爾特盤（ver -382，Ray：「怪碰到船以後進入舒爾特盤」）══
