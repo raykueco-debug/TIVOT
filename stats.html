@@ -55,6 +55,7 @@
       <div class="tile"><div class="v" id="tToday">–</div><div class="k">今日來訪</div></div>
     </div>
     <div class="panel"><h2>關卡用時（勝利場）</h2><table id="timeTable"></table></div>
+    <div class="panel"><h2>等級分布（勝利場）</h2><table id="gradeTable"></table></div>
     <div class="panel"><h2>搭檔使用分布（出陣）</h2><table id="partnerTable"></table></div>
     <div class="panel"><h2>武器使用分布（出陣）</h2><table id="weaponTable"></table></div>
     <div class="panel"><h2>原作點擊分布</h2><table id="originalTable"></table></div>
@@ -87,9 +88,18 @@ async function fetchAll(){
   // 一次拉全事件流（早期量小；破萬筆再改伺服端聚合），只取統計欄位
   const rows = [];
   const PAGE = 1000;
+  /* ⚠ `grade` 是 ver -456 的新欄：資料庫還沒跑 ALTER（見頁尾註解）時 select 它
+     會整個 400 —— 退回舊欄位照樣把其他統計端出來，等級面板顯示提示。 */
+  let cols = 'ts,type,client_id,partner,weapon,boss,result,time_ms,grade';
   for(let from=0;;from+=PAGE){
-    const r = await fetch(`${base}?select=ts,type,client_id,partner,weapon,boss,result,time_ms&order=id.asc`,
+    let r = await fetch(`${base}?select=${cols}&order=id.asc`,
       { headers:{ ...headers, Range:`${from}-${from+PAGE-1}` } });
+    if(!r.ok && from===0 && cols.includes(',grade')){
+      cols = cols.replace(',grade','');
+      window.__noGradeCol = true;
+      r = await fetch(`${base}?select=${cols}&order=id.asc`,
+        { headers:{ ...headers, Range:`${from}-${from+PAGE-1}` } });
+    }
     if(!r.ok) throw new Error('HTTP '+r.status);
     const page = await r.json();
     rows.push(...page);
@@ -143,6 +153,23 @@ async function render(){
   $('timeTable').innerHTML = '<tr><th>關卡</th><th>平均</th><th>最佳</th><th>樣本</th></tr>'
     + timeRow('一般（五盤）', winMs) + timeRow('Boss（亂入）', bossMs);
 
+  /* 等級分布（ver -456，Ray：「後台加入玩家的各別等級次數紀錄，分成一般跟 boss 戰」）
+     ⚠ 只算**勝利場**：輸了沒有等第。舊事件沒有 grade 欄（ver -456 之前上報的）
+       自然不落在任何一格 —— 樣本行印出來，量對不上時看得出是舊資料。 */
+  {
+    const gw = ends.filter(r=>r.result==='win' && r.grade);
+    const G=['S','A','B','C','D','E'];
+    const cnt=(g,boss)=>count(gw, r=>r.grade===g && !!r.boss===boss);
+    const nTot=count(gw,r=>!r.boss), bTot=count(gw,r=>r.boss);
+    $('gradeTable').innerHTML =
+      '<tr><th>等級</th><th>一般</th><th>Boss</th></tr>'
+      + G.map(g=>`<tr><td>${g}</td><td style="text-align:right">${cnt(g,false)}</td><td>${cnt(g,true)}</td></tr>`).join('')
+      + `<tr><td>有等第的樣本</td><td style="text-align:right">${nTot}</td><td>${bTot}</td></tr>`
+      + (window.__noGradeCol
+         ? '<tr><td colspan="3" style="color:#c98">資料庫還沒補 grade 欄 —— 跑頁尾註解的 ALTER 一次即生效</td></tr>'
+         : '');
+  }
+
   // 配裝分布（以出陣事件計）
   const tally = (arr, keyFn) => { const m={}; arr.forEach(r=>{ const k=keyFn(r); m[k]=(m[k]||0)+1; }); return Object.entries(m).sort((a,b)=>b[1]-a[1]); };
   distTable($('partnerTable'),  tally(starts, r=>P_NAME(r.partner)), starts.length);
@@ -169,13 +196,17 @@ render();
       weapon    text,               -- 武器鑰匙（run_start / run_end）
       boss      boolean,            -- 是否 Boss（亂入）場
       result    text,               -- run_end：win|lose；original_click：連結名
-      time_ms   integer             -- run_end：實打用時（毫秒）
+      time_ms   integer,            -- run_end：實打用時（毫秒）
+      grade     text                -- run_end（win）：S|A|B|C|D|E（ver -456）
     );
     alter table public.events enable row level security;
     create policy "anon_insert" on public.events for insert to anon with check (true);
     create policy "anon_select" on public.events for select to anon using (true);
 
   之後把 Settings → API 的 Project URL 與 anon public key 填入 config.js 的 TELEMETRY。
+
+  ⚠ ver -456 之前就建好表的：補一欄（沒補的話上報會被 Supabase 以 400 拒收）——
+    alter table public.events add column if not exists grade text;
 ============================================================================ -->
 </body>
 </html>

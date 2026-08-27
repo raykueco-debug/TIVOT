@@ -890,8 +890,6 @@ function win(){
        腳本看得懂的那個布林值（`onLose` 的分歧），交棒由 inspector 帶出去。 */
   state.timeOver = !!(state.timeAttack && state.timeAttack.parSec>0
                       && totalTime > state.timeAttack.parSec);
-  TEL.runEnd({ partner:state.pickedPartner, weapon:state.equippedWeapon,
-               boss:state.inIntruderFight, result:'win', time_ms:Math.round(totalTime*1000) });
   const totalTaps=state.correctTaps+state.wrongTaps;
   // 評價系統輸入（見 inspector.evaluate）：時間/命中率/連擊/完美反擊/overkill/受擊。
   const stats={
@@ -906,6 +904,13 @@ function win(){
     // 教學劇情殺三連擊為腳本演出，不算玩家頭上（下限 0）
     hitsTaken: Math.max(0, state.hitsTaken - _scriptedHits),
   };
+  /* ⚠ 上報搬到 `stats` 之後（ver -456，Ray：「後台加入玩家的各別等級次數紀錄，
+     分成一般跟 boss 戰」）：等第要一起上報，而它由 `stats` 算出來。
+     `evaluate` 是純函式（同一份輸入永遠同一個等第），與結算頁顯示的必然一致 ——
+     公式仍只有一份（鐵律 7），這裡只是再問一次答案。 */
+  TEL.runEnd({ partner:state.pickedPartner, weapon:state.equippedWeapon,
+               boss:state.inIntruderFight, result:'win', time_ms:Math.round(totalTime*1000),
+               grade: inspector.evaluate(stats).grade });
   /* 勝利 → 先播「驅逐完成」過渡禎；被點掉（done）後才建結算面板並起播結算 BGM。
      ⚠ **劇情叫起來的教學不播過渡禎**（ver -358）：那一場的進出都由劇情接手，
        中間插一張要點的過渡禎會把節奏切斷（同 -329「切乾淨」的理由）。

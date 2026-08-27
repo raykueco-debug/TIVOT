@@ -40,7 +40,7 @@ function send(type, fields){
   if(!TELEMETRY.url || !TELEMETRY.anonKey) return;   // 未設定 → 靜默停用
   if(isAdmin()) return;                              // 管理員（清盤鈕簽名）→ 不列入計數
   try{
-    fetch(TELEMETRY.url.replace(/\/+$/,'') + '/rest/v1/events', {
+    const post = body => fetch(TELEMETRY.url.replace(/\/+$/,'') + '/rest/v1/events', {
       method: 'POST',
       keepalive: true,   // 結算後立即關頁也送得出去
       headers: {
@@ -49,7 +49,15 @@ function send(type, fields){
         Authorization: 'Bearer ' + TELEMETRY.anonKey,
         Prefer: 'return=minimal',
       },
-      body: JSON.stringify(Object.assign({ type, client_id: cid(), ver: VERSION }, fields || {})),
+      body: JSON.stringify(body),
+    });
+    const body = Object.assign({ type, client_id: cid(), ver: VERSION }, fields || {});
+    /* ⚠⚠ 新欄位的退路（ver -456）：PostgREST 對**不認識的欄位**是整筆 400 拒收 ——
+       資料庫還沒跑 ALTER 補欄（見 stats.html 尾註）之前，帶著 `grade` 上報等於
+       把整場勝負紀錄丟掉。所以 400 就把 `grade` 拿掉重送一次：舊表照樣收得到
+       事件，只是少那一欄。日後再加新欄照同一條路。 */
+    post(body).then(r=>{
+      if(!r.ok && 'grade' in body){ const b2=Object.assign({},body); delete b2.grade; post(b2).catch(()=>{}); }
     }).catch(()=>{});
   }catch(_){ /* 遙測永不打斷遊戲 */ }
 }
