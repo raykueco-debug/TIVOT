@@ -649,12 +649,55 @@ function updateEnergyClasp(){
 /* ============================================================================
  *  間隔時限（逐格延時懲罰）
  * ========================================================================== */
+/* ══ 延時懲罰的視覺化（ver -458，Ray：「讓盤面外面有一圈光圈繞著盤面
+   順時針行走，走滿的時候延時懲罰發生，從左上角開始走」）══════════════════
+   一條貼著盤面外緣的發光線：從**左上角**起、順時針長，走滿一圈＝時限到。
+   ⚠ 它是**顯示**不是第二個計時器（鐵律 7）：每一幀讀 `state.intervalDeadline`
+     與 `effIntervalLimit()` —— 懲罰何時發生仍由 startIntervalTimer 那一支決定，
+     玩家每點一格（resetIntervalDeadline）光圈自己回到左上角重走。
+   ⚠ SVG 的 `pathLength="100"`：dash 用 0~100 講話，與盤面實際幾何無關 ——
+     盤面尺寸怎麼變（fitGridSquare）都不必重算。路徑 M0,0→H100→V100→H0→Z
+     的第一段就是「左上往右」＝順時針從左上角開始。
+   ⚠ 掛在 #grid 裡（absolute，不佔 grid 版位）：buildGrid 重建盤面會把它掃掉，
+     所以每一幀 `ensureDelayRing` 都會補 —— 那正好也處理了「第一次進場」。 */
+let ringRaf=0;
+function ensureDelayRing(){
+  let sv=document.getElementById('delayRing');
+  if(sv) return sv;
+  const grid=$('grid'); if(!grid) return null;
+  sv=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  sv.id='delayRing';
+  sv.setAttribute('viewBox','0 0 100 100');
+  sv.setAttribute('preserveAspectRatio','none');
+  sv.innerHTML='<path class="dr-rail" d="M0,0 H100 V100 H0 Z" pathLength="100"/>'
+             + '<path class="dr-prog" d="M0,0 H100 V100 H0 Z" pathLength="100"/>';
+  grid.appendChild(sv);
+  return sv;
+}
+function ringTick(){
+  ringRaf=requestAnimationFrame(ringTick);
+  const sv=ensureDelayRing(); if(!sv) return;
+  const lim=effIntervalLimit()*1000;
+  /* 聖徒化／演出中時限不斷被重置（見 interval 那一支）→ 光圈自然停在起點。 */
+  let t=state.intervalDeadline ? 1-((state.intervalDeadline-Date.now())/lim) : 0;
+  t=Math.max(0, Math.min(1, t));
+  const p=sv.querySelector('.dr-prog');
+  p.style.strokeDashoffset=String(100*(1-t));
+  sv.classList.toggle('danger', t>0.72);     // 快走滿 → 轉紅示警
+}
+function stopDelayRing(){
+  cancelAnimationFrame(ringRaf); ringRaf=0;
+  const sv=document.getElementById('delayRing'); if(sv) sv.remove();
+}
 function startIntervalTimer(){
   clearInterval(state.intervalTimer);
+  stopDelayRing();
   /* ⚠ 計時挑戰：**沒有延時懲罰**（ver -396，Ray 指定）—— 靶子不會催你，
      唯一的壓力是碼表本身。連計時器都不起，「太慢了」那一格也就不會跳。
-     （光靠 `enemyAttack` 守門只擋得住扣血，那行字與 combo 歸零還是會演。） */
+     （光靠 `enemyAttack` 守門只擋得住扣血，那行字與 combo 歸零還是會演。）
+     光圈跟著不出（它是這個計時器的臉，計時器不在它就不在）。 */
   if(state.timeAttack) return;
+  ringRaf=requestAnimationFrame(ringTick);
   state.intervalDeadline=Date.now()+effIntervalLimit()*1000;
   state.intervalTimer=setInterval(()=>{
     if(state.over){clearInterval(state.intervalTimer);return;}
@@ -692,7 +735,7 @@ function effIntervalLimit(){
   return Math.max(0.6, state.intervalLimit + state.DELAY_TIME_DELTA);
 }
 function resetIntervalDeadline(){ state.intervalDeadline=Date.now()+effIntervalLimit()*1000; }
-function stopIntervalTimer(){ clearInterval(state.intervalTimer); }
+function stopIntervalTimer(){ clearInterval(state.intervalTimer); stopDelayRing(); }
 
 /* ============================================================================
  *  UI

@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.27-457';
+export const VERSION = 'ver 2026.08.27-458';
 
 export const GAME_CONFIG = {
 
@@ -757,6 +757,8 @@ export const GAME_CONFIG = {
       atkInterval:null,// 大絕蓄力秒數；null＝沿用 tuning.chargeSeconds（逐怪可覆寫）
       // 攻擊音（依 kind：ult＝大絕命中/不完美防禦格擋、delay＝太慢、wrong＝按錯）。鑰匙對應 ASSETS。
       sound:{ ult:'em_slash', delay:'em_smack', wrong:'em_slash' },
+      /* 延時懲罰 5 秒（ver -458，Ray：「除了槍之魔女以外的敵人都先預設 5 秒」）。 */
+      delayPenalty:{ seconds:5 },
       special:[],      // 特殊行動預留（本版不實作邏輯，僅保留結構）
       // v16：每盤格數手動覆寫（index 對應第幾盤，0-based；null／缺項＝用預設規則：第三盤起 16 格）。
       //      作者日後可逐怪逐盤填數值微調難度，例：[9,9,16,16,20]。聖徒化 25 宮格不受此影響。
@@ -782,6 +784,7 @@ export const GAME_CONFIG = {
       attack:45,
       atkInterval:null,         // 沿用 tuning.chargeSeconds
       sound:{ ult:'em_slash', delay:'em_smack', wrong:'em_slash' },
+      delayPenalty:{ seconds:5 },   // 5 秒（ver -458，非魔女的預設）
       special:[],
       boardGrids:[9,9,16,16,16],
       hitFx:{
@@ -828,6 +831,7 @@ export const GAME_CONFIG = {
       attack:45,                     // 大絕單擊傷害（普通值；差異在密度不在單擊）
       atkInterval:3.33,              // 大絕蓄力秒數：4×(1/1.2)≈3.33 → 攻擊更密（比第一隻高 20%）
       sound:{ ult:'em_slash', delay:'em_smack', wrong:'em_slash' },   // 兩聖徒攻擊音相同
+      delayPenalty:{ seconds:5 },    // 5 秒（ver -458，非魔女的預設）
       special:[],
       boardGrids:[9,9,16,16,16],     // 自帶：前兩盤 9 格（累積破防、combo 加成總量低，不開場爆血）
       hitFx:{                        // 自帶獨立三件套（巨型聖徒風味：大絕爪數加重為 4）
@@ -844,6 +848,7 @@ export const GAME_CONFIG = {
       attack:50,
       atkInterval:null,
       sound:{ hit:null, ult:null, death:null },
+      delayPenalty:{ seconds:5 },    // 5 秒（ver -458，非魔女的預設）
       special:[],
       boardGrids:[9,9,16,16,16],   // v16：每盤格數手動覆寫（同上，聖徒化不受影響）
     },
@@ -940,8 +945,8 @@ export const GAME_CONFIG = {
       /* 盤面配置 `33344, loop`：3＝九宮格、4＝16 宮格，打完五盤沒死就從頭再來。 */
       boardGrids:[9,9,9,16,16],
       boardLoop:true,
-      /* 延時懲罰：4 秒、傷害 10、**單爪**特效。點錯：傷害 5、鈍器特效。 */
-      delayPenalty:{ seconds:4, damage:10 },
+      /* 延時懲罰：**5 秒**（ver -458 由 4 調成非魔女的統一預設）、傷害 10、單爪特效。 */
+      delayPenalty:{ seconds:5, damage:10 },
       wrongPenalty:{ damage:5 },
       hitFx:{
         delay:{ type:'claw', count:1, angle:'random' },
