@@ -331,6 +331,11 @@ window.__tivotFlight = {
     $('home').classList.remove('on');
     town.open(id || 'capital');
   },
+  /* 吊墜＝整備（ver -482，Ray：「飛行畫面吊墜點了沒有整備效果」）：飛行頁的吊墜
+     固定在面板左上（ver -481），點它開的是**同一頁整備**（gear.open，鐵律 8）。
+     gear 的 z（8450）在 iframe（8200）之上；開著時 gear.open 自己會把飛行凍住
+     （-481 的 __flightHoldToggle），關掉自動放行。 */
+  gear(){ gear.open(); },
   /* 飛行頁的「返回」。⚠ 只有在**底下沒有別的畫面**時才把首頁叫回來 ——
      從城鎮出航的話，城鎮的舞台一直在 iframe 底下開著，收掉 iframe 就回到城鎮了。 */
   close(){

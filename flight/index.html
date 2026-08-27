@@ -7400,7 +7400,23 @@ function placeFkerbPend(onDoor){
   pd.style.position='fixed'; pd.style.zIndex='44';
   pd.style.left=FKERB_PEND_PAD+'px';
   pd.style.top=VIEWH+'px';
+  /* 吊墜＝整備的入口（ver -482，Ray：「吊墜點了沒有整備效果」）——
+     與主遊戲槍棺上那顆同一個語意。掛在面板上才可點（門上那個分支維持 none）。 */
+  pd.style.pointerEvents='auto';
+  pd.style.cursor='pointer';
 }
+/* 吊墜的點擊 → 開父頁的整備頁（同一頁 gear，鐵律 8）。獨立開發模式沒有父頁＝不作動。
+   ⚠ pointerdown 也要攔：不攔的話這一下會同時被當成操舵/感應的起手。 */
+(function(){
+  const pd=document.getElementById('fkerbPend');
+  if(!pd) return;
+  pd.addEventListener('pointerdown', e=>{ e.stopPropagation(); });
+  pd.addEventListener('click', e=>{
+    e.stopPropagation();
+    if(fkerbPendOnDoor) return;                    // 門上（不會發生了，保險）
+    if(embedded()){ try{ window.parent.__tivotFlight.gear(); }catch(_){} }
+  });
+})();
 function fkerbPendSwing(amp, dur){
   const pd=document.getElementById('fkerbPend'); if(!pd) return;
   const sw=pd.querySelector('.fkp-swing'); if(!sw) return;
