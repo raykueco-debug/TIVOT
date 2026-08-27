@@ -472,16 +472,18 @@
   @keyframes pulse{from{filter:brightness(1)}to{filter:brightness(1.7)}}
 
   #grid{display:grid;gap:6px;touch-action:manipulation;position:relative;}
-  /* ══ 延時懲罰的光圈（ver -458）══
+  /* ══ 延時懲罰的光圈（ver -458；-461 修 dash）══
      盤面外緣一條發光線，從左上角順時針長、走滿＝延時懲罰（modules/combat.js 的
-     ringTick 驅動）。⚠ `pathLength=100` 在 SVG 上，dasharray 用 100 講話；
-     stroke 用 non-scaling 才不會被 viewBox 拉伸拉粗。 */
+     ringTick 驅動）。⚠ `pathLength=100` 在 SVG 上，dasharray 用 100 講話。
+     ⚠⚠ 不可以加 `vector-effect:non-scaling-stroke`：它讓 dash 改用**螢幕像素**計
+     （pathLength 的正規化整個失效），dasharray:100 變成「100px 虛線」繞著周長
+     （~1400px）重複——畫出來是散在四邊的好幾段短線，不是一條從左上角長出來的線
+     （ver -461 實測）。線寬因此用 viewBox 單位（.8 ≈ 手機上 3px）。 */
   #delayRing{position:absolute;inset:-9px;width:calc(100% + 18px);height:calc(100% + 18px);
     pointer-events:none;overflow:visible;z-index:5;}
-  #delayRing .dr-rail{fill:none;stroke:rgba(217,198,138,.14);stroke-width:3px;
-    vector-effect:non-scaling-stroke;}
-  #delayRing .dr-prog{fill:none;stroke:var(--gold);stroke-width:3px;stroke-linecap:round;
-    vector-effect:non-scaling-stroke;stroke-dasharray:100;stroke-dashoffset:100;
+  #delayRing .dr-rail{fill:none;stroke:rgba(217,198,138,.14);stroke-width:.8;}
+  #delayRing .dr-prog{fill:none;stroke:var(--gold);stroke-width:.8;stroke-linecap:round;
+    stroke-dasharray:100;stroke-dashoffset:100;
     filter:drop-shadow(0 0 5px rgba(240,196,105,.75));transition:stroke .3s ease;}
   #delayRing.danger .dr-prog{stroke:#e0523c;
     filter:drop-shadow(0 0 6px rgba(224,82,60,.85));}
