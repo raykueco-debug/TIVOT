@@ -682,6 +682,16 @@ const SETTLEMENTS = [
   { n:'薇拉馮德港', x:1366, y:936, t:'city1', f:'empire', c:1, sea:1.90,
     plan:'city/velafonte_plan.webp', planH:'city/velafonte_h.webp',
     planW:1050, planRot:1.40, planTall:50,
+    /* ⚠⚠ **整地**（ver -443，Ray：「地圖變形問題參照聖王廳的處理方式」）。
+       實測 footprint 之內的地形落差 **145**、標準差 22（其餘三座城都是 0）——
+       平面圖是貼在地形網格上的，地面一起伏，格子的深度比就失控，
+       保險絲（`CITY_ZRATIO`）逐格跳過，底下的地貌就從城裡透出來
+       ＝ Ray 看到的「飛行經過時破圖嚴重」。整平之後深度比回到正常。
+       ⚠ 參數照聖王廳（`r:1.05` 讓台座比圖再寬一點、`skirt:8` 平滑接回地形、
+         `lift:0` —— 只要平，不要墊高，見聖王廳那一段 ver -301 的教訓）。
+       ⚠ 這是**港城**：整地那一段有「海不整平」的守門（見 buildRelief），
+         不然港灣會被墊成一塊斜坡。 */
+    podium:{ r:1.05, skirt:8, lift:0 },
     /* spurs＝插畫上放射狀街道的世界方位（rad）。由 build_city.py 沿一圈量
        「街道色」的角度峰值偵測而來，已去掉朝海的兩條（1.78 / 2.27，那個方向
        是外海，路修不出去）。城外的路要從這些方位延伸出去，街道才不會一出
@@ -3239,6 +3249,10 @@ async function loadWorld(){
           if(rad>R1) continue;
           const i=y*MAPW+x;
           if(RIV[i]) continue;
+          /* ⚠⚠ **海不整平**（ver -443）：港城（薇拉馮德）的 footprint 裡有一大片
+             真正的海。上面那一段已經把「插畫說是陸」的格子填到 `gh` 之上了，
+             所以還留在雲海之下的就是海 —— 整平它等於把港灣墊成一塊斜坡。 */
+          if(HGT[i]<=CLOUD_H) continue;
           const w = rad<=R0 ? 1 : 1-(rad-R0)/(R1-R0);
           const k = w*w*(3-2*w);
           HGT[i]=HGT[i]*(1-k)+ghP*k;
