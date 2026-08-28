@@ -155,6 +155,7 @@ export function bootIdle(){
   enemy.applyConfigToDOM();
   state.over=true;
   loadBoard(0); updateBars();
+  armClaspLayout();   // 破防計量照實際血條位置取景（ver -527）
   $('home').classList.add('on');
   // 主選單 BGM 不在此播：playBgm 會立即開抓 1MB 檔，搶走載入畫面立繪/關鍵音效的頻寬。
   //   改由 main.js 預載批次段呼叫（實際起播本來就要等首次手勢 unlock，時序不變）。
@@ -241,10 +242,6 @@ export function fitGridSquare(){
 }
 function markNext(){
   state.cells.forEach(c=>c.classList.remove('next'));
-  /* 受擊＝連擊歸零（ver -522，Ray：「只要受擊就歸0」）—— 守在唯一入口，
-     大絕／延時／按錯／格擋掉血、聖徒化中的推進全部涵蓋；免傷的 Perfect/Counter
-     不經過這裡，連擊不斷。 */
-  state.combo=0;
   if(state.saintMode){   // 聖徒化：只提示第一格（本輪聖徒化未接，saintMode 恆 false）
     if(state.expect!==1) return;
     const c0=state.cells.find(c=>+c.dataset.num===state.expect);
@@ -478,6 +475,11 @@ function enemyAttack(dmg, kind, saintAmt){
   /* 受到敵人主動攻擊 → 震一下（ver -398，Ray 指定）。⚠ 守在這裡就涵蓋了所有扣血路徑
      （大絕／延時／按錯／格擋），與這一支「唯一入口」的定位一致（鐵律 8）。 */
   hap.hit();
+  /* 受擊＝連擊歸零（ver -522，Ray：「只要受擊就歸0」）。
+     ⚠⚠ ver -527 修：-522 的插入錨點「if(state.saintMode){」在檔案裡第一次出現
+       是 markNext（**每一次點擊**都跑）—— 連擊每點先歸零再 +1 ＝「計數永遠在 1」
+       （Ray 連報兩次）。守在這裡才是「受擊」的唯一入口。 */
+  state.combo=0;
   if(state.over) return;
   // 敵攻擊音：依 kind 播該怪對應音（ult＝大絕命中/不完美防禦格擋、delay＝太慢、wrong＝按錯）。
   const sk = state.curEnemySound && state.curEnemySound[kind];
@@ -650,6 +652,65 @@ function energyFullBurst(){
   document.body.appendChild(d);
   setTimeout(()=>d.remove(), 900);
 }
+/* ══ 破防計量的取景（ver -527）══════════════════════════════════════════
+   幾何照**量出來的血條位置**現算 —— 寫死的 VB 座標只在開發用的 375 寬視窗上
+   是對的，Ray 的桌面視窗整組歪掉、下緣被裁（他連報三次「沒對齊」都是這個）。
+   §6.5 的老原則：取景在進場/resize 時算成常數，之後只讀。
+   規格（Ray 的圖）：頭＝垂直平口，釘在藍（我方）條帶 × 血條左緣；
+   沿 45°→315° 的圓弧連續收細；尖收在紅條頂上方 4px、由 HITS 壓著。 */
+let claspSig='';
+function layoutClasp(){
+  const svg=document.querySelector('#energyClasp svg'); if(!svg) return;
+  const blue=document.querySelector('.hpbar.player-bar'), red=document.querySelector('.hpbar.enemy-bar');
+  if(!blue||!red) return;
+  const sr=svg.getBoundingClientRect(), br=blue.getBoundingClientRect(), rr=red.getBoundingClientRect();
+  if(sr.width<10||br.width<10) return;                 // 還沒排好 → 之後的重試再量
+  const sig=[sr.x,sr.y,br.x,br.y,br.height,rr.y].map(v=>Math.round(v)).join(',');
+  if(sig===claspSig) return; claspSig=sig;
+  const X=br.x-sr.x;                                   // 血條左緣（svg 座標）
+  const bt=br.y-sr.y, bb=br.y+br.height-sr.y;          // 藍條帶
+  const rt=rr.y-sr.y;                                  // 紅條頂
+  const headY=(bt+bb)/2, w0=(bb-bt)/2, tipY=rt-4;
+  const r=(headY-tipY)*Math.SQRT1_2;                   // 頭 45°、尖 315° 的圓
+  const cx=X-r*Math.SQRT1_2, cy=(headY+tipY)/2;
+  const N=84, pts=[], ws=[];
+  for(let i=0;i<N;i++){
+    const t=i/(N-1), th=(45+270*t)*Math.PI/180;
+    pts.push([cx+r*Math.cos(th), cy+r*Math.sin(th)]);
+    ws.push(w0*(1-t)+0.4*t);                           // 連續收細：藍條半高 → 0.4
+  }
+  const A=[],B=[];
+  for(let i=0;i<N;i++){
+    const p=pts[i], q=pts[Math.min(i+1,N-1)], o=pts[Math.max(i-1,0)];
+    const dx=q[0]-o[0], dy=q[1]-o[1], L=Math.hypot(dx,dy)||1;
+    const nx=-dy/L, ny=dx/L, w=ws[i];
+    A.push([Math.min(p[0]+nx*w,X), p[1]+ny*w]);        // 一律夾在血條左緣內（不壓 HP）
+    B.push([Math.min(p[0]-nx*w,X), p[1]-ny*w]);
+  }
+  A[0]=[X,bb]; B[0]=[X,bt];                            // 垂直平口＝藍條帶的上下緣
+  const f=P=>P.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' L');
+  const outline='M'+f(A)+' L'+f(B.slice().reverse())+' Z';
+  const spine='M'+f(pts.filter((_,i)=>i%5===0).concat([pts[N-1]]));
+  const track=svg.querySelector('.clasp-track'), gold=svg.querySelector('.clasp-gold'), fill=$('energyClaspFill');
+  if(track) track.setAttribute('d',outline);
+  if(gold) gold.setAttribute('d',outline);
+  if(fill){ fill.setAttribute('d',spine); fill.setAttribute('stroke-width', String(Math.ceil(w0*2+4))); }
+  /* 數字錨在圓心、HITS 壓在尖上（clasp 的定位座標系＝svg 減去宿主偏移）。 */
+  const host=$('energyClasp').getBoundingClientRect();
+  const combo=document.querySelector('#energyClasp .clasp-combo');
+  if(combo){ combo.style.left=(sr.x-host.x+cx)+'px'; combo.style.top=(sr.y-host.y+cy)+'px';
+             combo.style.bottom='auto'; combo.style.transform='translate(-50%,-50%)';
+             /* 字級跟著 C 的半徑走（Ray：「字也很小」——他的視窗比較大，
+                固定 px 相對就小）。 */
+             const b=combo.querySelector('b'); if(b) b.style.fontSize=Math.round(r*2.1)+'px'; }
+  const hits=svg.querySelector('.clasp-hits');
+  if(hits){ hits.setAttribute('x', String(Math.round(X-10))); hits.setAttribute('y', String(Math.round(tipY-1))); }
+  updateEnergyClasp();                                 // 路徑換了 → dash 總長重掛
+}
+/* 進場後多試幾拍（血條要排好才量得到）；視窗變了整組重量。 */
+function armClaspLayout(){ claspSig=''; [0,120,400,1000].forEach(ms=>setTimeout(layoutClasp,ms)); }
+window.addEventListener('resize', ()=>{ claspSig=''; setTimeout(layoutClasp,60); });
+
 function updateEnergyClasp(){
   const fill=$('energyClaspFill');
   if(fill){
