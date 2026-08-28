@@ -43,12 +43,8 @@ const $ = id => document.getElementById(id);
 /* 「最高的人露出身體的幾成」—— **越小＝鏡頭越近＝人越大、露出的身體越少**。
    （飛行頁的對照：0.62＝頭到大腿、0.48＝頭到腰。） */
 const CAST_SHOW = 0.56;
-/* ⚠⚠ **露出身體的上限**（ver -320，Ray：「立繪不要出全身，以膝部以上為原則，
-   不然細節看不清」）。0.72 約是頭到膝。
-   為什麼需要它：兩人同台時每人只有半屏，寬度不夠就會一路等比縮小 —— 縮到最後
-   全身都出來了，臉只剩幾十像素。這個底線讓「縮小」在膝蓋處停住，
-   **寧可兩人的輪廓稍微重疊，也不要縮到看不清臉**。 */
-const CAST_SHOW_MAX = 0.72;
+/* （CAST_SHOW_MAX 已拆，ver -495 清死碼：它是「依人數等比縮小」的膝部底線，
+   而那套縮放 ver -320 就整個移除了 —— §6.5「同一張立繪＝同一個結果」。） */
 const SLIDE_MS  = 450;          // 進場滑入（CLAUDE.md §6.5：450ms ease-out）
 const TYPE_MS   = 22;           // 打字機每字間隔
 
@@ -1990,7 +1986,6 @@ function playScene(id){
 }
 
 /* ══ 對外 ══ */
-export function isActive(){ return active; }
 /* 存檔要帶的劇情位置。 */
 export function getPosition(){ return active && cur ? { scene:cur.sceneId, line:lineIdx } : null; }
 
@@ -2250,9 +2245,7 @@ export function open(pos, done){
   const id = (pos && pos.scene && MAIN_SCRIPT[pos.scene]) ? pos.scene : MAIN_ENTRY;
   /* 預載頁：先擋著，載完才開演。⚠ 從戰鬥接回來（pos.line>0）時不再擋一次 ——
      那些圖上一輪已經抓過了，再擋一次只是多一個黑畫面。 */
-  const ld=$('storyLoad');
   const go=()=>{
-    if(ld) ld.classList.remove('on');
     layoutKerberos();     // ⚠ 要在舞台已經 .on 之後量 —— display:none 的元素量出來全是 0
     playScene(id);
     if(pos && pos.line>0 && cur){
@@ -2269,7 +2262,6 @@ export function open(pos, done){
   /* ⚠ 讀取頁走**開機那一頁的標準外觀**（Ray 指定：「story 按下時就要跑讀取」）——
      不再用劇情自己那一顆簡版（#storyLoad 已停用，DOM 與 CSS 先留著）。
      ⚠ 最短顯示 600ms：快取全中的時候只要一百多毫秒，閃一下讀起來像破圖。 */
-  if(ld) ld.classList.remove('on');
   const ui=showLoader();
   const t0=Date.now();
   preloadStory(id, p=>ui.set(p)).then(()=>{

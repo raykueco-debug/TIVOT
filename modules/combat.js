@@ -69,6 +69,7 @@ export function setup(){
   //   ultSuppressed/firstThreatPending：教學暫緩大絕（一次一顆/腳本盤）與首顆固定位
   //   （defense 不 import tutorial，經此轉交）
   defense.init({ enemyAttack, enemyDamage, floatDmg, triggerAtkBuff, weaponCounter: weapon.weaponCounter,
+                 resetIntervalDeadline,   // 反擊硬直：被反擊時延時歸零（ver -495，卡上 counterStagger）
                  onThreatSpawned: tutorial.onThreatSpawned,
                  /* ⚠ 一次防禦判完 → **固定模式的副武器歸位一順位**（ver -422，Ray 指定）。
                     這裡是唯一的呼叫點（鐵律 8）：defense 不 import weapon，
@@ -173,9 +174,7 @@ export function goNextBoard(){
   SFX.play(asset('sfx_reload'), sfxGain('sfx_reload'));   // 清盤換彈音（RELOADING 顯示時）
   t.classList.add('on');
   txt.style.animation='none'; void txt.offsetWidth; txt.style.animation='';
-  try{(window.__gnb=window.__gnb||[]).push({t:Date.now()%1000000,ev:'arm',ni:nextIdx});}catch(_){}
   setTimeout(()=>{
-    try{(window.__gnb=window.__gnb||[]).push({t:Date.now()%1000000,ev:'fire',ni:nextIdx,over:state.over});}catch(_){}
     if(state.over) return;
     t.classList.remove('on');
     state.transitioning=false;
@@ -976,7 +975,6 @@ function win(){
      storyBattleEnd 那一份留著（它照顧自己那兩條路）。 */
   if(storyFramed()){
     prog.setHp(Math.max(1, state.playerHp));
-    console.info('[hp] 勝場寫回：'+Math.max(1, state.playerHp));   // 診斷輸出（ver -491），穩定後可拆
     /* ⚠⚠ 開場白的 talkOnce **打贏才記**（ver -493，Ray：「敗北重來要跑，
        結束以戰鬥勝利為條件」）—— 敗北時根本沒記＝每次重來自動重播；
        記了＝這一場的劇情永久結束（隨機再遇同種怪也不播）。憲法 §6.5.2 原則。 */
@@ -1101,13 +1099,21 @@ export function startGame(){
      「上一場結束時記得歸零」是會漏的（漏了就換成一般戰鬥變單敵、還不能聖徒化）。
      開場一律先歸零、再看這一次有沒有指定，才是不會漏的寫法。 */
   state.scriptRun=!!pendingScript; state.scriptBattleId=pendingScript; pendingScript=null;
-  state.storyBattle = state.scriptRun && pendingScriptStory;   // 是否為劇情戰（ver -493，唯一判定）
-  pendingScriptStory = true;
   state.tutorialRun=false; state.tutorialStoryRun=false; state.tutorialLifeReturn=false;   // 教學場旗標歸零（tutorial 擁有；開場統一歸零、maybeStart 啟動時設回）
   /* 劇情插入戰（ver -375）：**單敵一場**，換上卡上那隻，且這一場不能聖徒化／不能用搭檔技。
      ⚠ 要在 `stopAll()`/`loadBoard(0)` **之前**換敵 —— 盤面配置（boardGrids/boardLoop）
        是查「目前這隻怪」來的，換晚了第一盤會用到上一隻的格數。 */
   const sb = state.scriptRun && GAME_CONFIG.battles && GAME_CONFIG.battles[state.scriptBattleId];
+  /* 是否為**劇情戰**（ver -493；-495 改成卡上統一有這一格）—— 唯一判定，
+     之後一律讀 `state.storyBattle`：
+       ① 發起端明確宣告的優先（飛行交棒的 `scripted`：隨機遭遇 false、劇本遭遇 true）
+       ② 沒宣告（城鎮／腳本插入戰、舊交棒鑰匙）→ 讀**敵人卡**的 `story`（1/0）
+       ③ 卡上也沒寫 → true（腳本叫起來的場子天生就是劇情戰）。 */
+  { const en = sb && GAME_CONFIG.enemies[sb.enemy];
+    const cardStory = !en || en.story==null || !!en.story;
+    state.storyBattle = state.scriptRun &&
+      (pendingScriptStory!==null ? pendingScriptStory : cardStory);
+    pendingScriptStory = null; }
   state.timeAttack = null; state.timeOver = false;   // 開場先歸零（同 noSaint：不要靠上一場收乾淨）
   state.weaponSound = null;                          // 武器音覆寫也是（ver -423）
   state.counterGapMs = null;                         // 連射間隔覆寫也是（ver -476）
@@ -1138,9 +1144,6 @@ export function startGame(){
   if(storyFramed()){
     const ph=prog.getHp();
     if(ph!=null) state.playerHp=Math.max(1, Math.min(state.playerMax, ph));
-    /* 診斷輸出（ver -491）：血量繼承在誰的機器上壞了很難隔空猜 ——
-       開 console 一眼看到「這一場開場讀到什麼」。穩定後可拆。 */
-    console.info('[hp] 開場繼承：store='+ph+' → playerHp='+state.playerHp+'/'+state.playerMax);
   }
   loadBoard(0); updateBars();
   if(state.scriptRun){ updateBars(); return; }   // 劇情插入戰不進教學
@@ -1159,13 +1162,14 @@ export function startGame(){
 /* 劇情插入戰的入口（ver -375）：main.js 的 battleHandler 查到 `config.battles[id]` 就走這支。
    ⚠ 旗標要在 `startGame()` **之前**設 —— 開場那一段會依它換敵、跳過教學。 */
 let pendingScript = null;   // 下一次 startGame 要開的插入戰 id（交棒用，見 startGame）
-/* 這一場是不是**劇情戰**（ver -493，Ray：「加上是否為劇情戰的判定，之後就讀那一個」）。
-   由發起端宣告（飛行的隨機遭遇傳 false；劇情/城鎮插入戰預設 true），
+/* 發起端對「這一場是不是劇情戰」的**明確宣告**（ver -493；-495 起卡上也有 `story`）。
+   null＝沒宣告（走敵人卡）；true/false＝宣告了（飛行交棒的 `scripted` 走這裡，優先）。
    startGame 寫進 state.storyBattle —— 開場白與 talkOnce 都只讀它分流。 */
-let pendingScriptStory = true;
+let pendingScriptStory = null;
 export function startScriptBattle(id, opts){
   pendingScript = id;
-  pendingScriptStory = !(opts && opts.story===false);   // 預設劇情戰（ver -493）
+  /* 只有**明確的布林**才算宣告（ver -495）—— undefined/null 一律交給敵人卡。 */
+  pendingScriptStory = (opts && typeof opts.story==='boolean') ? opts.story : null;
   startGame();
 }
 

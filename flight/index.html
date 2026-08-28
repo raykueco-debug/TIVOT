@@ -1059,36 +1059,10 @@ function massMipFor(key, img, scale){
   return { img:chain[i], ms:chain[i].width/img.width };
 }
 
-/* ══ 底圖厚度的「裙邊」貼圖（ver -444，Ray：「底圖厚度 20，立面顏色同邊緣色」）══
-   把平面圖的 **alpha 剪影**填上邊緣色 —— 畫的時候整格往下位移一段（見 cell 迴圈），
-   露出來的那一圈就是「厚度的立面」。
-   ⚠ 這正是 ver -312 結案時寫的正解（「把厚度沿平面圖的 alpha 剪影拉」）——
-     被拿掉的那一版（PLATE_DROP）錯在填的是**格網的正方形**，不吃 alpha。
-   ⚠ 邊緣色是**量出來的**（alpha 邊界像素的平均色），不是填死一個色碼 ——
-     Ray 指定「同邊緣色」，而每張插畫的岸邊顏色都不同。 */
-function buildPlanSkirt(im){
-  const cv=document.createElement('canvas'); cv.width=im.width; cv.height=im.height;
-  const g=cv.getContext('2d');
-  g.drawImage(im,0,0);
-  const d=g.getImageData(0,0,cv.width,cv.height).data;
-  let r=0,gg=0,b=0,n=0;
-  const W2=cv.width,H2=cv.height;
-  for(let y=1;y<H2-1;y+=2)for(let x=1;x<W2-1;x+=2){
-    const i=(y*W2+x)*4;
-    if(d[i+3]<128) continue;
-    /* 邊界＝自己不透明、四鄰有透明的 */
-    if(d[i-4+3]<128||d[i+4+3]<128||d[i-W2*4+3]<128||d[i+W2*4+3]<128){
-      r+=d[i]; gg+=d[i+1]; b+=d[i+2]; n++;
-    }
-  }
-  if(!n){ r=gg=90; b=70; n=1; }
-  /* 立面壓暗一點（×0.72）：它是「側面」，與受光的頂面同亮會讀成一片平的。 */
-  const col='rgb('+((r/n*0.72)|0)+','+((gg/n*0.72)|0)+','+((b/n*0.72)|0)+')';
-  g.globalCompositeOperation='source-in';
-  g.fillStyle=col; g.fillRect(0,0,cv.width,cv.height);
-  return cv;
-}
-const cityPlanSkirt={};     // plan → 裙邊剪影（只有帶 plateThick 的城會建）
+/* 底圖厚度（plateThick）與裙邊貼圖（buildPlanSkirt）：**已退役**（ver -444 資料端
+   先撤、-495 清死碼時連程式一起拆）。SETTLEMENTS 早就沒有這個鍵 —— 碼頭懸海那一段
+   如今由 voxel 立面渲染自己畫岸壁（§6.7.5）。日後真要厚度，正解仍是「沿平面圖的
+   alpha 剪影拉」不是填格網四邊形（見 drawSettlements3D 裡 PLATE_DROP 的結案註解）。 */
 function ensureCityArt(s){
   const key=s.plan;
   if(!key || cityArtWanted[key]) return;
@@ -1098,7 +1072,7 @@ function ensureCityArt(s){
   im.onload=()=>{ warmImage(im).then(()=>{ cityPlanArt[key]=im;
     /* 全解析到手 → 取樣金字塔換成高解析版（ver -445，近距離的細節從這裡來）。 */
     try{ buildCityPyramid(key, im, true); }catch(_){}
-    if(s.plateThick) try{ cityPlanSkirt[key]=buildPlanSkirt(im); }catch(e){} }); };
+    }); };
   im.onerror=()=>{ console.warn('[city] 載不到 '+key+'，維持程序生成'); };
   im.src=key;
   if(!(key in cityMass)){ cityMass[key]=null; loadMass(key); }
@@ -1732,7 +1706,6 @@ function buildRails(){
 /* 郊區選級：回傳 0/1/2（高/中/低密度屋頂）或 -1（這裡沒有房子）。
    ⚠ 門檻隨密度走 —— 靠近城區時幾乎必中（連成一片），往外門檻抬高，
      房子就一叢一叢地散開，最後完全交還給地貌。 */
-function roofPick(mi,n){ return roofPickW(SUBW[mi],n); }
 function roofPickW(subw,n){
   const w=subw/255;
   /* ⚠ 噪聲要先正規化再當門檻。VEGSEL 是 fbm，實測落在 0~0.815、均值 0.458 ——
@@ -1772,7 +1745,6 @@ const BIOME_CLIFF=70;                      // 崖面門檻（|SLX|+|SLY|，≈�
 const BIOME_ROCKALT=300;                   // 這個高度以上的崖面用灰岩，以下用褐岩
 const BIOME_WASTE=0.80;                    // 荒地門檻（噪聲高於此才是荒地）——刻意少量
 const VEG_ALT_LO=120, VEG_ALT_HI=300;      // 針葉／闊葉的過渡高度
-const VEG_BAND=0.16;                       // 針闊葉的混合帶寬度
 /* 遠處淡出：不淡出的話高頻細節在遠景會走樣成閃爍（跟高度雜訊同一個限制），
    而且淡出同時把成本收在近景。
    GEO_AMP＝細節層的強度。0.85 太重，地面讀起來是一片深色雜點；0.5 只剩薄紋。 */
@@ -1821,12 +1793,8 @@ function buildSettlements(){
     });
     s.plan=S.plan||null; s.planW=S.planW||0; s.planRot=S.planRot||0;
     s.planH=S.planH||null; s.planTall=S.planTall||0;
-    s.noWater=!!S.noWater; s.noLamps=!!S.noLamps; s.wallCol=S.wallCol||null;
-    s.plateThick=S.plateThick||0;      // 底圖厚度（世界單位，ver -444；0＝無）
+    s.noLamps=!!S.noLamps; s.wallCol=S.wallCol||null;   // noWater 由原始條目 S 讀（relief 那邊的 noW），這裡不抄一份
     s.smoke=S.smoke||null;             // 炊煙（ver -446，見 drawCitySmoke）
-    /* ⚠ 底圖厚度只在**有台座**的城開：抬高走 PODIUM_CLEAR，也只有台座城會抬。
-       沒抬的城去畫側面，等於在地面下面憑空多一圈邊。 */
-    s.hasPodium=!!S.podium;
     s.mx=S.x; s.my=S.y;
     /* ⚠ 高度一律走 settleGroundH —— 與 buildRelief 的整地同一個來源。
        不要在這裡重寫算式（先前就是這樣寫出 44 vs 124 的差異）。 */
@@ -1921,7 +1889,6 @@ const SENSE_FIT = {
   by0:0.414, by1:0.429,    // 胸針 y ÷ floorY
   w0:1.10,   w1:1.005,     // 尺寸 ÷ 視窗寬 的下限（只有寬螢幕會綁到）
 };
-const SENSE_ART_BASE = 600;                       // CSS 裡固定的基準尺寸
 const SENSE_ALPHA0 = 0.72, SENSE_ALPHA1 = 0.26;   // 透明度緩降
 
 /* k=0..1 → 這一刻的尺寸與左上角。boost＝心跳脈動的額外倍率（繞胸針放大）。 */
@@ -2052,8 +2019,6 @@ function sturmHit(px,py){
   return px>=C.x-8 && px<=C.x+C.w+8 && py>=C.y-10 && py<=C.y+C.h+10;
 }
 function sturmCancel(){ sturmT0=0; }
-/* 充能進度 0..1（給面板顯示用，目前只在方向計上發光）。 */
-function sturmCharge(now){ return clamp(1-(sturmReady-now)/STURM_CD_MS,0,1); }
 
 /* 立繪不進開場的擋畫面預載，但**開場結束後要在背景先抓好**。
    ⚠ 召喚只有 1 秒，來不及現抓：原檔 PNG 2.5MB，手機網路上那 1 秒鐘只會看到
@@ -3530,7 +3495,6 @@ async function loadWorld(){
       /* ⚠ 起點往**城心方向**再退 10 像素：接點是「城內水域最外緣的那一格」，
          從那裡起算的話，城區與水道之間仍隔著插畫邊緣那一圈陸地 ——
          使用者看到的「城與河之間還有森林」就是這一圈。往回咬進城區才接得上。 */
-      const bx0r=best.ax+(S.x-best.ax)*0.0, by0r=best.ay+(S.y-best.ay)*0.0;
       const backLen=10, bvx=(S.x-best.ax), bvy=(S.y-best.ay), bvl=Math.hypot(bvx,bvy)||1;
       const sx0r=best.ax+bvx/bvl*backLen, sy0r=best.ay+bvy/bvl*backLen;
       const n=Math.max(2,Math.ceil(Math.hypot(best.bx-sx0r,best.by-sy0r))*2);
@@ -7633,49 +7597,8 @@ document.getElementById('spawnBtn').addEventListener('click',()=>{
   enemyTimer=ENEMY_CFG.gapMin+Math.random()*(ENEMY_CFG.gapMax-ENEMY_CFG.gapMin);
 });
 
-/* 程序翅：素材裡的翅跟身體重疊、切不開，而且翅要獨立振動，
-   所以無論精靈模式或程序模式，翅一律在這裡畫。
-   ⚠ 鳥翼不是蟲翅：蟲翅是薄膜、拍動時整片縮放；鳥翼有羽片，除了展幅還要
-     繞肩點掃一個角度 —— 兩者的拍動讀感完全不同，不能共用一組參數。 */
-function drawWingsProc(EC,pts,K,flap,shade,segAng){
-  if(K.wing==='insect'){
-    for(const wi of [1,3]){
-      const P=pts[wi]; if(!P) continue;
-      const sc=P[3], span=sc*46, chord=sc*11;
-      if(span<1.2) continue;
-      const ang=segAng(wi);
-      for(const sgn of [1,-1]){
-        EC.save(); EC.translate(P[0],P[1]);
-        EC.rotate(ang+sgn*(Math.PI/2)*(0.34+flap*0.52));
-        EC.fillStyle=shade(206,226,246,0.42);
-        EC.beginPath(); EC.ellipse(span*0.5,0,span*0.5,chord*(0.42+flap*0.58),0,0,Math.PI*2); EC.fill();
-        EC.strokeStyle=shade(226,182,86,0.55); EC.lineWidth=Math.max(0.6,sc*1.1);
-        EC.stroke();
-        EC.restore();
-      }
-    }
-  }else{
-    const P=pts[2]||pts[1]||pts[0];
-    const sc=P[3], span=sc*62;
-    if(span<1.5) return;
-    const ang=segAng(2)||segAng(1);
-    for(const sgn of [1,-1]){
-      EC.save(); EC.translate(P[0],P[1]);
-      EC.rotate(ang+sgn*(Math.PI/2)*(0.26+flap*0.30));
-      for(let f=0;f<3;f++){
-        const t=f/2;
-        const L=span*(1-t*0.30), Cw=sc*(9-t*2.4)*(0.55+flap*0.55);
-        EC.fillStyle=f===0?shade(244,248,255,0.72)
-                   :f===1?shade(196,214,242,0.66)
-                         :shade(140,168,214,0.60);
-        EC.save(); EC.rotate(-0.20+t*0.42);
-        EC.beginPath(); EC.ellipse(L*0.5,0,L*0.5,Cw,0,0,Math.PI*2); EC.fill();
-        EC.restore();
-      }
-      EC.restore();
-    }
-  }
-}
+/* 程序翅（drawWingsProc）已內聯進 drawEnemy3D（蟲翅/鳥翼兩個分支）——
+   ver -495 清死碼時把零呼叫的原函式拆掉，畫法的說明見 drawEnemy3D 該兩段。 */
 
 /* 逐節投影 + 程序繪製。回傳畫過就 true（給提示字用）。 */
 /* 進入戰鬥的提示（戰鬥本身尚未實作）。鏈狀與剛體兩條繪製路徑都要用，
@@ -8338,10 +8261,9 @@ function clipByCityDepth(sxk,syk,c0,c1){
   ctx.clip();
 }
 
-/* 最近那座「畫得出來」的城有多深 —— 雲的分趟分界（見 render / drawPuffs）。
-   沒有城在畫面裡就回 Infinity：雲全部在城之前那一趟畫完，行為與分趟前相同。 */
-/* nearestSettleZ：**已退役**（ver -448）。它是雲與城分兩趟畫時的分界 ——
-   A 案之後地面歸地形管、雲永遠高過屋頂，雲整批畫在城之後即可（見 render）。 */
+/* nearestSettleZ：**已退役**（ver -448）。它原是「最近那座畫得出來的城有多深」——
+   雲與城分兩趟畫時的分界。A 案之後地面歸地形管、雲永遠高過屋頂，
+   雲整批畫在城之後即可（見 render），函式本體已刪。 */
 
 function drawSettlements3D(scaleH,horizon,sinp,cosp){
   if(!window.Settlement || !MAPW) return;
@@ -8639,8 +8561,6 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
          2·hw 是世界寬度，(W/2z) 是該深度的世界→螢幕比，再乘 pk 進緩衝。 */
       const wantW=Math.max(8, (2*hw)*(W/(2*Math.max(60,o.z)))*pk);
       const planSrc=planMipFor(o.s.plan, planImg, wantW);
-      /* 底圖厚度的裙邊剪影（ver -444）：只有帶 `plateThick` 的城才有，見 buildPlanSkirt。 */
-      const SKIRT=(o.s.plateThick>0 && cityPlanSkirt[o.s.plan]) || null;
       /* ── 底圖厚度（PLATE_DROP）：**已移除**（ver -312）─────────────────────
          -311 曾經逐格往下拉一道垂直四邊形，想用厚度蓋住「從廣場穿出來的草地」。
          ⚠⚠ 那是**治標**：真正的原因是格距太粗（見 QUALITY 的 cell 註解），
@@ -8799,25 +8719,6 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
           const su=Math.hypot(a1*kx, b1*ky), sv2=Math.hypot(c1*kx, d1*ky);
           const ou=clamp(OVER_PX/Math.max(su,1e-6), 0.6, 24);
           const ov=clamp(OVER_PX/Math.max(sv2,1e-6), 0.6, 24);
-          /* ── 底圖厚度（ver -444，Ray：「底圖厚度 20，立面顏色同邊緣色」）──
-             先把**邊緣色的剪影**（`cityPlanSkirt`）畫在往下位移一段的位置，
-             再讓頂面蓋上去 —— 內部被蓋住，露出來的那一圈就是厚度的立面。
-             位移量＝`plateThick × scaleH×syk ÷ z`，逐角自己的 z（近角位移大，
-             遠角小 —— 那是厚度該有的透視）。
-             ⚠ 這是 ver -312 結案時寫的正解（「沿平面圖的 alpha 剪影拉」）：
-               它吃 alpha，所以碼頭懸在海上那一段也有緣，而且不是方形台。
-             ⚠ 只在帶 `plateThick` 的城多這一筆 drawImage，其他城零成本。
-             ⚠ 裙邊是全解析的剪影，來源座標要換算（`planSrc` 可能是縮圖）。 */
-          if(SKIRT){
-            const dko=o.s.plateThick*scaleH*syk;
-            const La=dko/PS[PA+3], Lb=dko/PS[PB+3], Lc=dko/PS[PC+3];
-            const b1s=((qby+Lb)-(qay+La))/sw, d1s=((qcy+Lc)-(qay+La))/shh;
-            const ks=SKIRT.width/(sux*2);
-            CFB.setTransform(a1*kx/ks, b1s*ky/ks, c1*kx/ks, d1s*ky/ks,
-                             (qax-a1*sx-c1*sy-bx0)*kx, (qay+La-b1s*sx-d1s*sy-by0)*ky);
-            CFB.drawImage(SKIRT, (sx-ou*0.5)*ks, (sy-ov*0.5)*ks, (sw+ou)*ks, (shh+ov)*ks,
-                                 (sx-ou*0.5)*ks, (sy-ov*0.5)*ks, (sw+ou)*ks, (shh+ov)*ks);
-          }
           // 緩衝的座標系＝(螢幕座標 − 外框原點) × 縮放
           CFB.setTransform(a1*kx, b1*ky, c1*kx, d1*ky,
                            (qax-a1*sx-c1*sy-bx0)*kx, (qay-b1*sx-d1*sy-by0)*ky);
@@ -8907,7 +8808,6 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
         /* 方位桶：由遠而近的順序只取決於 (gradU,gradV) 的方向（見 loadMass）。 */
         let az=Math.atan2(gradV,gradU)/(Math.PI*2); az-=Math.floor(az);
         const ORD=MS.ord[Math.min(MASS_AZ-1,(az*MASS_AZ)|0)];
-        const sux2=planImg.width*0.5, svy2=planImg.height*0.5;
         if(!massPts||massPts.length<64) massPts=new Float64Array(64);
         const MP=massPts;
         /* ⚠ 淡入的濃度**只套在量體層**（牆＋屋頂），底下的手繪平面圖維持不透明

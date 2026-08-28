@@ -216,6 +216,15 @@ export function clearThreat(){
   $('grid').classList.remove('alert','hot');
   stopThreatTick();
 }
+/* 反擊硬直（ver -495，Ray：「被反擊時延時歸零；預設為 1，0 的話就算被反擊
+   延時計時也不會歸零」）。「被反擊」＝`weaponCounter` 真的開火的那兩個分支
+   （Counter 帶、散彈的 Perfect 改傷帶）—— 免傷不開火的 Perfect 不算。
+   歸零走 combat 注入的 `resetIntervalDeadline`（唯一那一支，鐵律 8）；
+   `enemyCounterStagger` 由 enemy.setEnemy 從卡上載入（沒寫＝1）。 */
+function staggerOnCounter(){
+  if(state.enemyCounterStagger===0) return;
+  if(api.resetIntervalDeadline) api.resetIntervalDeadline();
+}
 // 點掉單一攻擊點 → 依剩餘時間判定 Counter / Perfect / Defense
 export function resolveThreat(th){
   if(!th || state.threats.indexOf(th)<0) return;
@@ -243,6 +252,7 @@ export function resolveThreat(th){
       state.enemyAtkSuppressUntil = Math.max(state.enemyAtkSuppressUntil,
                                              Date.now() + state.enemyCounterStun*1000);
     api.weaponCounter();
+    staggerOnCounter();
   }else if(!(w && w.noPerfectBand) && ratio < DEF_DEFENSE_MIN){
     // === Perfect Defense ===（金色微閃）
     grade='perfect';
@@ -259,6 +269,7 @@ export function resolveThreat(th){
       //   音效由 weaponCounter 的武器 blast SE 出聲（完防與反擊都會觸發散彈音效），此處不再疊合成重擊音。
       api.floatDmg(L.battle.perfect,'50%','40%',true);
       api.weaponCounter(perfScale);
+      staggerOnCounter();
     }else{
       // 一般武器（如重機槍）：完全免傷（狙擊 noPerfectBand=true 時此帶消失，落入下方 Defense）。
       //   完美防禦音＝weapon 的 Guard_SE（散彈完防走自己的槍聲，不到這裡）。

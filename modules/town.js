@@ -28,7 +28,6 @@ const ARRIVE_MS = 1000;   // 抵達新地點之後、對白開演之前的停頓
 /* 立繪滑入的時間。⚠ 與 `modules/story.js` 的 `SLIDE_MS` 同值（450ms，§6.5 的 450ms ease-out）——
    兩邊必須一致：這裡是拿它來讓對話框「等人站定」。改一邊要改另一邊（鐵律 7 的但書）。 */
 const SLIDE_MS = 450;
-const DIRS = ['up','down','left','right','back'];
 
 let townId=null, nodeId=null, layer=null, busy=false;
 let arriveT=0;            // 抵達停頓的計時器（換節點要取消，見 enter）

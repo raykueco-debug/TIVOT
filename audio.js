@@ -427,7 +427,6 @@ export const SFX = {
       applyLayer(l);
     }
   },
-  getLayerVolume(layer){ return _layerVol[layer]!=null ? _layerVol[layer] : 1; },
 
   setMasterVolume(v){
     _master = Math.max(0, Math.min(1, v==null ? 1 : v));
@@ -471,34 +470,8 @@ export const SFX = {
     playSrc(_shots[Math.floor(Math.random()*_shots.length)], _shotsVol);
   },
 
-  // Overkill 進場鈴：明亮鈴鐺（基音＋泛音成串衰減＋輕微回音第二響）。
-  //   峰值合計 ≈0.45，介於 heavyHit(0.5) 與一般 SFX 之間——「響亮但適中」。
-  overkillBell(){
-    const c = ctx();
-    if(!c) return;
-    try{
-      const t = c.currentTime;
-      // [頻率Hz, 峰值, 衰減秒]：B5 基音 + 八度/十二度泛音 → 教堂手鈴質感
-      const partials = [[988,0.22,1.1],[1976,0.12,0.8],[2953,0.06,0.55],[1479,0.05,0.9]];
-      partials.forEach(p=>{
-        const o=c.createOscillator(), g=c.createGain();
-        o.type='sine'; o.frequency.setValueAtTime(p[0], t);
-        g.gain.setValueAtTime(0.0001, t);
-        g.gain.exponentialRampToValueAtTime(p[1], t+0.008);
-        g.gain.exponentialRampToValueAtTime(0.0001, t+p[2]);
-        o.connect(g); g.connect(busIn(c,'se'));
-        o.start(t); o.stop(t+p[2]+0.05);
-      });
-      // 第二響（0.16s 後、較弱）：增加「響亮」的迴盪感而不刺耳
-      const t2=t+0.16, o2=c.createOscillator(), g2=c.createGain();
-      o2.type='sine'; o2.frequency.setValueAtTime(1319, t2);
-      g2.gain.setValueAtTime(0.0001, t2);
-      g2.gain.exponentialRampToValueAtTime(0.10, t2+0.008);
-      g2.gain.exponentialRampToValueAtTime(0.0001, t2+0.9);
-      o2.connect(g2); g2.connect(busIn(c,'se'));
-      o2.start(t2); o2.stop(t2+1);
-    }catch(e){}
-  },
+  /* overkillBell（Overkill 進場鈴）已拆（ver -495 清死碼）：合成好了但從未接線 ——
+     Overkill 進場實際走 heavyHit（combat）。要找回來翻 git 這一版之前。 */
 
   // ツケ板（拍子木）二丁：Boss S 級獎勵演出（銭湯インストール）毛筆字寫完後「チョン、チョン」兩聲。
   //   一聲＝極短噪聲 click（敲擊瞬態）+ 三部分音快速衰減（木質共鳴）；第二聲略強、間隔 0.55s。

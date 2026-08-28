@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.28-494';
+export const VERSION = 'ver 2026.08.28-495';
 
 export const GAME_CONFIG = {
 
@@ -778,8 +778,19 @@ export const GAME_CONFIG = {
    *  立繪檔名規約：角色_變體_CI（例 Saint_TR_CI／Saint_UG_CI／Saint_GT_CI／GunWitch_Boss_CI）。
    * ------------------------------------------------------------------ */
   enemies: {
+    /* ⚠⚠ 敵人卡的兩個統一欄位（ver -495，Ray 指定「敵人卡統一加上」）：
+       `story`         ＝ 這一隻的場次是不是**劇情戰**（1/0）。發起端明確宣告的
+                         （飛行交棒的 `scripted`）優先；沒宣告（城鎮／腳本插入戰）
+                         才讀卡上這一格。判定只有一處：combat.startGame →
+                         `state.storyBattle`（§6.5.2，ver -493）。
+       `counterStagger`＝ **反擊硬直**（1/0，Ray：「預設為 1，0 的話就算被反擊
+                         延時計時也不會歸零」）：被反擊（weaponCounter 真的開火）
+                         時延時懲罰計時歸零。判定在 defense 的 staggerOnCounter。
+       兩格**每張卡都要寫**（統一），程式端沒寫時的預設：story 走發起端／true、
+       counterStagger＝1。 */
     faceless: {
       name:'地下聖徒_A',        // UI 只顯示底線前的「地下聖徒」；底線後（_A）僅供作者辨識、不顯示
+      story:0, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
       /* 聖徒系列的結算副標是「已擊殺」（ver -432，Ray 指定）。⚠ 對照表在 i18n 的
          `result.winSubBy`，這裡只標這一隻是哪一類（鐵律 1）。三種聖徒同一類。 */
       kind:'slay',
@@ -810,6 +821,7 @@ export const GAME_CONFIG = {
     //    hp/attack 仍填保底值。立繪：Saint_TR_CI。
     trainee: {
       name:'訓練用聖徒',
+      story:0, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
       kind:'slay',                   // 聖徒系列＝已擊殺（ver -432）
       image:'enemy_trainee',    // → resources/enemy/Saint_TR_CI.png
       hp:500,
@@ -832,6 +844,7 @@ export const GAME_CONFIG = {
        ⚠ `attack` 仍留一個值只是為了資料完整；沒有任何一條路會讀到它。 */
     dart_target: {
       name:'固定立靶',
+      story:0, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
       /* 結算副標的用詞（ver -432，Ray：「『靶』為已擊破」）。⚠ 對照表在 `i18n` 的
          `result.winSubBy`，這裡只標這一隻是哪一類（鐵律 1）。 */
       kind:'target',
@@ -855,6 +868,7 @@ export const GAME_CONFIG = {
     //    差異：血更厚（300）＋攻擊更密（蓄力 4×1/1.2≈3.33s）；單擊傷害同一般值。
     facelessgiant: {
       name:'巨型聖徒',
+      story:0, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
       kind:'slay',                   // 聖徒系列＝已擊殺（ver -432）
       image:'enemy_facelessgiant',   // 內嵌立繪鑰匙 → resources/enemy/Saint_GT_CI.webp
       // 取景：主體在圖面右下（撲擊構圖），cover 裁切錨點右移下移——爪/頭/軀幹全入鏡
@@ -875,6 +889,7 @@ export const GAME_CONFIG = {
     // 亂入怪（無傷 45 秒內通關才會出現）— 先用同一隻怪測流程，正式再換
     intruderEnemy: {
       name:'亂入者 · ???',
+      story:0, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
       image:'enemy_faceless',
       hp:400,
       attack:50,
@@ -887,6 +902,7 @@ export const GAME_CONFIG = {
     // ── 槍之魔女（Boss）v17：S 評價後遭遇的隱藏 Boss ──
     witch: {
       name:'槍之魔女',
+      story:0, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
       kind:'human',                  // 槍之魔女是人類 → 已擊敗（ver -432，Ray 指定）
       image:'enemy_witch',      // 立繪鑰匙（附圖）
       hp:500,
@@ -914,6 +930,7 @@ export const GAME_CONFIG = {
          程式後補；不要因為還沒做就把欄位丟掉（丟掉的下場是下次補做時沒人記得。） */
     guild_hunter: {
       name:'賞金獵人',
+      story:1, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
       kind:'human',                      // 結算副標「已擊敗」（ver -432）
       image:'enemy_guild_hunter',        // ＝ NPC_GuildHunter_SI_Attack（與對話立繪同一張）
       /* ⚠ `bg`＝**戰鬥背景**（ver -375 新欄位）。這一隻的立繪是**去背**的
@@ -954,6 +971,7 @@ export const GAME_CONFIG = {
        第一場**船艦戰**的怪。卡上的每一欄都照抄成絕對值（鐵律 1／§6.5.2）。 */
     centipi: {
       name:'巨型蜈蚣',
+      story:1, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
       /* ⚠⚠ **三張時段差分**（Ray：「上午下午用 Centipi_day，晚上用 night，
          黃昏黎明用 Centipi_dd」）。寫成 `{day,dd,night}` 三個槽，時段→槽的對應
          只有一處：`modules/enemy.js` 的 `enemyImage()`（鐵律 7）。 */
@@ -1181,7 +1199,6 @@ export const GAME_CONFIG = {
     dmgPerCombo:         0.2,   // 每層連擊加成
     dmgComboCap:         20,    // 連擊加成計入上限
     dmgDualMult:         0.7,   // 雙槍傷害倍率（<1=安全牌）
-    dmgCritMult:         3,     // 暴擊倍率（舊保留欄位，未使用；實際暴擊改用下方 crit* 參數）
 
     // 暴擊（普攻）：暴擊率/暴擊加傷皆隨「連擊」成長；連擊於受擊或清盤中斷歸零。雙槍破防期間無暴擊。
     critBaseRate:        0.10,  // 普攻初始暴擊率（連擊 0 時）

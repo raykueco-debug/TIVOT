@@ -212,6 +212,9 @@ export function setEnemy(key){
   state.enemyNoStack   = !!en.noStack;
   state.enemyCounterBuff = en.counterBuff || null;
   state.enemyCounterStun = en.counterStun || 0;
+  /* 反擊硬直（ver -495，Ray：「被反擊時延時歸零；預設為 1，0 的話就算被反擊
+     延時計時也不會歸零」）。卡上沒寫＝1（會硬直）。判定在 defense 的反擊分支。 */
+  state.enemyCounterStagger = (en.counterStagger!=null) ? en.counterStagger : 1;
   const u = en.ult || {};                        // 3.3：Boss 專屬大絕參數（缺欄位＝一般怪預設）
   state.ULT_SHOTS  = u.shots!=null ? u.shots : 1;
   state.ULT_GAP_MS = u.gapMs!=null ? u.gapMs : 0;

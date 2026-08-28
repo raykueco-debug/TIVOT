@@ -348,8 +348,8 @@ window.__tivotFlight = {
     preloadRestImgs(); preloadLateBgm();
     story.playKerberosFromRisen(
       /* `scripted` 由飛行頁宣告（ver -493：隨機遭遇＝false，劇本遭遇＝true）——
-         沒帶（舊鑰匙）視為劇情戰。 */
-      ()=>{ $('home').classList.remove('on'); combat.startScriptBattle(id, { story: !req || req.scripted!==false }); },
+         沒帶（舊鑰匙）＝沒宣告，combat 會退回敵人卡的 `story`（ver -495）。 */
+      ()=>{ $('home').classList.remove('on'); combat.startScriptBattle(id, { story: req && req.scripted }); },
       ()=>story.close({ keepBgm:true }));
   },
   /* 降落（ver -416，Ray：「靠近城鎮時加入降落按鈕，點擊進入城鎮預設畫面」）。
@@ -422,7 +422,7 @@ function bootBattleGate(req){
     preloadRestImgs();                    // 其餘的圖背景補載（cut-in／武器圖…）
     preloadLateBgm();                     // 結算／失敗／Boss 那幾首（打完或打輸才用得到）
     story.playKerberosFromRisen(
-      ()=>{ $('home').classList.remove('on'); combat.startScriptBattle(req.battle, { story: req.scripted!==false }); },   // ver -493
+      ()=>{ $('home').classList.remove('on'); combat.startScriptBattle(req.battle, { story: req.scripted }); },   // 明確宣告才算，否則退回敵人卡（ver -495）
       ()=>story.close({ keepBgm:true }));
   };
   document.addEventListener('pointerdown', open);
@@ -1515,4 +1515,3 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
 
 combat.bootIdle();   // over=true，建立背景盤面/血條，停在首頁
 
-console.log('[step8] 連戰 lineup 已接上（局內多敵：faceless→facelessgiant）· 首敵：', GAME_CONFIG.enemies[GAME_CONFIG.lineup[0]]?.name, '· HP', state.enemyMax);

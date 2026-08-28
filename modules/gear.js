@@ -30,7 +30,7 @@ const W = () => GAME_CONFIG.weapons||{};
    兩邊的清單是兩回事，不要合成一份。 */
 const STORY_PARTNERS = ['nouvelle'];
 
-let el=null, dragging=null;
+let el=null;
 /* 現在開著哪一個分頁（ver -457，Ray：「在整備頁面加入道具分頁，道具要分類」）。
    ⚠ 不進存檔：這是「玩家現在在看哪一頁」，關掉重開回到整備即可。 */
 let tab='gear';
@@ -142,7 +142,7 @@ function bindSlot(s){
     if(!list) return;
     const dy=e.clientY-sy;
     if(!moved && Math.abs(dy)<6) return;
-    if(!moved){ moved=true; s.classList.add('drag'); dragging=s; }
+    if(!moved){ moved=true; s.classList.add('drag'); }
     e.preventDefault();
     s.style.transform='translateY('+dy+'px)';
     /* 其餘的格子讓位：跨過半格就位移一格。 */
@@ -160,7 +160,7 @@ function bindSlot(s){
     const dy=e.clientY-sy;
     const to=Math.max(0, Math.min(list.length-1, idx + Math.round(dy/h)));
     list.forEach(o=>{ o.style.transform=''; });
-    s.classList.remove('drag'); dragging=null;
+    s.classList.remove('drag');
     const wasMoved=moved; list=null; moved=false;
     if(wasMoved){
       if(to!==idx){
@@ -176,7 +176,7 @@ function bindSlot(s){
   };
   s.addEventListener('pointerup', end);
   s.addEventListener('pointercancel', ()=>{ if(list){ list.forEach(o=>o.style.transform='');
-    s.classList.remove('drag'); dragging=null; list=null; moved=false; } });
+    s.classList.remove('drag'); list=null; moved=false; } });
 }
 
 /* 點一格 → 道具欄的那一個分類（Ray：「進入道具欄的對應分類」）。 */

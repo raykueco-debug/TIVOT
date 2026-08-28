@@ -140,7 +140,6 @@ export function sellPrice(id){
   const rate=((GAME_CONFIG.shop||{}).sellRate!=null) ? GAME_CONFIG.shop.sellRate : 0.5;
   return Math.max(0, Math.round(priceOf(id)*rate));
 }
-export function canSell(id){ return sellPrice(id)>0; }
 export function sell(id, n){
   const price=sellPrice(id); if(!price) return { n:0, gain:0 };
   n=Math.max(1, (n==null?1:n)|0);

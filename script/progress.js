@@ -103,13 +103,8 @@ export function setFlightLossCount(n){
   else { try{ localStorage.removeItem(K.flightLoss); }catch(e){} }
 }
 
-/* 退旗標（ver -480）：強制戰打輸、重生要「劇情再跑一次」時，把取段當下記的
-   talkOnce 那類旗標退掉。⚠ 只給「打輸重來」這種回捲用 —— 一般進度旗標不退。 */
-export function removeFlags(list){
-  if(!list || !list.length) return getFlags();
-  const s=new Set(getFlags()); for(const f of list) s.delete(f);
-  const out=[...s]; setFlags(out); return out;
-}
+/* removeFlags（-480 的敗北退旗標）已拆（ver -495 清死碼）：回捲機制被
+   「打贏才記」原則取代（§6.5.2），退旗標從此沒有呼叫者。 */
 
 /* ── 好感 ──
    ⚠ tier 界線 10/20/30/40/50，**棘輪只升不降**（docs/TIVOT_IMPL_SPEC.md §2）。
@@ -159,11 +154,6 @@ export function addAffection(who, delta){
   if(nf > floor){ floors[who]=nf; wr(K.affFloor, JSON.stringify(floors)); }
   return v;
 }
-export function affectionOf(who){
-  const v=getAffection()[who];
-  return (typeof v==='number') ? v : AFFECTION_DEFAULT;
-}
-export function tierOfChar(who){ return tierOf(affectionOf(who)); }
 
 /* ── 玩家名 ──
    ⚠ 台詞裡寫 {P}，**顯示的那一刻才代換**（存進播放佇列就換的話，玩家中途

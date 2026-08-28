@@ -515,10 +515,17 @@ Ray 交劇本稿一律照 **`script/SCRIPT_FORMAT.md`** —— 稿子的最小�
   | 城鎮進場對白 | **演完才記**（town.enter） | 不必退 —— 記法本身就合這條原則 |
 
   ⚠⚠ **「是不是劇情戰」是一支明確的判定：`state.storyBattle`**（ver -493，Ray：
-    「在戰鬥加上一個是否為劇情戰的判定，之後就讀那一個」）。由**發起端**宣告
-    （`startScriptBattle(id,{story})`：飛行的隨機遭遇傳 `scripted:false`，
-    劇本遭遇與城鎮／腳本插入戰＝true），開場白要不要播、`talkOnce` 打贏要不要記，
-    一律只讀它 —— 不要再從卡上的旗標（-492 的 `talkIfNot`，已撤）或別處反推。
+    「在戰鬥加上一個是否為劇情戰的判定，之後就讀那一個」；ver -495 起**敵人卡
+    統一有 `story:1/0` 這一格**，Ray 指定）。優先序（判定只有一處，combat.startGame）：
+    ① 發起端明確宣告（`startScriptBattle(id,{story})`，飛行交棒的 `scripted`：
+      隨機遭遇 false、劇本遭遇 true）② 沒宣告（城鎮／腳本插入戰、舊交棒鑰匙）
+      → 敵人卡的 `story` ③ 卡上也沒寫 → true。
+    開場白要不要播、`talkOnce` 打贏要不要記，一律只讀 `state.storyBattle` ——
+    不要再從別的旗標反推（-492 的 `talkIfNot` 已撤）。
+  ⚠ 敵人卡同時統一加了 **`counterStagger:1/0`（反擊硬直，ver -495）**：預設 1 ＝
+    被反擊（`weaponCounter` 真的開火：Counter 帶、散彈的橘圈改傷帶）時
+    **延時懲罰計時歸零**；0 ＝不歸零。實作只有 defense 的 `staggerOnCounter`（鐵律 8），
+    卡→state 的載入在 `enemy.setEnemy`（沒寫＝1）。
 
   ⚠⚠ **-486 的教訓（為什麼 -487 改成打贏才記）**：回捲版（記了再退）要跨兩個
     document 靠執行期掛鉤（main 呼叫 flight 的 rollback），而主頁與飛行頁的
