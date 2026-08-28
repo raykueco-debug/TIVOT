@@ -1153,6 +1153,14 @@ export function open(town, node, opts){
      開在城裡（save.apply → openTown）全部吃到。城內移動與戰後 resume 不經過
      這裡，所以城裡打殘的血照舊帶著，出去再回來才補滿。 */
   prog.clearHp();
+  /* 進帝都＝諾薇兒好感初始化為 5（ver -560，Ray：「預設是全 0，進帝都後諾才 5」）——
+     一輪一次（旗標擋重複），直接寫值不走棘輪（這是入隊的起始值，不是獎勵）；
+     已經比 5 高就不動（讀檔回城不能倒扣）。 */
+  if(townId==='capital' && !prog.hasFlag('aff_init_nouvelle')){
+    prog.addFlags(['aff_init_nouvelle']);
+    const _a=prog.getAffection();
+    if((_a.nouvelle||0) < 5){ _a.nouvelle=5; prog.setAffection(_a); }
+  }
   /* 被抬回來的（ver -496，Ray：「城鎮中戰鬥死亡就回旅店」）：這一次抵達由
      `enter()` 消化 —— 初見還沒看過就演節點的 `wake` 那一拍（見 enter 的說明）。 */
   carriedIn = !!(opts && opts.carried);

@@ -2282,7 +2282,9 @@ function removeFlag(f){
      不要以為現在的 affection() 已經是那份規格的完整實作。
    ⚠ 主遊戲的 state.currentFavor（固定 0）是舊的佔位，與這裡**還沒接起來**。 */
 const AFFECTION_KEY='tivot_affection_v1';
-const AFFECTION_DEFAULT=10;
+/* ver -560：預設全 0（Ray 指定）。⚠ 與 script/progress.js 的 AFFECTION_DEFAULT
+   是同一個數字的兩份（本頁非 module），改一邊要改另一邊。 */
+const AFFECTION_DEFAULT=0;
 const AFFECTION = { renna:AFFECTION_DEFAULT, nouvelle:AFFECTION_DEFAULT,
                     sorana:AFFECTION_DEFAULT, anya:AFFECTION_DEFAULT };
 (function loadAffection(){

@@ -46,7 +46,11 @@ const K = {
 /* ⚠ 測試期間預設 3（Ray 指定，與 flight/index.html 的 STAGE_DEFAULT 一致）。
    改這個值會連帶改變閒聊聽得到哪些內容 —— 兩邊要一起改。 */
 export const STAGE_DEFAULT = 3;
-export const AFFECTION_DEFAULT = 10;
+/* ver -560（Ray：「預設是全 0，進帝都後諾才 5」）：預設全 0；諾薇兒的 5 是
+   **進帝都那一刻**的一次性初始化（modules/town.js 的 open，旗標擋重複）。
+   ⚠ flight/index.html 的 AFFECTION_DEFAULT 是同一個數字的複本（非 module 頁），
+     改一邊要改另一邊（鐵律 7 的但書，兩邊註解互指）。 */
+export const AFFECTION_DEFAULT = 0;
 /* ⚠⚠ 預設名（ver -477，Ray 定案）：**托爾斯坦／托爾**（-395 曾是凱勞諾斯／凱）。
    ⚠ 故事文本**一律用暱稱 `{N}`**，除非 Ray 的稿特別標註使用全名（ver -477 同批指定）。
    西文的檔名/id（素材、插圖）與玩家自己輸入的名字**脫鉤** ——
