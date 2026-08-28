@@ -221,7 +221,7 @@
   /* 破防計量（ver -511 重設計）：鐮月形 —— 下粗上細，細尖往右鉤到血條上方，
      整體放大。SVG 是固定尺寸、錨在這一格的左下，往上與往右**刻意溢出**
      （細尖要騎在血條上方）；pointer-events 只有滿值時開。 */
-  #energyClasp{flex:none;width:30px;position:relative;align-self:stretch;touch-action:manipulation;pointer-events:none;z-index:2;}   /* 不被血條壓住（ver -515，Ray 指定） */
+  #energyClasp{flex:none;width:30px;position:relative;align-self:stretch;touch-action:manipulation;pointer-events:none;}   /* C 的圖層在 HP 之下（ver -526，Ray 指定；-515 的抬層取消） */
   #energyClasp.full{cursor:pointer;pointer-events:auto;}
   /* 滿值時擴大點擊熱區（蓋住厚端那一片） */
   #energyClasp.full::before{content:"";position:absolute;top:-12px;bottom:-6px;left:-8px;right:-2px;}
@@ -261,18 +261,18 @@
      ⚠ 漸層走 background-clip:text，描邊交給 -webkit-text-stroke＋外圈 drop-shadow
        （text-shadow 對 clip:text 的字不顯示）。 */
   /* 大白字（ver -517，Ray 的示意圖：純白粗體、壓在環上）。 */
-  #energyClasp .clasp-combo b{display:inline-block;font-size:38px;font-weight:700;
+  #energyClasp .clasp-combo b{display:inline-block;font-size:46px;font-weight:900;
     font-style:italic;font-family:Georgia,"Iowan Old Style","Palatino Linotype",serif;
-    color:#fff;-webkit-text-stroke:1px rgba(8,8,12,.85);
-    text-shadow:0 2px 3px rgba(0,0,0,.9),0 0 10px rgba(0,0,0,.65);
+    color:#fff;-webkit-text-stroke:1.6px rgba(8,8,12,.9);
+    text-shadow:0 2px 3px rgba(0,0,0,.9),0 0 12px rgba(0,0,0,.7);
     font-variant-numeric:tabular-nums;letter-spacing:0;}
   /* 每一次連擊：由大縮小彈一下（Ray 指定）。 */
   /* 蓋章（ver -516，Ray：「半透明像蓋章一樣由大到小落下成實字」）：
      大而半透 → 加速落下 → 到位成實字（結尾一點點回彈）。 */
-  #energyClasp .clasp-combo b.pop{animation:comboPop .3s cubic-bezier(.5,0,.65,1.35);}
+  #energyClasp .clasp-combo b.pop{animation:comboPop .34s cubic-bezier(.5,0,.6,1.2);}
   @keyframes comboPop{
-    0%  {transform:scale(2.5);opacity:.18;}
-    70% {transform:scale(1.02);opacity:.9;}
+    0%  {transform:scale(3.4);opacity:.12;}
+    70% {transform:scale(1.04);opacity:.92;}
     100%{transform:scale(1);opacity:1;}}
   /* 連擊斷：舊數字轉紅、縮小消散（散完 JS 才把整塊藏起來重計）。 */
   #energyClasp .clasp-combo b.break{color:#e0554a;
