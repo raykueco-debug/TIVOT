@@ -1004,7 +1004,9 @@ function refreshContinue(){
   b.classList.toggle('on', saveSys.hasSave());
 }
 refreshContinue();
-bindBtn('continueBtn', ()=>{ if(!saveSys.loadLatest()) refreshContinue(); });
+/* ⚠ 讀檔前先殺光背景頁（ver -559，同 startStoryFresh 的理由）：藏著的飛行 iframe
+   還活著的話，讀檔後它可能把記憶體裡的舊值寫回共用鑰匙。 */
+bindBtn('continueBtn', ()=>{ try{ killAllPages(); }catch(_){} if(!saveSys.loadLatest()) refreshContinue(); });
 /* 整備頁收掉了通知城鎮（ver -430）：武器店的整備教學要等玩家真的換完裝備，
    才把商店的單子擺出來（見 `modules/town.js` 的 `showTip`）。 */
 town.setGearWatch(gear.onceClosed);
@@ -1019,7 +1021,20 @@ town.setGearWatch(gear.onceClosed);
    從頭開始不能吃那個預設）→ 主線第 0 句。不吃 testmode、不經章節工具、
    不帶任何開發種子；讀檔照舊走「繼續」（存檔庫與一輪狀態分開，
    開新故事不會毀掉既有存檔）。testmode 的小 story 鈕＝同一支（鐵律 8）。 */
-function startStoryFresh(){ prog.newRun(); prog.setStage(0); story.open(null); }
+/* ver -559（Ray：「繼續又變 stage3…應該要把開始故事的 stage 和好感棘輪獨立」）：
+   開始故事＝**完全獨立的新輪**，三步缺一不可 ——
+   ① killAllPages()：背景還活著的頁（藏起來的飛行 iframe、掛著的城鎮）全部殺掉，
+     不給任何舊頁在新輪開始後把記憶體裡的舊值寫回 localStorage；
+   ② clearRunSaves()：上一輪的存檔（main＋auto）作廢 —— 不清的話「繼續」會把
+     舊輪的 stage／好感／棘輪整包拉回來；
+   ③ newRun()＋setStage(0)：一輪內鑰匙全清、明寫 stage 0。 */
+function startStoryFresh(){
+  try{ killAllPages(); }catch(_){}
+  saveSys.clearRunSaves();
+  prog.newRun();
+  prog.setStage(0);
+  story.open(null);
+}
 bindBtn('storyBtn', startStoryFresh);
 bindBtn('storyStartBtn', startStoryFresh);
 /* ══ 章節（ver -429，Ray 指定）══════════════════════════════════════════

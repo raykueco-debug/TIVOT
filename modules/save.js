@@ -163,6 +163,16 @@ export function autoFlightSave(fp){
   store(db);
   return rec;
 }
+/* 開新的一輪 → 上一輪的存檔一併作廢（ver -559，Ray：「應該要把開始故事的
+   stage 和好感棘輪獨立」）：main（旅店手動）與 auto（檢查點）都清 ——
+   不清的話「繼續」會把**舊輪**的 stage／好感／棘輪整包拉回來，跟新一輪打架
+   （Ray 連報兩次「繼續又變 stage3」就是這個）。
+   quick／slots 是 testmode 的開發梯子，留著。 */
+export function clearRunSaves(){
+  const db=load();
+  db.main=null; db.auto=null;
+  store(db);
+}
 export function hasSave(){ return !!latest(); }
 /* 首頁「繼續」：讀最新的那一筆。回傳 false＝根本沒有存檔（呼叫端不必自己再查一次）。 */
 export function loadLatest(){
