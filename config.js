@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.28-552';
+export const VERSION = 'ver 2026.08.28-553';
 
 export const GAME_CONFIG = {
 
@@ -302,11 +302,11 @@ export const GAME_CONFIG = {
         lose:{ 0:['......確認HUND {rand3}號機能停止。辛苦了。'] },   // {rand3}＝隨機 3 位數（零補），由 inspector 代入
       },
     },
-    /* ══ 璐娜莉亞（ver -471，Ray 交稿）：**挑戰的 Boss 戰打贏**的結算評價者 ══
+    /* ══ 璐娜莉亞（ver -471，Ray 交稿）：**挑戰的 Boss 戰**的結算評價者 ══
        「挑戰的boss戰結算畫面原本是監察官，改成璐娜莉亞」—— 那一場是夢裡的對決，
        醒來評語的是她自己。逐**等第**換立繪差分（portraitsByRank，S/A 共用 smirk）。
-       ⚠ **戰敗仍是芙蕾雅**（Ray 只交了 S~E 六句）：lose 的「機能停止」那句是
-         監察官的行話，混不進這一組。 */
+       ver -553（Ray 交稿）：**戰敗也是她**（angry＋「討人厭的夢......」）——
+       -471「戰敗仍是芙蕾雅」那條作廢。 */
     luna: {
       name:'璐娜莉亞',
       tier:'rookie',
@@ -315,6 +315,7 @@ export const GAME_CONFIG = {
         S:'inspector_luna_smirk', A:'inspector_luna_smirk',
         B:'inspector_luna_n',     C:'inspector_luna_lookdown',
         D:'inspector_luna_angry', E:'inspector_luna_hand',
+        lose:'inspector_luna_angry',
       },
       portraits:{},
       dialogues:{
@@ -324,6 +325,7 @@ export const GAME_CONFIG = {
         C:{ 0:['連在夢裡都那麼討人厭。'] },
         D:{ 0:['......只是場夢而已嗎？'] },
         E:{ 0:['手......又開始痛了。'] },
+        lose:{ 0:['討人厭的夢......'] },
       },
     },
   },

@@ -117,11 +117,11 @@ export function evaluate(stats, cfg = GAME_CONFIG.rating){
  *  監察官挑選 / 立繪 / 對白
  * ========================================================================== */
 // 取得當前啟用的監察官 config（無則 null）
-/* `bossWin`＝Boss 戰**打贏**的那一頁（ver -471，Ray：「挑戰的boss戰結算畫面
-   原本是監察官，改成璐娜莉亞」）→ 改用 config.bossInspector（luna）。
-   戰敗、迎擊警告（interceptLine）、其他一切照 defaultInspector（芙蕾雅）。 */
-function getInspector(bossWin){
-  const key=(bossWin && GAME_CONFIG.bossInspector) || GAME_CONFIG.defaultInspector;
+/* `bossFight`＝Boss 戰（挑戰）的結算頁（ver -471 打贏；-553 起**敗北也算**，
+   Ray：「boss戰落敗的話 Luna_SI_seat_angry」）→ 改用 config.bossInspector（luna）。
+   迎擊警告（interceptLine）與其他一切照 defaultInspector（芙蕾雅）。 */
+function getInspector(bossFight){
+  const key=(bossFight && GAME_CONFIG.bossInspector) || GAME_CONFIG.defaultInspector;
   if(!key) return null;
   return GAME_CONFIG.inspectors[key] || null;
 }
@@ -389,9 +389,11 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose, opts){
      ⚠ `portrait` 是**直接路徑**不是 ASSETS 鍵：立繪住在 `speakers.js`，沒進 ASSETS。 */
   const spk = (opts && opts.speaker) || null;
   // 監察官立繪＋台詞（一般失敗不跑監察官；Boss 戰失敗仍顯示監察官，播 Boss 失敗台詞）
+  /* Boss 戰（挑戰）勝敗**都**由璐娜莉亞評（ver -553，Ray：「boss戰落敗的話
+     Luna_SI_seat_angry『討人厭的夢......』」）—— -471 的「敗北回芙蕾雅」作廢。 */
   const insp = spk ? null
              : (opts && opts.noInspector) ? null
-             : ((isLose && !state.inIntruderFight) ? null : getInspector(state.inIntruderFight && !isLose));
+             : ((isLose && !state.inIntruderFight) ? null : getInspector(state.inIntruderFight));
   const stage=$('inspectorStage');
   const bubble=$('inspectorBubble');
   const portrait=$('inspectorPortrait');
