@@ -221,7 +221,7 @@
   /* 破防計量（ver -511 重設計）：鐮月形 —— 下粗上細，細尖往右鉤到血條上方，
      整體放大。SVG 是固定尺寸、錨在這一格的左下，往上與往右**刻意溢出**
      （細尖要騎在血條上方）；pointer-events 只有滿值時開。 */
-  #energyClasp{flex:none;width:30px;position:relative;align-self:stretch;touch-action:manipulation;pointer-events:none;}
+  #energyClasp{flex:none;width:30px;position:relative;align-self:stretch;touch-action:manipulation;pointer-events:none;z-index:2;}   /* 不被血條壓住（ver -515，Ray 指定） */
   #energyClasp.full{cursor:pointer;pointer-events:auto;}
   /* 滿值時擴大點擊熱區（蓋住厚端那一片） */
   #energyClasp.full::before{content:"";position:absolute;top:-12px;bottom:-6px;left:-8px;right:-2px;}
@@ -275,6 +275,11 @@
     animation:comboBreak .45s ease-in forwards;}
   @keyframes comboBreak{0%{transform:scale(1);opacity:1;}
     100%{transform:scale(.5);opacity:0;}}
+  /* HITS 小標（ver -515，Ray：「收尾用 HITS 擋住"）：貼著細尾終點、沿切線角度，
+     壓住收尾的斷口。 */
+  #energyClasp .clasp-hits{font-size:9px;font-style:italic;font-weight:700;
+    letter-spacing:1px;fill:#e8d9a8;stroke:rgba(10,7,3,.9);stroke-width:2.6;
+    paint-order:stroke;font-family:Georgia,serif;}
   /* 盤面（ver -514，Ray 給的 VP 特寫）：暗色橢圓的碟體＋細金緣 —— 刀刃形的
      計量貼著它的下緣掃過去，數字壓在盤上。 */
   #energyClasp .clasp-plate{fill:rgba(8,6,12,.88);stroke:rgba(217,198,138,.55);stroke-width:1.2;}
