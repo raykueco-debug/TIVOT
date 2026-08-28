@@ -700,7 +700,8 @@ function layoutClasp(){
      可蓋月牙、**不可蓋過 HP 條**（右緣的夾在 updateEnergyClasp 換字時做，
      因為夾多少取決於當下的字寬）。 */
   const combo=host.querySelector('.clasp-combo');
-  if(combo){ combo.style.top=claspGeo.nypx+'px';
+  /* 縱向＝缺口中心再上移 0.12S（ver -543，Ray：「連擊數字稍微上移一些」）。 */
+  if(combo){ combo.style.top=(claspGeo.nypx-0.12*S)+'px';
              combo.style.bottom='auto'; combo.style.transform='translate(-50%,-50%)';
              const b=combo.querySelector('b');
              if(b){ b.style.fontSize=Math.round(0.9*S)+'px';                  // 定稿截圖：字高≈0.9S
@@ -747,6 +748,8 @@ function updateEnergyClasp(){
     }
   }
   $('energyClasp').classList.toggle('full', state.energy>=100);
+  /* 累積中隱隱發光（ver -543）：0<energy<100 掛 .charging（滿檔另有強光暈）。 */
+  $('energyClasp').classList.toggle('charging', state.energy>0 && state.energy<100);
   /* 中央連擊數（ver -511，Ray：「像 VP1 那樣顯示連擊數在中間」「連擊為 0 的時候
      不顯示，每次連擊數字就由大縮小跳一次，連擊失敗數字就轉紅消失重計」）。
      這一支由 updateBars 帶著跑 —— 每一次打中／被打／點錯都會經過那裡，

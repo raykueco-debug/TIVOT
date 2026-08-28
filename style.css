@@ -225,10 +225,17 @@
   #energyClasp.full{cursor:pointer;pointer-events:auto;}
   /* 滿值時擴大點擊熱區（蓋住厚端那一片） */
   #energyClasp.full::before{content:"";position:absolute;top:-16px;bottom:-16px;left:-60px;right:-2px;}
-  /* 月牙圖層（ver -539）：frame（空圈）在下、fill（金月）在上，幾何由 layoutClasp 寫。 */
-  #energyClasp .clasp-moon{position:absolute;pointer-events:none;filter:drop-shadow(0 0 4px #000);}
+  /* 月牙圖層（ver -539）：frame（空圈）在下、fill（金月）在上，幾何由 layoutClasp 寫。
+     ver -543（Ray）：飽和度壓低（原圖金橙太豔）。 */
+  #energyClasp .clasp-moon{position:absolute;pointer-events:none;
+    filter:saturate(.72) drop-shadow(0 0 4px #000);}
+  /* 計量累積中（0<energy<100，combat 掛 .charging）：隱隱發光 —— 淡金光暈慢呼吸。 */
+  #energyClasp.charging #claspMoonFill{animation:moonCharge 1.8s ease-in-out infinite alternate;}
+  @keyframes moonCharge{
+    from{filter:saturate(.72) drop-shadow(0 0 3px rgba(255,196,96,.30)) drop-shadow(0 0 4px #000);}
+    to  {filter:saturate(.72) drop-shadow(0 0 7px rgba(255,196,96,.65)) drop-shadow(0 0 4px #000);}}
   /* 滿檔加強光暈：drop-shadow 加倍層 + ::after 呼吸光暈橢圓（::before 已作觸控擴區） */
-  #energyClasp.full svg,#energyClasp.full .clasp-moon{filter:drop-shadow(0 0 10px var(--holy)) drop-shadow(0 0 22px rgba(111,179,212,.75)) drop-shadow(0 0 4px #000);}
+  #energyClasp.full svg,#energyClasp.full .clasp-moon{filter:saturate(.72) drop-shadow(0 0 10px var(--holy)) drop-shadow(0 0 22px rgba(111,179,212,.75)) drop-shadow(0 0 4px #000);}
   #energyClasp.full::after{content:"";position:absolute;left:16px;bottom:16px;width:44px;height:52px;
     transform:translate(-50%,20%);border-radius:50%;pointer-events:none;
     background:radial-gradient(ellipse at center, rgba(150,215,245,.32), transparent 70%);
