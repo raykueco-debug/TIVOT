@@ -27,7 +27,7 @@ import { matchPortraits } from './tone.js';    // 立繪與背景的融合（葉
 import * as progress from '../script/progress.js';   // 旗標（戰鬥內短教學的「講過了」）
 /* ⚠ 只借**兩支演出原語**：音效名→檔案的表（`SE_FILES`）只有 story.js 一份（鐵律 7），
    抄過來必然走鐘。story.js 不 import 本檔，所以沒有循環相依。 */
-import { playSe } from './story.js';
+import { playSe, playSePair } from './story.js';
 import * as hap from './haptics.js';        // 畫面震動＝手上也震（§6.5.6）
 
 const $ = id => document.getElementById(id);
@@ -781,7 +781,9 @@ function shakeScreen(){
 function showLine(){
   const line = cur.lines[lineIdx] || {};
   /* 演出：音效與畫面震動（ver -429）。⚠ 一次性 —— 每次演到就放，不是狀態（同 story.js）。 */
-  if(line.se) playSe(line.se);
+  /* `seFollow`（ver -508）：與 `se` 同拍疊播、但長度**夾在 se 的長度**（se 停了
+     它就停）—— 實作在 story.playSePair（音效表只有那一份，鐵律 7）。 */
+  if(line.se){ if(line.seFollow) playSePair(line.se, line.seFollow); else playSe(line.se); }
   if(line.shake) shakeScreen();
   /* ⚠⚠ **演出拍**（ver -478，Ray：「先進戰鬥畫面，咆哮震動再彈蕾娜」）：
      只有 se/shake、沒有 who 也沒有 text —— 框藏起來、台上不動人，

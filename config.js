@@ -1177,9 +1177,10 @@ export const GAME_CONFIG = {
                             { who:'nouvelle', img:'tut_nouvelle_steady', text:'交給我們！' },
                             { who:'nouvelle', img:'tut_nouvelle_steady', text:'大型敵人就要靠重武器！' },
                             /* 主角的空白對話框（他開口了，但沒有台詞 —— §6.5 的慣例）。
-                               ver -507（Ray 指定）：這一拍播槍棺齒輪聲 —— 他正在把艦砲
-                               拆下來，下一句蕾娜才會喊「單手就把艦砲……！」。 */
-                            { blank:true, se:'se_kerberos_gear' },
+                               ver -507/-508（Ray 指定）：這一拍主音是 se_metalclip（上膛），
+                               齒輪聲疊在底下、metalclip 停了齒輪就收（seFollow）——
+                               他正在拆艦砲，下一句蕾娜才喊「單手就把艦砲……！」。 */
+                            { blank:true, se:'se_metalclip', seFollow:'se_kerberos_gear' },
                             { who:'renna',    img:'tut_renna_shocked',   text:'騙人的吧……單手就把艦砲……！' },
                             { who:'nouvelle', img:'tut_nouvelle_run',    text:'蕾娜小姐！請穩住船身！' },
                             { who:'nouvelle', img:'tut_nouvelle_run',    text:'這樣的話，那種東西對他來說就只是靶子！' },
@@ -1419,7 +1420,7 @@ export const GAME_CONFIG = {
       se_enemy_revolver:0.732, se_enemy_dagger:3.959, se_enemy_centipi:1.272,
       se_enemy_saintroar:2.910,
       /* ── 聖徒化／搭檔 ── */
-      se_saint_install:1.059, se_saint_maxburst:0.955, se_lunamg:2.066,
+      se_saint_install:1.059, se_saint_maxburst:0.955, vo_lunamg:2.066,   // se_lunaMG → vo_lunaMG（Ray 改名，ver -508）
       /* ── UI ── */
       se_ui_click:4.750, se_ui_kagurabell:2.530, se_ui_pageflip:2.359,
       se_ui_sortie:1.184, se_ginclick:1.106, se_metalclip:1.139,

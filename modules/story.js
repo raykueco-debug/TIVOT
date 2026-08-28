@@ -840,7 +840,7 @@ const SE_FILES=[
   'Se_enemy_centipi.m4a', 'se_weapon_cannon_120mm.m4a', 'se_weapon_heavygun.m4a',
   'se_enemy_revolver.m4a', 'se_enemy_shot.m4a', 'se_enemy_slash.m4a', 'se_enemy_smack.m4a',
   'se_flight_heartbeat.m4a', 'se_flight_idle_loop.mp3', 'se_flight_sail_loop.mp3',
-  'se_flight_seagull.m4a', 'se_flight_train.mp3', 'se_lunaMG.m4a', 'se_punch.m4a',
+  'se_flight_seagull.m4a', 'se_flight_train.mp3', 'vo_lunaMG.m4a', 'se_punch.m4a',
   'se_saint_install.m4a', 'se_saint_maxburst.m4a', 'se_steps.m4a', 'se_ui_click.m4a',
   'se_ginclick.m4a', 'Se_Tummy.m4a', 'se_metalclip.m4a', 'se_SailorShout.mp3',
   'se_ui_kagurabell.m4a', 'se_ui_pageflip.m4a', 'se_ui_sortie.m4a', 'se_walk.m4a',
@@ -850,7 +850,10 @@ const SE_FILES=[
 ];
 /* 別名：腳本裡慣用的短名 → 實際檔名（去副檔名）。 */
 const SE_ALIAS={ se_saintroar:'se_enemy_saintroar', se_mg_squall:'se_weapon_mg_squall',
-                 se_reload:'se_weapon_reload' };
+                 se_reload:'se_weapon_reload',
+                 /* Ray 於 ver -508 把 se_lunaMG 改名 vo_lunaMG（檔案仍在 se/）——
+                    腳本照舊寫 se_lunaMG，這裡接住（稿子不必回頭改）。 */
+                 se_lunamg:'vo_lunamg' };
 const SE_SRC=(()=>{ const m={};
   for(const f of SE_FILES) m[f.replace(/\.[^.]+$/,'').toLowerCase()]='resources/audio/se/'+f;
   return m; })();
@@ -900,6 +903,20 @@ export function playSe(spec){
   if(!spec) return;
   if(Array.isArray(spec)) spec.forEach(x=> typeof x==='string' ? one(x,0) : one(x.n, x.delay||0));
   else one(spec, 0);
+}
+/* ══ 同拍疊播、跟著主音收（ver -508，Ray：「se_metalclip 應該播這個才對，跟 gear
+   一起，但是 se_metalclip 停了 gear 就要停」）══
+   `main` 照常播；`follow` 用**可中止的 cue** 疊上去，主音的長度一到就把 cue 淡掉
+   （同 Kerberos 之門收齒輪的作法：齒輪素材 6.9 秒，不收會自己響完）。
+   長度問 `SFX.duration`（鐵律 7：真相在音檔身上）；還沒解碼就退 1.5 秒。 */
+export function playSePair(main, follow){
+  playSe(main);
+  const fsrc=seSrc(follow);
+  if(!fsrc){ playSe(follow); return; }
+  let cue=null;
+  try{ cue=SFX.playCue(fsrc, fileGain(fsrc)); }catch(_){ playSe(follow); return; }
+  const ms=(SFX.duration && SFX.duration(seSrc(main))) || 1500;
+  setTimeout(()=>{ try{ cue.fade(120); }catch(_){} }, ms);
 }
 /* 槍擊：**機關槍掃射**（Ray 指定）——沿著一條斜線由一端掃到另一端，火花大、
    持續兩秒。⚠ 不是「隨機灑點」：隨機讀起來是一片斑點，沿線推進才讀得出
