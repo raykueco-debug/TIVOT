@@ -173,7 +173,9 @@ export function goNextBoard(){
   SFX.play(asset('sfx_reload'), sfxGain('sfx_reload'));   // 清盤換彈音（RELOADING 顯示時）
   t.classList.add('on');
   txt.style.animation='none'; void txt.offsetWidth; txt.style.animation='';
+  try{(window.__gnb=window.__gnb||[]).push({t:Date.now()%1000000,ev:'arm',ni:nextIdx});}catch(_){}
   setTimeout(()=>{
+    try{(window.__gnb=window.__gnb||[]).push({t:Date.now()%1000000,ev:'fire',ni:nextIdx,over:state.over});}catch(_){}
     if(state.over) return;
     t.classList.remove('on');
     state.transitioning=false;
@@ -962,7 +964,10 @@ function win(){
      **這一支**（win → 結算頁 → 繼續交還），storyBattleEnd 只有 devSkip 與
      allowLose 在用，於是血量從來沒繼承過（Ray：「血量沒有繼承上一場的傷害」）。
      storyBattleEnd 那一份留著（它照顧自己那兩條路）。 */
-  if(storyFramed()) prog.setHp(Math.max(1, state.playerHp));
+  if(storyFramed()){
+    prog.setHp(Math.max(1, state.playerHp));
+    console.info('[hp] 勝場寫回：'+Math.max(1, state.playerHp));   // 診斷輸出（ver -491），穩定後可拆
+  }
   state.over=true; clockPause(); stopAll();
   const totalTime=clockElapsedMs()/1000;               // 只累計實打時間（overkill/轉場/cut-in 皆不計）
   /* ══ 計時挑戰：超過標準時間就算「沒過關」（ver -396，Ray：「時間超過 50 秒出失敗分支的台詞」）══
@@ -1115,6 +1120,9 @@ export function startGame(){
   if(storyFramed()){
     const ph=prog.getHp();
     if(ph!=null) state.playerHp=Math.max(1, Math.min(state.playerMax, ph));
+    /* 診斷輸出（ver -491）：血量繼承在誰的機器上壞了很難隔空猜 ——
+       開 console 一眼看到「這一場開場讀到什麼」。穩定後可拆。 */
+    console.info('[hp] 開場繼承：store='+ph+' → playerHp='+state.playerHp+'/'+state.playerMax);
   }
   loadBoard(0); updateBars();
   if(state.scriptRun){ updateBars(); return; }   // 劇情插入戰不進教學
