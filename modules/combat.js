@@ -667,31 +667,47 @@ function layoutClasp(){
   if(sr.width<10||br.width<10) return;                 // 還沒排好 → 之後的重試再量
   const sig=[sr.x,sr.y,br.x,br.y,br.height,rr.y].map(v=>Math.round(v)).join(',');
   if(sig===claspSig) return; claspSig=sig;
-  /* ══ ver -536：嚴格照 Ray 的遊戲截圖標註（S＝紅頂→藍底，全部照量）══
-     · C＝均勻厚度（0.25S）的橢圓環，整顆在血條左邊、留 0.11S 縫：
-       外緣下端＝藍條下緣、上端高過紅條 ~0.68S，開口朝右對著紅條那一帶。
-     · 下臂的收口是**垂直面**（Ray：「下臂拉正」）：內外兩條弧各繞到同一條
-       垂直線（x＝內緣 25° 處）才收，閉合邊自然就是鉛直的。
-     · 上臂照舊徑向收（Ray：「目前上臂是沒問題的」）。
-     · 金色計量＝遮罩描邊 dash，沿環的中心線由下唇畫到上唇（-531 那一套）。
-     ⚠ -535 的病：這一段用了沒宣告的 bb/rt，整支每次都拋 ReferenceError ——
-       量測版面從來沒生效，畫面停在 index.html 的舊寫死座標。 */
+  /* ══ ver -536：**新月**（Ray：「那不是圈，不是C，是新月狀的東西，
+     給我按照我的畫法」）——照他小畫家那張直抄：
+     · 外緣＝一顆橢圓的左弧（下端＝藍條下緣、上端＝紅頂上方 0.75S）；
+     · 內緣＝往右偏的第二顆橢圓（凹面朝右），兩弧交在上下兩個**收尖的月角**
+       （月角在右上／右下，尖端幾乎貼到血條，留 0.06S 縫）；
+     · 腰（最厚處，左側中央）＝0.5S，往兩角連續收細到 0 —— 這就是月牙，
+       不是等厚的環。數值全由血條 rect 推（S＝紅頂→藍底）。
+     · 金色計量＝遮罩描邊 dash 沿月牙中脊由下角畫到上角（-531 那一套）。 */
   const rt=rr.y-sr.y, bb=br.y+br.height-sr.y;
   const BL=br.x-sr.x;
   const S=bb-rt;
-  const TH=0.25*S, GAP=0.11*S;
-  const RXo=0.62*S, RYo=0.84*S, RXi=RXo-TH, RYi=RYo-TH;
-  const RXm=RXo-TH/2, RYm=RYo-TH/2;
-  const ccx=BL-GAP-RXo, ccy=bb-RYo;
-  const D2R=Math.PI/180, A1=335*D2R;
-  const pt=(rx,ry,a)=>[ccx+rx*Math.cos(a), ccy+ry*Math.sin(a)];
-  const arc=(rx,ry,aF,aT,n)=>{ const o=[]; for(let i=0;i<=n;i++) o.push(pt(rx,ry,aF+(aT-aF)*i/n)); return o; };
+  const RXo=0.64*S, RYo=0.875*S;                        // 外橢圓
+  const AT=50*Math.PI/180;                              // 月角在外橢圓 ±50°（右上/右下）
+  const XT=RXo*Math.cos(AT), YT=RYo*Math.sin(AT);       // 月角座標（相對環心）
+  /* 內橢圓：解「過兩個月角、腰厚 0.5S」——RYc 取 0.95S，
+     |XT−DX| = (DX+RXo−W)·√(1−(YT/RYc)²)，W=0.5S。 */
+  const W=0.50*S, RYc=0.95*S;
+  const kk=Math.sqrt(1-(YT/RYc)*(YT/RYc));
+  const DX=(XT-(RXo-W)*kk)/(1+kk);
+  const RXc=DX+RXo-W;
+  const GAP=0.06*S;
+  const ccx=BL-GAP-XT, ccy=bb-RYo;                      // 月角右端貼齊縫、下緣＝藍底
   const cl=v=>Math.max(-1,Math.min(1,v));
-  const XCUT=RXi*Math.cos(25*D2R);                       // 垂直切口的 x（圓心座標系）
-  const aI0=25*D2R, aO0=Math.acos(cl(XCUT/RXo)), aM0=Math.acos(cl(XCUT/RXm));
   const f=P=>P.map(q=>q[0].toFixed(1)+','+q[1].toFixed(1)).join(' L');
-  const ring='M'+f(arc(RXo,RYo,aO0,A1,72))+' L'+f(arc(RXi,RYi,A1,aI0,72))+' Z';
-  const spine='M'+f(arc(RXm,RYm,aM0,A1,72));
+  /* 外弧：下角(+50°) → 底 → 左 → 頂 → 上角(310°)；
+     內弧：上角沿偏右橢圓的左側倒回下角；交點即月角，自然收尖。 */
+  const tc=Math.acos(cl((XT-DX)/RXc));                  // 月角在內橢圓上的參數角
+  const outer=[], inner=[], spinePts=[];
+  const N=96;
+  for(let i=0;i<=N;i++){ const a=AT+(2*Math.PI-2*AT)*i/N;
+    outer.push([ccx+RXo*Math.cos(a), ccy+RYo*Math.sin(a)]); }
+  for(let i=0;i<=N;i++){ const t=(2*Math.PI-tc)-(2*Math.PI-2*tc)*i/N;
+    inner.push([ccx+DX+RXc*Math.cos(t), ccy+RYc*Math.sin(t)]); }
+  const ring='M'+f(outer)+' L'+f(inner)+' Z';
+  /* 中脊：外緣與內緣在同一個 y 的中點（兩角各讓 6%，尖端厚度 0）。 */
+  for(let i=0;i<=N;i++){ const a=(AT*1.12)+(2*Math.PI-2*AT*1.12)*i/N;
+    const y=RYo*Math.sin(a), xo=RXo*Math.cos(a);
+    const xi=DX-RXc*Math.sqrt(Math.max(0,1-(y/RYc)*(y/RYc)));
+    spinePts.push([ccx+(xo+xi)/2, ccy+y]); }
+  const spine='M'+f(spinePts);
+  const TH=W;                                           // 遮罩筆寬照腰厚
   const track=svg.querySelector('.clasp-track'), gold=svg.querySelector('.clasp-gold'), fill=$('energyClaspFill');
   if(track){ track.setAttribute('d',ring);
     track.style.fill='rgba(12,10,18,.82)'; track.style.stroke='rgba(217,198,138,.35)'; track.style.strokeWidth='1'; }
@@ -701,11 +717,14 @@ function layoutClasp(){
   /* 數字錨在圓心、HITS 壓在尖上（clasp 的定位座標系＝svg 減去宿主偏移）。 */
   const host=$('energyClasp').getBoundingClientRect();
   const combo=document.querySelector('#energyClasp .clasp-combo');
-  if(combo){ combo.style.left=(sr.x-host.x+BL+0.56*S)+'px'; combo.style.top=(sr.y-host.y+rt-0.83*S)+'px';
+  /* ver -536 改：數字**蓋在新月上層**（Ray：「數字應該在新月的上層，蓋到新月
+     沒關係」＋新標註圖：大白字壓在 C 的開口上）。錨在環心、往開口偏一點。
+     （前一張圖上方那個黑框是他在塗掉舊的數字，不是數字的位子 —— 看錯了。） */
+  if(combo){ combo.style.left=(sr.x-host.x+BL-0.63*S)+'px'; combo.style.top=(sr.y-host.y+ccy)+'px';
              combo.style.bottom='auto'; combo.style.transform='translate(-50%,-50%)';
              /* 字級跟著 C 的半徑走（Ray：「字也很小」——他的視窗比較大，
                 固定 px 相對就小）。 */
-             const b=combo.querySelector('b'); if(b) b.style.fontSize=Math.round(0.95*S)+'px'; }
+             const b=combo.querySelector('b'); if(b) b.style.fontSize=Math.round(1.1*S)+'px'; }
   const hits=svg.querySelector('.clasp-hits');
   if(hits){ hits.setAttribute('x', String(Math.round(BL+0.30*S)));   // 標註：數字下、紅條上方
             hits.setAttribute('y', String(Math.round(rt-0.27*S))); }
