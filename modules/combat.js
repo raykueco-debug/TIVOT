@@ -665,10 +665,6 @@ const MOON={
   nx : 0.6957, ny : 0.4412, // 缺口中心佔圖比例（連擊數的錨＝掃掠的軸心）
   a0 : 165,                 // 下月角（CSS conic 慣例：0°=正上、順時針增加）
   arc: 258.2,               // 下角→上角的掃角（順時針）
-  /* 兩個月角尖端佔圖比例（-540 擺位的錨；沿缺口中心對邊界角射線量到的最遠點）。 */
-  tipU:{x:0.9855, y:0.2923},   // 上角尖（長臂）
-  tipL:{x:0.7591, y:0.6912},   // 下角尖（短臂）
-  armT: 56/272,                // 下臂厚度佔圖高（缺口中心正下方 180° 的徑向厚度）
 };
 let claspSig='';
 let claspGeo=null;                                      // 遮罩/連擊數用的幾何（layoutClasp 算好，update 只讀）
@@ -686,16 +682,13 @@ function layoutClasp(){
   if(sig===claspSig) return; claspSig=sig;
   const S=(br.y+br.height)-rr.y;             // S＝紅條頂→藍條底（慣例單位）
   const BL=br.x;                             // 血條左緣（視口座標）
-  /* 擺位（ver -541，Ray：「月太大了，月的下臂粗細要與藍血條一樣粗」＋
-     -540 的「下臂要切齊藍血條左緣，上臂要伸入 HITS 的 H 後方」）：
-     · 縮放＝**下臂厚度貼齊藍條高**（armT 是那張圖量出來的比例）；
-     · 下角尖釘在（血條左緣, 藍條垂直中心）—— 下臂與藍條同粗又同高，
-       讀起來就是血條往左的收尾；
-     · 上臂的落點由圖自己決定（圖不旋轉）：這個大小下尖端沿 H 後方收在
-       紅條頂附近。左端超出畫面就讓它被裁。 */
-  const yL=br.y+br.height/2;
-  const Hm=br.height/MOON.armT, Wm=Hm*MOON.ar;
-  const left=BL-MOON.tipL.x*Wm, top=yL-MOON.tipL.y*Hm;
+  /* 擺位（ver -542，Ray：「月的位置跟大小參考未命名-2」）——
+     逐 px 量那張圖（存 resources/_originals/vfx/clasp_moon_mock2.png）換成 S 比例：
+     徽章 bbox 高 1.548S、上緣＝紅頂上方 0.516S、右緣＝血條左緣＋0.290S
+     （壓進血條左端；月牙圖層本來就在 HP 之下（-526），被蓋住的那一角是刻意的）。
+     -540/-541 的月角/臂厚錨定作廢。 */
+  const Hm=1.548*S, Wm=Hm*MOON.ar;
+  const top=rr.y-0.516*S, left=BL+0.290*S-Wm;
   for(const el of [frame,fillImg]){
     el.style.left=(left-hr.x)+'px'; el.style.top=(top-hr.y)+'px';
     el.style.width=Wm+'px'; el.style.height=Hm+'px';
