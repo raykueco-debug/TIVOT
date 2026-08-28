@@ -79,7 +79,11 @@ export function weaponCounter(dmgScale){
      覆寫的是**場次**不是武器卡，同一把槍在陸戰還是原本的聲音。
      ⚠ 值可以是 `'se_key'` 或 `{key, times}`（`times`＝同一瞬間疊播幾聲，
        Ray：「霰彈槍換成 se_weapon_pistol_01 **同時播放 6 聲**」）。 */
-  const ov = state.weaponSound && state.weaponSound[state.equippedWeapon];
+  /* 這一場的武器音覆寫（船戰卡）：**id 優先、類別次之**（ver -504，Ray：「數值跟著
+     玩家裝備的副武器，音效固定用船戰的」）—— 卡上照類別寫（重機槍/霰彈槍/萊福槍），
+     換上任何一把同類的槍都吃得到艦載音；要給特定武器開例外才寫 id。 */
+  const ov = state.weaponSound &&
+             (state.weaponSound[state.equippedWeapon] || state.weaponSound[w.cat]);
   const soundKey = ov ? (ov.key || ov) : w.sound;
   const soundTimes = (ov && ov.times) ? ov.times : 1;
   /* 卡上 weaponSound 的 `once`（ver -503，Ray：「se_bulletpiece 跟船戰散射武器

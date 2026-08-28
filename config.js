@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.28-503';
+export const VERSION = 'ver 2026.08.28-504';
 
 export const GAME_CONFIG = {
 
@@ -1139,13 +1139,15 @@ export const GAME_CONFIG = {
                            所以**這一場自己那一次就評得到**，之後每一場都有（打靶除外）。
                            ⚠ 寫在卡上不寫死是哪一場（鐵律 1）：日後改成別場開啟只動這一欄。 */
                         evalFrom:true,
-                        weaponSound:{ MG_Squall:'se_ship_heavygun',
-                                      /* `once`（ver -503，Ray：「se_bulletpiece 跟船戰散射
-                                         武器同時播放，只播一次，不隨 hit 數增加」）：
-                                         這一次反擊開火同時疊播一支，實作在 weapon.js。 */
-                                      Shotgun_Blast:{ key:'se_pistol_01', times:6, once:'se_bulletpiece' },
-                                      Shotgun_Dragon:{ key:'se_shotgun_blast', once:'se_bulletpiece' },
-                                      Sniper_Falcon:'se_ship_cannon' },
+                        /* ⚠⚠ 船戰的武器音**按類別**固定（ver -504，Ray：「船戰武器的
+                           數值都跟著玩家現在裝備的副武器，但是音效固定用船戰的」）——
+                           換上哪一把（絞肉機改、龍息、遊隼…）數值都是那把槍的，
+                           聲音一律是艦載的那一套。鑰匙＝武器類別（cat）；
+                           也吃武器 id（特定武器要例外時寫 id，id 優先於類別）。
+                           `once`（ver -503）：反擊開火同時疊播一支、整串只一次。 */
+                        weaponSound:{ '重機槍':'se_ship_heavygun',
+                                      '霰彈槍':{ key:'se_pistol_01', times:6, once:'se_bulletpiece' },
+                                      '萊福槍':'se_ship_cannon' },
                         /* 船戰的速射砲（機槍反擊）連射間隔（ver -476，Ray：「連射速度
                            調降50%」）：預設 90ms → 180ms。絕對值寫卡上（同敵人卡慣例）。 */
                         counterGapMs:180,
@@ -1202,13 +1204,15 @@ export const GAME_CONFIG = {
        ⚠ 只有**劇情戰**會播（state.storyBattle）：隨機遭遇共用這張卡不播；
          talkOnce 打贏才記（§6.5.2）。 */
     flight_serpent:   { enemy:'serpent',
-                        weaponSound:{ MG_Squall:'se_ship_heavygun',
-                                      /* `once`（ver -503，Ray：「se_bulletpiece 跟船戰散射
-                                         武器同時播放，只播一次，不隨 hit 數增加」）：
-                                         這一次反擊開火同時疊播一支，實作在 weapon.js。 */
-                                      Shotgun_Blast:{ key:'se_pistol_01', times:6, once:'se_bulletpiece' },
-                                      Shotgun_Dragon:{ key:'se_shotgun_blast', once:'se_bulletpiece' },
-                                      Sniper_Falcon:'se_ship_cannon' },
+                        /* ⚠⚠ 船戰的武器音**按類別**固定（ver -504，Ray：「船戰武器的
+                           數值都跟著玩家現在裝備的副武器，但是音效固定用船戰的」）——
+                           換上哪一把（絞肉機改、龍息、遊隼…）數值都是那把槍的，
+                           聲音一律是艦載的那一套。鑰匙＝武器類別（cat）；
+                           也吃武器 id（特定武器要例外時寫 id，id 優先於類別）。
+                           `once`（ver -503）：反擊開火同時疊播一支、整串只一次。 */
+                        weaponSound:{ '重機槍':'se_ship_heavygun',
+                                      '霰彈槍':{ key:'se_pistol_01', times:6, once:'se_bulletpiece' },
+                                      '萊福槍':'se_ship_cannon' },
                         counterGapMs:180,
                         talkOnce:'taught_serpent_frag',
                         talk:[
