@@ -226,16 +226,19 @@
   /* 滿值時擴大點擊熱區（蓋住厚端那一片） */
   #energyClasp.full::before{content:"";position:absolute;top:-16px;bottom:-16px;left:-60px;right:-2px;}
   /* 月牙圖層（ver -539）：frame（空圈）在下、fill（金月）在上，幾何由 layoutClasp 寫。
-     ver -543（Ray）：飽和度壓低（原圖金橙太豔）。 */
+     ver -543（Ray）：飽和度壓低；-544（Ray：「飽和度還是太高，再偏白一點」）：
+     再降並提亮 —— 這條基底鏈是唯一一份，charging/full 的 keyframes 都以它為底。 */
   #energyClasp .clasp-moon{position:absolute;pointer-events:none;
-    filter:saturate(.72) drop-shadow(0 0 4px #000);}
+    filter:saturate(.48) brightness(1.18) drop-shadow(0 0 4px #000);}
   /* 計量累積中（0<energy<100，combat 掛 .charging）：隱隱發光 —— 淡金光暈慢呼吸。 */
   #energyClasp.charging #claspMoonFill{animation:moonCharge 1.8s ease-in-out infinite alternate;}
   @keyframes moonCharge{
-    from{filter:saturate(.72) drop-shadow(0 0 3px rgba(255,196,96,.30)) drop-shadow(0 0 4px #000);}
-    to  {filter:saturate(.72) drop-shadow(0 0 7px rgba(255,196,96,.65)) drop-shadow(0 0 4px #000);}}
+    from{filter:saturate(.48) brightness(1.18) drop-shadow(0 0 3px rgba(255,214,150,.30)) drop-shadow(0 0 4px #000);}
+    to  {filter:saturate(.48) brightness(1.18) drop-shadow(0 0 7px rgba(255,214,150,.65)) drop-shadow(0 0 4px #000);}}
   /* 滿檔加強光暈：drop-shadow 加倍層 + ::after 呼吸光暈橢圓（::before 已作觸控擴區） */
-  #energyClasp.full svg,#energyClasp.full .clasp-moon{filter:saturate(.72) drop-shadow(0 0 10px var(--holy)) drop-shadow(0 0 22px rgba(111,179,212,.75)) drop-shadow(0 0 4px #000);}
+  /* 滿檔＝**白光**（ver -544，Ray：「月滿的時候呈白光」）：抽掉飽和、大幅提亮，
+     光暈換純白（原本聖藍 var(--holy) 那套撤掉）。 */
+  #energyClasp.full svg,#energyClasp.full .clasp-moon{filter:saturate(.20) brightness(1.75) drop-shadow(0 0 10px rgba(255,255,255,.95)) drop-shadow(0 0 22px rgba(255,250,235,.7)) drop-shadow(0 0 4px #000);}
   #energyClasp.full::after{content:"";position:absolute;left:16px;bottom:16px;width:44px;height:52px;
     transform:translate(-50%,20%);border-radius:50%;pointer-events:none;
     background:radial-gradient(ellipse at center, rgba(150,215,245,.32), transparent 70%);
@@ -294,8 +297,11 @@
   #energyClasp .clasp-hits{font-size:10px;font-weight:700;letter-spacing:1px;
     fill:#fff;stroke:rgba(8,8,12,.9);stroke-width:2.8;paint-order:stroke;
     font-family:Georgia,serif;}
-  /* 滿值：金月呼吸（pulse＝brightness，img 也吃）。 */
-  #energyClasp.full #claspMoonFill{animation:pulse .6s infinite alternate;}
+  /* 滿值：白月呼吸（獨立 keyframes —— 借通用 pulse 會把上面那條白光鏈整組蓋掉）。 */
+  #energyClasp.full #claspMoonFill{animation:moonFull .6s infinite alternate;}
+  @keyframes moonFull{
+    from{filter:saturate(.20) brightness(1.55) drop-shadow(0 0 8px rgba(255,255,255,.85)) drop-shadow(0 0 18px rgba(255,250,235,.6)) drop-shadow(0 0 4px #000);}
+    to  {filter:saturate(.20) brightness(2.00) drop-shadow(0 0 12px rgba(255,255,255,1)) drop-shadow(0 0 26px rgba(255,250,235,.8)) drop-shadow(0 0 4px #000);}}
   /* ── 副武器切換鈕（ver -410，Ray：「在敵我血條右側加入副武器切換鈕，大小同破防值」）──
      左邊是破防計量表、右邊是這一顆，兩側對稱夾著血條。
      ⚠ `#barsBlock` 整塊是 `pointer-events:none`（它只是 HUD），所以這一顆要自己打開。
