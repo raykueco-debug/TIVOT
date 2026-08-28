@@ -689,12 +689,22 @@ function layoutClasp(){
     const t=i/(NARM-1);
     pts.push([X-L*t, headY]);
   }
-  for(let i=1;i<N-NARM+1;i++){                         // 橢圓弧：90°（臂端，相切）→ 274°（尖）
-    const t=i/(N-NARM), th=(90+184*t)*Math.PI/180;
+  for(let i=1;i<N-NARM+1;i++){                         // 橢圓弧：90°（臂端，相切）→ 270°（頂點）
+    const t=i/(N-NARM), th=(90+180*t)*Math.PI/180;
     pts.push([cx+KX*r*Math.cos(th), cy+r*Math.sin(th)]);
   }
+  /* ver -533（Ray：「HITS 要在紅色血條的上方，C 上臂跟過去到 T」）：
+     頂點的切線本來就水平（+x）——細刃從頂點**水平拖過紅條上空**，
+     一路拖到紅條上方那枚 HITS 的 T 正下方（y 全程在紅條頂之上，不壓條）。 */
+  const apex=pts[pts.length-1];
+  const exX=(br.x-sr.x)+20, exY=apex[1]+1.5;           // T ≈ 字首往右 ~17px
+  const NEXT2=14;
+  for(let i=1;i<=NEXT2;i++){ const t=i/NEXT2;
+    pts.push([apex[0]+(exX-apex[0])*t, apex[1]+(exY-apex[1])*t*t]); }
   for(let i=0;i<pts.length;i++){ const t=i/(pts.length-1);
-    ws.push(w0*Math.pow(1-t,1.8)+0.5); }               // 斬擊：快速變細 → 長細刃
+    /* 切口**嚴格**＝藍條粗（ver -533，Ray 指定）：t=0 時 w 恰為 w0，
+       不再多出常數項那 0.5px。 */
+    ws.push((w0-0.5)*Math.pow(1-t,1.8)+0.5); }         // 斬擊：快速變細 → 長細刃
   const A=[],B=[];
   for(let i=0;i<N;i++){
     const p=pts[i], q=pts[Math.min(i+1,N-1)], o=pts[Math.max(i-1,0)];
@@ -724,8 +734,8 @@ function layoutClasp(){
              const b=combo.querySelector('b'); if(b) b.style.fontSize=Math.round(r*2.1)+'px'; }
   const hits=svg.querySelector('.clasp-hits');
   if(hits){ const tip=pts[pts.length-1];
-            hits.setAttribute('x', String(Math.round(tip[0]-18)));   // T（第 4 字前緣）落在尖端正上
-            hits.setAttribute('y', String(Math.round(tip[1]-3))); }
+            hits.setAttribute('x', String(Math.round(tip[0]-17)));   // T（第 4 字前緣）＝尖端正上
+            hits.setAttribute('y', String(Math.round(tip[1]-4))); }  // 字底在刃上、整枚在紅條上方
   updateEnergyClasp();                                 // 路徑換了 → dash 總長重掛
 }
 /* 進場後多試幾拍（血條要排好才量得到）；視窗變了整組重量。 */
