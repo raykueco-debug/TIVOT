@@ -6918,6 +6918,7 @@ const ENEMY_KINDS = {
     name:'空賊', plan:'rigid', speedK:0.85, turnRate:0.00055,
     /* ── 出場條件（ver -509，Ray 的空賊船卡：[區域：薩梅爾空域外全域]
        [稀有等級：E][Stage:1 以後才登場]）—— 與 config.enemies.pirate_ship 互指。 */
+    /* 為什麼不進薩梅爾（Ray 的設定）：**會被防空砲打下來** —— 故事需求。 */
     rarity:'E', fromStage:1, notRegion:1,   // 1＝薩梅爾帝國（regionAt 的 id，同劇本遭遇）
 
     bodyLen:300,                    // 船長（世界單位）＝側視圖寬所代表的長度

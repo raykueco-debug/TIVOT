@@ -27,8 +27,10 @@ const $ = id => document.getElementById(id);
 const W = () => GAME_CONFIG.weapons||{};
 
 /* 本篇能用的搭檔。⚠ **只有諾薇兒**（Ray 指定）—— 試玩版的選人畫面照舊列全部，
-   兩邊的清單是兩回事，不要合成一份。 */
-const STORY_PARTNERS = ['nouvelle'];
+   兩邊的清單是兩回事，不要合成一份。
+   ⚠ ver -510：第一位＝`config.storyPartner`（唯一真相 —— combat.startGame 進劇情戰
+   也切到它，不再依賴玩家先開過這一頁）。 */
+const STORY_PARTNERS = [GAME_CONFIG.storyPartner || 'nouvelle'];
 
 let el=null;
 /* 現在開著哪一個分頁（ver -457，Ray：「在整備頁面加入道具分頁，道具要分類」）。

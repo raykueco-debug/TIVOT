@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.28-509';
+export const VERSION = 'ver 2026.08.28-510';
 
 export const GAME_CONFIG = {
 
@@ -219,6 +219,11 @@ export const GAME_CONFIG = {
     },
   },
   defaultPartner: 'renee',   // 搭檔只有 renee（蕾妮）/ malzeno（馬季諾）；freya＝監察官（inspectors）
+  /* 本篇（story）的搭檔（ver -510）：劇情/城鎮/船戰一進場就切過去 ——
+     以前只有開過整備頁才切，出航直接進的船戰帶著試玩版的蕾妮/露娜，
+     即死防禦與聖徒化 cut-in 都是舊圖（Ray 連報兩張圖錯）。
+     讀取點：combat.startGame（scriptRun）與 gear（清單第一位），都指這裡（鐵律 7）。 */
+  storyPartner: 'nouvelle',
 
   /* ------------------------------------------------------------------ *
    *  三、監察官（Inspector）— 結算畫面角色（框架預留，之後接）
@@ -1079,6 +1084,8 @@ export const GAME_CONFIG = {
        飛行限定隨機敵（[場景：飛行][區域：**薩梅爾空域外全域**][稀有等級：E]
        [Stage:1 以後才登場]—— 刷新規則在 flight 的 ENEMY_KINDS.pirate：
        rarity/fromStage/notRegion，兩邊註解互指）。
+       ⚠ 為什麼不進薩梅爾（Ray 的設定）：**會被防空砲打下來** —— 故事需求，
+         不是平衡參數；別因為「帝都附近打不到空賊」就把限制拿掉。
        ⚠ 卡上「攻擊音」那一段（serpant／em_smack）是範本殘留 —— 真正的音寫在
          各受擊行的 `se:`（延時＝艦砲 120mm、點錯＝手槍二、大絕＝se_weapon_cannon），
          照那三個入表。 */

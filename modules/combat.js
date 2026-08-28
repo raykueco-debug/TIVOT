@@ -14,7 +14,7 @@
  * ========================================================================== */
 
 import { GAME_CONFIG, asset, bgmVol, sfxGain } from '../config.js';
-import { state, initEnemyHp } from '../state.js';
+import { state, initEnemyHp, setPickedPartner } from '../state.js';
 import { SFX } from '../audio.js';
 import { TEL } from '../telemetry.js';
 import { L, fmt } from '../i18n.js';   // 多語言（浮動字/RELOADING）   // 遙測（底層純輸出，同 audio 定位；未設定後端時 no-op）
@@ -1130,6 +1130,12 @@ export function startGame(){
   state.timeAttack = null; state.timeOver = false;   // 開場先歸零（同 noSaint：不要靠上一場收乾淨）
   state.weaponSound = null;                          // 武器音覆寫也是（ver -423）
   state.counterGapMs = null;                         // 連射間隔覆寫也是（ver -476）
+  /* ⚠⚠ 本篇的搭檔在**進場這一刻**切成 `config.storyPartner`（ver -510，Ray：
+     「即死防的圖錯了」「飛行戰中的聖徒化CI也是錯的」）—— 以前只有開過整備頁才切，
+     出航直接進的船戰帶著試玩版的蕾妮／露娜：即死防禦 cut-in 是蕾妮那張、
+     聖徒化 cut-in 落回 Luna（saint.js 那條分流要求搭檔＝諾薇兒才給她的圖）。
+     真相只有 config 一份（gear 的清單第一位與它互指，鐵律 7）。 */
+  if(state.scriptRun && GAME_CONFIG.storyPartner) setPickedPartner(GAME_CONFIG.storyPartner);
   if(sb && GAME_CONFIG.enemies[sb.enemy]){
     enemy.setEnemy(sb.enemy);
     state.noSaint = !!sb.noSaint;
