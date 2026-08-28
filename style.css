@@ -275,6 +275,9 @@
     animation:comboBreak .45s ease-in forwards;}
   @keyframes comboBreak{0%{transform:scale(1);opacity:1;}
     100%{transform:scale(.5);opacity:0;}}
+  /* 盤面（ver -514，Ray 給的 VP 特寫）：暗色橢圓的碟體＋細金緣 —— 刀刃形的
+     計量貼著它的下緣掃過去，數字壓在盤上。 */
+  #energyClasp .clasp-plate{fill:rgba(8,6,12,.88);stroke:rgba(217,198,138,.55);stroke-width:1.2;}
   /* 暗底＝整條鐮月的輪廓（金屬細邊），金色填面由 mask 依破防值揭露。 */
   #energyClasp .clasp-track{fill:rgba(10,8,16,.66);stroke:rgba(217,198,138,.5);stroke-width:1;}
   #energyClasp .clasp-gold{fill:url(#claspGrad);}
