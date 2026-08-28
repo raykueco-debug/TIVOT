@@ -249,19 +249,12 @@
     overflow:visible;pointer-events:none;filter:drop-shadow(0 0 4px #000);}
   /* 中央連擊數（ver -511，Ray：「像 VP1 那樣顯示連擊數在中間」）：
      錨在迴旋的圓心（viewBox 40,44 → 乘上顯示縮放再加 svg 的偏移）。 */
-  #energyClasp .clasp-combo{position:absolute;left:28px;bottom:30px;transform:translate(-50%,50%);
+  #energyClasp .clasp-combo{position:absolute;left:20px;bottom:26px;transform:translate(-50%,50%);
     pointer-events:none;text-align:center;line-height:1;z-index:2;}
   #energyClasp .clasp-combo{opacity:0;transition:opacity .15s;}
   #energyClasp .clasp-combo.on{opacity:1;}
   /* 滿值：數字讓位給光點（ver -522）。 */
   #energyClasp.full .clasp-combo{opacity:0;}
-  #energyClasp .clasp-orb{display:none;}
-  #energyClasp.full .clasp-orb{display:block;position:absolute;left:28px;bottom:30px;
-    width:16px;height:16px;border-radius:50%;transform:translate(-50%,50%);
-    background:radial-gradient(circle,#fff 0%,#ffe9a8 38%,rgba(255,224,138,0) 72%);
-    filter:drop-shadow(0 0 10px #ffe08a) drop-shadow(0 0 22px rgba(255,224,138,.7));
-    animation:orbPulse .9s ease-in-out infinite alternate;pointer-events:none;}
-  @keyframes orbPulse{from{transform:translate(-50%,50%) scale(.8);opacity:.75;}
     to{transform:translate(-50%,50%) scale(1.35);opacity:1;}}
   /* VP 風數字（ver -512，Ray：「字太小、字體不好看，找個更有視覺效果的；
      連擊數可以大一點，可稍微遮過計量表」）：粗斜體襯線＋金色縱向漸層＋黑描邊。
