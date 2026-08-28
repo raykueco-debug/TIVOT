@@ -670,24 +670,36 @@ function layoutClasp(){
   const X=br.x-sr.x;                                   // 血條左緣（svg 座標）
   const bt=br.y-sr.y, bb=br.y+br.height-sr.y;          // 藍條帶
   const rt=rr.y-sr.y;                                  // 紅條頂
-  const headY=(bt+bb)/2, w0=(bb-bt)/2, tipY=rt-4;
-  const r=(headY-tipY)*Math.SQRT1_2;                   // 頭 45°、尖 315° 的圓
-  const cx=X-r*Math.SQRT1_2, cy=(headY+tipY)/2;
-  const N=84, pts=[], ws=[];
-  for(let i=0;i<N;i++){
-    const t=i/(N-1), th=(45+270*t)*Math.PI/180;
-    pts.push([cx+r*Math.cos(th), cy+r*Math.sin(th)]);
-    ws.push(w0*(1-t)+0.4*t);                           // 連續收細：藍條半高 → 0.4
+  const headY=(bt+bb)/2, w0=(bb-bt)/2, tipY=rt-3;
+  /* ver -528（Ray 確認：上臂照舊、**下臂不可斜**）：頭端＝一小段**水平臂**
+     （接口與藍條平行、端面垂直），然後接一個在臂端**相切**的圓
+     （圓心在臂端正上方 → 切線連續，彎進去沒有折角）。
+     圓掃 90°→315°：頂在紅條上方、尖端微勾出血條左緣（y 全程在紅條頂之上）。 */
+  const r=(headY-tipY)/(1+Math.SQRT1_2);              // 尖停在紅條頂上方的解
+  const L=Math.max(6, r*0.6);                          // 水平臂長
+  const cx=X-L, cy=headY-r;                            // 圓心在臂端正上方
+  const N=90, pts=[], ws=[], NARM=10;
+  for(let i=0;i<NARM;i++){                             // 水平臂：血條左緣 → 臂端
+    const t=i/(NARM-1);
+    pts.push([X-L*t, headY]);
   }
+  for(let i=1;i<N-NARM+1;i++){                         // 圓弧：90°（臂端，相切）→ 315°（尖）
+    const t=i/(N-NARM), th=(90+225*t)*Math.PI/180;
+    pts.push([cx+r*Math.cos(th), cy+r*Math.sin(th)]);
+  }
+  for(let i=0;i<pts.length;i++){ const t=i/(pts.length-1); ws.push(w0*(1-t)+0.4*t); }
   const A=[],B=[];
   for(let i=0;i<N;i++){
     const p=pts[i], q=pts[Math.min(i+1,N-1)], o=pts[Math.max(i-1,0)];
     const dx=q[0]-o[0], dy=q[1]-o[1], L=Math.hypot(dx,dy)||1;
     const nx=-dy/L, ny=dx/L, w=ws[i];
-    A.push([Math.min(p[0]+nx*w,X), p[1]+ny*w]);        // 一律夾在血條左緣內（不壓 HP）
-    B.push([Math.min(p[0]-nx*w,X), p[1]-ny*w]);
+    /* 只在「血條存在的高度」夾 x（尖端在紅條頂之上，允許勾出去）。 */
+    const cap=(py)=>(py>rt-1)?X:Infinity;
+    const ax=p[0]+nx*w, ay=p[1]+ny*w, bx=p[0]-nx*w, by=p[1]-ny*w;
+    A.push([Math.min(ax,cap(ay)), ay]);
+    B.push([Math.min(bx,cap(by)), by]);
   }
-  A[0]=[X,bb]; B[0]=[X,bt];                            // 垂直平口＝藍條帶的上下緣
+  A[0]=[X,bb]; B[0]=[X,bt];                            // 垂直平口＝藍條帶的上下緣（θ90 本來就是）
   const f=P=>P.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' L');
   const outline='M'+f(A)+' L'+f(B.slice().reverse())+' Z';
   const spine='M'+f(pts.filter((_,i)=>i%5===0).concat([pts[N-1]]));
@@ -698,13 +710,14 @@ function layoutClasp(){
   /* 數字錨在圓心、HITS 壓在尖上（clasp 的定位座標系＝svg 減去宿主偏移）。 */
   const host=$('energyClasp').getBoundingClientRect();
   const combo=document.querySelector('#energyClasp .clasp-combo');
-  if(combo){ combo.style.left=(sr.x-host.x+cx)+'px'; combo.style.top=(sr.y-host.y+cy)+'px';
+  if(combo){ combo.style.left=(sr.x-host.x+cx)+'px'; combo.style.top=(sr.y-host.y+cy+r*0.1)+'px';
              combo.style.bottom='auto'; combo.style.transform='translate(-50%,-50%)';
              /* 字級跟著 C 的半徑走（Ray：「字也很小」——他的視窗比較大，
                 固定 px 相對就小）。 */
              const b=combo.querySelector('b'); if(b) b.style.fontSize=Math.round(r*2.1)+'px'; }
   const hits=svg.querySelector('.clasp-hits');
-  if(hits){ hits.setAttribute('x', String(Math.round(X-10))); hits.setAttribute('y', String(Math.round(tipY-1))); }
+  if(hits){ const tx=cx+r*Math.SQRT1_2, ty=cy-r*Math.SQRT1_2;
+            hits.setAttribute('x', String(Math.round(tx-12))); hits.setAttribute('y', String(Math.round(ty-2))); }
   updateEnergyClasp();                                 // 路徑換了 → dash 總長重掛
 }
 /* 進場後多試幾拍（血條要排好才量得到）；視窗變了整組重量。 */
