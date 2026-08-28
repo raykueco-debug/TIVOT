@@ -6845,6 +6845,21 @@ const ENEMY_CFG = {
        不要直接加大這個數字 —— -387 的教訓：距離只是表象，漂移才是真因。
      ⚠ 判定本來就是 `hypot(dx,dy)`＝全向的（Ray：「不論前後左右」），這裡只調半徑。 */
   engage: 300,
+  /* ── 終端撲擊（ver -502，Ray：「敵人靠近時會加速轉向玩家發起戰鬥」）──
+     進到 lungeDist 之內，加速與轉向能力隨接近程度**連續**放大（engage 處到頂）：
+     速度最多 ×lungeSpd、角速度最多 ×lungeTurn —— 最後一段是撲上來的，
+     不是慢悠悠貼上來的。⚠ 連續放大不做開關：門檻開關會在邊界上抖（同 giveUpAt
+     那條遲滯帶的教訓）。只在 chase 生效（flee/cruise/engage 不吃）。 */
+  lungeDist: 1100,                // 撲擊帶外緣（世界單位；engage 300 → 內緣）
+  /* ⚠ 撲擊速度要**壓過玩家極速**（Ray：「一旦在正面碰上一定距離內就逃不了」）：
+     最慢的蜈蚣 speedK 0.60 → 0.60×1.8＝1.08 > 1.0（玩家）。低於 1.67 的倍率
+     蜈蚣就追不上，「逃不了」對牠不成立。 */
+  lungeSpd: 1.8,                  // 撲擊帶內緣的速度倍率
+  lungeTurn: 2.8,                 // 撲擊帶內緣的角速度倍率
+  /* 錯身＝接戰（Ray：「不要讓敵錯身而過又在後面追半天，玩家都搞不清楚怎麼被
+     追上的」）：追擊中最近點落在這個距離之內、又開始拉開 → 當場交棒 ——
+     牠掠過船舷那一下就是接觸，不演一場玩家看不見的背後長途追逐。 */
+  nearMiss: 600,
   holdMs: 3000,                   // 提示停留後一同消失
   segs: 22,                       // 體節數
   /* 體長：120 時整隻讀起來像蜻蜓——翅展跟身體差不多長，蟲的比例就出不來。
@@ -7115,6 +7130,8 @@ function updateEnemy(dt,now){
   }
   const dx=cam.x-enemy.x, dy=cam.y-enemy.y;
   const dist=Math.hypot(dx,dy);
+  /* 追擊的最近點（ver -502 錯身判定用）。只在 chase 記 —— flee/cruise 不算追。 */
+  if(enemy.state==='chase') enemy.minDist=Math.min(enemy.minDist!=null?enemy.minDist:Infinity, dist);
 
   if(enemy.state==='engage'){
     // 提示停留中：敵人停住，時間到就一同消失並重新計時
@@ -7173,13 +7190,18 @@ function updateEnemy(dt,now){
     let da=want-cur;
     while(da>Math.PI) da-=Math.PI*2;
     while(da<-Math.PI) da+=Math.PI*2;
-    const step=clamp(da,-K.turnRate*dt,K.turnRate*dt);
+    /* 終端撲擊（ver -502）：接近程度 0（lungeDist 外）→ 1（engage 內緣），
+       角速度與速度跟著放大 —— 係數存在 enemy.lunge，位移那一行讀它（鐵律 7）。 */
+    const lf=clamp(1-(dist-C.engage)/Math.max(1,C.lungeDist-C.engage),0,1);
+    enemy.lunge=lf;
+    const turnR=K.turnRate*(1+(C.lungeTurn-1)*lf);
+    const step=clamp(da,-turnR*dt,turnR*dt);
     const na=cur+step;
     enemy.hx=Math.cos(na); enemy.hy=Math.sin(na);
     /* 角速度 → 側傾。船轉彎會外傾，那是「在轉」最直接的視覺線索；
        沒有它，換視角就只是一連串靜態的圖在交替。
        低通濾一下：直接吃瞬時角速度會隨 dt 抖。 */
-    const rollWant=clamp(step/Math.max(1,dt)/K.turnRate,-1,1);
+    const rollWant=clamp(step/Math.max(1,dt)/turnR,-1,1);
     enemy.roll=(enemy.roll||0)+(rollWant-(enemy.roll||0))*(1-Math.exp(-dt/260));
     /* 追擊時沉到玩家高度**之下**：船是固定畫在畫面 76% 高的精靈，
        敵人若與船同高，投影出來會停在地平線附近（畫面 30% 高）——
@@ -7195,7 +7217,9 @@ function updateEnemy(dt,now){
     enemy.alt+=(wantAlt-enemy.alt)*(1-Math.exp(-dt/420));
   }
 
-  const mv=MAX_SPD*enemy.spdK*dt*0.06;      // 與玩家同一套積分（見 update 的 mv）
+  /* 撲擊加速只在 chase（ver -502）：其他狀態 lunge 不設或不吃。 */
+  const lungeK=(enemy.state==='chase' && enemy.lunge) ? (1+(C.lungeSpd-1)*enemy.lunge) : 1;
+  const mv=MAX_SPD*enemy.spdK*lungeK*dt*0.06;   // 與玩家同一套積分（見 update 的 mv）
                                           // ⚠ spdK 在 spawnEnemy 算好（含劇本遭遇的倍率），這裡只讀
   enemy.x+=enemy.hx*mv; enemy.y+=enemy.hy*mv;
 
@@ -7215,7 +7239,12 @@ function updateEnemy(dt,now){
      下一幀就進戰鬥。⚠ 只管劇本遭遇：平時的怪照舊「不論前後左右」（Ray 舊規）。 */
   /* ⚠ 掉頭中的那一隻**不交棒**（ver -478）：牠正在讓位給劇本怪，
      玩家追上去貼臉也不該把牠打下來 —— 那一場注定是劇本怪的。 */
-  if(dist<=C.engage && enemy.state!=='flee'){
+  /* 錯身而過＝接戰（ver -502，見 ENEMY_CFG.nearMiss）。
+     ⚠ 只給平時的怪：劇本遭遇有「看得到才進戰鬥」的硬規（ver -455），
+       從側後方錯身交棒會違反它 —— 牠本來就正面撲來，錯身極少發生。 */
+  const nearMissHit = !enemy.script && enemy.state==='chase'
+    && enemy.minDist!=null && enemy.minDist<C.nearMiss && dist>enemy.minDist+40;
+  if((dist<=C.engage || nearMissHit) && enemy.state!=='flee'){
     if(enemy.script){
       /* ⚠ 上面的 dx/dy 是「玩家−敵人」，投影要的是「敵人−鏡頭」＝取負。 */
       const ex=-dx, ey=-dy;
