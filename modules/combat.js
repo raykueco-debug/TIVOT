@@ -667,75 +667,40 @@ function layoutClasp(){
   if(sr.width<10||br.width<10) return;                 // 還沒排好 → 之後的重試再量
   const sig=[sr.x,sr.y,br.x,br.y,br.height,rr.y].map(v=>Math.round(v)).join(',');
   if(sig===claspSig) return; claspSig=sig;
-  /* ver -530（Ray：「下臂不要接觸hp條，整個C往左移一些，留縫但不要太遠」）：
-     端面停在血條左緣往左 4px。 */
-  const X=br.x-sr.x-4;                                 // 血條左緣−4（svg 座標）
-  const bt=br.y-sr.y, bb=br.y+br.height-sr.y;          // 藍條帶
-  const rt=rr.y-sr.y;                                  // 紅條頂
-  const headY=(bt+bb)/2, w0=(bb-bt)/2, tipY=rt-3;
-  /* ver -528（Ray 確認：上臂照舊、**下臂不可斜**）：頭端＝一小段**水平臂**
-     （接口與藍條平行、端面垂直），然後接一個在臂端**相切**的圓
-     （圓心在臂端正上方 → 切線連續，彎進去沒有折角）。
-     圓掃 90°→315°：頂在紅條上方、尖端微勾出血條左緣（y 全程在紅條頂之上）。 */
-  /* ver -532（Ray 確認）：**橫向橢圓（×1.35）＋斬擊感** ——
-     厚端急彎、越往尾越平，收細改 ease（前段快速變細、後段拖長細刃）；
-     掃到頂點略過（274°），**尖端終點＝HITS 的 T 正下方**（HITS 以尖端反定位）。 */
-  const r=(headY-(rt-4))/2;                            // 頂緣停在紅條上方 4px
-  const KX=1.35;                                       // 橫向拉寬
-  const L=Math.max(6, r*0.6);                          // 水平臂長
-  const cx=X-L, cy=headY-r;                            // 橢圓心在臂端正上方
-  const N=96, pts=[], ws=[], NARM=10;
-  for(let i=0;i<NARM;i++){                             // 水平臂：端面 → 臂端
-    const t=i/(NARM-1);
-    pts.push([X-L*t, headY]);
-  }
-  for(let i=1;i<N-NARM+1;i++){                         // 橢圓弧：90°（臂端，相切）→ 270°（頂點）
-    const t=i/(N-NARM), th=(90+180*t)*Math.PI/180;
-    pts.push([cx+KX*r*Math.cos(th), cy+r*Math.sin(th)]);
-  }
-  /* ver -533（Ray：「HITS 要在紅色血條的上方，C 上臂跟過去到 T」）：
-     頂點的切線本來就水平（+x）——細刃從頂點**水平拖過紅條上空**，
-     一路拖到紅條上方那枚 HITS 的 T 正下方（y 全程在紅條頂之上，不壓條）。 */
-  const apex=pts[pts.length-1];
-  const exX=(br.x-sr.x)+20, exY=apex[1]+1.5;           // T ≈ 字首往右 ~17px
-  const NEXT2=14;
-  for(let i=1;i<=NEXT2;i++){ const t=i/NEXT2;
-    pts.push([apex[0]+(exX-apex[0])*t, apex[1]+(exY-apex[1])*t*t]); }
-  for(let i=0;i<pts.length;i++){ const t=i/(pts.length-1);
-    /* 切口**嚴格**＝藍條粗（ver -533，Ray 指定）：t=0 時 w 恰為 w0，
-       不再多出常數項那 0.5px。 */
-    ws.push((w0-0.5)*Math.pow(1-t,1.8)+0.5); }         // 斬擊：快速變細 → 長細刃
-  const A=[],B=[];
-  for(let i=0;i<N;i++){
-    const p=pts[i], q=pts[Math.min(i+1,N-1)], o=pts[Math.max(i-1,0)];
-    const dx=q[0]-o[0], dy=q[1]-o[1], L=Math.hypot(dx,dy)||1;
-    const nx=-dy/L, ny=dx/L, w=ws[i];
-    /* 只在「血條存在的高度」夾 x（尖端在紅條頂之上，允許勾出去）。 */
-    const cap=(py)=>(py>rt-1)?X:Infinity;
-    const ax=p[0]+nx*w, ay=p[1]+ny*w, bx=p[0]-nx*w, by=p[1]-ny*w;
-    A.push([Math.min(ax,cap(ay)), ay]);
-    B.push([Math.min(bx,cap(by)), by]);
-  }
-  A[0]=[X,bb]; B[0]=[X,bt];                            // 垂直平口＝藍條帶的上下緣（θ90 本來就是）
+  /* ══ ver -535：**嚴格照 Ray 在遊戲截圖上的標註**（量測值，S＝紅頂→藍底）══
+     · C＝**均勻厚度的橢圓環**，整顆在血條左邊（不壓不疊）：
+       直徑高 1.68S（下緣＝藍條下緣、上緣高過紅條 0.65S 左右）、寬 0.56S×2，
+       厚 0.25S，開口朝右 ±25°（對著紅條那一帶），與血條留 0.11S 的縫。
+     · 數字在 C 的右上（黑框處：藍條左緣起、紅頂上方 0.83S）。
+     · HITS 在數字下方、紅條上方（左緣+0.67S、紅頂上 0.27S）。 */
+  const BL=br.x-sr.x;
+  const S=bb-rt;
+  const RX=0.56*S, RY=0.84*S, TH=0.25*S, GAP=0.11*S;
+  const ccx=BL-GAP-RX, ccy=bb-RY;
+  const a0=25*Math.PI/180, a1=335*Math.PI/180;
+  const N=72, pts=[];
+  for(let i=0;i<=N;i++){ const a=a0+(a1-a0)*i/N;
+    pts.push([ccx+RX*Math.cos(a), ccy+RY*Math.sin(a)]); }
   const f=P=>P.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' L');
-  const outline='M'+f(A)+' L'+f(B.slice().reverse())+' Z';
-  const spine='M'+f(pts.filter((_,i)=>i%5===0).concat([pts[N-1]]));
+  const arcD='M'+f(pts);
+  const outline=arcD, spine=arcD;                      // 均勻厚度 → 直接用描邊，無需填面
   const track=svg.querySelector('.clasp-track'), gold=svg.querySelector('.clasp-gold'), fill=$('energyClaspFill');
-  if(track) track.setAttribute('d',outline);
-  if(gold) gold.setAttribute('d',outline);
-  if(fill){ fill.setAttribute('d',spine); fill.setAttribute('stroke-width', String(Math.ceil(w0*2+4))); }
+  if(track){ track.setAttribute('d',outline);
+    track.style.fill='none'; track.style.stroke='rgba(12,10,18,.82)'; track.style.strokeWidth=TH.toFixed(1); }
+  if(gold){ gold.setAttribute('d',outline);
+    gold.style.fill='none'; gold.style.stroke='var(--gold)'; gold.style.strokeWidth=TH.toFixed(1); }
+  if(fill){ fill.setAttribute('d',spine); fill.setAttribute('stroke-width', String(Math.ceil(TH+4))); }
   /* 數字錨在圓心、HITS 壓在尖上（clasp 的定位座標系＝svg 減去宿主偏移）。 */
   const host=$('energyClasp').getBoundingClientRect();
   const combo=document.querySelector('#energyClasp .clasp-combo');
-  if(combo){ combo.style.left=(sr.x-host.x+cx)+'px'; combo.style.top=(sr.y-host.y+cy+r*0.1)+'px';
+  if(combo){ combo.style.left=(sr.x-host.x+BL+0.56*S)+'px'; combo.style.top=(sr.y-host.y+rt-0.83*S)+'px';
              combo.style.bottom='auto'; combo.style.transform='translate(-50%,-50%)';
              /* 字級跟著 C 的半徑走（Ray：「字也很小」——他的視窗比較大，
                 固定 px 相對就小）。 */
-             const b=combo.querySelector('b'); if(b) b.style.fontSize=Math.round(r*2.1)+'px'; }
+             const b=combo.querySelector('b'); if(b) b.style.fontSize=Math.round(0.62*S)+'px'; }
   const hits=svg.querySelector('.clasp-hits');
-  if(hits){ const tip=pts[pts.length-1];
-            hits.setAttribute('x', String(Math.round(tip[0]-17)));   // T（第 4 字前緣）＝尖端正上
-            hits.setAttribute('y', String(Math.round(tip[1]-4))); }  // 字底在刃上、整枚在紅條上方
+  if(hits){ hits.setAttribute('x', String(Math.round(BL+0.30*S)));   // 標註：數字下、紅條上方
+            hits.setAttribute('y', String(Math.round(rt-0.27*S))); }
   updateEnergyClasp();                                 // 路徑換了 → dash 總長重掛
 }
 /* 進場後多試幾拍（血條要排好才量得到）；視窗變了整組重量。 */
