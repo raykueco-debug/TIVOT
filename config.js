@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.28-551';
+export const VERSION = 'ver 2026.08.28-552';
 
 export const GAME_CONFIG = {
 
@@ -109,6 +109,12 @@ export const GAME_CONFIG = {
      renderSwitch 直接 asset() 取圖（-481 的手繪 SVG 圖示已退場）。
      加新類別補一行（鐵律 1）。 */
   weaponCatIcons: { '重機槍':'switch_mg', '霰彈槍':'switch_split', '萊福槍':'switch_hyper' },
+  /* 副武器類別 → 紅點的**觸碰範圍**規則（ver -552，Ray 指定）：
+       visual      觸碰＝視覺圈當下大小（高爆：有效觸點與實際圈一致）
+       orangeOnRed 平時同視覺；**只剩紅圈時**觸碰擴到橘圈的最大範圍（連射）
+       yellowMax   不論圈縮到多小，觸碰永遠是黃圈最大範圍（散射）
+     實作只有 defense.js 的 hitDia() 一處（鐵律 8）。 */
+  weaponCatHitZone: { '重機槍':'orangeOnRed', '霰彈槍':'yellowMax', '萊福槍':'visual' },
 
   /* ------------------------------------------------------------------ *
    *  二、搭檔（修女 Partner）— 改變戰鬥規則的角色

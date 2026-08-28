@@ -39,6 +39,23 @@ export function init(a){ api = a; }
  *  ⚠ 判定用 tutorialRun（存續到勝負）：聖徒化收尾段落結束後（tutorialActive=false）
  *    收尾盤仍是教學戰，攻擊力必須鎖 2。 */
 const TUT = () => GAME_CONFIG.tutorial || {};
+
+/* ── 圈的大小（ver -552，Ray 指定三類武器的觸碰範圍）──────────────────
+   視覺圈直徑＝visDia(ratio)（20+90r，唯一那條式子）；**觸碰圈**依武器類別另算：
+     連射 orangeOnRed：平時同視覺，只剩紅圈時（ratio<defPerfectMin）擴到
+                       橘圈的最大（＝進橘圈那一刻 0.35 的大小）
+     散射 yellowMax  ：不論縮到多小，永遠＝黃圈最大（生成時的滿圈）
+     高爆 visual     ：永遠＝視覺當下大小
+   DOM：外層 .reddot＝觸碰區（它的 rect 就是判定），視覺畫在內層 .rd-vis ——
+   dot 自己的 listener 與 main.js 的 hitThreatAt 都以外層 rect 判，天然同一份。 */
+const visDia = r => 20 + 90*r;
+function hitDia(ratio){
+  const w = weaponOf(state.equippedWeapon, storyMode());
+  const zone = (GAME_CONFIG.weaponCatHitZone||{})[w && w.cat] || 'visual';
+  if(zone==='yellowMax') return visDia(1);
+  if(zone==='orangeOnRed' && ratio<DEF_PERFECT_MIN) return visDia(DEF_DEFENSE_MIN);
+  return visDia(ratio);
+}
 function effUltDamage(){
   return (state.tutorialRun && TUT().enemyAtkDamage!=null) ? TUT().enemyAtkDamage : state.ULT_DAMAGE;
 }
@@ -107,8 +124,11 @@ export function updateThreats(){
     const th=threats[i];
     const left=Math.max(0,CHARGE-(Date.now()-th.t0)/1000);
     const ratio=left/CHARGE;
-    const size=20+90*ratio;
-    th.el.style.width=size+'px'; th.el.style.height=size+'px';
+    const size=visDia(ratio);
+    const hd=hitDia(ratio);                      // 觸碰區（外層）與視覺（內層）分開（-552）
+    th.el.style.width=hd+'px'; th.el.style.height=hd+'px';
+    const vis=th.vis||th.el;
+    vis.style.width=size+'px'; vis.style.height=size+'px';
     th.el.style.opacity=0.5+0.5*ratio;
     const _w=weaponOf(state.equippedWeapon, storyMode());
     const wNP=_w && _w.noPerfectBand;
@@ -118,9 +138,9 @@ export function updateThreats(){
                                               : 'rgba(240,140,40';  // 橘圈：Perfect 免傷
     else                            col='rgba(240,50,50';    // 紅圈：反擊窗
     if(ratio<DEF_DEFENSE_MIN) hot=true;   // 與圈的分帶同一條門檻；狙擊圈色不同但門檻同一個
-    th.el.style.background=`radial-gradient(circle,${col},.75),${col},.3) 60%,transparent 72%)`;
-    th.el.style.borderColor=col+',.95)';
-    th.el.style.boxShadow=`0 0 22px ${col},.85),inset 0 0 12px ${col},.6)`;
+    vis.style.background=`radial-gradient(circle,${col},.75),${col},.3) 60%,transparent 72%)`;
+    vis.style.borderColor=col+',.95)';
+    vis.style.boxShadow=`0 0 22px ${col},.85),inset 0 0 12px ${col},.6)`;
     if(left<=0){ releaseUlt(th); }
   }
   /* 盤面警戒跟著圈走（ver -462，Ray：「亮黃圈時數字盤亮橘光，亮橘圈的時候
@@ -160,11 +180,15 @@ export function spawnThreat(){
   const layer=$('redDots');
   const dot=document.createElement('div');
   dot.className='reddot';
-  const size=110;
+  const size=visDia(1);                        // 生成＝滿圈；三類武器此刻觸碰＝視覺
   dot.style.width=size+'px'; dot.style.height=size+'px';
+  const vis=document.createElement('i');       // 視覺圈（-552：與觸碰區分層）
+  vis.className='rd-vis';
+  vis.style.width=size+'px'; vis.style.height=size+'px';
+  dot.appendChild(vis);
   // 位置挑選：黃圈可重疊，但橘圈／紅圈核心範圍不可與現有攻擊點重疊。
   const lw=layer.clientWidth||360, lh=layer.clientHeight||360;
-  const coreDia=20+90*DEF_DEFENSE_MIN;
+  const coreDia=visDia(DEF_DEFENSE_MIN);
   const coreR=coreDia/2;
   const pxLeft=l=>l/100*lw, pxTop=t=>t/100*lh;
   // 生成範圍：一般＝left 20~80% / top 25~70%；**會插對話的場次**＝中央帶
@@ -194,7 +218,7 @@ export function spawnThreat(){
   }
   dot.style.left=lp+'%';
   dot.style.top=tp+'%';
-  const th={el:dot, t0:Date.now()};
+  const th={el:dot, vis, t0:Date.now()};
   dot.addEventListener('touchstart',e=>{e.preventDefault();resolveThreat(th);},{passive:false});
   dot.addEventListener('click',()=>resolveThreat(th));
   layer.appendChild(dot);

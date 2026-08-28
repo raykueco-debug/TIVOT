@@ -635,10 +635,14 @@
     30%{opacity:1}100%{opacity:0;transform:translate(-40%,-50%) rotate(18deg) scaleX(1.1)}}
   #slashFx.flash::after{content:"";position:absolute;inset:0;background:radial-gradient(circle,rgba(255,255,255,.5),transparent 60%);animation:slashFlash .45s ease-out forwards;}
   @keyframes slashFlash{0%{opacity:0}20%{opacity:1}100%{opacity:0}}
+  /* -552：外層＝**觸碰區**（透明，大小依武器類別由 defense.hitDia 寫），
+     視覺圈畫在內層 .rd-vis —— 觸碰與視覺分層，點擊範圍才能照 Ray 的三類規則走。 */
   .reddot{position:absolute;border-radius:50%;pointer-events:auto;cursor:pointer;
-    background:radial-gradient(circle,rgba(255,70,70,.7),rgba(200,20,20,.3) 60%,transparent 72%);
-    border:2px solid rgba(255,100,100,.9);box-shadow:0 0 22px rgba(255,40,40,.85),inset 0 0 12px rgba(255,80,80,.6);
     transform:translate(-50%,-50%);}
+  .reddot .rd-vis{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    display:block;border-radius:50%;pointer-events:none;
+    background:radial-gradient(circle,rgba(255,70,70,.7),rgba(200,20,20,.3) 60%,transparent 72%);
+    border:2px solid rgba(255,100,100,.9);box-shadow:0 0 22px rgba(255,40,40,.85),inset 0 0 12px rgba(255,80,80,.6);}
   /* 盤面警戒兩段（ver -462，Ray：「亮黃圈時數字盤亮橘光，亮橘圈的時候數字盤轉紅光」）
      alert＝黃圈帶（橘光）、alert.hot＝橘圈帶起（紅光，紅圈維持）。.hot 由
      defense.updateThreats 依圈的同一條門檻（defDefenseMin）切換——唯一切換點。
