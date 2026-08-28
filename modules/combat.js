@@ -677,19 +677,24 @@ function layoutClasp(){
      （接口與藍條平行、端面垂直），然後接一個在臂端**相切**的圓
      （圓心在臂端正上方 → 切線連續，彎進去沒有折角）。
      圓掃 90°→315°：頂在紅條上方、尖端微勾出血條左緣（y 全程在紅條頂之上）。 */
-  const r=(headY-tipY)/(1+Math.SQRT1_2);              // 尖停在紅條頂上方的解
+  /* ver -532（Ray 確認）：**橫向橢圓（×1.35）＋斬擊感** ——
+     厚端急彎、越往尾越平，收細改 ease（前段快速變細、後段拖長細刃）；
+     掃到頂點略過（274°），**尖端終點＝HITS 的 T 正下方**（HITS 以尖端反定位）。 */
+  const r=(headY-(rt-4))/2;                            // 頂緣停在紅條上方 4px
+  const KX=1.35;                                       // 橫向拉寬
   const L=Math.max(6, r*0.6);                          // 水平臂長
-  const cx=X-L, cy=headY-r;                            // 圓心在臂端正上方
-  const N=90, pts=[], ws=[], NARM=10;
-  for(let i=0;i<NARM;i++){                             // 水平臂：血條左緣 → 臂端
+  const cx=X-L, cy=headY-r;                            // 橢圓心在臂端正上方
+  const N=96, pts=[], ws=[], NARM=10;
+  for(let i=0;i<NARM;i++){                             // 水平臂：端面 → 臂端
     const t=i/(NARM-1);
     pts.push([X-L*t, headY]);
   }
-  for(let i=1;i<N-NARM+1;i++){                         // 圓弧：90°（臂端，相切）→ 315°（尖）
-    const t=i/(N-NARM), th=(90+225*t)*Math.PI/180;
-    pts.push([cx+r*Math.cos(th), cy+r*Math.sin(th)]);
+  for(let i=1;i<N-NARM+1;i++){                         // 橢圓弧：90°（臂端，相切）→ 274°（尖）
+    const t=i/(N-NARM), th=(90+184*t)*Math.PI/180;
+    pts.push([cx+KX*r*Math.cos(th), cy+r*Math.sin(th)]);
   }
-  for(let i=0;i<pts.length;i++){ const t=i/(pts.length-1); ws.push(w0*(1-t)+0.4*t); }
+  for(let i=0;i<pts.length;i++){ const t=i/(pts.length-1);
+    ws.push(w0*Math.pow(1-t,1.8)+0.5); }               // 斬擊：快速變細 → 長細刃
   const A=[],B=[];
   for(let i=0;i<N;i++){
     const p=pts[i], q=pts[Math.min(i+1,N-1)], o=pts[Math.max(i-1,0)];
@@ -718,8 +723,9 @@ function layoutClasp(){
                 固定 px 相對就小）。 */
              const b=combo.querySelector('b'); if(b) b.style.fontSize=Math.round(r*2.1)+'px'; }
   const hits=svg.querySelector('.clasp-hits');
-  if(hits){ const tx=cx+r*Math.SQRT1_2, ty=cy-r*Math.SQRT1_2;
-            hits.setAttribute('x', String(Math.round(tx-12))); hits.setAttribute('y', String(Math.round(ty-2))); }
+  if(hits){ const tip=pts[pts.length-1];
+            hits.setAttribute('x', String(Math.round(tip[0]-18)));   // T（第 4 字前緣）落在尖端正上
+            hits.setAttribute('y', String(Math.round(tip[1]-3))); }
   updateEnergyClasp();                                 // 路徑換了 → dash 總長重掛
 }
 /* 進場後多試幾拍（血條要排好才量得到）；視窗變了整組重量。 */
