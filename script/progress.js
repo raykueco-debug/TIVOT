@@ -39,6 +39,8 @@ const K = {
   innLast:   'tivot_inn_last_v1',
   /* 飛行遭遇的連敗數（ver -481）：贏一場歸零、第三敗送回旅店並歸零。 */
   flightLoss:'tivot_flight_losses_v1',
+  /* 蕾娜的 S 計數（ver -557）：她不是搭檔，每拿四次 S 好感 +1（docs 的 +0.25 整數化）。 */
+  rennaS:    'tivot_renna_s_v1',
 };
 
 /* ⚠ 測試期間預設 3（Ray 指定，與 flight/index.html 的 STAGE_DEFAULT 一致）。
@@ -163,6 +165,29 @@ function getFloors(){
   }catch(e){}
   return out;
 }
+/* ══ 戰後評價 → 好感（ver -557，Ray 指定）════════════════════════════════
+   「與搭檔的伙伴一起拿了 S 就會該伙伴好感度 +1，索拉娜例外，C 以下她才會 +1，
+     蕾娜因為不是搭檔，所以她每拿四次 S +1」
+   實作只有這一支（鐵律 8），inspector 的劇情結算算出等第後呼叫。
+   · 搭檔＝CHARS 裡那幾位才有好感層（蕾妮／馬季諾是試玩版搭檔，沒有）。
+   · 索拉娜：S 不加，**C／D／E** 才 +1（docs「評價越爛越加」的落地）。
+   · 蕾娜：不看搭檔欄，累計 S 每 4 次 +1（一輪內計數 K.rennaS：newRun 清、
+     snapshot/restore 帶 —— §6.9 同一張清單的兩面）。
+   回傳這一場加到誰（[]＝沒人），呼叫端要顯示可以用。 */
+export function applyRankAffection(grade, partnerKey){
+  const got=[];
+  if(CHARS.indexOf(partnerKey)>=0){
+    if(partnerKey==='sorana'){
+      if(grade==='C'||grade==='D'||grade==='E'){ addAffection('sorana',1); got.push('sorana'); }
+    }else if(grade==='S'){ addAffection(partnerKey,1); got.push(partnerKey); }
+  }
+  if(grade==='S'){
+    const n=(parseInt(rd(K.rennaS),10)||0)+1;
+    wr(K.rennaS, n);
+    if(n%4===0){ addAffection('renna',1); got.push('renna'); }
+  }
+  return got;
+}
 export function addAffection(who, delta){
   if(CHARS.indexOf(who)<0) return null;
   const aff=getAffection(), floors=getFloors();
@@ -219,7 +244,7 @@ export const CHAPTERS = [
 
 export function newRun(){
   for(const k of [K.stage, K.flags, K.affection, K.affFloor, K.name, K.nick,
-                  K.hp, K.innLast, K.flightLoss]) {   // 持久 HP／上次旅店／連敗數（ver -481）
+                  K.hp, K.innLast, K.flightLoss, K.rennaS]) {   // 持久 HP／上次旅店／連敗數／蕾娜S計數
     try{ localStorage.removeItem(k); }catch(e){}
   }
   /* 其他模組自己的存檔。⚠ 這裡列出來就是「它屬於一輪遊戲」的宣告 ——
@@ -259,8 +284,9 @@ export function runRestore(s){
 export function snapshot(){
   return { stage:getStage(), flags:getFlags(), affection:getAffection(),
            affFloor:getFloors(), player:getPlayerName(), nick:getPlayerNick(),
-           /* 持久 HP／上次旅店／連敗數（ver -481；§6.9 兩面：newRun 清的這裡就要帶） */
-           hp:getHp(), innLast:getLastInn(), fLoss:flightLossCount() };
+           /* 持久 HP／上次旅店／連敗數／蕾娜S計數（§6.9 兩面：newRun 清的這裡就要帶） */
+           hp:getHp(), innLast:getLastInn(), fLoss:flightLossCount(),
+           rennaS:(parseInt(rd(K.rennaS),10)||0) };
 }
 export function restore(s){
   if(!s) return;
@@ -275,4 +301,5 @@ export function restore(s){
   if(s.innLast) setLastInn(s.innLast.town, s.innLast.node);
   else { try{ localStorage.removeItem(K.innLast); }catch(e){} }
   setFlightLossCount(s.fLoss||0);
+  wr(K.rennaS, s.rennaS||0);          // 蕾娜 S 計數（ver -557；沒有＝0，舊存檔照吃）
 }

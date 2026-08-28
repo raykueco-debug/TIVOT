@@ -514,6 +514,11 @@ function scriptSettle(totalTime, stats){
        日後多一場練習用的場次只要在卡上加一欄。 */
   const bt = (GAME_CONFIG.battles||{})[state.scriptBattleId] || {};
   const noReward = !!bt.noReward;
+  /* ══ 戰後評價 → 好感（ver -557，Ray 指定；規則在 prog.applyRankAffection 一支）══
+     搭檔 S +1（索拉娜改 C 以下）、蕾娜每 4 次 S +1。
+     ⚠ 打靶（noReward）不算：那是可以重打到膩的練習場，刷 S 刷好感等於印鈔機
+       （同 EXP/金錢不給的理由）。 */
+  if(!noReward) prog.applyRankAffection(ev.grade, state.pickedPartner);
   /* ══⚠⚠ EXP 與金錢**直接放在結算頁**（ver -453，Ray：「exp 跟 g 直接放結算頁，
      不要另外跳視窗顯示，有戰利品才跳」）══
      -439 曾把兩者搬去戰利品那一頁 —— 於是**每一場**打完都要多點一頁，
