@@ -243,24 +243,35 @@
   /* 尺寸與副武切換鈕平衡（ver -511，Ray：「太大，跟副武切換要平橫。頭從 hp 邊緣出，
      尾稍扣在 hp 上緣」）：整體 ≈66px（切換鈕 52 格 46 圓）——
      厚頭貼在血條左緣、細尾勾在血條上緣。 */
-  #energyClasp svg{position:absolute;left:-6px;bottom:-5px;width:66px;height:60px;
+  #energyClasp svg{position:absolute;left:-8px;bottom:-9px;width:70px;height:64px;
     overflow:visible;pointer-events:none;filter:drop-shadow(0 0 4px #000);}
   /* 中央連擊數（ver -511，Ray：「像 VP1 那樣顯示連擊數在中間」）：
      錨在迴旋的圓心（viewBox 40,44 → 乘上顯示縮放再加 svg 的偏移）。 */
-  #energyClasp .clasp-combo{position:absolute;left:22px;bottom:24px;transform:translate(-50%,50%);
-    pointer-events:none;text-align:center;line-height:1;}
+  #energyClasp .clasp-combo{position:absolute;left:24px;bottom:24px;transform:translate(-50%,50%);
+    pointer-events:none;text-align:center;line-height:1;z-index:2;}
   #energyClasp .clasp-combo{opacity:0;transition:opacity .15s;}
   #energyClasp .clasp-combo.on{opacity:1;}
-  #energyClasp .clasp-combo b{display:inline-block;font-size:19px;font-weight:400;
-    color:var(--ink,#e8dfcc);
-    text-shadow:0 0 6px #000,0 2px 3px #000,0 0 14px rgba(212,169,74,.35);
-    font-variant-numeric:tabular-nums;letter-spacing:1px;}
+  /* VP 風數字（ver -512，Ray：「字太小、字體不好看，找個更有視覺效果的；
+     連擊數可以大一點，可稍微遮過計量表」）：粗斜體襯線＋金色縱向漸層＋黑描邊。
+     ⚠ 漸層走 background-clip:text，描邊交給 -webkit-text-stroke＋外圈 drop-shadow
+       （text-shadow 對 clip:text 的字不顯示）。 */
+  #energyClasp .clasp-combo b{display:inline-block;font-size:36px;font-weight:700;
+    font-style:italic;font-family:Georgia,"Iowan Old Style","Palatino Linotype",serif;
+    background:linear-gradient(180deg,#fff3cf 8%,#ffd875 38%,#c9932e 72%,#8a5f1a 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    -webkit-text-stroke:1px rgba(20,12,4,.9);
+    filter:drop-shadow(0 2px 2px rgba(0,0,0,.85)) drop-shadow(0 0 8px rgba(0,0,0,.6));
+    font-variant-numeric:tabular-nums;letter-spacing:0;}
   /* 每一次連擊：由大縮小彈一下（Ray 指定）。 */
-  #energyClasp .clasp-combo b.pop{animation:comboPop .26s cubic-bezier(.2,.8,.3,1);}
-  @keyframes comboPop{0%{transform:scale(1.9);}100%{transform:scale(1);}}
+  #energyClasp .clasp-combo b.pop{animation:comboPop .3s cubic-bezier(.25,1.5,.45,1);}
+  @keyframes comboPop{
+    0%  {transform:scale(.5);  filter:drop-shadow(0 2px 2px rgba(0,0,0,.85)) brightness(1.9);}
+    55% {transform:scale(1.28);filter:drop-shadow(0 2px 2px rgba(0,0,0,.85)) brightness(1.6);}
+    100%{transform:scale(1);   filter:drop-shadow(0 2px 2px rgba(0,0,0,.85)) brightness(1);}}
   /* 連擊斷：舊數字轉紅、縮小消散（散完 JS 才把整塊藏起來重計）。 */
-  #energyClasp .clasp-combo b.break{color:#e0554a;
-    text-shadow:0 0 6px #000,0 2px 3px #000,0 0 14px rgba(224,85,74,.45);
+  #energyClasp .clasp-combo b.break{
+    background:linear-gradient(180deg,#ffb0a4 10%,#e0554a 55%,#8c231c 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
     animation:comboBreak .45s ease-in forwards;}
   @keyframes comboBreak{0%{transform:scale(1);opacity:1;}
     100%{transform:scale(.5);opacity:0;}}

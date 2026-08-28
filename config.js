@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.28-511';
+export const VERSION = 'ver 2026.08.28-512';
 
 export const GAME_CONFIG = {
 
@@ -1099,7 +1099,7 @@ export const GAME_CONFIG = {
       atkInterval:4,               // 蓄力窗口 4 秒（固定）
       ultEvery:[3,5],              // 發動頻率 3~5 秒一次
       noStack:true,                // 不疊加：場上同時只有一個紅點
-      sound:{ ult:'se_weapon_cannon', delay:'se_ship_cannon', wrong:'se_pistol_02' },
+      sound:{ ult:'se_weapon_cannon', delay:'se_ship_cannon', wrong:'se_sniper_falcon' },   // 點錯改狙擊音（ver -512，Ray 指定）
       special:[],
       boardGrids:[9,9,9,16,16],    // 33344, loop
       boardLoop:true,
