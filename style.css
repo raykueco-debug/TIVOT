@@ -242,12 +242,13 @@
   @keyframes energyBurst{70%{opacity:.55;}100%{transform:translate(-50%,-50%) scale(1);opacity:0;}}
   /* 環要咬住整疊血條（ver -517，Ray 的示意圖）：上臂高過上血條、下臂低過下血條，
      開口朝右讓血條插進來。 */
-  /* ⚠ 下臂不能超出 #top 的下緣（會被裁）：突出量收在 12px 內。 */
-  #energyClasp svg{position:absolute;left:-10px;bottom:-12px;width:86px;height:86px;
-    overflow:visible;pointer-events:none;filter:drop-shadow(0 0 5px #000);}
+  /* ver -518（Ray 的第二張示意）：縮小、厚起細收；**起始唇對齊我方（下）血條**，
+     下緣只越出面板 4px（#top 會裁）。 */
+  #energyClasp svg{position:absolute;left:-8px;bottom:-14px;width:64px;height:64px;
+    overflow:visible;pointer-events:none;filter:drop-shadow(0 0 4px #000);}
   /* 中央連擊數（ver -511，Ray：「像 VP1 那樣顯示連擊數在中間」）：
      錨在迴旋的圓心（viewBox 40,44 → 乘上顯示縮放再加 svg 的偏移）。 */
-  #energyClasp .clasp-combo{position:absolute;left:32px;bottom:34px;transform:translate(-50%,50%);
+  #energyClasp .clasp-combo{position:absolute;left:20px;bottom:18px;transform:translate(-50%,50%);
     pointer-events:none;text-align:center;line-height:1;z-index:2;}
   #energyClasp .clasp-combo{opacity:0;transition:opacity .15s;}
   #energyClasp .clasp-combo.on{opacity:1;}
@@ -256,7 +257,7 @@
      ⚠ 漸層走 background-clip:text，描邊交給 -webkit-text-stroke＋外圈 drop-shadow
        （text-shadow 對 clip:text 的字不顯示）。 */
   /* 大白字（ver -517，Ray 的示意圖：純白粗體、壓在環上）。 */
-  #energyClasp .clasp-combo b{display:inline-block;font-size:40px;font-weight:700;
+  #energyClasp .clasp-combo b{display:inline-block;font-size:30px;font-weight:700;
     font-style:italic;font-family:Georgia,"Iowan Old Style","Palatino Linotype",serif;
     color:#fff;-webkit-text-stroke:1px rgba(8,8,12,.85);
     text-shadow:0 2px 3px rgba(0,0,0,.9),0 0 10px rgba(0,0,0,.65);
@@ -275,14 +276,15 @@
   @keyframes comboBreak{0%{transform:scale(1);opacity:1;}
     100%{transform:scale(.5);opacity:0;}}
   /* HITS 小標：白粗字、蓋住上唇收尾（Ray 的示意圖）。 */
-  #energyClasp .clasp-hits{font-size:11px;font-weight:700;letter-spacing:1px;
+  #energyClasp .clasp-hits{font-size:10px;font-weight:700;letter-spacing:1px;
     fill:#fff;stroke:rgba(8,8,12,.9);stroke-width:2.8;paint-order:stroke;
     font-family:Georgia,serif;}
-  /* 環＝計量（ver -517）：暗軌 ＋ 金色進度弧（dash 直接畫在描邊上，免遮罩）。 */
-  #energyClasp .clasp-track{fill:none;stroke:rgba(12,10,18,.82);stroke-width:17;}
-  #energyClasp .clasp-gold{fill:none;stroke:var(--gold);stroke-width:15;
+  /* 錐形 C（ver -518）：填面輪廓＋遮罩粗筆畫揭露進度（錐形筆畫 SVG 做不到）。 */
+  #energyClasp .clasp-track{fill:rgba(12,10,18,.8);stroke:rgba(217,198,138,.35);stroke-width:1;}
+  #energyClasp .clasp-gold{fill:var(--gold);}
+  #energyClasp .clasp-maskstroke{fill:none;stroke:#fff;stroke-width:20;stroke-linecap:round;
     transition:stroke-dashoffset .25s;}
-  #energyClasp.full .clasp-gold{stroke:#ffe08a;animation:pulse .6s infinite alternate;}
+  #energyClasp.full .clasp-gold{fill:#ffe08a;animation:pulse .6s infinite alternate;}
   /* ── 副武器切換鈕（ver -410，Ray：「在敵我血條右側加入副武器切換鈕，大小同破防值」）──
      左邊是破防計量表、右邊是這一顆，兩側對稱夾著血條。
      ⚠ `#barsBlock` 整塊是 `pointer-events:none`（它只是 HUD），所以這一顆要自己打開。
