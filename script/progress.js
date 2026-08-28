@@ -62,11 +62,17 @@ const rd = k => { try{ return localStorage.getItem(k); }catch(e){ return null; }
 const wr = (k,v) => { try{ localStorage.setItem(k,String(v)); }catch(e){} };
 
 /* ── stage ── */
+/* ⚠ **stage 0 是合法章節**（ver -556 修，Ray：「開始故事是從 stage0 開始」）——
+   主線開場（拿到船之前）就是 stage 0。舊寫法 setStage 夾下限 1、getStage 只認 v>0，
+   0 根本存不進去 → 「開始故事」會吃到 STAGE_DEFAULT(3)。
+   ⚠ STAGE_DEFAULT 仍是 3：那是**鑰匙不存在**（試玩版／沒跑主線）時的測試預設。
+   ⚠ flight/index.html 有自己的一份讀取（非 module），它的預設也是 3 —— stage 0 時
+     本來就沒有船、進不了飛行頁，不受影響。 */
 export function getStage(){
   const v = parseInt(rd(K.stage),10);
-  return (isFinite(v) && v>0) ? v : STAGE_DEFAULT;
+  return (isFinite(v) && v>=0) ? v : STAGE_DEFAULT;
 }
-export function setStage(n){ n=Math.max(1, n|0); wr(K.stage, n); return n; }
+export function setStage(n){ n=Math.max(0, n|0); wr(K.stage, n); return n; }
 
 /* ── flags：一次性旗標集合（scene 播完寫入，存檔要帶）── */
 export function getFlags(){

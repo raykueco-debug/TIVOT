@@ -1148,6 +1148,11 @@ inn.setup({
 export function open(town, node, opts){
   townId = town || 'capital';
   const T=TOWNS[townId]; if(!T) return;
+  /* 進城就把體力回滿（ver -556，Ray 指定）：城＝安全區，走進來殘血歸零重算。
+     收在**入口唯一這一支**（鐵律 8）——正常進城、被抬回旅店（carried）、讀檔
+     開在城裡（save.apply → openTown）全部吃到。城內移動與戰後 resume 不經過
+     這裡，所以城裡打殘的血照舊帶著，出去再回來才補滿。 */
+  prog.clearHp();
   /* 被抬回來的（ver -496，Ray：「城鎮中戰鬥死亡就回旅店」）：這一次抵達由
      `enter()` 消化 —— 初見還沒看過就演節點的 `wake` 那一拍（見 enter 的說明）。 */
   carriedIn = !!(opts && opts.carried);

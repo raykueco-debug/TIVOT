@@ -977,13 +977,15 @@ town.setGearWatch(gear.onceClosed);
    不清的話旗標還留著，城鎮那些「只播一次」的段落就整個消失（Ray 回報過）。
    ⚠ 邊界定義在 `progress.newRun()` 那一支，不要在這裡列要清什麼（鐵律 8）。
    ⚠ 讀檔是另一回事（`progress.restore()`），不走這裡。 */
-bindBtn('storyBtn', ()=>{ prog.newRun(); story.open(null); });
-/* 「開始故事」（ver -554，Ray：「建立一個開始故事的大鈕放在挑戰上面，這條線獨立於
-   測試、章節選擇，及 story(run down)，用來測試真實遊玩的存讀檔、死亡機制等狀況」）：
+/* 「開始故事」（ver -554；-556 補 stage 0，Ray：「開始故事是從 stage0 開始」）：
    正式遊玩的「從頭開始」，乾淨的一條線 —— newRun()（唯一的從頭開始，§6.9）→
-   主線第 0 句。不吃 testmode、不經章節工具、不帶任何開發種子；讀檔照舊走「繼續」
-   （存檔庫與一輪狀態是分開的，開新故事不會毀掉既有存檔）。 */
-bindBtn('storyStartBtn', ()=>{ prog.newRun(); story.open(null); });
+   **明寫 stage 0**（鑰匙被 newRun 清掉後 getStage 會退回測試預設 3，
+   從頭開始不能吃那個預設）→ 主線第 0 句。不吃 testmode、不經章節工具、
+   不帶任何開發種子；讀檔照舊走「繼續」（存檔庫與一輪狀態分開，
+   開新故事不會毀掉既有存檔）。testmode 的小 story 鈕＝同一支（鐵律 8）。 */
+function startStoryFresh(){ prog.newRun(); prog.setStage(0); story.open(null); }
+bindBtn('storyBtn', startStoryFresh);
+bindBtn('storyStartBtn', startStoryFresh);
 /* ══ 章節（ver -429，Ray 指定）══════════════════════════════════════════
    管理人限定的跳關工具：每一章都先 `newRun()`（＝從頭開始的唯一那一支，§6.9），
    再把「這一章開始時本來就該有的東西」放回去，然後由這裡把入口打開。
