@@ -241,6 +241,10 @@ export function fitGridSquare(){
 }
 function markNext(){
   state.cells.forEach(c=>c.classList.remove('next'));
+  /* 受擊＝連擊歸零（ver -522，Ray：「只要受擊就歸0」）—— 守在唯一入口，
+     大絕／延時／按錯／格擋掉血、聖徒化中的推進全部涵蓋；免傷的 Perfect/Counter
+     不經過這裡，連擊不斷。 */
+  state.combo=0;
   if(state.saintMode){   // 聖徒化：只提示第一格（本輪聖徒化未接，saintMode 恆 false）
     if(state.expect!==1) return;
     const c0=state.cells.find(c=>+c.dataset.num===state.expect);
