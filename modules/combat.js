@@ -668,6 +668,7 @@ const MOON={
   /* 兩個月角尖端佔圖比例（-540 擺位的錨；沿缺口中心對邊界角射線量到的最遠點）。 */
   tipU:{x:0.9855, y:0.2923},   // 上角尖（長臂）
   tipL:{x:0.7591, y:0.6912},   // 下角尖（短臂）
+  armT: 56/272,                // 下臂厚度佔圖高（缺口中心正下方 180° 的徑向厚度）
 };
 let claspSig='';
 let claspGeo=null;                                      // 遮罩/連擊數用的幾何（layoutClasp 算好，update 只讀）
@@ -685,13 +686,15 @@ function layoutClasp(){
   if(sig===claspSig) return; claspSig=sig;
   const S=(br.y+br.height)-rr.y;             // S＝紅條頂→藍條底（慣例單位）
   const BL=br.x;                             // 血條左緣（視口座標）
-  /* 擺位（ver -540，Ray：「下臂要切齊藍血條左緣，上臂要伸入 HITS 的 H 後方」）：
-     兩個月角尖端當錨 —— 下角尖釘在（血條左緣, 藍條垂直中心）、上角尖的高度
-     ＝HITS 字的中心（基線 rt−0.28S、字高 0.36S → 中心約 rt−0.40S）。
-     縮放由兩錨的垂直距離解出（圖不旋轉，上角尖的橫向落點由圖自己決定 ——
-     這張圖上臂長，尖端會沿 H 後方伸過去）。左端超出畫面就讓它被裁。 */
-  const yU=rr.y-0.40*S, yL=br.y+br.height/2;
-  const Hm=(yL-yU)/(MOON.tipL.y-MOON.tipU.y), Wm=Hm*MOON.ar;
+  /* 擺位（ver -541，Ray：「月太大了，月的下臂粗細要與藍血條一樣粗」＋
+     -540 的「下臂要切齊藍血條左緣，上臂要伸入 HITS 的 H 後方」）：
+     · 縮放＝**下臂厚度貼齊藍條高**（armT 是那張圖量出來的比例）；
+     · 下角尖釘在（血條左緣, 藍條垂直中心）—— 下臂與藍條同粗又同高，
+       讀起來就是血條往左的收尾；
+     · 上臂的落點由圖自己決定（圖不旋轉）：這個大小下尖端沿 H 後方收在
+       紅條頂附近。左端超出畫面就讓它被裁。 */
+  const yL=br.y+br.height/2;
+  const Hm=br.height/MOON.armT, Wm=Hm*MOON.ar;
   const left=BL-MOON.tipL.x*Wm, top=yL-MOON.tipL.y*Hm;
   for(const el of [frame,fillImg]){
     el.style.left=(left-hr.x)+'px'; el.style.top=(top-hr.y)+'px';
