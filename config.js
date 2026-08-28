@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.28-502';
+export const VERSION = 'ver 2026.08.28-503';
 
 export const GAME_CONFIG = {
 
@@ -1140,7 +1140,11 @@ export const GAME_CONFIG = {
                            ⚠ 寫在卡上不寫死是哪一場（鐵律 1）：日後改成別場開啟只動這一欄。 */
                         evalFrom:true,
                         weaponSound:{ MG_Squall:'se_ship_heavygun',
-                                      Shotgun_Blast:{ key:'se_pistol_01', times:6 },
+                                      /* `once`（ver -503，Ray：「se_bulletpiece 跟船戰散射
+                                         武器同時播放，只播一次，不隨 hit 數增加」）：
+                                         這一次反擊開火同時疊播一支，實作在 weapon.js。 */
+                                      Shotgun_Blast:{ key:'se_pistol_01', times:6, once:'se_bulletpiece' },
+                                      Shotgun_Dragon:{ key:'se_shotgun_blast', once:'se_bulletpiece' },
                                       Sniper_Falcon:'se_ship_cannon' },
                         /* 船戰的速射砲（機槍反擊）連射間隔（ver -476，Ray：「連射速度
                            調降50%」）：預設 90ms → 180ms。絕對值寫卡上（同敵人卡慣例）。 */
@@ -1199,7 +1203,11 @@ export const GAME_CONFIG = {
          talkOnce 打贏才記（§6.5.2）。 */
     flight_serpent:   { enemy:'serpent',
                         weaponSound:{ MG_Squall:'se_ship_heavygun',
-                                      Shotgun_Blast:{ key:'se_pistol_01', times:6 },
+                                      /* `once`（ver -503，Ray：「se_bulletpiece 跟船戰散射
+                                         武器同時播放，只播一次，不隨 hit 數增加」）：
+                                         這一次反擊開火同時疊播一支，實作在 weapon.js。 */
+                                      Shotgun_Blast:{ key:'se_pistol_01', times:6, once:'se_bulletpiece' },
+                                      Shotgun_Dragon:{ key:'se_shotgun_blast', once:'se_bulletpiece' },
                                       Sniper_Falcon:'se_ship_cannon' },
                         counterGapMs:180,
                         talkOnce:'taught_serpent_frag',
@@ -1399,6 +1407,7 @@ export const GAME_CONFIG = {
       se_ui_sortie:1.184, se_ginclick:1.106, se_metalclip:1.139,
       se_buy:1.122, se_healing:1.461,   // ver -499（audio_scan 實測：−14.8／−17.1 LUFS）
       se_enemy_serpant:2.184,           // ver -500（audio_scan 實測：−20.6 LUFS）
+      se_bulletpiece:1.49,              // ver -503（audio_scan 實測：−17.2 LUFS）
       se_dart_fail:2.792,
       /* ── 劇情／城鎮（這一批以前完全沒有增益，見上面的說明）── */
       se_steps:7.198, se_walk:4.481, se_fall:3.724, se_punch:1.596,
@@ -1585,6 +1594,7 @@ export const ASSETS = {
   se_dart_fail:      "resources/audio/se/se_dart_fail.m4a",   // 打靶失手（ver -396）
   se_pageflip:       "resources/audio/se/se_ui_pageflip.m4a",
   se_buy:            "resources/audio/se/se_buy.m4a",       // 商店結帳（ver -499，Ray 交件）
+  se_bulletpiece:    "resources/audio/se/se_bulletpiece.m4a",   // 船戰散射的彈幕聲（ver -503，兩支素材混剪）
   se_healing:        "resources/audio/se/se_healing.m4a",   // 使用回復道具（ver -499，Ray 交件）
   /* 旅店「回房睡覺」（ver -430，Ray 交件）。⚠⚠ **淡出至黑的長度就是這支的長度** ——
      不要在別處寫一個秒數（鐵律 7）：`modules/inn.js` 問 `SFX.duration()` 拿實測值。

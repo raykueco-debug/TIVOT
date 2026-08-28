@@ -82,6 +82,10 @@ export function weaponCounter(dmgScale){
   const ov = state.weaponSound && state.weaponSound[state.equippedWeapon];
   const soundKey = ov ? (ov.key || ov) : w.sound;
   const soundTimes = (ov && ov.times) ? ov.times : 1;
+  /* 卡上 weaponSound 的 `once`（ver -503，Ray：「se_bulletpiece 跟船戰散射武器
+     同時播放，但只播一次，不用隨 hit 數增加」）：這一次反擊開火的同一瞬間
+     疊播一支 —— 不乘 times、不進每發的迴圈，三種 vfx 路徑都只在這裡響一次。 */
+  if(ov && ov.once){ try{ SFX.play(asset(ov.once), sfxGain(ov.once)); }catch(_){} }
   const se = asset(soundKey);
   const seGain = sfxGain(soundKey);   // 反擊層增益（全域響度階層見 tuning.sfxGain）
   /* 疊播：同一瞬間播 N 聲（音量分攤，否則 6 支疊起來會撞到 limiter）。 */
