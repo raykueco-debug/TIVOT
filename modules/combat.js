@@ -659,6 +659,7 @@ function energyFullBurst(){
    規格（Ray 的圖）：頭＝垂直平口，釘在藍（我方）條帶 × 血條左緣；
    沿 45°→315° 的圓弧連續收細；尖收在紅條頂上方 4px、由 HITS 壓著。 */
 let claspSig='';
+let claspGeo=null;                                      // 扇形掃掠遮罩用的幾何（layoutClasp 算好，update 只讀）
 function layoutClasp(){
   const svg=document.querySelector('#energyClasp svg'); if(!svg) return;
   const blue=document.querySelector('.hpbar.player-bar'), red=document.querySelector('.hpbar.enemy-bar');
@@ -685,8 +686,10 @@ function layoutClasp(){
   const RXo=0.78*S, RYo=1.08*S;                         // 外橢圓
   const AT=50*Math.PI/180;                              // 月角在外橢圓 ±50°（右上/右下）
   const XT=RXo*Math.cos(AT), YT=RYo*Math.sin(AT);       // 月角座標（相對環心）
-  /* 內橢圓：解「過兩個月角、腰厚 0.52S」。 */
-  const W=0.52*S, RYc=1.05*S;
+  /* -537 被退：他畫的是**幾乎實心的胖月** —— 腰佔掉整個寬（0.95S），
+     內緣那口只是右側一條淺淺的凹縫（藏在連擊數後面），畫面上讀起來
+     就是一顆金月盤、頂上留一段暗的未滿弧。細彎月是我抄錯。 */
+  const W=0.95*S, RYc=0.95*S;
   const kk=Math.sqrt(1-(YT/RYc)*(YT/RYc));
   const DX=(XT-(RXo-W)*kk)/(1+kk);
   const RXc=DX+RXo-W;
@@ -697,26 +700,22 @@ function layoutClasp(){
   /* 外弧：下角(+50°) → 底 → 左 → 頂 → 上角(310°)；
      內弧：上角沿偏右橢圓的左側倒回下角；交點即月角，自然收尖。 */
   const tc=Math.acos(cl((XT-DX)/RXc));                  // 月角在內橢圓上的參數角
-  const outer=[], inner=[], spinePts=[];
+  const outer=[], inner=[];
   const N=96;
   for(let i=0;i<=N;i++){ const a=AT+(2*Math.PI-2*AT)*i/N;
     outer.push([ccx+RXo*Math.cos(a), ccy+RYo*Math.sin(a)]); }
   for(let i=0;i<=N;i++){ const t=(2*Math.PI-tc)-(2*Math.PI-2*tc)*i/N;
     inner.push([ccx+DX+RXc*Math.cos(t), ccy+RYc*Math.sin(t)]); }
   const ring='M'+f(outer)+' L'+f(inner)+' Z';
-  /* 中脊：外緣與內緣在同一個 y 的中點（兩角各讓 6%，尖端厚度 0）。 */
-  for(let i=0;i<=N;i++){ const a=(AT*1.12)+(2*Math.PI-2*AT*1.12)*i/N;
-    const y=RYo*Math.sin(a), xo=RXo*Math.cos(a);
-    const xi=DX-RXc*Math.sqrt(Math.max(0,1-(y/RYc)*(y/RYc)));
-    spinePts.push([ccx+(xo+xi)/2, ccy+y]); }
-  const spine='M'+f(spinePts);
-  const TH=W;                                           // 遮罩筆寬照腰厚
+  /* 計量的遮罩改**扇形掃掠**（-537 的沿中脊描邊在胖月上罩不住，滿了中間
+     還留一條暗帶）：以月心為軸、由下角(AT)往上角(2π−AT)掃一個大半徑的
+     扇形當 mask —— 金月被掃到哪亮到哪，方向照舊「下角→上角」。 */
+  claspGeo={cx:ccx, cy:ccy, a0:AT, a1:2*Math.PI-AT, R:3*S};
   const track=svg.querySelector('.clasp-track'), gold=svg.querySelector('.clasp-gold'), fill=$('energyClaspFill');
   if(track){ track.setAttribute('d',ring);
     track.style.fill='rgba(12,10,18,.82)'; track.style.stroke='rgba(217,198,138,.35)'; track.style.strokeWidth='1'; }
   if(gold){ gold.setAttribute('d',ring);
     gold.style.fill='var(--gold)'; gold.style.stroke='none'; gold.style.strokeWidth='0'; }
-  if(fill){ fill.setAttribute('d',spine); fill.setAttribute('stroke-width', String(Math.ceil(TH+4))); }
   /* 數字錨在圓心、HITS 壓在尖上（clasp 的定位座標系＝svg 減去宿主偏移）。 */
   const host=$('energyClasp').getBoundingClientRect();
   const combo=document.querySelector('#energyClasp .clasp-combo');
@@ -740,10 +739,16 @@ window.addEventListener('resize', ()=>{ claspSig=''; setTimeout(layoutClasp,60);
 
 function updateEnergyClasp(){
   const fill=$('energyClaspFill');
-  if(fill){
-    const total=fill.getTotalLength ? fill.getTotalLength() : CLASP_LEN;
-    fill.style.strokeDasharray=total;
-    fill.style.strokeDashoffset=total*(1-state.energy/100);
+  if(fill && claspGeo){
+    const g=claspGeo, pgs=Math.max(0,Math.min(1,state.energy/100));
+    const aEnd=g.a0+(g.a1-g.a0)*pgs;
+    let d='M'+g.cx.toFixed(1)+','+g.cy.toFixed(1);
+    const n=Math.max(2,Math.round(40*pgs));
+    for(let i=0;i<=n;i++){ const a=g.a0+(aEnd-g.a0)*i/n;
+      d+=' L'+(g.cx+g.R*Math.cos(a)).toFixed(1)+','+(g.cy+g.R*Math.sin(a)).toFixed(1); }
+    fill.setAttribute('d', d+' Z');
+    fill.style.fill='#fff'; fill.style.stroke='none';
+    fill.style.strokeDasharray='none'; fill.style.strokeDashoffset='0';
   }
   $('energyClasp').classList.toggle('full', state.energy>=100);
   /* 中央連擊數（ver -511，Ray：「像 VP1 那樣顯示連擊數在中間」「連擊為 0 的時候
