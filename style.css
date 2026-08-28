@@ -249,7 +249,7 @@
     overflow:visible;pointer-events:none;filter:drop-shadow(0 0 4px #000);}
   /* 中央連擊數（ver -511，Ray：「像 VP1 那樣顯示連擊數在中間」）：
      錨在迴旋的圓心（viewBox 40,44 → 乘上顯示縮放再加 svg 的偏移）。 */
-  #energyClasp .clasp-combo{position:absolute;left:20px;bottom:26px;transform:translate(-50%,50%);
+  #energyClasp .clasp-combo{position:absolute;left:23px;bottom:35px;transform:translate(-50%,50%);
     pointer-events:none;text-align:center;line-height:1;z-index:2;}
   #energyClasp .clasp-combo{opacity:0;transition:opacity .15s;}
   #energyClasp .clasp-combo.on{opacity:1;}
