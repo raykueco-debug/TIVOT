@@ -1062,7 +1062,12 @@ story.setGateHold({
      · `retry`    → 一路帶到 `story.resumeFrom`，由它跳回那一幕的第 0 句
      · `giveup`   → 走**唯一那支**「離開這一切」（`story.leaveToHome`）
    ⚠ 這一頁該長什麼樣由 `setLoseKind` 回答 —— 判定點只有這一處（鐵律 7）。 */
-combat.setLoseKind(()=> flightBack ? 'flight' : (storyResume ? 'story' : 'home'));
+/* `town`（ver -496，Ray：「城鎮中戰鬥死亡就回旅店」）：城鎮開著的插入戰敗北
+   → 一顆「繼續」，按下去被抬回這座城的旅店（見下方 storyReturn 的分流）。
+   ⚠ 判 `town.isOpen()` 要在 `flightBack` 之後：從城鎮出航再進的船戰，城鎮也還開著
+   （suspend 不 close，§6.10）—— 那一場的敗北要回**飛行畫面**，不是旅店。 */
+combat.setLoseKind(()=> flightBack ? 'flight'
+                      : (storyResume ? (town.isOpen() ? 'town' : 'story') : 'home'));
 combat.setStoryReturn((res)=>{
   /* 「放棄」：回主畫面。⚠ 走 `story.leaveToHome()` 而不是自己 `combat.goHome()` ——
      那一支還會**收掉城鎮**（`townCloser`），漏了的話下一次進城會接在舊節點上。
@@ -1098,7 +1103,9 @@ combat.setStoryReturn((res)=>{
       if(n>=3){
         prog.setFlightLossCount(0);
         const inn = prog.getLastInn() || { town:'capital', node:'inn' };   // 沒睡過＝帝都旅店（開局的家）
-        combat.goHome(()=>town.open(inn.town, inn.node), { noBgm:true });
+        /* `carried:true`（ver -496）：他是被抬回來的 —— 初見還沒看過就演
+           「啊，醒了。」那一拍，不演店員的「歡迎光臨」。 */
+        combat.goHome(()=>town.open(inn.town, inn.node, { carried:true }), { noBgm:true });
         return;
       }
       prog.setFlightLossCount(n);
@@ -1110,6 +1117,20 @@ combat.setStoryReturn((res)=>{
       return;
     }
     location.href='flight/index.html'; return;
+  }
+  /* ══ 城鎮插入戰敗北 → 被抬回這座城的旅店（ver -496，Ray：「城鎮中戰鬥死亡就
+     回旅店」）══ 戰敗頁那一顆「繼續」帶 `{lost:true, lose:'continue'}` 到這裡。
+     ⚠ 在 `flightBack` 之後判（那條已經 return 掉了）：出航的船戰不走這裡。
+     ⚠ `carried:true` → 旅店初見還沒看過就演「啊，醒了。」那一拍（town.enter）。
+     ⚠ goHome 預設殺光所有頁面（ver -494）—— 被抬回去＝這一趟的戲全部收場，
+       town.open 在黑幕之下重開一座乾淨的城。旅店沒蓋起來的城退回上次睡覺的旅店。 */
+  if(res && res.lose==='continue' && town.isOpen()){
+    storyResume = null;
+    const pos = town.getPosition();
+    let dest = pos && { town:pos.town, node:town.innNodeOf(pos.town) };
+    if(!dest || !dest.node) dest = prog.getLastInn() || { town:'capital', node:'inn' };
+    combat.goHome(()=>town.open(dest.town, dest.node, { carried:true }), { noBgm:true });
+    return;
   }
   const r = storyResume; storyResume = null;
   /* ⚠ 走 `story.resumeFrom`（ver -375）：主線與城鎮的臨時段落**續播方式不同**，
@@ -1495,6 +1516,13 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
   };
   // 開機還原：簽名還在就直接進管理人模式
   if(TEL.isAdminStored()) document.body.classList.add('testmode');
+  /* 測試金（ver -496，Ray：「測試環境先給我10000元花」）：管理人模式下每一輪
+     發一次 10000 G。旗標走一輪內 flags —— `newRun()` 會清掉，新一輪自動再發；
+     正式版玩家開不了 testmode，吃不到這一條。 */
+  if(document.body.classList.contains('testmode') && !prog.hasFlag('dev_seed_money')){
+    prog.addFlags(['dev_seed_money']);
+    import('./script/inventory.js').then(inv=>inv.addMoney(10000));
+  }
   homeEl.addEventListener('pointerdown', e=>{
     if(e.target && e.target.closest && e.target.closest('button')) return;   // 按鈕上起手不算
     pid=e.pointerId; pts=[{x:e.clientX,y:e.clientY}];

@@ -30,6 +30,7 @@ const ARRIVE_MS = 1000;   // 抵達新地點之後、對白開演之前的停頓
 const SLIDE_MS = 450;
 
 let townId=null, nodeId=null, layer=null, busy=false;
+let carriedIn=false;   // 這一次進城是「被抬回旅店」（ver -496）；enter() 消化一次就歸零
 let arriveT=0;            // 抵達停頓的計時器（換節點要取消，見 enter）
 /* ⚠⚠ 傍晚那一格**讓過一次**了嗎（ver -430，Ray：「要等角色先把原有的場景對話講完
    才觸發，移動到下一個場景才強制觸發」）。ver -427 的作法是「優先所有事件」——
@@ -811,6 +812,7 @@ export function enter(id){
   const T=TOWNS[townId]; if(!T) return;
   const n=T.nodes[id]; if(!n){ console.warn('[town] 沒有這個節點：', id); busy=false; return; }
   nodeId=id;
+  const carried = carriedIn; carriedIn = false;   // 只吃這一次抵達（ver -496）
   /* ⚠ 上一個地點開出來的「下一步去哪」在這裡結算（ver -440，見 `resolveFavor`）——
      要在演任何東西之前，好感度是這一步的結果，不是這一段對白的結果。 */
   resolveFavor(id);
@@ -905,8 +907,15 @@ export function enter(id){
      移動到**下一個地點**才強制觸發。⚠ 只讓一次（`eveningHeld`）—— 否則一路走過
      還沒看過的地點會永遠讓下去，「強制」就名存實亡。 */
   if(ev && !eveningHeld && own.length){ eveningHeld=true; ev=null; }
+  /* ══ 被抬回旅店、初見還沒看過（ver -496，Ray：「如果在那之前還沒觸發旅店初見
+     就優先跑諾薇兒一句『啊，醒了。』」）══
+     這一拍**取代**該次的進場對白（被抬進來的人聽店員「歡迎光臨」是錯的），
+     而初見的旗標**不記** —— 下次正常走進來照演（同打烊／傍晚插隊的作法）。
+     初見已經看過＝什麼都不演（正常的安靜抵達）。 */
+  const wake = (carried && !played && n.wake && n.wake.length) ? n.wake : null;
   const lines = act ? act.lines
               : ev ? ev.lines
+              : wake ? wake
               : own;
   /* ⚠ 旗標**演完才記**（ver -375 由「開演就記」改過來）：這一段中間可能插一場戰鬥，
      打輸了會被丟回首頁 —— 開演就記的話，回頭再走一次公會就整段跳過，那一場永遠打不到。
@@ -935,6 +944,7 @@ export function enter(id){
           if(ev.hour!=null) clock.advanceToHour(ev.hour);
           if(ev.goto && ev.goto!==nodeId){ forceGo(ev.goto); return; }
         }
+        else if(wake){ /* 醒來拍（ver -496）：什麼旗標都不記 —— 初見留給下次正常抵達 */ }
         else{
           applyAff(lines);
           prog.addFlags([flag]);                  // ⚠ 演完才記（見上面的說明）
@@ -1135,9 +1145,12 @@ inn.setup({
 
 /* `node`（選填，ver -429）＝從哪一格開始，不寫就是城的入口。
    目前只有「章節」那顆跳關鈕在用；日後要記住離開時站在哪（§6.9 的清單）也走這裡。 */
-export function open(town, node){
+export function open(town, node, opts){
   townId = town || 'capital';
   const T=TOWNS[townId]; if(!T) return;
+  /* 被抬回來的（ver -496，Ray：「城鎮中戰鬥死亡就回旅店」）：這一次抵達由
+     `enter()` 消化 —— 初見還沒看過就演節點的 `wake` 那一拍（見 enter 的說明）。 */
+  carriedIn = !!(opts && opts.carried);
   eveningHeld=false;          // 傍晚那一格的「讓過一次」是這一趟城鎮探索的狀態（ver -430）
   pendingFavor=null;          // 「下一步去哪」也是（ver -440，見 armFavor）
   const st=story.stageEl(); if(st){ st.classList.add('on','town-on'); }
@@ -1159,6 +1172,12 @@ export function close(){
   document.querySelectorAll('.kerb-arrow').forEach(a=>a.classList.remove('avail','holding'));
 }
 export function isOpen(){ return !!townId; }
+/* 這座城的旅店節點（ver -496：城鎮插入戰敗北要被抬去那裡）。沒有旅店回 null。 */
+export function innNodeOf(town){
+  const T=TOWNS[town||townId]; if(!T) return null;
+  for(const k of Object.keys(T.nodes)) if(T.nodes[k].inn) return k;
+  return null;
+}
 /* ══ 出航：把城鎮的介面收起來，但**不關掉城鎮**（ver -437）══════════════
    Ray：「飛行畫面閉棺時下方出現城鎮的移動選項…飛行畫面城鎮的時間地點殘留。」
    ⚠⚠ 成因：出航之後 `body.flight-on` 只是把 `#storyStage` **藏起來**

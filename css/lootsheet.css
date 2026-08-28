@@ -119,16 +119,18 @@
     letter-spacing:1px;color:var(--gold-dim);}
   #lootSheet .shop-row.out{opacity:.42;}
   #lootSheet .shop-row.out .wp-stock{color:var(--blood);}
-  /* ── 購買數量（ver -405，Ray：「購買時可選擇購買數量」）──
-     ⚠ 只在買得到兩個以上時才出現（見 loot.js）；`／n` 標的是**這一次最多能買幾個**
-       ——「店裡剩幾個」與「錢夠買幾個」取小，玩家不必自己算。 */
-  #lootSheet .shop-qty{display:flex;align-items:center;justify-content:center;gap:10px;
-    margin:8px 0 0;}
-  #lootSheet .shop-qty button{width:34px;height:28px;font-family:inherit;font-size:15px;
+  /* ── 購物車（ver -496，Ray：「可以選要購買的商品數量一次結帳」）──
+     每一列自己的 −/＋（取代 -405 那條「選一項才出現」的底部數量列）。
+     ⚠ 控件要**夠大顆**（28px 高）：它在列表裡，太小會誤觸到整列的選取。
+     ⚠ `margin-left:auto` 把整組推到標籤列的右端 —— 左邊留給「持有／庫存」。 */
+  #lootSheet .shop-cartline{display:flex;align-items:center;gap:6px;margin-left:auto;}
+  #lootSheet .shop-cartline button{width:30px;height:26px;font-family:inherit;font-size:15px;
     line-height:1;color:var(--gold);background:rgba(10,8,14,.7);
     border:1px solid var(--gold-dim);border-radius:7px;}
-  #lootSheet .shop-qty b{min-width:2.2em;text-align:center;font-size:16px;color:var(--ink);}
-  #lootSheet .shop-qty .qty-max{font-size:11px;color:var(--gold-dim);letter-spacing:1px;}
+  #lootSheet .shop-cartline button.off{opacity:.35;}
+  #lootSheet .shop-cartline .cr-n{min-width:2.0em;text-align:center;font-size:13px;
+    font-style:normal;color:var(--gold-dim);}
+  #lootSheet .shop-cartline .cr-n.on{color:var(--ink);}
   /* ⚠ `.shop-keeper-art` 已於 ver -387 撤掉（Ray：「商店內展開購買視窗時不要放店主立繪」）——
      店主畫在背景的櫃台後面，這一頁是疊在他前面的一張單子，不必再放一次同一個人。
      樣式一併移除；要找歷史請看 git。 */

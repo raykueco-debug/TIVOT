@@ -318,7 +318,9 @@ function setupLoseNav(){
   const acts=$('bannerActs'), rbtn=$('rematchBtn'), gbtn=$('giveupBtn');
   if(kind==='home') return;                 // 出陣：showResultSequence 已經擺成「再度執槍」
   clearTimeout(_resultAutoTimer);
-  if(kind==='flight'){
+  /* `town`（ver -496）：城鎮插入戰敗北 → 也是一顆「繼續」，按下去被抬回旅店
+     （去哪裡一樣由啟動層的 storyReturn 分流 —— 這裡只管這一頁長什麼樣）。 */
+  if(kind==='flight' || kind==='town'){
     state.resultMode='lose-continue';
     if(rbtn) rbtn.textContent=L.result.loseContinue;
     return;
