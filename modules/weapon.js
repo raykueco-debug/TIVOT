@@ -90,6 +90,13 @@ export function weaponCounter(dmgScale){
      同時播放，但只播一次，不用隨 hit 數增加」）：這一次反擊開火的同一瞬間
      疊播一支 —— 不乘 times、不進每發的迴圈，三種 vfx 路徑都只在這裡響一次。 */
   if(ov && ov.once){ try{ SFX.play(asset(ov.once), sfxGain(ov.once)); }catch(_){} }
+  /* `after`（ver -506，Ray：「發射瞬間播砲聲，0.2 秒後播彈殼，可重疊」）：
+     開火之後延遲跟播一支，同樣整串只一次。SFX.play 每次都是新的 source，
+     與還在響的砲聲自然重疊，不必特別處理。 */
+  if(ov && ov.after && ov.after.key){
+    setTimeout(()=>{ try{ SFX.play(asset(ov.after.key), sfxGain(ov.after.key)); }catch(_){} },
+               ov.after.delayMs||0);
+  }
   const se = asset(soundKey);
   const seGain = sfxGain(soundKey);   // 反擊層增益（全域響度階層見 tuning.sfxGain）
   /* 疊播：同一瞬間播 N 聲（音量分攤，否則 6 支疊起來會撞到 limiter）。 */

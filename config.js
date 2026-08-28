@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.28-505';
+export const VERSION = 'ver 2026.08.28-506';
 
 export const GAME_CONFIG = {
 
@@ -1149,7 +1149,11 @@ export const GAME_CONFIG = {
                                       /* ver -505（Ray：「發射音改 se_spiltcannon，跟 bulletpiece
                                          同時播，不要隨 hit 數疊加」）—— times 不寫＝1。 */
                                       '霰彈槍':{ key:'se_spiltcannon', once:'se_bulletpiece' },
-                                      '萊福槍':'se_ship_cannon' },
+                                      /* ver -506（Ray：「單擊砲 se 換 se_weapon_cannon，發射
+                                         瞬間播，0.2 秒後播 se_weapon_shell，可重疊」）——
+                                         `after`＝延遲跟播（weapon.js，同 once 一組機制）。 */
+                                      '萊福槍':{ key:'se_weapon_cannon',
+                                                 after:{ key:'se_weapon_shell', delayMs:200 } } },
                         /* 船戰的速射砲（機槍反擊）連射間隔（ver -476，Ray：「連射速度
                            調降50%」）：預設 90ms → 180ms。絕對值寫卡上（同敵人卡慣例）。 */
                         counterGapMs:180,
@@ -1216,7 +1220,11 @@ export const GAME_CONFIG = {
                                       /* ver -505（Ray：「發射音改 se_spiltcannon，跟 bulletpiece
                                          同時播，不要隨 hit 數疊加」）—— times 不寫＝1。 */
                                       '霰彈槍':{ key:'se_spiltcannon', once:'se_bulletpiece' },
-                                      '萊福槍':'se_ship_cannon' },
+                                      /* ver -506（Ray：「單擊砲 se 換 se_weapon_cannon，發射
+                                         瞬間播，0.2 秒後播 se_weapon_shell，可重疊」）——
+                                         `after`＝延遲跟播（weapon.js，同 once 一組機制）。 */
+                                      '萊福槍':{ key:'se_weapon_cannon',
+                                                 after:{ key:'se_weapon_shell', delayMs:200 } } },
                         counterGapMs:180,
                         talkOnce:'taught_serpent_frag',
                         talk:[
@@ -1417,6 +1425,7 @@ export const GAME_CONFIG = {
       se_enemy_serpant:2.184,           // ver -500（audio_scan 實測：−20.6 LUFS）
       se_bulletpiece:1.49,              // ver -503（audio_scan 實測：−17.2 LUFS）
       se_spiltcannon:0.62,              // ver -505（audio_scan 實測：−9.7 LUFS，母帶很大聲）
+      se_weapon_cannon:1.29, se_weapon_shell:1.24,   // ver -506（audio_scan 實測：−16.0／−15.7 LUFS）
       se_dart_fail:2.792,
       /* ── 劇情／城鎮（這一批以前完全沒有增益，見上面的說明）── */
       se_steps:7.198, se_walk:4.481, se_fall:3.724, se_punch:1.596,
@@ -1605,6 +1614,8 @@ export const ASSETS = {
   se_buy:            "resources/audio/se/se_buy.m4a",       // 商店結帳（ver -499，Ray 交件）
   se_bulletpiece:    "resources/audio/se/se_bulletpiece.m4a",   // 船戰散射的彈幕聲（ver -503，兩支素材混剪）
   se_spiltcannon:    "resources/audio/se/se_spiltcannon.m4a",   // 船戰散射的發射音（ver -505，Ray 交件）
+  se_weapon_cannon:  "resources/audio/se/se_weapon_cannon.m4a",   // 船戰單擊砲發射音（ver -506，Ray 交件）
+  se_weapon_shell:   "resources/audio/se/se_weapon_shell.m4a",    // 砲彈殼落地（發射 0.2 秒後跟播）
   se_healing:        "resources/audio/se/se_healing.m4a",   // 使用回復道具（ver -499，Ray 交件）
   /* 旅店「回房睡覺」（ver -430，Ray 交件）。⚠⚠ **淡出至黑的長度就是這支的長度** ——
      不要在別處寫一個秒數（鐵律 7）：`modules/inn.js` 問 `SFX.duration()` 拿實測值。
