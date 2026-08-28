@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.28-548';
+export const VERSION = 'ver 2026.08.28-549';
 
 export const GAME_CONFIG = {
 
@@ -104,11 +104,11 @@ export const GAME_CONFIG = {
     // 新武器：複製一段，鑰匙用「類型_武器名」（同圖檔基底名），image 指對應 ASSETS 鑰匙。
   },
   defaultWeapon: 'MG_Squall',   // 開局預設武器（填上面的鑰匙名）
-  /* 副武器類別 → 切換鈕的圖示（ver -481，Ray：「用簡單易懂清楚可辨的
-     『連射武器』『散射武器』『單發高威力武器』圖示代替」）。
-     圖示本體（SVG）在 weapon.js 的 WS_ICONS —— 這裡只記「哪一類用哪一個」，
+  /* 副武器類別 → 切換鈕的徽章（ver -549，Ray 交圖：連射=Switch_MG、
+     散射=Switch_Split、高爆=Switch_Hyper）。值＝ASSETS 鑰匙，weapon.js 的
+     renderSwitch 直接 asset() 取圖（-481 的手繪 SVG 圖示已退場）。
      加新類別補一行（鐵律 1）。 */
-  weaponCatIcons: { '重機槍':'rapid', '霰彈槍':'spread', '萊福槍':'single' },
+  weaponCatIcons: { '重機槍':'switch_mg', '霰彈槍':'switch_split', '萊福槍':'switch_hyper' },
 
   /* ------------------------------------------------------------------ *
    *  二、搭檔（修女 Partner）— 改變戰鬥規則的角色
@@ -1631,6 +1631,11 @@ export const ASSETS = {
      ⚠ 換圖要重量 combat.js 的 MOON 常數（缺口中心／月角角度是**那張圖**的數字）。 */
   clasp_moon:       "resources/vfx/clasp_moon.webp",
   clasp_moon_frame: "resources/vfx/clasp_moon_frame.webp",
+  /* ── 副武器切換鈕的類別徽章（ver -549，Ray 交件：連射/散射/高爆）──
+     原檔白底 → 轉檔時沿金環裁圓去背、縮 256（原 PNG 在 _originals/vfx）。 */
+  switch_mg:    "resources/vfx/Switch_MG.webp",
+  switch_split: "resources/vfx/Switch_Split.webp",
+  switch_hyper: "resources/vfx/Switch_Hyper.webp",
   weapon_mg_squall:     "resources/weapon/MG_Squall.webp",       // 重機槍 Squall
   weapon_shotgun_blast: "resources/weapon/Shotgun_Blast.webp",   // 散彈槍 Blast
   weapon_sniper_falcon: "resources/weapon/Sniper_Falcon.webp",   // 狙擊槍 Falcon

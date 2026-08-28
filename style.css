@@ -217,7 +217,7 @@
   /* ===== 敵我血條：橫置於敵人區下方，敵上我下 ===== */
   /* 破防值計量表以 C 字型扣在兩條血量的左側 */
   #barsBlock{position:absolute;left:0;right:0;bottom:6px;z-index:6;pointer-events:none;
-    display:flex;align-items:stretch;gap:8px;padding:0 12px 2px;}
+    display:flex;align-items:stretch;gap:8px;padding:0 12px 2px;}   /* 本身就是 absolute ＝ -549 #wpSwitch 的定位錨 */
   /* 破防計量（ver -511 重設計）：鐮月形 —— 下粗上細，細尖往右鉤到血條上方，
      整體放大。SVG 是固定尺寸、錨在這一格的左下，往上與往右**刻意溢出**
      （細尖要騎在血條上方）；pointer-events 只有滿值時開。 */
@@ -226,15 +226,17 @@
   /* 滿值時擴大點擊熱區（蓋住厚端那一片） */
   #energyClasp.full::before{content:"";position:absolute;top:-16px;bottom:-16px;left:-60px;right:-2px;}
   /* 月牙圖層（ver -539）：frame（空圈）在下、fill（金月）在上，幾何由 layoutClasp 寫。
-     ver -548（Ray：「月不要半透明 金色光」，推翻 -545/-547 的半透明與白金）：
-     月體＝**不透明、原圖的金**，發**金色光**（呼吸光暈＋金色流光）。 */
+     ver -548（Ray：「月不要半透明 金色光」）：月體不透明、發金色光。
+     ver -549（Ray：「月太橘 應該是金光」）：原圖的橙金（色相約 40°）往黃移 10°
+     成正金色 —— 這條色彩鏈是唯一一份，moonCharge 的 keyframes 以它為底。 */
   #energyClasp .clasp-moon{position:absolute;pointer-events:none;
     filter:drop-shadow(0 0 4px #000);}
+  #claspMoonFill{filter:hue-rotate(10deg) saturate(.95) brightness(1.06) drop-shadow(0 0 4px #000);}
   /* 計量累積中（0<energy<100，combat 掛 .charging）：金色光暈慢呼吸。 */
   #energyClasp.charging #claspMoonFill{animation:moonCharge 1.8s ease-in-out infinite alternate;}
   @keyframes moonCharge{
-    from{filter:drop-shadow(0 0 3px rgba(255,200,100,.35)) drop-shadow(0 0 4px #000);}
-    to  {filter:drop-shadow(0 0 8px rgba(255,200,100,.75)) drop-shadow(0 0 4px #000);}}
+    from{filter:hue-rotate(10deg) saturate(.95) brightness(1.06) drop-shadow(0 0 3px rgba(255,216,110,.35)) drop-shadow(0 0 4px #000);}
+    to  {filter:hue-rotate(10deg) saturate(.95) brightness(1.10) drop-shadow(0 0 8px rgba(255,216,110,.75)) drop-shadow(0 0 4px #000);}}
   /* 能量流（ver -546 白色彗星束 → -547 改**漸層流光**，Ray：「不用白光，
      用漸層的能量流」）：一整圈平滑起伏的白金漸層繞**缺口中心**順時針轉
      （rotate 動畫，GPU 便宜）—— 沒有亮頭暗尾的斷點，讀起來是流體的光在循環。
@@ -338,7 +340,10 @@
      · 圖示由 weapon.js 的 renderSwitch 依類別填入（config.weaponCatIcons 對照）。
      · 翻卡動畫照舊（換類別時翻面）；`.pending`（反擊中排隊）＝藍環呼吸。
      （-465 Alpha 槍圖／-469 大圖／-470 平衡版的歷史見 git —— Ray 最終要圖示。） */
-  #wpSwitch{flex:none;align-self:stretch;width:52px;padding:0;
+  /* ver -549（Ray：「讓切換鈕與月大小位置對稱」）：改**絕對定位**，盒與圓的
+     尺寸由 combat.layoutClasp 以月牙的盒鏡射過來寫（幾何只有那一處，鐵律 7）。
+     退出 flex 流之後血條自己伸長到右緣 —— 鈕壓在血條右端上，與月牙壓左端對稱。 */
+  #wpSwitch{position:absolute;padding:0;
     background:transparent;border:none;border-radius:0;
     display:flex;align-items:center;justify-content:center;
     pointer-events:auto;touch-action:manipulation;cursor:pointer;
@@ -349,7 +354,7 @@
     border:1px solid var(--gold-dim);
     box-shadow:0 0 10px rgba(0,0,0,.6), inset 0 0 8px rgba(240,196,105,.14);
     transform-style:preserve-3d;backface-visibility:hidden;transition:transform .08s;}
-  #wpSwitch .ws-card svg{width:26px;height:26px;display:block;
+  #wpSwitch .ws-card img{width:100%;height:100%;display:block;border-radius:50%;
     filter:drop-shadow(0 1px 2px #000);}
   #wpSwitch:active .ws-card{transform:scale(.9);}
   #wpSwitch.flip .ws-card{animation:wsFlip .34s ease;}

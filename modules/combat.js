@@ -692,11 +692,34 @@ function layoutClasp(){
      （壓進血條左端；月牙圖層本來就在 HP 之下（-526），被蓋住的那一角是刻意的）。
      -540/-541 的月角/臂厚錨定作廢。 */
   const Hm=1.548*S, Wm=Hm*MOON.ar;
-  const top=rr.y-0.516*S, left=BL+0.290*S-Wm;
+  const OVER=0.290*S;                        // 月/鈕壓進血條端點的量（未命名-2 量出）
+  const top=rr.y-0.516*S, left=BL+OVER-Wm;
+  /* 血條右側讓位（-549）：鈕與月同大，鏡射後會伸出血條右端 (Wm-OVER)——
+     不讓位的話鈕會伸出畫面。讓位量改變血條 rect，所以改了就重跑一次重量。
+     鈕藏著（單一類別／試玩版教學）就不讓，血條照舊放滿。 */
+  const btn=document.getElementById('wpSwitch');
+  const stack=document.getElementById('barStack');
+  if(stack){
+    const want=(btn && btn.style.display!=='none') ? Math.round(Wm-OVER)+'px' : '0px';
+    if((stack.style.marginRight||'0px')!==want){
+      stack.style.marginRight=want; claspSig=''; setTimeout(layoutClasp,30); return;
+    }
+  }
   for(const el of [frame,fillImg,glow]){
     if(!el) continue;
     el.style.left=(left-hr.x)+'px'; el.style.top=(top-hr.y)+'px';
     el.style.width=Wm+'px'; el.style.height=Hm+'px';
+  }
+  /* 副武器切換鈕（ver -549，Ray：「讓切換鈕與月大小位置對稱」）：
+     盒＝月牙的盒以**血條水平中軸**鏡射；圓卡直徑＝盒的短邊。
+     幾何只算這一處（鐵律 7），weapon.js 只管卡面內容與行為。 */
+  if(btn){
+    const bb2=btn.offsetParent?btn.offsetParent.getBoundingClientRect():{x:0,y:0};
+    const mirL=(br.left+br.right)-(left+Wm);
+    btn.style.left=(mirL-bb2.x)+'px'; btn.style.top=(top-bb2.y)+'px';
+    btn.style.width=Wm+'px'; btn.style.height=Hm+'px';
+    const wc=btn.querySelector('.ws-card'); const d=Math.round(Math.min(Wm,Hm));
+    if(wc){ wc.style.width=d+'px'; wc.style.height=d+'px'; }
   }
   claspGeo={ nxpx:left+MOON.nx*Wm-hr.x,      // 缺口中心（host 座標）＝連擊數的錨
              nypx:top+MOON.ny*Hm-hr.y,
