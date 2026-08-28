@@ -283,8 +283,13 @@ export const SFX = {
       }
     }
     _unlocked = true;
+    /* 補播**只限「上膛待手勢」的那一首**（armOnly：src 已就位、等第一個手勢開火）——
+       判斷看 `_bgmSrc`（「要播哪一首」的真相）。⚠ ver -501 修：`stopBgm` 之後元素是
+       「暫停但 src 還掛著上一首」（例：戰鬥曲），舊寫法只看 `el.paused && el.src`，
+       於是之後**任何**呼叫 unlock 的手勢（用道具、結帳…）都會把那首死曲子復活 ——
+       Ray：「使用道具不知為何會播戰鬥音樂」就是這個。 */
     const el = _bgmEl;
-    if(el && el.paused && el.src){ el.volume=bgmTargetVol(); const p=el.play(); if(p&&p.catch) p.catch(()=>{}); }
+    if(el && el.paused && el.src && _bgmSrc){ el.volume=bgmTargetVol(); const p=el.play(); if(p&&p.catch) p.catch(()=>{}); }
   },
 
   /* 切換 BGM：同一元素先淡出 →（可選 delayMs 空一拍）→ 換 blobURL 起播（預設不淡入）loop。
