@@ -261,7 +261,7 @@
      ⚠ 漸層走 background-clip:text，描邊交給 -webkit-text-stroke＋外圈 drop-shadow
        （text-shadow 對 clip:text 的字不顯示）。 */
   /* 大白字（ver -517，Ray 的示意圖：純白粗體、壓在環上）。 */
-  #energyClasp .clasp-combo b{display:inline-block;font-size:30px;font-weight:700;
+  #energyClasp .clasp-combo b{display:inline-block;font-size:38px;font-weight:700;
     font-style:italic;font-family:Georgia,"Iowan Old Style","Palatino Linotype",serif;
     color:#fff;-webkit-text-stroke:1px rgba(8,8,12,.85);
     text-shadow:0 2px 3px rgba(0,0,0,.9),0 0 10px rgba(0,0,0,.65);
