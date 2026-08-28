@@ -925,6 +925,12 @@ export function setLoseKind(fn){ loseKind = fn; }
    （模組邊界：劇情層不在戰鬥的依賴圖裡，見 CLAUDE.md §2；同 storyReturn 的作法）。 */
 let storyClose = null;
 export function setStoryClose(fn){ storyClose = fn; }
+/* ⚠⚠ 「殺光所有頁面」（ver -494，Ray：「返回首頁就要 kill 所有的 page 再回去」）。
+   由 main.js 注入（combat 不認識飛行 iframe／城鎮／劇情層，§2 依賴方向）——
+   goHome 在黑幕全蓋的那一刻呼叫它，把還活著的每一層（飛行 iframe、城鎮、
+   劇情舞台、整備頁、選單、單子）整個收掉。實作只有 main 那一份（鐵律 8）。 */
+let pageKiller = null;
+export function setPageKiller(fn){ pageKiller = fn; }
 /* ⚠ ver -358 起**只有戰敗**走這條「不結算直接交還劇情」的路。
    勝利改成照樣上結算頁（Ray：「教學關卡結束後跳出結算畫面…並跳出拾得道具視窗」），
    由結算頁的按鈕再把場子交還劇情（見 inspector.onRematchBtn 的 tutorial-home 分支）。
@@ -1226,6 +1232,12 @@ function fadeTransition(mid, half){
 export function goHome(onCovered, opts){
   fadeTransition(()=>{                        // 回主選單：淡出淡入約 3 秒
     state.over=true; stopAll();
+    /* ⚠⚠ **返回首頁＝殺光所有頁面**（ver -494，Ray 指定）：黑幕全蓋的這一刻把
+       飛行 iframe／城鎮／劇情層／整備頁／選單全部收掉再回去 —— 藏起來不算，
+       背景還活著的頁面（音、計時器、模擬）都要死。
+       ⚠ 例外只有 `opts.keepPages`：那幾條是**借 goHome 當過場**、onCovered 立刻
+         開回某一頁的路（打完回飛行畫面、戰敗「再戰」續播劇情）—— 那不是回首頁。 */
+    if(!(opts && opts.keepPages) && pageKiller){ try{ pageKiller(); }catch(_){}}
     weapon.restoreTutorialLoadout();          // 教學固定裝備（蕾妮＋機槍）→ 還原玩家原選擇（非教學為 no-op）
     state.cutinPlaying=false;                 // 清掉可能的暫停旗標（退出確認用）
     $('banner').classList.remove('on'); $('banner').classList.remove('lose');

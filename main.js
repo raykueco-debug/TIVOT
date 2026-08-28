@@ -302,6 +302,34 @@ function closeFlightFrame(){
   const f=$('flightFrame'); if(f) f.classList.remove('on');
   document.body.classList.remove('flight-on');
 }
+/* ⚠⚠ **「返回首頁＝殺光所有頁面」只有這一支**（ver -494，Ray：「返回首頁就要
+   kill 所有的 page 再回去」；鐵律 8）。由 `combat.setPageKiller` 注入，goHome 在
+   黑幕全蓋的那一刻呼叫 —— 每一層都要**真的死**，不是藏起來：
+   · 飛行 iframe：暫停＋藏起來還不夠，**整個卸載**（換到 about:blank、拔掉 src）——
+     它的音訊／計時器／模擬全部隨 document 一起死；下一次出航 `openFlight` 看到
+     src 是空的就重載＝一趟新的航行（§6.10 本來的語意）。
+   · 城鎮：`suspend()`（介面：導覽/店舖/旅店/立繪）＋ `close()`（狀態：townId）——
+     只 close 的話店的單子與旅店大廳的 DOM 還掛著。
+   · 劇情舞台／整備頁／選單面板／買賣單子：各自唯一的收場器。
+   ⚠ 每一項都 try 包住：殺一半被一個例外攔腰，比漏殺一層更糟。
+   ⚠ `flightBack`/`storyResume` 一併丟掉 —— 回首頁之後不該再有「回去接著演」的殘念。 */
+function killAllPages(){
+  closeFlightFrame();
+  const f=$('flightFrame');
+  if(f && f.getAttribute('src')){
+    try{ const w=flightWin(); if(w) w.location.replace('about:blank'); }catch(_){}
+    f.removeAttribute('src');
+  }
+  try{ town.suspend(); }catch(_){}
+  try{ town.close(); }catch(_){}
+  try{ story.close(); }catch(_){}
+  try{ gear.close(); }catch(_){}
+  ['gameMenu','lootSheet'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el && el.parentNode) el.parentNode.removeChild(el);
+  });
+  flightBack=false; storyResume=null;
+}
 /* 飛行頁（iframe 內）呼叫得到的掛鉤。⚠ 掛在 window 上是**刻意**的 ——
    那一頁是非 module 的獨立文件，import 不到這裡的任何東西。 */
 window.__tivotFlight = {
@@ -1001,6 +1029,7 @@ let storyResume = null;
    ⚠ 注入而不是 import —— combat 不認識劇情層（CLAUDE.md §2 的依賴方向）。 */
 story.setTownOpener(town.open);   // scene 的 `thenTown` 由 story 呼叫（注入，story 不 import town）
 story.setTownCloser(town.close);  // 「選單」離開劇情層時，城鎮也要一起收（ver -394）
+combat.setPageKiller(killAllPages);   // 返回首頁＝殺光所有頁面（ver -494，見 killAllPages）
 /* 「回到主選單」（ver -398）：走**唯一那支**回主選單（`combat.goHome`），劇情層在黑幕
    全蓋的那一刻才收 —— 只 `story.close()` 的話，底下露出來的是上一場戰鬥的盤面
    （`#home` 早就被 startGame／openFlight 關掉了）。 */
@@ -1075,8 +1104,9 @@ combat.setStoryReturn((res)=>{
       prog.setFlightLossCount(n);
     }
     if(f && f.getAttribute('src')){
-      /* ⚠ 戰鬥／結算的曲子由 `openFlight` 統一收掉（鐵律 8），這裡不再自己 stopBgm。 */
-      combat.goHome(()=>openFlight({ resume:true, won }), { noBgm:true });
+      /* ⚠ 戰鬥／結算的曲子由 `openFlight` 統一收掉（鐵律 8），這裡不再自己 stopBgm。
+         ⚠ `keepPages`：這是**回飛行畫面**不是回首頁 —— iframe 要活著（船在原座標）。 */
+      combat.goHome(()=>openFlight({ resume:true, won }), { noBgm:true, keepPages:true });
       return;
     }
     location.href='flight/index.html'; return;
@@ -1084,7 +1114,8 @@ combat.setStoryReturn((res)=>{
   const r = storyResume; storyResume = null;
   /* ⚠ 走 `story.resumeFrom`（ver -375）：主線與城鎮的臨時段落**續播方式不同**，
      分流在 story 裡做（那裡才知道哪一種）。這裡照舊只負責把首頁收乾淨。 */
-  combat.goHome(()=>{ if(r) story.resumeFrom(r, res); }, { noBgm:true });
+  /* ⚠ `keepPages`：這是**續播劇情**不是回首頁 —— 城鎮／劇情舞台的狀態要留給 resumeFrom。 */
+  combat.goHome(()=>{ if(r) story.resumeFrom(r, res); }, { noBgm:true, keepPages:true });
 });
 /* 戰鬥音樂：**門開始上推那一瞬**就起播（ver -355，Ray 指定）。
    ⚠ 不能等 `setBattleHandler`（那是門開到縫才呼叫的，晚 3 秒多），也不要靠

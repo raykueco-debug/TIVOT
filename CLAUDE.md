@@ -993,6 +993,20 @@ Ray 交劇本稿一律照 **`script/SCRIPT_FORMAT.md`** —— 稿子的最小�
   早就被別的路徑關掉了（`combat.startGame`、`openFlight`、飛行頁交棒…），
   掀開來就是**上一場戰鬥的盤面**（Ray 回報過）。要走**唯一那支**回主選單
   （`combat.goHome`，注入進來），劇情層在**黑幕全蓋的那一刻**才收。
+- ⚠⚠⚠ **返回首頁＝殺光所有頁面**（ver -494，Ray：「返回首頁就要 kill 所有的 page
+  再回去」）。實作只有一支：`main.js` 的 `killAllPages()`（注入 `combat.setPageKiller`，
+  `goHome` 在黑幕全蓋的那一刻呼叫）—— 飛行 iframe **整個卸載**（`about:blank`＋拔 src，
+  音訊／計時器／模擬隨 document 一起死；下一次出航就是一趟新的航行）、
+  城鎮 `suspend()`＋`close()`（介面與狀態都收）、劇情舞台、整備頁、選單面板、
+  買賣單子，外加 `flightBack`/`storyResume` 歸零。**藏起來不算殺**（ver -483 的
+  extPaused 是暫停，這一條是死）。
+  ⚠ 例外只有 `opts.keepPages`：**借 goHome 當過場**、onCovered 立刻開回某一頁的
+    那兩條路（打完回飛行畫面 `openFlight({resume})`、戰敗「再戰」`story.resumeFrom`）
+    —— 那不是回首頁，殺了船的座標／續播狀態就沒了。
+  ⚠ 連敗三場送回旅店那條**照殺**：他是被抬回旅店的，追兵與船一起清場，
+    town.open 在 onCovered 重開一座乾淨的城。
+  ⚠ 新增任何全螢幕頁面時，把它的收場器補進 `killAllPages` —— 不補的下場就是
+    「回到首頁了，那一頁還在背景活著」。
 - ⚠ 按下去要**先確認**「尚未儲存的進度將會遺失」：旗標／時鐘／道具是即時寫的，
   但**演到哪一句**不是。面板用**換頁**不疊第二層（疊兩層很難點得準）。
 - ⚠ 設定是**玩家的偏好**，`progress.newRun()` 不清（同靜音、語言，§6.9）。
