@@ -41,6 +41,10 @@ const K = {
   flightLoss:'tivot_flight_losses_v1',
   /* 蕾娜的 S 計數（ver -557）：她不是搭檔，每拿四次 S 好感 +1（docs 的 +0.25 整數化）。 */
   rennaS:    'tivot_renna_s_v1',
+  /* 實體遊玩時間（ver -564，Ray：「在測跑中計時，玩家的實體遊玩時間」）：
+     一輪內累計的**真實秒數**（分頁看得見且不在首頁才走，main.js 的計時器累加）。
+     鐵律 9：newRun 插 0，只有 addPlaySeconds 能動。 */
+  playtime:  'tivot_playtime_v1',
 };
 
 /* ⚠ 測試期間預設 3（Ray 指定，與 flight/index.html 的 STAGE_DEFAULT 一致）。
@@ -130,6 +134,10 @@ export function setFlightLossCount(n){
   if(n>0) wr(K.flightLoss, String(n));
   else { try{ localStorage.removeItem(K.flightLoss); }catch(e){} }
 }
+
+/* ══ 實體遊玩時間（ver -564）══ 秒。累加只有這一支（鐵律 8/9）。 */
+export function playSeconds(){ const v=parseInt(rd(K.playtime),10); return isFinite(v)?v:0; }
+export function addPlaySeconds(n){ wr(K.playtime, playSeconds()+Math.max(0,n|0)); return playSeconds(); }
 
 /* removeFlags（-480 的敗北退旗標）已拆（ver -495 清死碼）：回捲機制被
    「打贏才記」原則取代（§6.5.2），退旗標從此沒有呼叫者。 */
@@ -248,7 +256,7 @@ export const CHAPTERS = [
 
 export function newRun(){
   for(const k of [K.stage, K.flags, K.affection, K.affFloor, K.name, K.nick,
-                  K.hp, K.innLast, K.flightLoss, K.rennaS]) {   // 持久 HP／上次旅店／連敗數／蕾娜S計數
+                  K.hp, K.innLast, K.flightLoss, K.rennaS, K.playtime]) {   // 持久HP／上次旅店／連敗數／蕾娜S計數／遊玩時間
     try{ localStorage.removeItem(k); }catch(e){}
   }
   /* ⚠⚠ 從頭開始＝**S0 要寫進鑰匙**（ver -563）。清掉 stage 之後不寫回的話，
@@ -258,6 +266,7 @@ export function newRun(){
      規矩收在這一支（鐵律 8）：呼叫 newRun 的人不必記得補；要跳章的
      （章節工具）在之後自己 setStage 覆寫。 */
   wr(K.stage, 0);
+  wr(K.playtime, 0);   // 實體遊玩時間也插著（鐵律 9）
   /* 其他模組自己的存檔。⚠ 這裡列出來就是「它屬於一輪遊戲」的宣告 ——
      日後新增任何一輪內的存檔（例如城鎮的所在節點），**一定要加進這一行**。 */
   const tutKey = (GAME_CONFIG.tutorial||{}).storageKey;   // ⚠ 問 config，不要抄字串（鐵律 7）
@@ -312,7 +321,7 @@ export function snapshot(){
            affectionRaw:rawJ(K.affection), affFloorRaw:rawJ(K.affFloor),
            nameRaw:rawS(K.name), nickRaw:rawS(K.nick),
            hp:getHp(), innLast:getLastInn(), fLoss:flightLossCount(),
-           rennaS:rawN(K.rennaS) };
+           rennaS:rawN(K.rennaS), playtimeRaw:rawN(K.playtime) };
 }
 export function restore(s){
   if(!s) return;
@@ -336,4 +345,5 @@ export function restore(s){
   else { try{ localStorage.removeItem(K.innLast); }catch(e){} }
   setFlightLossCount(s.fLoss||0);
   putRaw(K.rennaS, s.rennaS);          // 蕾娜 S 計數（null＝沒有，原樣）
+  putRaw(K.playtime, ('playtimeRaw' in s)?s.playtimeRaw:null);   // 遊玩時間（-564）
 }

@@ -1608,6 +1608,20 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
   /* 管理人檢視：stage＋好感度（ver -555，Ray：「故事開始在管理人模式下要可以
      檢視 stage 及好感度」）。左下角小綠字浮條，只在 testmode 且劇情舞台開著
      （劇情／城鎮都在 #storyStage 上）時出現；每秒重讀，純顯示不進任何流程。 */
+  /* 實體遊玩時間的累加器（ver -564）：5 秒一跳。「在玩」用**正面表列**——
+     劇情/城鎮舞台開著（#storyStage.on；城鎮也在它上面）或飛行中（body.flight-on）。
+     ⚠ 不能用「不在首頁」反推：開始故事只是把劇情層蓋在首頁上，#home 的 on 還在。
+     不算的時候：分頁看不見（切走/鎖屏）、**系統選單開著**（Ray：「按系統選單時
+     暫停計時」，#gameMenu.on）。累加走 prog.addPlaySeconds（唯一實作）。 */
+  setInterval(()=>{
+    if(document.hidden) return;
+    const menu=document.getElementById('gameMenu');
+    if(menu && menu.classList.contains('on')) return;
+    const st=$('storyStage');
+    const playing=(st && st.classList.contains('on')) || document.body.classList.contains('flight-on');
+    if(!playing) return;
+    prog.addPlaySeconds(5);
+  },5000);
   (function devStat(){
     const d=document.createElement('div'); d.id='devStat';
     d.style.cssText='position:fixed;left:8px;bottom:8px;z-index:9999;display:none;'
@@ -1621,8 +1635,11 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
       if(!on) return;
       const aff=prog.getAffection()||{};
       const v=k=>(aff[k]==null?'-':aff[k]);
+      const ps=prog.playSeconds();
+      const t=Math.floor(ps/3600)+':'+String(Math.floor(ps/60)%60).padStart(2,'0')+':'+String(ps%60).padStart(2,'0');
       d.textContent='stage '+prog.getStage()
-        +'｜蕾'+v('renna')+' 諾'+v('nouvelle')+' 索'+v('sorana')+' 安'+v('anya');
+        +'｜蕾'+v('renna')+' 諾'+v('nouvelle')+' 索'+v('sorana')+' 安'+v('anya')
+        +'｜⏱'+t;
     },1000);
   })();
   homeEl.addEventListener('pointerdown', e=>{
