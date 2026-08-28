@@ -667,28 +667,36 @@ function layoutClasp(){
   if(sr.width<10||br.width<10) return;                 // 還沒排好 → 之後的重試再量
   const sig=[sr.x,sr.y,br.x,br.y,br.height,rr.y].map(v=>Math.round(v)).join(',');
   if(sig===claspSig) return; claspSig=sig;
-  /* ══ ver -535：**嚴格照 Ray 在遊戲截圖上的標註**（量測值，S＝紅頂→藍底）══
-     · C＝**均勻厚度的橢圓環**，整顆在血條左邊（不壓不疊）：
-       直徑高 1.68S（下緣＝藍條下緣、上緣高過紅條 0.65S 左右）、寬 0.56S×2，
-       厚 0.25S，開口朝右 ±25°（對著紅條那一帶），與血條留 0.11S 的縫。
-     · 數字在 C 的右上（黑框處：藍條左緣起、紅頂上方 0.83S）。
-     · HITS 在數字下方、紅條上方（左緣+0.67S、紅頂上 0.27S）。 */
+  /* ══ ver -536：嚴格照 Ray 的遊戲截圖標註（S＝紅頂→藍底，全部照量）══
+     · C＝均勻厚度（0.25S）的橢圓環，整顆在血條左邊、留 0.11S 縫：
+       外緣下端＝藍條下緣、上端高過紅條 ~0.68S，開口朝右對著紅條那一帶。
+     · 下臂的收口是**垂直面**（Ray：「下臂拉正」）：內外兩條弧各繞到同一條
+       垂直線（x＝內緣 25° 處）才收，閉合邊自然就是鉛直的。
+     · 上臂照舊徑向收（Ray：「目前上臂是沒問題的」）。
+     · 金色計量＝遮罩描邊 dash，沿環的中心線由下唇畫到上唇（-531 那一套）。
+     ⚠ -535 的病：這一段用了沒宣告的 bb/rt，整支每次都拋 ReferenceError ——
+       量測版面從來沒生效，畫面停在 index.html 的舊寫死座標。 */
+  const rt=rr.y-sr.y, bb=br.y+br.height-sr.y;
   const BL=br.x-sr.x;
   const S=bb-rt;
-  const RX=0.56*S, RY=0.84*S, TH=0.25*S, GAP=0.11*S;
-  const ccx=BL-GAP-RX, ccy=bb-RY;
-  const a0=25*Math.PI/180, a1=335*Math.PI/180;
-  const N=72, pts=[];
-  for(let i=0;i<=N;i++){ const a=a0+(a1-a0)*i/N;
-    pts.push([ccx+RX*Math.cos(a), ccy+RY*Math.sin(a)]); }
-  const f=P=>P.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' L');
-  const arcD='M'+f(pts);
-  const outline=arcD, spine=arcD;                      // 均勻厚度 → 直接用描邊，無需填面
+  const TH=0.25*S, GAP=0.11*S;
+  const RXo=0.62*S, RYo=0.84*S, RXi=RXo-TH, RYi=RYo-TH;
+  const RXm=RXo-TH/2, RYm=RYo-TH/2;
+  const ccx=BL-GAP-RXo, ccy=bb-RYo;
+  const D2R=Math.PI/180, A1=335*D2R;
+  const pt=(rx,ry,a)=>[ccx+rx*Math.cos(a), ccy+ry*Math.sin(a)];
+  const arc=(rx,ry,aF,aT,n)=>{ const o=[]; for(let i=0;i<=n;i++) o.push(pt(rx,ry,aF+(aT-aF)*i/n)); return o; };
+  const cl=v=>Math.max(-1,Math.min(1,v));
+  const XCUT=RXi*Math.cos(25*D2R);                       // 垂直切口的 x（圓心座標系）
+  const aI0=25*D2R, aO0=Math.acos(cl(XCUT/RXo)), aM0=Math.acos(cl(XCUT/RXm));
+  const f=P=>P.map(q=>q[0].toFixed(1)+','+q[1].toFixed(1)).join(' L');
+  const ring='M'+f(arc(RXo,RYo,aO0,A1,72))+' L'+f(arc(RXi,RYi,A1,aI0,72))+' Z';
+  const spine='M'+f(arc(RXm,RYm,aM0,A1,72));
   const track=svg.querySelector('.clasp-track'), gold=svg.querySelector('.clasp-gold'), fill=$('energyClaspFill');
-  if(track){ track.setAttribute('d',outline);
-    track.style.fill='none'; track.style.stroke='rgba(12,10,18,.82)'; track.style.strokeWidth=TH.toFixed(1); }
-  if(gold){ gold.setAttribute('d',outline);
-    gold.style.fill='none'; gold.style.stroke='var(--gold)'; gold.style.strokeWidth=TH.toFixed(1); }
+  if(track){ track.setAttribute('d',ring);
+    track.style.fill='rgba(12,10,18,.82)'; track.style.stroke='rgba(217,198,138,.35)'; track.style.strokeWidth='1'; }
+  if(gold){ gold.setAttribute('d',ring);
+    gold.style.fill='var(--gold)'; gold.style.stroke='none'; gold.style.strokeWidth='0'; }
   if(fill){ fill.setAttribute('d',spine); fill.setAttribute('stroke-width', String(Math.ceil(TH+4))); }
   /* 數字錨在圓心、HITS 壓在尖上（clasp 的定位座標系＝svg 減去宿主偏移）。 */
   const host=$('energyClasp').getBoundingClientRect();
@@ -697,7 +705,7 @@ function layoutClasp(){
              combo.style.bottom='auto'; combo.style.transform='translate(-50%,-50%)';
              /* 字級跟著 C 的半徑走（Ray：「字也很小」——他的視窗比較大，
                 固定 px 相對就小）。 */
-             const b=combo.querySelector('b'); if(b) b.style.fontSize=Math.round(0.62*S)+'px'; }
+             const b=combo.querySelector('b'); if(b) b.style.fontSize=Math.round(0.95*S)+'px'; }
   const hits=svg.querySelector('.clasp-hits');
   if(hits){ hits.setAttribute('x', String(Math.round(BL+0.30*S)));   // 標註：數字下、紅條上方
             hits.setAttribute('y', String(Math.round(rt-0.27*S))); }
