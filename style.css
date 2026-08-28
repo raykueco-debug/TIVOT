@@ -224,9 +224,11 @@
   #energyClasp{flex:none;width:30px;position:relative;align-self:stretch;touch-action:manipulation;pointer-events:none;}   /* C 的圖層在 HP 之下（ver -526，Ray 指定；-515 的抬層取消） */
   #energyClasp.full{cursor:pointer;pointer-events:auto;}
   /* 滿值時擴大點擊熱區（蓋住厚端那一片） */
-  #energyClasp.full::before{content:"";position:absolute;top:-12px;bottom:-6px;left:-8px;right:-2px;}
+  #energyClasp.full::before{content:"";position:absolute;top:-16px;bottom:-16px;left:-60px;right:-2px;}
+  /* 月牙圖層（ver -539）：frame（空圈）在下、fill（金月）在上，幾何由 layoutClasp 寫。 */
+  #energyClasp .clasp-moon{position:absolute;pointer-events:none;filter:drop-shadow(0 0 4px #000);}
   /* 滿檔加強光暈：drop-shadow 加倍層 + ::after 呼吸光暈橢圓（::before 已作觸控擴區） */
-  #energyClasp.full svg{filter:drop-shadow(0 0 10px var(--holy)) drop-shadow(0 0 22px rgba(111,179,212,.75)) drop-shadow(0 0 4px #000);}
+  #energyClasp.full svg,#energyClasp.full .clasp-moon{filter:drop-shadow(0 0 10px var(--holy)) drop-shadow(0 0 22px rgba(111,179,212,.75)) drop-shadow(0 0 4px #000);}
   #energyClasp.full::after{content:"";position:absolute;left:16px;bottom:16px;width:44px;height:52px;
     transform:translate(-50%,20%);border-radius:50%;pointer-events:none;
     background:radial-gradient(ellipse at center, rgba(150,215,245,.32), transparent 70%);
@@ -258,7 +260,6 @@
   #energyClasp .clasp-combo.on{opacity:1;transition:none;}
   /* 滿值：數字讓位給光點（ver -522）。 */
   #energyClasp.full .clasp-combo{opacity:0;}
-    to{transform:translate(-50%,50%) scale(1.35);opacity:1;}}
   /* VP 風數字（ver -512，Ray：「字太小、字體不好看，找個更有視覺效果的；
      連擊數可以大一點，可稍微遮過計量表」）：粗斜體襯線＋金色縱向漸層＋黑描邊。
      ⚠ 漸層走 background-clip:text，描邊交給 -webkit-text-stroke＋外圈 drop-shadow
@@ -286,12 +287,8 @@
   #energyClasp .clasp-hits{font-size:10px;font-weight:700;letter-spacing:1px;
     fill:#fff;stroke:rgba(8,8,12,.9);stroke-width:2.8;paint-order:stroke;
     font-family:Georgia,serif;}
-  /* 錐形 C（ver -518）：填面輪廓＋遮罩粗筆畫揭露進度（錐形筆畫 SVG 做不到）。 */
-  #energyClasp .clasp-track{fill:rgba(12,10,18,.8);stroke:rgba(217,198,138,.35);stroke-width:1;}
-  #energyClasp .clasp-gold{fill:var(--gold);}
-  #energyClasp .clasp-maskstroke{fill:none;stroke:#fff;stroke-width:18;stroke-linecap:round;
-    transition:stroke-dashoffset .25s;}
-  #energyClasp.full .clasp-gold{fill:#ffe08a;animation:pulse .6s infinite alternate;}
+  /* 滿值：金月呼吸（pulse＝brightness，img 也吃）。 */
+  #energyClasp.full #claspMoonFill{animation:pulse .6s infinite alternate;}
   /* ── 副武器切換鈕（ver -410，Ray：「在敵我血條右側加入副武器切換鈕，大小同破防值」）──
      左邊是破防計量表、右邊是這一顆，兩側對稱夾著血條。
      ⚠ `#barsBlock` 整塊是 `pointer-events:none`（它只是 HUD），所以這一顆要自己打開。

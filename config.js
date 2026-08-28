@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.28-538';
+export const VERSION = 'ver 2026.08.28-539';
 
 export const GAME_CONFIG = {
 
@@ -1626,6 +1626,11 @@ export const ASSETS = {
   enemy_centipi_night: "resources/enemy/Centipi_night.webp",
   enemy_centipi_dd:    "resources/enemy/Centipi_DD.webp",
   inspector_renna:     "resources/SI/Renna_SI_front.webp",         // 讀取頁的說明者（出航後）
+  /* ── 破防計量的月牙（ver -539，Ray 交的 alpha 原圖，形狀 1px 不准差）──
+     frame＝同輪廓的描邊版（未充滿時的「透明框」，由原圖 alpha 邊緣生成）。
+     ⚠ 換圖要重量 combat.js 的 MOON 常數（缺口中心／月角角度是**那張圖**的數字）。 */
+  clasp_moon:       "resources/vfx/clasp_moon.webp",
+  clasp_moon_frame: "resources/vfx/clasp_moon_frame.webp",
   weapon_mg_squall:     "resources/weapon/MG_Squall.webp",       // 重機槍 Squall
   weapon_shotgun_blast: "resources/weapon/Shotgun_Blast.webp",   // 散彈槍 Blast
   weapon_sniper_falcon: "resources/weapon/Sniper_Falcon.webp",   // 狙擊槍 Falcon

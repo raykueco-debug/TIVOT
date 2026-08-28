@@ -644,7 +644,7 @@ function addEnergy(v){
 }
 // 破防值滿瞬間演出：以 C 字計量表為中心擴散一圈半透漸層光圈（~0.85s，不擋點擊）。
 function energyFullBurst(){
-  const clasp=$('energyClasp'); if(!clasp) return;
+  const clasp=$('claspMoonFill')||$('energyClasp'); if(!clasp) return;   // 光圈以月牙本體為中心（-539）
   const r=clasp.getBoundingClientRect();
   const d=document.createElement('div'); d.className='energy-burst';
   d.style.left=(r.left+r.width/2)+'px';
@@ -652,103 +652,87 @@ function energyFullBurst(){
   document.body.appendChild(d);
   setTimeout(()=>d.remove(), 900);
 }
-/* ══ 破防計量的取景（ver -527）══════════════════════════════════════════
-   幾何照**量出來的血條位置**現算 —— 寫死的 VB 座標只在開發用的 375 寬視窗上
-   是對的，Ray 的桌面視窗整組歪掉、下緣被裁（他連報三次「沒對齊」都是這個）。
-   §6.5 的老原則：取景在進場/resize 時算成常數，之後只讀。
-   規格（Ray 的圖）：頭＝垂直平口，釘在藍（我方）條帶 × 血條左緣；
-   沿 45°→315° 的圓弧連續收細；尖收在紅條頂上方 4px、由 HITS 壓著。 */
+/* ══ 破防計量的取景（ver -539：Ray 交了月牙原圖，整支改成「圖直接鋪」）════
+   -536~-538 用比例參數化仿他的畫連錯四版 —— 那條路廢除（HANDOFF 的結論）。
+   形狀＝`clasp_moon.webp`（他畫的 alpha 月牙）本身，程式只管三件事：
+     ① 大小/位置錨定血條（S＝紅頂→藍底，§6.5 老原則：取景算成常數，之後只讀）
+     ② 空圈＝同輪廓描邊圖（frame；Ray：「未充滿時是透明框」）
+     ③ 計量＝conic-gradient 遮罩，由下月角**順時針**掃到上月角（Ray 拍板）
+   ── MOON＝那張圖量出來的常數（缺口中心對 360° 射線掃出月角；換圖要重量）──
+   量測對象：resources/_originals/vfx/clasp_moon_raw.png（276×272）。 */
+const MOON={
+  ar : 276/272,             // 圖的寬高比
+  nx : 0.6957, ny : 0.4412, // 缺口中心佔圖比例（連擊數的錨＝掃掠的軸心）
+  a0 : 165,                 // 下月角（CSS conic 慣例：0°=正上、順時針增加）
+  arc: 258.2,               // 下角→上角的掃角（順時針）
+};
 let claspSig='';
-let claspGeo=null;                                      // 扇形掃掠遮罩用的幾何（layoutClasp 算好，update 只讀）
+let claspGeo=null;                                      // 遮罩/連擊數用的幾何（layoutClasp 算好，update 只讀）
 function layoutClasp(){
-  const svg=document.querySelector('#energyClasp svg'); if(!svg) return;
+  const host=$('energyClasp'); if(!host) return;
+  const frame=$('claspMoonFrame'), fillImg=$('claspMoonFill');
   const blue=document.querySelector('.hpbar.player-bar'), red=document.querySelector('.hpbar.enemy-bar');
-  if(!blue||!red) return;
-  const sr=svg.getBoundingClientRect(), br=blue.getBoundingClientRect(), rr=red.getBoundingClientRect();
-  if(sr.width<10||br.width<10) return;                 // 還沒排好 → 之後的重試再量
-  const sig=[sr.x,sr.y,br.x,br.y,br.height,rr.y].map(v=>Math.round(v)).join(',');
+  if(!host||!frame||!fillImg||!blue||!red) return;
+  if(!frame.getAttribute('src')){            // src 只在這裡掛：路徑只有 ASSETS 一份（鐵律 7）
+    frame.src=asset('clasp_moon_frame'); fillImg.src=asset('clasp_moon');
+  }
+  const hr=host.getBoundingClientRect(), br=blue.getBoundingClientRect(), rr=red.getBoundingClientRect();
+  if(hr.height<10||br.width<10) return;      // 還沒排好 → 之後的重試再量
+  const sig=[hr.x,hr.y,br.x,br.y,br.height,rr.y].map(v=>Math.round(v)).join(',');
   if(sig===claspSig) return; claspSig=sig;
-  /* ══ ver -536：**新月**（Ray：「那不是圈，不是C，是新月狀的東西，
-     給我按照我的畫法」）——照他小畫家那張直抄：
-     · 外緣＝一顆橢圓的左弧（下端＝藍條下緣、上端＝紅頂上方 0.75S）；
-     · 內緣＝往右偏的第二顆橢圓（凹面朝右），兩弧交在上下兩個**收尖的月角**
-       （月角在右上／右下，尖端幾乎貼到血條，留 0.06S 縫）；
-     · 腰（最厚處，左側中央）＝0.5S，往兩角連續收細到 0 —— 這就是月牙，
-       不是等厚的環。數值全由血條 rect 推（S＝紅頂→藍底）。
-     · 金色計量＝遮罩描邊 dash 沿月牙中脊由下角畫到上角（-531 那一套）。 */
-  const rt=rr.y-sr.y, bb=br.y+br.height-sr.y;
-  const BL=br.x-sr.x;
-  const S=bb-rt;
-  /* -536 被退（「這跟我給你的圖一樣嗎」）：對他的圖逐 px 量出的比例 ——
-     高 2.16S、寬 1.28S、腰 0.52S；月牙**中心在紅頂下 0.18S**，
-     所以上端到紅頂上 0.90S、下端**超出藍條下緣 0.26S**（他的圖就是垂出去的，
-     -536 硬把下緣切齊藍底＝整顆被抬高壓扁）。月角尖到血條 0.05S。 */
-  const RXo=0.78*S, RYo=1.08*S;                         // 外橢圓
-  const AT=50*Math.PI/180;                              // 月角在外橢圓 ±50°（右上/右下）
-  const XT=RXo*Math.cos(AT), YT=RYo*Math.sin(AT);       // 月角座標（相對環心）
-  /* -537 被退：他畫的是**幾乎實心的胖月** —— 腰佔掉整個寬（0.95S），
-     內緣那口只是右側一條淺淺的凹縫（藏在連擊數後面），畫面上讀起來
-     就是一顆金月盤、頂上留一段暗的未滿弧。細彎月是我抄錯。 */
-  const W=0.95*S, RYc=0.95*S;
-  const kk=Math.sqrt(1-(YT/RYc)*(YT/RYc));
-  const DX=(XT-(RXo-W)*kk)/(1+kk);
-  const RXc=DX+RXo-W;
-  const GAP=0.05*S;
-  const ccx=BL-GAP-XT, ccy=rt+0.18*S;                   // 中心在紅頂下 0.18S（照圖）
-  const cl=v=>Math.max(-1,Math.min(1,v));
-  const f=P=>P.map(q=>q[0].toFixed(1)+','+q[1].toFixed(1)).join(' L');
-  /* 外弧：下角(+50°) → 底 → 左 → 頂 → 上角(310°)；
-     內弧：上角沿偏右橢圓的左側倒回下角；交點即月角，自然收尖。 */
-  const tc=Math.acos(cl((XT-DX)/RXc));                  // 月角在內橢圓上的參數角
-  const outer=[], inner=[];
-  const N=96;
-  for(let i=0;i<=N;i++){ const a=AT+(2*Math.PI-2*AT)*i/N;
-    outer.push([ccx+RXo*Math.cos(a), ccy+RYo*Math.sin(a)]); }
-  for(let i=0;i<=N;i++){ const t=(2*Math.PI-tc)-(2*Math.PI-2*tc)*i/N;
-    inner.push([ccx+DX+RXc*Math.cos(t), ccy+RYc*Math.sin(t)]); }
-  const ring='M'+f(outer)+' L'+f(inner)+' Z';
-  /* 計量的遮罩改**扇形掃掠**（-537 的沿中脊描邊在胖月上罩不住，滿了中間
-     還留一條暗帶）：以月心為軸、由下角(AT)往上角(2π−AT)掃一個大半徑的
-     扇形當 mask —— 金月被掃到哪亮到哪，方向照舊「下角→上角」。 */
-  claspGeo={cx:ccx, cy:ccy, a0:AT, a1:2*Math.PI-AT, R:3*S};
-  const track=svg.querySelector('.clasp-track'), gold=svg.querySelector('.clasp-gold'), fill=$('energyClaspFill');
-  if(track){ track.setAttribute('d',ring);
-    track.style.fill='rgba(12,10,18,.82)'; track.style.stroke='rgba(217,198,138,.35)'; track.style.strokeWidth='1'; }
-  if(gold){ gold.setAttribute('d',ring);
-    gold.style.fill='var(--gold)'; gold.style.stroke='none'; gold.style.strokeWidth='0'; }
-  /* 數字錨在圓心、HITS 壓在尖上（clasp 的定位座標系＝svg 減去宿主偏移）。 */
-  const host=$('energyClasp').getBoundingClientRect();
-  const combo=document.querySelector('#energyClasp .clasp-combo');
-  /* ver -536 改：數字**蓋在新月上層**（Ray：「數字應該在新月的上層，蓋到新月
-     沒關係」＋新標註圖：大白字壓在 C 的開口上）。錨在環心、往開口偏一點。
-     （前一張圖上方那個黑框是他在塗掉舊的數字，不是數字的位子 —— 看錯了。） */
-  if(combo){ combo.style.left=(sr.x-host.x+BL-0.62*S)+'px'; combo.style.top=(sr.y-host.y+ccy+0.07*S)+'px';
+  const S=(br.y+br.height)-rr.y;             // S＝紅條頂→藍條底（慣例單位）
+  const BL=br.x;                             // 血條左緣（視口座標）
+  /* Ray 的定稿截圖量出的擺位：月牙高 1.75S、垂直中心＝兩條血條的中線
+     （上冒紅頂約 0.37S、下垂藍底約 0.37S）、右緣到血條左緣留 0.05S 縫。
+     左端超出畫面就讓它被裁 —— 他的截圖本來就是貼著畫面左緣裁掉的。 */
+  const Hm=1.75*S, Wm=Hm*MOON.ar;
+  const right=BL-0.05*S, top=(rr.y+br.y+br.height)/2-Hm/2;
+  for(const el of [frame,fillImg]){
+    el.style.left=(right-Wm-hr.x)+'px'; el.style.top=(top-hr.y)+'px';
+    el.style.width=Wm+'px'; el.style.height=Hm+'px';
+  }
+  claspGeo={ nxpx:right-Wm+MOON.nx*Wm-hr.x,  // 缺口中心（host 座標）＝連擊數的錨
+             nypx:top+MOON.ny*Hm-hr.y,
+             blpx:BL-hr.x, S };
+  /* 連擊數（Ray 定稿）：白粗斜體黑邊、錨在**月牙缺口中心**；
+     可蓋月牙、**不可蓋過 HP 條**（右緣的夾在 updateEnergyClasp 換字時做，
+     因為夾多少取決於當下的字寬）。 */
+  const combo=host.querySelector('.clasp-combo');
+  if(combo){ combo.style.left=claspGeo.nxpx+'px'; combo.style.top=claspGeo.nypx+'px';
              combo.style.bottom='auto'; combo.style.transform='translate(-50%,-50%)';
-             /* 字級跟著 C 的半徑走（Ray：「字也很小」——他的視窗比較大，
-                固定 px 相對就小）。 */
-             const b=combo.querySelector('b'); if(b) b.style.fontSize=Math.round(1.3*S)+'px'; }
-  const hits=svg.querySelector('.clasp-hits');
-  if(hits){ hits.setAttribute('x', String(Math.round(BL+0.02*S)));   // 照圖：起筆＝血條左緣
-            hits.setAttribute('y', String(Math.round(rt-0.28*S)));
-            hits.style.fontSize=Math.round(0.36*S)+'px'; }            // 照圖：字高約 0.31S
-  updateEnergyClasp();                                 // 路徑換了 → dash 總長重掛
+             const b=combo.querySelector('b');
+             if(b){ b.style.fontSize=Math.round(0.9*S)+'px';                  // 定稿截圖：字高≈0.9S
+                    b.style.webkitTextStroke=Math.max(1.6,0.05*S).toFixed(1)+'px rgba(8,8,12,.9)'; } }
+  /* HITS 照舊：起筆＝血條左緣、紅條上方（svg 76×76 1:1，座標＝相對 svg 的 px）。 */
+  const svg=host.querySelector('svg');
+  const hits=svg&&svg.querySelector('.clasp-hits');
+  if(hits){ const sr=svg.getBoundingClientRect();
+            hits.setAttribute('x', String(Math.round(BL-sr.x+0.02*S)));
+            hits.setAttribute('y', String(Math.round(rr.y-sr.y-0.28*S)));
+            hits.style.fontSize=Math.round(0.36*S)+'px'; }
+  updateEnergyClasp();                       // 幾何換了 → 遮罩與連擊數重掛
 }
 /* 進場後多試幾拍（血條要排好才量得到）；視窗變了整組重量。 */
 function armClaspLayout(){ claspSig=''; [0,120,400,1000].forEach(ms=>setTimeout(layoutClasp,ms)); }
 window.addEventListener('resize', ()=>{ claspSig=''; setTimeout(layoutClasp,60); });
 
 function updateEnergyClasp(){
-  const fill=$('energyClaspFill');
-  if(fill && claspGeo){
-    const g=claspGeo, pgs=Math.max(0,Math.min(1,state.energy/100));
-    const aEnd=g.a0+(g.a1-g.a0)*pgs;
-    let d='M'+g.cx.toFixed(1)+','+g.cy.toFixed(1);
-    const n=Math.max(2,Math.round(40*pgs));
-    for(let i=0;i<=n;i++){ const a=g.a0+(aEnd-g.a0)*i/n;
-      d+=' L'+(g.cx+g.R*Math.cos(a)).toFixed(1)+','+(g.cy+g.R*Math.sin(a)).toFixed(1); }
-    fill.setAttribute('d', d+' Z');
-    fill.style.fill='#fff'; fill.style.stroke='none';
-    fill.style.strokeDasharray='none'; fill.style.strokeDashoffset='0';
+  /* 計量（ver -539）：金月圖被 conic 遮罩由下角（MOON.a0）順時針掃出來，
+     掃角＝energy 比例 × MOON.arc。0＝整張藏起（只剩 frame 空圈）、
+     滿＝拿掉遮罩（避免 360° 接縫）。邊界羽化 ±0.6° 抗鋸齒。 */
+  const fillImg=$('claspMoonFill');
+  if(fillImg && claspGeo){
+    const p=Math.max(0,Math.min(1,state.energy/100));
+    if(p<=0){ fillImg.style.visibility='hidden'; }
+    else if(p>=1){ fillImg.style.visibility='';
+      fillImg.style.webkitMaskImage='none'; fillImg.style.maskImage='none'; }
+    else{
+      const deg=p*MOON.arc;
+      const m='conic-gradient(from '+MOON.a0+'deg at '+(MOON.nx*100).toFixed(2)+'% '+(MOON.ny*100).toFixed(2)+'%,'
+             +'#000 0deg,#000 '+Math.max(0,deg-0.6).toFixed(1)+'deg,rgba(0,0,0,0) '+(deg+0.6).toFixed(1)+'deg)';
+      fillImg.style.visibility='';
+      fillImg.style.webkitMaskImage=m; fillImg.style.maskImage=m;
+    }
   }
   $('energyClasp').classList.toggle('full', state.energy>=100);
   /* 中央連擊數（ver -511，Ray：「像 VP1 那樣顯示連擊數在中間」「連擊為 0 的時候
@@ -767,6 +751,10 @@ function updateEnergyClasp(){
       if(v>0){
         cb.textContent=v;
         wrap.classList.add('on');
+        /* Ray：連擊數可蓋月牙、**不可蓋過 HP 條** —— 位數變寬時右緣夾在血條左緣內。
+           （offsetWidth 是換字當下量的，不是逐幀；幾何常數仍只在 layoutClasp 算。） */
+        if(claspGeo){ const w=cb.offsetWidth;
+          wrap.style.left=Math.min(claspGeo.nxpx, claspGeo.blpx-2-w/2)+'px'; }
         cb.classList.remove('pop','break'); void cb.offsetWidth; cb.classList.add('pop');
       }else if(prev>0){
         cb.classList.remove('pop'); void cb.offsetWidth; cb.classList.add('break');
