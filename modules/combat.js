@@ -654,6 +654,31 @@ function updateEnergyClasp(){
     fill.style.strokeDashoffset=total*(1-state.energy/100);
   }
   $('energyClasp').classList.toggle('full', state.energy>=100);
+  /* 中央連擊數（ver -511，Ray：「像 VP1 那樣顯示連擊數在中間」「連擊為 0 的時候
+     不顯示，每次連擊數字就由大縮小跳一次，連擊失敗數字就轉紅消失重計」）。
+     這一支由 updateBars 帶著跑 —— 每一次打中／被打／點錯都會經過那裡，
+     combo 的變動全數涵蓋。變了才動 DOM：
+       升 → 換數字＋由大縮小彈一下（.pop 重觸發走 reflow）
+       斷（>0 → 0）→ **舊數字**轉紅縮小消散（textContent 不動），散完才藏
+       開場歸零（本來就 0）→ 直接藏著 */
+  const cb=$('claspCombo');
+  if(cb){
+    const v=state.combo|0, prev=+cb.dataset.v||0;
+    if(v!==prev){
+      cb.dataset.v=v;
+      const wrap=cb.parentNode;
+      if(v>0){
+        cb.textContent=v;
+        wrap.classList.add('on');
+        cb.classList.remove('pop','break'); void cb.offsetWidth; cb.classList.add('pop');
+      }else if(prev>0){
+        cb.classList.remove('pop'); void cb.offsetWidth; cb.classList.add('break');
+        setTimeout(()=>{ if((+cb.dataset.v||0)===0){ wrap.classList.remove('on'); cb.classList.remove('break'); } }, 460);
+      }else{
+        wrap.classList.remove('on');
+      }
+    }
+  }
 }
 
 /* ============================================================================
