@@ -665,6 +665,9 @@ const MOON={
   nx : 0.6957, ny : 0.4412, // 缺口中心佔圖比例（連擊數的錨＝掃掠的軸心）
   a0 : 165,                 // 下月角（CSS conic 慣例：0°=正上、順時針增加）
   arc: 258.2,               // 下角→上角的掃角（順時針）
+  /* 兩個月角尖端佔圖比例（-540 擺位的錨；沿缺口中心對邊界角射線量到的最遠點）。 */
+  tipU:{x:0.9855, y:0.2923},   // 上角尖（長臂）
+  tipL:{x:0.7591, y:0.6912},   // 下角尖（短臂）
 };
 let claspSig='';
 let claspGeo=null;                                      // 遮罩/連擊數用的幾何（layoutClasp 算好，update 只讀）
@@ -682,27 +685,31 @@ function layoutClasp(){
   if(sig===claspSig) return; claspSig=sig;
   const S=(br.y+br.height)-rr.y;             // S＝紅條頂→藍條底（慣例單位）
   const BL=br.x;                             // 血條左緣（視口座標）
-  /* Ray 的定稿截圖量出的擺位：月牙高 1.75S、垂直中心＝兩條血條的中線
-     （上冒紅頂約 0.37S、下垂藍底約 0.37S）、右緣到血條左緣留 0.05S 縫。
-     左端超出畫面就讓它被裁 —— 他的截圖本來就是貼著畫面左緣裁掉的。 */
-  const Hm=1.75*S, Wm=Hm*MOON.ar;
-  const right=BL-0.05*S, top=(rr.y+br.y+br.height)/2-Hm/2;
+  /* 擺位（ver -540，Ray：「下臂要切齊藍血條左緣，上臂要伸入 HITS 的 H 後方」）：
+     兩個月角尖端當錨 —— 下角尖釘在（血條左緣, 藍條垂直中心）、上角尖的高度
+     ＝HITS 字的中心（基線 rt−0.28S、字高 0.36S → 中心約 rt−0.40S）。
+     縮放由兩錨的垂直距離解出（圖不旋轉，上角尖的橫向落點由圖自己決定 ——
+     這張圖上臂長，尖端會沿 H 後方伸過去）。左端超出畫面就讓它被裁。 */
+  const yU=rr.y-0.40*S, yL=br.y+br.height/2;
+  const Hm=(yL-yU)/(MOON.tipL.y-MOON.tipU.y), Wm=Hm*MOON.ar;
+  const left=BL-MOON.tipL.x*Wm, top=yL-MOON.tipL.y*Hm;
   for(const el of [frame,fillImg]){
-    el.style.left=(right-Wm-hr.x)+'px'; el.style.top=(top-hr.y)+'px';
+    el.style.left=(left-hr.x)+'px'; el.style.top=(top-hr.y)+'px';
     el.style.width=Wm+'px'; el.style.height=Hm+'px';
   }
-  claspGeo={ nxpx:right-Wm+MOON.nx*Wm-hr.x,  // 缺口中心（host 座標）＝連擊數的錨
+  claspGeo={ nxpx:left+MOON.nx*Wm-hr.x,      // 缺口中心（host 座標）＝連擊數的錨
              nypx:top+MOON.ny*Hm-hr.y,
              blpx:BL-hr.x, S };
   /* 連擊數（Ray 定稿）：白粗斜體黑邊、錨在**月牙缺口中心**；
      可蓋月牙、**不可蓋過 HP 條**（右緣的夾在 updateEnergyClasp 換字時做，
      因為夾多少取決於當下的字寬）。 */
   const combo=host.querySelector('.clasp-combo');
-  if(combo){ combo.style.left=claspGeo.nxpx+'px'; combo.style.top=claspGeo.nypx+'px';
+  if(combo){ combo.style.top=claspGeo.nypx+'px';
              combo.style.bottom='auto'; combo.style.transform='translate(-50%,-50%)';
              const b=combo.querySelector('b');
              if(b){ b.style.fontSize=Math.round(0.9*S)+'px';                  // 定稿截圖：字高≈0.9S
-                    b.style.webkitTextStroke=Math.max(1.6,0.05*S).toFixed(1)+'px rgba(8,8,12,.9)'; } }
+                    b.style.webkitTextStroke=Math.max(1.6,0.05*S).toFixed(1)+'px rgba(8,8,12,.9)'; }
+             placeCombo(); }                                                  // 橫向＝夾位那一支（唯一實作）
   /* HITS 照舊：起筆＝血條左緣、紅條上方（svg 76×76 1:1，座標＝相對 svg 的 px）。 */
   const svg=host.querySelector('svg');
   const hits=svg&&svg.querySelector('.clasp-hits');
@@ -711,6 +718,15 @@ function layoutClasp(){
             hits.setAttribute('y', String(Math.round(rr.y-sr.y-0.28*S)));
             hits.style.fontSize=Math.round(0.36*S)+'px'; }
   updateEnergyClasp();                       // 幾何換了 → 遮罩與連擊數重掛
+}
+/* 連擊數的橫向擺位（唯一實作，鐵律 8）：錨在缺口中心，但 Ray：「可覆蓋月牙、
+   **不可蓋過 HP 條**」—— 依當下字寬把右緣夾在血條左緣內。layoutClasp（幾何變了）
+   與 updateEnergyClasp（字換了、變寬了）都呼叫這一支。 */
+function placeCombo(){
+  if(!claspGeo) return;
+  const cb=$('claspCombo'); if(!cb) return;
+  const w=cb.offsetWidth;                     // 藏著時是 0 → 落在缺口中心，無妨
+  cb.parentNode.style.left=Math.min(claspGeo.nxpx, claspGeo.blpx-2-w/2)+'px';
 }
 /* 進場後多試幾拍（血條要排好才量得到）；視窗變了整組重量。 */
 function armClaspLayout(){ claspSig=''; [0,120,400,1000].forEach(ms=>setTimeout(layoutClasp,ms)); }
@@ -751,10 +767,7 @@ function updateEnergyClasp(){
       if(v>0){
         cb.textContent=v;
         wrap.classList.add('on');
-        /* Ray：連擊數可蓋月牙、**不可蓋過 HP 條** —— 位數變寬時右緣夾在血條左緣內。
-           （offsetWidth 是換字當下量的，不是逐幀；幾何常數仍只在 layoutClasp 算。） */
-        if(claspGeo){ const w=cb.offsetWidth;
-          wrap.style.left=Math.min(claspGeo.nxpx, claspGeo.blpx-2-w/2)+'px'; }
+        placeCombo();                          // 字寬變了 → 重夾（不可蓋過 HP 條）
         cb.classList.remove('pop','break'); void cb.offsetWidth; cb.classList.add('pop');
       }else if(prev>0){
         cb.classList.remove('pop'); void cb.offsetWidth; cb.classList.add('break');
