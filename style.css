@@ -348,11 +348,14 @@
     display:flex;align-items:center;justify-content:center;
     pointer-events:auto;touch-action:manipulation;cursor:pointer;
     overflow:visible;perspective:200px;}
+  /* -550（Ray：「黑色的部份做成半透明」）：暗部的半透明烘在徽章圖的 alpha 裡，
+     卡面自己不能再鋪深底（會把透明度吃回來）；金環是圖自帶的，卡的邊框退場
+     （留 1px 透明佔位 —— .pending 的藍環要有邊可以上色）。 */
   #wpSwitch .ws-card{width:46px;height:46px;border-radius:50%;
     display:flex;align-items:center;justify-content:center;
-    color:var(--gold);background:rgba(10,8,14,.66);
-    border:1px solid var(--gold-dim);
-    box-shadow:0 0 10px rgba(0,0,0,.6), inset 0 0 8px rgba(240,196,105,.14);
+    color:var(--gold);background:transparent;
+    border:1px solid transparent;
+    box-shadow:0 0 10px rgba(0,0,0,.35);
     transform-style:preserve-3d;backface-visibility:hidden;transition:transform .08s;}
   #wpSwitch .ws-card img{width:100%;height:100%;display:block;border-radius:50%;
     filter:drop-shadow(0 1px 2px #000);}

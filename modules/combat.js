@@ -692,15 +692,17 @@ function layoutClasp(){
      （壓進血條左端；月牙圖層本來就在 HP 之下（-526），被蓋住的那一角是刻意的）。
      -540/-541 的月角/臂厚錨定作廢。 */
   const Hm=1.548*S, Wm=Hm*MOON.ar;
-  const OVER=0.290*S;                        // 月/鈕壓進血條端點的量（未命名-2 量出）
+  const OVER=0.290*S;                        // 月壓進血條左端的量（未命名-2 量出）
+  const GAPB=0.05*S;                         // 鈕與血條右端的縫（-550，Ray：「不要遮到 hp 條」）
   const top=rr.y-0.516*S, left=BL+OVER-Wm;
-  /* 血條右側讓位（-549）：鈕與月同大，鏡射後會伸出血條右端 (Wm-OVER)——
-     不讓位的話鈕會伸出畫面。讓位量改變血條 rect，所以改了就重跑一次重量。
+  /* 血條右側讓位（-549；-550 改「整顆讓開」）：鈕與月同大，但月在血條**之下**
+     壓著左端無妨，鈕在血條**之上**（要點擊）—— 蓋到會遮住血量，所以鈕整顆
+     排在血條右端之外。讓位量改變血條 rect，改了就重跑一次重量。
      鈕藏著（單一類別／試玩版教學）就不讓，血條照舊放滿。 */
   const btn=document.getElementById('wpSwitch');
   const stack=document.getElementById('barStack');
   if(stack){
-    const want=(btn && btn.style.display!=='none') ? Math.round(Wm-OVER)+'px' : '0px';
+    const want=(btn && btn.style.display!=='none') ? Math.round(Wm+GAPB)+'px' : '0px';
     if((stack.style.marginRight||'0px')!==want){
       stack.style.marginRight=want; claspSig=''; setTimeout(layoutClasp,30); return;
     }
@@ -710,12 +712,12 @@ function layoutClasp(){
     el.style.left=(left-hr.x)+'px'; el.style.top=(top-hr.y)+'px';
     el.style.width=Wm+'px'; el.style.height=Hm+'px';
   }
-  /* 副武器切換鈕（ver -549，Ray：「讓切換鈕與月大小位置對稱」）：
-     盒＝月牙的盒以**血條水平中軸**鏡射；圓卡直徑＝盒的短邊。
+  /* 副武器切換鈕（ver -549「與月大小位置對稱」；-550 改貼在血條右端**之外**）：
+     盒＝與月牙同大、同頂線，左緣＝血條右端＋GAPB；圓卡直徑＝盒的短邊。
      幾何只算這一處（鐵律 7），weapon.js 只管卡面內容與行為。 */
   if(btn){
     const bb2=btn.offsetParent?btn.offsetParent.getBoundingClientRect():{x:0,y:0};
-    const mirL=(br.left+br.right)-(left+Wm);
+    const mirL=br.right+GAPB;
     btn.style.left=(mirL-bb2.x)+'px'; btn.style.top=(top-bb2.y)+'px';
     btn.style.width=Wm+'px'; btn.style.height=Hm+'px';
     const wc=btn.querySelector('.ws-card'); const d=Math.round(Math.min(Wm,Hm));
