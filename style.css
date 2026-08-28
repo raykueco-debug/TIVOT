@@ -242,13 +242,13 @@
   @keyframes energyBurst{70%{opacity:.55;}100%{transform:translate(-50%,-50%) scale(1);opacity:0;}}
   /* 環要咬住整疊血條（ver -517，Ray 的示意圖）：上臂高過上血條、下臂低過下血條，
      開口朝右讓血條插進來。 */
-  /* ver -519：頭端改**水平粗臂**，寬度（厚度）與高度都與藍（我方）血條齊平 ——
-     像從血條左端長出來的（Ray 的參考圖）。遮罩粗筆畫加寬到 26 蓋住 11.2 半寬。 */
+  /* ver -520：照 Ray 的圖直抄 —— **純粹的粗 C**（無導入臂、輕微粗細差、鈍口），
+     開口朝右：下唇的厚度與高度對齊藍（我方）血條，藍條就插在開口裡。 */
   #energyClasp svg{position:absolute;left:-8px;bottom:-17px;width:64px;height:64px;
     overflow:visible;pointer-events:none;filter:drop-shadow(0 0 4px #000);}
   /* 中央連擊數（ver -511，Ray：「像 VP1 那樣顯示連擊數在中間」）：
      錨在迴旋的圓心（viewBox 40,44 → 乘上顯示縮放再加 svg 的偏移）。 */
-  #energyClasp .clasp-combo{position:absolute;left:18px;bottom:21px;transform:translate(-50%,50%);
+  #energyClasp .clasp-combo{position:absolute;left:18px;bottom:19px;transform:translate(-50%,50%);
     pointer-events:none;text-align:center;line-height:1;z-index:2;}
   #energyClasp .clasp-combo{opacity:0;transition:opacity .15s;}
   #energyClasp .clasp-combo.on{opacity:1;}
@@ -282,7 +282,7 @@
   /* 錐形 C（ver -518）：填面輪廓＋遮罩粗筆畫揭露進度（錐形筆畫 SVG 做不到）。 */
   #energyClasp .clasp-track{fill:rgba(12,10,18,.8);stroke:rgba(217,198,138,.35);stroke-width:1;}
   #energyClasp .clasp-gold{fill:var(--gold);}
-  #energyClasp .clasp-maskstroke{fill:none;stroke:#fff;stroke-width:26;stroke-linecap:round;
+  #energyClasp .clasp-maskstroke{fill:none;stroke:#fff;stroke-width:27;stroke-linecap:round;
     transition:stroke-dashoffset .25s;}
   #energyClasp.full .clasp-gold{fill:#ffe08a;animation:pulse .6s infinite alternate;}
   /* ── 副武器切換鈕（ver -410，Ray：「在敵我血條右側加入副武器切換鈕，大小同破防值」）──
