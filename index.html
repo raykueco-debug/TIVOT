@@ -220,6 +220,11 @@
     <img id="homeEmblem" alt="聖約第四騎士團徽記">
     <div class="title">聖約第四騎士團</div>
     <div class="saint-install"><span class="si-rule"></span><span class="si-text">SAINT&nbsp;&nbsp;INSTALL</span><span class="si-rule"></span></div>
+    <!-- 開始故事（ver -554，Ray：「建立一個開始故事的大鈕放在挑戰上面，這條線
+         獨立於測試、章節選擇，及 story(run down)，用來測試真實遊玩的存讀檔、
+         死亡機制等狀況」）：正式遊玩的「從頭開始」。乾淨的一條線——
+         newRun() → 主線第 0 句；不吃 testmode、不經章節工具；讀檔走「繼續」。 -->
+    <button id="storyStartBtn">開始故事</button>
     <button id="startBtn">挑戰</button>
     <!-- 繼續（ver -430，Ray 指定）：進最新的那一筆存檔（旅店睡覺存的就是它）。
          ⚠ 沒有存檔時整顆不出現（`main.js` 的 refreshContinue）——

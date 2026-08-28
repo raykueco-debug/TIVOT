@@ -999,6 +999,16 @@
   #home .saint-install .si-rule{width:clamp(22px,9vw,44px);height:1px;
     background:linear-gradient(90deg,transparent,rgba(111,179,212,.65));}
   #home .saint-install .si-rule:last-child{background:linear-gradient(90deg,rgba(111,179,212,.65),transparent);}
+  /* 開始故事（ver -554）：正式遊玩入口＝**金色實心的主要動作大鈕**（§6.5.5 的
+     份量原則），放在「挑戰」上面；挑戰維持描邊樣式，主次一眼看得出來。 */
+  #storyStartBtn{margin-bottom:14px;padding:18px 52px;border-radius:12px;
+    font-family:inherit;font-size:19px;letter-spacing:6px;font-weight:700;
+    color:#1c1408;border:1px solid #f4d896;
+    background:linear-gradient(180deg,#f0cf8e,#c9a75c);
+    box-shadow:0 0 22px var(--gold-dim),0 2px 10px rgba(0,0,0,.5);
+    animation:pulse 1.2s infinite alternate;}
+  #storyStartBtn:active{transform:scale(.94);}
+  @media (max-height:620px){ #storyStartBtn{padding:14px 44px;margin-bottom:10px;} }
   #startBtn{padding:16px 46px;background:transparent;border:1px solid var(--gold);
     color:var(--gold);border-radius:10px;font-family:inherit;font-size:17px;letter-spacing:5px;
     box-shadow:0 0 18px var(--gold-dim);animation:pulse 1.2s infinite alternate;}

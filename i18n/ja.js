@@ -14,6 +14,7 @@ export const STRINGS = {
   home: {
     title:        '聖約第四騎士団',
     start:        '挑戦',   // ver -471：出陣→挑戰
+    storyStart:   '物語を始める',   // ver -554
     tutorialBtn:  'チュートリアル',
     continueBtn:  'つづきから',           // 首頁：進最新存檔（ver -430）
     weaponLabel:  '副武装',

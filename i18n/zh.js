@@ -17,6 +17,7 @@ export const STRINGS = {
   home: {
     title:        '聖約第四騎士團',
     start:        '挑戰',   // ver -471（Ray：「試玩版的出陣現在改成挑戰」）
+    storyStart:   '開始故事',   // ver -554：正式遊玩入口（放在挑戰上面）
     tutorialBtn:  '教學',
     continueBtn:  '繼　續',              // 首頁：進最新存檔（ver -430）
     weaponLabel:  '副武器',
