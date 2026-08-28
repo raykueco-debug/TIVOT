@@ -1039,8 +1039,7 @@ town.setGearWatch(gear.onceClosed);
 function startStoryFresh(){
   try{ killAllPages(); }catch(_){}
   saveSys.clearRunSaves();
-  prog.newRun();
-  prog.setStage(0);
+  prog.newRun();          // -563 起 newRun 自己寫 stage 0（所有從頭開始的路都安全）
   story.open(null);
 }
 bindBtn('storyBtn', startStoryFresh);

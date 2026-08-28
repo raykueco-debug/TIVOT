@@ -251,6 +251,13 @@ export function newRun(){
                   K.hp, K.innLast, K.flightLoss, K.rennaS]) {   // 持久 HP／上次旅店／連敗數／蕾娜S計數
     try{ localStorage.removeItem(k); }catch(e){}
   }
+  /* ⚠⚠ 從頭開始＝**S0 要寫進鑰匙**（ver -563）。清掉 stage 之後不寫回的話，
+     getStage() 會掉進「無鑰匙＝測試預設(5)」—— 「開始故事」自己有補 0，
+     但**章節工具的 Stage 0、日後任何新的 newRun 呼叫者**都會踩這個洞
+     （Ray：「他媽的直接變 stage5」就是章節/舊紀錄那條路）。
+     規矩收在這一支（鐵律 8）：呼叫 newRun 的人不必記得補；要跳章的
+     （章節工具）在之後自己 setStage 覆寫。 */
+  wr(K.stage, 0);
   /* 其他模組自己的存檔。⚠ 這裡列出來就是「它屬於一輪遊戲」的宣告 ——
      日後新增任何一輪內的存檔（例如城鎮的所在節點），**一定要加進這一行**。 */
   const tutKey = (GAME_CONFIG.tutorial||{}).storageKey;   // ⚠ 問 config，不要抄字串（鐵律 7）
