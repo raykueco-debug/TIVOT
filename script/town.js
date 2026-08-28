@@ -117,7 +117,9 @@ export const TOWNS = {
        ⚠ 睡醒那一刻黑幕還蓋著（旅店的睡覺演出留下來的）—— `clockGate()` 會先把
          畫面亮回來再放她上場，所以這裡不必寫任何演出指示。
        ⚠ 台詞一字照 Ray 的稿。 */
-    stage1: { hour: 7, stage: 1, flag: 'stage1_open', goto: 'dock',
+    /* ver -562 編號重排：升段點改在「進帝都」(S1) 與「出航」(S2)，
+       這個七點的閘門只負責開船塢劇情與強制移動，不再動 stage。 */
+    stage1: { hour: 7, flag: 'stage1_open', goto: 'dock',
               lines: [ ren(null,'好囉，該出發囉') ] },
     nodes: {
 

@@ -1161,6 +1161,10 @@ export function open(town, node, opts){
     const _a=prog.getAffection();
     if((_a.nouvelle||0) < 5){ _a.nouvelle=5; prog.setAffection(_a); }
   }
+  /* 進帝都＝S1（ver -562，Ray 定案的編號：開頭 S0 → 進帝都 S1 → 出航 S2）。
+     守門看**值**不看旗標：只從 0 升上來 —— 讀檔在更後面的章節不會被倒退，
+     試玩版（無鑰匙，getStage 回測試預設 5）也不受影響。 */
+  if(townId==='capital' && prog.getStage()===0) prog.setStage(1);
   /* 被抬回來的（ver -496，Ray：「城鎮中戰鬥死亡就回旅店」）：這一次抵達由
      `enter()` 消化 —— 初見還沒看過就演節點的 `wake` 那一拍（見 enter 的說明）。 */
   carriedIn = !!(opts && opts.carried);

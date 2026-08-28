@@ -858,7 +858,15 @@ story.setPrepOpener(()=>gear.open());
 /* ⚠ 腳本的 `goFlight` 那一拍（主線的出航）也要先收城鎮的介面（ver -437）——
    與城鎮自己那顆「出航」走同一條規矩（鐵律 8）：`town.suspend()` 只收介面不收狀態，
    城鎮沒開著時它自己 no-op。不收的話交棒進戰鬥那一刻方向箭頭會從槍棺底下冒出來。 */
-story.setFlightOpener(()=>{ town.suspend(); openFlight(); });
+/* 出航＝S2（ver -562，Ray 定案：開頭 S0 → 進帝都 S1 → 碼頭出航 S2）。
+   兩條出航路（劇情的出航拍、城鎮的往下出航）都走這一支（鐵律 8）；
+   守門「===1」＝只在第一次離港升段：升過不再動、讀檔不倒退、
+   試玩版「試飛」（無鑰匙，getStage=測試預設 5）不受影響。 */
+function sailOut(){
+  if(prog.getStage()===1) prog.setStage(2);
+  openFlight();
+}
+story.setFlightOpener(()=>{ town.suspend(); sailOut(); });
 // 首頁「教學」鈕：強制下一場進教學（不動已看旗標），不經整備頁直接出陣
 bindBtn('tutorialBtn', ()=>{ tutorial.requestReplay(); launchBattle(); });
 
@@ -1114,7 +1122,7 @@ story.setHomeReturn(()=>{
   combat.goHome(()=>story.close());
 });
 /* 城鎮的「出航」→ 開飛行頁（注入，town 不 import main；同 setTownOpener 的作法）。 */
-town.setFlightOpener(()=>openFlight());   // 城鎮出航＝「進入」，讀取頁要跑（ver -389）
+town.setFlightOpener(()=>sailOut());   // 城鎮出航＝「進入」，讀取頁要跑（ver -389）；升段見 sailOut（-562）
 combat.setStoryClose(story.playKerberosClose);
 /* 門開期間戰鬥不計時（ver -466）：story 的開門演出押住／放行戰鬥。
    ⚠ 放行要讓位給教學對話：門還在開時教學的第一句可能已經插進來

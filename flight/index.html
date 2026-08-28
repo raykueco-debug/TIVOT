@@ -1988,7 +1988,7 @@ function senseUnlock(a){
    ⚠⚠ **暫填 3（＝`STAGE_DEFAULT`）**：預設進度下行為與 ver -432 完全一樣，
      只有真的在第 1、2 章才擋得到。真正解鎖的章節 Ray 定了就改這兩個數字
      （同 `flight/talks.js` 的 `PARTY`，那裡也是暫填 3）。 */
-const FEATURE_FROM = { sturm: 3, sense: 3 };
+const FEATURE_FROM = { sturm: 5, sense: 5 };   // ver -562：試飛暫定全部推到 S5（Ray：「以防萬一」）
 function featureOn(k){ return gameStage() >= (FEATURE_FROM[k] || 1); }
 
 /* ══ Sturm（衝刺）══════════════════════════════════════════════════
@@ -2223,7 +2223,7 @@ let talkLastId=null;
      而隊伍成員不齊時整組對話會被排除。改完用 talkDebug() 看一下各章還剩幾組，
      不然內容缺口只會表現成「按鈕好像沒反應」，很難回頭找。 */
 const STAGE_KEY='tivot_stage_v1';
-const STAGE_DEFAULT=3;
+const STAGE_DEFAULT=5;   // ver -562：測試預設推到 S5（與 script/progress.js 同值，改一邊要改另一邊）
 function gameStage(){
   try{
     const v=parseInt(localStorage.getItem(STAGE_KEY),10);
@@ -9267,7 +9267,8 @@ document.getElementById('landBtn').addEventListener('click', e=>{ e.stopPropagat
 const STAGE1_DEST = ['北方泊地', '帝都'];
 const STAGE1_NAG  = [{ who:'renna', text:'別晃了，趕快往北方泊地去！' }];
 function stage1Blocked(P){
-  return gameStage()===1 && P && STAGE1_DEST.indexOf(P.name) < 0;
+  /* ver -562 編號重排（進帝都=1、出航=2）：「前往北方泊地」的地圖鎖跟著搬到 S2。 */
+  return gameStage()===2 && P && STAGE1_DEST.indexOf(P.name) < 0;
 }
 
 /* ══ 第一場艦戰打完的那一段（ver -432，Ray 交稿，一字未改）══════════════

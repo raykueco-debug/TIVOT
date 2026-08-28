@@ -45,7 +45,7 @@ const K = {
 
 /* ⚠ 測試期間預設 3（Ray 指定，與 flight/index.html 的 STAGE_DEFAULT 一致）。
    改這個值會連帶改變閒聊聽得到哪些內容 —— 兩邊要一起改。 */
-export const STAGE_DEFAULT = 3;
+export const STAGE_DEFAULT = 5;   // ver -562：試飛/測試預設推到 S5（Ray：「以防萬一」；flight 那份同值）
 /* ver -560（Ray：「預設是全 0，進帝都後諾才 5」）：預設全 0；諾薇兒的 5 是
    **進帝都那一刻**的一次性初始化（modules/town.js 的 open，旗標擋重複）。
    ⚠ flight/index.html 的 AFFECTION_DEFAULT 是同一個數字的複本（非 module 頁），
