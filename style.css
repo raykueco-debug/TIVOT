@@ -226,15 +226,17 @@
   /* 滿值時擴大點擊熱區（蓋住厚端那一片） */
   #energyClasp.full::before{content:"";position:absolute;top:-16px;bottom:-16px;left:-60px;right:-2px;}
   /* 月牙圖層（ver -539）：frame（空圈）在下、fill（金月）在上，幾何由 layoutClasp 寫。
-     ver -543（Ray）：飽和度壓低；-544（Ray：「飽和度還是太高，再偏白一點」）：
-     再降並提亮 —— 這條基底鏈是唯一一份，charging/full 的 keyframes 都以它為底。 */
+     ver -545（Ray：「應該要半透明的金色」，推翻 -543/-544 的降飽和/偏白）：
+     色相＝原圖的金，計量中的月體**半透明**（opacity，背景透得過去）；
+     滿檔才轉白光（見 .full 那段）。 */
   #energyClasp .clasp-moon{position:absolute;pointer-events:none;
-    filter:saturate(.48) brightness(1.18) drop-shadow(0 0 4px #000);}
+    filter:drop-shadow(0 0 4px #000);}
+  #claspMoonFill{opacity:.55;}
   /* 計量累積中（0<energy<100，combat 掛 .charging）：隱隱發光 —— 淡金光暈慢呼吸。 */
   #energyClasp.charging #claspMoonFill{animation:moonCharge 1.8s ease-in-out infinite alternate;}
   @keyframes moonCharge{
-    from{filter:saturate(.48) brightness(1.18) drop-shadow(0 0 3px rgba(255,214,150,.30)) drop-shadow(0 0 4px #000);}
-    to  {filter:saturate(.48) brightness(1.18) drop-shadow(0 0 7px rgba(255,214,150,.65)) drop-shadow(0 0 4px #000);}}
+    from{filter:drop-shadow(0 0 3px rgba(255,196,96,.30)) drop-shadow(0 0 4px #000);}
+    to  {filter:drop-shadow(0 0 7px rgba(255,196,96,.65)) drop-shadow(0 0 4px #000);}}
   /* 滿檔加強光暈：drop-shadow 加倍層 + ::after 呼吸光暈橢圓（::before 已作觸控擴區） */
   /* 滿檔＝**白光**（ver -544，Ray：「月滿的時候呈白光」）：抽掉飽和、大幅提亮，
      光暈換純白（原本聖藍 var(--holy) 那套撤掉）。 */
@@ -297,8 +299,9 @@
   #energyClasp .clasp-hits{font-size:10px;font-weight:700;letter-spacing:1px;
     fill:#fff;stroke:rgba(8,8,12,.9);stroke-width:2.8;paint-order:stroke;
     font-family:Georgia,serif;}
-  /* 滿值：白月呼吸（獨立 keyframes —— 借通用 pulse 會把上面那條白光鏈整組蓋掉）。 */
-  #energyClasp.full #claspMoonFill{animation:moonFull .6s infinite alternate;}
+  /* 滿值：白月呼吸（獨立 keyframes —— 借通用 pulse 會把上面那條白光鏈整組蓋掉）；
+     半透明只給計量中，滿檔的月是實心的白。 */
+  #energyClasp.full #claspMoonFill{opacity:1;animation:moonFull .6s infinite alternate;}
   @keyframes moonFull{
     from{filter:saturate(.20) brightness(1.55) drop-shadow(0 0 8px rgba(255,255,255,.85)) drop-shadow(0 0 18px rgba(255,250,235,.6)) drop-shadow(0 0 4px #000);}
     to  {filter:saturate(.20) brightness(2.00) drop-shadow(0 0 12px rgba(255,255,255,1)) drop-shadow(0 0 26px rgba(255,250,235,.8)) drop-shadow(0 0 4px #000);}}
