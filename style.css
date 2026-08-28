@@ -226,18 +226,15 @@
   /* 滿值時擴大點擊熱區（蓋住厚端那一片） */
   #energyClasp.full::before{content:"";position:absolute;top:-16px;bottom:-16px;left:-60px;right:-2px;}
   /* 月牙圖層（ver -539）：frame（空圈）在下、fill（金月）在上，幾何由 layoutClasp 寫。
-     ver -547（Ray：「月牙本身不要不透明，用發光的白金」）：
-     月體＝**半透明、會發光的白金** —— 原圖的金抽掉一半飽和、提亮成香檳白金，
-     opacity 讓背景透過去；「發光」由 charging 的呼吸光暈與流光（下面那層）給。 */
+     ver -548（Ray：「月不要半透明 金色光」，推翻 -545/-547 的半透明與白金）：
+     月體＝**不透明、原圖的金**，發**金色光**（呼吸光暈＋金色流光）。 */
   #energyClasp .clasp-moon{position:absolute;pointer-events:none;
     filter:drop-shadow(0 0 4px #000);}
-  #claspMoonFill{opacity:.60;
-    filter:saturate(.40) brightness(1.50) drop-shadow(0 0 4px #000);}
-  /* 計量累積中（0<energy<100，combat 掛 .charging）：白金光暈慢呼吸。 */
+  /* 計量累積中（0<energy<100，combat 掛 .charging）：金色光暈慢呼吸。 */
   #energyClasp.charging #claspMoonFill{animation:moonCharge 1.8s ease-in-out infinite alternate;}
   @keyframes moonCharge{
-    from{filter:saturate(.40) brightness(1.50) drop-shadow(0 0 3px rgba(255,236,190,.35)) drop-shadow(0 0 4px #000);}
-    to  {filter:saturate(.40) brightness(1.62) drop-shadow(0 0 8px rgba(255,236,190,.70)) drop-shadow(0 0 4px #000);}}
+    from{filter:drop-shadow(0 0 3px rgba(255,200,100,.35)) drop-shadow(0 0 4px #000);}
+    to  {filter:drop-shadow(0 0 8px rgba(255,200,100,.75)) drop-shadow(0 0 4px #000);}}
   /* 能量流（ver -546 白色彗星束 → -547 改**漸層流光**，Ray：「不用白光，
      用漸層的能量流」）：一整圈平滑起伏的白金漸層繞**缺口中心**順時針轉
      （rotate 動畫，GPU 便宜）—— 沒有亮頭暗尾的斷點，讀起來是流體的光在循環。
@@ -252,11 +249,11 @@
   #claspMoonGlow .glow-beam{position:absolute;display:block;
     left:calc((0.6957 - 1.1)*100%);top:calc((0.4412 - 1.1)*100%);width:220%;height:220%;
     background:conic-gradient(from 0deg at 50% 50%,
-      rgba(255,244,214,0) 0deg,
-      rgba(255,244,214,.18) 90deg,
-      rgba(255,250,232,.50) 200deg,
-      rgba(255,244,214,.18) 300deg,
-      rgba(255,244,214,0) 360deg);
+      rgba(255,214,120,0) 0deg,
+      rgba(255,214,120,.20) 90deg,
+      rgba(255,228,150,.55) 200deg,
+      rgba(255,214,120,.20) 300deg,
+      rgba(255,214,120,0) 360deg);
     animation:moonBeam 2.2s linear infinite;}
   @keyframes moonBeam{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
   /* 滿檔加強光暈：drop-shadow 加倍層 + ::after 呼吸光暈橢圓（::before 已作觸控擴區） */
