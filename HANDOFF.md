@@ -1,4 +1,4 @@
-# HANDOFF — 破防計量（月牙）ver -539：Ray 交圖，改成「圖直接鋪」
+# HANDOFF — 破防計量（月牙）＋換槍鈕＋紅點觸碰 ver -539~-553（2026-08-28，全數已 push）
 
 > -534~-538 用比例參數化仿 Ray 的畫連錯四版，那條路已廢除。
 > ver -539 起：**形狀＝Ray 交的 alpha 月牙圖本身**，程式不再畫月牙。
@@ -47,11 +47,21 @@
 - **蓄能**：`.charging`＝金色呼吸光暈＋**整圈平滑漸層流光**繞缺口中心順時針轉
   （#claspMoonGlow：外層吃計量扇形遮罩、內層 .glow-shape 吃月牙形遮罩）。
 - **滿檔**＝實心白光（moonFull keyframes）。
-- **副武器切換鈕**（-549）：三張類別徽章 Ray 交件（連射=Switch_MG、散射=Switch_Split、
-  高爆=Switch_Hyper；白底原檔沿金環裁圓去背、縮 256 轉 webp）。鈕與月**同大小、
-  以血條水平中軸鏡射**（combat.layoutClasp 唯一計算點；血條右側讓位 `Wm-OVER`，
-  讓位改變 rect 所以設完重跑一次；鈕藏著不讓位，weapon.renderSwitch 顯示切換時
-  派 resize 通知重量）。
+- **副武器切換鈕**（-549~-551）：三張類別徽章 Ray 交件（連射=Switch_MG、
+  散射=Switch_Split、高爆=Switch_Hyper；白底原檔沿金環裁圓去背、縮 256 轉 webp，
+  **暗部烘成 α85 半透明**、卡面深底拿掉）。落點最終版（-551）：**月的 0.78 倍、
+  右緣貼面板內 6px、垂直中心＝血條中線、整顆在血條右端之外**（不遮 hp 條；
+  血條右側讓位，讓位改變 rect 所以設完重跑一次；鈕藏著不讓位，
+  weapon.renderSwitch 顯示切換時派 resize 通知重量）。幾何全在 combat.layoutClasp。
+- **紅點觸碰範圍分流**（-552，Ray 指定）：`.reddot` 拆成外層**觸碰區**＋內層
+  `.rd-vis` 視覺圈 —— dot 的 listener 與 main.js 的 hitThreatAt 都以外層 rect 判。
+  規則在 `config.weaponCatHitZone`：連射＝平時同視覺、只剩紅圈時擴到橘圈最大；
+  散射＝恆黃圈最大；高爆＝恆同視覺。實作只有 defense.js 的 `hitDia()`。
+- **挑戰 Boss 戰敗北評價**（-553）：勝敗都由璐娜莉亞評；lose＝
+  `inspector_luna_angry`＋「討人厭的夢......」（-471「敗北回芙蕾雅」作廢）。
+- 途中 Ray 回報「挑戰直接進武器選擇」：**重現不出來**，最可能是他載入頁面時
+  正好抓到改到一半的 weapon.js —— 重整後他確認正常。日後改檔期間他在測，
+  先提醒他等 commit 再重整。
 
 ## 教訓（沿用，逐字遵守）
 
