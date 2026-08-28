@@ -251,8 +251,11 @@
      錨在迴旋的圓心（viewBox 40,44 → 乘上顯示縮放再加 svg 的偏移）。 */
   #energyClasp .clasp-combo{position:absolute;left:23px;bottom:35px;transform:translate(-50%,50%);
     pointer-events:none;text-align:center;line-height:1;z-index:2;}
-  #energyClasp .clasp-combo{opacity:0;transition:opacity .15s;}
-  #energyClasp .clasp-combo.on{opacity:1;}
+  /* ⚠ 出現要**瞬顯**（ver -531）：斷連後的下一擊是 0→1，外框若在淡入，
+     蓋章最大最透的前幾格會被外框的透明吃掉 —— Ray：「印章效果又不見了」。
+     淡出只留給「隱藏」那一向。 */
+  #energyClasp .clasp-combo{opacity:0;transition:opacity .2s;}
+  #energyClasp .clasp-combo.on{opacity:1;transition:none;}
   /* 滿值：數字讓位給光點（ver -522）。 */
   #energyClasp.full .clasp-combo{opacity:0;}
     to{transform:translate(-50%,50%) scale(1.35);opacity:1;}}
@@ -269,10 +272,10 @@
   /* 每一次連擊：由大縮小彈一下（Ray 指定）。 */
   /* 蓋章（ver -516，Ray：「半透明像蓋章一樣由大到小落下成實字」）：
      大而半透 → 加速落下 → 到位成實字（結尾一點點回彈）。 */
-  #energyClasp .clasp-combo b.pop{animation:comboPop .34s cubic-bezier(.5,0,.6,1.2);}
+  #energyClasp .clasp-combo b.pop{animation:comboPop .4s cubic-bezier(.5,0,.6,1.2);}
   @keyframes comboPop{
-    0%  {transform:scale(3.4);opacity:.12;}
-    70% {transform:scale(1.04);opacity:.92;}
+    0%  {transform:scale(4);opacity:.1;}
+    72% {transform:scale(1.05);opacity:.95;}
     100%{transform:scale(1);opacity:1;}}
   /* 連擊斷：舊數字轉紅、縮小消散（散完 JS 才把整塊藏起來重計）。 */
   #energyClasp .clasp-combo b.break{color:#e0554a;
