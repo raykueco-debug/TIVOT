@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.28-499';
+export const VERSION = 'ver 2026.08.28-500';
 
 export const GAME_CONFIG = {
 
@@ -385,6 +385,12 @@ export const GAME_CONFIG = {
                         desc:'極少數個體才長得出的薄翅。輕而不折。' },
       chitin_shell:   { name:'殼甲',               cat:'material', price:10,
                         desc:'蜈蚣型禍魘的節甲。硬度足以擋下小口徑彈。' },
+      /* 羽蛇的掉落（ver -500，Ray 的卡）。⚠ **價格是我填的**（卡上沒寫）——
+         照 33% 掉落物的量級（殼甲 10、毒爪 12）。要改直接動這裡。 */
+      azure_scale:    { name:'蒼鱗',               cat:'material', price:12,
+                        desc:'羽蛇的青色鱗片。輕薄而韌，映著天光。' },
+      azure_feather:  { name:'蒼羽',               cat:'material', price:14,
+                        desc:'羽蛇翼上的長羽。飛行工匠拿它做配重翎。' },
       brass_casing:   { name:'黃銅彈殼',           cat:'material', price:8,
                         desc:'打完的彈殼。收集起來能重新裝填，槍匠都收。' },
       scrap_iron:     { name:'碎鐵片',             cat:'material', price:6,
@@ -1027,6 +1033,48 @@ export const GAME_CONFIG = {
       /* 金錢：HP 的 120%~150%。 */
       money:{ hpRatio:[1.2, 1.5] },
     },
+    /* ══ 羽蛇（ver -500，Ray 的敵人卡）══════════════════════════════════
+       飛行限定的隨機敵（[場景：飛行][區域：全陸域][稀有等級：E]—— 那三格住在
+       flight/index.html 的 ENEMY_KINDS.serpent：rarity/fromStage/landOnly，
+       兩邊註解互指）。**stage2 的劇情之後才會加入隨機敵人**（fromStage:2）。
+       ⚠ 卡上的「劇情」（好快！／廣域破片砲）在 battles.flight_serpent 的 talk；
+         「戰鬥結束」那一段（Sturm／Deck_Chaos／著水）是 stage2 劇本的戲，
+         觸發點與素材（Deck_Chaos）都還沒有 —— 等 Ray 的 stage2 稿再接。 */
+    serpent: {
+      name:'羽蛇_A',
+      story:1, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
+      kind:'harm',                 // 禍魘 → 已淨化
+      image:{ day:'enemy_serpant_day', dd:'enemy_serpant_dd', night:'enemy_serpant_night' },
+      hp:500,
+      attack:20,                   // 蓄力攻擊（紅點那一發）
+      atkInterval:4,               // 蓄力窗口 4 秒（固定）
+      ultEvery:[3,5],              // 發動頻率 3~5 秒一次
+      noStack:true,                // 不疊加：場上同時只有一個紅點
+      sound:{ ult:'se_enemy_serpant', delay:'em_smack', wrong:'em_smack' },
+      special:[],
+      boardGrids:[9,9,9,16,16],    // 33344, loop
+      boardLoop:true,
+      delayPenalty:{ seconds:5, damage:10 },
+      wrongPenalty:{ damage:5 },
+      /* 蓄力攻擊「毒牙特效」＝咬痕（bite）；延時單爪、點錯鈍器（同卡）。 */
+      hitFx:{
+        delay:{ type:'claw', count:1, angle:'random' },
+        wrong:{ type:'blunt' },
+        ult:{   type:'bite' },
+      },
+      resist:{ basic:0.20 },
+      /* 弱點：反擊武器 +100%、**散射武器（霰彈槍類）再 +150%**（Ray 的卡）——
+         `cat:<武器類別>` 只對反擊傷害生效，判定在 combat.applyEnemyMods（唯一一處）。 */
+      weak:{ counter:1.00, 'cat:霰彈槍':1.50 },
+      dualBonus:0.20,
+      counterBuff:{ mult:2, seconds:5 },
+      counterStun:3,
+      loot:[ { id:'venom_fang',    n:1, p:0.10 },
+             { id:'azure_scale',   n:1, p:0.33 },
+             { id:'azure_feather', n:1, p:0.33 } ],
+      /* 金錢：HP 的 50%~70%。 */
+      money:{ hpRatio:[0.5, 0.7] },
+    },
     // 例：新怪
     // giant: { name:'巨人', image:'enemy_giant', imageBase:'giant', hp:150, attack:30, atkInterval:5, sound:{}, special:[] },
   },
@@ -1145,7 +1193,23 @@ export const GAME_CONFIG = {
                               text:'點血條旁的武器圖可以切換艦載武器，反擊的時機與威力各有不同！' },
                           ]},
                         ] },
-    flight_serpent:   { enemy:'facelessgiant' },
+    /* 羽蛇（ver -500）。艦戰的武器音／連射間隔與蜈蚣那一場同一套（都是船戰）。
+       talk＝卡上的「劇情」：登場特效拍（出場音效＋震動）→ 兩句。
+       ⚠ 只有**劇情戰**會播（state.storyBattle）：隨機遭遇共用這張卡不播；
+         talkOnce 打贏才記（§6.5.2）。 */
+    flight_serpent:   { enemy:'serpent',
+                        weaponSound:{ MG_Squall:'se_ship_heavygun',
+                                      Shotgun_Blast:{ key:'se_pistol_01', times:6 },
+                                      Sniper_Falcon:'se_ship_cannon' },
+                        counterGapMs:180,
+                        talkOnce:'taught_serpent_frag',
+                        talk:[
+                          { trigger:'battleStart', lines:[
+                            { se:'se_enemy_serpant', shake:true, hold:900 },   // 出場音效＋震動（卡：出場特效）
+                            { who:'renna',    img:'tut_renna_shocked',   text:'好快！' },
+                            { who:'nouvelle', img:'tut_nouvelle_steady', text:'速度快的敵人就用廣域破片砲！' },
+                          ]},
+                        ] },
     flight_pirate:    { enemy:'facelessgiant' },
   },
 
@@ -1334,6 +1398,7 @@ export const GAME_CONFIG = {
       se_ui_click:4.750, se_ui_kagurabell:2.530, se_ui_pageflip:2.359,
       se_ui_sortie:1.184, se_ginclick:1.106, se_metalclip:1.139,
       se_buy:1.122, se_healing:1.461,   // ver -499（audio_scan 實測：−14.8／−17.1 LUFS）
+      se_enemy_serpant:2.184,           // ver -500（audio_scan 實測：−20.6 LUFS）
       se_dart_fail:2.792,
       /* ── 劇情／城鎮（這一批以前完全沒有增益，見上面的說明）── */
       se_steps:7.198, se_walk:4.481, se_fall:3.724, se_punch:1.596,
@@ -1467,6 +1532,9 @@ export const ASSETS = {
   /* 巨型蜈蚣（ver -423）：**三張時段差分**（Ray 指定：上午下午 day、晚上 night、
      黃昏黎明 dd）。解析在 `modules/enemy.js` 的 `enemyImage()`，那裡是唯一一處。 */
   enemy_centipi_day:   "resources/enemy/Centipi_day.webp",
+  enemy_serpant_day:   "resources/enemy/Serpant_day.webp",     // 羽蛇（ver -500，Ray 的卡）
+  enemy_serpant_dd:    "resources/enemy/Serpant_DD.webp",
+  enemy_serpant_night: "resources/enemy/Serpant_night.webp",
   enemy_centipi_night: "resources/enemy/Centipi_night.webp",
   enemy_centipi_dd:    "resources/enemy/Centipi_DD.webp",
   inspector_renna:     "resources/SI/Renna_SI_front.webp",         // 讀取頁的說明者（出航後）
@@ -1501,6 +1569,7 @@ export const ASSETS = {
   se_ship_cannon:    "resources/audio/se/se_weapon_cannon_120mm.m4a",   // 艦砲（步槍在船戰也用它）
   se_ship_heavygun:  "resources/audio/se/se_weapon_heavygun.m4a",       // 船戰的機槍
   se_enemy_centipi:  "resources/audio/se/Se_enemy_centipi.m4a",         // 巨型蜈蚣（登場／攻擊）
+  se_enemy_serpant:  "resources/audio/se/Se_enemy_serpant.m4a",   // 羽蛇出場（ver -500）
   se_mg_squall:      "resources/audio/se/se_weapon_mg_squall.m4a",       // 重機槍 反擊（連續感：整支播一次）
   se_shotgun_blast:  "resources/audio/se/se_weapon_shotgun_blast.m4a",   // 散彈槍 反擊（一次一發）
   se_sniper_falcon:  "resources/audio/se/se_weapon_sniper_falcon.m4a",   // 狙擊槍 反擊（單發）

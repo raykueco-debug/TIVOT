@@ -1553,6 +1553,14 @@ Ray 交劇本稿一律照 **`script/SCRIPT_FORMAT.md`** —— 稿子的最小�
 - ⚠ **`window.talkDebug=(m)=>talkDebug(m)` 這種「同名包一層」會無限遞迴**（ver -432 修）：
   `talkDebug` 是 `talks.js` 的頂層函式宣告，而那一頁是非 module 的一般 script
   —— 它本來就在 `window` 上，箭頭函式一覆寫，內文就解析回它自己。要包就換名字。
+- ⚠⚠ **隨機刷怪的抽選**（ver -500，Ray 的羽蛇卡）：`ENEMY_KINDS` 逐怪三格 ——
+  `rarity`（稀有等級 → 權重 E30/D25/C20/B15/A10/S5，按合格者正規化）、
+  `fromStage`（該 stage 的劇情之後才登場；羽蛇＝2）、`landOnly`（全陸域：
+  生成點 HGT ≤ CLOUD_H ＝雲海＝海，不出）。實作只有 `pickEnemyKind` 一支；
+  劇本遭遇（指定 kind）不經過抽選。蜈蚣／空賊的稀有度是**暫定 E**（卡還沒給）。
+  戰鬥數值照舊在 config.enemies 的卡上（兩邊註解互指）。
+  ⚠ 羽蛇卡的「戰鬥結束」段（Sturm／Deck_Chaos／著水）是 stage2 劇本的戲 ——
+    觸發點與 Deck_Chaos 素材都還沒有，等 Ray 的 stage2 稿再接。
 - ⚠ **遭遇不再有「進入戰鬥」那一格**（ver -389）：碰到遭遇距離就立刻彈棺，那一格只會被門
   壓在底下閃一眼。**免戰模式那一版留著** —— 那是開發用狀態（不會進戰鬥），沒有它就
   看不出遭遇有沒有觸發。

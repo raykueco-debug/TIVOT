@@ -6874,11 +6874,16 @@ const ENEMY_KINDS = {
              head:[0.00,0.085], wings:[0.085,0.330], body:[0.330,1.00] },
     waveAmp:7.0, wavePhase:0.92, waveHz:0.0042, wingHz:0.055,
     turnRate:0.0016, speedK:0.60,
+    rarity:'E',   // ⚠ 暫定（Ray 的蜈蚣卡沒寫稀有度）——卡到了改這一格
   },
   serpent: {
     /* 羽蛇：比蜈蚣更長更細，扭動慢而大 —— 蛇的波長比節肢動物長得多，
        用同一組 wavePhase 會扭成一條抽搐的毛毛蟲。翅是鳥翼，拍得比蟲慢。 */
     name:'羽蛇', plan:'chain', wing:'bird', segs:26, bodyLen:280, vertical:true,
+    /* ── 出場條件（ver -500，Ray 的卡：[場景：飛行][區域：全陸域][稀有等級：E]
+       「stage2 的劇情之後才會加入隨機敵人」）──
+       這三格與 config.enemies.serpent 的卡互指（那邊是戰鬥數值、這邊是刷新規則）。 */
+    rarity:'E', fromStage:2, landOnly:true,
     sprite:{ dir:'enemy/FLM_Serpent/', dorsal:'view_3.webp',
              head:[0.00,0.165], wings:[0.165,0.380], body:[0.380,1.00] },
     /* wingHz 0.019 → 0.008：鳥翼本來就比蟲翅慢得多。
@@ -6896,6 +6901,8 @@ const ENEMY_KINDS = {
     /* turnRate 0.0011 → 0.00055（63°/秒 → 32°/秒）：一艘三桅飛船不會像
        戰鬥機那樣甩頭。轉得慢，掉轉本身才有重量，也讓每個方位停留得夠久。 */
     name:'空賊', plan:'rigid', speedK:0.85, turnRate:0.00055,
+    rarity:'E',   // ⚠ 暫定（同蜈蚣：卡還沒給）
+
     bodyLen:300,                    // 船長（世界單位）＝側視圖寬所代表的長度
     /* 方位圖:0°(正面)/53.6°/90°(側)/141.6°/180°(背),再鏡射補另一側＝一圈八個。
        ⚠ 53.6/141.6 是**量出來的不是選的**:斜視圖來自另一張補充稿,
@@ -6912,6 +6919,25 @@ const ENEMY_KINDS = {
   },
 };
 
+const ENEMY_RARITY_W={E:30,D:25,C:20,B:15,A:10,S:5};   // 稀有等級 → 權重（ver -500，Ray 指定）
+function enemyKindEligible(k, x, y){
+  const K=ENEMY_KINDS[k];
+  if(K.fromStage && gameStage() < K.fromStage) return false;
+  if(K.landOnly){
+    const mx=(x/MAP_SCALE)|0, my=(y/MAP_SCALE)|0;
+    if(mx<0||my<0||mx>=MAPW||my>=MAPH) return false;
+    if(!HGT || HGT[my*MAPW+mx] <= CLOUD_H) return false;   // 雲海之下＝海域 → 全陸域的怪不出
+  }
+  return true;
+}
+function pickEnemyKind(x, y){
+  const pool=Object.keys(ENEMY_KINDS).filter(k=>enemyKindEligible(k,x,y));
+  if(!pool.length) return null;
+  let tot=0; for(const k of pool) tot+=ENEMY_RARITY_W[ENEMY_KINDS[k].rarity]||30;
+  let r=Math.random()*tot;
+  for(const k of pool){ r-=ENEMY_RARITY_W[ENEMY_KINDS[k].rarity]||30; if(r<=0) return k; }
+  return pool[pool.length-1];
+}
 let enemy=null;                                   // {x,y,alt,hx,hy,d0,state,tEngage,kind}
 let enemyFB=null, EC=null;                        // 低解析繪製緩衝（見 drawEnemy3D）
 /* 怪的素材：載到才切精靈模式，載不到走程序繪製（同飛空艇的雙軌）。
@@ -7029,8 +7055,16 @@ function spawnEnemy(opt){
       if(sv2<best){ best=sv2; hx=cx2; hy=cy2; }
     }
   }
-  const keys=Object.keys(ENEMY_KINDS);
-  const kind=(opt.kind && ENEMY_KINDS[opt.kind]) ? opt.kind : keys[(Math.random()*keys.length)|0];
+  /* ── 隨機刷怪的抽選（ver -500，Ray 的敵人卡）────────────────────────
+     [稀有等級] → 權重：E30／D25／C20／B15／A10／S5，按**合格者**正規化。
+     合格條件寫在 kind 上：
+       fromStage — stage 幾之後才登場（羽蛇＝2，Ray：「stage2 的劇情之後才會
+                   加入隨機敵人」；stage 由主線 setStage 推進）
+       landOnly  — [區域：全陸域]：生成點的地形要在雲海之上（雲海＝這個世界的海，
+                   同 seaProbe 的判法：HGT ≤ CLOUD_H ＝海）。
+     劇本遭遇（opt.kind 指定）不經過抽選，照舊。 */
+  const kind=(opt.kind && ENEMY_KINDS[opt.kind]) ? opt.kind : pickEnemyKind(x,y);
+  if(!kind) return;                       // 這一格沒有合格的怪（理論上不會：蜈蚣/空賊無條件）
   const K=ENEMY_KINDS[kind];
   /* cruiseHx/cruiseHy、alt0＝「原本的動作」。放棄追擊時要能回到這裡，
      而且是轉回去不是跳回去（同追擊的限角速度）。 */

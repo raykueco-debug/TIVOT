@@ -8,3 +8,8 @@ flight/Reference/_*
 .DS_Store
 flight/starpoints_preview*.png
 flight/silvermoon_atlas.png
+
+# Office 的暫存鎖檔（Ray 開著 docx 時會出現）
+~$*
+# 給 Ray 看的憲法匯出拷貝（程式不讀）
+憲法_ver-*.md
