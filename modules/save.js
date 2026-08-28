@@ -105,7 +105,11 @@ function apply(rec){
   /* v2＝整輪；v1 的舊存檔只有 progress 這一層，照舊吃下去（不要讓舊存檔讀不開）。 */
   if(rec.run) prog.runRestore(rec.run);
   else        prog.restore(rec.progress);
-  /* 位置：城鎮優先（v3 起才有）。⚠ 城鎮不是劇情的一個位置，`story.jumpTo` 帶不回去。 */
+  /* 位置：飛行 > 城鎮 > 劇情。
+     · 飛行（ver -558）：帶 flightPos 的檢查點 —— 開飛行頁接回那個座標
+       （從城出航時 town 也還開著＝rec.town 同時存在，所以飛行要**先**判）。
+     · 城鎮（v3 起）：⚠ 城鎮不是劇情的一個位置，`story.jumpTo` 帶不回去。 */
+  if(rec.flightPos && host.openFlightAt){ host.openFlightAt(rec.flightPos); return true; }
   if(rec.town && host.openTown){ host.openTown(rec.town.town, rec.town.node); return true; }
   if(rec.pos) story.jumpTo(rec.pos);
   return true;
@@ -146,6 +150,18 @@ export function autoSave(){
   db.auto=capture();
   store(db);
   return db.auto;
+}
+/* 飛行版的檢查點（ver -558）：同一個 auto 格，多帶 `flightPos`（cam 座標）——
+   「繼續」讀到它就開飛行頁接回那個座標（見 apply 的 flight 分支）。 */
+export function autoFlightSave(fp){
+  if(!fp || !isFinite(fp.x) || !isFinite(fp.y)) return null;
+  const db=load();
+  const rec=capture();
+  rec.flightPos={ x:fp.x, y:fp.y, angle:fp.angle, alt:fp.alt };
+  rec.label='大地圖航行中';
+  db.auto=rec;
+  store(db);
+  return rec;
 }
 export function hasSave(){ return !!latest(); }
 /* 首頁「繼續」：讀最新的那一筆。回傳 false＝根本沒有存檔（呼叫端不必自己再查一次）。 */

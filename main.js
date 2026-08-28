@@ -294,6 +294,32 @@ function openFlight(opts){
   document.body.classList.add('flight-on');
   $('home').classList.remove('on');
 }
+/* ══ 飛行檢查點（ver -558，Ray：「飛行畫面中斷回原位置、戰鬥中中斷回遭遇位置」
+   「以移動距離做檢查點，第一次移動做一個，接下來每適當距離一個」）══════════════
+   每 2 秒問一次船的座標（iframe 的 __flightPos）：這一趟**第一次動**（離起點
+   ≥10）落第一筆，之後每移動 600 落一筆；交棒進戰鬥那一刻另外強制落一筆
+   （flightCheckpointNow）＝遭遇戰鬥的位置。存進 save 的 auto 格（與劇情讀取頁
+   檢查點同一格）——「繼續」讀到帶 flightPos 的紀錄就開飛行頁接回那個座標。
+   ⚠ 距離單位＝cam 座標（地圖座標 × MAP_SCALE）。畫面收掉就歸零重來：
+     下一趟出航的「第一次移動」重新起算。 */
+const FLIGHT_CKPT_DIST=600, FLIGHT_CKPT_FIRST=10;
+let fckLast=null;
+function flightCheckpointNow(){
+  const w=flightWin(); if(!w || !w.__flightPos) return;
+  let p; try{ p=w.__flightPos(); }catch(_){ return; }
+  if(!p || !isFinite(p.x)) return;
+  try{ saveSys.autoFlightSave(p); }catch(_){}
+  fckLast={x:p.x, y:p.y, armed:true};
+}
+setInterval(()=>{
+  if(!document.body.classList.contains('flight-on')){ fckLast=null; return; }
+  const w=flightWin(); if(!w || !w.__flightPos) return;
+  let p; try{ p=w.__flightPos(); }catch(_){ return; }
+  if(!p || !isFinite(p.x)) return;
+  if(!fckLast){ fckLast={x:p.x, y:p.y, armed:false}; return; }   // 記這一趟的起點，先不存
+  const d=Math.hypot(p.x-fckLast.x, p.y-fckLast.y);
+  if(d >= (fckLast.armed ? FLIGHT_CKPT_DIST : FLIGHT_CKPT_FIRST)) flightCheckpointNow();
+}, 2000);
 /* 整備／設定窗蓋在飛行畫面上時暫停底下的模擬（ver -481）。掛在 window 給葉模組
    （gear/settings）用 —— 它們構不到 iframe（同 __tivotFlight 掛 window 的理由）。 */
 window.__flightHoldToggle = on => { const w=flightWin(); if(w && w.__flightHold) w.__flightHold(!!on); };
@@ -338,6 +364,7 @@ window.__tivotFlight = {
     const id = req && req.battle;
     if(!id || !GAME_CONFIG.battles || !GAME_CONFIG.battles[id]){ closeFlightFrame(); return; }
     flightBack = true;                    // 打完回飛行頁（見 setStoryReturn）
+    flightCheckpointNow();                // 交棒那一刻補一筆＝遭遇戰鬥的位置（ver -558）
     try{ SFX.unlock(); }catch(_){}        // 父頁早就解鎖過，這裡只是確保 context 是 running
     /* ⚠ 順序：**先把門擺上去，再收 iframe** —— 反過來的話中間會閃一格飛行畫面。
        門在劇情層（z 8300）＞ iframe（8200），所以蓋得住。
@@ -954,6 +981,15 @@ saveSys.setHost({
   placeName: (pos)=>town.placeName(pos),
   openTown:  openTownAt,
   onChange:  ()=>refreshContinue(),
+  /* 「繼續」接回飛行（ver -558）：座標塞回 `tivot_flight_ret_v1`（飛行頁開機的
+     restoreFlightPos 讀了就清、直接把船擺回去，鐵律 8：不另開一條還原路）——
+     然後照常開飛行頁（openFlight 非 resume＝重載 iframe，一開機就吃到）。 */
+  openFlightAt: (fp)=>{
+    markBooted();
+    $('home').classList.remove('on');
+    try{ localStorage.setItem('tivot_flight_ret_v1', JSON.stringify(fp)); }catch(_){}
+    openFlight();
+  },
 });
 /* 讀取頁檢查點（ver -555）：story 每收掉一頁標準讀取頁就落一筆 auto 存檔 ——
    「繼續」取時間戳最新的那一筆，沒有旅店手動存檔時自然接檢查點（§save.autoSave）。

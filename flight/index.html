@@ -7635,6 +7635,10 @@ window.__flightLoseRollback=function(){
      loop 整幀跳過會讓 updateBgm 停手，但 HTMLAudio 自己會照放（音量凍在當下）。
      真的要收音的只有 __flightPause（戰鬥／畫面收起 —— 那時換別頁的曲子上場）。 */
 window.__flightHold=function(on){ extPaused=!!on; };
+/* 船現在在哪（ver -558，飛行檢查點）：父頁每幾秒問一次寫進 auto 存檔 ——
+   「繼續」時把這組座標塞回 `tivot_flight_ret_v1`，restoreFlightPos 就接手了。
+   ⚠ cam 是 classic script 的頂層 const，不在 window 上，所以要明掛這一支。 */
+window.__flightPos=function(){ return { x:cam.x, y:cam.y, angle:cam.angle, alt:cam.alt }; };
 
 /* 打完回來：把船放回離開時的位置（ver -382）。
    ⚠ **讀了就清掉**：不清的話下次正常進飛行頁還會被拉回那個座標。
