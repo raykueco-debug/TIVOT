@@ -354,6 +354,12 @@ export const SFX = {
     if(!el.paused && el.src && el.volume>0.001) bgmFade(el, 0, fadeOut, afterOut);
     else afterOut();
   },
+  /* 暫時把 BGM 讓開（ver -499，Ray：「播旅店睡覺音樂時原 bgm 要淡出，播完再淡入」）：
+     淡到 0 但**不換曲、不清 _bgmSrc** —— unduck 再淡回目標音量，同一首接著播。
+     與 stopBgm 是兩件事（那支會把曲子整個丟掉）。
+     ⚠ unduck 淡的目標問 bgmTargetVol()（分軌音量／master 都吃到，鐵律 7）。 */
+  duckBgm(fadeMs){ const el=_bgmEl; if(el && !el.paused) bgmFade(el, 0, fadeMs!=null?fadeMs:600); },
+  unduckBgm(fadeMs){ const el=_bgmEl; if(el && !el.paused) bgmFade(el, bgmTargetVol(), fadeMs!=null?fadeMs:900); },
   // 停 BGM（淡出後停）
   stopBgm(fadeOutMs){
     clearTimeout(_bgmTimer); _bgmTimer=null;

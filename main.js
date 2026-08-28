@@ -1001,6 +1001,14 @@ bindBtn('chapterBtn', ()=>{
 function startChapter(c){
   if(!c) return;
   prog.newRun();                                   // ⚠ 唯一的「從頭開始」（§6.9）
+  /* 測試補給（ver -499，Ray：「測試階段點章節進去也要給主角1000元與回復道具
+     各10」）：章節跳關本來就是 body.testmode 限定的梯子，直接發。
+     回復道具＝defs 裡有 `use.hp` 的那幾樣（鐵律 1：不寫死 id，加了新藥自動吃到）。 */
+  import('./script/inventory.js').then(inv=>{
+    inv.addMoney(1000);
+    const defs=(GAME_CONFIG.items||{}).defs||{};
+    for(const id of Object.keys(defs)) if(defs[id].use && defs[id].use.hp!=null) inv.add(id,10);
+  });
   if(c.named){ prog.setPlayerName(''); prog.setPlayerNick(''); }   // 空字串＝套預設（托爾斯坦／托爾）
   if(c.flags && c.flags.length) prog.addFlags(c.flags);
   if(c.stage!=null) prog.setStage(c.stage);

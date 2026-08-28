@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.28-498';
+export const VERSION = 'ver 2026.08.28-499';
 
 export const GAME_CONFIG = {
 
@@ -169,7 +169,9 @@ export const GAME_CONFIG = {
       selectVoice:'vo_life_return',
       perk:'即死防禦（被動）＋生命歸還（主動）',
       passive:{ key:'deathGuard', name:'即死防禦', oncePerBattle:true,
-                cutin:'cutin_guard', voice:'vo_death_guard',
+                /* 她自己的 CI（ver -499，Ray 交件 CI_Nouvelle_Deathguard）——
+                   之前借蕾妮的 `cutin_guard`；蕾妮那張是試玩版的，不動。 */
+                cutin:'cutin_nouvelle_guard', voice:'vo_death_guard',
                 desc:'受到足以致死的攻擊時，為玩家保留1hp續命。' },
       active:{ key:'lifeReturn', name:'生命歸還', context:'saint',
                cutin:'cutin_return', voice:'vo_life_return',
@@ -1331,6 +1333,7 @@ export const GAME_CONFIG = {
       /* ── UI ── */
       se_ui_click:4.750, se_ui_kagurabell:2.530, se_ui_pageflip:2.359,
       se_ui_sortie:1.184, se_ginclick:1.106, se_metalclip:1.139,
+      se_buy:1.122, se_healing:1.461,   // ver -499（audio_scan 實測：−14.8／−17.1 LUFS）
       se_dart_fail:2.792,
       /* ── 劇情／城鎮（這一批以前完全沒有增益，見上面的說明）── */
       se_steps:7.198, se_walk:4.481, se_fall:3.724, se_punch:1.596,
@@ -1429,6 +1432,7 @@ export const ASSETS = {
   cutin_obe: "resources/partner/Luna_CI_obe.jpg",   // O.B.E. cut-in（Luna）
   cutin_mb: "resources/partner/Luna_CI_maxburst.jpg",   // Maximum Burst cut-in（Luna）
   cutin_guard: "resources/partner/Renee_CI_pas.jpg",   // 即死防禦 cut-in（蕾妮/Renee·被動；檔名 _pas＝passive）
+  cutin_nouvelle_guard: "resources/CI/CI_Nouvelle_Deathguard.webp",   // 諾薇兒的即死防禦 cut-in（ver -499，Ray 交件）
   cutin_return: "resources/partner/Renee_CI_act.jpg",   // 生命歸還 cut-in（蕾妮/Renee·主動；檔名 _act＝active）
   cutin_malzeno_act: "resources/partner/Malzeno_CI_act.webp",   // 前線補給 cut-in（馬季諾·主動）
   cutin_malzeno_pas: "resources/partner/Malzeno_CI_pas.webp",   // 高裝藥彈 cut-in（馬季諾·被動；正式圖）
@@ -1511,6 +1515,8 @@ export const ASSETS = {
   se_general_click:  "resources/audio/se/se_ui_click.m4a",
   se_dart_fail:      "resources/audio/se/se_dart_fail.m4a",   // 打靶失手（ver -396）
   se_pageflip:       "resources/audio/se/se_ui_pageflip.m4a",
+  se_buy:            "resources/audio/se/se_buy.m4a",       // 商店結帳（ver -499，Ray 交件）
+  se_healing:        "resources/audio/se/se_healing.m4a",   // 使用回復道具（ver -499，Ray 交件）
   /* 旅店「回房睡覺」（ver -430，Ray 交件）。⚠⚠ **淡出至黑的長度就是這支的長度** ——
      不要在別處寫一個秒數（鐵律 7）：`modules/inn.js` 問 `SFX.duration()` 拿實測值。
      ⚠ 它還是 **mp3**（316 KB）；§6.6 規約是 AAC/m4a，但這台機器沒有轉檔工具。

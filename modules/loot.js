@@ -10,7 +10,7 @@
      常駐在 index.html 裡只是多一塊沒人看的節點。
    ══════════════════════════════════════════════════════════════════════ */
 
-import { GAME_CONFIG, weaponStatRows, weaponOf, weaponDescText } from '../config.js';
+import { GAME_CONFIG, weaponStatRows, weaponOf, weaponDescText, asset, sfxGain } from '../config.js';
 import * as inv from '../script/inventory.js';
 import * as shopStock from '../script/shopstock.js';   // 店鋪存貨（ver -405）
 import { SFX } from '../audio.js';
@@ -408,7 +408,9 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
       e.stopPropagation();
       if(!can) return;
       if(tab!=='buy' && !pick) return;
-      try{ SFX.unlock(); SFX.menuClick(); }catch(_){}
+      /* ⚠ 結帳鈕的音在**成交那一刻**才響（買＝se_buy、賣＝menuClick）——
+         這裡只解鎖，不先「喀」一聲，不然會兩聲疊在一起。 */
+      try{ SFX.unlock(); if(tab!=='buy') SFX.menuClick(); }catch(_){}
       if(tab==='buy'){
         /* ══ 一次結帳（ver -496 購物車）══
            ⚠ **先扣店裡的貨再扣錢**（-405 的原則不變）：`take` 回傳「真的拿到幾個」——
@@ -426,6 +428,8 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
         }
         for(const id in got) inv.add(id, got[id]);
         cart={};
+        /* 結帳音（ver -499，Ray：「點下結帳時跑 se_buy」）—— 只在**真的成交**時響。 */
+        try{ SFX.play(asset('se_buy'), sfxGain('se_buy')); }catch(_){}
       }else{
         const p=inv.sellPrice(pick);
         if(inv.count(pick)<=0) return;

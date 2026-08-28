@@ -451,11 +451,18 @@ function sleepHere(){
   /* 睡覺音 ＋ 與它等長的淡出至黑（Ray 指定「配合音檔時間淡出至黑」）。 */
   const src = asset('se_sleep');
   try{ SFX.play(src, sfxGain('se_sleep')); }catch(_){}
+  /* ══ BGM 讓位（ver -499，Ray：「播旅店睡覺音樂時原 bgm 要淡出，播完再淡入」）══
+     淡出跟著畫面的淡黑走（半支音檔的長度）；**整支睡覺音播完**才淡回來 ——
+     兩個長度都從音檔推（鐵律 7）。被強制移走（stage 0 結尾）時 town.enter 會換曲，
+     晚到的 unduck 只是把新曲淡回它本來的音量，無害。 */
+  const full = SFX.duration(src) || SLEEP_FADE_FALLBACK*2;
   /* ⚠⚠ **淡出只走音檔長度的一半**（ver -433，Ray：「睡覺淡入淡出時間過長，減半，
      SE 不用改動」）—— 音效照樣整支播完（它是那一段的聲音），畫面不必陪它等：
      9.9 秒的漸暗讀起來是卡住，不是入睡。
      ⚠ 長度仍然**從音檔推**（鐵律 7）：換一支音檔這裡不必改，比例還是一半。 */
   const ms = Math.round((SFX.duration(src) || SLEEP_FADE_FALLBACK) * SLEEP_FADE_RATIO);
+  try{ SFX.duckBgm(ms); }catch(_){}
+  setTimeout(()=>{ try{ SFX.unduckBgm(900); }catch(_){} }, Math.round(full));
   story.veil(true, ms);
   setTimeout(()=>{
     /* ⚠ 蕾娜還沒回來就先去睡 → 記「錯過」（ver -405）：她 20:00 才進門，人睡著了

@@ -112,7 +112,6 @@ export function setup(){
     buildGrid, updateBars, startIntervalTimer, resetIntervalDeadline,
     hitDamage, enemyDamage, floatDmg, markNext, setBoard, resetEnergy,
     onEnemyDefeated: finishEnemyOrAdvance,   // 聖徒化擊殺 → 轉下一敵 or（最後一敵）結算（連戰）
-    isLastEnemy,                             // 聖徒化 overkill 推滿改走 MB 的判定（ver -498，唯一那一支）
     shatterCell: enemy.shatterCell,
     // defense 原語（combat 代為轉交；大絕頻率經 setUltRate 擁有者管道）
     scheduleUlt: defense.scheduleUlt, clearThreat: defense.clearThreat,
@@ -877,9 +876,10 @@ function autoClearOverkill(){
 }
 
 /* ---- 敵死收尾：局內還有下一敵→轉敵、否則→結算 ---- */
-/* 「這是不是最後一名敵人」只有這一支（鐵律 7）：finishEnemyOrAdvance 與
-   聖徒化的 overkill 收尾（saintAdvance 推滿改走 MB，ver -498）都問它。
-   教學戰／劇情插入戰＝單敵一場，永遠是最後一名。 */
+/* 「這是不是最後一名敵人」只有這一支（鐵律 7）。
+   教學戰／劇情插入戰＝單敵一場，永遠是最後一名。
+   （ver -499：聖徒化 overkill 的 EXSECUTIŌ 不再看這個 —— Ray：「只要清空敵 hp
+   就發生」；這一支現在只剩 finishEnemyOrAdvance 在用。） */
 function isLastEnemy(){
   return !(enemy.hasNextInLineup() && !state.tutorialRun && !state.scriptRun);
 }

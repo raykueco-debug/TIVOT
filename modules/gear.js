@@ -15,7 +15,7 @@
    ⚠ 從劇情層叫出來，所以整頁 z-index 要在 `#storyStage`（8300）之上。
    ══════════════════════════════════════════════════════════════════════ */
 
-import { GAME_CONFIG, asset, weaponDescText } from '../config.js';
+import { GAME_CONFIG, asset, sfxGain, weaponDescText } from '../config.js';
 import * as load from '../script/loadout.js';
 import * as inv from '../script/inventory.js';
 import * as prog from '../script/progress.js';
@@ -164,8 +164,9 @@ function bind(){
   el.querySelectorAll('.bag-use').forEach(b=>b.addEventListener('click', e=>{ e.stopPropagation();
     const res=prog.useHealItem(b.dataset.id);
     if(!res) return;
-    try{ SFX.menuClick(); }catch(_){}
-    if(res.full){ gsNote('體力已滿'); return; }
+    if(res.full){ try{ SFX.menuClick(); }catch(_){} gsNote('體力已滿'); return; }
+    /* 回復音（ver -499，Ray：「使用道具恢復時跑 se_healing」）—— 真的補到血才響。 */
+    try{ SFX.unlock(); SFX.play(asset('se_healing'), sfxGain('se_healing')); }catch(_){}
     render();                          // ⚠ 先重畫再浮字：render 會把整頁（含提示）洗掉
     /* ── 回血特效（ver -498，Ray：「回復體力的 hp 條加入回血特效」）──
        render 是整頁重建，條直接站在新寬度上不會動 —— 所以把填色**倒回舊寬度**、
