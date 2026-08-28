@@ -7501,13 +7501,16 @@ function toBattle(kind){
   setTimeout(()=>{
     if(embedded()){
       flightAudio(false);                          // 進戰鬥：這一頁的音樂與環境音收掉
-      window.parent.__tivotFlight.battle({ battle:'flight_'+kind, geom:fkerbGeom });
+      /* `scripted`＝這一場是不是**劇情戰**（ver -493，Ray：「加上是否為劇情戰的判定，
+         之後就讀那一個」）——由發起端（唯一知道的人）宣告，主遊戲照這個分流
+         開場白與 talkOnce。隨機遭遇＝false。 */
+      window.parent.__tivotFlight.battle({ battle:'flight_'+kind, geom:fkerbGeom, scripted: lastBattleScripted });
       return;
     }
     /* 獨立模式：照舊寫交棒鑰匙再跳頁。`gate:'kerb'` 告訴主遊戲門已經推到頂了。 */
     try{
       localStorage.setItem('tivot_battle_req_v1',
-        JSON.stringify({ battle:'flight_'+kind, gate:'kerb', geom:fkerbGeom }));
+        JSON.stringify({ battle:'flight_'+kind, gate:'kerb', geom:fkerbGeom, scripted: lastBattleScripted }));
       localStorage.setItem('tivot_flight_ret_v1', JSON.stringify(
         { x:cam.x, y:cam.y, angle:cam.angle, alt:cam.alt }));
     }catch(e){}

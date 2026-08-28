@@ -27,7 +27,7 @@ import * as partner from './partner.js';
 import * as inspector from './inspector.js';
 import * as tutorial from './tutorial.js';   // 教學關卡（首次出陣穿插對話；暫停走 pauseForDialog）
 import { playTransition } from './transition.js';   // 過渡禎（勝利進結算前的「驅逐完成」）
-import * as prog from '../script/progress.js';      // 強制戰打輸退 talkOnce（ver -480；葉節點，無循環）
+import * as prog from '../script/progress.js';      // 持久 HP／talkOnce 打贏才記（葉節點，無循環）
 
 const $ = id => document.getElementById(id);
 const T = GAME_CONFIG.tuning;
@@ -951,6 +951,10 @@ function storyBattleEnd(lost){
   /* 持久 HP 寫回（ver -481）：打贏（或 allowLose 的劇本輸）把殘量帶去下一場。
      真正的戰敗不經過這裡（lose() 直接走失敗流程）＝重生仍是進場前的殘量。 */
   prog.setHp(Math.max(1, state.playerHp));
+  /* talkOnce 也在這裡記（ver -493，同 win 的那一段）：allowLose 的「劇本輸」
+     與跳關都算「這一場過去了」—— 劇情不再重播。 */
+  { const _sb2 = state.scriptBattleId && GAME_CONFIG.battles && GAME_CONFIG.battles[state.scriptBattleId];
+    if(state.storyBattle && _sb2 && _sb2.talkOnce) prog.addFlags([_sb2.talkOnce]); }   // 只有劇情戰記（ver -493）
   state.tutorialRun=false; state.tutorialStoryRun=false; state.scriptRun=false;
   state.over=true; clockPause(); stopAll();
   /* ⚠ 把**勝負**一起交還（ver -377）：可戰敗的場次要靠它決定接哪一支分歧。 */
@@ -967,6 +971,11 @@ function win(){
   if(storyFramed()){
     prog.setHp(Math.max(1, state.playerHp));
     console.info('[hp] 勝場寫回：'+Math.max(1, state.playerHp));   // 診斷輸出（ver -491），穩定後可拆
+    /* ⚠⚠ 開場白的 talkOnce **打贏才記**（ver -493，Ray：「敗北重來要跑，
+       結束以戰鬥勝利為條件」）—— 敗北時根本沒記＝每次重來自動重播；
+       記了＝這一場的劇情永久結束（隨機再遇同種怪也不播）。憲法 §6.5.2 原則。 */
+    const _wsb = state.scriptBattleId && GAME_CONFIG.battles && GAME_CONFIG.battles[state.scriptBattleId];
+    if(state.storyBattle && _wsb && _wsb.talkOnce) prog.addFlags([_wsb.talkOnce]);   // 只有劇情戰記（ver -493）
   }
   state.over=true; clockPause(); stopAll();
   const totalTime=clockElapsedMs()/1000;               // 只累計實打時間（overkill/轉場/cut-in 皆不計）
@@ -1032,10 +1041,10 @@ function lose(){
        還打得到 —— 不會因為輸過就永遠卡住。 */
   const _sb = state.scriptBattleId && GAME_CONFIG.battles && GAME_CONFIG.battles[state.scriptBattleId];
   if(_sb && _sb.allowLose && storyBattleEnd(true)) return;
-  /* ⚠⚠ 戰鬥內開場白**一輪只看一次，勝敗都算**（ver -492，Ray：「第二次不應該
-     跑劇情」）—— -480 曾在這裡退 talkOnce 讓敗北重來時重播，Ray 已推翻：
-     第二次出現（含敗北重來、打贏後隨機再遇）一律不播。talkOnce 取段當下記、
-     永不退；重生要重來的只有**戰鬥本身**（遭遇重刷、HP 不寫回），不含開場白。 */
+  /* ⚠⚠ 戰鬥內開場白的 talkOnce **打贏才記**（ver -493，Ray：「敗北重來要跑…
+     結束以戰鬥勝利為條件」）—— 敗北這裡**什麼都不必做**：旗標根本還沒記，
+     重生自然重播；打贏才在 win／storyBattleEnd 記下去永久停播。
+     （-480 的「敗北退旗標」與 -492 的「取段當下記、永不退」都已推翻。） */
   /* 走一般失敗流程之前，把「這一場是劇情場」的旗標收掉 —— 不收的話結算會走
      教學／插入戰那一頁（那是給打贏用的），玩家輸了卻看到一頁戰績。 */
   state.scriptRun=false; state.scriptBattleId=null;
@@ -1086,6 +1095,8 @@ export function startGame(){
      「上一場結束時記得歸零」是會漏的（漏了就換成一般戰鬥變單敵、還不能聖徒化）。
      開場一律先歸零、再看這一次有沒有指定，才是不會漏的寫法。 */
   state.scriptRun=!!pendingScript; state.scriptBattleId=pendingScript; pendingScript=null;
+  state.storyBattle = state.scriptRun && pendingScriptStory;   // 是否為劇情戰（ver -493，唯一判定）
+  pendingScriptStory = true;
   state.tutorialRun=false; state.tutorialStoryRun=false; state.tutorialLifeReturn=false;   // 教學場旗標歸零（tutorial 擁有；開場統一歸零、maybeStart 啟動時設回）
   /* 劇情插入戰（ver -375）：**單敵一場**，換上卡上那隻，且這一場不能聖徒化／不能用搭檔技。
      ⚠ 要在 `stopAll()`/`loadBoard(0)` **之前**換敵 —— 盤面配置（boardGrids/boardLoop）
@@ -1106,11 +1117,10 @@ export function startGame(){
   /* 這一場自己的戰鬥內對話（ver -426，例：船艦戰的反擊短教學）。
      ⚠ 要在 `stopAll()` **之後**掛：`stopAll` 會叫 `tutorial.abort()`，那一支會把它收掉。
      ⚠ 也要在 `loadBoard(0)` **之前**：loadBoard 會觸發 `board:0`，晚掛就吃不到那個節點。 */
-  /* `talkIfNot`（ver -492）：卡上指定的旗標**立了就不播**開場劇情 —— 給
-     「劇本場打贏後隨機再遇同一種怪」用（例：flight_centipede 的初見對白
-     只屬於劇本那一場）。 */
-  const talkGated = sb && sb.talkIfNot && prog.hasFlag(sb.talkIfNot);
-  if(state.scriptRun && sb && !talkGated) tutorial.startBattleTalk(sb.talk, { once:sb.talkOnce });
+  /* 開場白只屬於**劇情戰**（ver -493：state.storyBattle 是唯一判定）——
+     隨機遭遇共用同一張卡（flight_centipede）也不播。
+     已打贏過（talkOnce 旗標立了）也不播（startBattleTalk 自己守門）。 */
+  if(state.storyBattle && sb) tutorial.startBattleTalk(sb.talk, { once:sb.talkOnce });
   /* ══⚠⚠ 本篇的 HP 是**延續的**（ver -481；-490 修位置）══
      讀 progress 的持久 HP；沒有鑰匙＝滿血（開局／睡醒）。挑戰（試玩版）不吃。
      ⚠⚠ 一定要在 `state.scriptRun`（上面 1094）**設好之後**才讀 —— -481 把它放在
@@ -1143,8 +1153,13 @@ export function startGame(){
 /* 劇情插入戰的入口（ver -375）：main.js 的 battleHandler 查到 `config.battles[id]` 就走這支。
    ⚠ 旗標要在 `startGame()` **之前**設 —— 開場那一段會依它換敵、跳過教學。 */
 let pendingScript = null;   // 下一次 startGame 要開的插入戰 id（交棒用，見 startGame）
-export function startScriptBattle(id){
+/* 這一場是不是**劇情戰**（ver -493，Ray：「加上是否為劇情戰的判定，之後就讀那一個」）。
+   由發起端宣告（飛行的隨機遭遇傳 false；劇情/城鎮插入戰預設 true），
+   startGame 寫進 state.storyBattle —— 開場白與 talkOnce 都只讀它分流。 */
+let pendingScriptStory = true;
+export function startScriptBattle(id, opts){
   pendingScript = id;
+  pendingScriptStory = !(opts && opts.story===false);   // 預設劇情戰（ver -493）
   startGame();
 }
 

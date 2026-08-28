@@ -176,6 +176,11 @@ export const state = {
        **框**（門開門關、不播櫻花過渡禎、打完交還劇情），那部分才是同一件事。 */
   scriptRun: false,      // 本場是劇情插入戰（存續到結算）
   scriptBattleId: null,  // 是哪一場（查 config.battles）
+  /* 這一場是不是**劇情戰**（ver -493，Ray：「在戰鬥加上一個是否為劇情戰的判定，
+     之後就讀那一個」）。由發起端在 startScriptBattle 宣告（飛行的隨機遭遇＝false，
+     劇本遭遇／城鎮插入戰＝true），startGame 寫入 —— 開場白要不要播、talkOnce
+     打贏要不要記，**一律只讀這一支**，不要再各自從卡或旗標推。 */
+  storyBattle: false,
   /* ══ 計時挑戰（ver -396，打靶場）══
      戰鬥卡的 `timeAttack` 直接放這裡（`{wrongPenaltySec, se}`；不是那種場次就是 null）。
      ⚠ 它一開就把**整條攻擊路徑**關掉（`enemyAttack` 與 `defense.scheduleUlt` 各自守門），

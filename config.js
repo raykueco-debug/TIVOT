@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.28-492';
+export const VERSION = 'ver 2026.08.28-493';
 
 export const GAME_CONFIG = {
 
@@ -1077,14 +1077,11 @@ export const GAME_CONFIG = {
                         /* 船戰的速射砲（機槍反擊）連射間隔（ver -476，Ray：「連射速度
                            調降50%」）：預設 90ms → 180ms。絕對值寫卡上（同敵人卡慣例）。 */
                         counterGapMs:180,
+                        /* ⚠ talkOnce 自 ver -493 起**打贏才記**（combat.win／storyBattleEnd，
+                           且僅劇情戰 state.storyBattle）：敗北重來每次都重播、
+                           打贏之後永久停播；隨機遭遇共用這張卡也不播（判定由
+                           發起端宣告，見 flight 的 toBattle `scripted`）。 */
                         talkOnce:'taught_ship_counter',
-                        /* ⚠⚠ 開場劇情只屬於**劇本那一場**（ver -492，Ray：「出現蜈蚣的
-                           時候又跑一次劇情，修正它」）：打贏劇本場之後隨機刷的蜈蚣
-                           也用這張卡 —— 這個旗標一旦立了（＝劇本場已打贏），
-                           talk 不再播、打輸也不再退 talkOnce。
-                           ⚠ 字串＝flight/index.html SCRIPTED_ENCOUNTERS 的 done
-                             （兩邊互指，改一邊要改另一邊）。 */
-                        talkIfNot:'flight_centipede_met',
                         talk:[
                           /* ══ 進場（ver -429，Ray 交稿，一字未改；-478 改分鏡）══
                              ⚠ 分鏡（ver -478，Ray：「先進戰鬥畫面，咆哮震動再彈蕾娜

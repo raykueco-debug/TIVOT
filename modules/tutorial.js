@@ -74,16 +74,14 @@ let awaitDualEnd = false;      // 劇情版：破防那一盤打完就收尾（�
    ⚠ `once:'<旗標>'`＝這一輪遊戲只講一次（走 `progress` 的旗標，所以讀檔會跟著回去，
      §6.9）。不寫就是每次打都講。 */
 let talkLeft = [];             // 這一場還沒觸發的 talk 步驟（同 stepsLeft，一步只觸發一次）
-let talkOnceFlag = null;       // 講完要記的旗標（null＝不記）
 let talkTimer = null;          // battleStart 延遲計時器（同 startTimer，兩者不會同時存在）
 export function startBattleTalk(list, opts){
   clearTimeout(talkTimer); talkTimer=null;
-  talkLeft = []; talkOnceFlag = null;
+  talkLeft = [];
   if(!list || !list.length) return;
   const once = opts && opts.once;
-  if(once && progress.hasFlag(once)) return;    // 這一輪講過了
+  if(once && progress.hasFlag(once)) return;    // 打贏過了（旗標由 combat 的勝利收尾記，ver -493）
   talkLeft = list.slice();
-  talkOnceFlag = once || null;
   soloRun = computeTalkSolo(talkLeft);          // 只有一個人講 → 立繪放大（同教學的規矩）
   resetCamera();                                // 這一場重新量一次相機（見 cameraPxCm）
   /* ⚠⚠ 開場白要等**玩家看得到戰鬥畫面**（ver -478，Ray：「先進戰鬥畫面，
@@ -118,18 +116,15 @@ function talkFire(trigger){
   if(state.tutorialDialog){ queue.push(step); return; }
   openStep(step);
 }
-/* 取走一段。⚠⚠ `once` 的旗標記在**最後一段被取走**的這一刻，而不是「講完」——
-   取走＝那一段一定會播（不是現在播就是接在 queue 後面），而「講完」有好幾條出口
-   （queue 接續、被 abort、被下一段蓋掉），掛在其中一條一定會漏（實測就漏了）。
-   ⚠ 早記不會害玩家跳過：打輸走 Game Over → 讀檔，旗標跟著那個存檔回去（§6.9）。 */
+/* ⚠⚠ `talkOnce` 的旗標**不在這裡記了**（ver -493；-426 曾記在「最後一段被取走」）——
+   Ray 定案：劇情戰的開場白**敗北重來每次都要播、打贏才永久停播**（憲法 §6.5.2
+   「打贏才記」原則的直接應用）。記錄點在 combat 的勝利收尾（win／storyBattleEnd）。 */
 function talkTake(i){
-  const st=talkLeft.splice(i,1)[0];
-  if(!talkLeft.length && talkOnceFlag){ progress.addFlags([talkOnceFlag]); talkOnceFlag=null; }
-  return st;
+  return talkLeft.splice(i,1)[0];
 }
 function endBattleTalk(){
   clearTimeout(talkTimer); talkTimer=null;
-  talkLeft=[]; talkOnceFlag=null;
+  talkLeft=[];
 }
 
 /* ---- 首次判定（localStorage 不可用時視為未看過：寧可多教，不漏教）---- */

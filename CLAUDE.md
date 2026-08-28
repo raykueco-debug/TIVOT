@@ -510,13 +510,15 @@ Ray 交劇本稿一律照 **`script/SCRIPT_FORMAT.md`** —— 稿子的最小�
 
   | 旗標 | 誰記的（何時） | 誰退的（敗北時） |
   |---|---|---|
-  | 戰鬥內對白 `talkOnce` | `tutorial.talkTake`（取段當下） | **永不退**（ver -492，Ray：「第二次不應該跑劇情」——推翻 -480 的「敗北重播」；重生要重來的只有戰鬥本身） |
+  | 戰鬥內對白 `talkOnce` | **打贏才記**（`combat.win`／`storyBattleEnd`，ver -493） | 免退 —— 敗北時根本沒記（敗北重來每次都重播，打贏後永久停播；Ray：「所有劇情戰鬥都適用…結束以戰鬥勝利為條件」） |
   | 劇本遭遇 `done`（飛行） | **打贏才記**（`__flightResume({won:true})`，ver -487） | 免退 —— 敗北時根本沒記 |
   | 城鎮進場對白 | **演完才記**（town.enter） | 不必退 —— 記法本身就合這條原則 |
 
-  ⚠ 戰鬥卡的 `talkIfNot:'<旗標>'`（ver -492）：旗標立了就**不播**開場劇情 ——
-    給「劇本場打贏後隨機再遇同一種怪、共用同一張卡」的場面用
-    （flight_centipede 指到劇本遭遇的 done 旗標，兩邊註解互指）。
+  ⚠⚠ **「是不是劇情戰」是一支明確的判定：`state.storyBattle`**（ver -493，Ray：
+    「在戰鬥加上一個是否為劇情戰的判定，之後就讀那一個」）。由**發起端**宣告
+    （`startScriptBattle(id,{story})`：飛行的隨機遭遇傳 `scripted:false`，
+    劇本遭遇與城鎮／腳本插入戰＝true），開場白要不要播、`talkOnce` 打贏要不要記，
+    一律只讀它 —— 不要再從卡上的旗標（-492 的 `talkIfNot`，已撤）或別處反推。
 
   ⚠⚠ **-486 的教訓（為什麼 -487 改成打贏才記）**：回捲版（記了再退）要跨兩個
     document 靠執行期掛鉤（main 呼叫 flight 的 rollback），而主頁與飛行頁的
@@ -587,7 +589,7 @@ Ray 交劇本稿一律照 **`script/SCRIPT_FORMAT.md`** —— 稿子的最小�
 
 一場戰鬥自己的幾句話（船艦戰的反擊短教學是第一個）寫在
 `config.battles[<場次>].talk`，掛在既有的節點上
-（`battleStart`／`board:N`／`threat`／`defended`），`talkOnce:'<旗標>'` ＝這一輪只講一次。
+（`battleStart`／`board:N`／`threat`／`defended`），`talkOnce:'<旗標>'` ＝**打贏過就不再講**。
 
 - ⚠⚠ **對話的實作只有一支**：`modules/tutorial.js` 的 `openStep` 那一條（立繪、打字機、
   真暫停、退場時序）。**不要為了「這又不是教學」另寫一份** —— 另寫一份必然與教學走鐘
@@ -602,10 +604,10 @@ Ray 交劇本稿一律照 **`script/SCRIPT_FORMAT.md`** —— 稿子的最小�
 - ⚠ **開場的大絕是 0~3 秒內隨機排的**（`scheduleOpeningUlt`），而開場白要等
   `startDelayMs`（700ms）—— 所以「紅點比開場白先到」是常態不是例外，
   `talkFire` 必須有那條「先講開場白、這一段排隊接上」的分支。
-- ⚠ `talkOnce` 的旗標記在**最後一段被取走**的那一刻，不是「講完」：取走＝那一段一定
-  會播（不是現在播就是接在 queue 後面），而「講完」有好幾條出口（queue 接續、
-  被 abort、被下一段蓋掉），掛在其中一條**一定會漏**（實測就漏了）。
-  早記不會害玩家跳過 —— 打輸走 Game Over → 讀檔，旗標跟著那個存檔回去（§6.9）。
+- ⚠⚠ `talkOnce` 的旗標**打贏才記**（ver -493，`combat.win`／`storyBattleEnd`；
+  且僅劇情戰 `state.storyBattle`）：敗北重來每次都重播、打贏之後永久停播
+  （§6.5.2 的表）。-426 的「最後一段被取走就記」與 -492 的「勝敗都記」都已推翻 ——
+  敗北不再走 Game Over → 讀檔（-430 起），「旗標跟著存檔回去」那個保證已失效。
 - ⚠ 掛的位置在 `startGame` 的 `stopAll()` **之後**（`stopAll` 會 `tutorial.abort()` 收掉它）
   且 `loadBoard(0)` **之前**（晚掛就吃不到 `board:0`）。
 - **拍上可以帶演出**（ver -429）：`se`（音效名，表在 story.js 的 `SE_FILES` —— 借過來用，
