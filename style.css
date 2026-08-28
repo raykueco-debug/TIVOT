@@ -237,6 +237,24 @@
   @keyframes moonCharge{
     from{filter:drop-shadow(0 0 3px rgba(255,196,96,.30)) drop-shadow(0 0 4px #000);}
     to  {filter:drop-shadow(0 0 7px rgba(255,196,96,.65)) drop-shadow(0 0 4px #000);}}
+  /* 蓄能光束（ver -546，Ray：「白光順著順時針方向持續推進產生蓄能感」）：
+     白色彗星帶繞**缺口中心**順時針轉（rotate 動畫，GPU 便宜），亮頭在前、長尾在後。
+     外層 #claspMoonGlow 由 JS 掛與 fill 同一條計量扇形遮罩（光只跑到蓄到的位置，
+     碰到充能前緣就被吃掉＝能量灌進去的樣子）；.glow-shape 再套月牙形遮罩。
+     光束方塊 220% 見方、中心＝缺口中心（(nx,ny)=(0.6957,0.4412) → left/top 由此推）。 */
+  #claspMoonGlow{overflow:hidden;filter:none;display:none;}
+  #energyClasp.charging #claspMoonGlow{display:block;}
+  #claspMoonGlow .glow-shape{position:absolute;inset:0;
+    -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
+    -webkit-mask-size:100% 100%;mask-size:100% 100%;}
+  #claspMoonGlow .glow-beam{position:absolute;display:block;
+    left:calc((0.6957 - 1.1)*100%);top:calc((0.4412 - 1.1)*100%);width:220%;height:220%;
+    background:conic-gradient(from 0deg at 50% 50%,
+      rgba(255,255,255,0) 0deg, rgba(255,255,255,0) 240deg,
+      rgba(255,255,240,.28) 300deg, rgba(255,255,255,.85) 330deg,
+      rgba(255,255,255,0) 338deg, rgba(255,255,255,0) 360deg);
+    animation:moonBeam 1.5s linear infinite;}
+  @keyframes moonBeam{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
   /* 滿檔加強光暈：drop-shadow 加倍層 + ::after 呼吸光暈橢圓（::before 已作觸控擴區） */
   /* 滿檔＝**白光**（ver -544，Ray：「月滿的時候呈白光」）：抽掉飽和、大幅提亮，
      光暈換純白（原本聖藍 var(--holy) 那套撤掉）。 */

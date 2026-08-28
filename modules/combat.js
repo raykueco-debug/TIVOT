@@ -673,8 +673,12 @@ function layoutClasp(){
   const frame=$('claspMoonFrame'), fillImg=$('claspMoonFill');
   const blue=document.querySelector('.hpbar.player-bar'), red=document.querySelector('.hpbar.enemy-bar');
   if(!host||!frame||!fillImg||!blue||!red) return;
+  const glow=$('claspMoonGlow');
   if(!frame.getAttribute('src')){            // src 只在這裡掛：路徑只有 ASSETS 一份（鐵律 7）
     frame.src=asset('clasp_moon_frame'); fillImg.src=asset('clasp_moon');
+    const gs=glow&&glow.querySelector('.glow-shape');   // 蓄能光的月牙形遮罩＝同一張圖
+    if(gs){ const u='url("'+asset('clasp_moon')+'")';
+            gs.style.webkitMaskImage=u; gs.style.maskImage=u; }
   }
   const hr=host.getBoundingClientRect(), br=blue.getBoundingClientRect(), rr=red.getBoundingClientRect();
   if(hr.height<10||br.width<10) return;      // 還沒排好 → 之後的重試再量
@@ -689,7 +693,8 @@ function layoutClasp(){
      -540/-541 的月角/臂厚錨定作廢。 */
   const Hm=1.548*S, Wm=Hm*MOON.ar;
   const top=rr.y-0.516*S, left=BL+0.290*S-Wm;
-  for(const el of [frame,fillImg]){
+  for(const el of [frame,fillImg,glow]){
+    if(!el) continue;
     el.style.left=(left-hr.x)+'px'; el.style.top=(top-hr.y)+'px';
     el.style.width=Wm+'px'; el.style.height=Hm+'px';
   }
@@ -733,18 +738,19 @@ function updateEnergyClasp(){
   /* 計量（ver -539）：金月圖被 conic 遮罩由下角（MOON.a0）順時針掃出來，
      掃角＝energy 比例 × MOON.arc。0＝整張藏起（只剩 frame 空圈）、
      滿＝拿掉遮罩（避免 360° 接縫）。邊界羽化 ±0.6° 抗鋸齒。 */
-  const fillImg=$('claspMoonFill');
+  const fillImg=$('claspMoonFill'), glowEl=$('claspMoonGlow');
   if(fillImg && claspGeo){
     const p=Math.max(0,Math.min(1,state.energy/100));
-    if(p<=0){ fillImg.style.visibility='hidden'; }
-    else if(p>=1){ fillImg.style.visibility='';
-      fillImg.style.webkitMaskImage='none'; fillImg.style.maskImage='none'; }
+    const els=[fillImg,glowEl].filter(Boolean);        // 蓄能光吃同一條計量遮罩（鐵律 7）
+    if(p<=0){ for(const el of els) el.style.visibility='hidden'; }
+    else if(p>=1){ for(const el of els){ el.style.visibility='';
+      el.style.webkitMaskImage='none'; el.style.maskImage='none'; } }
     else{
       const deg=p*MOON.arc;
       const m='conic-gradient(from '+MOON.a0+'deg at '+(MOON.nx*100).toFixed(2)+'% '+(MOON.ny*100).toFixed(2)+'%,'
              +'#000 0deg,#000 '+Math.max(0,deg-0.6).toFixed(1)+'deg,rgba(0,0,0,0) '+(deg+0.6).toFixed(1)+'deg)';
-      fillImg.style.visibility='';
-      fillImg.style.webkitMaskImage=m; fillImg.style.maskImage=m;
+      for(const el of els){ el.style.visibility='';
+        el.style.webkitMaskImage=m; el.style.maskImage=m; }
     }
   }
   $('energyClasp').classList.toggle('full', state.energy>=100);
