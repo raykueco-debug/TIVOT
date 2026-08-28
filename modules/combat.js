@@ -1032,12 +1032,10 @@ function lose(){
        還打得到 —— 不會因為輸過就永遠卡住。 */
   const _sb = state.scriptBattleId && GAME_CONFIG.battles && GAME_CONFIG.battles[state.scriptBattleId];
   if(_sb && _sb.allowLose && storyBattleEnd(true)) return;
-  /* ⚠⚠ 強制戰打輸 → **劇情要再跑一次**（ver -480，Ray）：戰鬥內對白的 talkOnce
-     旗標是「取段當下」就記的（§6.5.2）—— 重生再打這一場時它已經在了，
-     開場白整段不演。在這裡退掉；飛行頁那邊同一時刻退的是劇本遭遇的 done
-     （兩邊各退自己記的，同一把 flags 鑰匙）。allowLose 的場次不經過這裡（上面
-     return 了）—— 那種輸法是劇本的一部分，不是重來。 */
-  if(_sb && _sb.talkOnce) prog.removeFlags([_sb.talkOnce]);
+  /* ⚠⚠ 戰鬥內開場白**一輪只看一次，勝敗都算**（ver -492，Ray：「第二次不應該
+     跑劇情」）—— -480 曾在這裡退 talkOnce 讓敗北重來時重播，Ray 已推翻：
+     第二次出現（含敗北重來、打贏後隨機再遇）一律不播。talkOnce 取段當下記、
+     永不退；重生要重來的只有**戰鬥本身**（遭遇重刷、HP 不寫回），不含開場白。 */
   /* 走一般失敗流程之前，把「這一場是劇情場」的旗標收掉 —— 不收的話結算會走
      教學／插入戰那一頁（那是給打贏用的），玩家輸了卻看到一頁戰績。 */
   state.scriptRun=false; state.scriptBattleId=null;
@@ -1108,7 +1106,11 @@ export function startGame(){
   /* 這一場自己的戰鬥內對話（ver -426，例：船艦戰的反擊短教學）。
      ⚠ 要在 `stopAll()` **之後**掛：`stopAll` 會叫 `tutorial.abort()`，那一支會把它收掉。
      ⚠ 也要在 `loadBoard(0)` **之前**：loadBoard 會觸發 `board:0`，晚掛就吃不到那個節點。 */
-  if(state.scriptRun && sb) tutorial.startBattleTalk(sb.talk, { once:sb.talkOnce });
+  /* `talkIfNot`（ver -492）：卡上指定的旗標**立了就不播**開場劇情 —— 給
+     「劇本場打贏後隨機再遇同一種怪」用（例：flight_centipede 的初見對白
+     只屬於劇本那一場）。 */
+  const talkGated = sb && sb.talkIfNot && prog.hasFlag(sb.talkIfNot);
+  if(state.scriptRun && sb && !talkGated) tutorial.startBattleTalk(sb.talk, { once:sb.talkOnce });
   /* ══⚠⚠ 本篇的 HP 是**延續的**（ver -481；-490 修位置）══
      讀 progress 的持久 HP；沒有鑰匙＝滿血（開局／睡醒）。挑戰（試玩版）不吃。
      ⚠⚠ 一定要在 `state.scriptRun`（上面 1094）**設好之後**才讀 —— -481 把它放在
