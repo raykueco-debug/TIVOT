@@ -694,6 +694,9 @@ function layoutClasp(){
   const Hm=1.548*S, Wm=Hm*MOON.ar;
   const OVER=0.290*S;                        // 月壓進血條左端的量（未命名-2 量出）
   const GAPB=0.05*S;                         // 鈕與血條右端的縫（-550，Ray：「不要遮到 hp 條」）
+  /* 鈕的尺寸與落點（-551，Ray：「小一點…更靠右一些 低一些」）：
+     縮成月的 0.78、右緣貼齊面板右緣內 6px、垂直中心＝兩條血條的中線。 */
+  const BSC=0.78, Hb=Hm*BSC, Wb=Wm*BSC, BPAD=6;
   const top=rr.y-0.516*S, left=BL+OVER-Wm;
   /* 血條右側讓位（-549；-550 改「整顆讓開」）：鈕與月同大，但月在血條**之下**
      壓著左端無妨，鈕在血條**之上**（要點擊）—— 蓋到會遮住血量，所以鈕整顆
@@ -702,7 +705,8 @@ function layoutClasp(){
   const btn=document.getElementById('wpSwitch');
   const stack=document.getElementById('barStack');
   if(stack){
-    const want=(btn && btn.style.display!=='none') ? Math.round(Wm+GAPB)+'px' : '0px';
+    /* 讓位量＝鈕寬＋縫－右緣內縮差（blockPad 12 − BPAD 6）：血條右端正好停在鈕左緣外 GAPB。 */
+    const want=(btn && btn.style.display!=='none') ? Math.max(0,Math.round(Wb+GAPB-(12-BPAD)))+'px' : '0px';
     if((stack.style.marginRight||'0px')!==want){
       stack.style.marginRight=want; claspSig=''; setTimeout(layoutClasp,30); return;
     }
@@ -712,15 +716,16 @@ function layoutClasp(){
     el.style.left=(left-hr.x)+'px'; el.style.top=(top-hr.y)+'px';
     el.style.width=Wm+'px'; el.style.height=Hm+'px';
   }
-  /* 副武器切換鈕（ver -549「與月大小位置對稱」；-550 改貼在血條右端**之外**）：
-     盒＝與月牙同大、同頂線，左緣＝血條右端＋GAPB；圓卡直徑＝盒的短邊。
-     幾何只算這一處（鐵律 7），weapon.js 只管卡面內容與行為。 */
+  /* 副武器切換鈕（-549 與月對稱 → -550 移出血條 → -551 縮小靠右壓低）：
+     盒＝月的 0.78 倍，右緣＝面板右緣內 BPAD、垂直中心＝兩條血條的中線；
+     圓卡直徑＝盒的短邊。幾何只算這一處（鐵律 7），weapon.js 只管卡面與行為。 */
   if(btn){
     const bb2=btn.offsetParent?btn.offsetParent.getBoundingClientRect():{x:0,y:0};
-    const mirL=br.right+GAPB;
-    btn.style.left=(mirL-bb2.x)+'px'; btn.style.top=(top-bb2.y)+'px';
-    btn.style.width=Wm+'px'; btn.style.height=Hm+'px';
-    const wc=btn.querySelector('.ws-card'); const d=Math.round(Math.min(Wm,Hm));
+    const bL=bb2.right-BPAD-Wb;
+    const bT=(rr.y+br.y+br.height)/2-Hb/2;
+    btn.style.left=(bL-bb2.x)+'px'; btn.style.top=(bT-bb2.y)+'px';
+    btn.style.width=Wb+'px'; btn.style.height=Hb+'px';
+    const wc=btn.querySelector('.ws-card'); const d=Math.round(Math.min(Wb,Hb));
     if(wc){ wc.style.width=d+'px'; wc.style.height=d+'px'; }
   }
   claspGeo={ nxpx:left+MOON.nx*Wm-hr.x,      // 缺口中心（host 座標）＝連擊數的錨
