@@ -678,17 +678,20 @@ function layoutClasp(){
   const rt=rr.y-sr.y, bb=br.y+br.height-sr.y;
   const BL=br.x-sr.x;
   const S=bb-rt;
-  const RXo=0.64*S, RYo=0.875*S;                        // 外橢圓
+  /* -536 被退（「這跟我給你的圖一樣嗎」）：對他的圖逐 px 量出的比例 ——
+     高 2.16S、寬 1.28S、腰 0.52S；月牙**中心在紅頂下 0.18S**，
+     所以上端到紅頂上 0.90S、下端**超出藍條下緣 0.26S**（他的圖就是垂出去的，
+     -536 硬把下緣切齊藍底＝整顆被抬高壓扁）。月角尖到血條 0.05S。 */
+  const RXo=0.78*S, RYo=1.08*S;                         // 外橢圓
   const AT=50*Math.PI/180;                              // 月角在外橢圓 ±50°（右上/右下）
   const XT=RXo*Math.cos(AT), YT=RYo*Math.sin(AT);       // 月角座標（相對環心）
-  /* 內橢圓：解「過兩個月角、腰厚 0.5S」——RYc 取 0.95S，
-     |XT−DX| = (DX+RXo−W)·√(1−(YT/RYc)²)，W=0.5S。 */
-  const W=0.50*S, RYc=0.95*S;
+  /* 內橢圓：解「過兩個月角、腰厚 0.52S」。 */
+  const W=0.52*S, RYc=1.05*S;
   const kk=Math.sqrt(1-(YT/RYc)*(YT/RYc));
   const DX=(XT-(RXo-W)*kk)/(1+kk);
   const RXc=DX+RXo-W;
-  const GAP=0.06*S;
-  const ccx=BL-GAP-XT, ccy=bb-RYo;                      // 月角右端貼齊縫、下緣＝藍底
+  const GAP=0.05*S;
+  const ccx=BL-GAP-XT, ccy=rt+0.18*S;                   // 中心在紅頂下 0.18S（照圖）
   const cl=v=>Math.max(-1,Math.min(1,v));
   const f=P=>P.map(q=>q[0].toFixed(1)+','+q[1].toFixed(1)).join(' L');
   /* 外弧：下角(+50°) → 底 → 左 → 頂 → 上角(310°)；
@@ -720,14 +723,15 @@ function layoutClasp(){
   /* ver -536 改：數字**蓋在新月上層**（Ray：「數字應該在新月的上層，蓋到新月
      沒關係」＋新標註圖：大白字壓在 C 的開口上）。錨在環心、往開口偏一點。
      （前一張圖上方那個黑框是他在塗掉舊的數字，不是數字的位子 —— 看錯了。） */
-  if(combo){ combo.style.left=(sr.x-host.x+BL-0.63*S)+'px'; combo.style.top=(sr.y-host.y+ccy)+'px';
+  if(combo){ combo.style.left=(sr.x-host.x+BL-0.62*S)+'px'; combo.style.top=(sr.y-host.y+ccy+0.07*S)+'px';
              combo.style.bottom='auto'; combo.style.transform='translate(-50%,-50%)';
              /* 字級跟著 C 的半徑走（Ray：「字也很小」——他的視窗比較大，
                 固定 px 相對就小）。 */
-             const b=combo.querySelector('b'); if(b) b.style.fontSize=Math.round(1.1*S)+'px'; }
+             const b=combo.querySelector('b'); if(b) b.style.fontSize=Math.round(1.3*S)+'px'; }
   const hits=svg.querySelector('.clasp-hits');
-  if(hits){ hits.setAttribute('x', String(Math.round(BL+0.30*S)));   // 標註：數字下、紅條上方
-            hits.setAttribute('y', String(Math.round(rt-0.27*S))); }
+  if(hits){ hits.setAttribute('x', String(Math.round(BL+0.02*S)));   // 照圖：起筆＝血條左緣
+            hits.setAttribute('y', String(Math.round(rt-0.28*S)));
+            hits.style.fontSize=Math.round(0.36*S)+'px'; }            // 照圖：字高約 0.31S
   updateEnergyClasp();                                 // 路徑換了 → dash 總長重掛
 }
 /* 進場後多試幾拍（血條要排好才量得到）；視窗變了整組重量。 */
