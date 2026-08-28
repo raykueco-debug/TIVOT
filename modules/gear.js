@@ -167,6 +167,20 @@ function bind(){
     try{ SFX.menuClick(); }catch(_){}
     if(res.full){ gsNote('體力已滿'); return; }
     render();                          // ⚠ 先重畫再浮字：render 會把整頁（含提示）洗掉
+    /* ── 回血特效（ver -498，Ray：「回復體力的 hp 條加入回血特效」）──
+       render 是整頁重建，條直接站在新寬度上不會動 —— 所以把填色**倒回舊寬度**、
+       隔一幀再放到新寬度，讓 CSS 的 width 過場真的跑一次；同時掛 .heal
+       （金光脈動＋亮一階的填色，約 0.9 秒自己退）。 */
+    const bar=el.querySelector('.gs-hpbar'), fill=bar && bar.querySelector('i');
+    if(fill){
+      const p0=Math.round((res.hp-res.healed)/res.max*100);
+      const p1=Math.round(res.hp/res.max*100);
+      fill.style.transition='none'; fill.style.width=p0+'%';
+      void fill.offsetWidth;                       // 隔一幀（同 story.veil 那條的理由）
+      fill.style.transition=''; fill.style.width=p1+'%';
+      bar.classList.add('heal');
+      setTimeout(()=>{ bar.classList.remove('heal'); }, 900);
+    }
     gsNote('恢復了 '+res.healed+' 點體力');
   }));
   const sw=el.querySelector('.gs-sw');

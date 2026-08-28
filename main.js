@@ -1099,6 +1099,10 @@ combat.setStoryReturn((res)=>{
          「繼續回飛行」與「連敗三場送回旅店」兩條路都要回捲（掛在 __flightResume
          裡的話旅店那條不經過，實際就漏了）。 */
       try{ const w=flightWin(); if(w && w.__flightLoseRollback) w.__flightLoseRollback(); }catch(_){}
+      /* ⚠ 飛行戰鬥敗北**回滿血**（ver -498，Ray：「死亡回檔時 hp 回滿，遊戲不要
+         那麼硬核」）—— 回捲到戰前但不帶著戰前的殘血重打；持久 HP 清掉＝滿血。
+         連敗三場送回旅店那條也吃得到（clearHp 在分流之前）。 */
+      prog.clearHp();
       const n = prog.flightLossCount()+1;
       if(n>=3){
         prog.setFlightLossCount(0);

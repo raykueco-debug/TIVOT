@@ -2428,7 +2428,16 @@
   #gearSheet .gs-hpbar{flex:1 1 auto;height:8px;border:1px solid var(--gold-dim);
     border-radius:5px;background:rgba(10,8,14,.7);overflow:hidden;}
   #gearSheet .gs-hpbar i{display:block;height:100%;background:linear-gradient(90deg,#7e1f2b,#c4433c);
-    border-radius:4px;transition:width .35s ease;}
+    border-radius:4px;transition:width .45s ease;}
+  /* 回血特效（ver -498）：使用回復道具的那 0.9 秒 —— 填色亮一階＋整條金光脈動。 */
+  #gearSheet .gs-hpbar.heal{border-color:var(--gold);}
+  #gearSheet .gs-hpbar.heal i{background:linear-gradient(90deg,#a8323c,#e8695e);
+    animation:gsHealPulse .9s ease-out;}
+  @keyframes gsHealPulse{
+    0%  {box-shadow:0 0 2px rgba(212,169,74,0);   filter:brightness(1);}
+    25% {box-shadow:0 0 14px rgba(212,169,74,.85);filter:brightness(1.5);}
+    100%{box-shadow:0 0 2px rgba(212,169,74,0);   filter:brightness(1);}
+  }
   #gearSheet .gs-hp b{font-size:15px;color:var(--ink,#cfc6b8);letter-spacing:1px;}
   #gearSheet .gs-hpmax{font-size:11px;color:var(--gold-dim);letter-spacing:1px;}
   /* ── 道具的類別頁籤（ver -497，Ray：「道具按類別分頁，使用類的放第一」）── */

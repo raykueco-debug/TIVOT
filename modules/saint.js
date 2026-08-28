@@ -155,7 +155,16 @@ export function saintAdvance(amount){
     }
   }
   const hp = api.healPlayer(amount);     // 推進＝回血（上限裁切在 API 內）
-  if(hp>=state.playerMax){ triggerOBE(); }
+  if(hp>=state.playerMax){
+    /* ⚠⚠ 推滿＝OBE —— 但**最後一名敵人已經死了**（overkill 追打中）就不算敗走
+       （ver -498，Ray：「聖徒化把最後一名敵人打到 ovkill，判定算 mb 或 execute，
+       不論 ovk 有沒有點完，跑 CI 以後再閉棺」）：人是你殺的，處刑沒點完而已 ——
+       走 MaxBurst 的收尾（敵死 → EXSECUTIŌ CI → onEnemyDefeated → 結算閉棺）。
+       ⚠ 只有**最後一名**（api.isLastEnemy，判定與 finishEnemyOrAdvance 同一支）：
+         連戰中段殺敵後推滿仍是 OBE（那條本來就有敵死分支，obe CI 照播）。 */
+    if(state.enemyHp<=0 && api.isLastEnemy && api.isLastEnemy()){ triggerMaxBurst(); return; }
+    triggerOBE();
+  }
 }
 
 /* ============================================================================
