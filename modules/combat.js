@@ -667,7 +667,9 @@ function layoutClasp(){
   if(sr.width<10||br.width<10) return;                 // 還沒排好 → 之後的重試再量
   const sig=[sr.x,sr.y,br.x,br.y,br.height,rr.y].map(v=>Math.round(v)).join(',');
   if(sig===claspSig) return; claspSig=sig;
-  const X=br.x-sr.x;                                   // 血條左緣（svg 座標）
+  /* ver -530（Ray：「下臂不要接觸hp條，整個C往左移一些，留縫但不要太遠」）：
+     端面停在血條左緣往左 4px。 */
+  const X=br.x-sr.x-4;                                 // 血條左緣−4（svg 座標）
   const bt=br.y-sr.y, bb=br.y+br.height-sr.y;          // 藍條帶
   const rt=rr.y-sr.y;                                  // 紅條頂
   const headY=(bt+bb)/2, w0=(bb-bt)/2, tipY=rt-3;
