@@ -284,26 +284,49 @@ export function runRestore(s){
   shopStock.restore(s.shop || {});
 }
 
-/* ── 整包讀寫（存讀檔用）── */
+/* ── 整包讀寫（存讀檔用）──────────────────────────────────────────────
+   ⚠⚠ 存**鑰匙的原始狀態**，不存查詢結果（ver -561，Ray：「你的 flag 問題很大，
+   會出事」）。getStage()／getPlayerName() 這類查詢會把「鑰匙不存在」烘成預設值
+   （stage 的測試預設是 3、名字是 HUND）—— 照查詢結果存，任何在鑰匙缺席時落的
+   快照都會把預設值當真值寫進存檔，讀回來就毒發（「繼續又變 stage3」連環案、
+   「沒取名的檔讀回來變成取過名」都是這一類）。
+   原始值：null＝鑰匙不存在，restore 時**原樣移除** —— 存與讀之後的 localStorage
+   狀態一模一樣，查詢層的預設值只活在查詢的那一刻。 */
+const rawS = k => rd(k);                                   // 字串鑰匙原樣（null＝沒有）
+const rawN = k => { const v=parseInt(rd(k),10); return isFinite(v)?v:null; };
+const rawJ = k => { try{ return JSON.parse(rd(k)||'null'); }catch(e){ return null; } };
+const putRaw = (k,v,json) => {
+  if(v==null){ try{ localStorage.removeItem(k); }catch(e){} }
+  else wr(k, json ? JSON.stringify(v) : String(v));
+};
 export function snapshot(){
-  return { stage:getStage(), flags:getFlags(), affection:getAffection(),
-           affFloor:getFloors(), player:getPlayerName(), nick:getPlayerNick(),
-           /* 持久 HP／上次旅店／連敗數／蕾娜S計數（§6.9 兩面：newRun 清的這裡就要帶） */
+  return { v:2,                                            // v2＝原始鑰匙制
+           stageRaw:rawN(K.stage), flags:getFlags(),
+           affectionRaw:rawJ(K.affection), affFloorRaw:rawJ(K.affFloor),
+           nameRaw:rawS(K.name), nickRaw:rawS(K.nick),
            hp:getHp(), innLast:getLastInn(), fLoss:flightLossCount(),
-           rennaS:(parseInt(rd(K.rennaS),10)||0) };
+           rennaS:rawN(K.rennaS) };
 }
 export function restore(s){
   if(!s) return;
-  if(s.stage!=null)     setStage(s.stage);
-  if(s.flags)           setFlags(s.flags);
-  if(s.affection)       setAffection(s.affection);
-  if(s.affFloor)        wr(K.affFloor, JSON.stringify(s.affFloor));
-  if(s.player)          setPlayerName(s.player);
-  if(s.nick)            setPlayerNick(s.nick);
+  if('stageRaw' in s){                                     // v2：原樣放回（含「沒有」）
+    putRaw(K.stage, s.stageRaw);
+    setFlags(s.flags||[]);
+    putRaw(K.affection, s.affectionRaw, true);
+    putRaw(K.affFloor,  s.affFloorRaw,  true);
+    putRaw(K.name, s.nameRaw); putRaw(K.nick, s.nickRaw);
+  }else{                                                   // v1（烘過預設的舊存檔）：僅相容
+    if(s.stage!=null)     setStage(s.stage);
+    if(s.flags)           setFlags(s.flags);
+    if(s.affection)       setAffection(s.affection);
+    if(s.affFloor)        wr(K.affFloor, JSON.stringify(s.affFloor));
+    if(s.player)          setPlayerName(s.player);
+    if(s.nick)            setPlayerNick(s.nick);
+  }
   /* ⚠ 沒有也要清（舊存檔）：讀「還沒受傷」的檔不能帶著這一輪的殘血（§6.9 兩面）。 */
   if(s.hp!=null) setHp(s.hp); else clearHp();
   if(s.innLast) setLastInn(s.innLast.town, s.innLast.node);
   else { try{ localStorage.removeItem(K.innLast); }catch(e){} }
   setFlightLossCount(s.fLoss||0);
-  wr(K.rennaS, s.rennaS||0);          // 蕾娜 S 計數（ver -557；沒有＝0，舊存檔照吃）
+  putRaw(K.rennaS, s.rennaS);          // 蕾娜 S 計數（null＝沒有，原樣）
 }

@@ -121,7 +121,11 @@ function apply(rec){
 export function latest(){
   const db=load();
   let best=null;
-  for(const rec of [db.main, db.quick, db.auto, ...Object.keys(db.slots).map(k=>db.slots[k])]){   // auto＝讀取頁檢查點（ver -555）
+  /* ver -561（Ray：「你的 flag 問題很大，會出事」）：只看**玩家的兩格**
+     （main＝旅店手動、auto＝檢查點）。quick／slots 是 testmode 的開發梯子、
+     **跨輪不清** —— 讓它們進「繼續」的比較，舊輪的殘骸就會借屍還魂
+     （「又變 stage3」）。要讀那些格走 F7／F8 面板。 */
+  for(const rec of [db.main, db.auto]){
     if(!rec) continue;
     if(!best || (rec.ts||0) > (best.ts||0)) best=rec;
   }
