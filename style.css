@@ -255,19 +255,22 @@
      連擊數可以大一點，可稍微遮過計量表」）：粗斜體襯線＋金色縱向漸層＋黑描邊。
      ⚠ 漸層走 background-clip:text，描邊交給 -webkit-text-stroke＋外圈 drop-shadow
        （text-shadow 對 clip:text 的字不顯示）。 */
+  /* 白銀數字（ver -516，Ray：「數字是白色的」）：白 → 銀灰縱向漸層＋黑描邊。 */
   #energyClasp .clasp-combo b{display:inline-block;font-size:36px;font-weight:700;
     font-style:italic;font-family:Georgia,"Iowan Old Style","Palatino Linotype",serif;
-    background:linear-gradient(180deg,#fff3cf 8%,#ffd875 38%,#c9932e 72%,#8a5f1a 100%);
+    background:linear-gradient(180deg,#ffffff 12%,#e9eef2 42%,#aab4bd 78%,#7d8791 100%);
     -webkit-background-clip:text;background-clip:text;color:transparent;
-    -webkit-text-stroke:1px rgba(20,12,4,.9);
+    -webkit-text-stroke:1px rgba(10,10,14,.92);
     filter:drop-shadow(0 2px 2px rgba(0,0,0,.85)) drop-shadow(0 0 8px rgba(0,0,0,.6));
     font-variant-numeric:tabular-nums;letter-spacing:0;}
   /* 每一次連擊：由大縮小彈一下（Ray 指定）。 */
-  #energyClasp .clasp-combo b.pop{animation:comboPop .3s cubic-bezier(.25,1.5,.45,1);}
+  /* 蓋章（ver -516，Ray：「半透明像蓋章一樣由大到小落下成實字」）：
+     大而半透 → 加速落下 → 到位成實字（結尾一點點回彈）。 */
+  #energyClasp .clasp-combo b.pop{animation:comboPop .3s cubic-bezier(.5,0,.65,1.35);}
   @keyframes comboPop{
-    0%  {transform:scale(.5);  filter:drop-shadow(0 2px 2px rgba(0,0,0,.85)) brightness(1.9);}
-    55% {transform:scale(1.28);filter:drop-shadow(0 2px 2px rgba(0,0,0,.85)) brightness(1.6);}
-    100%{transform:scale(1);   filter:drop-shadow(0 2px 2px rgba(0,0,0,.85)) brightness(1);}}
+    0%  {transform:scale(2.5);opacity:.18;}
+    70% {transform:scale(1.02);opacity:.9;}
+    100%{transform:scale(1);opacity:1;}}
   /* 連擊斷：舊數字轉紅、縮小消散（散完 JS 才把整塊藏起來重計）。 */
   #energyClasp .clasp-combo b.break{
     background:linear-gradient(180deg,#ffb0a4 10%,#e0554a 55%,#8c231c 100%);
