@@ -769,8 +769,9 @@ function updateEnergyClasp(){
      與 `effIntervalLimit()` —— 懲罰何時發生仍由 startIntervalTimer 那一支決定，
      玩家每點一格（resetIntervalDeadline）光圈自己回到左上角重走。
    ⚠ SVG 的 `pathLength="100"`：dash 用 0~100 講話，與盤面實際幾何無關 ——
-     盤面尺寸怎麼變（fitGridSquare）都不必重算。路徑 M0,0→H100→V100→H0→Z
-     的第一段就是「左上往右」＝順時針從左上角開始。
+     盤面尺寸怎麼變（fitGridSquare）都不必重算。
+   ⚠ ver -529（Ray 指定）：路徑只剩**上緣一條線**（M0,0→H100）——
+     左到右跑滿＝時限到，不再繞整圈。
    ⚠ 掛在 #grid 裡（absolute，不佔 grid 版位）：buildGrid 重建盤面會把它掃掉，
      所以每一幀 `ensureDelayRing` 都會補 —— 那正好也處理了「第一次進場」。 */
 let ringRaf=0;
@@ -782,8 +783,10 @@ function ensureDelayRing(){
   sv.id='delayRing';
   sv.setAttribute('viewBox','0 0 100 100');
   sv.setAttribute('preserveAspectRatio','none');
-  sv.innerHTML='<path class="dr-rail" d="M0,0 H100 V100 H0 Z" pathLength="100"/>'
-             + '<path class="dr-prog" d="M0,0 H100 V100 H0 Z" pathLength="100"/>';
+  /* ver -529（Ray：「延時懲罰計時器在盤面上邊跑就好了，左到右跑滿觸發，
+     不要跑整圈了」）：路徑改成**上緣一條線**，dash 仍用 0~100 講話。 */
+  sv.innerHTML='<path class="dr-rail" d="M0,0 H100" pathLength="100"/>'
+             + '<path class="dr-prog" d="M0,0 H100" pathLength="100"/>';
   grid.appendChild(sv);
   return sv;
 }
