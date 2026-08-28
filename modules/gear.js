@@ -34,6 +34,10 @@ let el=null;
 /* 現在開著哪一個分頁（ver -457，Ray：「在整備頁面加入道具分頁，道具要分類」）。
    ⚠ 不進存檔：這是「玩家現在在看哪一頁」，關掉重開回到整備即可。 */
 let tab='gear';
+/* 道具分頁裡現在看哪一個**類別**（ver -497，Ray：「道具按類別分頁，使用類的放第一」）。
+   類別的順序＝config 的 `catOrder`（鐵律 1），而那張表本來就把 `item`（使用類）
+   排第一 —— 這裡只是照抄，不另訂順序。 */
+let itemCat='item';
 
 function ensure(){
   if(el && el.parentNode) return el;
@@ -62,12 +66,30 @@ function render(){
   const p=GAME_CONFIG.partners[pk]||{};
   const fit=p.siFit||{};
   const rot = load.mode()==='rotate';
-  /* 道具分頁（ver -457）：清單走 `bagListHtml`（與道具欄同一份實作，鐵律 8），
-     分類（道具／武器／素材…）由 `inv.grouped` 照 config 的 `catOrder` 排。 */
+  /* 目前的體力（ver -497，Ray：「在整備頁顯示目前主角的hp」）。
+     戰鬥外的 HP 只有一份真相：progress 的持久 HP（沒有鑰匙＝滿血），
+     上限＝config 的 `tuning.playerHp` —— 兩個都不要在這裡另存。 */
+  const hpMax=GAME_CONFIG.tuning.playerHp;
+  const hpG=prog.getHp();
+  const hpCur=(hpG!=null) ? Math.min(hpG, hpMax) : hpMax;
+  const hpHtml =
+      '<div class="gs-hp"><span class="gs-hplab">體　力</span>'
+    +   '<i class="gs-hpbar"><i style="width:'+Math.round(hpCur/hpMax*100)+'%"></i></i>'
+    +   '<b>'+hpCur+'</b><span class="gs-hpmax">／'+hpMax+'</span></div>';
+  /* 道具分頁（ver -457；-497 改成**類別分頁**，Ray：「道具按類別分頁，使用類的
+     放第一」）：頁籤照 config 的 `catOrder`（item 本來就排第一），清單走
+     `bagListHtml`（與道具欄同一份實作，鐵律 8），`use:true` 讓回復道具長出
+     「使　用」（按下去走 `prog.useHealItem`，唯一的實作）。 */
+  const IT=GAME_CONFIG.items||{};
+  const icats=(IT.catOrder||['item']);
   const itemsBody =
       '<div class="gs-items">'
     +   '<div class="bag-money">'+inv.moneyName()+'　<b>'+inv.getMoney()+'</b></div>'
-    +   '<div class="gs-itemlist">'+bagListHtml()+'</div>'
+    +   '<div class="gs-icats">'
+    +     icats.map(c=>'<button class="gs-icat'+(itemCat===c?' on':'')+'" data-cat="'+c+'"'
+                     + ' type="button">'+((IT.catName||{})[c]||c)+'</button>').join('')
+    +   '</div>'
+    +   '<div class="gs-itemlist">'+bagListHtml(itemCat, { use:true })+'</div>'
     + '</div>';
   el.innerHTML =
       '<button class="gs-close" type="button" aria-label="關閉">✕</button>'
@@ -75,6 +97,7 @@ function render(){
     +   '<button class="gs-tab'+(tab==='gear' ?' on':'')+'" data-tab="gear"  type="button">整　備</button>'
     +   '<button class="gs-tab'+(tab==='items'?' on':'')+'" data-tab="items" type="button">道　具</button>'
     + '</div>'
+    + hpHtml
     + (tab==='items' ? itemsBody :
       '<div class="gs-body">'
     +   '<div class="gs-left">'
@@ -110,6 +133,18 @@ function render(){
   setTimeout(maybeTip, 0);
 }
 
+/* 小提示（ver -497）：使用道具的回饋一句話，浮在體力條旁邊，1.4 秒自己收。
+   ⚠ 不用 alert 也不彈窗 —— 這只是回饋，不是要玩家做決定。 */
+let noteT=0;
+function gsNote(txt){
+  if(!el) return;
+  let n=el.querySelector('.gs-note');
+  if(!n){ n=document.createElement('div'); n.className='gs-note'; el.appendChild(n); }
+  n.textContent=txt; n.classList.add('on');
+  clearTimeout(noteT);
+  noteT=setTimeout(()=>{ if(n) n.classList.remove('on'); }, 1400);
+}
+
 /* ── 綁事件 ── */
 function bind(){
   el.querySelector('.gs-close').addEventListener('click', e=>{ e.stopPropagation(); close(); });
@@ -117,6 +152,22 @@ function bind(){
     if(b.dataset.tab===tab) return;
     try{ SFX.menuClick(); }catch(_){}
     tab=b.dataset.tab; render();
+  }));
+  /* 道具的類別頁籤（ver -497）。 */
+  el.querySelectorAll('.gs-icat').forEach(b=>b.addEventListener('click', e=>{ e.stopPropagation();
+    if(b.dataset.cat===itemCat) return;
+    try{ SFX.menuClick(); }catch(_){}
+    itemCat=b.dataset.cat; render();
+  }));
+  /* 「使　用」：回復道具（ver -497）。滿血不消耗，浮一句說明；用掉就重畫
+     （數量、體力條、錢那一行一起跟上）。 */
+  el.querySelectorAll('.bag-use').forEach(b=>b.addEventListener('click', e=>{ e.stopPropagation();
+    const res=prog.useHealItem(b.dataset.id);
+    if(!res) return;
+    try{ SFX.menuClick(); }catch(_){}
+    if(res.full){ gsNote('體力已滿'); return; }
+    render();                          // ⚠ 先重畫再浮字：render 會把整頁（含提示）洗掉
+    gsNote('恢復了 '+res.healed+' 點體力');
   }));
   const sw=el.querySelector('.gs-sw');
   if(sw) sw.addEventListener('click', e=>{ e.stopPropagation();

@@ -2417,6 +2417,33 @@
   #gearSheet .gs-itemlist .loot-n{font-size:12px;color:var(--gold);}
   #gearSheet .gs-itemlist .loot-desc{grid-column:1 / -1;font-size:11px;line-height:1.6;
     color:rgba(207,198,184,.62);}
+  /* 使用鈕貼在列的右下（ver -497）：列要相對定位、敘述讓開鈕的位置
+     （同道具欄賣鈕那一套的理由，見 lootsheet.css）。 */
+  #gearSheet .gs-itemlist .loot-row{position:relative;}
+  #gearSheet .gs-itemlist .loot-desc{padding-right:84px;}
+  /* ── 體力（ver -497，Ray：「在整備頁顯示目前主角的hp」）──
+     兩個分頁都看得到（用道具時要看得到補到哪裡）。 */
+  #gearSheet .gs-hp{display:flex;align-items:center;gap:10px;margin:0 2px 10px;}
+  #gearSheet .gs-hplab{font-size:11px;letter-spacing:3px;color:var(--gold-dim);white-space:nowrap;}
+  #gearSheet .gs-hpbar{flex:1 1 auto;height:8px;border:1px solid var(--gold-dim);
+    border-radius:5px;background:rgba(10,8,14,.7);overflow:hidden;}
+  #gearSheet .gs-hpbar i{display:block;height:100%;background:linear-gradient(90deg,#7e1f2b,#c4433c);
+    border-radius:4px;transition:width .35s ease;}
+  #gearSheet .gs-hp b{font-size:15px;color:var(--ink,#cfc6b8);letter-spacing:1px;}
+  #gearSheet .gs-hpmax{font-size:11px;color:var(--gold-dim);letter-spacing:1px;}
+  /* ── 道具的類別頁籤（ver -497，Ray：「道具按類別分頁，使用類的放第一」）── */
+  #gearSheet .gs-icats{display:flex;gap:8px;margin:0 0 10px;flex-wrap:wrap;}
+  #gearSheet .gs-icat{padding:5px 12px;font-family:inherit;font-size:12px;letter-spacing:2px;
+    color:var(--gold-dim);background:rgba(10,8,14,.6);
+    border:1px solid rgba(217,198,138,.28);border-radius:14px;}
+  #gearSheet .gs-icat.on{color:var(--gold);border-color:var(--gold-dim);
+    background:rgba(212,169,74,.10);}
+  /* 使用道具的一句回饋（1.4 秒自己收）。 */
+  #gearSheet .gs-note{position:absolute;top:12px;left:50%;transform:translate(-50%,-6px);
+    padding:6px 16px;font-size:12px;letter-spacing:2px;color:var(--gold);
+    background:rgba(10,8,14,.9);border:1px solid var(--gold-dim);border-radius:14px;
+    opacity:0;pointer-events:none;transition:opacity .25s ease, transform .25s ease;z-index:5;}
+  #gearSheet .gs-note.on{opacity:1;transform:translate(-50%,0);}
   #gearSheet .gs-body{flex:1 1 auto;min-height:0;display:flex;gap:12px;}
   #gearSheet .gs-left{flex:1 1 0;min-width:0;display:flex;flex-direction:column;}
   #gearSheet .gs-right{flex:1 1 0;min-width:0;display:flex;flex-direction:column;}

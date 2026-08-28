@@ -77,6 +77,10 @@
     font-family:inherit;font-size:10px;letter-spacing:1px;color:var(--gold);
     background:rgba(10,8,14,.72);border:1px solid var(--gold-dim);border-radius:10px;}
   #lootSheet .bag-sell.armed{color:#e7b4b4;border-color:var(--blood);}
+  /* 使用鈕（ver -497，整備頁的回復道具）：位置同賣鈕（該列右下）。 */
+  .bag-use{position:absolute;right:8px;bottom:6px;padding:3px 10px;
+    font-family:inherit;font-size:11px;letter-spacing:2px;color:var(--gold);
+    background:rgba(10,8,14,.72);border:1px solid var(--gold-dim);border-radius:10px;}
   /* ⚠ 敘述要讓開賣鈕的位置：不留白的話長敘述會**跑到鈕底下**（實測第一列就撞到）。
      在道具欄一律留，不用 `:has()` —— 沒有鈕的那幾列多留一點白，比對齊不一致好讀。 */
   #lootSheet.bag .loot-desc{padding-right:76px;}

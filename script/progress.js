@@ -82,6 +82,22 @@ export function hasFlag(f){ return getFlags().indexOf(f)>=0; }
 /* ══ 本篇的持久 HP（ver -481）══ null＝滿血（鑰匙不存在）。
    讀寫點：combat.startGame（讀）、combat.storyBattleEnd（勝場寫回殘量）、
    inn.sleepHere（睡覺 clear＝滿血）、日後的補血道具（用時 setHp）。 */
+/* ══ 戰鬥外使用回復道具（ver -497，Ray：「整備頁可以使用回復道具」）══
+   **唯一的實作**（鐵律 8）：整備頁、日後任何戰鬥外的使用入口都走這一支。
+   住在這裡是因為它動的是持久 HP（本檔擁有），而 progress → inventory 的依賴
+   方向本來就通（反過來會循環）。
+   回傳：{healed, hp, max}＝用掉了；{full:true}＝滿血不消耗；null＝這個道具不能用。 */
+export function useHealItem(id){
+  const d=inv.defOf(id), u=d && d.use;
+  if(!u || u.hp==null || inv.count(id)<=0) return null;
+  const max=GAME_CONFIG.tuning.playerHp;
+  const g=getHp();
+  const cur=(g!=null) ? Math.min(g, max) : max;
+  if(cur>=max) return { full:true, hp:cur, max };
+  const hp=Math.min(max, cur+u.hp);
+  setHp(hp); inv.remove(id,1);
+  return { healed:hp-cur, hp, max };
+}
 export function getHp(){
   const v = parseInt(rd(K.hp), 10);
   return isFinite(v) && v>0 ? v : null;

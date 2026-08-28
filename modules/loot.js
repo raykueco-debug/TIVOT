@@ -110,15 +110,26 @@ export function showLoot(list, done, money, opts){
 /* 道具清單（分類標題＋逐列）的 HTML —— **只有這一份**（鐵律 8）：
    `showBag`（獨立視窗）與整備頁的「道具」分頁（ver -457）都用它。
    純顯示、不含裝備鈕（裝備那一版有自己的分支，見 showBag 的 equip 段）。 */
-export function bagListHtml(catFilter){
+export function bagListHtml(catFilter, opts){
   ensureCss();
-  return inv.grouped().filter(g=>!catFilter || g.name===catFilter).map(g=>{
+  const o=opts||{};
+  /* `catFilter` 吃分類鍵（'item'）或顯示名（'道具'）—— 呼叫端兩種都出現過。 */
+  return inv.grouped().filter(g=>!catFilter || g.name===catFilter || g.cat===catFilter).map(g=>{
     const rows=g.rows.length
-      ? g.rows.map(r=>'<div class="loot-row"><span class="loot-name">'+r.name+'</span>'
-                    + '<span class="loot-n">×'+r.n+'</span>'
-                    + (r.desc?'<span class="loot-desc">'+r.desc+'</span>':'')+'</div>').join('')
+      ? g.rows.map(r=>{
+          /* 「使　用」只長在**有使用效果**的道具上（`defs[].use`，目前只有回 HP）——
+             呼叫端開 `o.use` 才給（ver -497，整備頁；按下去做什麼由呼叫端綁）。 */
+          const u=o.use && ((inv.defOf(r.id)||{}).use||null);
+          const useBtn=(u && u.hp!=null)
+            ? '<button class="bag-use" data-id="'+r.id+'" type="button">使　用</button>' : '';
+          return '<div class="loot-row"><span class="loot-name">'+r.name+'</span>'
+               + '<span class="loot-n">×'+r.n+'</span>'
+               + (r.desc?'<span class="loot-desc">'+r.desc+'</span>':'')
+               + useBtn + '</div>';
+        }).join('')
       : '<div class="bag-empty">—</div>';
-    return '<div class="bag-cat">'+g.name+'</div>'+rows;
+    /* 分頁模式（單一分類）不再印分類標題 —— 頁籤本身就是標題。 */
+    return (catFilter ? '' : '<div class="bag-cat">'+g.name+'</div>')+rows;
   }).join('');
 }
 
