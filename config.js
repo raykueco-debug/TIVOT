@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.28-506';
+export const VERSION = 'ver 2026.08.28-507';
 
 export const GAME_CONFIG = {
 
@@ -1176,8 +1176,10 @@ export const GAME_CONFIG = {
                               text:'竟然在內陸碰到這麼巨大的禍魘……' },
                             { who:'nouvelle', img:'tut_nouvelle_steady', text:'交給我們！' },
                             { who:'nouvelle', img:'tut_nouvelle_steady', text:'大型敵人就要靠重武器！' },
-                            /* 主角的空白對話框（他開口了，但沒有台詞 —— §6.5 的慣例）。 */
-                            { blank:true },
+                            /* 主角的空白對話框（他開口了，但沒有台詞 —— §6.5 的慣例）。
+                               ver -507（Ray 指定）：這一拍播槍棺齒輪聲 —— 他正在把艦砲
+                               拆下來，下一句蕾娜才會喊「單手就把艦砲……！」。 */
+                            { blank:true, se:'se_kerberos_gear' },
                             { who:'renna',    img:'tut_renna_shocked',   text:'騙人的吧……單手就把艦砲……！' },
                             { who:'nouvelle', img:'tut_nouvelle_run',    text:'蕾娜小姐！請穩住船身！' },
                             { who:'nouvelle', img:'tut_nouvelle_run',    text:'這樣的話，那種東西對他來說就只是靶子！' },
