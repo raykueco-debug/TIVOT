@@ -243,11 +243,11 @@
   /* 尺寸與副武切換鈕平衡（ver -511，Ray：「太大，跟副武切換要平橫。頭從 hp 邊緣出，
      尾稍扣在 hp 上緣」）：整體 ≈66px（切換鈕 52 格 46 圓）——
      厚頭貼在血條左緣、細尾勾在血條上緣。 */
-  #energyClasp svg{position:absolute;left:-8px;bottom:-9px;width:70px;height:64px;
+  #energyClasp svg{position:absolute;left:-8px;bottom:-14px;width:96px;height:88px;
     overflow:visible;pointer-events:none;filter:drop-shadow(0 0 4px #000);}
   /* 中央連擊數（ver -511，Ray：「像 VP1 那樣顯示連擊數在中間」）：
      錨在迴旋的圓心（viewBox 40,44 → 乘上顯示縮放再加 svg 的偏移）。 */
-  #energyClasp .clasp-combo{position:absolute;left:24px;bottom:24px;transform:translate(-50%,50%);
+  #energyClasp .clasp-combo{position:absolute;left:38px;bottom:27px;transform:translate(-50%,50%);
     pointer-events:none;text-align:center;line-height:1;z-index:2;}
   #energyClasp .clasp-combo{opacity:0;transition:opacity .15s;}
   #energyClasp .clasp-combo.on{opacity:1;}
