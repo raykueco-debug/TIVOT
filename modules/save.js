@@ -58,9 +58,9 @@ export function setHost(h){ host = { ...host, ...(h||{}) }; }
 function load(){
   try{
     const j=JSON.parse(localStorage.getItem(KEY)||'null');
-    if(j && typeof j==='object') return { main:j.main||null, quick:j.quick||null, slots:j.slots||{} };
+    if(j && typeof j==='object') return { main:j.main||null, quick:j.quick||null, auto:j.auto||null, slots:j.slots||{} };
   }catch(e){}
-  return { main:null, quick:null, slots:{} };
+  return { main:null, quick:null, auto:null, slots:{} };
 }
 function store(db){
   try{ localStorage.setItem(KEY, JSON.stringify(db)); }catch(e){}
@@ -117,7 +117,7 @@ function apply(rec){
 export function latest(){
   const db=load();
   let best=null;
-  for(const rec of [db.main, db.quick, ...Object.keys(db.slots).map(k=>db.slots[k])]){
+  for(const rec of [db.main, db.quick, db.auto, ...Object.keys(db.slots).map(k=>db.slots[k])]){   // auto＝讀取頁檢查點（ver -555）
     if(!rec) continue;
     if(!best || (rec.ts||0) > (best.ts||0)) best=rec;
   }
@@ -133,6 +133,19 @@ export function storySave(){
   db.main=capture();
   store(db);
   return db.main;
+}
+/* ══ 讀取頁檢查點（ver -555，Ray：「故事推進如果沒有進旅店手動存檔（坐坐或睡覺），
+   就以上一次讀取頁之後的那一幕開始銜接」）══════════════════════════════════
+   story 的標準讀取頁收掉、新場景第一拍在黑幕下演出來的那一刻寫進 `auto` 格
+   （story.setCheckpointHook 掛進來，main.js 接線）。
+   「繼續」照舊走 latest()＝時間戳最新的那一筆：沒有手動存檔時自然接檢查點；
+   手動那筆比較新（剛睡完）就回手動 —— 一律「接最後真的玩到的地方」。
+   玩家看不到這一格（同 quick，不進 F5/F8 面板的欄位）。 */
+export function autoSave(){
+  const db=load();
+  db.auto=capture();
+  store(db);
+  return db.auto;
 }
 export function hasSave(){ return !!latest(); }
 /* 首頁「繼續」：讀最新的那一筆。回傳 false＝根本沒有存檔（呼叫端不必自己再查一次）。 */

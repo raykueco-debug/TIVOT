@@ -955,6 +955,10 @@ saveSys.setHost({
   openTown:  openTownAt,
   onChange:  ()=>refreshContinue(),
 });
+/* 讀取頁檢查點（ver -555）：story 每收掉一頁標準讀取頁就落一筆 auto 存檔 ——
+   「繼續」取時間戳最新的那一筆，沒有旅店手動存檔時自然接檢查點（§save.autoSave）。
+   落完順手刷新「繼續」鈕（第一個檢查點落地，鈕就該亮起來）。 */
+story.setCheckpointHook(()=>{ saveSys.autoSave(); refreshContinue(); });
 /* ══ 首頁的「繼續」（ver -430，Ray：「按 continue 進入最新存檔點（旅店）」）══════
    ⚠ 讀檔的實作只有 `save` 那一份（鐵律 8）：這裡只負責「有沒有存檔 → 鈕出不出來」
      與「按下去叫它」。要改讀檔會做什麼事，改那邊。
@@ -1541,6 +1545,26 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
     prog.addFlags(['dev_seed_money']);
     import('./script/inventory.js').then(inv=>inv.addMoney(10000));
   }
+  /* 管理人檢視：stage＋好感度（ver -555，Ray：「故事開始在管理人模式下要可以
+     檢視 stage 及好感度」）。左下角小綠字浮條，只在 testmode 且劇情舞台開著
+     （劇情／城鎮都在 #storyStage 上）時出現；每秒重讀，純顯示不進任何流程。 */
+  (function devStat(){
+    const d=document.createElement('div'); d.id='devStat';
+    d.style.cssText='position:fixed;left:8px;bottom:8px;z-index:9999;display:none;'
+      +'font:10px/1.6 ui-monospace,monospace;color:#8f8;background:rgba(0,0,0,.55);'
+      +'padding:2px 8px;border-radius:6px;pointer-events:none;letter-spacing:.5px;';
+    document.body.appendChild(d);
+    setInterval(()=>{
+      const st=$('storyStage');
+      const on=document.body.classList.contains('testmode') && st && st.classList.contains('on');
+      d.style.display=on?'block':'none';
+      if(!on) return;
+      const aff=prog.getAffection()||{};
+      const v=k=>(aff[k]==null?'-':aff[k]);
+      d.textContent='stage '+prog.getStage()
+        +'｜蕾'+v('renna')+' 諾'+v('nouvelle')+' 索'+v('sorana')+' 安'+v('anya');
+    },1000);
+  })();
   homeEl.addEventListener('pointerdown', e=>{
     if(e.target && e.target.closest && e.target.closest('button')) return;   // 按鈕上起手不算
     pid=e.pointerId; pts=[{x:e.clientX,y:e.clientY}];

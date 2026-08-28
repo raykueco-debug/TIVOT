@@ -199,8 +199,24 @@ function ensureLayer(){
   layer.querySelectorAll('.inn-door').forEach(b=>
     b.addEventListener('pointerup', e=>{ e.stopPropagation();
       learnTip('knock'); closeGuide(true); knock(+b.dataset.i); }));
+  /* ⚠⚠ 兩顆行動鈕都要**長按一秒**才發動（ver -555，Ray 指定）：一顆消磨兩小時、
+     一顆結束今天並存檔，都是收不回來的 —— 點一下就發動太容易誤觸。
+     按住＝金色進度由左往右填滿（時長由 --hold-ms 餵給 CSS，同一個數字，鐵律 7）；
+     放早了＝取消，什麼都不發生（填充條本身就是「要按著」的回饋）。 */
+  const HOLD_MS=1000;
+  function bindHold(b, fire){
+    let t=0;
+    b.style.setProperty('--hold-ms', HOLD_MS+'ms');
+    const cancel=()=>{ if(t){ clearTimeout(t); t=0; } b.classList.remove('holding'); };
+    b.addEventListener('pointerdown', e=>{ e.stopPropagation();
+      cancel(); b.classList.add('holding');
+      t=setTimeout(()=>{ t=0; b.classList.remove('holding'); fire(); }, HOLD_MS);
+    });
+    ['pointerup','pointerleave','pointercancel'].forEach(ev=>
+      b.addEventListener(ev, e=>{ e.stopPropagation(); cancel(); }));
+  }
   layer.querySelectorAll('.inn-btn').forEach(b=>
-    b.addEventListener('pointerup', e=>{ e.stopPropagation();
+    bindHold(b, ()=>{
       const act = (b.dataset.act==='sit') ? 'sit' : 'sleep';
       /* ⚠⚠ **說明開著時，「獨自坐坐」由諾薇兒擋回來**（ver -439 擋、**-440 改成開口擋**）。
          ver -430 把「說明開著時可按的東西全部留在遮罩之上」，那對睡覺／敲門是對的
@@ -354,6 +370,9 @@ function sitAlone(){
       if(toBack > 0) mins = Math.min(mins, toBack);
     }
     clock.advance(Math.max(1, mins));
+    /* 坐坐也是**手動存檔**（ver -555，Ray：「進旅店手動存檔（坐坐或睡覺）」）——
+       與睡覺同一格（save.storySave 的 main），存的是坐完那一刻。 */
+    save.storySave();
     /* 時間變了 → **背景換成新時段的差分**（Ray 指定）。走城鎮那一支候選鏈。 */
     if(host && host.refreshBg) host.refreshBg();
     refresh();

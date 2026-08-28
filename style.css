@@ -2245,6 +2245,12 @@
   #innLobby .inn-btn b{font-weight:normal;font-size:12px;}
   #innLobby .inn-btn i{font-style:normal;font-size:9px;letter-spacing:1px;opacity:.72;}
   #innLobby .inn-btn:active{background:rgba(212,169,74,.22);}
+  /* 長按一秒才發動（ver -555）：按住時淡金填充由左往右掃滿＝進度回饋，
+     放開就歸零。時長讀 --hold-ms（inn.js 的 HOLD_MS 餵進來，同一個數字）。 */
+  #innLobby .inn-btn{overflow:hidden;}
+  #innLobby .inn-btn::after{content:"";position:absolute;left:0;top:0;bottom:0;width:0;
+    background:rgba(255,244,214,.42);pointer-events:none;}
+  #innLobby .inn-btn.holding::after{width:100%;transition:width var(--hold-ms,1s) linear;}
   /* 主要動作：金底深字，與空心那一顆拉開層級（同結算頁那組鈕的語彙）。 */
   #innLobby .inn-btn.primary{color:#1a1410;border-color:var(--gold);
     background:linear-gradient(180deg,#e2c98e 0%,#d4a94a 52%,#b98d34 100%);

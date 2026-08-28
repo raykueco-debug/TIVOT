@@ -2242,12 +2242,20 @@ function runLoadGate(sceneId){
     setTimeout(()=>{
       ui.close();                                  // 讀取頁開始淡出（ver -433）
       advance();                                   // 在黑幕底下把新場景的第一拍演出來
+      /* 讀取頁檢查點（ver -555，Ray：「沒有旅店手動存檔就以上一次讀取頁之後的
+         那一幕開始銜接」）：新場景第一拍已演出來 → 此刻的位置寫進 auto 格
+         （main.js 掛 save.autoSave 進來，story 不 import 存檔系統——會循環）。 */
+      if(checkpointHook) try{ checkpointHook(); }catch(e){}
       /* ⚠ 黑幕要等**讀取頁淡完**才掀（ver -433）：以前 120ms 就掀，那時讀取頁還沒
          淡走 —— 現在它是淡的，先掀黑幕會看到「讀取頁疊在新場景上一起變淡」。 */
       setTimeout(()=>{ if(fade){ fade.classList.remove('on'); fadeOwner=null; } }, AL_CLOSE_MS+120);
     }, Math.max(0, 600-(Date.now()-t0)));
   });
 }
+/* 讀取頁檢查點的掛鉤（ver -555）：main.js 注入 save.autoSave —— 同 battleHandler
+   的作法（story 不認識存檔系統，單向資料流）。 */
+let checkpointHook = null;
+export function setCheckpointHook(fn){ checkpointHook = fn || null; }
 
 export function open(pos, done){
   const st=$('storyStage'); if(!st) return;
@@ -2283,7 +2291,10 @@ export function open(pos, done){
   const t0=Date.now();
   preloadStory(id, p=>ui.set(p)).then(()=>{
     ui.set(1);
-    setTimeout(()=>{ ui.close(); go(); }, Math.max(0, 600-(Date.now()-t0)));
+    /* 開場那一頁也是讀取頁（ver -555）：第一拍演出來就落一次檢查點 ——
+       玩家在第一個 {load} 閘門之前退出，「繼續」也接得回這一幕。 */
+    setTimeout(()=>{ ui.close(); go(); if(checkpointHook) try{ checkpointHook(); }catch(e){} },
+               Math.max(0, 600-(Date.now()-t0)));
   });
 }
 
