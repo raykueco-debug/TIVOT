@@ -357,6 +357,12 @@
     22%{opacity:1;transform:translate(-50%,-50%) rotate(var(--deg,20deg)) scaleX(1)}
     100%{opacity:0;transform:translate(-50%,-50%) rotate(var(--deg,20deg)) scaleX(1)}}
   /* 紅刀痕：一條鋒利亮紅刀割，快速劃過（按錯懲罰用，搭配血痕濺血） */
+  /* 全畫面閃色（ver -509，空賊船大絕：「畫面閃紅」）——蓋滿受擊層、300ms 淡掉。
+     ⚠ 掛在 #hitFxLayer 裡（跟其他受擊特效同層同壽命管理），不另開 fixed 層。 */
+  .fx-screenflash{position:absolute;inset:0;width:auto;height:auto;margin:0;
+    animation:fxScreenFlash .32s ease-out forwards;pointer-events:none;}
+  .fx-screenflash-red{background:rgba(214,40,32,.42);}
+  @keyframes fxScreenFlash{0%{opacity:0;}18%{opacity:1;}100%{opacity:0;}}
   .fx-slash{left:50%;top:46%;width:320px;height:12px;margin:-6px 0 0 -160px;
     transform:translate(-50%,-50%) rotate(var(--deg,-25deg)) scaleX(.05);
     background:linear-gradient(90deg,transparent,rgba(255,50,50,0) 5%,rgba(255,70,70,.98) 20%,rgba(200,0,10,1) 50%,rgba(255,70,70,.98) 80%,rgba(255,50,50,0) 95%,transparent);

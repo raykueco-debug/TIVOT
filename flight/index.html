@@ -6916,7 +6916,9 @@ const ENEMY_KINDS = {
     /* turnRate 0.0011 → 0.00055（63°/秒 → 32°/秒）：一艘三桅飛船不會像
        戰鬥機那樣甩頭。轉得慢，掉轉本身才有重量，也讓每個方位停留得夠久。 */
     name:'空賊', plan:'rigid', speedK:0.85, turnRate:0.00055,
-    rarity:'E',   // ⚠ 暫定（同蜈蚣：卡還沒給）
+    /* ── 出場條件（ver -509，Ray 的空賊船卡：[區域：薩梅爾空域外全域]
+       [稀有等級：E][Stage:1 以後才登場]）—— 與 config.enemies.pirate_ship 互指。 */
+    rarity:'E', fromStage:1, notRegion:1,   // 1＝薩梅爾帝國（regionAt 的 id，同劇本遭遇）
 
     bodyLen:300,                    // 船長（世界單位）＝側視圖寬所代表的長度
     /* 方位圖:0°(正面)/53.6°/90°(側)/141.6°/180°(背),再鏡射補另一側＝一圈八個。
@@ -6942,6 +6944,13 @@ function enemyKindEligible(k, x, y){
     const mx=(x/MAP_SCALE)|0, my=(y/MAP_SCALE)|0;
     if(mx<0||my<0||mx>=MAPW||my>=MAPH) return false;
     if(!HGT || HGT[my*MAPW+mx] <= CLOUD_H) return false;   // 雲海之下＝海域 → 全陸域的怪不出
+  }
+  /* `notRegion`（ver -509，空賊船：[區域：薩梅爾空域外全域]）：生成點落在這個
+     國界之內就不出。⚠ 國界圖沒載完（REGION null）一律**不合格** —— regionAt 那時
+     回 0 會被誤判成「已出薩梅爾」（§6.10 劇本遭遇那條踩過的坑），寧缺勿濫。 */
+  if(K.notRegion!=null){
+    if(!REGION) return false;
+    if(regionAt(x/MAP_SCALE, y/MAP_SCALE)===K.notRegion) return false;
   }
   return true;
 }

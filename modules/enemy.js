@@ -44,6 +44,14 @@ export function showHitFx(kind){
     case 'blunt': spawnBlunt(fx.scale); break;
     default:      triggerClaw();
   }
+  /* 受擊行可加掛**全畫面閃色**（ver -509，空賊船卡：「蓄力攻擊…畫面閃紅」）——
+     疊在受擊特效之上、300ms 自己退。目前只有 'red' 一種，要新色再加 class。 */
+  if(fx.flash) screenFlash(fx.flash);
+}
+function screenFlash(color){
+  const d=document.createElement('div');
+  d.className='fx fx-screenflash fx-screenflash-'+color;
+  addFx(d, 340);
 }
 // 紅刀痕濺血：一條斜向亮紅刀痕 + 數顆散開的小血滴（按錯懲罰用）。
 //   ⚠ 不沿用 spawnBlood（那是延時懲罰的寬血痕，會誤看成兩個特效同時出現）；改自帶小血滴區隔。

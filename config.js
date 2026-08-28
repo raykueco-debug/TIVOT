@@ -16,7 +16,7 @@ import { ART } from './script/speakers.js';
 
 /* 版本號：顯示於診斷 HUD（首頁連點團徽 5 下開啟），每次部署遞增尾碼——
  *  用來確認手機（尤其 iOS 主畫面 App 的頑固快取）實際跑到的是哪一版。 */
-export const VERSION = 'ver 2026.08.28-507';
+export const VERSION = 'ver 2026.08.28-509';
 
 export const GAME_CONFIG = {
 
@@ -1075,6 +1075,47 @@ export const GAME_CONFIG = {
       /* 金錢：HP 的 50%~70%。 */
       money:{ hpRatio:[0.5, 0.7] },
     },
+    /* ══ 空賊船（ver -509，Ray 的敵人卡）══════════════════════════════════
+       飛行限定隨機敵（[場景：飛行][區域：**薩梅爾空域外全域**][稀有等級：E]
+       [Stage:1 以後才登場]—— 刷新規則在 flight 的 ENEMY_KINDS.pirate：
+       rarity/fromStage/notRegion，兩邊註解互指）。
+       ⚠ 卡上「攻擊音」那一段（serpant／em_smack）是範本殘留 —— 真正的音寫在
+         各受擊行的 `se:`（延時＝艦砲 120mm、點錯＝手槍二、大絕＝se_weapon_cannon），
+         照那三個入表。 */
+    pirate_ship: {
+      name:'空賊船_A',
+      story:0, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
+      kind:'ship',                 // 船隻 → 已擊沉
+      image:{ day:'enemy_pirate_day', dd:'enemy_pirate_dd', night:'enemy_pirate_night' },
+      hp:500,
+      attack:20,                   // 蓄力攻擊（紅點那一發）
+      atkInterval:4,               // 蓄力窗口 4 秒（固定）
+      ultEvery:[3,5],              // 發動頻率 3~5 秒一次
+      noStack:true,                // 不疊加：場上同時只有一個紅點
+      sound:{ ult:'se_weapon_cannon', delay:'se_ship_cannon', wrong:'se_pistol_02' },
+      special:[],
+      boardGrids:[9,9,9,16,16],    // 33344, loop
+      boardLoop:true,
+      delayPenalty:{ seconds:5, damage:10 },
+      wrongPenalty:{ damage:5 },
+      /* 延時／點錯都是彈孔（牠是用砲跟槍招呼你的）；大絕＝**特大彈孔＋畫面閃紅**
+         （`flash:'red'`，ver -509 新演出，實作在 enemy.showHitFx）。 */
+      hitFx:{
+        delay:{ type:'bullet', count:1, pos:'random' },
+        wrong:{ type:'bullet', count:1, pos:'random' },
+        ult:{   type:'bullet', count:1, pos:'random', scale:2.4, flash:'red' },
+      },
+      resist:{ basic:0.20 },
+      /* 弱點：反擊 +100%、**單射武器（萊福槍類）再 +150%**（`cat:` 只對反擊生效，
+         判定在 combat.applyEnemyMods，同羽蛇卡）。 */
+      weak:{ counter:1.00, 'cat:萊福槍':1.50 },
+      dualBonus:0.20,
+      counterBuff:{ mult:2, seconds:5 },
+      counterStun:3,
+      loot:[ { id:'brass_casing', n:1, p:0.33 } ],
+      /* 金錢：HP 的 70%~90%。 */
+      money:{ hpRatio:[0.7, 0.9] },
+    },
     // 例：新怪
     // giant: { name:'巨人', image:'enemy_giant', imageBase:'giant', hp:150, attack:30, atkInterval:5, sound:{}, special:[] },
   },
@@ -1237,7 +1278,14 @@ export const GAME_CONFIG = {
                             { who:'nouvelle', img:'tut_nouvelle_steady', text:'速度快的敵人就用廣域破片砲！' },
                           ]},
                         ] },
-    flight_pirate:    { enemy:'facelessgiant' },
+    /* 空賊船（ver -509）。船戰的武器音／連射間隔同前兩場（都是船戰）。
+       卡上出場音效／特效／背景＝0 ＝ 沒有開場演出、沒有 talk。 */
+    flight_pirate:    { enemy:'pirate_ship',
+                        weaponSound:{ '重機槍':'se_ship_heavygun',
+                                      '霰彈槍':{ key:'se_spiltcannon', once:'se_bulletpiece' },
+                                      '萊福槍':{ key:'se_weapon_cannon',
+                                                 after:{ key:'se_weapon_shell', delayMs:200 } } },
+                        counterGapMs:180 },
   },
 
   /* ══ 懸賞（ver -375）══ 賞金獵人公會的委託榜。
@@ -1563,6 +1611,9 @@ export const ASSETS = {
      黃昏黎明 dd）。解析在 `modules/enemy.js` 的 `enemyImage()`，那裡是唯一一處。 */
   enemy_centipi_day:   "resources/enemy/Centipi_day.webp",
   enemy_serpant_day:   "resources/enemy/Serpant_day.webp",     // 羽蛇（ver -500，Ray 的卡）
+  enemy_pirate_day:    "resources/enemy/Pirateship_day.webp",   // 空賊船（ver -509，Ray 的卡）
+  enemy_pirate_dd:     "resources/enemy/Pirateship_DD.webp",
+  enemy_pirate_night:  "resources/enemy/Pirateship_night.webp",
   enemy_serpant_dd:    "resources/enemy/Serpant_DD.webp",
   enemy_serpant_night: "resources/enemy/Serpant_night.webp",
   enemy_centipi_night: "resources/enemy/Centipi_night.webp",
