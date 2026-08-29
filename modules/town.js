@@ -77,6 +77,13 @@ const RESTING = [
    ⚠ 全部鎖在 `stage1_open` 之後 —— stage 0 的第一晚有自己的劇本
      （inn_wait 那一套），不能被這一套蓋掉。 */
 let escortNou=false, rennaOutNode=null;
+/* 同行的諾薇兒走完殘留事件（ver -567）：`nouTiredArmed`＝最後一段演完、等下一次
+   抵達演「我累了」那一拍；`nouAsleep`＝演完回房，這一趟敲門只回旁白（睡著了）。
+   ⚠ `escortLeftover`＝這一趟同行是**殘留事件**帶起的（open() 判的那一次）——
+     「累了回房」只對這種同行成立；**敲門約出來**（onInvite）的同行不喊累，
+     不然剛答應出門走兩步就要回去，讀起來是她在敷衍玩家。
+   三支都是**這一趟探索**的狀態（同 escortNou）：open() 歸零、不進存檔。 */
+let nouTiredArmed=false, nouAsleep=false, escortLeftover=false;
 function st1Active(){ return prog.hasFlag('stage1_open'); }
 function leftoverForNou(){
   const T=TOWNS[townId]; if(!T) return false;
@@ -1051,6 +1058,31 @@ let gearWatch=null;
 export function setGearWatch(fn){ gearWatch=fn||null; }
 
 function afterArrive(n){
+  /* ══ 同行的諾薇兒走完殘留事件（ver -567，Ray 交稿）══════════════════════
+     「殘留的帝都諾薇兒劇情結束，諾薇兒會在下一次移動時提出他累了想要回去
+       旅店休息，然後回到房間，敲門的時候沒有回應，大概睡著了」
+     最後一段演完的那一次抵達只**上膛**（Ray 明說是「下一次移動時」提出）；
+     下一次抵達、進場對白演完之後演 `TOWNS[].nouTired`，演完她回房：
+     escortNou 收掉（restingSet 重新封她的插話）、nouAsleep 立起（敲門只回旁白）。
+     ⚠ 要在 inn.arrive／店舖**之前**演 —— 她回房這件事會改門燈（st1.nouIn）。 */
+  if(nouTiredArmed && escortNou){
+    nouTiredArmed=false; escortLeftover=false;
+    const lines=(TOWNS[townId]||{}).nouTired;
+    if(lines && lines.length){
+      busy=true; showNav(false);
+      story.playAdhoc(lines, ()=>{ story.clearCast();     // 鐵律 8：離開這一段就清場
+        escortNou=false; nouAsleep=true;
+        busy=false; showNav(true);
+        afterArrive2(n); });
+      return;
+    }
+    escortNou=false; nouAsleep=true;       // 沒有台詞資料也要完成狀態轉移
+  }else if(escortNou && escortLeftover && !leftoverForNou()){
+    nouTiredArmed=true;
+  }
+  afterArrive2(n);
+}
+function afterArrive2(n){
   /* ⚠ `introFlag` 由城鎮算好傳進去（ver -402）：旅店已經沒有 `kind` 了，
      旗標名只有 `enter()` 那一支知道（`kind` 版／節點版兩種）—— inn 自己拼會拼錯城。 */
   maybeMeetRenna();          // 蕾娜外出時走到她那一格 → 碰到她（ver -461）
@@ -1061,6 +1093,9 @@ function afterArrive(n){
                                  /* Stage 1 起的房門（ver -566）：誰在房內、約諾薇兒出門的回呼。 */
                                  st1: st1Active() ? {
                                    nouIn: !escortNou,
+                                   /* 同行結束回房＝睡著了（ver -567）：敲門只回
+                                      `innStage1.nouAsleep` 那句旁白，約不出來。 */
+                                   nouAsleep: nouAsleep,
                                    renIn: !rennaIsOut(),
                                    data: n.innStage1||{},
                                    onInvite(){ escortNou=true; },
@@ -1224,8 +1259,9 @@ export function open(town, node, opts){
   pendingFavor=null;          // 「下一步去哪」也是（ver -440，見 armFavor）
   /* 夥伴的所在（ver -461）：進城算一次。⚠ 要在 townId 設好之後（leftoverForNou 要查表）。 */
   escortNou=false; rennaOutNode=null;
+  nouTiredArmed=false; nouAsleep=false; escortLeftover=false;   // 同行收尾（ver -567）
   if(st1Active()){
-    escortNou=leftoverForNou();
+    escortNou=escortLeftover=leftoverForNou();
     const ro=T.rennaOut;
     if(ro && clock.hourF()<(ro.until!=null?ro.until:18) && Math.random()<(ro.chance!=null?ro.chance:0.5)){
       const ns=(ro.nodes||[]).filter(k=>T.nodes[k]);

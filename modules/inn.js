@@ -342,6 +342,9 @@ function knock(i){
     try{ SFX.unlock(); SFX.menuClick(); }catch(_){}
     if(who==='RENNA'){ if(st1.data.renna && host && host.say) host.say(st1.data.renna, nm); return; }
     if(who==='NOUVELLE'){
+      /* 同行結束回房（ver -567，Ray：「敲門的時候沒有回應，大概睡著了」）——
+         **旁白**不是她說話，名字欄留空；好感再高也約不出來（人睡著了）。 */
+      if(st1.nouAsleep){ if(st1.data.nouAsleep && host && host.say) host.say(st1.data.nouAsleep, ''); return; }
       /* ⚠ -560 起好感 API 只剩 getAffection()（回四人物件），沒有逐人查詢 */
       const aff=(prog.getAffection()||{}).nouvelle||0;
       if(aff<10){ if(st1.data.nouRest && host && host.say) host.say(st1.data.nouRest, nm); return; }
