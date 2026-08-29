@@ -344,6 +344,16 @@ function knock(i){
   if(st1){
     const nm=(SPEAKERS[who]||{}).name||'';
     try{ SFX.unlock(); SFX.menuClick(); }catch(_){}
+    /* ══ 宵禁（ver -576，Ray：「晚上九點以後女主角就不出門，約不出來。改放天晚
+       休息了之類的台詞，到隔天七點以後才恢復」）══
+       ⚠ 排在**所有分支之前**，而且**四扇門共用**：這是「現在是深夜」這件事，
+         不是某一個人的狀態 —— 好感再高也約不出來。
+       ⚠ 時刻的判定在 `modules/town.js` 的 `isCurfew()`（唯一那一支，鐵律 8），
+         這裡只問它；台詞在節點資料的 `innStage1.nightRest`（鐵律 1）。 */
+    if(st1.night && st1.night()){
+      if(st1.data.nightRest && host && host.say) host.say(st1.data.nightRest, nm);
+      return;
+    }
     if(who==='RENNA'){ if(st1.data.renna && host && host.say) host.say(st1.data.renna, nm); return; }
     if(who==='NOUVELLE'){
       /* 同行結束回房（ver -567，Ray：「敲門的時候沒有回應，大概睡著了」）——

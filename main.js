@@ -1003,7 +1003,14 @@ saveSys.setHost({
      然後照常開飛行頁（openFlight 非 resume＝重載 iframe，一開機就吃到）。 */
   openFlightAt: (fp)=>{
     markBooted();
-    $('home').classList.remove('on');
+    /* ⚠⚠ **這裡不可以先把首頁收掉**（ver -576，Ray：「按繼續總會跳挑戰的第一戰的圖
+       出來」）。`openFlight()` 進來的第一件事是蓋 280ms 的黑幕再遞迴自己 ——
+       而那片黑幕住在 `#storyStage` 底下（`#storyVeil` 是 absolute），首頁上那一層
+       根本沒開，**黑幕是看不見的**。於是這 280ms＋iframe 還沒畫出來的那一段，
+       露出來的就是底下的 `#app` ＝ 開機時 `applyConfigToDOM` 擺好的**挑戰第一戰的
+       敵人立繪**。首頁自己是不透明的，讓它蓋著就好 —— `openFlight()` 已經在
+       `flightFrame.classList.add('on')`（那個 iframe 有不透明底色）**之後**才收首頁，
+       那才是對的時機（鐵律 8：收首頁只有那一處）。 */
     try{ localStorage.setItem('tivot_flight_ret_v1', JSON.stringify(fp)); }catch(_){}
     openFlight();
   },

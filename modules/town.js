@@ -176,8 +176,18 @@ function rollOuting(){
     }
   }
 }
+/* ══ 宵禁（ver -576，Ray：「晚上九點以後女主角就不出門，約不出來…到隔天七點以後
+   才恢復」）══ 判定只有這一支（鐵律 8）：外出行程與旅店敲門都問它。
+   ⚠ 跨午夜，上界不含（同節點的 `hours`）。 */
+function isCurfew(){
+  const c=(OUTING.curfew)||[21,7], h=clock.hourF();
+  return (c[0] > c[1]) ? (h>=c[0] || h<c[1]) : (h>=c[0] && h<c[1]);
+}
 /* 現在在外面的人：`{ who: 節點id }`。 */
 function outNow(){
+  /* ⚠ 行程本來就排在 8~18 點，這一條現在攔不到東西 —— 但**規則要寫在規則上**：
+     日後把 `hours` 拉長，宵禁不必跟著改（鐵律 8）。 */
+  if(isCurfew()) return {};
   rollOuting();
   const t=clock.elapsed(), m={};
   for(const o of outPlan) if(t>=o.from && t<o.to) m[o.who]=o.node;
@@ -1257,6 +1267,8 @@ function afterArrive2(n){
                                    /* 同行結束回房＝睡著了（ver -567）：敲門只回
                                       `innStage1.nouAsleep` 那句旁白，約不出來。 */
                                    asleep: who => (who==='NOUVELLE' && nouAsleep),
+                                   /* 宵禁（ver -576）：敲門一律回 `nightRest`，約不出來。 */
+                                   night: isCurfew,
                                    data: n.innStage1||{},
                                    onInvite(){ escortNou=true; },
                                  } : null,

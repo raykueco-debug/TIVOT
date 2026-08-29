@@ -513,13 +513,29 @@ function altCase(name){
     ? tail[0].toLowerCase()+tail.slice(1) : tail[0].toUpperCase()+tail.slice(1);
   return alt===tail ? null : head+alt;
 }
+/* ══⚠⚠ 退路要沿著**明暗軸**走，暗的時段不准退回白天（ver -576）══════════════
+   Ray：「攝政王廣場的夜間差分不正確」。成因：舊版的退路一律是
+   `這個時段 → _Day → 原名`，而 `Capital_Square` 只有 Day／Dusk／midnight
+   （**沒有 night**）—— 於是晚上 8 點到 12 點站在廣場看到的是大白天。
+   ⚠ 同一個洞不只那一個地點：旅店與餐酒館沒有 midnight、雜貨舖與武器店只有
+     day/dusk。改在這一支，全部一起好（鐵律 8）—— 不要在城鎮那邊為某個地點寫特例。
+   ⚠ 這是**退路**不是替代品：該有的差分還是要交（退到 midnight 的夜晚廣場只是
+     「不會錯得離譜」，不是「對」）。 */
+const BAND_FALL = {
+  Dawn:     ['Dawn','Day','Dusk'],
+  Day:      ['Day','Dawn','Dusk'],
+  Dusk:     ['Dusk','Day','night'],
+  night:    ['night','midnight','Dusk'],
+  midnight: ['midnight','night','Dusk'],
+};
 export function bandNames(base, noTime){
   const names=[]; const push=n=>{ if(n && names.indexOf(n)<0) names.push(n); };
   if(noTime){ push(base); }
   else{
-    const b=clock.bgName(base);
-    push(b); push(altCase(b));
-    push(base+'_Day'); push(altCase(base+'_Day'));
+    const cur=clock.band();
+    for(const b of (BAND_FALL[cur] || [cur,'Day'])){
+      const n=base+'_'+b; push(n); push(altCase(n));
+    }
     push(base);
   }
   const out=[];
