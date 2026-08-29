@@ -176,6 +176,22 @@ function rollOuting(){
     }
   }
 }
+/* ══ 約會（ver -576，Ray：「出城鎮、回旅店以後就要解除約會，一天內同人不能約
+   第二次，會拒絕」）══════════════════════════════════════════════════════
+   「約會」＝在旅店敲門把人約出來的那種同行（`onInvite`）。
+   ⚠⚠ **殘留事件帶起來的同行不算約會**（`escortLeftover`）：那一種有自己的收尾
+     （ver -567 的 `nouTired`），被這一條收掉的話她的那一段戲就演不到了。
+   ⚠ `datedSet` 是**這一天**的狀態，鑰匙是 `dayNo()` —— 日期一變自己歸零，
+     所以「出城再進城」還是同一天就約不了第二次（同 `outKey` 的作法）。
+   ⚠ 不進存檔：睡覺一定跨到隔天，醒來本來就該重來。 */
+let dateDay=null, datedSet=new Set();
+function dateDayCheck(){ const d=clock.dayNo(); if(dateDay!==d){ dateDay=d; datedSet=new Set(); } }
+function datedToday(who){ dateDayCheck(); return datedSet.has(who); }
+function markDated(who){ dateDayCheck(); datedSet.add(who); }
+/* ⚠⚠ 解除約會只有這一支（鐵律 8）：出城鎮（`suspend`／`close`）與回到旅店
+   （`enter` 看到 `inn`）三條路都叫它 —— 寫在各個呼叫點一定會漏掉其中一條。 */
+function endDate(){ if(escortNou && !escortLeftover) escortNou=false; }
+
 /* ══ 宵禁（ver -576，Ray：「晚上九點以後女主角就不出門，約不出來…到隔天七點以後
    才恢復」）══ 判定只有這一支（鐵律 8）：外出行程與旅店敲門都問它。
    ⚠ 跨午夜，上界不含（同節點的 `hours`）。 */
@@ -1046,6 +1062,10 @@ export function enter(id){
      上一個地點的對白會在**一秒後於新地點開演**（實測：從西區立刻回廣場，
      諾薇兒的「肚子餓」就跑到廣場上演了）。 */
   clearTimeout(arriveT); arriveT=0;
+  /* ⚠ **回到旅店就解除約會**（ver -576，Ray 指定）：她把你送回門口，回自己房間 ——
+     門燈跟著亮回來（`inRoom()` 現算）。要在 `afterArrive` 組 st1 之前做（鐵律 8：
+     解除只有 `endDate()` 一支）。 */
+  if(n.inn) endDate();
   story.endAdhoc();
   story.clearCast();
   chatterOn=false;          // ⚠ 第四件：上一個地點的路人單句（見 §6.5 的新路徑檢查表）
@@ -1269,8 +1289,10 @@ function afterArrive2(n){
                                    asleep: who => (who==='NOUVELLE' && nouAsleep),
                                    /* 宵禁（ver -576）：敲門一律回 `nightRest`，約不出來。 */
                                    night: isCurfew,
+                                   /* 今天已經約過她了（ver -576）：回 `dateDone`，不再出門。 */
+                                   dated: datedToday,
                                    data: n.innStage1||{},
-                                   onInvite(){ escortNou=true; },
+                                   onInvite(who){ escortNou=true; escortLeftover=false; markDated(who||'NOUVELLE'); },
                                  } : null,
                                  /* 「還沒六點呢」的那個六點＝傍晚提醒的時刻（ver -405）。
                                     ⚠ 同一個數字只有這一處（鐵律 7）。 */
@@ -1454,6 +1476,9 @@ export function close(){
   /* 外出行程（ver -575）：這裡才歸零 —— `close()` 才是「這一趟城鎮探索結束」
      （回主選單／killAllPages／讀檔換城）。`open()` 不清，見那一支的說明。 */
   outKey=null; outPlan=[];
+  /* 約會（ver -576）：解除同行、清掉「今天約過誰」。⚠ 出城鎮走的是 `suspend()`
+     不是這裡 —— 那一條只解除同行、**不清帳**（Ray：「一天內同人不能約第二次」）。 */
+  endDate(); dateDay=null; datedSet=new Set();
   townId=null; nodeId=null;
   document.body.classList.remove('town-nav');
   document.querySelectorAll('.kerb-arrow').forEach(a=>a.classList.remove('avail','holding'));
@@ -1476,6 +1501,7 @@ export function innNodeOf(town){
    ⚠ 收的四樣與換節點那張檢查表同源（§6.5 的新路徑檢查表）：導覽、店舖、旅店、立繪。 */
 export function suspend(){
   clearTimeout(arriveT); arriveT=0;
+  endDate();                // 出城鎮＝約會結束（ver -576，Ray 指定）
   story.endAdhoc();
   chatterOn=false;
   showNav(false);

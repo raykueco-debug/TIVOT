@@ -351,7 +351,18 @@ function knock(i){
        ⚠ 時刻的判定在 `modules/town.js` 的 `isCurfew()`（唯一那一支，鐵律 8），
          這裡只問它；台詞在節點資料的 `innStage1.nightRest`（鐵律 1）。 */
     if(st1.night && st1.night()){
-      if(st1.data.nightRest && host && host.say) host.say(st1.data.nightRest, nm);
+      /* ⚠ 專屬台詞優先（ver -576）：蕾娜是「那麼晚了你還不睡嗎？」，
+         沒寫專屬的人才回共用那一句。 */
+      const nl=(st1.data.nightRestBy||{})[who] || st1.data.nightRest;
+      if(nl && host && host.say) host.say(nl, nm);
+      return;
+    }
+    /* ══ 一天內同一個人只能約一次（ver -576，Ray：「一天內同人不能約第二次，
+       會拒絕」）══ 同宵禁：排在人的分支之前，好感再高也約不動。
+       ⚠ 記帳與判定都在 `modules/town.js`（`datedToday`／`markDated`，鐵律 8），
+         這裡只問；台詞在 `innStage1.dateDone`（鐵律 1）。 */
+    if(st1.dated && st1.dated(who)){
+      if(st1.data.dateDone && host && host.say) host.say(st1.data.dateDone, nm);
       return;
     }
     if(who==='RENNA'){ if(st1.data.renna && host && host.say) host.say(st1.data.renna, nm); return; }
@@ -369,7 +380,7 @@ function knock(i){
         if(host.lock) host.lock(false);
         /* ⚠ 門燈由 `st1.inRoom()` 現算（ver -575）：`onInvite` 一設同行，
            下一次 `refresh()` 就是空房 —— 不必在這裡另外把旗放倒（鐵律 7）。 */
-        if(st1.onInvite) st1.onInvite();
+        if(st1.onInvite) st1.onInvite(who);
         refresh(); });
       return;
     }
