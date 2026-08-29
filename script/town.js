@@ -685,27 +685,69 @@ export const TOWNS = {
     },
   },
 
-  /* ══ 北方泊地（ver -565 骨架）══════════════════════════════════════════
-     S2 的目的地。目前只有**入口一格**（Ray 交件 Northport_Entrance_BF）——
-     其餘節點、店家、進場對白、旅店都等 Ray 的稿再長，這裡不腦補內容。
+  /* ══ 北方泊地（ver -565 骨架；ver -567 照 Citymap 模板長出全圖）══════════
+     S2 的目的地。**節點圖照 `reference/Citymap.001.png`**（ver -567，Ray 交件
+     「大城市地圖設計參考此檔」）—— 那張是大城市的通用骨架，與帝都同構：
+       中央大道（樞紐；下＝離開/出航）
+       ├ 西側：左＝武器店　右＝賞金獵人公會　上＝（圖上「空格」，Ray：先留空）
+       ├ 北側：左＝市鎮中心　右＝教堂　上＝（圖上「空格」，Ray：**墓地**）
+       └ 東側：左＝雜貨街　右＝餐飲街　上＝旅店
+     Ray 三個定案（ver -567 問答）：
+       ① 入口那一格**就是中央大道**（降落站樞紐、下＝出航，同帝都廣場）。
+       ② 背景圖只有入口一張 → **其餘節點先全用入口圖佔位**，交圖後逐張換
+          （換圖時把 bg 改成該節點自己的基底名即可，時段差分自動吃）。
+       ③ 西側上方那個空格**先不開出口**（日後要加地點再開）。
+     ⚠ 店家內容（貨單/店主/hours/進場對白/chatter/旅店大廳）**等 Ray 的稿**——
+       這裡先只有「走得到的房間」：有地名、有佔位背景、沒有戲。
+       所以 shop/kind/keeperWho/hours 一律先不寫（寫了 kind 會把「這種店的初見戲」
+       在沒有店主的空房間裡演掉，那一戲就浪費了）。
      · 降落鈕：flight SETTLEMENTS 的 `town:'northport'`（兩邊互指）。
      · `sailFrom`＝這座城的**出港位**（地圖座標；main.js 的 sailOut ×MAP_SCALE=20
        寫進 tivot_flight_ret_v1）。城在 (1516,150)、北緣是海 —— 出港位在城南偏西，
        **暫定**，Ray 看了要挪就改這兩個數字。
-     · 沒有 `evening`／`acts`：傍晚強制回旅店那一套是帝都 stage0 的流程，
-       這座城還沒有旅店。 */
+     · 沒有 `evening`／`acts`：傍晚強制回旅店那一套是帝都 stage0 的流程。 */
   northport: {
     name: '北方泊地',
     entry: 'entrance',
     bgm: 'capital',            // ⚠ 暫用帝都曲 —— 北方泊地還沒有自己的 BGM
     sailFrom: { x:1480, y:190 },
     nodes: {
+      /* 樞紐＝Citymap 的「中央大道」（Ray：入口那一格就是它）。
+         ⚠ 「中央大道」是模板上的通名，這座城的街名 Ray 還沒給 —— 暫用。 */
       entrance: {
-        bg:'Northport_Entrance_BF', name:'北方泊地　入口',
-        exits:{},
-        /* 出航照 capital 的規矩掛在入口；到得了這裡船一定有了（同旗，只讀）。 */
+        bg:'Northport_Entrance_BF', name:'北方泊地　中央大道',
+        exits:{ up:'north', left:'west', right:'east' },
+        /* 出航＝模板的「離開」，照 capital 的規矩掛在下；到得這裡船一定有了（同旗，只讀）。 */
         sail:{ flag:'got_ship' },
       },
+      /* ── 三個街區樞紐（背景全是入口圖佔位，見檔頭②）── */
+      west: {
+        bg:'Northport_Entrance_BF', name:'北方泊地　西側',
+        /* up＝Citymap 的空格：Ray 指定先留空（不開出口）。 */
+        exits:{ left:'gunstore', right:'guild', down:'entrance' },
+      },
+      north: {
+        bg:'Northport_Entrance_BF', name:'北方泊地　北側',
+        exits:{ left:'cityhall', right:'church', up:'cemetery', down:'entrance' },
+      },
+      east: {
+        bg:'Northport_Entrance_BF', name:'北方泊地　東側',
+        exits:{ left:'grocery', right:'tavern', up:'inn', down:'entrance' },
+      },
+      /* ── 葉節點（`back`＝回不到「來時反向」時的退路，同 capital）──
+         ⚠ 全部還是空房間：等 Ray 的稿再補 shop/kind/keeperWho/hours/lines。 */
+      gunstore: { bg:'Northport_Entrance_BF', name:'北方泊地　武器店',     exits:{ back:'west' } },
+      guild:    { bg:'Northport_Entrance_BF', name:'北方泊地　賞金獵人公會', exits:{ back:'west' } },
+      cityhall: { bg:'Northport_Entrance_BF', name:'北方泊地　市鎮中心',   exits:{ back:'north' } },
+      church:   { bg:'Northport_Entrance_BF', name:'北方泊地　教堂',       exits:{ back:'north' } },
+      /* 墓地＝北側上方那個「空格」，Ray ver -567 定案是墓地。 */
+      cemetery: { bg:'Northport_Entrance_BF', name:'北方泊地　墓地',       exits:{ back:'north' } },
+      grocery:  { bg:'Northport_Entrance_BF', name:'北方泊地　雜貨街',     exits:{ back:'east' } },
+      tavern:   { bg:'Northport_Entrance_BF', name:'北方泊地　餐飲街',     exits:{ back:'east' } },
+      /* ⚠ 旅店先是空房間、**不掛 `inn:true`**：旅店大廳（伙伴門/睡覺存檔）那一套
+         的分支資料還綁著帝都 stage0 的旗標 —— 等 Ray 給這座城的旅店稿再接，
+         免得「被抬回旅店」的醒來拍與睡覺存檔接在沒調過的資料上。 */
+      inn:      { bg:'Northport_Entrance_BF', name:'北方泊地　旅店',       exits:{ back:'east' } },
     },
   },
 };
