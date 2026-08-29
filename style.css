@@ -873,8 +873,7 @@
   #resultStats .tag-flawless{display:inline-block;margin-left:8px;padding:1px 8px;border-radius:10px;
     font-size:10px;letter-spacing:2px;font-weight:bold;color:var(--bg);background:var(--gold);
     vertical-align:middle;box-shadow:0 0 10px var(--gold-dim);}
-  /* 評價等第 */
-  #resultStats .rank{font-weight:bold;letter-spacing:2px;}
+  /* 評價等第（現行只有 rank-X 分色；裸 .rank 是 reference 舊版的雙 class 殘留，ver -567 清掉） */
   #resultStats .rank-S{color:#ffe08a;text-shadow:0 0 12px var(--gold);}
   #resultStats .rank-A{color:var(--gold);}
   #resultStats .rank-B{color:var(--holy);}
@@ -2502,8 +2501,6 @@
   #gearSheet .gs-close{position:absolute;right:12px;top:calc(env(safe-area-inset-top,0px) + 10px);
     width:40px;height:40px;border-radius:50%;background:rgba(10,8,14,.7);
     border:1px solid var(--gold-dim);color:var(--gold);font-size:16px;cursor:pointer;}
-  #gearSheet .gs-title{text-align:center;font-size:15px;letter-spacing:6px;color:var(--gold);
-    margin:2px 0 12px;}
   /* ══ 分頁（ver -457，Ray：「在整備頁面加入道具分頁，道具要分類」）══
      兩顆分頁鈕取代原本的標題（它們就是標題）。 */
   #gearSheet .gs-tabs{display:flex;justify-content:center;gap:14px;margin:2px 0 12px;}

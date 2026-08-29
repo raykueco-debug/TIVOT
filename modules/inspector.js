@@ -434,7 +434,7 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose, opts){
   setTimeout(()=>{ stats.classList.add('sweep'); }, 260);
 
   // ── 階段三＋四：rows 刷完後彈出對話框，逐字顯示台詞（2 秒內）──
-  //   教學戰（tutorialRun）：rank 台詞讓位給 applyTutorialResult 的專屬台詞
+  //   教學戰（tutorialRun）走 tutorialSettle（noInspector，ver -358 起無台詞），不進這裡
   const sweepDone = 260 + (n>0 ? (n-1)*step : 0) + 300;
   if((insp || spk) && !state.tutorialRun){
     // 處決勝利（聖徒化 Maximum Burst 擊殺）→ 固定處決台詞，不論 rank；否則走 rank 台詞。
@@ -627,46 +627,14 @@ function popLootOnce(){
    ⚠ **只有劇情／城鎮那一場（`script-continue`）自動走**：
      · `rematch`（試玩版出陣）拿到 S 之後那一按是「迎擊」的岔路 —— 自動按下去會替
        玩家把那個選擇做掉。
-     · `tutorial-home` 的結算頁後面還有監察官的第二句（outro）要點出來。
+     · `tutorial-home` 是教學收尾，「繼續」那一按交還玩家。
      兩者都留給玩家自己按。 */
 function afterLoot(){
   if(state.resultMode==='script-continue') onRematchBtn();
 }
 
-function applyTutorialResult(){
-  const tr = (GAME_CONFIG.tutorial && GAME_CONFIG.tutorial.result) || {};
-  state.sRankUnlocked = false;
-  state.resultMode = 'tutorial-home';
-  const rbtn=$('rematchBtn');
-  if(rbtn) rbtn.textContent = tr.buttonLabel || '回到主畫面';
-  // ⚠ 用 tutorialLifeReturn 而非 partnerActiveUsed：蕾妮主動技無 oncePerBattle，後者不會被設
-  const line1 = state.tutorialLifeReturn ? tr.usedLifeReturn : tr.noLifeReturn;
-  const bubble=$('inspectorBubble'), lineEl=$('inspectorLine');
-  clearTimeout(_inspTypeTimer);
-  if(lineEl) lineEl.textContent='';
-  // 兩次對話框：第一句打完 → 尾端亮「▼」→ 點擊對話框才重彈打第二句（聖徒化豪賭 outro）
-  setTimeout(()=>{
-    if(bubble) bubble.classList.add('show');
-    if(lineEl) typeInspectorLine(lineEl, line1 || '', 2000);
-    if(tr.outro && bubble){
-      setTimeout(()=>{
-        if(state.resultMode!=='tutorial-home') return;   // 已按鈕離場（buttonLine 播放中）則讓位
-        if(lineEl) lineEl.textContent += '　▼';          // 待點提示
-        // ⚠ 監聽掛在 #inspectorStage：#inspectorBubble 是 pointer-events:none（結算慣例），
-        //   真實點擊會穿透對話框落在立繪/舞台上，再冒泡到 stage——掛 bubble 永遠收不到。
-        const stage=$('inspectorStage') || bubble;
-        const onTap=()=>{
-          stage.removeEventListener('pointerup', onTap);
-          if(state.resultMode!=='tutorial-home') return;
-          bubble.classList.remove('show'); void bubble.offsetWidth; bubble.classList.add('show');
-          clearTimeout(_inspTypeTimer);
-          if(lineEl) typeInspectorLine(lineEl, tr.outro, 2000);
-        };
-        stage.addEventListener('pointerup', onTap);
-      }, 2100);
-    }
-  }, 1400);
-}
+/* applyTutorialResult（監察官兩段台詞版的教學結算）已於 ver -358 被 tutorialSettle
+   取代（Ray：教學結算改成無監察官不評等級），死體於 ver -567 清死碼時移除。 */
 
 /* ============================================================================
  *  Boss 戰 S 級獎勵演出：銭湯インストール

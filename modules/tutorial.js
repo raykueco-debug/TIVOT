@@ -165,7 +165,6 @@ export function maybeStart(){
   state.tutorialActive = true;
   state.tutorialRun = true;         // 存續到結算（inspector 據此切教學專屬台詞/按鈕）
   state.tutorialStoryRun = storyRun;   // 劇情版：inspector 據此整段跳過教學結算
-  state.tutorialLifeReturn = false;
   soloRun = computeSoloRun();       // 獨腳戲 → 立繪放大（整場一致，見 applyPortraitFit）
   resetCamera();                    // 這一場重新量一次相機（見 cameraPxCm）
   /* 教學進行中的旗標：**只給 CSS 用**（開發者跳關鈕的顯示條件，ver -366）。
@@ -354,7 +353,6 @@ export function onSaintCritical(){
 export function onSaintEnded(kind){
   if(!state.tutorialActive) return;
   if(kind!=='mb' && kind!=='return') return;
-  if(kind==='return') state.tutorialLifeReturn = true;   // 結算台詞分歧：發動過生命歸還
   afterCutin(()=>{
     if(!state.tutorialActive) return;
     markSeen();

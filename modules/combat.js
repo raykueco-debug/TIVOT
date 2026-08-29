@@ -44,7 +44,6 @@ const ATK_BUFF_SECONDS=T.atkBuffSeconds;
 const OVERKILL_LIMIT_MS=T.overkillLimitMs, OVERKILL_NEXT_DELAY_MS=T.overkillNextDelayMs;   // overkill 限時/收尾延遲
 const OVERKILL_ORDER_MULT=T.overkillOrderMult!=null ? T.overkillOrderMult : 1;   // overkill 照順序點的獎勵倍率
 const SAINT_ADVANCE_DIVISOR=T.saintAdvanceDivisor;   // 聖徒化一次「受擊」推進量＝playerMax/此值
-const CLASP_LEN=110;
 
 const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;};
 
@@ -1273,7 +1272,7 @@ export function startGame(){
      「上一場結束時記得歸零」是會漏的（漏了就換成一般戰鬥變單敵、還不能聖徒化）。
      開場一律先歸零、再看這一次有沒有指定，才是不會漏的寫法。 */
   state.scriptRun=!!pendingScript; state.scriptBattleId=pendingScript; pendingScript=null;
-  state.tutorialRun=false; state.tutorialStoryRun=false; state.tutorialLifeReturn=false;   // 教學場旗標歸零（tutorial 擁有；開場統一歸零、maybeStart 啟動時設回）
+  state.tutorialRun=false; state.tutorialStoryRun=false;   // 教學場旗標歸零（tutorial 擁有；開場統一歸零、maybeStart 啟動時設回）
   /* 劇情插入戰（ver -375）：**單敵一場**，換上卡上那隻，且這一場不能聖徒化／不能用搭檔技。
      ⚠ 要在 `stopAll()`/`loadBoard(0)` **之前**換敵 —— 盤面配置（boardGrids/boardLoop）
        是查「目前這隻怪」來的，換晚了第一盤會用到上一隻的格數。 */

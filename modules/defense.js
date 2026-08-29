@@ -22,7 +22,6 @@ import { L, fmt } from '../i18n.js';   // 多語言（防禦浮動字）
 
 const $ = id => document.getElementById(id);
 const T = GAME_CONFIG.tuning;
-const WEAPONS = GAME_CONFIG.weapons;
 const DEF_DEFENSE_MIN = T.defDefenseMin;   // ratio 0.35~1.0：Defense（傷害減半）
 const DEF_PERFECT_MIN = T.defPerfectMin;   // ratio 0.12~0.35：Perfect（免傷）
 const SAINT_BLOCK_DIVISOR = T.saintBlockDivisor;   // 聖徒化期間格擋推進量（下一輪聖徒化才會實際觸發）

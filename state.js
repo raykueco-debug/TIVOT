@@ -198,8 +198,6 @@ export const state = {
   hpLock: false,
   noSaint: false,        // 這一場不能聖徒化（讀者：saint / main 的手勢綁定）
   noPartner: false,      // 這一場不能用搭檔技（讀者：partner / weapon 的按鈕）
-  tutorialLifeReturn: false,   // 教學戰中發動過生命歸還（結算台詞分歧用；同 tutorialRun 存續到結算）。
-                               //   ⚠ 不可用 partnerActiveUsed 判斷——蕾妮主動技無 oncePerBattle，該旗標不會被設
 
   /* ── UI 閘門（跨模組共享的演出鎖；擁有者：播演出的模組） ──────────
    *  cutinPlaying：cut-in／結局演出期間鎖住盤面點擊與敵大絕生成。

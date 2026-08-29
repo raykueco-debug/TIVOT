@@ -15,7 +15,10 @@
 #lootSheet{
   /* ⚠ **這一份用到的變數要列全**：漏一個，在沒有那組 :root 的宿主頁面上就會變成
      「該有顏色的地方是透明的」。實測漏了 `--panel`，飛行頁的面板整個透出舵輪。
-     檢查法：`grep -o 'var(--[a-z-]*)' css/lootsheet.css | sort -u` 對照這一行。 */
+     檢查法：`grep -o 'var(--[a-z-]*)' css/lootsheet.css | sort -u` 對照這一行。
+     ⚠ `--kerb-clip-top` 不在此列是刻意的：它由 story.js 執行期 setProperty 發佈到
+     documentElement（單子的下界＝楣的上緣，§6.5.4）；飛行頁沒跑 story.js，
+     吃的是 var() 裡的 56vh fallback —— 那正是為它準備的。 */
   --ink:#ece6d8; --gold:#d4a94a; --gold-dim:#8a6d2e; --blood:#8a1f1f; --holy:#6fb3d4;
   --panel:#120f1a;
   font-family:"Iowan Old Style","Palatino Linotype",Georgia,"Songti TC",serif;
@@ -71,13 +74,9 @@
   #lootSheet .bag-money{display:flex;justify-content:flex-end;align-items:baseline;gap:2px;
     font-size:11px;letter-spacing:2px;color:var(--gold-dim);margin:-4px 2px 8px;}
   #lootSheet .bag-money b{font-size:15px;color:var(--gold);letter-spacing:1px;}
-  /* 變賣鈕：貼在該列右下，兩段式（第二段轉紅提示不可逆）。 */
+  /* 列要 relative：使用鈕（.bag-use）絕對定位在該列右下。 */
   #lootSheet .loot-row{position:relative;}
-  #lootSheet .bag-sell{position:absolute;right:8px;bottom:6px;padding:2px 8px;
-    font-family:inherit;font-size:10px;letter-spacing:1px;color:var(--gold);
-    background:rgba(10,8,14,.72);border:1px solid var(--gold-dim);border-radius:10px;}
-  #lootSheet .bag-sell.armed{color:#e7b4b4;border-color:var(--blood);}
-  /* 使用鈕（ver -497，整備頁的回復道具）：位置同賣鈕（該列右下）。 */
+  /* 使用鈕（ver -497，整備頁的回復道具）：貼在該列右下。 */
   .bag-use{position:absolute;right:8px;bottom:6px;padding:3px 10px;
     font-family:inherit;font-size:11px;letter-spacing:2px;color:var(--gold);
     background:rgba(10,8,14,.72);border:1px solid var(--gold-dim);border-radius:10px;}
@@ -213,8 +212,6 @@
   #lootSheet.dock-left .shop-tab{padding:6px 0;}
   #lootSheet.dock-left .shop-row{padding:7px 9px;}
   #lootSheet.dock-left .shop-desc{margin-top:6px;min-height:1.8em;}
-  #lootSheet.dock-left .shop-qty{margin-top:6px;gap:8px;}
-  #lootSheet.dock-left .shop-qty button{width:30px;height:25px;}
   #lootSheet.dock-left .shop-acts{margin-top:6px;gap:5px;}
   /* ⚠ 鈕**擠一排**：字級 11px、字距歸零、不換行，鈕的字也縮短了（`showShop` 的
      「交　談」）。武器店最多四顆（買下／交談／射擊挑戰／關閉），250px 的單子每顆

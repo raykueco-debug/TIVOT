@@ -654,15 +654,13 @@ export const GAME_CONFIG = {
     // 引導箭頭（雪鐵龍雙箭羽依次閃滅）文字標示
     guideLabels: { click:'CLICK！', right:'向右側滑動', up:'向上滑動',
                    wswitch:'點擊切換' },   // 副武器切換教學（ver -478）
-    /* ── 教學專屬結算（inspector.settle 讀取；tutorialRun 旗標存續到結算）──
-     *  usedLifeReturn＝有發動蕾妮主動技（生命歸還）；noLifeReturn＝沒發動（MB 過關）。
-     *  outro 接在其後同框逐字補完；按鈕改「回到主畫面」，按下先補 buttonLine 再回首頁。 */
+    /* ── 教學專屬結算（inspector.tutorialSettle 讀取；tutorialRun 旗標存續到結算）──
+     *  ver -358 起教學結算**無監察官、不評等級**（Ray 指定），台詞欄位
+     *  （usedLifeReturn／noLifeReturn／outro／buttonLine）已隨舊版 applyTutorialResult
+     *  一併清掉（ver -567 清死碼）。⚠ 這一塊開機時被 i18n 整包蓋掉（i18n.js 的
+     *  `tut.result={...L.tutorial.result}`）——改欄位要連 i18n 三份一起改。 */
     result: {
-      usedLifeReturn: '我話說在前頭，這次是蕾妮救了你，萬一熔斷就真的背水一戰了。',
-      noLifeReturn:   '身手不錯，但要存活下來也得好好依賴伙伴。',
-      outro:          '「聖徒化」是場豪賭，失敗的話就只能背水一戰，謹慎使用吧。',
       buttonLabel:    '繼續',            // ver -361：教學結算是「往下走」不是「離場」
-      buttonLine:     '期待你的表現。',
     },
   },
 
@@ -844,7 +842,7 @@ export const GAME_CONFIG = {
       name:'訓練用聖徒',
       story:0, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
       kind:'slay',                   // 聖徒系列＝已擊殺（ver -432）
-      image:'enemy_trainee',    // → resources/enemy/Saint_TR_CI.png
+      image:'enemy_trainee',    // → resources/enemy/Saint_TR_CI.webp
       hp:500,
       attack:45,
       atkInterval:null,         // 沿用 tuning.chargeSeconds
@@ -1730,9 +1728,8 @@ export const ASSETS = {
   em_revolver:       "resources/audio/se/se_enemy_revolver.m4a", // Boss：大絕/不完美防禦（左輪）
   em_dagger:         "resources/audio/se/se_enemy_dagger.m4a",   // Boss：按錯
 
-  // 普攻槍聲（手槍；每次正確點擊由這兩支隨機播一支，製造變化）
-  se_pistol_01:      "resources/audio/se/se_weapon_pistol_01.m4a",
-  se_pistol_02:      "resources/audio/se/se_weapon_pistol_02.m4a",
+  /* 普攻槍聲：**固定用 pistol_03，不隨機**（ver -37 定案；main.js 的 setShots）。
+     pistol_01/02 的 ASSETS 鍵已清（ver -567）——音檔本身仍在 SE_FILES（劇情層在用），別刪檔。 */
   se_pistol_03:      "resources/audio/se/se_weapon_pistol_03.m4a",  // 普攻槍聲（現行）
 
   // BGM（loop、不可交疊，切歌時前一首淡出）。
