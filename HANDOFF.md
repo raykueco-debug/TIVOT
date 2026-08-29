@@ -115,6 +115,11 @@ window.dispatchEvent(new Event('resize'));   // 觸發 layoutClasp + updateEnerg
 - **交叉雙槍兩張圖**（`resources/vfx/42452231-….png` 彩色、`resources/background/42452231-….png`
   黑剪影）：Ray 說「另有用途」，**用途還沒講** —— 下次問清楚再接，先不入版控。
 - stage2 羽蛇「戰鬥結束」戲（Sturm／Deck_Chaos／著水）等 Ray 的 stage2 稿與素材。
-- `Northport_Entrance_BF.png` 還沒接。
+- ~~Northport_Entrance_BF~~ **已接**（ver -565）：北方泊地最小城鎮骨架 ——
+  降落鈕（flight SETTLEMENTS `town:'northport'`）→ 入口一格（背景已轉 webp）→
+  出航回大地圖（`TOWNS[].sailFrom` 出港位，main.js sailOut 寫回程鑰匙；
+  出港位 (1480,190) **暫定**）。其餘節點/店家/對白等 Ray 的稿。
+- 羽蛇卡的「戰鬥結束」戲（Sturm／Deck_Chaos／著水）：Sturm.m4a 已在，
+  **缺 Deck_Chaos 背景圖與 stage2 觸發稿**。
 - `vo_lunaMG.m4a` 還躺在 `resources/audio/se/`（該搬 `vo/`，等 Ray 點頭）。
 - 蜈蚣／空賊的稀有度暫定 E（卡還沒給）。

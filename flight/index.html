@@ -761,6 +761,7 @@ const SETTLEMENTS = [
   /* `smoke`（ver -446，Ray：「讓北方泊地城鎮冒煙」）：煙囪數與種子；
      `area` 是煙囪落點的局部範圍（-1..1）—— 上緣是碼頭與海灣，煙囪讓開它。 */
   { n:'北方泊地', x:1516, y:150, t:'city2', f:'free', c:1, sea:0.0,
+    town:'northport',   // ver -565：城鎮骨架上線（script/town.js northport，兩邊互指）→ 降落鈕
     plan:'city/northport_plan.webp', planH:'city/northport_h.webp',
     planW:700, planRot:0.0, planTall:40,
     smoke:{ n:8, seed:11, area:[-0.55,0.55,-0.15,0.55] },

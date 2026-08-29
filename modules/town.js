@@ -794,7 +794,9 @@ function setSail(){
     suspend();
     /* ⚠ 走注入的開啟器（ver -388）：飛行頁現在是**內嵌 iframe**，不跳頁 ——
        跳頁會讓音訊要重新解鎖（見 CLAUDE.md §6.10）。town 不 import main，所以用注入。 */
-    if(flightOpener) flightOpener(); else location.href='flight/index.html';
+    /* ⚠ 把這座城的**出港位**帶給啟動層（ver -565）：沒有這一手，出航一律重載
+       飛行頁＝船回到帝都出港位 —— 從北方泊地出航會瞬移回帝都。 */
+    if(flightOpener) flightOpener((TOWNS[townId]||{}).sailFrom||null); else location.href='flight/index.html';
     return;
   }
   if(!sail.blocked || !sail.blocked.length) return;

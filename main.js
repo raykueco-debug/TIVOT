@@ -862,8 +862,17 @@ story.setPrepOpener(()=>gear.open());
    兩條出航路（劇情的出航拍、城鎮的往下出航）都走這一支（鐵律 8）；
    守門「===1」＝只在第一次離港升段：升過不再動、讀檔不倒退、
    試玩版「試飛」（無鑰匙，getStage=測試預設 5）不受影響。 */
-function sailOut(){
+function sailOut(from){
   if(prog.getStage()===1) prog.setStage(2);
+  /* 出港位（ver -565）：城鎮資料的 `sailFrom`（**地圖座標**）→ 塞進回程鑰匙，
+     飛行頁開機的 restoreFlightPos 讀了就清、把船擺在那裡（鐵律 8：同一條還原路）。
+     沒帶＝重載後照舊從帝都出港位（SAIL_FROM_CAPITAL）開始。
+     ⚠ MAP_SCALE=20 是 flight/index.html 的複本（非 module 頁 import 不到）——
+       改那邊要改這裡（鐵律 7 的但書，兩邊註解互指）。 */
+  if(from && isFinite(from.x)){
+    try{ localStorage.setItem('tivot_flight_ret_v1',
+      JSON.stringify({ x:from.x*20, y:from.y*20 })); }catch(_){}
+  }
   openFlight();
 }
 story.setFlightOpener(()=>{ town.suspend(); sailOut(); });
@@ -1121,7 +1130,7 @@ story.setHomeReturn(()=>{
   combat.goHome(()=>story.close());
 });
 /* 城鎮的「出航」→ 開飛行頁（注入，town 不 import main；同 setTownOpener 的作法）。 */
-town.setFlightOpener(()=>sailOut());   // 城鎮出航＝「進入」，讀取頁要跑（ver -389）；升段見 sailOut（-562）
+town.setFlightOpener(from=>sailOut(from));   // 城鎮出航＝「進入」，讀取頁要跑（ver -389）；升段與出港位見 sailOut（-562/-565）
 combat.setStoryClose(story.playKerberosClose);
 /* 門開期間戰鬥不計時（ver -466）：story 的開門演出押住／放行戰鬥。
    ⚠ 放行要讓位給教學對話：門還在開時教學的第一句可能已經插進來

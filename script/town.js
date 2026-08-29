@@ -651,4 +651,28 @@ export const TOWNS = {
       },
     },
   },
+
+  /* ══ 北方泊地（ver -565 骨架）══════════════════════════════════════════
+     S2 的目的地。目前只有**入口一格**（Ray 交件 Northport_Entrance_BF）——
+     其餘節點、店家、進場對白、旅店都等 Ray 的稿再長，這裡不腦補內容。
+     · 降落鈕：flight SETTLEMENTS 的 `town:'northport'`（兩邊互指）。
+     · `sailFrom`＝這座城的**出港位**（地圖座標；main.js 的 sailOut ×MAP_SCALE=20
+       寫進 tivot_flight_ret_v1）。城在 (1516,150)、北緣是海 —— 出港位在城南偏西，
+       **暫定**，Ray 看了要挪就改這兩個數字。
+     · 沒有 `evening`／`acts`：傍晚強制回旅店那一套是帝都 stage0 的流程，
+       這座城還沒有旅店。 */
+  northport: {
+    name: '北方泊地',
+    entry: 'entrance',
+    bgm: 'capital',            // ⚠ 暫用帝都曲 —— 北方泊地還沒有自己的 BGM
+    sailFrom: { x:1480, y:190 },
+    nodes: {
+      entrance: {
+        bg:'Northport_Entrance_BF', name:'北方泊地　入口',
+        exits:{},
+        /* 出航照 capital 的規矩掛在入口；到得了這裡船一定有了（同旗，只讀）。 */
+        sail:{ flag:'got_ship' },
+      },
+    },
+  },
 };
