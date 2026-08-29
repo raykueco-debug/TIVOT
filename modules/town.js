@@ -66,12 +66,54 @@ let pendingFavor=null;
 const RESTING = [
   { who:'NOUVELLE', on:['inn_wait','inn_renna','inn_missed'], until:'stage1_open' },
 ];
+
+/* ══ Stage 1 起：夥伴在城裡的所在（ver -461，Ray 定案）══════════════════════
+   「夥伴進入城市就會自動亮旅店燈」——之後每次進城，夥伴預設住進旅店：
+     · 諾薇兒：城裡還有**她的殘留事件**（沒演過、沒過期的進場對白裡有她）
+       → 跟著玩家走；沒有 → 在房內（好感 ≥10 敲門可約出來，見 inn.js）。
+     · 蕾娜：在房內寫報告；`rennaOut` 的機率在**進城時擲一次**，中了就在
+       指定節點之一待到 `until`（18:00），走到那裡會碰到她。
+   ⚠ 這一組是**這一趟探索**的狀態（同 eveningHeld）：`open()` 歸零、不進存檔。
+   ⚠ 全部鎖在 `stage1_open` 之後 —— stage 0 的第一晚有自己的劇本
+     （inn_wait 那一套），不能被這一套蓋掉。 */
+let escortNou=false, rennaOutNode=null;
+function st1Active(){ return prog.hasFlag('stage1_open'); }
+function leftoverForNou(){
+  const T=TOWNS[townId]; if(!T) return false;
+  for(const id in T.nodes){
+    const n=T.nodes[id];
+    if(!n.lines || !n.lines.length) continue;
+    if(prog.hasFlag(flagOf(n,id))) continue;
+    if(n.expire && prog.hasFlag(n.expire)) continue;
+    if(n.lines.some(l=>l && (l.speaker==='NOUVELLE' || (l.portrait && l.portrait.char==='NOUVELLE'))))
+      return true;
+  }
+  return false;
+}
+/* 蕾娜還在外面嗎（時間到了就當她回房了）。 */
+function rennaIsOut(){
+  if(!rennaOutNode) return false;
+  const ro=(TOWNS[townId]||{}).rennaOut||{};
+  if(clock.hourF() >= (ro.until!=null?ro.until:18)){ rennaOutNode=null; return false; }
+  return true;
+}
+/* 走到蕾娜所在的節點 → 碰到她（立繪＋一句話）。afterArrive 收尾呼叫。 */
+function maybeMeetRenna(){
+  if(!rennaIsOut() || nodeId!==rennaOutNode) return;
+  const ro=(TOWNS[townId]||{}).rennaOut||{};
+  story.castSolo('RENNA');
+  if(ro.line) story.flashLine(ro.line, (SPEAKERS.RENNA||{}).name||'蕾娜');
+  chatterOn=true;          // 再點一下收掉（走路人單句那一套節奏）
+}
 function restingSet(){
   const s={};
   for(const r of RESTING){
     if(r.until && prog.hasFlag(r.until)) continue;
     if(r.on.some(f=>prog.hasFlag(f))) s[r.who]=1;
   }
+  /* Stage 1 起（ver -461）：諾薇兒在房內（沒被約出來）＝她不在場，
+     她會插話的段落（店主對談等）不觸發；約出來（escortNou）就解封。 */
+  if(st1Active() && townId && !escortNou) s.NOUVELLE=1;
   return s;
 }
 function linesBlockedByRest(lines){
@@ -1011,10 +1053,18 @@ export function setGearWatch(fn){ gearWatch=fn||null; }
 function afterArrive(n){
   /* ⚠ `introFlag` 由城鎮算好傳進去（ver -402）：旅店已經沒有 `kind` 了，
      旗標名只有 `enter()` 那一支知道（`kind` 版／節點版兩種）—— inn 自己拼會拼錯城。 */
+  maybeMeetRenna();          // 蕾娜外出時走到她那一格 → 碰到她（ver -461）
   if(n && n.inn) inn.arrive(n, { allSeen: allSeen(), introFlag: flagOf(n, nodeId),
                                  /* 這是哪一座城的哪個節點（ver -481）：睡覺那一刻要記
                                     「上一次睡覺的旅店」——連敗三場送回來用。 */
                                  where: { town: townId, node: nodeId },
+                                 /* Stage 1 起的房門（ver -566）：誰在房內、約諾薇兒出門的回呼。 */
+                                 st1: st1Active() ? {
+                                   nouIn: !escortNou,
+                                   renIn: !rennaIsOut(),
+                                   data: n.innStage1||{},
+                                   onInvite(){ escortNou=true; },
+                                 } : null,
                                  /* 「還沒六點呢」的那個六點＝傍晚提醒的時刻（ver -405）。
                                     ⚠ 同一個數字只有這一處（鐵律 7）。 */
                                  eveningHour: ((TOWNS[townId]||{}).evening||{}).hour,
@@ -1172,6 +1222,16 @@ export function open(town, node, opts){
   carriedIn = !!(opts && opts.carried);
   eveningHeld=false;          // 傍晚那一格的「讓過一次」是這一趟城鎮探索的狀態（ver -430）
   pendingFavor=null;          // 「下一步去哪」也是（ver -440，見 armFavor）
+  /* 夥伴的所在（ver -461）：進城算一次。⚠ 要在 townId 設好之後（leftoverForNou 要查表）。 */
+  escortNou=false; rennaOutNode=null;
+  if(st1Active()){
+    escortNou=leftoverForNou();
+    const ro=T.rennaOut;
+    if(ro && clock.hourF()<(ro.until!=null?ro.until:18) && Math.random()<(ro.chance!=null?ro.chance:0.5)){
+      const ns=(ro.nodes||[]).filter(k=>T.nodes[k]);
+      if(ns.length) rennaOutNode=ns[(Math.random()*ns.length)|0];
+    }
+  }
   const st=story.stageEl(); if(st){ st.classList.add('on','town-on'); }
   document.body.classList.add('story-on');
   /* ⚠ 進城也是**切景**（ver -438）：先蓋上黑幕（`0ms`＝立刻，因為這一層本來就是

@@ -86,6 +86,10 @@ let eveningHour = 18;
    下面的**分支二**（諾：「今天有點累了，我先去休息囉。」）—— 那一支演完要把
    傍晚的旗標一起記掉，否則走出去再回來又會被城鎮抓一次。名字由城鎮傳進來（鐵律 7）。 */
 let eveningFlag = null;
+/* Stage 1 起的房門（ver -566，由 town.afterArrive 傳進來）：
+   `{ nouIn, renIn, data, onInvite }` —— 誰在房內、敲門的台詞、約諾薇兒出門的回呼。
+   null＝還在 stage 0 的第一晚（走原本的劇本）。 */
+let st1 = null;
 function introDone(){ return !!(introFlag && prog.hasFlag(introFlag)); }
 
 /* ══ 一次性說明（遮罩＋箭頭）══════════════════════════════════════════
@@ -250,6 +254,13 @@ function faceStyle(who){
 
 /* 這一格現在是什麼狀態：`empty`（還沒有這個人）／`awake`／`asleep`。 */
 function doorState(who){
+  /* ══ Stage 1 起（ver -461，Ray：「夥伴進入城市就會自動亮旅店燈」）══
+     在房內＝燈亮（awake）；出門／跟著玩家走＝空房。stage 0 的旗標不再管這裡。 */
+  if(st1){
+    if(who==='NOUVELLE') return st1.nouIn ? 'awake' : 'empty';
+    if(who==='RENNA')    return st1.renIn ? 'awake' : 'empty';
+    return 'empty';
+  }
   const st = stage();
   /* ⚠ 大廳可能在**還沒住下**（`none`）時就開了（獨自坐坐從初入對白就能用，ver -401）——
      那時候還沒有人回房，四扇門都該是空的。不擋的話諾薇兒的門會在她還站在旁邊時就亮著。 */
@@ -320,6 +331,32 @@ function maybeGuide(){
 function knock(i){
   const who = DOORS[i];
   if(!who || doorState(who)==='empty') return;
+  /* ══ Stage 1 起的敲門（ver -461，Ray 交稿）══════════════════════════════
+       蕾娜 → 「我得先寫報告，你們去吧。」
+       諾薇兒（在房內）→ 好感 <10：「我想先休息一下。」；≥10：約她同行出門
+         （演 `nouJoin` 那一小段，演完她離房、跟著玩家走 —— 門燈熄掉，
+          她會插話的城鎮段落也解封，見 town.js 的 restingSet）。
+     ⚠ 台詞在資料上（`innStage1`，鐵律 1）；「未達 10」＝ <10，所以答應的門檻是 ≥10。 */
+  if(st1){
+    const nm=(SPEAKERS[who]||{}).name||'';
+    try{ SFX.unlock(); SFX.menuClick(); }catch(_){}
+    if(who==='RENNA'){ if(st1.data.renna && host && host.say) host.say(st1.data.renna, nm); return; }
+    if(who==='NOUVELLE'){
+      /* ⚠ -560 起好感 API 只剩 getAffection()（回四人物件），沒有逐人查詢 */
+      const aff=(prog.getAffection()||{}).nouvelle||0;
+      if(aff<10){ if(st1.data.nouRest && host && host.say) host.say(st1.data.nouRest, nm); return; }
+      const lines=st1.data.nouJoin||[];
+      if(!lines.length || !host || !host.play || busy) return;
+      busy=true; if(host.lock) host.lock(true);
+      host.play(lines, ()=>{ story.clearCast(); busy=false;
+        if(host.lock) host.lock(false);
+        if(st1.onInvite) st1.onInvite();
+        st1.nouIn=false;              // 她出門了 → 門燈熄
+        refresh(); });
+      return;
+    }
+    return;
+  }
   const tbl = (node && node.innKnock) || {};
   const set = tbl[stage()==='slept' ? 'slept' : 'wait'] || {};
   const line = set[who];
@@ -523,6 +560,7 @@ export function arrive(n, ctx){
   if(ctx && ctx.eveningHour!=null) eveningHour = ctx.eveningHour;
   eveningFlag = (ctx && ctx.eveningFlag) || null;
   allSeenNow = !!(ctx && ctx.allSeen);
+  st1 = (ctx && ctx.st1) || null;   // Stage 1 起的房門（ver -461，見 doorState/knock）
   ensureLayer();
   runBranch(true);
 }
@@ -539,6 +577,12 @@ export function arrive(n, ctx){
      是**招呼**，只在走進來時講；分支二（「今天有點累了」）是**狀態轉移**，時間到了就講，
      所以坐完也要判 —— 不分的話每坐兩小時她就把那句招呼再唸一次。 */
 function runBranch(arrived, sat){
+  /* ══⚠⚠ Stage 1 起，stage 0 的旅店劇本整套讓位（ver -461）══════════════════
+     這一支管的是第一晚的分支（「時間還早，我想去城裡逛逛呢」／等蕾娜／道晚安）——
+     之後每次回旅店，諾薇兒**在房裡**（或跟著玩家），不可能在大廳招呼你。
+     不讓位的話那句招呼會在 stage 1 的旅店卡住整個 arrive（實測就是）。
+     大廳照開：門牌走 st1 的 doorState、坐坐與睡覺照常。 */
+  if(st1){ refresh(); return; }
   const b = (node && node.innBranch) || {};
   /* ⚠⚠ **分支二的條件是「走完了」或「時間到了」**（ver -427，Ray 的規則四／五：
        「若3發生而主角已在旅店，走5（諾：『今天有點累了，我先去休息囉。』）」）。
