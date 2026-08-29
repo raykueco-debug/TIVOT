@@ -138,6 +138,9 @@ export const OUTING = {
    ══════════════════════════════════════════════════════════════════════ */
 export const DINE = {
   fallback: 'bar',       // Ray：無女伴、該場景無分配角色 → 酒吧
+  /* ⚠ `name` **不會出現在畫面上**（ver -580，Ray：地名一律是「餐飲街」）——
+     它是除錯與文件用的（`town.outingDebug()` 印得出來）。玩家看得出自己在哪一家
+     靠的是背景與路人語，那正是「點進去會進哪邊」這件事本身。 */
   scenes: {
     cafe:       { name:'咖啡廳' },
     restaurant: { name:'餐廳'   },
@@ -577,7 +580,10 @@ export const TOWNS = {
 
       /* 1. 酒館 ⚠ 還沒有背景素材，暫借西區街道那張（見 HANDOFF 的缺口清單）。 */
       tavern: {
-        bg:'Capital_Bistro', name:'帝都　餐酒館',
+        /* ⚠ 地名是**餐飲街**不是「餐酒館」（ver -580，Ray 指定）：這一格是一整條街，
+           點進去落在哪一家由同行女伴／現在誰在那裡決定（見 dining）。節點 id 沿用
+           `tavern`（旗標、腳本、`nextFavor` 都指著它，改 id 等於把那些全打斷）。 */
+        bg:'Capital_Bistro', name:'帝都　餐飲街',
         exits:{ back:'uptown' },
         /* 開到午夜（Ray 指定）。⚠ `[8,24]` 的意思是 23:59 還開著、00:00 就關 —— 見
            modules/town.js 的 `isOpenNow`（上界是**不含**的）。 */
