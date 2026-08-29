@@ -648,8 +648,16 @@ function nameOfNode(id){
   /* ⚠ 打烊的地方在**目的地字格上就標出來**（ver -406）：走過去才發現關門是白走一趟，
      而移動要花掉遊戲內時間（時間是資源）。標在這裡＝所有顯示目的地名的地方
      （字格、蓄能提示）都吃得到，只有這一支在決定（鐵律 7）。 */
-  const nm=(n.name||'').replace(/^帝都　/,'');
+  const nm=stripTownPrefix(n.name);
   return isOpenNow(n) ? nm : (nm+'（已打烊）');
+}
+/* 節點名去掉「城名＋全形空格」前綴（ver -571，Ray：「指示箭不要加『北方泊地』前綴」）。
+   ⚠ 城名從 `TOWNS[townId].name` 推，不寫死是哪座城（鐵律 7；舊版寫死 `^帝都　`，
+     北方泊地的箭就整排帶著前綴）。只有這一支在做（鐵律 8）—— 字格、打烊浮條都問它。 */
+function stripTownPrefix(name){
+  const tn=(TOWNS[townId]||{}).name;
+  const s=String(name||'');
+  return tn ? s.replace(new RegExp('^'+tn+'　'), '') : s;
 }
 /* 營業時間那一行。⚠ 只有這一支在把 `hours` 排成字（鐵律 7）—— 打烊提示與日後
    任何要顯示營業時間的地方都問它。 */
@@ -818,7 +826,7 @@ function knockClosed(n){
   const parts=[];
   if(n.closed) parts.push(n.closed);
   const ht=hoursText(n); if(ht) parts.push(ht);
-  story.flashLine(parts.join('　'), (n.name||'').replace(/^帝都　/,''));
+  story.flashLine(parts.join('　'), stripTownPrefix(n.name));
   chatterOn=true;
 }
 

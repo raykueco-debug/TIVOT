@@ -722,11 +722,17 @@ export const TOWNS = {
         /* 出航＝模板的「離開」，照 capital 的規矩掛在下；到得這裡船一定有了（同旗，只讀）。 */
         sail:{ flag:'got_ship' },
       },
-      /* ── 三個街區樞紐（背景全是入口圖佔位，見檔頭②）── */
+      /* ── 三個街區樞紐 ── */
       west: {
         bg:'Northport_west_BF', name:'北方泊地　西側',
-        /* up＝Citymap 的空格：Ray 指定先留空（不開出口）。 */
-        exits:{ left:'gunstore', right:'guild', down:'entrance' },
+        /* up＝Citymap 的空格 → ver -571 Ray 定案是**碼頭**（原入口圖 port_BF 的家）。 */
+        exits:{ up:'port', left:'gunstore', right:'guild', down:'entrance' },
+      },
+      /* 碼頭（ver -571，Ray：「西側北端加入碼頭 Northport_port_BF」）——
+         擔架兵那張原「入口」圖歸位於此。 */
+      port: {
+        bg:'Northport_port_BF', name:'北方泊地　碼頭',
+        exits:{ back:'west' },
       },
       north: {
         bg:'Northport_north_BF', name:'北方泊地　北側',
