@@ -59,8 +59,17 @@ const SLEEP_FADE_FALLBACK = 3000;   // 拿不到音檔長度時的退路（正�
 
 /* 四個門位。⚠ **格數固定四格**（Ray：「共有四人，留出適當空間。目前只有一人」）——
    人還沒到齊，但位子要先看得出來，玩家才知道這裡以後會有誰。
-   ⚠ 蕾娜那一格要等她回來才亮：她在外面辦事，門後面沒有人。 */
-const DOORS = ['NOUVELLE', 'RENNA', null, null];
+   ⚠ 蕾娜那一格要等她回來才亮：她在外面辦事，門後面沒有人。
+   ⚠⚠ **誰佔哪一格由城鎮傳進來**（ver -575，`st1.roster`＝`OUTING.who` 的順序，
+     照 `from` 濾過）—— 這裡不再自己列一份名單（鐵律 7：她們入隊的章節只有一處在寫）。
+     stage 0 的第一晚沒有 st1，走下面這份預設。 */
+const DOORS0 = ['NOUVELLE', 'RENNA', null, null];
+let DOORS = DOORS0.slice();
+function setRoster(list){
+  const r=(list && list.length) ? list.slice(0,4) : DOORS0.slice();
+  while(r.length<4) r.push(null);
+  DOORS=r;
+}
 
 let host = null;               // 注入進來的城鎮回呼（見 setup）
 let layer = null;
@@ -87,7 +96,8 @@ let eveningHour = 18;
    傍晚的旗標一起記掉，否則走出去再回來又會被城鎮抓一次。名字由城鎮傳進來（鐵律 7）。 */
 let eveningFlag = null;
 /* Stage 1 起的房門（ver -566，由 town.afterArrive 傳進來）：
-   `{ nouIn, renIn, data, onInvite }` —— 誰在房內、敲門的台詞、約諾薇兒出門的回呼。
+   `{ roster, inRoom(who), asleep(who), data, onInvite }` —— 四扇門是誰、誰在房內、
+   敲門的台詞、約諾薇兒出門的回呼（ver -575 由「諾/蕾兩個布林」改成四人通用）。
    null＝還在 stage 0 的第一晚（走原本的劇本）。 */
 let st1 = null;
 function introDone(){ return !!(introFlag && prog.hasFlag(introFlag)); }
@@ -251,11 +261,10 @@ function faceStyle(who){
 function doorState(who){
   /* ══ Stage 1 起（ver -461，Ray：「夥伴進入城市就會自動亮旅店燈」）══
      在房內＝燈亮（awake）；出門／跟著玩家走＝空房。stage 0 的旗標不再管這裡。 */
-  if(st1){
-    if(who==='NOUVELLE') return st1.nouIn ? 'awake' : 'empty';
-    if(who==='RENNA')    return st1.renIn ? 'awake' : 'empty';
-    return 'empty';
-  }
+  /* ⚠⚠ ver -575 起四人通用，而且問的是**函式**不是快照：大廳裡的時鐘會走
+     （獨自坐坐兩小時），快照會過期。出門與同行都算「不在房裡」——
+     Ray：「出門時不顯示頭像」，`refresh()` 看到 `empty` 就把臉與名字清掉。 */
+  if(st1){ return (st1.inRoom && st1.inRoom(who)) ? 'awake' : 'empty'; }
   const st = stage();
   /* ⚠ 大廳可能在**還沒住下**（`none`）時就開了（獨自坐坐從初入對白就能用，ver -401）——
      那時候還沒有人回房，四扇門都該是空的。不擋的話諾薇兒的門會在她還站在旁邊時就亮著。 */
@@ -339,7 +348,7 @@ function knock(i){
     if(who==='NOUVELLE'){
       /* 同行結束回房（ver -567，Ray：「敲門的時候沒有回應，大概睡著了」）——
          **旁白**不是她說話，名字欄留空；好感再高也約不出來（人睡著了）。 */
-      if(st1.nouAsleep){ if(st1.data.nouAsleep && host && host.say) host.say(st1.data.nouAsleep, ''); return; }
+      if(st1.asleep && st1.asleep(who)){ if(st1.data.nouAsleep && host && host.say) host.say(st1.data.nouAsleep, ''); return; }
       /* ⚠ -560 起好感 API 只剩 getAffection()（回四人物件），沒有逐人查詢 */
       const aff=(prog.getAffection()||{}).nouvelle||0;
       if(aff<10){ if(st1.data.nouRest && host && host.say) host.say(st1.data.nouRest, nm); return; }
@@ -348,8 +357,9 @@ function knock(i){
       busy=true; if(host.lock) host.lock(true);
       host.play(lines, ()=>{ story.clearCast(); busy=false;
         if(host.lock) host.lock(false);
+        /* ⚠ 門燈由 `st1.inRoom()` 現算（ver -575）：`onInvite` 一設同行，
+           下一次 `refresh()` 就是空房 —— 不必在這裡另外把旗放倒（鐵律 7）。 */
         if(st1.onInvite) st1.onInvite();
-        st1.nouIn=false;              // 她出門了 → 門燈熄
         refresh(); });
       return;
     }
@@ -546,6 +556,7 @@ export function arrive(n, ctx){
   eveningFlag = (ctx && ctx.eveningFlag) || null;
   allSeenNow = !!(ctx && ctx.allSeen);
   st1 = (ctx && ctx.st1) || null;   // Stage 1 起的房門（ver -461，見 doorState/knock）
+  setRoster(st1 && st1.roster);     // 誰佔哪一格（ver -575）：⚠ 要在 refresh 之前
   ensureLayer();
   runBranch(true);
 }

@@ -11,7 +11,7 @@
    ══════════════════════════════════════════════════════════════════════ */
 
 import { GAME_CONFIG, fileGain } from '../config.js';
-import { TOWNS } from '../script/town.js';
+import { TOWNS, OUTING, DINE } from '../script/town.js';
 import * as clock from '../script/clock.js';
 import * as prog from '../script/progress.js';
 import * as story from './story.js';
@@ -71,12 +71,12 @@ const RESTING = [
    「夥伴進入城市就會自動亮旅店燈」——之後每次進城，夥伴預設住進旅店：
      · 諾薇兒：城裡還有**她的殘留事件**（沒演過、沒過期的進場對白裡有她）
        → 跟著玩家走；沒有 → 在房內（好感 ≥10 敲門可約出來，見 inn.js）。
-     · 蕾娜：在房內寫報告；`rennaOut` 的機率在**進城時擲一次**，中了就在
-       指定節點之一待到 `until`（18:00），走到那裡會碰到她。
+     · 其餘三人（ver -575 起四人通用）：預設在房內，白天照 `OUTING` 的行程外出 ——
+       走到她所在的那一格會碰到她（見下方「女角外出」）。
    ⚠ 這一組是**這一趟探索**的狀態（同 eveningHeld）：`open()` 歸零、不進存檔。
    ⚠ 全部鎖在 `stage1_open` 之後 —— stage 0 的第一晚有自己的劇本
      （inn_wait 那一套），不能被這一套蓋掉。 */
-let escortNou=false, rennaOutNode=null;
+let escortNou=false;
 /* 同行的諾薇兒走完殘留事件（ver -567）：`nouTiredArmed`＝最後一段演完、等下一次
    抵達演「我累了」那一拍；`nouAsleep`＝演完回房，這一趟敲門只回旁白（睡著了）。
    ⚠ `escortLeftover`＝這一趟同行是**殘留事件**帶起的（open() 判的那一次）——
@@ -97,20 +97,144 @@ function leftoverForNou(){
   }
   return false;
 }
-/* 蕾娜還在外面嗎（時間到了就當她回房了）。 */
-function rennaIsOut(){
-  if(!rennaOutNode) return false;
-  const ro=(TOWNS[townId]||{}).rennaOut||{};
-  if(clock.hourF() >= (ro.until!=null?ro.until:18)){ rennaOutNode=null; return false; }
-  return true;
+/* ══════════════════════════════════════════════════════════════════════
+   女角外出（ver -575，Ray 交稿）
+   ──────────────────────────────────────────────────────────────────────
+   「女主角們在早上 8:00 到下午 6 點可能會出門，出門時不顯示頭像，一天最多出門兩次。
+     出現區域是所有的連接用場景（非末端），以及各角色不同。」
+   資料在 `script/town.js` 的 `OUTING`（鐵律 1），這裡只負責排與查。
+
+   ⚠⚠ 這一整段**取代** ver -461 的 `rennaOut`（只給蕾娜寫的那一份）——
+     四個人各寫一份必然走鐘（鐵律 8）。
+   ⚠⚠ 「一天最多兩次」是**結構保證**：`hours` 切成 `perDay` 個等寬的窗，
+     一個窗最多產出一次外出。事後數次數的話，跨日、離城再回來那幾條路都要各記一次帳。
+   ⚠ 行程是**「這座城的這一天」**的狀態：鑰匙 `outKey` 一變就重排，
+     所以走出城再回來（同一天）不會多排一輪。存檔不帶它 ——
+     睡覺一定跨到隔天 07:00，醒來本來就要重排（同 `escortNou` 那一組）。
+   ⚠ **跟著玩家走的人不算「在外面」**：她在你旁邊，不在某個定點（見 `outNow`）。 */
+let outKey=null;          // '<城>#<第幾天>'：這一份行程是替誰排的
+let outPlan=[];           // [{who, node, from, to}]，from/to＝開局起算的分鐘數
+
+/* 同行的女伴是誰（目前只有敲門約出來的諾薇兒）。
+   ⚠ 由 `escortNou` **推**出來，不另存一份（鐵律 7）—— 日後多一個人同行就改這一支。 */
+function escortWho(){ return escortNou ? 'NOUVELLE' : null; }
+/* 這一章在隊上的女角（`from` 同 flight/talks.js 的 `PARTY`，兩邊註解互指）。 */
+function girlsHere(){
+  const st=prog.getStage(), who=OUTING.who||{};
+  return Object.keys(who).filter(w => (who[w].from||0) <= st);
 }
-/* 走到蕾娜所在的節點 → 碰到她（立繪＋一句話）。afterArrive 收尾呼叫。 */
-function maybeMeetRenna(){
-  if(!rennaIsOut() || nodeId!==rennaOutNode) return;
-  const ro=(TOWNS[townId]||{}).rennaOut||{};
-  story.castSolo('RENNA');
-  if(ro.line) story.flashLine(ro.line, (SPEAKERS.RENNA||{}).name||'蕾娜');
-  chatterOn=true;          // 再點一下收掉（走路人單句那一套節奏）
+/* ⚠⚠ **「連接用場景」是算出來的**（鐵律 7）：`exits` 裡有 `back` 以外的方向
+   ＝它通往別的地方。大城地圖已經規則化，列表一寫死，日後加一座城就漏一次。 */
+function connectorIds(){
+  const T=TOWNS[townId]||{}, out=[];
+  for(const id in (T.nodes||{})){
+    const ex=T.nodes[id].exits||{};
+    if(Object.keys(ex).some(d=>d!=='back')) out.push(id);
+  }
+  return out;
+}
+/* 這座城的餐飲街是哪一格（沒有就 null）。 */
+function diningNode(){ return ((TOWNS[townId]||{}).dining||{}).node || null; }
+/* 她可能出現在哪：連接用場景 ∪ 她自己的清單 ∪ 餐飲街。
+   ⚠ **旅店不算** —— 她就住在那裡，「出門」的意思是不在旅店。 */
+function areaFor(who){
+  const w=(OUTING.who||{})[who]||{}, T=TOWNS[townId]||{};
+  const set=new Set(connectorIds());
+  for(const id of (w.nodes||[])) set.add(id);
+  const dn=diningNode(); if(dn && w.dine) set.add(dn);
+  return [...set].filter(id => T.nodes[id] && !T.nodes[id].inn);
+}
+/* 今天 00:00 的「開局起算分鐘數」。⚠ 行程用絕對分鐘存，比時刻穩
+   （同 clock.firstHourAt 的理由：拿時刻比，隔天會再成立一次）。 */
+function midnightMin(){ return clock.elapsed() - Math.round(clock.hourF()*60); }
+const rnd=(a,b)=> a + Math.random()*(b-a);
+/* 排這座城這一天的行程。⚠ 鑰匙沒變就不重排（同一天走出城再回來不會多排一輪）。 */
+function rollOuting(){
+  /* ⚠ **還不能排的時候不要記鑰匙**：記了就等於「今天排過了」，而 `stage1_open`
+     是白天中途才立得起來的 —— 卡著鑰匙的話那一天整天沒有人出門。 */
+  if(!townId || !st1Active()){ outKey=null; outPlan=[]; return; }
+  const key = townId + '#' + clock.dayNo();
+  if(outKey===key) return;
+  outKey=key; outPlan=[];
+  const H=OUTING.hours||[8,18], per=Math.max(1, OUTING.perDay|0 || 2);
+  const ch=(OUTING.chance!=null?OUTING.chance:0.5), stay=OUTING.stay||[60,150];
+  const mid=midnightMin(), span=((H[1]-H[0])*60)/per;
+  for(const who of girlsHere()){
+    const area=areaFor(who); if(!area.length) continue;
+    for(let k=0;k<per;k++){
+      if(Math.random() >= ch) continue;
+      const w0=H[0]*60 + span*k, w1=w0+span;
+      const len=Math.min(rnd(stay[0], stay[1]), span);
+      const from=mid + Math.round(rnd(w0, w1-len));
+      const to=from + Math.round(len);
+      /* ⚠ **同一格同一時段不放兩個人**：那樣「當下是誰在那個區域」就答不出唯一解，
+         而餐飲街要靠它決定開哪一家店。挑不到空的就這一次不出門。 */
+      const free=area.filter(id => !outPlan.some(o =>
+        o.node===id && o.from<to && from<o.to));
+      if(!free.length) continue;
+      outPlan.push({ who, node: free[(Math.random()*free.length)|0], from, to });
+    }
+  }
+}
+/* 現在在外面的人：`{ who: 節點id }`。 */
+function outNow(){
+  rollOuting();
+  const t=clock.elapsed(), m={};
+  for(const o of outPlan) if(t>=o.from && t<o.to) m[o.who]=o.node;
+  const e=escortWho(); if(e) delete m[e];      // 跟著玩家走的不算「在外面」
+  return m;
+}
+function isOutNow(who){ return !!outNow()[who]; }
+/* 這一格現在有誰（沒有就 null）。⚠ 排程保證同一格同時只有一個人。 */
+function whoOutAt(id){ const m=outNow(); for(const w in m) if(m[w]===id) return w; return null; }
+/* 誰在房裡（＝門要亮頭像）。⚠ 出門與同行都是「不在房裡」——
+   `doorState` 只問這一支，Ray：「出門時不顯示頭像」。 */
+function inRoom(who){ return !isOutNow(who) && who!==escortWho(); }
+
+/* ══ 餐飲街開哪一家（ver -575）══════════════════════════════════════════
+   Ray：「餐飲街方向會出什麼場景取決於同行女伴，或者當下是誰在那個區域」
+        「無女伴、且該場景無分配角色時就是酒吧」
+   ⚠ 判定只有這一支（鐵律 8）：背景、地名、目的地字格全部問它。
+   ⚠ 這座城沒開 `scenes` 就回 null（＝照節點原本那一張，帝都的餐酒館）。 */
+function dineKey(){
+  const d=(TOWNS[townId]||{}).dining;
+  if(!d || !d.scenes || !d.node) return null;
+  const who = escortWho() || whoOutAt(d.node);
+  const k = who && ((OUTING.who||{})[who]||{}).dine;
+  return (k && (DINE.scenes||{})[k]) ? k : (DINE.fallback||'bar');
+}
+/* 這一格的分店（不是餐飲街、或這座城沒開分店 → null）。 */
+function dineSceneOf(id){
+  const d=(TOWNS[townId]||{}).dining;
+  if(!d || !d.node || id!==d.node) return null;
+  const k=dineKey();
+  return k ? (DINE.scenes||{})[k] || null : null;
+}
+
+/* 排出來的行程長什麼樣（給調機率用，同 flight/talks.js 的 `talkDebug`）。
+   ⚠ 只讀，不排 —— 但會先 `rollOuting()`，所以在城裡任何時候問都是當下那一份。 */
+export function outingDebug(){
+  rollOuting();
+  const t=clock.elapsed();
+  return { key:outKey, now:outNow(), dine:dineKey(),
+           plan: outPlan.map(o=>({ who:o.who, node:o.node,
+             from:hhmm(o.from), to:hhmm(o.to), on:(t>=o.from && t<o.to) })) };
+}
+/* 開局起算的分鐘數 → 時刻。⚠ 開局是 11:00 不是 00:00（`clock.EPOCH`），
+   直接 `%1440` 會整整偏 11 小時。 */
+function hhmm(min){
+  const t=((min + clock.EPOCH.h*60 + clock.EPOCH.mi) % 1440 + 1440) % 1440;
+  return String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0');
+}
+
+/* 走到有人的那一格 → 碰到她（立繪＋一句話）。afterArrive 收尾呼叫。
+   ⚠ 走**路人單句那一套**（`flashLine` ＋ `chatterOn`）：再點一下收掉，節奏一致。 */
+function maybeMeetOut(){
+  const who=whoOutAt(nodeId); if(!who) return;
+  const w=(OUTING.who||{})[who]||{};
+  story.castSolo(who);
+  if(w.line) story.flashLine(w.line, (SPEAKERS[who]||{}).name||'');
+  chatterOn=true;
 }
 function restingSet(){
   const s={};
@@ -165,14 +289,22 @@ const bgResolved=new Map();
 /* `done`＝**這一景的背景真的擺好了**（ver -442）。切景的黑幕要等它才掀 ——
    見 `enter()` 的 `reveal`。⚠ 一定要在**每一條出口**都叫（載到了／候選全部
    404 了），漏掉哪一條，那一次就只剩保底計時器在撐。 */
-function bgFor(base, noTime, done){
+/* `bases` 可以是一串（ver -575）：**前面的優先，載不到就往後退**。
+   餐飲街的分店圖（`<節點的 bg>_cafe`）還沒交時，就退回節點原本那一張 ——
+   所以「圖還沒到」不會變成一片空畫面。 */
+function bgFor(bases, noTime, done){
   const my=++bgSeq;
   const fin=()=>{ if(my===bgSeq && done) done(); };
   /* ⚠⚠ 候選鏈**只有一份**（ver -427）：`modules/story.js` 的 `bandNames`。
      Ray 把插圖也拆成時段差分之後，這條規矩（時段 → 大小寫變體 → `_Day` → 原名，
      每個名字再試 `.webp`／`.png`）就有兩個使用者了 —— 抄一份到那邊必然走鐘
      （其中一份會漏掉大小寫變體、或漏掉 `.png` 那一級）。鐵律 7。 */
-  const all=story.bandNames(base, noTime);
+  const all=[];
+  for(const b of (Array.isArray(bases)?bases:[bases])){
+    if(!b) continue;
+    for(const nm of story.bandNames(b, noTime)) if(all.indexOf(nm)<0) all.push(nm);
+  }
+  if(!all.length){ fin(); return; }
   /* ⚠⚠ **試出來的結果要記起來**（ver -442，同插圖那一份 `cgResolved`／ver -433）：
      沒有該時段差分的地點會生出 4~6 個候選，而**每一次抵達都從頭試一遍** ——
      實測 07:00（Dawn 帶）進一個節點要先吃 4 個 404，切景的黑幕就得蓋著等它們，
@@ -477,7 +609,7 @@ function shopClose(){
      玩家知道自己在哪座城，鈕上再寫一次只是把字擠小。分隔符與 `TOWNS[].nodes[].name`
      同源，所以取最後一段就好，不必在這裡另存一份店名（鐵律 7）。 */
 function shopBtnName(n){
-  const s=String((n && n.name) || '');
+  const s=String(nameOf(nodeId) || (n && n.name) || '');
   const parts=s.split('　').filter(Boolean);
   return parts.length ? parts[parts.length-1] : s;
 }
@@ -510,7 +642,7 @@ function openSheet(){
 /* 單子標題下那一行：地名＋時刻（＋打烊）。⚠ 與上緣的 `#townInfo` 是**同一組字**，
    所以由同一支算（鐵律 7）—— 那一行在店裡被招呼語讓開了，資訊要在這裡找得到。 */
 function infoText(n){
-  return (n ? n.name : '') + '　' + clock.timeText() + (isOpenNow(n) ? '' : '　已打烊');
+  return (n ? nameOf(nodeId) : '') + '　' + clock.timeText() + (isOpenNow(n) ? '' : '　已打烊');
 }
 
 function refreshArrows(){
@@ -524,7 +656,7 @@ function refreshArrows(){
      ⚠ 整塊往上提（見 style.css 的 `#townInfo`）：原本壓在立繪的臉上。 */
   if(info) info.innerHTML =
       '<span class="ti-date">' + clock.dateText() + '</span>'
-    + '<span class="ti-line">' + n.name
+    + '<span class="ti-line">' + nameOf(nodeId)
     +   '<span class="ti-time">' + clock.timeText() + '</span>'
     +   (isOpenNow(n) ? '' : '<span class="ti-shut">已打烊</span>')
     + '</span>';
@@ -641,6 +773,23 @@ function exitsOf(){
   return ex;
 }
 const SAIL_ID='__sail';
+/* ══ 節點的顯示名（含城名前綴）══════════════════════════════════════════
+   ⚠⚠ **只有這一支在決定**（鐵律 7）：上緣那一行、目的地字格、店舖鈕、閉門羹的
+     名字欄全部問它。餐飲街會依同行女伴換分店（ver -575）—— 四個地方各自讀
+     `n.name` 的話，只有其中一個會跟著換。
+   ⚠ 分店名接在節點名後面（`北方泊地　餐飲街・咖啡廳`）：分隔用 `・` 不用全形空格，
+     因為 `shopBtnName` 取的是最後一個全形空格之後那一段（店名），
+     用空格分會把鈕上的字切成只剩「咖啡廳」。 */
+function nameOf(id){
+  const n=(TOWNS[townId]||{}).nodes[id]; if(!n) return '';
+  const sc=dineSceneOf(id);
+  return sc ? (String(n.name||'')+'・'+sc.name) : String(n.name||'');
+}
+/* 這一格要載哪些底圖（ver -575）：分店優先，載不到退回節點原本那一張。 */
+function bgBasesOf(n, id){
+  const sc=dineSceneOf(id);
+  return (sc && sc.bg) ? [n.bg+'_'+sc.bg, n.bg] : [n.bg];
+}
 function nameOfNode(id){
   if(id===SAIL_ID) return '出航';
   const n=(TOWNS[townId]||{}).nodes[id];
@@ -648,7 +797,7 @@ function nameOfNode(id){
   /* ⚠ 打烊的地方在**目的地字格上就標出來**（ver -406）：走過去才發現關門是白走一趟，
      而移動要花掉遊戲內時間（時間是資源）。標在這裡＝所有顯示目的地名的地方
      （字格、蓄能提示）都吃得到，只有這一支在決定（鐵律 7）。 */
-  const nm=stripTownPrefix(n.name);
+  const nm=stripTownPrefix(nameOf(id));
   return isOpenNow(n) ? nm : (nm+'（已打烊）');
 }
 /* 節點名去掉「城名＋全形空格」前綴（ver -571，Ray：「指示箭不要加『北方泊地』前綴」）。
@@ -808,7 +957,7 @@ function go(to, dir){
      ⚠ 判定走**同一支** `isOpenNow`（鐵律 8）—— 目的地字格上的「（已打烊）」、
        進去之後的地名後綴、店主與選單出不出來，全部是它。 */
   const nx=((TOWNS[townId]||{}).nodes||{})[to];
-  if(nx && !isOpenNow(nx)){ knockClosed(nx); return; }
+  if(nx && !isOpenNow(nx)){ knockClosed(nx, to); return; }
   pendingDir = dir || null;            // 這一次按的方向（ver -405）；enter() 取用
   busy=true; showNav(false);
   document.body.classList.remove('town-nav');          // 移動中把羅盤收起來
@@ -821,12 +970,12 @@ function go(to, dir){
    ⚠ 走**路人單句那一套**（`flashLine` ＋ `chatterOn`），所以「再點一下收掉」的節奏
      與城鎮其他單句一致（鐵律 8）—— 不另做一個提示框。
    ⚠ 名字欄放**店名**：這一句不是誰在講話，是「你站在這扇門前看到的事」。 */
-function knockClosed(n){
+function knockClosed(n, id){
   try{ SFX.unlock(); SFX.menuClick(); }catch(_){}
   const parts=[];
   if(n.closed) parts.push(n.closed);
   const ht=hoursText(n); if(ht) parts.push(ht);
-  story.flashLine(parts.join('　'), stripTownPrefix(n.name));
+  story.flashLine(parts.join('　'), stripTownPrefix(nameOf(id)||n.name));
   chatterOn=true;
 }
 
@@ -920,7 +1069,7 @@ export function enter(id){
      中間可能插進一場戰鬥（戰鬥有自己的曲子），回來要接得回去。
      同曲重播由 `playBgm` 自己擋掉，所以重複呼叫是安全的。 */
   story.ensureBgm(T.bgm);
-  bgFor(n.bg, n.noTime, needReveal ? reveal : null);
+  bgFor(bgBasesOf(n, id), n.noTime, needReveal ? reveal : null);
   ensureLayer(); bindInput(); refreshArrows(); showNav(false);
   /* ⚠⚠ 進場對白**一律只播一次**（ver -373，Ray：「對話只觸發一次，不重複觸發」）——
      不再看節點的 `once` 欄位：漏寫就會變成每次進去都重播，那是「預設值站錯邊」。
@@ -1072,7 +1221,7 @@ function afterArrive(n){
      最後一段演完的那一次抵達只**上膛**（Ray 明說是「下一次移動時」提出）；
      下一次抵達、進場對白演完之後演 `TOWNS[].nouTired`，演完她回房：
      escortNou 收掉（restingSet 重新封她的插話）、nouAsleep 立起（敲門只回旁白）。
-     ⚠ 要在 inn.arrive／店舖**之前**演 —— 她回房這件事會改門燈（st1.nouIn）。 */
+     ⚠ 要在 inn.arrive／店舖**之前**演 —— 她回房這件事會改門燈（st1.inRoom）。 */
   if(nouTiredArmed && escortNou){
     nouTiredArmed=false; escortLeftover=false;
     const lines=(TOWNS[townId]||{}).nouTired;
@@ -1093,18 +1242,21 @@ function afterArrive(n){
 function afterArrive2(n){
   /* ⚠ `introFlag` 由城鎮算好傳進去（ver -402）：旅店已經沒有 `kind` 了，
      旗標名只有 `enter()` 那一支知道（`kind` 版／節點版兩種）—— inn 自己拼會拼錯城。 */
-  maybeMeetRenna();          // 蕾娜外出時走到她那一格 → 碰到她（ver -461）
+  maybeMeetOut();            // 有人外出時走到她那一格 → 碰到她（ver -575，取代 -461 的蕾娜版）
   if(n && n.inn) inn.arrive(n, { allSeen: allSeen(), introFlag: flagOf(n, nodeId),
                                  /* 這是哪一座城的哪個節點（ver -481）：睡覺那一刻要記
                                     「上一次睡覺的旅店」——連敗三場送回來用。 */
                                  where: { town: townId, node: nodeId },
-                                 /* Stage 1 起的房門（ver -566）：誰在房內、約諾薇兒出門的回呼。 */
+                                 /* Stage 1 起的房門（ver -566；-575 改成四人通用）：
+                                    ⚠⚠ `inRoom` 傳的是**函式**不是當下的快照 ——
+                                      大廳裡的時鐘會走（獨自坐坐兩小時），快照會過期，
+                                      而「她在不在房裡」的真相只有 `inRoom()` 一支（鐵律 7）。 */
                                  st1: st1Active() ? {
-                                   nouIn: !escortNou,
+                                   roster: girlsHere(),
+                                   inRoom: inRoom,
                                    /* 同行結束回房＝睡著了（ver -567）：敲門只回
                                       `innStage1.nouAsleep` 那句旁白，約不出來。 */
-                                   nouAsleep: nouAsleep,
-                                   renIn: !rennaIsOut(),
+                                   asleep: who => (who==='NOUVELLE' && nouAsleep),
                                    data: n.innStage1||{},
                                    onInvite(){ escortNou=true; },
                                  } : null,
@@ -1266,16 +1418,13 @@ export function open(town, node, opts){
   eveningHeld=false;          // 傍晚那一格的「讓過一次」是這一趟城鎮探索的狀態（ver -430）
   pendingFavor=null;          // 「下一步去哪」也是（ver -440，見 armFavor）
   /* 夥伴的所在（ver -461）：進城算一次。⚠ 要在 townId 設好之後（leftoverForNou 要查表）。 */
-  escortNou=false; rennaOutNode=null;
+  escortNou=false;
   nouTiredArmed=false; nouAsleep=false; escortLeftover=false;   // 同行收尾（ver -567）
-  if(st1Active()){
-    escortNou=escortLeftover=leftoverForNou();
-    const ro=T.rennaOut;
-    if(ro && clock.hourF()<(ro.until!=null?ro.until:18) && Math.random()<(ro.chance!=null?ro.chance:0.5)){
-      const ns=(ro.nodes||[]).filter(k=>T.nodes[k]);
-      if(ns.length) rennaOutNode=ns[(Math.random()*ns.length)|0];
-    }
-  }
+  if(st1Active()) escortNou=escortLeftover=leftoverForNou();
+  /* ⚠⚠ 外出行程（ver -575）**這裡不歸零**：它的鑰匙是「這座城的這一天」
+     （`rollOuting`），走出城再回來還是同一天就該是同一份行程 ——
+     在這裡清掉等於「出城再進城」可以重擲，「一天最多兩次」就破了。
+     真正歸零的地方是 `close()`（離開這一輪遊戲／回主選單）。 */
   const st=story.stageEl(); if(st){ st.classList.add('on','town-on'); }
   document.body.classList.add('story-on');
   /* ⚠ 進城也是**切景**（ver -438）：先蓋上黑幕（`0ms`＝立刻，因為這一層本來就是
@@ -1290,6 +1439,9 @@ export function open(town, node, opts){
 export function close(){
   const st=story.stageEl(); if(st) st.classList.remove('town-on');
   showNav(false);
+  /* 外出行程（ver -575）：這裡才歸零 —— `close()` 才是「這一趟城鎮探索結束」
+     （回主選單／killAllPages／讀檔換城）。`open()` 不清，見那一支的說明。 */
+  outKey=null; outPlan=[];
   townId=null; nodeId=null;
   document.body.classList.remove('town-nav');
   document.querySelectorAll('.kerb-arrow').forEach(a=>a.classList.remove('avail','holding'));
