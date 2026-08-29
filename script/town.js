@@ -729,27 +729,27 @@ export const TOWNS = {
         exits:{ left:'gunstore', right:'guild', down:'entrance' },
       },
       north: {
-        bg:'Northport_Square_BF', name:'北方泊地　北側',
+        bg:'Northport_north_BF', name:'北方泊地　北側',
         exits:{ left:'cityhall', right:'church', up:'cemetery', down:'entrance' },
       },
       east: {
-        bg:'Northport_Square_BF', name:'北方泊地　東側',
+        bg:'Northport_east_BF', name:'北方泊地　東側',
         exits:{ left:'grocery', right:'tavern', up:'inn', down:'entrance' },
       },
       /* ── 葉節點（`back`＝回不到「來時反向」時的退路，同 capital）──
          ⚠ 全部還是空房間：等 Ray 的稿再補 shop/kind/keeperWho/hours/lines。 */
-      gunstore: { bg:'Northport_Square_BF', name:'北方泊地　武器店',     exits:{ back:'west' } },
-      guild:    { bg:'Northport_Square_BF', name:'北方泊地　賞金獵人公會', exits:{ back:'west' } },
-      cityhall: { bg:'Northport_Square_BF', name:'北方泊地　市鎮中心',   exits:{ back:'north' } },
-      church:   { bg:'Northport_Square_BF', name:'北方泊地　教堂',       exits:{ back:'north' } },
+      gunstore: { bg:'Northport_gunstore_BF', name:'北方泊地　武器店',     exits:{ back:'west' } },
+      guild:    { bg:'Northport_guild_BF', name:'北方泊地　賞金獵人公會', exits:{ back:'west' } },
+      cityhall: { bg:'Northport_cityhall_BF', name:'北方泊地　市鎮中心',   exits:{ back:'north' } },
+      church:   { bg:'Northport_church_BF', name:'北方泊地　教堂',       exits:{ back:'north' } },
       /* 墓地＝北側上方那個「空格」，Ray ver -567 定案是墓地。 */
-      cemetery: { bg:'Northport_Square_BF', name:'北方泊地　墓地',       exits:{ back:'north' } },
-      grocery:  { bg:'Northport_Square_BF', name:'北方泊地　雜貨街',     exits:{ back:'east' } },
-      tavern:   { bg:'Northport_Square_BF', name:'北方泊地　餐飲街',     exits:{ back:'east' } },
+      cemetery: { bg:'Northport_cemetery_BF', name:'北方泊地　墓地',       exits:{ back:'north' } },
+      grocery:  { bg:'Northport_grocery_BF', name:'北方泊地　雜貨街',     exits:{ back:'east' } },
+      tavern:   { bg:'Northport_tavern_BF', name:'北方泊地　餐飲街',     exits:{ back:'east' } },
       /* ⚠ 旅店先是空房間、**不掛 `inn:true`**：旅店大廳（伙伴門/睡覺存檔）那一套
          的分支資料還綁著帝都 stage0 的旗標 —— 等 Ray 給這座城的旅店稿再接，
          免得「被抬回旅店」的醒來拍與睡覺存檔接在沒調過的資料上。 */
-      inn:      { bg:'Northport_Square_BF', name:'北方泊地　旅店',       exits:{ back:'east' } },
+      inn:      { bg:'Northport_hotel_BF', name:'北方泊地　旅店',       exits:{ back:'east' } },
     },
   },
 };
