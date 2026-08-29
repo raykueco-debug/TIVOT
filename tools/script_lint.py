@@ -85,12 +85,21 @@ def alias(name):
     m = re.search(r'const %s=\{(.*?)\};' % name, s, re.S)
     return dict(re.findall(r"(\w+)\s*:\s*'([^']+)'", m.group(1))) if m else {}
 
-def check_audio_table(files, folder, label):
+def check_audio_table(files, folder, label, resolve=None):
+    """resolve(f) 回傳表項 f 的實際路徑（None＝就在 folder 裡）——
+       與 modules/story.js 的 SE_SRC 同一條規則（ver -566：vo_ 開頭住 vo/），
+       改那邊要改這邊。"""
     disk = {f for f in os.listdir(os.path.join(ROOT, folder))
             if not f.startswith('_') and f.lower().endswith(AUDIO_EXT)}
-    for f in sorted(disk - files):  warn('%s 表裡沒有這個檔案（遊戲載不到）：%s' % (label, f))
-    for f in sorted(files - disk):  err ('%s 表指到不存在的檔案：%s' % (label, f))
-    return {f.rsplit('.', 1)[0].lower(): f for f in disk}
+    known = disk | ({f for f in files
+                     if resolve and os.path.exists(os.path.join(ROOT, resolve(f)))}
+                    if resolve else set())
+    for f in sorted(disk - files):   warn('%s 表裡沒有這個檔案（遊戲載不到）：%s' % (label, f))
+    for f in sorted(files - known):  err ('%s 表指到不存在的檔案：%s' % (label, f))
+    return {f.rsplit('.', 1)[0].lower(): f for f in known}
+
+def se_resolve(f):
+    return ('resources/audio/vo/' if re.match(r'(?i)^vo_', f) else SE_DIR) + f
 
 def exists(rel):  return os.path.exists(os.path.join(ROOT, rel))
 
@@ -106,7 +115,7 @@ def main():
     D = load_data()
     script, entry, speakers, art = D['script'], D['entry'], D['speakers'], D['art']
 
-    se_map  = check_audio_table(table('SE_FILES'),  SE_DIR,  'SE_FILES')
+    se_map  = check_audio_table(table('SE_FILES'),  SE_DIR,  'SE_FILES', resolve=se_resolve)
     bgm_map = check_audio_table(table('BGM_FILES'), BGM_DIR, 'BGM_FILES')
     se_alias, bgm_alias = alias('SE_ALIAS'), alias('BGM_ALIAS')
 

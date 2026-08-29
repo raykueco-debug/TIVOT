@@ -4078,7 +4078,11 @@ let DPR=1;
 /* ⚠⚠ 這裡是**真正在重建畫布**的那一支，不要直接呼叫它 —— 呼叫 resize()（下方）。
    理由見 resize() 的說明：設 cv.width 會把畫布清空，時機錯了就是一幀全空。 */
 function applyResize(){
-  const nw=innerWidth, nh=innerHeight;
+  /* ⚠ 頁面在隱藏（display:none / 0×0）狀態下載入時 innerWidth 是 0 ——
+     BH 會算成 NaN，createImageData 直接 throw，而這裡是頂層開機路徑，
+     炸了整頁就死透（後面的 cam/輸入/loop 全沒建，resize 也救不回）。
+     退回 390×844 先把畫布建起來；真的顯示時 resize 事件會用真尺寸重建。 */
+  const nw=innerWidth||390, nh=innerHeight||844;
   const ndpr=Math.min(Q().dpr, devicePixelRatio||1);
   /* 尺寸、DPR、緩衝寬都沒變就什麼都別做。iOS 的網址列一動就發 resize，
      其中不少是同尺寸的重複事件；照做一遍等於白白重建 1.2M 像素的畫布與整批緩衝。
@@ -7711,9 +7715,6 @@ document.getElementById('spawnBtn').addEventListener('click',()=>{
 /* 程序翅（drawWingsProc）已內聯進 drawEnemy3D（蟲翅/鳥翼兩個分支）——
    ver -495 清死碼時把零呼叫的原函式拆掉，畫法的說明見 drawEnemy3D 該兩段。 */
 
-/* 逐節投影 + 程序繪製。回傳畫過就 true（給提示字用）。 */
-/* 進入戰鬥的提示（戰鬥本身尚未實作）。鏈狀與剛體兩條繪製路徑都要用，
-   所以抽成函式；文字不進低解析緩衝——那是 UI，跟著糊就成了糊掉的字。 */
 /* ══ 國界 ══════════════════════════════════════════════════════════
    國界**不畫在畫面上**，只用來定位：飛越國境時左下角淡入淡出顯示當前所在國。
 
@@ -8704,8 +8705,12 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
       const row=NU+1;
       /* ⚠⚠ **底圖已改在地形取樣迴圈裡畫**（ver -445，A 案）—— 取樣器活著時
          這整段格網**不畫**（畫了會疊兩份，而且它正是拉伸的來源）。
-         這裡只留兩個用途：①取樣器還沒就緒（極早期）當退路 ②上面那段 CZMIN
-         （逐欄最小深度）照算 —— 量體層貼回時的遮擋裁切還靠它。 */
+         這裡只留兩個用途：①**資產建構失敗**（buildCityMask／buildCityPyramid
+         被 try/catch 吞掉例外）時當退路 —— 時序上不存在「插畫到了但取樣器沒就緒」
+         的空窗（縮圖金字塔在 loadWorld 前就 await 完，全解析與 cityPlanArt 同一個
+         同步回呼寫入），所以正常運行**永遠走不進來**；②上面那段 CZMIN
+         （逐欄最小深度）照算 —— 量體層貼回時的遮擋裁切還靠它。
+         ⚠ 連帶：`?grid=1` 底圖層的紅格畫在這段裡，平時只看得到量體層的青格。 */
       const groundSampled=!!(CITYMASK && CITY_PYR[o.s.plan]);
       if(!groundSampled)
       for(let ky2=0;ky2<NV;ky2++){

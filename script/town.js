@@ -433,7 +433,7 @@ export const TOWNS = {
           /* 一發。⚠ 仍是空畫面 —— 玩家只聽到槍響，下一拍才看到對方的臉。 */
           { speaker:'PLAYER', text:'', auto:900, se:'se_weapon_pistol_03' },
           /* 無台詞的立繪拍：停一秒（§6.5，從立繪站定才起算）。 */
-          { speaker:'HUNTER', text:'',
+          { speaker:'HUNTER', text:'', auto:1000,
             portrait:{ char:'HUNTER', expr:'shocked', show:true } },
           hun('attack','你、小、子！'),
           /* ══ 推槍棺，進入戰鬥 ══ 這一場不能聖徒化、不能用搭檔技（見 config.battles）。 */
@@ -468,7 +468,7 @@ export const TOWNS = {
         lines:[
           nou('pray','感謝神，賜與我們平安與食糧。願主降福於世——'),
           nou('surprise','你怎麼已經開始吃了？禱詞還沒——'),
-          { speaker:'NOUVELLE', text:'',
+          { speaker:'NOUVELLE', text:'', auto:1000,   /* 無台詞立繪拍：停一秒（§6.5） */
             portrait:{ char:'NOUVELLE', expr:'shocked', show:true } },
           nou('lookaway','好好吃。'),
         ],
@@ -497,7 +497,7 @@ export const TOWNS = {
         once:true,
         lines:[
             nou('surprise', '好多東西！連衣服都有！'),
-            nou('awkwerd', '要是可以不穿用司祭服就好了。'),
+            nou('awkward', '要是可以不穿用司祭服就好了。'),   /* 表情鍵是 awkward（錯字只在檔名上） */
           { speaker:'PLAYER', blank:true },
           /* 好感度 +1（Ray 指定）。⚠ 走 `aff` 這個欄位，由 modules/town.js 在演到這一拍時記帳；
              ⚠ **只加一次**：`once:true` 的節點對白本來就只播一次，所以不必另外擋。 */
