@@ -229,12 +229,17 @@ function dineKey(){
   const k = who && ((OUTING.who||{})[who]||{}).dine;
   return (k && (DINE.scenes||{})[k]) ? k : (DINE.fallback||'bar');
 }
-/* 這一格的分店（不是餐飲街、或這座城沒開分店 → null）。 */
+/* ══ 這一格的分店（ver -578）══ 不是餐飲街／這座城沒開分店／這座城沒有那一家
+   → null（＝照節點原本那一張）。
+   ⚠ **名字是全域的、圖與路人語是這座城的**（見 `script/town.js` 的 DINE 註解）——
+     合併只有這一支（鐵律 7），背景／地名／路人語都問它。 */
 function dineSceneOf(id){
   const d=(TOWNS[townId]||{}).dining;
-  if(!d || !d.node || id!==d.node) return null;
-  const k=dineKey();
-  return k ? (DINE.scenes||{})[k] || null : null;
+  if(!d || !d.node || id!==d.node || !d.scenes) return null;
+  const k=dineKey(); if(!k) return null;
+  const t=d.scenes[k]; if(!t) return null;            // 這座城沒有這一家 → 不換
+  return { key:k, name:((DINE.scenes||{})[k]||{}).name || k,
+           bg:t.bg, noTime:!!t.noTime, chatter:t.chatter||null };
 }
 
 /* 排出來的行程長什麼樣（給調機率用，同 flight/talks.js 的 `talkDebug`）。
@@ -315,21 +320,14 @@ const bgResolved=new Map();
 /* `done`＝**這一景的背景真的擺好了**（ver -442）。切景的黑幕要等它才掀 ——
    見 `enter()` 的 `reveal`。⚠ 一定要在**每一條出口**都叫（載到了／候選全部
    404 了），漏掉哪一條，那一次就只剩保底計時器在撐。 */
-/* `bases` 可以是一串（ver -575）：**前面的優先，載不到就往後退**。
-   餐飲街的分店圖（`<節點的 bg>_cafe`）還沒交時，就退回節點原本那一張 ——
-   所以「圖還沒到」不會變成一片空畫面。 */
-function bgFor(bases, noTime, done){
+/* ⚠⚠ 吃的是**已經展開好的候選檔名**（ver -578，`bgCandsOf` 算的）而不是基底名。
+   理由：餐飲街的分店**逐張決定要不要吃時段差分**（三張新圖沒有、酒吧沿用的
+   餐酒館有），一個共用的 `noTime` 參數表達不了 —— 而候選鏈的展開只有
+   `story.bandNames` 一支（鐵律 7），所以展開的地方就該在知道每一張是誰的那一支。 */
+function bgFor(list, done){
   const my=++bgSeq;
   const fin=()=>{ if(my===bgSeq && done) done(); };
-  /* ⚠⚠ 候選鏈**只有一份**（ver -427）：`modules/story.js` 的 `bandNames`。
-     Ray 把插圖也拆成時段差分之後，這條規矩（時段 → 大小寫變體 → `_Day` → 原名，
-     每個名字再試 `.webp`／`.png`）就有兩個使用者了 —— 抄一份到那邊必然走鐘
-     （其中一份會漏掉大小寫變體、或漏掉 `.png` 那一級）。鐵律 7。 */
-  const all=[];
-  for(const b of (Array.isArray(bases)?bases:[bases])){
-    if(!b) continue;
-    for(const nm of story.bandNames(b, noTime)) if(all.indexOf(nm)<0) all.push(nm);
-  }
+  const all=(list||[]).filter(Boolean);
   if(!all.length){ fin(); return; }
   /* ⚠⚠ **試出來的結果要記起來**（ver -442，同插圖那一份 `cgResolved`／ver -433）：
      沒有該時段差分的地點會生出 4~6 個候選，而**每一次抵達都從頭試一遍** ——
@@ -811,10 +809,21 @@ function nameOf(id){
   const sc=dineSceneOf(id);
   return sc ? (String(n.name||'')+'・'+sc.name) : String(n.name||'');
 }
-/* 這一格要載哪些底圖（ver -575）：分店優先，載不到退回節點原本那一張。 */
-function bgBasesOf(n, id){
+/* 這一格要試哪些底圖檔名（ver -575；-578 改成逐張展開候選鏈）：
+   **分店優先，載不到退回節點原本那一張** —— 所以圖還沒交也不會變成空畫面。
+   ⚠ 每一張各自帶 `noTime`（分店的三張沒有時段差分、酒吧沿用的餐酒館有）。
+   ⚠⚠ 候選鏈**只有一份**（ver -427）：`modules/story.js` 的 `bandNames`。
+     Ray 把插圖也拆成時段差分之後，這條規矩（時段 → 退路時段 → 大小寫變體 →
+     `.webp`／`.png`）就有兩個使用者了 —— 抄一份到這邊必然走鐘
+     （其中一份會漏掉大小寫變體、或漏掉 `.png` 那一級）。鐵律 7。 */
+function bgCandsOf(n, id){
+  const out=[];
+  const add=(base, noTime)=>{ if(!base) return;
+    for(const nm of story.bandNames(base, noTime)) if(out.indexOf(nm)<0) out.push(nm); };
   const sc=dineSceneOf(id);
-  return (sc && sc.bg) ? [n.bg+'_'+sc.bg, n.bg] : [n.bg];
+  if(sc) add(sc.bg, sc.noTime);
+  add(n.bg, n.noTime);
+  return out;
 }
 function nameOfNode(id){
   if(id===SAIL_ID) return '出航';
@@ -1099,7 +1108,7 @@ export function enter(id){
      中間可能插進一場戰鬥（戰鬥有自己的曲子），回來要接得回去。
      同曲重播由 `playBgm` 自己擋掉，所以重複呼叫是安全的。 */
   story.ensureBgm(T.bgm);
-  bgFor(bgBasesOf(n, id), n.noTime, needReveal ? reveal : null);
+  bgFor(bgCandsOf(n, id), needReveal ? reveal : null);
   ensureLayer(); bindInput(); refreshArrows(); showNav(false);
   /* ⚠⚠ 進場對白**一律只播一次**（ver -373，Ray：「對話只觸發一次，不重複觸發」）——
      不再看節點的 `once` 欄位：漏寫就會變成每次進去都重播，那是「預設值站錯邊」。
@@ -1390,7 +1399,10 @@ function chatter(){
     if(n.closed){ story.flashLine(n.closed, ''); chatterOn=true; }
     return;
   }
-  const list=n && n.chatter;
+  /* ⚠ 分店有自己的路人語就用它（ver -578）：咖啡廳／餐廳／甜品店各一組；
+     酒吧沒寫 → 回去用節點自己那一組市井線（`tavern.chatter`）。 */
+  const sc=dineSceneOf(nodeId);
+  const list=(sc && sc.chatter && sc.chatter.length) ? sc.chatter : (n && n.chatter);
   if(!list || !list.length) return;
   let i=Math.floor(Math.random()*list.length);
   if(list.length>1 && i===lastChat) i=(i+1)%list.length;
@@ -1417,7 +1429,7 @@ inn.setup({
   bgPoint,
   /* 依**現在的時刻**重新挑一次背景（旅店「獨自坐坐」過完兩小時要換時段差分）。
      ⚠ 走同一支 `bgFor`（候選鏈只有那一份，鐵律 7）。 */
-  refreshBg(){ const n=node(); if(n) bgFor(n.bg, n.noTime); },
+  refreshBg(){ const n=node(); if(n) bgFor(bgCandsOf(n, nodeId)); },
   /* 時鐘動過了 → 問一次強制轉場的閘門（ver -427）。⚠ 旅店是**唯一**在城鎮之外
      推時鐘的地方（獨自坐坐／回房睡覺），所以那兩支推完都要叫這一支（鐵律 8）。
      回傳 true ＝已經接手轉場，呼叫端不要再收尾。 */

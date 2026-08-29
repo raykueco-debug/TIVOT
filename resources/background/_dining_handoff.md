@@ -1,5 +1,14 @@
 # 餐飲街差分 — 交給 coding session 的規格（ver -578）
 
+> **✅ 已接完（ver -579，coding session）**
+> · 四家店接在 `script/town.js` 的 `capital.dining.scenes`（完整基底名，逐張 `noTime`）；
+>   店別的中文名在同檔的 `DINE.scenes`。判定在 `modules/town.js` 的 `dineKey()`。
+> · 路人語三組已入 `dining.scenes[].chatter`；**酒吧沿用節點自己那一組市井線**。
+> · 女主角出門／宵禁／約會那一整套在 ver -575～-576 就做完了（`OUTING`），
+>   `rennaOut` 已刪。規格見 CLAUDE.md §6.5.4.2。
+> · 實測：三張新圖各只發一次請求（0 個 404）、酒吧仍吃 `Capital_Bistro_Day/Dusk/night`。
+> · **還缺**：北方泊地的四張（交件後照帝都那樣補一組 `scenes` 即可，程式端不必動）。
+
 素材已備妥在 `resources/background/`，以下整段可直接貼給另一個 session。
 
 ---
