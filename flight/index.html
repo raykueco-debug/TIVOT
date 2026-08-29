@@ -130,6 +130,17 @@
      ⚠ 平常 `pointer-events:none`：楣只是一條裝飾，不能吃掉舵輪下緣的操作。 */
   #fkerb{position:fixed;inset:0;z-index:45;overflow:hidden;pointer-events:none;}
   #fkerb.rise{z-index:90;pointer-events:auto;}
+  /* 撞頂的畫面震（ver -568，Ray：「飛行畫面彈棺沒有撞頂效果」）——
+     震 `body`＝整個畫面（含推到頂的門）一起抖，同主遊戲 `#storyStage.shake` 把
+     `#kerb` 也列進清單的理由：分成「抖的與不抖的兩半」比不抖還糟。
+     ⚠ 曲線與位移抄 style.css 的 `storyShake`（兩邊是同一下撞擊，改一邊要改另一邊）。 */
+  body.kerb-shake{animation:fkerbShake .42s cubic-bezier(.36,.07,.19,.97);}
+  @keyframes fkerbShake{
+    10%{transform:translate(-4px,2px);}  20%{transform:translate(5px,-3px);}
+    30%{transform:translate(-6px,-2px);} 40%{transform:translate(4px,3px);}
+    50%{transform:translate(-3px,2px);}  60%{transform:translate(4px,-2px);}
+    70%{transform:translate(-2px,1px);}  80%{transform:translate(2px,-1px);}
+    100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
     background-image:url('../resources/vfx/kerberos_door.webp');
@@ -490,7 +501,7 @@ const COLOR_URL  = 'silvermoon_terrain.png';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -455';
+const FLIGHT_VER = 'ver -568';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -7425,6 +7436,25 @@ function layoutFKerb(){
 const kerbPopSE = new Audio('../resources/audio/se/se_Kerberos_pop.m4a'); kerbPopSE.preload='auto';
 kerbPopSE.__baseVol = fileVol('se_kerberos_pop');   // 逐支增益（ver -441，見 fileVol）
 const FKERB_RISE_MS = 1000;   // 上推時間（＝ story.js 的 KERB_T.rise，兩邊同值）
+/* ══ 撞頂效果（ver -568，Ray：「飛行畫面彈棺沒有撞頂效果」）══════════════════
+   門在**這一頁**推上來，撞到頂的那一瞬（FKERB_RISE_MS，撞擊音的峰值也落在那裡）
+   要有撞擊感 —— 交棒後主遊戲那邊的撞頂拍（story.js `playKerberos` 的 ②）要等
+   預載完才演，玩家看到門撞頂的當下什麼都沒有。
+   · 畫面震：`body.kerb-shake`（見上面的 CSS，抄主遊戲 storyShake）
+   · 震動 90ms＝haptics.js 的 `kerbThud`（全場最重的一下；改一邊要改另一邊）。
+     這一頁是另一個 document import 不到 haptics.js（§6.10）——
+     開關讀同一把鑰匙 `tivot_haptics_v1`（＝ modules/settings.js 的 K.hap），現讀不快取。 */
+function fkerbThud(){
+  try{
+    const b=document.body;
+    b.classList.remove('kerb-shake'); void b.offsetWidth; b.classList.add('kerb-shake');
+    setTimeout(()=>b.classList.remove('kerb-shake'), 460);
+  }catch(_){}
+  try{
+    if(localStorage.getItem('tivot_haptics_v1')!=='0' && typeof navigator.vibrate==='function')
+      navigator.vibrate(90);
+  }catch(_){}
+}
 /* 吊墜被甩一下（ver -412）。⚠ 唯一的一支（同 story.js 的 `kerbPendSwing`）。 */
 /* ══ 吊墜掛在哪（ver -443，Ray：「飛行畫面時把吊墜掛在控制面板的左上方，
      飛行畫面時槍棺無吊墜」）══════════════════════════════════════════════
@@ -7537,7 +7567,8 @@ function toBattle(kind){
      推翻 -443「推棺那一刻回到門上」）。交棒後主遊戲那一半的門帶著吊墜出現，
      那一格的差異 Ray 知情。棺上推的震動仍讓面板上的吊墜甩一下（慣性）。 */
   fkerbPendSwing(9, 2.0);
-  setTimeout(()=>fkerbPendSwing(22, 2.6), FKERB_RISE_MS);
+  /* 撞頂那一瞬（ver -568）：畫面震＋震動＋吊墜甩得最兇的那一下。 */
+  setTimeout(()=>{ fkerbThud(); fkerbPendSwing(22, 2.6); }, FKERB_RISE_MS);
   setTimeout(()=>{
     if(embedded()){
       flightAudio(false);                          // 進戰鬥：這一頁的音樂與環境音收掉
