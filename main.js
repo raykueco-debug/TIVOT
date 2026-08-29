@@ -1618,8 +1618,12 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
      檢視 stage 及好感度」）。左下角小綠字浮條，只在 testmode 且劇情舞台開著
      （劇情／城鎮都在 #storyStage 上）時出現；每秒重讀，純顯示不進任何流程。 */
   /* 實體遊玩時間的累加器（ver -564）：5 秒一跳。「在玩」用**正面表列**——
-     劇情/城鎮舞台開著（#storyStage.on；城鎮也在它上面）或飛行中（body.flight-on）。
+     劇情/城鎮舞台開著（#storyStage.on；城鎮也在它上面）、飛行中（body.flight-on）、
+     或**戰鬥進行中**（ver -569，Ray：「戰鬥中沒計時」）。
      ⚠ 不能用「不在首頁」反推：開始故事只是把劇情層蓋在首頁上，#home 的 on 還在。
+     ⚠ 戰鬥那一格＝ `!state.over && 首頁沒開著`：state.over 開機預設 false，
+       單看它會把首頁待機也算進去 —— 首頁開著（#home.on）就一定不是在打。
+       出擊整備／結算頁夾在戰鬥流程裡，跟著算，那也是遊玩。
      不算的時候：分頁看不見（切走/鎖屏）、**系統選單開著**（Ray：「按系統選單時
      暫停計時」，#gameMenu.on）。累加走 prog.addPlaySeconds（唯一實作）。 */
   setInterval(()=>{
@@ -1627,7 +1631,9 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
     const menu=document.getElementById('gameMenu');
     if(menu && menu.classList.contains('on')) return;
     const st=$('storyStage');
-    const playing=(st && st.classList.contains('on')) || document.body.classList.contains('flight-on');
+    const homeOn=(el=>el && el.classList.contains('on'))($('home'));
+    const playing=(st && st.classList.contains('on')) || document.body.classList.contains('flight-on')
+      || (!state.over && !homeOn);
     if(!playing) return;
     prog.addPlaySeconds(5);
   },5000);

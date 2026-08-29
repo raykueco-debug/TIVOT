@@ -213,6 +213,13 @@ function ensureLayer(){
     b.style.setProperty('--hold-ms', HOLD_MS+'ms');
     const cancel=()=>{ if(t){ clearTimeout(t); t=0; } b.classList.remove('holding'); };
     b.addEventListener('pointerdown', e=>{ e.stopPropagation();
+      /* ⚠⚠ **雪鐵龍教學開著時，兩顆行動鈕不可作動**（ver -569，Ray：「獨自坐坐跟
+         回房睡覺在雪鐵龍教學時應該是不可以點的，點了只會推進教學」）。
+         這一下只收掉當前那一則說明（`closeGuide()` 的收尾會 `refresh()` 接下一則），
+         長按計時**不啟動** —— 連被指著的那顆也一樣：教學先看完，下一按才是真的。
+         ⚠ 此條**取代** -430「被指的動作要能按」與 -440「坐坐由諾薇兒開口擋」
+           在這兩顆鈕上的行為（敲門不在此列，照舊）。blockSit() 因此不再從這裡走。 */
+      if(guideKey){ closeGuide(); return; }
       cancel(); b.classList.add('holding');
       t=setTimeout(()=>{ t=0; b.classList.remove('holding'); fire(); }, HOLD_MS);
     });
@@ -222,18 +229,6 @@ function ensureLayer(){
   layer.querySelectorAll('.inn-btn').forEach(b=>
     bindHold(b, ()=>{
       const act = (b.dataset.act==='sit') ? 'sit' : 'sleep';
-      /* ⚠⚠ **說明開著時，「獨自坐坐」由諾薇兒擋回來**（ver -439 擋、**-440 改成開口擋**）。
-         ver -430 把「說明開著時可按的東西全部留在遮罩之上」，那對睡覺／敲門是對的
-         （它們就是被指的那個動作），但坐坐**花掉兩個小時而且收不回來** ——
-         玩家其實只是想把遮罩點掉的那一下，就這麼過了兩小時。
-         ⚠⚠ -439 是「靜靜地只收說明」，那讀起來就是**鈕不作動**（Ray 回報）——
-           §6.5.5 早就寫了「還不能做」要**像諾薇兒那樣開口擋**，不要靜靜地吃掉那一下。
-           所以現在走 `blockSit()`：她問一句「咦？你累了嗎？」，玩家知道自己按到了。
-         ⚠ 說明照樣記成看過（`closeGuide(true)` 一定會記）—— 他用行動表示知道了，
-           於是這一按的效果是**推進到下一個雪鐵龍**（她講完的 `refresh()` 接上去）。
-         ⚠ 睡覺不在此列：它是不可逆的沒錯，但它自己就是那一則說明指著的動作，
-           擋掉的話玩家會以為鈕壞了（那正是 -430 修掉的病）。 */
-      if(act==='sit' && guideKey){ closeGuide(true); blockSit(); return; }
       learnTip(act); closeGuide(true);
       if(act==='sit') sitAlone(); else sleepHere(); }));
   const g=layer.querySelector('.inn-guide');
@@ -371,22 +366,9 @@ function knock(i){
 /* ══ 獨自坐坐 ══ 暗去 → 時鐘推到 20:00 → 亮起 → 蕾娜回來那一幕。 */
 let busy = false;
 
-/* 一次性說明開著時按到「獨自坐坐」→ 諾薇兒問一句擋回來（ver -440，Ray 交稿：
-   「咦？你累了嗎？」）。⚠ 走的是與 `sleepHere` 那個「還沒六點」**同一套**
-   （台詞在資料上、`host.play` 演、演完 `clearCast` 再 `refresh`）——
-   §6.5.5：「還不能做」一律**開口擋**，不要靜靜地把那一下吃掉。
-   ⚠ 台詞查不到就什麼都不演，只 `refresh()` 讓下一則說明接上（不要卡在原地）。 */
-function blockSit(){
-  if(busy) return;
-  try{ SFX.unlock(); SFX.menuClick(); }catch(_){}
-  story.hideBubble();
-  const lines = (node && node.innGuideSit) || [];
-  if(!lines.length || !host || !host.play){ refresh(); return; }
-  busy = true;
-  if(host.lock) host.lock(true);
-  host.play(lines, ()=>{ story.clearCast(); busy=false;
-    if(host.lock) host.lock(false); refresh(); });
-}
+/* blockSit（-440「坐坐由諾薇兒開口擋」）已於 ver -569 被「教學開著時兩顆鈕
+   一律只推進教學」取代（見 bindHold 的守門），死體移除；
+   台詞資料 `innGuideSit`（town.js）留著 —— 日後要恢復開口擋再接。 */
 function sitAlone(){
   /* ⚠ 守門看的是**那顆鈕現在在不在**（`wantSit`），不是 `stage()==='wait'`（ver -401 修）——
      ver -395 那個守門是「只有在等蕾娜時才能坐」寫的，但 Ray 已經把它改成
