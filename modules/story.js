@@ -851,11 +851,13 @@ const SE_FILES=[
 /* 別名：腳本裡慣用的短名 → 實際檔名（去副檔名）。 */
 const SE_ALIAS={ se_saintroar:'se_enemy_saintroar', se_mg_squall:'se_weapon_mg_squall',
                  se_reload:'se_weapon_reload',
-                 /* Ray 於 ver -508 把 se_lunaMG 改名 vo_lunaMG（檔案仍在 se/）——
+                 /* Ray 於 ver -508 把 se_lunaMG 改名 vo_lunaMG（檔案已歸位 vo/，ver -566）——
                     腳本照舊寫 se_lunaMG，這裡接住（稿子不必回頭改）。 */
                  se_lunamg:'vo_lunamg' };
+/* vo_ 開頭的檔住在 vo/（§6.6 的命名規約），其餘住 se/ —— 路徑由檔名推，只有這一處。 */
 const SE_SRC=(()=>{ const m={};
-  for(const f of SE_FILES) m[f.replace(/\.[^.]+$/,'').toLowerCase()]='resources/audio/se/'+f;
+  for(const f of SE_FILES) m[f.replace(/\.[^.]+$/,'').toLowerCase()]=
+    'resources/audio/'+(/^vo_/i.test(f)?'vo/':'se/')+f;
   return m; })();
 function seSrc(n){ const k=String(n||'').toLowerCase();
   return SE_SRC[k] || SE_SRC[SE_ALIAS[k]] || null; }
