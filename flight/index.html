@@ -2101,8 +2101,10 @@ let senseChimeI = 0;
 const PORTRAIT = {
   /* ⚠ 身高 159→162（Ray：「安雅再高一點點」，ver -267）。縮放與站位現在都鎖身高，
      所以這一個數字同時決定她**多大**與**頭頂多高**，不必也不該另外調位移。 */
+  /* ⚠ 取景值於 ver -624 重量（`Anya_SI_front` 換過圖）——
+     **與 `script/speakers.js` 的 `ART.anya` 是同一組數字**，改一邊要改另一邊（§5）。 */
   anya:     { name:'安雅',   cm:162, side:'R', src:'../resources/SI/Anya_SI_front.webp',
-              eye:34, fx:0.478, top:0,   bot:1530, alt:null },
+              eye:34, fx:0.505, top:0,   bot:1531, alt:null },
   /* ⚠ 索拉娜用 **side** 那張：front 太滿（人物橫向佔 78%），兩人同台一定疊。
      側面只佔 69%，站位再拉開，交疊就壓到最低。 */
   /* ⚠⚠ **side ＝ 固定站位**（ver -289，Ray 定案）：

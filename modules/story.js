@@ -393,6 +393,29 @@ function highlight(side){
 
 /* ══ {P} 代換：**顯示的這一刻才換**（玩家中途改名，下一句就會是新名字）══ */
 /* `{P}`＝名字、`{N}`＝暱稱（ver -395）。⚠ **顯示的那一刻才代換**（見 progress.js）。 */
+/* ══⚠⚠ **依好感段位換一句台詞**（ver -624，Ray 的稿：「（T1）／（T2以上）」）══
+   線上寫 `textByTier:{1:'…', 2:'…'}`。
+   ⚠ 兩個數字是**門檻不是等於**（同 `config.inspectors.dialogues` 與
+     `script/evaluation.js` 的兩層查表）：只寫 1 與 2 ＝「T1 一種說法、T2 以上另一種」，
+     日後要給 T4 再加一把鑰匙，前面幾段自動沿用。
+   ⚠ 看的是**這一句說話者自己的**好感段位 —— 那句話是她說的，門檻自然是她的。
+     說話者沒有立繪（旁白／主角）就沒有好感可查，退回 `text`。
+   ⚠⚠ 解析只有這一支（鐵律 8）：所有讀「這一句要印什麼字」的地方一律問 `lineText()`，
+     不要有人直接讀 `line.text` —— 漏一處就會出現「打字打到一半換成另一句」。
+   ⚠ 不要把結果寫回 `line.text`：那是資料模組上的常數，改了下次重播就跟著錯。 */
+function lineText(line){
+  if(!line) return '';
+  const m = line.textByTier;
+  if(!m) return line.text || '';
+  const key = SPEAKERS[line.speaker] && SPEAKERS[line.speaker].art;
+  if(!key) return line.text || '';
+  const t = prog.tierOf((prog.getAffection()||{})[key] || 0);
+  let picked = line.text || '';
+  for(const k of Object.keys(m).map(Number).filter(n=>!isNaN(n)).sort((x,y)=>x-y)){
+    if(t >= k) picked = m[k];
+  }
+  return picked;
+}
 function subst(t){ return String(t==null?'':t)
   .split('{P}').join(prog.getPlayerName())
   .split('{N}').join(prog.getPlayerNick()); }
@@ -863,6 +886,7 @@ const SE_FILES=[
   'se_enemy_revolver.m4a', 'se_enemy_shot.m4a', 'se_enemy_slash.m4a', 'se_enemy_smack.m4a',
   'se_flight_heartbeat.m4a', 'se_flight_idle_loop.mp3', 'se_flight_sail_loop.mp3',
   'se_flight_seagull.m4a', 'se_flight_train.mp3', 'vo_lunaMG.m4a', 'se_punch.m4a',
+  'se_brickcrush.m4a',                                       // 瓦礫崩落（北方泊地教堂，ver -624）
   'se_saint_install.m4a', 'se_saint_maxburst.m4a', 'se_steps.m4a', 'se_ui_click.m4a',
   'se_ginclick.m4a', 'Se_Tummy.m4a', 'se_metalclip.m4a', 'se_SailorShout.mp3',
   'se_ui_kagurabell.m4a', 'se_ui_pageflip.m4a', 'se_ui_sortie.m4a', 'se_walk.m4a',
@@ -1919,8 +1943,8 @@ function renderLine(){
 
   /* 本場回顧：有台詞的才記（演出拍不是台詞）。⚠ 記的是**代換後**的字，
      玩家看到什麼、回顧就是什麼。 */
-  if(line.text) sceneLog.push({ name:(line.speaker==='PLAYER' ? prog.getPlayerNick() : nameOf(line.speaker)),
-                                text:subst(line.text) });
+  if(lineText(line)) sceneLog.push({ name:(line.speaker==='PLAYER' ? prog.getPlayerNick() : nameOf(line.speaker)),
+                                text:subst(lineText(line)) });
   const nm=$('storyName'), tx=$('storyText');
   /* 主角沒有立繪、名字由玩家取（存檔裡），所以不走 speakers.js 的查表。
      ⚠ 代換要在**顯示的這一刻**做（同 `{P}` 的規矩）：玩家中途改名，
@@ -1953,7 +1977,7 @@ function renderLine(){
     scheduleAuto(BLANK_BEAT);
     return;
   }
-  if(!line.text){
+  if(!lineText(line)){
     if(bub2) bub2.style.visibility='hidden';
     if(tx) tx.textContent='';
     /* auto：這一拍**自己走完**，不等玩家點（Ray：「對話框在播放完
@@ -1974,10 +1998,10 @@ function renderLine(){
     if(bub2) bub2.style.visibility='hidden';
     waitT=setTimeout(()=>{ waitT=null;
       if(bub2) bub2.style.visibility='';
-      if(tx) typeOut(tx, line.text); }, line.delay);
+      if(tx) typeOut(tx, lineText(line)); }, line.delay);
   }else{
     if(bub2) bub2.style.visibility='';
-    if(tx) typeOut(tx, line.text);
+    if(tx) typeOut(tx, lineText(line));
   }
   /* 自動播放／加速：這一句唸完就排下一句。⚠ 掛在 `onTyped` 而不是固定秒數 ——
      長句與短句該停一樣久的「讀完之後」，不是一樣久的「出現之後」。 */
@@ -2026,11 +2050,11 @@ function advance(){
   if(waitT){
     clearTimeout(waitT); waitT=null;
     const b=$('storyBubble'); if(b) b.style.visibility='';
-    if(tx && line) typeOut(tx, line.text);
+    if(tx && line) typeOut(tx, lineText(line));
     return;
   }
   /* 還在打字 → 這一下先補完，不推進（對話演出通則）。 */
-  if(typing && line && tx){ typeFinish(tx, line.text); return; }
+  if(typing && line && tx){ typeFinish(tx, lineText(line)); return; }
 
   lineIdx++;
   if(lineIdx < cur.lines.length){ renderLine(); return; }

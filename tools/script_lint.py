@@ -345,6 +345,11 @@ def main():
     #  ⚠ 它走的是**教學那一支**對話實作（modules/tutorial.js 的 openStep），所以
     #    角色要在 `config.tutorial.cast` 裡、表情差分要在 ASSETS 裡 ——
     #    打錯的話要等真的打到那一場才發現，那通常是好幾個畫面之後的事。
+    #  ⚠ 觸發除了那幾個節點，還有（ver -599／-619 加的）：
+    #    `hp:N`／`php:N`＝血量觸發（敵人／玩家血的百分比）、
+    #    以及**自訂接續名**——`gate.then`／`strike` 的 `then` 指到的那一段
+    #    （例如聖徒化教學的 `downed`／`saintOn`／`partnerOn`）。
+    #    自訂名不是打錯字，所以只要**有人指得到它**就算數；沒人指到才報。
     TALK_TRIGGERS = ('battleStart', 'threat', 'defended')
     tcast  = ((cfg.get('tutorial') or {}).get('cast') or {})
     assets = D.get('assets') or {}
@@ -354,8 +359,18 @@ def main():
         for i, st in enumerate(b.get('talk') or []):
             tag = 'battles.%s.talk[%d]' % (bid, i)
             tr  = st.get('trigger')
-            if not (tr in TALK_TRIGGERS or (isinstance(tr, str) and tr.startswith('board:'))):
-                err('%s：trigger「%s」不是既有的節點（%s 或 board:N）'
+            thens = set()
+            for st2 in (b.get('talk') or []):
+                for k in (st2.get('then'), (st2.get('gate') or {}).get('then')):
+                    if isinstance(k, str): thens.add(k)
+            ok_tr = (tr in TALK_TRIGGERS
+                     or (isinstance(tr, str)
+                         and (tr.startswith('board:')
+                              or re.match(r'^p?hp:\d+(\.\d+)?$', tr)
+                              or tr in thens)))
+            if not ok_tr:
+                err('%s：trigger「%s」既不是節點（%s／board:N／hp:N／php:N），'
+                    '也沒有任何一段的 then 指到它'
                     % (tag, tr, '／'.join(TALK_TRIGGERS)))
             if not (st.get('lines') or []):
                 err('%s：沒有台詞' % tag)

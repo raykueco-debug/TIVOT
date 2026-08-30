@@ -59,6 +59,10 @@ export const SPEAKERS = {
        **不要**用一個 id 再把 name 蓋成「？？？」，那會讓「這一句是誰講的」
        在資料上消失（同上面 UNKNOWN 那條註解）。
      ⚠ `UNKNOWN` 那一筆是**璐娜莉亞專用**的（art 指她），不能借來用。 */
+  /* 安雅：報上名字之前是「？？？」（ver -624，北方泊地教堂那一幕）。
+     ⚠ 同 `PRIEST_X`／`OFFICER` 的慣例：畫面上是同一個人，**顯示名不同就是兩個 id**
+       —— 不要在腳本裡臨時覆寫名字（§6.5.6）。 */
+  ANYA_X:   { name:'？？？',  art:'anya'   },
   PRIEST_X: { name:'？？？',  art:'priest' },
   PRIEST:   { name:'司祭',   art:'priest' },
 };
@@ -131,7 +135,16 @@ export const ART = {
                   cringe:   { src:'resources/SI/Renna_SI_cringe.webp',    top:3, bot:1524, fx:0.502 },
                   cutescare:{ src:'resources/SI/Renna_SI_cutescare.webp', top:0, bot:1530, fx:0.537 },
                   dying:    { src:'resources/SI/Renna_SI_dying.webp',     top:2, bot:1518, fx:0.543 },
-                  relief:   { src:'resources/SI/Renna_SI_relief.webp',    top:3, bot:1525, fx:0.518 } } },
+                  relief:   { src:'resources/SI/Renna_SI_relief.webp',    top:3, bot:1525, fx:0.518 },
+                  /* 北方泊地教堂那一幕（ver -624，Ray 交稿）。逐張量（tools/measure_si.py）。
+                     ⚠ 檔名的 `evalutating` 是交件時的拼字，鍵名照正確拼法 `evaluating`
+                       —— 腳本裡寫的是鍵名，路徑只有這裡一處在對。 */
+                  worry:    { src:'resources/SI/Renna_SI_worry.webp',      top:6, bot:1527, fx:0.568 },
+                  pause:    { src:'resources/SI/Renna_SI_Pause.webp',      top:3, bot:1525, fx:0.513 },
+                  upsetstare:{src:'resources/SI/Renna_SI_upsetstare.webp', top:0, bot:1524, fx:0.503 },
+                  evaluating:{src:'resources/SI/Renna_SI_evalutating.webp',top:6, bot:1524, fx:0.507 },
+                  evaluatingclosemouth:{src:'resources/SI/Renna_SI_evalutatingclosemouth.webp', top:6, bot:1524, fx:0.508 },
+                  chase:    { src:'resources/SI/Renna_SI_chase.webp',      top:4, bot:1532, fx:0.554 } } },
   /* ⚠⚠ 諾薇兒的表情差分是**不同姿勢**（跑、畏縮、驚恐、絕望、驚訝），不是換臉，
        所以每一張**各帶自己的 top/bot/fx**（ver -325 量完）。
        ⚠ 沿用 front 那一組的後果實測過：Scared 的臉其實在 0.397，照 0.564 擺會
@@ -185,8 +198,15 @@ export const ART = {
   /* ⚠ 索拉娜用 **side** 那張：front 橫向佔 78%，兩人同台一定疊；側面只佔 69%。 */
   sorana: { cm:176, eye:27, fx:0.527, top:4, bot:1522,
            side:'R', alt:null, base:'resources/SI/Sorana_SI_side.webp', expr:{} },
-  anya:   { cm:162, eye:34, fx:0.478, top:0, bot:1530,
-           side:'R', alt:null, base:'resources/SI/Anya_SI_front.webp', expr:{} },
+  /* ⚠ 取景值於 ver -624 **重量**：`Anya_SI_front` 換過圖（舊的留成
+     `XAnya_SI_front.webp`）—— §5「換圖一定要重量取景值」。
+     ⚠ `flight/index.html` 的 `PORTRAIT.anya` 是同一組數字，改一邊要改另一邊。 */
+  anya:   { cm:162, eye:34, fx:0.505, top:0, bot:1531,
+           side:'R', alt:null, base:'resources/SI/Anya_SI_front.webp', expr:{
+    /* 北方泊地教堂那一幕（ver -624）。逐張量（tools/measure_si.py）。 */
+    scared:   { src:'resources/SI/Anya_SI_Scared.webp',   top:0, bot:1511, fx:0.477 },
+    runworry: { src:'resources/SI/Anya_SI_runworry.webp', top:0, bot:1534, fx:0.432 },
+  } },
   /* 璐娜：戰鬥搭檔，劇情立繪尚未指定 —— 先指 cut-in 圖，數字**沒有量過**。
      ⚠ 真的要讓她在劇情裡站台，top/bot/fx 一定要重量（cut-in 是胸像構圖，
        照 alpha 上下緣量會把人放大好幾倍，見 CLAUDE.md §6.5）。 */

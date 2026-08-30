@@ -1793,6 +1793,7 @@ export const GAME_CONFIG = {
       se_tummy:8.268, se_sailorshout:2.048, se_sleep:1.708,
       se_kerberos_open:1.558, se_kerberos_pop:1.479, se_kerberos_steam:1.301,
       se_kerberos_gear:6.179, se_kerberos_drop:1.550,
+      se_brickcrush:1.825,              // ver -624（audio_scan 實測：−19.0 LUFS）
       /* ── 飛行頁（那一頁用 HTMLAudio，讀同一張表，見 flight/index.html）── */
       se_flight_heartbeat:5.064, se_flight_idle_loop:2.848,
       se_flight_sail_loop:7.928, se_flight_seagull:3.353, se_flight_train:5.059,
@@ -1802,11 +1803,9 @@ export const GAME_CONFIG = {
       bgm_mainmenu:1.735, bgm_battle:0.849, bgm_boss:0.665, bgm_result:0.855,
       bgm_missionfailed:1.995, bgm_capital_day:1.213, bgm_lunaria:1.230,
       peritunematerial_crisis_loop:1.077,
-      /* ⚠⚠ 北方泊地那兩首**還沒量**（ver -614）：先給 1.0（＝母帶原樣）。
-         §6.6 的規矩是每一支都要拉到 `targetLufs` —— 用 `tools/audio_scan.html`
-         量出來再把數字填進來，不然這兩首的響度會與其他曲子對不齊。 */
-      peritunematerial_suspense6_loop:1.0,
-      peritune_crimson_moon_loop:1.0,
+      /* 北方泊地那兩首（ver -624 補量，audio_scan 實測 −16.7／−12.7 LUFS）。 */
+      peritunematerial_suspense6_loop:1.401,
+      peritune_crimson_moon_loop:0.879,
       /* ⚠ 母帶太小聲（−26 LUFS）：×master×層之後會撞上 HTMLAudio 的 1.0 上限，
          實際只到 −26 而不是目標的 −21.9。要救得重做母帶。 */
       bgm_flight:4.056,

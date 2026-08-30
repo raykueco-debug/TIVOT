@@ -1012,7 +1012,12 @@ export const TOWNS = {
                右滑發動聖徒化、血回 99% 教主動技、諾薇兒倒下 —— 那一整套的節奏
                還沒接（見 config.battles.np_claws 的 TODO），這裡先把**對白與交棒**
                鋪好。 */
-          { flag:'np_claws_done', need:'np_clear_church', sides:{ RENNA:'R' },
+          /* ⚠⚠ 站位（§6.5「兩個人同台就一定分站兩邊」）：蕾娜整幕站**右**
+             （前半與諾薇兒同為左側，這是那條「整幕覆寫」的用途）；後半換安雅上台，
+             她的固定側也是右 —— 兩個都在右就是「一個槽兩個人」，所以這一幕把
+             **安雅擺左**。⚠ 一幕之內只能有一套站位（不可以逐句換邊），所以
+             不能等諾薇兒下台再把蕾娜放回左邊。 */
+          { flag:'np_claws_done', need:'np_clear_church', sides:{ RENNA:'R', ANYA_X:'L' },
             lines:[
               nou('relief','總算是消滅掉那些東西了……'),
               ren('thinking','……'),
@@ -1027,6 +1032,47 @@ export const TOWNS = {
               ren('shockedCalm','！！'),
               nou('shocked2','有什麼……要來了！'),
               { battle:'np_claws' },
+              /* ══ 戰勝（ver -624，Ray 交稿）══════════════════════════════════
+                 ⚠ 接在 `{battle}` **後面**（同一段）：這樣打贏就直接接著演，
+                   不必走出教堂再回來（`resumeFrom` 會把這一段剩下的拍續播）。 */
+              nou('desperate','哈啊——哈啊——'),
+              ren('worry','諾薇兒？妳還好嗎？'),
+              ren('worry','竟然能把妳逼到聖徒化，剛剛那個到底是……'),
+              nou('desperate','下面……'),
+              ren('shockedCalm','什麼？'),
+              nou('desperate','廢墟下面，有人！'),
+              { speaker:'PLAYER', blank:true, se:'se_brickcrush' },
+              /* ══ 插圖：昏迷的安雅 ══ 稿上「以下對話以插圖為背景，無立繪」——
+                 立繪是**持續狀態**，所以要明寫把兩個人請下台（§6.5）。
+                 ⚠ 用 `hide` 不是 `show:false`：後者一句只能管一個角色。 */
+              { speaker:'RENNA', text:'這孩子還有氣。有受傷嗎？',
+                cg:'007_Anya_passout', cgNoTime:true, hide:['NOUVELLE','RENNA'] },
+              /* 差分：醒來。空拍沒有台詞 → 一定要給 `auto`（§6.5）。 */
+              { speaker:'PLAYER', text:'', auto:1200, cg:'007-2_Anya_awake', cgNoTime:true },
+              /* 收插圖回教堂（`cg:null`），立繪從這一拍開始恢復。 */
+              { speaker:'ANYA_X', text:'！！', cg:null,
+                portrait:{ char:'ANYA_X', expr:'scared', show:true } },
+              ren('talkwork','先別亂動！妳剛剛還被壓瓦礫在下面呢！'),
+              /* 她轉身就跑：換表情＋跑步音的**演出拍**，沒有台詞所以給 auto。 */
+              { speaker:'ANYA_X', text:'', auto:900, se:'se_steps',
+                portrait:{ char:'ANYA_X', expr:'runworry', show:true } },
+              /* 人跑掉了 → 下一拍把她請下台（`hide` 是**立刻**執行的，不等 reveal）。 */
+              ren('pause','啊——', { hide:['ANYA_X'] }),
+              ren('upsetstare','……'),
+              ren('stare','我說啊……'),
+              /* ⚠⚠ 稿上這一句分 T1／T2 兩種說法 —— 走 `textByTier`（見 story.js 的
+                 `lineText`）：**門檻不是等於**，看的是**蕾娜自己的**好感段位。
+                 ⚠ `text` 要留著當退路（查不到好感時用）。 */
+              { speaker:'RENNA', portrait:{ char:'RENNA', expr:'bow', show:true },
+                text:'你好歹也是神職人員吧？那樣盯著人家小女生的腿合適嗎？',
+                textByTier:{ 1:'你好歹也是神職人員吧？那樣盯著人家小女生的腿合適嗎？',
+                             2:'眼睛看哪裡呢？' } },
+              { speaker:'PLAYER', blank:true },
+              ren('evaluating','……傷？'),
+              ren('evaluatingclosemouth','……有道理。被壓在這麼厚的石堆裡，怎麼連一道劃傷都沒有？'),
+              /* 主角追出去（跑步音）。 */
+              { speaker:'PLAYER', blank:true, se:'se_steps' },
+              ren('chase','喂、喂！別丟下我們兩個啊！'),
             ] },
         ],
       },
