@@ -146,6 +146,14 @@ function diningNode(){ return ((TOWNS[townId]||{}).dining||{}).node || null; }
    ⚠ 連接用場景一律留著 —— 不然玩家會被關在某一格出不去。
    ⚠ 判定只有這一支，`exitsOf()` 那個唯一的出口表問它（箭頭、目的地字格、鍵盤、
      `go()` 全部一次吃到，鐵律 8）。 */
+/* ⚠⚠⚠ **戰鬥地圖與城鎮探索是兩個模式**（ver -584，Ray：「戰鬥期間要跟城鎮探索期間
+   分開喔，兩個是不同的，只是背景跟城鎮圖沿用」）。
+   城鎮戰開著的時候，這張地圖上**只有「走」與「打」** —— 探索的每一層一律不啟動：
+     路人單句／店舖／旅店大廳／進場對白／傍晚提醒／營業時間／女角外出與約會／
+     一次性操作提示／「走過了沒」的旗標／走一步花掉的時間
+   ⚠⚠ **每一層自己問 `siegeOn()`**（鐵律 8），不是在 `enter()` 一處判完再分派 ——
+     日後新增任何一層探索機制，它自己會記得問；寫在呼叫端一定會漏。
+   ⚠ 唯一照常的是 `acts`：城鎮戰的那幾場戰鬥就是掛在那上面的。 */
 function siegeOn(){
   const g=(TOWNS[townId]||{}).siege;
   if(!g || !g.from || !prog.hasFlag(g.from)) return null;
@@ -218,6 +226,8 @@ function isCurfew(){
 }
 /* 現在在外面的人：`{ who: 節點id }`。 */
 function outNow(){
+  /* 戰鬥地圖上沒有人在逛街（ver -584）：城鎮戰是另一個模式，見 `siegeOn()`。 */
+  if(siegeOn()) return {};
   /* ⚠ 行程本來就排在 8~18 點，這一條現在攔不到東西 —— 但**規則要寫在規則上**：
      日後把 `hours` 拉長，宵禁不必跟著改（鐵律 8）。 */
   if(isCurfew()) return {};
@@ -382,7 +392,9 @@ function node(){ return (TOWNS[townId]||{}).nodes[nodeId] || null; }
 /* ══ 走到過的地點（ver -392）══════════════════════════════════════════
    ⚠ 與「進場對白播過了」（`town_<城>_<節點>`）是**兩件事**：有的節點根本沒有對白
      （中心區），有的對白被打烊擋掉 —— 那些也算走到過。所以另開一組旗標。 */
-function markSeen(id){ prog.addFlags(['seen_'+townId+'_'+id]); }
+/* ⚠ 戰鬥地圖不記（ver -584）：「走過這個地方」是探索的帳，
+   在城鎮戰裡跑過一輪不算逛過這座城。 */
+function markSeen(id){ if(siegeOn()) return; prog.addFlags(['seen_'+townId+'_'+id]); }
 /* 城裡的地點都走過了嗎。⚠ **不算旅店自己** —— 那是「走完之後要去的地方」，
    把它算進去的話玩家永遠等不到那句提醒。 */
 function allSeen(){
@@ -424,6 +436,7 @@ function dayNo(){ return clock.dayNo(); }
    ⚠ **在旅店裡不演**：那時走的是旅店自己的分支二（Ray 的規則四／五），
      旗標由 `inn.arrive` 那一支記（見 `afterArrive` 傳進去的 `eveningFlag`）。 */
 function eveningDue(n){
+  if(siegeOn()) return null;     // 戰鬥地圖不催你回旅店（ver -584）
   const T=TOWNS[townId], ev=T && T.evening;
   if(!ev) return null;
   if(n && n.inn) return null;
@@ -615,6 +628,7 @@ function keeperOf(n){
 }
 /* 這個節點現在有沒有店舖畫面：要是店（或已登記的公會），而且**在營業時間內**。 */
 function shopReady(n){
+  if(siegeOn()) return false;    // 戰鬥地圖不開店（ver -584）
   if(!n || !isOpenNow(n)) return false;
   if(n.shop) return true;
   return !!(n.board && (!n.boardFlag || prog.hasFlag(n.boardFlag)));
@@ -1025,7 +1039,10 @@ function go(to, dir){
   busy=true; showNav(false);
   document.body.classList.remove('town-nav');          // 移動中把羅盤收起來
   stepSfx();
-  clock.advance(STEP_MIN);
+  /* ⚠⚠ **戰鬥地圖不花時間**（ver -584）：「一步 10 分鐘」是**探索**的機制
+     （時間是資源）。城鎮戰是另一個模式 —— 在被禍魘襲擊的城裡跑一趟，
+     時間不該像逛街那樣被記帳。 */
+  if(!siegeOn()) clock.advance(STEP_MIN);
   sceneCut(to);          // 換景走淡入淡出（ver -438，見 sceneCut）
 }
 
@@ -1184,7 +1201,11 @@ export function enter(id){
        是第一天的戲），那個旗標一立（stage 0 的夜過去＝stage1_open）就永遠不演 ——
        與 -459「保留到他回隊」相反，哪一種由**節點自己**宣告。 */
   const expired = !!(n.expire && prog.hasFlag(n.expire));
-  const own = (played || expired || !isOpenNow(n) || linesBlockedByRest(n.lines)) ? [] : (n.lines||[]);
+  /* ⚠ **戰鬥地圖不播進場對白**（ver -584）：那一段是「第一次走進這個地方」的氣氛戲，
+     城裡正在被禍魘襲擊時演它是錯的。旗標也不會記 —— 城鎮戰結束後正常走進來照演。
+     ⚠ `acts` **不受這一條管**：城鎮戰的那幾場戰鬥就是掛在 acts 上的。 */
+  const own = (siegeOn() || played || expired || !isOpenNow(n) || linesBlockedByRest(n.lines))
+            ? [] : (n.lines||[]);
   /* ⚠⚠ **傍晚那一格不搶這一段戲**（ver -430，Ray 指定）：讓節點自己的對白先講完，
      移動到**下一個地點**才強制觸發。⚠ 只讓一次（`eveningHeld`）—— 否則一路走過
      還沒看過的地點會永遠讓下去，「強制」就名存實亡。 */
@@ -1262,6 +1283,7 @@ export function enter(id){
    ⚠ 彈之前要確認**被指的那顆真的在畫面上**（吊墜住在槍棺裡）—— `openHint` 自己會
      檢查 rect（量不到就直接跳過），所以這裡不必再判一次。 */
 function tipDue(){
+  if(siegeOn()) return null;     // 戰鬥地圖不教操作（ver -584）
   for(const t of (TOWNS[townId]||{}).tips || []){
     if(t.flag && prog.hasFlag(t.flag)) continue;
     if(t.need && !prog.hasFlag(t.need)) continue;
@@ -1317,7 +1339,8 @@ function afterArrive2(n){
   /* ⚠ `introFlag` 由城鎮算好傳進去（ver -402）：旅店已經沒有 `kind` 了，
      旗標名只有 `enter()` 那一支知道（`kind` 版／節點版兩種）—— inn 自己拼會拼錯城。 */
   maybeMeetOut();            // 有人外出時走到她那一格 → 碰到她（ver -575，取代 -461 的蕾娜版）
-  if(n && n.inn) inn.arrive(n, { allSeen: allSeen(), introFlag: flagOf(n, nodeId),
+  /* ⚠ 戰鬥地圖不開旅店大廳（ver -584）—— 伙伴門／獨自坐坐／回房睡覺都是探索的機制。 */
+  if(n && n.inn && !siegeOn()) inn.arrive(n, { allSeen: allSeen(), introFlag: flagOf(n, nodeId),
                                  /* 這是哪一座城的哪個節點（ver -481）：睡覺那一刻要記
                                     「上一次睡覺的旅店」——連敗三場送回來用。 */
                                  where: { town: townId, node: nodeId },
@@ -1428,6 +1451,7 @@ let chatterOn=false;
 
 /* 路人單句：**單句**，不進對話模式（Ray 指定）。點一下出一句、再點一下收掉。 */
 function chatter(){
+  if(siegeOn()) return;          // 戰鬥地圖沒有路人（ver -584）
   const n=node();
   /* 打烊中：出那一句「關著」的描述就好，不出路人單句（ver -391）。 */
   if(n && !isOpenNow(n)){
