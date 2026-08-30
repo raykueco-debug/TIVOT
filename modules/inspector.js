@@ -141,7 +141,13 @@ export function evaluate(stats, cfg = GAME_CONFIG.rating){
                + (stats.delays        ||0) * (pen.delay   ||0)
                /* ⚠ 反擊與 overkill 是**負的**（ver -601／-603）：它們是表現不是失誤。 */
                + (stats.perfectCounter||0) * (pen.counter ||0)
-               + (stats.overkill      ||0) * (pen.overkill||0);
+               + (stats.overkill      ||0) * (pen.overkill||0)
+               /* ⚠⚠ **整場無傷**是一次性折抵（ver -620，Ray：「無傷計分減 10 秒」）——
+                  它不乘任何次數，與上面那幾項「每一次幾秒」不同。
+                  ⚠ `hitsTaken` 已經扣掉**腳本演出**的擊數（劇情殺三連擊，見
+                    combat 的 `_scriptedHits`），所以「除了劇情殺之外沒被打到」
+                    照樣算無傷（Ray 指定）—— 與結算頁那個「無傷」標籤同一個判定。 */
+               + (((stats.hitsTaken||0)===0) ? (pen.flawless||0) : 0);
   /* ⚠ 夾在 0 以上：反擊／overkill 夠多時折算會是負的，扣過頭會變成負秒數。 */
   const used = Math.max(0, (stats.clearTime||0) + penSec);
   const score = Math.max(0, Math.min(100, Math.round(100 - (used/hp) * (cfg.timeK||200))));

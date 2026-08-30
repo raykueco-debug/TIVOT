@@ -763,7 +763,12 @@ export const GAME_CONFIG = {
          一格減 0.1 秒」）。⚠ 同一版起 **overkill 那一段照樣計時**（碼表不再在
          敵人倒下時暫停）—— 以前不計時又倒扣秒，那一段是白拿的（堆三十格白送
          六秒，timeK 600 之下＝12 分）。現在想賺就得真的花時間去敲。 */
-    penalty: { wrong: 2, ult: 3, block: 1, delay: 1, counter: -0.5, overkill: -0.1 },
+    /* ⚠⚠ `flawless` ＝**整場無傷**的一次性折抵（ver -620，Ray：「無傷計分減 10 秒」）。
+       它與上面那幾項不同：那些是**每一次**幾秒，這一項是**這一場**扣一次。
+       ⚠ 判定是 `stats.hitsTaken===0` —— 而 `hitsTaken` 已經把**腳本演出的擊數**
+         扣掉了（劇情殺三連擊，見 combat 的 `_scriptedHits`），
+         所以「除了劇情殺之外沒被打到」照樣算無傷（Ray 指定）。 */
+    penalty: { wrong: 2, ult: 3, block: 1, delay: 1, counter: -0.5, overkill: -0.1, flawless: -10 },
     /* 等第門檻（分數下限，由高到低）。⚠ 同上：形狀，不是難度旋鈕。
        ⚠ 最後一級 D 是 0 ＝ 兜底，所以永遠評得出等第、而且**沒有 E**。 */
     tiers: [
