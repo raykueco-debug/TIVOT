@@ -302,11 +302,20 @@ export function settle(totalTime, stats, opts={}){
   // ── 評價系統（rating）：大字等級（顯眼）+ 各數值明細 + EXP／金錢 ──
   /* ⚠ **整場一起評**（ver -601）：連續戰鬥中間幾格的用時與失誤先併進來，
      再算一次等第 —— 各場先算完再合併是另一件事（見 bankSessionGain）。 */
-  const evalResult = evaluate(mergeSessionStats(stats));
+  const merged = mergeSessionStats(stats);
+  const evalResult = evaluate(merged);
   let rows='';
   rows += `<div class="grade-wrap"><b class="grade-badge rank-${evalResult.grade}">${evalResult.grade}</b>`
         + `<span class="grade-meta"><span class="grade-cap">${L.result.gradeCap}</span></span></div>`;
-  rows += ratingStatsRows(stats, totalTime);
+  /* ══⚠⚠ **畫面上的「戰鬥用時」是實際秒數**（ver -610，Ray：「戰鬥用時不要扣秒，
+     要用實際的秒數，扣秒是後台計分算的」）══
+     失誤／獎勵折算的那幾秒**只活在 `evaluate()` 裡**（`breakdown.used`），
+     不進畫面 —— 玩家看到的必須是他真的打了多久，不然那個數字對不上手感。
+     ⚠ 連續戰鬥（城鎮戰）顯示的是**整場的總和**（`merged`，ver -601 那一條）：
+       中間幾格不彈結算頁，收段這一頁本來就是替整段報帳。
+     ⚠ 其餘幾列（連擊／受擊／命中率／反擊）同理一律用 `merged`，
+       不要一半顯示整場、一半只顯示最後一場。 */
+  rows += ratingStatsRows(merged, merged.clearTime || totalTime);
   /* ══⚠⚠ EXP 與金錢**直接放在結算頁、當場入帳**（ver -470，Ray：「exp跟金錢
      不要放在戰利品，直接在結算計算」）══
      與劇情結算（scriptSettle，ver -453）同一套。-439 曾把兩者搬去戰利品那一頁，
