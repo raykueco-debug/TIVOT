@@ -1304,9 +1304,10 @@ function win(){
   if(storyFramed()){
     prog.setHp(Math.max(1, state.playerHp));
     sessionSave();                    // 連續戰鬥：資源帶去下一格（ver -585）
-    /* ⚠ 這一場是段落的最後一場（Boss）→ 收段：下一次進戰鬥重新演開棺、資源回滿。 */
-    { const _es = state.scriptBattleId && GAME_CONFIG.battles && GAME_CONFIG.battles[state.scriptBattleId];
-      if(_es && _es.sessionEnd) endSession(); }
+    /* ⚠⚠ **收段（`endSession`）要等結算頁領完帳才做**（ver -621）——
+       它會 `clearSessionGain()`，而這一段的統計與錢正是結算頁要報的。
+       -595~-620 收在這裡：整段的用時／失誤／受擊／金錢在 `stats` 還沒組出來
+       之前就被清光了（無傷與等第因此只算最後一隻）。改掛在 `toResult`。 */
     /* ⚠⚠ 開場白的 talkOnce **打贏才記**（ver -493，Ray：「敗北重來要跑，
        結束以戰鬥勝利為條件」）—— 敗北時根本沒記＝每次重來自動重播；
        記了＝這一場的劇情永久結束（隨機再遇同種怪也不播）。憲法 §6.5.2 原則。 */
@@ -1345,7 +1346,9 @@ function win(){
      公式仍只有一份（鐵律 7），這裡只是再問一次答案。 */
   TEL.runEnd({ partner:state.pickedPartner, weapon:state.equippedWeapon,
                boss:state.inIntruderFight, result:'win', time_ms:Math.round(totalTime*1000),
-               grade: inspector.evaluate(stats).grade });
+               /* ⚠ 上報的等第也要**整場一起算**（ver -621）：`mergeSessionStats`
+                  是純函式、不清帳，所以這裡先問一次不影響結算頁再問一次。 */
+               grade: inspector.evaluate(inspector.mergeSessionStats(stats)).grade });
   /* 勝利 → 先播「驅逐完成」過渡禎；被點掉（done）後才建結算面板並起播結算 BGM。
      ⚠ **劇情叫起來的教學不播過渡禎**（ver -358）：那一場的進出都由劇情接手，
        中間插一張要點的過渡禎會把節奏切斷（同 -329「切乾淨」的理由）。
@@ -1355,9 +1358,9 @@ function win(){
      彈一頁戰績，等於把它切成五場。所以中間場：不演閉棺、不上結算，直接交還城鎮
      （＝回到戰鬥地圖），那兩件事留給 `sessionEnd` 的那一場（Boss）。
      ⚠ 上面的收尾（持久 HP、`sessionSave`、talkOnce）都已經跑過了，這裡只是不演。
-     ⚠⚠ **代價**：中間場的拾得道具與 EXP 目前是**沒有的**（那些掛在結算頁上），
-       而 Boss 那一頁報的也只有 Boss 那一場的戰績 —— 要「整段累計再一次結算」
-       是另一件事（統計要跨場累加），Ray 沒說，先不做。 */
+     ⚠ 中間場的**戰績與錢先記帳**（`bankSessionGain`），由收段那一場的結算頁
+       一起報（ver -621：用時／失誤／受擊／無傷／EXP／金錢全部以「場」為單位）。
+       ⚠ 拾得道具仍只在有結算頁的那一場給 —— 那是掉落，不是帳。 */
   if(midSession()){
     /* ⚠ 回程演的是**原地閉棺**（ver -587，Ray：「雜怪 hp 清零後槍棺在原高度閉棺
        成為控制板」）：門在控制盤的高度闔上，闔上就是那張控制板 ——
@@ -1381,6 +1384,10 @@ function win(){
       SFX.playBgm(asset(key), { volume: bgmVol(key) });
     }
     inspector.settle(totalTime, stats, { isLose:false });
+    /* ⚠ 這一場是段落的最後一場（Boss）→ 收段：下一次進戰鬥重新演開棺、資源回滿。
+       ⚠ **一定要在 `settle` 之後**：它清帳，而 settle 開頭才把那筆帳領走（ver -621）。 */
+    { const _es = state.scriptBattleId && GAME_CONFIG.battles && GAME_CONFIG.battles[state.scriptBattleId];
+      if(_es && _es.sessionEnd) endSession(); }
   };
   /* ⚠ 劇情版教學：**先演「關門」**（進場那一套的倒放）再上結算（ver -366，Ray 指定）。
      進場是門推上來、打開露出戰場；打完就該把門關回去 —— 沒有這一段，畫面會從戰鬥

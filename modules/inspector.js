@@ -273,6 +273,27 @@ function saveBestTotal(t, boss){
  * ========================================================================== */
 export function settle(totalTime, stats, opts={}){
   const isLose = !!opts.isLose;
+  /* ══⚠⚠ **「一場」的併帳只有這一處**（ver -621，Ray：「無傷是算『場』不是算『敵』，
+     所有以場為單位都是以結算為終點」）══
+     「場」＝槍棺上彈 → 蕾娜評價（§6.5.4.3 的 session）。連續戰鬥中間幾格不彈
+     結算頁，它們的用時／失誤／受擊／overkill 累在 `state.sessionStats`、
+     錢累在 `sessionMoney` —— **在這裡一次併進來**，之後每一條結算路徑
+     （監察官／教學／劇情插入戰）拿到的都是「整場」的統計。
+     ⚠⚠ ver -601 的併帳只做在**監察官**那一頁，而城鎮戰／劇情戰走的是
+       `scriptSettle` —— 於是整段累計的戰績與錢從來沒被領走過，
+       `endSession()` 一到就清掉了（無傷、用時、EXP、金錢全部只算最後一隻）。
+       併在分流**之前**，日後多一條結算路徑也自動吃到（鐵律 8）。
+     ⚠ 領完就清：不然下一場會把上一段的再算一次。
+     ⚠ 戰敗不併也不清 —— 那一頁不報帳，而這一段可能還要再打一次。 */
+  let sessionMoney = 0;
+  if(stats && !isLose){
+    stats = mergeSessionStats(stats);
+    sessionMoney = state.sessionMoney|0;
+    clearSessionGain();
+    /* ⚠ 「這一場打了多久」也跟著變成整場的總和 —— 最佳紀錄、破紀錄獎品、
+       畫面上的「戰鬥用時」全部同一個數字（鐵律 7）。 */
+    if(stats.clearTime) totalTime = stats.clearTime;
+  }
   /* 劇情版教學（諾薇兒帶的那一場）：結算頁**整個不出**（Ray 指定，見
      script/TUTORIAL_LINES_NOUVELLE.md 第八節）。
      ⚠ 正常情況下**根本走不到這裡** —— ver -325 起 combat 的 win()/lose() 在
@@ -284,10 +305,10 @@ export function settle(totalTime, stats, opts={}){
        玩家按了按鈕才回劇情／首頁 —— 交還的動作由 `tutorialDone` 這個回呼負責。 */
   /* ⚠ `!isLose`（ver -376）：教學／插入戰的結算頁是**給打贏用的**（戰績＋拾得）。
      戰敗一律走下面那一頁（Ray：除劇情殺／可戰敗之外，戰敗一律 Game Over 回主選單）。 */
-  if(state.tutorialRun && !isLose){ tutorialSettle(totalTime, stats); return; }
+  if(state.tutorialRun && !isLose){ tutorialSettle(totalTime, stats, sessionMoney); return; }
   /* 劇情插入戰（ver -375）：與教學結算同一頁 —— **沒有監察官、沒有等級**，
      只有戰績、EXP 與拾得。⚠ 不是教學，所以不走教學那兩句台詞。 */
-  if(state.scriptRun && !isLose){ scriptSettle(totalTime, stats); return; }
+  if(state.scriptRun && !isLose){ scriptSettle(totalTime, stats, sessionMoney); return; }
   if(isLose){
     const rows=combatStatsRows();
     showResultSequence(L.result.loseTitle, L.result.loseSub, rows, 'lose', true);
@@ -306,10 +327,9 @@ export function settle(totalTime, stats, opts={}){
   if(stats.overkill>0) sub += ` · OVERKILL ${Math.round(stats.overkill)}`;
 
   // ── 評價系統（rating）：大字等級（顯眼）+ 各數值明細 + EXP／金錢 ──
-  /* ⚠ **整場一起評**（ver -601）：連續戰鬥中間幾格的用時與失誤先併進來，
-     再算一次等第 —— 各場先算完再合併是另一件事（見 bankSessionGain）。 */
-  const merged = mergeSessionStats(stats);
-  const evalResult = evaluate(merged);
+  /* ⚠ **整場一起評**（ver -601；-621 起併帳搬到本函式開頭，見那裡）：
+     `stats` 進來就已經是整場的總和了。 */
+  const evalResult = evaluate(stats);
   let rows='';
   rows += `<div class="grade-wrap"><b class="grade-badge rank-${evalResult.grade}">${evalResult.grade}</b>`
         + `<span class="grade-meta"><span class="grade-cap">${L.result.gradeCap}</span></span></div>`;
@@ -321,7 +341,7 @@ export function settle(totalTime, stats, opts={}){
        中間幾格不彈結算頁，收段這一頁本來就是替整段報帳。
      ⚠ 其餘幾列（連擊／受擊／命中率／反擊）同理一律用 `merged`，
        不要一半顯示整場、一半只顯示最後一場。 */
-  rows += ratingStatsRows(merged, merged.clearTime || totalTime);
+  rows += ratingStatsRows(stats, totalTime);
   /* ══⚠⚠ EXP 與金錢**直接放在結算頁、當場入帳**（ver -470，Ray：「exp跟金錢
      不要放在戰利品，直接在結算計算」）══
      與劇情結算（scriptSettle，ver -453）同一套。-439 曾把兩者搬去戰利品那一頁，
@@ -336,10 +356,9 @@ export function settle(totalTime, stats, opts={}){
      ⚠ 擲骰只有 `rollBattleMoney()` 一支（鐵律 7）：中間場與這裡都問它。
      ⚠ 錢**在這裡才真的入帳**（中間場只記帳）—— 不然打到一半跑掉，錢已經進口袋了。
      ⚠ 領完就清（`clearSessionGain`），不然下一場會把上一段的再算一次。 */
-  let gainMoney = rollBattleMoney() + (state.sessionMoney|0);
+  let gainMoney = rollBattleMoney() + sessionMoney;
   const totalExp = evalResult.exp|0;      // EXP 由**整場的總和**算出來（ver -601）
   if(gainMoney) inv.addMoney(gainMoney);
-  clearSessionGain();
   if(totalExp) rows += '<div class="row"><span>EXP</span><b>＋'+totalExp+'</b></div>';
   if(gainMoney) rows += '<div class="row"><span>'+inv.moneyName()+'</span><b>＋'+gainMoney+'</b></div>';
   if(isRecord) rows += `<div class="record">${L.result.newRecord}</div>`;
@@ -526,7 +545,7 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose, opts){
    ⚠ EXP 照樣用 `evaluate()` 算 —— 不評等級指的是「不顯示 S/A/B 那個大字」，
      不是「不算分」。等級之後要拿來解隱藏關，教學場不該污染那條線。
    ⚠ 掉落清單在 `config.tutorial.loot`，這裡不寫死。 */
-function tutorialSettle(totalTime, stats){
+function tutorialSettle(totalTime, stats, sessionMoney){
   state.sRankUnlocked = false;
   const ev = evaluate(stats);
   const tr = (GAME_CONFIG.tutorial && GAME_CONFIG.tutorial.result) || {};
@@ -561,7 +580,7 @@ function tutorialSettle(totalTime, stats){
    金錢是「HP 的 6~8 成隨機」。兩者都在敵人卡上，這裡只負責擲骰與呈現（鐵律 1）。
    ⚠ 沒有監察官、沒有等級：那一場是劇情中間插進來的一場架，不是驅逐任務。
    ⚠ 按鈕是「繼續」→ 回劇情/城鎮（不是回主畫面）。 */
-function scriptSettle(totalTime, stats){
+function scriptSettle(totalTime, stats, sessionMoney){
   state.sRankUnlocked = false;
   const ev = evaluate(stats);
   const en = GAME_CONFIG.enemies[state.currentEnemyKey] || {};
@@ -596,6 +615,9 @@ function scriptSettle(totalTime, stats){
     const lo=mr[0], hi=mr[1]!=null?mr[1]:mr[0];
     money = Math.round((en.hp||0) * (lo + Math.random()*(hi-lo)));
   }
+  /* ⚠ 連續戰鬥中間幾格的錢在這裡一起入帳（ver -621）：那幾格不彈結算頁，
+     帳記在 `state.sessionMoney`，由 `settle` 併出來傳進來（見那裡）。 */
+  money += (sessionMoney|0);
   const exp = noReward ? 0 : (ev.exp|0);
   if(money) inv.addMoney(money);
   /* ⚠ 沒有評價者、又沒有等第可印時整塊就不要出 —— 一個只寫著「評價」兩個字的空行
