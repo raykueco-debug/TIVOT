@@ -141,18 +141,24 @@ export function evaluate(stats, cfg = GAME_CONFIG.rating){
                + (stats.delays        ||0) * (pen.delay   ||0)
                /* ⚠ 反擊與 overkill 是**負的**（ver -601／-603）：它們是表現不是失誤。 */
                + (stats.perfectCounter||0) * (pen.counter ||0)
-               + (stats.overkill      ||0) * (pen.overkill||0)
-               /* ⚠⚠ **整場無傷**是一次性折抵（ver -620，Ray：「無傷計分減 10 秒」）——
-                  它不乘任何次數，與上面那幾項「每一次幾秒」不同。
-                  ⚠ `hitsTaken` 已經扣掉**腳本演出**的擊數（劇情殺三連擊，見
-                    combat 的 `_scriptedHits`），所以「除了劇情殺之外沒被打到」
-                    照樣算無傷（Ray 指定）—— 與結算頁那個「無傷」標籤同一個判定。 */
-               + (((stats.hitsTaken||0)===0) ? (pen.flawless||0) : 0);
+               + (stats.overkill      ||0) * (pen.overkill||0);
   /* ⚠ 夾在 0 以上：反擊／overkill 夠多時折算會是負的，扣過頭會變成負秒數。 */
   const used = Math.max(0, (stats.clearTime||0) + penSec);
-  const score = Math.max(0, Math.min(100, Math.round(100 - (used/hp) * (cfg.timeK||200))));
+  let score = Math.max(0, Math.min(100, Math.round(100 - (used/hp) * (cfg.timeK||200))));
   let grade = cfg.tiers[cfg.tiers.length-1].grade;
   for(const tier of cfg.tiers){ if(score >= tier.min){ grade = tier.grade; break; } }
+  /* ══⚠⚠ **整場無傷 ＝ 等第下限**（ver -626，Ray：「無傷基本讓他保證 S」）══
+     說明與理由見 `config.rating.flawlessFloor`。
+     ⚠ 是**下限**不是覆寫：本來就更高就不要往下壓（現在 S 是頂，但日後加 SS 就會有差）。
+     ⚠ 分數一起抬到那一級的門檻 —— EXP 由分數算，等第與 EXP 不該互相打架（鐵律 7）。
+     ⚠ 判定與結算頁那個「無傷」標籤是**同一個**（`stats.hitsTaken===0`）：
+       畫面上標了無傷卻不是 S 會讀成壞掉。 */
+  const ff = cfg.flawlessFloor;
+  if(ff && (stats.hitsTaken||0)===0){
+    const fi = cfg.tiers.findIndex(t=>t.grade===ff);
+    const gi = cfg.tiers.findIndex(t=>t.grade===grade);
+    if(fi>=0 && (gi<0 || gi>fi)){ grade = ff; score = Math.max(score, cfg.tiers[fi].min); }
+  }
   const exp = scoreToExp(score, stats, cfg.exp);
   return { grade, score, exp, breakdown: { hp, penSec, used, secPerHp: used/hp } };
 }
