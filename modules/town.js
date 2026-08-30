@@ -1238,7 +1238,17 @@ export function enter(id){
       /* ⚠ 對白演完**把立繪全撤**，只留背景與導覽（Ray 指定）。 */
       /* ⚠ `n.sides`：兩個角色同台要分左右（§6.5）——城鎮這條路徑一樣要吃得到。 */
       story.playAdhoc(play, ()=>{ story.clearCast();
-        if(act){ if(act.flag) prog.addFlags([act.flag]); }        // 主線段落：只演一次
+        if(act){
+          if(act.flag) prog.addFlags([act.flag]);                 // 主線段落：只演一次
+          /* ══ **一場戰鬥結束 ＝ 一個檢查點**（ver -590，Ray：「每次進城跟一場戰鬥
+             結束都要有存檔點」）══ 城鎮的插入戰就是掛在 `acts` 上的（城鎮戰每一格
+             都是一拍 `{battle:…}`），所以「這一段收完」＝「那一場打完、地圖回來了、
+             旗標也記了」，正是該落檢查點的那一刻。
+             ⚠ 落在**旗標之後**：早一步存的話那一場會再打一次。
+             ⚠ 純對白的段落也會落一筆 —— 那也是一個段落邊界，存了不虧。
+             ⚠ 走同一支 `checkpoint()`（進城那一支也是它，鐵律 8）。 */
+          if(checkpoint) try{ checkpoint(); }catch(_){}
+        }
         else if(ev){
           if(ev.flag) prog.addFlags([ev.flag]);                  // 傍晚那一句：只演一次
           /* ⚠ **強制移轉到旅店**（ver -427，Ray：「然後強制移轉到旅店，時間改為當天18:00」）。
