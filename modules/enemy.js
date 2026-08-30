@@ -189,10 +189,34 @@ export function enemyImage(en){
   const key = im[slot] || im.day || im[Object.keys(im)[0]];
   return asset(key);
 }
+/* ══⚠⚠ 顯形：**背景先出，怪才從背景裡解析出來**（ver -588，Ray：「戰鬥中讓背景
+   先出，怪快速淡入」）══════════════════════════════════════════════════════
+   `setEnemy` 已經先把 `#top` 的底圖擺好了（那一段在這一支之前），所以這裡只要
+   讓立繪**晚一拍**再起 —— 演出本身在 CSS 的 `enemy-rise`（失焦去彩 → 收斂成焦）。
+   ⚠ 要等**圖真的載到**才起（`onload`）：沒載到就播動畫，前半段是在演一張空圖。
+     已經在快取裡時 `complete` 是真的，直接起。
+   ⚠ 每次都要先把 class 拿掉再重加（`offsetWidth` 強制重排），不然連戰換第二隻時
+     class 已經在身上、動畫不會重播。
+   ⚠ `enemy-purge`（上一隻的淨化）也要一起清 —— 不清的話新的一隻會頂著
+     「被抹掉一半」的遮罩出場。 */
+const RISE_DELAY_MS = 120;      // 背景先出的那一拍（讓玩家看得到「那裡本來就有個地方」）
 export function loadEnemyPortrait(en){
   const eImg = $('enemyImg');
   if(!eImg) return;
+  eImg.classList.remove('enemy-rise','enemy-purge');
+  const rise=()=>{ void eImg.offsetWidth; eImg.classList.add('enemy-rise'); };
+  eImg.onload = ()=>{ eImg.onload=null; setTimeout(rise, RISE_DELAY_MS); };
   eImg.src = enemyImage(en);
+  if(eImg.complete && eImg.naturalWidth){ eImg.onload=null; setTimeout(rise, RISE_DELAY_MS); }
+}
+/* ══ 淨化：血歸零那一刻把怪抹掉（ver -588）══
+   ⚠ 演出在 CSS（`enemy-purge`：聖光漂白 → 由下往上抹除），這裡只負責掛上去。
+   ⚠ **冪等**：overkill 期間 `enemyHp<=0` 會被判到好幾次，重複加 class 不會重播
+     （沒有 remove/reflow），這正是要的 —— 淨化只演一次。
+   ⚠ `both` 讓它停在最後一格（怪維持消失），不會在動畫結束後跳回來。 */
+export function purgeEnemy(){
+  const eImg = $('enemyImg');
+  if(eImg) eImg.classList.add('enemy-purge');
 }
 
 // UI 顯示名：一律隱藏「_」之後的內容（如 '地下聖徒_A' → '地下聖徒'）。

@@ -206,6 +206,39 @@
   #enemyImg.enemy-enter{animation:enemyEnter .56s cubic-bezier(.2,.7,.25,1);}
   @keyframes enemyEnter{0%{transform:scale(1.4);opacity:0;filter:brightness(1.7)}
     100%{transform:scale(1);opacity:1;filter:brightness(1)}}
+  /* ══⚠⚠ 敵人的顯形與淨化（ver -588，Ray：「戰鬥中讓背景先出，怪快速淡入，
+     怪 hp 歸零後淡出，看除了單純的淡入淡出有沒有視覺效果更好的方法」）══
+     **不是單純的淡入淡出** —— 兩端各挑了一個符合世界觀的做法：
+
+     · 顯形 `enemy-rise`：怪從**背景裡解析出來** —— 起手是失焦、去彩、偏暗、略大，
+       420ms 內收斂成焦。配的是司祭那句「像惡夢一樣，就好像一開始就在那裡」：
+       它不是走進來的，是**本來就在那裡、你才剛看清楚**。
+       ⚠ 所以背景要**先**出（`setEnemy` 先擺 `#top` 的底圖，立繪晚一拍才起），
+         不然「從背景裡浮出來」沒有可浮的東西。
+     · 淨化 `enemy-purge`：先被聖光**漂白**（brightness↑ saturate→0），再由下往上
+       **抹除**（動 mask 的位置，不是動 opacity）—— 結算副標寫的就是「已淨化」，
+       燒化比淡出貼題。
+       ⚠ 用 `mask-position` 位移一張固定的漸層遮罩，**不要動 `mask-image` 的色標**：
+         漸層色標在各家瀏覽器的內插支援不一致，位移則是穩的。
+       ⚠ `-webkit-mask-*` 一定要一起寫：Safari 到現在仍只吃前綴版。
+     ⚠ 兩支都只動 `#enemyImg`，不碰盤面與 HUD —— 這是敵人區的演出，不是轉場。 */
+  #enemyImg.enemy-rise{animation:enemyRise .42s cubic-bezier(.2,.75,.3,1) both;}
+  @keyframes enemyRise{
+    0%  {opacity:0; transform:scale(1.08); filter:blur(16px) saturate(.25) brightness(.7);}
+    45% {opacity:1;}
+    100%{opacity:1; transform:scale(1);    filter:blur(0)    saturate(1)   brightness(1);}}
+  #enemyImg.enemy-purge{animation:enemyPurge .78s ease-in both;
+    -webkit-mask-image:linear-gradient(to top, transparent 0%, #000 42%);
+            mask-image:linear-gradient(to top, transparent 0%, #000 42%);
+    -webkit-mask-size:100% 260%;  mask-size:100% 260%;
+    -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat;}
+  @keyframes enemyPurge{
+    0%  {opacity:1; filter:none;
+         -webkit-mask-position:0 100%; mask-position:0 100%;}
+    16% {filter:brightness(2.6) saturate(0) contrast(1.25);}
+    100%{opacity:0; transform:translateY(-14px) scale(1.03);
+         filter:brightness(2.2) saturate(0) blur(7px);
+         -webkit-mask-position:0 -160%; mask-position:0 -160%;}}
   #topVignette{position:absolute;inset:0;pointer-events:none;
     background:radial-gradient(120% 80% at 50% 20%,transparent 40%,rgba(0,0,0,.7) 100%);}
 

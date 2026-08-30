@@ -1052,6 +1052,10 @@ function isLastEnemy(){
 }
 function finishEnemyOrAdvance(){
   endOverkillFx();   // overkill 藍光/限時統一在此清理（所有結束路徑的匯流點，冪等）
+  /* 血歸零 → **淨化**（ver -588，Ray：「怪 hp 歸零後淡出」）。
+     ⚠ 掛在這個**匯流點**（鐵律 8）：自然清盤／按錯／逾時／聖徒化擊殺四條路都經過它。
+     ⚠ 連戰換敵那一條不掛：那一隻是被「掠過」不是被淨化，它有自己的 `enemy-leave`。 */
+  if(isLastEnemy()) enemy.purgeEnemy();
   if(!isLastEnemy()){ advanceEnemy(); }
   else { win(); }
 }
