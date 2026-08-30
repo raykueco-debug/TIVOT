@@ -1111,7 +1111,13 @@ function advanceEnemy(){
 // 整場敵人總血量（評價時間預算用）：一般連戰＝lineup 各敵 hp 相加；Boss 亂入＝單敵新場（enemyMax）。
 //   隨敵人 config 血量自動變動，設計新敵人時評價門檻自動跟著調整（見 config.rating 說明）。
 function runTotalHp(){
-  if(state.inIntruderFight) return state.enemyMax;
+  /* ⚠⚠ **劇情／城鎮的插入戰是單敵**（ver -604 修）：那些場次沒有 lineup，
+     舊寫法會退回 `GAME_CONFIG.lineup`（＝**挑戰模式**那一串怪）去加總 ——
+     實測北方泊地那隻 300 血的雜怪，分母被算成 500。
+     新評價的分母就是這個數，錯了整條等第跟著錯。
+     ⚠ 「數個敵人算一場」指的是**挑戰模式的 lineup**（連戰），
+       那一種才要加總（Ray：「數個敵人算一場的狀況下，以全敵 hp 總和計算」）。 */
+  if(state.inIntruderFight || state.scriptRun) return state.enemyMax;
   const lu=(GAME_CONFIG.lineup && GAME_CONFIG.lineup.length) ? GAME_CONFIG.lineup : [state.currentEnemyKey];
   return lu.reduce((sum,key)=>{ const en=GAME_CONFIG.enemies[key]; return sum + (en?en.hp:0); }, 0);
 }
