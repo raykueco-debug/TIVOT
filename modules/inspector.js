@@ -120,47 +120,35 @@ export function scoreToExp(score, stats, cfg = GAME_CONFIG.rating.exp){
 }
 
 /* ══════════════════════════════════════════════════════════════════════
-   主評分（ver -600 全面改寫，Ray 交辦）—— **以攻略時間為唯一維度**
+   主評分（ver -600 改寫；-604 收斂成**單一係數**，Ray 交辦）
    ──────────────────────────────────────────────────────────────────────
-     par   ＝ 全敵 HP 總和 × `secPerHp`　　←**唯一的時間係數**
-     用時  ＝ 實際秒數 ＋ 失誤折算的秒數（點錯／挨大絕／擋下／延時）
-     ratio ＝ 用時 ÷ par　**越小越好** → 對照 `tiers` 取等第
-   ⚠⚠ **係數全部在 `config.rating`**（鐵律 1）：Ray 要調直接改那裡，程式不必動。
-   ⚠ **沒有 E**（Ray 指定）：`tiers` 最後一級是 Infinity 兜底。
-   ⚠ 「數個敵人算一場」用的是 `stats.totalHP`（combat 的 `runTotalHp()` 已經把
-     lineup 各敵血量加總了，鐵律 7）。
-   ⚠ **舊的無傷直升 S 拿掉了**：新制的失誤已經折算成秒，再加一條「無傷就 S」
-     等於把時間那一維再蓋掉一次。
-   ⚠ 回傳仍是 `{grade, score, exp, breakdown}` —— `score` 只給 EXP 與後台用，
-     畫面上不出現（顯示的是等第）。
+       用時 ＝ 實際戰鬥秒數 ＋ 失誤秒 − 獎勵秒（夾在 0 以上）
+       分數 ＝ 100 −（用時 ÷ 敵人總血量）× `timeK`
+       等第 ＝ 分數對照 `tiers`
+   ⚠⚠⚠ **難度只有 `timeK` 一個旋鈕**（Ray：「我只要一個單一係數，用來把時間
+     轉換成分數的係數」）。`penalty`／`tiers` 是形狀，平常不動。
+   ⚠ 除以敵人總血量：血厚的怪本來就要打比較久 —— 除掉之後 `timeK` 對每一種怪的
+     意義才一致。「數個敵人算一場」時分母是**全敵 HP 總和**（`runTotalHp()`，鐵律 7）。
+   ⚠ Boss 沒有額外加成（ver -602）；沒有 E（`tiers` 末項兜底）。
+   ⚠ 回傳仍是 `{grade, score, exp, breakdown}` —— 畫面上顯示的是等第。
    ══════════════════════════════════════════════════════════════════════ */
 export function evaluate(stats, cfg = GAME_CONFIG.rating){
   const pen = cfg.penalty || {};
-  /* ⚠ **Boss 沒有額外加成**（ver -602，Ray：「boss 不用額外加秒，現在都用 hp 來控」）
-     —— 難度由敵人卡的 HP 表達，時間基準跟著血量走就好；再給 Boss 一個獨立加成
-     等於同一件事調兩個地方（鐵律 7）。 */
-  const par = Math.max(1, (stats.totalHP||0) * (cfg.secPerHp||0.3));
-  const penSec = (stats.wrongTaps||0) * (pen.wrong||0)
-               + (stats.ultHits ||0) * (pen.ult  ||0)
-               + (stats.blocks  ||0) * (pen.block||0)
-               + (stats.delays  ||0) * (pen.delay||0)
-               /* ⚠ 反擊成功與 overkill 是**負的**（ver -601／-603，Ray：「反擊成功
-                  -0.5 秒」「Overkill 一格減 0.2 秒」）—— 它們是表現不是失誤，
-                  所以折算成秒之後是減的。 */
+  const hp  = Math.max(1, stats.totalHP || 0);
+  const penSec = (stats.wrongTaps     ||0) * (pen.wrong   ||0)
+               + (stats.ultHits       ||0) * (pen.ult     ||0)
+               + (stats.blocks        ||0) * (pen.block   ||0)
+               + (stats.delays        ||0) * (pen.delay   ||0)
+               /* ⚠ 反擊與 overkill 是**負的**（ver -601／-603）：它們是表現不是失誤。 */
                + (stats.perfectCounter||0) * (pen.counter ||0)
                + (stats.overkill      ||0) * (pen.overkill||0);
-  /* ⚠ 夾在 0 以上：反擊夠多時 `penSec` 會是負的，扣過頭會變成負秒數（ratio 負值）。 */
-  const used  = Math.max(0, (stats.clearTime||0) + penSec);
-  const ratio = used / par;
+  /* ⚠ 夾在 0 以上：反擊／overkill 夠多時折算會是負的，扣過頭會變成負秒數。 */
+  const used = Math.max(0, (stats.clearTime||0) + penSec);
+  const score = Math.max(0, Math.min(100, Math.round(100 - (used/hp) * (cfg.timeK||200))));
   let grade = cfg.tiers[cfg.tiers.length-1].grade;
-  for(const tier of cfg.tiers){ if(ratio <= tier.max){ grade = tier.grade; break; } }
-  /* 分數：ratio 0 → 100、1 → `scoreFromRatio.at1`、≥2 → 0（線性兩段）。 */
-  const at1 = (cfg.scoreFromRatio && cfg.scoreFromRatio.at1) != null
-            ? cfg.scoreFromRatio.at1 : 50;
-  const score = Math.max(0, Math.round(ratio<=1 ? (100 - (100-at1)*ratio)
-                                                : Math.max(0, at1*(2-ratio))));
+  for(const tier of cfg.tiers){ if(score >= tier.min){ grade = tier.grade; break; } }
   const exp = scoreToExp(score, stats, cfg.exp);
-  return { grade, score, exp, breakdown: { par, penSec, used, ratio } };
+  return { grade, score, exp, breakdown: { hp, penSec, used, secPerHp: used/hp } };
 }
 
 /* ============================================================================
