@@ -640,7 +640,13 @@ function enemyDamage(dmg,isCrit,silent,src){
       if(!silent) floatDmg((isCrit?L.battle.crit:'')+dmg, (30+Math.random()*40)+'%','35%',isCrit);
       if(state.enemyHp<=0){
         if(state.killTime===0) state.killTime=Date.now();   // 敵死標記（OVERKILL 起點）
-        clockPause();                                       // 敵死→進 overkill：碼表暫停（overkill 不計時）
+        /* ⚠⚠ **overkill 現在照樣計時**（ver -611，Ray：「那 ovk 改計時，一格減 0.1 秒」）。
+           以前這裡 `clockPause()`＝overkill 完全不計時，於是那一段是**白拿的**：
+           每一格還倒扣秒數，堆個三十格就白送六秒（timeK 600 之下＝12 分）。
+           現在碼表照走、每一格只折抵 0.1 秒 —— 想賺就得真的花時間去敲，
+           划不划算變成玩家的判斷，那才是取捨。
+           ⚠ 碼表由 `win()`／`advanceEnemy()` 收（兩邊本來就有 `clockPause`），
+             這裡不收也不會漏掉。 */
         defense.killThreatSchedule(); clearAtkBuff();
         floatDmg(L.battle.overkill,'50%','48%',true);
         enterOverkillFx();   // 聖徒化中擊殺也進 overkill（藍光/鈴鐺；限時與撤游標僅非聖徒化，見函式內）
@@ -1204,6 +1210,15 @@ export function battleNeedsGate(battleId){
 export function endSession(){
   state.battleSession=null; sessionCarry=null;
   inspector.clearSessionGain();     // 半途離場：EXP/錢的帳不留到下一段（ver -595）
+  /* ══⚠⚠ **一場結束＝回滿血、破防值歸零**（ver -611，Ray 指定）══
+     「一場」＝**槍棺上彈到蕾娜評價**（Ray 的定義），也就是這一個 session：
+     中間走幾格、打幾隻都算同一場，資源（HP／聖徒化／主動技／破防值）連著算；
+     收段之後就是新的一場，全部回滿。
+     ⚠ HP 走 `prog.clearHp()`（拔掉持久 HP 那把鑰匙）而不是寫一個滿值 ——
+       「沒有鑰匙＝滿血」是既有的語意（§tivot_php_v1），寫值等於多一個真相（鐵律 9）。
+     ⚠ 破防值／聖徒化／主動技不必在這裡動：`sessionCarry` 一清，
+       下一場 `startGame` 那排歸零就是乾淨的起點（見 sessionSave 那一段）。 */
+  prog.clearHp();
 }
 /* 這一場的戰鬥背景覆寫（ver -592）：由 `main.js` 在交棒的那一刻設 ——
    城鎮插入戰給「你站的那一格」那張圖，其餘一律 null（走敵人卡的 `bg`）。
