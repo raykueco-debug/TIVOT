@@ -1119,7 +1119,16 @@ function runTotalHp(){
        那一種才要加總（Ray：「數個敵人算一場的狀況下，以全敵 hp 總和計算」）。 */
   if(state.inIntruderFight || state.scriptRun) return state.enemyMax;
   const lu=(GAME_CONFIG.lineup && GAME_CONFIG.lineup.length) ? GAME_CONFIG.lineup : [state.currentEnemyKey];
-  return lu.reduce((sum,key)=>{ const en=GAME_CONFIG.enemies[key]; return sum + (en?en.hp:0); }, 0);
+  /* ⚠⚠ **只算「真的遭遇到的」**（ver -606，Ray：「血量總和是以遭遇的敵人為總和，
+     地圖上有而未遭遇的不算」）：連戰的序列游標 `lineupIndex` 指到哪，就算到哪 ——
+     整串加總的話，中途收場（跳關、劇情提前結束）會把**沒打過的怪**也算進分母，
+     等第會被灌水。正常打完最後一隻時游標就是最後一格，行為不變。
+     ⚠ 城鎮戰那一種「一張地圖好幾格」不走這裡：那是好幾場獨立的戰鬥，
+       由 `inspector.bankSessionGain` 逐場累加 —— **打過的才會進帳**，
+       沒走到的那幾格自然不算（同一條原則的另一個實作點）。 */
+  const upto = Math.min(lu.length - 1, Math.max(0, state.lineupIndex|0));
+  return lu.slice(0, upto+1)
+           .reduce((sum,key)=>{ const en=GAME_CONFIG.enemies[key]; return sum + (en?en.hp:0); }, 0);
 }
 /* 劇情把戰鬥叫起來的那一場（tutorialStoryRun）：打完要**直接交還劇情**。
    ⚠ 不能走一般收尾 —— 那條路上有「驅逐完成」過渡禎（要點一下）、結算 BGM、
