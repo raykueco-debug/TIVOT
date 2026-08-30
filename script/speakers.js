@@ -156,7 +156,13 @@ export const ART = {
            校準：同法量 front 得 0.571（表上 0.564，差 −0.007）、璐娜莉亞得 0.494
            （表上 0.496，差 +0.002）—— 兩個獨立校準都落在 ±0.007 內，所以直接用。
          · eye 沒量（CAST_EYE_MIX=0 不參與運算）。 */
-  nouvelle: { cm:165, eye:40, fx:0.582, top:3, bot:1536,
+  /* ⚠⚠ `mirror:true`（ver -625，Ray：「諾薇兒跟索拉娜左右是對稱的，可以水平翻轉」）
+     ＝**這個角色的立繪換到非預設那一側時可以水平翻轉**。這是 §6.5「立繪朝向是畫死的，
+     換邊要水平翻轉，髮旋與持物會左右顛倒」那條的**例外開關**：翻不翻由**這張畫**決定，
+     所以寫在角色上、預設不翻 —— 有髮旋／單邊持物／不對稱制服的人不要加這一格。
+     ⚠ 蕾娜**沒有**這一格（Ray：「蕾娜原則右，碰到安雅就放左，因為蕾娜整體框細，
+       受左右影響小」）—— 她換邊就是換邊，不翻。 */
+  nouvelle: { cm:165, eye:40, fx:0.582, top:3, bot:1536, mirror:true,
            side:'L', alt:null, base:'resources/SI/Nouvelle_SI_front.webp',
            expr:{ /* 艦鬥教學那幾拍（ver -424，Ray 交件）：她穩住陣腳的姿勢。 */
                   steady:   { src:'resources/SI/Nouvelle_SI_steady.webp',   top:8,  bot:1529, fx:0.534 },
@@ -196,7 +202,7 @@ export const ART = {
                   happy:    { src:'resources/SI/Nouvelle_SI_happy.webp',     top:1,  bot:1533, fx:0.578 },
                   shocked2: { src:'resources/SI/Nouvelle_SI_Shocked2.webp',  top:3,  bot:1533, fx:0.541 } } },
   /* ⚠ 索拉娜用 **side** 那張：front 橫向佔 78%，兩人同台一定疊；側面只佔 69%。 */
-  sorana: { cm:176, eye:27, fx:0.527, top:4, bot:1522,
+  sorana: { cm:176, eye:27, fx:0.527, top:4, bot:1522, mirror:true,
            side:'R', alt:null, base:'resources/SI/Sorana_SI_side.webp', expr:{} },
   /* ⚠ 取景值於 ver -624 **重量**：`Anya_SI_front` 換過圖（舊的留成
      `XAnya_SI_front.webp`）—— §5「換圖一定要重量取景值」。

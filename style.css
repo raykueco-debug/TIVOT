@@ -1873,6 +1873,16 @@
   #storyCastL{transform:translateX(-140%);}
   #storyCastR{transform:translateX(140%);}
   #storyCast .story-portrait.on{transform:translateX(0);}
+  /* ══⚠⚠ **水平翻轉**（ver -625）══ 立繪被擺到非預設那一側時鏡射
+     （由 `ART[key].mirror` 決定，見 modules/story.js 的 castLayout）。
+     ⚠ 滑入／滑出用的也是 `transform`，所以**每一個狀態都要各寫一份**，
+       不能只加一條 `scaleX(-1)`——那會把 translateX 整個蓋掉，立繪就不滑了。
+     ⚠ `scaleX` 寫在後面：transform 由右往左套，先在原地翻、再位移。
+     ⚠ 與 `#tutCast` 那一份是**同一件事的兩份實作**（劇情頁／戰鬥對白各一套 DOM），
+       改一邊要看另一邊。 */
+  #storyCastL.mirrored{transform:translateX(-140%) scaleX(-1);}
+  #storyCastR.mirrored{transform:translateX(140%) scaleX(-1);}
+  #storyCast .story-portrait.mirrored.on{transform:scaleX(-1);}
   /* 壓暗：說話者原色，其餘 brightness(.38) saturate(.75)。
      ⚠ CSS filter 天生不透明 —— 那條「不可用透明度代替」的警告是給 canvas 版的。 */
   .story-portrait.dim{filter:brightness(.38) saturate(.75);}

@@ -244,7 +244,18 @@ function layout(){
        0.10~0.14 個畫面寬 —— Ray 反覆回報「還是往中間放」就是這個。
        ⚠ **單人也用同一組**：站位是角色的屬性，不該因為台上有幾個人而改變。 */
     const faceX = (o.side==='R' ? W*0.76 : W*0.24);
-    const x = faceX - o.s*fx*NW;
+    /* ══⚠⚠ **換到非預設那一側 → 水平翻轉**（ver -625，Ray：「諾薇兒跟索拉娜
+       左右是對稱的，可以水平翻轉；蕾娜原則右，碰到安雅就放左，因為蕾娜整體框細，
+       受左右影響小」）══
+       §6.5 說「立繪朝向是畫死的」—— 所以**翻不翻是這張畫的性質**，
+       寫在角色上（`ART[key].mirror`），預設不翻。判定只有這一處（鐵律 8）。
+       ⚠ 翻轉之後**臉也跟著跑到鏡像的位置**：原本在圖左 `fx` 的臉，翻完落在 `1-fx`。
+         不改的話翻轉會把臉整個推到框外（錨的永遠是臉，不是圖框）。
+       ⚠ 只有「可以翻的人」才翻；不能翻的人（蕾娜）換邊就是換邊，
+         她的框細，左右對她的影響本來就小。 */
+    const mir = !!(a.mirror && a.side && o.side && o.side !== a.side);
+    el.classList.toggle('mirrored', mir);
+    const x = faceX - o.s*(mir ? 1-fx : fx)*NW;
     el.style.width  = (o.s*el.naturalWidth)+'px';
     el.style.height = (o.s*el.naturalHeight)+'px';
     el.style.left   = x+'px';

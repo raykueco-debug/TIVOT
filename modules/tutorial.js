@@ -25,6 +25,7 @@ import { SFX } from '../audio.js';
 import { L, decorateLine } from '../i18n.js';   // 多語言（跳過確認文案／台詞關鍵字金色粗字）
 import { matchPortraits } from './tone.js';    // 立繪與背景的融合（葉節點）
 import * as progress from '../script/progress.js';   // 旗標（戰鬥內短教學的「講過了」）
+import { ART } from '../script/speakers.js';   // 「這張畫能不能水平翻」的唯一真相（ver -625）
 /* ⚠ 只借**兩支演出原語**：音效名→檔案的表（`SE_FILES`）只有 story.js 一份（鐵律 7），
    抄過來必然走鐘。story.js 不 import 本檔，所以沒有循環相依。 */
 import { playSe, playSePair } from './story.js';
@@ -586,7 +587,12 @@ function applyMirror(el, key){
   if(!el) return;
   const c = (CFG().cast || {})[key] || {};
   const sd = sideOf(key);
-  el.classList.toggle('mirrored', !!(c.mirror && c.side && sd && sd!==c.side));
+  /* ⚠⚠ 「這張畫可不可以翻」問的是 **`speakers.js` 的 `ART[key].mirror`**（ver -625）——
+     那是**這個角色的立繪**的性質，與「戰鬥對白把她擺哪一邊」（`cast[key].side`，
+     這裡自己的安排）是兩件事。寫兩份必然走鐘（鐵律 7）：劇情頁與戰鬥對白會出現
+     「同一個人這邊翻、那邊不翻」。 */
+  const a = ART[key];
+  el.classList.toggle('mirrored', !!(a && a.mirror && c.side && sd && sd!==c.side));
 }
 function portraitEl(c, key){
   const side = key ? sideOf(key) : (c && c.side);
