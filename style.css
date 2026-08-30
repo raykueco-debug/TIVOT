@@ -1386,10 +1386,20 @@
     border:1px solid var(--gold-dim);border-radius:20px;color:var(--gold-dim);
     font-family:inherit;font-size:11px;letter-spacing:2px;flex:none;}
   #home #tutorialBtn:active, #home #creditBtn:active, #home #originalBtn:active, #home #statsBtn:active, #home #flightBtn:active, #home #storyBtn:active, #home #shopBtn:active, #home #chapterBtn:active{transform:scale(.95);color:var(--gold);border-color:var(--gold);}
-  /* 管理人模式限定鈕（後臺／試飛）：預設隱藏，body.testmode 才出現。
+  /* ══⚠⚠ **首頁的可見範圍是「白名單」**（ver -623，Ray：「開始故事鈕只有管理人模式
+     才開」「一般玩家只能挑戰」「還有教學原作跟 credit，除以上之外都只有管理人可視」）══
+     一般玩家看得到的就這四顆：**挑戰 / 教學 / 原作 / Credit**（＋語言鈕與版權那一行）。
+     其餘一律管理人限定：開始故事、繼續、商店、後臺、試飛、story、章節。
+     ⚠⚠ 寫成**白名單**不是黑名單（鐵律 8）：黑名單每加一顆新鈕就要記得補一條，
+       漏掉就直接漏給玩家看；白名單則是「沒被點名的一律不出」，新鈕預設安全。
+     ⚠ 管理人模式下這一條**整條不適用**（`body:not(.testmode)`）—— 不是「再打開一次」，
+       所以每顆鈕自己的顯示規則（例如「繼續」的 `.on`＝有存檔才出現）原封不動。
+     ⚠ `:not(#id)` 的權重等同一個 id，所以這一條的權重遠高過各鈕自己的規則，
+       壓得住 `#continueBtn.on{display:block}`，不必動 `main.js`。
+     ⚠ 商店是**管理人模式限定的臨時入口**（ver -368）：正式入口是城鎮的雜貨舖節點。 */
+  body:not(.testmode) #home button:not(#startBtn):not(#tutorialBtn):not(#creditBtn):not(#originalBtn):not(#langBtn){display:none;}
+  /* 管理人模式下這幾顆要真的出來（它們自己沒有別的 display 規則）。
      testmode 於開機時由 localStorage 還原（見 main.js adminMode），手勢可再次關閉。 */
-  /* ⚠ 商店是**管理人模式限定的臨時入口**（ver -368）：正式的入口是城鎮節點，
-     等那個做出來就把這一條拿掉，不要讓玩家從首頁直接開商店。 */
   #home #statsBtn, #home #flightBtn, #home #storyBtn, #home #shopBtn, #home #chapterBtn{display:none;}
   body.testmode #home #statsBtn, body.testmode #home #flightBtn,
   body.testmode #home #storyBtn, body.testmode #home #shopBtn,
