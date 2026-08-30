@@ -1363,10 +1363,16 @@ export const GAME_CONFIG = {
            Game Over，而稿上要的是「倒下之後被諾薇兒接住」。
          ⚠ `once` 不寫：Ray 說「這個怪只會出現一次」，敗北重來要重播（同 §6.5.2）。 */
       talk:[
-        { trigger:'hp:30', drain:true, lines:[
+        /* ⚠ `sides`＋`soloLine`（ver -613，Ray：「諾薇兒固定站右位，蕾娜話講完
+           立繪就移出，不然看不到雪鐵龍」）：右滑的箭貼在**敵人框左緣**，
+           所以這一段把諾薇兒挪到右邊、而且台上只留現在講話的那一位 ——
+           蕾娜講完就滑出去，左邊空出來給箭。 */
+        { trigger:'hp:30', drain:true, sides:{ nouvelle:'right' }, soloLine:true, lines:[
           { who:'nouvelle', img:'tut_nouvelle_desperate', text:'不行！' },
           { who:'renna',    img:'tut_renna_thinking',     text:'到此為止了嗎？' },
-          { who:'nouvelle', img:'tut_nouvelle_saintinstall', text:'我準備好了，現在聖徒化！' },
+          /* ⚠ 這一句用 `steady`（Ray 指定）不是 SAINTINSTALL —— 那張是發動的瞬間，
+             這一拍她還在「準備好了」。 */
+          { who:'nouvelle', img:'tut_nouvelle_steady',    text:'我準備好了，現在聖徒化！' },
           /* ⚠ **箭要等她說完才出**（ver -607，Ray 指定）：`immediate` 拿掉 ——
              `immediate:true` 是「段落一開就進閘、台詞照常可讀」，那樣箭會跟
              「不行！」一起亮，玩家還沒聽到她說要聖徒化就先被指著滑。
@@ -1382,7 +1388,9 @@ export const GAME_CONFIG = {
         /* ⚠⚠ `when:'saint'`（ver -612，Ray：「boss 戰只要開一槍諾薇兒就會跳撐不住了」）：
            `php:99` 在**開場就成立**（玩家滿血），第一發傷害一觸發就把這一段吐出來。
            稿上這一句的意思是「**聖徒化期間**那條倒數槽被推回 99%」—— 加上條件才對。 */
-        { trigger:'php:99', when:'saint', lines:[
+        /* ⚠ 站**左**、箭放中央（ver -613，Ray 指定）：上滑的箭現在擺正中，
+           諾薇兒站左邊就不會壓到。 */
+        { trigger:'php:99', when:'saint', sides:{ nouvelle:'left' }, soloLine:true, lines:[
           { who:'nouvelle', img:'tut_nouvelle_desperate', text:'我撐不住了！至少……' },
         ], gate:{ type:'up', immediate:true, action:'partner', then:'partnerOn' } },
         { trigger:'partnerOn', lines:[

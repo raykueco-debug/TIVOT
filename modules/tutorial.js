@@ -497,7 +497,12 @@ function afterCutin(fn){
   const t0 = Date.now();
   let saw = state.cutinPlaying;
   const iv = setInterval(()=>{
-    if(!state.tutorialActive){ clearInterval(iv); return; }
+    /* ⚠⚠ **不再要求 `tutorialActive`**（ver -613，Ray：「聖徒化之後的教學對話
+       沒做進去」）—— 戰鬥卡的 `talk` 也在用它（`gate.then` 要等 cut-in 演完才接），
+       而那一場不是教學：舊寫法第一拍就 `clearInterval` **而且不呼叫 `fn`**，
+       於是聖徒化演完之後那一段從來沒有機會出現。
+       ⚠ 收手的條件改成「這一場結束了」。 */
+    if(state.over){ clearInterval(iv); return; }
     if(state.cutinPlaying){ saw = true; return; }
     if(saw || Date.now()-t0>2500){ clearInterval(iv); fn(); }
   }, 120);
@@ -532,7 +537,24 @@ function scoldLine(text){
   return S ? { who:'nouvelle', img:(S.scold&&S.scold.img)||null, text }
            : { who:'inspector', text };
 }
-function portraitEl(c){ return c.side==='right' ? $('tutCastR') : $('tutCastL'); }
+/* ══⚠⚠ **逐段的站位覆寫與清台**（ver -613，Ray：「諾薇兒固定站右位，蕾娜話講完
+   立繪就移出，不然看不到雪鐵龍」「我撐不住了站左位」）══
+   `cast[key].side` 是**全場**的固定站位（§6.5：同一個人每次都站同一邊）。
+   但戰鬥內對白會在畫面上疊雪鐵龍箭，那一拍需要**把台清乾淨、把人挪開**——
+   所以段落可以覆寫：
+     `sides:{ nouvelle:'right' }`  這一段誰站哪邊
+     `soloLine:true`               台上**只留現在講話的那一位**（講完就換人，前一位滑出）
+   ⚠ 覆寫只到「這一段」為止（`openStep` 設、下一段自然被覆蓋）——
+     不要寫成全域，那會把 §6.5 的固定站位打散。 */
+let stepSides=null, stepSolo=false;
+function sideOf(key){
+  if(stepSides && stepSides[key]) return stepSides[key];
+  return ((CFG().cast||{})[key]||{}).side;
+}
+function portraitEl(c, key){
+  const side = key ? sideOf(key) : (c && c.side);
+  return side==='right' ? $('tutCastR') : $('tutCastL');
+}
 
 /* 依步驟台詞決定在場立繪：只有一個人說話的段落（如罵人插話）不出現另一名角色。
  * .in 逐立繪掛在 img 上（CSS transition 滑入/滑出）；段落接續（queue）時差異更新即可。 */
@@ -543,13 +565,17 @@ function syncCast(step, uptoIdx){
   const cast = CFG().cast || {};
   const lines = (step && step.lines) || [];
   const upto = (uptoIdx==null) ? lines.length-1 : uptoIdx;
-  const used = new Set(lines.slice(0, upto+1).map(l=>l.who));
+  /* `soloLine`：台上只留**現在講話的那一位**（ver -613）—— 上一位滑出，
+     箭頭那一側才空得出來。 */
+  const used = stepSolo
+    ? new Set([ (lines[Math.max(0,upto)]||{}).who ].filter(Boolean))
+    : new Set(lines.slice(0, upto+1).map(l=>l.who));
   /* ⚠ 逐「槽」算，不是逐「角色」算：諾薇兒與芙蕾雅同站左側，共用同一個 <img>。
      逐角色 toggle 的話，沒講話的那一位會把講話那一位的 .in 關掉（結果取決於
      cast 的鍵順序 —— 這種對順序敏感的東西不要留）。 */
   const want = new Map();
   for(const key of Object.keys(cast)){
-    const el = portraitEl(cast[key]);
+    const el = portraitEl(cast[key], key);
     if(!el) continue;
     if(used.has(key) || !want.has(el)) want.set(el, used.has(key));
   }
@@ -763,11 +789,11 @@ function syncCastFit(step){
   const used = new Set((step && step.lines || []).map(l=>l.who));
   for(const key of Object.keys(cast)){
     if(!used.has(key)) continue;
-    const c = cast[key], el = portraitEl(c);
+    const c = cast[key], el = portraitEl(c, key);
     if(!el) continue;
     el.dataset.baseKey = c.image;   // 鎖縮放用的基準（見 placePortraitX 的說明）
     if(el.dataset.castKey!==key){ el.src = asset(c.image); el.dataset.castKey = key; el.dataset.imgKey = c.image; }
-    applyPortraitFit(el, c.fit || {}, baseH, soloRun, c.side);
+    applyPortraitFit(el, c.fit || {}, baseH, soloRun, sideOf(key));   // ⚠ 站位吃這一段的覆寫（ver -613）
   }
 }
 
@@ -797,6 +823,8 @@ function openStep(step){
      真的死掉會走 Game Over，而稿上要的是「倒下之後被諾薇兒接住」。
      ⚠ 走 combat 的統一改血 API（`api.setPlayerHp`），不要直接寫 state。 */
   if(step && step.drain && api.setPlayerHp) api.setPlayerHp(0);
+  stepSides = (step && step.sides) || null;      // 這一段的站位覆寫（ver -613）
+  stepSolo  = !!(step && step.soloLine);         // 這一段只留現在講話的那一位
   state.tutorialDialog = true;
   api.pauseForDialog();                          // 真暫停：同退出確認框的機制
   document.body.classList.add('dlg-pause');      // 凍結底層警戒脈動（防 iOS 合成假影）
@@ -897,7 +925,7 @@ function showLine(){
   const nm=$('tutName'); if(nm) nm.textContent = c.name || '';
   // 說話者保持原色，另一位色階調暗
   const L=$('tutCastL'), R=$('tutCastR');
-  const el = portraitEl(c), other = (el===L) ? R : L;
+  const el = portraitEl(c, line.who), other = (el===L) ? R : L;   // ⚠ 站位吃覆寫（ver -613）
   if(el) el.classList.add('speaking');
   if(other) other.classList.remove('speaking');
   /* ⚠ **說話的人一定疊在另一個人之上**（ver -350，Ray 指定）。兩人的輪廓允許交疊，
@@ -1076,8 +1104,11 @@ function showGuide(type){
   }else{
     // 敵人框內由下往上指（生命歸還手勢區）、標示向上滑動；偏左 1/4 處——蕾妮立繪在右側不被壓
     const tr=$('top') ? $('top').getBoundingClientRect() : {left:0,top:0,width:innerWidth,height:innerHeight/2};
+    /* ⚠ **箭放正中央**（ver -613，Ray：「雪鐵龍箭放中央不要跟立繪重疊」）——
+       原本偏左 1/4 是為了閃開右側的蕾妮立繪，但那一段現在是諾薇兒站**左**，
+       擺中央兩邊都不壓。 */
     dir='g-up'; label = labels.up || '向上滑動';
-    x = tr.left + tr.width*0.26;
+    x = tr.left + tr.width*0.5;
     y = tr.top + tr.height*0.52;
   }
   g.classList.add(dir);
