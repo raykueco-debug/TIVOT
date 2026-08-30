@@ -1284,6 +1284,11 @@ story.setBattleHandler((battleId, resume)=>{
      ⚠ 查不到才退回教學那一場 —— 舊腳本（地宮那一段）寫的就是教學，不能被改掉。 */
   if(GAME_CONFIG.battles && GAME_CONFIG.battles[battleId]){
     SFX.playBgm(asset('bgm_battle'), { fadeOutMs:600, volume: bgmVol('bgm_battle') });
+    /* ⚠⚠ **城鎮插入戰留在原背景**（ver -592，Ray：「打完敵人應該會留在原背景，
+       不要自動切背景」）：把城鎮現在畫面上那一張帶進戰鬥，蓋過敵人卡的 `bg` ——
+       不然打完一場上半會從卡上那張跳回節點原本那張，讀起來是換了個地方。
+       ⚠ 每次交棒都明確設一次（不在城裡就是 null，走卡上的 `bg`）。 */
+    combat.setBattleBg(town.isOpen() ? town.currentBg() : null);
     combat.startScriptBattle(battleId);
     return;
   }

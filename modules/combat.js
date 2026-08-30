@@ -1157,6 +1157,11 @@ export function battleNeedsGate(battleId){
   return !(sess && state.battleSession===sess);
 }
 export function endSession(){ state.battleSession=null; sessionCarry=null; }
+/* 這一場的戰鬥背景覆寫（ver -592）：由 `main.js` 在交棒的那一刻設 ——
+   城鎮插入戰給「你站的那一格」那張圖，其餘一律 null（走敵人卡的 `bg`）。
+   ⚠ **每次交棒都要明確設一次**（含設 null）：靠上一場收乾淨會漏，
+     漏了就是把上一格的背景帶進下一場（同 `noSaint` 那條的理由）。 */
+export function setBattleBg(name){ state.battleBg = name || null; }
 /* 這一場是連續戰鬥的**中間一場**嗎（＝不是收段的那一場）。
    ⚠ 問的是**卡**不是 `state.battleSession`：Boss 打贏時段落已經被 `endSession()`
      收掉了，拿 state 判會把 Boss 也算成中間場（鐵律 9：判定要看得到擁有者的那個值）。 */

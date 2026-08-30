@@ -279,8 +279,19 @@ export function setEnemy(key){
   }
   /* 戰鬥背景（ver -375）：敵人卡的 `bg`。去背立繪身後不能是一片黑。
      ⚠ 沒寫要清掉 —— 同 setEnemy 的其他欄位，連戰換敵不能留上一隻的。 */
+  /* ⚠⚠ **城鎮插入戰用「你站的那一格」的背景**（ver -592，Ray：「打完敵人應該會
+     留在原背景，不要自動切背景」）：`state.battleBg` 有值就蓋過卡上的 `bg` ——
+     不然打完一場，上半的圖會從卡上那張跳回節點原本那張，讀起來是換了個地方。
+     ⚠ 覆寫存的是**檔名**（城鎮那邊真的載到的那一個，含副檔名與時段）；
+       卡上的 `bg` 是**基底名**，要自己補 `.webp`。兩種寫法差在這裡，別搞混。
+     ⚠ 沒寫要清掉 —— 同 setEnemy 的其他欄位，連戰換敵不能留上一隻的。 */
   const topEl = $('top');
-  if(topEl) topEl.style.backgroundImage = en.bg ? ('url("resources/background/'+en.bg+'.webp")') : '';
+  if(topEl){
+    const ov = state.battleBg;
+    topEl.style.backgroundImage =
+      ov ? ('url("resources/background/'+ov+'")')
+         : (en.bg ? ('url("resources/background/'+en.bg+'.webp")') : '');
+  }
   loadEnemyPortrait(en);
 }
 

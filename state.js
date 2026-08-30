@@ -155,6 +155,12 @@ export const state = {
      ⚠ 擁有者是 `combat`（開場設、`sessionEnd` 的那一場打完清、goHome 清）；
        其餘模組只讀。`main.js` 的門也讀它決定要不要演開棺（鐵律 7：只有這一份）。 */
   battleSession: null,
+  /* 這一場的戰鬥背景覆寫（ver -592，Ray：「打完敵人應該會留在原背景，
+     不要自動切背景」）。城鎮插入戰＝**你站的那一格**那張圖，蓋過敵人卡的 `bg`。
+     ⚠ 存的是**檔名**（含副檔名），由 `modules/town.js` 的 `currentBg()` 給。
+     ⚠ 擁有者是 combat（`setBattleBg`，每次交棒明確設一次／設 null），
+       `enemy.setEnemy` 只讀 —— 不要讓它殘留到下一場（那會把上一格的背景帶過去）。 */
+  battleBg: null,
   pickedPartner: GAME_CONFIG.defaultPartner,   // 玩家實選搭檔（擁有者 partner；選人畫面經 setPickedPartner 寫入）
   lineupIndex: 0,        // 連戰序列游標（局內第幾隻敵，對應 GAME_CONFIG.lineup）
 

@@ -344,6 +344,15 @@ const missingBg=new Set();
 let bgSeq=0;
 /* 候選鏈第一個名字（＝已編進時段）→ 真的載得到的那一張（ver -442，見 `bgFor`）。 */
 const bgResolved=new Map();
+/* ══⚠⚠ **現在畫面上是哪一張背景**（ver -592，Ray：「打完敵人應該會留在原背景，
+   不要自動切背景」）══ 城鎮的插入戰要用**你站的那一格**當戰鬥背景 ——
+   不然打完一場，上半的圖會從敵人卡指定的那張跳回節點原本那張，讀起來是換景。
+   ⚠ 記的是**真的載到的那個檔名**（含副檔名與時段），不是基底名 ——
+     戰鬥那邊要直接拿去當 `background-image`，再解析一次就是第二個計算點（鐵律 7）。
+   ⚠ 由 `main.js` 在交棒進戰鬥的那一刻讀走（`combat.setBattleBg`）：
+     城鎮不認識戰鬥層，戰鬥層也不該反過來問城鎮。 */
+let bgNow=null;
+export function currentBg(){ return bgNow; }
 /* `done`＝**這一景的背景真的擺好了**（ver -442）。切景的黑幕要等它才掀 ——
    見 `enter()` 的 `reveal`。⚠ 一定要在**每一條出口**都叫（載到了／候選全部
    404 了），漏掉哪一條，那一次就只剩保底計時器在撐。 */
@@ -372,6 +381,7 @@ function bgFor(list, done){
     img.onload =()=>{
       if(my!==bgSeq) return;                 // 已經被後面那一次換掉了 → 這一張作廢
       bgResolved.set(all[0], name);          // 這一個時段就是它，下次不必再試一輪
+      bgNow = name;                          // 現在畫面上是哪一張（ver -592，見 currentBg）
       /* ⚠ 回報的時機是**它真的畫上去**，不是「叫了 setSceneBg」（ver -442）：
          那一支底下可能還要淡一段（`swapImg`），早報就會在舊圖上把黑幕掀開。 */
       story.setSceneBg(name, fin);
