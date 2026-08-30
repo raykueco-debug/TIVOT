@@ -65,7 +65,9 @@ function pickByThreshold(map, current, fallback){
  *  ---------------------------------------------------------------------------
  *  所有可調數值集中於 GAME_CONFIG.rating，本檔不硬編任何評分參數。
  *  evaluate / scoreToExp 為「純函式」（只吃 stats/cfg，不讀 state/DOM），方便單獨測試。
- *  stats 需含：totalHP、isBoss、clearTime(秒)、accuracy(0~1)、maxCombo、
+ *  stats 需含：totalHP、clearTime(秒)、失誤計數（wrongTaps/ultHits/blocks/delays）、
+ *              perfectCounter；⚠ `isBoss` 自 ver -602 起**不參與評價**（難度用 HP 表達）。
+ *  （以下是舊百分制留下的欄位說明，已退役）：accuracy(0~1)、maxCombo、
  *             perfectCounter、overkill、hitsTaken。
  *  完美反擊 = Counter 反擊次數(counterCount)；反擊總傷 = counterDamage（皆由 combat.win 組裝進 stats）。
  * ========================================================================== */
@@ -94,7 +96,6 @@ export function bankSessionGain(stats){
   const acc = state.sessionStats || {};
   for(const k of SUM_KEYS) acc[k] = (acc[k]||0) + (stats[k]||0);
   acc.maxCombo = Math.max(acc.maxCombo||0, stats.maxCombo||0);   // 連擊取最高，不相加
-  acc.isBoss   = acc.isBoss || !!stats.isBoss;
   state.sessionStats = acc;
   state.sessionMoney = (state.sessionMoney|0) + rollBattleMoney();
 }
@@ -105,7 +106,6 @@ export function mergeSessionStats(stats){
   const out = Object.assign({}, stats);
   for(const k of SUM_KEYS) out[k] = (out[k]||0) + (acc[k]||0);
   out.maxCombo = Math.max(out.maxCombo||0, acc.maxCombo||0);
-  out.isBoss   = out.isBoss || !!acc.isBoss;
   return out;
 }
 export function clearSessionGain(){ state.sessionStats=null; state.sessionMoney=0; }
@@ -122,7 +122,7 @@ export function scoreToExp(score, stats, cfg = GAME_CONFIG.rating.exp){
 /* ══════════════════════════════════════════════════════════════════════
    主評分（ver -600 全面改寫，Ray 交辦）—— **以攻略時間為唯一維度**
    ──────────────────────────────────────────────────────────────────────
-     par   ＝ 全敵 HP 總和 × `secPerHp`（＋Boss 加成）
+     par   ＝ 全敵 HP 總和 × `secPerHp`　　←**唯一的時間係數**
      用時  ＝ 實際秒數 ＋ 失誤折算的秒數（點錯／挨大絕／擋下／延時）
      ratio ＝ 用時 ÷ par　**越小越好** → 對照 `tiers` 取等第
    ⚠⚠ **係數全部在 `config.rating`**（鐵律 1）：Ray 要調直接改那裡，程式不必動。
@@ -136,8 +136,10 @@ export function scoreToExp(score, stats, cfg = GAME_CONFIG.rating.exp){
    ══════════════════════════════════════════════════════════════════════ */
 export function evaluate(stats, cfg = GAME_CONFIG.rating){
   const pen = cfg.penalty || {};
-  const par = Math.max(1, (stats.totalHP||0) * (cfg.secPerHp||0.3)
-                        + (stats.isBoss ? (cfg.bossBonus||0) : 0));
+  /* ⚠ **Boss 沒有額外加成**（ver -602，Ray：「boss 不用額外加秒，現在都用 hp 來控」）
+     —— 難度由敵人卡的 HP 表達，時間基準跟著血量走就好；再給 Boss 一個獨立加成
+     等於同一件事調兩個地方（鐵律 7）。 */
+  const par = Math.max(1, (stats.totalHP||0) * (cfg.secPerHp||0.3));
   const penSec = (stats.wrongTaps||0) * (pen.wrong||0)
                + (stats.ultHits ||0) * (pen.ult  ||0)
                + (stats.blocks  ||0) * (pen.block||0)
