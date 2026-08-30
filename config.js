@@ -1357,8 +1357,13 @@ export const GAME_CONFIG = {
           { who:'nouvelle', img:'tut_nouvelle_desperate', text:'不行！' },
           { who:'renna',    img:'tut_renna_thinking',     text:'到此為止了嗎？' },
           { who:'nouvelle', img:'tut_nouvelle_saintinstall', text:'我準備好了，現在聖徒化！' },
-          { who:'renna',    img:'tut_renna_shocked',      text:'！！' },
-        ], gate:{ type:'right', immediate:true, action:'saint', then:'saintOn' } },
+          /* ⚠ **箭要等她說完才出**（ver -607，Ray 指定）：`immediate` 拿掉 ——
+             `immediate:true` 是「段落一開就進閘、台詞照常可讀」，那樣箭會跟
+             「不行！」一起亮，玩家還沒聽到她說要聖徒化就先被指著滑。
+             不寫 `immediate` ＝ 講完最後一句才進閘，而最後一句正是那一句。
+             ⚠ 原本後面還有一句蕾娜「！！」，Ray 指定拿掉 —— 留著的話箭會落在
+               她的驚呼上，發動的理由就從諾薇兒身上跑掉了。 */
+        ], gate:{ type:'right', action:'saint', then:'saintOn' } },
         { trigger:'saintOn', lines:[
           { who:'renna',    img:'tut_renna_shocked',      text:'那就是……聖徒化？' },
           { who:'nouvelle', img:'tut_nouvelle_saintinstall',
@@ -1852,6 +1857,23 @@ export const ASSETS = {
   tut_nouvelle_surprise: "resources/SI/Nouvelle_SI_Surprise.webp",
   tut_nouvelle_desperate:"resources/SI/Nouvelle_SI_Desperate.webp",
   tut_nouvelle_saint:    "resources/SI/Nouvelle_SI_SAINTINSTALL.webp",
+  /* ══⚠⚠ **戰鬥內對白（`battles[].talk`）用到的立繪也要在這裡登記**
+     （ver -607，Ray：「聖徒化教學的立繪一直沒讀到」）══
+     `portraitFrames` 給的是**取景值**，圖的**路徑**要在 ASSETS 這一份 ——
+     兩份都要有，少一邊就是「有位置沒有圖」。
+     ⚠⚠ 船艦戰那一組（ver -429 的 `tut_renna*`／`tut_nouvelle_steady`／`_run`）
+       **從來沒登記過** —— 那一場的立繪應該一直都是空的，順手一起補。
+     ⚠ 路徑一律**抄 `ART`**（`script/speakers.js` 那一份，鐵律 7）：
+       換圖只改那裡，這邊自動跟上；寫死字串必然走鐘。 */
+  tut_renna:                ART.renna.base,
+  tut_renna_shocked:        ART.renna.expr.shocked.src,
+  tut_renna_run:            ART.renna.expr.run.src,
+  tut_renna_thinking:       ART.renna.expr.thinking.src,
+  tut_renna_ask:            ART.renna.expr.ask.src,
+  tut_renna_shout:          ART.renna.expr.shout.src,
+  tut_nouvelle_steady:      ART.nouvelle.expr.steady.src,
+  tut_nouvelle_run:         ART.nouvelle.expr.run.src,
+  tut_nouvelle_saintinstall:ART.nouvelle.expr.saintinstall.src,
   /* ⚠ 檔名 ver -454 由 Ray 改為 `CI_` 前綴（`Nouvelle_SAINTINSTALL` → 同名加前綴）。 */
   cutin_nouvelle_saint:  "resources/CI/CI_Nouvelle_SAINTINSTALL.webp",   // 全畫面 cut-in
   /* ══ 本篇（story）的 cut-in 差分（ver -454，Ray 指定三張）══════════════
