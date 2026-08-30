@@ -871,10 +871,12 @@ export const TOWNS = {
        ⚠ 連接用場景一律留著 —— 不然玩家會被關在某一格裡出不去。
        ⚠ **出航不擋**：Ray 說的是「末端」，出航不是末端；而且測試期間走得掉比較方便。
          真要擋（劇情上不該中途飛走）再說。
-       ⚠⚠ `until` 現在**沒有任何地方會立它** —— 這一段的結束條件 Ray 還沒給
-         （司祭說「守軍把禍魘吸引到城鎮中心去了」，推測是打完教堂那一場），
-         所以現在進了城鎮戰就一直是城鎮戰。要收尾就把那個旗標接到收尾的那一拍。 */
-    siege: { from:'np_port_arrive', until:'np_siege_done', keep:['church'] },
+       ⚠ `until` ＝**打贏教堂那一場 Boss**（ver -586）：`np_clear_church` 是那一格
+         `acts` 打贏才記的旗標 —— 城裡的禍魘清掉了，末端就全部開回來。
+         不另立一支 `np_siege_done`：同一件事兩個旗標一定會有一個忘了立（鐵律 7）。
+       ⚠ Boss 的戰鬥卡上另有 `sessionEnd`（config.battles.np_boss）——
+         那管的是「閉棺與資源回滿」，與「地圖解封」是兩件事，各自的擁有者不同。 */
+    siege: { from:'np_port_arrive', until:'np_clear_church', keep:['church'] },
     /* ══ 餐飲街（ver -575）══ 這座城的四家店**還沒有圖**，所以不給 `scenes`
        ＝不換分店，那一格只是「外出時碰得到人的地方」（見 OUTING）。
        圖交進來就照帝都那樣補一組 `scenes`（完整基底名＋逐張的 `noTime`），
@@ -980,12 +982,14 @@ export const TOWNS = {
       gunstore: { bg:'Northport_gunstore_BF', name:'北方泊地　武器店',     exits:{ back:'west' } },
       guild:    { bg:'Northport_guild_BF', name:'北方泊地　賞金獵人公會', exits:{ back:'west' } },
       cityhall: { bg:'Northport_cityhall_BF', name:'北方泊地　市鎮中心',   exits:{ back:'north' } },
-      /* ⚠ **城鎮戰期間唯一走得進去的末端**（Ray 指定，見城上的 `siege.keep`）。 */
+      /* ⚠ **城鎮戰期間唯一走得進去的末端**（Ray 指定，見城上的 `siege.keep`）——
+         因為 Boss 在這裡（司祭：「守軍把禍魘吸引到城鎮中心去了」）。 */
       church:   { bg:'Northport_church_BF', name:'北方泊地　教堂',       exits:{ back:'north' },
-        /* 城鎮戰的一場（ver -583）：走進來就打。⚠ `need` ＝城鎮戰開著、
-           `flag` ＝這一格清掉了（打贏才記，同所有城鎮段落「演完才記」的規矩，
-           所以打輸回頭再走一次還會遇到）。 */
-        acts:[ { flag:'np_clear_church', need:'np_port_arrive', lines:[ { battle:'np_harm' } ] } ],
+        /* ⚠ 這一格打的是 **Boss**（`np_boss`，ver -586）：戰鬥卡上有 `sessionEnd`，
+           所以打贏它才閉棺、聖徒化／主動技／破防值回滿。
+           ⚠ 它的 `flag` 同時是城鎮戰的**結束條件**（見城上的 `siege.until`）——
+             打贏＝城裡的禍魘清掉了，末端全部開回來。 */
+        acts:[ { flag:'np_clear_church', need:'np_port_arrive', lines:[ { battle:'np_boss' } ] } ],
       },
       /* 墓地＝北側上方那個「空格」，Ray ver -567 定案是墓地。 */
       cemetery: { bg:'Northport_cemetery_BF', name:'北方泊地　墓地',       exits:{ back:'north' } },

@@ -1149,6 +1149,13 @@ export function battleNeedsGate(battleId){
   return !(sess && state.battleSession===sess);
 }
 export function endSession(){ state.battleSession=null; sessionCarry=null; }
+/* 這一場是連續戰鬥的**中間一場**嗎（＝不是收段的那一場）。
+   ⚠ 問的是**卡**不是 `state.battleSession`：Boss 打贏時段落已經被 `endSession()`
+     收掉了，拿 state 判會把 Boss 也算成中間場（鐵律 9：判定要看得到擁有者的那個值）。 */
+function midSession(){
+  const b = state.scriptBattleId && GAME_CONFIG.battles && GAME_CONFIG.battles[state.scriptBattleId];
+  return !!(b && b.session && !b.sessionEnd);
+}
 function sessionSave(){
   if(!state.battleSession) return;
   sessionCarry={ saintUsed:!!state.saintUsedThisBattle,
@@ -1222,6 +1229,15 @@ function win(){
      ⚠ **劇情叫起來的教學不播過渡禎**（ver -358）：那一場的進出都由劇情接手，
        中間插一張要點的過渡禎會把節奏切斷（同 -329「切乾淨」的理由）。
        結算頁照出 —— Ray 要的是「沒有監察官的戰績頁 ＋ 拾得道具」。 */
+  /* ══⚠⚠ 連續戰鬥的**中間幾場不結算**（ver -586，Ray：「結算也不要留，
+     一場打完才結算」）══ 對玩家而言整張戰鬥地圖是**同一場** —— 中間每打掉一隻就
+     彈一頁戰績，等於把它切成五場。所以中間場：不演閉棺、不上結算，直接交還城鎮
+     （＝回到戰鬥地圖），那兩件事留給 `sessionEnd` 的那一場（Boss）。
+     ⚠ 上面的收尾（持久 HP、`sessionSave`、talkOnce）都已經跑過了，這裡只是不演。
+     ⚠⚠ **代價**：中間場的拾得道具與 EXP 目前是**沒有的**（那些掛在結算頁上），
+       而 Boss 那一頁報的也只有 Boss 那一場的戰績 —— 要「整段累計再一次結算」
+       是另一件事（統計要跨場累加），Ray 沒說，先不做。 */
+  if(midSession()){ if(storyReturn) storyReturn({ lost:false }); return; }
   const toResult = ()=>{
     /* ⚠ **教學戰的結算不放 result BGM**（ver -361，Ray 指定）：那首是「一場驅逐打完」的
        收束感，而教學是劇情中間的一段 —— 直接沿用地宮那條線的 crisis，情緒才接得上。

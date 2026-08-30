@@ -983,6 +983,32 @@ export const GAME_CONFIG = {
         ult:{   type:'claw', count:3, angle:'random' },
       },
     },
+    /* ══ 教堂的 Boss（ver -586，Ray：「B2G01，教堂 boss 用這一隻，跟其他怪數值
+       一樣就好」）══ 數值與 `np_harm` **完全相同**，差別只有三件事：
+         · 立繪（祭壇獸）
+         · `bg` 用教堂那一張 —— 打的地方就是那裡
+         · `sessionEnd` 在**戰鬥卡**上（`battles.np_boss`）＝打贏它才閉棺、資源回滿
+       ⚠ 名字沿用「禍魘」：Ray 還沒給它專屬的名字，不自己編。 */
+    np_boss: {
+      name:'禍魘',
+      story:1, counterStagger:1,
+      kind:'harm',
+      image:'enemy_np_boss',
+      bg:'Northport_church_BF',
+      fit:{ mode:'contain', pos:'center bottom' },
+      hp:300,
+      attack:10,
+      atkInterval:null,
+      sound:{ ult:'em_slash', delay:'em_smack', wrong:'em_slash' },
+      delayPenalty:{ seconds:5 },
+      special:[],
+      boardGrids:[9,9,16,16,16],
+      hitFx:{
+        delay:{ type:'blood', angle:'random' },
+        wrong:{ type:'slash' },
+        ult:{   type:'claw', count:3, angle:'random' },
+      },
+    },
     guild_hunter: {
       name:'賞金獵人',
       story:1, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
@@ -1193,6 +1219,9 @@ export const GAME_CONFIG = {
          直到回首頁（`goHome`）才收。卡一到就補一張 `{…, session:'np_siege',
          sessionEnd:true }`。 */
     np_harm: { enemy:'np_harm', session:'np_siege' },
+    /* 教堂的 Boss（ver -586）：同一段連續戰鬥的**最後一場** ——
+       `sessionEnd` ＝打贏它才閉棺、聖徒化／主動技／破防值回滿。 */
+    np_boss: { enemy:'np_boss', session:'np_siege', sessionEnd:true },
     /* 槍店的打靶（ver -377）。⚠ 這一場**可以輸**（`allowLose`）—— Ray 的稿子有
        「戰敗」與「戰勝」兩支台詞，所以輸了不是 Game Over，是接另一支分歧。
        ⚠ `record` ＝ 這一場自己的最佳紀錄（通關用時），破紀錄時結算頁加 NEW。
@@ -1636,6 +1665,9 @@ export const ASSETS = {
      ⚠ 圖還在 `_drafts`（底線開頭的資料夾**不進遊戲載入**是給「還沒選定」的草稿用的，
        但 ASSETS 明寫路徑照樣載得到）—— 選定之後請搬進 `resources/enemy/` 並改這一行。 */
   enemy_np_harm: "resources/enemy/_drafts/mon_sea_drowned.webp",
+  /* 教堂的 Boss（ver -586，Ray：「B2G01，教堂 boss 用這一隻」）＝第二批 Gemini 的
+     第 1 張＝**祭壇獸**（身上嵌著一片教堂立面，正好是教堂那一場）。 */
+  enemy_np_boss: "resources/enemy/_drafts/mon_beast_altar.webp",
 
   // ── 五張 cut-in 圖（v17.7 嵌入）──
   cutin_saint_luna: "resources/partner/Luna_CI_advent.jpg",   // 聖徒化降臨 cut-in（Luna）
