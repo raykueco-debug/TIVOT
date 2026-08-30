@@ -24,7 +24,8 @@ import { showLoot } from './loot.js';
 import * as inv from '../script/inventory.js';   // 破紀錄的獎品要先問「是不是已經有了」
 import * as prog from '../script/progress.js';   // 拿到獎品記一個旗標（城鎮的一次性提示掛在它上面）
 /* 蕾娜的結算評價（ver -432）：內容全在那一檔，這裡只負責挑與演（鐵律 1）。 */
-import { EVALUATOR, EVAL_FLAG, EVAL_SKIP, LINES as EVAL_LINES } from '../script/evaluation.js';
+import { EVALUATOR, EVAL_FLAG, EVAL_SKIP, LINES as EVAL_LINES,
+         BY_BATTLE as EVAL_BY_BATTLE } from '../script/evaluation.js';
 import { SPEAKERS, ART } from '../script/speakers.js';   // 評價者的顯示名與立繪＝與對白同一份
 import { state } from '../state.js';
 import { SFX } from '../audio.js';   // Boss BGM 於「再度執槍（S 解鎖）」瞬間起播
@@ -69,6 +70,25 @@ function pickByThreshold(map, current, fallback){
  *  完美反擊 = Counter 反擊次數(counterCount)；反擊總傷 = counterDamage（皆由 combat.win 組裝進 stats）。
  * ========================================================================== */
 const clamp01 = x => (x<0 ? 0 : (x>1 ? 1 : x));
+
+/* ══ 這一場掉多少錢（ver -595 抽成一支）══ 只擲骰、**不入帳** ——
+   連續戰鬥的中間幾場要先記帳、到收段那一場才一起入（見 settle 的說明）。
+   ⚠ 機率與範圍在 `config.battleLoot`（鐵律 1）；Boss 加成走 `bossMul`。 */
+export function rollBattleMoney(){
+  const bl=(GAME_CONFIG.battleLoot||{}).money;
+  if(!bl || Math.random() >= (bl.chance!=null?bl.chance:0)) return 0;
+  const lo=bl.min|0, hi=Math.max(lo, bl.max|0);
+  let m = lo + Math.floor(Math.random()*(hi-lo+1));
+  if(state.inIntruderFight && bl.bossMul>1) m=Math.round(m*bl.bossMul);
+  return m;
+}
+/* 連續戰鬥的中間幾場：把這一場的 EXP 與錢記進帳（ver -595）。由 combat 的
+   `win()` 在「不結算」那一支呼叫；到收段那一場由 `settle` 一起領走。 */
+export function bankSessionGain(stats){
+  state.sessionExp   = (state.sessionExp|0)   + (evaluate(stats).exp|0);
+  state.sessionMoney = (state.sessionMoney|0) + rollBattleMoney();
+}
+export function clearSessionGain(){ state.sessionExp=0; state.sessionMoney=0; }
 
 // 分數 → EXP：offset 質數基底 + score×mult，尾數微擾 + overkill 加成，避免整齊倍數。
 export function scoreToExp(score, stats, cfg = GAME_CONFIG.rating.exp){
@@ -141,13 +161,19 @@ function pickEvaluator(rankKey, battleId){
   if(bt.evalFrom && !prog.hasFlag(EVAL_FLAG)) prog.addFlags([EVAL_FLAG]);
   if(!prog.hasFlag(EVAL_FLAG)) return null;
   if(EVAL_SKIP.indexOf(battleId) >= 0) return null;          // 打靶不評（Ray 指定）
-  /* 章節 → 好感，兩層都是**門檻**（取不超過現值的最高那一格，同 `dialogues` 的查表法）。 */
-  const byStage = pickByThreshold(EVAL_LINES, prog.getStage(), null);
-  if(!byStage) return null;
   const who = SPEAKERS[EVALUATOR] || {};
-  const aff = (prog.getAffection() || {})[(who.art||'')] ;
-  const byAff = pickByThreshold(byStage, (aff==null ? 0 : aff), null);
-  const one = byAff && byAff[rankKey];
+  /* ⚠ **某一場專屬的台詞優先**（ver -597）：`evaluation.js` 的 `BY_BATTLE`
+     查得到這一場就用它，查不到才回去走依章節／好感的通用表。
+     那張通用表是「全部場次」的，把某一場的稿寫進去會把所有場次一起換掉。 */
+  let one = (EVAL_BY_BATTLE[battleId]||{})[rankKey];
+  if(!one){
+    /* 章節 → 好感，兩層都是**門檻**（取不超過現值的最高那一格，同 `dialogues` 的查表法）。 */
+    const byStage = pickByThreshold(EVAL_LINES, prog.getStage(), null);
+    if(!byStage) return null;
+    const aff = (prog.getAffection() || {})[(who.art||'')] ;
+    const byAff = pickByThreshold(byStage, (aff==null ? 0 : aff), null);
+    one = byAff && byAff[rankKey];
+  }
   if(!one) return null;
   const art = ART[who.art] || {};
   const ex  = (art.expr||{})[one.expr];
@@ -267,18 +293,21 @@ export function settle(totalTime, stats, opts={}){
      -453 只改了劇情場 —— 這裡是最後一條還在彈窗的路。
      ⚠ 掉錢的機率與範圍照舊在 `config.battleLoot`（鐵律 1），這裡只擲骰；
        Boss 加成走 `bossMul`。一般戰沒有道具掉落，戰利品視窗因此整個不彈。 */
-  let gainMoney = 0;
-  {
-    const bl=(GAME_CONFIG.battleLoot||{}).money;
-    if(bl && Math.random() < (bl.chance!=null?bl.chance:0)){
-      const lo=bl.min|0, hi=Math.max(lo, bl.max|0);
-      gainMoney=lo + Math.floor(Math.random()*(hi-lo+1));
-      if(state.inIntruderFight && bl.bossMul>1) gainMoney=Math.round(gainMoney*bl.bossMul);
-      inv.addMoney(gainMoney);
-    }
-  }
-  if(evalResult.exp|0) rows += '<div class="row"><span>EXP</span><b>＋'+(evalResult.exp|0)+'</b></div>';
-  if(gainMoney)        rows += '<div class="row"><span>'+inv.moneyName()+'</span><b>＋'+gainMoney+'</b></div>';
+  /* ══⚠⚠ **連續戰鬥的 EXP 與錢是「整場」結算**（ver -595，Ray：「exp 跟錢都用
+     『整場』來結算」）══ 城鎮戰那五格對玩家而言是同一場（§6.5.4.3），中間幾格
+     不彈結算頁 —— 那幾場的 EXP 與錢**存在 `state.sessionExp/sessionMoney`**，
+     到收段的那一場（Boss）一起入帳、一起顯示。
+     ⚠ 擲骰只有 `rollBattleMoney()` 一支（鐵律 7）：中間場與這裡都問它。
+     ⚠ 錢**在這裡才真的入帳**（中間場只記帳）—— 不然打到一半跑掉，錢已經進口袋了。
+     ⚠ 領完就清（`clearSessionGain`），不然下一場會把上一段的再算一次。 */
+  let gainMoney = rollBattleMoney();
+  const bankExp = state.sessionExp|0, bankMoney = state.sessionMoney|0;
+  const totalExp = (evalResult.exp|0) + bankExp;
+  gainMoney += bankMoney;
+  if(gainMoney) inv.addMoney(gainMoney);
+  clearSessionGain();
+  if(totalExp) rows += '<div class="row"><span>EXP</span><b>＋'+totalExp+'</b></div>';
+  if(gainMoney) rows += '<div class="row"><span>'+inv.moneyName()+'</span><b>＋'+gainMoney+'</b></div>';
   if(isRecord) rows += `<div class="record">${L.result.newRecord}</div>`;
   // ── 監察官結算展示（依評價等第挑台詞）──
   showResultSequence(L.result.winTitle, sub, rows, evalResult.grade, false);

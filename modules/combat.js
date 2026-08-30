@@ -467,6 +467,17 @@ function floatDmg(txt,left,top,crit,extraClass){
   setTimeout(()=>d.remove(),700);
 }
 // 被攻擊：扣玩家血 + 受擊特效 + 震動（saintMode 分支下一輪接）
+/* 命中敵人 → 牠被打得一縮（ver -598，Ray：「我方攻擊命中敵人，敵人也要震動或
+   其他更好的效果」）。演出在 CSS 的 `enemyHit`，這裡只負責**每一發都重播**：
+   ⚠ 一定要 remove → reflow → add，不然連點時第二發之後動畫不會重來
+     （class 已經在身上）—— 那正是原本「幾乎看不出來」的一部分原因。
+   ⚠ 只動 `#enemyImg`，背景不動（ver -592）；玩家受擊那一下才是整個畫面震（-593）。 */
+function enemyHitFlash(){
+  const el=$('enemyImg'); if(!el) return;
+  el.classList.remove('hit'); void el.offsetWidth; el.classList.add('hit');
+  clearTimeout(enemyHitFlash._t);
+  enemyHitFlash._t=setTimeout(()=>el.classList.remove('hit'), 180);
+}
 /* 玩家受擊 → 整個畫面震一下（ver -593，Ray 指定）。
    ⚠ 掛在 `#app`（＝鏡頭）不是 `#enemyImg`：背景與怪一起動才讀得出「你被打到了」。
    ⚠ 只有這一支在做（鐵律 8）—— `enemyAttack` 是所有扣血路徑的唯一入口，
@@ -608,7 +619,7 @@ function enemyDamage(dmg,isCrit,silent,src){
   //   防 EXSECUTIŌ／聖徒化中擊殺跳過最後一段教學（finishMB/LR 播完 endTutorial 後才解鎖擊殺）。
   if(state.tutorialActive && dmg>=state.enemyHp && state.enemyHp>0){
     dmg = state.enemyHp - 1;
-    if(dmg<=0){ $('enemyImg').classList.add('hit'); setTimeout(()=>$('enemyImg').classList.remove('hit'),80); return; }
+    if(dmg<=0){ enemyHitFlash(); return; }
   }
   if(dmg>0){
     if(state.enemyHp>0){
@@ -631,7 +642,7 @@ function enemyDamage(dmg,isCrit,silent,src){
       floatDmg(fmt(L.battle.overkillAdd,{n:dmg}), (30+Math.random()*40)+'%','35%',true);
     }
   }
-  $('enemyImg').classList.add('hit'); setTimeout(()=>$('enemyImg').classList.remove('hit'),80);
+  enemyHitFlash();
 }
 
 /* ============================================================================
@@ -1166,7 +1177,10 @@ export function battleNeedsGate(battleId){
   const sess=sessionOf(battleId);
   return !(sess && state.battleSession===sess);
 }
-export function endSession(){ state.battleSession=null; sessionCarry=null; }
+export function endSession(){
+  state.battleSession=null; sessionCarry=null;
+  inspector.clearSessionGain();     // 半途離場：EXP/錢的帳不留到下一段（ver -595）
+}
 /* 這一場的戰鬥背景覆寫（ver -592）：由 `main.js` 在交棒的那一刻設 ——
    城鎮插入戰給「你站的那一格」那張圖，其餘一律 null（走敵人卡的 `bg`）。
    ⚠ **每次交棒都要明確設一次**（含設 null）：靠上一場收乾淨會漏，
@@ -1175,6 +1189,23 @@ export function setBattleBg(name){ state.battleBg = name || null; }
 /* 這一場是連續戰鬥的**中間一場**嗎（＝不是收段的那一場）。
    ⚠ 問的是**卡**不是 `state.battleSession`：Boss 打贏時段落已經被 `endSession()`
      收掉了，拿 state 判會把 Boss 也算成中間場（鐵律 9：判定要看得到擁有者的那個值）。 */
+/* ══⚠⚠ 這一場打哪一隻（ver -596，Ray：「城鎮戰由這幾隻怪隨機出，數值都一樣，
+   但是要各別做敵人卡方便我修改」）══ 戰鬥卡的 `enemy` 可以是**一個鍵**或**一串鍵**；
+   是一串就隨機抽一隻。
+   ⚠⚠ **一場之內只能抽一次**：`startGame` 會問好幾次（判劇情戰、換敵…），
+     每次都現抽會抽到不同隻 —— 立繪與數值就對不起來。所以抽完記在 `pendingPick`，
+     同一個 `sb` 再問回同一個（鐵律 7：一個量一個計算點）。
+   ⚠ 抽的實作只有這一支（鐵律 8）。 */
+let pendingPick=null;   // { sb, key }
+function pickBattleEnemy(sb){
+  if(!sb) return null;
+  const e = sb.enemy;
+  if(!Array.isArray(e)) return e;
+  if(pendingPick && pendingPick.sb===sb) return pendingPick.key;
+  const key = e[(Math.random()*e.length)|0];
+  pendingPick = { sb, key };
+  return key;
+}
 function midSession(){
   const b = state.scriptBattleId && GAME_CONFIG.battles && GAME_CONFIG.battles[state.scriptBattleId];
   return !!(b && b.session && !b.sessionEnd);
@@ -1265,6 +1296,8 @@ function win(){
        成為控制板」）：門在控制盤的高度闔上，闔上就是那張控制板 ——
        所以回城鎮那一段**不走 goHome 的淡出**（`inPlace` 讓 main 那邊分流），
        不然玩家會先看到一次黑幕，門的動作就白演了。 */
+    /* EXP 與錢**整場結算**（ver -595）：中間這幾場先記帳，收段那一場一起入。 */
+    inspector.bankSessionGain(stats);
     const back = ()=>{ if(storyReturn) storyReturn({ lost:false, inPlace:true }); };
     if(storyShut) storyShut(back); else back();
     return;
@@ -1365,7 +1398,7 @@ export function startGame(){
        ① 發起端明確宣告的優先（飛行交棒的 `scripted`：隨機遭遇 false、劇本遭遇 true）
        ② 沒宣告（城鎮／腳本插入戰、舊交棒鑰匙）→ 讀**敵人卡**的 `story`（1/0）
        ③ 卡上也沒寫 → true（腳本叫起來的場子天生就是劇情戰）。 */
-  { const en = sb && GAME_CONFIG.enemies[sb.enemy];
+  { const en = sb && GAME_CONFIG.enemies[pickBattleEnemy(sb)];
     const cardStory = !en || en.story==null || !!en.story;
     state.storyBattle = state.scriptRun &&
       (pendingScriptStory!==null ? pendingScriptStory : cardStory);
@@ -1379,8 +1412,8 @@ export function startGame(){
      聖徒化 cut-in 落回 Luna（saint.js 那條分流要求搭檔＝諾薇兒才給她的圖）。
      真相只有 config 一份（gear 的清單第一位與它互指，鐵律 7）。 */
   if(state.scriptRun && GAME_CONFIG.storyPartner) setPickedPartner(GAME_CONFIG.storyPartner);
-  if(sb && GAME_CONFIG.enemies[sb.enemy]){
-    enemy.setEnemy(sb.enemy);
+  if(sb && GAME_CONFIG.enemies[pickBattleEnemy(sb)]){
+    enemy.setEnemy(pickBattleEnemy(sb));
     state.noSaint = !!sb.noSaint;
     state.noPartner = !!sb.noPartner;
     state.timeAttack = sb.timeAttack || null;    // 計時挑戰（ver -396，打靶場）

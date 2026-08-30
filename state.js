@@ -161,6 +161,12 @@ export const state = {
      ⚠ 擁有者是 combat（`setBattleBg`，每次交棒明確設一次／設 null），
        `enemy.setEnemy` 只讀 —— 不要讓它殘留到下一場（那會把上一格的背景帶過去）。 */
   battleBg: null,
+  /* 連續戰鬥的 EXP／錢記帳（ver -595，Ray：「exp 跟錢都用『整場』來結算」）。
+     中間幾格不彈結算頁，那幾場的收穫先記在這裡，收段的那一場（Boss）一起入帳。
+     ⚠ 擁有者是 inspector（`bankSessionGain`／`clearSessionGain`），
+       combat 的 `endSession()` 也會清 —— 半途離場不該把帳留到下一段。 */
+  sessionExp: 0,
+  sessionMoney: 0,
   pickedPartner: GAME_CONFIG.defaultPartner,   // 玩家實選搭檔（擁有者 partner；選人畫面經 setPickedPartner 寫入）
   lineupIndex: 0,        // 連戰序列游標（局內第幾隻敵，對應 GAME_CONFIG.lineup）
 

@@ -105,6 +105,12 @@ export const ART = {
                   /* 帝都廣場那一段新增（ver -359）。`stare`＝直視／半瞇，用在她盯著人講話那幾拍。 */
                   stare:   { src:'resources/SI/Renna_SI_stare.webp',   top:0, bot:1527, fx:0.515 },
                   surprise:{ src:'resources/SI/Renna_SI_Surprise.webp',top:8, bot:1524, fx:0.498 },
+                  /* 北方泊地教堂那一段（ver -595，Ray 交稿）。取景值全部用
+                     `tools/measure_si.py` 量的，沒有沿用別張。
+                     ⚠ 交件是 PNG，依 §5 轉 WebP 之後才接（原 PNG 進 _originals）。 */
+                  shockedCalm:{src:'resources/SI/Renna_SI_shockedCalm.webp',top:4, bot:1516, fx:0.493 },
+                  shout:   { src:'resources/SI/Renna_SI_Shout.webp',    top:4, bot:1534, fx:0.549 },
+                  writting:{ src:'resources/SI/Renna_SI_writting.webp', top:4, bot:1524, fx:0.507 },
                   ask:     { src:'resources/SI/Renna_SI_ask.webp',     top:3, bot:1525, fx:0.489 },
                   /* 船塢那一段新增（ver -424，Ray 交件）。取景值是 `tools/measure_si.py`
                      量的，**每一張各自帶**（差分是不同姿勢，不是換臉，§6.5）。 */
@@ -147,6 +153,10 @@ export const ART = {
                   runserious:{src:'resources/SI/Nouvelle_SI_runserious.webp',top:12, bot:1521, fx:0.402 },
                   /* ver -427 交件：酒館第一句要的那張（在此之前一直回退基本立繪）。 */
                   pray:     { src:'resources/SI/Nouvelle_SI_pray.webp',     top:0,  bot:1533, fx:0.535 },
+                  /* 北方泊地教堂那一段（ver -595，Ray 交稿）。`relief` 交件是 PNG，
+                     依 §5 轉 WebP 之後才接；`saintinstall` 的圖早就在，只是沒進表。 */
+                  relief:   { src:'resources/SI/Nouvelle_SI_relief.webp',   top:4,  bot:1530, fx:0.540 },
+                  saintinstall:{src:'resources/SI/Nouvelle_SI_SAINTINSTALL.webp',top:3,bot:1525,fx:0.505 },
                   run:      { src:'resources/SI/Nouvelle_SI_Run.webp',       top:13, bot:1533, fx:0.418 },
                   cringe:   { src:'resources/SI/Nouvelle_SI_Cringe.webp',    top:5,  bot:1533, fx:0.459 },
                   scared:   { src:'resources/SI/Nouvelle_SI_Scared.webp',    top:9,  bot:1530, fx:0.397 },

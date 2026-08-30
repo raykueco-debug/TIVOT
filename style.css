@@ -211,7 +211,22 @@
     touch-action:none;}
   #enemyImg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
     object-position:center top;transition:transform .06s;}
-  #enemyImg.hit{transform:scale(1.015);}
+  /* ══⚠⚠ 我方命中敵人 → **敵人被打得一縮**（ver -598，Ray：「我方攻擊命中敵人，
+     敵人也要震動或其他更好的效果」）══ 原本只有 `scale(1.015)` ＋ 60ms 過場，
+     幾乎看不出來。改成一記**短促的挨打**：
+       ① 瞬間被打亮（brightness 1.9／saturate .6）—— 命中的那一格閃光
+       ② 橫向被踢開再彈回（±5px）＋ 縮一下（.985）—— 受力的方向感
+       ③ 150ms 收乾淨 —— 這是每一次點擊都會發生的事，長了會糊成一片
+     ⚠ 只動 `#enemyImg`（一張去背立繪疊在底圖上）：**背景不動**（ver -592）。
+       玩家受擊那一下才是整個畫面震（`#app.hitshake`，ver -593），兩者不要搞混。
+     ⚠ 用動畫不用 transition：連點時 transition 會被下一次覆蓋掉、只剩最後一下，
+       動畫才每一發都完整播（呼叫端每次 remove→reflow→add）。 */
+  #enemyImg.hit{animation:enemyHit .15s ease-out;}
+  @keyframes enemyHit{
+    0%  {transform:translateX(0)    scale(1);    filter:brightness(1.9) saturate(.6);}
+    35% {transform:translateX(-5px) scale(.985); filter:brightness(1.35) saturate(.8);}
+    70% {transform:translateX(3px)  scale(1.008);filter:none;}
+    100%{transform:translateX(0)    scale(1);    filter:none;}}
   #enemyImg.shake{animation:camShake .3s;}
   @keyframes camShake{0%,100%{transform:translate(0,0)}
     20%{transform:translate(-6px,4px)}40%{transform:translate(5px,-3px)}

@@ -947,32 +947,87 @@ export const GAME_CONFIG = {
          `script/SCRIPT_FORMAT.md` 的「敵人卡」一節）。卡上有的欄位這裡都要有，
          沒實作的（抗性/弱點）也**照樣寫進資料**、標明未實作 —— 資料先齊，
          程式後補；不要因為還沒做就把欄位丟掉（丟掉的下場是下次補做時沒人記得。） */
-    /* ══⚠⚠ 北方泊地城鎮戰的**測試用**怪（ver -583，Ray 交辦）══════════════
-       Ray：「測試期間每張先放 B2G05 當怪，血量 300，攻擊模式同訓練用聖徒，
-             攻擊力同賞金獵人」。三個數字各有出處，所以**這張卡是拼出來的**：
-         · `hp:300`                    ← Ray 指定
-         · 攻擊**模式** ← `trainee`：`sound` / `boardGrids` / `delayPenalty` /
-           `hitFx` / `atkInterval` 一律照抄訓練用聖徒那一張
-         · 攻擊**力** ← `guild_hunter`：`attack:10`（＝大絕那一發的傷害）
-       ⚠⚠ **這是佔位卡**：Ray 說的是「測試期間」，正式的怪與數值還沒給。
-         日後每一格要換不同的怪時，一格一張卡、節點的 `acts` 各自指過去
-         （現在五格共用這一張，見 script/town.js 的 northport.siege）。
-       ⚠ `bg` ＋ `fit.contain` 是**去背立繪的必要配套**（同 guild_hunter 那條）——
-         沒有背景的話身後是一片黑，用 cover 會把頭裁掉。
-         ⚠ 現在固定用北側那張；要讓戰鬥背景跟著「你在哪一格」變，得讓 battles 支援
-           bg 覆寫，那是另一件事（Ray 沒要求，先不做）。
-       ⚠ `kind:'harm'` ＝禍魘 → 結算副標「已淨化」（ver -423 的對照表）。 */
-    np_harm: {
+    /* ══⚠⚠ 北方泊地城鎮戰的雜怪 —— **四隻隨機出，一隻一張卡**（ver -596，Ray：
+       「城鎮戰由這幾隻怪隨機出，數值都一樣，但是要各別做敵人卡方便我修改」）══
+       四張卡現在的數值**完全一樣**（hp 300／attack 10／攻擊模式抄訓練用聖徒／
+       攻擊力抄賞金獵人），分開寫是為了**日後各改各的** ——
+       ⚠ 不要為了「省重複」把它們合成一張帶陣列的卡：那樣就回不去逐隻調整了，
+         而逐隻可調正是 Ray 要這個形狀的理由（不是冗余）。
+       ⚠ 抽哪一隻由**戰鬥卡**決定（`battles.np_harm.enemy` 是陣列，
+         `combat.startGame` 開場抽一次）—— 不在這裡抽。
+       ⚠ 名字暫時都叫「禍魘」（Ray 還沒給各自的名字）。
+       ⚠ `bg`＋`fit.contain` 是去背立繪的必要配套；實戰時 `bg` 會被城鎮那一格的
+         背景蓋掉（ver -592），留著是為了在別處單獨叫用時不會身後一片黑。 */
+    np_candletower: {
       name:'禍魘',
       story:1, counterStagger:1,
       kind:'harm',
-      image:'enemy_np_harm',
-      bg:'Northport_north_BF',
+      image:'enemy_np_candletower',
+      bg:'Northport_church_BF',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:300,                       // Ray 指定
-      attack:10,                    // ＝賞金獵人（Ray：「攻擊力同賞金獵人」）
-      /* ── 以下整組照抄訓練用聖徒（Ray：「攻擊模式同訓練用聖徒」）── */
-      atkInterval:null,             // 沿用 tuning.chargeSeconds
+      hp:300,
+      attack:10,
+      atkInterval:null,
+      sound:{ ult:'em_slash', delay:'em_smack', wrong:'em_slash' },
+      delayPenalty:{ seconds:5 },
+      special:[],
+      boardGrids:[9,9,16,16,16],
+      hitFx:{
+        delay:{ type:'blood', angle:'random' },
+        wrong:{ type:'slash' },
+        ult:{   type:'claw', count:3, angle:'random' },
+      },
+    },
+    np_candlepenitent: {
+      name:'禍魘',
+      story:1, counterStagger:1,
+      kind:'harm',
+      image:'enemy_np_candlepenitent',
+      bg:'Northport_church_BF',
+      fit:{ mode:'contain', pos:'center bottom' },
+      hp:300,
+      attack:10,
+      atkInterval:null,
+      sound:{ ult:'em_slash', delay:'em_smack', wrong:'em_slash' },
+      delayPenalty:{ seconds:5 },
+      special:[],
+      boardGrids:[9,9,16,16,16],
+      hitFx:{
+        delay:{ type:'blood', angle:'random' },
+        wrong:{ type:'slash' },
+        ult:{   type:'claw', count:3, angle:'random' },
+      },
+    },
+    np_coralman: {
+      name:'禍魘',
+      story:1, counterStagger:1,
+      kind:'harm',
+      image:'enemy_np_coralman',
+      bg:'Northport_church_BF',
+      fit:{ mode:'contain', pos:'center bottom' },
+      hp:300,
+      attack:10,
+      atkInterval:null,
+      sound:{ ult:'em_slash', delay:'em_smack', wrong:'em_slash' },
+      delayPenalty:{ seconds:5 },
+      special:[],
+      boardGrids:[9,9,16,16,16],
+      hitFx:{
+        delay:{ type:'blood', angle:'random' },
+        wrong:{ type:'slash' },
+        ult:{   type:'claw', count:3, angle:'random' },
+      },
+    },
+    np_reassembled: {
+      name:'禍魘',
+      story:1, counterStagger:1,
+      kind:'harm',
+      image:'enemy_np_reassembled',
+      bg:'Northport_church_BF',
+      fit:{ mode:'contain', pos:'center bottom' },
+      hp:300,
+      attack:10,
+      atkInterval:null,
       sound:{ ult:'em_slash', delay:'em_smack', wrong:'em_slash' },
       delayPenalty:{ seconds:5 },
       special:[],
@@ -984,7 +1039,7 @@ export const GAME_CONFIG = {
       },
     },
     /* ══ 教堂的 Boss（ver -586，Ray：「B2G01，教堂 boss 用這一隻，跟其他怪數值
-       一樣就好」）══ 數值與 `np_harm` **完全相同**，差別只有三件事：
+       一樣就好」）══ 數值與那四隻雜怪 **完全相同**，差別只有三件事：
          · 立繪（祭壇獸）
          · `bg` 用教堂那一張 —— 打的地方就是那裡
          · `sessionEnd` 在**戰鬥卡**上（`battles.np_boss`）＝打贏它才閉棺、資源回滿
@@ -996,6 +1051,29 @@ export const GAME_CONFIG = {
       image:'enemy_np_boss',
       bg:'Northport_church_BF',
       fit:{ mode:'contain', pos:'center bottom' },
+      hp:300,
+      attack:10,
+      atkInterval:null,
+      sound:{ ult:'em_slash', delay:'em_smack', wrong:'em_slash' },
+      delayPenalty:{ seconds:5 },
+      special:[],
+      boardGrids:[9,9,16,16,16],
+      hitFx:{
+        delay:{ type:'blood', angle:'random' },
+        wrong:{ type:'slash' },
+        ult:{   type:'claw', count:3, angle:'random' },
+      },
+    },
+    /* ══ 瓦礫中的紫黑之爪（ver -595，Ray 交稿）══ 教堂那一場之後的真 BOSS，
+       也是**聖徒化教學戰**（腳本見 script/town.js 的 northport.church）。
+       ⚠ 立繪是**連背景的整張圖**（`TheClaws`）：不給 `bg`／`fit`，走滿版 cover。
+       ⚠ 數值先沿用禍魘那一張（Ray 還沒給這一隻的卡）—— 劇情殺的門檻（HP 30%）
+         與教學的節奏由腳本那一側管，不是靠數值。 */
+    np_claws: {
+      name:'禍魘',
+      story:1, counterStagger:1,
+      kind:'harm',
+      image:'enemy_np_claws',
       hp:300,
       attack:10,
       atkInterval:null,
@@ -1218,10 +1296,25 @@ export const GAME_CONFIG = {
          Boss 的卡 Ray 還沒給，所以現在這一段**沒有出口**：五格打完段落仍開著，
          直到回首頁（`goHome`）才收。卡一到就補一張 `{…, session:'np_siege',
          sessionEnd:true }`。 */
-    np_harm: { enemy:'np_harm', session:'np_siege' },
+    /* ⚠ `enemy` 是**陣列**＝這一場隨機抽一隻（ver -596）。抽的實作只有
+       `combat.startGame` 的 `pickBattleEnemy()` 一支（鐵律 8）。 */
+    np_harm: { enemy:['np_candletower','np_candlepenitent','np_coralman','np_reassembled'],
+               session:'np_siege' },
     /* 教堂的 Boss（ver -586）：同一段連續戰鬥的**最後一場** ——
        `sessionEnd` ＝打贏它才閉棺、聖徒化／主動技／破防值回滿。 */
     np_boss: { enemy:'np_boss', session:'np_siege', sessionEnd:true },
+    /* ══⚠⚠ 瓦礫中的紫黑之爪 ＝ **聖徒化教學戰**（ver -595，Ray 交稿）══
+       腳本節奏：BOSS HP ≤30% → 劇情殺（主角 HP 歸零）→ 諾薇兒「我準備好了，現在
+       聖徒化！」→ 雪鐵龍教學**右滑**發動聖徒化 → 聖徒化戰鬥 → 血回 99% 自動觸發
+       **主動技教學**（上滑生命歸還）→ 諾薇兒倒下 → 打完。
+       ⚠⚠ **那一整套的機制還沒接** —— 現有的教學系統（`config.tutorial`）本來就有
+         右滑／上滑那兩個閘門與劇情殺，但那是「首次出陣」那一場的腳本；
+         這一場要的是**同一套機制、不同的稿與觸發條件**（門檻是 BOSS 血量而不是盤序）。
+         接法要 Ray 拍板（沿用 tutorial 的腳本格式再加一組？還是走 battles 的 `talk`
+         加上血量觸發？），所以現在這一場**只是一場普通的 Boss 戰**。
+       ⚠ 不禁聖徒化／搭檔技：這一場的重點就是教它們。
+       ⚠ 不掛 `session` —— 城鎮戰那一段已經在祭壇獸那一場收掉了，這是新的一場。 */
+    np_claws: { enemy:'np_claws' },
     /* 槍店的打靶（ver -377）。⚠ 這一場**可以輸**（`allowLose`）—— Ray 的稿子有
        「戰敗」與「戰勝」兩支台詞，所以輸了不是 Game Over，是接另一支分歧。
        ⚠ `record` ＝ 這一場自己的最佳紀錄（通關用時），破紀錄時結算頁加 NEW。
@@ -1659,15 +1752,23 @@ export const ASSETS = {
   enemy_dart_target: "resources/enemy/Dart_timeattack.webp",   // 打靶場：固定立靶（ver -396）
   /* 賞金獵人（ver -375）：戰鬥立繪＝對話立繪的 `attack` 那張（去背，配 `bg` 用）。 */
   enemy_guild_hunter: "resources/SI/NPC_GuildHunter_SI_Attack.webp",
-  /* ⚠⚠ 北方泊地城鎮戰的**測試用**怪（ver -583，Ray：「測試期間每張先放 B2G05 當怪」）。
-     `B2G05` 我對到的是第二批 Gemini 那六張裡的第 5 張＝**溺亡騎士**
-     （`resources/enemy/_drafts/mon_sea_drowned.webp`）。對錯只要改這一行。
-     ⚠ 圖還在 `_drafts`（底線開頭的資料夾**不進遊戲載入**是給「還沒選定」的草稿用的，
-       但 ASSETS 明寫路徑照樣載得到）—— 選定之後請搬進 `resources/enemy/` 並改這一行。 */
-  enemy_np_harm: "resources/enemy/_drafts/mon_sea_drowned.webp",
-  /* 教堂的 Boss（ver -586，Ray：「B2G01，教堂 boss 用這一隻」）＝第二批 Gemini 的
-     第 1 張＝**祭壇獸**（身上嵌著一片教堂立面，正好是教堂那一場）。 */
-  enemy_np_boss: "resources/enemy/_drafts/mon_beast_altar.webp",
+  /* ══⚠⚠ 北方泊地城鎮戰的雜怪（ver -596，Ray 指定四隻隨機出）＋教堂的 Boss（祭壇獸）══
+     ⚠⚠ **一定要放在 `resources/enemy/` 底下，不可以留在 `_drafts`**（ver -595，
+       Ray 回報「手機端讀不到怪的圖」）：靜態空間（GitHub Pages）跑的是 Jekyll，
+       **底線開頭的檔案與資料夾整個被忽略**，而 `_drafts` 還正好是 Jekyll 的保留字
+       —— 本機的 dev server 照給，線上一律 404，所以只有手機（吃線上版）看不到。
+       ⚠ 順手補了根目錄的 `.nojekyll`（那才是根治：以後任何底線路徑都不會消失），
+         但**草稿還是不要直接引用** —— `_drafts` 的意思就是「還沒選定」。 */
+  enemy_np_candletower:    "resources/enemy/mon_relic_candletower.webp",
+  enemy_np_candlepenitent: "resources/enemy/mon_relic_candlepenitent.webp",
+  enemy_np_coralman:       "resources/enemy/mon_sea_coralman.webp",
+  enemy_np_reassembled:    "resources/enemy/mon_relic_reassembled.webp",
+  enemy_np_boss: "resources/enemy/mon_beast_altar.webp",
+  /* 教堂那一場之後的真 BOSS：**瓦礫中生出的紫黑之爪**（ver -595，Ray：「boss 圖為
+     TheClaws」）。⚠ 這一張是**連背景一起畫的整張戰鬥圖**（規格見
+     `resources/background/_boss_claw_spec.md`）—— 所以敵人卡**不給 `bg`、不給
+     `fit.contain`**，走預設的 cover 滿版；那兩個是給去背立繪配背景用的。 */
+  enemy_np_claws: "resources/enemy/TheClaws.webp",
 
   // ── 五張 cut-in 圖（v17.7 嵌入）──
   cutin_saint_luna: "resources/partner/Luna_CI_advent.jpg",   // 聖徒化降臨 cut-in（Luna）

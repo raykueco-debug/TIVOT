@@ -989,7 +989,38 @@ export const TOWNS = {
            所以打贏它才閉棺、聖徒化／主動技／破防值回滿。
            ⚠ 它的 `flag` 同時是城鎮戰的**結束條件**（見城上的 `siege.until`）——
              打贏＝城裡的禍魘清掉了，末端全部開回來。 */
-        acts:[ { flag:'np_clear_church', need:'np_port_arrive', lines:[ { battle:'np_boss' } ] } ],
+        acts:[
+          { flag:'np_clear_church', need:'np_port_arrive', lines:[ { battle:'np_boss' } ] },
+          /* ══ 教堂戰之後（ver -595，Ray 交稿）══════════════════════════════
+             祭壇獸清掉了 → 這一段對白 → 瓦礫中生出紫黑之爪 → **聖徒化教學戰**。
+             ⚠ 兩段拆開：`acts` 由上往下取**第一個到期的**，所以打完祭壇獸
+               （記了 `np_clear_church`）**下一次抵達**才輪到這一段。
+               ⚠ 玩家打完 Boss 就站在教堂裡，但 `enter()` 不會再跑一次 ——
+                 所以這一段是走出去再回來才演。要它接著演的話得讓城鎮戰的
+                 收尾自己再叫一次 `enter()`，那是另一件事，等 Ray 決定。
+             ⚠ 「（震動）」那一拍是**演出拍**：沒有台詞就一定要給 `auto`，
+               配 `shake`（§6.5 的空畫面拍）。
+             ⚠⚠ **這一場是聖徒化教學戰**（`np_claws`）：劇情殺（BOSS ≤30% 打死玩家）、
+               右滑發動聖徒化、血回 99% 教主動技、諾薇兒倒下 —— 那一整套的節奏
+               還沒接（見 config.battles.np_claws 的 TODO），這裡先把**對白與交棒**
+               鋪好。 */
+          { flag:'np_claws_done', need:'np_clear_church', sides:{ RENNA:'R' },
+            lines:[
+              nou('relief','總算是消滅掉那些東西了……'),
+              ren('thinking','……'),
+              ren('thinking','……適性果然很不錯呢。'),
+              { speaker:'PLAYER', blank:true },
+              ren('talkwork','不，別在意。總之先確認生還者。'),
+              ren('ask','諾薇兒，還有餘力嗎？'),
+              nou('runserious','還可以。傷者就交給我。'),
+              ren('ask','不愧是第十二騎士團的精銳呢。那麼接下來——'),
+              /* （震動）：空畫面拍 —— 沒有台詞，所以給 auto＋shake。 */
+              { speaker:'PLAYER', text:'', auto:900, shake:true },
+              ren('shockedCalm','！！'),
+              nou('shocked2','有什麼……要來了！'),
+              { battle:'np_claws' },
+            ] },
+        ],
       },
       /* 墓地＝北側上方那個「空格」，Ray ver -567 定案是墓地。 */
       cemetery: { bg:'Northport_cemetery_BF', name:'北方泊地　墓地',       exits:{ back:'north' } },

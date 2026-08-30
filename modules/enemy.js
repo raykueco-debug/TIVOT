@@ -204,7 +204,17 @@ export function loadEnemyPortrait(en){
   const eImg = $('enemyImg');
   if(!eImg) return;
   eImg.classList.remove('enemy-rise','enemy-purge');
-  const rise=()=>{ void eImg.offsetWidth; eImg.classList.add('enemy-rise'); };
+  /* ⚠⚠ **演完要把 class 拿掉**（ver -598 修）：`enemy-rise` 帶 `both` 填充，
+     留在身上等於 `#enemyImg` 永遠掛著 `animation:enemyRise`；而它與命中反應
+     （`#enemyImg.hit`）specificity 相同、宣告在後面 —— **後面的贏**，
+     於是「打中敵人」那一記從頭到尾播不出來（Ray 回報看不到命中效果）。
+     ⚠ 用 `animationend` 而不是計時器：時長只寫在 CSS 一處（鐵律 7）。 */
+  const rise=()=>{ void eImg.offsetWidth; eImg.classList.add('enemy-rise');
+    eImg.addEventListener('animationend', function off(e){
+      if(e.animationName!=='enemyRise') return;
+      eImg.removeEventListener('animationend', off);
+      eImg.classList.remove('enemy-rise');
+    }); };
   eImg.onload = ()=>{ eImg.onload=null; setTimeout(rise, RISE_DELAY_MS); };
   eImg.src = enemyImage(en);
   if(eImg.complete && eImg.naturalWidth){ eImg.onload=null; setTimeout(rise, RISE_DELAY_MS); }

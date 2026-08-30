@@ -102,6 +102,12 @@
     opacity:0;pointer-events:none;transition:opacity .25s ease,transform .25s ease;}
   #landBtn.on{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) translateY(0);}
   #landBtn:active{background:rgba(201,162,39,.28);color:#ffedc2;}
+  /* 長按一秒的填充條（ver -597）：金色由左往右填滿 —— 與城鎮方向箭的蓄能圈
+     同一個語意（按住才算數）。⚠ 時長由 JS 餵 `--hold-ms`（同一個數字，鐵律 7）。 */
+  #landBtn::after{content:'';position:absolute;left:0;bottom:0;height:3px;width:0;
+    background:linear-gradient(90deg,rgba(201,162,39,.35),#f0cf72);
+    border-radius:0 0 8px 8px;pointer-events:none;}
+  #landBtn.holding::after{width:100%;transition:width var(--hold-ms,1000ms) linear;}
   /* 雪鐵龍箭：鈕的正下方，穿透點擊（點到箭也算點到鈕的話反而誤觸畫面）。
      ⚠ 掛在鈕**裡面**（絕對定位往下探出），跟著鈕一起淡入淡出與定位，
        不必再算第二份座標（鐵律 7）。 */
@@ -9243,7 +9249,12 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
    ⚠ 推棺中／戰鬥中／地圖開著時一律不顯示 —— 那幾拍玩家的注意力不在飛行上。
    ⚠ **每幀跑但只在狀態改變時碰 DOM**：`classList.toggle` 每幀呼叫會讓瀏覽器一直
      重算樣式（這一頁是 60fps 的 canvas，那個成本不是零）。 */
-const LAND_K = 1.25;           // 判定半徑＝市區外緣的幾倍
+/* ⚠⚠ **降落範圍要夠大**（ver -597，Ray：「飛行地圖的可降落座標範圍加大，
+   不要求飛到正上方才跳進入按鈕」）：1.25 倍市區外緣＝幾乎要飛到城心正上方，
+   實際玩起來是「一直錯過、繞回來再試一次」。放到 **3.2 倍**＝城的上空一大片都算。
+   ⚠ 這個數字是**判定半徑對市區外緣的倍率**，不是絕對距離 —— 城越大範圍越大，
+     那正是「飛到那座城上空」的意思。 */
+const LAND_K = 3.2;           // 判定半徑＝市區外緣的幾倍
 let landTarget=null, landOn=false;
 function nearestTown(){
   let best=null, bd=Infinity;
@@ -9289,7 +9300,28 @@ function doLand(){
   const url=new URL('../index.html', location.href).href;
   try{ (window.top||window).location.href=url; }catch(_){ location.href=url; }
 }
-document.getElementById('landBtn').addEventListener('click', e=>{ e.stopPropagation(); doLand(); });
+/* ══⚠⚠ 降落鈕**長按一秒**才進（ver -597，Ray 指定）══════════════════════
+   降落是收不回來的一步（花掉一小時、追兵清掉、整頁交棒），而那顆鈕就浮在
+   3D 視窗正中央 —— 點一下就走太容易誤觸。
+   ⚠ 走的是與城鎮方向箭**同一個語意**：按住＝金色進度由左往右填滿，放早了取消。
+     時長餵給 CSS 變數（同一個數字，鐵律 7）。
+   ⚠ 放開／移出／取消都要收手，不然按著滑走回來會憑空降落。
+   ⚠ 用 pointer 事件不要用 click：click 沒有按住的概念。 */
+(function bindLandHold(){
+  const b=document.getElementById('landBtn'); if(!b) return;
+  const HOLD_MS=1000;
+  let t=0;
+  b.style.setProperty('--hold-ms', HOLD_MS+'ms');
+  const cancel=()=>{ if(t){ clearTimeout(t); t=0; } b.classList.remove('holding'); };
+  b.addEventListener('pointerdown', e=>{ e.stopPropagation();
+    cancel(); b.classList.add('holding');
+    t=setTimeout(()=>{ t=0; b.classList.remove('holding'); doLand(); }, HOLD_MS);
+  });
+  ['pointerup','pointerleave','pointercancel'].forEach(ev=>
+    b.addEventListener(ev, e=>{ e.stopPropagation(); cancel(); }));
+  /* click 照樣吃掉（不做事）：不然放開的那一下會冒到底下的操作層去。 */
+  b.addEventListener('click', e=>e.stopPropagation());
+})();
 
 /* ══ Stage 1 的地圖限制（ver -429，Ray 指定）══════════════════════════════
    「出地圖以後除了北方泊地之外所有地圖點入蕾娜都會說『別晃了，趕快往北方泊地去！』」
