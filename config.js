@@ -582,7 +582,12 @@ export const GAME_CONFIG = {
       partner:   { name:'蕾妮',   image:'partner_renee',   side:'right', fit:{ zoom:0.82, drop:0 } },
       /* 劇情版教學的唯一說話者。⚠ 站**左**：與地宮那一幕同側，玩家的空間記憶才連得起來
          （CLAUDE.md §6.5：同一個人每次都站同一邊）。 */
-      nouvelle:  { name:'諾薇兒', image:'tut_nouvelle',    side:'left',  fit:{ zoom:0.92, drop:6 } },
+      /* ⚠⚠ `mirror:true`（ver -619，Ray：「諾在喊準備好了的時候要站右側，人物水平翻轉。
+         她的立繪是左右對稱的可以翻」）＝**這個角色的立繪換到非預設的那一側時可以水平翻轉**。
+         這是 §6.5「立繪朝向是畫死的，換邊要水平翻轉，髮旋與持物會左右顛倒」那條的
+         **例外開關**：翻不翻由**這張畫**決定，所以寫在角色上、預設不翻 ——
+         有髮旋／單邊持物／不對稱制服的人不要加這一格。 */
+      nouvelle:  { name:'諾薇兒', image:'tut_nouvelle',    side:'left',  mirror:true, fit:{ zoom:0.92, drop:6 } },
       /* 蕾娜（ver -429，船艦戰的戰鬥內對白）。
          ⚠⚠ 站**右**：她與諾薇兒在 `speakers.js` 裡**都是左**（左 蕾娜・諾薇兒），
            兩個人同台會一直互相擠掉 —— 這是 §6.5 那條「一幕裡只有兩個人又剛好同側時
@@ -1355,26 +1360,51 @@ export const GAME_CONFIG = {
        ⚠ 不禁聖徒化／搭檔技：這一場的重點就是教它們。
        ⚠ 不掛 `session` —— 城鎮戰那一段已經在祭壇獸那一場收掉了，這是新的一場。 */
     np_claws: { enemy:'np_claws', bgm:'bgm_crimson',   // BOSS 專屬曲（ver -614，Ray 指定）
+      /* ⚠⚠ **這一場的整幕站位覆寫**（ver -619，Ray：「諾要永遠站右側」
+         ＋「人物要分站兩邊，如果同邊換人要用抽牌輪轉」）。
+         寫在**場**上不是逐段寫：逐段寫必然漏掉其中一段，而站位錯了就是
+         「同一個人一下左一下右」（§6.5 固定站位）。段落自己的 `sides` 仍可覆寫。
+         ⚠⚠ **兩個人一定要分兩邊**：諾薇兒被指定站右，蕾娜（`cast.renna` 預設也是右，
+           那是船艦戰的安排）就必須讓到左邊 —— 同側就是「同一個槽換人」，
+           換人只能靠抽牌輪轉，一句一換讀起來很忙（§6.5）。
+         ⚠ 蕾娜的立繪本來就是朝左側畫的（`ART.renna.side:'L'`），擺左不必翻。
+           諾薇兒站到非預設側，由 `cast.nouvelle.mirror` 水平翻轉。 */
+      talkSides:{ nouvelle:'right', renna:'left' },
       /* ══⚠⚠ **聖徒化教學戰**（ver -599，Ray：「戰鬥卡的 talk 加血量觸發，
          反正這個怪只會出現一次」）══ 走的是教學那一支對話實作（鐵律 8），
          但**這不是教學**（`tutorialActive` 一律不碰，同 §6.5.2「框是共用的」）。
-         節奏（Ray 的稿）：
-           BOSS ≤30% → 劇情殺（主角血歸零）→ 諾薇兒喊聖徒化 → **右滑**發動
-           → 聖徒化戰鬥 → 血回 99% → 諾薇兒撐不住 → **上滑**生命歸還 → 她倒下
-         ⚠ `hp:30`／`php:99` 是**血量觸發**（ver -599 新增，見 tutorial.onHpChange）：
-           前者是敵人血掉到 30% 以下，後者是玩家血回到 99% 以上
+         節奏（ver -619 依 Ray 改寫：「敵 hp 50% 以下時觸發劇情殺把主角三擊清零，
+         一定要三擊，在三擊發生前讓蕾娜喊『小心！』；主角 hp 被清零後發動即死防禦，
+         然後才進聖徒化教學」）：
+           BOSS ≤50% → 蕾娜「小心！」→ **三連擊**打到 0 → **即死防禦**接住（cut-in）
+           → 諾薇兒喊聖徒化 → **右滑**發動 → 聖徒化戰鬥
+           → 血回 99% → 諾薇兒撐不住 → **上滑**生命歸還 → 她倒下
+         ⚠ `hp:50`／`php:99` 是**血量觸發**（ver -599 新增，見 tutorial.onHpChange）：
+           前者是敵人血掉到 50% 以下，後者是玩家血回到 99% 以上
            —— 聖徒化期間那條倒數槽走的就是玩家血，所以同一支吃得到。
          ⚠ `gate` 寫的是**具名動作**（`saint`／`partner`），不是函式：
            這裡是資料（config.js），函式寫不進來 —— 名字在 `tutorial.GATE_ACTIONS` 對。
-         ⚠ `drain:true` ＝**劇情殺**（把玩家血打到 0 但不判死）：真的死掉會走
-           Game Over，而稿上要的是「倒下之後被諾薇兒接住」。
+         ⚠⚠ `strike:true` ＝ 這一段講完就打**劇情殺三連擊**，走的是**既有的**
+           `config.tutorial.strike`（教學第四回合那一套，鐵律 8）：前兩擊必留 1 HP、
+           第三擊必致死 → 搭檔的即死防禦接住並播 cut-in。
+           ⚠ ver -599~-618 是 `drain:true`（一步把血設成 0），那**不是三擊**、
+             也**不會發動即死防禦** —— 玩家看不到自己是怎麼倒下的，
+             也看不到諾薇兒接住他。已整支移除。
+           ⚠ `then` ＝ 三擊與 cut-in 都演完才接的下一個 trigger（等 `afterCutin`，
+             不是固定秒數）。
          ⚠ `once` 不寫：Ray 說「這個怪只會出現一次」，敗北重來要重播（同 §6.5.2）。 */
       talk:[
-        /* ⚠ `sides`＋`soloLine`（ver -613，Ray：「諾薇兒固定站右位，蕾娜話講完
-           立繪就移出，不然看不到雪鐵龍」）：右滑的箭貼在**敵人框左緣**，
-           所以這一段把諾薇兒挪到右邊、而且台上只留現在講話的那一位 ——
-           蕾娜講完就滑出去，左邊空出來給箭。 */
-        { trigger:'hp:30', drain:true, sides:{ nouvelle:'right' }, soloLine:true, lines:[
+        /* ── ① 蕾娜示警 → 劇情殺三連擊 ────────────────────────────────
+           ⚠ 只有一句：喊完就打。她的驚呼與那三下之間不要再插別的話 ——
+             「小心！」是**對那三下的預告**，隔了一段就成了無主的驚呼。 */
+        { trigger:'hp:50', strike:true, then:'downed', soloLine:true, lines:[
+          { who:'renna', img:'tut_renna_shout', text:'小心！' },
+        ]},
+        /* ── ② 倒下之後（即死防禦已經接住他）→ 聖徒化 ──────────────────
+           ⚠ `soloLine`（ver -613，Ray：「蕾娜話講完立繪就移出，不然看不到雪鐵龍」）：
+             右滑的箭貼在**敵人框左緣**，所以台上只留現在講話的那一位 ——
+             蕾娜講完就滑出去，左邊空出來給箭（諾薇兒在右邊，不擋）。 */
+        { trigger:'downed', soloLine:true, lines:[
           { who:'nouvelle', img:'tut_nouvelle_desperate', text:'不行！' },
           { who:'renna',    img:'tut_renna_thinking',     text:'到此為止了嗎？' },
           /* ⚠ 這一句用 `steady`（Ray 指定）不是 SAINTINSTALL —— 那張是發動的瞬間，
@@ -1395,9 +1425,9 @@ export const GAME_CONFIG = {
         /* ⚠⚠ `when:'saint'`（ver -612，Ray：「boss 戰只要開一槍諾薇兒就會跳撐不住了」）：
            `php:99` 在**開場就成立**（玩家滿血），第一發傷害一觸發就把這一段吐出來。
            稿上這一句的意思是「**聖徒化期間**那條倒數槽被推回 99%」—— 加上條件才對。 */
-        /* ⚠ 站**左**、箭放中央（ver -613，Ray 指定）：上滑的箭現在擺正中，
-           諾薇兒站左邊就不會壓到。 */
-        { trigger:'php:99', when:'saint', sides:{ nouvelle:'left' }, soloLine:true, lines:[
+        /* ⚠ 箭放中央（ver -613）；諾薇兒照 `talkSides` 站**右**（ver -619 改，
+           原本這一段特地把她挪到左邊，那正是「一下左一下右」）。 */
+        { trigger:'php:99', when:'saint', soloLine:true, lines:[
           { who:'nouvelle', img:'tut_nouvelle_desperate', text:'我撐不住了！至少……' },
         ], gate:{ type:'up', immediate:true, action:'partner', then:'partnerOn' } },
         { trigger:'partnerOn', lines:[

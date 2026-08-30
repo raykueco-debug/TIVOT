@@ -75,9 +75,15 @@ let awaitDualEnd = false;      // 劇情版：破防那一盤打完就收尾（�
      §6.9）。不寫就是每次打都講。 */
 let talkLeft = [];             // 這一場還沒觸發的 talk 步驟（同 stepsLeft，一步只觸發一次）
 let talkTimer = null;          // battleStart 延遲計時器（同 startTimer，兩者不會同時存在）
+/* 這一場的**站位預設**（ver -619，Ray：「諾要永遠站右側」）：
+   戰鬥卡寫 `talkSides:{nouvelle:'right'}`，整場所有段落都吃 ——
+   逐段寫一次必然有人漏掉，而站位錯了就是「同一個人一下左一下右」。
+   ⚠ 段落自己的 `sides` 仍可覆寫（覆寫贏），但這一場不需要。 */
+let talkSides=null;
 export function startBattleTalk(list, opts){
   clearTimeout(talkTimer); talkTimer=null;
   talkLeft = [];
+  talkSides = (opts && opts.sides) || null;
   if(!list || !list.length) return;
   const once = opts && opts.once;
   if(once && progress.hasFlag(once)) return;    // 打贏過了（旗標由 combat 的勝利收尾記，ver -493）
@@ -391,8 +397,24 @@ export function onEnergyFull(){
   }});
 }
 // saint.saintAdvance 於倒數槽推至臨界（滿-1）時呼叫 → 生命歸還引導（不進 OBE）
+/* ══⚠⚠ **還有人在等「倒數槽推到 99%」那一拍嗎**（ver -619，Ray：「生命歸還在 OBE 後
+   不能用，所以要在生命 99% 時發動」）══
+   聖徒化的倒數槽推滿＝OBE，而 OBE 一走生命歸還就沒得用了 —— 所以教學／劇情要在
+   **滿 −1** 攔下來。攔截的實作在 `saint.saintAdvance`（唯一那一處），
+   要不要攔由這一支回答。
+   ⚠⚠ 舊版把攔截寫死成 `state.tutorialActive`（ver -619 前）—— 於是**戰鬥卡的
+     `talk`**（BOSS 的聖徒化教學，那一場不是教學）整條吃不到：槽推滿 → OBE →
+     玩家永遠等不到「我撐不住了」那一拍，也發不了生命歸還。
+   ⚠ 判定看**還沒演的那一段**（`talkLeft` 裡還有 `php:` 觸發），不是看旗標：
+     那一段演過就從清單裡取走了，不必另記一支旗（鐵律 9）。 */
+export function saintCriticalPending(){
+  if(state.tutorialActive) return !saintCritFired;
+  return (talkLeft||[]).some(st0 => /^php:/.test(String(st0.trigger||'')));
+}
 export function onSaintCritical(){
-  if(!state.tutorialActive || saintCritFired) return;
+  /* 戰鬥卡的 `talk`：攔在 99% 之後就交回血量觸發，由 `php:99` 那一段自己接手。 */
+  if(!state.tutorialActive){ onHpChange(); return; }
+  if(saintCritFired) return;
   saintCritFired = true;
   openScript('saintFail', { gate:{
     type:'up',
@@ -550,6 +572,21 @@ let stepSides=null, stepSolo=false;
 function sideOf(key){
   if(stepSides && stepSides[key]) return stepSides[key];
   return ((CFG().cast||{})[key]||{}).side;
+}
+/* ══⚠⚠ **換到非預設那一側 → 水平翻轉**（ver -619，Ray：「諾在喊準備好了的時候
+   要站右側，人物水平翻轉。她的立繪是左右對稱的可以翻」）══
+   §6.5 說「立繪朝向是畫死的，換邊要水平翻轉，髮旋與持物會左右顛倒」——所以
+   **翻不翻是這張畫的性質**，寫在角色上（`cast[key].mirror`），預設不翻。
+   ⚠ 判定只有這一支（鐵律 8）：站位覆寫（`sides`／`talkSides`）把她擺到
+     `c.side` 以外的那一邊，才翻。
+   ⚠ 兩個角色可能**共用同一個槽**（諾薇兒與蕾娜在這一場都被擺到右邊），所以
+     這一支要在「**這個槽現在是誰**」被決定的每一處都呼叫一次 ——
+     `syncCastFit`（整段）與 `showLine`（逐句換人）。 */
+function applyMirror(el, key){
+  if(!el) return;
+  const c = (CFG().cast || {})[key] || {};
+  const sd = sideOf(key);
+  el.classList.toggle('mirrored', !!(c.mirror && c.side && sd && sd!==c.side));
 }
 function portraitEl(c, key){
   const side = key ? sideOf(key) : (c && c.side);
@@ -774,7 +811,10 @@ function placePortraitX(el, side){
   el.style.width  = w + 'px';
   el.style.height = h + 'px';
   if(centered){ el.style.left=''; el.style.right=''; }
-  else { el.style.left = (W*anchor - w*fr.fx) + 'px'; el.style.right = 'auto'; }
+  /* ⚠ 翻轉之後**臉也跟著跑到鏡像的位置**：原本在圖左 `fx` 的臉，翻完落在 `1-fx`。
+     不改這一行的話，翻轉會把臉整個推到框外（鐵律 7：錨的永遠是臉，不是圖框）。 */
+  const fxA = el.classList.contains('mirrored') ? (1 - fr.fx) : fr.fx;
+  if(!centered){ el.style.left = (W*anchor - w*fxA) + 'px'; el.style.right = 'auto'; }
   el.style.top    = (headTop - s*fr.top) + 'px';       // 頭頂貼頂線（見上面 camTop/headTop 的分工）
   el.style.bottom = 'auto';
 }
@@ -793,7 +833,9 @@ function syncCastFit(step){
     if(!el) continue;
     el.dataset.baseKey = c.image;   // 鎖縮放用的基準（見 placePortraitX 的說明）
     if(el.dataset.castKey!==key){ el.src = asset(c.image); el.dataset.castKey = key; el.dataset.imgKey = c.image; }
-    applyPortraitFit(el, c.fit || {}, baseH, soloRun, sideOf(key));   // ⚠ 站位吃這一段的覆寫（ver -613）
+    const sd = sideOf(key);
+    applyMirror(el, key);
+    applyPortraitFit(el, c.fit || {}, baseH, soloRun, sd);   // ⚠ 站位吃這一段的覆寫（ver -613）
   }
 }
 
@@ -819,11 +861,7 @@ function openStep(step){
   cur = step; lineIdx = 0; cutinLine = -1;
   /* 這一段自己帶閘門（資料上的 `talk` 用；程式那幾段走 `openScript` 的 opts）。 */
   if(step && step.gate) pendingGate = resolveGate(step.gate);
-  /* ⚠ `drain:true` ＝**劇情殺**（ver -599）：把玩家血打到 0 但**不判死** ——
-     真的死掉會走 Game Over，而稿上要的是「倒下之後被諾薇兒接住」。
-     ⚠ 走 combat 的統一改血 API（`api.setPlayerHp`），不要直接寫 state。 */
-  if(step && step.drain && api.setPlayerHp) api.setPlayerHp(0);
-  stepSides = (step && step.sides) || null;      // 這一段的站位覆寫（ver -613）
+  stepSides = (step && step.sides) || talkSides || null;   // 段落覆寫 > 整場預設（ver -613／-619）
   stepSolo  = !!(step && step.soloLine);         // 這一段只留現在講話的那一位
   state.tutorialDialog = true;
   api.pauseForDialog();                          // 真暫停：同退出確認框的機制
@@ -940,10 +978,16 @@ function showLine(){
     if(key && el.dataset.imgKey!==key){
       el.dataset.imgKey = key;
       el.src = asset(key);
-      // ⚠ 換圖必須重排橫向：每張差分的臉位置不同（見 placePortraitX）。
-      //   先用規格比例排一次（不等載入＝不閃），載好再排一次修正真實寬高比。
-      placePortraitX(el, c.side);
-      el.onload = ()=>{ el.onload=null; placePortraitX(el, c.side); };
+      /* ⚠ 換圖必須重排橫向：每張差分的臉位置不同（見 placePortraitX）。
+         先用規格比例排一次（不等載入＝不閃），載好再排一次修正真實寬高比。
+         ⚠⚠ 站位吃 `sideOf()` **不是 `c.side`**（ver -619 修）：-613 的站位覆寫
+           只做到 `portraitEl`（決定放哪個槽），逐句換圖這一支還在用角色的**預設**
+           側 —— 於是被覆寫到右邊的人「人在右槽、臉錨在左邊的位置」，看起來就是
+           她站在左邊（Ray 回報諾薇兒沒有站右）。同一個量只有 `sideOf` 一個來源。 */
+      const sd = sideOf(line.who);
+      applyMirror(el, line.who);
+      placePortraitX(el, sd);
+      el.onload = ()=>{ el.onload=null; placePortraitX(el, sd); };
     }
   }
   // 全畫面 cut-in（line.cutin＝ASSETS 鍵）：先演完再打字，否則字被 cut-in（z8100）蓋住白打。
@@ -1005,8 +1049,10 @@ function advance(){
 
 /* 收掉對話層。resume=true → 解除暫停續戰並跑腳本接續（onStepClosed）；
  * silent=true（skip/abort）→ 只撤 UI、不觸發任何腳本接續。 */
+let strikeAfter=null;      // 這一段收掉之後要打的劇情殺（ver -619，見下）
 function closeDialog(resume, silent){
   const id = cur && (cur.key || cur.trigger);
+  strikeAfter = (cur && cur.strike) ? cur : null;
   cur=null; lineIdx=0;
   clearInterval(typeTimer); typeTimer=null;
   clearTimeout(fxTimer); fxTimer=null;
@@ -1027,6 +1073,25 @@ function closeDialog(resume, silent){
   if(resume){
     const finish=()=>{
       api.resumeFromDialog();
+      /* ══⚠⚠ **劇情殺三連擊**（ver -619，Ray：「敵 hp 50% 以下時觸發劇情殺把主角
+         三擊清零，一定要三擊，在三擊發生前讓蕾娜喊『小心！』；主角 hp 被清零後
+         發動即死防禦，然後才進聖徒化教學」）══
+         段落寫 `strike:true` ＝ 這一段講完就打那三下。走的是**既有的**
+         `tutorialStrike`（config.tutorial.strike 的三擊：前兩擊必留 1 HP、
+         第三擊必致死 → 搭檔的即死防禦接住並播 cut-in），鐵律 8 —— 不要為了
+         這一場另寫一份三連擊。
+         ⚠ `then` ＝ 三擊與即死防禦的 cut-in 都演完之後要接的下一個 trigger。
+           等 `afterCutin` 而不是固定秒數：cut-in 的長度不歸這裡管。
+         ⚠ 要在 `resumeFromDialog()` **之後**：對話還壓著真暫停時打下去，
+           那三下的演出會被凍在暫停裡。 */
+      if(strikeAfter){
+        const st0=strikeAfter; strikeAfter=null;
+        const dur = (api.strike && api.strike()) || 0;
+        /* ⚠ 等到**最後一擊落地**才開始等 cut-in：`afterCutin` 沒看到 cut-in 時
+           2.5 秒就放行，而末擊在 1.4 秒後才打出去 —— 從 0 秒開始等的話，
+           即死防禦的 cut-in 稍微晚一點，下一段就會壓在它上面。 */
+        if(st0.then) setTimeout(()=>afterCutin(()=>fireTrigger(st0.then)), dur+80);
+      }
       // tutorialDead 不受 tutorialActive 限制：收尾盤（tutorialActive 已 false）陣亡也要能重開
       if(!silent && id && (state.tutorialActive || id==='tutorialDead')) onStepClosed(id);
     };
@@ -1076,6 +1141,20 @@ function completeGate(){
 }
 
 /* ---- 引導箭頭（雪鐵龍雙箭羽依次閃滅）＋文字標示 ---- */
+/* 現在台上的人各站哪一側（回傳 Set of 'left'|'right'）。
+   ⚠⚠ 讀**資料**不讀 DOM 的 `.in`（ver -619）：`.in` 是**滑入動畫**的旗標，
+     `ensureOn` 那一步是延後掛上去的（16ms／450ms×0.45），而引導箭是段落一開就要
+     擺位置的 —— 當場問 DOM 一定問到「上一個狀態」（同 §6.5 那條「不要從畫面反推」）。
+   ⚠ 與 `syncCast` 的 `used` 是同一套算法（`soloLine` 只留現在講話的那一位）。 */
+function stageSides(){
+  const lines = (cur && cur.lines) || [];
+  const upto  = Math.max(0, Math.min(lineIdx, lines.length-1));
+  const who   = stepSolo ? [ (lines[upto]||{}).who ]
+                         : lines.slice(0, upto+1).map(l=>l.who);
+  const out = new Set();
+  for(const k of who){ const sd = k && sideOf(k); if(sd) out.add(sd); }
+  return out;
+}
 function showGuide(type){
   const g=$('tutGuide'); if(!g) return;
   const labels = CFG().guideLabels || {};
@@ -1104,11 +1183,18 @@ function showGuide(type){
   }else{
     // 敵人框內由下往上指（生命歸還手勢區）、標示向上滑動；偏左 1/4 處——蕾妮立繪在右側不被壓
     const tr=$('top') ? $('top').getBoundingClientRect() : {left:0,top:0,width:innerWidth,height:innerHeight/2};
-    /* ⚠ **箭放正中央**（ver -613，Ray：「雪鐵龍箭放中央不要跟立繪重疊」）——
-       原本偏左 1/4 是為了閃開右側的蕾妮立繪，但那一段現在是諾薇兒站**左**，
-       擺中央兩邊都不壓。 */
+    /* ⚠⚠ **箭要落在台上那個人的另一邊**（ver -619；-613 是「一律正中」）。
+       Ray 兩次的要求其實是同一條：「箭不要跟立繪重疊」。寫死位置（1/4 左＝閃蕾妮、
+       正中＝閃站左邊的諾薇兒）每換一次站位就要再改一次，而站位現在是**資料**
+       （`sides`／`talkSides`）——所以改成**看台上的人在哪一側**現算（鐵律 7／8）：
+         右邊有人、左邊沒人 → 箭在左 1/4；反過來 → 右 1/4；兩邊都有或都沒有 → 正中。
+       ⚠ 讀的是 `.in`（現在台上的那幾個）不是資料上的 side：`soloLine` 的段落
+         台上只留說話的那一位，其他人已經滑出去了。 */
     dir='g-up'; label = labels.up || '向上滑動';
-    x = tr.left + tr.width*0.5;
+    const on = stageSides();
+    const inL=on.has('left'), inR=on.has('right');
+    const fx = (inR && !inL) ? 0.25 : (inL && !inR) ? 0.75 : 0.5;
+    x = tr.left + tr.width*fx;
     y = tr.top + tr.height*0.52;
   }
   g.classList.add(dir);

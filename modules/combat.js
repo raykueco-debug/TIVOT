@@ -58,6 +58,7 @@ const tutAtkDmg = dmg => (state.tutorialRun && GAME_CONFIG.tutorial && GAME_CONF
 //   結算受擊數扣除（win 內 clamp 0）。逐擊累計而非固定 -3：陣亡該段重來後
 //   若再經歷一次劇情殺，扣除量同步跟上；未演到就死則不誤扣玩家真實受擊。
 let _scriptedHits = 0;
+let _scriptedAtk  = false;   // 現在這一擊是腳本演出（劇情殺）——不算玩家的失誤（ver -619）
 
 /* ============================================================================
  *  啟動：注入 api 與開機閒置畫面（由 main.js 調度）
@@ -90,10 +91,6 @@ export function setup(){
     segmentRestart: tutorialSegmentRestart, // 教學陣亡：「重來！」該段重來（滿血重建本盤，不重播已完成段落）
     goHome,   // 跳過鈕：中止教學戰回主選單
     playCutin: saint.playCutin,   // 劇情版教學：SAINT INSTALL 那一句配全畫面 cut-in
-    /* 劇情殺（ver -599）：把玩家血設成指定值但**不判死**（`talk` 的 `drain:true` 用）
-       —— 真的死掉會走 Game Over，而稿上要的是「倒下之後被諾薇兒接住」。
-       ⚠ 這一支要掛在 **tutorial** 的 api（對話那一層在用），不是 saint 的。 */
-    setPlayerHp:(v)=>{ state.playerHp=Math.max(0, Math.min(state.playerMax, v|0)); updateBars(); },
   });
   // 武器：反擊演算所需（enemyDamage/floatDmg）+ 雙槍破防窗口所需（cut-in/敵計時/盤面/破防值歸零）。
   weapon.init({
@@ -110,6 +107,7 @@ export function setup(){
     healPlayer, setPlayerHpRatio,
     // 教學掛鉤：倒數槽臨界攔截（引導生命歸還）＋結局通知（MB/生命歸還後的收尾台詞）
     onSaintCritical: tutorial.onSaintCritical,
+    saintCriticalPending: tutorial.saintCriticalPending,   // 還有人在等 99% 那一拍嗎（ver -619）
     onSaintEnded: tutorial.onSaintEnded,
     // combat 盤面/傷害/UI 原語
     buildGrid, updateBars, startIntervalTimer, resetIntervalDeadline,
@@ -505,8 +503,30 @@ function enemyAttack(dmg, kind, saintAmt){
        （Ray 連報兩次）。守在這裡才是「受擊」的唯一入口。 */
   state.combo=0;
   if(state.over) return;
+  /* ══⚠⚠ `kind` 有**兩個用途**，ver -600 之後不再是同一個值（ver -619 修）══
+     · **計數**（評價的失誤秒數）要分得出「挨了大絕」與「擋下一半」→ 'ult' / 'block'
+     · **演出**（音效、受擊特效）分不出來：敵人卡上只有 ult/delay/wrong 三格
+       —— 'block' 就是「大絕擋了一半」，演出一律讀成 'ult'。
+     ⚠ 這是 ver -600 留下的破口：那一版把格擋的呼叫由 'ult' 改成 'block' 卻沒有
+       別名，於是 `curEnemySound['block']`／`hitFx['block']` 全部查不到 ——
+       格擋的敵大絕音沒了、受擊特效退回預設的三爪。 */
+  const fxKind = (kind==='block') ? 'ult' : kind;
+  /* ══⚠⚠ **失誤計數**（ver -619 補）══ ver -600 定了 `penUlt`／`penBlock`／`penDelay`
+     這三個欄位、結算也在讀它們，**但從來沒有人 ++** —— 於是新評價的懲罰秒數
+     永遠只有「點錯」那一項，挨大絕／格擋／延時全部免費。
+     （那就是「用滑鼠點都可以每場 S」的真正原因，timeK 一路被推到 550 也壓不住。）
+     ⚠ 守在這裡＝所有扣血路徑的唯一入口（鐵律 8）。
+     ⚠ **腳本演出的擊數不算**（劇情殺三連擊）：那不是玩家的失誤，同 `_scriptedHits`。
+     ⚠ 放在聖徒化分支**之前**：聖徒化期間挨打不掉血，但那一擊照樣把倒數槽推短，
+       仍是失誤。 */
+  if(!_scriptedAtk){
+    if(kind==='ult') state.penUlt++;
+    else if(kind==='block') state.penBlock++;
+    else if(kind==='delay') state.penDelay++;
+    // 'wrong' 由 state.wrongTaps 記（點錯那一支自己的計數），不重複記
+  }
   // 敵攻擊音：依 kind 播該怪對應音（ult＝大絕命中/不完美防禦格擋、delay＝太慢、wrong＝按錯）。
-  const sk = state.curEnemySound && state.curEnemySound[kind];
+  const sk = state.curEnemySound && state.curEnemySound[fxKind];
   if(sk) SFX.play(asset(sk), sfxGain(sk));   // 受擊層增益（全域響度階層見 tuning.sfxGain）
   if(state.saintMode){
     // 聖徒化期間敵攻擊不扣血：改推進倒數槽（推滿＝OBE）。視覺（震動/受擊特效/紅閃）留在 combat，
@@ -514,7 +534,7 @@ function enemyAttack(dmg, kind, saintAmt){
     //   推進量：一般受擊＝playerMax/SAINT_ADVANCE_DIVISOR（≈+1s）；格擋由呼叫端傳 saintAmt（≈+0.5s）。
     const amt=(saintAmt!=null)?saintAmt:(state.playerMax/SAINT_ADVANCE_DIVISOR);
     screenShake();                   // 畫面震一下（ver -593）
-    enemy.showHitFx(kind);
+    enemy.showHitFx(fxKind);
     $('redFlash').style.opacity=.8; setTimeout(()=>$('redFlash').style.opacity=0,120);
     saint.saintAdvance(amt);
     return;
@@ -528,7 +548,7 @@ function enemyAttack(dmg, kind, saintAmt){
   if(!state.hpLock) state.playerHp=Math.max(0,state.playerHp-dmg);
   updateBars();
   tutorial.onHpChange();             // 血量觸發（ver -599）：玩家這一側（`php:N`）
-  enemy.showHitFx(kind);             // 依 kind 播放該怪對應受擊特效
+  enemy.showHitFx(fxKind);           // 依 kind 播放該怪對應受擊特效（'block' 讀成 'ult'）
   $('redFlash').style.opacity=.8; setTimeout(()=>$('redFlash').style.opacity=0,120);
   screenShake();                     // 畫面震一下（ver -593，取代原本只抖敵人立繪那一版）
   if(state.playerHp<=0){ handlePlayerLethal(kind); }
@@ -1472,7 +1492,7 @@ export function startGame(){
   /* 開場白只屬於**劇情戰**（ver -493：state.storyBattle 是唯一判定）——
      隨機遭遇共用同一張卡（flight_centipede）也不播。
      已打贏過（talkOnce 旗標立了）也不播（startBattleTalk 自己守門）。 */
-  if(state.storyBattle && sb) tutorial.startBattleTalk(sb.talk, { once:sb.talkOnce });
+  if(state.storyBattle && sb) tutorial.startBattleTalk(sb.talk, { once:sb.talkOnce, sides:sb.talkSides });
   /* ══⚠⚠ 本篇的 HP 是**延續的**（ver -481；-490 修位置）══
      讀 progress 的持久 HP；沒有鑰匙＝滿血（開局／睡醒）。挑戰（試玩版）不吃。
      ⚠⚠ 一定要在 `state.scriptRun`（上面 1094）**設好之後**才讀 —— -481 把它放在
@@ -1623,6 +1643,8 @@ export function goHome(onCovered, opts){
 //   傷害為真實值（不受教學 enemyAtkDamage=2 管制）；非末擊絕不打死（至少留 1 HP），
 //   末擊必致死 → 蕾妮即死防禦保 1 HP＋cut-in。
 //   保險：當前搭檔無即死防禦（或已用掉）時末擊退化為「打到剩 1 HP」，不讓教學直接戰死。
+/* 回傳「整段演完要多久」（毫秒）——呼叫端要等它（ver -619：戰鬥卡的 `strike:true`
+   打完才接下一段）。⚠ 長度只有這一支算得出來（鐵律 7）：呼叫端不要自己乘一次。 */
 function tutorialStrike(){
   const st=(GAME_CONFIG.tutorial && GAME_CONFIG.tutorial.strike) || {};
   const hits=st.hits || [{kind:'ult', dmg:999}];
@@ -1642,9 +1664,12 @@ function tutorialStrike(){
         dmg = guardOk ? state.playerHp + 50 : Math.max(1, state.playerHp - 1);
       }
       _scriptedHits++;            // 本擊為腳本演出（結算受擊數扣除）
+      _scriptedAtk=true;          // …失誤秒數也不算（ver -619）
       enemyAttack(dmg, h.kind);
+      _scriptedAtk=false;
     }, i*gap);
   });
+  return (hits.length-1)*gap;
 }
 // 教學陣亡「重來」＝該段重來：滿血、即死防禦歸還、清雙槍/威脅狀態、重建當前盤面。
 //   教學步驟旗標不動（已看過的對話不重播）；敵血維持現值（教學夾底 1 不會被誤殺）。

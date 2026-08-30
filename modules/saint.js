@@ -144,9 +144,13 @@ function startSaintMode(){
  * ========================================================================== */
 export function saintAdvance(amount){
   if(!state.saintMode) return;
-  // 教學：倒數槽推至臨界（滿-1，即 99）即攔截——不進 OBE，交由教學引導生命歸還
-  //   （api.onSaintCritical → tutorial.onSaintCritical，內有一次性守門；非教學不生效）
-  if(state.tutorialActive && api.onSaintCritical){
+  /* 倒數槽推至臨界（滿-1，即 99）即攔截——不進 OBE，交由教學／劇情引導生命歸還。
+     ⚠⚠ 守門改問 `api.saintCriticalPending()`（ver -619）：原本寫死
+       `state.tutorialActive`，於是 BOSS 那一場的聖徒化教學（走戰鬥卡的 `talk`，
+       **不是教學**）整條吃不到，槽一推滿就 OBE，生命歸還沒機會發動
+       （Ray：「生命歸還在 OBE 後不能用，所以要在生命 99% 時發動」）。
+       ⚠ 誰在等那一拍由 tutorial 那一層回答（鐵律 8）；saint 只負責攔。 */
+  if(api.onSaintCritical && (!api.saintCriticalPending || api.saintCriticalPending())){
     const cap = state.playerMax - 1;
     if(state.playerHp + amount >= cap){
       if(state.playerHp < cap) api.healPlayer(cap - state.playerHp);

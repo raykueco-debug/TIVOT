@@ -1467,6 +1467,16 @@
   /* .center（step.center）：立繪移畫面正中——側邊讓位給引導箭頭（箭頭不壓立繪） */
   #tutCast .tut-portrait.center{left:50%;right:auto;transform:translateX(-150%);}
   #tutCast .tut-portrait.center.in{transform:translateX(-50%);}
+  /* ══⚠⚠ **水平翻轉**（ver -619）══ 立繪換到非預設那一側時鏡射（由 tutorial 的
+     `cast[key].mirror` 決定，見 syncCastFit）。
+     ⚠ 滑入／滑出用的也是 `transform`，所以**每一個狀態都要各寫一份**，
+       不能只加一條 `scaleX(-1)`——那會把 translateX 整個蓋掉，立繪就不滑了。
+     ⚠ `scaleX` 寫在後面：transform 由右往左套，先在原地翻、再位移。 */
+  #tutCastL.mirrored{transform:translateX(-108%) scaleX(-1);}
+  #tutCastR.mirrored{transform:translateX(108%) scaleX(-1);}
+  #tutCast .tut-portrait.mirrored.in{transform:scaleX(-1);}
+  #tutCast .tut-portrait.center.mirrored{transform:translateX(-150%) scaleX(-1);}
+  #tutCast .tut-portrait.center.mirrored.in{transform:translateX(-50%) scaleX(-1);}
   .tut-portrait.speaking{filter:brightness(1) saturate(1);}   /* 說話者原色；其餘維持調暗 */
   /* 對話框：緊貼數字盤面上方（間隔 2px）。#top overflow:hidden 裁不到盤面側
      → 改 fixed 脫離裁切，精確 bottom 由 tutorial.placeBubble 依 #grid 實測寫入
