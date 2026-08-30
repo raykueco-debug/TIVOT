@@ -169,7 +169,14 @@ export const state = {
      `penUlt`＝被大絕命中、`penBlock`＝擋下一半、`penDelay`＝延時懲罰；
      點錯格用既有的 `wrongTaps`。 */
   penUlt: 0, penBlock: 0, penDelay: 0,
-  sessionExp: 0,
+  /* ⚠⚠ 連續戰鬥的**戰績累計**（ver -601，Ray：「戰鬥用時也是要用整場的全部戰鬥
+     總和時間，不計算移動，只算戰鬥時間」）：中間幾格的用時與失誤累加在這裡，
+     到收段那一場（Boss）**一起評一次**。null＝這一段還沒有累計。
+     ⚠ 累的是**原始統計**不是分數：分數要在總和上算一次，
+       各場先算完再平均／相加都不是同一件事。
+     ⚠ `clearTime` 本來就只累計實打時間（轉場、cut-in、對話都不計），
+       城裡走路更不經過戰鬥 —— 所以「不計算移動」是既有行為，不必另外扣。 */
+  sessionStats: null,
   sessionMoney: 0,
   pickedPartner: GAME_CONFIG.defaultPartner,   // 玩家實選搭檔（擁有者 partner；選人畫面經 setPickedPartner 寫入）
   lineupIndex: 0,        // 連戰序列游標（局內第幾隻敵，對應 GAME_CONFIG.lineup）

@@ -722,8 +722,12 @@ export const GAME_CONFIG = {
 
      ── 算法（只有這一份，`inspector.evaluate()` 實作）─────────────────
        ① 基準秒數 `par` ＝ 全敵 HP 總和 × `secPerHp`（＋Boss 時加 `bossBonus`）
-       ② 失誤折算成秒：點錯 ×`penalty.wrong`、挨大絕 ×`ult`、擋下 ×`block`、
-          延時 ×`delay` —— 全部加進實際用時
+       ② 失誤／表現折算成秒：點錯 ×`penalty.wrong`、挨大絕 ×`ult`、擋下 ×`block`、
+          延時 ×`delay`、**反擊成功 ×`counter`（負數＝減秒）** —— 全部加進實際用時
+       ②' **整場的戰鬥時間總和**（ver -601，Ray：「戰鬥用時也是要用整場的全部戰鬥
+          總和時間，不計算移動，只算戰鬥時間」）：連續戰鬥（城鎮戰）那幾格的
+          用時與失誤**累加**，到收段那一場一起評 —— 城裡走路的時間本來就不算
+          （`clearTime` 只累計實打時間，轉場／cut-in／對話都不計）。
        ③ `ratio` ＝ (實際用時 ＋ 失誤秒) ÷ par　**越小越好**
        ④ 對照 `tiers` 取等第（由上往下，第一個 `ratio <= max` 的就是）
 
@@ -741,8 +745,8 @@ export const GAME_CONFIG = {
   rating: {
     secPerHp: 0.30,       // 每 1 點敵人總血量給幾秒（300 血 → 90 秒）
     bossBonus: 20,        // Boss（亂入）額外加幾秒
-    /* 失誤折算成秒（Ray 指定的四個數字）。 */
-    penalty: { wrong: 2, ult: 3, block: 1, delay: 1 },
+    /* 失誤／表現折算成秒（Ray 指定）。⚠ **負數＝加分**（時間變短）。 */
+    penalty: { wrong: 2, ult: 3, block: 1, delay: 1, counter: -0.5 },
     /* 等第門檻：`ratio`（用時÷基準）**不超過** max 就是這一級，由上往下取第一個。
        ⚠ D 是兜底（Infinity），所以沒有 E。 */
     tiers: [

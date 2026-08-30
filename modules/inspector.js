@@ -82,13 +82,33 @@ export function rollBattleMoney(){
   if(state.inIntruderFight && bl.bossMul>1) m=Math.round(m*bl.bossMul);
   return m;
 }
-/* 連續戰鬥的中間幾場：把這一場的 EXP 與錢記進帳（ver -595）。由 combat 的
-   `win()` 在「不結算」那一支呼叫；到收段那一場由 `settle` 一起領走。 */
+/* ══⚠⚠ 連續戰鬥的中間幾場：把這一場的**戰績**與錢記進帳（ver -595；-601 改）══
+   由 combat 的 `win()` 在「不結算」那一支呼叫；到收段那一場由 `settle` 一起領走。
+   ⚠⚠ 累的是**原始統計**（用時、失誤次數、血量總和…）不是分數（ver -601，Ray：
+     「戰鬥用時也是要用整場的全部戰鬥總和時間」）—— 分數要在**總和**上算一次；
+     各場先各算一次再相加是另一件事，等第會失真。
+   ⚠ 錢照舊逐場擲、逐場記（那是掉落，不是評價）。 */
+const SUM_KEYS = ['clearTime','totalHP','wrongTaps','ultHits','blocks','delays',
+                  'perfectCounter','counterDamage','overkill','hitsTaken'];
 export function bankSessionGain(stats){
-  state.sessionExp   = (state.sessionExp|0)   + (evaluate(stats).exp|0);
+  const acc = state.sessionStats || {};
+  for(const k of SUM_KEYS) acc[k] = (acc[k]||0) + (stats[k]||0);
+  acc.maxCombo = Math.max(acc.maxCombo||0, stats.maxCombo||0);   // 連擊取最高，不相加
+  acc.isBoss   = acc.isBoss || !!stats.isBoss;
+  state.sessionStats = acc;
   state.sessionMoney = (state.sessionMoney|0) + rollBattleMoney();
 }
-export function clearSessionGain(){ state.sessionExp=0; state.sessionMoney=0; }
+/* 收段那一場：把累計的併進這一場的統計（`settle` 用）。沒有累計就原樣回傳。 */
+export function mergeSessionStats(stats){
+  const acc = state.sessionStats;
+  if(!acc) return stats;
+  const out = Object.assign({}, stats);
+  for(const k of SUM_KEYS) out[k] = (out[k]||0) + (acc[k]||0);
+  out.maxCombo = Math.max(out.maxCombo||0, acc.maxCombo||0);
+  out.isBoss   = out.isBoss || !!acc.isBoss;
+  return out;
+}
+export function clearSessionGain(){ state.sessionStats=null; state.sessionMoney=0; }
 
 // 分數 → EXP：offset 質數基底 + score×mult，尾數微擾 + overkill 加成，避免整齊倍數。
 export function scoreToExp(score, stats, cfg = GAME_CONFIG.rating.exp){
@@ -121,8 +141,12 @@ export function evaluate(stats, cfg = GAME_CONFIG.rating){
   const penSec = (stats.wrongTaps||0) * (pen.wrong||0)
                + (stats.ultHits ||0) * (pen.ult  ||0)
                + (stats.blocks  ||0) * (pen.block||0)
-               + (stats.delays  ||0) * (pen.delay||0);
-  const used  = (stats.clearTime||0) + penSec;
+               + (stats.delays  ||0) * (pen.delay||0)
+               /* ⚠ 反擊成功是**負的**（ver -601，Ray：「反擊成功 -0.5 秒」）——
+                  它是表現不是失誤，所以折算成秒之後是減的。 */
+               + (stats.perfectCounter||0) * (pen.counter||0);
+  /* ⚠ 夾在 0 以上：反擊夠多時 `penSec` 會是負的，扣過頭會變成負秒數（ratio 負值）。 */
+  const used  = Math.max(0, (stats.clearTime||0) + penSec);
   const ratio = used / par;
   let grade = cfg.tiers[cfg.tiers.length-1].grade;
   for(const tier of cfg.tiers){ if(ratio <= tier.max){ grade = tier.grade; break; } }
@@ -284,7 +308,9 @@ export function settle(totalTime, stats, opts={}){
   if(stats.overkill>0) sub += ` · OVERKILL ${Math.round(stats.overkill)}`;
 
   // ── 評價系統（rating）：大字等級（顯眼）+ 各數值明細 + EXP／金錢 ──
-  const evalResult = evaluate(stats);
+  /* ⚠ **整場一起評**（ver -601）：連續戰鬥中間幾格的用時與失誤先併進來，
+     再算一次等第 —— 各場先算完再合併是另一件事（見 bankSessionGain）。 */
+  const evalResult = evaluate(mergeSessionStats(stats));
   let rows='';
   rows += `<div class="grade-wrap"><b class="grade-badge rank-${evalResult.grade}">${evalResult.grade}</b>`
         + `<span class="grade-meta"><span class="grade-cap">${L.result.gradeCap}</span></span></div>`;
@@ -297,15 +323,14 @@ export function settle(totalTime, stats, opts={}){
        Boss 加成走 `bossMul`。一般戰沒有道具掉落，戰利品視窗因此整個不彈。 */
   /* ══⚠⚠ **連續戰鬥的 EXP 與錢是「整場」結算**（ver -595，Ray：「exp 跟錢都用
      『整場』來結算」）══ 城鎮戰那五格對玩家而言是同一場（§6.5.4.3），中間幾格
-     不彈結算頁 —— 那幾場的 EXP 與錢**存在 `state.sessionExp/sessionMoney`**，
-     到收段的那一場（Boss）一起入帳、一起顯示。
+     不彈結算頁 —— 那幾格的**戰績**累在 `state.sessionStats`、錢累在 `sessionMoney`，
+     到收段的那一場（Boss）**一起評一次等第**、一起入帳、一起顯示（ver -601：
+     「戰鬥用時也是要用整場的全部戰鬥總和時間」）。
      ⚠ 擲骰只有 `rollBattleMoney()` 一支（鐵律 7）：中間場與這裡都問它。
      ⚠ 錢**在這裡才真的入帳**（中間場只記帳）—— 不然打到一半跑掉，錢已經進口袋了。
      ⚠ 領完就清（`clearSessionGain`），不然下一場會把上一段的再算一次。 */
-  let gainMoney = rollBattleMoney();
-  const bankExp = state.sessionExp|0, bankMoney = state.sessionMoney|0;
-  const totalExp = (evalResult.exp|0) + bankExp;
-  gainMoney += bankMoney;
+  let gainMoney = rollBattleMoney() + (state.sessionMoney|0);
+  const totalExp = evalResult.exp|0;      // EXP 由**整場的總和**算出來（ver -601）
   if(gainMoney) inv.addMoney(gainMoney);
   clearSessionGain();
   if(totalExp) rows += '<div class="row"><span>EXP</span><b>＋'+totalExp+'</b></div>';
