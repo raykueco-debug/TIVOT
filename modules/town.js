@@ -1486,7 +1486,19 @@ export function open(town, node, opts){
   story.showPanel();          // 下半的面盤（不擺會是一片全黑）
   story.ensureBgm(T.bgm);
   busy=false;
-  enter((node && T.nodes[node]) ? node : T.entry);
+  /* ══ 第一次（劇情）降落的入口（ver -582，Ray：「第一次劇情降落北方泊地是從碼頭
+     進去」）══ 城上寫 `firstEntry:{node,until}`：`until` 那支旗標還沒立起來之前，
+     從這一格進去；立了就照舊走 `entry`。
+     ⚠ 收在**進城的唯一入口**（鐵律 8）：降落、讀檔、章節跳關都經過這裡。
+     ⚠ **明寫節點時不套用**（讀檔／跳關指定了 `node`）—— 那是「回到存檔的那一格」，
+       不是「第一次走進這座城」。 */
+  let start = (node && T.nodes[node]) ? node : null;
+  if(!start){
+    const fe=T.firstEntry;
+    start = (fe && fe.node && T.nodes[fe.node] && !(fe.until && prog.hasFlag(fe.until)))
+          ? fe.node : T.entry;
+  }
+  enter(start);
 }
 export function close(){
   const st=story.stageEl(); if(st) st.classList.remove('town-on');

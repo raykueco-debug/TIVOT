@@ -57,6 +57,9 @@ const nou = N('NOUVELLE'), ren = N('RENNA');
    玩家的同伴在左、對面的人在右，與店主同一個邏輯。 */
 const hun = N('HUNTER'), cnt = N('COUNTER');
 const gun = N('GUNSMITH');   // 槍店店主（ver -377）
+/* 北方泊地的司祭（ver -582）。⚠ 兩個 id：報上身分之前是 `PRIEST_X`（顯示「？？？」），
+   之後才是 `PRIEST` —— 畫面上同一個人，見 speakers.js 的說明。 */
+const prx = N('PRIEST_X'), pri = N('PRIEST');
 
 /* ══════════════════════════════════════════════════════════════════════
    女角外出（ver -575，Ray 交稿）
@@ -845,6 +848,13 @@ export const TOWNS = {
   northport: {
     name: '北方泊地',
     entry: 'entrance',
+    /* ══ 第一次（劇情）降落從**碼頭**進去（ver -582，Ray 指定）══════════════
+       之後每次進城照舊從 `entry`（中央大道）開始。
+       ⚠ 旗標是**那一段主線演完才記**的（`acts` 的收尾）—— 中途離開／打斷重來
+         還是從碼頭進，那一場戲不會被跳過（同城鎮所有「演完才記」的旗標）。
+       ⚠ 判定收在 `modules/town.js` 的 `open()`（進城的唯一入口，鐵律 8）：
+         降落、讀檔、章節跳關全部經過它。明寫節點（讀檔）時不套用。 */
+    firstEntry: { node:'port', until:'np_port_arrive' },
     bgm: 'capital',            // ⚠ 暫用帝都曲 —— 北方泊地還沒有自己的 BGM
     sailFrom: { x:1480, y:190 },
     /* ══ 餐飲街（ver -575）══ 這座城的四家店**還沒有圖**，所以不給 `scenes`
@@ -872,6 +882,56 @@ export const TOWNS = {
       port: {
         bg:'Northport_port_BF', name:'北方泊地　碼頭',
         exits:{ back:'west' },
+        /* ══ 抵達北方泊地（ver -582，Ray 交稿）══════════════════════════════
+           第一次劇情降落就落在這一格（見城上的 `firstEntry`），演完才記旗標。
+           ⚠ 這是**主線段落**（`acts`）不是進場對白：它優先於傍晚提醒與 `lines`，
+             而且不受「夥伴回房休息」擋（ver -581）。
+           ⚠ 站位不必覆寫：蕾娜與諾薇兒本來就站左、司祭（NPC）站右 —— 同側的
+             兩人由引擎輪轉換卡（§6.5）。
+           ⚠ 司祭報上身分**之前**用 `PRIEST_X`（顯示「？？？」），蕾娜問完之後
+             改用 `PRIEST` —— 兩個 id 同一張圖（同 OFFICER／RENNA 的作法）。
+           ⚠ 「（尖叫，魔物吼叫）」那一拍是**空畫面拍**：沒有台詞就一定要給 `auto`
+             （沒有框就沒有 ▼，§6.5），配 `se` ＋ `shake`。
+             ⚠⚠ 音效**暫用** `se_saintroar`（現有唯一的怪物吼叫）—— 稿上寫的是
+               「尖叫＋魔物吼叫」，尖叫那一支還沒有素材。要分開就交一支
+               `se_scream`，登記進 `modules/story.js` 的 `SE_FILES` 再把這裡改掉。
+           ⚠⚠ **這一段收在諾薇兒那句「我們上吧！」** —— 稿到此為止。
+             接下來要往中心區打那一場（司祭說「守軍把禍魘吸引到城鎮中心去了」），
+             但那一場的敵人卡與轉場 Ray 還沒給，所以這裡不自作主張接戰鬥。 */
+        acts:[
+          { flag:'np_port_arrive',
+            lines:[
+              ren('cringe','好慘……'),
+              nou('pray','啊，神啊……'),
+              prx(null,'你們是，聖王廳派來的人？'),
+              ren('talkwork','是的。您是——本地的司祭嗎。'),
+              pri(null,'沒錯。'),
+              ren('talkwork','這裡發生了什麼事？'),
+              pri(null,'如你所見，昨晚被禍魘襲擊了。'),
+              pri(null,'『永夜』以來發生過好幾次，一直以來駐地的軍隊都能擊退。'),
+              pri(null,'但昨晚那個，不一樣！'),
+              nou('surprise','不一樣？'),
+              pri(null,'突然，就出現了！像惡夢一樣，就好像一開始就在那裡！'),
+              ren('thinking','惡夢……？'),
+              pri(null,'聖王廳派來的支援，就只有妳們嗎？'),
+              ren('talkwork','是的。'),
+              pri(null,'太過份了！就算是瓦爾士，我們也是教區的子民啊！'),
+              pri(null,'派聖約騎士團來啊！'),
+              ren('talkserious','這兩位就是聖約騎士團的菁英喔。'),
+              pri(null,'就這樣的小鬼？'),
+              ren('talkserious','他們的實力，我以十三課監察官的身份保證。'),
+              pri(null,'十、十三課？'),
+              pri(null,'……我知道了。'),
+              pri(null,'守軍把禍魘吸引到城鎮中心去了。'),
+              pri(null,'沒有援軍的話，不知道能撐到什麼時候……'),
+              nou('steady','請交給我們吧。'),
+              /* 尖叫、魔物吼叫（空畫面拍）。 */
+              { speaker:'PLAYER', text:'', auto:1100, se:'se_saintroar', shake:true },
+              ren('cringe','還是來遲了嗎……'),
+              { speaker:'PLAYER', blank:true },
+              nou('runserious','沒錯！我們上吧！'),
+            ] },
+        ],
       },
       north: {
         bg:'Northport_north_BF', name:'北方泊地　北側',

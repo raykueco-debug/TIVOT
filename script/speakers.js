@@ -52,6 +52,15 @@ export const SPEAKERS = {
   COUNTER:  { name:'櫃台',   art:'counter' },
   /* 旅店前台（ver -392）。同樣站右（玩家的同伴在左、對面的人在右）。 */
   CLERK:    { name:'前台',   art:'clerk' },
+  /* ══ 北方泊地的司祭（ver -582，Ray 交稿）══════════════════════════════
+     ⚠ **兩個 id**（同 OFFICER／RENNA 的作法）：報上身分之前是「？？？」，
+       蕾娜問出「您是——本地的司祭嗎」之後才改用 `PRIEST`。
+       畫面上是同一個人（art 同指），只是玩家還不知道他是誰 ——
+       **不要**用一個 id 再把 name 蓋成「？？？」，那會讓「這一句是誰講的」
+       在資料上消失（同上面 UNKNOWN 那條註解）。
+     ⚠ `UNKNOWN` 那一筆是**璐娜莉亞專用**的（art 指她），不能借來用。 */
+  PRIEST_X: { name:'？？？',  art:'priest' },
+  PRIEST:   { name:'司祭',   art:'priest' },
 };
 
 /* ══ 立繪素材 ＋ 取景實測值 ══
@@ -132,6 +141,10 @@ export const ART = {
            side:'L', alt:null, base:'resources/SI/Nouvelle_SI_front.webp',
            expr:{ /* 艦鬥教學那幾拍（ver -424，Ray 交件）：她穩住陣腳的姿勢。 */
                   steady:   { src:'resources/SI/Nouvelle_SI_steady.webp',   top:8,  bot:1529, fx:0.534 },
+                  /* 北方泊地碼頭那一幕的收尾（ver -582，Ray 交稿「沒錯！我們上吧！」）。
+                     ⚠ 交件是 PNG，依 §5 的規約轉成 WebP 後才接（原 PNG 留在 resources/SI）。
+                     ⚠ 取景值是 `tools/measure_si.py` 量的，不是沿用 `run` 那一張。 */
+                  runserious:{src:'resources/SI/Nouvelle_SI_runserious.webp',top:12, bot:1521, fx:0.402 },
                   /* ver -427 交件：酒館第一句要的那張（在此之前一直回退基本立繪）。 */
                   pray:     { src:'resources/SI/Nouvelle_SI_pray.webp',     top:0,  bot:1533, fx:0.535 },
                   run:      { src:'resources/SI/Nouvelle_SI_Run.webp',       top:13, bot:1533, fx:0.418 },
@@ -291,6 +304,16 @@ export const ART = {
            side:'R', alt:null, base:'resources/SI/NPC_Hotel_Capital.webp', expr:{} },
   luna:   { cm:160, eye:30, fx:0.500, top:0, bot:1000,
            side:'L', alt:null, base:'resources/partner/Luna_CI_exc.webp', expr:{}, unmeasured:true },
+  /* ══⚠⚠ 北方泊地的司祭（ver -582）—— **立繪還沒交，這一組數字是佔位的** ══
+     Ray 的稿指名 `NPC_SI_Priest`，但 `resources/SI/` 還沒有這個檔。
+     腳本先接上去（`missingExpr` 那條規矩：查不到就退回本尊，載不到就沒有立繪，
+     台詞照播），圖一進來**一定要跑 `python3 tools/measure_si.py` 重量四個值**
+     並拿掉 `unmeasured` —— 沿用別張的數字人一定會歪（CLAUDE.md §5／§6.5）。
+     ⚠ `unmeasured:true` 讓它不參與 `CAST_TALL`：佔位的 cm 不會把整組相機帶歪。
+     ⚠ 身高 172 是估的（成年男性神職），同 hunter／gunsmith 那幾筆的作法。
+     ⚠ 站**右**：玩家的同伴在左、對面的人在右（同所有城鎮 NPC）。 */
+  priest: { cm:172, eye:32, fx:0.500, top:5, bot:1530,
+           side:'R', alt:null, base:'resources/SI/NPC_SI_Priest.webp', expr:{}, unmeasured:true },
 };
 
 /* 最高的人：她定義相機（頭頂貼在舞台頂線，其餘人依身高往下排）。 */
