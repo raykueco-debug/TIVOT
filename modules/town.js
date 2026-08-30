@@ -1202,6 +1202,17 @@ export function enter(id){
        對話」）；**主線段落是劇本**，它說誰在場誰就在場 —— 更何況玩家是被那條主線
        強制搬到船塢的，用「她在房裡」把戲擋掉講不通。
      ⚠ 進場對白（`own`）與傍晚提醒照舊要看休息，見下面的 `linesBlockedByRest`。 */
+  /* ══⚠⚠ **一段 `acts` 演完就立刻接下一段**（ver -599，Ray：「教堂的中 boss 打完
+     立刻進劇情，不用進出」）══ 以前 `acts` 一次只取一個到期的，第二段要走出去再
+     回來才演 —— 而「打完 Boss 就站在原地看下一幕」才是那一段戲要的節奏。
+     ⚠ 作法是把**抵達要演什麼**整段包成一支可重入的 `runArrival()`：
+       演完的收尾發現還有下一段就再叫自己一次（鐵律 8：不要把播放與收尾複製第二份）。
+     ⚠ 接續的那一次**不停一秒**（`immediate`）：抵達停頓是給「剛走到一個新地方」用的，
+       原地接下一段再停一次只是空等。
+     ⚠ 不會無限迴圈：`acts` 的旗標是演完才記的，記了 `actDue` 就不再回它。 */
+  runArrival(false);
+
+  function runArrival(immediate){
   const act = actDue(n);
   let ev = act ? null : eveningDue(n);
   /* 這一次抵達**原本**要演的進場對白（打烊、演過了、或段落裡有**回房休息的夥伴**
@@ -1258,6 +1269,8 @@ export function enter(id){
              ⚠ 純對白的段落也會落一筆 —— 那也是一個段落邊界，存了不虧。
              ⚠ 走同一支 `checkpoint()`（進城那一支也是它，鐵律 8）。 */
           if(checkpoint) try{ checkpoint(); }catch(_){}
+          /* 還有下一段就**原地立刻接上**（ver -599）——不停一秒、不必走出去再回來。 */
+          if(actDue(n)){ story.clearCast(); runArrival(true); return; }
         }
         else if(ev){
           if(ev.flag) prog.addFlags([ev.flag]);                  // 傍晚那一句：只演一次
@@ -1284,12 +1297,13 @@ export function enter(id){
            七點的那一段（例如旅店的分支二）。放在開演前判會把演出腰斬。 */
         if(clockGate()) return;
         afterArrive(n); }, { sides:(act && act.sides) || n.sides });
-    }, ARRIVE_MS);
+    }, immediate ? 0 : ARRIVE_MS);
   }else{
     busy=false; refreshArrows(); showNav(true);
     if(clockGate()) return;
     afterArrive(n);
   }
+  }   // ← runArrival
 }
 
 /* 進場對白（或傍晚的提醒）演完之後才成立的事。目前只有旅店大廳。

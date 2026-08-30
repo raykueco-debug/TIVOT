@@ -569,6 +569,12 @@ export const GAME_CONFIG = {
       put('tut_renna',              R);
       put('tut_renna_shocked',      R, R.expr.shocked);
       put('tut_renna_run',          R, R.expr.run);
+      /* 北方泊地的聖徒化教學戰（ver -599，Ray 交稿）用到的差分。
+         ⚠ 取景值一樣抄 `ART`（speakers.js 量的那一份，鐵律 7）。 */
+      put('tut_renna_thinking',     R, R.expr.thinking);
+      put('tut_renna_ask',          R, R.expr.ask);
+      put('tut_renna_shout',        R, R.expr.shout);
+      put('tut_nouvelle_saintinstall', N, N.expr.saintinstall);
       return F;
     })(),
     cast: {
@@ -1314,7 +1320,41 @@ export const GAME_CONFIG = {
          加上血量觸發？），所以現在這一場**只是一場普通的 Boss 戰**。
        ⚠ 不禁聖徒化／搭檔技：這一場的重點就是教它們。
        ⚠ 不掛 `session` —— 城鎮戰那一段已經在祭壇獸那一場收掉了，這是新的一場。 */
-    np_claws: { enemy:'np_claws' },
+    np_claws: { enemy:'np_claws',
+      /* ══⚠⚠ **聖徒化教學戰**（ver -599，Ray：「戰鬥卡的 talk 加血量觸發，
+         反正這個怪只會出現一次」）══ 走的是教學那一支對話實作（鐵律 8），
+         但**這不是教學**（`tutorialActive` 一律不碰，同 §6.5.2「框是共用的」）。
+         節奏（Ray 的稿）：
+           BOSS ≤30% → 劇情殺（主角血歸零）→ 諾薇兒喊聖徒化 → **右滑**發動
+           → 聖徒化戰鬥 → 血回 99% → 諾薇兒撐不住 → **上滑**生命歸還 → 她倒下
+         ⚠ `hp:30`／`php:99` 是**血量觸發**（ver -599 新增，見 tutorial.onHpChange）：
+           前者是敵人血掉到 30% 以下，後者是玩家血回到 99% 以上
+           —— 聖徒化期間那條倒數槽走的就是玩家血，所以同一支吃得到。
+         ⚠ `gate` 寫的是**具名動作**（`saint`／`partner`），不是函式：
+           這裡是資料（config.js），函式寫不進來 —— 名字在 `tutorial.GATE_ACTIONS` 對。
+         ⚠ `drain:true` ＝**劇情殺**（把玩家血打到 0 但不判死）：真的死掉會走
+           Game Over，而稿上要的是「倒下之後被諾薇兒接住」。
+         ⚠ `once` 不寫：Ray 說「這個怪只會出現一次」，敗北重來要重播（同 §6.5.2）。 */
+      talk:[
+        { trigger:'hp:30', drain:true, lines:[
+          { who:'nouvelle', img:'tut_nouvelle_desperate', text:'不行！' },
+          { who:'renna',    img:'tut_renna_thinking',     text:'到此為止了嗎？' },
+          { who:'nouvelle', img:'tut_nouvelle_saintinstall', text:'我準備好了，現在聖徒化！' },
+          { who:'renna',    img:'tut_renna_shocked',      text:'！！' },
+        ], gate:{ type:'right', immediate:true, action:'saint', then:'saintOn' } },
+        { trigger:'saintOn', lines:[
+          { who:'renna',    img:'tut_renna_shocked',      text:'那就是……聖徒化？' },
+          { who:'nouvelle', img:'tut_nouvelle_saintinstall',
+            text:'在我熔斷之前你都會是不死之身！趁現在！' },
+        ]},
+        { trigger:'php:99', lines:[
+          { who:'nouvelle', img:'tut_nouvelle_desperate', text:'我撐不住了！至少……' },
+        ], gate:{ type:'up', immediate:true, action:'partner', then:'partnerOn' } },
+        { trigger:'partnerOn', lines:[
+          { who:'renna',    img:'tut_renna_shocked',      text:'諾薇兒！' },
+          { who:'renna',    img:'tut_renna_shout',        text:'解決祂！不要白費諾薇兒的覺悟！' },
+        ]},
+      ] },
     /* 槍店的打靶（ver -377）。⚠ 這一場**可以輸**（`allowLose`）—— Ray 的稿子有
        「戰敗」與「戰勝」兩支台詞，所以輸了不是 Game Over，是接另一支分歧。
        ⚠ `record` ＝ 這一場自己的最佳紀錄（通關用時），破紀錄時結算頁加 NEW。

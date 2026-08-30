@@ -187,6 +187,38 @@ export function maybeStart(){
   clearTimeout(startTimer);
   startTimer = setTimeout(()=>fire('battleStart'), cfg.startDelayMs||700);
 }
+/* ══⚠⚠ **血量觸發**（ver -599，Ray：「戰鬥卡的 talk 加血量觸發，反正這個怪只會
+   出現一次」）══ 兩種寫法，都走 `fire()` 那個唯一的派送（鐵律 8）：
+     `hp:30`   敵人血量**掉到 30% 以下**時觸發
+     `php:99`  玩家血量**回到 99% 以上**時觸發（聖徒化期間那條槽也是玩家血）
+   ⚠ 由 combat 在血量真的變動之後呼叫（`onHpChange`）—— 不要用計時器輪詢：
+     那會在「剛好跨過門檻的那一幀」與演出搶拍。
+   ⚠ 同時有好幾個門檻符合時取**最接近的那一個**（敵人取最大的 N、玩家取最小的 N）：
+     一次只該觸發剛跨過的那一道。 */
+/* `fire()` 在 completeGate 裡被同名的區域變數遮蔽了，所以另開一個對外的別名。 */
+function fireTrigger(t){ fire(t); }
+export function onHpChange(){
+  const list = state.tutorialActive ? stepsLeft : talkLeft;
+  if(!list || !list.length) return;
+  const emax=state.enemyMax||0, pmax=state.playerMax||0;
+  const ep = emax ? (state.enemyHp/emax*100) : null;
+  const pp = pmax ? (state.playerHp/pmax*100) : null;
+  let hit=null;
+  for(const st0 of list){
+    const t=String(st0.trigger||'');
+    let m=/^hp:(\d+(?:\.\d+)?)$/.exec(t);
+    if(m && ep!=null && ep <= +m[1]){
+      if(!hit || hit.kind!=='hp' || +m[1] > hit.n) hit={ kind:'hp', n:+m[1], t };
+      continue;
+    }
+    m=/^php:(\d+(?:\.\d+)?)$/.exec(t);
+    if(m && pp!=null && pp >= +m[1]){
+      if(!hit || (hit.kind==='php' && +m[1] < hit.n)) hit={ kind:'php', n:+m[1], t };
+    }
+  }
+  if(hit) fire(hit.t);
+}
+
 // combat.loadBoard 每次載盤呼叫 → 觸發 'board:N' 步驟
 export function onBoardLoaded(idx){
   /* 劇情版收尾：破防教學那一盤清完 → 下一盤載入的這一刻接「收拾他吧」。
@@ -719,8 +751,32 @@ function syncCastFit(step){
   }
 }
 
+/* ══⚠⚠ **資料上的閘門**（ver -599，Ray：「戰鬥卡的 talk 加血量觸發」）══
+   `config.tutorial.script` 那幾段的閘門是**寫在程式裡**的（`gate.action` 是函式），
+   但戰鬥卡的 `talk` 是**資料**（config.js）—— 資料寫不了函式。
+   所以資料上寫**具名動作**：`gate:{ type:'right', action:'saint', immediate:true }`，
+   由這一支翻成真正的呼叫。
+   ⚠ 名字只有這一張表在對（鐵律 7）：加新動作就加一列，不要在呼叫端各自翻譯。 */
+const GATE_ACTIONS = {
+  saint:   ()=>api.activateSaint('right'),
+  dual:    ()=>api.activateDual(),
+  partner: ()=>api.tryPartnerActive('saint'),
+};
+function resolveGate(g){
+  if(!g) return null;
+  if(typeof g.action === 'function') return g;          // 程式裡寫的那幾段，原樣
+  const fn = GATE_ACTIONS[g.action];
+  if(!fn){ console.info('[tutorial] 不認得的閘門動作：', g.action); return null; }
+  return Object.assign({}, g, { action: fn });
+}
 function openStep(step){
   cur = step; lineIdx = 0; cutinLine = -1;
+  /* 這一段自己帶閘門（資料上的 `talk` 用；程式那幾段走 `openScript` 的 opts）。 */
+  if(step && step.gate) pendingGate = resolveGate(step.gate);
+  /* ⚠ `drain:true` ＝**劇情殺**（ver -599）：把玩家血打到 0 但**不判死** ——
+     真的死掉會走 Game Over，而稿上要的是「倒下之後被諾薇兒接住」。
+     ⚠ 走 combat 的統一改血 API（`api.setPlayerHp`），不要直接寫 state。 */
+  if(step && step.drain && api.setPlayerHp) api.setPlayerHp(0);
   state.tutorialDialog = true;
   api.pauseForDialog();                          // 真暫停：同退出確認框的機制
   document.body.classList.add('dlg-pause');      // 凍結底層警戒脈動（防 iOS 合成假影）
@@ -955,10 +1011,18 @@ function completeGate(){
   //   完成閘門時，activateSaint/activateDual 會被 transitioning/cutinPlaying 守門「無聲擋掉」
   //   → 閘門已消耗、教學軟鎖（敵血鎖 1 永遠打不完）。改輪詢至可執行為止。
   const fire=()=>{
-    if(state.over || !state.tutorialActive) return;
+    /* ⚠ **不再要求 `tutorialActive`**（ver -599）：閘門現在也給戰鬥卡的 `talk` 用
+       （聖徒化教學戰），那一場不是教學。門是我們自己開的，收的時候只要確認
+       這一場還沒結束。 */
+    if(state.over) return;
     if(state.transitioning || state.cutinPlaying){ setTimeout(fire, 120); return; }
     if(g.action) g.action();
     if(g.after) g.after();
+    /* ⚠ 資料上的接續（ver -599）：`gate.then` 是**下一個 trigger 的名字**
+       —— 程式那幾段用的是 `after`（函式），資料寫不了函式所以走名字。
+       ⚠ 要等 cut-in 演完才接（聖徒化與主動技都有 cut-in），不然那一段會被蓋掉；
+         `afterCutin` 是既有的那一支（鐵律 8）。 */
+    if(g.then) afterCutin(()=>fireTrigger(g.then));
   };
   fire();
 }

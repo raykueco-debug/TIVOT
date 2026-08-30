@@ -90,6 +90,10 @@ export function setup(){
     segmentRestart: tutorialSegmentRestart, // 教學陣亡：「重來！」該段重來（滿血重建本盤，不重播已完成段落）
     goHome,   // 跳過鈕：中止教學戰回主選單
     playCutin: saint.playCutin,   // 劇情版教學：SAINT INSTALL 那一句配全畫面 cut-in
+    /* 劇情殺（ver -599）：把玩家血設成指定值但**不判死**（`talk` 的 `drain:true` 用）
+       —— 真的死掉會走 Game Over，而稿上要的是「倒下之後被諾薇兒接住」。
+       ⚠ 這一支要掛在 **tutorial** 的 api（對話那一層在用），不是 saint 的。 */
+    setPlayerHp:(v)=>{ state.playerHp=Math.max(0, Math.min(state.playerMax, v|0)); updateBars(); },
   });
   // 武器：反擊演算所需（enemyDamage/floatDmg）+ 雙槍破防窗口所需（cut-in/敵計時/盤面/破防值歸零）。
   weapon.init({
@@ -523,6 +527,7 @@ function enemyAttack(dmg, kind, saintAmt){
   // 鎖血（管理人測試，ver -463）：只擋掉血這一行——上面的特效/計數照走，手感不失真
   if(!state.hpLock) state.playerHp=Math.max(0,state.playerHp-dmg);
   updateBars();
+  tutorial.onHpChange();             // 血量觸發（ver -599）：玩家這一側（`php:N`）
   enemy.showHitFx(kind);             // 依 kind 播放該怪對應受擊特效
   $('redFlash').style.opacity=.8; setTimeout(()=>$('redFlash').style.opacity=0,120);
   screenShake();                     // 畫面震一下（ver -593，取代原本只抖敵人立繪那一版）
@@ -568,6 +573,9 @@ export function healPlayer(amount){
   const add=Math.max(0, amount||0);
   state.playerHp=Math.min(state.playerMax, state.playerHp+add);
   updateBars();
+  /* 血量觸發（ver -599）：聖徒化期間那條倒數槽走的就是回血這一支 ——
+     「血回到 99% 自動觸發主動技教學」靠它（`php:99`）。 */
+  tutorial.onHpChange();
   return state.playerHp;
 }
 // 把血量設為 playerMax 的某百分比（各結局回血走這）。夾在 [1, playerMax]。回傳結果血量。
@@ -626,6 +634,7 @@ function enemyDamage(dmg,isCrit,silent,src){
       const after=state.enemyHp-dmg;
       if(after<0) state.overkill+=(-after);
       state.enemyHp=Math.max(0,after);
+      tutorial.onHpChange();          // 血量觸發的 talk 步驟（ver -599）
       updateBars();
       tutorial.onEnemyHp(state.enemyHp/state.enemyMax);   // 教學：削血保底觸發（非教學為 no-op）
       if(!silent) floatDmg((isCrit?L.battle.crit:'')+dmg, (30+Math.random()*40)+'%','35%',isCrit);
