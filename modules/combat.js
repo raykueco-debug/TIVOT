@@ -1097,6 +1097,10 @@ export function setLoseKind(fn){ loseKind = fn; }
    （模組邊界：劇情層不在戰鬥的依賴圖裡，見 CLAUDE.md §2；同 storyReturn 的作法）。 */
 let storyClose = null;
 export function setStoryClose(fn){ storyClose = fn; }
+/* 原地閉棺（`story.playKerberosShut`）也由 main.js 注入 —— 城鎮戰打掉一隻雜怪之後
+   門在控制盤高度闔上、變回控制板（ver -587）。combat 一樣不 import story。 */
+let storyShut = null;
+export function setStoryShut(fn){ storyShut = fn; }
 /* ⚠⚠ 「殺光所有頁面」（ver -494，Ray：「返回首頁就要 kill 所有的 page 再回去」）。
    由 main.js 注入（combat 不認識飛行 iframe／城鎮／劇情層，§2 依賴方向）——
    goHome 在黑幕全蓋的那一刻呼叫它，把還活著的每一層（飛行 iframe、城鎮、
@@ -1237,7 +1241,15 @@ function win(){
      ⚠⚠ **代價**：中間場的拾得道具與 EXP 目前是**沒有的**（那些掛在結算頁上），
        而 Boss 那一頁報的也只有 Boss 那一場的戰績 —— 要「整段累計再一次結算」
        是另一件事（統計要跨場累加），Ray 沒說，先不做。 */
-  if(midSession()){ if(storyReturn) storyReturn({ lost:false }); return; }
+  if(midSession()){
+    /* ⚠ 回程演的是**原地閉棺**（ver -587，Ray：「雜怪 hp 清零後槍棺在原高度閉棺
+       成為控制板」）：門在控制盤的高度闔上，闔上就是那張控制板 ——
+       所以回城鎮那一段**不走 goHome 的淡出**（`inPlace` 讓 main 那邊分流），
+       不然玩家會先看到一次黑幕，門的動作就白演了。 */
+    const back = ()=>{ if(storyReturn) storyReturn({ lost:false, inPlace:true }); };
+    if(storyShut) storyShut(back); else back();
+    return;
+  }
   const toResult = ()=>{
     /* ⚠ **教學戰的結算不放 result BGM**（ver -361，Ray 指定）：那首是「一場驅逐打完」的
        收束感，而教學是劇情中間的一段 —— 直接沿用地宮那條線的 crisis，情緒才接得上。

@@ -1139,6 +1139,7 @@ story.setHomeReturn(()=>{
 /* 城鎮的「出航」→ 開飛行頁（注入，town 不 import main；同 setTownOpener 的作法）。 */
 town.setFlightOpener(from=>sailOut(from));   // 城鎮出航＝「進入」，讀取頁要跑（ver -389）；升段與出港位見 sailOut（-562/-565）
 combat.setStoryClose(story.playKerberosClose);
+combat.setStoryShut(story.playKerberosShut);   // 城鎮戰：原地閉棺 → 變回控制板（ver -587）
 /* 門開期間戰鬥不計時（ver -466）：story 的開門演出押住／放行戰鬥。
    ⚠ 放行要讓位給教學對話：門還在開時教學的第一句可能已經插進來
    （startDelayMs 的計時器）—— 那個暫停歸教學層擁有，由它自己的關閉流程放行
@@ -1228,6 +1229,15 @@ combat.setStoryReturn((res)=>{
     let dest = pos && { town:pos.town, node:town.innNodeOf(pos.town) };
     if(!dest || !dest.node) dest = prog.getLastInn() || { town:'capital', node:'inn' };
     combat.goHome(()=>town.open(dest.town, dest.node, { carried:true }), { noBgm:true });
+    return;
+  }
+  /* ══ 原地閉棺回來的（ver -587）══ 城鎮戰打掉一隻雜怪：門已經在控制盤高度闔上了，
+     這裡只要把那一段續播下去 —— **不走 `goHome` 的淡出**，那一片黑幕會把門的動作
+     整個蓋掉（而且 `goHome` 會把首頁打開，明明沒有要回首頁）。
+     ⚠ `state.over`／`stopAll()` 在 `win()` 就做過了，這條路不必再收一次。 */
+  if(res && res.inPlace){
+    const r0 = storyResume; storyResume = null;
+    if(r0) story.resumeFrom(r0, res);
     return;
   }
   const r = storyResume; storyResume = null;

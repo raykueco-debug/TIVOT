@@ -1620,6 +1620,66 @@ function sparkPlate(){
   }
 }
 
+/* 門的音效（模組級，兩支原地演出與關門都用它）。⚠ 查不到就安靜跳過（見 playKerberos）。 */
+function kerbSe(k){
+  const u = KERB_SFX[k] ? KERB_SE_DIR+KERB_SFX[k]+'.'+(KERB_SFX_EXT[k]||'m4a') : null;
+  if(!u) return;
+  try{ SFX.play(u, fileGain(u)); }catch(e){}
+}
+
+/* ══⚠⚠ 城鎮戰：**在控制盤高度原地開／關**（ver -587，Ray：「雜怪 hp 清零後槍棺
+   在原高度閉棺成為控制板，移動後遭遇下一個怪時直接原高度開棺不上彈，
+   露出數字面盤」）══════════════════════════════════════════════════════════
+   整張戰鬥地圖是**同一場**（§ 上面那一段），所以格與格之間不該再演一次
+   「上推 → 撞頂 → 解鎖 → 圓盤 → 開門」的完整儀式 —— 那是「一場戰鬥開始了」的儀式。
+   中間只演**門**：開＝露出數字面盤、關＝變回控制板。
+   ⚠⚠ **「原高度」＝控制盤高度**：不加 `rise`/`full`（那兩個才是上推）。
+     戰鬥期間槍棺根本不在畫面上（舞台是收著的），所以起始狀態由這兩支自己擺 ——
+     擺在控制盤高度，玩家看到的就是「面盤打開／闔上」，中間沒有位移。
+   ⚠ `kerb-open` 讓舞台透明並藏起場景各層 —— 門一開，底下 `#app` 的數字盤就露出來。
+   ⚠ 不演解鎖與圓盤（`unlock`/`lift`）：那是「上彈」的一部分，Ray 明說不上彈。
+     紋章與左半扇是同一個剛體（ver -389），所以不掀圓盤也不會把紋章撕成兩半。 */
+export function playKerberosInPlace(onGap, onDone){
+  const kb=$('kerb'), st=$('storyStage');
+  if(!kb || !st){ onGap&&onGap(); onDone&&onDone(); return; }
+  stopKerberos(); layoutKerberos();
+  kerbPlaying=true;
+  clearInterval(typing); typing=null;
+  const bub=$('storyBubble'); if(bub) bub.style.visibility='hidden';
+  const at=(ms,fn)=>kerbTimers.push(setTimeout(fn,ms));
+  st.classList.add('on','kerb-open');
+  document.body.classList.add('story-on');
+  onGap&&onGap();
+  gatePause();                       // 同 playKerberos：門沒全開，戰鬥不計時（ver -466）
+  at(60,()=>{ kb.classList.add('open'); kerbPendSwing(15,2.2); kerbSe('open'); });
+  at(60+KERB_T.open, ()=>{ gateResume(); kerbPlaying=false; onDone&&onDone(); });
+}
+/* 原地閉棺 → 成為控制板（同上那一段的說明）。 */
+export function playKerberosShut(onDone){
+  const st=$('storyStage'), kb=$('kerb');
+  if(!st || !kb){ onDone&&onDone(); return; }
+  stopKerberos();
+  st.classList.add('on','kerb-open');
+  document.body.classList.add('story-on');
+  layoutKerberos();
+  /* 起始＝「開著、在控制盤高度」。⚠ 要在 `kerb-instant` 之下擺，
+     否則一掛上 class 就會從關著的狀態先演一次開門（同 playKerberosClose）。 */
+  kb.classList.add('kerb-instant');
+  kb.classList.add('open');
+  void kb.offsetWidth;
+  kb.classList.remove('kerb-instant');
+  kerbPlaying=true;
+  const at=(ms,fn)=>kerbTimers.push(setTimeout(fn,ms));
+  at(0,()=>{ kb.classList.add('kerb-shut'); kb.classList.remove('open');
+             kerbPendSwing(15,2.2); kerbSe('clip'); sparkSeam(); });
+  at(KERB_T.open, ()=>{
+    kb.classList.remove('kerb-shut');
+    st.classList.remove('kerb-open');   // 場景各層回來 ＝ 變回城鎮的控制板
+    kerbPlaying=false;
+    onDone&&onDone();
+  });
+}
+
 /* ══ 關門：**進場那一套的倒放**（ver -366，Ray 指定）══════════════════════
    戰鬥打完 → 兩扇從兩邊合上 → 倒置的紋章轉回並縮小 → 箭與鉚釘依次扣回
    → 上一層黑透遮罩 → 交給結算。每一步都有金屬磨擦火花；**沒有蒸氣**。
@@ -1780,10 +1840,11 @@ function renderLine(){
        先讓底下開戰（onGap），門才拉開；門全開之後才把劇情層收掉。
        ⚠ 舊寫法是「先 close 再交棒」，那樣門一開只會露出黑幕。
        ⚠ close 一定要等門全開（onDone）—— 提早收掉的話門會憑空消失。 */
-    /* 連續戰鬥的第二格起：**不演開棺**，直接開戰、收掉劇情層（ver -585）。 */
+    /* 連續戰鬥的第二格起：**原地開棺**（ver -587）—— 不上推、不解鎖、不掀圓盤，
+       門在控制盤的高度直接分開，露出底下的數字面盤。 */
     if(gateSkip && !gateSkip(id)){
-      battleHandler(id, resume);
-      close({ keepBgm:true });
+      playKerberosInPlace(()=>battleHandler(id, resume),
+                          ()=>close({ keepBgm:true }));
       return;
     }
     playKerberos(()=>battleHandler(id, resume),
