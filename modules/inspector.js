@@ -144,9 +144,11 @@ export function evaluate(stats, cfg = GAME_CONFIG.rating){
                + (stats.ultHits ||0) * (pen.ult  ||0)
                + (stats.blocks  ||0) * (pen.block||0)
                + (stats.delays  ||0) * (pen.delay||0)
-               /* ⚠ 反擊成功是**負的**（ver -601，Ray：「反擊成功 -0.5 秒」）——
-                  它是表現不是失誤，所以折算成秒之後是減的。 */
-               + (stats.perfectCounter||0) * (pen.counter||0);
+               /* ⚠ 反擊成功與 overkill 是**負的**（ver -601／-603，Ray：「反擊成功
+                  -0.5 秒」「Overkill 一格減 0.2 秒」）—— 它們是表現不是失誤，
+                  所以折算成秒之後是減的。 */
+               + (stats.perfectCounter||0) * (pen.counter ||0)
+               + (stats.overkill      ||0) * (pen.overkill||0);
   /* ⚠ 夾在 0 以上：反擊夠多時 `penSec` 會是負的，扣過頭會變成負秒數（ratio 負值）。 */
   const used  = Math.max(0, (stats.clearTime||0) + penSec);
   const ratio = used / par;

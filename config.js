@@ -723,7 +723,8 @@ export const GAME_CONFIG = {
      ── 算法（只有這一份，`inspector.evaluate()` 實作）─────────────────
        ① 基準秒數 `par` ＝ 全敵 HP 總和 × `secPerHp`
        ② 失誤／表現折算成秒：點錯 ×`penalty.wrong`、挨大絕 ×`ult`、擋下 ×`block`、
-          延時 ×`delay`、**反擊成功 ×`counter`（負數＝減秒）** —— 全部加進實際用時
+          延時 ×`delay`、**反擊成功 ×`counter`**、**overkill 每一格 ×`overkill`**
+          （後兩者是負數＝減秒）—— 全部加進實際用時
        ②' **整場的戰鬥時間總和**（ver -601，Ray：「戰鬥用時也是要用整場的全部戰鬥
           總和時間，不計算移動，只算戰鬥時間」）：連續戰鬥（城鎮戰）那幾格的
           用時與失誤**累加**，到收段那一場一起評 —— 城裡走路的時間本來就不算
@@ -751,8 +752,11 @@ export const GAME_CONFIG = {
        300 血 → par 90 秒；1500 血（城鎮戰五格加總）→ par 450 秒。
        調大＝更寬鬆，調小＝更嚴。 */
     secPerHp: 0.30,
-    /* 失誤／表現折算成秒（Ray 指定）。⚠ **負數＝加分**（時間變短）。 */
-    penalty: { wrong: 2, ult: 3, block: 1, delay: 1, counter: -0.5 },
+    /* 失誤／表現折算成秒（Ray 指定）。⚠ **負數＝加分**（時間變短）。
+       ⚠ `overkill` 是**每一格** overkill 減 0.2 秒（ver -603）——
+         那一段本來就不計時（碼表在敵人倒下時已經停），所以它純粹是獎勵：
+         趁 overkill 多敲幾格 ＝ 打得乾脆，時間算你便宜一點。 */
+    penalty: { wrong: 2, ult: 3, block: 1, delay: 1, counter: -0.5, overkill: -0.2 },
     /* 等第門檻：`ratio`（用時÷基準）**不超過** max 就是這一級，由上往下取第一個。
        ⚠ D 是兜底（Infinity），所以沒有 E。 */
     tiers: [
