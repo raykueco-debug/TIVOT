@@ -470,12 +470,17 @@ const BGM_FILES=[
   'Bgm_Lunaria.m4a', 'PerituneMaterial_Crisis_loop.m4a', 'bgm_Capital_Day.m4a',
   'bgm_battle.m4a', 'bgm_boss.m4a', 'bgm_flight.m4a', 'bgm_mainmenu.m4a',
   'bgm_missionfailed.m4a', 'bgm_result.m4a',
+  /* 北方泊地那一段（ver -614，Ray 交辦）。⚠ Crimson_Moon 是 **.ogg** ——
+     Safari 到 17 才支援，舊 iOS 播不出來；之後轉 m4a（§6.6 的規約）。 */
+  'PerituneMaterial_Suspense6_loop.m4a', 'Peritune_Crimson_Moon.ogg',
 ];
 /* 別名：腳本裡慣用的短名 → 實際檔名（去副檔名）。加新別名只動這裡。 */
 const BGM_ALIAS={ crisis:'peritunematerial_crisis_loop', lunaria:'bgm_lunaria',
                   mainmenu:'bgm_mainmenu', battle:'bgm_battle', boss:'bgm_boss',
                   result:'bgm_result', failed:'bgm_missionfailed', flight:'bgm_flight',
-                  capital:'bgm_capital_day' };
+                  capital:'bgm_capital_day',
+                  suspense:'peritunematerial_suspense6_loop',   // ver -614
+                  crimson:'peritune_crimson_moon' };
 const BGM_SRC=(()=>{ const m={};
   for(const f of BGM_FILES) m[f.replace(/\.[^.]+$/,'').toLowerCase()]='resources/audio/bgm/'+f;
   return m; })();
@@ -1842,11 +1847,13 @@ function renderLine(){
        ⚠ close 一定要等門全開（onDone）—— 提早收掉的話門會憑空消失。 */
     /* 連續戰鬥的第二格起：**原地開棺**（ver -587）—— 不上推、不解鎖、不掀圓盤，
        門在控制盤的高度直接分開，露出底下的數字面盤。 */
+    battleCueId = id;
     if(gateSkip && !gateSkip(id)){
       playKerberosInPlace(()=>battleHandler(id, resume),
                           ()=>close({ keepBgm:true }));
       return;
     }
+    battleCueId = id;          // 這一場的曲子（ver -614）：撞頂那一拍的 riseCue 要用
     playKerberos(()=>battleHandler(id, resume),
                  ()=>close({ keepBgm:true }));
     return;
@@ -2398,7 +2405,11 @@ export function setBattleHandler(fn){ battleHandler = fn || null; }
    ⚠ 由 main.js 注入，story.js 不去認識「戰鬥的曲子叫什麼」——單向資料流。
    ⚠ 為什麼不放在 `battleHandler` 裡：那一支是在門**開到縫**（onGap）才呼叫的，
      距離開始上推有 3 秒多（rise 1000 ＋ 撞頂 ＋ 解鎖 ＋ 紋章浮起 1600）。 */
-function riseCue(){ if(battleCue) try{ battleCue(); }catch(e){} }
+/* ⚠ 把**這一場的 id** 交給 cue（ver -614）：戰鬥卡可以指定自己的曲子
+   （`config.battles[].bgm`），撞頂那一拍就得放對的那一首 —— 沒有 id 的話
+   啟動層只能一律放 `bgm_battle`。 */
+let battleCueId=null;
+function riseCue(){ if(battleCue) try{ battleCue(battleCueId); }catch(e){} }
 let battleCue = null;
 export function setBattleCue(fn){ battleCue = fn || null; }
 /* scene 的 `thenTown:'capital'`：這一段演完就進城鎮探索（ver -369）。

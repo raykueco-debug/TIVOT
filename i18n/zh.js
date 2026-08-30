@@ -383,6 +383,8 @@ export const STRINGS = {
       result:     '結算畫面',
       battle:     '戰鬥畫面',
       boss:       'Boss戰',
+      northport:  '北方泊地',           // ver -614
+      harmBoss:   '禍魘BOSS戰',         // ver -614
       flight:     '航行畫面',
     },
     originalNote: '（圖文小說連結，兩站皆已連載完畢）',

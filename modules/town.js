@@ -154,6 +154,16 @@ function diningNode(){ return ((TOWNS[townId]||{}).dining||{}).node || null; }
    ⚠⚠ **每一層自己問 `siegeOn()`**（鐵律 8），不是在 `enter()` 一處判完再分派 ——
      日後新增任何一層探索機制，它自己會記得問；寫在呼叫端一定會漏。
    ⚠ 唯一照常的是 `acts`：城鎮戰的那幾場戰鬥就是掛在那上面的。 */
+/* ══⚠⚠ **這座城現在該放哪一首**（ver -614，Ray 交辦）══ 只有這一支在決定（鐵律 7）：
+   城鎮戰進行中 → `siege.bgm`；其餘 → 城上的 `bgm`。
+   ⚠ 三個呼叫點（`open`／`enter`／`resumeBgm`）都問它 —— 各自讀 `T.bgm` 的話，
+     打完城鎮戰之後只有其中一個會換回來。
+   ⚠ 同曲重播由 `playBgm` 自己擋掉，所以每進一格問一次是安全的。 */
+function townBgm(){
+  const T=TOWNS[townId]; if(!T) return null;
+  const g=siegeOn();
+  return (g && g.bgm) ? g.bgm : T.bgm;
+}
 function siegeOn(){
   const g=(TOWNS[townId]||{}).siege;
   if(!g || !g.from || !prog.hasFlag(g.from)) return null;
@@ -1162,7 +1172,7 @@ export function enter(id){
   /* 這座城的曲子（ver -375）。⚠ 每進一個節點都確認一次，不是只在 `open` 時放一次 ——
      中間可能插進一場戰鬥（戰鬥有自己的曲子），回來要接得回去。
      同曲重播由 `playBgm` 自己擋掉，所以重複呼叫是安全的。 */
-  story.ensureBgm(T.bgm);
+  story.ensureBgm(townBgm());
   bgFor(bgCandsOf(n, id), needReveal ? reveal : null);
   ensureLayer(); bindInput(); refreshArrows(); showNav(false);
   /* ⚠⚠ 進場對白**一律只播一次**（ver -373，Ray：「對話只觸發一次，不重複觸發」）——
@@ -1591,7 +1601,7 @@ export function open(town, node, opts){
      不是「啪」一聲換上一張還沒載完的背景。 */
   story.veil(true, 0);
   story.showPanel();          // 下半的面盤（不擺會是一片全黑）
-  story.ensureBgm(T.bgm);
+  story.ensureBgm(townBgm());
   busy=false;
   /* ══ 第一次（劇情）降落的入口（ver -582，Ray：「第一次劇情降落北方泊地是從碼頭
      進去」）══ 城上寫 `firstEntry:{node,until}`：`until` 那支旗標還沒立起來之前，
@@ -1671,4 +1681,4 @@ export function placeName(pos){
 /* 把這座城的曲子接回來（ver -391）。⚠ 進飛行頁時主遊戲的 BGM 被收掉了
    （見 main.js 的 `openFlight`：兩個 document 各有一套 BGM，不收會疊在一起），
    從飛行頁「返回」回到城鎮時要有人把它接回來。 */
-export function resumeBgm(){ const T=TOWNS[townId]; if(T) story.ensureBgm(T.bgm); }
+export function resumeBgm(){ const T=TOWNS[townId]; if(T) story.ensureBgm(townBgm()); }

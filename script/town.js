@@ -855,7 +855,12 @@ export const TOWNS = {
        ⚠ 判定收在 `modules/town.js` 的 `open()`（進城的唯一入口，鐵律 8）：
          降落、讀檔、章節跳關全部經過它。明寫節點（讀檔）時不套用。 */
     firstEntry: { node:'port', until:'np_port_arrive' },
-    bgm: 'capital',            // ⚠ 暫用帝都曲 —— 北方泊地還沒有自己的 BGM
+    /* ══ 這座城的曲子（ver -614，Ray 交辦）══
+       抵達／城鎮戰打完到 BOSS 登場前 → **Suspense6**（`bgm_suspense`）
+       城鎮戰進行中                   → **Crisis**（見下面 `siege.bgm`）
+       ⚠ 兩者的切換是**同一支** `story.ensureBgm` 在做（每進一個節點問一次，
+         同曲重播由 `playBgm` 自己擋掉）—— 不必在轉場那幾拍手動換曲。 */
+    bgm: 'suspense',
     sailFrom: { x:1480, y:190 },
     /* ══⚠⚠ 城鎮戰（ver -583，Ray 交辦）══════════════════════════════════
        「城鎮戰所以沿用原圖，但是末端只留教堂，其他末端不可進，不用顯示箭頭，
@@ -876,7 +881,10 @@ export const TOWNS = {
          不另立一支 `np_siege_done`：同一件事兩個旗標一定會有一個忘了立（鐵律 7）。
        ⚠ Boss 的戰鬥卡上另有 `sessionEnd`（config.battles.np_boss）——
          那管的是「閉棺與資源回滿」，與「地圖解封」是兩件事，各自的擁有者不同。 */
-    siege: { from:'np_port_arrive', until:'np_clear_church', keep:['church'] },
+    /* ⚠ `bgm`（ver -614）：城鎮戰**進行中**換這一首；打完（`until` 成立）
+       自動回到城上那一首（Suspense6）—— 正好就是 Ray 說的
+       「結束戰鬥，到 boss 登場前用 Suspense6」。 */
+    siege: { from:'np_port_arrive', until:'np_clear_church', keep:['church'], bgm:'crisis' },
     /* ══ 餐飲街（ver -575）══ 這座城的四家店**還沒有圖**，所以不給 `scenes`
        ＝不換分店，那一格只是「外出時碰得到人的地方」（見 OUTING）。
        圖交進來就照帝都那樣補一組 `scenes`（完整基底名＋逐張的 `noTime`），

@@ -1270,8 +1270,16 @@ combat.setStoryReturn((res)=>{
      `launchBattle` 裡那一行 —— 它帶 `delayMs:1000`，是給櫻花過渡禎用的節奏。
    ⚠ 同一首重播由 `playBgm` 自己擋掉（同曲播放中直接 return），所以 launchBattle
      那一行照留著不會打架。 */
-story.setBattleCue(()=>{
-  SFX.playBgm(asset('bgm_battle'), { fadeOutMs:600, volume: bgmVol('bgm_battle') });
+/* ⚠ 這一場自己的曲子（ver -614）：戰鬥卡寫了 `bgm` 就放它，沒寫才是 `bgm_battle`。
+   ⚠ 只有這一支在決定（`battleBgmOf`，鐵律 7）—— 門的 cue 與交棒兩處都問它，
+     各寫一份的話會出現「門開的時候放 A、真的開打換成 B」。 */
+function battleBgmOf(id){
+  const b = id && GAME_CONFIG.battles && GAME_CONFIG.battles[id];
+  return (b && b.bgm) || 'bgm_battle';
+}
+story.setBattleCue((id)=>{
+  const k = battleBgmOf(id);
+  SFX.playBgm(asset(k), { fadeOutMs:600, volume: bgmVol(k) });
 });
 /* 連續戰鬥的開棺判定（ver -585）：真相在 combat 的 `state.battleSession`，
    story 只問（它不 import combat，所以由這裡注入 —— 同 setGateHold 的理由）。 */
@@ -1283,7 +1291,8 @@ story.setBattleHandler((battleId, resume)=>{
      就開那一場（單敵、卡上的數值、不能聖徒化／用搭檔技）。
      ⚠ 查不到才退回教學那一場 —— 舊腳本（地宮那一段）寫的就是教學，不能被改掉。 */
   if(GAME_CONFIG.battles && GAME_CONFIG.battles[battleId]){
-    SFX.playBgm(asset('bgm_battle'), { fadeOutMs:600, volume: bgmVol('bgm_battle') });
+    { const k=battleBgmOf(battleId);
+      SFX.playBgm(asset(k), { fadeOutMs:600, volume: bgmVol(k) }); }
     /* ⚠⚠ **城鎮插入戰留在原背景**（ver -592，Ray：「打完敵人應該會留在原背景，
        不要自動切背景」）：把城鎮現在畫面上那一張帶進戰鬥，蓋過敵人卡的 `bg` ——
        不然打完一場上半會從卡上那張跳回節點原本那張，讀起來是換了個地方。
