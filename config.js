@@ -1379,7 +1379,10 @@ export const GAME_CONFIG = {
           { who:'nouvelle', img:'tut_nouvelle_saintinstall',
             text:'在我熔斷之前你都會是不死之身！趁現在！' },
         ]},
-        { trigger:'php:99', lines:[
+        /* ⚠⚠ `when:'saint'`（ver -612，Ray：「boss 戰只要開一槍諾薇兒就會跳撐不住了」）：
+           `php:99` 在**開場就成立**（玩家滿血），第一發傷害一觸發就把這一段吐出來。
+           稿上這一句的意思是「**聖徒化期間**那條倒數槽被推回 99%」—— 加上條件才對。 */
+        { trigger:'php:99', when:'saint', lines:[
           { who:'nouvelle', img:'tut_nouvelle_desperate', text:'我撐不住了！至少……' },
         ], gate:{ type:'up', immediate:true, action:'partner', then:'partnerOn' } },
         { trigger:'partnerOn', lines:[

@@ -102,7 +102,7 @@ function computeTalkSolo(list){
 }
 function talkFire(trigger){
   if(!talkLeft.length) return;
-  const i=talkLeft.findIndex(s=>s.trigger===trigger);
+  const i=talkLeft.findIndex(s=>s.trigger===trigger && whenOk(s));
   if(i<0) return;
   const step=talkTake(i);
   /* 開場白還沒插入就被別的節點搶先 → 先講開場白，這一段排隊接上（同 fire 的作法）。
@@ -197,6 +197,25 @@ export function maybeStart(){
      一次只該觸發剛跨過的那一道。 */
 /* `fire()` 在 completeGate 裡被同名的區域變數遮蔽了，所以另開一個對外的別名。 */
 function fireTrigger(t){ fire(t); }
+
+/* ══⚠⚠ **段落的附加條件** `when`（ver -612，Ray：「boss 戰只要開一槍諾薇兒就會跳
+   撐不住了」）══ 光靠 trigger 不夠：`php:99`（玩家血回到 99%）在**開場就成立**
+   —— 玩家滿血，第一發傷害一呼叫 `onHpChange` 就把那一段吐出來了。
+   而稿上那一句的意思是「**聖徒化期間**那條倒數槽被推回 99%」，所以要再加一個條件。
+   ⚠ 條件寫成**具名**的（資料層寫不了函式，同 `gate.action`），對照表只有這一張。
+   ⚠ 條件不成立時**不消耗**那一段（`fire` 的 findIndex 一併過濾）——
+     消耗掉的話之後就再也不會演了。 */
+const WHEN = {
+  saint:   ()=>!!state.saintMode,      // 聖徒化進行中
+  nosaint: ()=>!state.saintMode,
+};
+function whenOk(step){
+  const w = step && step.when;
+  if(!w) return true;
+  const fn = WHEN[w];
+  if(!fn){ console.info('[tutorial] 不認得的段落條件：', w); return true; }
+  return !!fn();
+}
 export function onHpChange(){
   const list = state.tutorialActive ? stepsLeft : talkLeft;
   if(!list || !list.length) return;
@@ -205,6 +224,7 @@ export function onHpChange(){
   const pp = pmax ? (state.playerHp/pmax*100) : null;
   let hit=null;
   for(const st0 of list){
+    if(!whenOk(st0)) continue;        // 條件不成立的那一段先跳過（ver -612）
     const t=String(st0.trigger||'');
     let m=/^hp:(\d+(?:\.\d+)?)$/.exec(t);
     if(m && ep!=null && ep <= +m[1]){
@@ -399,7 +419,7 @@ export function onSaintEnded(kind){
  * ========================================================================== */
 function fire(trigger){
   if(!state.tutorialActive){ talkFire(trigger); return; }
-  const i = stepsLeft.findIndex(s=>s.trigger===trigger);
+  const i = stepsLeft.findIndex(s=>s.trigger===trigger && whenOk(s));
   if(i<0) return;
   const step = stepsLeft.splice(i,1)[0];
   if(state.tutorialDialog){ queue.push(step); return; }   // 對話中觸發 → 排隊接續播
