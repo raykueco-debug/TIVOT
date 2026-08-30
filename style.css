@@ -215,30 +215,49 @@
        它不是走進來的，是**本來就在那裡、你才剛看清楚**。
        ⚠ 所以背景要**先**出（`setEnemy` 先擺 `#top` 的底圖，立繪晚一拍才起），
          不然「從背景裡浮出來」沒有可浮的東西。
-     · 淨化 `enemy-purge`：先被聖光**漂白**（brightness↑ saturate→0），再由下往上
-       **抹除**（動 mask 的位置，不是動 opacity）—— 結算副標寫的就是「已淨化」，
-       燒化比淡出貼題。
-       ⚠ 用 `mask-position` 位移一張固定的漸層遮罩，**不要動 `mask-image` 的色標**：
-         漸層色標在各家瀏覽器的內插支援不一致，位移則是穩的。
-       ⚠ `-webkit-mask-*` 一定要一起寫：Safari 到現在仍只吃前綴版。
+     · 淨化 `enemy-purge`（ver -589 改，Ray：「敵人死掉的效果不好，如果用垂直拉長
+       抖動淡出的話呢？」）：**由腳底往上垂直拉長 ＋ 橫向高頻抖動 ＋ 淡出**。
+       ⚠ `transform-origin:50% 100%` —— 拉長要**從腳底往上抽**（原點在中心的話是
+         上下一起長，讀起來是變胖不是被抽走）。立繪本來就靠下（`fit.pos` 多半是
+         `center bottom`），腳底就是它站的地方。
+       ⚠ 抖動與拉長寫在**同一個 `transform`**：CSS 一個元素只有一份 transform，
+         分開寫後者會蓋掉前者。
+       ⚠ 拉長走 ease-in、尾段加速（1.0 → 2.2）：等速拉長讀起來是「被拉開」，
+         加速才是「被抽走」。
+       ⚠ ver -588 那一版（聖光漂白＋mask 由下往上抹除）已被 Ray 退回，不要退回去。
      ⚠ 兩支都只動 `#enemyImg`，不碰盤面與 HUD —— 這是敵人區的演出，不是轉場。 */
   #enemyImg.enemy-rise{animation:enemyRise .42s cubic-bezier(.2,.75,.3,1) both;}
   @keyframes enemyRise{
     0%  {opacity:0; transform:scale(1.08); filter:blur(16px) saturate(.25) brightness(.7);}
     45% {opacity:1;}
     100%{opacity:1; transform:scale(1);    filter:blur(0)    saturate(1)   brightness(1);}}
-  #enemyImg.enemy-purge{animation:enemyPurge .78s ease-in both;
-    -webkit-mask-image:linear-gradient(to top, transparent 0%, #000 42%);
-            mask-image:linear-gradient(to top, transparent 0%, #000 42%);
-    -webkit-mask-size:100% 260%;  mask-size:100% 260%;
-    -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat;}
+  #enemyImg.enemy-purge{animation:enemyPurge .6s ease-in both;
+    transform-origin:50% 100%;}
+  /* ⚠ 抖動用 5% 一格：格子太疏（10%）在 60fps 下會被內插成「左右搖擺」，
+     要密到讀得出是**顫抖**。振幅中段最大（被扯開的那一刻最劇烈），尾段隨著
+     淡出收小 —— 一路抖到消失讀起來是雜訊，不是死亡。 */
   @keyframes enemyPurge{
-    0%  {opacity:1; filter:none;
-         -webkit-mask-position:0 100%; mask-position:0 100%;}
-    16% {filter:brightness(2.6) saturate(0) contrast(1.25);}
-    100%{opacity:0; transform:translateY(-14px) scale(1.03);
-         filter:brightness(2.2) saturate(0) blur(7px);
-         -webkit-mask-position:0 -160%; mask-position:0 -160%;}}
+    0%  {opacity:1;   transform:translateX(0)    scaleY(1.00);}
+    5%  {              transform:translateX(-4px) scaleY(1.01);}
+    10% {              transform:translateX(6px)  scaleY(1.03);}
+    15% {              transform:translateX(-7px) scaleY(1.05);}
+    20% {opacity:.97; transform:translateX(8px)  scaleY(1.07);}
+    25% {              transform:translateX(-9px) scaleY(1.10);}
+    30% {              transform:translateX(9px)  scaleY(1.13);}
+    35% {              transform:translateX(-10px)scaleY(1.17);}
+    40% {opacity:.90; transform:translateX(9px)  scaleY(1.21);}
+    45% {              transform:translateX(-8px) scaleY(1.26);}
+    50% {              transform:translateX(7px)  scaleY(1.32);}
+    55% {              transform:translateX(-6px) scaleY(1.39);}
+    60% {opacity:.74; transform:translateX(5px)  scaleY(1.47);}
+    65% {              transform:translateX(-4px) scaleY(1.56);}
+    70% {              transform:translateX(4px)  scaleY(1.66);}
+    75% {opacity:.52; transform:translateX(-3px) scaleY(1.78);}
+    80% {              transform:translateX(2px)  scaleY(1.90);}
+    85% {              transform:translateX(-2px) scaleY(2.02);}
+    90% {opacity:.26; transform:translateX(1px)  scaleY(2.10);}
+    95% {              transform:translateX(-1px) scaleY(2.16);}
+    100%{opacity:0;   transform:translateX(0)    scaleY(2.20);}}
   #topVignette{position:absolute;inset:0;pointer-events:none;
     background:radial-gradient(120% 80% at 50% 20%,transparent 40%,rgba(0,0,0,.7) 100%);}
 
