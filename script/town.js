@@ -857,6 +857,24 @@ export const TOWNS = {
     firstEntry: { node:'port', until:'np_port_arrive' },
     bgm: 'capital',            // ⚠ 暫用帝都曲 —— 北方泊地還沒有自己的 BGM
     sailFrom: { x:1480, y:190 },
+    /* ══⚠⚠ 城鎮戰（ver -583，Ray 交辦）══════════════════════════════════
+       「城鎮戰所以沿用原圖，但是末端只留教堂，其他末端不可進，不用顯示箭頭，
+         測試期間每張先放 B2G05 當怪。」
+       `from` 那支旗標成立、`until` 還沒成立時，這座城進入**城鎮戰**：
+         · **背景與節點原封不動**（沿用原圖，Ray 指定）。
+         · **末端只留 `keep` 列的那幾格**：其餘末端的箭頭直接不出現
+           （不是走過去被擋，是根本沒有那個方向 —— Ray：「不用顯示箭頭」）。
+         · 每一格自己的 `acts` 掛一場戰鬥（見下面各節點）。
+       ⚠⚠ **「末端」是算出來的，不是列出來的**（鐵律 7）：`exits` 裡只有 `back`
+         ＝它不通往別的地方（`connectorIds()` 的反面）。大城地圖已經規則化，
+         列一張死名單日後加一格就漏一次。
+       ⚠ 連接用場景一律留著 —— 不然玩家會被關在某一格裡出不去。
+       ⚠ **出航不擋**：Ray 說的是「末端」，出航不是末端；而且測試期間走得掉比較方便。
+         真要擋（劇情上不該中途飛走）再說。
+       ⚠⚠ `until` 現在**沒有任何地方會立它** —— 這一段的結束條件 Ray 還沒給
+         （司祭說「守軍把禍魘吸引到城鎮中心去了」，推測是打完教堂那一場），
+         所以現在進了城鎮戰就一直是城鎮戰。要收尾就把那個旗標接到收尾的那一拍。 */
+    siege: { from:'np_port_arrive', until:'np_siege_done', keep:['church'] },
     /* ══ 餐飲街（ver -575）══ 這座城的四家店**還沒有圖**，所以不給 `scenes`
        ＝不換分店，那一格只是「外出時碰得到人的地方」（見 OUTING）。
        圖交進來就照帝都那樣補一組 `scenes`（完整基底名＋逐張的 `noTime`），
@@ -870,12 +888,20 @@ export const TOWNS = {
         exits:{ up:'north', left:'west', right:'east' },
         /* 出航＝模板的「離開」，照 capital 的規矩掛在下；到得這裡船一定有了（同旗，只讀）。 */
         sail:{ flag:'got_ship' },
+        /* 城鎮戰的一場（ver -583）：走進來就打。⚠ `need` ＝城鎮戰開著、
+           `flag` ＝這一格清掉了（打贏才記，同所有城鎮段落「演完才記」的規矩，
+           所以打輸回頭再走一次還會遇到）。 */
+        acts:[ { flag:'np_clear_entrance', need:'np_port_arrive', lines:[ { battle:'np_harm' } ] } ],
       },
       /* ── 三個街區樞紐 ── */
       west: {
         bg:'Northport_west_BF', name:'北方泊地　西側',
         /* up＝Citymap 的空格 → ver -571 Ray 定案是**碼頭**（原入口圖 port_BF 的家）。 */
         exits:{ up:'port', left:'gunstore', right:'guild', down:'entrance' },
+        /* 城鎮戰的一場（ver -583）：走進來就打。⚠ `need` ＝城鎮戰開著、
+           `flag` ＝這一格清掉了（打贏才記，同所有城鎮段落「演完才記」的規矩，
+           所以打輸回頭再走一次還會遇到）。 */
+        acts:[ { flag:'np_clear_west', need:'np_port_arrive', lines:[ { battle:'np_harm' } ] } ],
       },
       /* 碼頭（ver -571，Ray：「西側北端加入碼頭 Northport_port_BF」）——
          擔架兵那張原「入口」圖歸位於此。 */
@@ -936,17 +962,31 @@ export const TOWNS = {
       north: {
         bg:'Northport_north_BF', name:'北方泊地　北側',
         exits:{ left:'cityhall', right:'church', up:'cemetery', down:'entrance' },
+        /* 城鎮戰的一場（ver -583）：走進來就打。⚠ `need` ＝城鎮戰開著、
+           `flag` ＝這一格清掉了（打贏才記，同所有城鎮段落「演完才記」的規矩，
+           所以打輸回頭再走一次還會遇到）。 */
+        acts:[ { flag:'np_clear_north', need:'np_port_arrive', lines:[ { battle:'np_harm' } ] } ],
       },
       east: {
         bg:'Northport_east_BF', name:'北方泊地　東側',
         exits:{ left:'grocery', right:'tavern', up:'inn', down:'entrance' },
+        /* 城鎮戰的一場（ver -583）：走進來就打。⚠ `need` ＝城鎮戰開著、
+           `flag` ＝這一格清掉了（打贏才記，同所有城鎮段落「演完才記」的規矩，
+           所以打輸回頭再走一次還會遇到）。 */
+        acts:[ { flag:'np_clear_east', need:'np_port_arrive', lines:[ { battle:'np_harm' } ] } ],
       },
       /* ── 葉節點（`back`＝回不到「來時反向」時的退路，同 capital）──
          ⚠ 全部還是空房間：等 Ray 的稿再補 shop/kind/keeperWho/hours/lines。 */
       gunstore: { bg:'Northport_gunstore_BF', name:'北方泊地　武器店',     exits:{ back:'west' } },
       guild:    { bg:'Northport_guild_BF', name:'北方泊地　賞金獵人公會', exits:{ back:'west' } },
       cityhall: { bg:'Northport_cityhall_BF', name:'北方泊地　市鎮中心',   exits:{ back:'north' } },
-      church:   { bg:'Northport_church_BF', name:'北方泊地　教堂',       exits:{ back:'north' } },
+      /* ⚠ **城鎮戰期間唯一走得進去的末端**（Ray 指定，見城上的 `siege.keep`）。 */
+      church:   { bg:'Northport_church_BF', name:'北方泊地　教堂',       exits:{ back:'north' },
+        /* 城鎮戰的一場（ver -583）：走進來就打。⚠ `need` ＝城鎮戰開著、
+           `flag` ＝這一格清掉了（打贏才記，同所有城鎮段落「演完才記」的規矩，
+           所以打輸回頭再走一次還會遇到）。 */
+        acts:[ { flag:'np_clear_church', need:'np_port_arrive', lines:[ { battle:'np_harm' } ] } ],
+      },
       /* 墓地＝北側上方那個「空格」，Ray ver -567 定案是墓地。 */
       cemetery: { bg:'Northport_cemetery_BF', name:'北方泊地　墓地',       exits:{ back:'north' } },
       grocery:  { bg:'Northport_grocery_BF', name:'北方泊地　雜貨街',     exits:{ back:'east' } },

@@ -947,6 +947,42 @@ export const GAME_CONFIG = {
          `script/SCRIPT_FORMAT.md` 的「敵人卡」一節）。卡上有的欄位這裡都要有，
          沒實作的（抗性/弱點）也**照樣寫進資料**、標明未實作 —— 資料先齊，
          程式後補；不要因為還沒做就把欄位丟掉（丟掉的下場是下次補做時沒人記得。） */
+    /* ══⚠⚠ 北方泊地城鎮戰的**測試用**怪（ver -583，Ray 交辦）══════════════
+       Ray：「測試期間每張先放 B2G05 當怪，血量 300，攻擊模式同訓練用聖徒，
+             攻擊力同賞金獵人」。三個數字各有出處，所以**這張卡是拼出來的**：
+         · `hp:300`                    ← Ray 指定
+         · 攻擊**模式** ← `trainee`：`sound` / `boardGrids` / `delayPenalty` /
+           `hitFx` / `atkInterval` 一律照抄訓練用聖徒那一張
+         · 攻擊**力** ← `guild_hunter`：`attack:10`（＝大絕那一發的傷害）
+       ⚠⚠ **這是佔位卡**：Ray 說的是「測試期間」，正式的怪與數值還沒給。
+         日後每一格要換不同的怪時，一格一張卡、節點的 `acts` 各自指過去
+         （現在五格共用這一張，見 script/town.js 的 northport.siege）。
+       ⚠ `bg` ＋ `fit.contain` 是**去背立繪的必要配套**（同 guild_hunter 那條）——
+         沒有背景的話身後是一片黑，用 cover 會把頭裁掉。
+         ⚠ 現在固定用北側那張；要讓戰鬥背景跟著「你在哪一格」變，得讓 battles 支援
+           bg 覆寫，那是另一件事（Ray 沒要求，先不做）。
+       ⚠ `kind:'harm'` ＝禍魘 → 結算副標「已淨化」（ver -423 的對照表）。 */
+    np_harm: {
+      name:'禍魘',
+      story:1, counterStagger:1,
+      kind:'harm',
+      image:'enemy_np_harm',
+      bg:'Northport_north_BF',
+      fit:{ mode:'contain', pos:'center bottom' },
+      hp:300,                       // Ray 指定
+      attack:10,                    // ＝賞金獵人（Ray：「攻擊力同賞金獵人」）
+      /* ── 以下整組照抄訓練用聖徒（Ray：「攻擊模式同訓練用聖徒」）── */
+      atkInterval:null,             // 沿用 tuning.chargeSeconds
+      sound:{ ult:'em_slash', delay:'em_smack', wrong:'em_slash' },
+      delayPenalty:{ seconds:5 },
+      special:[],
+      boardGrids:[9,9,16,16,16],
+      hitFx:{
+        delay:{ type:'blood', angle:'random' },
+        wrong:{ type:'slash' },
+        ult:{   type:'claw', count:3, angle:'random' },
+      },
+    },
     guild_hunter: {
       name:'賞金獵人',
       story:1, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
@@ -1143,6 +1179,12 @@ export const GAME_CONFIG = {
        Game Over 畫面回主選單**。所以這一欄不寫＝打輸就 Game Over；
        只有「劇本要它被打輸」的場次才寫 `allowLose:true`（輸了接著演）。 */
     guild_hunter: { enemy:'guild_hunter', noSaint:true, noPartner:true },
+    /* 北方泊地的城鎮戰（ver -583）：每一格走進去打一場，共用這一張佔位卡。
+       ⚠ **不禁聖徒化／搭檔技**：Ray 沒說要禁（禁了要明寫 noSaint/noPartner）。
+       ⚠ 打輸走一般流程 —— 城鎮插入戰的敗北會被抬回這座城的旅店（§6.5.2 那張表）。
+         ⚠ 北方泊地的旅店還沒掛 `inn:true`，所以現在會退回「上次睡覺的旅店」
+           （帝都）。要讓他被抬回這裡的旅店，得先把北方泊地的旅店大廳接起來。 */
+    np_harm: { enemy:'np_harm' },
     /* 槍店的打靶（ver -377）。⚠ 這一場**可以輸**（`allowLose`）—— Ray 的稿子有
        「戰敗」與「戰勝」兩支台詞，所以輸了不是 Game Over，是接另一支分歧。
        ⚠ `record` ＝ 這一場自己的最佳紀錄（通關用時），破紀錄時結算頁加 NEW。
@@ -1580,6 +1622,12 @@ export const ASSETS = {
   enemy_dart_target: "resources/enemy/Dart_timeattack.webp",   // 打靶場：固定立靶（ver -396）
   /* 賞金獵人（ver -375）：戰鬥立繪＝對話立繪的 `attack` 那張（去背，配 `bg` 用）。 */
   enemy_guild_hunter: "resources/SI/NPC_GuildHunter_SI_Attack.webp",
+  /* ⚠⚠ 北方泊地城鎮戰的**測試用**怪（ver -583，Ray：「測試期間每張先放 B2G05 當怪」）。
+     `B2G05` 我對到的是第二批 Gemini 那六張裡的第 5 張＝**溺亡騎士**
+     （`resources/enemy/_drafts/mon_sea_drowned.webp`）。對錯只要改這一行。
+     ⚠ 圖還在 `_drafts`（底線開頭的資料夾**不進遊戲載入**是給「還沒選定」的草稿用的，
+       但 ASSETS 明寫路徑照樣載得到）—— 選定之後請搬進 `resources/enemy/` 並改這一行。 */
+  enemy_np_harm: "resources/enemy/_drafts/mon_sea_drowned.webp",
 
   // ── 五張 cut-in 圖（v17.7 嵌入）──
   cutin_saint_luna: "resources/partner/Luna_CI_advent.jpg",   // 聖徒化降臨 cut-in（Luna）

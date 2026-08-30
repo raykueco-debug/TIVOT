@@ -135,6 +135,23 @@ function connectorIds(){
 }
 /* 這座城的餐飲街是哪一格（沒有就 null）。 */
 function diningNode(){ return ((TOWNS[townId]||{}).dining||{}).node || null; }
+
+/* ══ 城鎮戰（ver -583，Ray：「城鎮戰所以沿用原圖，但是末端只留教堂，其他末端不可進，
+   不用顯示箭頭」）══════════════════════════════════════════════════════════
+   資料在城上的 `siege:{from, until, keep}`（鐵律 1）。開著時：**通往末端的箭頭
+   只留 `keep` 列的那幾格**，其餘直接不出現（不是走過去被擋 —— Ray 指定「不用顯示
+   箭頭」，那才讀得出「那邊過不去」而不是「按了沒反應」）。
+   ⚠⚠ 「末端」是**算出來的**（鐵律 7）：`connectorIds()` 之外的就是末端。
+     大城地圖已經規則化，列一張死名單日後加一格就漏一次。
+   ⚠ 連接用場景一律留著 —— 不然玩家會被關在某一格出不去。
+   ⚠ 判定只有這一支，`exitsOf()` 那個唯一的出口表問它（箭頭、目的地字格、鍵盤、
+     `go()` 全部一次吃到，鐵律 8）。 */
+function siegeOn(){
+  const g=(TOWNS[townId]||{}).siege;
+  if(!g || !g.from || !prog.hasFlag(g.from)) return null;
+  if(g.until && prog.hasFlag(g.until)) return null;
+  return g;
+}
 /* 她可能出現在哪：連接用場景 ∪ 她自己的清單 ∪ 餐飲街。
    ⚠ **旅店不算** —— 她就住在那裡，「出門」的意思是不在旅店。 */
 function areaFor(who){
@@ -781,6 +798,18 @@ let backDir    = null;   // 「回去」該掛在哪一支箭
 function exitsOf(){
   const n=node(); const ex=Object.assign({}, (n&&n.exits)||{});
   const back=ex.back; delete ex.back;
+  /* ══ 城鎮戰：通往末端的方向只留 `keep` 那幾格（ver -583）══
+     ⚠ 擋在**這裡**而不是 `go()`：Ray 要的是「不用顯示箭頭」——
+       箭頭都不出現，玩家才讀得出「那邊過不去」。 */
+  const sg=siegeOn();
+  if(sg){
+    const conn=new Set(connectorIds());
+    const keep=new Set(sg.keep||[]);
+    for(const d in ex) if(!conn.has(ex[d]) && !keep.has(ex[d])) delete ex[d];
+    /* ⚠ `back` 也要吃這一條：它指到的若是被封的末端就不掛（實際上 `back` 一律
+       指向連接場景，所以正常不會踩到 —— 但規則要一致，不要留一條後門）。 */
+    if(back && !conn.has(back) && !keep.has(back)) return ex;
+  }
   /* ══ 出航（ver -387，Ray：「預設的城鎮入口下方為『出航』」）══
      ⚠ 走**同一套**方向出口（長按那一支箭／字格），不另做一顆鈕 —— 對玩家而言
        「往下走」與「出航」是同一個動作，只是目的地在城外（鐵律 8）。
