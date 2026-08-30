@@ -252,6 +252,19 @@ export const CHAPTERS = [
     stage:1, clockHour:7, named:true,
     flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open'],
     enter:'town', town:'capital', node:'dock' },
+  /* ══ Stage 3（ver -600，Ray：「寫入章節選擇讓我可以直接測」）══
+     北方泊地：碼頭那一幕（司祭）→ 城鎮戰五格 → 教堂 Boss → 聖徒化教學戰。
+     ⚠ `node` **不寫**：第一次降落走城上的 `firstEntry`（碼頭），跟正常玩一樣。
+     ⚠ `stage:3` ＝ Ray 指定「初進北境插 Stage3」；正常玩是 `town.open` 從 2 升上來，
+       這裡是跳關工具，直接寫。
+     ⚠ `flags` 只列**擋路的那幾支**（§6.5.8）：出航／船塢那一段要當成看過，
+       不然一進城會被主線段落抓走。城鎮戰與碼頭那一幕的旗標**故意不給** ——
+       那正是要測的東西。 */
+  { id:'stage3', name:'Stage 3', sub:'北方泊地・碼頭 → 城鎮戰 → 教堂 → 聖徒化教學戰',
+    stage:3, clockHour:13, named:true,
+    flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open',
+           'set_sail','got_ship','dock_day2','eval_renna'],
+    enter:'town', town:'northport' },
 ];
 
 export function newRun(){

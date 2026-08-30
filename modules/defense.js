@@ -304,7 +304,7 @@ export function resolveThreat(th){
     flashDefense('block');
     if(state.saintMode){
       // 聖徒化期間：格擋＝推進 +0.5 秒（下一輪聖徒化才會實際生效）
-      api.enemyAttack(0, 'ult', state.playerMax/SAINT_BLOCK_DIVISOR);
+      api.enemyAttack(0, 'block', state.playerMax/SAINT_BLOCK_DIVISOR);   // 'block'＝擋下一半（ver -600 評價用）
       api.floatDmg(L.battle.block,'50%','42%',false);
     }else{
       const defScale=(w && w.defenseDamageScale!=null) ? w.defenseDamageScale : 0.5;
@@ -312,7 +312,7 @@ export function resolveThreat(th){
         api.floatDmg(L.battle.block,'50%','42%',false);        // 完全免傷（若有武器設 0）
       }else{
         const dmg=Math.max(1, Math.round(effUltDamage()*defScale));   // 教學：2 減半 → 1
-        api.enemyAttack(dmg, 'ult');                     // 依武器倍率受傷（仍屬大絕受擊）
+        api.enemyAttack(dmg, 'block');                   // 依武器倍率受傷（'block'＝擋下一半，ver -600）
         api.floatDmg(fmt(L.battle.blockDmg,{n:dmg}),'50%','42%',false);
       }
       if(api.onThreatEarly) api.onThreatEarly();   // 教學「太早防禦」插話（教學外/聖徒化為 no-op）

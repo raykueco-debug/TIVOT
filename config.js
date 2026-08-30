@@ -712,39 +712,53 @@ export const GAME_CONFIG = {
    *  設計新敵人只要給 hp，評價門檻即自動跟著調整。
    *  無傷 gate：hitsTaken===0 → 直接判 S（凌駕分數）。
    * ------------------------------------------------------------------ */
+  /* ══════════════════════════════════════════════════════════════════════
+     評價（ver -600 全面改寫，Ray 交辦）
+     ──────────────────────────────────────────────────────────────────────
+     Ray：「評價系統改為 SABCD，沒有 E，把評價系統改寬鬆一點，以敵 HP 為基準，
+           算出一個值，以攻略時間為最大評分要素，把係數給我，我測試以後直接修改
+           係數就好。點錯格 +2 秒，被大絕命中 +3 秒，大絕防一半 +1 秒，
+           延遲懲罰加一秒。數個敵人算一場的狀況下，以全敵 hp 總和計算。」
+
+     ── 算法（只有這一份，`inspector.evaluate()` 實作）─────────────────
+       ① 基準秒數 `par` ＝ 全敵 HP 總和 × `secPerHp`（＋Boss 時加 `bossBonus`）
+       ② 失誤折算成秒：點錯 ×`penalty.wrong`、挨大絕 ×`ult`、擋下 ×`block`、
+          延時 ×`delay` —— 全部加進實際用時
+       ③ `ratio` ＝ (實際用時 ＋ 失誤秒) ÷ par　**越小越好**
+       ④ 對照 `tiers` 取等第（由上往下，第一個 `ratio <= max` 的就是）
+
+     ⚠⚠ **這一段就是給 Ray 調的**：改係數不必動程式。三組旋鈕：
+       · `secPerHp`  基準給多鬆（每 1 點血幾秒）
+       · `penalty.*` 各種失誤值多少秒
+       · `tiers[].max` 每一級的門檻（ratio）
+     ⚠ **沒有 E**（Ray 指定）：最後一級 `D` 的 `max` 是 Infinity ＝ 兜底，
+       所以永遠評得出一個等第。
+     ⚠ 現在這一組**刻意寬鬆**：300 血的怪 par ＝ 90 秒；一分半內打完、
+       失誤不多就有 A 以上。要嚴就把 `secPerHp` 調小或把 `tiers` 的 max 調小。
+     ⚠ 舊的百分制（時間/命中/連擊/完美反擊/overkill 配分）**整組退役** ——
+       Ray 要的是「以攻略時間為最大評分要素」的單一維度，多維加權會把時間稀釋掉。
+     ══════════════════════════════════════════════════════════════════════ */
   rating: {
-    time: {
-      base: 100,          // 每 hpPerBase 血量對應的秒數基數
-      hpPerBase: 500,     // 每 500 血 = 100 秒預算
-      bossBonus: 20,      // isBoss 時預算額外 +20 秒
-      capSeconds: 20,     // 剩餘時間達 (預算-20) 即時間項封頂；即 20 秒內 clear 時間項滿分
-    },
-    points: {
-      timeMax:        60, // 時間項滿分（主評價）
-      accuracyMax:    15, // 命中率 × 15
-      accPerfectBonus: 5, // 命中率 100%（零按錯）額外加成
-      comboMax:       10,
-      perfectCtrMax:  8,  // 完美反擊（Counter 反擊次數）配分
-      overkillMax:    2,  // overkill 評價分數上限（收緊：原 5 太甜，隨便 overkill 就白拿滿）
-      hitPenalty:     10, // 每次受擊扣 10 分（收緊：受擊懲罰加重）
-    },
-    norm: {
-      comboTarget: 30,
-      pcTarget: 5,
-      okTarget: 4,   // 搭配 overkillMax=2 → 每點 overkill 0.5 分、overkill 4 即封頂（僅 2 分）
-    },
+    secPerHp: 0.30,       // 每 1 點敵人總血量給幾秒（300 血 → 90 秒）
+    bossBonus: 20,        // Boss（亂入）額外加幾秒
+    /* 失誤折算成秒（Ray 指定的四個數字）。 */
+    penalty: { wrong: 2, ult: 3, block: 1, delay: 1 },
+    /* 等第門檻：`ratio`（用時÷基準）**不超過** max 就是這一級，由上往下取第一個。
+       ⚠ D 是兜底（Infinity），所以沒有 E。 */
     tiers: [
-      { grade: 'S', min: 80 },
-      { grade: 'A', min: 64 },
-      { grade: 'B', min: 48 },
-      { grade: 'C', min: 32 },
-      { grade: 'D', min: 16 },
-      { grade: 'E', min: 0  },
+      { grade: 'S', max: 0.60 },
+      { grade: 'A', max: 0.85 },
+      { grade: 'B', max: 1.10 },
+      { grade: 'C', max: 1.45 },
+      { grade: 'D', max: Infinity },
     ],
+    /* 分數（0~100，只給 EXP 與後台統計用，畫面上不出現）：
+       ratio 0 → 100、ratio 1 → 50、ratio ≥2 → 0。 */
+    scoreFromRatio: { at1: 50 },
     exp: {
       mult: 8.7,          // 非整數倍率，避免整齊倍數
       offset: 137,        // 質數基底，保證三位數起跳
-      overkillExp: 3,     // 每點 overkill 額外 +3 EXP（EXP 展示用，不影響評價分數）
+      overkillExp: 3,     // 每點 overkill 額外 +3 EXP（EXP 展示用，不影響評價）
       jitterMod: 7,       // 用分數尾數做微擾，讓 EXP 數字不整齊
     },
   },

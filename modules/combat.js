@@ -1280,6 +1280,11 @@ function win(){
     overkill: state.runOverkill + state.overkill,              // 整場累計 overkill
     // 教學劇情殺三連擊為腳本演出，不算玩家頭上（下限 0）
     hitsTaken: Math.max(0, state.hitsTaken - _scriptedHits),
+    /* 失誤計數（ver -600）：新評價把它們折算成秒數加進攻略時間。 */
+    wrongTaps: state.wrongTaps|0,
+    ultHits:   state.penUlt|0,
+    blocks:    state.penBlock|0,
+    delays:    state.penDelay|0,
   };
   /* ⚠ 上報搬到 `stats` 之後（ver -456，Ray：「後台加入玩家的各別等級次數紀錄，
      分成一般跟 boss 戰」）：等第要一起上報，而它由 `stats` 算出來。
@@ -1378,6 +1383,7 @@ export function startGame(){
   state.overkill=0; state.killTime=0; state.transitioning=false;
   state.counterCount=0; state.counterDamage=0; state.perfectCount=0; state.sawExecution=false;
   state.maxCombo=0; state.hitsTaken=0; state.correctTaps=0; state.wrongTaps=0; state.runOverkill=0;   // 評價統計歸零
+  state.penUlt=0; state.penBlock=0; state.penDelay=0;   // 失誤計數歸零（ver -600 的新評價）
   _scriptedHits=0;                                     // 教學劇情殺擊數（結算受擊數扣除用）
   state.playerHp=state.playerMax;
   state.N=9; state.cols=3;
@@ -1512,6 +1518,7 @@ export function startIntruderFight(){
   state.overkill=0; state.killTime=0; state.transitioning=false;
   state.counterCount=0; state.counterDamage=0; state.perfectCount=0; state.sawExecution=false;
   state.maxCombo=0; state.hitsTaken=0; state.correctTaps=0; state.wrongTaps=0; state.runOverkill=0;   // 評價統計歸零
+  state.penUlt=0; state.penBlock=0; state.penDelay=0;   // 失誤計數歸零（ver -600 的新評價）
   _scriptedHits=0;                                     // 教學劇情殺擊數（結算受擊數扣除用）
   state.playerHp=state.playerMax; state.enemyHp=state.enemyMax;
   state.N=9; state.cols=3;

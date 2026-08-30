@@ -165,6 +165,10 @@ export const state = {
      中間幾格不彈結算頁，那幾場的收穫先記在這裡，收段的那一場（Boss）一起入帳。
      ⚠ 擁有者是 inspector（`bankSessionGain`／`clearSessionGain`），
        combat 的 `endSession()` 也會清 —— 半途離場不該把帳留到下一段。 */
+  /* 失誤計數（ver -600 的新評價）：擁有者 combat（`enemyAttack` 加、`startGame` 歸零）。
+     `penUlt`＝被大絕命中、`penBlock`＝擋下一半、`penDelay`＝延時懲罰；
+     點錯格用既有的 `wrongTaps`。 */
+  penUlt: 0, penBlock: 0, penDelay: 0,
   sessionExp: 0,
   sessionMoney: 0,
   pickedPartner: GAME_CONFIG.defaultPartner,   // 玩家實選搭檔（擁有者 partner；選人畫面經 setPickedPartner 寫入）

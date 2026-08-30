@@ -1565,6 +1565,12 @@ export function open(town, node, opts){
      守門看**值**不看旗標：只從 0 升上來 —— 讀檔在更後面的章節不會被倒退，
      試玩版（無鑰匙，getStage 回測試預設 5）也不受影響。 */
   if(townId==='capital' && prog.getStage()===0) prog.setStage(1);
+  /* 初進北方泊地＝S3（ver -600，Ray：「在初進入北境時插 Stage3 的旗，stage2 拔掉」）。
+     ⚠ 守門看**值**不看旗標（同上面那一條，鐵律 9）：只從 2 升上來 ——
+       讀檔在更後面的章節不會被倒退，試玩版（無鑰匙，預設 5）也不受影響。
+     ⚠ 「stage2 拔掉」是 `setStage(3)` 的必然結果：階段是**一個值**不是一疊旗，
+       升上去舊的那一個就不成立了（`gameStage()===2` 的地圖鎖因此自動解開）。 */
+  if(townId==='northport' && prog.getStage()===2) prog.setStage(3);
   /* 被抬回來的（ver -496，Ray：「城鎮中戰鬥死亡就回旅店」）：這一次抵達由
      `enter()` 消化 —— 初見還沒看過就演節點的 `wake` 那一拍（見 enter 的說明）。 */
   carriedIn = !!(opts && opts.carried);

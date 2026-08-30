@@ -99,38 +99,40 @@ export function scoreToExp(score, stats, cfg = GAME_CONFIG.rating.exp){
   return Math.round(exp);
 }
 
-// 主評分：回傳 { grade, score, exp, breakdown }。
+/* ══════════════════════════════════════════════════════════════════════
+   主評分（ver -600 全面改寫，Ray 交辦）—— **以攻略時間為唯一維度**
+   ──────────────────────────────────────────────────────────────────────
+     par   ＝ 全敵 HP 總和 × `secPerHp`（＋Boss 加成）
+     用時  ＝ 實際秒數 ＋ 失誤折算的秒數（點錯／挨大絕／擋下／延時）
+     ratio ＝ 用時 ÷ par　**越小越好** → 對照 `tiers` 取等第
+   ⚠⚠ **係數全部在 `config.rating`**（鐵律 1）：Ray 要調直接改那裡，程式不必動。
+   ⚠ **沒有 E**（Ray 指定）：`tiers` 最後一級是 Infinity 兜底。
+   ⚠ 「數個敵人算一場」用的是 `stats.totalHP`（combat 的 `runTotalHp()` 已經把
+     lineup 各敵血量加總了，鐵律 7）。
+   ⚠ **舊的無傷直升 S 拿掉了**：新制的失誤已經折算成秒，再加一條「無傷就 S」
+     等於把時間那一維再蓋掉一次。
+   ⚠ 回傳仍是 `{grade, score, exp, breakdown}` —— `score` 只給 EXP 與後台用，
+     畫面上不出現（顯示的是等第）。
+   ══════════════════════════════════════════════════════════════════════ */
 export function evaluate(stats, cfg = GAME_CONFIG.rating){
-  const t = cfg.time, p = cfg.points, nm = cfg.norm;
-  // 1) 時間預算：隨敵人總血量自動變動（+ Boss 加成）
-  const budget = (stats.totalHP / t.hpPerBase) * t.base + (stats.isBoss ? t.bossBonus : 0);
-  // 2) 剩餘時間
-  const timeLeft = budget - stats.clearTime;
-  // 3) 時間項：剩餘達 (預算-capSeconds) 即封頂（capSeconds 內 clear → 時間項滿分）
-  const fullMarkLeft = budget - t.capSeconds;
-  const timeRatio = (fullMarkLeft > 0) ? clamp01(timeLeft / fullMarkLeft) : (timeLeft > 0 ? 1 : 0);
-  const timeScore = timeRatio * p.timeMax;
-  // 4) 加分項（各自 clamp 到 0~1 後乘配分）
-  const accScore   = clamp01(stats.accuracy)                 * p.accuracyMax;
-  const accPerfect = (stats.accuracy >= 1 ? (p.accPerfectBonus || 0) : 0);   // 命中率 100% 額外加成
-  const comboScore = clamp01(stats.maxCombo / nm.comboTarget) * p.comboMax;
-  const pcScore    = clamp01(stats.perfectCounter / nm.pcTarget) * p.perfectCtrMax;
-  const okScore    = clamp01(stats.overkill / nm.okTarget)    * p.overkillMax;
-  // 5) 受擊扣分
-  const hitPenalty = stats.hitsTaken * p.hitPenalty;
-  // 6) 總分（下限 0）
-  const score = Math.max(0, timeScore + accScore + accPerfect + comboScore + pcScore + okScore - hitPenalty);
-  // 7) 級距：tiers 由高到低，取第一個 score >= min
-  let grade = cfg.tiers[cfg.tiers.length - 1].grade;
-  for(const tier of cfg.tiers){ if(score >= tier.min){ grade = tier.grade; break; } }
-  // 8) 無傷 gate：無受擊 → 直接 S（凌駕分數）
-  if(stats.hitsTaken === 0) grade = 'S';
-
+  const pen = cfg.penalty || {};
+  const par = Math.max(1, (stats.totalHP||0) * (cfg.secPerHp||0.3)
+                        + (stats.isBoss ? (cfg.bossBonus||0) : 0));
+  const penSec = (stats.wrongTaps||0) * (pen.wrong||0)
+               + (stats.ultHits ||0) * (pen.ult  ||0)
+               + (stats.blocks  ||0) * (pen.block||0)
+               + (stats.delays  ||0) * (pen.delay||0);
+  const used  = (stats.clearTime||0) + penSec;
+  const ratio = used / par;
+  let grade = cfg.tiers[cfg.tiers.length-1].grade;
+  for(const tier of cfg.tiers){ if(ratio <= tier.max){ grade = tier.grade; break; } }
+  /* 分數：ratio 0 → 100、1 → `scoreFromRatio.at1`、≥2 → 0（線性兩段）。 */
+  const at1 = (cfg.scoreFromRatio && cfg.scoreFromRatio.at1) != null
+            ? cfg.scoreFromRatio.at1 : 50;
+  const score = Math.max(0, Math.round(ratio<=1 ? (100 - (100-at1)*ratio)
+                                                : Math.max(0, at1*(2-ratio))));
   const exp = scoreToExp(score, stats, cfg.exp);
-  return {
-    grade, score, exp,
-    breakdown: { timeScore, accScore, accPerfect, comboScore, pcScore, okScore, hitPenalty, budget, timeLeft },
-  };
+  return { grade, score, exp, breakdown: { par, penSec, used, ratio } };
 }
 
 /* ============================================================================
