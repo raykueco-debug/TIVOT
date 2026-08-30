@@ -147,6 +147,14 @@ export const state = {
   inIntruderFight: false,
   deathGuardUsed: false,
   partnerActiveUsed: false,   // 搭檔主動技「每場一次」旗標（oncePerBattle 技用；擁有者 partner，combat 於開場歸零）
+  /* ══⚠⚠ 連續戰鬥的「同一場」（ver -585，Ray：「戰鬥地圖中移動期間算同一場，
+     hp／聖徒化次數／主動技發動次數／破防值算同一場」）══
+     城鎮戰那張地圖上的每一格是一次 `startScriptBattle`，但對玩家而言**是同一場** ——
+     所以「每場一次」的資源不可以在格與格之間回滿。
+     這裡存的是**現在開著的那一段**的 id（`config.battles[].session`），null＝沒有。
+     ⚠ 擁有者是 `combat`（開場設、`sessionEnd` 的那一場打完清、goHome 清）；
+       其餘模組只讀。`main.js` 的門也讀它決定要不要演開棺（鐵律 7：只有這一份）。 */
+  battleSession: null,
   pickedPartner: GAME_CONFIG.defaultPartner,   // 玩家實選搭檔（擁有者 partner；選人畫面經 setPickedPartner 寫入）
   lineupIndex: 0,        // 連戰序列游標（局內第幾隻敵，對應 GAME_CONFIG.lineup）
 

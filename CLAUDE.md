@@ -1081,6 +1081,36 @@ trigger 壞了」）**
 - ⚠⚠ **結束條件還沒有**：`until` 那支旗標目前沒有任何地方會立它，所以進了城鎮戰
   就一直是城鎮戰。要收尾就把它接到收尾的那一拍。
 
+**⚠⚠ 整張戰鬥地圖算「同一場」（ver -585，Ray：「城鎮戰內打掉一個怪不用閉棺，
+打掉 Boss 才閉，戰鬥地圖中移動期間算同一場，hp／聖徒化次數／主動技發動次數／
+破防值算同一場」）**
+
+- 戰鬥卡寫 `session:'<id>'` ＝屬於那一段連續戰鬥；`sessionEnd:true` ＝打贏它收段（Boss）。
+  現在開著的那一段存在 `state.battleSession`（擁有者 combat，其餘只讀，鐵律 7）。
+- 同一段之內：
+  · **開棺只演第一次** —— 判定 `combat.battleNeedsGate()`，由 `main.js` 注入給
+    `story.setGateSkip`（story 不 import combat）。一格演一次儀式，五格就是五次，
+    那讀起來不是同一場戰鬥。
+  · **「每場一次」的資源不回滿**：聖徒化（`saintUsedThisBattle`）、搭檔主動技
+    （`partnerActiveUsed`）、破防值（`energy`）。HP 本來就延續（持久 HP，ver -481）。
+- ⚠⚠ 作法是**離場存、進場放**（`sessionSave`／`startGame` 尾端放回），
+  **不是**在 `startGame` 開頭那排歸零裡挖特例 —— 那會讓「這一場到底重置了什麼」
+  出現兩份答案（鐵律 7）。
+- ⚠ 段落的收尾走**一支** `endSession()`：`sessionEnd` 那一場打贏、`goHome`
+  （`keepPages` 例外 —— 那是借 goHome 當過場，收掉的話走一格資源就回滿）。
+
+**⚠⚠ 戰鬥是這一段的最後一句時，舞台沒有人開回來（ver -585 修）**
+
+- 打完回來走 `story.resumeFrom` 的 adhoc 分支。剩下有台詞時 `playAdhoc` 第一行就把
+  `#storyStage.on` 加回去；**剩零句**時走的是「直接叫 `done`」那條捷徑 —— 那一條
+  **漏了開舞台**。而 `goHome` 在黑幕全蓋那一刻一律 `$('home').classList.add('on')`，
+  於是打完看到的是**首頁**，城鎮明明還開著（`isOpen()` 真、`getPosition()` 有值）
+  卻整層 `display:none`。
+- ⚠ 城鎮的 `acts` 常常整段只有一拍 `{battle:…}`（城鎮戰每一格都是），
+  所以那是**常態不是邊角**。
+- ⚠ 自檢：任何「把畫面交出去再接回來」的路徑，兩條分支（有剩／沒剩）都要問
+  「誰把舞台開回來？」
+
 ## 6.5.5 旅店大廳（ver -392）
 
 旅店節點（`script/town.js` 的 `inn:true`）在進場對白之後多一層互動：

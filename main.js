@@ -1244,6 +1244,9 @@ combat.setStoryReturn((res)=>{
 story.setBattleCue(()=>{
   SFX.playBgm(asset('bgm_battle'), { fadeOutMs:600, volume: bgmVol('bgm_battle') });
 });
+/* 連續戰鬥的開棺判定（ver -585）：真相在 combat 的 `state.battleSession`，
+   story 只問（它不 import combat，所以由這裡注入 —— 同 setGateHold 的理由）。 */
+story.setGateSkip(id => combat.battleNeedsGate(id));
 story.setBattleHandler((battleId, resume)=>{
   storyResume = resume;
   flightBack = false;   // 劇情/城鎮的插入戰不是飛行頁交棒過來的（同 launchBattle 的理由）

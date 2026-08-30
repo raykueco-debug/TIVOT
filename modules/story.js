@@ -1434,6 +1434,14 @@ let kerbHeld=false;      // 門正押著戰鬥（中止演出時要放行，否�
    回到劇情側的門（playKerberos 非 fromRisen）清。layoutKerberos 讀它決定顯示。 */
 let kerbNoPend=false;
 export function setGateHold(o){ gateHold = o || null; }
+/* ══⚠⚠ 這一場要不要演開棺（ver -585，Ray：「城鎮戰內打掉一個怪不用閉棺，
+   打掉 Boss 才閉」）══ 連續戰鬥（`config.battles[].session`）在段落**開始**時演一次，
+   段落之內每一格直接接上去 —— 一格演一次開棺，五格就是五次儀式，那不是同一場戰鬥。
+   ⚠ 判定的**真相在 combat**（`state.battleSession`，鐵律 7），這裡只問；
+     由 `main.js` 注入（story 不 import combat，維持依賴方向）。
+   ⚠ 沒注入＝一律演（舊行為），所以漏接不會壞。 */
+let gateSkip=null;
+export function setGateSkip(fn){ gateSkip = fn || null; }
 function gatePause(){ if(gateHold && !kerbHeld){ kerbHeld=true; gateHold.pause(); } }
 function gateResume(){ if(kerbHeld){ kerbHeld=false; gateHold && gateHold.resume(); } }
 function stopKerberos(){
@@ -1772,6 +1780,12 @@ function renderLine(){
        先讓底下開戰（onGap），門才拉開；門全開之後才把劇情層收掉。
        ⚠ 舊寫法是「先 close 再交棒」，那樣門一開只會露出黑幕。
        ⚠ close 一定要等門全開（onDone）—— 提早收掉的話門會憑空消失。 */
+    /* 連續戰鬥的第二格起：**不演開棺**，直接開戰、收掉劇情層（ver -585）。 */
+    if(gateSkip && !gateSkip(id)){
+      battleHandler(id, resume);
+      close({ keepBgm:true });
+      return;
+    }
     playKerberos(()=>battleHandler(id, resume),
                  ()=>close({ keepBgm:true }));
     return;
@@ -2720,6 +2734,17 @@ export function resumeFrom(pos, res){
   }
   if(pos.adhoc){
     const rest = pos.adhoc.slice(pos.line||0);
+    /* ⚠⚠ **舞台要先開回來**（ver -585 修）：戰鬥交棒時 `close()` 把 `#storyStage.on`
+       與 `body.story-on` 拿掉了，而 `#home` 在 `goHome` 那一刻被加上 `.on` ——
+       舞台沒開回來的話，打完回到的是**首頁**，城鎮明明還開著卻看不見
+       （`town.isOpen()` 真、`getPosition()` 有值，但整層 display:none）。
+       ⚠ 有剩幾句時 `playAdhoc` 自己會開（它第一行就做這件事），
+         但**戰鬥是最後一句**時走的是下面那條捷徑 —— 那一條以前就漏了。
+         城鎮的 `acts` 常常整段只有一拍 `{battle:…}`，所以那是常態不是邊角。
+       ⚠ 這一支不是「開一個新場」：`active` 不動、不清台上 —— 城鎮的背景與導覽
+         都還在，重建一次只會把它們洗掉（同下面 playAdhoc 那條註解）。 */
+    const stg=$('storyStage');
+    if(stg){ stg.classList.add('on'); document.body.classList.add('story-on'); }
     layoutKerberos();                       // 門被戰鬥收過了，回來要重新擺（不擺是一片黑）
     if(!rest.length){ const d=pos.done; if(d) d(); return; }
     playAdhoc(rest, pos.done, { sides: pos.sides });

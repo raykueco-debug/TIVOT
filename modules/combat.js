@@ -1124,11 +1124,43 @@ export function devSkipBattle(){
    ⚠ 共用的只有框 —— 教學那一套（鎖攻擊力、敵人打不死、教學台詞結算）只看
      `tutorialRun`，不要混進來。 */
 function storyFramed(){ return state.tutorialStoryRun || state.scriptRun; }
+
+/* ══⚠⚠ 連續戰鬥：整張戰鬥地圖算「同一場」（ver -585，Ray：「城鎮戰內打掉一個怪
+   不用閉棺，打掉 Boss 才閉，戰鬥地圖中移動期間算同一場，hp／聖徒化次數／
+   主動技發動次數／破防值算同一場」）══════════════════════════════════════
+   戰鬥卡寫 `session:'<id>'` ＝這一場屬於那一段連續戰鬥；`sessionEnd:true` ＝
+   打贏它就收段（＝Boss）。同一段之內：
+     · **開棺只演第一次**（判定在 `main.js` 注入給 story 的 `setGateSkip`）
+     · **每場一次的資源不回滿**：聖徒化、搭檔主動技、破防值（`energy`）
+     · HP 本來就延續（持久 HP，ver -481），不必另外處理
+   ⚠⚠ 存的是**離場那一刻的值**（`sessionSave`），下一格開場再放回去（`sessionLoad`）
+     —— 不是「不要 reset」：`startGame` 開頭那整排歸零是所有場次共用的乾淨起點，
+     在那裡開特例會讓「這一場到底重置了什麼」變成兩份答案（鐵律 7）。
+   ⚠ 段落的收尾有三處，全部走 `endSession()`（鐵律 8）：`sessionEnd` 的那一場打贏、
+     `goHome`（回首頁／被抬走）、`progress.newRun`（重開一輪，由 main 呼叫）。 */
+let sessionCarry=null;                 // { saintUsed, partnerUsed, energy }
+export function sessionOf(battleId){
+  const b=GAME_CONFIG.battles && GAME_CONFIG.battles[battleId];
+  return (b && b.session) || null;
+}
+/* 這一場要不要演開棺：**沒有連續段、或這一段還沒開始**才演（story 經 main 注入）。 */
+export function battleNeedsGate(battleId){
+  const sess=sessionOf(battleId);
+  return !(sess && state.battleSession===sess);
+}
+export function endSession(){ state.battleSession=null; sessionCarry=null; }
+function sessionSave(){
+  if(!state.battleSession) return;
+  sessionCarry={ saintUsed:!!state.saintUsedThisBattle,
+                 partnerUsed:!!state.partnerActiveUsed,
+                 energy:state.energy||0 };
+}
 function storyBattleEnd(lost){
   if(!storyFramed()) return false;
   /* 持久 HP 寫回（ver -481）：打贏（或 allowLose 的劇本輸）把殘量帶去下一場。
      真正的戰敗不經過這裡（lose() 直接走失敗流程）＝重生仍是進場前的殘量。 */
   prog.setHp(Math.max(1, state.playerHp));
+  sessionSave();                      // 連續戰鬥：把「每場一次」的資源帶去下一格（ver -585）
   /* talkOnce 也在這裡記（ver -493，同 win 的那一段）：allowLose 的「劇本輸」
      與跳關都算「這一場過去了」—— 劇情不再重播。 */
   { const _sb2 = state.scriptBattleId && GAME_CONFIG.battles && GAME_CONFIG.battles[state.scriptBattleId];
@@ -1148,6 +1180,10 @@ function win(){
      storyBattleEnd 那一份留著（它照顧自己那兩條路）。 */
   if(storyFramed()){
     prog.setHp(Math.max(1, state.playerHp));
+    sessionSave();                    // 連續戰鬥：資源帶去下一格（ver -585）
+    /* ⚠ 這一場是段落的最後一場（Boss）→ 收段：下一次進戰鬥重新演開棺、資源回滿。 */
+    { const _es = state.scriptBattleId && GAME_CONFIG.battles && GAME_CONFIG.battles[state.scriptBattleId];
+      if(_es && _es.sessionEnd) endSession(); }
     /* ⚠⚠ 開場白的 talkOnce **打贏才記**（ver -493，Ray：「敗北重來要跑，
        結束以戰鬥勝利為條件」）—— 敗北時根本沒記＝每次重來自動重播；
        記了＝這一場的劇情永久結束（隨機再遇同種怪也不播）。憲法 §6.5.2 原則。 */
@@ -1324,6 +1360,23 @@ export function startGame(){
     const ph=prog.getHp();
     if(ph!=null) state.playerHp=Math.max(1, Math.min(state.playerMax, ph));
   }
+  /* ══ 連續戰鬥：接上一格的資源（ver -585，見 sessionSave 那一段的說明）══
+     ⚠ 要在**所有歸零之後**才放回去 —— 這一段是「把上一格的殘值搬回來」，
+       不是在開頭挖特例（那會讓「這一場重置了什麼」有兩份答案，鐵律 7）。
+     ⚠ 段落是**這一場的卡**宣告的：接得上（同一段）就沿用，接不上就是新的一段。 */
+  { const sess = sb && sb.session || null;
+    if(sess && state.battleSession===sess && sessionCarry){
+      state.saintUsedThisBattle = sessionCarry.saintUsed;
+      state.partnerActiveUsed   = sessionCarry.partnerUsed;
+      state.energy              = sessionCarry.energy;
+      updateEnergyClasp();          // 破防值搬回來了，扣環要跟著畫（同一支，鐵律 8）
+    }else if(sess){
+      state.battleSession = sess;     // 這一段從這一場開始（開棺就演這一次）
+      sessionCarry = null;
+    }else{
+      endSession();                   // 不屬於任何連續段 → 收掉還開著的那一段
+    }
+  }
   loadBoard(0); updateBars();
   if(state.scriptRun){ updateBars(); return; }   // 劇情插入戰不進教學
   tutorial.maybeStart();   // 首次出陣 → 進教學（穿插式；看過/跳過後恆 no-op）
@@ -1420,6 +1473,10 @@ export function goHome(onCovered, opts){
        背景還活著的頁面（音、計時器、模擬）都要死。
        ⚠ 例外只有 `opts.keepPages`：那幾條是**借 goHome 當過場**、onCovered 立刻
          開回某一頁的路（打完回飛行畫面、戰敗「再戰」續播劇情）—— 那不是回首頁。 */
+    /* 連續戰鬥的段落也一起收（ver -585）：真的回首頁＝那一段結束。
+       ⚠ `keepPages` 是「借 goHome 當過場」（打完回城鎮續播、戰敗再戰）——
+         那幾條不收，不然城鎮戰走一格就把段落斷掉，資源會回滿。 */
+    if(!(opts && opts.keepPages)) endSession();
     if(!(opts && opts.keepPages) && pageKiller){ try{ pageKiller(); }catch(_){}}
     weapon.restoreTutorialLoadout();          // 教學固定裝備（蕾妮＋機槍）→ 還原玩家原選擇（非教學為 no-op）
     state.cutinPlaying=false;                 // 清掉可能的暫停旗標（退出確認用）
