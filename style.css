@@ -180,6 +180,23 @@
     /* 頂部保留安全區墊高：#top（底圖）與 #bottom 為 flex 子項，會被此 padding 整體下移到瀏海之下 */
     padding-top:var(--notch-bar-h);}
   /* 戰敗定格：HP 歸零瞬間全畫面黑白（快速壓入），維持約 1 秒後才切「驅逐失敗」過渡禎 */
+  /* ══⚠⚠ 玩家受擊 → **整個畫面震一下**（ver -593，Ray：「玩家受擊時還是要有畫面
+     抖動」）══ 這是**鏡頭**在震，不是某個元素在抖：背景與怪一起動，讀起來才是
+     「你被打到了」，而不是「那張圖在抖」。
+     ⚠ 與 ver -592「背景不要閃動抖動變化」不衝突：那一條講的是**平時**（怪的顯形、
+       死亡、受擊特效都只動 `#enemyImg`，底圖不動）；這一條是**玩家被打中的那一下**，
+       本來就該整個畫面震。
+     ⚠ 不共用 `camShake`：那一支是給 `#enemyImg` 用的元素級抖動，沒有放大 ——
+       整個 `#app` 位移的話四邊會露出底色，所以這一支多一個 `scale(1.02)` 當過掃描。
+     ⚠ 時間要短（260ms）：這是一記衝擊，不是持續狀態；長了會妨礙點盤面。 */
+  #app.hitshake{animation:appShake .26s;}
+  @keyframes appShake{
+    0%,100%{transform:translate(0,0) scale(1.02)}
+    18%{transform:translate(-7px,5px) scale(1.02)}
+    36%{transform:translate(6px,-4px) scale(1.02)}
+    54%{transform:translate(-5px,-5px) scale(1.02)}
+    72%{transform:translate(5px,4px) scale(1.02)}
+    86%{transform:translate(-3px,2px) scale(1.02)}}
   #app.death-freeze{filter:grayscale(1) contrast(1.06) brightness(.9);
     transition:filter .18s ease-out;}
 

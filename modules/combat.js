@@ -467,6 +467,16 @@ function floatDmg(txt,left,top,crit,extraClass){
   setTimeout(()=>d.remove(),700);
 }
 // 被攻擊：扣玩家血 + 受擊特效 + 震動（saintMode 分支下一輪接）
+/* 玩家受擊 → 整個畫面震一下（ver -593，Ray 指定）。
+   ⚠ 掛在 `#app`（＝鏡頭）不是 `#enemyImg`：背景與怪一起動才讀得出「你被打到了」。
+   ⚠ 只有這一支在做（鐵律 8）—— `enemyAttack` 是所有扣血路徑的唯一入口，
+     兩個分支（聖徒化／一般）都叫它。 */
+function screenShake(){
+  const el=$('app'); if(!el) return;
+  el.classList.remove('hitshake'); void el.offsetWidth; el.classList.add('hitshake');
+  clearTimeout(screenShake._t);
+  screenShake._t=setTimeout(()=>el.classList.remove('hitshake'), 300);
+}
 function enemyAttack(dmg, kind, saintAmt){
   /* ⚠ 計時挑戰：靶子**不攻擊**（ver -396）。守在這裡是因為所有會扣玩家血的路徑
      （大絕／延時懲罰／按錯懲罰／格擋）都經過這一支 —— 守一次就全關掉（鐵律 8）。 */
@@ -488,7 +498,7 @@ function enemyAttack(dmg, kind, saintAmt){
     //   倒數槽推進交由 saint.saintAdvance（內部走 HP API healPlayer，滿則觸發 OBE）。
     //   推進量：一般受擊＝playerMax/SAINT_ADVANCE_DIVISOR（≈+1s）；格擋由呼叫端傳 saintAmt（≈+0.5s）。
     const amt=(saintAmt!=null)?saintAmt:(state.playerMax/SAINT_ADVANCE_DIVISOR);
-    $('enemyImg').classList.add('shake'); setTimeout(()=>$('enemyImg').classList.remove('shake'),300);
+    screenShake();                   // 畫面震一下（ver -593）
     enemy.showHitFx(kind);
     $('redFlash').style.opacity=.8; setTimeout(()=>$('redFlash').style.opacity=0,120);
     saint.saintAdvance(amt);
@@ -504,7 +514,7 @@ function enemyAttack(dmg, kind, saintAmt){
   updateBars();
   enemy.showHitFx(kind);             // 依 kind 播放該怪對應受擊特效
   $('redFlash').style.opacity=.8; setTimeout(()=>$('redFlash').style.opacity=0,120);
-  $('enemyImg').classList.add('shake'); setTimeout(()=>$('enemyImg').classList.remove('shake'),300);
+  screenShake();                     // 畫面震一下（ver -593，取代原本只抖敵人立繪那一版）
   if(state.playerHp<=0){ handlePlayerLethal(kind); }
 }
 /* ============================================================================
