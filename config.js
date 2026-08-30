@@ -1099,13 +1099,13 @@ export const GAME_CONFIG = {
     },
     /* ══ 瓦礫中的紫黑之爪（ver -595，Ray 交稿）══ 教堂那一場之後的真 BOSS，
        也是**聖徒化教學戰**（腳本見 script/town.js 的 northport.church）。
-       ⚠⚠ **走 `contain` 不走 cover**（ver -616，Ray：「禍魘 boss 的圖左右被裁太多」）：
-         這張是 **1536×1024（3:2 橫式）**，而 `#top` 只有 390×422（幾乎正方）——
-         `cover` 會把左右各裁掉一大截，兩隻爪子正好在兩側，整個構圖就沒了。
-         `contain` ＝ 一個像素都不裁，上下留白由 `#top` 的底圖補（城鎮戰交棒時
-         那是教堂那張，ver -592）。
-       ⚠ 另外給 `bg`＝教堂：不是走城鎮那條路（單獨叫用、日後從別處進來）時，
-         留白處才不會是一片黑。
+       ⚠⚠ **圖已重繪成 1254×1254（1:1）**（ver -617，Ray 交件；規格見
+         `resources/background/_boss_claw_spec.md`）—— 所以走回**滿版 cover**。
+         ⚠ -616 曾經改 `contain`：那時的圖是 1536×1024（3:2），而 `#top` 幾乎正方
+           （390×420 ＝ 0.93），cover 會把左右各裁掉約四分之一，而兩隻爪子正好
+           在兩側。重繪時特地把爪往內收，正方畫幅下 cover 只切掉邊緣約 7%，
+           構圖完整而且沒有上下黑邊 —— 這才是這張圖原本的呈現方式。
+       ⚠ `bg`＝教堂留著：不是走城鎮那條路（單獨叫用）時的保底。
        ⚠ 數值先沿用禍魘那一張（Ray 還沒給這一隻的卡）—— 劇情殺的門檻（HP 30%）
          與教學的節奏由腳本那一側管，不是靠數值。 */
     np_claws: {
@@ -1114,7 +1114,6 @@ export const GAME_CONFIG = {
       kind:'harm',
       image:'enemy_np_claws',
       bg:'Northport_church_BF',
-      fit:{ mode:'contain', pos:'center' },
       hp:300,
       attack:10,
       atkInterval:null,
