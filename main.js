@@ -1222,13 +1222,28 @@ combat.setStoryReturn((res)=>{
      ⚠ 在 `flightBack` 之後判（那條已經 return 掉了）：出航的船戰不走這裡。
      ⚠ `carried:true` → 旅店初見還沒看過就演「啊，醒了。」那一拍（town.enter）。
      ⚠ goHome 預設殺光所有頁面（ver -494）—— 被抬回去＝這一趟的戲全部收場，
-       town.open 在黑幕之下重開一座乾淨的城。旅店沒蓋起來的城退回上次睡覺的旅店。 */
+       town.open 在黑幕之下重開一座乾淨的城。
+       ⚠ **旅店還沒蓋起來的城改成「回檔」**（ver -589，Ray 指定）—— 見下方的說明。 */
   if(res && res.lose==='continue' && town.isOpen()){
     storyResume = null;
     const pos = town.getPosition();
-    let dest = pos && { town:pos.town, node:town.innNodeOf(pos.town) };
-    if(!dest || !dest.node) dest = prog.getLastInn() || { town:'capital', node:'inn' };
-    combat.goHome(()=>town.open(dest.town, dest.node, { carried:true }), { noBgm:true });
+    const inn = pos && town.innNodeOf(pos.town);
+    /* ══⚠⚠ **功能未開的城鎮裡戰死 → 回檔到前一次劇情**（ver -589，Ray 指定）══
+       「被抬回旅店」的前提是**這座城有旅店**（`inn:true`）。北方泊地那種還在
+       蓋的城沒有旅店大廳 —— 舊寫法退回 `getLastInn()`／帝都旅店，於是在北方泊地
+       打輸會被丟到**另一座城**去，而那座城的城鎮戰旗標還開著（實測：死在北方泊地，
+       醒來在帝都旅店，`np_port_arrive` 照樣留著）。那不是「被抬回去」，是走鐘。
+       ⚠ 正解是**回檔**：讀最新的那一筆存檔（`save.loadLatest()`，與首頁「繼續」
+         同一支，鐵律 8）—— 旗標、時鐘、道具整輪一起回到那一刻，
+         「這一場還沒發生過」才成立（同 §6.5.2 劇情戰敗北回捲的原則）。
+       ⚠ 完全沒有存檔時（剛開新局就闖進去）：`loadLatest()` 回 false，
+         `goHome` 已經把首頁擺回來了 —— 停在首頁是對的，沒有可以回的地方。
+       ⚠ 這裡**不能帶 `keepPages`**：要回的是別的地方，這座城要真的被收掉。 */
+    if(!inn){
+      combat.goHome(()=>{ try{ saveSys.loadLatest(); }catch(_){} }, { noBgm:true });
+      return;
+    }
+    combat.goHome(()=>town.open(pos.town, inn, { carried:true }), { noBgm:true });
     return;
   }
   /* ══ 原地閉棺回來的（ver -587）══ 城鎮戰打掉一隻雜怪：門已經在控制盤高度闔上了，
