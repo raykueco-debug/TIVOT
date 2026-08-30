@@ -1,10 +1,12 @@
 # 北方泊地　司祭立繪 — 產圖規格（ver -582）
 
-腳本已經接好了（`script/town.js` 的 `northport.nodes.port.acts`），
-**檔案丟到 `resources/SI/NPC_SI_Priest.webp` 就會出現**。
-圖進來之後要跑一次 `python3 tools/measure_si.py resources/SI/NPC_SI_Priest.webp`，
-把 top/bot/fx 貼進 `script/speakers.js` 的 `ART.priest` 並拿掉 `unmeasured:true`
-（現在掛的是佔位值，沿用別張的數字人一定會歪 —— CLAUDE.md §5／§6.5）。
+> **✅ 已交件並接上（ver -582）**：`resources/SI/Priest_SI_front.webp`
+> （檔名用 `角色_SI_變體` 的規約，不是規格裡原本假設的 `NPC_SI_Priest`）。
+> `ART.priest` 的取景值已用 `tools/measure_si.py` 量進去：`top:7 bot:1531 fx:0.536`
+> （縱向佔 99.2%＝全身圖，可以當身高用），`unmeasured` 旗標已拿掉。
+> 身高 172 仍是估的 —— 有設定就改 `cm`，取景值不必重量。
+
+腳本在 `script/town.js` 的 `northport.nodes.port.acts`。
 
 ## 情境（他在這一幕是什麼狀態）
 

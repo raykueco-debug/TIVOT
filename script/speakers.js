@@ -304,16 +304,13 @@ export const ART = {
            side:'R', alt:null, base:'resources/SI/NPC_Hotel_Capital.webp', expr:{} },
   luna:   { cm:160, eye:30, fx:0.500, top:0, bot:1000,
            side:'L', alt:null, base:'resources/partner/Luna_CI_exc.webp', expr:{}, unmeasured:true },
-  /* ══⚠⚠ 北方泊地的司祭（ver -582）—— **立繪還沒交，這一組數字是佔位的** ══
-     Ray 的稿指名 `NPC_SI_Priest`，但 `resources/SI/` 還沒有這個檔。
-     腳本先接上去（`missingExpr` 那條規矩：查不到就退回本尊，載不到就沒有立繪，
-     台詞照播），圖一進來**一定要跑 `python3 tools/measure_si.py` 重量四個值**
-     並拿掉 `unmeasured` —— 沿用別張的數字人一定會歪（CLAUDE.md §5／§6.5）。
-     ⚠ `unmeasured:true` 讓它不參與 `CAST_TALL`：佔位的 cm 不會把整組相機帶歪。
-     ⚠ 身高 172 是估的（成年男性神職），同 hunter／gunsmith 那幾筆的作法。
+  /* 北方泊地的司祭（ver -582，Ray 交件 `Priest_SI_front`）。
+     ⚠ 取景值是 `tools/measure_si.py` 量的（縱向佔 99.2%＝全身圖，可以當身高用）。
+     ⚠ 身高 172 是**估的**（中老年男性神職），同 hunter／gunsmith 那幾筆的作法 ——
+       日後有設定改 cm 即可，取景值不必重量。
      ⚠ 站**右**：玩家的同伴在左、對面的人在右（同所有城鎮 NPC）。 */
-  priest: { cm:172, eye:32, fx:0.500, top:5, bot:1530,
-           side:'R', alt:null, base:'resources/SI/NPC_SI_Priest.webp', expr:{}, unmeasured:true },
+  priest: { cm:172, eye:32, fx:0.536, top:7, bot:1531,
+           side:'R', alt:null, base:'resources/SI/Priest_SI_front.webp', expr:{} },
 };
 
 /* 最高的人：她定義相機（頭頂貼在舞台頂線，其餘人依身高往下排）。 */
