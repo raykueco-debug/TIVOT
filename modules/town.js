@@ -1309,6 +1309,20 @@ function showTip(t, done){
    ⚠ 注入而不是 import：城鎮不認識啟動層的畫面（同 `setFlightOpener`）。 */
 let gearWatch=null;
 export function setGearWatch(fn){ gearWatch=fn||null; }
+/* ══⚠⚠ **進城 ＝ 一個檢查點**（ver -590，Ray：「在北泊劇情戰敗應該是回檔到祭司
+   那邊吧」）══════════════════════════════════════════════════════════════
+   ver -589 的「功能未開的城鎮裡戰死 → 回檔」讀的是**最新的那一筆存檔**，
+   而城鎮的段落**不經過劇情讀取頁**（那才是既有的自動檢查點，ver -555）——
+   於是在北方泊地打輸會退回**上一次讀取頁**（帝都船塢），把整段抵達的戲一起退掉。
+   ⚠ 補這一支之後，回檔就落在**剛降落**那一刻：碼頭那一幕（司祭）還沒演，
+     所以它會重演一次 —— 那正是 Ray 要的「回檔到祭司那邊」。
+   ⚠ 落在 `enter()` **之後**：`save.capture()` 要問 `town.getPosition()`，
+     節點還沒設好的話存進去的是上一座城的位置。
+   ⚠ 段落的旗標是**演完才記**的，所以這一刻存下去的必然是「還沒演」的狀態 ——
+     不必刻意避開哪一拍。
+   ⚠ 注入而不是 import（同上）：城鎮不認識存檔層。 */
+let checkpoint=null;
+export function setCheckpoint(fn){ checkpoint=fn||null; }
 
 function afterArrive(n){
   /* ══ 同行的諾薇兒走完殘留事件（ver -567，Ray 交稿）══════════════════════
@@ -1552,6 +1566,9 @@ export function open(town, node, opts){
           ? fe.node : T.entry;
   }
   enter(start);
+  /* 進城的檢查點（ver -590，見 setCheckpoint）。⚠ 一定要在 `enter()` 之後 ——
+     存檔要記「人在哪一格」。 */
+  if(checkpoint) try{ checkpoint(); }catch(_){}
 }
 export function close(){
   const st=story.stageEl(); if(st) st.classList.remove('town-on');

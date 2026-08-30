@@ -1034,6 +1034,10 @@ bindBtn('continueBtn', ()=>{ try{ killAllPages(); }catch(_){} if(!saveSys.loadLa
 /* 整備頁收掉了通知城鎮（ver -430）：武器店的整備教學要等玩家真的換完裝備，
    才把商店的單子擺出來（見 `modules/town.js` 的 `showTip`）。 */
 town.setGearWatch(gear.onceClosed);
+/* 進城 ＝ 一個檢查點（ver -590）：城鎮的段落不經過劇情讀取頁，沒有這一支的話
+   「功能未開的城鎮裡戰死 → 回檔」會退回**上一次讀取頁**，把整段抵達的戲一起退掉。
+   ⚠ 走**同一支** `autoSave`（劇情讀取頁的檢查點也是它，鐵律 8）。 */
+town.setCheckpoint(()=>{ saveSys.autoSave(); refreshContinue(); });
 /* ⚠⚠ **這顆鈕就是「從頭開始」**（ver -381，Ray：「從頭開始，城鎮探索的劇情要重新出現」）：
    `story.open(null)` 一律從 MAIN_ENTRY 演起，所以進去之前要把**這一輪**的東西清乾淨 ——
    不清的話旗標還留著，城鎮那些「只播一次」的段落就整個消失（Ray 回報過）。
