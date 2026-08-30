@@ -275,6 +275,33 @@
     90% {opacity:.26; transform:translateX(1px)  scaleY(2.10);}
     95% {              transform:translateX(-1px) scaleY(2.16);}
     100%{opacity:0;   transform:translateX(0)    scaleY(2.20);}}
+  /* ══⚠⚠ 淨化的**白光星芒**（ver -594，Ray：「拉長抖動還要白光星芒飄散」）══
+     一顆星芒 ＝ 十字光條（`::before` 橫、`::after` 直）＋ 中心的圓形光核。
+     ⚠ 光條要**兩端尖、中間亮**：用三段式的 linear-gradient（透明→白→透明），
+       等寬的白條讀起來是「一根棍子」不是「一道光」。
+     ⚠ 每一顆的大小／角度／飄散方向都由 inline 的 CSS 變數餵（見 enemy.js 的
+       `spawnPurgeStars`）—— 動畫本身只有這一份（鐵律 7），不要為了不同方向寫好幾組。
+     ⚠ `mix-blend-mode:screen`：白光疊在暗色背景上要用加亮混合，
+       直接畫白色會變成貼上去的白貼紙。
+     ⚠ 先脹後消（scale 0→1.15→0.2）＋ 一路往 `--dx/--dy` 飄：
+       等速平移讀起來是飛過去的粒子，帶脹縮才像光在散。 */
+  .fx-star{position:absolute;width:var(--s,26px);height:var(--s,26px);
+    margin:calc(var(--s,26px)/-2) 0 0 calc(var(--s,26px)/-2);
+    pointer-events:none;mix-blend-mode:screen;
+    animation:purgeStar var(--life,700ms) cubic-bezier(.15,.75,.35,1) both;}
+  .fx-star::before,.fx-star::after{content:'';position:absolute;inset:0;margin:auto;}
+  .fx-star::before{width:100%;height:2px;
+    background:linear-gradient(90deg,transparent,#fff 45%,#fff 55%,transparent);}
+  .fx-star::after{width:2px;height:100%;
+    background:linear-gradient(180deg,transparent,#fff 45%,#fff 55%,transparent);}
+  .fx-star i{position:absolute;inset:0;margin:auto;width:34%;height:34%;border-radius:50%;
+    background:radial-gradient(circle,#fff 0%,rgba(255,255,255,.85) 35%,transparent 70%);}
+  @keyframes purgeStar{
+    0%  {opacity:0;   transform:translate(0,0) rotate(var(--r,0deg)) scale(.2);}
+    18% {opacity:1;   transform:translate(calc(var(--dx)*.18),calc(var(--dy)*.18))
+                                rotate(var(--r,0deg)) scale(1.15);}
+    100%{opacity:0;   transform:translate(var(--dx),var(--dy))
+                                rotate(var(--r,0deg)) scale(.35);}}
   #topVignette{position:absolute;inset:0;pointer-events:none;
     background:radial-gradient(120% 80% at 50% 20%,transparent 40%,rgba(0,0,0,.7) 100%);}
 

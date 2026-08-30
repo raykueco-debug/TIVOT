@@ -214,9 +214,49 @@ export function loadEnemyPortrait(en){
    ⚠ **冪等**：overkill 期間 `enemyHp<=0` 會被判到好幾次，重複加 class 不會重播
      （沒有 remove/reflow），這正是要的 —— 淨化只演一次。
    ⚠ `both` 讓它停在最後一格（怪維持消失），不會在動畫結束後跳回來。 */
+/* ══ 淨化的**白光星芒飄散**（ver -594，Ray：「拉長抖動還要白光星芒飄散」）══
+   在怪的身上撒一把十字光斑，往上飄散開來。演出在 CSS 的 `.fx-star`／`purgeStar`，
+   這裡只負責**撒**：每一顆的位置、大小、角度、飄散方向、壽命都在這裡擲。
+   ⚠ 撒的範圍對著**立繪站的地方**（中間偏下的一塊），不是整個 `#top` ——
+     怪在中央，星芒撒到畫面邊角會變成「畫面在發光」而不是「牠在散」。
+   ⚠ 方向**偏上**（dy 一律往負、dx 左右各半）：怪同時在往上拉長，
+     光往上飄才是同一件事的兩面；四面八方散開會把那個方向感抵消掉。
+   ⚠ 逐顆給不同的 `delay` 與 `life`：同時出現同時消失讀起來是一次閃光，
+     錯開才像「一直有東西在飄」。
+   ⚠ 生命結束要自己移除（走既有的 `addFx`，它會定時 remove）。 */
+const STAR_N = 18;
+function spawnPurgeStars(){
+  for(let i=0;i<STAR_N;i++){
+    const d=document.createElement('div');
+    d.className='fx fx-star';
+    d.appendChild(document.createElement('i'));      // 中心光核
+    const size = 14 + Math.random()*30;
+    const life = 520 + Math.random()*420;
+    const delay = Math.random()*260;
+    d.style.left = (30 + Math.random()*40) + '%';    // 立繪站的那一塊
+    d.style.top  = (28 + Math.random()*46) + '%';
+    d.style.setProperty('--s', size.toFixed(0)+'px');
+    d.style.setProperty('--r', (Math.random()*90).toFixed(0)+'deg');
+    d.style.setProperty('--dx', ((Math.random()*2-1)*70).toFixed(0)+'px');
+    d.style.setProperty('--dy', (-40 - Math.random()*110).toFixed(0)+'px');
+    d.style.setProperty('--life', life.toFixed(0)+'ms');
+    d.style.animationDelay = delay.toFixed(0)+'ms';
+    addFx(d, life+delay+80);
+  }
+}
+/* ══⚠⚠ **只有「禍魘」這一類用這個死法**（ver -594，Ray 指定）══════════════
+   拉長抖動 ＋ 白光星芒是**淨化**的樣子 —— 禍魘被淨化才是那個畫面。
+   人類（賞金獵人／魔女）、靶、船、獸、聖徒系列各有各的死法，不該共用這一套。
+   ⚠ 判定看**敵人卡的 `kind`**（ver -423 就有的那一格，結算副標也是讀它）——
+     不要另立一個「要不要播特效」的欄位，那是同一件事的第二個真相（鐵律 7）。
+   ⚠ 其餘 kind 目前**沒有專屬死法**（維持原本的行為）；Ray 給了再照這裡加一支。 */
+const PURGE_KINDS = { harm:1 };
 export function purgeEnemy(){
+  const en = GAME_CONFIG.enemies[state.currentEnemyKey];
+  if(!en || !PURGE_KINDS[en.kind]) return;
   const eImg = $('enemyImg');
   if(eImg) eImg.classList.add('enemy-purge');
+  spawnPurgeStars();
 }
 
 // UI 顯示名：一律隱藏「_」之後的內容（如 '地下聖徒_A' → '地下聖徒'）。
