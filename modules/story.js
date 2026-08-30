@@ -470,9 +470,10 @@ const BGM_FILES=[
   'Bgm_Lunaria.m4a', 'PerituneMaterial_Crisis_loop.m4a', 'bgm_Capital_Day.m4a',
   'bgm_battle.m4a', 'bgm_boss.m4a', 'bgm_flight.m4a', 'bgm_mainmenu.m4a',
   'bgm_missionfailed.m4a', 'bgm_result.m4a',
-  /* 北方泊地那一段（ver -614，Ray 交辦）。⚠ Crimson_Moon 是 **.ogg** ——
-     Safari 到 17 才支援，舊 iOS 播不出來；之後轉 m4a（§6.6 的規約）。 */
-  'PerituneMaterial_Suspense6_loop.m4a', 'Peritune_Crimson_Moon.ogg',
+  /* 北方泊地那一段（ver -614；-615 Ray 補上 m4a 版）。
+     ⚠ 一律用 m4a（§6.6 的規約）：ogg 在 Safari 17 以前整個不支援，
+       手機上會變成「那一段沒有音樂」。 */
+  'PerituneMaterial_Suspense6_loop.m4a', 'Peritune_Crimson_Moon_loop.m4a',
 ];
 /* 別名：腳本裡慣用的短名 → 實際檔名（去副檔名）。加新別名只動這裡。 */
 const BGM_ALIAS={ crisis:'peritunematerial_crisis_loop', lunaria:'bgm_lunaria',
@@ -480,7 +481,7 @@ const BGM_ALIAS={ crisis:'peritunematerial_crisis_loop', lunaria:'bgm_lunaria',
                   result:'bgm_result', failed:'bgm_missionfailed', flight:'bgm_flight',
                   capital:'bgm_capital_day',
                   suspense:'peritunematerial_suspense6_loop',   // ver -614
-                  crimson:'peritune_crimson_moon' };
+                  crimson:'peritune_crimson_moon_loop' };
 const BGM_SRC=(()=>{ const m={};
   for(const f of BGM_FILES) m[f.replace(/\.[^.]+$/,'').toLowerCase()]='resources/audio/bgm/'+f;
   return m; })();

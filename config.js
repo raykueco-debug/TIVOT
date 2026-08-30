@@ -1099,7 +1099,13 @@ export const GAME_CONFIG = {
     },
     /* ══ 瓦礫中的紫黑之爪（ver -595，Ray 交稿）══ 教堂那一場之後的真 BOSS，
        也是**聖徒化教學戰**（腳本見 script/town.js 的 northport.church）。
-       ⚠ 立繪是**連背景的整張圖**（`TheClaws`）：不給 `bg`／`fit`，走滿版 cover。
+       ⚠⚠ **走 `contain` 不走 cover**（ver -616，Ray：「禍魘 boss 的圖左右被裁太多」）：
+         這張是 **1536×1024（3:2 橫式）**，而 `#top` 只有 390×422（幾乎正方）——
+         `cover` 會把左右各裁掉一大截，兩隻爪子正好在兩側，整個構圖就沒了。
+         `contain` ＝ 一個像素都不裁，上下留白由 `#top` 的底圖補（城鎮戰交棒時
+         那是教堂那張，ver -592）。
+       ⚠ 另外給 `bg`＝教堂：不是走城鎮那條路（單獨叫用、日後從別處進來）時，
+         留白處才不會是一片黑。
        ⚠ 數值先沿用禍魘那一張（Ray 還沒給這一隻的卡）—— 劇情殺的門檻（HP 30%）
          與教學的節奏由腳本那一側管，不是靠數值。 */
     np_claws: {
@@ -1107,6 +1113,8 @@ export const GAME_CONFIG = {
       story:1, counterStagger:1,
       kind:'harm',
       image:'enemy_np_claws',
+      bg:'Northport_church_BF',
+      fit:{ mode:'contain', pos:'center' },
       hp:300,
       attack:10,
       atkInterval:null,
@@ -1764,7 +1772,7 @@ export const GAME_CONFIG = {
          §6.6 的規矩是每一支都要拉到 `targetLufs` —— 用 `tools/audio_scan.html`
          量出來再把數字填進來，不然這兩首的響度會與其他曲子對不齊。 */
       peritunematerial_suspense6_loop:1.0,
-      peritune_crimson_moon:1.0,
+      peritune_crimson_moon_loop:1.0,
       /* ⚠ 母帶太小聲（−26 LUFS）：×master×層之後會撞上 HTMLAudio 的 1.0 上限，
          實際只到 −26 而不是目標的 −21.9。要救得重做母帶。 */
       bgm_flight:4.056,
@@ -2036,10 +2044,10 @@ export const ASSETS = {
        城鎮戰進行中                   → `bgm_crisis`（既有那一首）
        BOSS（紫黑之爪）               → `bgm_crimson`（Crimson Moon）
      ⚠ 兩首新的都要進 Credit（Ray 指定，見 index.html 的 BGM Source）。
-     ⚠ `Crimson_Moon` 是 **.ogg**：Safari 到 17 才支援，舊 iOS 會播不出來 ——
-       之後轉成 m4a 比較保險（同 §6.6 的規約：音效一律 AAC）。 */
+     ⚠ 兩首都用 **m4a**（§6.6 的規約）：ogg 在 Safari 17 以前整個不支援，
+       手機上會變成「那一段沒有音樂」。Crimson_Moon 的 m4a 版由 Ray 於 -615 補上。 */
   bgm_suspense:   "resources/audio/bgm/PerituneMaterial_Suspense6_loop.m4a",
-  bgm_crimson:    "resources/audio/bgm/Peritune_Crimson_Moon.ogg",
+  bgm_crimson:    "resources/audio/bgm/Peritune_Crimson_Moon_loop.m4a",
   bgm_battle:    "resources/audio/bgm/bgm_battle.m4a",      // 戰鬥（驅逐開始插入瞬間起播）
   bgm_lose:      "resources/audio/bgm/bgm_missionfailed.m4a", // 任務失敗（驅逐失敗插入起播）
   bgm_result:    "resources/audio/bgm/bgm_result.m4a",      // 結算（驅逐完成頁被點掉後起播）
