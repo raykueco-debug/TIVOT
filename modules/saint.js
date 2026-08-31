@@ -239,6 +239,15 @@ function startNightmareMode(left){
   }, 100);
   state.saintPrevUlt = { min:state.ULT_MIN, max:state.ULT_MAX };
   api.setUltRate(SAINT_ULT_MIN_MS, SAINT_ULT_MAX_MS);
+  /* ⚠⚠ **發動時高光第一個該點的號碼**（ver -683，Ray 指定）：惡夢化**不重建盤面**，
+     所以玩家眼前是打到一半的殘局 —— 不指一下，他得先自己找「剛剛點到幾了」，
+     而倒數槽已經在抽血了。
+     ⚠ 走**既有的** `hintCurrentCell`（即死防禦之後那個「一次性續命導航」用的同一支，
+       鐵律 8）—— 不要用 `markNext`：那一支在 `hint:false` 的盤面上什麼都不做
+       （第二盤起全部是 false），等於沒指。
+     ⚠ **只指這一次**（同聖徒化「只提示第一格」的規矩）：之後每點一格
+       `nightmareTap` 會叫 `markNext`，在 hint 盤上自然就不再提示。 */
+  if(api.hintCurrentCell) api.hintCurrentCell();
   startSaintReactTimer();
 }
 /* 抽血。⚠ 走 combat 統一的改血 API（`hurtPlayer` 不存在 → 用 healPlayer 的負值）。

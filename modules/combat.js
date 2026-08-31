@@ -118,6 +118,7 @@ export function setup(){
     onEnemyDefeated: finishEnemyOrAdvance,   // 聖徒化擊殺 → 轉下一敵 or（最後一敵）結算（連戰）
     goNextBoard,                             // 惡夢化清空殘格之後換下一盤（ver -671）
     armAtkBuff,                              // 自爆之後下一盤普攻加倍（ver -673）
+    hintCurrentCell,                         // 惡夢化發動時高光第一個該點的號碼（ver -683）
     shatterCell: enemy.shatterCell,
     // defense 原語（combat 代為轉交；大絕頻率經 setUltRate 擁有者管道）
     scheduleUlt: defense.scheduleUlt, clearThreat: defense.clearThreat,
