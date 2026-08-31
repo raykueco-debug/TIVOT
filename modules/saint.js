@@ -195,17 +195,16 @@ export function saintAdvance(amount){
  *  惡夢化（Nightmare Install，ver -671）—— 聖徒化的鏡像
  *  ⚠ 讀 §config.tuning.nightmare 與 saint* 那一組（共用的數字不重寫，鐵律 7）。
  * ════════════════════════════════════════════════════════════════════════ */
-/* 殘格數（還沒點掉的）。⚠ 沒有盤面就回 0 —— 呼叫端要能容忍。 */
-function niCellsLeft(){ return (state.cells||[]).filter(c=>!c.classList.contains('done')).length; }
-/* 發動。⚠ **不重建盤面**（Ray 指定）：用現在這一盤剩下的格子，秒數由殘格數決定。 */
+/* 發動。⚠⚠ **重建成 16 宮格**（ver -690，Ray：「夢魘改成固定 16 格吧，跟 SI 一樣」）——
+   -671~-689 是「沿用殘局」，秒數也隨殘格數變；現在與聖徒化同一套：滿盤 16 格、
+   固定 `16 × secPerCell` 秒（12.8 秒），收尾再把原本的盤面換回來。
+   ⚠ 連帶：`niCellsLeft` 那一支沒有人用了（份量改由 `niCells` 計數，見 `nightmareTap`）。 */
 export function activateNightmare(){
   if(state.over || state.saintMode || state.niMode) return false;
-  const left = niCellsLeft();
-  if(left<=0) return false;
-  playCutin(()=>startNightmareMode(left), L.battle.nightmareLabel||'NIGHTMARE INSTALL', 'ci_anya_ni');
+  playCutin(()=>startNightmareMode(), L.battle.nightmareLabel||'NIGHTMARE INSTALL', 'ci_anya_ni');
   return true;
 }
-function startNightmareMode(left){
+function startNightmareMode(){
   if(state.over) return;
   enterNightmare();
   api.resetEnemyTimers();
@@ -226,11 +225,16 @@ function startNightmareMode(left){
        把下面這一行的 `setPlayerHpRatio(1)` 拿掉就好（那時劇情殺要留多一點血）。 */
   api.setPlayerHpRatio(1);
   state.niFrom   = state.playerHp;
-  state.niTotalMs= Math.max(1, left * NI_SEC_PER_CELL * 1000);
+  /* 固定 16 格 → 固定 12.8 秒（ver -690）。 */
+  state.niTotalMs= Math.max(1, SAINT_GRID * NI_SEC_PER_CELL * 1000);
   state.combo    = 0;
   api.resetEnergy();
   $('grid').classList.add('saint','ni');
   setSaintBarFx(true);
+  /* 盤面換成 16 宮格（收尾再換回來，同聖徒化）。 */
+  state.saintPrevBoard = { N:state.N, cols:state.cols };
+  api.setBoard(SAINT_GRID, SAINT_GRID_COLS);
+  api.buildGrid();
   api.floatDmg(L.battle.nightmareLabel||'NIGHTMARE INSTALL','50%','20%',true);
   /* 抽血：從**發動當下的 HP**線性降到 1，跑完整段就是熔斷。
      ⚠ 用「起點 → 1」的線性而不是固定速率：Ray 說「以現有的 hp 開始扣除，
@@ -388,9 +392,8 @@ export function nightmareTap(num, cell){
     if(state.niMode) startSaintReactTimer();
   }
 }
-/* 惡夢化的收尾：回到當前盤面。⚠ 與 `finishSaintMode` **不同的只有一件事** ——
-   盤面**不還原**（惡夢化本來就沒有換過盤面），所以不叫 `setBoard`／`buildGrid`；
-   全清的那一次由 combat 的正常流程接手（`expect>N` 已經在 tap 那邊處理）。 */
+/* 惡夢化的收尾（ver -690 起與 `finishSaintMode` 同一套）：把原本的盤面換回來、
+   敵人排程歸零、接回碼表。 */
 function finishNightmare(finalHpThunk){
   $('grid').classList.remove('saint','ni'); setSaintBarFx(false);
   restoreUltRate();
@@ -401,11 +404,11 @@ function finishNightmare(finalHpThunk){
      ⚠ 要在 `finalHpThunk` **之後**：那一支才剛把結局血量設好（熔斷／自爆＝1、
        清盤＝滿），門檻要對著結果判，不是對著過程判。 */
   if(api.checkLowHpBuff) api.checkLowHpBuff();
+  const back=state.saintPrevBoard||{N:16,cols:4};
+  api.setBoard(back.N, back.cols);
   api.resetEnemyTimers();
   if(!state.over){
-    /* 殘格已經全部點掉 → 交給 combat 換下一盤；還有殘格 → 就地接回正常盤面規則。 */
-    if(state.cells && state.cells.every(c=>c.classList.contains('done'))) api.goNextBoard();
-    else api.markNext();
+    api.buildGrid();
     api.resetIntervalDeadline();
     api.startIntervalTimer();
     api.scheduleUlt();

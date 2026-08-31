@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.08.31-689';
+export const VERSION = 'ver 2026.08.31-690';
 
 export const GAME_CONFIG = {
 
@@ -2089,7 +2089,9 @@ export const GAME_CONFIG = {
          那些一律讀 `saint*` 那一組，不要在這裡抄第二份（鐵律 7）。
          這裡只放**惡夢化自己才有**的那一個。 */
     nightmare: {
-      /* 一格給幾秒（Ray：「有幾格就給幾秒 ×0.8」→ 16 格＝12.8 秒）。 */
+      /* 一格給幾秒（Ray：「有幾格就給幾秒 ×0.8」→ 16 格＝12.8 秒）。
+         ⚠ ver -690 起盤面**固定 16 格**（Ray：「夢魘改成固定 16 格吧，跟 SI 一樣」），
+           所以這一段一律 12.8 秒 —— 不再隨殘格數變。 */
       secPerCell: 0.8,
       /* ══ 自爆（上滑主動技 · 夢境粉碎）══
          `burstFloor` ＝自爆**打不死**：敵血最低留這個比例（ver -673，Ray：

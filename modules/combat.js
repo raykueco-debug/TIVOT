@@ -116,7 +116,6 @@ export function setup(){
     buildGrid, updateBars, startIntervalTimer, resetIntervalDeadline,
     hitDamage, enemyDamage, floatDmg, markNext, setBoard, resetEnergy,
     onEnemyDefeated: finishEnemyOrAdvance,   // 聖徒化擊殺 → 轉下一敵 or（最後一敵）結算（連戰）
-    goNextBoard,                             // 惡夢化清空殘格之後換下一盤（ver -671）
     hintCurrentCell,                         // 惡夢化發動時高光第一個該點的號碼（ver -683）
     /* 惡夢化收尾要補判一次被動的門檻（ver -688）：期間不發動，退掉才發動。 */
     checkLowHpBuff: partner.checkLowHpBuff,
