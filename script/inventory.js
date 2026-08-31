@@ -32,7 +32,16 @@ export function all(){
     return out;
   }catch(e){ return {}; }
 }
-export function count(id){ return all()[id] || 0; }
+/* ══⚠⚠ **永遠帶著、賣不完的東西**（`always`，ver -661，Ray：「讓主角身上永遠有一個
+   『薇拉馮德家的紋章』，數量無限，賣一次得錢 1000 元」）══════════════════════
+   它**不進道具欄的帳**（localStorage 一個字都不寫）——「永遠有」是道具**定義**的
+   性質，不是持有狀態（鐵律 9：狀態要答得出誰插誰拔，而這個沒有人插也沒有人拔）。
+   所以：`newRun()` 不必清、存讀檔不必帶、賣掉不會變少。
+   ⚠ 數量是 `Infinity`：UI 印成「∞」（見 modules/loot.js 的 `qtyText`）。
+   ⚠ 賣掉**不入店家的庫**（那條是給真的會變少的東西用的，見 loot.js）。 */
+export function isAlways(id){ return !!((ITEMS().defs[id]||{}).always); }
+function alwaysIds(){ const d=ITEMS().defs||{}; return Object.keys(d).filter(k=>d[k].always); }
+export function count(id){ return isAlways(id) ? Infinity : (all()[id] || 0); }
 
 /* 道具定義（查不到回 null —— 呼叫端要能容忍，別讓一個打錯的 id 弄壞整個道具欄）。
    ⚠⚠ **武器沒有第二份定義**（ver -377）：`config.weapons` 那一份就是它的道具定義
@@ -70,6 +79,8 @@ export function ownedWeapons(){
 const warned = new Set();
 export function add(id, n){
   if(!id) return 0;
+  /* 永遠帶著的東西不記帳（ver -661）：加也不加、扣也不扣。 */
+  if(isAlways(id)) return Infinity;
   n = (n==null ? 1 : n)|0;
   if(!defOf(id) && !warned.has(id)){ warned.add(id);
     console.info('[inventory] config.items.defs 裡沒有這個道具：', id); }
@@ -90,6 +101,8 @@ export function remove(id, n){ return add(id, -Math.abs((n==null?1:n)|0)); }
    回傳 `[{cat, name, rows:[{id,name,n,desc}]}, …]`，空的分類也會在（UI 決定要不要畫）。 */
 export function grouped(){
   const I=ITEMS(), inv=all();
+  /* 永遠帶著的那幾樣併進來（ver -661）：它們不在 localStorage 裡，但道具欄要看得到。 */
+  for(const id of alwaysIds()) inv[id] = Infinity;
   const buckets={};
   for(const c of I.catOrder) buckets[c]=[];
   for(const id in inv){
@@ -137,6 +150,11 @@ export function sellPrice(id){
      賣掉會讓流程斷掉。這條在**價錢這一層**擋，不是在 UI 擋：日後有別的賣出入口
      （委託、熔解…）也自動吃到。 */
   if(catOf(id)==='special') return 0;
+  /* ⚠⚠ **卡上寫絕對值就存絕對值**（`sellValue`，ver -661；同敵人卡與武器卡的原則）：
+     「賣一次得錢 1000 元」就是 1000，不要在這裡寫成「市價 2000 × 五折」——
+     那是把同一個數字算兩次，`sellRate` 一改它就走鐘（鐵律 7）。 */
+  const d=defOf(id);
+  if(d && d.sellValue>0) return d.sellValue|0;
   const rate=((GAME_CONFIG.shop||{}).sellRate!=null) ? GAME_CONFIG.shop.sellRate : 0.5;
   return Math.max(0, Math.round(priceOf(id)*rate));
 }

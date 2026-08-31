@@ -74,7 +74,7 @@ export function showLoot(list, done, money, opts){
             const d = inv.defOf(r.id) || {};
             return '<div class="loot-row">'
                  +   '<span class="loot-name">'+inv.nameOf(r.id)+'</span>'
-                 +   '<span class="loot-n">×'+n+'</span>'
+                 +   '<span class="loot-n">×'+qtyText(n)+'</span>'
                  +   (d.desc ? '<span class="loot-desc">'+d.desc+'</span>' : '')
                  + '</div>';
           }).join('')
@@ -110,6 +110,10 @@ export function showLoot(list, done, money, opts){
 /* 道具清單（分類標題＋逐列）的 HTML —— **只有這一份**（鐵律 8）：
    `showBag`（獨立視窗）與整備頁的「道具」分頁（ver -457）都用它。
    純顯示、不含裝備鈕（裝備那一版有自己的分支，見 showBag 的 equip 段）。 */
+/* 數量的字面（ver -661）：永遠帶著的東西是 `Infinity` → 印「∞」。
+   ⚠ 只有這一支在轉（鐵律 8）：四個印「×n」的地方都問它，漏一個就會出現「×Infinity」。 */
+function qtyText(n){ return (n===Infinity || n===-Infinity || !isFinite(n)) ? '∞' : String(n); }
+
 export function bagListHtml(catFilter, opts){
   ensureCss();
   const o=opts||{};
@@ -123,7 +127,7 @@ export function bagListHtml(catFilter, opts){
           const useBtn=(u && u.hp!=null)
             ? '<button class="bag-use" data-id="'+r.id+'" type="button">使　用</button>' : '';
           return '<div class="loot-row"><span class="loot-name">'+r.name+'</span>'
-               + '<span class="loot-n">×'+r.n+'</span>'
+               + '<span class="loot-n">×'+qtyText(r.n)+'</span>'
                + (r.desc?'<span class="loot-desc">'+r.desc+'</span>':'')
                + useBtn + '</div>';
         }).join('')
@@ -167,7 +171,7 @@ export function showBag(opts){
               ? '<button class="bag-eq'+(cur?' cur':'')+'" data-id="'+r.id+'" type="button">'
                 + (cur?'使用中':'裝　備')+'</button>' : '';
             return '<div class="loot-row"><span class="loot-name">'+r.name+'</span>'
-                 + (o.equip ? '' : '<span class="loot-n">×'+r.n+'</span>')
+                 + (o.equip ? '' : '<span class="loot-n">×'+qtyText(r.n)+'</span>')
                  + (r.desc?'<span class="loot-desc">'+r.desc+'</span>':'')+btn+'</div>';
           }).join('')
         : '<div class="bag-empty">—</div>';
@@ -237,9 +241,30 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
      取代 -405 的「選一項→調數量→買下」——那一套一次只能結一項。
      ⚠ 換頁籤一律清空：留著會把上一頁的總價帶進結帳鈕（-405 同一個理由）。
      ⚠ 上限照舊三個取最小（鐵律 7 的那組）：店裡剩幾個／錢夠付整車／武器的 1。 */
+  /* ⚠⚠ **賣也走購物車**（ver -662，Ray：「賣沒有做結帳啊」）——-496 只把買的那一邊
+     做成車，賣的那一邊還是「選一項→按一下賣一個」，兩邊的操作邏輯不一致。
+     現在**同一台車、同一顆結帳鈕**（鐵律 8），差別只有單價從哪裡問、上限是誰。 */
   let cart={};
   const cartCount=()=>Object.values(cart).reduce((a,b)=>a+b,0);
-  const cartTotal=()=>Object.keys(cart).reduce((a,id)=>a+inv.priceOf(id)*cart[id],0);
+  /* 這一頁的單價：買＝市價、賣＝收購價（唯一那一支在算，鐵律 7）。 */
+  const unitOf=(id)=> (tab==='sell') ? inv.sellPrice(id) : inv.priceOf(id);
+  const cartTotal=()=>Object.keys(cart).reduce((a,id)=>a+unitOf(id)*cart[id],0);
+  /* 這一列最多能加幾個。
+       買 → 店裡剩幾個／武器只有 1／上限 99
+       賣 → 手上有幾個（`Infinity` 的夾成 99：一次賣 99 個已經夠，
+             而 UI 上「×∞」那一列還是可以再結一次帳） */
+  const capOf=(id)=>{
+    if(tab==='sell'){ const h=inv.count(id); return isFinite(h) ? h : 99; }
+    const left=shopStock.count(stockKey, id);
+    const w=!!(GAME_CONFIG.weapons||{})[id];
+    return Math.min(w?1:99, isFinite(left)?left:99);
+  };
+  /* 這一列的 −/＋（買賣共用的那一段 HTML）。 */
+  const cartCtrl=(id)=>{ const n=cart[id]||0;
+    return '<span class="shop-cartline">'
+         + '<button class="cr-m'+(n<=0?' off':'')+'" type="button">−</button>'
+         + '<b class="cr-n'+(n>0?' on':'')+'">×'+n+'</b>'
+         + '<button class="cr-p" type="button">＋</button></span>'; };
 
   /* ⚠ `o.onClose`（ver -404）：**任何**收掉這張單子的路徑都要通知呼叫端 ——
      城鎮那邊記著「單子開著沒」，不通知的話玩家按了關閉之後就再也開不回來。
@@ -289,14 +314,8 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
            （`hasWeapon` 是布林，第二把在資料上表達不出來）。一般道具持有了照樣加購
            （-405 的 `owned` 擋掉整鈕是連牛奶都不能買第二瓶，那是 bug 不是規則）。
            數量為 0 時「−」暗掉 —— 控件常駐，玩家才知道每一列都能加。 */
-        const n=cart[id]||0;
         const isW=!!(GAME_CONFIG.weapons||{})[id];
-        const ctrl = (!out && !(isW && has))
-          ? '<span class="shop-cartline">'
-            + '<button class="cr-m'+(n<=0?' off':'')+'" type="button">−</button>'
-            + '<b class="cr-n'+(n>0?' on':'')+'">×'+n+'</b>'
-            + '<button class="cr-p" type="button">＋</button></span>'
-          : '';
+        const ctrl = (!out && !(isW && has)) ? cartCtrl(id) : '';
         return '<div class="shop-row'+(pick===id?' pick':'')+(out?' out':'')+'" data-id="'+id+'">'
              + '<span class="loot-name">'+(d.name||id)+'</span>'
              + '<span class="loot-n">'+price+' '+inv.moneyName()+'</span>'
@@ -306,7 +325,8 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
       rows = sellable.length ? sellable.map(r=>
             '<div class="shop-row'+(pick===r.id?' pick':'')+'" data-id="'+r.id+'">'
           + '<span class="loot-name">'+r.name+'</span>'
-          + '<span class="loot-n">×'+r.n+'　'+inv.sellPrice(r.id)+' '+inv.moneyName()+'</span></div>'
+          + '<span class="loot-n">×'+qtyText(r.n)+'　'+inv.sellPrice(r.id)+' '+inv.moneyName()+'</span>'
+          + '<span class="shop-tags">'+cartCtrl(r.id)+'</span></div>'
           ).join('') : '<div class="bag-empty">沒有可以賣的東西。</div>';
     }else{
       /* 改裝：**這一頁先留空**（Ray 指定）。⚠ 不要偷偷做一個半套的出來 ——
@@ -318,9 +338,8 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
     const price = pick ? (tab==='buy' ? inv.priceOf(pick) : inv.sellPrice(pick)) : 0;
     /* 結帳鈕（ver -496 購物車）：車裡有東西才亮。「錢不夠」不會發生在這裡 ——
        每一列的「＋」在總價會超過持有金額的那一刻就擋掉了。 */
-    const total = (tab==='buy') ? cartTotal() : price;
-    const can = (tab==='buy') ? cartCount()>0
-              : (pick && tab!=='mod' && inv.count(pick)>0);
+    const total = cartTotal();
+    const can = (tab!=='mod') && cartCount()>0;
 
     /* 說明區：武器 → 規格表（＋同類比較）；其餘 → 文字說明。 */
     let desc;
@@ -357,8 +376,10 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
           : '<button class="shop-do'+(can?'':' broke')+'" type="button">'
             /* 結帳（ver -496）：整車一次付清；車是空的鈕就暗著（字不變，
                玩家看得到這一顆是幹嘛的）。售完／已持有的狀態在各自那一列上。 */
-            + (tab==='buy' ? (can ? '結帳　'+total+' '+inv.moneyName() : '結　帳')
-                           : '賣出 '+total)+'</button>')
+            /* ⚠ 賣的總價前面加「＋」：同一顆鈕在兩頁的金額方向相反，
+               不標的話「結帳 1000」讀起來像要付錢。 */
+            + (can ? ('結帳　'+(tab==='sell'?'＋':'')+total+' '+inv.moneyName()) : '結　帳')
+            +'</button>')
       /* ⚠ 字短一點（ver -404 由「與店主交談」改）：靠左停的窄單子上，四顆鈕
          （買下／交談／挑戰／關閉）要排進一列，五個字會被擠成兩行。店主就站在右邊，
          「交談」跟誰交談不會有疑義。 */
@@ -389,11 +410,10 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
     ov.querySelectorAll('.shop-row .cr-p').forEach(b=>b.addEventListener('click', e=>{
       e.stopPropagation();
       const id=b.closest('.shop-row').dataset.id;
-      const w=!!(GAME_CONFIG.weapons||{})[id];
-      const left=shopStock.count(stockKey, id);
       const n=cart[id]||0;
-      if(n >= Math.min(w?1:99, isFinite(left)?left:99)) return;
-      if(cartTotal()+inv.priceOf(id) > inv.getMoney()) return;
+      if(n >= capOf(id)) return;
+      /* 錢的上限只有**買**才擋（賣是進帳）。 */
+      if(tab==='buy' && cartTotal()+inv.priceOf(id) > inv.getMoney()) return;
       cart[id]=n+1; pick=id;
       try{ SFX.menuClick(); }catch(_){} render(); }));
     ov.querySelectorAll('.shop-row .cr-m').forEach(b=>b.addEventListener('click', e=>{
@@ -431,13 +451,25 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
         /* 結帳音（ver -499，Ray：「點下結帳時跑 se_buy」）—— 只在**真的成交**時響。 */
         try{ SFX.play(asset('se_buy'), sfxGain('se_buy')); }catch(_){}
       }else{
-        const p=inv.sellPrice(pick);
-        if(inv.count(pick)<=0) return;
-        inv.remove(pick, 1); inv.addMoney(p);
-        /* ⚠ **賣給店家＝入庫**（Ray 指定：「除非玩家賣給他才會入庫再賣」）——
-           武器店那三把各只有一支，賣掉之後想反悔就得靠這一條。 */
-        shopStock.give(stockKey, pick, 1);
-        if(inv.count(pick)<=0) pick=null;     // 賣光了就取消選取
+        /* ══ 一次結帳（賣，ver -662）══
+           ⚠ **先確認手上真的有**（`count`），再扣、再入袋 —— 同買的那一支
+             「先扣貨再扣錢」的精神：少賣可以，不能發生「錢進來了東西沒少」。 */
+        let sum=0;
+        for(const id of Object.keys(cart)){
+          const have=inv.count(id);
+          const n=Math.min(cart[id], isFinite(have)?have:cart[id]);
+          if(n<=0) continue;
+          inv.remove(id, n); sum += inv.sellPrice(id)*n;
+          /* ⚠ **賣給店家＝入庫**（Ray 指定：「除非玩家賣給他才會入庫再賣」）——
+             武器店那三把各只有一支，賣掉之後想反悔就得靠這一條。
+             ⚠ **永遠帶著的東西不入庫**（ver -661）：那一條是給「真的會變少」的東西
+               用的，紋章賣了還在他身上，再堆進貨架等於憑空生出一堆。 */
+          if(!inv.isAlways(id)) shopStock.give(stockKey, id, n);
+        }
+        if(!sum) return;
+        inv.addMoney(sum);
+        cart={};
+        if(pick && inv.count(pick)<=0) pick=null;     // 賣光了就取消選取
       }
       render();
     });

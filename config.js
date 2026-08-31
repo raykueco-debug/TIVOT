@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.08.31-660';
+export const VERSION = 'ver 2026.08.31-662';
 
 export const GAME_CONFIG = {
 
@@ -398,6 +398,15 @@ export const GAME_CONFIG = {
        ⚠ 沒寫 `price` 的道具**不能買也不能賣**（劇情道具、任務物品都該如此）。
        ⚠ `use`＝使用效果（目前只有恢復體力的數值；戰鬥外的使用系統還沒做，先把資料放著）。 */
     defs: {
+      /* ══⚠⚠ **薇拉馮德家的紋章**（ver -661，Ray 指定）══════════════════════
+         「讓主角身上永遠有一個，數量無限，賣一次得錢 1000 元」。
+         ⚠ `always:true` ＝ 它是道具**定義**的性質，不進道具欄的帳
+           （不必存、不必清、賣掉不會變少）—— 見 script/inventory.js 的說明。
+         ⚠ `sellValue` ＝**絕對值**（1000），不走 `shop.sellRate` 折算：
+           Ray 說的是「賣一次得 1000」，不是「市價 2000 打五折」。
+         ⚠ 沒有 `price` ＝ 商店不會拿出來賣（那是他家的東西）。 */
+      verafond_crest: { name:'薇拉馮德家的紋章', cat:'item', sellValue:1000, always:true,
+                        desc:'薇拉馮德家的家徽。同樣的東西他身上似乎總還有一個。' },
       saint_claw_low: { name:'聖徒之爪（低品質）', cat:'material', price:24,
                         desc:'從訓練用聖徒上剝下來的爪。質地脆，勉強能當研磨材。' },
       /* 巨型蜈蚣的掉落（ver -423，Ray 的卡）。⚠ **價格是我填的**（卡上沒寫）——
