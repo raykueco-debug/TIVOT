@@ -225,12 +225,13 @@ export function loadEnemyPortrait(en){
          改一邊要改另一邊（鐵律 7 的但書，兩邊註解互指）。 */
     clearTimeout(landT);
     landT=setTimeout(()=>{
-      /* 著地的聲音（ver -641，Ray：「怪降下的那一瞬用 se_saint_install，pitch 調低 3 度」）。
-         ⚠ 借聖徒化那一支 —— 降 3 個半音之後它不再是「聖光降臨」而是「某個沉重的
-           東西落地」，同一個世界的聲音、不同的來者。
-         ⚠ 換算走 `SFX.semitone()`（鐵律 7），不要在這裡寫 2 的次方。
-         ⚠ 增益仍問 `sfxGain`（全域響度階層，§6.6）—— 變調不改響度。 */
-      SFX.play(asset('sfx_saint'), sfxGain('sfx_saint'), SFX.semitone(-3));
+      /* 著地的聲音（ver -643，Ray：「原本的 se_saint_install 歸 se_saint_install，
+         降音的是怪用的，重新生一個 NIGHTMAREINCOME」）。
+         ⚠⚠ 它是**另一支檔案**（`se_enemy_nightmareincome`＝聖徒化那一支降 3 個半音
+           離線做好的），不是執行期把 `se_saint_install` 變調 —— 兩件事要分開：
+           聖徒化仍然用原音，這裡用怪自己的那一支。
+         ⚠ 增益問 `sfxGain`（全域響度階層，§6.6）。 */
+      SFX.play(asset('se_enemy_nightmare'), sfxGain('se_enemy_nightmare'));
       if(api.screenShake) api.screenShake();
       const top=$('top');
       if(top){

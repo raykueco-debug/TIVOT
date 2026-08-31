@@ -678,6 +678,20 @@ const missingCg=new Set();   // 退回過的插圖：只提示一次，不然每
 function flushCgFade(){
   cgFadeT.forEach(clearTimeout); cgFadeT=[];
   if(cgFinish) cgFinish();
+  flushCgCross();
+}
+/* ══⚠⚠ **淡入中的第二層要能被「立刻做完」**（ver -643，Ray：「有時按太快會卡插畫」）══
+   `cgCross`（`cgSoft` 的疊上去淡入，ver -628）把交棒排在 `CG_FADE_MS` 之後，
+   而且 `#storyCg2` 上還可能掛著沒回來的 `onload`。玩家在那半秒內點下一句時：
+     · 交棒的計時器被 `flushCgFade` 清掉 → **主圖層永遠拿不到新的那一張**
+     · 第二層停在 `.on`（不透明）→ **它就蓋在畫面上不走了** ＝ 卡插畫
+   作法與 `cgFinish` 同一個模式：**被打斷就把它做完**（把該交的交完、把第二層收掉），
+   不是「取消」—— 取消等於讓畫面停在半路（同 ver -430 `pendingReveal` 的教訓）。
+   ⚠ 冪等：沒有在跑就什麼都不做。 */
+let cgCrossFinish = null;
+function flushCgCross(){
+  const f = cgCrossFinish; cgCrossFinish = null;
+  if(f) f();
 }
 /* `src` 可以是一個**候選陣列**（時段差分，ver -427）：由前往後試，第一張載得起來的
    就是它。⚠ 試的那一次**就是**要用的那一次載入（設 `el.src` 再看 onload/onerror），
@@ -744,29 +758,52 @@ function cgCross(el, src){
     top.style.transform      = cs.transform==='none' ? '' : cs.transform;
     top.style.transformOrigin= cs.transformOrigin; }
   const tryAt=(i)=>{
-    if(i>=list.length){ top.classList.remove('on'); setImg(top,''); return; }
+    if(i>=list.length){ cgCrossFinish=null; top.classList.remove('on'); setImg(top,''); return; }
     setImg(top, list[i]);
     const done=()=>{ top.onload=null; top.onerror=null;
       cgResolved.set(list[0], list[i]);
       top.classList.add('on');                    // 淡入（CSS transition）
-      cgFadeT.push(setTimeout(()=>{               // 淡完把它交棒給主圖層
-        /* ⚠⚠ 交棒時**取景要一起交**（ver -631）：主圖層那個 `pan-up` 的位置是
-           animation 的 forwards 結果，換掉 `src` 之後它未必守得住 —— 把第二層
-           算好的那組值寫成 inline，交棒才不會「啪」一聲跳回正中。
-           ⚠ 下一次真的要重新平移時，`startMove` 會把這幾個 inline 清掉（見那裡）。 */
+      /* 交棒：把第二層那一張交給主圖層。⚠⚠ **取景要一起交**（ver -631）：
+         主圖層那個 `pan-up` 的位置是 animation 的 forwards 結果，換掉 `src` 之後
+         它未必守得住 —— 把第二層算好的那組值寫成 inline，交棒才不會跳回正中。
+         ⚠ 下一次真的要重新平移時，`startMove` 會把這幾個 inline 清掉（見那裡）。
+         ⚠ 冪等：被 `flushCgCross` 提前叫過就不再做第二次。 */
+      let handed=false;
+      const handoff=()=>{
+        if(handed) return; handed=true;
+        cgCrossFinish=null;
         el.style.objectPosition = top.style.objectPosition;
         if(top.style.transform){ el.style.transform=top.style.transform;
                                  el.style.transformOrigin=top.style.transformOrigin; }
         setImg(el, list[i]); top.classList.remove('on');
         cgFadeT.push(setTimeout(()=>{ if(!top.classList.contains('on')) setImg(top,''); }, 60));
-      }, CG_FADE_MS));
+      };
+      cgCrossFinish = handoff;                    // 被打斷就立刻做完（見 flushCgCross）
+      cgFadeT.push(setTimeout(handoff, CG_FADE_MS));
     };
     if(top.complete && top.naturalWidth){ done(); return; }
     top.onload=done; top.onerror=()=>{ top.onload=null; top.onerror=null; tryAt(i+1); };
   };
+  flushCgCross();                                 // 上一次還沒交棒的，先做完（不要疊兩層）
   cgFadeT.forEach(clearTimeout); cgFadeT=[];
   tryAt(0);
   return true;
+}
+/* ══⚠⚠ **一段演完就把插圖撤掉**（ver -643，Ray：「插畫播完強制撤掉」）══
+   插圖與立繪一樣是**持續狀態** —— 沒人撤它就一直蓋在畫面上。以前靠腳本自己寫
+   `cg:null`，漏寫就卡著（而且新增的每一條路徑都會再漏一次，同 §6.5「清場」那條）。
+   ⚠ 收在 `clearCast()` 裡：那一支已經是「這一段講完了」的唯一出口（鐵律 8）。
+   ⚠ 連第二層與正在跑的淡入一起收，不然被打斷的那一張會留在最上面。 */
+export function clearCg(){
+  flushCgCross();
+  cgFadeT.forEach(clearTimeout); cgFadeT=[];
+  cgCrossFinish=null; cgFinish=null;
+  stageCg=null;
+  const top=$('storyCg2'); if(top){ top.classList.remove('on'); setImg(top,''); }
+  const cg=$('storyCg');
+  if(cg){ cg.classList.remove('pan-up','pan-down','zoom-in');
+          cg.style.objectPosition=''; cg.style.transform=''; cg.style.transformOrigin='';
+          setImg(cg,''); }
 }
 function cgFade(el, src){
   const fade=$('storyFade');
@@ -2712,6 +2749,11 @@ export function clearCast(){
   leaveSlot('L'); leaveSlot('R');
   const b=$('storyBubble'); if(b) b.style.visibility='hidden';
   markTalking(false);
+  /* ⚠⚠ **插圖也一起撤**（ver -643，Ray：「插畫播完強制撤掉」）：它與立繪一樣是
+     **持續狀態**，沒人撤就一直蓋在畫面上。以前靠腳本自己寫 `cg:null`，
+     漏寫就卡著 —— 而新增的每一條路徑都會再漏一次（同 §6.5「清場」那條的教訓）。
+     ⚠ 收在這一支＝「這一段講完了」的唯一出口（鐵律 8）。 */
+  clearCg();
   verifyCastCleared();
 }
 /* ⚠⚠ **撤場之後再驗收一次台上真的空了**（ver -433，Ray：「在播放結束後放一個檢查，

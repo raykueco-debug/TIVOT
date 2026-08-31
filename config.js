@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.08.31-642';
+export const VERSION = 'ver 2026.08.31-643';
 
 export const GAME_CONFIG = {
 
@@ -1833,6 +1833,7 @@ export const GAME_CONFIG = {
       se_kerberos_gear:6.179, se_kerberos_drop:1.550,
       se_brickcrush:1.825,              // ver -624（audio_scan 實測：−19.0 LUFS）
       se_earthquake:2.306,              // ver -636（audio_scan 實測：−21.1 LUFS）
+      se_enemy_nightmareincome:1.087,   // ver -643（audio_scan 實測：−14.5 LUFS）
       /* ── 飛行頁（那一頁用 HTMLAudio，讀同一張表，見 flight/index.html）── */
       se_flight_heartbeat:5.064, se_flight_idle_loop:2.848,
       se_flight_sail_loop:7.928, se_flight_seagull:3.353, se_flight_train:5.059,
@@ -2076,6 +2077,11 @@ export const ASSETS = {
   se_sleep:          "resources/audio/se/Se_sleep.mp3",
   // 聖徒化發動音效
   //  ⚠ 素材「內容」更新但檔名不變時,在路徑加/升 ?v=N 強制手機重抓(HTTP 快取以 URL 為鍵)。
+  /* ⚠⚠ 怪的**降臨**著地音（ver -643，Ray：「原本的 se_saint_install 歸
+     se_saint_install，降音的是怪用的，重新生一個 NIGHTMAREINCOME」）。
+     它是 `se_saint_install` **降 3 個半音**離線做好的另一支檔案 ——
+     聖徒化仍然用原音，兩者從此各走各的。 */
+  se_enemy_nightmare:"resources/audio/se/se_enemy_nightmareincome.m4a",
   sfx_saint:         "resources/audio/se/se_saint_install.m4a?v=3",
 
   // 完美防禦（完防）合成替代音（一般武器；散彈完防維持自己的槍聲）

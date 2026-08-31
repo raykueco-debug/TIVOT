@@ -166,17 +166,9 @@ function voiceChain(c, vol){
    被下面那個 `catch(e){}` **靜靜吞掉** → **所有音效整個不見**（Ray 回報，ver -399 修）。
    ⚠ 那個空的 catch 是刻意的（音效壞掉不該讓遊戲停），但它也會把這種低級錯誤藏起來
      —— 動這一支之後**一定要真的聽一次**，不要只看 console。 */
-/* ⚠⚠ `rate` ＝**播放倍率**（ver -641，Ray：「pitch 調低 3 度」）。
-   WebAudio 的 `playbackRate` 是**變速兼變調**（沒有獨立的移調器）—— 對一次性的
-   音效來說那正是要的：低 3 個半音 ＝ `2^(-3/12)` ≈ 0.841，同時也慢一點，
-   聽起來就是「同一個東西、更大更沉」。
-   ⚠ 半音 → 倍率的換算只有 `SFX.semitone()` 一支（鐵律 7）：呼叫端寫「幾度」，
-     不要自己在各處算 2 的次方。
-   ⚠ 語音鏈那一支不吃 `rate`：人聲變調會變成另一個人。 */
-function playBuffer(c, buf, vol, voice, handle, src, rate){
+function playBuffer(c, buf, vol, voice, handle, src){
   try{
     const s = c.createBufferSource(); s.buffer = buf;
-    if(rate>0 && rate!==1) s.playbackRate.value = rate;
     if(voice && _voice){
       const ch = voiceChain(c, vol);
       if(ch){ s.connect(ch.head); ch.tail.connect(busIn(c,'vo')); s.start(); return; }
@@ -198,21 +190,21 @@ const LATE_PLAY_MS = 1500;
 /* context 未 running（iOS 解鎖中/被中斷）時不盲目 s.start()——被排入的音源會卡到
  * 「下一次手勢 resume」才突然冒出（=延到下一幕才響）。改輪詢等 running，
  * LATE_PLAY_MS 內沒等到就放棄（遲到不亂響）。context 若中途重建，改用新 _ctx。 */
-function playWhenRunning(buf, vol, t0, voice, handle, src, rate){
+function playWhenRunning(buf, vol, t0, voice, handle, src){
   if(Date.now()-t0 > LATE_PLAY_MS) return;
   const c = _ctx; if(!c) return;
-  if(c.state === 'running'){ playBuffer(c, buf, vol, voice, handle, src, rate); return; }
-  setTimeout(()=>playWhenRunning(buf, vol, t0, voice, handle, src, rate), 60);
+  if(c.state === 'running'){ playBuffer(c, buf, vol, voice, handle, src); return; }
+  setTimeout(()=>playWhenRunning(buf, vol, t0, voice, handle, src), 60);
 }
 
 // 播放音檔（src＝已解析路徑）。已解碼→立即播；未解碼→限時補播（逾時放棄）。null/空→靜默略過。
-function playSrc(src, vol, voice, handle, rate){
+function playSrc(src, vol, voice, handle){
   if(!src) return;
   if(!ctx()) return;
   const t0 = Date.now();
   const buf = _buffers[src];
-  if(buf){ playWhenRunning(buf, vol, t0, voice, handle, src, rate); return; }
-  load(src).then(b => { if(b) playWhenRunning(b, vol, t0, voice, handle, src, rate); });
+  if(buf){ playWhenRunning(buf, vol, t0, voice, handle, src); return; }
+  load(src).then(b => { if(b) playWhenRunning(b, vol, t0, voice, handle, src); });
 }
 
 let _shots = [];    // 普攻槍聲候選（已解析路徑，隨機播一支）
@@ -396,9 +388,7 @@ export const SFX = {
   preloadBgm(srcs){ return Promise.all((srcs || []).filter(Boolean).map(ensureBlob)); },
 
   // 播放音檔（src＝已解析路徑）。每次 new source → 可自由重疊、不限制、不打斷前一個。
-  play(src, vol, rate){ playSrc(src, vol, false, null, rate); },
-  /* 半音 → 播放倍率（ver -641）。負數＝降。⚠ 換算只有這一支（鐵律 7）。 */
-  semitone(n){ return Math.pow(2, (n||0)/12); },
+  play(src, vol){ playSrc(src, vol); },
   /* 播一支**可中止**的音效，回傳把手：`.stop(fadeMs)` 收掉它。
      用途：演出用的機械聲（Kerberos 的齒輪）必須跟著動畫收尾，不能自己響完 ——
      素材 6.9 秒、動畫只有 1.6 秒，不收的話門都開完了齒輪還在轉。
