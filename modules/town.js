@@ -1491,8 +1491,15 @@ export function enter(id){
                  所以那一格照樣落得到 —— 正好就是「戰鬥結算後才有」。
                ⚠ 純對白的段落不受影響（那時 `battleSession` 本來就是 null）。 */
           if(checkpoint && !state.battleSession) try{ checkpoint(); }catch(_){}
-          /* 還有下一段就**原地立刻接上**（ver -599）——不停一秒、不必走出去再回來。 */
-          if(actDue(n)){ story.clearCast(); runArrival(true); return; }
+          /* 還有下一段就**原地立刻接上**（ver -599）——不停一秒、不必走出去再回來。
+             ⚠⚠ **不可以接上「剛剛演完的那一段」**（ver -669，Ray：「還是卡諾薇兒
+               不要催我」）：沒有 `flag` 的段落（＝每次抵達都演的「再訪」）演完之後
+               `actDue` 照樣回它自己 —— 於是它會**立刻再演一次，永遠不停**。
+               那不是「重播」而是**當場無窮迴圈**，畫面就卡在那一句上。
+             ⚠ 判的是**物件本身**（`!==act`）不是「有沒有 flag」：日後若有兩段
+               都沒有 flag，還是接得上另一段。 */
+          const nx=actDue(n);
+          if(nx && nx!==act){ story.clearCast(); runArrival(true); return; }
         }
         else if(ev){
           if(ev.flag) prog.addFlags([ev.flag]);                  // 傍晚那一句：只演一次
