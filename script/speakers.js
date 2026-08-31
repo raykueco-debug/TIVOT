@@ -81,6 +81,10 @@ export const SPEAKERS = {
   ANYA_X:   { name:'？？？',  art:'anya'   },
   /* 娜塔莉：安雅的侍女（ver -636）。只在這一幕出現，倒在地上。 */
   NATALIA:  { name:'娜塔莉',  art:'natalia' },
+  /* 禍魘娜塔莉（ver -681）：墓地那一幕「進場」的那一拍用得到。
+     ⚠ **顯示名與生前是兩個 id**（同 PRIEST_X／OFFICER 的慣例）—— 畫面上是
+       同一個人，但玩家看到的是另一個東西。 */
+  NATALIA_X:{ name:'禍魘娜塔莉', art:'natalia_x' },
   PRIEST_X: { name:'？？？',  art:'priest' },
   PRIEST:   { name:'司祭',   art:'priest' },
 };
@@ -492,6 +496,13 @@ export const ART = {
      （`tools/measure_si.py`）。 */
   gunsmith:{ cm:175, eye:32, fx:0.476, top:6, bot:1531,
            side:'R', alt:null, base:'resources/SI/NPC_Capital_Gunstore_SI.webp', expr:{} },
+  /* 禍魘娜塔莉（ver -681）。⚠ `fx` **不是 `measure_si.py` 印的 0.626**：
+     那一支量的是「頭頂往下 8% 那一帶的重心」，而她的頭髮往右上飛散一大片 ——
+     重心被拉過去了（同槍匠扛長槍的那個坑）。0.542 是照臉的位置定的。
+     ⚠ 身高 165 是**估的**（同其他 NPC 的作法）。
+     ⚠ 立繪就是敵人那一張：同一張圖兩種用途，戰鬥那邊是滿版取景、不吃這組數字。 */
+  natalia_x:{ cm:165, eye:32, fx:0.542, top:0, bot:1534,
+           side:'R', alt:null, base:'resources/enemy/mon_natalia.webp', expr:{} },
   /* ══ 北方泊地的兩位店主（ver -655，Ray 交件）══════════════════════════
      ⚠ 身高是**估的**（槍匠 176＝壯漢、雜貨舖 165＝中年婦人），同 hunter／gunsmith
        那幾筆的作法 —— 日後有設定改 cm 即可，取景值不必重量。

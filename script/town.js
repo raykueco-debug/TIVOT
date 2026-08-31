@@ -1417,10 +1417,16 @@ export const TOWNS = {
             /* 高音版的吼叫（`se_nightmare_hp`：原音升 5 個半音，Ray 指定另存）。 */
             { speaker:'ANYA', text:'', auto:1100, se:'se_nightmare_hp',
               portrait:{ char:'ANYA', expr:'desperate', show:true } },
+            /* ══ 這一聲結束後**立繪清空、夢魘娜塔莉進入**（ver -681，Ray 指定）══
+               ⚠ 同一拍做兩件事：`hide` 把台上的人請下去、`portrait` 把她放上來 ——
+                 分兩拍的話中間會有一格空台，讀起來是「大家不見了」而不是「她來了」。
+               ⚠ 空台詞不出對話框（ver -327），而台上有人 ＝ 要**點一下**才過
+                 （ver -628）—— 那一拍就是給玩家看清楚她的。
+               ⚠ 立繪就是敵人那一張（`natalia_x`，見 speakers.js）。 */
+            { speaker:'NATALIA_X', text:'',
+              hide:['RENNA','NOUVELLE','ANYA','ANYA_X','GIRL','NATALIA'],
+              portrait:{ char:'NATALIA_X', show:true } },
             any('terrifying','騙……騙人……'),
-            /* 禍魘娜塔莉現身：那是**敵人立繪**（`mon_natalia`），不是對白立繪 ——
-               這一拍用插圖層擺不出來，所以只留演出（音效已在上一拍），
-               她的樣子交給下一拍開打時的「降臨」演出（`kind:'harm'`）。 */
             any('terrifying','娜塔莉……不要……'),
             { speaker:'PLAYER', blank:true },
             /* ⚠ 這兩拍是**同一句「……」講兩次**（Ray 的稿），不是重複貼上：

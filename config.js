@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.08.31-680';
+export const VERSION = 'ver 2026.08.31-681';
 
 export const GAME_CONFIG = {
 
@@ -210,7 +210,23 @@ export const GAME_CONFIG = {
       cutin:'ci_anya_ni',
       voice:null,
       selectVoice:'vo_life_return',
-      perk:'惡夢化（劇情）',
+      perk:'清醒夢（被動）＋惡夢化・夢境粉碎（劇情）',
+      /* ══ 被動：清醒夢（ver -681，Ray：「被動技是 hp30% 以下普攻傷害 2 倍 5 秒，
+         CI 為 CI_Anya_Luciddream」）══
+         ⚠ 走**既有的** `lowHpBuff`（馬季諾的高裝藥彈那一支，鐵律 8）——
+           邊緣觸發：跌破門檻才發動，回到門檻上才重新上膛。
+         ⚠ Ray：「血量的關係原則上會在這一場 NI 結束後發動」—— 惡夢化熔斷／自爆
+           收在 HP1，正好跌破 30%，所以它自然接在後面。 */
+      passive:{
+        key:'lowHpBuff',
+        name:'清醒夢',
+        en:'Lucid Dream',
+        threshold:0.30,
+        buffSeconds:5,
+        cutin:'ci_anya_lucid',
+        voice:'vo_hc_rounds',
+        desc:'HP 降至 30% 以下時發動：5 秒普攻傷害加倍。',
+      },
     },
     // ── 第二搭檔：馬季諾 Malzeno ──────────────────────────
     malzeno: {
@@ -1629,13 +1645,21 @@ export const GAME_CONFIG = {
          兩個場合，把場合寫在戰鬥卡上才分得開（鐵律 7）。
        ⚠ **背景不寫**：城鎮插入戰交棒時 `main.js` 會把「你站的那一格」設進
          `state.battleBg`（ver -592），所以自然就是墓地那一張。 */
-    np_cemetery: { enemy:'np_boss' },
+    /* ⚠⚠ **這一場身邊沒有任何夥伴**（ver -681，Ray：「主角在沒有任何夥伴的狀況下
+       不會有任何主被動技能，也沒有聖徒化，也就是娜塔莉戰的前一場」）——
+       諾薇兒去了教堂、安雅還沒介入。所以聖徒化與搭檔技都關掉。
+       ⚠ 禁令擋在**唯一的發動點**（`saint.activateSaint` 的 `noSaint`／
+         `partner.tryActive` 的 `noPartner`），不是在手勢那邊各擋一次（鐵律 8）。 */
+    np_cemetery: { enemy:'np_boss', noSaint:true, noPartner:true },
     /* ══ 禍魘娜塔莉戰（ver -671，Ray 交稿）══════════════════════════════════
        敵 HP 50% 以下 → 劇情殺（**一擊**打到剩 1）→ 安雅接手惡夢化。
        ⚠ 與聖徒化教學那一場的三連擊是**兩種劇情殺**：那一套要走即死防禦
          （所以要三下），這一場接的是惡夢化（`strikeTo:1` ＝一下）。
        ⚠ `bgm` 不寫＝照舊 `bgm_battle`；背景照舊由城鎮交棒帶進來（墓地那一張）。 */
-    np_nightmare: { enemy:'nightmare_natalia',
+    /* ⚠⚠ 這一場**開場也沒有**（同上，Ray：「娜塔莉戰也是，等到安雅干涉才有
+       聖徒化跟主動技」）：`noSaint`／`noPartner` 把玩家自己發動的那兩個入口關掉，
+       惡夢化與夢境粉碎由**腳本的閘門**帶出來（`gate.action` 直接呼叫，不經過那兩道守門）。 */
+    np_nightmare: { enemy:'nightmare_natalia', noSaint:true, noPartner:true,
       /* ⚠ 站位：安雅本位右 → 蕾娜讓到**左**（§6.5 的表）。 */
       talkSides:{ renna:'left', anya:'right' },
       talk:[
@@ -2141,6 +2165,8 @@ export const ASSETS = {
   ci_anya_ni:     "resources/CI/CI_Anya_NightmareInstall.webp",
   /* 夢境粉碎（ver -674，Ray 交件）：惡夢化期間上滑的那一發。 */
   ci_anya_dreambreaker: "resources/CI/CI_Anya_Dreambreaker.webp",
+  /* 清醒夢（ver -681，Ray 交件）：安雅的被動 —— HP≤30% 普攻加倍 5 秒。 */
+  ci_anya_lucid:  "resources/CI/CI_Anya_Luciddream.webp",
   /* 賞金獵人（ver -375）：戰鬥立繪＝對話立繪的 `attack` 那張（去背，配 `bg` 用）。 */
   enemy_guild_hunter: "resources/SI/NPC_GuildHunter_SI_Attack.webp",
   /* ══⚠⚠ 北方泊地城鎮戰的雜怪（ver -596，Ray 指定四隻隨機出）＋教堂的 Boss（祭壇獸）══
