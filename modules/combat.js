@@ -1232,6 +1232,8 @@ export function battleNeedsGate(battleId){
 }
 export function endSession(){
   state.battleSession=null; sessionCarry=null;
+  sessionUsedKeys=[];                // 這一段出過哪幾隻（ver -628）：下一次重新洗牌
+
   inspector.clearSessionGain();     // 半途離場：EXP/錢的帳不留到下一段（ver -595）
   /* ══⚠⚠ **一場結束＝回滿血、破防值歸零**（ver -611，Ray 指定）══
      「一場」＝**槍棺上彈到蕾娜評價**（Ray 的定義），也就是這一個 session：
@@ -1259,12 +1261,21 @@ export function setBattleBg(name){ state.battleBg = name || null; }
      同一個 `sb` 再問回同一個（鐵律 7：一個量一個計算點）。
    ⚠ 抽的實作只有這一支（鐵律 8）。 */
 let pendingPick=null;   // { sb, key }
+/* 這一段（session）已經出過哪幾隻 —— **同一段之內不重覆**（ver -628，Ray：
+   「北泊城鎮戰的怪每一區不可重覆」）。
+   ⚠ 記在**段落**上而不是節點上：Ray 要的是「這一輪城鎮戰四區各不相同」，
+     而不是「這一格永遠出這一隻」（後者就不是隨機了）。
+   ⚠ 隨 `endSession()` 一起清（見那裡）—— 下一次城鎮戰重新洗牌。 */
+let sessionUsedKeys = [];
 function pickBattleEnemy(sb){
   if(!sb) return null;
   const e = sb.enemy;
   if(!Array.isArray(e)) return e;
   if(pendingPick && pendingPick.sb===sb) return pendingPick.key;
-  const key = e[(Math.random()*e.length)|0];
+  /* 抽**還沒出過的**；全部出過了就重新洗（怪比格子少時不至於卡住）。 */
+  let pool = e.filter(k => sessionUsedKeys.indexOf(k) < 0);
+  if(!pool.length){ sessionUsedKeys = []; pool = e; }
+  const key = pool[(Math.random()*pool.length)|0];
   pendingPick = { sb, key };
   return key;
 }
@@ -1489,6 +1500,16 @@ export function startGame(){
   if(state.scriptRun && GAME_CONFIG.storyPartner) setPickedPartner(GAME_CONFIG.storyPartner);
   if(sb && GAME_CONFIG.enemies[pickBattleEnemy(sb)]){
     enemy.setEnemy(pickBattleEnemy(sb));
+    /* ══⚠⚠ 真的開打了才記「這一段出過牠」，**並且把這一抽用掉**（ver -628）══
+       `pendingPick` 是為了讓 `startGame` 裡那兩次呼叫拿到同一隻（立繪與數值要對得起來）
+       —— 但它從來沒有人清掉，於是**整輪都黏著第一次抽到的那一隻**
+       （實測連開五場都是同一隻，「每一區不可重覆」根本無從談起）。
+       ⚠ 記在**開打**這一刻不是抽的那一刻：中途離開／讀檔重來不該把沒打過的算掉。 */
+    if(Array.isArray(sb.enemy)){
+      const k=pickBattleEnemy(sb);
+      if(sessionUsedKeys.indexOf(k)<0) sessionUsedKeys.push(k);
+    }
+    pendingPick=null;                  // 這一抽用完了 —— 下一場重抽（見上）
     state.noSaint = !!sb.noSaint;
     state.noPartner = !!sb.noPartner;
     state.timeAttack = sb.timeAttack || null;    // 計時挑戰（ver -396，打靶場）

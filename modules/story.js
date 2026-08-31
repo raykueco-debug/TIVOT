@@ -707,6 +707,35 @@ function resolveCg(base, noTime){
     step(0);
   });
 }
+/* ══⚠⚠ **`cgSoft:true` ＝這一張換圖用淡入，不走黑幕**（ver -628，Ray：
+   「007_Anya_passout / 007-2_Anya_awake 兩張的切換直接用淡入，不用轉黑」）══
+   黑幕（淡黑→換→淡回）是「換一個地方」的語氣；**同一張插圖的差分**（昏迷→醒來）
+   要的是「同一個畫面上發生了變化」，中間插一片黑等於把那個變化切斷。
+   ⚠ 作法是把新圖疊在舊圖上淡入（`#storyCg2`），淡完再把它換成主圖層 ——
+     不是「先清空再淡入」（那會閃一格空白，跟黑幕一樣糟）。
+   ⚠ 只有**明寫**的那幾拍走這條：預設仍是黑幕（§6.5 的通則不變）。 */
+function cgCross(el, src){
+  const list = Array.isArray(src) ? src : (src ? [src] : []);
+  const top = $('storyCg2');
+  if(!top || !list.length) return false;
+  const tryAt=(i)=>{
+    if(i>=list.length){ top.classList.remove('on'); setImg(top,''); return; }
+    setImg(top, list[i]);
+    const done=()=>{ top.onload=null; top.onerror=null;
+      cgResolved.set(list[0], list[i]);
+      top.classList.add('on');                    // 淡入（CSS transition）
+      cgFadeT.push(setTimeout(()=>{               // 淡完把它交棒給主圖層
+        setImg(el, list[i]); top.classList.remove('on');
+        cgFadeT.push(setTimeout(()=>{ if(!top.classList.contains('on')) setImg(top,''); }, 60));
+      }, CG_FADE_MS));
+    };
+    if(top.complete && top.naturalWidth){ done(); return; }
+    top.onload=done; top.onerror=()=>{ top.onload=null; top.onerror=null; tryAt(i+1); };
+  };
+  cgFadeT.forEach(clearTimeout); cgFadeT=[];
+  tryAt(0);
+  return true;
+}
 function cgFade(el, src){
   const fade=$('storyFade');
   /* ⚠ **插圖一出現就要走黑幕**，不是只有「插圖換插圖」才走 —— Ray 抱怨的正是
@@ -785,8 +814,11 @@ function applyPersist(line){
        ⚠ `cgNoTime:true` ＝這張沒有差分（多數插圖都是），只試原名。 */
     /* ⚠ 走 `cgCandidates`（ver -433）：已經解析過就只請求那一張，
        不必每次把四五個 404 再走一遍（見那一支的說明）。 */
-    cgFaded = cgFade($('storyCg'),
-      line.cg ? cgCandidates(line.cg, line.cgNoTime) : '');
+    /* `cgSoft`：同一張插圖的差分 → 淡入不轉黑（ver -628，見 cgCross）。
+       ⚠ 收圖（`cg:null`）不吃這一條 —— 那是「這張插圖結束了」，該走黑幕。 */
+    cgFaded = (line.cgSoft && line.cg)
+      ? !cgCross($('storyCg'), cgCandidates(line.cg, line.cgNoTime))
+      : cgFade($('storyCg'), line.cg ? cgCandidates(line.cg, line.cgNoTime) : '');
   }
   if(line.ci!==undefined){ stageCi=line.ci; setImg($('storyCi'), line.ci?SI_DIR+line.ci+'.webp':''); }
   /* 情境卡：⚠ 它是**一次性的畫面狀態**（下一句沒寫就收掉），所以每一句都要判，
@@ -1999,7 +2031,18 @@ function renderLine(){
        的時候，監察官立繪撤太快」）。她的立繪要滑 450ms 才站定，若那一秒從這一拍
        的第 0 毫秒起算，實際站定的時間只剩半秒 —— 讀起來就是「才剛出來就走了」。
        規則：**無台詞的立繪拍，等她站定之後再停 `auto` 那麼久**。 */
-    if(line.auto>0){
+    /* ══⚠⚠ **有立繪的無台詞拍要點擊才往下播**（ver -628，Ray：「角色立繪無對白時
+       也要點擊才往下播，除非自動播放」）══
+       那一拍是**演給人看的**（換表情、轉身要跑、站定不說話）—— 自己跑掉的話
+       玩家還沒看清楚就沒了，而它又沒有字可以讀、連「剛剛演了什麼」都回想不起來。
+       ⚠ 判定看**這一拍有沒有人在台上**（`slot.L`／`slot.R`），不是看有沒有寫
+         `portrait` —— 立繪是持續狀態，上一拍放上來的人這一拍還站著。
+       ⚠ **自動播放模式照跑**：那是玩家明確要求「不要等我」（`autoPlay`／`fastMode`
+         由 `scheduleAuto` 接手，見那裡）。
+       ⚠ 純演出拍（震動、空畫面、換插圖）**台上沒人**，照舊吃 `auto` —— 那些沒有
+         「要看清楚的東西」，停在那裡只是空等。 */
+    const onStage = !!(slot.L || slot.R);
+    if(line.auto>0 && !(onStage && !autoPlay && !fastMode)){
       const wait = line.auto + (slidIn ? SLIDE_MS : 0);
       autoT=setTimeout(()=>{ autoT=null; advance(); }, wait);
     }

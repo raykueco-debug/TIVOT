@@ -1071,8 +1071,10 @@ export const TOWNS = {
                  ⚠ 用 `hide` 不是 `show:false`：後者一句只能管一個角色。 */
               { speaker:'RENNA', text:'這孩子還有氣。有受傷嗎？',
                 cg:'007_Anya_passout', cgNoTime:true, hide:['NOUVELLE','RENNA'] },
-              /* 差分：醒來。空拍沒有台詞 → 一定要給 `auto`（§6.5）。 */
-              { speaker:'PLAYER', text:'', auto:1200, cg:'007-2_Anya_awake', cgNoTime:true },
+              /* 差分：醒來。⚠ `cgSoft`（ver -628，Ray 指定）＝**淡入不轉黑**：
+                 這是同一張插圖的差分（昏迷→醒來），中間插一片黑會把那個變化切斷。
+                 ⚠ 台上沒有人（上一拍 `hide` 過），所以照舊吃 `auto` 自己走完。 */
+              { speaker:'PLAYER', text:'', auto:1200, cg:'007-2_Anya_awake', cgNoTime:true, cgSoft:true },
               /* 收插圖回教堂（`cg:null`），立繪從這一拍開始恢復。 */
               { speaker:'ANYA_X', text:'！！', cg:null,
                 portrait:{ char:'ANYA_X', expr:'scared', show:true } },
