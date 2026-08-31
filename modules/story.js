@@ -335,9 +335,20 @@ function ensureOn(id, expr){
   const el = slotEl(side); if(!el) return null;
   const src = srcFor(sp.art, expr);
   const swapping = (slot[side] && slot[side]!==id);
+  /* 取景的鑰匙。⚠ 只有在**真的把 src 換上去的那一刻**才更新（見下面 apply 的說明）。 */
+  const setExpr = ()=>{ slotExpr[side]=expr||null; };
 
   if(slot[side]!==id || el.getAttribute('src')!==src){
     const apply = ()=>{
+      /* ⚠⚠ **取景要跟著「畫面上真的是哪一張」走**（ver -647 修，Ray：「娜塔莉說
+         『安娜』的時候位置跑掉了，此時應該就是用 dead 了，但圖還是 dying」）。
+         `slotExpr` 決定 `castLayout` 用哪一張的取景（`frameOf(id, slotExpr)`），
+         而換圖是**延後**的（換表情 190ms、同側換人 203ms、首次 16ms，外加 `onload`）。
+         舊寫法在函式**最後**就把 `slotExpr` 設好 —— 於是那段延遲裡
+         **舊圖被套上新圖的取景**：娜塔莉 dying→dead 的 `fx` 差 0.23、`top` 差 56，
+         畫面上就是「圖還沒換、人先跳走」。
+         正解：`slotExpr` 與 `src` **同一刻**更新，然後才 `layout()`。 */
+      setExpr();
       el.onload = ()=>{ el.onload=null; layout(); el.classList.add('on'); };
       el.setAttribute('src', src);
       el.dataset.who = id;
@@ -366,6 +377,7 @@ function ensureOn(id, expr){
       el.classList.add('fading');
       slotT[side]=setTimeout(()=>{
         const back=()=>{ el.classList.remove('fading'); layout(); el.classList.add('on'); };
+        setExpr();                    // ⚠ 取景與 src 同一刻（見 apply 的說明）
         el.onload=()=>{ el.onload=null; back(); };
         el.setAttribute('src', src);
         el.dataset.who = id;
@@ -373,8 +385,10 @@ function ensureOn(id, expr){
       }, 190);
     }
     slot[side]=id;
+  }else{
+    /* 圖沒有變（同一張）→ 取景本來就一樣，立刻更新即可。 */
+    setExpr();
   }
-  slotExpr[side]=expr||null;
   return side;
 }
 
