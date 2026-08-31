@@ -99,6 +99,7 @@ export function bankSessionGain(stats){
   /* 處刑是**這一場有沒有發生過**（ver -630）：布林用 OR，不是相加 ——
      一段之內任何一場以 EXSECUTIŌ 收尾，整場就算數。 */
   acc.sawExecution = !!(acc.sawExecution || stats.sawExecution);
+  acc.sawMaxBurst  = !!(acc.sawMaxBurst  || stats.sawMaxBurst);
   state.sessionStats = acc;
   state.sessionMoney = (state.sessionMoney|0) + rollBattleMoney();
 }
@@ -110,6 +111,7 @@ export function mergeSessionStats(stats){
   for(const k of SUM_KEYS) out[k] = (out[k]||0) + (acc[k]||0);
   out.maxCombo = Math.max(out.maxCombo||0, acc.maxCombo||0);
   out.sawExecution = !!(out.sawExecution || acc.sawExecution);
+  out.sawMaxBurst  = !!(out.sawMaxBurst  || acc.sawMaxBurst);
   return out;
 }
 export function clearSessionGain(){ state.sessionStats=null; state.sessionMoney=0; }
@@ -154,7 +156,10 @@ export function evaluate(stats, cfg = GAME_CONFIG.rating){
                   「excute 結束 −5 秒」）。它是**這一場有沒有發生過**，不乘次數。
                   ⚠ 與無傷那條下限是兩件事：這一條仍然走秒數（它是「打得漂亮」的
                     加分，不是「保證等第」的宣告）。 */
-               + (stats.sawExecution ? (pen.execution||0) : 0);
+               + (stats.sawExecution ? (pen.execution||0) : 0)
+               /* MB（未擊殺那一種，ver -675）：同樣是**一次性**，不乘次數。
+                  ⚠ 與處決互斥：擊殺的那一次是 EXSECUTIŌ，沒擊殺的才是 MB。 */
+               + (stats.sawMaxBurst  ? (pen.maxBurst ||0) : 0);
   /* ⚠ 夾在 0 以上：反擊／overkill 夠多時折算會是負的，扣過頭會變成負秒數。 */
   const used = Math.max(0, (stats.clearTime||0) + penSec);
   let score = Math.max(0, Math.min(100, Math.round(100 - (used/hp) * (cfg.timeK||200))));

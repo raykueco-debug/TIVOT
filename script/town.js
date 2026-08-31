@@ -1002,7 +1002,12 @@ export const TOWNS = {
          ⚠ 中間的黑幕（`sceneCut`）就是那一夜過去的表示。
          ⚠ -664 曾經寫成 `hourOfDay:[8,18]`（等玩家自己睡到早上）——
            那條路現在走不到了，但那個時段寫法本身是對的，留在引擎裡備用。 */
-      { flag:'np_day3', need:'np_night_done', clockTo:8,
+      /* ⚠⚠ **這一格同時進 S4**（ver -674，Ray：「把 stage4 設在第二天旅店醒來」）。
+         章節編號：S0 開頭／S1 第一次進帝都／S2 第一次出航／**S4 北方泊地第二天早上**
+         （S3 還沒定，見 §6.5.4.1 那張表）。
+         ⚠ 走閘門自己的 `stage` 欄位（`clockGate` 在演台詞之前就 `setStage`）——
+           不要在腳本裡另外寫一拍去設它（鐵律 8：那一支已經在做這件事了）。 */
+      { flag:'np_day3', need:'np_night_done', clockTo:8, stage:4,
         goto:'inn', enterAgain:true },
     ],
     /* ══⚠⚠ **重建之後換一整組背景**（ver -627，Ray：「stage5 之後北泊改用這一組差分」）══

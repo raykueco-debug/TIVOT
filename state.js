@@ -140,6 +140,7 @@ export const state = {
   counterDamage: 0,
   perfectCount: 0,
   sawExecution: false,
+  sawMaxBurst: false,    // 以 Maximum Burst 收尾（未擊殺那一種；ver -675）
   sRankUnlocked: false,
   /* 結算頁那顆（或那兩顆）底鈕現在是什麼意思。`modules/inspector.js` 擁有它，
      `onRematchBtn`／`onGiveupBtn` 依它分流：
@@ -289,6 +290,13 @@ export function exitNightmare(){ state.niMode = false; }
  * 比照 addCounter/addPerfect 的「跨擁有者計數例外」，經具名 setter 寫入。 */
 export function markExecution(){
   state.sawExecution = true;
+}
+/* saint.js 專用：以 Maximum Burst 收尾（**沒有擊殺**那一種）→ 標記本場 MB。
+   ⚠ 與 `sawExecution` 是**兩件事**：擊殺的那一次走處決（EXSECUTIŌ），
+     沒擊殺的才是 MB —— 評價折的秒數不同（ver -675）。
+   ⚠ 惡夢化清空殘格（`triggerNiBurst`）也算 MB（Ray：「同 SI 的 MB」）。 */
+export function markMaxBurst(){
+  state.sawMaxBurst = true;
 }
 
 /* weapon.js 專用：反擊成功時累加反擊計數/傷害（3.6 的跨擁有者計數例外）。

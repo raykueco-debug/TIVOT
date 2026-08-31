@@ -24,7 +24,7 @@
  * ========================================================================== */
 
 import { GAME_CONFIG, asset, sfxGain, isVoiceKey } from '../config.js';
-import { state, enterSaint, exitSaint, enterNightmare, exitNightmare, markExecution, storyMode } from '../state.js';
+import { state, enterSaint, exitSaint, enterNightmare, exitNightmare, markExecution, markMaxBurst, storyMode } from '../state.js';
 import { SFX } from '../audio.js';
 import { L, fmt } from '../i18n.js';   // 多語言（cut-in 副標/浮動字）
 
@@ -55,6 +55,8 @@ const NI = T.nightmare || {};
 const NI_SEC_PER_CELL = (NI.secPerCell!=null) ? NI.secPerCell : 0.8;   // 每一殘格給幾秒
 const NI_BURST_FLOOR  = (NI.burstFloor!=null) ? NI.burstFloor : 0;     // 自爆打不死：敵血最低留這個比例
 const NI_BURST_BUFF   = (NI.burstBuffSec!=null) ? NI.burstBuffSec : 0; // 自爆之後下一盤普攻加倍幾秒
+const NI_BURST_NAME   = NI.burstName  || '';       // 自爆的名字（cut-in 的字）
+const NI_BURST_CUTIN  = NI.burstCutin || '';       // 自爆的 cut-in 圖（ASSETS 鑰匙）
 
 /* combat 於啟動時注入的原語（HP API / 盤面 / 傷害 / defense / partner）。 */
 let api = {};
@@ -281,12 +283,25 @@ function triggerNiBurst(){
     playSaintCutin('execute', ()=>{ api.setPlayerHpRatio(1); api.onEnemyDefeated(); });
     return;
   }
+  markMaxBurst();   // 惡夢化清空殘格＝MB（Ray：「同 SI 的 MB」，ver -675）
   finishNightmare(()=>api.setPlayerHpRatio(1));   // 「hp 全恢復」
 }
 /* 主動技（上滑）：一次清掉殘格造成相應傷害 —— **沒有 MB、不回血、直接結束，HP 剩 1**。 */
 export function nightmareActive(){
   if(!state.niMode) return false;
   clearSaintReactTimer();
+  /* ══ 夢境粉碎（ver -674，Ray 交件 `CI_Anya_Dreambreaker`）══
+     ⚠ **先演再結算**：cut-in 是「她發動了」，盤面清空與傷害是它的結果 ——
+       反過來的話玩家會先看到數字再看到她出手。
+     ⚠ 沒有圖／沒有名字就直接結算（cut-in 是演出不是規則）。 */
+  if(NI_BURST_CUTIN){
+    playCutin(()=>niBurstResolve(), NI_BURST_NAME, NI_BURST_CUTIN);
+    return true;
+  }
+  return niBurstResolve();
+}
+function niBurstResolve(){
+  if(!state.niMode) return false;
   let dmg=0;
   for(const c of (state.cells||[])){
     if(c.classList.contains('done')) continue;
@@ -468,6 +483,7 @@ function triggerMaxBurst(){
     playSaintCutin('execute', ()=>{ api.setPlayerHpRatio(1); api.onEnemyDefeated(); });
     return;
   }
+  markMaxBurst();   // 未擊殺的 MB（ver -675）：評價折 10 秒，見 config.rating.penalty
   // 敵人未死 → Maximum Burst 演出後回盤面。回血規則（2026-08-13 定案）：
   //   EXSECUTIŌ（MB 擊殺）→ 回滿；MaxBurst（未擊殺）→ 回 50%，並自然延續到同場下一敵。
   playSaintCutin('burst', ()=>{

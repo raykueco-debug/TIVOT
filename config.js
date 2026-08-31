@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.08.31-673';
+export const VERSION = 'ver 2026.08.31-675';
 
 export const GAME_CONFIG = {
 
@@ -845,10 +845,13 @@ export const GAME_CONFIG = {
          它與 overkill 正好相反：「這一盤沒點錯也沒被打到」是玩家**每一盤自己決定**
          的事，不隨機，所以折成秒數是公平的。條件＝`state.boardClean`
          （與清盤獎勵聖能同一個，鐵律 7）。 */
-    /* ⚠ `execution` ＝以 **EXSECUTIŌ（處刑）** 收尾（ver -630，Ray：「excute 結束
-       −5 秒」）：一次性折抵，**不乘次數**（它是「這一場有沒有發生過」）。 */
+    /* ⚠ `execution` ＝以 **EXSECUTIŌ（處刑）** 收尾、`maxBurst` ＝以 **Maximum Burst**
+       收尾（沒擊殺那一種）。兩者都是**一次性**折抵，**不乘次數**
+       （它們是「這一場有沒有發生過」），而且**互斥**：擊殺的那一次是處決。
+       ⚠ 秒數 ver -675 由 Ray 改定：MB −10、處決 −15（原本處決是 −5）。
+       ⚠ 惡夢化清空殘格也算 MB（Ray：「同 SI 的 MB」）。 */
     penalty: { wrong: 2, ult: 3, block: 1, delay: 1, counter: -0.5,
-               overkill: 0, perfectBoard: -1, execution: -5 },
+               overkill: 0, perfectBoard: -1, maxBurst: -10, execution: -15 },
     /* ══⚠⚠ **整場無傷 ＝ 等第下限**（ver -626，Ray：「無傷基本讓他保證 S」）══
        ver -620 是「折 10 秒」，已推翻 —— 定額折秒的份量被**場的大小稀釋**：
        同樣 10 秒在 300 血的場值 16.7 分、在 1500 血的城鎮戰只值 3.3 分（五倍差），
@@ -2057,6 +2060,13 @@ export const GAME_CONFIG = {
          ⚠ 「下一盤」不是「馬上」：換盤有 RELOADING 的空檔，馬上起算會白白吃掉 1 秒。 */
       burstFloor: 0.10,
       burstBuffSec: 5,
+      /* 自爆的名字與 cut-in（ver -674，Ray：「CI_Anya_Dreambreaker／夢境粉碎／
+         這是安雅的主動技」）。
+         ⚠ **不寫進她的搭檔卡的 `active`**：那一格是搭檔系統（`partner.tryActive`）
+           在讀的 —— 寫進去的話聖徒化期間上滑會去問它，而夢境粉碎是**惡夢化自己的**
+           主動技，只在 NI 期間存在（鐵律 8：一個動作一個入口）。 */
+      burstName: '夢境粉碎',
+      burstCutin: 'ci_anya_dreambreaker',
     },
 
     // 雙槍
@@ -2122,6 +2132,8 @@ export const ASSETS = {
      ⚠ cut-in 住在 `resources/CI/`（Ray 指定；-672 曾誤指 `partner/`）。 */
   enemy_natalia:  "resources/enemy/mon_natalia.webp",
   ci_anya_ni:     "resources/CI/CI_Anya_NightmareInstall.webp",
+  /* 夢境粉碎（ver -674，Ray 交件）：惡夢化期間上滑的那一發。 */
+  ci_anya_dreambreaker: "resources/CI/CI_Anya_Dreambreaker.webp",
   /* 賞金獵人（ver -375）：戰鬥立繪＝對話立繪的 `attack` 那張（去背，配 `bg` 用）。 */
   enemy_guild_hunter: "resources/SI/NPC_GuildHunter_SI_Attack.webp",
   /* ══⚠⚠ 北方泊地城鎮戰的雜怪（ver -596，Ray 指定四隻隨機出）＋教堂的 Boss（祭壇獸）══

@@ -1390,6 +1390,8 @@ function win(){
     hitsTaken: Math.max(0, state.hitsTaken - _scriptedHits),
     /* 以 EXSECUTIŌ（處刑）收尾（ver -630）：評價折抵一次幾秒，見 config.rating.penalty。 */
     sawExecution: !!state.sawExecution,
+    /* 以 Maximum Burst 收尾（未擊殺那一種，ver -675）：折 10 秒。 */
+    sawMaxBurst: !!state.sawMaxBurst,
     /* 完美清盤的盤數（ver -659）：折算成秒數（負的＝獎勵），見 config.rating.penalty。 */
     perfectBoards: state.perfectBoards|0,
     /* 失誤計數（ver -600）：新評價把它們折算成秒數加進攻略時間。 */
@@ -1499,7 +1501,7 @@ export function startGame(){
   weapon.resetWeaponSwitch();   // 副武器切換鈕（ver -410）：排隊中的切換不可以跨場留著
   partner.reset(); // 搭檔被動重置（高裝藥彈 10 秒計時器清除、上膛旗標歸位）
   state.overkill=0; state.killTime=0; state.transitioning=false;
-  state.counterCount=0; state.counterDamage=0; state.perfectCount=0; state.sawExecution=false;
+  state.counterCount=0; state.counterDamage=0; state.perfectCount=0; state.sawExecution=false; state.sawMaxBurst=false;
   state.maxCombo=0; state.hitsTaken=0; state.correctTaps=0; state.wrongTaps=0; state.runOverkill=0; state.perfectBoards=0;   // 評價統計歸零
   state.penUlt=0; state.penBlock=0; state.penDelay=0;   // 失誤計數歸零（ver -600 的新評價）
   _scriptedHits=0;                                     // 教學劇情殺擊數（結算受擊數扣除用）
@@ -1646,7 +1648,7 @@ export function startIntruderFight(){
   weapon.reset();
   partner.reset();
   state.overkill=0; state.killTime=0; state.transitioning=false;
-  state.counterCount=0; state.counterDamage=0; state.perfectCount=0; state.sawExecution=false;
+  state.counterCount=0; state.counterDamage=0; state.perfectCount=0; state.sawExecution=false; state.sawMaxBurst=false;
   state.maxCombo=0; state.hitsTaken=0; state.correctTaps=0; state.wrongTaps=0; state.runOverkill=0; state.perfectBoards=0;   // 評價統計歸零
   state.penUlt=0; state.penBlock=0; state.penDelay=0;   // 失誤計數歸零（ver -600 的新評價）
   _scriptedHits=0;                                     // 教學劇情殺擊數（結算受擊數扣除用）
