@@ -348,6 +348,8 @@ function linesBlockedByRest(lines){
   }
   return false;
 }
+/* 開一次「下一步走去某處就加好感」的機會。⚠ 傳進來的可以是**節點**也可以是
+   **段落**（`acts` 的一項）—— 兩者都用 `nextFavor` 這個欄位（ver -664）。 */
 function armFavor(n){
   const f = n && n.nextFavor; if(!f) return;
   if(f.flag && prog.hasFlag(f.flag)) return;      // 這一輪已經拿過了
@@ -355,6 +357,11 @@ function armFavor(n){
 }
 function resolveFavor(to){
   const f = pendingFavor; if(!f) return;
+  /* ⚠⚠ `throughConnectors`（ver -664，Ray：「若**先進了其他末端地圖**則失去此機會」）：
+     連接用場景（東側／西側／北側／碼頭大道）**只是路**，走過去不算「去了別的地方」——
+     不然從旅店到教堂中間一定要經過兩三格，這個機會根本不可能達成。
+     ⚠ 「連接場景」是**算出來的**（`connectorIds`，鐵律 7），不列死名單。 */
+  if(f.throughConnectors && to!==f.to && connectorIds().indexOf(to)>=0) return;
   pendingFavor = null;                            // 機會只有一次，去哪裡都用掉
   if(to !== f.to) return;                         // 去了別的地方 → 不加也不扣
   for(const who in (f.aff||{})) prog.addAffection(who, f.aff[who]);
@@ -519,7 +526,9 @@ function eveningDue(n){
      need        這支旗立了才有效（前置）
      hour        到達或經過**時間軸上**那一個時刻才觸發（開局起算的分鐘數比，
                  見 `firstHourAt`）—— 帝都 stage 0 的結尾用的是這一種
-     hourOfDay   **今天**過了這個時刻就觸發（`hourF()` 比）
+     hourOfDay   **今天**過了這個時刻就觸發（`hourF()` 比）；
+                 寫成 `[起,迄]` ＝**時段**（迄不含）—— 「隔日早上那一幕」要用這個，
+                 見下面的說明
      onMove      **走一步就觸發**（Ray：「一進行地圖移動，祭司會出現」）
      goto        強制移到哪一格
      enterAgain  已經站在那一格時也要再 enter 一次（讓那一格的 acts 接手）
@@ -545,7 +554,16 @@ function stageGate(){
        北方泊地是第二天以後的事，那個點早就過了，寫 `hour:18` 等於「立刻成立」，
        安葬一演完就被抓回旅店，中間那段自由探索整個消失（實測就是這樣）。
        這一段要的是「**今天**過了六點」，所以比的是 `hourF()`。 */
-    if(g.hourOfDay!=null && clock.hourF() < g.hourOfDay) continue;
+    /* ⚠⚠ **「隔日早上八點」要寫成時段 `[8,18]` 不是 `8`**（ver -664 踩過）：
+       `hourOfDay:8` 的意思是「今天過了八點」—— 而**當天晚上八點也過了八點**，
+       於是那一幕在前一晚就演掉了（實測 20:00 就跳出來）。
+       寫成時段之後，只有真的走到隔天早上（睡醒或熬夜走到）才成立。
+       ⚠ 迄不含（同營業時間 `hours` 的規約）。 */
+    if(g.hourOfDay!=null){
+      const h=clock.hourF();
+      if(Array.isArray(g.hourOfDay)){ if(h < g.hourOfDay[0] || h >= g.hourOfDay[1]) continue; }
+      else if(h < g.hourOfDay) continue;
+    }
     return g;
   }
   return null;
@@ -1129,8 +1147,31 @@ function stepSfx(){
    ⚠ 參數是**目的地的節點 id**，不是方向（ver -370 修）：手勢／羅盤那一段已經把方向
    換算成目的地了，這裡再查一次 `exits[dir]` 只會查到 undefined（實測踩過：
    提示出得來、時間也滿了，就是不會走）。 */
+/* ══⚠⚠ **離開這一格之前要演的一段**（`onLeave`，ver -664，Ray：「點擊離開旅店時
+   安：『……』…」）══════════════════════════════════════════════════════════
+   節點寫 `onLeave:{ flag, need, sides, lines }`：`need` 立了、`flag` 還沒立 →
+   按下移動的那一刻先演完這一段，**演完才走**（旗標演完才記，同城鎮所有段落）。
+   ⚠ 與 `acts`（抵達時演）是**兩個時機**，不要混用：這一段的語意就是「你要走了」。
+   ⚠ 出航（`__sail`）也吃得到 —— 它一樣是「離開這一格」。 */
+function leaveDue(n){
+  const l = n && n.onLeave; if(!l) return null;
+  if(l.flag && prog.hasFlag(l.flag)) return null;
+  if(l.need && !prog.hasFlag(l.need)) return null;
+  return (l.lines && l.lines.length) ? l : null;
+}
 function go(to, dir){
   if(!to) return;
+  const lv = leaveDue(node());
+  if(lv){
+    busy=true; showNav(false);
+    if(chatterOn){ story.hideBubble(); chatterOn=false; }
+    const play=lv.lines.map((l,i)=> (i===0 && l && l.delay==null)
+      ? Object.assign({}, l, { delay:SLIDE_MS }) : l);
+    story.playAdhoc(play, ()=>{ story.clearCast();
+      if(lv.flag) prog.addFlags([lv.flag]);        // ⚠ 演完才記（同所有城鎮段落）
+      busy=false; go(to, dir); }, { sides:lv.sides });
+    return;
+  }
   if(to===SAIL_ID){ setSail(); return; }
   /* ══ 打烊的店**進不去**（ver -406，Ray 指定）══
      原本會走進去、站在一間關著的店裡（沒有店主、沒有選單），而且白花掉 10 分鐘
@@ -1383,6 +1424,12 @@ export function enter(id){
              「這一段讓世界變成什麼樣」—— 語意不同，不要共用一格。
              ⚠ 同樣是**演完才記**（打輸回頭再走一次還要能打）。 */
           if(act.safehouse) prog.addFlags([safehouseFlag()]);
+          /* ⚠⚠ **主線段落演完也要開「下一步」的機會**（ver -664）：`nextFavor`
+             以前只掛在**進場對白**那一支上，而第三天那些戲都是 `acts` ——
+             於是「應要求直接去教堂 +5」整條不會生效（實測好感是 0）。
+             ⚠ 段落自己可以帶一份（`act.nextFavor`），沒帶就用節點上那一份。
+             ⚠ 與旗標同一個時機（**演完**才算）：中途離開就沒聽完那句話。 */
+          armFavor(act.nextFavor ? act : n);
           /* ══ **一場戰鬥結束 ＝ 一個檢查點**（ver -590，Ray：「每次進城跟一場戰鬥
              結束都要有存檔點」）══ 城鎮的插入戰就是掛在 `acts` 上的（城鎮戰每一格
              都是一拍 `{battle:…}`），所以「這一段收完」＝「那一場打完、地圖回來了、
@@ -1557,6 +1604,8 @@ function afterArrive2(n){
                                     走的是旅店自己的分支二 —— 那一支演完要**把傍晚的旗標
                                     一起記掉**，否則走出去再回來又會被抓一次。 */
                                  eveningFlag: ((TOWNS[townId]||{}).evening||{}).flag });
+  /* 注：`noSleep` / `noSleepUntil` / `innWake` / `innAsleep` / `innRoster` /
+     `innNoGuide` 都是**節點上的欄位**，inn.js 直接讀 `node`（見那一支）。 */
   else inn.close();
   /* ⚠⚠ **教學先、選單後**（ver -430，Ray：「武器店的裝備教學先彈出，裝備完才跳出
      武器店的選單」）。有到期的提示時，店舖只擺店主、那顆入口鈕押後 ——

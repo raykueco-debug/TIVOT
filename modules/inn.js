@@ -41,6 +41,11 @@ const SIT_MIN    = 120;        // 「獨自坐坐」一次消磨多久（Ray：�
 const RENNA_BACK = 20;         // 她回到旅店的時刻
 const RENNA_GONE = 21;         // 過了就回房了（碰不到）
 const WAKE_HOUR  = 7;          // 「回房睡覺」推進到隔日的這個時刻（Ray 指定）
+/* 這一格的起床時刻（ver -664）：節點寫 `innWake` 就用它，沒寫＝ `WAKE_HOUR`。
+   ⚠ 北方泊地第三天那一段的戲排在 **08:00**，起床就該是八點 —— 不然睡醒之後
+     還要在城裡走六趟才碰得到那個閘門。
+   ⚠ **只有這一支在決定**（鐵律 7）：鈕上那行「到隔日 N:00」與真的推時鐘都問它。 */
+function wakeHour(){ const h=node && node.innWake; return (h!=null) ? h : WAKE_HOUR; }
 const AFF_MEET   = 1;          // 碰到她：好感 +1（Ray 指定）
 /* ══ 兩段轉場的時間（ver -430，Ray 指定）══════════════════════════════════
    ⚠⚠ 黑幕本身走 `story.veil()`（唯一那一片，鐵律 8）—— 舊版那一片
@@ -193,7 +198,7 @@ function ensureLayer(){
     +   '<button class="inn-btn" data-act="sit" type="button">'
     +     '<b>獨自坐坐</b><i>消磨 '+(SIT_MIN/60)+' 小時</i></button>'
     +   '<button class="inn-btn primary" data-act="sleep" type="button">'
-    +     '<b>回房睡覺</b><i>到隔日 '+WAKE_HOUR+':00・存檔</i></button>'
+    +     '<b>回房睡覺</b><i>到隔日 '+wakeHour()+':00・存檔</i></button>'
     /* ⚠ 常駐的雪鐵龍箭與說明**都撤掉了**（ver -401 撤說明、-402 撤箭，
        Ray：「說明都是一次性的」「雪鐵龍箭也都是一次性說明」）——
        箭與文字現在都只在下面 `.inn-guide` 那個一次性遮罩裡出現一次。 */
@@ -389,7 +394,21 @@ function knock(i){
       if(st1.data.dateDone && host && host.say) host.say(st1.data.dateDone, nm);
       return;
     }
-    if(who==='RENNA'){ if(st1.data.renna && host && host.say) host.say(st1.data.renna, nm); return; }
+    if(who==='RENNA'){
+      /* ⚠ `rennaAlt`（ver -664）：某支旗立起來之後改講另一段（可以是好幾句）。
+         北方泊地第三天出發前，她會說「先去吧，我等等去找你們」。
+         ⚠ 走 `host.play`（劇情播放器）不是 `say` —— 兩句以上就要能推進。
+         ⚠ Ray 標的是**無立繪**，所以那幾拍不寫 `portrait`。 */
+      const alt=st1.data.rennaAlt;
+      if(alt && alt.lines && alt.lines.length && (!alt.need || prog.hasFlag(alt.need))){
+        if(!host || !host.play || busy) return;
+        busy=true; if(host.lock) host.lock(true);
+        host.play(alt.lines, ()=>{ story.clearCast(); busy=false;
+          if(host.lock) host.lock(false); refresh(); });
+        return;
+      }
+      if(st1.data.renna && host && host.say) host.say(st1.data.renna, nm); return;
+    }
     if(who==='NOUVELLE'){
       /* 同行結束回房（ver -567，Ray：「敲門的時候沒有回應，大概睡著了」）——
          **旁白**不是她說話，名字欄留空；好感再高也約不出來（人睡著了）。 */
@@ -536,7 +555,9 @@ function sleepHere(){
      ⚠ 排在「太早」之前：那一條看時刻，這一條是「這一段劇情還沒到能睡的時候」，
        與幾點無關。
      ⚠ **旁白**（名字欄空）：那是主角自己的念頭，不是誰在講話。 */
-  if(node && node.noSleep){
+  /* ⚠ `noSleepUntil`（ver -664）：那支旗立起來就可以睡了 —— 北方泊地是
+     「那一夜演完」（`np_night_done`）之後才睡得著。沒寫＝一直擋。 */
+  if(node && node.noSleep && !(node.noSleepUntil && prog.hasFlag(node.noSleepUntil))){
     if(host && host.say) host.say(node.noSleep, '');
     return;
   }
@@ -578,7 +599,7 @@ function sleepHere(){
     if(stage()!=='slept') prog.addFlags([F_MISS]);
     /* 推進到**下一個** 07:00：晚上 21:00 睡 → 隔天 07:00（+10h）；
        凌晨 01:00 睡 → 同一天 07:00（+6h，那本來就已經是「隔日」了）。 */
-    let mins = Math.round((WAKE_HOUR - clock.hourF())*60);
+    let mins = Math.round((wakeHour() - clock.hourF())*60);
     if(mins <= 0) mins += 24*60;
     clock.advance(mins);
     /* ══ 睡覺＝體力回滿＋記「上一次睡覺的旅店」（ver -481，Ray：「hp除非回旅店睡覺

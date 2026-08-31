@@ -692,6 +692,28 @@ function stopShake(){
   const st=$('storyStage');
   if(st){ clearTimeout(st.__shakeT); st.classList.remove('shake','hold'); }
 }
+/* ══⚠⚠ **跨句的畫面染色**（`tintHold`，ver -664，Ray：「畫面變色，紫紅負片」）══
+   與 `shakeHold` 同族：那一拍寫 `tintHold:'<名字>'` ＝整個舞台換上那組濾鏡，
+   **推對話不會收掉**，一路撐到出口為止。
+   ⚠⚠ 跨句的狀態一定要有**明確的出口清單**，而且全部走同一支收尾（§6.5）：
+     進戰鬥（`line.battle`）／換場（`playScene`）／離場（`close`）—— 與持續震動同三個。
+   ⚠ 它**不是** `line.bg` 那種持續狀態（那些要寫 null 才收）：這是一段演出，
+     沒有人會記得在最後一拍寫 `tintHold:null`。
+   ⚠ 名字對到 CSS 的 `.story-tint-<名字>`（現在只有 `nightmare`）——
+     腳本只寫名字，配方在 CSS（鐵律 1）。 */
+let tintName=null;
+function stopTint(){
+  if(!tintName) return;
+  const st=$('storyStage'); if(st) st.classList.remove('story-tint-'+tintName);
+  tintName=null;
+}
+function setTint(name){
+  if(name===tintName) return;
+  stopTint();
+  if(!name) return;
+  const st=$('storyStage'); if(!st) return;
+  tintName=name; st.classList.add('story-tint-'+name);
+}
 /* 見檔頭 import 處的說明。⚠ 判「看不看得見」用實際尺寸不用 class（同 tone.js）。 */
 function toneSrcEl(){
   const cg=$('storyCg');
@@ -1041,6 +1063,7 @@ const SE_FILES=[
   'se_flight_seagull.m4a', 'se_flight_train.mp3', 'vo_lunaMG.m4a', 'se_punch.m4a',
   'se_brickcrush.m4a',                                       // 瓦礫崩落（北方泊地教堂，ver -624）
   'se_earthquake.m4a',                                       // 地鳴（教堂那一拍的震動，ver -636）
+  'se_paniccrowd.mp3',                                       // 人群尖叫（墓地那一幕，ver -664）
   /* ⚠ `se_saint_maxburst` 於 ver -641 改名成 `vo_saint_maxburst`，而它**還躺在 `se/`**
      —— 這張表是照 `vo_` 前綴推資料夾的，列進來會指到 `vo/` 而 404。
      它本來就在 `ASSETS.se_luna_mb`（開機那一批照樣預載得到），所以這裡直接不列。 */
@@ -1181,6 +1204,8 @@ function fireOneShot(line){
      ⚠ 收尾有三個出口，全部走 `stopShake()`（鐵律 8）：
        進戰鬥（`line.battle` 那一支）／換場（`playScene`）／離場（`close`）。
      ⚠ 計時器**不進 `fxTimers`**：那一組是給一次性演出用的，每推一句就被清掉。 */
+  /* 跨句的染色（ver -664）：只有寫了才動；沒寫的拍不會把它收掉。 */
+  if(line.tintHold!==undefined) setTint(line.tintHold||null);
   if(line.shakeHold>0){
     hap.shake();
     const st=$('storyStage');
@@ -2051,7 +2076,7 @@ function renderLine(){
   }
 
   if(line.battle){
-    stopShake();                 // 進戰鬥就停（ver -638，Ray 指定）
+    stopShake(); stopTint();     // 進戰鬥就停（ver -638／-664，Ray 指定）
     if(!battleHandler){
       console.info('[story] 沒有註冊戰鬥發動器，跳過：', line.battle);
       return advance();
@@ -2327,7 +2352,7 @@ function endScene(){
 }
 
 function playScene(id){
-  stopShake();                   // 換場一定停（ver -638，持續震動的三個出口之一）
+  stopShake(); stopTint();       // 換場一定停（ver -638／-664，跨句演出的三個出口之一）
   const sc = MAIN_SCRIPT[id];
   if(!sc){ console.warn('[story] 找不到 scene：', id); close(); return; }
   cur = sc; lineIdx = 0;
@@ -2669,7 +2694,7 @@ let townOpener = null;
 export function setTownOpener(fn){ townOpener = fn || null; }
 
 export function close(opts){
-  stopShake();                   // 離場一定停（ver -638，持續震動的三個出口之一）
+  stopShake(); stopTint();       // 離場一定停（ver -638／-664，跨句演出的三個出口之一）
   clearInterval(typing); typing=null;
   pendingReveal=null;                // ⚠ 離場：還沒演的那一拍**丟掉**（同 playScene，ver -430）
   clearTimeout(waitT); waitT=null;

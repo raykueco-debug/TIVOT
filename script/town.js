@@ -987,6 +987,15 @@ export const TOWNS = {
       { flag:'np_night', need:'np_burial_done', hourOfDay:18,
         goto:'inn', enterAgain:true,
         lines:[ { speaker:'NARRATION', text:'該回去看看了。' } ] },
+      /* ③ **隔日 08:00**（ver -664，Ray：「旅店大廳 隔日8：00」）——
+         睡醒就是八點（旅店的 `innWake`），所以這一格多半在睡醒那一刻成立。
+         ⚠ 不寫 `lines`：玩家本來就在旅店，沒有「先講一句再轉場」這回事；
+           那一幕由旅店的 `acts` 接。 */
+      /* ⚠⚠ **時段 `[8,18]` 不是 `8`**：`hourOfDay:8` ＝「今天過了八點」，
+         而演完那一夜的當晚（18:0x 之後）也過了八點 —— 這一幕會在前一晚
+         就跳出來（實測 20:00 就演了）。寫成時段，只有真的到隔天早上才成立。 */
+      { flag:'np_day3', need:'np_night_done', hourOfDay:[8,18],
+        goto:'inn', enterAgain:true },
     ],
     /* ══⚠⚠ **重建之後換一整組背景**（ver -627，Ray：「stage5 之後北泊改用這一組差分」）══
        節點的 `bg` 是**戰損版**（`_BF`，沒有時段差分）；到了 `fromStage` 這一章之後
@@ -1017,7 +1026,11 @@ export const TOWNS = {
       /* 樞紐＝Citymap 的「中央大道」（Ray：入口那一格就是它）。
          ⚠ 「中央大道」是模板上的通名，這座城的街名 Ray 還沒給 —— 暫用。 */
       entrance: {
-        bg:'Northport_Square_BF', name:'北方泊地　中央大道',
+        /* ⚠ 街名由 Ray 定案為**碼頭大道**（ver -664 的稿：「兩點要回碼頭大道」）——
+           「中央大道」是模板上的通名，之前是暫用的。
+           ⚠ 節點 id 仍是 `entrance`（旗標、`firstEntry`、`sail` 都指著它，
+             改 id 等於把那些一起打斷）—— 只改顯示名（`nameOf` 是唯一在算的那一支）。 */
+        bg:'Northport_Square_BF', name:'北方泊地　碼頭大道',
         exits:{ up:'north', left:'west', right:'east' },
         /* 出航＝模板的「離開」，照 capital 的規矩掛在下；到得這裡船一定有了（同旗，只讀）。 */
         /* ⚠⚠ **不可離港**（ver -655，Ray：「自由探索，不可離港，離港會跳訊息：
@@ -1026,10 +1039,26 @@ export const TOWNS = {
              那正是這一版要的（鐵律 9：誰插的、誰拔的，這裡先把名字留好）。 */
         sail:{ flag:'got_ship',
                hold:{ need:'np_claws_done', until:'np_leave_ok', text:'不能丟下同伴。' } },
+
         /* 城鎮戰的一場（ver -583）：走進來就打。⚠ `need` ＝城鎮戰開著、
            `flag` ＝這一格清掉了（打贏才記，同所有城鎮段落「演完才記」的規矩，
            所以打輸回頭再走一次還會遇到）。 */
-        acts:[ { flag:'np_clear_entrance', need:'np_port_arrive', lines:[ { battle:'np_harm' } ] } ],
+        acts:[ { flag:'np_clear_entrance', need:'np_port_arrive', lines:[ { battle:'np_harm' } ] },
+               /* ══ 第三天：安雅想去看娜塔莉（ver -664，Ray 交稿）══
+                  ⚠⚠ **好感 +5 的機會**掛在**這一段**上（不是節點上）：
+                    `nextFavor` ＝這一段演完就開一次，下一步走去 `church` 就加。
+                  ⚠ `throughConnectors:true` ＝**連接場景只是路**，走過去不算數 ——
+                    Ray 說的是「若先進了其他**末端**地圖則失去此機會」，而從碼頭大道
+                    到教堂中間一定要經過北側，不放行的話這個機會不可能達成。 */
+               { flag:'np_dock_ask', need:'np_anya_join',
+                 nextFavor:{ to:'church', aff:{ anya:5 }, flag:'np_anya_grave',
+                             throughConnectors:true },
+                 lines:[
+                 any('scared','那個……'),
+                 any('sobbing','我想去教堂那裡，看看娜塔莉……'),
+                 { speaker:'PLAYER', blank:true },
+                 any('scared','謝謝……'),
+               ] } ],
       },
       /* ── 三個街區樞紐 ── */
       west: {
@@ -1095,6 +1124,11 @@ export const TOWNS = {
               { speaker:'PLAYER', blank:true },
               nou('runserious','沒錯！我們上吧！'),
             ] },
+          /* 第三天路過碼頭（ver -664，Ray 交稿）。 */
+          { flag:'np_port_day3', need:'np_day3_done', lines:[
+            pri(null,'真是多虧了你們，否則後果不堪設想。'),
+            any('sobbing','……'),
+          ] },
         ],
       },
       north: {
@@ -1125,7 +1159,12 @@ export const TOWNS = {
                  .concat(NP_RANGE_SEQ),
         /* 「射擊挑戰」鈕 → **同一份**（見 NP_RANGE_SEQ 的說明）。 */
         challengeLines: NP_RANGE_SEQ },
-      guild:    { bg:'Northport_guild_BF', name:'北方泊地　賞金獵人公會', exits:{ back:'west' } },
+      /* 賞金獵人公會（ver -664，Ray：「沒有人，只有張貼懸賞單，點擊查看」）。
+         ⚠ 懸賞內容在 `config.bounties`（鐵律 1），這裡只指哪一座城。
+         ⚠ 不寫 `keeperWho`＝沒有店主立繪，正合「沒有人」。 */
+      guild:    { bg:'Northport_guild_BF', name:'北方泊地　賞金獵人公會', exits:{ back:'west' },
+        board:'northport',
+        acts:[ { flag:'np_guild_seen', need:'np_day3_done', lines:[ any('silent','……') ] } ] },
       cityhall: { bg:'Northport_cityhall_BF', name:'北方泊地　市鎮中心',   exits:{ back:'north' } },
       /* ⚠ **城鎮戰期間唯一走得進去的末端**（Ray 指定，見城上的 `siege.keep`）——
          因為 Boss 在這裡（司祭：「守軍把禍魘吸引到城鎮中心去了」）。 */
@@ -1287,6 +1326,21 @@ export const TOWNS = {
                 cg:'008_RennaholdAnya', cgNoTime:true, cgPan:'down',
                 hide:['RENNA','NOUVELLE','ANYA','ANYA_X','GIRL','NATALIA'] },
             ] },
+          /* ══ 第三天：戰地醫院（ver -664，Ray 交稿）══
+             ⚠ **不覆寫站位**：諾薇兒本位左、安雅本位右，本來就分開了。
+               這一幕她們同台，把諾薇兒指到右就會與安雅擠同一個槽（§6.5）。 */
+          { flag:'np_church_help', need:'np_day3_done', lines:[
+            nou('surprise','撐著點，馬上就不痛了！'),
+            nou('lookback','啊，你們是來幫忙的嗎？'),
+            { speaker:'PLAYER', blank:true },
+            nou('sad','這樣啊……我知道了。在那之前我都會在這裡幫忙。'),
+            nou('pray','死者遺骨的話，都已經移到墓地了。'),
+            any('sobbing','……'),
+            any('sobbing','謝謝……'),
+          ] },
+          /* 再訪（ver -664）。⚠⚠ **不寫 `flag` ＝每次抵達都演**（`actDue` 只跳過
+             「旗立了」的段落）—— 那正是「再訪教堂」要的行為。 */
+          { need:'np_church_help', lines:[ nou('lookback','等等啦！不要催我！') ] },
         ],
       },
       /* 墓地＝北側上方那個「空格」，Ray ver -567 定案是墓地。 */
@@ -1303,6 +1357,35 @@ export const TOWNS = {
             pri(null,'辛苦你們了。多虧有你，才沒有更多人死去。'),
             pri(null,'願神庇佑這些無辜的靈魂。'),
           ] },
+          /* ══ 第三天：墓地 → 惡夢 → 戰鬥（ver -664，Ray 交稿）══
+             ⚠⚠ `pullSafehouse:true` ＝**特殊戰**：這張地圖插著安全區旗
+               （`safehouse_northport`），不拔的話 `actDue` 會把「有戰鬥拍的段落」
+               整段跳過（§6.5.4 的規矩）。演完再插回去。
+             ⚠⚠ **紫紅負片是跨句的**（`tintHold`）：從那一拍起一路撐到進戰鬥，
+               推對話不會收掉（出口：進戰鬥／換場／離場，見 story 的 `stopTint`）。
+             ⚠ 「（異國語言）」照稿保留括號 —— 那是**唸不出來的話**本身，
+               不是舞台指示（§6.5.1 的括號規則不適用）。
+             ⚠ 三個純音效拍：台上有安雅 → 要點一下才過（ver -628），這是要的。 */
+          { flag:'np_grave_done', need:'np_day3_done', pullSafehouse:true, lines:[
+            any('cry','娜塔莉……'),
+            any('sobbing','（異國語言）'),
+            { speaker:'PLAYER', blank:true },
+            any('sobbing','我知道，可是……可是……'),
+            any('desperate','都是我的錯……'),
+            /* 惡夢滲進來。⚠ 染色與心跳同一拍起。 */
+            { speaker:'ANYA', text:'', auto:1200, tintHold:'nightmare',
+              se:'se_flight_heartbeat', portrait:{ char:'ANYA', expr:'desperate', show:true } },
+            { speaker:'ANYA', text:'', auto:1100, se:'se_paniccrowd',
+              portrait:{ char:'ANYA', expr:'desperate', show:true } },
+            any('terrifying','！！'),
+            { speaker:'ANYA', text:'', auto:1100, se:'se_saintroar', shake:true,
+              portrait:{ char:'ANYA', expr:'terrifying', show:true } },
+            any('terrifying','不可以……'),
+            { speaker:'ANYA', text:'', auto:900, se:'se_steps',
+              portrait:{ char:'ANYA', expr:'terrifying', show:true } },
+            ren('shocked','禍魘！是從哪裡——'),
+            { battle:'np_cemetery' },
+          ] },
         ] },
       /* ══ 雜貨店（ver -655，Ray 交稿）══ 功能與帝都相同（買／賣）。
          ⚠ 那一句同時當**進場對白**與**「交談」鈕**的內容 —— 只寫一次（鐵律 7）。 */
@@ -1311,7 +1394,9 @@ export const TOWNS = {
         shop:'np_grocery', keeperWho:'SHOPKEEP_NP',
         hours:[8,20], closed:'櫥窗裡的燈熄了，門板上掛著「已打烊」。',
         lines: NP_GROCER_LINES, keeper: NP_GROCER_LINES },
-      tavern:   { bg:'Northport_tavern_BF', name:'北方泊地　餐飲街',     exits:{ back:'east' } },
+      /* 餐飲街：廢墟（ver -664）。 */
+      tavern:   { bg:'Northport_tavern_BF', name:'北方泊地　餐飲街',     exits:{ back:'east' },
+        acts:[ { flag:'np_tavern_seen', need:'np_day3_done', lines:[ any('sobbing','……') ] } ] },
       /* ══ 旅店（ver -656，Ray 交稿）══════════════════════════════════════
          「六點前直接走進旅店，只有蕾娜會亮燈」＋「一過六點……強制轉移」那一夜。
          ⚠⚠ **兩顆行動鈕都要有**（ver -659，Ray：「旅店還是要有獨自坐坐，回房睡覺
@@ -1329,7 +1414,12 @@ export const TOWNS = {
         bg:'Northport_hotel_BF', name:'北方泊地　旅店', exits:{ back:'east' },
         inn:true,
         innSpots:{ sit:{ x:0.310, y:0.630 }, sleep:{ x:0.580, y:0.550 } },
-        noSleep:'現在不是睡覺的時候。',
+        /* ⚠ 那一夜演完（`np_night_done`）之後就睡得著了（ver -664）——
+           蕾娜最後那一句就是「早點休息吧」。在那之前一律擋回來。 */
+        noSleep:'現在不是睡覺的時候。', noSleepUntil:'np_night_done',
+        /* 起床是**八點**不是七點（ver -664）：第三天那一幕排在 08:00，
+           起床就該是那個時刻，不然睡醒還要在城裡走六趟才碰得到閘門。 */
+        innWake:8,
         /* ⚠ 三扇門都在（ver -659，Ray：「安雅跟諾薇兒的頭像也要上，但是點下去
            都是蕾娜應門」）——她們躺在房裡，門是蕾娜開的。
            臉照舊是各人的（`doorState`／`faceStyle` 問真正的住客），
@@ -1339,7 +1429,12 @@ export const TOWNS = {
            門在、燈熄、臉照畫 —— 與「不在房裡」（`empty`，臉都不畫）是兩件事。 */
         innAsleep:['NOUVELLE','ANYA'],
         innStage1:{ renna:'你一個大男人不方便吧？我來照顧她們兩個就好了。',
-                    answerBy:'RENNA' },
+                    answerBy:'RENNA',
+                    /* 第三天出發前敲她的門（ver -664，Ray 交稿）。⚠ **無立繪**。 */
+                    rennaAlt:{ need:'np_day3_done', lines:[
+                      { speaker:'RENNA', text:'怎麼了？這麼快就回來了？' },
+                      { speaker:'RENNA', text:'先去吧，我等等去找你們。' },
+                    ] } },
         /* 這一格不教（ver -659）：一次性說明在帝都的旅店已經教過了。 */
         innNoGuide:true,
         /* ══ 那一夜（ver -656，Ray 交稿）══════════════════════════════════
@@ -1374,7 +1469,52 @@ export const TOWNS = {
             ren('writting','把那女孩帶回聖王廳，現在也只能這麼辦了。'),
             ren('stare','早點休息吧，辛苦你囉。'),
           ] },
+          /* ══ 第三天早上八點（ver -664，Ray 交稿）══════════════════════════
+             ⚠⚠ 「如果聽不懂的話也沒關係，先跟我們回聖王廳吧？」那一句稿上標
+               「諾：」但圖是 `Renna_SI_smile` —— 這裡照**圖**判給蕾娜：
+               前一拍她剛嘆了口氣（tired），這一句是她放軟；而下一句
+               「說話了！」才是諾薇兒的反應。要改成諾薇兒就換 `nou('happy',…)`。
+             ⚠⚠ **不覆寫站位**：這一幕三個人同台，而本位就已經分開了 ——
+               蕾娜左、諾薇兒左、安雅右。蕾娜與諾薇兒共用左槽，第三個人上場時
+               由引擎抽牌輪轉（§6.5）。⚠ 這裡**不可以**把諾薇兒指到右：
+               安雅本位就在右，兩個人擠同一槽會每換一句就換一次人。 */
+          { flag:'np_day3_done', need:'np_day3', lines:[
+            ren('talkwork','薩梅爾的標準語，妳聽得懂的吧？'),
+            any('silent','……'),
+            /* 無台詞的立繪拍（換表情）：台上有人 → 要點一下才過（ver -628）。 */
+            { speaker:'RENNA', text:'', portrait:{ char:'RENNA', expr:'tired', show:true } },
+            ren('smile','如果聽不懂的話也沒關係，先跟我們回聖王廳吧？'),
+            any('talk','聖王……廳？'),
+            nou('surprise','說話了！'),
+            any('talk','那裡……靠近帝都嗎？'),
+            ren('evaluatingclosemouth','……'),
+            ren('evaluating','蠻近的。'),
+            ren('evaluating','妳有事要去帝都嗎？'),
+            any('talk','沒有……'),
+            ren('evaluatingclosemouth','……'),
+            ren('evaluating','那就和我們走一趟吧。'),
+            any('talk','……好。'),
+            nou('shocked2','竟然乾脆地答應了？'),
+            nou('awkward','這孩子，戒心到底算高還是低呢？'),
+            ren('talkserious','當事人願意就好說了。等船整備好了就出發吧。'),
+            nou('runserious','等等，我先去戰地醫院幫忙！'),
+            ren('reach','啊。'),
+            ren('upsetstare','真是的。'),
+            ren('ask','兩點要回碼頭大道，麻煩你再轉達她囉。'),
+            ren('ask','我還有些報告要寫。'),
+          ] },
         ],
+        /* ══ 點擊離開旅店時（ver -664，Ray 交稿）══
+           ⚠ 這是 `onLeave` 不是 `acts`：那一段的語意就是「你要走了」——
+             按下移動的那一刻先演完，演完才走（見 modules/town.js 的 `leaveDue`）。 */
+        onLeave:{ flag:'np_anya_join', need:'np_day3_done', lines:[
+          any('silent','……'),
+          { speaker:'RENNA', text:'？', portrait:{ char:'RENNA', show:true } },
+          ren('ask','看起來是想跟你一起去的樣子呢。'),
+          { speaker:'PLAYER', blank:true },
+          ren('evaluatingclosemouth','嗯……'),
+          ren('smile','沒關係。好好保護她喔。'),
+        ] },
       },
     },
   },

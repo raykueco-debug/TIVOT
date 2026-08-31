@@ -2322,6 +2322,21 @@
     font-family:inherit;font-size:13px;letter-spacing:2px;line-height:1.5;color:var(--gold);
     background:rgba(10,8,14,.86);border:1px solid var(--gold-dim);border-radius:10px;
     -webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);}
+  /* ══⚠⚠ **紫紅負片**（ver -664，Ray：「畫面變色，紫紅負片」）══
+     惡夢滲進來的那一刻。`invert` 之後整個畫面的明暗與色相都翻過來，
+     再用 `hue-rotate` 把它推到紫紅、`saturate` 拉濃 —— 讀起來是「這裡不對勁」，
+     不是「畫面壞了」。
+     ⚠ 套在**整個舞台**（背景＋立繪＋對話框＋楣與槍棺一起翻）：只翻背景的話
+       立繪會浮起來，讀成貼紙；玩家要的是「整個世界變了」。
+     ⚠ 進場給 260ms 的過渡：瞬間翻轉會被讀成閃屏（而且對光敏感的人不友善）。
+     ⚠⚠ **配方是 `invert → sepia → hue-rotate → saturate`，不是 `invert + hue-rotate`**：
+       單靠 hue-rotate 只會把原本的顏色各自轉一個角度，**畫面有幾種色相就跑出幾種**
+       —— 實測墓地那一景（灰天＋白碑）翻出來是一片粉白，完全不是紫紅（-664 第一版）。
+       `sepia(1)` 先把整張壓成**單一色相**，再轉到紫紅、拉濃，才會是「整個畫面
+       同一個顏色」的負片。 */
+  #storyStage{transition:filter .26s linear;}
+  #storyStage.story-tint-nightmare{
+    filter:invert(1) sepia(1) hue-rotate(238deg) saturate(3.4) contrast(1.08) brightness(.86);}
   #choiceSheet .ch-opt:active{background:rgba(212,169,74,.22);}
   /* 錢不夠的選項（ver -655）：**留在原地變暗**，不要藏起來 ——
      藏掉的話玩家不知道自己少了什麼（§6.5.5「還不能做不要靠藏起鈕擋」）。 */

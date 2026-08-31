@@ -164,7 +164,10 @@ export const ART = {
                   evaluatingclosemouth:{src:'resources/SI/Renna_SI_evalutatingclosemouth.webp', top:6, bot:1524, fx:0.508 },
                   chase:    { src:'resources/SI/Renna_SI_chase.webp',      top:4, bot:1532, fx:0.554 },
                   /* 娜塔莉那一幕（ver -636）。 */
-                  invite:   { src:'resources/SI/Renna_SI_invite.webp',     top:2, bot:1525, fx:0.537 } } },
+                  invite:   { src:'resources/SI/Renna_SI_invite.webp',     top:2, bot:1525, fx:0.537 },
+                  /* 北方泊地第三天（ver -664，Ray 交稿）。逐張量（tools/measure_si.py）。 */
+                  smile:    { src:'resources/SI/Renna_SI_smile.webp',      top:5, bot:1529, fx:0.518 },
+                  reach:    { src:'resources/SI/Renna_SI_reach.webp',      top:2, bot:1528, fx:0.566 } } },
   /* ⚠⚠ 諾薇兒的表情差分是**不同姿勢**（跑、畏縮、驚恐、絕望、驚訝），不是換臉，
        所以每一張**各帶自己的 top/bot/fx**（ver -325 量完）。
        ⚠ 沿用 front 那一組的後果實測過：Scared 的臉其實在 0.397，照 0.564 擺會
@@ -234,7 +237,9 @@ export const ART = {
                   /* 舊街區／公會那一段新增（ver -375）。取景由 `tools/measure_si.py` 量出來的。 */
                   concern:  { src:'resources/SI/Nouvelle_SI_concern.webp',   top:6,  bot:1529, fx:0.505 },
                   happy:    { src:'resources/SI/Nouvelle_SI_happy.webp',     top:1,  bot:1533, fx:0.578 },
-                  shocked2: { src:'resources/SI/Nouvelle_SI_Shocked2.webp',  top:3,  bot:1533, fx:0.541 } } },
+                  shocked2: { src:'resources/SI/Nouvelle_SI_Shocked2.webp',  top:3,  bot:1533, fx:0.541 },
+                  /* 北方泊地第三天（ver -664）：回頭看。 */
+                  lookback: { src:'resources/SI/Nouvelle_SI_lookback.webp',  top:2,  bot:1528, fx:0.661 } } },
   /* ⚠ 索拉娜用 **side** 那張：front 橫向佔 78%，兩人同台一定疊；側面只佔 69%。 */
   sorana: { cm:176, eye:27, fx:0.527, top:4, bot:1522, mirror:true,
            side:'R', alt:null, base:'resources/SI/Sorana_SI_side.webp', expr:{} },
@@ -269,6 +274,12 @@ export const ART = {
        而畫面下緣正好切在膝蓋（那就是近景該有的樣子）。
        ⚠ 95 是**看出來的**，不是量出來的：覺得頭太大就往上調、太小就往下調。 */
     sobbing:  { src:'resources/SI/Anya_SI_sobbing.webp',   top:4,  bot:1535, fx:0.320, cm:95, standCm:162 },
+    /* 北方泊地第三天（ver -664，Ray 交稿）。四張都是**全身站姿**，照量即可
+       —— 近景那幾張才要 `cm`／`standCm`（見上面的說明）。 */
+    silent:    { src:'resources/SI/Anya_SI_Silent.webp',     top:0, bot:1527, fx:0.432 },
+    talk:      { src:'resources/SI/Anya_SI_talk.webp',       top:0, bot:1531, fx:0.426 },
+    cry:       { src:'resources/SI/Anya_SI_Cry.webp',        top:0, bot:1528, fx:0.452 },
+    terrifying:{ src:'resources/SI/Anya_SI_terrifying.webp', top:0, bot:1518, fx:0.448 },
   } },
   /* ══ 娜塔莉（ver -636，Ray 交稿）══ 安雅的侍女，只在北方泊地那一幕出現。
      ⚠⚠ 兩張圖都是**坐倒在地**的姿勢，不是站姿 —— 所以 `cm` 不是她的真實身高，

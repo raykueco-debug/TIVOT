@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.08.31-663';
+export const VERSION = 'ver 2026.08.31-664';
 
 export const GAME_CONFIG = {
 
@@ -1552,6 +1552,13 @@ export const GAME_CONFIG = {
          而且要在**玩家答應的那一刻**扣，卡上沒有那個時機。 */
     np_range: { enemy:'dart_target', record:'np_range', noReward:true,
                 timeAttack:{ wrongPenaltySec:3, se:'se_dart_fail', parSec:25 } },
+    /* ══ 墓地那一場（ver -664，Ray：「教堂那隻中 boss，背景維持墓地」）══
+       ⚠ **另開一張卡**不共用 `np_boss`：那一張是城鎮戰的收段場（`sessionEnd`、
+         屬於 `siege` 那一段），這一場是自由探索期的單場遭遇 —— 同一隻怪、
+         兩個場合，把場合寫在戰鬥卡上才分得開（鐵律 7）。
+       ⚠ **背景不寫**：城鎮插入戰交棒時 `main.js` 會把「你站的那一格」設進
+         `state.battleBg`（ver -592），所以自然就是墓地那一張。 */
+    np_cemetery: { enemy:'np_boss' },
     /* ══ 飛行頁的遭遇戰（ver -382）══ 怪撞上船 → 跳來這一頁打舒爾特盤。
        ⚠⚠ 三隻怪的**敵人卡 Ray 還沒給**，所以現在**一律先借巨型聖徒**跑流程
          （同打靶先用訓練用聖徒的作法）。卡到位之後只要改 `enemy` 這一欄。
@@ -1687,6 +1694,9 @@ export const GAME_CONFIG = {
   bounties: {
     rolf: { name:'黑船洛爾夫', city:'capital', reward:500,
             desc:'在瓦爾士大公國與法爾登王國交界出沒的空賊。' },
+    /* 北方泊地（ver -664，Ray 交稿）。 */
+    arad: { name:'北海暴徒阿拉德', city:'northport', reward:1000,
+            desc:'出沒地：東北空域。' },
   },
 
   currentEnemy: 'faceless',   // 這場開場先打誰（填上面的鑰匙名）
@@ -1901,6 +1911,8 @@ export const GAME_CONFIG = {
       se_kerberos_open:1.558, se_kerberos_pop:1.479, se_kerberos_steam:1.301,
       se_kerberos_gear:6.179, se_kerberos_drop:1.550,
       se_brickcrush:1.825,              // ver -624（audio_scan 實測：−19.0 LUFS）
+      /* ⚠ **還沒量**（ver -664 新加的音效）：跑一次 tools/audio_scan.html 貼回來（§6.6）。 */
+      se_paniccrowd:1.0,
       se_earthquake:2.306,              // ver -636（audio_scan 實測：−21.1 LUFS）
       /* ── 飛行頁（那一頁用 HTMLAudio，讀同一張表，見 flight/index.html）── */
       se_flight_heartbeat:5.064, se_flight_idle_loop:2.848,
