@@ -290,6 +290,10 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
     return inv.ownedWeapons().find(k=>k!==id && W[k] && W[k].cat===w.cat) || null;
   };
 
+  /* 結帳音（ver -499 買／-663 賣）：**只在真的成交那一刻**響，買賣共用一支
+     （鐵律 8）—— 那是「結帳」的聲音，不是「買東西」的聲音。 */
+  const checkoutSfx=()=>{ try{ SFX.play(asset('se_buy'), sfxGain('se_buy')); }catch(_){} };
+
   const render=()=>{
     /* 賣出清單。⚠ `only` 過濾（武器店只收武器）；賣價 0 的一律不列
        （沒定價的劇情道具、以及**開局就有的那幾把槍**——它們沒有 price）。 */
@@ -428,9 +432,12 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
       e.stopPropagation();
       if(!can) return;
       if(tab!=='buy' && !pick) return;
-      /* ⚠ 結帳鈕的音在**成交那一刻**才響（買＝se_buy、賣＝menuClick）——
-         這裡只解鎖，不先「喀」一聲，不然會兩聲疊在一起。 */
-      try{ SFX.unlock(); if(tab!=='buy') SFX.menuClick(); }catch(_){}
+      /* ⚠ 結帳鈕的音在**成交那一刻**才響 —— 這裡只解鎖，不先「喀」一聲，
+         不然會兩聲疊在一起。
+         ⚠⚠ **買與賣同一支 `se_buy`**（ver -663，Ray：「賣也要有結帳音效喔」）：
+           那是「結帳」的聲音，不是「買東西」的聲音 —— 兩邊是同一個動作。
+           -662 之前賣走的是 `menuClick`，而且在**按下去**就響（不管成不成交）。 */
+      try{ SFX.unlock(); }catch(_){}
       if(tab==='buy'){
         /* ══ 一次結帳（ver -496 購物車）══
            ⚠ **先扣店裡的貨再扣錢**（-405 的原則不變）：`take` 回傳「真的拿到幾個」——
@@ -448,8 +455,7 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
         }
         for(const id in got) inv.add(id, got[id]);
         cart={};
-        /* 結帳音（ver -499，Ray：「點下結帳時跑 se_buy」）—— 只在**真的成交**時響。 */
-        try{ SFX.play(asset('se_buy'), sfxGain('se_buy')); }catch(_){}
+        checkoutSfx();
       }else{
         /* ══ 一次結帳（賣，ver -662）══
            ⚠ **先確認手上真的有**（`count`），再扣、再入袋 —— 同買的那一支
@@ -469,6 +475,7 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
         if(!sum) return;
         inv.addMoney(sum);
         cart={};
+        checkoutSfx();
         if(pick && inv.count(pick)<=0) pick=null;     // 賣光了就取消選取
       }
       render();
