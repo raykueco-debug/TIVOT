@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.08.31-691';
+export const VERSION = 'ver 2026.08.31-692';
 
 export const GAME_CONFIG = {
 
@@ -2117,6 +2117,12 @@ export const GAME_CONFIG = {
            主動技，只在 NI 期間存在（鐵律 8：一個動作一個入口）。 */
       burstName: '夢境粉碎',
       burstCutin: 'ci_anya_dreambreaker',
+      /* 熔斷（倒數槽抽乾）的 cut-in（ver -692，Ray：「CI_Anya_OBE 夢魘熔斷 CI」）。
+         ⚠ 字面留 `MELTDOWN`（Ray 自己的用語是「熔斷」）—— 檔名叫 OBE 是沿用
+           聖徒化那一端的命名，兩者是**對稱的失敗結局**，不是同一件事。
+           要改字就動 `meltdownName`。 */
+      meltdownName: 'MELTDOWN',
+      meltdownCutin: 'ci_anya_obe',
     },
 
     // 雙槍
@@ -2190,6 +2196,8 @@ export const ASSETS = {
   ci_anya_ni:     "resources/CI/CI_Anya_NightmareInstall.webp?v=2",
   /* 夢境粉碎（ver -674，Ray 交件）：惡夢化期間上滑的那一發。 */
   ci_anya_dreambreaker: "resources/CI/CI_Anya_Dreambreaker.webp?v=2",
+  /* 惡夢化熔斷（ver -692，Ray 交件 `CI_Anya_OBE`）：倒數槽抽乾的那一結局。 */
+  ci_anya_obe:    "resources/CI/CI_Anya_OBE.webp",
   /* 明晰之夢（ver -681 交件／-682 定中文名）：安雅的被動 —— HP≤30% 普攻加倍 5 秒。 */
   ci_anya_lucid:  "resources/CI/CI_Anya_Luciddream.webp",
   /* 賞金獵人（ver -375）：戰鬥立繪＝對話立繪的 `attack` 那張（去背，配 `bg` 用）。 */

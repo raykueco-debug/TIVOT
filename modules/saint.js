@@ -56,6 +56,8 @@ const SAINT_LAST_HIT_RATIO    = T.saintLastHitRatio;     // 結束前清盤 → 
 const NI = T.nightmare || {};
 const NI_SEC_PER_CELL = (NI.secPerCell!=null) ? NI.secPerCell : 0.8;   // 每一殘格給幾秒
 const NI_BURST_FLOOR  = (NI.burstFloor!=null) ? NI.burstFloor : 0;     // 自爆打不死：敵血最低留這個比例
+const NI_MELT_NAME    = NI.meltdownName  || 'MELTDOWN';  // 熔斷的字
+const NI_MELT_CUTIN   = NI.meltdownCutin || '';          // 熔斷的 cut-in（ASSETS 鑰匙）
 const NI_BURST_PCT    = (NI.burstPct!=null) ? NI.burstPct : 0.25;      // 滿格自爆＝敵最大 HP 的幾成
 const NI_BURST_FULL   = (NI.burstFullCells!=null) ? NI.burstFullCells : 16;  // 「滿格」是幾格
 const NI_BURST_NAME   = NI.burstName  || '';       // 自爆的名字（cut-in 的字）
@@ -281,15 +283,22 @@ function niDrain(amount){
   api.drainPlayer(Math.min(Math.abs(amount), room));
   if(state.playerHp<=1) niMeltdown();
 }
-/* 熔斷：時間到／血抽乾 → 惡夢化結束，HP 留 1。 */
+/* 熔斷：時間到／血抽乾 → 惡夢化結束，HP 留 1。
+   ⚠ 它與聖徒化的 **OBE** 是**對稱的失敗結局**（推滿 ↔ 抽乾），所以照它的作法
+     配一張全畫面 cut-in（ver -692，Ray 交件 `CI_Anya_OBE`）。
+   ⚠ **先關掉惡夢化再演**：cut-in 期間 `cutinPlaying` 會把倒數槽凍住，
+     但槽已經沒有意義了 —— 狀態先收乾淨，演出只是演出。
+   ⚠ 沒有 cut-in 圖就直接收（演出不是規則）。 */
 function niMeltdown(){
   if(!state.niMode) return;
   exitNightmare();
   clearInterval(state.niTimer); state.niTimer=null;
   clearSaintReactTimer(); setReturnSwipe(false);
   restoreUltRate();
-  api.floatDmg(L.battle.nightmareOut||'MELTDOWN','50%','28%',true);
-  finishNightmare(()=>api.setPlayerHpRatio(0));   // 下限 floor 1 → 恰為 1 HP
+  api.floatDmg(NI_MELT_NAME,'50%','28%',true);
+  const done=()=>finishNightmare(()=>api.setPlayerHpRatio(0));   // 下限 floor 1 → 恰為 1 HP
+  if(NI_MELT_CUTIN) playCutin(done, NI_MELT_NAME, NI_MELT_CUTIN);
+  else done();
 }
 /* 清空殘格 → 回滿 ＋ 最後一擊追加期間總傷 20%（同 SI 的 MaxBurst）。 */
 function triggerNiBurst(){
