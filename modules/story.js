@@ -257,7 +257,13 @@ function layout(){
          她的框細，左右對她的影響本來就小。 */
     const mir = !!(a.mirror && a.side && o.side && o.side !== a.side);
     el.classList.toggle('mirrored', mir);
-    const x = faceX - o.s*(mir ? 1-fx : fx)*NW;
+    /* ⚠⚠ `fxShift` ＝**這個角色整個往左右挪一點**（ver -645）：加在角色層，
+       所以他的每一張差分一起移，而 `fx` 永遠保持**實測值**（見 speakers.js）。
+       ⚠ **正數往左、負數往右**（`fx` 越大＝臉在圖上越右＝圖被推得越左）。
+       ⚠ 加在**鏡射之後**：這樣「往右」在翻轉與否之下都是同一個螢幕方向。
+       ⚠ 它與 `fx` 是兩件事，不要合成一個數字 —— 合了就分不出「量到的」與
+         「手調的」，下次重量那張圖會把手調一起洗掉。 */
+    const x = faceX - o.s*((mir ? 1-fx : fx) + (a.fxShift||0))*NW;
     el.style.width  = (o.s*el.naturalWidth)+'px';
     el.style.height = (o.s*el.naturalHeight)+'px';
     el.style.left   = x+'px';

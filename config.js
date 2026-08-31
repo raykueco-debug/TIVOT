@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.08.31-644';
+export const VERSION = 'ver 2026.08.31-645';
 
 export const GAME_CONFIG = {
 
@@ -562,7 +562,9 @@ export const GAME_CONFIG = {
       const N = ART.nouvelle, R = ART.renna, F = {};
       /* ⚠ 取景值一律**抄 `ART`**（speakers.js 量的那一份，鐵律 7）——
          不要在這裡另填一組數字。`cm` 在角色那一層、expr 只帶 top/bot/fx，所以合起來。 */
-      const put = (key, A, v) => { F[key] = Object.assign({ cm:A.cm }, v || A); };
+      /* ⚠ `cm` 與 `fxShift` 在**角色**那一層、`expr` 只帶 top/bot/fx，所以要合進來
+         （`fxShift` ver -645：整個角色往左右挪的手調位移，見 speakers.js）。 */
+      const put = (key, A, v) => { F[key] = Object.assign({ cm:A.cm, fxShift:A.fxShift }, v || A); };
       put('tut_nouvelle',           N);
       put('tut_nouvelle_cringe',    N, N.expr.cringe);
       put('tut_nouvelle_surprise',  N, N.expr.surprise);

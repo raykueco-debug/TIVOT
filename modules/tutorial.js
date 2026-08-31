@@ -828,7 +828,8 @@ function placePortraitX(el, side){
   if(centered){ el.style.left=''; el.style.right=''; }
   /* ⚠ 翻轉之後**臉也跟著跑到鏡像的位置**：原本在圖左 `fx` 的臉，翻完落在 `1-fx`。
      不改這一行的話，翻轉會把臉整個推到框外（鐵律 7：錨的永遠是臉，不是圖框）。 */
-  const fxA = el.classList.contains('mirrored') ? (1 - fr.fx) : fr.fx;
+  /* `fxShift`：這個角色整個往左右挪一點（ver -645，說明見 speakers.js／story.js）。 */
+  const fxA = (el.classList.contains('mirrored') ? (1 - fr.fx) : fr.fx) + (fr.fxShift||0);
   if(!centered){ el.style.left = (W*anchor - w*fxA) + 'px'; el.style.right = 'auto'; }
   el.style.top    = (headTop - s*fr.top) + 'px';       // 頭頂貼頂線（見上面 camTop/headTop 的分工）
   el.style.bottom = 'auto';
