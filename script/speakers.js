@@ -245,7 +245,10 @@ export const ART = {
          （頭頂 y ＝ 頂線 ＋ (最高身高−cm)×每公分像素），所以只調 `cm` 會讓
          「畫得越近 → 頭擺得越低」——正好相反。`standCm` 是**站姿身高**，
          只管頭頂高度、不進縮放：近景給她真正的 162，頭就會回到該在的位置。 */
-    crying:   { src:'resources/SI/Anya_SI_Crying.webp',    top:0,  bot:1535, fx:0.422, cm:110, standCm:162 },
+    /* ⚠ ver -637 換過圖：新的是**全身**（頭到靴底都在框內，取景與基本立繪一樣）——
+       所以 `cm`／`standCm` 的近景修正整組拿掉，回到照量的預設。
+       §5：換圖一定要重量取景值，這一組是重量的。 */
+    crying:   { src:'resources/SI/Anya_SI_Crying.webp',    top:6,  bot:1527, fx:0.454 },
     desperate:{ src:'resources/SI/Anya_SI_Desperate.webp', top:13, bot:1535, fx:0.402, cm:110, standCm:162 },
     /* ⚠⚠ `sobbing` 是**裁到膝蓋**的近景，不是全身（§6.5：半身圖照量 alpha 上下緣
        會把人放大好幾倍）。畫面上看得到的大約是「頭頂→膝」＝身高的 75%，
