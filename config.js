@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.08.31-672';
+export const VERSION = 'ver 2026.08.31-673';
 
 export const GAME_CONFIG = {
 
@@ -2050,6 +2050,13 @@ export const GAME_CONFIG = {
     nightmare: {
       /* 一格給幾秒（Ray：「有幾格就給幾秒 ×0.8」→ 16 格＝12.8 秒）。 */
       secPerCell: 0.8,
+      /* ══ 自爆（上滑主動技）之後（ver -673，Ray：「炸不死也沒關係，最後留個 10%，
+         爆發完以後的下一盤普攻 2 倍 ×5 秒」）══
+         `burstFloor` ＝自爆**打不死**：敵血最低留這個比例（0.10）。
+         `burstBuffSec` ＝自爆之後**下一盤**普攻加倍幾秒（走既有的 `atkBuff`，鐵律 8）。
+         ⚠ 「下一盤」不是「馬上」：換盤有 RELOADING 的空檔，馬上起算會白白吃掉 1 秒。 */
+      burstFloor: 0.10,
+      burstBuffSec: 5,
     },
 
     // 雙槍
@@ -2112,11 +2119,9 @@ export const ASSETS = {
   enemy_trainee:  "resources/enemy/Saint_TR_CI.webp",   // 教學專用敵：訓練用聖徒
   enemy_dart_target: "resources/enemy/Dart_timeattack.webp",   // 打靶場：固定立靶（ver -396）
   /* 禍魘娜塔莉（ver -671，Ray 交件）＋惡夢化 cut-in。
-     ⚠⚠ `CI_Anya_NightmareInstall` **還沒進 repo**（Ray 指名的就是這一張）——
-       路徑先指對，圖一放進 `resources/partner/` 就會自己出現；
-       在那之前這一格是空的（cut-in 的字與音照演，只是沒有圖）。 */
+     ⚠ cut-in 住在 `resources/CI/`（Ray 指定；-672 曾誤指 `partner/`）。 */
   enemy_natalia:  "resources/enemy/mon_natalia.webp",
-  ci_anya_ni:     "resources/partner/CI_Anya_NightmareInstall.webp",
+  ci_anya_ni:     "resources/CI/CI_Anya_NightmareInstall.webp",
   /* 賞金獵人（ver -375）：戰鬥立繪＝對話立繪的 `attack` 那張（去背，配 `bg` 用）。 */
   enemy_guild_hunter: "resources/SI/NPC_GuildHunter_SI_Attack.webp",
   /* ══⚠⚠ 北方泊地城鎮戰的雜怪（ver -596，Ray 指定四隻隨機出）＋教堂的 Boss（祭壇獸）══

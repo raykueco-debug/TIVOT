@@ -53,6 +53,8 @@ const SAINT_LAST_HIT_RATIO    = T.saintLastHitRatio;     // 結束前清盤 → 
      所以實作放在**同一支模組**（鐵律 8）：兩者共用 `playCutin`／收尾／api。 */
 const NI = T.nightmare || {};
 const NI_SEC_PER_CELL = (NI.secPerCell!=null) ? NI.secPerCell : 0.8;   // 每一殘格給幾秒
+const NI_BURST_FLOOR  = (NI.burstFloor!=null) ? NI.burstFloor : 0;     // 自爆打不死：敵血最低留這個比例
+const NI_BURST_BUFF   = (NI.burstBuffSec!=null) ? NI.burstBuffSec : 0; // 自爆之後下一盤普攻加倍幾秒
 
 /* combat 於啟動時注入的原語（HP API / 盤面 / 傷害 / defense / partner）。 */
 let api = {};
@@ -297,8 +299,14 @@ export function nightmareActive(){
   setReturnSwipe(false); restoreUltRate();
   if(dmg>0){
     SFX.gunshot(true);
-    api.enemyDamage(dmg, true, false, 'saint');
-    api.floatDmg(String(dmg),'50%','28%',true);
+    /* ⚠⚠ **自爆打不死**（ver -673，Ray：「炸不死也沒關係，最後留個 10%」）：
+       敵血最低留 `burstFloor`。所以這一擊的傷害要先夾住 —— 不是打完再把血加回來
+       （那樣會先觸發「敵人死了」的那一整套演出，再憑空復活）。 */
+    const floorHp = Math.ceil((state.enemyMax||0) * NI_BURST_FLOOR);
+    const room = Math.max(0, state.enemyHp - floorHp);
+    const real = NI_BURST_FLOOR>0 ? Math.min(dmg, room) : dmg;
+    if(real>0) api.enemyDamage(real, true, false, 'saint');
+    api.floatDmg(String(real),'50%','28%',true);
   }
   $('grid').classList.remove('saint','ni'); setSaintBarFx(false);
   if(state.enemyHp<=0){
@@ -306,6 +314,10 @@ export function nightmareActive(){
     playSaintCutin('execute', ()=>{ api.setPlayerHpRatio(0); api.onEnemyDefeated(); });
     return true;
   }
+  /* 自爆之後**下一盤**普攻加倍（Ray 指定）。⚠ 記成「待領」的旗標，由
+     `combat.loadBoard` 在新盤真的載好時起算 —— 馬上起算會被換盤的
+     RELOADING 空檔吃掉一秒（鐵律 8：那一支才知道新盤什麼時候開始）。 */
+  if(NI_BURST_BUFF>0 && api.armAtkBuff) api.armAtkBuff(NI_BURST_BUFF);
   finishNightmare(()=>api.setPlayerHpRatio(0));   // HP 剩 1
   return true;
 }

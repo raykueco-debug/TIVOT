@@ -117,6 +117,7 @@ export function setup(){
     hitDamage, enemyDamage, floatDmg, markNext, setBoard, resetEnergy,
     onEnemyDefeated: finishEnemyOrAdvance,   // 聖徒化擊殺 → 轉下一敵 or（最後一敵）結算（連戰）
     goNextBoard,                             // 惡夢化清空殘格之後換下一盤（ver -671）
+    armAtkBuff,                              // 自爆之後下一盤普攻加倍（ver -673）
     shatterCell: enemy.shatterCell,
     // defense 原語（combat 代為轉交；大絕頻率經 setUltRate 擁有者管道）
     scheduleUlt: defense.scheduleUlt, clearThreat: defense.clearThreat,
@@ -208,6 +209,11 @@ function boardGridFor(idx){
   if(cols*cols!==grid){ grid=baseBoard.grid; cols=baseBoard.cols; }
   return { grid, cols };
 }
+/* 「下一盤才起算」的普攻加倍（ver -673，惡夢化自爆之後）。
+   ⚠ 待領而不是馬上起算：換盤有 RELOADING 的空檔，馬上起算會白白吃掉一秒。
+   ⚠ 只有 `loadBoard` 領它（新盤真的載好的那一刻，鐵律 8）。 */
+let _pendingAtkBuff = 0;
+export function armAtkBuff(sec){ _pendingAtkBuff = Math.max(0, sec||0); }
 export function loadBoard(idx){
   state.boardIndex=idx;
   const g=boardGridFor(idx); state.N=g.grid; state.cols=g.cols;
@@ -218,6 +224,7 @@ export function loadBoard(idx){
   state.critCombo=0;              // 暴擊連擊為「盤內連續」：新盤（含清盤後換盤/換敵）歸零＝「清盤中斷」
   buildGrid();
   startIntervalTimer();
+  if(_pendingAtkBuff>0){ const sec=_pendingAtkBuff; _pendingAtkBuff=0; triggerAtkBuff(sec); }
   clockResume();                  // 新盤載好、可點 → 碼表起算（開場/換盤/換敵首盤共用）
   defense.scheduleOpeningUlt();   // 開場保證：每盤 3 秒內敵方就發動大絕
   updateStatus();
