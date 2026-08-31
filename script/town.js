@@ -154,6 +154,11 @@ export const DINE = {
 
 export const TOWNS = {
   capital: {
+    /* ⚠⚠ **帝都預設就是安全區**（ver -634，Ray：「帝都其餘時間都插著 safehouse flag」）：
+       進城時插上 `safehouse_capital`，城裡不會有遭遇戰。
+       ⚠ 賞金獵人與打靶那兩場是**特殊戰**（玩家自己走過去挑的），
+         那幾段 act 寫 `pullSafehouse:true`：開演前拔旗、演完插回去。 */
+    safehouse: true,
     name: '帝都',
     entry: 'square',
     /* 這座城的 BGM（ver -375）。⚠ 有它才能在**插入戰打完回來**時把曲子接回去 ——
@@ -890,9 +895,13 @@ export const TOWNS = {
        （店開了、路人講話了、末端解封了），與「禍魘還在城裡」對不起來。
        ⚠ `np_claws_done` 是教堂那一段**整段演完**才記的（含戰勝那一段對白），
          所以解封的時機正好是安雅跑掉、蕾娜追出去那一刻。 */
-    siege: { from:'np_port_arrive', until:'np_claws_done', keep:['church'],
-             /* 曲子在**清完怪**那一刻就換回城的 Suspense6（ver -614 Ray 指定的節奏）；
-                遇敵則要到黑爪打完才停（`until`）—— 兩者是不同的事，見 townBgm。 */
+    /* ⚠⚠ **結束條件是這張地圖的安全區旗**（ver -634，Ray：「只要插 safehouse flag
+       就不會有遭遇戰，黑爪戰後就插一個，拔 flag 才會遭遇」「flag 跟地圖，一插就是
+       整個北泊」）—— 由教堂那一段演完時插（見 church 的 `safehouse:true`）。
+       這裡不寫 `until`：同一件事只有一個開關（鐵律 7）。
+       ⚠ 曲子有**自己的**結束點（`bgmUntil`）：怪清完就換回城的 Suspense6
+       （ver -614 Ray 指定的節奏），而遇敵要到黑爪打完才停 —— 兩件事，見 townBgm。 */
+    siege: { from:'np_port_arrive', keep:['church'],
              bgm:'crisis', bgmUntil:'np_clear_church' },
     /* ══⚠⚠ **重建之後換一整組背景**（ver -627，Ray：「stage5 之後北泊改用這一組差分」）══
        節點的 `bg` 是**戰損版**（`_BF`，沒有時段差分）；到了 `fromStage` 這一章之後
@@ -930,7 +939,7 @@ export const TOWNS = {
         /* 城鎮戰的一場（ver -583）：走進來就打。⚠ `need` ＝城鎮戰開著、
            `flag` ＝這一格清掉了（打贏才記，同所有城鎮段落「演完才記」的規矩，
            所以打輸回頭再走一次還會遇到）。 */
-        acts:[ { siege:true, flag:'np_clear_entrance', need:'np_port_arrive', lines:[ { battle:'np_harm' } ] } ],
+        acts:[ { flag:'np_clear_entrance', need:'np_port_arrive', lines:[ { battle:'np_harm' } ] } ],
       },
       /* ── 三個街區樞紐 ── */
       west: {
@@ -940,7 +949,7 @@ export const TOWNS = {
         /* 城鎮戰的一場（ver -583）：走進來就打。⚠ `need` ＝城鎮戰開著、
            `flag` ＝這一格清掉了（打贏才記，同所有城鎮段落「演完才記」的規矩，
            所以打輸回頭再走一次還會遇到）。 */
-        acts:[ { siege:true, flag:'np_clear_west', need:'np_port_arrive', lines:[ { battle:'np_harm' } ] } ],
+        acts:[ { flag:'np_clear_west', need:'np_port_arrive', lines:[ { battle:'np_harm' } ] } ],
       },
       /* 碼頭（ver -571，Ray：「西側北端加入碼頭 Northport_port_BF」）——
          擔架兵那張原「入口」圖歸位於此。 */
@@ -1004,7 +1013,7 @@ export const TOWNS = {
         /* 城鎮戰的一場（ver -583）：走進來就打。⚠ `need` ＝城鎮戰開著、
            `flag` ＝這一格清掉了（打贏才記，同所有城鎮段落「演完才記」的規矩，
            所以打輸回頭再走一次還會遇到）。 */
-        acts:[ { siege:true, flag:'np_clear_north', need:'np_port_arrive', lines:[ { battle:'np_harm' } ] } ],
+        acts:[ { flag:'np_clear_north', need:'np_port_arrive', lines:[ { battle:'np_harm' } ] } ],
       },
       east: {
         bg:'Northport_east_BF', name:'北方泊地　東側',
@@ -1012,7 +1021,7 @@ export const TOWNS = {
         /* 城鎮戰的一場（ver -583）：走進來就打。⚠ `need` ＝城鎮戰開著、
            `flag` ＝這一格清掉了（打贏才記，同所有城鎮段落「演完才記」的規矩，
            所以打輸回頭再走一次還會遇到）。 */
-        acts:[ { siege:true, flag:'np_clear_east', need:'np_port_arrive', lines:[ { battle:'np_harm' } ] } ],
+        acts:[ { flag:'np_clear_east', need:'np_port_arrive', lines:[ { battle:'np_harm' } ] } ],
       },
       /* ── 葉節點（`back`＝回不到「來時反向」時的退路，同 capital）──
          ⚠ 全部還是空房間：等 Ray 的稿再補 shop/kind/keeperWho/hours/lines。 */
@@ -1027,7 +1036,7 @@ export const TOWNS = {
            ⚠ 它的 `flag` 同時是城鎮戰的**結束條件**（見城上的 `siege.until`）——
              打贏＝城裡的禍魘清掉了，末端全部開回來。 */
         acts:[
-          { siege:true, flag:'np_clear_church', need:'np_port_arrive', lines:[ { battle:'np_boss' } ] },
+          { flag:'np_clear_church', need:'np_port_arrive', lines:[ { battle:'np_boss' } ] },
           /* ══ 教堂戰之後（ver -595，Ray 交稿）══════════════════════════════
              祭壇獸清掉了 → 這一段對白 → 瓦礫中生出紫黑之爪 → **聖徒化教學戰**。
              ⚠ 兩段拆開：`acts` 由上往下取**第一個到期的**，所以打完祭壇獸
@@ -1050,7 +1059,10 @@ export const TOWNS = {
              ⚠ 這也與**緊接在前面**的 BOSS 戰對白一致（那一場也是諾薇兒右、蕾娜左）
                —— 玩家的空間記憶才連得起來。
              ⚠ 一幕之內只能有一套站位（§6.5 不可以逐句換邊）。 */
-          { flag:'np_claws_done', need:'np_clear_church', sides:{ NOUVELLE:'R' },
+          /* ⚠ `safehouse:true`（ver -634）：這一段演完＝**整個北方泊地**從此是安全區，
+             不再有遭遇戰（旗名由 townId 推＝`safehouse_northport`，見 modules/town.js）。
+             鐵律 9：誰插的寫在這裡；要拔只能由日後某個單一事件拔。 */
+          { flag:'np_claws_done', need:'np_clear_church', safehouse:true, sides:{ NOUVELLE:'R' },
             lines:[
               nou('relief','總算是消滅掉那些東西了……'),
               ren('thinking','……'),

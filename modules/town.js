@@ -172,9 +172,25 @@ function townBgm(){
   if(g.bgmUntil && prog.hasFlag(g.bgmUntil)) return T.bgm;
   return g.bgm;
 }
+/* ══⚠⚠ **安全區旗：一插，這張地圖就不再有遭遇戰**（ver -634，Ray：「只要插
+   safehouse flag 就不會有遭遇戰，黑爪戰後就插一個，拔 flag 才會遭遇」
+   ＋「flag 跟地圖，一插就是整個北泊」）══
+   鐵律 9 的標準形狀：**插了以後被拔之前不動，而且只有單一事件能拔**。
+   · 誰插的：那張地圖上寫了 `safehouse:true` 的那一段 `acts` 演完時
+     （北方泊地＝教堂那一段：黑爪打完＋戰勝那一段對白）。
+   · 誰拔的：**目前還沒有人** —— 日後要讓那張地圖再度不安全，由那一個事件拔掉它。
+   ⚠⚠ **旗跟著地圖走**（Ray 指定）：名字由 `townId` 推（`safehouse_northport`），
+     所以一插就是**整個北泊**、而且不會影響別座城。
+     ⚠ 由 `townId` **推**不由資料寫死：寫死的話插旗那一端與查旗那一端各有一個字串，
+       打錯一個字就是「插了但查不到」，而且不會有任何錯誤訊息（鐵律 7）。
+   ⚠ 收在 `siegeOn()` 這一支（鐵律 8）：城鎮戰的每一層都問它（§6.5.4.3 那張表），
+     所以「不再有遭遇戰」順帶把末端解封、店開回來、時間開始走 —— 一次到位。 */
+function safehouseFlag(){ return 'safehouse_' + (townId||''); }
+function actHasBattle(a){ return !!(a && (a.lines||[]).some(l=>l && l.battle)); }
 function siegeOn(){
   const g=(TOWNS[townId]||{}).siege;
   if(!g || !g.from || !prog.hasFlag(g.from)) return null;
+  if(prog.hasFlag(safehouseFlag())) return null;
   if(g.until && prog.hasFlag(g.until)) return null;
   return g;
 }
@@ -445,13 +461,17 @@ function actDue(n){
     if(a.flag && prog.hasFlag(a.flag)) continue;
     if(a.need && !prog.hasFlag(a.need)) continue;
     if(a.day && dayNo() < a.day) continue;
-    /* ⚠⚠ `siege:true` ＝**這一段只在城鎮戰期間演**（ver -633，Ray：「黑爪戰後進入
-       城鎮探索模式，城鎮中不會再遇敵」）。城鎮戰的那幾格戰鬥就是掛在 `acts` 上的，
-       而 `acts` 本來不受 `siegeOn()` 管（§6.5.4.3 唯一的例外）—— 於是城鎮戰結束後
-       走進一格**還沒清掉**的街，照樣會被那隻怪攔下來，探索模式名存實亡。
-       ⚠ 寫成旗標（`unless:'np_claws_done'`）也做得到，但那要把同一個旗標名抄五次
-         （鐵律 7）；問 `siegeOn()` 是問**同一個**真相。 */
-    if(a.siege && !siegeOn()) continue;
+    /* ══⚠⚠ **安全區旗插著就不會有遭遇戰**（ver -634，Ray）══
+       「只要插 safehouse flag 就不會有遭遇戰」「flag 跟地圖，一插就是整個北泊」
+       「特殊戰就先拔旗，打完再插，如帝都的賞金獵人跟打靶小遊戲」
+       —— 所以判定是：**這一段裡有戰鬥** ＋ 這張地圖插著安全區旗 → 不演。
+       ⚠ 判「有沒有戰鬥」看**資料**（拍上有 `battle`），不另外加一個要記得寫的欄位：
+         漏寫的下場是「安全區裡冒出一場架」，而那不會有任何錯誤訊息。
+       ⚠ `pullSafehouse:true` ＝**特殊戰**（帝都的賞金獵人、打靶）：它們是玩家自己
+         走過去挑的，不是遭遇 —— 開演前拔旗、演完再插回去（見下方的收尾）。
+       ⚠⚠ 這一條**取代**了 ver -633 的 `siege:true`（同一件事兩個開關＝鐵律 7）：
+         安全區旗說了算，`siegeOn()` 也讀同一支旗（見 `safehouseFlag`）。 */
+    if(!a.pullSafehouse && prog.hasFlag(safehouseFlag()) && actHasBattle(a)) continue;
     if(a.lines && a.lines.length) return a;
   }
   return null;
@@ -1296,9 +1316,20 @@ export function enter(id){
         ? Object.assign({}, l, { delay:SLIDE_MS }) : l);
       /* ⚠ 對白演完**把立繪全撤**，只留背景與導覽（Ray 指定）。 */
       /* ⚠ `n.sides`：兩個角色同台要分左右（§6.5）——城鎮這條路徑一樣要吃得到。 */
+      /* 特殊戰開演前**拔旗**（ver -634，Ray 指定）：這一段真的要打一場，
+         那一刻這張地圖就不是安全區。演完由下面插回去。
+         ⚠ 拔在**開演**、插在**演完** —— 中途離開（或打輸）會停在「拔掉」的狀態，
+           下次走進來這一段還在（`flag` 沒記），照樣拔了再打，收尾時一起插回去。 */
+      if(act && act.pullSafehouse) prog.removeFlags([safehouseFlag()]);
       story.playAdhoc(play, ()=>{ story.clearCast();
         if(act){
+          if(act.pullSafehouse) prog.addFlags([safehouseFlag()]);   // 打完插回去（見上）
           if(act.flag) prog.addFlags([act.flag]);                 // 主線段落：只演一次
+          /* `safehouse:true`：這一段演完＝**這張地圖從此是安全區**（ver -634，見
+             `safehouseFlag` 的說明）。`flag` 記的是「演過了」，這一支記的是
+             「這一段讓世界變成什麼樣」—— 語意不同，不要共用一格。
+             ⚠ 同樣是**演完才記**（打輸回頭再走一次還要能打）。 */
+          if(act.safehouse) prog.addFlags([safehouseFlag()]);
           /* ══ **一場戰鬥結束 ＝ 一個檢查點**（ver -590，Ray：「每次進城跟一場戰鬥
              結束都要有存檔點」）══ 城鎮的插入戰就是掛在 `acts` 上的（城鎮戰每一格
              都是一拍 `{battle:…}`），所以「這一段收完」＝「那一場打完、地圖回來了、
@@ -1591,6 +1622,12 @@ export function open(town, node, opts){
      開在城裡（save.apply → openTown）全部吃到。城內移動與戰後 resume 不經過
      這裡，所以城裡打殘的血照舊帶著，出去再回來才補滿。 */
   prog.clearHp();
+  /* ══⚠⚠ **這張地圖預設就是安全區**（ver -634，Ray：「帝都其餘時間都插著
+     safehouse flag」）══ 城上寫 `safehouse:true` → 進城時把旗插上（只插一次）。
+     ⚠ 為什麼要真的插一支旗而不是「沒寫 siege 就當安全」：**旗才拔得掉**。
+       特殊戰（帝都的賞金獵人、打靶）就是靠拔它才打得起來（見 `pullSafehouse`）。
+     ⚠ 插在 `townId` 設好之後 —— 旗名是由它推的。 */
+  if(T.safehouse && !prog.hasFlag(safehouseFlag())) prog.addFlags([safehouseFlag()]);
   /* 進帝都＝諾薇兒好感初始化為 5（ver -560，Ray：「預設是全 0，進帝都後諾才 5」）——
      一輪一次（旗標擋重複），直接寫值不走棘輪（這是入隊的起始值，不是獎勵）；
      已經比 5 高就不動（讀檔回城不能倒扣）。 */

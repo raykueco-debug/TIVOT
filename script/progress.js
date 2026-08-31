@@ -139,8 +139,19 @@ export function setFlightLossCount(n){
 export function playSeconds(){ const v=parseInt(rd(K.playtime),10); return isFinite(v)?v:0; }
 export function addPlaySeconds(n){ wr(K.playtime, playSeconds()+Math.max(0,n|0)); return playSeconds(); }
 
-/* removeFlags（-480 的敗北退旗標）已拆（ver -495 清死碼）：回捲機制被
-   「打贏才記」原則取代（§6.5.2），退旗標從此沒有呼叫者。 */
+/* ══⚠⚠ **拔旗**（ver -634 重新啟用；-480 那一版於 -495 拆掉，理由見下）══
+   ⚠⚠ 鐵律 9：**旗插了以後被拔之前不動，要拔旗只有單一事件能拔**。
+     所以這一支存在**不代表**可以隨手退旗 —— 目前唯一的呼叫者是安全區旗
+     （`modules/town.js` 的 `pullSafehouse`：特殊戰開演前拔、演完插回去），
+     那是「這張地圖現在安不安全」這個狀態的正常開關，不是把進度倒回去。
+   ⚠ -480 那一版是拿它做**敗北回捲**（把記過的進度退掉），已被
+     「打贏才記」原則取代（§6.5.2）—— **不要**再用它做那件事。 */
+export function removeFlags(list){
+  const cur=getFlags(), drop=new Set([].concat(list||[]));
+  const next=cur.filter(f=>!drop.has(f));
+  if(next.length!==cur.length) wr(K.flags, JSON.stringify(next));
+  return next;
+}
 
 /* ── 好感 ──
    ⚠ tier 界線 10/20/30/40/50，**棘輪只升不降**（docs/TIVOT_IMPL_SPEC.md §2）。
