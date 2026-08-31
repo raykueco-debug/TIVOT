@@ -5,14 +5,21 @@
  *  讓人物不會像貼紙一樣浮在背景上（Ray：「人物立繪根據背景做小幅亮度調整，
  *  使人物與背景融合度高一點」）。
  *
- *  ⚠ 幅度要**小**。立繪是玩家要看清楚的東西，壓得太暗就變成「這個人在陰影裡」，
- *    那是 §6.5 的「非說話者壓暗」在講的事，不是這裡要做的。上下限鎖在 ±12%。
+ *  ⚠⚠ **幅度以前鎖在 ±12%，ver -631 放寬**（Ray：「人物色調要隨場景調整，
+ *    安雅現在太亮」）。實測：北方泊地教堂（戰損）平均亮度 **0.152**，而安雅的
+ *    立繪是 **0.573** —— 差 3.8 倍。舊公式在那裡只給 0.916（暗 8%），
+ *    等於沒有調，她就是一張貼紙。
+ *  ⚠ 係數搬進 `config.js` 的 `tuning.portraitTone`（鐵律 1）：這是**看出來**的數字，
+ *    要能不動程式就調。形狀是「以 `ref` 為中性點的線性斜率＋上下夾」——
+ *    中等亮度的場景幾乎不動（≈1.0），只有很暗／很亮的場景才明顯偏。
  *  ⚠ 套在**容器**上不是逐張立繪：容器的濾鏡與立繪自己的 dim/dark 會自然疊加，
  *    不必去合併字串，也不會互相覆蓋。
  *  ⚠ 取樣要縮到很小再讀（16×16）：整張 1024×1536 讀 getImageData 在手機上是
  *    幾十毫秒的同步阻塞，縮圖之後是零點幾毫秒，而平均值不受影響。
  *  ⚠ 同一張圖只算一次（快取）—— 背景會反覆切回來。
  * ========================================================================== */
+
+import { GAME_CONFIG } from '../config.js';   // 係數是內容資料（鐵律 1），見檔頭
 
 const _cache = new Map();   // src → { lum, filter }
 
@@ -40,8 +47,17 @@ function meanLuma(img){
    ⚠ 係數是**看出來**的，不是算出來的 —— 融合度沒有客觀指標。改之前先想清楚
      你要的是「融合」還是「壓暗」，後者是別的機制。 */
 function filterFor(lum){
-  const k = 0.88 + 0.24 * Math.max(0, Math.min(1, lum));     // 0.88 ~ 1.12
-  const sat = 0.94 + 0.10 * Math.max(0, Math.min(1, lum));   // 0.94 ~ 1.04
+  const T = (GAME_CONFIG.tuning && GAME_CONFIG.tuning.portraitTone) || {};
+  const ref  = T.ref  != null ? T.ref  : 0.45;
+  const gain = T.gain != null ? T.gain : 0.90;
+  const lo   = T.min  != null ? T.min  : 0.78;
+  const hi   = T.max  != null ? T.max  : 1.08;
+  const sg   = T.satGain != null ? T.satGain : 0.35;
+  const slo  = T.satMin  != null ? T.satMin  : 0.86;
+  const shi  = T.satMax  != null ? T.satMax  : 1.05;
+  const d = Math.max(0, Math.min(1, lum)) - ref;              // 比中性點暗多少（負）／亮多少（正）
+  const k   = Math.max(lo,  Math.min(hi,  1 + d * gain));
+  const sat = Math.max(slo, Math.min(shi, 1 + d * sg));
   return `brightness(${k.toFixed(3)}) saturate(${sat.toFixed(3)})`;
 }
 

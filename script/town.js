@@ -1070,9 +1070,13 @@ export const TOWNS = {
                  立繪是**持續狀態**，所以要明寫把兩個人請下台（§6.5）。
                  ⚠ 用 `hide` 不是 `show:false`：後者一句只能管一個角色。 */
               { speaker:'RENNA', text:'這孩子還有氣。有受傷嗎？',
-                cg:'007_Anya_passout', cgNoTime:true, hide:['NOUVELLE','RENNA'] },
+                cg:'007_Anya_passout', cgNoTime:true, cgPan:'up',
+                hide:['NOUVELLE','RENNA'] },
               /* 差分：醒來。⚠ `cgSoft`（ver -628，Ray 指定）＝**淡入不轉黑**：
                  這是同一張插圖的差分（昏迷→醒來），中間插一片黑會把那個變化切斷。
+                 ⚠ **不寫 `cgPan`**（ver -631，Ray：「awake 不用平移，直接疊在
+                   平移後的 passout 上」）：它疊在上一拍平移完的取景上，
+                   引擎會把第二層擺到同一個 object-position（見 story 的 cgCross）。
                  ⚠ 台上沒有人（上一拍 `hide` 過），所以照舊吃 `auto` 自己走完。 */
               { speaker:'PLAYER', text:'', auto:1200, cg:'007-2_Anya_awake', cgNoTime:true, cgSoft:true },
               /* 收插圖回教堂（`cg:null`），立繪從這一拍開始恢復。 */

@@ -31,6 +31,8 @@ import * as prog from '../script/progress.js';
 import { decorateLine } from '../i18n.js';
 import { SFX } from '../audio.js';
 import { matchPortraits } from './tone.js';
+/* 立繪的色調要跟著**玩家現在看到的那一層**走（ver -631）：有插圖時插圖就是場景，
+   沒有才是背景。⚠ 只有這一支在決定「背後是什麼」（鐵律 8）—— 三個呼叫點都問它。 */
 import * as settings from './settings.js';   // 選單（音量／自動播放速度）；葉節點，只依賴 audio
 import * as hap from './haptics.js';        // 震動（ver -398）
 import * as clock from '../script/clock.js';   // 時段（插圖／背景的差分候選鏈，ver -427）
@@ -650,6 +652,12 @@ function coverOrigin(el, p){
    ⚠ 場上還沒有插圖時（第一次上圖）不走黑幕 —— 開場黑一下沒有意義，
      只會讓玩家覺得卡住。 */
 const CG_FADE_MS = 500;
+/* 見檔頭 import 處的說明。⚠ 判「看不看得見」用實際尺寸不用 class（同 tone.js）。 */
+function toneSrcEl(){
+  const cg=$('storyCg');
+  if(cg && cg.getAttribute('src') && cg.offsetWidth>0) return cg;
+  return $('storyBg');
+}
 /* ⚠⚠ 黑幕的計時器**自己一組**，不掛在 `fxTimers` 上（ver -351 修）。
      原本掛在一起，而 `renderLine` 一開頭就 `stopFx()` 把 fxTimers 全清 ——
      玩家在 500ms 的淡黑期間點了下一句，那個「換圖並收黑幕」的計時器就被取消，
@@ -718,6 +726,16 @@ function cgCross(el, src){
   const list = Array.isArray(src) ? src : (src ? [src] : []);
   const top = $('storyCg2');
   if(!top || !list.length) return false;
+  /* ⚠⚠ 第二層要與主圖層**同一個取景**（ver -631）：主圖層可能停在平移／放大的
+     結果上（`pan-up` 跑完是 `object-position:50% 0%`），第二層用預設值的話
+     淡入的是「另一個構圖」，讀起來是跳了一下而不是同一張圖變了。
+     ⚠ 讀**computed** 值不是 class：平移是 animation 的 forwards 結果，
+       class 名字不告訴你它停在哪（同「不要從畫面反推」的反面 —— 這裡要的
+       正是那個算出來的結果）。 */
+  { const cs=getComputedStyle(el);
+    top.style.objectPosition = cs.objectPosition;
+    top.style.transform      = cs.transform==='none' ? '' : cs.transform;
+    top.style.transformOrigin= cs.transformOrigin; }
   const tryAt=(i)=>{
     if(i>=list.length){ top.classList.remove('on'); setImg(top,''); return; }
     setImg(top, list[i]);
@@ -725,6 +743,13 @@ function cgCross(el, src){
       cgResolved.set(list[0], list[i]);
       top.classList.add('on');                    // 淡入（CSS transition）
       cgFadeT.push(setTimeout(()=>{               // 淡完把它交棒給主圖層
+        /* ⚠⚠ 交棒時**取景要一起交**（ver -631）：主圖層那個 `pan-up` 的位置是
+           animation 的 forwards 結果，換掉 `src` 之後它未必守得住 —— 把第二層
+           算好的那組值寫成 inline，交棒才不會「啪」一聲跳回正中。
+           ⚠ 下一次真的要重新平移時，`startMove` 會把這幾個 inline 清掉（見那裡）。 */
+        el.style.objectPosition = top.style.objectPosition;
+        if(top.style.transform){ el.style.transform=top.style.transform;
+                                 el.style.transformOrigin=top.style.transformOrigin; }
         setImg(el, list[i]); top.classList.remove('on');
         cgFadeT.push(setTimeout(()=>{ if(!top.classList.contains('on')) setImg(top,''); }, 60));
       }, CG_FADE_MS));
@@ -803,7 +828,7 @@ function applyPersist(line){
     swapImg($('storyBg'), line.bg?imgSrc(line.bg):'');
     /* 立繪的色調跟著背景走一點點（見 modules/tone.js）。
        ⚠ 要等換圖跑完再量 —— swapImg 是先淡出、載好才換 src，太早量到的是舊圖。 */
-    setTimeout(()=>matchPortraits($('storyBg'), $('storyCast')), 420);
+    setTimeout(()=>matchPortraits(toneSrcEl(), $('storyCast')), 420);
   }
   let cgChanged=false, cgFaded=false;
   if(line.cg!==undefined && line.cg!==stageCg){
@@ -816,6 +841,8 @@ function applyPersist(line){
        不必每次把四五個 404 再走一遍（見那一支的說明）。 */
     /* `cgSoft`：同一張插圖的差分 → 淡入不轉黑（ver -628，見 cgCross）。
        ⚠ 收圖（`cg:null`）不吃這一條 —— 那是「這張插圖結束了」，該走黑幕。 */
+    /* 插圖換了 → 色調來源也換了（ver -631）：等它畫上去再量。 */
+    fxTimers.push(setTimeout(()=>matchPortraits(toneSrcEl(), $('storyCast')), CG_FADE_MS+80));
     cgFaded = (line.cgSoft && line.cg)
       ? !cgCross($('storyCg'), cgCandidates(line.cg, line.cgNoTime))
       : cgFade($('storyCg'), line.cg ? cgCandidates(line.cg, line.cgNoTime) : '');
@@ -873,6 +900,7 @@ function applyPersist(line){
       setCgScale(line.cgScale);
     }else if(cgChanged){ cg.style.transform=''; setCgScale(0); }   // 新圖不繼承舊圖的放大
     if(line.cgPan==='up' || line.cgPan==='down'){
+      cg.style.objectPosition='';                // 上一次交棒留下的 inline 取景（見 cgCross）
       cg.classList.remove('pan-up','pan-down','zoom-in');
       void cg.offsetWidth;                       // 不重設 class，animation 不會重播
       cg.classList.add(line.cgPan==='up'?'pan-up':'pan-down');
@@ -884,7 +912,12 @@ function applyPersist(line){
       const go=()=>{ cg.style.transformOrigin = coverOrigin(cg, line.cgZoom);
                      void cg.offsetWidth; cg.classList.add('zoom-in'); };
       if(cg.complete && cg.naturalWidth) go(); else cg.addEventListener('load', go, {once:true});
-    }else if(line.cgPan===null || cgChanged){
+    }else if(line.cgPan===null || (cgChanged && !line.cgSoft)){
+      /* ⚠⚠ `cgSoft` 的那一拍**不重置平移**（ver -631，Ray：「awake 直接疊在平移後的
+         passout 上」）：它是同一張圖的差分、疊上去淡入的 —— 平移是上一拍跑完
+         停在那裡的取景，重置等於把畫面「啪」一聲拉回原位，那正是這條要避免的。
+         ⚠ 所以 `cgCross` 也要把第二層擺到**同一個** object-position（見那裡）。 */
+      cg.style.objectPosition='';                // 同上：回到預設取景
       cg.classList.remove('pan-up','pan-down','zoom-in');
     }
   };
@@ -1905,9 +1938,11 @@ function renderLine(){
     /* `onLose`（ver -377）：**這一場可以打輸**，輸了跳到帶那個 `label` 的拍。
        ⚠ 只在戰鬥卡上寫了「可戰敗」（`config.battles[].allowLose`）時才走得到 ——
          其餘場次輸了是 Game Over 回主選單（-376 的規矩），根本不會回到這裡。 */
+    /* ⚠ `battleId` 一起帶著（ver -631）：回程要問那張卡「打完換哪一首」
+       （`bgmAfter`）—— 不帶的話 `resumeFrom` 認不出剛剛打的是哪一場。 */
     const resume = cur.__adhoc
-      ? { adhoc: cur.lines, line: lineIdx+1, done: cur.__done, sides: sideOverride, bgm: stageBgm, onLose: line.onLose }
-      : { scene: cur.sceneId, line: lineIdx+1, bgm: stageBgm, onLose: line.onLose };
+      ? { adhoc: cur.lines, line: lineIdx+1, done: cur.__done, sides: sideOverride, bgm: stageBgm, onLose: line.onLose, battleId: line.battle }
+      : { scene: cur.sceneId, line: lineIdx+1, bgm: stageBgm, onLose: line.onLose, battleId: line.battle };
     const id = line.battle;
     /* Kerberos 之門（ver -329）：門開的**縫裡露出的就是戰鬥畫面**，所以順序反過來 ——
        先讓底下開戰（onGap），門才拉開；門全開之後才把劇情層收掉。
@@ -2827,7 +2862,7 @@ export function setSceneBg(name, done){
   if(name===stageBg){ done&&done(); return; }
   stageBg=name;
   swapImg(el, name ? imgSrc(name) : '', done);
-  setTimeout(()=>matchPortraits($('storyBg'), $('storyCast')), 420);
+  setTimeout(()=>matchPortraits(toneSrcEl(), $('storyCast')), 420);
 }
 /* 播一段臨時台詞（城鎮節點的進場對白）。done 在最後一句被點掉之後呼叫。
    ⚠ 播完**不收舞台**（城鎮還要留在畫面上），與 scene 鏈的 endScene 不同。 */
@@ -2858,7 +2893,15 @@ export function indexOfLabel(lines, label){
 }
 export function resumeFrom(pos, res){
   if(!pos) return;
-  ensureBgm(pos.bgm);                       // 戰前那一首（見 renderLine 的 resume）
+  /* ══⚠⚠ **打完換一首**（ver -631，Ray：「黑爪戰完 bgm 換 Suspense6」）══
+     戰鬥卡上寫 `bgmAfter:'<鑰匙>'`；沒寫就照舊接回**戰前那一首**（`pos.bgm`）。
+     ⚠ **只有打贏才換**：戰敗要再打一次，這一場還沒結束 —— 換了曲子等於幫劇情
+       先畫了句點。`res.lost` 為真時走回原本那一首。
+     ⚠ 寫在**卡**上不寫在腳本裡（鐵律 1）：「這一場打完之後是什麼氣氛」是那一場
+       的性質，日後同一隻怪在別的地方出現也該接同一首。 */
+  const _bc = pos.battleId && GAME_CONFIG.battles && GAME_CONFIG.battles[pos.battleId];
+  const _after = (_bc && _bc.bgmAfter && !(res && res.lost)) ? _bc.bgmAfter : null;
+  ensureBgm(_after || pos.bgm);             // 戰前那一首（見 renderLine 的 resume）
   /* ══ 戰敗後按「再戰」（ver -430，Ray：「回到該幕對話的開頭」）══════════════
      回的是**這一幕的第一句**，不是戰鬥前那一句 —— 玩家要重看的是那一段戲的鋪陳，
      而且從頭走一次才會再走到那一拍 `{battle:…}`。
@@ -2990,7 +3033,7 @@ export function init(){
      綁 `load` 事件就沒有這個問題：換幾次量幾次，主線／城鎮／旅店全部一體適用。
      ⚠ 原本那兩處 `setTimeout` 留著不礙事（同一張圖有快取，第二次是 no-op）。 */
   const bgEl=$('storyBg');
-  if(bgEl) bgEl.addEventListener('load', ()=>matchPortraits(bgEl, $('storyCast')));
+  if(bgEl) bgEl.addEventListener('load', ()=>matchPortraits(toneSrcEl(), $('storyCast')));
   const touch=$('storyTouch');
   /* ══ 面盤手勢（ver -367）══
      起點在**面盤**（`--story-top` 之下）才算手勢；起點在上半就是單純的「點一下推一句」。
