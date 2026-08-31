@@ -1595,6 +1595,15 @@
   #tutGuide.g-down  .tg-chevrons i{transform:rotate(135deg);}
   #tutGuide.g-up    .tg-chevrons{flex-direction:column-reverse;}   /* 由下往上依次閃 */
   #tutGuide.g-up    .tg-chevrons i{transform:rotate(-45deg);}
+  /* ══⚠⚠ **紅色的雪鐵龍箭**（`tone:'red'`，ver -686，Ray：「夢魘教學雪鐵龍換成紅色，
+     不然看不見」）══ 惡夢化那一場的畫面本來就是金的（`#grid.saint` 把整盤設成金邊、
+     還罩了一層金色 drop-shadow）—— 金箭頭疊在金畫面上讀不出來。
+     ⚠ 三個地方都要換：容器的外光、chevron 的邊、標示字的顏色與字光 ——
+       只改其中一個會變成「金字配紅箭」。
+     ⚠ 顏色走既有的 `--danger`（受擊／危險用的那一支），不另外定一個紅。 */
+  #tutGuide.g-red{filter:drop-shadow(0 0 7px rgba(255,80,80,.9));}
+  #tutGuide.g-red .tg-chevrons i{border-top-color:var(--danger);border-right-color:var(--danger);}
+  #tutGuide.g-red .tg-label{color:#ff9a9a;text-shadow:0 0 9px rgba(255,80,80,.85);}
   #tutGuide .tg-label{margin-top:8px;font-size:13px;letter-spacing:3px;color:var(--gold);
     text-shadow:0 0 8px rgba(212,169,74,.75);animation:tgLabel 1s ease-in-out infinite alternate;}
   /* 點擊閘（指向左緣破防計量表）：標示縮字，置中定位時左緣不出畫面（箭頭保持正對計量表） */

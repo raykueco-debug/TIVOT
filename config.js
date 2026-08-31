@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.08.31-685';
+export const VERSION = 'ver 2026.08.31-686';
 
 export const GAME_CONFIG = {
 
@@ -1675,7 +1675,7 @@ export const GAME_CONFIG = {
              （`gate.then` 是 `afterCutin` 排的，所以一定在 CI 之後）。 */
         { trigger:'hp:50', lines:[
           { who:'anya', img:'tut_anya_terrifying', text:'娜塔莉！' },
-        ], gate:{ type:'right', immediate:true, action:'nightmare', then:'niCall' } },
+        ], gate:{ type:'right', immediate:true, action:'nightmare', then:'niCall', tone:'red' } },
         { trigger:'niCall', lines:[
           { who:'renna', img:'tut_renna_shocked', text:'那是……！' },
           { who:'renna', img:'tut_renna_shocked', text:'聖徒化？' },
@@ -1689,7 +1689,7 @@ export const GAME_CONFIG = {
         { trigger:'phplow:20', lines:[
           { who:'anya', img:'tut_anya_ni', text:'撐不住了……' },
           { who:'anya', img:'tut_anya_ni', text:'一起……結束吧，娜塔莉。' },
-        ], gate:{ type:'up', immediate:true, action:'niBurst' } },
+        ], gate:{ type:'up', immediate:true, action:'niBurst', tone:'red' } },
       ] },
     /* ══ 飛行頁的遭遇戰（ver -382）══ 怪撞上船 → 跳來這一頁打舒爾特盤。
        ⚠⚠ 三隻怪的**敵人卡 Ray 還沒給**，所以現在**一律先借巨型聖徒**跑流程

@@ -1155,7 +1155,7 @@ function closeDialog(resume, silent){
  * ========================================================================== */
 function enterGate(g){
   gate = g;
-  showGuide(g.type);
+  showGuide(g.type, g.tone);
 }
 // 對外：閘門是否進行中（main.js 的方向鍵入口據此讓位——閘門由本檔自行收鍵）
 export function gateActive(){ return !!gate; }
@@ -1199,10 +1199,13 @@ function stageSides(){
   for(const k of who){ const sd = k && sideOf(k); if(sd) out.add(sd); }
   return out;
 }
-function showGuide(type){
+/* ⚠ `tone` ＝這一次的顏色（ver -686）：`'red'` 走 `.g-red`（見 style.css）。
+   閘門的資料上寫 `gate:{ type:'up', tone:'red' }`；不寫＝原本的金色。 */
+function showGuide(type, tone){
   const g=$('tutGuide'); if(!g) return;
   const labels = CFG().guideLabels || {};
-  g.classList.remove('g-down','g-right','g-up');
+  g.classList.remove('g-down','g-right','g-up','g-red');
+  if(tone==='red') g.classList.add('g-red');
   let x=innerWidth/2, y=innerHeight/2, dir='g-right', label='';
   if(type==='click'){
     // 破防計量表上方，箭頭向下指、標示 CLICK！
