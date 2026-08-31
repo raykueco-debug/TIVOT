@@ -428,6 +428,16 @@ const bgResolved=new Map();
      城鎮不認識戰鬥層，戰鬥層也不該反過來問城鎮。 */
 let bgNow=null;
 export function currentBg(){ return bgNow; }
+/* ══⚠⚠ **現在打的是不是「劇情戰」**（ver -680，Ray：「劇情戰戰敗是回捲至上一段
+   劇情喔，不是直接送回旅店」）══
+   由 `runArrival` 在取到那一段時記下（`act.storyBattle`），`enter()` 開頭歸零。
+   ⚠ 打輸的話那一段的 `done` 不會跑，所以旗會留著 —— 那正是要的：
+     戰敗的分流（`main.js` 的 `setStoryReturn`）就是在那個時候問它。
+   ⚠ 為什麼不問 `state.storyBattle`：那一支是**戰鬥**那一層的（敵人卡的 `story`），
+     北方泊地的城鎮戰雜怪也是 1 —— 分不出「劇本安排的那一場」與「城鎮戰的一格」。
+     這裡問的是**段落**怎麼宣告自己（同 `actDue` 的 `storyBattle`，鐵律 7）。 */
+let storyActNow = false;
+export function storyBattleAct(){ return storyActNow; }
 /* `done`＝**這一景的背景真的擺好了**（ver -442）。切景的黑幕要等它才掀 ——
    見 `enter()` 的 `reveal`。⚠ 一定要在**每一條出口**都叫（載到了／候選全部
    404 了），漏掉哪一條，那一次就只剩保底計時器在撐。 */
@@ -1314,6 +1324,7 @@ export function enter(id){
   const n=T.nodes[id]; if(!n){ console.warn('[town] 沒有這個節點：', id); busy=false; return; }
   nodeId=id;
   const carried = carriedIn; carriedIn = false;   // 只吃這一次抵達（ver -496）
+  storyActNow = false;                           // 換一格就重算（ver -680）
   /* ⚠ 上一個地點開出來的「下一步去哪」在這裡結算（ver -440，見 `resolveFavor`）——
      要在演任何東西之前，好感度是這一步的結果，不是這一段對白的結果。 */
   resolveFavor(id);
@@ -1440,6 +1451,7 @@ export function enter(id){
      而初見的旗標**不記** —— 下次正常走進來照演（同打烊／傍晚插隊的作法）。
      初見已經看過＝什麼都不演（正常的安靜抵達）。 */
   const wake = (carried && !played && n.wake && n.wake.length) ? n.wake : null;
+  if(act && act.storyBattle) storyActNow = true;   // 這一段是劇情戰（ver -680，見 storyBattleAct）
   const lines = act ? act.lines
               : ev ? ev.lines
               : wake ? wake
