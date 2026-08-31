@@ -335,7 +335,18 @@ function ensureOn(id, expr){
   const el = slotEl(side); if(!el) return null;
   const src = srcFor(sp.art, expr);
   const swapping = (slot[side] && slot[side]!==id);
-  /* 取景的鑰匙。⚠ 只有在**真的把 src 換上去的那一刻**才更新（見下面 apply 的說明）。 */
+  /* ══⚠⚠ **取景要跟著「畫面上真的畫出來的那一張」走**（ver -647／-648，Ray：
+     「娜塔莉說『安娜』的時候位置跑掉了，此時應該就是用 dead 了，但圖還是 dying」
+      →「說完安娜以後她又跑了，而且用的也還是 dying」）══
+     `slotExpr` 決定 `castLayout` 用哪一張的取景（`frameOf(id, slotExpr)`），
+     而換圖有**兩段延遲**：① 排程（換表情 190ms／同側換人 203ms／首次 16ms）
+     ② **圖自己的載入解碼**。
+     · -647 只把它移到「設 `src` 的那一刻」—— 圖沒快取時 ② 還沒完成，
+       畫面上仍是舊圖卻已經套上新取景，於是又跳一次（Ray 回報的第二次）。
+     · 現在移到 **`onload`／`complete` 那一刻**：新的像素真的畫上去了才換取景。
+     ⚠ 載不到圖時它**不會更新** —— 取景與畫面上那張（舊的）仍然一致，
+       那正是我們要的失敗模式。
+     ⚠ 娜塔莉 dying→dead 的 `fx` 差 0.23、`top` 差 56，跳起來是 45px，很顯眼。 */
   const setExpr = ()=>{ slotExpr[side]=expr||null; };
 
   if(slot[side]!==id || el.getAttribute('src')!==src){
@@ -348,11 +359,11 @@ function ensureOn(id, expr){
          **舊圖被套上新圖的取景**：娜塔莉 dying→dead 的 `fx` 差 0.23、`top` 差 56，
          畫面上就是「圖還沒換、人先跳走」。
          正解：`slotExpr` 與 `src` **同一刻**更新，然後才 `layout()`。 */
-      setExpr();
-      el.onload = ()=>{ el.onload=null; layout(); el.classList.add('on'); };
+      const ready=()=>{ el.onload=null; setExpr(); layout(); el.classList.add('on'); };
+      el.onload = ready;
       el.setAttribute('src', src);
       el.dataset.who = id;
-      if(el.complete && el.naturalWidth){ el.onload=null; layout(); el.classList.add('on'); }
+      if(el.complete && el.naturalWidth) ready();
     };
     const first = !slot[side];
     if(swapping || first) slidIn = true;
@@ -376,8 +387,7 @@ function ensureOn(id, expr){
            要靠 `complete && naturalWidth` 這條退路。 */
       el.classList.add('fading');
       slotT[side]=setTimeout(()=>{
-        const back=()=>{ el.classList.remove('fading'); layout(); el.classList.add('on'); };
-        setExpr();                    // ⚠ 取景與 src 同一刻（見 apply 的說明）
+        const back=()=>{ setExpr(); el.classList.remove('fading'); layout(); el.classList.add('on'); };
         el.onload=()=>{ el.onload=null; back(); };
         el.setAttribute('src', src);
         el.dataset.who = id;
