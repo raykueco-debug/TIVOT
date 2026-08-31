@@ -19,6 +19,7 @@ import * as inn from './inn.js';                 // 旅店大廳（伙伴門／�
 import { showShop, showBounty } from './loot.js';
 import { SPEAKERS } from '../script/speakers.js';
 import { SFX } from '../audio.js';
+import { state } from '../state.js';   // 只讀：`battleSession`（擁有者是 combat，見鐵律 3.1）
 
 const $ = id => document.getElementById(id);
 
@@ -1336,8 +1337,17 @@ export function enter(id){
              旗標也記了」，正是該落檢查點的那一刻。
              ⚠ 落在**旗標之後**：早一步存的話那一場會再打一次。
              ⚠ 純對白的段落也會落一筆 —— 那也是一個段落邊界，存了不虧。
-             ⚠ 走同一支 `checkpoint()`（進城那一支也是它，鐵律 8）。 */
-          if(checkpoint) try{ checkpoint(); }catch(_){}
+             ⚠ 走同一支 `checkpoint()`（進城那一支也是它，鐵律 8）。
+             ⚠⚠ **「一場」之內不落檢查點**（ver -639，Ray：「『一場』戰鬥內不設紀錄點，
+               戰鬥結算後才有」）。城鎮戰的每一格都是一拍 `{battle:…}`，照舊會逐格
+               落一筆 —— 那等於把「一場」切成五個存檔點，與 §6.5.4.3
+               「整張戰鬥地圖算同一場」互相矛盾（讀檔回到半場中間，資源卻是
+               那一刻的殘量，玩家看到的是一個沒頭沒尾的段落）。
+               ⚠ 判定讀 `state.battleSession`（**還開著＝這一場還沒打完**）：
+                 收段那一場（Boss）打贏時 `endSession()` 已經把它清掉了，
+                 所以那一格照樣落得到 —— 正好就是「戰鬥結算後才有」。
+               ⚠ 純對白的段落不受影響（那時 `battleSession` 本來就是 null）。 */
+          if(checkpoint && !state.battleSession) try{ checkpoint(); }catch(_){}
           /* 還有下一段就**原地立刻接上**（ver -599）——不停一秒、不必走出去再回來。 */
           if(actDue(n)){ story.clearCast(); runArrival(true); return; }
         }
@@ -1682,8 +1692,10 @@ export function open(town, node, opts){
   }
   enter(start);
   /* 進城的檢查點（ver -590，見 setCheckpoint）。⚠ 一定要在 `enter()` 之後 ——
-     存檔要記「人在哪一格」。 */
-  if(checkpoint) try{ checkpoint(); }catch(_){}
+     存檔要記「人在哪一格」。
+     ⚠ 同上：「一場」之內不落點（ver -639）。正常情況下進城時 `battleSession`
+       本來就是 null —— 這一道是為了讓規則只有一條，不要兩個呼叫點各有各的條件。 */
+  if(checkpoint && !state.battleSession) try{ checkpoint(); }catch(_){}
 }
 export function close(){
   const st=story.stageEl(); if(st) st.classList.remove('town-on');
