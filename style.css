@@ -821,6 +821,20 @@
   #grid.saint.overkill .cell{border-color:var(--holy);color:#bfe6ff;background:#18202e;
     text-shadow:0 0 10px #4fc3ff,0 0 22px rgba(79,195,255,.55);}
   #grid.saint.overkill{filter:none;animation:overkillPulse .6s infinite alternate;}
+  /* ══⚠⚠ **惡夢化發動時那一格要看得見**（ver -684，Ray：「NI 後的第一格還是
+     沒有標出來，會找不到」）══
+     `hintCurrentCell` 加的 `.next` 在惡夢化底下**等於隱形**：
+       · `.cell.next` 只改 `border-color` 與一圈淡光，
+       · 而 `#grid.saint .cell` 把**每一格**都設成金邊（id 選擇器，權重贏），
+       · `#grid.saint` 自己又罩了一層 drop-shadow，把那一圈淡光吃掉。
+     所以要一條**權重更高、而且用不同顏色**的規則（1 個 id ＋ 3 個 class）。
+     ⚠ 用白光不用金光：整盤都是金的，再加金光還是找不到。 */
+  #grid.ni .cell.next{
+    border-color:#fff;color:#fff;background:#3a2036;
+    animation:niNextPulse .7s infinite alternate;}
+  @keyframes niNextPulse{
+    from{box-shadow:0 0 0 2px #fff, 0 0 10px rgba(255,255,255,.55);}
+    to  {box-shadow:0 0 0 3px #fff, 0 0 22px rgba(255,255,255,1);}}
   @keyframes saintPulse{from{filter:drop-shadow(0 0 10px var(--gold))}to{filter:drop-shadow(0 0 20px #fff)}}
 
   /* 彈殼 */

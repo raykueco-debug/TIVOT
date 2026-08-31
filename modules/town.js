@@ -1521,8 +1521,15 @@ export function enter(id){
                那不是「重播」而是**當場無窮迴圈**，畫面就卡在那一句上。
              ⚠ 判的是**物件本身**（`!==act`）不是「有沒有 flag」：日後若有兩段
                都沒有 flag，還是接得上另一段。 */
+          /* ⚠⚠ **只接得上「有 flag 的下一段」**（ver -684，Ray：「第一次進教堂
+             諾薇兒不會說不要催我，那是第二次以後」）：
+             沒有 `flag` 的段落是**每次抵達都演的常駐句**（「再訪」），
+             它本來就該等**下一次走進來**才講 —— 接在主線段落後面的話，
+             第一次進教堂就會在戰地醫院那一段之後立刻補一句「不要催我」。
+             ⚠ 這與 -669 的「不可以接上剛剛那一段」是同一族：**接續是給主線用的**，
+               常駐句不屬於那條鏈。 */
           const nx=actDue(n);
-          if(nx && nx!==act){ story.clearCast(); runArrival(true); return; }
+          if(nx && nx!==act && nx.flag){ story.clearCast(); runArrival(true); return; }
         }
         else if(ev){
           if(ev.flag) prog.addFlags([ev.flag]);                  // 傍晚那一句：只演一次
