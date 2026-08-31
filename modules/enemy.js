@@ -226,9 +226,21 @@ const LAND_AT = 702;
    `loadEnemyPortrait` 每次呼叫都會做一個新的 `rise`，掛閉包等於每一次都是新的
    計時器，前一次的取消不掉 —— 實測換一次敵人就疊出**兩圈**落地光。 */
 let landT = 0;
+/* ⚠⚠⚠ **上一隻還在路上的降臨要取消掉**（ver -659，Ray：「我現在打靶還是有降臨特效」）。
+   降臨是**延後**執行的（`setTimeout(rise, RISE_DELAY_MS)`，圖還沒載到時再等 `onload`）——
+   而 `startGame` 會先擺一隻預設的怪、再換成這一場真正的那一隻。於是：
+     ① setEnemy(聖徒) → 排了一個 rise ② setEnemy(靶) → 清掉 class、依 kind 不排 rise
+     ③ ①那個 timeout 到期 → **把 `enemy-rise` 加到靶身上**
+   `kind` 的守門完全正確，錯的是「沒有取消上一次的延後」——
+   這與 §6.5「上場是延後執行的，所以撤場一定要把那個延後取消掉」是同一條。
+   ⚠ 三樣都要收：`setTimeout` 的握把、`onload` 的回呼、著地的計時器。 */
+let riseT = 0;
 export function loadEnemyPortrait(en){
   const eImg = $('enemyImg');
   if(!eImg) return;
+  clearTimeout(riseT); riseT=0;
+  clearTimeout(landT); landT=0;
+  eImg.onload = null;
   eImg.classList.remove('enemy-rise','enemy-purge');
   /* ⚠⚠ **演完要把 class 拿掉**（ver -598 修）：`enemy-rise` 帶 `both` 填充，
      留在身上等於 `#enemyImg` 永遠掛著 `animation:enemyRise`；而它與命中反應
@@ -266,9 +278,10 @@ export function loadEnemyPortrait(en){
      ⚠ 判定用**傳進來的這張卡**不是 `isHarm()`：`setEnemy` 在寫
        `state.currentEnemyKey` 之前就可能叫到這裡，問 state 會問到上一隻。 */
   if(!PURIFY_KINDS[en && en.kind]) return void (eImg.src = enemyImage(en));
-  eImg.onload = ()=>{ eImg.onload=null; setTimeout(rise, RISE_DELAY_MS); };
+  const arm=()=>{ eImg.onload=null; clearTimeout(riseT); riseT=setTimeout(rise, RISE_DELAY_MS); };
+  eImg.onload = arm;
   eImg.src = enemyImage(en);
-  if(eImg.complete && eImg.naturalWidth){ eImg.onload=null; setTimeout(rise, RISE_DELAY_MS); }
+  if(eImg.complete && eImg.naturalWidth) arm();
 }
 /* ══ 淨化：血歸零那一刻把怪抹掉（ver -588）══
    ⚠ 演出在 CSS（`enemy-purge`：聖光漂白 → 由下往上抹除），這裡只負責掛上去。

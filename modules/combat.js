@@ -417,6 +417,10 @@ function clearBoard(){
   recordBoardTime(elapsed);
   // 清盤 bonus 聖能：僅在本盤全程無出錯、未受擊時給予（依清盤速度）
   if(state.boardClean){
+    /* 完美清盤 +1（ver -659，Ray：「完美清盤一次 −1 秒」）。
+       ⚠ 條件就是既有的 `boardClean`，不另訂一套（鐵律 7）—— 給聖能與給折秒
+         是**同一件事**的兩個獎勵。折算的秒數在 `config.rating.penalty.perfectBoard`。 */
+    state.perfectBoards++;
     const ideal=state.N*0.45;
     const speed=Math.max(0.4, Math.min(1.6, ideal/Math.max(elapsed,0.1)));
     const gain=Math.round(state.N*1.8*speed);
@@ -1359,6 +1363,8 @@ function win(){
     hitsTaken: Math.max(0, state.hitsTaken - _scriptedHits),
     /* 以 EXSECUTIŌ（處刑）收尾（ver -630）：評價折抵一次幾秒，見 config.rating.penalty。 */
     sawExecution: !!state.sawExecution,
+    /* 完美清盤的盤數（ver -659）：折算成秒數（負的＝獎勵），見 config.rating.penalty。 */
+    perfectBoards: state.perfectBoards|0,
     /* 失誤計數（ver -600）：新評價把它們折算成秒數加進攻略時間。 */
     wrongTaps: state.wrongTaps|0,
     ultHits:   state.penUlt|0,
@@ -1467,7 +1473,7 @@ export function startGame(){
   partner.reset(); // 搭檔被動重置（高裝藥彈 10 秒計時器清除、上膛旗標歸位）
   state.overkill=0; state.killTime=0; state.transitioning=false;
   state.counterCount=0; state.counterDamage=0; state.perfectCount=0; state.sawExecution=false;
-  state.maxCombo=0; state.hitsTaken=0; state.correctTaps=0; state.wrongTaps=0; state.runOverkill=0;   // 評價統計歸零
+  state.maxCombo=0; state.hitsTaken=0; state.correctTaps=0; state.wrongTaps=0; state.runOverkill=0; state.perfectBoards=0;   // 評價統計歸零
   state.penUlt=0; state.penBlock=0; state.penDelay=0;   // 失誤計數歸零（ver -600 的新評價）
   _scriptedHits=0;                                     // 教學劇情殺擊數（結算受擊數扣除用）
   state.playerHp=state.playerMax;
@@ -1612,7 +1618,7 @@ export function startIntruderFight(){
   partner.reset();
   state.overkill=0; state.killTime=0; state.transitioning=false;
   state.counterCount=0; state.counterDamage=0; state.perfectCount=0; state.sawExecution=false;
-  state.maxCombo=0; state.hitsTaken=0; state.correctTaps=0; state.wrongTaps=0; state.runOverkill=0;   // 評價統計歸零
+  state.maxCombo=0; state.hitsTaken=0; state.correctTaps=0; state.wrongTaps=0; state.runOverkill=0; state.perfectBoards=0;   // 評價統計歸零
   state.penUlt=0; state.penBlock=0; state.penDelay=0;   // 失誤計數歸零（ver -600 的新評價）
   _scriptedHits=0;                                     // 教學劇情殺擊數（結算受擊數扣除用）
   state.playerHp=state.playerMax; state.enemyHp=state.enemyMax;

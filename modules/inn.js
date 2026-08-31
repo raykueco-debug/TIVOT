@@ -509,6 +509,17 @@ function sleepHere(){
      ⚠ 那個時刻與**傍晚的提醒**是同一個（`TOWNS[].evening.hour`，18:00）——
        她說的「還沒六點」就是那條線，所以**問同一個地方**（鐵律 7），
        不要在這裡再寫一個 18。 */
+  /* ══⚠⚠ **這座城現在還不能睡**（`noSleep`，ver -659，Ray：「回房睡覺也要有，
+     但是點了會跳『現在不是睡覺的時候。』」）══
+     ⚠ 鈕**要在**：藏起來玩家只會以為壞了（§6.5.5「還不能做不要靠藏起鈕擋」）——
+       按下去由一句話擋回來才知道為什麼。
+     ⚠ 排在「太早」之前：那一條看時刻，這一條是「這一段劇情還沒到能睡的時候」，
+       與幾點無關。
+     ⚠ **旁白**（名字欄空）：那是主角自己的念頭，不是誰在講話。 */
+  if(node && node.noSleep){
+    if(host && host.say) host.say(node.noSleep, '');
+    return;
+  }
   if(clock.hourF() < eveningHour){
     const lines = (node && node.innEarly) || [];
     if(lines.length && host && host.play){

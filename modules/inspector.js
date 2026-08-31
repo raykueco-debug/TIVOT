@@ -91,7 +91,7 @@ export function rollBattleMoney(){
      各場先各算一次再相加是另一件事，等第會失真。
    ⚠ 錢照舊逐場擲、逐場記（那是掉落，不是評價）。 */
 const SUM_KEYS = ['clearTime','totalHP','wrongTaps','ultHits','blocks','delays',
-                  'perfectCounter','counterDamage','overkill','hitsTaken'];
+                  'perfectCounter','counterDamage','overkill','hitsTaken','perfectBoards'];
 export function bankSessionGain(stats){
   const acc = state.sessionStats || {};
   for(const k of SUM_KEYS) acc[k] = (acc[k]||0) + (stats[k]||0);
@@ -146,6 +146,10 @@ export function evaluate(stats, cfg = GAME_CONFIG.rating){
                /* ⚠ 反擊與 overkill 是**負的**（ver -601／-603）：它們是表現不是失誤。 */
                + (stats.perfectCounter||0) * (pen.counter ||0)
                + (stats.overkill      ||0) * (pen.overkill||0)
+               /* 完美清盤（ver -659，Ray：「完美清盤一次 −1 秒」）：負的＝獎勵。
+                  ⚠ 與 overkill 相反 —— 它**不是隨機的**，是「這一盤打乾淨了」，
+                    每一盤都由玩家自己決定，所以折成秒數是公平的。 */
+               + (stats.perfectBoards ||0) * (pen.perfectBoard||0)
                /* ⚠ 以 **EXSECUTIŌ（處刑）** 收尾 → 一次性折抵（ver -630，Ray：
                   「excute 結束 −5 秒」）。它是**這一場有沒有發生過**，不乘次數。
                   ⚠ 與無傷那條下限是兩件事：這一條仍然走秒數（它是「打得漂亮」的

@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.08.31-658';
+export const VERSION = 'ver 2026.08.31-659';
 
 export const GAME_CONFIG = {
 
@@ -791,13 +791,20 @@ export const GAME_CONFIG = {
     timeK: 400,
     /* 失誤／表現折算成秒（Ray 指定）。⚠ **負數＝減秒**（獎勵）。
        ⚠ 這是「形狀」不是難度旋鈕 —— 先調 `timeK`，這一組通常不必動。
-       ⚠⚠ `overkill` 每一格折抵 **0.1 秒**（ver -611，Ray：「那 ovk 改計時，
-         一格減 0.1 秒」）。⚠ 同一版起 **overkill 那一段照樣計時**（碼表不再在
-         敵人倒下時暫停）—— 以前不計時又倒扣秒，那一段是白拿的（堆三十格白送
-         六秒，timeK 600 之下＝12 分）。現在想賺就得真的花時間去敲。 */
+       ⚠⚠ **`overkill` 不折秒**（ver -659，Ray：「OVK 還是不能算時間，否則不公平，
+         因為 ovk 的量幾乎隨機」）—— ver -611 的「一格減 0.1 秒」已推翻：
+         那個量取決於最後一擊溢出多少與敵人剩多少血，**不是玩家控制得了的**，
+         折成秒數等於把隨機數寫進等第。⚠ **overkill 那一段照樣計時**（-611 那半條
+         留著）、**EXP 照樣給**（`exp.overkillExp`）—— 它是「打爽的」不是「打好的」。
+         ⚠ 欄位留著寫 0 不刪：日後要改回來只動這一個數字。
+       ⚠⚠ `perfectBoard` ＝**完美清盤一盤折 1 秒**（ver -659，Ray 指定）。
+         它與 overkill 正好相反：「這一盤沒點錯也沒被打到」是玩家**每一盤自己決定**
+         的事，不隨機，所以折成秒數是公平的。條件＝`state.boardClean`
+         （與清盤獎勵聖能同一個，鐵律 7）。 */
     /* ⚠ `execution` ＝以 **EXSECUTIŌ（處刑）** 收尾（ver -630，Ray：「excute 結束
        −5 秒」）：一次性折抵，**不乘次數**（它是「這一場有沒有發生過」）。 */
-    penalty: { wrong: 2, ult: 3, block: 1, delay: 1, counter: -0.5, overkill: -0.1, execution: -5 },
+    penalty: { wrong: 2, ult: 3, block: 1, delay: 1, counter: -0.5,
+               overkill: 0, perfectBoard: -1, execution: -5 },
     /* ══⚠⚠ **整場無傷 ＝ 等第下限**（ver -626，Ray：「無傷基本讓他保證 S」）══
        ver -620 是「折 10 秒」，已推翻 —— 定額折秒的份量被**場的大小稀釋**：
        同樣 10 秒在 300 血的場值 16.7 分、在 1500 血的城鎮戰只值 3.3 分（五倍差），

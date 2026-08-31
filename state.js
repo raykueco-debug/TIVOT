@@ -42,6 +42,10 @@ export const state = {
   correctTaps: 0,        // 依序正確點擊數（命中率分子）
   wrongTaps: 0,          // 按錯格次數（命中率＝correct/(correct+wrong)）
   runOverkill: 0,        // 整場累計 overkill（state.overkill 每敵歸零，換敵時併入此）
+  /* 完美清盤的盤數（ver -659，Ray：「完美清盤一次 -1 秒」）。
+     ⚠ 「完美」＝那一盤 `boardClean` 撐到清盤為止（沒點錯、沒受擊）——
+       與清盤獎勵聖能同一個條件，不要另外定義一次（鐵律 7）。 */
+  perfectBoards: 0,
   energy: 0,
   boardStartTime: 0,
   boardClean: true,
