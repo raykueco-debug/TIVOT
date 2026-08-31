@@ -878,12 +878,25 @@ function nameOf(id){
      Ray 把插圖也拆成時段差分之後，這條規矩（時段 → 退路時段 → 大小寫變體 →
      `.webp`／`.png`）就有兩個使用者了 —— 抄一份到這邊必然走鐘
      （其中一份會漏掉大小寫變體、或漏掉 `.png` 那一級）。鐵律 7。 */
+/* 這一格現在該用哪一張底圖的**基底名**（ver -627）。
+   ⚠⚠ 城重建之後整組換掉（`TOWNS[x].rebuild`，Ray：「stage5 之後北泊改用這一組差分」）：
+     節點的 `bg` 是戰損版，`rebuild.bg[id]` 是已重建版 —— 判定只有這一處（鐵律 8），
+     所以背景、預載、店舖、戰鬥交棒帶過去的那一張全部同步。
+   ⚠ 沒到那一章、或那一格沒列在表上（例如日後新增的節點）→ 照舊用 `n.bg`。 */
+function rebuiltBg(n, id){
+  const rb=(TOWNS[townId]||{}).rebuild;
+  if(!rb || !rb.bg) return null;
+  if(prog.getStage() < (rb.fromStage|0)) return null;
+  return rb.bg[id] || null;
+}
 function bgCandsOf(n, id){
   const out=[];
   const add=(base, noTime)=>{ if(!base) return;
     for(const nm of story.bandNames(base, noTime)) if(out.indexOf(nm)<0) out.push(nm); };
   const sc=dineSceneOf(id);
   if(sc) add(sc.bg, sc.noTime);
+  /* 重建版優先、戰損版當退路 —— 圖還沒交也不會變成空畫面（同分店那一條）。 */
+  add(rebuiltBg(n, id), false);
   add(n.bg, n.noTime);
   return out;
 }

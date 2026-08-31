@@ -885,6 +885,26 @@ export const TOWNS = {
        自動回到城上那一首（Suspense6）—— 正好就是 Ray 說的
        「結束戰鬥，到 boss 登場前用 Suspense6」。 */
     siege: { from:'np_port_arrive', until:'np_clear_church', keep:['church'], bgm:'crisis' },
+    /* ══⚠⚠ **重建之後換一整組背景**（ver -627，Ray：「stage5 之後北泊改用這一組差分」）══
+       節點的 `bg` 是**戰損版**（`_BF`，沒有時段差分）；到了 `fromStage` 這一章之後
+       改吃這一組**已重建**的基底名，時段差分（Day／Night）由既有的候選鏈自己接
+       （`story.bandNames` ＋ `BAND_FALL`，§6.5.4）—— 這裡只給基底名。
+       ⚠⚠ **一定要逐格寫出檔名，不可以由 `_BF` 那個名字去推**：交件的大小寫是
+         `Northport_West`，而戰損版是 `Northport_west_BF` —— **macOS 不分大小寫、
+         靜態空間分**，用字串去 `_BF` 再首字母大寫這種推法在本機測不出問題，
+         上線就整排 404（§6.5.4 的老坑）。
+       ⚠ 只有 Day／Night 兩張：其餘時段由 `BAND_FALL` 退路吃掉
+         （Dawn/Dusk→Day、midnight→night），不必補圖。
+       ⚠ 判定與取用只有 `modules/town.js` 的 `bgCandsOf` 一處（鐵律 8）。
+       ⚠ `fromStage:5` ＝北方泊地之後那一章的**暫填號**（同 `STAGE_DEFAULT`／
+         `FEATURE_FROM`／`talks` 的 `from`）—— 章節編號定案後這四處要一起對。 */
+    rebuild: { fromStage:5, bg:{
+      entrance:'Northport_Square',   west:'Northport_West',     north:'Northport_North',
+      east:'Northport_East',         port:'Northport_Port',     church:'Northport_Church',
+      cemetery:'Northport_Cemetery', cityhall:'Northport_Cityhall',
+      guild:'Northport_Guild',       gunstore:'Northport_Gunstore',
+      grocery:'Northport_Grocery',   tavern:'Northport_Tavern', inn:'Northport_Hotel',
+    } },
     /* ══ 餐飲街（ver -575）══ 這座城的四家店**還沒有圖**，所以不給 `scenes`
        ＝不換分店，那一格只是「外出時碰得到人的地方」（見 OUTING）。
        圖交進來就照帝都那樣補一組 `scenes`（完整基底名＋逐張的 `noTime`），
