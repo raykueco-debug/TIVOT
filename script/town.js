@@ -1347,8 +1347,13 @@ export const TOWNS = {
             any('sobbing','謝謝……'),
           ] },
           /* 再訪（ver -664）。⚠⚠ **不寫 `flag` ＝每次抵達都演**（`actDue` 只跳過
-             「旗立了」的段落）—— 那正是「再訪教堂」要的行為。 */
-          { need:'np_church_help', lines:[ nou('lookback','等等啦！不要催我！') ] },
+             「旗立了」的段落）—— 那正是「再訪教堂」要的行為。
+             ⚠⚠ **一定要給它一個終點**（`until`，ver -668，Ray：「每進去一次觸發
+               一次**直到下一個劇情事件結束解除**」）：沒有 `flag` 的段落不會自己
+               停下來，不寫 `until` 就會演到天荒地老（Ray 回報「卡在不要催我」）。
+               這裡的終點是**墓地那一幕演完**（`np_grave_done`）。 */
+          { need:'np_church_help', until:'np_grave_done',
+            lines:[ nou('lookback','等等啦！不要催我！') ] },
         ],
       },
       /* 墓地＝北側上方那個「空格」，Ray ver -567 定案是墓地。 */

@@ -501,6 +501,13 @@ function actDue(n){
   for(const a of (n && n.acts) || []){
     if(a.flag && prog.hasFlag(a.flag)) continue;
     if(a.need && !prog.hasFlag(a.need)) continue;
+    /* ⚠⚠ `until` ＝**這支旗立了就不再演**（ver -668，Ray：「教堂諾薇兒卡在
+       『不要催我』…每進去一次觸發一次直到下一個劇情事件結束解除」）。
+       它是給**沒有 `flag`（每次抵達都演）**的段落收尾用的 —— 那種段落沒有
+       自己的旗可以記，不給它一個終點就會演到天荒地老。
+       ⚠ 與 `flag` 是兩件事：`flag` ＝「這一段演過了」（自己記的），
+         `until` ＝「別人那一段演完了」（別人記的）。 */
+    if(a.until && prog.hasFlag(a.until)) continue;
     if(a.day && dayNo() < a.day) continue;
     /* ══⚠⚠ **安全區旗插著就不會有遭遇戰**（ver -634，Ray）══
        「只要插 safehouse flag 就不會有遭遇戰」「flag 跟地圖，一插就是整個北泊」
