@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.08.31-629';
+export const VERSION = 'ver 2026.08.31-630';
 
 export const GAME_CONFIG = {
 
@@ -766,7 +766,9 @@ export const GAME_CONFIG = {
          一格減 0.1 秒」）。⚠ 同一版起 **overkill 那一段照樣計時**（碼表不再在
          敵人倒下時暫停）—— 以前不計時又倒扣秒，那一段是白拿的（堆三十格白送
          六秒，timeK 600 之下＝12 分）。現在想賺就得真的花時間去敲。 */
-    penalty: { wrong: 2, ult: 3, block: 1, delay: 1, counter: -0.5, overkill: -0.1 },
+    /* ⚠ `execution` ＝以 **EXSECUTIŌ（處刑）** 收尾（ver -630，Ray：「excute 結束
+       −5 秒」）：一次性折抵，**不乘次數**（它是「這一場有沒有發生過」）。 */
+    penalty: { wrong: 2, ult: 3, block: 1, delay: 1, counter: -0.5, overkill: -0.1, execution: -5 },
     /* ══⚠⚠ **整場無傷 ＝ 等第下限**（ver -626，Ray：「無傷基本讓他保證 S」）══
        ver -620 是「折 10 秒」，已推翻 —— 定額折秒的份量被**場的大小稀釋**：
        同樣 10 秒在 300 血的場值 16.7 分、在 1500 血的城鎮戰只值 3.3 分（五倍差），

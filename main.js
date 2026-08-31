@@ -1402,10 +1402,17 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
     return best;
   }
 
-  function begin(x,y){ startX=x; startY=y; tracking=true; fired=false; moved=0; showAura(x,y); }
+  /* ⚠⚠ **按下去不亮聚光，滑起來才亮**（ver -630，Ray：「聖徒化期間點擊的聚光效果取消」）。
+     這個手勢層在聖徒化期間整片蓋著敵人框，而**點擊在那裡是正事**（點紅點防禦）——
+     每點一下閃一圈向心光線，讀起來像每次點擊都在發動什麼。
+     ⚠ 聚光是**上滑這個手勢**的回饋，不是點擊的回饋：位移超過 `TAP_SLOP`
+       （＝已經確定不是點擊）才亮，那時它才言之有物。
+     ⚠ 不整支拿掉：真的在上滑時仍需要看得到「系統收到了」。 */
+  function begin(x,y){ startX=x; startY=y; tracking=true; fired=false; moved=0; }
   function move(x,y){
     if(!tracking||fired) return;
     moved=Math.max(moved, Math.hypot(x-startX, y-startY));
+    if(moved >= TAP_SLOP) showAura(x,y);        // 確定是滑動了才亮（見上）
     if(aura && aura.classList.contains('on')){ aura.style.left=x+'px'; aura.style.top=y+'px'; }
     const up = startY - y;
     if(up > need() && up > Math.abs(x-startX)*1.0){

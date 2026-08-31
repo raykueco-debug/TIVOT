@@ -1345,6 +1345,8 @@ function win(){
     overkill: state.runOverkill + state.overkill,              // 整場累計 overkill
     // 教學劇情殺三連擊為腳本演出，不算玩家頭上（下限 0）
     hitsTaken: Math.max(0, state.hitsTaken - _scriptedHits),
+    /* 以 EXSECUTIŌ（處刑）收尾（ver -630）：評價折抵一次幾秒，見 config.rating.penalty。 */
+    sawExecution: !!state.sawExecution,
     /* 失誤計數（ver -600）：新評價把它們折算成秒數加進攻略時間。 */
     wrongTaps: state.wrongTaps|0,
     ultHits:   state.penUlt|0,

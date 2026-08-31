@@ -96,6 +96,9 @@ export function bankSessionGain(stats){
   const acc = state.sessionStats || {};
   for(const k of SUM_KEYS) acc[k] = (acc[k]||0) + (stats[k]||0);
   acc.maxCombo = Math.max(acc.maxCombo||0, stats.maxCombo||0);   // 連擊取最高，不相加
+  /* 處刑是**這一場有沒有發生過**（ver -630）：布林用 OR，不是相加 ——
+     一段之內任何一場以 EXSECUTIŌ 收尾，整場就算數。 */
+  acc.sawExecution = !!(acc.sawExecution || stats.sawExecution);
   state.sessionStats = acc;
   state.sessionMoney = (state.sessionMoney|0) + rollBattleMoney();
 }
@@ -106,6 +109,7 @@ export function mergeSessionStats(stats){
   const out = Object.assign({}, stats);
   for(const k of SUM_KEYS) out[k] = (out[k]||0) + (acc[k]||0);
   out.maxCombo = Math.max(out.maxCombo||0, acc.maxCombo||0);
+  out.sawExecution = !!(out.sawExecution || acc.sawExecution);
   return out;
 }
 export function clearSessionGain(){ state.sessionStats=null; state.sessionMoney=0; }
@@ -141,7 +145,12 @@ export function evaluate(stats, cfg = GAME_CONFIG.rating){
                + (stats.delays        ||0) * (pen.delay   ||0)
                /* ⚠ 反擊與 overkill 是**負的**（ver -601／-603）：它們是表現不是失誤。 */
                + (stats.perfectCounter||0) * (pen.counter ||0)
-               + (stats.overkill      ||0) * (pen.overkill||0);
+               + (stats.overkill      ||0) * (pen.overkill||0)
+               /* ⚠ 以 **EXSECUTIŌ（處刑）** 收尾 → 一次性折抵（ver -630，Ray：
+                  「excute 結束 −5 秒」）。它是**這一場有沒有發生過**，不乘次數。
+                  ⚠ 與無傷那條下限是兩件事：這一條仍然走秒數（它是「打得漂亮」的
+                    加分，不是「保證等第」的宣告）。 */
+               + (stats.sawExecution ? (pen.execution||0) : 0);
   /* ⚠ 夾在 0 以上：反擊／overkill 夠多時折算會是負的，扣過頭會變成負秒數。 */
   const used = Math.max(0, (stats.clearTime||0) + penSec);
   let score = Math.max(0, Math.min(100, Math.round(100 - (used/hp) * (cfg.timeK||200))));
