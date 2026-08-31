@@ -258,11 +258,40 @@
          加速才是「被抽走」。
        ⚠ ver -588 那一版（聖光漂白＋mask 由下往上抹除）已被 Ray 退回，不要退回去。
      ⚠ 兩支都只動 `#enemyImg`，不碰盤面與 HUD —— 這是敵人區的演出，不是轉場。 */
-  #enemyImg.enemy-rise{animation:enemyRise .42s cubic-bezier(.2,.75,.3,1) both;}
+  /* ══⚠⚠ **降臨**（ver -640，Ray：「讓遭遇戰的怪出現時更有『降臨』的感覺」）══
+     ver -588 那一版是「從背景裡解析出來」（420ms 失焦→收斂），讀起來是**它本來就在那裡**。
+     現在要的是**它降下來**，所以多了三件事，而且慢了一倍（900ms）：
+       ① **從上方落下**：起手在上方 −7%、放大 1.16（＝離鏡頭遠），一路沉到定位。
+          ⚠ 只動 `#enemyImg` 的 transform，背景不動（ver -592 的規矩）。
+       ② **著地的頓挫**：78% 已經到位並**壓過頭一點**（scale .985），最後 22% 才回彈到 1
+          —— 等速落到底讀起來是「貼上去」，有壓過再回彈才是「踩到地上」。
+       ③ **落地那一刻的聖光**：`brightness` 在 78% 衝到 1.45 再收回 1
+          （配合 `.enemy-land` 那一圈擴散的光環，見下）。
+     ⚠ 失焦與去彩照舊由重到輕 —— 那是「從遠處來」的距離感，不要拿掉。 */
+  #enemyImg.enemy-rise{animation:enemyRise .9s cubic-bezier(.18,.7,.24,1) both;}
   @keyframes enemyRise{
-    0%  {opacity:0; transform:scale(1.08); filter:blur(16px) saturate(.25) brightness(.7);}
-    45% {opacity:1;}
-    100%{opacity:1; transform:scale(1);    filter:blur(0)    saturate(1)   brightness(1);}}
+    0%  {opacity:0;   transform:translateY(-7%) scale(1.16);
+         filter:blur(22px) saturate(.15) brightness(.55);}
+    30% {opacity:.85;}
+    62% {opacity:1;   transform:translateY(-1%) scale(1.04);
+         filter:blur(6px)  saturate(.6)  brightness(.9);}
+    78% {opacity:1;   transform:translateY(0)   scale(.985);
+         filter:blur(0)    saturate(1)   brightness(1.45);}
+    100%{opacity:1;   transform:translateY(0)   scale(1);
+         filter:blur(0)    saturate(1)   brightness(1);}}
+  /* 著地的光環：由腳底往外擴散的一圈聖光。⚠ 掛在 `#top` 上（要能蓋住整個敵人區），
+     `mix-blend-mode:screen` —— 白光疊在暗背景上要用加亮混合，直接畫白色是白貼紙。
+     ⚠ `pointer-events:none`：它蓋在盤面上方的區域，不能吃掉點擊。 */
+  #top .enemy-land{position:absolute;left:50%;bottom:6%;width:10px;height:10px;
+    margin:-5px 0 0 -5px;border-radius:50%;pointer-events:none;z-index:4;
+    mix-blend-mode:screen;
+    background:radial-gradient(circle,rgba(255,255,255,0) 58%,rgba(255,247,214,.95) 72%,
+               rgba(255,214,120,.35) 84%,rgba(255,214,120,0) 100%);
+    animation:enemyLand .62s cubic-bezier(.15,.75,.3,1) both;}
+  @keyframes enemyLand{
+    0%  {transform:scale(1)  scaleY(.35); opacity:0;}
+    18% {opacity:.95;}
+    100%{transform:scale(46) scaleY(.35); opacity:0;}}
   #enemyImg.enemy-purge{animation:enemyPurge .6s ease-in both;
     transform-origin:50% 100%;}
   /* ⚠ 抖動用 5% 一格：格子太疏（10%）在 60fps 下會被內插成「左右搖擺」，

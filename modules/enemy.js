@@ -200,6 +200,13 @@ export function enemyImage(en){
    ⚠ `enemy-purge`（上一隻的淨化）也要一起清 —— 不清的話新的一隻會頂著
      「被抹掉一半」的遮罩出場。 */
 const RISE_DELAY_MS = 120;      // 背景先出的那一拍（讓玩家看得到「那裡本來就有個地方」）
+/* 落地的時刻（毫秒）。⚠ **必須對上 CSS `enemyRise` 的 78% 那一格**
+   （0.9s × 0.78 = 702ms）—— 改一邊要改另一邊（ver -640）。 */
+const LAND_AT = 702;
+/* ⚠⚠ 著地的計時器要**掛在模組上**不是掛在 `rise` 那個閉包上（ver -640）：
+   `loadEnemyPortrait` 每次呼叫都會做一個新的 `rise`，掛閉包等於每一次都是新的
+   計時器，前一次的取消不掉 —— 實測換一次敵人就疊出**兩圈**落地光。 */
+let landT = 0;
 export function loadEnemyPortrait(en){
   const eImg = $('enemyImg');
   if(!eImg) return;
@@ -210,6 +217,23 @@ export function loadEnemyPortrait(en){
      於是「打中敵人」那一記從頭到尾播不出來（Ray 回報看不到命中效果）。
      ⚠ 用 `animationend` 而不是計時器：時長只寫在 CSS 一處（鐵律 7）。 */
   const rise=()=>{ void eImg.offsetWidth; eImg.classList.add('enemy-rise');
+    /* ══ 著地（ver -640，見 CSS 的 `enemyRise` 78% 那一格）══
+       落到定位的那一刻補兩件事：**一圈擴散的聖光**與**鏡頭一震**。
+       ⚠ 鏡頭震動走 `api.screenShake`（combat 擁有的那一支，鐵律 8）——
+         不要在這裡自己加 class，那會變成第二份實作。
+       ⚠ 時間點寫成 `LAND_AT`：它必須對上 CSS 那一格（0.9s × 78%），
+         改一邊要改另一邊（鐵律 7 的但書，兩邊註解互指）。 */
+    clearTimeout(landT);
+    landT=setTimeout(()=>{
+      if(api.screenShake) api.screenShake();
+      const top=$('top');
+      if(top){
+        const ring=document.createElement('div');
+        ring.className='enemy-land';
+        top.appendChild(ring);
+        setTimeout(()=>ring.remove(), 700);
+      }
+    }, LAND_AT);
     eImg.addEventListener('animationend', function off(e){
       if(e.animationName!=='enemyRise') return;
       eImg.removeEventListener('animationend', off);

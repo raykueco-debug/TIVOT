@@ -149,7 +149,9 @@ export function setup(){
                       交棒過來的（船艦戰）、還是劇情插進來的（見 main.js 的 setLoseKind）。 */
                    loseKind: ()=> (loseKind ? loseKind() : 'home') });
   // 敵人：Boss 亂入的戰鬥重置（startIntruderFight，combat 擁有）+ 換敵刷血條（updateBars）注入。
-  enemy.init({ startIntruderFight, updateBars });
+  /* ⚠ `screenShake` 給「降臨」的著地那一拍用（ver -640）——
+     震動的實作只有 combat 這一支（鐵律 8），enemy 不自己加 class。 */
+  enemy.init({ startIntruderFight, updateBars, screenShake });
 }
 export function bootIdle(){
   // 開機停在首頁：先建立盤面/血條供背景顯示，但 over=true 讓計時與敵人不啟動
