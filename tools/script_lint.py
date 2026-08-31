@@ -356,7 +356,8 @@ def main():
     #    角色要在 `config.tutorial.cast` 裡、表情差分要在 ASSETS 裡 ——
     #    打錯的話要等真的打到那一場才發現，那通常是好幾個畫面之後的事。
     #  ⚠ 觸發除了那幾個節點，還有（ver -599／-619 加的）：
-    #    `hp:N`／`php:N`＝血量觸發（敵人／玩家血的百分比）、
+    #    `hp:N`／`php:N`／`phplow:N`＝血量觸發（敵人／玩家血的百分比；
+    #      `php` 是「回到 N% 以上」、`phplow` 是「掉到 N% 以下」）、
     #    以及**自訂接續名**——`gate.then`／`strike` 的 `then` 指到的那一段
     #    （例如聖徒化教學的 `downed`／`saintOn`／`partnerOn`）。
     #    自訂名不是打錯字，所以只要**有人指得到它**就算數；沒人指到才報。
@@ -376,10 +377,10 @@ def main():
             ok_tr = (tr in TALK_TRIGGERS
                      or (isinstance(tr, str)
                          and (tr.startswith('board:')
-                              or re.match(r'^p?hp:\d+(\.\d+)?$', tr)
+                              or re.match(r'^(hp|php|phplow):\d+(\.\d+)?$', tr)
                               or tr in thens)))
             if not ok_tr:
-                err('%s：trigger「%s」既不是節點（%s／board:N／hp:N／php:N），'
+                err('%s：trigger「%s」既不是節點（%s／board:N／hp:N／php:N／phplow:N），'
                     '也沒有任何一段的 then 指到它'
                     % (tag, tr, '／'.join(TALK_TRIGGERS)))
             if not (st.get('lines') or []):

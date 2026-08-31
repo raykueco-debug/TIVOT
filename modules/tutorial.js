@@ -241,6 +241,14 @@ export function onHpChange(){
     m=/^php:(\d+(?:\.\d+)?)$/.exec(t);
     if(m && pp!=null && pp >= +m[1]){
       if(!hit || (hit.kind==='php' && +m[1] < hit.n)) hit={ kind:'php', n:+m[1], t };
+      continue;
+    }
+    /* `phplow:N` ＝玩家血量**掉到** N% 以下（ver -672，惡夢化熔斷前的引導）。
+       ⚠ 與 `php:N` 是**相反方向**：那一支是「回到 N% 以上」（聖徒化的倒數槽往上推），
+         這一支是「抽到 N% 以下」（惡夢化的倒數槽往下抽）。同一個血條、兩個方向。 */
+    m=/^phplow:(\d+(?:\.\d+)?)$/.exec(t);
+    if(m && pp!=null && pp <= +m[1]){
+      if(!hit || hit.kind!=='phplow' || +m[1] > hit.n) hit={ kind:'phplow', n:+m[1], t };
     }
   }
   if(hit) fire(hit.t);
@@ -865,6 +873,9 @@ const GATE_ACTIONS = {
   saint:   ()=>api.activateSaint('right'),
   dual:    ()=>api.activateDual(),
   partner: ()=>api.tryPartnerActive('saint'),
+  /* 惡夢化（ver -672）：右滑發動、上滑自爆（那一段的主動技）。 */
+  nightmare:  ()=>api.nightmare && api.nightmare(),
+  niBurst:    ()=>api.nightmareActive && api.nightmareActive(),
 };
 function resolveGate(g){
   if(!g) return null;

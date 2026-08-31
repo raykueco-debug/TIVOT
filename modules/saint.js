@@ -246,7 +246,7 @@ function niDrain(amount){
      （實測 `playerHp` 掉到 0）。所以先夾住這一次能抽多少。 */
   const room = state.playerHp - 1;
   if(room<=0){ niMeltdown(); return; }
-  api.healPlayer(-Math.min(Math.abs(amount), room));
+  api.drainPlayer(Math.min(Math.abs(amount), room));
   if(state.playerHp<=1) niMeltdown();
 }
 /* 熔斷：時間到／血抽乾 → 惡夢化結束，HP 留 1。 */

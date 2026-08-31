@@ -197,10 +197,11 @@ export const GAME_CONFIG = {
     },
     /* ══ 安雅（ver -671，Ray：「從玩家跟安雅一起出旅店後，夥伴就從諾薇兒
        換成安雅了」）══
-       ⚠⚠ **她的技能組 Ray 還沒給**：這裡先沿用諾薇兒那一套（即死防禦＋生命歸還），
-         只換名字與立繪 —— 不然一換人就沒有即死防禦，劇情殺那條鏈會直接讓玩家死。
-         她真正的能力是**惡夢化**（`saint.activateNightmare`），而那一支現在由
-         腳本發動、上滑是它自己的主動技，不經過搭檔那一套。
+       ⚠⚠ **她沒有即死防禦**（ver -672，Ray：「諾薇兒現在不是夥伴，所以不會有
+         即死防禦」）—— `passive`／`active` 都不寫。那不是漏寫：即死防禦是
+         **諾薇兒**的技，換人就沒有了。
+       ⚠ 她的能力是**惡夢化**（`saint.activateNightmare`），走的是它自己那一套
+         （右滑發動、上滑自爆），不經過搭檔的被動／主動系統。
        ⚠ `siFit` 是估的（同諾薇兒那一張的作法）—— 換成她自己的選人立繪時要重量。 */
     anya: {
       name:'安雅',
@@ -209,13 +210,7 @@ export const GAME_CONFIG = {
       cutin:'ci_anya_ni',
       voice:null,
       selectVoice:'vo_life_return',
-      perk:'即死防禦（被動）＋生命歸還（主動）',
-      passive:{ key:'deathGuard', name:'即死防禦', oncePerBattle:true,
-                cutin:'cutin_nouvelle_guard', voice:'vo_death_guard',
-                desc:'受到足以致死的攻擊時，為玩家保留1hp續命。' },
-      active:{ key:'lifeReturn', name:'生命歸還', context:'saint',
-               cutin:'cutin_return', voice:'vo_life_return',
-               desc:'聖徒化期間發動：強制中止聖徒化，保留當前血量。' },
+      perk:'惡夢化（劇情）',
     },
     // ── 第二搭檔：馬季諾 Malzeno ──────────────────────────
     malzeno: {
@@ -1634,19 +1629,31 @@ export const GAME_CONFIG = {
       /* ⚠ 站位：安雅本位右 → 蕾娜讓到**左**（§6.5 的表）。 */
       talkSides:{ renna:'left', anya:'right' },
       talk:[
-        /* ⚠⚠ **順序是：一擊 → 安雅那一句 → 惡夢化的 CI → 蕾娜才反應**
-           （ver -671，Ray：「要先跑 CI 蕾娜才會說『聖徒化……？』」）。
-           所以 `nightmare:true` 掛在**這一段**（講完就發動、CI 開始播），
-           而 `then:'niCall'` 是 `afterCutin` 排的 —— CI 演完才接下一段。 */
-        { trigger:'hp:50', strikeTo:1, nightmare:true, then:'niCall', lines:[
+        /* ══⚠⚠ **不走劇情殺，改成玩家自己發動**（ver -672，Ray：「那就不要劇情殺，
+           直接介入，右滑雪鐵龍」）══
+           -671 曾經用 `strikeTo:1` 把血打到 1 再自動發動 —— 那一版有兩個問題：
+             ① 安雅不是即死防禦的擁有者（諾薇兒才是），打到 1 沒有人接得住；
+             ② 惡夢化「以現有的 hp 開始扣」在 hp=1 時當場熔斷。
+           現在是**閘門**：講完那一句就亮雪鐵龍箭，玩家右滑發動（同聖徒化的手勢）。
+           ⚠ 順序照 Ray 指定：安雅那一句 → **CI 先跑** → 蕾娜才說「聖徒化？」
+             （`gate.then` 是 `afterCutin` 排的，所以一定在 CI 之後）。 */
+        { trigger:'hp:50', lines:[
           { who:'anya', img:'tut_anya_terrifying', text:'娜塔莉！' },
-        ] },
+        ], gate:{ type:'right', immediate:true, action:'nightmare', then:'niCall' } },
         { trigger:'niCall', lines:[
           { who:'renna', img:'tut_renna_shocked', text:'那是……！' },
           { who:'renna', img:'tut_renna_shocked', text:'聖徒化？' },
           { who:'anya',  img:'tut_anya_ni',       text:'對不起……！' },
           { who:'anya',  img:'tut_anya_ni',       text:'請讓娜塔莉安息吧！' },
         ] },
+        /* ══ 熔斷前教一次「上滑自爆」（ver -672，Ray：「在熔斷前增加一個教學
+           上滑雪鐵龍發動自爆一次把娜塔莉炸死」）══
+           `phplow:20` ＝倒數槽抽到剩兩成 —— 快熔斷了才教，玩家才感覺得到那是最後手段。
+           ⚠⚠ 這兩句是**我寫的**（Ray 只寫了「教學上滑雪鐵龍發動自爆」）。 */
+        { trigger:'phplow:20', lines:[
+          { who:'anya', img:'tut_anya_ni', text:'撐不住了……' },
+          { who:'anya', img:'tut_anya_ni', text:'一起……結束吧，娜塔莉。' },
+        ], gate:{ type:'up', immediate:true, action:'niBurst' } },
       ] },
     /* ══ 飛行頁的遭遇戰（ver -382）══ 怪撞上船 → 跳來這一頁打舒爾特盤。
        ⚠⚠ 三隻怪的**敵人卡 Ray 還沒給**，所以現在**一律先借巨型聖徒**跑流程

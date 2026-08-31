@@ -86,7 +86,8 @@ export function setup(){
     tryPartnerActive: partner.tryActive,
     strike: tutorialStrike,
     strikeTo: tutorialStrikeTo,           // 一擊打到剩 N 血（ver -671，惡夢化那一場）
-    nightmare: saint.activateNightmare,   // 惡夢化（ver -671）：段落寫 `nightmare:true` 就發動
+    nightmare: saint.activateNightmare,   // 惡夢化（ver -671）：閘門 `action:'nightmare'`
+    nightmareActive: saint.nightmareActive,  // 惡夢化的自爆（ver -672）：閘門 `action:'niBurst'`
     capEnemyHp: tutorialCapEnemyHp,
     respawnThreat: defense.startCharge,   // 反擊教學：太早格擋 → 罵完重放一次反擊圈
     fillEnergy: ()=>addEnergy(100),       // 削血保底：直接填滿破防值（走滿值引導路徑）
@@ -106,7 +107,7 @@ export function setup(){
   //   saint 不直接 import 其他業務模組（維持 §2 依賴方向）。改血一律走本檔 HP API（Part A）。
   saint.init({
     // 統一改血 API（Part A）
-    healPlayer, setPlayerHpRatio,
+    healPlayer, setPlayerHpRatio, drainPlayer,
     // 教學掛鉤：倒數槽臨界攔截（引導生命歸還）＋結局通知（MB/生命歸還後的收尾台詞）
     onSaintCritical: tutorial.onSaintCritical,
     saintCriticalPending: tutorial.saintCriticalPending,   // 還有人在等 99% 那一拍嗎（ver -619）
@@ -619,6 +620,20 @@ export function healPlayer(amount){
   updateBars();
   /* 血量觸發（ver -599）：聖徒化期間那條倒數槽走的就是回血這一支 ——
      「血回到 99% 自動觸發主動技教學」靠它（`php:99`）。 */
+  tutorial.onHpChange();
+  return state.playerHp;
+}
+/* ══⚠⚠ **抽血**（惡夢化的倒數槽，ver -672）══════════════════════════════
+   ⚠ **不可以用 `healPlayer(-x)`**：那一支開頭就 `Math.max(0, amount)` ——
+     負數被吃掉，什麼事都不會發生（-671 就是這樣，血是被敵人打掉的，
+     倒數槽其實一格都沒動）。
+   ⚠ 也**不可以走 `enemyAttack`**：那是「被打到」—— 會記失誤、破無傷、震畫面。
+     惡夢化的失血是**它自己的代價**，不是敵人造成的。
+   ⚠ 夾在 1：抽到 0 是陣亡，而規格是「剩 hp1 熔斷」。 */
+export function drainPlayer(amount){
+  const cut=Math.max(0, amount||0);
+  state.playerHp=Math.max(1, state.playerHp-cut);
+  updateBars();
   tutorial.onHpChange();
   return state.playerHp;
 }
