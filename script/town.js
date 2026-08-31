@@ -1097,8 +1097,11 @@ export const TOWNS = {
               { battle:'np_claws' },
               /* ══ 戰勝（ver -624，Ray 交稿）══════════════════════════════════
                  ⚠ 接在 `{battle}` **後面**（同一段）：這樣打贏就直接接著演，
-                   不必走出教堂再回來（`resumeFrom` 會把這一段剩下的拍續播）。 */
-              nou('desperate','哈啊——哈啊——'),
+                   不必走出教堂再回來（`resumeFrom` 會把這一段剩下的拍續播）。
+                 ⚠ `checkpoint:true`（ver -653，Ray：「黑爪戰後加一個記錄點」）：
+                   這一段很長（對白 → 打一場 → 戰勝 → 娜塔莉那一幕 → 插圖），
+                   而 act 的存檔點要**整段演完**才落 —— 打完那一場就先存一次。 */
+              nou('desperate','哈啊——哈啊——', { checkpoint:true }),
               ren('worry','諾薇兒？妳還好嗎？'),
               ren('worry','竟然能把妳逼到聖徒化，剛剛那個到底是……'),
               nou('desperate','下面……'),

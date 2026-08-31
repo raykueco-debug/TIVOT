@@ -398,7 +398,7 @@ export const ART = {
        但要有人看過才算數）。三種自動量法都失敗，別再走一次：膚色偵測臉高會把手臂
        胸口腿一起算進去；窄帶取膚色跨距被髮絲汙染；眼罩當剛體尺標分不出髮帶與衣服。
        正解是渲染出來與諾薇兒並排比頭，再調這兩個值。 */
-  lunaria:{ cm:168, standCm:176, eye:32, fx:0.496, top:9, bot:1528, faceAdj:1.22,
+  lunaria:{ cm:168, standCm:176, eye:32, fx:0.496, top:9, standCm:110,bot:1528, faceAdj:1.22,
            side:'R', alt:null, base:'resources/SI/Lunaria_SI_Armed.webp',
            /* 站姿差分（地宮那一幕的收尾，ver -349）。⚠ 這兩張的檔名是 `Luna_*`，
               但畫的是**璐娜莉亞**（同一套黑白洋裝＋眼罩，與 `Lunaria_SI_Armed` 同一人）。

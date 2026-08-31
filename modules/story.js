@@ -1168,6 +1168,7 @@ function fireOneShot(line){
   const hold = (line.fx==='gunfire') ? GUNFIRE_MS : 0;
   /* 腳本備註「震動」但畫面不抖（ver -398，Ray：「我備註震動時震動」）。
      ⚠ 與 `shake` 分開：有時候要的是「手上感覺到」而不是「畫面在晃」。 */
+  if(line.checkpoint) lineCheckpoint();   // 腳本上的存檔點（ver -653，見 lineCheckpoint）
   if(line.vibrate) hap.shake();
   /* ══⚠⚠ **持續震動**（ver -638，Ray：「蕾娜的！！之前的畫面震動要持續 10 秒，
      點擊推進對話也要繼續」「直到進戰鬥停止」）══
@@ -2572,6 +2573,16 @@ function runLoadGate(sceneId){
    的作法（story 不認識存檔系統，單向資料流）。 */
 let checkpointHook = null;
 export function setCheckpointHook(fn){ checkpointHook = fn || null; }
+/* ══⚠⚠ **腳本上的存檔點**：那一拍寫 `checkpoint:true`（ver -653，Ray：「黑爪戰後
+   加一個記錄點」）══
+   ⚠ 為什麼需要它：城鎮的 act 是**整段演完**才落點（`town.enter` 的收尾），而一個 act
+   可能很長（教堂那一段是「對白 → 打一場 → 戰勝 → 娜塔莉那一幕 → 插圖」）——
+   中間想存就得有一個「這一拍存」的辦法。
+   ⚠ 走的是**同一支** `checkpointHook`（＝ `save.autoSave`，鐵律 8）：
+   讀取頁、城鎮、腳本三條路都存進同一格。
+   ⚠ 它與「一場之內不落點」（ver -639）不衝突：那一條看的是 `battleSession`，
+   而寫得出 `checkpoint:true` 的地方都是段落之間，不會在連續戰鬥中途。 */
+function lineCheckpoint(){ if(checkpointHook) try{ checkpointHook(); }catch(e){} }
 
 export function open(pos, done){
   const st=$('storyStage'); if(!st) return;
