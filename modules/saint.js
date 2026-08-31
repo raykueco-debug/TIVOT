@@ -241,8 +241,13 @@ function startNightmareMode(left){
    抽到 1 就熔斷。 */
 function niDrain(amount){
   if(!state.niMode) return;
-  const hp = api.healPlayer(-Math.abs(amount));
-  if(hp<=1) niMeltdown();
+  /* ⚠⚠ **抽到 1 就停，不可以抽死**（ver -671）：Ray 的規格是「直到剩 hp1 熔斷」——
+     直接把量交給 `healPlayer` 的話最後一下會把血扣成 0，那是**陣亡**不是熔斷
+     （實測 `playerHp` 掉到 0）。所以先夾住這一次能抽多少。 */
+  const room = state.playerHp - 1;
+  if(room<=0){ niMeltdown(); return; }
+  api.healPlayer(-Math.min(Math.abs(amount), room));
+  if(state.playerHp<=1) niMeltdown();
 }
 /* 熔斷：時間到／血抽乾 → 惡夢化結束，HP 留 1。 */
 function niMeltdown(){
