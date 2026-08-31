@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.08.31-681';
+export const VERSION = 'ver 2026.08.31-682';
 
 export const GAME_CONFIG = {
 
@@ -210,16 +210,18 @@ export const GAME_CONFIG = {
       cutin:'ci_anya_ni',
       voice:null,
       selectVoice:'vo_life_return',
-      perk:'清醒夢（被動）＋惡夢化・夢境粉碎（劇情）',
-      /* ══ 被動：清醒夢（ver -681，Ray：「被動技是 hp30% 以下普攻傷害 2 倍 5 秒，
-         CI 為 CI_Anya_Luciddream」）══
+      perk:'明晰之夢（被動）＋惡夢化・夢境粉碎（劇情）',
+      /* ══ 被動：明晰之夢（Lucid Dream；中文名 ver -682 由 Ray 定：
+         「luciddream 中文 CI 寫『明晰之夢』」）══
+         Ray（-681）：「被動技是 hp30% 以下普攻傷害 2 倍 5 秒，CI 為 CI_Anya_Luciddream」
          ⚠ 走**既有的** `lowHpBuff`（馬季諾的高裝藥彈那一支，鐵律 8）——
            邊緣觸發：跌破門檻才發動，回到門檻上才重新上膛。
          ⚠ Ray：「血量的關係原則上會在這一場 NI 結束後發動」—— 惡夢化熔斷／自爆
            收在 HP1，正好跌破 30%，所以它自然接在後面。 */
       passive:{
         key:'lowHpBuff',
-        name:'清醒夢',
+        /* ⚠ cut-in 上印的就是這個字（`partner` 讀 `passive.name`）—— 只有這一處。 */
+        name:'明晰之夢',
         en:'Lucid Dream',
         threshold:0.30,
         buffSeconds:5,
@@ -2165,7 +2167,7 @@ export const ASSETS = {
   ci_anya_ni:     "resources/CI/CI_Anya_NightmareInstall.webp",
   /* 夢境粉碎（ver -674，Ray 交件）：惡夢化期間上滑的那一發。 */
   ci_anya_dreambreaker: "resources/CI/CI_Anya_Dreambreaker.webp",
-  /* 清醒夢（ver -681，Ray 交件）：安雅的被動 —— HP≤30% 普攻加倍 5 秒。 */
+  /* 明晰之夢（ver -681 交件／-682 定中文名）：安雅的被動 —— HP≤30% 普攻加倍 5 秒。 */
   ci_anya_lucid:  "resources/CI/CI_Anya_Luciddream.webp",
   /* 賞金獵人（ver -375）：戰鬥立繪＝對話立繪的 `attack` 那張（去背，配 `bg` 用）。 */
   enemy_guild_hunter: "resources/SI/NPC_GuildHunter_SI_Attack.webp",
