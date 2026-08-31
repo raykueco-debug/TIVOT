@@ -274,8 +274,22 @@ export const CHAPTERS = [
   { id:'stage3', name:'Stage 3', sub:'北方泊地・碼頭 → 城鎮戰 → 教堂 → 聖徒化教學戰',
     stage:3, clockHour:13, named:true,
     flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open',
-           'set_sail','got_ship','dock_day2','eval_renna'],
+           'set_sail','got_ship','dock_day2'],
     enter:'town', town:'northport' },
+  /* ══ Stage 4（ver -677）══ 北方泊地**第二天早上在旅店醒來**（Ray 定的 S4 起點）。
+     ⚠ `np_day3` 要給、`np_day3_done` **不要給**：那是「閘門已經用掉了」與
+       「早上那一幕演過了」的分別 —— 給了前者才不會一進去又被閘門抓一次，
+       不給後者那一幕才演得到（那正是要測的東西）。
+     ⚠ `clockHour:8` ＝ `firstHourAt(8)`（開局是 6/13 11:00，所以是**隔天 08:00**）。
+     ⚠ 安全區旗要給：北方泊地這時已經不打仗了，不給的話走一格就被城鎮戰抓走。
+     ⚠ `node:'inn'` ＝直接站在旅店裡（那一幕就在那裡演）。 */
+  { id:'stage4', name:'Stage 4', sub:'北方泊地・第二天早上（旅店） → 自由探索 → 墓地',
+    stage:4, clockHour:8, named:true,
+    flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open',
+           'set_sail','got_ship','dock_day2',
+           'np_port_arrive','np_clear_church','np_claws_done','safehouse_northport',
+           'np_burial','np_burial_done','np_night','np_night_done','np_day3'],
+    enter:'town', town:'northport', node:'inn' },
 ];
 
 export function newRun(){
