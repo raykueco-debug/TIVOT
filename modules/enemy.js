@@ -14,7 +14,7 @@
  * ========================================================================== */
 
 import * as clock from '../script/clock.js';   // 立繪的時段差分（ver -423）
-import { GAME_CONFIG, asset } from '../config.js';
+import { GAME_CONFIG, asset, sfxGain } from '../config.js';
 import { state, initEnemyHp } from '../state.js';
 import { SFX } from '../audio.js';
 
@@ -225,6 +225,12 @@ export function loadEnemyPortrait(en){
          改一邊要改另一邊（鐵律 7 的但書，兩邊註解互指）。 */
     clearTimeout(landT);
     landT=setTimeout(()=>{
+      /* 著地的聲音（ver -641，Ray：「怪降下的那一瞬用 se_saint_install，pitch 調低 3 度」）。
+         ⚠ 借聖徒化那一支 —— 降 3 個半音之後它不再是「聖光降臨」而是「某個沉重的
+           東西落地」，同一個世界的聲音、不同的來者。
+         ⚠ 換算走 `SFX.semitone()`（鐵律 7），不要在這裡寫 2 的次方。
+         ⚠ 增益仍問 `sfxGain`（全域響度階層，§6.6）—— 變調不改響度。 */
+      SFX.play(asset('sfx_saint'), sfxGain('sfx_saint'), SFX.semitone(-3));
       if(api.screenShake) api.screenShake();
       const top=$('top');
       if(top){

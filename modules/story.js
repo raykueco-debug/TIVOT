@@ -971,7 +971,10 @@ const SE_FILES=[
   'se_flight_seagull.m4a', 'se_flight_train.mp3', 'vo_lunaMG.m4a', 'se_punch.m4a',
   'se_brickcrush.m4a',                                       // 瓦礫崩落（北方泊地教堂，ver -624）
   'se_earthquake.m4a',                                       // 地鳴（教堂那一拍的震動，ver -636）
-  'se_saint_install.m4a', 'se_saint_maxburst.m4a', 'se_steps.m4a', 'se_ui_click.m4a',
+  /* ⚠ `se_saint_maxburst` 於 ver -641 改名成 `vo_saint_maxburst`，而它**還躺在 `se/`**
+     —— 這張表是照 `vo_` 前綴推資料夾的，列進來會指到 `vo/` 而 404。
+     它本來就在 `ASSETS.se_luna_mb`（開機那一批照樣預載得到），所以這裡直接不列。 */
+  'se_saint_install.m4a', 'se_steps.m4a', 'se_ui_click.m4a',
   'se_ginclick.m4a', 'Se_Tummy.m4a', 'se_metalclip.m4a', 'se_SailorShout.mp3',
   'se_ui_kagurabell.m4a', 'se_ui_pageflip.m4a', 'se_ui_sortie.m4a', 'se_walk.m4a',
   'se_weapon_guard.m4a', 'se_weapon_mg_squall.m4a', 'se_weapon_pistol_01.m4a',

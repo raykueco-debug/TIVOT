@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.08.31-640';
+export const VERSION = 'ver 2026.08.31-641';
 
 export const GAME_CONFIG = {
 
@@ -1816,7 +1816,7 @@ export const GAME_CONFIG = {
       se_enemy_revolver:0.732, se_enemy_dagger:3.959, se_enemy_centipi:1.272,
       se_enemy_saintroar:2.910,
       /* ── 聖徒化／搭檔 ── */
-      se_saint_install:1.059, se_saint_maxburst:0.955, vo_lunamg:2.066,   // se_lunaMG → vo_lunaMG（Ray 改名，ver -508）
+      se_saint_install:1.059, vo_saint_maxburst:0.955, vo_lunamg:2.066,   // se_lunaMG → vo_lunaMG（Ray 改名，ver -508）；se_saint_maxburst → vo_saint_maxburst（ver -641）
       /* ── UI ── */
       se_ui_click:4.750, se_ui_kagurabell:2.530, se_ui_pageflip:2.359,
       se_ui_sortie:1.184, se_ginclick:1.106, se_metalclip:1.139,
@@ -2092,7 +2092,10 @@ export const ASSETS = {
      -475 曾暫借馬季諾的高裝藥彈語音，正主到了。檔名照規約轉小寫（靜態空間分大小寫）。 */
   vo_dual_torsten:   "resources/audio/vo/vo_torsten_dualcrush.m4a",
   se_luna_exc:       "resources/audio/vo/vo_luna_execution.m4a",    // 處決 EXSECUTIŌ cut-in
-  se_luna_mb:        "resources/audio/se/se_saint_maxburst.m4a",     // Maximum Burst cut-in
+  /* ⚠ ver -641 改名 `se_saint_maxburst` → `vo_saint_maxburst`（它是語音）。
+     ⚠ **檔案還躺在 `se/`**（同 `vo_lunaMG` 那一筆，等 Ray 點頭再搬 `vo/`）——
+       所以路徑照實寫，不要照 `vo_` 前綴推資料夾。 */
+  se_luna_mb:        "resources/audio/se/vo_saint_maxburst.m4a",     // Maximum Burst cut-in
   se_luna_obe:       "resources/audio/vo/vo_luna_obe.m4a",    // O.B.E. cut-in
 
   // 敵人攻擊音（依攻擊種類 kind：ult 大絕命中/不完美防禦格擋、delay 太慢、wrong 按錯）。

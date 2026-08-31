@@ -273,9 +273,16 @@ export const ART = {
      `standCm` 管**頭頂高度**（140：她坐在地上，頭比站著的人低一截）。
      ⚠ 照真人比例（坐姿頭頂約 100cm）會把她整個推到對話框底下 —— 這個舞台
        只看得到站姿的上面約六成。140 是「看得見、又明顯比別人低」的折衷。 */
-  natalia:{ cm:150, standCm:140, eye:0, fx:0.657, top:47, bot:1535,
+  /* ⚠ ver -641 換過圖並**重量**：兩張的數字與上一版對調了（`dying` 103/0.363、
+     `dead` 47/0.657）—— §5「換圖一定要重量取景值」，沿用舊值會歪一大截。
+     ⚠⚠ `standCm` 140 → **152**、`fx` **量到 0.363 但填 0.300**（Ray：「娜塔莉再往
+       右上移一些」）：`standCm` 抬高＝頭往上；`fx` 是「臉在圖上的位置」，
+       **填得比實測小＝整張圖往右移**（錨點固定在畫面左 24%，臉越靠左圖就被推得越右）。
+       ⚠ 這是**刻意偏離實測值的一個位移**，不是量錯 —— 日後重量這張圖時
+         記得把這 −0.063 的位移補回去，不然她會跳回原位。 */
+  natalia:{ cm:150, standCm:152, eye:0, fx:0.300, top:103, bot:1535,
            side:'L', alt:null, base:'resources/SI/NPC_Natalia_SI_dying.webp', expr:{
-    dead: { src:'resources/SI/NPC_Natalia_SI_dead.webp', top:103, bot:1535, fx:0.363 },
+    dead: { src:'resources/SI/NPC_Natalia_SI_dead.webp', top:47, bot:1535, fx:0.594 },
   } },
   /* 璐娜：戰鬥搭檔，劇情立繪尚未指定 —— 先指 cut-in 圖，數字**沒有量過**。
      ⚠ 真的要讓她在劇情裡站台，top/bot/fx 一定要重量（cut-in 是胸像構圖，
