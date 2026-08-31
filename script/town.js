@@ -926,6 +926,12 @@ export const TOWNS = {
        ⚠ 兩者的切換是**同一支** `story.ensureBgm` 在做（每進一個節點問一次，
          同曲重播由 `playBgm` 自己擋掉）—— 不必在轉場那幾拍手動換曲。 */
     bgm: 'suspense',
+    /* ⚠⚠ **這座城預設是劇情探索**（ver -666，Ray：「目前北泊都是插劇情探索旗」）：
+       女角不排外出行程 —— 走到哪一格都不會碰到她們。
+       ⚠ 要開放自由探索，在那一段 act 上寫 `endStoryExplore:true`（旗記在
+         `free_explore_northport`）；要再鎖回來寫 `storyExplore:true`。
+       ⚠ 帝都**不寫**這一欄 ＝ 一直都是自由探索。 */
+    storyExplore: true,
     sailFrom: { x:1480, y:190 },
     /* ══⚠⚠ 城鎮戰（ver -583，Ray 交辦）══════════════════════════════════
        「城鎮戰所以沿用原圖，但是末端只留教堂，其他末端不可進，不用顯示箭頭，
@@ -1422,16 +1428,22 @@ export const TOWNS = {
            ⚠ 鈕**還是要在**（§6.5.5：藏起來玩家只會以為壞了），用一句話擋回來。
            ⚠ 所以也不寫 `innWake` —— 這座城根本走不到「睡醒」那一步。 */
         noSleep:'現在不是睡覺的時候。',
-        /* ⚠ 三扇門都在（ver -659，Ray：「安雅跟諾薇兒的頭像也要上，但是點下去
-           都是蕾娜應門」）——她們躺在房裡，門是蕾娜開的。
-           臉照舊是各人的（`doorState`／`faceStyle` 問真正的住客），
-           只有「誰回話」被 `answerBy` 換掉。 */
-        innRoster:['RENNA','NOUVELLE','ANYA'],
-        /* 她們躺在房裡（ver -660，Ray：「安雅跟諾薇兒此時都是熄燈的」）：
-           門在、燈熄、臉照畫 —— 與「不在房裡」（`empty`，臉都不畫）是兩件事。 */
-        innAsleep:['NOUVELLE','ANYA'],
+        /* ══⚠⚠ 門的狀態（`innDoors`，由上往下取第一個 `need` 成立的）══
+           · **第三天早上之後**（ver -666，Ray：「諾薇兒在隔天就會恢復正常旅店功能，
+             但她會馬上離開去教堂，安雅則是亮燈，點她只會說『........』」）：
+               蕾娜 亮（敲門走 `rennaAlt`）／諾薇兒 **不在房裡**（去了教堂）／
+               安雅 亮，只回「........」。**沒有 `answerBy`** —— 各人回各人的。
+           · **那一夜**（ver -659／-660）：蕾娜亮、諾薇兒與安雅**熄燈**，
+             而且**都由蕾娜應門**（她們躺在房裡，門是蕾娜開的）。
+           ⚠ 三種狀態不要混用：`out` ＝不在房裡（臉不畫）、`asleep` ＝人在但睡著
+             （門在、燈熄、臉照畫）、亮＝正常。 */
+        innDoors:[
+          { need:'np_day3_done', roster:['RENNA','NOUVELLE','ANYA'],
+            out:['NOUVELLE'], say:{ ANYA:'........' } },
+          { roster:['RENNA','NOUVELLE','ANYA'],
+            asleep:['NOUVELLE','ANYA'], answerBy:'RENNA' },
+        ],
         innStage1:{ renna:'你一個大男人不方便吧？我來照顧她們兩個就好了。',
-                    answerBy:'RENNA',
                     /* 第三天出發前敲她的門（ver -664，Ray 交稿）。⚠ **無立繪**。 */
                     rennaAlt:{ need:'np_day3_done', lines:[
                       { speaker:'RENNA', text:'怎麼了？這麼快就回來了？' },

@@ -187,6 +187,28 @@ function townBgm(){
    ⚠ 收在 `siegeOn()` 這一支（鐵律 8）：城鎮戰的每一層都問它（§6.5.4.3 那張表），
      所以「不再有遭遇戰」順帶把末端解封、店開回來、時間開始走 —— 一次到位。 */
 function safehouseFlag(){ return 'safehouse_' + (townId||''); }
+/* ══⚠⚠ **劇情探索旗**（`story_explore_<地圖>`，ver -666，Ray：「劇情期間不會在
+   城鎮內遇到女角，這個要插個 flag，分自由探索跟劇情探索。目前北泊都是插劇情
+   探索旗，一樣視需求插拔」）══════════════════════════════════════════════
+   **劇情探索**＝女角不排外出行程：走到哪一格都不會碰到她們，餐飲街也不會因為
+   誰在那裡而換店。**自由探索**＝現在帝都的樣子。
+   ⚠⚠ **只有一支旗，而且它記的是「例外」**（鐵律 9：一個狀態一個擁有事件）：
+     · 城上 `storyExplore:true` ＝ 這座城**預設是劇情探索**（那是資料，不是狀態）。
+     · 旗 `free_explore_<地圖>` ＝「這座城已經開放自由探索了」，**插了才算**。
+     · 誰插的：act 上 `endStoryExplore:true`（那一段演完）。
+     · 誰拔的：act 上 `storyExplore:true`（要再鎖回劇情探索時）。
+   ⚠ 為什麼不是「進城時插一支劇情旗」：那樣**拔掉之後下次進城又會插回去**，
+     於是需要第二支「已經拔過了」的旗來記——同一個狀態兩支旗，必然有一支忘了立。
+     把旗定義成**例外**（自由探索）就只需要一支。
+   ⚠ **旗名由 `townId` 推**：插旗端與查旗端各打一個字串的話，打錯一個字就是
+     「插了但查不到」，而且不會有任何錯誤訊息。
+   ⚠ 它與**安全區旗**是兩件事：那個管「有沒有遭遇戰」，這個管「碰不碰得到女角」。
+     一座城可以是安全區但還在演劇情（北方泊地現在就是）。 */
+function freeExploreFlag(){ return 'free_explore_' + (townId||''); }
+function storyExploreOn(){
+  const T=TOWNS[townId]||{};
+  return !!T.storyExplore && !prog.hasFlag(freeExploreFlag());
+}
 function actHasBattle(a){ return !!(a && (a.lines||[]).some(l=>l && l.battle)); }
 function siegeOn(){
   const g=(TOWNS[townId]||{}).siege;
@@ -212,7 +234,9 @@ const rnd=(a,b)=> a + Math.random()*(b-a);
 function rollOuting(){
   /* ⚠ **還不能排的時候不要記鑰匙**：記了就等於「今天排過了」，而 `stage1_open`
      是白天中途才立得起來的 —— 卡著鑰匙的話那一天整天沒有人出門。 */
-  if(!townId || !st1Active()){ outKey=null; outPlan=[]; return; }
+  /* ⚠ 劇情探索期間**不排行程**（ver -666）：不是「排了再擋」——排了就會被
+     `outingDebug` 印出來、也會被餐飲街的 `whoOutAt` 讀到，那是兩個真相。 */
+  if(!townId || !st1Active() || storyExploreOn()){ outKey=null; outPlan=[]; return; }
   const key = townId + '#' + clock.dayNo();
   if(outKey===key) return;
   outKey=key; outPlan=[];
@@ -278,6 +302,15 @@ function whoOutAt(id){ const m=outNow(); for(const w in m) if(m[w]===id) return 
 /* 誰在房裡（＝門要亮頭像）。⚠ 出門與同行都是「不在房裡」——
    `doorState` 只問這一支，Ray：「出門時不顯示頭像」。 */
 function inRoom(who){ return !isOutNow(who) && who!==escortWho(); }
+/* 這一格現在的門設定（ver -666）：`innDoors` 由上往下取第一個 `need` 成立的。
+   ⚠ 沒寫就回空物件 —— 呼叫端一律 `||` 帶預設，不必判 null。 */
+function innDoorSet(n){
+  for(const d of (n && n.innDoors) || []){
+    if(d.need && !prog.hasFlag(d.need)) continue;
+    return d;
+  }
+  return {};
+}
 
 /* ══ 餐飲街開哪一家（ver -575）══════════════════════════════════════════
    Ray：「餐飲街方向會出什麼場景取決於同行女伴，或者當下是誰在那個區域」
@@ -1424,6 +1457,10 @@ export function enter(id){
              「這一段讓世界變成什麼樣」—— 語意不同，不要共用一格。
              ⚠ 同樣是**演完才記**（打輸回頭再走一次還要能打）。 */
           if(act.safehouse) prog.addFlags([safehouseFlag()]);
+          /* 劇情探索 ⇄ 自由探索（ver -666）：同樣是**演完才記**。
+             ⚠ 記的是「自由探索」那一支旗（見 `freeExploreFlag` 的說明）。 */
+          if(act.endStoryExplore) prog.addFlags([freeExploreFlag()]);
+          if(act.storyExplore)    prog.removeFlags([freeExploreFlag()]);
           /* ⚠⚠ **主線段落演完也要開「下一步」的機會**（ver -664）：`nextFavor`
              以前只掛在**進場對白**那一支上，而第三天那些戲都是 `acts` ——
              於是「應要求直接去教堂 +5」整條不會生效（實測好感是 0）。
@@ -1578,18 +1615,26 @@ function afterArrive2(n){
                                       大廳裡的時鐘會走（獨自坐坐兩小時），快照會過期，
                                       而「她在不在房裡」的真相只有 `inRoom()` 一支（鐵律 7）。 */
                                  st1: st1Active() ? {
-                                   /* ⚠ `innRoster` ＝這一格自己指定的名單（ver -656，
-                                      北方泊地：諾薇兒與安雅躺著，門口只有蕾娜）。
-                                      不寫＝照這一章入隊的所有人（`girlsHere`）。 */
-                                   roster: n.innRoster || girlsHere(),
+                                   /* ⚠⚠ **門的狀態是一張由上往下取的表**（`innDoors`，ver -666）：
+                                      每一項 `{need?, roster, asleep?, out?, answerBy?, say?}`，
+                                      第一個 `need` 成立的就是現在的樣子（同 `acts` 的取法）。
+                                      北方泊地：那一夜是「蕾娜亮／諾薇兒與安雅熄燈、都由蕾娜應門」，
+                                      隔天早上變成「蕾娜亮／諾薇兒出門去教堂／安雅亮但只說『……』」。
+                                      ⚠ 不寫 `innDoors` ＝照這一章入隊的所有人（`girlsHere`）。 */
+                                   roster: (innDoorSet(n).roster) || girlsHere(),
                                    inRoom: inRoom,
                                    /* 同行結束回房＝睡著了（ver -567）：敲門只回
                                       `innStage1.nouAsleep` 那句旁白，約不出來。 */
                                    /* ⚠ 節點可以指定「這幾位睡著了」（`innAsleep`，
                                       ver -660）：北方泊地的諾薇兒與安雅躺在房裡 ——
                                       門在、燈熄、臉照畫（見 inn 的 `doorState`）。 */
-                                   asleep: who => (n.innAsleep||[]).indexOf(who)>=0
+                                   asleep: who => (innDoorSet(n).asleep||[]).indexOf(who)>=0
                                                   || (who==='NOUVELLE' && nouAsleep),
+                                   /* 「不在房裡」也可以由資料指定（ver -666）：
+                                      諾薇兒隔天一早就去教堂了 —— 門在、燈滅、臉不畫。 */
+                                   out: who => (innDoorSet(n).out||[]).indexOf(who)>=0,
+                                   /* 這一格現在的門設定（`answerBy` / 逐人的敲門詞）。 */
+                                   doors: innDoorSet(n),
                                    /* 宵禁（ver -576）：敲門一律回 `nightRest`，約不出來。 */
                                    night: isCurfew,
                                    /* 今天已經約過她了（ver -576）：回 `dateDone`，不再出門。 */

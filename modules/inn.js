@@ -279,6 +279,9 @@ function doorState(who){
      ⚠ 排在 `inRoom` 之前：她們確實在房裡，只是叫不醒。
      ⚠ 敲門仍由 `answerBy` 那一條接手（蕾娜應門），與這裡是兩件事。 */
   if(st1){
+    /* ⚠ `out` ＝**資料指定的「不在房裡」**（ver -666）：諾薇兒隔天一早就去教堂了。
+       排在 `asleep` 之前 —— 人都不在了就談不上睡不睡。 */
+    if(st1.out && st1.out(who)) return 'empty';
     if(st1.asleep && st1.asleep(who)) return 'asleep';
     return (st1.inRoom && st1.inRoom(who)) ? 'awake' : 'empty';
   }
@@ -363,7 +366,13 @@ function knock(i){
        所以三扇門還是三個人（那正是 Ray 要的）。
      ⚠ 換在**所有分支之前**：換完之後宵禁／今天約過了／她自己那一支照舊適用，
        不必為這一條再寫一份判斷（鐵律 8）。 */
-  if(st1 && st1.data && st1.data.answerBy) who = st1.data.answerBy;
+  /* ⚠ `answerBy` 現在**跟著門的狀態走**（`st1.doors`，ver -666）：那一夜是
+     「都由蕾娜應門」，隔天早上就沒有了（安雅自己回話）。
+     ⚠ 舊的 `innStage1.answerBy` 仍然吃得到（帝都那一套沒有 `innDoors`）。 */
+  const dset = (st1 && st1.doors) || {};
+  const ansBy = dset.answerBy !== undefined ? dset.answerBy
+              : (st1 && st1.data && st1.data.answerBy);
+  if(ansBy) who = ansBy;
   /* ══ Stage 1 起的敲門（ver -461，Ray 交稿）══════════════════════════════
        蕾娜 → 「我得先寫報告，你們去吧。」
        諾薇兒（在房內）→ 好感 <10：「我想先休息一下。」；≥10：約她同行出門
@@ -394,6 +403,9 @@ function knock(i){
       if(st1.data.dateDone && host && host.say) host.say(st1.data.dateDone, nm);
       return;
     }
+    /* ⚠ 逐人的敲門詞（`innDoors[].say`，ver -666）：安雅隔天只回「……」。
+       排在所有分支之前（換完 `answerBy` 之後）—— 它就是「這個人現在會說什麼」。 */
+    if(dset.say && dset.say[who]){ if(host && host.say) host.say(dset.say[who], nm); return; }
     if(who==='RENNA'){
       /* ⚠ `rennaAlt`（ver -664）：某支旗立起來之後改講另一段（可以是好幾句）。
          北方泊地第三天出發前，她會說「先去吧，我等等去找你們」。
