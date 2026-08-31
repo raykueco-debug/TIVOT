@@ -1376,15 +1376,19 @@ export const TOWNS = {
             pri(null,'願神庇佑這些無辜的靈魂。'),
           ] },
           /* ══ 第三天：墓地 → 惡夢 → 戰鬥（ver -664，Ray 交稿）══
-             ⚠⚠ `pullSafehouse:true` ＝**特殊戰**：這張地圖插著安全區旗
-               （`safehouse_northport`），不拔的話 `actDue` 會把「有戰鬥拍的段落」
-               整段跳過（§6.5.4 的規矩）。演完再插回去。
+             ⚠⚠ `storyBattle:true` ＝**這是劇情戰，安全區旗管不著**（ver -679，Ray：
+               「stage4 在北泊的兩場都是劇情戰，不該插戰鬥探索 flag」）。
+               ⚠ -671 曾經用 `pullSafehouse:true`（拔旗→打→插回去）——**那會出事**：
+                 打輸的話這一段沒演完，旗就停在拔掉的狀態，整座城當場退回城鎮戰模式
+                 （Ray 回報：第一場戰敗選繼續之後「整個城鎮就回到戰鬥探索了」）。
+               ⚠ `pullSafehouse` 留給**特殊戰**（帝都的賞金獵人／打靶，玩家自己走
+                 過去挑的）—— 那一種「這段期間真的不是安全區」才成立。
              ⚠⚠ **紫紅負片是跨句的**（`tintHold`）：從那一拍起一路撐到進戰鬥，
                推對話不會收掉（出口：進戰鬥／換場／離場，見 story 的 `stopTint`）。
              ⚠ 「（異國語言）」照稿保留括號 —— 那是**唸不出來的話**本身，
                不是舞台指示（§6.5.1 的括號規則不適用）。
              ⚠ 三個純音效拍：台上有安雅 → 要點一下才過（ver -628），這是要的。 */
-          { flag:'np_grave_done', need:'np_day3_done', pullSafehouse:true, lines:[
+          { flag:'np_grave_done', need:'np_day3_done', storyBattle:true, lines:[
             any('cry','娜塔莉……'),
             any('sobbing','（異國語言）'),
             { speaker:'PLAYER', blank:true },

@@ -519,7 +519,18 @@ function actDue(n){
          走過去挑的，不是遭遇 —— 開演前拔旗、演完再插回去（見下方的收尾）。
        ⚠⚠ 這一條**取代**了 ver -633 的 `siege:true`（同一件事兩個開關＝鐵律 7）：
          安全區旗說了算，`siegeOn()` 也讀同一支旗（見 `safehouseFlag`）。 */
-    if(!a.pullSafehouse && prog.hasFlag(safehouseFlag()) && actHasBattle(a)) continue;
+    /* ⚠⚠ **劇情戰不受安全區旗管**（`storyBattle:true`，ver -679，Ray：「stage4 在
+       北泊的兩場都是劇情戰，不該插戰鬥探索 flag」）——
+       安全區旗擋的是**遭遇戰**（城鎮戰那一格一格的雜怪），不是劇本安排的那一場。
+       ⚠ 它與 `pullSafehouse` 是**兩件事**，不要拿後者去湊：
+         · `pullSafehouse` ＝「這一段期間這裡真的不是安全區」（帝都的賞金獵人／打靶，
+           玩家自己走過去挑的特殊戰）—— 開演前拔旗、演完插回去。
+         · `storyBattle`    ＝「這是劇本，安全區旗管不著」—— **旗一動都不動**。
+       ⚠⚠ 用 `pullSafehouse` 代替會出事：**打輸的話那一段沒演完，旗就停在拔掉的
+         狀態** —— 整座城當場退回城鎮戰模式（Ray 回報：第一場戰敗選繼續之後
+         「整個城鎮就回到戰鬥探索了」）。 */
+    if(!a.storyBattle && !a.pullSafehouse
+       && prog.hasFlag(safehouseFlag()) && actHasBattle(a)) continue;
     if(a.lines && a.lines.length) return a;
   }
   return null;
