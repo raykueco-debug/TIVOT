@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.08.31-628';
+export const VERSION = 'ver 2026.08.31-629';
 
 export const GAME_CONFIG = {
 
@@ -759,7 +759,7 @@ export const GAME_CONFIG = {
        ⚠⚠ **「用時」是含失誤／獎勵折算之後的內部值**；畫面上的「戰鬥用時」
          一律顯示**實際秒數**（ver -610，Ray 指定）。
        調大＝更嚴、調小＝更寬鬆。 */
-    timeK: 500,
+    timeK: 400,
     /* 失誤／表現折算成秒（Ray 指定）。⚠ **負數＝減秒**（獎勵）。
        ⚠ 這是「形狀」不是難度旋鈕 —— 先調 `timeK`，這一組通常不必動。
        ⚠⚠ `overkill` 每一格折抵 **0.1 秒**（ver -611，Ray：「那 ovk 改計時，
