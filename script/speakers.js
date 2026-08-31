@@ -175,7 +175,19 @@ export const ART = {
                   /* 北方泊地教堂那一段（ver -595，Ray 交稿）。`relief` 交件是 PNG，
                      依 §5 轉 WebP 之後才接；`saintinstall` 的圖早就在，只是沒進表。 */
                   relief:   { src:'resources/SI/Nouvelle_SI_relief.webp',   top:4,  bot:1530, fx:0.540 },
-                  saintinstall:{src:'resources/SI/Nouvelle_SI_SAINTINSTALL.webp',top:3,bot:1525,fx:0.505 },
+                  /* ⚠⚠ **法環不算在身高裡**（ver -635，Ray：「戰鬥中諾的 saint install
+                     立繪太小，因為你把法環也納入總高了，抓臉的大小調整」）。
+                     這張圖頭頂上有一圈金色法環，照 alpha 上下緣量會把它算進人物身高
+                     （舊值 top:3 ＝法環頂）—— 於是「鎖身高」把她整個縮小 5%，
+                     而且因為 `top` 偏高，位置也被往下壓了 73px×縮放。
+                     §6.5 早就寫了「髮飾／帽子／武器超出頭頂會污染 `top`，量的是
+                     **人物最上緣**」—— 這就是那一條。
+                     ⚠ 現行值是量**頭髮**（暗紅棕，濾掉金色法環）到**腳底**
+                     （只看畫面中央那一段，避開兩側垂下的緞帶）：76 / 1519。
+                     ⚠ `rescale:true`：這張圖把她畫得比基本立繪小一號
+                     （1443 vs 1523 px），所以縮放要用**它自己的**身高，
+                     不是基本立繪的（見 tutorial.placePortraitX 的說明）。 */
+                  saintinstall:{src:'resources/SI/Nouvelle_SI_SAINTINSTALL.webp',top:76,bot:1519,fx:0.505, rescale:true },
                   run:      { src:'resources/SI/Nouvelle_SI_Run.webp',       top:13, bot:1533, fx:0.418 },
                   cringe:   { src:'resources/SI/Nouvelle_SI_Cringe.webp',    top:5,  bot:1533, fx:0.459 },
                   scared:   { src:'resources/SI/Nouvelle_SI_Scared.webp',    top:9,  bot:1530, fx:0.397 },

@@ -807,7 +807,16 @@ function placePortraitX(el, side){
      surprise 1519），每換一次表情就縮放一次 —— 那是「同一個人忽大忽小」的另一半。
      位置照樣吃這一張自己的 top/fx（那是取景，本來就該逐張算）。 */
   const baseFr = (CFG().portraitFrames||{})[el.dataset.baseKey] || fr;
-  const s     = pxCm * fr.cm / (baseFr.bot - baseFr.top);
+  /* ⚠⚠ `rescale:true` ＝**這張差分自己就是另一個尺**（ver -635）：
+     預設拿基本立繪的像素身高當分母（ver -346：差分之間 alpha 上下緣差 ~1%，
+     每換一次表情就縮放一次＝「同一個人忽大忽小」）—— 那個規則的前提是
+     「所有差分都畫在同一個尺上，量到的差異是雜訊」。
+     但有些圖**真的**畫得比較小（諾薇兒的 SAINT INSTALL 為了容納頭上的法環，
+     人物只佔 1443px 而基本立繪是 1523px，差 5%），那就不是雜訊 ——
+     那一張要用它自己的身高，否則玩家看到的就是「她變小了」。
+     ⚠ 是**明寫的例外**不是自動判斷（門檻式的自動判斷會在雜訊邊界上跳）。 */
+  const denom = (fr.rescale ? (fr.bot - fr.top) : (baseFr.bot - baseFr.top)) || 1;
+  const s     = pxCm * fr.cm / denom;
   const h     = s * nH, w = s * nW;
   const sd    = side || (el.id==='tutCastR' ? 'right' : 'left');
   const fxc   = C.portraitFaceX;
