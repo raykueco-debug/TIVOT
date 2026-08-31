@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.08.31-688';
+export const VERSION = 'ver 2026.08.31-689';
 
 export const GAME_CONFIG = {
 
@@ -1673,7 +1673,12 @@ export const GAME_CONFIG = {
            現在是**閘門**：講完那一句就亮雪鐵龍箭，玩家右滑發動（同聖徒化的手勢）。
            ⚠ 順序照 Ray 指定：安雅那一句 → **CI 先跑** → 蕾娜才說「聖徒化？」
              （`gate.then` 是 `afterCutin` 排的，所以一定在 CI 之後）。 */
-        { trigger:'hp:50', lines:[
+        /* ⚠⚠ **觸發點由 50% 壓到 30%**（ver -689，Ray：「把夢魘化的時間壓後，最好讓
+           夢境粉碎可以爆到她只剩 5% 血」）——
+           算一下就知道為什麼是 30：夢境粉碎滿格是**敵最大 HP 的 25%**，加上惡夢化
+           期間點掉那十幾格的傷（約一成），30% 打完正好落在 5% 那條下限上。
+           50% 觸發的話爆完還剩兩成多，讀起來就不是「一擊把她打到只剩一口氣」。 */
+        { trigger:'hp:30', lines:[
           { who:'anya', img:'tut_anya_terrifying', text:'娜塔莉！' },
         ], gate:{ type:'right', immediate:true, action:'nightmare', then:'niCall', tone:'red' } },
         { trigger:'niCall', lines:[
@@ -2098,7 +2103,9 @@ export const GAME_CONFIG = {
          ⚠ 分母是**滿盤 16 格**不是「這一盤幾格」：9 格盤清完不該與 16 格盤等值。
          ⚠ ver -673 的「下一盤普攻 2 倍 ×5 秒」已由 Ray 拿掉（-685）；
            -685 的 `burstMul` 由這一組取代（-688）。 */
-      burstFloor: 0.10,
+      /* ⚠ `burstFloor` 由 0.10 降到 **0.05**（ver -689，Ray：「最好讓夢境粉碎
+         可以爆到她只剩 5% 血」）—— 它是「打不死」的下限，不是傷害本身。 */
+      burstFloor: 0.05,
       burstPct: 0.25,
       burstFullCells: 16,
       /* 自爆的名字與 cut-in（ver -674，Ray：「CI_Anya_Dreambreaker／夢境粉碎／
@@ -2175,9 +2182,12 @@ export const ASSETS = {
   /* 禍魘娜塔莉（ver -671，Ray 交件）＋惡夢化 cut-in。
      ⚠ cut-in 住在 `resources/CI/`（Ray 指定；-672 曾誤指 `partner/`）。 */
   enemy_natalia:  "resources/enemy/mon_natalia.webp",
-  ci_anya_ni:     "resources/CI/CI_Anya_NightmareInstall.webp",
+  /* ⚠⚠ `?v=2`：這兩張是**同名覆蓋**的（ver -689，Ray：「這兩個 CI 都有改」）——
+     檔名沒變、內容變了，瀏覽器照樣拿舊的那一份（§5 的老坑，娜塔莉那一組踩過
+     四版才查出來）。**一組要一起帶**，漏掉哪一張哪一張就被快取住。 */
+  ci_anya_ni:     "resources/CI/CI_Anya_NightmareInstall.webp?v=2",
   /* 夢境粉碎（ver -674，Ray 交件）：惡夢化期間上滑的那一發。 */
-  ci_anya_dreambreaker: "resources/CI/CI_Anya_Dreambreaker.webp",
+  ci_anya_dreambreaker: "resources/CI/CI_Anya_Dreambreaker.webp?v=2",
   /* 明晰之夢（ver -681 交件／-682 定中文名）：安雅的被動 —— HP≤30% 普攻加倍 5 秒。 */
   ci_anya_lucid:  "resources/CI/CI_Anya_Luciddream.webp",
   /* 賞金獵人（ver -375）：戰鬥立繪＝對話立繪的 `attack` 那張（去背，配 `bg` 用）。 */
