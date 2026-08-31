@@ -201,17 +201,22 @@ export function enemyImage(en){
      「被抹掉一半」的遮罩出場。 */
 /* ══⚠⚠ **降臨與淨化只給「禍魘」**（ver -657，Ray：「只有分類為禍魘的敵人會有
    降臨跟擊敗淨化特效」）══════════════════════════════════════════════════
-   兩個演出**共用這一份名單**（鐵律 7）：它們是同一件事的兩端 —— 禍魘從惡夢裡
-   降下來、被淨化之後散成白光。人類（賞金獵人／魔女）、靶、船、獸、聖徒系列
-   各有各的出場與死法，不該共用這一套。
+   兩個演出**共用這一份名單**（鐵律 7）：它們是同一件事的兩端 —— 從惡夢裡
+   降下來、被淨化之後散成白光。人類（賞金獵人／魔女）、靶、船、獸各有各的
+   出場與死法，不該共用這一套。
    ⚠ 判定看**敵人卡的 `kind`**（ver -423 就有的那一格，結算副標讀的也是它）——
      不要另立一個「要不要播特效」的欄位，那是同一件事的第二個真相。
    ⚠ 其餘 kind 目前**沒有專屬演出**：立繪載到就直接在那裡（維持原本的行為）。
      Ray 給了再照這裡加一支。 */
-const HARM_KINDS = { harm:1 };
-function isHarm(){
+/* ⚠⚠ **聖徒系列（`slay`）效果上等同禍魘**（ver -658，Ray 指定）——
+   牠們不是禍魘，但**降臨與淨化這兩個演出**用同一套。
+   ⚠ 這與**結算副標**的 `kind` 是兩回事：那邊 `slay` 仍是「已擊殺」、`harm` 是
+     「已淨化」（`i18n` 的 `result.winSubBy`）—— 同一格 `kind` 兩種用途，
+     各查各的表，不要為了對齊演出而去改副標。 */
+const PURIFY_KINDS = { harm:1, slay:1 };
+function isPurify(){
   const en = GAME_CONFIG.enemies[state.currentEnemyKey];
-  return !!(en && HARM_KINDS[en.kind]);
+  return !!(en && PURIFY_KINDS[en.kind]);
 }
 const RISE_DELAY_MS = 120;      // 背景先出的那一拍（讓玩家看得到「那裡本來就有個地方」）
 /* 落地的時刻（毫秒）。⚠ **必須對上 CSS `enemyRise` 的 78% 那一格**
@@ -260,7 +265,7 @@ export function loadEnemyPortrait(en){
   /* ⚠ 不是禍魘就不演降臨（ver -657）：立繪載到就直接在那裡。
      ⚠ 判定用**傳進來的這張卡**不是 `isHarm()`：`setEnemy` 在寫
        `state.currentEnemyKey` 之前就可能叫到這裡，問 state 會問到上一隻。 */
-  if(!HARM_KINDS[en && en.kind]) return void (eImg.src = enemyImage(en));
+  if(!PURIFY_KINDS[en && en.kind]) return void (eImg.src = enemyImage(en));
   eImg.onload = ()=>{ eImg.onload=null; setTimeout(rise, RISE_DELAY_MS); };
   eImg.src = enemyImage(en);
   if(eImg.complete && eImg.naturalWidth){ eImg.onload=null; setTimeout(rise, RISE_DELAY_MS); }
@@ -307,7 +312,7 @@ function spawnPurgeStars(){
      不要另立一個「要不要播特效」的欄位，那是同一件事的第二個真相（鐵律 7）。
    ⚠ 其餘 kind 目前**沒有專屬死法**（維持原本的行為）；Ray 給了再照這裡加一支。 */
 export function purgeEnemy(){
-  if(!isHarm()) return;
+  if(!isPurify()) return;
   const eImg = $('enemyImg');
   if(eImg) eImg.classList.add('enemy-purge');
   spawnPurgeStars();

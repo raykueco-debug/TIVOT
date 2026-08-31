@@ -1275,7 +1275,12 @@ combat.setStoryReturn((res)=>{
      各寫一份的話會出現「門開的時候放 A、真的開打換成 B」。 */
 function battleBgmOf(id){
   const b = id && GAME_CONFIG.battles && GAME_CONFIG.battles[id];
-  return (b && b.bgm) || 'bgm_battle';
+  if(b && b.bgm) return b.bgm;
+  /* 打靶場（`timeAttack`）一律用自己那一首（ver -658）——**規則不是逐張卡填**，
+     資料在 `config.battleBgm`（鐵律 1）。 */
+  const t = GAME_CONFIG.battleBgm || {};
+  if(b && b.timeAttack && t.timeAttack) return t.timeAttack;
+  return t.default || 'bgm_battle';
 }
 story.setBattleCue((id)=>{
   const k = battleBgmOf(id);

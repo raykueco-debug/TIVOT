@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.08.31-657';
+export const VERSION = 'ver 2026.08.31-658';
 
 export const GAME_CONFIG = {
 
@@ -108,6 +108,13 @@ export const GAME_CONFIG = {
                      flavor:'栓動、遠距、一擊定生死' },
     // 新武器：複製一段，鑰匙用「類型_武器名」（同圖檔基底名），image 指對應 ASSETS 鑰匙。
   },
+  /* ══⚠⚠ 戰鬥曲的預設（ver -658，Ray：「所有打靶遊戲都用這個音樂」）══════════
+     卡上寫了 `bgm` 就用卡上那一首；沒寫就照這張表。
+     `timeAttack` ＝**打靶場**（計時挑戰）—— 寫成**規則**不是逐張卡填：
+     日後多一座城的靶場自動吃到，不必記得補一行（鐵律 1＋8）。
+     ⚠ 決定只有 `main.js` 的 `battleBgmOf` 一支（門的 cue 與交棒兩處都問它）。 */
+  battleBgm: { default:'bgm_battle', timeAttack:'bgm_hopstep' },
+
   defaultWeapon: 'MG_Squall',   // 開局預設武器（填上面的鑰匙名）
   /* 副武器類別 → 切換鈕的徽章（ver -549，Ray 交圖：連射=Switch_MG、
      散射=Switch_Split、高爆=Switch_Hyper）。值＝ASSETS 鑰匙，weapon.js 的
@@ -1893,6 +1900,8 @@ export const GAME_CONFIG = {
       /* ⚠ **還沒量**（ver -656 新加的曲子）：1.0 ＝以母帶的響度播出。
          跑一次 `tools/audio_scan.html` 把建議值貼回來（§6.6）。 */
       peritunematerial_entangle:1.0,
+      /* ⚠ 同上，**還沒量**（ver -658 新加的曲子）。 */
+      peritune_hopstep_battle_loop:1.0,
       peritune_crimson_moon_loop:0.879,
       /* ⚠ 母帶太小聲（−26 LUFS）：×master×層之後會撞上 HTMLAudio 的 1.0 上限，
          實際只到 −26 而不是目標的 −21.9。要救得重做母帶。 */
@@ -2172,6 +2181,9 @@ export const ASSETS = {
        手機上會變成「那一段沒有音樂」。Crimson_Moon 的 m4a 版由 Ray 於 -615 補上。 */
   bgm_suspense:   "resources/audio/bgm/PerituneMaterial_Suspense6_loop.m4a",
   bgm_crimson:    "resources/audio/bgm/Peritune_Crimson_Moon_loop.m4a",
+  /* 打靶場（計時挑戰）專屬曲（ver -658，Ray：「所有打靶遊戲都用這個音樂」）。
+     ⚠ 哪一場用它**不寫在卡上**而是規則：見下面的 `battleBgm.timeAttack`。 */
+  bgm_hopstep:    "resources/audio/bgm/Peritune_Hopstep_Battle_loop.m4a",
   bgm_battle:    "resources/audio/bgm/bgm_battle.m4a",      // 戰鬥（驅逐開始插入瞬間起播）
   bgm_lose:      "resources/audio/bgm/bgm_missionfailed.m4a", // 任務失敗（驅逐失敗插入起播）
   bgm_result:    "resources/audio/bgm/bgm_result.m4a",      // 結算（驅逐完成頁被點掉後起播）
