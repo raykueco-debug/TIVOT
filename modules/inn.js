@@ -636,6 +636,16 @@ function sleepHere(){
 /* ══ 進旅店 ══ 由 `modules/town.js` 的 `afterArrive` 呼叫（進場對白演完之後）。 */
 let allSeenNow = false;         // 這一次進來時「城裡都走過了沒」（坐坐不會改變它）
 export function arrive(n, ctx){
+  /* ══⚠⚠ **走進來就把鎖歸零**（ver -667，Ray：「回房坐坐現在點了無效」）══
+     `busy` 是「這一層正在演東西」的鎖，由敲門／坐坐／睡覺的**回呼**解開 ——
+     而 `story.endAdhoc()`（換節點時一定會叫）**不會呼叫那個 done**。
+     於是「敲蕾娜的門 → 對白還沒推完就走掉」會把鎖永遠留在身上，
+     回到旅店之後兩顆行動鈕與敲門就全部按不動了（沒有任何錯誤訊息）。
+     ⚠ 走進來是大廳唯一的入口，所以這裡歸零就涵蓋所有路徑（鐵律 8）——
+       不要在每個可能被打斷的地方各補一次。
+     ⚠ 這與 §6.5「上場是延後執行的，撤場要取消掉」是同一族：
+       **任何可能不會被呼叫的回呼，都不可以是唯一的解鎖點。** */
+  busy = false;
   node = n;
   /* ⚠ 旗標名**由城鎮算好傳進來**（ver -402）：旅店已經沒有 `kind` 了，
      `kind` 版／節點版兩種只有 `town.flagOf()` 知道 —— 自己拼會拼錯城（鐵律 7）。 */
@@ -777,6 +787,7 @@ export function relayout(){
 }
 
 export function close(){
+  busy = false;   // 同 arrive：收掉大廳就把鎖歸零（ver -667）
   if(layer) layer.classList.remove('on');
   node = null;
 }
