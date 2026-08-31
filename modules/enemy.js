@@ -225,13 +225,10 @@ export function loadEnemyPortrait(en){
          改一邊要改另一邊（鐵律 7 的但書，兩邊註解互指）。 */
     clearTimeout(landT);
     landT=setTimeout(()=>{
-      /* 著地的聲音（ver -643，Ray：「原本的 se_saint_install 歸 se_saint_install，
-         降音的是怪用的，重新生一個 NIGHTMAREINCOME」）。
-         ⚠⚠ 它是**另一支檔案**（`se_enemy_nightmareincome`＝聖徒化那一支降 3 個半音
-           離線做好的），不是執行期把 `se_saint_install` 變調 —— 兩件事要分開：
-           聖徒化仍然用原音，這裡用怪自己的那一支。
+      /* 著地的聲音：`se_saint_install` **原音**（ver -649，Ray：「se_saintinstall
+         不要降 key，用原 pitch」）。-641 的執行期變調與 -643 的降調檔案都已撤掉。
          ⚠ 增益問 `sfxGain`（全域響度階層，§6.6）。 */
-      SFX.play(asset('se_enemy_nightmare'), sfxGain('se_enemy_nightmare'));
+      SFX.play(asset('sfx_saint'), sfxGain('sfx_saint'));
       if(api.screenShake) api.screenShake();
       const top=$('top');
       if(top){
