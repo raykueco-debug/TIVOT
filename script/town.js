@@ -1067,7 +1067,15 @@ export const TOWNS = {
              鐵律 9：誰插的寫在這裡；要拔只能由日後某個單一事件拔。 */
           { flag:'np_claws_done', need:'np_clear_church', safehouse:true, sides:{ NOUVELLE:'R' },
             lines:[
-              nou('relief','總算是消滅掉那些東西了……'),
+              /* ⚠⚠ 這一幕**開場就換 Suspense6**（ver -637，Ray：「總算是消滅那些東西了
+                 的那一幕開始，bgm 換成 PerituneMaterial_Suspense6_loop」）。
+                 ⚠ 為什麼要在這裡明寫：這一段多半是**打完祭壇獸直接接上的**
+                   （ver -599 的原地接續），而戰鬥交棒回來時 `story.resumeFrom` 會把
+                   **戰前那一首**接回去（＝城鎮戰的 Crisis）—— 城的 `bgm` 與
+                   `siege.bgmUntil` 都管不到那一條路。
+                 ⚠ `bgm` 是**持續狀態**，寫第一拍就好，整幕沿用（含後面娜塔莉那一段
+                   換成 `bgm_missionfailed`）。 */
+              nou('relief','總算是消滅掉那些東西了……', { bgm:'suspense' }),
               ren('thinking','……'),
               ren('thinking','……適性果然很不錯呢。'),
               { speaker:'PLAYER', blank:true },
@@ -1075,10 +1083,15 @@ export const TOWNS = {
               ren('ask','諾薇兒，還有餘力嗎？'),
               nou('runserious','還可以。傷者就交給我。'),
               ren('ask','不愧是第十二騎士團的精銳呢。那麼接下來——'),
-              /* （震動）：空畫面拍 —— 沒有台詞，所以給 auto＋shake。
+              /* （震動）：空畫面拍 —— 沒有台詞，所以給 auto。
                  ⚠ `se_earthquake`（ver -636，Ray 指定）：地鳴要與畫面震動同一拍，
-                   晚一拍就變成「先震後響」。 */
-              { speaker:'PLAYER', text:'', auto:1200, shake:true, se:'se_earthquake' },
+                   晚一拍就變成「先震後響」。
+                 ⚠⚠ `shakeHold:10000`（ver -638，Ray：「蕾娜的！！之前的畫面震動要
+                   持續 10 秒，點擊推進對話也要繼續」「直到進戰鬥停止」）——
+                   它是**跨句的狀態**不是這一拍的演出，所以推對話不會把它收掉；
+                   真正的收尾是下面那一拍 `{battle:'np_claws'}`（見 story 的 stopShake）。
+                   10 秒是保險（音檔 12 秒），正常會先被戰鬥收掉。 */
+              { speaker:'PLAYER', text:'', auto:1200, shakeHold:10000, se:'se_earthquake' },
               ren('shockedCalm','！！'),
               nou('shocked2','有什麼……要來了！'),
               { battle:'np_claws' },
@@ -1139,7 +1152,7 @@ export const TOWNS = {
                    「真的只剩同一邊可用時，換人＝抽牌輪轉」（引擎自己會滑出／滑入）。
                  ⚠ 娜塔莉倒在地上，`cm` 給的是「這張畫該佔多少公分」不是身高
                    （見 speakers.js 的說明）。 */
-              nat(null,'……', { bg:'Northport_north_BF', bgm:'bgm_missionfailed',
+              nat(null,'……', { bg:'Northport_north_BF', bgm:'failed',
                                 hide:['RENNA','NOUVELLE','ANYA_X'] }),
               grl('crying','娜塔莉……娜塔莉！'),
               nat(null,'……'),

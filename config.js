@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.08.31-637';
+export const VERSION = 'ver 2026.08.31-638';
 
 export const GAME_CONFIG = {
 
@@ -1383,7 +1383,10 @@ export const GAME_CONFIG = {
       /* 打完換回 Suspense6（ver -631，Ray：「黑爪戰完 bgm 換 Suspense6」）——
          不接回戰前那一首（Crimson Moon 是這一戰的曲子，安雅那一段要的是餘韻）。
          ⚠ 只有打贏才換（戰敗要再打一次，見 story.resumeFrom）。 */
-      bgmAfter:'bgm_suspense',
+      /* ⚠ 這裡的鍵走**劇情層那張表**（`story.js` 的 `BGM_ALIAS`／`BGM_FILES`），
+         不是 `ASSETS` 的鍵 —— `resumeFrom` 是用 `story.ensureBgm` 播的。
+         寫成 `bgm_suspense` 查不到（ver -637 抓到，-631 起一直是啞的）。 */
+      bgmAfter:'suspense',
       /* ⚠⚠ **這一場的整幕站位覆寫**（ver -619，Ray：「諾要永遠站右側」
          ＋「人物要分站兩邊，如果同邊換人要用抽牌輪轉」）。
          寫在**場**上不是逐段寫：逐段寫必然漏掉其中一段，而站位錯了就是

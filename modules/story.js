@@ -652,6 +652,13 @@ function coverOrigin(el, p){
    ⚠ 場上還沒有插圖時（第一次上圖）不走黑幕 —— 開場黑一下沒有意義，
      只會讓玩家覺得卡住。 */
 const CG_FADE_MS = 500;
+/* 現在是不是「持續震動」中（ver -638，見 renderLine 的 `shakeHold`）。 */
+let sustainShake = false;
+function stopShake(){
+  sustainShake = false;
+  const st=$('storyStage');
+  if(st){ clearTimeout(st.__shakeT); st.classList.remove('shake','hold'); }
+}
 /* 見檔頭 import 處的說明。⚠ 判「看不看得見」用實際尺寸不用 class（同 tone.js）。 */
 function toneSrcEl(){
   const cg=$('storyCg');
@@ -1054,7 +1061,10 @@ function stopFx(){
   fxTimers.forEach(clearTimeout); fxTimers=[];
   const box=$('storyFx'); if(box) box.innerHTML='';
   const st=$('storyStage');
-  if(st){ clearTimeout(st.__shakeT); st.classList.remove('shake','hold'); }
+  /* ⚠⚠ **持續抖不受 `stopFx` 管**（ver -638）：它是跨句的狀態（見 `shakeHold`），
+     而 `stopFx` 是「上一句的一次性演出收掉」—— 每推一句就把它收掉的話，
+     Ray 要的「點擊推進對話也要繼續」就永遠做不到。 */
+  if(st && !sustainShake){ clearTimeout(st.__shakeT); st.classList.remove('shake','hold'); }
 }
 function fireHits(ms){
   const box=$('storyFx'); if(!box) return;
@@ -1089,6 +1099,25 @@ function fireOneShot(line){
   /* 腳本備註「震動」但畫面不抖（ver -398，Ray：「我備註震動時震動」）。
      ⚠ 與 `shake` 分開：有時候要的是「手上感覺到」而不是「畫面在晃」。 */
   if(line.vibrate) hap.shake();
+  /* ══⚠⚠ **持續震動**（ver -638，Ray：「蕾娜的！！之前的畫面震動要持續 10 秒，
+     點擊推進對話也要繼續」「直到進戰鬥停止」）══
+     腳本寫 `shakeHold:<毫秒>`。它與 `shake` 是**兩件事**：
+       · `shake`     ＝這一拍抖一下（一次性，`stopFx` 會收掉）
+       · `shakeHold` ＝**跨句的狀態**，一路抖到「進戰鬥」或時間到為止
+     ⚠ 收尾有三個出口，全部走 `stopShake()`（鐵律 8）：
+       進戰鬥（`line.battle` 那一支）／換場（`playScene`）／離場（`close`）。
+     ⚠ 計時器**不進 `fxTimers`**：那一組是給一次性演出用的，每推一句就被清掉。 */
+  if(line.shakeHold>0){
+    hap.shake();
+    const st=$('storyStage');
+    if(st){
+      clearTimeout(st.__shakeT);
+      st.classList.remove('shake','hold'); void st.offsetWidth;
+      st.classList.add('shake','hold');
+      sustainShake = true;
+      st.__shakeT = setTimeout(stopShake, line.shakeHold);
+    }
+  }
   if(line.shake){
     hap.shake();                 // 畫面震動＝手上也震（Ray 指定）
     const st=$('storyStage');
@@ -1927,6 +1956,7 @@ function renderLine(){
   }
 
   if(line.battle){
+    stopShake();                 // 進戰鬥就停（ver -638，Ray 指定）
     if(!battleHandler){
       console.info('[story] 沒有註冊戰鬥發動器，跳過：', line.battle);
       return advance();
@@ -2202,6 +2232,7 @@ function endScene(){
 }
 
 function playScene(id){
+  stopShake();                   // 換場一定停（ver -638，持續震動的三個出口之一）
   const sc = MAIN_SCRIPT[id];
   if(!sc){ console.warn('[story] 找不到 scene：', id); close(); return; }
   cur = sc; lineIdx = 0;
@@ -2533,6 +2564,7 @@ let townOpener = null;
 export function setTownOpener(fn){ townOpener = fn || null; }
 
 export function close(opts){
+  stopShake();                   // 離場一定停（ver -638，持續震動的三個出口之一）
   clearInterval(typing); typing=null;
   pendingReveal=null;                // ⚠ 離場：還沒演的那一拍**丟掉**（同 playScene，ver -430）
   clearTimeout(waitT); waitT=null;
