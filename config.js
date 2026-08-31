@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.08.31-631';
+export const VERSION = 'ver 2026.08.31-632';
 
 export const GAME_CONFIG = {
 
@@ -1667,8 +1667,12 @@ export const GAME_CONFIG = {
          帝都廣場白天 0.542 → 1.083；安雅的立繪本身是 0.573（全場最亮的一張）。
        ⚠ 舊值是 `ref` 隱含 0.5、`gain` 0.24、夾 ±12% —— 在 0.15 的教堂只給 0.916，
          等於沒調（那就是「安雅太亮」的成因）。調小 `gain` 或收窄 `min` 可以退回去。 */
-    portraitTone: { ref:0.45, gain:0.90, min:0.78, max:1.08,
-                    satGain:0.35, satMin:0.86, satMax:1.05 },
+    /* ⚠ ver -632：`min` 0.78 → **0.85**、`satMin` 0.86 → 0.90（Ray：「這邊立繪
+       有點太暗了，調亮 30%」）—— 壓暗量由 22% 減為 **15%**（正好三成）。
+       ⚠ 這裡動的是**夾底**不是斜率：教堂那種很暗的場景本來就被夾在底，
+         中間亮度的場景走的是 `gain` 那條線，本來就沒問題，不必跟著動。 */
+    portraitTone: { ref:0.45, gain:0.90, min:0.85, max:1.08,
+                    satGain:0.35, satMin:0.90, satMax:1.05 },
     // 全域主音量（0~1）：所有 SFX/合成音/BGM 統一縮放（0.7 仍過大 → 再取其 70%＝0.49）。
     //   main.js 開機時經 SFX.setMasterVolume 套用；逐支的平衡走 fileGain（見下）。
     masterVolume:        0.49,
