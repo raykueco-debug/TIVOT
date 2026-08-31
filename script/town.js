@@ -1330,8 +1330,18 @@ export const TOWNS = {
         inn:true,
         innSpots:{ sit:{ x:0.310, y:0.630 }, sleep:{ x:0.580, y:0.550 } },
         noSleep:'現在不是睡覺的時候。',
-        innRoster:['RENNA'],
-        innStage1:{ renna:'你一個大男人不方便吧？我來照顧她們兩個就好了。' },
+        /* ⚠ 三扇門都在（ver -659，Ray：「安雅跟諾薇兒的頭像也要上，但是點下去
+           都是蕾娜應門」）——她們躺在房裡，門是蕾娜開的。
+           臉照舊是各人的（`doorState`／`faceStyle` 問真正的住客），
+           只有「誰回話」被 `answerBy` 換掉。 */
+        innRoster:['RENNA','NOUVELLE','ANYA'],
+        /* 她們躺在房裡（ver -660，Ray：「安雅跟諾薇兒此時都是熄燈的」）：
+           門在、燈熄、臉照畫 —— 與「不在房裡」（`empty`，臉都不畫）是兩件事。 */
+        innAsleep:['NOUVELLE','ANYA'],
+        innStage1:{ renna:'你一個大男人不方便吧？我來照顧她們兩個就好了。',
+                    answerBy:'RENNA' },
+        /* 這一格不教（ver -659）：一次性說明在帝都的旅店已經教過了。 */
+        innNoGuide:true,
         /* ══ 那一夜（ver -656，Ray 交稿）══════════════════════════════════
            由城上的閘門 ② 帶進來。⚠ 背景換成**房間**那一張（`Northport_Hotel_room_Night`，
            檔名自帶時段，不吃候選鏈），BGM 換 Entangle（Credit 已加）——

@@ -1538,7 +1538,11 @@ function afterArrive2(n){
                                    inRoom: inRoom,
                                    /* 同行結束回房＝睡著了（ver -567）：敲門只回
                                       `innStage1.nouAsleep` 那句旁白，約不出來。 */
-                                   asleep: who => (who==='NOUVELLE' && nouAsleep),
+                                   /* ⚠ 節點可以指定「這幾位睡著了」（`innAsleep`，
+                                      ver -660）：北方泊地的諾薇兒與安雅躺在房裡 ——
+                                      門在、燈熄、臉照畫（見 inn 的 `doorState`）。 */
+                                   asleep: who => (n.innAsleep||[]).indexOf(who)>=0
+                                                  || (who==='NOUVELLE' && nouAsleep),
                                    /* 宵禁（ver -576）：敲門一律回 `nightRest`，約不出來。 */
                                    night: isCurfew,
                                    /* 今天已經約過她了（ver -576）：回 `dateDone`，不再出門。 */

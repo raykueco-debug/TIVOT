@@ -268,7 +268,15 @@ function doorState(who){
   /* ⚠⚠ ver -575 起四人通用，而且問的是**函式**不是快照：大廳裡的時鐘會走
      （獨自坐坐兩小時），快照會過期。出門與同行都算「不在房裡」——
      Ray：「出門時不顯示頭像」，`refresh()` 看到 `empty` 就把臉與名字清掉。 */
-  if(st1){ return (st1.inRoom && st1.inRoom(who)) ? 'awake' : 'empty'; }
+  /* ⚠⚠ **睡著了＝門在、燈熄**（`asleep`，ver -660，Ray：「安雅跟諾薇兒此時
+     都是熄燈的」）：`empty` 是「不在房裡」（臉都不畫），這一個是「人在裡面但
+     睡著了」—— 臉照畫、壓暗、燈不亮。兩者不要混用。
+     ⚠ 排在 `inRoom` 之前：她們確實在房裡，只是叫不醒。
+     ⚠ 敲門仍由 `answerBy` 那一條接手（蕾娜應門），與這裡是兩件事。 */
+  if(st1){
+    if(st1.asleep && st1.asleep(who)) return 'asleep';
+    return (st1.inRoom && st1.inRoom(who)) ? 'awake' : 'empty';
+  }
   const st = stage();
   /* ⚠ 大廳可能在**還沒住下**（`none`）時就開了（獨自坐坐從初入對白就能用，ver -401）——
      那時候還沒有人回房，四扇門都該是空的。不擋的話諾薇兒的門會在她還站在旁邊時就亮著。 */
@@ -322,6 +330,10 @@ function refresh(){
    「背景晚一步載完、鈕才被擺好」那一拍（那時 refresh 已經跑過了）。 */
 function maybeGuide(){
   if(guideKey || !layer) return;
+  /* ⚠ 這一格不教（`innNoGuide`，ver -659，Ray：「旅店可以不用再跑教學了」）：
+     一次性說明是**第一次用到那個機制**時教的，玩家在帝都的旅店已經學過了。
+     ⚠ 寫在**節點**上不是全域關掉：帝都那一次還是要教（那是他第一次看到大廳）。 */
+  if(node && node.innNoGuide) return;
   const st=stage();
   /* 順序是**玩家會先碰到的那一個在前**：坐 → 睡 → 敲門。
      ⚠⚠ 要**逐個試到真的開起來為止**（ver -408 修）——不能寫成 `else if` 鏈：
@@ -337,8 +349,16 @@ function maybeGuide(){
 
 /* ══ 敲門 ══ 單句、沒有立繪（Ray：「未開門無立繪」），可以一直敲。 */
 function knock(i){
-  const who = DOORS[i];
+  let who = DOORS[i];
   if(!who || doorState(who)==='empty') return;
+  /* ⚠⚠ **這一段每一扇門都由同一個人應門**（`innStage1.answerBy`，ver -659，Ray：
+     「安雅跟諾薇兒的頭像也要上，但是點下去都是蕾娜應門」）——
+     她們躺在房裡，門是蕾娜開的。
+     ⚠ 只換「誰回話」，**不換門上的臉**：`doorState`／`faceStyle` 照舊問真正的住客，
+       所以三扇門還是三個人（那正是 Ray 要的）。
+     ⚠ 換在**所有分支之前**：換完之後宵禁／今天約過了／她自己那一支照舊適用，
+       不必為這一條再寫一份判斷（鐵律 8）。 */
+  if(st1 && st1.data && st1.data.answerBy) who = st1.data.answerBy;
   /* ══ Stage 1 起的敲門（ver -461，Ray 交稿）══════════════════════════════
        蕾娜 → 「我得先寫報告，你們去吧。」
        諾薇兒（在房內）→ 好感 <10：「我想先休息一下。」；≥10：約她同行出門
