@@ -44,6 +44,9 @@ const ATK_BUFF_SECONDS=T.atkBuffSeconds;
 const OVERKILL_LIMIT_MS=T.overkillLimitMs, OVERKILL_NEXT_DELAY_MS=T.overkillNextDelayMs;   // overkill 限時/收尾延遲
 const OVERKILL_ORDER_MULT=T.overkillOrderMult!=null ? T.overkillOrderMult : 1;   // overkill 照順序點的獎勵倍率
 const SAINT_ADVANCE_DIVISOR=T.saintAdvanceDivisor;   // 聖徒化一次「受擊」推進量＝playerMax/此值
+/* 聖徒化倒數槽的被動速度（滿槽需要幾秒）。⚠ 惡夢化把「受擊值多少秒」換算回來時要用
+   （ver -691，見 enemyAttack 的 niMode 分支）—— 與 saint.js 讀的是同一格（鐵律 7）。 */
+const SAINT_PASSIVE_HEAL_SEC=T.saintPassiveHealSec;
 
 const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;};
 
@@ -561,6 +564,24 @@ function enemyAttack(dmg, kind, saintAmt){
     enemy.showHitFx(fxKind);
     $('redFlash').style.opacity=.8; setTimeout(()=>$('redFlash').style.opacity=0,120);
     saint.saintAdvance(amt);
+    return;
+  }
+  /* ══⚠⚠ **惡夢化期間也一樣不扣「原始傷害」**（ver -691，Ray：「夢魘時被攻擊血掉得
+     好像比聖徒化快很多？讓兩邊因受擊所減少的持續時間一致」）══
+     那條倒數槽的單位雖然是血，但它量的是**時間** —— 直接扣敵人的攻擊力，
+     一發大絕（22）在 12.8 秒的槽上就吃掉 2.9 秒，而聖徒化的同一發只吃 1 秒；
+     而且它會隨**敵人的攻擊力**變動（換一隻怪手感就不一樣）。
+     ⚠ 作法：把「這一發值多少秒」交給 saint 換算（`saint.niHitSeconds`），
+       兩邊用**同一個秒數**（`saintPassiveHealSec / saintAdvanceDivisor`；格擋照舊減半）。
+     ⚠ 演出（震動／受擊特效／紅閃）與計數（penUlt…）照走 —— 只換「掉多少」。 */
+  if(state.niMode){
+    const sec = (saintAmt!=null)
+      ? (saintAmt / (state.playerMax/SAINT_PASSIVE_HEAL_SEC))   // 格擋那一半：換算回秒
+      : (SAINT_PASSIVE_HEAL_SEC / SAINT_ADVANCE_DIVISOR);
+    screenShake();
+    enemy.showHitFx(fxKind);
+    $('redFlash').style.opacity=.8; setTimeout(()=>$('redFlash').style.opacity=0,120);
+    saint.nightmareHit(sec);
     return;
   }
   SFX.hit();                         // 受擊撞擊音

@@ -258,6 +258,17 @@ function startNightmareMode(){
   if(api.hintCurrentCell) api.hintCurrentCell();
   startSaintReactTimer();
 }
+/* ══⚠⚠ **受擊：抽掉「相當於 N 秒」的槽**（ver -691，Ray：「讓兩邊因受擊所減少的
+   持續時間一致」）══
+   惡夢化的倒數槽單位雖然是血，量的卻是**時間** —— 所以受擊要換算成秒再抽，
+   不能直接扣敵人的攻擊力（那會隨敵人的攻擊力變動，而且份量與聖徒化對不起來）。
+   ⚠ 一秒值多少槽 ＝ `(niFrom − 1) / 這一段總秒數` —— 與被動抽血用的是同一條斜率
+     （那一支就是這樣算的，鐵律 7）。 */
+export function nightmareHit(sec){
+  if(!state.niMode) return;
+  const perSec = (state.niFrom - 1) / Math.max(0.001, state.niTotalMs/1000);
+  niDrain(Math.max(0, sec) * perSec);
+}
 /* 抽血。⚠ 走 combat 統一的改血 API（`hurtPlayer` 不存在 → 用 healPlayer 的負值）。
    抽到 1 就熔斷。 */
 function niDrain(amount){
@@ -388,7 +399,9 @@ export function nightmareTap(num, cell){
     cell.classList.add('wrong'); setTimeout(()=>cell.classList.remove('wrong'),300);
     state.combo=0;
     api.floatDmg(L.battle.miss,'50%','44%',true);
-    niDrain(state.playerMax/SAINT_ADVANCE_DIVISOR);
+    /* ⚠ 點錯也走**秒**（ver -691）：`playerMax/DIVISOR` 是**聖徒化那條槽**的刻度，
+       在惡夢化這條槽上代表的秒數完全不同（同 `nightmareHit` 的理由）。 */
+    nightmareHit(SAINT_PASSIVE_HEAL_SEC / SAINT_ADVANCE_DIVISOR);
     if(state.niMode) startSaintReactTimer();
   }
 }
