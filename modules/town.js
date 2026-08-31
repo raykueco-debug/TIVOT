@@ -159,10 +159,18 @@ function diningNode(){ return ((TOWNS[townId]||{}).dining||{}).node || null; }
    ⚠ 三個呼叫點（`open`／`enter`／`resumeBgm`）都問它 —— 各自讀 `T.bgm` 的話，
      打完城鎮戰之後只有其中一個會換回來。
    ⚠ 同曲重播由 `playBgm` 自己擋掉，所以每進一格問一次是安全的。 */
+/* ⚠⚠ **城鎮戰的曲子有自己的結束點**（ver -633）：`siege.bgmUntil`。
+   「地圖還在戰鬥模式」與「還在清怪」是兩件事 —— 打贏教堂 Boss（`np_clear_church`）
+   之後城裡的怪已經清完，剩下的是那一段戲＋黑爪那一場，曲子該換成 Suspense6
+   （Ray 於 ver -614 指定「結束戰鬥，到 boss 登場前用 Suspense6」）；
+   而**遇敵**要到黑爪打完才停（`siege.until`，Ray 於 -633 指定）。
+   ⚠ 沒寫 `bgmUntil` ＝ 兩者同一個結束點（其他城照舊）。 */
 function townBgm(){
   const T=TOWNS[townId]; if(!T) return null;
   const g=siegeOn();
-  return (g && g.bgm) ? g.bgm : T.bgm;
+  if(!g || !g.bgm) return T.bgm;
+  if(g.bgmUntil && prog.hasFlag(g.bgmUntil)) return T.bgm;
+  return g.bgm;
 }
 function siegeOn(){
   const g=(TOWNS[townId]||{}).siege;
@@ -437,6 +445,13 @@ function actDue(n){
     if(a.flag && prog.hasFlag(a.flag)) continue;
     if(a.need && !prog.hasFlag(a.need)) continue;
     if(a.day && dayNo() < a.day) continue;
+    /* ⚠⚠ `siege:true` ＝**這一段只在城鎮戰期間演**（ver -633，Ray：「黑爪戰後進入
+       城鎮探索模式，城鎮中不會再遇敵」）。城鎮戰的那幾格戰鬥就是掛在 `acts` 上的，
+       而 `acts` 本來不受 `siegeOn()` 管（§6.5.4.3 唯一的例外）—— 於是城鎮戰結束後
+       走進一格**還沒清掉**的街，照樣會被那隻怪攔下來，探索模式名存實亡。
+       ⚠ 寫成旗標（`unless:'np_claws_done'`）也做得到，但那要把同一個旗標名抄五次
+         （鐵律 7）；問 `siegeOn()` 是問**同一個**真相。 */
+    if(a.siege && !siegeOn()) continue;
     if(a.lines && a.lines.length) return a;
   }
   return null;
