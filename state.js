@@ -131,6 +131,7 @@ export const state = {
   niMode: false,
   niTimer: null,
   niDamage: 0,       // 惡夢化期間造成的總傷（收尾追加 20% 用，同 saintDamageDealt）
+  niCells: 0,        // 惡夢化期間清掉幾格（夢境粉碎的傷害由它換算，ver -688）
   niFrom: 0,         // 發動當下的 HP（抽血的起點）
   niTotalMs: 0,      // 這一次惡夢化總共多久（殘格數 × NI_SEC_PER_CELL）
   enemyAtkSuppressUntil: 0,

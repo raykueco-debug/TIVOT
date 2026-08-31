@@ -159,7 +159,14 @@ let lowHpArmed = true;    // 上膛旗標：HP 在門檻上方＝已上膛；跌
 let lowHpTimer = null;    // 10 秒 buff 計時器
 
 export function checkLowHpBuff(){
-  if(state.saintMode || state.over) return;   // 聖徒化/結束後不判定
+  /* ⚠⚠ **惡夢化期間不發動**（ver -688，Ray：「明晰之夢在夢魘期間不發動，如果是
+     夢魘期間 hp 降到標準以下，要等夢魘退掉才會發動」）——
+     那一段的失血是**它自己的代價**（倒數槽），不是被打到；在那裡發動等於把
+     惡夢化的代價換成獎勵。
+     ⚠ **不要在這裡把 `lowHpArmed` 用掉**：直接 return 就好 —— 上膛狀態留著，
+       惡夢化收尾時 `saint` 會再叫一次這一支，那時才真的發動（那就是「等夢魘退掉」）。
+     ⚠ 聖徒化那一條（`saintMode`）本來就在，同一個理由。 */
+  if(state.saintMode || state.niMode || state.over) return;
   const p = currentPartner();
   const pas = p && p.passive;
   if(!(pas && pas.key==='lowHpBuff')) return; // 非馬季諾：不判定（lowHpBuff 由開場重置歸位）

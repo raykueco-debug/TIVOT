@@ -37,8 +37,10 @@ const SAINT_GRID_COLS         = T.saintGridCols;         // 每列格數（4）
 const SAINT_ADVANCE_DIVISOR   = T.saintAdvanceDivisor;   // 一次受擊推進＝playerMax/此值（≈+1s）
 const SAINT_PASSIVE_HEAL_SEC  = T.saintPassiveHealSec;   // 無受擊時被動回滿約需秒數
 const SAINT_REACT_SEC_IN_SAINT= T.saintReactSecInSaint;  // 聖徒化期間放寬的每格反應時限（秒）
-const SAINT_ULT_MIN_MS        = T.saintUltMinMs;         // 期間敵大絕頻率下限
-const SAINT_ULT_MAX_MS        = T.saintUltMaxMs;         // 期間敵大絕頻率上限
+/* ⚠ ver -688 起**沒有人讀這兩個**（Ray：「把 boss 一進夢魘或聖徒就猛攻的設定
+   拿掉」）—— 留著是為了讓「日後要恢復就把 setUltRate 加回去」有東西可指。 */
+// const SAINT_ULT_MIN_MS = T.saintUltMinMs;   // 期間敵大絕頻率下限
+// const SAINT_ULT_MAX_MS = T.saintUltMaxMs;   // 期間敵大絕頻率上限
 const SAINT_COMBO_STEP        = T.saintComboStep;        // 期間每 combo 疊傷斜率（無上限）
 const SAINT_LAST_HIT_RATIO    = T.saintLastHitRatio;     // 結束前清盤 → 追加期間總傷的比例（0.20）
 /* ══ 惡夢化（Nightmare Install，ver -671，Ray 交稿）══════════════════════════
@@ -54,7 +56,8 @@ const SAINT_LAST_HIT_RATIO    = T.saintLastHitRatio;     // 結束前清盤 → 
 const NI = T.nightmare || {};
 const NI_SEC_PER_CELL = (NI.secPerCell!=null) ? NI.secPerCell : 0.8;   // 每一殘格給幾秒
 const NI_BURST_FLOOR  = (NI.burstFloor!=null) ? NI.burstFloor : 0;     // 自爆打不死：敵血最低留這個比例
-const NI_BURST_MUL    = (NI.burstMul!=null) ? NI.burstMul : 1;        // 自爆傷害＝期間累積傷害的幾倍
+const NI_BURST_PCT    = (NI.burstPct!=null) ? NI.burstPct : 0.25;      // 滿格自爆＝敵最大 HP 的幾成
+const NI_BURST_FULL   = (NI.burstFullCells!=null) ? NI.burstFullCells : 16;  // 「滿格」是幾格
 const NI_BURST_NAME   = NI.burstName  || '';       // 自爆的名字（cut-in 的字）
 const NI_BURST_CUTIN  = NI.burstCutin || '';       // 自爆的 cut-in 圖（ASSETS 鑰匙）
 
@@ -147,9 +150,10 @@ function startSaintMode(){
     if(state.cutinPlaying) return;       // 演出/教學對話暫停中凍結倒數槽（讀提示不吃聖徒化時間）
     saintAdvance(healPerTick);           // 被動推進；推滿→OBE（由 saintAdvance 內部處理）
   }, 100);
-  // 大絕頻率改密集：讀現值存自有 saintPrevUlt、經 defense 擁有者管道 setUltRate 寫入
-  state.saintPrevUlt = { min:state.ULT_MIN, max:state.ULT_MAX };
-  api.setUltRate(SAINT_ULT_MIN_MS, SAINT_ULT_MAX_MS);
+  /* ⚠⚠ **聖徒化期間不再加密大絕**（ver -688，Ray：「把 boss 一進夢魘或聖徒就猛攻的
+     設定拿掉」）——原本這裡會把 `ULT_MIN/MAX` 換成 `saintUltMinMs/MaxMs`。
+     ⚠ `restoreUltRate()` 的呼叫留著：`saintPrevUlt` 是 null 時它直接 return，
+       是冪等的保險；日後要恢復就把那兩行加回來。 */
   startSaintReactTimer();                // 起算第一格的反應時限
 }
 
@@ -209,6 +213,7 @@ function startNightmareMode(left){
   api.scheduleUlt();
   setReturnSwipe(true);                  // 上滑＝惡夢化的主動技（見 nightmareActive）
   state.niDamage = 0;
+  state.niCells  = 0;
   /* ══⚠⚠ **發動時先把血灌滿，再從滿血抽到 1**（ver -671）══
      Ray 的稿有兩句在這裡打架：「玩家受擊，hp1」→ 安雅發動惡夢化，而惡夢化
      「以現有的 hp 開始扣除，直到剩 hp1 熔斷」—— 現有的 hp 就是 1，這一段
@@ -237,8 +242,7 @@ function startNightmareMode(left){
     if(state.cutinPlaying) return;       // 演出／對話暫停中凍結（同聖徒化）
     niDrain(per);
   }, 100);
-  state.saintPrevUlt = { min:state.ULT_MIN, max:state.ULT_MAX };
-  api.setUltRate(SAINT_ULT_MIN_MS, SAINT_ULT_MAX_MS);
+  /* ⚠ 惡夢化期間同樣**不加密大絕**（ver -688，同聖徒化那一條）。 */
   /* ⚠⚠ **發動時高光第一個該點的號碼**（ver -683，Ray 指定）：惡夢化**不重建盤面**，
      所以玩家眼前是打到一半的殘局 —— 不指一下，他得先自己找「剛剛點到幾了」，
      而倒數槽已經在抽血了。
@@ -319,7 +323,11 @@ function niBurstResolve(){
     if(c.classList.contains('done')) continue;
     c.classList.add('done'); c.classList.remove('next'); api.shatterCell(c);
   }
-  const dmg = Math.round(state.niDamage * NI_BURST_MUL);
+  /* 傷害 ＝ 敵人最大 HP × `burstPct` × （期間清掉的格數 ÷ 滿盤格數）。
+     ⚠ 綁在**敵人最大 HP** 上：-685 的「期間累積傷害 ×2」在 900 血的場只打得出
+       百來點，大場等於沒有（Ray：「還是太弱」）。 */
+  const dmg = Math.round((state.enemyMax||0) * NI_BURST_PCT
+                         * Math.min(1, (state.niCells||0) / NI_BURST_FULL));
   exitNightmare();
   clearInterval(state.niTimer); state.niTimer=null;
   setReturnSwipe(false); restoreUltRate();
@@ -355,6 +363,7 @@ export function nightmareTap(num, cell){
     const d=Math.round(api.hitDamage() + state.combo*SAINT_COMBO_STEP);
     api.enemyDamage(d, true, false, 'saint');
     state.niDamage += d;
+    state.niCells++;                 // 夢境粉碎的份量由「清了幾格」換算（ver -688）
   };
   if(state.enemyHp<=0){                       // overkill：免順序追打（同聖徒化）
     hit(true);
@@ -386,6 +395,12 @@ function finishNightmare(finalHpThunk){
   $('grid').classList.remove('saint','ni'); setSaintBarFx(false);
   restoreUltRate();
   if(finalHpThunk) finalHpThunk();
+  /* ⚠⚠ **惡夢化退掉才補判被動的門檻**（ver -688，Ray：「明晰之夢在夢魘期間不發動，
+     如果是夢魘期間 hp 降到標準以下，要等夢魘退掉才會發動」）——
+     期間 `partner.checkLowHpBuff` 直接 return（上膛狀態留著），這裡叫一次它才真的發動。
+     ⚠ 要在 `finalHpThunk` **之後**：那一支才剛把結局血量設好（熔斷／自爆＝1、
+       清盤＝滿），門檻要對著結果判，不是對著過程判。 */
+  if(api.checkLowHpBuff) api.checkLowHpBuff();
   api.resetEnemyTimers();
   if(!state.over){
     /* 殘格已經全部點掉 → 交給 combat 換下一盤；還有殘格 → 就地接回正常盤面規則。 */

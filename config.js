@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.08.31-687';
+export const VERSION = 'ver 2026.08.31-688';
 
 export const GAME_CONFIG = {
 
@@ -2089,14 +2089,18 @@ export const GAME_CONFIG = {
       /* ══ 自爆（上滑主動技 · 夢境粉碎）══
          `burstFloor` ＝自爆**打不死**：敵血最低留這個比例（ver -673，Ray：
            「炸不死也沒關係，最後留個 10%」）。
-         `burstMul`   ＝傷害是**惡夢化期間累積傷害**的幾倍（ver -685，Ray：
-           「夢境粉碎太弱了，改成夢魘期間清除格數的 2 倍傷害」）。
-         ⚠⚠ 它**取代**了原本「把殘格逐一結算」的算法：那一版的份量取決於**剩幾格**
-           —— 玩家打得越好、殘格越少，自爆反而越弱，正好反過來。
-           現在看的是**期間清掉了多少**（`niDamage`），打得好就轟得重。
-         ⚠ ver -673 的「下一盤普攻 2 倍 ×5 秒」已由 Ray 拿掉（-685）。 */
+         `burstPct` / `burstFullCells` ＝傷害是**敵人最大 HP 的百分比**（ver -688，Ray：
+           「夢境粉碎還是太弱，用百分比好了，滿格 16 可以帶敵最大 hp 25% 傷害走」）：
+             傷害 ＝ 敵人最大 HP × `burstPct` × （惡夢化期間清掉的格數 ÷ `burstFullCells`）
+         ⚠⚠ **改成百分比是為了讓它在大場也有份量**：-685 的「期間累積傷害 ×2」
+           在 900 血的場只打得出百來點（累積傷害本身就只有幾十），大場等於沒有。
+           綁在敵人最大 HP 上，同一招在哪一場都是同一個「份量」。
+         ⚠ 分母是**滿盤 16 格**不是「這一盤幾格」：9 格盤清完不該與 16 格盤等值。
+         ⚠ ver -673 的「下一盤普攻 2 倍 ×5 秒」已由 Ray 拿掉（-685）；
+           -685 的 `burstMul` 由這一組取代（-688）。 */
       burstFloor: 0.10,
-      burstMul: 2,
+      burstPct: 0.25,
+      burstFullCells: 16,
       /* 自爆的名字與 cut-in（ver -674，Ray：「CI_Anya_Dreambreaker／夢境粉碎／
          這是安雅的主動技」）。
          ⚠ **不寫進她的搭檔卡的 `active`**：那一格是搭檔系統（`partner.tryActive`）
@@ -2120,6 +2124,9 @@ export const GAME_CONFIG = {
     saintPassiveHealSec: 10,    // v18b：被動回血打底——無受擊時，從現存血量回滿約需秒數（受擊會額外加速）
     saintReactSecInSaint:5,     // 聖徒化「發動期間」延時懲罰放寬（秒）：v16
     saintNoAtkAfterCutinSec: 3, // 聖徒化 cut-in 撤下後，敵不發動大絕的秒數（v16）
+    /* ⚠⚠ **這兩個已經沒有人讀了**（ver -688，Ray：「把 boss 一進夢魘或聖徒就猛攻的
+       設定拿掉」）—— 聖徒化／惡夢化期間不再改敵人的大絕頻率。欄位留著當紀錄，
+       日後要恢復就把 `saint.js` 那兩行 `setUltRate` 加回去。 */
     saintUltMinMs:       1200,  // v18：聖徒化期間敵大絕發動頻率下限（毫秒；越小越密集）
     saintUltMaxMs:       2600,  // v18：聖徒化期間敵大絕發動頻率上限（毫秒）
     saintComboStep:      1.0,   // 聖徒化每 combo 疊傷斜率（無上限）。reference 為 0.5；本專案調 1.0
