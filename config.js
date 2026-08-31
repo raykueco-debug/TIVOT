@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.08.31-669';
+export const VERSION = 'ver 2026.08.31-670';
 
 export const GAME_CONFIG = {
 
@@ -1532,10 +1532,12 @@ export const GAME_CONFIG = {
        ⚠ 已經有那把槍就不再給（見 inspector.scriptSettle）。 */
     /* ⚠⚠ `noReward`（ver -439，Ray：「靶不要給 exp 跟錢」）：這一場**不給 EXP、
          不給金錢**。它可以重打到膩 —— 給獎勵就是一台印鈔機，而且「被評一次分」
-         本來就已經免了（`EVAL_SKIP`）。
+         本來就已經免了（卡上的 `noEval`）。
        ⚠ **破紀錄的獎品照給**（`timeAttack.prize`）：那是這一場的目的，不是報酬。
        ⚠ 判定在 `modules/inspector.js` 的 `scriptSettle` 讀這一欄，不認場次名。 */
-    range_trainee: { enemy:'dart_target', record:'range', noReward:true,
+    /* ⚠ `noEval` ＝**這一場不出蕾娜的評價**（ver -670）：打靶是一直重打的計時挑戰，
+       每打一次被評一次很煩，而且那不是戰鬥。預設是**每一場都評**（見 script/evaluation.js）。 */
+    range_trainee: { enemy:'dart_target', record:'range', noReward:true, noEval:true,
                      timeAttack:{ wrongPenaltySec:3, se:'se_dart_fail', parSec:50,
                                   prizeSec:30, prize:'Shotgun_Dragon' } },
     /* ══ 北方泊地的打靶（ver -655，Ray 交稿）══════════════════════════════
@@ -1550,7 +1552,7 @@ export const GAME_CONFIG = {
        ⚠ **挑戰費 200G 寫在腳本的選項上**（`choice` 的 `cost`），不寫在卡上 ——
          「打這一場要多少錢」是那家店的規矩，不是這場戰鬥的性質；
          而且要在**玩家答應的那一刻**扣，卡上沒有那個時機。 */
-    np_range: { enemy:'dart_target', record:'np_range', noReward:true,
+    np_range: { enemy:'dart_target', record:'np_range', noReward:true, noEval:true,
                 timeAttack:{ wrongPenaltySec:3, se:'se_dart_fail', parSec:25 } },
     /* ══ 墓地那一場（ver -664，Ray：「教堂那隻中 boss，背景維持墓地」）══
        ⚠ **另開一張卡**不共用 `np_boss`：那一張是城鎮戰的收段場（`sessionEnd`、
@@ -1577,7 +1579,6 @@ export const GAME_CONFIG = {
                            開啟蕾娜評價」）。旗標由 `inspector.pickEvaluator` 在結算那一刻記，
                            所以**這一場自己那一次就評得到**，之後每一場都有（打靶除外）。
                            ⚠ 寫在卡上不寫死是哪一場（鐵律 1）：日後改成別場開啟只動這一欄。 */
-                        evalFrom:true,
                         /* ⚠⚠ 船戰的武器音**按類別**固定（ver -504，Ray：「船戰武器的
                            數值都跟著玩家現在裝備的副武器，但是音效固定用船戰的」）——
                            換上哪一把（絞肉機改、龍息、遊隼…）數值都是那把槍的，

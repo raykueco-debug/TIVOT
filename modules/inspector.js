@@ -24,7 +24,7 @@ import { showLoot } from './loot.js';
 import * as inv from '../script/inventory.js';   // 破紀錄的獎品要先問「是不是已經有了」
 import * as prog from '../script/progress.js';   // 拿到獎品記一個旗標（城鎮的一次性提示掛在它上面）
 /* 蕾娜的結算評價（ver -432）：內容全在那一檔，這裡只負責挑與演（鐵律 1）。 */
-import { EVALUATOR, EVAL_FLAG, EVAL_SKIP, LINES as EVAL_LINES,
+import { EVALUATOR, LINES as EVAL_LINES,
          BY_BATTLE as EVAL_BY_BATTLE } from '../script/evaluation.js';
 import { SPEAKERS, ART } from '../script/speakers.js';   // 評價者的顯示名與立繪＝與對白同一份
 import { state } from '../state.js';
@@ -190,20 +190,19 @@ function getInspector(bossFight){
 }
 
 // 依監察官 + 好感度挑立繪鑰匙（無 portraits 則用單張 image）
-/* ══ 蕾娜的結算評價（ver -432，Ray 交稿）══════════════════════════════════
-   「第一次艦戰後開啟蕾娜評價，之後除了打靶之外蕾娜都會在結算畫面評價。」
+/* ══ 蕾娜的結算評價（ver -432 開始；**-670 改成預設就有**）══════════════════
+   Ray：「之後的每一場戰鬥都要有蕾娜評價，沒有的是特例。」
    ⚠ **這一支是唯一的判定點**（鐵律 7）：要不要出現、出誰、講哪一句，全在這裡；
      `scriptSettle` 只問一次然後照演。
-   ⚠ 開啟的**時機寫在戰鬥卡上**（`config.battles[x].evalFrom`）不寫死是哪一場 ——
-     所以第一場艦戰自己那一次就看得到（旗標在這裡順手記下去，之後每一場都有）。
+   ⚠⚠ **不再有「開啟」的旗標**（-432 的 `eval_renna`）：那條規則已被上面那句取代，
+     留著只會讓沒跑過第一場艦戰的存檔整條看不到評價（Ray 就是這樣回報的）。
+   ⚠ 要某一場不評，寫在**那一場的戰鬥卡**上（`noEval:true`）—— 鐵律 1，
+     而且與 `EVAL_SKIP` 那張名單擇一（名單已撤，同一件事不要有兩個真相）。
    ⚠ 回傳 `{name, portrait, line}`＝ `showResultSequence` 的 `opts.speaker` 契約；
      `portrait` 是**直接路徑**不是 ASSETS 鍵（立繪住在 `speakers.js`，不進 ASSETS）。 */
 function pickEvaluator(rankKey, battleId){
   const bt = (GAME_CONFIG.battles||{})[battleId] || {};
-  /* 這一場負責開啟評價 → 現在就記，於是**這一次就評得到**（Ray：「第一次艦戰後開啟」）。 */
-  if(bt.evalFrom && !prog.hasFlag(EVAL_FLAG)) prog.addFlags([EVAL_FLAG]);
-  if(!prog.hasFlag(EVAL_FLAG)) return null;
-  if(EVAL_SKIP.indexOf(battleId) >= 0) return null;          // 打靶不評（Ray 指定）
+  if(bt.noEval) return null;                                 // 這一場不評（特例，寫在卡上）
   const who = SPEAKERS[EVALUATOR] || {};
   /* ⚠ **某一場專屬的台詞優先**（ver -597）：`evaluation.js` 的 `BY_BATTLE`
      查得到這一場就用它，查不到才回去走依章節／好感的通用表。
