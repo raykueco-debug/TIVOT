@@ -54,7 +54,7 @@ const SAINT_LAST_HIT_RATIO    = T.saintLastHitRatio;     // 結束前清盤 → 
 const NI = T.nightmare || {};
 const NI_SEC_PER_CELL = (NI.secPerCell!=null) ? NI.secPerCell : 0.8;   // 每一殘格給幾秒
 const NI_BURST_FLOOR  = (NI.burstFloor!=null) ? NI.burstFloor : 0;     // 自爆打不死：敵血最低留這個比例
-const NI_BURST_BUFF   = (NI.burstBuffSec!=null) ? NI.burstBuffSec : 0; // 自爆之後下一盤普攻加倍幾秒
+const NI_BURST_MUL    = (NI.burstMul!=null) ? NI.burstMul : 1;        // 自爆傷害＝期間累積傷害的幾倍
 const NI_BURST_NAME   = NI.burstName  || '';       // 自爆的名字（cut-in 的字）
 const NI_BURST_CUTIN  = NI.burstCutin || '';       // 自爆的 cut-in 圖（ASSETS 鑰匙）
 
@@ -311,13 +311,15 @@ export function nightmareActive(){
 }
 function niBurstResolve(){
   if(!state.niMode) return false;
-  let dmg=0;
+  /* ⚠⚠ **殘格只是清掉，不再逐格結算傷害**（ver -685，Ray：「夢境粉碎太弱了，
+     改成夢魘期間清除格數的 2 倍傷害」）——舊算法的份量取決於**剩幾格**，
+     於是玩家打得越好、殘格越少，自爆反而越弱，正好反過來。
+     現在看的是**期間清掉了多少**（`niDamage`）：打得好就轟得重。 */
   for(const c of (state.cells||[])){
     if(c.classList.contains('done')) continue;
     c.classList.add('done'); c.classList.remove('next'); api.shatterCell(c);
-    state.combo++;
-    dmg += Math.round(api.hitDamage() + state.combo*SAINT_COMBO_STEP);
   }
+  const dmg = Math.round(state.niDamage * NI_BURST_MUL);
   exitNightmare();
   clearInterval(state.niTimer); state.niTimer=null;
   setReturnSwipe(false); restoreUltRate();
@@ -338,10 +340,6 @@ function niBurstResolve(){
     playSaintCutin('execute', ()=>{ api.setPlayerHpRatio(0); api.onEnemyDefeated(); });
     return true;
   }
-  /* 自爆之後**下一盤**普攻加倍（Ray 指定）。⚠ 記成「待領」的旗標，由
-     `combat.loadBoard` 在新盤真的載好時起算 —— 馬上起算會被換盤的
-     RELOADING 空檔吃掉一秒（鐵律 8：那一支才知道新盤什麼時候開始）。 */
-  if(NI_BURST_BUFF>0 && api.armAtkBuff) api.armAtkBuff(NI_BURST_BUFF);
   finishNightmare(()=>api.setPlayerHpRatio(0));   // HP 剩 1
   return true;
 }
