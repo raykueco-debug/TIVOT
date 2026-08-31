@@ -285,7 +285,7 @@ export const ART = {
             `fx` 是「臉在那張圖裡的位置」，兩張圖各有各的實測值，抄同一個數字
             會讓她在斷氣那一拍橫向跳一大格。 */
   natalia:{ cm:150, standCm:152, eye:0, fx:0.363, fxShift:0.012, top:103, bot:1535,
-           side:'L', alt:null, base:'resources/SI/NPC_Natalia_SI_dying.webp', expr:{
+           side:'L', alt:null, base:'resources/SI/NPC_Natalia_SI_dying.webp?v=2', expr:{
     /* ⚠⚠ **`fx` 是「臉在**這張圖**裡的橫向位置」，不是螢幕位置** —— 所以**不能抄**。
        引擎做的是 `left = 畫面錨點 − 縮放 × fx × 圖寬`：只要每張圖的 `fx` 各自量對，
        兩張差分的**臉**就會落在同一個螢幕位置，圖自己會左右挪。
@@ -307,7 +307,13 @@ export const ART = {
        所以不寫就是沿用（`fx` / `fxShift` / `top` / `bot` / `cm` / `standCm` 一併）。
        ⚠ 不要「各自量、再想辦法對齊」（-641~-648 繞的那一大圈）：
          對躺著的圖逐張量臉，反而製造出要對齊的問題。 */
-    dead: { src:'resources/SI/NPC_Natalia_SI_dead.webp' },
+    /* ⚠⚠ `?v=2`（ver -650）：這兩張圖被**同名覆蓋**過（美術改圖直接蓋回原檔名）——
+       瀏覽器會沿用舊的快取，於是換到 `dead` 時畫面上還是舊那一張，看起來像
+       「dead 出不來」（Ray 回報，實測：不帶 cache-buster 抓到的 `dead.webp`
+       與 `dying` 的像素指紋完全相同；帶了就正常）。
+       ⚠ **同名覆蓋的圖一定要動這個號碼**，不然只有清快取的人看得到新圖。
+       ⚠ 兩張都要帶（`base` 與這一張），少一張就少一張被快取住。 */
+    dead: { src:'resources/SI/NPC_Natalia_SI_dead.webp?v=2' },
   } },
   /* 璐娜：戰鬥搭檔，劇情立繪尚未指定 —— 先指 cut-in 圖，數字**沒有量過**。
      ⚠ 真的要讓她在劇情裡站台，top/bot/fx 一定要重量（cut-in 是胸像構圖，
