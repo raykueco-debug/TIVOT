@@ -49,6 +49,14 @@ export const SPEAKERS = {
   HUNTER:   { name:'獵人',   art:'hunter'  },
   /* 槍店店主（ver -377）。同樣站右。 */
   GUNSMITH: { name:'店主',   art:'gunsmith' },
+  /* ══ 北方泊地的兩位店主（ver -655，Ray 交件）══════════════════════════
+     ⚠⚠ **顯示名一樣（「店主」）但是不同的人**，所以是**不同的 id** ——
+       art 不同就不能共用一個 id（同 PRIEST_X／OFFICER 的理由的反面：
+       那兩組是「同一個人兩個顯示名」，這一組是「同一個顯示名兩個人」）。
+     ⚠ 城鎮節點上寫 `keeperWho:'GUNSMITH_NP'`／`'SHOPKEEP_NP'`，
+       商店那張單子的店主圖另外寫在 `config.shop.shops[…].art`（兩處都要指對）。 */
+  GUNSMITH_NP: { name:'店主', art:'gunsmith_np' },
+  SHOPKEEP_NP: { name:'店主', art:'grocer_np'   },
   COUNTER:  { name:'櫃台',   art:'counter' },
   /* 旅店前台（ver -392）。同樣站右（玩家的同伴在左、對面的人在右）。 */
   CLERK:    { name:'前台',   art:'clerk' },
@@ -449,6 +457,24 @@ export const ART = {
      （`tools/measure_si.py`）。 */
   gunsmith:{ cm:175, eye:32, fx:0.476, top:6, bot:1531,
            side:'R', alt:null, base:'resources/SI/NPC_Capital_Gunstore_SI.webp', expr:{} },
+  /* ══ 北方泊地的兩位店主（ver -655，Ray 交件）══════════════════════════
+     ⚠ 身高是**估的**（槍匠 176＝壯漢、雜貨舖 165＝中年婦人），同 hunter／gunsmith
+       那幾筆的作法 —— 日後有設定改 cm 即可，取景值不必重量。
+     ⚠⚠ 槍匠**不要填超過 178**（現行最高的獵人）：`CAST_TALL` ＝ 全體 `cm` 的最大值，
+       而每公分像素是拿它算的（`story.js` 的 `pxCm`）—— 填 180 等於把**所有人**
+       一起縮小 1.1%，而他自己變成「頂到框」的那一位（實測就是這樣）。
+       一個 NPC 的估身高不該改寫整個劇組的尺。
+     ⚠⚠ 槍匠的 `fx` **不是 `tools/measure_si.py` 印的那個**（0.635）：那支工具量的是
+       「頭頂往下 8% 那一帶的 alpha 重心」，而他把**長槍扛在肩上**，槍管橫過那一帶
+       一路伸到 x≈990 —— 重心整個被拉到右邊，套上去人會偏出畫面半個身子。
+       0.547 是**只取「含最上緣那一團」的連續區段**（＝頭）重算的。
+       這與 §6.5「髮飾/武器超出頭頂會污染 `top`」是同一族的坑，只是污染的是 `fx`。
+     ⚠ 兩張都是全身圖（縱向佔 98.5%／98.7%），所以 `top`/`bot` 可以當身高用。
+     ⚠ 站**右**：玩家的同伴在左、對面的人在右（同所有城鎮 NPC）。 */
+  gunsmith_np:{ cm:176, eye:32, fx:0.547, top:11, bot:1524,
+           side:'R', alt:null, base:'resources/SI/NPC_Gunsmith_SI_Northport.webp', expr:{} },
+  grocer_np:{ cm:165, eye:32, fx:0.515, top:15, bot:1531,
+           side:'R', alt:null, base:'resources/SI/NPC_Grocery_SI_Northport.webp', expr:{} },
   /* 公會櫃台（ver -375）。身高同樣是估的（168）。 */
   counter:{ cm:168, eye:32, fx:0.511, top:4, bot:1526,
            side:'R', alt:null, base:'resources/SI/GuildCounterCA_SI.webp', expr:{} },

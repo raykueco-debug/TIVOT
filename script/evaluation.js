@@ -32,7 +32,7 @@ export const EVAL_FLAG = 'eval_renna';
 
 /* **不評的場次**（`config.battles` 的鍵）。Ray：「除了打靶之外」——
    打靶場是一直重打的計時挑戰，每打一次被評一次會很煩，而且那不是戰鬥。 */
-export const EVAL_SKIP = ['range_trainee'];
+export const EVAL_SKIP = ['range_trainee', 'np_range'];   // ver -655：北方泊地那一場也是打靶
 
 /* ⚠ 第一批台詞用的是**試玩版的評分公式**（Ray 指定）＝ `config.rating` 那一套
    （`inspector.evaluate()`），S/A/B/C/D/E 六階。這裡不另訂分數，只認等第。 */

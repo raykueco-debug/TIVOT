@@ -2323,6 +2323,9 @@
     background:rgba(10,8,14,.86);border:1px solid var(--gold-dim);border-radius:10px;
     -webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);}
   #choiceSheet .ch-opt:active{background:rgba(212,169,74,.22);}
+  /* 錢不夠的選項（ver -655）：**留在原地變暗**，不要藏起來 ——
+     藏掉的話玩家不知道自己少了什麼（§6.5.5「還不能做不要靠藏起鈕擋」）。 */
+  #choiceSheet .ch-opt.off{opacity:.42;filter:grayscale(1);pointer-events:none;}
   /* 鍵盤選到的那一項（ver -427）。⚠ 要**按過鍵**才會出現（見 story.js 的 `armed`）——
      純觸控的玩家不會憑空多出一個「已選取」的框，而且第一下空白只是把它亮出來，
      不會直接選下去。 */

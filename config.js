@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.08.31-654';
+export const VERSION = 'ver 2026.08.31-655';
 
 export const GAME_CONFIG = {
 
@@ -454,6 +454,17 @@ export const GAME_CONFIG = {
       gunstore: [ { id:'Shotgun_Dragon', n:1 },
                   { id:'MG_Squall_Kai',  n:1 },
                   { id:'Rifle_Shahin',   n:1 } ],
+      /* ══ 北方泊地的兩家店（ver -655，Ray：「兩間店目前都與帝都功能相同」）══
+         ⚠⚠ **貨單分開記帳**，不共用帝都那兩份：`script/shopstock.js` 的鑰匙就是
+           這裡的鍵 —— 共用的話在帝都買空的東西，飛到北方泊地也是空的（那是兩家店）。
+         ⚠ 內容照抄帝都（Ray 指定「功能相同」）。店主台詞說「物資都被徵調了、
+           貨品有限」是**氣氛**，要真的砍貨單等 Ray 指定砍哪幾樣。 */
+      np_grocery:  [ { id:'milk',     n:8 },
+                     { id:'cheese',   n:5 },
+                     { id:'lime_rum', n:3 } ],
+      np_gunstore: [ { id:'Shotgun_Dragon', n:1 },
+                     { id:'MG_Squall_Kai',  n:1 },
+                     { id:'Rifle_Shahin',   n:1 } ],
     },
     /* 每家店的長相（ver -377）。沒登記的店走預設（買／賣兩頁、雜貨舖的店主圖）。
          title  頁首的字
@@ -472,6 +483,15 @@ export const GAME_CONFIG = {
                   tabs:['buy','sell','mod'], tabName:{ buy:'買武器', sell:'賣武器', mod:'武器改裝' },
                   only:'weapon', compare:true,
                   challenge:'range_trainee', challengeLabel:'射擊挑戰' },
+      /* ══ 北方泊地的兩家店（ver -655）══ 功能與帝都相同，差別只有**店主圖**與
+         **貨單的鑰匙**（見上面 stock 的說明）。⚠ 射擊挑戰指的是這座城自己那一場
+         （`np_range`，25 秒、要 200G）—— 最佳紀錄與帝都那一場也是分開的。 */
+      np_grocery:  { title:'雜貨舖', art:'resources/SI/NPC_Grocery_SI_Northport.webp',
+                     tabs:['buy','sell'] },
+      np_gunstore: { title:'武器店', art:'resources/SI/NPC_Gunsmith_SI_Northport.webp',
+                     tabs:['buy','sell','mod'], tabName:{ buy:'買武器', sell:'賣武器', mod:'武器改裝' },
+                     only:'weapon', compare:true,
+                     challenge:'np_range', challengeLabel:'射擊挑戰' },
     },
   },
 
@@ -1495,6 +1515,20 @@ export const GAME_CONFIG = {
     range_trainee: { enemy:'dart_target', record:'range', noReward:true,
                      timeAttack:{ wrongPenaltySec:3, se:'se_dart_fail', parSec:50,
                                   prizeSec:30, prize:'Shotgun_Dragon' } },
+    /* ══ 北方泊地的打靶（ver -655，Ray 交稿）══════════════════════════════
+       「咱這一區的記錄可是25秒，破得了的話……現在我也拿不出像樣的東西，
+         就免費幫你調校一下那兩把槍吧！」「挑戰費200G喔。」
+       ⚠⚠ 這一場**只有一條門檻**（25 秒）：Ray 的稿只有「挑戰成功／挑戰失敗」
+         兩支台詞，所以用 `parSec` 就夠了 —— **不寫 `prizeSec`/`prize`**。
+         帝都那一場的「過關但沒獎品」中間帶在這裡不存在。
+       ⚠ 獎品不是道具而是**主槍的強化**（見 tuning.gunTune）：由腳本那一拍
+         `flags:['np_gun_tuned']` 記下去，不走 `timeAttack.prize`（那一欄只發道具）。
+       ⚠ `record` 與帝都那一場**分開**（'np_range'）：那是兩間店各自的紀錄。
+       ⚠ **挑戰費 200G 寫在腳本的選項上**（`choice` 的 `cost`），不寫在卡上 ——
+         「打這一場要多少錢」是那家店的規矩，不是這場戰鬥的性質；
+         而且要在**玩家答應的那一刻**扣，卡上沒有那個時機。 */
+    np_range: { enemy:'dart_target', record:'np_range', noReward:true,
+                timeAttack:{ wrongPenaltySec:3, se:'se_dart_fail', parSec:25 } },
     /* ══ 飛行頁的遭遇戰（ver -382）══ 怪撞上船 → 跳來這一頁打舒爾特盤。
        ⚠⚠ 三隻怪的**敵人卡 Ray 還沒給**，所以現在**一律先借巨型聖徒**跑流程
          （同打靶先用訓練用聖徒的作法）。卡到位之後只要改 `enemy` 這一欄。
@@ -1687,6 +1721,15 @@ export const GAME_CONFIG = {
 
     // 傷害
     dmgBase:             3,     // 基礎單發傷害
+    /* ══⚠⚠ **主槍的永久強化**（ver -655，Ray 的北方泊地槍店稿：「膛壓增強了，
+         後座力也會強一點」）══
+       `flag` 立起來之後，`dmgBase` 永久 +`dmgBase` 這麼多（`combat.hitDamage` 唯一那一處在讀）。
+       ⚠ 它是**一輪遊戲內**的狀態：旗標走 `progress`，所以 `newRun()` 會清、讀檔會跟著回去（§6.9）。
+       ⚠ **試玩版（出陣）吃不到**：那條路不跑主線，旗標永遠不存在 —— 與 `weapons[].story`
+         那條「本篇與試玩版是兩套數值」同一個原則，只是這一支是用旗標分的。
+       ⚠⚠ **+1 是我填的**（Ray 只寫了台詞沒給數字）：基礎 3 → 4，連擊滿時 7 → 8
+         （整體約 +20%）。要調就只動這一個數字。 */
+    gunTune: { flag:'np_gun_tuned', dmgBase:1 },
     dmgPerCombo:         0.2,   // 每層連擊加成
     dmgComboCap:         20,    // 連擊加成計入上限
     dmgDualMult:         0.7,   // 雙槍傷害倍率（<1=安全牌）

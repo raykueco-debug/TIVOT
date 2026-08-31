@@ -36,6 +36,7 @@ import { matchPortraits } from './tone.js';
 import * as settings from './settings.js';   // 選單（音量／自動播放速度）；葉節點，只依賴 audio
 import * as hap from './haptics.js';        // 震動（ver -398）
 import * as clock from '../script/clock.js';   // 時段（插圖／背景的差分候選鏈，ver -427）
+import * as inv from '../script/inventory.js';  // 選項的挑戰費（ver -655）：葉節點，只依賴 config
 
 const $ = id => document.getElementById(id);
 
@@ -1979,6 +1980,15 @@ function renderLine(){
     lineIdx=at; return renderLine();
   }
 
+  /* ══ 這一段到此為止（`{ end:true }`，ver -655）══════════════════════════
+     分歧的**收尾**：一條支線講完了，而它後面還躺著另一條支線的拍。
+     ⚠ 為什麼需要它：`goto`／`label` 只做得到「跳到某一拍」，做不到「結束」——
+       兩條支線沒有共用結尾時（北方泊地槍店：拒絕／失敗一句話就結束，
+       挑戰成功還有十幾拍），先講完的那一條就會**掉進**另一條裡。
+       以前的作法是 `goto` 到一個不存在的 label（靠 `endScene` 的退路收場）——
+       那會印一行「沒有這個 label」的警告，把真正的打錯字淹掉。 */
+  if(line.end){ applyPersist(line); return endScene(); }
+
   /* ══ 選項（ver -396）══ 這一拍是**閘門**：列出幾個選擇，點下去跳到那個 `label`。
      ⚠ 不出對話框 —— 前一句就是問句，選項是**回答**，再包一層框只會多一次點擊。 */
   if(line.choice){
@@ -2882,11 +2892,16 @@ function openHint(spec, done){
 /* 選項面板開著時的鍵盤操作（ver -427）。⚠ 由 `openChoice` 掛上、選完清掉 ——
    鍵盤那一支只要問「現在有沒有選項在等」，不必自己去翻 DOM。 */
 let choiceNav=null;
+/* 這個選項現在按不按得動（ver -655）：`cost` ＝ 選下去要付的錢（挑戰費、過路費…）。
+   ⚠ 錢在**按下去那一刻**扣（見下面的 click），不是演到那一拍就扣 ——
+     玩家還沒答應。 */
+function choiceAfford(o){ return !o || !o.cost || inv.getMoney() >= (o.cost|0); }
 function openChoice(opts, pick){
   if($('choiceSheet') || !opts || !opts.length) return;
   const ov=document.createElement('div'); ov.id='choiceSheet';
   ov.innerHTML='<div class="ch-panel">'
-    + opts.map((o,i)=>'<button class="ch-opt" type="button" data-i="'+i+'">'
+    + opts.map((o,i)=>'<button class="ch-opt'+(choiceAfford(o)?'':' off')+'" type="button" data-i="'+i+'"'
+                    + (choiceAfford(o)?'':' disabled')+'>'
                     + String(o.text||'').replace(/</g,'&lt;')+'</button>').join('')
     + '</div>';
   document.body.appendChild(ov);
@@ -2897,13 +2912,16 @@ function openChoice(opts, pick){
     try{ SFX.menuClick(); }catch(_){}
     choiceNav=null;
     const o=opts[+b.dataset.i]||{};
+    /* 挑戰費：**按下去才扣**（ver -655）。⚠ 錢不夠的選項本來就 disabled，
+       這裡再擋一次是保險（鍵盤那條路也走同一顆鈕的 click）。 */
+    if(o.cost && !inv.spendMoney(o.cost|0)) return;
     ov.classList.remove('on');
     setTimeout(()=>{ if(ov.parentNode) ov.parentNode.removeChild(ov); pick&&pick(o.goto); }, 180);
   }));
   /* 鍵盤：W/S（或上下鍵）移動、空白／Enter 確定（ver -427，Ray：「空白鍵推進、選擇」）。
      ⚠ 確定走的是**那顆鈕自己的 click**（鐵律 8）—— 不要另寫一條選定的路，
        不然音效、關閉動畫、`pick` 的呼叫時序會有兩份。 */
-  const btns=[...ov.querySelectorAll('.ch-opt')];
+  const btns=[...ov.querySelectorAll('.ch-opt:not([disabled])')];
   let sel=0, armed=false;
   const paint=()=>btns.forEach((b,i)=>b.classList.toggle('sel', armed && i===sel));
   /* ⚠⚠ **第一下空白只是「亮出游標」，不會選下去**：玩家是一路按空白推對白進來的，

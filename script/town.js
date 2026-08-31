@@ -63,6 +63,56 @@ const prx = N('PRIEST_X'), pri = N('PRIEST');
 /* 北方泊地娜塔莉那一幕（ver -636）。安雅在報上名字之前有兩個顯示名：
    抱著娜塔莉哭的時候是「少女」、答話時是「？？？」，之後才是「安雅」（見 speakers.js）。 */
 const nat = N('NATALIA'), grl = N('GIRL'), anx = N('ANYA_X'), any = N('ANYA');
+/* 北方泊地的兩位店主（ver -655）。⚠ 與帝都那兩位是**不同的人**（不同立繪），
+   所以是不同的 speaker id —— 顯示名一樣都是「店主」（見 speakers.js）。 */
+const gunN = N('GUNSMITH_NP'), groN = N('SHOPKEEP_NP');
+
+/* ══⚠⚠ 北方泊地槍店的射擊挑戰（ver -655，Ray 交稿）══════════════════════
+   **這一段只寫一次**（鐵律 7）：初次進店的 `lines` 與店裡「射擊挑戰」鈕的
+   `challengeLines` 用的是同一份 —— 兩邊各抄一份的話，改台詞一定只改到一邊。
+   ⚠ 分歧：接受→`np_go`／拒絕→`np_no`；**挑戰失敗與拒絕共用同一句**
+     （Ray 的稿兩處都是「可惜！下次再挑戰吧！」），所以 `onLose` 指的是同一個 label。
+   ⚠ `{ end:true }` ＝拒絕／失敗那一條到此為止：它後面躺著挑戰成功那十幾拍，
+     沒有它就會掉進去（見 modules/story.js 的說明）。
+   ⚠ 挑戰費 **200G 扣在選項上**（`cost`）：錢不夠時那個選項是暗的、按不動。
+   ⚠ 「25 秒」是 `config.battles.np_range.timeAttack.parSec`（改那個數字要改這一句，
+     兩邊註解互指）。
+   ⚠ 強化的旗標記在**「嗯……完成了。」**那一拍（`flags` 是演到就記）——
+     不記在戰勝那一拍：他還沒動手。 */
+const NP_RANGE_SEQ = [
+  gunN(null,'喔！想打靶嗎？咱這一區的記錄可是25秒，破得了的話……'),
+  gunN(null,'現在我也拿不出像樣的東西，就免費幫你調校一下那兩把槍吧！'),
+  gunN(null,'挑戰費200G喔。'),
+  { choice:[ { text:'接受', goto:'np_go', cost:200 },
+             { text:'拒絕', goto:'np_no' } ] },
+  /* —— 拒絕／挑戰失敗（同一句，Ray 的稿）—— */
+  Object.assign(gunN(null,'可惜！下次再挑戰吧！'), { label:'np_no' }),
+  { end:true },
+  /* —— 接受 —— */
+  Object.assign(gunN(null,'好！放開手腳上吧！'), { label:'np_go' }),
+  { battle:'np_range', onLose:'np_no' },
+  /* —— 挑戰成功 —— */
+  gunN(null,'真是驚人啊！'),
+  gunN(null,'依照約定，我來幫你做些強化。'),
+  /* 三個音效各一拍（Ray：「依序 se_ui_click, se_ginclick, se_ui_sortie」）。
+     ⚠ 沒有台詞就一定要給 `auto`（沒有框就沒有 ▼，§6.5）；立繪維持在台上。 */
+  { speaker:'GUNSMITH_NP', text:'', auto:800, se:'se_ui_click',
+    portrait:{ char:'GUNSMITH_NP', show:true } },
+  { speaker:'GUNSMITH_NP', text:'', auto:800, se:'se_ginclick',
+    portrait:{ char:'GUNSMITH_NP', show:true } },
+  { speaker:'GUNSMITH_NP', text:'', auto:800, se:'se_ui_sortie',
+    portrait:{ char:'GUNSMITH_NP', show:true } },
+  Object.assign(gunN(null,'嗯……完成了。'), { flags:['np_gun_tuned'] }),
+  gunN(null,'膛壓增強了，後座力也會強一點，不過你應該沒問題。'),
+  gunN(null,'不過，這兩把槍的名字是南方的古文吧。有什麼典故嗎？'),
+  { speaker:'PLAYER', blank:true },
+  gunN(null,'喔？哈哈哈！真是浪漫啊！'),
+  gunN(null,'那就，祝你們一路順風！'),
+];
+/* 北方泊地雜貨店店主（ver -655，Ray 交稿）。⚠ 進場對白與「交談」鈕共用這一份。 */
+const NP_GROCER_LINES = [
+  groN(null,'苦著臉也沒用，日子還是得過。物資都被徵調了，貨品有限，抱歉啊。'),
+];
 
 /* ══════════════════════════════════════════════════════════════════════
    女角外出（ver -575，Ray 交稿）
@@ -938,7 +988,12 @@ export const TOWNS = {
         bg:'Northport_Square_BF', name:'北方泊地　中央大道',
         exits:{ up:'north', left:'west', right:'east' },
         /* 出航＝模板的「離開」，照 capital 的規矩掛在下；到得這裡船一定有了（同旗，只讀）。 */
-        sail:{ flag:'got_ship' },
+        /* ⚠⚠ **不可離港**（ver -655，Ray：「自由探索，不可離港，離港會跳訊息：
+           『不能丟下同伴。』」）：黑爪那一段演完（`np_claws_done`）起生效。
+           ⚠ `until` 那支旗**還沒有人插** —— 下一段劇情的稿還沒到，所以現在走不掉，
+             那正是這一版要的（鐵律 9：誰插的、誰拔的，這裡先把名字留好）。 */
+        sail:{ flag:'got_ship',
+               hold:{ need:'np_claws_done', until:'np_leave_ok', text:'不能丟下同伴。' } },
         /* 城鎮戰的一場（ver -583）：走進來就打。⚠ `need` ＝城鎮戰開著、
            `flag` ＝這一格清掉了（打贏才記，同所有城鎮段落「演完才記」的規矩，
            所以打輸回頭再走一次還會遇到）。 */
@@ -1028,7 +1083,16 @@ export const TOWNS = {
       },
       /* ── 葉節點（`back`＝回不到「來時反向」時的退路，同 capital）──
          ⚠ 全部還是空房間：等 Ray 的稿再補 shop/kind/keeperWho/hours/lines。 */
-      gunstore: { bg:'Northport_gunstore_BF', name:'北方泊地　武器店',     exits:{ back:'west' } },
+      /* ══ 武器店（ver -655，Ray 交稿）══ 功能與帝都相同（買／賣／改裝＋射擊挑戰），
+         店主與貨單是這座城自己的（`config.shop` 的 `np_gunstore`）。 */
+      gunstore: { bg:'Northport_gunstore_BF', name:'北方泊地　武器店', kind:'gunstore',
+        exits:{ back:'west' },
+        shop:'np_gunstore', keeperWho:'GUNSMITH_NP',
+        hours:[8,20], closed:'鐵門拉下來了。門邊的牌子寫著「八點開門」。',
+        lines:[ gunN(null,'武器都被徵調啦，沒什麼好東西。槍我倒是能幫你看看。') ]
+                 .concat(NP_RANGE_SEQ),
+        /* 「射擊挑戰」鈕 → **同一份**（見 NP_RANGE_SEQ 的說明）。 */
+        challengeLines: NP_RANGE_SEQ },
       guild:    { bg:'Northport_guild_BF', name:'北方泊地　賞金獵人公會', exits:{ back:'west' } },
       cityhall: { bg:'Northport_cityhall_BF', name:'北方泊地　市鎮中心',   exits:{ back:'north' } },
       /* ⚠ **城鎮戰期間唯一走得進去的末端**（Ray 指定，見城上的 `siege.keep`）——
@@ -1195,7 +1259,13 @@ export const TOWNS = {
       },
       /* 墓地＝北側上方那個「空格」，Ray ver -567 定案是墓地。 */
       cemetery: { bg:'Northport_cemetery_BF', name:'北方泊地　墓地',       exits:{ back:'north' } },
-      grocery:  { bg:'Northport_grocery_BF', name:'北方泊地　雜貨街',     exits:{ back:'east' } },
+      /* ══ 雜貨店（ver -655，Ray 交稿）══ 功能與帝都相同（買／賣）。
+         ⚠ 那一句同時當**進場對白**與**「交談」鈕**的內容 —— 只寫一次（鐵律 7）。 */
+      grocery:  { bg:'Northport_grocery_BF', name:'北方泊地　雜貨街', kind:'grocery',
+        exits:{ back:'east' },
+        shop:'np_grocery', keeperWho:'SHOPKEEP_NP',
+        hours:[8,20], closed:'櫥窗裡的燈熄了，門板上掛著「已打烊」。',
+        lines: NP_GROCER_LINES, keeper: NP_GROCER_LINES },
       tavern:   { bg:'Northport_tavern_BF', name:'北方泊地　餐飲街',     exits:{ back:'east' } },
       /* ⚠ 旅店先是空房間、**不掛 `inn:true`**：旅店大廳（伙伴門/睡覺存檔）那一套
          的分支資料還綁著帝都 stage0 的旗標 —— 等 Ray 給這座城的旅店稿再接，

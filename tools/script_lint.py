@@ -156,6 +156,11 @@ def main():
                     err('%s：goto 指到這一段裡沒有的 label：%s' % (tag, ln['goto']))
                 continue                      # 控制拍，不帶演出
 
+            # 結束拍（ver -655）：`{ end:true }` ＝這一段到此為止（分歧的收尾）。
+            #   控制拍，不帶演出。
+            if ln.get('end'):
+                continue
+
             # 選項（ver -396）：閘門拍，沒有 speaker。每一個 goto 都要指得到 label。
             if ln.get('choice'):
                 for o in (ln['choice'] or []):

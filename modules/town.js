@@ -1137,8 +1137,24 @@ function knockClosed(n, id){
 /* 開飛行頁的實體由 main.js 注入（模組邊界：城鎮不認識啟動層）。 */
 let flightOpener=null;
 export function setFlightOpener(fn){ flightOpener=fn; }
+/* ══⚠⚠ **暫時不可離港**（`sail.hold`，ver -655，Ray：「自由探索，不可離港，
+   離港會跳訊息：『不能丟下同伴。』」）══════════════════════════════════
+   `need` 立了、`until` 還沒立 → 出航被擋，就地浮一句（走路人單句那一套）。
+   ⚠ 它與 `sail.flag` 是**兩件事**，不要合併：`flag` ＝「船還沒到手」（一去不回的
+     前置），`hold` ＝「這一段劇情裡不准走」（會開會關的暫時狀態）。
+   ⚠ 鐵律 9：`until` 那支旗誰插的要答得出來 —— 現在**還沒有人插**
+     （下一段劇情的稿還沒到），所以這一版走到這裡就是走不掉的，那正是 Ray 要的。
+   ⚠ 沒有名字欄 ＝ 旁白（那句話是主角自己的念頭，不是誰在講）。 */
+function sailHeld(){
+  const n=node(), h=n && n.sail && n.sail.hold; if(!h) return null;
+  if(h.need && !prog.hasFlag(h.need)) return null;
+  if(h.until && prog.hasFlag(h.until)) return null;
+  return h;
+}
 function setSail(){
   const n=node(), sail=n && n.sail; if(!sail) return;
+  const held=sailHeld();
+  if(held){ story.flashLine(held.text||'', ''); chatterOn=true; return; }
   if(!sail.flag || prog.hasFlag(sail.flag)){
     /* 船已經到手：交給飛行頁。⚠ 城鎮的位置目前不存 —— 飛行頁那邊回來時走的是
        `tivot_flight_ret_v1`（座標），城鎮節點要不要一起存是另一件事（§6.9 的清單）。 */
