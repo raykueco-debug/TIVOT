@@ -81,4 +81,16 @@ export const BY_BATTLE = {
     C: { text:'低階的聖徒之力竟然也有這種威力……',               expr:'writting'    },
     D: { text:'你得好好感謝諾薇兒呢。',                          expr:'writting'    },
   },
+  /* 禍魘娜塔莉戰（ver -671，Ray 交稿）。稿一字未改。
+     ⚠⚠ S 那一句帶**好感 +5**（`aff`）：這是評價這一層第一次給好感 ——
+       由 `inspector.pickEvaluator` 在挑到那一句時記帳（只有這一處，鐵律 8）。
+     ⚠ 只加一次：`EVAL_AFF_FLAG` 記在 progress（進存檔，§6.9）—— 打贏之後
+       重看結算頁、或這一場再打一次，都不會再加。 */
+  np_nightmare: {
+    S: { text:'……我決定這輩子都不會離開你身邊……', expr:'scarecute', aff:{ renna:5 } },
+    A: { text:'說好了，一步都不許離開我！',         expr:'scarecute' },
+    B: { text:'對不起，我最怕這種的了……',           expr:'awkward'   },
+    C: { text:'對、對喔！神父本來就會驅魔嘛！',      expr:'meltdown'  },
+    D: { text:'我要跟諾薇兒睡一間房……',             expr:'dying'     },
+  },
 };

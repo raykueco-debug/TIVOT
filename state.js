@@ -124,6 +124,15 @@ export const state = {
   saintReactTimer: null,
   saintPrevBoard: null,
   saintPrevUlt: null,
+  /* ══ 惡夢化（Nightmare Install，ver -671，Ray 交稿）══
+     聖徒化的**鏡像**：一樣由 saint.js 獨佔寫入（`niMode` 只有它能寫）。
+     差別全在方向 —— 聖徒化是「血往上推，推滿＝OBE」，惡夢化是
+     「血往下抽，抽乾＝熔斷」。 */
+  niMode: false,
+  niTimer: null,
+  niDamage: 0,       // 惡夢化期間造成的總傷（收尾追加 20% 用，同 saintDamageDealt）
+  niFrom: 0,         // 發動當下的 HP（抽血的起點）
+  niTotalMs: 0,      // 這一次惡夢化總共多久（殘格數 × NI_SEC_PER_CELL）
   enemyAtkSuppressUntil: 0,
 
   /* ── 3.6 評價/流程（擁有者：inspector；counterCount/Damage 允許 weapon 累加） ── */
@@ -270,6 +279,10 @@ export function enterSaint(){
 export function exitSaint(){
   state.saintMode = false;
 }
+
+/* saint.js 專用：進入／離開惡夢化。`niMode` 的唯一寫入管道（同 saintMode 的規矩）。 */
+export function enterNightmare(){ state.niMode = true; }
+export function exitNightmare(){ state.niMode = false; }
 
 /* saint.js 專用：以 Maximum Burst 擊殺 → 標記本場處決（EXSECUTIŌ）。
  * sawExecution 擁有者為 inspector（3.6，結算讀取加乘）；saint 是唯一使其為真的來源，

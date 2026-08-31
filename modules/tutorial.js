@@ -1066,9 +1066,13 @@ function advance(){
 /* 收掉對話層。resume=true → 解除暫停續戰並跑腳本接續（onStepClosed）；
  * silent=true（skip/abort）→ 只撤 UI、不觸發任何腳本接續。 */
 let strikeAfter=null;      // 這一段收掉之後要打的劇情殺（ver -619，見下）
+/* 這一段收掉之後要發動的惡夢化（ver -671）。⚠ 與 `strikeAfter` 同一個理由：
+   `cur` 在 `closeDialog` 開頭就被清成 null，收尾的 `finish()` 讀不到它。 */
+let niAfter=false;
 function closeDialog(resume, silent){
   const id = cur && (cur.key || cur.trigger);
-  strikeAfter = (cur && cur.strike) ? cur : null;
+  strikeAfter = (cur && (cur.strike || cur.strikeTo!=null)) ? cur : null;
+  niAfter     = !!(cur && cur.nightmare);
   cur=null; lineIdx=0;
   clearInterval(typeTimer); typeTimer=null;
   clearTimeout(fxTimer); fxTimer=null;
@@ -1102,12 +1106,25 @@ function closeDialog(resume, silent){
            那三下的演出會被凍在暫停裡。 */
       if(strikeAfter){
         const st0=strikeAfter; strikeAfter=null;
-        const dur = (api.strike && api.strike()) || 0;
+        /* ⚠⚠ **一擊到底的版本**（`strikeTo:<剩多少血>`，ver -671，Ray：
+           「敵 HP50% 以下觸發劇情殺：玩家受擊，hp1」）—— 這一場要的是**一下**，
+           不是三連擊。三連擊那一套（`strike:true`）是聖徒化教學的節奏，
+           它會走即死防禦；這一場接的是惡夢化，由安雅接手。
+           ⚠ 走 combat 的同一個受擊入口（`api.strikeTo`），演出與音效才一致。 */
+        const dur = (st0.strikeTo!=null)
+          ? ((api.strikeTo && api.strikeTo(st0.strikeTo)) || 0)
+          : ((api.strike && api.strike()) || 0);
         /* ⚠ 等到**最後一擊落地**才開始等 cut-in：`afterCutin` 沒看到 cut-in 時
            2.5 秒就放行，而末擊在 1.4 秒後才打出去 —— 從 0 秒開始等的話，
            即死防禦的 cut-in 稍微晚一點，下一段就會壓在它上面。 */
         if(st0.then) setTimeout(()=>afterCutin(()=>fireTrigger(st0.then)), dur+80);
       }
+      /* ══ 惡夢化（ver -671）：段落寫 `nightmare:true` ＝這一段講完就發動 ══
+         ⚠ 它**不是閘門**（不需要玩家操作）：Ray 的稿是安雅自己做的。
+         ⚠⚠ 排在**劇情殺之後**：Ray 的順序是「一擊 → 安雅那一句 → CI → 蕾娜反應」。
+           而 `then` 是用 `afterCutin` 排的 —— 這裡先把 CI 起播，那一支才等得到它
+           （不然 `afterCutin` 2.5 秒逾時放行，蕾娜會搶在 CI 前面講）。 */
+      if(niAfter){ niAfter=false; if(api.nightmare) setTimeout(()=>api.nightmare(), 40); }
       // tutorialDead 不受 tutorialActive 限制：收尾盤（tutorialActive 已 false）陣亡也要能重開
       if(!silent && id && (state.tutorialActive || id==='tutorialDead')) onStepClosed(id);
     };

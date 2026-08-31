@@ -1064,6 +1064,10 @@ const SE_FILES=[
   'se_brickcrush.m4a',                                       // 瓦礫崩落（北方泊地教堂，ver -624）
   'se_earthquake.m4a',                                       // 地鳴（教堂那一拍的震動，ver -636）
   'se_paniccrowd.mp3',                                       // 人群尖叫（墓地那一幕，ver -664）
+  /* 高音版的怪物吼叫（ver -671，Ray：「pitch 高 5 個半音，另存為 se_nightmare_hp」）。
+     ⚠ 由 `Se_enemy_Saintroar` 升 5 個半音另存 —— **不是**執行期變調
+     （那一套在 ver -649 被 Ray 撤掉了，見 enemy.js 著地音的說明）。 */
+  'se_nightmare_hp.m4a',
   /* ⚠ `se_saint_maxburst` 於 ver -641 改名成 `vo_saint_maxburst`，而它**還躺在 `se/`**
      —— 這張表是照 `vo_` 前綴推資料夾的，列進來會指到 `vo/` 而 404。
      它本來就在 `ASSETS.se_luna_mb`（開機那一批照樣預載得到），所以這裡直接不列。 */

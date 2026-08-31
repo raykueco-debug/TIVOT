@@ -21,6 +21,7 @@ import * as inv from '../script/inventory.js';
 import * as prog from '../script/progress.js';
 import { setPickedPartner, state } from '../state.js';
 import { showBag, bagListHtml } from './loot.js';
+import * as partner from './partner.js';   // 本篇現在的搭檔是誰（ver -671，唯一那一支判定）
 import { SFX } from '../audio.js';
 
 const $ = id => document.getElementById(id);
@@ -30,7 +31,9 @@ const W = () => GAME_CONFIG.weapons||{};
    兩邊的清單是兩回事，不要合成一份。
    ⚠ ver -510：第一位＝`config.storyPartner`（唯一真相 —— combat.startGame 進劇情戰
    也切到它，不再依賴玩家先開過這一頁）。 */
-const STORY_PARTNERS = [GAME_CONFIG.storyPartner || 'nouvelle'];
+/* ⚠ 現在是誰由 `partner.storyPartnerKey()` 決定（ver -671，安雅入隊之後換她）——
+   所以這裡不能是**模組載入時**算好的常數：那時旗標還沒立起來。 */
+const STORY_PARTNERS = () => [partner.storyPartnerKey()];
 
 let el=null;
 /* 現在開著哪一個分頁（ver -457，Ray：「在整備頁面加入道具分頁，道具要分類」）。
@@ -64,7 +67,8 @@ function slotHtml(cat, n){
 
 function render(){
   const cats=load.order();
-  const pk=STORY_PARTNERS.find(k=>GAME_CONFIG.partners[k]) || STORY_PARTNERS[0];
+  const SP=STORY_PARTNERS();
+  const pk=SP.find(k=>GAME_CONFIG.partners[k]) || SP[0];
   const p=GAME_CONFIG.partners[pk]||{};
   const fit=p.siFit||{};
   const rot = load.mode()==='rotate';
@@ -298,7 +302,7 @@ export function open(){
   if(document.body.classList.contains('flight-on') && window.__flightHoldToggle) window.__flightHoldToggle(true);
   tab='gear';        // 每次開都回到整備 —— 吊墜的語意是「整備」，道具是它的第二頁
   /* 本篇的搭檔固定是諾薇兒（Ray 指定）。⚠ 走 `setPickedPartner`（唯一管道，§3.6）。 */
-  const pk=STORY_PARTNERS[0];
+  const pk=STORY_PARTNERS()[0];
   if(GAME_CONFIG.partners[pk] && state.pickedPartner!==pk) setPickedPartner(pk);
   render();
   el.classList.add('on');

@@ -1422,8 +1422,12 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
     const up = startY - y;
     if(up > need() && up > Math.abs(x-startX)*1.0){
       fired=true; tracking=false; hideAura();
+      /* ⚠ 惡夢化期間的上滑是**它自己的主動技**（ver -671，Ray：「主動技是在 NI 期間
+         往上劃可以一次性清除現有盤面造成相應傷害」）—— 那不是搭檔技，
+         所以在問 partner 之前先讓它接走。兩者不會同時成立（saintMode／niMode 互斥）。 */
+      if(state.niMode){ saint.nightmareActive(); }
       // 下滑觸發主動技（情境＝聖徒化內）。能否發、屬於誰由 partner 判定；換 partner 即此技消失。
-      partner.tryActive('saint');
+      else partner.tryActive('saint');
     }
   }
   // 抬手：若整段位移很小（點擊而非滑動）→ 放行給底下的紅點防禦

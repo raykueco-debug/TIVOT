@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.08.31-670';
+export const VERSION = 'ver 2026.08.31-671';
 
 export const GAME_CONFIG = {
 
@@ -195,6 +195,28 @@ export const GAME_CONFIG = {
                cutin:'cutin_return', voice:'vo_life_return',
                desc:'聖徒化期間發動：強制中止聖徒化，保留當前血量。' },
     },
+    /* ══ 安雅（ver -671，Ray：「從玩家跟安雅一起出旅店後，夥伴就從諾薇兒
+       換成安雅了」）══
+       ⚠⚠ **她的技能組 Ray 還沒給**：這裡先沿用諾薇兒那一套（即死防禦＋生命歸還），
+         只換名字與立繪 —— 不然一換人就沒有即死防禦，劇情殺那條鏈會直接讓玩家死。
+         她真正的能力是**惡夢化**（`saint.activateNightmare`），而那一支現在由
+         腳本發動、上滑是它自己的主動技，不經過搭檔那一套。
+       ⚠ `siFit` 是估的（同諾薇兒那一張的作法）—— 換成她自己的選人立繪時要重量。 */
+    anya: {
+      name:'安雅',
+      image:'partner_anya',
+      siFit:{ zoom:1.6, top:0.01 },
+      cutin:'ci_anya_ni',
+      voice:null,
+      selectVoice:'vo_life_return',
+      perk:'即死防禦（被動）＋生命歸還（主動）',
+      passive:{ key:'deathGuard', name:'即死防禦', oncePerBattle:true,
+                cutin:'cutin_nouvelle_guard', voice:'vo_death_guard',
+                desc:'受到足以致死的攻擊時，為玩家保留1hp續命。' },
+      active:{ key:'lifeReturn', name:'生命歸還', context:'saint',
+               cutin:'cutin_return', voice:'vo_life_return',
+               desc:'聖徒化期間發動：強制中止聖徒化，保留當前血量。' },
+    },
     // ── 第二搭檔：馬季諾 Malzeno ──────────────────────────
     malzeno: {
       name:'馬季諾',
@@ -242,6 +264,17 @@ export const GAME_CONFIG = {
      即死防禦與聖徒化 cut-in 都是舊圖（Ray 連報兩張圖錯）。
      讀取點：combat.startGame（scriptRun）與 gear（清單第一位），都指這裡（鐵律 7）。 */
   storyPartner: 'nouvelle',
+  /* ══⚠⚠ **本篇的搭檔會換人**（ver -671，Ray：「從玩家跟安雅一起出旅店後，
+     夥伴就從諾薇兒換成安雅了」）══
+     由上往下取**第一個 `need` 成立的**（同 `acts`／`innDoors` 的取法）；
+     都不成立就回 `storyPartner`。
+     ⚠ 判定只有 `partner.storyPartnerKey()` 一支（鐵律 8）：`combat.startGame`
+       與整備頁都問它，不要各自讀這張表。
+     ⚠ 這是**資料**不是狀態：換人的那個事件記的是 `np_anya_join` 那支旗
+       （離開旅店那一段演完才記）—— 一個狀態一個擁有事件（鐵律 9）。 */
+  storyPartnerBy: [
+    { need:'np_anya_join', key:'anya' },
+  ],
 
   /* ------------------------------------------------------------------ *
    *  三、監察官（Inspector）— 結算畫面角色（框架預留，之後接）
@@ -595,7 +628,7 @@ export const GAME_CONFIG = {
     /* ⚠ 每一筆都要帶 cm（角色身高）—— 縮放是**鎖身高**算的（§6.5）。
        speakers.js 的 expr 只帶 top/bot/fx，cm 在角色那一層，所以這裡要合進來。 */
     portraitFrames: (()=>{
-      const N = ART.nouvelle, R = ART.renna, F = {};
+      const N = ART.nouvelle, R = ART.renna, A = ART.anya, F = {};
       /* ⚠ 取景值一律**抄 `ART`**（speakers.js 量的那一份，鐵律 7）——
          不要在這裡另填一組數字。`cm` 在角色那一層、expr 只帶 top/bot/fx，所以合起來。 */
       /* ⚠ `cm` 與 `fxShift` 在**角色**那一層、`expr` 只帶 top/bot/fx，所以要合進來
@@ -618,6 +651,9 @@ export const GAME_CONFIG = {
       put('tut_renna_ask',          R, R.expr.ask);
       put('tut_renna_shout',        R, R.expr.shout);
       put('tut_nouvelle_saintinstall', N, N.expr.saintinstall);
+      /* 禍魘娜塔莉戰（ver -671，Ray 交稿）用到的差分。 */
+      put('tut_anya_terrifying',    A, A.expr.terrifying);
+      put('tut_anya_ni',            A, A.expr.nightmareinstall);
       return F;
     })(),
     cast: {
@@ -635,6 +671,10 @@ export const GAME_CONFIG = {
            可以整幕覆寫」的同一個情形。船塢那一幕（`sides:{RENNA:'R'}`）已經把她擺右，
            這裡跟著同一個安排，玩家的空間記憶才連得起來。 */
       renna:     { name:'蕾娜',   image:'tut_renna',       side:'right', fit:{ zoom:0.92, drop:6 } },
+      /* 安雅（ver -671，禍魘娜塔莉戰）。⚠ 站**右**（`speakers.js` 的本位）——
+         她與蕾娜同台時蕾娜本來就在右…… 所以這一場**蕾娜讓到左**：
+         §6.5 的表「蕾娜原則右，碰到安雅就放左」。 */
+      anya:      { name:'安雅',   image:'tut_anya_terrifying', side:'right', fit:{ zoom:0.92, drop:6 } },
     },
     // 罵人台詞（監察官）：教學中玩家「按錯 / 延時」即插入一句（隨機取、可重複觸發；
     //   defended 段講完後停用）。early＝太早防禦（Defense 格擋半傷）專用——不受 defended
@@ -1005,6 +1045,30 @@ export const GAME_CONFIG = {
       hitFx:{                        // 自帶獨立三件套（巨型聖徒風味：大絕爪數加重為 4）
         delay:{ type:'blood', angle:'random' },
         wrong:{ type:'slash' },      // 按錯 → 紅刀痕濺血
+        ult:{   type:'claw', count:4, angle:'random' },
+      },
+    },
+    /* ══ 禍魘娜塔莉（ver -671，Ray 交稿）══════════════════════════════════
+       「數值與模式同巨型聖徒，攻擊力減半，HP900。」
+       ⚠ 所以這張卡是**巨型聖徒那一張**逐欄抄過來、只動兩格 —— 不寫成
+         「基礎 × 倍率」（鐵律：卡上寫絕對值就存絕對值，§6.5.2）。
+       ⚠ `kind:'harm'` ＝禍魘：吃降臨與淨化那一套演出，結算副標是「已淨化」。 */
+    nightmare_natalia: {
+      name:'禍魘娜塔莉',
+      story:1, counterStagger:1,
+      kind:'harm',
+      image:'enemy_natalia',         // → resources/enemy/mon_natalia.webp
+      fit:{ pos:'50% 30%' },
+      hp:900,                        // Ray 指定
+      attack:22,                     // 巨型聖徒 45 的一半（減半，取整）
+      atkInterval:3.33,              // 以下全部同巨型聖徒
+      sound:{ ult:'em_slash', delay:'em_smack', wrong:'em_slash' },
+      delayPenalty:{ seconds:5 },
+      special:[],
+      boardGrids:[9,9,16,16,16],
+      hitFx:{
+        delay:{ type:'blood', angle:'random' },
+        wrong:{ type:'slash' },
         ult:{   type:'claw', count:4, angle:'random' },
       },
     },
@@ -1561,6 +1625,29 @@ export const GAME_CONFIG = {
        ⚠ **背景不寫**：城鎮插入戰交棒時 `main.js` 會把「你站的那一格」設進
          `state.battleBg`（ver -592），所以自然就是墓地那一張。 */
     np_cemetery: { enemy:'np_boss' },
+    /* ══ 禍魘娜塔莉戰（ver -671，Ray 交稿）══════════════════════════════════
+       敵 HP 50% 以下 → 劇情殺（**一擊**打到剩 1）→ 安雅接手惡夢化。
+       ⚠ 與聖徒化教學那一場的三連擊是**兩種劇情殺**：那一套要走即死防禦
+         （所以要三下），這一場接的是惡夢化（`strikeTo:1` ＝一下）。
+       ⚠ `bgm` 不寫＝照舊 `bgm_battle`；背景照舊由城鎮交棒帶進來（墓地那一張）。 */
+    np_nightmare: { enemy:'nightmare_natalia',
+      /* ⚠ 站位：安雅本位右 → 蕾娜讓到**左**（§6.5 的表）。 */
+      talkSides:{ renna:'left', anya:'right' },
+      talk:[
+        /* ⚠⚠ **順序是：一擊 → 安雅那一句 → 惡夢化的 CI → 蕾娜才反應**
+           （ver -671，Ray：「要先跑 CI 蕾娜才會說『聖徒化……？』」）。
+           所以 `nightmare:true` 掛在**這一段**（講完就發動、CI 開始播），
+           而 `then:'niCall'` 是 `afterCutin` 排的 —— CI 演完才接下一段。 */
+        { trigger:'hp:50', strikeTo:1, nightmare:true, then:'niCall', lines:[
+          { who:'anya', img:'tut_anya_terrifying', text:'娜塔莉！' },
+        ] },
+        { trigger:'niCall', lines:[
+          { who:'renna', img:'tut_renna_shocked', text:'那是……！' },
+          { who:'renna', img:'tut_renna_shocked', text:'聖徒化？' },
+          { who:'anya',  img:'tut_anya_ni',       text:'對不起……！' },
+          { who:'anya',  img:'tut_anya_ni',       text:'請讓娜塔莉安息吧！' },
+        ] },
+      ] },
     /* ══ 飛行頁的遭遇戰（ver -382）══ 怪撞上船 → 跳來這一頁打舒爾特盤。
        ⚠⚠ 三隻怪的**敵人卡 Ray 還沒給**，所以現在**一律先借巨型聖徒**跑流程
          （同打靶先用訓練用聖徒的作法）。卡到位之後只要改 `enemy` 這一欄。
@@ -1914,6 +2001,9 @@ export const GAME_CONFIG = {
       se_brickcrush:1.825,              // ver -624（audio_scan 實測：−19.0 LUFS）
       /* ⚠ **還沒量**（ver -664 新加的音效）：跑一次 tools/audio_scan.html 貼回來（§6.6）。 */
       se_paniccrowd:1.0,
+      /* ⚠ 由 `Se_enemy_Saintroar` 升 5 個半音另存（ver -671，Ray 指定）——
+         增益沿用原音那一支（同一段素材，響度沒變）。 */
+      se_nightmare_hp:1.0,
       se_earthquake:2.306,              // ver -636（audio_scan 實測：−21.1 LUFS）
       /* ── 飛行頁（那一頁用 HTMLAudio，讀同一張表，見 flight/index.html）── */
       se_flight_heartbeat:5.064, se_flight_idle_loop:2.848,
@@ -1945,6 +2035,15 @@ export const GAME_CONFIG = {
     defDefenseMin:       0.35,  // 0.35~1.0 → Defense（傷害減半）
     defPerfectMin:       0.12,  // 0.12~0.35 → Perfect（免傷）
                                 // 0~0.12 → Counter（免傷+武器反擊）
+
+    /* ══ 惡夢化（Nightmare Install，ver -671，Ray 交稿）══
+       ⚠ 它與聖徒化共用大部分數字（連擊斜率、反應時限、追加 20%）——
+         那些一律讀 `saint*` 那一組，不要在這裡抄第二份（鐵律 7）。
+         這裡只放**惡夢化自己才有**的那一個。 */
+    nightmare: {
+      /* 一格給幾秒（Ray：「有幾格就給幾秒 ×0.8」→ 16 格＝12.8 秒）。 */
+      secPerCell: 0.8,
+    },
 
     // 雙槍
     dualSeconds:         6,     // 破防模式時長（秒）。ver -474：4→6（Ray：「雙槍破防時間＋2秒」）
@@ -2005,6 +2104,12 @@ export const ASSETS = {
   enemy_facelessgiant: "resources/enemy/Saint_GT_CI.webp",   // 連戰第二隻：巨型聖徒（GT=giant）
   enemy_trainee:  "resources/enemy/Saint_TR_CI.webp",   // 教學專用敵：訓練用聖徒
   enemy_dart_target: "resources/enemy/Dart_timeattack.webp",   // 打靶場：固定立靶（ver -396）
+  /* 禍魘娜塔莉（ver -671，Ray 交件）＋惡夢化 cut-in。
+     ⚠⚠ `CI_Anya_NightmareInstall` **還沒進 repo**（Ray 指名的就是這一張）——
+       路徑先指對，圖一放進 `resources/partner/` 就會自己出現；
+       在那之前這一格是空的（cut-in 的字與音照演，只是沒有圖）。 */
+  enemy_natalia:  "resources/enemy/mon_natalia.webp",
+  ci_anya_ni:     "resources/partner/CI_Anya_NightmareInstall.webp",
   /* 賞金獵人（ver -375）：戰鬥立繪＝對話立繪的 `attack` 那張（去背，配 `bg` 用）。 */
   enemy_guild_hunter: "resources/SI/NPC_GuildHunter_SI_Attack.webp",
   /* ══⚠⚠ 北方泊地城鎮戰的雜怪（ver -596，Ray 指定四隻隨機出）＋教堂的 Boss（祭壇獸）══
@@ -2042,6 +2147,8 @@ export const ASSETS = {
   /* 諾薇兒的搭檔立繪（ver -422）：先借對白用的正面全身圖。
      ⚠ 換成專屬的選人立繪時，`partners.nouvelle.siFit` 要重量（那是**那一張圖**的數字）。 */
   partner_nouvelle:"resources/SI/Nouvelle_SI_front.webp",     // 諾薇兒 立繪（暫用對白圖）
+  /* 安雅（ver -671）。⚠ 暫用她的對白立繪，同諾薇兒那一張的作法。 */
+  partner_anya:   "resources/SI/Anya_SI_front.webp",
   /* ── 教學（劇情版）的諾薇兒立繪與差分（ver -323）──────────────────────
      ⚠ 這一組**只給劇情帶起來的教學**用（tutorial.isStoryRun()）。首頁「教學」鈕
        那一場仍是芙蕾雅／蕾妮 —— Ray 指定兩者要分開。 */
@@ -2067,6 +2174,9 @@ export const ASSETS = {
   tut_nouvelle_steady:      ART.nouvelle.expr.steady.src,
   tut_nouvelle_run:         ART.nouvelle.expr.run.src,
   tut_nouvelle_saintinstall:ART.nouvelle.expr.saintinstall.src,
+  /* 禍魘娜塔莉戰（ver -671）。 */
+  tut_anya_terrifying:      ART.anya.expr.terrifying.src,
+  tut_anya_ni:              ART.anya.expr.nightmareinstall.src,
   /* ⚠ 檔名 ver -454 由 Ray 改為 `CI_` 前綴（`Nouvelle_SAINTINSTALL` → 同名加前綴）。 */
   cutin_nouvelle_saint:  "resources/CI/CI_Nouvelle_SAINTINSTALL.webp",   // 全畫面 cut-in
   /* ══ 本篇（story）的 cut-in 差分（ver -454，Ray 指定三張）══════════════

@@ -217,6 +217,18 @@ function pickEvaluator(rankKey, battleId){
     one = byAff && byAff[rankKey];
   }
   if(!one) return null;
+  /* ══⚠⚠ **這一句帶好感**（`aff`，ver -671，Ray：禍魘娜塔莉戰 S 那一句「好感＋5」）══
+     ⚠ 只加一次：旗標記在 progress（進存檔、讀檔跟著回去，§6.9）—— 重看結算頁、
+       或這一場再打一次拿到同一個等第，都不會再加。
+     ⚠ 旗名由**場次＋等第**推（不寫死在資料裡）：同一場的不同等第是不同的一句話。
+     ⚠ 記帳只有這一處（鐵律 8）：`evaluation.js` 只放內容，不做事。 */
+  if(one.aff){
+    const k='eval_aff_'+battleId+'_'+rankKey;
+    if(!prog.hasFlag(k)){
+      for(const w in one.aff) prog.addAffection(w, one.aff[w]);
+      prog.addFlags([k]);
+    }
+  }
   const art = ART[who.art] || {};
   const ex  = (art.expr||{})[one.expr];
   return { name: who.name || '',

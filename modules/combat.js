@@ -85,6 +85,8 @@ export function setup(){
     activateSaint: saint.activateSaint,
     tryPartnerActive: partner.tryActive,
     strike: tutorialStrike,
+    strikeTo: tutorialStrikeTo,           // 一擊打到剩 N 血（ver -671，惡夢化那一場）
+    nightmare: saint.activateNightmare,   // 惡夢化（ver -671）：段落寫 `nightmare:true` 就發動
     capEnemyHp: tutorialCapEnemyHp,
     respawnThreat: defense.startCharge,   // 反擊教學：太早格擋 → 罵完重放一次反擊圈
     fillEnergy: ()=>addEnergy(100),       // 削血保底：直接填滿破防值（走滿值引導路徑）
@@ -113,6 +115,7 @@ export function setup(){
     buildGrid, updateBars, startIntervalTimer, resetIntervalDeadline,
     hitDamage, enemyDamage, floatDmg, markNext, setBoard, resetEnergy,
     onEnemyDefeated: finishEnemyOrAdvance,   // 聖徒化擊殺 → 轉下一敵 or（最後一敵）結算（連戰）
+    goNextBoard,                             // 惡夢化清空殘格之後換下一盤（ver -671）
     shatterCell: enemy.shatterCell,
     // defense 原語（combat 代為轉交；大絕頻率經 setUltRate 擁有者管道）
     scheduleUlt: defense.scheduleUlt, clearThreat: defense.clearThreat,
@@ -279,6 +282,8 @@ function tap(num,cell,e){
 
   // 聖徒化：依序點擊 16 格、受擊推進倒數槽（combat 於期間讓出主迴圈，交由 saint 驅動盤面游標）。
   if(state.saintMode){ saint.saintTap(num, cell); updateStatus(); return; }
+  /* 惡夢化（ver -671）：與聖徒化同一個位置分流 —— 兩者不可能同時成立。 */
+  if(state.niMode){ saint.nightmareTap(num, cell); updateStatus(); return; }
 
   // 雙槍破防（獎勵射擊窗口）：無視順序、點掉的格移除不可重點、快速清盤（降攻安全牌，不吃暴擊/atkBuff）。
   //   注意：雙槍清盤走自己的收尾（不走 clearBoard、不給完美清盤 bonus）。
@@ -1517,7 +1522,9 @@ export function startGame(){
      出航直接進的船戰帶著試玩版的蕾妮／露娜：即死防禦 cut-in 是蕾妮那張、
      聖徒化 cut-in 落回 Luna（saint.js 那條分流要求搭檔＝諾薇兒才給她的圖）。
      真相只有 config 一份（gear 的清單第一位與它互指，鐵律 7）。 */
-  if(state.scriptRun && GAME_CONFIG.storyPartner) setPickedPartner(GAME_CONFIG.storyPartner);
+  /* ⚠ 現在是誰由 `partner.storyPartnerKey()` 決定（ver -671：安雅入隊之後換她）——
+     不要在這裡讀 `GAME_CONFIG.storyPartner`，那只是「都不成立時」的預設。 */
+  if(state.scriptRun) setPickedPartner(partner.storyPartnerKey());
   if(sb && GAME_CONFIG.enemies[pickBattleEnemy(sb)]){
     enemy.setEnemy(pickBattleEnemy(sb));
     /* ══⚠⚠ 真的開打了才記「這一段出過牠」，**並且把這一抽用掉**（ver -628）══
@@ -1735,6 +1742,22 @@ function tutorialSegmentRestart(){
 }
 // 敵殘血封頂：聖徒化收尾後把敵血壓到 finishEnemyHp 以下，保證玩家「本盤」就能殺進
 //   overkill 結束教學戰；跳過教學時也用它把覆寫的高血量收回該敵 config 值。
+/* ══⚠⚠ **一擊打到剩 N 血**（`strikeTo`，ver -671，Ray：「玩家受擊，hp1」）══
+   與三連擊（`tutorialStrike`）是**兩種劇情殺**：那一套是「三擊清零 → 即死防禦」，
+   這一套是「一下打到剩 1 → 由安雅接手惡夢化」。
+   ⚠ 走**同一個受擊入口** `enemyAttack`（演出／音效／畫面震都在那裡，鐵律 8），
+     傷害算成「現在的血 − 目標血」。
+   ⚠ 這一擊**不算在玩家頭上**（`_scriptedAtk`／`_scriptedHits`，同三連擊的規矩）：
+     那是腳本演的，不是他失誤。
+   ⚠ 回傳這一段演出的長度（毫秒），呼叫端拿它接下一拍 —— 不要自己乘一次（鐵律 7）。 */
+function tutorialStrikeTo(leave){
+  const to = Math.max(1, leave|0);
+  const dmg = Math.max(1, state.playerHp - to);
+  _scriptedAtk = true; _scriptedHits++;
+  enemyAttack(dmg, 'ult');
+  _scriptedAtk = false;
+  return 0;
+}
 function tutorialCapEnemyHp(maxHp){
   if(maxHp==null) return;
   if(state.enemyHp>maxHp){ state.enemyHp=maxHp; updateBars(); }

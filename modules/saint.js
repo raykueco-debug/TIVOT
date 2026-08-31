@@ -24,7 +24,7 @@
  * ========================================================================== */
 
 import { GAME_CONFIG, asset, sfxGain, isVoiceKey } from '../config.js';
-import { state, enterSaint, exitSaint, markExecution, storyMode } from '../state.js';
+import { state, enterSaint, exitSaint, enterNightmare, exitNightmare, markExecution, storyMode } from '../state.js';
 import { SFX } from '../audio.js';
 import { L, fmt } from '../i18n.js';   // 多語言（cut-in 副標/浮動字）
 
@@ -41,6 +41,18 @@ const SAINT_ULT_MIN_MS        = T.saintUltMinMs;         // 期間敵大絕頻�
 const SAINT_ULT_MAX_MS        = T.saintUltMaxMs;         // 期間敵大絕頻率上限
 const SAINT_COMBO_STEP        = T.saintComboStep;        // 期間每 combo 疊傷斜率（無上限）
 const SAINT_LAST_HIT_RATIO    = T.saintLastHitRatio;     // 結束前清盤 → 追加期間總傷的比例（0.20）
+/* ══ 惡夢化（Nightmare Install，ver -671，Ray 交稿）══════════════════════════
+   「效果類似聖徒化，但發動時以**盤面上殘留的格數**，不會像 Saint install 一樣重置
+     整個 16 格。秒數是有幾格就給幾秒 ×0.8……會以現有的 hp 開始扣除，直到剩 hp1
+     熔斷，或者把殘格清空 hp 全恢復並在最後一擊增加 NI 期間造成的 20% 傷害
+     （同 SI 的 MB）。若在 NI 發動期間把敵 hp 清零一樣有 excute。
+     主動技是在 NI 期間往上劃可以一次性清除現有盤面造成相應傷害，但是沒有 MB，
+     也不回血，直接結束 NI，hp 剩 1。」
+   ⚠ 它是聖徒化的**鏡像**：同一套盤面／連擊／追加傷害的規矩，方向相反 ——
+     聖徒化把血往上推（推滿＝OBE），惡夢化把血往下抽（抽乾＝熔斷）。
+     所以實作放在**同一支模組**（鐵律 8）：兩者共用 `playCutin`／收尾／api。 */
+const NI = T.nightmare || {};
+const NI_SEC_PER_CELL = (NI.secPerCell!=null) ? NI.secPerCell : 0.8;   // 每一殘格給幾秒
 
 /* combat 於啟動時注入的原語（HP API / 盤面 / 傷害 / defense / partner）。 */
 let api = {};
@@ -168,6 +180,182 @@ export function saintAdvance(amount){
        連帶：triggerOBE 的敵死分支從此走不到（唯一入口在這裡），留著當保險。 */
     if(state.enemyHp<=0){ triggerMaxBurst(); return; }
     triggerOBE();
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+ *  惡夢化（Nightmare Install，ver -671）—— 聖徒化的鏡像
+ *  ⚠ 讀 §config.tuning.nightmare 與 saint* 那一組（共用的數字不重寫，鐵律 7）。
+ * ════════════════════════════════════════════════════════════════════════ */
+/* 殘格數（還沒點掉的）。⚠ 沒有盤面就回 0 —— 呼叫端要能容忍。 */
+function niCellsLeft(){ return (state.cells||[]).filter(c=>!c.classList.contains('done')).length; }
+/* 發動。⚠ **不重建盤面**（Ray 指定）：用現在這一盤剩下的格子，秒數由殘格數決定。 */
+export function activateNightmare(){
+  if(state.over || state.saintMode || state.niMode) return false;
+  const left = niCellsLeft();
+  if(left<=0) return false;
+  playCutin(()=>startNightmareMode(left), L.battle.nightmareLabel||'NIGHTMARE INSTALL', 'ci_anya_ni');
+  return true;
+}
+function startNightmareMode(left){
+  if(state.over) return;
+  enterNightmare();
+  api.resetEnemyTimers();
+  state.enemyAtkSuppressUntil = 0;
+  api.scheduleUlt();
+  setReturnSwipe(true);                  // 上滑＝惡夢化的主動技（見 nightmareActive）
+  state.niDamage = 0;
+  /* ══⚠⚠ **發動時先把血灌滿，再從滿血抽到 1**（ver -671）══
+     Ray 的稿有兩句在這裡打架：「玩家受擊，hp1」→ 安雅發動惡夢化，而惡夢化
+     「以現有的 hp 開始扣除，直到剩 hp1 熔斷」—— 現有的 hp 就是 1，這一段
+     會在發動的那一瞬間就熔斷（實測：`niTotalMs` 11.2 秒，但 `niFrom` 是 1，
+     倒數槽一格都跑不動）。
+     ⚠ 兩句只能留一句能成立的：**灌滿再抽**。那也是這個機制的語氣 ——
+       安雅把力量灌進來（血條瞬間填滿），然後一路流失；清空殘格＝守住了，
+       「hp 全恢復」（Ray 的原話）正好是同一個狀態。
+     ⚠ **這是我的判斷不是 Ray 的指定**：要改成「真的從現有 hp 開始抽」，
+       把下面這一行的 `setPlayerHpRatio(1)` 拿掉就好（那時劇情殺要留多一點血）。 */
+  api.setPlayerHpRatio(1);
+  state.niFrom   = state.playerHp;
+  state.niTotalMs= Math.max(1, left * NI_SEC_PER_CELL * 1000);
+  state.combo    = 0;
+  api.resetEnergy();
+  $('grid').classList.add('saint','ni');
+  setSaintBarFx(true);
+  api.floatDmg(L.battle.nightmareLabel||'NIGHTMARE INSTALL','50%','20%',true);
+  /* 抽血：從**發動當下的 HP**線性降到 1，跑完整段就是熔斷。
+     ⚠ 用「起點 → 1」的線性而不是固定速率：Ray 說「以現有的 hp 開始扣除，
+       直到剩 hp1 熔斷」—— 也就是**這一段的長度**由殘格數決定，不是由血量決定。 */
+  const per = (state.niFrom - 1) / (state.niTotalMs/100);   // 每 100ms 抽多少
+  clearInterval(state.niTimer);
+  state.niTimer = setInterval(()=>{
+    if(state.over||!state.niMode){ clearInterval(state.niTimer); state.niTimer=null; return; }
+    if(state.cutinPlaying) return;       // 演出／對話暫停中凍結（同聖徒化）
+    niDrain(per);
+  }, 100);
+  state.saintPrevUlt = { min:state.ULT_MIN, max:state.ULT_MAX };
+  api.setUltRate(SAINT_ULT_MIN_MS, SAINT_ULT_MAX_MS);
+  startSaintReactTimer();
+}
+/* 抽血。⚠ 走 combat 統一的改血 API（`hurtPlayer` 不存在 → 用 healPlayer 的負值）。
+   抽到 1 就熔斷。 */
+function niDrain(amount){
+  if(!state.niMode) return;
+  const hp = api.healPlayer(-Math.abs(amount));
+  if(hp<=1) niMeltdown();
+}
+/* 熔斷：時間到／血抽乾 → 惡夢化結束，HP 留 1。 */
+function niMeltdown(){
+  if(!state.niMode) return;
+  exitNightmare();
+  clearInterval(state.niTimer); state.niTimer=null;
+  clearSaintReactTimer(); setReturnSwipe(false);
+  restoreUltRate();
+  api.floatDmg(L.battle.nightmareOut||'MELTDOWN','50%','28%',true);
+  finishNightmare(()=>api.setPlayerHpRatio(0));   // 下限 floor 1 → 恰為 1 HP
+}
+/* 清空殘格 → 回滿 ＋ 最後一擊追加期間總傷 20%（同 SI 的 MaxBurst）。 */
+function triggerNiBurst(){
+  if(!state.niMode) return;
+  exitNightmare();
+  clearInterval(state.niTimer); state.niTimer=null;
+  clearSaintReactTimer(); setReturnSwipe(false);
+  restoreUltRate();
+  if(state.niDamage>0){
+    const last=Math.round(state.niDamage*SAINT_LAST_HIT_RATIO);
+    api.enemyDamage(last, true, false, 'saint');
+    api.floatDmg('MAXIMUM BURST '+last,'50%','28%',true);
+    SFX.clear();
+  }
+  $('grid').classList.remove('saint','ni'); setSaintBarFx(false);
+  if(state.enemyHp<=0){
+    /* 「若在 NI 發動期間把敵 hp 清零一樣有 excute」（Ray 指定）。 */
+    markExecution();
+    playSaintCutin('execute', ()=>{ api.setPlayerHpRatio(1); api.onEnemyDefeated(); });
+    return;
+  }
+  finishNightmare(()=>api.setPlayerHpRatio(1));   // 「hp 全恢復」
+}
+/* 主動技（上滑）：一次清掉殘格造成相應傷害 —— **沒有 MB、不回血、直接結束，HP 剩 1**。 */
+export function nightmareActive(){
+  if(!state.niMode) return false;
+  clearSaintReactTimer();
+  let dmg=0;
+  for(const c of (state.cells||[])){
+    if(c.classList.contains('done')) continue;
+    c.classList.add('done'); c.classList.remove('next'); api.shatterCell(c);
+    state.combo++;
+    dmg += Math.round(api.hitDamage() + state.combo*SAINT_COMBO_STEP);
+  }
+  exitNightmare();
+  clearInterval(state.niTimer); state.niTimer=null;
+  setReturnSwipe(false); restoreUltRate();
+  if(dmg>0){
+    SFX.gunshot(true);
+    api.enemyDamage(dmg, true, false, 'saint');
+    api.floatDmg(String(dmg),'50%','28%',true);
+  }
+  $('grid').classList.remove('saint','ni'); setSaintBarFx(false);
+  if(state.enemyHp<=0){
+    markExecution();
+    playSaintCutin('execute', ()=>{ api.setPlayerHpRatio(0); api.onEnemyDefeated(); });
+    return true;
+  }
+  finishNightmare(()=>api.setPlayerHpRatio(0));   // HP 剩 1
+  return true;
+}
+/* 惡夢化的盤面點擊（combat.tap 於 niMode 委派至此）。
+   ⚠ 與 `saintTap` **同一套規則**，差別只有失誤的方向（抽血而不是推血）
+     與清盤之後走哪一支收尾。 */
+export function nightmareTap(num, cell){
+  if(cell.classList.contains('done')) return;
+  const hit=(bonusFree)=>{
+    SFX.gunshot(true);
+    cell.classList.add('done'); cell.classList.remove('next'); api.shatterCell(cell);
+    state.combo++;
+    const d=Math.round(api.hitDamage() + state.combo*SAINT_COMBO_STEP);
+    api.enemyDamage(d, true, false, 'saint');
+    state.niDamage += d;
+  };
+  if(state.enemyHp<=0){                       // overkill：免順序追打（同聖徒化）
+    hit(true);
+    if(state.cells.every(c=>c.classList.contains('done'))) triggerNiBurst();
+    else startSaintReactTimer();
+    return;
+  }
+  if(num===state.expect){
+    hit(false);
+    state.expect++;
+    if(state.expect>state.N) triggerNiBurst();
+    else { api.markNext(); startSaintReactTimer(); }
+  }else{
+    /* 點錯＝多抽一次血（聖徒化那邊是多推一次）。
+       ⚠ **這個懲罰是我定的**（Ray 只寫了時間與熔斷）：不給懲罰的話點錯毫無代價，
+         而惡夢化本來就是「一路失血」的段落。份量與聖徒化的一次受擊相同。 */
+    SFX.wrong();
+    cell.classList.add('wrong'); setTimeout(()=>cell.classList.remove('wrong'),300);
+    state.combo=0;
+    api.floatDmg(L.battle.miss,'50%','44%',true);
+    niDrain(state.playerMax/SAINT_ADVANCE_DIVISOR);
+    if(state.niMode) startSaintReactTimer();
+  }
+}
+/* 惡夢化的收尾：回到當前盤面。⚠ 與 `finishSaintMode` **不同的只有一件事** ——
+   盤面**不還原**（惡夢化本來就沒有換過盤面），所以不叫 `setBoard`／`buildGrid`；
+   全清的那一次由 combat 的正常流程接手（`expect>N` 已經在 tap 那邊處理）。 */
+function finishNightmare(finalHpThunk){
+  $('grid').classList.remove('saint','ni'); setSaintBarFx(false);
+  restoreUltRate();
+  if(finalHpThunk) finalHpThunk();
+  api.resetEnemyTimers();
+  if(!state.over){
+    /* 殘格已經全部點掉 → 交給 combat 換下一盤；還有殘格 → 就地接回正常盤面規則。 */
+    if(state.cells && state.cells.every(c=>c.classList.contains('done'))) api.goNextBoard();
+    else api.markNext();
+    api.resetIntervalDeadline();
+    api.startIntervalTimer();
+    api.scheduleUlt();
+    if(api.clockResume) api.clockResume();
   }
 }
 
@@ -418,11 +606,16 @@ function playSaintCutin(kind, done){
  * ========================================================================== */
 // 停聖徒化計時器（combat.stopAll 調度）
 export function stopTimers(){
+  clearInterval(state.niTimer); state.niTimer=null;
   clearInterval(state.saintTimer); state.saintTimer=null;
   clearTimeout(state.saintReactTimer); state.saintReactTimer=null;
 }
 // 全重置（combat.startGame 調度）：saintMode 經 exitSaint，清計時器/旗標、關手勢層。
 export function reset(){
+  exitNightmare();
+  clearInterval(state.niTimer); state.niTimer=null;
+  state.niDamage=0; state.niFrom=0; state.niTotalMs=0;
+  const g0=$('grid'); if(g0) g0.classList.remove('ni');
   stopTimers();
   if(state.saintMode) exitSaint();
   state.saintUsedThisBattle=false;

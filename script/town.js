@@ -1398,6 +1398,57 @@ export const TOWNS = {
               portrait:{ char:'ANYA', expr:'terrifying', show:true } },
             ren('shocked','禍魘！是從哪裡——'),
             { battle:'np_cemetery' },
+            /* ══ 第一場打完（ver -671，Ray 交稿）══
+               ⚠ 染色**打完就沒了**（進戰鬥時 `stopTint` 收掉）—— 這裡不重新上，
+                 因為下一段的緊張是靠聲音與立繪撐的；要再上就寫一次 `tintHold`。 */
+            ren('thinking','……憑空生出的禍魘，『永夜』以來第一次發生這種狀況。'),
+            ren('writting','其他地方是否也有這種異象……？'),
+            ren('writting','還是……'),
+            any('desperate','……'),
+            /* 高音版的吼叫（`se_nightmare_hp`：原音升 5 個半音，Ray 指定另存）。 */
+            { speaker:'ANYA', text:'', auto:1100, se:'se_nightmare_hp',
+              portrait:{ char:'ANYA', expr:'desperate', show:true } },
+            any('terrifying','騙……騙人……'),
+            /* 禍魘娜塔莉現身：那是**敵人立繪**（`mon_natalia`），不是對白立繪 ——
+               這一拍用插圖層擺不出來，所以只留演出（音效已在上一拍），
+               她的樣子交給下一拍開打時的「降臨」演出（`kind:'harm'`）。 */
+            any('terrifying','娜塔莉……不要……'),
+            { speaker:'PLAYER', blank:true },
+            /* ⚠ 這兩拍是**同一句「……」講兩次**（Ray 的稿），不是重複貼上：
+               她說不出話來，所以連兩拍都是省略號、表情一樣。 */
+            ren('meltdown','……'),
+            ren('meltdown','……'),
+            ren('meltdowncry','我不行……'),
+            ren('meltdowncry','這種的我真的不行！'),
+            Object.assign(ren('scarejump','！！'), { se:'se_nightmare_hp' }),
+            { battle:'np_nightmare' },
+            /* ══ 禍魘娜塔莉戰打完（ver -671，Ray 交稿）══
+               ⚠ 依等第的那五句在**結算頁**上（`script/evaluation.js` 的 `BY_BATTLE`），
+                 不在這裡 —— 那是蕾娜的評價，S 那一句還帶好感 +5。 */
+            ren('shocked','剛剛那是……禍魘？'),
+            { speaker:'PLAYER', blank:true },
+            ren('surprised','不要嚇我啦！'),
+            ren('upsetstare','真是……'),
+            ren('thinking','特定人物形象的禍魘。如果是這樣的話，那這一切……'),
+            any('silent','……'),
+            ren('evaluating','一定和這女孩脫不了關係。'),
+            nou('run','對不起！'),
+            nou('run','我來遲了嗎？'),
+            ren(null,'沒事了。幸虧有他。'),
+            ren('surprised','但是，我們得把這女孩帶回聖王廳。刻不容緩。'),
+            nou('surprise','發生什麼事了？'),
+            { speaker:'PLAYER', blank:true },
+            nou('shocked2','欸？'),
+            any('silent','……'),
+            ren('talkserious','就是那樣了，在禍事發生前盡快動身。'),
+            nou('run','好、好！我去準備一下！'),
+            ren('chase2','等一下！妳要去哪？'),
+            { speaker:'PLAYER', blank:true },
+            ren('tired','……真是善良的孩子呢。'),
+            ren('lookdown','…………！'),
+            ren('blushed','那個……'),
+            ren('blushed','能扶我一下嗎？'),
+            ren('dying','我站不起來了……'),
           ] },
         ] },
       /* ══ 雜貨店（ver -655，Ray 交稿）══ 功能與帝都相同（買／賣）。

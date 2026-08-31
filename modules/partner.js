@@ -28,6 +28,7 @@ import { GAME_CONFIG, asset, sfxGain } from '../config.js';
 import { state, applyDeathGuard } from '../state.js';
 import { SFX } from '../audio.js';
 import { L } from '../i18n.js';   // 多語言（即死防禦浮動字/cut-in 標題）
+import * as prog from '../script/progress.js';   // 本篇搭檔換人的旗標（ver -671；葉節點，無循環）
 
 /* combat 於啟動時注入的原語：
  *   被動技所需：updateBars / floatDmg / resetEnemyTimers / scheduleUlt / playCutin
@@ -38,6 +39,16 @@ export function init(a){ api = a; }
 
 // 目前啟用的搭檔 config：讀玩家實選（state.pickedPartner，選人畫面經 setPickedPartner 寫入）。
 // 換 partner 即能力切換——被動/主動的歸屬判定全在本模組、全經此函式取當前搭檔。
+/* ══⚠⚠ **本篇現在的搭檔是誰**（ver -671，Ray：「從玩家跟安雅一起出旅店後，
+   夥伴就從諾薇兒換成安雅了」）══
+   資料在 `config.storyPartnerBy`（由上往下取第一個 `need` 成立的），
+   **判定只有這一支**（鐵律 8）：`combat.startGame` 與整備頁都問它。 */
+export function storyPartnerKey(){
+  for(const r of (GAME_CONFIG.storyPartnerBy||[])){
+    if(r && r.key && (!r.need || prog.hasFlag(r.need)) && GAME_CONFIG.partners[r.key]) return r.key;
+  }
+  return GAME_CONFIG.storyPartner || GAME_CONFIG.defaultPartner;
+}
 export function currentPartner(){
   return GAME_CONFIG.partners[state.pickedPartner] || GAME_CONFIG.partners[GAME_CONFIG.defaultPartner];
 }

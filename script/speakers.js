@@ -167,7 +167,15 @@ export const ART = {
                   invite:   { src:'resources/SI/Renna_SI_invite.webp',     top:2, bot:1525, fx:0.537 },
                   /* 北方泊地第三天（ver -664，Ray 交稿）。逐張量（tools/measure_si.py）。 */
                   smile:    { src:'resources/SI/Renna_SI_smile.webp',      top:5, bot:1529, fx:0.518 },
-                  reach:    { src:'resources/SI/Renna_SI_reach.webp',      top:2, bot:1528, fx:0.566 } } },
+                  reach:    { src:'resources/SI/Renna_SI_reach.webp',      top:2, bot:1528, fx:0.566 },
+                  /* 墓地那一幕（ver -671，Ray 交稿）。逐張量（tools/measure_si.py）。 */
+                  meltdown:    { src:'resources/SI/Renna_SI_meltdown.webp',    top:0,  bot:1535, fx:0.528 },
+                  meltdowncry: { src:'resources/SI/Renna_SI_meltdowncry.webp', top:4,  bot:1532, fx:0.607 },
+                  scarejump:   { src:'resources/SI/Renna_SI_scarejump.webp',   top:0,  bot:1533, fx:0.632 },
+                  scarecute:   { src:'resources/SI/Renna_SI_scarecute.webp',   top:0,  bot:1530, fx:0.537 },
+                  blushed:     { src:'resources/SI/Renna_SI_blushed.webp',     top:8,  bot:1522, fx:0.551 },
+                  lookdown:    { src:'resources/SI/Renna_SI_lookdown.webp',    top:6,  bot:1524, fx:0.548 },
+                  chase2:      { src:'resources/SI/Renna_SI_chase2.webp',      top:11, bot:1529, fx:0.579 } } },
   /* ⚠⚠ 諾薇兒的表情差分是**不同姿勢**（跑、畏縮、驚恐、絕望、驚訝），不是換臉，
        所以每一張**各帶自己的 top/bot/fx**（ver -325 量完）。
        ⚠ 沿用 front 那一組的後果實測過：Scared 的臉其實在 0.397，照 0.564 擺會
@@ -280,6 +288,17 @@ export const ART = {
     talk:      { src:'resources/SI/Anya_SI_talk.webp',       top:0, bot:1531, fx:0.426 },
     cry:       { src:'resources/SI/Anya_SI_Cry.webp',        top:0, bot:1528, fx:0.452 },
     terrifying:{ src:'resources/SI/Anya_SI_terrifying.webp', top:0, bot:1518, fx:0.448 },
+    /* ══ 惡夢化（ver -671）══
+       ⚠⚠ **不可以照量 alpha 上下緣**（Ray：「安雅的聖徒化 SI 太低太小了，要抓臉」）：
+         她頭上有一圈金色法環，`tools/measure_si.py` 量到的 `top:1` 是**法環頂**
+         —— 於是頭被壓低了一大截，而且鎖身高把她整個縮小。
+         這是諾薇兒 SAINT INSTALL 那一張的同一個坑（ver -635，§6.5「法環也算污染」）。
+       ⚠ 量法：用**顏色**把人物挑出來（淡紫的頭髮挑得掉金色特效），
+         腳底只看中央那一段（避開兩側披風與光帶）。這張的正解是 308 / 1530。
+       ⚠⚠ `rescale:true`：人物在這張圖上只佔 1222px，而基本立繪是 1531px
+         （小了 20%）—— 那不是雜訊，是真的畫得比較小，所以這一張用它自己的身高。 */
+    nightmareinstall:{ src:'resources/SI/Anya_SI_Nightmareinstall.webp',
+                       top:308, bot:1530, fx:0.519, rescale:true },
   } },
   /* ══ 娜塔莉（ver -636，Ray 交稿）══ 安雅的侍女，只在北方泊地那一幕出現。
      ⚠⚠ 兩張圖都是**坐倒在地**的姿勢，不是站姿 —— 所以 `cm` 不是她的真實身高，
