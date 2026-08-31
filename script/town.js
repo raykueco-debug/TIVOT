@@ -60,6 +60,9 @@ const gun = N('GUNSMITH');   // 槍店店主（ver -377）
 /* 北方泊地的司祭（ver -582）。⚠ 兩個 id：報上身分之前是 `PRIEST_X`（顯示「？？？」），
    之後才是 `PRIEST` —— 畫面上同一個人，見 speakers.js 的說明。 */
 const prx = N('PRIEST_X'), pri = N('PRIEST');
+/* 北方泊地娜塔莉那一幕（ver -636）。安雅在報上名字之前有兩個顯示名：
+   抱著娜塔莉哭的時候是「少女」、答話時是「？？？」，之後才是「安雅」（見 speakers.js）。 */
+const nat = N('NATALIA'), grl = N('GIRL'), anx = N('ANYA_X'), any = N('ANYA');
 
 /* ══════════════════════════════════════════════════════════════════════
    女角外出（ver -575，Ray 交稿）
@@ -1072,8 +1075,10 @@ export const TOWNS = {
               ren('ask','諾薇兒，還有餘力嗎？'),
               nou('runserious','還可以。傷者就交給我。'),
               ren('ask','不愧是第十二騎士團的精銳呢。那麼接下來——'),
-              /* （震動）：空畫面拍 —— 沒有台詞，所以給 auto＋shake。 */
-              { speaker:'PLAYER', text:'', auto:900, shake:true },
+              /* （震動）：空畫面拍 —— 沒有台詞，所以給 auto＋shake。
+                 ⚠ `se_earthquake`（ver -636，Ray 指定）：地鳴要與畫面震動同一拍，
+                   晚一拍就變成「先震後響」。 */
+              { speaker:'PLAYER', text:'', auto:1200, shake:true, se:'se_earthquake' },
               ren('shockedCalm','！！'),
               nou('shocked2','有什麼……要來了！'),
               { battle:'np_claws' },
@@ -1124,6 +1129,51 @@ export const TOWNS = {
               /* 主角追出去（跑步音）。 */
               { speaker:'PLAYER', blank:true, se:'se_steps' },
               ren('chase','喂、喂！別丟下我們兩個啊！'),
+
+              /* ══ 娜塔莉（ver -636，Ray 交稿）══════════════════════════════════
+                 ⚠ 換景：背景切到北側、BGM 換 `bgm_missionfailed`（Ray 指定）。
+                   兩個都是**持續狀態**，寫在第一拍就好（後面沿用）。
+                 ⚠⚠ 站位：這一幕有**四個人**而槽只有兩個 —— 安雅整幕固定站**右**
+                   （她是這一幕的主角），左槽依序是娜塔莉 → 蕾娜⇄諾薇兒。
+                   蕾娜與諾薇兒同為左側，這裡走的是 §6.5 那條
+                   「真的只剩同一邊可用時，換人＝抽牌輪轉」（引擎自己會滑出／滑入）。
+                 ⚠ 娜塔莉倒在地上，`cm` 給的是「這張畫該佔多少公分」不是身高
+                   （見 speakers.js 的說明）。 */
+              nat(null,'……', { bg:'Northport_north_BF', bgm:'bgm_missionfailed',
+                                hide:['RENNA','NOUVELLE','ANYA_X'] }),
+              grl('crying','娜塔莉……娜塔莉！'),
+              nat(null,'……'),
+              grl('desperate','……'),
+              nat(null,'……'),
+              nat(null,'安娜……'),
+              /* 斷氣：換成 `dead` 的**演出拍**（沒有台詞）。
+                 ⚠ 台上有人 → 要點一下才推進（ver -628 那一條），所以不寫 `auto`。 */
+              { speaker:'NATALIA', text:'', portrait:{ char:'NATALIA', expr:'dead', show:true } },
+              grl('crying','娜塔莉？'),
+              grl('crying','娜塔莉——'),
+              nou('sad','是她的……親人嗎？', { hide:['NATALIA'] }),
+              ren('pause','不，好像是侍女……還是侍衛之類的人。'),
+              nou('sad','那是……是紫月語言？'),
+              ren('pause','嗯。我也只聽得懂一些。'),
+              grl('desperate','……'),
+              nou('sad','好可憐……那一定是很重要的人吧？'),
+              ren('pause','妳，叫什麼名字？'),
+              anx('sobbing','……'),
+              anx('sobbing','安雅。'),
+              ren('writing','安雅小姐是紫月人吧？會說標準語嗎？'),
+              any('sobbing','……'),
+              /* 這兩句同一個立繪（稿上第一句沒標圖）—— 沿用上一拍的 `invite` 之前那一張。 */
+              ren('writing','我們不是帝國軍，是教廷的人。'),
+              ren('invite','如果可以的話，讓我們幫幫妳，好嗎？'),
+              ren('worry','否則讓死者就這麼客死異鄉，也太令人難過了。'),
+              any('sobbing','……'),
+              any('sobbing','拜託妳……把娜塔莉……拜託……'),
+              /* ⚠ 插圖由**上往下**平移（Ray 指定），這一拍**無立繪** ——
+                 所以把台上兩個人一起請下去（`hide`），不是只寫 `show:false`
+                 （那一句只管一個角色）。 */
+              { speaker:'RENNA', text:'交給我們吧。死者的歸途，是不分教派的。',
+                cg:'008_RennaholdAnya', cgNoTime:true, cgPan:'down',
+                hide:['RENNA','NOUVELLE','ANYA','ANYA_X','GIRL','NATALIA'] },
             ] },
         ],
       },

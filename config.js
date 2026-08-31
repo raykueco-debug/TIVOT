@@ -1829,6 +1829,7 @@ export const GAME_CONFIG = {
       se_kerberos_open:1.558, se_kerberos_pop:1.479, se_kerberos_steam:1.301,
       se_kerberos_gear:6.179, se_kerberos_drop:1.550,
       se_brickcrush:1.825,              // ver -624（audio_scan 實測：−19.0 LUFS）
+      se_earthquake:2.306,              // ver -636（audio_scan 實測：−21.1 LUFS）
       /* ── 飛行頁（那一頁用 HTMLAudio，讀同一張表，見 flight/index.html）── */
       se_flight_heartbeat:5.064, se_flight_idle_loop:2.848,
       se_flight_sail_loop:7.928, se_flight_seagull:3.353, se_flight_train:5.059,

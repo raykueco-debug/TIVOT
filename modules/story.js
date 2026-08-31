@@ -963,6 +963,7 @@ const SE_FILES=[
   'se_flight_heartbeat.m4a', 'se_flight_idle_loop.mp3', 'se_flight_sail_loop.mp3',
   'se_flight_seagull.m4a', 'se_flight_train.mp3', 'vo_lunaMG.m4a', 'se_punch.m4a',
   'se_brickcrush.m4a',                                       // 瓦礫崩落（北方泊地教堂，ver -624）
+  'se_earthquake.m4a',                                       // 地鳴（教堂那一拍的震動，ver -636）
   'se_saint_install.m4a', 'se_saint_maxburst.m4a', 'se_steps.m4a', 'se_ui_click.m4a',
   'se_ginclick.m4a', 'Se_Tummy.m4a', 'se_metalclip.m4a', 'se_SailorShout.mp3',
   'se_ui_kagurabell.m4a', 'se_ui_pageflip.m4a', 'se_ui_sortie.m4a', 'se_walk.m4a',

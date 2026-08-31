@@ -62,7 +62,12 @@ export const SPEAKERS = {
   /* 安雅：報上名字之前是「？？？」（ver -624，北方泊地教堂那一幕）。
      ⚠ 同 `PRIEST_X`／`OFFICER` 的慣例：畫面上是同一個人，**顯示名不同就是兩個 id**
        —— 不要在腳本裡臨時覆寫名字（§6.5.6）。 */
+  /* 北方泊地那一幕的三個階段（ver -636，Ray 交稿）：抱著娜塔莉哭的時候是「少女」→
+     報上名字前是「？？？」→ 之後才是「安雅」。**顯示名不同就是不同的 id**（§6.5.6）。 */
+  GIRL:     { name:'少女',    art:'anya'   },
   ANYA_X:   { name:'？？？',  art:'anya'   },
+  /* 娜塔莉：安雅的侍女（ver -636）。只在這一幕出現，倒在地上。 */
+  NATALIA:  { name:'娜塔莉',  art:'natalia' },
   PRIEST_X: { name:'？？？',  art:'priest' },
   PRIEST:   { name:'司祭',   art:'priest' },
 };
@@ -144,7 +149,9 @@ export const ART = {
                   upsetstare:{src:'resources/SI/Renna_SI_upsetstare.webp', top:0, bot:1524, fx:0.503 },
                   evaluating:{src:'resources/SI/Renna_SI_evalutating.webp',top:6, bot:1524, fx:0.507 },
                   evaluatingclosemouth:{src:'resources/SI/Renna_SI_evalutatingclosemouth.webp', top:6, bot:1524, fx:0.508 },
-                  chase:    { src:'resources/SI/Renna_SI_chase.webp',      top:4, bot:1532, fx:0.554 } } },
+                  chase:    { src:'resources/SI/Renna_SI_chase.webp',      top:4, bot:1532, fx:0.554 },
+                  /* 娜塔莉那一幕（ver -636）。 */
+                  invite:   { src:'resources/SI/Renna_SI_invite.webp',     top:2, bot:1525, fx:0.537 } } },
   /* ⚠⚠ 諾薇兒的表情差分是**不同姿勢**（跑、畏縮、驚恐、絕望、驚訝），不是換臉，
        所以每一張**各帶自己的 top/bot/fx**（ver -325 量完）。
        ⚠ 沿用 front 那一組的後果實測過：Scared 的臉其實在 0.397，照 0.564 擺會
@@ -175,6 +182,8 @@ export const ART = {
                   /* 北方泊地教堂那一段（ver -595，Ray 交稿）。`relief` 交件是 PNG，
                      依 §5 轉 WebP 之後才接；`saintinstall` 的圖早就在，只是沒進表。 */
                   relief:   { src:'resources/SI/Nouvelle_SI_relief.webp',   top:4,  bot:1530, fx:0.540 },
+                  /* 娜塔莉那一幕（ver -636）。 */
+                  sad:      { src:'resources/SI/Nouvelle_SI_sad.webp',      top:3,  bot:1534, fx:0.481 },
                   /* ⚠⚠ **法環不算在身高裡**（ver -635，Ray：「戰鬥中諾的 saint install
                      立繪太小，因為你把法環也納入總高了，抓臉的大小調整」）。
                      這張圖頭頂上有一圈金色法環，照 alpha 上下緣量會把它算進人物身高
@@ -224,6 +233,46 @@ export const ART = {
     /* 北方泊地教堂那一幕（ver -624）。逐張量（tools/measure_si.py）。 */
     scared:   { src:'resources/SI/Anya_SI_Scared.webp',   top:0, bot:1511, fx:0.477 },
     runworry: { src:'resources/SI/Anya_SI_runworry.webp', top:0, bot:1534, fx:0.432 },
+    /* ══ 娜塔莉那一幕（ver -636）══
+       ⚠⚠ 這三張都是**近景**（比基本立繪畫得大：人物只畫到膝或大腿，頭相對大）。
+         照 alpha 上下緣量 ＝「這 1535px 就是 162cm」→ 頭會比別人大一圈
+         （Ray：「娜塔莉跟安雅的立繪太失控了吧」）。
+         所以 `cm` 給的是**這張畫該佔多少公分**（§6.5 的 `cm` 就是這個意思）：
+         畫得越近 → 佔的公分越少 → 頭才會與其他立繪一樣大。
+       ⚠ 這幾個數字是**看出來的**（沒有可靠的自動量法：臉的自動偵測會被頭髮吃掉）。
+         頭太大就往下調、太小就往上調 —— 只動 `cm`，別去動 top/bot。
+       ⚠⚠ **近景一定要配 `standCm`**：`cm` 同時管**大小**與**頭頂高度**
+         （頭頂 y ＝ 頂線 ＋ (最高身高−cm)×每公分像素），所以只調 `cm` 會讓
+         「畫得越近 → 頭擺得越低」——正好相反。`standCm` 是**站姿身高**，
+         只管頭頂高度、不進縮放：近景給她真正的 162，頭就會回到該在的位置。 */
+    crying:   { src:'resources/SI/Anya_SI_Crying.webp',    top:0,  bot:1535, fx:0.422, cm:110, standCm:162 },
+    desperate:{ src:'resources/SI/Anya_SI_Desperate.webp', top:13, bot:1535, fx:0.402, cm:110, standCm:162 },
+    /* ⚠⚠ `sobbing` 是**裁到膝蓋**的近景，不是全身（§6.5：半身圖照量 alpha 上下緣
+       會把人放大好幾倍）。畫面上看得到的大約是「頭頂→膝」＝身高的 75%，
+       所以 `cm` 給 162×0.75 ≈ **122** —— 這樣她的**頭**才會與其他立繪一樣大，
+       而畫面下緣正好切在膝蓋（那就是近景該有的樣子）。
+       ⚠ 95 是**看出來的**，不是量出來的：覺得頭太大就往上調、太小就往下調。 */
+    sobbing:  { src:'resources/SI/Anya_SI_sobbing.webp',   top:4,  bot:1535, fx:0.320, cm:95, standCm:162 },
+  } },
+  /* ══ 娜塔莉（ver -636，Ray 交稿）══ 安雅的侍女，只在北方泊地那一幕出現。
+     ⚠⚠ 兩張圖都是**坐倒在地**的姿勢，不是站姿 —— 所以 `cm` 不是她的真實身高，
+       而是「這張畫應該在畫面上佔多少公分」（§6.5 的 `cm` 就是這個意思）。
+       ⚠⚠ 這個數字是**看渲染結果調的**，不是照真人比例算的（ver -636 由 100 改成 150，
+         Ray：「娜塔莉跟安雅的立繪太失控了吧」）：照「坐姿約 100cm」填，她會小到整個
+         被下半的槍棺面盤吃掉 —— 因為畫面只看得到站姿的上面約六成。
+         她那張圖是**用全身立繪的尺畫的坐姿**，所以要接近全身的值才對得上別人的頭。
+       ⚠ 這樣算出來的結果正好對：`bot` 一律落在同一條地平線上（那是取景公式的性質），
+         所以她「坐在地上」的下緣與別人的腳底同高，而頭比站著的人矮一大截。
+     ⚠ `dying` 與 `dead` 是**同一個尺**畫的（頭的位置不同而已），共用一個 `cm`。
+     ⚠ 站**左**：這一幕安雅固定站右（她是這一幕的主角），兩人要分邊（§6.5）。
+     ⚠ `eye` 沒量（CAST_EYE_MIX=0 不參與運算）。 */
+  /* ⚠ `cm` 管**大小**（150：她那張圖是用全身立繪的尺畫的坐姿）、
+     `standCm` 管**頭頂高度**（140：她坐在地上，頭比站著的人低一截）。
+     ⚠ 照真人比例（坐姿頭頂約 100cm）會把她整個推到對話框底下 —— 這個舞台
+       只看得到站姿的上面約六成。140 是「看得見、又明顯比別人低」的折衷。 */
+  natalia:{ cm:150, standCm:140, eye:0, fx:0.657, top:47, bot:1535,
+           side:'L', alt:null, base:'resources/SI/NPC_Natalia_SI_dying.webp', expr:{
+    dead: { src:'resources/SI/NPC_Natalia_SI_dead.webp', top:103, bot:1535, fx:0.363 },
   } },
   /* 璐娜：戰鬥搭檔，劇情立繪尚未指定 —— 先指 cut-in 圖，數字**沒有量過**。
      ⚠ 真的要讓她在劇情裡站台，top/bot/fx 一定要重量（cut-in 是胸像構圖，

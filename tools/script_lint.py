@@ -274,7 +274,12 @@ def main():
                 if not (isinstance(z, dict) and 0 <= z.get('x', -1) <= 1 and 0 <= z.get('y', -1) <= 1):
                     err('%s：cgZoom 要是 {x,y}，兩個值都在 0~1' % tag)
             # 沒有台詞、沒有卡片、又不會自己走的拍：畫面上沒有 ▼ 提示，看起來像卡住
-            if not ln.get('text') and not ln.get('card') and not ln.get('auto') and not ln.get('blank'):
+            #  ⚠ **有立繪的那一種不算**（ver -628 起）：「有立繪在台上的無台詞拍要點擊
+            #    才往下播」是規矩不是漏寫（§6.5）—— 那一拍就是要玩家看清楚她的表情。
+            #    這裡只認**這一拍自己有指定立繪**的（`portrait`）；沿用上一拍的看不出來，
+            #    寧可少報也不要每一拍都吵。
+            if (not ln.get('text') and not ln.get('card') and not ln.get('auto')
+                    and not ln.get('blank') and not ln.get('portrait')):
                 warn('%s：空台詞又沒有 auto —— 畫面上不會有提示，玩家可能以為卡住' % tag)
 
     for sid, sc in script.items():
