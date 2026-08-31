@@ -327,7 +327,10 @@ export const ART = {
        ⚠ `standCm` 不寫（沿用 152）：那是「頭頂擺多高」，兩張要一樣高就不能各寫一個。
          Ray 手動填的 130 是**有效的**（實測整個往下 87.6px＝(152−130)×每公分像素）——
          只是用它來補「`top` 沒對」會過頭。真的想讓她更低再動它。 */
-    dead: { src:'resources/SI/NPC_Natalia_SI_dead.webp?v=2', top:47, bot:1535, cm:156, fxShift:0.130 },
+    /* ⚠ `standCm` 比本尊低 4.7cm ＝ 這一張整個往下 20px（ver -654，Ray 指定）。
+       換算走 390×844 那個驗收視口的每公分像素（4.28）—— 位移寫成 cm 才不會
+       換一台機器就走鐘（headY 是 `(CAST_TALL−standCm)×pxCm` 算出來的）。 */
+    dead: { src:'resources/SI/NPC_Natalia_SI_dead.webp?v=2', top:47, bot:1535, cm:156, standCm:147.3, fxShift:0.130 },
   } },
   /* 璐娜：戰鬥搭檔，劇情立繪尚未指定 —— 先指 cut-in 圖，數字**沒有量過**。
      ⚠ 真的要讓她在劇情裡站台，top/bot/fx 一定要重量（cut-in 是胸像構圖，
