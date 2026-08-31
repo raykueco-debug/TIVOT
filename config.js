@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.08.31-675';
+export const VERSION = 'ver 2026.08.31-676';
 
 export const GAME_CONFIG = {
 
@@ -849,6 +849,10 @@ export const GAME_CONFIG = {
        收尾（沒擊殺那一種）。兩者都是**一次性**折抵，**不乘次數**
        （它們是「這一場有沒有發生過」），而且**互斥**：擊殺的那一次是處決。
        ⚠ 秒數 ver -675 由 Ray 改定：MB −10、處決 −15（原本處決是 −5）。
+       ⚠⚠⚠ **折得重是刻意的，不要「平衡」掉它**（ver -676，Ray：「處決的發生率
+         本來就不高，而且聖徒／夢魘既然高風險高回報，那就要在評價上也表現出來」）——
+         處決要在倒數槽推滿前清完整盤而且那一擊剛好致死；而聖徒化／惡夢化本身
+         就是拿 OBE／熔斷換來的。要調難度動 `timeK`，不要回頭削這兩項。
        ⚠ 惡夢化清空殘格也算 MB（Ray：「同 SI 的 MB」）。 */
     penalty: { wrong: 2, ult: 3, block: 1, delay: 1, counter: -0.5,
                overkill: 0, perfectBoard: -1, maxBurst: -10, execution: -15 },
