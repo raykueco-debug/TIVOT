@@ -75,6 +75,18 @@ export function advanceToHour(h){
   advance(mins);
   return mins;
 }
+/* 推到**下一個** h:00 —— 已經過了就推到**隔天**的 h:00（ver -656，Ray：「時間強制
+   進到下午2點，如果當前時間已過2點就往後推一天的兩點」）。
+   ⚠ 與 `advanceToHour` 是兩件事，不要合併：那一支是「推到今天的 h 點，過了就不動」
+     （傍晚被抓回旅店用的），這一支是「一定要到 h 點」。兩者都不倒轉。
+   ⚠ 剛好等於 h:00 時**不動**（已經在那一刻了，不必再等一天）。 */
+export function advanceToNextHour(h){
+  let mins = Math.round((h - hourF())*60);
+  if(mins < 0) mins += 1440;
+  if(mins <= 0) return 0;
+  advance(mins);
+  return mins;
+}
 
 /* ── 時段 ──
    ⚠ 界線是**內容設定**，但這裡只有一組（全城鎮通用），所以放這支就好；

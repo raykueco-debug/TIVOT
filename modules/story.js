@@ -541,6 +541,7 @@ const BGM_FILES=[
      ⚠ 一律用 m4a（§6.6 的規約）：ogg 在 Safari 17 以前整個不支援，
        手機上會變成「那一段沒有音樂」。 */
   'PerituneMaterial_Suspense6_loop.m4a', 'Peritune_Crimson_Moon_loop.m4a',
+  'PerituneMaterial_Entangle.m4a',   // 北方泊地那一夜（ver -656，Ray 指定；Credit 已加）
 ];
 /* 別名：腳本裡慣用的短名 → 實際檔名（去副檔名）。加新別名只動這裡。 */
 const BGM_ALIAS={ crisis:'peritunematerial_crisis_loop', lunaria:'bgm_lunaria',
@@ -548,7 +549,8 @@ const BGM_ALIAS={ crisis:'peritunematerial_crisis_loop', lunaria:'bgm_lunaria',
                   result:'bgm_result', failed:'bgm_missionfailed', flight:'bgm_flight',
                   capital:'bgm_capital_day',
                   suspense:'peritunematerial_suspense6_loop',   // ver -614
-                  crimson:'peritune_crimson_moon_loop' };
+                  crimson:'peritune_crimson_moon_loop',
+                  entangle:'peritunematerial_entangle' };   // ver -656
 const BGM_SRC=(()=>{ const m={};
   for(const f of BGM_FILES) m[f.replace(/\.[^.]+$/,'').toLowerCase()]='resources/audio/bgm/'+f;
   return m; })();
@@ -1974,6 +1976,18 @@ function renderLine(){
 
   /* 跳到某一個 `label`（ver -377）。用途：分歧演完之後跳過另一支、回到合流點。
      ⚠ 找不到就當作這一段結束 —— 打錯字要看得出來，不要靜靜地演下去。 */
+  /* ══ 條件拍（`onlyIf` / `skipIf`，ver -656）══════════════════════════════
+     這一拍要不要演，看一支旗標：`onlyIf` ＝旗立著才演、`skipIf` ＝旗立著就跳過。
+     ⚠ 為什麼需要：同一段對白會被走第二次（店裡的「射擊挑戰」可以一直挑），
+       而第二次之後有些拍不該再出現（獎品已經領過了、費用已經免了）。
+       腳本層用旗標表達「這一次跟上一次不一樣」，不必為此複製一份對白（鐵律 7）。
+     ⚠ 它**只跳過這一拍**，不是跳到別的地方 —— 要跳走請用 `goto`。
+       配 `{ end:true, onlyIf:'…' }` 就是「某個條件下這一段提早結束」。
+     ⚠ 條件是 progress 的旗標（唯一的真相），不接受任意運算式：
+       腳本是資料，資料裡不放程式。 */
+  if((line.onlyIf && !prog.hasFlag(line.onlyIf)) ||
+     (line.skipIf &&  prog.hasFlag(line.skipIf))) return advance();
+
   if(line.goto){
     const at=indexOfLabel(cur.lines, line.goto);
     if(at<0){ console.info('[story] 沒有這個 label：', line.goto); return endScene(); }
@@ -2895,7 +2909,16 @@ let choiceNav=null;
 /* 這個選項現在按不按得動（ver -655）：`cost` ＝ 選下去要付的錢（挑戰費、過路費…）。
    ⚠ 錢在**按下去那一刻**扣（見下面的 click），不是演到那一拍就扣 ——
      玩家還沒答應。 */
-function choiceAfford(o){ return !o || !o.cost || inv.getMoney() >= (o.cost|0); }
+/* 這個選項現在要付多少（ver -656）：`costUntil` ＝**那支旗立起來之後就免費**
+   （Ray：「挑戰失敗就要再花錢挑戰，成功以後挑戰不用錢」）。
+   ⚠ 一個計算點：要不要收錢、收多少，只有這一支在算（鐵律 7）—— 顯示（變暗）
+     與真的扣錢都問它。 */
+function choiceCost(o){
+  if(!o || !o.cost) return 0;
+  if(o.costUntil && prog.hasFlag(o.costUntil)) return 0;
+  return o.cost|0;
+}
+function choiceAfford(o){ return inv.getMoney() >= choiceCost(o); }
 function openChoice(opts, pick){
   if($('choiceSheet') || !opts || !opts.length) return;
   const ov=document.createElement('div'); ov.id='choiceSheet';
@@ -2914,7 +2937,8 @@ function openChoice(opts, pick){
     const o=opts[+b.dataset.i]||{};
     /* 挑戰費：**按下去才扣**（ver -655）。⚠ 錢不夠的選項本來就 disabled，
        這裡再擋一次是保險（鍵盤那條路也走同一顆鈕的 click）。 */
-    if(o.cost && !inv.spendMoney(o.cost|0)) return;
+    const need=choiceCost(o);
+    if(need && !inv.spendMoney(need)) return;
     ov.classList.remove('on');
     setTimeout(()=>{ if(ov.parentNode) ov.parentNode.removeChild(ov); pick&&pick(o.goto); }, 180);
   }));

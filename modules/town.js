@@ -511,11 +511,44 @@ function eveningDue(n){
      一個點，用時刻比會在第三天早上又成立一次。
    ⚠ 旗標**立刻記**（不是演完才記）：這一格是狀態轉移不是對白，而且下一拍就要
      `enter(goto)`，不先記的話那一次 enter 又會判到同一個閘門（無窮遞迴）。 */
+/* ══⚠⚠ **強制轉場的閘門是一張清單**（ver -656）══════════════════════════
+   城上寫 `gates:[…]`；`stage1` 是它的舊名（帝都那一個），視為只有一項的清單 ——
+   **判定只有這一支**（鐵律 8），日後多一個閘門只加一筆資料。
+   一筆閘門的欄位：
+     flag        立起來就不再觸發（**立刻記**，見下）
+     need        這支旗立了才有效（前置）
+     hour        到達或經過**時間軸上**那一個時刻才觸發（開局起算的分鐘數比，
+                 見 `firstHourAt`）—— 帝都 stage 0 的結尾用的是這一種
+     hourOfDay   **今天**過了這個時刻就觸發（`hourF()` 比）
+     onMove      **走一步就觸發**（Ray：「一進行地圖移動，祭司會出現」）
+     goto        強制移到哪一格
+     enterAgain  已經站在那一格時也要再 enter 一次（讓那一格的 acts 接手）
+     clockTo     轉場前把時鐘推到**下一個**這個時刻（advanceToNextHour）
+     stage / lines / sides  同舊的 stage1
+   ⚠ 條件全部是 **and**：都寫就都要成立。
+   ⚠ 清單由上往下取**第一個成立的**（同 acts）。 */
+function gateList(){
+  const T=TOWNS[townId]; if(!T) return [];
+  return T.gates ? T.gates : (T.stage1 ? [T.stage1] : []);
+}
 function stageGate(){
-  const T=TOWNS[townId], g=T && T.stage1;
-  if(!g) return null;
-  if(g.flag && prog.hasFlag(g.flag)) return null;
-  return (clock.elapsed() >= clock.firstHourAt(g.hour)) ? g : null;
+  for(const g of gateList()){
+    if(!g) continue;
+    if(g.flag && prog.hasFlag(g.flag)) continue;
+    if(g.need && !prog.hasFlag(g.need)) continue;
+    /* 「一進行地圖移動」：`backDir` 是這一次抵達由 `pendingDir` 推出來的 ——
+       走過來才有，開城／強制轉場／讀檔都是空的（forceGo 會把 pendingDir 清掉）。 */
+    if(g.onMove && !backDir) continue;
+    if(g.hour!=null && clock.elapsed() < clock.firstHourAt(g.hour)) continue;
+    /* ⚠⚠ `hourOfDay` 與 `hour` 是**兩種時刻**，不要混用（ver -656 踩過）：
+       `firstHourAt(18)` ＝**開局那天**的 18:00（開局是 11:00，所以是第 7 小時）——
+       北方泊地是第二天以後的事，那個點早就過了，寫 `hour:18` 等於「立刻成立」，
+       安葬一演完就被抓回旅店，中間那段自由探索整個消失（實測就是這樣）。
+       這一段要的是「**今天**過了六點」，所以比的是 `hourF()`。 */
+    if(g.hourOfDay!=null && clock.hourF() < g.hourOfDay) continue;
+    return g;
+  }
+  return null;
 }
 /* 時鐘一動就問一次：該不該強制轉場。回傳 true ＝已經接手（呼叫端不要再做別的事）。
    ⚠ 由 `enter()` 的收尾與旅店（`host.onClock`）呼叫 —— 那兩處涵蓋了所有會推時鐘的路。 */
@@ -524,7 +557,10 @@ function clockGate(){
   if(!g) return false;
   if(g.flag) prog.addFlags([g.flag]);
   if(g.stage!=null) prog.setStage(g.stage);
-  if(!g.goto || g.goto===nodeId) return false;   // 已經站在那裡：讓原本的流程繼續（acts 會接手）
+  /* ⚠ 時鐘在**演台詞之前**推（ver -656）：那一段路不算時間，而下一格的背景
+     要用推完之後的時段挑（`bgFor` 在 `enter()` 裡才問時鐘）。 */
+  if(g.clockTo!=null) clock.advanceToNextHour(g.clockTo);
+  if(!g.goto || (g.goto===nodeId && !g.enterAgain)) return false;   // 已經站在那裡：讓原本的流程繼續（acts 會接手）
   /* ⚠⚠ **先講一句再轉場**（ver -438，Ray：「讓蕾娜在旅店先講一句『好囉，該出發囉』
      再淡入淡出轉到下一幕」）。台詞在資料上（`TOWNS[].stage1.lines`，鐵律 1）。
      ⚠ 睡醒那一刻**黑幕還蓋著**（旅店的睡覺演出留下來的）—— 要先把畫面亮回來，
@@ -1483,7 +1519,10 @@ function afterArrive2(n){
      旗標名只有 `enter()` 那一支知道（`kind` 版／節點版兩種）—— inn 自己拼會拼錯城。 */
   maybeMeetOut();            // 有人外出時走到她那一格 → 碰到她（ver -575，取代 -461 的蕾娜版）
   /* ⚠ 戰鬥地圖不開旅店大廳（ver -584）—— 伙伴門／獨自坐坐／回房睡覺都是探索的機制。 */
-  if(n && n.inn && !siegeOn()) inn.arrive(n, { allSeen: allSeen(), introFlag: flagOf(n, nodeId),
+  /* ⚠ 沒有初見對白的旅店（北方泊地）傳 **null**（ver -656）：那面旗永遠不會立，
+     而大廳是等它才出現的 —— 見 `inn.introDone()`。 */
+  if(n && n.inn && !siegeOn()) inn.arrive(n, { allSeen: allSeen(),
+                                 introFlag: (n.lines && n.lines.length) ? flagOf(n, nodeId) : null,
                                  /* 這是哪一座城的哪個節點（ver -481）：睡覺那一刻要記
                                     「上一次睡覺的旅店」——連敗三場送回來用。 */
                                  where: { town: townId, node: nodeId },
@@ -1492,7 +1531,10 @@ function afterArrive2(n){
                                       大廳裡的時鐘會走（獨自坐坐兩小時），快照會過期，
                                       而「她在不在房裡」的真相只有 `inRoom()` 一支（鐵律 7）。 */
                                  st1: st1Active() ? {
-                                   roster: girlsHere(),
+                                   /* ⚠ `innRoster` ＝這一格自己指定的名單（ver -656，
+                                      北方泊地：諾薇兒與安雅躺著，門口只有蕾娜）。
+                                      不寫＝照這一章入隊的所有人（`girlsHere`）。 */
+                                   roster: n.innRoster || girlsHere(),
                                    inRoom: inRoom,
                                    /* 同行結束回房＝睡著了（ver -567）：敲門只回
                                       `innStage1.nouAsleep` 那句旁白，約不出來。 */

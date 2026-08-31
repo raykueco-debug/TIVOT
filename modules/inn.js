@@ -100,7 +100,11 @@ let eveningFlag = null;
    敲門的台詞、約諾薇兒出門的回呼（ver -575 由「諾/蕾兩個布林」改成四人通用）。
    null＝還在 stage 0 的第一晚（走原本的劇本）。 */
 let st1 = null;
-function introDone(){ return !!(introFlag && prog.hasFlag(introFlag)); }
+/* 初見那一幕演完了沒。⚠⚠ **這一格根本沒有初見對白時算「演完」**（ver -656）：
+   `introFlag` 由城鎮傳進來，**沒有 `lines` 就傳 null** —— 沒有要等的東西，
+   大廳當然一開始就在。舊寫法（`introFlag && …`）會讓沒有初見戲的旅店
+   （北方泊地）永遠等不到那面旗，門與鈕整組不出現（實測就是）。 */
+function introDone(){ return !introFlag || prog.hasFlag(introFlag); }
 
 /* ══ 一次性說明（遮罩＋箭頭）══════════════════════════════════════════
    ⚠ **一次性**（Ray 指定）：旗標記在 progress，看過就不再擋路。

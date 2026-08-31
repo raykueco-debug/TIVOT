@@ -464,13 +464,15 @@ function gunHitOnEnemy(cell){
    資料在 `tuning.gunTune`、旗標在 progress，這裡只是把兩者接起來。
    ⚠ 不快取成模組常數（像 `DMG_BASE` 那樣）：旗標是**遊戲中途**才立的，
      而模組常數是 import 那一刻就定死的 —— 那樣強化要重整頁面才生效。 */
-function gunTuneBonus(){
-  const g=T.gunTune; if(!g || !g.flag) return 0;
-  return prog.hasFlag(g.flag) ? (g.dmgBase||0) : 0;
+function gunTuneMul(){
+  const g=T.gunTune; if(!g || !g.flag) return 1;
+  return prog.hasFlag(g.flag) ? (g.dmgMul||1) : 1;
 }
 function hitDamage(){
   const c=Math.min(state.combo,DMG_COMBO_CAP);
-  return DMG_BASE + gunTuneBonus() + c*DMG_PER_COMBO;
+  /* ⚠ 強化是**乘在整個普攻傷害上**（ver -656，Ray：「主槍普攻攻擊力強化5%」）——
+     連擊加成也一起放大，那才是「攻擊力 +5%」。 */
+  return (DMG_BASE + c*DMG_PER_COMBO) * gunTuneMul();
 }
 function floatDmg(txt,left,top,crit,extraClass){
   const d=document.createElement('div');

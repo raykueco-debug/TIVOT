@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.08.31-655';
+export const VERSION = 'ver 2026.08.31-656';
 
 export const GAME_CONFIG = {
 
@@ -1727,9 +1727,10 @@ export const GAME_CONFIG = {
        ⚠ 它是**一輪遊戲內**的狀態：旗標走 `progress`，所以 `newRun()` 會清、讀檔會跟著回去（§6.9）。
        ⚠ **試玩版（出陣）吃不到**：那條路不跑主線，旗標永遠不存在 —— 與 `weapons[].story`
          那條「本篇與試玩版是兩套數值」同一個原則，只是這一支是用旗標分的。
-       ⚠⚠ **+1 是我填的**（Ray 只寫了台詞沒給數字）：基礎 3 → 4，連擊滿時 7 → 8
-         （整體約 +20%）。要調就只動這一個數字。 */
-    gunTune: { flag:'np_gun_tuned', dmgBase:1 },
+       ⚠⚠ **+5%**（ver -656，Ray：「挑戰成功主槍普攻攻擊力強化5%」）——
+         乘在**整個普攻傷害**上（含連擊加成），不是只加在基礎值。
+         -655 那一版是 `dmgBase:1`（絕對值 +1），已被 Ray 的指定取代。 */
+    gunTune: { flag:'np_gun_tuned', dmgMul:1.05 },
     dmgPerCombo:         0.2,   // 每層連擊加成
     dmgComboCap:         20,    // 連擊加成計入上限
     dmgDualMult:         0.7,   // 雙槍傷害倍率（<1=安全牌）
@@ -1889,6 +1890,9 @@ export const GAME_CONFIG = {
       peritunematerial_crisis_loop:1.077,
       /* 北方泊地那兩首（ver -624 補量，audio_scan 實測 −16.7／−12.7 LUFS）。 */
       peritunematerial_suspense6_loop:1.401,
+      /* ⚠ **還沒量**（ver -656 新加的曲子）：1.0 ＝以母帶的響度播出。
+         跑一次 `tools/audio_scan.html` 把建議值貼回來（§6.6）。 */
+      peritunematerial_entangle:1.0,
       peritune_crimson_moon_loop:0.879,
       /* ⚠ 母帶太小聲（−26 LUFS）：×master×層之後會撞上 HTMLAudio 的 1.0 上限，
          實際只到 −26 而不是目標的 −21.9。要救得重做母帶。 */

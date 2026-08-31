@@ -81,9 +81,14 @@ const gunN = N('GUNSMITH_NP'), groN = N('SHOPKEEP_NP');
      不記在戰勝那一拍：他還沒動手。 */
 const NP_RANGE_SEQ = [
   gunN(null,'喔！想打靶嗎？咱這一區的記錄可是25秒，破得了的話……'),
-  gunN(null,'現在我也拿不出像樣的東西，就免費幫你調校一下那兩把槍吧！'),
-  gunN(null,'挑戰費200G喔。'),
-  { choice:[ { text:'接受', goto:'np_go', cost:200 },
+  /* 這兩拍是**還沒領過獎品**時才講（ver -656，Ray：「成功以後挑戰不用錢
+     但也不會有強化事件」）—— 已經調校過了就不再提獎品，也不再收錢。 */
+  Object.assign(gunN(null,'現在我也拿不出像樣的東西，就免費幫你調校一下那兩把槍吧！'),
+                { skipIf:'np_gun_tuned' }),
+  Object.assign(gunN(null,'挑戰費200G喔。'), { skipIf:'np_gun_tuned' }),
+  /* ⚠ `costUntil` ＝那支旗立起來之後就**免費**（同上）。
+     ⚠ 挑戰**失敗**不會立旗，所以要再挑戰就得再付一次 —— 那正是 Ray 要的。 */
+  { choice:[ { text:'接受', goto:'np_go', cost:200, costUntil:'np_gun_tuned' },
              { text:'拒絕', goto:'np_no' } ] },
   /* —— 拒絕／挑戰失敗（同一句，Ray 的稿）—— */
   Object.assign(gunN(null,'可惜！下次再挑戰吧！'), { label:'np_no' }),
@@ -93,6 +98,8 @@ const NP_RANGE_SEQ = [
   { battle:'np_range', onLose:'np_no' },
   /* —— 挑戰成功 —— */
   gunN(null,'真是驚人啊！'),
+  /* 已經調校過了 → 到此為止（ver -656）：獎品只有一次。 */
+  { end:true, onlyIf:'np_gun_tuned' },
   gunN(null,'依照約定，我來幫你做些強化。'),
   /* 三個音效各一拍（Ray：「依序 se_ui_click, se_ginclick, se_ui_sortie」）。
      ⚠ 沒有台詞就一定要給 `auto`（沒有框就沒有 ▼，§6.5）；立繪維持在台上。 */
@@ -956,6 +963,31 @@ export const TOWNS = {
        （ver -614 Ray 指定的節奏），而遇敵要到黑爪打完才停 —— 兩件事，見 townBgm。 */
     siege: { from:'np_port_arrive', keep:['church'],
              bgm:'crisis', bgmUntil:'np_clear_church' },
+    /* ══⚠⚠ 自由探索期的兩個強制轉場（ver -656，Ray 交稿）══════════════════
+       ① 黑爪打完之後**一走動**，司祭就來找你幫忙安葬死者 → 強制移到墓地，
+          時間推到**下一個**下午兩點（已經過了就是隔天的兩點）。
+       ② 過了**六點**跳一個對話框「該回去看看了。」→ 強制回旅店，接那一夜的戲。
+       ⚠ 判定與執行都在 `modules/town.js` 的 `stageGate`／`clockGate`（鐵律 8）——
+         與帝都 stage 0 的結尾是**同一支**，這裡只是多了兩筆資料。
+       ⚠ ①的旗標（`np_burial`）是**閘門自己**立的（立刻記），墓地那一段演完才記
+         `np_burial_done` —— 兩支旗分別回答「祭司來過了沒」與「那場戲演完了沒」
+         （鐵律 9：一個狀態一個擁有事件）。中途離開城鎮的話，②不會提早成立。
+       ⚠ ②要 `enterAgain`：玩家可能**已經站在旅店裡**（在大廳待到六點），
+         那時 `goto===nodeId`，不重新 enter 一次的話那一格的 `acts` 沒有人叫得動。
+       ⚠⚠ **司祭那兩句是我寫的**（Ray 只寫了「祭司會出現，找你去協助安葬死者」，
+         沒給台詞）—— 要換直接改這裡。 */
+    gates: [
+      { flag:'np_burial', need:'np_claws_done', onMove:true,
+        goto:'cemetery', clockTo:14,
+        lines:[ pri(null,'……那位騎士。'),
+                pri(null,'死者還躺在瓦礫裡。方便的話，能請你幫忙送他們最後一程嗎？') ] },
+      /* ⚠ `hourOfDay` 不是 `hour`：要的是「**今天**過了六點」（見 modules/town.js
+         那一條的說明）—— 用 `hour` 的話那個點在開局那天早就過了，安葬一演完
+         就會立刻被抓回旅店。 */
+      { flag:'np_night', need:'np_burial_done', hourOfDay:18,
+        goto:'inn', enterAgain:true,
+        lines:[ { speaker:'NARRATION', text:'該回去看看了。' } ] },
+    ],
     /* ══⚠⚠ **重建之後換一整組背景**（ver -627，Ray：「stage5 之後北泊改用這一組差分」）══
        節點的 `bg` 是**戰損版**（`_BF`，沒有時段差分）；到了 `fromStage` 這一章之後
        改吃這一組**已重建**的基底名，時段差分（Day／Night）由既有的候選鏈自己接
@@ -1258,7 +1290,20 @@ export const TOWNS = {
         ],
       },
       /* 墓地＝北側上方那個「空格」，Ray ver -567 定案是墓地。 */
-      cemetery: { bg:'Northport_cemetery_BF', name:'北方泊地　墓地',       exits:{ back:'north' } },
+      /* ══ 安葬死者（ver -656，Ray 交稿）══════════════════════════════════
+         由城上的閘門 ① 帶進來（時間已經被推到下午兩點）。
+         ⚠⚠ **三句都是司祭**：那時台上只有主角與他 —— 蕾娜在旅店照顧諾薇兒與安雅
+           （見旅店那扇門的台詞），而「多虧有『你』」是單數。
+         ⚠ Ray 的稿裡「辛苦你們了。多虧有你，才沒有更多人死去。」**重複了兩次**，
+           這裡只演一次（同一個人連講兩遍同一句讀起來是 bug）。真要兩次再說。 */
+      cemetery: { bg:'Northport_cemetery_BF', name:'北方泊地　墓地', exits:{ back:'north' },
+        acts:[
+          { flag:'np_burial_done', need:'np_burial', lines:[
+            pri(null,'這實在……不是人類應得的死法。'),
+            pri(null,'辛苦你們了。多虧有你，才沒有更多人死去。'),
+            pri(null,'願神庇佑這些無辜的靈魂。'),
+          ] },
+        ] },
       /* ══ 雜貨店（ver -655，Ray 交稿）══ 功能與帝都相同（買／賣）。
          ⚠ 那一句同時當**進場對白**與**「交談」鈕**的內容 —— 只寫一次（鐵律 7）。 */
       grocery:  { bg:'Northport_grocery_BF', name:'北方泊地　雜貨街', kind:'grocery',
@@ -1267,10 +1312,54 @@ export const TOWNS = {
         hours:[8,20], closed:'櫥窗裡的燈熄了，門板上掛著「已打烊」。',
         lines: NP_GROCER_LINES, keeper: NP_GROCER_LINES },
       tavern:   { bg:'Northport_tavern_BF', name:'北方泊地　餐飲街',     exits:{ back:'east' } },
-      /* ⚠ 旅店先是空房間、**不掛 `inn:true`**：旅店大廳（伙伴門/睡覺存檔）那一套
-         的分支資料還綁著帝都 stage0 的旗標 —— 等 Ray 給這座城的旅店稿再接，
-         免得「被抬回旅店」的醒來拍與睡覺存檔接在沒調過的資料上。 */
-      inn:      { bg:'Northport_hotel_BF', name:'北方泊地　旅店',       exits:{ back:'east' } },
+      /* ══ 旅店（ver -656，Ray 交稿）══════════════════════════════════════
+         「六點前直接走進旅店，只有蕾娜會亮燈」＋「一過六點……強制轉移」那一夜。
+         ⚠⚠ **只有房門，沒有那兩顆行動鈕**（獨自坐坐／回房睡覺）：不寫 `innSpots`
+           ＝那兩顆擺不出來（`inn.relayout` 的 `bgPoint` 回 null 就不亮）。
+           那不是漏寫 —— 這一段的時間要靠**走路**推過六點，給了睡覺就會一口氣
+           跳到隔天早上，把那一夜的戲整段跳過去。Ray 要旅店的完整機能再補。
+         ⚠ `innRoster:['RENNA']` ＝門口只有她一扇（諾薇兒與安雅躺在房裡）。
+           不寫的話會照這一章入隊的所有人開四扇門，而那三扇都沒有戲。
+         ⚠ 敲門那一句是 Ray 的稿，一字不要動。 */
+      inn: {
+        bg:'Northport_hotel_BF', name:'北方泊地　旅店', exits:{ back:'east' },
+        inn:true,
+        innRoster:['RENNA'],
+        innStage1:{ renna:'你一個大男人不方便吧？我來照顧她們兩個就好了。' },
+        /* ══ 那一夜（ver -656，Ray 交稿）══════════════════════════════════
+           由城上的閘門 ② 帶進來。⚠ 背景換成**房間**那一張（`Northport_Hotel_room_Night`，
+           檔名自帶時段，不吃候選鏈），BGM 換 Entangle（Credit 已加）——
+           兩者都是**持續狀態**，寫第一拍就好。
+           ⚠ 安雅與諾薇兒那兩句「……」**無立繪**（Ray 標的）：她們睡著了，
+             `show:false` ＝不上台；蕾娜留在台上（她在講話之外的每一拍都在場）。
+           ⚠ 站位不必覆寫：台上只有蕾娜一個人。 */
+        acts:[
+          { flag:'np_night_done', need:'np_night', lines:[
+            { speaker:'RENNA', text:'結束了嗎？', bgm:'entangle',
+              bg:'Northport_Hotel_room_Night',
+              portrait:{ char:'RENNA', expr:'ask', show:true } },
+            { speaker:'PLAYER', blank:true },
+            ren(null,'別擔心，兩個人都沒事。睡著了。'),
+            { speaker:'ANYA',     text:'……', portrait:{ char:'ANYA',     show:false } },
+            { speaker:'NOUVELLE', text:'……', portrait:{ char:'NOUVELLE', show:false } },
+            ren(null,'你也早點休息吧。'),
+            { speaker:'PLAYER', blank:true },
+            ren('ask','你是說……今天的敵人？'),
+            ren('thinking','確實有點不自然。'),
+            ren('thinking','當我們看到祂的瞬間，大腦就已經接受祂「存在」的事實了。'),
+            ren('thinking','連「為什麼」都沒去想。'),
+            ren('thinking','理所當然地就好像……在夢中一樣。'),
+            { speaker:'PLAYER', blank:true },
+            ren('ask','那就是司祭說的「惡夢」嗎……？'),
+            ren('thinking','來自『紫月』的少女，跟『惡夢』……如果只是巧合就好了。'),
+            { speaker:'PLAYER', blank:true },
+            ren('talkwork','我不確定你的層級能否接觸這個情報，還是先打住吧。'),
+            ren('stare','別擺出那種表情嘛，我們團長也是很嚴格的。'),
+            ren('writting','把那女孩帶回聖王廳，現在也只能這麼辦了。'),
+            ren('stare','早點休息吧，辛苦你囉。'),
+          ] },
+        ],
+      },
     },
   },
 };
