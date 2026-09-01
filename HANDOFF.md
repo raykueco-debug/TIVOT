@@ -112,6 +112,14 @@ window.dispatchEvent(new Event('resize'));   // 觸發 layoutClasp + updateEnerg
 
 ## 背景待辦（沿用中）
 
+- ⚠⚠ **多語種整批留到最後做**（ver -726，Ray：「多語種等全部完成再做」）——
+  在那之前**只維護繁中**，英日的落差先記著、不要逐版追。已知的落差：
+  - **`tutorial.story`（地宮聖徒戰・諾薇兒全程那一份）只有 `i18n/zh.js` 有**，
+    `config.js` 沒有 fallback → 切到 en／ja 時 `tut.story` 是 `null`
+    （`i18n.js` 的那一行 `L.tutorial.story ? … : null`）。
+    正解是把 zh 那一份搬進 `config.tutorial.story` 當預設，i18n 只做覆寫。
+  - 逐版改的台詞（-710 的「太早反擊」那三處、-726 的反擊教學）en/ja 有些跟不上。
+
 - **交叉雙槍兩張圖**（`resources/vfx/42452231-….png` 彩色、`resources/background/42452231-….png`
   黑剪影）：Ray 說「另有用途」，**用途還沒講** —— 下次問清楚再接，先不入版控。
 - stage2 羽蛇「戰鬥結束」戲（Sturm／Deck_Chaos／著水）等 Ray 的 stage2 稿與素材。
