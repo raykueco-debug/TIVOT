@@ -102,12 +102,15 @@ const NP_RANGE_SEQ = [
   { end:true, onlyIf:'np_gun_tuned' },
   gunN(null,'依照約定，我來幫你做些強化。'),
   /* 三個音效各一拍（Ray：「依序 se_ui_click, se_ginclick, se_ui_sortie」）。
-     ⚠ 沒有台詞就一定要給 `auto`（沒有框就沒有 ▼，§6.5）；立繪維持在台上。 */
-  { speaker:'GUNSMITH_NP', text:'', auto:800, se:'se_ui_click',
+     ⚠ 沒有台詞就一定要給 `auto`（沒有框就沒有 ▼，§6.5）；立繪維持在台上。
+     ⚠⚠ `noHold:true`（ver -703，Ray：「要自動三連播，不要點擊才播下一個」）——
+       台上有立繪的無台詞拍預設要點擊才推進（§6.5 的 -628），但**這三拍是一串
+       音效**，中間要人點三下就斷了節奏。 */
+  { speaker:'GUNSMITH_NP', text:'', auto:800, noHold:true, se:'se_ui_click',
     portrait:{ char:'GUNSMITH_NP', show:true } },
-  { speaker:'GUNSMITH_NP', text:'', auto:800, se:'se_ginclick',
+  { speaker:'GUNSMITH_NP', text:'', auto:800, noHold:true, se:'se_ginclick',
     portrait:{ char:'GUNSMITH_NP', show:true } },
-  { speaker:'GUNSMITH_NP', text:'', auto:800, se:'se_ui_sortie',
+  { speaker:'GUNSMITH_NP', text:'', auto:800, noHold:true, se:'se_ui_sortie',
     portrait:{ char:'GUNSMITH_NP', show:true } },
   /* ⚠ `gunTune:1` ＝主武器強化 +1 級（ver -700，Ray：「現在強化一次就是 2」——
      出廠 Lv1，這一次之後是 Lv2＝ +5%，與 ver -655 的數字一致）。

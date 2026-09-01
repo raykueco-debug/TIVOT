@@ -1101,10 +1101,13 @@ function stopAll(){
  *  clockElapsedMs：目前累計＝已併入 + 進行中的一段。overkill 與轉場自然不計入。
  *  ⚠ saintMode 一併排除：聖徒化是獨立計時的演出段（倒數槽自有節奏、盤面規則不同），
  *    不該算進「實打時間」。守在 clockResume 而非只在進場暫停一次——tap() 每次點擊都會
- *    呼叫 clockResume，只暫停一次會被聖徒化期間的點擊立刻重新起算。 */
+ *    呼叫 clockResume，只暫停一次會被聖徒化期間的點擊立刻重新起算。
+ *  ⚠⚠ **惡夢化（niMode）同理**（ver -703，Ray：「聖徒/夢魘化期間不算時間」）——
+ *    它是聖徒化的鏡像，同樣有自己的倒數槽與盤面規則。漏了它的話，NI 那 12.8 秒
+ *    會整段算進攻略時間，而玩家在那段裡根本不是在「打」。 */
 function clockResume(){
   if(state.clockRunSince===0 && !state.over && state.enemyHp>0
-     && !state.cutinPlaying && !state.transitioning && !state.saintMode){
+     && !state.cutinPlaying && !state.transitioning && !state.saintMode && !state.niMode){
     state.clockRunSince=Date.now();
   }
 }

@@ -656,7 +656,7 @@ function playSaintCutin(kind, done){
      —— 同 -454 的破防與生命歸還，分流一律走 `storyMode()`（鐵律 8）。
      試玩版（挑戰／出陣）照舊 Luna。 */
   const scImgKey = { execute: storyMode() ? 'cutin_exc_torsten' : 'cutin_exc',
-                     obe:'cutin_obe',
+                     obe:     storyMode() ? 'cutin_obe_nouvelle' : 'cutin_obe',
                      burst:   storyMode() ? 'cutin_mb_torsten'  : 'cutin_mb',
                      return:  storyMode() ? 'cutin_return_nouvelle' : 'cutin_return' };
   const scImgEl  = { execute:'saintCutinImg', obe:'saintCutinImgObe', burst:'saintCutinImgBurst', return:'saintCutinImgReturn' };

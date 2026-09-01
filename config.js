@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.01-702';
+export const VERSION = 'ver 2026.09.01-703';
 
 export const GAME_CONFIG = {
 
@@ -2359,10 +2359,16 @@ export const ASSETS = {
   cutin_dual_torsten:    "resources/CI/CI_Torsten_Dualcrush.webp",
   /* ══ 本篇的 MB／處決 cut-in（ver -702，Ray 交件）══ 試玩版照舊 Luna（見 cutin_mb／
      cutin_exc）；分流走 `storyMode()`，與破防／生命歸還那兩張同一套（鐵律 8）。
-     ⚠ 檔名是 Ray 給的 `Excute`（少一個 e）—— **照檔名**，不要自作主張改。 */
+     ⚠ ver -703：檔名的拼字由 `Excute` 更正為 `Execute`（Ray 指定）。 */
   cutin_mb_torsten:      "resources/CI/CI_Torsten_MB.webp",
-  cutin_exc_torsten:     "resources/CI/CI_Torsten_Excute.webp",
-  cutin_return_nouvelle: "resources/CI/Nouvelle_Sturm.webp",
+  cutin_exc_torsten:     "resources/CI/CI_Torsten_Execute.webp",
+  /* ══ 本篇的生命歸還／OBE cut-in（ver -703，Ray 交件）══
+     ⚠ 生命歸還原本**借** `Nouvelle_Sturm`（ver -454 的權宜）—— 正牌的來了就換掉。
+       那張 Sturm 留著（她自己的招，日後用得到）。
+     ⚠ OBE 在本篇也換成諾薇兒：那一拍是**搭檔**把靈魂拉回來，本篇的搭檔是她。
+       試玩版照舊 Luna。 */
+  cutin_return_nouvelle: "resources/CI/CI_Nouvelle_Lifereturn.webp",
+  cutin_obe_nouvelle:    "resources/CI/CI_Nouvelle_OBE.webp",
   partner_malzeno: "resources/partner/Malzeno_SI_01.webp",   // 馬季諾 立繪
   cutin_boss: "resources/enemy/Belinda_CI_boss.jpg",   // v18d：Boss（貝琳妲）遭遇 cut-in 專屬圖
   bg_sentou: "resources/background/SENTOUINSTALL.webp", // Boss 戰 S 級獎勵畫面（銭湯インストール）

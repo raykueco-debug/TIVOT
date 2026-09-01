@@ -2235,8 +2235,13 @@ function renderLine(){
          由 `scheduleAuto` 接手，見那裡）。
        ⚠ 純演出拍（震動、空畫面、換插圖）**台上沒人**，照舊吃 `auto` —— 那些沒有
          「要看清楚的東西」，停在那裡只是空等。 */
+    /* ⚠⚠ `noHold:true` ＝**這一拍不押著等點擊，照 `auto` 自己跑**（ver -703，Ray：
+       「北泊槍匠的音效要自動三連播，不要點擊才播下一個」）。
+       -628 那條規矩是為了「演給人**看**的那一拍」（換表情、轉身）；
+       **一串音效**是演給人**聽**的，而且是一個序列 —— 中間要人點三下就斷了節奏。
+       ⚠ 它是明寫的例外，不是自動判斷：「這一拍不必看清楚」只有寫劇本的人知道。 */
     const onStage = !!(slot.L || slot.R);
-    if(line.auto>0 && !(onStage && !autoPlay && !fastMode)){
+    if(line.auto>0 && !(onStage && !autoPlay && !fastMode && !line.noHold)){
       const wait = line.auto + (slidIn ? SLIDE_MS : 0);
       autoT=setTimeout(()=>{ autoT=null; advance(); }, wait);
     }
