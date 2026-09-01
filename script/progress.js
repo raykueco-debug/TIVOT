@@ -304,7 +304,7 @@ export function removeFlags(list){
 
 /* ── 好感 ──
    ⚠ tier 界線 10/20/30/40/50，**棘輪只升不降**（docs/TIVOT_IMPL_SPEC.md §2）。
-     tier = floor((aff-1)/10)+1 → 1..5。這裡只做值與查詢；
+     tier = floor((aff-1)/20)+1 → 1..5（ver -724 由 /10 改）。這裡只做值與查詢；
      tier_lock 的落地（affection 可跌但不跌破已達 tier 的底）尚未實作。 */
 export function getAffection(){
   const out={}; for(const c of CHARS) out[c]=AFFECTION_DEFAULT;
@@ -315,9 +315,16 @@ export function getAffection(){
   return out;
 }
 export function setAffection(obj){ wr(K.affection, JSON.stringify(obj||{})); }
-export function tierOf(aff){ return Math.min(5, Math.max(1, Math.floor((aff-1)/10)+1)); }
-/* tier 的下限值（tier 1→1、2→11、3→21…）。棘輪就是「不跌破這條線」。 */
-export function tierFloor(t){ return Math.max(1, (Math.min(5,Math.max(1,t|0))-1)*10 + 1); }
+export function tierOf(aff){ return Math.min(5, Math.max(1, Math.floor((aff-1)/TIER_W)+1)); }
+/* tier 的下限值（tier 1→1、2→21、3→41…）。棘輪就是「不跌破這條線」。
+   ⚠⚠ ver -724：上限 50→**100**、一段 10→**20**（Ray：「好感度上限改成100…每20一個tier」）。
+     ⚠ 這個寬度在**三個地方**各有一份（鐵律 7 的但書，改一處要改三處）：
+       · 這裡（`TIER_W`）
+       · `flight/index.html` 的 `progTier`（管理人進度面板）
+       · `flight/talks.js` 的 `AFFECTION_BANDS`（閒聊台詞池的門檻）
+     三邊的註解互指。 */
+const TIER_W = 20;
+export function tierFloor(t){ return Math.max(1, (Math.min(5,Math.max(1,t|0))-1)*TIER_W + 1); }
 
 /* ── 好感度的加減（ver -358，四人各自計數）───────────────────────────
    ⚠⚠ 三條規矩，缺一個都會走鐘：
@@ -329,7 +336,7 @@ export function tierFloor(t){ return Math.max(1, (Math.min(5,Math.max(1,t|0))-1)
         ⚠ flight/index.html 的 `setAffection` 有 `v|0`（它自己寫入時會截斷）；
           **讀**是好的。哪天要在飛行頁加減好感，那一行也得跟著改。
      ③ 上限 50（tier 5 的頂）、下限 0。 */
-const AFF_MAX = 50;
+const AFF_MAX = 100;   // ver -724：上限 50→100（Ray 指定）
 function getFloors(){
   /* ⚠⚠ 預設 **0** 不是 1（ver -723 修）：好感的預設值是 0（`AFFECTION_DEFAULT`），
      而地板預設 1 的話，**第一次的 +0.5 會被拉成 1** —— A（半份）與 S（整份）
@@ -349,8 +356,7 @@ function getFloors(){
    ⚠ ver -723 起**次一級也給一半**（Ray：「評價A好感度也給一半。跟別人相反的
      索拉娜則是評價D＋1 評價C+0.5」）—— 數字全部搬進 `config.rating.affection`。
    · 索拉娜：方向相反，**D +1／C +0.5**（-557 的「C 以下都 +1」已由這張表取代）。
-   · 蕾娜：不看搭檔欄，走**點數**（S 2 點／A 1 點，每 8 點 +1 ＝ +0.25／+0.125）。
-     一輪內計數 K.rennaS：newRun 清、snapshot/restore 帶（§6.9 同一張清單的兩面）。
+   · 蕾娜：不看搭檔欄，**S +0.5／A +0.25**（ver -724 全面 ×2 之後直接給小數）。
    回傳這一場加到誰（[]＝沒人），呼叫端要顯示可以用。 */
 export function applyRankAffection(grade, partnerKey){
   const got=[];
@@ -362,18 +368,12 @@ export function applyRankAffection(grade, partnerKey){
     const d = tbl[grade];
     if(d){ addAffection(partnerKey, d); got.push(partnerKey); }
   }
-  /* 蕾娜：不看搭檔欄，走**點數**（見 config 的說明：0.125 會被 1/4 對齊吃掉）。 */
-  const R=A.renna||{};
-  const add=(R.pts||{})[grade]||0;
-  if(add>0){
-    const per=R.per||8;
-    const n=(parseInt(rd(K.rennaS),10)||0)+add;
-    /* ⚠ 只在**跨過整數倍**的那一次才 +1（不是 `n%per===0`）——
-       一次加 2 點時會直接跳過餘數 0 的那一格（實測 S→S→S→S 在 8 點那次才發）。 */
-    const before=Math.floor((n-add)/per), after=Math.floor(n/per);
-    wr(K.rennaS, n);
-    if(after>before){ addAffection('renna', after-before); got.push('renna'); }
-  }
+  /* 蕾娜：不看搭檔欄，照她自己那一欄加。
+     ⚠ ver -724 起**直接給小數**（S +0.5／A +0.25）—— 兩個都對得上 `addAffection`
+       的 1/4 對齊，所以 -723 那套「點數換算」退休了（`K.rennaS` 已無人讀，
+       留在 newRun／snapshot 只為了舊存檔載得乾淨）。 */
+  const rd2=(A.renna||{})[grade];
+  if(rd2){ addAffection('renna', rd2); got.push('renna'); }
   return got;
 }
 export function addAffection(who, delta){

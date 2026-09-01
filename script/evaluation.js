@@ -87,7 +87,7 @@ export const BY_BATTLE = {
      ⚠ 只加一次：`EVAL_AFF_FLAG` 記在 progress（進存檔，§6.9）—— 打贏之後
        重看結算頁、或這一場再打一次，都不會再加。 */
   np_nightmare: {
-    S: { text:'……我決定這輩子都不會離開你身邊……', expr:'scarecute', aff:{ renna:5 } },
+    S: { text:'……我決定這輩子都不會離開你身邊……', expr:'scarecute', aff:{ renna:10 } },   // ver -724：全面 ×2（原 5）
     A: { text:'說好了，一步都不許離開我！',         expr:'scarecute' },
     B: { text:'對不起，我最怕這種的了……',           expr:'awkward'   },
     C: { text:'對、對喔！神父本來就會驅魔嘛！',      expr:'meltdown'  },

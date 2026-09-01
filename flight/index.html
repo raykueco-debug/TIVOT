@@ -2295,9 +2295,9 @@ function removeFlag(f){
 /* ══ 好感度（四名女角）══
    ⚠ 與 STAGE、玩家名同一套作法：**存 localStorage、與主遊戲共用鑰匙**，
      劇情/事件改這裡，任何畫面讀同一份，不會兩邊各有一份而走鐘。
-   ⚠ 預設 10（Ray 指定）。分級門檻 10/20/30/40/50 五段，見 talks.js 的 affBand。
+   ⚠ 分級門檻 **20/40/60/80/100** 五段（ver -724 由 10~50 ×2），見 talks.js 的 affBand。
    ⚠ 與 docs/TIVOT_IMPL_SPEC.md §2 的關係：那份規格寫的是 1..50、
-     tier=floor((aff-1)/10)+1 的棘輪制。這裡先只做「值」與「分級查詢」，
+     tier=floor((aff-1)/20)+1 的棘輪制（ver -724 由 /10 改）。這裡先只做「值」與「分級查詢」，
      **棘輪（tier_lock 只升不降）還沒做** —— 養成層真的開工時再補，
      不要以為現在的 affection() 已經是那份規格的完整實作。
    ⚠ 主遊戲的 state.currentFavor（固定 0）是舊的佔位，與這裡**還沒接起來**。 */
@@ -4758,11 +4758,16 @@ function pick3dAt(cssX,cssY){
      敲門安全感、稱呼變化去感知。所以這個面板只在管理人模式出現，
      不要因為「好用」就把它放給一般玩家。 */
 const PROG_CHARS=[['renna','蕾娜'],['nouvelle','諾薇兒'],['sorana','索拉娜'],['anya','安雅']];
-/* tier 定義見 docs/TIVOT_IMPL_SPEC.md §2：tier=floor((aff-1)/10)+1 → 1..5。
+/* tier 定義見 docs/TIVOT_IMPL_SPEC.md §2：tier=floor((aff-1)/20)+1 → 1..5。
+   ⚠⚠ ver -724：好感上限 50→**100**、一段 10→**20**（Ray 指定）。這個寬度在
+     **三個地方**各有一份（鐵律 7 的但書，改一處要改三處）：
+       · `script/progress.js` 的 `TIER_W`／`AFF_MAX`
+       · 這裡（`progTier`）
+       · `flight/talks.js` 的 `AFFECTION_BANDS`
    ⚠ 這與 talks.js 的 affBand（取「不超過現值的最高門檻」）是**兩套不同的東西**：
-     affBand 回傳門檻值（10/20/…）拿去查台詞池，tier 回傳級數（1..5）。別混用。 */
+     affBand 回傳門檻值（20/40/…）拿去查台詞池，tier 回傳級數（1..5）。別混用。 */
 const PROG_TIER_NAME=['同行','朋友','摯友','羈絆','愛'];
-function progTier(v){ return Math.min(5, Math.max(1, Math.floor((v-1)/10)+1)); }
+function progTier(v){ return Math.min(5, Math.max(1, Math.floor((v-1)/20)+1)); }
 function renderProg(){
   const b=document.getElementById('progBody'); if(!b) return;
   const st=gameStage();

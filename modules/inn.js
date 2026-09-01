@@ -46,7 +46,7 @@ const WAKE_HOUR  = 7;          // 「回房睡覺」推進到隔日的這個時�
      還要在城裡走六趟才碰得到那個閘門。
    ⚠ **只有這一支在決定**（鐵律 7）：鈕上那行「到隔日 N:00」與真的推時鐘都問它。 */
 function wakeHour(){ const h=node && node.innWake; return (h!=null) ? h : WAKE_HOUR; }
-const AFF_MEET   = 1;          // 碰到她：好感 +1（Ray 指定）
+const AFF_MEET   = 2;          // 碰到她：好感 +2（Ray 指定 +1；ver -724 全面 ×2）
 /* ══ 兩段轉場的時間（ver -430，Ray 指定）══════════════════════════════════
    ⚠⚠ 黑幕本身走 `story.veil()`（唯一那一片，鐵律 8）—— 舊版那一片
      （`#innLobby .inn-veil`）住在會被 `lock(true)` 藏起來的那一層裡，

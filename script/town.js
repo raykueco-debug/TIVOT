@@ -704,7 +704,7 @@ export const TOWNS = {
           /* 好感度 +1（Ray 指定）。⚠ 走 `aff` 這個欄位，由 modules/town.js 在演到這一拍時記帳；
              ⚠ **只加一次**：`once:true` 的節點對白本來就只播一次，所以不必另外擋。 */
           Object.assign(nou('shy','討厭啦，真會說話。要當神父的人油嘴滑舌可不行喔。'),
-                        { aff:{ nouvelle:1 } }),
+                        { aff:{ nouvelle:2 } }),   // ver -724：全面 ×2（原 1）
             {
                         speaker: 'SHOPKEEP', text: '歡迎光臨。最近航道受阻，貨物不那麼齊全，請見諒。',
             portrait:{ char:'SHOPKEEP', show:true } },
@@ -754,7 +754,7 @@ export const TOWNS = {
              判定在 `modules/town.js` 的 `armFavor` / `resolveFavor`（鐵律 8）。
            ⚠ 「反之」是**不動**不是扣分（Ray 明寫）：沒帶她去吃飯不是壞事，
              只是沒有那一分。 */
-        nextFavor:{ to:'tavern', aff:{ nouvelle:1 }, flag:'fav_capital_meal' },
+        nextFavor:{ to:'tavern', aff:{ nouvelle:2 }, flag:'fav_capital_meal' },   // ver -724：×2
         /* ⚠ 這一段綁著**第一天**（「剛剛才經歷一場死鬥」）—— 夜一過就作廢，
            不留到隔天重播（ver -460，Ray 指定；expire 的機制見 modules/town.js）。 */
         expire:'stage1_open',
@@ -1072,7 +1072,7 @@ export const TOWNS = {
                     Ray 說的是「若先進了其他**末端**地圖則失去此機會」，而從碼頭大道
                     到教堂中間一定要經過北側，不放行的話這個機會不可能達成。 */
                { flag:'np_dock_ask', need:'np_anya_join',
-                 nextFavor:{ to:'church', aff:{ anya:5 }, flag:'np_anya_grave',
+                 nextFavor:{ to:'church', aff:{ anya:10 },   /* ver -724：×2（原 5）*/ flag:'np_anya_grave',
                              throughConnectors:true },
                  lines:[
                  any('scared','那個……'),

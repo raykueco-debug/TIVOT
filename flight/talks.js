@@ -618,9 +618,16 @@ const TALK_EDGE = {
   W: [],
 };
 
-/* 好感度分級：回傳「不超過 v 的最高門檻」。⚠ 低於 10 也給 10 —— 沒有更低的
-   段落，回 null 的話按鈕會變成沒反應。 */
-const AFFECTION_BANDS=[10,20,30,40,50];
+/* 好感度分級：回傳「不超過 v 的最高門檻」。⚠ 低於第一段也給第一段 —— 沒有更低的
+   段落，回 null 的話按鈕會變成沒反應。
+   ⚠⚠ ver -724：門檻 10~50 → **20~100**（Ray：「好感度上限改成100…每20一個tier」）。
+     這個寬度在三個地方各有一份（`script/progress.js` 的 `TIER_W`、
+     `flight/index.html` 的 `progTier`、這裡）—— 改一處要改三處，三邊註解互指。
+   ⚠ **台詞池的鑰匙沒有跟著改**：`TALK_EDGE.ANY` 那幾把仍然是 10/20/…，
+     所以下面用 `bandKey()` 把新門檻映回舊鑰匙 —— 資料不必重寫。 */
+const AFFECTION_BANDS=[20,40,60,80,100];
+/* 新門檻 → 台詞池的舊鑰匙（20→10、40→20…）。⚠ 只有這一支在換算（鐵律 7）。 */
+function bandKey(b){ return AFFECTION_BANDS.indexOf(b)>=0 ? (AFFECTION_BANDS.indexOf(b)+1)*10 : 10; }
 function affBand(v){
   let b=AFFECTION_BANDS[0];
   for(const t of AFFECTION_BANDS) if(v>=t) b=t;
@@ -631,7 +638,7 @@ function affBand(v){
 function edgeAnyPool(aff){
   const b=affBand(aff);
   for(let i=AFFECTION_BANDS.indexOf(b); i>=0; i--){
-    const p=TALK_EDGE.ANY[AFFECTION_BANDS[i]];
+    const p=TALK_EDGE.ANY[bandKey(AFFECTION_BANDS[i])];
     if(p && p.length) return p;
   }
   return [];
