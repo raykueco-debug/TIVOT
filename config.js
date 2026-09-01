@@ -1785,7 +1785,11 @@ export const GAME_CONFIG = {
     /* ⚠ BGM 與黑爪戰同一首（ver -720，Ray 指定）：`bgm_crimson`。
        兩場都是這一章的 BOSS 級對決 —— 用同一首把它們讀成同一條線。
        ⚠ 只寫鑰匙不抄路徑（鐵律 7）：曲子換檔時 ASSETS 改一處就好。 */
-    np_nightmare: { enemy:'nightmare_natalia', bgm:'bgm_crimson',
+    np_nightmare: { enemy:'nightmare_natalia', bgm:'bgm_crimson', bgmAfter:'suspense',
+      /* ⚠ `bgmAfter` 的鍵走**劇情層那張表**（`story.js` 的 `BGM_ALIAS`／`BGM_FILES`），
+         **不是** ASSETS 的鍵 —— 寫成 `bgm_suspense` 查不到（-631 起啞了六版，
+         -637 才抓到）。與黑爪戰同一個收尾（ver -720，Ray 指定）。
+         ⚠ 只有打贏才換：戰敗要再打一次，換了曲子等於先畫句點。 */
       burstVoice:'vo_anya_burst2', noSaint:true, noPartner:true,
       /* ⚠ 站位：安雅本位右 → 蕾娜讓到**左**（§6.5 的表）。 */
       talkSides:{ renna:'left', anya:'right' },
