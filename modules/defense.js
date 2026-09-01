@@ -321,6 +321,12 @@ export function resolveThreat(th){
       if(api.onThreatEarly) api.onThreatEarly();   // 教學「太早防禦」插話（教學外/聖徒化為 no-op）
     }
   }
+  /* ⚠⚠ **紅點解決了就指一下正確格**（ver -718，Ray：「反擊、格擋成功也顯示下一個
+     正確格，要爽就要降難度」）—— **不分成功失敗**：反擊與完美防禦那一刻畫面上是
+     cut-in／浮字／連續槍聲，眼睛根本不在盤面上，回來要重新找「我點到幾了」。
+     ⚠ 走 `combat.hintCurrentCell`（唯一那一支，鐵律 8）；它自己會擋掉聖徒化
+       （那一盤可以亂點，指一格反而誤導）與演出中／敵已死。 */
+  if(GAME_CONFIG.tuning.hintNextCell && api.hintCurrentCell) api.hintCurrentCell();
   if(api.onThreatResolved) api.onThreatResolved(grade);   // 教學「首次防禦成功」節點通知（帶判定等級；教學外為 no-op）
 }
 // 防禦統一閃光：color 'block'（白）或 'gold'（金）。整張敵圖微微一閃。

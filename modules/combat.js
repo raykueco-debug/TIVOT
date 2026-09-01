@@ -78,6 +78,7 @@ export function setup(){
                     這裡是唯一的呼叫點（鐵律 8）：defense 不 import weapon，
                     所以由 combat 這個協調者把兩件事串起來。 */
                  onThreatResolved: (g)=>{ weapon.onThreatResolved(); tutorial.onThreatResolved(g); },
+                 hintCurrentCell,   // 紅點解決了就指一下正確格（ver -718，見 tuning.hintNextCell）
                  onThreatEarly: tutorial.onEarlyBlock,
                  ultSuppressed: tutorial.ultSuppressed, firstThreatPending: tutorial.firstThreatPending,
                  threatBand: tutorial.threatBand });
@@ -551,6 +552,14 @@ function screenShake(){
 }
 function enemyAttack(dmg, kind, saintAmt){
   saint.resetSaintCombo();   // 受擊／點錯／逾時 → 連擊斷（九階「源泉」，ver -707）
+  /* ⚠⚠ **失誤之後指一下正確的格子**（ver -717，Ray 指定）。掛在**這一支**是因為
+     大絕／延時／按錯／格擋四條扣血路徑全部經過它 —— 守一次就全吃到（鐵律 8），
+     與上面那兩行（震動、連擊歸零）同一個理由。
+     ⚠ 擺在 `timeAttack` 的守門**之前**：打靶不扣血、那一支會提早 return，
+       但「點錯了指一下」在打靶一樣成立（那裡的代價是秒數不是血）。
+     ⚠ 走既有的 `hintCurrentCell`（即死防禦續命導航／惡夢化發動同一支，鐵律 8）——
+       它自己會擋掉聖徒化（那一盤可以亂點，指一格反而誤導）、擋掉演出中與敵已死。 */
+  if(T.hintNextCell) hintCurrentCell();
   /* ⚠ 計時挑戰：靶子**不攻擊**（ver -396）。守在這裡是因為所有會扣玩家血的路徑
      （大絕／延時懲罰／按錯懲罰／格擋）都經過這一支 —— 守一次就全關掉（鐵律 8）。 */
   if(state.timeAttack) return;
