@@ -460,7 +460,13 @@ function swingDeck(deck, dir){
  *  setPickedPartner（唯一寫入管道）→ partner.currentPartner 即時切換能力。
  *  底部鈕兼返回：按下＝選定展示中的搭檔並關閉畫面（已出戰時顯示「返回」）。
  * ========================================================================== */
-const PARTNER_KEYS = Object.keys(GAME_CONFIG.partners);
+/* ⚠⚠ **這一頁是「挑戰」（試玩版）的出陣選人**，所以只列 `challengePartners`
+   那幾位（ver -694，Ray：「挑戰的伙伴只留馬跟蕾妮可選」）——
+   `partners` 現在也裝著本篇的搭檔（諾薇兒、安雅），那兩位是劇情給的。
+   ⚠ 白名單裡的鑰匙查不到卡就跳過（打錯字不會讓整頁空掉）。
+   ⚠ 沒寫 `challengePartners` 就退回「全部」—— 舊行為，不會突然變空。 */
+const PARTNER_KEYS = (GAME_CONFIG.challengePartners || Object.keys(GAME_CONFIG.partners))
+  .filter(k => GAME_CONFIG.partners[k]);
 let psIndex = 0;          // 目前展示中的搭檔 index
 let psBound = false;      // 手勢/按鈕只綁一次
 

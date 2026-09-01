@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.01-694';
+export const VERSION = 'ver 2026.09.01-695';
 
 export const GAME_CONFIG = {
 
@@ -279,6 +279,13 @@ export const GAME_CONFIG = {
      例如馬季諾的高裝藥彈照舊是血量觸發，而安雅的明晰之夢 ver -693 改成反擊觸發
      （§6.5.2 那一段）。**動其中一邊之前先確認那一張卡是誰在用。** */
   defaultPartner: 'renee',   // 搭檔只有 renee（蕾妮）/ malzeno（馬季諾）；freya＝監察官（inspectors）
+  /* ⚠⚠ **「挑戰」的選人畫面只列這幾位**（ver -694，Ray：「挑戰的伙伴只留馬跟蕾妮
+     可選」）—— `partners` 現在也裝著**本篇**的搭檔（諾薇兒、安雅），
+     而那兩位是劇情給的，不該出現在出陣的選人卡疊上。
+     ⚠ 用**白名單**不是黑名單：日後加一位本篇搭檔，預設不會漏進挑戰（同首頁那條
+       白名單的理由，§6.9）。
+     ⚠ 讀取只有 `weapon.PARTNER_KEYS` 一處（鐵律 7）。 */
+  challengePartners: ['renee', 'malzeno'],
   /* 本篇（story）的搭檔（ver -510）：劇情/城鎮/船戰一進場就切過去 ——
      以前只有開過整備頁才切，出航直接進的船戰帶著試玩版的蕾妮/露娜，
      即死防禦與聖徒化 cut-in 都是舊圖（Ray 連報兩張圖錯）。
