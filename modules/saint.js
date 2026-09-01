@@ -27,6 +27,7 @@ import { GAME_CONFIG, asset, sfxGain, isVoiceKey } from '../config.js';
 import { state, enterSaint, exitSaint, enterNightmare, exitNightmare, markExecution, markMaxBurst, storyMode } from '../state.js';
 import { SFX } from '../audio.js';
 import { L, fmt } from '../i18n.js';   // 多語言（cut-in 副標/浮動字）
+import * as prog from '../script/progress.js';   // 九階強化的加成（ver -707；葉節點，無循環）
 
 const $ = id => document.getElementById(id);
 const T = GAME_CONFIG.tuning;
@@ -164,6 +165,25 @@ function startSaintMode(){
  *  amount＝本次推進量（playerMax 比例值）。走 combat 統一改血 API（healPlayer）。
  *  Counter／Perfect 免傷則不呼叫此函式。
  * ========================================================================== */
+/* ══ 九階強化「源泉」（ver -707，Ray：「聖徒化期間連續普攻 3 Combo，可微量增加
+   聖徒化時間」）══ 每連續 `saintCombo` 發就把倒數槽**往回退**相當於 `saintSec` 秒的量。
+   ⚠ SI 的「時間」就是那條槽（推滿＝OBE），所以「增加時間」＝退槽，不是另開一個計時器。
+   ⚠ 一秒值多少槽由**被動推進的速率**換算（`playerMax / SAINT_PASSIVE_HEAL_SEC`）——
+     那是槽與秒之間唯一的匯率，不要另訂一個（鐵律 7）。
+   ⚠ 連擊**斷了就歸零**（受擊／點錯／清盤都會斷 `state.combo`，這裡跟著它走）。 */
+let siComboSeen = 0;
+export function onSaintTap(){
+  if(!state.saintMode) return;
+  const need = prog.starBonus('saintCombo'), sec = prog.starBonus('saintSec');
+  if(!(need>0) || !(sec>0)) return;
+  if(++siComboSeen < need) return;
+  siComboSeen = 0;
+  /* ⚠⚠ **退槽要走 `drainPlayer`，不能用 `saintAdvance(負值)`** —— `healPlayer`
+     開頭就 `Math.max(0, amount)`，負數會被整個吃掉、什麼都不會發生
+     （ver -671 的惡夢化抽血就是踩這個，查了好幾版）。 */
+  if(api.drainPlayer) api.drainPlayer((state.playerMax / SAINT_PASSIVE_HEAL_SEC) * sec);
+}
+export function resetSaintCombo(){ siComboSeen = 0; }
 export function saintAdvance(amount){
   if(!state.saintMode) return;
   /* 倒數槽推至臨界（滿-1，即 99）即攔截——不進 OBE，交由教學／劇情引導生命歸還。

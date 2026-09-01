@@ -657,6 +657,9 @@ function scriptSettle(totalTime, stats, sessionMoney){
   /* ⚠ 連續戰鬥中間幾格的錢在這裡一起入帳（ver -621）：那幾格不彈結算頁，
      帳記在 `state.sessionMoney`，由 `settle` 併出來傳進來（見那裡）。 */
   money += (sessionMoney|0);
+  /* 九階強化「銀幣星」：金錢掉落加成（ver -707）。⚠ 在**併完連戰的帳之後**才乘 ——
+     中間幾格的錢也是這一場打來的，只乘最後一格等於少算一大半。 */
+  if(money) money = Math.round(money * (1 + prog.starBonus('moneyMul')));
   const exp = noReward ? 0 : (ev.exp|0);
   if(money) inv.addMoney(money);
   /* ⚠ 沒有評價者、又沒有等第可印時整塊就不要出 —— 一個只寫著「評價」兩個字的空行
@@ -731,7 +734,10 @@ function displayName(n){ return String(n||'').split('_')[0]; }
 /* 掉落：卡上的 `loot`，**每一項各自擲骰**（ver -423，Ray：「可能都掉，可能都不掉」）。
    ⚠ `p` 沒寫＝必掉（舊卡不受影響）。⚠ 只有這一支在擲（鐵律 7）。 */
 function rollLoot(en){
-  return (en && en.loot ? en.loot : []).filter(r=>!(r.p>0) || Math.random()<r.p)
+  /* 九階強化「幸運星」：掉落機率提升（ver -707）。⚠ 乘在**機率**上不是另外再擲一次
+     （鐵律 7），而且夾到 1 —— 超過 1 的機率沒有意義，只會讓日後的除錯看不懂。 */
+  const lm = 1 + prog.starBonus('lootMul');
+  return (en && en.loot ? en.loot : []).filter(r=>!(r.p>0) || Math.random()<Math.min(1, r.p*lm))
                                        .map(r=>({ id:r.id, n:r.n }));
 }
 

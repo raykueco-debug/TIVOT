@@ -232,42 +232,43 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
   /* ⚠ 貨架問 `shopStock`，不要直接讀 `config.shop.stock`（ver -405）——
      那裡只有**開店時**的數量，賣掉幾個、玩家又賣回來幾個是那一支在記帳（鐵律 7）。 */
   const shelf=()=>shopStock.list(stockKey);
-  /* ══ 主武器的素材強化（ver -701）══════════════════════════════════════════
-     `modNext()` ＝下一個可強化的等級（已滿級回 null）；`modReady(lv)` ＝那一級的
-     素材與錢都夠了嗎（**唯一的判定**，鐵律 7）；`modRows()` ＝整座階梯的列。 */
-  const GU=()=>GAME_CONFIG.gunUpgrade||{};
-  const GT=()=>(GAME_CONFIG.tuning||{}).gunTune||{};
-  const modNext=()=>{ const lv=prog.gunLevel(), max=GT().max||lv;
-                      return lv<max ? lv+1 : null; };
-  const modRecipe=(lv)=>(GU().recipes||{})[lv]||null;
-  function modReady(lv){
-    const r=modRecipe(lv); if(!r) return false;
+  /* ══ 主武器的九階強化（ver -707，Ray 交卡：水瓶座九顆星）══════════════════
+     **非線性**：九顆星各自獨立，玩家自由選要升哪一顆 —— 所以這一頁是「選一列
+     再按強化」，不是「只有下一級可以按」（-701 的線性版已推翻）。
+     ⚠ 星的資料、配方全在 config（鐵律 1）；`modReady` 是素材夠不夠的唯一判定（鐵律 7）。
+     ⚠⚠ **內部數值不顯示給玩家**（Ray 指定）：只印星名、名稱與效果那一句。 */
+  const STARS=()=>GAME_CONFIG.gunStars||[];
+  const modRecipe=(id)=>((GAME_CONFIG.gunUpgrade||{}).recipes||{})[id]||null;
+  const modDone=(st)=>prog.starCount(st.id)>0 && !st.repeat;    // 單次的星升過就滿了
+  function modReady(id){
+    const st=STARS().find(d=>d.id===id); if(!st || modDone(st)) return false;
+    const r=modRecipe(id); if(!r) return false;
     if((r.money||0) > inv.getMoney()) return false;
-    for(const id in (r.items||{})) if(inv.count(id) < r.items[id]) return false;
+    for(const k in (r.items||{})) if(inv.count(k) < r.items[k]) return false;
     return true;
   }
   function modRows(){
-    const lv=prog.gunLevel(), max=GT().max||lv, nx=modNext();
-    const out=[];
-    for(let n=(GT().base||1)+1; n<=max; n++){
-      const r=modRecipe(n);
-      const done=n<=lv, cur=(n===nx);
+    const lit=STARS().filter(st=>prog.starCount(st.id)>0).length;
+    const rows=STARS().map(st=>{
+      const n=prog.starCount(st.id), r=modRecipe(st.id), done=modDone(st);
       const mats=r ? Object.keys(r.items||{}).map(id=>{
         const have=inv.count(id), need=r.items[id];
         return '<span class="mod-mat'+(have>=need?'':' lack')+'">'
              + inv.nameOf(id)+' '+(isFinite(have)?have:'∞')+'/'+need+'</span>';
       }).join('') : '<span class="mod-mat lack">配方未定</span>';
-      out.push('<div class="shop-row mod-row'+(done?' done':'')+(cur?' cur':'')+'">'
-        + '<span class="loot-name">Lv '+n+(done?'　✓':'')+'</span>'
-        + '<span class="mod-need">'+mats
-        +   (r&&r.money ? '<span class="mod-mat'+(inv.getMoney()>=r.money?'':' lack')+'">'
-                        + r.money+' '+inv.moneyName()+'</span>' : '')
-        + '</span></div>');
-    }
+      return '<div class="shop-row mod-row'+(done?' done':'')+(pick===st.id?' pick':'')+'"'
+           +   ' data-id="'+st.id+'">'
+           + '<span class="loot-name"><i class="mod-star">'+st.star+'</i>'+st.name
+           +   (n>0 ? (st.repeat ? '　×'+n : '　✓') : '')+'</span>'
+           + '<span class="mod-eff">'+st.desc+'</span>'
+           + '<span class="mod-need">'+(done ? '' : mats
+             + (r&&r.money ? '<span class="mod-mat'+(inv.getMoney()>=r.money?'':' lack')+'">'
+                           + r.money+' '+inv.moneyName()+'</span>' : ''))
+           + '</span></div>';
+    });
     return '<div class="mod-head">主武器　'+((GAME_CONFIG.mainGun||{}).name||'')
-         + '　強化 '+lv+' / '+max+'</div>' + out.join('');
+         + '　已點亮 '+lit+' / '+STARS().length+'</div>' + rows.join('');
   }
-  /* 這一家店的長相（ver -377）。沒登記就走預設 —— 舊的雜貨舖不必改任何呼叫端。 */
   const cfg=((SHOP.shops||{})[stockKey])||{};
   const TABS=(cfg.tabs&&cfg.tabs.length)?cfg.tabs:['buy','sell'];
   const TABNAME=Object.assign({ buy:'買', sell:'賣', mod:'改裝' }, cfg.tabName||{});
@@ -371,8 +372,8 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
     }else{
       /* ══⚠⚠ 改裝＝**主武器的素材強化**（ver -701，Ray：「強化原則上走的是素材
          收集，打靶給強化是特殊事件」）══════════════════════════════════════
-         整座階梯都列出來（Lv2~9），玩家才知道**要去收什麼** —— 那正是這個玩法
-         的內容。只有「下一級」那一列可以按（`modNext`）。
+         九顆星全部列出來，玩家才知道**要去收什麼** —— 那正是這個玩法
+         的內容。⚠ ver -707 改成**非線性**：九顆星各自獨立，選哪一列就升哪一顆。
          ⚠ 配方在 `config.gunUpgrade.recipes`（鐵律 1）；這裡只讀、不算。
          ⚠ 素材夠不夠**只有 `modReady` 一支在判**（鐵律 7）：列的樣式與底下那顆
            鈕都問它，各判一次必然出現「列是亮的、鈕卻按不動」。 */
@@ -384,8 +385,7 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
     /* 結帳鈕（ver -496 購物車）：車裡有東西才亮。「錢不夠」不會發生在這裡 ——
        每一列的「＋」在總價會超過持有金額的那一刻就擋掉了。 */
     const total = cartTotal();
-    const modLv = (tab==='mod') ? modNext() : null;
-    const can = (tab==='mod') ? !!(modLv && modReady(modLv)) : cartCount()>0;
+    const can = (tab==='mod') ? (!!pick && modReady(pick)) : cartCount()>0;
 
     /* 說明區：武器 → 規格表（＋同類比較）；其餘 → 文字說明。 */
     let desc;
@@ -419,8 +419,7 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
       + '<div class="shop-desc">'+desc+'</div>'
       + '<div class="shop-acts">'
       +   (tab==='mod'
-          ? ('<button class="shop-do'+(can?'':' broke')+'" type="button">'
-             + (modLv ? '強　化　→ Lv '+modLv : '已　滿　級') + '</button>')
+          ? ('<button class="shop-do'+(can?'':' broke')+'" type="button">強　化</button>')
           : '<button class="shop-do'+(can?'':' broke')+'" type="button">'
             /* 結帳（ver -496）：整車一次付清；車是空的鈕就暗著（字不變，
                玩家看得到這一顆是幹嘛的）。售完／已持有的狀態在各自那一列上。 */
@@ -475,7 +474,7 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
     if(doBtn) doBtn.addEventListener('click', e=>{
       e.stopPropagation();
       if(!can) return;
-      if(tab==='sell' && !pick) return;   // ⚠ 改裝頁沒有「選一項」的概念（ver -701）
+      if(tab!=='buy' && !pick) return;   // 賣與改裝都要先選一列（ver -707）
       /* ⚠ 結帳鈕的音在**成交那一刻**才響 —— 這裡只解鎖，不先「喀」一聲，
          不然會兩聲疊在一起。
          ⚠⚠ **買與賣同一支 `se_buy`**（ver -663，Ray：「賣也要有結帳音效喔」）：
@@ -485,10 +484,10 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
       /* ══ 強化（ver -701）══ ⚠ **先扣素材再扣錢**（同買的那一支）：
          少扣可以，不能發生「錢扣了等級沒升」。⚠ `can` 已經確認過夠了。 */
       if(tab==='mod'){
-        const r=modRecipe(modLv); if(!r) return;
+        const r=modRecipe(pick); if(!r || !modReady(pick)) return;
         for(const id in (r.items||{})) inv.remove(id, r.items[id]);
         if(r.money) inv.spendMoney(r.money);
-        prog.addGunLevel(1);
+        prog.addStar(pick);
         checkoutSfx();
         render();
         return;

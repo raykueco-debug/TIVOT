@@ -919,10 +919,12 @@ function applyPersist(line){
      scene 有 `setFlags`（收尾才寫），但城鎮的 `acts` 不是 scene —— 這一條是逐拍的。
      ⚠ 演到就記（不是演完），所以只放「這一刻確實發生了」的事（出航、拿到東西…）。 */
   if(line.flags && line.flags.length) prog.addFlags(line.flags);
-  /* 主武器的強化（ver -700）：那一拍寫 `gunTune:N` ＝**升 N 級**（見 progress.gunLevel）。
+  /* 主武器的強化（ver -707）：那一拍寫 `gunStar:'<星id>'` ＝**點亮那一顆星**
+     （可多次的星就 +1 次）。Ray：「部分關鍵素材由劇情控制產出」——
+     劇情直接給強化是**特殊事件**，一般的路是拿素材去槍店換（見 config.gunStars）。
      ⚠ 與 `flags` 是兩件事：旗記「這件事發生過」（免除重挑戰的費用），
-       等級是**加成的唯一真相**。北方泊地那一拍兩個都寫。 */
-  if(line.gunTune) prog.addGunLevel(line.gunTune);
+       星是**加成的唯一真相**。北方泊地那一拍兩個都寫。 */
+  if(line.gunStar) prog.addStar(line.gunStar);
   persistFaded=false;
   let bgChanged=false;
   if(line.bg!==undefined && line.bg!==stageBg){

@@ -342,10 +342,11 @@ function tap(num,cell,e){
       advanceExpectPastCleared();
     }
     let okCrit=false;
-    if(Math.random() < CRIT_BASE_RATE + state.critCombo*CRIT_PER_COMBO){
-      okCrit=true; okDmg*=(1 + CRIT_DMG_BASE + state.critCombo*CRIT_DMG_PER_COMBO);
+    if(Math.random() < critRateAt(state.critCombo)){
+      okCrit=true; okDmg*=(1 + critDmgAt(state.critCombo));
     }
     state.critCombo++;
+    saint.onSaintTap();                  // 九階「源泉」：連續 3 發 → 微量延長聖徒化（ver -707）
     enemyDamage(Math.round(okDmg), okCrit, false, 'saint');
     if(state.cells.every(c=>c.classList.contains('done'))){ clearBoard(); return; }
     updateStatus();
@@ -363,8 +364,8 @@ function tap(num,cell,e){
     //   本擊先以「現值」擲骰再 +1（首擊＝base 暴擊率）；命中則跳紅字「暴擊」（交由 enemyDamage 的 isCrit 呈現）。
     let crit=false;
     const cc=state.critCombo;
-    if(Math.random() < CRIT_BASE_RATE + cc*CRIT_PER_COMBO){
-      crit=true; dmg*=(1 + CRIT_DMG_BASE + cc*CRIT_DMG_PER_COMBO);
+    if(Math.random() < critRateAt(cc)){
+      crit=true; dmg*=(1 + critDmgAt(cc));
     }
     state.critCombo++;
     enemyDamage(Math.round(dmg),crit,false,'basic');   // 點擊直接扣敵血（crit=true → 敵區跳紅字「暴擊」）
@@ -410,6 +411,8 @@ function clearAtkBuff(){
   if(!state.lowHpBuff) $('grid').classList.remove('buffed');
 }
 function triggerAtkBuff(sec){
+  /* 九階強化「交界點」：反擊後的增益延長（ver -707）。加在這唯一的發動點。 */
+  sec = (sec||ATK_BUFF_SECONDS) + prog.starBonus('buffSec');
   state.atkBuff=true;
   $('grid').classList.add('buffed');
   clearTimeout(state.atkBuffTimer);
@@ -417,7 +420,7 @@ function triggerAtkBuff(sec){
     state.atkBuff=false;
     if(!state.lowHpBuff) $('grid').classList.remove('buffed');
     updateStatus();
-  }, (sec||ATK_BUFF_SECONDS)*1000);
+  }, sec*1000);
   updateStatus();
 }
 /* 低血量普攻加倍（馬季諾「高裝藥彈」）開/關管道：partner.checkLowHpBuff 經注入呼叫。
@@ -504,12 +507,14 @@ function charmDmgMul(){
   return m;
 }
 function mainGunDmgMul(){ return gunTuneMul() * charmDmgMul(); }
-function gunTuneMul(){
-  const g=T.gunTune; if(!g) return 1;
-  /* ver -700：加成由**等級**算，不再看旗標（見 config 的 gunTune 與 progress.gunLevel）。
-     Lv1（出廠）＝ ×1；每一級 +5%。 */
-  return 1 + Math.max(0, prog.gunLevel() - (g.base||1)) * (g.dmgMulPerLv||0);
-}
+/* ══ 普攻暴擊：率與加傷（ver -707）══ 兩處點擊分支（聖徒化／一般）**共用這兩支**
+   （鐵律 7）—— 九階強化的「運之王」（率 +10%）與「王之運」（加傷 +20%）
+   只加在這裡。 */
+function critRateAt(cc){ return CRIT_BASE_RATE + cc*CRIT_PER_COMBO + prog.starBonus('critRate'); }
+function critDmgAt(cc){  return CRIT_DMG_BASE  + cc*CRIT_DMG_PER_COMBO + prog.starBonus('critDmg'); }
+/* ver -707：普攻的永久強化＝九階裡的**吞噬者**（可多次，每次 +5%）。
+   ⚠ -700 的線性等級已退役，舊存檔由 `progress.gunStars` 自動遷移成吞噬者的次數。 */
+function gunTuneMul(){ return 1 + prog.starBonus('dmgMul'); }
 function hitDamage(){
   const c=Math.min(state.combo,DMG_COMBO_CAP);
   /* ⚠ 強化是**乘在整個普攻傷害上**（ver -656，Ray：「主槍普攻攻擊力強化5%」）——
@@ -545,6 +550,7 @@ function screenShake(){
   screenShake._t=setTimeout(()=>el.classList.remove('hitshake'), 300);
 }
 function enemyAttack(dmg, kind, saintAmt){
+  saint.resetSaintCombo();   // 受擊／點錯／逾時 → 連擊斷（九階「源泉」，ver -707）
   /* ⚠ 計時挑戰：靶子**不攻擊**（ver -396）。守在這裡是因為所有會扣玩家血的路徑
      （大絕／延時懲罰／按錯懲罰／格擋）都經過這一支 —— 守一次就全關掉（鐵律 8）。 */
   if(state.timeAttack) return;
@@ -775,7 +781,9 @@ function enemyDamage(dmg,isCrit,silent,src){
 function addEnergy(v){
   if(state.saintMode) return;        // 聖徒化期間不累積破防值
   const was=state.energy;
-  state.energy=Math.min(100,state.energy+v);
+  /* 九階強化「疾走」：破防值累積加速（ver -707）。⚠ 乘在**入口**這一處 ——
+     呼叫端有好幾個（點擊、反擊…），各自乘一次必然漏掉其中一個（鐵律 7/8）。 */
+  state.energy=Math.min(100,state.energy+v*(1+prog.starBonus('energyMul')));
   // 教學：雙槍引導前破防值封頂於 preFullEnergy（第三盤起放行 → 首擊即滿、交給教學引導）
   if(tutorial.energyCapActive()){
     state.energy=Math.min(state.energy, (GAME_CONFIG.tutorial && GAME_CONFIG.tutorial.preFullEnergy) || 99);
@@ -1200,6 +1208,7 @@ function isLastEnemy(){
 }
 function finishEnemyOrAdvance(){
   endOverkillFx();   // overkill 藍光/限時統一在此清理（所有結束路徑的匯流點，冪等）
+  partner.onEnemyCleared();   // 九階「方舟」：無傷擊殺 → 已用掉的一次性被動重新上膛（ver -707）
   /* 血歸零 → **淨化**（ver -588，Ray：「怪 hp 歸零後淡出」）。
      ⚠ 掛在這個**匯流點**（鐵律 8）：自然清盤／按錯／逾時／聖徒化擊殺四條路都經過它。
      ⚠ 連戰換敵那一條不掛：那一隻是被「掠過」不是被淨化，它有自己的 `enemy-leave`。 */

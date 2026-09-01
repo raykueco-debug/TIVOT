@@ -112,10 +112,12 @@ const NP_RANGE_SEQ = [
     portrait:{ char:'GUNSMITH_NP', show:true } },
   { speaker:'GUNSMITH_NP', text:'', auto:800, noHold:true, se:'se_ui_sortie',
     portrait:{ char:'GUNSMITH_NP', show:true } },
-  /* ⚠ `gunTune:1` ＝主武器強化 +1 級（ver -700，Ray：「現在強化一次就是 2」——
-     出廠 Lv1，這一次之後是 Lv2＝ +5%，與 ver -655 的數字一致）。
+  /* ⚠ `gunStar:'albali'` ＝點亮**吞噬者**一次（ver -707；-700 的 `gunTune:1` 改寫）。
+     九階改成非線性之後，「特殊事件給的強化」要指名是**哪一顆星** ——
+     槍匠說的是「膛壓增強了」＝普攻攻擊力 +5%，正是吞噬者，也與 ver -655
+     Ray 原本的「主槍普攻攻擊力強化 5%」完全對得上。
      旗標照舊記著：它管的是「重挑戰不必再付 200G」。 */
-  Object.assign(gunN(null,'嗯……完成了。'), { flags:['np_gun_tuned'], gunTune:1 }),
+  Object.assign(gunN(null,'嗯……完成了。'), { flags:['np_gun_tuned'], gunStar:'albali' }),
   gunN(null,'膛壓增強了，後座力也會強一點，不過你應該沒問題。'),
   gunN(null,'不過，這兩把槍的名字是南方的古文吧。有什麼典故嗎？'),
   { speaker:'PLAYER', blank:true },

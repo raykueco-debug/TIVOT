@@ -75,8 +75,9 @@ function slotHtml(cat, n){
 function mainGunHtml(){
   const MG=GAME_CONFIG.mainGun; if(!MG) return '';
   const defs=(GAME_CONFIG.items||{}).defs||{};
-  const g=(GAME_CONFIG.tuning||{}).gunTune||{};
-  const lv=prog.gunLevel(), lvMax=g.max||lv;
+  /* ver -707：顯示**已點亮幾顆星**（九階是非線性的，沒有「等級」可言）。 */
+  const stars=(GAME_CONFIG.gunStars||[]);
+  const lit=stars.filter(st=>prog.starCount(st.id)>0).length;
   const barrels=(MG.barrels||[]).map(b=>{
     const id=prog.charmOf(b.id), d=id?defs[id]:null;
     return '<div class="gs-barrel" data-barrel="'+b.id+'">'
@@ -91,7 +92,7 @@ function mainGunHtml(){
        +   (MG.image ? '<img class="gs-mimg" src="'+(asset(MG.image)||'')+'" alt="">' : '')
        +   '<div class="gs-mname">'+MG.name
        +     (MG.tag ? '<span class="gs-mfix">'+MG.tag+'</span>' : '')+'</div>'
-       +   '<div class="gs-mtune">強　化　<b>'+lv+'</b><span>／'+lvMax+'</span></div>'
+       +   '<div class="gs-mtune">強　化　<b>'+lit+'</b><span>／'+stars.length+'</span></div>'
        +   '<div class="gs-barrels">'+barrels+'</div>'
        + '</div>';
 }

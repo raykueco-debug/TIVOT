@@ -170,6 +170,19 @@ let lowHpTimer = null;    // 10 秒 buff 計時器
    ⚠ 效果與原本同一支（`setLowHpBuff` ＋計時器）：只換觸發條件，不換效果。 */
 let fcArmed = false;
 export function armFirstCounter(){ fcArmed = true; }
+/* ══ 九階強化「方舟」（ver -707，Ray：「無傷使敵 HP 歸零，可回復已使用的被動技」）══
+   打倒一隻敵人的那一刻，**這一場全程無傷**就把用掉的一次性被動重新上膛：
+   即死防禦（`deathGuardUsed`）＋ 明晰之夢（`fcArmed`）。
+   ⚠ 「無傷」用 `state.hitsTaken===0` —— 與結算頁那個「無傷」標籤、與
+     `rating.flawlessFloor` **同一個定義**（鐵律 7），不要另訂一套。
+   ⚠ 掛在 `combat.finishEnemyOrAdvance` 那個匯流點（自然清盤／按錯／逾時／
+     聖徒化擊殺四條路都經過它，鐵律 8）。 */
+export function onEnemyCleared(){
+  if(!prog.hasStar('safina')) return;
+  if(state.hitsTaken!==0) return;
+  state.deathGuardUsed = false;
+  fcArmed = true;
+}
 export function onCounter(){
   if(state.over || state.saintMode || state.niMode) return;   // 演出中不插隊（同 checkLowHpBuff）
   const p = currentPartner();

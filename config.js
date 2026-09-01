@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.01-706';
+export const VERSION = 'ver 2026.09.01-707';
 
 export const GAME_CONFIG = {
 
@@ -152,26 +152,57 @@ export const GAME_CONFIG = {
     charmCat:'charm',
   },
 
-  /* ══⚠⚠ 主武器的強化配方（ver -701，Ray：「強化原則上走的是素材收集，
-     打靶給強化是特殊事件」）══════════════════════════════════════════════════
-     鑰匙＝**目標等級**（升到第幾級），值＝那一級要交的東西。
-     兩條路各自獨立、可以疊加：
-       · **素材收集**（原則）：拿素材去槍店的「武器改裝」分頁換一級
-       · **特殊事件**（例外）：腳本那一拍寫 `gunTune:N` 直接給（北方泊地打靶）
-     ⚠⚠⚠ **下面的數字是我擬的草案，等 Ray 的卡覆蓋**（他只給了「走素材收集」
-       這個原則，沒給配方）。排法：Lv2~3 收低階素材、Lv4~6 中階、Lv7~9 高階，
-       數量與費用隨級數遞增 —— 素材的階由 `items.defs` 現有的 `price` 分的。
-     ⚠ 改這張表不必動程式：`modules/loot.js` 的改裝頁只讀它（鐵律 1）。 */
+  /* ══⚠⚠ 主武器的九階強化（ver -707，Ray 交卡）══════════════════════════════
+     > 「升級機制：**非線性**。等級編號僅為排列順序，不代表升級先後。升級看素材是否
+     >   足夠，玩家自由選擇要升哪一項；部分關鍵素材由劇情控制產出。」
+     > 「命名：水瓶座九顆星。強化武器＝逐顆點亮蕾娜的星座；武力巔峰（爆擊）以主角
+     >   雙槍 Ganymede 命名。」
+
+     ⚠⚠ **這一版取代 -700/-701 的線性 Lv1~9**：等級不再是一個數字，而是**九顆各自
+       獨立的星**（`progress.gunStars` 存 id→已升幾次）。舊存檔的等級會遷移成
+       「吞噬者」的次數 —— 那時的效果就是 +5% 普攻，語意完全對得上。
+     ⚠⚠ **括號內的數值是內部參數，不顯示給玩家**（Ray 指定）：UI 只印星名、
+       名稱與效果那一句。所以數值欄位與 `desc` 是分開的兩件事，不要把數字寫進 desc。
+     ⚠ 效果的**累計**只有一個查詢點：`progress.starBonus('<欄位名>')`（鐵律 7）——
+       各模組一律問它，不要自己去翻 `gunStars`。
+     ⚠ `repeat:true` ＝可多次升級（目前只有「吞噬者」，每次 +5% 普攻）。 */
+  gunStars: [
+    { id:'sadalmelik', star:'Sadalmelik', name:'王之運 / Ganymede α',
+      desc:'增加爆擊傷害',                 critDmg:0.20 },
+    { id:'sadalsuud',  star:'Sadalsuud',  name:'運之王 / Ganymede β',
+      desc:'增加爆擊機率',                 critRate:0.10 },
+    { id:'skat',       star:'Skat',       name:'疾走',
+      desc:'加速破防值累積',               energyMul:0.10 },
+    { id:'sadaltager', star:'Sadaltager', name:'銀幣星',
+      desc:'增加戰鬥金錢掉落數額',         moneyMul:0.20 },
+    { id:'safina',     star:'Safina',     name:'方舟',
+      desc:'無傷使敵 HP 歸零，可回復已使用的被動技' },   // ⚠ 無數值參數（Ray 註明）
+    { id:'albali',     star:'Albali',     name:'吞噬者',
+      desc:'增加普攻攻擊力（可多次升級）', dmgMul:0.05, repeat:true },
+    { id:'sadachbia',  star:'Sadachbia',  name:'幸運星',
+      desc:'增加戰鬥掉落物機率',           lootMul:0.10 },
+    { id:'ancha',      star:'Ancha',      name:'交界點',
+      desc:'增加反擊後的普攻增益持續時間', buffSec:3 },
+    { id:'situla',     star:'Situla',     name:'源泉',
+      desc:'聖徒化期間連續普攻 3 Combo，可微量增加聖徒化時間',
+      saintCombo:3, saintSec:1 },
+  ],
+  /* ══ 每一顆星要交什麼（ver -707；-701 的按等級配方已改成按星）══════════════
+     鑰匙＝星的 id。⚠⚠⚠ **下面的素材與價格仍是我擬的草案**，等 Ray 的卡覆蓋 ——
+     他給的是九顆星的**效果**，沒給配方。排法照原本的三階：靠前的收低階素材、
+     靠後的收高階，「吞噬者」可多次所以每次同價。
+     ⚠ 「部分關鍵素材由劇情控制產出」（Ray）—— 那幾樣等劇情給了再填進來。 */
   gunUpgrade: {
     recipes: {
-      2:{ money:200,  items:{ scrap_iron:4,     brass_casing:4 } },
-      3:{ money:400,  items:{ scrap_iron:6,     brass_casing:6,   chitin_shell:3 } },
-      4:{ money:700,  items:{ chitin_shell:6,   venom_claw:4 } },
-      5:{ money:1000, items:{ venom_claw:6,     azure_scale:5 } },
-      6:{ money:1400, items:{ azure_scale:8,    azure_feather:6 } },
-      7:{ money:2000, items:{ azure_feather:8,  chitin_wing:5,    saint_claw_low:3 } },
-      8:{ money:2800, items:{ chitin_wing:8,    venom_fang:6,     saint_claw_low:5 } },
-      9:{ money:4000, items:{ venom_fang:10,    saint_claw_low:8 } },
+      sadalmelik:{ money:200,  items:{ scrap_iron:4,     brass_casing:4 } },
+      sadalsuud: { money:400,  items:{ scrap_iron:6,     brass_casing:6,   chitin_shell:3 } },
+      skat:      { money:700,  items:{ chitin_shell:6,   venom_claw:4 } },
+      sadaltager:{ money:1000, items:{ venom_claw:6,     azure_scale:5 } },
+      safina:    { money:1400, items:{ azure_scale:8,    azure_feather:6 } },
+      albali:    { money:600,  items:{ scrap_iron:5,     brass_casing:5,   chitin_shell:2 } },
+      sadachbia: { money:2000, items:{ azure_feather:8,  chitin_wing:5,    saint_claw_low:3 } },
+      ancha:     { money:2800, items:{ chitin_wing:8,    venom_fang:6,     saint_claw_low:5 } },
+      situla:    { money:4000, items:{ venom_fang:10,    saint_claw_low:8 } },
     },
   },
 

@@ -51,8 +51,11 @@ const K = {
        它與 `script/loadout.js` 的副武器編成**不同類**：那個是玩家的操作偏好
        （跨輪不清），這個掛的是身上真的有的東西。 */
   charms:    'tivot_charms_v1',
-  /* 主武器的強化等級（ver -700）：1~9，出廠 1。一輪內（同掛件）。 */
+  /* 主武器的強化等級（ver -700）：舊的線性 Lv1~9，-707 已由九顆星取代，
+     這把鑰匙只剩**遷移來源**（見 gunStars）。 */
   gunLv:     'tivot_gunlv_v1',
+  /* 主武器的九階強化（ver -707）：`{星id: 已升幾次}`。一輪內（同掛件）。 */
+  gunStars:  'tivot_gunstars_v1',
 };
 
 /* ⚠ 測試期間預設 3（Ray 指定，與 flight/index.html 的 STAGE_DEFAULT 一致）。
@@ -182,7 +185,47 @@ export function setCharm(barrel, id){
   return c;
 }
 
-/* ══ 主武器的強化等級（ver -700，Ray：「強化等級到 9」「現在強化一次就是 2」）══
+/* ══⚠⚠ 主武器的九階強化（ver -707，Ray 交卡：水瓶座九顆星）══════════════════
+   `{星id: 已升幾次}`。非線性 —— 玩家自由選要升哪一顆，沒有先後。
+   ⚠⚠ **累計加成只有 `starBonus` 一個查詢點**（鐵律 7）：九個效果散在
+     combat／weapon／defense／saint／inspector，各自去翻 `gunStars` 的話，
+     哪天改欄位名就會有一半沒跟上。
+   ⚠ 舊存檔（線性 Lv1~9）**遷移成「吞噬者」的次數**：那時的效果就是 +5% 普攻
+     （`tuning.gunTune`），語意完全對得上；Lv1 是出廠所以 (lv−1) 次。
+     遷移之後把舊鑰匙留著不動 —— 它已經沒有人讀，刪不刪都一樣，留著可回溯。 */
+function starDefs(){ return (GAME_CONFIG.gunStars||[]); }
+export function gunStars(){
+  try{ const j=JSON.parse(rd(K.gunStars)||'null'); if(j && typeof j==='object') return j; }catch(e){}
+  /* 一次性遷移：這一輪還沒有這把鑰匙 → 由舊的線性等級換算並寫回。 */
+  const lv=parseInt(rd(K.gunLv),10);
+  const base=((GAME_CONFIG.tuning||{}).gunTune||{}).base || 1;
+  const n=(isFinite(lv) && lv>base) ? (lv-base) : 0;
+  const out=n>0 ? { albali:n } : {};
+  wr(K.gunStars, JSON.stringify(out));
+  return out;
+}
+export function starCount(id){ return (gunStars()[id]|0); }
+export function hasStar(id){ return starCount(id)>0; }
+export function addStar(id, n){
+  const def=starDefs().find(d=>d.id===id); if(!def) return null;
+  const cur=gunStars();
+  const have=cur[id]|0;
+  if(have>0 && !def.repeat) return cur;          // 單次的星升過就不再升
+  cur[id]=have+(n==null?1:n);
+  wr(K.gunStars, JSON.stringify(cur));
+  return cur;
+}
+/* 某一項效果的累計值（沒點亮＝0）。`key` 就是 `gunStars[]` 上的欄位名。 */
+export function starBonus(key){
+  const owned=gunStars(); let sum=0;
+  for(const d of starDefs()){
+    const n=owned[d.id]|0;
+    if(n>0 && d[key]!=null) sum += d[key]*n;
+  }
+  return sum;
+}
+
+/* ══ 主武器的強化等級（ver -700，已由九顆星取代；保留供遷移與舊呼叫端）══
    ⚠⚠ **唯一真相**（鐵律 9）：加成由等級算（`combat.gunTuneMul`），
      `np_gun_tuned` 那支旗**不再**參與 —— 它只剩「北方泊地那一次做過了」。
    ⚠ 誰改它：腳本那一拍的 `gunTune:N`（→ `addGunLevel`）。沒有別人。
@@ -365,7 +408,7 @@ export const CHAPTERS = [
 export function newRun(){
   for(const k of [K.stage, K.flags, K.affection, K.affFloor, K.name, K.nick,
                   K.hp, K.innLast, K.flightLoss, K.rennaS, K.playtime,
-                  K.charms, K.gunLv]) {   // 持久HP／上次旅店／連敗數／蕾娜S計數／遊玩時間／掛件／強化等級
+                  K.charms, K.gunLv, K.gunStars]) {   // 持久HP／上次旅店／連敗數／蕾娜S計數／遊玩時間／掛件／強化
     try{ localStorage.removeItem(k); }catch(e){}
   }
   /* ⚠⚠ 從頭開始＝**S0 要寫進鑰匙**（ver -563）。清掉 stage 之後不寫回的話，
@@ -432,7 +475,8 @@ export function snapshot(){
            hp:getHp(), innLast:getLastInn(), fLoss:flightLossCount(),
            rennaS:rawN(K.rennaS), playtimeRaw:rawN(K.playtime),
            charmsRaw:rawJ(K.charms),      // 主武器掛件（ver -699，一輪內）
-           gunLvRaw:rawN(K.gunLv) };     // 主武器強化等級（ver -700，一輪內）
+           gunLvRaw:rawN(K.gunLv),       // 主武器強化等級（ver -700 的舊制，留著相容）
+           gunStarsRaw:rawJ(K.gunStars) };   // 主武器九階強化（ver -707，一輪內）
 }
 export function restore(s){
   if(!s) return;
@@ -461,4 +505,5 @@ export function restore(s){
      不該帶著這一輪掛上去的護符，§6.9 兩面）。 */
   putRaw(K.charms, ('charmsRaw' in s)?s.charmsRaw:null, true);
   putRaw(K.gunLv,  ('gunLvRaw'  in s)?s.gunLvRaw :null);
+  putRaw(K.gunStars, ('gunStarsRaw' in s)?s.gunStarsRaw:null, true);
 }
