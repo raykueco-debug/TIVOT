@@ -51,6 +51,8 @@ const K = {
        它與 `script/loadout.js` 的副武器編成**不同類**：那個是玩家的操作偏好
        （跨輪不清），這個掛的是身上真的有的東西。 */
   charms:    'tivot_charms_v1',
+  /* 主武器的強化等級（ver -700）：1~9，出廠 1。一輪內（同掛件）。 */
+  gunLv:     'tivot_gunlv_v1',
 };
 
 /* ⚠ 測試期間預設 3（Ray 指定，與 flight/index.html 的 STAGE_DEFAULT 一致）。
@@ -160,12 +162,48 @@ export function charms(){
   catch(e){ return {}; }
 }
 export function charmOf(barrel){ return charms()[barrel] || null; }
+/* ⚠⚠ **同一張護符不能同時掛兩支槍**（ver -700）：身上只有一個就只掛得了一支 ——
+   裝到另一支等於**移過去**（原本那一支自動空出來）。持有兩個以上才各掛一個。
+   ⚠ 收在這一支（鐵律 8）：日後有別的地方會裝護符（劇情給、遺跡開到就自動裝上），
+     那條路不必記得再判一次。
+   ⚠ `id` 傳 null／空 ＝ **卸下**。 */
 export function setCharm(barrel, id){
   const c=charms();
-  if(id) c[barrel]=id; else delete c[barrel];
+  if(id){
+    const have=inv.count(id);
+    for(const k in c) if(k!==barrel && c[k]===id){
+      /* 這張已經掛在別支上：夠用就各掛一個，不夠就把它移過來。 */
+      if(have<2) delete c[k];
+      break;
+    }
+    c[barrel]=id;
+  }else delete c[barrel];
   wr(K.charms, JSON.stringify(c));
   return c;
 }
+
+/* ══ 主武器的強化等級（ver -700，Ray：「強化等級到 9」「現在強化一次就是 2」）══
+   ⚠⚠ **唯一真相**（鐵律 9）：加成由等級算（`combat.gunTuneMul`），
+     `np_gun_tuned` 那支旗**不再**參與 —— 它只剩「北方泊地那一次做過了」。
+   ⚠ 誰改它：腳本那一拍的 `gunTune:N`（→ `addGunLevel`）。沒有別人。
+   ⚠ 舊存檔（打過靶、還沒有這把鑰匙）**遷移一次並寫回**：不留「鑰匙不存在時
+     用旗標推」那種查詢層預設值 —— 那正是鐵律 9 禁止的東西。 */
+function gunCfg(){ return (GAME_CONFIG.tuning||{}).gunTune || {}; }
+export function gunLevel(){
+  const g=gunCfg(), base=g.base||1;
+  const v=parseInt(rd(K.gunLv),10);
+  if(isFinite(v)) return Math.max(base, Math.min(g.max||base, v));
+  /* 一次性遷移：這一輪還沒有這把鑰匙。打過靶的存檔補成 base+1，其餘 base。 */
+  const lv = base + (g.flag && hasFlag(g.flag) ? 1 : 0);
+  wr(K.gunLv, lv);
+  return lv;
+}
+export function setGunLevel(n){
+  const g=gunCfg(), base=g.base||1;
+  wr(K.gunLv, Math.max(base, Math.min(g.max||base, n|0)));
+  return gunLevel();
+}
+export function addGunLevel(n){ return setGunLevel(gunLevel() + (n|0)); }
 
 /* ══ 實體遊玩時間（ver -564）══ 秒。累加只有這一支（鐵律 8/9）。 */
 export function playSeconds(){ const v=parseInt(rd(K.playtime),10); return isFinite(v)?v:0; }
@@ -327,7 +365,7 @@ export const CHAPTERS = [
 export function newRun(){
   for(const k of [K.stage, K.flags, K.affection, K.affFloor, K.name, K.nick,
                   K.hp, K.innLast, K.flightLoss, K.rennaS, K.playtime,
-                  K.charms]) {   // 持久HP／上次旅店／連敗數／蕾娜S計數／遊玩時間／主武器掛件
+                  K.charms, K.gunLv]) {   // 持久HP／上次旅店／連敗數／蕾娜S計數／遊玩時間／掛件／強化等級
     try{ localStorage.removeItem(k); }catch(e){}
   }
   /* ⚠⚠ 從頭開始＝**S0 要寫進鑰匙**（ver -563）。清掉 stage 之後不寫回的話，
@@ -393,7 +431,8 @@ export function snapshot(){
            nameRaw:rawS(K.name), nickRaw:rawS(K.nick),
            hp:getHp(), innLast:getLastInn(), fLoss:flightLossCount(),
            rennaS:rawN(K.rennaS), playtimeRaw:rawN(K.playtime),
-           charmsRaw:rawJ(K.charms) };   // 主武器掛件（ver -699，一輪內）
+           charmsRaw:rawJ(K.charms),      // 主武器掛件（ver -699，一輪內）
+           gunLvRaw:rawN(K.gunLv) };     // 主武器強化等級（ver -700，一輪內）
 }
 export function restore(s){
   if(!s) return;
@@ -421,4 +460,5 @@ export function restore(s){
   /* 主武器掛件（ver -699）：舊存檔沒有這一欄 → 原樣移除（讀「還沒掛」的檔
      不該帶著這一輪掛上去的護符，§6.9 兩面）。 */
   putRaw(K.charms, ('charmsRaw' in s)?s.charmsRaw:null, true);
+  putRaw(K.gunLv,  ('gunLvRaw'  in s)?s.gunLvRaw :null);
 }

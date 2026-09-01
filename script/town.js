@@ -109,7 +109,10 @@ const NP_RANGE_SEQ = [
     portrait:{ char:'GUNSMITH_NP', show:true } },
   { speaker:'GUNSMITH_NP', text:'', auto:800, se:'se_ui_sortie',
     portrait:{ char:'GUNSMITH_NP', show:true } },
-  Object.assign(gunN(null,'嗯……完成了。'), { flags:['np_gun_tuned'] }),
+  /* ⚠ `gunTune:1` ＝主武器強化 +1 級（ver -700，Ray：「現在強化一次就是 2」——
+     出廠 Lv1，這一次之後是 Lv2＝ +5%，與 ver -655 的數字一致）。
+     旗標照舊記著：它管的是「重挑戰不必再付 200G」。 */
+  Object.assign(gunN(null,'嗯……完成了。'), { flags:['np_gun_tuned'], gunTune:1 }),
   gunN(null,'膛壓增強了，後座力也會強一點，不過你應該沒問題。'),
   gunN(null,'不過，這兩把槍的名字是南方的古文吧。有什麼典故嗎？'),
   { speaker:'PLAYER', blank:true },

@@ -504,8 +504,10 @@ function charmDmgMul(){
 }
 function mainGunDmgMul(){ return gunTuneMul() * charmDmgMul(); }
 function gunTuneMul(){
-  const g=T.gunTune; if(!g || !g.flag) return 1;
-  return prog.hasFlag(g.flag) ? (g.dmgMul||1) : 1;
+  const g=T.gunTune; if(!g) return 1;
+  /* ver -700：加成由**等級**算，不再看旗標（見 config 的 gunTune 與 progress.gunLevel）。
+     Lv1（出廠）＝ ×1；每一級 +5%。 */
+  return 1 + Math.max(0, prog.gunLevel() - (g.base||1)) * (g.dmgMulPerLv||0);
 }
 function hitDamage(){
   const c=Math.min(state.combo,DMG_COMBO_CAP);

@@ -70,13 +70,13 @@ function slotHtml(cat, n){
    ⚠ **整張卡不可點**：它不可更換，給它一個「點得到卻沒反應」的熱區只會讓玩家
      一直去戳（同 §6.5.5「還不能做不要靠藏起鈕擋」的反面 —— 不能做的東西就別做成鈕）。
      可點的只有**兩個掛件槽**。
-   ⚠ 強化的顯示讀 `tuning.gunTune`（＝槍店那一項），沒立旗就整行不出現。 */
+   ⚠ ver -700：只顯示**強化等級**（Ray：「顯示強化等級就好，不用寫槍店強化」），
+     而且**一直顯示**（Lv1 也顯示）—— 玩家要看得出「這個東西可以練，練到 9」。 */
 function mainGunHtml(){
   const MG=GAME_CONFIG.mainGun; if(!MG) return '';
   const defs=(GAME_CONFIG.items||{}).defs||{};
-  const g=(GAME_CONFIG.tuning||{}).gunTune;
-  const tuned = g && g.flag && prog.hasFlag(g.flag);
-  const pct = tuned ? Math.round(((g.dmgMul||1)-1)*100) : 0;
+  const g=(GAME_CONFIG.tuning||{}).gunTune||{};
+  const lv=prog.gunLevel(), lvMax=g.max||lv;
   const barrels=(MG.barrels||[]).map(b=>{
     const id=prog.charmOf(b.id), d=id?defs[id]:null;
     return '<div class="gs-barrel" data-barrel="'+b.id+'">'
@@ -89,8 +89,9 @@ function mainGunHtml(){
   return '<div class="gs-sec">主武器</div>'
        + '<div class="gs-main">'
        +   (MG.image ? '<img class="gs-mimg" src="'+(asset(MG.image)||'')+'" alt="">' : '')
-       +   '<div class="gs-mname">'+MG.name+'<span class="gs-mfix">固定・不可更換</span></div>'
-       +   (tuned ? '<div class="gs-mtune">槍店強化　普攻 +'+pct+'%</div>' : '')
+       +   '<div class="gs-mname">'+MG.name
+       +     (MG.tag ? '<span class="gs-mfix">'+MG.tag+'</span>' : '')+'</div>'
+       +   '<div class="gs-mtune">強　化　<b>'+lv+'</b><span>／'+lvMax+'</span></div>'
        +   '<div class="gs-barrels">'+barrels+'</div>'
        + '</div>';
 }

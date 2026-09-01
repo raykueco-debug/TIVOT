@@ -2815,11 +2815,14 @@
      ⚠ 卡本身**不給 cursor:pointer**：它不可更換，看起來能點就會被戳。 */
   #gearSheet .gs-main{margin-bottom:14px;padding:8px 10px;border-radius:10px;
     border:1px solid var(--gold-dim);background:rgba(10,8,14,.6);}
-  #gearSheet .gs-mimg{display:block;width:100%;max-height:76px;object-fit:contain;
-    margin:2px auto 4px;}
+  /* ⚠ 這張圖是**上下兩支槍**（α 上／β 下），比交叉那張高 —— 高度給足才讀得出是兩支。 */
+  #gearSheet .gs-mimg{display:block;width:100%;max-height:120px;object-fit:contain;
+    margin:2px auto 6px;}
   #gearSheet .gs-mname{font-size:12px;color:var(--ink);display:flex;align-items:baseline;gap:6px;}
   #gearSheet .gs-mfix{font-size:9px;letter-spacing:1px;color:var(--gold-dim);}
-  #gearSheet .gs-mtune{margin-top:3px;font-size:10px;color:var(--gold);}
+  #gearSheet .gs-mtune{margin-top:3px;font-size:10px;letter-spacing:1px;color:var(--gold-dim);}
+  #gearSheet .gs-mtune b{font-size:14px;font-weight:normal;color:var(--gold);}
+  #gearSheet .gs-mtune span{color:var(--gold-dim);}
   #gearSheet .gs-barrels{display:flex;flex-direction:column;gap:6px;margin-top:8px;}
   #gearSheet .gs-barrel{display:flex;align-items:center;gap:8px;padding:6px 8px;
     border:1px solid rgba(212,169,74,.28);border-radius:8px;cursor:pointer;

@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.01-699';
+export const VERSION = 'ver 2026.09.01-700';
 
 export const GAME_CONFIG = {
 
@@ -129,7 +129,9 @@ export const GAME_CONFIG = {
      ⚠ 強化走槍店（Ray 指定）：目前只有打靶獎品那一項（`tuning.gunTune`），
        改裝分頁的內容等 Ray 的卡 —— 不要先做一個半套的出來（同 loot.js 那一頁）。 */
   mainGun: {
-    name:'迦尼米德', image:'weapon_ganymede_twin', fixed:true,
+    name:'迦尼米德', image:'weapon_ganymede_ab', fixed:true,
+    /* Ray 指定的字面（ver -700）：不寫「固定・不可更換」，寫**固有武裝**。 */
+    tag:'固有武裝',
     barrels:[
       { id:'alpha', name:'迦尼米德α「王之運」' },
       { id:'beta',  name:'迦尼米德β「運之王」' },
@@ -1948,7 +1950,15 @@ export const GAME_CONFIG = {
        ⚠⚠ **+5%**（ver -656，Ray：「挑戰成功主槍普攻攻擊力強化5%」）——
          乘在**整個普攻傷害**上（含連擊加成），不是只加在基礎值。
          -655 那一版是 `dmgBase:1`（絕對值 +1），已被 Ray 的指定取代。 */
-    gunTune: { flag:'np_gun_tuned', dmgMul:1.05 },
+    /* ══⚠⚠ 主武器的**強化等級**（ver -700，Ray：「顯示強化等級就好…強化等級到 9」
+       「現在強化一次就是 2」）══════════════════════════════════════════════
+       等級 `base`(1) ~ `max`(9)，**出廠就是 1**；北方泊地打靶那一次強化 → 2。
+       加成 ＝ `(等級 − base) × dmgMulPerLv` —— 所以 Lv2 正好是 +5%
+       （＝ ver -655 Ray 給的「主槍普攻攻擊力強化 5%」，數字沒有變），Lv9 是 +40%。
+       ⚠⚠ **等級是唯一真相**（`progress.gunLevel`，鐵律 9）：`flag` 已經**不再**
+         決定加成，它只剩「北方泊地那一次做過了」這個意思（免除重挑戰的費用，
+         見 `costUntil`）。兩者各有各的擁有事件，不要拿其中一個去推另一個。 */
+    gunTune: { flag:'np_gun_tuned', base:1, max:9, dmgMulPerLv:0.05 },
     dmgPerCombo:         0.2,   // 每層連擊加成
     dmgComboCap:         20,    // 連擊加成計入上限
     dmgDualMult:         0.7,   // 雙槍傷害倍率（<1=安全牌）
@@ -2353,7 +2363,8 @@ export const ASSETS = {
   switch_split: "resources/vfx/Switch_Split.webp",
   switch_hyper: "resources/vfx/Switch_Hyper.webp",
   /* 主武器（ver -699）：交叉雙槍＝整備頁的卡；單槍留著給日後的改裝頁。 */
-  weapon_ganymede_twin: "resources/weapon/GanymedeTwin.webp",     // 迦尼米德 α＋β（去背）
+  weapon_ganymede_ab:   "resources/weapon/GanymedeAB.webp",       // 迦尼米德 α（上）＋β（下）＝整備頁的卡
+  weapon_ganymede_twin: "resources/weapon/GanymedeTwin.webp",     // 交叉雙槍（備用）
   weapon_ganymede:      "resources/weapon/Ganymede.webp",         // 迦尼米德 單支（黑底）
   weapon_mg_squall:     "resources/weapon/MG_Squall.webp",       // 重機槍 Squall
   weapon_shotgun_blast: "resources/weapon/Shotgun_Blast.webp",   // 散彈槍 Blast

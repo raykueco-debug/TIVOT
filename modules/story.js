@@ -919,6 +919,10 @@ function applyPersist(line){
      scene 有 `setFlags`（收尾才寫），但城鎮的 `acts` 不是 scene —— 這一條是逐拍的。
      ⚠ 演到就記（不是演完），所以只放「這一刻確實發生了」的事（出航、拿到東西…）。 */
   if(line.flags && line.flags.length) prog.addFlags(line.flags);
+  /* 主武器的強化（ver -700）：那一拍寫 `gunTune:N` ＝**升 N 級**（見 progress.gunLevel）。
+     ⚠ 與 `flags` 是兩件事：旗記「這件事發生過」（免除重挑戰的費用），
+       等級是**加成的唯一真相**。北方泊地那一拍兩個都寫。 */
+  if(line.gunTune) prog.addGunLevel(line.gunTune);
   persistFaded=false;
   let bgChanged=false;
   if(line.bg!==undefined && line.bg!==stageBg){
