@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.01-730';
+export const VERSION = 'ver 2026.09.01-731';
 
 export const GAME_CONFIG = {
 
@@ -2344,10 +2344,16 @@ export const GAME_CONFIG = {
            主動技，只在 NI 期間存在（鐵律 8：一個動作一個入口）。 */
       burstName: '夢境粉碎',
       burstCutin: 'ci_anya_dreambreaker',
-      /* 熔斷（倒數槽抽乾）的 cut-in（ver -692，Ray：「CI_Anya_OBE 夢魘熔斷 CI」）。
-         ⚠ 字面留 `MELTDOWN`（Ray 自己的用語是「熔斷」）—— 檔名叫 OBE 是沿用
-           聖徒化那一端的命名，兩者是**對稱的失敗結局**，不是同一件事。
-           要改字就動 `meltdownName`。 */
+      /* ══⚠⚠ **熔斷就是 OBE**（ver -731，Ray 定案）══════════════════════════
+         -692 的註解寫成「對稱的失敗結局，**不是**同一件事」—— 那是錯的，已更正：
+         聖徒化推滿與惡夢化抽乾**是同一個結局的兩個方向**，所以行為要一致：
+           · 都用那一張 cut-in（`CI_Anya_OBE`）
+           · 都會被「有人在等這一拍」的閘門**擋住**，等玩家做完那個動作才輪到它
+             （SI：生命歸還的上滑 → `saintCriticalPending`；
+              NI：夢境粉碎的上滑 → `niBurstPending`）
+           · 沒有人在等就照常發生
+         ⚠ 螢幕上的字仍是 `MELTDOWN`（Ray 自己的用語是「熔斷」）——
+           那是**字面**不是**機制**，要改字就動 `meltdownName`。 */
       meltdownName: 'MELTDOWN',
       meltdownCutin: 'ci_anya_obe',
     },
