@@ -255,18 +255,26 @@ export const STRINGS = {
           { who:'nouvelle', img:'tut_nouvelle_surprise', text:'很好……你做得到的。小心！攻擊要來了！' },
           { who:'nouvelle', img:'tut_nouvelle_surprise', text:'牠蓄力的時候，畫面上會出現光圈——那是要你防禦的信號。' },
         ],
+        /* ══⚠⚠ **先叫他點掉，規則留到點完再講**（ver -726，Ray：「開頭的諾薇兒
+           反擊教學直接叫玩家點掉，點完以後再提示越小打越痛」）══
+           第一次看到那個光圈的人不知道要做什麼 —— 這一拍的任務是**讓他動手**，
+           不是讓他理解。「越小打越痛」要等他**已經點過一次**、手上有那個觸感
+           之後才聽得懂；先講規則只會讓他一邊讀字一邊眼睜睜看著光圈縮完。
+           ⚠ 所以這裡只有一句，而且不解釋任何規則。 */
         threat: [
-          { who:'nouvelle', img:'tut_nouvelle_surprise', text:'光圈會越縮越小。太早出手只能「擋下」，還是會受到一半的傷。' },
-          { who:'nouvelle', img:'tut_nouvelle_surprise', text:'等它縮得夠小、抓準那一瞬間，才能完美防下！' },
-          { who:'nouvelle', img:'tut_nouvelle_cringe',   text:'來了！擋下來！' },
+          { who:'nouvelle', img:'tut_nouvelle_cringe',   text:'來了——點掉那個光圈！' },
         ],
         defended: [
+          { who:'nouvelle', img:'tut_nouvelle_surprise', text:'擋下來了！' },
+          /* ← 這一句才是「越小打越痛」，位置就是 Ray 指定的「點完以後」。 */
           { who:'nouvelle', img:'tut_nouvelle_surprise',
-            text:'擋下來了。如果在牠出手的前一瞬反擊，副武器可以打出很重的傷害。' },
+            text:'光圈會越縮越小——收得越小才點，反擊就打得越痛。' },
           { who:'nouvelle', img:'tut_nouvelle_surprise', text:'不要勉強。覺得危險的話，好好防下來就好。' },
           /* ⚠ 原本芙蕾雅的「那樣的話，我的評價可不會留情。」Ray 指定**刪除** ——
-             她沒有評價玩家的立場。 */
-          { who:'nouvelle', img:'tut_nouvelle_surprise', text:'每一種副武器的效果和反擊時機都不一樣，要謹慎使用！' },
+             她沒有評價玩家的立場。
+             ⚠⚠ **副武器切換／選擇的說明也拿掉了**（ver -726，Ray：「武器切換教學
+               這邊先不教」）—— 一次教一件事，反擊還沒熟就再塞一個操作是勸退。
+               要教的時候把那一句加回來就好（雪鐵龍箭的 `wswitch` 型別還在）。 */
         ],
         strike: [
           { who:'nouvelle', img:'tut_nouvelle_cringe', text:'危險——！' },
