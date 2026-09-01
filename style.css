@@ -1425,10 +1425,10 @@
     display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px;padding:0 8px;}
   /* 視窗被裁（iOS 26 standalone）：home indicator 位於不可視死區，安全區墊高全屬白墊 → 拿回 */
   html.vp-clipped #home #homeLinks{bottom:10px;}
-  #home #tutorialBtn, #home #creditBtn, #home #originalBtn, #home #statsBtn, #home #flightBtn, #home #storyBtn, #home #shopBtn, #home #chapterBtn{padding:6px 18px;background:transparent;
+  #home #tutorialBtn, #home #creditBtn, #home #originalBtn, #home #statsBtn, #home #flightBtn, #home #chapterBtn{padding:6px 18px;background:transparent;
     border:1px solid var(--gold-dim);border-radius:20px;color:var(--gold-dim);
     font-family:inherit;font-size:11px;letter-spacing:2px;flex:none;}
-  #home #tutorialBtn:active, #home #creditBtn:active, #home #originalBtn:active, #home #statsBtn:active, #home #flightBtn:active, #home #storyBtn:active, #home #shopBtn:active, #home #chapterBtn:active{transform:scale(.95);color:var(--gold);border-color:var(--gold);}
+  #home #tutorialBtn:active, #home #creditBtn:active, #home #originalBtn:active, #home #statsBtn:active, #home #flightBtn:active, #home #chapterBtn:active{transform:scale(.95);color:var(--gold);border-color:var(--gold);}
   /* ══⚠⚠ **首頁的可見範圍是「白名單」**（ver -623，Ray：「開始故事鈕只有管理人模式
      才開」「一般玩家只能挑戰」「還有教學原作跟 credit，除以上之外都只有管理人可視」）══
      一般玩家看得到的就這四顆：**挑戰 / 教學 / 原作 / Credit**（＋語言鈕與版權那一行）。
@@ -1443,9 +1443,8 @@
   body:not(.testmode) #home button:not(#startBtn):not(#tutorialBtn):not(#creditBtn):not(#originalBtn):not(#langBtn){display:none;}
   /* 管理人模式下這幾顆要真的出來（它們自己沒有別的 display 規則）。
      testmode 於開機時由 localStorage 還原（見 main.js adminMode），手勢可再次關閉。 */
-  #home #statsBtn, #home #flightBtn, #home #storyBtn, #home #shopBtn, #home #chapterBtn{display:none;}
+  #home #statsBtn, #home #flightBtn, #home #chapterBtn{display:none;}
   body.testmode #home #statsBtn, body.testmode #home #flightBtn,
-  body.testmode #home #storyBtn, body.testmode #home #shopBtn,
   body.testmode #home #chapterBtn{display:block;}
   /* 版權：強制換行獨占一行（flex-basis:100%），置中、單行 */
   #home .home-copyright{flex:0 0 100%;text-align:center;margin-top:2px;

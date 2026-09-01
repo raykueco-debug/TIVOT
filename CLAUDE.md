@@ -2635,7 +2635,11 @@ trigger 壞了」）**
 - ⚠⚠ **首頁的可見範圍是「白名單」**（ver -623，Ray：「開始故事鈕只有管理人模式才開」
   「一般玩家只能挑戰」「還有教學原作跟 credit，除以上之外都只有管理人可視」）：
   一般玩家看得到的只有 **挑戰 / 教學 / 原作 / Credit**（＋語言鈕與版權那一行）。
-  其餘一律 `body.testmode` 限定 —— **開始故事、繼續**、商店、後臺、試飛、story、章節。
+  其餘一律 `body.testmode` 限定 —— **開始故事、繼續**、後臺、試飛、章節。
+  ⚠ ver -713：**商店**與 **story** 兩顆已整個拿掉（Ray 指定）。商店本來就是
+    -368 的臨時入口（正式入口是城鎮的雜貨舖節點）；`story` 與「開始故事」
+    是同一支 `startStoryFresh`，留一顆就夠。`loot.showShop` 沒有變成孤兒 ——
+    城鎮那邊還在叫它。
   - ⚠⚠ 規則寫成**白名單**不是黑名單（鐵律 8）：
     `body:not(.testmode) #home button:not(#startBtn):not(#tutorialBtn):not(#creditBtn):not(#originalBtn):not(#langBtn){display:none}`
     —— 黑名單每加一顆新鈕就要記得補一條，漏掉就直接漏給玩家看；

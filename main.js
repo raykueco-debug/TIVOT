@@ -952,7 +952,6 @@ bindBtn('hpLockBtn', ()=>{
 /* ⚠ 「道具」（bagBtn）與「城鎮」（townBtn）兩顆首頁鈕已於 ver -376 移除（Ray 指定）。
    `loot.showBag` 與 `town.open` 都還在（前者暫時沒有入口、後者由劇情的 `thenTown` 叫起來），
    不要因為「沒人叫」就把它們刪掉。 */
-bindBtn('shopBtn',      ()=>loot.showShop('grocery'));   // 商店（ver -368；臨時入口，正式入口在城鎮節點）
 bindBtn('storySkip',    story.skipToNextGate);  // 跳段（開發者限定，ver -363）
 bindBtn('tutDevSkip',   combat.devSkipBattle);  // 教學戰跳關（開發者限定，ver -366）
 bindBtn('rematchBtn',   inspector.onRematchBtn);// 結算：依 resultMode 分流（再度執槍/迎擊/繼續/再戰）
@@ -1053,7 +1052,8 @@ town.setCheckpoint(()=>{ saveSys.autoSave(); refreshContinue(); });
    **明寫 stage 0**（鑰匙被 newRun 清掉後 getStage 會退回測試預設 3，
    從頭開始不能吃那個預設）→ 主線第 0 句。不吃 testmode、不經章節工具、
    不帶任何開發種子；讀檔照舊走「繼續」（存檔庫與一輪狀態分開，
-   開新故事不會毀掉既有存檔）。testmode 的小 story 鈕＝同一支（鐵律 8）。 */
+   開新故事不會毀掉既有存檔）。
+   ⚠ ver -713：首頁的小 `story` 鈕已拿掉（Ray 指定），這一支現在只有「開始故事」在用。 */
 /* ver -559（Ray：「繼續又變 stage3…應該要把開始故事的 stage 和好感棘輪獨立」）：
    開始故事＝**完全獨立的新輪**，三步缺一不可 ——
    ① killAllPages()：背景還活著的頁（藏起來的飛行 iframe、掛著的城鎮）全部殺掉，
@@ -1067,7 +1067,6 @@ function startStoryFresh(){
   prog.newRun();          // -563 起 newRun 自己寫 stage 0（所有從頭開始的路都安全）
   story.open(null);
 }
-bindBtn('storyBtn', startStoryFresh);
 bindBtn('storyStartBtn', startStoryFresh);
 /* ══ 章節（ver -429，Ray 指定）══════════════════════════════════════════
    管理人限定的跳關工具：每一章都先 `newRun()`（＝從頭開始的唯一那一支，§6.9），
