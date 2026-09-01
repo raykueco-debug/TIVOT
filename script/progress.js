@@ -331,7 +331,11 @@ export function tierFloor(t){ return Math.max(1, (Math.min(5,Math.max(1,t|0))-1)
      ③ 上限 50（tier 5 的頂）、下限 0。 */
 const AFF_MAX = 50;
 function getFloors(){
-  const out={}; for(const c of CHARS) out[c]=1;
+  /* ⚠⚠ 預設 **0** 不是 1（ver -723 修）：好感的預設值是 0（`AFFECTION_DEFAULT`），
+     而地板預設 1 的話，**第一次的 +0.5 會被拉成 1** —— A（半份）與 S（整份）
+     就分不出來了。舊規則全是整數所以看不出來，Ray 這一版加了「A 給一半」才露餡。
+     沒存過＝還沒達到過任何 tier ＝ 沒有地板。 */
+  const out={}; for(const c of CHARS) out[c]=0;
   try{ const j=JSON.parse(rd(K.affFloor)||'null');
     if(j) for(const c of CHARS) if(typeof j[c]==='number') out[c]=j[c];
   }catch(e){}
@@ -342,21 +346,33 @@ function getFloors(){
      蕾娜因為不是搭檔，所以她每拿四次 S +1」
    實作只有這一支（鐵律 8），inspector 的劇情結算算出等第後呼叫。
    · 搭檔＝CHARS 裡那幾位才有好感層（蕾妮／馬季諾是試玩版搭檔，沒有）。
-   · 索拉娜：S 不加，**C／D／E** 才 +1（docs「評價越爛越加」的落地）。
-   · 蕾娜：不看搭檔欄，累計 S 每 4 次 +1（一輪內計數 K.rennaS：newRun 清、
-     snapshot/restore 帶 —— §6.9 同一張清單的兩面）。
+   ⚠ ver -723 起**次一級也給一半**（Ray：「評價A好感度也給一半。跟別人相反的
+     索拉娜則是評價D＋1 評價C+0.5」）—— 數字全部搬進 `config.rating.affection`。
+   · 索拉娜：方向相反，**D +1／C +0.5**（-557 的「C 以下都 +1」已由這張表取代）。
+   · 蕾娜：不看搭檔欄，走**點數**（S 2 點／A 1 點，每 8 點 +1 ＝ +0.25／+0.125）。
+     一輪內計數 K.rennaS：newRun 清、snapshot/restore 帶（§6.9 同一張清單的兩面）。
    回傳這一場加到誰（[]＝沒人），呼叫端要顯示可以用。 */
 export function applyRankAffection(grade, partnerKey){
   const got=[];
+  /* ⚠ 表在 config（`rating.affection`，鐵律 1）——這一支只負責照表加。 */
+  const A=((GAME_CONFIG.rating||{}).affection)||{};
   if(CHARS.indexOf(partnerKey)>=0){
-    if(partnerKey==='sorana'){
-      if(grade==='C'||grade==='D'||grade==='E'){ addAffection('sorana',1); got.push('sorana'); }
-    }else if(grade==='S'){ addAffection(partnerKey,1); got.push(partnerKey); }
+    /* 索拉娜的方向與別人相反（評價越爛越加）；其餘搭檔照 `partner` 那一欄。 */
+    const tbl = (partnerKey==='sorana') ? (A.sorana||{}) : (A.partner||{});
+    const d = tbl[grade];
+    if(d){ addAffection(partnerKey, d); got.push(partnerKey); }
   }
-  if(grade==='S'){
-    const n=(parseInt(rd(K.rennaS),10)||0)+1;
+  /* 蕾娜：不看搭檔欄，走**點數**（見 config 的說明：0.125 會被 1/4 對齊吃掉）。 */
+  const R=A.renna||{};
+  const add=(R.pts||{})[grade]||0;
+  if(add>0){
+    const per=R.per||8;
+    const n=(parseInt(rd(K.rennaS),10)||0)+add;
+    /* ⚠ 只在**跨過整數倍**的那一次才 +1（不是 `n%per===0`）——
+       一次加 2 點時會直接跳過餘數 0 的那一格（實測 S→S→S→S 在 8 點那次才發）。 */
+    const before=Math.floor((n-add)/per), after=Math.floor(n/per);
     wr(K.rennaS, n);
-    if(n%4===0){ addAffection('renna',1); got.push('renna'); }
+    if(after>before){ addAffection('renna', after-before); got.push('renna'); }
   }
   return got;
 }
@@ -366,11 +382,13 @@ export function addAffection(who, delta){
   const q = v => Math.round(v*4)/4;                    // 對齊到 1/4（蕾娜的 +0.25）
   let v = q((typeof aff[who]==='number' ? aff[who] : AFFECTION_DEFAULT) + (+delta||0));
   v = Math.min(AFF_MAX, Math.max(0, v));
-  const floor = floors[who]||1;
+  const floor = floors[who]||0;   // ⚠ `||1` 會把「還沒有地板」當成 1（ver -723 修，見 getFloors）
   if(v < floor) v = floor;                             // ① 棘輪
   aff[who]=v; setAffection(aff);
+  /* ⚠ 地板只在**真的達到那條線**之後才抬（ver -723 修）：`tierOf()` 對 0.5 也回 1，
+     不加 `v >= nf` 的話 0.5 就會把地板記成 1 —— 等於把半份直接補成整份。 */
   const nf = tierFloor(tierOf(v));
-  if(nf > floor){ floors[who]=nf; wr(K.affFloor, JSON.stringify(floors)); }
+  if(v >= nf && nf > floor){ floors[who]=nf; wr(K.affFloor, JSON.stringify(floors)); }
   return v;
 }
 
