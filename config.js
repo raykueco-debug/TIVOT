@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.01-718';
+export const VERSION = 'ver 2026.09.01-719';
 
 export const GAME_CONFIG = {
 
@@ -322,7 +322,7 @@ export const GAME_CONFIG = {
         buffSeconds:5,
         cutin:'ci_anya_lucid',
         voice:'vo_anya_lucid',   // ver -711：她自己的語音（原本借馬季諾的 vo_hc_rounds）
-        desc:'每隻敵人第一次反擊成功時發動：5 秒普攻傷害加倍。',
+        desc:'每隻敵人第一次完美反擊（紅圈）時發動：5 秒普攻傷害加倍。',
       },
     },
     // ── 第二搭檔：馬季諾 Malzeno ──────────────────────────

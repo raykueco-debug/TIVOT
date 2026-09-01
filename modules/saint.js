@@ -349,7 +349,15 @@ function triggerNiBurst(){
     return;
   }
   markMaxBurst();   // 惡夢化清空殘格＝MB（Ray：「同 SI 的 MB」，ver -675）
-  finishNightmare(()=>api.setPlayerHpRatio(1));   // 「hp 全恢復」
+  /* ⚠⚠ **要播 MB 的全畫面 cut-in**（ver -719，Ray：「NI 的 MB 跟 execute 沒接上」）——
+     -675 只做了「算 MB 的傷害＋記旗標」，演出那一步漏了：擊殺那一支有
+     `playSaintCutin('execute')`，未擊殺這一支卻直接跳收尾，畫面上只有一行浮字。
+     「同 SI 的 MB」指的是整套，包含它的臉。
+     ⚠ 回血是**回滿**不是 SI 的 50%（Ray 的惡夢化規格：「清空殘格 hp 全恢復」）——
+       那是這兩套唯一不同的地方，收尾的 thunk 照舊。 */
+  playSaintCutin('burst', ()=>{
+    finishNightmare(()=>api.setPlayerHpRatio(1));   // 「hp 全恢復」
+  });
 }
 /* 主動技（上滑）：一次清掉殘格造成相應傷害 —— **沒有 MB、不回血、直接結束，HP 剩 1**。 */
 export function nightmareActive(){

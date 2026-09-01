@@ -69,11 +69,15 @@ export function init(a){ api = a; }
  *  透過 state.addCounter(總傷) 記一次（+1 次 +總傷；inspector 結算讀取）。
  *  ⚠ 未來若加吸血反擊，回血走 combat.healPlayer（D3），此處不碰 playerHp。
  * ========================================================================== */
-/* ══ 「這一次反擊真的開火了」（ver -693）══
-   ⚠ 三個武器分支各自 `addCounter` —— 這一支就掛在它們旁邊，**同一個事件**。
-     （不能只掛在函式開頭：那時還沒判定會不會開火。）
-   ⚠ 通知誰由 combat 注入（`api.onCounter`）：weapon 不反向 import partner。 */
-function onCounterFired(){ if(api.onCounter) api.onCounter(); }
+/* ══ 「這一次反擊真的開火了」（ver -693 建、**ver -719 移走**）══
+   ⚠⚠ 這一支現在是 no-op：**明晰之夢改成只有「完美反擊」（紅圈）才發動**
+     （Ray：「明晰之夢要在完美反擊的狀況下才能發動，黃橘圈不會發動」）。
+     -706 之後黃圈與橘圈也會呼叫 `weaponCounter`，掛在這裡就變成「隨便擋一下
+     就發動」—— 而**只有 `defense` 知道這一次是哪一帶**，所以判定搬去那裡
+     （`combat` 的 `onThreatResolved(grade)`，grade==='counter' 才通知，鐵律 7）。
+   ⚠ 留著空殼是為了讓三個分支旁邊那一行不用刪 —— 日後若有「開火就觸發」的
+     被動（不分帶），接回這裡就好。 */
+function onCounterFired(){ /* 見上：判定已移到 defense 的判定等級 */ }
 /* `hitRate`（ver -706，Ray：「機槍黃圈命中率只有 30%，擊發數不變，沒中的跳 miss，
    橘圈 70%，紅圈 100%。**但不論如何第一發一定不會 miss**」）。
    ⚠ 第一發保底不是體貼，是必要的：8 發 30% 全 miss 的機率有 5.7% ——

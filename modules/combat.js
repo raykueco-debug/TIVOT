@@ -77,7 +77,11 @@ export function setup(){
                  /* ⚠ 一次防禦判完 → **固定模式的副武器歸位一順位**（ver -422，Ray 指定）。
                     這裡是唯一的呼叫點（鐵律 8）：defense 不 import weapon，
                     所以由 combat 這個協調者把兩件事串起來。 */
-                 onThreatResolved: (g)=>{ weapon.onThreatResolved(); tutorial.onThreatResolved(g); },
+                 /* ⚠ `g==='counter'` 才算「完美反擊」（ver -719，Ray 指定）——
+                    黃圈與橘圈自 -706 起也會開火，但那不是**完美**反擊。
+                    判定放在這裡是因為只有 defense 分得出帶（鐵律 7）。 */
+                 onThreatResolved: (g)=>{ weapon.onThreatResolved(); tutorial.onThreatResolved(g);
+                                          if(g==='counter') partner.onCounter(); },
                  hintCurrentCell,   // 紅點解決了就指一下正確格（ver -718，見 tuning.hintNextCell）
                  onThreatEarly: tutorial.onEarlyBlock,
                  ultSuppressed: tutorial.ultSuppressed, firstThreatPending: tutorial.firstThreatPending,
@@ -107,6 +111,8 @@ export function setup(){
     scheduleUlt: defense.scheduleUlt,
     markNext, buildGrid, resetEnergy,
     /* 反擊成功 → 通知搭檔的被動（ver -693，明晰之夢：每隻怪第一次反擊時發動）。 */
+    /* ver -719：明晰之夢改由 `onThreatResolved` 的判定等級觸發（只有紅圈），
+       weapon 那一支已成空殼 —— 這一條留著，日後「開火就觸發」的被動可以接回去。 */
     onCounter: partner.onCounter,
   });
   // 聖徒化：combat 為協調者，把 combat/defense/partner 的原語打包注入 saint，
