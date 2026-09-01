@@ -651,8 +651,14 @@ function playSaintCutin(kind, done){
   /* ⚠ 生命歸還在**本篇**換成諾薇兒那一張（ver -454，Ray：「story 版的生命歸還 CI
      換成 Nouvelle_Sturm」）：本篇的搭檔是諾薇兒，演出裡出現蕾妮是錯的人。
      試玩版照舊 Renee。 */
-  const scImgKey = { execute:'cutin_exc', obe:'cutin_obe', burst:'cutin_mb',
-                     return: storyMode() ? 'cutin_return_nouvelle' : 'cutin_return' };
+  /* ⚠⚠ **MB 與處決在本篇換成托爾斯滕**（ver -702，Ray 交件 CI_Torsten_MB／
+     CI_Torsten_Excute）：那兩招是**主角自己**的收尾，本篇演出裡出現露娜是錯的人
+     —— 同 -454 的破防與生命歸還，分流一律走 `storyMode()`（鐵律 8）。
+     試玩版（挑戰／出陣）照舊 Luna。 */
+  const scImgKey = { execute: storyMode() ? 'cutin_exc_torsten' : 'cutin_exc',
+                     obe:'cutin_obe',
+                     burst:   storyMode() ? 'cutin_mb_torsten'  : 'cutin_mb',
+                     return:  storyMode() ? 'cutin_return_nouvelle' : 'cutin_return' };
   const scImgEl  = { execute:'saintCutinImg', obe:'saintCutinImgObe', burst:'saintCutinImgBurst', return:'saintCutinImgReturn' };
   if(scImgEl[kind]){ const el=$(scImgEl[kind]); if(el){ const src=asset(scImgKey[kind]); if(src) el.src=src; } }
   c.classList.remove('burst','obe','execute','return','on');

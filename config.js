@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.01-701';
+export const VERSION = 'ver 2026.09.01-702';
 
 export const GAME_CONFIG = {
 
@@ -2277,7 +2277,7 @@ export const ASSETS = {
      四版才查出來）。**一組要一起帶**，漏掉哪一張哪一張就被快取住。 */
   ci_anya_ni:     "resources/CI/CI_Anya_NightmareInstall.webp?v=2",
   /* 夢境粉碎（ver -674，Ray 交件）：惡夢化期間上滑的那一發。 */
-  ci_anya_dreambreaker: "resources/CI/CI_Anya_Dreambreaker.webp?v=2",
+  ci_anya_dreambreaker: "resources/CI/CI_Anya_Dreambreaker.webp?v=3",   // ver -702：Ray 又換了一版
   /* 惡夢化熔斷（ver -692，Ray 交件 `CI_Anya_OBE`）：倒數槽抽乾的那一結局。 */
   ci_anya_obe:    "resources/CI/CI_Anya_OBE.webp",
   /* 明晰之夢（ver -681 交件／-682 定中文名）：安雅的被動 —— HP≤30% 普攻加倍 5 秒。 */
@@ -2357,6 +2357,11 @@ export const ASSETS = {
        聖徒化   → saint.activateSaint（搭檔為諾薇兒時）
        生命歸還 → saint.playSaintCutin('return') */
   cutin_dual_torsten:    "resources/CI/CI_Torsten_Dualcrush.webp",
+  /* ══ 本篇的 MB／處決 cut-in（ver -702，Ray 交件）══ 試玩版照舊 Luna（見 cutin_mb／
+     cutin_exc）；分流走 `storyMode()`，與破防／生命歸還那兩張同一套（鐵律 8）。
+     ⚠ 檔名是 Ray 給的 `Excute`（少一個 e）—— **照檔名**，不要自作主張改。 */
+  cutin_mb_torsten:      "resources/CI/CI_Torsten_MB.webp",
+  cutin_exc_torsten:     "resources/CI/CI_Torsten_Excute.webp",
   cutin_return_nouvelle: "resources/CI/Nouvelle_Sturm.webp",
   partner_malzeno: "resources/partner/Malzeno_SI_01.webp",   // 馬季諾 立繪
   cutin_boss: "resources/enemy/Belinda_CI_boss.jpg",   // v18d：Boss（貝琳妲）遭遇 cut-in 專屬圖
