@@ -1110,7 +1110,21 @@ function updateStatus(){ /* 狀態列已移出畫面（下半為純數字盤）�
 /* ============================================================================
  *  勝負 / 結算（combat 擁有計時 → 算 totalTime/avg → 交 inspector.settle 演出）
  * ========================================================================== */
+/* ══⚠⚠ 打靶的棄權（ver -730，Ray：「給打靶遊戲都加個棄權鈕」）══════════════
+   當成**沒過關**收場：走 `storyBattleEnd(true)` —— 那一支本來就是「劇本輸」
+   的出口（`allowLose` 用的同一條），所以腳本那一拍的 `onLose` 分歧會照常接上，
+   玩家回到店裡／劇情，不必打完。
+   ⚠ 走既有的出口而不是另開一條（鐵律 8）：交棒、持久 HP、talkOnce 的記法
+     全部在那一支裡，另寫一條必然漏掉其中一項。
+   ⚠ `timeOver` 一併標起來：結算與腳本判「有沒有過關」讀的是它。 */
+export function giveUpTimeAttack(){
+  if(!state.timeAttack || state.over) return false;
+  state.timeOver = true;
+  return storyBattleEnd(true);
+}
+
 function stopAll(){
+  document.body.classList.remove('timeattack');   // 棄權鈕：所有結束路徑的匯流點（ver -730）
   stopIntervalTimer();   // 含光圈（ver -464 修：raw clearInterval 會把 rAF 留著抱過期 deadline 繼續畫）
   clearTimeout(state.atkBuffTimer);
   endOverkillFx();       // 中途退出/結算時清 overkill 限時與藍光
@@ -1646,6 +1660,11 @@ export function startGame(){
     state.counterGapMs = sb.counterGapMs || null;// 這一場的機槍連射間隔（ver -476，船艦戰）
   }
   stopAll();
+  /* ⚠⚠ 棄權鈕的 class **要掛在 `stopAll()` 之後**（ver -730）：`stopAll` 會把它
+     清掉（那是所有結束路徑的匯流點，見那一支）—— 掛在前面等於沒掛，
+     鈕永遠不出現（實測就是這樣）。同憲法那條「talk 要掛在 stopAll 之後」的坑。
+     ⚠ 只在計時挑戰出現；收由 `stopAll()` 負責，這裡不必再管。 */
+  document.body.classList.toggle('timeattack', !!state.timeAttack);
   /* 這一場自己的戰鬥內對話（ver -426，例：船艦戰的反擊短教學）。
      ⚠ 要在 `stopAll()` **之後**掛：`stopAll` 會叫 `tutorial.abort()`，那一支會把它收掉。
      ⚠ 也要在 `loadBoard(0)` **之前**：loadBoard 會觸發 `board:0`，晚掛就吃不到那個節點。 */

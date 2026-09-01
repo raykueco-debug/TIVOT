@@ -437,6 +437,12 @@ export function saintCriticalPending(){
      「那個閘門已經開著」才算。寬鬆的話（例如只看有沒有 phplow）會把熔斷
      永遠擋住，那一場就結束不了。 */
 export function niBurstPending(){
+  /* ⚠⚠ **開著的那一個也算**（ver -730，Ray：「夢境粉碎的教學沒有暫停等玩家往上滑」）——
+     `immediate:true` 的閘門在段落一開就從 `pendingGate` 搬到 `gate`，而這一支原本
+     只看 `pendingGate`：於是同一次抽血裡（drainPlayer → onHpChange → 開段落 →
+     回到 niDrain 檢查熔斷）它已經回 false，熔斷當場搶在玩家上滑之前發生。
+     ⚠ 症狀不是「沒有暫停」而是「還沒等到你就結束了」—— 兩者在畫面上長得一樣。 */
+  if(gate && gate.name==='niBurst') return true;
   if(pendingGate && pendingGate.name==='niBurst') return true;
   return (talkLeft||[]).some(st0 =>
     /^phplow:/.test(String(st0.trigger||'')) && st0.gate && st0.gate.action==='niBurst');

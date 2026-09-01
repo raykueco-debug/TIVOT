@@ -914,6 +914,7 @@ bindBtn('tutorialBtn', ()=>{ tutorial.requestReplay(); launchBattle(); });
   }
 })();
 bindBtn('exitBtn',      showExitConfirm);       // 右上：退出 → 確認對話框（盤面模糊）
+bindBtn('giveUpBtn',    ()=>combat.giveUpTimeAttack());   // 打靶的棄權（ver -730）
 
 // 退出確認：暫停（cutinPlaying）+ 數字盤模糊 + 「回主選單 / 繼續」。回主選單走 goHome（淡出淡入）。
 function showExitConfirm(){

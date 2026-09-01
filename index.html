@@ -132,6 +132,10 @@
     </div>
     <!-- 退出：右上角 → 回到首頁 -->
     <button id="exitBtn" class="corner-btn">✕</button>
+    <!-- 棄權（ver -730，Ray：「給打靶遊戲都加個棄權鈕」）：只在計時挑戰（打靶）出現。
+         按下去＝當成沒過關收場，走那一拍的 onLose 分歧回到店裡／劇情。
+         ⚠ 擺在 ✕ 旁邊而不是盤面附近：打靶時手指一直在數字盤上，放近了會誤觸。 -->
+    <button id="giveUpBtn" class="corner-btn">棄　權</button>
     <button id="testClearBtn" class="corner-btn">清盤</button>
     <!-- 鎖血（管理人測試，ver -463）：開著時玩家不掉血。與清盤同排，亮金＝開啟。 -->
     <button id="hpLockBtn" class="corner-btn">鎖血</button>

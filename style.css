@@ -671,6 +671,10 @@
   #tutDevSkip{top:10px;left:118px;right:auto;width:auto;padding:0 12px;font-size:12px;
     letter-spacing:2px;color:var(--holy);border-color:var(--holy);display:none;}
   body.testmode.tut-on #tutDevSkip{display:flex;}
+  /* 棄權（ver -730）：只在計時挑戰出現，貼在右上 ✕ 的左邊。 */
+  #giveUpBtn{top:10px;right:64px;width:auto;padding:0 12px;font-size:12px;letter-spacing:1px;
+    color:var(--gold-dim);border-color:var(--gold-dim);display:none;}
+  body.timeattack #giveUpBtn{display:flex;}
   #testClearBtn{top:10px;left:10px;right:auto;font-size:12px;letter-spacing:1px;color:var(--holy);border-color:var(--holy);display:none;}
   body.testmode #testClearBtn{display:flex;}
   /* 鎖血鈕（管理人測試，ver -463）：清盤右側。開啟＝亮金（.on）。 */
