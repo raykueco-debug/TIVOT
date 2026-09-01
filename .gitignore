@@ -13,3 +13,8 @@ flight/silvermoon_atlas.png
 ~$*
 # 給 Ray 看的憲法匯出拷貝（程式不讀）
 憲法_ver-*.md
+
+# 回收區：內容只留本機（同 _originals），但規約說明與回收紀錄入版控
+_recycle/*
+!_recycle/README.md
+!_recycle/RECYCLE_LOG.tsv

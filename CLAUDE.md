@@ -183,6 +183,25 @@ SPEC.md             行為規格
 - ⚠ 露娜在對白裡目前借用 cut-in `partner/Luna_CI_exc.webp`（`speakers.js`
   標了 `unmeasured:true`）。`Luna_SI_seat` 是坐姿,還沒接進去。
 
+**⚠⚠⚠ 回收區 ＝ 本專案唯一的「刪除」出口(ver -696,Ray：「以後不要刪我的東西,
+在根目錄放一個回收區」)**
+- 任何 session(程式的、美術的)要拿掉或**覆蓋掉**任何檔案,一律走 `tools/recycle.sh`
+  —— **不准 `rm`,也不准用 `mv`／`cwebp` 就地蓋掉**。它只搬進 `_recycle/`,永遠不刪。
+
+      tools/recycle.sh -m "為什麼" <檔案或資料夾>...   # 回收
+      tools/recycle.sh --list                          # 看紀錄
+      tools/recycle.sh --restore _recycle/<路徑>       # 放回原位
+
+- 保留**原本的相對路徑**(`_recycle/resources/CI/x.png`),才知道它本來住哪、也才放得回去;
+  同名再回收一次不覆蓋(加時間戳)。每一筆記進 `_recycle/RECYCLE_LOG.tsv`,
+  **那份紀錄入版控** —— 「誰在哪一版拿掉了什麼」翻 git 就查得到。
+- ⚠⚠ **它與版控不重疊,不是多此一舉**:git 只保護 **commit 過的**東西。
+  ver -695 之後 Ray 回報一張自己畫的諾薇兒 OBE 不見了 —— 查下來那張圖**從來沒進過版控**
+  (全機、`_originals`、git 全歷史都沒有),所以 git 一點忙都幫不上。
+  回收區保護的正是**還沒 commit 的那一段**。
+- ⚠ 內容只留本機(`.gitignore`),同 `_originals` —— 是「可回滾」不是「異地備份」。
+- ⚠ **清空回收區是 Ray 的決定**,沒有任何 session 被授權清它。
+
 **原圖備份的規矩(ver -357,Ray 指定「以後被做成 webp 的原 png 圖找個不會被讀的地方存好備份」)**
 - 轉檔流程固定三步:①`cwebp` 出 `.webp` 到原位 ②`config.js`/`speakers.js` 指 `.webp`
   ③**原 PNG 移進 `resources/_originals/<同層資料夾>/`**,絕不留在會被載入的目錄裡。
