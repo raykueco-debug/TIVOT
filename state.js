@@ -223,6 +223,10 @@ export const state = {
        **框**（門開門關、不播櫻花過渡禎、打完交還劇情），那部分才是同一件事。 */
   scriptRun: false,      // 本場是劇情插入戰（存續到結算）
   scriptBattleId: null,  // 是哪一場（查 config.battles）
+  /* 剛打完的那一場是哪一場（ver -698）。⚠ 與上面那個的差別：`scriptBattleId` 在
+     `lose()` 就被清掉了（結算頁要靠它分流），但**戰敗頁按下鈕之後**才輪到啟動層
+     決定「回哪裡」—— 那時它已經是 null。所以另存一份，唯一的寫入點在 `lose()`。 */
+  lastBattleId: null,
   /* 這一場是不是**劇情戰**（ver -493，Ray：「在戰鬥加上一個是否為劇情戰的判定，
      之後就讀那一個」）。由發起端在 startScriptBattle 宣告（飛行的隨機遭遇＝false，
      劇本遭遇／城鎮插入戰＝true），startGame 寫入 —— 開場白要不要播、talkOnce

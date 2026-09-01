@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.01-697';
+export const VERSION = 'ver 2026.09.01-698';
 
 export const GAME_CONFIG = {
 
@@ -1493,7 +1493,10 @@ export const GAME_CONFIG = {
     /* `allowLose`（ver -376，Ray 定案）：**除標明劇情殺／可戰敗之外，戰敗一律接
        Game Over 畫面回主選單**。所以這一欄不寫＝打輸就 Game Over；
        只有「劇本要它被打輸」的場次才寫 `allowLose:true`（輸了接著演）。 */
-    guild_hunter: { enemy:'guild_hunter', noSaint:true, noPartner:true },
+    /* ⚠⚠ `special:true`（ver -698，Ray：「城鎮偶有特殊戰（賞金獵人挑釁、抓賊等
+       非戰鬥探索），戰敗就後送旅店。特殊戰原則上不可重覆挑戰、過了就沒了，
+       所以沒有劇情 flag 問題」）—— 戰敗**一次就送旅店**（不計連敗、不回檔）。 */
+    guild_hunter: { enemy:'guild_hunter', special:true, noSaint:true, noPartner:true },
     /* 北方泊地的城鎮戰（ver -583）：每一格走進去打一場，共用這一張佔位卡。
        ⚠ **不禁聖徒化／搭檔技**：Ray 沒說要禁（禁了要明寫 noSaint/noPartner）。
        ⚠ 打輸走一般流程 —— 城鎮插入戰的敗北會被抬回這座城的旅店（§6.5.2 那張表）。

@@ -9370,6 +9370,10 @@ function enterPlace(P){
   /* ⚠ **進入地圖上的地標 1 小時**（ver -435，Ray 指定）。
      ⚠ 擋下來的那一支（`stage1Blocked`）在上面就 return 了 —— 沒進去就不該收時間。 */
   clockAdvance(HOUR);
+  /* ══ 入口存檔（ver -698，Ray：「進城鎮、遺跡、特殊地點就自動在入口存檔一次」）══
+     ⚠ 在**收了時間之後**落 —— 存的是「已經進來了」的那一刻。
+     ⚠ 獨立模式（沒有父頁）沒有存檔庫，靜靜跳過。 */
+  try{ window.parent.__tivotFlight.checkpoint(); }catch(_){}
   entering={P,t:performance.now()};
   const pn=document.getElementById('place');
   document.getElementById('pnm').textContent=P.name;

@@ -1496,6 +1496,9 @@ function lose(){
      （-480 的「敗北退旗標」與 -492 的「取段當下記、永不退」都已推翻。） */
   /* 走一般失敗流程之前，把「這一場是劇情場」的旗標收掉 —— 不收的話結算會走
      教學／插入戰那一頁（那是給打贏用的），玩家輸了卻看到一頁戰績。 */
+  /* 「剛剛那一場是哪一場」交給戰敗頁的去向判定（ver -698，見 state.lastBattleId）——
+     **要在清掉之前記**。 */
+  state.lastBattleId = state.scriptBattleId;
   state.scriptRun=false; state.scriptBattleId=null;
   state.tutorialRun=false; state.tutorialStoryRun=false;
   state.over=true; clockPause(); stopAll();

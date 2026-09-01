@@ -438,6 +438,9 @@ export function currentBg(){ return bgNow; }
      這裡問的是**段落**怎麼宣告自己（同 `actDue` 的 `storyBattle`，鐵律 7）。 */
 let storyActNow = false;
 export function storyBattleAct(){ return storyActNow; }
+/* 這座城的入口那一格（ver -698，見 open()）：遭遇戰打輸把人放回這裡。 */
+let entryNodeId = null;
+export function entryNode(){ return entryNodeId; }
 /* `done`＝**這一景的背景真的擺好了**（ver -442）。切景的黑幕要等它才掀 ——
    見 `enter()` 的 `reveal`。⚠ 一定要在**每一條出口**都叫（載到了／候選全部
    404 了），漏掉哪一條，那一次就只剩保底計時器在撐。 */
@@ -1892,12 +1895,14 @@ export function open(town, node, opts){
      ⚠ 收在**進城的唯一入口**（鐵律 8）：降落、讀檔、章節跳關都經過這裡。
      ⚠ **明寫節點時不套用**（讀檔／跳關指定了 `node`）—— 那是「回到存檔的那一格」，
        不是「第一次走進這座城」。 */
-  let start = (node && T.nodes[node]) ? node : null;
-  if(!start){
-    const fe=T.firstEntry;
-    start = (fe && fe.node && T.nodes[fe.node] && !(fe.until && prog.hasFlag(fe.until)))
-          ? fe.node : T.entry;
-  }
+  /* ⚠⚠ **入口那一格另外記著**（ver -698，Ray：「城鎮、野外、遺跡非劇情戰則回到
+     入口存檔，入口不會有戰鬥」）—— 遭遇戰打輸要把人放回這裡。
+     ⚠ 記的是**這座城的入口**（`firstEntry`／`entry`），**不是**這一趟走進來的那一格：
+       讀檔／跳關可以落在中間任何一格，而「入口不會有戰鬥」的保證只對入口成立。 */
+  const fe=T.firstEntry;
+  entryNodeId = (fe && fe.node && T.nodes[fe.node] && !(fe.until && prog.hasFlag(fe.until)))
+              ? fe.node : T.entry;
+  const start = (node && T.nodes[node]) ? node : entryNodeId;
   enter(start);
   /* 進城的檢查點（ver -590，見 setCheckpoint）。⚠ 一定要在 `enter()` 之後 ——
      存檔要記「人在哪一格」。

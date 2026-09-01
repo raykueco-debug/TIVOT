@@ -360,6 +360,23 @@ def main():
                             story_battle=bool(a.get('storyBattle')))
             # 傍晚的提醒掛在**城**上不是節點上，所以在外層另外驗（見下）。
 
+        # ══⚠⚠ 入口那一格不可以有戰鬥（ver -698，Ray：「入口不會有戰鬥」）══
+        #   它是**遭遇戰的復活點**（打輸回這裡），有戰鬥就是必死鏈。
+        #   ⚠ 入口是 `firstEntry.node`（劇情降落的那一格）或 `entry`，兩個都要驗。
+        for ekey in ('entry', 'firstEntry'):
+            eid = town.get(ekey)
+            if isinstance(eid, dict): eid = eid.get('node')
+            if not eid: continue
+            en = (town.get('nodes') or {}).get(eid)
+            if not en:
+                err('%s.%s 指到不存在的節點 %s' % (tid, ekey, eid)); continue
+            for i, a in enumerate(en.get('acts') or []):
+                if any(isinstance(l, dict) and l.get('battle') for l in (a.get('lines') or [])):
+                    warn('%s：入口那一格（%s）的 acts[%d] 裡有戰鬥 —— 入口是遭遇戰的'
+                         '復活點，打輸回到這裡會再打一次同一場。'
+                         '目前靠「連敗三次抬回旅店」兜底，不會真的卡死，但這違反'
+                         '「入口不會有戰鬥」（Ray, ver -698）' % (tid, eid, i))
+
         # 傍晚那一格有**兩句**（ver -427）：走完了 `bySeen`／時間到了 `byTime`。
         ev = town.get("evening") or {}
         for k in ('bySeen', 'byTime'):

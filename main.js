@@ -359,6 +359,11 @@ function killAllPages(){
 /* 飛行頁（iframe 內）呼叫得到的掛鉤。⚠ 掛在 window 上是**刻意**的 ——
    那一頁是非 module 的獨立文件，import 不到這裡的任何東西。 */
 window.__tivotFlight = {
+  /* ══ 入口存檔（ver -698，Ray：「進城鎮、遺跡、特殊地點就自動在入口存檔一次」）══
+     飛行頁走進地標／遺跡那一刻叫它。城鎮那一邊由 `town.open` 自己落（同一支
+     `saveSys.autoSave`，鐵律 8）—— 這裡只補「還留在大地圖上」的那幾種入口。
+     ⚠ 走 `flightCheckpointNow`（＝帶座標的那一種）：人還在天上，回檔要回到座標。 */
+  checkpoint(){ flightCheckpointNow(); },
   /* 遭遇 → 進戰鬥。門已經在飛行頁推到頂了，這裡**接著演**（撞頂 → 解鎖 → 圓盤 → 開門）。 */
   battle(req){
     const id = req && req.battle;
@@ -1164,11 +1169,14 @@ story.setGateHold({
    ⚠ `carried:true`（ver -496）：旅店初見還沒看過就演「啊，醒了。」那一拍。
    ⚠ 沒睡過＝帝都旅店（開局的家）。
    ⚠ 飛行與城鎮兩條路都走這一支（鐵律 8）—— 兩邊各寫一份必然只有一邊會回檔。 */
-function carriedToInn(){
+/* `opts.rollback`（預設 true）＝要不要順便回捲那一輪。
+   ⚠ **特殊戰傳 false**（ver -698）：那一場「過了就沒了」，回捲會把它變成沒發生過。 */
+function carriedToInn(opts){
   prog.setLossStreak(0);
+  const roll = !(opts && opts.rollback===false);
   const inn = prog.getLastInn() || { town:'capital', node:'inn' };
   combat.goHome(()=>{
-    try{ saveSys.loadLatest({ noJump:true }); }catch(_){}
+    if(roll) try{ saveSys.loadLatest({ noJump:true }); }catch(_){}
     town.open(inn.town, inn.node, { carried:true });
   }, { noBgm:true });
 }
@@ -1272,11 +1280,30 @@ combat.setStoryReturn((res)=>{
      ⚠ 這條路**不能帶 `keepPages`**：要回的是別的地方，這座城要真的被收掉。 */
   if(res && res.lose==='rollback'){
     storyResume = null;
+    const bt = state.lastBattleId && GAME_CONFIG.battles && GAME_CONFIG.battles[state.lastBattleId];
+    /* ① **特殊戰**（賞金獵人挑釁、抓賊…玩家自己走過去挑的）→ **一次就後送旅店**，
+       不計連敗、**不回檔**：那一場「過了就沒了」，回捲等於把它變成沒發生過。 */
+    if(bt && bt.special){ carriedToInn({ rollback:false }); return; }
+    /* ② **劇情戰** → 讀最新的那一筆快照。回檔點是**腳本明寫**的（`checkpoint:true`），
+       而且必須落在玩家還能自由行動的地方 —— 那是寫劇本時的責任。 */
     const isStory = town.isOpen() ? town.storyBattleAct() : true;
-    if(!isStory){
-      const n = prog.lossStreak()+1;
-      if(n>=3){ carriedToInn(); return; }
-      prog.setLossStreak(n);
+    if(isStory){
+      combat.goHome(()=>{ try{ saveSys.loadLatest(); }catch(_){} }, { noBgm:true });
+      return;
+    }
+    /* ③ **遭遇戰** → 回這張地圖的**入口**（Ray：「入口不會有戰鬥」）。
+       ⚠⚠ 「回入口」與「回檔」是**兩件事**：進度照最新的那一筆放回去
+         （戰勝即存檔 —— 已經清掉的格子不該白打），只有**位置**回到入口。
+         所以是 `noJump` ＋ 明指節點，不是讓快照決定人在哪。
+       ⚠ 連敗三次 → 抬回旅店（那一條才回捲，見 carriedToInn）。 */
+    const n = prog.lossStreak()+1;
+    if(n>=3){ carriedToInn(); return; }
+    prog.setLossStreak(n);
+    const pos = town.getPosition(), gate = town.entryNode();
+    if(pos && gate){
+      combat.goHome(()=>{ try{ saveSys.loadLatest({ noJump:true }); }catch(_){}
+                          town.open(pos.town, gate); }, { noBgm:true });
+      return;
     }
     combat.goHome(()=>{ try{ saveSys.loadLatest(); }catch(_){} }, { noBgm:true });
     return;
