@@ -24,7 +24,7 @@ export const STRINGS = {
     tapContinue:  'T A P   T O   C O N T I N U E',
     hints: [
       'Counter timing varies by weapon. Stay calm.',
-      'A counter that is too early will still get you hurt.',
+      'A counter that is too early is safe, but it barely hurts them.',
       'The closer you are to death, the more valuable Saint Install becomes. If you think you cannot hold out any longer, use it without hesitation.',
       'Good coordination with your partner will make the battle much easier.',
       'The longer the combo, the more powerful your bullets become. The moment you stop, it all resets.',
@@ -212,8 +212,8 @@ export const STRINGS = {
         { who:'partner',   text:'When the enemy charges up, a ring will appear on the screen. That is your cue to guard!' },
       ],
       threat: [
-        { who:'partner',   text:'The ring will keep shrinking—act too early and you will only "Guard," taking half damage!' },
-        { who:'partner',   text:'Wait until the ring is small enough, then hit it at the right moment for a "Perfect Guard"! You will take no damage!' },
+        { who:'partner',   text:'The ring will keep shrinking—act too early and you will still block it, but your counter barely hurts!' },
+        { who:'partner',   text:'Wait until the ring is small enough, then hit it at the right moment—that is when your counter really bites!' },
         { who:'inspector', text:'Show me your guard.' },
       ],
       defended: [
