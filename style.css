@@ -2820,7 +2820,22 @@
     margin:2px auto 6px;}
   #gearSheet .gs-mname{font-size:12px;color:var(--ink);display:flex;align-items:baseline;gap:6px;}
   #gearSheet .gs-mfix{font-size:9px;letter-spacing:1px;color:var(--gold-dim);}
-  #gearSheet .gs-mtune{margin-top:3px;font-size:10px;letter-spacing:1px;color:var(--gold-dim);}
+  /* ver -712：強化那一行是**鈕**（點開九顆星的現況）。⚠ 樣式維持成一行字，
+     不做成方框 —— 它在卡裡面，做成鈕會與底下兩個掛件槽搶視覺重量。 */
+  #gearSheet .gs-mtune{display:flex;align-items:baseline;gap:2px;width:100%;
+    margin-top:3px;padding:2px 0;background:none;border:0;cursor:pointer;
+    font-family:inherit;font-size:10px;letter-spacing:1px;color:var(--gold-dim);text-align:left;}
+  #gearSheet .gs-mcaret{margin-left:4px;font-style:normal;font-size:9px;color:var(--gold-dim);}
+  /* 九顆星的現況（唯讀）：未點亮的整列壓暗，點亮的星名與名稱轉金。 */
+  #gearSheet .gs-stars{margin:4px 0 2px;display:flex;flex-direction:column;gap:5px;
+    padding:6px 8px;border-radius:8px;background:rgba(0,0,0,.28);}
+  #gearSheet .gs-star{opacity:.42;}
+  #gearSheet .gs-star.on{opacity:1;}
+  #gearSheet .gs-starname{display:block;font-style:normal;font-size:8px;letter-spacing:1.5px;
+    color:var(--gold-dim);text-transform:uppercase;}
+  #gearSheet .gs-star b{font-size:11px;font-weight:normal;color:var(--ink);}
+  #gearSheet .gs-star.on b{color:var(--gold);}
+  #gearSheet .gs-star span{display:block;font-size:9.5px;color:var(--ink);opacity:.7;}
   #gearSheet .gs-mtune b{font-size:14px;font-weight:normal;color:var(--gold);}
   #gearSheet .gs-mtune span{color:var(--gold-dim);}
   #gearSheet .gs-barrels{display:flex;flex-direction:column;gap:6px;margin-top:8px;}

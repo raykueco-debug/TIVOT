@@ -71,7 +71,26 @@ function slotHtml(cat, n){
      一直去戳（同 §6.5.5「還不能做不要靠藏起鈕擋」的反面 —— 不能做的東西就別做成鈕）。
      可點的只有**兩個掛件槽**。
    ⚠ ver -700：只顯示**強化等級**（Ray：「顯示強化等級就好，不用寫槍店強化」），
-     而且**一直顯示**（Lv1 也顯示）—— 玩家要看得出「這個東西可以練，練到 9」。 */
+     而且**一直顯示**（Lv1 也顯示）—— 玩家要看得出「這個東西可以練，練到 9」。
+   ⚠⚠ ver -712：那一行**點得開**（Ray：「加尼米德的改裝狀況在整備欄也要可以點開觀看」）
+     —— 展開九顆星的現況。**唯讀**：升級要素材，素材在槍店，所以升級留在槍店那一頁。
+     這是「整張卡不可點」的**例外而不是推翻**：可點的是「看改裝狀況」這個動作，
+     不是「換一把槍」。
+   ⚠ 與槍店改裝頁（`loot.modRows`）**共用的是資料**（`config.gunStars` ＋
+     `prog.starCount`），不是版面：那一頁要列素材需求、要能選；這一頁只報現況。 */
+/* 九顆星的現況（唯讀）。已點亮＝金色＋✓（可多次的印 ×N）；未點亮＝暗。
+   ⚠ 內部數值**不顯示**（Ray 指定）：只印星名、名稱與效果那一句。 */
+let starsOpen = false;
+function starListHtml(){
+  return (GAME_CONFIG.gunStars||[]).map(st=>{
+    const n=prog.starCount(st.id);
+    return '<div class="gs-star'+(n>0?' on':'')+'">'
+         +   '<i class="gs-starname">'+st.star+'</i>'
+         +   '<b>'+st.name+(n>0 ? (st.repeat ? '　×'+n : '　✓') : '')+'</b>'
+         +   '<span>'+st.desc+'</span>'
+         + '</div>';
+  }).join('');
+}
 function mainGunHtml(){
   const MG=GAME_CONFIG.mainGun; if(!MG) return '';
   const defs=(GAME_CONFIG.items||{}).defs||{};
@@ -92,7 +111,10 @@ function mainGunHtml(){
        +   (MG.image ? '<img class="gs-mimg" src="'+(asset(MG.image)||'')+'" alt="">' : '')
        +   '<div class="gs-mname">'+MG.name
        +     (MG.tag ? '<span class="gs-mfix">'+MG.tag+'</span>' : '')+'</div>'
-       +   '<div class="gs-mtune">強　化　<b>'+lit+'</b><span>／'+stars.length+'</span></div>'
+       +   '<button class="gs-mtune" type="button">強　化　<b>'+lit+'</b>'
+       +     '<span>／'+stars.length+'</span>'
+       +     '<i class="gs-mcaret">'+(starsOpen?'▾':'▸')+'</i></button>'
+       +   (starsOpen ? '<div class="gs-stars">'+starListHtml()+'</div>' : '')
        +   '<div class="gs-barrels">'+barrels+'</div>'
        + '</div>';
 }
@@ -231,6 +253,10 @@ function bind(){
   });
   el.querySelectorAll('.gs-slot').forEach(s=>bindSlot(s));
   /* 掛件槽（ver -699）：點一下開道具欄的護符類。⚠ 不做拖曳 —— 兩支槍沒有順位。 */
+  { const t=el.querySelector('.gs-mtune');
+    if(t) t.addEventListener('click', e=>{ e.stopPropagation();
+      try{ SFX.menuClick(); }catch(_){}
+      starsOpen=!starsOpen; render(); }); }
   el.querySelectorAll('.gs-barrel').forEach(b=>b.addEventListener('click', e=>{
     e.stopPropagation(); openCharm(b.dataset.barrel);
   }));
