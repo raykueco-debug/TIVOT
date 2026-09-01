@@ -266,9 +266,10 @@ export const STRINGS = {
         ],
         defended: [
           { who:'nouvelle', img:'tut_nouvelle_surprise', text:'擋下來了！' },
-          /* ← 這一句才是「越小打越痛」，位置就是 Ray 指定的「點完以後」。 */
+          /* ← 這一句才是「越小打越痛」，位置就是 Ray 指定的「點完以後」。
+             ⚠ 文案 ver -727 由 Ray 定稿，照抄不要改寫。 */
           { who:'nouvelle', img:'tut_nouvelle_surprise',
-            text:'光圈會越縮越小——收得越小才點，反擊就打得越痛。' },
+            text:'光圈縮得越小，對敵人造成的傷害越高！' },
           /* ⚠ 「不要勉強。覺得危險的話，好好防下來就好。」Ray 指定**刪除**（ver -727）。
              ⚠ 原本芙蕾雅的「那樣的話，我的評價可不會留情。」Ray 指定**刪除** ——
              她沒有評價玩家的立場。
