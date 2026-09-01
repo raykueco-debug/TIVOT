@@ -83,7 +83,10 @@ export function activateSaint(dir){
   SFX.play(asset('sfx_saint'), sfxGain('sfx_saint'));       // 聖徒化發動音效（SI_01）
   /* Luna 發動語音。⚠ 增益讀 config 的逐支表（tuning.fileGain），
      不寫死在這裡 —— 全域響度要能一處調完，漏一支就會突出來。 */
-  SFX.playVoice(asset('voice_saint_luna'), sfxGain('voice_saint_luna'));
+  /* 降臨語音（ver -711）：本篇＝諾薇兒，試玩版照舊露娜（同 cut-in 圖的分流，鐵律 8）。
+     ⚠ 增益讀 config 的逐支表（tuning.fileGain），不寫死在這裡。 */
+  { const vk = storyMode() ? 'vo_nou_saint' : 'voice_saint_luna';
+    SFX.playVoice(asset(vk), sfxGain(vk)); }
   playSlash(dir);                     // 依滑動方向的橫斬特效
   playCutin(()=>{
     if(state.over) return;
@@ -223,6 +226,7 @@ export function saintAdvance(amount){
    ⚠ 連帶：`niCellsLeft` 那一支沒有人用了（份量改由 `niCells` 計數，見 `nightmareTap`）。 */
 export function activateNightmare(){
   if(state.over || state.saintMode || state.niMode) return false;
+  SFX.playVoice(asset('vo_anya_ni'), sfxGain('vo_anya_ni'));   // 惡夢化降臨語音（ver -711）
   playCutin(()=>startNightmareMode(), L.battle.nightmareLabel||'NIGHTMARE INSTALL', 'ci_anya_ni');
   return true;
 }
@@ -320,6 +324,7 @@ function niMeltdown(){
   restoreUltRate();
   api.floatDmg(NI_MELT_NAME,'50%','28%',true);
   const done=()=>finishNightmare(()=>api.setPlayerHpRatio(0));   // 下限 floor 1 → 恰為 1 HP
+  SFX.playVoice(asset('vo_anya_melt'), sfxGain('vo_anya_melt'));   // 熔斷語音（ver -711）
   if(NI_MELT_CUTIN) playCutin(done, NI_MELT_NAME, NI_MELT_CUTIN);
   else done();
 }
@@ -355,6 +360,11 @@ export function nightmareActive(){
        反過來的話玩家會先看到數字再看到她出手。
      ⚠ 沒有圖／沒有名字就直接結算（cut-in 是演出不是規則）。 */
   if(NI_BURST_CUTIN){
+    /* 夢境粉碎的語音（ver -711）：預設 `vo_anya_burst`，**這一場**可以在戰鬥卡上
+       改（`burstVoice`）—— 娜塔莉戰用第二版（Ray 指定）。鐵律 1：寫在卡上。 */
+    { const bc = state.scriptBattleId && GAME_CONFIG.battles && GAME_CONFIG.battles[state.scriptBattleId];
+      const vk = (bc && bc.burstVoice) || 'vo_anya_burst';
+      SFX.playVoice(asset(vk), sfxGain(vk)); }
     playCutin(()=>niBurstResolve(), NI_BURST_NAME, NI_BURST_CUTIN);
     return true;
   }
@@ -693,7 +703,11 @@ function playSaintCutin(kind, done){
        ⚠ 這三支**不在同一層**：exc/obe 是 Luna 的語音（走語音鏈），
          而 burst 的 se_luna_mb 是音效（不走）。舊名 Luna_MB_SE 就已經
          說了它是 SE，只是舊版把四支一起放進語音表。 */
-  const scSeKey = { execute:'se_luna_exc', obe:'se_luna_obe', burst:'se_luna_mb' };
+  /* ver -711：本篇換成自己人的語音（托爾斯滕的 MB／處決、諾薇兒的 OBE），
+     試玩版照舊露娜 —— 同上面 cut-in 圖的那一組分流。 */
+  const scSeKey = storyMode()
+    ? { execute:'vo_torsten_exc', obe:'vo_nou_obe', burst:'vo_torsten_mb' }
+    : { execute:'se_luna_exc',    obe:'se_luna_obe', burst:'se_luna_mb' };
   if(scSeKey[kind]){
     const k=scSeKey[kind];
     /* ⚠ exc/obe 是語音（走語音鏈），burst 的 se_luna_mb 是音效（不走）——

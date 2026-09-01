@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.01-710';
+export const VERSION = 'ver 2026.09.01-711';
 
 export const GAME_CONFIG = {
 
@@ -280,10 +280,10 @@ export const GAME_CONFIG = {
       passive:{ key:'deathGuard', name:'即死防禦', oncePerBattle:true,
                 /* 她自己的 CI（ver -499，Ray 交件 CI_Nouvelle_Deathguard）——
                    之前借蕾妮的 `cutin_guard`；蕾妮那張是試玩版的，不動。 */
-                cutin:'cutin_nouvelle_guard', voice:'vo_death_guard',
+                cutin:'cutin_nouvelle_guard', voice:'vo_nou_guard',   // ver -711：她自己的語音（原本借蕾妮的）
                 desc:'受到足以致死的攻擊時，為玩家保留1hp續命。' },
       active:{ key:'lifeReturn', name:'生命歸還', context:'saint',
-               cutin:'cutin_return', voice:'vo_life_return',
+               cutin:'cutin_return', voice:'vo_nou_return',   // ver -711：她自己的語音
                desc:'聖徒化期間發動：強制中止聖徒化，保留當前血量。' },
     },
     /* ══ 安雅（ver -671，Ray：「從玩家跟安雅一起出旅店後，夥伴就從諾薇兒
@@ -320,7 +320,7 @@ export const GAME_CONFIG = {
         en:'Lucid Dream',
         buffSeconds:5,
         cutin:'ci_anya_lucid',
-        voice:'vo_hc_rounds',
+        voice:'vo_anya_lucid',   // ver -711：她自己的語音（原本借馬季諾的 vo_hc_rounds）
         desc:'每隻敵人第一次反擊成功時發動：5 秒普攻傷害加倍。',
       },
     },
@@ -1779,7 +1779,9 @@ export const GAME_CONFIG = {
     /* ⚠⚠ 這一場**開場也沒有**（同上，Ray：「娜塔莉戰也是，等到安雅干涉才有
        聖徒化跟主動技」）：`noSaint`／`noPartner` 把玩家自己發動的那兩個入口關掉，
        惡夢化與夢境粉碎由**腳本的閘門**帶出來（`gate.action` 直接呼叫，不經過那兩道守門）。 */
-    np_nightmare: { enemy:'nightmare_natalia', noSaint:true, noPartner:true,
+    /* ⚠ `burstVoice`（ver -711，Ray：「vo_anya_dreambreaker2 目前只有娜塔莉戰使用」）
+       —— 寫在**卡**上不寫死在程式裡（鐵律 1）：日後別的場次要換一支就加一行。 */
+    np_nightmare: { enemy:'nightmare_natalia', burstVoice:'vo_anya_burst2', noSaint:true, noPartner:true,
       /* ⚠ 站位：安雅本位右 → 蕾娜讓到**左**（§6.5 的表）。 */
       talkSides:{ renna:'left', anya:'right' },
       talk:[
@@ -2132,7 +2134,11 @@ export const GAME_CONFIG = {
        增益一搬家那個判斷就會憑空消失。 */
     voiceKeys: ['se_luna_dual','se_luna_exc','se_luna_obe','voice_saint_luna',
                 'vo_life_return','vo_death_guard','vo_supply_refill','vo_hc_rounds',
-                'vo_dual_torsten'],
+                'vo_dual_torsten',
+                /* ver -711 這一批全是語音（走 voiceChain）。 */
+                'vo_dual_torsten2','vo_torsten_mb','vo_torsten_exc',
+                'vo_nou_saint','vo_nou_obe','vo_nou_guard','vo_nou_return',
+                'vo_anya_ni','vo_anya_burst','vo_anya_burst2','vo_anya_melt','vo_anya_lucid'],
 
     /* ══ 逐支增益：鑰匙是**檔名**（去副檔名、轉小寫）══════════════════
        ⚠⚠ 鑰匙用檔名不用 ASSETS 鍵（ver -441）：**一支音檔只有一個響度**，
@@ -2143,6 +2149,21 @@ export const GAME_CONFIG = {
        實測日期 ver -441；`CAP` 標記見上面 `peakCeilDb` 的說明。 */
     fileGain: {
       /* ── 語音（過 voiceChain 後量）── */
+      /* ══ ver -711 交件那一批 ══════════════════════════════════════════
+         ⚠⚠ **語音要過完 `voiceChain` 之後才量**（§6.6）—— `tools/audio_scan.html`
+           量的是**原始波形**，對語音會系統性低估約 5 dB（實測：它給
+           `vo_torsten_dualcrush` 的建議是 1.34，而那一支 -479 過鏈量出來是 2.482）。
+           所以這一批是另外量的：過 eq＋comp 之後，再取「耳機／手機（600Hz 三階高通）」
+           兩次的平均，並以**已校準的 `vo_torsten_dualcrush`（2.482）當錨**換算 ——
+           那一支重量回來是 2.48，方法自洽。
+         ⚠ `vo_torsten_dualcrush` 本身不在這一批（它 -479 就有一列，見下）。 */
+      vo_torsten_dualcrush2:2.83,
+      vo_torsten_mb:3.53,            vo_torsten_execute:2.63,
+      vo_nouvelle_saintinstall:2.43, vo_nouvelle_obe:2.73,
+      vo_nouvelle_deathguard:2.29,   vo_nouvelle_lifereturn:3.17,
+      vo_anya_nightmareinstall:4.14, vo_anya_obe:2.05,
+      vo_anya_dreambreaker1:5.15,    vo_anya_dreambreaker2:2.63,
+      vo_anya_luciddream:1.90,
       vo_luna_dualwield:1.483, vo_luna_execution:1.013, vo_luna_obe:1.163,
       vo_luna_saintinstall:1.345, vo_malzeno_hcrounds:2.647,
       vo_malzeno_supplyrefill:2.261, vo_renee_deathguard:1.563,
@@ -2524,6 +2545,21 @@ export const ASSETS = {
   /* 本篇的破防發動語音（ver -479，Ray 交檔 vo_Torsten_DualCrush）——
      -475 曾暫借馬季諾的高裝藥彈語音，正主到了。檔名照規約轉小寫（靜態空間分大小寫）。 */
   vo_dual_torsten:   "resources/audio/vo/vo_torsten_dualcrush.m4a",
+  /* ══ ver -711：Ray 一次交了一批語音，逐支嵌到對應場合 ══════════════════════
+     ⚠ **本篇與試玩版分家**：托爾斯滕／諾薇兒／安雅是本篇的人，露娜與蕾妮留給
+       挑戰（出陣）—— 分流一律走 `storyMode()`（鐵律 8，同 cut-in 圖那一套）。 */
+  vo_dual_torsten2:  "resources/audio/vo/vo_torsten_dualcrush2.m4a",   // 破防第二版（與上面交互）
+  vo_torsten_mb:     "resources/audio/vo/vo_torsten_mb.m4a",           // Maximum Burst
+  vo_torsten_exc:    "resources/audio/vo/vo_torsten_execute.m4a",      // 處決 EXSECUTIŌ
+  vo_nou_saint:      "resources/audio/vo/vo_nouvelle_saintinstall.m4a",// 聖徒化降臨
+  vo_nou_obe:        "resources/audio/vo/vo_nouvelle_obe.m4a",         // O.B.E.
+  vo_nou_guard:      "resources/audio/vo/vo_nouvelle_deathguard.m4a",  // 即死防禦
+  vo_nou_return:     "resources/audio/vo/vo_nouvelle_lifereturn.m4a",  // 生命歸還
+  vo_anya_ni:        "resources/audio/vo/vo_anya_nightmareinstall.m4a",// 惡夢化降臨
+  vo_anya_burst:     "resources/audio/vo/vo_anya_dreambreaker1.m4a",   // 夢境粉碎（預設）
+  vo_anya_burst2:    "resources/audio/vo/vo_anya_dreambreaker2.m4a",   // 夢境粉碎（娜塔莉戰，見戰鬥卡）
+  vo_anya_melt:      "resources/audio/vo/vo_anya_obe.m4a",             // 熔斷 MELTDOWN
+  vo_anya_lucid:     "resources/audio/vo/vo_anya_luciddream.m4a",      // 明晰之夢
   se_luna_exc:       "resources/audio/vo/vo_luna_execution.m4a",    // 處決 EXSECUTIŌ cut-in
   /* ⚠ ver -641 改名 `se_saint_maxburst` → `vo_saint_maxburst`（它是語音）。
      ⚠ **檔案還躺在 `se/`**（同 `vo_lunaMG` 那一筆，等 Ray 點頭再搬 `vo/`）——

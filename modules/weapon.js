@@ -207,6 +207,8 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll){
  *    破防值（energy）滿後點 #energyClasp 發動 → cut-in → 4 秒 dualWield 快速清盤。
  *    期間點擊邏輯在 combat.tap 的 dualWield 分支（基本盤面）；此處只管發動與收尾。
  * ========================================================================== */
+/* 破防語音的輪替旗標（ver -711）。⚠ **不要**放進 `reset()`：跨敵、跨場都要接著輪。 */
+let dualVoFlip = false;
 export function activateDual(){
   if(state.over||state.dualWield||state.saintMode||state.cutinPlaying||state.transitioning) return;
   if(state.enemyHp<=0) return;                 // overkill（敵已死）不可發動；雙槍中殺敵觸發 overkill 則照常（見 enterOverkillFx）
@@ -215,7 +217,13 @@ export function activateDual(){
   /* 雙槍破防發動語音：試玩版＝Luna；本篇＝托爾斯坦專屬（ver -479，Ray 交檔
      vo_Torsten_DualCrush；-475 曾暫借馬季諾的高裝藥彈語音）。
      分流同 cut-in 圖（下面那行）：走 storyMode()（鐵律 8：唯一的判定）。 */
-  const dualVo = storyMode() ? 'vo_dual_torsten' : 'se_luna_dual';
+  /* ══⚠⚠ 本篇的破防語音**兩支交互**（ver -711，Ray：「vo_torsten_dualcrush2 跟
+     vo_torsten_dualcrush 這兩個交互使用，不要連播兩次，跨敵也一樣」）══
+     ⚠ 旗標是**模組級**的，`reset()` 與換敵都不動它 —— 「跨敵也一樣」的意思就是
+       它不歸零；歸零的話連戰換一隻怪就可能連著聽到同一支。
+     ⚠ 試玩版只有一支（露娜），不進這個輪替。 */
+  const dualVo = storyMode() ? (dualVoFlip = !dualVoFlip, dualVoFlip ? 'vo_dual_torsten' : 'vo_dual_torsten2')
+                             : 'se_luna_dual';
   SFX.playVoice(asset(dualVo), sfxGain(dualVo));
   api.resetEnergy();                           // 破防值歸零 + 刷新計量表（energy 為 combat 擁有）
   api.playCutin(()=>{
