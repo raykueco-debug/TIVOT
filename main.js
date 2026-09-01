@@ -1152,6 +1152,26 @@ story.setGateHold({
   pause: combat.pauseForDialog,
   resume: ()=>{ if(!state.tutorialDialog) combat.resumeFromDialog(); },
 });
+/* ══⚠⚠ 遭遇戰的防卡死：連敗三次 → 被抬回上一次睡覺的旅店（ver -481 建、-697 統一）══
+   Ray：「死亡三次回到上一次停泊的城鎮旅店接『啊，醒了。』劇情與進度也要回檔，
+         死亡之前的那一段劇情必需再觸發。」
+   兩件事，順序不能反：
+     ① **先回檔那一輪**（旗標／時鐘／好感／道具）—— 這就是「死亡之前的那一段劇情
+        必需再觸發」：那一段的旗標退回去了，走過去自然會再演一次。
+     ② **再把人放到旅店**（`noJump` ＝快照不要決定位置）—— 他是被**抬**回來的，
+        不是回到存檔當時的地點。合成一支的話②會被①的位置蓋掉。
+   ⚠ HP 不在這裡回復：要**睡一覺**才滿血（睡覺那一支順手把連敗歸零）。
+   ⚠ `carried:true`（ver -496）：旅店初見還沒看過就演「啊，醒了。」那一拍。
+   ⚠ 沒睡過＝帝都旅店（開局的家）。
+   ⚠ 飛行與城鎮兩條路都走這一支（鐵律 8）—— 兩邊各寫一份必然只有一邊會回檔。 */
+function carriedToInn(){
+  prog.setLossStreak(0);
+  const inn = prog.getLastInn() || { town:'capital', node:'inn' };
+  combat.goHome(()=>{
+    try{ saveSys.loadLatest({ noJump:true }); }catch(_){}
+    town.open(inn.town, inn.node, { carried:true });
+  }, { noBgm:true });
+}
 /* ══ 戰敗那一頁按了哪一顆（ver -430，Ray 定案）══════════════════════════════
    「船戰死亡點擊繼續回到戰鬥前的飛行畫面進度；其餘戰鬥死亡點再戰回到該幕對話的
      開頭，點放棄回到主畫面。」
@@ -1166,8 +1186,11 @@ story.setGateHold({
    ⚠ 判 `town.isOpen()` 要在 `flightBack` 之後：從城鎮出航再進的船戰，城鎮也還開著
    （suspend 不 close，§6.10）—— 那一場的敗北要回**飛行畫面**，不是旅店。 */
 combat.setLoseKind(()=> flightBack ? 'flight'
-                      : (storyResume ? (town.isOpen() ? 'town' : 'story') : 'home'));
+                      : (storyResume ? 'rollback' : 'home'));
 combat.setStoryReturn((res)=>{
+  /* ══ 連敗歸零（ver -697）══ 任何一場打贏都算「沒卡住」，所以歸零收在**入口**
+     這唯一的一處（鐵律 8）—— 掛在各條回程分支上必然漏掉其中一條。 */
+  if(res && !res.lost) prog.setLossStreak(0);
   /* 「放棄」：回主畫面。⚠ 走 `story.leaveToHome()` 而不是自己 `combat.goHome()` ——
      那一支還會**收掉城鎮**（`townCloser`），漏了的話下一次進城會接在舊節點上。
      `storyResume`／`flightBack` 由它呼叫的 `setHomeReturn` 一併清掉（見上面）。 */
@@ -1191,8 +1214,7 @@ combat.setStoryReturn((res)=>{
        贏一場歸零；第三敗不回飛行畫面 —— 追兵清場（closeFlightFrame 已把模擬凍住），
        人直接落在旅店節點（town.open 帶 node）。HP 不在這裡回復：
        他是被抬回旅店的，要**睡一覺**才滿血（睡覺那一支會把連敗一併歸零）。 */
-    if(won){ prog.setFlightLossCount(0); }
-    else{
+    if(!won){
       /* ⚠⚠ 敗北回捲（ver -486，Ray：「劇情蜈蚣戰敗北後應該回到蜈蚣戰前的狀態」）：
          叫飛行頁把劇本遭遇的 done 旗標退掉、pending 重掛。**在分流之前**呼叫 ——
          「繼續回飛行」與「連敗三場送回旅店」兩條路都要回捲（掛在 __flightResume
@@ -1202,59 +1224,61 @@ combat.setStoryReturn((res)=>{
          那麼硬核」）—— 回捲到戰前但不帶著戰前的殘血重打；持久 HP 清掉＝滿血。
          連敗三場送回旅店那條也吃得到（clearHp 在分流之前）。 */
       prog.clearHp();
-      const n = prog.flightLossCount()+1;
-      if(n>=3){
-        prog.setFlightLossCount(0);
-        const inn = prog.getLastInn() || { town:'capital', node:'inn' };   // 沒睡過＝帝都旅店（開局的家）
-        /* `carried:true`（ver -496）：他是被抬回來的 —— 初見還沒看過就演
-           「啊，醒了。」那一拍，不演店員的「歡迎光臨」。 */
-        combat.goHome(()=>town.open(inn.town, inn.node, { carried:true }), { noBgm:true });
-        return;
-      }
-      prog.setFlightLossCount(n);
+      const n = prog.lossStreak()+1;
+      if(n>=3){ carriedToInn(); return; }
+      prog.setLossStreak(n);
     }
     if(f && f.getAttribute('src')){
       /* ⚠ 戰鬥／結算的曲子由 `openFlight` 統一收掉（鐵律 8），這裡不再自己 stopBgm。
          ⚠ `keepPages`：這是**回飛行畫面**不是回首頁 —— iframe 要活著（船在原座標）。 */
-      combat.goHome(()=>openFlight({ resume:true, won }), { noBgm:true, keepPages:true });
+      /* ══ 戰勝即存檔（ver -697，Ray 的戰鬥分級）══ 打贏之後**再落一筆**飛行檢查點：
+         交棒進戰鬥那一刻已經落過一筆，但那一筆裡的旗標還停在戰前（劇本遭遇的
+         `done` 是「打贏才記」的，§6.5.2）—— 不補這一筆的話，下一次回檔會把
+         剛剛打贏的那一場退回去，玩家得再打一次。
+         ⚠ 延後到 `__flightResume` 跑完（它才在記 `done`），所以掛在 openFlight 之後。 */
+      combat.goHome(()=>{ openFlight({ resume:true, won });
+                          if(won) setTimeout(flightCheckpointNow, 400); },
+                    { noBgm:true, keepPages:true });
       return;
     }
     location.href='flight/index.html'; return;
   }
-  /* ══ 城鎮插入戰敗北 → 被抬回這座城的旅店（ver -496，Ray：「城鎮中戰鬥死亡就
-     回旅店」）══ 戰敗頁那一顆「繼續」帶 `{lost:true, lose:'continue'}` 到這裡。
-     ⚠ 在 `flightBack` 之後判（那條已經 return 掉了）：出航的船戰不走這裡。
-     ⚠ `carried:true` → 旅店初見還沒看過就演「啊，醒了。」那一拍（town.enter）。
-     ⚠ goHome 預設殺光所有頁面（ver -494）—— 被抬回去＝這一趟的戲全部收場，
-       town.open 在黑幕之下重開一座乾淨的城。
-       ⚠ **旅店還沒蓋起來的城改成「回檔」**（ver -589，Ray 指定）—— 見下方的說明。 */
-  if(res && res.lose==='continue' && town.isOpen()){
+  /* ══⚠⚠ 回檔（ver -697，Ray 定的戰鬥分級）══════════════════════════════════
+     Ray：「遭遇戰，非劇情戰都用 1（原則）; 劇情戰都用 2（每次手動設回檔點）」
+           「原則上劇情戰要防卡死，所以必需手動回檔到主角仍然可以自由行動的地方。
+             遭遇戰防卡死就是死三次後送旅店」
+
+     **回檔的動作兩邊完全一樣**：讀最新的那一筆快照（`save.loadLatest`，與首頁
+     「繼續」同一支，鐵律 8）—— 旗標／時鐘／好感／道具／位置整輪一起回去。
+     ⚠⚠ 所以「回去之後那一段對白是初見還是二見」**不必判斷**：快照在那一段之前
+       ＝整段重演（初見），在之後＝二見，沒有第三種可能（鐵律 9）。
+       ver -430 的「再戰＝跳回那一幕第 0 句」正是敗在這裡 —— 它只還原了播到哪裡。
+
+     兩邊的差別只有**那一筆快照是誰落的**、以及**防卡死怎麼做**：
+
+     | | 遭遇戰（非劇情戰） | 劇情戰 |
+     |---|---|---|
+     | 回檔點 | 引擎自動落：進城（town.setCheckpoint）／打贏那一刻 | 腳本明寫 `checkpoint:true` |
+     | 防卡死 | **連敗三次 → 抬回旅店**（見 carriedToInn） | **落點必須在「主角仍可自由行動」處**（規約，script_lint 驗） |
+
+     ⚠ 為什麼劇情戰不用「三次送旅店」：被送走等於把那一段戲跳過去了。它的出路是
+       回到一個**還能去買藥、換裝、練級**的地方再來一次 —— 那是**落點**的責任，
+       不是引擎的。落在「強制鏈中間」的 checkpoint 讀回來只會再走一次同一條必死路。
+     ⚠ 「這一場是不是劇情戰」問**段落**（`town.storyBattleAct()`）不問敵人卡的
+       `story`：北方泊地城鎮戰那一格的雜怪也是 `story:1`，卡上分不出來（ver -680）。
+       城鎮沒開＝劇情插入戰，那一定是劇情戰。
+     ⚠ 完全沒有存檔時 `loadLatest()` 回 false —— `goHome` 已經把首頁擺回來了，
+       停在首頁是對的：沒有可以回去的地方。
+     ⚠ 這條路**不能帶 `keepPages`**：要回的是別的地方，這座城要真的被收掉。 */
+  if(res && res.lose==='rollback'){
     storyResume = null;
-    const pos = town.getPosition();
-    const inn = pos && town.innNodeOf(pos.town);
-    /* ══⚠⚠ **功能未開的城鎮裡戰死 → 回檔到前一次劇情**（ver -589，Ray 指定）══
-       「被抬回旅店」的前提是**這座城有旅店**（`inn:true`）。北方泊地那種還在
-       蓋的城沒有旅店大廳 —— 舊寫法退回 `getLastInn()`／帝都旅店，於是在北方泊地
-       打輸會被丟到**另一座城**去，而那座城的城鎮戰旗標還開著（實測：死在北方泊地，
-       醒來在帝都旅店，`np_port_arrive` 照樣留著）。那不是「被抬回去」，是走鐘。
-       ⚠ 正解是**回檔**：讀最新的那一筆存檔（`save.loadLatest()`，與首頁「繼續」
-         同一支，鐵律 8）—— 旗標、時鐘、道具整輪一起回到那一刻，
-         「這一場還沒發生過」才成立（同 §6.5.2 劇情戰敗北回捲的原則）。
-       ⚠ 完全沒有存檔時（剛開新局就闖進去）：`loadLatest()` 回 false，
-         `goHome` 已經把首頁擺回來了 —— 停在首頁是對的，沒有可以回的地方。
-       ⚠ 這裡**不能帶 `keepPages`**：要回的是別的地方，這座城要真的被收掉。 */
-    /* ⚠⚠ **劇情戰戰敗也走回檔**（ver -680，Ray：「劇情戰戰敗是回捲至上一段劇情喔，
-       不是直接送回旅店，以這一段來說就是回捲到蕾娜問話」）——
-       「被抬回旅店」是給**城鎮戰**（那一格一格的遭遇）用的：那種輸了就是輸了，
-       醒在旅店繼續逛。**劇本安排的那一場**輸了要「這一場還沒發生過」，
-       所以回到上一個檢查點（§6.5.2 劇情戰敗北回捲的原則）。
-       ⚠ 判定問**段落**怎麼宣告自己（`town.storyBattleAct()`）不問敵人卡的 `story`：
-         北方泊地的城鎮戰雜怪那一格也是 story:1，分不出來。 */
-    if(!inn || town.storyBattleAct()){
-      combat.goHome(()=>{ try{ saveSys.loadLatest(); }catch(_){} }, { noBgm:true });
-      return;
+    const isStory = town.isOpen() ? town.storyBattleAct() : true;
+    if(!isStory){
+      const n = prog.lossStreak()+1;
+      if(n>=3){ carriedToInn(); return; }
+      prog.setLossStreak(n);
     }
-    combat.goHome(()=>town.open(pos.town, inn, { carried:true }), { noBgm:true });
+    combat.goHome(()=>{ try{ saveSys.loadLatest(); }catch(_){} }, { noBgm:true });
     return;
   }
   /* ══ 原地閉棺回來的（ver -587）══ 城鎮戰打掉一隻雜怪：門已經在控制盤高度闔上了，

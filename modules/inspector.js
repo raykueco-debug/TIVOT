@@ -421,10 +421,13 @@ export function settle(totalTime, stats, opts={}){
 /* ══ 戰敗那一頁的去向（ver -430，Ray 定案）══════════════════════════════════
    「船戰死亡點擊繼續回到戰鬥前的飛行畫面進度；其餘戰鬥死亡點再戰回到該幕對話的
      開頭，點放棄回到主畫面。」
-   三種場次、三張臉：
-     'flight'  船艦戰（飛行頁交棒過來的）→ 一顆「繼續」：回飛行畫面，船還在原處
-     'story'   劇情／城鎮插進來的那一場   → 兩顆「放棄／再戰」
-     'home'    出陣（試玩版）             → 維持原樣（一顆「再度執槍」→ 回首頁）
+   三種場次、三張臉（ver -697 重排，Ray 的戰鬥分級）：
+     'flight'   船艦戰（飛行頁交棒過來的）→ 一顆「繼續」：回飛行畫面，船還在原處
+     'rollback' 城鎮／劇情插進來的那一場   → 兩顆「放棄／繼續」，繼續＝**回檔**
+     'home'     出陣（試玩版）             → 維持原樣（一顆「再度執槍」→ 回首頁）
+   ⚠⚠ ver -430 的「再戰＝回那一幕的第 0 句」**已推翻**（ver -697）：那一顆現在是
+     「從上一個記錄點繼續」，字面因此改用 `loseContinue`。回到某一句只還原了
+     **播到哪裡**，旗標／好感／道具全部停在戰前 —— 那不是「這一場還沒發生過」。
    ⚠ **是哪一種由啟動層回答**（`api.loseKind`）：只有它知道這一場是誰叫起來的。
      這裡不從 `state` 反推（那會變成第二個判定點，鐵律 7）。
    ⚠ **有去處時取消「自動回首頁」**：那個計時器是給看戰績用的，
@@ -435,15 +438,16 @@ function setupLoseNav(){
   const acts=$('bannerActs'), rbtn=$('rematchBtn'), gbtn=$('giveupBtn');
   if(kind==='home') return;                 // 出陣：showResultSequence 已經擺成「再度執槍」
   clearTimeout(_resultAutoTimer);
-  /* `town`（ver -496）：城鎮插入戰敗北 → 也是一顆「繼續」，按下去被抬回旅店
-     （去哪裡一樣由啟動層的 storyReturn 分流 —— 這裡只管這一頁長什麼樣）。 */
-  if(kind==='flight' || kind==='town'){
+  if(kind==='flight'){
     state.resultMode='lose-continue';
     if(rbtn) rbtn.textContent=L.result.loseContinue;
     return;
   }
-  state.resultMode='lose-retry';
-  if(rbtn) rbtn.textContent=L.result.loseRetry;
+  /* 回檔那一頁**給兩顆**：玩家可能不想從那個記錄點再來一次，要留一條回主畫面的路。
+     ⚠ 右邊那顆的字面是「繼續」不是「再戰」—— 按下去不是立刻重打，
+       是回到上一個記錄點（`loseRetry` 已無人使用，字串留著當紀錄）。 */
+  state.resultMode='lose-rollback';
+  if(rbtn) rbtn.textContent=L.result.loseContinue;
   if(gbtn) gbtn.textContent=L.result.loseGiveUp;
   if(acts) acts.classList.add('two');
 }
@@ -461,7 +465,7 @@ function leaveLose(action){
 /* 「放棄」（ver -430）。⚠ 只有兩顆鈕那一頁按得到 —— 其餘狀態下它根本不顯示，
    這一道是防止鍵盤／誤觸在別的結算頁把玩家踢回首頁。 */
 export function onGiveupBtn(){
-  if(state.resultMode!=='lose-retry') return;
+  if(state.resultMode!=='lose-rollback') return;
   leaveLose('giveup');
 }
 
@@ -838,7 +842,7 @@ export function onRematchBtn(){
   /* 戰敗那一頁（ver -430）：右邊那一顆＝「繼續」（船艦戰）或「再戰」（劇情場次）。
      ⚠ 兩者送出的動作不同、去處也不同，但離場的手續是同一份（見 leaveLose）。 */
   if(state.resultMode==='lose-continue'){ leaveLose('continue'); return; }
-  if(state.resultMode==='lose-retry'){    leaveLose('retry');    return; }
+  if(state.resultMode==='lose-rollback'){  leaveLose('rollback'); return; }
   if(state.resultMode==='tutorial-home'){   // 教學戰結算：按鈕離場
     /* ⚠ 道具還沒彈過 → 這一按先彈道具，不離場（ver -361）。
        玩家一按就走的話，掉落等於沒發生 —— 東西雖然已經入袋，但他不知道拿到什麼。 */

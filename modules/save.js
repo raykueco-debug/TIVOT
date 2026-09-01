@@ -100,7 +100,7 @@ function labelOf(pos, twn){
 /* ══ 套用一筆存檔 ══
    ⚠⚠ **讀檔與首頁「繼續」走同一支**（ver -430，鐵律 8）：兩者要做的事完全一樣
      ——把那一輪放回去、再把玩家擺回存檔當時的位置。分兩份寫必然走鐘。 */
-function apply(rec){
+function apply(rec, opts){
   if(!rec) return false;
   /* v2＝整輪；v1 的舊存檔只有 progress 這一層，照舊吃下去（不要讓舊存檔讀不開）。 */
   if(rec.run) prog.runRestore(rec.run);
@@ -109,6 +109,11 @@ function apply(rec){
      · 飛行（ver -558）：帶 flightPos 的檢查點 —— 開飛行頁接回那個座標
        （從城出航時 town 也還開著＝rec.town 同時存在，所以飛行要**先**判）。
      · 城鎮（v3 起）：⚠ 城鎮不是劇情的一個位置，`story.jumpTo` 帶不回去。 */
+  /* ⚠⚠ `noJump`（ver -697）＝**只回捲那一輪，位置由呼叫端決定**。
+     連敗三次的防卡死要「進度回檔、但人落在旅店」—— 那是兩件事：
+     回檔是快照的職責，去哪裡是那條路徑的職責。合成一支的話旅店那條會被
+     快照裡的位置蓋掉（讀回存檔當時的地點，等於沒被抬回去）。 */
+  if(opts && opts.noJump) return true;
   if(rec.flightPos && host.openFlightAt){ host.openFlightAt(rec.flightPos); return true; }
   if(rec.town && host.openTown){ host.openTown(rec.town.town, rec.town.node); return true; }
   if(rec.pos) story.jumpTo(rec.pos);
@@ -179,10 +184,10 @@ export function clearRunSaves(){
 }
 export function hasSave(){ return !!latest(); }
 /* 首頁「繼續」：讀最新的那一筆。回傳 false＝根本沒有存檔（呼叫端不必自己再查一次）。 */
-export function loadLatest(){
+export function loadLatest(opts){
   const rec=latest();
   if(!rec) return false;
-  apply(rec);
+  apply(rec, opts);
   return true;
 }
 

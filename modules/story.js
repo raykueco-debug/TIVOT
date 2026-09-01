@@ -3092,23 +3092,14 @@ export function resumeFrom(pos, res){
   const _bc = pos.battleId && GAME_CONFIG.battles && GAME_CONFIG.battles[pos.battleId];
   const _after = (_bc && _bc.bgmAfter && !(res && res.lost)) ? _bc.bgmAfter : null;
   ensureBgm(_after || pos.bgm);             // 戰前那一首（見 renderLine 的 resume）
-  /* ══ 戰敗後按「再戰」（ver -430，Ray：「回到該幕對話的開頭」）══════════════
-     回的是**這一幕的第一句**，不是戰鬥前那一句 —— 玩家要重看的是那一段戲的鋪陳，
-     而且從頭走一次才會再走到那一拍 `{battle:…}`。
-     ⚠ 主線 scene 走 `open({scene, line:0})`（＝整幕重建：舞台、背景、立繪全部歸零）；
-       城鎮那種臨時段落沒有 scene，就把手上這一份台詞從第 0 句重播。
-     ⚠ 要擋在 `onLose` 那一支**前面**：`res.lost` 兩者都是真，順序反了「再戰」會被
-       當成劇本分歧跳到別的 label 去。（可戰敗的場次根本走不到這裡 —— 那些在
-       `combat.lose()` 就交棒了，所以兩條規則實際上不會同時成立。） */
-  if(res && res.lose==='retry'){
-    if(pos.adhoc){
-      layoutKerberos();                     // 門被戰鬥收過了，回來要重新擺（同下面那一支）
-      playAdhoc(pos.adhoc, pos.done, { sides: pos.sides });
-      return;
-    }
-    open({ scene: pos.scene, line: 0 });
-    return;
-  }
+  /* ══⚠⚠ ver -430 的「再戰＝回這一幕的第 0 句」**已在 ver -697 推翻**══════════
+     那一顆現在叫「繼續」，做的是**回檔**（`save.loadLatest`，分流在 main 的
+     `setStoryReturn`）—— 所以敗北根本走不到這一支了。
+     為什麼推翻：跳回某一句只還原了「播到哪裡」，旗標／好感／道具／時鐘全部停在
+     戰前 —— 那不是 §6.5.2 說的「這一場還沒發生過」。實測就出過事（Ray 連報兩次
+     「安雅的好感還在，也沒有觸發要求去教堂」）。
+     ⚠ **回檔＝讀一份完整快照**，所以「這一段對白是初見還是二見」由快照裡的旗標
+       回答，不必判斷（鐵律 9）。 */
   /* 打輸了而且這一場有寫 `onLose` → 從那個 label 接下去（ver -377）。 */
   if(res && res.lost && pos.onLose){
     const lines = pos.adhoc || ((MAIN_SCRIPT[pos.scene]||{}).lines);

@@ -145,10 +145,13 @@ def main():
     # ── 逐句 ──
     #  ⚠ 抽成一支給**主線與城鎮共用**（ver -375）：規矩只寫一份，新的路徑才不會漏檢
     #    （鐵律 8 —— 城鎮節點就是這樣長出第二套的）。
-    def check_lines(sid, lines, scenes_ok=True):
+    def check_lines(sid, lines, scenes_ok=True, story_battle=True):
         labels = {l.get('label') for l in (lines or []) if isinstance(l, dict) and l.get('label')}
+        # 這一段裡到目前為止有沒有落過回檔點（ver -697，見底下 battle 那一支）
+        seen_ckpt = [False]
         for i, ln in enumerate(lines or []):
             tag = '%s[%d]' % (sid, i)
+            if ln.get('checkpoint'): seen_ckpt[0] = True
 
             # 跳轉拍（ver -377）：`goto` 與戰鬥的 `onLose` 都指向同一段裡的 `label`。
             if ln.get('goto'):
@@ -206,6 +209,25 @@ def main():
                 elif bt and bt.get('allowLose'):
                     warn('%s：%s 標了 allowLose 卻沒有 onLose —— 輸了會照著贏的那一支往下演'
                          % (tag, b))
+                # ══⚠⚠ 劇情戰要有**手動**回檔點（ver -697，Ray 定的戰鬥分級）══
+                #   Ray：「遭遇戰，非劇情戰都用 1（原則）; 劇情戰都用 2（每次手動設回檔點）」
+                #        「原則上劇情戰要防卡死，所以必需手動回檔到主角仍然可以自由
+                #          行動的地方。」
+                #   劇情戰敗北＝讀最新的那一筆快照（main 的 setStoryReturn）。漏寫
+                #   `checkpoint:true` 的下場是**回捲到很久以前**（上一次進城／上一次
+                #   讀取頁），而那**不會有任何錯誤訊息** —— 這一條就是那個安全網。
+                #   ⚠⚠ 這裡**只能提醒不能判死**：正確的回檔點常常**不在這一段裡** ——
+                #     一走進墓地就是強制鏈，落在鏈中間的 checkpoint 讀回來只會再走
+                #     一次同一條必死路。墓地那兩場的正解就是**上一段**（黑爪戰後
+                #     那個 -653 的記錄點）：讀回去人站在教堂，還能去買藥換裝。
+                #     所以驗得出「這一段裡沒有」，驗不出「上一段有沒有」——
+                #     那是人要確認的（跨段落、跨節點，靜態排不出先後）。
+                #   ⚠ `allowLose` 的場次不提：輸了接著演，根本不回檔。
+                #   ⚠ 遭遇戰不提：引擎自動落點（進城／打贏那一刻）。
+                if story_battle and bt and not bt.get('allowLose') and not seen_ckpt[0]:
+                    warn('%s：劇情戰 %s 之前這一段裡沒有 checkpoint:true —— 打輸會回捲到'
+                         '**上一個自動存檔點**（上一段有戰鬥的段落／進城）。'
+                         '確認那個點是玩家還能自由行動的地方，否則會卡死' % (tag, b))
                 continue
 
             sp = ln.get('speaker')
@@ -328,13 +350,14 @@ def main():
                 #   （它會 enumerate 出鑰匙字串然後在 `ln.get` 炸掉）。
                 if isinstance(v, dict):
                     for k2, v2 in v.items():
-                        check_lines('%s.%s.%s' % (tag, key, k2), v2)
+                        check_lines('%s.%s.%s' % (tag, key, k2), v2, story_battle=False)
                 else:
-                    check_lines('%s.%s' % (tag, key), v)
+                    check_lines('%s.%s' % (tag, key), v, story_battle=False)
             # ⚠ `acts`（主線段落，ver -424）也要驗 —— 那裡面才是真正的劇情，
             #   漏掉的話缺圖／打錯角色 id 要等演到那一句才發現。
             for i, a in enumerate(n.get('acts') or []):
-                check_lines('%s.acts[%d]' % (tag, i), a.get('lines'))
+                check_lines('%s.acts[%d]' % (tag, i), a.get('lines'),
+                            story_battle=bool(a.get('storyBattle')))
             # 傍晚的提醒掛在**城**上不是節點上，所以在外層另外驗（見下）。
 
         # 傍晚那一格有**兩句**（ver -427）：走完了 `bySeen`／時間到了 `byTime`。

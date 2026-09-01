@@ -128,12 +128,21 @@ export function getLastInn(){
        return (j && j.town && j.node) ? j : null; }catch(e){ return null; }
 }
 
-/* ══ 飛行遭遇的連敗數（ver -481）══ */
-export function flightLossCount(){ const v=parseInt(rd(K.flightLoss),10); return isFinite(v)?v:0; }
-export function setFlightLossCount(n){
+/* ══ 連敗數（ver -481 建、**ver -697 擴大成全域**）══════════════════════════
+   Ray 的戰鬥分級：「遭遇戰防卡死就是死三次後送旅店」——
+   所以它算的是**遭遇戰**的連敗（飛行的、城鎮那一格一格的），不分在哪張地圖。
+   ⚠ **劇情戰不計數**：它的防卡死是「回檔點必須落在主角仍然可以自由行動的地方」
+     （Ray 指定），不是三次送旅店。
+   ⚠ 誰歸零：任何一場打贏（main 的 storyReturn 入口）、睡覺。誰累加：只有遭遇戰敗北。
+   ⚠ 鑰匙沿用 `flightLoss` —— 舊存檔照樣讀得到，改鑰匙只會把在途的連敗數洗掉。 */
+export function lossStreak(){ const v=parseInt(rd(K.flightLoss),10); return isFinite(v)?v:0; }
+export function setLossStreak(n){
   if(n>0) wr(K.flightLoss, String(n));
   else { try{ localStorage.removeItem(K.flightLoss); }catch(e){} }
 }
+/* 舊名（ver -481~-696 的呼叫點）—— 同一個量，不要在別處再算一次（鐵律 7）。 */
+export const flightLossCount = lossStreak;
+export const setFlightLossCount = setLossStreak;
 
 /* ══ 實體遊玩時間（ver -564）══ 秒。累加只有這一支（鐵律 8/9）。 */
 export function playSeconds(){ const v=parseInt(rd(K.playtime),10); return isFinite(v)?v:0; }
