@@ -65,6 +65,36 @@ function slotHtml(cat, n){
        + '</div>';
 }
 
+/* ══⚠⚠ 主武器（ver -699，Ray：「裝備欄加入雙槍…兩支算同一個武器，但是各有一個
+   掛件槽，可以掛強化護符」「固定武器不可更換，但可以在槍店強化」）══════════
+   ⚠ **整張卡不可點**：它不可更換，給它一個「點得到卻沒反應」的熱區只會讓玩家
+     一直去戳（同 §6.5.5「還不能做不要靠藏起鈕擋」的反面 —— 不能做的東西就別做成鈕）。
+     可點的只有**兩個掛件槽**。
+   ⚠ 強化的顯示讀 `tuning.gunTune`（＝槍店那一項），沒立旗就整行不出現。 */
+function mainGunHtml(){
+  const MG=GAME_CONFIG.mainGun; if(!MG) return '';
+  const defs=(GAME_CONFIG.items||{}).defs||{};
+  const g=(GAME_CONFIG.tuning||{}).gunTune;
+  const tuned = g && g.flag && prog.hasFlag(g.flag);
+  const pct = tuned ? Math.round(((g.dmgMul||1)-1)*100) : 0;
+  const barrels=(MG.barrels||[]).map(b=>{
+    const id=prog.charmOf(b.id), d=id?defs[id]:null;
+    return '<div class="gs-barrel" data-barrel="'+b.id+'">'
+         +   '<b>'+b.name+'</b>'
+         +   '<span class="gs-charm'+(d?' on':'')+'">'
+         +     '<i>掛件</i>'+(d ? (d.name||id) : '—')+'</span>'
+         +   '<span class="gs-arrow">›</span>'
+         + '</div>';
+  }).join('');
+  return '<div class="gs-sec">主武器</div>'
+       + '<div class="gs-main">'
+       +   (MG.image ? '<img class="gs-mimg" src="'+(asset(MG.image)||'')+'" alt="">' : '')
+       +   '<div class="gs-mname">'+MG.name+'<span class="gs-mfix">固定・不可更換</span></div>'
+       +   (tuned ? '<div class="gs-mtune">槍店強化　普攻 +'+pct+'%</div>' : '')
+       +   '<div class="gs-barrels">'+barrels+'</div>'
+       + '</div>';
+}
+
 function render(){
   const cats=load.order();
   const SP=STORY_PARTNERS();
@@ -107,6 +137,7 @@ function render(){
     + (tab==='items' ? itemsBody :
       '<div class="gs-body">'
     +   '<div class="gs-left">'
+    +     mainGunHtml()
     +     '<div class="gs-sec">副武器・順位</div>'
     +     '<div class="gs-slots">' + cats.map((c,i)=>slotHtml(c,i+1)).join('') + '</div>'
     +     '<div class="gs-hint">長按拖曳可換順位</div>'
@@ -197,6 +228,22 @@ function bind(){
     render();
   });
   el.querySelectorAll('.gs-slot').forEach(s=>bindSlot(s));
+  /* 掛件槽（ver -699）：點一下開道具欄的護符類。⚠ 不做拖曳 —— 兩支槍沒有順位。 */
+  el.querySelectorAll('.gs-barrel').forEach(b=>b.addEventListener('click', e=>{
+    e.stopPropagation(); openCharm(b.dataset.barrel);
+  }));
+}
+
+/* 點一個掛件槽 → 道具欄的護符類（走 `showBag` 的 equip 模式，與副武器同一支）。
+   ⚠ 目前 `items.defs` 裡一張護符都沒有（Ray 的卡還沒到）—— 清單會是空的，
+     那是**對的**：不要為了讓它看起來有東西就自己發明護符（同「改裝服務準備中」）。 */
+function openCharm(barrel){
+  const MG=GAME_CONFIG.mainGun||{};
+  try{ SFX.unlock(); SFX.menuClick(); }catch(_){}
+  closeTip();
+  showBag({ cat: MG.charmCat||'charm', equip:true, current:prog.charmOf(barrel), top:8460,
+            onEquip(id){ prog.setCharm(barrel, id); },
+            onClose(){ render(); } });
 }
 
 /* 一格：**點一下**開那個分類的道具欄換槍；**拖曳**改順位。

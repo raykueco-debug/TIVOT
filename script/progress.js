@@ -45,6 +45,12 @@ const K = {
      一輪內累計的**真實秒數**（分頁看得見且不在首頁才走，main.js 的計時器累加）。
      鐵律 9：newRun 插 0，只有 addPlaySeconds 能動。 */
   playtime:  'tivot_playtime_v1',
+  /* 主武器兩支槍的掛件（ver -699）：`{alpha:'<道具id>', beta:'…'}`。
+     ⚠⚠ **這是「一輪內」的東西**（§6.9）：護符是**道具**，而道具一輪一清 ——
+       所以 `newRun()` 要清、`runSnapshot/runRestore` 要帶（同一張清單的兩面）。
+       它與 `script/loadout.js` 的副武器編成**不同類**：那個是玩家的操作偏好
+       （跨輪不清），這個掛的是身上真的有的東西。 */
+  charms:    'tivot_charms_v1',
 };
 
 /* ⚠ 測試期間預設 3（Ray 指定，與 flight/index.html 的 STAGE_DEFAULT 一致）。
@@ -143,6 +149,23 @@ export function setLossStreak(n){
 /* 舊名（ver -481~-696 的呼叫點）—— 同一個量，不要在別處再算一次（鐵律 7）。 */
 export const flightLossCount = lossStreak;
 export const setFlightLossCount = setLossStreak;
+
+/* ══ 主武器的掛件（ver -699）══════════════════════════════════════════════
+   `barrel` ＝ `config.mainGun.barrels[].id`（alpha／beta）。
+   ⚠ 讀取一律經過這裡（鐵律 7）：`combat` 算傷害、`gear` 畫槽、存讀檔都問它。
+   ⚠ **掛了之後被賣掉的護符**：`charmOf` 不查持有 —— 查持有是 `inventory` 的事，
+     而掛件槽本來就該顯示「掛著什麼」。要擋「賣掉還在生效」就在賣的那一端卸下。 */
+export function charms(){
+  try{ const j=JSON.parse(rd(K.charms)||'null'); return (j&&typeof j==='object') ? j : {}; }
+  catch(e){ return {}; }
+}
+export function charmOf(barrel){ return charms()[barrel] || null; }
+export function setCharm(barrel, id){
+  const c=charms();
+  if(id) c[barrel]=id; else delete c[barrel];
+  wr(K.charms, JSON.stringify(c));
+  return c;
+}
 
 /* ══ 實體遊玩時間（ver -564）══ 秒。累加只有這一支（鐵律 8/9）。 */
 export function playSeconds(){ const v=parseInt(rd(K.playtime),10); return isFinite(v)?v:0; }
@@ -303,7 +326,8 @@ export const CHAPTERS = [
 
 export function newRun(){
   for(const k of [K.stage, K.flags, K.affection, K.affFloor, K.name, K.nick,
-                  K.hp, K.innLast, K.flightLoss, K.rennaS, K.playtime]) {   // 持久HP／上次旅店／連敗數／蕾娜S計數／遊玩時間
+                  K.hp, K.innLast, K.flightLoss, K.rennaS, K.playtime,
+                  K.charms]) {   // 持久HP／上次旅店／連敗數／蕾娜S計數／遊玩時間／主武器掛件
     try{ localStorage.removeItem(k); }catch(e){}
   }
   /* ⚠⚠ 從頭開始＝**S0 要寫進鑰匙**（ver -563）。清掉 stage 之後不寫回的話，
@@ -368,7 +392,8 @@ export function snapshot(){
            affectionRaw:rawJ(K.affection), affFloorRaw:rawJ(K.affFloor),
            nameRaw:rawS(K.name), nickRaw:rawS(K.nick),
            hp:getHp(), innLast:getLastInn(), fLoss:flightLossCount(),
-           rennaS:rawN(K.rennaS), playtimeRaw:rawN(K.playtime) };
+           rennaS:rawN(K.rennaS), playtimeRaw:rawN(K.playtime),
+           charmsRaw:rawJ(K.charms) };   // 主武器掛件（ver -699，一輪內）
 }
 export function restore(s){
   if(!s) return;
@@ -393,4 +418,7 @@ export function restore(s){
   setFlightLossCount(s.fLoss||0);
   putRaw(K.rennaS, s.rennaS);          // 蕾娜 S 計數（null＝沒有，原樣）
   putRaw(K.playtime, ('playtimeRaw' in s)?s.playtimeRaw:null);   // 遊玩時間（-564）
+  /* 主武器掛件（ver -699）：舊存檔沒有這一欄 → 原樣移除（讀「還沒掛」的檔
+     不該帶著這一輪掛上去的護符，§6.9 兩面）。 */
+  putRaw(K.charms, ('charmsRaw' in s)?s.charmsRaw:null, true);
 }

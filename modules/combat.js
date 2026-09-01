@@ -485,6 +485,24 @@ function gunHitOnEnemy(cell){
    資料在 `tuning.gunTune`、旗標在 progress，這裡只是把兩者接起來。
    ⚠ 不快取成模組常數（像 `DMG_BASE` 那樣）：旗標是**遊戲中途**才立的，
      而模組常數是 import 那一刻就定死的 —— 那樣強化要重整頁面才生效。 */
+/* ══⚠⚠ 主武器的傷害倍率（ver -699）══════════════════════════════════════
+   **只有這一支在算**（鐵律 7）：槍店的永久強化（`tuning.gunTune`）＋兩支槍
+   掛件槽上的強化護符（`items.defs[].charm.dmgMul`），一起乘出來。
+   ⚠ 護符要別的效果（暴擊、破防、聖能）就在**這裡**加一支對應的取值函式，
+     不要在各處自己乘一次 —— 那正是鐵律 7 反覆踩過的那個坑。
+   ⚠ 不快取：旗標與掛件都是**遊戲中途**才變的（同 gunTuneMul 原本的理由）。 */
+function charmDmgMul(){
+  const MG=GAME_CONFIG.mainGun; if(!MG || !MG.barrels) return 1;
+  const defs=(GAME_CONFIG.items||{}).defs||{};
+  let m=1;
+  for(const b of MG.barrels){
+    const d = defs[prog.charmOf(b.id)];
+    const c = d && d.charm;
+    if(c && isFinite(c.dmgMul)) m *= c.dmgMul;
+  }
+  return m;
+}
+function mainGunDmgMul(){ return gunTuneMul() * charmDmgMul(); }
 function gunTuneMul(){
   const g=T.gunTune; if(!g || !g.flag) return 1;
   return prog.hasFlag(g.flag) ? (g.dmgMul||1) : 1;
@@ -493,7 +511,7 @@ function hitDamage(){
   const c=Math.min(state.combo,DMG_COMBO_CAP);
   /* ⚠ 強化是**乘在整個普攻傷害上**（ver -656，Ray：「主槍普攻攻擊力強化5%」）——
      連擊加成也一起放大，那才是「攻擊力 +5%」。 */
-  return (DMG_BASE + c*DMG_PER_COMBO) * gunTuneMul();
+  return (DMG_BASE + c*DMG_PER_COMBO) * mainGunDmgMul();
 }
 function floatDmg(txt,left,top,crit,extraClass){
   const d=document.createElement('div');

@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.01-698';
+export const VERSION = 'ver 2026.09.01-699';
 
 export const GAME_CONFIG = {
 
@@ -114,6 +114,29 @@ export const GAME_CONFIG = {
      日後多一座城的靶場自動吃到，不必記得補一行（鐵律 1＋8）。
      ⚠ 決定只有 `main.js` 的 `battleBgmOf` 一支（門的 cue 與交棒兩處都問它）。 */
   battleBgm: { default:'bgm_battle', timeAttack:'bgm_hopstep' },
+
+  /* ══⚠⚠ 主武器：迦尼米德雙槍（ver -699，Ray 交卡）══════════════════════════
+     Ray：「裝備欄加入雙槍　迦尼米德α「王之運」／迦尼米德β「運之王」。
+           兩支算同一個武器，但是各有一個掛件槽，可以掛強化護符」
+           「固定武器不可更換，但可以在槍店強化」
+
+     ⚠⚠ **它不進 `weapons`**：那張表是**副武器**（可買可賣可換、有反擊數值
+       `counterWin`/`hits`/`dmgPerHit`）。主武器是主角的**普攻**，數值住在
+       `tuning`（`dmgBase`/`dmgPerCombo`），而且**不可更換** —— 混進那張表會
+       立刻長出「賣掉主槍」「把主槍排進副武器順位」這種不該存在的操作。
+     ⚠ 「兩支算同一個武器」：一張卡、一組數值，**只有掛件是逐支的**。
+       所以 `barrels` 兩筆只帶名字與掛件槽，不帶任何戰鬥數值。
+     ⚠ 強化走槍店（Ray 指定）：目前只有打靶獎品那一項（`tuning.gunTune`），
+       改裝分頁的內容等 Ray 的卡 —— 不要先做一個半套的出來（同 loot.js 那一頁）。 */
+  mainGun: {
+    name:'迦尼米德', image:'weapon_ganymede_twin', fixed:true,
+    barrels:[
+      { id:'alpha', name:'迦尼米德α「王之運」' },
+      { id:'beta',  name:'迦尼米德β「運之王」' },
+    ],
+    /* 掛件槽收哪一類道具（鐵律 1：不在程式裡寫死類別字串）。 */
+    charmCat:'charm',
+  },
 
   defaultWeapon: 'MG_Squall',   // 開局預設武器（填上面的鑰匙名）
   /* 副武器類別 → 切換鈕的徽章（ver -549，Ray 交圖：連射=Switch_MG、
@@ -451,8 +474,17 @@ export const GAME_CONFIG = {
    *  ⚠ 名稱先寫在這裡（中文）。要多語系再搬進 i18n —— 但**鍵名（id）永遠是英數**，
    *    存檔存的是 id，改名不會動到存檔。 */
   items: {
-    catOrder: ['item','weapon','material','equip','special'],
-    catName:  { item:'道具', weapon:'武器', material:'素材', equip:'裝備', special:'特殊' },
+    /* ⚠ `charm`（ver -699）＝**強化護符**：掛在主武器兩支槍的掛件槽上（見 `mainGun`）。
+       ⚠⚠ **護符的卡還沒到**（Ray 未給）—— 這一版只做好槽與生效的管線，
+         `defs` 裡一張護符都沒有是**刻意的**：不要自己發明名字與數值
+         （同「改裝服務準備中」的原則）。一張護符長這樣：
+             charm_xxx: { name:'…', cat:'charm', price:…,
+                          charm:{ dmgMul:1.05 },        // 普攻傷害倍率
+                          desc:'…' }
+         `charm.dmgMul` 是目前唯一接上的效果（`combat.mainGunDmgMul`）；
+         要別的效果（暴擊、破防、聖能）就在那一支加，**不要另開第二個計算點**。 */
+    catOrder: ['item','weapon','charm','material','equip','special'],
+    catName:  { item:'道具', weapon:'武器', charm:'護符', material:'素材', equip:'裝備', special:'特殊' },
     /* ⚠ `price`＝**市價**（買進的價）。賣出價由 `shop.sellRate` 折算（Ray：買收價為物價 50%）
        —— 一個道具只寫一個數字，折扣是店家的事，不是道具的屬性（鐵律 7 的精神）。
        ⚠ 沒寫 `price` 的道具**不能買也不能賣**（劇情道具、任務物品都該如此）。
@@ -2320,6 +2352,9 @@ export const ASSETS = {
   switch_mg:    "resources/vfx/Switch_MG.webp",
   switch_split: "resources/vfx/Switch_Split.webp",
   switch_hyper: "resources/vfx/Switch_Hyper.webp",
+  /* 主武器（ver -699）：交叉雙槍＝整備頁的卡；單槍留著給日後的改裝頁。 */
+  weapon_ganymede_twin: "resources/weapon/GanymedeTwin.webp",     // 迦尼米德 α＋β（去背）
+  weapon_ganymede:      "resources/weapon/Ganymede.webp",         // 迦尼米德 單支（黑底）
   weapon_mg_squall:     "resources/weapon/MG_Squall.webp",       // 重機槍 Squall
   weapon_shotgun_blast: "resources/weapon/Shotgun_Blast.webp",   // 散彈槍 Blast
   weapon_sniper_falcon: "resources/weapon/Sniper_Falcon.webp",   // 狙擊槍 Falcon
