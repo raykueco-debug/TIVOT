@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.01-719';
+export const VERSION = 'ver 2026.09.01-720';
 
 export const GAME_CONFIG = {
 
@@ -1782,7 +1782,11 @@ export const GAME_CONFIG = {
        惡夢化與夢境粉碎由**腳本的閘門**帶出來（`gate.action` 直接呼叫，不經過那兩道守門）。 */
     /* ⚠ `burstVoice`（ver -711，Ray：「vo_anya_dreambreaker2 目前只有娜塔莉戰使用」）
        —— 寫在**卡**上不寫死在程式裡（鐵律 1）：日後別的場次要換一支就加一行。 */
-    np_nightmare: { enemy:'nightmare_natalia', burstVoice:'vo_anya_burst2', noSaint:true, noPartner:true,
+    /* ⚠ BGM 與黑爪戰同一首（ver -720，Ray 指定）：`bgm_crimson`。
+       兩場都是這一章的 BOSS 級對決 —— 用同一首把它們讀成同一條線。
+       ⚠ 只寫鑰匙不抄路徑（鐵律 7）：曲子換檔時 ASSETS 改一處就好。 */
+    np_nightmare: { enemy:'nightmare_natalia', bgm:'bgm_crimson',
+      burstVoice:'vo_anya_burst2', noSaint:true, noPartner:true,
       /* ⚠ 站位：安雅本位右 → 蕾娜讓到**左**（§6.5 的表）。 */
       talkSides:{ renna:'left', anya:'right' },
       talk:[
@@ -2062,7 +2066,11 @@ export const GAME_CONFIG = {
     weaponPerks: {},
     dmgPerCombo:         0.2,   // 每層連擊加成
     dmgComboCap:         20,    // 連擊加成計入上限
-    dmgDualMult:         0.7,   // 雙槍傷害倍率（<1=安全牌）
+    /* ⚠ ver -720（Ray：「現在破防攻擊是 80%，改成 100%」）：由 **0.7** 改成 1.0。
+       ⚠ 實際的舊值是 **70%** 不是 80% —— 一併記著，免得日後看 commit 訊息對不上。
+       破防窗口的點擊**不吃暴擊也不吃 atkBuff**（見 combat 那一行），
+       所以 1.0 ＝「與一發沒有暴擊的普攻等值」，不是「兩倍普攻」。 */
+    dmgDualMult:         1.0,   // 雙槍傷害倍率（破防窗口的每一擊）
 
     // 暴擊（普攻）：暴擊率/暴擊加傷皆隨「連擊」成長；連擊於受擊或清盤中斷歸零。雙槍破防期間無暴擊。
     critBaseRate:        0.10,  // 普攻初始暴擊率（連擊 0 時）
