@@ -56,6 +56,8 @@ const K = {
   gunLv:     'tivot_gunlv_v1',
   /* 主武器的九階強化（ver -707）：`{星id: 已升幾次}`。一輪內（同掛件）。 */
   gunStars:  'tivot_gunstars_v1',
+  /* 副武器的改裝等級（ver -714）：`{武器id: 階}`，0~卡上的 `maxMod`。一輪內。 */
+  wmod:      'tivot_wmod_v1',
 };
 
 /* ⚠ 測試期間預設 3（Ray 指定，與 flight/index.html 的 STAGE_DEFAULT 一致）。
@@ -215,6 +217,19 @@ export function addStar(id, n){
   wr(K.gunStars, JSON.stringify(cur));
   return cur;
 }
+/* ⚠⚠ **直接設定次數：管理人模式限定的梯子**（ver -714，Ray：「管理人模式下可以
+   自由點亮，熄滅槍的九星」）。正規的路只有兩條 —— 槍店的素材強化與腳本的
+   `gunStar:`（都走 `addStar`）；這一支是給 `body.testmode` 的整備頁用的，
+   同章節跳關那種開發工具（鐵律 9 的例外要明寫，不要讓它看起來像正規入口）。 */
+export function setStarCount(id, n){
+  const def=starDefs().find(d=>d.id===id); if(!def) return null;
+  const cur=gunStars();
+  const v=Math.max(0, n|0);
+  if(v>0) cur[id]=v; else delete cur[id];
+  wr(K.gunStars, JSON.stringify(cur));
+  return cur;
+}
+
 /* 某一項效果的累計值（沒點亮＝0）。`key` 就是 `gunStars[]` 上的欄位名。 */
 export function starBonus(key){
   const owned=gunStars(); let sum=0;
@@ -223,6 +238,27 @@ export function starBonus(key){
     if(n>0 && d[key]!=null) sum += d[key]*n;
   }
   return sum;
+}
+
+/* ══ 副武器的改裝（ver -714，Ray：「每次升級增加攻擊力 20%，最高五階」）══════
+   ⚠ 上限問**卡上的 `maxMod`**（那是那一把槍的性質），加成率在
+     `tuning.weaponMod.perLv`（全域規則）—— 兩者分開，不要合成一個數字。
+   ⚠ 一輪內（同九星與掛件）：`newRun()` 清、`snapshot/restore` 帶。 */
+export function weaponMods(){
+  try{ const j=JSON.parse(rd(K.wmod)||'null'); if(j && typeof j==='object') return j; }catch(e){}
+  return {};
+}
+export function weaponMod(id){ return (weaponMods()[id]|0); }
+export function weaponModMax(id){
+  const w=(GAME_CONFIG.weapons||{})[id];
+  return (w && w.maxMod|0) || 0;
+}
+export function setWeaponMod(id, n){
+  const cur=weaponMods();
+  const v=Math.max(0, Math.min(weaponModMax(id), n|0));
+  if(v>0) cur[id]=v; else delete cur[id];
+  wr(K.wmod, JSON.stringify(cur));
+  return v;
 }
 
 /* ══ 主武器的強化等級（ver -700，已由九顆星取代；保留供遷移與舊呼叫端）══
@@ -408,7 +444,7 @@ export const CHAPTERS = [
 export function newRun(){
   for(const k of [K.stage, K.flags, K.affection, K.affFloor, K.name, K.nick,
                   K.hp, K.innLast, K.flightLoss, K.rennaS, K.playtime,
-                  K.charms, K.gunLv, K.gunStars]) {   // 持久HP／上次旅店／連敗數／蕾娜S計數／遊玩時間／掛件／強化
+                  K.charms, K.gunLv, K.gunStars, K.wmod]) {   // 持久HP／上次旅店／連敗數／蕾娜S計數／遊玩時間／掛件／強化
     try{ localStorage.removeItem(k); }catch(e){}
   }
   /* ⚠⚠ 從頭開始＝**S0 要寫進鑰匙**（ver -563）。清掉 stage 之後不寫回的話，
@@ -476,7 +512,8 @@ export function snapshot(){
            rennaS:rawN(K.rennaS), playtimeRaw:rawN(K.playtime),
            charmsRaw:rawJ(K.charms),      // 主武器掛件（ver -699，一輪內）
            gunLvRaw:rawN(K.gunLv),       // 主武器強化等級（ver -700 的舊制，留著相容）
-           gunStarsRaw:rawJ(K.gunStars) };   // 主武器九階強化（ver -707，一輪內）
+           gunStarsRaw:rawJ(K.gunStars),     // 主武器九階強化（ver -707，一輪內）
+           wmodRaw:rawJ(K.wmod) };          // 副武器改裝（ver -714，一輪內）
 }
 export function restore(s){
   if(!s) return;
@@ -506,4 +543,5 @@ export function restore(s){
   putRaw(K.charms, ('charmsRaw' in s)?s.charmsRaw:null, true);
   putRaw(K.gunLv,  ('gunLvRaw'  in s)?s.gunLvRaw :null);
   putRaw(K.gunStars, ('gunStarsRaw' in s)?s.gunStarsRaw:null, true);
+  putRaw(K.wmod,     ('wmodRaw'     in s)?s.wmodRaw    :null, true);
 }

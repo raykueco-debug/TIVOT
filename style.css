@@ -2835,6 +2835,11 @@
   #gearSheet .gs-star b{font-size:11px;font-weight:normal;color:var(--ink);}
   #gearSheet .gs-star.on b{color:var(--gold);}
   #gearSheet .gs-star span{display:block;font-size:9.5px;color:var(--ink);opacity:.7;}
+  /* 管理人模式：整列可點（點一下 +1，到上限歸零）。 */
+  #gearSheet .gs-star.dev{cursor:pointer;padding:2px 4px;margin:-2px -4px;border-radius:6px;}
+  #gearSheet .gs-star.dev:active{background:rgba(212,169,74,.14);}
+  /* 副武器那一格的改裝階（唯讀；升級在槍店）。 */
+  #gearSheet .gs-mod{flex:none;font-size:9.5px;color:var(--holy);white-space:nowrap;}
   #gearSheet .gs-mtune b{font-size:14px;font-weight:normal;color:var(--gold);}
   #gearSheet .gs-mtune span{color:var(--gold-dim);}
   #gearSheet .gs-barrels{display:flex;flex-direction:column;gap:6px;margin-top:8px;}
@@ -2882,7 +2887,12 @@
   #gearSheet .gs-sw.right i{left:28px;}
   #gearSheet .gs-modedesc{margin-top:8px;font-size:10px;line-height:1.7;color:var(--gold-dim);}
   /* ── 搭檔卡 ── */
-  #gearSheet .gs-pcard{position:relative;flex:1 1 auto;min-height:120px;overflow:hidden;
+  /* ⚠⚠ ver -715：立繪**不伸展**（Ray：「伙伴立繪太大了，下方要有足夠空間說明
+     主備動技能」）。原本是 `flex:1 1 auto` —— 它會把右欄剩下的高度全部吃掉，
+     技能說明就被擠成貼在底下的三行。改成固定比例（3:4）＋高度上限，
+     多出來的高度歸底下那一塊。 */
+  #gearSheet .gs-pcard{position:relative;flex:0 0 auto;aspect-ratio:3/4;
+    max-height:40vh;min-height:120px;overflow:hidden;
     border:1px solid var(--gold-dim);border-radius:10px;background:rgba(10,8,14,.6);}
   /* 取景與出擊整備那一張同一套：以高度貼合、頭頂對齊框頂再依 siFit 微調。 */
   #gearSheet .gs-pimg{position:absolute;left:50%;top:var(--gp-top,0%);
@@ -2891,8 +2901,13 @@
   #gearSheet .gs-pname{position:absolute;left:0;right:0;bottom:0;padding:6px 10px;
     font-size:12px;letter-spacing:3px;color:var(--gold);
     background:linear-gradient(180deg,rgba(8,6,12,0),rgba(8,6,12,.9) 60%);}
+  /* 技能說明：吃掉右欄剩下的高度，塞不下就自己捲（不要把立繪擠掉）。 */
+  #gearSheet .gs-perks{flex:1 1 auto;min-height:0;overflow-y:auto;}
   #gearSheet .gs-perk{margin-top:8px;font-size:10px;line-height:1.65;color:var(--gold-dim);}
   #gearSheet .gs-perk b{display:block;font-weight:normal;color:var(--gold);margin-bottom:1px;}
+  /* 常駐技能：未實裝的留空欄（ver -715）。整格壓暗，但看得見它存在。 */
+  #gearSheet .gs-perk.empty{opacity:.4;}
+  #gearSheet .gs-perk.empty b{color:var(--gold-dim);}
   /* ── 一次性教學（雪鐵龍箭，同旅店那一套）── */
   #gearSheet .gs-tip{position:fixed;inset:0;z-index:3;background:rgba(4,3,7,.62);}
   #gearSheet .gt-arrow{position:absolute;transform:translate(-50%,-100%);font-style:normal;
@@ -2914,7 +2929,7 @@
     #gearSheet .gs-body{flex-direction:column;gap:10px;overflow-y:auto;}
     #gearSheet .gs-left{flex:0 0 auto;}
     #gearSheet .gs-right{flex:1 1 auto;min-height:0;}
-    #gearSheet .gs-pcard{min-height:200px;}
+    #gearSheet .gs-pcard{min-height:180px;max-height:38vh;}
   }
   /* 道具欄裡的「裝　備」（ver -422）：整備頁點一格進來時才有。 */
   #lootSheet .bag-eq{position:absolute;right:8px;bottom:6px;padding:3px 10px;

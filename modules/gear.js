@@ -56,11 +56,18 @@ function slotHtml(cat, n){
   const key=load.pickOf(cat);
   const w=key ? W()[key] : null;
   const img=w ? (asset(w.image)||'') : '';
+  /* 改裝階（ver -714）：**唯讀顯示**，升級在槍店（花錢，見 config.tuning.weaponMod）。
+     ⚠ -714 初版曾做成 testmode 的 ± —— Ray 更正「不是管理人限定」，所以那個拿掉了：
+       一個動作只留一個入口（鐵律 8）。 */
+  const mod=key ? prog.weaponMod(key) : 0, modMax=key ? prog.weaponModMax(key) : 0;
+  const devMod = (key && modMax && mod>0)
+    ? '<span class="gs-mod">改 '+mod+'/'+modMax+'</span>' : '';
   return '<div class="gs-slot" data-cat="'+cat+'">'
        +   '<i class="gs-no">'+n+'</i>'
        +   (img ? '<img src="'+img+'" alt="">' : '<span class="gs-none">—</span>')
        +   '<div class="gs-txt"><span class="gs-cat">'+cat+'</span>'
        +     '<b>'+(w ? (w.shortName||w.name) : '未持有')+'</b></div>'
+       +   devMod
        +   '<span class="gs-arrow">›</span>'
        + '</div>';
 }
@@ -82,9 +89,14 @@ function slotHtml(cat, n){
    ⚠ 內部數值**不顯示**（Ray 指定）：只印星名、名稱與效果那一句。 */
 let starsOpen = false;
 function starListHtml(){
+  /* ⚠⚠ **管理人模式可以自由點亮／熄滅**（ver -714，Ray 指定）：點一列 +1，
+     到上限再點就歸零（`repeat` 的星上限 9，其餘 1）—— 一顆鈕就能來回，
+     不必再擺一個「清除」。⚠ 只有 `body.testmode` 掛得上這個熱區。 */
+  const dev=document.body.classList.contains('testmode');
   return (GAME_CONFIG.gunStars||[]).map(st=>{
     const n=prog.starCount(st.id);
-    return '<div class="gs-star'+(n>0?' on':'')+'">'
+    return '<div class="gs-star'+(n>0?' on':'')+(dev?' dev':'')+'"'
+         +   (dev?' data-star="'+st.id+'"':'')+'>'
          +   '<i class="gs-starname">'+st.star+'</i>'
          +   '<b>'+st.name+(n>0 ? (st.repeat ? '　×'+n : '　✓') : '')+'</b>'
          +   '<span>'+st.desc+'</span>'
@@ -182,10 +194,18 @@ function render(){
                      + ' style="--gp-zoom:'+(fit.zoom||1)+';--gp-top:'+((fit.top||0)*100)+'%">' : '')
     +       '<div class="gs-pname">'+(p.name||'—')+'</div>'
     +     '</div>'
-    +     (p.passive ? '<div class="gs-perk"><b>'+p.passive.name+'（被動）</b>'
-                     + '<span>'+p.passive.desc+'</span></div>' : '')
-    +     (p.active  ? '<div class="gs-perk"><b>'+p.active.name+'（主動）</b>'
-                     + '<span>'+p.active.desc+'</span></div>' : '')
+    /* ⚠⚠ 技能說明包成自己的一塊（ver -715，Ray：「伙伴立繪太大了，下方要有足夠
+       空間說明主備動技能」）—— 立繪改成**不伸展**（見 CSS 的 `gs-pcard`），
+       多出來的高度歸這一塊，塞不下就它自己捲。
+       ⚠ **常駐技能還沒實裝**（Ray：「先留空」）：欄位先擺著、內容空 ——
+       留一格看得見的空位，比整個不出現好（玩家才知道還有這一欄）。 */
+    +     '<div class="gs-perks">'
+    +       (p.passive ? '<div class="gs-perk"><b>'+p.passive.name+'（被動）</b>'
+                       + '<span>'+p.passive.desc+'</span></div>' : '')
+    +       (p.active  ? '<div class="gs-perk"><b>'+p.active.name+'（主動）</b>'
+                       + '<span>'+p.active.desc+'</span></div>' : '')
+    +       '<div class="gs-perk empty"><b>常駐</b><span>—</span></div>'
+    +     '</div>'
     +   '</div>'
     + '</div>');
   bind();
@@ -257,6 +277,17 @@ function bind(){
     if(t) t.addEventListener('click', e=>{ e.stopPropagation();
       try{ SFX.menuClick(); }catch(_){}
       starsOpen=!starsOpen; render(); }); }
+  /* 管理人：點一顆星 → +1，到上限歸零（ver -714）。 */
+  el.querySelectorAll('.gs-star.dev').forEach(d=>d.addEventListener('click', e=>{
+    e.stopPropagation();
+    const id=d.dataset.star;
+    const st=(GAME_CONFIG.gunStars||[]).find(x=>x.id===id); if(!st) return;
+    const max=st.repeat ? 9 : 1;
+    const cur=prog.starCount(id);
+    prog.setStarCount(id, cur>=max ? 0 : cur+1);
+    try{ SFX.menuClick(); }catch(_){}
+    render();
+  }));
   el.querySelectorAll('.gs-barrel').forEach(b=>b.addEventListener('click', e=>{
     e.stopPropagation(); openCharm(b.dataset.barrel);
   }));

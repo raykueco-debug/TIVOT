@@ -36,6 +36,7 @@ import { SFX } from '../audio.js';
 import { L } from '../i18n.js';   // 多語言（cut-in 標題/選單鈕/暴擊前綴）
 import * as inv from '../script/inventory.js';   // 武器持有（買來的才上得了卡疊，ver -377）
 import * as load from '../script/loadout.js';    // 副武器的編成（整備頁排的順序與模式，ver -422）
+import * as prog from '../script/progress.js';   // 副武器的改裝等級（ver -714；葉節點，無循環）
 
 const $ = id => document.getElementById(id);
 const WEAPONS = GAME_CONFIG.weapons;
@@ -82,7 +83,15 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll){
   /* ⚠ 本篇與試玩版是**兩套數值**（ver -378）——一律走 `weaponOf`，不要直接查 WEAPONS。 */
   const w = weaponOf(state.equippedWeapon, storyMode());
   if(!w) return;
-  const scale = (dmgScale==null) ? 1 : dmgScale;
+  /* 副武器的改裝加成（ver -714）：每階 +20%，上限＝卡上的 `maxMod`。
+     ⚠ **折進 `scale`** —— 三種 vfx 分支各自算 `base`，在這裡乘一次就三條都吃到
+       （鐵律 7：不要在每個分支各乘一遍）。
+     ⚠ 只影響反擊：副武器只在反擊時開火，普攻是主武器的事。 */
+  const WM     = GAME_CONFIG.tuning.weaponMod || {};
+  /* ⚠ 第 5 階**不加數值**（換成特殊能力）—— 所以夾在 `statLv`（4）。 */
+  const modLv  = Math.min(prog.weaponMod(state.equippedWeapon), WM.statLv || 99);
+  const modMul = 1 + modLv * (WM.perLv || 0);
+  const scale = ((dmgScale==null) ? 1 : dmgScale) * modMul;
   const hitR  = (hitRate==null) ? 1 : Math.max(0, Math.min(1, hitRate));
   /* 第 k 發中不中。⚠ `k===0` 一定中（見上）。 */
   const hits = (k)=> (hitR>=1 || k===0) ? true : (Math.random() < hitR);
@@ -91,7 +100,8 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll){
      ⚠ 抽到 0 **不是 miss** —— 照樣跳一個「0」出來（Ray：「不要全都 1 很沒感」）。
      ⚠ 0 不呼叫 `enemyDamage`：那一支會帶受擊特效與擊殺判定，打 0 不該驚動它。 */
   const roll = Array.isArray(dmgRoll) && dmgRoll.length ? dmgRoll : null;
-  const rollOne = ()=> roll[(Math.random()*roll.length)|0];
+  /* ⚠ `dmgRoll` 走 `scale` 之外的路（它是絕對值清單），所以改裝要在這裡自己乘。 */
+  const rollOne = ()=> Math.round(roll[(Math.random()*roll.length)|0] * modMul);
   // 反擊武器 SE：反擊（Counter）與完美防禦（散彈 Perfect 反擊）都會出聲——散彈 blast 兩路徑皆觸發。
   //   機槍＝逐發播（搭搭搭搭搭連續感）、散彈＝一發、狙擊＝一發。散彈完防由此 SE 出聲，defense 端不再疊合成重擊。
   /* ⚠ 「這一場」可以覆寫武器音（ver -423，Ray：船艦戰的機槍／霰彈／步槍各換一支）——

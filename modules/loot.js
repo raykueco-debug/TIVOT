@@ -240,14 +240,36 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
   const STARS=()=>GAME_CONFIG.gunStars||[];
   const modRecipe=(id)=>((GAME_CONFIG.gunUpgrade||{}).recipes||{})[id]||null;
   const modDone=(st)=>prog.starCount(st.id)>0 && !st.repeat;    // 單次的星升過就滿了
-  function modReady(id){
+  /* ══ 副武器的改裝（ver -714，Ray：「花錢就好」）══════════════════════════
+     費用＝**槍價 × costMul[下一階−1]**；槍價是卡上的 `price`（店貨）或
+     `value`（開局那三把的市價）。⚠ 只收錢，不收素材（素材那條是主武器的路）。 */
+  const WM=()=>GAME_CONFIG.tuning.weaponMod||{};
+  const wOwned=()=>inv.ownedWeapons();
+  const wPrice=(id)=>{ const w=(GAME_CONFIG.weapons||{})[id]||{}; return (w.price||w.value||0)|0; };
+  const wNext =(id)=>{ const n=prog.weaponMod(id)+1; return n<=prog.weaponModMax(id) ? n : 0; };
+  const wCost =(id)=>{ const n=wNext(id); if(!n) return 0;
+                       const m=(WM().costMul||[])[n-1]; return m ? Math.round(wPrice(id)*m) : 0; };
+  /* 選中的那一項：`star:<id>` 或 `wmod:<id>`（兩種東西同一個 `pick`，鐵律 8）。 */
+  function modReady(sel){
+    if(!sel) return false;
+    if(sel.indexOf('wmod:')===0){
+      const id=sel.slice(5);
+      return !!wNext(id) && inv.getMoney() >= wCost(id);
+    }
+    const id=sel.indexOf('star:')===0 ? sel.slice(5) : sel;
     const st=STARS().find(d=>d.id===id); if(!st || modDone(st)) return false;
     const r=modRecipe(id); if(!r) return false;
     if((r.money||0) > inv.getMoney()) return false;
     for(const k in (r.items||{})) if(inv.count(k) < r.items[k]) return false;
     return true;
   }
+  function modTabsHtml(){
+    const t=(k,n)=>'<button class="mod-tab'+(modTab===k?' on':'')+'" data-mod="'+k+'"'
+                 + ' type="button">'+n+'</button>';
+    return '<div class="mod-tabs">'+t('main','主武器')+t('sub','副武器')+'</div>';
+  }
   function modRows(){
+    if(modTab==='sub') return modTabsHtml()+modSubRows();
     const lit=STARS().filter(st=>prog.starCount(st.id)>0).length;
     const rows=STARS().map(st=>{
       const n=prog.starCount(st.id), r=modRecipe(st.id), done=modDone(st);
@@ -256,8 +278,8 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
         return '<span class="mod-mat'+(have>=need?'':' lack')+'">'
              + inv.nameOf(id)+' '+(isFinite(have)?have:'∞')+'/'+need+'</span>';
       }).join('') : '<span class="mod-mat lack">配方未定</span>';
-      return '<div class="shop-row mod-row'+(done?' done':'')+(pick===st.id?' pick':'')+'"'
-           +   ' data-id="'+st.id+'">'
+      return '<div class="shop-row mod-row'+(done?' done':'')+(pick==='star:'+st.id?' pick':'')+'"'
+           +   ' data-id="star:'+st.id+'">'
            + '<span class="loot-name"><i class="mod-star">'+st.star+'</i>'+st.name
            +   (n>0 ? (st.repeat ? '　×'+n : '　✓') : '')+'</span>'
            + '<span class="mod-eff">'+st.desc+'</span>'
@@ -266,13 +288,40 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
                            + r.money+' '+inv.moneyName()+'</span>' : ''))
            + '</span></div>';
     });
-    return '<div class="mod-head">主武器　'+((GAME_CONFIG.mainGun||{}).name||'')
+    return modTabsHtml()
+         + '<div class="mod-head">'+((GAME_CONFIG.mainGun||{}).name||'主武器')
          + '　已點亮 '+lit+' / '+STARS().length+'</div>' + rows.join('');
+  }
+  /* ── 副武器：一把一列，只收錢（ver -714）── */
+  function modSubRows(){
+    const sub=wOwned().map(id=>{
+      const w=GAME_CONFIG.weapons[id]||{};
+      const lv=prog.weaponMod(id), max=prog.weaponModMax(id), nx=wNext(id), cost=wCost(id);
+      const statLv=WM().statLv||max;
+      /* ⚠ 第 5 階不加數值 —— 那一列要講清楚，不然玩家付了三倍價會覺得被騙。 */
+      const nxt = !nx ? '<span class="mod-mat">已滿階</span>'
+        : '<span class="mod-mat">→ '+nx+' 階'+(nx>statLv?'（特殊能力）':'（攻擊 +'
+          + Math.round((WM().perLv||0)*100)+'%）')+'</span>'
+          + '<span class="mod-mat'+(inv.getMoney()>=cost?'':' lack')+'">'+cost+' '+inv.moneyName()+'</span>';
+      return '<div class="shop-row mod-row'+(!nx?' done':'')+(pick==='wmod:'+id?' pick':'')+'"'
+           +   ' data-id="wmod:'+id+'">'
+           + '<span class="loot-name"><i class="mod-star">'+(w.cat||'')+'</i>'
+           +   (w.shortName||w.name||id)+'　'+lv+'/'+max+'</span>'
+           + '<span class="mod-need">'+nxt+'</span></div>';
+    }).join('');
+    return '<div class="mod-head">改裝（每階 攻擊 +'
+         + Math.round((WM().perLv||0)*100)+'%，第 '+((WM().statLv||4)+1)+' 階為特殊能力）</div>'
+         + sub;
   }
   const cfg=((SHOP.shops||{})[stockKey])||{};
   const TABS=(cfg.tabs&&cfg.tabs.length)?cfg.tabs:['buy','sell'];
   const TABNAME=Object.assign({ buy:'買', sell:'賣', mod:'改裝' }, cfg.tabName||{});
   let tab=TABS[0], pick=null;
+  /* 改裝頁的子分頁（ver -716，Ray：「武器改裝要分頁，主武器跟副武器分開」）。
+     ⚠ 做成**子分頁**而不是第四個主頁籤：上排已經有三個，再加一個在 390px 上會折行；
+       而且「買／賣／改裝」是三件事，主副武器都是「改裝」底下的兩半。
+     ⚠ 換子分頁要清 `pick`：兩邊的 id 前綴不同，留著會讓結帳鈕亮著卻按不動。 */
+  let modTab='main';
   /* ══ 購物車（ver -496，Ray：「商店購物可以選要購買的商品數量一次結帳」）══
      `cart[id]=n`：每一列自己的 −/＋ 加減，底下一顆「結帳」一次付清。
      取代 -405 的「選一項→調數量→買下」——那一套一次只能結一項。
@@ -447,6 +496,12 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
     ov.querySelectorAll('.shop-tab').forEach(b=>b.addEventListener('click', e=>{
       e.stopPropagation(); tab=b.dataset.tab; pick=null; cart={};
       try{ SFX.menuClick(); }catch(_){} render(); }));
+    ov.querySelectorAll('.mod-tab').forEach(b=>b.addEventListener('click', e=>{
+      e.stopPropagation();
+      if(b.dataset.mod===modTab) return;
+      try{ SFX.menuClick(); }catch(_){}
+      modTab=b.dataset.mod; pick=null; render();
+    }));
     ov.querySelectorAll('.shop-row').forEach(b=>b.addEventListener('click', e=>{
       e.stopPropagation();
       if(b.classList.contains('out')) return;      // 售完的那一列點不動
@@ -484,10 +539,18 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
       /* ══ 強化（ver -701）══ ⚠ **先扣素材再扣錢**（同買的那一支）：
          少扣可以，不能發生「錢扣了等級沒升」。⚠ `can` 已經確認過夠了。 */
       if(tab==='mod'){
-        const r=modRecipe(pick); if(!r || !modReady(pick)) return;
-        for(const id in (r.items||{})) inv.remove(id, r.items[id]);
-        if(r.money) inv.spendMoney(r.money);
-        prog.addStar(pick);
+        if(!modReady(pick)) return;
+        if(pick.indexOf('wmod:')===0){          // 副武器：只收錢
+          const id=pick.slice(5), cost=wCost(id);
+          if(!inv.spendMoney(cost)) return;
+          prog.setWeaponMod(id, prog.weaponMod(id)+1);
+        }else{                                  // 主武器的星：收素材＋錢
+          const id=pick.indexOf('star:')===0 ? pick.slice(5) : pick;
+          const r=modRecipe(id); if(!r) return;
+          for(const k in (r.items||{})) inv.remove(k, r.items[k]);
+          if(r.money) inv.spendMoney(r.money);
+          prog.addStar(id);
+        }
         checkoutSfx();
         render();
         return;

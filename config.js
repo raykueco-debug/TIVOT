@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.01-713';
+export const VERSION = 'ver 2026.09.01-716';
 
 export const GAME_CONFIG = {
 
@@ -55,7 +55,8 @@ export const GAME_CONFIG = {
          橘圈 → `noPerfectBand:true`＝沒有完防帶；否則免傷，或 `perfectDmgPerHit`＝改打傷害
          紅圈 → `hits` × `dmgPerHit`
          爆擊率 → `critRate`（沒寫才回去用 tuning.counterCritRate）
-         最大改裝等級 → `maxMod`（**資料先放著，改裝系統還沒做**）
+         最大改裝等級 → `maxMod`（ver -714 起真的在用：每階 +20% 反擊傷害，
+                                    加成率在 `tuning.weaponMod.perLv`）
          價格 → `price`（沒寫＝**買不到也賣不掉**）
      ⚠ `perfectDmgPerHit` 存的是**卡上的絕對值**（龍息橘圈 6 發 ×4），不是倍率 ——
        倍率由 `defense.js` 現算（`perfectDmgPerHit / dmgPerHit`）。卡上寫幾就存幾（鐵律 7）。
@@ -2033,6 +2034,22 @@ export const GAME_CONFIG = {
          決定加成，它只剩「北方泊地那一次做過了」這個意思（免除重挑戰的費用，
          見 `costUntil`）。兩者各有各的擁有事件，不要拿其中一個去推另一個。 */
     gunTune: { flag:'np_gun_tuned', base:1, max:9, dmgMulPerLv:0.05 },
+    /* ══⚠⚠ 副武器的改裝（ver -714，Ray：「副武器可以直接升級，每次升級增加
+       攻擊力 20%，最高五階，**花錢就好**。第一次是槍價的半額，第二次是全額，
+       第三次 1.5，第四次兩倍，第五次三倍，**不加數值，加特殊能力**」）══════════
+       · 上限讀**卡上的 `maxMod`**（三把初始槍都是 5）—— 那是那一把槍的性質。
+       · `perLv` 每階 +20% 反擊傷害；⚠ **只加到 `statLv`（第 4 階）為止**，
+         第 5 階換成**特殊能力**（見下）。所以滿階的數值加成是 +80%，不是 +100%。
+       · `costMul[n]` ＝升到第 n+1 階要付「槍價」的幾倍。槍價＝卡上的
+         `price`（店貨）或 `value`（開局那三把的市價）。
+       ⚠ 只影響**反擊傷害**：副武器只在反擊時開火，普攻是主武器的事。
+       ⚠⚠ **第 5 階的特殊能力還沒定**（Ray：「先留槽，我還沒想好，應該是類似
+         雙槍的掛飾但是**固定不可換**」）—— `perks` 先空著。
+         「固定不可換」是它與雙槍掛件的分野：掛件玩家自己換，這個是升上去就定了。 */
+    weaponMod: { perLv:0.20, statLv:4, costMul:[0.5, 1, 1.5, 2, 3] },
+    /* 第 5 階給哪一個特殊能力（鑰匙＝武器 id）。⚠ 內容待 Ray 的卡，先空著 ——
+       不要自己發明能力（同護符那一批的處理）。 */
+    weaponPerks: {},
     dmgPerCombo:         0.2,   // 每層連擊加成
     dmgComboCap:         20,    // 連擊加成計入上限
     dmgDualMult:         0.7,   // 雙槍傷害倍率（<1=安全牌）

@@ -117,6 +117,14 @@
   #lootSheet .shop-row .loot-n{white-space:nowrap;}
   /* ── 槍店的「武器改裝」＝主武器素材強化（ver -701）──
      ⚠ 列是 grid（`1fr auto`），所以素材那一欄自己 wrap，不會把 Lv 擠掉。 */
+  /* 改裝頁的子分頁（ver -716）：主武器／副武器。⚠ 比主頁籤小一號 ——
+     它是「改裝」底下的兩半，不該跟買／賣搶同一個視覺層級。 */
+  #lootSheet .mod-tabs{display:flex;gap:6px;margin:0 0 6px;}
+  #lootSheet .mod-tab{flex:1 1 0;padding:4px 0;font-family:inherit;font-size:10.5px;
+    letter-spacing:2px;color:var(--gold-dim);background:transparent;cursor:pointer;
+    border:1px solid rgba(212,169,74,.28);border-radius:6px;}
+  #lootSheet .mod-tab.on{color:var(--gold);border-color:var(--gold);
+    background:rgba(212,169,74,.10);}
   #lootSheet .mod-head{padding:6px 8px;margin-bottom:6px;font-size:11px;letter-spacing:1px;
     color:var(--gold);border-bottom:1px solid rgba(212,169,74,.25);}
   #lootSheet .mod-row{grid-template-columns:1fr auto;}
