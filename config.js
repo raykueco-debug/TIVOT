@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.01-727';
+export const VERSION = 'ver 2026.09.01-728';
 
 export const GAME_CONFIG = {
 
@@ -817,9 +817,10 @@ export const GAME_CONFIG = {
         '手停下來做什麼？敵人可不會等你。',
         '猶豫的代價，記住這種痛。',
       ],
-      early: [
-        '太早了！看清楚一點！',
-      ],
+      /* ⚠ 「太早了！看清楚一點！」Ray 指定**刪除**（ver -728）。
+         ⚠ 空陣列是**有意義的**：`onEarlyBlock` 看到空的就跳過台詞、**直接重放
+           反擊圈** —— 不要把這個鍵整個拿掉，留著才看得出「這裡本來有一段」。 */
+      early: [],
     },
     steps: [
       // 第一盤：純清盤教學（noUltBoards=1 → 敵人不出大絕）

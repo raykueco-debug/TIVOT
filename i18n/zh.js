@@ -299,7 +299,7 @@ export const STRINGS = {
       scold: {
         wrong: ['看清楚數字……拜託你。', '別慌……順序，慢慢來就好。'],
         delay: ['不能停下來……牠不會等你的。', '猶豫會受傷的！'],
-        early: ['太早了……再看清楚一點。'],
+        early: [],   // ver -728：Ray 指定刪除（空陣列＝不講話但照樣重放反擊圈）
         attackDuringThreat: { first:'防禦——！要來了！', rest:'…………' },
         dead: '沒關係……我們再來一次。',
         img: 'tut_nouvelle_cringe',
@@ -356,9 +356,7 @@ export const STRINGS = {
         '手停下來做什麼？敵人可不會等你。',
         '猶豫的代價，記住這種痛。',
       ],
-      early: [
-        '太早了！看清楚一點！',
-      ],
+      early: [],   // ver -728：Ray 指定刪除（空陣列＝不講話但照樣重放反擊圈）
       // 反擊教學：紅圈在場還猛點盤面攻擊 → 首次罵、第二次起無言
       attackDuringThreat: { first:'你倒是防禦啊！', rest:'…………' },
       dead: '服了你了。重來！',   // 教學陣亡（收段後該段重來：滿血重建本盤，不重播已完成段落）

@@ -311,7 +311,16 @@ export function onMistake(kind){
 export function onEarlyBlock(){
   if(!state.tutorialActive || state.tutorialDialog || state.over || state.saintMode || deadHandled) return;
   const pool = scoldCfg().early;
-  if(!pool || !pool.length) return;
+  /* ⚠⚠ **沒有台詞就直接重放，不要 return**（ver -728，Ray：「不要有太早了看清楚一點，
+     拿掉」）—— 重放反擊圈本來掛在那一段的**收尾**上（`onStepClosed` 的 earlyRetry）。
+     台詞清空之後若照舊 return，就再也沒有人重放紅點，而 `onThreatResolved` 對
+     `grade==='block'` 是**不放行**的（反擊教學要玩家點出 Perfect／Counter）——
+     結果是教學卡在那裡等一顆永遠不會來的紅點。
+     ⚠ 這是「規矩掛在演出上」的典型：把演出拿掉，規矩跟著不見。 */
+  if(!pool || !pool.length){
+    if(!defendedDone && api.respawnThreat) api.respawnThreat();
+    return;
+  }
   // key='earlyRetry'：反擊教學階段收段後重放反擊圈（onStepClosed 分流；已過 defended 則只罵不重放）
   openStep({ key:'earlyRetry', lines:[scoldLine(pool[Math.random()*pool.length|0])] });
 }
