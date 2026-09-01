@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.01-700';
+export const VERSION = 'ver 2026.09.01-701';
 
 export const GAME_CONFIG = {
 
@@ -138,6 +138,29 @@ export const GAME_CONFIG = {
     ],
     /* 掛件槽收哪一類道具（鐵律 1：不在程式裡寫死類別字串）。 */
     charmCat:'charm',
+  },
+
+  /* ══⚠⚠ 主武器的強化配方（ver -701，Ray：「強化原則上走的是素材收集，
+     打靶給強化是特殊事件」）══════════════════════════════════════════════════
+     鑰匙＝**目標等級**（升到第幾級），值＝那一級要交的東西。
+     兩條路各自獨立、可以疊加：
+       · **素材收集**（原則）：拿素材去槍店的「武器改裝」分頁換一級
+       · **特殊事件**（例外）：腳本那一拍寫 `gunTune:N` 直接給（北方泊地打靶）
+     ⚠⚠⚠ **下面的數字是我擬的草案，等 Ray 的卡覆蓋**（他只給了「走素材收集」
+       這個原則，沒給配方）。排法：Lv2~3 收低階素材、Lv4~6 中階、Lv7~9 高階，
+       數量與費用隨級數遞增 —— 素材的階由 `items.defs` 現有的 `price` 分的。
+     ⚠ 改這張表不必動程式：`modules/loot.js` 的改裝頁只讀它（鐵律 1）。 */
+  gunUpgrade: {
+    recipes: {
+      2:{ money:200,  items:{ scrap_iron:4,     brass_casing:4 } },
+      3:{ money:400,  items:{ scrap_iron:6,     brass_casing:6,   chitin_shell:3 } },
+      4:{ money:700,  items:{ chitin_shell:6,   venom_claw:4 } },
+      5:{ money:1000, items:{ venom_claw:6,     azure_scale:5 } },
+      6:{ money:1400, items:{ azure_scale:8,    azure_feather:6 } },
+      7:{ money:2000, items:{ azure_feather:8,  chitin_wing:5,    saint_claw_low:3 } },
+      8:{ money:2800, items:{ chitin_wing:8,    venom_fang:6,     saint_claw_low:5 } },
+      9:{ money:4000, items:{ venom_fang:10,    saint_claw_low:8 } },
+    },
   },
 
   defaultWeapon: 'MG_Squall',   // 開局預設武器（填上面的鑰匙名）

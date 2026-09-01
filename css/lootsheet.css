@@ -20,7 +20,7 @@
      documentElement（單子的下界＝楣的上緣，§6.5.4）；飛行頁沒跑 story.js，
      吃的是 var() 裡的 56vh fallback —— 那正是為它準備的。 */
   --ink:#ece6d8; --gold:#d4a94a; --gold-dim:#8a6d2e; --blood:#8a1f1f; --holy:#6fb3d4;
-  --panel:#120f1a;
+  --panel:#120f1a; --danger:#c0392b;   /* ver -701：改裝頁「素材不足」的紅（值同 style.css 的 :root） */
   font-family:"Iowan Old Style","Palatino Linotype",Georgia,"Songti TC",serif;
   color:var(--ink);-webkit-tap-highlight-color:transparent;
 }
@@ -115,6 +115,15 @@
   #lootSheet .shop-row.pick{border-color:var(--gold-dim);background:rgba(212,169,74,.10);}
   /* 價格那一欄**不換行**（ver -377）：武器名長，換行之後「4000」與「G」會被拆成兩行。 */
   #lootSheet .shop-row .loot-n{white-space:nowrap;}
+  /* ── 槍店的「武器改裝」＝主武器素材強化（ver -701）──
+     ⚠ 列是 grid（`1fr auto`），所以素材那一欄自己 wrap，不會把 Lv 擠掉。 */
+  #lootSheet .mod-head{padding:6px 8px;margin-bottom:6px;font-size:11px;letter-spacing:1px;
+    color:var(--gold);border-bottom:1px solid rgba(212,169,74,.25);}
+  #lootSheet .mod-row.done{opacity:.45;}
+  #lootSheet .mod-row.cur{border-color:var(--gold);background:rgba(212,169,74,.10);}
+  #lootSheet .mod-need{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:3px 8px;}
+  #lootSheet .mod-mat{font-size:10px;color:var(--gold-dim);white-space:nowrap;}
+  #lootSheet .mod-mat.lack{color:var(--danger);}
   /* ── 存貨（ver -405）──
      ⚠ 標在**品名後面**不是價錢那一欄：價錢那欄要保持「一個數字」才掃得快。
      ⚠ 售完那一列整列變暗**而且點不動**（JS 那邊擋）—— 只變暗的話玩家會一直戳。 */

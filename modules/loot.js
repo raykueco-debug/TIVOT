@@ -13,6 +13,7 @@
 import { GAME_CONFIG, weaponStatRows, weaponOf, weaponDescText, asset, sfxGain } from '../config.js';
 import * as inv from '../script/inventory.js';
 import * as shopStock from '../script/shopstock.js';   // 店鋪存貨（ver -405）
+import * as prog from '../script/progress.js';         // 主武器的強化等級（ver -701）
 import { SFX } from '../audio.js';
 
 /* ══ 樣式（ver -380）══
@@ -231,6 +232,41 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
   /* ⚠ 貨架問 `shopStock`，不要直接讀 `config.shop.stock`（ver -405）——
      那裡只有**開店時**的數量，賣掉幾個、玩家又賣回來幾個是那一支在記帳（鐵律 7）。 */
   const shelf=()=>shopStock.list(stockKey);
+  /* ══ 主武器的素材強化（ver -701）══════════════════════════════════════════
+     `modNext()` ＝下一個可強化的等級（已滿級回 null）；`modReady(lv)` ＝那一級的
+     素材與錢都夠了嗎（**唯一的判定**，鐵律 7）；`modRows()` ＝整座階梯的列。 */
+  const GU=()=>GAME_CONFIG.gunUpgrade||{};
+  const GT=()=>(GAME_CONFIG.tuning||{}).gunTune||{};
+  const modNext=()=>{ const lv=prog.gunLevel(), max=GT().max||lv;
+                      return lv<max ? lv+1 : null; };
+  const modRecipe=(lv)=>(GU().recipes||{})[lv]||null;
+  function modReady(lv){
+    const r=modRecipe(lv); if(!r) return false;
+    if((r.money||0) > inv.getMoney()) return false;
+    for(const id in (r.items||{})) if(inv.count(id) < r.items[id]) return false;
+    return true;
+  }
+  function modRows(){
+    const lv=prog.gunLevel(), max=GT().max||lv, nx=modNext();
+    const out=[];
+    for(let n=(GT().base||1)+1; n<=max; n++){
+      const r=modRecipe(n);
+      const done=n<=lv, cur=(n===nx);
+      const mats=r ? Object.keys(r.items||{}).map(id=>{
+        const have=inv.count(id), need=r.items[id];
+        return '<span class="mod-mat'+(have>=need?'':' lack')+'">'
+             + inv.nameOf(id)+' '+(isFinite(have)?have:'∞')+'/'+need+'</span>';
+      }).join('') : '<span class="mod-mat lack">配方未定</span>';
+      out.push('<div class="shop-row mod-row'+(done?' done':'')+(cur?' cur':'')+'">'
+        + '<span class="loot-name">Lv '+n+(done?'　✓':'')+'</span>'
+        + '<span class="mod-need">'+mats
+        +   (r&&r.money ? '<span class="mod-mat'+(inv.getMoney()>=r.money?'':' lack')+'">'
+                        + r.money+' '+inv.moneyName()+'</span>' : '')
+        + '</span></div>');
+    }
+    return '<div class="mod-head">主武器　'+((GAME_CONFIG.mainGun||{}).name||'')
+         + '　強化 '+lv+' / '+max+'</div>' + out.join('');
+  }
   /* 這一家店的長相（ver -377）。沒登記就走預設 —— 舊的雜貨舖不必改任何呼叫端。 */
   const cfg=((SHOP.shops||{})[stockKey])||{};
   const TABS=(cfg.tabs&&cfg.tabs.length)?cfg.tabs:['buy','sell'];
@@ -333,9 +369,14 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
           + '<span class="shop-tags">'+cartCtrl(r.id)+'</span></div>'
           ).join('') : '<div class="bag-empty">沒有可以賣的東西。</div>';
     }else{
-      /* 改裝：**這一頁先留空**（Ray 指定）。⚠ 不要偷偷做一個半套的出來 ——
-         留一句話讓玩家知道這裡以後有東西，比一個做一半的介面好。 */
-      rows = '<div class="bag-empty">改裝服務準備中。<br>素材帶來給店主，他說馬上能幫你打出趁手的武器。</div>';
+      /* ══⚠⚠ 改裝＝**主武器的素材強化**（ver -701，Ray：「強化原則上走的是素材
+         收集，打靶給強化是特殊事件」）══════════════════════════════════════
+         整座階梯都列出來（Lv2~9），玩家才知道**要去收什麼** —— 那正是這個玩法
+         的內容。只有「下一級」那一列可以按（`modNext`）。
+         ⚠ 配方在 `config.gunUpgrade.recipes`（鐵律 1）；這裡只讀、不算。
+         ⚠ 素材夠不夠**只有 `modReady` 一支在判**（鐵律 7）：列的樣式與底下那顆
+           鈕都問它，各判一次必然出現「列是亮的、鈕卻按不動」。 */
+      rows = modRows();
     }
 
     const d=pick ? (inv.defOf(pick)||{}) : null;
@@ -343,7 +384,8 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
     /* 結帳鈕（ver -496 購物車）：車裡有東西才亮。「錢不夠」不會發生在這裡 ——
        每一列的「＋」在總價會超過持有金額的那一刻就擋掉了。 */
     const total = cartTotal();
-    const can = (tab!=='mod') && cartCount()>0;
+    const modLv = (tab==='mod') ? modNext() : null;
+    const can = (tab==='mod') ? !!(modLv && modReady(modLv)) : cartCount()>0;
 
     /* 說明區：武器 → 規格表（＋同類比較）；其餘 → 文字說明。 */
     let desc;
@@ -376,7 +418,9 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
       + '</div>'
       + '<div class="shop-desc">'+desc+'</div>'
       + '<div class="shop-acts">'
-      +   (tab==='mod' ? ''
+      +   (tab==='mod'
+          ? ('<button class="shop-do'+(can?'':' broke')+'" type="button">'
+             + (modLv ? '強　化　→ Lv '+modLv : '已　滿　級') + '</button>')
           : '<button class="shop-do'+(can?'':' broke')+'" type="button">'
             /* 結帳（ver -496）：整車一次付清；車是空的鈕就暗著（字不變，
                玩家看得到這一顆是幹嘛的）。售完／已持有的狀態在各自那一列上。 */
@@ -431,13 +475,24 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
     if(doBtn) doBtn.addEventListener('click', e=>{
       e.stopPropagation();
       if(!can) return;
-      if(tab!=='buy' && !pick) return;
+      if(tab==='sell' && !pick) return;   // ⚠ 改裝頁沒有「選一項」的概念（ver -701）
       /* ⚠ 結帳鈕的音在**成交那一刻**才響 —— 這裡只解鎖，不先「喀」一聲，
          不然會兩聲疊在一起。
          ⚠⚠ **買與賣同一支 `se_buy`**（ver -663，Ray：「賣也要有結帳音效喔」）：
            那是「結帳」的聲音，不是「買東西」的聲音 —— 兩邊是同一個動作。
            -662 之前賣走的是 `menuClick`，而且在**按下去**就響（不管成不成交）。 */
       try{ SFX.unlock(); }catch(_){}
+      /* ══ 強化（ver -701）══ ⚠ **先扣素材再扣錢**（同買的那一支）：
+         少扣可以，不能發生「錢扣了等級沒升」。⚠ `can` 已經確認過夠了。 */
+      if(tab==='mod'){
+        const r=modRecipe(modLv); if(!r) return;
+        for(const id in (r.items||{})) inv.remove(id, r.items[id]);
+        if(r.money) inv.spendMoney(r.money);
+        prog.addGunLevel(1);
+        checkoutSfx();
+        render();
+        return;
+      }
       if(tab==='buy'){
         /* ══ 一次結帳（ver -496 購物車）══
            ⚠ **先扣店裡的貨再扣錢**（-405 的原則不變）：`take` 回傳「真的拿到幾個」——
