@@ -420,6 +420,19 @@ export function saintCriticalPending(){
   if(state.tutorialActive) return !saintCritFired;
   return (talkLeft||[]).some(st0 => /^php:/.test(String(st0.trigger||'')));
 }
+/* ══⚠⚠ **還有人在等「自爆」那一拍嗎**（ver -705，Ray：「娜塔莉戰讓主角 hp 到 1 的
+   時候再發動 dreambreaker」）══════════════════════════════════════════════════
+   惡夢化的倒數槽把血抽到 1 就熔斷 —— 而 Ray 要的是「**到 1 的那一刻**才教玩家自爆」，
+   兩件事撞在同一個瞬間。作法與生命歸還那一條完全同型（`saintCriticalPending`，
+   §6.5.2）：**有人在等這一拍，熔斷就讓位**，血停在 1 等玩家上滑。
+   ⚠ 判定要**夠精確**：只有「真的有一段 `phplow:` 帶著 `niBurst` 閘門」或
+     「那個閘門已經開著」才算。寬鬆的話（例如只看有沒有 phplow）會把熔斷
+     永遠擋住，那一場就結束不了。 */
+export function niBurstPending(){
+  if(pendingGate && pendingGate.name==='niBurst') return true;
+  return (talkLeft||[]).some(st0 =>
+    /^phplow:/.test(String(st0.trigger||'')) && st0.gate && st0.gate.action==='niBurst');
+}
 export function onSaintCritical(){
   /* 戰鬥卡的 `talk`：攔在 99% 之後就交回血量觸發，由 `php:99` 那一段自己接手。 */
   if(!state.tutorialActive){ onHpChange(); return; }
@@ -807,7 +820,11 @@ function placePortraitX(el, side){
        **尺寸沒變、人上下跳**。
      現在改成純常數：`#tutCast` 的頂 ＝ `#app` 的 padding-top ＝ 瀏海高，
        所以「螢幕座標的頭頂」減掉瀏海就是「框內座標的頭頂」＝ `BTN_TOP + 身高讓位`。 */
-  const headTop = BTN_TOP + (( C.castTall||176 ) - fr.cm) * pxCm;
+  /* ⚠⚠ 頭頂用 `standCm`（站姿身高）不用 `cm`（ver -705 補）：`cm` 是縮放的分子，
+     改它連大小一起變 —— 那正是 -636 把兩者拆開的理由。
+     **story.js 的 castLayout 早就這樣做了，這一份漏掉** ＝ 同一條規矩兩份實作
+     （鐵律 8 的老毛病）：於是安雅在劇情裡站對位置、在戰鬥對白裡卻沉下去一截。 */
+  const headTop = BTN_TOP + (( C.castTall||176 ) - (fr.standCm||fr.cm)) * pxCm;
   const nH    = el.naturalHeight || 1536;              // 這批立繪都是 1024×1536
   const nW    = el.naturalWidth  || 1024;
   /* 鎖身高。⚠ 分母用**該角色基本立繪**的像素身高，不是這一張差分自己的
@@ -882,7 +899,7 @@ function resolveGate(g){
   if(typeof g.action === 'function') return g;          // 程式裡寫的那幾段，原樣
   const fn = GATE_ACTIONS[g.action];
   if(!fn){ console.info('[tutorial] 不認得的閘門動作：', g.action); return null; }
-  return Object.assign({}, g, { action: fn });
+  return Object.assign({}, g, { action: fn, name: g.action });   // ⚠ 名字留著：熔斷讓位要問它（ver -705）
 }
 function openStep(step){
   cur = step; lineIdx = 0; cutinLine = -1;

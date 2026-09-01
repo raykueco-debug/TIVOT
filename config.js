@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.01-704';
+export const VERSION = 'ver 2026.09.01-705';
 
 export const GAME_CONFIG = {
 
@@ -717,7 +717,8 @@ export const GAME_CONFIG = {
          不要在這裡另填一組數字。`cm` 在角色那一層、expr 只帶 top/bot/fx，所以合起來。 */
       /* ⚠ `cm` 與 `fxShift` 在**角色**那一層、`expr` 只帶 top/bot/fx，所以要合進來
          （`fxShift` ver -645：整個角色往左右挪的手調位移，見 speakers.js）。 */
-      const put = (key, A, v) => { F[key] = Object.assign({ cm:A.cm, fxShift:A.fxShift }, v || A); };
+      /* ⚠ `standCm` 與 `cm` 一樣住在**角色**那一層（ver -705），要一起帶進來。 */
+      const put = (key, A, v) => { F[key] = Object.assign({ cm:A.cm, standCm:A.standCm, fxShift:A.fxShift }, v || A); };
       put('tut_nouvelle',           N);
       put('tut_nouvelle_cringe',    N, N.expr.cringe);
       put('tut_nouvelle_surprise',  N, N.expr.surprise);
@@ -1763,9 +1764,14 @@ export const GAME_CONFIG = {
         ] },
         /* ══ 熔斷前教一次「上滑自爆」（ver -672，Ray：「在熔斷前增加一個教學
            上滑雪鐵龍發動自爆一次把娜塔莉炸死」）══
-           `phplow:20` ＝倒數槽抽到剩兩成 —— 快熔斷了才教，玩家才感覺得到那是最後手段。
+           ⚠⚠ `phplow:1` ＝**血被抽到只剩 1 的那一刻**（ver -705，Ray：「娜塔莉戰讓
+           主角 hp 到 1 的時候再發動 dreambreaker」）。-672 原本是 20%，太早 ——
+           那個時候玩家還沒被逼到底，讀不出「這是最後手段」。
+           ⚠ 到 1 就熔斷，兩件事撞在同一個瞬間 —— 所以熔斷要**讓位**：
+             `tutorial.niBurstPending()` 說還有人在等這一拍時，`saint.niDrain`
+             把血停在 1 不熔斷（同生命歸還攔在滿−1 的作法，鐵律 8）。
            ⚠⚠ 這兩句是**我寫的**（Ray 只寫了「教學上滑雪鐵龍發動自爆」）。 */
-        { trigger:'phplow:20', lines:[
+        { trigger:'phplow:1', lines:[
           { who:'anya', img:'tut_anya_ni', text:'撐不住了……' },
           { who:'anya', img:'tut_anya_ni', text:'一起……結束吧，娜塔莉。' },
         ], gate:{ type:'up', immediate:true, action:'niBurst', tone:'red' } },

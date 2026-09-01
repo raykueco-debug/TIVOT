@@ -278,10 +278,13 @@ function niDrain(amount){
   /* ⚠⚠ **抽到 1 就停，不可以抽死**（ver -671）：Ray 的規格是「直到剩 hp1 熔斷」——
      直接把量交給 `healPlayer` 的話最後一下會把血扣成 0，那是**陣亡**不是熔斷
      （實測 `playerHp` 掉到 0）。所以先夾住這一次能抽多少。 */
+  /* ⚠⚠ **有人在等「自爆」那一拍就讓位**（ver -705）：血停在 1、不熔斷 ——
+     那一段演完（玩家上滑）之後才輪到熔斷。同生命歸還攔在滿−1 的作法（鐵律 8）。 */
+  const holding = () => !!(api.niBurstPending && api.niBurstPending());
   const room = state.playerHp - 1;
-  if(room<=0){ niMeltdown(); return; }
+  if(room<=0){ if(!holding()) niMeltdown(); return; }
   api.drainPlayer(Math.min(Math.abs(amount), room));
-  if(state.playerHp<=1) niMeltdown();
+  if(state.playerHp<=1 && !holding()) niMeltdown();
 }
 /* 熔斷：時間到／血抽乾 → 惡夢化結束，HP 留 1。
    ⚠ 它與聖徒化的 **OBE** 是**對稱的失敗結局**（推滿 ↔ 抽乾），所以照它的作法

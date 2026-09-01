@@ -258,7 +258,17 @@ export const ART = {
   /* ⚠ 取景值於 ver -624 **重量**：`Anya_SI_front` 換過圖（舊的留成
      `XAnya_SI_front.webp`）—— §5「換圖一定要重量取景值」。
      ⚠ `flight/index.html` 的 `PORTRAIT.anya` 是同一組數字，改一邊要改另一邊。 */
-  anya:   { cm:162, eye:34, fx:0.505, top:0, bot:1531,
+  /* ⚠⚠ `cm:146` ＋ `standCm:162`（ver -705，Ray：「安雅立繪太大了，臉比所有人大一圈」）：
+     她的 `top`/`bot` **沒有量錯**（實測與 alpha 邊界完全相符，四個人都是）——
+     問題出在**這張畫的頭身比本來就比別人大**（畫風偏幼，眼睛也畫得大）。
+     鎖身高會把畫風差異原樣端上螢幕，那是 §6.5 寫明的代價。
+     旋鈕就是 -636 那一組：`cm` 管**大小**（146＝縮到 0.90）、`standCm` 管**頭頂高度**
+     （162＝她真正的身高，所以頭還是擺在該在的位置，不會跟著沉下去）。
+     ⚠ 152 是**看渲染結果調出來的**（與蕾娜並排比對：146 過小、162 過大）——
+       這一組值沒有可靠的自動量法（-636 已寫明），要改就再並排看一次。
+     ⚠ **不要去動 `top`/`bot`** —— 那兩個是那張圖的客觀事實。
+     ⚠ 也不要動 `CAST_EYE_MIX`：那是全域旋鈕，會把另外三個人一起改掉。 */
+  anya:   { cm:152, standCm:162, eye:34, fx:0.505, top:0, bot:1531,
            side:'R', alt:null, base:'resources/SI/Anya_SI_front.webp', expr:{
     /* 北方泊地教堂那一幕（ver -624）。逐張量（tools/measure_si.py）。 */
     scared:   { src:'resources/SI/Anya_SI_Scared.webp',   top:0, bot:1511, fx:0.477 },

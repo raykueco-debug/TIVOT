@@ -116,6 +116,7 @@ export function setup(){
     // 教學掛鉤：倒數槽臨界攔截（引導生命歸還）＋結局通知（MB/生命歸還後的收尾台詞）
     onSaintCritical: tutorial.onSaintCritical,
     saintCriticalPending: tutorial.saintCriticalPending,   // 還有人在等 99% 那一拍嗎（ver -619）
+    niBurstPending: tutorial.niBurstPending,               // 還有人在等「自爆」那一拍嗎（ver -705）
     onSaintEnded: tutorial.onSaintEnded,
     // combat 盤面/傷害/UI 原語
     buildGrid, updateBars, startIntervalTimer, resetIntervalDeadline,
