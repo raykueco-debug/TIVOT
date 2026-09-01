@@ -2352,9 +2352,11 @@ export const GAME_CONFIG = {
              （SI：生命歸還的上滑 → `saintCriticalPending`；
               NI：夢境粉碎的上滑 → `niBurstPending`）
            · 沒有人在等就照常發生
-         ⚠ 螢幕上的字仍是 `MELTDOWN`（Ray 自己的用語是「熔斷」）——
-           那是**字面**不是**機制**，要改字就動 `meltdownName`。 */
-      meltdownName: 'MELTDOWN',
+         ⚠ 螢幕上的字是 **DREAM AWAKE**（ver -731，Ray 指定）——「熔斷」是講機制時的
+           說法，玩家看到的是這個字。⚠ 全大寫是跟著同一場的鄰居走
+           （NIGHTMARE INSTALL／MAXIMUM BURST／EXSECUTIŌ 都是大寫）——
+           同一場裡混大小寫會讀成排版失誤。 */
+      meltdownName: 'DREAM AWAKE',
       meltdownCutin: 'ci_anya_obe',
     },
 
