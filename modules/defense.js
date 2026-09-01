@@ -2,10 +2,12 @@
  *  modules/defense.js — 三級防禦（大絕紅點判定系統）
  *  ---------------------------------------------------------------------------
  *  職責：大絕排程與紅點的生成/縮放/判定。依剩餘時間比例 ratio 分三段——
- *    ratio 0.35~1.0 → Defense（傷害減半，武器 defenseDamageScale 縮放）
+ *    ratio 0.35~1.0 → Defense（黃圈）｜0.12~0.35 → Perfect（橘圈）｜<0.12 → Counter（紅圈）
+ *    ⚠ ver -706：每一帶「反不反擊／打多少／命中率／挨多少」全部讀卡上的 `bands`
+ *      （config 的 `weaponBand`，唯一的計算點）。舊的 defenseDamageScale 等欄位已退役。
  *    ratio 0.12~0.35 → Perfect（免傷；散彈改 perfectDamageScale 打反擊傷）
  *    ratio 0~counterWin → Counter（免傷 + weapon 反擊）
- *    Boss 多發（ULT_SHOTS / ULT_GAP_MS）；noPerfectBand 武器（狙擊）取消橘圈。
+ *    Boss 多發（ULT_SHOTS / ULT_GAP_MS）。
  *
  *  狀態擁有者：3.3（threats / threatTick / ultCheckTimer）。大絕大寫參數與門檻
  *    由 enemy 於 setEnemy 寫入 state、本模組只讀。門檻常數讀 config。
@@ -15,7 +17,7 @@
  *    不 import combat/weapon（維持 §2 依賴方向，不製造反向依賴）。
  * ========================================================================== */
 
-import { GAME_CONFIG, asset, sfxGain, weaponOf } from '../config.js';
+import { GAME_CONFIG, asset, sfxGain, weaponOf, weaponBand } from '../config.js';
 import { state, addPerfect, storyMode } from '../state.js';
 import { SFX } from '../audio.js';
 import { L, fmt } from '../i18n.js';   // 多語言（防禦浮動字）
@@ -129,12 +131,11 @@ export function updateThreats(){
     const vis=th.vis||th.el;
     vis.style.width=size+'px'; vis.style.height=size+'px';
     th.el.style.opacity=0.5+0.5*ratio;
-    const _w=weaponOf(state.equippedWeapon, storyMode());
-    const wNP=_w && _w.noPerfectBand;
+    /* ver -706：`noPerfectBand` 退役 —— 三把槍現在**都有真正的橘帶**
+       （狙擊的橘圈是「挨 1/4 傷」，與黃圈的 1/2 不同），所以圈色不再有特例。 */
     let col;
-    if(ratio>=DEF_DEFENSE_MIN)      col='rgba(240,200,60';   // 黃圈：防一半
-    else if(ratio>=DEF_PERFECT_MIN) col= wNP ? 'rgba(240,200,60'   // 狙擊：橘圈被黃圈取代（無 Perfect 帶）
-                                              : 'rgba(240,140,40';  // 橘圈：Perfect 免傷
+    if(ratio>=DEF_DEFENSE_MIN)      col='rgba(240,200,60';   // 黃圈
+    else if(ratio>=DEF_PERFECT_MIN) col='rgba(240,140,40';   // 橘圈
     else                            col='rgba(240,50,50';    // 紅圈：反擊窗
     if(ratio<DEF_DEFENSE_MIN) hot=true;   // 與圈的分帶同一條門檻；狙擊圈色不同但門檻同一個
     vis.style.background=`radial-gradient(circle,${col},.75),${col},.3) 60%,transparent 72%)`;
@@ -276,28 +277,26 @@ export function resolveThreat(th){
                                              Date.now() + state.enemyCounterStun*1000);
     api.weaponCounter();
     staggerOnCounter();
-  }else if(!(w && w.noPerfectBand) && ratio < DEF_DEFENSE_MIN){
+  }else if(ratio < DEF_DEFENSE_MIN){
     // === Perfect Defense ===（金色微閃）
     grade='perfect';
     addPerfect();
     flashDefense('gold');
-    /* 橘圈改打傷害的武器（散彈類）。⚠ 卡上寫的是**絕對值**（「橘圈 6 發 ×4」），
-       存成 `perfectDmgPerHit`；倍率是**這裡**現算的唯一一處（鐵律 7：資料存絕對值、
-       換算只有一個地方）。舊欄位 `perfectDamageScale` 仍吃，但新武器一律寫絕對值。 */
-    const perfScale = (w && w.perfectDmgPerHit!=null && w.dmgPerHit)
-      ? (w.perfectDmgPerHit / w.dmgPerHit)
-      : (w && w.perfectDamageScale);
-    if(perfScale){
-      // 散彈類：Perfect 檔以傷害取代免傷（打弱化反擊，不觸發 atkBuff、不免傷）。
-      //   音效由 weaponCounter 的武器 blast SE 出聲（完防與反擊都會觸發散彈音效），此處不再疊合成重擊音。
-      api.floatDmg(L.battle.perfect,'50%','40%',true);
-      api.weaponCounter(perfScale);
+    /* ══ 橘圈（ver -706 改寫）══ 行為全部來自卡上的 `bands.perfect`（鐵律 1）：
+       會反擊就開火（帶這一帶的傷害與命中率），不反擊就照 `take` 決定挨多少。
+       ⚠ 反擊那一支的音由 `weaponCounter` 的武器 SE 出聲，這裡不再疊合成重擊音。 */
+    const bp = weaponBand(w, 'perfect');
+    api.floatDmg(L.battle.perfect,'50%','40%',true);
+    if(bp.counter){
+      api.weaponCounter(bp.scale, bp.hit);
       staggerOnCounter();
-    }else{
-      // 一般武器（如重機槍）：完全免傷（狙擊 noPerfectBand=true 時此帶消失，落入下方 Defense）。
-      //   完美防禦音＝weapon 的 Guard_SE（散彈完防走自己的槍聲，不到這裡）。
-      SFX.play(asset('se_guard'), sfxGain('se_guard'));
-      api.floatDmg(L.battle.perfect,'50%','40%',true);
+    }else if(bp.take<=0){
+      SFX.play(asset('se_guard'), sfxGain('se_guard'));   // 完美防禦音（免傷那一支）
+    }
+    if(bp.take>0){
+      const dmg=Math.max(1, Math.round(effUltDamage()*bp.take));
+      api.enemyAttack(dmg, 'block');
+      api.floatDmg(fmt(L.battle.blockDmg,{n:dmg}),'50%','46%',false);
     }
   }else{
     // === Defense（格擋＝不完美防禦，仍挨大絕）===（白色微閃）。攻擊音由下方 enemyAttack('ult') 出敵大絕音。
@@ -307,13 +306,17 @@ export function resolveThreat(th){
       api.enemyAttack(0, 'block', state.playerMax/SAINT_BLOCK_DIVISOR);   // 'block'＝擋下一半（ver -600 評價用）
       api.floatDmg(L.battle.block,'50%','42%',false);
     }else{
-      const defScale=(w && w.defenseDamageScale!=null) ? w.defenseDamageScale : 0.5;
-      if(defScale<=0){
-        api.floatDmg(L.battle.block,'50%','42%',false);        // 完全免傷（若有武器設 0）
-      }else{
-        const dmg=Math.max(1, Math.round(effUltDamage()*defScale));   // 教學：2 減半 → 1
+      /* ══ 黃圈（ver -706 改寫）══ 同橘圈，行為讀卡上的 `bands.block`。 */
+      const bb = weaponBand(w, 'block');
+      api.floatDmg(L.battle.block,'50%','42%',false);
+      if(bb.counter){
+        api.weaponCounter(bb.scale, bb.hit);
+        staggerOnCounter();
+      }
+      if(bb.take>0){
+        const dmg=Math.max(1, Math.round(effUltDamage()*bb.take));   // 教學：2 減半 → 1
         api.enemyAttack(dmg, 'block');                   // 依武器倍率受傷（'block'＝擋下一半，ver -600）
-        api.floatDmg(fmt(L.battle.blockDmg,{n:dmg}),'50%','42%',false);
+        api.floatDmg(fmt(L.battle.blockDmg,{n:dmg}),'50%','46%',false);
       }
       if(api.onThreatEarly) api.onThreatEarly();   // 教學「太早防禦」插話（教學外/聖徒化為 no-op）
     }

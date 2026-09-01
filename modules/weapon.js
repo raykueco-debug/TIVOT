@@ -73,11 +73,20 @@ export function init(a){ api = a; }
      （不能只掛在函式開頭：那時還沒判定會不會開火。）
    ⚠ 通知誰由 combat 注入（`api.onCounter`）：weapon 不反向 import partner。 */
 function onCounterFired(){ if(api.onCounter) api.onCounter(); }
-export function weaponCounter(dmgScale){
+/* `hitRate`（ver -706，Ray：「機槍黃圈命中率只有 30%，擊發數不變，沒中的跳 miss，
+   橘圈 70%，紅圈 100%。**但不論如何第一發一定不會 miss**」）。
+   ⚠ 第一發保底不是體貼，是必要的：8 發 30% 全 miss 的機率有 5.7% ——
+     那一次玩家會以為遊戲壞了，而不是「運氣不好」。
+   ⚠ 命中率由**卡上的 `bands[帶].hit`** 決定，呼叫端只負責傳進來（鐵律 1＋7）。 */
+export function weaponCounter(dmgScale, hitRate){
   /* ⚠ 本篇與試玩版是**兩套數值**（ver -378）——一律走 `weaponOf`，不要直接查 WEAPONS。 */
   const w = weaponOf(state.equippedWeapon, storyMode());
   if(!w) return;
   const scale = (dmgScale==null) ? 1 : dmgScale;
+  const hitR  = (hitRate==null) ? 1 : Math.max(0, Math.min(1, hitRate));
+  /* 第 k 發中不中。⚠ `k===0` 一定中（見上）。 */
+  const hits = (k)=> (hitR>=1 || k===0) ? true : (Math.random() < hitR);
+  const MISS = (L.battle && L.battle.miss) || 'MISS';
   // 反擊武器 SE：反擊（Counter）與完美防禦（散彈 Perfect 反擊）都會出聲——散彈 blast 兩路徑皆觸發。
   //   機槍＝逐發播（搭搭搭搭搭連續感）、散彈＝一發、狙擊＝一發。散彈完防由此 SE 出聲，defense 端不再疊合成重擊。
   /* ⚠ 「這一場」可以覆寫武器音（ver -423，Ray：船艦戰的機槍／霰彈／步槍各換一支）——
@@ -113,7 +122,7 @@ export function weaponCounter(dmgScale){
     // 狙擊：單發，跳一個較大的數字；暴擊則轉紅並前綴「暴擊」
     const base=Math.max(1, Math.round(w.hits*w.dmgPerHit*scale));
     const h=critHit(base);
-    playSe();                      // 狙擊：一發
+    playSe();                      // 狙擊：一發（單發武器的第一發必中，所以不會 miss）
     hap.shot();
     api.enemyDamage(h.dmg, true, true, 'counter');   // 靜默扣血（含 overkill/擊殺判定）
     addCounter(h.dmg); onCounterFired();
@@ -129,6 +138,7 @@ export function weaponCounter(dmgScale){
     const bx=40+Math.random()*20;
     let sum=0;
     for(let k=0;k<w.hits;k++){
+      if(!hits(k)){ api.floatDmg(MISS, (bx-6+k*3)+'%', (34+(k%2)*6)+'%', false); continue; }
       const h=critHit(base); sum+=h.dmg;
       api.enemyDamage(h.dmg, true, true, 'counter');
       api.floatDmg((h.crit?L.battle.crit:'')+h.dmg, (bx-6+k*3)+'%', (34+(k%2)*6)+'%', true);
@@ -139,8 +149,14 @@ export function weaponCounter(dmgScale){
   }
   // 預設（重機槍等）：逐發跳出（每 90ms 一發），每發各自獨立暴擊
   const base=Math.max(1, Math.round(w.dmgPerHit*scale));
-  const rolls=[]; let sum=0;                   // 先擲定全彈（全彈必中，此期間 over 不會被觸發）→ 一次記總傷
-  for(let k=0;k<w.hits;k++){ const h=critHit(base); rolls.push(h); sum+=h.dmg; }
+  /* 先擲定全彈（此期間 over 不會被觸發）→ 一次記總傷。
+     ⚠ ver -706：命中與否也在**這裡**一起擲定 —— 逐發現擲的話，中途若被別的路徑
+       打斷，已記的總傷與實際打出去的發數會對不起來。 */
+  const rolls=[]; let sum=0;
+  for(let k=0;k<w.hits;k++){
+    if(!hits(k)){ rolls.push(null); continue; }
+    const h=critHit(base); rolls.push(h); sum+=h.dmg;
+  }
   addCounter(sum); onCounterFired();
   /* 連射間隔：預設 90ms；場次可覆寫（ver -476，Ray：「船戰的速射砲連射速度
      調降50%」→ flight 船戰卡 counterGapMs:180）。同 weaponSound 的機制：
@@ -158,9 +174,13 @@ export function weaponCounter(dmgScale){
   const fire=()=>{
     if(state.over||i>=w.hits){ flushPending(); return; }
     const h=rolls[i];
-    playSe();                      // 機槍：每 hit 播一次 → 搭搭搭搭搭
-    api.enemyDamage(h.dmg, true, true, 'counter'); // 靜默扣血 → 由自訂 float 控制「暴擊」字樣（僅暴擊發才顯示）
-    api.floatDmg((h.crit?L.battle.crit:'')+h.dmg, (30+Math.random()*40)+'%','35%', true);
+    playSe();                      // 機槍：每 hit 播一次 → 搭搭搭搭搭（miss 也有槍聲，是打空不是沒開槍）
+    if(h){
+      api.enemyDamage(h.dmg, true, true, 'counter'); // 靜默扣血 → 由自訂 float 控制「暴擊」字樣（僅暴擊發才顯示）
+      api.floatDmg((h.crit?L.battle.crit:'')+h.dmg, (30+Math.random()*40)+'%','35%', true);
+    }else{
+      api.floatDmg(MISS, (30+Math.random()*40)+'%','35%', false);
+    }
     i++;
     if(i<w.hits) setTimeout(fire, gap);
     else flushPending();                       // 打完最後一發 → 排隊中的切換生效

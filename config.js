@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.01-705';
+export const VERSION = 'ver 2026.09.01-706';
 
 export const GAME_CONFIG = {
 
@@ -32,6 +32,9 @@ export const GAME_CONFIG = {
    *  dmgPerHit   = 每發傷害（反擊總傷＝hits×dmgPerHit；重機槍 48 為基準）
    *  vfx         = 傷害數字視覺：'burst'＝同區塊同時跳多個數字（散彈）、
    *                'single'＝單發較大紅字（狙擊）、留 null＝預設逐發跳
+   *  ⚠⚠ ver -706：三帶的行為改由卡上的 `bands` 表決定（見 weaponBand）。
+   *     以下 defenseDamageScale／noPerfectBand／perfectDmgPerHit 的說明是**歷史**，
+   *     六張卡都已改寫，程式端也沒有人再讀它們。
    *  defenseDamageScale = Defense（格擋）段受傷倍率（相對大絕 ULT_DAMAGE）：
    *                      0.5＝半傷（預設，重機槍等）、0.25＝四分之一傷（散彈的保命特性）、
    *                      0＝完全免傷。留 null 視為 0.5。
@@ -47,6 +50,7 @@ export const GAME_CONFIG = {
   /* ══ 副武器（反擊武器）══
      ⚠ 欄位對照 Ray 的**武器卡**（ver -377 起）：
          分類 → `cat`（比較數值時用它找同類）
+         ⚠ ver -706 起三帶一律寫 `bands`（見檔尾的 `weaponBand`），下面兩行是歷史。
          黃圈 → `defenseDamageScale`（1＝無減傷、0.5＝減傷 50%、0.25＝減傷 75%）
          橘圈 → `noPerfectBand:true`＝沒有完防帶；否則免傷，或 `perfectDmgPerHit`＝改打傷害
          紅圈 → `hits` × `dmgPerHit`
@@ -68,23 +72,28 @@ export const GAME_CONFIG = {
     // B1901 陣地機槍「絞肉機」：基準武器（反擊總傷 48），Perfect 帶正常、Defense 吃半傷（0.5）
     MG_Squall:     { name:'B1901陣地機槍「絞肉機」', shortName:'絞肉機', cat:'重機槍',
                      owned:true, critRate:0.20, maxMod:5, value:4000,
-                     counterWin:0.12, hits:8, dmgPerHit:6,  vfx:null,     defenseDamageScale:0.5,  noPerfectBand:false, image:'weapon_mg_squall',     sound:'se_mg_squall',
+                     counterWin:0.12, hits:8, dmgPerHit:6,  vfx:null,     image:'weapon_mg_squall',     sound:'se_mg_squall',
+                     bands:{ block:{ counter:true, hit:0.30, take:0.5 }, perfect:{ counter:true, hit:0.70 } },
                      flavor:'攻守均衡的可靠選擇',
                      /* 本篇用的數值（ver -378，Ray 的「初始重機槍」卡）：紅圈 8發×3、爆擊 10%。 */
                      story:{ hits:8, dmgPerHit:3, critRate:0.10 } },
-    // 雙管霰彈槍「鐵拳」：Counter 6發×4=24；Perfect 檔改打 6發×2=12（perfectDmgPerHit=2，傷害取代免傷）；Defense 檔吃 1/4 傷（0.25＝減傷75%）
+    // 雙管霰彈槍「鐵拳」（ver -706 改）：**三帶都反擊、都免傷**，傷害遞增 ——
+    //   黃圈每發打 1、橘圈半額、紅圈全額。它是保命槍：完全不會挨打，代價是傷害低。
     Shotgun_Blast: { name:'雙管霰彈槍「鐵拳」', shortName:'鐵拳', cat:'霰彈槍',
                      owned:true, critRate:0.20, maxMod:5, value:3000,
-                     counterWin:0.20, hits:6, dmgPerHit:4,  vfx:'burst',  defenseDamageScale:0.25, noPerfectBand:false, perfectDmgPerHit:2, image:'weapon_shotgun_blast', sound:'se_shotgun_blast',
+                     counterWin:0.20, hits:6, dmgPerHit:4,  vfx:'burst',  image:'weapon_shotgun_blast', sound:'se_shotgun_blast',
+                     bands:{ block:{ counter:true, dmgPerHit:1 }, perfect:{ counter:true, dmgScale:0.5 } },
                      flavor:'保命的穩健之選',
                      /* 本篇用的數值（ver -378，Ray 的「初始霰彈槍」卡）：黃圈 減傷50%、紅圈 6發×3。
                         ⚠ 黃圈由 75% **降**到 50%（試玩版那把仍是 75%）。 */
-                     story:{ hits:6, dmgPerHit:3, defenseDamageScale:0.5, perfectDmgPerHit:2 } },
+                     story:{ hits:6, dmgPerHit:3 } },
     // 85 式步槍「嗜心者」：反擊總傷 72（1.5 倍）、單發大紅字、無 Perfect 帶；
-    //   defenseDamageScale 1＝黃圈也無減傷（與文案一致：賭上一切，防禦全靠反擊窗）
+    //   ver -706：黃圈挨 1/2、橘圈挨 1/4、紅圈才反擊 —— 三把裡唯一「點了還是會挨打」的，
+    //   但**越接近完美挨得越少**（賭上一切，回報全在反擊窗）。
     Sniper_Falcon: { name:'85式萊福槍「嗜心者」', shortName:'嗜心者', cat:'萊福槍',
                      owned:true, critRate:0.20, maxMod:5, value:5000,
-                     counterWin:0.06, hits:1, dmgPerHit:72, vfx:'single', defenseDamageScale:1,    noPerfectBand:true,  image:'weapon_sniper_falcon', sound:'se_sniper_falcon',
+                     counterWin:0.06, hits:1, dmgPerHit:72, vfx:'single', image:'weapon_sniper_falcon', sound:'se_sniper_falcon',
+                     bands:{ block:{ take:0.5 }, perfect:{ take:0.25 } },
                      flavor:'賭上一切的單發重擊',
                      /* 本篇用的數值（ver -378，Ray 的「初始萊福槍」卡）：紅圈 1發56。 */
                      story:{ hits:1, dmgPerHit:56 } },
@@ -94,17 +103,20 @@ export const GAME_CONFIG = {
          素材到位就只改這兩欄。 */
     Shotgun_Dragon:{ name:'短板霰彈槍「龍息」', shortName:'龍息', cat:'霰彈槍',
                      critRate:0.20, maxMod:5, price:3000,
-                     counterWin:0.20, hits:6, dmgPerHit:6,  vfx:'burst',  defenseDamageScale:0.5,  noPerfectBand:false, perfectDmgPerHit:4, image:'weapon_shotgun_blast', sound:'se_shotgun_blast',
+                     counterWin:0.20, hits:6, dmgPerHit:6,  vfx:'burst',  image:'weapon_shotgun_blast', sound:'se_shotgun_blast',
+                     bands:{ block:{ counter:true, dmgPerHit:1 }, perfect:{ counter:true, dmgScale:0.5 } },
                      flavor:'短管、近身、火力壓制' },
     /* ⚠ 「絞肉機 改」的爆擊率是 **10%**（比原版 20% 低）—— 卡上就是這麼寫的。
        數值面它與原版只差這一項，其餘完全相同。要調就跟 Ray 確認，不要自己改順。 */
     MG_Squall_Kai: { name:'B1901陣地機槍「絞肉機 改」', shortName:'絞肉機改', cat:'重機槍',
                      critRate:0.10, maxMod:5, price:4000,
-                     counterWin:0.12, hits:8, dmgPerHit:6,  vfx:null,     defenseDamageScale:0.5,  noPerfectBand:false, image:'weapon_mg_squall',     sound:'se_mg_squall',
+                     counterWin:0.12, hits:8, dmgPerHit:6,  vfx:null,     image:'weapon_mg_squall',     sound:'se_mg_squall',
+                     bands:{ block:{ counter:true, hit:0.30, take:0.5 }, perfect:{ counter:true, hit:0.70 } },
                      flavor:'原廠改良型' },
     Rifle_Shahin:  { name:'Shahin栓動萊福槍「遊隼」', shortName:'遊隼', cat:'萊福槍',
                      critRate:0.20, maxMod:5, price:5000,
-                     counterWin:0.06, hits:1, dmgPerHit:72, vfx:'single', defenseDamageScale:1,    noPerfectBand:true,  image:'weapon_sniper_falcon', sound:'se_sniper_falcon',
+                     counterWin:0.06, hits:1, dmgPerHit:72, vfx:'single', image:'weapon_sniper_falcon', sound:'se_sniper_falcon',
+                     bands:{ block:{ take:0.5 }, perfect:{ take:0.25 } },
                      flavor:'栓動、遠距、一擊定生死' },
     // 新武器：複製一段，鑰匙用「類型_武器名」（同圖檔基底名），image 指對應 ASSETS 鑰匙。
   },
@@ -2569,16 +2581,45 @@ export function weaponOf(key, story){
   if(!w) return null;
   return (story && w.story) ? Object.assign({}, w, w.story) : w;
 }
+/* ══⚠⚠ 三級防禦逐帶的行為（ver -706，Ray 交規格）══════════════════════════
+   Ray：「遊戲的爽感要大於難度，我把難度放在角色攻略與解鎖劇情還有升級素材」
+
+   一張表講完三帶，**卡上寫、這裡讀，只有這一個計算點**（鐵律 1＋7）：
+     `bands.block`（黃）／`bands.perfect`（橘）／`bands.counter`（紅，可省略）
+   每一帶的欄位：
+     `counter:true` 這一帶也反擊（紅圈永遠反擊，不必寫）
+     `dmgPerHit:N`  這一帶的反擊**每發絕對傷害**（卡上寫幾就存幾，同敵人卡的原則）
+     `dmgScale:x`   或用比例（沒寫 `dmgPerHit` 時才看）；兩個都沒寫＝全額
+     `hit:0..1`     命中率（沒寫＝1）。⚠ **第一發一定命中**，見 weapon.weaponCounter
+     `take:0..1`    這一帶挨多少大絕傷（沒寫＝0 免傷；紅圈永遠 0）
+   ⚠ 舊欄位 `defenseDamageScale`／`perfectDmgPerHit`／`noPerfectBand` **已退役**
+     —— 六張卡全部改寫成 `bands`，不留第二套（鐵律 7）。
+   ⚠ 本篇與試玩版**行為相同**（Ray：「試玩版跟著改」），所以 `bands` 只寫在卡本體；
+     `story:{}` 只覆寫數值（hits／dmgPerHit）。 */
+export function weaponBand(w, grade){
+  const b = (w && w.bands && w.bands[grade]) || {};
+  const full = (w && w.dmgPerHit) || 0;
+  const dmgPerHit = (b.dmgPerHit!=null) ? b.dmgPerHit
+                  : (b.dmgScale!=null ? Math.max(1, Math.round(full*b.dmgScale)) : full);
+  return {
+    counter: (grade==='counter') ? true : !!b.counter,
+    dmgPerHit,
+    scale: full ? (dmgPerHit/full) : 1,
+    hit:  (b.hit!=null) ? b.hit : 1,
+    take: (grade==='counter') ? 0 : ((b.take!=null) ? b.take : 0),
+  };
+}
 export function weaponStatRows(key, story){
   const w=weaponOf(key, story); if(!w) return [];
-  const def = (w.defenseDamageScale==null) ? 0.5 : w.defenseDamageScale;
-  const yellow = def>=1 ? '無減傷效果' : (def<=0 ? '完全防禦' : '減傷'+Math.round((1-def)*100)+'%');
   const shots = n => (w.hits>1 ? w.hits+'發×'+n+'傷害' : '單發'+n+'傷害');
-  const orange = w.noPerfectBand ? '無減傷效果'
-    : (w.perfectDmgPerHit!=null ? shots(w.perfectDmgPerHit)
-      : (w.perfectDamageScale ? shots(Math.round(w.dmgPerHit*w.perfectDamageScale)) : '完全防禦'));
+  /* 一帶一句：會反擊就報反擊的份量（帶命中率），不反擊就報減傷。 */
+  const line = (g)=>{
+    const b=weaponBand(w,g);
+    if(b.counter) return shots(b.dmgPerHit) + (b.hit<1 ? '（命中'+Math.round(b.hit*100)+'%）' : '');
+    return b.take>=1 ? '無減傷效果' : (b.take<=0 ? '完全防禦' : '減傷'+Math.round((1-b.take)*100)+'%');
+  };
   const crit = (w.critRate!=null ? w.critRate : GAME_CONFIG.tuning.counterCritRate);
-  const rows=[['分類', w.cat||'—'], ['黃圈', yellow], ['橘圈', orange],
+  const rows=[['分類', w.cat||'—'], ['黃圈', line('block')], ['橘圈', line('perfect')],
               ['反擊', shots(w.dmgPerHit)], ['暴擊率', Math.round(crit*100)+'%']];
   if(w.maxMod) rows.push(['最大改裝等級', String(w.maxMod)]);   // 卡上就寫「5」，不加單位
   return rows;
