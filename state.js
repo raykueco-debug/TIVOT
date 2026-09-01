@@ -141,10 +141,14 @@ export const state = {
   niTotalMs: 0,      // 這一次惡夢化總共多久（殘格數 × NI_SEC_PER_CELL）
   enemyAtkSuppressUntil: 0,
 
-  /* ── 3.6 評價/流程（擁有者：inspector；counterCount/Damage 允許 weapon 累加） ── */
-  counterCount: 0,
+  /* ── 3.6 評價/流程（擁有者：inspector；counterFired/Damage 允許 weapon 累加） ── */
+  /* ⚠⚠ **「反擊開火了」不等於「完美反擊」**（ver -721/-722，Ray：「只有紅圈叫完美
+     反擊，其他不是，這樣分就不會有問題」）——-706 之後黃圈與橘圈也會開火，
+     所以這一支從 `counterCount` 改名成 `counterFired`：名字要說實話，
+     不然下一個人又會拿它當「完美反擊」用（已經害過三次）。 */
+  counterFired: 0,
   counterDamage: 0,
-  perfectCounters: 0,   // 完美反擊（紅圈）次數（ver -721；counterCount 含黃橘）
+  perfectCounters: 0,   // 完美反擊（紅圈）次數（ver -721；counterFired 含黃橘）
   counterSec: 0,        // 完美反擊折抵的秒數合計（武器卡的 counterSec，ver -721）
   perfectCount: 0,
   sawExecution: false,
@@ -314,11 +318,11 @@ export function markMaxBurst(){
 /* weapon.js 專用：反擊成功時累加反擊計數/傷害（3.6 的跨擁有者計數例外）。
  * inspector 結算時只讀這兩個值。一次反擊事件呼叫一次（+1 次、+dmg 傷害）。 */
 export function addCounter(dmg){
-  state.counterCount += 1;
+  state.counterFired += 1;
   state.counterDamage += dmg;
 }
 /* ══ 完美反擊（紅圈）專用的計數與折秒（ver -721）══════════════════════════
-   ⚠ 與上面那一支是**兩件事**：`counterCount`／`counterDamage` 算的是「反擊開火了」
+   ⚠ 與上面那一支是**兩件事**：`counterFired`／`counterDamage` 算的是「反擊開火了」
      （-706 之後黃橘圈也會開火，那是對的 —— 傷害本來就要記帳）；
      這一支算的是「**完美**反擊」，只有紅圈。評價折秒讀這一支。
    ⚠ 秒數由**武器卡**決定（`counterSec`），所以船艦戰自動一致 ——

@@ -1455,7 +1455,7 @@ function win(){
     accuracy: totalTaps>0 ? state.correctTaps/totalTaps : 1,   // 0~1 比率（非百分比）
     maxCombo: state.maxCombo,
     /* ver -721：完美反擊＝**紅圈**那一帶（-706 之後黃橘也會開火，
-       `counterCount` 已經不等於「完美」了）。折秒另存，見 state.addPerfectCounter。 */
+       `counterFired` 已經不等於「完美」了）。折秒另存，見 state.addPerfectCounter。 */
     perfectCounter: state.perfectCounters,
     counterSec: state.counterSec,                              // 完美反擊折抵的秒數（武器卡 counterSec）
     counterDamage: state.counterDamage,                        // 反擊累計總傷（結算顯示用）
@@ -1578,7 +1578,7 @@ export function startGame(){
   weapon.resetWeaponSwitch();   // 副武器切換鈕（ver -410）：排隊中的切換不可以跨場留著
   partner.reset(); // 搭檔被動重置（高裝藥彈 10 秒計時器清除、上膛旗標歸位）
   state.overkill=0; state.killTime=0; state.transitioning=false;
-  state.counterCount=0; state.counterDamage=0; state.perfectCount=0; state.sawExecution=false; state.sawMaxBurst=false;
+  state.counterFired=0; state.counterDamage=0; state.perfectCount=0; state.sawExecution=false; state.sawMaxBurst=false;
   state.perfectCounters=0; state.counterSec=0;   // 完美反擊（紅圈）的次數與折秒（ver -721）
   state.maxCombo=0; state.hitsTaken=0; state.correctTaps=0; state.wrongTaps=0; state.runOverkill=0; state.perfectBoards=0;   // 評價統計歸零
   state.penUlt=0; state.penBlock=0; state.penDelay=0;   // 失誤計數歸零（ver -600 的新評價）
@@ -1726,7 +1726,7 @@ export function startIntruderFight(){
   weapon.reset();
   partner.reset();
   state.overkill=0; state.killTime=0; state.transitioning=false;
-  state.counterCount=0; state.counterDamage=0; state.perfectCount=0; state.sawExecution=false; state.sawMaxBurst=false;
+  state.counterFired=0; state.counterDamage=0; state.perfectCount=0; state.sawExecution=false; state.sawMaxBurst=false;
   state.perfectCounters=0; state.counterSec=0;   // 完美反擊（紅圈）的次數與折秒（ver -721）
   state.maxCombo=0; state.hitsTaken=0; state.correctTaps=0; state.wrongTaps=0; state.runOverkill=0; state.perfectBoards=0;   // 評價統計歸零
   state.penUlt=0; state.penBlock=0; state.penDelay=0;   // 失誤計數歸零（ver -600 的新評價）

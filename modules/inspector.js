@@ -6,7 +6,7 @@
  *    （一般/Boss 兩組 localStorage）、S 解鎖與「再度執槍/迎擊」分流。
  *
  *  狀態擁有者：3.6 評價/流程（sRankUnlocked / resultMode / currentFavor）。
- *    跨擁有者累加值只讀不反寫：counterCount/counterDamage（weapon 經 addCounter）、
+ *    跨擁有者累加值只讀不反寫：counterFired/counterDamage（weapon 經 addCounter）、
  *    perfectCount（defense 經 addPerfect）、sawExecution（saint 經 markExecution）、
  *    flawlessRun（combat）。currentFavor 本輪固定 0（養成層未接），只讀。
  *
@@ -69,7 +69,7 @@ function pickByThreshold(map, current, fallback){
  *              perfectCounter；⚠ `isBoss` 自 ver -602 起**不參與評價**（難度用 HP 表達）。
  *  （以下是舊百分制留下的欄位說明，已退役）：accuracy(0~1)、maxCombo、
  *             perfectCounter、overkill、hitsTaken。
- *  完美反擊 = Counter 反擊次數(counterCount)；反擊總傷 = counterDamage（皆由 combat.win 組裝進 stats）。
+ *  完美反擊 = Counter 反擊次數(counterFired)；反擊總傷 = counterDamage（皆由 combat.win 組裝進 stats）。
  * ========================================================================== */
 const clamp01 = x => (x<0 ? 0 : (x>1 ? 1 : x));
 
@@ -268,7 +268,7 @@ function pickInspectorDialogue(insp, rankKey, boss){
 // 戰敗結算用：Counter（次數+累計傷害）、完美防禦（次數）
 function combatStatsRows(){
   let r='';
-  r += `<div class="row"><span>${L.result.rowCounter}</span><b>${fmt(L.result.timesUnit,{n:state.counterCount})} · ${fmt(L.result.dmgUnit,{n:state.counterDamage})}</b></div>`;
+  r += `<div class="row"><span>${L.result.rowCounter}</span><b>${fmt(L.result.timesUnit,{n:state.counterFired})} · ${fmt(L.result.dmgUnit,{n:state.counterDamage})}</b></div>`;
   r += `<div class="row"><span>${L.result.rowPerfect}</span><b>${fmt(L.result.timesUnit,{n:state.perfectCount})}</b></div>`;
   return r;
 }
