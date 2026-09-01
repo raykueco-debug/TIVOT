@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.01-708';
+export const VERSION = 'ver 2026.09.01-709';
 
 export const GAME_CONFIG = {
 
@@ -73,7 +73,7 @@ export const GAME_CONFIG = {
     MG_Squall:     { name:'B1901陣地機槍「絞肉機」', shortName:'絞肉機', cat:'重機槍',
                      owned:true, critRate:0.20, maxMod:5, value:4000,
                      counterWin:0.12, hits:8, dmgPerHit:6,  vfx:null,     image:'weapon_mg_squall',     sound:'se_mg_squall',
-                     bands:{ block:{ counter:true, hit:0.30, take:0.5 }, perfect:{ counter:true, hit:0.70 } },
+                     bands:{ block:{ counter:true, hit:0.30 }, perfect:{ counter:true, hit:0.70 } },
                      flavor:'攻守均衡的可靠選擇',
                      /* 本篇用的數值（ver -378，Ray 的「初始重機槍」卡）：紅圈 8發×3、爆擊 10%。 */
                      story:{ hits:8, dmgPerHit:3, critRate:0.10 } },
@@ -111,7 +111,7 @@ export const GAME_CONFIG = {
     MG_Squall_Kai: { name:'B1901陣地機槍「絞肉機 改」', shortName:'絞肉機改', cat:'重機槍',
                      critRate:0.10, maxMod:5, price:4000,
                      counterWin:0.12, hits:8, dmgPerHit:6,  vfx:null,     image:'weapon_mg_squall',     sound:'se_mg_squall',
-                     bands:{ block:{ counter:true, hit:0.30, take:0.5 }, perfect:{ counter:true, hit:0.70 } },
+                     bands:{ block:{ counter:true, hit:0.30 }, perfect:{ counter:true, hit:0.70 } },
                      flavor:'原廠改良型' },
     Rifle_Shahin:  { name:'Shahin栓動萊福槍「遊隼」', shortName:'遊隼', cat:'萊福槍',
                      critRate:0.20, maxMod:5, price:5000,
@@ -2627,6 +2627,12 @@ export function weaponOf(key, story){
                     抽到 0 跳的是**數字 0** —— 那是「打到了但只有一點」，讀感不同。
      `hit:0..1`     命中率（沒寫＝1）。⚠ **第一發一定命中**，見 weapon.weaponCounter
      `take:0..1`    這一帶挨多少大絕傷（沒寫＝0 免傷；紅圈永遠 0）
+   ⚠⚠ **會反擊的帶就不挨傷**（ver -709，Ray：「現在點黃圈還是受擊」）——
+     -706 我在機槍的黃圈留了 `take:0.5`（沿用舊的減傷 50%），那是我自己加的，
+     Ray 的規格只講了命中率。整套的讀法是：**擋下來就是擋下來了**，
+     「點了還是會挨打」是**狙擊獨有**的性格（黃 1/2、橘 1/4），不是通則。
+   ⚠ 欄位保留（日後真的要一把「能反擊但擋不乾淨」的槍還是寫得出來），
+     只是現在沒有人用它 —— 除了狙擊那兩帶。
    ⚠ 舊欄位 `defenseDamageScale`／`perfectDmgPerHit`／`noPerfectBand` **已退役**
      —— 六張卡全部改寫成 `bands`，不留第二套（鐵律 7）。
    ⚠ 本篇與試玩版**行為相同**（Ray：「試玩版跟著改」），所以 `bands` 只寫在卡本體；
