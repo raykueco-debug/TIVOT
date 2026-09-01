@@ -277,11 +277,15 @@ function finishStoryRun(){
 }
 // defense.spawnThreat 生成紅點時經注入呼叫 → 觸發 'threat' 步驟（紅點凍結於畫面講解）
 export function onThreatSpawned(){ fire('threat'); }
-// defense.resolveThreat 點掉紅點 → 'defended' 步驟（grade='counter'|'perfect'|'block'）。
-//   反擊教學階段（defended 未過）點太早（block）不算過關：監察官已插話「太早」（onEarlyBlock），
-//   收段後重放一次反擊圈（見 onStepClosed 'earlyRetry'），直到點出 Perfect / Counter 才進「防得好」段。
+/* defense.resolveThreat 點掉紅點 → 'defended' 步驟（grade='counter'|'perfect'|'block'）。
+   ⚠⚠ **黃圈也算過關**（ver -728，Ray：「黃圈點了以後教學沒有繼續跑下去，一定要
+     橘圈才跑，修正」）—— 舊規則是「點太早不算，重放一次紅點直到點出 Perfect／Counter」，
+     那是 -706 之前的世界：那時黃圈**不反擊而且會挨半傷**，所以「太早」真的是失敗。
+     -706/-709 之後黃圈會反擊、也不挨傷，它已經不是失敗了 ——
+     再擋在這裡只會讓玩家點對了卻覺得教學壞掉。
+   ⚠ 這是同一族的第四個連鎖（前三個：黃圈還是受擊／明晰之夢亂發動／完美反擊灌水）：
+     **凡是把黃圈當成失敗的舊邏輯，都要重新問一次。** */
 export function onThreatResolved(grade){
-  if(state.tutorialActive && !defendedDone && grade==='block') return;
   defendedDone = true;    // 防禦成功：延時懲罰恢復、罵人停用（「第二盤結束前不再跳任何提示」）
   fire('defended');
 }
@@ -310,17 +314,12 @@ export function onMistake(kind){
 //   不受 defended 停用限制（每次太早都提醒）；聖徒化期間不插（格擋是推進機制、節奏緊湊）。
 export function onEarlyBlock(){
   if(!state.tutorialActive || state.tutorialDialog || state.over || state.saintMode || deadHandled) return;
+  /* ⚠⚠ **不再重放紅點**（ver -728）：黃圈現在算過關（見 `onThreatResolved`），
+     `defended` 那一段會照常接上 —— 這裡若還重放一次，玩家會多吃一顆莫名其妙的紅點。
+     ⚠ 這一支現在只剩「插一句話」的用途，而那句話 Ray 已經拿掉了（池是空的）——
+       所以實際上是 no-op。留著是因為日後要再插話時就接回這裡。 */
   const pool = scoldCfg().early;
-  /* ⚠⚠ **沒有台詞就直接重放，不要 return**（ver -728，Ray：「不要有太早了看清楚一點，
-     拿掉」）—— 重放反擊圈本來掛在那一段的**收尾**上（`onStepClosed` 的 earlyRetry）。
-     台詞清空之後若照舊 return，就再也沒有人重放紅點，而 `onThreatResolved` 對
-     `grade==='block'` 是**不放行**的（反擊教學要玩家點出 Perfect／Counter）——
-     結果是教學卡在那裡等一顆永遠不會來的紅點。
-     ⚠ 這是「規矩掛在演出上」的典型：把演出拿掉，規矩跟著不見。 */
-  if(!pool || !pool.length){
-    if(!defendedDone && api.respawnThreat) api.respawnThreat();
-    return;
-  }
+  if(!pool || !pool.length) return;
   // key='earlyRetry'：反擊教學階段收段後重放反擊圈（onStepClosed 分流；已過 defended 則只罵不重放）
   openStep({ key:'earlyRetry', lines:[scoldLine(pool[Math.random()*pool.length|0])] });
 }
@@ -519,9 +518,9 @@ function onStepClosed(id){
     return;
   }
   if(id==='earlyRetry'){
-    // 太早格擋收段：反擊教學未過（defended 未觸發）→ 立即重放一次反擊圈，
-    // 玩家點出 Perfect/Counter 才過關；已過 defended 的太早提醒不重放（自然排程接手）
-    if(!defendedDone && api.respawnThreat) api.respawnThreat();
+    /* ⚠ ver -728：**不再重放**（黃圈已經算過關，見 onThreatResolved）。
+       這一支保留成純收段 —— 日後若又要「這一種點法不算，再來一次」，
+       把 `api.respawnThreat()` 加回這裡就好。 */
     return;
   }
   if(id==='strike'){
