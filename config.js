@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.01-703';
+export const VERSION = 'ver 2026.09.01-704';
 
 export const GAME_CONFIG = {
 
@@ -1463,13 +1463,13 @@ export const GAME_CONFIG = {
       name:'羽蛇_A',
       story:1, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
       kind:'harm',                 // 禍魘 → 已淨化
-      image:{ day:'enemy_serpant_day', dd:'enemy_serpant_dd', night:'enemy_serpant_night' },
+      image:{ day:'enemy_serpent_day', dd:'enemy_serpent_dd', night:'enemy_serpent_night' },
       hp:500,
       attack:20,                   // 蓄力攻擊（紅點那一發）
       atkInterval:4,               // 蓄力窗口 4 秒（固定）
       ultEvery:[3,5],              // 發動頻率 3~5 秒一次
       noStack:true,                // 不疊加：場上同時只有一個紅點
-      sound:{ ult:'se_enemy_serpant', delay:'em_smack', wrong:'em_smack' },
+      sound:{ ult:'se_enemy_serpent', delay:'em_smack', wrong:'em_smack' },
       special:[],
       boardGrids:[9,9,9,16,16],    // 33344, loop
       boardLoop:true,
@@ -1500,7 +1500,7 @@ export const GAME_CONFIG = {
        rarity/fromStage/notRegion，兩邊註解互指）。
        ⚠ 為什麼不進薩梅爾（Ray 的設定）：**會被防空砲打下來** —— 故事需求，
          不是平衡參數；別因為「帝都附近打不到空賊」就把限制拿掉。
-       ⚠ 卡上「攻擊音」那一段（serpant／em_smack）是範本殘留 —— 真正的音寫在
+       ⚠ 卡上「攻擊音」那一段（serpent／em_smack）是範本殘留 —— 真正的音寫在
          各受擊行的 `se:`（延時＝艦砲 120mm、點錯＝手槍二、大絕＝se_weapon_cannon），
          照那三個入表。 */
     pirate_ship: {
@@ -1881,7 +1881,7 @@ export const GAME_CONFIG = {
                         talkOnce:'taught_serpent_frag',
                         talk:[
                           { trigger:'battleStart', lines:[
-                            { se:'se_enemy_serpant', shake:true, hold:900 },   // 出場音效＋震動（卡：出場特效）
+                            { se:'se_enemy_serpent', shake:true, hold:900 },   // 出場音效＋震動（卡：出場特效）
                             { who:'renna',    img:'tut_renna_shocked',   text:'好快！' },
                             { who:'nouvelle', img:'tut_nouvelle_steady', text:'速度快的敵人就用廣域破片砲！' },
                           ]},
@@ -2118,7 +2118,7 @@ export const GAME_CONFIG = {
       se_ui_click:4.750, se_ui_kagurabell:2.530, se_ui_pageflip:2.359,
       se_ui_sortie:1.184, se_ginclick:1.106, se_metalclip:1.139,
       se_buy:1.122, se_healing:1.461,   // ver -499（audio_scan 實測：−14.8／−17.1 LUFS）
-      se_enemy_serpant:2.184,           // ver -500（audio_scan 實測：−20.6 LUFS）
+      se_enemy_serpent:2.184,           // ver -500（audio_scan 實測：−20.6 LUFS）
       se_bulletpiece:1.49,              // ver -503（audio_scan 實測：−17.2 LUFS）
       se_spiltcannon:0.62,              // ver -505（audio_scan 實測：−9.7 LUFS，母帶很大聲）
       se_weapon_cannon:1.29, se_weapon_shell:1.24,   // ver -506（audio_scan 實測：−16.0／−15.7 LUFS）
@@ -2377,12 +2377,12 @@ export const ASSETS = {
   /* 巨型蜈蚣（ver -423）：**三張時段差分**（Ray 指定：上午下午 day、晚上 night、
      黃昏黎明 dd）。解析在 `modules/enemy.js` 的 `enemyImage()`，那裡是唯一一處。 */
   enemy_centipi_day:   "resources/enemy/Centipi_day.webp",
-  enemy_serpant_day:   "resources/enemy/Serpant_day.webp",     // 羽蛇（ver -500，Ray 的卡）
+  enemy_serpent_day:   "resources/enemy/Serpent_day.webp",     // 羽蛇（ver -500，Ray 的卡）
   enemy_pirate_day:    "resources/enemy/Pirateship_day.webp",   // 空賊船（ver -509，Ray 的卡）
   enemy_pirate_dd:     "resources/enemy/Pirateship_DD.webp",
   enemy_pirate_night:  "resources/enemy/Pirateship_night.webp",
-  enemy_serpant_dd:    "resources/enemy/Serpant_DD.webp",
-  enemy_serpant_night: "resources/enemy/Serpant_night.webp",
+  enemy_serpent_dd:    "resources/enemy/Serpent_DD.webp",
+  enemy_serpent_night: "resources/enemy/Serpent_night.webp",
   enemy_centipi_night: "resources/enemy/Centipi_night.webp",
   enemy_centipi_dd:    "resources/enemy/Centipi_DD.webp",
   inspector_renna:     "resources/SI/Renna_SI_front.webp",         // 讀取頁的說明者（出航後）
@@ -2431,7 +2431,7 @@ export const ASSETS = {
   se_ship_cannon:    "resources/audio/se/se_weapon_cannon_120mm.m4a",   // 艦砲（步槍在船戰也用它）
   se_ship_heavygun:  "resources/audio/se/se_weapon_heavygun.m4a",       // 船戰的機槍
   se_enemy_centipi:  "resources/audio/se/Se_enemy_centipi.m4a",         // 巨型蜈蚣（登場／攻擊）
-  se_enemy_serpant:  "resources/audio/se/Se_enemy_serpant.m4a",   // 羽蛇出場（ver -500）
+  se_enemy_serpent:  "resources/audio/se/Se_enemy_serpent.m4a",   // 羽蛇出場（ver -500）
   se_mg_squall:      "resources/audio/se/se_weapon_mg_squall.m4a",       // 重機槍 反擊（連續感：整支播一次）
   se_shotgun_blast:  "resources/audio/se/se_weapon_shotgun_blast.m4a",   // 散彈槍 反擊（一次一發）
   se_sniper_falcon:  "resources/audio/se/se_weapon_sniper_falcon.m4a",   // 狙擊槍 反擊（單發）
