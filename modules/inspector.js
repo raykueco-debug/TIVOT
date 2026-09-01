@@ -397,7 +397,7 @@ export function settle(totalTime, stats, opts={}){
   let gainMoney = rollBattleMoney() + sessionMoney;
   const totalExp = evalResult.exp|0;      // EXP 由**整場的總和**算出來（ver -601）
   if(gainMoney) inv.addMoney(gainMoney);
-  if(totalExp) rows += '<div class="row"><span>EXP</span><b>＋'+totalExp+'</b></div>';
+  if(totalExp && showExp()) rows += '<div class="row"><span>EXP</span><b>＋'+totalExp+'</b></div>';
   if(gainMoney) rows += '<div class="row"><span>'+inv.moneyName()+'</span><b>＋'+gainMoney+'</b></div>';
   if(isRecord) rows += `<div class="record">${L.result.newRecord}</div>`;
   // ── 監察官結算展示（依評價等第挑台詞）──
@@ -673,7 +673,7 @@ function scriptSettle(totalTime, stats, sessionMoney){
        + '</span></div>')
     : '';
   rows += ratingStatsRows(stats, totalTime);
-  if(exp)   rows += '<div class="row"><span>EXP</span><b>＋'+exp+'</b></div>';
+  if(exp && showExp()) rows += '<div class="row"><span>EXP</span><b>＋'+exp+'</b></div>';
   if(money) rows += '<div class="row"><span>'+inv.moneyName()+'</span><b>＋'+money+'</b></div>';
   /* ══ 這一場自己的最佳紀錄（ver -377，Ray：「紀錄最佳紀錄，破紀錄時加上 New」）══
      ⚠ 只有卡上寫了 `record` 的場次才記（打靶場那種「一直挑戰」的）；
@@ -736,6 +736,9 @@ function displayName(n){ return String(n||'').split('_')[0]; }
 
 /* 掉落：卡上的 `loot`，**每一項各自擲骰**（ver -423，Ray：「可能都掉，可能都不掉」）。
    ⚠ `p` 沒寫＝必掉（舊卡不受影響）。⚠ 只有這一支在擲（鐵律 7）。 */
+/* EXP 要不要顯示（ver -725，Ray：「先把 exp 拿掉不顯示」）——
+   ⚠ 唯一的查詢點（鐵律 7/8）：結算頁與戰利品視窗都問它。 */
+function showExp(){ return !!((GAME_CONFIG.rating||{}).showExp); }
 function rollLoot(en){
   /* 九階強化「幸運星」：掉落機率提升（ver -707）。⚠ 乘在**機率**上不是另外再擲一次
      （鐵律 7），而且夾到 1 —— 超過 1 的機率沒有意義，只會讓日後的除錯看不懂。 */

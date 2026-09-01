@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.01-724';
+export const VERSION = 'ver 2026.09.01-725';
 
 export const GAME_CONFIG = {
 
@@ -1003,6 +1003,10 @@ export const GAME_CONFIG = {
          · 索拉娜（方向相反）    D **+2**、C **+1**
          · 蕾娜（不是搭檔，最難） S **+0.5**、A **+0.25**
        ⚠ 沒有 E 那一格（Ray 指定沒有 E，`tiers` 最後一級是兜底）。 */
+    /* ⚠ EXP **先不顯示**（ver -725，Ray：「先把 exp 拿掉不顯示」）。
+       ⚠ 只是不印 —— `evaluate()` 照算、`exp` 那一組係數照留（overkillExp 之類），
+         等有了等級系統再打開。**兩個顯示點都問這一支**（結算頁與戰利品視窗，鐵律 8）。 */
+    showExp: false,
     affection: {
       partner: { S:2, A:1 },
       sorana:  { D:2, C:1 },

@@ -47,7 +47,10 @@ export function showLoot(list, done, money, opts){
   const o=opts||{};
   const rows=(list||[]).filter(x=>x && x.id && (x.n==null || x.n>0));
   money=Math.max(0, money|0);
-  const exp=Math.max(0, o.exp|0);
+  /* ⚠ EXP 先不顯示（ver -725，Ray 指定）：開關在 `config.rating.showExp`，
+     與結算頁同一支（鐵律 8）。關掉時當成 0 —— 連「有沒有東西可看」的判斷
+     （下面那一行的 early return）也要跟著，不然會彈一張只有標題的空視窗。 */
+  const exp=((GAME_CONFIG.rating||{}).showExp) ? Math.max(0, o.exp|0) : 0;
   if(!rows.length && !money && !exp){ done && done(); return; }
   inv.addMany(rows);                                   // ← 真正入袋
   if(money) inv.addMoney(money);
