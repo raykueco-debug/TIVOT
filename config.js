@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.08.31-692';
+export const VERSION = 'ver 2026.09.01-693';
 
 export const GAME_CONFIG = {
 
@@ -211,23 +211,26 @@ export const GAME_CONFIG = {
       voice:null,
       selectVoice:'vo_life_return',
       perk:'明晰之夢（被動）＋惡夢化・夢境粉碎（劇情）',
-      /* ══ 被動：明晰之夢（Lucid Dream；中文名 ver -682 由 Ray 定：
-         「luciddream 中文 CI 寫『明晰之夢』」）══
-         Ray（-681）：「被動技是 hp30% 以下普攻傷害 2 倍 5 秒，CI 為 CI_Anya_Luciddream」
-         ⚠ 走**既有的** `lowHpBuff`（馬季諾的高裝藥彈那一支，鐵律 8）——
-           邊緣觸發：跌破門檻才發動，回到門檻上才重新上膛。
-         ⚠ Ray：「血量的關係原則上會在這一場 NI 結束後發動」—— 惡夢化熔斷／自爆
-           收在 HP1，正好跌破 30%，所以它自然接在後面。 */
+      /* ══ 被動：明晰之夢（Lucid Dream；中文名 ver -682 由 Ray 定）══
+         ⚠⚠ **觸發條件 ver -693 改了**（Ray：「娜塔莉戰如果先觸發 lucid dream 再進入
+           NI 劇情會卡住，或者同時，所以我決定改 luciddream 的發動條件為觸發單怪
+           觸發第一次反擊成功時發動，不算場，每隻怪都可以觸發一次，
+           觸發期間 5 秒普攻 2 倍」）：
+             舊（-681）：HP ≤30% 發動 —— 與惡夢化**搶同一個時刻**（NI 的倒數槽本來就
+               會把血抽到 1），兩段演出疊在一起就卡住。
+             新（-693）：**每隻怪第一次反擊成功**時發動。連戰換敵重新上膛
+               （`enemy.setEnemy` → `partner.armFirstCounter`）。
+         ⚠ 效果不變（5 秒普攻加倍），與 `lowHpBuff` **共用同一個執行體**
+           （`partner.fireBuff`，鐵律 8）—— 換的是條件不是效果。 */
       passive:{
-        key:'lowHpBuff',
+        key:'firstCounter',
         /* ⚠ cut-in 上印的就是這個字（`partner` 讀 `passive.name`）—— 只有這一處。 */
         name:'明晰之夢',
         en:'Lucid Dream',
-        threshold:0.30,
         buffSeconds:5,
         cutin:'ci_anya_lucid',
         voice:'vo_hc_rounds',
-        desc:'HP 降至 30% 以下時發動：5 秒普攻傷害加倍。',
+        desc:'每隻敵人第一次反擊成功時發動：5 秒普攻傷害加倍。',
       },
     },
     // ── 第二搭檔：馬季諾 Malzeno ──────────────────────────

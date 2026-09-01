@@ -105,6 +105,8 @@ export function setup(){
     resetEnemyTimers: defense.resetEnemyTimers,
     scheduleUlt: defense.scheduleUlt,
     markNext, buildGrid, resetEnergy,
+    /* 反擊成功 → 通知搭檔的被動（ver -693，明晰之夢：每隻怪第一次反擊時發動）。 */
+    onCounter: partner.onCounter,
   });
   // 聖徒化：combat 為協調者，把 combat/defense/partner 的原語打包注入 saint，
   //   saint 不直接 import 其他業務模組（維持 §2 依賴方向）。改血一律走本檔 HP API（Part A）。
@@ -160,7 +162,11 @@ export function setup(){
   // 敵人：Boss 亂入的戰鬥重置（startIntruderFight，combat 擁有）+ 換敵刷血條（updateBars）注入。
   /* ⚠ `screenShake` 給「降臨」的著地那一拍用（ver -640）——
      震動的實作只有 combat 這一支（鐵律 8），enemy 不自己加 class。 */
-  enemy.init({ startIntruderFight, updateBars, screenShake });
+  enemy.init({ startIntruderFight, updateBars, screenShake,
+    /* 換了一隻怪 → 明晰之夢重新上膛（ver -693，Ray：「不算場，每隻怪都可以觸發一次」）。
+       ⚠ 掛在 `setEnemy` 是因為那是**「換了一隻怪」的唯一時刻**（開場、連戰換敵、
+         Boss 亂入都經過它）—— 在別的地方各補一次一定會漏（鐵律 8）。 */
+    onEnemySet: partner.armFirstCounter });
 }
 export function bootIdle(){
   // 開機停在首頁：先建立盤面/血條供背景顯示，但 over=true 讓計時與敵人不啟動

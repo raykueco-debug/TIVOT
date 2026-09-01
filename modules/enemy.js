@@ -405,6 +405,9 @@ export function setEnemy(key){
          : (en.bg ? ('url("resources/background/'+en.bg+'.webp")') : '');
   }
   loadEnemyPortrait(en);
+  /* 換了一隻怪（ver -693）：讓搭檔的「每隻怪一次」那一類被動重新上膛。
+     ⚠ 這裡是那件事的唯一時刻 —— 開場、連戰換敵、Boss 亂入全部經過 setEnemy。 */
+  if(api.onEnemySet) api.onEnemySet();
 }
 
 /* ---------- 連戰序列（局＝同場多敵）----------

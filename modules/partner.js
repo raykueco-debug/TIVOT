@@ -158,6 +158,46 @@ export function tryActive(context){
 let lowHpArmed = true;    // 上膛旗標：HP 在門檻上方＝已上膛；跌破發動一次即卸膛
 let lowHpTimer = null;    // 10 秒 buff 計時器
 
+/* ══⚠⚠ **明晰之夢：每隻怪第一次反擊成功時發動**（`firstCounter`，ver -693，Ray：
+   「娜塔莉戰如果先觸發 lucid dream 再進入 NI 劇情會卡住，或者同時，所以我決定改
+     luciddream 的發動條件為觸發單怪觸發第一次反擊成功時發動，不算場，
+     每隻怪都可以觸發一次，觸發期間 5 秒普攻 2 倍」）══
+   ⚠ 為什麼換掉血量門檻：那一條與惡夢化的劇情**搶同一個時刻** ——
+     NI 的倒數槽本來就會把血抽到 1，於是「跌破 30%」與「進 NI 劇情」同時發生，
+     兩段演出疊在一起就卡住了。改成**反擊**之後兩者再也不會撞。
+   ⚠ **每隻怪一次**（不是每場一次）：連戰換敵要重新上膛 —— 由 `enemy.setEnemy`
+     經 combat 呼叫 `armFirstCounter()`（那是「換了一隻怪」的唯一時刻）。
+   ⚠ 效果與原本同一支（`setLowHpBuff` ＋計時器）：只換觸發條件，不換效果。 */
+let fcArmed = false;
+export function armFirstCounter(){ fcArmed = true; }
+export function onCounter(){
+  if(state.over || state.saintMode || state.niMode) return;   // 演出中不插隊（同 checkLowHpBuff）
+  const p = currentPartner();
+  const pas = p && p.passive;
+  if(!(pas && pas.key==='firstCounter')) return;
+  if(!fcArmed) return;
+  fcArmed = false;
+  fireBuff(pas);
+}
+/* 「5 秒普攻加倍」的執行體（`lowHpBuff` 與 `firstCounter` 共用，鐵律 8）。 */
+function fireBuff(pas){
+  const sec = pas.buffSeconds || 10;
+  const fire = ()=>{
+    if(state.over) return;
+    api.setLowHpBuff(true);
+    clearTimeout(lowHpTimer);
+    lowHpTimer = setTimeout(()=>{ api.setLowHpBuff(false); lowHpTimer=null; }, sec*1000);
+  };
+  const vo = asset(pas.voice); if(vo) SFX.playVoice(vo, sfxGain(pas.voice));
+  api.floatDmg(pas.name,'50%','34%',true);
+  if(state.cutinPlaying){ fire(); return; }   // 已有演出在播 → 只跳字、buff 立即起算
+  api.playCutin(()=>{
+    fire();                                   // cut-in 撤下才起算，秒數完整可用
+    if(state.over) return;
+    api.resetEnemyTimers();                   // 同其他 cut-in 的慣例
+    api.scheduleUlt();
+  }, `${pas.name}<span class="cutin-en">${pas.en||''}</span>`, pas.cutin);
+}
 export function checkLowHpBuff(){
   /* ⚠⚠ **惡夢化期間不發動**（ver -688，Ray：「明晰之夢在夢魘期間不發動，如果是
      夢魘期間 hp 降到標準以下，要等夢魘退掉才會發動」）——
@@ -199,6 +239,7 @@ export function checkLowHpBuff(){
 /* 全重置（combat.startGame / startIntruderFight 調度）：清 10 秒計時器、上膛旗標歸位。
  * state.lowHpBuff 本體由 combat 於開場自清；此處只清 partner 自有狀態。 */
 export function reset(){
+  fcArmed = true;                             // 開場就上膛（ver -693）
   clearTimeout(lowHpTimer); lowHpTimer=null;
   lowHpArmed = true;
 }

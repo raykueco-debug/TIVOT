@@ -68,6 +68,11 @@ export function init(a){ api = a; }
  *  透過 state.addCounter(總傷) 記一次（+1 次 +總傷；inspector 結算讀取）。
  *  ⚠ 未來若加吸血反擊，回血走 combat.healPlayer（D3），此處不碰 playerHp。
  * ========================================================================== */
+/* ══ 「這一次反擊真的開火了」（ver -693）══
+   ⚠ 三個武器分支各自 `addCounter` —— 這一支就掛在它們旁邊，**同一個事件**。
+     （不能只掛在函式開頭：那時還沒判定會不會開火。）
+   ⚠ 通知誰由 combat 注入（`api.onCounter`）：weapon 不反向 import partner。 */
+function onCounterFired(){ if(api.onCounter) api.onCounter(); }
 export function weaponCounter(dmgScale){
   /* ⚠ 本篇與試玩版是**兩套數值**（ver -378）——一律走 `weaponOf`，不要直接查 WEAPONS。 */
   const w = weaponOf(state.equippedWeapon, storyMode());
@@ -111,7 +116,7 @@ export function weaponCounter(dmgScale){
     playSe();                      // 狙擊：一發
     hap.shot();
     api.enemyDamage(h.dmg, true, true, 'counter');   // 靜默扣血（含 overkill/擊殺判定）
-    addCounter(h.dmg);
+    addCounter(h.dmg); onCounterFired();
     api.floatDmg((h.crit?L.battle.crit:'')+h.dmg, '46%','32%', h.crit, 'snipernum');
     flushPending();                            // 單發：一瞬間就結束，排隊中的切換立刻生效
     return;
@@ -128,7 +133,7 @@ export function weaponCounter(dmgScale){
       api.enemyDamage(h.dmg, true, true, 'counter');
       api.floatDmg((h.crit?L.battle.crit:'')+h.dmg, (bx-6+k*3)+'%', (34+(k%2)*6)+'%', true);
     }
-    addCounter(sum);
+    addCounter(sum); onCounterFired();
     flushPending();                            // 齊發：同上，一瞬間結束
     return;
   }
@@ -136,7 +141,7 @@ export function weaponCounter(dmgScale){
   const base=Math.max(1, Math.round(w.dmgPerHit*scale));
   const rolls=[]; let sum=0;                   // 先擲定全彈（全彈必中，此期間 over 不會被觸發）→ 一次記總傷
   for(let k=0;k<w.hits;k++){ const h=critHit(base); rolls.push(h); sum+=h.dmg; }
-  addCounter(sum);
+  addCounter(sum); onCounterFired();
   /* 連射間隔：預設 90ms；場次可覆寫（ver -476，Ray：「船戰的速射砲連射速度
      調降50%」→ flight 船戰卡 counterGapMs:180）。同 weaponSound 的機制：
      覆寫的是**場次**不是武器卡。震動長度與 setTimeout 都讀這一個變數（鐵律 7）。 */
