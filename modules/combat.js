@@ -621,6 +621,7 @@ function enemyAttack(dmg, kind, saintAmt){
   state.boardClean=false;            // 受擊 → 本盤取消清盤破防獎勵
   state.critCombo=0;                 // 受擊中斷：暴擊連擊歸零（延時懲罰/按錯重擊/大絕/格擋掉血皆經此路徑）
   state.hitsTaken++;                 // 評價受擊數（此路徑＝真實掉血；=0 即無傷 gate）
+  state.enemyHitsTaken++;            // 這一隻的受擊數（九階「方舟」，ver -708）
   /* 真實受擊 → 整場無傷旗標取消。⚠ **腳本演出的那幾擊不算**（劇情殺三連擊，
      ver -620，Ray：「如果玩家除此之外無傷的話一樣記無傷」）—— 同 `_scriptedHits`
      從 `hitsTaken` 扣掉的作法，兩者要一致，不然畫面上標了無傷、旗標卻是假的。 */

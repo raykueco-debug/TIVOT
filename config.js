@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.01-707';
+export const VERSION = 'ver 2026.09.01-708';
 
 export const GAME_CONFIG = {
 
@@ -82,7 +82,7 @@ export const GAME_CONFIG = {
     Shotgun_Blast: { name:'雙管霰彈槍「鐵拳」', shortName:'鐵拳', cat:'霰彈槍',
                      owned:true, critRate:0.20, maxMod:5, value:3000,
                      counterWin:0.20, hits:6, dmgPerHit:4,  vfx:'burst',  image:'weapon_shotgun_blast', sound:'se_shotgun_blast',
-                     bands:{ block:{ counter:true, dmgPerHit:1 }, perfect:{ counter:true, dmgScale:0.5 } },
+                     bands:{ block:{ counter:true, dmgRoll:[0,1] }, perfect:{ counter:true, dmgScale:0.5 } },
                      flavor:'保命的穩健之選',
                      /* 本篇用的數值（ver -378，Ray 的「初始霰彈槍」卡）：黃圈 減傷50%、紅圈 6發×3。
                         ⚠ 黃圈由 75% **降**到 50%（試玩版那把仍是 75%）。 */
@@ -104,7 +104,7 @@ export const GAME_CONFIG = {
     Shotgun_Dragon:{ name:'短板霰彈槍「龍息」', shortName:'龍息', cat:'霰彈槍',
                      critRate:0.20, maxMod:5, price:3000,
                      counterWin:0.20, hits:6, dmgPerHit:6,  vfx:'burst',  image:'weapon_shotgun_blast', sound:'se_shotgun_blast',
-                     bands:{ block:{ counter:true, dmgPerHit:1 }, perfect:{ counter:true, dmgScale:0.5 } },
+                     bands:{ block:{ counter:true, dmgRoll:[0,1] }, perfect:{ counter:true, dmgScale:0.5 } },
                      flavor:'短管、近身、火力壓制' },
     /* ⚠ 「絞肉機 改」的爆擊率是 **10%**（比原版 20% 低）—— 卡上就是這麼寫的。
        數值面它與原版只差這一項，其餘完全相同。要調就跟 Ray 確認，不要自己改順。 */
@@ -2330,7 +2330,7 @@ export const ASSETS = {
   /* 惡夢化熔斷（ver -692，Ray 交件 `CI_Anya_OBE`）：倒數槽抽乾的那一結局。 */
   ci_anya_obe:    "resources/CI/CI_Anya_OBE.webp",
   /* 明晰之夢（ver -681 交件／-682 定中文名）：安雅的被動 —— HP≤30% 普攻加倍 5 秒。 */
-  ci_anya_lucid:  "resources/CI/CI_Anya_Luciddream.webp",
+  ci_anya_lucid:  "resources/CI/CI_Anya_Luciddream.webp?v=2",   // ver -708：Ray 換了一版（同名覆蓋 → 必掛 ?v，§5）
   /* 賞金獵人（ver -375）：戰鬥立繪＝對話立繪的 `attack` 那張（去背，配 `bg` 用）。 */
   enemy_guild_hunter: "resources/SI/NPC_GuildHunter_SI_Attack.webp",
   /* ══⚠⚠ 北方泊地城鎮戰的雜怪（ver -596，Ray 指定四隻隨機出）＋教堂的 Boss（祭壇獸）══
@@ -2621,6 +2621,10 @@ export function weaponOf(key, story){
      `counter:true` 這一帶也反擊（紅圈永遠反擊，不必寫）
      `dmgPerHit:N`  這一帶的反擊**每發絕對傷害**（卡上寫幾就存幾，同敵人卡的原則）
      `dmgScale:x`   或用比例（沒寫 `dmgPerHit` 時才看）；兩個都沒寫＝全額
+     `dmgRoll:[…]`  **每一發從這幾個值裡等機率抽**（ver -708，Ray：「1 跟 0 是黃圈的
+                    時候跳的數字，只有 1 跟 0，機率一半，不要全都 1 很沒感」）——
+                    它蓋過上面兩個。⚠ 與 `hit`（命中率）是**兩件事**：沒中跳 MISS，
+                    抽到 0 跳的是**數字 0** —— 那是「打到了但只有一點」，讀感不同。
      `hit:0..1`     命中率（沒寫＝1）。⚠ **第一發一定命中**，見 weapon.weaponCounter
      `take:0..1`    這一帶挨多少大絕傷（沒寫＝0 免傷；紅圈永遠 0）
    ⚠ 舊欄位 `defenseDamageScale`／`perfectDmgPerHit`／`noPerfectBand` **已退役**
@@ -2636,6 +2640,7 @@ export function weaponBand(w, grade){
     counter: (grade==='counter') ? true : !!b.counter,
     dmgPerHit,
     scale: full ? (dmgPerHit/full) : 1,
+    roll: Array.isArray(b.dmgRoll) ? b.dmgRoll.slice() : null,
     hit:  (b.hit!=null) ? b.hit : 1,
     take: (grade==='counter') ? 0 : ((b.take!=null) ? b.take : 0),
   };
@@ -2646,7 +2651,10 @@ export function weaponStatRows(key, story){
   /* 一帶一句：會反擊就報反擊的份量（帶命中率），不反擊就報減傷。 */
   const line = (g)=>{
     const b=weaponBand(w,g);
-    if(b.counter) return shots(b.dmgPerHit) + (b.hit<1 ? '（命中'+Math.round(b.hit*100)+'%）' : '');
+    if(b.counter){
+      const n = b.roll ? (Math.min(...b.roll)+'~'+Math.max(...b.roll)) : b.dmgPerHit;
+      return shots(n) + (b.hit<1 ? '（命中'+Math.round(b.hit*100)+'%）' : '');
+    }
     return b.take>=1 ? '無減傷效果' : (b.take<=0 ? '完全防禦' : '減傷'+Math.round((1-b.take)*100)+'%');
   };
   const crit = (w.critRate!=null ? w.critRate : GAME_CONFIG.tuning.counterCritRate);

@@ -288,7 +288,7 @@ export function resolveThreat(th){
     const bp = weaponBand(w, 'perfect');
     api.floatDmg(L.battle.perfect,'50%','40%',true);
     if(bp.counter){
-      api.weaponCounter(bp.scale, bp.hit);
+      api.weaponCounter(bp.scale, bp.hit, bp.roll);
       staggerOnCounter();
     }else if(bp.take<=0){
       SFX.play(asset('se_guard'), sfxGain('se_guard'));   // 完美防禦音（免傷那一支）
@@ -310,7 +310,7 @@ export function resolveThreat(th){
       const bb = weaponBand(w, 'block');
       api.floatDmg(L.battle.block,'50%','42%',false);
       if(bb.counter){
-        api.weaponCounter(bb.scale, bb.hit);
+        api.weaponCounter(bb.scale, bb.hit, bb.roll);
         staggerOnCounter();
       }
       if(bb.take>0){

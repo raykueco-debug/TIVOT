@@ -173,13 +173,14 @@ export function armFirstCounter(){ fcArmed = true; }
 /* ══ 九階強化「方舟」（ver -707，Ray：「無傷使敵 HP 歸零，可回復已使用的被動技」）══
    打倒一隻敵人的那一刻，**這一場全程無傷**就把用掉的一次性被動重新上膛：
    即死防禦（`deathGuardUsed`）＋ 明晰之夢（`fcArmed`）。
-   ⚠ 「無傷」用 `state.hitsTaken===0` —— 與結算頁那個「無傷」標籤、與
-     `rating.flawlessFloor` **同一個定義**（鐵律 7），不要另訂一套。
+   ⚠⚠ 「無傷」是**逐隻**算的（`state.enemyHitsTaken`，ver -708，Ray：「是用逐隻，
+     連戰才有意義的技能」）—— 不是整場的 `hitsTaken`：整場算的話，連戰只要中途挨過
+     一次就永遠回不了，而這顆星的用處正是在連戰裡把用掉的被動一隻一隻賺回來。
    ⚠ 掛在 `combat.finishEnemyOrAdvance` 那個匯流點（自然清盤／按錯／逾時／
      聖徒化擊殺四條路都經過它，鐵律 8）。 */
 export function onEnemyCleared(){
   if(!prog.hasStar('safina')) return;
-  if(state.hitsTaken!==0) return;
+  if(state.enemyHitsTaken!==0) return;
   state.deathGuardUsed = false;
   fcArmed = true;
 }

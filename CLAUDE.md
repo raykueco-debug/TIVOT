@@ -1145,8 +1145,10 @@ Ray 交劇本稿一律照 **`script/SCRIPT_FORMAT.md`** —— 稿子的最小�
 - ⚠⚠ **「源泉」退槽要走 `drainPlayer`，不能用 `saintAdvance(負值)`** ——
   `healPlayer` 開頭就 `Math.max(0, amount)`，負數會被整個吃掉、什麼都不會發生
   （ver -671 的惡夢化抽血踩過同一個坑，查了好幾版）。
-- ⚠ 「方舟」的**無傷**用 `state.hitsTaken===0` —— 與結算頁那個「無傷」標籤、與
-  `rating.flawlessFloor` 同一個定義（鐵律 7），不要另訂一套。
+- ⚠⚠ 「方舟」的無傷是**逐隻**算的（`state.enemyHitsTaken`，ver -708，Ray：「是用逐隻，
+  連戰才有意義的技能」）—— **不是**整場的 `hitsTaken`：整場算的話，連戰只要中途挨過
+  一次就永遠回不了，而這顆星的用處正是在連戰裡把用掉的被動一隻一隻賺回來。
+  歸零掛在 `enemy.setEnemy`（＝「換了一隻怪」的唯一時刻，鐵律 9）。
 - **兩條路，各自獨立、可以疊加**：
   · **素材收集**（原則）→ 槍店「武器改裝」分頁，配方 `config.gunUpgrade.recipes[星id]`
   · **特殊事件**（例外）→ 腳本那一拍寫 `gunStar:'<星id>'`（北方泊地打靶＝`albali`，

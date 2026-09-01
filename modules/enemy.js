@@ -343,6 +343,7 @@ export function setEnemy(key){
   const en = GAME_CONFIG.enemies[key];
   if(!en) return;
   state.currentEnemyKey = key;                 // 3.7：記住目前怪 key，供 boardGridFor 查每盤格數
+  state.enemyHitsTaken = 0;                     // 換了一隻怪 → 「這一隻」的受擊數歸零（九階「方舟」，ver -708）
   initEnemyHp(en.hp);                           // 3.2：敵血基準（載入時 setter）
   state.ULT_DAMAGE = en.attack;                 // 3.3：大絕單擊傷害
   /* 蓄力秒數。⚠ 卡上可以給**區間**（`[3,5]`，ver -423 的巨型蜈蚣）——

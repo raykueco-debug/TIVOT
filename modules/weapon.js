@@ -78,7 +78,7 @@ function onCounterFired(){ if(api.onCounter) api.onCounter(); }
    ⚠ 第一發保底不是體貼，是必要的：8 發 30% 全 miss 的機率有 5.7% ——
      那一次玩家會以為遊戲壞了，而不是「運氣不好」。
    ⚠ 命中率由**卡上的 `bands[帶].hit`** 決定，呼叫端只負責傳進來（鐵律 1＋7）。 */
-export function weaponCounter(dmgScale, hitRate){
+export function weaponCounter(dmgScale, hitRate, dmgRoll){
   /* ⚠ 本篇與試玩版是**兩套數值**（ver -378）——一律走 `weaponOf`，不要直接查 WEAPONS。 */
   const w = weaponOf(state.equippedWeapon, storyMode());
   if(!w) return;
@@ -87,6 +87,11 @@ export function weaponCounter(dmgScale, hitRate){
   /* 第 k 發中不中。⚠ `k===0` 一定中（見上）。 */
   const hits = (k)=> (hitR>=1 || k===0) ? true : (Math.random() < hitR);
   const MISS = (L.battle && L.battle.miss) || 'MISS';
+  /* `dmgRoll`（ver -708）：這一發打幾點從清單裡等機率抽（散彈黃圈＝`[0,1]`）。
+     ⚠ 抽到 0 **不是 miss** —— 照樣跳一個「0」出來（Ray：「不要全都 1 很沒感」）。
+     ⚠ 0 不呼叫 `enemyDamage`：那一支會帶受擊特效與擊殺判定，打 0 不該驚動它。 */
+  const roll = Array.isArray(dmgRoll) && dmgRoll.length ? dmgRoll : null;
+  const rollOne = ()=> roll[(Math.random()*roll.length)|0];
   // 反擊武器 SE：反擊（Counter）與完美防禦（散彈 Perfect 反擊）都會出聲——散彈 blast 兩路徑皆觸發。
   //   機槍＝逐發播（搭搭搭搭搭連續感）、散彈＝一發、狙擊＝一發。散彈完防由此 SE 出聲，defense 端不再疊合成重擊。
   /* ⚠ 「這一場」可以覆寫武器音（ver -423，Ray：船艦戰的機槍／霰彈／步槍各換一支）——
@@ -139,6 +144,12 @@ export function weaponCounter(dmgScale, hitRate){
     let sum=0;
     for(let k=0;k<w.hits;k++){
       if(!hits(k)){ api.floatDmg(MISS, (bx-6+k*3)+'%', (34+(k%2)*6)+'%', false); continue; }
+      if(roll){
+        const n=rollOne(); sum+=n;
+        if(n>0) api.enemyDamage(n, true, true, 'counter');
+        api.floatDmg(String(n), (bx-6+k*3)+'%', (34+(k%2)*6)+'%', n>0);
+        continue;
+      }
       const h=critHit(base); sum+=h.dmg;
       api.enemyDamage(h.dmg, true, true, 'counter');
       api.floatDmg((h.crit?L.battle.crit:'')+h.dmg, (bx-6+k*3)+'%', (34+(k%2)*6)+'%', true);
@@ -155,6 +166,7 @@ export function weaponCounter(dmgScale, hitRate){
   const rolls=[]; let sum=0;
   for(let k=0;k<w.hits;k++){
     if(!hits(k)){ rolls.push(null); continue; }
+    if(roll){ const n=rollOne(); rolls.push({dmg:n, crit:false, zero:n<=0}); sum+=n; continue; }
     const h=critHit(base); rolls.push(h); sum+=h.dmg;
   }
   addCounter(sum); onCounterFired();
@@ -176,8 +188,8 @@ export function weaponCounter(dmgScale, hitRate){
     const h=rolls[i];
     playSe();                      // 機槍：每 hit 播一次 → 搭搭搭搭搭（miss 也有槍聲，是打空不是沒開槍）
     if(h){
-      api.enemyDamage(h.dmg, true, true, 'counter'); // 靜默扣血 → 由自訂 float 控制「暴擊」字樣（僅暴擊發才顯示）
-      api.floatDmg((h.crit?L.battle.crit:'')+h.dmg, (30+Math.random()*40)+'%','35%', true);
+      if(!h.zero) api.enemyDamage(h.dmg, true, true, 'counter'); // 靜默扣血 → 由自訂 float 控制「暴擊」字樣
+      api.floatDmg((h.crit?L.battle.crit:'')+h.dmg, (30+Math.random()*40)+'%','35%', !h.zero);
     }else{
       api.floatDmg(MISS, (30+Math.random()*40)+'%','35%', false);
     }

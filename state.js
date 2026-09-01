@@ -39,6 +39,11 @@ export const state = {
   // 評價系統（rating）用的整場統計（combat 擁有；startGame/startIntruderFight 歸零）：
   maxCombo: 0,           // 整場最高連擊
   hitsTaken: 0,          // 整場受擊次數（=0 → 無傷 gate 直判 S）
+  /* **這一隻**敵人打到現在受了幾次擊（ver -708）。與上面那個是**兩件事**：
+     那個是「整場」（評價、無傷保底），這個是「這一隻」——
+     九階「方舟」的無傷擊殺要逐隻算，連戰才有意義（Ray 指定）。
+     ⚠ 誰歸零：換敵那一刻（`enemy.setEnemy`，＝「換了一隻怪」的唯一時刻，鐵律 9）。 */
+  enemyHitsTaken: 0,
   correctTaps: 0,        // 依序正確點擊數（命中率分子）
   wrongTaps: 0,          // 按錯格次數（命中率＝correct/(correct+wrong)）
   runOverkill: 0,        // 整場累計 overkill（state.overkill 每敵歸零，換敵時併入此）
