@@ -18,7 +18,7 @@
  * ========================================================================== */
 
 import { GAME_CONFIG, asset, sfxGain, weaponOf, weaponBand } from '../config.js';
-import { state, addPerfect, storyMode } from '../state.js';
+import { state, addPerfect, addPerfectCounter, storyMode } from '../state.js';
 import { SFX } from '../audio.js';
 import { L, fmt } from '../i18n.js';   // 多語言（防禦浮動字）
 
@@ -275,6 +275,11 @@ export function resolveThreat(th){
     if(state.enemyCounterStun>0)
       state.enemyAtkSuppressUntil = Math.max(state.enemyAtkSuppressUntil,
                                              Date.now() + state.enemyCounterStun*1000);
+    /* ══ 完美反擊的折秒（ver -721）══ 秒數讀**武器卡**的 `counterSec`，
+       沒寫才回去用 `rating.penalty.counter`（鐵律 1：狙擊 −3 寫在那一把槍上）。
+       ⚠ 只有這一帶算 —— 黃橘圈自 -706 起也會開火，但那不是**完美**反擊。 */
+    { const pc=(GAME_CONFIG.rating&&GAME_CONFIG.rating.penalty)||{};
+      addPerfectCounter((w && w.counterSec!=null) ? w.counterSec : (pc.counter||0)); }
     api.weaponCounter();
     staggerOnCounter();
   }else if(ratio < DEF_DEFENSE_MIN){

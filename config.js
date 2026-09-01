@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.01-720';
+export const VERSION = 'ver 2026.09.01-721';
 
 export const GAME_CONFIG = {
 
@@ -94,7 +94,7 @@ export const GAME_CONFIG = {
     Sniper_Falcon: { name:'85式萊福槍「嗜心者」', shortName:'嗜心者', cat:'萊福槍',
                      owned:true, critRate:0.20, maxMod:5, value:5000,
                      counterWin:0.06, hits:1, dmgPerHit:72, vfx:'single', image:'weapon_sniper_falcon', sound:'se_sniper_falcon',
-                     bands:{ block:{ take:0.5 }, perfect:{ take:0.25 } },
+                     bands:{ block:{ take:0.5 }, perfect:{ take:0.25 } }, counterSec:-3,
                      flavor:'賭上一切的單發重擊',
                      /* 本篇用的數值（ver -378，Ray 的「初始萊福槍」卡）：紅圈 1發56。 */
                      story:{ hits:1, dmgPerHit:56 } },
@@ -117,7 +117,7 @@ export const GAME_CONFIG = {
     Rifle_Shahin:  { name:'Shahin栓動萊福槍「遊隼」', shortName:'遊隼', cat:'萊福槍',
                      critRate:0.20, maxMod:5, price:5000,
                      counterWin:0.06, hits:1, dmgPerHit:72, vfx:'single', image:'weapon_sniper_falcon', sound:'se_sniper_falcon',
-                     bands:{ block:{ take:0.5 }, perfect:{ take:0.25 } },
+                     bands:{ block:{ take:0.5 }, perfect:{ take:0.25 } }, counterSec:-3,
                      flavor:'栓動、遠距、一擊定生死' },
     // 新武器：複製一段，鑰匙用「類型_武器名」（同圖檔基底名），image 指對應 ASSETS 鑰匙。
   },
@@ -991,6 +991,12 @@ export const GAME_CONFIG = {
          在那裡開得出聖徒化就代表被逼到**慘勝**；而監察官評的本來就是
          **主角對聖徒化的適性** —— 這不是數值上的例外，是這套評價的本意。
        ⚠ 惡夢化清空殘格也算 MB（Ray：「同 SI 的 MB」）。 */
+    /* ⚠⚠ `counter` 是**每一次完美反擊（紅圈）**折抵的秒數 —— 武器卡上可以覆寫
+       （`weapons[].counterSec`，ver -721：狙擊 −3，Ray 指定）。狙擊的黃橘圈都要挨傷、
+       只有紅圈有回報，折得重一點才對得上那個風險。
+       ⚠⚠ **只有紅圈算**（ver -721 修）：-706 之後黃圈與橘圈也會呼叫 `weaponCounter`，
+         而計數掛在那裡 —— 於是「完美反擊」把三帶全算進去，一次威脅折 1.5 秒而不是
+         0.5 秒，等第被灌水。判定只有 `defense` 分得出帶（同明晰之夢那一條，鐵律 7）。 */
     penalty: { wrong: 2, ult: 3, block: 1, delay: 1, counter: -0.5,
                overkill: 0, perfectBoard: -1, maxBurst: -10, execution: -15 },
     /* ══⚠⚠ **整場無傷 ＝ 等第下限**（ver -626，Ray：「無傷基本讓他保證 S」）══

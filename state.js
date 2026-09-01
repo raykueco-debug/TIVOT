@@ -144,6 +144,8 @@ export const state = {
   /* ── 3.6 評價/流程（擁有者：inspector；counterCount/Damage 允許 weapon 累加） ── */
   counterCount: 0,
   counterDamage: 0,
+  perfectCounters: 0,   // 完美反擊（紅圈）次數（ver -721；counterCount 含黃橘）
+  counterSec: 0,        // 完美反擊折抵的秒數合計（武器卡的 counterSec，ver -721）
   perfectCount: 0,
   sawExecution: false,
   sawMaxBurst: false,    // 以 Maximum Burst 收尾（未擊殺那一種；ver -675）
@@ -314,6 +316,16 @@ export function markMaxBurst(){
 export function addCounter(dmg){
   state.counterCount += 1;
   state.counterDamage += dmg;
+}
+/* ══ 完美反擊（紅圈）專用的計數與折秒（ver -721）══════════════════════════
+   ⚠ 與上面那一支是**兩件事**：`counterCount`／`counterDamage` 算的是「反擊開火了」
+     （-706 之後黃橘圈也會開火，那是對的 —— 傷害本來就要記帳）；
+     這一支算的是「**完美**反擊」，只有紅圈。評價折秒讀這一支。
+   ⚠ 秒數由**武器卡**決定（`counterSec`），所以船艦戰自動一致 ——
+     那一場的數值本來就跟著玩家身上的裝備走，只有視聽效果被換掉（ver -504）。 */
+export function addPerfectCounter(sec){
+  state.perfectCounters += 1;
+  state.counterSec += (sec||0);
 }
 
 /* defense.js 專用：完美防禦成功時累加完美次數（3.6 的跨擁有者計數例外）。
