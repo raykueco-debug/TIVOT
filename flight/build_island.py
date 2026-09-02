@@ -6,7 +6,7 @@ ver -733：伊斯維亞王國（舊名阿斯佩里亞）外海的大型島嶼（
   · 主島在大陸西南外海，長軸東西向（不列顛是南北向）
   · 中島在主島「北方」的西灣（愛爾蘭在不列顛西方）
   · 小島鏈沿中島與主島之間往南串（赫布里底群島在蘇格蘭西北）
-島群的國界（羅賽爾／埃蘭）由 build_regions.py 的 ISLAND_REGIONS 劃（兩邊互指）。
+島群的國界（主島＋小島＝阿斯佩里亞聯合王國、中島＝埃蘭，ver -735 Ray 定案）由 build_regions.py 的 ISLAND_REGIONS 劃（兩邊互指）。
 重跑：py flight/build_island.py —— ⚠ 它會**覆蓋**兩張 silvermoon PNG，
 跑之前先 tools/recycle.sh 回收現行版，跑完把 index.html 的 ?v=N 再 +1（§5 快取鐵則）。
 預覽輸出 _island_preview.png / _island_world.png（底線開頭，遊戲不載、gitignore 同類）。

@@ -61,7 +61,7 @@
    "id": 9,
    "zh": "羅賽爾王國",
    "en": "Kingdom of Rosselle",
-   "px": 98968
+   "px": 48908
   },
   {
    "id": 10,
@@ -79,7 +79,13 @@
    "id": 12,
    "zh": "埃蘭王國",
    "en": "Kingdom of Eland",
-   "px": 11808
+   "px": 10500
+  },
+  {
+   "id": 13,
+   "zh": "阿斯佩里亞聯合王國",
+   "en": "United Kingdom of Asperia",
+   "px": 51368
   }
  ]
 }
