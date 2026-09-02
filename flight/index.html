@@ -509,7 +509,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -736';
+const FLIGHT_VER = 'ver -741';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -1972,6 +1972,8 @@ const FILE_GAIN = {
   bgm_flight:4.056, se_flight_sail_loop:7.928, se_flight_idle_loop:2.848,
   se_flight_train:5.059, se_flight_seagull:3.353, se_flight_heartbeat:5.064,
   se_ui_kagurabell:2.530, sturm:1.709, se_kerberos_pop:1.479,
+  /* stage2 甲板混亂（ver -741）：與 config tuning.fileGain 同值（兩邊互指）。 */
+  se_sail:2.056, se_shipcrush:2.358,
 };
 /* 這一支音檔最後該用多大的 volume。⚠ `Math.min(1,…)` 是 HTMLAudio 的硬上限：
    母帶太小聲的那幾支（航行環境音、飛行曲）會被夾住、拉不到目標 —— 那是母帶的
@@ -2494,6 +2496,7 @@ const CAST_IN_MS = 450;    // 滑入／滑出（同教學的 .45s）
 const CAST_DIM   = 0.38;   // 非說話者亮度（同教學）
 const CAST_SAT   = 0.75;
 let sayQueue=null, sayAt=0, sayIdx=0, sayEndAt=0;
+let sayDone=null;   // 這一段對白收完要做的事（ver -741：出航／羽蛇那幾段要串場）
 let hudTalking=false;   // 目前有沒有把「時間地點」收起來（見繪製迴圈裡的同步）
 let cast=[];               // [{who,side,t0,out}]：out＝退場起始時戳（0＝在場）
 
@@ -2549,8 +2552,25 @@ const PORTRAIT_EXPR = {
   nouvelle: {
     surprise:  { src:'../resources/SI/Nouvelle_SI_Surprise.webp',fx:0.487, top:5, bot:1524 },
     awkward:   { src:'../resources/SI/Nouvelle_SI_Awkwerd.webp', fx:0.468, top:2, bot:1534 },
+    /* stage2 甲板混亂（ver -741）。 */
+    shocked2:  { src:'../resources/SI/Nouvelle_SI_Shocked2.webp',fx:0.541, top:3, bot:1533 },
+  },
+  /* stage2 出航～甲板混亂（ver -741，Ray 的稿）。⚠ 取景值與 script/speakers.js
+     的 ART 同組（兩邊互指）。`renna/lookup` 的圖**還沒交** —— pkey 查不到差分會
+     自動退回本尊，圖到位補一列即可。 */
+  anya: {
+    lookup:    { src:'../resources/SI/Anya_SI_lookup.webp',      fx:0.479, top:5, bot:1525 },
+    nervous:   { src:'../resources/SI/Anya_SI_nervous.webp',     fx:0.459, top:0, bot:1526 },
+    scared2:   { src:'../resources/SI/Anya_SI_scared2.webp',     fx:0.356, top:3, bot:1519 },
   },
 };
+Object.assign(PORTRAIT_EXPR.renna, {
+  talkserious:{ src:'../resources/SI/Renna_SI_talkserious.webp', fx:0.509, top:3, bot:1516 },
+  command:    { src:'../resources/SI/Renna_SI_command.webp',     fx:0.502, top:0, bot:1527 },
+  watch:      { src:'../resources/SI/Renna_SI_watch.webp',       fx:0.492, top:7, bot:1530 },
+  curious:    { src:'../resources/SI/Renna_SI_curious.webp',     fx:0.529, top:0, bot:1526 },
+  intense:    { src:'../resources/SI/Renna_SI_intense.webp',     fx:0.629, top:6, bot:1526 },
+});
 /* `renna/relief` → 本尊 id。⚠ **入隊判定（`inParty`）一定要走這一支**：
    直接拿 `renna/relief` 去問 PARTY 查不到，而 `inParty` 對查不到的人一律放行
    —— 那等於整組對話悄悄繞過「這個人在不在船上」的硬條件。 */
@@ -2695,6 +2715,7 @@ function say(beats, at, opts){
     }
   }
   sayQueue=beats; sayIdx=0; sayAt=at; sayEndAt=0;
+  sayDone=(opts && opts.done)||null;   // 收完的回呼（ver -741）
   cast=[];
   for(const b of beats) portraitArt(b.who);   // 先把圖抓好，輪到誰才上場
   castEnter(beats[0].who, at);
@@ -2910,7 +2931,8 @@ function drawTalk(now){
   if(senseOn || senseFireAt) return;
   if(now<sayAt) return;
   // 退場跑完才真的收掉
-  if(sayEndAt && now-sayEndAt>=CAST_IN_MS){ sayQueue=null; cast=[]; saySides=null; return; }
+  if(sayEndAt && now-sayEndAt>=CAST_IN_MS){ sayQueue=null; cast=[]; saySides=null;
+    if(sayDone){ const cb=sayDone; sayDone=null; try{ cb(); }catch(_){}} return; }
   // 退場跑完的人從名單移除，免得一路長下去
   cast=cast.filter(c=>!c.out || now-c.out<CAST_IN_MS);
   const beat=sayQueue[sayIdx];
@@ -4619,7 +4641,8 @@ document.getElementById('talkBtn').addEventListener('click',()=>{
   if(sayQueue || senseOn || senseFireAt || senseT0 || mapOpen) return;
   talkStart(performance.now());
 });
-document.getElementById('mapBtn').addEventListener('click',()=>{
+/* 開地圖（ver -741 抽出）：mapBtn 與出航對白（「地圖彈出」那一拍）共用（鐵律 8）。 */
+function openMapView(){
   // ⚠ 浮雕與聚落都是點開才算（2.6M 取樣 + 26 座聚落），不進飛行開場
   const R=buildRelief();
   /* 初始縮放取「覆蓋」：base 是 zoom=1 時**寬度剛好貼合**，直向手機下
@@ -4640,9 +4663,12 @@ document.getElementById('mapBtn').addEventListener('click',()=>{
     MV.cx=me.x; MV.cy=me.y;
   }
   drawMap();
-});
+}
+document.getElementById('mapBtn').addEventListener('click',openMapView);
+let mapClosedCb=null;   // 地圖關掉那一刻要做的事（ver -741：出航對白的第二句）
 document.getElementById('mapClose').addEventListener('click',e=>{
   e.stopPropagation(); mapOpen=false; mapView.classList.remove('on');
+  if(mapClosedCb){ const cb=mapClosedCb; mapClosedCb=null; try{ cb(); }catch(_){} }
 });
 
 /* 縮放與平移：滾輪／雙指縮放以指標為錨點，單指拖曳平移 */
@@ -7073,6 +7099,13 @@ const SCRIPTED_ENCOUNTERS = [
   /* `dist`＝生成距離覆寫（ver -455）：要在視野的清楚段正面現身，不泡在霧裡。 */
   { flag:'set_sail', done:'flight_centipede_met', outOf:1,
     kind:'centipede', speedMul:1.5, dist:1800 },
+  /* ══ stage2 回程的羽蛇（ver -741，Ray 的稿：「自由探索，但進入薩梅爾國境線
+     十秒，生成羽蛇，插圖 Serpent_day 視時間差分」）══
+     `intoRegion`＝**進入**這一國滿 `holdSec` 秒才生（與 outOf 相反方向；
+     出境重新計時）。`intro:'serpent'`＝不走「追到撞上」那一套，走演出序列
+     （插圖 → 對白 → 換搭檔教學 → 蕾娜「要來了！」→ 直接開戰，見 runSerpentIntro）。 */
+  { flag:'np_leave_ok', done:'flight_serpent_met', intoRegion:1, holdSec:10,
+    kind:'serpent', speedMul:1.2, dist:2000, intro:'serpent' },
 ];
 /* 這一趟要不要演劇本遭遇：**開場算一次**。旗標不會在航行途中改變 —— 會改它的是
    主遊戲，而主遊戲在演的時候這一頁是停著的；每幀去 parse 一次 localStorage 是白花的。
@@ -7088,10 +7121,102 @@ function scriptedDue(){
        讀成「已經出薩梅爾了」，一開場就在船塢上空刷怪）。 */
   if(regionCur===-1) return null;
   if(scriptPending.outOf!=null && regionCur===scriptPending.outOf) return null;
+  /* `intoRegion`（ver -741）：**進入**那一國、而且待滿 `holdSec` 秒。
+     出境（或還沒進去）就把計時歸零 —— 沿著國境線擦邊不算「進入了」。 */
+  if(scriptPending.intoRegion!=null){
+    if(regionCur!==scriptPending.intoRegion){ intoT0=0; return null; }
+    const now=performance.now();
+    if(!intoT0){ intoT0=now; return null; }
+    if(now-intoT0 < (scriptPending.holdSec||0)*1000) return null;
+  }
   return scriptPending;
 }
+let intoT0=0;   // 進入 intoRegion 的時刻（scriptedDue 專用）
 function spawnScripted(S){
   spawnEnemy({ kind:S.kind, ahead:true, speedMul:S.speedMul, script:S, spawnDist:S.dist });
+  /* 演出型的劇本遭遇（ver -741，羽蛇）：生成之後不是追撞交棒，
+     是插圖＋對白＋換搭檔教學的一整段（見 runSerpentIntro）。 */
+  if(S.intro==='serpent' && enemy){ runSerpentIntro(S); }
+}
+
+/* ══════════ stage2 羽蛇的登場演出（ver -741，Ray 的稿）══════════
+   插圖（視時間差分）→ 對白（好快！…讓她試試看）→ 教學提示（進整備換搭檔，
+   吊墜就是入口）→ 玩家選完人回到畫面 → 蕾娜「要來了！」→ 直接開戰。
+   ⚠ 期間羽蛇凍在原地（spdK=0）、接戰保留（enemy.holdBattle）——
+     「進入戰鬥」由這一段的收尾自己叫（toBattle），不靠追撞。 */
+function runSerpentIntro(S){
+  if(!enemy) return;
+  enemy.holdBattle=true;
+  enemy.__spdK0=enemy.spdK; enemy.spdK=0;
+  showEncounterArt('Serpent', ()=>{
+    say([
+      { who:'nouvelle/surprise', text:'好快！' },
+      { who:'anya/lookup',       text:'……！' },
+      { who:'renna/watch',       text:'用廣域破片彈或許能抓到！' },
+      { who:'anya/nervous',      text:'我、我也能幫忙！' },
+      { who:'renna/curious',     text:'……' },
+      { who:'renna/talkserious', text:'那就讓她試試看，可以嗎？' },
+    ], performance.now(), { done:()=>showPartnerHint(()=>waitGearThenBattle()) });
+  });
+}
+/* 遭遇插圖：../resources/illustration/<base>_<時段>.webp（退 _day、退 .png；
+   一張都載不到就跳過 —— **圖還沒交也不能把劇情擋死**）。點一下收。 */
+function showEncounterArt(base, done){
+  const h=clock.minutes/60%24;
+  const band = (h>=6&&h<16) ? 'day' : (h>=16&&h<19) ? 'dusk' : 'night';
+  const names=[base+'_'+band, base+'_day'];
+  const cands=[];
+  for(const n of names){ cands.push(n+'.webp'); cands.push(n+'.png'); }
+  const ov=document.createElement('div');
+  ov.style.cssText='position:fixed;inset:0;z-index:60;background:#000;display:flex;'
+    +'align-items:center;justify-content:center;opacity:0;transition:opacity .6s ease;';
+  const im=new Image();
+  im.style.cssText='max-width:100%;max-height:100%;object-fit:contain;';
+  let i=0;
+  const fail=()=>{ i++; if(i<cands.length){ im.src='../resources/illustration/'+cands[i]; }
+                   else { try{ ov.remove(); }catch(_){} done(); } };
+  im.onerror=fail;
+  im.onload=()=>{
+    ov.appendChild(im); document.body.appendChild(ov);
+    requestAnimationFrame(()=>{ ov.style.opacity='1'; });
+    const off=()=>{ ov.style.opacity='0'; setTimeout(()=>{ try{ ov.remove(); }catch(_){} done(); }, 620); };
+    ov.addEventListener('pointerdown', e=>{ e.stopPropagation(); off(); }, { once:true });
+  };
+  im.src='../resources/illustration/'+cands[0];
+}
+/* 教學提示（Ray：「教學提示：進入整備畫面可以切換戰鬥搭檔。選安或諾都可以，
+   選定後回到畫面」）。整備入口＝面板左上的吊墜（fkerbPend → 父頁 gear）。 */
+function showPartnerHint(done){
+  const ov=document.createElement('div');
+  ov.style.cssText='position:fixed;left:50%;top:34%;transform:translate(-50%,-50%);'
+    +'z-index:59;max-width:78%;padding:14px 18px;border:1px solid #c9a227;'
+    +'border-radius:10px;background:rgba(8,9,14,.88);color:#e8e0cd;'
+    +'font-size:14px;line-height:1.7;letter-spacing:1px;text-align:center;';
+  ov.innerHTML='<b style="color:#d4a94a">教學提示</b><br>'
+    +'點左下的<b style="color:#d4a94a">吊墜</b>進入整備畫面，可以切換戰鬥搭檔。<br>'
+    +'<span style="font-size:11px;color:#9a927e">（點一下這則提示關閉）</span>';
+  document.body.appendChild(ov);
+  ov.addEventListener('pointerdown', e=>{ e.stopPropagation();
+    try{ ov.remove(); }catch(_){} done(); }, { once:true });
+}
+/* 玩家可能開整備頁換人 —— 等它關了（或根本沒開）才收尾開戰。 */
+function gearOpenNow(){
+  try{ return !!(embedded() && window.parent.__tivotFlight.gearOpen
+                 && window.parent.__tivotFlight.gearOpen()); }catch(_){ return false; }
+}
+function waitGearThenBattle(){
+  const fin=()=>{
+    say([{ who:'renna/command', text:'要來了！' }], performance.now(), { done:()=>{
+      if(enemy){ enemy.holdBattle=false; if(enemy.__spdK0) enemy.spdK=enemy.__spdK0; }
+      toBattle('serpent');
+    }});
+  };
+  const tick=()=>{
+    if(gearOpenNow()){ setTimeout(tick, 350); return; }
+    /* 沒開（或關了）：緩 900ms 再收 —— 玩家剛回到畫面，別立刻壓戰鬥上去。 */
+    setTimeout(()=>{ if(gearOpenNow()){ tick(); return; } fin(); }, 900);
+  };
+  tick();
 }
 
 /* opt（全部選填，劇本遭遇用；不給就是平時那隻隨機刷的）：
@@ -7323,6 +7448,7 @@ function updateEnemy(dt,now){
   const nearMissHit = !enemy.script && enemy.state==='chase'
     && enemy.minDist!=null && enemy.minDist<C.nearMiss && dist>enemy.minDist+40;
   if((dist<=C.engage || nearMissHit) && enemy.state!=='flee'){
+    if(enemy.holdBattle) return;   // 登場演出保留中（ver -741 羽蛇）：開戰由演出收尾自己叫
     if(enemy.script){
       /* ⚠ 上面的 dx/dy 是「玩家−敵人」，投影要的是「敵人−鏡頭」＝取負。 */
       const ex=-dx, ey=-dy;
@@ -7658,6 +7784,60 @@ function flightAudio(on){
 /* 父頁在戰鬥打完、要把畫面交還這一頁時呼叫（ver -388）。
    ⚠ `battleGoing` 一定要歸零：不歸零的話船永遠停著（見 update 的那一行），
      而且下一次遭遇的交棒鎖也解不開。 */
+/* ══ stage2 出航對白（ver -741，Ray 的稿）══
+   「蕾：事不宜遲，直接回聖王廳去吧。（地圖彈出，地標。）蕾：看到帝都就表示到了。」
+   旗標演完才記（中途重整會重播 —— 城鎮段落同一個慣例）。 */
+function departureTalkMaybe(){
+  if(!flagOn('np_leave_ok') || flagOn('np_depart_talk')) return;
+  if(sayQueue || mapOpen) return;
+  say([{ who:'renna/talkserious', text:'事不宜遲，直接回聖王廳去吧。' }],
+      performance.now(), { done:()=>{
+    openMapView();                       // 地圖彈出（帝都的地標本來就在圖上）
+    mapClosedCb=()=>{
+      say([{ who:'renna/smile', text:'看到帝都就表示到了。' }],
+          performance.now(), { done:()=>addFlag('np_depart_talk') });
+    };
+  }});
+}
+
+/* ══ stage2 甲板混亂（ver -741，Ray 的稿）══ 羽蛇戰打贏回到甲板：
+   Se_sturm＋Se_Sail → 對白 → 淡入黑景＋se_shipcrush → 淡出。
+   「在那片湖著水」之後的戲**等 Ray 的稿** —— 這裡收在黑幕掀開、船停住為止。
+   ⚠ `battleGoing` 借來當「演出中全停」：船不動、不再遭遇；收尾歸還。 */
+const seSailSE=new Audio('../resources/audio/se/se_sail.m4a'); seSailSE.preload='auto';
+seSailSE.__baseVol=fileVol('se_sail');
+const seCrashSE=new Audio('../resources/audio/se/se_shipcrush.m4a'); seCrashSE.preload='auto';
+seCrashSE.__baseVol=fileVol('se_shipcrush');
+function deckChaosScene(){
+  battleGoing=true;
+  if(!muted){ try{ playSfx(sturmSE); }catch(_){} try{ playSfx(seSailSE); }catch(_){} }
+  say([
+    { who:'nouvelle/shocked2', text:'啊！' },
+    { who:'anya/lookup',       text:'……！' },
+    /* `renna/lookup` 的圖還沒交 → pkey 自動退回本尊（見 PORTRAIT_EXPR 檔頭）。 */
+    { who:'renna/lookup',      text:'糟糕！帆被——' },
+    { who:'renna/intense',     text:'要失控了！' },
+    { who:'anya/scared2',      text:'……！' },
+    { who:'renna/command',     text:'那裡！在那片湖著水！' },
+    { who:'renna/intense',     text:'！！' },
+  ], performance.now(), { done:()=>{
+    const ov=document.createElement('div');
+    ov.style.cssText='position:fixed;inset:0;z-index:70;background:#000;opacity:0;'
+      +'transition:opacity 1.2s ease;pointer-events:none;';
+    document.body.appendChild(ov);
+    requestAnimationFrame(()=>{ ov.style.opacity='1'; });
+    setTimeout(()=>{
+      if(!muted){ try{ playSfx(seCrashSE); }catch(_){} }
+      setTimeout(()=>{
+        addFlag('np_deck_chaos');
+        battleGoing=false;
+        ov.style.opacity='0';
+        setTimeout(()=>{ try{ ov.remove(); }catch(_){} }, 1300);
+      }, 1800);
+    }, 1250);
+  }});
+}
+
 window.__flightResume=function(opts){
   extPaused=false;   // 父頁把畫面還回來（ver -481：extPaused 是「畫面收起」的凍結）
   battleGoing=false;
@@ -7699,6 +7879,12 @@ window.__flightResume=function(opts){
      都會把這段「初次見面」的戲演出來。現在**雙重綁**：這一場必須是劇本遭遇
      （`lastBattleScripted`，`toBattle` 記的）＋ 旗標沒演過 —— 隨機遭遇永遠不演。 */
   if(!wasScripted) return;
+  /* 羽蛇那一場打贏（ver -741）：接甲板混亂。⚠ 判 done 的鑰匙不判 kind ——
+     這一段是**那一條劇本遭遇**的戲，隨機羽蛇（日後 fromStage 放行）不演。 */
+  if(lastScriptS && lastScriptS.done==='flight_serpent_met' && !flagOn('np_deck_chaos')){
+    setTimeout(()=>{ if(!sayQueue) deckChaosScene(); }, 1100);
+    return;
+  }
   if(flagOn(AFTER_SHIP_FLAG)) return;
   addFlag(AFTER_SHIP_FLAG);
   /* 站位：蕾娜右／諾薇兒左（ver -478，Ray：「要分左右」）——
@@ -10410,6 +10596,8 @@ function preloadSfx(){
     window.__map=MAPW+'×'+MAPH;
     // 進度圈跑到滿再收，不要瞬間閃掉
     setTimeout(()=>bootUI.done(),260);
+    /* stage2 出航對白（ver -741，Ray 的稿）：讀取頁收乾淨之後才演。 */
+    setTimeout(departureTalkMaybe, 2600);
     requestAnimationFrame(loop);
   }catch(e){
     document.getElementById('bootMsg').textContent=e.message+'（需以 http 提供，不能直接雙擊開啟）';

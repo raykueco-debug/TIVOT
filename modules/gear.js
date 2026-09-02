@@ -32,8 +32,10 @@ const W = () => GAME_CONFIG.weapons||{};
    ⚠ ver -510：第一位＝`config.storyPartner`（唯一真相 —— combat.startGame 進劇情戰
    也切到它，不再依賴玩家先開過這一頁）。 */
 /* ⚠ 現在是誰由 `partner.storyPartnerKey()` 決定（ver -671，安雅入隊之後換她）——
-   所以這裡不能是**模組載入時**算好的常數：那時旗標還沒立起來。 */
-const STORY_PARTNERS = () => [partner.storyPartnerKey()];
+   所以這裡不能是**模組載入時**算好的常數：那時旗標還沒立起來。
+   ⚠⚠ ver -741（Ray：「選安或諾都可以」）：改列**整個池子**（storyPartnerPool），
+   池子裡不只一位時搭檔卡上長頁籤可切（見 render 的 gs-ptabs）。 */
+const STORY_PARTNERS = () => partner.storyPartnerPool();
 
 let el=null;
 /* 現在開著哪一個分頁（ver -457，Ray：「在整備頁面加入道具分頁，道具要分類」）。
@@ -136,7 +138,8 @@ function mainGunHtml(){
 function render(){
   const cats=load.order();
   const SP=STORY_PARTNERS();
-  const pk=SP.find(k=>GAME_CONFIG.partners[k]) || SP[0];
+  /* 顯示的是**現任**（旗標＋玩家選擇，ver -741）—— 不是池子第一位。 */
+  const pk=partner.storyPartnerKey();
   const p=GAME_CONFIG.partners[pk]||{};
   const fit=p.siFit||{};
   const rot = load.mode()==='rotate';
@@ -191,6 +194,16 @@ function render(){
     +   '</div>'
     +   '<div class="gs-right">'
     +     '<div class="gs-sec">搭　檔</div>'
+    /* ══ 換搭檔（ver -741，Ray 的 stage2 稿：「進入整備畫面可以切換戰鬥搭檔…
+       選安或諾都可以」）══ 池子裡不只一位才長頁籤（`storyPartnerPool`）；
+       選擇存 loadout（跨輪偏好），套用走 `setPickedPartner`（唯一管道，§3.6）。 */
+    +     (SP.length>1
+            ? '<div class="gs-ptabs">'+SP.map(k=>{
+                const pp=GAME_CONFIG.partners[k]||{};
+                return '<button class="gs-ptab'+(k===pk?' on':'')+'" data-pk="'+k+'"'
+                     + ' type="button">'+(pp.name||k)+'</button>';
+              }).join('')+'</div>'
+            : '')
     +     '<div class="gs-pcard">'
     +       (p.image ? '<img class="gs-pimg" src="'+(asset(p.image)||'')+'" alt=""'
                      + ' style="--gp-zoom:'+(fit.zoom||1)+';--gp-top:'+((fit.top||0)*100)+'%">' : '')
@@ -235,6 +248,16 @@ function bind(){
     if(b.dataset.tab===tab) return;
     try{ SFX.menuClick(); }catch(_){}
     tab=b.dataset.tab; render();
+  }));
+  /* 換搭檔（ver -741，Ray：「選安或諾都可以，選定後回到畫面」）：
+     選擇存 loadout（跨輪偏好）＋當場套用（setPickedPartner 唯一管道）。 */
+  el.querySelectorAll('.gs-ptab').forEach(b=>b.addEventListener('click', e=>{ e.stopPropagation();
+    const k=b.dataset.pk;
+    if(!GAME_CONFIG.partners[k] || k===partner.storyPartnerKey()) return;
+    try{ SFX.menuClick(); }catch(_){}
+    load.setPartner(k);
+    setPickedPartner(k);
+    render();
   }));
   /* 道具的類別頁籤（ver -497）。 */
   el.querySelectorAll('.gs-icat').forEach(b=>b.addEventListener('click', e=>{ e.stopPropagation();
@@ -412,8 +435,9 @@ export function open(){
      掛鉤走 window（main.js 掛的）：這一支是葉模組，構不到 iframe。 */
   if(document.body.classList.contains('flight-on') && window.__flightHoldToggle) window.__flightHoldToggle(true);
   tab='gear';        // 每次開都回到整備 —— 吊墜的語意是「整備」，道具是它的第二頁
-  /* 本篇的搭檔固定是諾薇兒（Ray 指定）。⚠ 走 `setPickedPartner`（唯一管道，§3.6）。 */
-  const pk=STORY_PARTNERS()[0];
+  /* 本篇現任搭檔＝旗標＋玩家選擇（`storyPartnerKey`，ver -741）。
+     ⚠ 走 `setPickedPartner`（唯一管道，§3.6）。 */
+  const pk=partner.storyPartnerKey();
   if(GAME_CONFIG.partners[pk] && state.pickedPartner!==pk) setPickedPartner(pk);
   render();
   el.classList.add('on');

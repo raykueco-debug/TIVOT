@@ -364,6 +364,8 @@ window.__tivotFlight = {
      `saveSys.autoSave`，鐵律 8）—— 這裡只補「還留在大地圖上」的那幾種入口。
      ⚠ 走 `flightCheckpointNow`（＝帶座標的那一種）：人還在天上，回檔要回到座標。 */
   checkpoint(){ flightCheckpointNow(); },
+  /* 整備頁開著嗎（ver -741）：羽蛇戰前的換搭檔教學要等玩家關掉整備頁才開戰。 */
+  gearOpen(){ try{ return gear.isOpen(); }catch(_){ return false; } },
   /* 遭遇 → 進戰鬥。門已經在飛行頁推到頂了，這裡**接著演**（撞頂 → 解鎖 → 圓盤 → 開門）。 */
   battle(req){
     const id = req && req.battle;
@@ -716,7 +718,10 @@ window.addEventListener('pagehide', refreshBoot);
       const req = REQ;                        // 開機時就取走了（見 IIFE 開頭）
       if(req){
         flightBack = true;
-        SFX.playBgm(asset('bgm_battle'), { fadeOutMs:600, volume: bgmVol('bgm_battle') });
+        /* 曲子照這一場的卡挑（ver -741）—— 以前寫死 bgm_battle，船戰的
+           EpicBattle／piratebattle 在「開機直入戰鬥」這條路上會放錯首。 */
+        const bk = battleBgmOf(req.battle);
+        SFX.playBgm(asset(bk), { fadeOutMs:600, volume: bgmVol(bk) });
         setTimeout(()=>{ $('home').classList.remove('on'); combat.startScriptBattle(req.battle); }, 2500);
       }
     };
@@ -1338,6 +1343,13 @@ function battleBgmOf(id){
      資料在 `config.battleBgm`（鐵律 1）。 */
   const t = GAME_CONFIG.battleBgm || {};
   if(b && b.timeAttack && t.timeAttack) return t.timeAttack;
+  /* 船戰的禍魘默認曲（ver -741，Ray：「船戰禍魘默認 EpicBattle」）：
+     船戰的記號＝卡上有 `weaponSound`（艦載武器音只有船戰有）；
+     禍魘看敵人卡的 `kind`。空賊那一場卡上寫了自己的 `bgm`，走上面那一條。 */
+  if(b && b.weaponSound && t.shipHarm){
+    const e = GAME_CONFIG.enemies && GAME_CONFIG.enemies[b.enemy];
+    if(e && e.kind==='harm') return t.shipHarm;
+  }
   return t.default || 'bgm_battle';
 }
 story.setBattleCue((id)=>{

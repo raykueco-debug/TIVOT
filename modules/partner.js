@@ -29,6 +29,7 @@ import { state, applyDeathGuard } from '../state.js';
 import { SFX } from '../audio.js';
 import { L } from '../i18n.js';   // 多語言（即死防禦浮動字/cut-in 標題）
 import * as prog from '../script/progress.js';   // 本篇搭檔換人的旗標（ver -671；葉節點，無循環）
+import * as load from '../script/loadout.js';    // 玩家的搭檔選擇（ver -741；同為葉節點資料層）
 
 /* combat 於啟動時注入的原語：
  *   被動技所需：updateBars / floatDmg / resetEnemyTimers / scheduleUlt / playCutin
@@ -43,11 +44,27 @@ export function init(a){ api = a; }
    夥伴就從諾薇兒換成安雅了」）══
    資料在 `config.storyPartnerBy`（由上往下取第一個 `need` 成立的），
    **判定只有這一支**（鐵律 8）：`combat.startGame` 與整備頁都問它。 */
-export function storyPartnerKey(){
+/* ══ 現在能挑的本篇搭檔（ver -741，Ray 的 stage2 稿：「選安或諾都可以」）══
+   `storyPartnerBy` 每一條 need 成立的都在池子裡＋預設那一位墊底 —— 以前是
+   「第一條成立的**取代**預設」（-671 的換人），現在是「入隊的都可選」。
+   pool[0]＝旗標推出來的預設（沒選過的人用它，行為與 -671 相同）。 */
+export function storyPartnerPool(){
+  const out=[];
   for(const r of (GAME_CONFIG.storyPartnerBy||[])){
-    if(r && r.key && (!r.need || prog.hasFlag(r.need)) && GAME_CONFIG.partners[r.key]) return r.key;
+    if(r && r.key && (!r.need || prog.hasFlag(r.need)) && GAME_CONFIG.partners[r.key]
+       && out.indexOf(r.key)<0) out.push(r.key);
   }
-  return GAME_CONFIG.storyPartner || GAME_CONFIG.defaultPartner;
+  const d = GAME_CONFIG.storyPartner || GAME_CONFIG.defaultPartner;
+  if(GAME_CONFIG.partners[d] && out.indexOf(d)<0) out.push(d);
+  return out;
+}
+export function storyPartnerKey(){
+  const pool = storyPartnerPool();
+  /* 玩家在整備頁挑過人（ver -741）：選擇存 loadout（跨輪偏好，§6.9），
+     **還在池子裡才算** —— 讀檔回到安雅還沒入隊的章節時，「安雅」不能成立。 */
+  const chosen = load.partner();
+  if(chosen && pool.indexOf(chosen)>=0) return chosen;
+  return pool[0];
 }
 export function currentPartner(){
   return GAME_CONFIG.partners[state.pickedPartner] || GAME_CONFIG.partners[GAME_CONFIG.defaultPartner];

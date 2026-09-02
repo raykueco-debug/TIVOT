@@ -1499,6 +1499,10 @@
   #creditSheet .cl-use{color:var(--holy);font-size:10.5px;letter-spacing:.5px;flex:none;
     opacity:.85;white-space:nowrap;}
   /* 說明列：載明點擊曲目會前往作曲者頁面 */
+  /* 作者要求的授權字樣（ver -741）：小字塊，連結可點。 */
+  #creditSheet .credit-note{margin:8px 2px 0;font-size:9.5px;line-height:1.7;
+    color:var(--gold-dim);word-break:break-all;}
+  #creditSheet .credit-note a{color:var(--gold);text-decoration:none;}
   #creditSheet .credit-tip{font-size:10.5px;letter-spacing:1px;color:var(--gold-dim);
     text-align:center;opacity:.85;margin-top:2px;}
   #creditSheet .credit-close{margin-top:14px;flex:none;align-self:center;padding:9px 34px;
@@ -2904,6 +2908,13 @@
      主備動技能」）。原本是 `flex:1 1 auto` —— 它會把右欄剩下的高度全部吃掉，
      技能說明就被擠成貼在底下的三行。改成固定比例（3:4）＋高度上限，
      多出來的高度歸底下那一塊。 */
+  /* 換搭檔頁籤（ver -741）：池子裡不只一位才出現（見 gear 的 gs-ptabs）。 */
+  #gearSheet .gs-ptabs{display:flex;gap:6px;margin:0 0 8px;}
+  #gearSheet .gs-ptab{flex:1 1 0;padding:7px 0;border:1px solid rgba(212,169,74,.35);
+    border-radius:8px;background:none;font-family:inherit;font-size:12px;
+    letter-spacing:2px;color:var(--gold-dim);cursor:pointer;}
+  #gearSheet .gs-ptab.on{border-color:var(--gold);color:var(--gold);
+    background:rgba(212,169,74,.12);}
   #gearSheet .gs-pcard{position:relative;flex:0 0 auto;aspect-ratio:3/4;
     max-height:40vh;min-height:120px;overflow:hidden;
     border:1px solid var(--gold-dim);border-radius:10px;background:rgba(10,8,14,.6);}

@@ -18,6 +18,7 @@ import * as inv from './inventory.js';
 const K_ORDER = 'tivot_wcat_order_v1';   // 類別的順序（陣列）
 const K_PICK  = 'tivot_wcat_pick_v1';    // 類別 → 選用的武器鑰匙
 const K_MODE  = 'tivot_wswitch_v1';      // 'rotate' | 'fixed'
+const K_PTNR  = 'tivot_partner_v1';      // 本篇的戰鬥搭檔選擇（ver -741，見 partner.storyPartnerKey）
 
 const rd = k => { try{ return JSON.parse(localStorage.getItem(k)); }catch(e){ return null; } };
 const wr = (k,v) => { try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} };
@@ -72,3 +73,12 @@ export function weaponAt(n){
   const cs=activeCats(); if(!cs.length) return null;
   return pickOf(cs[Math.min(Math.max(1,n|0), cs.length)-1]);
 }
+
+/* ══ 本篇的戰鬥搭檔選擇（ver -741，Ray 的 stage2 稿：「選安或諾都可以，
+   選定後回到畫面」）══════════════════════════════════════════════════════
+   只存「玩家挑了誰」；**現在能挑誰**由 partner.storyPartnerPool()（旗標）回答 ——
+   選擇是偏好（跨輪，§6.9 不隨 newRun 清），資格是劇情（旗標）。
+   讀取端（partner.storyPartnerKey）要自己驗「選的人還在 pool 裡」，
+   不在＝當沒選（讀檔回到安雅還沒入隊的章節時，選『安雅』不能成立）。 */
+export function partner(){ const v=rd(K_PTNR); return (typeof v==='string' && v) ? v : null; }
+export function setPartner(key){ wr(K_PTNR, key||null); }

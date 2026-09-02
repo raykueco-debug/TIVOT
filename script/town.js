@@ -66,6 +66,8 @@ const nat = N('NATALIA'), grl = N('GIRL'), anx = N('ANYA_X'), any = N('ANYA');
 /* 北方泊地的兩位店主（ver -655）。⚠ 與帝都那兩位是**不同的人**（不同立繪），
    所以是不同的 speaker id —— 顯示名一樣都是「店主」（見 speakers.js）。 */
 const gunN = N('GUNSMITH_NP'), groN = N('SHOPKEEP_NP');
+/* 北方泊地的送行群眾（ver -741，stage2 碼頭道別）。 */
+const crd = N('CROWD_NP');
 
 /* ══⚠⚠ 北方泊地槍店的射擊挑戰（ver -655，Ray 交稿）══════════════════════
    **這一段只寫一次**（鐵律 7）：初次進店的 `lines` 與店裡「射擊挑戰」鈕的
@@ -1020,6 +1022,14 @@ export const TOWNS = {
            不要在腳本裡另外寫一拍去設它（鐵律 8：那一支已經在做這件事了）。 */
       { flag:'np_day3', need:'np_night_done', clockTo:8, stage:4,
         goto:'inn', enterAgain:true },
+      /* ④ 墓地那一幕演完（翌朝的日期卡收尾）→ **一走動就被帶去碼頭道別**
+         （ver -741，Ray 的 stage2 稿：「隔天八點，碼頭」）。
+         道別那一段（port 的 `np_farewell`）演完直接出航（`sailOut`）。
+         ⚠ `onMove` 同司祭那一格的理由：日期卡收在 act 裡，act 演完當下不重跑
+           閘門 —— 玩家一抬腳就被接走，讀起來是「該出發了」。
+         ⚠ 強制轉場現在是三秒黑幕（ver -739 的 forceGo）。 */
+      { flag:'np_depart', need:'np_grave_done', onMove:true,
+        goto:'port', enterAgain:true },
     ],
     /* ══⚠⚠ **重建之後換一整組背景**（ver -627，Ray：「stage5 之後北泊改用這一組差分」）══
        節點的 `bg` 是**戰損版**（`_BF`，沒有時段差分）；到了 `fromStage` 這一章之後
@@ -1162,6 +1172,34 @@ export const TOWNS = {
               { speaker:'PLAYER', blank:true },
               nou('runserious','沒錯！我們上吧！'),
             ] },
+          /* ══⚠⚠ 碼頭道別（ver -741，Ray 的 stage2 稿：「隔天八點，碼頭」）══
+             翌朝（`np_grave_done` 收尾那張日期卡）之後由城上的閘門把玩家帶過來
+             （見 gates 的 `np_depart`）。**排在 day3 那一段之前**：那一段沒看過的話
+             `actDue` 會先取到它，把道別擠掉。
+             ⚠ `sailOut:true`＝演完直接出航（modules/town.js 的 act 收尾，ver -741）。
+             ⚠ **`np_leave_ok` 的擁有者就是這一段**（鐵律 9：-655 留名字等的那支旗）
+               —— 揮手那一拍插上，「不能丟下同伴」的 hold 從此解除。
+             ⚠ 站位用預設：諾／蕾本位左、安／群眾本位右 —— 兩側各自輪轉（§6.5）。 */
+          { flag:'np_farewell', need:'np_grave_done', lines:[
+            nou('bigsmile','那麼，大家保重了！'),
+            crd(null,'諾薇兒小姐！'),
+            crd(null,'啊！我們的天使啊！'),
+            ren('surprise','好驚人的人氣……'),
+            nou('awkward','我是十二騎士團的嘛，對人輸出術式本來就是看家本領。'),
+            any('silent','……'),
+            nou(null,'嗯？'),
+            ren(null,'連這孩子都這麼親近妳，看來能療癒的不只是傷口呢。'),
+            nou('awkward','沒有啦……'),
+            { speaker:'PLAYER', blank:true },
+            ren('talkwork','沒錯。雖然對不起大家的熱情，我們得快點啟航了。'),
+            ren('talkserious','這也是，為了這裡的人好。對吧？'),
+            any('silent','……'),
+            crd(null,'諾薇兒小姐！請一定要再回來看我們啊！'),
+            /* 揮手＝演出拍（台上有人、無台詞 → 點一下才過，§6.5）；
+               `np_leave_ok` 在這一拍插上（見上）。 */
+            { speaker:'NOUVELLE', text:'', flags:['np_leave_ok'],
+              portrait:{ char:'NOUVELLE', expr:'wave', show:true } },
+          ], sailOut:true },
           /* 第三天路過碼頭（ver -664，Ray 交稿）。 */
           { flag:'np_port_day3', need:'np_day3_done', lines:[
             pri(null,'真是多虧了你們，否則後果不堪設想。'),

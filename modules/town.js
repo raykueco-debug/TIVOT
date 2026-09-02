@@ -1589,6 +1589,17 @@ export function enter(id){
                  所以那一格照樣落得到 —— 正好就是「戰鬥結算後才有」。
                ⚠ 純對白的段落不受影響（那時 `battleSession` 本來就是 null）。 */
           if(checkpoint && !state.battleSession && actHasBattle(act)) try{ checkpoint(); }catch(_){}
+          /* ══ 演完就出航（`sailOut:true`，ver -741，Ray 的 stage2 稿：碼頭道別
+             之後「進入飛行畫面」）══ 走與 `setSail` 同一條交棒（suspend →
+             flightOpener 帶出港位，鐵律 8）。不看 `sail.hold` —— 這是劇本要走，
+             不是玩家自己按的；`np_leave_ok` 也已經在這一段的拍上插了（鐵律 9：
+             那支旗的擁有者就是這一段）。 */
+          if(act.sailOut){
+            stepSfx();
+            suspend();
+            if(flightOpener) flightOpener((TOWNS[townId]||{}).sailFrom||null);
+            return;
+          }
           /* 還有下一段就**原地立刻接上**（ver -599）——不停一秒、不必走出去再回來。
              ⚠⚠ **不可以接上「剛剛演完的那一段」**（ver -669，Ray：「還是卡諾薇兒
                不要催我」）：沒有 `flag` 的段落（＝每次抵達都演的「再訪」）演完之後

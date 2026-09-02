@@ -61,6 +61,8 @@ export const SPEAKERS = {
      ⚠ 城鎮節點上寫 `keeperWho:'GUNSMITH_NP'`／`'SHOPKEEP_NP'`，
        商店那張單子的店主圖另外寫在 `config.shop.shops[…].art`（兩處都要指對）。 */
   GUNSMITH_NP: { name:'店主', art:'gunsmith_np' },
+  /* 北方泊地的送行群眾（ver -741，stage2 碼頭道別）。 */
+  CROWD_NP:    { name:'群眾', art:'crowd_np' },
   SHOPKEEP_NP: { name:'店主', art:'grocer_np'   },
   COUNTER:  { name:'櫃台',   art:'counter' },
   /* 旅店前台（ver -392）。同樣站右（玩家的同伴在左、對面的人在右）。 */
@@ -182,7 +184,13 @@ export const ART = {
                   scarecute:   { src:'resources/SI/Renna_SI_scarecute.webp',   top:0,  bot:1530, fx:0.537 },
                   blushed:     { src:'resources/SI/Renna_SI_blushed.webp',     top:8,  bot:1522, fx:0.551 },
                   lookdown:    { src:'resources/SI/Renna_SI_lookdown.webp',    top:6,  bot:1524, fx:0.548 },
-                  chase2:      { src:'resources/SI/Renna_SI_chase2.webp',      top:11, bot:1529, fx:0.579 } } },
+                  chase2:      { src:'resources/SI/Renna_SI_chase2.webp',      top:11, bot:1529, fx:0.579 },
+                  /* stage2 出航（ver -741，Ray 交稿）。逐張量（measure_si.py）。
+                     ⚠ 稿上還有 `Renna_SI_lookup` —— **檔案還沒交**：腳本照規格寫
+                       expr:'lookup'，查不到會自動回退基本立繪（story 的 missingExpr），
+                       圖到位量了取景補這一列即可。 */
+                  curious:     { src:'resources/SI/Renna_SI_curious.webp',     top:0,  bot:1526, fx:0.529 },
+                  intense:     { src:'resources/SI/Renna_SI_intense.webp',     top:6,  bot:1526, fx:0.629 } } },
   /* ⚠⚠ 諾薇兒的表情差分是**不同姿勢**（跑、畏縮、驚恐、絕望、驚訝），不是換臉，
        所以每一張**各帶自己的 top/bot/fx**（ver -325 量完）。
        ⚠ 沿用 front 那一組的後果實測過：Scared 的臉其實在 0.397，照 0.564 擺會
@@ -254,7 +262,9 @@ export const ART = {
                   happy:    { src:'resources/SI/Nouvelle_SI_happy.webp',     top:1,  bot:1533, fx:0.578 },
                   shocked2: { src:'resources/SI/Nouvelle_SI_Shocked2.webp',  top:3,  bot:1533, fx:0.541 },
                   /* 北方泊地第三天（ver -664）：回頭看。 */
-                  lookback: { src:'resources/SI/Nouvelle_SI_lookback.webp',  top:2,  bot:1528, fx:0.661 } } },
+                  lookback: { src:'resources/SI/Nouvelle_SI_lookback.webp',  top:2,  bot:1528, fx:0.661 },
+                  /* stage2 出航（ver -741，Ray 交稿）：揮手道別。 */
+                  wave:     { src:'resources/SI/Nouvelle_SI_wave.webp',      top:13, bot:1535, fx:0.483 } } },
   /* ⚠ 索拉娜用 **side** 那張：front 橫向佔 78%，兩人同台一定疊；側面只佔 69%。 */
   sorana: { cm:176, eye:27, fx:0.527, top:4, bot:1522, mirror:true,
            side:'R', alt:null, base:'resources/SI/Sorana_SI_side.webp', expr:{} },
@@ -316,6 +326,10 @@ export const ART = {
          （小了 20%）—— 那不是雜訊，是真的畫得比較小，所以這一張用它自己的身高。 */
     nightmareinstall:{ src:'resources/SI/Anya_SI_Nightmareinstall.webp',
                        top:308, bot:1530, fx:0.519, rescale:true },
+    /* stage2 出航那一段（ver -741，Ray 交稿）。全身站姿，照量（measure_si.py）。 */
+    lookup:    { src:'resources/SI/Anya_SI_lookup.webp',     top:5, bot:1525, fx:0.479 },
+    nervous:   { src:'resources/SI/Anya_SI_nervous.webp',    top:0, bot:1526, fx:0.459 },
+    scared2:   { src:'resources/SI/Anya_SI_scared2.webp',    top:3, bot:1519, fx:0.356 },
   } },
   /* ══ 娜塔莉（ver -636，Ray 交稿）══ 安雅的侍女，只在北方泊地那一幕出現。
      ⚠⚠ 兩張圖都是**坐倒在地**的姿勢，不是站姿 —— 所以 `cm` 不是她的真實身高，
@@ -557,6 +571,12 @@ export const ART = {
      ⚠ 站**右**：玩家的同伴在左、對面的人在右（同所有城鎮 NPC）。 */
   priest: { cm:172, eye:32, fx:0.536, top:7, bot:1531,
            side:'R', alt:null, base:'resources/SI/Priest_SI_front.webp', expr:{} },
+  /* ══ 北方泊地的群眾（ver -741，Ray 交件 NPC_northport_Crowd）══
+     碼頭道別那一幕的送行人群 —— 一張圖畫好幾個人，當一個「角色」上台。
+     ⚠ `cm` 是**估的**（畫面上最高那位 ≈172）：這張沒有單一的人可量，
+       看渲染結果不對就調 cm（同安雅近景那組的規矩，top/bot 不要動）。 */
+  crowd_np: { cm:172, eye:32, fx:0.370, top:7, bot:1527,
+           side:'R', alt:null, base:'resources/SI/NPC_northport_Crowd.webp', expr:{} },
 };
 
 /* 最高的人：她定義相機（頭頂貼在舞台頂線，其餘人依身高往下排）。 */

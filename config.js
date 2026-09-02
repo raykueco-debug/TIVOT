@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.02-740';
+export const VERSION = 'ver 2026.09.02-741';
 
 export const GAME_CONFIG = {
 
@@ -126,7 +126,10 @@ export const GAME_CONFIG = {
      `timeAttack` ＝**打靶場**（計時挑戰）—— 寫成**規則**不是逐張卡填：
      日後多一座城的靶場自動吃到，不必記得補一行（鐵律 1＋8）。
      ⚠ 決定只有 `main.js` 的 `battleBgmOf` 一支（門的 cue 與交棒兩處都問它）。 */
-  battleBgm: { default:'bgm_battle', timeAttack:'bgm_hopstep' },
+  /* `shipHarm`（ver -741，Ray：「船戰禍魘默認這一首 PerituneMaterial_EpicBattle_loop」）：
+     卡上沒寫 `bgm`、而且是**船戰**（卡上有 `weaponSound`＝艦載武器音，那正是
+     船戰的記號）、敵人卡 `kind:'harm'` → 用這一首。判定只有 main.battleBgmOf 一處。 */
+  battleBgm: { default:'bgm_battle', timeAttack:'bgm_hopstep', shipHarm:'bgm_epicbattle' },
 
   /* ══⚠⚠ 主武器：迦尼米德雙槍（ver -699，Ray 交卡）══════════════════════════
      Ray：「裝備欄加入雙槍　迦尼米德α「王之運」／迦尼米德β「運之王」。
@@ -1995,18 +1998,16 @@ export const GAME_CONFIG = {
                                          `after`＝延遲跟播（weapon.js，同 once 一組機制）。 */
                                       '萊福槍':{ key:'se_weapon_cannon',
                                                  after:{ key:'se_weapon_shell', delayMs:200 } } },
-                        counterGapMs:180,
-                        talkOnce:'taught_serpent_frag',
-                        talk:[
-                          { trigger:'battleStart', lines:[
-                            { se:'se_enemy_serpent', shake:true, hold:900 },   // 出場音效＋震動（卡：出場特效）
-                            { who:'renna',    img:'tut_renna_shocked',   text:'好快！' },
-                            { who:'nouvelle', img:'tut_nouvelle_steady', text:'速度快的敵人就用廣域破片砲！' },
-                          ]},
-                        ] },
+                        counterGapMs:180 },
+                        /* ⚠ 舊的戰內 talk（好快！／廣域破片砲）於 ver -741 移除 ——
+                           Ray 的 stage2 稿把這段改成**戰前**的登場演出
+                           （flight 的 runSerpentIntro：插圖＋對白＋換搭檔教學）。 */
     /* 空賊船（ver -509）。船戰的武器音／連射間隔同前兩場（都是船戰）。
        卡上出場音效／特效／背景＝0 ＝ 沒有開場演出、沒有 talk。 */
     flight_pirate:    { enemy:'pirate_ship',
+                        /* ver -741（Ray：「船戰的空賊戰定成這一首」）—— Seven Seas
+                           （Alexander Nakarada），出處與授權字樣在 credit（index.html）。 */
+                        bgm:'bgm_piratebattle',
                         weaponSound:{ '重機槍':'se_ship_heavygun',
                                       '霰彈槍':{ key:'se_spiltcannon', once:'se_bulletpiece' },
                                       '萊福槍':{ key:'se_weapon_cannon',
@@ -2306,6 +2307,9 @@ export const GAME_CONFIG = {
       se_flight_heartbeat:5.064, se_flight_idle_loop:2.848,
       se_flight_sail_loop:7.928, se_flight_seagull:3.353, se_flight_train:5.059,
       sturm:1.709,
+      /* stage2 甲板混亂那一段（ver -741，本機 BS.1770 實測，錨：se_earthquake 誤差
+         <0.1%、sturm 6%）。飛行頁 FILE_GAIN 有第二份，改一邊要改另一邊。 */
+      se_sail:2.056, se_shipcrush:2.358,
 
       /* ── 音樂 ── */
       bgm_mainmenu:1.735, bgm_battle:0.849, bgm_boss:0.665, bgm_result:0.855,
@@ -2318,6 +2322,9 @@ export const GAME_CONFIG = {
       peritunematerial_entangle:1.0,
       /* ⚠ 同上，**還沒量**（ver -658 新加的曲子）。 */
       peritune_hopstep_battle_loop:1.0,
+      /* 船戰兩首（ver -741，本機 BS.1770 實測，同上錨）。 */
+      peritunematerial_epicbattle_loop:0.523,
+      bgm_piratebattle:1.277,
       peritune_crimson_moon_loop:0.879,
       /* ⚠ 母帶太小聲（−26 LUFS）：×master×層之後會撞上 HTMLAudio 的 1.0 上限，
          實際只到 −26 而不是目標的 −21.9。要救得重做母帶。 */
@@ -2696,6 +2703,11 @@ export const ASSETS = {
      ⚠ 兩首都用 **m4a**（§6.6 的規約）：ogg 在 Safari 17 以前整個不支援，
        手機上會變成「那一段沒有音樂」。Crimson_Moon 的 m4a 版由 Ray 於 -615 補上。 */
   bgm_suspense:   "resources/audio/bgm/PerituneMaterial_Suspense6_loop.m4a",
+  /* 船戰兩首（ver -741，Ray：「船戰禍魘默認這一首」「船戰的空賊戰定成 bgm_piratebattle」）。
+     禍魘船戰的「默認」規則在 battleBgm.shipHarm（main.battleBgmOf 讀）；
+     空賊寫在 flight_pirate 卡上。 */
+  bgm_epicbattle:   "resources/audio/bgm/PerituneMaterial_EpicBattle_loop.m4a",
+  bgm_piratebattle: "resources/audio/bgm/bgm_piratebattle.m4a",
   bgm_crimson:    "resources/audio/bgm/Peritune_Crimson_Moon_loop.m4a",
   /* 打靶場（計時挑戰）專屬曲（ver -658，Ray：「所有打靶遊戲都用這個音樂」）。
      ⚠ 哪一場用它**不寫在卡上**而是規則：見下面的 `battleBgm.timeAttack`。 */
