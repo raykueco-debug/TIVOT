@@ -509,7 +509,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -735';
+const FLIGHT_VER = 'ver -736';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -4438,6 +4438,36 @@ function drawMap(){
   mctx.imageSmoothingEnabled=MV.zoom<2.5;                  // 放很大改硬像素，免得糊成一團
   mctx.drawImage(R.cv, ox, oy, R.w*sc, R.h*sc);
 
+  /* ══ 國界（ver -736，Ray：「地圖也要畫出明顯國界線」「線就好，不用色塊，
+     因為隨 stage 禁航區會變」）══ 畫在地形之上、公路之下。
+     製圖學的國界符號：深色打底＋暗紅**點劃線** —— 虛線與鐵路同理（自然界
+     沒有虛線），而且與公路（金）／鐵路（深＋淺枕木）／河（藍灰）都分得開。
+     ⚠ 虛線節距跟著縮放走（同鐵路那一條的理由）；畫完要把 dash 歸零，
+       不然接下來的公路整批變虛線。 */
+  if(BORDER_PATHS.length){
+    mctx.lineCap='round'; mctx.lineJoin='round';
+    const trace=()=>{
+      for(const pts of BORDER_PATHS){
+        mctx.beginPath();
+        for(let k=0;k<pts.length;k++){
+          const q=reliefXY(pts[k][0], pts[k][1]);
+          if(k) mctx.lineTo(ox+q.x*sc, oy+q.y*sc); else mctx.moveTo(ox+q.x*sc, oy+q.y*sc);
+        }
+        mctx.stroke();
+      }
+    };
+    mctx.setLineDash([]);
+    mctx.strokeStyle='rgba(20,12,10,.62)';
+    mctx.lineWidth=Math.max(2.4, sc*MAP_SS*2.6);
+    trace();
+    const du=Math.max(4, sc*MAP_SS*5);
+    mctx.setLineDash([du*1.6, du*0.8, du*0.4, du*0.8]);   // 長劃・點・長劃（點劃線）
+    mctx.strokeStyle='rgba(224,92,72,.95)';
+    mctx.lineWidth=Math.max(1.2, sc*MAP_SS*1.1);
+    trace();
+    mctx.setLineDash([]);
+  }
+
   /* 道路：畫在聚落之下、地形之上。跟 3D 畫面同一份 ROAD_PATHS，
      所以地圖上看到的路就是實際飛過去會看到的那一條。 */
   if(ROAD_PATHS.length){
@@ -7743,6 +7773,61 @@ document.getElementById('spawnBtn').addEventListener('click',()=>{
    索引圖是半解析度：1 像素 = 2 地圖像素 = 40 世界單位，對「我在哪一國」
    這個用途綽綽有餘，而且整張只有幾 KB。 */
 let REGION=null, REGION_W=0, REGION_H=0, REGION_NAME=[];
+/* ══ 國界折線（ver -736，Ray：「遊戲中的地圖也要畫出明顯國界線…是按鈕開啟的
+   參考地圖」「線就好，不用色塊，因為隨 stage 禁航區會變」）══
+   從 REGION 索引圖描出來（鐵律 7：國界只有那一份真相，這裡不另讀檔），
+   地圖座標的折線，畫法同 ROAD_PATHS（drawMap 逐點過 reliefXY）。
+   只描**國與國**的界（兩側都 >0）：海岸線本來就看得出來，逐島描一圈只是噪音。 */
+let BORDER_PATHS=[];
+function buildBorderPaths(S){
+  BORDER_PATHS=[];
+  const W=REGION_W, H=REGION_H, at=(x,y)=>REGION[y*W+x];
+  /* ① 收集半解析格邊：左右／上下兩格是不同的國 → 那條格線是界 */
+  const list=[];
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+    const a=at(x,y);
+    if(x+1<W){ const b=at(x+1,y); if(a!==b && a>0 && b>0) list.push([x+1,y,x+1,y+1]); }
+    if(y+1<H){ const b=at(x,y+1); if(a!==b && a>0 && b>0) list.push([x,y+1,x+1,y+1]); }
+  }
+  /* ② 端點雜湊把小段串成折線（三國交界的第三條自然斷成另一條，無妨） */
+  const key=(x,y)=>x+','+y, adj=new Map();
+  list.forEach((s,i)=>{ for(const [px,py] of [[s[0],s[1]],[s[2],s[3]]]){
+    const k=key(px,py); if(!adj.has(k)) adj.set(k,[]); adj.get(k).push(i); } });
+  const used=new Uint8Array(list.length);
+  for(let i=0;i<list.length;i++){
+    if(used[i]) continue;
+    used[i]=1;
+    const pts=[[list[i][0],list[i][1]],[list[i][2],list[i][3]]];
+    for(let end=0;end<2;end++){
+      for(;;){
+        const p=end===0?pts[0]:pts[pts.length-1];
+        const cand=(adj.get(key(p[0],p[1]))||[]).filter(j=>!used[j]);
+        if(!cand.length) break;
+        const s=list[cand[0]]; used[cand[0]]=1;
+        const q=(s[0]===p[0]&&s[1]===p[1])?[s[2],s[3]]:[s[0],s[1]];
+        if(end===0) pts.unshift(q); else pts.push(q);
+      }
+    }
+    /* ③ 共線合併（長直段收成兩點）＋ Chaikin 一次（磨掉格線的階梯） */
+    const mg=[pts[0]];
+    for(let k=1;k<pts.length-1;k++){
+      const a=mg[mg.length-1], b=pts[k], c=pts[k+1];
+      if((b[0]-a[0])*(c[1]-b[1])!==(b[1]-a[1])*(c[0]-b[0])) mg.push(b);
+    }
+    mg.push(pts[pts.length-1]);
+    let sm=mg;
+    if(mg.length>3){
+      sm=[mg[0]];
+      for(let k=0;k<mg.length-1;k++){
+        const a=mg[k], b=mg[k+1];
+        sm.push([a[0]*0.75+b[0]*0.25, a[1]*0.75+b[1]*0.25],
+                [a[0]*0.25+b[0]*0.75, a[1]*0.25+b[1]*0.75]);
+      }
+      sm.push(mg[mg.length-1]);
+    }
+    BORDER_PATHS.push(sm.map(p=>[p[0]*S, p[1]*S]));   // S＝半解析 → 地圖像素
+  }
+}
 let regionCur=-1, regionShownAt=0;
 const REGION_IN=420, REGION_HOLD=2600, REGION_OUT=900;   // 淡入／停留／淡出（ms）
 
@@ -7764,6 +7849,9 @@ function loadRegions(){
         REGION=new Uint8Array(J.w*J.h);
         for(let i=0,j=0;i<REGION.length;i++,j+=4) REGION[i]=d[j];
         REGION_W=J.w; REGION_H=J.h;
+        /* 國界折線（ver -736）：縮放比從 json 拿（mapW/w）——
+           loadRegions 可能比 loadWorld 先完成，那時 MAPW 還是 0。 */
+        try{ buildBorderPaths(J.mapW/J.w); }catch(_){ BORDER_PATHS=[]; }
         res();
       };
       im.onerror=()=>res();
