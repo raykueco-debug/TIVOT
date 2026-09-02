@@ -96,6 +96,10 @@ export function tryDeathGuard(){
     if(pas.immuneSeconds){
       startImmune(pas.immuneSeconds);
       if(pas.immuneHealPct) guardHealUntil = Date.now() + pas.immuneSeconds*1000;
+      /* 被動技計時器（ver -749，Ray：「諾薇兒的被動怎麼沒有計時器？」）——
+         免傷窗也走盤外金光柱（與明晰之夢同一支 lucidFlood，鐵律 8），
+         升滿＝窗關、到頂自己爆散（combat 端 rAF 收尾）。 */
+      if(api.lucidFlood) api.lucidFlood(pas.immuneSeconds);
     }
     // 續命導航：標記「當前應點的數字格」一次（玩家被救回來不必找格找到被秒）。
     //   只提示這一格——點掉後回到該盤原本的提示規則（hint:false 盤不再標下一格）。

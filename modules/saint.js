@@ -151,7 +151,9 @@ function startSaintMode(){
   setReturnSwipe(true);                  // 開啟生命歸還手勢層
   state.saintDamageDealt = 0;
   state.combo = 0;                       // 期間 saint 代理盤面游標（combat 已讓出主迴圈）
-  api.resetEnergy();                     // 清零破防（雙槍）值，期間也不累積
+  /* 破防值**不清**（ver -749，Ray：「聖徒化／夢魘化都不要清空破防值」）——
+     期間本來就不累積（盤面由 saint 代理，不走 combat.tap 的 addEnergy），
+     存量凍著，退出後接著用。 */
   $('grid').classList.add('saint');
   setSaintBarFx(true);                   // 回血特效：血條轉金＋末端強光點（見 style.css .saint-heal）
   state.saintPrevBoard = { N:state.N, cols:state.cols };
@@ -267,7 +269,7 @@ function startNightmareMode(){
   /* 固定 16 格 → 固定 12.8 秒（ver -690）。 */
   state.niTotalMs= Math.max(1, SAINT_GRID * NI_SEC_PER_CELL * 1000);
   state.combo    = 0;
-  api.resetEnergy();
+  /* 破防值不清（ver -749，同聖徒化那一條）。 */
   $('grid').classList.add('saint','ni');
   setSaintBarFx(true);
   /* 盤面換成 16 宮格（收尾再換回來，同聖徒化）。 */

@@ -489,6 +489,10 @@ function lucidFlood(sec){
     const pct=Math.min(1, (now-t0)/(sec*1000));
     el.style.height=(pct*H)+'px';
     if(pct<1) lucidFloodRaf=requestAnimationFrame(step);
+    /* 到頂自己爆散（ver -749）：它現在服務多個被動（明晰之夢／諾薇兒的免傷窗），
+       不是每一個都有 setLowHpBuff(false) 那種收尾鉤 —— 終點由量尺自己認。
+       clearLucidFlood 冪等，與 lucid 那端的鉤同刻叫到也不會演兩次。 */
+    else clearLucidFlood(true);
   };
   lucidFloodRaf=requestAnimationFrame(step);
 }
