@@ -399,7 +399,12 @@ window.__tivotFlight = {
      固定在面板左上（ver -481），點它開的是**同一頁整備**（gear.open，鐵律 8）。
      gear 的 z（8450）在 iframe（8200）之上；開著時 gear.open 自己會把飛行凍住
      （-481 的 __flightHoldToggle），關掉自動放行。 */
-  gear(){ gear.open(); },
+  gear(){
+    /* `_guidePartner`（ver -743）：飛行頁的換搭檔教學設的一次性閂 ——
+       開整備頁時接著高光夥伴欄（gear.openGuide），用掉就清。 */
+    const g=!!this._guidePartner; this._guidePartner=false;
+    gear.open(g ? { guidePartner:true } : undefined);
+  },
   /* 飛行頁的「返回」。⚠ 只有在**底下沒有別的畫面**時才把首頁叫回來 ——
      從城鎮出航的話，城鎮的舞台一直在 iframe 底下開著，收掉 iframe 就回到城鎮了。 */
   close(){

@@ -2915,6 +2915,12 @@
     letter-spacing:2px;color:var(--gold-dim);cursor:pointer;}
   #gearSheet .gs-ptab.on{border-color:var(--gold);color:var(--gold);
     background:rgba(212,169,74,.12);}
+  /* 確認鈕（ver -743）：待選≠現任才長出來，金色實心＝主要動作（同睡覺鈕的語言）。 */
+  #gearSheet .gs-pconfirm{display:block;width:100%;margin:0 0 8px;padding:9px 0;
+    border:1px solid var(--gold);border-radius:8px;background:rgba(212,169,74,.18);
+    font-family:inherit;font-size:13px;letter-spacing:6px;text-indent:6px;
+    color:var(--gold);cursor:pointer;}
+  #gearSheet .gs-pconfirm:active{background:rgba(212,169,74,.32);}
   #gearSheet .gs-pcard{position:relative;flex:0 0 auto;aspect-ratio:3/4;
     max-height:40vh;min-height:120px;overflow:hidden;
     border:1px solid var(--gold-dim);border-radius:10px;background:rgba(10,8,14,.6);}

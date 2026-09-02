@@ -575,7 +575,11 @@ export const ART = {
      碼頭道別那一幕的送行人群 —— 一張圖畫好幾個人，當一個「角色」上台。
      ⚠ `cm` 是**估的**（畫面上最高那位 ≈172）：這張沒有單一的人可量，
        看渲染結果不對就調 cm（同安雅近景那組的規矩，top/bot 不要動）。 */
-  crowd_np: { cm:172, eye:32, fx:0.370, top:7, bot:1527,
+  /* ⚠ ver -743（Ray：「群眾不要被裁掉，全部入鏡」）：舞台只露出最高者身高的
+     半截（CAST_SHOW），任何全身圖照 172cm 擺一定裁到腰 —— 所以走近景那一套
+     兩顆旋鈕（§6.5）：`cm` 壓小＝整張圖縮到舞台放得下，`standCm` 拉高＝
+     頭頂回到頂線附近。兩個都是**看渲染結果調的**（同安雅近景那組的規矩）。 */
+  crowd_np: { cm:82, standCm:170, eye:32, fx:0.370, top:7, bot:1527,
            side:'R', alt:null, base:'resources/SI/NPC_northport_Crowd.webp', expr:{} },
 };
 

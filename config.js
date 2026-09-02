@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.02-742';
+export const VERSION = 'ver 2026.09.02-743';
 
 export const GAME_CONFIG = {
 
@@ -289,7 +289,8 @@ export const GAME_CONFIG = {
       siFit:{ zoom:1.6, top:0.01 },
       cutin:'cutin_saint',
       voice:null,
-      selectVoice:'vo_life_return',
+      /* 選人確認的語音（ver -743，Ray：「諾薇兒播主動技語音」＝生命歸還）。 */
+      selectVoice:'vo_nou_return',
       perk:'即死防禦（被動）＋生命歸還（主動）',
       /* ⚠⚠ ver -740（Ray）：即死防禦加**十秒免傷**、期間普攻每次回血 2%
          （「免傷仍算受擊，只是不扣血」—— 實作見 combat.enemyAttack 的扣血行）。
@@ -323,7 +324,8 @@ export const GAME_CONFIG = {
       siFit:{ zoom:1.6, top:0.01 },
       cutin:'ci_anya_ni',
       voice:null,
-      selectVoice:'vo_life_return',
+      /* 選人確認的語音（ver -743，Ray：「安雅播被動技語音」＝明晰之夢）。 */
+      selectVoice:'vo_anya_lucid',
       perk:'明晰之夢（被動）＋惡夢化・夢境粉碎（劇情）',
       /* ══ 被動：明晰之夢（Lucid Dream；中文名 ver -682 由 Ray 定）══
          ⚠⚠ **觸發條件 ver -693 改了**（Ray：「娜塔莉戰如果先觸發 lucid dream 再進入

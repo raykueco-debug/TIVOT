@@ -457,6 +457,21 @@ export const CHAPTERS = [
            'np_port_arrive','np_clear_church','np_claws_done','safehouse_northport',
            'np_burial','np_burial_done','np_night','np_night_done','np_day3'],
     enter:'town', town:'northport', node:'inn' },
+  /* ══ Stage 5（ver -743，Ray：「stage5 沒做進章節選擇」）══
+     北泊出航：直接站在碼頭，送行那一段（np_farewell）就緒 —— 演完自動插 S5
+     並出航（羽蛇遭遇接著測）。
+     ⚠ `stage:4`：S5 是**送行那一段自己插的**（act 的 stage 欄位），
+       章節工具只把人擺到那一段之前。
+     ⚠ `np_depart` 要給（閘門已用掉——直接站在碼頭，不再被抓一次）；
+       `np_farewell` **不給**（那正是要演的）。 */
+  { id:'stage5', name:'Stage 5', sub:'北泊出航・送行 → 羽蛇 → 甲板混亂',
+    stage:4, clockHour:8, named:true,
+    flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open',
+           'set_sail','got_ship','dock_day2','flight_centipede_met',
+           'np_port_arrive','np_clear_church','np_claws_done','safehouse_northport',
+           'np_burial','np_burial_done','np_night','np_night_done','np_day3',
+           'np_day3_done','np_anya_join','np_dock_ask','np_grave_done','np_depart'],
+    enter:'town', town:'northport', node:'port' },
 ];
 
 export function newRun(){

@@ -38,6 +38,11 @@ const W = () => GAME_CONFIG.weapons||{};
 const STORY_PARTNERS = () => partner.storyPartnerPool();
 
 let el=null;
+/* 待選搭檔（ver -743，Ray：「伙伴選了以後要有一個確認鈕，點下才生效」）：
+   點頁籤只是**預覽**（卡換成那一位），按「確　認」才寫進 loadout＋pickedPartner，
+   並播那一位的 `selectVoice`（config：安雅＝被動技語音、諾薇兒＝主動技語音）。
+   開頁歸零（預覽不跨開關）。 */
+let pendingPartner=null;
 /* 現在開著哪一個分頁（ver -457，Ray：「在整備頁面加入道具分頁，道具要分類」）。
    ⚠ 不進存檔：這是「玩家現在在看哪一頁」，關掉重開回到整備即可。 */
 let tab='gear';
@@ -138,8 +143,10 @@ function mainGunHtml(){
 function render(){
   const cats=load.order();
   const SP=STORY_PARTNERS();
-  /* 顯示的是**現任**（旗標＋玩家選擇，ver -741）—— 不是池子第一位。 */
-  const pk=partner.storyPartnerKey();
+  /* 顯示的是**現任**（旗標＋玩家選擇，ver -741）；有待選就先預覽待選那一位
+     （ver -743：確認才生效）。 */
+  const cur=partner.storyPartnerKey();
+  const pk=(pendingPartner && GAME_CONFIG.partners[pendingPartner]) ? pendingPartner : cur;
   const p=GAME_CONFIG.partners[pk]||{};
   const fit=p.siFit||{};
   const rot = load.mode()==='rotate';
@@ -203,6 +210,10 @@ function render(){
                 return '<button class="gs-ptab'+(k===pk?' on':'')+'" data-pk="'+k+'"'
                      + ' type="button">'+(pp.name||k)+'</button>';
               }).join('')+'</div>'
+              /* 確認鈕（ver -743）：有待選而且不是現任才長出來。 */
+            + (pk!==cur
+                ? '<button class="gs-pconfirm" type="button">確　認</button>'
+                : '')
             : '')
     +     '<div class="gs-pcard">'
     +       (p.image ? '<img class="gs-pimg" src="'+(asset(p.image)||'')+'" alt=""'
@@ -229,6 +240,37 @@ function render(){
   setTimeout(maybeTip, 0);
 }
 
+/* ══ 夥伴欄聚光燈（ver -743）══ 壓暗其餘、給搭檔那一欄一圈金光＋一句話。
+   ⚠ 遮罩 `pointer-events:none`：**什麼都不擋**（§6.5.5 的教訓：說明不是鎖），
+   「指的是這一欄」交給金光。收場：點提示文字／按下確認／關頁。 */
+let guideEls=null;
+function openGuide(){
+  if(!el || guideEls) return;
+  const tgt=el.querySelector('.gs-ptabs') || el.querySelector('.gs-pcard');
+  if(!tgt) return;
+  const r=tgt.getBoundingClientRect();
+  const dim=document.createElement('div');
+  dim.style.cssText='position:fixed;inset:0;z-index:8455;background:rgba(0,0,0,.45);pointer-events:none;';
+  const ring=document.createElement('div');
+  ring.style.cssText='position:fixed;z-index:8456;pointer-events:none;border:2px solid var(--gold);'
+    +'border-radius:12px;box-shadow:0 0 18px rgba(212,169,74,.9),inset 0 0 12px rgba(212,169,74,.5);'
+    +'left:'+(r.left-6)+'px;top:'+(r.top-6)+'px;width:'+(r.width+12)+'px;height:'+(r.height+12)+'px;';
+  const tip=document.createElement('div');
+  tip.style.cssText='position:fixed;z-index:8456;left:50%;top:'+(r.bottom+18)+'px;'
+    +'transform:translateX(-50%);max-width:80%;padding:10px 14px;border:1px solid var(--gold-dim);'
+    +'border-radius:10px;background:rgba(8,9,14,.92);color:var(--ink);font-size:13px;'
+    +'line-height:1.7;letter-spacing:1px;text-align:center;pointer-events:auto;cursor:pointer;';
+  tip.textContent='在這裡切換戰鬥搭檔——選好按「確　認」才會生效。';
+  tip.addEventListener('click', e=>{ e.stopPropagation(); closeGuide(); });
+  document.body.appendChild(dim); document.body.appendChild(ring); document.body.appendChild(tip);
+  guideEls=[dim,ring,tip];
+}
+function closeGuide(){
+  if(!guideEls) return;
+  for(const e of guideEls){ try{ e.remove(); }catch(_){} }
+  guideEls=null;
+}
+
 /* 小提示（ver -497）：使用道具的回饋一句話，浮在體力條旁邊，1.4 秒自己收。
    ⚠ 不用 alert 也不彈窗 —— 這只是回饋，不是要玩家做決定。 */
 let noteT=0;
@@ -249,16 +291,28 @@ function bind(){
     try{ SFX.menuClick(); }catch(_){}
     tab=b.dataset.tab; render();
   }));
-  /* 換搭檔（ver -741，Ray：「選安或諾都可以，選定後回到畫面」）：
-     選擇存 loadout（跨輪偏好）＋當場套用（setPickedPartner 唯一管道）。 */
+  /* 換搭檔（ver -741；-743 改成**確認制**，Ray：「伙伴選了以後要有一個確認鈕，
+     點下才生效」）：頁籤＝預覽（卡先換給你看），「確　認」才寫進 loadout＋
+     pickedPartner，並播那一位的 `selectVoice`。 */
   el.querySelectorAll('.gs-ptab').forEach(b=>b.addEventListener('click', e=>{ e.stopPropagation();
     const k=b.dataset.pk;
-    if(!GAME_CONFIG.partners[k] || k===partner.storyPartnerKey()) return;
+    if(!GAME_CONFIG.partners[k]) return;
     try{ SFX.menuClick(); }catch(_){}
-    load.setPartner(k);
-    setPickedPartner(k);
+    pendingPartner = (k===partner.storyPartnerKey()) ? null : k;
     render();
   }));
+  { const cf=el.querySelector('.gs-pconfirm');
+    if(cf) cf.addEventListener('click', e=>{ e.stopPropagation();
+      const k=pendingPartner;
+      if(!k || !GAME_CONFIG.partners[k]) return;
+      pendingPartner=null;
+      load.setPartner(k);
+      setPickedPartner(k);
+      const v=GAME_CONFIG.partners[k].selectVoice;
+      try{ if(v && asset(v)) SFX.playVoice(asset(v), sfxGain(v)); else SFX.menuClick(); }catch(_){}
+      closeGuide();          // 教學聚光燈（有開的話）到此收（ver -743）
+      render();
+    }); }
   /* 道具的類別頁籤（ver -497）。 */
   el.querySelectorAll('.gs-icat').forEach(b=>b.addEventListener('click', e=>{ e.stopPropagation();
     if(b.dataset.cat===itemCat) return;
@@ -429,8 +483,9 @@ function closeTip(){
   t.remove();
 }
 
-export function open(){
+export function open(opts){
   ensure();
+  pendingPartner=null;   // 預覽不跨開關（ver -743）
   /* 蓋在飛行畫面上 → 底下整個暫停（ver -481，Ray 指定）。收場（close）放開。
      掛鉤走 window（main.js 掛的）：這一支是葉模組，構不到 iframe。 */
   if(document.body.classList.contains('flight-on') && window.__flightHoldToggle) window.__flightHoldToggle(true);
@@ -441,7 +496,11 @@ export function open(){
   if(GAME_CONFIG.partners[pk] && state.pickedPartner!==pk) setPickedPartner(pk);
   render();
   el.classList.add('on');
-  requestAnimationFrame(()=>{ el.classList.add('vis'); maybeTip(); });
+  requestAnimationFrame(()=>{ el.classList.add('vis'); maybeTip();
+    /* 夥伴欄聚光燈（ver -743，Ray：「同槍店教整備一樣，高光整備欄，再高光
+       夥伴欄」）—— 飛行頁那一段高光了吊墜（整備欄），開進來接著高光**夥伴欄**。
+       走 `opts.guidePartner`（橋上的一次性閂）。⚠ 等 `.on` 之後才量 rect（老坑）。 */
+    if(opts && opts.guidePartner) setTimeout(openGuide, 120); });
   /* ⚠ **一般的 click 音就好**（ver -433，Ray 指定）。原本用 `sfx_saint`（聖徒化那一支）——
      那是「發動」的聲音，開一頁裝備管理配不上那個份量，而且它比其他 UI 音都響。
      ⚠ 走 `SFX.menuClick()`（＝ `se_general_click`，所有按鈕的統一出口）——
@@ -449,6 +508,8 @@ export function open(){
   try{ SFX.menuClick(); }catch(_){}
 }
 export function close(){
+  closeGuide();          // 教學聚光燈跟著頁一起收（ver -743）
+  pendingPartner=null;
   if(!el) return;
   closeTip();
   if(document.body.classList.contains('flight-on') && window.__flightHoldToggle) window.__flightHoldToggle(false);
