@@ -265,8 +265,11 @@ function fireBuff(pas){
     clearTimeout(lowHpTimer);
     lowHpTimer = setTimeout(()=>{ api.setLowHpBuff(false); lowHpTimer=null; }, sec*1000);
     /* 明晰之夢（ver -740）：發動那一刻就把當前應點格指出來 —— 之後每一格
-       由 combat.markNext 接手（它看 lucidActive）。 */
+       由 combat.markNext 接手（它看 lucidActive），一路指到技能結束。 */
     if(pas.key==='firstCounter' && api.hintCurrentCell) api.hintCurrentCell();
+    /* 時限視覺（ver -746）：金光從盤底淹起，`sec` 秒到頂＝與上面那顆計時器
+       同一刻結束（爆散由 setLowHpBuff(false) 那一端演）。 */
+    if(pas.key==='firstCounter' && api.lucidFlood) api.lucidFlood(sec);
   };
   const vo = asset(pas.voice); if(vo) SFX.playVoice(vo, sfxGain(pas.voice));
   api.floatDmg(pas.name,'50%','34%',true);

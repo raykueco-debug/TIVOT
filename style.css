@@ -840,6 +840,31 @@
   @keyframes niNextPulse{
     from{box-shadow:0 0 0 2px #fff, 0 0 10px rgba(255,255,255,.55);}
     to  {box-shadow:0 0 0 3px #fff, 0 0 22px rgba(255,255,255,1);}}
+  /* ══ 明晰之夢的指格也要看得見（ver -746，Ray：「發動後要依序提示所有正確格子
+     到技能結束」）══ 同 -684 那個 NI 的病：發動期間 #grid 掛著 `buffed`
+     （每一格都金邊），`.cell.next` 那圈淡金光疊上去等於隱形 —— markNext 一直
+     在指，玩家看不到。同一帖藥：權重更高、換白光。 */
+  #grid.buffed .cell.next{
+    border-color:#fff;color:#fff;
+    animation:niNextPulse .7s infinite alternate;}
+  /* ══ 明晰之夢的時限＝金光從盤底淹起（ver -746，Ray：「技能的結束時間讓盤面的
+     底色從下方淹起金光，圖層在數字的背後，金光到頂就爆散」）══
+     疊在 #gridWrap 上、罩住 #grid 的範圍（位置由 combat.lucidFlood 現量）。
+     ⚠ 「在數字的背後」用 `mix-blend-mode:screen` 做：格底被加亮成金、
+       亮色的數字照樣浮在上面 —— 真的塞到 DOM 背後會被格子的不透明底色蓋死。
+     末端（`::after`）要高亮（Ray 指定）：一條亮邊＋外光。 */
+  .lucid-flood{position:absolute;pointer-events:none;z-index:3;
+    mix-blend-mode:screen;
+    background:linear-gradient(to top, rgba(212,169,74,.62), rgba(212,169,74,.28));}
+  .lucid-flood::after{content:'';position:absolute;left:0;right:0;top:-2px;height:3px;
+    background:#ffe9a8;
+    box-shadow:0 0 10px #ffd76a, 0 0 22px rgba(255,215,106,.8);}
+  /* 到頂爆散：整片衝亮、往上散開、消失 —— 技能同一刻結束（fireBuff 的計時器）。 */
+  .lucid-flood.burst{animation:lucidBurst .6s ease-out forwards;}
+  @keyframes lucidBurst{
+    0%  {opacity:1;transform:none;filter:brightness(1.8);}
+    35% {opacity:.9;filter:brightness(2.6);}
+    100%{opacity:0;transform:translateY(-14px) scaleY(1.12);filter:brightness(3);}}
   @keyframes saintPulse{from{filter:drop-shadow(0 0 10px var(--gold))}to{filter:drop-shadow(0 0 20px #fff)}}
 
   /* 彈殼 */

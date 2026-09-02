@@ -185,12 +185,10 @@ export const ART = {
                   blushed:     { src:'resources/SI/Renna_SI_blushed.webp',     top:8,  bot:1522, fx:0.551 },
                   lookdown:    { src:'resources/SI/Renna_SI_lookdown.webp',    top:6,  bot:1524, fx:0.548 },
                   chase2:      { src:'resources/SI/Renna_SI_chase2.webp',      top:11, bot:1529, fx:0.579 },
-                  /* stage2 出航（ver -741，Ray 交稿）。逐張量（measure_si.py）。
-                     ⚠ 稿上還有 `Renna_SI_lookup` —— **檔案還沒交**：腳本照規格寫
-                       expr:'lookup'，查不到會自動回退基本立繪（story 的 missingExpr），
-                       圖到位量了取景補這一列即可。 */
+                  /* stage2 出航（ver -741，Ray 交稿）。逐張量（measure_si.py）。 */
                   curious:     { src:'resources/SI/Renna_SI_curious.webp',     top:0,  bot:1526, fx:0.529 },
                   intense:     { src:'resources/SI/Renna_SI_intense.webp',     top:6,  bot:1526, fx:0.629 },
+                  lookup:      { src:'resources/SI/Renna_SI_lookup.webp',      top:5,  bot:1520, fx:0.510 },   // ver -746 交件補量
                   /* 湖上甲板（ver -744，Ray 的 stage5 稿）。逐張量。 */
                   intense2:    { src:'resources/SI/Renna_SI_intense2.webp',    top:5,  bot:1520, fx:0.510 },
                   askserious:  { src:'resources/SI/Renna_SI_askserious.webp',  top:3,  bot:1527, fx:0.525 } } },

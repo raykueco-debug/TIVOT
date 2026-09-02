@@ -509,7 +509,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -745';
+const FLIGHT_VER = 'ver -746';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -2558,8 +2558,7 @@ const PORTRAIT_EXPR = {
     shocked2:  { src:'../resources/SI/Nouvelle_SI_Shocked2.webp',fx:0.541, top:3, bot:1533 },
   },
   /* stage2 出航～甲板混亂（ver -741，Ray 的稿）。⚠ 取景值與 script/speakers.js
-     的 ART 同組（兩邊互指）。`renna/lookup` 的圖**還沒交** —— pkey 查不到差分會
-     自動退回本尊，圖到位補一列即可。 */
+     的 ART 同組（兩邊互指）。 */
   anya: {
     lookup:    { src:'../resources/SI/Anya_SI_lookup.webp',      fx:0.479, top:5, bot:1525 },
     nervous:   { src:'../resources/SI/Anya_SI_nervous.webp',     fx:0.459, top:0, bot:1526 },
@@ -2572,6 +2571,7 @@ Object.assign(PORTRAIT_EXPR.renna, {
   watch:      { src:'../resources/SI/Renna_SI_watch.webp',       fx:0.492, top:7, bot:1530 },
   curious:    { src:'../resources/SI/Renna_SI_curious.webp',     fx:0.529, top:0, bot:1526 },
   intense:    { src:'../resources/SI/Renna_SI_intense.webp',     fx:0.629, top:6, bot:1526 },
+  lookup:     { src:'../resources/SI/Renna_SI_lookup.webp',      fx:0.510, top:5, bot:1520 },  // ver -746 交件補量
 });
 /* `renna/relief` → 本尊 id。⚠ **入隊判定（`inParty`）一定要走這一支**：
    直接拿 `renna/relief` 去問 PARTY 查不到，而 `inParty` 對查不到的人一律放行
@@ -7232,8 +7232,22 @@ function drawIntroArt(now){
   /* cover：鋪滿 3D 場景區（W×VIEWH；面板稍後蓋回下半，不必裁）。 */
   const k=Math.max(W/im.width, VIEWH/im.height);
   const dw=im.width*k, dh=im.height*k;
+  const bx=(W-dw)/2+ox, by=(VIEWH-dh)/2+oy;
   ctx.save();
-  ctx.drawImage(im, (W-dw)/2+ox, (VIEWH-dh)/2+oy, dw, dh);
+  ctx.drawImage(im, bx, by, dw, dh);
+  /* 音波模糊（ver -746，Ray：「羽蛇登場時加入模糊效果，像是被音波攻擊」）——
+     吼聲那 1.6 秒內疊兩張高頻橫向殘影（振幅隨時間衰減），畫面像被聲波震得
+     糊開再收攏。⚠ 不用 ctx.filter 的 blur：Safari 18 以前沒有（§6.5 buildDim
+     那條的同一個理由），殘影疊繪到處都跑得動。 */
+  const BLUR_MS=1600;
+  if(dt<BLUR_MS){
+    const amp=16*(1-dt/BLUR_MS);              // 起手最糊，隨吼聲收斂
+    const ph=Math.sin(dt*0.045)*amp;          // 高頻震盪＝聲波的抖，不是定向拖影
+    ctx.globalAlpha=0.35*(1-dt/BLUR_MS)+0.15;
+    ctx.drawImage(im, bx+ph, by, dw, dh);
+    ctx.drawImage(im, bx-ph, by-ph*0.35, dw, dh);
+    ctx.globalAlpha=1;
+  }
   ctx.restore();
 }
 /* 劇情段的 Crisis（ver -745，Ray：「進劇情時 bgm 為 PerituneMaterial_Crisis_loop」）。
@@ -7949,7 +7963,6 @@ function deckChaosScene(){
   say([
     { who:'nouvelle/shocked2', text:'啊！' },
     { who:'anya/lookup',       text:'……！' },
-    /* `renna/lookup` 的圖還沒交 → pkey 自動退回本尊（見 PORTRAIT_EXPR 檔頭）。 */
     { who:'renna/lookup',      text:'糟糕！帆被——' },
     { who:'renna/intense',     text:'要失控了！' },
     { who:'anya/scared2',      text:'……！' },
@@ -7965,6 +7978,7 @@ function deckChaosScene(){
     requestAnimationFrame(()=>{ ov.style.opacity='1'; });
     setTimeout(()=>{
       if(!muted){ try{ playSfx(seCrashSE); }catch(_){} }
+      /* 落水聲之後**停滿三秒**才交棒淡入（ver -746，Ray：「落水聲以後三秒再淡入才對」）。 */
       setTimeout(()=>{
         addFlag('np_deck_chaos');
         /* ══ 黑著交棒給主線場景「湖上甲板」（ver -744，Ray 的 stage5 稿）══
@@ -7978,7 +7992,7 @@ function deckChaosScene(){
         battleGoing=false;
         ov.style.opacity='0';
         setTimeout(()=>{ try{ ov.remove(); }catch(_){} }, 3100);
-      }, 1800);
+      }, 3000);
     }, 3100);
   }});
 }

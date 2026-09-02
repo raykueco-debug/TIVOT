@@ -151,6 +151,7 @@ export function setup(){
     scheduleUlt: defense.scheduleUlt,
     playCutin: saint.playCutin,
     hintCurrentCell,   // 即死防禦後標記當前應點格（一次性續命導航）
+    lucidFlood,        // 明晰之夢的金光淹漲時限（ver -746；發動端在 partner.fireBuff）
     saintApi: { lifeReturnAbort: saint.lifeReturnAbort },
     // 馬季諾：前線補給（cut-in 後直接進雙槍破防窗口，窗口本體歸 weapon）＋高裝藥彈（低血量普攻加倍；lowHpBuff 為 combat 擁有，經此管道寫）
     startDual: weapon.startDualWindow, setLowHpBuff,
@@ -446,6 +447,47 @@ function setLowHpBuff(on){
   state.lowHpBuff=!!on;
   if(on) $('grid').classList.add('buffed');
   else if(!state.atkBuff) $('grid').classList.remove('buffed');
+  /* 明晰之夢的金光淹漲（見下）：buff 收掉的那一刻＝技能結束＝到頂爆散。
+     馬季諾的 lowHpBuff 沒開過金光（lucidFlood 只有安雅那條在叫），這裡冪等。 */
+  if(!on) clearLucidFlood(true);
+}
+
+/* ══ 明晰之夢的時限視覺（ver -746，Ray：「技能的結束時間讓盤面的底色從下方
+   淹起金光，圖層在數字的背後，金光到頂就爆散，技能結束。金光的末端要高亮」）══
+   一片 `.lucid-flood` 疊在 #gridWrap 上、罩住 #grid 的範圍，高度用 CSS transition
+   以技能秒數線性長到頂 —— 到頂的同一刻 fireBuff 的計時器把 buff 收掉，
+   setLowHpBuff(false) 叫 clearLucidFlood(true) 演爆散。樣式全在 style.css（鐵律 1）。
+   ⚠ 掛在 #gridWrap 不掛 #grid：buff 會跨盤，而 buildGrid 每換一盤就把 #grid
+     的子節點整批洗掉 —— 掛進去金光活不過一盤。位置在建立那一刻現量一次
+     （盤與盤之間 #grid 的外框不變，量一次就夠）。 */
+let lucidFloodEl=null;
+function lucidFlood(sec){
+  clearLucidFlood(false);
+  const wrap=$('gridWrap'), grid=$('grid');
+  if(!wrap || !grid || !(sec>0)) return;
+  const wr=wrap.getBoundingClientRect(), gr=grid.getBoundingClientRect();
+  if(!gr.height) return;                      // 盤面沒顯示就不擺（量到 0 的通病，§6.5.4）
+  const el=document.createElement('div');
+  el.className='lucid-flood';
+  el.style.left=(gr.left-wr.left)+'px';
+  el.style.width=gr.width+'px';
+  el.style.bottom=(wr.bottom-gr.bottom)+'px';
+  el.style.height='0px';
+  wrap.appendChild(el);
+  lucidFloodEl=el;
+  /* 隔一幀才給 transition＋目標高度：同一幀設起點與終點會被合併成一次計算，
+     整段跳掉（同 story.veil 那條 offsetWidth 的理由）。 */
+  void el.offsetWidth;
+  el.style.transition='height '+sec+'s linear';
+  el.style.height=gr.height+'px';
+}
+function clearLucidFlood(burst){
+  const el=lucidFloodEl; lucidFloodEl=null;
+  if(!el) return;
+  if(burst){
+    el.classList.add('burst');
+    setTimeout(()=>{ try{ el.remove(); }catch(_){} }, 650);
+  } else { try{ el.remove(); }catch(_){} }
 }
 
 function clearBoard(){
@@ -1148,6 +1190,7 @@ function stopAll(){
   defense.stopAll();
   saint.stopTimers();    // 停聖徒化計時器（saintTimer / saintReactTimer）
   weapon.stopTimers();   // 停雙槍破防計時器（dualTimer）
+  clearLucidFlood(false);   // 明晰之夢的金光（ver -746）：任何結束路徑都收掉，不爆散
 }
 
 /* ---- 計時碼表（連戰用；規則：只在「盤面可點且非 overkill／非聖徒化」時作動）----

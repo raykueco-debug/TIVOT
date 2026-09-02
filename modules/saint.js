@@ -424,8 +424,11 @@ function niBurstResolve(){
   }
   $('grid').classList.remove('saint','ni'); setSaintBarFx(false);
   if(state.enemyHp<=0){
+    /* ⚠ 夢境粉碎把敵血打到零：**不演 EXSECUTIŌ 畫面，計分照算處決**
+       （ver -746，Ray：「夢境破碎讓敵hp歸零的話不出處決畫面，但是計分時算處決」）
+       —— 粉碎自己的 cut-in 剛演完，再疊一張處決是兩段演出打架。 */
     markExecution();
-    playSaintCutin('execute', ()=>{ api.setPlayerHpRatio(0); api.onEnemyDefeated(); });
+    api.setPlayerHpRatio(0); api.onEnemyDefeated();
     return true;
   }
   finishNightmare(()=>api.setPlayerHpRatio(0));   // HP 剩 1

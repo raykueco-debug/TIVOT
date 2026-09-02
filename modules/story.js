@@ -2773,6 +2773,11 @@ export function setBattleHandler(fn){ battleHandler = fn || null; }
    （`config.battles[].bgm`），撞頂那一拍就得放對的那一首 —— 沒有 id 的話
    啟動層只能一律放 `bgm_battle`。 */
 let battleCueId=null;
+/* 飛行頁交棒的兩條路（橋接 battle／開機 bootBattleGate）不經過腳本的 battle 拍，
+   battleCueId 沒人設 → riseCue 一律放回預設 bgm_battle（ver -746 修，Ray：
+   「羽蛇戰 bgm 不對」）—— 交棒端用這一支把「這一場是誰」告訴撞頂那一拍。
+   曲子仍由 main 的 battleBgmOf 一處決定（鐵律 7），這裡只傳遞 id。 */
+export function setBattleCueId(id){ battleCueId = id || null; }
 function riseCue(){ if(battleCue) try{ battleCue(battleCueId); }catch(e){} }
 let battleCue = null;
 export function setBattleCue(fn){ battleCue = fn || null; }

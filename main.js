@@ -387,6 +387,7 @@ window.__tivotFlight = {
     story.showKerbGate(req.geom);
     closeFlightFrame();
     preloadRestImgs(); preloadLateBgm();
+    story.setBattleCueId(id);   // 撞頂那一拍的曲子照這一場的卡挑（ver -746：不設就退回 bgm_battle，羽蛇的 EpicBattle 放不出來）
     story.playKerberosFromRisen(
       /* `scripted` 由飛行頁宣告（ver -493：隨機遭遇＝false，劇本遭遇＝true）——
          沒帶（舊鑰匙）＝沒宣告，combat 會退回敵人卡的 `story`（ver -495）。 */
@@ -467,6 +468,7 @@ function bootBattleGate(req){
     SFX.unlock();                         // 這一頁唯一的使用者手勢
     preloadRestImgs();                    // 其餘的圖背景補載（cut-in／武器圖…）
     preloadLateBgm();                     // 結算／失敗／Boss 那幾首（打完或打輸才用得到）
+    story.setBattleCueId(req.battle);     // 同橋接那一條（ver -746）：曲子照這一場的卡挑
     story.playKerberosFromRisen(
       ()=>{ $('home').classList.remove('on'); combat.startScriptBattle(req.battle, { story: req.scripted }); },   // 明確宣告才算，否則退回敵人卡（ver -495）
       ()=>story.close({ keepBgm:true }));
