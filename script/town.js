@@ -1185,7 +1185,8 @@ export const TOWNS = {
              試飛預設與暫填組同步推到 7（STAGE_DEFAULT／FEATURE_FROM／索拉娜的
              talks from —— 安雅的留 5：她這一段起真的在船上）。 */
           { flag:'np_farewell', need:'np_grave_done', stage:5, lines:[
-            nou('bigsmile','那麼，大家保重了！'),
+            /* bgm_flight（ver -745，Ray 指定）：送行就換上航行曲——啟程的語氣。 */
+            Object.assign(nou('bigsmile','那麼，大家保重了！'), { bgm:'flight' }),
             crd(null,'諾薇兒小姐！'),
             crd(null,'啊！我們的天使啊！'),
             ren('surprise','好驚人的人氣……'),

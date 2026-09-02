@@ -188,8 +188,12 @@ function layout(){
          群眾的腳高於畫面底，shift 把**全員**往下推，主角群高度跟著跑掉
          （Ray 回報的正是這個）。 */
     if(a.fitStage){
-      const s0 = H/(a.bot-a.top) * 0.97;
-      const yT = H - s0*a.bot;               // 底（bot）貼舞台底 → 圖框上緣
+      /* ver -745（Ray：「群眾可以過中線，以全員入鏡為標準，腳部可以裁，
+         左右上不可」）：改鎖**寬度**——整張圖貼滿舞台寬（過中線是當然的），
+         上緣貼頂；比舞台高的部分裁**腳**（下緣），比舞台矮就底貼底。 */
+      const s0 = W / o.el.naturalWidth;
+      const ih = s0 * o.el.naturalHeight;
+      const yT = (ih >= H) ? 0 : (H - ih);   // 高則頂貼頂裁腳；矮則底貼底
       return { ...o, s:s0, headY:yT+s0*a.top, yTop:yT, fitStage:true,
                b:measureBounds(o.el, a.top, a.bot) };
     }
@@ -278,7 +282,8 @@ function layout(){
        ⚠ 加在**鏡射之後**：這樣「往右」在翻轉與否之下都是同一個螢幕方向。
        ⚠ 它與 `fx` 是兩件事，不要合成一個數字 —— 合了就分不出「量到的」與
          「手調的」，下次重量那張圖會把手調一起洗掉。 */
-    const x = faceX - o.s*((mir ? 1-fx : fx) + (a.fxShift||0))*NW;
+    const x = o.fitStage ? 0
+            : faceX - o.s*((mir ? 1-fx : fx) + (a.fxShift||0))*NW;
     el.style.width  = (o.s*el.naturalWidth)+'px';
     el.style.height = (o.s*el.naturalHeight)+'px';
     el.style.left   = x+'px';

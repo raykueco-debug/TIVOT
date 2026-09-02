@@ -169,6 +169,7 @@ export const state = {
   currentEnemyKey: GAME_CONFIG.currentEnemy,
   curEnemyHitFx: null,
   curEnemySound: null,     // 當前怪攻擊音（依 kind：ult/delay/wrong；enemy 於 setEnemy 寫入、combat.enemyAttack 讀）
+  curEnemyLandSe: null,    // 降臨著地音覆寫（卡上 landSe，ver -745；enemy 寫、enemy 讀）
   intruderTriggered: false,
   inIntruderFight: false,
   deathGuardUsed: false,

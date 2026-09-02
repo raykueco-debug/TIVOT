@@ -97,13 +97,23 @@ export function spawnBlood(randomAngle){
   addFx(d,600);
 }
 // 齒痕：一組上下咬痕，水平位置隨機
+/* 牙印（ver -745 改，Ray：「上下兩道，尖一點」）：上顎＋下顎各一排尖齒，
+   同一個中心相對而咬。齒形在 CSS（.fx-bite-up/.fx-bite-dn 的 clip-path 鋸齒）。 */
 export function spawnBite(){
-  const d=document.createElement('div');
-  d.className='fx fx-bite';
-  d.style.left=(30+Math.random()*40)+'%';
-  d.style.top =(38+Math.random()*22)+'%';
-  d.style.transform='translate(-50%,-50%) rotate('+((Math.random()*30)-15).toFixed(1)+'deg)';
-  addFx(d,560);
+  const cx=(30+Math.random()*40), cy=(38+Math.random()*22);
+  const rot=((Math.random()*30)-15).toFixed(1);
+  for(const side of ['up','dn']){
+    const d=document.createElement('div');
+    d.className='fx fx-bite fx-bite-'+side;
+    d.style.left=cx+'%';
+    d.style.top =cy+'%';
+    /* 位移與旋轉交給 CSS 變數（見 style.css 的說明：keyframes 會蓋掉 inline
+       transform）。origin 釘在咬合線上，兩排齒繞同一條線轉。 */
+    d.style.setProperty('--ty', side==='up' ? '-100%' : '0%');
+    d.style.setProperty('--rot', rot+'deg');
+    d.style.transformOrigin='50% '+(side==='up'?'100%':'0%');
+    addFx(d,560);
+  }
 }
 // 彈痕（玻璃碎裂）：count 顆，位置隨機。每顆用內嵌 SVG 畫中心孔＋放射裂紋＋環裂。
 //   scale＝彈痕放大倍率（config hitFx 可帶，如 Boss 大絕單顆大彈痕 1.6）。
@@ -259,7 +269,9 @@ export function loadEnemyPortrait(en){
       /* 著地的聲音：`se_saint_install` **原音**（ver -649，Ray：「se_saintinstall
          不要降 key，用原 pitch」）。-641 的執行期變調與 -643 的降調檔案都已撤掉。
          ⚠ 增益問 `sfxGain`（全域響度階層，§6.6）。 */
-      SFX.play(asset('sfx_saint'), sfxGain('sfx_saint'));
+      { /* 著地音可由卡覆寫（`landSe`，ver -745——羽蛇要吼叫不要聖印）。 */
+        const k=state.curEnemyLandSe || 'sfx_saint';
+        SFX.play(asset(k), sfxGain(k)); }
       if(api.screenShake) api.screenShake();
       const top=$('top');
       if(top){
@@ -380,6 +392,7 @@ export function setEnemy(key){
   state.WRONG_DAMAGE  = wp.damage !=null ? wp.damage  : null;
   state.curEnemyHitFx = en.hitFx || null;        // 3.7：本怪受擊特效三件套
   state.curEnemySound = en.sound || null;        // 3.7：本怪攻擊音（依 kind：ult/delay/wrong）
+  state.curEnemyLandSe = en.landSe || null;      // 降臨著地音的卡上覆寫（ver -745，羽蛇＝吼叫）
   // 名稱與立繪；取景（config fit.pos → object-position；未設＝回 CSS 預設 center top）
   const nameEl = $('enemyName');
   if(nameEl) nameEl.textContent = displayEnemyName(en.name);

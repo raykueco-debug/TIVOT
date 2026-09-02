@@ -609,22 +609,23 @@
     18%{opacity:1;transform:translate(calc(-50% + var(--dx,0)*.4),calc(-50% + var(--dy,0)*.4)) scale(1)}
     100%{opacity:0;transform:translate(calc(-50% + var(--dx,0)),calc(-50% + var(--dy,0))) scale(.7)}}
   /* 齒痕：上下兩排咬痕（用 radial-gradient 點陣模擬），隨機水平位置 */
-  .fx-bite{width:150px;height:96px;margin:-48px 0 0 -75px;opacity:0;
-    animation:biteMark .5s ease-out forwards;
-    background:
-      radial-gradient(circle at 12% 22%, rgba(150,0,0,.95) 0 5px, transparent 6px),
-      radial-gradient(circle at 30% 14%, rgba(150,0,0,.95) 0 6px, transparent 7px),
-      radial-gradient(circle at 50% 12%, rgba(150,0,0,.95) 0 6px, transparent 7px),
-      radial-gradient(circle at 70% 14%, rgba(150,0,0,.95) 0 6px, transparent 7px),
-      radial-gradient(circle at 88% 22%, rgba(150,0,0,.95) 0 5px, transparent 6px),
-      radial-gradient(circle at 12% 78%, rgba(150,0,0,.95) 0 5px, transparent 6px),
-      radial-gradient(circle at 30% 86%, rgba(150,0,0,.95) 0 6px, transparent 7px),
-      radial-gradient(circle at 50% 88%, rgba(150,0,0,.95) 0 6px, transparent 7px),
-      radial-gradient(circle at 70% 86%, rgba(150,0,0,.95) 0 6px, transparent 7px),
-      radial-gradient(circle at 88% 78%, rgba(150,0,0,.95) 0 5px, transparent 6px);
-    filter:drop-shadow(0 0 3px rgba(80,0,0,.8));}
-  @keyframes biteMark{0%{opacity:0;transform:scale(.7)}25%{opacity:1;transform:scale(1.05)}
-    45%{transform:scale(1)}100%{opacity:0}}
+  /* 牙印（ver -745，Ray：「上下兩道，尖一點」）：上下顎各一排尖齒、對著同一條
+     咬合線相咬。齒形＝clip-path 鋸齒（尖端 96~100% 深，夠尖）。
+     ⚠ 位移與旋轉走 CSS 變數（--ty/--rot，JS 逐次塞）：keyframes 的 transform 會把
+       inline 的整個蓋掉 —— 舊版就是這樣，rotate 從來沒生效過。 */
+  .fx-bite{width:150px;height:34px;opacity:0;
+    background:linear-gradient(rgba(175,0,0,.95), rgba(105,0,0,.9));
+    filter:drop-shadow(0 0 3px rgba(80,0,0,.8));
+    animation:biteMark .5s ease-out forwards;}
+  .fx-bite-up{clip-path:polygon(0 0,100% 0,100% 28%,93% 100%,86% 30%,79% 96%,72% 28%,
+    64% 100%,57% 30%,50% 96%,43% 28%,36% 100%,29% 30%,21% 96%,14% 28%,7% 100%,0 28%);}
+  .fx-bite-dn{clip-path:polygon(0 100%,100% 100%,100% 72%,93% 0,86% 70%,79% 4%,72% 72%,
+    64% 0,57% 70%,50% 4%,43% 72%,36% 0,29% 70%,21% 4%,14% 72%,7% 0,0 72%);}
+  @keyframes biteMark{
+    0%{opacity:0;transform:translate(-50%,var(--ty,-50%)) rotate(var(--rot,0deg)) scale(.7)}
+    25%{opacity:1;transform:translate(-50%,var(--ty,-50%)) rotate(var(--rot,0deg)) scale(1.05)}
+    45%{transform:translate(-50%,var(--ty,-50%)) rotate(var(--rot,0deg)) scale(1)}
+    100%{opacity:0;transform:translate(-50%,var(--ty,-50%)) rotate(var(--rot,0deg)) scale(1)}}
   /* 彈痕：玻璃被擊碎（中心孔＋放射狀裂紋＋環裂），隨機位置。細節用內嵌 SVG 畫。 */
   .fx-bullet{width:120px;height:120px;margin:-60px 0 0 -60px;opacity:0;
     animation:bulletHole .5s ease-out forwards;}

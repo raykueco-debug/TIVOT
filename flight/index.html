@@ -509,7 +509,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -744';
+const FLIGHT_VER = 'ver -745';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -1975,6 +1975,7 @@ const FILE_GAIN = {
   /* stage2 甲板混亂（ver -741）：與 config tuning.fileGain 同值（兩邊互指）。 */
   se_sail:2.056, se_shipcrush:2.358,
   se_enemy_serpent:2.184,   // 羽蛇登場的吼叫（ver -742；config 同值）
+  peritunematerial_crisis_loop:1.077,   // 羽蛇劇情段（ver -745；config 同值）
 };
 /* 這一支音檔最後該用多大的 volume。⚠ `Math.min(1,…)` 是 HTMLAudio 的硬上限：
    母帶太小聲的那幾支（航行環境音、飛行曲）會被夾住、拉不到目標 —— 那是母帶的
@@ -7162,8 +7163,11 @@ const SCRIPTED_ENCOUNTERS = [
      `outOf:2`＝一離開瓦爾士（同蜈蚣出薩梅爾的機制）；`intro:'serpent'`＝
      不走「追到撞上」，走演出序列（戰鬥圖當插圖背景 → 對白 → 換搭檔教學 →
      蕾娜「要來了！」→ 直接開戰，見 runSerpentIntro）。 */
+  /* ver -745（Ray：「範圍太遠，玩家還沒看到有東西飛來就進劇情了。讓牠刷出時
+     常速，接近玩家時兩倍速，撞上時才進劇情『好快』」）：
+     `nearMul/nearDist`＝接近加速；`intro` 改在**接觸那一刻**才啟動（見 updateEnemy）。 */
   { flag:'np_leave_ok', done:'flight_serpent_met', outOf:2,
-    kind:'serpent', speedMul:2, dist:2000, intro:'serpent' },
+    kind:'serpent', speedMul:1, nearMul:2, nearDist:1100, dist:2000, intro:'serpent' },
 ];
 /* 這一趟要不要演劇本遭遇：**開場算一次**。旗標不會在航行途中改變 —— 會改它的是
    主遊戲，而主遊戲在演的時候這一頁是停著的；每幀去 parse 一次 localStorage 是白花的。
@@ -7192,9 +7196,8 @@ function scriptedDue(){
 let intoT0=0;   // 進入 intoRegion 的時刻（scriptedDue 專用）
 function spawnScripted(S){
   spawnEnemy({ kind:S.kind, ahead:true, speedMul:S.speedMul, script:S, spawnDist:S.dist });
-  /* 演出型的劇本遭遇（ver -741，羽蛇）：生成之後不是追撞交棒，
-     是插圖＋對白＋換搭檔教學的一整段（見 runSerpentIntro）。 */
-  if(S.intro==='serpent' && enemy){ runSerpentIntro(S); }
+  /* 演出型的劇本遭遇（ver -741；-745 改）：**撞上才進劇情** —— 生成後正常追
+     （常速），接近加速、接觸那一刻才 runSerpentIntro（見 updateEnemy）。 */
 }
 
 /* ══════════ stage2 羽蛇的登場演出（ver -741，Ray 的稿）══════════
@@ -7233,10 +7236,22 @@ function drawIntroArt(now){
   ctx.drawImage(im, (W-dw)/2+ox, (VIEWH-dh)/2+oy, dw, dh);
   ctx.restore();
 }
+/* 劇情段的 Crisis（ver -745，Ray：「進劇情時 bgm 為 PerituneMaterial_Crisis_loop」）。
+   ⚠ 獨立管理，不進 flightAudio 的清單 —— 那一支的 (true) 會把整組 loop 重開，
+     Crisis 只活在「羽蛇劇情」這一段（開戰交棒時收）。 */
+const crisisLoop=new Audio('../resources/audio/bgm/PerituneMaterial_Crisis_loop.m4a');
+crisisLoop.loop=true; crisisLoop.preload='none';
+function crisisBgm(on){
+  try{
+    if(on){ bgmMain.stop(); crisisLoop.volume=fileVol('peritunematerial_crisis_loop','bgm'); crisisLoop.currentTime=0; crisisLoop.play(); }
+    else { crisisLoop.pause(); }
+  }catch(_){}
+}
 function runSerpentIntro(S){
   if(!enemy) return;
   enemy.holdBattle=true;
   enemy.__spdK0=enemy.spdK; enemy.spdK=0;
+  crisisBgm(true);   // 進劇情＝Crisis（ver -745）
   /* 吼聲（ver -742，Ray：「登場音是牠的叫聲」）在插圖亮相那一拍播（setIntroArt）。 */
   setIntroArt();
   setTimeout(()=>{
@@ -7535,6 +7550,11 @@ function updateEnemy(dt,now){
        從側後方錯身交棒會違反它 —— 牠本來就正面撲來，錯身極少發生。 */
   const nearMissHit = !enemy.script && enemy.state==='chase'
     && enemy.minDist!=null && enemy.minDist<C.nearMiss && dist>enemy.minDist+40;
+  /* 劇本遭遇的接近加速（ver -745，Ray：「接近玩家時兩倍速」）：
+     只乘一次（nearApplied），連續判會每幀翻倍。 */
+  if(enemy.script && enemy.script.nearMul && !enemy.nearApplied && dist<enemy.script.nearDist){
+    enemy.spdK*=enemy.script.nearMul; enemy.nearApplied=true;
+  }
   if((dist<=C.engage || nearMissHit) && enemy.state!=='flee'){
     if(enemy.holdBattle) return;   // 登場演出保留中（ver -741 羽蛇）：開戰由演出收尾自己叫
     if(enemy.script){
@@ -7543,6 +7563,11 @@ function updateEnemy(dt,now){
       const zE=ex*(-Math.sin(cam.angle))+ey*(-Math.cos(cam.angle));
       const svE=zE>40 ? Math.abs((ex*Math.cos(cam.angle)+ey*(-Math.sin(cam.angle)))/zE) : 9;
       if(zE<=40 || svE>1.15) return;          // 在身後／畫面外 → 先不進
+      /* 演出型（羽蛇）：**撞上這一刻**才進劇情（ver -745）—— 不交棒，
+         改跑登場序列（凍結、戰鬥圖背景、對白…），開戰由序列收尾自己叫。 */
+      if(enemy.script.intro==='serpent' && !enemy.introRan){
+        enemy.introRan=true; runSerpentIntro(enemy.script); return;
+      }
     }
     enemy.state='engage'; enemy.tEngage=now; toBattle(enemy.kind);
   }
@@ -7806,6 +7831,10 @@ function toBattle(kind){
      不如**根本不記**：敗北從結構上就等於「這一場還沒發生過」。
      記錄點在 __flightResume({won:true})。 */
   const SC=enemy && enemy.script;
+  crisisBgm(false);          // 劇情段的 Crisis 到此為止（戰鬥曲由主遊戲放，ver -745）
+  /* 結算要用的甲板背景先熱起來（ver -745，Ray：「結算畫面就要先讀
+     deck_rapidsail」）—— 戰鬥打多久它就有多久可以載。 */
+  if(SC && SC.intro==='serpent') deckBgWarm();
   introArt=null;             // 插圖背景收掉（ver -743：它只活到「進入戰鬥」那一刻）
   scriptPending=null;        // 這一頁這一趟不再刷（免戰模式也是；重整就能再測一遍）
   if(peaceMode) return;      // 免戰：遭遇照演，就是不進戰鬥
@@ -7869,6 +7898,9 @@ function toBattle(kind){
 function flightAudio(on){
   const loops=[bgmMain, ambSail, ambIdle, sfxTrain, sfxGull];
   for(const L of loops){ try{ on ? L.start() : L.stop(); }catch(_){} }
+  /* Crisis（羽蛇劇情段）只收不開（ver -745）：它的生命週期是那一段自己的，
+     這裡只是「進戰鬥／被藏起來一定要安靜」的保險（play() 的競態擋不勝擋）。 */
+  if(!on){ try{ crisisLoop.pause(); }catch(_){} }
 }
 /* 父頁在戰鬥打完、要把畫面交還這一頁時呼叫（ver -388）。
    ⚠ `battleGoing` 一定要歸零：不歸零的話船永遠停著（見 update 的那一行），
@@ -7897,6 +7929,16 @@ function departureTalkMaybe(){
    Se_sturm＋Se_Sail → 對白 → 淡入黑景＋se_shipcrush → 淡出。
    「在那片湖著水」之後的戲**等 Ray 的稿** —— 這裡收在黑幕掀開、船停住為止。
    ⚠ `battleGoing` 借來當「演出中全停」：船不動、不再遭遇；收尾歸還。 */
+/* 甲板背景（ver -745，Ray：「結算一撤背景就是 deck_rapidsail 把飛行畫面遮住」）——
+   借 introArt 的畫層（3D 之上、對白之下）：resume 的羽蛇分支**同步**鋪上，
+   飛行畫面露出來的第一幀就已經被它蓋著。 */
+let deckBgImg=null;
+function deckBgWarm(){
+  if(deckBgImg) return;
+  const im=new Image();
+  im.onload=()=>{ deckBgImg=im; };
+  im.src='../resources/background/deck_rapidsail.webp';
+}
 const seSailSE=new Audio('../resources/audio/se/se_sail.m4a'); seSailSE.preload='auto';
 seSailSE.__baseVol=fileVol('se_sail');
 const seCrashSE=new Audio('../resources/audio/se/se_shipcrush.m4a'); seCrashSE.preload='auto';
@@ -7914,9 +7956,11 @@ function deckChaosScene(){
     { who:'renna/command',     text:'那裡！在那片湖著水！' },
     { who:'renna/intense',     text:'！！' },
   ], performance.now(), { done:()=>{
+    /* 黑幕三秒（ver -745，Ray：「船著水的黑淡入淡出轉景太快，要三秒」——
+       同 -739 劇情轉場三秒的規矩）。 */
     const ov=document.createElement('div');
     ov.style.cssText='position:fixed;inset:0;z-index:70;background:#000;opacity:0;'
-      +'transition:opacity 1.2s ease;pointer-events:none;';
+      +'transition:opacity 3s ease;pointer-events:none;';
     document.body.appendChild(ov);
     requestAnimationFrame(()=>{ ov.style.opacity='1'; });
     setTimeout(()=>{
@@ -7933,9 +7977,9 @@ function deckChaosScene(){
         }
         battleGoing=false;
         ov.style.opacity='0';
-        setTimeout(()=>{ try{ ov.remove(); }catch(_){} }, 1300);
+        setTimeout(()=>{ try{ ov.remove(); }catch(_){} }, 3100);
       }, 1800);
-    }, 1250);
+    }, 3100);
   }});
 }
 
@@ -7983,6 +8027,11 @@ window.__flightResume=function(opts){
   /* 羽蛇那一場打贏（ver -741）：接甲板混亂。⚠ 判 done 的鑰匙不判 kind ——
      這一段是**那一條劇本遭遇**的戲，隨機羽蛇（日後 fromStage 放行）不演。 */
   if(lastScriptS && lastScriptS.done==='flight_serpent_met' && !flagOn('np_deck_chaos')){
+    /* 甲板背景**這一刻**就鋪（ver -745）：結算一撤、畫面露出來就是它。
+       地圖上的怪全清（Ray：「包括那隻羽蛇」）—— 牠已經在剛剛那一場被打掉了。 */
+    enemy=null;
+    if(deckBgImg) introArt={ img:deckBgImg, t0:performance.now()-9999 };
+    else { deckBgWarm(); setTimeout(()=>{ if(deckBgImg && !flagOn('np_deck_chaos')) introArt={ img:deckBgImg, t0:performance.now()-9999 }; }, 400); }
     setTimeout(()=>{ if(!sayQueue) deckChaosScene(); }, 1100);
     return;
   }

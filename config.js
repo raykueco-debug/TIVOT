@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.02-744';
+export const VERSION = 'ver 2026.09.02-745';
 
 export const GAME_CONFIG = {
 
@@ -1255,7 +1255,7 @@ export const GAME_CONFIG = {
       story:1, counterStagger:1,
       kind:'human',
       image:'enemy_man_sorana',
-      fit:{ pos:'50% 20%' },
+      fit:{ pos:'50% 30%' },   // ver -745 換上專用戰鬥圖；構圖不對再調這格
       hp:300,
       attack:22,                     // 巨型聖徒 45 的一半
       atkInterval:3.33,
@@ -1597,6 +1597,9 @@ export const GAME_CONFIG = {
       ultEvery:[3,5],              // 發動頻率 3~5 秒一次
       noStack:true,                // 不疊加：場上同時只有一個紅點
       sound:{ ult:'se_enemy_serpent', delay:'em_smack', wrong:'em_smack' },
+      /* 降臨著地音（ver -745，Ray：「se 不放 se_saintintall 而是放羽蛇叫聲」）——
+         禍魘的著地預設是 sfx_saint，這張卡覆寫成牠自己的吼叫（enemy.js 讀）。 */
+      landSe:'se_enemy_serpent',
       special:[],
       boardGrids:[9,9,9,16,16],    // 33344, loop
       boardLoop:true,
@@ -2291,7 +2294,10 @@ export const GAME_CONFIG = {
          ⚠ `vo_torsten_dualcrush` 本身不在這一批（它 -479 就有一列，見下）。 */
       vo_torsten_dualcrush2:2.83,
       vo_torsten_mb:3.53,            vo_torsten_execute:2.63,
-      vo_nouvelle_saintinstall:2.43, vo_nouvelle_obe:2.73,
+      vo_nouvelle_saintinstall:2.43,
+      /* ver -745：OBE 語音更新（Ray 交新檔，1.2 秒 —— 舊 10.6 秒那支的懸案結案）。
+         錨換算（vo_nouvelle_saintinstall 2.43 ÷ 本機量 1.724 ＝鏈補償 1.41）。 */
+      vo_nouvelle_obe:2.04,
       vo_nouvelle_deathguard:2.29,   vo_nouvelle_lifereturn:3.17,
       vo_anya_nightmareinstall:4.14, vo_anya_obe:2.05,
       vo_anya_dreambreaker1:5.15,    vo_anya_dreambreaker2:2.63,
@@ -2751,9 +2757,8 @@ export const ASSETS = {
   bgm_misty:        "resources/audio/bgm/Peritune_Misty_Hollow_loop.m4a",
   bgm_whirlwind:    "resources/audio/bgm/Peritune_Whirlwind.m4a",
   bgm_whistling:    "resources/audio/bgm/Peritune_Whistling_Winds_loop.m4a",
-  /* ⚠⚠ man_sorana 的敵立繪**暫用索拉娜的 SI**（她就是那個「森住民」）——
-     Ray 交專用戰鬥圖再換（同羽蛇 FLM 的規格）。 */
-  enemy_man_sorana: "resources/SI/Sorana_SI_side.webp",
+  /* ver -745：Ray 交專用戰鬥圖（man_sorana.jpg → webp，原檔入 _originals）。 */
+  enemy_man_sorana: "resources/enemy/man_sorana.webp",
   bgm_crimson:    "resources/audio/bgm/Peritune_Crimson_Moon_loop.m4a",
   /* 打靶場（計時挑戰）專屬曲（ver -658，Ray：「所有打靶遊戲都用這個音樂」）。
      ⚠ 哪一場用它**不寫在卡上**而是規則：見下面的 `battleBgm.timeAttack`。 */
