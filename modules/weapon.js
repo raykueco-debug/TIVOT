@@ -246,7 +246,7 @@ export function activateDual(){
     api.resetEnemyTimers();
     api.scheduleUlt();
     startDualWindow();
-  }, L.cutins.dualBreak+'<span class="cutin-en">Guard Crushing</span>',
+  }, L.cutins.dualBreak+'<span class="cutin-en">Bullets Rain</span>',   // ver -750，Ray：「Bullets Rain 彈雨傾洩」
      /* 破防 cut-in 分流（ver -454，Ray：「story 版的破防 CI 換成這一張
         CI_Torsten_Dualcrush」）：本篇＝托爾斯滕、試玩版照舊 Luna。
         ⚠ 走 `storyMode()`（＝scriptRun || tutorialStoryRun，唯一的判定，鐵律 8）。 */

@@ -72,7 +72,7 @@ export const STRINGS = {
   /* ═══ 5. Cut-in 演出 ═══ */
   cutins: {
     saintInstall:      'SAINT INSTALL!!',
-    dualBreak:         'GUARD BREAK · DUAL WIELD',
+    dualBreak:         'BULLETS RAIN',           // ver -750（Ray：「彈雨傾洩」）
     deathGuard:        'DEATH GUARD',
     mbSub:             'ADDITIONAL JUDGMENT · HP 50%',
     executeSub:        '{name} · ERADICATION',

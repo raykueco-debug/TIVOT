@@ -83,7 +83,7 @@ export const STRINGS = {
   /* ═══ 5. Cut-in 演出 ═══ */
   cutins: {
     saintInstall:      'セイント\nインストール！！',   // \n＝cut-in 斷行點（セイント上／インストール下，不得詞中斷行）
-    dualBreak:         'ガードブレイク\n二丁拳銃',      // 同上：一行放不下時的指定斷點
+    dualBreak:         '弾雨の嵐',               // ver -750（Ray：「彈雨傾洩」）
 
     deathGuard:        '即死防御',
     mbSub:             '追加聖裁 · HP 50%リカバー',

@@ -88,7 +88,7 @@ export const STRINGS = {
   /* ═══ 5. Cut-in 演出（title 大字／sub 副標）═══ */
   cutins: {
     saintInstall:      '聖徒降臨！！',          // 副標 SAINT INSTALL!! [EN-STYLE] 不譯
-    dualBreak:         '破防・雙槍',            // 副標 Guard Crushing [EN-STYLE] 不譯
+    dualBreak:         '彈雨傾洩',              // ver -750，Ray：「改成 Bullets Rain 彈雨傾洩」（副標在 weapon.js）
     deathGuard:        '即死防禦',              // 副標 Death Guard [EN-STYLE] 不譯
     mbSub:             '追加聖裁 · HP 50%',     // MAXIMUM BURST 副標
     executeSub:        '{name} · 消滅',        // EXSECUTIŌ 副標（{name}=敵名）
