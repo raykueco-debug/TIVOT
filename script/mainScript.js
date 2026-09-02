@@ -465,8 +465,7 @@ export const MAIN_SCRIPT = {
      ⚠ 戰鬥卡 man_sorana：BGM Whirlwind、打贏換 Whistling Winds（卡上 bgmAfter）。
      ⚠ 結尾「為什麼攻擊我們？」之後**稿到此為止** —— 落一個檢查點、掛待續卡、
        回主選單（scene 的 endHome）。Ray 的後續稿到了把待續那兩拍換掉、接 next。
-     ⚠ 「木頭斷裂聲」**暫用 se_brickcrush**（音庫裡沒有木裂，最接近的一支）——
-       Ray 交 se_woodbreak 再換。 */
+     ⚠ 木頭斷裂聲＝se_woodbreak（ver -751 交件；-744 曾暫用 se_brickcrush）。 */
   lake_deck: {
     sceneId:'lake_deck',
     next:null,
@@ -484,8 +483,9 @@ export const MAIN_SCRIPT = {
         portrait:{ char:'NOUVELLE', show:true } },
       { speaker:'ANYA', text:'……沒事。',
         portrait:{ char:'ANYA', show:true } },
-      /* 木頭斷裂聲（演出拍：沒有台詞就要給 auto，§6.5）。 */
-      { speaker:'RENNA', text:'', auto:1000, se:'se_brickcrush', shake:true },
+      /* 木頭斷裂聲（演出拍：沒有台詞就要給 auto，§6.5）。ver -750：Ray 交了
+         se_woodbreak（-751），-744 暫代的 se_brickcrush 退場。 */
+      { speaker:'RENNA', text:'', auto:1000, se:'se_woodbreak', shake:true },
       { speaker:'RENNA', text:'可怕的蠻力……竟然把整個舵都給斷了。',
         portrait:{ char:'RENNA', expr:'shockedCalm' } },
       { speaker:'ANYA', text:'很強。' },

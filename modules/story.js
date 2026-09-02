@@ -1123,6 +1123,7 @@ const SE_FILES=[
   'Se_enemy_centipi.m4a', 'se_weapon_cannon_120mm.m4a', 'se_weapon_heavygun.m4a',
   'se_enemy_revolver.m4a', 'se_enemy_shot.m4a', 'se_enemy_slash.m4a', 'se_enemy_smack.m4a',
   'se_land.m4a',   // 著岸（ver -744，湖上甲板）
+  'se_woodbreak.m4a',   // 舵斷裂的木裂聲（ver -751，Ray 交件；取代暫代的 se_brickcrush）
   'se_flight_heartbeat.m4a', 'se_flight_idle_loop.mp3', 'se_flight_sail_loop.mp3',
   'se_flight_seagull.m4a', 'se_flight_train.mp3', 'vo_lunaMG.m4a', 'se_punch.m4a',
   'se_brickcrush.m4a',                                       // 瓦礫崩落（北方泊地教堂，ver -624）
