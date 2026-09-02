@@ -332,6 +332,14 @@ export function settle(totalTime, stats, opts={}){
        畫面上的「戰鬥用時」全部同一個數字（鐵律 7）。 */
     if(stats.clearTime) totalTime = stats.clearTime;
   }
+  /* ══⚠⚠ 名詞定義（ver -755，Ray 定案）：**一次結算為一局、一隻怪 hp 清零為一場、
+     一次盤面清空為一盤**。══
+     「現在每一局戰鬥 hp 跟破防值都會回到初始值」（Ray）—— 局的終點就是結算，
+     所以在這裡歸位：HP 回滿、破防值歸零。之後離場的持久 HP 存檔
+     （combat 的 prog.setHp）存到的就是滿值 ＝ 下一局滿血滿格開場。
+     ⚠ 連戰（session）中間幾場**不經過這裡**（midSession 不結算）—— 局內延續照舊。
+     ⚠ 戰敗不歸位：那一局還沒結（回捲／續戰各走各的路）。 */
+  if(!isLose){ state.playerHp = state.playerMax; state.energy = 0; }
   /* 劇情版教學（諾薇兒帶的那一場）：結算頁**整個不出**（Ray 指定，見
      script/TUTORIAL_LINES_NOUVELLE.md 第八節）。
      ⚠ 正常情況下**根本走不到這裡** —— ver -325 起 combat 的 win()/lose() 在

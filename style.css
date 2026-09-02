@@ -2185,10 +2185,10 @@
        transition 整個蓋掉 —— 門一開兩扇就會彈回中間。轉子元素則是各管各的，
        兩種轉自然疊加。
      ⚠ 凹槽（`.ke-well`）是兄弟元素，不跟著轉：孔是挖在鐵板上的，會轉的是輪子。 */
-  @keyframes kerbTickBig{ to{ transform:rotate(360deg); } }
-  @keyframes kerbTickSm { to{ transform:rotate(-360deg); } }
-  #storyExit img{animation:kerbTickBig 60s steps(60) infinite;}
-  #kerbGearSm img{animation:kerbTickSm 30s steps(30) infinite;}
+  /* ⚠⚠ 齒輪的「跳動」自 ver -755 改由 **JS 撥**（story.js 的 gearTick）——
+     手機（iOS Safari）對「長週期＋steps()」的 CSS 動畫重繪非常不可靠：
+     一秒才變一格的畫面更新常被整個略過，齒輪在手機上就是不動（Ray 回報）。
+     節奏不變：大 6°/s、小 −12°/s，一秒一跳。舊的 kerbTickBig/Sm keyframes 移除。 */
   #kerb.lift #storyExit{transform:rotate(var(--kerb-gear-rot,0deg));}
   #kerb.lift #kerbGearSm{transform:rotate(var(--kerb-gear-rot-s,0deg));}
   #kerb.open #storyExit{transform:translateX(var(--kerb-open-rx,0px)) rotate(var(--kerb-gear-rot,0deg));

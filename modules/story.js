@@ -714,6 +714,22 @@ function coverOrigin(el, p){
      只會讓玩家覺得卡住。 */
 const CG_FADE_MS = 500;
 let slowFadeSeq = 0;      // 慢黑幕（ver -739）的 inline duration 歸還序號，見 renderLine
+/* ══ 齒輪的跳動（ver -755，Ray：「手機版齒輪不跳動」）══
+   原本是 CSS `steps()` 動畫（60s/30s 一圈、一秒一格）—— iOS Safari 對這種
+   「長週期＋一秒才變一格」的動畫重繪非常不可靠，手機上齒輪常整個不動。
+   改由 JS 一秒撥一格（節奏同舊 CSS：大 6°/s、小 −12°/s，方向相反＝咬合）。
+   ⚠ 轉的是**裡面那張 img**：鈕身上的 transform 是門在用的（開關門位移），
+     疊上去會互相蓋掉 —— 與舊 CSS 那一條同一個理由。
+   ⚠ 劇情層沒開就跳過（一秒一次的 no-op，成本可忽略）。 */
+let gearDeg=0;
+setInterval(()=>{
+  if(!document.body.classList.contains('story-on')) return;
+  gearDeg=(gearDeg+6)%360;
+  const a=$('storyExit'), b=$('kerbGearSm');
+  const ai=a && a.querySelector('img'), bi=b && b.querySelector('img');
+  if(ai) ai.style.transform='rotate('+gearDeg+'deg)';
+  if(bi) bi.style.transform='rotate('+(-gearDeg*2)+'deg)';
+}, 1000);
 let slowSlideSeq = 0;     // 慢速上場（ver -740）同上 —— 立繪槽的 inline duration 歸還
 /* 情境卡的日期時刻代換（ver -739）：{DATE}／{TIME} **顯示的那一刻**才問時鐘
    （鐵律 7：日期不寫死 —— 寫死的卡在玩家拖過半夜之後就是騙人的）。 */

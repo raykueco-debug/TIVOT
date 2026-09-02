@@ -509,7 +509,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -754';
+const FLIGHT_VER = 'ver -755';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -4036,6 +4036,10 @@ const QUALITY = [
   { dpr:1.5, bwf:0.54, cell:10, nmax:26, blk:1.1 },   // 1
   { dpr:1,   bwf:0.48, cell: 9, nmax:20, blk:1.7 },   // 2
   { dpr:1,   bwf:0.40, cell: 7, nmax:14, blk:2.6 },   // 3 低
+  /* q4（ver -755，Ray：「手機端飛行地圖掉幀嚴重」）：自適應原本到 q3 就沒路退，
+     低配手機在 q3 還是撐不住就只能掉幀。再給一檔：緩衝再縮 17%、格網更粗、
+     量體塊更早不畫 —— 城市取樣是逐像素的，緩衝縮多少成本就降多少。 */
+  { dpr:1,   bwf:0.33, cell: 6, nmax:10, blk:3.6 },   // 4 極低（手機保底）
 ];
 /* ── 量體層的門檻：**固定值，不隨自適應畫質變**（ver -285）───────────
    ⚠⚠ 這裡原本是 QUALITY 的一欄（27/45/75/128）。那才是「聖王廳靠近會 2D 跳
@@ -4099,7 +4103,7 @@ let CITY_ZNEAR = 14, CITY_ZRATIO = 3, CITY_ZCLAMP = 8;
 let MASS_ZNEAR = 60, MASS_ZRATIO = 3;
 
 let qLevel = 0, qLocked = false;
-{ const m=/[?&]q=([0-3])/.exec(location.search);
+{ const m=/[?&]q=([0-4])/.exec(location.search);
   if(m){ qLevel=+m[1]; qLocked=true; } }
 /* ── 除錯：把城的逐格貼圖格線畫出來（?grid=1）──────────────────────────
    ⚠ 這支存在的理由：使用者回報「格子狀破圖」時，城區疊了好幾層（平面圖的格／

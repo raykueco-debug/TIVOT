@@ -1376,8 +1376,13 @@ export const TOWNS = {
                    「真的只剩同一邊可用時，換人＝抽牌輪轉」（引擎自己會滑出／滑入）。
                  ⚠ 娜塔莉倒在地上，`cm` 給的是「這張畫該佔多少公分」不是身高
                    （見 speakers.js 的說明）。 */
-              nat(null,'……', { bg:'Northport_north_BF', bgm:'failed',
-                                hide:['RENNA','NOUVELLE','ANYA_X'] }),
+              /* ══ 教堂 → 北側（娜塔莉處）的轉景三秒（ver -755，Ray：「教堂內轉景
+                 到娜塔莉處淡入淡出要三秒」）══ 同翌朝那一段的 fadeOut/fadeIn 拍
+                 （-739 的 slowFade）：先三秒淡黑＋清場，背景與 BGM 在全黑之下換，
+                 再三秒亮回、娜塔莉那一拍才上。 */
+              { speaker:'PLAYER', text:'', auto:3200, fadeOut:3000,
+                hide:['RENNA','NOUVELLE','ANYA_X'] },
+              nat(null,'……', { bg:'Northport_north_BF', bgm:'failed', fadeIn:3000 }),
               grl('crying','娜塔莉……娜塔莉！'),
               nat(null,'……'),
               grl('desperate','……'),

@@ -310,18 +310,22 @@ export function resolveThreat(th){
     }
     if(bp.take>0){
       const dmg=Math.max(1, Math.round(effUltDamage()*bp.take));
-      api.enemyAttack(dmg, 'block');
+      /* 聖徒化（ver -755）：橘圈的 take 也是「擋下一部分」那一族 → 半格推進
+         （同黃圈；不給的話 enemyAttack 會用全額 +1s，把橘圈打成挨大絕）。 */
+      api.enemyAttack(dmg, 'block',
+        state.saintMode ? state.playerMax/SAINT_BLOCK_DIVISOR : undefined);
       api.floatDmg(fmt(L.battle.blockDmg,{n:dmg}),'50%','46%',false);
     }
   }else{
     // === Defense（格擋＝不完美防禦，仍挨大絕）===（白色微閃）。攻擊音由下方 enemyAttack('ult') 出敵大絕音。
     flashDefense('block');
-    if(state.saintMode){
-      // 聖徒化期間：格擋＝推進 +0.5 秒（下一輪聖徒化才會實際生效）
-      api.enemyAttack(0, 'block', state.playerMax/SAINT_BLOCK_DIVISOR);   // 'block'＝擋下一半（ver -600 評價用）
-      api.floatDmg(L.battle.block,'50%','42%',false);
-    }else{
-      /* ══ 黃圈（ver -706 改寫）══ 同橘圈，行為讀卡上的 `bands.block`。 */
+    {
+      /* ══ 黃圈（ver -706 改寫；**-755 起聖徒化也走同一套**，Ray：「聖徒化期間
+         反擊用的是舊系統，更新之」）══ 行為讀卡上的 `bands.block` —— 開不開火、
+         挨多少，聖徒化內外**同一張卡**（鐵律 7）。
+         聖徒化的差別只有「挨打不掉血、改推倒數槽」——那件事收在 enemyAttack 的
+         saintMode 分支（唯一入口），這裡只把「格擋＝+0.5s」的推進量交給它
+         （舊規矩不變：擋下是半格推進，不看 take 折了多少）。 */
       const bb = weaponBand(w, 'block');
       api.floatDmg(L.battle.block,'50%','42%',false);
       if(bb.counter){
@@ -330,10 +334,11 @@ export function resolveThreat(th){
       }
       if(bb.take>0){
         const dmg=Math.max(1, Math.round(effUltDamage()*bb.take));   // 教學：2 減半 → 1
-        api.enemyAttack(dmg, 'block');                   // 依武器倍率受傷（'block'＝擋下一半，ver -600）
+        api.enemyAttack(dmg, 'block',
+          state.saintMode ? state.playerMax/SAINT_BLOCK_DIVISOR : undefined);   // 聖徒化：格擋＝+0.5s
         api.floatDmg(fmt(L.battle.blockDmg,{n:dmg}),'50%','46%',false);
       }
-      if(api.onThreatEarly) api.onThreatEarly();   // 教學「太早防禦」插話（教學外/聖徒化為 no-op）
+      if(!state.saintMode && api.onThreatEarly) api.onThreatEarly();   // 教學「太早防禦」插話（教學外/聖徒化為 no-op）
     }
   }
   /* ⚠⚠ **紅點解決了就指一下正確格**（ver -718，Ray：「反擊、格擋成功也顯示下一個

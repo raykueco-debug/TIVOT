@@ -1501,7 +1501,10 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
   function move(x,y){
     if(!tracking||fired) return;
     moved=Math.max(moved, Math.hypot(x-startX, y-startY));
-    if(moved >= TAP_SLOP) showAura(x,y);        // 確定是滑動了才亮（見上）
+    /* 聚光只給**真的在滑**（ver -755，Ray：「聖徒/夢魘期間點畫面不要有聚光
+       效果」）：TAP_SLOP（14px）在手機上點一下就會超過，改成過了需求量的四成
+       才亮 —— 點擊永遠碰不到，下滑的回饋照舊。 */
+    if(moved >= need()*0.4) showAura(x,y);
     if(aura && aura.classList.contains('on')){ aura.style.left=x+'px'; aura.style.top=y+'px'; }
     const up = startY - y;
     if(up > need() && up > Math.abs(x-startX)*1.0){
@@ -1509,7 +1512,12 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
       /* ⚠ 惡夢化期間的上滑是**它自己的主動技**（ver -671，Ray：「主動技是在 NI 期間
          往上劃可以一次性清除現有盤面造成相應傷害」）—— 那不是搭檔技，
          所以在問 partner 之前先讓它接走。兩者不會同時成立（saintMode／niMode 互斥）。 */
-      if(state.niMode){ saint.nightmareActive(); }
+      /* ⚠⚠ **劇情的粉碎教學還沒到之前，玩家不可自己引爆**（ver -755，Ray：
+         「娜塔莉戰如果玩家先劇情一步夢境粉碎，就會卡死，所以在劇情之前不可使用」）
+         —— 那一段的 talk 裡還排著 niBurst 閘門（tutorial.niBurstPending）時，
+         這裡的上滑一律吃掉：等到閘門真的開了，由閘門自己的完成路徑去引爆
+         （GATE_ACTIONS.niBurst），這一條也擋不到它。非劇情戰沒有閘門＝照常。 */
+      if(state.niMode){ if(!tutorial.niBurstPending()) saint.nightmareActive(); }
       // 下滑觸發主動技（情境＝聖徒化內）。能否發、屬於誰由 partner 判定；換 partner 即此技消失。
       else partner.tryActive('saint');
     }
