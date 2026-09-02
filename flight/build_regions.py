@@ -35,19 +35,35 @@ SEA_GREY = 44 / 520 * 255
 # 國名錨點：從 region.png 的標籤位置讀出來的（地圖像素）。
 # ⚠ 這是**人讀的**，不是 OCR —— 標籤是燒進圖裡的文字，沒有可靠的自動來源。
 #   改了 region.png 的國界不用動這裡；改了國名或新增國家才要。
+# ⚠⚠ ver -734（Ray 交國名總表）：達爾馬提亞→瓦勒里亞、恩雅→羅賽爾、
+#   阿斯佩里亞→伊斯維亞、東埃爾比斯公國→諾爾維亞王國、Zevelia→Zevilia。
+#   **Reference/region.png 上燒的還是舊名** —— 名字的真相在這張表，不在那張圖。
 ANCHORS = [
     ('薩梅爾帝國',     'Samael Empire',              1154, 709),
     ('瓦爾士大公國',   'Grand Duchy of Vals',        1589, 228),
-    ('阿斯佩里亞王國', 'Kingdom of Asperia',          365, 436),
-    ('東埃爾比斯公國', 'Principality of East Elbis',  923, 312),
+    ('伊斯維亞王國',   'Kingdom of Isvia',            365, 436),
+    ('諾爾維亞王國',   'Kingdom of Norvia',           923, 312),
     ('埃爾比斯王國',   'Kingdom of Elbis',            620, 260),
-    ('達爾馬提亞王國', 'Kingdom of Dalmaria',         612, 677),
-    ('澤維利亞王國',   'Kingdom of Zevelia',         1835, 588),
+    ('瓦勒里亞王國',   'Kingdom of Valeria',          612, 677),
+    ('澤維利亞王國',   'Kingdom of Zevilia',         1835, 588),
     ('瓦爾德尼亞王國', 'Kingdom of Valdenia',        1661, 691),
-    ('恩雅王國',       'Kingdom of Enya',             369, 777),
+    ('羅賽爾王國',     'Kingdom of Rosselle',         369, 777),
     ('法爾登王國',     'Kingdom of Falden',          1266, 375),
     ('馬爾維恩王國',   'Kingdom of Malvien',         1553, 428),
 ]
+
+# ══ 外海島群（ver -734）══ Reference/region.png 沒有這些島（它畫在舊地形上）——
+# 島群的國界由**現行高度圖**推：新增的陸地（region.png 抽不到＝id 0）落在哪個框
+# 就劃給誰。與 build_island.py 的島是同一批（那支生成地形、這裡劃國界）。
+#   羅賽爾王國（id 9）＝本土（舊恩雅）＋西南大島與其東側小島
+#   埃蘭王國（id 12，新國）＝西方中島＋往南那串小島
+ISLAND_REGIONS = [
+    # (id, y0, y1, x0, x1)  全解析地圖像素；整個連通塊都在框內才劃入
+    # ⚠ 兩框在 y 895~940 有一小段重疊：先列的先配（島鏈最南那顆屬埃蘭）。
+    (12, 460, 940, 20, 210),
+    (9,  895, 1200, 30, 580),
+]
+ISLAND_NAMES = {12: ('埃蘭王國', 'Kingdom of Eland')}   # 9 已在 ANCHORS（羅賽爾）
 
 
 def main():
@@ -111,6 +127,27 @@ def main():
         if ci not in used:
             print('  · 未認領的區塊 %7d px 中心(%4.0f,%4.0f)（多半是湖或標記，忽略）'
                   % (ar, cx, cy))
+
+    # ══ 外海島群（ver -734）══ ⚠⚠ 一定要在下面「補洞」**之前**：
+    # 島是 region.png 抽不到的新陸地（id 0），先劃給 ISLAND_REGIONS 表上的國，
+    # 否則會被「併入最近的國家」按距離亂拆。整個連通塊都在框內才劃入 ——
+    # 貼著本土海岸的無主碎邊（抗鋸齒殘渣）連通範圍很大，自然落不進框。
+    ncc, cc, stt, _ = cv2.connectedComponentsWithStats(
+        (land & (idx == 0)).astype(np.uint8), 8)
+    isl_px = 0
+    for j in range(1, ncc):
+        x0 = stt[j, cv2.CC_STAT_LEFT]; y0 = stt[j, cv2.CC_STAT_TOP]
+        x1 = x0 + stt[j, cv2.CC_STAT_WIDTH] - 1
+        y1 = y0 + stt[j, cv2.CC_STAT_HEIGHT] - 1
+        for rid, by0, by1, bx0, bx1 in ISLAND_REGIONS:
+            if by0 <= y0 and y1 <= by1 and bx0 <= x0 and x1 <= bx1:
+                idx[cc == j] = rid
+                isl_px += int(stt[j, cv2.CC_STAT_AREA])
+                if not any(nm['id'] == rid for nm in names):
+                    zh, en = ISLAND_NAMES[rid]
+                    names.append({'id': rid, 'zh': zh, 'en': en})
+                break
+    print('島群劃界：%d px' % isl_px)
 
     # 未覆蓋的陸地：補成最近的國家（邊界抗鋸齒、標籤文字挖掉的洞）
     hole = land & (idx == 0)

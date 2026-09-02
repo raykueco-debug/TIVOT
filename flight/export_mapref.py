@@ -22,13 +22,16 @@ OUT    = os.path.join(HERE, "map_reference.png")
 #   · 薇拉馮德港的 (1310,965) 是**已知錯的**舊值（落在海上，且與 SETTLEMENTS
 #     差 60px，地圖上城與名牌會分家）—— index.html 早就改成 (1366,936)。
 #   · 北方泊地由 (1000,300) 移到 (1496,160)（Ray 在現場指定）。
+# ⚠ ver -734：北方泊地對回 (1516,150)（-444 城的插畫落地座標，index.html 已改）；
+#   加 (1094,808) 的無名村落（ver -733，Ray：「備著」）。
 PLACES = [
     (1005, 600, "帝都",         "教廷・中樞"),
     (934,  606, "聖王廳",       "教廷・聖座"),
     (1366, 936, "薇拉馮德港",   "帝國・港灣"),
     (985,  858, "卡耶爾山谷",   "險地"),
-    (1496, 160, "北方泊地",     "泊地"),
+    (1516, 150, "北方泊地",     "泊地"),
     (2030, 590, "東方泊地",     "泊地"),
+    (1094, 808, "村落",         "聚落・未命名（備用）"),
 ]
 
 GRID      = 100        # 網格間距（地圖像素）
@@ -40,9 +43,15 @@ PARCH = (232, 224, 205)
 
 
 def load_font(size):
-    for name in ("msjh.ttc", "msyh.ttc", "simhei.ttf", "mingliu.ttc"):
+    # Windows 與 macOS 的 CJK 字型都試（ver -734：這支現在也在 mac 上跑）
+    cands = [os.path.join(r"C:\Windows\Fonts", n)
+             for n in ("msjh.ttc", "msyh.ttc", "simhei.ttf", "mingliu.ttc")]
+    cands += ["/System/Library/Fonts/PingFang.ttc",
+              "/System/Library/Fonts/STHeiti Medium.ttc",
+              "/System/Library/Fonts/Hiragino Sans GB.ttc"]
+    for path in cands:
         try:
-            return ImageFont.truetype(os.path.join(r"C:\Windows\Fonts", name), size)
+            return ImageFont.truetype(path, size)
         except OSError:
             continue
     return ImageFont.load_default()
@@ -74,6 +83,38 @@ for y in range(0, H + 1, GRID):
            fill=(255, 255, 255, 70 if major else 28), width=2 if major else 1)
     if major:
         d.text((6, PAD_T + y - 8), str(y), font=f_small, fill=PARCH)
+
+# ── 國界與國名（ver -734，Ray：「flight reference 也要更新」）──────────
+# ⚠ 名字與界線讀 **runtime 的 region_map.json/png**（鐵律 7：真相只有那一份，
+#   這裡不另抄國名表）。Reference/region.png 上燒的舊國名不再是依據。
+import json as _json
+import numpy as _np
+_rj = _json.load(open(os.path.join(HERE, "region_map.json"), encoding="utf-8"))
+_rm = _np.array(Image.open(os.path.join(HERE, "region_map.png")))
+_rmU = _np.kron(_rm, _np.ones((2, 2), dtype=_rm.dtype))[:H, :W]     # 半解析 → 全解析
+_edge = _np.zeros_like(_rmU, dtype=bool)
+_edge[:-1, :] |= _rmU[:-1, :] != _rmU[1:, :]
+_edge[:, :-1] |= _rmU[:, :-1] != _rmU[:, 1:]
+_ov = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+_ovpx = _np.array(_ov)
+_ovpx[_edge] = (255, 90, 90, 170)
+sheet.paste(Image.fromarray(_ovpx), (PAD_L, PAD_T), Image.fromarray(_ovpx))
+for _r in _rj["regions"]:
+    if _r["id"] == 0:
+        continue
+    _ys, _xs = _np.where(_rmU == _r["id"])
+    if not len(_xs):
+        continue
+    _cx, _cy = PAD_L + int(_xs.mean()), PAD_T + int(_ys.mean())
+    _zh, _en = _r["zh"], _r.get("en", "")
+    _tw = max(d.textlength(_zh, font=f_big), d.textlength(_en, font=f_small))
+    d.rectangle([_cx - _tw / 2 - 8, _cy - 22, _cx + _tw / 2 + 8, _cy + 24],
+                fill=(8, 9, 14, 150))
+    d.text((_cx - d.textlength(_zh, font=f_big) / 2, _cy - 20), _zh,
+           font=f_big, fill=(240, 232, 210))
+    if _en:
+        d.text((_cx - d.textlength(_en, font=f_small) / 2, _cy + 8), _en,
+               font=f_small, fill=(200, 195, 180))
 
 # ── 地標 ───────────────────────────────────────────────────────────
 for px, py, name, kind in PLACES:

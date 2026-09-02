@@ -23,14 +23,14 @@
   },
   {
    "id": 3,
-   "zh": "阿斯佩里亞王國",
-   "en": "Kingdom of Asperia",
+   "zh": "伊斯維亞王國",
+   "en": "Kingdom of Isvia",
    "px": 123076
   },
   {
    "id": 4,
-   "zh": "東埃爾比斯公國",
-   "en": "Principality of East Elbis",
+   "zh": "諾爾維亞王國",
+   "en": "Kingdom of Norvia",
    "px": 110027
   },
   {
@@ -41,14 +41,14 @@
   },
   {
    "id": 6,
-   "zh": "達爾馬提亞王國",
-   "en": "Kingdom of Dalmaria",
+   "zh": "瓦勒里亞王國",
+   "en": "Kingdom of Valeria",
    "px": 88229
   },
   {
    "id": 7,
    "zh": "澤維利亞王國",
-   "en": "Kingdom of Zevelia",
+   "en": "Kingdom of Zevilia",
    "px": 82961
   },
   {
@@ -59,9 +59,9 @@
   },
   {
    "id": 9,
-   "zh": "恩雅王國",
-   "en": "Kingdom of Enya",
-   "px": 48922
+   "zh": "羅賽爾王國",
+   "en": "Kingdom of Rosselle",
+   "px": 98968
   },
   {
    "id": 10,
@@ -74,6 +74,12 @@
    "zh": "馬爾維恩王國",
    "en": "Kingdom of Malvien",
    "px": 37308
+  },
+  {
+   "id": 12,
+   "zh": "埃蘭王國",
+   "en": "Kingdom of Eland",
+   "px": 11808
   }
  ]
 }

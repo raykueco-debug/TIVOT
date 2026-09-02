@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-ver -733：阿斯佩里亞王國外海的大型島嶼（主島面積 ≈ 恩雅王國 48.9k 全解析像素）。
+ver -733：伊斯維亞王國（舊名阿斯佩里亞）外海的大型島嶼（主島面積 ≈ 羅賽爾王國本土＝舊恩雅 48.9k 全解析像素）。
 島群配置取不列顛群島的「結構」（一大＋一中＋成串小島），但整個鏡射＋換方位：
   · 主島在大陸西南外海，長軸東西向（不列顛是南北向）
   · 中島在主島「北方」的西灣（愛爾蘭在不列顛西方）
   · 小島鏈沿中島與主島之間往南串（赫布里底群島在蘇格蘭西北）
+島群的國界（羅賽爾／埃蘭）由 build_regions.py 的 ISLAND_REGIONS 劃（兩邊互指）。
 重跑：py flight/build_island.py —— ⚠ 它會**覆蓋**兩張 silvermoon PNG，
 跑之前先 tools/recycle.sh 回收現行版，跑完把 index.html 的 ?v=N 再 +1（§5 快取鐵則）。
 預覽輸出 _island_preview.png / _island_world.png（底線開頭，遊戲不載、gitignore 同類）。
-高度＝多八度值雜訊 × 距岸衰減；配色＝按高度分箱從恩雅／南阿斯佩里亞的實地取樣，
+高度＝多八度值雜訊 × 距岸衰減；配色＝從伊斯維亞內陸整塊搬運，
 再乘上自算的 NW 光 hillshade（原圖的陰影是烘死的，新地也要有同一種立體感）。
 """
 import numpy as np
@@ -119,7 +120,7 @@ edge = min(island.nonzero()[1].min(), (W - 1) - island.nonzero()[1].max(),
            island.nonzero()[0].min(), (H - 1) - island.nonzero()[0].max())
 print('離圖緣最近（px）:', edge)
 print('面積 主島:', int(main.sum()), '中島:', int(mid.sum()), '小島:', int(isles.sum()),
-      '合計:', int(island.sum()), '（恩雅=48922）')
+      '合計:', int(island.sum()), '（羅賽爾本土=48922）')
 
 # ── 高度 ──────────────────────────────────────────────────────────
 dist_in = ndimage.distance_transform_edt(island)
@@ -140,7 +141,7 @@ print('島高度: min', int(land_h.min()), 'mean', round(land_h.mean(), 1), 'max
 # ── 配色＋高度改成「整塊搬運」：從大陸內陸借真實地形（顏色與高度一起）──
 # 逐像素合成的質感一眼是貼的（沒有烘死的白稜線與林斑）；借真地形連陰影、
 # 銳化、河點都是同一鍋出來的。防認出：來源鏡射 ＋ 低頻域扭曲 ±22px。
-# 來源：阿斯佩里亞中部內陸（平原＋稜線＋林斑都有）
+# 來源：伊斯維亞中部內陸（平原＋稜線＋林斑都有）
 SX0, SX1, SY0, SY1 = 180, 760, 300, 820
 warpx = (fbm((H, W), 128, 3, 903) - 0.5) * 44
 warpy = (fbm((H, W), 128, 3, 904) - 0.5) * 44
@@ -167,7 +168,7 @@ print('來源落海要補的點：', int(bad.sum()), '/', len(sxi))
 # 顏色直接搬
 out_c = tr.copy()
 out_c[iy, ix] = tr[syi, sxi]
-# 高度：借來源的結構，乘上距岸衰減（島緣要沉入海）；壓一點讓島的量感 ≈ 恩雅
+# 高度：借來源的結構，乘上距岸衰減（島緣要沉入海）；壓一點讓島的量感 ≈ 羅賽爾本土
 h_src = hg[syi, sxi]
 h_bor = 24 + np.clip(h_src - 20, 0, None) * 0.80
 h_new = hg.copy()
