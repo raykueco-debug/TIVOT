@@ -261,6 +261,9 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
     }
     const id=sel.indexOf('star:')===0 ? sel.slice(5) : sel;
     const st=STARS().find(d=>d.id===id); if(!st || modDone(st)) return false;
+    /* `storyFirst`（ver -737，Ray：「北泊槍匠開啟至 LV.1 以後才走素材升級」）：
+       第 1 級由劇情給（腳本 `gunStar:`），沒開之前素材升級不開放。 */
+    if(st.storyFirst && prog.starCount(st.id)===0) return false;
     const r=modRecipe(id); if(!r) return false;
     if((r.money||0) > inv.getMoney()) return false;
     for(const k in (r.items||{})) if(inv.count(k) < r.items[k]) return false;
@@ -276,18 +279,23 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
     const lit=STARS().filter(st=>prog.starCount(st.id)>0).length;
     const rows=STARS().map(st=>{
       const n=prog.starCount(st.id), r=modRecipe(st.id), done=modDone(st);
-      const mats=r ? Object.keys(r.items||{}).map(id=>{
+      /* 還沒被劇情點開的 `storyFirst` 星（ver -737）：需求欄印 `lockText`，
+         整列走 done 的壓暗（modReady 已經擋著，選了也按不動）。 */
+      const locked=!!(st.storyFirst && n===0);
+      const mats=locked
+        ? '<span class="mod-mat lack">'+(st.lockText||'尚未開啟')+'</span>'
+        : r ? Object.keys(r.items||{}).map(id=>{
         const have=inv.count(id), need=r.items[id];
         return '<span class="mod-mat'+(have>=need?'':' lack')+'">'
              + inv.nameOf(id)+' '+(isFinite(have)?have:'∞')+'/'+need+'</span>';
       }).join('') : '<span class="mod-mat lack">配方未定</span>';
-      return '<div class="shop-row mod-row'+(done?' done':'')+(pick==='star:'+st.id?' pick':'')+'"'
+      return '<div class="shop-row mod-row'+((done||locked)?' done':'')+(pick==='star:'+st.id?' pick':'')+'"'
            +   ' data-id="star:'+st.id+'">'
            + '<span class="loot-name"><i class="mod-star">'+st.star+'</i>'+st.name
            +   (n>0 ? (st.repeat ? '　×'+n : '　✓') : '')+'</span>'
            + '<span class="mod-eff">'+st.desc+'</span>'
            + '<span class="mod-need">'+(done ? '' : mats
-             + (r&&r.money ? '<span class="mod-mat'+(inv.getMoney()>=r.money?'':' lack')+'">'
+             + (!locked && r && r.money ? '<span class="mod-mat'+(inv.getMoney()>=r.money?'':' lack')+'">'
                            + r.money+' '+inv.moneyName()+'</span>' : ''))
            + '</span></div>';
     });

@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.02-736';
+export const VERSION = 'ver 2026.09.02-737';
 
 export const GAME_CONFIG = {
 
@@ -167,26 +167,36 @@ export const GAME_CONFIG = {
      ⚠ 效果的**累計**只有一個查詢點：`progress.starBonus('<欄位名>')`（鐵律 7）——
        各模組一律問它，不要自己去翻 `gunStars`。
      ⚠ `repeat:true` ＝可多次升級（目前只有「吞噬者」，每次 +5% 普攻）。 */
+  /* ⚠ ver -737（Ray）：王之運／運之王**拿掉「/ Ganymede α・β」字尾**（那兩個
+     西文名是槍管的，已經印在主武器卡上）；疾走→疾行星、方舟→方舟星、
+     交界點→界星、源泉→泉之星；**吞噬者移到最下面**（順序＝改裝頁的排列，
+     效果查詢全走 id，搬動不影響任何計算）。 */
   gunStars: [
-    { id:'sadalmelik', star:'Sadalmelik', name:'王之運 / Ganymede α',
+    { id:'sadalmelik', star:'Sadalmelik', name:'王之運',
       desc:'增加爆擊傷害',                 critDmg:0.20 },
-    { id:'sadalsuud',  star:'Sadalsuud',  name:'運之王 / Ganymede β',
+    { id:'sadalsuud',  star:'Sadalsuud',  name:'運之王',
       desc:'增加爆擊機率',                 critRate:0.10 },
-    { id:'skat',       star:'Skat',       name:'疾走',
+    { id:'skat',       star:'Skat',       name:'疾行星',
       desc:'加速破防值累積',               energyMul:0.10 },
     { id:'sadaltager', star:'Sadaltager', name:'銀幣星',
       desc:'增加戰鬥金錢掉落數額',         moneyMul:0.20 },
-    { id:'safina',     star:'Safina',     name:'方舟',
+    { id:'safina',     star:'Safina',     name:'方舟星',
       desc:'無傷使敵 HP 歸零，可回復已使用的被動技' },   // ⚠ 無數值參數（Ray 註明）
-    { id:'albali',     star:'Albali',     name:'吞噬者',
-      desc:'增加普攻攻擊力（可多次升級）', dmgMul:0.05, repeat:true },
     { id:'sadachbia',  star:'Sadachbia',  name:'幸運星',
       desc:'增加戰鬥掉落物機率',           lootMul:0.10 },
-    { id:'ancha',      star:'Ancha',      name:'交界點',
+    { id:'ancha',      star:'Ancha',      name:'界星',
       desc:'增加反擊後的普攻增益持續時間', buffSec:3 },
-    { id:'situla',     star:'Situla',     name:'源泉',
+    { id:'situla',     star:'Situla',     name:'泉之星',
       desc:'聖徒化期間連續普攻 3 Combo，可微量增加聖徒化時間',
       saintCombo:3, saintSec:1 },
+    /* ⚠⚠ 吞噬者的第 1 級是**北方泊地槍匠**開的（打靶 30 秒內，腳本
+       `gunStar:'albali'`）—— `storyFirst` ＝ 還沒點亮之前**素材升級不開放**
+       （Ray ver -737：「北泊槍匠開啟至 LV.1 以後才走素材升級，每一次升級
+       +5% 普攻」）。判定只在 `loot.modReady` 一處（鐵律 8）；鎖著時
+       改裝頁印 `lockText` 不印素材。 */
+    { id:'albali',     star:'Albali',     name:'吞噬者',
+      desc:'增加普攻攻擊力（可多次升級）', dmgMul:0.05, repeat:true,
+      storyFirst:true, lockText:'尚未開啟——聽說北方泊地的槍匠有辦法' },
   ],
   /* ══ 每一顆星要交什麼（ver -707；-701 的按等級配方已改成按星）══════════════
      鑰匙＝星的 id。⚠⚠⚠ **下面的素材與價格仍是我擬的草案**，等 Ray 的卡覆蓋 ——
