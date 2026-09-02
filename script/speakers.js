@@ -169,6 +169,9 @@ export const ART = {
                   chase:    { src:'resources/SI/Renna_SI_chase.webp',      top:4, bot:1532, fx:0.554 },
                   /* 娜塔莉那一幕（ver -636）。 */
                   invite:   { src:'resources/SI/Renna_SI_invite.webp',     top:2, bot:1525, fx:0.537 },
+                  /* 惡夢戰後那一幕的修正稿（ver -739，Ray 指定 Renna_SI_command）。
+                     取景 tools/measure_si.py 量的。 */
+                  command:  { src:'resources/SI/Renna_SI_command.webp',    top:0, bot:1527, fx:0.502 },
                   /* 北方泊地第三天（ver -664，Ray 交稿）。逐張量（tools/measure_si.py）。 */
                   smile:    { src:'resources/SI/Renna_SI_smile.webp',      top:5, bot:1529, fx:0.518 },
                   reach:    { src:'resources/SI/Renna_SI_reach.webp',      top:2, bot:1528, fx:0.566 },

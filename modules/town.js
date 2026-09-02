@@ -676,17 +676,27 @@ function clockGate(){
    ⚠ 這一支取代了 `go()` 與 `forceGo()` 各寫一次的 `setTimeout(()=>enter(to),260)`
      —— 那 260ms 本來就是為換場留的空檔，只是當時什麼都沒演。 */
 const CUT_MS = 280;       // 淡出／淡入各一段（同一個數字，切景的節奏才一致）
+/* ⚠⚠ 劇情轉場的黑幕拉長到三秒（ver -739，Ray：「日間、劇情場景轉換的黑色淡入
+   淡出時間長點，三秒」「自主移動不能三秒，只有劇情轉場要三秒」）——
+   `forceGo`（強制轉場：傍晚回旅店、安葬、那一夜、翌朝…）走這個；
+   玩家自己走一步（`go` → `sceneCut` 不帶 ms）照舊 280ms。 */
+const STORY_CUT_MS = 3000;
 /* 黑幕最多蓋多久（ver -442）：背景載不到／請求卡住時的保底 —— 見 `enter()` 的 `reveal`。 */
 const REVEAL_CAP_MS = 1800;
 let enterSeq = 0;         // 第幾次 enter（保底計時器要認得出自己是不是已經過期）
-function sceneCut(to){ story.veil(true, CUT_MS); setTimeout(()=>enter(to), CUT_MS); }
+/* 這一次切景的黑幕時長：`sceneCut` 寫、`enter()` 的 reveal 讀（淡出淡入要同長，
+   而亮回來的人是 enter —— 見下面那段「亮回來不在這裡收」）。用完歸位 CUT_MS，
+   不然 forceGo 之後第一次 `open()` 的亮回會沿用 3 秒（那一條路不經過 sceneCut）。 */
+let cutMs = CUT_MS;
+function sceneCut(to, ms){ cutMs = ms || CUT_MS;
+  story.veil(true, cutMs); setTimeout(()=>enter(to), cutMs); }
 function forceGo(to){
   clearTimeout(arriveT); arriveT=0;
   busy=true; showNav(false);
   document.body.classList.remove('town-nav');
   stepSfx();
   pendingDir=null;
-  sceneCut(to);
+  sceneCut(to, STORY_CUT_MS);   // 劇情轉場＝三秒（ver -739）
 }
 
 /* ══ 營業時間（ver -391，Ray 指定）══════════════════════════════════════
@@ -1422,8 +1432,11 @@ export function enter(id){
   const reveal=()=>{
     if(revealed || my!==enterSeq) return;
     revealed=true;
-    /* ⚠ 隔一幀再掀：`setSceneBg` 那一下只是換 `src`，讓瀏覽器先畫出來再淡。 */
-    requestAnimationFrame(()=>{ if(my===enterSeq) story.veil(false, CUT_MS); });
+    /* ⚠ 隔一幀再掀：`setSceneBg` 那一下只是換 `src`，讓瀏覽器先畫出來再淡。
+       ⚠ 時長讀 `cutMs`（這一次切景的黑幕多長，淡出淡入要同長，ver -739）——
+         讀完歸位 CUT_MS：`open()`／resume 那些不經過 `sceneCut` 的 enter
+         不該沿用上一次劇情轉場的 3 秒。 */
+    requestAnimationFrame(()=>{ if(my===enterSeq){ story.veil(false, cutMs); cutMs=CUT_MS; } });
   };
   if(needReveal) setTimeout(reveal, REVEAL_CAP_MS);
   bgNat=null;               // 背景要重載，舊的尺寸不能拿來擺旅店那兩顆行動鈕

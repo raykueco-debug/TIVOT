@@ -1465,17 +1465,22 @@ export const TOWNS = {
             /* ══ 禍魘娜塔莉戰打完（ver -671，Ray 交稿）══
                ⚠ 依等第的那五句在**結算頁**上（`script/evaluation.js` 的 `BY_BATTLE`），
                  不在這裡 —— 那是蕾娜的評價，S 那一句還帶好感 +5。 */
+            /* ⚠ ver -739：這一段照 Ray 的修正稿逐句對過 —— thinking 那一句改字、
+               「如果是這樣的話」拆成獨立一拍（表情沿用 thinking）、
+               「沒事了」回 base（front）、「刻不容緩」換 command。 */
             ren('shocked','剛剛那是……禍魘？'),
             { speaker:'PLAYER', blank:true },
             ren('surprised','不要嚇我啦！'),
             ren('upsetstare','真是……'),
-            ren('thinking','特定人物形象的禍魘。如果是這樣的話，那這一切……'),
+            ren('thinking','特定人物形象的禍魘、還有疑似『聖徒化』的力量……'),
             any('silent','……'),
+            ren('thinking','如果是這樣的話，那這一切……'),
             ren('evaluating','一定和這女孩脫不了關係。'),
             nou('run','對不起！'),
             nou('run','我來遲了嗎？'),
+            /* `ren(null)` ＝回 base（Renna_SI_front）—— 稿上指定 front。 */
             ren(null,'沒事了。幸虧有他。'),
-            ren('surprised','但是，我們得把這女孩帶回聖王廳。刻不容緩。'),
+            ren('command','但是，我們得把這女孩帶回聖王廳。刻不容緩。'),
             nou('surprise','發生什麼事了？'),
             { speaker:'PLAYER', blank:true },
             nou('shocked2','欸？'),
@@ -1489,6 +1494,18 @@ export const TOWNS = {
             ren('blushed','那個……'),
             ren('blushed','能扶我一下嗎？'),
             ren('dying','我站不起來了……'),
+            /* ══ 翌朝（ver -739，Ray：「在這一幕結束轉景後，先上透黑遮罩顯示日期
+               時間…時間是早上八點」「黑色淡入淡出時間長點，三秒」）══════════
+               ① 三秒淡黑＋清場（台上沒人，auto 才走得動——§6.5 的空演出拍）
+               ② 時鐘推到**下一個** 08:00（＝隔天早上）
+               ③ 情境卡報日期時刻 —— {DATE}/{TIME} 顯示那一刻才問時鐘，
+                 玩家在墓地拖到半夜日期也不會騙人（鐵律 7）；三秒亮回，
+                 卡疊在亮回來的畫面上，點一下收場。
+               接下來的戲等 Ray 的稿 —— 這裡只演到「新的一天開始了」。 */
+            { speaker:'PLAYER', text:'', auto:3200, fadeOut:3000,
+              hide:['RENNA','NOUVELLE','ANYA'] },
+            { speaker:'PLAYER', text:'', clockToNext:8, fadeIn:3000,
+              card:'大陸曆　{DATE}　{TIME}' },
           ] },
         ] },
       /* ══ 雜貨店（ver -655，Ray 交稿）══ 功能與帝都相同（買／賣）。

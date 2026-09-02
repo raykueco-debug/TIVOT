@@ -685,6 +685,14 @@ function coverOrigin(el, p){
    ⚠ 場上還沒有插圖時（第一次上圖）不走黑幕 —— 開場黑一下沒有意義，
      只會讓玩家覺得卡住。 */
 const CG_FADE_MS = 500;
+let slowFadeSeq = 0;      // 慢黑幕（ver -739）的 inline duration 歸還序號，見 renderLine
+/* 情境卡的日期時刻代換（ver -739）：{DATE}／{TIME} **顯示的那一刻**才問時鐘
+   （鐵律 7：日期不寫死 —— 寫死的卡在玩家拖過半夜之後就是騙人的）。 */
+function cardText(t){
+  return String(t)
+    .replace(/\{DATE\}/g, ()=>{ try{ return clock.dateText(); }catch(_){ return ''; } })
+    .replace(/\{TIME\}/g, ()=>{ try{ return clock.timeText(); }catch(_){ return ''; } });
+}
 /* 現在是不是「持續震動」中（ver -638，見 renderLine 的 `shakeHold`）。 */
 let sustainShake = false;
 function stopShake(){
@@ -953,11 +961,33 @@ function applyPersist(line){
       : cgFade($('storyCg'), line.cg ? cgCandidates(line.cg, line.cgNoTime) : '');
   }
   if(line.ci!==undefined){ stageCi=line.ci; setImg($('storyCi'), line.ci?SI_DIR+line.ci+'.webp':''); }
+  /* 推時鐘（ver -739，Ray：「這一幕結束轉景後…時間是早上八點」）：拍上寫
+     `clockToNext:8` ＝推到**下一個** 8:00（過了就是隔天）—— 走城鎮閘門同一支
+     `clock.advanceToNextHour`（鐵律 8）。⚠ 在情境卡代換**之前**做：
+     卡上要印的常常就是跳完之後的日期。 */
+  if(line.clockToNext!=null){ try{ clock.advanceToNextHour(line.clockToNext); }catch(_){} }
+  /* 慢黑幕（ver -739，Ray：「劇情場景轉換的黑色淡入淡出時間長點，三秒」）：
+     拍上寫 `fadeOut:3000`／`fadeIn:3000` ＝用指定毫秒把場景區那片 `#storyFade`
+     蓋上／掀開。inline 的 transitionDuration 用完要歸還 —— `cgFade` 的 0.5s 是
+     CSS 在管，殘留的 inline 值會把之後每一次換插圖一起拖慢。
+     ⚠ 歸還的計時器**不進 fxTimers**（那一組每推一句就被清空，同「跨句的演出
+       要另開一個欄位」那條的理由）；用序號擋過期的歸還。 */
+  if(line.fadeOut!=null || line.fadeIn!=null){
+    const f=$('storyFade');
+    if(f){
+      const ms=((line.fadeOut!=null?line.fadeOut:line.fadeIn)|0)||1;
+      const my=++slowFadeSeq;
+      f.style.transitionDuration=ms+'ms';
+      void f.offsetWidth;                 // 同 veil：先讓瀏覽器看到起始狀態
+      f.classList.toggle('on', line.fadeOut!=null);
+      setTimeout(()=>{ if(my===slowFadeSeq) f.style.transitionDuration=''; }, ms+120);
+    }
+  }
   /* 情境卡：⚠ 它是**一次性的畫面狀態**（下一句沒寫就收掉），所以每一句都要判，
      不能只在有 card 的那一句處理。 */
   const card=$('storyCard'), bub=$('storyBubble');
   if(card){
-    if(line.card){ card.textContent=line.card; card.classList.add('on'); }
+    if(line.card){ card.textContent=cardText(line.card); card.classList.add('on'); }
     else card.classList.remove('on');
   }
   if(bub) bub.style.display = line.card ? 'none' : '';
@@ -2859,6 +2889,10 @@ export function clearCast(){
      漏寫就卡著 —— 而新增的每一條路徑都會再漏一次（同 §6.5「清場」那條的教訓）。
      ⚠ 收在這一支＝「這一段講完了」的唯一出口（鐵律 8）。 */
   clearCg();
+  /* ⚠ **情境卡也一樣**（ver -739 發現）：它是逐拍判的（下一拍沒寫就收），但
+     卡是**最後一拍**時沒有下一拍 —— 對話收場後就一直蓋著（翌朝那張卡實測卡住）。
+     同插圖：持續畫面狀態收在這唯一的收尾。 */
+  { const c=$('storyCard'); if(c) c.classList.remove('on'); }
   verifyCastCleared();
 }
 /* ⚠⚠ **撤場之後再驗收一次台上真的空了**（ver -433，Ray：「在播放結束後放一個檢查，
