@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.02-739';
+export const VERSION = 'ver 2026.09.02-740';
 
 export const GAME_CONFIG = {
 
@@ -288,14 +288,23 @@ export const GAME_CONFIG = {
       voice:null,
       selectVoice:'vo_life_return',
       perk:'即死防禦（被動）＋生命歸還（主動）',
+      /* ⚠⚠ ver -740（Ray）：即死防禦加**十秒免傷**、期間普攻每次回血 2%
+         （「免傷仍算受擊，只是不扣血」—— 實作見 combat.enemyAttack 的扣血行）。
+         `immuneSeconds`／`immuneHealPct` 是**這張卡**的：蕾妮的即死防禦沒寫
+         ＝沒有這扇窗（挑戰那一套不動，ver -694）。 */
       passive:{ key:'deathGuard', name:'即死防禦', oncePerBattle:true,
                 /* 她自己的 CI（ver -499，Ray 交件 CI_Nouvelle_Deathguard）——
                    之前借蕾妮的 `cutin_guard`；蕾妮那張是試玩版的，不動。 */
                 cutin:'cutin_nouvelle_guard', voice:'vo_nou_guard',   // ver -711：她自己的語音（原本借蕾妮的）
-                desc:'受到足以致死的攻擊時，為玩家保留1hp續命。' },
+                immuneSeconds:10, immuneHealPct:0.02,
+                desc:'受到足以致死的攻擊時，為玩家保留1hp續命，'
+                    +'並獲得10秒免傷；免傷期間普攻每次回復2%生命。' },
+      /* ⚠ ver -740（Ray 定案：「生命歸還只有聖徒化期間可發動，只是原本回血是看
+         當前血量，現在發動一律直接全滿」）—— 同日一度改成「隨時可發＋免傷」，
+         已撤回：聖徒化限定照舊，唯一的改變是回滿（實作在 partner 的 handler）。 */
       active:{ key:'lifeReturn', name:'生命歸還', context:'saint',
                cutin:'cutin_return', voice:'vo_nou_return',   // ver -711：她自己的語音
-               desc:'聖徒化期間發動：強制中止聖徒化，保留當前血量。' },
+               desc:'聖徒化期間發動：強制中止聖徒化，生命完全回復。' },
     },
     /* ══ 安雅（ver -671，Ray：「從玩家跟安雅一起出旅店後，夥伴就從諾薇兒
        換成安雅了」）══
@@ -332,7 +341,10 @@ export const GAME_CONFIG = {
         buffSeconds:5,
         cutin:'ci_anya_lucid',
         voice:'vo_anya_lucid',   // ver -711：她自己的語音（原本借馬季諾的 vo_hc_rounds）
-        desc:'每隻敵人第一次完美反擊（紅圈）時發動：5 秒普攻傷害加倍。',
+        /* ver -740（Ray）：發動期間追加「反擊不論哪一圈都算完美反擊（傷害與評價）」
+           與「指引每一個應點格」—— 實作見 defense.resolveThreat 與 combat.markNext。 */
+        desc:'每隻敵人第一次完美反擊（紅圈）時發動：5 秒內普攻傷害加倍、'
+            +'任何反擊都視為完美反擊，並指引每一個應點格。',
       },
     },
     // ── 第二搭檔：馬季諾 Malzeno ──────────────────────────

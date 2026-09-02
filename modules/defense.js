@@ -259,8 +259,15 @@ export function resolveThreat(th){
   SFX.confirm();
 
   const counterWin = w ? w.counterWin : DEF_PERFECT_MIN;
+  /* ══⚠⚠ 明晰之夢（ver -740，Ray：「明晰夢增加發動期間反擊不論哪一圈都算完美
+     反擊，傷害跟評價都是」）══ 發動中把**任何一帶**的解決一律走紅圈那一支 ——
+     全額反擊、免傷、完美反擊計數與折秒、硬直整套自動一致（帶的判定只有這一處，
+     鐵律 7；「這是完美反擊才給還是開火就給」那一問在這裡一次答完）。
+     ⚠ 是不是明晰之夢由 partner 分辨（`lucidPerfect`＝安雅的 firstCounter 限定，
+       馬季諾的高裝藥彈不吃這一條）。 */
+  const lucid = !!(api.lucidPerfect && api.lucidPerfect());
   let grade='block';   // 判定等級：'counter' | 'perfect' | 'block'（傳給教學層分流，見文末通知）
-  if(ratio < counterWin){
+  if(ratio < counterWin || lucid){
     // === Counter === 免傷 + 反擊武器大傷害（金色微閃）
     grade='counter';
     flashDefense('gold');

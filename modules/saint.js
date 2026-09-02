@@ -614,9 +614,11 @@ export function lifeReturnAbort(){
   clearSaintReactTimer(); setReturnSwipe(false);
   restoreUltRate();
   api.floatDmg(L.battle.lifeReturn,'50%','28%',true);
-  // 第四結局 cut-in → 結束後回盤面，血量維持當前值（saintMode 已關、計時器已停，HP 不再變動）
+  // 第四結局 cut-in → 結束後回盤面。⚠ 血量 ver -740 起由呼叫端（partner 的
+  //   lifeReturn handler）在本函式返回後**回滿**（Ray：「現在發動一律直接全滿」）——
+  //   這裡的 finalHpThunk 維持 no-op，不要在兩處各寫一次血（鐵律 7）。
   playSaintCutin('return', ()=>{
-    finishSaintMode(()=>{ /* 保留當前血量：不改血 */ });
+    finishSaintMode(()=>{ /* 血量由 lifeReturn handler 設（回滿），這裡不改 */ });
   });
   if(api.onSaintEnded) api.onSaintEnded('return');   // 教學終盤掛鉤（非教學 no-op）
 }

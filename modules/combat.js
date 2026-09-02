@@ -83,6 +83,7 @@ export function setup(){
                  onThreatResolved: (g)=>{ weapon.onThreatResolved(); tutorial.onThreatResolved(g);
                                           if(g==='counter') partner.onCounter(); },
                  hintCurrentCell,   // 紅點解決了就指一下正確格（ver -718，見 tuning.hintNextCell）
+                 lucidPerfect: partner.lucidActive,   // 明晰之夢發動中＝全帶皆完美反擊（ver -740）
                  onThreatEarly: tutorial.onEarlyBlock,
                  ultSuppressed: tutorial.ultSuppressed, firstThreatPending: tutorial.firstThreatPending,
                  threatBand: tutorial.threatBand });
@@ -145,7 +146,7 @@ export function setup(){
   //   被動（即死防禦）：updateBars / floatDmg / resetEnemyTimers / scheduleUlt / playCutin。
   //   主動 saintApi（生命歸還）：saint 的中止+保血執行體。partner 不反向 import，一律經此注入。
   partner.init({
-    updateBars, floatDmg,
+    updateBars, floatDmg, healPlayer,   // healPlayer：生命歸還回滿用（ver -740）
     resetEnemyTimers: defense.resetEnemyTimers,
     scheduleUlt: defense.scheduleUlt,
     playCutin: saint.playCutin,
@@ -274,7 +275,11 @@ function markNext(){
     if(c0) c0.classList.add('next');
     return;
   }
-  if(!(BOARDS[state.boardIndex]||BOARDS[BOARDS.length-1]).hint) return;
+  /* 明晰之夢發動中＝**每一格**都指引（ver -740，Ray：「發動期間會指引每一個
+     應點格」）—— `hint:false` 的盤也照指。markNext 在每次點對與每次換盤都會跑，
+     所以「指引每一格」就是把這一道門讓開（發動那一刻的第一格由 partner 的
+     fireBuff 叫 hintCurrentCell 指）。 */
+  if(!(BOARDS[state.boardIndex]||BOARDS[BOARDS.length-1]).hint && !partner.lucidActive()) return;
   const c=state.cells.find(c=>+c.dataset.num===state.expect);
   if(c) c.classList.add('next');
 }
@@ -376,6 +381,11 @@ function tap(num,cell,e){
     }
     state.critCombo++;
     enemyDamage(Math.round(dmg),crit,false,'basic');   // 點擊直接扣敵血（crit=true → 敵區跳紅字「暴擊」）
+    /* 即死防禦的免傷窗（ver -740，Ray：「期間普攻每次回血2%」）：比例在
+       諾薇兒的卡上（`immuneHealPct`），窗關著回 0 —— 生命歸還的免傷不回血。
+       這個分支必為普攻（聖徒化／雙槍走上面的獨立分支），不必再判模式。 */
+    { const gp=partner.guardHealPct();
+      if(gp>0) healPlayer(Math.max(1, Math.round(state.playerMax*gp))); }
     state.expect++;
     tutorial.onBoardProgress(state.expect-1);   // 教學：第四回合清滿 N 格 → 劇情殺（非教學 no-op）
     if(state.expect>state.N) clearBoard(); else markNext();
@@ -641,8 +651,14 @@ function enemyAttack(dmg, kind, saintAmt){
      ver -620，Ray：「如果玩家除此之外無傷的話一樣記無傷」）—— 同 `_scriptedHits`
      從 `hitsTaken` 扣掉的作法，兩者要一致，不然畫面上標了無傷、旗標卻是假的。 */
   if(!_scriptedAtk) state.flawlessRun=false;
+  /* ══ 免傷窗（ver -740，Ray：「免傷仍算受擊，只是不扣血」）══
+     即死防禦／生命歸還開的那扇窗（partner.immuneActive）——
+     受擊計數、破無傷、失誤折秒、震動特效**全部照走**（上面一行都沒跳過），
+     只有扣血這一行不做。與鎖血同一個位置、同一個理由：手感不失真。 */
+  const immune = partner.immuneActive();
+  if(immune && dmg>0) floatDmg((L.battle.immune||'免傷'),'50%','46%',true);
   // 鎖血（管理人測試，ver -463）：只擋掉血這一行——上面的特效/計數照走，手感不失真
-  if(!state.hpLock) state.playerHp=Math.max(0,state.playerHp-dmg);
+  if(!state.hpLock && !immune) state.playerHp=Math.max(0,state.playerHp-dmg);
   updateBars();
   tutorial.onHpChange();             // 血量觸發（ver -599）：玩家這一側（`php:N`）
   enemy.showHitFx(fxKind);           // 依 kind 播放該怪對應受擊特效（'block' 讀成 'ult'）

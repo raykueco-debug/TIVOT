@@ -74,6 +74,7 @@ export const STRINGS = {
     saintMode:    'SAINT MODE',       // [EN-STYLE] 聖徒化開始浮字
     lifeReturn:   '生命歸還',          // 生命歸還浮字
     deathGuard:   '即死防禦',          // 即死防禦浮字
+    immune:       '免傷',              // 免傷窗（ver -740）：受擊但不扣血的那一下
   },
 
   /* ═══ 4. 退出確認框 ═══ */

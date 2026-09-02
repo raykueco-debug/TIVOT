@@ -73,6 +73,13 @@ export function tryDeathGuard(){
     // 即死防禦後：cut-in 撤下瞬間重置敵大絕與延時（間隔）懲罰倒數，避免剛保命就被連段擊殺
     api.resetEnemyTimers();
     api.scheduleUlt();        // 重新排程敵大絕
+    /* 免傷窗（ver -740，Ray）：cut-in 撤下才起算，秒數完整可用（同 fireBuff）。
+       秒數與回血比例都在諾薇兒的卡上（`immuneSeconds`／`immuneHealPct`）——
+       蕾妮的卡沒寫＝沒有這扇窗（挑戰那一套不動，ver -694）。 */
+    if(pas.immuneSeconds){
+      startImmune(pas.immuneSeconds);
+      if(pas.immuneHealPct) guardHealUntil = Date.now() + pas.immuneSeconds*1000;
+    }
     // 續命導航：標記「當前應點的數字格」一次（玩家被救回來不必找格找到被秒）。
     //   只提示這一格——點掉後回到該盤原本的提示規則（hint:false 盤不再標下一格）。
     if(api.hintCurrentCell) api.hintCurrentCell();
@@ -88,11 +95,18 @@ export function tryDeathGuard(){
  *  分派骨架 tryActive 不動。
  * ========================================================================== */
 const ACTIVE_HANDLERS = {
-  // 生命歸還：聖徒化中止並保留當前血量。執行能力經 saintApi 注入（saint 內部提供）。
+  /* ══ 生命歸還（ver -740，Ray 定案：「生命歸還只有聖徒化期間可發動，只是原本
+     回血是看當前血量，現在發動一律直接全滿」）══
+     一度改成「隨時可發＋免傷窗」，Ray 同日撤回 —— 聖徒化限定照舊，唯一的
+     改變是**回滿**。免傷窗是即死防禦的，這一招沒有。
+     ⚠ 回滿在中止**之後**：`lifeReturnAbort` 的 `exitSaint` 同步收掉 saintMode，
+       血條語意回到一般血，這時回滿才是回滿（聖徒化期間血條＝倒數槽，
+       推滿＝OBE，先回滿就出事）；結局的 finalHpThunk 是 no-op，不會蓋回去。 */
   lifeReturn(a, act){
     if(!state.saintMode) return false;   // 保險：非聖徒化不執行
-    const vo = asset(act && act.voice); if(vo) SFX.playVoice(vo, sfxGain(act.voice));   // SE 與結局 cut-in 同步（→ vo_life_return；saint 不知觸發者，SE 歸 partner 播）
+    const vo = asset(act && act.voice); if(vo) SFX.playVoice(vo, sfxGain(act.voice));   // SE 與結局 cut-in 同步（→ vo_nou_return）
     a.saintApi.lifeReturnAbort();
+    api.healPlayer(state.playerMax);     // 一律全滿（ver -740）
     return true;
   },
   // 前線補給（馬季諾·主動）：發動即進入雙槍破防射擊窗口（不吃破防值、不另播雙槍
@@ -158,6 +172,25 @@ export function tryActive(context){
 let lowHpArmed = true;    // 上膛旗標：HP 在門檻上方＝已上膛；跌破發動一次即卸膛
 let lowHpTimer = null;    // 10 秒 buff 計時器
 
+/* ══⚠⚠ 免傷窗（ver -740，Ray：「諾薇兒的即死防禦加上十秒免傷，期間普攻每次
+   回血2%」「life return 改為…10 秒免傷」「免傷仍算受擊，只是不扣血」）══
+   兩支技共用同一扇窗（`immuneUntil`）：窗開著時 `combat.enemyAttack` **只跳過
+   扣血那一行** —— 受擊計數、破無傷、失誤折秒、震動特效全部照走（Ray 明訂）。
+   `guardHealUntil` 是**即死防禦專屬**的第二扇窗：期間普攻每次回血
+   （比例在諾薇兒的卡上 `immuneHealPct`）—— 生命歸還的免傷不回血。
+   鐵律 9：誰插的＝tryDeathGuard／lifeReturn；誰拔的＝時間到（唯一事件）；
+   `reset()` 開場歸零。 */
+let immuneUntil = 0;
+let guardHealUntil = 0;
+function startImmune(sec){ if(sec>0) immuneUntil = Math.max(immuneUntil, Date.now()+sec*1000); }
+export function immuneActive(){ return Date.now() < immuneUntil; }
+export function guardHealPct(){
+  if(Date.now() >= guardHealUntil) return 0;
+  const p = currentPartner();
+  const pas = p && p.passive;
+  return (pas && pas.key==='deathGuard' && pas.immuneHealPct) || 0;
+}
+
 /* ══⚠⚠ **明晰之夢：每隻怪第一次反擊成功時發動**（`firstCounter`，ver -693，Ray：
    「娜塔莉戰如果先觸發 lucid dream 再進入 NI 劇情會卡住，或者同時，所以我決定改
      luciddream 的發動條件為觸發單怪觸發第一次反擊成功時發動，不算場，
@@ -193,6 +226,19 @@ export function onCounter(){
   fcArmed = false;
   fireBuff(pas);
 }
+/* ══⚠⚠ 明晰之夢**發動中**？（ver -740，Ray：「明晰夢增加發動期間反擊不論哪一圈
+   都算完美反擊，傷害跟評價都是。並且發動期間會指引每一個應點格」）══
+   「發動期間」＝buff 旗標亮著的那一段（`state.lowHpBuff`，時長走 `buffSeconds`）。
+   ⚠ 只有**安雅的明晰之夢**（passive `firstCounter`）算：馬季諾的高裝藥彈共用
+     同一支旗標，但那是挑戰限定的另一招（ver -694：正篇不會有他，別動他）——
+     所以判的是「旗亮著**而且**現任搭檔的被動是 firstCounter」。
+   讀它的兩處：defense.resolveThreat（全帶升紅圈）／combat.markNext（全程指格）。 */
+export function lucidActive(){
+  if(!state.lowHpBuff) return false;
+  const p = currentPartner();
+  const pas = p && p.passive;
+  return !!(pas && pas.key==='firstCounter');
+}
 /* 「5 秒普攻加倍」的執行體（`lowHpBuff` 與 `firstCounter` 共用，鐵律 8）。 */
 function fireBuff(pas){
   const sec = pas.buffSeconds || 10;
@@ -201,6 +247,9 @@ function fireBuff(pas){
     api.setLowHpBuff(true);
     clearTimeout(lowHpTimer);
     lowHpTimer = setTimeout(()=>{ api.setLowHpBuff(false); lowHpTimer=null; }, sec*1000);
+    /* 明晰之夢（ver -740）：發動那一刻就把當前應點格指出來 —— 之後每一格
+       由 combat.markNext 接手（它看 lucidActive）。 */
+    if(pas.key==='firstCounter' && api.hintCurrentCell) api.hintCurrentCell();
   };
   const vo = asset(pas.voice); if(vo) SFX.playVoice(vo, sfxGain(pas.voice));
   api.floatDmg(pas.name,'50%','34%',true);
@@ -256,4 +305,5 @@ export function reset(){
   fcArmed = true;                             // 開場就上膛（ver -693）
   clearTimeout(lowHpTimer); lowHpTimer=null;
   lowHpArmed = true;
+  immuneUntil = 0; guardHealUntil = 0;        // 免傷窗不跨場（ver -740）
 }

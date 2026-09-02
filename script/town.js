@@ -1450,7 +1450,9 @@ export const TOWNS = {
                ⚠ 立繪就是敵人那一張（`natalia_x`，見 speakers.js）。 */
             { speaker:'NATALIA_X', text:'',
               hide:['RENNA','NOUVELLE','ANYA','ANYA_X','GIRL','NATALIA'],
-              portrait:{ char:'NATALIA_X', show:true } },
+              /* `slowMs`（ver -740，Ray：「禍魘娜塔莉立繪彈出的速度要慢一點」）：
+                 禍魘不是跑上台的，是**滲出來**的 —— 進場滑入由 450ms 放慢到 1400ms。 */
+              portrait:{ char:'NATALIA_X', show:true, slowMs:1400 } },
             any('terrifying','騙……騙人……'),
             any('terrifying','娜塔莉……不要……'),
             { speaker:'PLAYER', blank:true },

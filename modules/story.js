@@ -686,6 +686,7 @@ function coverOrigin(el, p){
      只會讓玩家覺得卡住。 */
 const CG_FADE_MS = 500;
 let slowFadeSeq = 0;      // 慢黑幕（ver -739）的 inline duration 歸還序號，見 renderLine
+let slowSlideSeq = 0;     // 慢速上場（ver -740）同上 —— 立繪槽的 inline duration 歸還
 /* 情境卡的日期時刻代換（ver -739）：{DATE}／{TIME} **顯示的那一刻**才問時鐘
    （鐵律 7：日期不寫死 —— 寫死的卡在玩家拖過半夜之後就是騙人的）。 */
 function cardText(t){
@@ -2192,6 +2193,19 @@ function renderLine(){
   /* ⚠ 沒有立繪資料的角色（UNKNOWN／LUNARIA）整段跳過 —— 不上場也不下場，
      台上原本站著的人維持原樣。 */
   if(artOf(who)){
+    /* 慢速上場（ver -740，Ray：「禍魘娜塔莉立繪彈出的速度要慢一點」）：
+       拍上寫 `portrait.slowMs` ＝這一次進場用指定毫秒滑入（inline duration，
+       用完歸還 —— 殘留會把之後每一次換表情的淡入淡出一起拖慢，同慢黑幕那條）。
+       ⚠ 歸還要蓋過 ensureOn 的排程延遲與載圖，多留 500ms。 */
+    if(st.show && p.slowMs){
+      const sEl=slotEl(sideOf(who));
+      if(sEl){
+        const my=++slowSlideSeq;
+        sEl.style.transitionDuration=(p.slowMs|0)+'ms';
+        setTimeout(()=>{ if(my===slowSlideSeq) sEl.style.transitionDuration=''; },
+                   (p.slowMs|0)+500);
+      }
+    }
     if(st.show) side = ensureOn(who, st.expr);
     else { const s2=sideOf(who); if(slot[s2]===who) leaveSlot(s2); }
   }
