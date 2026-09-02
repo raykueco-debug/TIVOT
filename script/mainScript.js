@@ -456,6 +456,64 @@ export const MAIN_SCRIPT = {
     ],
   },
 
+
+  /* ══════════════════════════════════════════════════════════════════════
+     湖上甲板（ver -744，Ray 的 stage5 稿）—— 羽蛇戰後帆斷失控、迫降湖面。
+     由飛行頁的甲板混亂黑幕**黑著交棒**進來（main 的 __tivotFlight.lakeScene）。
+     ⚠ 時間「固定為 14:00，超過就推到隔天」＝ clockToNext:14（ver -739 的拍欄位，
+       與城鎮閘門同一支 advanceToNextHour）。
+     ⚠ 戰鬥卡 man_sorana：BGM Whirlwind、打贏換 Whistling Winds（卡上 bgmAfter）。
+     ⚠ 結尾「為什麼攻擊我們？」之後**稿到此為止** —— 落一個檢查點、掛待續卡、
+       回主選單（scene 的 endHome）。Ray 的後續稿到了把待續那兩拍換掉、接 next。
+     ⚠ 「木頭斷裂聲」**暫用 se_brickcrush**（音庫裡沒有木裂，最接近的一支）——
+       Ray 交 se_woodbreak 再換。 */
+  lake_deck: {
+    sceneId:'lake_deck',
+    next:null,
+    endHome:true,
+    context:'scene',
+    lines:[
+      /* 設定拍（背景／BGM／時鐘），台上沒人＝空演出拍要給 auto（§6.5）——
+         不給的話畫面上是一個空的蕾娜框等人點。 */
+      { speaker:'RENNA', text:'', auto:900, clockToNext:14,
+        bg:'Deck_destroied', bgm:'misty',
+        portrait:{ char:'RENNA', show:false } },
+      { speaker:'RENNA', text:'還以為真的到此為止了……',
+        portrait:{ char:'RENNA', expr:'dying', show:true } },
+      { speaker:'NOUVELLE', text:'安雅！沒事嗎？',
+        portrait:{ char:'NOUVELLE', show:true } },
+      { speaker:'ANYA', text:'……沒事。',
+        portrait:{ char:'ANYA', show:true } },
+      /* 木頭斷裂聲（演出拍：沒有台詞就要給 auto，§6.5）。 */
+      { speaker:'RENNA', text:'', auto:1000, se:'se_brickcrush', shake:true },
+      { speaker:'RENNA', text:'可怕的蠻力……竟然把整個舵都給斷了。',
+        portrait:{ char:'RENNA', expr:'shockedCalm' } },
+      { speaker:'ANYA', text:'很強。' },
+      { speaker:'NOUVELLE', text:'現在不是誇他的時候啦！' },
+      { speaker:'RENNA', text:'還好，附近似乎有村莊。',
+        portrait:{ char:'RENNA', expr:'watch' } },
+      { speaker:'RENNA', text:'風向正好，先靠岸再——',
+        portrait:{ char:'RENNA', expr:'watch' } },
+      { speaker:'RENNA', text:'……說？', se:'se_land',
+        portrait:{ char:'RENNA', expr:'intense2' } },
+      /* 009_Soranadebute 插圖，由下往上平移（同 001 跌倒那一拍的節奏：
+         對話框等平移跑完再出，2600 與 CSS 的平移時間同值）。 */
+      { speaker:'NOUVELLE', text:'那是……', delay:2600,
+        cg:'009_Soranadebute', cgPan:'up',
+        portrait:{ char:'NOUVELLE', expr:'scared' } },
+      { speaker:'NOUVELLE', text:'森住民？',
+        portrait:{ expr:'scared' } },
+      { battle:'man_sorana' },
+      /* 戰後（BGM 由卡上的 bgmAfter 換成 Whistling Winds；插圖收掉走黑幕）。 */
+      { speaker:'RENNA', text:'停——停手！', cg:null,
+        portrait:{ char:'RENNA', expr:'command', show:true } },
+      { speaker:'RENNA', text:'為什麼攻擊我們？', checkpoint:true,
+        portrait:{ char:'RENNA', expr:'askserious' } },
+      /* ——稿到此為止（ver -744）—— */
+      { speaker:'RENNA', text:'', card:'——未完待續——' },
+    ],
+  },
+
 };
 
 /* 主線的起點。存檔沒有進度時從這裡開始。 */

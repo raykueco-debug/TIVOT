@@ -180,6 +180,19 @@ function layout(){
      只拿那一段量輪廓（見 measureBounds 的警告）。 */
   const calc = ()=>on.map(o=>{
     const a=o.a;
+    /* ══⚠⚠ `fitStage:true`（ver -744，Ray：「主角群高度固定，群眾全入鏡，
+       小一點點沒關係」）══ 這一張**整張入鏡**：縮放＝貼滿立繪區高、底貼舞台底，
+       完全不進身高那套（cm／讓位／shift 都與它無關）。
+       第一個用例是北泊送行的群眾（一張圖畫好幾個人，鎖身高沒有意義）。
+       ⚠ 它也**不得參與**下面的 shift：-743 的近景縮圖版就是踩了這個 ——
+         群眾的腳高於畫面底，shift 把**全員**往下推，主角群高度跟著跑掉
+         （Ray 回報的正是這個）。 */
+    if(a.fitStage){
+      const s0 = H/(a.bot-a.top) * 0.97;
+      const yT = H - s0*a.bot;               // 底（bot）貼舞台底 → 圖框上緣
+      return { ...o, s:s0, headY:yT+s0*a.top, yTop:yT, fitStage:true,
+               b:measureBounds(o.el, a.top, a.bot) };
+    }
     /* 縮放：鎖身高。faceAdj＝逐張的畫風補償（見 speakers.js 的說明），沒寫就是 1。 */
     const s     = pxCm*a.cm/(a.bot-a.top) * (a.faceAdj||1);
     /* ⚠ 身高差的縱向讓位**只在兩人同台時**才做（ver -319，Ray：「立繪太低」）。
@@ -220,7 +233,8 @@ function layout(){
      所以縮小時改成**把腳落到畫面底**（那本來就是 §6.5 要的「四個人的腳
      落在同一條地平線上」）；沒縮小、腳本來就在畫面外時 shift=0，維持貼頂。 */
   let shift=0;
-  for(const o of m) shift=Math.max(shift, H - (o.yTop + o.s*o.a.bot));
+  for(const o of m){ if(o.fitStage) continue;   // 整張入鏡的不拖別人（ver -744，見 calc）
+    shift=Math.max(shift, H - (o.yTop + o.s*o.a.bot)); }
   shift=Math.max(0, shift);
 
   for(const o of m){
@@ -268,7 +282,7 @@ function layout(){
     el.style.width  = (o.s*el.naturalWidth)+'px';
     el.style.height = (o.s*el.naturalHeight)+'px';
     el.style.left   = x+'px';
-    el.style.top    = (o.yTop+shift)+'px';
+    el.style.top    = (o.yTop + (o.fitStage ? 0 : shift))+'px';
   }
 }
 
@@ -542,6 +556,8 @@ const BGM_FILES=[
        手機上會變成「那一段沒有音樂」。 */
   'PerituneMaterial_Suspense6_loop.m4a', 'Peritune_Crimson_Moon_loop.m4a',
   'PerituneMaterial_Entangle.m4a',   // 北方泊地那一夜（ver -656，Ray 指定；Credit 已加）
+  /* 湖上甲板那一段（ver -744，Ray 的 stage5 稿；Credit 已加）。 */
+  'Peritune_Misty_Hollow_loop.m4a', 'Peritune_Whistling_Winds_loop.m4a',
 ];
 /* 別名：腳本裡慣用的短名 → 實際檔名（去副檔名）。加新別名只動這裡。 */
 const BGM_ALIAS={ crisis:'peritunematerial_crisis_loop', lunaria:'bgm_lunaria',
@@ -550,7 +566,9 @@ const BGM_ALIAS={ crisis:'peritunematerial_crisis_loop', lunaria:'bgm_lunaria',
                   capital:'bgm_capital_day',
                   suspense:'peritunematerial_suspense6_loop',   // ver -614
                   crimson:'peritune_crimson_moon_loop',
-                  entangle:'peritunematerial_entangle' };   // ver -656
+                  entangle:'peritunematerial_entangle',   // ver -656
+                  misty:'peritune_misty_hollow_loop',       // ver -744：湖上甲板
+                  whistling:'peritune_whistling_winds_loop' };   // ver -744：森住民戰後
 const BGM_SRC=(()=>{ const m={};
   for(const f of BGM_FILES) m[f.replace(/\.[^.]+$/,'').toLowerCase()]='resources/audio/bgm/'+f;
   return m; })();
@@ -1096,6 +1114,7 @@ const SE_FILES=[
   /* 船艦戰（ver -423／-425）：蜈蚣的攻擊音、艦砲、船戰用的機槍。 */
   'Se_enemy_centipi.m4a', 'se_weapon_cannon_120mm.m4a', 'se_weapon_heavygun.m4a',
   'se_enemy_revolver.m4a', 'se_enemy_shot.m4a', 'se_enemy_slash.m4a', 'se_enemy_smack.m4a',
+  'se_land.m4a',   // 著岸（ver -744，湖上甲板）
   'se_flight_heartbeat.m4a', 'se_flight_idle_loop.mp3', 'se_flight_sail_loop.mp3',
   'se_flight_seagull.m4a', 'se_flight_train.mp3', 'vo_lunaMG.m4a', 'se_punch.m4a',
   'se_brickcrush.m4a',                                       // 瓦礫崩落（北方泊地教堂，ver -624）
@@ -2407,6 +2426,11 @@ function endScene(){
   const nx = cur.next;
   if(nx && MAIN_SCRIPT[nx]){ playScene(nx); return; }
   if(nx) console.warn('[story] next 指向不存在的 scene：', nx);
+  /* `endHome:true`（ver -744）：這一幕演完回主選單 —— 走**唯一那一支**
+     goHomeNow（＝選單「回到主選單」與 leaveToHome 同一條，鐵律 8），
+     不能只 close()：底下的 #app 是上一場戰鬥的盤面（§6.5.6 的老坑）。
+     給「稿還沒到、故事先收在這裡」的幕用（lake_deck 是第一個）。 */
+  if(cur.endHome){ active=false; cur=null; goHomeNow(); return; }
   close();
 }
 

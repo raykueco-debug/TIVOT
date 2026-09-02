@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.02-743';
+export const VERSION = 'ver 2026.09.02-744';
 
 export const GAME_CONFIG = {
 
@@ -1242,6 +1242,33 @@ export const GAME_CONFIG = {
         ult:{   type:'claw', count:4, angle:'random' },
       },
     },
+    /* ══ 森住民（man_sorana，ver -744，Ray 的卡：「數值用巨型聖徒，攻擊減半，
+       延時快一秒。攻擊特效，延時同貝琳妲的 dagger，其他同巨型聖徒」）══════════
+       ⚠ 巨型聖徒那一張**逐欄抄**、只動三格（鐵律：卡上寫絕對值就存絕對值）：
+         attack 45→22（減半，取整——同娜塔莉那一次的取法）
+         delayPenalty.seconds 5→4（延時快一秒）
+         hitFx.delay／sound.delay → 貝琳妲的「dagger」語彙（slash 特效＋em_dagger 音）
+       ⚠ `kind:'human'`：她是人，不吃降臨／淨化那一套，結算副標「已擊敗」。
+       ⚠ 立繪暫用索拉娜的 SI（見 ASSETS enemy_man_sorana）—— 等 Ray 的戰鬥圖。 */
+    man_sorana: {
+      name:'森住民',
+      story:1, counterStagger:1,
+      kind:'human',
+      image:'enemy_man_sorana',
+      fit:{ pos:'50% 20%' },
+      hp:300,
+      attack:22,                     // 巨型聖徒 45 的一半
+      atkInterval:3.33,
+      sound:{ ult:'em_slash', delay:'em_dagger', wrong:'em_slash' },
+      delayPenalty:{ seconds:4 },    // 快一秒（巨型聖徒是 5）
+      special:[],
+      boardGrids:[9,9,16,16,16],
+      hitFx:{
+        delay:{ type:'slash' },      // 貝琳妲的 dagger（slash 特效＋em_dagger 音）
+        wrong:{ type:'slash' },
+        ult:{   type:'claw', count:4, angle:'random' },
+      },
+    },
     /* ══ 禍魘娜塔莉（ver -671，Ray 交稿）══════════════════════════════════
        「數值與模式同巨型聖徒，攻擊力減半，HP900。」
        ⚠ 所以這張卡是**巨型聖徒那一張**逐欄抄過來、只動兩格 —— 不寫成
@@ -1980,6 +2007,11 @@ export const GAME_CONFIG = {
                               text:'點血條旁的武器圖可以切換艦載武器，反擊的時機與威力各有不同！' },
                           ]},
                         ] },
+    /* ══ 森住民戰（man_sorana，ver -744，Ray 的 stage5 稿）══
+       湖上甲板・索拉娜登場戰。`bgm`＝Peritune Whirlwind（Ray 指定，進 credit）；
+       `bgmAfter`＝打贏換 Whistling Winds（「戰鬥結束 BGM」，只有打贏才換的既有規矩）。 */
+    man_sorana:       { enemy:'man_sorana',
+                        bgm:'bgm_whirlwind', bgmAfter:'whistling' },
     /* 羽蛇（ver -500）。艦戰的武器音／連射間隔與蜈蚣那一場同一套（都是船戰）。
        talk＝卡上的「劇情」：登場特效拍（出場音效＋震動）→ 兩句。
        ⚠ 只有**劇情戰**會播（state.storyBattle）：隨機遭遇共用這張卡不播；
@@ -2327,6 +2359,11 @@ export const GAME_CONFIG = {
       /* 船戰兩首（ver -741，本機 BS.1770 實測，同上錨）。 */
       peritunematerial_epicbattle_loop:0.523,
       bgm_piratebattle:1.277,
+      /* 湖上甲板三首＋著岸音（ver -744，同一把尺）。 */
+      peritune_misty_hollow_loop:0.569,
+      peritune_whirlwind:0.588,
+      peritune_whistling_winds_loop:0.698,
+      se_land:3.143,
       peritune_crimson_moon_loop:0.879,
       /* ⚠ 母帶太小聲（−26 LUFS）：×master×層之後會撞上 HTMLAudio 的 1.0 上限，
          實際只到 −26 而不是目標的 −21.9。要救得重做母帶。 */
@@ -2710,6 +2747,13 @@ export const ASSETS = {
      空賊寫在 flight_pirate 卡上。 */
   bgm_epicbattle:   "resources/audio/bgm/PerituneMaterial_EpicBattle_loop.m4a",
   bgm_piratebattle: "resources/audio/bgm/bgm_piratebattle.m4a",
+  /* 湖上甲板那一段（ver -744，Ray 的 stage5 稿）。 */
+  bgm_misty:        "resources/audio/bgm/Peritune_Misty_Hollow_loop.m4a",
+  bgm_whirlwind:    "resources/audio/bgm/Peritune_Whirlwind.m4a",
+  bgm_whistling:    "resources/audio/bgm/Peritune_Whistling_Winds_loop.m4a",
+  /* ⚠⚠ man_sorana 的敵立繪**暫用索拉娜的 SI**（她就是那個「森住民」）——
+     Ray 交專用戰鬥圖再換（同羽蛇 FLM 的規格）。 */
+  enemy_man_sorana: "resources/SI/Sorana_SI_side.webp",
   bgm_crimson:    "resources/audio/bgm/Peritune_Crimson_Moon_loop.m4a",
   /* 打靶場（計時挑戰）專屬曲（ver -658，Ray：「所有打靶遊戲都用這個音樂」）。
      ⚠ 哪一場用它**不寫在卡上**而是規則：見下面的 `battleBgm.timeAttack`。 */

@@ -366,6 +366,13 @@ window.__tivotFlight = {
   checkpoint(){ flightCheckpointNow(); },
   /* 整備頁開著嗎（ver -741）：羽蛇戰前的換搭檔教學要等玩家關掉整備頁才開戰。 */
   gearOpen(){ try{ return gear.isOpen(); }catch(_){ return false; } },
+  /* 甲板混亂 → 湖上甲板那一幕（ver -744）：船摔進湖裡，這一趟航行結束 ——
+     城鎮（suspend 著的北泊）真的收掉、iframe 收掉，主線場景接手。 */
+  lakeScene(){
+    try{ town.close(); }catch(_){}
+    closeFlightFrame();
+    story.open({ scene:'lake_deck' });
+  },
   /* 遭遇 → 進戰鬥。門已經在飛行頁推到頂了，這裡**接著演**（撞頂 → 解鎖 → 圓盤 → 開門）。 */
   battle(req){
     const id = req && req.battle;

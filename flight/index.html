@@ -509,7 +509,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -743';
+const FLIGHT_VER = 'ver -744';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -7923,6 +7923,14 @@ function deckChaosScene(){
       if(!muted){ try{ playSfx(seCrashSE); }catch(_){} }
       setTimeout(()=>{
         addFlag('np_deck_chaos');
+        /* ══ 黑著交棒給主線場景「湖上甲板」（ver -744，Ray 的 stage5 稿）══
+           這一頁到此收工：音先收（同交棒進戰鬥的規矩），黑幕不掀 ——
+           掀的人是 story.open 的讀取頁。獨立開發模式沒有父頁＝照舊掀回飛行。 */
+        if(embedded()){
+          flightAudio(false);
+          try{ window.parent.__tivotFlight.lakeScene(); }catch(_){}
+          return;
+        }
         battleGoing=false;
         ov.style.opacity='0';
         setTimeout(()=>{ try{ ov.remove(); }catch(_){} }, 1300);

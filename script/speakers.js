@@ -190,7 +190,10 @@ export const ART = {
                        expr:'lookup'，查不到會自動回退基本立繪（story 的 missingExpr），
                        圖到位量了取景補這一列即可。 */
                   curious:     { src:'resources/SI/Renna_SI_curious.webp',     top:0,  bot:1526, fx:0.529 },
-                  intense:     { src:'resources/SI/Renna_SI_intense.webp',     top:6,  bot:1526, fx:0.629 } } },
+                  intense:     { src:'resources/SI/Renna_SI_intense.webp',     top:6,  bot:1526, fx:0.629 },
+                  /* 湖上甲板（ver -744，Ray 的 stage5 稿）。逐張量。 */
+                  intense2:    { src:'resources/SI/Renna_SI_intense2.webp',    top:5,  bot:1520, fx:0.510 },
+                  askserious:  { src:'resources/SI/Renna_SI_askserious.webp',  top:3,  bot:1527, fx:0.525 } } },
   /* ⚠⚠ 諾薇兒的表情差分是**不同姿勢**（跑、畏縮、驚恐、絕望、驚訝），不是換臉，
        所以每一張**各帶自己的 top/bot/fx**（ver -325 量完）。
        ⚠ 沿用 front 那一組的後果實測過：Scared 的臉其實在 0.397，照 0.564 擺會
@@ -264,7 +267,10 @@ export const ART = {
                   /* 北方泊地第三天（ver -664）：回頭看。 */
                   lookback: { src:'resources/SI/Nouvelle_SI_lookback.webp',  top:2,  bot:1528, fx:0.661 },
                   /* stage2 出航（ver -741，Ray 交稿）：揮手道別。 */
-                  wave:     { src:'resources/SI/Nouvelle_SI_wave.webp',      top:13, bot:1535, fx:0.483 } } },
+                  wave:     { src:'resources/SI/Nouvelle_SI_wave.webp',      top:13, bot:1535, fx:0.483 },
+                  /* 湖上甲板（ver -744）。⚠ 檔案是 **Scared2**：美術 session 把舊的
+                     Nouvelle_SI_Scared.webp 換成這一張（重畫），鍵名照稿寫 scared。 */
+                  scared:   { src:'resources/SI/Nouvelle_SI_Scared2.webp',   top:9,  bot:1530, fx:0.399 } } },
   /* ⚠ 索拉娜用 **side** 那張：front 橫向佔 78%，兩人同台一定疊；側面只佔 69%。 */
   sorana: { cm:176, eye:27, fx:0.527, top:4, bot:1522, mirror:true,
            side:'R', alt:null, base:'resources/SI/Sorana_SI_side.webp', expr:{} },
@@ -575,11 +581,13 @@ export const ART = {
      碼頭道別那一幕的送行人群 —— 一張圖畫好幾個人，當一個「角色」上台。
      ⚠ `cm` 是**估的**（畫面上最高那位 ≈172）：這張沒有單一的人可量，
        看渲染結果不對就調 cm（同安雅近景那組的規矩，top/bot 不要動）。 */
-  /* ⚠ ver -743（Ray：「群眾不要被裁掉，全部入鏡」）：舞台只露出最高者身高的
-     半截（CAST_SHOW），任何全身圖照 172cm 擺一定裁到腰 —— 所以走近景那一套
-     兩顆旋鈕（§6.5）：`cm` 壓小＝整張圖縮到舞台放得下，`standCm` 拉高＝
-     頭頂回到頂線附近。兩個都是**看渲染結果調的**（同安雅近景那組的規矩）。 */
-  crowd_np: { cm:82, standCm:170, eye:32, fx:0.370, top:7, bot:1527,
+  /* ⚠⚠ ver -744（Ray：「主角群高度固定，群眾全入鏡，小一點點沒關係」）：
+     `fitStage:true` ＝ 這一張**整張貼滿立繪區**、底貼舞台底、不進身高那一套
+     也不影響別人（story.castLayout 的 fitStage 分支）。
+     -743 用近景 cm／standCm 縮它，結果它的腳高於畫面底、layout 的 shift 把
+     **全員**往下推 —— 主角群高度跟著跑掉，Ray 回報的就是這個。
+     ⚠ `cm` 只是名目值（fitStage 不用它），留著給 CAST_TALL 之類的彙整讀。 */
+  crowd_np: { cm:172, fitStage:true, eye:32, fx:0.370, top:7, bot:1527,
            side:'R', alt:null, base:'resources/SI/NPC_northport_Crowd.webp', expr:{} },
 };
 
