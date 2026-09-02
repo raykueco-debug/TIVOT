@@ -1549,6 +1549,10 @@ export function enter(id){
         if(act){
           if(act.pullSafehouse) prog.addFlags([safehouseFlag()]);   // 打完插回去（見上）
           if(act.flag) prog.addFlags([act.flag]);                 // 主線段落：只演一次
+          /* 段落自己的章節（ver -742，Ray：「北泊出航插 stage5，插在眾人給諾薇兒
+             送行那一段」）—— 與閘門的 `stage` 同一個語意（clockGate 也是直接 set）；
+             重播由 `flag` 擋著，不會倒退（讀檔在更後面的章節時 flag 早就立了）。 */
+          if(act.stage!=null) prog.setStage(act.stage);
           /* `safehouse:true`：這一段演完＝**這張地圖從此是安全區**（ver -634，見
              `safehouseFlag` 的說明）。`flag` 記的是「演過了」，這一支記的是
              「這一段讓世界變成什麼樣」—— 語意不同，不要共用一格。

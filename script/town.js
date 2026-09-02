@@ -1180,7 +1180,11 @@ export const TOWNS = {
              ⚠ **`np_leave_ok` 的擁有者就是這一段**（鐵律 9：-655 留名字等的那支旗）
                —— 揮手那一拍插上，「不能丟下同伴」的 hold 從此解除。
              ⚠ 站位用預設：諾／蕾本位左、安／群眾本位右 —— 兩側各自輪轉（§6.5）。 */
-          { flag:'np_farewell', need:'np_grave_done', lines:[
+          /* ⚠ `stage:5`（ver -742，Ray：「北泊出航插 stage5，插在眾人給諾薇兒
+             送行那一段」）—— 章節表：S4 北泊第二天早上 → **S5 北泊出航**。
+             試飛預設與暫填組同步推到 7（STAGE_DEFAULT／FEATURE_FROM／索拉娜的
+             talks from —— 安雅的留 5：她這一段起真的在船上）。 */
+          { flag:'np_farewell', need:'np_grave_done', stage:5, lines:[
             nou('bigsmile','那麼，大家保重了！'),
             crd(null,'諾薇兒小姐！'),
             crd(null,'啊！我們的天使啊！'),

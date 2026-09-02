@@ -75,9 +75,9 @@
      四人同台的那 23 組照舊聽得到，只有真的在第 1、2 章時才會被擋下。
      真正的入隊章節定了就改這兩個數字，其餘什麼都不必動。 */
 const PARTY = {
-  sorana:   { from: 5 },
+  sorana:   { from: 7 },   // ver -742：入隊章節仍未定，隨試飛預設推到 7（她不在 S5 的船上）
   nouvelle: { from: 1 },
-  anya:     { from: 5 },
+  anya:     { from: 5 },   // ver -742：**留 5**——北泊出航（S5）起她真的在船上，船上對話該有她
   renna:    { from: 1 },
 };
 function inParty(who, stage){

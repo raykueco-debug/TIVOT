@@ -509,7 +509,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -741';
+const FLIGHT_VER = 'ver -742';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -1974,6 +1974,7 @@ const FILE_GAIN = {
   se_ui_kagurabell:2.530, sturm:1.709, se_kerberos_pop:1.479,
   /* stage2 甲板混亂（ver -741）：與 config tuning.fileGain 同值（兩邊互指）。 */
   se_sail:2.056, se_shipcrush:2.358,
+  se_enemy_serpent:2.184,   // 羽蛇登場的吼叫（ver -742；config 同值）
 };
 /* 這一支音檔最後該用多大的 volume。⚠ `Math.min(1,…)` 是 HTMLAudio 的硬上限：
    母帶太小聲的那幾支（航行環境音、飛行曲）會被夾住、拉不到目標 —— 那是母帶的
@@ -2015,7 +2016,7 @@ function senseUnlock(a){
    ⚠⚠ **暫填 3（＝`STAGE_DEFAULT`）**：預設進度下行為與 ver -432 完全一樣，
      只有真的在第 1、2 章才擋得到。真正解鎖的章節 Ray 定了就改這兩個數字
      （同 `flight/talks.js` 的 `PARTY`，那裡也是暫填 3）。 */
-const FEATURE_FROM = { sturm: 5, sense: 5 };   // ver -562：試飛暫定全部推到 S5（Ray：「以防萬一」）
+const FEATURE_FROM = { sturm: 7, sense: 7 };   // ver -742：隨試飛預設推到 S7（能力解鎖的章節劇情還沒給，照舊「以防萬一」）
 function featureOn(k){ return gameStage() >= (FEATURE_FROM[k] || 1); }
 
 /* ══ Sturm（衝刺）══════════════════════════════════════════════════
@@ -2252,7 +2253,7 @@ let talkLastId=null;
      而隊伍成員不齊時整組對話會被排除。改完用 talkDebug() 看一下各章還剩幾組，
      不然內容缺口只會表現成「按鈕好像沒反應」，很難回頭找。 */
 const STAGE_KEY='tivot_stage_v1';
-const STAGE_DEFAULT=5;   // ver -562：測試預設推到 S5（與 script/progress.js 同值，改一邊要改另一邊）
+const STAGE_DEFAULT=7;   // ver -742（Ray：「試飛改 stage7」）：S5＝北泊出航已定案（與 script/progress.js 同值，改一邊要改另一邊）
 function gameStage(){
   try{
     const v=parseInt(localStorage.getItem(STAGE_KEY),10);
@@ -7144,10 +7145,16 @@ function spawnScripted(S){
    吊墜就是入口）→ 玩家選完人回到畫面 → 蕾娜「要來了！」→ 直接開戰。
    ⚠ 期間羽蛇凍在原地（spdK=0）、接戰保留（enemy.holdBattle）——
      「進入戰鬥」由這一段的收尾自己叫（toBattle），不靠追撞。 */
+const serpentRoarSE=new Audio('../resources/audio/se/Se_enemy_serpent.m4a');
+serpentRoarSE.preload='auto';
+serpentRoarSE.__baseVol=fileVol('se_enemy_serpent');
 function runSerpentIntro(S){
   if(!enemy) return;
   enemy.holdBattle=true;
   enemy.__spdK0=enemy.spdK; enemy.spdK=0;
+  /* 登場音＝**牠的叫聲**（ver -742，Ray：「羽蛇的登場音不是鐘聲，是牠的叫聲，
+     也就是攻擊音效」）—— 卡上的 `sound.ult`（Se_enemy_serpent），生成那一刻就吼。 */
+  if(!muted){ try{ playSfx(serpentRoarSE); }catch(_){} }
   showEncounterArt('Serpent', ()=>{
     say([
       { who:'nouvelle/surprise', text:'好快！' },
