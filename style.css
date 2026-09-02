@@ -2632,17 +2632,22 @@
      ⚠ 落點：**左上、地名那一行之下**。右邊站著店主（`castSolo` 固定 `side:'R'`），
        下半是槍棺與吊墜 —— 左上是這一頁唯一沒有東西的角落。
      ⚠ `#townNav` 是 `pointer-events:none`，子元素要自己開回來。 */
-  #townShopBtn{position:absolute;display:none;pointer-events:auto;
+  #townShopBtn,.town-stall{position:absolute;display:none;pointer-events:auto;
     left:12px;top:calc(env(safe-area-inset-top,0px) + 92px);
     width:min(46%,168px);padding:13px 12px 11px;
     background:rgba(18,15,26,.92);border:1px solid var(--gold-dim);border-radius:10px;
     box-shadow:0 8px 26px rgba(0,0,0,.6);
     font-family:inherit;text-align:center;color:var(--gold);}
   #townShopBtn.on{display:block;}
-  #townShopBtn:active{background:var(--grid-active);transform:scale(.97);}
-  #townShopBtn b{display:block;font-size:17px;letter-spacing:5px;font-weight:normal;
+  /* 臨時攤鈕（ver -732）：只在要顯示時才建（modules/town.js 的 showStallBtns），
+     所以存在＝顯示；`right` 落在畫面右緣 ——「左右各設」，同一個 top 左右對稱
+     （右上角的選單鈕在 top:10 高 44，這條 top 本來就閃得開它）。 */
+  .town-stall{display:block;}
+  .town-stall.right{left:auto;right:12px;}
+  #townShopBtn:active,.town-stall:active{background:var(--grid-active);transform:scale(.97);}
+  #townShopBtn b,.town-stall b{display:block;font-size:17px;letter-spacing:5px;font-weight:normal;
     text-indent:5px;}
-  #townShopBtn i{display:block;margin-top:5px;font-size:10px;letter-spacing:2px;
+  #townShopBtn i,.town-stall i{display:block;margin-top:5px;font-size:10px;letter-spacing:2px;
     font-style:normal;color:var(--gold-dim);}
 
   /* ── 槍棺的吊墜（ver -411／-412，Ray 指定）──────────────────────────

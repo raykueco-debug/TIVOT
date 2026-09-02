@@ -975,7 +975,10 @@ export const TOWNS = {
        這裡不寫 `until`：同一件事只有一個開關（鐵律 7）。
        ⚠ 曲子有**自己的**結束點（`bgmUntil`）：怪清完就換回城的 Suspense6
        （ver -614 Ray 指定的節奏），而遇敵要到黑爪打完才停 —— 兩件事，見 townBgm。 */
-    siege: { from:'np_port_arrive', keep:['church'],
+    /* ⚠ `keep` 收 'port'（ver -732）：碼頭那一格在城鎮戰中擺著兩個**臨時攤**
+       （見 port 節點的 `siegeShops`）—— 末端被封的話攤根本走不到。
+       走回去的路上西側那一格的怪照舊要打（那是那一格自己的 act，這裡不另開後門）。 */
+    siege: { from:'np_port_arrive', keep:['church','port'],
              bgm:'crisis', bgmUntil:'np_clear_church' },
     /* ══⚠⚠ 自由探索期的兩個強制轉場（ver -656，Ray 交稿）══════════════════
        ① 黑爪打完之後**一走動**，司祭就來找你幫忙安葬死者 → 強制移到墓地，
@@ -1096,6 +1099,20 @@ export const TOWNS = {
       port: {
         bg:'Northport_port_BF', name:'北方泊地　碼頭',
         exits:{ back:'west' },
+        /* ══⚠⚠ 臨時攤（ver -732，Ray：「碼頭劇情登陸後（戰鬥探索）在左右各設
+           臨時的雜貨店跟武器店，黑爪戰後恢復城鎮探索後移除」）══════════════
+           只在**城鎮戰開著時**存在（判定收在 modules/town.js 的 `stallsOf`，
+           鐵律 8）—— 黑爪那一段演完插上安全區旗、`siegeOn()` 一變 false 就
+           自動消失。「移除」是推出來的，不另立旗標（鐵律 9：不加沒有擁有者的旗）。
+           ⚠ 店主與貨帳**沿用**這座城自己的兩家店（Ray 定案 ver -732）：
+             在攤上買空的東西，戰後回本店也是空的（貨帳只有 shopstock 一處，鐵律 7）。
+           ⚠ 攤只有買賣那張窗（含改裝頁 —— 那是 np_gunstore 這家店的性質）：
+             店主立繪、交談、射擊挑戰是**本店節點**的設施，不跟過來。
+           ⚠ 連帶城上的 `siege.keep` 要收 'port'（見上）：末端被封的話攤走不到。 */
+        siegeShops:[
+          { side:'left',  shop:'np_grocery',  label:'臨時雜貨店' },
+          { side:'right', shop:'np_gunstore', label:'臨時武器店' },
+        ],
         /* ══ 抵達北方泊地（ver -582，Ray 交稿）══════════════════════════════
            第一次劇情降落就落在這一格（見城上的 `firstEntry`），演完才記旗標。
            ⚠ 這是**主線段落**（`acts`）不是進場對白：它優先於傍晚提醒與 `lines`，

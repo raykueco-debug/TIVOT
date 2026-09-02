@@ -810,8 +810,54 @@ function shopReady(n){
 /* `opts.noMenu`＝只擺店主，**那顆鈕先不出來**（ver -430，Ray：「武器店的裝備教學
    先彈出，裝備完才跳出武器店的選單」）—— 等玩家真的換完裝備才由 `afterArrive` 補上。
    ⚠ 讓開的是**選單**不是整個店舖畫面：店主照舊立刻上場，不然玩家會以為走錯地方。 */
+/* ══⚠⚠ 臨時攤（ver -732，Ray：「碼頭劇情登陸後（戰鬥探索）在左右各設臨時的
+   雜貨店跟武器店，黑爪戰後恢復城鎮探索後移除」）══════════════════════════
+   節點資料寫 `siegeShops:[{side,shop,label}]`（鐵律 1）——「這一格在城鎮戰中
+   擺著哪些攤」。**只在 `siegeOn()` 時存在**：黑爪戰後安全區旗一插、城鎮戰一收，
+   攤自動消失 —— 「移除」是推出來的，不另立旗標（鐵律 9）。
+   ⚠ 判定只有這一支（鐵律 8）：`shopEnter`／`openMenu`／`showStallBtns` 都問它。
+   ⚠ 它是 `shopReady()` 那條「戰鬥地圖不開店」的**明寫例外**：一般店照舊不開，
+     只有掛了 `siegeShops` 的節點開攤。
+   ⚠ 攤只有買賣那張窗（貨帳沿用本店的鑰匙 —— 同一本帳，鐵律 7）：
+     店主立繪、交談、射擊挑戰是本店節點的設施，不跟過來。 */
+function stallsOf(n){
+  const sts = n && n.siegeShops;
+  return (sts && sts.length && siegeOn()) ? sts : null;
+}
+/* 攤的入口鈕：與 `#townShopBtn` **同一套樣式**（style.css 的共用選擇器），
+   一攤一顆、照資料的 `side` 落在畫面左右。每次要顯示就重建（冪等）。 */
+function showStallBtns(on){
+  if(!layer) return;
+  layer.querySelectorAll('.town-stall').forEach(b=>b.remove());
+  if(!on) return;
+  const sts=stallsOf(node()); if(!sts) return;
+  for(const st of sts){
+    const b=document.createElement('button');
+    b.type='button';
+    b.className='town-stall'+(st.side==='right' ? ' right' : '');
+    b.innerHTML='<b></b><i>點一下開啟</i>';
+    b.querySelector('b').textContent = st.label || '';
+    /* ⚠ 同 `#townShopBtn`：一定要 stopPropagation —— 舞台上還有「點一下」那一支。 */
+    b.addEventListener('pointerup', e=>{ e.stopPropagation(); openStallSheet(st); });
+    layer.appendChild(b);
+  }
+}
+/* 點攤 → 開全畫面那張買賣窗。與 `openSheet` 同一份 CSS 與同一個收尾約定：
+   開著時鈕收起來、關掉由 `onClose` 把入口交還玩家（`openMenu` 認得攤）。 */
+function openStallSheet(st){
+  if(sheetClose) return;                       // 已經開著
+  showStallBtns(false);
+  try{ SFX.unlock(); SFX.menuClick(); }catch(_){}
+  sheetClose = showShop(st.shop, null, null, null,
+      { info:infoText(node()), onClose:()=>{ sheetClose=null; openMenu(); } });
+}
 function shopEnter(opts){
-  const n=node(); if(!shopReady(n)) return;
+  const n=node();
+  /* 臨時攤（ver -732）：只擺攤鈕 —— 沒有店主立繪（那是本店的畫面），
+     也不進店舖模式（`setShopOn`）：沒有臉要讓，地名照舊。 */
+  const sts=stallsOf(n);
+  if(sts){ if(!(opts && opts.noMenu)) showStallBtns(true); return; }
+  if(!shopReady(n)) return;
   setShopOn(true);
   const who=keeperOf(n);
   if(who) story.castSolo(who);
@@ -822,6 +868,7 @@ function shopEnter(opts){
 function shopClose(){
   setShopOn(false);
   showShopBtn(false);
+  showStallBtns(false);      // 臨時攤的鈕也收（ver -732，同一張檢查表的第六件）
   if(sheetClose){ try{ sheetClose(); }catch(_){} sheetClose=null; }
 }
 /* ══ 店舖的入口鈕（ver -430）══════════════════════════════════════════
@@ -853,7 +900,9 @@ function showShopBtn(on){
 /* 這一格的「選單」＝把那顆鈕擺出來。⚠ 名字沿用 `openMenu` —— 呼叫端（`afterArrive`、
    整備教學的回呼、談完話回到店裡）要的是同一件事：「把這家店的入口交還給玩家」。 */
 function openMenu(){
-  const n=node(); if(!shopReady(n)) return;
+  const n=node();
+  if(stallsOf(n)){ showStallBtns(true); return; }   // 臨時攤（ver -732）：同一個入口
+  if(!shopReady(n)) return;
   showShopBtn(true);
 }
 /* ⚠⚠ **真正的那張窗：全畫面**（ver -430）。與 dock-left 是**同一份 CSS**，
@@ -1167,6 +1216,8 @@ function bindInput(){
        ⚠ 店裡沒有路人單句（`chatter` 只寫在餐酒館／教堂／行政廳／船塢），
          所以兩者不會打架；真要兩者兼有時，店舖優先。 */
     if(shopOn){ openMenu(); return; }
+    /* 臨時攤（ver -732）：點畫面也把攤鈕交還 —— 同一支 `openMenu`（鐵律 8）。 */
+    if(stallsOf(node())){ openMenu(); return; }
     /* ══ 單純點畫面 ＝ 路人單句（ver -387，Ray 指定四個地方都有）══
        節奏是**點一下出一句、再點一下收掉**，收掉之前不出下一句 ——
        一直點就一直換句的話，玩家永遠讀不完一句。 */
