@@ -509,7 +509,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -746';
+const FLIGHT_VER = 'ver -747';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -7162,7 +7162,7 @@ const SCRIPTED_ENCOUNTERS = [
      太晚，只要一出瓦爾士就生羽蛇，兩倍速正面殺來」）══
      `outOf:2`＝一離開瓦爾士（同蜈蚣出薩梅爾的機制）；`intro:'serpent'`＝
      不走「追到撞上」，走演出序列（戰鬥圖當插圖背景 → 對白 → 換搭檔教學 →
-     蕾娜「要來了！」→ 直接開戰，見 runSerpentIntro）。 */
+     整備一收直接開戰（-747 拿掉戰前那句「要來了！」），見 runSerpentIntro）。 */
   /* ver -745（Ray：「範圍太遠，玩家還沒看到有東西飛來就進劇情了。讓牠刷出時
      常速，接近玩家時兩倍速，撞上時才進劇情『好快』」）：
      `nearMul/nearDist`＝接近加速；`intro` 改在**接觸那一刻**才啟動（見 updateEnemy）。 */
@@ -7202,7 +7202,7 @@ function spawnScripted(S){
 
 /* ══════════ stage2 羽蛇的登場演出（ver -741，Ray 的稿）══════════
    插圖（視時間差分）→ 對白（好快！…讓她試試看）→ 教學提示（進整備換搭檔，
-   吊墜就是入口）→ 玩家選完人回到畫面 → 蕾娜「要來了！」→ 直接開戰。
+   吊墜就是入口）→ 玩家選完人回到畫面 → 直接開戰（-747 拿掉「要來了！」）。
    ⚠ 期間羽蛇凍在原地（spdK=0）、接戰保留（enemy.holdBattle）——
      「進入戰鬥」由這一段的收尾自己叫（toBattle），不靠追撞。 */
 const serpentRoarSE=new Audio('../resources/audio/se/Se_enemy_serpent.m4a');
@@ -7322,11 +7322,10 @@ function gearOpenNow(){
                  && window.parent.__tivotFlight.gearOpen()); }catch(_){ return false; }
 }
 function waitGearThenBattle(){
+  /* 戰前那句「要來了！」ver -747 由 Ray 拿掉 —— 整備一收（緩 900ms）直接開戰。 */
   const fin=()=>{
-    say([{ who:'renna/command', text:'要來了！' }], performance.now(), { done:()=>{
-      if(enemy){ enemy.holdBattle=false; if(enemy.__spdK0) enemy.spdK=enemy.__spdK0; }
-      toBattle('serpent');
-    }});
+    if(enemy){ enemy.holdBattle=false; if(enemy.__spdK0) enemy.spdK=enemy.__spdK0; }
+    toBattle('serpent');
   };
   const tick=()=>{
     if(gearOpenNow()){ setTimeout(tick, 350); return; }
@@ -8043,6 +8042,10 @@ window.__flightResume=function(opts){
   if(lastScriptS && lastScriptS.done==='flight_serpent_met' && !flagOn('np_deck_chaos')){
     /* 甲板背景**這一刻**就鋪（ver -745）：結算一撤、畫面露出來就是它。
        地圖上的怪全清（Ray：「包括那隻羽蛇」）—— 牠已經在剛剛那一場被打掉了。 */
+    /* 戰後這一段的 bgm ＝ Crisis（ver -747，Ray：「戰後 bgm 用 crisis」）——
+       上面的 flightAudio(true) 剛把航行曲接回來，這裡蓋回 Crisis；
+       交棒 lakeScene 時 flightAudio(false) 的保險會把它一起收掉（-745 的帶子）。 */
+    crisisBgm(true);
     enemy=null;
     if(deckBgImg) introArt={ img:deckBgImg, t0:performance.now()-9999 };
     else { deckBgWarm(); setTimeout(()=>{ if(deckBgImg && !flagOn('np_deck_chaos')) introArt={ img:deckBgImg, t0:performance.now()-9999 }; }, 400); }

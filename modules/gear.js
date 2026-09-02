@@ -210,10 +210,12 @@ function render(){
                 return '<button class="gs-ptab'+(k===pk?' on':'')+'" data-pk="'+k+'"'
                      + ' type="button">'+(pp.name||k)+'</button>';
               }).join('')+'</div>'
-              /* 確認鈕（ver -743）：有待選而且不是現任才長出來。 */
+              /* 確認鈕（ver -743；-747 Ray：「當前伙伴也要顯示確認鈕，寫『已配對』」）
+                 —— 現任那一頁換成不可按的「已配對」：鈕一直在，玩家才讀得出
+                 「這一格是拿來按的」，只是現在沒有要換（§6.5.5：不要靠藏起鈕擋）。 */
             + (pk!==cur
                 ? '<button class="gs-pconfirm" type="button">確　認</button>'
-                : '')
+                : '<button class="gs-pconfirm gs-paired" type="button" disabled>已配對</button>')
             : '')
     +     '<div class="gs-pcard">'
     +       (p.image ? '<img class="gs-pimg" src="'+(asset(p.image)||'')+'" alt=""'

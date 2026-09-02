@@ -498,8 +498,11 @@ export const MAIN_SCRIPT = {
         portrait:{ char:'RENNA', expr:'intense2' } },
       /* 009_Soranadebute 插圖，由下往上平移（同 001 跌倒那一拍的節奏：
          對話框等平移跑完再出，2600 與 CSS 的平移時間同值）。 */
+      /* 索拉娜插畫登場那一拍就起 Whirlwind（ver -747，Ray：「插畫登場時就播
+         Peritune_Whirlwind，戰鬥時不再更換音樂」——戰鬥卡同一首，riseCue 的
+         同曲判斷會直接放行，開打無縫接續）。 */
       { speaker:'NOUVELLE', text:'那是……', delay:2600,
-        cg:'009_Soranadebute', cgPan:'up',
+        cg:'009_Soranadebute', cgPan:'up', bgm:'whirlwind',
         portrait:{ char:'NOUVELLE', expr:'scared' } },
       { speaker:'NOUVELLE', text:'森住民？',
         portrait:{ expr:'scared' } },

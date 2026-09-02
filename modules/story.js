@@ -561,8 +561,10 @@ const BGM_FILES=[
        手機上會變成「那一段沒有音樂」。 */
   'PerituneMaterial_Suspense6_loop.m4a', 'Peritune_Crimson_Moon_loop.m4a',
   'PerituneMaterial_Entangle.m4a',   // 北方泊地那一夜（ver -656，Ray 指定；Credit 已加）
-  /* 湖上甲板那一段（ver -744，Ray 的 stage5 稿；Credit 已加）。 */
+  /* 湖上甲板那一段（ver -744，Ray 的 stage5 稿；Credit 已加）。
+     Whirlwind（-747）：索拉娜插畫登場那一拍就起，戰鬥卡同一首＝開打不換曲。 */
   'Peritune_Misty_Hollow_loop.m4a', 'Peritune_Whistling_Winds_loop.m4a',
+  'Peritune_Whirlwind.m4a',
 ];
 /* 別名：腳本裡慣用的短名 → 實際檔名（去副檔名）。加新別名只動這裡。 */
 const BGM_ALIAS={ crisis:'peritunematerial_crisis_loop', lunaria:'bgm_lunaria',
@@ -573,7 +575,8 @@ const BGM_ALIAS={ crisis:'peritunematerial_crisis_loop', lunaria:'bgm_lunaria',
                   crimson:'peritune_crimson_moon_loop',
                   entangle:'peritunematerial_entangle',   // ver -656
                   misty:'peritune_misty_hollow_loop',       // ver -744：湖上甲板
-                  whistling:'peritune_whistling_winds_loop' };   // ver -744：森住民戰後
+                  whistling:'peritune_whistling_winds_loop',   // ver -744（-747 起森住民戰後改回 misty，這首暫無人用）
+                  whirlwind:'peritune_whirlwind' };   // ver -747：索拉娜插畫登場～森住民戰
 const BGM_SRC=(()=>{ const m={};
   for(const f of BGM_FILES) m[f.replace(/\.[^.]+$/,'').toLowerCase()]='resources/audio/bgm/'+f;
   return m; })();

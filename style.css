@@ -2947,6 +2947,10 @@
     font-family:inherit;font-size:13px;letter-spacing:6px;text-indent:6px;
     color:var(--gold);cursor:pointer;}
   #gearSheet .gs-pconfirm:active{background:rgba(212,169,74,.32);}
+  /* 現任那一頁的「已配對」（ver -747）：同一顆鈕的不可按態 —— 壓暗、不給游標，
+     :active 那條自然不套（disabled 不會觸發）。 */
+  #gearSheet .gs-pconfirm.gs-paired{color:var(--gold-dim);border-color:var(--gold-dim);
+    background:rgba(212,169,74,.08);cursor:default;}
   #gearSheet .gs-pcard{position:relative;flex:0 0 auto;aspect-ratio:3/4;
     max-height:40vh;min-height:120px;overflow:hidden;
     border:1px solid var(--gold-dim);border-radius:10px;background:rgba(10,8,14,.6);}
