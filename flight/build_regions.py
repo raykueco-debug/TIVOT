@@ -37,7 +37,8 @@ SEA_GREY = 44 / 520 * 255
 #   改了 region.png 的國界不用動這裡；改了國名或新增國家才要。
 # ⚠⚠ ver -734（Ray 交國名總表）：達爾馬提亞→瓦勒里亞、恩雅→羅賽爾、
 #   阿斯佩里亞→伊斯維亞、東埃爾比斯公國→諾爾維亞王國、Zevelia→Zevilia。
-#   **Reference/region.png 上燒的還是舊名** —— 名字的真相在這張表，不在那張圖。
+#   Reference/region.png 已於 ver -735 換成新國界圖（build_region_overlay.py 出的，
+#   Ray 核可）—— 名字的真相仍在這張表，那張圖的標籤只是跟著它印的。
 ANCHORS = [
     ('薩梅爾帝國',     'Samael Empire',              1154, 709),
     ('瓦爾士大公國',   'Grand Duchy of Vals',        1589, 228),
