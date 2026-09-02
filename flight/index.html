@@ -509,7 +509,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -747';
+const FLIGHT_VER = 'ver -748';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -4980,14 +4980,24 @@ function mapPick(cssX,cssY){
   if(rx<0||ry<0||rx>=R.w||ry>=R.h){ MV.pick=null; drawMap(); return; }
   const i=R.pick[ry*R.w+rx];
   MV.pick = i<0 ? null : [i%MAPW, (i/MAPW)|0];
+  /* 管理人瞬移＝**快速點兩次**（ver -748，Ray：「管理人模式下要在地圖上快速
+     點兩次才會瞬移過去」）—— 單點只落選取標記（誤觸地圖不再把船搬走），
+     400ms 內在同一處（30px）再點一下才瞬移。 */
   if(ADMIN && MV.pick){
-    cam.x=MV.pick[0]*MAP_SCALE; cam.y=MV.pick[1]*MAP_SCALE;
-    /* 怪是依「離自機的距離」排程的，瞬移之後留在原地的那隻會突然變成
-       幾千單位外的殘影 —— 直接回收，讓它照正常規則重新刷。 */
-    enemy=null;
+    const now=performance.now();
+    const dbl = mapTapLast && (now-mapTapLast.t)<400
+             && Math.abs(cssX-mapTapLast.x)<30 && Math.abs(cssY-mapTapLast.y)<30;
+    mapTapLast = dbl ? null : { t:now, x:cssX, y:cssY };
+    if(dbl){
+      cam.x=MV.pick[0]*MAP_SCALE; cam.y=MV.pick[1]*MAP_SCALE;
+      /* 怪是依「離自機的距離」排程的，瞬移之後留在原地的那隻會突然變成
+         幾千單位外的殘影 —— 直接回收，讓它照正常規則重新刷。 */
+      enemy=null;
+    }
   }
   drawMap();
 }
+let mapTapLast=null;   // 上一次的單點（管理人雙點瞬移判定用；mapPick 只在事件裡跑，此宣告屆時已生效）
 const mUp=e=>{
   if(mDown && mDown.n===1 && mPts.size===1 &&
      Math.abs(e.clientX-mDown.x)<4 && Math.abs(e.clientY-mDown.y)<4){

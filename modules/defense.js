@@ -21,6 +21,7 @@ import { GAME_CONFIG, asset, sfxGain, weaponOf, weaponBand } from '../config.js'
 import { state, addPerfect, addPerfectCounter, storyMode } from '../state.js';
 import { SFX } from '../audio.js';
 import { L, fmt } from '../i18n.js';   // 多語言（防禦浮動字）
+import * as settings from './settings.js';  // 敵攻警告開關（fxOn('alert')，ver -748）
 
 const $ = id => document.getElementById(id);
 const T = GAME_CONFIG.tuning;
@@ -146,7 +147,9 @@ export function updateThreats(){
   /* 盤面警戒跟著圈走（ver -462，Ray：「亮黃圈時數字盤亮橘光，亮橘圈的時候
      數字盤轉紅光」）：alert（橘光）自 spawnThreat 起、.hot（紅光）自進橘圈帶起
      （紅圈維持紅光）。這裡是唯一的切換點（鐵律 8）——移除一律跟著 alert 一起。 */
-  $('grid').classList.toggle('hot', hot);
+  /* 敵攻警告是可關的提示（ver -748，settings.fxOn('alert')）：關掉＝盤面不變色
+     不脈動，紅點本體照出（那是玩法不是提示）。 */
+  $('grid').classList.toggle('hot', hot && settings.fxOn('alert'));
 }
 export function stopThreatTick(){
   clearInterval(state.threatTick); state.threatTick=null;
@@ -223,7 +226,7 @@ export function spawnThreat(){
   dot.addEventListener('click',()=>resolveThreat(th));
   layer.appendChild(dot);
   state.threats.push(th);
-  $('grid').classList.add('alert');
+  if(settings.fxOn('alert')) $('grid').classList.add('alert');   // 可關的提示（ver -748）
   if(api.onThreatSpawned) api.onThreatSpawned();   // 教學「首紅點」節點通知（教學外為 no-op）
 }
 // 從清單移除單一攻擊點

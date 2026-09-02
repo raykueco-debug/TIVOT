@@ -17,6 +17,11 @@ const K = {
   vo:   'tivot_vol_vo_v1',
   auto: 'tivot_auto_ms_v1',
   hap:  'tivot_haptics_v1',
+  /* 戰鬥提示三開關（ver -748，Ray：「把延時懲罰計時器、被動技能計時器、
+     敵人攻擊警告效果做進設定裡，讓玩家可以選擇開閉」）。預設**開**。 */
+  fxDelay: 'tivot_fx_delayring_v1',     // 延時懲罰計時器（盤面上緣那條線）
+  fxPass:  'tivot_fx_passivetimer_v1',  // 被動技能計時器（明晰之夢的兩側金光柱）
+  fxAlert: 'tivot_fx_alertfx_v1',       // 敵人攻擊警告效果（盤面的 alert/hot 變色脈動）
 };
 
 /* 自動播放：一句唸完之後停多久才走下一句。
@@ -39,6 +44,13 @@ export function autoDelayMs(){
      就自己變成關的。 */
 export function haptics(){ return rd(K.hap) !== '0'; }
 export function setHaptics(on){ wr(K.hap, on ? '1' : '0'); }
+
+/* 戰鬥提示開關的查詢（ver -748，鐵律 7：讀的人只問這一支）。
+   kind：'delay'（延時懲罰計時器）／'pass'（被動技計時器）／'alert'（敵攻警告）。
+   ⚠ 這裡只管「玩家要不要看」；紅點本體、懲罰本體是玩法不是提示，不歸這裡管。 */
+const FXK = { delay:'fxDelay', pass:'fxPass', alert:'fxAlert' };
+export function fxOn(kind){ return rd(K[FXK[kind]]) !== '0'; }
+export function setFx(kind, on){ wr(K[FXK[kind]], on ? '1' : '0'); }
 
 /* 套用到音訊層。⚠ **唯一的套用點**（鐵律 8）：開機時由 main.js 呼叫一次，
    面板每動一下也呼叫。 */
@@ -69,6 +81,12 @@ export function open(opts){
      不要 close 完再 open 一次：`open()` 開頭那道「已經開著就不重開」的守門會擋掉
      （移除是 200ms 之後才發生的）。 */
   const renderMain = ()=>{
+    /* 戰鬥提示的開關列（ver -748）：同震動那顆的樣式（gm-sw），一列一個。 */
+    const fxRow = (id, label, kind) =>
+        '<label class="gm-row gm-toggle"><span>'+label+'</span>'
+      + '<button class="gm-sw'+(fxOn(kind)?' on':'')+'" id="'+id+'" type="button" data-fx="'+kind+'">'
+      +   '<i></i></button>'
+      + '<b>'+(fxOn(kind)?'開':'關')+'</b></label>';
     const row = (id, label, val) =>
         '<label class="gm-row"><span>'+label+'</span>'
       + '<input id="'+id+'" type="range" min="0" max="100" step="1" value="'+Math.round(val*100)+'">'
@@ -85,6 +103,10 @@ export function open(opts){
       +   '<input id="gmAuto" type="range" min="0" max="100" step="1" value="'+autoPct+'">'
       +   '<b id="gmAutoV">'+(autoDelayMs()/1000).toFixed(1)+'s</b></label>'
       + '<div class="gm-note">一句唸完之後停多久才走下一句。往左＝快。</div>'
+      + '<div class="gm-sec">戰鬥提示</div>'
+      + fxRow('gmFxDelay','延時懲罰計時器','delay')
+      + fxRow('gmFxPass','被動技能計時器','pass')
+      + fxRow('gmFxAlert','敵人攻擊警告','alert')
       + '<div class="gm-sec">其　他</div>'
       + '<label class="gm-row gm-toggle"><span>震　動</span>'
       +   '<button class="gm-sw'+(haptics()?' on':'')+'" id="gmHap" type="button">'
@@ -111,6 +133,12 @@ export function open(opts){
       const ms=Math.round(AUTO_MIN + (+au.value)/100*(AUTO_MAX-AUTO_MIN));
       wr(K.auto, ms); if(auV) auV.textContent=(ms/1000).toFixed(1)+'s';
     });
+    panel.querySelectorAll('.gm-sw[data-fx]').forEach(b=>b.addEventListener('click', e=>{ e.stopPropagation();
+      const kind=b.dataset.fx, on=!fxOn(kind); setFx(kind, on);
+      b.classList.toggle('on', on);
+      const lab=b.parentNode.querySelector('b'); if(lab) lab.textContent = on ? '開' : '關';
+      try{ SFX.menuClick(); }catch(_){}
+    }));
     const sw=panel.querySelector('#gmHap');
     if(sw) sw.addEventListener('click', e=>{ e.stopPropagation();
       const on=!haptics(); setHaptics(on);

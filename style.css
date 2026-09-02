@@ -847,19 +847,25 @@
   #grid.buffed .cell.next{
     border-color:#fff;color:#fff;
     animation:niNextPulse .7s infinite alternate;}
-  /* ══ 明晰之夢的時限＝金光從盤底淹起（ver -746，Ray：「技能的結束時間讓盤面的
-     底色從下方淹起金光，圖層在數字的背後，金光到頂就爆散」）══
-     疊在 #gridWrap 上、罩住 #grid 的範圍（位置由 combat.lucidFlood 現量）。
-     ⚠ 「在數字的背後」用 `mix-blend-mode:screen` 做：格底被加亮成金、
-       亮色的數字照樣浮在上面 —— 真的塞到 DOM 背後會被格子的不透明底色蓋死。
-     末端（`::after`）要高亮（Ray 指定）：一條亮邊＋外光。 */
-  .lucid-flood{position:absolute;pointer-events:none;z-index:3;
-    mix-blend-mode:screen;
-    background:linear-gradient(to top, rgba(212,169,74,.62), rgba(212,169,74,.28));}
-  .lucid-flood::after{content:'';position:absolute;left:0;right:0;top:-2px;height:3px;
-    background:#ffe9a8;
-    box-shadow:0 0 10px #ffd76a, 0 0 22px rgba(255,215,106,.8);}
-  /* 到頂爆散：整片衝亮、往上散開、消失 —— 技能同一刻結束（fireBuff 的計時器）。 */
+  /* ══ 明晰之夢的時限＝盤面**兩側**的金光同步升起（ver -748，Ray 定案：
+     「不要全盤面，讓盤面兩側同步升起金光，到頂結束」「一樣爆散」）══
+     -746 的「整面從下淹起」與 -748 前半的三層夾心都撤了：`#grid.alert` 的警戒
+     脈動會掛 filter（stacking context＋backdrop root），蓋在格子上的光怎麼疊
+     都會被它攪局 —— 兩側的光柱**不壓格子**，整個問題消失。
+     結構：`.lucid-flood` 是一片高度＝進度的隱形量尺（rAF 推 %，combat.lucidFlood），
+     ::before／::after 是左右兩道光柱（頂端 8% 收亮＝末端高亮，Ray -746 指定沿用）。 */
+  .cell>span{position:relative;z-index:2;}
+  .lucid-flood{position:absolute;pointer-events:none;z-index:1;}
+  /* 光柱**完全在盤外**（Ray：「被動技能計時器不可壓到盤面」）：量尺對齊 #grid，
+     柱子往外推 10px（7px 寬＋3px 淨空），落在 gridWrap 的左右留白裡。 */
+  .lucid-flood::before, .lucid-flood::after{content:'';position:absolute;top:0;bottom:0;width:7px;
+    border-radius:4px;
+    background:linear-gradient(to top,
+      rgba(212,169,74,.40) 0%, rgba(212,169,74,.80) 90%, #ffe9a8 100%);
+    box-shadow:0 0 10px rgba(255,215,106,.75), 0 0 22px rgba(212,169,74,.45);}
+  .lucid-flood::before{left:-10px;}
+  .lucid-flood::after{right:-10px;}
+  /* 到頂爆散：衝亮、往上散開、消失 —— 技能同一刻結束（fireBuff 的計時器）。 */
   .lucid-flood.burst{animation:lucidBurst .6s ease-out forwards;}
   @keyframes lucidBurst{
     0%  {opacity:1;transform:none;filter:brightness(1.8);}

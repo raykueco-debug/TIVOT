@@ -20,6 +20,7 @@ import { TEL } from '../telemetry.js';
 import { L, fmt } from '../i18n.js';   // 多語言（浮動字/RELOADING）   // 遙測（底層純輸出，同 audio 定位；未設定後端時 no-op）
 import * as enemy from './enemy.js';
 import * as hap from './haptics.js';   // 震動（葉節點：只依賴 settings/瀏覽器 API）
+import * as settings from './settings.js';  // 戰鬥提示開關（fxOn，ver -748；settings 是葉節點不反向 import）
 import * as defense from './defense.js';
 import * as weapon from './weapon.js';
 import * as saint from './saint.js';
@@ -252,7 +253,11 @@ function buildGrid(){
   state.order=shuffle([...Array(state.N)].map((_,i)=>i+1));
   state.order.forEach(num=>{
     const c=document.createElement('div');
-    c.className='cell'; c.textContent=num; c.dataset.num=num; c.style.fontSize=fs+'px';
+    /* 數字包進 span（ver -748）：帶 z-index:2 ＝格內永遠的最上層。
+       明晰之夢的計時器最後改成盤外光柱（不壓盤面），這層包裝留著 ——
+       日後任何要墊在數字後面的效果都有現成的夾層；textContent 讀取照樣穿透。 */
+    c.className='cell'; c.dataset.num=num; c.style.fontSize=fs+'px';
+    const sp=document.createElement('span'); sp.textContent=num; c.appendChild(sp);
     let handled=false;
     c.addEventListener('touchstart',e=>{e.preventDefault();handled=true;tap(num,c,e);},{passive:false});
     c.addEventListener('click',e=>{if(handled){handled=false;return;}tap(num,c,e);});
@@ -452,21 +457,24 @@ function setLowHpBuff(on){
   if(!on) clearLucidFlood(true);
 }
 
-/* ══ 明晰之夢的時限視覺（ver -746，Ray：「技能的結束時間讓盤面的底色從下方
-   淹起金光，圖層在數字的背後，金光到頂就爆散，技能結束。金光的末端要高亮」）══
-   一片 `.lucid-flood` 疊在 #gridWrap 上、罩住 #grid 的範圍，高度用 CSS transition
-   以技能秒數線性長到頂 —— 到頂的同一刻 fireBuff 的計時器把 buff 收掉，
-   setLowHpBuff(false) 叫 clearLucidFlood(true) 演爆散。樣式全在 style.css（鐵律 1）。
-   ⚠ 掛在 #gridWrap 不掛 #grid：buff 會跨盤，而 buildGrid 每換一盤就把 #grid
-     的子節點整批洗掉 —— 掛進去金光活不過一盤。位置在建立那一刻現量一次
-     （盤與盤之間 #grid 的外框不變，量一次就夠）。 */
-let lucidFloodEl=null;
+/* ══ 明晰之夢的時限視覺＝盤面**兩側**的金光柱（ver -748，Ray 定案：
+   「不要全盤面，讓盤面兩側同步升起金光，到頂結束」「一樣爆散」；
+   -746 的整面淹起與三層夾心都撤了——蓋在格子上的光會被 #grid.alert 的
+   filter 攪局，兩側的光柱不壓盤面（Ray：「被動技能計時器不可壓到盤面」），
+   問題整個消失）══
+   `.lucid-flood` 是掛在 #gridWrap、對齊 #grid 矩形的隱形量尺（高度＝進度，
+   rAF 線性推滿 sec 秒），::before/::after 是盤外左右兩道光柱（style.css）。
+   到頂的同一刻 fireBuff 的計時器把 buff 收掉，setLowHpBuff(false) 叫
+   clearLucidFlood(true) 演爆散。掛 wrap 不掛 #grid：buildGrid 換盤會把
+   #grid 子節點整批洗掉。 */
+let lucidFloodEl=null, lucidFloodRaf=null;
 function lucidFlood(sec){
   clearLucidFlood(false);
+  if(!settings.fxOn('pass')) return;   // 玩家關掉被動技計時器（ver -748）
   const wrap=$('gridWrap'), grid=$('grid');
   if(!wrap || !grid || !(sec>0)) return;
   const wr=wrap.getBoundingClientRect(), gr=grid.getBoundingClientRect();
-  if(!gr.height) return;                      // 盤面沒顯示就不擺（量到 0 的通病，§6.5.4）
+  if(!gr.height) return;               // 盤面沒顯示就不擺（量到 0 的通病，§6.5.4）
   const el=document.createElement('div');
   el.className='lucid-flood';
   el.style.left=(gr.left-wr.left)+'px';
@@ -475,14 +483,18 @@ function lucidFlood(sec){
   el.style.height='0px';
   wrap.appendChild(el);
   lucidFloodEl=el;
-  /* 隔一幀才給 transition＋目標高度：同一幀設起點與終點會被合併成一次計算，
-     整段跳掉（同 story.veil 那條 offsetWidth 的理由）。 */
-  void el.offsetWidth;
-  el.style.transition='height '+sec+'s linear';
-  el.style.height=gr.height+'px';
+  const t0=performance.now(), H=gr.height;
+  const step=(now)=>{
+    if(lucidFloodEl!==el) return;                       // 已被收掉
+    const pct=Math.min(1, (now-t0)/(sec*1000));
+    el.style.height=(pct*H)+'px';
+    if(pct<1) lucidFloodRaf=requestAnimationFrame(step);
+  };
+  lucidFloodRaf=requestAnimationFrame(step);
 }
 function clearLucidFlood(burst){
   const el=lucidFloodEl; lucidFloodEl=null;
+  if(lucidFloodRaf){ cancelAnimationFrame(lucidFloodRaf); lucidFloodRaf=null; }
   if(!el) return;
   if(burst){
     el.classList.add('burst');
@@ -1057,6 +1069,12 @@ function updateEnergyClasp(){
      所以每一幀 `ensureDelayRing` 都會補 —— 那正好也處理了「第一次進場」。 */
 let ringRaf=0;
 function ensureDelayRing(){
+  /* 玩家關掉延時懲罰計時器（ver -748，settings.fxOn）：不畫、有就收 ——
+     懲罰本體照跑（那是玩法），只有這條線是提示。 */
+  if(!settings.fxOn('delay')){
+    const s0=document.getElementById('delayRing'); if(s0) s0.remove();
+    return null;
+  }
   let sv=document.getElementById('delayRing');
   if(sv) return sv;
   const grid=$('grid'); if(!grid) return null;
