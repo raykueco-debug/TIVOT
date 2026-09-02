@@ -1,3 +1,10 @@
 when	from	to	reason
 20260901-111723	resources/CI/CI_Anya_Dreambreaker.png	_recycle/resources/CI/CI_Anya_Dreambreaker.png	Dreambreaker 更新，這是舊版的原 PNG
 20260901-145932	resources/audio/vo/vo_torsten_dualcrush2.pkf	_recycle/resources/audio/vo/vo_torsten_dualcrush2.pkf	Audacity 的波形快取，不是素材
+20260902-103408	resources/background/Ruins_Entrance_Day.webp	_recycle/resources/background/Ruins_Entrance_Day.webp	遺跡首批 5 張是 Gemini 自家筆觸，未對齊 GPT 基準；ver -732 起改用對齊版重畫
+20260902-103408	resources/background/Ruins_Entrance_Night.webp	_recycle/resources/background/Ruins_Entrance_Night.webp	遺跡首批 5 張是 Gemini 自家筆觸，未對齊 GPT 基準；ver -732 起改用對齊版重畫
+20260902-103408	resources/background/Ruins_Antechamber.webp	_recycle/resources/background/Ruins_Antechamber.webp	遺跡首批 5 張是 Gemini 自家筆觸，未對齊 GPT 基準；ver -732 起改用對齊版重畫
+20260902-103408	resources/background/Ruins_CorridorA.webp	_recycle/resources/background/Ruins_CorridorA.webp	遺跡首批 5 張是 Gemini 自家筆觸，未對齊 GPT 基準；ver -732 起改用對齊版重畫
+20260902-103408	resources/background/Ruins_CorridorB.webp	_recycle/resources/background/Ruins_CorridorB.webp	遺跡首批 5 張是 Gemini 自家筆觸，未對齊 GPT 基準；ver -732 起改用對齊版重畫
+20260902-111059	flight/silvermoon_heightmap.png	_recycle/flight/silvermoon_heightmap.png	ver -733 阿斯佩里亞外海加大型島嶼，改寫前回收原圖
+20260902-111059	flight/silvermoon_terrain.png	_recycle/flight/silvermoon_terrain.png	ver -733 阿斯佩里亞外海加大型島嶼，改寫前回收原圖

@@ -492,8 +492,10 @@
      入口：首頁「試飛」鈕，僅管理人模式可見。
    ══════════════════════════════════════════════════════════════════════ */
 
-const HEIGHT_URL = 'silvermoon_heightmap.png';
-const COLOR_URL  = 'silvermoon_terrain.png';
+/* ⚠ `?v=N`：同名覆蓋的圖一定要帶快取戳記（§5 的 ver -650 鐵則）。
+   v2 ＝ ver -733 加了阿斯佩里亞外海的島群（兩張一起改、一起升版）。 */
+const HEIGHT_URL = 'silvermoon_heightmap.png?v=2';
+const COLOR_URL  = 'silvermoon_terrain.png?v=2';
 
 /* ── 世界尺度 ─────────────────────────────────────────────────────
    MAP_SCALE＝一個高度圖像素等於幾個世界單位。放大世界＝提高這個值，
@@ -507,7 +509,7 @@ const COLOR_URL  = 'silvermoon_terrain.png';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -568';
+const FLIGHT_VER = 'ver -733';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -783,6 +785,11 @@ const SETTLEMENTS = [
     planW:700, planRot:0.0, planTall:40,
     smoke:{ n:8, seed:11, area:[-0.55,0.55,-0.15,0.55] },
     podium:{ r:1.05, skirt:8, lift:0 } },
+  /* ── 村落（ver -733，Ray：「在1094,808設置一個村落，備著」）──────────────
+     還沒有名字、沒有城鎮內容（不寫 `town` ＝沒有降落鈕）、沒有名牌（PLACES
+     不加 —— 名字定了再補）。程序生成的村落街廓，先立在那裡備用。
+     地形對過：該點 raw 高度 44（低地、內陸），region＝薩梅爾帝國 → f:'empire'。 */
+  { n:'村落', x:1094, y:808, t:'village', f:'empire' },
 ];
 /* 手繪平面圖：背景載，載不到就退回程序生成的街廓（同飛空艇/怪的雙軌）。
    ⚠ 不進 loadWorld：它只影響少數幾座城的外觀，擋開場不划算。 */
