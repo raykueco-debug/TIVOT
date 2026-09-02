@@ -349,13 +349,13 @@ function getFloors(){
   return out;
 }
 /* ══ 戰後評價 → 好感（ver -557，Ray 指定）════════════════════════════════
-   「與搭檔的伙伴一起拿了 S 就會該伙伴好感度 +1，索拉娜例外，C 以下她才會 +1，
+   「與搭檔的伙伴一起拿了 S 就會該伙伴好感度 +1，索菈娜例外，C 以下她才會 +1，
      蕾娜因為不是搭檔，所以她每拿四次 S +1」
    實作只有這一支（鐵律 8），inspector 的劇情結算算出等第後呼叫。
    · 搭檔＝CHARS 裡那幾位才有好感層（蕾妮／馬季諾是試玩版搭檔，沒有）。
    ⚠ ver -723 起**次一級也給一半**（Ray：「評價A好感度也給一半。跟別人相反的
-     索拉娜則是評價D＋1 評價C+0.5」）—— 數字全部搬進 `config.rating.affection`。
-   · 索拉娜：方向相反，**D +1／C +0.5**（-557 的「C 以下都 +1」已由這張表取代）。
+     索菈娜則是評價D＋1 評價C+0.5」）—— 數字全部搬進 `config.rating.affection`。
+   · 索菈娜：方向相反，**D +1／C +0.5**（-557 的「C 以下都 +1」已由這張表取代）。
    · 蕾娜：不看搭檔欄，**S +0.5／A +0.25**（ver -724 全面 ×2 之後直接給小數）。
    回傳這一場加到誰（[]＝沒人），呼叫端要顯示可以用。 */
 export function applyRankAffection(grade, partnerKey){
@@ -363,7 +363,7 @@ export function applyRankAffection(grade, partnerKey){
   /* ⚠ 表在 config（`rating.affection`，鐵律 1）——這一支只負責照表加。 */
   const A=((GAME_CONFIG.rating||{}).affection)||{};
   if(CHARS.indexOf(partnerKey)>=0){
-    /* 索拉娜的方向與別人相反（評價越爛越加）；其餘搭檔照 `partner` 那一欄。 */
+    /* 索菈娜的方向與別人相反（評價越爛越加）；其餘搭檔照 `partner` 那一欄。 */
     const tbl = (partnerKey==='sorana') ? (A.sorana||{}) : (A.partner||{});
     const d = tbl[grade];
     if(d){ addAffection(partnerKey, d); got.push(partnerKey); }

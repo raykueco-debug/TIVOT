@@ -56,7 +56,7 @@ Ray 定案：「遭遇戰、非劇情戰都用原則；劇情戰都用手動回�
 
 ### 6. 好感度（-723／-724）
 上限 **100**、每 **20** 一個 tier、所有給好感的地方 **×2**。
-等第→好感的表在 `config.rating.affection`：搭檔 S+2/A+1、索拉娜 D+2/C+1、蕾娜 S+0.5/A+0.25。
+等第→好感的表在 `config.rating.affection`：搭檔 S+2/A+1、索菈娜 D+2/C+1、蕾娜 S+0.5/A+0.25。
 ⚠ tier 寬度在**三個地方**各有一份（`progress.TIER_W`／`flight/index.html` 的 `progTier`／
 `flight/talks.js` 的 `AFFECTION_BANDS`），三邊註解已互指。
 ⚠ 順手修好「地板預設 1 但好感預設 0」——那會把第一次的 +0.5 拉成 1，A 與 S 分不出來。

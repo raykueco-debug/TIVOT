@@ -5,7 +5,7 @@
    stage / flags，再依 next 接下一段。
 
    ── 站位：固定 2/2 分邊（Ray 定案，ver -289；取代規格 §3 原有的逐句 pos）──
-     右　索拉娜・安雅　　　左　蕾娜・諾薇兒
+     右　索菈娜・安雅　　　左　蕾娜・諾薇兒
    站位寫在 speakers.js 的 ART[].side，**不隨台詞變動** —— 同一個人每次都站
    同一邊，玩家才記得住誰是誰。同側換人＝舊的滑出、新的滑入。
    ⚠ ver -288 曾短暫改成「發起位制」（發起人站右），**已退回** —— 立繪朝向是
@@ -228,7 +228,7 @@ function layout(){
      現在 pxCm 只由 CAST_SHOW 與畫面高決定，是個常數 → 同一張圖永遠同一個大小。
      ⚠ 代價是兩人的輪廓會**交疊**。Ray 定案：「多少有些交疊沒關係」。
      ⚠ 也不要改成鎖臉上的特徵（眼寬／耳寬）來解 —— 專案踩過：鎖眼寬會把
-       **畫風差異放大成體型差異**（索拉娜眼睛被畫小 → 整個人放大 13%，
+       **畫風差異放大成體型差異**（索菈娜眼睛被畫小 → 整個人放大 13%，
        實測螢幕身高比 1.249 vs 真實身高比 1.107）。見 flight/HANDOFF.md F 節。
        尺要鎖**身高**，那是角色的客觀屬性，不隨畫風跑。 */
 
@@ -265,7 +265,7 @@ function layout(){
        0.10~0.14 個畫面寬 —— Ray 反覆回報「還是往中間放」就是這個。
        ⚠ **單人也用同一組**：站位是角色的屬性，不該因為台上有幾個人而改變。 */
     const faceX = (o.side==='R' ? W*0.76 : W*0.24);
-    /* ══⚠⚠ **換到非預設那一側 → 水平翻轉**（ver -625，Ray：「諾薇兒跟索拉娜
+    /* ══⚠⚠ **換到非預設那一側 → 水平翻轉**（ver -625，Ray：「諾薇兒跟索菈娜
        左右是對稱的，可以水平翻轉；蕾娜原則右，碰到安雅就放左，因為蕾娜整體框細，
        受左右影響小」）══
        §6.5 說「立繪朝向是畫死的」—— 所以**翻不翻是這張畫的性質**，
@@ -562,9 +562,10 @@ const BGM_FILES=[
   'PerituneMaterial_Suspense6_loop.m4a', 'Peritune_Crimson_Moon_loop.m4a',
   'PerituneMaterial_Entangle.m4a',   // 北方泊地那一夜（ver -656，Ray 指定；Credit 已加）
   /* 湖上甲板那一段（ver -744，Ray 的 stage5 稿；Credit 已加）。
-     Whirlwind（-747）：索拉娜插畫登場那一拍就起，戰鬥卡同一首＝開打不換曲。 */
+     Whirlwind（-747）：索菈娜插畫登場那一拍就起，戰鬥卡同一首＝開打不換曲。 */
   'Peritune_Misty_Hollow_loop.m4a', 'Peritune_Whistling_Winds_loop.m4a',
   'Peritune_Whirlwind.m4a',
+  'PeriTune_Harbor_Morning_loop.m4a',   // ver -753：stage5 起的北泊（rebuild.bgm；Credit 已加）
 ];
 /* 別名：腳本裡慣用的短名 → 實際檔名（去副檔名）。加新別名只動這裡。 */
 const BGM_ALIAS={ crisis:'peritunematerial_crisis_loop', lunaria:'bgm_lunaria',
@@ -576,7 +577,8 @@ const BGM_ALIAS={ crisis:'peritunematerial_crisis_loop', lunaria:'bgm_lunaria',
                   entangle:'peritunematerial_entangle',   // ver -656
                   misty:'peritune_misty_hollow_loop',       // ver -744：湖上甲板
                   whistling:'peritune_whistling_winds_loop',   // ver -744；-752 起＝森住民戰後（bgmAfter）
-                  whirlwind:'peritune_whirlwind' };   // ver -747：索拉娜插畫登場～森住民戰
+                  whirlwind:'peritune_whirlwind',   // ver -747：索菈娜插畫登場～森住民戰
+                  harbor:'peritune_harbor_morning_loop' };   // ver -753：stage5 起的北泊
 const BGM_SRC=(()=>{ const m={};
   for(const f of BGM_FILES) m[f.replace(/\.[^.]+$/,'').toLowerCase()]='resources/audio/bgm/'+f;
   return m; })();

@@ -639,7 +639,7 @@ function scriptSettle(totalTime, stats, sessionMoney){
   const bt = (GAME_CONFIG.battles||{})[state.scriptBattleId] || {};
   const noReward = !!bt.noReward;
   /* ══ 戰後評價 → 好感（ver -557，Ray 指定；規則在 prog.applyRankAffection 一支）══
-     搭檔 S +1（索拉娜改 C 以下）、蕾娜每 4 次 S +1。
+     搭檔 S +1（索菈娜改 C 以下）、蕾娜每 4 次 S +1。
      ⚠ 打靶（noReward）不算：那是可以重打到膩的練習場，刷 S 刷好感等於印鈔機
        （同 EXP/金錢不給的理由）。 */
   if(!noReward) prog.applyRankAffection(ev.grade, state.pickedPartner);

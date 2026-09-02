@@ -169,9 +169,25 @@ function diningNode(){ return ((TOWNS[townId]||{}).dining||{}).node || null; }
 function townBgm(){
   const T=TOWNS[townId]; if(!T) return null;
   const g=siegeOn();
-  if(!g || !g.bgm) return T.bgm;
-  if(g.bgmUntil && prog.hasFlag(g.bgmUntil)) return T.bgm;
+  /* ══ 城重建之後換曲（ver -753，Ray：「stage5 以後的北泊 bgm 改成
+     PeriTune_Harbor_Morning_loop」）══ 鑰匙寫在 `rebuild.bgm`（與 -627 的
+     重建背景同一個章節門檻 `rebuild.fromStage`，鐵律 7：同一件事同一個門）。
+     排在 siege 之後：真的又打起來（日後的稿）仍以戰鬥曲優先。 */
+  const rb=T.rebuild;
+  const rebuilt = rb && rb.bgm && prog.getStage() >= (rb.fromStage|0);
+  if(!g || !g.bgm) return rebuilt ? rb.bgm : T.bgm;
+  if(g.bgmUntil && prog.hasFlag(g.bgmUntil)) return rebuilt ? rb.bgm : T.bgm;
   return g.bgm;
+}
+/* ══⚠⚠ 舊章節的對白封存（ver -753，Ray：「且 stage4 之前的對話都不會再觸發」）══
+   城上寫 `muteTalksFrom:<章>`：stage 到了那一章，這座城**既有的**進場對白／
+   主線段落（acts）／強制轉場（gates）／onLeave 一律不再觸發 ——
+   例外是段落自己標了 `fromStage:<章>`（＝那是新章節的稿，日後 S5 的北泊稿用）。
+   ⚠ 路人單句（chatter）不在此列：那是市井的氣氛，不是劇情對白。
+   ⚠ 每一層自己問（鐵律 8，同 siegeOn 的作法）。 */
+function mutedTalks(){
+  const T=TOWNS[townId]; if(!T || T.muteTalksFrom==null) return false;
+  return prog.getStage() >= T.muteTalksFrom;
 }
 /* ══⚠⚠ **安全區旗：一插，這張地圖就不再有遭遇戰**（ver -634，Ray：「只要插
    safehouse flag 就不會有遭遇戰，黑爪戰後就插一個，拔 flag 才會遭遇」
@@ -511,7 +527,12 @@ function allSeen(){
    由開局日推出來 —— 時鐘是唯一的真相，不另存「第幾天」的旗標）。
    ⚠ 由上往下取**第一個**沒演過又符合條件的，所以資料的順序就是劇情的順序。 */
 function actDue(n){
+  const muted = mutedTalks();
   for(const a of (n && n.acts) || []){
+    /* 舊章節封存（ver -753）：沒標 fromStage 的段落＝舊稿，封存後不再演；
+       新章節的段落自己標 `fromStage`（同時也是「還沒到那一章不演」的門）。 */
+    if(a.fromStage!=null && prog.getStage() < a.fromStage) continue;
+    if(muted && a.fromStage==null) continue;
     if(a.flag && prog.hasFlag(a.flag)) continue;
     if(a.need && !prog.hasFlag(a.need)) continue;
     /* ⚠⚠ `until` ＝**這支旗立了就不再演**（ver -668，Ray：「教堂諾薇兒卡在
@@ -605,6 +626,7 @@ function gateList(){
   return T.gates ? T.gates : (T.stage1 ? [T.stage1] : []);
 }
 function stageGate(){
+  if(mutedTalks()) return null;   // 舊章節封存（ver -753）：安葬／那一夜那些閘門不再抓人
   for(const g of gateList()){
     if(!g) continue;
     if(g.flag && prog.hasFlag(g.flag)) continue;
@@ -1279,6 +1301,7 @@ function stepSfx(){
    ⚠ 與 `acts`（抵達時演）是**兩個時機**，不要混用：這一段的語意就是「你要走了」。
    ⚠ 出航（`__sail`）也吃得到 —— 它一樣是「離開這一格」。 */
 function leaveDue(n){
+  if(mutedTalks()) return null;   // 舊章節封存（ver -753）
   const l = n && n.onLeave; if(!l) return null;
   if(l.flag && prog.hasFlag(l.flag)) return null;
   if(l.need && !prog.hasFlag(l.need)) return null;
@@ -1506,7 +1529,7 @@ export function enter(id){
   /* ⚠ **戰鬥地圖不播進場對白**（ver -584）：那一段是「第一次走進這個地方」的氣氛戲，
      城裡正在被禍魘襲擊時演它是錯的。旗標也不會記 —— 城鎮戰結束後正常走進來照演。
      ⚠ `acts` **不受這一條管**：城鎮戰的那幾場戰鬥就是掛在 acts 上的。 */
-  const own = (siegeOn() || played || expired || !isOpenNow(n) || linesBlockedByRest(n.lines))
+  const own = (siegeOn() || mutedTalks() || played || expired || !isOpenNow(n) || linesBlockedByRest(n.lines))
             ? [] : (n.lines||[]);
   /* ⚠⚠ **傍晚那一格不搶這一段戲**（ver -430，Ray 指定）：讓節點自己的對白先講完，
      移動到**下一個地點**才強制觸發。⚠ 只讓一次（`eveningHeld`）—— 否則一路走過

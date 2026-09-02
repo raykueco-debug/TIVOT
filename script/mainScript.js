@@ -471,9 +471,9 @@ export const MAIN_SCRIPT = {
     next:null,
     endHome:true,
     context:'scene',
-    /* 站位（ver -752）：索拉娜（含報名前的？？？）與安雅都是右位、蕾娜原則右 ——
+    /* 站位（ver -752）：索菈娜（含報名前的？？？）與安雅都是右位、蕾娜原則右 ——
        四個人擠一邊會一直互相擠掉（§6.5）。蕾娜整幕改左（她碰到安雅本來就放左），
-       左＝蕾娜／諾薇兒輪替、右＝索拉娜／安雅輪替（抽牌輪轉）。 */
+       左＝蕾娜／諾薇兒輪替、右＝索菈娜／安雅輪替（抽牌輪轉）。 */
     sides:{ RENNA:'L' },
     lines:[
       /* 設定拍（背景／BGM／時鐘），台上沒人＝空演出拍要給 auto（§6.5）——
@@ -502,7 +502,7 @@ export const MAIN_SCRIPT = {
         portrait:{ char:'RENNA', expr:'intense2' } },
       /* 009_Soranadebute 插圖，由下往上平移（同 001 跌倒那一拍的節奏：
          對話框等平移跑完再出，2600 與 CSS 的平移時間同值）。 */
-      /* 索拉娜插畫登場那一拍就起 Whirlwind（ver -747，Ray：「插畫登場時就播
+      /* 索菈娜插畫登場那一拍就起 Whirlwind（ver -747，Ray：「插畫登場時就播
          Peritune_Whirlwind，戰鬥時不再更換音樂」——戰鬥卡同一首，riseCue 的
          同曲判斷會直接放行，開打無縫接續）。 */
       { speaker:'NOUVELLE', text:'那是……', delay:2600,
@@ -513,7 +513,7 @@ export const MAIN_SCRIPT = {
       { battle:'man_sorana' },
       /* ══ 戰後（ver -752，Ray 的續稿）══ BGM 由卡上的 bgmAfter 換成
          Whistling Winds（-747 曾改 misty，這一稿改回）；插圖收掉走黑幕。
-         索拉娜報名（「我叫索菈娜！」）之前一律用 SORANA_Q（顯示名？？？，
+         索菈娜報名（「我叫索菈娜！」）之前一律用 SORANA_Q（顯示名？？？，
          同 GIRL→ANYA 的慣例，§6.5.6）。 */
       { speaker:'RENNA', text:'停——停手！', cg:null,
         portrait:{ char:'RENNA', expr:'command', show:true } },
@@ -557,7 +557,7 @@ export const MAIN_SCRIPT = {
       { speaker:'SORANA_Q', text:'對不起喔！' },
       { speaker:'NOUVELLE', text:'好乾脆的人……',
         portrait:{ char:'NOUVELLE', expr:'shocked' } },
-      /* 報名 —— 這一拍起改用 SORANA（顯示名「索拉娜」）。 */
+      /* 報名 —— 這一拍起改用 SORANA（顯示名「索菈娜」）。 */
       { speaker:'SORANA_Q', text:'我叫索菈娜！夏爾村的獵手。你們呢？',
         portrait:{ char:'SORANA_Q', expr:'side' } },
       { speaker:'PLAYER', blank:true },

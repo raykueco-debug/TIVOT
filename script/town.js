@@ -154,7 +154,7 @@ const NP_GROCER_LINES = [
    ⚠ 行程是**這一座城的這一天**的狀態，存在記憶體裡（`modules/town.js` 的 `outPlan`），
      不進存檔：睡覺一定跨到隔天 07:00，醒來本來就要重排（同 `escortNou` 那一組）。
    ⚠ `from`＝這一章之後她才在隊上（與 `flight/talks.js` 的 `PARTY` 同義，兩邊註解互指）。
-     安雅與索拉娜**暫填 5**（Ray 還沒定她們哪一章入隊，同 §6.10 那條）——
+     安雅與索菈娜**暫填 5**（Ray 還沒定她們哪一章入隊，同 §6.10 那條）——
      定案了就改這兩個數字，其餘什麼都不必動。
    ⚠ `line` 是**佔位稿**（Ray 給了規則、沒給句子）：碰到她時她說的那一句。要換直接改。
    ══════════════════════════════════════════════════════════════════════ */
@@ -1044,7 +1044,12 @@ export const TOWNS = {
        ⚠ 判定與取用只有 `modules/town.js` 的 `bgCandsOf` 一處（鐵律 8）。
        ⚠ `fromStage:5` ＝北方泊地之後那一章的**暫填號**（同 `STAGE_DEFAULT`／
          `FEATURE_FROM`／`talks` 的 `from`）—— 章節編號定案後這四處要一起對。 */
-    rebuild: { fromStage:5, bg:{
+    /* ══ ver -753（Ray）══ stage5 起：曲子換 Harbor Morning（`bgm`，townBgm 讀，
+       進 credit）；且 **stage4 之前的對話都不會再觸發**（`muteTalksFrom`，
+       modules/town.js 的 mutedTalks —— 進場對白／acts／gates／onLeave 整批封存，
+       日後 S5 的北泊稿在段落上標 `fromStage:5` 就能穿過封存）。 */
+    muteTalksFrom: 5,
+    rebuild: { fromStage:5, bgm:'harbor', bg:{
       entrance:'Northport_Square',   west:'Northport_West',     north:'Northport_North',
       east:'Northport_East',         port:'Northport_Port',     church:'Northport_Church',
       cemetery:'Northport_Cemetery', cityhall:'Northport_Cityhall',
@@ -1182,7 +1187,7 @@ export const TOWNS = {
              ⚠ 站位用預設：諾／蕾本位左、安／群眾本位右 —— 兩側各自輪轉（§6.5）。 */
           /* ⚠ `stage:5`（ver -742，Ray：「北泊出航插 stage5，插在眾人給諾薇兒
              送行那一段」）—— 章節表：S4 北泊第二天早上 → **S5 北泊出航**。
-             試飛預設與暫填組同步推到 7（STAGE_DEFAULT／FEATURE_FROM／索拉娜的
+             試飛預設與暫填組同步推到 7（STAGE_DEFAULT／FEATURE_FROM／索菈娜的
              talks from —— 安雅的留 5：她這一段起真的在船上）。 */
           { flag:'np_farewell', need:'np_grave_done', stage:5, lines:[
             /* bgm_flight（ver -745，Ray 指定）：送行就換上航行曲——啟程的語氣。 */
@@ -1273,7 +1278,7 @@ export const TOWNS = {
              這一幕**安雅在場**（後半），而她的固定側是右 —— 所以蕾娜讓到**左**
              （她的框細，換邊的影響小，而且她本來就是左）。
              前半的諾薇兒也是左，於是把她翻到**右**（`ART.nouvelle.mirror`，
-             Ray：「諾薇兒跟索拉娜左右是對稱的，可以水平翻轉」）。
+             Ray：「諾薇兒跟索菈娜左右是對稱的，可以水平翻轉」）。
              ⚠ 諾薇兒與安雅共用右槽，但兩人不同台（中間隔著插圖那一段，台上已清空）。
              ⚠ 這也與**緊接在前面**的 BOSS 戰對白一致（那一場也是諾薇兒右、蕾娜左）
                —— 玩家的空間記憶才連得起來。

@@ -18,8 +18,8 @@ export const SPEAKERS = {
   RENNA:    { name:'蕾娜',   art:'renna'    },
   NOUVELLE: { name:'諾薇兒', art:'nouvelle' },
   ANYA:     { name:'安雅',   art:'anya'     },
-  SORANA:   { name:'索拉娜', art:'sorana'   },
-  /* 索拉娜：報上名字之前是「？？？」（ver -752，湖上甲板登場稿）。
+  SORANA:   { name:'索菈娜', art:'sorana'   },
+  /* 索菈娜：報上名字之前是「？？？」（ver -752，湖上甲板登場稿）。
      同 GIRL／ANYA_Q／OFFICER 的慣例：顯示名不同就是兩個 id，art 同指。 */
   SORANA_Q: { name:'？？？',   art:'sorana'   },
   LUNA:     { name:'璐娜',   art:'luna'     },
@@ -106,7 +106,7 @@ export const SPEAKERS = {
             留著是為了哪天要調回混合模式。
    ⚠ 縮放**鎖身高**不鎖眼寬（ver -266 起）。鎖眼寬會把畫風差異放大成體型差異。
 
-   side：**固定站位**（ver -289，Ray 定案）：右 索拉娜・安雅／左 蕾娜・諾薇兒。
+   side：**固定站位**（ver -289，Ray 定案）：右 索菈娜・安雅／左 蕾娜・諾薇兒。
         不隨台詞變動 —— 同一個人每次都站同一邊，玩家才記得住誰是誰。
         與 flight/index.html 的 PORTRAIT.side 同義同值，改一邊要改兩邊。
    ⚠ ver -288 曾短暫改成「發起位制」（發起人站右、其他人左側輪），**已退回**。
@@ -206,7 +206,7 @@ export const ART = {
            校準：同法量 front 得 0.571（表上 0.564，差 −0.007）、璐娜莉亞得 0.494
            （表上 0.496，差 +0.002）—— 兩個獨立校準都落在 ±0.007 內，所以直接用。
          · eye 沒量（CAST_EYE_MIX=0 不參與運算）。 */
-  /* ⚠⚠ `mirror:true`（ver -625，Ray：「諾薇兒跟索拉娜左右是對稱的，可以水平翻轉」）
+  /* ⚠⚠ `mirror:true`（ver -625，Ray：「諾薇兒跟索菈娜左右是對稱的，可以水平翻轉」）
      ＝**這個角色的立繪換到非預設那一側時可以水平翻轉**。這是 §6.5「立繪朝向是畫死的，
      換邊要水平翻轉，髮旋與持物會左右顛倒」那條的**例外開關**：翻不翻由**這張畫**決定，
      所以寫在角色上、預設不翻 —— 有髮旋／單邊持物／不對稱制服的人不要加這一格。
@@ -273,23 +273,27 @@ export const ART = {
                   /* 湖上甲板（ver -744）。⚠ 檔案是 **Scared2**：美術 session 把舊的
                      Nouvelle_SI_Scared.webp 換成這一張（重畫），鍵名照稿寫 scared。 */
                   scared:   { src:'resources/SI/Nouvelle_SI_Scared2.webp',   top:9,  bot:1530, fx:0.399 } } },
-  /* ⚠ 索拉娜用 **side** 那張：front 橫向佔 78%，兩人同台一定疊；側面只佔 69%。
+  /* ⚠ 索菈娜用 **side** 那張：front 橫向佔 78%，兩人同台一定疊；側面只佔 69%。
      ⚠⚠ ver -752：front／side 換了新圖（同名覆蓋 → 掛 ?v=2，§5）＋湖上甲板
        登場稿的 12 張差分逐張量（measure_si.py）。
+     ⚠⚠ ver -753（Ray：「索菈娜有些圖會太大」）：壓低重心／鞠躬那幾張人物
+       畫得比 front 滿版，鎖身高會放大 —— 逐張給 `cm`（-636 的旋鈕，expr 層
+       蓋過角色層；看渲染結果調的，重量 top/bot 不會治這個）。standCm 不動
+       （舞台只看得見上半身，頭頂錨著就對）。
        `flight/index.html` 的 PORTRAIT.sorana 是同一組數字，改一邊要改另一邊。 */
   sorana: { cm:176, eye:27, fx:0.498, top:4, bot:1526, mirror:true,
            side:'R', alt:null, base:'resources/SI/Sorana_SI_side.webp?v=2', expr:{
     front:        { src:'resources/SI/Sorana_SI_front.webp?v=2',     top:3,  bot:1523, fx:0.659 },
     side:         { src:'resources/SI/Sorana_SI_side.webp?v=2',      top:4,  bot:1526, fx:0.498 },
-    guard:        { src:'resources/SI/Sorana_SI_guard.webp',         top:9,  bot:1527, fx:0.651 },
-    guardtalk:    { src:'resources/SI/Sorana_SI_guardtalk.webp',     top:5,  bot:1529, fx:0.653 },
-    guardthinking:{ src:'resources/SI/Sorana_SI_guardthinking.webp', top:8,  bot:1529, fx:0.672 },
+    guard:        { src:'resources/SI/Sorana_SI_guard.webp',         top:9,  bot:1527, fx:0.651, cm:168 },
+    guardtalk:    { src:'resources/SI/Sorana_SI_guardtalk.webp',     top:5,  bot:1529, fx:0.653, cm:168 },
+    guardthinking:{ src:'resources/SI/Sorana_SI_guardthinking.webp', top:8,  bot:1529, fx:0.672, cm:168 },
     embarassed:   { src:'resources/SI/Sorana_SI_embarassed.webp',    top:5,  bot:1527, fx:0.551 },
-    sorry:        { src:'resources/SI/Sorana_SI_sorry.webp',         top:12, bot:1528, fx:0.511 },
+    sorry:        { src:'resources/SI/Sorana_SI_sorry.webp',         top:12, bot:1528, fx:0.511, cm:166 },
     talk:         { src:'resources/SI/Sorana_SI_talk.webp',          top:7,  bot:1525, fx:0.508 },
-    laugh:        { src:'resources/SI/Sorana_SI_laugh.webp',         top:3,  bot:1529, fx:0.579 },
+    laugh:        { src:'resources/SI/Sorana_SI_laugh.webp',         top:3,  bot:1529, fx:0.579, cm:170, standCm:176 },
     amazed:       { src:'resources/SI/Sorana_SI_amazed.webp',        top:3,  bot:1527, fx:0.562 },
-    think:        { src:'resources/SI/Sorana_SI_think.webp',         top:3,  bot:1530, fx:0.529 },
+    think:        { src:'resources/SI/Sorana_SI_think.webp',         top:3,  bot:1530, fx:0.529, cm:168, standCm:176 },
     idea:         { src:'resources/SI/Sorana_SI_idea.webp',          top:3,  bot:1525, fx:0.523 } } },
   /* ⚠ 取景值於 ver -624 **重量**：`Anya_SI_front` 換過圖（舊的留成
      `XAnya_SI_front.webp`）—— §5「換圖一定要重量取景值」。

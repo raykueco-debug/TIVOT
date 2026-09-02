@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.02-752';
+export const VERSION = 'ver 2026.09.02-753';
 
 export const GAME_CONFIG = {
 
@@ -763,7 +763,7 @@ export const GAME_CONFIG = {
          `placePortraitX`：戰鬥那邊的分母已經改成劇情頁那個框（`#app` 高 × 56%），
          不是 `#top` 自己的高。要動大小就動這裡，不要回頭去改分母。 */
     castShow: 0.56,          // 最高的人露出身體的幾成（越小＝鏡頭越近＝人越大）
-    castTall: 176,           // 最高的角色身高（索拉娜）——全域一致，換人要一起改
+    castTall: 176,           // 最高的角色身高（索菈娜）——全域一致，換人要一起改
     portraitTopPct: 3,       // 頂線：佔敵人框高的 %（頭頂貼在這裡）
     portraitSoloScale: 1.8,
     /* 臉的橫向落點（佔敵人框寬的比例），**依站位分左右**——
@@ -1020,15 +1020,15 @@ export const GAME_CONFIG = {
          **主角對聖徒化的適性** —— 這不是數值上的例外，是這套評價的本意。
        ⚠ 惡夢化清空殘格也算 MB（Ray：「同 SI 的 MB」）。 */
     /* ══⚠⚠ 等第 → 好感（ver -723，Ray：「評價A好感度也給一半。跟別人相反的
-       索拉娜則是評價D＋1 評價C+0.5」）══════════════════════════════════════
-       -557 只有「S +1／索拉娜 C 以下 +1／蕾娜四次 S +1」，這一版把**次一級**
+       索菈娜則是評價D＋1 評價C+0.5」）══════════════════════════════════════
+       -557 只有「S +1／索菈娜 C 以下 +1／蕾娜四次 S +1」，這一版把**次一級**
        也算進去，一律**給一半**：
        ⚠⚠ **ver -724 全面 ×2**（Ray：「好感度上限改成100，原本+1的地方變成+2，
          +5的變+10就解決了，每20一個tier」）—— 上限 50→100、一段 10→20，
          所有給好感的地方一律加倍。加倍的好處正是這個：蕾娜的 +0.125 本來會被
          `addAffection` 的 1/4 對齊吃掉，×2 之後變 +0.25，剛好落在格子上。
          · 搭檔（諾薇兒／安雅）  S **+2**、A **+1**
-         · 索拉娜（方向相反）    D **+2**、C **+1**
+         · 索菈娜（方向相反）    D **+2**、C **+1**
          · 蕾娜（不是搭檔，最難） S **+0.5**、A **+0.25**
        ⚠ 沒有 E 那一格（Ray 指定沒有 E，`tiers` 最後一級是兜底）。 */
     /* ⚠ EXP **先不顯示**（ver -725，Ray：「先把 exp 拿掉不顯示」）。
@@ -1249,7 +1249,7 @@ export const GAME_CONFIG = {
          delayPenalty.seconds 5→4（延時快一秒）
          hitFx.delay／sound.delay → 貝琳妲的「dagger」語彙（slash 特效＋em_dagger 音）
        ⚠ `kind:'human'`：她是人，不吃降臨／淨化那一套，結算副標「已擊敗」。
-       ⚠ 立繪暫用索拉娜的 SI（見 ASSETS enemy_man_sorana）—— 等 Ray 的戰鬥圖。 */
+       ⚠ 立繪暫用索菈娜的 SI（見 ASSETS enemy_man_sorana）—— 等 Ray 的戰鬥圖。 */
     man_sorana: {
       name:'森住民',
       story:1, counterStagger:1,
@@ -2011,7 +2011,7 @@ export const GAME_CONFIG = {
                           ]},
                         ] },
     /* ══ 森住民戰（man_sorana，ver -744，Ray 的 stage5 稿）══
-       湖上甲板・索拉娜登場戰。`bgm`＝Peritune Whirlwind（Ray 指定，進 credit）；
+       湖上甲板・索菈娜登場戰。`bgm`＝Peritune Whirlwind（Ray 指定，進 credit）；
        `bgmAfter`＝打贏換 Whistling Winds（ver -752 的續稿；-747 曾改 misty，
        Ray：「戰鬥結束。BGM Peritune_Whistling_Winds_loop」）。
        ⚠ `bgm` 與插畫登場那一拍（mainScript 的 bgm:'whirlwind'）是同一首同一個
@@ -2372,6 +2372,7 @@ export const GAME_CONFIG = {
       peritune_misty_hollow_loop:0.569,
       peritune_whirlwind:0.588,
       peritune_whistling_winds_loop:0.698,
+      peritune_harbor_morning_loop:0.758,   // ver -753（measure_lufs 實測：平均 −11.4 LUFS）
       se_land:3.143,
       se_woodbreak:0.552,               // ver -751（measure_lufs 實測：平均 −8.6 LUFS）
       peritune_crimson_moon_loop:0.879,
