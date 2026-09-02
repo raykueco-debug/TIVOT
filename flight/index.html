@@ -509,7 +509,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -751';
+const FLIGHT_VER = 'ver -752';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -2134,8 +2134,8 @@ const PORTRAIT = {
        不同的畫不可能沿用。沿用的話人會歪掉，而且很難看出原因。
      ⚠ 目前**沒有任何程式路徑會用到 alt** —— 固定站位下沒有人會站到另一側。
        它是留給日後改回發起位制的接口，不是現在的死碼。 */
-  sorana:   { name:'索拉娜', cm:176, side:'R', src:'../resources/SI/Sorana_SI_side.webp',
-              eye:27, fx:0.527, top:4,   bot:1522, alt:null },
+  sorana:   { name:'索拉娜', cm:176, side:'R', src:'../resources/SI/Sorana_SI_side.webp?v=2',
+              eye:27, fx:0.498, top:4,   bot:1526, alt:null },   // ver -752 換新圖重量（同名覆蓋掛 ?v，§5）
   /* ⚠ ver -284 Priest 換了新版插畫（Ray 重畫）。**又全部重量過**，沒有沿用上一版：
        top 1 / bot 1535 —— alpha 邊界，程式量的（上一版 5 / 1534，這版頂到圖框）。
        fx 0.564 —— 兩眼中心的中點。量法：在眼框內找**低飽和**像素（虹膜是灰藍，
@@ -7960,7 +7960,7 @@ function deckBgWarm(){
   if(deckBgImg) return;
   const im=new Image();
   im.onload=()=>{ deckBgImg=im; };
-  im.src='../resources/background/deck_rapidsail.webp';
+  im.src='../resources/background/deck_rapidsail.webp?v=2';   // ver -752 換新圖（同名覆蓋掛 ?v，§5）
 }
 const seSailSE=new Audio('../resources/audio/se/se_sail.m4a'); seSailSE.preload='auto';
 seSailSE.__baseVol=fileVol('se_sail');

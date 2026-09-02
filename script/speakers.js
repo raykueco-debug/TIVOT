@@ -19,6 +19,9 @@ export const SPEAKERS = {
   NOUVELLE: { name:'諾薇兒', art:'nouvelle' },
   ANYA:     { name:'安雅',   art:'anya'     },
   SORANA:   { name:'索拉娜', art:'sorana'   },
+  /* 索拉娜：報上名字之前是「？？？」（ver -752，湖上甲板登場稿）。
+     同 GIRL／ANYA_Q／OFFICER 的慣例：顯示名不同就是兩個 id，art 同指。 */
+  SORANA_Q: { name:'？？？',   art:'sorana'   },
   LUNA:     { name:'璐娜',   art:'luna'     },
   /* 璐娜莉亞：第四騎士團團長。⚠ 目前只以 **CG 與暗調 CI 插入**登場，不站立繪
      —— 所以 art 是 null。真的要讓她在對話裡站台，得先量取景值（見下方 ART 的
@@ -252,6 +255,7 @@ export const ART = {
                   /* ⚠ `whisper` 的臉在 **0.697**（其他差分 0.39~0.60）——她整個人偏右，
                      與 `gossip1`（0.710）同一類構圖。沿用別張會把她推出畫面。 */
                   whisper:  { src:'resources/SI/Nouvelle_SI_whisper.webp',   top:8,  bot:1530, fx:0.697 },
+                  talk:     { src:'resources/SI/Nouvelle_SI_talk.webp',      top:3,  bot:1535, fx:0.582 },   // ver -752
                   /* 城鎮探索那一段新增（ver -369）。 */
                   sadsmile: { src:'resources/SI/Nouvelle_SI_sadsmile.webp',  top:5,  bot:1532, fx:0.587 },
                   hungry:   { src:'resources/SI/Nouvelle_SI_hungry.webp',    top:0,  bot:1536, fx:0.579 },
@@ -269,9 +273,24 @@ export const ART = {
                   /* 湖上甲板（ver -744）。⚠ 檔案是 **Scared2**：美術 session 把舊的
                      Nouvelle_SI_Scared.webp 換成這一張（重畫），鍵名照稿寫 scared。 */
                   scared:   { src:'resources/SI/Nouvelle_SI_Scared2.webp',   top:9,  bot:1530, fx:0.399 } } },
-  /* ⚠ 索拉娜用 **side** 那張：front 橫向佔 78%，兩人同台一定疊；側面只佔 69%。 */
-  sorana: { cm:176, eye:27, fx:0.527, top:4, bot:1522, mirror:true,
-           side:'R', alt:null, base:'resources/SI/Sorana_SI_side.webp', expr:{} },
+  /* ⚠ 索拉娜用 **side** 那張：front 橫向佔 78%，兩人同台一定疊；側面只佔 69%。
+     ⚠⚠ ver -752：front／side 換了新圖（同名覆蓋 → 掛 ?v=2，§5）＋湖上甲板
+       登場稿的 12 張差分逐張量（measure_si.py）。
+       `flight/index.html` 的 PORTRAIT.sorana 是同一組數字，改一邊要改另一邊。 */
+  sorana: { cm:176, eye:27, fx:0.498, top:4, bot:1526, mirror:true,
+           side:'R', alt:null, base:'resources/SI/Sorana_SI_side.webp?v=2', expr:{
+    front:        { src:'resources/SI/Sorana_SI_front.webp?v=2',     top:3,  bot:1523, fx:0.659 },
+    side:         { src:'resources/SI/Sorana_SI_side.webp?v=2',      top:4,  bot:1526, fx:0.498 },
+    guard:        { src:'resources/SI/Sorana_SI_guard.webp',         top:9,  bot:1527, fx:0.651 },
+    guardtalk:    { src:'resources/SI/Sorana_SI_guardtalk.webp',     top:5,  bot:1529, fx:0.653 },
+    guardthinking:{ src:'resources/SI/Sorana_SI_guardthinking.webp', top:8,  bot:1529, fx:0.672 },
+    embarassed:   { src:'resources/SI/Sorana_SI_embarassed.webp',    top:5,  bot:1527, fx:0.551 },
+    sorry:        { src:'resources/SI/Sorana_SI_sorry.webp',         top:12, bot:1528, fx:0.511 },
+    talk:         { src:'resources/SI/Sorana_SI_talk.webp',          top:7,  bot:1525, fx:0.508 },
+    laugh:        { src:'resources/SI/Sorana_SI_laugh.webp',         top:3,  bot:1529, fx:0.579 },
+    amazed:       { src:'resources/SI/Sorana_SI_amazed.webp',        top:3,  bot:1527, fx:0.562 },
+    think:        { src:'resources/SI/Sorana_SI_think.webp',         top:3,  bot:1530, fx:0.529 },
+    idea:         { src:'resources/SI/Sorana_SI_idea.webp',          top:3,  bot:1525, fx:0.523 } } },
   /* ⚠ 取景值於 ver -624 **重量**：`Anya_SI_front` 換過圖（舊的留成
      `XAnya_SI_front.webp`）—— §5「換圖一定要重量取景值」。
      ⚠ `flight/index.html` 的 `PORTRAIT.anya` 是同一組數字，改一邊要改另一邊。 */
@@ -317,6 +336,10 @@ export const ART = {
        —— 近景那幾張才要 `cm`／`standCm`（見上面的說明）。 */
     silent:    { src:'resources/SI/Anya_SI_Silent.webp',     top:0, bot:1527, fx:0.432 },
     talk:      { src:'resources/SI/Anya_SI_talk.webp',       top:0, bot:1531, fx:0.426 },
+    /* 湖上甲板（ver -752，Ray 交稿）。逐張量（measure_si.py）。 */
+    wheel:     { src:'resources/SI/Anya_SI_wheel.webp',      top:4, bot:1531, fx:0.483 },
+    wheelpoint:{ src:'resources/SI/Anya_SI_wheelpoint.webp', top:0, bot:1529, fx:0.473 },
+    dying:     { src:'resources/SI/Anya_SI_dying.webp',      top:0, bot:1526, fx:0.431 },
     cry:       { src:'resources/SI/Anya_SI_Cry.webp',        top:0, bot:1528, fx:0.452 },
     terrifying:{ src:'resources/SI/Anya_SI_terrifying.webp', top:0, bot:1518, fx:0.448 },
     /* ══ 惡夢化（ver -671）══

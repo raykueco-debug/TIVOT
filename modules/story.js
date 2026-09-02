@@ -575,7 +575,7 @@ const BGM_ALIAS={ crisis:'peritunematerial_crisis_loop', lunaria:'bgm_lunaria',
                   crimson:'peritune_crimson_moon_loop',
                   entangle:'peritunematerial_entangle',   // ver -656
                   misty:'peritune_misty_hollow_loop',       // ver -744：湖上甲板
-                  whistling:'peritune_whistling_winds_loop',   // ver -744（-747 起森住民戰後改回 misty，這首暫無人用）
+                  whistling:'peritune_whistling_winds_loop',   // ver -744；-752 起＝森住民戰後（bgmAfter）
                   whirlwind:'peritune_whirlwind' };   // ver -747：索拉娜插畫登場～森住民戰
 const BGM_SRC=(()=>{ const m={};
   for(const f of BGM_FILES) m[f.replace(/\.[^.]+$/,'').toLowerCase()]='resources/audio/bgm/'+f;

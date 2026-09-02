@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.02-751';
+export const VERSION = 'ver 2026.09.02-752';
 
 export const GAME_CONFIG = {
 
@@ -2012,12 +2012,12 @@ export const GAME_CONFIG = {
                         ] },
     /* ══ 森住民戰（man_sorana，ver -744，Ray 的 stage5 稿）══
        湖上甲板・索拉娜登場戰。`bgm`＝Peritune Whirlwind（Ray 指定，進 credit）；
-       `bgmAfter`＝打贏換回 Misty Hollow（ver -747，Ray：「戰後換回
-       Peritune_Misty_Hollow_loop」——原 -744 的 Whistling Winds 撤下）。
+       `bgmAfter`＝打贏換 Whistling Winds（ver -752 的續稿；-747 曾改 misty，
+       Ray：「戰鬥結束。BGM Peritune_Whistling_Winds_loop」）。
        ⚠ `bgm` 與插畫登場那一拍（mainScript 的 bgm:'whirlwind'）是同一首同一個
        路徑：riseCue 的同曲判斷直接放行＝「戰鬥時不再更換音樂」。 */
     man_sorana:       { enemy:'man_sorana',
-                        bgm:'bgm_whirlwind', bgmAfter:'misty' },
+                        bgm:'bgm_whirlwind', bgmAfter:'whistling' },
     /* 羽蛇（ver -500）。艦戰的武器音／連射間隔與蜈蚣那一場同一套（都是船戰）。
        talk＝卡上的「劇情」：登場特效拍（出場音效＋震動）→ 兩句。
        ⚠ 只有**劇情戰**會播（state.storyBattle）：隨機遭遇共用這張卡不播；
