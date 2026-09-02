@@ -2821,19 +2821,23 @@
   #gearSheet .gs-sec{font-size:10px;letter-spacing:3px;color:var(--gold-dim);margin-bottom:6px;}
   /* ── 主武器（ver -699）：一張卡＋兩個掛件槽 ──
      ⚠ 卡本身**不給 cursor:pointer**：它不可更換，看起來能點就會被戳。 */
+  /* ver -738：整張卡可點展開九星（Ray 指定）—— cursor 要說話。 */
   #gearSheet .gs-main{margin-bottom:14px;padding:8px 10px;border-radius:10px;
-    border:1px solid var(--gold-dim);background:rgba(10,8,14,.6);}
+    border:1px solid var(--gold-dim);background:rgba(10,8,14,.6);cursor:pointer;}
+  #gearSheet .gs-main:active{background:rgba(212,169,74,.08);}
+  /* 倒三角（ver -738）：置中一整行，玩家一眼看到「可展開」。 */
+  #gearSheet .gs-mopen{text-align:center;font-size:12px;line-height:1;
+    padding:4px 0 2px;color:var(--gold);text-shadow:0 0 6px rgba(212,169,74,.45);}
   /* ⚠ 這張圖是**上下兩支槍**（α 上／β 下），比交叉那張高 —— 高度給足才讀得出是兩支。 */
   #gearSheet .gs-mimg{display:block;width:100%;max-height:120px;object-fit:contain;
     margin:2px auto 6px;}
   #gearSheet .gs-mname{font-size:12px;color:var(--ink);display:flex;align-items:baseline;gap:6px;}
   #gearSheet .gs-mfix{font-size:9px;letter-spacing:1px;color:var(--gold-dim);}
-  /* ver -712：強化那一行是**鈕**（點開九顆星的現況）。⚠ 樣式維持成一行字，
-     不做成方框 —— 它在卡裡面，做成鈕會與底下兩個掛件槽搶視覺重量。 */
+  /* ver -712 這一行原本是鈕；ver -738 起改成**整張卡**都可點（見 .gs-main），
+     它退回純狀態列。樣式維持一行字，不做成方框 —— 免得與掛件槽搶視覺重量。 */
   #gearSheet .gs-mtune{display:flex;align-items:baseline;gap:2px;width:100%;
-    margin-top:3px;padding:2px 0;background:none;border:0;cursor:pointer;
+    margin-top:3px;padding:2px 0;
     font-family:inherit;font-size:10px;letter-spacing:1px;color:var(--gold-dim);text-align:left;}
-  #gearSheet .gs-mcaret{margin-left:4px;font-style:normal;font-size:9px;color:var(--gold-dim);}
   /* 九顆星的現況（唯讀）：未點亮的整列壓暗，點亮的星名與名稱轉金。 */
   #gearSheet .gs-stars{margin:4px 0 2px;display:flex;flex-direction:column;gap:5px;
     padding:6px 8px;border-radius:8px;background:rgba(0,0,0,.28);}

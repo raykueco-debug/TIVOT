@@ -74,15 +74,15 @@ function slotHtml(cat, n){
 
 /* ══⚠⚠ 主武器（ver -699，Ray：「裝備欄加入雙槍…兩支算同一個武器，但是各有一個
    掛件槽，可以掛強化護符」「固定武器不可更換，但可以在槍店強化」）══════════
-   ⚠ **整張卡不可點**：它不可更換，給它一個「點得到卻沒反應」的熱區只會讓玩家
-     一直去戳（同 §6.5.5「還不能做不要靠藏起鈕擋」的反面 —— 不能做的東西就別做成鈕）。
-     可點的只有**兩個掛件槽**。
    ⚠ ver -700：只顯示**強化等級**（Ray：「顯示強化等級就好，不用寫槍店強化」），
      而且**一直顯示**（Lv1 也顯示）—— 玩家要看得出「這個東西可以練，練到 9」。
-   ⚠⚠ ver -712：那一行**點得開**（Ray：「加尼米德的改裝狀況在整備欄也要可以點開觀看」）
-     —— 展開九顆星的現況。**唯讀**：升級要素材，素材在槍店，所以升級留在槍店那一頁。
-     這是「整張卡不可點」的**例外而不是推翻**：可點的是「看改裝狀況」這個動作，
-     不是「換一把槍」。
+   ⚠⚠ ver -738：**整張卡可點展開九星現況，卡上有倒三角**（Ray：「主武器卡應該要
+     可以點擊展開，看得到九星目前的狀況。要有一個倒三角讓玩家知到可點」）——
+     -699 的「整張卡不可點」到此**推翻**：卡可點，但點下去做的是「看改裝狀況」，
+     不是「換一把槍」（不可更換照舊）。-712 只有「強化」那一行是鈕、caret 小到
+     看不見 —— 玩家不知道可點，正是這一版要修的。
+     掛件槽仍是自己的熱區（stopPropagation），點槽不會把卡收合。
+     **唯讀**照舊：升級要素材，素材在槍店，升級留在槍店那一頁。
    ⚠ 與槍店改裝頁（`loot.modRows`）**共用的是資料**（`config.gunStars` ＋
      `prog.starCount`），不是版面：那一頁要列素材需求、要能選；這一頁只報現況。 */
 /* 九顆星的現況（唯讀）。已點亮＝金色＋✓（可多次的印 ×N）；未點亮＝暗。
@@ -123,10 +123,12 @@ function mainGunHtml(){
        +   (MG.image ? '<img class="gs-mimg" src="'+(asset(MG.image)||'')+'" alt="">' : '')
        +   '<div class="gs-mname">'+MG.name
        +     (MG.tag ? '<span class="gs-mfix">'+MG.tag+'</span>' : '')+'</div>'
-       +   '<button class="gs-mtune" type="button">強　化　<b>'+lit+'</b>'
-       +     '<span>／'+stars.length+'</span>'
-       +     '<i class="gs-mcaret">'+(starsOpen?'▾':'▸')+'</i></button>'
+       +   '<div class="gs-mtune">強　化　<b>'+lit+'</b>'
+       +     '<span>／'+stars.length+'</span></div>'
        +   (starsOpen ? '<div class="gs-stars">'+starListHtml()+'</div>' : '')
+       /* 倒三角＝「這張卡點得開」的記號（ver -738，Ray 指定）：收著 ▼、開著 ▲。
+          放在星列之後 —— 開著時它在展開內容的底部，再點一下就收，動線自然。 */
+       +   '<div class="gs-mopen">'+(starsOpen?'▲':'▼')+'</div>'
        +   '<div class="gs-barrels">'+barrels+'</div>'
        + '</div>';
 }
@@ -273,8 +275,11 @@ function bind(){
   });
   el.querySelectorAll('.gs-slot').forEach(s=>bindSlot(s));
   /* 掛件槽（ver -699）：點一下開道具欄的護符類。⚠ 不做拖曳 —— 兩支槍沒有順位。 */
-  { const t=el.querySelector('.gs-mtune');
-    if(t) t.addEventListener('click', e=>{ e.stopPropagation();
+  /* ver -738：**整張主武器卡**都是展開／收合的熱區（Ray 指定，取代 -712 只有
+     「強化」那一行）。掛件槽與管理人的星列自己 stopPropagation，不會誤觸。 */
+  { const m=el.querySelector('.gs-main');
+    if(m) m.addEventListener('click', e=>{
+      if(e.target.closest('.gs-barrel') || e.target.closest('.gs-star.dev')) return;
       try{ SFX.menuClick(); }catch(_){}
       starsOpen=!starsOpen; render(); }); }
   /* 管理人：點一顆星 → +1，到上限歸零（ver -714）。 */
