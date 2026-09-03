@@ -512,7 +512,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -776';
+const FLIGHT_VER = 'ver -777';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -10780,10 +10780,57 @@ const bootUI=(()=>{
       b.classList.add('blank');
       setTimeout(()=>{
         b.classList.add('fade');
-        setTimeout(()=>b.classList.add('hide'), 480);
+        setTimeout(()=>{ b.classList.add('hide');
+          /* 開機淡出後、正常畫面之前：升空過場（ver -777）。 */
+          try{ playTakeoff(); }catch(_){}
+        }, 480);
       }, BLANK_MS); },
   };
 })();
+
+/* ══ 升空過場（ver -777，Ray 定案「先用折疊」）══
+   voxel 鏡頭轉不到正上方（地平線寫死）→ 用**疊層折疊**：正上方俯視的船
+   （ship_topdown）→ 升空（縮小、上飄、地面亮成天光）→ rotateX 折起（正上方 →
+   斜視，＝鏡頭折到航行角度）→ 淡出露出正常 3/4 航行畫面。
+   ⚠ 期間 extPaused：世界整個凍住（不生怪、不移動、不進戰鬥）；疊層蓋著，
+     凍住的 render 看不見。跑完放行。
+   ⚠ 只在 fresh boot 演（打完回來走 __flightResume，不經開機頁）。 */
+let takeoffPlaying=false;
+function playTakeoff(){
+  if(takeoffPlaying) return;
+  takeoffPlaying=true;
+  extPaused=true;                                    // 過場期間整個模擬凍住
+  if(!document.getElementById('tkCSS')){
+    const st=document.createElement('style'); st.id='tkCSS';
+    st.textContent=
+      '#takeoff{position:fixed;inset:0;z-index:48;overflow:hidden;pointer-events:none;'
+      +'perspective:520px;background:radial-gradient(120% 90% at 50% 62%,'
+      +'#6b5230 0%,#3a2c18 26%,#140f0a 60%,#05040a 100%);'
+      +'animation:tkBg 2.4s ease-in forwards;}'
+      +'#takeoff .tk-ship{position:absolute;left:50%;top:52%;width:38%;max-width:280px;'
+      +'transform-origin:50% 50%;filter:drop-shadow(0 12px 26px rgba(0,0,0,.6));'
+      +'animation:tkShip 2.4s cubic-bezier(.5,0,.4,1) forwards;}'
+      +'@keyframes tkBg{0%{opacity:1}72%{opacity:1}100%{opacity:0}}'
+      /* 正上方(rotateX 0，大) → 升空(縮、上飄) → 折起(rotateX 60) → 淡出 */
+      +'@keyframes tkShip{'
+      +'0%{opacity:0;transform:translate(-50%,-50%) rotateX(0deg) scale(1.35);}'
+      +'10%{opacity:1;}'
+      +'46%{transform:translate(-50%,-62%) rotateX(0deg) scale(.72);}'
+      +'80%{opacity:1;transform:translate(-50%,-84%) rotateX(60deg) scale(.5);}'
+      +'100%{opacity:0;transform:translate(-50%,-96%) rotateX(60deg) scale(.42);}}';
+    document.head.appendChild(st);
+  }
+  const ov=document.createElement('div'); ov.id='takeoff';
+  const im=document.createElement('img'); im.className='tk-ship';
+  im.src='../resources/effects/ship_topdown.webp';
+  ov.appendChild(im);
+  document.body.appendChild(ov);
+  setTimeout(()=>{
+    try{ ov.remove(); }catch(_){}
+    extPaused=false;                                 // 放行：模擬恢復
+    takeoffPlaying=false;
+  }, 2450);
+}
 
 /* ⚠⚠ **音效全部 → 圖 → BGM，音效不載完不放行**（ver -430，Ray 指定的全域規則，
    憲法 §6.6）。這一頁以前是**反過來的**：地形與船艦圖先跑完、讀取頁收掉，
