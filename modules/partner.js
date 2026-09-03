@@ -191,7 +191,8 @@ export function tryActive(context){
  *  10 秒計時器為 partner 自有狀態（reset() 清理，combat 開場調度）。
  * ========================================================================== */
 let lowHpArmed = true;    // 上膛旗標：HP 在門檻上方＝已上膛；跌破發動一次即卸膛
-let lowHpTimer = null;    // 10 秒 buff 計時器
+let lowHpTimer = null;
+let voRotIdx = 0;              // 被動語音輪播的游標（ver -759；不進存檔）    // 10 秒 buff 計時器
 
 /* ══⚠⚠ 免傷窗（ver -740，Ray：「諾薇兒的即死防禦加上十秒免傷，期間普攻每次
    回血2%」「life return 改為…10 秒免傷」「免傷仍算受擊，只是不扣血」）══
@@ -275,7 +276,10 @@ function fireBuff(pas){
        同一刻結束（爆散由 setLowHpBuff(false) 那一端演）。 */
     if(pas.key==='firstCounter' && api.lucidFlood) api.lucidFlood(sec);
   };
-  const vo = asset(pas.voice); if(vo) SFX.playVoice(vo, sfxGain(pas.voice));
+  /* 語音輪播（ver -759，Ray：「vo_anya_luciddream1～4 更新，輪播」）：
+     `voice` 寫成陣列＝發動一次換下一支（單支照舊）。序號不進存檔 —— 純演出。 */
+  const vk = Array.isArray(pas.voice) ? pas.voice[(voRotIdx++) % pas.voice.length] : pas.voice;
+  const vo = asset(vk); if(vo) SFX.playVoice(vo, sfxGain(vk));
   api.floatDmg(pas.name,'50%','34%',true);
   if(state.cutinPlaying){ fire(); return; }   // 已有演出在播 → 只跳字、buff 立即起算
   api.playCutin(()=>{

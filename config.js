@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.03-758';
+export const VERSION = 'ver 2026.09.03-759';
 
 export const GAME_CONFIG = {
 
@@ -325,7 +325,7 @@ export const GAME_CONFIG = {
       cutin:'ci_anya_ni',
       voice:null,
       /* 選人確認的語音（ver -743，Ray：「安雅播被動技語音」＝明晰之夢）。 */
-      selectVoice:'vo_anya_lucid',
+      selectVoice:'vo_anya_lucid1',   // 選人確認音：固定第 1 支（輪播是技能發動那一端）
       perk:'明晰之夢（被動）＋惡夢化・夢境粉碎（劇情）',
       /* ══ 被動：明晰之夢（Lucid Dream；中文名 ver -682 由 Ray 定）══
          ⚠⚠ **觸發條件 ver -693 改了**（Ray：「娜塔莉戰如果先觸發 lucid dream 再進入
@@ -345,7 +345,8 @@ export const GAME_CONFIG = {
         en:'Lucid Dream',
         buffSeconds:5,
         cutin:'ci_anya_lucid',
-        voice:'vo_anya_lucid',   // ver -711：她自己的語音（原本借馬季諾的 vo_hc_rounds）
+        /* ver -759：四支輪播（Ray 指定）—— 陣列＝發動一次換下一支（fireBuff）。 */
+        voice:['vo_anya_lucid1','vo_anya_lucid2','vo_anya_lucid3','vo_anya_lucid4'],
         /* ver -740（Ray）：發動期間追加「反擊不論哪一圈都算完美反擊（傷害與評價）」
            與「指引每一個應點格」—— 實作見 defense.resolveThreat 與 combat.markNext。 */
         desc:'每隻敵人第一次完美反擊（紅圈）時發動：5 秒內普攻傷害加倍、'
@@ -2273,7 +2274,8 @@ export const GAME_CONFIG = {
                 /* ver -711 這一批全是語音（走 voiceChain）。 */
                 'vo_dual_torsten2','vo_torsten_mb','vo_torsten_exc',
                 'vo_nou_saint','vo_nou_obe','vo_nou_guard','vo_nou_return',
-                'vo_anya_ni','vo_anya_burst','vo_anya_burst2','vo_anya_melt','vo_anya_lucid'],
+                'vo_anya_ni','vo_anya_burst','vo_anya_burst2','vo_anya_melt',
+                'vo_anya_lucid1','vo_anya_lucid2','vo_anya_lucid3','vo_anya_lucid4'],
 
     /* ══ 逐支增益：鑰匙是**檔名**（去副檔名、轉小寫）══════════════════
        ⚠⚠ 鑰匙用檔名不用 ASSETS 鍵（ver -441）：**一支音檔只有一個響度**，
@@ -2301,7 +2303,11 @@ export const GAME_CONFIG = {
       vo_nouvelle_deathguard:2.29,   vo_nouvelle_lifereturn:3.17,
       vo_anya_nightmareinstall:4.14, vo_anya_obe:2.05,
       vo_anya_dreambreaker1:5.15,    vo_anya_dreambreaker2:2.63,
-      vo_anya_luciddream:1.90,
+      /* luciddream ×4（ver -759，measure_lufs 實測 × 語音鏈錨 1.41）。 */
+      vo_anya_luciddream1:3.65,
+      vo_anya_luciddream2:1.94,
+      vo_anya_luciddream3:1.94,
+      vo_anya_luciddream4:3.13,
       vo_luna_dualwield:1.483, vo_luna_execution:1.013, vo_luna_obe:1.163,
       vo_luna_saintinstall:1.345, vo_malzeno_hcrounds:2.647,
       vo_malzeno_supplyrefill:2.261, vo_renee_deathguard:1.563,
@@ -2718,7 +2724,12 @@ export const ASSETS = {
   vo_anya_burst:     "resources/audio/vo/vo_anya_dreambreaker1.m4a",   // 夢境粉碎（預設）
   vo_anya_burst2:    "resources/audio/vo/vo_anya_dreambreaker2.m4a",   // 夢境粉碎（娜塔莉戰，見戰鬥卡）
   vo_anya_melt:      "resources/audio/vo/vo_anya_obe.m4a",             // 熔斷 MELTDOWN
-  vo_anya_lucid:     "resources/audio/vo/vo_anya_luciddream.m4a",      // 明晰之夢
+  /* 明晰之夢語音 ×4（ver -759，Ray：「vo_anya_luciddream1～4 更新，輪播」）——
+     發動一次換下一支（partner.fireBuff 的輪播）。舊單支 luciddream.m4a 退場。 */
+  vo_anya_lucid1:    "resources/audio/vo/vo_anya_luciddream1.m4a",
+  vo_anya_lucid2:    "resources/audio/vo/vo_anya_luciddream2.m4a",
+  vo_anya_lucid3:    "resources/audio/vo/vo_anya_luciddream3.m4a",
+  vo_anya_lucid4:    "resources/audio/vo/vo_anya_luciddream4.m4a",
   se_luna_exc:       "resources/audio/vo/vo_luna_execution.m4a",    // 處決 EXSECUTIŌ cut-in
   /* ⚠ ver -641 改名 `se_saint_maxburst` → `vo_saint_maxburst`（它是語音）。
      ⚠ **檔案還躺在 `se/`**（同 `vo_lunaMG` 那一筆，等 Ray 點頭再搬 `vo/`）——
