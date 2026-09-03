@@ -509,7 +509,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -772';
+const FLIGHT_VER = 'ver -773';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -7952,11 +7952,15 @@ function mapSayShow(name, text){
   mapSayHide();
   const mv=document.getElementById('mapView'); if(!mv) return;
   const el=document.createElement('div');
+  /* ver -773（Ray：「大地圖的對話框要用平常一樣的尺寸」）：寬度＝平常飛行
+     對話框（compassRect().w，＝方向計那條帶），置中、貼底——不再是 82%。
+     配色也對齊平常那個框（名字 #c9a227／內文 #ece6d8／底 .84／框 .55）。 */
+  const bw=compassRect().w;
   el.style.cssText='position:absolute;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));'
-    +'transform:translateX(-50%);max-width:82%;min-width:220px;pointer-events:none;z-index:5;'
-    +'background:rgba(10,9,16,.88);border:1px solid #c9a227;border-radius:10px;'
-    +'padding:10px 16px 12px;color:#e8e0cd;font-size:15px;line-height:1.7;letter-spacing:1px;';
-  el.innerHTML='<div style="color:#d4a94a;font-size:12px;letter-spacing:2px;margin-bottom:2px;">'+name+'</div>'+text;
+    +'transform:translateX(-50%);width:'+bw+'px;box-sizing:border-box;pointer-events:none;z-index:5;'
+    +'background:rgba(10,9,16,.84);border:1px solid rgba(201,162,39,.55);border-radius:8px;'
+    +'padding:8px 13px 12px;color:#ece6d8;font-size:15px;line-height:1.5;';
+  el.innerHTML='<div style="color:#c9a227;font-size:11px;margin-bottom:3px;">'+name+'</div>'+text;
   mv.appendChild(el);
   mapSayEl=el;
 }

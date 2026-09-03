@@ -270,8 +270,15 @@ export function loadEnemyPortrait(en){
       /* 著地的聲音：`se_saint_install` **原音**（ver -649，Ray：「se_saintinstall
          不要降 key，用原 pitch」）。-641 的執行期變調與 -643 的降調檔案都已撤掉。
          ⚠ 增益問 `sfxGain`（全域響度階層，§6.6）。 */
-      { /* 著地音可由卡覆寫（`landSe`，ver -745——羽蛇要吼叫不要聖印）。 */
-        const k=state.curEnemyLandSe || 'sfx_saint';
+      { /* 出場音效（ver -773，Ray：「船戰的禍魘登場時…出場音效都放各自的
+           攻擊音效」）：預設＝這隻怪自己的攻擊音（`sound.ult`）——sfx_saint 是
+           露娜的聖印音，借來當禍魘的登場音本來就不對。
+           優先序：卡上明寫的 `landSe`（羽蛇＝吼叫，-745）→ 自己的攻擊音 → sfx_saint。
+           ⚠ 震動衝擊（screenShake，見下一行）本來就對 harm/slay 都放——這一改
+             只補上「各自的攻擊音」那一半。 */
+        const k=state.curEnemyLandSe
+              || (state.curEnemySound && state.curEnemySound.ult)
+              || 'sfx_saint';
         SFX.play(asset(k), sfxGain(k)); }
       if(api.screenShake) api.screenShake();
       const top=$('top');
