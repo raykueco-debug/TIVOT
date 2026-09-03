@@ -622,7 +622,8 @@
      ⚠ 旋轉／縮放放在**外層**（--rot/--sc），keyframes 只動兩半的 translateY ——
        keyframes 會蓋掉同元素的 inline transform（-745 踩過的坑）。 */
   .fx-bitei{width:264px;height:176px;margin:-88px 0 0 -132px;pointer-events:none;
-    transform:rotate(var(--rot,0deg)) scale(var(--sc,1));}
+    transform:rotate(var(--rot,0deg)) scale(var(--sc,1));
+    perspective:340px;}   /* ver -767：3D 咬合的透視（子層 rotateX 要有它才有深度） */
   .fx-bitei i{position:absolute;inset:0;
     background:url('resources/effects/ef_bite2.webp') center/100% 100% no-repeat;   /* ver -766：Ray「效果換成 ef_bite2 試看看」 */
     mix-blend-mode:screen;opacity:0;}
@@ -631,14 +632,22 @@
      兩排牙**滿亮登場**（不淡入）、加速衝向咬合線（ease-in＝越咬越快；開幅 ver -765 由 ±72% 收到 ±38%，Ray：「開幅不要那麼大」），
      一路淡出 —— translateY 歸零與 opacity 歸零**同一格**（完全咬合＝剛好消失）。
      全長 0.3 秒，快、狠、不停留。 */
-  .fx-bitei .up{clip-path:inset(0 0 50% 0);animation:biteUp .3s cubic-bezier(.65,0,1,1) forwards;}
-  .fx-bitei .dn{clip-path:inset(50% 0 0 0);animation:biteDn .3s cubic-bezier(.65,0,1,1) forwards;}
+  /* ══ 3D 鉸鏈式咬合（ver -767，Ray：「整個只是上下闔起的平面，有沒有辦法讓他
+     有更立體的咬合效果？」＋開幅再收）══
+     上下顎**沿咬合線摺合**（rotateX，origin 釘在咬合線）——像一張嘴從張開
+     闔上，不是兩片平面對滑；加 1.18→1 的進逼縮放（從鏡頭前咬進畫面的深度感）。
+     開口感改由 3D 傾角（58°）提供，位移收到 ±22%。
+     其餘不變：滿亮登場、ease-in 加速、邊咬邊淡、咬合即消（0.3s）。 */
+  .fx-bitei .up{clip-path:inset(0 0 50% 0);transform-origin:50% 100%;
+    animation:biteUp .3s cubic-bezier(.65,0,1,1) forwards;}
+  .fx-bitei .dn{clip-path:inset(50% 0 0 0);transform-origin:50% 0%;
+    animation:biteDn .3s cubic-bezier(.65,0,1,1) forwards;}
   @keyframes biteUp{
-    0%  {opacity:1;transform:translateY(-38%);}
-    100%{opacity:0;transform:translateY(0);}}
+    0%  {opacity:1;transform:translateY(-22%) rotateX(58deg) scale(1.18);}
+    100%{opacity:0;transform:translateY(0) rotateX(0deg) scale(1);}}
   @keyframes biteDn{
-    0%  {opacity:1;transform:translateY(38%);}
-    100%{opacity:0;transform:translateY(0);}}
+    0%  {opacity:1;transform:translateY(22%) rotateX(-58deg) scale(1.18);}
+    100%{opacity:0;transform:translateY(0) rotateX(0deg) scale(1);}}
   /* 彈痕：玻璃被擊碎（中心孔＋放射狀裂紋＋環裂），隨機位置。細節用內嵌 SVG 畫。 */
   .fx-bullet{width:120px;height:120px;margin:-60px 0 0 -60px;opacity:0;
     animation:bulletHole .5s ease-out forwards;}
