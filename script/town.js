@@ -1785,7 +1785,7 @@ export const TOWNS = {
         exits:{ up:'sorahome', left:'grocery', right:'restaurant', down:'plaza' } },
       /* ── 末端（北） ── */
       lakeside: { bg:'Shinier_Lakeside', name:'夏爾村　湖畔',   exits:{ back:'north' } },
-      chief:    { bg:'Shinier_Chief', bgPending:true,    name:'夏爾村　村長的家', exits:{ back:'north' },
+      chief:    { bg:'Shinier_chiefhouse', name:'夏爾村　村長的家', exits:{ back:'north' },
         /* 電報機＋蕾娜（ver -772，Ray：「會在村長家找到電報機，蕾娜在晚上
            18:00 前必然只出現在該處，送出報告」）。沒有 flag ＝每次抵達都演
            （再訪），until 收在傍晚閘門（sv_evening）。
@@ -1810,7 +1810,7 @@ export const TOWNS = {
         ] } ] },
       hunter:   { bg:'Shinier_Hunter', bgPending:true,   name:'夏爾村　獵人小屋', exits:{ back:'west' } },
       /* ── 末端（東） ── */
-      sorahome: { bg:'Shinier_Sorana', bgPending:true,   name:'夏爾村　索菈娜的家', exits:{ back:'east' },
+      sorahome: { bg:'Shinier_soranahouse', name:'夏爾村　索菈娜的家', exits:{ back:'east' },
         /* ══ 18:00 後（ver -772，Ray 交稿）══ 開頭依「找到工匠了沒」分歧
            （skipIf/onlyIf），未找到那句再依蕾娜好感 T1/T2 換字**與表情**
            （textByTier＋exprByTier，本版新增）。
