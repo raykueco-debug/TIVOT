@@ -1706,4 +1706,55 @@ export const TOWNS = {
       },
     },
   },
+  /* ══════════════════════════════════════════════════════════════════════
+     夏爾村（Shinier Village，ver -757）—— 索菈娜的故鄉，stage5 湖上甲板之後
+     一行人被帶進來修舵的村子。
+     ⚠ 節點與連線的唯一真相＝ `reference/ShinierVillage.png`；
+       戰鬥探索版（末端只留五個）＝ `reference/ShinierVillageBattle.png`。
+     ⚠ 背景檔名對照 `resources/background/_shinier_spec.md`（美術產圖中，
+       16/39 已交 —— 缺圖的節點載不到就是空背景，交到就自動出現，骨架不必再動）。
+     ⚠ **這裡只有骨架**：進場對白／店家／路人語／段落全部等 Ray 的稿。
+     ══════════════════════════════════════════════════════════════════════ */
+  shinier: {
+    name: '夏爾村',
+    entry: 'plaza',
+    /* BGM **暫代** Misty Hollow（湖區的底曲）—— Ray 指定村子的曲子後換掉。 */
+    bgm: 'misty',
+    /* 主線帶進來的村子：預設劇情探索（同北方泊地，女角不排外出）。
+       要開放自由探索＝那一段 act 寫 `endStoryExplore:true`（旗 free_explore_shinier）。 */
+    storyExplore: true,
+    /* ══ 戰鬥探索（`reference/ShinierVillageBattle.png`）══
+       末端只留：湖畔／村長的家／祭壇／野外／索菈娜的家（工坊・獵人小屋・
+       雜貨街・餐廳收起）；連接場景照引擎規矩一律開著。
+       ⚠ 鐵律 9：`shinier_siege` **現在還沒有人插** —— 哪一段劇情開打由那一段
+         自己認領（同 np 的作法：act 演完插 safehouse 旗收場）。 */
+    siege: { from:'shinier_siege', keep:['lakeside','chief','altar','wild','sorahome'] },
+    nodes: {
+      /* ── 樞紐：剝製廣場 ──「離開」＝下方出口（sail 那一套；舵還沒修好，
+         旗 `shinier_leave_ok` 由修舵那一段劇情立，日後接大地圖）。 */
+      plaza: { bg:'Shinier_Plaza', name:'夏爾村　剝製廣場',
+        exits:{ up:'north', left:'west', right:'east' },
+        sail:{ flag:'shinier_leave_ok', blocked:'（舵還沒修好，現在還離不開夏爾村。）' } },
+      /* ── 三個支點 ── */
+      north: { bg:'Shinier_North', name:'夏爾村　北側',
+        exits:{ up:'lakeside', left:'chief', right:'altar', down:'plaza' } },
+      west:  { bg:'Shinier_West', name:'夏爾村　西側',
+        exits:{ up:'wild', left:'workshop', right:'hunter', down:'plaza' } },
+      east:  { bg:'Shinier_East', name:'夏爾村　東側',
+        exits:{ up:'sorahome', left:'grocery', right:'restaurant', down:'plaza' } },
+      /* ── 末端（北） ── */
+      lakeside: { bg:'Shinier_Lakeside', name:'夏爾村　湖畔',   exits:{ back:'north' } },
+      chief:    { bg:'Shinier_Chief', bgPending:true,    name:'夏爾村　村長的家', exits:{ back:'north' } },
+      altar:    { bg:'Shinier_Altar', bgPending:true,    name:'夏爾村　祭壇',   exits:{ back:'north' } },
+      /* ── 末端（西） ── */
+      wild:     { bg:'Shinier_Wilds', bgPending:true,    name:'夏爾村　野外',   exits:{ back:'west' } },
+      workshop: { bg:'Shinier_Workshop', bgPending:true, name:'夏爾村　工坊',   exits:{ back:'west' } },
+      hunter:   { bg:'Shinier_Hunter', bgPending:true,   name:'夏爾村　獵人小屋', exits:{ back:'west' } },
+      /* ── 末端（東） ── */
+      sorahome: { bg:'Shinier_Sorana', bgPending:true,   name:'夏爾村　索菈娜的家', exits:{ back:'east' } },
+      grocery:  { bg:'Shinier_Grocery', bgPending:true,  name:'夏爾村　雜貨街', exits:{ back:'east' } },
+      restaurant:{ bg:'Shinier_Restaurant', name:'夏爾村　餐廳', exits:{ back:'east' } },
+    },
+  },
+
 };

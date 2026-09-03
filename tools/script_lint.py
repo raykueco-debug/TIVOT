@@ -335,8 +335,14 @@ def main():
                 # 同上：有 PNG 只是還沒轉檔（`bgFor` 兩個副檔名都試），不是「缺圖」
                 if exists(BG_DIR + bg + '_Day.png') or exists(BG_DIR + bg + '.png'):
                     warn('%s：背景 %s 只有 .png，還沒轉成 .webp（§5 的規約）' % (tag, bg))
+                elif n.get('bgPending'):
+                    # 骨架先行、美術產圖中（ver -757，夏爾村）：節點明寫 `bgPending:true`
+                    # ＝「知道缺，圖在路上」——降為提醒。圖到了記得拔掉這個欄位。
+                    warn('%s：背景 %s 產圖中（bgPending）——交件後拔掉 bgPending' % (tag, bg))
                 else:
                     err('%s：沒有這張背景 %s（找 %s，含 _Day）' % (tag, bg, BG_DIR))
+            if bg and n.get('bgPending') and (exists(BG_DIR + bg + '_Day.webp') or exists(BG_DIR + bg + '.webp')):
+                warn('%s：背景 %s 已交件，bgPending 可以拔了' % (tag, bg))
             if n.get('shop') and n['shop'] not in ((cfg.get('shop') or {}).get('stock') or {}):
                 err('%s：shop 指到 config.shop.stock 裡沒有的貨單 %s' % (tag, n['shop']))
             if n.get('board'):
