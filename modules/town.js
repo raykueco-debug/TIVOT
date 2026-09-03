@@ -1316,6 +1316,20 @@ function leaveDue(n){
 }
 function go(to, dir){
   if(!to) return;
+  /* ══ 出口鎖（ver -786，Ray：「野外是連接另一個地圖的地方，stage5 不開放」）══
+     節點的 `lock:{ <方向>:{ until, need?, text } }` ＝這個方向現在走不了，就地浮一句
+     （走路人單句那一套）。`until` 那支旗立了就解鎖（鐵律 9：開放它的那一段劇情
+     插旗，現在還沒有人插＝一律鎖）。
+     ⚠ 箭頭照樣顯示（Ray 要的是「按了出訊息」不是「沒有箭頭」——那是 siege 的作法）：
+       擋在 go() 不在 exitsOf。
+     ⚠ 只認**玩家按方向**（有 dir）：forceGo／內部轉場不帶 dir，不受鎖擋。 */
+  const nlk=node();
+  if(dir && nlk && nlk.lock && nlk.lock[dir]){
+    const L=nlk.lock[dir];
+    if((!L.need || prog.hasFlag(L.need)) && !(L.until && prog.hasFlag(L.until))){
+      story.flashLine(L.text||'', ''); chatterOn=true; return;
+    }
+  }
   const lv = leaveDue(node());
   if(lv){
     busy=true; showNav(false);

@@ -1994,6 +1994,17 @@
      ⚠ 要壓過 .dim，所以寫在它後面；同樣用 filter 不用 opacity
      （CLAUDE.md §6.5：壓暗必須不透明）。 */
   .story-portrait.dark{filter:brightness(.16) saturate(.35) contrast(1.25);}
+  /* ══ 安雅整體偏亮，上一層統一遮罩降一階（ver -786，Ray：「安雅整體太亮，幫她上
+     一層統一遮罩，顏色你定，降一點色階，不要太多」）══
+     ⚠ 只在她**當說話者**（原色，無 dim/dark）時套 —— 被壓暗時本來就夠暗，
+       而且 `:not(.dim):not(.dark)` 確保不與那兩條搶同一個 filter 屬性（同元素只有
+       一個 filter，會互相蓋）。
+     ⚠ 幅度刻意小（Ray「不要太多」）：亮度 −10%、飽和 −10%、對比 −3%＝降階但不失色。
+       顏色維持中性（不加色偏）—— 臉上加色調風險高，要色偏 Ray 再指定。
+     ⚠ 與容器的場景色調（tone.js 套在 #storyCast）自然疊加，不衝突。 */
+  #storyCast .story-portrait[data-who="ANYA"]:not(.dim):not(.dark){
+    filter:brightness(.9) saturate(.9) contrast(.97);
+  }
   /* 背景：鋪滿、cover。⚠ 在立繪**之下**（z-index 0）—— 立繪要站在場景裡。 */
   /* ⚠ 背景換圖也走淡入淡出（ver -325，Ray 指定）—— 與插圖／立繪同一條規則。
      transition 的時間要與 story.js 的 FADE_MS 同值，改一邊要改另一邊。 */

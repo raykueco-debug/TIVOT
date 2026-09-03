@@ -256,6 +256,7 @@ export const ART = {
                      與 `gossip1`（0.710）同一類構圖。沿用別張會把她推出畫面。 */
                   whisper:  { src:'resources/SI/Nouvelle_SI_whisper.webp',   top:8,  bot:1530, fx:0.697 },
                   talk:     { src:'resources/SI/Nouvelle_SI_talk.webp',      top:3,  bot:1535, fx:0.582 },   // ver -752
+                  explain:  { src:'resources/SI/Nouvelle_SI_expain.webp',    top:2,  bot:1526, fx:0.582 },   // ver -772（檔名 expain 照交件）
                   /* 城鎮探索那一段新增（ver -369）。 */
                   sadsmile: { src:'resources/SI/Nouvelle_SI_sadsmile.webp',  top:5,  bot:1532, fx:0.587 },
                   hungry:   { src:'resources/SI/Nouvelle_SI_hungry.webp',    top:0,  bot:1536, fx:0.579 },
@@ -294,7 +295,19 @@ export const ART = {
     laugh:        { src:'resources/SI/Sorana_SI_laugh.webp',         top:3,  bot:1529, fx:0.579, cm:170, standCm:176 },
     amazed:       { src:'resources/SI/Sorana_SI_amazed.webp',        top:3,  bot:1527, fx:0.562 },
     think:        { src:'resources/SI/Sorana_SI_think.webp',         top:3,  bot:1530, fx:0.529, cm:168, standCm:176 },
-    idea:         { src:'resources/SI/Sorana_SI_idea.webp',          top:3,  bot:1525, fx:0.523 } } },
+    idea:         { src:'resources/SI/Sorana_SI_idea.webp',          top:3,  bot:1525, fx:0.523 },
+    /* 夏爾村抵達稿（ver -772，Ray 交稿）。逐張量（measure_si.py）。
+       ⚠ smirk/smile/remind/back/readysmile 交件是**白底**，程式端邊緣泛洪去背
+         （白衣白髮保住，未去背原稿留在 _originals/SI 以備重做——Ray 指定不刪）。
+       ⚠ `lauaghbig` 的拼法照稿（檔名如此），不要「修正」成 laughbig——鍵與檔名
+         對得上才找得到圖。 */
+    smirk:        { src:'resources/SI/Sorana_SI_smirk.webp',         top:8,  bot:1528, fx:0.582 },
+    lauaghbig:    { src:'resources/SI/Sorana_SI_lauaghbig.webp',     top:4,  bot:1529, fx:0.492 },
+    remind:       { src:'resources/SI/Sorana_SI_remind.webp',        top:4,  bot:1525, fx:0.523 },
+    smile:        { src:'resources/SI/Sorana_SI_smile.webp',         top:10, bot:1525, fx:0.547 },
+    back:         { src:'resources/SI/Sorana_SI_back.webp?v=2',       top:1,  bot:1516, fx:0.533 },  // ver -786 換新圖＋重量取景
+    ready:        { src:'resources/SI/Sorana_SI_ready.webp',         top:7,  bot:1521, fx:0.631 },
+    readysmile:   { src:'resources/SI/Sorana_SI_readysmile.webp',    top:7,  bot:1466, fx:0.567 } } },
   /* ⚠ 取景值於 ver -624 **重量**：`Anya_SI_front` 換過圖（舊的留成
      `XAnya_SI_front.webp`）—— §5「換圖一定要重量取景值」。
      ⚠ `flight/index.html` 的 `PORTRAIT.anya` 是同一組數字，改一邊要改另一邊。 */
@@ -344,6 +357,7 @@ export const ART = {
     wheel:     { src:'resources/SI/Anya_SI_wheel.webp',      top:4, bot:1531, fx:0.483 },
     wheelpoint:{ src:'resources/SI/Anya_SI_wheelpoint.webp', top:0, bot:1529, fx:0.473 },
     dying:     { src:'resources/SI/Anya_SI_dying.webp',      top:0, bot:1526, fx:0.431 },
+    sleepy:    { src:'resources/SI/Anya_SI_sleepy.webp',     top:0, bot:1518, fx:0.441 },   // ver -772
     cry:       { src:'resources/SI/Anya_SI_Cry.webp',        top:0, bot:1528, fx:0.452 },
     terrifying:{ src:'resources/SI/Anya_SI_terrifying.webp', top:0, bot:1518, fx:0.448 },
     /* ══ 惡夢化（ver -671）══

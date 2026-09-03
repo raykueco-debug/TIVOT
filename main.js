@@ -369,6 +369,11 @@ window.__tivotFlight = {
   /* 甲板混亂 → 湖上甲板那一幕（ver -744）：船摔進湖裡，這一趟航行結束 ——
      城鎮（suspend 著的北泊）真的收掉、iframe 收掉，主線場景接手。 */
   lakeScene(){
+    /* ⚠ 羽蛇戰後 HP 回滿（ver -786，Ray：「羽蛇戰後主角的 hp 沒恢復，結算完應該都要
+       回到初始狀態」）—— 持久 HP（tivot_php_v1）平時是延續的，但這一場打完是**一段
+       落幕、接新場景**（湖上甲板→夏爾村），所以清掉傷害＝下一段從滿血開始。
+       ⚠ 走既有的 `prog.clearHp()`（＝飛行敗北回滿同一支，鐵律 8）。 */
+    prog.clearHp();
     try{ town.close(); }catch(_){}
     closeFlightFrame();
     story.open({ scene:'lake_deck' });

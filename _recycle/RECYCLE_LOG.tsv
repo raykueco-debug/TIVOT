@@ -24,3 +24,8 @@ when	from	to	reason
 20260903-112107	resources/audio/vo/vo_anya_luciddream4.wav	_recycle/resources/audio/vo/vo_anya_luciddream4.wav	luciddream 語音 1~4 轉 m4a，wav 原檔回收（§6.6）；舊單支 luciddream.m4a 被輪播四支取代
 20260903-162236	resources/audio/se/se_villagealarm.wav	_recycle/resources/audio/se/se_villagealarm.wav	villagealarm/warhorn 轉 m4a，wav 原檔回收（§6.6）
 20260903-162236	resources/audio/bgm/bgm_warhorn.wav	_recycle/resources/audio/bgm/bgm_warhorn.wav	villagealarm/warhorn 轉 m4a，wav 原檔回收（§6.6）
+20260903-172410	resources/SI/Sorana_SI_tease.png	_recycle/resources/SI/Sorana_SI_tease.png	無 alpha 的舊版，已由 GPT 重製出透明背景版取代
+20260903-191952	resources/SI/Sorana_SI_remind.webp	_recycle/resources/SI/Sorana_SI_remind.webp	白底去背版品質不足（髮絲被切、殘留白塊），改用本機 isnet-anime 軟遮罩重做
+20260903-203439	resources/SI/Sorana_SI_smile.webp	_recycle/resources/SI/Sorana_SI_smile.webp	本機 matte 版半透明過多（12.4%），改用 GPT 版
+20260903-210409	resources/SI/Sorana_SI_back.webp	_recycle/resources/SI/Sorana_SI_back.webp	索拉娜 back 立繪更新，換新 png 轉檔 ver -786
+20260903-210430	resources/_originals/SI/Sorana_SI_back.png	_recycle/resources/_originals/SI/Sorana_SI_back.png	索拉娜 back 舊原圖，換新版 ver -786

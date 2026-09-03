@@ -512,7 +512,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -785';
+const FLIGHT_VER = 'ver -786';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -7875,7 +7875,12 @@ function toBattle(kind){
   /* 結算要用的甲板背景先熱起來（ver -745，Ray：「結算畫面就要先讀
      deck_rapidsail」）—— 戰鬥打多久它就有多久可以載。 */
   if(SC && SC.intro==='serpent') deckBgWarm();
-  introArt=null;             // 插圖背景收掉（ver -743：它只活到「進入戰鬥」那一刻）
+  /* ⚠ 羽蛇的登場插圖**留著**當推棺時的背景（ver -786，Ray：「羽蛇來襲的插圖不屬於
+     飛行畫面，已經算劇情播放器了，槍棺是直接從播放器的狀態往上推，畫面不要再回
+     飛行畫面」）—— 它是滿版 cover（蓋住 3D），推棺那一秒就不會露出飛行畫面。
+     不在這裡清：交棒收 iframe 時自然消失；敗北回飛行由 __flightResume 清（見那支）。
+     其他遭遇本來就沒有 introArt，照舊清掉。 */
+  if(!(SC && SC.intro==='serpent')) introArt=null;
   scriptPending=null;        // 這一頁這一趟不再刷（免戰模式也是；重整就能再測一遍）
   if(peaceMode) return;      // 免戰：遭遇照演，就是不進戰鬥
   if(battleGoing) return;
@@ -7984,7 +7989,7 @@ function departureTalkMaybe(){
     /* ══ 航向指引（ver -753；**-756 依 Ray 的定義搬位**：「大地圖＝開啟地圖畫面」
        —— 這句話要出現在**地圖畫面上**，不是關掉地圖之後）══
        蕾娜的無立繪話框疊在地圖下緣，地圖關掉就收（同 mapClosedCb 那一刻）。 */
-    mapSayShow('蕾娜', '往東南方一路飛回去。');
+    mapSayShow('蕾娜', '往西南方一路飛回去。');   // ver -786：北泊(1516,150)→聖王廳(934,606)＝西南（Δx 西582・Δy 南456）
     mapClosedCb=()=>{
       mapSayHide();
       say([{ who:'renna/smile', text:'看到帝都就表示到了。' }],
@@ -8070,6 +8075,9 @@ window.__flightResume=function(opts){
      ⚠ 等門收完再演（`FKERB_MS`）：槍棺還蓋著半個畫面時放人出來，
        立繪會從門後面滑出來。 */
   const wasScripted = lastBattleScripted; lastBattleScripted = false;
+  /* ⚠ 羽蛇登場插圖現在留到交棒（ver -786，見 toBattle）——回到這一頁一律先清乾淨：
+     敗北回飛行不能還蓋著那張插圖；羽蛇打贏的甲板分支會在下面重設 introArt=甲板背景。 */
+  introArt=null;
   /* ══ 劇本遭遇的勝負記帳（ver -487，唯一的記錄點）══
      · 打贏：**這一刻**才記 done（-426 的「交棒就記」廢除 —— 敗北要等於沒發生過，
        憲法 §6.5.2）。

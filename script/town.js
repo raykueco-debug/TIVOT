@@ -1736,6 +1736,9 @@ export const TOWNS = {
        諾薇兒會來找玩家，強制移動」）══ 同北泊閘門那一套（clockGate）。
        ⚠ 諾薇兒那一句是**我寫的**（Ray 只寫了「諾薇兒會來找玩家」）。 */
     gates: [
+      /* ⚠ 18:00 的 band 是 Dusk（ver -786，Ray：「那就放 dusk，我補」）——索拉娜家
+         補上 `Shinier_soranahouse_dusk` 之後，band 系統在 18:00 自然挑到黃昏圖
+         （Dusk→Day→night 的候選鏈，dusk 存在就用 dusk）。不推時鐘。 */
       { flag:'sv_evening', need:'sv_arrive', hourOfDay:18,
         goto:'sorahome', enterAgain:true,
         lines:[ nou('front','找到你了！大家都在索菈娜家等著喔。') ] },
@@ -1799,12 +1802,16 @@ export const TOWNS = {
           ren('talkwork','村長借我用電報機。得把這幾天的事回報聖王廳才行。'),
           ren('writting','你先去忙吧，我把報告送完就回索菈娜家。'),
         ] } ] },
-      altar:    { bg:'Shinier_Altar', bgPending:true,    name:'夏爾村　祭壇',   exits:{ back:'north' } },
+      altar:    { bg:'Shinier_Altar',   name:'夏爾村　祭壇',   exits:{ back:'north' } },   // ver -786：祭壇圖已交（day/dd/night）
       /* ── 末端（西） ── */
       /* 野外＝**夏爾森林的入口**（ver -758，Ray：「野外是森林地圖」）：
          往上走就換到 shinier_forest 那張圖（跨地圖出口，modules/town.js 的 @ 語法）。 */
       wild:     { bg:'Shinier_Wilds', bgPending:true,    name:'夏爾村　野外',
-        exits:{ back:'west', up:'@shinier_forest' } },
+        exits:{ back:'west', up:'@shinier_forest' },
+        /* stage5 森林不開放（ver -786，Ray：「野外是連接另一個地圖的地方，stage5 不
+           開放『現在還是別亂跑吧。』」）：往上進森林的出口先鎖著，按了浮旁白。
+           `shinier_forest_ok` 由開放森林那一段劇情立（鐵律 9：現在還沒有人插＝一律鎖）。 */
+        lock:{ up:{ until:'shinier_forest_ok', text:'現在還是別亂跑吧。' } } },
       workshop: { bg:'Shinier_Workshop', name:'夏爾村　工坊',   exits:{ back:'west' },
         /* 找到工匠（ver -772，Ray：「要找到工匠」——18:00 前找到與否改變晚上
            蕾娜的第一句）。⚠ 對白是**我寫的**佔位，稿到了換掉；旗標 sv_craftsman
@@ -1816,6 +1823,21 @@ export const TOWNS = {
       hunter:   { bg:'Shinier_Hunter', bgPending:true,   name:'夏爾村　獵人小屋', exits:{ back:'west' } },
       /* ── 末端（東） ── */
       sorahome: { bg:'Shinier_soranahouse', name:'夏爾村　索菈娜的家', exits:{ back:'east' },
+        /* ══ 索拉娜的家＝旅店（ver -786，Ray：「索拉娜的家就是旅店，功能一樣」）══
+           `inn:true` 就會由 afterArrive2 自動接上 inn.arrive（伙伴門／獨自坐坐／
+           回房睡覺），roster 預設 girlsHere()。
+           ⚠ **睡覺先擋**（`noSleep`，同北泊的作法）：魔獸戰那一段還沒實裝
+             （下面的 acts 收在「待續」），睡下去會一口氣跳到隔天、把那段跳過。
+             鈕還是要在（§6.5.5：藏起來只會被當成壞了），用一句話擋回來。
+           ⚠ innStage1／innSpots 是**佔位**（Ray 只給了「功能一樣」，敲門對白與
+             roster 細節等他的 stage5 續稿）—— 缺這幾格 inn.js 的敲門路徑會取到
+             undefined，所以先給安全值。 */
+        inn:true, innNoGuide:true,
+        innSpots:{ sit:{ x:0.30, y:0.62 }, sleep:{ x:0.60, y:0.55 } },
+        noSleep:'……還是先別睡，總覺得今晚不會太平靜。',
+        innStage1:{ renna:'早點休息吧，明天還要趕路呢。',
+                    nightRest:'這麼晚了，早點睡吧。',
+                    dateDone:'今天已經聊夠多囉，明天再說吧。' },
         /* ══ 18:00 後（ver -772，Ray 交稿）══ 開頭依「找到工匠了沒」分歧
            （skipIf/onlyIf），未找到那句再依蕾娜好感 T1/T2 換字**與表情**
            （textByTier＋exprByTier，本版新增）。
