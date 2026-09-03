@@ -429,6 +429,11 @@ window.__tivotFlight = {
       SFX.playBgm(asset('bgm_home'), { volume: bgmVol('bgm_home') });
     }
   },
+  /* 回到主畫面（ver -775，Ray：「飛行畫面的返回箭移除，改為全域通用的回到
+     主畫面 X 鍵」）—— 走**唯一那支** `combat.goHome`（killAllPages → 首頁，
+     與選單「回到主選單」同一支，鐵律 8）。與 `close()`（回底下那一頁）不同：
+     這一支不管底下是城鎮還是首頁，一律殺光回主畫面。 */
+  home(){ flightBack=false; storyResume=null; combat.goHome(); },
 };
 
 function bootBattleGate(req){

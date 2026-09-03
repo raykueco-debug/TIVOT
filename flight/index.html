@@ -50,7 +50,10 @@
   #backBtn,#mapBtn,#muteBtn,#talkBtn,#bagBtn{position:fixed;top:calc(env(safe-area-inset-top) + 10px);z-index:40;
     background:rgba(5,6,12,.72);border:1px solid rgba(201,162,39,.5);color:var(--gold);
     font-family:inherit;font-size:11px;letter-spacing:.14em;padding:5px 12px;cursor:pointer;}
-  #backBtn{right:12px;} #mapBtn{right:78px;} #muteBtn{right:144px;width:44px;padding:0;text-align:center;}
+  /* 回到主畫面鍵（ver -775）：全域通用的圓形 ✕（同主遊戲的 .corner-btn 觀感）。 */
+  #backBtn{right:12px;width:44px;height:44px;padding:0;border-radius:50%;
+    font-size:20px;letter-spacing:0;display:flex;align-items:center;justify-content:center;}
+  #mapBtn{right:78px;} #muteBtn{right:144px;width:44px;padding:0;text-align:center;}
   #talkBtn{right:196px;} #bagBtn{right:248px;}
   #backBtn:active,#mapBtn:active,#muteBtn:active,#talkBtn:active,#bagBtn:active{background:rgba(201,162,39,.16);}
   #muteBtn.muted{color:#d06a60;border-color:rgba(208,106,96,.7);}
@@ -393,7 +396,7 @@
        （`tivot_inventory_v1` / `tivot_money_v1`），出城打完再入城都是連續的。
      ⚠ 樣式由那支模組自己掛（`css/lootsheet.css`），這一頁不載 `style.css`。 -->
 <button id="bagBtn">道具</button>
-<button id="backBtn">← 返回</button>
+<button id="backBtn" aria-label="回到主畫面">✕</button>
 <button id="spawnBtn">生怪</button>
 <!-- 免戰（ver -383）：開著就不會被拉進戰鬥，畫地圖時用。狀態記在 localStorage。 -->
 <button id="peaceBtn">免戰</button>
@@ -509,7 +512,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -774';
+const FLIGHT_VER = 'ver -775';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -4362,10 +4365,12 @@ function syncClock(){
 syncClock();
 
 // 返回主頁（原型是獨立頁面，不共用遊戲的場景切換）
+/* ✕＝回到主畫面（ver -775，Ray：「改為全域通用的回到主畫面 X 鍵」）——
+   內嵌時走父頁的 `home()`（combat.goHome：killAllPages → 首頁），不是 close()
+   （那是回底下那一頁）。獨立開發模式沒有父頁 → 跳回 index。 */
 document.getElementById('backBtn').addEventListener('click',()=>{
-  /* 內嵌時交給父頁收（不跳頁，見 toBattle 上方那段說明）。 */
   try{ if(window.parent!==window && window.parent.__tivotFlight){
-    window.parent.__tivotFlight.close(); return; } }catch(_){}
+    window.parent.__tivotFlight.home(); return; } }catch(_){}
   location.href='../index.html';
 });
 
