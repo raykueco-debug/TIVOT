@@ -512,7 +512,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -780';
+const FLIGHT_VER = 'ver -781';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -9804,10 +9804,12 @@ function doLand(){
      ⚠ 記在這裡而不是進城之後：城鎮那一邊的計時是「每走一步 10 分鐘」，
        那是**城裡**的規矩；「飛過去降落」花掉的是大地圖的時間，兩者不能混（鐵律 7）。 */
   clockAdvance(HOUR);
-  /* 內嵌：交給父頁開城鎮（同遭遇戰的作法，走 `__tivotFlight`）。 */
+  /* 內嵌：先演降落過場（高度 700→100＋淡全黑，ver -781），黑幕淡完才交棒開城鎮。 */
   if(embedded()){
-    flightAudio(false);
-    try{ window.parent.__tivotFlight.land(S.town); }catch(_){}
+    playLanding(()=>{
+      flightAudio(false);
+      try{ window.parent.__tivotFlight.land(S.town); }catch(_){}
+    });
     return;
   }
   /* 獨立模式：寫一把「要降在哪」的鑰匙再跳最外層（主遊戲開機時讀了就清）。 */
@@ -10673,9 +10675,14 @@ function loop(now){
      出薩梅爾的劇本蜈蚣也是在那一幀立刻刷（scriptedDue 不排隊）。 */
   const talking = !!(sayQueue && !sayEndAt);
   if(talking){ render(now); updateBgm(dt); requestAnimationFrame(loop); return; }
-  /* 升空過場（ver -778）：照 render（雲動、畫布 zoom 拉遠看得到）但**不 update**
-     —— 不生怪、船不動、不進戰鬥。跑完 takeoffPlaying 歸零，世界接著動。 */
-  if(takeoffPlaying){ render(now); updateBgm(dt); requestAnimationFrame(loop); return; }
+  /* 升空／進城過場（ver -781）：照 render（下降／上升、雲動看得到）但**不 update**
+     —— 不生怪、船不動、不進戰鬥。期間由 altTween 驅動 cam.alt（真高度維度）。 */
+  if(altTween){
+    const t=clamp((now-altTween.t0)/altTween.dur,0,1);
+    const e=altTween.easeIn ? t*t : (1-(1-t)*(1-t));   // 加速降／減速升
+    cam.alt=altTween.from+(altTween.to-altTween.from)*e;
+    render(now); updateBgm(dt); requestAnimationFrame(loop); return;
+  }
   edgeNag(now);      // 快飛出圖了 → 蕾娜叫你回頭（軟邊界）
   const wt0=performance.now();
   update(dt,now); updateRegion(now); updateTrains(dt/1000); render(now); updateBgm(dt); updateMapMe();
@@ -10791,82 +10798,64 @@ const bootUI=(()=>{
   };
 })();
 
-/* ══ 升空過場（ver -778，Ray 定案「遠近法」）══
-   voxel 鏡頭轉不到正上方（地平線寫死）→ 用一串錯覺（Ray 的設計）：
-     ① 黑幕淡入（出航從黑開始）
-     ② **近景**（畫布放大到看不到地平線）＝正上方 topdown 錯覺，疊上
-        ship_topdown 俯視船
-     ③ 船角度變化（rotateX 漸傾＝把俯視補幀成斜視）＋鏡頭**拉遠**（畫布縮回 1）
-     ④ **穿過雲霧**：一層霧掃過，正好遮住「topdown 船圖 → 正常 3/4 航行船」的
-        換圖接縫（Ray：「利用變型補幀，船會像素化，破綻不會太大」）
-     ⑤ 霧散＝正常航行畫面（真 3/4 船、地平線浮現）
-   ⚠ 期間 `takeoffPlaying`：照 render（雲動、畫布 zoom 看得到）但不 update
-     （不生怪、船不動、不進戰鬥，見 loop 的守門）。
-   ⚠ 只在 fresh boot 演（打完回來走 __flightResume，不經開機頁）。 */
+/* ══ 起降過場（ver -781，Ray 定案「用高度維度」——VP1 沒有、我們的優勢）══
+   topdown 那套整組放棄。改用**真的 cam.alt**：
+     · 出城（起飛）＝從全黑起 → 高度由 100 快速升回巡航 700、黑幕淡出、地平線浮現。
+     · 進城（降落）＝高度由 700 快速降到 100、鏡頭拉近、雲霧撲面、**1 秒內整個畫面
+       （含操作面盤）淡到全黑**，觸底（100）前黑幕就淡完，然後交棒進城。
+   ⚠ 期間 `altTween`：loop 只 render 不 update（我自己驅動 cam.alt，見 loop 守門）。
+   ⚠ 黑幕蓋在**最上層**（z 100）—— 連舵輪面盤（畫在 canvas 上）也一起黑。
+   ⚠ 雲霧撲面：一層白霧從中央擴散＋淡出（撲向鏡頭）。 */
 let takeoffPlaying=false;
-let tkPixURL=null;                                    // 像素化 topdown 的快取（dataURL）
-/* topdown 圖降到低解析再最近鄰放大＝像素化（Ray：「topdown 那張也要像素化」，
-   配合飛行畫面的像素感）。畫一次快取起來。 */
-function tkBuildPixel(cb){
-  if(tkPixURL){ cb(tkPixURL); return; }
-  const im=new Image();
-  im.onload=()=>{
-    const LOW=120;                                    // 低解析寬（像素塊大小＝顯示寬/120）
-    const lh=Math.round(LOW*im.height/im.width);
-    const c=document.createElement('canvas'); c.width=LOW; c.height=lh;
-    const g=c.getContext('2d'); g.imageSmoothingEnabled=true;
-    g.drawImage(im,0,0,LOW,lh);                        // 降到 120px
-    tkPixURL=c.toDataURL('image/png'); cb(tkPixURL);
-  };
-  im.onerror=()=>cb(null);
-  im.src='../resources/effects/ship_topdown.webp';
-}
-function playTakeoff(){
-  if(takeoffPlaying) return;
-  const cv=document.getElementById('cv'); if(!cv) return;
-  takeoffPlaying=true;
+let altTween=null;                                    // { from, to, t0, dur, easeIn }
+const TK_ALT_LOW=100;                                 // 起降的低點（Ray 指定）
+function tkOverlay(){
   if(!document.getElementById('tkCSS')){
     const st=document.createElement('style'); st.id='tkCSS';
     st.textContent=
-      '#takeoff{position:fixed;inset:0;z-index:48;overflow:hidden;pointer-events:none;perspective:640px;}'
-      /* 遮換圖用**整個畫面淡黑**（Ray：「船不要消失，讓整個畫面淡入到黑色」）：
-         出航從黑開始 → 掀開 → 尾段再淡黑一次遮住 topdown→真船的換圖 → 掀開露出航行。 */
-      +'#takeoff .tk-black{position:absolute;inset:0;background:#05040a;'
-      +'animation:tkBlack 2.9s ease-in-out forwards;}'
-      /* topdown 船（像素化）＝擺在**飛行船的同一位置**（50%,50% of 視窗＝shipHit，讀成同一艘。
-         ⚠ image-rendering:pixelated：最近鄰放大＝大像素塊。 */
-      +'#takeoff .tk-ship{position:absolute;left:50%;top:50%;width:30%;max-width:210px;'
-      +'image-rendering:pixelated;transform-origin:50% 50%;'
-      +'filter:drop-shadow(0 10px 22px rgba(0,0,0,.5));'
-      +'animation:tkShip 2.9s cubic-bezier(.4,0,.3,1) forwards;}'
-      +'@keyframes tkBlack{0%{opacity:1}14%{opacity:0}72%{opacity:0}86%{opacity:1}100%{opacity:0}}'
-      /* 近到遠、topdown 轉正：rotateX 0(俯視) → 56(斜視＝航行角度)；船不淡出
-         （尾段被黑幕蓋住換成真船）。 */
-      +'@keyframes tkShip{'
-      +'0%{transform:translate(-50%,-50%) rotateX(0deg) scale(1.02);}'
-      +'14%{transform:translate(-50%,-50%) rotateX(0deg) scale(1.0);}'
-      +'80%{transform:translate(-50%,-50%) rotateX(56deg) scale(.9);}'
-      +'100%{transform:translate(-50%,-50%) rotateX(56deg) scale(.9);}}';
+      '#takeoff{position:fixed;inset:0;z-index:100;overflow:hidden;pointer-events:none;}'
+      +'#takeoff .tk-black{position:absolute;inset:0;background:#05040a;opacity:0;}'
+      +'#takeoff .tk-fog{position:absolute;inset:-20%;pointer-events:none;opacity:0;'
+      +'background:radial-gradient(60% 45% at 50% 48%,rgba(240,244,250,.95),'
+      +'rgba(226,232,240,.55) 45%,transparent 78%);}';
     document.head.appendChild(st);
   }
-  const start=()=>{
-    const ov=document.createElement('div'); ov.id='takeoff';
-    const img=tkPixURL ? '<img class="tk-ship" src="'+tkPixURL+'">' : '';
-    ov.innerHTML=img+'<div class="tk-black"></div>';
-    document.body.appendChild(ov);
-    /* 畫布 zoom 近→遠：起始放大 2.2（原點＝船位，地平線推出畫面＝topdown 錯覺），
-       掀開後一路拉遠到 1（地平線浮現、真 3/4 船回正常大小）。 */
-    cv.style.transformOrigin='50% 50%';   // ＝真飛行船的螢幕位置（shipHit）
-    cv.style.transition='none'; cv.style.transform='scale(2.2)'; void cv.offsetWidth;
-    setTimeout(()=>{ cv.style.transition='transform 1.9s cubic-bezier(.4,0,.25,1)';
-                     cv.style.transform='scale(1)'; }, 420);   // 黑幕掀開後開始拉遠
-    setTimeout(()=>{
-      try{ ov.remove(); }catch(_){}
-      cv.style.transition=''; cv.style.transform=''; cv.style.transformOrigin='';
-      takeoffPlaying=false;                           // 放行：世界恢復 update
-    }, 2950);
-  };
-  tkBuildPixel(start);
+  const ov=document.createElement('div'); ov.id='takeoff';
+  ov.innerHTML='<div class="tk-fog"></div><div class="tk-black"></div>';
+  document.body.appendChild(ov);
+  return ov;
+}
+/* 出城（起飛）：全黑起 → 高度 100→700、黑幕淡出。 */
+function playTakeoff(){
+  if(takeoffPlaying || altTween) return;
+  takeoffPlaying=true;
+  cam.alt=TK_ALT_LOW;
+  const ov=tkOverlay(), bk=ov.querySelector('.tk-black'), fog=ov.querySelector('.tk-fog');
+  bk.style.opacity='1';                               // 從全黑開始
+  altTween={ from:TK_ALT_LOW, to:CRUISE_ALT, t0:performance.now(), dur:1300, easeIn:false };
+  requestAnimationFrame(()=>{
+    bk.style.transition='opacity 1s ease-out'; bk.style.opacity='0';   // 黑幕淡出
+    fog.style.transition='opacity 1.1s ease-out'; fog.style.opacity='0';  // 雲霧散
+    fog.style.opacity='.9'; void fog.offsetWidth; fog.style.opacity='0';
+  });
+  setTimeout(()=>{ altTween=null; cam.alt=CRUISE_ALT; try{ ov.remove(); }catch(_){}
+                   takeoffPlaying=false; }, 1360);
+}
+/* 進城（降落）：高度 700→100 快速降＋雲霧撲面＋1 秒淡全黑，觸底前黑幕淡完 → done()。 */
+function playLanding(done){
+  if(altTween){ done&&done(); return; }
+  takeoffPlaying=true;
+  const A0=cam.alt||CRUISE_ALT;
+  const ov=tkOverlay(), bk=ov.querySelector('.tk-black'), fog=ov.querySelector('.tk-fog');
+  altTween={ from:A0, to:TK_ALT_LOW, t0:performance.now(), dur:1150, easeIn:true };  // 加速降
+  requestAnimationFrame(()=>{
+    bk.style.transition='opacity .95s ease-in'; bk.style.opacity='1';   // 1 秒內淡全黑
+    fog.style.transition='opacity .8s ease-in'; fog.style.opacity='.92';  // 雲霧撲面
+  });
+  /* 黑幕淡完（~0.95s，早於觸底）→ 交棒。⚠ 交棒後這一頁被父頁收掉，
+     所以 overlay 不必自己移除；altTween 歸零、高度復位給下一趟。 */
+  setTimeout(()=>{ altTween=null; cam.alt=CRUISE_ALT; takeoffPlaying=false;
+                   done&&done(); }, 980);
 }
 
 /* ⚠⚠ **音效全部 → 圖 → BGM，音效不載完不放行**（ver -430，Ray 指定的全域規則，
