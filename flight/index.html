@@ -512,7 +512,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -778';
+const FLIGHT_VER = 'ver -780';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -10804,6 +10804,23 @@ const bootUI=(()=>{
      （不生怪、船不動、不進戰鬥，見 loop 的守門）。
    ⚠ 只在 fresh boot 演（打完回來走 __flightResume，不經開機頁）。 */
 let takeoffPlaying=false;
+let tkPixURL=null;                                    // 像素化 topdown 的快取（dataURL）
+/* topdown 圖降到低解析再最近鄰放大＝像素化（Ray：「topdown 那張也要像素化」，
+   配合飛行畫面的像素感）。畫一次快取起來。 */
+function tkBuildPixel(cb){
+  if(tkPixURL){ cb(tkPixURL); return; }
+  const im=new Image();
+  im.onload=()=>{
+    const LOW=120;                                    // 低解析寬（像素塊大小＝顯示寬/120）
+    const lh=Math.round(LOW*im.height/im.width);
+    const c=document.createElement('canvas'); c.width=LOW; c.height=lh;
+    const g=c.getContext('2d'); g.imageSmoothingEnabled=true;
+    g.drawImage(im,0,0,LOW,lh);                        // 降到 120px
+    tkPixURL=c.toDataURL('image/png'); cb(tkPixURL);
+  };
+  im.onerror=()=>cb(null);
+  im.src='../resources/effects/ship_topdown.webp';
+}
 function playTakeoff(){
   if(takeoffPlaying) return;
   const cv=document.getElementById('cv'); if(!cv) return;
@@ -10811,44 +10828,45 @@ function playTakeoff(){
   if(!document.getElementById('tkCSS')){
     const st=document.createElement('style'); st.id='tkCSS';
     st.textContent=
-      '#takeoff{position:fixed;inset:0;z-index:48;overflow:hidden;pointer-events:none;perspective:600px;}'
-      /* ① 黑幕 */
+      '#takeoff{position:fixed;inset:0;z-index:48;overflow:hidden;pointer-events:none;perspective:640px;}'
+      /* 遮換圖用**整個畫面淡黑**（Ray：「船不要消失，讓整個畫面淡入到黑色」）：
+         出航從黑開始 → 掀開 → 尾段再淡黑一次遮住 topdown→真船的換圖 → 掀開露出航行。 */
       +'#takeoff .tk-black{position:absolute;inset:0;background:#05040a;'
-      +'animation:tkBlack 3s ease-in forwards;}'
-      /* ② 俯視船（topdown）→ ③ 角度變化＋縮小上飄；④ 到霧最濃時已淡掉（換圖） */
-      +'#takeoff .tk-ship{position:absolute;left:50%;top:50%;width:52%;max-width:380px;'
-      +'transform-origin:50% 50%;filter:drop-shadow(0 14px 30px rgba(0,0,0,.55));'
-      +'animation:tkShip 3s cubic-bezier(.45,0,.35,1) forwards;}'
-      /* ④ 雲霧掃過：遮住換圖那一刻 */
-      +'#takeoff .tk-fog{position:absolute;inset:-10%;pointer-events:none;'
-      +'background:radial-gradient(70% 55% at 50% 46%,rgba(238,242,248,.96),'
-      +'rgba(226,232,240,.7) 40%,rgba(210,218,228,.25) 68%,transparent 84%);'
-      +'animation:tkFog 3s ease-in-out forwards;}'
-      +'@keyframes tkBlack{0%{opacity:1}16%{opacity:0}100%{opacity:0}}'
+      +'animation:tkBlack 2.9s ease-in-out forwards;}'
+      /* topdown 船（像素化）＝擺在**飛行船的同一位置**（50%,50% of 視窗＝shipHit，讀成同一艘。
+         ⚠ image-rendering:pixelated：最近鄰放大＝大像素塊。 */
+      +'#takeoff .tk-ship{position:absolute;left:50%;top:50%;width:30%;max-width:210px;'
+      +'image-rendering:pixelated;transform-origin:50% 50%;'
+      +'filter:drop-shadow(0 10px 22px rgba(0,0,0,.5));'
+      +'animation:tkShip 2.9s cubic-bezier(.4,0,.3,1) forwards;}'
+      +'@keyframes tkBlack{0%{opacity:1}14%{opacity:0}72%{opacity:0}86%{opacity:1}100%{opacity:0}}'
+      /* 近到遠、topdown 轉正：rotateX 0(俯視) → 56(斜視＝航行角度)；船不淡出
+         （尾段被黑幕蓋住換成真船）。 */
       +'@keyframes tkShip{'
-      +'0%{opacity:0;transform:translate(-50%,-50%) rotateX(0deg) scale(1.15);}'
-      +'12%{opacity:1;transform:translate(-50%,-50%) rotateX(0deg) scale(1.1);}'
-      +'44%{opacity:1;transform:translate(-50%,-58%) rotateX(34deg) scale(.78);}'
-      +'60%{opacity:0;transform:translate(-50%,-64%) rotateX(52deg) scale(.62);}'
-      +'100%{opacity:0;transform:translate(-50%,-64%) rotateX(52deg) scale(.6);}}'
-      +'@keyframes tkFog{0%{opacity:0}30%{opacity:0}55%{opacity:.95}72%{opacity:.9}100%{opacity:0}}';
+      +'0%{transform:translate(-50%,-50%) rotateX(0deg) scale(1.02);}'
+      +'14%{transform:translate(-50%,-50%) rotateX(0deg) scale(1.0);}'
+      +'80%{transform:translate(-50%,-50%) rotateX(56deg) scale(.9);}'
+      +'100%{transform:translate(-50%,-50%) rotateX(56deg) scale(.9);}}';
     document.head.appendChild(st);
   }
-  const ov=document.createElement('div'); ov.id='takeoff';
-  ov.innerHTML='<img class="tk-ship" src="../resources/effects/ship_topdown.webp">'
-             + '<div class="tk-fog"></div><div class="tk-black"></div>';
-  document.body.appendChild(ov);
-  /* 畫布 zoom：起始放大 2.2（原點＝船的螢幕位置，地平線推出畫面外），
-     霧最濃那一刻（~1.65s）開始拉遠到 1（真 3/4 船隨之回到正常大小、地平線浮現）。 */
-  cv.style.transformOrigin='50% 76%';
-  cv.style.transition='none'; cv.style.transform='scale(2.2)'; void cv.offsetWidth;
-  setTimeout(()=>{ cv.style.transition='transform 1.15s cubic-bezier(.33,0,.2,1)';
-                   cv.style.transform='scale(1)'; }, 1650);
-  setTimeout(()=>{
-    try{ ov.remove(); }catch(_){}
-    cv.style.transition=''; cv.style.transform=''; cv.style.transformOrigin='';
-    takeoffPlaying=false;                             // 放行：世界恢復 update
-  }, 3050);
+  const start=()=>{
+    const ov=document.createElement('div'); ov.id='takeoff';
+    const img=tkPixURL ? '<img class="tk-ship" src="'+tkPixURL+'">' : '';
+    ov.innerHTML=img+'<div class="tk-black"></div>';
+    document.body.appendChild(ov);
+    /* 畫布 zoom 近→遠：起始放大 2.2（原點＝船位，地平線推出畫面＝topdown 錯覺），
+       掀開後一路拉遠到 1（地平線浮現、真 3/4 船回正常大小）。 */
+    cv.style.transformOrigin='50% 50%';   // ＝真飛行船的螢幕位置（shipHit）
+    cv.style.transition='none'; cv.style.transform='scale(2.2)'; void cv.offsetWidth;
+    setTimeout(()=>{ cv.style.transition='transform 1.9s cubic-bezier(.4,0,.25,1)';
+                     cv.style.transform='scale(1)'; }, 420);   // 黑幕掀開後開始拉遠
+    setTimeout(()=>{
+      try{ ov.remove(); }catch(_){}
+      cv.style.transition=''; cv.style.transform=''; cv.style.transformOrigin='';
+      takeoffPlaying=false;                           // 放行：世界恢復 update
+    }, 2950);
+  };
+  tkBuildPixel(start);
 }
 
 /* ⚠⚠ **音效全部 → 圖 → BGM，音效不載完不放行**（ver -430，Ray 指定的全域規則，
