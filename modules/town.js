@@ -1054,17 +1054,20 @@ function hintHide(){ const h=layer && layer.querySelector('#townHint'); if(h) h.
      `layoutKerberos` 解出來的（鐵律 7）。 */
 const DIR_ARROW={ up:'n', right:'e', down:'s', left:'w' };
 
-/* ══ 「回去」掛在哪一支箭（ver -405；**ver -787 改同向**，Ray：「從哪個方向來，就要
-   從哪個方向回去」）══
-   按 UP 進來就按 UP 回去、按 LEFT 進來就按 LEFT 回去（不再是反向）。
-   ⚠ **記的是「這一次是按哪個方向進來的」**（`backDir` ＝ 來時方向本身），
+/* ══ 「回去」掛在哪一支箭（ver -405，Ray：「左進右出，上進下出」＝來時方向的**反向**）══
+   往上走進去的地方往下退回來、往左走進去的往右退回來。
+   ⚠ **記的是「這一次是按哪個方向進來的」**（`backDir` ＝ 來時方向的反向），
      不是節點資料上的東西 —— 同一個地方可以從不同的路走到（日後多城時尤其），
      寫死在資料上一定會有一邊是反的。
    ⚠ 沒有記錄時（開城第一格、戰鬥交棒回來、讀檔）退回舊行為「掛在下」。
    ⚠ 這條**不論城鎮探索或戰鬥探索都適用**，之後所有移動地圖照辦（Ray 指定）——
      它是全域規則（收在 enter/exitsOf 一處），不寫死在每座城的資料上。
-   ⚠ 樞紐節點（plaza/north/east/west）用**寫死的四向出口**、不走 `back`，所以不受這條
-     影響：它們回 plaza 一律是既定的 down（那些節點的來時方向被末端佔著，同向落不下）。 */
+   ⚠ **兩套機制達成同一條規則**（ver -788）：
+     ① 純末端（只有 `back` 出口）＝ 靠這裡的 `backDir`（反向）；
+     ② 樞紐 sub-hub（寫死四向出口、無 `back`）＝ 母節點出口**直接硬掛在來時的反向槽**
+        （script/town.js 的資料，見那邊 -788 的註解）—— 上進的擺 down、左進的擺 right、
+        右進的擺 left；被佔的末端移到空出的 down。兩者都給「左進右出、上進下出」。 */
+const OPPOSITE = { up:'down', down:'up', left:'right', right:'left' };
 let pendingDir = null;   // go() 記下這一次按的方向，enter() 取用後清掉
 let backDir    = null;   // 「回去」該掛在哪一支箭
 
@@ -1459,11 +1462,10 @@ export function enter(id){
   /* ⚠ 上一個地點開出來的「下一步去哪」在這裡結算（ver -440，見 `resolveFavor`）——
      要在演任何東西之前，好感度是這一步的結果，不是這一段對白的結果。 */
   resolveFavor(id);
-  /* 「回去」該掛哪一支箭（ver -405；**ver -787 改同向**）：Ray：「從哪個方向來，就要
-     從哪個方向回去」——按 UP 進來就按 UP 回去（不再是反向 DOWN）。末端節點只有
-     `back` 出口、來時方向那一槽本來就空，同向能乾淨落位。走別的路徑進來（開城第一格、
+  /* 「回去」該掛哪一支箭（ver -405，Ray：「左進右出，上進下出」＝來時方向的**反向**）：
+     按 UP 進來按 DOWN 回去、按 LEFT 進來按 RIGHT 回去。走別的路徑進來（開城第一格、
      戰鬥交棒回來、讀檔）時 `pendingDir` 是空的 → `backDir` 歸零，退回「掛在下」。 */
-  backDir = pendingDir || null;
+  backDir = pendingDir ? (OPPOSITE[pendingDir] || null) : null;
   pendingDir = null;
   /* ⚠⚠ **換節點先收乾淨**（鐵律 8）：
        ① 還在播的臨時段落要中止 —— 不中止的話它會在新的地點上把上一段演完（實測過）；

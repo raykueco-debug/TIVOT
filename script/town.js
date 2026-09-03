@@ -433,7 +433,9 @@ export const TOWNS = {
            -371 那次是把兩張圖對調過，現在對回來了。 */
       oldtown: {
         bg:'Capital_Downtown', name:'帝都　舊街區',
-        exits:{ left:'gunstore', right:'guild', up:'dock', down:'square' },
+        /* ver -788：左進（square 左→oldtown）→右出（右回 square）。原本 down→square
+           違反「左進右出」，把 square 挪到 right、被佔的 guild 移到空出的 down。 */
+        exits:{ left:'gunstore', right:'square', up:'dock', down:'guild' },
         lines:[
           nou('cringe','這地方……好像很複雜。'),
           nou('surprise','啊，是要去保養武器嗎？'),
@@ -738,7 +740,9 @@ export const TOWNS = {
            留在舊街區的話後面那頓飯就沒頭沒尾。要改地方再說。 */
       uptown: {
         bg:'Capital_Uptown', name:'帝都　上街區',
-        exits:{ left:'grocery', right:'tavern', up:'inn', down:'square' },
+        /* ver -788：右進（square 右→uptown）→左出（左回 square）。square 挪到 left、
+           被佔的 grocery 移到空出的 down。 */
+        exits:{ left:'square', right:'tavern', up:'inn', down:'grocery' },
         lines:[
           /* 肚子叫：沒有台詞的一拍（立繪＋音效），停一秒自己走（§6.5）。 */
           { speaker:'NOUVELLE', text:'', auto:1000, se:'Se_Tummy',
@@ -1104,7 +1108,8 @@ export const TOWNS = {
       west: {
         bg:'Northport_west_BF', name:'北方泊地　西側',
         /* up＝Citymap 的空格 → ver -571 Ray 定案是**碼頭**（原入口圖 port_BF 的家）。 */
-        exits:{ up:'port', left:'gunstore', right:'guild', down:'entrance' },
+        /* ver -788：左進（entrance 左→west）→右出。entrance 挪到 right、guild 移到 down。 */
+        exits:{ up:'port', left:'gunstore', right:'entrance', down:'guild' },
         /* 城鎮戰的一場（ver -583）：走進來就打。⚠ `need` ＝城鎮戰開著、
            `flag` ＝這一格清掉了（打贏才記，同所有城鎮段落「演完才記」的規矩，
            所以打輸回頭再走一次還會遇到）。 */
@@ -1228,7 +1233,8 @@ export const TOWNS = {
       },
       east: {
         bg:'Northport_east_BF', name:'北方泊地　東側',
-        exits:{ left:'grocery', right:'tavern', up:'inn', down:'entrance' },
+        /* ver -788：右進（entrance 右→east）→左出。entrance 挪到 left、grocery 移到 down。 */
+        exits:{ left:'entrance', right:'tavern', up:'inn', down:'grocery' },
         /* 城鎮戰的一場（ver -583）：走進來就打。⚠ `need` ＝城鎮戰開著、
            `flag` ＝這一格清掉了（打贏才記，同所有城鎮段落「演完才記」的規矩，
            所以打輸回頭再走一次還會遇到）。 */
@@ -1788,9 +1794,11 @@ export const TOWNS = {
       north: { bg:'Shinier_North', name:'夏爾村　北側',
         exits:{ up:'lakeside', left:'chief', right:'altar', down:'plaza' } },
       west:  { bg:'Shinier_West', name:'夏爾村　西側',
-        exits:{ up:'wild', left:'workshop', right:'hunter', down:'plaza' } },
+        /* ver -788：左進（plaza 左→west）→右出。plaza 挪到 right、hunter 移到 down。 */
+        exits:{ up:'wild', left:'workshop', right:'plaza', down:'hunter' } },
       east:  { bg:'Shinier_East', name:'夏爾村　東側',
-        exits:{ up:'sorahome', left:'grocery', right:'restaurant', down:'plaza' } },
+        /* ver -788：右進（plaza 右→east）→左出。plaza 挪到 left、grocery 移到 down。 */
+        exits:{ up:'sorahome', left:'plaza', right:'restaurant', down:'grocery' } },
       /* ── 末端（北） ── */
       lakeside: { bg:'Shinier_Lakeside', name:'夏爾村　湖畔',   exits:{ back:'north' } },
       chief:    { bg:'Shinier_chiefhouse', name:'夏爾村　村長的家', exits:{ back:'north' },
