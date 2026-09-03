@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.03-755';
+export const VERSION = 'ver 2026.09.03-756';
 
 export const GAME_CONFIG = {
 
@@ -1683,15 +1683,12 @@ export const GAME_CONFIG = {
     /* ⚠⚠ `special:true`（ver -698，Ray：「城鎮偶有特殊戰（賞金獵人挑釁、抓賊等
        非戰鬥探索），戰敗就後送旅店。特殊戰原則上不可重覆挑戰、過了就沒了，
        所以沒有劇情 flag 問題」）—— 戰敗**一次就送旅店**（不計連敗、不回檔）。 */
-    /* ⚠⚠ `noEval`（ver -729，Ray：「帝都打賞金獵人時還沒有蕾娜評分」）——
-       這一場在**時序上**早於她開始評價：那時她還是「監察官」，站在對面看考核，
-       還沒有走到會在結算頁講評的位置。
-       ⚠ 不必用旗標擋：這一場**一輩子只打得到一次**（帝都公會那一段的插入戰），
-         而且就在那個時間點 —— 卡上一個靜態欄位就說完了（鐵律 1／9：
-         「沒有旗標可以答出誰插誰拔」的東西就不要做成旗標）。
-       ⚠ -670 拆掉的是**全域的開關**（`eval_renna` 旗標與 `EVAL_SKIP` 名單），
-         不是這種逐場的特例 —— 特例本來就該寫在卡上。 */
-    guild_hunter: { enemy:'guild_hunter', special:true, noEval:true, noSaint:true, noPartner:true },
+    /* ⚠⚠ `noEvalBeforeStage:2`（ver -729 原是 noEval:true；**-756 Ray 改**：
+       「帝都賞金獵人戰如在 stage2 才打，就要放蕾娜評價」）——
+       stage 0/1 打＝她還是「監察官」，不評（-729 的理由）；玩家拖到出航之後
+       （stage2+）才回頭打，她已經在結算頁講評了，這一場照評。
+       判定在 inspector.pickEvaluator（問結算那一刻的 stage，唯一讀點）。 */
+    guild_hunter: { enemy:'guild_hunter', special:true, noEvalBeforeStage:2, noSaint:true, noPartner:true },
     /* 北方泊地的城鎮戰（ver -583）：每一格走進去打一場，共用這一張佔位卡。
        ⚠ **不禁聖徒化／搭檔技**：Ray 沒說要禁（禁了要明寫 noSaint/noPartner）。
        ⚠ 打輸走一般流程 —— 城鎮插入戰的敗北會被抬回這座城的旅店（§6.5.2 那張表）。

@@ -509,7 +509,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -755';
+const FLIGHT_VER = 'ver -756';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -7453,6 +7453,10 @@ function updateEnemy(dt,now){
          到時把判準改成「旗標已立而未打完」（加回 flagOn(S.flag)）。 */
     if(SCRIPTED_ENCOUNTERS.some(S=>!flagOn(S.done))) return;
     if(scriptPending) return;
+    /* ══ 船不動就不生怪（ver -756，Ray：「飛行地圖若不動就不生怪」）══
+       停著＝看地圖／掛機／整理，不該被怪撞。計時器**凍著**（不扣 dt），
+       一開船才繼續倒數。⚠ 0.06 ＝螺旋槳／環境音那條「在動」的同一個門檻。 */
+    if(Math.abs(cam.speed)<=0.06) return;
     enemyTimer-=dt;
     if(enemyTimer<=0) spawnEnemy();
     return;
@@ -7939,6 +7943,25 @@ function flightAudio(on){
 /* ══ stage2 出航對白（ver -741，Ray 的稿）══
    「蕾：事不宜遲，直接回聖王廳去吧。（地圖彈出，地標。）蕾：看到帝都就表示到了。」
    旗標演完才記（中途重整會重播 —— 城鎮段落同一個慣例）。 */
+/* ══ 大地圖上的話框（ver -756）══ 「大地圖」＝**開啟的地圖畫面**（Ray 定義）。
+   地圖是一層 DOM（#mapView）蓋在 canvas 上，drawTalk 畫不到那裡 ——
+   所以這種「地圖上要講一句話」的框自己是一塊 DOM，疊在地圖下緣。
+   樣式仿 canvas 對話框（金框、名字欄）；pointer-events:none ＝ 不擋平移縮放。 */
+let mapSayEl=null;
+function mapSayShow(name, text){
+  mapSayHide();
+  const mv=document.getElementById('mapView'); if(!mv) return;
+  const el=document.createElement('div');
+  el.style.cssText='position:absolute;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));'
+    +'transform:translateX(-50%);max-width:82%;min-width:220px;pointer-events:none;z-index:5;'
+    +'background:rgba(10,9,16,.88);border:1px solid #c9a227;border-radius:10px;'
+    +'padding:10px 16px 12px;color:#e8e0cd;font-size:15px;line-height:1.7;letter-spacing:1px;';
+  el.innerHTML='<div style="color:#d4a94a;font-size:12px;letter-spacing:2px;margin-bottom:2px;">'+name+'</div>'+text;
+  mv.appendChild(el);
+  mapSayEl=el;
+}
+function mapSayHide(){ if(mapSayEl){ try{ mapSayEl.remove(); }catch(_){} mapSayEl=null; } }
+
 function departureTalkMaybe(){
   if(!flagOn('np_leave_ok') || flagOn('np_depart_talk')) return;
   if(sayQueue || mapOpen) return;
@@ -7949,15 +7972,14 @@ function departureTalkMaybe(){
        要移過去然後標記」）—— 座標＝SETTLEMENTS 的聖王廳 (934,606)。 */
     setMapMark(934, 606, '聖王廳');
     setTimeout(()=>mapPanTo(934, 606, 1100), 350);
+    /* ══ 航向指引（ver -753；**-756 依 Ray 的定義搬位**：「大地圖＝開啟地圖畫面」
+       —— 這句話要出現在**地圖畫面上**，不是關掉地圖之後）══
+       蕾娜的無立繪話框疊在地圖下緣，地圖關掉就收（同 mapClosedCb 那一刻）。 */
+    mapSayShow('蕾娜', '往東南方一路飛回去。');
     mapClosedCb=()=>{
+      mapSayHide();
       say([{ who:'renna/smile', text:'看到帝都就表示到了。' }],
-          performance.now(), { done:()=>{
-        addFlag('np_depart_talk');
-        /* 航向指引（ver -753，Ray：「在大地圖的時候插一個蕾娜無立繪話框
-           『往東南方一路飛回去。』」）—— 前一段收掉、立繪滑出之後才出，
-           who 用 renna_v（無立繪條目）＝只有名字框。 */
-        setTimeout(()=>{ if(!sayQueue) say([{ who:'renna_v', text:'往東南方一路飛回去。' }], performance.now()); }, 900);
-      }});
+          performance.now(), { done:()=>addFlag('np_depart_talk') });
     };
   }});
 }

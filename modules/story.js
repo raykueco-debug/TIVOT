@@ -2357,13 +2357,24 @@ function renderLine(){
   if(persistFaded){
     /* 黑幕期間先把對話框藏起來（立繪本來就還沒上）—— 不藏的話上一句的框會留在黑幕上。 */
     const b=$('storyBubble'); if(b) b.style.visibility='hidden';
+    /* ⚠⚠ **情境卡也等黑幕掀完才上**（ver -756，Ray：「璐娜莉亞登場時會被加兩層
+       黑遮罩，一層就好」）—— 帶 card 的那一拍常常同時在收插圖／換背景（走黑幕），
+       上面那段把卡立刻 `add('on')`，於是卡的半透黑罩疊在全黑的 `#storyFade` 上
+       （實測兩層同時掛了 1.35 秒）。黑幕蓋著時先收下來，掀開那一刻（reveal）再上
+       —— 玩家看到的永遠只有一層。 */
+    { const c=$('storyCard');
+      if(c && line.card) c.classList.remove('on'); }
     /* ⚠⚠ **這一拍還沒演的部分要記下來**（ver -430，Ray：「對話點擊太快（或者點到箭頭）
        會有立繪殘留」）。`reveal` 裡面才是「誰上台、誰下台、誰高亮」——
        它被延後了，而玩家在黑幕那一秒是**點得動**的（那時既沒在打字也沒在等 delay），
        於是 `advance()` 直接跳到下一句、`renderLine` 的 `stopFx()` 把這個計時器清掉：
        **這一拍的立繪指令整段沒有執行**。上一個人於是留在台上（`shown[who]` 還是舊的）。
-       正解與「還在打字就先補完」是同一條規矩：**點下去先把這一拍演完，不推進**。 */
-    pendingReveal = reveal;
+       正解與「還在打字就先補完」是同一條規矩：**點下去先把這一拍演完，不推進**。
+       ⚠ 卡的重上包在這一層（`reveal` 是 const，不能重指）—— flushReveal 補演時
+         卡也跟著回來，不會漏。 */
+    pendingReveal = ()=>{ const c=$('storyCard');
+      if(c && line.card) c.classList.add('on');
+      reveal(); };
     fxTimers.push(setTimeout(flushReveal, CG_FADE_MS*2 + 140));
   }else reveal();
 }

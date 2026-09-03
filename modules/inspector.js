@@ -211,6 +211,9 @@ function getInspector(bossFight){
 function pickEvaluator(rankKey, battleId){
   const bt = (GAME_CONFIG.battles||{})[battleId] || {};
   if(bt.noEval) return null;                                 // 這一場不評（特例，寫在卡上）
+  /* `noEvalBeforeStage:N`（ver -756，Ray：「帝都賞金獵人戰如在 stage2 才打，
+     就要放蕾娜評價」）＝那一章之前不評、到了就評 —— 問**結算那一刻**的 stage。 */
+  if(bt.noEvalBeforeStage!=null && prog.getStage() < bt.noEvalBeforeStage) return null;
   const who = SPEAKERS[EVALUATOR] || {};
   /* ⚠ **某一場專屬的台詞優先**（ver -597）：`evaluation.js` 的 `BY_BATTLE`
      查得到這一場就用它，查不到才回去走依章節／好感的通用表。
