@@ -96,9 +96,20 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll){
   const modLv  = Math.min(prog.weaponMod(state.equippedWeapon), WM.statLv || 99);
   const modMul = 1 + modLv * (WM.perLv || 0);
   const scale = ((dmgScale==null) ? 1 : dmgScale) * modMul;
-  const hitR  = (hitRate==null) ? 1 : Math.max(0, Math.min(1, hitRate));
-  /* 第 k 發中不中。⚠ `k===0` 一定中（見上）。 */
-  const hits = (k)=> (hitR>=1 || k===0) ? true : (Math.random() < hitR);
+  /* ══ 武器抗性（ver -760，Ray：「％數代表對該副武器產生的額外迴避率，但即使
+     全 miss 也會清掉延時跟主動攻擊」）══ 卡上 `weaponResist`，id 優先於類別
+     （同 weaponSound 慣例）。每一發的命中 ×(1−r)。
+     ⚠ 「全 miss 也清延時／主動攻擊」不用另寫：紅點的收點在 resolveThreat、
+       反擊硬直在 staggerOnCounter —— 兩者本來就不看打沒打中。
+     ⚠ 有抗性時「第一發必中」與「hitR≥1 不擲骰」都不成立（不然單發武器吃不到抗性）。 */
+  const _rz = state.enemyWeaponResist
+    && (state.enemyWeaponResist[state.equippedWeapon]!=null
+          ? state.enemyWeaponResist[state.equippedWeapon]
+          : state.enemyWeaponResist[w.cat]);
+  const resist = Math.max(0, Math.min(0.95, +_rz || 0));
+  const hitR  = ((hitRate==null) ? 1 : Math.max(0, Math.min(1, hitRate))) * (1-resist);
+  /* 第 k 發中不中。⚠ `k===0` 一定中（見上）—— **無抗性時**；有抗性一律擲。 */
+  const hits = (k)=> (resist<=0 && (hitR>=1 || k===0)) ? true : (Math.random() < hitR);
   const MISS = (L.battle && L.battle.miss) || 'MISS';
   /* `dmgRoll`（ver -708）：這一發打幾點從清單裡等機率抽（散彈黃圈＝`[0,1]`）。
      ⚠ 抽到 0 **不是 miss** —— 照樣跳一個「0」出來（Ray：「不要全都 1 很沒感」）。
@@ -140,9 +151,17 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll){
   if(w.vfx==='single'){
     // 狙擊：單發，跳一個較大的數字；暴擊則轉紅並前綴「暴擊」
     const base=Math.max(1, Math.round(w.hits*w.dmgPerHit*scale));
-    const h=critHit(base);
-    playSe();                      // 狙擊：一發（單發武器的第一發必中，所以不會 miss）
+    playSe();                      // 狙擊：一發（無抗性時第一發必中；有抗性要擲）
     hap.shot();
+    /* 武器抗性（ver -760）：單發武器被迴避＝這一發整個 MISS——開火照記
+       （counterFired＝「開火了」），紅點的收點與硬直在 resolveThreat 那端不受影響。 */
+    if(!hits(0)){
+      api.floatDmg(MISS, '46%','32%', false, 'snipernum');
+      addCounter(0); onCounterFired();
+      flushPending();
+      return;
+    }
+    const h=critHit(base);
     api.enemyDamage(h.dmg, true, true, 'counter');   // 靜默扣血（含 overkill/擊殺判定）
     addCounter(h.dmg); onCounterFired();
     api.floatDmg((h.crit?L.battle.crit:'')+h.dmg, '46%','32%', h.crit, 'snipernum');

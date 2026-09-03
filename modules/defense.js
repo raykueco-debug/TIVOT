@@ -94,10 +94,30 @@ export function scheduleUlt(firstDelayMs){
     if(state.enemyNoStack && state.threats && state.threats.length){ scheduleUlt(300); return; }
     // cut-in／清盤後緩衝期內敵不發動，等窗口過了再排
     if(Date.now() < state.enemyAtkSuppressUntil){ scheduleUlt(state.enemyAtkSuppressUntil - Date.now() + 50); return; }
-    startCharge();
+    /* ══ 大絕（ver -760，Ray 的敵攻四態定義：延時／攻擊（一般圈）／失誤／大絕）══
+       卡上 `ult:{ hp:30, act:'ring4' }` ＝ hp 掉到 30% 以下起，這一次攻擊改走
+       具名行為（ULT_ACTS 那張表）；沒到門檻＝照常出一般圈（startCharge）。
+       ⚠ 判在**發動那一刻**：打到門檻下的下一次排程自然切換，不用另掛監聽。 */
+    const ua=state.enemyUltAct;
+    if(ua && ULT_ACTS[ua.act] && state.enemyHp <= state.enemyMax*(ua.hp/100)){
+      ULT_ACTS[ua.act]();
+    }else startCharge();
     scheduleUlt();          // 立即排下一個 → 錯開生成、可累積多個
   }, delay);
 }
+/* ══ 大絕的具名行為表（ver -760）══ 資料寫不了函式（同 tutorial 的 GATE_ACTIONS），
+   卡上寫名字、這張表翻成呼叫 —— 加新行為就加一列，不要在發動端各自翻譯（鐵律 7）。 */
+const ULT_ACTS = {
+  /* 同時四圈（索菈娜的實驗卡，Ray：「她 hp30% 以下時會同時出現四個攻擊圈」）。
+     ⚠ 與 startCharge 的 ULT_SHOTS（先後出、隔 gap）不同：這四顆**同一瞬間**全上。
+     ⚠ noStack 的守門在排程那一層（場上有圈就重排）—— 走到這裡場上一定是空的，
+       所以四圈不會與殘圈疊出第五顆。 */
+  ring4(){
+    for(let i=0;i<4;i++) spawnThreat();
+    $('chargeWarn').classList.add('on');
+    if(!state.threatTick){ state.threatTick=setInterval(updateThreats,50); }
+  },
+};
 // 生成一次大絕。Boss 可一次先後出多個點（ULT_SHOTS），每發間隔 ULT_GAP_MS。
 export function startCharge(){
   spawnThreat();                     // 第 1 發立即

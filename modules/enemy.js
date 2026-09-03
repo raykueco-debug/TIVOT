@@ -364,6 +364,7 @@ export function setEnemy(key){
   /* 這一隻的「打起來的手感」欄位（ver -423 的敵人卡）。⚠ 一律**每次換敵都寫**，
      沒寫要寫回預設 —— setEnemy 是連戰換敵也會走的（同下面那組絕對值的理由）。 */
   state.enemyResist    = en.resist || null;
+  state.enemyWeaponResist = en.weaponResist || null;   // 武器抗性（ver -760，額外迴避率）
   state.enemyWeak      = en.weak || null;
   state.enemyDualBonus = en.dualBonus || 0;
   state.enemyNoStack   = !!en.noStack;
@@ -373,6 +374,8 @@ export function setEnemy(key){
      延時計時也不會歸零」）。卡上沒寫＝1（會硬直）。判定在 defense 的反擊分支。 */
   state.enemyCounterStagger = (en.counterStagger!=null) ? en.counterStagger : 1;
   const u = en.ult || {};                        // 3.3：Boss 專屬大絕參數（缺欄位＝一般怪預設）
+  /* 大絕的 hp 門檻行為（ver -760）：`ult:{ hp:30, act:'ring4' }` —— 見 state 的說明。 */
+  state.enemyUltAct = (u.act!=null) ? { hp:(u.hp||0), act:u.act } : null;
   state.ULT_SHOTS  = u.shots!=null ? u.shots : 1;
   state.ULT_GAP_MS = u.gapMs!=null ? u.gapMs : 0;
   /* 發動頻率。⚠ 卡上的 `ultEvery:[3,5]`（**秒**）是最好讀的寫法（ver -423），

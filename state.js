@@ -105,6 +105,17 @@ export const state = {
   enemyWeak: null,          // { counter:1.00 }：**增傷**的成數，依傷害來源
   enemyDualBonus: 0,        // 破防（雙槍窗口）期間的增傷成數
   enemyNoStack: false,      // 紅點不疊加（場上同時只有一個）
+  /* 武器抗性（ver -760，Ray：「％數代表對該副武器產生的額外迴避率，但即使全
+     miss 也會清掉延時跟主動攻擊」）：{ '<武器id或類別>':0.35 } —— id 優先於類別
+     （同 weaponSound 慣例）。讀取在 weapon.weaponCounter（每一發命中 ×(1−r)）；
+     「全 miss 也清延時／主動攻擊」本來就成立 —— resolveThreat 的收點與反擊硬直
+     不看打沒打中。⚠ 與 `enemyResist`（減傷）是兩件事，不要混用。 */
+  enemyWeaponResist: null,
+  /* 大絕（ver -760，Ray 的敵攻四態：延時／攻擊（一般圈）／失誤／**大絕**）：
+     hp% 以下的特定行為，卡上寫在 ult 裡（`ult:{ hp:30, act:'ring4' }`）——
+     行為名對 defense 的 ULT_ACTS 那張表（同 GATE_ACTIONS 的理由：資料寫不了函式）。
+     沒到門檻＝照常出一般圈。 */
+  enemyUltAct: null,
   enemyCounterBuff: null,   // { mult, seconds }：被反擊後玩家的普攻增益
   enemyCounterStun: 0,      // 被反擊後幾秒才發起下一次主動攻擊
   enemyCounterStagger: 1,   // 反擊硬直（ver -495）：1＝被反擊時延時計時歸零、0＝不歸零。卡上沒寫＝1

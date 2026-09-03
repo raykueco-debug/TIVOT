@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.03-759';
+export const VERSION = 'ver 2026.09.03-760';
 
 export const GAME_CONFIG = {
 
@@ -1260,6 +1260,12 @@ export const GAME_CONFIG = {
       hp:300,
       attack:22,                     // 巨型聖徒 45 的一半
       atkInterval:3.33,
+      /* ══ 大絕（ver -760，Ray 的敵攻四態實驗卡：「她 hp30% 以下時會同時出現
+         四個攻擊圈」）══ hp 門檻＋具名行為（defense 的 ULT_ACTS）。
+         ⚠ `noStack`＝一**波**清完才有下一波（不寫的話下一次排程會在殘圈上再疊
+           四顆，實測疊到 8）—— 這是我補的節奏判斷，要改掉直接拔。 */
+      ult:{ hp:30, act:'ring4' },
+      noStack:true,
       sound:{ ult:'em_slash', delay:'em_dagger', wrong:'em_slash' },
       delayPenalty:{ seconds:4 },    // 快一秒（巨型聖徒是 5）
       special:[],
@@ -1335,7 +1341,20 @@ export const GAME_CONFIG = {
        ⚠ 這一筆是「**敵人資訊標準卡**」的第一個實例（Ray 交稿的格式，見
          `script/SCRIPT_FORMAT.md` 的「敵人卡」一節）。卡上有的欄位這裡都要有，
          沒實作的（抗性/弱點）也**照樣寫進資料**、標明未實作 —— 資料先齊，
-         程式後補；不要因為還沒做就把欄位丟掉（丟掉的下場是下次補做時沒人記得。） */
+         程式後補；不要因為還沒做就把欄位丟掉（丟掉的下場是下次補做時沒人記得。）
+       ══⚠⚠ 敵攻四態（ver -760，Ray 定案的卡格式）══
+         · 延時＝`delayPenalty`　· 攻擊（一般圈）＝`atkInterval`/`ultEvery` 排程出的
+           蓄力圈　· 失誤（點錯）＝`wrongPenalty`
+         · **大絕**＝hp% 以下的特定行為：`ult:{ hp:30, act:'ring4' }` ——
+           行為名對 defense 的 ULT_ACTS 那張表（資料寫不了函式，同 GATE_ACTIONS）；
+           沒到門檻照常出一般圈。第一個實驗卡＝man_sorana（hp30% 同時四圈）。
+       ══⚠⚠ 武器抗性（ver -760，Ray：「％數代表對該副武器產生的額外迴避率，
+         但即使全 miss 也會清掉延時跟主動攻擊」）══
+         `weaponResist:{ '<武器id或類別>':0.35 }` —— id 優先於類別（同 weaponSound
+         慣例）；每一發反擊的命中 ×(1−r)（weapon.weaponCounter 唯一讀點）。
+         「全 miss 也清延時／主動攻擊」本來就成立：紅點的收點在 resolveThreat、
+         反擊硬直在 staggerOnCounter，兩者都不看打沒打中。
+         ⚠ 與 `resist`（減傷，依傷害來源）是**兩個欄位兩件事**，不要混用。 */
     /* ══⚠⚠ 北方泊地城鎮戰的雜怪 —— **四隻隨機出，一隻一張卡**（ver -596，Ray：
        「城鎮戰由這幾隻怪隨機出，數值都一樣，但是要各別做敵人卡方便我修改」）══
        四張卡現在的數值**完全一樣**（hp 300／attack 10／攻擊模式抄訓練用聖徒／
