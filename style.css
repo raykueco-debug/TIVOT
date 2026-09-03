@@ -628,16 +628,16 @@
     mix-blend-mode:screen;opacity:0;}
   /* ⚠⚠ 節奏 ver -764 整個反過來（Ray：「闔起的速度太慢，而且不自然，最好像
      the house of the dead 那種感覺，咬下的瞬間就開始淡出，完全咬合時剛好消失」）：
-     兩排牙**滿亮登場**（不淡入）、大行程加速衝向咬合線（ease-in＝越咬越快），
+     兩排牙**滿亮登場**（不淡入）、加速衝向咬合線（ease-in＝越咬越快；開幅 ver -765 由 ±72% 收到 ±38%，Ray：「開幅不要那麼大」），
      一路淡出 —— translateY 歸零與 opacity 歸零**同一格**（完全咬合＝剛好消失）。
      全長 0.3 秒，快、狠、不停留。 */
   .fx-bitei .up{clip-path:inset(0 0 50% 0);animation:biteUp .3s cubic-bezier(.65,0,1,1) forwards;}
   .fx-bitei .dn{clip-path:inset(50% 0 0 0);animation:biteDn .3s cubic-bezier(.65,0,1,1) forwards;}
   @keyframes biteUp{
-    0%  {opacity:1;transform:translateY(-72%);}
+    0%  {opacity:1;transform:translateY(-38%);}
     100%{opacity:0;transform:translateY(0);}}
   @keyframes biteDn{
-    0%  {opacity:1;transform:translateY(72%);}
+    0%  {opacity:1;transform:translateY(38%);}
     100%{opacity:0;transform:translateY(0);}}
   /* 彈痕：玻璃被擊碎（中心孔＋放射狀裂紋＋環裂），隨機位置。細節用內嵌 SVG 畫。 */
   .fx-bullet{width:120px;height:120px;margin:-60px 0 0 -60px;opacity:0;
