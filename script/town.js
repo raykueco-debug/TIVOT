@@ -1820,7 +1820,7 @@ export const TOWNS = {
           { speaker:'NARRATION', text:'工坊裡的工匠聽完來意，瞥了一眼湖的方向，點了點頭。' },
           { speaker:'NARRATION', text:'（明天一早，他會去看舵。）' },
         ] } ] },
-      hunter:   { bg:'Shinier_Hunter', bgPending:true,   name:'夏爾村　獵人小屋', exits:{ back:'west' } },
+      hunter:   { bg:'Shinier_huntercabin',   name:'夏爾村　獵人小屋', exits:{ back:'west' } },   // ver -787：獵人小屋圖已交（day/dd/night；bg 名對齊交件的 huntercabin）
       /* ── 末端（東） ── */
       sorahome: { bg:'Shinier_soranahouse', name:'夏爾村　索菈娜的家', exits:{ back:'east' },
         /* ══ 索拉娜的家＝旅店（ver -786，Ray：「索拉娜的家就是旅店，功能一樣」）══

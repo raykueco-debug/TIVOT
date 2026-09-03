@@ -225,6 +225,12 @@ export function enemyImage(en){
      「已淨化」（`i18n` 的 `result.winSubBy`）—— 同一格 `kind` 兩種用途，
      各查各的表，不要為了對齊演出而去改副標。 */
 const PURIFY_KINDS = { harm:1, slay:1 };
+/* ⚠⚠ **登場特效比淨化死法多一類：船（ver -787，Ray：「每一個船戰的敵人都會有出場
+   特效，每次都要播」）**。降臨（rise＋震動＋衝擊波）與淨化（死亡散白光）本來共用
+   `PURIFY_KINDS`，但 Ray 要**所有船戰敵人**都有登場震動衝擊波 —— 空賊船 `kind:'ship'`
+   不是禍魘（死掉不該散白光），所以只把它加進**登場**這一類，**淨化死法維持
+   harm/slay**。羽蛇／蜈蚣是 `harm`，本來就在登場類裡（＝「每次都播」已成立）。 */
+const ENTRANCE_KINDS = { harm:1, slay:1, ship:1 };
 function isPurify(){
   const en = GAME_CONFIG.enemies[state.currentEnemyKey];
   return !!(en && PURIFY_KINDS[en.kind]);
@@ -294,10 +300,10 @@ export function loadEnemyPortrait(en){
       eImg.removeEventListener('animationend', off);
       eImg.classList.remove('enemy-rise');
     }); };
-  /* ⚠ 不是禍魘就不演降臨（ver -657）：立繪載到就直接在那裡。
-     ⚠ 判定用**傳進來的這張卡**不是 `isHarm()`：`setEnemy` 在寫
+  /* ⚠ 不在登場類就不演降臨（ver -657；-787 登場類含 ship）：立繪載到就直接在那裡。
+     ⚠ 判定用**傳進來的這張卡**不是查 state：`setEnemy` 在寫
        `state.currentEnemyKey` 之前就可能叫到這裡，問 state 會問到上一隻。 */
-  if(!PURIFY_KINDS[en && en.kind]) return void (eImg.src = enemyImage(en));
+  if(!ENTRANCE_KINDS[en && en.kind]) return void (eImg.src = enemyImage(en));
   const arm=()=>{ eImg.onload=null; clearTimeout(riseT); riseT=setTimeout(rise, RISE_DELAY_MS); };
   eImg.onload = arm;
   eImg.src = enemyImage(en);
