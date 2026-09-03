@@ -1745,7 +1745,12 @@ export const TOWNS = {
          旗 `shinier_leave_ok` 由修舵那一段劇情立，日後接大地圖）。 */
       plaza: { bg:'Shinier_Plaza', name:'夏爾村　剝製廣場',
         exits:{ up:'north', left:'west', right:'east' },
-        sail:{ flag:'shinier_leave_ok', blocked:'（舵還沒修好，現在還離不開夏爾村。）' },
+        /* ⚠ S5 出不了港：`shinier_leave_ok` 由「修舵」那一段劇情立（稿還沒到，所以
+           現在誰都沒插＝一律擋，正是 Ray 要的「劇情船還沒修好」）。⚠ `blocked` 是
+           **行物件陣列**（走 playAdhoc）不是字串——字串會在 `.map` 崩。NARRATION＝旁白，
+           名字欄空（主角自己的念頭）。 */
+        sail:{ flag:'shinier_leave_ok', blocked:[
+          { speaker:'NARRATION', text:'（舵還沒修好，現在還離不開夏爾村。）' } ] },
         /* ══ 抵達（ver -772，Ray 交稿）══ 湖上甲板 thenTown 進來的第一段。
            站位：索菈娜／安雅本位右，蕾娜整幕改左（同湖上甲板，§6.5）。
            ⚠ 最後一句稿上標 `Sorana_SI_think` 但說話的是**蕾娜** —— 判讀為筆誤，

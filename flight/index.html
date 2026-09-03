@@ -512,7 +512,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -783';
+const FLIGHT_VER = 'ver -784';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -10691,11 +10691,12 @@ function loop(now){
         const zeta=0.62, wn=7.0, wd=wn*Math.sqrt(1-zeta*zeta);
         e=1 - Math.exp(-zeta*wn*t)*(Math.cos(wd*t) + (zeta*wn/wd)*Math.sin(wd*t));
       }else if(altTween.ease==='dropbob'){
-        /* 降落（ver -783，Ray：「先下上晃一下再下降」）：前 22% 小幅阻尼擺盪
-           （sin 正相＝alt 先下後上，因為 to<from）→ 之後加速下降。 */
+        /* 降落（ver -783；-784 修方向）：前 22% 小幅阻尼擺盪（sin 正相＝alt 先下
+           後上，因 to<from）→ 之後**先快後慢**下降（Ray：「降落則相反」＝與升空的
+           先慢後快相反＝減速煞停 ease-out）。 */
         const T=0.22;
         if(t<T){ const u=t/T; e=0.06*Math.sin(2*Math.PI*u)*(1-u); }
-        else{ const u=(t-T)/(1-T); e=u*u; }
+        else{ const u=(t-T)/(1-T); e=1-(1-u)*(1-u); }
       }else if(altTween.easeIn){ e=t*t;                  // 加速降（退路）
       }else{ e=1-(1-t)*(1-t); }                          // 減速升（退路）
       cam.alt=altTween.from+(altTween.to-altTween.from)*e;
