@@ -613,19 +613,37 @@
      咬合線相咬。齒形＝clip-path 鋸齒（尖端 96~100% 深，夠尖）。
      ⚠ 位移與旋轉走 CSS 變數（--ty/--rot，JS 逐次塞）：keyframes 的 transform 會把
        inline 的整個蓋掉 —— 舊版就是這樣，rotate 從來沒生效過。 */
-  .fx-bite{width:150px;height:34px;opacity:0;
-    background:linear-gradient(rgba(175,0,0,.95), rgba(105,0,0,.9));
-    filter:drop-shadow(0 0 3px rgba(80,0,0,.8));
-    animation:biteMark .5s ease-out forwards;}
-  .fx-bite-up{clip-path:polygon(0 0,100% 0,100% 28%,93% 100%,86% 30%,79% 96%,72% 28%,
-    64% 100%,57% 30%,50% 96%,43% 28%,36% 100%,29% 30%,21% 96%,14% 28%,7% 100%,0 28%);}
-  .fx-bite-dn{clip-path:polygon(0 100%,100% 100%,100% 72%,93% 0,86% 70%,79% 4%,72% 72%,
-    64% 0,57% 70%,50% 4%,43% 72%,36% 0,29% 70%,21% 4%,14% 72%,7% 0,0 72%);}
-  @keyframes biteMark{
-    0%{opacity:0;transform:translate(-50%,var(--ty,-50%)) rotate(var(--rot,0deg)) scale(.7)}
-    25%{opacity:1;transform:translate(-50%,var(--ty,-50%)) rotate(var(--rot,0deg)) scale(1.05)}
-    45%{transform:translate(-50%,var(--ty,-50%)) rotate(var(--rot,0deg)) scale(1)}
-    100%{opacity:0;transform:translate(-50%,var(--ty,-50%)) rotate(var(--rot,0deg)) scale(1)}}
+  /* ══ 咬痕（ver -761，Ray 交件 ef_bite ＋「受擊時呈咬下效果然後淡出，最好用
+     變形的」）══ -745 的程序鋸齒版退役，改用他的圖：**同一張圖切上下兩半**
+     （clip-path），上顎從上、下顎從下**快速閉合**（transform，合成器友善）→
+     咬進去過一點（衝擊）→ 停一拍 → 淡出。
+     ⚠ 圖是**黑底紅光**不是去背 —— 一定要 `mix-blend-mode:screen`（黑自動變
+       透明、紅光疊加），直接貼會是一塊黑板。
+     ⚠ 旋轉／縮放放在**外層**（--rot/--sc），keyframes 只動兩半的 translateY ——
+       keyframes 會蓋掉同元素的 inline transform（-745 踩過的坑）。 */
+  .fx-bitei{width:264px;height:176px;margin:-88px 0 0 -132px;pointer-events:none;
+    transform:rotate(var(--rot,0deg)) scale(var(--sc,1));}
+  .fx-bitei i{position:absolute;inset:0;
+    background:url('resources/effects/ef_bite.webp') center/100% 100% no-repeat;
+    mix-blend-mode:screen;opacity:0;}
+  .fx-bitei .up{clip-path:inset(0 0 50% 0);animation:biteUp .62s cubic-bezier(.5,0,.6,1) forwards;}
+  .fx-bitei .dn{clip-path:inset(50% 0 0 0);animation:biteDn .62s cubic-bezier(.5,0,.6,1) forwards;}
+  @keyframes biteUp{
+    0%  {opacity:0;transform:translateY(-46%);}
+    8%  {opacity:1;}
+    22% {transform:translateY(0);}        /* 咬合：前 22% 快速閉上 */
+    30% {transform:translateY(2.2%);}     /* 咬進去過一點＝衝擊 */
+    40% {transform:translateY(0);opacity:1;}
+    68% {opacity:1;}
+    100%{opacity:0;transform:translateY(0);}}
+  @keyframes biteDn{
+    0%  {opacity:0;transform:translateY(46%);}
+    8%  {opacity:1;}
+    22% {transform:translateY(0);}
+    30% {transform:translateY(-2.2%);}
+    40% {transform:translateY(0);opacity:1;}
+    68% {opacity:1;}
+    100%{opacity:0;transform:translateY(0);}}
   /* 彈痕：玻璃被擊碎（中心孔＋放射狀裂紋＋環裂），隨機位置。細節用內嵌 SVG 畫。 */
   .fx-bullet{width:120px;height:120px;margin:-60px 0 0 -60px;opacity:0;
     animation:bulletHole .5s ease-out forwards;}

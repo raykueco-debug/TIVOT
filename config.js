@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.03-760';
+export const VERSION = 'ver 2026.09.03-761';
 
 export const GAME_CONFIG = {
 
@@ -2714,6 +2714,9 @@ export const ASSETS = {
   se_sleep:          "resources/audio/se/Se_sleep.mp3",
   // 聖徒化發動音效
   //  ⚠ 素材「內容」更新但檔名不變時,在路徑加/升 ?v=N 強制手機重抓(HTTP 快取以 URL 為鍵)。
+/* 咬痕特效圖（ver -761，Ray 交件）：CSS 背景用同一路徑 —— 這裡登記只為了
+     進開機預載批把 HTTP 快取暖起來，第一口咬下去才不會白框。 */
+  ef_bite: "resources/effects/ef_bite.webp",
   sfx_saint:         "resources/audio/se/se_saint_install.m4a?v=3",
 
   // 完美防禦（完防）合成替代音（一般武器；散彈完防維持自己的槍聲）

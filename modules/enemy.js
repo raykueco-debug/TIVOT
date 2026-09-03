@@ -100,20 +100,17 @@ export function spawnBlood(randomAngle){
 /* 牙印（ver -745 改，Ray：「上下兩道，尖一點」）：上顎＋下顎各一排尖齒，
    同一個中心相對而咬。齒形在 CSS（.fx-bite-up/.fx-bite-dn 的 clip-path 鋸齒）。 */
 export function spawnBite(){
-  const cx=(30+Math.random()*40), cy=(38+Math.random()*22);
-  const rot=((Math.random()*30)-15).toFixed(1);
-  for(const side of ['up','dn']){
-    const d=document.createElement('div');
-    d.className='fx fx-bite fx-bite-'+side;
-    d.style.left=cx+'%';
-    d.style.top =cy+'%';
-    /* 位移與旋轉交給 CSS 變數（見 style.css 的說明：keyframes 會蓋掉 inline
-       transform）。origin 釘在咬合線上，兩排齒繞同一條線轉。 */
-    d.style.setProperty('--ty', side==='up' ? '-100%' : '0%');
-    d.style.setProperty('--rot', rot+'deg');
-    d.style.transformOrigin='50% '+(side==='up'?'100%':'0%');
-    addFx(d,560);
-  }
+  /* ver -761：改用 Ray 交件的 ef_bite（黑底紅光牙）——一個外層帶隨機旋轉縮放，
+     裡面上下顎兩半各自閉合（動畫全在 style.css 的 .fx-bitei，變形式）。 */
+  const cx=(30+Math.random()*40), cy=(36+Math.random()*24);
+  const d=document.createElement('div');
+  d.className='fx fx-bitei';
+  d.style.left=cx+'%';
+  d.style.top =cy+'%';
+  d.style.setProperty('--rot', ((Math.random()*24)-12).toFixed(1)+'deg');
+  d.style.setProperty('--sc',  (0.9+Math.random()*0.35).toFixed(2));
+  d.innerHTML='<i class="up"></i><i class="dn"></i>';
+  addFx(d,700);
 }
 // 彈痕（玻璃碎裂）：count 顆，位置隨機。每顆用內嵌 SVG 畫中心孔＋放射裂紋＋環裂。
 //   scale＝彈痕放大倍率（config hitFx 可帶，如 Boss 大絕單顆大彈痕 1.6）。
