@@ -194,6 +194,9 @@ export function resumeThreats(){
 export function releaseUlt(th){
   removeThreat(th);
   if(state.over||state.cutinPlaying) return;
+  /* 受擊特效落在**這一顆圈**的位置（ver -766，Ray：「攻擊效果要跟光圈的位置
+     一樣」）—— 座標發佈給 state，enemy.spawnBite 讀完即清。 */
+  state.lastUltPos = { x:th.lp, y:th.tp };
   api.enemyAttack(effUltDamage(), 'ult');   // 教學中一律 2（見 effUltDamage）
   api.floatDmg(L.battle.hitByUlt,'45%','25%',true);
 }
@@ -241,7 +244,7 @@ export function spawnThreat(){
   }
   dot.style.left=lp+'%';
   dot.style.top=tp+'%';
-  const th={el:dot, vis, t0:Date.now()};
+  const th={el:dot, vis, t0:Date.now(), lp, tp};   // 圈的落點（ver -766：受擊特效要落在同一點）
   dot.addEventListener('touchstart',e=>{e.preventDefault();resolveThreat(th);},{passive:false});
   dot.addEventListener('click',()=>resolveThreat(th));
   layer.appendChild(dot);

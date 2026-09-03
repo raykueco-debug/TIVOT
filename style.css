@@ -624,7 +624,7 @@
   .fx-bitei{width:264px;height:176px;margin:-88px 0 0 -132px;pointer-events:none;
     transform:rotate(var(--rot,0deg)) scale(var(--sc,1));}
   .fx-bitei i{position:absolute;inset:0;
-    background:url('resources/effects/ef_bite.webp') center/100% 100% no-repeat;
+    background:url('resources/effects/ef_bite2.webp') center/100% 100% no-repeat;   /* ver -766：Ray「效果換成 ef_bite2 試看看」 */
     mix-blend-mode:screen;opacity:0;}
   /* ⚠⚠ 節奏 ver -764 整個反過來（Ray：「闔起的速度太慢，而且不自然，最好像
      the house of the dead 那種感覺，咬下的瞬間就開始淡出，完全咬合時剛好消失」）：

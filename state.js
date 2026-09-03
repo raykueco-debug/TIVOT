@@ -116,6 +116,10 @@ export const state = {
      行為名對 defense 的 ULT_ACTS 那張表（同 GATE_ACTIONS 的理由：資料寫不了函式）。
      沒到門檻＝照常出一般圈。 */
   enemyUltAct: null,
+  /* 這一發大絕（光圈）落點的座標（ver -766，Ray：「攻擊效果要跟光圈的位置一樣」）：
+     defense.releaseUlt 寫（圈的 left/top %）、enemy.spawnBite **讀完即清**（一次性）——
+     不清的話劇情殺那種不經光圈的 'ult' 擊會沿用上一顆圈的舊位置。 */
+  lastUltPos: null,
   enemyCounterBuff: null,   // { mult, seconds }：被反擊後玩家的普攻增益
   enemyCounterStun: 0,      // 被反擊後幾秒才發起下一次主動攻擊
   enemyCounterStagger: 1,   // 反擊硬直（ver -495）：1＝被反擊時延時計時歸零、0＝不歸零。卡上沒寫＝1

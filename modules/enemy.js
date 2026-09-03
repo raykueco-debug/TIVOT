@@ -102,7 +102,11 @@ export function spawnBlood(randomAngle){
 export function spawnBite(){
   /* ver -761：改用 Ray 交件的 ef_bite（黑底紅光牙）——一個外層帶隨機旋轉縮放，
      裡面上下顎兩半各自閉合（動畫全在 style.css 的 .fx-bitei，變形式）。 */
-  const cx=(30+Math.random()*40), cy=(36+Math.random()*24);
+  /* 落點＝剛剛那顆光圈（ver -766，Ray）：defense 發佈的座標**讀完即清**——
+     不經光圈的 'ult' 擊（劇情殺三擊那種）拿不到座標，照舊隨機。 */
+  const pos = state.lastUltPos; state.lastUltPos = null;
+  const cx = pos ? pos.x : (30+Math.random()*40);
+  const cy = pos ? pos.y : (36+Math.random()*24);
   const d=document.createElement('div');
   d.className='fx fx-bitei';
   d.style.left=cx+'%';
