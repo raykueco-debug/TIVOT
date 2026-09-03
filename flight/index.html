@@ -512,7 +512,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -784';
+const FLIGHT_VER = 'ver -785';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -10683,13 +10683,14 @@ function loop(now){
     if(altTween){
       const t=clamp((now-altTween.t0)/altTween.dur,0,1);
       let e;
-      if(altTween.ease==='spring'){
-        /* 欠阻尼彈簧的階躍響應（ver -783，Ray：升空要有「加速感」＋「阻尼感」
-           ＋「到頂上下晃一下」）：從靜止起步（e'(0)=0＝加速感）→ 過衝到頂
-           （晃一下）→ 衰減回穩（阻尼）。zeta 越小晃越多；0.62≈過衝 ~8%
-           （600 單位 → 到頂衝到 ~750 再回 700）。 */
-        const zeta=0.62, wn=7.0, wd=wn*Math.sqrt(1-zeta*zeta);
-        e=1 - Math.exp(-zeta*wn*t)*(Math.cos(wd*t) + (zeta*wn/wd)*Math.sin(wd*t));
+      if(altTween.ease==='takeoff'){
+        /* 升空（ver -784，Ray：「加速感是**先慢後快**，不要全程等速」＋「到頂上下
+           晃一下」）：-783 的欠阻尼彈簧速度前段最快（讀起來偏先快），改成**分段**——
+           前 70% 用 u² **加速上升**（逐步位移單調遞增＝真的先慢後快）衝到 1.05 過衝點，
+           後 30% 阻尼晃回 1.0（到頂衝 ~730 → 下擺 ~693 → 回穩 700）。 */
+        const P=0.70;
+        if(t<P){ const u=t/P; e=1.05*u*u; }
+        else{ const u=(t-P)/(1-P); e=1 + 0.05*Math.cos(1.5*Math.PI*u)*Math.exp(-2.2*u); }
       }else if(altTween.ease==='dropbob'){
         /* 降落（ver -783；-784 修方向）：前 22% 小幅阻尼擺盪（sin 正相＝alt 先下
            後上，因 to<from）→ 之後**先快後慢**下降（Ray：「降落則相反」＝與升空的
@@ -10860,7 +10861,7 @@ function playTakeoff(){
   setTimeout(()=>{
     /* 阻尼上升（ver -783）：easeOutBack 過衝到頂再落回＝「上下晃一下」；
        dur 2000 讓加速＋過衝＋回穩都看得出來。 */
-    altTween={ from:TK_ALT_LOW, to:CRUISE_ALT, t0:performance.now(), dur:2000, ease:'spring' };
+    altTween={ from:TK_ALT_LOW, to:CRUISE_ALT, t0:performance.now(), dur:2000, ease:'takeoff' };
     bk.style.transition='opacity 1.2s ease-out'; bk.style.opacity='0';    // 黑幕淡出（與上升同步）
     fog.style.transition='opacity 1.2s ease-out'; fog.style.opacity='0';  // 雲霧散
   }, HOLD);
