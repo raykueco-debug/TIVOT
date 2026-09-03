@@ -628,16 +628,16 @@
     mix-blend-mode:screen;opacity:0;}
   /* ══ 平面闔起定案（ver -770，Ray：「算了，用原本的闔起就好」——
      -767~-769 的 3D 鉸鏈嘗試整組撤下）══
-     兩排牙滿亮登場（不淡入）、小開幅（±20%）ease-in 加速對滑闔上、
+     兩排牙滿亮登場（不淡入）、±38% 開幅（-766 的版本，ver -771 Ray 指定回復）ease-in 加速對滑闔上、
      邊咬邊淡 —— translateY 歸零與 opacity 歸零同一格（完全咬合＝剛好消失），
      全長 0.3 秒（-764 的 HotD 節奏）。落點＝光圈（-766）、圖＝ef_bite2（-766）。 */
   .fx-bitei .up{clip-path:inset(0 0 50% 0);animation:biteUp .3s cubic-bezier(.65,0,1,1) forwards;}
   .fx-bitei .dn{clip-path:inset(50% 0 0 0);animation:biteDn .3s cubic-bezier(.65,0,1,1) forwards;}
   @keyframes biteUp{
-    0%  {opacity:1;transform:translateY(-20%);}
+    0%  {opacity:1;transform:translateY(-38%);}
     100%{opacity:0;transform:translateY(0);}}
   @keyframes biteDn{
-    0%  {opacity:1;transform:translateY(20%);}
+    0%  {opacity:1;transform:translateY(38%);}
     100%{opacity:0;transform:translateY(0);}}
   /* 彈痕：玻璃被擊碎（中心孔＋放射狀裂紋＋環裂），隨機位置。細節用內嵌 SVG 畫。 */
   .fx-bullet{width:120px;height:120px;margin:-60px 0 0 -60px;opacity:0;
