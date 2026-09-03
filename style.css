@@ -623,7 +623,7 @@
        keyframes 會蓋掉同元素的 inline transform（-745 踩過的坑）。 */
   .fx-bitei{width:264px;height:176px;margin:-88px 0 0 -132px;pointer-events:none;
     transform:rotate(var(--rot,0deg)) scale(var(--sc,1));
-    perspective:340px;}   /* ver -767：3D 咬合的透視（子層 rotateX 要有它才有深度） */
+    perspective:200px;}   /* ver -768：透視拉近（340→200），rotateX 的深度才讀得出來 */
   .fx-bitei i{position:absolute;inset:0;
     background:url('resources/effects/ef_bite2.webp') center/100% 100% no-repeat;   /* ver -766：Ray「效果換成 ef_bite2 試看看」 */
     mix-blend-mode:screen;opacity:0;}
@@ -642,11 +642,16 @@
     animation:biteUp .3s cubic-bezier(.65,0,1,1) forwards;}
   .fx-bitei .dn{clip-path:inset(50% 0 0 0);transform-origin:50% 0%;
     animation:biteDn .3s cubic-bezier(.65,0,1,1) forwards;}
+  /* ⚠ 方向 ver -768 翻正（Ray：「反了，應該是闔上變張開→」正解＝開場要**張開**）：
+     -767 的軸轉錯邊——顎緣往螢幕內倒，開場被透視壓扁反而像闔著、
+     闔合瞬間攤平像張開。翻成**顎緣朝鏡頭外翻**（上顎 -72°、下顎 +72°）：
+     開場近緣放大＝血盆大口朝著你，加速摺平＝咬死。傾角 58→72、配 200px
+     透視，立體才讀得出來。 */
   @keyframes biteUp{
-    0%  {opacity:1;transform:translateY(-22%) rotateX(58deg) scale(1.18);}
+    0%  {opacity:1;transform:translateY(-22%) rotateX(-72deg) scale(1.25);}
     100%{opacity:0;transform:translateY(0) rotateX(0deg) scale(1);}}
   @keyframes biteDn{
-    0%  {opacity:1;transform:translateY(22%) rotateX(-58deg) scale(1.18);}
+    0%  {opacity:1;transform:translateY(22%) rotateX(72deg) scale(1.25);}
     100%{opacity:0;transform:translateY(0) rotateX(0deg) scale(1);}}
   /* 彈痕：玻璃被擊碎（中心孔＋放射狀裂紋＋環裂），隨機位置。細節用內嵌 SVG 畫。 */
   .fx-bullet{width:120px;height:120px;margin:-60px 0 0 -60px;opacity:0;
