@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.03-761';
+export const VERSION = 'ver 2026.09.03-762';
 
 export const GAME_CONFIG = {
 
@@ -1169,7 +1169,7 @@ export const GAME_CONFIG = {
       hitFx:{
         delay:{ type:'blood', angle:'random' },   // 延時懲罰 → 一道血痕、角度隨機
         wrong:{ type:'slash' },                    // 按錯懲罰 → 一條紅刀痕濺血
-        ult:{   type:'claw', count:3, angle:'random' },  // 大絕 → 三爪、角度隨機
+        ult:{   type:'bite' },   // 攻擊（一般圈）→ 牙印（ver -762，Ray：「地下聖徒跟巨型聖徒的攻擊都換成牙印」）
       },
     },
     // ── 教學專用敵：訓練用聖徒（僅教學戰載入，不進 lineup）──
@@ -1240,7 +1240,7 @@ export const GAME_CONFIG = {
       hitFx:{                        // 自帶獨立三件套（巨型聖徒風味：大絕爪數加重為 4）
         delay:{ type:'blood', angle:'random' },
         wrong:{ type:'slash' },      // 按錯 → 紅刀痕濺血
-        ult:{   type:'claw', count:4, angle:'random' },
+        ult:{   type:'bite' },       // 攻擊（一般圈）→ 牙印（ver -762，同地下聖徒）
       },
     },
     /* ══ 森住民（man_sorana，ver -744，Ray 的卡：「數值用巨型聖徒，攻擊減半，
