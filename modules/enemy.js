@@ -110,7 +110,7 @@ export function spawnBite(){
   d.style.setProperty('--rot', ((Math.random()*24)-12).toFixed(1)+'deg');
   d.style.setProperty('--sc',  (0.9+Math.random()*0.35).toFixed(2));
   d.innerHTML='<i class="up"></i><i class="dn"></i>';
-  addFx(d,980);   // 動畫 .9s（ver -763 拉長）＋餘裕
+  addFx(d,420);   // 動畫 .3s（ver -764 的 HotD 節奏）＋餘裕
 }
 // 彈痕（玻璃碎裂）：count 顆，位置隨機。每顆用內嵌 SVG 畫中心孔＋放射裂紋＋環裂。
 //   scale＝彈痕放大倍率（config hitFx 可帶，如 Boss 大絕單顆大彈痕 1.6）。

@@ -626,26 +626,18 @@
   .fx-bitei i{position:absolute;inset:0;
     background:url('resources/effects/ef_bite.webp') center/100% 100% no-repeat;
     mix-blend-mode:screen;opacity:0;}
-  .fx-bitei .up{clip-path:inset(0 0 50% 0);animation:biteUp .9s cubic-bezier(.5,0,.6,1) forwards;}
-  .fx-bitei .dn{clip-path:inset(50% 0 0 0);animation:biteDn .9s cubic-bezier(.5,0,.6,1) forwards;}
-  /* ⚠ 時程 ver -763 由 .62s 拉到 .9s、咬住的停格拉長（8%→75% 全亮）：
-     受擊那一瞬還有全畫面紅閃（redFlash，120ms）疊著 —— 太快的話牙印整段
-     被閃光蓋掉，讀起來就是「沒有特效」（Ray 回報）。 */
+  /* ⚠⚠ 節奏 ver -764 整個反過來（Ray：「闔起的速度太慢，而且不自然，最好像
+     the house of the dead 那種感覺，咬下的瞬間就開始淡出，完全咬合時剛好消失」）：
+     兩排牙**滿亮登場**（不淡入）、大行程加速衝向咬合線（ease-in＝越咬越快），
+     一路淡出 —— translateY 歸零與 opacity 歸零**同一格**（完全咬合＝剛好消失）。
+     全長 0.3 秒，快、狠、不停留。 */
+  .fx-bitei .up{clip-path:inset(0 0 50% 0);animation:biteUp .3s cubic-bezier(.65,0,1,1) forwards;}
+  .fx-bitei .dn{clip-path:inset(50% 0 0 0);animation:biteDn .3s cubic-bezier(.65,0,1,1) forwards;}
   @keyframes biteUp{
-    0%  {opacity:0;transform:translateY(-46%);}
-    6%  {opacity:1;}
-    16% {transform:translateY(0);}        /* 咬合：前 16% 快速閉上 */
-    22% {transform:translateY(2.2%);}     /* 咬進去過一點＝衝擊 */
-    30% {transform:translateY(0);opacity:1;}
-    75% {opacity:1;}
+    0%  {opacity:1;transform:translateY(-72%);}
     100%{opacity:0;transform:translateY(0);}}
   @keyframes biteDn{
-    0%  {opacity:0;transform:translateY(46%);}
-    6%  {opacity:1;}
-    16% {transform:translateY(0);}
-    22% {transform:translateY(-2.2%);}
-    30% {transform:translateY(0);opacity:1;}
-    75% {opacity:1;}
+    0%  {opacity:1;transform:translateY(72%);}
     100%{opacity:0;transform:translateY(0);}}
   /* 彈痕：玻璃被擊碎（中心孔＋放射狀裂紋＋環裂），隨機位置。細節用內嵌 SVG 畫。 */
   .fx-bullet{width:120px;height:120px;margin:-60px 0 0 -60px;opacity:0;
