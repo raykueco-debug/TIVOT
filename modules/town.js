@@ -1137,6 +1137,13 @@ function bgCandsOf(n, id){
 }
 function nameOfNode(id){
   if(id===SAIL_ID) return '出航';
+  /* 跨地圖出口（ver -758）：目的地字格印**那張圖的名字**（或指定節點的名字）。 */
+  if(typeof id==='string' && id[0]==='@'){
+    const seg=id.slice(1).split(':'), T=TOWNS[seg[0]];
+    if(!T) return '';
+    if(seg[1] && T.nodes && T.nodes[seg[1]] && T.nodes[seg[1]].name) return T.nodes[seg[1]].name;
+    return T.name || '';
+  }
   const n=(TOWNS[townId]||{}).nodes[id];
   if(!n) return '';
   /* ⚠ 打烊的地方在**目的地字格上就標出來**（ver -406）：走過去才發現關門是白走一趟，
@@ -1321,6 +1328,25 @@ function go(to, dir){
     return;
   }
   if(to===SAIL_ID){ setSail(); return; }
+  /* ══ 跨地圖的走廊（ver -758，夏爾村・野外 ⇄ 夏爾森林）══
+     出口寫成 `'@<地圖>'` 或 `'@<地圖>:<節點>'` ＝走過去就換一張地圖
+     （淡出 → `open(那張圖, 那一格)` → enter 自己淡回，同 sceneCut 的分工）。
+     ⚠ 為什麼是出口不是專用鈕：對玩家而言「往上走進森林」與「往上走到北側」
+       是同一個動作 —— 同 `sail` 那一條的理由（§6.5.4）。
+     ⚠ 安全區旗、遭遇戰的「回入口」都是**每張地圖自己的**（safehouse_<map>）——
+       這正是森林要自成一張圖、而不是掛在村子節點樹上的原因。
+     ⚠ 跨圖不記「來時方向」（pendingDir 清掉）：兩張圖的方向系不連續。 */
+  if(typeof to==='string' && to[0]==='@'){
+    const seg=to.slice(1).split(':'), map=seg[0], nd=seg[1]||null;
+    if(!TOWNS[map]) return;
+    busy=true; showNav(false);
+    document.body.classList.remove('town-nav');
+    stepSfx();
+    if(!siegeOn()) clock.advance(STEP_MIN);
+    story.veil(true, CUT_MS);
+    setTimeout(()=>{ open(map, nd || undefined); }, CUT_MS);
+    return;
+  }
   /* ══ 打烊的店**進不去**（ver -406，Ray 指定）══
      原本會走進去、站在一間關著的店裡（沒有店主、沒有選單），而且白花掉 10 分鐘
      ——「時間是資源」，走一趟空的就是實質的懲罰。改成**擋在門口**：不移動、

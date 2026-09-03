@@ -1747,13 +1747,67 @@ export const TOWNS = {
       chief:    { bg:'Shinier_Chief', bgPending:true,    name:'夏爾村　村長的家', exits:{ back:'north' } },
       altar:    { bg:'Shinier_Altar', bgPending:true,    name:'夏爾村　祭壇',   exits:{ back:'north' } },
       /* ── 末端（西） ── */
-      wild:     { bg:'Shinier_Wilds', bgPending:true,    name:'夏爾村　野外',   exits:{ back:'west' } },
+      /* 野外＝**夏爾森林的入口**（ver -758，Ray：「野外是森林地圖」）：
+         往上走就換到 shinier_forest 那張圖（跨地圖出口，modules/town.js 的 @ 語法）。 */
+      wild:     { bg:'Shinier_Wilds', bgPending:true,    name:'夏爾村　野外',
+        exits:{ back:'west', up:'@shinier_forest' } },
       workshop: { bg:'Shinier_Workshop', bgPending:true, name:'夏爾村　工坊',   exits:{ back:'west' } },
       hunter:   { bg:'Shinier_Hunter', bgPending:true,   name:'夏爾村　獵人小屋', exits:{ back:'west' } },
       /* ── 末端（東） ── */
       sorahome: { bg:'Shinier_Sorana', bgPending:true,   name:'夏爾村　索菈娜的家', exits:{ back:'east' } },
       grocery:  { bg:'Shinier_Grocery', bgPending:true,  name:'夏爾村　雜貨街', exits:{ back:'east' } },
       restaurant:{ bg:'Shinier_Restaurant', name:'夏爾村　餐廳', exits:{ back:'east' } },
+    },
+  },
+
+  /* ══════════════════════════════════════════════════════════════════════
+     夏爾森林（ver -758，Ray：「依照城鎮地圖模式設計野戰地圖…最短路徑四場，
+     中間有一些分支，終點不要一直線走到，要繞一下」＋「野外是森林地圖」）
+     —— 設計圖＝scratchpad 的 field_map_design.png（已交 Ray 過目）。
+     ⚠ 為什麼自成一張圖不掛在村子的節點樹上：安全區旗（safehouse_<map>）與
+       遭遇戰「回入口」都是**每張地圖自己的** —— 村子平時安全、森林有怪，
+       同一張圖裝不下這兩件事。與村子的走廊＝跨地圖出口（@ 語法）。
+     ⚠ 最短路徑四場：林間空地①→淺灘②→舊獵道③→高地④；終點（遺跡入口）在
+       入口正北，但林間空地**沒有 up**（斷崖）——要往西繞上高地折回東側。
+     ⚠ **骨架**：四場主線戰＋獸巢選打的怪卡、支線的寶箱／採集、各段對白全部
+       等 Ray 的稿（戰鬥拍照城鎮戰掛 acts 的 {battle} 那一套）。
+     ⚠ 背景全部產圖中（bgPending；命名 Forest_<節點>，見 _forest_spec.md）——
+       只有終點直接用遺跡那批的 Ruins_Entrance（已交件）。 */
+  shinier_forest: {
+    name: '夏爾森林',
+    entry: 'entry',
+    /* BGM 暫代 misty（同村；Ray 指定森林曲後換）。 */
+    bgm: 'misty',
+    storyExplore: true,
+    nodes: {
+      /* 入口＝遭遇戰復活點，**不可以有戰鬥**（§6.5.2 的鐵條）。下方回村（野外）。 */
+      entry: { bg:'Forest_Entry', bgPending:true, name:'夏爾森林　森林入口',
+        exits:{ up:'glade', down:'@shinier:wild' } },
+      /* 戰①。⚠ **沒有 up**：北面是斷崖（設計的「不要一直線走到」）。 */
+      glade: { bg:'Forest_Glade', bgPending:true, name:'夏爾森林　林間空地',
+        exits:{ left:'shoal', right:'nest', down:'entry' } },
+      nest:  { bg:'Forest_Nest', bgPending:true, name:'夏爾森林　獸巢',
+        exits:{ back:'glade' } },                       // 支線：選打，掉素材
+      /* 戰②。 */
+      shoal: { bg:'Forest_Shoal', bgPending:true, name:'夏爾森林　淺灘',
+        exits:{ up:'trail', left:'valley', right:'glade' } },
+      valley:{ bg:'Forest_Valley', bgPending:true, name:'夏爾森林　河谷',
+        exits:{ back:'shoal' } },                       // 支線：採集
+      /* 戰③。 */
+      trail: { bg:'Forest_Trail', bgPending:true, name:'夏爾森林　舊獵道',
+        exits:{ up:'high', left:'cave', down:'shoal' } },
+      cave:  { bg:'Forest_Cave', bgPending:true, name:'夏爾森林　岩窟',
+        exits:{ back:'trail' } },                       // 支線：寶箱
+      /* 戰④。 */
+      high:  { bg:'Forest_Highland', bgPending:true, name:'夏爾森林　高地',
+        exits:{ right:'cliff', down:'trail' } },
+      /* 終點前的喘息格（無戰）：日後 checkpoint／劇情拍放這裡。 */
+      cliff: { bg:'Forest_Cliff', bgPending:true, name:'夏爾森林　斷崖邊',
+        exits:{ up:'ruins', left:'high' } },
+      /* 終點：遺跡入口 —— 背景直接用遺跡那批（美術已交 Ruins_Entrance_Day/Night）。
+         進遺跡本體（Ruins_* 那 20 張）是另一張圖，等 Ray 的規劃。 */
+      ruins: { bg:'Ruins_Entrance', name:'夏爾森林　遺跡入口',
+        exits:{ back:'cliff' } },
     },
   },
 

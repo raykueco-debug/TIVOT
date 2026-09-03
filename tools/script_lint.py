@@ -321,6 +321,15 @@ def main():
         for nid, n in nodes.items():
             tag = '%s.%s' % (tid, nid)
             for d, to in (n.get('exits') or {}).items():
+                # 跨地圖出口（ver -758）：'@<地圖>' 或 '@<地圖>:<節點>' —— 驗那張圖與那一格
+                if isinstance(to, str) and to.startswith('@'):
+                    seg = to[1:].split(':')
+                    T2 = (D.get('towns') or {}).get(seg[0])
+                    if not T2:
+                        err('%s：跨地圖出口 %s 指到不存在的地圖 %s' % (tag, d, seg[0]))
+                    elif len(seg) > 1 and seg[1] not in (T2.get('nodes') or {}):
+                        err('%s：跨地圖出口 %s 指到 %s 裡不存在的節點 %s' % (tag, d, seg[0], seg[1]))
+                    continue
                 if to not in nodes:
                     err('%s：出口 %s 指到不存在的節點 %s' % (tag, d, to))
             bg = n.get('bg')
