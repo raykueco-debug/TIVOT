@@ -469,7 +469,9 @@ export const MAIN_SCRIPT = {
   lake_deck: {
     sceneId:'lake_deck',
     next:null,
-    endHome:true,
+    /* ver -772：演完直接進夏爾村（thenTown，-369 的機制）——
+       -744 的 endHome＋待續卡退場，村子的抵達對白接在 plaza 的 act 上。 */
+    thenTown:'shinier',
     context:'scene',
     /* 站位（ver -752）：索菈娜（含報名前的？？？）與安雅都是右位、蕾娜原則右 ——
        四個人擠一邊會一直互相擠掉（§6.5）。蕾娜整幕改左（她碰到安雅本來就放左），
@@ -607,8 +609,6 @@ export const MAIN_SCRIPT = {
         portrait:{ char:'NOUVELLE', expr:'awkward' } },
       { speaker:'ANYA', text:'……', checkpoint:true,
         portrait:{ char:'ANYA', expr:'nervous' } },
-      /* ——稿到此為止（ver -752）—— */
-      { speaker:'RENNA', text:'', card:'——未完待續——' },
     ],
   },
 

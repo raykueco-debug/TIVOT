@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.03-771';
+export const VERSION = 'ver 2026.09.03-772';
 
 export const GAME_CONFIG = {
 
@@ -2396,7 +2396,9 @@ export const GAME_CONFIG = {
       peritune_whistling_winds_loop:0.698,
       peritune_harbor_morning_loop:0.758,   // ver -753（measure_lufs 實測：平均 −11.4 LUFS）
       se_land:3.143,
-      se_woodbreak:0.552,               // ver -751（measure_lufs 實測：平均 −8.6 LUFS）
+      se_woodbreak:0.552,
+      se_villagealarm:0.880,            // ver -772（measure_lufs 實測 −12.7）
+      bgm_warhorn:1.275,                // ver -772（measure_lufs 實測 −15.9）               // ver -751（measure_lufs 實測：平均 −8.6 LUFS）
       peritune_crimson_moon_loop:0.879,
       /* ⚠ 母帶太小聲（−26 LUFS）：×master×層之後會撞上 HTMLAudio 的 1.0 上限，
          實際只到 −26 而不是目標的 −21.9。要救得重做母帶。 */

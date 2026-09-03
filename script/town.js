@@ -68,6 +68,7 @@ const nat = N('NATALIA'), grl = N('GIRL'), anx = N('ANYA_X'), any = N('ANYA');
 const gunN = N('GUNSMITH_NP'), groN = N('SHOPKEEP_NP');
 /* 北方泊地的送行群眾（ver -741，stage2 碼頭道別）。 */
 const crd = N('CROWD_NP');
+const sor = N('SORANA');   // 夏爾村（ver -772）
 
 /* ══⚠⚠ 北方泊地槍店的射擊挑戰（ver -655，Ray 交稿）══════════════════════
    **這一段只寫一次**（鐵律 7）：初次進店的 `lines` 與店裡「射擊挑戰」鈕的
@@ -1718,8 +1719,10 @@ export const TOWNS = {
   shinier: {
     name: '夏爾村',
     entry: 'plaza',
-    /* BGM **暫代** Misty Hollow（湖區的底曲）—— Ray 指定村子的曲子後換掉。 */
-    bgm: 'misty',
+    /* 村的曲子＝Whistling Winds（ver -772，Ray：「轉景：夏爾村剝製廣場
+       BGM Peritune_Whistling_Winds_loop」）——湖上戰後的 bgmAfter 也是它，
+       進村無縫接續。-757 的 misty 暫代退場。 */
+    bgm: 'whistling',
     /* 主線帶進來的村子：預設劇情探索（同北方泊地，女角不排外出）。
        要開放自由探索＝那一段 act 寫 `endStoryExplore:true`（旗 free_explore_shinier）。 */
     storyExplore: true,
@@ -1729,12 +1732,50 @@ export const TOWNS = {
        ⚠ 鐵律 9：`shinier_siege` **現在還沒有人插** —— 哪一段劇情開打由那一段
          自己認領（同 np 的作法：act 演完插 safehouse 旗收場）。 */
     siege: { from:'shinier_siege', keep:['lakeside','chief','altar','wild','sorahome'] },
+    /* ══ 18:00 強制回索菈娜的家（ver -772，Ray：「18:00 後玩家未回到索菈娜的家，
+       諾薇兒會來找玩家，強制移動」）══ 同北泊閘門那一套（clockGate）。
+       ⚠ 諾薇兒那一句是**我寫的**（Ray 只寫了「諾薇兒會來找玩家」）。 */
+    gates: [
+      { flag:'sv_evening', need:'sv_arrive', hourOfDay:18,
+        goto:'sorahome', enterAgain:true,
+        lines:[ nou('front','找到你了！大家都在索菈娜家等著喔。') ] },
+    ],
     nodes: {
       /* ── 樞紐：剝製廣場 ──「離開」＝下方出口（sail 那一套；舵還沒修好，
          旗 `shinier_leave_ok` 由修舵那一段劇情立，日後接大地圖）。 */
       plaza: { bg:'Shinier_Plaza', name:'夏爾村　剝製廣場',
         exits:{ up:'north', left:'west', right:'east' },
-        sail:{ flag:'shinier_leave_ok', blocked:'（舵還沒修好，現在還離不開夏爾村。）' } },
+        sail:{ flag:'shinier_leave_ok', blocked:'（舵還沒修好，現在還離不開夏爾村。）' },
+        /* ══ 抵達（ver -772，Ray 交稿）══ 湖上甲板 thenTown 進來的第一段。
+           站位：索菈娜／安雅本位右，蕾娜整幕改左（同湖上甲板，§6.5）。
+           ⚠ 最後一句稿上標 `Sorana_SI_think` 但說話的是**蕾娜** —— 判讀為筆誤，
+             用她自己的 thinking；要照稿改回跟我說。 */
+        acts:[ { flag:'sv_arrive', sides:{ RENNA:'L' }, lines:[
+          sor('front','歡迎！這就是夏爾村囉！'),
+          any('nervous','……'),
+          sor('smirk','森住民那麼稀奇嗎？'),
+          nou('explain','不是啦！她是紫月那邊的人，可能比較少見到吧？'),
+          sor('amazed','嚄——'),
+          sor('lauaghbig','我想說這傢伙怎麼看得眼睛都快掉出來了！哈哈哈！'),
+          any('dying',''),
+          ren('dying','妳也不擅長這種的吧……我懂。'),
+          sor('side','不論如何，先到我家去吧，應該睡得下所有人。'),
+          { speaker:'PLAYER', blank:true },
+          sor('side','不用那麼客氣啦，睡船上很危險的。'),
+          sor('remind','這附近偶爾有魔獸出沒，待在村子裡安全點。'),
+          ren('shocked','魔獸？難道是……禍魘？'),
+          sor('think','好像也有人這麼叫，外地來的學者什麼的。'),
+          ren('thinking','……妳說這裡是夏爾村？'),
+          sor('smile','嗯啊。'),
+          ren('ask','聖王廳大概在哪個方向？多遠呢？'),
+          sor('lauaghbig','那種事我哪知道啦。'),
+          ren('dying','是我不該問……'),
+          sor('lauaghbig','反正，船一時半刻也修不好，先安頓下來比較重要吧。'),
+          nou('awkward','也是，今天實在是太辛苦了。'),
+          ren('askserious','但是……'),
+          any('silent',''),
+          ren('thinking','希望我是錯的吧。'),
+        ] } ] },
       /* ── 三個支點 ── */
       north: { bg:'Shinier_North', name:'夏爾村　北側',
         exits:{ up:'lakeside', left:'chief', right:'altar', down:'plaza' } },
@@ -1744,18 +1785,67 @@ export const TOWNS = {
         exits:{ up:'sorahome', left:'grocery', right:'restaurant', down:'plaza' } },
       /* ── 末端（北） ── */
       lakeside: { bg:'Shinier_Lakeside', name:'夏爾村　湖畔',   exits:{ back:'north' } },
-      chief:    { bg:'Shinier_Chief', bgPending:true,    name:'夏爾村　村長的家', exits:{ back:'north' } },
+      chief:    { bg:'Shinier_Chief', bgPending:true,    name:'夏爾村　村長的家', exits:{ back:'north' },
+        /* 電報機＋蕾娜（ver -772，Ray：「會在村長家找到電報機，蕾娜在晚上
+           18:00 前必然只出現在該處，送出報告」）。沒有 flag ＝每次抵達都演
+           （再訪），until 收在傍晚閘門（sv_evening）。
+           ⚠ 台詞是**我寫的**佔位（Ray 只給了設定）—— 稿到了整段換掉。 */
+        acts:[ { need:'sv_arrive', until:'sv_evening', lines:[
+          ren('talkwork','村長借我用電報機。得把這幾天的事回報聖王廳才行。'),
+          ren('writting','你先去忙吧，我把報告送完就回索菈娜家。'),
+        ] } ] },
       altar:    { bg:'Shinier_Altar', bgPending:true,    name:'夏爾村　祭壇',   exits:{ back:'north' } },
       /* ── 末端（西） ── */
       /* 野外＝**夏爾森林的入口**（ver -758，Ray：「野外是森林地圖」）：
          往上走就換到 shinier_forest 那張圖（跨地圖出口，modules/town.js 的 @ 語法）。 */
       wild:     { bg:'Shinier_Wilds', bgPending:true,    name:'夏爾村　野外',
         exits:{ back:'west', up:'@shinier_forest' } },
-      workshop: { bg:'Shinier_Workshop', bgPending:true, name:'夏爾村　工坊',   exits:{ back:'west' } },
+      workshop: { bg:'Shinier_Workshop', name:'夏爾村　工坊',   exits:{ back:'west' },
+        /* 找到工匠（ver -772，Ray：「要找到工匠」——18:00 前找到與否改變晚上
+           蕾娜的第一句）。⚠ 對白是**我寫的**佔位，稿到了換掉；旗標 sv_craftsman
+           是晚上那段分歧在讀的那一支。 */
+        acts:[ { flag:'sv_craftsman', need:'sv_arrive', lines:[
+          { speaker:'NARRATION', text:'工坊裡的工匠聽完來意，瞥了一眼湖的方向，點了點頭。' },
+          { speaker:'NARRATION', text:'（明天一早，他會去看舵。）' },
+        ] } ] },
       hunter:   { bg:'Shinier_Hunter', bgPending:true,   name:'夏爾村　獵人小屋', exits:{ back:'west' } },
       /* ── 末端（東） ── */
-      sorahome: { bg:'Shinier_Sorana', bgPending:true,   name:'夏爾村　索菈娜的家', exits:{ back:'east' } },
-      grocery:  { bg:'Shinier_Grocery', bgPending:true,  name:'夏爾村　雜貨街', exits:{ back:'east' } },
+      sorahome: { bg:'Shinier_Sorana', bgPending:true,   name:'夏爾村　索菈娜的家', exits:{ back:'east' },
+        /* ══ 18:00 後（ver -772，Ray 交稿）══ 開頭依「找到工匠了沒」分歧
+           （skipIf/onlyIf），未找到那句再依蕾娜好感 T1/T2 換字**與表情**
+           （textByTier＋exprByTier，本版新增）。
+           警鐘（se_villagealarm）響起後**不點擊**緊接 bgm_warhorn（loop）。
+           ⚠ 收在 readysmile「一起上吧！」＋待續卡 —— 魔獸戰的敵人卡還沒交
+             （美術的 mon_* 是圖、數值未定），戰鬥拍等卡到再接。 */
+        acts:[ { flag:'sv_night_done', need:'sv_evening', sides:{ RENNA:'L' }, lines:[
+          { speaker:'RENNA', skipIf:'sv_craftsman',
+            text:'工匠那邊我已經談好了，明天就能出發。',
+            textByTier:{ 1:'工匠那邊我已經談好了，明天就能出發。', 2:'你都跑哪去啦？' },
+            portrait:{ char:'RENNA', exprByTier:{ 1:'front', 2:'upsetstare' }, show:true } },
+          { speaker:'RENNA', onlyIf:'sv_craftsman',
+            text:'明天就能出發？太好了。',
+            portrait:{ char:'RENNA', expr:'bow', show:true } },
+          nou('awkward','蕾娜小姐太緊張了啦，放鬆點嘛。'),
+          ren('talkwork','……我們可是帶著那女孩啊。'),
+          ren('talkwork','要是那些憑空出現的禍魘跟她有什麼關聯的話……'),
+          nou('surprise','咦？'),
+          nou('awkward','不會啦！安雅那麼好的孩子。'),
+          ren('talkserious','我沒說她不好，但是——'),
+          /* 警鐘（演出拍）：Ray「不點擊緊接 bgm_warhorn」——這一拍 auto，
+             下一拍（索菈娜起身）帶 bgm 自動接上。 */
+          { speaker:'RENNA', text:'', auto:2600, se:'se_villagealarm' },
+          Object.assign(sor('back','是魔獸！魔獸攻進村子了！'), { bgm:'warhorn' }),
+          ren('shockedCalm','！！'),
+          nou(null,'！！'),
+          any('sleepy',''),
+          sor('ready','我去迎擊！你們在這裡躲好！'),
+          nou('surprise','好帥氣……'),
+          { speaker:'PLAYER', blank:true },
+          Object.assign(sor('readysmile','噢！幫大忙了！一起上吧！'), { checkpoint:true }),
+          /* ——稿到此為止（ver -772）：魔獸戰的敵人卡待交—— */
+          { speaker:'RENNA', text:'', card:'——未完待續——' },
+        ] } ] },
+      grocery:  { bg:'Shinier_Grocery', name:'夏爾村　雜貨街', exits:{ back:'east' } },
       restaurant:{ bg:'Shinier_Restaurant', name:'夏爾村　餐廳', exits:{ back:'east' } },
     },
   },

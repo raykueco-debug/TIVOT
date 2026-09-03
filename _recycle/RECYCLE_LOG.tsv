@@ -22,3 +22,5 @@ when	from	to	reason
 20260903-112107	resources/audio/vo/vo_anya_luciddream2.wav	_recycle/resources/audio/vo/vo_anya_luciddream2.wav	luciddream 語音 1~4 轉 m4a，wav 原檔回收（§6.6）；舊單支 luciddream.m4a 被輪播四支取代
 20260903-112107	resources/audio/vo/vo_anya_luciddream3.wav	_recycle/resources/audio/vo/vo_anya_luciddream3.wav	luciddream 語音 1~4 轉 m4a，wav 原檔回收（§6.6）；舊單支 luciddream.m4a 被輪播四支取代
 20260903-112107	resources/audio/vo/vo_anya_luciddream4.wav	_recycle/resources/audio/vo/vo_anya_luciddream4.wav	luciddream 語音 1~4 轉 m4a，wav 原檔回收（§6.6）；舊單支 luciddream.m4a 被輪播四支取代
+20260903-162236	resources/audio/se/se_villagealarm.wav	_recycle/resources/audio/se/se_villagealarm.wav	villagealarm/warhorn 轉 m4a，wav 原檔回收（§6.6）
+20260903-162236	resources/audio/bgm/bgm_warhorn.wav	_recycle/resources/audio/bgm/bgm_warhorn.wav	villagealarm/warhorn 轉 m4a，wav 原檔回收（§6.6）

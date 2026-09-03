@@ -566,6 +566,7 @@ const BGM_FILES=[
   'Peritune_Misty_Hollow_loop.m4a', 'Peritune_Whistling_Winds_loop.m4a',
   'Peritune_Whirlwind.m4a',
   'PeriTune_Harbor_Morning_loop.m4a',   // ver -753：stage5 起的北泊（rebuild.bgm；Credit 已加）
+  'bgm_warhorn.m4a',   // ver -772：夏爾村魔獸來襲（警鐘後緊接，loop）
 ];
 /* 別名：腳本裡慣用的短名 → 實際檔名（去副檔名）。加新別名只動這裡。 */
 const BGM_ALIAS={ crisis:'peritunematerial_crisis_loop', lunaria:'bgm_lunaria',
@@ -578,7 +579,8 @@ const BGM_ALIAS={ crisis:'peritunematerial_crisis_loop', lunaria:'bgm_lunaria',
                   misty:'peritune_misty_hollow_loop',       // ver -744：湖上甲板
                   whistling:'peritune_whistling_winds_loop',   // ver -744；-752 起＝森住民戰後（bgmAfter）
                   whirlwind:'peritune_whirlwind',   // ver -747：索菈娜插畫登場～森住民戰
-                  harbor:'peritune_harbor_morning_loop' };   // ver -753：stage5 起的北泊
+                  harbor:'peritune_harbor_morning_loop',   // ver -753：stage5 起的北泊
+                  warhorn:'bgm_warhorn' };   // ver -772：夏爾村魔獸來襲
 const BGM_SRC=(()=>{ const m={};
   for(const f of BGM_FILES) m[f.replace(/\.[^.]+$/,'').toLowerCase()]='resources/audio/bgm/'+f;
   return m; })();
@@ -1142,6 +1144,7 @@ const SE_FILES=[
   'se_enemy_revolver.m4a', 'se_enemy_shot.m4a', 'se_enemy_slash.m4a', 'se_enemy_smack.m4a',
   'se_land.m4a',   // 著岸（ver -744，湖上甲板）
   'se_woodbreak.m4a',   // 舵斷裂的木裂聲（ver -751，Ray 交件；取代暫代的 se_brickcrush）
+  'se_villagealarm.m4a',   // 夏爾村警鐘（ver -772，Ray 交件）
   'se_flight_heartbeat.m4a', 'se_flight_idle_loop.mp3', 'se_flight_sail_loop.mp3',
   'se_flight_seagull.m4a', 'se_flight_train.mp3', 'vo_lunaMG.m4a', 'se_punch.m4a',
   'se_brickcrush.m4a',                                       // 瓦礫崩落（北方泊地教堂，ver -624）
@@ -2229,7 +2232,20 @@ function renderLine(){
 
   /* 只寫變化的部分：省略 ＝ 沿用上一狀態。 */
   const prev = shown[who] || {};
-  const st   = { expr: (p.expr!==undefined ? p.expr : prev.expr),
+  /* `exprByTier`（ver -772，夏爾村晚上蕾娜那一句：T1/T2 連**表情**都不同——
+     textByTier 只管字）：{1:'front',2:'upsetstare'} —— 門檻不是等於，
+     看**這一句說話者自己的**好感段位（與 lineText 同一把尺）。 */
+  let pexpr = p.expr;
+  if(p.exprByTier){
+    const ak = SPEAKERS[line.speaker] && SPEAKERS[line.speaker].art;
+    if(ak){
+      const t = prog.tierOf((prog.getAffection()||{})[ak] || 0);
+      for(const k of Object.keys(p.exprByTier).map(Number).filter(n=>!isNaN(n)).sort((x,y)=>x-y)){
+        if(t >= k) pexpr = p.exprByTier[k];
+      }
+    }
+  }
+  const st   = { expr: (pexpr!==undefined ? pexpr : prev.expr),
                  show: (p.show!==undefined ? p.show : (prev.show!==undefined ? prev.show : true)) };
   shown[who] = st;
 
