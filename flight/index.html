@@ -512,7 +512,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -775';
+const FLIGHT_VER = 'ver -776';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -10658,8 +10658,13 @@ function onQualityChange(){
 function loop(now){
   const dt=Math.min(40,now-last); last=now;
   /* ⚠⚠ 父頁說停（畫面收起／戰鬥中／整備・設定窗蓋著）＝整幀跳過（ver -481）：
-     不更新也不畫 —— 反正看不見。dt 已經吃掉（last=now），恢復那一幀不會補跑。 */
-  if(extPaused){ requestAnimationFrame(loop); return; }
+     不更新也不畫 —— 反正看不見。dt 已經吃掉（last=now），恢復那一幀不會補跑。
+     ⚠ **開大地圖也凍**（ver -776，Ray：「開大地圖、整備頁、選單、回主選單期間
+       飛行地圖 freeze，就算有怪也不會進入戰鬥」）——整備／選單已由 extPaused
+       蓋到（__flightHoldToggle），回主選單整個殺掉 iframe，只有大地圖（DOM 罩在
+       canvas 上）漏了：不凍的話怪照生照追、toBattle 照彈棺。地圖有自己的
+       draw／resize，凍住整個 loop 不影響它。 */
+  if(extPaused || mapOpen){ requestAnimationFrame(loop); return; }
   flushResize();     // 重建畫布只在這裡發生 —— 緊接著就是 render，不會露出空畫布
   talkHideStep(now); // ⚠ 方向計收合進度：一定要在這裡推，不能掛在 drawTalk（見該處說明）
   /* ⚠⚠ **對話中＝遊戲暫停**（ver -481，Ray：「對話期間不要生怪…一邊點對話一邊怪
