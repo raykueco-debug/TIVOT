@@ -405,11 +405,12 @@ function niBurstResolve(){
     if(c.classList.contains('done')) continue;
     c.classList.add('done'); c.classList.remove('next'); api.shatterCell(c);
   }
-  /* 傷害 ＝ 敵人最大 HP × `burstPct` × （期間清掉的格數 ÷ 滿盤格數）。
-     ⚠ 綁在**敵人最大 HP** 上：-685 的「期間累積傷害 ×2」在 900 血的場只打得出
-       百來點，大場等於沒有（Ray：「還是太弱」）。 */
-  const dmg = Math.round((state.enemyMax||0) * NI_BURST_PCT
-                         * Math.min(1, (state.niCells||0) / NI_BURST_FULL));
+  /* 傷害 ＝ 敵人最大 HP × `burstPct`（ver -789，Ray：「發動時應該是對敵最大 hp 的
+     百分比進行扣除」）——**拿掉「清格數 ÷ 16」的縮放**：那個縮放讓份量隨清了幾格
+     而變，不是乾淨的「敵最大 HP 百分比」，清得少時打不到下限。現在發動就是固定
+     一個百分比、穩定爆到 `burstFloor`（＝Ray 要的「爆到只剩 5% 血」）。
+     ⚠ 綁在**敵人最大 HP** 上（不是當前 HP、不是累積傷害）：大場小場同一份量。 */
+  const dmg = Math.round((state.enemyMax||0) * NI_BURST_PCT);
   exitNightmare();
   clearInterval(state.niTimer); state.niTimer=null;
   setReturnSwipe(false); restoreUltRate();
