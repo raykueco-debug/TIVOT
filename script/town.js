@@ -1935,8 +1935,8 @@ export const TOWNS = {
        入口正北，但林間空地**沒有 up**（斷崖）——要往西繞上高地折回東側。
      ⚠ **骨架**：四場主線戰＋獸巢選打的怪卡、支線的寶箱／採集、各段對白全部
        等 Ray 的稿（戰鬥拍照城鎮戰掛 acts 的 {battle} 那一套）。
-     ⚠ 背景全部產圖中（bgPending；命名 Forest_<節點>，見 _forest_spec.md）——
-       只有終點直接用遺跡那批的 Ruins_Entrance（已交件）。 */
+     背景已全部交件（Forest_<節點>_Day/_Dusk/_Night 共 27 張，ver -791）；
+       終點直接用遺跡那批的 Ruins_Entrance。 */
   shinier_forest: {
     name: '夏爾森林',
     entry: 'entry',
