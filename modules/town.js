@@ -744,9 +744,8 @@ function ensureLayer(){
   if(layer && layer.parentNode) return layer;
   const st=story.stageEl(); if(!st) return null;
   layer=document.createElement('div'); layer.id='townNav';
-  /* 目的地字格：上／左／右三個一律有；**下方只有「出航」時才有**（ver -387）——
-     下方通常是「退回上一層」，寫出名字只是重複；但出航是城外，玩家非得看到那兩個字
-     才知道那一支箭是幹什麼的（Ray：「預設的城鎮入口下方為『出航』」）。
+  /* 目的地字格：四個方向**只要有目的地就標名**（ver -790，Ray 指定；-387 原本
+     下方只給出航標字，現改成一律標——顯示與否的判定在那一支渲染函式，見 `show`）。
      按住字格蓄能滿了才走（Ray 指定）。 */
   layer.innerHTML=['up','left','right','down'].map(d=>
       '<button class="town-dest '+d+'" data-dir="'+d+'" type="button"><span></span></button>').join('')
@@ -979,8 +978,10 @@ function refreshArrows(){
   const sr=st ? st.getBoundingClientRect() : null;
   layer.querySelectorAll('.town-dest').forEach(b=>{
     const to=ex[b.dataset.dir];
-    /* ⚠ 下方那一格只給出航：一般的「退回上一層」不標名字（見 ensureLayer）。 */
-    const show = b.dataset.dir==='down' ? (to===SAIL_ID) : !!to;
+    /* 四個方向只要有目的地就標名（ver -790，Ray：「城鎮移動時四個方向在控制盤上都要
+       標移動目的地的名，現在下方常常沒標」）——先前下方只給出航標字（一般的「退回
+       上一層」省略），現在一律標。名字走 nameOfNode（出航＝「出航」，back＝該格地名）。 */
+    const show = !!to;
     b.classList.toggle('on', show);
     if(!show){ b.style.setProperty('--fill', 0); return; }
     b.style.setProperty('--fill', 0);

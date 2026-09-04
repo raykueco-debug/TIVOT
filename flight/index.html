@@ -522,7 +522,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -789';
+const FLIGHT_VER = 'ver -790';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -4746,11 +4746,30 @@ function openMapView(){
   drawMap();
 }
 document.getElementById('mapBtn').addEventListener('click',openMapView);
-let mapClosedCb=null;   // 地圖關掉那一刻要做的事（ver -741：出航對白的第二句）
-document.getElementById('mapClose').addEventListener('click',e=>{
-  e.stopPropagation(); mapOpen=false; mapView.classList.remove('on');
+let mapClosedCb=null;   // 地圖關掉那一刻要做的事（ver -741：出航對白收尾）
+function closeMapView(){
+  mapOpen=false; mapView.classList.remove('on');
   if(mapClosedCb){ const cb=mapClosedCb; mapClosedCb=null; try{ cb(); }catch(_){} }
-});
+}
+document.getElementById('mapClose').addEventListener('click',e=>{ e.stopPropagation(); closeMapView(); });
+
+/* ══ 大地圖上的對話（ver -790，Ray：「大地圖如果有對話框點擊就可以推進對話，
+   如已無對話就在該點擊退出大地圖」）══
+   點地圖：有對話框→推進到下一句／最後一句→收掉對話框；無對話框→退出大地圖
+   （走 closeMapView，X 鈕同一條路）。 */
+let mapDlgActive=false, mapDlgLines=null;
+function mapDlgStart(lines){
+  mapDlgActive=true; mapDlgLines=lines.slice(1);
+  mapSayShow(lines[0].name, lines[0].text);
+}
+function mapDlgTap(){
+  if(!mapDlgActive) return;
+  if(mapSayEl && mapDlgLines && mapDlgLines.length){       // 推進到下一句
+    const l=mapDlgLines.shift(); mapSayShow(l.name, l.text); return;
+  }
+  if(mapSayEl){ mapSayHide(); return; }                    // 最後一句 → 收掉對話框（此後＝無對話）
+  mapDlgActive=false; mapDlgLines=null; closeMapView();     // 無對話框 → 退出大地圖
+}
 
 /* 縮放與平移：滾輪／雙指縮放以指標為錨點，單指拖曳平移 */
 function zoomAt(cssX, cssY, factor){
@@ -5022,8 +5041,14 @@ function mapPick(cssX,cssY){
 }
 let mapTapLast=null;   // 上一次的單點（管理人雙點瞬移判定用；mapPick 只在事件裡跑，此宣告屆時已生效）
 const mUp=e=>{
-  if(mDown && mDown.n===1 && mPts.size===1 &&
-     Math.abs(e.clientX-mDown.x)<4 && Math.abs(e.clientY-mDown.y)<4){
+  const isTap = mDown && mDown.n===1 && mPts.size===1 &&
+     Math.abs(e.clientX-mDown.x)<4 && Math.abs(e.clientY-mDown.y)<4;
+  /* 對話中：點地圖＝推進／退出（ver -790），吃掉這一擊、不做管理人瞬移。 */
+  if(isTap && mapDlgActive){
+    mDown=null; mPts.delete(e.pointerId); if(mPts.size<2) mPinch=0;
+    mapDlgTap(); return;
+  }
+  if(isTap){
     const r=mapCv.getBoundingClientRect();
     mapPick(e.clientX-r.left, e.clientY-r.top);
   }
@@ -7288,6 +7313,14 @@ function drawIntroArt(now){
      Crisis 只活在「羽蛇劇情」這一段（開戰交棒時收）。 */
 const crisisLoop=new Audio('../resources/audio/bgm/PerituneMaterial_Crisis_loop.m4a');
 crisisLoop.loop=true; crisisLoop.preload='none';
+/* ⚠ 手機端預熱（ver -790，Ray：「手機板的羽蛇劇情戰插圖的 crisis bgm 在手機端
+   常常沒播，列入出北境的預載項目」）：出北境（`np_leave_ok` 已立、羽蛇還沒打）＝
+   這一趟就會遇到羽蛇 —— 先把 crisis 讀起來，別等 runSerpentIntro 那一刻才 preload=none
+   從零抓（iOS 慢網下抓不及，插圖亮相了曲子還沒到）。`scriptPending` 開場算一次，
+   所以中途重整也吃得到。iOS 的 preload 要靠一次 load() 觸發（這一頁早有手勢）。 */
+if(scriptPending && scriptPending.intro==='serpent'){
+  try{ crisisLoop.preload='auto'; crisisLoop.load(); }catch(_){}
+}
 function crisisBgm(on){
   try{
     if(on){ bgmMain.stop(); crisisLoop.volume=fileVol('peritunematerial_crisis_loop','bgm'); crisisLoop.currentTime=0; crisisLoop.play(); }
@@ -7976,8 +8009,10 @@ function mapSayShow(name, text){
      對話框（compassRect().w，＝方向計那條帶），置中、貼底——不再是 82%。
      配色也對齊平常那個框（名字 #c9a227／內文 #ece6d8／底 .84／框 .55）。 */
   const bw=compassRect().w;
-  el.style.cssText='position:absolute;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));'
-    +'transform:translateX(-50%);width:'+bw+'px;box-sizing:border-box;pointer-events:none;z-index:5;'
+  /* ver -790（Ray：「對話框不要貼底，中心大約在畫面下 1/4 處」）：中心置於畫面
+     75% 高（＝下 1/4），不再貼底。 */
+  el.style.cssText='position:absolute;left:50%;top:75%;'
+    +'transform:translate(-50%,-50%);width:'+bw+'px;box-sizing:border-box;pointer-events:none;z-index:5;'
     +'background:rgba(10,9,16,.84);border:1px solid rgba(201,162,39,.55);border-radius:8px;'
     +'padding:8px 13px 12px;color:#ece6d8;font-size:15px;line-height:1.5;';
   el.innerHTML='<div style="color:#c9a227;font-size:11px;margin-bottom:3px;">'+name+'</div>'+text;
@@ -7999,12 +8034,14 @@ function departureTalkMaybe(){
     /* ══ 航向指引（ver -753；**-756 依 Ray 的定義搬位**：「大地圖＝開啟地圖畫面」
        —— 這句話要出現在**地圖畫面上**，不是關掉地圖之後）══
        蕾娜的無立繪話框疊在地圖下緣，地圖關掉就收（同 mapClosedCb 那一刻）。 */
-    mapSayShow('蕾娜', '往西南方一路飛回去。');   // ver -786：北泊(1516,150)→聖王廳(934,606)＝西南（Δx 西582・Δy 南456）
-    mapClosedCb=()=>{
-      mapSayHide();
-      say([{ who:'renna/smile', text:'看到帝都就表示到了。' }],
-          performance.now(), { done:()=>addFlag('np_depart_talk') });
-    };
+    /* 兩句都在大地圖上：點地圖推進，走完再點一下退出（ver -790）。
+       ⚠ 方向＝西南（-786：北泊 1516,150 → 聖王廳 934,606＝Δx 西582・Δy 南456）。 */
+    mapDlgStart([
+      { name:'蕾娜', text:'往西南方一路飛回去。' },
+      { name:'蕾娜', text:'看到帝都就表示到了。' },
+    ]);
+    /* 走完（點擊退出大地圖）或按 X 都記旗（演完才記，同城鎮通則）。 */
+    mapClosedCb=()=>addFlag('np_depart_talk');
   }});
 }
 
@@ -10852,7 +10889,7 @@ const bootUI=(()=>{
    ⚠ 雲霧撲面：一層白霧從中央擴散＋淡出（撲向鏡頭）。 */
 let takeoffPlaying=false;
 let altTween=null;                                    // { from, to, t0, dur, easeIn }
-const TK_ALT_LOW=100;                                 // 起降的低點（Ray 指定）
+const TK_ALT_LOW=400;                                 // 起降的低點（ver -790，Ray：「700～400，100 太低有些高地城市會潛入」）
 function tkOverlay(){
   if(!document.getElementById('tkCSS')){
     const st=document.createElement('style'); st.id='tkCSS';

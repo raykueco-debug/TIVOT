@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.03-789';
+export const VERSION = 'ver 2026.09.04-790';
 
 export const GAME_CONFIG = {
 
@@ -1565,6 +1565,7 @@ export const GAME_CONFIG = {
       /* ⚠ 「不疊加」＝場上同時只有一個紅點（見 defense.scheduleUlt 的 `noStack`）。 */
       noStack:true,
       sound:{ ult:'se_enemy_centipi', delay:'em_smack', wrong:'em_smack' },
+      landSe:'se_enemy_centipi',    // 登場音（ver -790，船戰各自獨立；蜈蚣＝自己的叫聲）
       special:[],
       /* 盤面配置 `33344, loop`：3＝九宮格、4＝16 宮格，打完五盤沒死就從頭再來。 */
       boardGrids:[9,9,9,16,16],
@@ -1664,6 +1665,7 @@ export const GAME_CONFIG = {
       ultEvery:[3,5],              // 發動頻率 3~5 秒一次
       noStack:true,                // 不疊加：場上同時只有一個紅點
       sound:{ ult:'se_weapon_cannon', delay:'se_ship_cannon', wrong:'se_sniper_falcon' },   // 點錯改狙擊音（ver -512，Ray 指定）
+      landSe:'se_weapon_cannon',   // 登場音（ver -790，船戰各自獨立；空賊船＝艦砲）
       special:[],
       boardGrids:[9,9,9,16,16],    // 33344, loop
       boardLoop:true,

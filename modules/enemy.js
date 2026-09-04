@@ -276,15 +276,16 @@ export function loadEnemyPortrait(en){
       /* 著地的聲音：`se_saint_install` **原音**（ver -649，Ray：「se_saintinstall
          不要降 key，用原 pitch」）。-641 的執行期變調與 -643 的降調檔案都已撤掉。
          ⚠ 增益問 `sfxGain`（全域響度階層，§6.6）。 */
-      { /* 出場音效（ver -773，Ray：「船戰的禍魘登場時…出場音效都放各自的
-           攻擊音效」）：預設＝這隻怪自己的攻擊音（`sound.ult`）——sfx_saint 是
-           露娜的聖印音，借來當禍魘的登場音本來就不對。
-           優先序：卡上明寫的 `landSe`（羽蛇＝吼叫，-745）→ 自己的攻擊音 → sfx_saint。
-           ⚠ 震動衝擊（screenShake，見下一行）本來就對 harm/slay 都放——這一改
-             只補上「各自的攻擊音」那一半。 */
-        const k=state.curEnemyLandSe
-              || (state.curEnemySound && state.curEnemySound.ult)
-              || 'sfx_saint';
+      { /* 出場音效（ver -790，Ray 更正：「船戰登場特效音是每一個都有獨立的，跟陸戰
+           禍魘分開」「原本放 se_saintinstall 的鐘聲變成受擊音了」）：
+           · **船戰敵人**（羽蛇／蜈蚣／空賊船）＝卡上各自的 `landSe`（每隻獨立）。
+           · **陸戰禍魘／聖徒**＝沒有 `landSe`，退回 `sfx_saint`（＝se_saintinstall 鐘聲，
+             ver -649 的原音）。
+           ⚠ -773 曾把預設改成「自己的攻擊音 `sound.ult`」——但 `sound.ult` 正是玩家
+             被那隻怪打到的**受擊音**，套到陸戰的登臨就變成受擊音（Ray 回報）。所以
+             **拿掉那個 fallback**：船戰各自的登場音一律寫成卡上的 `landSe`（資料驅動，
+             鐵律 1），陸戰一律鐘聲。 */
+        const k=state.curEnemyLandSe || 'sfx_saint';
         SFX.play(asset(k), sfxGain(k)); }
       if(api.screenShake) api.screenShake();
       const top=$('top');
