@@ -105,9 +105,15 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll){
   const _m = state.enemyWeaponMod && state.enemyWeaponMod[w.cat];
   const _rz = _m && _m[1];
   const resist = Math.max(0, Math.min(0.95, +_rz || 0));
-  const hitR  = ((hitRate==null) ? 1 : Math.max(0, Math.min(1, hitRate))) * (1-resist);
-  /* 第 k 發中不中。⚠ `k===0` 一定中（見上）—— **無抗性時**；有抗性一律擲。 */
-  const hits = (k)=> (resist<=0 && (hitR>=1 || k===0)) ? true : (Math.random() < hitR);
+  const baseHit = (hitRate==null) ? 1 : Math.max(0, Math.min(1, hitRate));
+  /* ⚠⚠ **紅圈（完美反擊，命中率 100%）不受迴避影響**（ver -796，Ray 定案）：
+     `hitRate` 是帶位命中（黃 30%／橘 70%／紅 100%，ver -706），迴避只咬**黃／橘圈**
+     （baseHit<1）；紅圈一律 100%。 */
+  const evade = (baseHit >= 1) ? 0 : resist;
+  const hitR  = baseHit * (1-evade);
+  /* 第 k 發中不中。⚠ `k===0` 一定中（見上）—— **無迴避時**；有迴避一律擲
+     （ver -760：不然單發武器吃不到迴避）。紅圈 evade=0＝走前一分支必中。 */
+  const hits = (k)=> (evade<=0 && (hitR>=1 || k===0)) ? true : (Math.random() < hitR);
   const MISS = (L.battle && L.battle.miss) || 'MISS';
   /* `dmgRoll`（ver -708）：這一發打幾點從清單裡等機率抽（散彈黃圈＝`[0,1]`）。
      ⚠ 抽到 0 **不是 miss** —— 照樣跳一個「0」出來（Ray：「不要全都 1 很沒感」）。
