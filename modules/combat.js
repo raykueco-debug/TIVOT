@@ -816,12 +816,14 @@ function applyEnemyMods(dmg, src){
   const R=state.enemyResist, Wk=state.enemyWeak;
   if(R && R[src]) k -= R[src];
   if(Wk && Wk[src]) k += Wk[src];
-  /* 依**武器類別**的弱點（ver -500，羽蛇卡：「散射武器＋150%」）：
-     鑰匙寫成 `cat:<類別>`（例 `cat:霰彈槍`），只對**反擊**傷害生效 ——
-     反擊打出去的就是當下裝備的副武器（state.equippedWeapon）。 */
-  if(src==='counter' && Wk){
+  /* 副武器**傷害調整**（ver -796，Ray：一欄 `weaponMod:{ 類別:[傷害,迴避] }`，加法）：
+     只對**反擊**生效（反擊打出去的就是當下裝備的副武器 state.equippedWeapon）。
+     取 [0]＝傷害率：正=增傷、負=抗性減傷（0.1＝+10%、−0.2＝−20%，加進 k，不是乘）。
+     ⚠ 取代 -500 的 `weak['cat:類別']`（鐵律 7）；[1]＝迴避在 weapon.weaponCounter 讀。 */
+  if(src==='counter' && state.enemyWeaponMod){
     const w=(GAME_CONFIG.weapons||{})[state.equippedWeapon];
-    if(w && Wk['cat:'+w.cat]) k += Wk['cat:'+w.cat];
+    const m = w && state.enemyWeaponMod[w.cat];
+    if(m && m[0]) k += m[0];
   }
   if(state.dualWield && state.enemyDualBonus) k += state.enemyDualBonus;
   return Math.max(1, Math.round(dmg * Math.max(0, k)));

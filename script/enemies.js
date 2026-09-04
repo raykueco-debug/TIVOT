@@ -24,6 +24,7 @@ export const ENEMIES = {
     faceless: {
       name:'地下聖徒_A',        // UI 只顯示底線前的「地下聖徒」；底線後（_A）僅供作者辨識、不顯示
       story:0, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       /* 聖徒系列的結算副標是「已擊殺」（ver -432，Ray 指定）。⚠ 對照表在 i18n 的
          `result.winSubBy`，這裡只標這一隻是哪一類（鐵律 1）。三種聖徒同一類。 */
       kind:'slay',
@@ -55,6 +56,7 @@ export const ENEMIES = {
     trainee: {
       name:'訓練用聖徒',
       story:0, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       kind:'slay',                   // 聖徒系列＝已擊殺（ver -432）
       image:'enemy_trainee',    // → resources/enemy/Saint_TR_CI.webp
       hp:500,
@@ -78,6 +80,7 @@ export const ENEMIES = {
     dart_target: {
       name:'固定立靶',
       story:0, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       /* 結算副標的用詞（ver -432，Ray：「『靶』為已擊破」）。⚠ 對照表在 `i18n` 的
          `result.winSubBy`，這裡只標這一隻是哪一類（鐵律 1）。 */
       kind:'target',
@@ -102,6 +105,7 @@ export const ENEMIES = {
     facelessgiant: {
       name:'巨型聖徒',
       story:0, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       kind:'slay',                   // 聖徒系列＝已擊殺（ver -432）
       image:'enemy_facelessgiant',   // 內嵌立繪鑰匙 → resources/enemy/Saint_GT_CI.webp
       // 取景：主體在圖面右下（撲擊構圖），cover 裁切錨點右移下移——爪/頭/軀幹全入鏡
@@ -130,6 +134,7 @@ export const ENEMIES = {
     man_sorana: {
       name:'森住民',
       story:1, counterStagger:1,
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       kind:'human',
       image:'enemy_man_sorana',
       fit:{ pos:'50% 30%' },   // ver -745 換上專用戰鬥圖；構圖不對再調這格
@@ -160,6 +165,7 @@ export const ENEMIES = {
     nightmare_natalia: {
       name:'禍魘娜塔莉',
       story:1, counterStagger:1,
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       kind:'harm',
       image:'enemy_natalia',         // → resources/enemy/mon_natalia.webp
       fit:{ pos:'50% 30%' },
@@ -180,6 +186,7 @@ export const ENEMIES = {
     intruderEnemy: {
       name:'亂入者 · ???',
       story:0, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       image:'enemy_faceless',
       hp:400,
       attack:50,
@@ -193,6 +200,7 @@ export const ENEMIES = {
     witch: {
       name:'槍之魔女',
       story:0, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       kind:'human',                  // 槍之魔女是人類 → 已擊敗（ver -432，Ray 指定）
       image:'enemy_witch',      // 立繪鑰匙（附圖）
       hp:500,
@@ -224,13 +232,18 @@ export const ENEMIES = {
          · **大絕**＝hp% 以下的特定行為：`ult:{ hp:30, act:'ring4' }` ——
            行為名對 defense 的 ULT_ACTS 那張表（資料寫不了函式，同 GATE_ACTIONS）；
            沒到門檻照常出一般圈。第一個實驗卡＝man_sorana（hp30% 同時四圈）。
-       ══⚠⚠ 武器抗性（ver -760，Ray：「％數代表對該副武器產生的額外迴避率，
-         但即使全 miss 也會清掉延時跟主動攻擊」）══
-         `weaponResist:{ '<武器id或類別>':0.35 }` —— id 優先於類別（同 weaponSound
-         慣例）；每一發反擊的命中 ×(1−r)（weapon.weaponCounter 唯一讀點）。
-         「全 miss 也清延時／主動攻擊」本來就成立：紅點的收點在 resolveThreat、
-         反擊硬直在 staggerOnCounter，兩者都不看打沒打中。
-         ⚠ 與 `resist`（減傷，依傷害來源）是**兩個欄位兩件事**，不要混用。 */
+       ══⚠⚠ 副武器調整 `weaponMod`（ver -760→-796 定案，Ray：「弱點跟抗性做一起、
+         迴避也做進同一欄、逗點格開、先傷害後迴避、加%不是乘」）══
+         **每張卡明列三類**（重機槍／霰彈槍／萊福槍），每把＝ **[傷害, 迴避]**，預設 [0,0]：
+           `weaponMod:{ 重機槍:[0,0], 霰彈槍:[0,0], 萊福槍:[0,0] }`
+         · **[0] 傷害**：反擊時該副武器的傷害調整——**正=增傷、負=抗性減傷**，加法
+           （0.1＝+10%、−0.2＝−20%）。加進 combat.applyEnemyMods 的 k。
+         · **[1] 迴避**：該副武器的額外 miss 率(0~1)，加法（0.1＝多 10% miss）；每一發
+           反擊命中 ×(1−r)（weapon.weaponCounter 唯一讀點）。
+           ⚠「全 miss 也清延時／主動攻擊」本來就成立：紅點收點在 resolveThreat、
+             反擊硬直在 staggerOnCounter，兩者都不看打沒打中。
+         ⚠ 與 `resist`／`weak`（依**傷害來源** basic/counter/dual/saint 的減/增傷）是
+           **另一件事**，不要混用。 */
     /* ══⚠⚠ 北方泊地城鎮戰的雜怪 —— **四隻隨機出，一隻一張卡**（ver -596，Ray：
        「城鎮戰由這幾隻怪隨機出，數值都一樣，但是要各別做敵人卡方便我修改」）══
        四張卡現在的數值**完全一樣**（hp 300／attack 10／攻擊模式抄訓練用聖徒／
@@ -243,8 +256,9 @@ export const ENEMIES = {
        ⚠ `bg`＋`fit.contain` 是去背立繪的必要配套；實戰時 `bg` 會被城鎮那一格的
          背景蓋掉（ver -592），留著是為了在別處單獨叫用時不會身後一片黑。 */
     np_candletower: {
-      name:'禍魘',
+      name:'禍魘祭司',
       story:1, counterStagger:1,
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       kind:'harm',
       image:'enemy_np_candletower',
       bg:'Northport_church_BF',
@@ -263,8 +277,9 @@ export const ENEMIES = {
       },
     },
     np_candlepenitent: {
-      name:'禍魘',
+      name:'罪之神像',
       story:1, counterStagger:1,
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       kind:'harm',
       image:'enemy_np_candlepenitent',
       bg:'Northport_church_BF',
@@ -285,6 +300,7 @@ export const ENEMIES = {
     np_coralman: {
       name:'禍魘',
       story:1, counterStagger:1,
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       kind:'harm',
       image:'enemy_np_coralman',
       bg:'Northport_church_BF',
@@ -305,6 +321,7 @@ export const ENEMIES = {
     np_reassembled: {
       name:'禍魘',
       story:1, counterStagger:1,
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       kind:'harm',
       image:'enemy_np_reassembled',
       bg:'Northport_church_BF',
@@ -331,6 +348,7 @@ export const ENEMIES = {
     np_boss: {
       name:'禍魘',
       story:1, counterStagger:1,
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       kind:'harm',
       image:'enemy_np_boss',
       bg:'Northport_church_BF',
@@ -362,6 +380,7 @@ export const ENEMIES = {
     np_claws: {
       name:'禍魘',
       story:1, counterStagger:1,
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       kind:'harm',
       image:'enemy_np_claws',
       bg:'Northport_church_BF',
@@ -381,6 +400,7 @@ export const ENEMIES = {
     guild_hunter: {
       name:'賞金獵人',
       story:1, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       kind:'human',                      // 結算副標「已擊敗」（ver -432）
       image:'enemy_guild_hunter',        // ＝ NPC_GuildHunter_SI_Attack（與對話立繪同一張）
       /* ⚠ `bg`＝**戰鬥背景**（ver -375 新欄位）。這一隻的立繪是**去背**的
@@ -422,6 +442,7 @@ export const ENEMIES = {
     centipi: {
       name:'巨型蜈蚣',
       story:1, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       /* ⚠⚠ **三張時段差分**（Ray：「上午下午用 Centipi_day，晚上用 night，
          黃昏黎明用 Centipi_dd」）。寫成 `{day,dd,night}` 三個槽，時段→槽的對應
          只有一處：`modules/enemy.js` 的 `enemyImage()`（鐵律 7）。 */
@@ -486,6 +507,7 @@ export const ENEMIES = {
     serpent: {
       name:'羽蛇_A',
       story:1, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[1.50,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       kind:'harm',                 // 禍魘 → 已淨化
       image:{ day:'enemy_serpent_day', dd:'enemy_serpent_dd', night:'enemy_serpent_night' },
       hp:500,
@@ -511,7 +533,7 @@ export const ENEMIES = {
       resist:{ basic:0.20 },
       /* 弱點：反擊武器 +100%、**散射武器（霰彈槍類）再 +150%**（Ray 的卡）——
          `cat:<武器類別>` 只對反擊傷害生效，判定在 combat.applyEnemyMods（唯一一處）。 */
-      weak:{ counter:1.00, 'cat:霰彈槍':1.50 },
+      weak:{ counter:1.00 },
       dualBonus:0.20,
       counterBuff:{ mult:2, seconds:5 },
       counterStun:3,
@@ -533,6 +555,7 @@ export const ENEMIES = {
     pirate_ship: {
       name:'空賊船_A',
       story:0, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[1.50,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       kind:'ship',                 // 船隻 → 已擊沉
       image:{ day:'enemy_pirate_day', dd:'enemy_pirate_dd', night:'enemy_pirate_night' },
       hp:500,
@@ -557,7 +580,7 @@ export const ENEMIES = {
       resist:{ basic:0.20 },
       /* 弱點：反擊 +100%、**單射武器（萊福槍類）再 +150%**（`cat:` 只對反擊生效，
          判定在 combat.applyEnemyMods，同羽蛇卡）。 */
-      weak:{ counter:1.00, 'cat:萊福槍':1.50 },
+      weak:{ counter:1.00 },
       dualBonus:0.20,
       counterBuff:{ mult:2, seconds:5 },
       counterStun:3,

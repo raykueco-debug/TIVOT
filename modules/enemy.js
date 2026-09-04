@@ -379,7 +379,9 @@ export function setEnemy(key){
   /* 這一隻的「打起來的手感」欄位（ver -423 的敵人卡）。⚠ 一律**每次換敵都寫**，
      沒寫要寫回預設 —— setEnemy 是連戰換敵也會走的（同下面那組絕對值的理由）。 */
   state.enemyResist    = en.resist || null;
-  state.enemyWeaponResist = en.weaponResist || null;   // 武器抗性（ver -760，額外迴避率）
+  /* 副武器調整（ver -796，Ray：一欄搞定）：`weaponMod:{ 類別:[傷害, 迴避] }` ——
+     [0]傷害＝反擊增傷率（正）/抗性減傷率（負），加法；[1]迴避＝額外 miss 率(0~1)，加法。 */
+  state.enemyWeaponMod = en.weaponMod || null;
   state.enemyWeak      = en.weak || null;
   state.enemyDualBonus = en.dualBonus || 0;
   state.enemyNoStack   = !!en.noStack;

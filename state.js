@@ -107,12 +107,14 @@ export const state = {
   enemyWeak: null,          // { counter:1.00 }：**增傷**的成數，依傷害來源
   enemyDualBonus: 0,        // 破防（雙槍窗口）期間的增傷成數
   enemyNoStack: false,      // 紅點不疊加（場上同時只有一個）
-  /* 武器抗性（ver -760，Ray：「％數代表對該副武器產生的額外迴避率，但即使全
-     miss 也會清掉延時跟主動攻擊」）：{ '<武器id或類別>':0.35 } —— id 優先於類別
-     （同 weaponSound 慣例）。讀取在 weapon.weaponCounter（每一發命中 ×(1−r)）；
-     「全 miss 也清延時／主動攻擊」本來就成立 —— resolveThreat 的收點與反擊硬直
-     不看打沒打中。⚠ 與 `enemyResist`（減傷）是兩件事，不要混用。 */
-  enemyWeaponResist: null,
+  /* 副武器調整（ver -760 抗性→ ver -796 併成一欄，Ray：「弱點跟抗性做一起、
+     迴避也做進同一欄、逗點格開、先傷害後迴避」）：
+       `weaponMod:{ 重機槍:[傷害,迴避], 霰彈槍:[傷害,迴避], 萊福槍:[傷害,迴避] }`
+     · [0] 傷害＝反擊增傷率（正）/抗性減傷率（負），加進 combat.applyEnemyMods 的 k。
+     · [1] 迴避＝額外 miss 率(0~1)，weapon.weaponCounter 每一發命中 ×(1−r)。
+     都是**加法**（0.1＝+10%），預設 [0,0]。⚠ 與 `enemyResist/enemyWeak`（依傷害來源
+     的減/增傷）是兩件事，不要混用。 */
+  enemyWeaponMod: null,
   /* 大絕（ver -760，Ray 的敵攻四態：延時／攻擊（一般圈）／失誤／**大絕**）：
      hp% 以下的特定行為，卡上寫在 ult 裡（`ult:{ hp:30, act:'ring4' }`）——
      行為名對 defense 的 ULT_ACTS 那張表（同 GATE_ACTIONS 的理由：資料寫不了函式）。
