@@ -522,7 +522,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -791';
+const FLIGHT_VER = 'ver -793';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -819,7 +819,13 @@ let PRIME_G=null;
 async function warmImage(im){
   if(!PRIME_G){ const c=document.createElement('canvas'); c.width=c.height=8;
                 PRIME_G=c.getContext('2d'); }
-  try{ if(im.decode) await im.decode(); }catch(_){}
+  /* ⚠⚠ **decode 要有時限**（ver -793，Ray：「手機端圖音都跑不出來」）：預熱只是
+     優化（貼圖晚一幀解碼無妨），但 `im.decode()` 在**重載／快取部分內容（206→
+     ERR_ABORTED）**時可能**永不 resolve 也不 reject** —— try/catch 擋得住 reject、
+     擋不住「一直吊著」。它卡在 primeArt 的迴圈裡，整個開場停在 94%＝圖音都出不來。
+     用 race 夾 1.5 秒：解碼吊住就跳過那一張（之後進視野時瀏覽器自己會解）。 */
+  try{ if(im.decode) await Promise.race([ im.decode(),
+        new Promise((_,rej)=>setTimeout(rej,1500)) ]); }catch(_){}
   try{ PRIME_G.drawImage(im,0,0,8,8); }catch(_){}
   return im;
 }
@@ -3943,7 +3949,10 @@ async function loadWorld(){
   try{ buildCityMask(); }catch(e){ console.warn('[city] 遮罩建不出來', e); }
 
   step(0.94);   // 預熱貼圖…
-  await primeArt();
+  /* ⚠ primeArt 是**純優化**（預先解碼貼圖），不是開場的必要條件——用 race 夾 4 秒
+     當總保底：萬一它還是吊住（warmImage 已逐張夾 1.5s，這裡多一層），開場照樣往下走，
+     貼圖進視野時瀏覽器自己會解（ver -793）。 */
+  await Promise.race([ primeArt(), new Promise(r=>setTimeout(r,4000)) ]);
 }
 
 /* ── 貼圖預熱 ────────────────────────────────────────────────────────
