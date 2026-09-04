@@ -626,12 +626,18 @@ function altCase(name){
      day/dusk。改在這一支，全部一起好（鐵律 8）—— 不要在城鎮那邊為某個地點寫特例。
    ⚠ 這是**退路**不是替代品：該有的差分還是要交（退到 midnight 的夜晚廣場只是
      「不會錯得離譜」，不是「對」）。 */
+/* ⚠⚠ **時段差分是四張：Dawn / Day / Dusk / night**（ver -734，Ray 最終定案）——
+   一度改成「清晨與黃昏共用一張 `_DD`」，**已推翻**：Gemini 從 GPT 的原圖衍生差分
+   又快又好，所以四時全生、清晨與黃昏分開，不必為了省一張圖去畫一個
+   「沒有太陽、也不能太暗」的折衷版。
+   ⚠ `DD` 留在鏈上最低優先，只為了 `resources/enemy/` 那幾張本來就叫 `_DD` 的戰鬥背景。
+   ⚠ 退路仍沿著明暗軸走，暗的時段不准退回白天（ver -576 的教訓）。 */
 const BAND_FALL = {
-  Dawn:     ['Dawn','Day','Dusk'],
-  Day:      ['Day','Dawn','Dusk'],
-  Dusk:     ['Dusk','Day','night'],
-  night:    ['night','midnight','Dusk'],
-  midnight: ['midnight','night','Dusk'],
+  Dawn:     ['Dawn','Day','Dusk','DD'],
+  Day:      ['Day','Dawn','Dusk','DD'],
+  Dusk:     ['Dusk','DD','Day','night'],
+  night:    ['night','midnight','Dusk','DD'],
+  midnight: ['midnight','night','Dusk','DD'],
 };
 export function bandNames(base, noTime){
   const names=[]; const push=n=>{ if(n && names.indexOf(n)<0) names.push(n); };
@@ -2603,6 +2609,12 @@ function preloadStory(startId, onProgress){
      以前 BGM 與音效綁在同一個 `audio` 一起等，圖片讓路 6 秒之後就開跑；
      現在音樂排到最後（`playBgm` 自己會 `ensureBlob`，晚一點只是晚幾百毫秒起播），
      省下來的頻寬全給音效。 */
+  /* ⚠⚠ **背景排最前**（ver -790，Ray：「城鎮預載優先讀背景」，入憲 §6.6）：背景是
+     鋪滿畫面的那一張 —— 手機的連線數有限，瀏覽器按陣列順序發請求，背景排前面就
+     先搶到連線、先畫上去；立繪晚一拍淡進來無妨（同 §6.6「圖沒載完最多晚一拍、
+     音效沒載完直接不響」的失敗代價不對等）。門的素材（KERB_*）是戰鬥那一刻才用，
+     一併排到背景之後。 */
+  A.imgs.sort((a,b)=>(a.startsWith(BG_DIR)?0:1)-(b.startsWith(BG_DIR)?0:1));
   const AUDIO_FIRST_MS = 6000;
   const imgJobs = ()=> A.imgs.map(src=>new Promise(res=>{
     const im=new Image();
