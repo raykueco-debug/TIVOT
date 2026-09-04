@@ -103,39 +103,44 @@ export function scheduleUlt(firstDelayMs){
        具名行為（ULT_ACTS 那張表）；沒到門檻＝照常出一般圈（startCharge）。
        ⚠ 判在**發動那一刻**：打到門檻下的下一次排程自然切換，不用另掛監聽。 */
     const ua=state.enemyUltAct;
-    if(ua && ULT_ACTS[ua.act] && state.enemyHp <= state.enemyMax*(ua.hp/100)){
-      ULT_ACTS[ua.act]();
+    const belowHp = ua && state.enemyHp <= state.enemyMax*(ua.hp/100);
+    if(belowHp){
+      if(ua.act && ULT_ACTS[ua.act]) ULT_ACTS[ua.act]();   // 具名波（ring4＝4 同時）
+      else spawnWave(ua.count, ua.gapMs);                   // 依次波：count 顆、每顆隔 gapMs
     }else startCharge();
-    scheduleUlt();          // 立即排下一個 → 錯開生成、可累積多個
+    /* 下一波的排程（ver -798）：門檻行為可自訂 CD（整波之間的冷卻，自這一波起算）；
+       沒寫＝照常規頻率（ULT_MIN~MAX）。⚠ noStack 仍在排程層擋著：場上有圈就重排，
+       所以 CD 是「最快多久一波」，不是保證。 */
+    if(belowHp && ua.cdMs!=null) scheduleUlt(ua.cdMs);
+    else scheduleUlt();     // 立即排下一個 → 錯開生成、可累積多個
   }, delay);
 }
-/* ══ 大絕的具名行為表（ver -760）══ 資料寫不了函式（同 tutorial 的 GATE_ACTIONS），
-   卡上寫名字、這張表翻成呼叫 —— 加新行為就加一列，不要在發動端各自翻譯（鐵律 7）。 */
-const ULT_ACTS = {
-  /* 同時四圈（索菈娜的實驗卡，Ray：「她 hp30% 以下時會同時出現四個攻擊圈」）。
-     ⚠ 與 startCharge 的 ULT_SHOTS（先後出、隔 gap）不同：這四顆**同一瞬間**全上。
-     ⚠ noStack 的守門在排程那一層（場上有圈就重排）—— 走到這裡場上一定是空的，
-       所以四圈不會與殘圈疊出第五顆。 */
-  ring4(){
-    for(let i=0;i<4;i++) spawnThreat();
-    $('chargeWarn').classList.add('on');
-    if(!state.threatTick){ state.threatTick=setInterval(updateThreats,50); }
-  },
-};
-// 生成一次大絕。Boss 可一次先後出多個點（ULT_SHOTS），每發間隔 ULT_GAP_MS。
-export function startCharge(){
-  spawnThreat();                     // 第 1 發立即
+/* 一波攻擊圈：`count` 顆、每顆隔 `gapMs` **依次**隨機出現（gapMs=0＝同時）。
+   ⚠ startCharge（Boss 的 ULT_SHOTS/GAP_MS）與 ring4 都是它的特例——同一支（鐵律 8）。 */
+function spawnWave(count, gapMs){
+  const n=Math.max(1, count||1), g=Math.max(0, gapMs||0);
+  spawnThreat();
   $('chargeWarn').classList.add('on');
   if(!state.threatTick){ state.threatTick=setInterval(updateThreats,50); }
-  for(let s=1; s<state.ULT_SHOTS; s++){
+  for(let s=1;s<n;s++){
     setTimeout(()=>{
       if(state.over||state.enemyHp<=0||state.cutinPlaying||state.transitioning) return;
       spawnThreat();
       $('chargeWarn').classList.add('on');
       if(!state.threatTick){ state.threatTick=setInterval(updateThreats,50); }
-    }, s*state.ULT_GAP_MS);
+    }, s*g);
   }
 }
+/* ══ 大絕的具名行為表（ver -760）══ 資料寫不了函式（同 tutorial 的 GATE_ACTIONS），
+   卡上寫名字、這張表翻成呼叫 —— 加新行為就加一列，不要在發動端各自翻譯（鐵律 7）。 */
+const ULT_ACTS = {
+  /* 同時四圈（索菈娜的實驗卡，Ray：「她 hp30% 以下時會同時出現四個攻擊圈」）
+     ＝ spawnWave(4, 0)（gap=0＝同一瞬間全上）。 */
+  ring4(){ spawnWave(4, 0); },
+};
+// 生成一次大絕。Boss 可一次先後出多個點（ULT_SHOTS），每發間隔 ULT_GAP_MS
+//   —— ＝ spawnWave 的特例（鐵律 8）。
+export function startCharge(){ spawnWave(state.ULT_SHOTS, state.ULT_GAP_MS); }
 // 更新所有攻擊點的視覺與倒數；到期則釋放
 export function updateThreats(){
   // 演出/對話暫停中一律凍結（教學對話於 spawnThreat 內觸發暫停後，

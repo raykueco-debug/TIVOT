@@ -391,8 +391,18 @@ export function setEnemy(key){
      延時計時也不會歸零」）。卡上沒寫＝1（會硬直）。判定在 defense 的反擊分支。 */
   state.enemyCounterStagger = (en.counterStagger!=null) ? en.counterStagger : 1;
   const u = en.ult || {};                        // 3.3：Boss 專屬大絕參數（缺欄位＝一般怪預設）
-  /* 大絕的 hp 門檻行為（ver -760）：`ult:{ hp:30, act:'ring4' }` —— 見 state 的說明。 */
-  state.enemyUltAct = (u.act!=null) ? { hp:(u.hp||0), act:u.act } : null;
+  /* 大絕的 hp 門檻行為（ver -760；ver -798 參數化）：hp% 以下這一次攻擊改走特殊波。
+     `ult:{ hp:40, count:4, gap:0.5, cd:3 }` ＝血 ≤40% 起：一波 4 顆、每顆隔 0.5 秒
+       **依次**隨機出現，整波之間 CD 3 秒（沒寫 cd＝照常規頻率 ULT_MIN~MAX）。
+     `ult:{ hp:30, act:'ring4' }` ＝具名波（4 顆**同時**，＝ count:4 gap:0）。
+     ⚠ 有 act 或 count 才算「有門檻行為」；只有 hp 沒有行為 → 當一般圈。 */
+  state.enemyUltAct = (u.act!=null || u.count!=null) ? {
+    hp:    u.hp||0,
+    act:   u.act||null,                          // 具名波（ring4）；沒寫走 count/gap 的依次波
+    count: (u.count!=null) ? u.count : 4,         // 一波幾顆
+    gapMs: (u.gap!=null)   ? u.gap*1000 : 0,      // 每顆間隔（秒→ms）；0＝同時
+    cdMs:  (u.cd!=null)    ? u.cd*1000  : null,    // 整波之間 CD（秒→ms）；null＝照常規頻率
+  } : null;
   state.ULT_SHOTS  = u.shots!=null ? u.shots : 1;
   state.ULT_GAP_MS = u.gapMs!=null ? u.gapMs : 0;
   /* 發動頻率。⚠ 卡上的 `ultEvery:[3,5]`（**秒**）是最好讀的寫法（ver -423），
