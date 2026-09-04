@@ -104,13 +104,15 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll){
      ⚠ 有抗性時「第一發必中」與「hitR≥1 不擲骰」都不成立（不然單發武器吃不到抗性）。 */
   const _m = state.enemyWeaponMod && state.enemyWeaponMod[w.cat];
   const _rz = _m && _m[1];
-  const resist = Math.max(0, Math.min(0.95, +_rz || 0));
+  /* 迴避帶正負號（ver -799，Ray）：**正＝更會閃（miss↑）、負＝加命中（miss↓）**。
+     上夾 0.95（不讓全閃）；下不夾 0，讓負值把命中往上加（下限 −3 純防呆）。 */
+  const resist = Math.max(-3, Math.min(0.95, +_rz || 0));
   const baseHit = (hitRate==null) ? 1 : Math.max(0, Math.min(1, hitRate));
   /* ⚠⚠ **紅圈（完美反擊，命中率 100%）不受迴避影響**（ver -796，Ray 定案）：
      `hitRate` 是帶位命中（黃 30%／橘 70%／紅 100%，ver -706），迴避只咬**黃／橘圈**
      （baseHit<1）；紅圈一律 100%。 */
   const evade = (baseHit >= 1) ? 0 : resist;
-  const hitR  = baseHit * (1-evade);
+  const hitR  = Math.min(1, baseHit * (1-evade));   // 負迴避把命中往上加，夾到 100%
   /* 第 k 發中不中。⚠ `k===0` 一定中（見上）—— **無迴避時**；有迴避一律擲
      （ver -760：不然單發武器吃不到迴避）。紅圈 evade=0＝走前一分支必中。 */
   const hits = (k)=> (evade<=0 && (hitR>=1 || k===0)) ? true : (Math.random() < hitR);
