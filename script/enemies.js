@@ -35,7 +35,6 @@ export const ENEMIES = {
       atkInterval:null,// 大絕蓄力秒數；null＝沿用 tuning.chargeSeconds（逐怪可覆寫）
       ultEvery:[2,4],
       // 攻擊音（依 kind：ult＝大絕命中/不完美防禦格擋、delay＝太慢、wrong＝按錯）。鑰匙對應 ASSETS。
-      sound:{ ult:'em_slash', delay:'em_smack', wrong:'em_slash' },
       /* 延時懲罰 5 秒（ver -458，Ray：「除了槍之魔女以外的敵人都先預設 5 秒」）。 */
       delayPenalty:{ seconds:5 },
       special:[],      // 特殊行動預留（本版不實作邏輯，僅保留結構）
@@ -65,7 +64,6 @@ export const ENEMIES = {
       hp:500,
       attack:45,
       atkInterval:null,         // 沿用 tuning.chargeSeconds
-      sound:{ ult:'em_slash', delay:'em_smack', wrong:'em_slash' },
       delayPenalty:{ seconds:5 },   // 5 秒（ver -458，非魔女的預設）
       special:[],
       boardGrids:[9,9,9,9,9],
@@ -92,7 +90,6 @@ export const ENEMIES = {
       hp:300,                        // Ray 指定
       attack:0,
       atkInterval:null,
-      sound:{ ult:'em_slash', delay:'em_smack', wrong:'em_slash' },
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
@@ -119,7 +116,6 @@ export const ENEMIES = {
       attack:45,                     // 大絕單擊傷害（普通值；差異在密度不在單擊）
       atkInterval:3.33,              // 大絕蓄力秒數：4×(1/1.2)≈3.33 → 攻擊更密（比第一隻高 20%）
       ultEvery:[2,4],
-      sound:{ ult:'em_slash', delay:'em_smack', wrong:'em_slash' },   // 兩聖徒攻擊音相同
       delayPenalty:{ seconds:5 },    // 5 秒（ver -458，非魔女的預設）
       special:[],
       boardGrids:[9,9,9,9,9],     // ver -792：貝琳妲以外全 9 宮格（Ray 指定）
@@ -154,12 +150,11 @@ export const ENEMIES = {
            四顆，實測疊到 8）—— 這是我補的節奏判斷，要改掉直接拔。 */
       ult:{ hp:40, count:4, gap:0.4, cd:4 },   // hp% 以下，每 0.4 秒丟一顆、連丟 4 顆、然後歇 4 秒
       noStack:true,
-      sound:{ ult:'em_slash', delay:'em_dagger', wrong:'em_slash' },
       delayPenalty:{ seconds:4 },    // 快一秒（巨型聖徒是 5）
       special:[],
       boardGrids:[9,9,9,9,16],
       hitFx:{
-        delay:{ type:'slash' },      // 貝琳妲的 dagger（slash 特效＋em_dagger 音）
+        delay:{ type:'dagger' },     // 貝琳妲的 dagger（slash 視覺＋匕首音，見 config.HITFX）
         wrong:{ type:'slash' },
         ult:{   type:'claw', count:4, angle:'random' },
       },
@@ -180,7 +175,6 @@ export const ENEMIES = {
       hp:900,                        // Ray 指定
       attack:22,                     // 巨型聖徒 45 的一半（減半，取整）
       atkInterval:3.33,              // 以下全部同巨型聖徒
-      sound:{ ult:'em_slash', delay:'em_smack', wrong:'em_slash' },
       delayPenalty:{ seconds:5 },
       special:[],
       boardGrids:[9,9,9,9,9],
@@ -200,7 +194,6 @@ export const ENEMIES = {
       hp:400,
       attack:50,
       atkInterval:null,
-      sound:{ hit:null, ult:null, death:null },
       delayPenalty:{ seconds:5 },    // 5 秒（ver -458，非魔女的預設）
       special:[],
       boardGrids:[9,9,9,9,9],   // v16：每盤格數手動覆寫（同上，聖徒化不受影響）
@@ -217,7 +210,6 @@ export const ENEMIES = {
       attack:45,                // 大絕單點傷害（同一般怪基準）
       atkInterval:null,         // 大絕蓄力窗口（紅圈縮放時間）；null＝沿用 tuning.chargeSeconds
       // Boss 攻擊音：大絕＝左輪 EM_Revolver；延時＝槍聲 EM_Shot；按錯＝匕首 EM_Dagger。
-      sound:{ ult:'em_revolver', delay:'em_shot', wrong:'em_dagger' },
       special:[],
       boardGrids:[9,9,16,16,16],
       // v17：Boss 專屬機制（一般怪不填＝走預設，資料/程式分離）
@@ -226,9 +218,9 @@ export const ENEMIES = {
       wrongPenalty:{ dmgScale:1 },                           // 按錯懲罰：攻擊力同一般怪
       // v17.2：受擊特效 —— 大絕/延時走彈痕（玻璃碎裂），按錯改紅刀痕濺血
       hitFx:{
-        delay:{ type:'bullet', count:1, pos:'random' },   // 延時懲罰 → 一顆彈痕
-        wrong:{ type:'slash' },                            // 按錯懲罰 → 一條紅刀痕濺血
-        ult:{   type:'bullet', count:1, pos:'random', scale:1.6 },   // 大絕 → 一顆大彈痕（1.6 倍）
+        delay:{ type:'bullet', count:1, pos:'random' },   // 延時 → 彈痕＋槍聲（bullet→em_shot）
+        wrong:{ type:'dagger' },                           // 按錯 → 紅刀痕＋匕首音（dagger）
+        ult:{   type:'witch_revolver', count:1, pos:'random', scale:1.6 },   // 大絕 → 大彈痕＋左輪（專屬）
       },
     },
     /* ══ 賞金獵人（ver -375）══ 舊街區・賞金獵人公會那一場（劇情插入戰）。
@@ -278,7 +270,6 @@ export const ENEMIES = {
       hp:300,
       attack:15,
       atkInterval:null,
-      sound:{ ult:'em_slash', delay:'em_smack', wrong:'em_slash' },
       delayPenalty:{ seconds:6 },
       special:[],
       boardGrids:[9,9,9,9,9],
@@ -301,7 +292,6 @@ export const ENEMIES = {
       hp:250,
       attack:10,
       atkInterval:null,
-      sound:{ ult:'em_slash', delay:'em_smack', wrong:'em_slash' },
       delayPenalty:{ seconds:5 },
       special:[],
       boardGrids:[9,9,9,9,9],
@@ -324,7 +314,6 @@ export const ENEMIES = {
       hp:250,
       attack:10,
       atkInterval:null,
-      sound:{ ult:'em_slash', delay:'em_smack', wrong:'em_slash' },
       delayPenalty:{ seconds:5 },
       special:[],
       boardGrids:[9,9,9,9,9],
@@ -347,7 +336,6 @@ export const ENEMIES = {
       hp:400,
       attack:15,
       atkInterval:null,
-      sound:{ ult:'em_slash', delay:'em_smack', wrong:'em_slash' },
       delayPenalty:{ seconds:5 },
       special:[],
       boardGrids:[9,9,9,9,9],
@@ -376,7 +364,6 @@ export const ENEMIES = {
       hp:500,
       attack:20,
       atkInterval:null,
-      sound:{ ult:'em_smack', delay:'em_smack', wrong:'em_smack' },
       delayPenalty:{ seconds:6 },
       special:[],
       boardGrids:[9,9,9,9,9],
@@ -409,7 +396,6 @@ export const ENEMIES = {
       hp:500,
       attack:10,
       atkInterval:null,
-      sound:{ ult:'em_slash', delay:'em_smack', wrong:'em_slash' },
       delayPenalty:{ seconds:5 },
       special:[],
       boardGrids:[9,9,9,9,16],
@@ -436,7 +422,6 @@ export const ENEMIES = {
          不是聖徒，數字低是刻意的。 */
       attack:10,
       atkInterval:null,                  // 沿用 tuning.chargeSeconds
-      sound:{ ult:'em_shot', delay:'em_shot', wrong:'em_smack' },
       special:[],
       /* 盤面配置 `33344, loop`：3＝九宮格、4＝16 宮格；**loop**＝打完五盤還沒死就從頭再來
          （這一隻血厚 200、傷害低，是「耐力戰」的設計）。 */
@@ -485,7 +470,6 @@ export const ENEMIES = {
       ultEvery:[2,4],
       /* ⚠ 「不疊加」＝場上同時只有一個紅點（見 defense.scheduleUlt 的 `noStack`）。 */
       noStack:true,
-      sound:{ ult:'se_enemy_centipi', delay:'em_smack', wrong:'em_smack' },
       landSe:'se_enemy_centipi',    // 登場音（ver -790，船戰各自獨立；蜈蚣＝自己的叫聲）
       special:[],
       /* 盤面配置 `33344, loop`：3＝九宮格、4＝16 宮格，打完五盤沒死就從頭再來。 */
@@ -497,7 +481,7 @@ export const ENEMIES = {
       hitFx:{
         delay:{ type:'claw', count:1, angle:'random' },
         wrong:{ type:'blunt' },
-        ult:{   type:'claw', count:3, angle:'random' },
+        ult:{   type:'centipi_claw', count:3, angle:'random' },   // 專屬：爪痕＋蜈蚣叫聲
       },
       /* ⚠⚠ **抗性／弱點／破防增傷**（ver -423 起真的生效，之前只是放著）：
          值是**加減成**，套在 `combat.enemyDamage` 那一個計算點上（鐵律 7）。
@@ -540,7 +524,6 @@ export const ENEMIES = {
       atkInterval:4,               // 蓄力窗口 4 秒（固定）
       ultEvery:[2,4],              // 發動頻率 2~4 秒一次
       noStack:true,                // 不疊加：場上同時只有一個紅點
-      sound:{ ult:'se_enemy_serpent', delay:'em_smack', wrong:'em_smack' },
       /* 降臨著地音（ver -745，Ray：「se 不放 se_saintintall 而是放羽蛇叫聲」）——
          禍魘的著地預設是 sfx_saint，這張卡覆寫成牠自己的吼叫（enemy.js 讀）。 */
       landSe:'se_enemy_serpent',
@@ -553,7 +536,7 @@ export const ENEMIES = {
       hitFx:{
         delay:{ type:'claw', count:1, angle:'random' },
         wrong:{ type:'blunt' },
-        ult:{   type:'bite' },
+        ult:{   type:'serpent_bite' },   // 專屬：牙印＋羽蛇吼叫
       },
       resist:{ basic:0.20 },
       /* 弱點：反擊武器 +100%、**散射武器（霰彈槍類）再 +150%**（Ray 的卡）——
@@ -589,7 +572,6 @@ export const ENEMIES = {
       atkInterval:4,               // 蓄力窗口 4 秒（固定）
       ultEvery:[2,4],              // 發動頻率 2~4 秒一次
       noStack:true,                // 不疊加：場上同時只有一個紅點
-      sound:{ ult:'se_weapon_cannon', delay:'se_ship_cannon', wrong:'se_sniper_falcon' },   // 點錯改狙擊音（ver -512，Ray 指定）
       landSe:'se_weapon_cannon',   // 登場音（ver -790，船戰各自獨立；空賊船＝艦砲）
       special:[],
       boardGrids:[9,9,9,9,16],    // 33344, loop
@@ -599,9 +581,9 @@ export const ENEMIES = {
       /* 延時／點錯都是彈孔（牠是用砲跟槍招呼你的）；大絕＝**特大彈孔＋畫面閃紅**
          （`flash:'red'`，ver -509 新演出，實作在 enemy.showHitFx）。 */
       hitFx:{
-        delay:{ type:'bullet', count:1, pos:'random' },
-        wrong:{ type:'bullet', count:1, pos:'random' },
-        ult:{   type:'bullet', count:1, pos:'random', scale:2.4, flash:'red' },
+        delay:{ type:'pirate_shipcannon', count:1, pos:'random' },   // 專屬：艦砲（延時）
+        wrong:{ type:'pirate_sniper', count:1, pos:'random' },       // 專屬：狙擊（按錯）
+        ult:{   type:'pirate_cannon', count:1, pos:'random', scale:2.4, flash:'red' },   // 專屬：艦砲（大絕）
       },
       resist:{ basic:0.20 },
       /* 弱點：反擊 +100%、**單射武器（萊福槍類）再 +150%**（`cat:` 只對反擊生效，

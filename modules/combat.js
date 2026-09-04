@@ -13,7 +13,7 @@
  *    與監察官結算為下一輪；相關分支以 TODO 標註、以最小佔位不影響本輪流程。
  * ========================================================================== */
 
-import { GAME_CONFIG, asset, bgmVol, sfxGain } from '../config.js';
+import { GAME_CONFIG, HITFX, asset, bgmVol, sfxGain } from '../config.js';
 import { state, initEnemyHp, setPickedPartner } from '../state.js';
 import { SFX } from '../audio.js';
 import { TEL } from '../telemetry.js';
@@ -668,8 +668,11 @@ function enemyAttack(dmg, kind, saintAmt){
     else if(kind==='delay') state.penDelay++;
     // 'wrong' 由 state.wrongTaps 記（點錯那一支自己的計數），不重複記
   }
-  // 敵攻擊音：依 kind 播該怪對應音（ult＝大絕命中/不完美防禦格擋、delay＝太慢、wrong＝按錯）。
-  const sk = state.curEnemySound && state.curEnemySound[fxKind];
+  /* 敵攻擊音（ver -800）：**綁在 hitFx 的 type 上**——同一格的受擊特效與音效是一組
+     （HITFX 那張表：type→{base 視覺, se 音效}）。卡上不再有 `sound` 欄位，改 hitFx
+     的 type 就連特效帶音一起換（Ray 定案）。block 讀 ult（fxKind 已折）。 */
+  const _hf = state.curEnemyHitFx && state.curEnemyHitFx[fxKind];
+  const sk  = _hf && HITFX[_hf.type] && HITFX[_hf.type].se;
   if(sk) SFX.play(asset(sk), sfxGain(sk));   // 受擊層增益（全域響度階層見 tuning.sfxGain）
   if(state.saintMode){
     // 聖徒化期間敵攻擊不扣血：改推進倒數槽（推滿＝OBE）。視覺（震動/受擊特效/紅閃）留在 combat，

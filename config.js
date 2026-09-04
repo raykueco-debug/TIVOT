@@ -7,6 +7,33 @@
 import { ART } from './script/speakers.js';
 import { ENEMIES } from './script/enemies.js';   // 敵人卡抽成獨立檔（ver -794）
 
+/* ══ 受擊特效 → 視覺＋音效（ver -800，Ray：「音效直接跟 hitFx 綁定，改 hitFx 就自動
+   連到音效；特殊怪 fx 直接寫 centipi_bite 之類的專屬 type」）══
+   敵人卡的 `hitFx:{ ult/delay/wrong:{ type:'…' } }` 只寫 type，這張表把 type 翻成：
+     · `base` ＝視覺（enemy.showHitFx 的 switch 吃它：claw/blood/bite/bullet/slash/blunt）
+     · `se`   ＝受擊音（combat 播它）
+   —— 所以卡上**不再需要 `sound` 欄位**（鐵律 7：一個 type 一個音，不用兩處各寫）。
+   ⚠ 通用 type（claw/slash/…）＝通用音；**特殊怪**自己的簽名音用**專屬 type 名**
+     （serpent_bite＝羽蛇吼叫、centipi_claw＝蜈蚣叫聲、pirate_*＝空賊船三種艦砲…），
+     視覺沿用某個 base，音效獨立——別人用不到，改一格連 fx 帶音一起換掉。 */
+export const HITFX = {
+  // ── 通用 ──
+  claw:   { base:'claw',   se:'em_slash'  },
+  slash:  { base:'slash',  se:'em_slash'  },
+  bite:   { base:'bite',   se:'em_slash'  },
+  blood:  { base:'blood',  se:'em_smack'  },
+  blunt:  { base:'blunt',  se:'em_smack'  },
+  bullet: { base:'bullet', se:'em_shot'   },
+  dagger: { base:'slash',  se:'em_dagger' },   // 匕首（貝琳妲語彙）：slash 視覺＋匕首音
+  // ── 特殊怪的簽名（視覺沿用 base、音效專屬）──
+  serpent_bite:      { base:'bite',   se:'se_enemy_serpent' },   // 羽蛇：牙印＋吼叫
+  centipi_claw:      { base:'claw',   se:'se_enemy_centipi' },   // 蜈蚣：爪痕＋叫聲
+  witch_revolver:    { base:'bullet', se:'em_revolver'      },   // 魔女大絕：彈痕＋左輪
+  pirate_cannon:     { base:'bullet', se:'se_weapon_cannon' },   // 空賊船大絕：艦砲
+  pirate_shipcannon: { base:'bullet', se:'se_ship_cannon'   },   // 空賊船延時：艦砲（另一支）
+  pirate_sniper:     { base:'bullet', se:'se_sniper_falcon' },   // 空賊船按錯：狙擊
+};
+
 /* ============================================================================
  *  config.js — 遊戲內容資料層（唯一資料來源）
  *  ---------------------------------------------------------------------------
@@ -22,7 +49,7 @@ import { ENEMIES } from './script/enemies.js';   // 敵人卡抽成獨立檔（v
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.05-799';
+export const VERSION = 'ver 2026.09.05-800';
 
 export const GAME_CONFIG = {
 

@@ -14,7 +14,7 @@
  * ========================================================================== */
 
 import * as clock from '../script/clock.js';   // 立繪的時段差分（ver -423）
-import { GAME_CONFIG, asset, sfxGain } from '../config.js';
+import { GAME_CONFIG, HITFX, asset, sfxGain } from '../config.js';
 import { state, initEnemyHp } from '../state.js';
 import { SFX } from '../audio.js';
 
@@ -33,7 +33,10 @@ export function init(a){ api = { ...api, ...a }; }
 export function showHitFx(kind){
   const fx = state.curEnemyHitFx && state.curEnemyHitFx[kind];
   if(!fx){ triggerClaw(); return; }
-  switch(fx.type){
+  /* 視覺 base（ver -800）：特殊 type（serpent_bite…）沿用某個 base 視覺，見 config.HITFX。
+     未登記的 type → 就用 type 本身（相容舊寫法），再退回三爪。 */
+  const base = (HITFX[fx.type] && HITFX[fx.type].base) || fx.type;
+  switch(base){
     case 'claw':  triggerClaw(fx.count||3, fx.angle==='random'); break;
     case 'blood': spawnBlood(fx.angle==='random'); break;
     case 'bite':  spawnBite(); break;
@@ -426,8 +429,7 @@ export function setEnemy(key){
   state.DELAY_SECONDS = dp.seconds!=null ? dp.seconds : null;
   state.DELAY_DAMAGE  = dp.damage !=null ? dp.damage  : null;
   state.WRONG_DAMAGE  = wp.damage !=null ? wp.damage  : null;
-  state.curEnemyHitFx = en.hitFx || null;        // 3.7：本怪受擊特效三件套
-  state.curEnemySound = en.sound || null;        // 3.7：本怪攻擊音（依 kind：ult/delay/wrong）
+  state.curEnemyHitFx = en.hitFx || null;        // 3.7：本怪受擊特效三件套（音效綁在 type 上，見 config.HITFX；卡上不再有 sound，ver -800）
   state.curEnemyLandSe = en.landSe || null;      // 降臨著地音的卡上覆寫（ver -745，羽蛇＝吼叫）
   // 名稱與立繪；取景（config fit.pos → object-position；未設＝回 CSS 預設 center top）
   const nameEl = $('enemyName');
