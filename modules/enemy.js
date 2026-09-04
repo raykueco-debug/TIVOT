@@ -398,6 +398,12 @@ export function setEnemy(key){
   const ue = Array.isArray(en.ultEvery) ? en.ultEvery : null;
   state.ULT_MIN    = ue ? ue[0]*1000 : (u.minMs!=null ? u.minMs : 4000);
   state.ULT_MAX    = ue ? ue[1]*1000 : (u.maxMs!=null ? u.maxMs : 8000);
+  /* 開場第一發大絕的延遲（ver -795，Ray：「編入逐個，預設 1~2 秒」）：卡上
+     `openUlt:[1,2]`（**秒**，同 ultEvery 的讀法）覆寫；沒寫＝預設 1~2 秒隨機。
+     以前是全域寫死 0~3 秒（defense 的 ULT_OPEN_MS），現在逐怪可調。 */
+  const oue = Array.isArray(en.openUlt) ? en.openUlt : null;
+  state.ULT_OPEN_MIN = oue ? oue[0]*1000 : 1000;
+  state.ULT_OPEN_MAX = oue ? oue[1]*1000 : 2000;
   const dp = en.delayPenalty || {};              // 3.3：延時懲罰縮放（Boss=0.5 / -1）
   state.DELAY_PENALTY_SCALE = dp.dmgScale!=null ? dp.dmgScale : 1;
   state.DELAY_TIME_DELTA    = dp.timeDelta!=null ? dp.timeDelta : 0;

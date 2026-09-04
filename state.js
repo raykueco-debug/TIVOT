@@ -85,6 +85,8 @@ export const state = {
   ULT_GAP_MS: 0,
   ULT_MIN: 4000,
   ULT_MAX: 8000,
+  ULT_OPEN_MIN: 1000,   // 開場第一發大絕的延遲範圍（毫秒，ver -795）：逐怪卡上 openUlt:[秒,秒] 覆寫，預設 1~2 秒
+  ULT_OPEN_MAX: 2000,
   DELAY_PENALTY_SCALE: 1,
   DELAY_TIME_DELTA: 0,
   WRONG_PENALTY_SCALE: 1,
