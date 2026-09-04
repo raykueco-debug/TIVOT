@@ -653,7 +653,9 @@ function enemyAttack(dmg, kind, saintAmt){
      ⚠ 這是 ver -600 留下的破口：那一版把格擋的呼叫由 'ult' 改成 'block' 卻沒有
        別名，於是 `curEnemySound['block']`／`hitFx['block']` 全部查不到 ——
        格擋的敵大絕音沒了、受擊特效退回預設的三爪。 */
-  const fxKind = (kind==='block') ? 'ult' : kind;
+  /* hitFx/音效的 slot（ver -801）：主動攻擊由 `ult` 改叫 `assault`（Ray）——`kind` 的
+     'ult'（大絕命中）與 'block'（格擋）都讀 hitFx.assault；delay/wrong 照舊。 */
+  const fxKind = (kind==='block' || kind==='ult') ? 'assault' : kind;
   /* ══⚠⚠ **失誤計數**（ver -619 補）══ ver -600 定了 `penUlt`／`penBlock`／`penDelay`
      這三個欄位、結算也在讀它們，**但從來沒有人 ++** —— 於是新評價的懲罰秒數
      永遠只有「點錯」那一項，挨大絕／格擋／延時全部免費。

@@ -393,26 +393,28 @@ export function setEnemy(key){
   /* 反擊硬直（ver -495，Ray：「被反擊時延時歸零；預設為 1，0 的話就算被反擊
      延時計時也不會歸零」）。卡上沒寫＝1（會硬直）。判定在 defense 的反擊分支。 */
   state.enemyCounterStagger = (en.counterStagger!=null) ? en.counterStagger : 1;
-  const u = en.ult || {};                        // 3.3：Boss 專屬大絕參數（缺欄位＝一般怪預設）
-  /* 大絕的 hp 門檻行為（ver -760；ver -798 參數化）：hp% 以下這一次攻擊改走特殊波。
-     `ult:{ hp:40, count:4, gap:0.5, cd:3 }` ＝血 ≤40% 起：一波 4 顆、每顆隔 0.5 秒
-       **依次**隨機出現，整波之間 CD 3 秒（沒寫 cd＝照常規頻率 ULT_MIN~MAX）。
-     `ult:{ hp:30, act:'ring4' }` ＝具名波（4 顆**同時**，＝ count:4 gap:0）。
-     ⚠ 有 act 或 count 才算「有門檻行為」；只有 hp 沒有行為 → 當一般圈。 */
-  state.enemyUltAct = (u.act!=null || u.count!=null) ? {
+  /* ══ 主動攻擊三分（ver -801，Ray 定案）══
+     · `ultEvery:[min,max]`（秒）＝**頻率**（多久發一次；全卡必填）。
+     · `assault:{ count, gap }`＝**一般主動攻擊**的形狀：一波幾顆、每顆間隔秒
+       （取代舊的 Boss `ult:{shots,gapMs}`；沒寫＝1 顆）。
+     · `ult:{ hp, count, gap, cd }`＝**血量門檻的特殊波**（hp% 以下改走它；沒有就 `{}`）。
+     三者分開：頻率／一般形狀／門檻波。 */
+  const asl = en.assault || {};
+  const u   = en.ult || {};
+  state.ULT_SHOTS  = (asl.count!=null) ? asl.count : 1;
+  state.ULT_GAP_MS = (asl.gap!=null)   ? asl.gap*1000 : 0;
+  const ue = Array.isArray(en.ultEvery) ? en.ultEvery : [4,8];   // 沒填＝退回 4~8 秒
+  state.ULT_MIN    = ue[0]*1000;
+  state.ULT_MAX    = ue[1]*1000;
+  /* 門檻波：`ult:{ hp:40, count:4, gap:0.4, cd:4 }` ＝血 ≤40% 起，一波 count 顆、每顆隔
+     gap 秒依次隨機出現、整波之間 CD cd 秒（沒寫 cd＝照常規頻率）。空 `{}`＝沒有門檻波。 */
+  state.enemyUltAct = (u.hp!=null) ? {
     hp:    u.hp||0,
-    act:   u.act||null,                          // 具名波（ring4）；沒寫走 count/gap 的依次波
-    count: (u.count!=null) ? u.count : 4,         // 一波幾顆
-    gapMs: (u.gap!=null)   ? u.gap*1000 : 0,      // 每顆間隔（秒→ms）；0＝同時
-    cdMs:  (u.cd!=null)    ? u.cd*1000  : null,    // 整波之間 CD（秒→ms）；null＝照常規頻率
+    act:   u.act||null,                          // 具名波（相容舊 ring4）；沒寫走 count/gap
+    count: (u.count!=null) ? u.count : 4,
+    gapMs: (u.gap!=null)   ? u.gap*1000 : 0,
+    cdMs:  (u.cd!=null)    ? u.cd*1000  : null,
   } : null;
-  state.ULT_SHOTS  = u.shots!=null ? u.shots : 1;
-  state.ULT_GAP_MS = u.gapMs!=null ? u.gapMs : 0;
-  /* 發動頻率。⚠ 卡上的 `ultEvery:[3,5]`（**秒**）是最好讀的寫法（ver -423），
-     舊的 `ult.minMs/maxMs`（毫秒）仍然吃 —— 兩者都在，卡上寫哪個用哪個。 */
-  const ue = Array.isArray(en.ultEvery) ? en.ultEvery : null;
-  state.ULT_MIN    = ue ? ue[0]*1000 : (u.minMs!=null ? u.minMs : 4000);
-  state.ULT_MAX    = ue ? ue[1]*1000 : (u.maxMs!=null ? u.maxMs : 8000);
   /* 開場第一發大絕的延遲（ver -795，Ray：「編入逐個，預設 1~2 秒」）：卡上
      `openUlt:[1,2]`（**秒**，同 ultEvery 的讀法）覆寫；沒寫＝預設 1~2 秒隨機。
      以前是全域寫死 0~3 秒（defense 的 ULT_OPEN_MS），現在逐怪可調。 */

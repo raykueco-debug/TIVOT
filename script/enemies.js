@@ -34,9 +34,14 @@ export const ENEMIES = {
       attack:45,       // 大絕一擊傷害（原 ULT_DAMAGE）
       atkInterval:null,// 大絕蓄力秒數；null＝沿用 tuning.chargeSeconds（逐怪可覆寫）
       ultEvery:[2,4],
+      assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
+      ult:{},                        // hp 門檻特殊波 {hp,count,gap,cd}；無則留空
       // 攻擊音（依 kind：ult＝大絕命中/不完美防禦格擋、delay＝太慢、wrong＝按錯）。鑰匙對應 ASSETS。
       /* 延時懲罰 5 秒（ver -458，Ray：「除了槍之魔女以外的敵人都先預設 5 秒」）。 */
       delayPenalty:{ seconds:5 },
+      resist:{},                     // 依傷害來源(basic/counter/dual/saint)的減傷成數；無則 {}
+      weak:{},                       // 依傷害來源的增傷成數；無則 {}
+      landSe:null,                   // 登場音（卡上覆寫）；無則 null
       special:[],      // 特殊行動預留（本版不實作邏輯，僅保留結構）
       // v16：每盤格數手動覆寫（index 對應第幾盤，0-based；null／缺項＝用預設規則：第三盤起 16 格）。
       //      作者日後可逐怪逐盤填數值微調難度，例：[9,9,16,16,20]。聖徒化 25 宮格不受此影響。
@@ -47,7 +52,7 @@ export const ENEMIES = {
       hitFx:{
         delay:{ type:'blood', angle:'random' },   // 延時懲罰 → 一道血痕、角度隨機
         wrong:{ type:'slash' },                    // 按錯懲罰 → 一條紅刀痕濺血
-        ult:{   type:'bite' },   // 攻擊（一般圈）→ 牙印（ver -762，Ray：「地下聖徒跟巨型聖徒的攻擊都換成牙印」）
+        assault:{   type:'bite' },   // 攻擊（一般圈）→ 牙印（ver -762，Ray：「地下聖徒跟巨型聖徒的攻擊都換成牙印」）
       },
     },
     // ── 教學專用敵：訓練用聖徒（僅教學戰載入，不進 lineup）──
@@ -64,13 +69,19 @@ export const ENEMIES = {
       hp:500,
       attack:45,
       atkInterval:null,         // 沿用 tuning.chargeSeconds
+      ultEvery:[2,4],                 // 大絕頻率（秒）
+      assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
+      ult:{},                        // hp 門檻特殊波 {hp,count,gap,cd}；無則留空
       delayPenalty:{ seconds:5 },   // 5 秒（ver -458，非魔女的預設）
+      resist:{},                     // 依傷害來源(basic/counter/dual/saint)的減傷成數；無則 {}
+      weak:{},                       // 依傷害來源的增傷成數；無則 {}
+      landSe:null,                   // 登場音（卡上覆寫）；無則 null
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
         delay:{ type:'blood', angle:'random' },
         wrong:{ type:'slash' },
-        ult:{   type:'claw', count:3, angle:'random' },
+        assault:{   type:'claw', count:3, angle:'random' },
       },
     },
     /* ══ 固定立靶（ver -396，Ray 交件 `Dart_timeattack`）══
@@ -90,6 +101,12 @@ export const ENEMIES = {
       hp:300,                        // Ray 指定
       attack:0,
       atkInterval:null,
+      ultEvery:[2,4],                 // 大絕頻率（秒）
+      assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
+      ult:{},                        // hp 門檻特殊波 {hp,count,gap,cd}；無則留空
+      resist:{},                     // 依傷害來源(basic/counter/dual/saint)的減傷成數；無則 {}
+      weak:{},                       // 依傷害來源的增傷成數；無則 {}
+      landSe:null,                   // 登場音（卡上覆寫）；無則 null
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
@@ -97,7 +114,7 @@ export const ENEMIES = {
            大絕與延時的特效根本不會演到（它不攻擊）。 */
         delay:{ type:'slash' },
         wrong:{ type:'slash' },
-        ult:{   type:'slash' },
+        assault:{   type:'slash' },
       },
     },
     // ── 連戰第二隻（局內序列第二敵）：巨型聖徒。完全獨立一筆，非沿用 faceless。 ──
@@ -116,13 +133,18 @@ export const ENEMIES = {
       attack:45,                     // 大絕單擊傷害（普通值；差異在密度不在單擊）
       atkInterval:3.33,              // 大絕蓄力秒數：4×(1/1.2)≈3.33 → 攻擊更密（比第一隻高 20%）
       ultEvery:[2,4],
+      assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
+      ult:{},                        // hp 門檻特殊波 {hp,count,gap,cd}；無則留空
       delayPenalty:{ seconds:5 },    // 5 秒（ver -458，非魔女的預設）
+      resist:{},                     // 依傷害來源(basic/counter/dual/saint)的減傷成數；無則 {}
+      weak:{},                       // 依傷害來源的增傷成數；無則 {}
+      landSe:null,                   // 登場音（卡上覆寫）；無則 null
       special:[],
       boardGrids:[9,9,9,9,9],     // ver -792：貝琳妲以外全 9 宮格（Ray 指定）
       hitFx:{                        // 自帶獨立三件套（巨型聖徒風味：大絕爪數加重為 4）
         delay:{ type:'blood', angle:'random' },
         wrong:{ type:'slash' },      // 按錯 → 紅刀痕濺血
-        ult:{   type:'bite' },       // 攻擊（一般圈）→ 牙印（ver -762，同地下聖徒）
+        assault:{   type:'bite' },       // 攻擊（一般圈）→ 牙印（ver -762，同地下聖徒）
       },
     },
     /* ══ 森住民（man_sorana，ver -744，Ray 的卡：「數值用巨型聖徒，攻擊減半，
@@ -144,6 +166,8 @@ export const ENEMIES = {
       hp:400,
       attack:22,                     // 巨型聖徒 45 的一半
       atkInterval:3.33,
+      ultEvery:[2,4],                 // 大絕頻率（秒）
+      assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
       /* ══ 大絕（ver -760，Ray 的敵攻四態實驗卡：「她 hp30% 以下時會同時出現
          四個攻擊圈」）══ hp 門檻＋具名行為（defense 的 ULT_ACTS）。
          ⚠ `noStack`＝一**波**清完才有下一波（不寫的話下一次排程會在殘圈上再疊
@@ -151,12 +175,15 @@ export const ENEMIES = {
       ult:{ hp:40, count:4, gap:0.4, cd:4 },   // hp% 以下，每 0.4 秒丟一顆、連丟 4 顆、然後歇 4 秒
       noStack:true,
       delayPenalty:{ seconds:4 },    // 快一秒（巨型聖徒是 5）
+      resist:{},                     // 依傷害來源(basic/counter/dual/saint)的減傷成數；無則 {}
+      weak:{},                       // 依傷害來源的增傷成數；無則 {}
+      landSe:null,                   // 登場音（卡上覆寫）；無則 null
       special:[],
       boardGrids:[9,9,9,9,16],
       hitFx:{
         delay:{ type:'dagger' },     // 貝琳妲的 dagger（slash 視覺＋匕首音，見 config.HITFX）
         wrong:{ type:'slash' },
-        ult:{   type:'claw', count:4, angle:'random' },
+        assault:{   type:'claw', count:4, angle:'random' },
       },
     },
     /* ══ 禍魘娜塔莉（ver -671，Ray 交稿）══════════════════════════════════
@@ -175,13 +202,19 @@ export const ENEMIES = {
       hp:900,                        // Ray 指定
       attack:22,                     // 巨型聖徒 45 的一半（減半，取整）
       atkInterval:3.33,              // 以下全部同巨型聖徒
+      ultEvery:[2,4],                 // 大絕頻率（秒）
+      assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
+      ult:{},                        // hp 門檻特殊波 {hp,count,gap,cd}；無則留空
       delayPenalty:{ seconds:5 },
+      resist:{},                     // 依傷害來源(basic/counter/dual/saint)的減傷成數；無則 {}
+      weak:{},                       // 依傷害來源的增傷成數；無則 {}
+      landSe:null,                   // 登場音（卡上覆寫）；無則 null
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
         delay:{ type:'claw', count:4, angle:'random' },
         wrong:{ type:'slash' },
-        ult:{   type:'bite', count:4, angle:'random' },
+        assault:{   type:'bite', count:4, angle:'random' },
       },
     },
     // 亂入怪（無傷 45 秒內通關才會出現）— 先用同一隻怪測流程，正式再換
@@ -194,9 +227,20 @@ export const ENEMIES = {
       hp:400,
       attack:50,
       atkInterval:null,
+      ultEvery:[2,4],                 // 大絕頻率（秒）
+      assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
+      ult:{},                        // hp 門檻特殊波 {hp,count,gap,cd}；無則留空
       delayPenalty:{ seconds:5 },    // 5 秒（ver -458，非魔女的預設）
+      resist:{},                     // 依傷害來源(basic/counter/dual/saint)的減傷成數；無則 {}
+      weak:{},                       // 依傷害來源的增傷成數；無則 {}
+      landSe:null,                   // 登場音（卡上覆寫）；無則 null
       special:[],
       boardGrids:[9,9,9,9,9],   // v16：每盤格數手動覆寫（同上，聖徒化不受影響）
+      hitFx:{                        // 佔位卡的預設三件套（沿用地下聖徒風味；triggerIntruder 載入真正的怪會整組覆寫）
+        delay:{ type:'blood', angle:'random' },
+        wrong:{ type:'slash' },
+        assault:{   type:'bite' },
+      },
     },
     // ── 槍之魔女（Boss）v17：S 評價後遭遇的隱藏 Boss ──
     witch: {
@@ -209,18 +253,20 @@ export const ENEMIES = {
       hp:500,
       attack:45,                // 大絕單點傷害（同一般怪基準）
       atkInterval:null,         // 大絕蓄力窗口（紅圈縮放時間）；null＝沿用 tuning.chargeSeconds
-      // Boss 攻擊音：大絕＝左輪 EM_Revolver；延時＝槍聲 EM_Shot；按錯＝匕首 EM_Dagger。
+      ultEvery:[2,4],           // 大絕頻率 2~4 秒
+      assault:{ count:2, gap:1 },   // 一般主動攻擊：一次先後出 2 顆、間隔 1 秒（Boss；ver -801 由舊 ult.shots/gapMs 轉）
+      ult:{},                       // 無 hp 門檻特殊波
+      resist:{},                     // 依傷害來源(basic/counter/dual/saint)的減傷成數；無則 {}
+      weak:{},                       // 依傷害來源的增傷成數；無則 {}
+      landSe:null,                   // 登場音（卡上覆寫）；無則 null
       special:[],
       boardGrids:[9,9,16,16,16],
-      // v17：Boss 專屬機制（一般怪不填＝走預設，資料/程式分離）
-      ult:{ shots:2, gapMs:1000, minMs:2000, maxMs:4000 },   // 大絕：一次先後出 2 個點、間隔 1 秒；發動頻率 2~4 秒
       delayPenalty:{ dmgScale:0.5, timeDelta:-1 },           // 延時懲罰：攻擊力為一般怪一半、時限減 1 秒
-      wrongPenalty:{ dmgScale:1 },                           // 按錯懲罰：攻擊力同一般怪
       // v17.2：受擊特效 —— 大絕/延時走彈痕（玻璃碎裂），按錯改紅刀痕濺血
       hitFx:{
         delay:{ type:'bullet', count:1, pos:'random' },   // 延時 → 彈痕＋槍聲（bullet→em_shot）
         wrong:{ type:'dagger' },                           // 按錯 → 紅刀痕＋匕首音（dagger）
-        ult:{   type:'witch_revolver', count:1, pos:'random', scale:1.6 },   // 大絕 → 大彈痕＋左輪（專屬）
+        assault:{   type:'witch_revolver', count:1, pos:'random', scale:1.6 },   // 大絕 → 大彈痕＋左輪（專屬）
       },
     },
     /* ══ 賞金獵人（ver -375）══ 舊街區・賞金獵人公會那一場（劇情插入戰）。
@@ -263,6 +309,8 @@ export const ENEMIES = {
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[-0.5,0], '萊福槍':[0.5,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       openUlt:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
       ultEvery:[2,4],
+      assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
+      ult:{},                        // hp 門檻特殊波 {hp,count,gap,cd}；無則留空
       kind:'harm',
       image:'enemy_np_candletower',
       bg:'Northport_church_BF',
@@ -271,12 +319,15 @@ export const ENEMIES = {
       attack:15,
       atkInterval:null,
       delayPenalty:{ seconds:6 },
+      resist:{},                     // 依傷害來源(basic/counter/dual/saint)的減傷成數；無則 {}
+      weak:{},                       // 依傷害來源的增傷成數；無則 {}
+      landSe:null,                   // 登場音（卡上覆寫）；無則 null
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
         delay:{ type:'blood', angle:'random' },
         wrong:{ type:'slash' },
-        ult:{   type:'blunt', },
+        assault:{   type:'blunt', },
       },
     },
     np_candlepenitent: {
@@ -285,6 +336,8 @@ export const ENEMIES = {
       weaponMod:{ '重機槍':[0,-0.2], '霰彈槍':[0.5,0], '萊福槍':[-0.5,-0.3] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       openUlt:[0.5,1.5],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
       ultEvery:[2,4],
+      assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
+      ult:{},                        // hp 門檻特殊波 {hp,count,gap,cd}；無則留空
       kind:'harm',
       image:'enemy_np_candlepenitent',
       bg:'Northport_church_BF',
@@ -293,12 +346,15 @@ export const ENEMIES = {
       attack:10,
       atkInterval:null,
       delayPenalty:{ seconds:5 },
+      resist:{},                     // 依傷害來源(basic/counter/dual/saint)的減傷成數；無則 {}
+      weak:{},                       // 依傷害來源的增傷成數；無則 {}
+      landSe:null,                   // 登場音（卡上覆寫）；無則 null
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
         delay:{ type:'blood', angle:'random' },
         wrong:{ type:'slash' },
-        ult:{   type:'claw', count:3, angle:'random' },
+        assault:{   type:'claw', count:3, angle:'random' },
       },
     },
     np_coralman: {
@@ -307,6 +363,8 @@ export const ENEMIES = {
       weaponMod:{ '重機槍':[0,-0.2], '霰彈槍':[0.5,0], '萊福槍':[-0.5,-0.3] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       openUlt:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
       ultEvery:[2,4],
+      assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
+      ult:{},                        // hp 門檻特殊波 {hp,count,gap,cd}；無則留空
       kind:'harm',
       image:'enemy_np_coralman',
       bg:'Northport_church_BF',
@@ -315,12 +373,15 @@ export const ENEMIES = {
       attack:10,
       atkInterval:null,
       delayPenalty:{ seconds:5 },
+      resist:{},                     // 依傷害來源(basic/counter/dual/saint)的減傷成數；無則 {}
+      weak:{},                       // 依傷害來源的增傷成數；無則 {}
+      landSe:null,                   // 登場音（卡上覆寫）；無則 null
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
         delay:{ type:'blood', angle:'random' },
         wrong:{ type:'slash' },
-        ult:{   type:'claw', count:3, angle:'random' },
+        assault:{   type:'claw', count:3, angle:'random' },
       },
     },
     np_reassembled: {
@@ -329,6 +390,8 @@ export const ENEMIES = {
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       openUlt:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
       ultEvery:[2,4],
+      assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
+      ult:{},                        // hp 門檻特殊波 {hp,count,gap,cd}；無則留空
       kind:'harm',
       image:'enemy_np_reassembled',
       bg:'Northport_church_BF',
@@ -337,12 +400,15 @@ export const ENEMIES = {
       attack:15,
       atkInterval:null,
       delayPenalty:{ seconds:5 },
+      resist:{},                     // 依傷害來源(basic/counter/dual/saint)的減傷成數；無則 {}
+      weak:{},                       // 依傷害來源的增傷成數；無則 {}
+      landSe:null,                   // 登場音（卡上覆寫）；無則 null
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
         delay:{ type:'blood', angle:'random' },
         wrong:{ type:'slash' },
-        ult:{   type:'claw', count:3, angle:'random' },
+        assault:{   type:'claw', count:3, angle:'random' },
       },
     },
     /* ══ 教堂的 Boss（ver -586，Ray：「B2G01，教堂 boss 用這一隻，跟其他怪數值
@@ -357,6 +423,8 @@ export const ENEMIES = {
       weaponMod:{ '重機槍':[-0.1,0], '霰彈槍':[-0.5,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       openUlt:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
       ultEvery:[2,4],
+      assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
+      ult:{},                        // hp 門檻特殊波 {hp,count,gap,cd}；無則留空
       kind:'harm',
       image:'enemy_np_boss',
       bg:'Northport_church_BF',
@@ -365,12 +433,15 @@ export const ENEMIES = {
       attack:20,
       atkInterval:null,
       delayPenalty:{ seconds:6 },
+      resist:{},                     // 依傷害來源(basic/counter/dual/saint)的減傷成數；無則 {}
+      weak:{},                       // 依傷害來源的增傷成數；無則 {}
+      landSe:null,                   // 登場音（卡上覆寫）；無則 null
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
         delay:{ type:'blunt' },
         wrong:{ type:'blood', angle:'random' },
-        ult:{   type:'blunt' },
+        assault:{   type:'blunt' },
       },
     },
     /* ══ 瓦礫中的紫黑之爪（ver -595，Ray 交稿）══ 教堂那一場之後的真 BOSS，
@@ -390,6 +461,8 @@ export const ENEMIES = {
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       openUlt:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
       ultEvery:[2,4],
+      assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
+      ult:{},                        // hp 門檻特殊波 {hp,count,gap,cd}；無則留空
       kind:'harm',
       image:'enemy_np_claws',
       bg:'Northport_church_BF',
@@ -397,12 +470,15 @@ export const ENEMIES = {
       attack:10,
       atkInterval:null,
       delayPenalty:{ seconds:5 },
+      resist:{},                     // 依傷害來源(basic/counter/dual/saint)的減傷成數；無則 {}
+      weak:{},                       // 依傷害來源的增傷成數；無則 {}
+      landSe:null,                   // 登場音（卡上覆寫）；無則 null
       special:[],
       boardGrids:[9,9,9,9,16],
       hitFx:{
         delay:{ type:'blood', angle:'random' },
         wrong:{ type:'slash' },
-        ult:{   type:'claw', count:3, angle:'random' },
+        assault:{   type:'claw', count:3, angle:'random' },
       },
     },
     guild_hunter: {
@@ -422,6 +498,11 @@ export const ENEMIES = {
          不是聖徒，數字低是刻意的。 */
       attack:10,
       atkInterval:null,                  // 沿用 tuning.chargeSeconds
+      ultEvery:[2,4],                 // 大絕頻率（秒）
+      assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
+      ult:{},                        // hp 門檻特殊波 {hp,count,gap,cd}；無則留空
+      weak:{},                       // 依傷害來源的增傷成數；無則 {}
+      landSe:null,                   // 登場音（卡上覆寫）；無則 null
       special:[],
       /* 盤面配置 `33344, loop`：3＝九宮格、4＝16 宮格；**loop**＝打完五盤還沒死就從頭再來
          （這一隻血厚 200、傷害低，是「耐力戰」的設計）。 */
@@ -435,7 +516,7 @@ export const ENEMIES = {
       hitFx:{
         delay:{ type:'bullet', count:1, pos:'random' },          // 彈孔
         wrong:{ type:'blunt' },                                   // 鈍器
-        ult:{   type:'bullet', count:1, pos:'random', scale:1.8 },// 大彈孔
+        assault:{   type:'bullet', count:1, pos:'random', scale:1.8 },// 大彈孔
       },
       /* ⚠ 抗性／弱點武器：**卡上有、程式還沒實作**。資料先照卡放著。 */
       resist:[], weak:[],
@@ -468,6 +549,8 @@ export const ENEMIES = {
          兩個都叫「秒」但意思完全不同，混用會讓怪要嘛不打人、要嘛打不完。 */
       atkInterval:null,
       ultEvery:[2,4],
+      assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
+      ult:{},                        // hp 門檻特殊波 {hp,count,gap,cd}；無則留空
       /* ⚠ 「不疊加」＝場上同時只有一個紅點（見 defense.scheduleUlt 的 `noStack`）。 */
       noStack:true,
       landSe:'se_enemy_centipi',    // 登場音（ver -790，船戰各自獨立；蜈蚣＝自己的叫聲）
@@ -481,7 +564,7 @@ export const ENEMIES = {
       hitFx:{
         delay:{ type:'claw', count:1, angle:'random' },
         wrong:{ type:'blunt' },
-        ult:{   type:'centipi_claw', count:3, angle:'random' },   // 專屬：爪痕＋蜈蚣叫聲
+        assault:{   type:'centipi_claw', count:3, angle:'random' },   // 專屬：爪痕＋蜈蚣叫聲
       },
       /* ⚠⚠ **抗性／弱點／破防增傷**（ver -423 起真的生效，之前只是放著）：
          值是**加減成**，套在 `combat.enemyDamage` 那一個計算點上（鐵律 7）。
@@ -523,6 +606,8 @@ export const ENEMIES = {
       attack:20,                   // 蓄力攻擊（紅點那一發）
       atkInterval:4,               // 蓄力窗口 4 秒（固定）
       ultEvery:[2,4],              // 發動頻率 2~4 秒一次
+      assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
+      ult:{},                        // hp 門檻特殊波 {hp,count,gap,cd}；無則留空
       noStack:true,                // 不疊加：場上同時只有一個紅點
       /* 降臨著地音（ver -745，Ray：「se 不放 se_saintintall 而是放羽蛇叫聲」）——
          禍魘的著地預設是 sfx_saint，這張卡覆寫成牠自己的吼叫（enemy.js 讀）。 */
@@ -536,7 +621,7 @@ export const ENEMIES = {
       hitFx:{
         delay:{ type:'claw', count:1, angle:'random' },
         wrong:{ type:'blunt' },
-        ult:{   type:'serpent_bite' },   // 專屬：牙印＋羽蛇吼叫
+        assault:{   type:'serpent_bite' },   // 專屬：牙印＋羽蛇吼叫
       },
       resist:{ basic:0.20 },
       /* 弱點：反擊武器 +100%、**散射武器（霰彈槍類）再 +150%**（Ray 的卡）——
@@ -571,6 +656,8 @@ export const ENEMIES = {
       attack:20,                   // 蓄力攻擊（紅點那一發）
       atkInterval:4,               // 蓄力窗口 4 秒（固定）
       ultEvery:[2,4],              // 發動頻率 2~4 秒一次
+      assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
+      ult:{},                        // hp 門檻特殊波 {hp,count,gap,cd}；無則留空
       noStack:true,                // 不疊加：場上同時只有一個紅點
       landSe:'se_weapon_cannon',   // 登場音（ver -790，船戰各自獨立；空賊船＝艦砲）
       special:[],
@@ -583,7 +670,7 @@ export const ENEMIES = {
       hitFx:{
         delay:{ type:'pirate_shipcannon', count:1, pos:'random' },   // 專屬：艦砲（延時）
         wrong:{ type:'pirate_sniper', count:1, pos:'random' },       // 專屬：狙擊（按錯）
-        ult:{   type:'pirate_cannon', count:1, pos:'random', scale:2.4, flash:'red' },   // 專屬：艦砲（大絕）
+        assault:{   type:'pirate_cannon', count:1, pos:'random', scale:2.4, flash:'red' },   // 專屬：艦砲（大絕）
       },
       resist:{ basic:0.20 },
       /* 弱點：反擊 +100%、**單射武器（萊福槍類）再 +150%**（`cat:` 只對反擊生效，
