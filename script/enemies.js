@@ -33,6 +33,7 @@ export const ENEMIES = {
       hp:200,          // 連戰第一隻（原測試值 500，v-lineup 調 200）
       attack:45,       // 大絕一擊傷害（原 ULT_DAMAGE）
       atkInterval:null,// 大絕蓄力秒數；null＝沿用 tuning.chargeSeconds（逐怪可覆寫）
+      ultEvery:[2,4],
       // 攻擊音（依 kind：ult＝大絕命中/不完美防禦格擋、delay＝太慢、wrong＝按錯）。鑰匙對應 ASSETS。
       sound:{ ult:'em_slash', delay:'em_smack', wrong:'em_slash' },
       /* 延時懲罰 5 秒（ver -458，Ray：「除了槍之魔女以外的敵人都先預設 5 秒」）。 */
@@ -117,6 +118,7 @@ export const ENEMIES = {
       hp:300,                        // 血更厚
       attack:45,                     // 大絕單擊傷害（普通值；差異在密度不在單擊）
       atkInterval:3.33,              // 大絕蓄力秒數：4×(1/1.2)≈3.33 → 攻擊更密（比第一隻高 20%）
+      ultEvery:[2,4],
       sound:{ ult:'em_slash', delay:'em_smack', wrong:'em_slash' },   // 兩聖徒攻擊音相同
       delayPenalty:{ seconds:5 },    // 5 秒（ver -458，非魔女的預設）
       special:[],
@@ -138,24 +140,24 @@ export const ENEMIES = {
     man_sorana: {
       name:'森住民',
       story:1, counterStagger:1,
-      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0.3], '萊福槍':[0,0.5] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       openUlt:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
       kind:'human',
       image:'enemy_man_sorana',
       fit:{ pos:'50% 30%' },   // ver -745 換上專用戰鬥圖；構圖不對再調這格
-      hp:300,
+      hp:400,
       attack:22,                     // 巨型聖徒 45 的一半
       atkInterval:3.33,
       /* ══ 大絕（ver -760，Ray 的敵攻四態實驗卡：「她 hp30% 以下時會同時出現
          四個攻擊圈」）══ hp 門檻＋具名行為（defense 的 ULT_ACTS）。
          ⚠ `noStack`＝一**波**清完才有下一波（不寫的話下一次排程會在殘圈上再疊
            四顆，實測疊到 8）—— 這是我補的節奏判斷，要改掉直接拔。 */
-      ult:{ hp:30, act:'ring4' },
+      ult:{ hp:40, count:4, gap:0.4, cd:4 },   // hp% 以下，每 0.4 秒丟一顆、連丟 4 顆、然後歇 4 秒
       noStack:true,
       sound:{ ult:'em_slash', delay:'em_dagger', wrong:'em_slash' },
       delayPenalty:{ seconds:4 },    // 快一秒（巨型聖徒是 5）
       special:[],
-      boardGrids:[9,9,9,9,9],
+      boardGrids:[9,9,9,9,16],
       hitFx:{
         delay:{ type:'slash' },      // 貝琳妲的 dagger（slash 特效＋em_dagger 音）
         wrong:{ type:'slash' },
@@ -183,9 +185,9 @@ export const ENEMIES = {
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
-        delay:{ type:'blood', angle:'random' },
+        delay:{ type:'claw', count:4, angle:'random' },
         wrong:{ type:'slash' },
-        ult:{   type:'claw', count:4, angle:'random' },
+        ult:{   type:'bite', count:4, angle:'random' },
       },
     },
     // 亂入怪（無傷 45 秒內通關才會出現）— 先用同一隻怪測流程，正式再換
@@ -207,7 +209,7 @@ export const ENEMIES = {
     witch: {
       name:'槍之魔女',
       story:0, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
-      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
+      weaponMod:{ '重機槍':[0,0.3], '霰彈槍':[0,0.3], '萊福槍':[0,0.3] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       openUlt:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
       kind:'human',                  // 槍之魔女是人類 → 已擊敗（ver -432，Ray 指定）
       image:'enemy_witch',      // 立繪鑰匙（附圖）
@@ -268,12 +270,13 @@ export const ENEMIES = {
       story:1, counterStagger:1,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[-0.5,0], '萊福槍':[0.5,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       openUlt:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
+      ultEvery:[2,4],
       kind:'harm',
       image:'enemy_np_candletower',
       bg:'Northport_church_BF',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:300,
-      attack:10,
+      attack:15,
       atkInterval:null,
       sound:{ ult:'em_slash', delay:'em_smack', wrong:'em_slash' },
       delayPenalty:{ seconds:6 },
@@ -282,14 +285,15 @@ export const ENEMIES = {
       hitFx:{
         delay:{ type:'blood', angle:'random' },
         wrong:{ type:'slash' },
-        ult:{   type:'claw', count:3, angle:'random' },
+        ult:{   type:'blunt', },
       },
     },
     np_candlepenitent: {
       name:'罪之魔像',
       story:1, counterStagger:1,
       weaponMod:{ '重機槍':[0,-0.2], '霰彈槍':[0.5,0], '萊福槍':[-0.5,-0.3] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
-      openUlt:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
+      openUlt:[0.5,1.5],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
+      ultEvery:[2,4],
       kind:'harm',
       image:'enemy_np_candlepenitent',
       bg:'Northport_church_BF',
@@ -308,15 +312,16 @@ export const ENEMIES = {
       },
     },
     np_coralman: {
-      name:'禍魘',
+      name:'魘魔',
       story:1, counterStagger:1,
-      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
+      weaponMod:{ '重機槍':[0,-0.2], '霰彈槍':[0.5,0], '萊福槍':[-0.5,-0.3] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       openUlt:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
+      ultEvery:[2,4],
       kind:'harm',
       image:'enemy_np_coralman',
       bg:'Northport_church_BF',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:300,
+      hp:250,
       attack:10,
       atkInterval:null,
       sound:{ ult:'em_slash', delay:'em_smack', wrong:'em_slash' },
@@ -330,16 +335,17 @@ export const ENEMIES = {
       },
     },
     np_reassembled: {
-      name:'禍魘',
+      name:'心魘',
       story:1, counterStagger:1,
-      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
+      weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       openUlt:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
+      ultEvery:[2,4],
       kind:'harm',
       image:'enemy_np_reassembled',
       bg:'Northport_church_BF',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:300,
-      attack:10,
+      hp:400,
+      attack:15,
       atkInterval:null,
       sound:{ ult:'em_slash', delay:'em_smack', wrong:'em_slash' },
       delayPenalty:{ seconds:5 },
@@ -358,25 +364,26 @@ export const ENEMIES = {
          · `sessionEnd` 在**戰鬥卡**上（`battles.np_boss`）＝打贏它才閉棺、資源回滿
        ⚠ 名字沿用「禍魘」：Ray 還沒給它專屬的名字，不自己編。 */
     np_boss: {
-      name:'禍魘',
+      name:'背負祭壇者',
       story:1, counterStagger:1,
-      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
+      weaponMod:{ '重機槍':[-0.1,0], '霰彈槍':[-0.5,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       openUlt:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
+      ultEvery:[2,4],
       kind:'harm',
       image:'enemy_np_boss',
       bg:'Northport_church_BF',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:300,
-      attack:10,
+      hp:500,
+      attack:20,
       atkInterval:null,
-      sound:{ ult:'em_slash', delay:'em_smack', wrong:'em_slash' },
-      delayPenalty:{ seconds:5 },
+      sound:{ ult:'em_smack', delay:'em_smack', wrong:'em_smack' },
+      delayPenalty:{ seconds:6 },
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
-        delay:{ type:'blood', angle:'random' },
-        wrong:{ type:'slash' },
-        ult:{   type:'claw', count:3, angle:'random' },
+        delay:{ type:'blunt' },
+        wrong:{ type:'blood', angle:'random' },
+        ult:{   type:'blunt' },
       },
     },
     /* ══ 瓦礫中的紫黑之爪（ver -595，Ray 交稿）══ 教堂那一場之後的真 BOSS，
@@ -391,20 +398,21 @@ export const ENEMIES = {
        ⚠ 數值先沿用禍魘那一張（Ray 還沒給這一隻的卡）—— 劇情殺的門檻（HP 30%）
          與教學的節奏由腳本那一側管，不是靠數值。 */
     np_claws: {
-      name:'禍魘',
+      name:'紫黑之爪',
       story:1, counterStagger:1,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       openUlt:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
+      ultEvery:[2,4],
       kind:'harm',
       image:'enemy_np_claws',
       bg:'Northport_church_BF',
-      hp:300,
+      hp:500,
       attack:10,
       atkInterval:null,
       sound:{ ult:'em_slash', delay:'em_smack', wrong:'em_slash' },
       delayPenalty:{ seconds:5 },
       special:[],
-      boardGrids:[9,9,9,9,9],
+      boardGrids:[9,9,9,9,16],
       hitFx:{
         delay:{ type:'blood', angle:'random' },
         wrong:{ type:'slash' },
@@ -457,7 +465,7 @@ export const ENEMIES = {
     centipi: {
       name:'巨型蜈蚣',
       story:1, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
-      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
+      weaponMod:{ '重機槍':[1,0], '霰彈槍':[-0.5,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       openUlt:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
       /* ⚠⚠ **三張時段差分**（Ray：「上午下午用 Centipi_day，晚上用 night，
          黃昏黎明用 Centipi_dd」）。寫成 `{day,dd,night}` 三個槽，時段→槽的對應
@@ -474,14 +482,14 @@ export const ENEMIES = {
          （＝`ULT_MIN`/`ULT_MAX`），不是 `atkInterval`（那是紅點給你幾秒反應）。
          兩個都叫「秒」但意思完全不同，混用會讓怪要嘛不打人、要嘛打不完。 */
       atkInterval:null,
-      ultEvery:[3,5],
+      ultEvery:[2,4],
       /* ⚠ 「不疊加」＝場上同時只有一個紅點（見 defense.scheduleUlt 的 `noStack`）。 */
       noStack:true,
       sound:{ ult:'se_enemy_centipi', delay:'em_smack', wrong:'em_smack' },
       landSe:'se_enemy_centipi',    // 登場音（ver -790，船戰各自獨立；蜈蚣＝自己的叫聲）
       special:[],
       /* 盤面配置 `33344, loop`：3＝九宮格、4＝16 宮格，打完五盤沒死就從頭再來。 */
-      boardGrids:[9,9,9,9,9],
+      boardGrids:[9,9,9,9,16],
       boardLoop:true,
       /* 延時懲罰：**5 秒**（ver -458 由 4 調成非魔女的統一預設）、傷害 10、單爪特效。 */
       delayPenalty:{ seconds:5, damage:10 },
@@ -523,21 +531,21 @@ export const ENEMIES = {
     serpent: {
       name:'羽蛇_A',
       story:1, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
-      weaponMod:{ '重機槍':[0,0], '霰彈槍':[1.50,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
+      weaponMod:{ '重機槍':[0,0.3], '霰彈槍':[0.5,-0.5], '萊福槍':[0,0.5] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       openUlt:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
       kind:'harm',                 // 禍魘 → 已淨化
       image:{ day:'enemy_serpent_day', dd:'enemy_serpent_dd', night:'enemy_serpent_night' },
       hp:500,
       attack:20,                   // 蓄力攻擊（紅點那一發）
       atkInterval:4,               // 蓄力窗口 4 秒（固定）
-      ultEvery:[3,5],              // 發動頻率 3~5 秒一次
+      ultEvery:[2,4],              // 發動頻率 2~4 秒一次
       noStack:true,                // 不疊加：場上同時只有一個紅點
       sound:{ ult:'se_enemy_serpent', delay:'em_smack', wrong:'em_smack' },
       /* 降臨著地音（ver -745，Ray：「se 不放 se_saintintall 而是放羽蛇叫聲」）——
          禍魘的著地預設是 sfx_saint，這張卡覆寫成牠自己的吼叫（enemy.js 讀）。 */
       landSe:'se_enemy_serpent',
       special:[],
-      boardGrids:[9,9,9,9,9],    // 33344, loop
+      boardGrids:[9,9,9,9,16],    // 33344, loop
       boardLoop:true,
       delayPenalty:{ seconds:5, damage:10 },
       wrongPenalty:{ damage:5 },
@@ -572,19 +580,19 @@ export const ENEMIES = {
     pirate_ship: {
       name:'空賊船_A',
       story:0, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
-      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[1.50,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
+      weaponMod:{ '重機槍':[-0.3,0], '霰彈槍':[-0.3,0], '萊福槍':[0.5,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       openUlt:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
       kind:'ship',                 // 船隻 → 已擊沉
       image:{ day:'enemy_pirate_day', dd:'enemy_pirate_dd', night:'enemy_pirate_night' },
       hp:500,
       attack:20,                   // 蓄力攻擊（紅點那一發）
       atkInterval:4,               // 蓄力窗口 4 秒（固定）
-      ultEvery:[3,5],              // 發動頻率 3~5 秒一次
+      ultEvery:[2,4],              // 發動頻率 2~4 秒一次
       noStack:true,                // 不疊加：場上同時只有一個紅點
       sound:{ ult:'se_weapon_cannon', delay:'se_ship_cannon', wrong:'se_sniper_falcon' },   // 點錯改狙擊音（ver -512，Ray 指定）
       landSe:'se_weapon_cannon',   // 登場音（ver -790，船戰各自獨立；空賊船＝艦砲）
       special:[],
-      boardGrids:[9,9,9,9,9],    // 33344, loop
+      boardGrids:[9,9,9,9,16],    // 33344, loop
       boardLoop:true,
       delayPenalty:{ seconds:5, damage:10 },
       wrongPenalty:{ damage:5 },
