@@ -481,6 +481,183 @@ export const ENEMIES = {
         assault:{   type:'claw', count:3, angle:'random' },
       },
     },
+    /* ══ 夏爾村村內戰（ver -802，Ray 交稿）══════════════════════════════════
+       索菈娜家那一夜之後、踏出家門的圍城戰（script/town.js 的 shinier.siege）。
+       全部是**獸骸／魔獸**（kind:'harm' → 降臨/淨化特效、結算副標「已淨化」）。
+       ⚠ 模板＝心魘（np_reassembled）：**武器命中與弱點武器（weaponMod）一律同心魘**
+         （Ray 指定「武器命中跟弱點武器同心魘」），只有 hp/attack 依「上下 20%」變動。
+       ⚠ 連接格（東/廣場/西/北）共用一張怪池卡 `sv_beast`（config.battles）——
+         pickBattleEnemy 每格抽不重覆的一隻（同北泊 np_harm 的作法）。
+       ⚠ bg 是**保底**：城鎮戰交棒時 battleBg 會用玩家站的那一格背景蓋掉它。 */
+    /* ── 連接格怪池（心魘 ±20%，weaponMod 同心魘）── */
+    sv_wolf_pack: {                       // 野外那格以外的怪之一：狼群（−20%）
+      name:'狼骸群',
+      story:1, counterStagger:1,
+      weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },   // ＝心魘（弱點/命中不動）
+      openUlt:[1,2],
+      ultEvery:[2,4],
+      assault:{ count:1, gap:0 },
+      ult:{},
+      kind:'harm',
+      image:'enemy_sv_wolf_pack',
+      bg:'Shinier_North',
+      fit:{ mode:'contain', pos:'center bottom' },
+      hp:320,                             // 心魘 400 −20%
+      attack:12,                          // 心魘 15 −20%
+      atkInterval:null,
+      delayPenalty:{ seconds:5 },
+      resist:{},
+      weak:{},
+      landSe:null,
+      special:[],
+      boardGrids:[9,9,9,9,9],
+      hitFx:{
+        delay:{ type:'blood', angle:'random' },
+        wrong:{ type:'slash' },
+        assault:{   type:'claw', count:3, angle:'random' },
+      },
+    },
+    sv_beast_organ: {                     // 畸變野獸（器官外露，−5%）
+      name:'裂肉獸',
+      story:1, counterStagger:1,
+      weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
+      openUlt:[1,2],
+      ultEvery:[2,4],
+      assault:{ count:1, gap:0 },
+      ult:{},
+      kind:'harm',
+      image:'enemy_sv_beast_organ',
+      bg:'Shinier_North',
+      fit:{ mode:'contain', pos:'center bottom' },
+      hp:380,                             // 心魘 −5%
+      attack:14,
+      atkInterval:null,
+      delayPenalty:{ seconds:5 },
+      resist:{},
+      weak:{},
+      landSe:null,
+      special:[],
+      boardGrids:[9,9,9,9,9],
+      hitFx:{
+        delay:{ type:'blood', angle:'random' },
+        wrong:{ type:'slash' },
+        assault:{   type:'claw', count:3, angle:'random' },
+      },
+    },
+    sv_stag: {                            // 鹿魘（基準值）
+      name:'鹿骸',
+      story:1, counterStagger:1,
+      weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
+      openUlt:[1,2],
+      ultEvery:[2,4],
+      assault:{ count:1, gap:0 },
+      ult:{},
+      kind:'harm',
+      image:'enemy_sv_stag',
+      bg:'Shinier_North',
+      fit:{ mode:'contain', pos:'center bottom' },
+      hp:400,                             // ＝心魘
+      attack:15,
+      atkInterval:null,
+      delayPenalty:{ seconds:5 },
+      resist:{},
+      weak:{},
+      landSe:null,
+      special:[],
+      boardGrids:[9,9,9,9,9],
+      hitFx:{
+        delay:{ type:'blood', angle:'random' },
+        wrong:{ type:'slash' },
+        assault:{   type:'claw', count:3, angle:'random' },
+      },
+    },
+    sv_beast_shackle: {                   // 魔獸型（鐵環枷鎖長進肉裡，+10%）
+      name:'枷獸',
+      story:1, counterStagger:1,
+      weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
+      openUlt:[1,2],
+      ultEvery:[2,4],
+      assault:{ count:1, gap:0 },
+      ult:{},
+      kind:'harm',
+      image:'enemy_sv_beast_shackle',
+      bg:'Shinier_North',
+      fit:{ mode:'contain', pos:'center bottom' },
+      hp:440,                             // 心魘 +10%
+      attack:16,
+      atkInterval:null,
+      delayPenalty:{ seconds:5 },
+      resist:{},
+      weak:{},
+      landSe:null,
+      special:[],
+      boardGrids:[9,9,9,9,9],
+      hitFx:{
+        delay:{ type:'blood', angle:'random' },
+        wrong:{ type:'slash' },
+        assault:{   type:'claw', count:3, angle:'random' },
+      },
+    },
+    /* ── 野外那格（圍城的**收尾格**，config.battles.sv_wild 的 sessionEnd）──
+       Ray：「boss 放 nightmare bear，比其他怪強 20%」——weaponMod 仍同心魘，
+       只有 hp/attack 是心魘 +20%（＝連接格怪池之上）。⚠ 圖目前仍是 .png（未去背轉
+       webp，見 ASSETS 註）。 */
+    sv_bear: {
+      name:'熊骸',
+      story:1, counterStagger:1,
+      weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },   // ＝心魘（弱點/命中不動）
+      openUlt:[1,2],
+      ultEvery:[2,4],
+      assault:{ count:1, gap:0 },
+      ult:{},
+      kind:'harm',
+      image:'enemy_sv_bear',
+      bg:'Shinier_Wilds',
+      fit:{ mode:'contain', pos:'center bottom' },
+      hp:480,                             // 心魘 +20%（比連接格怪池強）
+      attack:18,
+      atkInterval:null,
+      delayPenalty:{ seconds:6 },
+      resist:{},
+      weak:{},
+      landSe:null,
+      special:[],
+      boardGrids:[9,9,9,9,9],
+      hitFx:{
+        delay:{ type:'blood', angle:'random' },
+        wrong:{ type:'slash' },
+        assault:{   type:'claw', count:3, angle:'random' },
+      },
+    },
+    /* ── 祭壇那格（「最硬的一般格」，數值同 np_boss；Ray 指定）──
+       ⚠ weaponMod／hitFx 都**照 np_boss**（不是心魘）——「數值同 np_boss」。 */
+    sv_reliquary: {
+      name:'聖骨獸',
+      story:1, counterStagger:1,
+      weaponMod:{ '重機槍':[-0.1,0], '霰彈槍':[-0.5,0], '萊福槍':[0,0] },   // ＝np_boss
+      openUlt:[1,2],
+      ultEvery:[2,4],
+      assault:{ count:1, gap:0 },
+      ult:{},
+      kind:'harm',
+      image:'enemy_sv_reliquary',
+      bg:'Shinier_Altar',
+      fit:{ mode:'contain', pos:'center bottom' },
+      hp:500,                             // ＝np_boss
+      attack:20,
+      atkInterval:null,
+      delayPenalty:{ seconds:6 },         // ＝np_boss
+      resist:{},
+      weak:{},
+      landSe:null,
+      special:[],
+      boardGrids:[9,9,9,9,9],
+      hitFx:{
+        delay:{ type:'blunt' },
+        wrong:{ type:'blood', angle:'random' },
+        assault:{   type:'blunt' },
+      },
+    },
     guild_hunter: {
       name:'賞金獵人',
       story:1, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）

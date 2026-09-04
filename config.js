@@ -49,7 +49,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.05-801';
+export const VERSION = 'ver 2026.09.05-802';
 
 export const GAME_CONFIG = {
 
@@ -1202,6 +1202,18 @@ export const GAME_CONFIG = {
     /* 教堂的 Boss（ver -586）：同一段連續戰鬥的**最後一場** ——
        `sessionEnd` ＝打贏它才閉棺、聖徒化／主動技／破防值回滿。 */
     np_boss: { enemy:'np_boss', session:'np_siege', sessionEnd:true },
+    /* ══ 夏爾村村內戰（ver -802，Ray 交稿）══════════════════════════════════
+       整張圍城算一場（`session:'shinier_siege'`）：格與格之間開棺原地開/關、
+       hp／聖徒化／主動技／破防值不回滿。**收尾格＝野外那格**（`sv_wild`，
+       `sessionEnd`）——Ray：「夏爾村 seige 無 boss…打到野外為止」，所以沒有一場
+       戲劇性的 Boss，野外那格（熊骸）打完就閉棺、結算、解除圍城。
+       ⚠ **進戰鬥伙伴強配索菈娜**（`partner:'sorana'`，Ray 指定）：combat.startGame
+         看到 `sb.partner` 就覆寫（見那一支）。祭壇那格（`sv_altar`）是「最硬的
+         一般格」，**不是 sessionEnd**（打不打隨玩家，走西側直接到野外可跳過）。 */
+    sv_beast: { enemy:['sv_wolf_pack','sv_beast_organ','sv_stag','sv_beast_shackle'],
+                session:'shinier_siege', partner:'sorana' },
+    sv_altar: { enemy:'sv_reliquary', session:'shinier_siege', partner:'sorana' },
+    sv_wild:  { enemy:'sv_bear', session:'shinier_siege', sessionEnd:true, partner:'sorana' },
     /* ══⚠⚠ 瓦礫中的紫黑之爪 ＝ **聖徒化教學戰**（ver -595，Ray 交稿）══
        腳本節奏：BOSS HP ≤30% → 劇情殺（主角 HP 歸零）→ 諾薇兒「我準備好了，現在
        聖徒化！」→ 雪鐵龍教學**右滑**發動聖徒化 → 聖徒化戰鬥 → 血回 99% 自動觸發
@@ -2030,6 +2042,15 @@ export const ASSETS = {
      `resources/background/_boss_claw_spec.md`）—— 所以敵人卡**不給 `bg`、不給
      `fit.contain`**，走預設的 cover 滿版；那兩個是給去背立繪配背景用的。 */
   enemy_np_claws: "resources/enemy/TheClaws.webp",
+  /* 夏爾村村內戰（ver -802，Ray 交稿）—— 敵人卡見 script/enemies.js 的 sv_*。
+     ⚠ bear／stag 目前仍是 **.png**（美術尚未去背轉 webp）：先指 .png 讓它載得出來，
+       轉檔後把副檔名改成 .webp（同 §5 的轉檔三步）。其餘四張已是 webp。 */
+  enemy_sv_wolf_pack:     "resources/enemy/mon_wolf_pack.webp",
+  enemy_sv_beast_organ:   "resources/enemy/mon_beast_organ.webp",
+  enemy_sv_stag:          "resources/enemy/mon_stag_nightmare.png",
+  enemy_sv_beast_shackle: "resources/enemy/mon_beast_shackle.webp",
+  enemy_sv_bear:          "resources/enemy/mon_bear_nightmare.png",
+  enemy_sv_reliquary:     "resources/enemy/mon_beast_reliquary.webp",
 
   // ── 五張 cut-in 圖（v17.7 嵌入）──
   cutin_saint_luna: "resources/partner/Luna_CI_advent.jpg",   // 聖徒化降臨 cut-in（Luna）

@@ -1732,12 +1732,18 @@ export const TOWNS = {
     /* 主線帶進來的村子：預設劇情探索（同北方泊地，女角不排外出）。
        要開放自由探索＝那一段 act 寫 `endStoryExplore:true`（旗 free_explore_shinier）。 */
     storyExplore: true,
-    /* ══ 戰鬥探索（`reference/ShinierVillageBattle.png`）══
-       末端只留：湖畔／村長的家／祭壇／野外／索菈娜的家（工坊・獵人小屋・
-       雜貨街・餐廳收起）；連接場景照引擎規矩一律開著。
-       ⚠ 鐵律 9：`shinier_siege` **現在還沒有人插** —— 哪一段劇情開打由那一段
-         自己認領（同 np 的作法：act 演完插 safehouse 旗收場）。 */
-    siege: { from:'shinier_siege', keep:['lakeside','chief','altar','wild','sorahome'] },
+    /* ══ 戰鬥探索（村內戰，ver -802，Ray 交稿）══
+       末端**只留祭壇與野外**（Ray：「末端地圖除了祭壇都不可進」＋「打到野外為止，
+       野外也開放進入」）——其餘末端（湖畔／村長家／索菈娜家／工坊／獵人小屋／
+       雜貨街／餐廳）在圍城期間一律收起；連接場景（廣場／北／西／東）照引擎規矩開著。
+       ⚠ 收尾格＝野外（`sv_wild` 的 sessionEnd）：打贏它 → 那一段 `safehouse:true`
+         插上 `safehouse_shinier`，`siegeOn()` 收場、末端全開、野外變成一般末端
+         （它的 `up:@shinier_forest` 仍由 `shinier_forest_ok` 鎖著）。
+       ⚠ `shinier_siege` 由 `sorahome` 的 `onLeave` 插（踏出家門那一刻，見下）。
+       ⚠ 曲子＝警鐘後的 `warhorn`（那一夜的 bgm，無縫接續）；野外清掉就換回村的
+         `whistling`（`bgmUntil`，同北泊 crisis→Suspense6 的作法）。 */
+    siege: { from:'shinier_siege', keep:['altar','wild'],
+             bgm:'warhorn', bgmUntil:'sv_clear_wild' },
     /* ══ 18:00 強制回索菈娜的家（ver -772，Ray：「18:00 後玩家未回到索菈娜的家，
        諾薇兒會來找玩家，強制移動」）══ 同北泊閘門那一套（clockGate）。
        ⚠ 諾薇兒那一句是**我寫的**（Ray 只寫了「諾薇兒會來找玩家」）。 */
@@ -1789,16 +1795,24 @@ export const TOWNS = {
           ren('askserious','但是……'),
           any('silent',''),
           ren('thinking','希望我是錯的吧。'),
-        ] } ] },
+        ] },
+        /* 廣場（樞紐）在圍城期間也是一場（ver -802）：`sv_arrive` 早就演過，這時輪到
+           戰鬥拍。 */
+        { flag:'sv_clear_plaza', need:'shinier_siege', lines:[ { battle:'sv_beast' } ] } ] },
       /* ── 三個支點 ── */
+      /* 三個連接格在圍城期間各一場（`sv_beast` 怪池，抽不重覆的一隻，ver -802）。
+         ⚠ 旗**打贏才記**（同城鎮戰通則）—— 打輸回頭再走一次還會遇到。 */
       north: { bg:'Shinier_North', name:'夏爾村　北側',
-        exits:{ up:'lakeside', left:'chief', right:'altar', down:'plaza' } },
+        exits:{ up:'lakeside', left:'chief', right:'altar', down:'plaza' },
+        acts:[ { flag:'sv_clear_north', need:'shinier_siege', lines:[ { battle:'sv_beast' } ] } ] },
       west:  { bg:'Shinier_West', name:'夏爾村　西側',
         /* ver -788：左進（plaza 左→west）→右出。plaza 挪到 right、hunter 移到 down。 */
-        exits:{ up:'wild', left:'workshop', right:'plaza', down:'hunter' } },
+        exits:{ up:'wild', left:'workshop', right:'plaza', down:'hunter' },
+        acts:[ { flag:'sv_clear_west', need:'shinier_siege', lines:[ { battle:'sv_beast' } ] } ] },
       east:  { bg:'Shinier_East', name:'夏爾村　東側',
         /* ver -788：右進（plaza 右→east）→左出。plaza 挪到 left、grocery 移到 down。 */
-        exits:{ up:'sorahome', left:'plaza', right:'restaurant', down:'grocery' } },
+        exits:{ up:'sorahome', left:'plaza', right:'restaurant', down:'grocery' },
+        acts:[ { flag:'sv_clear_east', need:'shinier_siege', lines:[ { battle:'sv_beast' } ] } ] },
       /* ── 末端（北） ── */
       lakeside: { bg:'Shinier_Lakeside', name:'夏爾村　湖畔',   exits:{ back:'north' } },
       chief:    { bg:'Shinier_chiefhouse', name:'夏爾村　村長的家', exits:{ back:'north' },
@@ -1810,12 +1824,24 @@ export const TOWNS = {
           ren('talkwork','村長借我用電報機。得把這幾天的事回報聖王廳才行。'),
           ren('writting','你先去忙吧，我把報告送完就回索菈娜家。'),
         ] } ] },
-      altar:    { bg:'Shinier_Altar',   name:'夏爾村　祭壇',   exits:{ back:'north' } },   // ver -786：祭壇圖已交（day/dd/night）
+      /* 祭壇＝圍城期間唯一走得進去的末端之一（另一個是野外）。這一格是「最硬的
+         一般格」（`sv_altar`＝聖骨獸，數值同 np_boss）—— **不是**收尾格，打不打隨
+         玩家（走西側直接到野外可跳過；ver -802）。 */
+      altar:    { bg:'Shinier_Altar',   name:'夏爾村　祭壇',   exits:{ back:'north' },   // ver -786：祭壇圖已交（day/dd/night）
+        acts:[ { flag:'sv_clear_altar', need:'shinier_siege', lines:[ { battle:'sv_altar' } ] } ] },
       /* ── 末端（西） ── */
       /* 野外＝**夏爾森林的入口**（ver -758，Ray：「野外是森林地圖」）：
          往上走就換到 shinier_forest 那張圖（跨地圖出口，modules/town.js 的 @ 語法）。 */
-      wild:     { bg:'Shinier_Wilds', bgPending:true,    name:'夏爾村　野外',
+      wild:     { bg:'Shinier_Wilds',    name:'夏爾村　野外',
         exits:{ back:'west', up:'@shinier_forest' },
+        /* ══ 圍城的**收尾格**（ver -802，Ray：「打到野外為止，野外也開放進入」）══
+           `sv_wild`＝熊骸（`sessionEnd`＝打贏它才閉棺、資源回滿、結算）。
+           `safehouse:true`＝這一段演完（＝打贏）插上 `safehouse_shinier`，`siegeOn()`
+           收場：末端全開、野外從此是一般末端（它的森林出口仍由下面的 `lock` 鎖著）。
+           ⚠ Ray 沒給打完的收尾對白（稿到「要上了」為止）——結算頁的蕾娜評價即收束；
+             要補一段戰後對白再說。 */
+        acts:[ { flag:'sv_clear_wild', need:'shinier_siege', safehouse:true,
+                 lines:[ { battle:'sv_wild' } ] } ],
         /* stage5 森林不開放（ver -786，Ray：「野外是連接另一個地圖的地方，stage5 不
            開放『現在還是別亂跑吧。』」）：往上進森林的出口先鎖著，按了浮旁白。
            `shinier_forest_ok` 由開放森林那一段劇情立（鐵律 9：現在還沒有人插＝一律鎖）。 */
@@ -1877,9 +1903,22 @@ export const TOWNS = {
           nou('surprise','好帥氣……'),
           { speaker:'PLAYER', blank:true },
           Object.assign(sor('readysmile','噢！幫大忙了！一起上吧！'), { checkpoint:true }),
-          /* ——稿到此為止（ver -772）：魔獸戰的敵人卡待交—— */
-          { speaker:'RENNA', text:'', card:'——未完待續——' },
-        ] } ] },
+          /* 索菈娜衝出去迎擊 —— 圍城由**踏出家門**（`onLeave`）接續（ver -802）。 */
+        ] } ],
+        /* ══ 踏出索菈娜家 → 村內戰開打（ver -802，Ray 交稿）══
+           `flag:'shinier_siege'` ＝**它的已演旗就是圍城旗**（鐵律 9：插了就開圍城、
+           只演一次）。演完才走（§6.5.4.3 onLeave），走到東側時 `siegeOn()` 已成立，
+           那一格的戰鬥拍就會發動。⚠ 村民／村長沒有立繪（名字框），索菈娜說話才上場。 */
+        onLeave:{ flag:'shinier_siege', need:'sv_night_done', lines:[
+          { speaker:'VILLAGER', text:'是……是獸骸！' },
+          { speaker:'CHIEF', text:'！！' },
+          { speaker:'CHIEF', text:'擋下來！絕不能讓牠們踏進村子一步！' },
+          { speaker:'VILLAGER', text:'不行！太多了！' },
+          { speaker:'CHIEF', text:'可惡！' },
+          sor('remind','盡量別殺！往森林裡趕！'),
+          sor('ready','要上了！'),
+        ] },
+      },
       grocery:  { bg:'Shinier_Grocery', name:'夏爾村　雜貨街', exits:{ back:'east' } },
       restaurant:{ bg:'Shinier_Restaurant', name:'夏爾村　餐廳', exits:{ back:'east' } },
     },
@@ -1906,28 +1945,28 @@ export const TOWNS = {
     storyExplore: true,
     nodes: {
       /* 入口＝遭遇戰復活點，**不可以有戰鬥**（§6.5.2 的鐵條）。下方回村（野外）。 */
-      entry: { bg:'Forest_Entry', bgPending:true, name:'夏爾森林　森林入口',
+      entry: { bg:'Forest_Entry', name:'夏爾森林　森林入口',
         exits:{ up:'glade', down:'@shinier:wild' } },
       /* 戰①。⚠ **沒有 up**：北面是斷崖（設計的「不要一直線走到」）。 */
-      glade: { bg:'Forest_Glade', bgPending:true, name:'夏爾森林　林間空地',
+      glade: { bg:'Forest_Glade', name:'夏爾森林　林間空地',
         exits:{ left:'shoal', right:'nest', down:'entry' } },
-      nest:  { bg:'Forest_Nest', bgPending:true, name:'夏爾森林　獸巢',
+      nest:  { bg:'Forest_Nest', name:'夏爾森林　獸巢',
         exits:{ back:'glade' } },                       // 支線：選打，掉素材
       /* 戰②。 */
-      shoal: { bg:'Forest_Shoal', bgPending:true, name:'夏爾森林　淺灘',
+      shoal: { bg:'Forest_Shoal', name:'夏爾森林　淺灘',
         exits:{ up:'trail', left:'valley', right:'glade' } },
-      valley:{ bg:'Forest_Valley', bgPending:true, name:'夏爾森林　河谷',
+      valley:{ bg:'Forest_Valley', name:'夏爾森林　河谷',
         exits:{ back:'shoal' } },                       // 支線：採集
       /* 戰③。 */
-      trail: { bg:'Forest_Trail', bgPending:true, name:'夏爾森林　舊獵道',
+      trail: { bg:'Forest_Trail', name:'夏爾森林　舊獵道',
         exits:{ up:'high', left:'cave', down:'shoal' } },
-      cave:  { bg:'Forest_Cave', bgPending:true, name:'夏爾森林　岩窟',
+      cave:  { bg:'Forest_Cave', name:'夏爾森林　岩窟',
         exits:{ back:'trail' } },                       // 支線：寶箱
       /* 戰④。 */
-      high:  { bg:'Forest_Highland', bgPending:true, name:'夏爾森林　高地',
+      high:  { bg:'Forest_Highland', name:'夏爾森林　高地',
         exits:{ right:'cliff', down:'trail' } },
       /* 終點前的喘息格（無戰）：日後 checkpoint／劇情拍放這裡。 */
-      cliff: { bg:'Forest_Cliff', bgPending:true, name:'夏爾森林　斷崖邊',
+      cliff: { bg:'Forest_Cliff', name:'夏爾森林　斷崖邊',
         exits:{ up:'ruins', left:'high' } },
       /* 終點：遺跡入口 —— 背景直接用遺跡那批（美術已交 Ruins_Entrance_Day/Night）。
          進遺跡本體（Ruins_* 那 20 張）是另一張圖，等 Ray 的規劃。 */

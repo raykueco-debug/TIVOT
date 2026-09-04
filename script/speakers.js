@@ -52,6 +52,11 @@ export const SPEAKERS = {
      這是「沒有人在講話」。⚠ 主角的空白框（`blank:true`）又是另一件事：
      那是**他**在說話，只是不出聲，名字欄會印他的暱稱。 */
   NARRATION:{ name:'',      art:null },
+  /* 夏爾村村民／村長（ver -802，Ray 的村內戰交稿）：**沒有立繪、有名字** ——
+     圍城那一段是一片混亂的喊話，只有對話框（同 `VOICE` 路人，只是名字不同）。
+     台詞不包引號（§6.5.4）。 */
+  VILLAGER: { name:'村民',   art:null },
+  CHIEF:    { name:'村長',   art:null },
   /* 賞金獵人公會（ver -375）。⚠ 兩位都站**右**：與店主同一個邏輯 ——
      玩家的同伴在左，對面的人在右。 */
   HUNTER:   { name:'獵人',   art:'hunter'  },
