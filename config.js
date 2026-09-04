@@ -49,7 +49,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.05-803';
+export const VERSION = 'ver 2026.09.05-804';
 
 export const GAME_CONFIG = {
 
@@ -479,6 +479,15 @@ export const GAME_CONFIG = {
      ⚠ 這是**資料**不是狀態：換人的那個事件記的是 `np_anya_join` 那支旗
        （離開旅店那一段演完才記）—— 一個狀態一個擁有事件（鐵律 9）。 */
   storyPartnerBy: [
+    /* ══ 夏爾村村內戰：強配索菈娜（ver -804，Ray：「村莊戰索拉娜是強制搭配出擊的，
+       在前一段劇情就先設置，出戰之前」）══ 那一夜（`sv_night_done`）演完就切成她 ——
+       ⚠ 這是**在出戰之前**設好的：整備頁／任何進戰前的畫面都已經是索菈娜（比戰鬥卡
+         上的 `partner` 覆寫更早、更正，所以那條已拿掉，單一真相＝這裡）。
+       ⚠ **排在安雅之前**：stage5 時 `np_anya_join` 早已立（stage4 入隊），
+         storyPartnerKey 取**第一個 need 成立的** —— 要索菈娜贏就得排前面。
+       ⚠ `sv_night_done` 是永久旗＝村戰後索菈娜仍是搭檔；要在村戰結束換回別人，
+         等 Ray 的轉場旗再加一條（同 `np_anya_join` 的作法，鐵律 9）。 */
+    { need:'sv_night_done', key:'sorana' },
     { need:'np_anya_join', key:'anya' },
   ],
 
@@ -1238,13 +1247,15 @@ export const GAME_CONFIG = {
        hp／聖徒化／主動技／破防值不回滿。**收尾格＝野外那格**（`sv_wild`，
        `sessionEnd`）——Ray：「夏爾村 seige 無 boss…打到野外為止」，所以沒有一場
        戲劇性的 Boss，野外那格（熊骸）打完就閉棺、結算、解除圍城。
-       ⚠ **進戰鬥伙伴強配索菈娜**（`partner:'sorana'`，Ray 指定）：combat.startGame
-         看到 `sb.partner` 就覆寫（見那一支）。祭壇那格（`sv_altar`）是「最硬的
-         一般格」，**不是 sessionEnd**（打不打隨玩家，走西側直接到野外可跳過）。 */
+       ⚠ **搭檔強配索菈娜是在劇情設的**（ver -804，Ray：「在前一段劇情就先設置，
+         出戰之前」）—— `storyPartnerBy` 的 `sv_night_done` 分支（那一夜演完就切她）。
+         所以這裡**不寫 `partner`**（單一真相在 storyPartnerBy，不在戰鬥卡）。
+       ⚠ 祭壇那格（`sv_altar`）是「最硬的一般格」，**不是 sessionEnd**（打不打隨
+         玩家，走西側直接到野外可跳過）。 */
     sv_beast: { enemy:['sv_wolf_pack','sv_beast_organ','sv_stag','sv_beast_shackle'],
-                session:'shinier_siege', partner:'sorana' },
-    sv_altar: { enemy:'sv_reliquary', session:'shinier_siege', partner:'sorana' },
-    sv_wild:  { enemy:'sv_bear', session:'shinier_siege', sessionEnd:true, partner:'sorana' },
+                session:'shinier_siege' },
+    sv_altar: { enemy:'sv_reliquary', session:'shinier_siege' },
+    sv_wild:  { enemy:'sv_bear', session:'shinier_siege', sessionEnd:true },
     /* ══⚠⚠ 瓦礫中的紫黑之爪 ＝ **聖徒化教學戰**（ver -595，Ray 交稿）══
        腳本節奏：BOSS HP ≤30% → 劇情殺（主角 HP 歸零）→ 諾薇兒「我準備好了，現在
        聖徒化！」→ 雪鐵龍教學**右滑**發動聖徒化 → 聖徒化戰鬥 → 血回 99% 自動觸發

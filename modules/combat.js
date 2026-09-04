@@ -1765,9 +1765,10 @@ export function startGame(){
      真相只有 config 一份（gear 的清單第一位與它互指，鐵律 7）。 */
   /* ⚠ 現在是誰由 `partner.storyPartnerKey()` 決定（ver -671：安雅入隊之後換她）——
      不要在這裡讀 `GAME_CONFIG.storyPartner`，那只是「都不成立時」的預設。 */
-  /* ══ 戰鬥卡強配搭檔（ver -803，Ray：「進入戰鬥後伙伴強配為索菈娜」）══
-     卡上寫了 `partner` 就覆寫（夏爾村村內戰的 sv_* ＝索菈娜）；排在章節預設之前
-     （唯一的挑人點，鐵律 8）。 */
+  /* ══ 搭檔的挑選（唯一的挑人點，鐵律 8）══
+     ① 戰鬥卡若明寫 `partner` 就覆寫（一般性的逃生口，目前沒有卡在用 ——
+        夏爾村村內戰改由劇情設定，見 storyPartnerBy 的 sv_night_done 分支，ver -804）。
+     ② 否則走章節預設 `partner.storyPartnerKey()`。 */
   if(sb && sb.partner) setPickedPartner(sb.partner);
   else if(state.scriptRun) setPickedPartner(partner.storyPartnerKey());
   if(sb && GAME_CONFIG.enemies[pickBattleEnemy(sb)]){
