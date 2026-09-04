@@ -21,7 +21,7 @@ import { ART } from './script/speakers.js';
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.04-791';
+export const VERSION = 'ver 2026.09.04-792';
 
 export const GAME_CONFIG = {
 
@@ -1162,7 +1162,7 @@ export const GAME_CONFIG = {
       special:[],      // 特殊行動預留（本版不實作邏輯，僅保留結構）
       // v16：每盤格數手動覆寫（index 對應第幾盤，0-based；null／缺項＝用預設規則：第三盤起 16 格）。
       //      作者日後可逐怪逐盤填數值微調難度，例：[9,9,16,16,20]。聖徒化 25 宮格不受此影響。
-      boardGrids:[9,9,16,16,16],
+      boardGrids:[9,9,9,9,9],
       // v17.2：受擊特效三件套（delay＝延時懲罰／wrong＝按錯懲罰／ult＝大絕）。逐怪可各自設定。
       //   type 可用：'claw'（爪痕，可設 count 幾道）／'blood'（血痕）／'bite'（齒痕）／
       //             'bullet'（彈痕/玻璃碎裂）／'slash'（紅刀痕濺血）。
@@ -1187,7 +1187,7 @@ export const GAME_CONFIG = {
       sound:{ ult:'em_slash', delay:'em_smack', wrong:'em_slash' },
       delayPenalty:{ seconds:5 },   // 5 秒（ver -458，非魔女的預設）
       special:[],
-      boardGrids:[9,9,16,16,16],
+      boardGrids:[9,9,9,9,9],
       hitFx:{
         delay:{ type:'blood', angle:'random' },
         wrong:{ type:'slash' },
@@ -1211,7 +1211,7 @@ export const GAME_CONFIG = {
       atkInterval:null,
       sound:{ ult:'em_slash', delay:'em_smack', wrong:'em_slash' },
       special:[],
-      boardGrids:[9,9,16,16,16],
+      boardGrids:[9,9,9,9,9],
       hitFx:{
         /* ⚠ 沙袋靶不噴血：受擊只有**碎屑**（沿用 slash 的刀痕當彈著），
            大絕與延時的特效根本不會演到（它不攻擊）。 */
@@ -1236,7 +1236,7 @@ export const GAME_CONFIG = {
       sound:{ ult:'em_slash', delay:'em_smack', wrong:'em_slash' },   // 兩聖徒攻擊音相同
       delayPenalty:{ seconds:5 },    // 5 秒（ver -458，非魔女的預設）
       special:[],
-      boardGrids:[9,9,16,16,16],     // 自帶：前兩盤 9 格（累積破防、combo 加成總量低，不開場爆血）
+      boardGrids:[9,9,9,9,9],     // ver -792：貝琳妲以外全 9 宮格（Ray 指定）
       hitFx:{                        // 自帶獨立三件套（巨型聖徒風味：大絕爪數加重為 4）
         delay:{ type:'blood', angle:'random' },
         wrong:{ type:'slash' },      // 按錯 → 紅刀痕濺血
@@ -1269,7 +1269,7 @@ export const GAME_CONFIG = {
       sound:{ ult:'em_slash', delay:'em_dagger', wrong:'em_slash' },
       delayPenalty:{ seconds:4 },    // 快一秒（巨型聖徒是 5）
       special:[],
-      boardGrids:[9,9,16,16,16],
+      boardGrids:[9,9,9,9,9],
       hitFx:{
         delay:{ type:'slash' },      // 貝琳妲的 dagger（slash 特效＋em_dagger 音）
         wrong:{ type:'slash' },
@@ -1293,7 +1293,7 @@ export const GAME_CONFIG = {
       sound:{ ult:'em_slash', delay:'em_smack', wrong:'em_slash' },
       delayPenalty:{ seconds:5 },
       special:[],
-      boardGrids:[9,9,16,16,16],
+      boardGrids:[9,9,9,9,9],
       hitFx:{
         delay:{ type:'blood', angle:'random' },
         wrong:{ type:'slash' },
@@ -1311,7 +1311,7 @@ export const GAME_CONFIG = {
       sound:{ hit:null, ult:null, death:null },
       delayPenalty:{ seconds:5 },    // 5 秒（ver -458，非魔女的預設）
       special:[],
-      boardGrids:[9,9,16,16,16],   // v16：每盤格數手動覆寫（同上，聖徒化不受影響）
+      boardGrids:[9,9,9,9,9],   // v16：每盤格數手動覆寫（同上，聖徒化不受影響）
     },
     // ── 槍之魔女（Boss）v17：S 評價後遭遇的隱藏 Boss ──
     witch: {
@@ -1379,7 +1379,7 @@ export const GAME_CONFIG = {
       sound:{ ult:'em_slash', delay:'em_smack', wrong:'em_slash' },
       delayPenalty:{ seconds:5 },
       special:[],
-      boardGrids:[9,9,16,16,16],
+      boardGrids:[9,9,9,9,9],
       hitFx:{
         delay:{ type:'blood', angle:'random' },
         wrong:{ type:'slash' },
@@ -1399,7 +1399,7 @@ export const GAME_CONFIG = {
       sound:{ ult:'em_slash', delay:'em_smack', wrong:'em_slash' },
       delayPenalty:{ seconds:5 },
       special:[],
-      boardGrids:[9,9,16,16,16],
+      boardGrids:[9,9,9,9,9],
       hitFx:{
         delay:{ type:'blood', angle:'random' },
         wrong:{ type:'slash' },
@@ -1419,7 +1419,7 @@ export const GAME_CONFIG = {
       sound:{ ult:'em_slash', delay:'em_smack', wrong:'em_slash' },
       delayPenalty:{ seconds:5 },
       special:[],
-      boardGrids:[9,9,16,16,16],
+      boardGrids:[9,9,9,9,9],
       hitFx:{
         delay:{ type:'blood', angle:'random' },
         wrong:{ type:'slash' },
@@ -1439,7 +1439,7 @@ export const GAME_CONFIG = {
       sound:{ ult:'em_slash', delay:'em_smack', wrong:'em_slash' },
       delayPenalty:{ seconds:5 },
       special:[],
-      boardGrids:[9,9,16,16,16],
+      boardGrids:[9,9,9,9,9],
       hitFx:{
         delay:{ type:'blood', angle:'random' },
         wrong:{ type:'slash' },
@@ -1465,7 +1465,7 @@ export const GAME_CONFIG = {
       sound:{ ult:'em_slash', delay:'em_smack', wrong:'em_slash' },
       delayPenalty:{ seconds:5 },
       special:[],
-      boardGrids:[9,9,16,16,16],
+      boardGrids:[9,9,9,9,9],
       hitFx:{
         delay:{ type:'blood', angle:'random' },
         wrong:{ type:'slash' },
@@ -1495,7 +1495,7 @@ export const GAME_CONFIG = {
       sound:{ ult:'em_slash', delay:'em_smack', wrong:'em_slash' },
       delayPenalty:{ seconds:5 },
       special:[],
-      boardGrids:[9,9,16,16,16],
+      boardGrids:[9,9,9,9,9],
       hitFx:{
         delay:{ type:'blood', angle:'random' },
         wrong:{ type:'slash' },
@@ -1521,7 +1521,7 @@ export const GAME_CONFIG = {
       special:[],
       /* 盤面配置 `33344, loop`：3＝九宮格、4＝16 宮格；**loop**＝打完五盤還沒死就從頭再來
          （這一隻血厚 200、傷害低，是「耐力戰」的設計）。 */
-      boardGrids:[9,9,9,16,16],
+      boardGrids:[9,9,9,9,9],
       boardLoop:true,
       /* 延時懲罰：**5 秒**、傷害 **5**、彈孔特效。
          ⚠ `seconds`/`damage` 是**絕對值**（ver -375 新欄位），與舊的 `dmgScale`/`timeDelta`
@@ -1568,7 +1568,7 @@ export const GAME_CONFIG = {
       landSe:'se_enemy_centipi',    // 登場音（ver -790，船戰各自獨立；蜈蚣＝自己的叫聲）
       special:[],
       /* 盤面配置 `33344, loop`：3＝九宮格、4＝16 宮格，打完五盤沒死就從頭再來。 */
-      boardGrids:[9,9,9,16,16],
+      boardGrids:[9,9,9,9,9],
       boardLoop:true,
       /* 延時懲罰：**5 秒**（ver -458 由 4 調成非魔女的統一預設）、傷害 10、單爪特效。 */
       delayPenalty:{ seconds:5, damage:10 },
@@ -1622,7 +1622,7 @@ export const GAME_CONFIG = {
          禍魘的著地預設是 sfx_saint，這張卡覆寫成牠自己的吼叫（enemy.js 讀）。 */
       landSe:'se_enemy_serpent',
       special:[],
-      boardGrids:[9,9,9,16,16],    // 33344, loop
+      boardGrids:[9,9,9,9,9],    // 33344, loop
       boardLoop:true,
       delayPenalty:{ seconds:5, damage:10 },
       wrongPenalty:{ damage:5 },
@@ -1667,7 +1667,7 @@ export const GAME_CONFIG = {
       sound:{ ult:'se_weapon_cannon', delay:'se_ship_cannon', wrong:'se_sniper_falcon' },   // 點錯改狙擊音（ver -512，Ray 指定）
       landSe:'se_weapon_cannon',   // 登場音（ver -790，船戰各自獨立；空賊船＝艦砲）
       special:[],
-      boardGrids:[9,9,9,16,16],    // 33344, loop
+      boardGrids:[9,9,9,9,9],    // 33344, loop
       boardLoop:true,
       delayPenalty:{ seconds:5, damage:10 },
       wrongPenalty:{ damage:5 },
