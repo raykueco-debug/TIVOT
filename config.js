@@ -49,7 +49,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.05-802';
+export const VERSION = 'ver 2026.09.05-803';
 
 export const GAME_CONFIG = {
 
@@ -380,6 +380,37 @@ export const GAME_CONFIG = {
         desc:'每隻敵人第一次完美反擊（紅圈）時發動：5 秒內普攻傷害加倍、'
             +'任何反擊都視為完美反擊，並指引每一個應點格。',
       },
+    },
+    /* ══ 索菈娜（ver -803，Ray 交稿）══ 夏爾村村內戰一進場就強配（見 config.battles
+       的 sv_* 的 `partner:'sorana'`，combat.startGame 讀它覆寫）。
+       ⚠ 她的變身是**共鬥**（`saint.activateCoop`，右滑發動、發動邏輯等同聖徒化）——
+         走它自己那一套（無敵窗＋自動完美反擊），不經搭檔的被動／主動系統，
+         同安雅的惡夢化。所以 `cutin` 是共鬥的變身圖。
+       ⚠ 被動名「獵手的直覺」是**我填的佔位**（Ray 只給了效果與 CI_Sorana_cheer）。 */
+    sorana: {
+      name:'索菈娜',
+      image:'partner_sorana',
+      siFit:{ zoom:1.6, top:0.01 },   // 估（同諾薇兒/安雅）；Ray 交專用選人立繪再重量
+      cutin:'ci_sorana_predator',     // 共鬥的變身 cut-in
+      voice:null,
+      perk:'獵手的共鬥（共鬥/無敵）＋獵手的智慧（上滑 Bullets Rain）＋獵手的直覺（被動）',
+      /* ══ 共鬥（Predator's Pack）的參數（saint.activateCoop 讀，鐵律 1）══
+         無敵秒數 ＝ baseSec × (破防值/100)（下夾 minSec），發動消耗全部破防值、
+         每場一次；點錯縮短 wrongShortenSec 秒；敵攻擊自動完美反擊（counterScale 倍）。
+         ⚠ baseSec=12＝滿破防的無敵秒數（Ray：「無敵12秒」＋「破防越高越長」）。 */
+      coop:{ baseSec:12, minSec:3, wrongShortenSec:1.5, counterScale:1 },
+      /* 主動技：**照搬馬季諾的前線補給**（Ray 指定）＝ supplyRefill（立即進入雙槍破防、
+         不吃破防值）。上滑手勢（bindBoardActiveSwipe → tryActive('board')）發動，
+         只換她自己的名字與 CI。 */
+      active:{ key:'supplyRefill', name:'獵手的智慧', en:"Predator's Wisdom", context:'board',
+               oncePerBattle:true, cutin:'ci_sorana_supply', voice:null,
+               desc:'上滑：無視破防值，立即進入雙槍破防（Bullets Rain）。' },
+      /* 被動：連續三輪完美清盤 → 10 秒破防值累積速度加倍，可重覆發動。
+         實作＝ combat.clearBoard 累加 `svPerfectStreak`，滿 `streak` 由 partner.fireEnergyBuff
+         開一段 `energyBoostUntil`（addEnergy 讀它 ×`energyMul`）。 */
+      passive:{ key:'perfectStreak', name:'獵手的直覺', en:"Predator's Instinct",
+                streak:3, buffSeconds:10, energyMul:2, cutin:'ci_sorana_cheer', voice:null,
+                desc:'連續三輪完美清盤時發動：10 秒內破防值累積速度加倍，可重覆發動。' },
     },
     // ── 第二搭檔：馬季諾 Malzeno ──────────────────────────
     malzeno: {
@@ -2017,6 +2048,13 @@ export const ASSETS = {
      檔名沒變、內容變了，瀏覽器照樣拿舊的那一份（§5 的老坑，娜塔莉那一組踩過
      四版才查出來）。**一組要一起帶**，漏掉哪一張哪一張就被快取住。 */
   ci_anya_ni:     "resources/CI/CI_Anya_NightmareInstall.webp?v=2",
+  /* 索菈娜的三張 CI（ver -803，Ray 交件於 resources/CI/）——共鬥／上滑 bullets rain／
+     被動。⚠ 目前是 jpg/png（美術交件格式），轉 webp 後改副檔名（§5 轉檔三步）。
+     ⚠ 伙伴立繪先用她的 SI 佔位（本篇強配不經選人，整備頁才顯示；Ray 交專用選人圖再換）。 */
+  partner_sorana:     "resources/SI/Sorana_SI_front.webp",
+  ci_sorana_predator: "resources/CI/CI_Sorana_predator.jpg",
+  ci_sorana_supply:   "resources/CI/CI_Sorana_supply.png",
+  ci_sorana_cheer:    "resources/CI/CI_Sorana_cheer.png",
   /* 夢境粉碎（ver -674，Ray 交件）：惡夢化期間上滑的那一發。 */
   ci_anya_dreambreaker: "resources/CI/CI_Anya_Dreambreaker.webp?v=3",   // ver -702：Ray 又換了一版
   /* 惡夢化熔斷（ver -692，Ray 交件 `CI_Anya_OBE`）：倒數槽抽乾的那一結局。 */

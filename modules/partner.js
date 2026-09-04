@@ -136,7 +136,7 @@ const ACTIVE_HANDLERS = {
   //   ⚠ 聖徒化期間不可發動（「聖徒化不能開雙槍」原則）：config context:'board' 在
   //   tryActive 已擋掉聖徒化入口，此處再守一道 saintMode 保險。
   supplyRefill(a, act){
-    if(state.over || state.saintMode || state.dualWield || state.cutinPlaying || state.transitioning) return false;
+    if(state.over || state.saintMode || state.coopMode || state.dualWield || state.cutinPlaying || state.transitioning) return false;   // 共鬥期間不可發（ver -803）
     if(state.enemyHp<=0) return false;   // overkill（敵已死）不可發動雙槍破防 → 技能不消耗
     const vo = asset(act && act.voice); if(vo) SFX.playVoice(vo, sfxGain(act.voice));   // SE（→ vo_supply_refill；增益見 tuning.fileGain）
     a.floatDmg(act.name,'50%','40%',true);
@@ -206,6 +206,11 @@ let immuneUntil = 0;
 let guardHealUntil = 0;
 function startImmune(sec){ if(sec>0) immuneUntil = Math.max(immuneUntil, Date.now()+sec*1000); }
 export function immuneActive(){ return Date.now() < immuneUntil; }
+/* ══ 共鬥（ver -803）：無敵窗由 saint 的 coop **直接設定**結束時刻 ══
+   （不是延長 —— 點錯要把它往前縮，所以一支 setter 管到底，鐵律 8）。
+   共用 `immuneUntil`＝`combat.enemyAttack` 的免傷判定（免傷仍算受擊、只是不扣血），
+   正是共鬥「無敵」要的語意（Ray）。 */
+export function setImmuneUntil(ts){ immuneUntil = ts||0; }
 export function guardHealPct(){
   if(Date.now() >= guardHealUntil) return 0;
   const p = currentPartner();
@@ -260,6 +265,30 @@ export function lucidActive(){
   const p = currentPartner();
   const pas = p && p.passive;
   return !!(pas && pas.key==='firstCounter');
+}
+/* ══ 獵手的直覺（`perfectStreak`，索菈娜的被動，ver -803）══
+   連續 `streak`（3）輪完美清盤 → 開一段 `energyBoostUntil`（破防值累積 ×`energyMul`）。
+   ⚠ combat.clearBoard 每清一盤呼叫（帶那一盤的 `boardClean`）——完美就累加、破功歸零。
+   ⚠ 變身／演出中不計不發（同 checkLowHpBuff 的守門）：那時清盤的語意不同。 */
+export function onBoardCleared(clean){
+  const p = currentPartner();
+  const pas = p && p.passive;
+  if(!(pas && pas.key==='perfectStreak')) return;
+  if(state.saintMode || state.niMode || state.coopMode || state.over) return;
+  if(!clean){ state.svPerfectStreak = 0; return; }
+  state.svPerfectStreak++;
+  if(state.svPerfectStreak < (pas.streak||3)) return;
+  state.svPerfectStreak = 0;                       // 發動就重置：可重覆發動（Ray）
+  const sec = pas.buffSeconds || 10;
+  const fire = ()=>{ if(state.over) return; state.energyBoostUntil = Date.now()+sec*1000; };
+  const vo = asset(pas.voice); if(vo) SFX.playVoice(vo, sfxGain(pas.voice));
+  api.floatDmg(pas.name,'50%','34%',true);
+  if(state.cutinPlaying){ fire(); return; }        // 已有演出在播 → 只跳字、buff 立即起算
+  api.playCutin(()=>{
+    fire();
+    if(state.over) return;
+    api.resetEnemyTimers(); api.scheduleUlt();
+  }, `${pas.name}<span class="cutin-en">${pas.en||''}</span>`, pas.cutin);
 }
 /* 「5 秒普攻加倍」的執行體（`lowHpBuff` 與 `firstCounter` 共用，鐵律 8）。 */
 function fireBuff(pas){

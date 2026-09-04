@@ -142,6 +142,9 @@ export function setup(){
     // 計時碼表：cut-in 演出期間暫停（playCutin/playSaintCutin 開頭呼叫），維持「非可點不計時」
     //   clockResume 供 finishSaintMode 於三結局收尾後接回碼表（聖徒化全程不計時）
     clockPause, clockResume,
+    // 共鬥（ver -803）：無敵窗的擁有者是 partner（免傷判定同一支 immune 窗）；
+    //   saint 的 coop 經此設定/縮短/關窗（partner 不反向 import，一律經注入）。
+    coopImmune: partner.setImmuneUntil,
   });
   // 搭檔：combat 注入被動技所需原語 + 主動技各 handler 的分域 api。
   //   被動（即死防禦）：updateBars / floatDmg / resetEnemyTimers / scheduleUlt / playCutin。
@@ -403,6 +406,12 @@ function tap(num,cell,e){
     state.wrongTaps++;                    // 命中率分母（按錯格）
     cell.classList.add('wrong'); setTimeout(()=>cell.classList.remove('wrong'),300);
     state.combo=0;
+    /* 共鬥（ver -803）：點錯不受擊（enemyAttack 的 coopMode 分支不扣血），但**縮短
+       無敵窗** —— 亂點會提早結束，點得準才維持滿窗口（Ray：技術仍有意義）。 */
+    if(state.coopMode){
+      const _c=(GAME_CONFIG.partners&&GAME_CONFIG.partners[state.pickedPartner])||{};
+      saint.coopShorten((_c.coop&&_c.coop.wrongShortenSec)||1.5);
+    }
     /* ══ 計時挑戰（ver -396）：唯一的懲罰是**時間**══
        按錯 → 碼表直接加秒數（`runElapsedMs` 是碼表的累計，加在那裡就等於「多花了那麼久」），
        並播那一場自己的失手音。⚠ 不走 `enemyAttack` —— 那條路上有扣血、受擊特效、
@@ -523,6 +532,9 @@ function clearBoard(){
     addEnergy(gain);
     floatDmg(fmt(L.battle.perfectClear,{n:gain}),'50%','30%',false);
   }
+  /* 索菈娜「獵手的直覺」被動（ver -803）：連續 N 輪完美清盤 → 破防值加速窗。
+     ⚠ 帶這一盤的 `boardClean`（完美與否）：完美累加、破功歸零（partner 判是不是她）。 */
+  partner.onBoardCleared(state.boardClean);
   // 教學：第二盤清盤的最後一槍 → 破防值直接設為只差 1 滿（第三盤首擊即滿、進雙槍引導）
   if(state.tutorialActive && state.boardIndex===1 && GAME_CONFIG.tutorial){
     state.energy = GAME_CONFIG.tutorial.preFullEnergy != null ? GAME_CONFIG.tutorial.preFullEnergy : 99;
@@ -656,6 +668,23 @@ function enemyAttack(dmg, kind, saintAmt){
   /* hitFx/音效的 slot（ver -801）：主動攻擊由 `ult` 改叫 `assault`（Ray）——`kind` 的
      'ult'（大絕命中）與 'block'（格擋）都讀 hitFx.assault；delay/wrong 照舊。 */
   const fxKind = (kind==='block' || kind==='ult') ? 'assault' : kind;
+  /* ══ 共鬥（Predator's Pack，ver -803）══ 無敵：不扣血、不記失誤、無延時懲罰；
+     敵攻擊自動完美反擊（全額）。點錯（kind==='wrong'）只吃「不受擊」，不反擊
+     （縮短窗口由 tap 的 coopMode 分支做）。放在計數之前 → 期間一律不算失誤。 */
+  if(state.coopMode){
+    const _hf0 = state.curEnemyHitFx && state.curEnemyHitFx[fxKind];
+    const sk0  = _hf0 && HITFX[_hf0.type] && HITFX[_hf0.type].se;
+    if(sk0) SFX.play(asset(sk0), sfxGain(sk0));
+    screenShake();
+    enemy.showHitFx(fxKind);
+    $('redFlash').style.opacity=.35; setTimeout(()=>$('redFlash').style.opacity=0,120);
+    if(kind==='ult' || kind==='block' || kind==='delay'){
+      const card = (GAME_CONFIG.partners && GAME_CONFIG.partners[state.pickedPartner]) || {};
+      const cs = (card.coop && card.coop.counterScale!=null) ? card.coop.counterScale : 1;
+      weapon.weaponCounter(cs, 1);   // 自動完美反擊（命中率 100% ＝紅圈全額）
+    }
+    return;                          // 無敵：不扣血、不記失誤
+  }
   /* ══⚠⚠ **失誤計數**（ver -619 補）══ ver -600 定了 `penUlt`／`penBlock`／`penDelay`
      這三個欄位、結算也在讀它們，**但從來沒有人 ++** —— 於是新評價的懲罰秒數
      永遠只有「點錯」那一項，挨大絕／格擋／延時全部免費。
@@ -878,9 +907,16 @@ function enemyDamage(dmg,isCrit,silent,src){
 function addEnergy(v){
   if(state.saintMode) return;        // 聖徒化期間不累積破防值
   const was=state.energy;
+  /* 索菈娜「獵手的直覺」被動（ver -803）：連續完美清盤開的加速窗期間，破防值累積 ×energyMul。
+     ⚠ 乘在**入口**這一處（同「疾走」的理由，鐵律 7/8）——窗由 partner.onBoardCleared 開。 */
+  let svBoost=1;
+  if(state.energyBoostUntil && Date.now()<state.energyBoostUntil){
+    const _sc=(GAME_CONFIG.partners&&GAME_CONFIG.partners[state.pickedPartner])||{};
+    svBoost=(_sc.passive&&_sc.passive.energyMul)||2;
+  }
   /* 九階強化「疾走」：破防值累積加速（ver -707）。⚠ 乘在**入口**這一處 ——
      呼叫端有好幾個（點擊、反擊…），各自乘一次必然漏掉其中一個（鐵律 7/8）。 */
-  state.energy=Math.min(100,state.energy+v*(1+prog.starBonus('energyMul')));
+  state.energy=Math.min(100,state.energy+v*svBoost*(1+prog.starBonus('energyMul')));
   // 教學：雙槍引導前破防值封頂於 preFullEnergy（第三盤起放行 → 首擊即滿、交給教學引導）
   if(tutorial.energyCapActive()){
     state.energy=Math.min(state.energy, (GAME_CONFIG.tutorial && GAME_CONFIG.tutorial.preFullEnergy) || 99);
@@ -1675,7 +1711,8 @@ export function startGame(){
   state.over=false; state.defeated=false; state.combo=0; state.energy=0; state.expect=1; state.boardIndex=0;
   state.atkBuff=false; state.lowHpBuff=false;
   state.partnerActiveUsed=false;   // 搭檔主動技每場次數重置
-  saint.reset();   // 聖徒化狀態全重置（saintMode 經 exitSaint、清計時器、關手勢層、清 saint 旗標）
+  state.coopUntil=0; state.svPerfectStreak=0; state.energyBoostUntil=0;   // 共鬥/獵手的直覺 每場重置（ver -803）
+  saint.reset();   // 聖徒化狀態全重置（saintMode 經 exitSaint、清計時器、關手勢層、清 saint 旗標；共鬥 coopMode/coopTimer 一併）
   weapon.reset();  // 雙槍破防重置（清 dualWield/dualTimer + #grid dualwield class，防跨場殘留）
   weapon.resetWeaponSwitch();   // 副武器切換鈕（ver -410）：排隊中的切換不可以跨場留著
   partner.reset(); // 搭檔被動重置（高裝藥彈 10 秒計時器清除、上膛旗標歸位）
@@ -1728,7 +1765,11 @@ export function startGame(){
      真相只有 config 一份（gear 的清單第一位與它互指，鐵律 7）。 */
   /* ⚠ 現在是誰由 `partner.storyPartnerKey()` 決定（ver -671：安雅入隊之後換她）——
      不要在這裡讀 `GAME_CONFIG.storyPartner`，那只是「都不成立時」的預設。 */
-  if(state.scriptRun) setPickedPartner(partner.storyPartnerKey());
+  /* ══ 戰鬥卡強配搭檔（ver -803，Ray：「進入戰鬥後伙伴強配為索菈娜」）══
+     卡上寫了 `partner` 就覆寫（夏爾村村內戰的 sv_* ＝索菈娜）；排在章節預設之前
+     （唯一的挑人點，鐵律 8）。 */
+  if(sb && sb.partner) setPickedPartner(sb.partner);
+  else if(state.scriptRun) setPickedPartner(partner.storyPartnerKey());
   if(sb && GAME_CONFIG.enemies[pickBattleEnemy(sb)]){
     enemy.setEnemy(pickBattleEnemy(sb));
     /* ══⚠⚠ 真的開打了才記「這一段出過牠」，**並且把這一抽用掉**（ver -628）══
@@ -1829,6 +1870,7 @@ export function startIntruderFight(){
   state.over=false; state.defeated=false; state.combo=0; state.energy=0; state.expect=1; state.boardIndex=0;
   state.atkBuff=false; state.lowHpBuff=false;
   state.partnerActiveUsed=false;   // 新場：搭檔主動技每場次數重置
+  state.coopUntil=0; state.svPerfectStreak=0; state.energyBoostUntil=0;   // 共鬥/獵手的直覺 每場重置（ver -803）
   saint.reset();
   weapon.reset();
   partner.reset();

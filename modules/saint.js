@@ -24,7 +24,7 @@
  * ========================================================================== */
 
 import { GAME_CONFIG, asset, sfxGain, isVoiceKey } from '../config.js';
-import { state, enterSaint, exitSaint, enterNightmare, exitNightmare, markExecution, markMaxBurst, storyMode } from '../state.js';
+import { state, enterSaint, exitSaint, enterNightmare, exitNightmare, enterCoop, exitCoop, markExecution, markMaxBurst, storyMode } from '../state.js';
 import { SFX } from '../audio.js';
 import { L, fmt } from '../i18n.js';   // 多語言（cut-in 副標/浮動字）
 import * as prog from '../script/progress.js';   // 九階強化的加成（ver -707；葉節點，無循環）
@@ -89,7 +89,7 @@ export function activateSaint(dir){
     activateNightmare();
     return;
   }
-  if(storyMode() && state.pickedPartner==='sorana') return;   // 共鬥未實裝
+  if(storyMode() && state.pickedPartner==='sorana'){ activateCoop(dir); return; }   // 共鬥（ver -803）
   if(state.over||state.saintMode||state.cutinPlaying||state.saintUsedThisBattle||state.transitioning||state.dualWield||state.enemyHp<=0) return;
   state.saintUsedThisBattle = true;   // saint 自有欄位：發動即鎖（一場一次），時序同 reference
   SFX.unlock(); SFX.ultCharge();
@@ -112,6 +112,67 @@ export function activateSaint(dir){
                                                        : 'cutin_saint_luna',
      { noShot:true });
 }
+
+/* ============================================================================
+ *  共鬥（Predator's Pack，ver -803，Ray 交稿）— 索菈娜的變身
+ * ----------------------------------------------------------------------------
+ *  發動邏輯等同聖徒化（右滑、每場一次、消耗破防值），但**不是盤面模式** ——
+ *  不換 16 格、不動血條，而是開一段**無敵窗**：
+ *    · 免傷（走 partner 的 immune 窗；免傷仍算受擊、只是不扣血）＝「無敵」
+ *    · 敵攻擊自動完美反擊、無延時懲罰（combat.enemyAttack 的 coopMode 分支）
+ *    · 點錯不受擊，但每次點錯縮短窗口（combat.tap 的 coopMode 分支 → coopShorten）
+ *  秒數 ＝ baseSec × (破防值/100)（下夾 minSec），發動消耗全部破防值。
+ *  ⚠ 參數全在 config.partners.sorana.coop（鐵律 1）；無敵窗的擁有者是 partner
+ *    （`setImmuneUntil`，注入為 `api.coopImmune`），coopMode 旗由本模組獨佔寫入。
+ * ========================================================================== */
+let coopTimer = null;
+export function activateCoop(dir){
+  if(state.over||state.saintMode||state.niMode||state.coopMode||state.cutinPlaying
+     ||state.saintUsedThisBattle||state.transitioning||state.dualWield||state.enemyHp<=0) return;
+  if(state.energy<=0) return;                         // 隨時可發，但要有破防值
+  const card = (GAME_CONFIG.partners && GAME_CONFIG.partners[state.pickedPartner]) || {};
+  const c = card.coop || {};
+  const en = Math.max(0, Math.min(100, state.energy));
+  const sec = Math.max(c.minSec||3, (c.baseSec||12) * en/100);
+  state.saintUsedThisBattle = true;                   // 與聖徒化／惡夢化同槽（一場一次）
+  if(api.resetEnergy) api.resetEnergy();              // 消耗全部破防值
+  SFX.unlock(); SFX.ultCharge();
+  SFX.play(asset('sfx_saint'), sfxGain('sfx_saint'));
+  playSlash(dir);
+  playCutin(()=>{ if(state.over) return; startCoop(sec); },
+    (L.battle && L.battle.coopMode || '共鬥')+'<span class="cutin-en">PREDATOR\'S PACK!!</span>',
+    card.cutin || 'ci_sorana_predator', { noShot:true });
+}
+function startCoop(sec){
+  if(state.over) return;
+  enterCoop();
+  api.resetEnemyTimers(); state.enemyAtkSuppressUntil = 0; api.scheduleUlt();
+  const until = Date.now() + sec*1000;
+  state.coopUntil = until;
+  if(api.coopImmune) api.coopImmune(until);            // 開無敵窗（partner.setImmuneUntil）
+  const g=$('grid'); if(g) g.classList.add('coop');
+  api.floatDmg(L.battle && L.battle.coopMode || '共鬥','50%','20%',true);
+  clearInterval(coopTimer);
+  coopTimer = setInterval(()=>{
+    if(state.over || Date.now() >= state.coopUntil) endCoop();
+  }, 100);
+}
+/* 點錯 → 縮短無敵窗（combat 的 coopMode 分支呼叫）。 */
+export function coopShorten(sec){
+  if(!state.coopMode) return;
+  state.coopUntil = Math.max(Date.now(), state.coopUntil - Math.max(0,sec)*1000);
+  if(api.coopImmune) api.coopImmune(state.coopUntil);
+  if(Date.now() >= state.coopUntil) endCoop();
+}
+function endCoop(){
+  if(!state.coopMode) return;
+  clearInterval(coopTimer); coopTimer = null;
+  exitCoop();
+  state.coopUntil = 0;
+  if(api.coopImmune) api.coopImmune(0);                // 關無敵窗
+  const g=$('grid'); if(g) g.classList.remove('coop');
+}
+export function coopActive(){ return !!state.coopMode; }
 
 /* 聖徒化回血特效開關：玩家血條（倒數槽）轉金＋末端強光點（CSS .saint-heal） */
 function setSaintBarFx(on){
@@ -769,6 +830,9 @@ export function reset(){
   exitNightmare();
   clearInterval(state.niTimer); state.niTimer=null;
   state.niDamage=0; state.niFrom=0; state.niTotalMs=0;
+  /* 共鬥（ver -803）：清窗口輪詢＋收 coopMode（同 niMode 的重置）；無敵窗歸 partner.reset。 */
+  exitCoop(); clearInterval(coopTimer); coopTimer=null; state.coopUntil=0;
+  const gc=$('grid'); if(gc) gc.classList.remove('coop');
   const g0=$('grid'); if(g0) g0.classList.remove('ni');
   stopTimers();
   if(state.saintMode) exitSaint();

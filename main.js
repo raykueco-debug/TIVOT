@@ -1571,7 +1571,7 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
   if(!zone) return;
   let startX=0, startY=0, tracking=false;
   const need=()=>Math.max(48, (window.innerHeight||600)*0.125);   // 上滑 ≥ 螢幕高 12.5%（同生命歸還手勢）
-  const canTrack=()=>!(state.over||state.saintMode||state.cutinPlaying||state.transitioning);
+  const canTrack=()=>!(state.over||state.saintMode||state.coopMode||state.cutinPlaying||state.transitioning);   // 共鬥期間不吃上滑（ver -803）
   zone.addEventListener('touchstart',e=>{
     if(!canTrack()) return;
     const t=e.touches[0]; startX=t.clientX; startY=t.clientY; tracking=true;

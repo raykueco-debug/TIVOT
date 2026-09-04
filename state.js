@@ -158,6 +158,17 @@ export const state = {
   niCells: 0,        // 惡夢化期間清掉幾格（夢境粉碎的傷害由它換算，ver -688）
   niFrom: 0,         // 發動當下的 HP（抽血的起點）
   niTotalMs: 0,      // 這一次惡夢化總共多久（殘格數 × NI_SEC_PER_CELL）
+  /* ══ 共鬥（Predator's Pack，ver -803，Ray 交稿）══ 索菈娜的變身：與聖徒化／惡夢化
+     一樣由 saint.js 獨佔寫入（`coopMode` 只有它能寫，同上兩者的規矩）。
+     不是盤面模式（不換 16 格、不動血條）——它是一段**無敵窗**：期間免傷（走 partner
+     的 immune 窗）、敵攻擊自動完美反擊、無延時懲罰；點錯不受擊但會縮短窗口。
+     秒數＝破防值換算（消耗全部破防值），每場一次（與 saintUsedThisBattle 同槽）。 */
+  coopMode: false,
+  coopTimer: null,   // 100ms 輪詢：now≥coopUntil → 收窗（可被點錯縮短，所以不用固定 setTimeout）
+  coopUntil: 0,      // 無敵窗的結束時刻（ms）；與 partner 的 immuneUntil 同步
+  /* ══ 獵手的直覺（被動，ver -803）══ 連續 N 輪完美清盤 → 一段破防值加速窗。 */
+  svPerfectStreak: 0,    // 連續完美清盤數（斷了歸零）
+  energyBoostUntil: 0,   // 破防值累積加速（×N）的結束時刻（ms）；addEnergy 讀它
   enemyAtkSuppressUntil: 0,
 
   /* ── 3.6 評價/流程（擁有者：inspector；counterFired/Damage 允許 weapon 累加） ── */
@@ -319,6 +330,9 @@ export function exitSaint(){
 /* saint.js 專用：進入／離開惡夢化。`niMode` 的唯一寫入管道（同 saintMode 的規矩）。 */
 export function enterNightmare(){ state.niMode = true; }
 export function exitNightmare(){ state.niMode = false; }
+/* saint.js 專用：進入／離開共鬥。`coopMode` 的唯一寫入管道（同 saintMode 的規矩）。 */
+export function enterCoop(){ state.coopMode = true; }
+export function exitCoop(){ state.coopMode = false; }
 
 /* saint.js 專用：以 Maximum Burst 擊殺 → 標記本場處決（EXSECUTIŌ）。
  * sawExecution 擁有者為 inspector（3.6，結算讀取加乘）；saint 是唯一使其為真的來源，
