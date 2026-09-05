@@ -252,6 +252,10 @@ function buildGrid(){
   const grid=$('grid'); grid.innerHTML=''; state.cells=[];
   grid.style.gridTemplateColumns=`repeat(${state.cols},1fr)`;
   grid.style.gridTemplateRows=`repeat(${state.cols},1fr)`;
+  /* 碎玻璃底圖的切片參數（ver -805）：盤面是 cols×cols，每格用 background-position
+     顯示 bulletsrain 的**那一塊**（見 style.css）—— 底圖切在各格框內，**格間空隙不顯示**
+     （Ray：「底圖不要出現在格子之間的空間」）。 */
+  grid.style.setProperty('--cx', state.cols);
   const fs=state.N<=9?30:24;
   state.order=shuffle([...Array(state.N)].map((_,i)=>i+1));
   state.order.forEach(num=>{
@@ -260,13 +264,9 @@ function buildGrid(){
        明晰之夢的計時器最後改成盤外光柱（不壓盤面），這層包裝留著 ——
        日後任何要墊在數字後面的效果都有現成的夾層；textContent 讀取照樣穿透。 */
     c.className='cell'; c.dataset.num=num; c.style.fontSize=fs+'px';
-    /* 龜裂種子（ver -805，Ray：「彈雨/ovk 等無視瞬序的狀態…每一格出現隨機龜裂效果」）——
-       每格一組隨機的旋轉/鏡射/衝擊點；CSS 只在 `#grid.dualwield`／`.overkill` 下顯示，
-       數字同時隱藏（免順序＝數字沒意義）。設一次即可，狀態開時動畫自然播。 */
-    c.style.setProperty('--crk-rot', (Math.random()*360|0)+'deg');
-    c.style.setProperty('--crk-flip', Math.random()<0.5?-1:1);
-    c.style.setProperty('--crk-x', (34+(Math.random()*32|0))+'%');
-    c.style.setProperty('--crk-y', (34+(Math.random()*32|0))+'%');
+    /* 這一格在盤面的行列（append 序＝格線填格序）→ 碎玻璃底圖的切片位置。 */
+    c.style.setProperty('--col', state.cells.length % state.cols);
+    c.style.setProperty('--row', (state.cells.length / state.cols)|0);
     const sp=document.createElement('span'); sp.textContent=num; c.appendChild(sp);
     let handled=false;
     c.addEventListener('touchstart',e=>{e.preventDefault();handled=true;tap(num,c,e);},{passive:false});
@@ -311,6 +311,28 @@ function advanceExpectPastCleared(){
   }
 }
 
+/* ══ 玻璃碎片落下（ver -805，Ray：「點擊消掉方塊時要有玻璃碎片落下效果」）══
+   雙槍彈雨／overkill 打掉一格時，從那一格灑幾片玻璃碎片、帶重力往下掉＋旋轉淡出。
+   碎片附在 #grid（relative）上，掉到盤底；CSS 見 style.css 的 `.glass-shard`。 */
+function glassShards(cell){
+  const grid=$('grid'); if(!grid||!cell) return;
+  const gx=cell.offsetLeft+cell.offsetWidth/2, gy=cell.offsetTop+cell.offsetHeight/2;
+  const n=4+(Math.random()*3|0);   // 4~6 片
+  for(let i=0;i<n;i++){
+    const s=document.createElement('div'); s.className='glass-shard';
+    const sz=4+Math.random()*7;
+    s.style.left=(gx+(Math.random()-0.5)*cell.offsetWidth*0.6)+'px';
+    s.style.top =(gy+(Math.random()-0.5)*cell.offsetHeight*0.4)+'px';
+    s.style.width=sz.toFixed(1)+'px'; s.style.height=(sz*(0.7+Math.random()*0.8)).toFixed(1)+'px';
+    s.style.setProperty('--dx', ((Math.random()-0.5)*46).toFixed(0)+'px');
+    s.style.setProperty('--fall', (grid.clientHeight - gy + 24).toFixed(0)+'px');
+    s.style.setProperty('--rot', ((Math.random()-0.5)*720|0)+'deg');
+    s.style.animationDelay=(Math.random()*0.06).toFixed(2)+'s';
+    grid.appendChild(s);
+    setTimeout(()=>s.remove(), 950);
+  }
+}
+
 /* ============================================================================
  *  點擊判定
  * ========================================================================== */
@@ -330,7 +352,7 @@ function tap(num,cell,e){
   //   注意：雙槍清盤走自己的收尾（不走 clearBoard、不給完美清盤 bonus）。
   if(state.dualWield){
     if(cell.classList.contains('done')) return;
-    cell.classList.add('done'); enemy.shatterCell(cell);
+    cell.classList.add('done'); enemy.shatterCell(cell); glassShards(cell);   // 彈雨：玻璃碎片落下（ver -805）
     state.combo++; if(state.combo>state.maxCombo) state.maxCombo=state.combo;
     resetIntervalDeadline();
     const dmg=hitDamage()*DMG_DUAL_MULT;
@@ -358,7 +380,7 @@ function tap(num,cell,e){
     if(cell.classList.contains('done')) return;
     SFX.gunshot(false);
     const inOrder = (num===state.expect);
-    cell.classList.add('done'); cell.classList.remove('next'); enemy.shatterCell(cell);
+    cell.classList.add('done'); cell.classList.remove('next'); enemy.shatterCell(cell); glassShards(cell);   // overkill：玻璃碎片落下（ver -805）
     state.combo++; if(state.combo>state.maxCombo) state.maxCombo=state.combo;
     state.correctTaps++;
     resetIntervalDeadline(); addEnergy(ENERGY_PER_HIT);
