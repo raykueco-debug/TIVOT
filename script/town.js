@@ -1754,7 +1754,7 @@ export const TOWNS = {
            時間強制為晚上七點」）：`clockTo:19` ＝ advanceToNextHour(19)，觸發點在剛過
            18:00，所以是**當天 19:00**（clockGate 在演台詞/轉場之前先推）。 */
       { flag:'sv_evening', need:'sv_arrive', hourOfDay:18, clockTo:19,
-        goto:'sorahome', enterAgain:true,
+        goto:'sorahome', enterAgain:true, stage:6,   // 回到索拉娜小屋後的劇情＝S6（ver -821，Ray）
         lines:[ nou('front','找到你了！大家都在索菈娜家等著喔。') ] },
     ],
     nodes: {

@@ -17,6 +17,7 @@ const K = {
   vo:   'tivot_vol_vo_v1',
   auto: 'tivot_auto_ms_v1',
   hap:  'tivot_haptics_v1',
+  text: 'tivot_dlgtext_v1',   // 對話框文字大小（ver -821）：'1'＝加大、其餘＝預設
   /* 戰鬥提示三開關（ver -748，Ray：「把延時懲罰計時器、被動技能計時器、
      敵人攻擊警告效果做進設定裡，讓玩家可以選擇開閉」）。預設**開**。 */
   fxDelay: 'tivot_fx_delayring_v1',     // 延時懲罰計時器（盤面上緣那條線）
@@ -45,6 +46,11 @@ export function autoDelayMs(){
 export function haptics(){ return rd(K.hap) !== '0'; }
 export function setHaptics(on){ wr(K.hap, on ? '1' : '0'); }
 
+/* 對話框文字大小（ver -821，Ray：「只有加大跟預設兩種」）。預設**預設**（非加大）。
+   ⚠ 只是顯示偏好，跨輪不清（同音量／震動）；套用走 apply() 的 body.dlg-large（鐵律 8）。 */
+export function bigText(){ return rd(K.text) === '1'; }
+export function setBigText(on){ wr(K.text, on ? '1' : '0'); }
+
 /* 戰鬥提示開關的查詢（ver -748，鐵律 7：讀的人只問這一支）。
    kind：'delay'（延時懲罰計時器）／'pass'（被動技計時器）／'alert'（敵攻警告）。
    ⚠ 這裡只管「玩家要不要看」；紅點本體、懲罰本體是玩法不是提示，不歸這裡管。 */
@@ -56,6 +62,7 @@ export function setFx(kind, on){ wr(K[FXK[kind]], on ? '1' : '0'); }
    面板每動一下也呼叫。 */
 export function apply(){
   for(const l of ['bgm','se','vo']) SFX.setLayerVolume(l, volOf(l));
+  try{ document.body.classList.toggle('dlg-large', bigText()); }catch(_){}   // 對話框文字加大（ver -821）
 }
 
 /* ══ 面板 ══
@@ -108,6 +115,10 @@ export function open(opts){
       + fxRow('gmFxPass','被動技能計時器','pass')
       + fxRow('gmFxAlert','敵人攻擊警告','alert')
       + '<div class="gm-sec">其　他</div>'
+      + '<label class="gm-row gm-toggle"><span>對話文字</span>'
+      +   '<button class="gm-sw'+(bigText()?' on':'')+'" id="gmBigText" type="button">'
+      +     '<i></i></button>'
+      +   '<b>'+(bigText()?'加大':'預設')+'</b></label>'
       + '<label class="gm-row gm-toggle"><span>震　動</span>'
       +   '<button class="gm-sw'+(haptics()?' on':'')+'" id="gmHap" type="button">'
       +     '<i></i></button>'
@@ -139,6 +150,14 @@ export function open(opts){
       const lab=b.parentNode.querySelector('b'); if(lab) lab.textContent = on ? '開' : '關';
       try{ SFX.menuClick(); }catch(_){}
     }));
+    const bt=panel.querySelector('#gmBigText');
+    if(bt) bt.addEventListener('click', e=>{ e.stopPropagation();
+      const on=!bigText(); setBigText(on);
+      bt.classList.toggle('on', on);
+      const lab=bt.parentNode.querySelector('b'); if(lab) lab.textContent = on ? '加大' : '預設';
+      apply();   // 即時套用 body.dlg-large
+      try{ SFX.menuClick(); }catch(_){}
+    });
     const sw=panel.querySelector('#gmHap');
     if(sw) sw.addEventListener('click', e=>{ e.stopPropagation();
       const on=!haptics(); setHaptics(on);

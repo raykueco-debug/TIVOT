@@ -2327,6 +2327,12 @@
     min-height:3.4em;}
   #storyBubble .story-next{position:absolute;right:10px;bottom:5px;font-size:9px;color:var(--gold);
     animation:tutNext .7s ease-in-out infinite alternate;}
+  /* 對話框文字加大（ver -821，Ray：選單「對話文字：加大／預設」）——套在三種對話框的
+     正文上：劇情/城鎮(#storyBubble)、戰鬥對白(#tutBubble)、評價/監察官(#inspectorBubble)。
+     13→16px。開關走 settings.apply() 的 body.dlg-large（鐵律 8）。 */
+  body.dlg-large #storyBubble .story-text,
+  body.dlg-large #tutBubble .tut-line,
+  body.dlg-large #inspectorBubble .insp-line{font-size:16px;line-height:1.65;}
 
   /* ⚠ 拾得道具／道具欄／商店／懸賞榜的樣式已抽到 `css/lootsheet.css`（ver -380）：
      飛行頁也要用同一套（道具欄的入口在那裡），而 `style.css` 整份掛過去會把那一頁的
