@@ -17,6 +17,7 @@ import * as prog from '../script/progress.js';
 import * as story from './story.js';
 import * as inn from './inn.js';                 // 旅店大廳（伙伴門／獨自坐坐／回房睡覺）
 import { showShop, showBounty } from './loot.js';
+import * as gear from './gear.js';               // 戰前強制整備（ver -838，onLeave 的 gear 掛鉤）
 import { SPEAKERS } from '../script/speakers.js';
 import { SFX } from '../audio.js';
 import { state } from '../state.js';   // 只讀：`battleSession`（擁有者是 combat，見鐵律 3.1）
@@ -1346,6 +1347,15 @@ function go(to, dir){
       ? Object.assign({}, l, { delay:SLIDE_MS }) : l);
     story.playAdhoc(play, ()=>{ story.clearCast();
       if(lv.flag) prog.addFlags([lv.flag]);        // ⚠ 演完才記（同所有城鎮段落）
+      /* ══ 戰前強制整備（ver -838，Ray：「戰鬥開始前強制開整備畫面，高光伙伴欄，
+         提示此場戰鬥由索拉娜搭檔出擊」）══ onLeave 帶 `gear:{partner,msg}` ＝
+         對白演完先開整備頁（夥伴欄聚光燈＋提示），**收掉才放行移動** ——
+         gear.onceClosed 是那一頁唯一的收場通知（鐵律 8）。 */
+      if(lv.gear){
+        gear.open({ guidePartner:true, guideMsg:lv.gear.msg, forcePartner:lv.gear.partner });
+        gear.onceClosed(()=>{ busy=false; go(to, dir); });
+        return;
+      }
       busy=false; go(to, dir); }, { sides:lv.sides });
     return;
   }

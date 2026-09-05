@@ -25,7 +25,8 @@ import * as inv from '../script/inventory.js';   // 破紀錄的獎品要先問�
 import * as prog from '../script/progress.js';   // 拿到獎品記一個旗標（城鎮的一次性提示掛在它上面）
 /* 蕾娜的結算評價（ver -432）：內容全在那一檔，這裡只負責挑與演（鐵律 1）。 */
 import { EVALUATOR, LINES as EVAL_LINES,
-         BY_BATTLE as EVAL_BY_BATTLE } from '../script/evaluation.js';
+         BY_BATTLE as EVAL_BY_BATTLE,
+         INTRUDE as EVAL_INTRUDE } from '../script/evaluation.js';
 import { SPEAKERS, ART } from '../script/speakers.js';   // 評價者的顯示名與立繪＝與對白同一份
 import { state } from '../state.js';
 import { SFX } from '../audio.js';   // Boss BGM 於「再度執槍（S 解鎖）」瞬間起播
@@ -223,7 +224,15 @@ function pickEvaluator(rankKey, battleId){
   /* ⚠ **某一場專屬的台詞優先**（ver -597）：`evaluation.js` 的 `BY_BATTLE`
      查得到這一場就用它，查不到才回去走依章節／好感的通用表。
      那張通用表是「全部場次」的，把某一場的稿寫進去會把所有場次一起換掉。 */
-  let one = (EVAL_BY_BATTLE[battleId]||{})[rankKey];
+  /* ══ 某一場的稿也可以分好感段（ver -838，夏爾村戰 Ray 交 T1/T2 兩組）══
+     `byTier:{1:{…},2:{…}}` —— 門檻不是等於（pickByThreshold，同通用表那兩層），
+     tier 看**評價者自己**的好感（prog.tierOf）。沒寫 byTier 的照舊平面查。 */
+  let bb = EVAL_BY_BATTLE[battleId] || null;
+  if(bb && bb.byTier){
+    const affT = (prog.getAffection() || {})[(who.art||'')] || 0;
+    bb = pickByThreshold(bb.byTier, prog.tierOf(affT), null);
+  }
+  let one = bb ? bb[rankKey] : null;
   if(!one){
     /* 章節 → 好感，兩層都是**門檻**（取不超過現值的最高那一格，同 `dialogues` 的查表法）。 */
     const byStage = pickByThreshold(EVAL_LINES, prog.getStage(), null);
@@ -247,9 +256,14 @@ function pickEvaluator(rankKey, battleId){
   }
   const art = ART[who.art] || {};
   const ex  = (art.expr||{})[one.expr];
+  /* ══ 亂入（ver -838，Ray：「評價D/C 蕾娜評價完索拉娜亂入評價畫面」）══
+     `evaluation.js` 的 INTRUDE[場次][等第] → 第一句打完換人再講一句
+     （showResultSequence 的 `spk.follow`；portrait 是直接路徑）。 */
+  const fol = (EVAL_INTRUDE[battleId]||{})[rankKey] || null;
   return { name: who.name || '',
            portrait: (ex && ex.src) || art.base || '',
-           line: one.text || '' };
+           line: one.text || '',
+           follow: fol };
 }
 
 function pickInspectorPortrait(insp, rankKey){
@@ -493,6 +507,7 @@ export function onGiveupBtn(){
  *   T0 立繪＋retry＋大標同時進場 → rows 由上往下刷（1s 內）→ 對話框彈出 → 逐字台詞（2s 內）
  * ========================================================================== */
 let _inspTypeTimer=null;
+let _inspFollowTimer=null;   // 亂入第二句的排程（ver -838）
 let _resultAutoTimer=null;   // 結算/戰敗畫面自動回首頁計時
 /* opts.noInspector＝這一頁**不出監察官**（ver -358，Ray 指定教學結算不要她）。
    ⚠ 不要用「傳 isLose」來偷渡：那會連按鈕文案與 BGM 分支一起改掉。 */
@@ -540,6 +555,7 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose, opts){
   const nameEl=$('inspectorName');
   const lineEl=$('inspectorLine');
   clearTimeout(_inspTypeTimer);
+  clearTimeout(_inspFollowTimer);   // 亂入的第二句（ver -838）：重進這一頁要收乾淨
   bubble.classList.remove('show');
   lineEl.textContent='';
   /* ⚠ **膝部以上只給評價者那一頁**（ver -439，Ray 指定）：裁切的比例是照
@@ -588,6 +604,16 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose, opts){
     setTimeout(()=>{
       bubble.classList.add('show');
       typeInspectorLine(lineEl, line, 2000);   // 2 秒內逐字
+      /* ══ 亂入（ver -838）══ 第一句打完停一拍 → 換立繪、換名字、重打第二句。
+         只有 `spk.follow` 有料才演（evaluation.js 的 INTRUDE）。 */
+      if(spk && spk.follow){
+        const f = spk.follow;
+        _inspFollowTimer = setTimeout(()=>{
+          if(f.portrait){ portrait.src = f.portrait; portrait.style.display='block'; }
+          if(f.name) nameEl.textContent = f.name;
+          typeInspectorLine(lineEl, f.text || '', 1600);
+        }, 2000 + (f.delayMs!=null ? f.delayMs : 900));
+      }
     }, Math.max(sweepDone, 1100));
   }
 }

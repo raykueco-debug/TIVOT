@@ -246,7 +246,7 @@ function render(){
    ⚠ 遮罩 `pointer-events:none`：**什麼都不擋**（§6.5.5 的教訓：說明不是鎖），
    「指的是這一欄」交給金光。收場：點提示文字／按下確認／關頁。 */
 let guideEls=null;
-function openGuide(){
+function openGuide(msg){
   if(!el || guideEls) return;
   const tgt=el.querySelector('.gs-ptabs') || el.querySelector('.gs-pcard');
   if(!tgt) return;
@@ -262,7 +262,7 @@ function openGuide(){
     +'transform:translateX(-50%);max-width:80%;padding:10px 14px;border:1px solid var(--gold-dim);'
     +'border-radius:10px;background:rgba(8,9,14,.92);color:var(--ink);font-size:13px;'
     +'line-height:1.7;letter-spacing:1px;text-align:center;pointer-events:auto;cursor:pointer;';
-  tip.textContent='在這裡切換戰鬥搭檔——選好按「確　認」才會生效。';
+  tip.textContent=msg || '在這裡切換戰鬥搭檔——選好按「確　認」才會生效。';
   tip.addEventListener('click', e=>{ e.stopPropagation(); closeGuide(); });
   document.body.appendChild(dim); document.body.appendChild(ring); document.body.appendChild(tip);
   guideEls=[dim,ring,tip];
@@ -494,6 +494,9 @@ export function open(opts){
   tab='gear';        // 每次開都回到整備 —— 吊墜的語意是「整備」，道具是它的第二頁
   /* 本篇現任搭檔＝旗標＋玩家選擇（`storyPartnerKey`，ver -741）。
      ⚠ 走 `setPickedPartner`（唯一管道，§3.6）。 */
+  /* 劇情強配（ver -838，夏爾村戰前的強制整備）：`opts.forcePartner` 先寫進
+     loadout（唯一真相）——storyPartnerKey 之後自然回她，頁面顯示的就是她。 */
+  if(opts && opts.forcePartner && GAME_CONFIG.partners[opts.forcePartner]) load.setPartner(opts.forcePartner);
   const pk=partner.storyPartnerKey();
   if(GAME_CONFIG.partners[pk] && state.pickedPartner!==pk) setPickedPartner(pk);
   render();
@@ -502,7 +505,7 @@ export function open(opts){
     /* 夥伴欄聚光燈（ver -743，Ray：「同槍店教整備一樣，高光整備欄，再高光
        夥伴欄」）—— 飛行頁那一段高光了吊墜（整備欄），開進來接著高光**夥伴欄**。
        走 `opts.guidePartner`（橋上的一次性閂）。⚠ 等 `.on` 之後才量 rect（老坑）。 */
-    if(opts && opts.guidePartner) setTimeout(openGuide, 120); });
+    if(opts && opts.guidePartner) setTimeout(()=>openGuide(opts.guideMsg), 120); });
   /* ⚠ **一般的 click 音就好**（ver -433，Ray 指定）。原本用 `sfx_saint`（聖徒化那一支）——
      那是「發動」的聲音，開一頁裝備管理配不上那個份量，而且它比其他 UI 音都響。
      ⚠ 走 `SFX.menuClick()`（＝ `se_general_click`，所有按鈕的統一出口）——

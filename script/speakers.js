@@ -52,11 +52,12 @@ export const SPEAKERS = {
      這是「沒有人在講話」。⚠ 主角的空白框（`blank:true`）又是另一件事：
      那是**他**在說話，只是不出聲，名字欄會印他的暱稱。 */
   NARRATION:{ name:'',      art:null },
-  /* 夏爾村村民／村長（ver -802，Ray 的村內戰交稿）：**沒有立繪、有名字** ——
-     圍城那一段是一片混亂的喊話，只有對話框（同 `VOICE` 路人，只是名字不同）。
-     台詞不包引號（§6.5.4）。 */
-  VILLAGER: { name:'村民',   art:null },
-  CHIEF:    { name:'村長',   art:null },
+  /* 夏爾村村民／村長（-802 沒有立繪；**ver -838 Ray 交件接上** NPC_shinier_*）。
+     ⚠ 兩位「村民」是**不同的人**（獵人／雜貨商）→ 兩個 id（同 NP 店主那一條：
+       同一個顯示名兩個人）。台詞不包引號（§6.5.4）。 */
+  VILLAGER: { name:'村民',   art:'sh_villager'  },
+  VILLAGER2:{ name:'村民',   art:'sh_villager2' },
+  CHIEF:    { name:'村長',   art:'sh_chief'     },
   /* 賞金獵人公會（ver -375）。⚠ 兩位都站**右**：與店主同一個邏輯 ——
      玩家的同伴在左，對面的人在右。 */
   HUNTER:   { name:'獵人',   art:'hunter'  },
@@ -622,6 +623,17 @@ export const ART = {
      ⚠ 身高 172 是**估的**（中老年男性神職），同 hunter／gunsmith 那幾筆的作法 ——
        日後有設定改 cm 即可，取景值不必重量。
      ⚠ 站**右**：玩家的同伴在左、對面的人在右（同所有城鎮 NPC）。 */
+  /* ══ 夏爾村的臉（ver -838，Ray 交件）══ 身高是**估的**（≤178 那條紅線），
+     取景是量的（measure_si.py）。站位照店主邏輯：對面的人在右。
+     `sh_craftsman`（NPC_shinier_Gunsmith）＝蕾娜口中的「工匠」，先備著沒戲。 */
+  sh_villager: { cm:178, eye:32, fx:0.421, top:5, bot:1524, side:'R', alt:null,
+                 base:'resources/SI/NPC_shinier_hunter_SI.webp', expr:{} },
+  sh_villager2:{ cm:172, eye:32, fx:0.542, top:5, bot:1530, side:'R', alt:null,
+                 base:'resources/SI/NPC_shinier_grocery_SI.webp', expr:{} },
+  sh_chief:    { cm:164, eye:32, fx:0.537, top:6, bot:1520, side:'R', alt:null,
+                 base:'resources/SI/NPC_shinier_chief_SI.webp', expr:{} },
+  sh_craftsman:{ cm:175, eye:32, fx:0.603, top:5, bot:1531, side:'R', alt:null,
+                 base:'resources/SI/NPC_shinier_Gunsmith_SI.webp', expr:{} },
   priest: { cm:172, eye:32, fx:0.536, top:7, bot:1531,
            side:'R', alt:null, base:'resources/SI/Priest_SI_front.webp', expr:{} },
   /* ══ 北方泊地的群眾（ver -741，Ray 交件 NPC_northport_Crowd）══

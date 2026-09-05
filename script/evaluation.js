@@ -73,6 +73,27 @@ export const LINES = {
      （`inspector` 回 null），不要自己補一句。
    ══════════════════════════════════════════════════════════════════════ */
 export const BY_BATTLE = {
+  /* ══ 夏爾村・村戰收尾（sv_wild＝sessionEnd，整段圍城在這裡結算）（ver -838，Ray 交稿）══
+     `byTier`：這一場的稿**分好感段**（T1／T2 以上）—— 門檻不是等於（pickByThreshold，
+     tier 看評價者蕾娜自己的好感，`prog.tierOf`）。
+     `aff`＝戰後索菈娜好感（Ray：「戰後索拉娜好感＋10，評價D再加2、C再加1」）——
+     掛在句子上、once 旗防重複（見 inspector.pickEvaluator）。⚠ E 沒給就不寫（同 np_claws）。 */
+  sv_wild: { byTier: {
+    1: {
+      S: { text:'簡直是移動的軍火庫……！',         expr:'shockedCalm', aff:{ sorana:10 } },
+      A: { text:'這種程度的敵人我也很難評分呢。',   expr:'writting',    aff:{ sorana:10 } },
+      B: { text:'數量不少，辛苦了。',               expr:'writting',    aff:{ sorana:10 } },
+      C: { text:'你是太暗了看不清楚嗎？',           expr:'upset',       aff:{ sorana:11 } },
+      D: { text:'基本全靠人家村民呢……',             expr:'dying',       aff:{ sorana:12 } },
+    },
+    2: {
+      S: { text:'把船弄壞那件事就原諒你吧！',       expr:'bow',         aff:{ sorana:10 } },
+      A: { text:'明天把船修好就算原諒你囉。',       expr:'bow',         aff:{ sorana:10 } },
+      B: { text:'那些……原本只是普通的動物嗎？',     expr:'shockedCalm', aff:{ sorana:10 } },
+      C: { text:'這麼暗，戰鬥也挺困難的吧？',       expr:'pause',       aff:{ sorana:11 } },
+      D: { text:'基本全靠人家村民呢……',             expr:'dying',       aff:{ sorana:12 } },
+    },
+  } },
   /* 聖徒化教學戰（瓦礫中的紫黑之爪）。稿一字未改。 */
   np_claws: {
     S: { text:'難以置信……聖徒加護的你恐怕有接近團長級的實力。', expr:'shockedCalm' },
@@ -92,5 +113,23 @@ export const BY_BATTLE = {
     B: { text:'對不起，我最怕這種的了……',           expr:'awkward'   },
     C: { text:'對、對喔！神父本來就會驅魔嘛！',      expr:'meltdown'  },
     D: { text:'我要跟諾薇兒睡一間房……',             expr:'dying'     },
+  },
+};
+
+/* ══════════════════════════════════════════════════════════════════════
+   **亂入**（ver -838，Ray：「評價D再加2 蕾娜評價完索拉娜亂入評價畫面：哈！這次算平手！
+   評價C再加1 …：嘿嘿！要是沒有我你就倒楣了吧！」）
+   ──────────────────────────────────────────────────────────────────────
+   鑰匙＝戰鬥卡 id → 等第。蕾娜那一句打完，換這個人（名字＋立繪）再講一句
+   （inspector 的 spk.follow）。`portrait` 是**直接路徑**（雙人合圖不進 ART——
+   那不是誰的差分，是這一幕專用的一張畫）。加成的好感在上面 BY_BATTLE 的 `aff`
+   （C=+1、D=+2 已併進 11/12），不在這裡重複記（鐵律 7）。
+   ══════════════════════════════════════════════════════════════════════ */
+export const INTRUDE = {
+  sv_wild: {
+    D: { name:'索菈娜', portrait:'resources/SI/RennaSorana_SI_annoyedD.webp',
+         text:'哈！這次算平手！' },
+    C: { name:'索菈娜', portrait:'resources/SI/RennaSorana_SI_annoyedC.webp',
+         text:'嘿嘿！要是沒有我你就倒楣了吧！' },
   },
 };

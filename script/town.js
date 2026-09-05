@@ -69,6 +69,7 @@ const gunN = N('GUNSMITH_NP'), groN = N('SHOPKEEP_NP');
 /* 北方泊地的送行群眾（ver -741，stage2 碼頭道別）。 */
 const crd = N('CROWD_NP');
 const sor = N('SORANA');   // 夏爾村（ver -772）
+const vil = N('VILLAGER'), vil2 = N('VILLAGER2'), chf = N('CHIEF');   // 夏爾村村民/村長（ver -838 接上立繪）
 
 /* ══⚠⚠ 北方泊地槍店的射擊挑戰（ver -655，Ray 交稿）══════════════════════
    **這一段只寫一次**（鐵律 7）：初次進店的 `lines` 與店裡「射擊挑戰」鈕的
@@ -1914,13 +1915,23 @@ export const TOWNS = {
            `flag:'shinier_siege'` ＝**它的已演旗就是圍城旗**（鐵律 9：插了就開圍城、
            只演一次）。演完才走（§6.5.4.3 onLeave），走到東側時 `siegeOn()` 已成立，
            那一格的戰鬥拍就會發動。⚠ 村民／村長沒有立繪（名字框），索菈娜說話才上場。 */
-        onLeave:{ flag:'shinier_siege', need:'sv_night_done', lines:[
-          { speaker:'VILLAGER', text:'是……是獸骸！' },
-          { speaker:'CHIEF', text:'！！' },
-          { speaker:'CHIEF', text:'擋下來！絕不能讓牠們踏進村子一步！' },
-          { speaker:'VILLAGER', text:'不行！太多了！' },
-          { speaker:'CHIEF', text:'可惡！' },
-          sor('remind','盡量別殺！往森林裡趕！'),
+        onLeave:{ flag:'shinier_siege', need:'sv_night_done',
+          /* ver -838：NPC 立繪接上（Ray 交件）——索菈娜讓到左（她可翻），村民村長
+             站右（店主邏輯）。第一拍把背景切到屋外（Ray：「走出屋外，第一隻敵人現身」）。 */
+          sides:{ SORANA:'L' },
+          /* 戰前強制整備（ver -838，Ray：「戰鬥開始前強制開整備畫面，高光伙伴欄，
+             提示此場戰鬥由索拉娜搭檔出擊」）：對白演完 → 整備頁＋夥伴欄聚光燈，
+             收掉才真的踏出去（modules/town.js 的 go()；partner 同步寫進 loadout）。 */
+          gear:{ partner:'sorana', msg:'這場戰鬥由索菈娜搭檔出擊！' },
+          lines:[
+          /* ⚠ 這裡寫死 _night：對白拍的 `bg:` 不走時段候選鏈（town.bgFor 才走），
+             而這一幕固定發生在警鐘之後的夜裡 —— 同主線 scene 指定確切檔名的慣例。 */
+          Object.assign(vil(null,'是……是獸骸！'), { bg:'Shinier_East_night' }),
+          chf(null,'！！'),
+          chf(null,'擋下來！絕不能讓牠們踏進村子一步！'),
+          vil2(null,'不行！太多了！'),
+          chf(null,'可惡！'),
+          sor('guardtalk','盡量別殺！往森林裡趕！'),
           sor('ready','要上了！'),
         ] },
       },
