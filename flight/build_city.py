@@ -27,7 +27,10 @@ import os
 import json
 import sys
 import numpy as np
-import cv2
+try:
+    import cv2   # 只有「街廓量體」(extract_blocks) 用到；沒裝時仍可跑 nomass 的 JOB
+except Exception:
+    cv2 = None
 from PIL import Image, ImageDraw, ImageFilter
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -158,6 +161,27 @@ JOBS = [{
     'mdst': 'northport_mass.webp', 'jdst': 'northport_mass.json',
     # ⚠ 必須與 index.html 的 SETTLEMENTS 一致（見檔頭）。
     'mx': 1516, 'my': 150, 'planW': 700, 'planRot': 0.0,
+    'landmarks': [],
+}, {
+    # ── 夏爾村（ver -827，Ray 交件）─────────────────────────────────────
+    # ⚠ 正俯視（unsquash 1.0，同北方泊地）。高度直接吃 Ray 的灰階圖 `hsrc`（水=黑=0、
+    #   祭壇塔=最亮=最高），不從插畫顏色推。
+    # ⚠ 「不要太大片」→ planW 小（村莊）；「縮小再放大像素化」→ maxdim 壓低。
+    # ⚠ cv2 未就緒 → nomass（先出 plan/height；量體之後補）。
+    # ⚠ planRot 待 3D 對齊地形湖水（Ray：「北向貼地形現有的湖水，可旋轉調整」）——
+    #   先給 0.0，之後對著飛行畫面轉。mx/my/planW/planRot **必須與 index.html 的
+    #   SETTLEMENTS 一致**。
+    'src': 'Shinier_topdown_gpt.png',
+    'hsrc': 'Shinier_topdown_height.png',
+    'unsquash': 1.00,
+    'maxdim': 200,
+    'nomass': True,
+    'val': 1.12, 'sat': 0.90,   # ver -828：Ray「太黑」→ 提亮、彩度略回，貼近周圍地面色調
+
+    'dst': 'shinier_plan.webp',
+    'hdst': 'shinier_h.webp',
+    'mdst': 'shinier_mass.webp', 'jdst': 'shinier_mass.json',
+    'mx': 1107, 'my': 826, 'planW': 360, 'planRot': 0.0,
     'landmarks': [],
 }]
 
@@ -535,8 +559,9 @@ for J in JOBS:
     #   套了會把圓形的廣場拉成橢圓。逐 JOB 可覆寫。
     _uq = J.get('unsquash', UNSQUASH)
     im = im.resize((w, int(round(h * _uq))), Image.LANCZOS)
-    if max(im.size) > MAXDIM:
-        im.thumbnail((MAXDIM, MAXDIM), Image.LANCZOS)
+    _md = J.get('maxdim', MAXDIM)   # 逐 JOB 覆寫輸出長邊（ver -827：小村莊壓低＝像素化）
+    if max(im.size) > _md:
+        im.thumbnail((_md, _md), Image.LANCZOS)
     if _lbl is not None:
         # ⚠ 一律 NEAREST：標號是類別不是顏色，插值會在兩塊之間生出不存在的標號。
         _lbl = _lbl.resize(im.size, Image.NEAREST)
@@ -548,9 +573,10 @@ for J in JOBS:
     if J.get('shadowCheck'):
         report_ground_shadow(rgb, al, float(J['shadowCheck']))
 
-    # 色調對齊（見上方 SAT/VAL）
+    # 色調對齊（見上方 SAT/VAL）。逐 JOB 可覆寫 sat/val（ver -828：夏爾村太黑 → 提亮）。
+    _sat = J.get('sat', SAT); _val = J.get('val', VAL)
     lum = (rgb * np.array([0.299, 0.587, 0.114])).sum(axis=2, keepdims=True)
-    rgb = np.clip((lum + (rgb - lum) * SAT) * VAL, 0, 255)
+    rgb = np.clip((lum + (rgb - lum) * _sat) * _val, 0, 255)
 
     # ── 逐類別色調對齊（ver -210）────────────────────────────────────
     # ⚠ 上面那組 SAT/VAL 是**全圖一個值**，對著「近景地表均值」調的。但綠地與
@@ -658,6 +684,17 @@ for J in JOBS:
     veg = (G > R + 6) & (G > B + 6)
     built = (~water) & (~veg) & (al[:, :, 0] > 40)
     hm = np.where(built, H_BUILT, 0.0).astype(np.float32)
+    # ── 外部高度圖（ver -827，Ray 交 Shinier_topdown_height）───────────────
+    # 直接吃**灰階當高度**（水＝純黑＝0、最高＝最亮），不從插畫顏色推。它與 plan
+    # 同構圖，所以照 plan 的裁切框 `_box` 裁、再縮到 W2×H2 對齊。水＝黑 → 那裡不長東西。
+    if J.get('hsrc'):
+        _hi = (Image.open(os.path.join(CITY, J['hsrc'])).convert('L')
+               .crop(_box).resize((W2, H2), Image.LANCZOS))
+        _hg = np.asarray(_hi).astype(np.float32) / 255.0
+        water = _hg < J.get('waterLevel', 0.06)
+        veg = np.zeros(R.shape, bool)
+        built = (~water) & (al[:, :, 0] > 40)
+        hm = _hg
 
     # ── 依底圖把個別建物立體化（塔林立的城要用）──────────────────────
     # 作法：取亮度的**局部對比**（原圖減去大半徑模糊）。等角視插畫裡，越高的
@@ -690,28 +727,34 @@ for J in JOBS:
     # ── 街廓量體 ──────────────────────────────────────────────────────
     # ⚠ 用**未糊**的 hm 取高度：上面那個 5.0 的模糊是舊版位移網格頂點時的必要
     #   妥協（相鄰頂點高差太大會把格子剪成長條）。稜柱各自獨立，不需要糊。
-    if _lbl is not None:
-        _L = np.asarray(_lbl)
-        _cls = [(_L == k, hv) for (k, hv) in _lblH if (_L == k).sum() >= BLK_MIN]
+    # ⚠ `nomass`（ver -827）／沒裝 cv2 → 略過量體層（小村莊用不到牆體；或 cv2 未就緒時
+    #   先產可視的 plan/height 素材，之後再補量體）。
+    if J.get('nomass') or cv2 is None:
+        print('  略過街廓量體：%s（nomass=%s，cv2=%s）'
+              % (J['dst'], bool(J.get('nomass')), cv2 is not None))
     else:
-        _cls = holysee_classes(rgb, al, built) if J.get('classes') == 'holysee' else None
-    blocks, atlas = extract_blocks(rgb, al, built, hm, J['dst'],
-                                   J.get('blockmode', 'dark'), _cls,
-                                   nosplit=_lbl is not None,
-                                   lmarks=J.get('landmarkMass'),
-                                   lm_mx=J['mx'], lm_my=J['my'],
-                                   lm_hw=J['planW'] * 0.5,
-                                   lm_hh=J['planW'] * 0.5 * H2 / W2)
-    atlas.save(os.path.join(CITY, J['mdst']), quality=QUALITY, method=6)
-    json.dump({
-        'w': W2, 'h': H2,
-        'atlas': J['mdst'],
-        'aw': atlas.width, 'ah': atlas.height,
-        # poly：插畫像素座標；at：在 atlas 上的位置；bb：在插畫上的外框；h：0..1
-        'b': [{'p': [c for xy in b['poly'] for c in xy],
-               'bb': list(b['bb']), 'at': list(b['at']),
-               'h': round(b['h'], 4)} for b in blocks],
-    }, io.open(os.path.join(CITY, J['jdst']), 'w', encoding='utf-8'), separators=(',', ':'))
+        if _lbl is not None:
+            _L = np.asarray(_lbl)
+            _cls = [(_L == k, hv) for (k, hv) in _lblH if (_L == k).sum() >= BLK_MIN]
+        else:
+            _cls = holysee_classes(rgb, al, built) if J.get('classes') == 'holysee' else None
+        blocks, atlas = extract_blocks(rgb, al, built, hm, J['dst'],
+                                       J.get('blockmode', 'dark'), _cls,
+                                       nosplit=_lbl is not None,
+                                       lmarks=J.get('landmarkMass'),
+                                       lm_mx=J['mx'], lm_my=J['my'],
+                                       lm_hw=J['planW'] * 0.5,
+                                       lm_hh=J['planW'] * 0.5 * H2 / W2)
+        atlas.save(os.path.join(CITY, J['mdst']), quality=QUALITY, method=6)
+        json.dump({
+            'w': W2, 'h': H2,
+            'atlas': J['mdst'],
+            'aw': atlas.width, 'ah': atlas.height,
+            # poly：插畫像素座標；at：在 atlas 上的位置；bb：在插畫上的外框；h：0..1
+            'b': [{'p': [c for xy in b['poly'] for c in xy],
+                   'bb': list(b['bb']), 'at': list(b['at']),
+                   'h': round(b['h'], 4)} for b in blocks],
+        }, io.open(os.path.join(CITY, J['jdst']), 'w', encoding='utf-8'), separators=(',', ':'))
 
     print('%s  %dx%d  →  %s / %s  %dx%d'
           % (J['src'], w, h, J['dst'], J['hdst'], out.width, out.height))
