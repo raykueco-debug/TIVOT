@@ -2097,12 +2097,12 @@ export const ASSETS = {
   /* 夏爾村村內戰（ver -802，Ray 交稿）—— 敵人卡見 script/enemies.js 的 sv_*。
      ⚠ bear／stag 目前仍是 **.png**（美術尚未去背轉 webp）：先指 .png 讓它載得出來，
        轉檔後把副檔名改成 .webp（同 §5 的轉檔三步）。其餘四張已是 webp。 */
-  enemy_sv_wolf_pack:     "resources/enemy/mon_wolf_pack.webp",
-  enemy_sv_beast_organ:   "resources/enemy/mon_beast_organ.webp",
+  enemy_sv_wolf_pack:     "resources/enemy/mon_wolf_pack.webp?v=2",
+  enemy_sv_beast_organ:   "resources/enemy/mon_beast_organ.webp?v=2",
   enemy_sv_stag:          "resources/enemy/mon_stag_nightmare.png",
-  enemy_sv_beast_shackle: "resources/enemy/mon_beast_shackle.webp",
+  enemy_sv_beast_shackle: "resources/enemy/mon_beast_shackle.webp?v=2",
   enemy_sv_bear:          "resources/enemy/mon_bear_nightmare.png",
-  enemy_sv_reliquary:     "resources/enemy/mon_beast_reliquary.webp",
+  enemy_sv_reliquary:     "resources/enemy/mon_beast_reliquary.webp?v=2",
 
   // ── 五張 cut-in 圖（v17.7 嵌入）──
   cutin_saint_luna: "resources/partner/Luna_CI_advent.jpg",   // 聖徒化降臨 cut-in（Luna）
