@@ -176,12 +176,12 @@ JOBS = [{
     'unsquash': 1.00,
     'maxdim': 200,
     'nomass': True,
-    'val': 1.12, 'sat': 0.90,   # ver -828：Ray「太黑」→ 提亮、彩度略回，貼近周圍地面色調
+    'val': 1.50, 'sat': 0.95,   # ver -829：Ray「太黑跟坨大便一樣」→ 大幅提亮
 
     'dst': 'shinier_plan.webp',
     'hdst': 'shinier_h.webp',
     'mdst': 'shinier_mass.webp', 'jdst': 'shinier_mass.json',
-    'mx': 1107, 'my': 826, 'planW': 360, 'planRot': 0.0,
+    'mx': 1088, 'my': 864, 'planW': 360, 'planRot': 0.0,   # ver -829：往西南移到實地陸地（雲海盆地/湖在北側）
     'landmarks': [],
 }]
 
