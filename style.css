@@ -736,7 +736,8 @@
   #transText{font-size:24px;letter-spacing:4px;color:var(--gold);font-weight:bold;
     text-shadow:0 0 16px var(--gold-dim);animation:transPop .45s;}
   @keyframes transPop{0%{transform:scale(.7);opacity:0}55%{transform:scale(1.12);opacity:1}100%{transform:scale(1);opacity:1}}
-  @keyframes pulse{from{filter:brightness(1)}to{filter:brightness(1.7)}}
+  /* ver -848：同團徽 —— filter 呼吸改 opacity（合成器），亮度感用靜態值補在各鈕上。 */
+  @keyframes pulse{from{opacity:.68}to{opacity:1}}
 
   #grid{display:grid;gap:6px;touch-action:manipulation;position:relative;}
   /* ══ 延時懲罰的光圈（ver -458；-461 修 dash）══
@@ -1264,6 +1265,15 @@
      （內容高過視窗時 center 會把團徽推出畫面頂、按鈕擠進 footer）。
      垂直間距/團徽尺寸以 --appvh（main.js 實測視窗高寫入；iOS Safari 的 vh 恆取大視口不可信）
      收縮：矮視窗整欄等比變緊，內容保證不壓到貼底 footer。 */
+  /* ══ 蓋住的層不准燒（ver -848，Ray：「完全沒有進飛行畫面，手機依然發熱掉幀」）══
+     實測 town-story 畫面下有 9 條無限動畫在**被蓋住的層**上照畫：戰後 goHome(keepPages)
+     會把 #home 掛回 .on、劇情舞台再蓋上去 —— 首頁的團徽光暈與鈕脈動（filter 動畫＝
+     逐幀重繪）就這樣在底下燒到天荒地老；#app 的月光計量表同理。
+     · 舞台開著 → #home 整層 visibility:hidden（完全不畫）＋ #app 的動畫暫停
+       （paused 只停推進，層一露出來自己續跑）。
+     · 飛行 iframe 蓋著 → #home 同樣藏掉。 */
+  body:has(#storyStage.on) #home, body.flight-on #home{ visibility:hidden; }
+  body:has(#storyStage.on) #home *, body:has(#storyStage.on) #app *{ animation-play-state:paused !important; }
   #home{position:absolute;inset:0;display:none;flex-direction:column;
     align-items:center;justify-content:flex-start;z-index:50;text-align:center;
     background:radial-gradient(120% 90% at 50% 30%,#1a1330,#07050c 90%);
@@ -1277,10 +1287,12 @@
   #home #homeEmblem{width:min(64vw,300px);max-width:78%;height:auto;
     margin:0 0 14px;flex:none;
     user-select:none;-webkit-user-drag:none;pointer-events:none;
-    animation:emblemGlow 1.2s ease-in-out infinite alternate;}
-  @keyframes emblemGlow{
-    from{filter:drop-shadow(0 0 8px rgba(212,169,74,.25)) brightness(1);}
-    to{filter:drop-shadow(0 0 22px rgba(212,169,74,.6)) brightness(1.12);}}
+    animation:emblemGlow 1.2s ease-in-out infinite alternate;
+    /* ver -848：光改**靜態**（drop-shadow 只 raster 一次），呼吸改 opacity ——
+       filter 動畫是逐幀整張重繪，首頁掛機就是持續發燙的來源之一。 */
+    filter:drop-shadow(0 0 16px rgba(212,169,74,.45)) brightness(1.06);
+    will-change:opacity;}
+  @keyframes emblemGlow{ from{opacity:.82;} to{opacity:1;} }
   /* 中文主標：不自動換行（依畫面寬用 clamp 縮字，保證單行不溢出） */
   #home .title{font-size:clamp(24px,7.6vw,34px);letter-spacing:.16em;color:var(--gold);
     margin:0;white-space:nowrap;
