@@ -186,6 +186,30 @@ Ray：「所有戰鬥中的伙伴主被動，聖徒夢魘共鬥發動後都要�
 - 全部瀏覽器實測：talk 立繪與輪轉、鎖定整備頁、9 刀 9 中、crackIn 逐格延遲、
   glasscrack 請求、D 亂入雙人圖。
 
+## -845：手機發燙／圖讀不出來——飛行 iframe 非前景一律卸載（Ray 指令）
+
+- **診斷**：`extPaused` 只是空轉凍結（rAF 每幀跳過，CPU 近零）——但整包記憶體
+  （COL/HGT 陣列、取樣金字塔、浮雕畫布、音訊 buffer，上百 MB）**一直押著**。
+  iPhone 記憶體吃緊 → Safari 拒解新圖（＝「圖讀不出來」）＋系統降頻（＝發燙掉幀）。
+  另抓到兩張**還在用的 2.4MB PNG** 敵圖（sv_stag/sv_bear）→ webp（-75%）。
+- **作法**（Ray：「只要不是可以操控的飛行畫面，都應該要把飛行畫面 kill 掉」）：
+  `killFlightFrame`（唯一實作）——交棒進戰鬥（battle handler +300ms）、降落進城
+  （land handler）、回首頁（killAllPages）三路都殺。**整備/選單蓋在飛行畫面上的
+  那種短暫 overlay 照舊只凍結**（那還是「在飛行畫面上」，殺了每開一次選單就重載）。
+- **回程**：toBattle 交棒那一刻把 `{座標, fromBattle, scripted, doneKey}` 寫進
+  `tivot_flight_ret_v1`；打完 `openFlight` 看到 iframe 沒 src → 把 `won` 補進鑰匙、
+  整頁重載；飛行開機 `restoreFlightPos` 回座標、boot 收尾呼叫 `afterBattleReturn`
+  （自 `__flightResume` 抽出共用，鐵律 8）接勝負記帳（done 打贏才記）與首勝演出
+  （蜈蚣首勝對白／羽蛇甲板混亂 —— doneKey 帶在鑰匙裡）。敗北：done 本來就沒記、
+  scriptPending 重載時由旗標重算（-487 的結構）；戰勝檢查點改讀鑰匙座標。
+- 實測全循環：試飛→蜈蚣遭遇→**iframe 卸載（src 拔掉）**→打贏→繼續→整頁重載→
+  **船回到 (20100,14000) 遭遇原座標**、鑰匙讀完即清。
+- ⚠ 代價：打完回飛行會**重新跑一次飛行讀取頁**（-388「不重載」的設計被此指令推翻，
+  Ray 知情）。⚠ 首勝對白（scripted 路）只驗了程式路徑（共用 afterBattleReturn），
+  沒真打一場劇本遭遇 —— 下次跑主線時順帶看一眼。
+- 其餘發燙候選（未動）：戰鬥常駐的 CSS 動畫（saintPulse/alert 的 drop-shadow）、
+  開機預載總量 —— 若 Ray 還嫌熱再逐項量。
+
 ## 這一批留下的缺口／進行中（下一個 session 接手）
 
 ### A. 平面 2D 開發地圖 → **已完成（-832，見上面第 7 節）**
