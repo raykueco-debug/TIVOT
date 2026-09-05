@@ -801,8 +801,10 @@ const SETTLEMENTS = [
   /* ── 夏爾村（ver -733 備著的村落；**-757 正名接上城鎮骨架**）──────────────
      索菈娜的故鄉（stage5 湖上甲板之後帶路進來的村子）。
      `town:'shinier'` → 降落鈕（script/town.js shinier，兩邊互指）。
-     地形對過：該點 raw 高度 44（低地、內陸），region＝薩梅爾帝國 → f:'empire'。 */
-  { n:'夏爾村', x:1094, y:808, t:'village', f:'empire', town:'shinier' },
+     地形對過：low 地內陸，region＝薩梅爾帝國 → f:'empire'。
+     ⚠ ver -826：Ray 指定落點 (1107,826)，靠水邊（下一步接手繪平面圖 Shinier_topdown_gpt，
+       見 build_city.py 的 shinier JOB 與 SETTLEMENTS；planRot 對齊地形湖水待 3D 調）。 */
+  { n:'夏爾村', x:1107, y:826, t:'village', f:'empire', town:'shinier' },
 ];
 /* 手繪平面圖：背景載，載不到就退回程序生成的街廓（同飛空艇/怪的雙軌）。
    ⚠ 不進 loadWorld：它只影響少數幾座城的外觀，擋開場不划算。 */
