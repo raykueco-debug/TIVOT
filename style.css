@@ -1273,6 +1273,9 @@
        （paused 只停推進，層一露出來自己續跑）。
      · 飛行 iframe 蓋著 → #home 同樣藏掉。 */
   body:has(#storyStage.on) #home, body.flight-on #home{ visibility:hidden; }
+  /* 鐵律 10（ver -849）：舞台開著＝戰鬥層整層不畫（visibility 連 layout 光柵全省；
+     storyStage 是 body 直屬，藏 #app 不會誤傷舞台）。動畫暫停那條留著當保險。 */
+  body:has(#storyStage.on) #app{ visibility:hidden; }
   body:has(#storyStage.on) #home *, body:has(#storyStage.on) #app *{ animation-play-state:paused !important; }
   #home{position:absolute;inset:0;display:none;flex-direction:column;
     align-items:center;justify-content:flex-start;z-index:50;text-align:center;

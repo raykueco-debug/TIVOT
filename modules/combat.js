@@ -2006,6 +2006,19 @@ export function goHome(onCovered, opts){
     $('home').classList.add('on');
     if(!(opts && opts.noBgm)) SFX.playBgm(asset('bgm_home'), { volume: bgmVol('bgm_home') });   // 主選單 BGM
     if(typeof onCovered==='function') onCovered();
+    /* ══ 首頁離場即殺（ver -849，Ray：「首頁離開就殺不就好了？又不會一天到晚
+       回首頁」）══ `keepPages` 的過場借道會把 #home 掛回 .on、再讓下一頁蓋上去 ——
+       -848 抓到它就是「沒進飛行也發燙」的主因（團徽光暈在底下畫到天荒地老）。
+       黑幕還蓋著的此刻檢查：onCovered 真的開了別的頁（劇情舞台／飛行）就把
+       #home 拔掉（display:none＝整層連動畫帶 layout 全滅）；什麼都沒開才留著當保底
+       （-585「剩零句露出首頁」那一族的安全網）。 */
+    if(opts && opts.keepPages){
+      setTimeout(()=>{
+        const covered = document.querySelector('#storyStage.on')
+                     || document.body.classList.contains('flight-on');
+        if(covered) $('home').classList.remove('on');
+      }, 600);   // 黑幕還蓋著的窗內（掀開前）——晚一點檢查，讓慢的開頁路徑也來得及
+    }
   }, 1400);
 }
 
