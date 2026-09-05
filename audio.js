@@ -169,6 +169,10 @@ function voiceChain(c, vol){
 function playBuffer(c, buf, vol, voice, handle, src){
   try{
     const s = c.createBufferSource(); s.buffer = buf;
+    /* 語音 → BGM 閃避（ver -847）：開播即壓、onended 放（來源一定會 ended，
+       stop 也會 —— refcount 不會漏）。掛在真的 start 的那一刻，late-play 放棄的
+       不會白壓。 */
+    if(voice){ voDuckStart(); s.onended = ()=>{ try{ voDuckEnd(); }catch(_){} }; }
     if(voice && _voice){
       const ch = voiceChain(c, vol);
       if(ch){ s.connect(ch.head); ch.tail.connect(busIn(c,'vo')); s.start(); return; }
@@ -230,6 +234,23 @@ let _bgmPlaying = null;      // 真的已經掛上 el.src 的那一首
 let _bgmSwitching = false;   // 換歌在路上（淡出中／等 delay／等 blob）
 let _bgmVol = 0.7;      // 目標音量
 let _bgmTimer = null;   // 切歌間隔/待播計時器
+/* ══ 語音時 BGM 自動閃避（ver -847，Ray：「現在的語音全部被音樂壓住聽不見，
+   調整響度讓語音清晰」）══ 語音一開播就把 BGM 壓到 level 倍（attack 快壓），
+   語音結束 release 淡回。refcount：語音可能交疊（輪播／插話），最後一句結束才放。
+   參數由 main 從 config 推進來（setVoiceDuck —— 本模組不讀 config 的慣例）。 */
+let _duck = { level:0.35, attackMs:120, releaseMs:350 };
+let _duckN = 0;
+function voDuckStart(){
+  _duckN++;
+  const el=_bgmEl;
+  if(el && !el.paused) bgmFade(el, bgmTargetVol()*_duck.level, _duck.attackMs);
+}
+function voDuckEnd(){
+  _duckN = Math.max(0, _duckN-1);
+  if(_duckN) return;
+  const el=_bgmEl;
+  if(el && !el.paused && !_bgmSwitching) bgmFade(el, bgmTargetVol(), _duck.releaseMs);
+}
 const _bgmBlob = {};    // path → objectURL（快取；壓縮 mp3，體積小可多留）
 const _bgmPending = {}; // path → Promise（下載中；同曲併發呼叫去重，避免重複抓整首）
 function bgmElem(){
@@ -430,6 +451,9 @@ export const SFX = {
   /* 語音鏈參數（main.js 開機時從 config 的 tuning.voiceChain 推進來）。
      傳 null／不呼叫＝不裝鏈，語音走一般路徑。 */
   setVoiceChain(cfg){ _voice = cfg || null; },
+
+  /* 語音閃避參數（ver -847，main 開機從 tuning.loudness.voiceDuck 推進來）。 */
+  setVoiceDuck(cfg){ if(cfg) _duck = Object.assign({}, _duck, cfg); },
 
   // 設定普攻槍聲候選（傳已解析路徑陣列，gunshot 隨機播其一；vol＝播放增益，未傳＝1）
   setShots(srcs, vol){ _shots = (srcs || []).filter(Boolean); _shotsVol = (vol==null ? 1 : vol); },

@@ -122,6 +122,7 @@ SFX.setMasterVolume(MASTER_VOL);
 SFX.setLayerBase((GAME_CONFIG.tuning.loudness||{}).layer);
 // 語音鏈（手機外放的可懂度；理由見 config 的 tuning.voiceChain）
 SFX.setVoiceChain(GAME_CONFIG.tuning.voiceChain);
+SFX.setVoiceDuck(GAME_CONFIG.tuning.loudness && GAME_CONFIG.tuning.loudness.voiceDuck);   // 語音時 BGM 閃避（ver -847）
 
 /* ── 全域靜音（右上鈕，管理人模式限定）───────────────────────────
    走 SFX.setMasterVolume(0)：SFX（合成音與取樣音經 limiter 後的主音量節）與 BGM

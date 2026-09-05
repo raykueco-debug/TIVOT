@@ -49,7 +49,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.06-846';
+export const VERSION = 'ver 2026.09.06-847';
 
 export const GAME_CONFIG = {
 
@@ -1881,7 +1881,14 @@ export const GAME_CONFIG = {
     loudness: {
       targetLufs: -20,       // 拉平的共同目標
       peakCeilDb: 2,         // 增益後的峰值上限（dBFS）
-      layer: { vo:1.00, se:0.90, bgm:0.80 },   // Ray 指定的三層比例
+      /* ver -847（Ray：「語音全部被音樂壓住聽不見，調整響度讓語音清晰」「連開槍的
+         音效都聽不見」）：bgm 由 -441 的 0.80 再壓一階到 **0.70** —— 音樂墊底，
+         槍聲與語音才浮得出來。⚠ 飛行頁的 LAYER_BASE 是同一組數字的第二份
+         （非 module 頁面），改一邊要改另一邊。 */
+      layer: { vo:1.00, se:0.90, bgm:0.70 },
+      /* 語音時 BGM 自動閃避（ver -847）：語音開播把 BGM 壓到 level 倍、結束淡回。
+         audio.js 的 setVoiceDuck 吃這一組（main 開機推入）。 */
+      voiceDuck: { level:0.35, attackMs:120, releaseMs:350 },
     },
 
     /* 哪幾個 ASSETS 鍵是**語音**（走 voiceChain）。⚠ 這是**歸屬**不是增益 ——
@@ -1986,7 +1993,8 @@ export const GAME_CONFIG = {
 
       /* ── 音樂 ── */
       bgm_mainmenu:1.735, bgm_battle:0.849, bgm_boss:0.665, bgm_result:0.855,
-      peritune_whirlwind:0.97,   // 索菈娜戰鬥曲（ver -837 實測 −13.5 LUFS）
+      peritune_whirlwind:0.80,   // 索菈娜戰鬥曲（ver -847 錨校正：本機尺 ×0.82 對回表尺——
+                                 //   同尺量 bgm_battle 得 1.03 vs 表值 0.849，whirlwind 0.97→0.80）
       se_soranacounter:1.47, se_soranacounterhit:1.04,   // 飛刀射出/命中（ver -839 實測；hit 峰值夾）
       se_glasscrack:1.94,   // 裂紋輻射（ver -839 實測 −19.5 LUFS）
       bgm_missionfailed:1.995, bgm_capital_day:1.213, bgm_lunaria:1.230,
