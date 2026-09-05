@@ -284,10 +284,17 @@ function openFlight(opts){
        戰鬥打完回來，三條路都經過這一支。 */
   try{ SFX.stopBgm(600); }catch(_){}
   const w=flightWin();
-  if(!f.getAttribute('src')) f.setAttribute('src','flight/index.html');
+  if(!f.getAttribute('src')){
+    /* ver -845：交棒時殺掉了 —— 勝負補進回程鑰匙（重載後開機收尾讀），整頁重載。
+       座標與 scripted/doneKey 是 toBattle 交棒那一刻寫的，這裡只補 `won` 一欄。 */
+    if(opts && opts.resume){
+      try{ const j=JSON.parse(localStorage.getItem('tivot_flight_ret_v1')||'null');
+           if(j){ j.won = opts.won?1:0; localStorage.setItem('tivot_flight_ret_v1', JSON.stringify(j)); } }catch(_){}
+    }
+    f.setAttribute('src','flight/index.html');
+  }
   /* ⚠ **勝負要帶過去**（ver -432）：飛行頁那一邊有「第一場艦戰打完」的一段對白，
-     而 ver -430 起**打輸也會回到這一頁** —— 那段的第一句是「小命保住了」，
-     輸了聽到它是錯的。判斷在啟動層（只有這裡知道玩家按的是「繼續」還是打贏回來）。 */
+     輸了聽到「小命保住了」是錯的。活著的舊路保留（萬一哪條路沒殺到）。 */
   else if(opts && opts.resume){ if(w && w.__flightResume) w.__flightResume({ won: !!opts.won }); }
   else { try{ w.location.reload(); }catch(_){ f.setAttribute('src','flight/index.html'); } }
   f.classList.add('on');
@@ -339,13 +346,22 @@ function closeFlightFrame(){
    · 劇情舞台／整備頁／選單面板／買賣單子：各自唯一的收場器。
    ⚠ 每一項都 try 包住：殺一半被一個例外攔腰，比漏殺一層更糟。
    ⚠ `flightBack`/`storyResume` 一併丟掉 —— 回首頁之後不該再有「回去接著演」的殘念。 */
-function killAllPages(){
-  closeFlightFrame();
-  const f=$('flightFrame');
-  if(f && f.getAttribute('src')){
+/* ══ 殺掉飛行 iframe（ver -845 抽出，唯一實作，鐵律 8）══
+   Ray：「只要不是可以操控的飛行畫面，都應該要把飛行畫面 kill 掉」——
+   extPaused 只是空轉凍結（CPU 近零），但整包記憶體（地形陣列/取樣金字塔/畫布，
+   上百 MB）一直押著：手機記憶體吃緊 → 圖解不出來、系統降頻發燙。
+   交棒進戰鬥／降落進城／回首頁三條路都走這一支；座標與勝負上下文在回程鑰匙
+   （toBattle 寫、restoreFlightPos 讀），下次開飛行頁重載照樣站在原地。 */
+function killFlightFrame(){
+  const f=$('flightFrame'); if(!f) return;
+  if(f.getAttribute('src')){
     try{ const w=flightWin(); if(w) w.location.replace('about:blank'); }catch(_){}
     f.removeAttribute('src');
   }
+}
+function killAllPages(){
+  closeFlightFrame();
+  killFlightFrame();
   try{ town.suspend(); }catch(_){}
   try{ town.close(); }catch(_){}
   try{ story.close(); }catch(_){}
@@ -380,6 +396,11 @@ window.__tivotFlight = {
   },
   /* 遭遇 → 進戰鬥。門已經在飛行頁推到頂了，這裡**接著演**（撞頂 → 解鎖 → 圓盤 → 開門）。 */
   battle(req){
+    /* ver -845：交棒即殺（Ray：「不是可操控的飛行畫面就 kill」）——
+       幾何（geom）與 scripted 都在 req 裡、座標在回程鑰匙（toBattle 剛寫的），
+       這個 iframe 沒有再留著的理由。⚠ 檢查點要先落（要問活著的 __flightPos）。 */
+    try{ flightCheckpointNow(); }catch(_){}
+    setTimeout(()=>{ try{ killFlightFrame(); }catch(_){} }, 300);
     const id = req && req.battle;
     if(!id || !GAME_CONFIG.battles || !GAME_CONFIG.battles[id]){ closeFlightFrame(); return; }
     flightBack = true;                    // 打完回飛行頁（見 setStoryReturn）
@@ -404,6 +425,8 @@ window.__tivotFlight = {
      ⚠ 城鎮的 BGM 由 `town.open` 自己接（`story.ensureBgm`）—— 進飛行頁時主遊戲的
        曲子被 `openFlight` 收掉了，不接回來會一片安靜。 */
   land(id){
+    /* ver -845：降落＝這一趟航行結束，iframe 殺掉（下一次出航本來就整頁重載）。 */
+    setTimeout(()=>{ try{ killFlightFrame(); }catch(_){} }, 600);
     closeFlightFrame();
     $('home').classList.remove('on');
     town.open(id || 'capital');
@@ -1265,16 +1288,20 @@ combat.setStoryReturn((res)=>{
       if(n>=3){ carriedToInn(); return; }
       prog.setLossStreak(n);
     }
-    if(f && f.getAttribute('src')){
+    if(f){
       /* ⚠ 戰鬥／結算的曲子由 `openFlight` 統一收掉（鐵律 8），這裡不再自己 stopBgm。
-         ⚠ `keepPages`：這是**回飛行畫面**不是回首頁 —— iframe 要活著（船在原座標）。 */
-      /* ══ 戰勝即存檔（ver -697，Ray 的戰鬥分級）══ 打贏之後**再落一筆**飛行檢查點：
-         交棒進戰鬥那一刻已經落過一筆，但那一筆裡的旗標還停在戰前（劇本遭遇的
-         `done` 是「打贏才記」的，§6.5.2）—— 不補這一筆的話，下一次回檔會把
-         剛剛打贏的那一場退回去，玩家得再打一次。
-         ⚠ 延後到 `__flightResume` 跑完（它才在記 `done`），所以掛在 openFlight 之後。 */
+         ver -845：交棒時 iframe 已被殺掉 —— openFlight 看到沒有 src 就把勝負補進
+         回程鑰匙、整頁重載（座標在鑰匙裡，船照樣站在遭遇位置）。 */
+      /* ══ 戰勝即存檔（ver -697）══ 打贏再落一筆飛行檢查點（交棒那一筆的旗標停在
+         戰前）。⚠ ver -845：iframe 死了問不到 __flightPos —— 座標直接讀回程鑰匙
+         （toBattle 交棒那一刻寫的，就是遭遇位置，同一份真相）。 */
+      const dead = !f.getAttribute('src');
       combat.goHome(()=>{ openFlight({ resume:true, won });
-                          if(won) setTimeout(flightCheckpointNow, 400); },
+                          if(won){
+                            if(dead){ try{ const j=JSON.parse(localStorage.getItem('tivot_flight_ret_v1')||'null');
+                                           if(j && isFinite(j.x)) saveSys.autoFlightSave({x:j.x, y:j.y}); }catch(_){}
+                            } else setTimeout(flightCheckpointNow, 400);
+                          } },
                     { noBgm:true, keepPages:true });
       return;
     }

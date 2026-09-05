@@ -522,7 +522,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -844';
+const FLIGHT_VER = 'ver -845';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -8100,6 +8100,16 @@ function toBattle(kind){
   setTimeout(()=>{
     if(embedded()){
       flightAudio(false);                          // 進戰鬥：這一頁的音樂與環境音收掉
+      /* ══⚠⚠ 回程鑰匙（ver -845，Ray：「只要不是可以操控的飛行畫面，都應該要把
+         飛行畫面 kill 掉」）══ 父頁交棒後會把這個 iframe **整個卸載**（發燙與
+         「圖讀不出來」的元凶＝上百 MB 的地形/金字塔一直押著記憶體）。
+         所以座標＋勝負記帳要的上下文（這一場是不是劇本遭遇、贏了要記哪支 done）
+         **現在**就寫進回程鑰匙 —— 打完重載，restoreFlightPos 讀座標、
+         afterBattleReturn 讀上下文（勝負由父頁在重開前補進 `won` 欄）。 */
+      try{ localStorage.setItem('tivot_flight_ret_v1', JSON.stringify(
+        { x:cam.x, y:cam.y, angle:cam.angle, alt:cam.alt,
+          fromBattle:1, scripted: lastBattleScripted?1:0,
+          doneKey: (lastBattleScripted && lastScriptS && lastScriptS.done) || null })); }catch(e){}
       /* `scripted`＝這一場是不是**劇情戰**（ver -493，Ray：「加上是否為劇情戰的判定，
          之後就讀那一個」）——由發起端（唯一知道的人）宣告，主遊戲照這個分流
          開場白與 talkOnce。隨機遭遇＝false。 */
@@ -8270,31 +8280,29 @@ window.__flightResume=function(opts){
   /* ⚠ 羽蛇登場插圖現在留到交棒（ver -786，見 toBattle）——回到這一頁一律先清乾淨：
      敗北回飛行不能還蓋著那張插圖；羽蛇打贏的甲板分支會在下面重設 introArt=甲板背景。 */
   introArt=null;
+  afterBattleReturn(!!(opts && opts.won), wasScripted, (lastScriptS && lastScriptS.done) || null, lastScriptS);
+};
+/* ══ 戰鬥回程的收尾（ver -845 抽出，鐵律 8）══ 兩條路共用：
+   · 活著被喚醒（__flightResume —— 保留給沒殺到的邊角）
+   · **殺掉重載**（父頁交棒後卸載 iframe，回程由開機收尾呼叫；上下文在回程鑰匙）
+   內容＝-487 的勝負記帳＋-453/-741 的首勝演出，一字未動搬進來。 */
+function afterBattleReturn(won, wasScripted, doneKey, scriptS){
   /* ══ 劇本遭遇的勝負記帳（ver -487，唯一的記錄點）══
-     · 打贏：**這一刻**才記 done（-426 的「交棒就記」廢除 —— 敗北要等於沒發生過，
-       憲法 §6.5.2）。
-     · 打輸：pending 重掛（in-page 記憶；done 從來沒記，旗標不必退）——
-       人還在國境外的話下一幀就再遭遇。順手退一次 done 是**治舊檔**：
-       舊版在交棒時記過的殘留旗標藉此洗掉。
-     · 連敗第三場走「送回旅店」不經過這裡 —— 沒關係：done 沒記過，下次出航
-       重載本頁時 scriptPending 由旗標重算，自然又掛上。 */
-  if(wasScripted && lastScriptS){
-    if(opts && opts.won){ if(lastScriptS.done) addFlag(lastScriptS.done); }
+     · 打贏：**這一刻**才記 done（敗北要等於沒發生過，憲法 §6.5.2）。
+     · 打輸：done 從來沒記（旗標不必退；退一次是治舊檔）。pending：活著那條重掛
+       in-page 記憶；**重載那條不必** —— 開機時 scriptPending 本來就由旗標重算。 */
+  if(wasScripted && doneKey){
+    if(won) addFlag(doneKey);
     else{
-      if(lastScriptS.done) removeFlag(lastScriptS.done);   // 治舊檔（見上）
-      scriptPending = lastScriptS;
+      removeFlag(doneKey);   // 治舊檔（見上）
+      if(scriptS) scriptPending = scriptS;
     }
   }
-  if(!(opts && opts.won)) return;
-  /* ⚠⚠ **只有第一場船戰（劇本遭遇的蜈蚣）打贏才演**（ver -453，Ray：「不要每次
-     船戰都跳…只有第一場船戰結束會跳」）。旗標守門本來就有，但它綁的是
-     **這一輪有沒有演過** —— 讀檔／跳章之後旗標歸零，隨便哪一場隨機遭遇打贏
-     都會把這段「初次見面」的戲演出來。現在**雙重綁**：這一場必須是劇本遭遇
-     （`lastBattleScripted`，`toBattle` 記的）＋ 旗標沒演過 —— 隨機遭遇永遠不演。 */
+  if(!won) return;
+  /* ⚠⚠ **只有劇本遭遇打贏才演**（ver -453：隨機遭遇永遠不演首勝那段戲）。 */
   if(!wasScripted) return;
-  /* 羽蛇那一場打贏（ver -741）：接甲板混亂。⚠ 判 done 的鑰匙不判 kind ——
-     這一段是**那一條劇本遭遇**的戲，隨機羽蛇（日後 fromStage 放行）不演。 */
-  if(lastScriptS && lastScriptS.done==='flight_serpent_met' && !flagOn('np_deck_chaos')){
+  /* 羽蛇那一場打贏（ver -741）：接甲板混亂。⚠ 判 done 的鑰匙不判 kind。 */
+  if(doneKey==='flight_serpent_met' && !flagOn('np_deck_chaos')){
     /* 甲板背景**這一刻**就鋪（ver -745）：結算一撤、畫面露出來就是它。
        地圖上的怪全清（Ray：「包括那隻羽蛇」）—— 牠已經在剛剛那一場被打掉了。 */
     /* 戰後這一段的 bgm ＝ Crisis（ver -747，Ray：「戰後 bgm 用 crisis」）——
@@ -8339,6 +8347,7 @@ window.__flightPos=function(){ return { x:cam.x, y:cam.y, angle:cam.angle, alt:c
 /* 打完回來：把船放回離開時的位置（ver -382）。
    ⚠ **讀了就清掉**：不清的話下次正常進飛行頁還會被拉回那個座標。
    ⚠ 這一段要在 `cam` 宣告之後才跑得到，所以掛在這裡（生怪那一區）而不是檔頭。 */
+let retCtx=null;   // 戰鬥回程的上下文（ver -845）：開機收尾（afterBattleReturn）讀
 (function restoreFlightPos(){
   try{
     const j=JSON.parse(localStorage.getItem('tivot_flight_ret_v1')||'null');
@@ -8348,6 +8357,7 @@ window.__flightPos=function(){ return { x:cam.x, y:cam.y, angle:cam.angle, alt:c
       if(isFinite(j.angle)) cam.angle=j.angle;
       if(isFinite(j.alt))   cam.alt=j.alt;
     }
+    if(j && j.fromBattle) retCtx=j;
   }catch(e){}
 })();
 
@@ -11146,6 +11156,10 @@ function preloadSfx(){
     window.__map=MAPW+'×'+MAPH;
     // 進度圈跑到滿再收，不要瞬間閃掉
     setTimeout(()=>bootUI.done(),260);
+    /* ══ 戰鬥回程（ver -845，殺掉重載那條）══ 上下文在回程鑰匙（restoreFlightPos
+       收進 retCtx），勝負由父頁在重開前補進 `won` 欄。等畫面真的還給玩家再演。 */
+    if(retCtx){ const c=retCtx; retCtx=null;
+      setTimeout(()=>{ try{ afterBattleReturn(!!c.won, !!c.scripted, c.doneKey||null, null); }catch(e){} }, 900); }
     /* stage2 出航對白（ver -741，Ray 的稿）：讀取頁收乾淨之後才演。 */
     setTimeout(departureTalkMaybe, 2600);
     requestAnimationFrame(loop);

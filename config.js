@@ -49,7 +49,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.06-844';
+export const VERSION = 'ver 2026.09.06-845';
 
 export const GAME_CONFIG = {
 
@@ -2192,9 +2192,9 @@ export const ASSETS = {
        轉檔後把副檔名改成 .webp（同 §5 的轉檔三步）。其餘四張已是 webp。 */
   enemy_sv_wolf_pack:     "resources/enemy/mon_wolf_pack.webp?v=2",
   enemy_sv_beast_organ:   "resources/enemy/mon_beast_organ.webp?v=2",
-  enemy_sv_stag:          "resources/enemy/mon_stag_nightmare.png",
+  enemy_sv_stag:          "resources/enemy/mon_stag_nightmare.webp",   // ver -845：2.4MB PNG → webp（手機發燙/圖讀不出來的調查）
   enemy_sv_beast_shackle: "resources/enemy/mon_beast_shackle.webp?v=2",
-  enemy_sv_bear:          "resources/enemy/mon_bear_nightmare.png",
+  enemy_sv_bear:          "resources/enemy/mon_bear_nightmare.webp",   // 同上
   enemy_sv_reliquary:     "resources/enemy/mon_beast_reliquary.webp?v=2",
 
   // ── 五張 cut-in 圖（v17.7 嵌入）──
