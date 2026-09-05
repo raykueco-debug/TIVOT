@@ -112,6 +112,37 @@ Ray：「所有戰鬥中的伙伴主被動，聖徒夢魘共鬥發動後都要�
   實地陸地、val 1.12→1.50 大幅提亮。
 - ⚠ cv2 之前沒裝，已 `pip install opencv-python-headless`（完成，cv2 5.0.0），量體層重跑補上。
 
+## -837：vo 大更新／獵手戰吼兩段式／手機卡頓調查（接手 session）
+
+- **vo 13 支新錄音**（Ray 交 mp3/wav）轉 m4a 接線；「編 1、2 的都是輪播」＝
+  `SFX.pickRot`（**唯一的輪播實作**，鐵律 8 —— saint 的 coopVoIdx 與 partner 的
+  voRotIdx 已收攏）。同名覆蓋的（nou_saint/guard/return、anya_melt、sorana pack/pack2/
+  roar）ASSETS 掛 `?v=2`；舊 sorana 五支走 recycle。原 mp3/wav 進 `_originals/audio/vo`。
+  fileGain 全部重量（BS.1770＋voiceChain EQ、耳機/手機平均、峰值夾 +2dB —— 量測腳本
+  是 session 現寫的，方法同 -818）。明晰之夢 4 支輪播收成單支 `vo_anya_lucid`。
+- **獵手的戰吼兩段式**（Ray）：連 3 盤完美清盤發動（voice＝roar2，**計數不歸零**）；
+  連 5 盤再發動＋**重置共鬥**（`saint.resetInstallSlot` 具名 setter，partner 經 combat
+  注入呼叫）＋計數歸零，voice2＝roar。卡上 `streak2`/`voice2`。
+- **索菈娜為夥伴 → 戰鬥 BGM `bgm_whirlwind`**（Peritune_Whirlwind.m4a，已量 0.97）：
+  表在 `config.battleBgm.partner`，判定只在 `main.battleBgmOf`（卡上 `bgm` 仍最優先；
+  搭檔＝卡上 `partner`，否則 `partner.storyPartnerKey()`）。
+- **手機戰鬥卡頓調查結論**：①主嫌＝索菈娜 CI 五張 2.0~2.5MB 的 1024×1536 PNG ——
+  戰吼每 3 盤輪播一張，cut-in 當下下載＋解碼（playCutin 的 300ms 保底蓋不住），
+  已整批轉 webp（0.10~0.27MB，90%↓；原 PNG 留原位給美術）②戰鬥開場的敵立繪/背景
+  解碼尖峰（桌機 76/51ms，手機 ×5~10）—— 補 `combat.warmPartnerCutins`（開場 idle
+  預熱搭檔全部 CI）③點格＋彈殼 VFX 實測**不卡**（快速清整盤 0 個 long task）。
+- **cutinFit**（Ray：「獵手的智慧 CI 後方角色不要被裁掉太多」）：`#cutinImg` 是 96% 高
+  再乘 keyframe scale 1.2~1.3＝溢出 ~20%；keyframe 改乘 `var(--ci-s)`，
+  逐張表在 `config.tuning.cutinFit`（supply＝0.78，實測 computed scale 0.95）。
+- **拖城「舊的要刪掉」**：`dropSettlement` 落定即 `buildCityMask()` —— 插畫/量體當場
+  搬家、舊位置立刻回地形；整地（podium 烘在 HGT）仍要重整才跟上（讀數框有寫）。
+- **Sorana_SI_readysmile**：session 開始前就被刪（git D），Ray 21:28 放了新 PNG ——
+  已轉回 webp＋重量取景（top:6 bot:1534 fx:0.578，`?v=2`）。**tease 找回**：
+  `_originals/SI/Sorana_SI_tease.png`（透明版）轉 webp、量好掛進 ART（腳本還沒用到）。
+- ⚠ `Peritune_Mystic_Tides_loop.m4a` 還沒接線（Ray 沒說用在哪），未入版控。
+- ⚠ `resources/audio/se/` 的 `dragon-studio-groaning-metal`／`se_cannonslide` mp3
+  未轉檔未接線（-816 的 cannonslide 已有？—— 待確認是否重複）。
+
 ## 這一批留下的缺口／進行中（下一個 session 接手）
 
 ### A. 平面 2D 開發地圖 → **已完成（-832，見上面第 7 節）**
