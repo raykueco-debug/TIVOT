@@ -143,6 +143,25 @@ Ray：「所有戰鬥中的伙伴主被動，聖徒夢魘共鬥發動後都要�
 - ⚠ `resources/audio/se/` 的 `dragon-studio-groaning-metal`／`se_cannonslide` mp3
   未轉檔未接線（-816 的 cannonslide 已有？—— 待確認是否重複）。
 
+## -838：夏爾村村戰全接線（Ray 交稿＋交件）
+
+- **onLeave 立繪**：村民（獵人）/村民（雜貨）/村長＝`NPC_shinier_*` 轉 webp＋量取景；
+  兩位「村民」是不同 id（VILLAGER/VILLAGER2，同 NP 店主那條）。索的 expr 換
+  `guardtalk`、第一拍 `bg:'Shinier_East_night'`（⚠ 對白拍的 bg 不走時段鏈，寫死夜版）、
+  `sides:{SORANA:'L'}`。工匠立繪（Gunsmith）備著（`ART.sh_craftsman`，還沒有戲）。
+- **戰前強制整備**（Ray：「強制開整備畫面，高光伙伴欄，提示此場戰鬥由索拉娜搭檔出擊」）：
+  onLeave 帶 `gear:{partner:'sorana', msg}` → 對白演完開整備頁（既有 `guidePartner`
+  聚光燈＋自訂訊息），**收掉才放行移動**（gear.onceClosed）；`forcePartner` 先寫進
+  loadout，頁面顯示的就是她。
+- **評價 T1/T2**：`BY_BATTLE.sv_wild.byTier`（門檻查表，tier＝蕾娜自己的好感
+  `prog.tierOf`）；十句稿全接（shockedCalm/writting/upset/dying/bow/pause 差分都在）。
+- **好感**：戰後索菈娜 +10 掛在評價句的 `aff`（D 併成 12、C 併成 11；once 旗
+  `eval_aff_sv_wild_<rank>`）。⚠ E 沒給稿＝沒有評價那一段也沒有 +10（同 np_claws 慣例）。
+- **索菈娜亂入**（D/C）：`evaluation.INTRUDE[場次][等第]` → `spk.follow` ——
+  蕾娜那句打完 0.9 秒，換 `RennaSorana_SI_annoyedD/C` 雙人圖＋名字改索菈娜重打字。
+- 實測全鏈：onLeave 立繪→整備頁（聚光燈+提示+索菈娜已配對）→關頁→移動→sv_beast 開打；
+  sv_wild 結算 T1-S 句、+10 入帳、D 亂入雙人圖與台詞。script_lint 0 錯誤。
+
 ## 這一批留下的缺口／進行中（下一個 session 接手）
 
 ### A. 平面 2D 開發地圖 → **已完成（-832，見上面第 7 節）**
