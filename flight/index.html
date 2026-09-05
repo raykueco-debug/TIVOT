@@ -522,7 +522,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -837';
+const FLIGHT_VER = 'ver -844';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -9996,6 +9996,7 @@ function updateLandBtn(){
 }
 function doLand(){
   const S=landTarget; if(!S || !S.town) return;
+  if(placeLockedNag(S.town)) return;   // 章節鎖（ver -844）：蕾娜擋回來，不扣時間
   /* ⚠ **進入城鎮＝終止追擊**（ver -478，Ray：「進入城鎮也會終止追擊」）——
      追兵清掉、刷新計時重排；不清的話出城那一刻牠還貼在船尾，等於降落白降。 */
   enemy=null;
@@ -10052,6 +10053,23 @@ function doLand(){
    日後多開一個地方只加一項（鐵律 1）。 */
 const STAGE1_DEST = ['北方泊地', '帝都'];
 const STAGE1_NAG  = [{ who:'renna', text:'別晃了，趕快往北方泊地去！' }];
+/* ══ 地點的章節鎖（ver -844，Ray：「在 stage5 前無法進入夏爾村，蕾娜會說
+   『這個地方跟任務無關吧？請繼續任務。』『不然我扣分喔。』」）══
+   鑰匙＝SETTLEMENTS 的 `town` 鍵**與** PLACES 的 `name`（兩個入口各用各的鑰匙，
+   同一張表，鐵律 1）。判定只有 `placeLockedNag` 一支（鐵律 8）：
+   降落（doLand）與名牌點擊（enterPlace）都問它，**擋在扣時間之前**
+   （同 stage1Blocked「沒進去就不該收時間」的理由）。 */
+const PLACE_STAGE_FROM = { shinier:5, '夏爾村':5 };
+const PLACE_LOCK_NAG = [
+  { who:'renna', text:'這個地方跟任務無關吧？請繼續任務。' },
+  { who:'renna', text:'不然我扣分喔。' },
+];
+function placeLockedNag(key){
+  const from = PLACE_STAGE_FROM[key];
+  if(from==null || gameStage()>=from) return false;
+  if(!sayQueue) say(PLACE_LOCK_NAG, performance.now());
+  return true;
+}
 function stage1Blocked(P){
   /* ver -562 編號重排（進帝都=1、出航=2）：「前往北方泊地」的地圖鎖跟著搬到 S2。 */
   return gameStage()===2 && P && STAGE1_DEST.indexOf(P.name) < 0;
@@ -10077,6 +10095,7 @@ const AFTER_SHIP_TALK = [
 /* 進入地標（目前只做確認演出；之後接場景切換） */
 let entering=null;
 function enterPlace(P){
+  if(P && placeLockedNag(P.name)) return;   // 章節鎖（ver -844）
   if(stage1Blocked(P)){
     /* ⚠ 已經在演別的對白就不插隊（同「對話」鈕的規矩）——兩段搶同一個舞台會疊在一起。 */
     if(!sayQueue) say(STAGE1_NAG, performance.now());
