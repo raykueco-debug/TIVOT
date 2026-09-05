@@ -1,8 +1,43 @@
-# HANDOFF — 彈殼演出／索拉娜共鬥語音／夏爾村嵌圖 ver -803〜-830（2026-09-05，全數已 push）
+# HANDOFF — 彈殼演出／索拉娜共鬥語音／夏爾村嵌圖／平面地圖／技能指格 ver -803〜-833（2026-09-05）
 
 > 前一份（-696〜-731：回收區、戰鬥分級、九星、難度下修）已被本檔取代；
 > 檔尾的「教訓／快速測法／背景待辦」是**沿用**的，不隨版次汰換。
-> 目前 HEAD＝`ver 2026.09.05-830`，工作樹只剩並行美術 session 的未提交檔（**不要動**）。
+> 目前 HEAD＝`ver 2026.09.05-833`，工作樹只剩並行美術 session 的未提交檔（**不要動**）。
+
+## -832〜-833（接手 session 完成的兩項）
+
+### 7. ?flatmap 平面 2D 開發地圖（-832，＝原缺口 A）
+`flight/index.html` 網址帶 **`?flatmap`** → 地圖視圖改畫 `COL` 的 **1:1 正俯視**
+（不吃斜投影／tilt／高度位移），**點選讀數＝精確地圖座標**（與 SETTLEMENTS／
+build_city.py 同一套；ADMIN 雙點瞬移照舊）。
+- 作法：`buildRelief()` 開頭分流建平面畫布（海＝HGT≤CLOUD_H 塗 SEA 色）；
+  `reliefXY` 在 flat 下是**恆等式** → 國界／道路／鐵路／聚落／自機／標記全部自動落對位
+  （一行都沒分岔，鐵律 8）。`relief` 物件多 `ss`（地圖px→畫布px 倍率，浮雕 0.5／平面 1）
+  與 `flat` 旗，drawMap 的線寬與聚落半徑改讀 `R.ss`。
+- `mapPick` flat 下 `i=ry*MAPW+rx`；左上讀數 flat 時顯示「平面1:1 中心 (x,y)」
+  （平面下中心座標是準的，浮雕那條「寧可不給」只針對斜投影）。
+- `MV.max` flat 下放寬到 48（要放大到看得清單一像素）。
+- 實測：zoom 1 與 zoom 24 點選讀回的座標**一像素不差**；不帶 ?flatmap 的浮雕版
+  回歸無變化。
+
+### 8. 技能發動後標示「現在應該點的格子」（-833，＝原缺口 B）
+Ray：「所有戰鬥中的伙伴主被動，聖徒夢魘共鬥發動後都要標示現在應該點的格子。
+獵手的智慧除外，因為會直接進 BR」。全部走既有的 `hintCurrentCell`／`.next`（鐵律 8）：
+- **聖徒化**：markNext 的 saintMode 分支**本來就在標**第一格 —— 病在 CSS
+  （`#grid.saint .cell` 金邊權重蓋掉 `.cell.next`，正是 -684 NI 那個坑）。
+  補 `#grid.saint .cell.next`（白框白光，niNextPulse），放在 `#grid.ni` 那條**之前**
+  讓 NI 底色贏。
+- **夢魘化**：-683 已有，不動。
+- **共鬥**：`saint.startCoop` 補一次 `api.hintCurrentCell()`（不換盤，指殘局當前格）。
+- **生命歸還**：`lifeReturnAbort` 的 return cut-in 回呼在 `finishSaintMode` **之後**
+  補指（那時 saintMode 已關、新盤已建，guard 才放行）。
+- **fireBuff**（明晰之夢＋高裝藥彈共用執行體）：拿掉 `pas.key==='firstCounter'`
+  的限制 → 兩支被動發動都指一次（全程指引仍只有明晰之夢，那是 lucidActive 的事）。
+- **獵手的直覺**（perfectStreak）：cut-in 回呼補指（clearBoard→goNextBoard 是同步的，
+  cut-in 撤下時新盤已擺好）。
+- **獵手的智慧／前線補給**不指（直接進 BR，Ray 指定的例外同理）。
+- 實測：SI 發動白框標 1 號格；共鬥發動標殘局當前格（expect=4 標 4）；
+  生命歸還收尾標新盤 1 號格。
 
 ## 這一批做了什麼
 
@@ -79,31 +114,13 @@
 
 ## 這一批留下的缺口／進行中（下一個 session 接手）
 
-### A. 平面 2D 開發地圖（Ray：「先把大地圖做成全平面不要有 3D，我直接點座標給你比較快」）
-**還沒做。** 目的：讓 Ray 直接在正俯視的色圖上點，讀出精確地圖座標（給夏爾村這種要定位的城用）。
-已分析好的落點：
-- 色圖是 `flight/index.html` 的 `COL`（Uint32Array，從 `silvermoon_terrain.png` 載，約 line 3213-3230）。
-- 現行地圖視圖是 `mapCv` canvas（`mctx`），變換 `sc=base*MV.zoom, ox=w/2-MV.cx*sc, oy=h/2-MV.cy*sc`；
-  `mapPick(cssX,cssY)`（約 line 5035）已做 `rx=Math.round((cssX-ox)/sc)`。ADMIN 雙擊會傳送
-  （`cam.x=MV.pick[0]*MAP_SCALE`）。
-- `reliefXY(mx,my)` 是斜投影：`{x:mx*MAP_SS, y:my*MAP_SS*MAP_TILT+R.maxRise-hh*R.hK}`（X 線性、Y 有 tilt＋height）。
-- **建議做法**：加一個 `?flatmap` 模式，把 `COL` 1:1 正俯視畫出來（**不吃 relief/tilt/height**），
-  點擊 = 直接 `(round(cssX/scale), round(cssY/scale))` 讀出地圖座標。X 本來就線性，只要把 Y 也拉成線性即可。
+### A. 平面 2D 開發地圖 → **已完成（-832，見上面第 7 節）**
+### B. 技能發動後高光「該點的格子」 → **已完成（-833，見上面第 8 節）**
 
-### B. 技能發動後高光「該點的格子」（Ray：「所有戰鬥中的伙伴主被動，聖徒夢魘共鬥發動後都要標示現在應該點的格子。獵手的智慧除外，因為會直接進 BR」）
-**還沒做。** 聖徒化(Saint)／夢魘化(Nightmare)／共鬥(Coop) 發動後，高光現在該點的那一格。
-**例外：獵手的智慧（supply）不標** —— 它直接進 BR。
-- 現成基建：`hintCurrentCell`（即死防禦後那個「一次性續命導航」同一支，鐵律 8）——
-  惡夢化發動高光第一格已在用它（見 CLAUDE.md 惡夢化那節，`markNext` 在 hint:false 盤面上沒作用，
-  **要用 `hintCurrentCell`**）。
-- ⚠ CSS 權重坑（已在惡夢化踩過）：`.cell.next` 只改 border＋淡光，而 `#grid.saint .cell` 把每格設金邊、
-  `#grid.saint` 又罩一層 drop-shadow 吃掉淡光 → 要一條**權重更高且換顏色**的規則（如 `#grid.ni .cell.next` 白框白光）。
-  聖徒化盤面同樣是金的，加金光找不到 —— 需要對應的高權重規則。
-- 發動點：`saint.activateSaint`／`activateCoop`（`saint.js`）；共鬥的黃圈反擊在 `defense.spawnThreat`。
-
-### C. 夏爾村 planRot 微調
-村在 (1088,864)、`planRot:0`。需要 Ray 用平面圖（做出 A 之後）看一眼，給旋轉角讓平面圖北向的湖
-對齊地形現有湖水（Ray：「平面圖的北向要貼地形現有的湖水，可旋轉調整」）。目前落在一個坡上，
+### C. 夏爾村 planRot 微調（**等 Ray 用 ?flatmap 給座標／角度**）
+村在 (1088,864)、`planRot:0`。A 已做好：Ray 開 `flight/index.html?flatmap` → 開地圖 →
+放大點村子與湖，把「點選 (x,y)」的讀數與旋轉角給下一個 session 即可
+（Ray：「平面圖的北向要貼地形現有的湖水，可旋轉調整」）。目前落在一個坡上，
 也可能要重新挑點。build_city.py 的 JOB 與 index.html 的 SETTLEMENTS 兩邊 `mx/my/planW/planRot` 要一起改。
 
 ### D. CI 佔位圖（美術 session 領域）
