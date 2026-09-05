@@ -217,7 +217,8 @@ export function ejectCounterShell(x, y, opts){
   if(opts.sc!=null) s.style.setProperty('--sc', String(opts.sc));
   if(opts.sl!=null) s.style.setProperty('--sl', String(opts.sl));   // 只拉長長邊（爆發型 1.3×）
   const H=window.innerHeight||760;
-  const dir=(Math.random()<0.5?-1:1);
+  // 方向：opts.dir 指定就用它（連射型陸戰一律往右＝+1，ver -814），否則隨機。
+  const dir=(opts.dir!=null) ? opts.dir : (Math.random()<0.5?-1:1);
   const rot=(540+Math.random()*900)*(Math.random()<0.5?-1:1);
   const pop=1.4+Math.random()*0.6;
   const dyDown=(H-y)+90+Math.random()*180;               // 一路往下落出畫面外

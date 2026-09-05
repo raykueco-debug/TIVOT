@@ -97,8 +97,8 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll){
   const cp = state.counterPoint ||
              {x:(window.innerWidth||390)*0.5, y:(window.innerHeight||760)*0.4};
   const shellOpt = (w.vfx==='burst')  ? (ship ? {sc:2,   down:true} : {sc:1.5, shotgun:true})
-                 : (w.vfx==='single') ? (ship ? {sc:2.5, down:true} : {sl:1.3})   // 陸戰爆發：只拉長 30%
-                 :                      (ship ? {sc:2,   down:true} : {sc:1});
+                 : (w.vfx==='single') ? (ship ? {sc:2.5, down:true} : {sl:1.3})          // 陸戰爆發：只拉長 30%
+                 :                      (ship ? {sc:2,   down:true} : {sc:1, dir:1});      // 陸戰連射：一律往右（ver -814）
   const ejectShell = ()=>{ if(api.ejectCounterShell) api.ejectCounterShell(cp.x, cp.y, shellOpt); };
   /* 副武器的改裝加成（ver -714）：每階 +20%，上限＝卡上的 `maxMod`。
      ⚠ **折進 `scale`** —— 三種 vfx 分支各自算 `base`，在這裡乘一次就三條都吃到
