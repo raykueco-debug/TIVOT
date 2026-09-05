@@ -229,6 +229,10 @@ function render(){
        ⚠ **常駐技能還沒實裝**（Ray：「先留空」）：欄位先擺著、內容空 ——
        留一格看得見的空位，比整個不出現好（玩家才知道還有這一欄）。 */
     +     '<div class="gs-perks">'
+    /* 變身（ver -841，Ray：「伙伴卡也要記載聖徒化 夢魘化 共鬥的效果」）——
+       文案在搭檔卡的 `install`（鐵律 1），排最前：那是這位搭檔的招牌系統。 */
+    +       (p.install ? '<div class="gs-perk"><b>'+p.install.name+'（變身）</b>'
+                       + '<span>'+p.install.desc+'</span></div>' : '')
     +       (p.passive ? '<div class="gs-perk"><b>'+p.passive.name+'（被動）</b>'
                        + '<span>'+p.passive.desc+'</span></div>' : '')
     +       (p.active  ? '<div class="gs-perk"><b>'+p.active.name+'（主動）</b>'

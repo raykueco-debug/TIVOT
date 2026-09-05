@@ -49,7 +49,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.05-840';
+export const VERSION = 'ver 2026.09.05-841';
 
 export const GAME_CONFIG = {
 
@@ -316,6 +316,12 @@ export const GAME_CONFIG = {
     nouvelle: {
       name:'諾薇兒',
       image:'partner_nouvelle',
+      /* 整備頁伙伴卡的「變身」欄（ver -841，Ray：「伙伴卡也要記載聖徒化 夢魘化
+         共鬥的效果」）—— 純顯示文案（gear.js 讀），機制本體在 saint.js。 */
+      install:{ name:'聖徒化', en:'SAINT INSTALL',
+        desc:'敵人框右滑發動（每場一次）：盤面換成 16 宮格，血條化為倒數槽——'
+            +'受擊會推進、推滿即敗走（HP 剩 1）；推滿前清盤＝Maximum Burst，'
+            +'回復體力並以期間總傷的兩成追加一擊。期間下滑可發動搭檔技。' },
       /* 取景：她的立繪是全身直幅（1024×1536），蕾妮那張是膝上構圖 ——
          同樣的框要放到「頭大小相當」，得往下推並放大。⚠ 這是估的，Ray 換圖時要重量。 */
       siFit:{ zoom:1.6, top:0.01 },
@@ -351,6 +357,10 @@ export const GAME_CONFIG = {
          （右滑發動、上滑自爆），不經過搭檔的被動／主動系統。
        ⚠ `siFit` 是估的（同諾薇兒那一張的作法）—— 換成她自己的選人立繪時要重量。 */
     anya: {
+      install:{ name:'夢魘化', en:'NIGHTMARE INSTALL',
+        desc:'敵人框右滑發動（每場一次）：體力灌滿後持續流失，抽乾即熔斷（HP 剩 1）；'
+            +'流失殆盡前清空 16 格＝體力全回復並以期間總傷的兩成追加一擊。'
+            +'期間上滑＝夢境粉碎：依已清格數對敵方最大體力造成比例傷害，直接結束（HP 剩 1）。' },
       name:'安雅',
       image:'partner_anya',
       siFit:{ zoom:1.6, top:0.01 },
@@ -395,6 +405,9 @@ export const GAME_CONFIG = {
       name:'索菈娜',
       image:'partner_sorana',
       selectVoice:'vo_sorana_pack',   // 選人確認音（ver -839，Ray 指定）
+      install:{ name:'共鬥', en:"PREDATOR'S PACK",
+        desc:'敵人框右滑發動（每場一次，消耗全部破防值）：進入無敵——秒數依破防值換算'
+            +'（滿值 12 秒）。期間敵方攻擊一出手就被飛刀自動完美反擊；點錯格會縮短剩餘時間。' },
       siFit:{ zoom:1.6, top:0.01 },   // 估（同諾薇兒/安雅）；Ray 交專用選人立繪再重量
       cutin:'ci_sorana_predator',     // 共鬥的變身 cut-in
       voice:null,
