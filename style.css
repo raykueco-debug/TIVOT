@@ -840,8 +840,10 @@
     background-image:url(resources/vfx/bulletsrain.webp);background-repeat:no-repeat;
     background-size:calc(var(--cx,3)*100%) calc(var(--cx,3)*100%);
     background-position:calc(var(--col,0)/(var(--cx,3) - 1)*100%) calc(var(--row,0)/(var(--cx,3) - 1)*100%);}
+  /* 打掉的格**完全消失、不留框**（ver -806，Ray）：黑底＋邊框透明＋無光暈 →
+     那一格看起來就是空的（玻璃那塊掉光了），只剩黑洞。 */
   #grid.dualwield .cell.done, #grid.overkill .cell.done{
-    background:#000;box-shadow:none;animation:none;}
+    background:#000;border-color:transparent;box-shadow:none;animation:none;}
   /* 玻璃碎片落下（ver -805，Ray：「點擊消掉方塊時要有玻璃碎片落下效果」）——
      打掉一格從那格灑 4~6 片碎玻璃：先小彈一下，再帶重力落到盤底、旋轉淡出。
      位置/位移/旋轉由 combat.glassShards 逐片設 --dx/--fall/--rot。 */
