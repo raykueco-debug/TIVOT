@@ -832,15 +832,16 @@
        關掉，直接壓黑）；打掉時另有玻璃碎片落下（.glass-shard）。
      · 免順序時數字沒意義 → 藏起。 */
   #grid.dualwield .cell>span, #grid.overkill .cell>span{opacity:0;}
-  /* 盤底鋪**全黑**（ver -807，Ray：「點掉應該就是全黑背景」）——格間空隙與打掉的格
-     都吃這一層黑，連成一片；打掉的格因此看不出「格」（不再是紫底上的黑方塊）。
-     ⚠ 順手把盤面的聖光暈（drop-shadow）收掉：Ray「不要有光暈」。 */
-  #grid.dualwield, #grid.overkill{background:#000;filter:none;animation:none;}
+  /* 盤面底色**維持原底色**（ver -825，Ray：「盤面底色不是在 BR 時轉黑，要維持跟原底色
+     同色」）——不再鋪黑：#grid 容器保持原本（透明→露出後面的面板），只把聖光暈收掉
+     （drop-shadow；Ray「不要有光暈」）。 */
+  #grid.dualwield, #grid.overkill{filter:none;animation:none;}
   /* 每格顯示 bulletsrain 的**自己那一塊**（sprite 切片：整圖放大成 cols×cols 格大，
      再用 background-position 對到本格行列 --col/--row，參數在 combat.buildGrid）——
-     底圖切在各格框內、**格間空隙不顯示**（Ray）；已點掉的格黑底、不露底圖。 */
+     底圖切在各格框內、**格間空隙不顯示**（Ray）。底色＝原本的 `var(--grid)`（ver -825，
+     Ray），裂痕貼在原底色上，不是黑底。 */
   #grid.dualwield .cell:not(.done), #grid.overkill .cell:not(.done){
-    background-color:#000;box-shadow:none;
+    background-color:var(--grid);box-shadow:none;
     background-image:url(resources/vfx/bulletsrain.webp);background-repeat:no-repeat;
     background-size:calc(var(--cx,3)*100%) calc(var(--cx,3)*100%);
     background-position:calc(var(--col,0)/(var(--cx,3) - 1)*100%) calc(var(--row,0)/(var(--cx,3) - 1)*100%);}
