@@ -57,6 +57,7 @@ export const SPEAKERS = {
        同一個顯示名兩個人）。台詞不包引號（§6.5.4）。 */
   VILLAGER: { name:'村民',   art:'sh_villager'  },
   VILLAGER2:{ name:'村民',   art:'sh_villager2' },
+  VILLAGER3:{ name:'村民',   art:'sh_craftsman' },   // ver -842：戰後稿的第三位（工匠的臉）
   CHIEF:    { name:'村長',   art:'sh_chief'     },
   /* 賞金獵人公會（ver -375）。⚠ 兩位都站**右**：與店主同一個邏輯 ——
      玩家的同伴在左，對面的人在右。 */
@@ -156,6 +157,8 @@ export const ART = {
                   run:      { src:'resources/SI/Renna_SI_run.webp',      top:3, bot:1532, fx:0.611 },
                   scared:   { src:'resources/SI/Renna_SI_scared.webp',   top:5, bot:1528, fx:0.498 },
                   surprised:{ src:'resources/SI/Renna_SI_surprised.webp',top:0, bot:1522, fx:0.502 },
+                  lookaway: { src:'resources/SI/Renna_SI_lookaway.webp',   top:2, bot:1529, fx:0.532 },   // ver -842
+                  lookawaytalk:{src:'resources/SI/Renna_SI_lookawaytalk.webp',top:3,bot:1519, fx:0.545 },  // ver -842
                   tired:    { src:'resources/SI/Renna_SI_tired.webp',    top:7, bot:1522, fx:0.495 },
                   writing:  { src:'resources/SI/Renna_SI_writting.webp', top:4, bot:1524, fx:0.507 },
                   /* ver -427 交件。`talkserious`＝正色說明、`talkwork`＝談公事、
@@ -268,6 +271,7 @@ export const ART = {
                   hungry:   { src:'resources/SI/Nouvelle_SI_hungry.webp',    top:0,  bot:1536, fx:0.579 },
                   shocked:  { src:'resources/SI/Nouvelle_SI_Shocked.webp',   top:3,  bot:1534, fx:0.504 },
                   lookaway: { src:'resources/SI/Nouvelle_SI_Lookaway.webp',  top:5,  bot:1529, fx:0.504 },
+                  angry:    { src:'resources/SI/Nouvelle_SI_angry.webp',      top:3,  bot:1535, fx:0.583 },   // ver -842
                   bigsmile: { src:'resources/SI/Nouvelle_SI_bigsmile.webp',  top:4,  bot:1534, fx:0.565 },
                   /* 舊街區／公會那一段新增（ver -375）。取景由 `tools/measure_si.py` 量出來的。 */
                   concern:  { src:'resources/SI/Nouvelle_SI_concern.webp',   top:6,  bot:1529, fx:0.505 },
@@ -316,7 +320,9 @@ export const ART = {
     readysmile:   { src:'resources/SI/Sorana_SI_readysmile.webp?v=2', top:6,  bot:1534, fx:0.578 },  // ver -837 換新圖＋重量取景（?v=2：同名覆蓋）
     /* ver -837（Ray：「我的 tease 也被刪了，找回來」）：從 _originals 的透明版轉回，
        逐張量（measure_si.py）。腳本還沒有用到它 —— 先掛著備用。 */
-    tease:        { src:'resources/SI/Sorana_SI_tease.webp',         top:7,  bot:1528, fx:0.583 } } },
+    tease:        { src:'resources/SI/Sorana_SI_tease.webp',         top:7,  bot:1528, fx:0.583 },
+    surprised:    { src:'resources/SI/Sorana_SI_surprised.webp',     top:9,  bot:1522, fx:0.537 },   // ver -842
+    hug:          { src:'resources/SI/Sorana_SI_hug.webp',           top:0,  bot:1535, fx:0.500 } } },  // ver -842
   /* ⚠ 取景值於 ver -624 **重量**：`Anya_SI_front` 換過圖（舊的留成
      `XAnya_SI_front.webp`）—— §5「換圖一定要重量取景值」。
      ⚠ `flight/index.html` 的 `PORTRAIT.anya` 是同一組數字，改一邊要改另一邊。 */
@@ -361,6 +367,7 @@ export const ART = {
     /* 北方泊地第三天（ver -664，Ray 交稿）。四張都是**全身站姿**，照量即可
        —— 近景那幾張才要 `cm`／`standCm`（見上面的說明）。 */
     silent:    { src:'resources/SI/Anya_SI_Silent.webp',     top:0, bot:1527, fx:0.432 },
+    panic:     { src:'resources/SI/Anya_SI_panic.webp',      top:0, bot:1535, fx:0.395 },   // ver -842
     talk:      { src:'resources/SI/Anya_SI_talk.webp',       top:0, bot:1531, fx:0.426 },
     /* 湖上甲板（ver -752，Ray 交稿）。逐張量（measure_si.py）。 */
     wheel:     { src:'resources/SI/Anya_SI_wheel.webp',      top:4, bot:1531, fx:0.483 },

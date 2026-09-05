@@ -69,7 +69,7 @@ const gunN = N('GUNSMITH_NP'), groN = N('SHOPKEEP_NP');
 /* 北方泊地的送行群眾（ver -741，stage2 碼頭道別）。 */
 const crd = N('CROWD_NP');
 const sor = N('SORANA');   // 夏爾村（ver -772）
-const vil = N('VILLAGER'), vil2 = N('VILLAGER2'), chf = N('CHIEF');   // 夏爾村村民/村長（ver -838 接上立繪）
+const vil = N('VILLAGER'), vil2 = N('VILLAGER2'), vil3 = N('VILLAGER3'), chf = N('CHIEF');   // 夏爾村村民×3/村長（-838/-842）
 
 /* ══⚠⚠ 北方泊地槍店的射擊挑戰（ver -655，Ray 交稿）══════════════════════
    **這一段只寫一次**（鐵律 7）：初次進店的 `lines` 與店裡「射擊挑戰」鈕的
@@ -1844,7 +1844,78 @@ export const TOWNS = {
            ⚠ Ray 沒給打完的收尾對白（稿到「要上了」為止）——結算頁的蕾娜評價即收束；
              要補一段戰後對白再說。 */
         acts:[ { flag:'sv_clear_wild', need:'shinier_siege', safehouse:true,
-                 lines:[ { battle:'sv_wild' } ] } ],
+                 sides:{ RENNA:'L' },   // 台上有安雅 → 蕾娜放左（§6.5 站位原則）
+                 lines:[ { battle:'sv_wild' },
+          /* ══ 戰後對白（ver -842，Ray 交稿，一字未改；「戰鬥結束，bgm 恢復村落
+             bgm，原地展開對話」）══ 第一拍帶 bgm:'whistling'（村落那一首）。
+             ⚠ 稿上「確實，這次是從村子外面跑進來的」那一句標了 Sorana_SI_think，
+               說話者卻是蕾 —— 視為筆誤，暫用 talkwork（Ray 要換再說）。
+             ⚠ T1/T2 的拍走 textByTier／exprByTier（門檻不是等於，§6.5）。 */
+          Object.assign(ren('writting','別怨我，搭檔無法聖徒化的話我也給不了什麼評價啊。'), { bgm:'whistling' }),
+          ren('ask','不過……輕易就把那種數量的禍魘給擊敗，森住民的戰鬥力真的令人畏懼。'),
+          nou('shocked','既然那麼強，為什麼大家還那麼緊張呀？'),
+          vil(null,'可惡......又是一堆屍體！'),
+          vil3(null,'所以我才討厭獸骸型的嘛！'),
+          chf(null,'別囉唆了，天亮前清掉！不然會發臭的！'),
+          nou('awkward',''),
+          ren('dying','這裡的所有事我都搞不懂......'),
+          ren('talkwork','不過……總感覺不像毫無瓜葛呢。'),
+          any('silent','……'),
+          nou('talk','也不一定是那樣吧……跟上次的，好像不太一樣。'),
+          ren('talkwork','確實，這次是從村子外面跑進來的，但是——'),
+          sor('tired','唉——又是南面那個遺跡，沒完沒了！'),
+          sor('tired','這個月都第三次了。'),
+          nou('talk','這個月？'),
+          ren('evalutatingclosemouth','……'),
+          ren('evalutating','這個狀況很久了嗎？'),
+          sor('think','一兩年有了吧？'),
+          ren('pause','！！'),
+          ren('talkserious','也就是說，『永夜』以來這個村子一直被禍魘襲擊？'),
+          sor('talk','永夜是啥我不曉得，不過那些東西也算不上什麼威脅。'),
+          sor('idea','只要不是睡覺時間來，大家都不介意陪牠們玩玩。'),
+          sor('embarassed','就是屍體很麻煩。'),
+          ren('shockedCalm','森住民……真是強得豈有此理。'),
+          sor('think','所以當初才被你們從綠月抓來當奴隸嘛。'),
+          nou('shocked','！！'),
+          ren('lookaway','！！'),
+          sor('surprised',''),
+          sor('embarassed','開玩笑、開玩笑的啦！'),
+          sor('tease','都我祖奶奶那一輩的事了，誰還記得呀！'),
+          ren('dying','……'),
+          ren('ask','不過，妳剛剛提到的遺跡……知道名字嗎？'),
+          sor('think','好像叫木雅克神殿吧？之前那個學者說的。'),
+          ren('shockedCalm','木雅克神殿！'),
+          ren('thinking','原來我們掉到這裡來了......那表示離聖王廳不遠。'),
+          nou('surprise','蕾娜小姐知道這個地方？'),
+          ren('lookaway','......'),
+          ren('lookawaytalk','『永夜』發生不久，聖王廳就接獲禍魘在此地頻繁出沒的報告。'),
+          ren('ask','當時全大陸都還搞不清楚怎麼回事，派人調查過，至於後續......我就不曉得了。'),
+          nou('whisper','至少可以確定這次跟安雅小姐無關吧？'),
+          ren('lookaway','......或許吧。'),
+          { speaker:'PLAYER', blank:true },
+          nou('surprise','咦？不要吧？'),
+          ren('thinking','不......倒也不是不能試試。'),
+          sor('tired','就你們幾個人想去探遺蹟？別鬧了，會出人命的。'),
+          { speaker:'RENNA', text:'討伐禍魘，本就是聖王廳的職責。',
+            portrait:{ char:'RENNA', exprByTier:{ 1:'front', 2:'talkwork' }, show:true } },
+          { speaker:'RENNA', text:'有他在，區區禍魘威脅不了我們的。',
+            portrait:{ char:'RENNA', exprByTier:{ 1:'front', 2:'bow' }, show:true } },
+          { speaker:'PLAYER', blank:true },
+          { speaker:'RENNA', text:'所以請你這次務必寸步不離。',
+            textByTier:{ 1:'所以請你這次務必寸步不離。', 2:'才、才不會好不好！那次是狀況特殊！' },
+            portrait:{ char:'RENNA', exprByTier:{ 1:'askserious', 2:'blushed' }, show:true } },
+          sor('amazed','嚄——'),
+          sor('laugh','那、我也一起去吧！'),
+          nou('explain','索拉娜小姐也？'),
+          sor('hug','總要有個帶路的吧？況且我的身手還算不錯吧？吶？'),
+          { speaker:'PLAYER', blank:true },
+          { speaker:'NOUVELLE', text:'',
+            portrait:{ char:'NOUVELLE', exprByTier:{ 1:'awkward', 2:'angry' }, show:true } },
+          { speaker:'RENNA', text:'唉呀，這個色狼神父。',
+            textByTier:{ 1:'唉呀，這個色狼神父。', 2:'' },
+            portrait:{ char:'RENNA', exprByTier:{ 1:'curious', 2:'lookaway' }, show:true } },
+          any('panic','頭都埋進去了......'),
+        ] } ],
         /* stage5 森林不開放（ver -786，Ray：「野外是連接另一個地圖的地方，stage5 不
            開放『現在還是別亂跑吧。』」）：往上進森林的出口先鎖著，按了浮旁白。
            `shinier_forest_ok` 由開放森林那一段劇情立（鐵律 9：現在還沒有人插＝一律鎖）。 */
