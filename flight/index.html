@@ -522,7 +522,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -835';
+const FLIGHT_VER = 'ver -836';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -1869,6 +1869,11 @@ const PLACES=[
      export_mapref.py 的 PLACES 要同步，否則地圖參考圖會標在舊位置。 */
   {x:1516,y:150, name:'北方泊地',     type:'泊地'},
   {x:2030,y:590, name:'東方泊地',     type:'泊地'},
+  /* ver -836（Ray：「要跟帝都一樣遠遠的就看得到提示箭頭」）：夏爾村的名牌。
+     遠距的金箭頭與近距展開的名牌都是 drawPlaces 畫的 —— 沒這一筆就什麼都沒有。
+     ⚠ 座標＝SETTLEMENTS 那一列（名牌跟著城走，§6.7.5）；拖城工具搬同名的兩份。
+     ⚠ export_mapref.py 的 PLACES 要同步。 */
+  {x:1098,y:798, name:'夏爾村',       type:'帝國・村落'},
 ];
 
 /* ══ 隱藏點位（★）══

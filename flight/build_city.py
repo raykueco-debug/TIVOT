@@ -173,7 +173,7 @@ JOBS = [{
     'src': 'Shinier_topdown_gpt.png',
     'hsrc': 'Shinier_topdown_height.png',
     'unsquash': 1.00,
-    'maxdim': 200,
+    'maxdim': 440,   # ver -836：Ray「太糊了都看不出來是村落」→ -827 的 200 恢復成全案預設 440（原圖 1534px，細節都在）
     'val': 1.50, 'sat': 0.95,   # ver -829：Ray「太黑跟坨大便一樣」→ 大幅提亮
 
     'dst': 'shinier_plan.webp',
