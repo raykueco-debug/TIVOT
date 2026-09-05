@@ -175,11 +175,26 @@ export function bulletSVG(px){
 /* ---------- 每次點擊的兩個小特效（供 combat.tap 呼叫）---------- */
 // 破碎消失：任何被點掉的格子播放破碎動畫
 export function shatterCell(cell){ cell.classList.add('shatter'); }
-// 彈殼
+/* 彈殼噴出（ver -808，Ray：「彈殼要有遠近感、飛速旋轉、掉出畫面外，角度幅度轉速隨機」）——
+   ⚠ 舊版把彈殼掛在 `.cell`（`overflow:hidden`）上，所以「只在格子裡就消失」。改成掛在
+     `document.body`、`position:fixed`（視窗座標，不被任何容器裁）→ 真的飛出畫面。
+   遠近感＝飛出瞬間放大（--spop）再縮小（CSS shellEject）；角度/幅度/轉速全隨機。 */
 export function ejectShell(cell){
+  const r=cell.getBoundingClientRect();
   const s=document.createElement('div'); s.className='shell';
-  s.style.right='6px'; s.style.top='6px'; cell.appendChild(s);
-  setTimeout(()=>s.remove(),500);
+  s.style.position='fixed'; s.style.left=(r.right-14)+'px'; s.style.top=(r.top+6)+'px';
+  const side=Math.random()<0.22 ? -1 : 1;                       // 偶爾往左，多半往右
+  const dx=side*(140+Math.random()*300);
+  const dy=320+Math.random()*480;                               // 一定往下、飛出畫面外
+  const rot=(720+Math.random()*1080)*(Math.random()<0.5?-1:1);  // 飛速旋轉（±720~1800°）
+  const pop=1.5+Math.random()*0.8;                              // 遠近感：飛出瞬間放大
+  s.style.setProperty('--sx', dx.toFixed(0)+'px');
+  s.style.setProperty('--sy', dy.toFixed(0)+'px');
+  s.style.setProperty('--srot', rot.toFixed(0)+'deg');
+  s.style.setProperty('--spop', pop.toFixed(2));
+  s.style.animationDuration=(0.75+Math.random()*0.35).toFixed(2)+'s';
+  document.body.appendChild(s);
+  setTimeout(()=>{ if(s.parentNode) s.remove(); }, 1300);
 }
 
 /* ---------- 立繪載入 ----------

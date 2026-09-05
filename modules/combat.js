@@ -407,7 +407,7 @@ function tap(num,cell,e){
 
   if(num===state.expect){
     SFX.gunshot(false);            // 普通開槍：重「碰」
-    cell.classList.add('done'); cell.classList.remove('next'); enemy.shatterCell(cell);
+    cell.classList.add('done'); cell.classList.remove('next'); enemy.shatterCell(cell); glassShards(cell);   // 一般點掉也噴玻璃碎片（ver -808，Ray）
     state.combo++; if(state.combo>state.maxCombo) state.maxCombo=state.combo;
     state.correctTaps++;                 // 命中率分子（依序正確點擊）
     resetIntervalDeadline(); addEnergy(ENERGY_PER_HIT);

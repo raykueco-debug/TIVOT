@@ -926,13 +926,16 @@
     100%{opacity:0;transform:translateY(-14px) scaleY(1.12);filter:brightness(3);}}
   @keyframes saintPulse{from{filter:drop-shadow(0 0 10px var(--gold))}to{filter:drop-shadow(0 0 20px #fff)}}
 
-  /* 彈殼 */
-  .shell{position:absolute;width:9px;height:20px;
+  /* 彈殼（ver -808）：掛在 body、fixed，飛出畫面外＋飛速旋轉＋遠近感（飛出瞬間放大再縮小）。
+     角度/幅度/轉速由 enemy.ejectShell 逐顆設 --sx/--sy/--srot/--spop。 */
+  .shell{width:9px;height:20px;
     background:linear-gradient(120deg,#fff3c4 0%,#e8c56a 35%,#a8842e 70%,#6b5220 100%);
-    border-radius:3px;pointer-events:none;z-index:10;
-    box-shadow:0 0 6px rgba(232,197,106,.7);animation:shellEject .55s ease-in forwards;}
-  @keyframes shellEject{0%{opacity:1;transform:translate(0,0) rotate(0)}
-    100%{opacity:0;transform:translate(34px,40px) rotate(260deg)}}
+    border-radius:3px;pointer-events:none;z-index:9000;
+    box-shadow:0 0 6px rgba(232,197,106,.7);animation:shellEject .8s cubic-bezier(.3,.5,.6,1) forwards;}
+  @keyframes shellEject{
+    0%  {opacity:1;transform:translate(0,0) rotate(0deg) scale(.85);}
+    16% {opacity:1;transform:translate(calc(var(--sx)*.24),-36px) rotate(calc(var(--srot)*.16)) scale(var(--spop,1.6));}
+    100%{opacity:.45;transform:translate(var(--sx),var(--sy)) rotate(var(--srot)) scale(.6);}}
 
   button.act{flex:1;padding:11px;background:transparent;border:1px solid var(--gold-dim);
     color:var(--gold);border-radius:8px;font-family:inherit;font-size:13px;letter-spacing:2px;}
