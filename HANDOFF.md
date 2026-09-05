@@ -230,6 +230,20 @@ Ray：「所有戰鬥中的伙伴主被動，聖徒夢魘共鬥發動後都要�
 - -847：語音時 BGM 自動閃避（0.35×，refcount）＋bgm 層 0.80→0.70（飛行第二份同步）
   ＋Whirlwind 響度錨校正 0.97→0.80。
 
+## -850：遊戲內效能探針（Ray：「寫一個偵測程式進去看是什麼東西在吃資源」）
+
+- **開法**：首頁**團徽連點 5 下**（或網址帶 `?debug`）＝既有診斷 HUD，擴充成效能探針；
+  再連點 5 下關閉。每秒更新。
+- **計數層**（index.html 開機最前面的 inline script，`window.__perf`）：
+  setInterval 登記（毫秒＋函式片段）、HTMLMediaElement.play 登記、BufferSource
+  活躍數、rAF 計數 —— 只做 Set/計數，常駐開銷趨近零。⚠ 要在所有程式之前掛，
+  晚掛數不到早開的計時器，所以住在 index.html 不在 main.js。
+- **呈現層**（main.js debugHud）：fps（自己的 rAF 幀距）｜long（>50ms 任務 5 秒累計）｜
+  heap/dom/src♪｜**層狀態**（home/stage/app/flight 誰活著——驗鐵律 10）｜
+  **∞動畫清單**（發燙頭號嫌犯）｜**timer 清單**｜**♪ 播放中音訊**（曲名/loop/音量 ——
+  BGM 疊播的現行犯直接看這幾行）。
+- 用法：發燙當下打開 → 截圖 ∞動畫/timer/♪ 三段給 session 對症。
+
 ## 這一批留下的缺口／進行中（下一個 session 接手）
 
 ### A. 平面 2D 開發地圖 → **已完成（-832，見上面第 7 節）**
