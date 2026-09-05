@@ -162,6 +162,7 @@ export const ENEMIES = {
       openUlt:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
       kind:'human',
       image:'enemy_man_sorana',
+      entranceVo:'vo_sorana_pack2',   // 敵立繪一出現就播（ver -818，Ray）——她是 human 不吃降臨，另掛登場音
       fit:{ pos:'50% 30%' },   // ver -745 換上專用戰鬥圖；構圖不對再調這格
       hp:400,
       attack:22,                     // 巨型聖徒 45 的一半

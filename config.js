@@ -49,7 +49,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.05-817';
+export const VERSION = 'ver 2026.09.05-818';
 
 export const GAME_CONFIG = {
 
@@ -401,12 +401,15 @@ export const GAME_CONFIG = {
          無敵秒數 ＝ baseSec × (破防值/100)（下夾 minSec），發動消耗全部破防值、
          每場一次；點錯縮短 wrongShortenSec 秒；敵攻擊自動完美反擊（counterScale 倍）。
          ⚠ baseSec=12＝滿破防的無敵秒數（Ray：「無敵12秒」＋「破防越高越長」）。 */
-      coop:{ baseSec:12, minSec:3, wrongShortenSec:1.5, counterScale:1 },
+      /* 語音（ver -818，Ray）：`voice` 陣列＝發動時輪播（同安雅明晰之夢的輪播）；
+         `endVoice`＝共鬥時間結束那一刻播。 */
+      coop:{ baseSec:12, minSec:3, wrongShortenSec:1.5, counterScale:1,
+             voice:['vo_sorana_pack','vo_sorana_pack2'], endVoice:'vo_sorana_obe' },
       /* 主動技：**照搬馬季諾的前線補給**（Ray 指定）＝ supplyRefill（立即進入雙槍破防、
          不吃破防值）。上滑手勢（bindBoardActiveSwipe → tryActive('board')）發動，
          只換她自己的名字與 CI。 */
       active:{ key:'supplyRefill', name:'獵手的智慧', en:"Predator's Wisdom", context:'board',
-               oncePerBattle:true, cutin:'ci_sorana_supply', voice:null,
+               oncePerBattle:true, cutin:'ci_sorana_supply', voice:'vo_sorana_supply',
                desc:'上滑：無視破防值，立即進入雙槍破防（Bullets Rain）。' },
       /* 被動：連續三輪完美清盤 → 10 秒破防值累積速度加倍，可重覆發動。
          實作＝ combat.clearBoard 累加 `svPerfectStreak`，滿 `streak` 由 partner.fireEnergyBuff
@@ -1834,7 +1837,9 @@ export const GAME_CONFIG = {
                 'vo_dual_torsten2','vo_torsten_mb','vo_torsten_exc',
                 'vo_nou_saint','vo_nou_obe','vo_nou_guard','vo_nou_return',
                 'vo_anya_ni','vo_anya_burst','vo_anya_burst2','vo_anya_melt',
-                'vo_anya_lucid1','vo_anya_lucid2','vo_anya_lucid3','vo_anya_lucid4'],
+                'vo_anya_lucid1','vo_anya_lucid2','vo_anya_lucid3','vo_anya_lucid4',
+                /* ver -818：索菈娜語音（共鬥/供給/共鬥結束）。 */
+                'vo_sorana_pack','vo_sorana_pack2','vo_sorana_supply','vo_sorana_obe'],
 
     /* ══ 逐支增益：鑰匙是**檔名**（去副檔名、轉小寫）══════════════════
        ⚠⚠ 鑰匙用檔名不用 ASSETS 鍵（ver -441）：**一支音檔只有一個響度**，
@@ -1867,6 +1872,8 @@ export const GAME_CONFIG = {
       vo_anya_luciddream2:1.94,
       vo_anya_luciddream3:1.94,
       vo_anya_luciddream4:3.13,
+      /* ver -818（BS.1770＋voiceChain EQ 實測；未過壓縮器，Ray 可用 audio_scan 微調）。 */
+      vo_sorana_pack:2.35, vo_sorana_pack2:1.73, vo_sorana_supply:1.09, vo_sorana_obe:1.78,
       vo_luna_dualwield:1.483, vo_luna_execution:1.013, vo_luna_obe:1.163,
       vo_luna_saintinstall:1.345, vo_malzeno_hcrounds:2.647,
       vo_malzeno_supplyrefill:2.261, vo_renee_deathguard:1.563,
@@ -2080,7 +2087,7 @@ export const ASSETS = {
      ⚠ 伙伴立繪先用她的 SI 佔位（本篇強配不經選人，整備頁才顯示；Ray 交專用選人圖再換）。 */
   partner_sorana:     "resources/SI/Sorana_SI_front.webp",
   ci_sorana_predator: "resources/CI/CI_Sorana_predator.jpg",
-  ci_sorana_supply:   "resources/CI/CI_Sorana_supply.png",
+  ci_sorana_supply:   "resources/CI/CI_Sorana_supply.png?v=2",   // ver -818 Ray 更新素材（避快取）
   ci_sorana_cheer:    "resources/CI/CI_Sorana_cheer.png",
   /* 獵手的直覺（被動）發動的 CI：三張隨機輪播（ver -809，Ray 指定）——與三位女角的合擊圖。 */
   ci_sorana_roar_renna:    "resources/CI/CI_Sorana_roar_Renna.png",
@@ -2319,6 +2326,12 @@ export const ASSETS = {
   vo_anya_lucid2:    "resources/audio/vo/vo_anya_luciddream2.m4a",
   vo_anya_lucid3:    "resources/audio/vo/vo_anya_luciddream3.m4a",
   vo_anya_lucid4:    "resources/audio/vo/vo_anya_luciddream4.m4a",
+  /* 索菈娜語音（ver -818，Ray 交件）——共鬥發動 pack/pack2 輪播、共鬥結束 obe、
+     供給技 supply；pack2 另作 man_sorana 敵登場音。 */
+  vo_sorana_pack:    "resources/audio/vo/vo_sorana_pack.m4a",
+  vo_sorana_pack2:   "resources/audio/vo/vo_sorana_pack2.m4a",
+  vo_sorana_supply:  "resources/audio/vo/vo_sorana_supply.m4a",
+  vo_sorana_obe:     "resources/audio/vo/vo_sorana_obe.m4a",
   se_luna_exc:       "resources/audio/vo/vo_luna_execution.m4a",    // 處決 EXSECUTIŌ cut-in
   /* ⚠ ver -641 改名 `se_saint_maxburst` → `vo_saint_maxburst`（它是語音）。
      ⚠ **檔案還躺在 `se/`**（同 `vo_lunaMG` 那一筆，等 Ray 點頭再搬 `vo/`）——

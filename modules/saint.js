@@ -126,6 +126,7 @@ export function activateSaint(dir){
  *    （`setImmuneUntil`，注入為 `api.coopImmune`），coopMode 旗由本模組獨佔寫入。
  * ========================================================================== */
 let coopTimer = null;
+let coopVoIdx = 0;   // 共鬥發動語音的輪播序號（ver -818；純演出，不進存檔）
 export function activateCoop(dir){
   if(state.over||state.saintMode||state.niMode||state.coopMode||state.cutinPlaying
      ||state.saintUsedThisBattle||state.transitioning||state.dualWield||state.enemyHp<=0) return;
@@ -138,6 +139,10 @@ export function activateCoop(dir){
   if(api.resetEnergy) api.resetEnergy();              // 消耗全部破防值
   SFX.unlock(); SFX.ultCharge();
   SFX.play(asset('sfx_saint'), sfxGain('sfx_saint'));
+  /* 共鬥發動語音（ver -818，Ray）：pack/pack2 輪播（陣列＝發動一次換下一支）。 */
+  { const vs = c.voice;
+    const vk = Array.isArray(vs) ? vs[(coopVoIdx++) % vs.length] : vs;
+    if(vk) SFX.playVoice(asset(vk), sfxGain(vk)); }
   playSlash(dir);
   playCutin(()=>{ if(state.over) return; startCoop(sec); },
     (L.battle && L.battle.coopMode || '共鬥')+'<span class="cutin-en">PREDATOR\'S PACK!!</span>',
@@ -171,6 +176,13 @@ function endCoop(){
   state.coopUntil = 0;
   if(api.coopImmune) api.coopImmune(0);                // 關無敵窗
   const g=$('grid'); if(g) g.classList.remove('coop');
+  /* 共鬥時間結束的語音（ver -818，Ray）——只在**時間到／被縮短到 0** 那種「窗結束」時播；
+     戰鬥結束（勝/敗，state.over）不播，免得蓋在結算上。 */
+  if(!state.over){
+    const card = (GAME_CONFIG.partners && GAME_CONFIG.partners[state.pickedPartner]) || {};
+    const ev = card.coop && card.coop.endVoice;
+    if(ev) SFX.playVoice(asset(ev), sfxGain(ev));
+  }
 }
 export function coopActive(){ return !!state.coopMode; }
 

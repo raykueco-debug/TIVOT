@@ -380,11 +380,25 @@ export function loadEnemyPortrait(en){
       eImg.removeEventListener('animationend', off);
       eImg.classList.remove('enemy-rise');
     }); };
+  /* 登場語音（ver -818，Ray）：卡上 `entranceVo` ＝**敵立繪一出現就播**——不吃降臨，
+     不分 kind（man_sorana 是 human，走下面的非登場類分支）。走 playVoice（過 voiceChain）。 */
+  const voKey = en && en.entranceVo;
+  const playEntranceVo = voKey ? (()=>{ try{ SFX.playVoice(asset(voKey), sfxGain(voKey)); }catch(_){} }) : null;
   /* ⚠ 不在登場類就不演降臨（ver -657；-787 登場類含 ship）：立繪載到就直接在那裡。
      ⚠ 判定用**傳進來的這張卡**不是查 state：`setEnemy` 在寫
        `state.currentEnemyKey` 之前就可能叫到這裡，問 state 會問到上一隻。 */
-  if(!ENTRANCE_KINDS[en && en.kind]) return void (eImg.src = enemyImage(en));
-  const arm=()=>{ eImg.onload=null; clearTimeout(riseT); riseT=setTimeout(rise, RISE_DELAY_MS); };
+  if(!ENTRANCE_KINDS[en && en.kind]){
+    if(playEntranceVo){
+      eImg.onload = ()=>{ eImg.onload=null; playEntranceVo(); };
+      eImg.src = enemyImage(en);
+      if(eImg.complete && eImg.naturalWidth){ eImg.onload=null; playEntranceVo(); }
+    }else{
+      eImg.src = enemyImage(en);
+    }
+    return;
+  }
+  const arm=()=>{ eImg.onload=null; clearTimeout(riseT); riseT=setTimeout(rise, RISE_DELAY_MS);
+                  if(playEntranceVo) playEntranceVo(); };
   eImg.onload = arm;
   eImg.src = enemyImage(en);
   if(eImg.complete && eImg.naturalWidth) arm();
