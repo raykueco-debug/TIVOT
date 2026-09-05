@@ -522,7 +522,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -793';
+const FLIGHT_VER = 'ver -835';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -807,7 +807,7 @@ const SETTLEMENTS = [
        maxdim 200（像素化）；整地照聖王廳。
      ⚠⚠ mx/my/planW/planRot **必須與 build_city.py 的 shinier JOB 一致**。
      ⚠ `planRot` 待 3D 對齊地形湖水（Ray：「北向貼地形現有的湖水，可旋轉調整」）——先 0.0。 */
-  { n:'夏爾村', x:1116, y:828, t:'village', f:'empire', town:'shinier',   // ver -834：Ray 用 ?flatmap 點的座標
+  { n:'夏爾村', x:1098, y:798, t:'village', f:'empire', town:'shinier',   // ver -835：Ray 二改（-834 的 (1116,828) 還是泡在湖裡）
     plan:'city/shinier_plan.webp', planH:'city/shinier_h.webp',
     planW:360, planRot:0.0, planTall:24,
     podium:{ r:1.05, skirt:8, lift:0 } },
@@ -4715,17 +4715,23 @@ function drawMap(){
     /* 點選讀數（開發用）：回報位置問題時直接把這組數字給我，
        不必再從地形猜 —— HANDOFF A3 那條教訓。 */
     const t3=MV.pick?('點選 ('+MV.pick[0]+','+MV.pick[1]+')'):null;
+    /* 拖城狀態（ver -835）：拖曳中即時座標／落定結果（重整後 3D 才生效）。 */
+    const t4=dragSet ? ('拖曳中 '+dragSet.name+' ('+Math.round(dragSet.mx)+','+Math.round(dragSet.my)+')　放開＝落定')
+           : (dragDrop ? ('已落定 '+dragDrop.n+' ('+dragDrop.x+','+dragDrop.y+')'+dragDrop.warn+'　重整後3D生效') : null);
     mctx.font='11px "Noto Sans TC",monospace'; mctx.textAlign='left';
     let w1=Math.max(mctx.measureText(t1).width, mctx.measureText(t2).width);
     if(t3) w1=Math.max(w1, mctx.measureText(t3).width);
-    const bh2=t3?50:36;
+    if(t4) w1=Math.max(w1, mctx.measureText(t4).width);
+    const bh2=36+(t3?14:0)+(t4?14:0);
     mctx.fillStyle='rgba(6,8,14,.72)';
     mctx.fillRect(8,8,w1+14,bh2);
     mctx.strokeStyle='rgba(201,162,39,.35)'; mctx.lineWidth=1;
     mctx.strokeRect(8.5,8.5,w1+13,bh2-1);
     mctx.fillStyle='#d9c68a'; mctx.fillText(t1,15,23);
     mctx.fillStyle='rgba(217,198,138,.72)'; mctx.fillText(t2,15,37);
-    if(t3){ mctx.fillStyle='#7fd0a0'; mctx.fillText(t3,15,51); }
+    let ty=37;
+    if(t3){ ty+=14; mctx.fillStyle='#7fd0a0'; mctx.fillText(t3,15,ty); }
+    if(t4){ ty+=14; mctx.fillStyle=dragSet?'#ffd660':'#7fd0a0'; mctx.fillText(t4,15,ty); }
   }
 }
 /* 目的地標記（ver -743）：畫在最上層（drawMap 的收尾呼叫）。 */
@@ -4839,6 +4845,13 @@ mapCv.addEventListener('pointermove',e=>{
   const dx=e.clientX-p.x, dy=e.clientY-p.y;
   p.x=e.clientX; p.y=e.clientY;
   const { base }=mapFit(), sc=base*MV.zoom;
+  /* 拖城中：單指＝搬聚落，不平移地圖（放開落定，見 mUp）。 */
+  if(dragSet && mPts.size===1){
+    const r=mapCv.getBoundingClientRect();
+    const q=mapCoordAt(e.clientX-r.left, e.clientY-r.top);
+    if(q) moveSettlement(dragSet, q[0], q[1]);
+    return;
+  }
   if(mPts.size===1){ MV.cx-=dx/sc; MV.cy-=dy/sc; drawMap(); }
   else if(mPts.size===2){
     const [a,b]=[...mPts.values()];
@@ -4854,6 +4867,30 @@ mapCv.addEventListener('pointermove',e=>{
    開法：localStorage.tivot_admin_v1='1' */
 const ADMIN=(()=>{ try{ return localStorage.getItem('tivot_admin_v1')==='1'; }
                    catch(_){ return false; } })();
+/* ══ 管理者拖城（ver -835，Ray：「有沒有什麼方式可以讓我在大地圖上直接移動？
+   用管理者模式點城鎮兩下就可以拖著走，這樣比較快」）══
+   地圖上**雙點一座聚落**＝把它拿起來（落在聚落上就不瞬移），拖到哪跟到哪，
+   放開＝落定：座標印在讀數框與 console、存進 localStorage ——
+   **重新整理後**整地／取樣遮罩／道路才會在新位置重算（那些都是 loadWorld 烘的，
+   活著的世界改不動；地圖上的圖標與名牌則即時跟著走）。
+   ⚠ 覆寫只在 ADMIN 生效（玩家不吃）；PLACES 的同名名牌一起搬（§6.7.5「名牌跟著城走」）。
+   ⚠ 定稿後把座標交回程式端寫進 SETTLEMENTS＋build_city.py（兩邊互指），
+     再 `settleDragClear()` 清掉覆寫 —— 不清的話這台機器永遠用拖的那一份，
+     之後改 code 也看不出來（同 resetFlags 那一條的病）。 */
+const SETTLE_DRAG_KEY='tivot_settle_drag_v1';
+let dragSet=null, dragDrop=null;    // 拖曳中的聚落 ／ 最後落定 {n,x,y,warn}
+window.settleDragClear=()=>{ try{ localStorage.removeItem(SETTLE_DRAG_KEY); }catch(_){}
+  dragDrop=null; console.log('拖城覆寫已清除，重新整理後回到 code 寫的位置'); };
+(function(){
+  if(!ADMIN) return;
+  let ov=null; try{ ov=JSON.parse(localStorage.getItem(SETTLE_DRAG_KEY)||'null'); }catch(_){}
+  if(!ov) return;
+  for(const S of SETTLEMENTS){ const o=ov[S.n]; if(!o) continue;
+    S.x=o[0]; S.y=o[1];
+    const P=PLACES.find(p=>p.name===S.n); if(P){ P.x=o[0]; P.y=o[1]; }
+    console.warn('⚠ 拖城覆寫生效：'+S.n+' → ('+o[0]+','+o[1]+')　定稿請寫回 SETTLEMENTS/build_city.py，再 settleDragClear()');
+  }
+})();
 /* 程式化傳送：tp(地圖x, 地圖y[, 航向rad])。
    ⚠ 這支存在的理由是「驗收要能到指定座標」。cam 是 top-level const，外部注入的
      <script> 讀不到（函式宣告才讀得到），所以每次驗收都得在檔案裡暫掛
@@ -5057,23 +5094,64 @@ if(ADMIN) window.tp=(mx,my,ang,keepEnemy)=>{
      起伏），所以只要改 x/y，高度與航向都不動。
      地圖不自動關 —— 關掉的話「連點幾個地方比對」就得一直重開；留著反而
      馬上看得到自機標記跳過去，等於即時回饋。 */
-function mapPick(cssX,cssY){
-  const { w, h, base }=mapFit(), R=relief; if(!R||(!R.pick&&!R.flat)) return;
+/* 畫面座標 → 地圖座標（mapPick 與拖城共用，鐵律 8）：
+   浮雕走反查表、平面直接就是（同 mapPick 原本那段）。出界回 null。 */
+function mapCoordAt(cssX,cssY){
+  const { w, h, base }=mapFit(), R=relief; if(!R||(!R.pick&&!R.flat)) return null;
   const sc=base*MV.zoom, ox=w/2-MV.cx*sc, oy=h/2-MV.cy*sc;
   const rx=Math.round((cssX-ox)/sc), ry=Math.round((cssY-oy)/sc);
-  if(rx<0||ry<0||rx>=R.w||ry>=R.h){ MV.pick=null; drawMap(); return; }
-  /* 平面模式：畫布座標＝地圖座標，不必反查表 */
+  if(rx<0||ry<0||rx>=R.w||ry>=R.h) return null;
   const i=R.flat ? (ry*MAPW+rx) : R.pick[ry*R.w+rx];
-  MV.pick = i<0 ? null : [i%MAPW, (i/MAPW)|0];
+  return i<0 ? null : [i%MAPW, (i/MAPW)|0];
+}
+/* 拖城：這一點抓得到哪座聚落（半徑取圖標／平面圖較大者，最少 12 地圖像素）。 */
+function grabSettlementAt(mx,my){
+  if(!ADMIN) return null;
+  let best=null, bd=1e9;
+  for(const s of buildSettlements()){
+    const r=Math.max(12, s.radius||0, (s.planW||0)*0.5/MAP_SCALE);
+    const d=Math.hypot(mx-s.mx, my-s.my);
+    if(d<=r && d<bd){ best=s; bd=d; }
+  }
+  return best;
+}
+/* 拖城：把聚落搬到 (x,y) —— 地圖顯示層（settleCache 的 mx/my）與資料
+   （SETTLEMENTS／同名 PLACES）一起改，圖標與名牌即時跟著走。 */
+function moveSettlement(s,x,y){
+  s.mx=x; s.my=y;
+  const S=SETTLEMENTS.find(S2=>S2.n===s.name); if(S){ S.x=x; S.y=y; }
+  const P=PLACES.find(p=>p.name===s.name);    if(P){ P.x=x; P.y=y; }
+  drawMap();
+}
+/* 拖城：落定 —— 存覆寫、印座標；整地／取樣要**重新整理**才會在新位置重烘。 */
+function dropSettlement(){
+  const s=dragSet; dragSet=null; if(!s) return;
+  const x=Math.round(s.mx), y=Math.round(s.my);
+  moveSettlement(s,x,y);
+  const warn=(HGT[y*MAPW+x]<=CLOUD_H)?'　⚠這一格是雲海/海':'';
+  dragDrop={ n:s.name, x, y, warn };
+  let ov={}; try{ ov=JSON.parse(localStorage.getItem(SETTLE_DRAG_KEY)||'{}')||{}; }catch(_){}
+  ov[s.name]=[x,y];
+  try{ localStorage.setItem(SETTLE_DRAG_KEY, JSON.stringify(ov)); }catch(_){}
+  console.log('拖城落定：'+s.name+' ('+x+','+y+')'+warn+' —— 已存，重新整理後 3D 生效');
+  drawMap();
+}
+function mapPick(cssX,cssY){
+  const q=mapCoordAt(cssX,cssY);
+  if(!q){ MV.pick=null; drawMap(); return; }
+  MV.pick=q;
   /* 管理人瞬移＝**快速點兩次**（ver -748，Ray：「管理人模式下要在地圖上快速
      點兩次才會瞬移過去」）—— 單點只落選取標記（誤觸地圖不再把船搬走），
-     400ms 內在同一處（30px）再點一下才瞬移。 */
+     400ms 內在同一處（30px）再點一下才瞬移。
+     ⚠ ver -835：雙點落在**聚落**上＝把它拿起來拖（不瞬移），見拖城那一節。 */
   if(ADMIN && MV.pick){
     const now=performance.now();
     const dbl = mapTapLast && (now-mapTapLast.t)<400
              && Math.abs(cssX-mapTapLast.x)<30 && Math.abs(cssY-mapTapLast.y)<30;
     mapTapLast = dbl ? null : { t:now, x:cssX, y:cssY };
     if(dbl){
+      const s=grabSettlementAt(MV.pick[0], MV.pick[1]);
+      if(s){ dragSet=s; dragDrop=null; drawMap(); return; }
       cam.x=MV.pick[0]*MAP_SCALE; cam.y=MV.pick[1]*MAP_SCALE;
       /* 怪是依「離自機的距離」排程的，瞬移之後留在原地的那隻會突然變成
          幾千單位外的殘影 —— 直接回收，讓它照正常規則重新刷。 */
@@ -5086,6 +5164,17 @@ let mapTapLast=null;   // 上一次的單點（管理人雙點瞬移判定用；
 const mUp=e=>{
   const isTap = mDown && mDown.n===1 && mPts.size===1 &&
      Math.abs(e.clientX-mDown.x)<4 && Math.abs(e.clientY-mDown.y)<4;
+  /* 拖城中：這一次放開＝落定。點一下（沒拖）＝直接把聚落放到點的那一格。 */
+  if(dragSet){
+    if(isTap){
+      const r=mapCv.getBoundingClientRect();
+      const q=mapCoordAt(e.clientX-r.left, e.clientY-r.top);
+      if(q) moveSettlement(dragSet, q[0], q[1]);
+    }
+    dropSettlement();
+    mDown=null; mPts.delete(e.pointerId); if(mPts.size<2) mPinch=0;
+    return;
+  }
   /* 對話中：點地圖＝推進／退出（ver -790），吃掉這一擊、不做管理人瞬移。 */
   if(isTap && mapDlgActive){
     mDown=null; mPts.delete(e.pointerId); if(mPts.size<2) mPinch=0;

@@ -179,7 +179,7 @@ JOBS = [{
     'dst': 'shinier_plan.webp',
     'hdst': 'shinier_h.webp',
     'mdst': 'shinier_mass.webp', 'jdst': 'shinier_mass.json',
-    'mx': 1116, 'my': 828, 'planW': 360, 'planRot': 0.0,   # ver -834：Ray 用 ?flatmap 點的座標（高度 57~69 實地，落差僅 12）
+    'mx': 1098, 'my': 798, 'planW': 360, 'planRot': 0.0,   # ver -835：Ray 二改（湖的西北岸高地，高度 69~128）
     'landmarks': [],
 }]
 
