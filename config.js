@@ -49,7 +49,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.05-818';
+export const VERSION = 'ver 2026.09.05-819';
 
 export const GAME_CONFIG = {
 
@@ -2087,7 +2087,7 @@ export const ASSETS = {
      ⚠ 伙伴立繪先用她的 SI 佔位（本篇強配不經選人，整備頁才顯示；Ray 交專用選人圖再換）。 */
   partner_sorana:     "resources/SI/Sorana_SI_front.webp",
   ci_sorana_predator: "resources/CI/CI_Sorana_predator.jpg",
-  ci_sorana_supply:   "resources/CI/CI_Sorana_supply.png?v=2",   // ver -818 Ray 更新素材（避快取）
+  ci_sorana_supply:   "resources/CI/CI_Sorana_supply.webp",   // ver -819 轉 webp 入版控（原 png 進 _originals）
   ci_sorana_cheer:    "resources/CI/CI_Sorana_cheer.png",
   /* 獵手的直覺（被動）發動的 CI：三張隨機輪播（ver -809，Ray 指定）——與三位女角的合擊圖。 */
   ci_sorana_roar_renna:    "resources/CI/CI_Sorana_roar_Renna.png",
