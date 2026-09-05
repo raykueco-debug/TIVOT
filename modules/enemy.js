@@ -186,10 +186,12 @@ export function ejectShell(cell){
   const side=Math.random()<0.22 ? -1 : 1;                       // 偶爾往左，多半往右
   const dx=side*(140+Math.random()*300);
   const dy=320+Math.random()*480;                               // 一定往下、飛出畫面外
+  const peak=-(45+Math.random()*75);                            // 拋物線頂（先往上彈這麼高）
   const rot=(720+Math.random()*1080)*(Math.random()<0.5?-1:1);  // 飛速旋轉（±720~1800°）
   const pop=1.5+Math.random()*0.8;                              // 遠近感：飛出瞬間放大
   s.style.setProperty('--sx', dx.toFixed(0)+'px');
   s.style.setProperty('--sy', dy.toFixed(0)+'px');
+  s.style.setProperty('--peak', peak.toFixed(0)+'px');
   s.style.setProperty('--srot', rot.toFixed(0)+'deg');
   s.style.setProperty('--spop', pop.toFixed(2));
   s.style.animationDuration=(0.75+Math.random()*0.35).toFixed(2)+'s';

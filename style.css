@@ -931,11 +931,16 @@
   .shell{width:9px;height:20px;
     background:linear-gradient(120deg,#fff3c4 0%,#e8c56a 35%,#a8842e 70%,#6b5220 100%);
     border-radius:3px;pointer-events:none;z-index:9000;
-    box-shadow:0 0 6px rgba(232,197,106,.7);animation:shellEject .8s cubic-bezier(.3,.5,.6,1) forwards;}
+    box-shadow:0 0 6px rgba(232,197,106,.7);animation:shellEject .82s linear forwards;}
+  /* ver -809：**自然拋物線**（Ray：「飛到頂會頓一下」）——上升段減速到頂（ease-out）、
+     下落段重力加速（ease-in），用逐關鍵格的 timing-function 讓過頂那一刻不頓；
+     旋轉/縮放照樣連續。頂高 --peak、落點 --sy 由 enemy.ejectShell 逐顆隨機。 */
   @keyframes shellEject{
-    0%  {opacity:1;transform:translate(0,0) rotate(0deg) scale(.85);}
-    16% {opacity:1;transform:translate(calc(var(--sx)*.24),-36px) rotate(calc(var(--srot)*.16)) scale(var(--spop,1.6));}
-    100%{opacity:.45;transform:translate(var(--sx),var(--sy)) rotate(var(--srot)) scale(.6);}}
+    0%  {opacity:1;transform:translate(0,0) rotate(0deg) scale(.85);
+         animation-timing-function:cubic-bezier(.12,.62,.4,1);}      /* 上升：先快後慢到頂 */
+    30% {opacity:1;transform:translate(calc(var(--sx)*.3),var(--peak,-60px)) rotate(calc(var(--srot)*.3)) scale(var(--spop,1.6));
+         animation-timing-function:cubic-bezier(.55,0,.8,.5);}       /* 下落：先慢後快（重力）*/
+    100%{opacity:.4;transform:translate(var(--sx),var(--sy)) rotate(var(--srot)) scale(.55);}}
 
   button.act{flex:1;padding:11px;background:transparent;border:1px solid var(--gold-dim);
     color:var(--gold);border-radius:8px;font-family:inherit;font-size:13px;letter-spacing:2px;}

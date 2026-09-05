@@ -284,11 +284,13 @@ export function onBoardCleared(clean){
   const vo = asset(pas.voice); if(vo) SFX.playVoice(vo, sfxGain(pas.voice));
   api.floatDmg(pas.name,'50%','34%',true);
   if(state.cutinPlaying){ fire(); return; }        // 已有演出在播 → 只跳字、buff 立即起算
+  /* CI 隨機輪播（ver -809，Ray）：`cutin` 寫成陣列＝發動時隨機挑一張（三張合擊圖）。 */
+  const cut = Array.isArray(pas.cutin) ? pas.cutin[Math.random()*pas.cutin.length|0] : pas.cutin;
   api.playCutin(()=>{
     fire();
     if(state.over) return;
     api.resetEnemyTimers(); api.scheduleUlt();
-  }, `${pas.name}<span class="cutin-en">${pas.en||''}</span>`, pas.cutin);
+  }, `${pas.name}<span class="cutin-en">${pas.en||''}</span>`, cut);
 }
 /* 「5 秒普攻加倍」的執行體（`lowHpBuff` 與 `firstCounter` 共用，鐵律 8）。 */
 function fireBuff(pas){

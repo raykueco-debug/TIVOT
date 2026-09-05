@@ -49,7 +49,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.05-809';
+export const VERSION = 'ver 2026.09.05-810';
 
 export const GAME_CONFIG = {
 
@@ -411,8 +411,10 @@ export const GAME_CONFIG = {
       /* 被動：連續三輪完美清盤 → 10 秒破防值累積速度加倍，可重覆發動。
          實作＝ combat.clearBoard 累加 `svPerfectStreak`，滿 `streak` 由 partner.fireEnergyBuff
          開一段 `energyBoostUntil`（addEnergy 讀它 ×`energyMul`）。 */
+      /* CI 三張隨機輪播（ver -809，Ray 指定）——發動時 partner.onBoardCleared 隨機挑一張。 */
       passive:{ key:'perfectStreak', name:'獵手的直覺', en:"Predator's Instinct",
-                streak:3, buffSeconds:10, energyMul:2, cutin:'ci_sorana_cheer', voice:null,
+                streak:3, buffSeconds:10, energyMul:2, voice:null,
+                cutin:['ci_sorana_roar_renna','ci_sorana_roar_anya','ci_sorana_roar_nouvelle'],
                 desc:'連續三輪完美清盤時發動：10 秒內破防值累積速度加倍，可重覆發動。' },
     },
     // ── 第二搭檔：馬季諾 Malzeno ──────────────────────────
@@ -2069,6 +2071,10 @@ export const ASSETS = {
   ci_sorana_predator: "resources/CI/CI_Sorana_predator.jpg",
   ci_sorana_supply:   "resources/CI/CI_Sorana_supply.png",
   ci_sorana_cheer:    "resources/CI/CI_Sorana_cheer.png",
+  /* 獵手的直覺（被動）發動的 CI：三張隨機輪播（ver -809，Ray 指定）——與三位女角的合擊圖。 */
+  ci_sorana_roar_renna:    "resources/CI/CI_Sorana_roar_Renna.png",
+  ci_sorana_roar_anya:     "resources/CI/CI_Sorana_roar_Anya.png",
+  ci_sorana_roar_nouvelle: "resources/CI/CI_Sorana_roar_Nouvelle.png",
   /* 夢境粉碎（ver -674，Ray 交件）：惡夢化期間上滑的那一發。 */
   ci_anya_dreambreaker: "resources/CI/CI_Anya_Dreambreaker.webp?v=3",   // ver -702：Ray 又換了一版
   /* 惡夢化熔斷（ver -692，Ray 交件 `CI_Anya_OBE`）：倒數槽抽乾的那一結局。 */
