@@ -183,52 +183,78 @@ export function ejectShell(cell){
   const r=cell.getBoundingClientRect();
   const s=document.createElement('div'); s.className='shell';
   s.style.position='fixed'; s.style.left=(r.right-14)+'px'; s.style.top=(r.top+6)+'px';
-  // ver -811（Ray：「往左右側飛出畫面外，左排必往左、右排必往右，弧度角度高度隨機」）——
-  // side 由「這一格在盤面的哪一邊」決定，不再隨機：格中心 vs 盤面中心（同格居中則隨機挑邊）。
+  // ver -813（Ray：「主武器拋殼直接斜上低角度往兩邊噴就好」）——不再是高拋物線：
+  // side 由「這一格在盤面的哪一邊」決定（左排往左、右排往右，居中隨機），直線斜上噴出畫面外。
   const grid=cell.closest('#grid')||cell.parentNode;
   const gc=grid.getBoundingClientRect();
   const d=(r.left+r.width/2)-(gc.left+gc.width/2);
   const side=Math.abs(d)<4 ? (Math.random()<0.5?-1:1) : (d<0?-1:1);
   const vw=window.innerWidth||390;
-  const dx=side*(vw*(0.75+Math.random()*0.55)+120);            // 一定飛出左／右畫面外
-  const peak=-(50+Math.random()*90);                           // 拋物線頂（先往上彈，弧度隨機）
-  const dy=peak+60+Math.random()*260;                          // 離場高度隨機，但必在頂之下（頂＝真正的頂，過頂不頓）
+  const dx=side*(vw*(0.7+Math.random()*0.5)+150);              // 一定飛出左／右畫面外
+  const dy=-(50+Math.random()*140);                            // 斜上「低角度」：只往上一點（相對大 dx）
   const rot=(720+Math.random()*1080)*(Math.random()<0.5?-1:1); // 飛速旋轉（±720~1800°）
-  const pop=1.5+Math.random()*0.8;                             // 遠近感：飛出瞬間放大
+  const pop=1.4+Math.random()*0.6;                             // 遠近感：噴出瞬間放大
   s.style.setProperty('--sx', dx.toFixed(0)+'px');
   s.style.setProperty('--sy', dy.toFixed(0)+'px');
-  s.style.setProperty('--peak', peak.toFixed(0)+'px');
   s.style.setProperty('--srot', rot.toFixed(0)+'deg');
   s.style.setProperty('--spop', pop.toFixed(2));
-  s.style.animationDuration=(0.5+Math.random()*0.25).toFixed(2)+'s';  // 快速飛出
+  // 斜上直噴（shellSide）：單調不折返、ease-out 爆發感（不是拋物線，不會回頭往下）。
+  s.style.animation='shellSide '+(0.5+Math.random()*0.22).toFixed(2)+'s cubic-bezier(.15,.7,.35,1) forwards';
   document.body.appendChild(s);
   setTimeout(()=>{ if(s.parentNode) s.remove(); }, 950);
 }
 
-/* 反擊彈殼（ver -812，Ray：「反擊時從反擊點噴彈殼，拋物線噴出來不停頓往下落」）——
-   與盤面點擊的 ejectShell 不同：從**反擊點**(x,y 視窗座標)噴、**往下落**出畫面外
-   （不是往左右飛），逐武器型別給不同大小／顏色（opts.sw/sh/red，由 weapon 傳）。
-   ⚠ 拋物線頂 peak 在 dy 之上（dy 為正＝往下），沿用 -810 的過頂不頓。 */
+/* 反擊彈殼（ver -812/-813，Ray）——從**反擊點**(x,y 視窗座標)噴，逐型別大小／顏色
+   （opts.sc/sl/shotgun）；兩種軌跡：
+     · 船戰（opts.down）＝**直接斜下拋、完全不往上**（直線 shellSide，--sy 正）。
+     · 陸戰＝**往旁邊斜上噴、等速不減速、平滑弧線落下**（ver -813，Ray：「不減速不轉折
+       畫一個弧落下」）——彈道拋物線由 el.animate 逐格算出、linear 播放：水平等速
+       （不減速）、垂直先上後下的重力弧（不轉折）。 */
 export function ejectCounterShell(x, y, opts){
   opts = opts || {};
   const s=document.createElement('div'); s.className='shell'+(opts.shotgun?' shotgun':'');
   s.style.position='fixed'; s.style.left=(x-8)+'px'; s.style.top=(y-8)+'px';
   if(opts.sc!=null) s.style.setProperty('--sc', String(opts.sc));
+  if(opts.sl!=null) s.style.setProperty('--sl', String(opts.sl));   // 只拉長長邊（爆發型 1.3×）
   const H=window.innerHeight||760;
   const dir=(Math.random()<0.5?-1:1);
-  const dx=dir*(20+Math.random()*90);                    // 小幅左右漂（方向隨機）
-  const peak=-(50+Math.random()*90);                     // 先往上彈（弧度隨機）
-  const dy=(H-y)+80+Math.random()*260;                   // 一路往下落出畫面外（dy≫peak → 頂為真頂）
   const rot=(540+Math.random()*900)*(Math.random()<0.5?-1:1);
   const pop=1.4+Math.random()*0.6;
-  s.style.setProperty('--sx', dx.toFixed(0)+'px');
-  s.style.setProperty('--sy', dy.toFixed(0)+'px');
-  s.style.setProperty('--peak', peak.toFixed(0)+'px');
-  s.style.setProperty('--srot', rot.toFixed(0)+'deg');
-  s.style.setProperty('--spop', pop.toFixed(2));
-  s.style.animationDuration=(0.7+Math.random()*0.35).toFixed(2)+'s';
+  const dyDown=(H-y)+90+Math.random()*180;               // 一路往下落出畫面外
+
+  if(opts.down){
+    // 船戰：直接斜下拋，完全不往上——直線 shellSide、--sy 為正。
+    s.style.setProperty('--sx', (dir*(100+Math.random()*180)).toFixed(0)+'px');
+    s.style.setProperty('--sy', dyDown.toFixed(0)+'px');
+    s.style.setProperty('--srot', rot.toFixed(0)+'deg');
+    s.style.setProperty('--spop', pop.toFixed(2));
+    s.style.animation='shellSide '+(0.55+Math.random()*0.28).toFixed(2)+'s cubic-bezier(.2,.65,.4,1) forwards';
+    document.body.appendChild(s);
+    setTimeout(()=>{ if(s.parentNode) s.remove(); }, 1250);
+    return;
+  }
+
+  // 陸戰：彈道拋物線——往旁邊斜上噴（水平等速）＋重力弧落下。
+  const sx=dir*(120+Math.random()*150);                  // 往旁邊（水平總位移，等速）
+  const apexUp=55+Math.random()*70;                      // 斜上 launch 的頂高
+  const fa=0.30;                                         // 頂點落在 30% 行程
+  const A=(fa*dyDown + apexUp)/(fa*(1-fa));              // y(f)=A f²+B f 過 (0,0)(fa,-apexUp)(1,dyDown)
+  const B=dyDown-A;
+  const N=18, frames=[];
+  for(let i=0;i<=N;i++){
+    const f=i/N;
+    const tx=(f*sx).toFixed(1);
+    const ty=(A*f*f+B*f).toFixed(1);
+    const rz=(f*rot).toFixed(0);
+    const sc=(f<0.18 ? 0.8+(pop-0.8)*(f/0.18) : pop+(0.55-pop)*((f-0.18)/0.82)).toFixed(3);
+    const op=(f<0.72 ? 1 : 1-(f-0.72)/0.28*0.65).toFixed(2);
+    frames.push({transform:`translate(${tx}px,${ty}px) rotate(${rz}deg) scale(${sc})`, opacity:op});
+  }
+  s.style.animation='none';
   document.body.appendChild(s);
-  setTimeout(()=>{ if(s.parentNode) s.remove(); }, 1250);
+  const anim=s.animate(frames, {duration:(880+Math.random()*260), easing:'linear', fill:'forwards'});
+  anim.onfinish=()=>{ if(s.parentNode) s.remove(); };
+  setTimeout(()=>{ if(s.parentNode) s.remove(); }, 1400);
 }
 
 /* ---------- 立繪載入 ----------

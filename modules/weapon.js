@@ -91,13 +91,14 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll){
      船戰＝卡上有艦載武器音（`state.weaponSound`，即 config §158 對「船戰」的定義）。
        · 速射型（機槍 vfx:null）＝一般彈殼(shell.webp)，一發噴一個；船戰 2×。
        · 散射型（霰彈 vfx:'burst'）＝只噴一顆、1.5×、紅殼金底火(shotgunshell.webp)；船戰改金色 2×。
-       · 爆發型（狙擊 vfx:'single'）＝只噴一顆、1.3×、金色；船戰金色 2.5×。 */
+       · 爆發型（狙擊 vfx:'single'）＝只噴一顆、1.3×、金色；船戰金色 2.5×。
+     ⚠ 船戰（ship）一律 `down:true`＝直接斜下拋、無往上角度（ver -813，Ray）。 */
   const ship = !!state.weaponSound;
   const cp = state.counterPoint ||
              {x:(window.innerWidth||390)*0.5, y:(window.innerHeight||760)*0.4};
-  const shellOpt = (w.vfx==='burst')  ? (ship ? {sc:2  } : {sc:1.5, shotgun:true})
-                 : (w.vfx==='single') ? (ship ? {sc:2.5} : {sc:1.3})
-                 :                      (ship ? {sc:2  } : {sc:1});
+  const shellOpt = (w.vfx==='burst')  ? (ship ? {sc:2,   down:true} : {sc:1.5, shotgun:true})
+                 : (w.vfx==='single') ? (ship ? {sc:2.5, down:true} : {sl:1.3})   // 陸戰爆發：只拉長 30%
+                 :                      (ship ? {sc:2,   down:true} : {sc:1});
   const ejectShell = ()=>{ if(api.ejectCounterShell) api.ejectCounterShell(cp.x, cp.y, shellOpt); };
   /* 副武器的改裝加成（ver -714）：每階 +20%，上限＝卡上的 `maxMod`。
      ⚠ **折進 `scale`** —— 三種 vfx 分支各自算 `base`，在這裡乘一次就三條都吃到
