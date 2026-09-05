@@ -472,6 +472,22 @@ export const CHAPTERS = [
            'np_burial','np_burial_done','np_night','np_night_done','np_day3',
            'np_day3_done','np_anya_join','np_dock_ask','np_grave_done','np_depart'],
     enter:'town', town:'northport', node:'port' },
+  /* ══ Stage 6（ver -824，Ray：「stage6 沒進章節列表」）══
+     夏爾村・回到索菈娜的家（那一夜）——直接站在索菈娜家，`sv_night_done` 就緒。
+     ⚠ `sv_evening` 給（18:00 閘門已用掉、時鐘定在 19:00）＋`sv_arrive` 給（村子已抵達，
+       廣場那一幕不重播）；`sv_night_done` **不給**——那正是 S6 要演的「回小屋後的劇情」。
+     ⚠ `stage:6` 直接寫（正常玩是 sv_evening 閘門把它從 5 升上來，這裡是跳關工具）。
+     ⚠ `clockHour:19` ＝ firstHourAt(19)＝夜景（band 19:00 起，ver -816）；羽蛇/甲板/
+       man_sorana 都在飛行/scene（無城鎮旗），所以旗只需 S5 那批＋sv_arrive＋sv_evening。 */
+  { id:'stage6', name:'Stage 6', sub:'夏爾村・回到索菈娜的家（那一夜） → 村內戰',
+    stage:6, clockHour:19, named:true,
+    flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open',
+           'set_sail','got_ship','dock_day2','flight_centipede_met',
+           'np_port_arrive','np_clear_church','np_claws_done','safehouse_northport',
+           'np_burial','np_burial_done','np_night','np_night_done','np_day3',
+           'np_day3_done','np_anya_join','np_dock_ask','np_grave_done','np_depart',
+           'sv_arrive','sv_evening'],
+    enter:'town', town:'shinier', node:'sorahome' },
 ];
 
 export function newRun(){
