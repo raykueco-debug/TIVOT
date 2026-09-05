@@ -49,7 +49,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.05-839';
+export const VERSION = 'ver 2026.09.05-840';
 
 export const GAME_CONFIG = {
 
@@ -1285,9 +1285,12 @@ export const GAME_CONFIG = {
                 session:'shinier_siege',
                 /* ══ 村民的戰前對白（ver -839，Ray：「進入第一場戰鬥以後才發生，
                    有背景，有怪才開始對話」）══ 掛 battleStart（§6.5.2 的 talk）——
-                   拓撲上第一場一定是東側（索菈娜家唯一的出口），talkOnce 打贏才記
-                   → 其餘格的 sv_beast 不再重講。立繪走 tutPortraits（抄 ART）。 */
-                talk:[ { trigger:'battleStart', talkOnce:'sv_siege_talk', lines:[
+                   拓撲上第一場一定是東側（索菈娜家唯一的出口）。
+                   ⚠⚠ `talkOnce` 是**卡層**的欄位（combat 的勝利收尾與 startBattleTalk
+                   讀的都是 `sb.talkOnce`）——ver -839 一度寫進段落裡，引擎讀不到，
+                   於是每一格都重講（Ray：「怎麼每打一次怪都出一次村民對話？」）。 */
+                talkOnce:'sv_siege_talk',
+                talk:[ { trigger:'battleStart', lines:[
                   { who:'sh_villager',  img:'tut_sh_villager',    text:'是……是獸骸！' },
                   { who:'sh_chief',     img:'tut_sh_chief',       text:'！！' },
                   { who:'sh_chief',     img:'tut_sh_chief',       text:'擋下來！絕不能讓牠們踏進村子一步！' },
