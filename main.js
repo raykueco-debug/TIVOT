@@ -1722,7 +1722,7 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
   let hud=null, timer=null, probes=null;
   const mk=(css)=>{ const el=document.createElement('div'); el.style.cssText=css; document.body.appendChild(el); return el; };
   function show(){
-    if(hud){ [hud,...probes].forEach(e=>e.remove()); hud=null; clearInterval(timer); return; }   // 再觸發一次＝關閉
+    if(hud){ try{ hud.__cleanup&&hud.__cleanup(); }catch(_){} [hud,...probes].forEach(e=>e.remove()); hud=null; clearInterval(timer); return; }   // 再觸發一次＝關閉（探針的觀測器一併收）
     const pT=mk('position:fixed;left:0;top:0;width:1px;height:env(safe-area-inset-top,0px);visibility:hidden;pointer-events:none;');
     const pB=mk('position:fixed;left:0;bottom:0;width:1px;height:env(safe-area-inset-bottom,0px);visibility:hidden;pointer-events:none;');
     const pVH=mk('position:fixed;left:0;top:0;width:1px;height:100vh;visibility:hidden;pointer-events:none;');
@@ -1731,20 +1731,50 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
     const pSVH=mk('position:fixed;left:0;top:0;width:1px;height:100svh;visibility:hidden;pointer-events:none;');
     probes=[pT,pB,pVH,pDVH,pLVH,pSVH];
     /* ⚠ HUD 放畫面上方：若底部黑帶是 iOS 蓋在頁面上的遮罩，貼底定位會被埋進黑帶看不到 */
-    hud=mk('position:fixed;left:6px;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:99998;font:11px/1.6 monospace;color:#4f4;background:rgba(0,0,0,.72);padding:5px 8px;pointer-events:none;white-space:pre;border-radius:4px;');
+    hud=mk('position:fixed;left:6px;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:99998;font:11px/1.55 monospace;color:#4f4;background:rgba(0,0,0,.78);padding:5px 8px;pointer-events:none;white-space:pre;border-radius:4px;max-width:92vw;overflow:hidden;');
+    /* ══ 效能探針・呈現層（ver -850，Ray：「寫一個偵測程式進去看是什麼東西在吃
+       資源」）══ 計數層在 index.html 開機最前面掛（window.__perf）；重的量測
+       （FPS、long task、動畫清單）只在 HUD 開著時跑。逐項：
+       fps＝自己的 rAF 幀距｜long＝主執行緒 >50ms 的任務（過去 5 秒累計毫秒）｜
+       ∞動畫＝正在跑的無限循環動畫（**發燙的頭號嫌犯清單**）｜timer＝活著的
+       setInterval（毫秒與函式片段）｜♪＝正在播的媒體元素（**BGM 疊播直接看這行**）｜
+       src＝活著的 WebAudio 音源｜層＝home/stage/app/flight 誰活著。 */
+    let frames=0, lastT=performance.now(), fps=0;
+    const rafTick=t=>{ frames++; if(t-lastT>=1000){ fps=Math.round(frames*1000/(t-lastT)); frames=0; lastT=t; } if(hud) requestAnimationFrame(rafTick); };
+    requestAnimationFrame(rafTick);
+    let ltMs=0, ltLog=[];
+    let po=null;
+    try{ po=new PerformanceObserver(l=>{ for(const e of l.getEntries()){ ltLog.push({t:performance.now(), d:e.duration}); } });
+         po.observe({entryTypes:['longtask']}); }catch(_){}
     const upd=()=>{
-      const b=document.body.getBoundingClientRect();
+      const P=window.__perf||{timers:{},media:new Set(),srcLive:0};
+      const now=performance.now();
+      ltLog=ltLog.filter(x=>now-x.t<5000); ltMs=Math.round(ltLog.reduce((a,x)=>a+x.d,0));
+      let anims=[];
+      try{ anims=document.getAnimations().filter(a=>{ const tm=a.effect&&a.effect.getTiming();
+             return a.playState==='running' && tm && tm.iterations===Infinity; })
+           .map(a=>{ const t=a.effect.target; return (a.animationName||'?')+'@'+(t&&(t.id||String(t.className).split(' ')[0])||'?'); }); }catch(_){}
+      const med=[...P.media].filter(e=>!e.paused&&!e.ended)
+        .map(e=>(e.currentSrc||e.src||'').split('/').pop().split('?')[0].slice(0,24)+(e.loop?'⟳':'')+' v'+e.volume.toFixed(2));
+      const tms=Object.values(P.timers).map(t=>t.ms+'ms '+t.tag.slice(0,26));
+      const mem=(performance.memory? Math.round(performance.memory.usedJSHeapSize/1048576)+'MB' : '—');
+      const st=!!document.querySelector('#storyStage.on'), hm=$('home').classList.contains('on');
+      const ff=$('flightFrame'), fl=ff&&!!ff.getAttribute('src');
       hud.textContent=
-        VERSION
-        +'\ninner  '+innerWidth+'x'+innerHeight
-        +'\nvisual '+Math.round(visualViewport.width)+'x'+Math.round(visualViewport.height)
-        +'\nscreen '+screen.width+'x'+screen.height+'  outer '+outerHeight
-        +'\nbody   '+Math.round(b.width)+'x'+Math.round(b.height)
-        +'\nvh '+pVH.offsetHeight+' dvh '+pDVH.offsetHeight+' lvh '+pLVH.offsetHeight+' svh '+pSVH.offsetHeight
-        +'\nsafe   top '+pT.offsetHeight+' / bottom '+pB.offsetHeight
+        VERSION+'  fps '+fps+'  long '+ltMs+'ms/5s'
+        +'\nheap '+mem+'  dom '+document.getElementsByTagName('*').length+'  src♪'+(P.srcLive|0)
+        +'\n層 home'+(hm?'●':'×')+' stage'+(st?'●':'×')+' app'+(getComputedStyle($('app')).visibility==='hidden'?'隱':'●')+' flight'+(fl?'●':'×')
+        +'\n∞動畫 '+anims.length+(anims.length?'：\n  '+anims.slice(0,8).join('\n  '):'')
+        +'\ntimer '+tms.length+(tms.length?'：\n  '+tms.slice(0,8).join('\n  '):'')
+        +'\n♪ '+(med.length?med.join('\n♪ '):'（無）')
+        +'\n──────'
+        +'\ninner '+innerWidth+'x'+innerHeight+'  vh '+pVH.offsetHeight+' dvh '+pDVH.offsetHeight
+        +'\nsafe top '+pT.offsetHeight+' / bot '+pB.offsetHeight
         +'\nstandalone '+(navigator.standalone===true || (window.matchMedia&&matchMedia('(display-mode: standalone)').matches));
     };
     upd(); timer=setInterval(upd,1000);
+    const oldShowCleanup=()=>{ try{ po&&po.disconnect(); }catch(_){} };
+    hud.__cleanup=oldShowCleanup;
   }
   // 觸發一：網址帶 ?debug
   if(location.search.indexOf('debug')>=0) show();

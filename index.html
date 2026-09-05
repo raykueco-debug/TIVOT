@@ -17,6 +17,33 @@
 <title>TIVOT</title>
 <!-- 全域鎖直向（真鎖 + 橫向擋板）；classic script，需在版面就緒前掛上 -->
 <script src="orientation.js"></script>
+<!-- ══ 效能探針・計數層（ver -850，Ray：「沒有辦法寫一個偵測程式進去看是什麼
+     東西在吃資源嗎？」）══ 要在**所有程式之前**掛（晚掛就數不到早開的計時器），
+     所以住在這裡。只做登記（Set/計數，開銷趨近零）；讀取與呈現在 main.js 的
+     診斷 HUD（首頁連點團徽 5 下）。 -->
+<script>
+(function(){
+  var P = window.__perf = { timers:{}, media:new Set(), srcLive:0, srcTotal:0, raf:0 };
+  var tid=0;
+  var osi=window.setInterval, oci=window.clearInterval;
+  window.setInterval=function(fn,ms){
+    var id=osi.apply(window,arguments);
+    try{ P.timers[id]={ms:ms|0, tag:String(fn).replace(/\s+/g,' ').slice(11,58)}; }catch(_){}
+    return id; };
+  window.clearInterval=function(id){ delete P.timers[id]; return oci.apply(window,arguments); };
+  var op=HTMLMediaElement.prototype.play;
+  HTMLMediaElement.prototype.play=function(){ P.media.add(this); return op.apply(this,arguments); };
+  var AC=window.AudioContext||window.webkitAudioContext;
+  if(AC){ var ob=AC.prototype.createBufferSource;
+    AC.prototype.createBufferSource=function(){ var s=ob.apply(this,arguments);
+      P.srcTotal++; P.srcLive++; var done=false, fin=function(){ if(!done){done=true; P.srcLive--;} };
+      s.addEventListener('ended',fin);
+      setTimeout(function(){ try{ if(s.buffer&&isFinite(s.buffer.duration)) setTimeout(fin,(s.buffer.duration+2)*1000); else setTimeout(fin,15000); }catch(_){ setTimeout(fin,15000); } },0);
+      return s; }; }
+  var orf=window.requestAnimationFrame;
+  window.requestAnimationFrame=function(cb){ return orf.call(window,function(t){ P.raf++; return cb(t); }); };
+})();
+</script>
 <link rel="stylesheet" href="style.css">
   <!-- 拾得道具／道具欄／商店／懸賞榜（ver -380 抽出，飛行頁共用同一份）。
        ⚠ `data-lootsheet` 是給 `modules/loot.js` 認的：它看到已經掛過就不再掛一次。
