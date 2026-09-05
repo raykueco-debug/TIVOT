@@ -49,7 +49,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.05-822';
+export const VERSION = 'ver 2026.09.05-823';
 
 export const GAME_CONFIG = {
 
@@ -1843,7 +1843,7 @@ export const GAME_CONFIG = {
                 'vo_anya_ni','vo_anya_burst','vo_anya_burst2','vo_anya_melt',
                 'vo_anya_lucid1','vo_anya_lucid2','vo_anya_lucid3','vo_anya_lucid4',
                 /* ver -818：索菈娜語音（共鬥/供給/共鬥結束）。 */
-                'vo_sorana_pack','vo_sorana_pack2','vo_sorana_supply','vo_sorana_obe'],
+                'vo_sorana_pack','vo_sorana_pack2','vo_sorana_supply','vo_sorana_obe','vo_sorana_roar'],
 
     /* ══ 逐支增益：鑰匙是**檔名**（去副檔名、轉小寫）══════════════════
        ⚠⚠ 鑰匙用檔名不用 ASSETS 鍵（ver -441）：**一支音檔只有一個響度**，
@@ -1878,6 +1878,7 @@ export const GAME_CONFIG = {
       vo_anya_luciddream4:3.13,
       /* ver -818（BS.1770＋voiceChain EQ 實測；未過壓縮器，Ray 可用 audio_scan 微調）。 */
       vo_sorana_pack:2.35, vo_sorana_pack2:1.73, vo_sorana_supply:1.09, vo_sorana_obe:1.78,
+      vo_sorana_roar:0.95,   // ver -823（BS.1770＋voiceChain EQ 實測 −13.4 LUFS）
       vo_luna_dualwield:1.483, vo_luna_execution:1.013, vo_luna_obe:1.163,
       vo_luna_saintinstall:1.345, vo_malzeno_hcrounds:2.647,
       vo_malzeno_supplyrefill:2.261, vo_renee_deathguard:1.563,
@@ -2092,7 +2093,6 @@ export const ASSETS = {
   partner_sorana:     "resources/SI/Sorana_SI_front.webp",
   ci_sorana_predator: "resources/CI/CI_Sorana_predator.jpg",
   ci_sorana_supply:   "resources/CI/CI_Sorana_supply.png?v=2",   // ver -820 過渡圖：本機佔位、不入版控（Ray）
-  ci_sorana_cheer:    "resources/CI/CI_Sorana_cheer.png",
   /* 獵手的直覺（被動）發動的 CI：三張隨機輪播（ver -809，Ray 指定）——與三位女角的合擊圖。 */
   ci_sorana_roar_renna:    "resources/CI/CI_Sorana_roar_Renna.png",
   ci_sorana_roar_anya:     "resources/CI/CI_Sorana_roar_Anya.png",
@@ -2337,6 +2337,7 @@ export const ASSETS = {
   vo_sorana_pack2:   "resources/audio/vo/vo_sorana_pack2.m4a",
   vo_sorana_supply:  "resources/audio/vo/vo_sorana_supply.m4a",
   vo_sorana_obe:     "resources/audio/vo/vo_sorana_obe.m4a",
+  vo_sorana_roar:    "resources/audio/vo/vo_sorana_roar.m4a",   // 獵手的戰吼（被動，ver -823；原檔 vo_sorara_roar 正名）
   se_luna_exc:       "resources/audio/vo/vo_luna_execution.m4a",    // 處決 EXSECUTIŌ cut-in
   /* ⚠ ver -641 改名 `se_saint_maxburst` → `vo_saint_maxburst`（它是語音）。
      ⚠ **檔案還躺在 `se/`**（同 `vo_lunaMG` 那一筆，等 Ray 點頭再搬 `vo/`）——
