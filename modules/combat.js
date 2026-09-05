@@ -116,6 +116,7 @@ export function setup(){
     /* ver -719：明晰之夢改由 `onThreatResolved` 的判定等級觸發（只有紅圈），
        weapon 那一支已成空殼 —— 這一條留著，日後「開火就觸發」的被動可以接回去。 */
     onCounter: partner.onCounter,
+    ejectCounterShell: enemy.ejectCounterShell,   // 反擊開火時從反擊點噴彈殼（ver -812）
   });
   // 聖徒化：combat 為協調者，把 combat/defense/partner 的原語打包注入 saint，
   //   saint 不直接 import 其他業務模組（維持 §2 依賴方向）。改血一律走本檔 HP API（Part A）。
@@ -712,6 +713,8 @@ function enemyAttack(dmg, kind, saintAmt){
     if(kind==='ult' || kind==='block' || kind==='delay'){
       const card = (GAME_CONFIG.partners && GAME_CONFIG.partners[state.pickedPartner]) || {};
       const cs = (card.coop && card.coop.counterScale!=null) ? card.coop.counterScale : 1;
+      /* 共鬥自動反擊沒有玩家點的紅點 → 反擊點取畫面中上（敵人區，ver -812）。 */
+      state.counterPoint={x:(window.innerWidth||390)*0.5, y:(window.innerHeight||760)*0.4};
       weapon.weaponCounter(cs, 1);   // 自動完美反擊（命中率 100% ＝紅圈全額）
     }
     return;                          // 無敵：不扣血、不記失誤

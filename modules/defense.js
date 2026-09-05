@@ -290,6 +290,9 @@ export function resolveThreat(th){
   const left=Math.max(0,state.CHARGE_SECONDS-(Date.now()-th.t0)/1000);
   const ratio=left/state.CHARGE_SECONDS;
   const w=weaponOf(state.equippedWeapon, storyMode());   // 本篇／試玩版兩套數值（ver -378）
+  /* 反擊點（ver -812）：趁威脅還在，記下它的視窗座標中心 → weapon 從這裡噴彈殼。 */
+  if(th.el){ const rr=th.el.getBoundingClientRect();
+    state.counterPoint={x:rr.left+rr.width/2, y:rr.top+rr.height/2}; }
   removeThreat(th);
   SFX.confirm();
 

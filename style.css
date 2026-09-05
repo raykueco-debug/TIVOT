@@ -928,10 +928,16 @@
 
   /* 彈殼（ver -808）：掛在 body、fixed，飛出畫面外＋飛速旋轉＋遠近感（飛出瞬間放大再縮小）。
      角度/幅度/轉速由 enemy.ejectShell 逐顆設 --sx/--sy/--srot/--spop。 */
-  .shell{width:9px;height:20px;
-    background:linear-gradient(120deg,#fff3c4 0%,#e8c56a 35%,#a8842e 70%,#6b5220 100%);
-    border-radius:3px;pointer-events:none;z-index:9000;
-    box-shadow:0 0 6px rgba(232,197,106,.7);animation:shellEject .82s linear forwards;}
+  /* 彈殼素材（ver -812，Ray 交圖）：shell.webp＝金黃彈殼（一般/速射/爆發/船戰金色）、
+     shotgunshell.webp＝紅殼金底火（陸戰散射型）。--sc＝整體縮放（逐型別由 JS 設）。
+     盒子比例對齊各自素材（1.5:1／3:1）→ contain 不變形；旋轉/縮放照樣走 shellEject。 */
+  .shell{width:calc(22px*var(--sc,1));height:calc(15px*var(--sc,1));
+    background:url(resources/vfx/shell.webp) center/contain no-repeat;
+    pointer-events:none;z-index:9000;
+    filter:drop-shadow(0 0 2px rgba(232,197,106,.55));animation:shellEject .82s linear forwards;}
+  .shell.shotgun{width:calc(26px*var(--sc,1));height:calc(9px*var(--sc,1));
+    background-image:url(resources/vfx/shotgunshell.webp);
+    filter:drop-shadow(0 0 2px rgba(212,58,42,.55));}
   /* ver -809：**自然拋物線**（Ray：「飛到頂會頓一下」）——上升段減速到頂（ease-out）、
      下落段重力加速（ease-in），用逐關鍵格的 timing-function 讓過頂那一刻不頓；
      旋轉/縮放照樣連續。頂高 --peak、落點 --sy 由 enemy.ejectShell 逐顆隨機。 */

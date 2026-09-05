@@ -205,6 +205,32 @@ export function ejectShell(cell){
   setTimeout(()=>{ if(s.parentNode) s.remove(); }, 950);
 }
 
+/* 反擊彈殼（ver -812，Ray：「反擊時從反擊點噴彈殼，拋物線噴出來不停頓往下落」）——
+   與盤面點擊的 ejectShell 不同：從**反擊點**(x,y 視窗座標)噴、**往下落**出畫面外
+   （不是往左右飛），逐武器型別給不同大小／顏色（opts.sw/sh/red，由 weapon 傳）。
+   ⚠ 拋物線頂 peak 在 dy 之上（dy 為正＝往下），沿用 -810 的過頂不頓。 */
+export function ejectCounterShell(x, y, opts){
+  opts = opts || {};
+  const s=document.createElement('div'); s.className='shell'+(opts.shotgun?' shotgun':'');
+  s.style.position='fixed'; s.style.left=(x-8)+'px'; s.style.top=(y-8)+'px';
+  if(opts.sc!=null) s.style.setProperty('--sc', String(opts.sc));
+  const H=window.innerHeight||760;
+  const dir=(Math.random()<0.5?-1:1);
+  const dx=dir*(20+Math.random()*90);                    // 小幅左右漂（方向隨機）
+  const peak=-(50+Math.random()*90);                     // 先往上彈（弧度隨機）
+  const dy=(H-y)+80+Math.random()*260;                   // 一路往下落出畫面外（dy≫peak → 頂為真頂）
+  const rot=(540+Math.random()*900)*(Math.random()<0.5?-1:1);
+  const pop=1.4+Math.random()*0.6;
+  s.style.setProperty('--sx', dx.toFixed(0)+'px');
+  s.style.setProperty('--sy', dy.toFixed(0)+'px');
+  s.style.setProperty('--peak', peak.toFixed(0)+'px');
+  s.style.setProperty('--srot', rot.toFixed(0)+'deg');
+  s.style.setProperty('--spop', pop.toFixed(2));
+  s.style.animationDuration=(0.7+Math.random()*0.35).toFixed(2)+'s';
+  document.body.appendChild(s);
+  setTimeout(()=>{ if(s.parentNode) s.remove(); }, 1250);
+}
+
 /* ---------- 立繪載入 ----------
  *  一律走 ASSETS 鑰匙（en.image → resources/*）。
  *  註：舊版（含 reference 原型）會先探測外部目錄 assets/enemy/<imageBase>/portrait.<ext>

@@ -180,6 +180,10 @@ export const state = {
   counterDamage: 0,
   perfectCounters: 0,   // 完美反擊（紅圈）次數（ver -721；counterFired 含黃橘）
   counterSec: 0,        // 完美反擊折抵的秒數合計（武器卡的 counterSec，ver -721）
+  /* 反擊點（ver -812）：最近一次反擊發生的**視窗座標**{x,y}。由解威脅的一方
+     （defense.resolveThreat／combat 共鬥自動反擊）在呼叫 weaponCounter 前寫，
+     weapon 在開火時讀它從反擊點噴彈殼。純渲染座標，不進存檔。 */
+  counterPoint: null,
   perfectCount: 0,
   sawExecution: false,
   sawMaxBurst: false,    // 以 Maximum Burst 收尾（未擊殺那一種；ver -675）

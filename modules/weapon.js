@@ -87,6 +87,18 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll){
   /* ⚠ 本篇與試玩版是**兩套數值**（ver -378）——一律走 `weaponOf`，不要直接查 WEAPONS。 */
   const w = weaponOf(state.equippedWeapon, storyMode());
   if(!w) return;
+  /* ══ 反擊彈殼（ver -812，Ray）══ 從反擊點噴、往下落，逐型別不同大小／顏色。
+     船戰＝卡上有艦載武器音（`state.weaponSound`，即 config §158 對「船戰」的定義）。
+       · 速射型（機槍 vfx:null）＝一般彈殼(shell.webp)，一發噴一個；船戰 2×。
+       · 散射型（霰彈 vfx:'burst'）＝只噴一顆、1.5×、紅殼金底火(shotgunshell.webp)；船戰改金色 2×。
+       · 爆發型（狙擊 vfx:'single'）＝只噴一顆、1.3×、金色；船戰金色 2.5×。 */
+  const ship = !!state.weaponSound;
+  const cp = state.counterPoint ||
+             {x:(window.innerWidth||390)*0.5, y:(window.innerHeight||760)*0.4};
+  const shellOpt = (w.vfx==='burst')  ? (ship ? {sc:2  } : {sc:1.5, shotgun:true})
+                 : (w.vfx==='single') ? (ship ? {sc:2.5} : {sc:1.3})
+                 :                      (ship ? {sc:2  } : {sc:1});
+  const ejectShell = ()=>{ if(api.ejectCounterShell) api.ejectCounterShell(cp.x, cp.y, shellOpt); };
   /* 副武器的改裝加成（ver -714）：每階 +20%，上限＝卡上的 `maxMod`。
      ⚠ **折進 `scale`** —— 三種 vfx 分支各自算 `base`，在這裡乘一次就三條都吃到
        （鐵律 7：不要在每個分支各乘一遍）。
@@ -159,6 +171,7 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll){
     const base=Math.max(1, Math.round(w.hits*w.dmgPerHit*scale));
     playSe();                      // 狙擊：一發（無抗性時第一發必中；有抗性要擲）
     hap.shot();
+    ejectShell();                  // 爆發型：只噴一顆（ver -812）
     /* 武器抗性（ver -760）：單發武器被迴避＝這一發整個 MISS——開火照記
        （counterFired＝「開火了」），紅點的收點與硬直在 resolveThreat 那端不受影響。 */
     if(!hits(0)){
@@ -179,6 +192,7 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll){
     const base=Math.max(1, Math.round(w.dmgPerHit*scale));
     playSe();                      // 散彈：一次一發（完防/反擊皆觸發）
     hap.shot();
+    ejectShell();                  // 散射型：只噴一顆（ver -812）
     const bx=40+Math.random()*20;
     let sum=0;
     for(let k=0;k<w.hits;k++){
@@ -226,6 +240,7 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll){
     if(state.over||i>=w.hits){ flushPending(); return; }
     const h=rolls[i];
     playSe();                      // 機槍：每 hit 播一次 → 搭搭搭搭搭（miss 也有槍聲，是打空不是沒開槍）
+    ejectShell();                  // 速射型：一發噴一個（ver -812）
     if(h){
       if(!h.zero) api.enemyDamage(h.dmg, true, true, 'counter'); // 靜默扣血 → 由自訂 float 控制「暴擊」字樣
       api.floatDmg((h.crit?L.battle.crit:'')+h.dmg, (30+Math.random()*40)+'%','35%', !h.zero);
