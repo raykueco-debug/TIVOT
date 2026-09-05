@@ -49,7 +49,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.05-816';
+export const VERSION = 'ver 2026.09.05-817';
 
 export const GAME_CONFIG = {
 
@@ -1499,7 +1499,7 @@ export const GAME_CONFIG = {
                         weaponSound:{ '重機槍':'se_ship_heavygun',
                                       /* ver -505（Ray：「發射音改 se_spiltcannon，跟 bulletpiece
                                          同時播，不要隨 hit 數疊加」）—— times 不寫＝1。 */
-                                      '霰彈槍':{ key:'se_spiltcannon', once:'se_bulletpiece' },
+                                      '霰彈槍':{ key:'se_spiltcannon', once:'se_weapon_cannonshell' },
                                       /* ver -506（Ray：「單擊砲 se 換 se_weapon_cannon，發射
                                          瞬間播，0.2 秒後播 se_weapon_shell，可重疊」）——
                                          `after`＝延遲跟播（weapon.js，同 once 一組機制）。 */
@@ -1581,7 +1581,7 @@ export const GAME_CONFIG = {
                         weaponSound:{ '重機槍':'se_ship_heavygun',
                                       /* ver -505（Ray：「發射音改 se_spiltcannon，跟 bulletpiece
                                          同時播，不要隨 hit 數疊加」）—— times 不寫＝1。 */
-                                      '霰彈槍':{ key:'se_spiltcannon', once:'se_bulletpiece' },
+                                      '霰彈槍':{ key:'se_spiltcannon', once:'se_weapon_cannonshell' },
                                       /* ver -506（Ray：「單擊砲 se 換 se_weapon_cannon，發射
                                          瞬間播，0.2 秒後播 se_weapon_shell，可重疊」）——
                                          `after`＝延遲跟播（weapon.js，同 once 一組機制）。 */
@@ -1598,7 +1598,7 @@ export const GAME_CONFIG = {
                            （Alexander Nakarada），出處與授權字樣在 credit（index.html）。 */
                         bgm:'bgm_piratebattle',
                         weaponSound:{ '重機槍':'se_ship_heavygun',
-                                      '霰彈槍':{ key:'se_spiltcannon', once:'se_bulletpiece' },
+                                      '霰彈槍':{ key:'se_spiltcannon', once:'se_weapon_cannonshell' },
                                       '萊福槍':{ key:'se_weapon_cannon',
                                                  once:'se_weapon_cannonshell' } },
                         counterGapMs:180 },
@@ -1706,7 +1706,8 @@ export const GAME_CONFIG = {
     /* 陸戰反擊的「額外音」按類別（ver -816，Ray）——沒有艦載音覆寫（`state.weaponSound`）
        時才吃：只帶 once/after（發射殼音、延遲上膛），**不帶 key** → 保留武器原音效。
        實作只有 weapon.weaponCounter 一處（鐵律 8）。
-       ⚠ 散射(霰彈槍)的發射殼音待 Ray 指定音檔，先留空。 */
+       ⚠ 散射(霰彈槍)的發射殼音是**船戰限定**（Ray，-816），寫在船戰卡的 weaponSound
+         （once:se_weapon_cannonshell），不在這裡。 */
     landCounterSound: {
       '萊福槍': { after:{ key:'se_weapon_riflereload', delayMs:500 } },   // 陸戰高爆：發射後 0.5s 上膛
     },
