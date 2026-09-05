@@ -4417,9 +4417,27 @@ document.getElementById('backBtn').addEventListener('click',()=>{
 const MAP_TILT=(window.Settlement?Settlement.TILT:0.58);
 const MAP_HEX=2.4;                     // 高度誇張倍率（1＝真實比例，太真實會扁得看不出山）
 const MAP_SS=0.5;                      // 烘焙解析度（相對地圖像素）
-let relief=null;                       // {cv, w, h, riseOf(x,y), topOf(x,y)}
+/* ══ 平面 2D 開發地圖（ver -832，Ray：「先把大地圖做成全平面不要有 3D，
+   我直接點座標給你比較快」）══ 網址帶 ?flatmap ＝地圖視圖改畫 COL 的 1:1 正俯視
+   （不吃斜投影／tilt／高度位移），點選讀數＝精確地圖座標（與 SETTLEMENTS／
+   build_city.py 同一套）。物件與浮雕同形（cv/w/h/ss/flat/pick），
+   drawMap／mapPick／疊加物全部照走 reliefXY 那一條，不另寫一套（鐵律 8）。 */
+const FLATMAP=/[?&]flatmap/.test(location.search);
+let relief=null;                       // {cv, w, h, ss, flat, maxRise, hK, pick}
 function buildRelief(){
   if(relief) return relief;
+  if(FLATMAP){
+    const cv=document.createElement('canvas'); cv.width=MAPW; cv.height=MAPH;
+    const c=cv.getContext('2d');
+    const img=c.createImageData(MAPW,MAPH), U=new Uint32Array(img.data.buffer);
+    const SEA=rgb(28,38,52);
+    for(let i=0;i<MAPW*MAPH;i++) U[i]=(HGT[i]<=CLOUD_H)?SEA:COL[i];
+    c.putImageData(img,0,0);
+    /* ss＝「地圖像素→畫布像素」倍率（平面是 1:1）；pick 不必反查表 ——
+       畫布座標本身就是地圖座標，mapPick 直接用。 */
+    relief={ cv, w:MAPW, h:MAPH, maxRise:0, hK:0, sh0:MAPH, ss:1, flat:true, pick:null };
+    return relief;
+  }
   const sw=Math.round(MAPW*MAP_SS), sh0=Math.round(MAPH*MAP_SS);
   const hK=MAP_SS/MAP_SCALE*MAP_HEX;                    // 高度值 → 烘焙畫布像素
   let maxRise=0;
@@ -4460,12 +4478,15 @@ function buildRelief(){
     }
   }
   c.putImageData(img,0,0);
-  relief={ cv, w:sw, h:sh, maxRise, hK, sh0, pick:PICK };
+  relief={ cv, w:sw, h:sh, maxRise, hK, sh0, ss:MAP_SS, flat:false, pick:PICK };
   return relief;
 }
-/* 地圖像素 → 浮雕畫布座標（聚落要坐在地表上，用同一條換算） */
+/* 地圖像素 → 浮雕畫布座標（聚落要坐在地表上，用同一條換算）
+   ⚠ 平面模式（?flatmap）：畫布就是 1:1 正俯視，恆等式 —— 所有疊加物自動落對位。 */
 function reliefXY(mx,my){
-  const R=relief, i=(Math.min(MAPH-1,my|0))*MAPW+(Math.min(MAPW-1,mx|0));
+  const R=relief;
+  if(R.flat) return { x:mx, y:my };
+  const i=(Math.min(MAPH-1,my|0))*MAPW+(Math.min(MAPW-1,mx|0));
   const hh=HGT[i]>CLOUD_H?HGT[i]:CLOUD_H;
   return { x:mx*MAP_SS, y:my*MAP_SS*MAP_TILT+R.maxRise-hh*R.hK };
 }
@@ -4474,7 +4495,7 @@ const mapView=document.getElementById('mapView'), mapCv=document.getElementById(
 const mctx=mapCv.getContext('2d');
 let mapOpen=false;
 /* 視圖：zoom 1＝整張大陸剛好塞滿寬度；cx/cy＝視野中心的地圖像素座標 */
-const MV={ zoom:1, cx:0, cy:0, min:1, max:16 };
+const MV={ zoom:1, cx:0, cy:0, min:1, max:FLATMAP?48:16 };   // 平面模式放大到看得清單一像素
 /* ══ 地圖目的地標記（ver -743，Ray：「地圖沒有標出聖王廳，要移過去然後標記。
    把標記功能寫入」）══ 一個持久的目的地標（跨開關、跨重載——存 localStorage），
    劇情設（出航對白指聖王廳）、劇情清（抵達之後的稿再說）。
@@ -4550,12 +4571,12 @@ function drawMap(){
     };
     mctx.setLineDash([]);
     mctx.strokeStyle='rgba(20,12,10,.62)';
-    mctx.lineWidth=Math.max(2.4, sc*MAP_SS*2.6);
+    mctx.lineWidth=Math.max(2.4, sc*R.ss*2.6);
     trace();
-    const du=Math.max(4, sc*MAP_SS*5);
+    const du=Math.max(4, sc*R.ss*5);
     mctx.setLineDash([du*1.6, du*0.8, du*0.4, du*0.8]);   // 長劃・點・長劃（點劃線）
     mctx.strokeStyle='rgba(224,92,72,.95)';
-    mctx.lineWidth=Math.max(1.2, sc*MAP_SS*1.1);
+    mctx.lineWidth=Math.max(1.2, sc*R.ss*1.1);
     trace();
     mctx.setLineDash([]);
   }
@@ -4567,7 +4588,7 @@ function drawMap(){
     for(let pass=0;pass<2;pass++){
       // 兩趟：先畫深色描邊再畫路面，路才不會在同色地形上消失
       mctx.strokeStyle = pass? 'rgba(196,168,116,.85)' : 'rgba(38,30,20,.55)';
-      mctx.lineWidth   = pass? Math.max(0.8, sc*MAP_SS*1.1) : Math.max(1.6, sc*MAP_SS*2.2);
+      mctx.lineWidth   = pass? Math.max(0.8, sc*R.ss*1.1) : Math.max(1.6, sc*R.ss*2.2);
       for(const pts of ROAD_PATHS){
         mctx.beginPath();
         for(let k=0;k<pts.length;k++){
@@ -4599,12 +4620,12 @@ function drawMap(){
     };
     mctx.setLineDash([]);
     mctx.strokeStyle='rgba(24,25,29,.88)';
-    mctx.lineWidth=Math.max(1.5, sc*MAP_SS*1.8);
+    mctx.lineWidth=Math.max(1.5, sc*R.ss*1.8);
     trace();
-    const d=Math.max(2, sc*MAP_SS*3.2);
+    const d=Math.max(2, sc*R.ss*3.2);
     mctx.setLineDash([d*0.42, d*0.58]);
     mctx.strokeStyle='rgba(226,222,210,.92)';
-    mctx.lineWidth=Math.max(1.0, sc*MAP_SS*1.15);
+    mctx.lineWidth=Math.max(1.0, sc*R.ss*1.15);
     trace();
     mctx.setLineDash([]);
     mctx.lineCap='round';
@@ -4619,7 +4640,7 @@ function drawMap(){
       const p=reliefXY(s.mx,s.my);
       const sx=ox+p.x*sc, sy=oy+p.y*sc;
       // 聚落半徑是地圖像素 → 換到浮雕像素
-      const rs=sc*MAP_SS, dia=s.radius*2*rs;
+      const rs=sc*R.ss, dia=s.radius*2*rs;
       if(sx<-dia-40||sy<-dia-40||sx>w+dia+40||sy>h+dia+40) continue;
       Settlement.draw(mctx, s, { ox:sx, oy:sy, scale:rs }, Settlement.DEBUG);
       if(dia>26){
@@ -4686,7 +4707,11 @@ function drawMap(){
     /* ⚠ 不顯示「畫面中心的座標」：MV.cx/cy 是**浮雕像素**，而浮雕是斜角投影
        （reliefXY 會依高度位移），除以 MAP_SS 反推回去是錯的 —— 寧可不給，
        也不要給一個看起來像座標的錯數字。 */
-    const t2='×'+MV.zoom.toFixed(2)+'  地圖像素';
+    /* 平面模式的中心座標是**準的**（沒有 tilt／高度位移，MV.cx/cy 就是地圖像素）——
+       上面那條「寧可不給」只針對浮雕。 */
+    const t2=R.flat
+      ? ('×'+MV.zoom.toFixed(2)+'  平面1:1  中心 ('+Math.round(MV.cx)+','+Math.round(MV.cy)+')')
+      : ('×'+MV.zoom.toFixed(2)+'  地圖像素');
     /* 點選讀數（開發用）：回報位置問題時直接把這組數字給我，
        不必再從地形猜 —— HANDOFF A3 那條教訓。 */
     const t3=MV.pick?('點選 ('+MV.pick[0]+','+MV.pick[1]+')'):null;
@@ -5033,11 +5058,12 @@ if(ADMIN) window.tp=(mx,my,ang,keepEnemy)=>{
      地圖不自動關 —— 關掉的話「連點幾個地方比對」就得一直重開；留著反而
      馬上看得到自機標記跳過去，等於即時回饋。 */
 function mapPick(cssX,cssY){
-  const { w, h, base }=mapFit(), R=relief; if(!R||!R.pick) return;
+  const { w, h, base }=mapFit(), R=relief; if(!R||(!R.pick&&!R.flat)) return;
   const sc=base*MV.zoom, ox=w/2-MV.cx*sc, oy=h/2-MV.cy*sc;
   const rx=Math.round((cssX-ox)/sc), ry=Math.round((cssY-oy)/sc);
   if(rx<0||ry<0||rx>=R.w||ry>=R.h){ MV.pick=null; drawMap(); return; }
-  const i=R.pick[ry*R.w+rx];
+  /* 平面模式：畫布座標＝地圖座標，不必反查表 */
+  const i=R.flat ? (ry*MAPW+rx) : R.pick[ry*R.w+rx];
   MV.pick = i<0 ? null : [i%MAPW, (i/MAPW)|0];
   /* 管理人瞬移＝**快速點兩次**（ver -748，Ray：「管理人模式下要在地圖上快速
      點兩次才會瞬移過去」）—— 單點只落選取標記（誤觸地圖不再把船搬走），
@@ -9818,7 +9844,7 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
        中間那一小段是「只有地面的城」—— 遠距離看不出差別。 */
     if(planCity){ ctx.restore(); continue; }
     /* ⚠ Settlement.draw 的 scale 是「每個**地圖像素**幾個螢幕像素」——
-       s.radius 存的是地圖像素（同地圖畫面那邊傳 sc*MAP_SS）。
+       s.radius 存的是地圖像素（同地圖畫面那邊傳 sc*R.ss）。
        sc 是每個**世界單位**幾個螢幕像素，兩者差一個 MAP_SCALE。
        直接傳 sc 的話整座城會縮小 20 倍 → screenDia 永遠 <20 → LOD 0，
        飛到城上空也只看得到一顆符號點。上面那行尺寸檢查用的 R 有乘
