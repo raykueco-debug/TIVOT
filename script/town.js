@@ -1868,7 +1868,10 @@ export const TOWNS = {
            ⚠ innStage1／innSpots 是**佔位**（Ray 只給了「功能一樣」，敲門對白與
              roster 細節等他的 stage5 續稿）—— 缺這幾格 inn.js 的敲門路徑會取到
              undefined，所以先給安全值。 */
-        inn:true, innNoGuide:true,
+        /* ⚠ 旅店功能**村戰打完才開**（ver -827，Ray：「第六章起點已經是戰鬥探索，
+           索拉娜家的旅店在當時是關掉的」）：那一夜（S6）＋圍城期間一律關；`safehouse_shinier`
+           （＝清完野外、村子安全）立了才開放休息。 */
+        inn:true, innFrom:'safehouse_shinier', innNoGuide:true,
         innSpots:{ sit:{ x:0.30, y:0.62 }, sleep:{ x:0.60, y:0.55 } },
         noSleep:'……還是先別睡，總覺得今晚不會太平靜。',
         innStage1:{ renna:'早點休息吧，明天還要趕路呢。',

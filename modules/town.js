@@ -1811,7 +1811,10 @@ function afterArrive2(n){
   /* ⚠ 戰鬥地圖不開旅店大廳（ver -584）—— 伙伴門／獨自坐坐／回房睡覺都是探索的機制。 */
   /* ⚠ 沒有初見對白的旅店（北方泊地）傳 **null**（ver -656）：那面旗永遠不會立，
      而大廳是等它才出現的 —— 見 `inn.introDone()`。 */
-  if(n && n.inn && !siegeOn()) inn.arrive(n, { allSeen: allSeen(),
+  /* ⚠ `innFrom`（ver -827，Ray：「第六章起點已經是戰鬥探索，索拉娜家的旅店在當時
+     是關掉的」）：這一格的旅店功能要某支旗立了才開（夏爾村＝`safehouse_shinier`，
+     ＝村戰打完、村子安全了才開放休息）；沒寫＝一直開（其他城照舊）。 */
+  if(n && n.inn && !siegeOn() && (!n.innFrom || prog.hasFlag(n.innFrom))) inn.arrive(n, { allSeen: allSeen(),
                                  introFlag: (n.lines && n.lines.length) ? flagOf(n, nodeId) : null,
                                  /* 這是哪一座城的哪個節點（ver -481）：睡覺那一刻要記
                                     「上一次睡覺的旅店」——連敗三場送回來用。 */
