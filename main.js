@@ -1363,6 +1363,13 @@ combat.setStoryReturn((res)=>{
 function battleBgmOf(id){
   const b = id && GAME_CONFIG.battles && GAME_CONFIG.battles[id];
   if(b && b.bgm) return b.bgm;
+  /* 搭檔專屬戰鬥曲（ver -837，Ray：「索拉娜為夥伴時戰鬥音樂換成 Peritune_Whirlwind」）：
+     這一場的搭檔＝卡上的 `partner`（sv_* 的強配），否則整備頁選的人
+     （partner.storyPartnerKey —— cue 的當下 startGame 還沒跑，state.pickedPartner 未定）。
+     表在 `config.battleBgm.partner`（鐵律 1）；卡上明寫的 `bgm` 仍最優先（上一行）。 */
+  { const t0 = GAME_CONFIG.battleBgm || {};
+    const pk = (b && b.partner) || partner.storyPartnerKey();
+    if(t0.partner && t0.partner[pk]) return t0.partner[pk]; }
   /* 打靶場（`timeAttack`）一律用自己那一首（ver -658）——**規則不是逐張卡填**，
      資料在 `config.battleBgm`（鐵律 1）。 */
   const t = GAME_CONFIG.battleBgm || {};

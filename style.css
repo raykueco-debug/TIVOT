@@ -984,15 +984,18 @@
   #cutinFlash{position:absolute;inset:0;background:#fff;opacity:0;}
   #cutin.on #cutinFlash{animation:cutinFlash 1.5s ease-out;}
   @keyframes cutinFlash{0%{opacity:1}12%{opacity:0}100%{opacity:0}}
+  /* ⚠ scale 一律乘 var(--ci-s)（ver -837，Ray：「CI 後方角色不要被裁掉太多」）——
+     96% 高再乘 1.2~1.3 等於放大到約 120%，低角度構圖的後方角色頭部會被裁掉。
+     逐張的縮小倍率在 config.tuning.cutinFit（saint.playCutin 逐次設，預設 1）。 */
   #cutinImg{position:absolute;top:50%;left:50%;height:96%;max-width:none;
     filter:drop-shadow(0 0 30px #c0308a) drop-shadow(0 0 12px #6a30c0);
-    transform:translate(-50%,-50%) scale(1.3);opacity:0;}
+    transform:translate(-50%,-50%) scale(calc(var(--ci-s,1)*1.3));opacity:0;}
   #cutin.on #cutinImg{animation:cutinImg 1.5s cubic-bezier(.15,.7,.3,1);}
   @keyframes cutinImg{
-    0%{transform:translate(-120%,-50%) scale(1.5) rotate(-8deg);opacity:0;}
-    18%{transform:translate(-50%,-50%) scale(1.28) rotate(0deg);opacity:1;}
-    82%{transform:translate(-50%,-50%) scale(1.22);opacity:1;}
-    100%{transform:translate(30%,-50%) scale(1.2);opacity:0;}
+    0%{transform:translate(-120%,-50%) scale(calc(var(--ci-s,1)*1.5)) rotate(-8deg);opacity:0;}
+    18%{transform:translate(-50%,-50%) scale(calc(var(--ci-s,1)*1.28)) rotate(0deg);opacity:1;}
+    82%{transform:translate(-50%,-50%) scale(calc(var(--ci-s,1)*1.22));opacity:1;}
+    100%{transform:translate(30%,-50%) scale(calc(var(--ci-s,1)*1.2));opacity:0;}
   }
   /* i18n 斷行規則：keep-all＝CJK/假名連續串視為一個詞不得中斷（セイント／インストール
      只能在空白或 \n 換行，不會斷成「～インスト／ール」）；pre-line＝語言包可用 \n 指定斷點；

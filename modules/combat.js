@@ -161,6 +161,9 @@ export function setup(){
     saintApi: { lifeReturnAbort: saint.lifeReturnAbort },
     // 馬季諾：前線補給（cut-in 後直接進雙槍破防窗口，窗口本體歸 weapon）＋高裝藥彈（低血量普攻加倍；lowHpBuff 為 combat 擁有，經此管道寫）
     startDual: weapon.startDualWindow, setLowHpBuff,
+    /* 獵手的戰吼連 5 盤那一發＝重置共鬥（ver -837）：saintUsedThisBattle 的擁有者
+       是 saint，partner 經這一支具名 setter 寫（§3.5 的契約）。 */
+    resetInstallSlot: saint.resetInstallSlot,
   });
   // 監察官（評價/結算）：combat 擁有計時 → 算好 totalTime/avg 呼叫 inspector.settle。
   //   inspector 只 import state/config；goHome（combat）與 triggerIntruder（enemy）經此注入。
@@ -1738,6 +1741,21 @@ function lose(){
 /* ============================================================================
  *  流程進出
  * ========================================================================== */
+/* 搭檔 cut-in 預熱（ver -837）：把這一場搭檔會用到的所有 cut-in 圖抓下來解碼。
+   鑰匙從搭檔卡收（變身／共鬥結束／主動／被動，陣列展開）—— 加新技能自動吃到。 */
+function warmPartnerCutins(){
+  const p = GAME_CONFIG.partners && GAME_CONFIG.partners[state.pickedPartner];
+  if(!p) return;
+  const keys=[];
+  const add=v=>{ if(Array.isArray(v)) keys.push(...v); else if(v) keys.push(v); };
+  add(p.cutin); add(p.coop && p.coop.endCutin);
+  add(p.active && p.active.cutin); add(p.passive && p.passive.cutin);
+  const run=()=>{ for(const k of keys){ const src=asset(k); if(!src) continue;
+    const im=new Image(); im.src=src; if(im.decode) im.decode().catch(()=>{}); } };
+  /* ⚠ rIC 的第二參數是 {timeout}，不是毫秒 —— 與 setTimeout 不能共用一組參數。 */
+  if(window.requestIdleCallback) requestIdleCallback(run, {timeout:800});
+  else setTimeout(run, 300);
+}
 export function startGame(){
   state.over=false; state.defeated=false; state.combo=0; state.energy=0; state.expect=1; state.boardIndex=0;
   state.atkBuff=false; state.lowHpBuff=false;
@@ -1863,6 +1881,11 @@ export function startGame(){
     }
   }
   loadBoard(0); updateBars();
+  /* CI 預熱（ver -837，手機戰鬥卡頓調查的收尾）：這一場搭檔會用到的 cut-in
+     開場就解碼掉 —— 不預熱的話「第一次發動技能」那一刻才下載＋解碼，
+     手機上就是演出開頭卡一拍（playCutin 的 300ms 保底蓋不住大圖）。
+     idle 時段做、失敗靜默（純優化，同 primeArt 的理由）。 */
+  warmPartnerCutins();
   if(state.scriptRun){ updateBars(); return; }   // 劇情插入戰不進教學
   tutorial.maybeStart();   // 首次出陣 → 進教學（穿插式；看過/跳過後恆 no-op）
   if(state.tutorialActive && GAME_CONFIG.tutorial){

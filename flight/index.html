@@ -522,7 +522,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -836';
+const FLIGHT_VER = 'ver -837';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -4722,7 +4722,7 @@ function drawMap(){
     const t3=MV.pick?('點選 ('+MV.pick[0]+','+MV.pick[1]+')'):null;
     /* 拖城狀態（ver -835）：拖曳中即時座標／落定結果（重整後 3D 才生效）。 */
     const t4=dragSet ? ('拖曳中 '+dragSet.name+' ('+Math.round(dragSet.mx)+','+Math.round(dragSet.my)+')　放開＝落定')
-           : (dragDrop ? ('已落定 '+dragDrop.n+' ('+dragDrop.x+','+dragDrop.y+')'+dragDrop.warn+'　重整後3D生效') : null);
+           : (dragDrop ? ('已落定 '+dragDrop.n+' ('+dragDrop.x+','+dragDrop.y+')'+dragDrop.warn+'　已搬（整地重整後跟上）') : null);
     mctx.font='11px "Noto Sans TC",monospace'; mctx.textAlign='left';
     let w1=Math.max(mctx.measureText(t1).width, mctx.measureText(t2).width);
     if(t3) w1=Math.max(w1, mctx.measureText(t3).width);
@@ -5138,7 +5138,12 @@ function dropSettlement(){
   let ov={}; try{ ov=JSON.parse(localStorage.getItem(SETTLE_DRAG_KEY)||'{}')||{}; }catch(_){}
   ov[s.name]=[x,y];
   try{ localStorage.setItem(SETTLE_DRAG_KEY, JSON.stringify(ov)); }catch(_){}
-  console.log('拖城落定：'+s.name+' ('+x+','+y+')'+warn+' —— 已存，重新整理後 3D 生效');
+  /* 「地圖手動移位時，舊的要刪掉」（ver -837，Ray）：落定就重建取樣遮罩 ——
+     插畫與量體**當場搬家**，舊位置立刻回復成地形，不必等重整。
+     ⚠ 整地（podium 削平）是 loadWorld 烘進 HGT 的，活著的世界改不動 ——
+       舊位置會留一塊已整平的空地、新位置的地還沒整，重整一次才完整。 */
+  try{ buildCityMask(); }catch(_){}
+  console.log('拖城落定：'+s.name+' ('+x+','+y+')'+warn+' —— 已存；插畫已搬（舊位置已清），整地要重整後才跟上');
   drawMap();
 }
 function mapPick(cssX,cssY){

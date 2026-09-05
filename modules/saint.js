@@ -126,7 +126,6 @@ export function activateSaint(dir){
  *    （`setImmuneUntil`，注入為 `api.coopImmune`），coopMode 旗由本模組獨佔寫入。
  * ========================================================================== */
 let coopTimer = null;
-let coopVoIdx = 0;   // 共鬥發動語音的輪播序號（ver -818；純演出，不進存檔）
 export function activateCoop(dir){
   if(state.over||state.saintMode||state.niMode||state.coopMode||state.cutinPlaying
      ||state.saintUsedThisBattle||state.transitioning||state.dualWield||state.enemyHp<=0) return;
@@ -139,9 +138,8 @@ export function activateCoop(dir){
   if(api.resetEnergy) api.resetEnergy();              // 消耗全部破防值
   SFX.unlock(); SFX.ultCharge();
   SFX.play(asset('sfx_saint'), sfxGain('sfx_saint'));
-  /* 共鬥發動語音（ver -818，Ray）：pack/pack2 輪播（陣列＝發動一次換下一支）。 */
-  { const vs = c.voice;
-    const vk = Array.isArray(vs) ? vs[(coopVoIdx++) % vs.length] : vs;
+  /* 共鬥發動語音（ver -818）：pack/pack2 輪播 —— ver -837 起走 SFX.pickRot（鐵律 8）。 */
+  { const vk = SFX.pickRot(c.voice);
     if(vk) SFX.playVoice(asset(vk), sfxGain(vk)); }
   playSlash(dir);
   playCutin(()=>{ if(state.over) return; startCoop(sec); },
@@ -185,11 +183,16 @@ function endCoop(){
      語音 vo_sorana_obe 與 CI_Sorana_obe 同步（同發動 cut-in 的作法）。 */
   if(!state.over){
     const c = ((GAME_CONFIG.partners && GAME_CONFIG.partners[state.pickedPartner]) || {}).coop || {};
-    if(c.endVoice) SFX.playVoice(asset(c.endVoice), sfxGain(c.endVoice));
+    const ek = SFX.pickRot(c.endVoice);   // ver -837：obe1/obe2 輪播
+    if(ek) SFX.playVoice(asset(ek), sfxGain(ek));
     if(c.endCutin) playCutin(()=>{}, c.endName || '', c.endCutin, { noShot:true });
   }
 }
 export function coopActive(){ return !!state.coopMode; }
+/* 重置 Install 槽（ver -837，Ray：「連五場會再發動一次並重置獵手的共鬥」）——
+   `saintUsedThisBattle` 的擁有者是 saint（§3.5），跨模組的寫一律走具名 setter：
+   partner 的獵手的戰吼經 combat 注入呼叫這一支，不直接改 state。 */
+export function resetInstallSlot(){ state.saintUsedThisBattle = false; }
 
 /* 聖徒化回血特效開關：玩家血條（倒數槽）轉金＋末端強光點（CSS .saint-heal） */
 function setSaintBarFx(on){
@@ -757,6 +760,11 @@ export function playCutin(done, label, imgKey, opts){
   if(label!==undefined) $('cutinText').innerHTML = label;
   const ci=$('cutinImg');
   const src=imgKey ? asset(imgKey) : null;
+  /* 逐張縮放（ver -837，Ray：「CI 後方角色不要被裁掉太多」）：#cutinImg 的 keyframe
+     scale 乘上 var(--ci-s)（style.css），表在 config.tuning.cutinFit（鐵律 1）。
+     每次都要設（含 1）—— 上一張的縮放不能殘留到這一張。 */
+  if(ci){ const fit=(GAME_CONFIG.tuning.cutinFit||{})[imgKey];
+          ci.style.setProperty('--ci-s', fit || 1); }
   // cut-in 槍聲已全面取消：雙槍破防有 Luna_dual_VC、聖徒化降臨有 SI_01，槍聲只留給盤面實際射擊
   const start=()=>{
     c.classList.remove('on'); void c.offsetWidth; c.classList.add('on');

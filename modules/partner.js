@@ -138,7 +138,9 @@ const ACTIVE_HANDLERS = {
   supplyRefill(a, act){
     if(state.over || state.saintMode || state.coopMode || state.dualWield || state.cutinPlaying || state.transitioning) return false;   // 共鬥期間不可發（ver -803）
     if(state.enemyHp<=0) return false;   // overkill（敵已死）不可發動雙槍破防 → 技能不消耗
-    const vo = asset(act && act.voice); if(vo) SFX.playVoice(vo, sfxGain(act.voice));   // SE（→ vo_supply_refill；增益見 tuning.fileGain）
+    /* 語音（ver -837）：`voice` 陣列＝輪播（索菈娜 supply1/2），單支照舊（馬季諾）。 */
+    const vk = SFX.pickRot(act && act.voice);
+    const vo = asset(vk); if(vo) SFX.playVoice(vo, sfxGain(vk));
     a.floatDmg(act.name,'50%','40%',true);
     const label = `${act.name}<span class="cutin-en">${act.en||''}</span>`;
     a.playCutin(()=>{
@@ -191,8 +193,7 @@ export function tryActive(context){
  *  10 秒計時器為 partner 自有狀態（reset() 清理，combat 開場調度）。
  * ========================================================================== */
 let lowHpArmed = true;    // 上膛旗標：HP 在門檻上方＝已上膛；跌破發動一次即卸膛
-let lowHpTimer = null;
-let voRotIdx = 0;              // 被動語音輪播的游標（ver -759；不進存檔）    // 10 秒 buff 計時器
+let lowHpTimer = null;    // 10 秒 buff 計時器
 
 /* ══⚠⚠ 免傷窗（ver -740，Ray：「諾薇兒的即死防禦加上十秒免傷，期間普攻每次
    回血2%」「life return 改為…10 秒免傷」「免傷仍算受擊，只是不扣血」）══
@@ -277,11 +278,23 @@ export function onBoardCleared(clean){
   if(state.saintMode || state.niMode || state.coopMode || state.over) return;
   if(!clean){ state.svPerfectStreak = 0; return; }
   state.svPerfectStreak++;
-  if(state.svPerfectStreak < (pas.streak||3)) return;
-  state.svPerfectStreak = 0;                       // 發動就重置：可重覆發動（Ray）
+  /* ══ 兩段式（ver -837，Ray：「連三場會發動獵手戰吼，播 vo_sorana_roar2；
+     連五場會再發動一次並重置獵手的共鬥，播 vo_sorana_roar」）══
+     · 滿 streak(3)：發動（語音 voice＝roar2），**計數不歸零** —— 歸零 5 就到不了。
+     · 滿 streak2(5)：再發動＋**重置共鬥**（api.resetInstallSlot → saint 的具名 setter），
+       計數歸零重頭數。中間盤數（4）不發動；破功照舊歸零。 */
+  const s1 = pas.streak || 3, s2 = pas.streak2 || 5;
+  let vkey;
+  if(state.svPerfectStreak === s1){ vkey = pas.voice; }
+  else if(state.svPerfectStreak >= s2){
+    vkey = pas.voice2 || pas.voice;
+    state.svPerfectStreak = 0;
+    if(api.resetInstallSlot) api.resetInstallSlot();   // 共鬥可以再發一次
+  }
+  else return;
   const sec = pas.buffSeconds || 10;
   const fire = ()=>{ if(state.over) return; state.energyBoostUntil = Date.now()+sec*1000; };
-  const vo = asset(pas.voice); if(vo) SFX.playVoice(vo, sfxGain(pas.voice));
+  const vo = asset(vkey); if(vo) SFX.playVoice(vo, sfxGain(vkey));
   api.floatDmg(pas.name,'50%','34%',true);
   if(state.cutinPlaying){ fire(); return; }        // 已有演出在播 → 只跳字、buff 立即起算
   /* CI 隨機輪播（ver -809，Ray）：`cutin` 寫成陣列＝發動時隨機挑一張（三張合擊圖）。 */
@@ -314,9 +327,8 @@ function fireBuff(pas){
        同一刻結束（爆散由 setLowHpBuff(false) 那一端演）。 */
     if(pas.key==='firstCounter' && api.lucidFlood) api.lucidFlood(sec);
   };
-  /* 語音輪播（ver -759，Ray：「vo_anya_luciddream1～4 更新，輪播」）：
-     `voice` 寫成陣列＝發動一次換下一支（單支照舊）。序號不進存檔 —— 純演出。 */
-  const vk = Array.isArray(pas.voice) ? pas.voice[(voRotIdx++) % pas.voice.length] : pas.voice;
+  /* 語音：陣列＝輪播（ver -759；-837 起走 SFX.pickRot，鐵律 8）。 */
+  const vk = SFX.pickRot(pas.voice);
   const vo = asset(vk); if(vo) SFX.playVoice(vo, sfxGain(vk));
   api.floatDmg(pas.name,'50%','34%',true);
   if(state.cutinPlaying){ fire(); return; }   // 已有演出在播 → 只跳字、buff 立即起算

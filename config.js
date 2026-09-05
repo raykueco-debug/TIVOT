@@ -49,7 +49,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.05-836';
+export const VERSION = 'ver 2026.09.05-837';
 
 export const GAME_CONFIG = {
 
@@ -157,7 +157,11 @@ export const GAME_CONFIG = {
   /* `shipHarm`（ver -741，Ray：「船戰禍魘默認這一首 PerituneMaterial_EpicBattle_loop」）：
      卡上沒寫 `bgm`、而且是**船戰**（卡上有 `weaponSound`＝艦載武器音，那正是
      船戰的記號）、敵人卡 `kind:'harm'` → 用這一首。判定只有 main.battleBgmOf 一處。 */
-  battleBgm: { default:'bgm_battle', timeAttack:'bgm_hopstep', shipHarm:'bgm_epicbattle' },
+  battleBgm: { default:'bgm_battle', timeAttack:'bgm_hopstep', shipHarm:'bgm_epicbattle',
+               /* ver -837（Ray：「索拉娜為夥伴時戰鬥音樂換成 Peritune_Whirlwind」）——
+                  這一場的搭檔（卡上的 partner，否則整備頁選的人）在這張表裡就換曲；
+                  卡上明寫的 bgm 仍最優先（main.battleBgmOf，鐵律 7）。 */
+               partner:{ sorana:'bgm_whirlwind' } },
 
   /* ══⚠⚠ 主武器：迦尼米德雙槍（ver -699，Ray 交卡）══════════════════════════
      Ray：「裝備欄加入雙槍　迦尼米德α「王之運」／迦尼米德β「運之王」。
@@ -353,7 +357,7 @@ export const GAME_CONFIG = {
       cutin:'ci_anya_ni',
       voice:null,
       /* 選人確認的語音（ver -743，Ray：「安雅播被動技語音」＝明晰之夢）。 */
-      selectVoice:'vo_anya_lucid1',   // 選人確認音：固定第 1 支（輪播是技能發動那一端）
+      selectVoice:'vo_anya_lucid',   // 選人確認音（ver -837：明晰之夢語音收成單支）
       perk:'明晰之夢（被動）＋惡夢化・夢境粉碎（劇情）',
       /* ══ 被動：明晰之夢（Lucid Dream；中文名 ver -682 由 Ray 定）══
          ⚠⚠ **觸發條件 ver -693 改了**（Ray：「娜塔莉戰如果先觸發 lucid dream 再進入
@@ -374,7 +378,7 @@ export const GAME_CONFIG = {
         buffSeconds:5,
         cutin:'ci_anya_lucid',
         /* ver -759：四支輪播（Ray 指定）—— 陣列＝發動一次換下一支（fireBuff）。 */
-        voice:['vo_anya_lucid1','vo_anya_lucid2','vo_anya_lucid3','vo_anya_lucid4'],
+        voice:'vo_anya_lucid',   // ver -837：Ray 交新單支，取代 -759 的 ×4 輪播（沒編號＝不輪播）
         /* ver -740（Ray）：發動期間追加「反擊不論哪一圈都算完美反擊（傷害與評價）」
            與「指引每一個應點格」—— 實作見 defense.resolveThreat 與 combat.markNext。 */
         desc:'每隻敵人第一次完美反擊（紅圈）時發動：5 秒內普攻傷害加倍、'
@@ -405,24 +409,30 @@ export const GAME_CONFIG = {
          `endVoice`＝共鬥時間結束那一刻播。 */
       coop:{ baseSec:12, minSec:3, wrongShortenSec:1.5, counterScale:1,
              voice:['vo_sorana_pack','vo_sorana_pack2'],
-             /* 共鬥結束＝飛刀耗盡（obe，ver -822，Ray）：CI_Sorana_obe＋vo_sorana_obe。 */
-             endVoice:'vo_sorana_obe', endCutin:'ci_sorana_obe', endName:'飛刀耗盡' },
+             /* 共鬥結束＝飛刀耗盡（obe，ver -822）。ver -837：語音兩支輪播（Ray：「有編1、2的都是輪播」）。 */
+             endVoice:['vo_sorana_obe1','vo_sorana_obe2'], endCutin:'ci_sorana_obe', endName:'飛刀耗盡' },
       /* 主動技：**照搬馬季諾的前線補給**（Ray 指定）＝ supplyRefill（立即進入雙槍破防、
          不吃破防值）。上滑手勢（bindBoardActiveSwipe → tryActive('board')）發動，
          只換她自己的名字與 CI。 */
       active:{ key:'supplyRefill', name:'獵手的智慧', en:"Predator's Wisdom", context:'board',
-               oncePerBattle:true, cutin:'ci_sorana_supply', voice:'vo_sorana_supply',
+               oncePerBattle:true, cutin:'ci_sorana_supply', voice:['vo_sorana_supply1','vo_sorana_supply2'],   // ver -837 輪播
                desc:'上滑：無視破防值，立即進入雙槍破防（Bullets Rain）。' },
       /* 被動：連續三輪完美清盤 → 10 秒破防值累積速度加倍，可重覆發動。
          實作＝ combat.clearBoard 累加 `svPerfectStreak`，滿 `streak` 由 partner.fireEnergyBuff
          開一段 `energyBoostUntil`（addEnergy 讀它 ×`energyMul`）。 */
       /* CI 三張隨機輪播（ver -809，Ray 指定）——發動時 partner.onBoardCleared 隨機挑一張。 */
-      /* 被動＝獵手的戰吼（ver -822，Ray 定名）：CI 三張輪播＋語音 vo_sorana_roar。
-         ⚠ vo_sorana_roar 的音檔 Ray 尚未交（先寫進來，檔到再轉 m4a＋ASSETS＋fileGain）。 */
+      /* 被動＝獵手的戰吼（ver -822 定名；**ver -837 改成兩段式**，Ray：「連三場會發動
+         獵手戰吼，播 vo_sorana_roar2；連五場會再發動一次並重置獵手的共鬥，播 vo_sorana_roar」）：
+         · 連 `streak`(3) 盤完美清盤 → 發動（10 秒破防加速），語音 `voice`（roar2）
+         · 連 `streak2`(5) 盤 → **再發動一次＋重置共鬥**（saintUsedThisBattle 歸零，
+           可再右滑共鬥），語音 `voice2`（roar），連擊計數歸零重頭數。
+         ⚠ 3 那一發**不歸零**計數 —— 歸零的話 5 永遠到不了。CI 三張照舊隨機輪播。 */
       passive:{ key:'perfectStreak', name:'獵手的戰吼', en:"Predator's Roar",
-                streak:3, buffSeconds:10, energyMul:2, voice:'vo_sorana_roar',
+                streak:3, buffSeconds:10, energyMul:2, voice:'vo_sorana_roar2',
+                streak2:5, voice2:'vo_sorana_roar',
                 cutin:['ci_sorana_roar_renna','ci_sorana_roar_anya','ci_sorana_roar_nouvelle'],
-                desc:'連續三輪完美清盤時發動：10 秒內破防值累積速度加倍，可重覆發動。' },
+                desc:'連續三輪完美清盤時發動：10 秒內破防值累積速度加倍；'
+                    +'連續五輪再次發動並重置共鬥。' },
     },
     // ── 第二搭檔：馬季諾 Malzeno ──────────────────────────
     malzeno: {
@@ -1791,6 +1801,13 @@ export const GAME_CONFIG = {
          匯流 limiter 接就好 —— 那本來就是它的工作，而且只作用在瞬態。
        ⚠ 改這裡就要同步 tools/audio_probe.html 的 VO_EQ／VO_COMP，否則量到的
          不是實際播出的東西。 */
+    /* ══ cut-in 逐張縮放（ver -837，Ray：「獵手的智慧發動時注意 CI 後方角色不要被
+       裁掉太多」）══ #cutinImg 是 96% 高再乘 keyframe 的 scale 1.2~1.3 ——
+       等於放大到約 120%，低角度構圖裡站在後方的角色頭部會被裁掉。
+       這張表＝逐張的縮小倍率（乘進 keyframe 的 scale，見 style.css 的 var(--ci-s)），
+       1＝照舊；saint.playCutin 讀（鐵律 1）。 */
+    cutinFit: { ci_sorana_supply:0.78 },
+
     voiceChain: {
       eq:   [ ['highpass', 130, 0.707,  0],
               ['lowshelf', 500, 0.707, -5],
@@ -1841,9 +1858,10 @@ export const GAME_CONFIG = {
                 'vo_dual_torsten2','vo_torsten_mb','vo_torsten_exc',
                 'vo_nou_saint','vo_nou_obe','vo_nou_guard','vo_nou_return',
                 'vo_anya_ni','vo_anya_burst','vo_anya_burst2','vo_anya_melt',
-                'vo_anya_lucid1','vo_anya_lucid2','vo_anya_lucid3','vo_anya_lucid4',
+                'vo_anya_lucid',
                 /* ver -818：索菈娜語音（共鬥/供給/共鬥結束）。 */
-                'vo_sorana_pack','vo_sorana_pack2','vo_sorana_supply','vo_sorana_obe','vo_sorana_roar'],
+                'vo_sorana_pack','vo_sorana_pack2','vo_sorana_supply1','vo_sorana_supply2',
+                'vo_sorana_obe1','vo_sorana_obe2','vo_sorana_roar','vo_sorana_roar2'],
 
     /* ══ 逐支增益：鑰匙是**檔名**（去副檔名、轉小寫）══════════════════
        ⚠⚠ 鑰匙用檔名不用 ASSETS 鍵（ver -441）：**一支音檔只有一個響度**，
@@ -1864,21 +1882,20 @@ export const GAME_CONFIG = {
          ⚠ `vo_torsten_dualcrush` 本身不在這一批（它 -479 就有一列，見下）。 */
       vo_torsten_dualcrush2:2.83,
       vo_torsten_mb:3.53,            vo_torsten_execute:2.63,
-      vo_nouvelle_saintinstall:2.43,
+      vo_nouvelle_saintinstall:1.08,   // ver -837 新錄音重量
       /* ver -745：OBE 語音更新（Ray 交新檔，1.2 秒 —— 舊 10.6 秒那支的懸案結案）。
          錨換算（vo_nouvelle_saintinstall 2.43 ÷ 本機量 1.724 ＝鏈補償 1.41）。 */
       vo_nouvelle_obe:2.04,
-      vo_nouvelle_deathguard:2.29,   vo_nouvelle_lifereturn:3.17,
-      vo_anya_nightmareinstall:4.14, vo_anya_obe:2.05,
+      vo_nouvelle_deathguard:1.35,   vo_nouvelle_lifereturn:1.63,   // ver -837 新錄音重量
+      vo_anya_nightmareinstall:4.14, vo_anya_obe:0.67,   // obe ver -837 新錄音重量
       vo_anya_dreambreaker1:5.15,    vo_anya_dreambreaker2:2.63,
-      /* luciddream ×4（ver -759，measure_lufs 實測 × 語音鏈錨 1.41）。 */
-      vo_anya_luciddream1:3.65,
-      vo_anya_luciddream2:1.94,
-      vo_anya_luciddream3:1.94,
-      vo_anya_luciddream4:3.13,
-      /* ver -818（BS.1770＋voiceChain EQ 實測；未過壓縮器，Ray 可用 audio_scan 微調）。 */
-      vo_sorana_pack:2.35, vo_sorana_pack2:1.73, vo_sorana_supply:1.09, vo_sorana_obe:1.78,
-      vo_sorana_roar:0.95,   // ver -823（BS.1770＋voiceChain EQ 實測 −13.4 LUFS）
+      vo_anya_luciddream:0.77,   // ver -837：收成單支（新錄音，BS.1770＋voiceChain 實測）
+      /* ver -837 整批新錄音（BS.1770＋voiceChain EQ 實測，耳機/手機平均，峰值夾 +2dB；
+         未過壓縮器 —— 同 -818 的方法）。⚠ obe2 是氣音收尾（−28 LUFS），增益 5.22 是對的。 */
+      vo_sorana_pack:0.69,  vo_sorana_pack2:0.57,
+      vo_sorana_supply1:0.98, vo_sorana_supply2:0.96,
+      vo_sorana_obe1:1.17,  vo_sorana_obe2:5.22,
+      vo_sorana_roar:0.76,  vo_sorana_roar2:0.69,
       vo_luna_dualwield:1.483, vo_luna_execution:1.013, vo_luna_obe:1.163,
       vo_luna_saintinstall:1.345, vo_malzeno_hcrounds:2.647,
       vo_malzeno_supplyrefill:2.261, vo_renee_deathguard:1.563,
@@ -1933,6 +1950,7 @@ export const GAME_CONFIG = {
 
       /* ── 音樂 ── */
       bgm_mainmenu:1.735, bgm_battle:0.849, bgm_boss:0.665, bgm_result:0.855,
+      peritune_whirlwind:0.97,   // 索菈娜戰鬥曲（ver -837 實測 −13.5 LUFS）
       bgm_missionfailed:1.995, bgm_capital_day:1.213, bgm_lunaria:1.230,
       peritunematerial_crisis_loop:1.077,
       /* 北方泊地那兩首（ver -624 補量，audio_scan 實測 −16.7／−12.7 LUFS）。 */
@@ -2091,13 +2109,15 @@ export const ASSETS = {
      被動。⚠ 目前是 jpg/png（美術交件格式），轉 webp 後改副檔名（§5 轉檔三步）。
      ⚠ 伙伴立繪先用她的 SI 佔位（本篇強配不經選人，整備頁才顯示；Ray 交專用選人圖再換）。 */
   partner_sorana:     "resources/SI/Sorana_SI_front.webp",
-  ci_sorana_predator: "resources/CI/CI_Sorana_predator.jpg",
-  ci_sorana_supply:   "resources/CI/CI_Sorana_supply.png?v=2",   // ver -820 過渡圖：本機佔位、不入版控（Ray）
+  /* ver -837：索菈娜 CI 整批轉 webp（2.0~2.5MB 的 1024×1536 PNG → 0.10~0.27MB）——
+     戰鬥中 cut-in 解碼那一口就是手機卡頓的主嫌之一；原 PNG 留在原位給美術 session。 */
+  ci_sorana_predator: "resources/CI/CI_Sorana_predator.webp",
+  ci_sorana_supply:   "resources/CI/CI_Sorana_supply.webp",   // -820 過渡圖 → -837 webp
   /* 獵手的直覺（被動）發動的 CI：三張隨機輪播（ver -809，Ray 指定）——與三位女角的合擊圖。 */
-  ci_sorana_roar_renna:    "resources/CI/CI_Sorana_roar_Renna.png",
-  ci_sorana_roar_anya:     "resources/CI/CI_Sorana_roar_Anya.png",
-  ci_sorana_roar_nouvelle: "resources/CI/CI_Sorana_roar_Nouvelle.png",
-  ci_sorana_obe:           "resources/CI/CI_Sorana_obe.png",   // 飛刀耗盡（共鬥結束，ver -822，Ray）
+  ci_sorana_roar_renna:    "resources/CI/CI_Sorana_roar_Renna.webp",
+  ci_sorana_roar_anya:     "resources/CI/CI_Sorana_roar_Anya.webp",
+  ci_sorana_roar_nouvelle: "resources/CI/CI_Sorana_roar_Nouvelle.webp",
+  ci_sorana_obe:           "resources/CI/CI_Sorana_obe.webp",   // 飛刀耗盡（共鬥結束，ver -822）
   /* 夢境粉碎（ver -674，Ray 交件）：惡夢化期間上滑的那一發。 */
   ci_anya_dreambreaker: "resources/CI/CI_Anya_Dreambreaker.webp?v=3",   // ver -702：Ray 又換了一版
   /* 惡夢化熔斷（ver -692，Ray 交件 `CI_Anya_OBE`）：倒數槽抽乾的那一結局。 */
@@ -2317,27 +2337,26 @@ export const ASSETS = {
   vo_dual_torsten2:  "resources/audio/vo/vo_torsten_dualcrush2.m4a",   // 破防第二版（與上面交互）
   vo_torsten_mb:     "resources/audio/vo/vo_torsten_mb.m4a",           // Maximum Burst
   vo_torsten_exc:    "resources/audio/vo/vo_torsten_execute.m4a",      // 處決 EXSECUTIŌ
-  vo_nou_saint:      "resources/audio/vo/vo_nouvelle_saintinstall.m4a",// 聖徒化降臨
+  vo_nou_saint:      "resources/audio/vo/vo_nouvelle_saintinstall.m4a?v=2",// 聖徒化降臨（?v=2：ver -837 新錄音同名覆蓋）
   vo_nou_obe:        "resources/audio/vo/vo_nouvelle_obe.m4a",         // O.B.E.
-  vo_nou_guard:      "resources/audio/vo/vo_nouvelle_deathguard.m4a",  // 即死防禦
-  vo_nou_return:     "resources/audio/vo/vo_nouvelle_lifereturn.m4a",  // 生命歸還
+  vo_nou_guard:      "resources/audio/vo/vo_nouvelle_deathguard.m4a?v=2",  // 即死防禦（?v=2 同上）
+  vo_nou_return:     "resources/audio/vo/vo_nouvelle_lifereturn.m4a?v=2",  // 生命歸還（?v=2 同上）
   vo_anya_ni:        "resources/audio/vo/vo_anya_nightmareinstall.m4a",// 惡夢化降臨
   vo_anya_burst:     "resources/audio/vo/vo_anya_dreambreaker1.m4a",   // 夢境粉碎（預設）
   vo_anya_burst2:    "resources/audio/vo/vo_anya_dreambreaker2.m4a",   // 夢境粉碎（娜塔莉戰，見戰鬥卡）
-  vo_anya_melt:      "resources/audio/vo/vo_anya_obe.m4a",             // 熔斷 MELTDOWN
-  /* 明晰之夢語音 ×4（ver -759，Ray：「vo_anya_luciddream1～4 更新，輪播」）——
-     發動一次換下一支（partner.fireBuff 的輪播）。舊單支 luciddream.m4a 退場。 */
-  vo_anya_lucid1:    "resources/audio/vo/vo_anya_luciddream1.m4a",
-  vo_anya_lucid2:    "resources/audio/vo/vo_anya_luciddream2.m4a",
-  vo_anya_lucid3:    "resources/audio/vo/vo_anya_luciddream3.m4a",
-  vo_anya_lucid4:    "resources/audio/vo/vo_anya_luciddream4.m4a",
+  vo_anya_melt:      "resources/audio/vo/vo_anya_obe.m4a?v=2",             // 熔斷 MELTDOWN（?v=2 同上）
+  /* 明晰之夢語音（ver -759 ×4 輪播 → ver -837 收成單支新錄音）。 */
+  vo_anya_lucid:     "resources/audio/vo/vo_anya_luciddream.m4a",
   /* 索菈娜語音（ver -818，Ray 交件）——共鬥發動 pack/pack2 輪播、共鬥結束 obe、
      供給技 supply；pack2 另作 man_sorana 敵登場音。 */
-  vo_sorana_pack:    "resources/audio/vo/vo_sorana_pack.m4a",
-  vo_sorana_pack2:   "resources/audio/vo/vo_sorana_pack2.m4a",
-  vo_sorana_supply:  "resources/audio/vo/vo_sorana_supply.m4a",
-  vo_sorana_obe:     "resources/audio/vo/vo_sorana_obe.m4a",
-  vo_sorana_roar:    "resources/audio/vo/vo_sorana_roar.m4a",   // 獵手的戰吼（被動，ver -823；原檔 vo_sorara_roar 正名）
+  vo_sorana_pack:    "resources/audio/vo/vo_sorana_pack.m4a?v=2",   // ?v=2：ver -837 新錄音同名覆蓋
+  vo_sorana_pack2:   "resources/audio/vo/vo_sorana_pack2.m4a?v=2",
+  vo_sorana_supply1: "resources/audio/vo/vo_sorana_supply1.m4a",   // ver -837：獵手的智慧 ×2 輪播
+  vo_sorana_supply2: "resources/audio/vo/vo_sorana_supply2.m4a",
+  vo_sorana_obe1:    "resources/audio/vo/vo_sorana_obe1.m4a",   // ver -837：飛刀耗盡 ×2 輪播
+  vo_sorana_obe2:    "resources/audio/vo/vo_sorana_obe2.m4a",
+  vo_sorana_roar:    "resources/audio/vo/vo_sorana_roar.m4a?v=2",   // 獵手的戰吼・連5盤那一發（ver -837 新錄音）
+  vo_sorana_roar2:   "resources/audio/vo/vo_sorana_roar2.m4a",      // 獵手的戰吼・連3盤那一發
   se_luna_exc:       "resources/audio/vo/vo_luna_execution.m4a",    // 處決 EXSECUTIŌ cut-in
   /* ⚠ ver -641 改名 `se_saint_maxburst` → `vo_saint_maxburst`（它是語音）。
      ⚠ **檔案還躺在 `se/`**（同 `vo_lunaMG` 那一筆，等 Ray 點頭再搬 `vo/`）——
@@ -2385,6 +2404,7 @@ export const ASSETS = {
      ⚠ 哪一場用它**不寫在卡上**而是規則：見下面的 `battleBgm.timeAttack`。 */
   bgm_hopstep:    "resources/audio/bgm/Peritune_Hopstep_Battle_loop.m4a",
   bgm_battle:    "resources/audio/bgm/bgm_battle.m4a",      // 戰鬥（驅逐開始插入瞬間起播）
+  bgm_whirlwind: "resources/audio/bgm/Peritune_Whirlwind.m4a",   // 索菈娜為夥伴的戰鬥曲（ver -837，Ray 指定）
   bgm_lose:      "resources/audio/bgm/bgm_missionfailed.m4a", // 任務失敗（驅逐失敗插入起播）
   bgm_result:    "resources/audio/bgm/bgm_result.m4a",      // 結算（驅逐完成頁被點掉後起播）
   bgm_boss:      "resources/audio/bgm/bgm_boss.m4a",        // Boss 戰（點下迎擊起播）

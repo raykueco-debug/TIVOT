@@ -414,6 +414,19 @@ export const SFX = {
        config 的 tuning.voiceKeys 那一份名單，判斷歸屬是呼叫端的事。 */
   playVoice(src, vol){ playSrc(src, vol, true); },
 
+  /* 語音輪播（ver -837，Ray：「有編 1、2 的都是輪播」）：`voice` 欄位寫成陣列＝
+     發動一次換下一支；單支照舊原樣回傳。**唯一的輪播實作**（鐵律 8）——
+     以前 saint 的 coopVoIdx 與 partner 的 voRotIdx 各記一個游標，現在都走這一支。
+     游標以整份清單為鍵（純演出，不進存檔）。 */
+  pickRot(v){
+    if(!Array.isArray(v)) return v;
+    if(!this._rot) this._rot = new Map();
+    const k = v.join('|');
+    const i = this._rot.get(k) || 0;
+    this._rot.set(k, i + 1);
+    return v[i % v.length];
+  },
+
   /* 語音鏈參數（main.js 開機時從 config 的 tuning.voiceChain 推進來）。
      傳 null／不呼叫＝不裝鏈，語音走一般路徑。 */
   setVoiceChain(cfg){ _voice = cfg || null; },

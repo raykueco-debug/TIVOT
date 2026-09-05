@@ -312,7 +312,10 @@ export const ART = {
     smile:        { src:'resources/SI/Sorana_SI_smile.webp',         top:10, bot:1525, fx:0.547 },
     back:         { src:'resources/SI/Sorana_SI_back.webp?v=2',       top:1,  bot:1516, fx:0.533 },  // ver -786 換新圖＋重量取景
     ready:        { src:'resources/SI/Sorana_SI_ready.webp',         top:7,  bot:1521, fx:0.631 },
-    readysmile:   { src:'resources/SI/Sorana_SI_readysmile.webp',    top:7,  bot:1466, fx:0.567 } } },
+    readysmile:   { src:'resources/SI/Sorana_SI_readysmile.webp?v=2', top:6,  bot:1534, fx:0.578 },  // ver -837 換新圖＋重量取景（?v=2：同名覆蓋）
+    /* ver -837（Ray：「我的 tease 也被刪了，找回來」）：從 _originals 的透明版轉回，
+       逐張量（measure_si.py）。腳本還沒有用到它 —— 先掛著備用。 */
+    tease:        { src:'resources/SI/Sorana_SI_tease.webp',         top:7,  bot:1528, fx:0.583 } } },
   /* ⚠ 取景值於 ver -624 **重量**：`Anya_SI_front` 換過圖（舊的留成
      `XAnya_SI_front.webp`）—— §5「換圖一定要重量取景值」。
      ⚠ `flight/index.html` 的 `PORTRAIT.anya` 是同一組數字，改一邊要改另一邊。 */
