@@ -1364,7 +1364,7 @@ function go(to, dir){
     busy=true; showNav(false);
     document.body.classList.remove('town-nav');
     stepSfx();
-    if(!siegeOn()) clock.advance(STEP_MIN);
+    clock.advance(STEP_MIN);          // 戰鬥探索移動也耗時（ver -815，Ray；跨圖同）
     story.veil(true, CUT_MS);
     setTimeout(()=>{ open(map, nd || undefined); }, CUT_MS);
     return;
@@ -1381,10 +1381,10 @@ function go(to, dir){
   busy=true; showNav(false);
   document.body.classList.remove('town-nav');          // 移動中把羅盤收起來
   stepSfx();
-  /* ⚠⚠ **戰鬥地圖不花時間**（ver -584）：「一步 10 分鐘」是**探索**的機制
-     （時間是資源）。城鎮戰是另一個模式 —— 在被禍魘襲擊的城裡跑一趟，
-     時間不該像逛街那樣被記帳。 */
-  if(!siegeOn()) clock.advance(STEP_MIN);
+  /* ⚠⚠ **戰鬥探索中移動也耗時**（ver -815，Ray；推翻 -584 的「戰鬥地圖不花時間」）：
+     「一步 10 分鐘」在城鎮戰一樣記帳 —— 在被禍魘襲擊的城裡跑一趟，時間照樣流逝
+     （也讓夏爾村村戰從黃昏 19:00 隨著移動推進到夜景 20:00）。 */
+  clock.advance(STEP_MIN);
   sceneCut(to);          // 換景走淡入淡出（ver -438，見 sceneCut）
 }
 
