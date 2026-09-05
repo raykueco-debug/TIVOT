@@ -259,6 +259,43 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll){
   fire();
 }
 
+/* ══ 共鬥的黃圈反擊（ver -822，Ray：「共鬥狀態下敵人一出黃圈瞬間就反擊，造成現裝備
+   副武器的攻擊力，100% 命中，分 3 hits，每 hits 隔 0.3 秒」）══
+   總傷＝副武器一次完整反擊 (hits×dmgPerHit×改裝×counterScale)，拆成 3 hits（每 hit≈1/3）。
+   ⚠ 與一般 weaponCounter 的逐武器形態不同（固定 3 hits），另寫一支；由 defense.spawnThreat
+     在共鬥中呼叫（api.coopCounter）。音效／彈殼／反擊點沿用同一套解析。 */
+export function coopCounter(){
+  const w = weaponOf(state.equippedWeapon, storyMode());
+  if(!w || state.over || state.enemyHp<=0) return;
+  const WM = GAME_CONFIG.tuning.weaponMod || {};
+  const modLv = Math.min(prog.weaponMod(state.equippedWeapon), WM.statLv||99);
+  const modMul = 1 + modLv*(WM.perLv||0);
+  const card = (GAME_CONFIG.partners && GAME_CONFIG.partners[state.pickedPartner]) || {};
+  const cs = (card.coop && card.coop.counterScale!=null) ? card.coop.counterScale : 1;
+  const total = Math.max(3, Math.round(w.hits * w.dmgPerHit * modMul * cs));   // 一次完整反擊
+  const per   = Math.max(1, Math.round(total/3));                              // 拆 3 hits
+  /* 音效（同 weaponCounter：船戰覆寫 id>類別，否則武器卡音）。 */
+  const ov = state.weaponSound && (state.weaponSound[state.equippedWeapon] || state.weaponSound[w.cat]);
+  const soundKey = (typeof ov==='string') ? ov : ((ov && ov.key) ? ov.key : w.sound);
+  const se = asset(soundKey), seGain = sfxGain(soundKey);
+  const ship = !!state.weaponSound;
+  const shellOpt = (w.vfx==='burst')  ? (ship ? {sc:2,   down:true} : {sc:1.5, shotgun:true})
+                 : (w.vfx==='single') ? (ship ? {sc:2.5, down:true} : {sl:1.3})
+                 :                      (ship ? {sc:2,   down:true} : {sc:1, dir:1});
+  state.counterPoint = { x:(window.innerWidth||390)*0.5, y:(window.innerHeight||760)*0.4 };
+  for(let i=0;i<3;i++){
+    setTimeout(()=>{
+      if(state.over || state.enemyHp<=0) return;
+      try{ SFX.play(se, seGain); }catch(_){}
+      hap.shot();
+      if(api.ejectCounterShell) api.ejectCounterShell(state.counterPoint.x, state.counterPoint.y, shellOpt);
+      api.enemyDamage(per, true, true, 'counter');   // 靜默扣血（含 overkill/擊殺判定）
+      addCounter(per);
+      api.floatDmg(String(per), (44+Math.random()*12)+'%', '34%', true);
+    }, i*300);   // 每 hit 隔 0.3s
+  }
+}
+
 /* ============================================================================
  *  雙槍破防（獎勵射擊窗口）
  * ----------------------------------------------------------------------------

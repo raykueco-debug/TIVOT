@@ -176,12 +176,13 @@ function endCoop(){
   state.coopUntil = 0;
   if(api.coopImmune) api.coopImmune(0);                // 關無敵窗
   const g=$('grid'); if(g) g.classList.remove('coop');
-  /* 共鬥時間結束的語音（ver -818，Ray）——只在**時間到／被縮短到 0** 那種「窗結束」時播；
-     戰鬥結束（勝/敗，state.over）不播，免得蓋在結算上。 */
+  /* 共鬥時間結束＝飛刀耗盡（obe，ver -818／-822，Ray）——只在**時間到／被縮短到 0**
+     那種「窗結束」時播；戰鬥結束（勝/敗，state.over）不播，免得蓋在結算上。
+     語音 vo_sorana_obe 與 CI_Sorana_obe 同步（同發動 cut-in 的作法）。 */
   if(!state.over){
-    const card = (GAME_CONFIG.partners && GAME_CONFIG.partners[state.pickedPartner]) || {};
-    const ev = card.coop && card.coop.endVoice;
-    if(ev) SFX.playVoice(asset(ev), sfxGain(ev));
+    const c = ((GAME_CONFIG.partners && GAME_CONFIG.partners[state.pickedPartner]) || {}).coop || {};
+    if(c.endVoice) SFX.playVoice(asset(c.endVoice), sfxGain(c.endVoice));
+    if(c.endCutin) playCutin(()=>{}, c.endName || '', c.endCutin, { noShot:true });
   }
 }
 export function coopActive(){ return !!state.coopMode; }

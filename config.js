@@ -49,7 +49,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.05-821';
+export const VERSION = 'ver 2026.09.05-822';
 
 export const GAME_CONFIG = {
 
@@ -396,7 +396,7 @@ export const GAME_CONFIG = {
       /* 難度加成（ver -805，Ray：「索拉娜為伙伴時，難度系數 +100」）——共鬥的無敵
          讓她好打，評價的 timeK 就 +100（inspector.evaluate 讀，鐵律 1）。 */
       timeKBonus:100,
-      perk:'獵手的共鬥（共鬥/無敵）＋獵手的智慧（上滑 Bullets Rain）＋獵手的直覺（被動）',
+      perk:'獵手的共鬥（共鬥/無敵）＋獵手的智慧（上滑 Bullets Rain）＋獵手的戰吼（被動）',
       /* ══ 共鬥（Predator's Pack）的參數（saint.activateCoop 讀，鐵律 1）══
          無敵秒數 ＝ baseSec × (破防值/100)（下夾 minSec），發動消耗全部破防值、
          每場一次；點錯縮短 wrongShortenSec 秒；敵攻擊自動完美反擊（counterScale 倍）。
@@ -404,7 +404,9 @@ export const GAME_CONFIG = {
       /* 語音（ver -818，Ray）：`voice` 陣列＝發動時輪播（同安雅明晰之夢的輪播）；
          `endVoice`＝共鬥時間結束那一刻播。 */
       coop:{ baseSec:12, minSec:3, wrongShortenSec:1.5, counterScale:1,
-             voice:['vo_sorana_pack','vo_sorana_pack2'], endVoice:'vo_sorana_obe' },
+             voice:['vo_sorana_pack','vo_sorana_pack2'],
+             /* 共鬥結束＝飛刀耗盡（obe，ver -822，Ray）：CI_Sorana_obe＋vo_sorana_obe。 */
+             endVoice:'vo_sorana_obe', endCutin:'ci_sorana_obe', endName:'飛刀耗盡' },
       /* 主動技：**照搬馬季諾的前線補給**（Ray 指定）＝ supplyRefill（立即進入雙槍破防、
          不吃破防值）。上滑手勢（bindBoardActiveSwipe → tryActive('board')）發動，
          只換她自己的名字與 CI。 */
@@ -415,8 +417,10 @@ export const GAME_CONFIG = {
          實作＝ combat.clearBoard 累加 `svPerfectStreak`，滿 `streak` 由 partner.fireEnergyBuff
          開一段 `energyBoostUntil`（addEnergy 讀它 ×`energyMul`）。 */
       /* CI 三張隨機輪播（ver -809，Ray 指定）——發動時 partner.onBoardCleared 隨機挑一張。 */
-      passive:{ key:'perfectStreak', name:'獵手的直覺', en:"Predator's Instinct",
-                streak:3, buffSeconds:10, energyMul:2, voice:null,
+      /* 被動＝獵手的戰吼（ver -822，Ray 定名）：CI 三張輪播＋語音 vo_sorana_roar。
+         ⚠ vo_sorana_roar 的音檔 Ray 尚未交（先寫進來，檔到再轉 m4a＋ASSETS＋fileGain）。 */
+      passive:{ key:'perfectStreak', name:'獵手的戰吼', en:"Predator's Roar",
+                streak:3, buffSeconds:10, energyMul:2, voice:'vo_sorana_roar',
                 cutin:['ci_sorana_roar_renna','ci_sorana_roar_anya','ci_sorana_roar_nouvelle'],
                 desc:'連續三輪完美清盤時發動：10 秒內破防值累積速度加倍，可重覆發動。' },
     },
@@ -2093,6 +2097,7 @@ export const ASSETS = {
   ci_sorana_roar_renna:    "resources/CI/CI_Sorana_roar_Renna.png",
   ci_sorana_roar_anya:     "resources/CI/CI_Sorana_roar_Anya.png",
   ci_sorana_roar_nouvelle: "resources/CI/CI_Sorana_roar_Nouvelle.png",
+  ci_sorana_obe:           "resources/CI/CI_Sorana_obe.png",   // 飛刀耗盡（共鬥結束，ver -822，Ray）
   /* 夢境粉碎（ver -674，Ray 交件）：惡夢化期間上滑的那一發。 */
   ci_anya_dreambreaker: "resources/CI/CI_Anya_Dreambreaker.webp?v=3",   // ver -702：Ray 又換了一版
   /* 惡夢化熔斷（ver -692，Ray 交件 `CI_Anya_OBE`）：倒數槽抽乾的那一結局。 */

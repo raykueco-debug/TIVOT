@@ -260,6 +260,13 @@ export function spawnThreat(){
   state.threats.push(th);
   if(settings.fxOn('alert')) $('grid').classList.add('alert');   // 可關的提示（ver -748）
   if(api.onThreatSpawned) api.onThreatSpawned();   // 教學「首紅點」節點通知（教學外為 no-op）
+  /* ══ 共鬥（Predator's Pack，ver -822，Ray）══ 「只要敵人出黃圈瞬間就反擊」——
+     黃圈一生成就立刻收掉這一顆、由 weapon.coopCounter 打出 3-hit 反擊，敵不發動。
+     ⚠ 稍等 90ms 再收：讓黃圈先畫出來，玩家看得到「出圈瞬間被打掉」。 */
+  if(state.coopMode && api.coopCounter){
+    const _th = th;
+    setTimeout(()=>{ if(state.coopMode && state.threats.indexOf(_th)>=0){ removeThreat(_th); api.coopCounter(); } }, 90);
+  }
 }
 // 從清單移除單一攻擊點
 export function removeThreat(th){

@@ -73,6 +73,7 @@ export function setup(){
   //   ultSuppressed/firstThreatPending：教學暫緩大絕（一次一顆/腳本盤）與首顆固定位
   //   （defense 不 import tutorial，經此轉交）
   defense.init({ enemyAttack, enemyDamage, floatDmg, triggerAtkBuff, weaponCounter: weapon.weaponCounter,
+                 coopCounter: weapon.coopCounter,   // 共鬥：黃圈一出現就打的 3-hit 反擊（ver -822，Ray）
                  resetIntervalDeadline,   // 反擊硬直：被反擊時延時歸零（ver -495，卡上 counterStagger）
                  onThreatSpawned: tutorial.onThreatSpawned,
                  /* ⚠ 一次防禦判完 → **固定模式的副武器歸位一順位**（ver -422，Ray 指定）。
@@ -710,13 +711,9 @@ function enemyAttack(dmg, kind, saintAmt){
     screenShake();
     enemy.showHitFx(fxKind);
     $('redFlash').style.opacity=.35; setTimeout(()=>$('redFlash').style.opacity=0,120);
-    if(kind==='ult' || kind==='block' || kind==='delay'){
-      const card = (GAME_CONFIG.partners && GAME_CONFIG.partners[state.pickedPartner]) || {};
-      const cs = (card.coop && card.coop.counterScale!=null) ? card.coop.counterScale : 1;
-      /* 共鬥自動反擊沒有玩家點的紅點 → 反擊點取畫面中上（敵人區，ver -812）。 */
-      state.counterPoint={x:(window.innerWidth||390)*0.5, y:(window.innerHeight||760)*0.4};
-      weapon.weaponCounter(cs, 1);   // 自動完美反擊（命中率 100% ＝紅圈全額）
-    }
+    /* ⚠ 反擊已移到**黃圈生成那一刻**（ver -822，Ray：「敵人出黃圈瞬間就反擊」）——
+       由 defense.spawnThreat 呼叫 weapon.coopCounter，敵大絕根本發不出來。所以這裡
+       只保留**無敵**（不扣血、不記失誤）當保險，不再在攻擊落地時反擊（免得雙重反擊）。 */
     return;                          // 無敵：不扣血、不記失誤
   }
   /* ══⚠⚠ **失誤計數**（ver -619 補）══ ver -600 定了 `penUlt`／`penBlock`／`penDelay`
