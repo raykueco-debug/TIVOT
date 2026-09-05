@@ -832,6 +832,10 @@
        關掉，直接壓黑）；打掉時另有玻璃碎片落下（.glass-shard）。
      · 免順序時數字沒意義 → 藏起。 */
   #grid.dualwield .cell>span, #grid.overkill .cell>span{opacity:0;}
+  /* 盤底鋪**全黑**（ver -807，Ray：「點掉應該就是全黑背景」）——格間空隙與打掉的格
+     都吃這一層黑，連成一片；打掉的格因此看不出「格」（不再是紫底上的黑方塊）。
+     ⚠ 順手把盤面的聖光暈（drop-shadow）收掉：Ray「不要有光暈」。 */
+  #grid.dualwield, #grid.overkill{background:#000;filter:none;animation:none;}
   /* 每格顯示 bulletsrain 的**自己那一塊**（sprite 切片：整圖放大成 cols×cols 格大，
      再用 background-position 對到本格行列 --col/--row，參數在 combat.buildGrid）——
      底圖切在各格框內、**格間空隙不顯示**（Ray）；已點掉的格黑底、不露底圖。 */
@@ -850,12 +854,15 @@
   .glass-shard{position:absolute;z-index:5;pointer-events:none;
     background:linear-gradient(135deg,#ffffff,#bfe6ff 55%,#7fb8e0);
     clip-path:polygon(0 0,100% 22%,72% 100%,8% 68%);
-    opacity:.95;filter:drop-shadow(0 1px 2px rgba(120,200,255,.55));
-    animation:shardFall .8s cubic-bezier(.35,.15,.7,1) forwards;}
+    opacity:.98;filter:drop-shadow(0 1px 3px rgba(120,200,255,.6));
+    animation:shardFall .85s cubic-bezier(.2,.55,.5,1) forwards;}
+  /* ver -807：先往外＋往上「炸開」（--pop 上、--dx 更寬）再帶重力落下 → 更劇裂。 */
+  /* ⚠ **往 viewer 噴的感覺**（ver -807，Ray）：飛出那一瞬間碎片放大（scale 0.5→1.8＝
+     像飛到鏡頭前），之後落遠再縮小（→0.7）淡出。 */
   @keyframes shardFall{
-    0%{transform:translate(0,0) rotate(0deg);opacity:.95;}
-    16%{transform:translate(calc(var(--dx)*.22),calc(var(--fall)*-.06)) rotate(calc(var(--rot)*.2));}
-    100%{transform:translate(var(--dx),var(--fall)) rotate(var(--rot));opacity:0;}}
+    0%{transform:translate(0,0) rotate(0deg) scale(.5);opacity:1;}
+    14%{transform:translate(calc(var(--dx)*.45),var(--pop)) rotate(calc(var(--rot)*.28)) scale(1.8);opacity:1;}
+    100%{transform:translate(var(--dx),var(--fall)) rotate(var(--rot)) scale(.7);opacity:0;}}
   /* 攻擊加倍 buff 盤面金框 */
   #grid.buffed .cell{border-color:var(--gold);}
   #grid.buffed{filter:drop-shadow(0 0 8px var(--gold));}

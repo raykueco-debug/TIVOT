@@ -317,19 +317,21 @@ function advanceExpectPastCleared(){
 function glassShards(cell){
   const grid=$('grid'); if(!grid||!cell) return;
   const gx=cell.offsetLeft+cell.offsetWidth/2, gy=cell.offsetTop+cell.offsetHeight/2;
-  const n=4+(Math.random()*3|0);   // 4~6 片
+  const cw=cell.offsetWidth, ch=cell.offsetHeight;
+  const n=9+(Math.random()*5|0);   // 9~13 片（ver -807：噴更多、更劇裂）
   for(let i=0;i<n;i++){
     const s=document.createElement('div'); s.className='glass-shard';
-    const sz=4+Math.random()*7;
-    s.style.left=(gx+(Math.random()-0.5)*cell.offsetWidth*0.6)+'px';
-    s.style.top =(gy+(Math.random()-0.5)*cell.offsetHeight*0.4)+'px';
-    s.style.width=sz.toFixed(1)+'px'; s.style.height=(sz*(0.7+Math.random()*0.8)).toFixed(1)+'px';
-    s.style.setProperty('--dx', ((Math.random()-0.5)*46).toFixed(0)+'px');
-    s.style.setProperty('--fall', (grid.clientHeight - gy + 24).toFixed(0)+'px');
-    s.style.setProperty('--rot', ((Math.random()-0.5)*720|0)+'deg');
-    s.style.animationDelay=(Math.random()*0.06).toFixed(2)+'s';
+    const sz=3+Math.random()*11;                       // 大小差更大（碎屑～大塊）
+    s.style.left=(gx+(Math.random()-0.5)*cw*0.7)+'px';
+    s.style.top =(gy+(Math.random()-0.5)*ch*0.5)+'px';
+    s.style.width=sz.toFixed(1)+'px'; s.style.height=(sz*(0.5+Math.random()*0.9)).toFixed(1)+'px';
+    s.style.setProperty('--dx',  ((Math.random()-0.5)*cw*1.5).toFixed(0)+'px');   // 往兩側噴更開
+    s.style.setProperty('--pop', (-(12+Math.random()*46)).toFixed(0)+'px');       // 先往上炸一下
+    s.style.setProperty('--fall',(grid.clientHeight - gy + 30).toFixed(0)+'px');  // 再落到盤底
+    s.style.setProperty('--rot', ((Math.random()-0.5)*1100|0)+'deg');             // 轉更多
+    s.style.animationDelay=(Math.random()*0.05).toFixed(2)+'s';
     grid.appendChild(s);
-    setTimeout(()=>s.remove(), 950);
+    setTimeout(()=>s.remove(), 1000);
   }
 }
 

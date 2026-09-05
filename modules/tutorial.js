@@ -373,6 +373,15 @@ export function onBoardProgress(cleared){
       return;
     }
   }
+  /* ══ BR（雙槍破防／bulletsrain）教學提前（ver -807，Ray：「教學的破防改成該盤面
+     打完第二發就觸發」）══ 該盤打掉第二格就填滿破防值 → onEnergyFull → dualReady 引導
+     （破防教學早點來、也方便測 BR）。⚠ 走與削血保底同一條路（dualForce 解封頂
+     ＋ fillEnergy），所以 onEnergyFull 那邊的收尾（撤反擊殘步）自然一致。 */
+  if(!dualGuideDone && cleared >= 2){
+    dualForce = true;                       // 解除 preFullEnergy 封頂
+    if(api.fillEnergy) api.fillEnergy();    // 滿值瞬間 → onEnergyFull → dualReady
+    return;
+  }
   const st = CFG().strike || {};
   if(state.boardIndex===3 && cleared >= (st.afterCells||8)) fire('strike');
 }
