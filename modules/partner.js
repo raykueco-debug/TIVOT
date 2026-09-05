@@ -290,6 +290,10 @@ export function onBoardCleared(clean){
     fire();
     if(state.over) return;
     api.resetEnemyTimers(); api.scheduleUlt();
+    /* 伙伴被動發動後標示當前應點格（ver -833，Ray）：獵手的直覺在清盤那一刻發動，
+       cut-in 撤下時下一盤已經擺好（clearBoard → goNextBoard 是同步接著跑的）——
+       指的就是新盤的第一格。走既有的 hintCurrentCell（鐵律 8）。 */
+    if(api.hintCurrentCell) api.hintCurrentCell();
   }, `${pas.name}<span class="cutin-en">${pas.en||''}</span>`, cut);
 }
 /* 「5 秒普攻加倍」的執行體（`lowHpBuff` 與 `firstCounter` 共用，鐵律 8）。 */
@@ -301,8 +305,11 @@ function fireBuff(pas){
     clearTimeout(lowHpTimer);
     lowHpTimer = setTimeout(()=>{ api.setLowHpBuff(false); lowHpTimer=null; }, sec*1000);
     /* 明晰之夢（ver -740）：發動那一刻就把當前應點格指出來 —— 之後每一格
-       由 combat.markNext 接手（它看 lucidActive），一路指到技能結束。 */
-    if(pas.key==='firstCounter' && api.hintCurrentCell) api.hintCurrentCell();
+       由 combat.markNext 接手（它看 lucidActive），一路指到技能結束。
+       ⚠ ver -833 起**兩支被動都指**（Ray：「所有戰鬥中的伙伴主被動…發動後都要
+         標示現在應該點的格子」）—— 高裝藥彈（lowHpBuff）發動那一刻也指一次
+         （只有明晰之夢有後續的全程指引，那是 lucidActive 的事）。 */
+    if(api.hintCurrentCell) api.hintCurrentCell();
     /* 時限視覺（ver -746）：金光從盤底淹起，`sec` 秒到頂＝與上面那顆計時器
        同一刻結束（爆散由 setLowHpBuff(false) 那一端演）。 */
     if(pas.key==='firstCounter' && api.lucidFlood) api.lucidFlood(sec);

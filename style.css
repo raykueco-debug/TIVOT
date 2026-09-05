@@ -888,6 +888,14 @@
        · `#grid.saint` 自己又罩了一層 drop-shadow，把那一圈淡光吃掉。
      所以要一條**權重更高、而且用不同顏色**的規則（1 個 id ＋ 3 個 class）。
      ⚠ 用白光不用金光：整盤都是金的，再加金光還是找不到。 */
+  /* ══ 聖徒化發動的指格也要看得見（ver -833，Ray：「聖徒夢魘共鬥發動後都要標示
+     現在應該點的格子」）══ markNext 的 saintMode 分支**本來就在標**第一格 ——
+     DOM 上有 .next，但被 `#grid.saint .cell` 的金邊（權重贏）蓋到隱形，
+     與 -684 NI 那個病一模一樣。同一帖藥：權重更高、換白光。
+     ⚠ 放在 #grid.ni 那條**之前**：NI 是 saint＋ni 同掛，要讓 ni 的底色贏。 */
+  #grid.saint .cell.next{
+    border-color:#fff;color:#fff;background:#3a3018;
+    animation:niNextPulse .7s infinite alternate;}
   #grid.ni .cell.next{
     border-color:#fff;color:#fff;background:#3a2036;
     animation:niNextPulse .7s infinite alternate;}

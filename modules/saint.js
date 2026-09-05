@@ -157,6 +157,10 @@ function startCoop(sec){
   if(api.coopImmune) api.coopImmune(until);            // 開無敵窗（partner.setImmuneUntil）
   const g=$('grid'); if(g) g.classList.add('coop');
   api.floatDmg(L.battle && L.battle.coopMode || '共鬥','50%','20%',true);
+  /* ⚠ 發動時指一下「現在該點的格子」（ver -833，Ray：「聖徒夢魘共鬥發動後都要
+     標示現在應該點的格子」）—— 共鬥不換盤面，玩家眼前是打到一半的殘局。
+     走既有的 hintCurrentCell（鐵律 8）；只指這一次，之後照盤面自己的提示規則。 */
+  if(api.hintCurrentCell) api.hintCurrentCell();
   clearInterval(coopTimer);
   coopTimer = setInterval(()=>{
     if(state.over || Date.now() >= state.coopUntil) endCoop();
@@ -712,6 +716,10 @@ export function lifeReturnAbort(){
   //   這裡的 finalHpThunk 維持 no-op，不要在兩處各寫一次血（鐵律 7）。
   playSaintCutin('return', ()=>{
     finishSaintMode(()=>{ /* 血量由 lifeReturn handler 設（回滿），這裡不改 */ });
+    /* 伙伴主動技發動後標示當前應點格（ver -833，Ray）：生命歸還收尾是一張全新的
+       一般盤面（buildGrid 剛跑完、盤多半 hint:false）—— 指一下第一格。
+       ⚠ 要在 finishSaintMode **之後**（saintMode 已關、盤已重建，guard 才放行）。 */
+    if(api.hintCurrentCell) api.hintCurrentCell();
   });
   if(api.onSaintEnded) api.onSaintEnded('return');   // 教學終盤掛鉤（非教學 no-op）
 }

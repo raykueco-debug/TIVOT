@@ -287,7 +287,7 @@ export function fitGridSquare(){
 }
 function markNext(){
   state.cells.forEach(c=>c.classList.remove('next'));
-  if(state.saintMode){   // 聖徒化：只提示第一格（本輪聖徒化未接，saintMode 恆 false）
+  if(state.saintMode){   // 聖徒化：只提示第一格（顯示端見 style.css 的 #grid.saint .cell.next，ver -833）
     if(state.expect!==1) return;
     const c0=state.cells.find(c=>+c.dataset.num===state.expect);
     if(c0) c0.classList.add('next');
