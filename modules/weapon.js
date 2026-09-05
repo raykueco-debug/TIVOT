@@ -145,9 +145,13 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll){
   /* 這一場的武器音覆寫（船戰卡）：**id 優先、類別次之**（ver -504，Ray：「數值跟著
      玩家裝備的副武器，音效固定用船戰的」）—— 卡上照類別寫（重機槍/霰彈槍/萊福槍），
      換上任何一把同類的槍都吃得到艦載音；要給特定武器開例外才寫 id。 */
-  const ov = state.weaponSound &&
+  const shipOv = state.weaponSound &&
              (state.weaponSound[state.equippedWeapon] || state.weaponSound[w.cat]);
-  const soundKey = ov ? (ov.key || ov) : w.sound;
+  /* 陸戰（沒有艦載音覆寫時）：讀 config 的 landCounterSound[類別]（ver -816）——
+     只帶 once/after（發射殼音、延遲上膛），不帶 key → 保留武器原音效。 */
+  const ov = shipOv || (GAME_CONFIG.tuning.landCounterSound || {})[w.cat] || null;
+  /* soundKey：字串＝那個鑰匙；物件有 key＝用它；物件沒 key（陸戰額外音）＝保留武器原音效。 */
+  const soundKey = (typeof ov === 'string') ? ov : ((ov && ov.key) ? ov.key : w.sound);
   const soundTimes = (ov && ov.times) ? ov.times : 1;
   /* 卡上 weaponSound 的 `once`（ver -503，Ray：「se_bulletpiece 跟船戰散射武器
      同時播放，但只播一次，不用隨 hit 數增加」）：這一次反擊開火的同一瞬間

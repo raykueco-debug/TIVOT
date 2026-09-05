@@ -49,7 +49,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.05-815';
+export const VERSION = 'ver 2026.09.05-816';
 
 export const GAME_CONFIG = {
 
@@ -1504,7 +1504,7 @@ export const GAME_CONFIG = {
                                          瞬間播，0.2 秒後播 se_weapon_shell，可重疊」）——
                                          `after`＝延遲跟播（weapon.js，同 once 一組機制）。 */
                                       '萊福槍':{ key:'se_weapon_cannon',
-                                                 after:{ key:'se_weapon_shell', delayMs:200 } } },
+                                                 once:'se_weapon_cannonshell' } },
                         /* 船戰的速射砲（機槍反擊）連射間隔（ver -476，Ray：「連射速度
                            調降50%」）：預設 90ms → 180ms。絕對值寫卡上（同敵人卡慣例）。 */
                         counterGapMs:180,
@@ -1586,7 +1586,7 @@ export const GAME_CONFIG = {
                                          瞬間播，0.2 秒後播 se_weapon_shell，可重疊」）——
                                          `after`＝延遲跟播（weapon.js，同 once 一組機制）。 */
                                       '萊福槍':{ key:'se_weapon_cannon',
-                                                 after:{ key:'se_weapon_shell', delayMs:200 } } },
+                                                 once:'se_weapon_cannonshell' } },
                         counterGapMs:180 },
                         /* ⚠ 舊的戰內 talk（好快！／廣域破片砲）於 ver -741 移除 ——
                            Ray 的 stage2 稿把這段改成**戰前**的登場演出
@@ -1600,7 +1600,7 @@ export const GAME_CONFIG = {
                         weaponSound:{ '重機槍':'se_ship_heavygun',
                                       '霰彈槍':{ key:'se_spiltcannon', once:'se_bulletpiece' },
                                       '萊福槍':{ key:'se_weapon_cannon',
-                                                 after:{ key:'se_weapon_shell', delayMs:200 } } },
+                                                 once:'se_weapon_cannonshell' } },
                         counterGapMs:180 },
   },
 
@@ -1703,6 +1703,13 @@ export const GAME_CONFIG = {
          雙槍的掛飾但是**固定不可換**」）—— `perks` 先空著。
          「固定不可換」是它與雙槍掛件的分野：掛件玩家自己換，這個是升上去就定了。 */
     weaponMod: { perLv:0.20, statLv:4, costMul:[0.5, 1, 1.5, 2, 3] },
+    /* 陸戰反擊的「額外音」按類別（ver -816，Ray）——沒有艦載音覆寫（`state.weaponSound`）
+       時才吃：只帶 once/after（發射殼音、延遲上膛），**不帶 key** → 保留武器原音效。
+       實作只有 weapon.weaponCounter 一處（鐵律 8）。
+       ⚠ 散射(霰彈槍)的發射殼音待 Ray 指定音檔，先留空。 */
+    landCounterSound: {
+      '萊福槍': { after:{ key:'se_weapon_riflereload', delayMs:500 } },   // 陸戰高爆：發射後 0.5s 上膛
+    },
     /* ══⚠⚠ **打斷之後指一下正確的格子**（ver -717/-718，Ray：「受擊、點錯以後
        馬上提示正確的格子」→「反擊、格擋成功也顯示下一個正確格，**要爽就要降難度**」）══
        規則收斂成一句：**任何一次把玩家注意力從盤面拉走的事件之後，指一下**。
@@ -1886,7 +1893,10 @@ export const GAME_CONFIG = {
       se_enemy_serpent:2.184,           // ver -500（audio_scan 實測：−20.6 LUFS）
       se_bulletpiece:1.49,              // ver -503（audio_scan 實測：−17.2 LUFS）
       se_spiltcannon:0.62,              // ver -505（audio_scan 實測：−9.7 LUFS，母帶很大聲）
-      se_weapon_cannon:1.29, se_weapon_shell:1.24,   // ver -506（audio_scan 實測：−16.0／−15.7 LUFS）
+      se_weapon_cannon:0.76,           // ver -816 更新素材（BS.1770 實測 −11.4 LUFS；-506 舊值 1.29）
+      se_weapon_cannonshell:1.17,      // ver -816（BS.1770 實測 −15.2 LUFS）
+      se_weapon_riflereload:1.26,      // ver -816（BS.1770 實測 −15.8 LUFS）
+      se_weapon_shell:1.24,            // ver -506（audio_scan 實測 −15.7 LUFS；-816 起未用）
       se_dart_fail:2.792,
       /* ── 劇情／城鎮（這一批以前完全沒有增益，見上面的說明）── */
       se_steps:7.198, se_walk:4.481, se_fall:3.724, se_punch:1.596,
@@ -2257,8 +2267,10 @@ export const ASSETS = {
   se_buy:            "resources/audio/se/se_buy.m4a",       // 商店結帳（ver -499，Ray 交件）
   se_bulletpiece:    "resources/audio/se/se_bulletpiece.m4a",   // 船戰散射的彈幕聲（ver -503，兩支素材混剪）
   se_spiltcannon:    "resources/audio/se/se_spiltcannon.m4a",   // 船戰散射的發射音（ver -505，Ray 交件）
-  se_weapon_cannon:  "resources/audio/se/se_weapon_cannon.m4a",   // 船戰單擊砲發射音（ver -506，Ray 交件）
-  se_weapon_shell:   "resources/audio/se/se_weapon_shell.m4a",    // 砲彈殼落地（發射 0.2 秒後跟播）
+  se_weapon_cannon:  "resources/audio/se/se_weapon_cannon.m4a?v=2",   // 船戰高爆(爆發型)發射音（ver -816 Ray 更新素材）
+  se_weapon_cannonshell: "resources/audio/se/se_weapon_cannonshell.m4a",  // 船戰高爆的彈殼音（發射同時，ver -816）
+  se_weapon_riflereload: "resources/audio/se/se_weapon_riflereload.m4a",  // 陸戰高爆發射後 0.5s 上膛音（ver -816）
+  se_weapon_shell:   "resources/audio/se/se_weapon_shell.m4a",    // 砲彈殼落地（舊船戰高爆跟播音，-816 起未用）
   se_healing:        "resources/audio/se/se_healing.m4a",   // 使用回復道具（ver -499，Ray 交件）
   /* 旅店「回房睡覺」（ver -430，Ray 交件）。⚠⚠ **淡出至黑的長度就是這支的長度** ——
      不要在別處寫一個秒數（鐵律 7）：`modules/inn.js` 問 `SFX.duration()` 拿實測值。
