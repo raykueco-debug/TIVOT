@@ -167,7 +167,6 @@ JOBS = [{
     # ⚠ 正俯視（unsquash 1.0，同北方泊地）。高度直接吃 Ray 的灰階圖 `hsrc`（水=黑=0、
     #   祭壇塔=最亮=最高），不從插畫顏色推。
     # ⚠ 「不要太大片」→ planW 小（村莊）；「縮小再放大像素化」→ maxdim 壓低。
-    # ⚠ cv2 未就緒 → nomass（先出 plan/height；量體之後補）。
     # ⚠ planRot 待 3D 對齊地形湖水（Ray：「北向貼地形現有的湖水，可旋轉調整」）——
     #   先給 0.0，之後對著飛行畫面轉。mx/my/planW/planRot **必須與 index.html 的
     #   SETTLEMENTS 一致**。
@@ -175,7 +174,6 @@ JOBS = [{
     'hsrc': 'Shinier_topdown_height.png',
     'unsquash': 1.00,
     'maxdim': 200,
-    'nomass': True,
     'val': 1.50, 'sat': 0.95,   # ver -829：Ray「太黑跟坨大便一樣」→ 大幅提亮
 
     'dst': 'shinier_plan.webp',
