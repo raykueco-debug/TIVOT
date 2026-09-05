@@ -118,6 +118,7 @@ export function setup(){
        weapon 那一支已成空殼 —— 這一條留著，日後「開火就觸發」的被動可以接回去。 */
     onCounter: partner.onCounter,
     ejectCounterShell: enemy.ejectCounterShell,   // 反擊開火時從反擊點噴彈殼（ver -812）
+    throwDagger: enemy.throwDagger,               // 共鬥反擊的飛刀（ver -839；命中時刻由 enemy 唯一決定）
   });
   // 聖徒化：combat 為協調者，把 combat/defense/partner 的原語打包注入 saint，
   //   saint 不直接 import 其他業務模組（維持 §2 依賴方向）。改血一律走本檔 HP API（Part A）。
@@ -270,8 +271,15 @@ function buildGrid(){
        日後任何要墊在數字後面的效果都有現成的夾層；textContent 讀取照樣穿透。 */
     c.className='cell'; c.dataset.num=num; c.style.fontSize=fs+'px';
     /* 這一格在盤面的行列（append 序＝格線填格序）→ 碎玻璃底圖的切片位置。 */
-    c.style.setProperty('--col', state.cells.length % state.cols);
-    c.style.setProperty('--row', (state.cells.length / state.cols)|0);
+    const _col = state.cells.length % state.cols, _row = (state.cells.length / state.cols)|0;
+    c.style.setProperty('--col', _col);
+    c.style.setProperty('--row', _row);
+    /* 裂紋輻射的逐格延遲（ver -839，Ray：「破防/ovk 時讓裂紋底圖從中心快速不規則
+       輻射出去，0.3 秒跑完」）：離盤心越遠越晚出＋一點抖動（「不規則」），
+       0.2s 內鋪完＋0.1s 的單格動畫＝0.3 秒跑完。CSS 端見 crackIn。 */
+    { const cc=(state.cols-1)/2;
+      const d=Math.hypot(_col-cc,_row-cc)/Math.max(0.001,Math.hypot(cc,cc));
+      c.style.setProperty('--cd', (d*0.14+Math.random()*0.06).toFixed(3)+'s'); }
     const sp=document.createElement('span'); sp.textContent=num; c.appendChild(sp);
     let handled=false;
     c.addEventListener('touchstart',e=>{e.preventDefault();handled=true;tap(num,c,e);},{passive:false});
@@ -1350,6 +1358,7 @@ export function resumeFromDialog(){
 let overkillTimer=null;
 function enterOverkillFx(){
   $('grid').classList.add('overkill');            // 數字藍光（見 style.css #grid.overkill）
+  try{ SFX.play(asset('se_glasscrack'), sfxGain('se_glasscrack')); }catch(_){}   // 裂紋輻射音（ver -839）
   SFX.play(asset('sfx_startbt'), sfxGain('sfx_startbt'));   // 神楽鈴（StartBT_SE，擊殺這一槍；之後每槍由 enemyDamage 補鈴）
   // 雙槍窗口與敵同亡：殺敵瞬間收窗（endDual 於敵死不重建盤面），追打統一走 overkill 免順序。
   //   否則雙槍 4 秒計時器晚點到期會 buildGrid 憑空生出一整盤新 overkill 盤。

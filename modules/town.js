@@ -1321,7 +1321,8 @@ function leaveDue(n){
   const l = n && n.onLeave; if(!l) return null;
   if(l.flag && prog.hasFlag(l.flag)) return null;
   if(l.need && !prog.hasFlag(l.need)) return null;
-  return (l.lines && l.lines.length) ? l : null;
+  /* ver -839：onLeave 可以**沒有台詞只有整備**（村戰對白搬進戰鬥內之後就是這樣）。 */
+  return ((l.lines && l.lines.length) || l.gear) ? l : null;
 }
 function go(to, dir){
   if(!to) return;
@@ -1343,20 +1344,22 @@ function go(to, dir){
   if(lv){
     busy=true; showNav(false);
     if(chatterOn){ story.hideBubble(); chatterOn=false; }
-    const play=lv.lines.map((l,i)=> (i===0 && l && l.delay==null)
+    const play=(lv.lines||[]).map((l,i)=> (i===0 && l && l.delay==null)
       ? Object.assign({}, l, { delay:SLIDE_MS }) : l);
-    story.playAdhoc(play, ()=>{ story.clearCast();
+    /* ══ 戰前強制整備（ver -838/-839）══ onLeave 帶 `gear:{partner,msg,lock}` ＝
+       （台詞演完）先開整備頁（夥伴欄聚光燈＋提示；lock＝其他搭檔鎖住），
+       **收掉才放行移動** —— gear.onceClosed 是那一頁唯一的收場通知（鐵律 8）。 */
+    const fin=()=>{
       if(lv.flag) prog.addFlags([lv.flag]);        // ⚠ 演完才記（同所有城鎮段落）
-      /* ══ 戰前強制整備（ver -838，Ray：「戰鬥開始前強制開整備畫面，高光伙伴欄，
-         提示此場戰鬥由索拉娜搭檔出擊」）══ onLeave 帶 `gear:{partner,msg}` ＝
-         對白演完先開整備頁（夥伴欄聚光燈＋提示），**收掉才放行移動** ——
-         gear.onceClosed 是那一頁唯一的收場通知（鐵律 8）。 */
       if(lv.gear){
-        gear.open({ guidePartner:true, guideMsg:lv.gear.msg, forcePartner:lv.gear.partner });
+        gear.open({ guidePartner:true, guideMsg:lv.gear.msg,
+                    forcePartner:lv.gear.partner, lockPartner:!!lv.gear.lock });
         gear.onceClosed(()=>{ busy=false; go(to, dir); });
         return;
       }
-      busy=false; go(to, dir); }, { sides:lv.sides });
+      busy=false; go(to, dir); };
+    if(!(lv.lines && lv.lines.length)){ fin(); return; }   // 只有整備、沒有台詞（ver -839）
+    story.playAdhoc(play, ()=>{ story.clearCast(); fin(); }, { sides:lv.sides });
     return;
   }
   if(to===SAIL_ID){ setSail(); return; }

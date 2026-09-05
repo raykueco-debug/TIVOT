@@ -274,25 +274,29 @@ export function coopCounter(){
   const cs = (card.coop && card.coop.counterScale!=null) ? card.coop.counterScale : 1;
   const total = Math.max(3, Math.round(w.hits * w.dmgPerHit * modMul * cs));   // 一次完整反擊
   const per   = Math.max(1, Math.round(total/3));                              // 拆 3 hits
-  /* 音效（同 weaponCounter：船戰覆寫 id>類別，否則武器卡音）。 */
-  const ov = state.weaponSound && (state.weaponSound[state.equippedWeapon] || state.weaponSound[w.cat]);
-  const soundKey = (typeof ov==='string') ? ov : ((ov && ov.key) ? ov.key : w.sound);
-  const se = asset(soundKey), seGain = sfxGain(soundKey);
-  const ship = !!state.weaponSound;
-  const shellOpt = (w.vfx==='burst')  ? (ship ? {sc:2,   down:true} : {sc:1.5, shotgun:true})
-                 : (w.vfx==='single') ? (ship ? {sc:2.5, down:true} : {sl:1.3})
-                 :                      (ship ? {sc:2,   down:true} : {sc:1, dir:1});
-  state.counterPoint = { x:(window.innerWidth||390)*0.5, y:(window.innerHeight||760)*0.4 };
+  /* ══ 飛刀（ver -839，Ray：「索拉娜的共鬥反擊特效用的是飛刀…每次 3 hits，
+     每 0.2 秒 1 hit，射出音效是 se_soranacounter，命中音效是 se_soranacounterhit」）══
+     取代 -822 的武器音＋彈殼：她擲的是飛刀，不是開槍。
+     · 反擊點＝那顆圈（defense 的共鬥分支在收圈前寫進 state.counterPoint）；
+       沒有值才退回畫面中央（保險）。
+     · **傷害與命中音掛在飛刀命中那一刻**（enemy.throwDagger 的 onHit ——
+       時刻由它唯一決定，鐵律 7），不再在擲出那一拍扣血。 */
+  const px=(state.counterPoint&&state.counterPoint.x!=null)?state.counterPoint.x:(window.innerWidth||390)*0.5;
+  const py=(state.counterPoint&&state.counterPoint.y!=null)?state.counterPoint.y:(window.innerHeight||760)*0.4;
   for(let i=0;i<3;i++){
     setTimeout(()=>{
       if(state.over || state.enemyHp<=0) return;
-      try{ SFX.play(se, seGain); }catch(_){}
-      hap.shot();
-      if(api.ejectCounterShell) api.ejectCounterShell(state.counterPoint.x, state.counterPoint.y, shellOpt);
-      api.enemyDamage(per, true, true, 'counter');   // 靜默扣血（含 overkill/擊殺判定）
-      addCounter(per);
-      api.floatDmg(String(per), (44+Math.random()*12)+'%', '34%', true);
-    }, i*300);   // 每 hit 隔 0.3s
+      try{ SFX.play(asset('se_soranacounter'), sfxGain('se_soranacounter')); }catch(_){}   // 射出
+      const onHit=()=>{
+        if(state.over || state.enemyHp<=0) return;
+        try{ SFX.play(asset('se_soranacounterhit'), sfxGain('se_soranacounterhit')); }catch(_){}
+        hap.shot();
+        api.enemyDamage(per, true, true, 'counter');   // 靜默扣血（含 overkill/擊殺判定）
+        addCounter(per);
+        api.floatDmg(String(per), (44+Math.random()*12)+'%', '34%', true);
+      };
+      if(api.throwDagger) api.throwDagger(px, py, onHit); else onHit();
+    }, i*200);   // 每 hit 隔 0.2s（ver -839，Ray 指定）
   }
 }
 
@@ -339,6 +343,7 @@ export function activateDual(){
 // 的 cut-in 撤下後也經注入直接進窗（不吃破防值、不另播雙槍 cut-in）。
 // 聖徒化中不進（「聖徒化期間不能發動雙槍破防」原則的最後一道擋門）。
 export function startDualWindow(){
+  try{ SFX.play(asset('se_glasscrack'), sfxGain('se_glasscrack')); }catch(_){}   // 裂紋輻射音（ver -839，Ray：「破防/ovk…音效 se_glasscrack」）
   if(state.over||state.saintMode||state.dualWield||state.enemyHp<=0) return;   // overkill 中不開窗
   state.dualWield=true;
   $('grid').classList.add('dualwield');

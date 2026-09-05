@@ -608,10 +608,31 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose, opts){
          只有 `spk.follow` 有料才演（evaluation.js 的 INTRUDE）。 */
       if(spk && spk.follow){
         const f = spk.follow;
+        /* 先把亂入那張圖抓來解碼（換場那一刻才載會閃白）。 */
+        if(f.portrait){ const wi=new Image(); wi.src=f.portrait; }
         _inspFollowTimer = setTimeout(()=>{
-          if(f.portrait){ portrait.src = f.portrait; portrait.style.display='block'; }
-          if(f.name) nameEl.textContent = f.name;
-          typeInspectorLine(lineEl, f.text || '', 1600);
+          /* ══ 水平抽卡（ver -839，Ray：「索拉娜亂入用水平抽卡特效」）══
+             舊立繪往左抽走 → 換圖換名 → 新的一張從右滑入 —— §6.5「同側換人＝
+             抽牌輪轉」的語彙，這裡是同一個 img 的兩段動畫。 */
+          let swapped=false;
+          const swap=()=>{
+            if(swapped) return; swapped=true;
+            if(f.portrait){ portrait.src = f.portrait; portrait.style.display='block'; }
+            if(f.name) nameEl.textContent = f.name;
+            typeInspectorLine(lineEl, f.text || '', 1600);
+            try{ portrait.animate(
+              [ { transform:'translateX(46%)', opacity:0 },
+                { transform:'translateX(0)',   opacity:1 } ],
+              { duration:240, easing:'ease-out' }); }catch(_){}
+          };
+          try{
+            const out=portrait.animate(
+              [ { transform:'translateX(0)',    opacity:1 },
+                { transform:'translateX(-46%)', opacity:0 } ],
+              { duration:180, easing:'ease-in' });
+            out.onfinish=swap;
+            setTimeout(swap, 400);   // 保險：onfinish 沒到也要換（swap 冪等）
+          }catch(_){ swap(); }
         }, 2000 + (f.delayMs!=null ? f.delayMs : 900));
       }
     }, Math.max(sweepDone, 1100));

@@ -49,7 +49,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.05-838';
+export const VERSION = 'ver 2026.09.05-839';
 
 export const GAME_CONFIG = {
 
@@ -394,6 +394,7 @@ export const GAME_CONFIG = {
     sorana: {
       name:'索菈娜',
       image:'partner_sorana',
+      selectVoice:'vo_sorana_pack',   // 選人確認音（ver -839，Ray 指定）
       siFit:{ zoom:1.6, top:0.01 },   // 估（同諾薇兒/安雅）；Ray 交專用選人立繪再重量
       cutin:'ci_sorana_predator',     // 共鬥的變身 cut-in
       voice:null,
@@ -918,6 +919,12 @@ export const GAME_CONFIG = {
            可以整幕覆寫」的同一個情形。船塢那一幕（`sides:{RENNA:'R'}`）已經把她擺右，
            這裡跟著同一個安排，玩家的空間記憶才連得起來。 */
       renna:     { name:'蕾娜',   image:'tut_renna',       side:'right', fit:{ zoom:0.92, drop:6 } },
+      /* 夏爾村村戰的戰鬥內對白（ver -839）：索菈娜站左（搭檔側，ART.sorana.mirror
+         會自己翻），村民村長站右（對面的人在右）。 */
+      sorana:      { name:'索菈娜', image:'tut_sorana',       side:'left',  fit:{ zoom:0.92, drop:6 } },
+      sh_villager: { name:'村民',   image:'tut_sh_villager',  side:'right', fit:{ zoom:0.92, drop:6 } },
+      sh_villager2:{ name:'村民',   image:'tut_sh_villager2', side:'right', fit:{ zoom:0.92, drop:6 } },
+      sh_chief:    { name:'村長',   image:'tut_sh_chief',     side:'right', fit:{ zoom:0.92, drop:6 } },
       /* 安雅（ver -671，禍魘娜塔莉戰）。⚠ 站**右**（`speakers.js` 的本位）——
          她與蕾娜同台時蕾娜本來就在右…… 所以這一場**蕾娜讓到左**：
          §6.5 的表「蕾娜原則右，碰到安雅就放左」。 */
@@ -1275,7 +1282,20 @@ export const GAME_CONFIG = {
        ⚠ 祭壇那格（`sv_altar`）是「最硬的一般格」，**不是 sessionEnd**（打不打隨
          玩家，走西側直接到野外可跳過）。 */
     sv_beast: { enemy:['sv_wolf_pack','sv_beast_organ','sv_stag','sv_beast_shackle'],
-                session:'shinier_siege' },
+                session:'shinier_siege',
+                /* ══ 村民的戰前對白（ver -839，Ray：「進入第一場戰鬥以後才發生，
+                   有背景，有怪才開始對話」）══ 掛 battleStart（§6.5.2 的 talk）——
+                   拓撲上第一場一定是東側（索菈娜家唯一的出口），talkOnce 打贏才記
+                   → 其餘格的 sv_beast 不再重講。立繪走 tutPortraits（抄 ART）。 */
+                talk:[ { trigger:'battleStart', talkOnce:'sv_siege_talk', lines:[
+                  { who:'sh_villager',  img:'tut_sh_villager',    text:'是……是獸骸！' },
+                  { who:'sh_chief',     img:'tut_sh_chief',       text:'！！' },
+                  { who:'sh_chief',     img:'tut_sh_chief',       text:'擋下來！絕不能讓牠們踏進村子一步！' },
+                  { who:'sh_villager2', img:'tut_sh_villager2',   text:'不行！太多了！' },
+                  { who:'sh_chief',     img:'tut_sh_chief',       text:'可惡！' },
+                  { who:'sorana',       img:'tut_sorana_guardtalk', text:'盡量別殺！往森林裡趕！' },
+                  { who:'sorana',       img:'tut_sorana_ready',   text:'要上了！' },
+                ]} ] },
     sv_altar: { enemy:'sv_reliquary', session:'shinier_siege' },
     sv_wild:  { enemy:'sv_bear', session:'shinier_siege', sessionEnd:true },
     /* ══⚠⚠ 瓦礫中的紫黑之爪 ＝ **聖徒化教學戰**（ver -595，Ray 交稿）══
@@ -1951,6 +1971,8 @@ export const GAME_CONFIG = {
       /* ── 音樂 ── */
       bgm_mainmenu:1.735, bgm_battle:0.849, bgm_boss:0.665, bgm_result:0.855,
       peritune_whirlwind:0.97,   // 索菈娜戰鬥曲（ver -837 實測 −13.5 LUFS）
+      se_soranacounter:1.47, se_soranacounterhit:1.04,   // 飛刀射出/命中（ver -839 實測；hit 峰值夾）
+      se_glasscrack:1.94,   // 裂紋輻射（ver -839 實測 −19.5 LUFS）
       bgm_missionfailed:1.995, bgm_capital_day:1.213, bgm_lunaria:1.230,
       peritunematerial_crisis_loop:1.077,
       /* 北方泊地那兩首（ver -624 補量，audio_scan 實測 −16.7／−12.7 LUFS）。 */
@@ -2118,6 +2140,12 @@ export const ASSETS = {
   ci_sorana_roar_anya:     "resources/CI/CI_Sorana_roar_Anya.webp",
   ci_sorana_roar_nouvelle: "resources/CI/CI_Sorana_roar_Nouvelle.webp",
   ci_sorana_obe:           "resources/CI/CI_Sorana_obe.webp",   // 飛刀耗盡（共鬥結束，ver -822）
+  /* 共鬥反擊的飛刀（ver -839，Ray 交件 weapon/dagger）：黑底光暈圖，畫面上走
+     mix-blend-mode:screen（黑自然消失，同星芒那條的理由）。刀尖朝下＝畫的 +90°。 */
+  vfx_dagger:         "resources/weapon/dagger.webp",
+  se_soranacounter:    "resources/audio/se/se_soranacounter.m4a",     // 飛刀射出（ver -839）
+  se_soranacounterhit: "resources/audio/se/se_soranacounterhit.m4a",  // 飛刀命中
+  se_glasscrack:       "resources/audio/se/se_glasscrack.m4a",        // 破防/ovk 裂紋輻射（ver -839）
   /* 夢境粉碎（ver -674，Ray 交件）：惡夢化期間上滑的那一發。 */
   ci_anya_dreambreaker: "resources/CI/CI_Anya_Dreambreaker.webp?v=3",   // ver -702：Ray 又換了一版
   /* 惡夢化熔斷（ver -692，Ray 交件 `CI_Anya_OBE`）：倒數槽抽乾的那一結局。 */
@@ -2432,7 +2460,10 @@ export const ASSETS = {
      預載多抓幾十張圖（`main.js` 是走 `Object.keys(ASSETS)` 的）。
    ⚠ 加一句新台詞要用新差分時，在這裡補一筆就好，取景值會自己跟著來。 */
 (function tutPortraits(){
-  const need = { nouvelle:['steady','run'], renna:['shocked','run'] };
+  const need = { nouvelle:['steady','run'], renna:['shocked','run'],
+                 /* ver -839：夏爾村村戰的戰鬥內對白。 */
+                 sorana:['guardtalk','ready'],
+                 sh_villager:[], sh_villager2:[], sh_chief:[] };
   for(const who in need){
     const A = ART[who]; if(!A) continue;
     ASSETS['tut_'+who] = A.base;

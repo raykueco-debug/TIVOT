@@ -207,7 +207,8 @@ function render(){
     +     (SP.length>1
             ? '<div class="gs-ptabs">'+SP.map(k=>{
                 const pp=GAME_CONFIG.partners[k]||{};
-                return '<button class="gs-ptab'+(k===pk?' on':'')+'" data-pk="'+k+'"'
+                const lk=(lockedTo && k!==lockedTo);
+                return '<button class="gs-ptab'+(k===pk?' on':'')+(lk?' gs-plock':'')+'" data-pk="'+k+'"'
                      + ' type="button">'+(pp.name||k)+'</button>';
               }).join('')+'</div>'
               /* 確認鈕（ver -743；-747 Ray：「當前伙伴也要顯示確認鈕，寫『已配對』」）
@@ -246,6 +247,10 @@ function render(){
    ⚠ 遮罩 `pointer-events:none`：**什麼都不擋**（§6.5.5 的教訓：說明不是鎖），
    「指的是這一欄」交給金光。收場：點提示文字／按下確認／關頁。 */
 let guideEls=null;
+/* 鎖定搭檔（ver -839，Ray：「本場戰鬥強制索拉娜出戰，所以另外兩位伙伴不能選」）：
+   開頁帶 lockPartner ＝其他頁籤鎖住 —— **看得到、按不動**（§6.5.5 不藏鈕），
+   按下去浮一句回饋。close() 歸零（這是「這一次開頁」的狀態，不進存檔）。 */
+let lockedTo=null;
 function openGuide(msg){
   if(!el || guideEls) return;
   const tgt=el.querySelector('.gs-ptabs') || el.querySelector('.gs-pcard');
@@ -299,6 +304,7 @@ function bind(){
   el.querySelectorAll('.gs-ptab').forEach(b=>b.addEventListener('click', e=>{ e.stopPropagation();
     const k=b.dataset.pk;
     if(!GAME_CONFIG.partners[k]) return;
+    if(lockedTo && k!==lockedTo){ gsNote('本場戰鬥由'+((GAME_CONFIG.partners[lockedTo]||{}).name||'')+'出擊'); return; }   // ver -839 鎖定
     try{ SFX.menuClick(); }catch(_){}
     pendingPartner = (k===partner.storyPartnerKey()) ? null : k;
     render();
@@ -497,6 +503,7 @@ export function open(opts){
   /* 劇情強配（ver -838，夏爾村戰前的強制整備）：`opts.forcePartner` 先寫進
      loadout（唯一真相）——storyPartnerKey 之後自然回她，頁面顯示的就是她。 */
   if(opts && opts.forcePartner && GAME_CONFIG.partners[opts.forcePartner]) load.setPartner(opts.forcePartner);
+  lockedTo = (opts && opts.lockPartner && opts.forcePartner) || null;   // ver -839：其他搭檔鎖住
   const pk=partner.storyPartnerKey();
   if(GAME_CONFIG.partners[pk] && state.pickedPartner!==pk) setPickedPartner(pk);
   render();
@@ -515,6 +522,7 @@ export function open(opts){
 export function close(){
   closeGuide();          // 教學聚光燈跟著頁一起收（ver -743）
   pendingPartner=null;
+  lockedTo=null;         // 鎖定不跨開關（ver -839）
   if(!el) return;
   closeTip();
   if(document.body.classList.contains('flight-on') && window.__flightHoldToggle) window.__flightHoldToggle(false);

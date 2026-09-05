@@ -210,6 +210,41 @@ export function ejectShell(cell){
      · 陸戰＝**往旁邊斜上噴、等速不減速、平滑弧線落下**（ver -813，Ray：「不減速不轉折
        畫一個弧落下」）——彈道拋物線由 el.animate 逐格算出、linear 播放：水平等速
        （不減速）、垂直先上後下的重力弧（不轉折）。 */
+/* ══ 索菈娜共鬥反擊的飛刀（ver -839，Ray：「發動時從畫面外射出至反擊圈，刀最好能
+   做一些變型來做角度變化，每次 3 hits，每 0.2 秒 1 hit」）══
+   從畫面外（左右輪替、略低的位置＝索菈娜擲出）直線射向反擊圈：元素 rotate 對齊
+   飛行方向（素材刀尖朝下＝方向 +90°），每一刀隨機起點/尺寸/微傾（「變型」），
+   走 el.animate（linear＝擲出等速）。**命中那一刻**閃一圈 .dagger-hit 並呼叫
+   onHit —— 傷害與命中音的時刻由這裡唯一決定（鐵律 7），呼叫端不自己抓秒數。
+   ⚠ 素材是黑底光暈圖，CSS 走 mix-blend-mode:screen（黑自然消失，同星芒那條）。 */
+const DAGGER_MS = 150;   // 飛行時間（毫秒）
+export function throwDagger(x, y, onHit){
+  const W=window.innerWidth||390;
+  const el=document.createElement('img');
+  el.src=asset('vfx_dagger'); el.className='dagger-fly';
+  const side=((throwDagger._n=((throwDagger._n||0)+1))%2) ? -1 : 1;   // 左右輪替
+  const sx=W/2 + side*(W*0.62+Math.random()*80);
+  const sy=y + 260 + Math.random()*160;
+  const ang=Math.atan2(y-sy, x-sx)*180/Math.PI;
+  const rot=ang-90;                                   // 刀尖朝下＝+90°，轉到飛行方向
+  const wob=Math.random()*26-13;                      // 角度變化
+  const scl=(0.85+Math.random()*0.35).toFixed(2);
+  document.body.appendChild(el);
+  try{
+    el.animate([
+      { transform:'translate('+sx+'px,'+sy+'px) rotate('+(rot+wob)+'deg) scale('+scl+')', opacity:0.85 },
+      { transform:'translate('+x+'px,'+y+'px) rotate('+(rot+wob*0.25)+'deg) scale('+scl+')', opacity:1 },
+    ], { duration:DAGGER_MS, easing:'linear', fill:'forwards' });
+  }catch(_){ el.style.transform='translate('+x+'px,'+y+'px) rotate('+rot+'deg)'; }
+  setTimeout(()=>{
+    if(el.parentNode) el.remove();
+    const hit=document.createElement('div'); hit.className='dagger-hit';
+    hit.style.left=x+'px'; hit.style.top=y+'px';
+    document.body.appendChild(hit);
+    setTimeout(()=>{ if(hit.parentNode) hit.remove(); }, 320);
+    if(onHit) onHit();
+  }, DAGGER_MS);
+}
 export function ejectCounterShell(x, y, opts){
   opts = opts || {};
   const s=document.createElement('div'); s.className='shell'+(opts.shotgun?' shotgun':'');

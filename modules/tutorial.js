@@ -891,8 +891,19 @@ function syncCastFit(step){
   // ⚠ 只套**本段有講話的人**：諾薇兒（劇情版）與芙蕾雅同站左側，左槽只有一個 <img>，
   //   全表掃過去會讓字典順序在後的那個蓋掉真正的說話者（連取景一起蓋錯）。
   const used = new Set((step && step.lines || []).map(l=>l.who));
+  /* ⚠⚠ 同一個槽有**好幾個人**時（ver -839，夏爾村的村民×2＋村長都站右），
+     步首只擺**這一段第一個開口的那一位** —— 全表掃過去會讓字典順序在後的蓋掉
+     真正的第一位（同下面那條「只套本段有講話的人」的理由）。之後的換人由
+     showLine 的抽牌輪轉接手。 */
+  const firstBySlot = {};
+  for(const l of (step && step.lines || [])){
+    if(!l || !l.who) continue;
+    const sd0 = sideOf(l.who);
+    if(!(sd0 in firstBySlot)) firstBySlot[sd0] = l.who;
+  }
   for(const key of Object.keys(cast)){
     if(!used.has(key)) continue;
+    if(firstBySlot[sideOf(key)] !== key) continue;   // 這一槽的第一位才上（ver -839）
     const c = cast[key], el = portraitEl(c, key);
     if(!el) continue;
     el.dataset.baseKey = c.image;   // 鎖縮放用的基準（見 placePortraitX 的說明）
@@ -1042,8 +1053,30 @@ function showLine(){
   // ⚠ 直接換 src，不做淡入淡出——同一角色同一槽的表情切換，淡出會讓她整個人消失一拍。
   if(el){
     const key = line.img || c.image;
-    if(key && el.dataset.imgKey!==key){
+    /* ══⚠⚠ 同槽**換人**＝抽牌輪轉（ver -839，Ray：「村民換人講話時也要比照
+       對話特效」）══ 舊的滑出、新的滑入（§6.5「不可以就地把 src 換掉」）——
+       同一個人的**表情差分**照舊直接換 src（下面原本那條註解），這一條只管
+       「人變了」。0.45s 過場的 45% 時點換圖，同 story 的作法。 */
+    /* ⚠ 上一次的換牌還在路上（200ms 的排程）就被更快的推進打斷 —— 先取消並把槽
+       復原（.in 加回去），否則舊人滑出去、新人永遠沒進來（§6.5「延後執行的上場，
+       撤場要能取消」的同族坑；實測快速連點就會出現空槽）。 */
+    if(el._swapT){ clearTimeout(el._swapT); el._swapT=null; el.classList.add('in'); }
+    const changedChar = el.dataset.castKey && el.dataset.castKey !== line.who;
+    if(key && el.dataset.imgKey!==key && changedChar && el.classList.contains('in')){
+      el.classList.remove('in');
+      clearTimeout(el._swapT);
+      const sd0 = sideOf(line.who);
+      el._swapT = setTimeout(()=>{
+        el.dataset.imgKey = key; el.dataset.castKey = line.who;
+        el.src = asset(key);
+        applyMirror(el, line.who); placePortraitX(el, sd0);
+        el.onload = ()=>{ el.onload=null; placePortraitX(el, sd0); };
+        void el.offsetWidth; el.classList.add('in');
+      }, 200);
+    }
+    else if(key && el.dataset.imgKey!==key){
       el.dataset.imgKey = key;
+      el.dataset.castKey = line.who;
       el.src = asset(key);
       /* ⚠ 換圖必須重排橫向：每張差分的臉位置不同（見 placePortraitX）。
          先用規格比例排一次（不等載入＝不閃），載好再排一次修正真實寬高比。
@@ -1056,6 +1089,7 @@ function showLine(){
       placePortraitX(el, sd);
       el.onload = ()=>{ el.onload=null; placePortraitX(el, sd); };
     }
+    else if(el.dataset.castKey !== line.who){ el.dataset.castKey = line.who; }
   }
   // 全畫面 cut-in（line.cutin＝ASSETS 鍵）：先演完再打字，否則字被 cut-in（z8100）蓋住白打。
   if(line.cutin && cutinLine!==lineIdx){

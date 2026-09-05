@@ -265,7 +265,12 @@ export function spawnThreat(){
      ⚠ 稍等 90ms 再收：讓黃圈先畫出來，玩家看得到「出圈瞬間被打掉」。 */
   if(state.coopMode && api.coopCounter){
     const _th = th;
-    setTimeout(()=>{ if(state.coopMode && state.threats.indexOf(_th)>=0){ removeThreat(_th); api.coopCounter(); } }, 90);
+    setTimeout(()=>{ if(state.coopMode && state.threats.indexOf(_th)>=0){
+      /* 反擊點＝**這顆圈**（ver -839：飛刀要射到反擊圈）——收掉之前先記
+         （同 resolveThreat 那一行，鐵律 7：counterPoint 的來源就是圈）。 */
+      try{ const rr=_th.el.getBoundingClientRect();
+           state.counterPoint={x:rr.left+rr.width/2, y:rr.top+rr.height/2}; }catch(_){}
+      removeThreat(_th); api.coopCounter(); } }, 90);
   }
 }
 // 從清單移除單一攻擊點
