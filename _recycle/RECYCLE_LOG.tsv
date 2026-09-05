@@ -46,3 +46,4 @@ when	from	to	reason
 20260905-112509	resources/enemy/mon_beast_reliquary.webp	_recycle/resources/enemy/mon_beast_reliquary.webp	白底原形，換 GPT 加工 alpha 版
 20260905-112744	resources/enemy/mon_beast_shackle.webp	_recycle/resources/enemy/mon_beast_shackle.webp	白底原形，換 GPT 加工 alpha 版
 20260905-113056	resources/enemy/mon_bear_husk.webp	_recycle/resources/enemy/mon_bear_husk.webp	白底原形，換 GPT 加工 alpha 版
+20260905-164527	resources/CI/CI_Sorana_supply.webp	_recycle/resources/CI/CI_Sorana_supply.webp	CI_Sorana_supply 是過渡圖，Ray 指定不進版控（ver -820）
