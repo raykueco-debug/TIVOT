@@ -823,6 +823,23 @@
     text-shadow:0 0 10px #4fc3ff,0 0 22px rgba(79,195,255,.55);}
   #grid.overkill{animation:overkillPulse .6s infinite alternate;}
   @keyframes overkillPulse{from{filter:drop-shadow(0 0 8px var(--holy))}to{filter:drop-shadow(0 0 18px #7fd4ff)}}
+  /* ══ 無視瞬序的狀態（雙槍彈雨／overkill）：數字移除＋每格隨機龜裂玻璃（ver -805，Ray）══
+     免順序時數字沒意義，改成裂痕更讀得出「隨便點都行」。裂痕的旋轉/鏡射/衝擊點由
+     buildGrid 逐格設的 --crk-* 決定（隨機），狀態開啟時動畫播一次。 */
+  #grid.dualwield .cell>span, #grid.overkill .cell>span{opacity:0;}
+  #grid.dualwield .cell:not(.done)::after, #grid.overkill .cell:not(.done)::after{
+    content:"";position:absolute;inset:0;z-index:3;pointer-events:none;
+    mix-blend-mode:screen;
+    background:
+      radial-gradient(circle at var(--crk-x,50%) var(--crk-y,50%), rgba(255,255,255,.95) 0, rgba(223,243,255,.55) 7%, transparent 15%),
+      var(--crk-glass);
+    background-repeat:no-repeat;background-position:center;background-size:118% 118%;
+    transform:rotate(var(--crk-rot,0deg)) scaleX(var(--crk-flip,1));
+    animation:crazeIn .2s ease-out both;}
+  @keyframes crazeIn{from{opacity:0;transform:rotate(var(--crk-rot,0deg)) scale(.55)}
+    to{opacity:.9;transform:rotate(var(--crk-rot,0deg)) scaleX(var(--crk-flip,1))}}
+  /* 龜裂玻璃貼圖（放射狀裂紋＋兩圈環裂，內嵌 SVG）——藍白，配 overkill/雙槍的聖光色。 */
+  #grid{--crk-glass:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='none' stroke='%23dff3ff' stroke-width='1.2' opacity='.9'%3E%3Cpath d='M50 50 4 4M50 50 90 12M50 50 97 50M50 50 84 92M50 50 46 97M50 50 10 86M50 50 3 44M50 50 16 10M50 50 66 6M50 50 94 72M50 50 28 94M50 50 6 68'/%3E%3Cpolygon points='50 24 70 40 63 68 36 70 28 44'/%3E%3Cpolygon points='50 10 80 30 86 62 64 86 32 88 14 56 20 26'/%3E%3C/g%3E%3C/svg%3E");}
   /* 攻擊加倍 buff 盤面金框 */
   #grid.buffed .cell{border-color:var(--gold);}
   #grid.buffed{filter:drop-shadow(0 0 8px var(--gold));}

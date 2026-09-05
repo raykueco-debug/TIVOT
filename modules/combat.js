@@ -260,6 +260,13 @@ function buildGrid(){
        明晰之夢的計時器最後改成盤外光柱（不壓盤面），這層包裝留著 ——
        日後任何要墊在數字後面的效果都有現成的夾層；textContent 讀取照樣穿透。 */
     c.className='cell'; c.dataset.num=num; c.style.fontSize=fs+'px';
+    /* 龜裂種子（ver -805，Ray：「彈雨/ovk 等無視瞬序的狀態…每一格出現隨機龜裂效果」）——
+       每格一組隨機的旋轉/鏡射/衝擊點；CSS 只在 `#grid.dualwield`／`.overkill` 下顯示，
+       數字同時隱藏（免順序＝數字沒意義）。設一次即可，狀態開時動畫自然播。 */
+    c.style.setProperty('--crk-rot', (Math.random()*360|0)+'deg');
+    c.style.setProperty('--crk-flip', Math.random()<0.5?-1:1);
+    c.style.setProperty('--crk-x', (34+(Math.random()*32|0))+'%');
+    c.style.setProperty('--crk-y', (34+(Math.random()*32|0))+'%');
     const sp=document.createElement('span'); sp.textContent=num; c.appendChild(sp);
     let handled=false;
     c.addEventListener('touchstart',e=>{e.preventDefault();handled=true;tap(num,c,e);},{passive:false});

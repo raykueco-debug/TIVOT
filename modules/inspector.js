@@ -165,7 +165,12 @@ export function evaluate(stats, cfg = GAME_CONFIG.rating){
                + (stats.sawMaxBurst  ? (pen.maxBurst ||0) : 0);
   /* ⚠ 夾在 0 以上：反擊／overkill 夠多時折算會是負的，扣過頭會變成負秒數。 */
   const used = Math.max(0, (stats.clearTime||0) + penSec);
-  let score = Math.max(0, Math.min(100, Math.round(100 - (used/hp) * (cfg.timeK||200))));
+  /* ══ 搭檔難度加成（ver -805，Ray：「索拉娜為伙伴時，難度系數 +100」）══
+     ⚠ 寫在**搭檔卡**上（`timeKBonus`，鐵律 1）——共鬥的無敵讓她好打，評價就要更嚴；
+       日後別的搭檔要加也一樣寫卡，不寫死是誰。 */
+  const pcard = GAME_CONFIG.partners && GAME_CONFIG.partners[state.pickedPartner];
+  const timeK = (cfg.timeK||200) + ((pcard && pcard.timeKBonus) || 0);
+  let score = Math.max(0, Math.min(100, Math.round(100 - (used/hp) * timeK)));
   let grade = cfg.tiers[cfg.tiers.length-1].grade;
   for(const tier of cfg.tiers){ if(score >= tier.min){ grade = tier.grade; break; } }
   /* ══⚠⚠ **整場無傷 ＝ 等第下限**（ver -626，Ray：「無傷基本讓他保證 S」）══

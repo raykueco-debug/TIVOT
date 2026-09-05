@@ -1748,10 +1748,12 @@ export const TOWNS = {
        諾薇兒會來找玩家，強制移動」）══ 同北泊閘門那一套（clockGate）。
        ⚠ 諾薇兒那一句是**我寫的**（Ray 只寫了「諾薇兒會來找玩家」）。 */
     gates: [
-      /* ⚠ 18:00 的 band 是 Dusk（ver -786，Ray：「那就放 dusk，我補」）——索拉娜家
-         補上 `Shinier_soranahouse_dusk` 之後，band 系統在 18:00 自然挑到黃昏圖
-         （Dusk→Day→night 的候選鏈，dusk 存在就用 dusk）。不推時鐘。 */
-      { flag:'sv_evening', need:'sv_arrive', hourOfDay:18,
+      /* ⚠ 18:00 的 band 是 Dusk（ver -786）——索拉娜家補上 `Shinier_soranahouse_dusk`
+         之後，band 系統在這個時段自然挑到黃昏圖（Dusk→Day→night 的候選鏈）。
+         ⚠⚠ **強制回家時把時鐘定在晚上七點**（ver -805，Ray：「據情強制回到索拉娜家時，
+           時間強制為晚上七點」）：`clockTo:19` ＝ advanceToNextHour(19)，觸發點在剛過
+           18:00，所以是**當天 19:00**（clockGate 在演台詞/轉場之前先推）。 */
+      { flag:'sv_evening', need:'sv_arrive', hourOfDay:18, clockTo:19,
         goto:'sorahome', enterAgain:true,
         lines:[ nou('front','找到你了！大家都在索菈娜家等著喔。') ] },
     ],
