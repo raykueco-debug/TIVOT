@@ -1,101 +1,121 @@
-# HANDOFF — 回收區／戰鬥分級／主武器九星／難度下修 ver -696〜-731（2026-09-01，全數已 push）
+# HANDOFF — 彈殼演出／索拉娜共鬥語音／夏爾村嵌圖 ver -803〜-830（2026-09-05，全數已 push）
 
-> 前一份（-539〜-564：破防計量、換槍鈕、紅點觸碰）已被本檔取代；
+> 前一份（-696〜-731：回收區、戰鬥分級、九星、難度下修）已被本檔取代；
 > 檔尾的「教訓／快速測法／背景待辦」是**沿用**的，不隨版次汰換。
+> 目前 HEAD＝`ver 2026.09.05-830`，工作樹只剩並行美術 session 的未提交檔（**不要動**）。
 
 ## 這一批做了什麼
 
-### 1. 回收區（-696）
-`_recycle/` ＋ `tools/recycle.sh` —— **本專案唯一的刪除出口**。
-任何 session 要拿掉或**覆蓋掉**檔案一律走它，不准 `rm`、不准就地蓋掉。
-保留原相對路徑、同名加時間戳、每筆記進 `RECYCLE_LOG.tsv`（**那份紀錄入版控**）。
-⚠ 它與 git 不重疊：git 只保護 commit 過的，回收區保護**還沒 commit 的那一段**
-（起因是 Ray 一張沒進過版控的諾薇兒 OBE 不見了，git 完全幫不上忙）。
+### 1. 彈殼噴出 VFX（-810〜-814）
+彈殼素材：`Shell.png`＋`shotgunshell.png`（已轉 webp）。CSS 在 `style.css` 的 `.shell`
+（`--sc`／`--sl` 兩個縮放變數＋sprite webp）。兩條 keyframe：
+- `shellEject`＝拋物線（上升→頂點→落下，逐格 cubic-bezier 讓**頂點速度＝0** 才平滑）。
+- `shellSide`＝直線斜射（單調，不減速不轉折）。
+- 陸戰彈道反擊走 **JS `el.animate()`**（linear timing＝等速水平），過 (0,0)→(0.30,−apexUp)→(1,dyDown) 共 18 格。
 
-### 2. 戰鬥分級與回檔（-697／-698）
-Ray 定案：「遭遇戰、非劇情戰都用原則；劇情戰都用手動回檔點」。
-- **回檔＝讀一份完整快照**（`save.loadLatest`）——所以「回去之後是初見還是二見」
-  由快照裡的旗標回答，不必判斷。ver -430 的「再戰＝跳回那一幕第 0 句」已推翻。
-- 落點：遭遇戰**引擎自動**（進城／有戰鬥的段落演完）；劇情戰**腳本明寫** `checkpoint:true`，
-  而且那一點必須落在「主角仍可自由行動」處。
-- 防卡死：遭遇戰**連敗三次抬回旅店**（`main.carriedToInn`，先回檔再放人）；
-  劇情戰靠落點規約。特殊戰（`battles[].special`）**一次就送旅店、不回檔**。
-- 非劇情戰死亡**回這張地圖的入口**（進度照留，只有位置回入口）。
-- 詳見憲法 §6.5.2 的新表。
+規則（全部 Ray 逐項定案）：
+- **點格彈殼**（`enemy.ejectShell(cell)`）＝低角度斜上往兩側噴到畫面外，
+  **左排必往左、右排必往右**（`side` 由 cell 對盤面中心算）。
+- **反擊彈殼**（`enemy.ejectCounterShell(x,y,opts)`）從 `state.counterPoint`（威脅生成點）噴出，
+  **逐武器型別**：速射／機槍＝每發一顆一般款；散射／霰彈＝一顆 1.5× 紅殼金底火；
+  爆發／狙擊＝一顆 1.3× 加長金色。船戰版更大、金色。
+- **主武器**＝低角度斜上往兩側（無下降段）。
+- **陸戰反擊**＝彈道弧（等速水平＋弧＋落下）；**船戰反擊**＝斜下無上升。
+- 爆發型長度 +30%；**陸戰連射型反擊一律往右噴**（-814）。
+- vfx 分類：`null`＝機槍(速射)、`'burst'`＝霰彈(散射)、`'single'`＝狙擊(爆發)；船戰＝`!!state.weaponSound`。
+- 資料流：`defense.resolveThreat` 在 `removeThreat` 前寫 `state.counterPoint`；
+  `weapon.weaponCounter` 讀它、逐分支呼叫 `ejectShell()`；`opts{sc,sl,shotgun,down,dir}`。
 
-### 3. 主武器：迦尼米德雙槍（-699〜-701、-707、-712、-714）
-- `config.mainGun`：一張卡、兩個 barrel（**固有武裝**，不可更換），各一個**掛件槽**。
-- **九階強化＝水瓶座九顆星**（`config.gunStars`），非線性、玩家自選。
-  累計加成只有 `progress.starBonus()` 一個查詢點；九個效果各接在既有的唯一計算點上。
-- 兩條路：**素材收集**（槍店改裝頁）／**特殊事件**（腳本 `gunStar:'<星id>'`）。
-- **副武器改裝**（`tuning.weaponMod`）：每階 +20%、最高五階、**只收錢**，
-  費用＝槍價 ×[0.5,1,1.5,2,3]；⚠ **第 5 階不加數值，換成特殊能力**（`weaponPerks` 先空著）。
-- 改裝頁分**主武器／副武器**兩個子分頁；整備頁可點開看九星現況（唯讀）。
+### 2. 戰鬥探索移動照樣耗時（-815）
+**推翻 -584 的「戰鬥地圖不花時間」**（Ray：「戰鬥探索中移動也要耗時」）。
+`modules/town.js` 的 `go()` 兩條移動路徑都**無條件** `clock.advance(STEP_MIN)`
+（移除 `!siegeOn()` 的守門）。CLAUDE.md §6.5.4.3 那張表的「走一步 10 分鐘」列已改成
+「照樣耗時 ver -815」。
 
-### 4. 三級防禦改寫：難度下修（-706、-709）
-卡上一張 `bands` 表講完三帶（`counter`/`dmgPerHit`/`dmgScale`/`dmgRoll`/`hit`/`take`），
-`config.weaponBand` 是唯一的解讀點。舊欄位 `defenseDamageScale`／`perfectDmgPerHit`／
-`noPerfectBand` **全部退役**。
+### 3. 夜景時刻與反擊音效（-816／-817）
+- 夜景 band 改成 **19:00 起**（`script/clock.js`：`h>=17&&h<19 Dusk`／`h>=19&&h<24 night`）。
+- 反擊武器音：`se_weapon_cannon` 更新（船戰高爆）；`se_weapon_cannonshell` 發射同時播；
+  `se_weapon_riflereload` 於**陸戰高爆**發射後 **0.5 秒**播。
+- 新增 `config.tuning.landCounterSound`（`萊福槍:{after:{key:'se_weapon_riflereload',delayMs:500}}`）；
+  三張船戰卡（萊福槍／霰彈槍）`once:'se_weapon_cannonshell'`。
+- `weapon.weaponCounter` 的 soundKey 解析：`(typeof ov==='string')?ov:((ov&&ov.key)?ov.key:w.sound)`
+  —— 陸戰 ov 是物件（沒有 key）時的破口已修。
 
-| | 黃圈 | 橘圈 | 紅圈 |
-|---|---|---|---|
-| 霰彈 | 反擊・每發 0/1 各半・免傷 | 反擊・半額・免傷 | 反擊・全額・免傷 |
-| 機槍 | 反擊・命中 30%・免傷 | 反擊・命中 70%・免傷 | 反擊・命中 100%・免傷 |
-| 狙擊 | 不反擊・挨 1/2 | 不反擊・挨 1/4 | 反擊・全額・免傷 |
+### 4. 索拉娜搭檔：CI／語音／共鬥（-818〜-823）
+- **語音**（config.js `partners.sorana`）：共鬥 `coop.voice=[vo_sorana_pack, vo_sorana_pack2]` 輪播、
+  `coop.endVoice=vo_sorana_obe`＋`coop.endCutin=ci_sorana_obe`、`coop.endName='飛刀耗盡'`；
+  主動 `active.voice=vo_sorana_supply`（獵手的智慧）；被動 `獵手的戰吼`(en `Predator's Roar`)`voice=vo_sorana_roar`。
+- **登場音**：`man_sorana` 敵人卡 `entranceVo:'vo_sorana_pack2'`，`enemy.loadEnemyPortrait` 載立繪時播。
+- **共鬥 3-hit 黃圈反擊**（`weapon.coopCounter`）：total＝hits×dmgPerHit×modMul×counterScale，
+  per＝total/3，3 hits × 300ms，100% 命中。觸發在 `defense.spawnThreat` 尾端（90ms 後 `removeThreat`＋`api.coopCounter`）。
+- fileGain 全部量過（BS.1770：cannon 0.76／cannonshell 1.17／riflereload 1.26／pack 2.35／
+  pack2 1.73／supply 1.09／obe 1.78／roar 0.95）；voiceKeys 已加索拉娜語音。
+- ⚠ vo 檔名原是 `vo_sorara_roar.wav`（typo「sorara」），已轉成正名 `vo_sorana_roar.m4a`。
+- ⚠ **CI_Sorana_supply 是過渡圖，已撤出版控**（-820，Ray 指定）；webp 回收、png 留本機未追蹤。
 
-⚠⚠ **這一次改動連環害了四次**，全部同一個形狀：舊邏輯掛在「反擊」上，
-而反擊從一帶變成三帶。憲法已立「完美反擊只有紅圈」一節，**新增任何「反擊時 X」
-之前先回答：這是完美反擊才給，還是開火就給？**
+### 5. Stage 6／選單／BR 底色（-821〜-825）
+- **回索拉娜小屋後的劇情＝Stage 6**：`script/town.js` `sv_evening` 加 `stage:6`；
+  `sorahome` 節點加 `innFrom:'safehouse_shinier'`（旅店 gated）。
+- **章節列表**加 stage6（`script/progress.js` CHAPTERS，`clockHour:19, town:'shinier', node:'sorahome'`）。
+- **選單對話文字加大**（`modules/settings.js`）：`K.text`／`bigText()`／`setBigText()`，
+  `apply()` toggle `document.body.classList.toggle('dlg-large', ...)`；面板 #gmBigText「加大／預設」。
+  CSS：`body.dlg-large` 下三種對話框行 font-size 16px。
+- **BR 盤面底色維持原底色不轉黑**（-825）：`style.css` `#grid.dualwield,.overkill{filter:none;animation:none}`
+  （拿掉 `background:#000`），非 done 格 `background-color:var(--grid)`。
+- 旅店 gate：`modules/town.js` afterArrive2 `if(n&&n.inn&&!siegeOn()&&(!n.innFrom||prog.hasFlag(n.innFrom)))`。
 
-### 5. 語音一批（-711）
-12 支 `.wav` → m4a，逐支嵌到對應場合（托爾斯滕破防1/2交互・MB・處決／
-諾薇兒聖徒化・OBE・即死防禦・生命歸還／安雅惡夢化・夢境粉碎・熔斷・明晰之夢）。
-⚠⚠ **語音的 `fileGain` 要過完 `voiceChain` 才量** —— `tools/audio_scan.html`
-量的是原始波形，對語音系統性低估約 5 dB。這一批是以已校準的
-`vo_torsten_dualcrush`（2.482）當錨換算的。
+### 6. 夏爾村（Shinier Village）飛行地圖嵌入（-826〜-830）
+照 §6.7.5 的城市嵌入流程做的第一個新村。
+- `flight/build_city.py` 的 JOB（shinier）：`hsrc` 外部灰階標高圖、`unsquash:1.0`、`maxdim:200`、
+  `val:1.50`、`sat:0.95`，出 `_plan/_plan_lo/_h/_mass(.webp)`＋`_mass.json`（200×133、50 塊量體）。
+  · build_city.py 這一批補強：`import cv2` 改 lazy（try/except，cv2=None）；`J.get('sat'/'val'/'maxdim')`；
+    `hsrc` 分支（載外部灰階、crop、resize、`water=_hg<waterLevel`）；mass 區塊包 `if nomass or cv2 is None: skip`。
+- `flight/index.html` SETTLEMENTS 補一列（`mx:1088, my:864, planW:360, planRot:0.0, planTall:24,
+  podium:{r:1.05,skirt:8,lift:0}, plan:'city/shinier_plan.webp', planH:'city/shinier_h.webp'`）。
+- ⚠ **落點踩過坑**：原定 (1107,826)，terrain 灰階 32 < CLOUD_H 44＝雲海盆地，podium 填不了雲海格
+  → 村子「泡水裡」。Ray：「往西南移一個村落的位置就好了，太暗了跟坨大便一樣」→ 移到 (1088,864)
+  實地陸地、val 1.12→1.50 大幅提亮。
+- ⚠ cv2 之前沒裝，已 `pip install opencv-python-headless`（完成，cv2 5.0.0），量體層重跑補上。
 
-### 6. 好感度（-723／-724）
-上限 **100**、每 **20** 一個 tier、所有給好感的地方 **×2**。
-等第→好感的表在 `config.rating.affection`：搭檔 S+2/A+1、索菈娜 D+2/C+1、蕾娜 S+0.5/A+0.25。
-⚠ tier 寬度在**三個地方**各有一份（`progress.TIER_W`／`flight/index.html` 的 `progTier`／
-`flight/talks.js` 的 `AFFECTION_BANDS`），三邊註解已互指。
-⚠ 順手修好「地板預設 1 但好感預設 0」——那會把第一次的 +0.5 拉成 1，A 與 S 分不出來。
+## 這一批留下的缺口／進行中（下一個 session 接手）
 
-### 7. 惡夢化收尾（-719、-730、-731）
-- NI 清盤要播 **MB 的 cut-in**（-675 只做了傷害與旗標，演出漏了）。
-- 夢境粉碎的閘門**真的會等玩家上滑**：`niBurstPending()` 要連**開著的**那個閘門一起算，
-  不然熔斷會在同一次抽血裡搶先發生（症狀長得像「沒有暫停」）。
-- **熔斷就是 OBE**（Ray 定案）：SI 推滿 ↔ NI 抽乾是同一個結局的兩個方向。
-  畫面字 **DREAM AWAKE**；CI：SI 本篇＝`CI_Nouvelle_OBE`、NI＝`CI_Anya_OBE`。
+### A. 平面 2D 開發地圖（Ray：「先把大地圖做成全平面不要有 3D，我直接點座標給你比較快」）
+**還沒做。** 目的：讓 Ray 直接在正俯視的色圖上點，讀出精確地圖座標（給夏爾村這種要定位的城用）。
+已分析好的落點：
+- 色圖是 `flight/index.html` 的 `COL`（Uint32Array，從 `silvermoon_terrain.png` 載，約 line 3213-3230）。
+- 現行地圖視圖是 `mapCv` canvas（`mctx`），變換 `sc=base*MV.zoom, ox=w/2-MV.cx*sc, oy=h/2-MV.cy*sc`；
+  `mapPick(cssX,cssY)`（約 line 5035）已做 `rx=Math.round((cssX-ox)/sc)`。ADMIN 雙擊會傳送
+  （`cam.x=MV.pick[0]*MAP_SCALE`）。
+- `reliefXY(mx,my)` 是斜投影：`{x:mx*MAP_SS, y:my*MAP_SS*MAP_TILT+R.maxRise-hh*R.hK}`（X 線性、Y 有 tilt＋height）。
+- **建議做法**：加一個 `?flatmap` 模式，把 `COL` 1:1 正俯視畫出來（**不吃 relief/tilt/height**），
+  點擊 = 直接 `(round(cssX/scale), round(cssY/scale))` 讀出地圖座標。X 本來就線性，只要把 Y 也拉成線性即可。
 
-### 8. 其他
-- 失誤／紅點解決之後**指一下正確的格子**（`tuning.hintNextCell`，兩個呼叫點同一支）。
-- 打靶加**棄權鈕**（只在計時挑戰出現，走 `storyBattleEnd(true)` 的既有出口）。
-  ⚠ class 要掛在 `startGame` 的 `stopAll()` **之後**。
-- **EXP 先不顯示**（`rating.showExp:false`，機制照算）。
-- 首頁拿掉「商店」與「story」兩顆鈕。
-- 教學：地宮聖徒戰的反擊教學改成「先叫他點掉、點完才講傷害」，
-  拿掉「太早了」與武器切換那兩段；**黃圈也算過關**。
-- 帝都賞金獵人 `noEval:true`（那時蕾娜還沒開始評價）。
-- 安雅立繪 `cm:152 + standCm:162`（她那張畫的頭身比較大）。
-- ⚠ **璐娜莉亞的 `standCm` 曾被寫兩次**（176 與夾帶進來的 110），JS 取後者 ——
-  她從 -653 起每一張立繪都沉了約 290px。**重複鍵不會有任何錯誤訊息**，
-  改立繪資料時記得 grep 一下。
+### B. 技能發動後高光「該點的格子」（Ray：「所有戰鬥中的伙伴主被動，聖徒夢魘共鬥發動後都要標示現在應該點的格子。獵手的智慧除外，因為會直接進 BR」）
+**還沒做。** 聖徒化(Saint)／夢魘化(Nightmare)／共鬥(Coop) 發動後，高光現在該點的那一格。
+**例外：獵手的智慧（supply）不標** —— 它直接進 BR。
+- 現成基建：`hintCurrentCell`（即死防禦後那個「一次性續命導航」同一支，鐵律 8）——
+  惡夢化發動高光第一格已在用它（見 CLAUDE.md 惡夢化那節，`markNext` 在 hint:false 盤面上沒作用，
+  **要用 `hintCurrentCell`**）。
+- ⚠ CSS 權重坑（已在惡夢化踩過）：`.cell.next` 只改 border＋淡光，而 `#grid.saint .cell` 把每格設金邊、
+  `#grid.saint` 又罩一層 drop-shadow 吃掉淡光 → 要一條**權重更高且換顏色**的規則（如 `#grid.ni .cell.next` 白框白光）。
+  聖徒化盤面同樣是金的，加金光找不到 —— 需要對應的高權重規則。
+- 發動點：`saint.activateSaint`／`activateCoop`（`saint.js`）；共鬥的黃圈反擊在 `defense.spawnThreat`。
 
-## 這一批留下的缺口（要 Ray 的東西）
+### C. 夏爾村 planRot 微調
+村在 (1088,864)、`planRot:0`。需要 Ray 用平面圖（做出 A 之後）看一眼，給旋轉角讓平面圖北向的湖
+對齊地形現有湖水（Ray：「平面圖的北向要貼地形現有的湖水，可旋轉調整」）。目前落在一個坡上，
+也可能要重新挑點。build_city.py 的 JOB 與 index.html 的 SETTLEMENTS 兩邊 `mx/my/planW/planRot` 要一起改。
 
-- **強化護符**：管線全通（`cat:'charm'`、掛件槽、`combat.mainGunDmgMul`），
-  但 `items.defs` 一張都沒有 —— 等卡。格式：
-  `charm_xxx:{ name, cat:'charm', price, charm:{ dmgMul:1.05 }, desc }`
-- **九星的素材配方**（`config.gunUpgrade.recipes`）目前是我擬的草案，等 Ray 的卡。
-  「部分關鍵素材由劇情控制產出」那幾樣也還沒填。
-- **副武器第 5 階的特殊能力**（`tuning.weaponPerks`）：Ray「先留槽，我還沒想好，
-  應該是類似雙槍的掛飾但是固定不可換」。
-- **北方泊地的入口那一格有戰鬥**（`entrance.acts[0]`），違反「入口不會有戰鬥」；
-  目前靠「連敗三次抬回旅店」兜底，`script_lint.py` 會出一條 warn。
-- **戰敗結算的「Counter 反擊」列**印的是 `counterFired`（三帶）＋總傷，
-  標題卻用紅圈的名字。要改成只算紅圈、或改標題，都會動到三個語系的字串。
-- `vo_nouvelle_obe` 是 **10.6 秒**，其餘 11 支都在 1.1〜2.0 秒 —— 想確認不是放錯檔。
+### D. CI 佔位圖（美術 session 領域）
+`CI_Sorana_predator.jpg`／`roar_*.png`／`ci_sorana_obe`／`supply.png` 都是未追蹤的美術佔位；
+部署要它們在，但那是並行美術 session 的事，**不要動**。
+
+## 環境備忘（給下一個 session）
+- cv2 已裝（opencv-python-headless 5.0.0）—— build_city.py 的 mass 區塊現在跑得動。
+- dev server 埠會變（上次是 57635），用 `preview_start` 起。
+- 飛行相機：console 直接讀 `cam`（x/y/angle/alt/speed）；強制白天 `clock.minutes=720`。
+- 音量測法：`tools/audio_scan.html` 現場列目錄逐支印建議值；語音要過完 voiceChain 才量（見 §6.6）。
+- 原 wav 進 `resources/_originals/audio/<vo|se>`，不入版控。
 
 ## 教訓（沿用，逐字遵守）
 
@@ -103,16 +123,14 @@ Ray 定案：「遭遇戰、非劇情戰都用原則；劇情戰都用手動回�
 2. **「做之前先跟我確認。」** 對圖有任何一處看不懂，先問再動手。
 3. **改完必須在瀏覽器實測再交**。
 4. python 替換程式碼時**錨點必須唯一**。
-5. ⚠⚠ **改了一個機制之後，去問「誰掛在它上面」**（-696〜-731 的最大教訓）。
-   -706 把三帶都改成會反擊，接著連環出了四個 bug（黃圈還是受擊／明晰之夢亂發動／
-   完美反擊灌水／黃圈教學不放行）—— 每一個都是舊邏輯掛在「反擊」上，
-   而那個詞的意思被改掉了。**改語意的那一版，就要把所有讀它的地方掃一遍。**
-6. ⚠ **重複鍵不會有錯誤訊息**：物件字面同一個鍵寫兩次，JS 靜靜取後面那個
-   （璐娜莉亞的 `standCm` 沉了 75 個版本才被發現）。改資料前 grep 一下。
-7. ⚠ **jsc 的語法檢查會把 `import` 剝掉**，所以查不出重複 import 之類的錯 ——
-   **以瀏覽器實測為準**（`progress.js` 重複 import `inv` 就是瀏覽器抓到的）。
-8. ⚠ python splice 用「起點索引到終點索引」時，**先確認中間沒有別的東西** ——
-   `loot.js` 那次連 `cfg`／`TABS`／`pick`／`cart` 一起刪掉了。
+5. ⚠⚠ **改了一個機制之後，去問「誰掛在它上面」**（-706 三帶反擊連環四 bug 的教訓）。
+   **改語意的那一版，就要把所有讀它的地方掃一遍。**
+6. ⚠ **重複鍵不會有錯誤訊息**：物件字面同一個鍵寫兩次，JS 靜靜取後面那個。改資料前 grep 一下。
+7. ⚠ **jsc 的語法檢查會把 `import` 剝掉** —— 以瀏覽器實測為準。
+8. ⚠ python splice 用「起點到終點索引」時先確認中間沒有別的東西。
+9. ⚠⚠ **靜態空間分大小寫、macOS 不分**：檔名推法（如 `_BF` → 基底名）本機測不出來，上線整排 404
+   —— 逐格寫出真實檔名（夏爾村 hsrc、城重建背景都踩過）。
+10. ⚠ **改圖同名覆蓋要帶 `?v=N`**：瀏覽器快取沿用舊圖，量像素指紋確認換到新的。
 
 ## 快速測法（瀏覽器 console）
 
@@ -127,24 +145,20 @@ __combat.pauseForDialog(); __st.state.energy=85; __st.state.combo=13;
 window.dispatchEvent(new Event('resize'));   // 觸發 layoutClasp + updateEnergyClasp
 ```
 
+彈殼／反擊要看實際軌跡：`enemy.ejectShell(cell)`／`enemy.ejectCounterShell(x,y,opts)` 手動叫一次，
+用 DOMMatrix 取樣確認頂點速度＝0、方向、等速。
+
 ## 背景待辦（沿用中）
 
-- ⚠⚠ **多語種整批留到最後做**（ver -726，Ray：「多語種等全部完成再做」）——
-  在那之前**只維護繁中**，英日的落差先記著、不要逐版追。已知的落差：
-  - **`tutorial.story`（地宮聖徒戰・諾薇兒全程那一份）只有 `i18n/zh.js` 有**，
-    `config.js` 沒有 fallback → 切到 en／ja 時 `tut.story` 是 `null`
-    （`i18n.js` 的那一行 `L.tutorial.story ? … : null`）。
-    正解是把 zh 那一份搬進 `config.tutorial.story` 當預設，i18n 只做覆寫。
-  - 逐版改的台詞（-710 的「太早反擊」那三處、-726 的反擊教學）en/ja 有些跟不上。
-
-- **交叉雙槍兩張圖**（`resources/vfx/42452231-….png` 彩色、`resources/background/42452231-….png`
-  黑剪影）：Ray 說「另有用途」，**用途還沒講** —— 下次問清楚再接，先不入版控。
+- ⚠⚠ **多語種整批留到最後做**（Ray：「多語種等全部完成再做」）—— 在那之前**只維護繁中**，
+  英日落差先記著、不逐版追。已知落差：`tutorial.story`（地宮聖徒戰那份）只有 `i18n/zh.js` 有，
+  切 en/ja 時 `tut.story` 是 null；逐版改的台詞 en/ja 跟不上。
+- **交叉雙槍兩張圖**（`resources/vfx/42452231-….png` 彩色、`background/…` 黑剪影）：
+  Ray「另有用途」，用途還沒講 —— 下次問清楚再接，先不入版控。
 - stage2 羽蛇「戰鬥結束」戲（Sturm／Deck_Chaos／著水）等 Ray 的 stage2 稿與素材。
-- ~~Northport_Entrance_BF~~ **已接**（ver -565）：北方泊地最小城鎮骨架 ——
-  降落鈕（flight SETTLEMENTS `town:'northport'`）→ 入口一格（背景已轉 webp）→
-  出航回大地圖（`TOWNS[].sailFrom` 出港位，main.js sailOut 寫回程鑰匙；
-  出港位 (1480,190) **暫定**）。其餘節點/店家/對白等 Ray 的稿。
-- 羽蛇卡的「戰鬥結束」戲（Sturm／Deck_Chaos／著水）：Sturm.m4a 已在，
-  **缺 Deck_Chaos 背景圖與 stage2 觸發稿**。
+- **九星素材配方**（`config.gunUpgrade.recipes`）仍是草案；「部分關鍵素材由劇情控制產出」那幾樣沒填。
+- **副武器第 5 階特殊能力**（`tuning.weaponPerks`）先留槽（Ray 還沒想好）。
+- **強化護符**（`items.defs` 的 `cat:'charm'`）：管線全通、一張卡都還沒給，不要自己發明。
+- **S3 章節編號**未定（出航～北方泊地之間）；試玩／飛行的暫填值（STAGE_DEFAULT 等）先擺 5。
+- 森林地圖的戰鬥（夏爾村所在的暗色森林）尚未鋪。
 - `vo_lunaMG.m4a` 還躺在 `resources/audio/se/`（該搬 `vo/`，等 Ray 點頭）。
-- 蜈蚣／空賊的稀有度暫定 E（卡還沒給）。
