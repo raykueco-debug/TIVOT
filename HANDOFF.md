@@ -162,6 +162,30 @@ Ray：「所有戰鬥中的伙伴主被動，聖徒夢魘共鬥發動後都要�
 - 實測全鏈：onLeave 立繪→整備頁（聚光燈+提示+索菈娜已配對）→關頁→移動→sv_beast 開打；
   sv_wild 結算 T1-S 句、+10 入帳、D 亂入雙人圖與台詞。script_lint 0 錯誤。
 
+## -839：村戰對白入戰鬥／飛刀反擊／裂紋輻射／亂入抽卡（Ray 連環交辦）
+
+- **村民戰前對白搬進第一場戰鬥**（Ray：「進入第一場戰鬥以後才發生，有背景，有怪
+  才開始對話」）：`battles.sv_beast.talk`（battleStart、talkOnce:'sv_siege_talk'）；
+  onLeave 只剩圍城旗＋強制整備（引擎支援**沒有台詞只有整備**的 onLeave）。
+  cast 補 sorana＋夏爾村三人（tutPortraits 自動出鍵）。
+- **戰鬥對白同槽換人＝抽牌輪轉**（Ray：「村民換人講話時也要比照對話特效」）：
+  showLine 的換圖分「換人」（滑出 200ms→換 src→滑入）與「表情差分」（照舊直換）；
+  syncCastFit 步首只擺**該槽第一個開口的人**。⚠ 快速連點會打斷 200ms 排程 →
+  補「pending 就取消並復原 .in」（§6.5 延後上場要能取消的同族坑，實測踩到）。
+- **共鬥反擊＝飛刀**（weapon/dagger 交件）：`enemy.throwDagger`（畫面外左右輪替
+  射向反擊圈、旋轉對齊彈道＋隨機傾角/尺寸、mix-blend-mode:screen 吃黑底）；
+  3hits×**0.2s**；射出 `se_soranacounter`／命中 `se_soranacounterhit`（傷害與命中音
+  掛在 onHit —— 時刻由 enemy 唯一決定）；反擊點＝defense 收圈前記的那顆圈。
+- **破防/ovk 裂紋輻射**：裂紋切片搬到 `.cell::after`（進入 dual/overkill 才生成），
+  逐格 `--cd`＝離盤心距離＋抖動（buildGrid 算），crackIn 0.1s → 全程 0.3 秒鋪完；
+  `se_glasscrack` 在 startDualWindow 與 overkill 開窗各播一次。
+- **索拉娜亂入＝水平抽卡**：inspector 的 follow 改兩段 animate（滑出→換雙人圖＋
+  名字→滑入）。**搭檔鎖定（僅本劇情戰）**：gear open 的 `lockPartner` —— 其他頁籤
+  反灰不可選＋gsNote 回饋；close 歸零。索菈娜 `selectVoice:'vo_sorana_pack'`。
+- 修正：Ray 現場把 town.js 的一拍改成裸識別字 `Nouvelle_SI_Shocked2` → `nou('shocked2')`。
+- 全部瀏覽器實測：talk 立繪與輪轉、鎖定整備頁、9 刀 9 中、crackIn 逐格延遲、
+  glasscrack 請求、D 亂入雙人圖。
+
 ## 這一批留下的缺口／進行中（下一個 session 接手）
 
 ### A. 平面 2D 開發地圖 → **已完成（-832，見上面第 7 節）**
