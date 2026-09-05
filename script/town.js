@@ -1896,9 +1896,11 @@ export const TOWNS = {
           nou('surprise','咦？不要吧？'),
           ren('thinking','不......倒也不是不能試試。'),
           sor('tired','就你們幾個人想去探遺蹟？別鬧了，會出人命的。'),
+          /* ══ ver -843 修：這是**一拍的好感分歧**（Ray：「兩句都跑出來了」）——
+             T1 只播「討伐禍魘」句（front）、T2 以上只播「有他在」句（bow）。
+             稿上另外標的 talkwork／front 是各句另一段位的表情，選字之後用不到。 */
           { speaker:'RENNA', text:'討伐禍魘，本就是聖王廳的職責。',
-            portrait:{ char:'RENNA', exprByTier:{ 1:'front', 2:'talkwork' }, show:true } },
-          { speaker:'RENNA', text:'有他在，區區禍魘威脅不了我們的。',
+            textByTier:{ 1:'討伐禍魘，本就是聖王廳的職責。', 2:'有他在，區區禍魘威脅不了我們的。' },
             portrait:{ char:'RENNA', exprByTier:{ 1:'front', 2:'bow' }, show:true } },
           { speaker:'PLAYER', blank:true },
           { speaker:'RENNA', text:'所以請你這次務必寸步不離。',

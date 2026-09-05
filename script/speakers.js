@@ -322,7 +322,7 @@ export const ART = {
        逐張量（measure_si.py）。腳本還沒有用到它 —— 先掛著備用。 */
     tease:        { src:'resources/SI/Sorana_SI_tease.webp',         top:7,  bot:1528, fx:0.583 },
     surprised:    { src:'resources/SI/Sorana_SI_surprised.webp',     top:9,  bot:1522, fx:0.537 },   // ver -842
-    hug:          { src:'resources/SI/Sorana_SI_hug.webp',           top:0,  bot:1535, fx:0.500 } } },  // ver -842
+    hug:          { src:'resources/SI/Sorana_SI_hug.webp?v=2',       top:11, bot:1485, fx:0.408 } } },  // ver -843：Ray 換新圖＋重量（?v=2 同名覆蓋）
   /* ⚠ 取景值於 ver -624 **重量**：`Anya_SI_front` 換過圖（舊的留成
      `XAnya_SI_front.webp`）—— §5「換圖一定要重量取景值」。
      ⚠ `flight/index.html` 的 `PORTRAIT.anya` 是同一組數字，改一邊要改另一邊。 */
