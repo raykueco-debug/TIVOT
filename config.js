@@ -684,8 +684,8 @@ export const GAME_CONFIG = {
                           desc:'…' }
          `charm.dmgMul` 是目前唯一接上的效果（`combat.mainGunDmgMul`）；
          要別的效果（暴擊、破防、聖能）就在那一支加，**不要另開第二個計算點**。 */
-    catOrder: ['item','weapon','charm','material','equip','special'],
-    catName:  { item:'道具', weapon:'武器', charm:'護符', material:'素材', equip:'裝備', special:'特殊' },
+    catOrder: ['item','weapon','charm','material','food','treasure','equip','special'],
+    catName:  { item:'道具', weapon:'武器', charm:'護符', material:'素材', food:'食材', treasure:'寶物', equip:'裝備', special:'特殊' },
     /* ⚠ `price`＝**市價**（買進的價）。賣出價由 `shop.sellRate` 折算（Ray：買收價為物價 50%）
        —— 一個道具只寫一個數字，折扣是店家的事，不是道具的屬性（鐵律 7 的精神）。
        ⚠ 沒寫 `price` 的道具**不能買也不能賣**（劇情道具、任務物品都該如此）。
@@ -707,8 +707,8 @@ export const GAME_CONFIG = {
       /* ══ 夏爾森林狩獵食材（ver -858，Ray 交稿）══ 森林戰鬥的掉落（掉落表
          等森林敵卡到了再接）；獵人謝尼每日收一種换獎勵（script/town.js 的
          svHunterTrade）。⚠ 價格是我擬的草案。 */
-      meat_lynx:  { name:'山貓腿肉', cat:'material', price:60,  desc:'緊實的山貓腿肉。烤過之後香氣四溢。' },
-      meat_boar:  { name:'山豬腹肉', cat:'material', price:80,  desc:'油花漂亮的山豬腹肉。獵人的最愛。' },
+      meat_lynx:  { name:'山貓腿肉', cat:'food', price:60,  desc:'緊實的山貓腿肉。烤過之後香氣四溢。' },
+      meat_boar:  { name:'山豬腹肉', cat:'food', price:80,  desc:'油花漂亮的山豬腹肉。獵人的最愛。' },
       antler_deer:{ name:'鹿角',     cat:'material', price:50,  desc:'分岔漂亮的鹿角。可入藥也可做工藝。' },
       paw_bear:   { name:'熊掌',     cat:'material', price:120, desc:'稀有的熊掌。燉煮費工，滋味濃厚。' },
       meat_snake: { name:'蛇肉',     cat:'material', price:40,  desc:'處理乾淨的蛇肉。意外地清爽可口。' },
@@ -718,6 +718,10 @@ export const GAME_CONFIG = {
       harm_bone_big: { name:'禍魘巨骨',   cat:'material', price:350, desc:'大型禍魘的骨。沉重而緻密。' },
       harm_bone_frag:{ name:'禍魘碎骨',   cat:'material', price:120, desc:'禍魘骨骼的碎片。仍殘留著微弱的脈動。' },
       harm_fang:     { name:'禍魘的細牙', cat:'material', price:80,  desc:'細小的禍魘牙。串起來像一條項鍊。' },
+      /* 夏爾森林獸掉落的素材（ver -860，改槍用）。⚠ 價格草案。 */
+      tiger_horn:  { name:'虎王的獨角', cat:'material', price:400, desc:'森林之王額上的獨角。堅硬如鐵。' },
+      crow_beak:   { name:'尖喙',       cat:'material', price:90,  desc:'食腐鴉的利喙。意外地鋒利。' },
+      elf_antler:  { name:'精靈鹿角',   cat:'material', price:300, desc:'靈鹿的角。泛著淡淡螢光。' },
       venom_fang:     { name:'毒牙',               cat:'material', price:30,
                         desc:'蜈蚣型禍魘的毒牙。稀有，硝製後可作彈頭。' },
       venom_claw:     { name:'毒爪',               cat:'material', price:12,

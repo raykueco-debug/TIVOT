@@ -750,9 +750,14 @@ function forceGo(to){
    ⚠ 跨午夜（`[20,2]`）也要對，所以兩種寫法都判。
    ⚠ 時刻只有一個計算點：`clock.hourF()`（鐵律 7）。 */
 function isOpenNow(n){
+  const t = clock.hourF();
+  /* ver -860（Ray：「所有營業場所七點以後不開，除了酒吧跟夏爾村餐廳」）：
+     19:00 起一律打烊——除非節點標 `lateNight:true`（酒吧／夏爾村餐廳）。
+     這是**全域規則**，收在唯一的 isOpenNow（鐵律 8）；各店的 `hours` 照舊
+     管早上開門，只是上界被這條 19:00 蓋住（除例外）。 */
+  if(!n || !n.lateNight){ if(t >= 19) return false; }
   const h = n && n.hours;
   if(!h || h.length<2) return true;
-  const t = clock.hourF();
   return (h[1] > h[0]) ? (t >= h[0] && t < h[1]) : (t >= h[0] || t < h[1]);
 }
 
