@@ -1316,6 +1316,13 @@
      style 推進還在跑）。首頁一關（開戰）兩塊自己回來。 */
   body:has(#home.on) #top, body:has(#home.on) #bottom{ visibility:hidden; }
   body:has(#home.on) #top *, body:has(#home.on) #bottom *{ animation-play-state:paused !important; }
+  /* ══ 鐵律 10 補洞之二（ver -854，全流程掃查抓到）：**飛行蓋著時戰鬥層也要藏** ——
+     打完回飛行走 openFlight({resume})（keepPages，不經 goHome），戰鬥層整層留著
+     壓在 iframe 底下照畫（探針實錄：巡航中 moonCharge/moonBeam 還在 painted 清單）。
+     -849/-851 蓋了 stage 蓋、home 蓋，就漏這一條。交棒開棺那一刻 flight-on 已撤，
+     戰鬥層自己回來，不影響開棺演出。 */
+  body.flight-on #top, body.flight-on #bottom{ visibility:hidden; }
+  body.flight-on #top *, body.flight-on #bottom *{ animation-play-state:paused !important; }
   #home{position:absolute;inset:0;display:none;flex-direction:column;
     align-items:center;justify-content:flex-start;z-index:50;text-align:center;
     background:radial-gradient(120% 90% at 50% 30%,#1a1330,#07050c 90%);
