@@ -521,7 +521,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -872';
+const FLIGHT_VER = 'ver -873';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -5400,11 +5400,20 @@ function trainSndTarget(){
   const t=clamp((TRAIN_SND_FAR-best)/(TRAIN_SND_FAR-TRAIN_SND_NEAR),0,1);
   return t*t*(3-2*t);                          // smoothstep：兩頭都不會突然起落
 }
+/* crisis 持有 BGM 中（ver -873）：kick 不准搶回航行曲。⚠ 宣告要在 startBgm 之前
+   —— 開機那一下 kick() 立刻執行，晚宣告是 TDZ 爆炸。 */
+let crisisOn=false;
 (function startBgm(){
   /* ⚠ 監聽器要**確認真的播出來**才移除。play() 回傳的是 Promise，
      成功與否在下一個 tick 才知道，所以 kick 當下不能立刻判斷 ——
      每次事件都重試一次，等 playing() 轉 true 才收工。 */
   const kick=()=>{
+    /* ⚠⚠ crisis／暫停／戰鬥中**不搶**（ver -873，Ray：「墜船時飛行音樂跟 crisis
+       同時播放的問題又回來了」）——這顆監聽要「五條同時在播」才會自己卸掉，
+       而 crisis 期間航行是停的＝永遠卸不掉，於是墜船對白**每點一下**就把航行曲
+       重新拉起來蓋在 crisis 上（-862 只修了 crisisBgm 那一端，漏了這一端）。 */
+    if(crisisOn) return;   // ⚠ 只判它：extPaused/battleGoing 宣告在本 IIFE 之後（TDZ），
+                           //   且那兩態下 iframe 藏著/已卸載，點擊本來就到不了這裡。
     bgmMain.start(); ambSail.start(); ambIdle.start(); sfxTrain.start(); sfxGull.start();
     if(bgmMain.playing() && ambSail.playing() && ambIdle.playing()
        && sfxTrain.playing() && sfxGull.playing()){
@@ -7466,6 +7475,7 @@ if(scriptPending && scriptPending.intro==='serpent'){
   try{ crisisLoop.preload='auto'; crisisLoop.load(); }catch(_){}
 }
 function crisisBgm(on){
+  crisisOn=!!on;
   try{
     /* ⚠ 收的是**整組**航行音（flightAudio(false)：bgmMain＋環境音＋火車海鷗），
        不是只有 bgmMain（ver -862，Ray 回報墜船時環境音跟 crisis 疊）。

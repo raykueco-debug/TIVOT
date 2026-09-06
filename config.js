@@ -49,7 +49,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.07-872';
+export const VERSION = 'ver 2026.09.07-873';
 
 export const GAME_CONFIG = {
 
@@ -161,7 +161,8 @@ export const GAME_CONFIG = {
                /* ver -837（Ray：「索拉娜為夥伴時戰鬥音樂換成 Peritune_Whirlwind」）——
                   這一場的搭檔（卡上的 partner，否則整備頁選的人）在這張表裡就換曲；
                   卡上明寫的 bgm 仍最優先（main.battleBgmOf，鐵律 7）。 */
-               partner:{ sorana:'bgm_whirlwind' } },
+               /* ver -873（Ray 指定，混亂 session 遺失件補回）：安雅＝BattleField4。 */
+               partner:{ sorana:'bgm_whirlwind', anya:'bgm_battlefield4' } },
 
   /* ══⚠⚠ 主武器：迦尼米德雙槍（ver -699，Ray 交卡）══════════════════════════
      Ray：「裝備欄加入雙槍　迦尼米德α「王之運」／迦尼米德β「運之王」。
@@ -2093,6 +2094,9 @@ export const GAME_CONFIG = {
       peritune_hopstep_battle_loop:1.0,
       /* 船戰兩首（ver -741，本機 BS.1770 實測，同上錨）。 */
       peritunematerial_epicbattle_loop:0.523,
+      /* 安雅戰鬥曲（ver -873 本機 BS.1770 實測 −8.4 LUFS，錨校正 bgm_battle 0.849：
+         尺差 ×1.18 對回表尺 → 0.636；峰值 1.1dB 未觸頂）。 */
+      peritunematerial_battlefield4:0.636,
       bgm_piratebattle:1.277,
       /* 湖上甲板三首＋著岸音（ver -744，同一把尺）。 */
       peritune_misty_hollow_loop:0.569,
@@ -2541,6 +2545,8 @@ export const ASSETS = {
      禍魘船戰的「默認」規則在 battleBgm.shipHarm（main.battleBgmOf 讀）；
      空賊寫在 flight_pirate 卡上。 */
   bgm_epicbattle:   "resources/audio/bgm/PerituneMaterial_EpicBattle_loop.m4a",
+  /* 安雅為夥伴時的戰鬥曲（ver -873，Ray 指定 BattleField4——混亂 session 遺失件補回）。 */
+  bgm_battlefield4: "resources/audio/bgm/PerituneMaterial_BattleField4.m4a",
   bgm_piratebattle: "resources/audio/bgm/bgm_piratebattle.m4a",
   /* 湖上甲板那一段（ver -744，Ray 的 stage5 稿）。 */
   bgm_misty:        "resources/audio/bgm/Peritune_Misty_Hollow_loop.m4a",
