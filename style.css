@@ -688,14 +688,16 @@
   /* 效能探針的常駐開關（ver -852，Ray：「首頁開了以後進遊戲關不掉」）——
      testmode 限定、右下角、z 高於飛行 iframe(8200)與所有 overlay，任何畫面都按得到。
      半透明小顆，不擋盤面右下那一格的點擊面積太多。 */
-  #perfToggle{position:fixed;right:8px;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);
+  /* ⚠ ver -868（Ray：「該移的是管理員專用鈕」）：右下角讓給地圖 icon ——
+     這兩顆診斷鈕（testmode 限定）移到**左緣**、SKIP 之上。 */
+  #perfToggle{position:fixed;left:8px;right:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 64px);
     z-index:99999;width:34px;height:34px;display:none;align-items:center;justify-content:center;
     border:1px solid rgba(120,255,120,.55);border-radius:8px;color:#4f4;
     background:rgba(0,0,0,.55);font:16px/1 monospace;user-select:none;-webkit-user-select:none;
     cursor:pointer;opacity:.65;}
   body.testmode #perfToggle{display:flex;}
   /* ❄ 全凍結鈕（ver -855）：疊在探針鈕上方；凍結中亮起提醒（不然會忘記自己凍著）。 */
-  #perfFreeze{position:fixed;right:8px;bottom:calc(env(safe-area-inset-bottom,0px) + 50px);
+  #perfFreeze{position:fixed;left:8px;right:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 106px);
     z-index:99999;width:34px;height:34px;display:none;align-items:center;justify-content:center;
     border:1px solid rgba(120,200,255,.55);border-radius:8px;color:#8cf;
     background:rgba(0,0,0,.55);font:16px/1 monospace;user-select:none;-webkit-user-select:none;
@@ -2882,13 +2884,17 @@
      那張地圖，所在地閃爍光點」）══════════════════════════════════════════
      鈕落在**控制盤右下角**（面盤是下半那一塊，錨底部安全區）；
      地圖是全畫面覆蓋層（羊皮紙置中 contain），光點吃比例座標。 */
-  /* ⚠ 右下角已有 ☰ 選單鈕 —— 地圖鈕靠它左邊排，不疊（ver -867 實測撞過）。 */
-  #townMapBtn{position:absolute;right:64px;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);
-    padding:8px 12px 7px;pointer-events:auto;
-    background:rgba(18,15,26,.92);border:1px solid var(--gold-dim);border-radius:9px;
-    box-shadow:0 4px 14px rgba(0,0,0,.55);font-family:inherit;color:var(--gold);}
-  #townMapBtn b{font-size:12.5px;letter-spacing:3px;font-weight:normal;text-indent:3px;white-space:nowrap;}
-  #townMapBtn:active{background:var(--grid-active);transform:scale(.96);}
+  /* ⚠⚠ ver -868（Ray：「地圖用 vfx/map 這個 icon，位置大小角度優先考慮與整備掛件、
+     齒輪的視覺平衡，不要考慮管理人專用的按鈕——該移的是管理員專用鈕」）：
+     旅誌 icon 貼在**槍棺右下角**當第三件配件（左上吊墜、右上齒輪、右下旅誌），
+     視覺份量對齊吊墜（寬 ~88px）、帶一點隨手擱著的斜度；金邊嵌板收進棺面的暗色。 */
+  #townMapBtn{position:absolute;right:10px;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);
+    width:88px;height:59px;padding:0;pointer-events:auto;overflow:hidden;
+    background:transparent;border:1px solid rgba(217,198,138,.55);border-radius:7px;
+    box-shadow:0 5px 16px rgba(0,0,0,.65), inset 0 0 10px rgba(0,0,0,.5);
+    transform:rotate(-5deg);}
+  #townMapBtn img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;}
+  #townMapBtn:active{transform:rotate(-5deg) scale(.95);}
   /* ⚠ z 與 #townNav 同層（7）＋ DOM 後生（map view 一定比 nav 晚建）＝壓過導覽字格；
      退出/跳段鈕（z-8）仍在其上，地圖開著也點得到。 */
   /* 地圖開著時導覽字格整組收掉（ver -867，Ray：「不用導覽字格」）。 */

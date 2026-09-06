@@ -990,7 +990,8 @@ function showMapBtn(){
   if(!b){
     b=document.createElement('button');
     b.type='button'; b.id='townMapBtn';
-    b.innerHTML='<b>地　圖</b>';
+    /* 旅誌 icon（ver -868，Ray：「地圖用 vfx/map 這個 icon」）。 */
+    b.innerHTML='<img src="resources/vfx/map.webp" alt="地圖">';
     /* 同槍棺功能鍵：不讓「點畫面」吃到這一下（§story 的 swallowTap 同款理由）。 */
     b.addEventListener('pointerdown', e=>e.stopPropagation());
     b.addEventListener('pointerup', e=>{ e.stopPropagation();
