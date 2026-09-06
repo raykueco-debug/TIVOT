@@ -1751,8 +1751,14 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
       const now=performance.now();
       ltLog=ltLog.filter(x=>now-x.t<5000); ltMs=Math.round(ltLog.reduce((a,x)=>a+x.d,0));
       let anims=[];
+      /* ⚠ ver -851：加「真的畫得到」的過濾 —— getAnimations 連 display:none／
+         visibility:hidden（被蓋住的層）底下的動畫都列（桌機掃查時踩過），
+         列出來會誤導判讀。藏著的＝不燒（不畫），不列。 */
+      const paintable=(el)=>{ if(!el||el.nodeType!==1) return true;
+        try{ if(el.checkVisibility) return el.checkVisibility({visibilityProperty:true});
+             const cs=getComputedStyle(el); return cs.display!=='none'&&cs.visibility!=='hidden'; }catch(_){ return true; } };
       try{ anims=document.getAnimations().filter(a=>{ const tm=a.effect&&a.effect.getTiming();
-             return a.playState==='running' && tm && tm.iterations===Infinity; })
+             return a.playState==='running' && tm && tm.iterations===Infinity && paintable(a.effect.target); })
            .map(a=>{ const t=a.effect.target; return (a.animationName||'?')+'@'+(t&&(t.id||String(t.className).split(' ')[0])||'?'); }); }catch(_){}
       const med=[...P.media].filter(e=>!e.paused&&!e.ended)
         .map(e=>(e.currentSrc||e.src||'').split('/').pop().split('?')[0].slice(0,24)+(e.loop?'⟳':'')+' v'+e.volume.toFixed(2));

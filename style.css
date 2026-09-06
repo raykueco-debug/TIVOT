@@ -372,11 +372,15 @@
   #energyClasp .clasp-moon{position:absolute;pointer-events:none;
     filter:drop-shadow(0 0 4px #000);}
   #claspMoonFill{filter:hue-rotate(10deg) saturate(.95) brightness(1.06) drop-shadow(0 0 4px #000);}
-  /* 計量累積中（0<energy<100，combat 掛 .charging）：金色光暈慢呼吸。 */
-  #energyClasp.charging #claspMoonFill{animation:moonCharge 1.8s ease-in-out infinite alternate;}
-  @keyframes moonCharge{
-    from{filter:hue-rotate(10deg) saturate(.95) brightness(1.06) drop-shadow(0 0 3px rgba(255,216,110,.35)) drop-shadow(0 0 4px #000);}
-    to  {filter:hue-rotate(10deg) saturate(.95) brightness(1.10) drop-shadow(0 0 8px rgba(255,216,110,.75)) drop-shadow(0 0 4px #000);}}
+  /* 計量累積中（0<energy<100，combat 掛 .charging）：金色光暈慢呼吸。
+     ⚠ 效能（ver -851，實機探針抓到）：舊版 keyframes 逐幀動 filter（drop-shadow 半徑
+       在變）＝整場戰鬥每幀重繪這一層 —— 與 emblemGlow 同族的發熱病灶。
+       改成**靜態 filter（光暈定格在中間值，渲染一次進合成層）＋ 動 opacity**
+       （純合成器，零重繪）：月體隨光一起微呼吸，讀感相同。 */
+  #energyClasp.charging #claspMoonFill{
+    filter:hue-rotate(10deg) saturate(.95) brightness(1.08) drop-shadow(0 0 6px rgba(255,216,110,.55)) drop-shadow(0 0 4px #000);
+    animation:moonCharge 1.8s ease-in-out infinite alternate;}
+  @keyframes moonCharge{from{opacity:.86;}to{opacity:1;}}
   /* 能量流（ver -546 白色彗星束 → -547 改**漸層流光**，Ray：「不用白光，
      用漸層的能量流」）：一整圈平滑起伏的白金漸層繞**缺口中心**順時針轉
      （rotate 動畫，GPU 便宜）—— 沒有亮頭暗尾的斷點，讀起來是流體的光在循環。
@@ -461,11 +465,13 @@
     fill:#fff;stroke:rgba(8,8,12,.9);stroke-width:2.8;paint-order:stroke;
     font-family:Georgia,serif;}
   /* 滿值：白月呼吸（獨立 keyframes —— 借通用 pulse 會把上面那條白光鏈整組蓋掉）；
-     半透明只給計量中，滿檔的月是實心的白。 */
-  #energyClasp.full #claspMoonFill{opacity:1;animation:moonFull .6s infinite alternate;}
-  @keyframes moonFull{
-    from{filter:saturate(.20) brightness(1.55) drop-shadow(0 0 8px rgba(255,255,255,.85)) drop-shadow(0 0 18px rgba(255,250,235,.6)) drop-shadow(0 0 4px #000);}
-    to  {filter:saturate(.20) brightness(2.00) drop-shadow(0 0 12px rgba(255,255,255,1)) drop-shadow(0 0 26px rgba(255,250,235,.8)) drop-shadow(0 0 4px #000);}}
+     半透明只給計量中，滿檔的月是實心的白。
+     ⚠ 效能（ver -851）：同 moonCharge —— filter 定格在偏亮那一端（靜態、渲染一次），
+       呼吸改動 opacity（合成器）。滿檔的白光讀感靠 ::after 的 claspHalo 補（它本來就在）。 */
+  #energyClasp.full #claspMoonFill{
+    filter:saturate(.20) brightness(1.85) drop-shadow(0 0 10px rgba(255,255,255,.95)) drop-shadow(0 0 22px rgba(255,250,235,.7)) drop-shadow(0 0 4px #000);
+    animation:moonFull .6s infinite alternate;}
+  @keyframes moonFull{from{opacity:.80;}to{opacity:1;}}
   /* ── 副武器切換鈕（ver -410，Ray：「在敵我血條右側加入副武器切換鈕，大小同破防值」）──
      左邊是破防計量表、右邊是這一顆，兩側對稱夾著血條。
      ⚠ `#barsBlock` 整塊是 `pointer-events:none`（它只是 HUD），所以這一顆要自己打開。
@@ -807,23 +813,38 @@
      defense.updateThreats 依圈的同一條門檻（defDefenseMin）切換——唯一切換點。
      橘光的色相取圈的橘（240,140,40），玩家才讀得出「盤面在預告圈的下一段」。 */
   #grid.alert .cell{border-color:#c87d2e;color:#ffc27e;}
-  #grid.alert{animation:alertPulseAmber .5s infinite alternate;}
-  @keyframes alertPulseAmber{from{filter:none}to{filter:drop-shadow(0 0 8px rgba(240,140,40,.9))}}
-  #grid.alert.hot .cell{border-color:var(--danger);color:#ff8a8a;}
-  #grid.alert.hot{animation:alertPulse .5s infinite alternate;}
-  @keyframes alertPulse{from{filter:none}to{filter:drop-shadow(0 0 8px var(--danger))}}
+  /* ⚠⚠ 效能（ver -851，實機探針抓到「戰鬥中累積發熱」的主嫌）：警戒／聖徒／overkill
+     的盤面脈動原本全是**逐幀動 filter drop-shadow**的無限動畫 —— #grid 是半個畫面大
+     的元素，每幀重算一次模糊＝整場戰鬥的固定發熱源（與 emblemGlow 同族，規模大十倍）。
+     改法統一：脈動搬到 `#grid` 的 **::after 光暈層**（靜態 box-shadow 光圈，動的只有
+     opacity＝純合成器）；.cell 的變色與 #grid.saint 的**靜態** drop-shadow 照舊。
+     舊的 alertPulse／alertPulseAmber／overkillPulse／saintPulse keyframes 已拆除。
+     ⚠ ::after 的規則順序＝優先權（同特異度靠源序）：saint → alert → alert.hot →
+       saint.overkill，警戒蓋聖徒、overkill 蓋警戒 —— 與舊 filter 版的覆蓋關係一致。 */
+  #grid::after{content:"";position:absolute;inset:-7px;border-radius:10px;
+    pointer-events:none;opacity:0;z-index:0;}
+  #grid.saint::after{box-shadow:0 0 12px 3px var(--gold),0 0 24px 8px rgba(255,255,255,.45);
+    animation:gridGlowPulse .8s infinite alternate;}
+  #grid.alert::after{box-shadow:0 0 10px 3px rgba(240,140,40,.9);
+    animation:gridGlowPulse .5s infinite alternate;}
+  #grid.alert.hot::after{box-shadow:0 0 10px 3px var(--danger);}
+  #grid.saint.overkill::after{box-shadow:0 0 10px 2px var(--holy),0 0 22px 7px rgba(127,212,255,.55);
+    animation:gridGlowPulse .6s infinite alternate;}
+  @keyframes gridGlowPulse{from{opacity:.30;}to{opacity:1;}}
   /* 暫停對話框開啟中：凍結底下的警戒/聖徒化脈動（動畫 filter 於 iOS 會被抬成獨立合成層，
      蓋過 z-order 較高的教學對話框＝「盤面壓過對話框」；alert 另有色偏假影問題）。 */
   body.dlg-pause #grid.alert, body.dlg-pause #grid.saint.alert,
   body.dlg-pause #grid.saint{animation:none;filter:none;}
+  body.dlg-pause #grid::after{animation:none;opacity:0;}
   /* 雙槍模式盤面外框 */
   #grid.dualwield .cell{border-color:var(--holy);}
   #grid.dualwield{filter:drop-shadow(0 0 6px var(--holy));}
   /* Overkill 窗口（敵死後追加輸出）：數字發藍光 + 盤面冷藍脈動 */
   #grid.overkill .cell{border-color:var(--holy);color:#bfe6ff;
     text-shadow:0 0 10px #4fc3ff,0 0 22px rgba(79,195,255,.55);}
-  #grid.overkill{animation:overkillPulse .6s infinite alternate;}
-  @keyframes overkillPulse{from{filter:drop-shadow(0 0 8px var(--holy))}to{filter:drop-shadow(0 0 18px #7fd4ff)}}
+  /* （ver -851：overkillPulse 拆除 —— 素 overkill 的光暈本來就被下面 -825 那條
+     `filter:none;animation:none` 蓋掉了（BR 盤不要光暈），聖徒中的 overkill 走
+     上面 #grid.saint.overkill::after 那條 opacity 脈動。） */
   /* ══ 無視瞬序的狀態（雙槍彈雨／overkill）：鋪 Ray 的碎玻璃底圖，數字移除，
      打掉的格黑掉（ver -805/-806，Ray：「用一大張當底圖…裂痕不要超出數字塊的範圍，
      數字被點掉的格子就不會有裂痕，是黑底」＋「底圖不要出現在格子之間的空間」）══
@@ -878,17 +899,19 @@
   #grid.buffed{filter:drop-shadow(0 0 8px var(--gold));}
   /* 聖徒化盤面（金色神聖） */
   #grid.saint .cell{border-color:var(--gold);background:#2a2418;color:#ffe9a8;}
-  #grid.saint{filter:drop-shadow(0 0 14px var(--gold));animation:saintPulse .8s infinite alternate;}
+  /* ver -851：saintPulse／alertPulse（saint 版）／overkillPulse 全拆 —— 脈動一律走
+     上面 #grid::after 那組 opacity 動畫；這裡只留**靜態** filter（渲染一次，不逐幀）。 */
+  #grid.saint{filter:drop-shadow(0 0 14px var(--gold));}
   /* v16：聖徒化期間敵發動攻擊（有紅點）時，盤面一樣要變色（覆蓋金色）——
      兩段與一般警戒同步（ver -462）：黃圈帶橘光、橘圈帶起紅光 */
   #grid.saint.alert .cell{border-color:#c87d2e;color:#ffc27e;background:#2a1e12;}
-  #grid.saint.alert{filter:drop-shadow(0 0 12px rgba(240,140,40,.85));animation:alertPulseAmber .5s infinite alternate;}
+  #grid.saint.alert{filter:drop-shadow(0 0 12px rgba(240,140,40,.85));}
   #grid.saint.alert.hot .cell{border-color:var(--danger);color:#ff8a8a;background:#2a1414;}
-  #grid.saint.alert.hot{filter:drop-shadow(0 0 12px var(--danger));animation:alertPulse .5s infinite alternate;}
+  #grid.saint.alert.hot{filter:drop-shadow(0 0 12px var(--danger));}
   /* 聖徒化中進 overkill：藍光覆蓋金色（敵已死，優先權高於 saint 金） */
   #grid.saint.overkill .cell{border-color:var(--holy);color:#bfe6ff;background:#18202e;
     text-shadow:0 0 10px #4fc3ff,0 0 22px rgba(79,195,255,.55);}
-  #grid.saint.overkill{filter:none;animation:overkillPulse .6s infinite alternate;}
+  #grid.saint.overkill{filter:none;}
   /* ══⚠⚠ **惡夢化發動時那一格要看得見**（ver -684，Ray：「NI 後的第一格還是
      沒有標出來，會找不到」）══
      `hintCurrentCell` 加的 `.next` 在惡夢化底下**等於隱形**：
@@ -942,7 +965,6 @@
     0%  {opacity:1;transform:none;filter:brightness(1.8);}
     35% {opacity:.9;filter:brightness(2.6);}
     100%{opacity:0;transform:translateY(-14px) scaleY(1.12);filter:brightness(3);}}
-  @keyframes saintPulse{from{filter:drop-shadow(0 0 10px var(--gold))}to{filter:drop-shadow(0 0 20px #fff)}}
 
   /* 彈殼（ver -808）：掛在 body、fixed，飛出畫面外＋飛速旋轉＋遠近感（飛出瞬間放大再縮小）。
      角度/幅度/轉速由 enemy.ejectShell 逐顆設 --sx/--sy/--srot/--spop。 */
@@ -1277,6 +1299,14 @@
      storyStage 是 body 直屬，藏 #app 不會誤傷舞台）。動畫暫停那條留著當保險。 */
   body:has(#storyStage.on) #app{ visibility:hidden; }
   body:has(#storyStage.on) #home *, body:has(#storyStage.on) #app *{ animation-play-state:paused !important; }
+  /* ══ 鐵律 10 補洞（ver -851，Ray 的實機 HUD 抓到：人在首頁，∞動畫列著
+     moonCharge/moonBeam ＝ 月光計量表在首頁底下照畫）══
+     #home 長在 #app **裡面**，所以不能整層藏 #app —— 藏的是戰鬥 UI 那兩塊
+     （#top 敵區＋HUD、#bottom 盤面）。visibility:hidden 保留 layout
+     （layoutClasp 的 rect 量測照常），動畫另外暫停（visibility 只是不畫，
+     style 推進還在跑）。首頁一關（開戰）兩塊自己回來。 */
+  body:has(#home.on) #top, body:has(#home.on) #bottom{ visibility:hidden; }
+  body:has(#home.on) #top *, body:has(#home.on) #bottom *{ animation-play-state:paused !important; }
   #home{position:absolute;inset:0;display:none;flex-direction:column;
     align-items:center;justify-content:flex-start;z-index:50;text-align:center;
     background:radial-gradient(120% 90% at 50% 30%,#1a1330,#07050c 90%);
