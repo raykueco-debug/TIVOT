@@ -1055,7 +1055,9 @@ export const ENEMIES = {
       kind:'harm',
       image:'enemy_sf_stag_rot',
       bg:'Forest_Cliff_Day',
-      fit:{ mode:'contain', pos:'center bottom' },
+      /* 右貼邊（ver -869，Ray：「把鹿骸（半截的那隻）右移到貼邊」）——
+         這張圖是前半身構圖、右緣本來就是裁切線，貼齊畫面右緣裁切線才藏得住。 */
+      fit:{ mode:'contain', pos:'right bottom' },
       hp:300, attack:12,                  // ⚠ 暫定
       atkInterval:null,
       delayPenalty:{ seconds:5 },
