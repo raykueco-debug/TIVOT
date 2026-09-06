@@ -117,8 +117,8 @@ export const ENEMIES = {
         assault:{   type:'slash' },
       },
     },
-    /* ══ 蕃茄人11號（ver -858，Ray：杰羅的自動人型靶）══ 同固定立靶（沿用
-       Dart_timeattack 的圖），但**會攻擊**：戰鬥卡 timeAttack.ultOn 放行排程
+    /* ══ 蕃茄人11號（ver -858，Ray：杰羅的自動人型靶）══ 同固定立靶（圖用
+       Ray 交件的 Dart_counter，ver -862），但**會攻擊**：戰鬥卡 timeAttack.ultOn 放行排程
        （ultEvery 3 秒一發），被打中＝碼表 +3 秒（combat.enemyAttack 的
        hitPenaltySec 分支）—— 不扣血，罰的是時間。 */
     sv_dart: {
@@ -127,7 +127,7 @@ export const ENEMIES = {
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openUlt:[2,3],
       kind:'target',
-      image:'enemy_dart_target',
+      image:'enemy_dart_counter',    // 蕃茄人11號自己的圖（ver -862，Ray 交件 Dart_counter.webp）
       hp:300,
       attack:1,                      // 不會真的扣到血（timeAttack 擋在 enemyAttack）
       atkInterval:null,

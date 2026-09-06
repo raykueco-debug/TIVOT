@@ -416,6 +416,12 @@ function niDrain(amount){
    ⚠ 沒有 cut-in 圖就直接收（演出不是規則）。 */
 function niMeltdown(){
   if(!state.niMode) return;
+  /* ⚠⚠ **敵已死（overkill 追打中被抽乾）＝處刑沒點完而已，不算熔斷**（ver -862，
+     Ray 回報「NI 中敵 hp 歸零沒跑 EXECUTE」）—— 鏡射 SI 那邊 `saintAdvance` 推滿的
+     敵死分支（ver -498/-499：「人是你殺的」→ triggerMaxBurst）：這裡走 triggerNiBurst，
+     它自己的敵死分支會 markExecution ＋ EXSECUTIŌ cut-in ＋ onEnemyDefeated。
+     不攔的話 finishNightmare 會對著一隻死敵重建盤面，整場卡死。 */
+  if(state.enemyHp<=0){ triggerNiBurst(); return; }
   exitNightmare();
   clearInterval(state.niTimer); state.niTimer=null;
   clearSaintReactTimer(); setReturnSwipe(false);

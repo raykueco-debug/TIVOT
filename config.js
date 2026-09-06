@@ -49,7 +49,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.06-859';
+export const VERSION = 'ver 2026.09.07-862';
 
 export const GAME_CONFIG = {
 
@@ -2189,6 +2189,7 @@ export const ASSETS = {
   enemy_facelessgiant: "resources/enemy/Saint_GT_CI.webp",   // 連戰第二隻：巨型聖徒（GT=giant）
   enemy_trainee:  "resources/enemy/Saint_TR_CI.webp",   // 教學專用敵：訓練用聖徒
   enemy_dart_target: "resources/enemy/Dart_timeattack.webp",   // 打靶場：固定立靶（ver -396）
+  enemy_dart_counter: "resources/enemy/Dart_counter.webp",   // 蕃茄人11號：杰羅的自動人型靶（ver -862，Ray 交件）
   /* 禍魘娜塔莉（ver -671，Ray 交件）＋惡夢化 cut-in。
      ⚠ cut-in 住在 `resources/CI/`（Ray 指定；-672 曾誤指 `partner/`）。 */
   enemy_natalia:  "resources/enemy/mon_natalia.webp",
