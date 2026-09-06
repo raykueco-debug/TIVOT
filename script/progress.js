@@ -58,6 +58,9 @@ const K = {
   gunStars:  'tivot_gunstars_v1',
   /* 副武器的改裝等級（ver -714）：`{武器id: 階}`，0~卡上的 `maxMod`。一輪內。 */
   wmod:      'tivot_wmod_v1',
+  /* 杰羅的賭博式改造（ver -866，Ray 的 E 規格）：`{武器id: 加成小數}`（0.15~0.50，
+     成功一次就定住）。一輪內（同 wmod）。 */
+  jmod:      'tivot_jeromod_v1',
 };
 
 /* ⚠ 測試期間預設 3（Ray 指定，與 flight/index.html 的 STAGE_DEFAULT 一致）。
@@ -258,6 +261,27 @@ export function setWeaponMod(id, n){
   const v=Math.max(0, Math.min(weaponModMax(id), n|0));
   if(v>0) cur[id]=v; else delete cur[id];
   wr(K.wmod, JSON.stringify(cur));
+  return v;
+}
+
+/* ══ 杰羅的賭博式改造（ver -866，Ray：「杰羅不賣槍，只改槍，50%機率會失敗白花錢，
+   成功的話增加增益15~50%隨機」）══════════════════════════════════════════
+   `{武器id: 加成小數}` —— 成功**一次**就定住（⚠ 我的假定：改成的槍不再收第二次，
+   失敗可以一直重試；要能重賭洗加成再跟 Ray 確認）。
+   ⚠ 與 `wmod`（固定 +20%/階）**分開存、相乘**：兩套是不同的來源，折進反擊傷害的
+     乘點只有 weapon.js 的 `subgunPowerMul` 一支（鐵律 7）。 */
+export function jeroMods(){
+  try{ const j=JSON.parse(rd(K.jmod)||'null'); if(j && typeof j==='object') return j; }catch(e){}
+  return {};
+}
+export function jeroMod(id){
+  const v=jeroMods()[id];
+  return (typeof v==='number' && isFinite(v) && v>0) ? v : 0;
+}
+export function setJeroMod(id, v){
+  const cur=jeroMods();
+  if(v>0) cur[id]=v; else delete cur[id];
+  wr(K.jmod, JSON.stringify(cur));
   return v;
 }
 
@@ -497,7 +521,7 @@ export const CHAPTERS = [
 export function newRun(){
   for(const k of [K.stage, K.flags, K.affection, K.affFloor, K.name, K.nick,
                   K.hp, K.innLast, K.flightLoss, K.rennaS, K.playtime,
-                  K.charms, K.gunLv, K.gunStars, K.wmod]) {   // 持久HP／上次旅店／連敗數／蕾娜S計數／遊玩時間／掛件／強化
+                  K.charms, K.gunLv, K.gunStars, K.wmod, K.jmod]) {   // 持久HP／上次旅店／連敗數／蕾娜S計數／遊玩時間／掛件／強化／杰羅改造
     try{ localStorage.removeItem(k); }catch(e){}
   }
   /* ⚠⚠ 從頭開始＝**S0 要寫進鑰匙**（ver -563）。清掉 stage 之後不寫回的話，
@@ -566,7 +590,8 @@ export function snapshot(){
            charmsRaw:rawJ(K.charms),      // 主武器掛件（ver -699，一輪內）
            gunLvRaw:rawN(K.gunLv),       // 主武器強化等級（ver -700 的舊制，留著相容）
            gunStarsRaw:rawJ(K.gunStars),     // 主武器九階強化（ver -707，一輪內）
-           wmodRaw:rawJ(K.wmod) };          // 副武器改裝（ver -714，一輪內）
+           wmodRaw:rawJ(K.wmod),            // 副武器改裝（ver -714，一輪內）
+           jmodRaw:rawJ(K.jmod) };          // 杰羅改造（ver -866，一輪內）
 }
 export function restore(s){
   if(!s) return;
@@ -597,4 +622,5 @@ export function restore(s){
   putRaw(K.gunLv,  ('gunLvRaw'  in s)?s.gunLvRaw :null);
   putRaw(K.gunStars, ('gunStarsRaw' in s)?s.gunStarsRaw:null, true);
   putRaw(K.wmod,     ('wmodRaw'     in s)?s.wmodRaw    :null, true);
+  putRaw(K.jmod,     ('jmodRaw'     in s)?s.jmodRaw    :null, true);
 }

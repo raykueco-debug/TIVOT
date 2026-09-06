@@ -49,7 +49,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.07-865';
+export const VERSION = 'ver 2026.09.07-866';
 
 export const GAME_CONFIG = {
 
@@ -830,6 +830,11 @@ export const GAME_CONFIG = {
                      tabs:['buy','sell','mod'], tabName:{ buy:'買武器', sell:'賣武器', mod:'武器改裝' },
                      only:'weapon', compare:true,
                      challenge:'np_range', challengeLabel:'射擊挑戰' },
+      /* ══ 杰羅的工坊（ver -866，Ray：「杰羅不賣槍，只改槍」「杰羅的工坊就是槍店」）══
+         只有一個「改槍」分頁（賭博式改造，規則在 tuning.jeroMod；UI 在 loot.js 的
+         jero 分頁）。不賣不買 —— tabs 沒有 buy/sell，貨帳也就不存在。 */
+      sv_workshop: { title:'杰羅的工坊', art:'resources/SI/NPC_shinier_Gunsmith_SI.webp',
+                     tabs:['jero'], tabName:{ jero:'改槍' } },
     },
   },
 
@@ -1812,6 +1817,12 @@ export const GAME_CONFIG = {
          雙槍的掛飾但是**固定不可換**」）—— `perks` 先空著。
          「固定不可換」是它與雙槍掛件的分野：掛件玩家自己換，這個是升上去就定了。 */
     weaponMod: { perLv:0.20, statLv:4, costMul:[0.5, 1, 1.5, 2, 3] },
+    /* ══ 杰羅的賭博式改造（ver -866，Ray 的 E 規格）══
+       「50%機率會失敗，白花錢。成功的話增加增益15~50%隨機」——
+       與 weaponMod（固定 +20%/階）分開存（progress 的 jeroMod）、**相乘**；
+       乘點只有 weapon.js 的 subgunPowerMul 一支（鐵律 7）。
+       ⚠ `costMul` 是**暫定**（Ray 沒給費用）：一次改造費＝槍價 × 0.5。 */
+    jeroMod: { costMul:0.5, failP:0.5, bonus:[0.15, 0.50] },
     /* 陸戰反擊的「額外音」按類別（ver -816，Ray）——沒有艦載音覆寫（`state.weaponSound`）
        時才吃：只帶 once/after（發射殼音、延遲上膛），**不帶 key** → 保留武器原音效。
        實作只有 weapon.weaponCounter 一處（鐵律 8）。

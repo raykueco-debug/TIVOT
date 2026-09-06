@@ -187,6 +187,9 @@
   #lootSheet .wp-stats.rival{opacity:.62;}
   #lootSheet .wp-stats.rival .wp-v{color:var(--gold-dim);}
   #lootSheet .wp-vs{margin-top:6px;font-size:10.5px;letter-spacing:2px;color:var(--gold);opacity:.85;}
+  /* 杰羅改槍（ver -866）：「點下去以後跳槍的圖與數值出來」—— 說明區頂上那張槍圖。 */
+  #lootSheet .jero-gunimg{display:block;max-width:100%;max-height:110px;margin:0 auto 6px;
+    object-fit:contain;filter:drop-shadow(0 2px 8px rgba(0,0,0,.6));}
   #lootSheet .wp-flavor{margin-top:6px;font-size:11px;color:var(--gold-dim);opacity:.85;}
   /* 「持有」小標：貼在品名後面，不另開一欄（價格那一欄要留給價格）。 */
   #lootSheet .wp-have{padding:1px 5px;white-space:nowrap;font-style:normal;font-size:9.5px;

@@ -2029,6 +2029,15 @@ export const TOWNS = {
         },
       workshop: { bg:'Shinier_Workshop', name:'夏爾村　工坊',   exits:{ back:'west' },
         hours:[8,19], closed:'爐子熄了。杰羅大概收工回去了。',   // ver -864，Ray 確認工坊打烊
+        /* ══ 杰羅的槍店（ver -866，Ray：「杰羅的工坊就是槍店」「只改不賣」）══
+           店＝config.shop.shops.sv_workshop（只有「改槍」分頁＝賭博式改造）。
+           `shopFrom:4`＝修船那段 acts 的 fromStage 同步 —— 杰羅在，店才在。 */
+        shop:'sv_workshop', keeperWho:'JERO', shopFrom:4,
+        keeperRandom:[
+          '船的事包在俺身上。槍嘛……嘿嘿，看運氣。',
+          '制式槍就是保守才叫制式。俺改的槍，兇起來連俺都怕。',
+          '別的槍匠收你錢保證成功。俺收你錢，保證刺激。',
+        ],
         /* ══ 杰羅的修船委託（ver -858，Ray 交稿；取代 -772 的工匠佔位）══
            S5 之前他不在（fromStage:5 ＝ 空房）；S5 起「蕃茄人11號」打靶：
            30 秒內打完＝約定修船。旗照舊 **sv_craftsman**（晚上蕾娜那段分歧

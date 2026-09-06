@@ -253,6 +253,52 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
   const wNext =(id)=>{ const n=prog.weaponMod(id)+1; return n<=prog.weaponModMax(id) ? n : 0; };
   const wCost =(id)=>{ const n=wNext(id); if(!n) return 0;
                        const m=(WM().costMul||[])[n-1]; return m ? Math.round(wPrice(id)*m) : 0; };
+  /* ══ 杰羅的賭博式改造（ver -866，Ray 的 E 規格）══════════════════════════
+     「50%失敗白花錢；成功隨機 +15~50%；改槍畫面點下去跳槍的圖與數值；
+       成功額外顯示額外增益；杰羅自己坦白（不講百分比，只說比制式火力還強）」
+     規則在 `tuning.jeroMod`（鐵律 1）；加成存 progress 的 jeroMod（一輪內），
+     乘點只有 weapon.subgunPowerMul 一支（鐵律 7）。
+     ⚠ 成功一次那把槍就**定住**（不再收第二次）；失敗可以一直重試 ——
+       「重賭洗加成」要開再跟 Ray 確認。 */
+  const JM=()=>GAME_CONFIG.tuning.jeroMod||{};
+  const jeroCost=(id)=>Math.round(wPrice(id)*(JM().costMul==null?0.5:JM().costMul));
+  const jeroReady=(sel)=>{
+    if(!sel || sel.indexOf('jero:')!==0) return false;
+    const id=sel.slice(5);
+    if(wOwned().indexOf(id)<0) return false;
+    if(prog.jeroMod(id)>0) return false;               // 改成的槍不再收
+    return inv.getMoney() >= jeroCost(id);
+  };
+  let jeroMsg=null;   // 杰羅這一把的結果台詞（換頁／換槍就清）
+  function jeroRows(){
+    const head='<div class="mod-head">「先說好——俺不是專業槍匠，改壞了不退錢。'
+      +'不過改成的話，出來的傢伙比制式的火力還兇。要賭就把槍放上來。」</div>';
+    const list=wOwned();
+    if(!list.length) return head+'<div class="bag-empty">身上沒有可以改的副武器。</div>';
+    return head + list.map(id=>{
+      const w=(GAME_CONFIG.weapons||{})[id]||{};
+      const b=prog.jeroMod(id), cost=jeroCost(id);
+      /* 「額外顯示額外增益」（Ray）：成功的那把直接把加成標在列上。 */
+      const tag = b>0
+        ? '<span class="mod-mat">改造済　火力 +'+Math.round(b*100)+'%</span>'
+        : '<span class="mod-mat'+(inv.getMoney()>=cost?'':' lack')+'">'+cost+' '+inv.moneyName()+'</span>';
+      return '<div class="shop-row mod-row'+(b>0?' done':'')+(pick==='jero:'+id?' pick':'')+'"'
+           +   ' data-id="jero:'+id+'">'
+           + '<span class="loot-name"><i class="mod-star">'+(w.cat||'')+'</i>'
+           +   (w.shortName||w.name||id)+'</span>'
+           + '<span class="mod-need">'+tag+'</span></div>';
+    }).join('');
+  }
+  /* 「點下去以後跳槍的圖與數值出來」（Ray）：說明區＝槍圖＋規格表＋改造狀態。 */
+  function jeroDesc(){
+    if(!pick || pick.indexOf('jero:')!==0) return '選一把槍看看。';
+    const id=pick.slice(5), w=(GAME_CONFIG.weapons||{})[id]||{};
+    const b=prog.jeroMod(id);
+    return (w.image ? '<img class="jero-gunimg" src="'+asset(w.image)+'" alt="">' : '')
+         + statTable(id)
+         + (b>0 ? '<div class="wp-vs">杰羅改造済：火力 +'+Math.round(b*100)+'%</div>' : '')
+         + (jeroMsg ? '<div class="wp-flavor">'+jeroMsg+'</div>' : '');
+  }
   /* 選中的那一項：`star:<id>` 或 `wmod:<id>`（兩種東西同一個 `pick`，鐵律 8）。 */
   function modReady(sel){
     if(!sel) return false;
@@ -351,7 +397,7 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
   }
   const cfg=((SHOP.shops||{})[stockKey])||{};
   const TABS=(cfg.tabs&&cfg.tabs.length)?cfg.tabs:['buy','sell'];
-  const TABNAME=Object.assign({ buy:'買', sell:'賣', mod:'改裝' }, cfg.tabName||{});
+  const TABNAME=Object.assign({ buy:'買', sell:'賣', mod:'改裝', jero:'改槍' }, cfg.tabName||{});
   let tab=TABS[0], pick=null;
   /* 改裝頁的導覽（ver -857 由 -716 的「主／副」兩頁籤改成四大格入口，見 modGrid）。
      ⚠ 換頁要清 `pick`：主副的 id 前綴不同，留著會讓結帳鈕亮著卻按不動。 */
@@ -458,6 +504,8 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
           + '<span class="loot-n">×'+qtyText(r.n)+'　'+inv.sellPrice(r.id)+' '+inv.moneyName()+'</span>'
           + '<span class="shop-tags">'+cartCtrl(r.id)+'</span></div>'
           ).join('') : '<div class="bag-empty">沒有可以賣的東西。</div>';
+    }else if(tab==='jero'){
+      rows = jeroRows();          // 杰羅的賭博式改造（ver -866）
     }else{
       /* ══⚠⚠ 改裝＝**主武器的素材強化**（ver -701，Ray：「強化原則上走的是素材
          收集，打靶給強化是特殊事件」）══════════════════════════════════════
@@ -474,11 +522,14 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
     /* 結帳鈕（ver -496 購物車）：車裡有東西才亮。「錢不夠」不會發生在這裡 ——
        每一列的「＋」在總價會超過持有金額的那一刻就擋掉了。 */
     const total = cartTotal();
-    const can = (tab==='mod') ? (!!pick && modReady(pick)) : cartCount()>0;
+    const can = (tab==='mod')  ? (!!pick && modReady(pick))
+              : (tab==='jero') ? jeroReady(pick)
+              : cartCount()>0;
 
     /* 說明區：武器 → 規格表（＋同類比較）；其餘 → 文字說明。 */
     let desc;
-    if(!pick) desc = (tab==='mod') ? '' : '選一項看說明。';
+    if(tab==='jero') desc = jeroDesc();
+    else if(!pick) desc = (tab==='mod') ? '' : '選一項看說明。';
     else if(weaponStatRows(pick, true).length){
       const rk=rivalOf(pick);
       desc = statTable(pick)
@@ -511,7 +562,10 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
       + '</div>'
       + '<div class="shop-desc">'+desc+'</div>'
       + '<div class="shop-acts">'
-      +   (tab==='mod'
+      +   (tab==='jero'
+          ? ('<button class="shop-do'+(can?'':' broke')+'" type="button">改　造'
+             +(can ? '　'+jeroCost(pick.slice(5))+' '+inv.moneyName() : '')+'</button>')
+          : tab==='mod'
           ? ('<button class="shop-do'+(can?'':' broke')+'" type="button">強　化</button>')
           : '<button class="shop-do'+(can?'':' broke')+'" type="button">'
             /* 結帳（ver -496）：整車一次付清；車是空的鈕就暗著（字不變，
@@ -540,7 +594,7 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
         ov.classList.toggle('dock-'+o.dock); render(); });
     }
     ov.querySelectorAll('.shop-tab').forEach(b=>b.addEventListener('click', e=>{
-      e.stopPropagation(); tab=b.dataset.tab; pick=null; cart={};
+      e.stopPropagation(); tab=b.dataset.tab; pick=null; cart={}; jeroMsg=null;
       try{ SFX.menuClick(); }catch(_){} render(); }));
     ov.querySelectorAll('.mod-cell').forEach(b=>b.addEventListener('click', e=>{
       e.stopPropagation();
@@ -556,6 +610,7 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
     ov.querySelectorAll('.shop-row').forEach(b=>b.addEventListener('click', e=>{
       e.stopPropagation();
       if(b.classList.contains('out')) return;      // 售完的那一列點不動
+      if(pick!==b.dataset.id) jeroMsg=null;        // 換一把槍＝上一把的結果台詞收掉（ver -866）
       pick=b.dataset.id;
       try{ SFX.menuClick(); }catch(_){} render(); }));
     /* 每一列的 −/＋（ver -496 購物車）。上限三個取最小（店裡剩幾個／武器的 1），
@@ -587,6 +642,26 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
            那是「結帳」的聲音，不是「買東西」的聲音 —— 兩邊是同一個動作。
            -662 之前賣走的是 `menuClick`，而且在**按下去**就響（不管成不成交）。 */
       try{ SFX.unlock(); }catch(_){}
+      /* ══ 杰羅改造（ver -866）══ 扣錢 → 擲骰：失敗＝白花錢（Ray 的規格，錢不退）；
+         成功＝隨機 +15~50% 存進 progress、結帳音、列上與說明區都標出額外增益。 */
+      if(tab==='jero'){
+        if(!jeroReady(pick)) return;
+        const id=pick.slice(5), cost=jeroCost(id);
+        if(!inv.spendMoney(cost)) return;
+        const jm=JM();
+        if(Math.random() < (jm.failP==null ? 0.5 : jm.failP)){
+          jeroMsg='「……嘖，搞砸了。說好的，錢不退。」';
+          try{ SFX.wrong(); }catch(_){}
+        }else{
+          const rng=jm.bonus||[0.15,0.50];
+          const b=Math.round((rng[0]+Math.random()*(rng[1]-rng[0]))*100)/100;
+          prog.setJeroMod(id, b);
+          jeroMsg='「哈！成了！這把比制式的還兇——拿去試試。」';
+          checkoutSfx();
+        }
+        render();
+        return;
+      }
       /* ══ 強化（ver -701）══ ⚠ **先扣素材再扣錢**（同買的那一支）：
          少扣可以，不能發生「錢扣了等級沒升」。⚠ `can` 已經確認過夠了。 */
       if(tab==='mod'){

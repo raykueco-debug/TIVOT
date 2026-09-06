@@ -915,6 +915,9 @@ function keeperOf(n){
 function shopReady(n){
   if(siegeOn()) return false;    // 戰鬥地圖不開店（ver -584）
   if(!n || !isOpenNow(n)) return false;
+  /* `shopFrom`（ver -866）：這一章之前店還不存在（杰羅 S5 才到夏爾村，
+     工坊在那之前是空房）。同 acts 的 fromStage 語意。 */
+  if(n.shopFrom!=null && prog.getStage() < n.shopFrom) return false;
   if(n.shop) return true;
   if(n.exchange) return true;   // ver -859：獵人兌換表
   return !!(n.board && (!n.boardFlag || prog.hasFlag(n.boardFlag)));

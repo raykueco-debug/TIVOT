@@ -62,6 +62,16 @@ export function init(a){ api = a; }
 // 搭檔選擇：實選存 state.pickedPartner（partner.currentPartner 讀此值 → 換人即能力切換）。
 // 寫入一律走 state.setPickedPartner（唯一管道）。
 
+/* ══ 副武器的火力乘數 —— **唯一的計算點**（鐵律 7；ver -866 收攏）══
+   ＝ 槍店改裝（wmod：每階 +20%，第 5 階不加數值 → 夾 statLv）
+   × 杰羅改造（jeroMod：成功一次 +15~50%，兩套相乘）。
+   weaponCounter 的 scale、dmgRoll、coopCounter 全部問這一支 —— 各算一份必然走鐘。 */
+export function subgunPowerMul(id){
+  const WM = GAME_CONFIG.tuning.weaponMod || {};
+  const modLv = Math.min(prog.weaponMod(id), WM.statLv || 99);
+  return (1 + modLv * (WM.perLv || 0)) * (1 + prog.jeroMod(id));
+}
+
 /* ============================================================================
  *  反擊武器 · 反擊演算（三段防禦 Counter／散彈 Perfect 呼叫）
  * ----------------------------------------------------------------------------
@@ -104,10 +114,7 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll){
      ⚠ **折進 `scale`** —— 三種 vfx 分支各自算 `base`，在這裡乘一次就三條都吃到
        （鐵律 7：不要在每個分支各乘一遍）。
      ⚠ 只影響反擊：副武器只在反擊時開火，普攻是主武器的事。 */
-  const WM     = GAME_CONFIG.tuning.weaponMod || {};
-  /* ⚠ 第 5 階**不加數值**（換成特殊能力）—— 所以夾在 `statLv`（4）。 */
-  const modLv  = Math.min(prog.weaponMod(state.equippedWeapon), WM.statLv || 99);
-  const modMul = 1 + modLv * (WM.perLv || 0);
+  const modMul = subgunPowerMul(state.equippedWeapon);
   const scale = ((dmgScale==null) ? 1 : dmgScale) * modMul;
   /* ══ 副武器迴避（ver -760；ver -796 併進 `weaponMod`）══ 卡上
      `weaponMod:{ 類別:[傷害, 迴避] }` 的 **[1]＝額外迴避率**（％數，即使全 miss 也會
@@ -267,9 +274,7 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll){
 export function coopCounter(){
   const w = weaponOf(state.equippedWeapon, storyMode());
   if(!w || state.over || state.enemyHp<=0) return;
-  const WM = GAME_CONFIG.tuning.weaponMod || {};
-  const modLv = Math.min(prog.weaponMod(state.equippedWeapon), WM.statLv||99);
-  const modMul = 1 + modLv*(WM.perLv||0);
+  const modMul = subgunPowerMul(state.equippedWeapon);
   const card = (GAME_CONFIG.partners && GAME_CONFIG.partners[state.pickedPartner]) || {};
   const cs = (card.coop && card.coop.counterScale!=null) ? card.coop.counterScale : 1;
   const total = Math.max(3, Math.round(w.hits * w.dmgPerHit * modMul * cs));   // 一次完整反擊
