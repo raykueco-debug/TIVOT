@@ -4,6 +4,43 @@
 > 檔尾的「教訓／快速測法／背景待辦」是**沿用**的，不隨版次汰換。
 > 目前 HEAD＝`ver 2026.09.05-833`，工作樹只剩並行美術 session 的未提交檔（**不要動**）。
 
+## -851 手機發熱第四波：戰鬥中的 filter 動畫 ＋ 戰鬥用圖縮半實驗（2026-09-06）
+
+Ray 實機 HUD（-850 探針）：人在**首頁**，∞動畫列著 `moonCharge`/`moonBeam` ＝
+戰鬥層的月光計量表在首頁底下照畫；Ray 判斷「發熱是**戰鬥中**累積的，與飛行地圖無關」。
+
+### 修了三件（style.css）
+1. **盤面脈動全面去 filter 化**：`saintPulse`／`alertPulse(Amber)`／`overkillPulse`
+   全是逐幀動 drop-shadow 的無限動畫，掛在**半個畫面大的 #grid** 上 —— 聖徒化整段、
+   每波大絕警戒都在燒。改成 `#grid::after` 靜態 box-shadow 光圈＋`gridGlowPulse`
+   動 opacity（純合成器）。`.cell` 變色與靜態 filter 照舊，視覺等價。
+   ⚠ ::after 規則順序＝覆蓋優先權（saint→alert→alert.hot→saint.overkill）。
+   ⚠ 素 `#grid.overkill` 本來就被 -825「BR 盤不要光暈」蓋掉，沒補 ::after。
+2. **月扣 moonCharge／moonFull**：同病同修 —— filter 定格（靜態、渲染一次），
+   呼吸改動 opacity。`moonBeam`（rotate）本來就便宜，不動。
+3. **鐵律 10 補洞**：`#home` 長在 `#app` **裡面**，-849 那條藏不到它底下的戰鬥 UI →
+   補 `body:has(#home.on) #top/#bottom{visibility:hidden}` ＋動畫暫停。
+   首頁掛機從此戰鬥層一個像素都不畫。
+   另：HUD 的 ∞動畫過濾補 `checkVisibility`（藏著的＝不燒，不再列出來誤導）。
+
+### 戰鬥用圖縮半實驗（Ray：「把所有的圖尺寸縮小一半再放大試試看」）
+- **範圍**：`background`／`enemy`／`CI`／`illustration` 共 **324 張 webp**（尺寸÷2、q85
+  重編碼，126M→83M；解碼後記憶體與 GPU 貼圖約 **1/4**）。
+- **SI 立繪刻意不動**：`speakers.js` 的 top/bot 取景值是圖上**絕對像素**，縮了全毀；
+  而戰鬥畫面（Ray 指的發熱場景）用的正是 bg＋敵立繪＋CI，已全數涵蓋。
+- **備份**：原檔完整存 `resources/_originals/_fullres_ver850/`（同層路徑），
+  git 歷史也有 —— 要復原：整批 cp 回去即可。
+- **美術 session 的 modified／untracked 檔案全部跳過**（git status 過濾）。
+- ⚠ 同名覆蓋沒逐張加 ?v=N（324 張加不動）：靜態空間靠 ETag/max-age=600 換新，
+  手機測試前先等部署完＋確認 HUD 版號＝-851。
+- 判讀：若這一版熱度明顯下降＝圖的解碼/合成是主因 → 再決定正式方案
+  （選擇性縮圖或改善壓縮）；沒差＝排除圖，剩 3×DPR 全屏合成的基線成本
+  （解法是閒置降幀/降 DPR）。
+
+### 桌機驗證
+戰鬥中 painted ∞動畫從 3+ 條降到 **1 條**（gridGlowPulse，opacity）；警戒光圈視覺正常；
+縮半敵圖/背景顯示無異狀；首頁 painted 只剩 emblemGlow＋pulse 兩條 opacity。
+
 ## -832〜-833（接手 session 完成的兩項）
 
 ### 7. ?flatmap 平面 2D 開發地圖（-832，＝原缺口 A）
