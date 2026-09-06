@@ -74,7 +74,22 @@ WebP q85 → `resources/background/`；原 PNG → `resources/_originals/backgro
    `document.documentElement.style.zoom='0.6'` 可以把它拉進來，
    但**最穩的還是走 JS `.click()`**（配上第 1 條的 scrollIntoView），不必算座標。
 
-## ⚠⚠⚠ 品質未達標 —— 全部要交給 GPT 重繪（2026-09-02，Ray）
+## GPT 重繪完成＋室外光場景四時態差分（2026-09-07）
+
+- [x] Ray 交的 GPT 重繪 18 張（`resources/background/ruins/` 的 UUID PNG）全部入庫：
+  · **有室外光（天光）的 14 場景**＝四時態：`Ruins_<節點>_{day,dawn,dusk,night}.webp`
+    （day＝GPT 原圖、dawn/dusk/night＝Gemini 衍生，共 42 張差分，時段尾綴全小寫）：
+    Antechamber／CorridorA／CorridorB／StairDown／Rotunda／Collapsed／Bridge／
+    Spring／Sarcophagus／Observatory／Vault／Throne／PillarHall／DeepAltar
+  · **純人工光（火把/符文）的 4 場景**＝單張無後綴：Guardians／Ritual／
+    MuralGallery／Flooded
+- 原稿：GPT 版 PNG 在 `_originals/background/_ruins_gpt/`、Gemini 差分原檔在
+  `_originals/background/_ruins_gem/`。`ruins/` 的 UUID 檔可由 Ray 決定去留。
+- `Ruins_Spring` 半解析的舊帳一併解掉（GPT 新版全解析）。
+- 差分規約：天光隨時段變（dawn 冷藍紫／dusk 暖橘金／night 銀白月光＋大幅變暗）；
+  **發光苔與符文的青綠光不隨時段變**（DeepAltar／Bridge 的 prompt 有明寫）。
+
+## ⚠⚠⚠ 品質未達標 —— 全部要交給 GPT 重繪（2026-09-02，Ray）【已完成，見上】
 
 > Ray：「gemini 目前的遺跡圖品質都不達標，那是**卡通風，不是動畫風，太簡陋**。
 >   不過圖都生了，西湖跑完就把 gemini 生的圖丟給 gpt 加 prompt 重繪」
