@@ -16,7 +16,7 @@ import * as clock from '../script/clock.js';
 import * as prog from '../script/progress.js';
 import * as story from './story.js';
 import * as inn from './inn.js';                 // 旅店大廳（伙伴門／獨自坐坐／回房睡覺）
-import { showShop, showBounty } from './loot.js';
+import { showShop, showBounty, showExchange } from './loot.js';
 import * as gear from './gear.js';               // 戰前強制整備（ver -838，onLeave 的 gear 掛鉤）
 import { SPEAKERS } from '../script/speakers.js';
 import { SFX } from '../audio.js';
@@ -852,6 +852,7 @@ function keeperOf(n){
   if(n.keeperWho) return n.keeperWho;
   if(n.shop) return 'SHOPKEEP';
   if(n.board) return 'COUNTER';
+  if(n.exchange) return 'HUNTER_SV';   // ver -859：獵人兌換表也擺店主立繪
   return null;
 }
 /* 這個節點現在有沒有店舖畫面：要是店（或已登記的公會），而且**在營業時間內**。 */
@@ -859,6 +860,7 @@ function shopReady(n){
   if(siegeOn()) return false;    // 戰鬥地圖不開店（ver -584）
   if(!n || !isOpenNow(n)) return false;
   if(n.shop) return true;
+  if(n.exchange) return true;   // ver -859：獵人兌換表
   return !!(n.board && (!n.boardFlag || prog.hasFlag(n.boardFlag)));
 }
 /* `opts.noMenu`＝只擺店主，**那顆鈕先不出來**（ver -430，Ray：「武器店的裝備教學
@@ -947,7 +949,7 @@ function showShopBtn(on){
   const b=layer && layer.querySelector('#townShopBtn'); if(!b) return;
   const n=node();
   if(on && n){
-    b.querySelector('b').textContent = n.shop ? (shopBtnName(n) || '買　賣') : '懸賞榜';
+    b.querySelector('b').textContent = n.shop ? (shopBtnName(n) || '買　賣') : (n.exchange ? '兌　換' : '懸賞榜');
   }
   b.classList.toggle('on', !!on);
 }
@@ -968,6 +970,11 @@ function openSheet(){
   showShopBtn(false);
   if(n.shop){ openShop(); return; }
   try{ SFX.unlock(); SFX.menuClick(); }catch(_){}
+  if(n.exchange){
+    sheetClose = showExchange({ info:infoText(n),
+                                onClose:()=>{ sheetClose=null; openMenu(); } });
+    return;
+  }
   sheetClose = showBounty(n.board, { info:infoText(n),
                                      onClose:()=>{ sheetClose=null; openMenu(); } });
 }

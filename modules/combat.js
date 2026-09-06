@@ -328,6 +328,10 @@ function advanceExpectPastCleared(){
    雙槍彈雨／overkill 打掉一格時，從那一格灑幾片玻璃碎片、帶重力往下掉＋旋轉淡出。
    碎片附在 #grid（relative）上，掉到盤底；CSS 見 style.css 的 `.glass-shard`。 */
 function glassShards(cell){
+  /* ver -859（Ray：「碎玻璃耗太多效能，先拿掉看看」）：整支停用 ——
+     每格打掉生 4~6 個 DOM 元素跑 shardFall 動畫，一盤十幾格＝上百個短命節點。
+     留函式殼與 CSS，要還原就拿掉這一行。 */
+  return;
   const grid=$('grid'); if(!grid||!cell) return;
   const gx=cell.offsetLeft+cell.offsetWidth/2, gy=cell.offsetTop+cell.offsetHeight/2;
   const cw=cell.offsetWidth, ch=cell.offsetHeight;

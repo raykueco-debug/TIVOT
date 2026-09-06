@@ -14,6 +14,7 @@ import { GAME_CONFIG, weaponStatRows, weaponOf, weaponDescText, asset, sfxGain }
 import * as inv from '../script/inventory.js';
 import * as shopStock from '../script/shopstock.js';   // 店鋪存貨（ver -405）
 import * as prog from '../script/progress.js';         // 主武器的強化等級（ver -701）
+import * as clock from '../script/clock.js';           // 獵人兌換表的每日配對種子（ver -859）
 import { SFX } from '../audio.js';
 
 /* ══ 樣式（ver -380）══
@@ -672,6 +673,60 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
    為止），所以這一頁沒有按鈕，只有一張清單與關閉。
    ⚠ 委託內容在 `config.bounties`，這裡只負責演（鐵律 1）。要加委託就加資料，不動這支。
    ⚠ 依 `city` 篩選：櫃台說了「各個城市的委託也會不同」，那句話得在資料上成立。 */
+/* ══ 獵人兌換表（ver -859）══ 五食材各配一個獎勵，每天洗牌（種子＝dayNo）。
+   配對只有這一支在算（鐵律 7）：資料在 config.huntExchange，這裡讀它＋日序算。 */
+export function huntPairs(){
+  const H=GAME_CONFIG.huntExchange||{foods:[],prizes:[]};
+  const d=clock.dayNo(), P=H.prizes.length||1;
+  return (H.foods||[]).map((f,i)=>({ food:f, prize:H.prizes[(d*3+i*7+1)%P] }));
+}
+export function showExchange(opts){
+  ensureCss();
+  const o=opts||{};
+  const unit=(GAME_CONFIG.items&&GAME_CONFIG.items.moneyName)||'G';
+  const prizeName=(p)=> p.id==='__money' ? (p.amount+' '+unit) : inv.nameOf(p.id);
+  const ov=document.createElement('div'); ov.id='lootSheet'; ov.classList.add('bag','bounty');
+  if(o.dock) ov.classList.add('dock-'+o.dock);
+  document.body.appendChild(ov);
+  const render=()=>{
+    const pairs=huntPairs();
+    const body=pairs.map((pr,i)=>{
+      const have=inv.count(pr.food);
+      const can=have>0;
+      return '<div class="loot-row exch-row"'+(can?' data-i="'+i+'"':'')+'>'
+           + '<span class="loot-name">'+inv.nameOf(pr.food)+'　→　'+prizeName(pr.prize)+'</span>'
+           + '<span class="loot-n">持有 '+(isFinite(have)?have:'∞')+'</span>'
+           + (can ? '<button class="exch-do" type="button">交　換</button>'
+                  : '<span class="mod-mat lack">未持有</span>')
+           + '</div>';
+    }).join('');
+    ov.innerHTML='<div class="loot-panel"><div class="loot-title">獵人的兌換'
+               + (o.info ? '<span class="shop-info">'+o.info+'</span>' : '')+'</div>'
+               + '<div class="shop-desc">今天想收的獵物。帶來就換。（每天不同）</div>'
+               + '<div class="loot-list">'+body+'</div>'
+               + '<button class="loot-ok" type="button">關閉</button></div>';
+    ov.querySelectorAll('.exch-row[data-i]').forEach(row=>{
+      const b=row.querySelector('.exch-do'); if(!b) return;
+      b.addEventListener('click', e=>{ e.stopPropagation();
+        const pr=huntPairs()[+row.dataset.i]; if(!pr || inv.count(pr.food)<=0) return;
+        inv.remove(pr.food,1);
+        if(pr.prize.id==='__money') inv.addMoney(pr.prize.amount||0);
+        else inv.add(pr.prize.id,1);
+        try{ SFX.unlock(); if(asset('se_buy')) SFX.play(asset('se_buy'),sfxGain('se_buy')); else SFX.menuClick(); }catch(_){}
+        render();
+      });
+    });
+    ov.querySelector('.loot-ok').addEventListener('click', e=>{ e.stopPropagation();
+      try{ SFX.unlock(); SFX.menuClick(); }catch(_){} close(); });
+  };
+  const close=()=>{ ov.classList.remove('on');
+    setTimeout(()=>{ if(ov.parentNode) ov.parentNode.removeChild(ov); }, 220);
+    if(o.onClose){ const f=o.onClose; o.onClose=null; try{ f(); }catch(_){} } };
+  render();
+  requestAnimationFrame(()=>ov.classList.add('on'));
+  return close;
+}
+
 export function showBounty(city, opts){
   ensureCss();
   const o=opts||{};

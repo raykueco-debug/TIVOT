@@ -49,9 +49,6 @@
    ⚠ 口氣守則見 flight/script/STYLE.md，這裡不重寫一份。
    ══════════════════════════════════════════════════════════════════════ */
 
-import * as inv from './inventory.js';   // ver -858：獵人每日兌換要問「有沒有帶食材」
-import * as clock from './clock.js';     // ver -858：兌換配對的種子＝日序（同日恆定）
-
 /* 諾薇兒的差分（縮寫，對到 speakers.js 的 expr）。寫成常數只是為了讓下面的稿子好讀。 */
 const N = who => (expr, text, extra) => Object.assign(
   { speaker:who, text:text||'', portrait:{ char:who, expr:expr||null, show:true } }, extra||{});
@@ -87,41 +84,6 @@ const jer = N('JERO'), shen = N('HUNTER_SV'), grcS = N('GROCER_SV');   // 杰羅
      兩邊註解互指）。
    ⚠ 強化的旗標記在**「嗯……完成了。」**那一拍（`flags` 是演到就記）——
      不記在戰勝那一拍：他還沒動手。 */
-/* ══ 獵人謝尼的每日兌換（ver -858，Ray：「目標食材、獎勵素材，配對隨機，
-   每天更換」）══ 判讀：每天抽**一組**「食材 ↔ 獎勵」（食材 5×獎勵 6，種子＝
-   dayNo，同一天恆定、跨日重抽）。`lines` 寫成**函式**（modules/town.js 的
-   actLines，-858 新增）—— 今天要什麼是現算的。
-   ⚠ 交易的入帳走**逐拍**的 take/give/money（story.js，-858 新增）：
-     選「先不用」那一支不會記帳（applyAff 那種整段盲加做不到這件事）。 */
-const SV_HUNT_FOOD = [
-  ['meat_lynx','山貓腿肉'], ['meat_boar','山豬腹肉'], ['antler_deer','鹿角'],
-  ['paw_bear','熊掌'], ['meat_snake','蛇肉'] ];
-const SV_HUNT_PRIZE = [
-  ['__money','500 G'], ['harm_claw_s','禍魘的小爪'], ['harm_claw','禍魘之爪'],
-  ['harm_bone_big','禍魘巨骨'], ['harm_bone_frag','禍魘碎骨'], ['harm_fang','禍魘的細牙'] ];
-function svTradeToday(){
-  const d=clock.dayNo();
-  return { f:SV_HUNT_FOOD[(d*7+3)%SV_HUNT_FOOD.length],
-           p:SV_HUNT_PRIZE[(d*5+1)%SV_HUNT_PRIZE.length] };
-}
-function svHunterTradeLines(){
-  const {f,p}=svTradeToday();
-  const L=[ shen(null,'今天想收「'+f[1]+'」。拿來的話，用「'+p[1]+'」跟你換！') ];
-  if(!(inv.count(f[0])>0)){
-    L.push(shen(null,'森林裡就有，去碰碰運氣吧。'));
-    return L;
-  }
-  const yes=Object.assign(shen('','成交！收下吧。'),
-    { label:'svt_y', take:{ [f[0]]:1 } });
-  if(p[0]==='__money') yes.money=500; else yes.give={ [p[0]]:1 };
-  L.push(shen(null,'喔！你身上就有嘛。要換嗎？'),
-    { choice:[ { text:'交換', goto:'svt_y' }, { text:'先不用', goto:'svt_n' } ] },
-    yes,
-    { end:true },
-    Object.assign(shen(null,'想好了再來吧。'), { label:'svt_n' }));
-  return L;
-}
-
 const NP_RANGE_SEQ = [
   gunN(null,'喔！想打靶嗎？咱這一區的記錄可是25秒，破得了的話……'),
   /* 這兩拍是**還沒領過獎品**時才講（ver -656，Ray：「成功以後挑戰不用錢
@@ -1058,7 +1020,7 @@ export const TOWNS = {
          ⚠ 與下面 18:00 那一格**同一支旗**（np_night）＝天然去重：哪一個先成立
            就走哪一個，另一個永遠不會再觸發（gates 由上往下取第一個成立的）。
          ⚠ `need` 陣列＝全部都要（-858 讓 need 收陣列，見 modules/town.js）。 */
-      { flag:'np_night', need:['np_med','np_guild_seen'], onMove:true,
+      { flag:'np_night', need:['np_med','np_guild_seen','np_gunstore_seen'], onMove:true,
         goto:'inn', enterAgain:true,
         lines:[ { speaker:'NARRATION', text:'該回去看看了。' } ] },
       { flag:'np_night', need:'np_burial_done', hourOfDay:18,
@@ -1302,6 +1264,11 @@ export const TOWNS = {
       gunstore: { bg:'Northport_gunstore_BF', name:'北方泊地　武器店', kind:'gunstore',
         exits:{ back:'west' },
         shop:'np_gunstore', keeperWho:'GUNSMITH_NP',
+        /* ver -859（Ray：「雜貨、公會、槍店三個都去過以後才會被拉回去」）：
+           進槍店記一筆 np_gunstore_seen（安葬後自由探索期）—— 「該回去看看了」
+           閘門的三旗之一。act 演完 afterArrive 照開店。 */
+        acts:[ { flag:'np_gunstore_seen', need:'np_burial_done', lines:[
+          gunN(null,'找槍嗎？物資都被徵調啦，能修的我幫你看看。') ] } ],
         hours:[8,20], closed:'鐵門拉下來了。門邊的牌子寫著「八點開門」。',
         lines:[ gunN(null,'武器都被徵調啦，沒什麼好東西。槍我倒是能幫你看看。') ]
                  .concat(NP_RANGE_SEQ),
@@ -1868,7 +1835,9 @@ export const TOWNS = {
            站位：索菈娜／安雅本位右，蕾娜整幕改左（同湖上甲板，§6.5）。
            ⚠ 最後一句稿上標 `Sorana_SI_think` 但說話的是**蕾娜** —— 判讀為筆誤，
              用她自己的 thinking；要照稿改回跟我說。 */
-        acts:[ { flag:'sv_arrive', sides:{ RENNA:'L' }, lines:[
+        /* ⚠ ver -859（Ray：「stage4 以前夏爾村不會出現索拉娜」）：加 fromStage:4 ——
+           早訪（stage<4，玩家自己亂飛進來的空村）不演這段索菈娜帶路的歡迎戲。 */
+        acts:[ { flag:'sv_arrive', fromStage:4, sides:{ RENNA:'L' }, lines:[
           sor('front','歡迎！這就是夏爾村囉！'),
           any('nervous','……'),
           sor('smirk','森住民那麼稀奇嗎？'),
@@ -1922,8 +1891,13 @@ export const TOWNS = {
         /* ══ S5 前的早訪（ver -858，Ray 交稿）══ 村長在家：森住民聚落的由來
            （逃亡奴隸）＋警告別進森林（魔獸）。蕾娜兩句照稿；村長台詞是我
            照 Ray 給的方向寫的。untilStage:5 ＝ 到了夏爾村章就讓位給主線段。 */
+        /* ══ 村長家（ver -859 重整，Ray 交稿）══ 三段，actDue 由上往下取第一個成立：
+           · **早訪**（stage<4，untilStage:4）：森住民由來＋**魔獸警告**＋蕾娜起疑。
+           · **正式初入**（stage>=4，need sv_arrive）：先蕾娜借電報事件（flag 只演一次）。
+           · **正式再入**（電報演過後）：村長談話 —— 森住民由來，**不提魔獸**
+             （Ray：「stage4 後的村長不會提魔獸」；那時魔獸已在早訪或劇情裡交代過）。 */
         acts:[
-          { flag:'sv_chief_met', untilStage:5, lines:[
+          { flag:'sv_chief_met', untilStage:4, lines:[
             chf(null,'外地來的客人？稀奇稀奇。'),
             chf(null,'這裡是森住民的聚落。最早以前，是逃亡的奴隸們建立起來的。'),
             chf(null,'大家逃到這片森林邊上，靠山吃山，就這麼一代代過下來了。'),
@@ -1931,14 +1905,19 @@ export const TOWNS = {
             ren('ask','魔獸……？'),
             ren('thinking','看來之後有必要調查一下呢。'),
           ] },
-        /* 電報機＋蕾娜（ver -772，Ray：「會在村長家找到電報機，蕾娜在晚上
-           18:00 前必然只出現在該處，送出報告」）。沒有 flag ＝每次抵達都演
-           （再訪），until 收在傍晚閘門（sv_evening）。
-           ⚠ 台詞是**我寫的**佔位（Ray 只給了設定）—— 稿到了整段換掉。 */
-          { need:'sv_arrive', until:'sv_evening', lines:[
-          ren('talkwork','村長借我用電報機。得把這幾天的事回報聖王廳才行。'),
-          ren('writting','你先去忙吧，我把報告送完就回索菈娜家。'),
-        ] } ] },
+          /* 正式初入：蕾娜借電報事件（ver -772 的電報機，-859 加 flag＋fromStage:4）。 */
+          { flag:'sv_telegram_done', need:'sv_arrive', fromStage:4, until:'sv_evening', lines:[
+            ren('talkwork','村長借我用電報機。得把這幾天的事回報聖王廳才行。'),
+            ren('writting','你先去忙吧，我把報告送完就回索菈娜家。'),
+          ] },
+          /* 正式再入：村長談話（不提魔獸）。無 flag＝每次再訪都在，收在傍晚閘門。 */
+          { need:'sv_telegram_done', fromStage:4, until:'sv_evening', lines:[
+            chf(null,'哦，是聖王廳的客人。索菈娜那丫頭給你們添麻煩了吧？'),
+            chf(null,'這裡是森住民的聚落，最早是逃亡的奴隸建起來的。'),
+            chf(null,'大家逃到森林邊上，靠山吃山，一代代過下來。'),
+            chf(null,'難得有客人上門。安心住下吧。'),
+          ] },
+        ] },
       /* 祭壇＝圍城期間唯一走得進去的末端之一（另一個是野外）。這一格是「最硬的
          一般格」（`sv_altar`＝聖骨獸，數值同 np_boss）—— **不是**收尾格，打不打隨
          玩家（走西側直接到野外可跳過；ver -802）。 */
@@ -2046,7 +2025,7 @@ export const TOWNS = {
            ⚠ 兩種「接受」各走自己的戰鬥拍（onLose 分開）——不情願版的兩句
              台詞才對得上，不用旗記選擇（旗拔不掉，交錯選會亂）。
            ⚠ sv_range 的時限勝負：超過 30 秒＝timeOver＝走 onLose（同 np_range）。 */
-        acts:[ { fromStage:5, until:'sv_craftsman', lines:[
+        acts:[ { fromStage:4, until:'sv_craftsman', lines:[
           { speaker:'PLAYER', blank:true },
           jer(null,'小事啦，這種品質的東西我用廢料都能拼一個更好的給你！'),
           jer(null,'不過……可不能白白幫你。'),
@@ -2068,20 +2047,20 @@ export const TOWNS = {
           { end:true },
           Object.assign(jer(null,'蕃茄人11號大獲全勝！不干心就再挑戰看看啊？'), { label:'svr_fail2' }),
         ] } ] },
-      hunter:   { bg:'Shinier_huntercabin',   name:'夏爾村　獵人小屋', exits:{ back:'west' },   // ver -787：圖已交
-        /* ══ 謝尼（ver -858，Ray 交稿）══ S5 之前早訪就在小屋（sh_villager 的臉）：
-           說明「森林打獵 → 食材換獎勵」。每日兌換是**常駐**（lines＝函式，
-           內容由日序現算；until 不給——這個攤子一直開）。
-           ⚠ 初見台詞是我寫的（Ray 給的是方向「說明去森林打獵拿到食材可以來換獎勵」）。 */
+      /* ══ 獵人小屋・謝尼（ver -859 改：Ray「要像賞金獵人公會一樣有表可以看」）══
+         走進去＝店主立繪＋「兌換」鈕 → 開兌換表（showExchange，今日配對）。
+         初見先演一次說明（act flag）。⚠ keeperWho 給謝尼的臉。 */
+      hunter:   { bg:'Shinier_huntercabin',   name:'夏爾村　獵人小屋', exits:{ back:'west' },
+        exchange:'sv_hunt', keeperWho:'HUNTER_SV',
+        hours:[6,20], closed:'小屋沒點燈。獵人大概進山了。',
         acts:[
           { flag:'sv_hunter_met', lines:[
             shen(null,'喔？生面孔。迷路了嗎？'),
             { speaker:'PLAYER', blank:true },
             shen(null,'哈，膽子不小。森林裡的獵物，肉跟角都是好東西。'),
             shen(null,'打到食材就拿來我這，我用手邊的好料跟你換。'),
-            shen(null,'想收什麼每天不一樣，常來看看吧。'),
+            shen(null,'想收什麼每天不一樣，看牆上的單子吧。'),
           ] },
-          { lines: svHunterTradeLines },
         ] },
       /* ── 末端（東） ── */
       sorahome: { bg:'Shinier_soranahouse', name:'夏爾村　索菈娜的家', exits:{ back:'east' },

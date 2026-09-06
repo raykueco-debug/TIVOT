@@ -263,3 +263,10 @@
   /* 標題右邊的地名／時刻：停靠模式蓋掉了上緣的 `#townInfo`，資訊要在這裡找得到。 */
   #lootSheet .shop-info{display:block;margin-top:3px;
     font-size:10px;letter-spacing:2px;color:var(--gold-dim);}
+
+/* 獵人兌換表（ver -859）：一列＝食材→獎勵＋持有＋換鈕。沿用 mod-row 的網格。 */
+#lootSheet .exch-row{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:8px;}
+#lootSheet .exch-do{font-family:inherit;font-size:11px;letter-spacing:2px;color:var(--gold);
+  background:rgba(212,169,74,.10);border:1px solid var(--gold);border-radius:6px;
+  padding:4px 10px;cursor:pointer;}
+#lootSheet .exch-do:active{background:rgba(212,169,74,.24);}

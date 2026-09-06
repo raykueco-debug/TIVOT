@@ -49,7 +49,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.06-858';
+export const VERSION = 'ver 2026.09.06-859';
 
 export const GAME_CONFIG = {
 
@@ -698,7 +698,7 @@ export const GAME_CONFIG = {
          ⚠ `sellValue` ＝**絕對值**（1000），不走 `shop.sellRate` 折算：
            Ray 說的是「賣一次得 1000」，不是「市價 2000 打五折」。
          ⚠ 沒有 `price` ＝ 商店不會拿出來賣（那是他家的東西）。 */
-      verafond_crest: { name:'薇拉馮德家的紋章', cat:'item', sellValue:1000, always:true,
+      verafond_crest: { name:'薇拉馮德家的紋章', cat:'item', sellValue:10000, always:true,   /* ver -859：Ray 改 10000 */
                         desc:'薇拉馮德家的家徽。同樣的東西他身上似乎總還有一個。' },
       saint_claw_low: { name:'聖徒之爪（低品質）', cat:'material', price:24,
                         desc:'從訓練用聖徒上剝下來的爪。質地脆，勉強能當研磨材。' },
@@ -1699,6 +1699,15 @@ export const GAME_CONFIG = {
             desc:'出沒地：東北空域。' },
   },
 
+  /* ══ 夏爾村獵人兌換表（ver -859，Ray：「獵人小屋要像賞金獵人公會一樣有表可以看…
+     目標食材↔獎勵素材，配對隨機，每天更換」）══ 五種食材各配一個獎勵，
+     配對每天洗牌（種子＝dayNo，見 loot.huntPairs）。玩家帶食材來換對應獎勵。 */
+  huntExchange: {
+    foods:  ['meat_lynx','meat_boar','antler_deer','paw_bear','meat_snake'],
+    prizes: [ { id:'__money', amount:500 }, { id:'harm_claw_s' }, { id:'harm_claw' },
+              { id:'harm_bone_big' }, { id:'harm_bone_frag' }, { id:'harm_fang' } ],
+  },
+
   currentEnemy: 'faceless',   // 這場開場先打誰（填上面的鑰匙名）
 
   /* 連戰陣容（局＝同場清一隻接下一隻）。依序取,打完一敵接下一敵,最後一敵清完進結算。
@@ -1871,7 +1880,10 @@ export const GAME_CONFIG = {
        等於放大到約 120%，低角度構圖裡站在後方的角色頭部會被裁掉。
        這張表＝逐張的縮小倍率（乘進 keyframe 的 scale，見 style.css 的 var(--ci-s)），
        1＝照舊；saint.playCutin 讀（鐵律 1）。 */
-    cutinFit: { ci_sorana_supply:0.78 },
+    /* ver -859（Ray：「被動技圖不要放那麼大，後方的 Q 版角色也要入鏡，
+       手機版幾乎全被裁掉」）：獵手戰吼三張縮到 0.62 —— 後方那位 Q 版夥伴才進得了框。 */
+    cutinFit: { ci_sorana_supply:0.78,
+                ci_sorana_roar_renna:0.62, ci_sorana_roar_anya:0.62, ci_sorana_roar_nouvelle:0.62 },
 
     voiceChain: {
       eq:   [ ['highpass', 130, 0.707,  0],
@@ -2436,7 +2448,7 @@ export const ASSETS = {
   vo_sorana_supply2: "resources/audio/vo/vo_sorana_supply2.m4a",
   vo_sorana_obe1:    "resources/audio/vo/vo_sorana_obe1.m4a",   // ver -837：飛刀耗盡 ×2 輪播
   vo_sorana_obe2:    "resources/audio/vo/vo_sorana_obe2.m4a",
-  vo_sorana_roar:    "resources/audio/vo/vo_sorana_roar.m4a?v=2",   // 獵手的戰吼・連5盤那一發（ver -837 新錄音）
+  vo_sorana_roar:    "resources/audio/vo/vo_sorana_roar.m4a?v=3",   // ver -859：Ray 更新 5連完美戰吼   // 獵手的戰吼・連5盤那一發（ver -837 新錄音）
   vo_sorana_roar2:   "resources/audio/vo/vo_sorana_roar2.m4a",      // 獵手的戰吼・連3盤那一發
   se_luna_exc:       "resources/audio/vo/vo_luna_execution.m4a",    // 處決 EXSECUTIŌ cut-in
   /* ⚠ ver -641 改名 `se_saint_maxburst` → `vo_saint_maxburst`（它是語音）。
