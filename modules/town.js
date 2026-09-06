@@ -966,6 +966,69 @@ function openStallSheet(st){
   sheetClose = showShop(st.shop, null, null, null,
       { info:infoText(node()), onClose:()=>{ sheetClose=null; openMenu(); } });
 }
+/* ══ 槍棺地圖（ver -867，Ray 的 H 需求）══════════════════════════════════
+   「控制介面右下角放『地圖』選項，點開控制面板變成那張地圖，所在地閃爍光點。」
+   · 資料在城上的 `map:{img, spots}`（鐵律 1）—— 沒有 map 的城不出這顆鈕。
+   · **開圖規則**（Ray）：「村落/城鎮一進去就有全圖；城村以外（遺蹟/野外）要走過
+     才開圖」—— 荒野圖（`wilderness`）只亮 `seen_*` 過的節點＋所在地；
+     城村整張全亮。⚠ 我的解讀：底圖（手繪羊皮紙）整張照出，**光點與地名**
+     走過才標上 —— 一張圖切區塊遮沒法看（要改再跟 Ray 說）。
+   · 每個光點標**中文地名**（節點 name 全形空白後那一段；日後翻譯標的）。
+   · 點地圖任何一處＝收掉（它是查看用的覆蓋層，不是導航）。
+   · 收在 nav 的生命週期裡：對白中鈕跟著 nav 藏、換節點/離城 mapClose（檢查表）。 */
+let mapOn=false;
+function mapClose(){
+  mapOn=false;
+  const v=document.getElementById('townMapView'); if(v) v.classList.remove('on');
+  if(layer) layer.classList.remove('map-on');   // 導覽字格回來（ver -867，見 renderMap）
+}
+function showMapBtn(){
+  if(!layer) return;
+  let b=layer.querySelector('#townMapBtn');
+  const T=TOWNS[townId];
+  if(!(T && T.map)){ if(b) b.remove(); return; }
+  if(!b){
+    b=document.createElement('button');
+    b.type='button'; b.id='townMapBtn';
+    b.innerHTML='<b>地　圖</b>';
+    /* 同槍棺功能鍵：不讓「點畫面」吃到這一下（§story 的 swallowTap 同款理由）。 */
+    b.addEventListener('pointerdown', e=>e.stopPropagation());
+    b.addEventListener('pointerup', e=>{ e.stopPropagation();
+      try{ SFX.unlock(); SFX.menuClick(); }catch(_){}
+      if(mapOn) mapClose(); else renderMap();
+    });
+    layer.appendChild(b);
+  }
+}
+function renderMap(){
+  const T=TOWNS[townId]; const M=T && T.map; if(!M) return;
+  const st=story.stageEl(); if(!st) return;
+  let v=document.getElementById('townMapView');
+  if(!v){
+    v=document.createElement('div'); v.id='townMapView';
+    v.addEventListener('pointerdown', e=>e.stopPropagation());
+    v.addEventListener('pointerup', e=>{ e.stopPropagation(); mapClose(); });
+    st.appendChild(v);
+  }
+  const wild=!!T.wilderness;
+  const ids=Object.keys(M.spots||{}).filter(id=> T.nodes[id]
+    && (!wild || id===nodeId || prog.hasFlag('seen_'+townId+'_'+id)));
+  v.innerHTML='<div class="tm-frame">'
+    + '<img class="tm-img" src="'+M.img+'" alt="">'
+    + ids.map(id=>{
+        const p=M.spots[id];
+        const nm=String((T.nodes[id]||{}).name||'').split('　').pop();
+        return '<i class="tm-spot'+(id===nodeId?' here':'')
+             + '" style="left:'+(p[0]*100).toFixed(1)+'%;top:'+(p[1]*100).toFixed(1)+'%">'
+             + '<b></b><span>'+nm+'</span></i>';
+      }).join('')
+    + '</div>';
+  v.classList.add('on'); mapOn=true;
+  /* 地圖開著＝導覽字格收掉（ver -867，Ray：「不用導覽字格」）——
+     那幾片目的地字格會壓在羊皮紙上；看地圖的時候不需要它們。 */
+  if(layer) layer.classList.add('map-on');
+}
+
 function shopEnter(opts){
   const n=node();
   /* 臨時攤（ver -732）：只擺攤鈕 —— 沒有店主立繪（那是本店的畫面），
@@ -1104,7 +1167,9 @@ function refreshArrows(){
 function showNav(on){
   if(layer) layer.classList.toggle('on', !!on);
   document.body.classList.toggle('town-nav', !!on && !!townId);
+  if(!on) mapClose();          // 對白/演出接手＝地圖收掉（它跟著 nav 活，ver -867）
   if(on){
+    showMapBtn();              // 槍棺地圖鈕（有 map 資料的城才出，ver -867）
     updateCompass();
     /* ⚠⚠ **字格的位置要在 `.on` 之後才量**（ver -406 修）：`#townNav` 沒有 `.on`
        時整層是 `display:none`，那時候量目的地字格得到的是 **0×0** —— 夾回畫面內那一段

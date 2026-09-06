@@ -49,7 +49,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.07-866';
+export const VERSION = 'ver 2026.09.07-867';
 
 export const GAME_CONFIG = {
 
@@ -1817,10 +1817,12 @@ export const GAME_CONFIG = {
          雙槍的掛飾但是**固定不可換**」）—— `perks` 先空著。
          「固定不可換」是它與雙槍掛件的分野：掛件玩家自己換，這個是升上去就定了。 */
     weaponMod: { perLv:0.20, statLv:4, costMul:[0.5, 1, 1.5, 2, 3] },
-    /* ══ 杰羅的賭博式改造（ver -866，Ray 的 E 規格）══
-       「50%機率會失敗，白花錢。成功的話增加增益15~50%隨機」——
-       與 weaponMod（固定 +20%/階）分開存（progress 的 jeroMod）、**相乘**；
-       乘點只有 weapon.js 的 subgunPowerMul 一支（鐵律 7）。
+    /* ══ 杰羅的賭博式改造（ver -866；-867 Ray 更正）══
+       「50%機率會失敗，白花錢。成功的話增加增益15~50%隨機」
+       ⚠⚠ 放大的是**改造增益**不是直接加火力（Ray：「杰羅火力不是直接+50%，
+         是改造增益＋50%」）：總乘數＝1＋改造增益×(1＋杰羅加成)，
+         乘點只有 weapon.js 的 subgunPowerMul 一支（鐵律 7）。
+         沒改裝過的槍他不收（loot.js 的 jeroReady 擋）。
        ⚠ `costMul` 是**暫定**（Ray 沒給費用）：一次改造費＝槍價 × 0.5。 */
     jeroMod: { costMul:0.5, failP:0.5, bonus:[0.15, 0.50] },
     /* 陸戰反擊的「額外音」按類別（ver -816，Ray）——沒有艦載音覆寫（`state.weaponSound`）

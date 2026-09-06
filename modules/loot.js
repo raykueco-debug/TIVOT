@@ -267,6 +267,9 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
     const id=sel.slice(5);
     if(wOwned().indexOf(id)<0) return false;
     if(prog.jeroMod(id)>0) return false;               // 改成的槍不再收
+    /* ⚠ 杰羅放大的是**改造增益**（ver -867，Ray 更正）—— 沒改裝過的槍增益是 0，
+       放大 0 還是 0，收錢等於詐騙 → 他不收（列上標「先去改裝」）。 */
+    if(prog.weaponMod(id)<=0) return false;
     return inv.getMoney() >= jeroCost(id);
   };
   let jeroMsg=null;   // 杰羅這一把的結果台詞（換頁／換槍就清）
@@ -278,11 +281,15 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
     return head + list.map(id=>{
       const w=(GAME_CONFIG.weapons||{})[id]||{};
       const b=prog.jeroMod(id), cost=jeroCost(id);
-      /* 「額外顯示額外增益」（Ray）：成功的那把直接把加成標在列上。 */
+      /* 「額外顯示額外增益」（Ray）：成功的那把直接把加成標在列上。
+         ⚠ 標的是**改造增益 +N%**（ver -867，Ray 更正：放大的是改造增益不是火力）。 */
+      const noMod = !(prog.weaponMod(id)>0);
       const tag = b>0
-        ? '<span class="mod-mat">改造済　火力 +'+Math.round(b*100)+'%</span>'
+        ? '<span class="mod-mat">改造済　改造增益 +'+Math.round(b*100)+'%</span>'
+        : noMod
+        ? '<span class="mod-mat lack">先去改裝再來</span>'
         : '<span class="mod-mat'+(inv.getMoney()>=cost?'':' lack')+'">'+cost+' '+inv.moneyName()+'</span>';
-      return '<div class="shop-row mod-row'+(b>0?' done':'')+(pick==='jero:'+id?' pick':'')+'"'
+      return '<div class="shop-row mod-row'+((b>0||noMod)?' done':'')+(pick==='jero:'+id?' pick':'')+'"'
            +   ' data-id="jero:'+id+'">'
            + '<span class="loot-name"><i class="mod-star">'+(w.cat||'')+'</i>'
            +   (w.shortName||w.name||id)+'</span>'
@@ -296,7 +303,7 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
     const b=prog.jeroMod(id);
     return (w.image ? '<img class="jero-gunimg" src="'+asset(w.image)+'" alt="">' : '')
          + statTable(id)
-         + (b>0 ? '<div class="wp-vs">杰羅改造済：火力 +'+Math.round(b*100)+'%</div>' : '')
+         + (b>0 ? '<div class="wp-vs">杰羅改造済：改造增益 +'+Math.round(b*100)+'%</div>' : '')
          + (jeroMsg ? '<div class="wp-flavor">'+jeroMsg+'</div>' : '');
   }
   /* 選中的那一項：`star:<id>` 或 `wmod:<id>`（兩種東西同一個 `pick`，鐵律 8）。 */

@@ -63,13 +63,15 @@ export function init(a){ api = a; }
 // 寫入一律走 state.setPickedPartner（唯一管道）。
 
 /* ══ 副武器的火力乘數 —— **唯一的計算點**（鐵律 7；ver -866 收攏）══
-   ＝ 槍店改裝（wmod：每階 +20%，第 5 階不加數值 → 夾 statLv）
-   × 杰羅改造（jeroMod：成功一次 +15~50%，兩套相乘）。
+   ＝ 1 ＋ 改造增益 ×（1 ＋ 杰羅加成）。
+   ⚠⚠ 杰羅放大的是**改造增益**，不是直接加火力（ver -867，Ray：「杰羅火力不是
+     直接+50%，是改造增益＋50%」）—— 例：改裝 3 階＝+60%，杰羅 +50% → +90%。
+     沒改裝過的槍（增益 0）杰羅放大不了什麼，所以他不收（jeroReady 擋）。
    weaponCounter 的 scale、dmgRoll、coopCounter 全部問這一支 —— 各算一份必然走鐘。 */
 export function subgunPowerMul(id){
   const WM = GAME_CONFIG.tuning.weaponMod || {};
   const modLv = Math.min(prog.weaponMod(id), WM.statLv || 99);
-  return (1 + modLv * (WM.perLv || 0)) * (1 + prog.jeroMod(id));
+  return 1 + (modLv * (WM.perLv || 0)) * (1 + prog.jeroMod(id));
 }
 
 /* ============================================================================

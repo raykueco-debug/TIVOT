@@ -2203,6 +2203,22 @@ export const TOWNS = {
     /* 荒野圖（ver -862，Ray：「森林也會打烊是怎樣」）：19:00 全域打烊那條不罩這裡
        —— 野外的路沒有門可以關（判定在 modules/town.js 的 isOpenNow，鐵律 8）。 */
     wilderness: true,
+    /* ══ 槍棺地圖（ver -867，Ray 的 H 需求：「控制介面右下角放地圖選項，點開
+       控制面板變成那張地圖，所在地閃爍光點」）══
+       `spots`＝各節點在**圖上**的位置（比例座標，對著 Ray 交的手繪圖量的：
+       Woods=入口／Forest=空地／Beast Nest=獸巢／Shallows=淺灘／River=河谷／
+       Old Hunt=舊獵道／Cave=岩窟／Hill=高地／Cliff=斷崖／Ruins=遺跡）。
+       ⚠ 開圖規則（Ray）：**城村＝一進去就有全圖；荒野（wilderness）＝走過的
+         節點才亮**（判定在 modules/town.js 的 renderMap，讀 seen_* 旗）。 */
+    map: {
+      img: 'resources/map/map_shinierforest.webp',
+      spots: {
+        entry: [0.697, 0.857], glade: [0.635, 0.659], nest:  [0.846, 0.652],
+        shoal: [0.423, 0.618], valley:[0.232, 0.672], trail: [0.383, 0.447],
+        cave:  [0.187, 0.449], high:  [0.426, 0.223], cliff: [0.752, 0.313],
+        ruins: [0.864, 0.168],
+      },
+    },
     /* ══ 野生刷怪（ver -862，Ray 的 F 表）══════════════════════════════════
        實作只有 modules/town.js 的 `wildActDue` 一支（鐵律 8）。規則：
        · `rate`＝隨機池的出怪率（每次抵達擲一次；踩過的格照樣擲）。
