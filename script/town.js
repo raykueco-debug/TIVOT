@@ -1022,11 +1022,12 @@ export const TOWNS = {
          ⚠ -664 曾經寫成 `hourOfDay:[8,18]`（等玩家自己睡到早上）——
            那條路現在走不到了，但那個時段寫法本身是對的，留在引擎裡備用。 */
       /* ⚠⚠ **這一格同時進 S4**（ver -674，Ray：「把 stage4 設在第二天旅店醒來」）。
-         章節編號：S0 開頭／S1 第一次進帝都／S2 第一次出航／**S4 北方泊地第二天早上**
-         （S3 還沒定，見 §6.5.4.1 那張表）。
+         章節編號（ver -857 重編，Ray：「沒有第二章，把第三章變成第二章以降回推」）：
+         S0 開頭／S1 進帝都／S2 出航＋北泊第一天／**S3 北泊第二天早上**／
+         S4 北泊出航／S5 夏爾村。
          ⚠ 走閘門自己的 `stage` 欄位（`clockGate` 在演台詞之前就 `setStage`）——
            不要在腳本裡另外寫一拍去設它（鐵律 8：那一支已經在做這件事了）。 */
-      { flag:'np_day3', need:'np_night_done', clockTo:8, stage:4,
+      { flag:'np_day3', need:'np_night_done', clockTo:8, stage:3,
         goto:'inn', enterAgain:true },
       /* ④ 墓地那一幕演完（翌朝的日期卡收尾）→ **一走動就被帶去碼頭道別**
          （ver -741，Ray 的 stage2 稿：「隔天八點，碼頭」）。
@@ -1048,14 +1049,15 @@ export const TOWNS = {
        ⚠ 只有 Day／Night 兩張：其餘時段由 `BAND_FALL` 退路吃掉
          （Dawn/Dusk→Day、midnight→night），不必補圖。
        ⚠ 判定與取用只有 `modules/town.js` 的 `bgCandsOf` 一處（鐵律 8）。
-       ⚠ `fromStage:5` ＝北方泊地之後那一章的**暫填號**（同 `STAGE_DEFAULT`／
-         `FEATURE_FROM`／`talks` 的 `from`）—— 章節編號定案後這四處要一起對。 */
-    /* ══ ver -753（Ray）══ stage5 起：曲子換 Harbor Morning（`bgm`，townBgm 讀，
+       ⚠ ver -857 重編號定案：`fromStage:4` ＝**北泊出航章（S4）**起吃重建組
+         （原編號的 S5）。STAGE_DEFAULT／FEATURE_FROM 仍是 7（在所有內容之上，
+         不必動）；talks 的 from 維持暫填（索菈娜/安雅入隊章 Ray 未定）。 */
+    /* ══ ver -753（Ray）══ 北泊出航章起：曲子換 Harbor Morning（`bgm`，townBgm 讀，
        進 credit）；且 **stage4 之前的對話都不會再觸發**（`muteTalksFrom`，
        modules/town.js 的 mutedTalks —— 進場對白／acts／gates／onLeave 整批封存，
-       日後 S5 的北泊稿在段落上標 `fromStage:5` 就能穿過封存）。 */
-    muteTalksFrom: 5,
-    rebuild: { fromStage:5, bgm:'harbor', bg:{
+       日後 S4（重建後）的北泊稿在段落上標 `fromStage:4` 就能穿過封存）。 */
+    muteTalksFrom: 4,   /* ver -857 重編號：原 5（北泊出航章）對位成 4 */
+    rebuild: { fromStage:4, bgm:'harbor', bg:{
       entrance:'Northport_Square',   west:'Northport_West',     north:'Northport_North',
       east:'Northport_East',         port:'Northport_Port',     church:'Northport_Church',
       cemetery:'Northport_Cemetery', cityhall:'Northport_Cityhall',
@@ -1171,7 +1173,7 @@ export const TOWNS = {
               pri(null,'太過份了！就算是瓦爾士，我們也是教區的子民啊！'),
               pri(null,'派聖約騎士團來啊！'),
               ren('talkserious','這兩位就是聖約騎士團的菁英喔。'),
-              pri(null,'就這樣的小鬼？'),
+              pri(null,'就這樣的孩子？'),
               ren('talkserious','他們的實力，我以十三課監察官的身份保證。'),
               pri(null,'十、十三課？'),
               pri(null,'……我知道了。'),
@@ -1180,7 +1182,7 @@ export const TOWNS = {
               nou('steady','請交給我們吧。'),
               /* 尖叫、魔物吼叫（空畫面拍）。 */
               { speaker:'PLAYER', text:'', auto:1100, se:'se_saintroar', shake:true },
-              ren('cringe','還是來遲了嗎……'),
+              ren('cringe','守軍要擋不住了嗎……？'),
               { speaker:'PLAYER', blank:true },
               nou('runserious','沒錯！我們上吧！'),
             ] },
@@ -1192,11 +1194,11 @@ export const TOWNS = {
              ⚠ **`np_leave_ok` 的擁有者就是這一段**（鐵律 9：-655 留名字等的那支旗）
                —— 揮手那一拍插上，「不能丟下同伴」的 hold 從此解除。
              ⚠ 站位用預設：諾／蕾本位左、安／群眾本位右 —— 兩側各自輪轉（§6.5）。 */
-          /* ⚠ `stage:5`（ver -742，Ray：「北泊出航插 stage5，插在眾人給諾薇兒
-             送行那一段」）—— 章節表：S4 北泊第二天早上 → **S5 北泊出航**。
+          /* ⚠ `stage:4`（-857 重編號；原 -742 的「北泊出航插 stage5」）——
+             章節表：S3 北泊第二天早上 → **S4 北泊出航**。
              試飛預設與暫填組同步推到 7（STAGE_DEFAULT／FEATURE_FROM／索菈娜的
              talks from —— 安雅的留 5：她這一段起真的在船上）。 */
-          { flag:'np_farewell', need:'np_grave_done', stage:5, lines:[
+          { flag:'np_farewell', need:'np_grave_done', stage:4, lines:[
             /* bgm_flight（ver -745，Ray 指定）：送行就換上航行曲——啟程的語氣。 */
             Object.assign(nou('bigsmile','那麼，大家保重了！'), { bgm:'flight' }),
             crd(null,'諾薇兒小姐！'),
@@ -1755,7 +1757,7 @@ export const TOWNS = {
            時間強制為晚上七點」）：`clockTo:19` ＝ advanceToNextHour(19)，觸發點在剛過
            18:00，所以是**當天 19:00**（clockGate 在演台詞/轉場之前先推）。 */
       { flag:'sv_evening', need:'sv_arrive', hourOfDay:18, clockTo:19,
-        goto:'sorahome', enterAgain:true, stage:6,   // 回到索拉娜小屋後的劇情＝S6（ver -821，Ray）
+        goto:'sorahome', enterAgain:true, stage:5,   // 回到索拉娜小屋後的劇情＝S5（-857 重編號；原 -821 的 S6）
         lines:[ nou('front','找到你了！大家都在索菈娜家等著喔。') ] },
     ],
     nodes: {

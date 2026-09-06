@@ -269,13 +269,33 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
     for(const k in (r.items||{})) if(inv.count(k) < r.items[k]) return false;
     return true;
   }
-  function modTabsHtml(){
-    const t=(k,n)=>'<button class="mod-tab'+(modTab===k?' on':'')+'" data-mod="'+k+'"'
-                 + ' type="button">'+n+'</button>';
-    return '<div class="mod-tabs">'+t('main','主武器')+t('sub','副武器')+'</div>';
+  /* ══ 改裝頁入口＝四大格（ver -857，Ray：「應該要分四大格，嘉尼美德（主武器）、
+     機槍、霰彈、步槍，點進去才是各武器分類，現在的 ui 對手機不友好」）══
+     modTab：null＝四大格入口／'main'＝九星頁／'cat:<類>'＝那一類的副武器頁。
+     ⚠ 分類是**算出來的**（weapons 表的 cat 去重，鐵律 7）：日後加一類武器，
+       格子自己多一格，不列死名單。-716 的「主／副」兩頁籤已被這一版取代。 */
+  function weaponCats(){
+    const seen=[]; const W=GAME_CONFIG.weapons||{};
+    for(const id in W){ const c=W[id].cat; if(c && seen.indexOf(c)<0) seen.push(c); }
+    return seen;
   }
+  function modGrid(){
+    const lit=STARS().filter(st=>prog.starCount(st.id)>0).length;
+    const cells=[{k:'main', t:(GAME_CONFIG.mainGun||{}).name||'主武器',
+                  tag:(GAME_CONFIG.mainGun||{}).tag||'', s:'已點亮 '+lit+' / '+STARS().length}]
+      .concat(weaponCats().map(c=>{
+        const n=wOwned().filter(id=>(GAME_CONFIG.weapons[id]||{}).cat===c).length;
+        return {k:'cat:'+c, t:c, tag:'副武器', s:'持有 '+n+' 把'};
+      }));
+    return '<div class="mod-grid">'+cells.map(c=>
+        '<div class="mod-cell" data-modcell="'+c.k+'">'
+      +   '<i>'+c.tag+'</i><b>'+c.t+'</b><span>'+c.s+'</span>'
+      + '</div>').join('')+'</div>';
+  }
+  const modBack='<div class="mod-back" data-modback="1" role="button">‹　返回分類</div>';
   function modRows(){
-    if(modTab==='sub') return modTabsHtml()+modSubRows();
+    if(!modTab) return modGrid();
+    if(modTab!=='main') return modBack+modSubRows(modTab.slice(4));
     const lit=STARS().filter(st=>prog.starCount(st.id)>0).length;
     const rows=STARS().map(st=>{
       const n=prog.starCount(st.id), r=modRecipe(st.id), done=modDone(st);
@@ -299,13 +319,17 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
                            + r.money+' '+inv.moneyName()+'</span>' : ''))
            + '</span></div>';
     });
-    return modTabsHtml()
+    return modBack
          + '<div class="mod-head">'+((GAME_CONFIG.mainGun||{}).name||'主武器')
          + '　已點亮 '+lit+' / '+STARS().length+'</div>' + rows.join('');
   }
-  /* ── 副武器：一把一列，只收錢（ver -714）── */
-  function modSubRows(){
-    const sub=wOwned().map(id=>{
+  /* ── 副武器：一把一列，只收錢（ver -714；-857 起**逐類**進來，cat 由格子帶） ── */
+  function modSubRows(cat){
+    const list=wOwned().filter(id=>!cat || (GAME_CONFIG.weapons[id]||{}).cat===cat);
+    if(!list.length)
+      return '<div class="mod-head">'+(cat||'副武器')+'</div>'
+           + '<div class="bag-empty">還沒有這一類的武器。</div>';
+    const sub=list.map(id=>{
       const w=GAME_CONFIG.weapons[id]||{};
       const lv=prog.weaponMod(id), max=prog.weaponModMax(id), nx=wNext(id), cost=wCost(id);
       const statLv=WM().statLv||max;
@@ -320,7 +344,7 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
            +   (w.shortName||w.name||id)+'　'+lv+'/'+max+'</span>'
            + '<span class="mod-need">'+nxt+'</span></div>';
     }).join('');
-    return '<div class="mod-head">改裝（每階 攻擊 +'
+    return '<div class="mod-head">'+(cat||'副武器')+'　改裝（每階 攻擊 +'
          + Math.round((WM().perLv||0)*100)+'%，第 '+((WM().statLv||4)+1)+' 階為特殊能力）</div>'
          + sub;
   }
@@ -328,11 +352,9 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
   const TABS=(cfg.tabs&&cfg.tabs.length)?cfg.tabs:['buy','sell'];
   const TABNAME=Object.assign({ buy:'買', sell:'賣', mod:'改裝' }, cfg.tabName||{});
   let tab=TABS[0], pick=null;
-  /* 改裝頁的子分頁（ver -716，Ray：「武器改裝要分頁，主武器跟副武器分開」）。
-     ⚠ 做成**子分頁**而不是第四個主頁籤：上排已經有三個，再加一個在 390px 上會折行；
-       而且「買／賣／改裝」是三件事，主副武器都是「改裝」底下的兩半。
-     ⚠ 換子分頁要清 `pick`：兩邊的 id 前綴不同，留著會讓結帳鈕亮著卻按不動。 */
-  let modTab='main';
+  /* 改裝頁的導覽（ver -857 由 -716 的「主／副」兩頁籤改成四大格入口，見 modGrid）。
+     ⚠ 換頁要清 `pick`：主副的 id 前綴不同，留著會讓結帳鈕亮著卻按不動。 */
+  let modTab=null;
   /* ══ 購物車（ver -496，Ray：「商店購物可以選要購買的商品數量一次結帳」）══
      `cart[id]=n`：每一列自己的 −/＋ 加減，底下一顆「結帳」一次付清。
      取代 -405 的「選一項→調數量→買下」——那一套一次只能結一項。
@@ -459,6 +481,10 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
               '<div class="wp-flavor">'+GAME_CONFIG.weapons[pick].flavor+'</div>' : '');
     }else desc = (d.desc||'');
 
+    /* ⚠ 固定捲軸（ver -857，Ray：「按下改裝鈕會跳回頁首，這不行」）：
+       render 是整張 innerHTML 重建，清單的捲動位置會歸零 ——
+       重建前記下、重建後放回（鐵律 8：所有走 render 的路徑一次全好）。 */
+    const _sl=ov.querySelector('.shop-list'); const _scroll=_sl?_sl.scrollTop:0;
     ov.innerHTML='<div class="loot-panel shop-panel">'
       + '<div class="loot-title">'+(cfg.title||'商店')
       +   (o.info ? '<span class="shop-info">'+o.info+'</span>' : '')+'</div>'
@@ -496,6 +522,8 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
       +   '<button class="loot-ok" type="button">關閉</button>'
       + '</div></div>';
 
+    const _sl2=ov.querySelector('.shop-list'); if(_sl2 && _scroll) _sl2.scrollTop=_scroll;
+
     /* 點標題 → 靠左停 ⇄ 全寬（ver -404，Ray 指定）。⚠ 只是加減 `dock-left` 這個
        class，版面兩邊都用這一份的既有規則（鐵律 8）。 */
     if(o.dock){
@@ -507,12 +535,17 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
     ov.querySelectorAll('.shop-tab').forEach(b=>b.addEventListener('click', e=>{
       e.stopPropagation(); tab=b.dataset.tab; pick=null; cart={};
       try{ SFX.menuClick(); }catch(_){} render(); }));
-    ov.querySelectorAll('.mod-tab').forEach(b=>b.addEventListener('click', e=>{
+    ov.querySelectorAll('.mod-cell').forEach(b=>b.addEventListener('click', e=>{
       e.stopPropagation();
-      if(b.dataset.mod===modTab) return;
       try{ SFX.menuClick(); }catch(_){}
-      modTab=b.dataset.mod; pick=null; render();
+      modTab=b.dataset.modcell; pick=null; render();
     }));
+    const mb=ov.querySelector('.mod-back');
+    if(mb) mb.addEventListener('click', e=>{
+      e.stopPropagation();
+      try{ SFX.menuClick(); }catch(_){}
+      modTab=null; pick=null; render();
+    });
     ov.querySelectorAll('.shop-row').forEach(b=>b.addEventListener('click', e=>{
       e.stopPropagation();
       if(b.classList.contains('out')) return;      // 售完的那一列點不動

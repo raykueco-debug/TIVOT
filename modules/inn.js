@@ -778,8 +778,22 @@ export function relayout(){
         const st=story.stageEl(), sr=st.getBoundingClientRect();
         const half=a.width/2;
         let nx=(c.left-sr.left)-half-10;                                   // 睡覺左側
-        if(nx < half+8) nx=Math.min(sr.width-half-8, (c.right-sr.left)+half+10);  // 塞不下改右側
-        bs.style.left=nx+'px';
+        if(nx < half+8){
+          /* ⚠⚠ 右側的退路也要**讓開門欄**（ver -857，Ray：「坐坐鈕移到諾薇兒門口，
+             你是想幹什麼？」）：傍晚分支二之後對話框把兩顆鈕往上夾到重疊，
+             這條退路把坐坐推到睡覺右側 —— 而右側就是伙伴門那一欄（-407 的夾
+             只做在 put() 裡，這裡漏了同一道）。右側也塞不下＝改放睡覺鈕正上方。 */
+          let rb=sr.width-half-8;
+          const dl=doorLeft();
+          if(dl!=null) rb=Math.min(rb, dl-sr.left-half-8);
+          nx=(c.right-sr.left)+half+10;
+          if(nx>rb){
+            bs.style.left=((c.left+c.right)/2-sr.left)+'px';
+            bs.style.top =Math.max(a.height/2+8, (c.top-sr.top)-a.height/2-10)+'px';
+            nx=null;
+          }
+        }
+        if(nx!=null) bs.style.left=nx+'px';
       }
     }
   }

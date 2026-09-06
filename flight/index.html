@@ -521,7 +521,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -856';
+const FLIGHT_VER = 'ver -857';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -10082,7 +10082,8 @@ const STAGE1_NAG  = [{ who:'renna', text:'別晃了，趕快往北方泊地去�
    同一張表，鐵律 1）。判定只有 `placeLockedNag` 一支（鐵律 8）：
    降落（doLand）與名牌點擊（enterPlace）都問它，**擋在扣時間之前**
    （同 stage1Blocked「沒進去就不該收時間」的理由）。 */
-const PLACE_STAGE_FROM = { shinier:5, '夏爾村':5 };
+/* ver -857 章節重編號：夏爾村在**北泊出航章（S4）**起可進（原編號的 S5）。 */
+const PLACE_STAGE_FROM = { shinier:4, '夏爾村':4 };
 const PLACE_LOCK_NAG = [
   { who:'renna', text:'這個地方跟任務無關吧？請繼續任務。' },
   { who:'renna', text:'不然我扣分喔。' },

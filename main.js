@@ -124,6 +124,29 @@ SFX.setLayerBase((GAME_CONFIG.tuning.loudness||{}).layer);
 SFX.setVoiceChain(GAME_CONFIG.tuning.voiceChain);
 SFX.setVoiceDuck(GAME_CONFIG.tuning.loudness && GAME_CONFIG.tuning.loudness.voiceDuck);   // 語音時 BGM 閃避（ver -847）
 
+/* ══ 閒置熄滅（ver -857，實機收網）══════════════════════════════════════
+   Ray 實機 HUD：城鎮玩 3 分鐘就熱 —— fps 60、節流 x1.00、網 0、JS 零負載，
+   排除到只剩**永不停歇的 60fps 全屏合成**：城鎮 7 條裝飾動畫讓 GPU 每一幀
+   都重合成整個 3×DPR 畫面。溫度的來源不是「誰在算」，是「畫面從不靜止」。
+   解法：**10 秒沒有任何輸入 → 裝飾動畫全部暫停**（畫面靜止＝合成器睡覺、
+   GPU 歸零），任何觸控/按鍵**同步**恢復（pointerdown 那一刻就拿掉 class，
+   玩家看不到凍結感）。
+   ⚠ **戰鬥中不熄**（state.over===false 不掛）：警戒脈動是玩法資訊。
+   ⚠ 熄的是 CSS 動畫；打字機/演出走 JS 計時器，該動的照動（有變化就有幀）。
+   ⚠ 這與 ❄ 全凍結是兩件事：那是診斷用手動開關，這是常駐的省電機制。 */
+(function idleDim(){
+  const IDLE_MS=10000;
+  let t=null;
+  const off=()=>{ document.body.classList.remove('perf-idle'); };
+  const arm=()=>{ clearTimeout(t);
+    t=setTimeout(()=>{ if(state.over) document.body.classList.add('perf-idle'); }, IDLE_MS); };
+  const bump=()=>{ off(); arm(); };
+  ['pointerdown','pointermove','keydown','touchstart','wheel'].forEach(ev=>
+    addEventListener(ev, bump, {passive:true, capture:true}));
+  document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) bump(); });
+  arm();
+})();
+
 /* ── 全域靜音（ver -856 起住在**選單面板**，Ray：「把靜音鈕拿掉，放到系統選單裡」；
    浮動鈕已拆）───────────────────────────
    走 SFX.setMasterVolume(0)：SFX（合成音與取樣音經 limiter 後的主音量節）與 BGM
@@ -1853,16 +1876,21 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
        ⚠ 只凍主頁 document：飛行 iframe 是它自己的世界，這顆管不到。 */
     const fz=document.createElement('div'); fz.id='perfFreeze'; fz.textContent='❄';
     document.body.appendChild(fz);
-    let frozenAnims=[];
+    let frozenAnims=[], frozeBattle=false;
     fz.addEventListener('click', e=>{ e.stopPropagation();
       if(!window.__frozen){
         window.__frozen=true; fz.classList.add('on');
+        /* 戰鬥中也要真的靜止（ver -857，Ray：「敵攻擊行為完全不會停」）——
+           掛**既有的**真暫停（pauseForDialog：凍大絕排程/紅點/碼表/延時倒數，
+           教學對話同一支，鐵律 8）；解凍走 resumeFromDialog 原樣接回。 */
+        if(!state.over){ try{ combat.pauseForDialog(); frozeBattle=true; }catch(_){} }
         try{ frozenAnims=document.getAnimations().filter(a=>a.playState==='running');
              frozenAnims.forEach(a=>{ try{a.pause()}catch(_){} }); }catch(_){ frozenAnims=[]; }
         try{ SFX.stopBgm(0); }catch(_){}
         try{ const P=window.__perf; P&&[...P.media].forEach(m=>{ try{m.pause()}catch(_){} }); }catch(_){}
       }else{
         window.__frozen=false; fz.classList.remove('on');
+        if(frozeBattle){ try{ combat.resumeFromDialog(); }catch(_){} frozeBattle=false; }
         frozenAnims.forEach(a=>{ try{a.play()}catch(_){} }); frozenAnims=[];
         try{ window.__hudRafRestart&&window.__hudRafRestart(); }catch(_){}
       }

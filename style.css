@@ -1319,6 +1319,11 @@
      戰鬥層自己回來，不影響開棺演出。 */
   body.flight-on #top, body.flight-on #bottom{ visibility:hidden; }
   body.flight-on #top *, body.flight-on #bottom *{ animation-play-state:paused !important; }
+  /* ══ 閒置熄滅（ver -857）：10 秒無輸入＝裝飾動畫全停 → 畫面靜止 → GPU 睡覺。
+     掛法見 main.js 的 idleDim（戰鬥中不掛 perf-idle，警戒脈動不受影響）。
+     範圍是**舞台與首頁全部動畫**：熄的當下玩家本來就沒在動，凍在原地無感；
+     一碰螢幕 class 同步拿掉、原地續播。 */
+  body.perf-idle #storyStage *, body.perf-idle #home *{ animation-play-state:paused !important; }
   #home{position:absolute;inset:0;display:none;flex-direction:column;
     align-items:center;justify-content:flex-start;z-index:50;text-align:center;
     background:radial-gradient(120% 90% at 50% 30%,#1a1330,#07050c 90%);
@@ -1715,9 +1720,14 @@
    *  #tutTouch＝對話期間全畫面點擊層（z-36 < corner-btn 37 → 退出/跳過仍可點）。 */
   #tutCast{position:absolute;inset:0;z-index:20;display:none;pointer-events:none;}
   #tutCast.on{display:block;}
+  /* ⚠⚠ **filter 不進 transition**（ver -857，Ray：「手機版夏爾村開場對話，
+     人都站到對話框上了」）：iOS 會把**過渡中的 filter** 抬成獨立合成層、
+     蓋過 z 較高的 #tutBubble（8000）—— 與 dlg-pause 那條「盤面壓過對話框」
+     同一族（桌機 Chrome 重現不了，實機必現）。亮暗改瞬切，promotion 的
+     來源就沒了；transform 的過渡照留（滑入滑出）。 */
   .tut-portrait{position:absolute;bottom:0;height:88%;max-width:62%;object-fit:contain;
     object-position:bottom;filter:brightness(.38) saturate(.75);
-    transition:transform .45s ease,filter .25s ease;}
+    transition:transform .45s ease;}
   /* .in 逐立繪掛在 img 上：只有說到話的角色才在場（單人段落不出現另一位） */
   #tutCastL{left:-2%;transform:translateX(-108%);}
   #tutCastR{right:-2%;transform:translateX(108%);}

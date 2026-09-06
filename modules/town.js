@@ -2028,12 +2028,13 @@ export function open(town, node, opts){
      守門看**值**不看旗標：只從 0 升上來 —— 讀檔在更後面的章節不會被倒退，
      試玩版（無鑰匙，getStage 回測試預設 5）也不受影響。 */
   if(townId==='capital' && prog.getStage()===0) prog.setStage(1);
-  /* 初進北方泊地＝S3（ver -600，Ray：「在初進入北境時插 Stage3 的旗，stage2 拔掉」）。
-     ⚠ 守門看**值**不看旗標（同上面那一條，鐵律 9）：只從 2 升上來 ——
-       讀檔在更後面的章節不會被倒退，試玩版（無鑰匙，預設 5）也不受影響。
-     ⚠ 「stage2 拔掉」是 `setStage(3)` 的必然結果：階段是**一個值**不是一疊旗，
-       升上去舊的那一個就不成立了（`gameStage()===2` 的地圖鎖因此自動解開）。 */
-  if(townId==='northport' && prog.getStage()===2) prog.setStage(3);
+  /* ⚠⚠ 章節重編號（ver -857，Ray：「章節編排錯誤，沒有第二章 —— 把第三章變成
+     第二章，以降回推」）：初進北泊**不再升段** —— S2 涵蓋「出航～北泊第一天」
+     （-600 的「初進北境插 Stage3」作廢）。新表：S0 開頭／S1 進帝都／S2 出航＋北泊
+     ／S3 北泊第二天（np_day3 閘門設）／S4 北泊出航（np_farewell 設）／S5 夏爾村
+     （sv_evening 設）。
+     ⚠ `gameStage()===2` 的地圖鎖因此**撐到 np_day3 為止**才解 —— 那段期間本來就
+       不可離港（sail.hold），行為無差。 */
   /* 被抬回來的（ver -496，Ray：「城鎮中戰鬥死亡就回旅店」）：這一次抵達由
      `enter()` 消化 —— 初見還沒看過就演節點的 `wake` 那一拍（見 enter 的說明）。 */
   carriedIn = !!(opts && opts.carried);

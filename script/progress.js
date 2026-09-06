@@ -430,57 +430,61 @@ export const CHAPTERS = [
     stage:1, clockHour:7, named:true,
     flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open'],
     enter:'town', town:'capital', node:'dock' },
-  /* ══ Stage 3（ver -600，Ray：「寫入章節選擇讓我可以直接測」）══
+  /* ⚠⚠ 章節重編號（ver -857，Ray：「章節編排錯誤，沒有第二章 —— 修正把第三章
+     變成第二章，以降回推」）：新表 S0 開頭／S1 進帝都／S2 出航＋北泊第一天／
+     S3 北泊第二天／S4 北泊出航／S5 夏爾村。落點：初進北泊**不再升段**
+     （town.open 那一條拔了）、np_day3 設 3、np_farewell 設 4、sv_evening 設 5，
+     PLACE_STAGE_FROM 與 rebuild.fromStage 對位到 4。 */
+  /* ══ Stage 2（原 -600 的 Stage 3）══
      北方泊地：碼頭那一幕（司祭）→ 城鎮戰五格 → 教堂 Boss → 聖徒化教學戰。
      ⚠ `node` **不寫**：第一次降落走城上的 `firstEntry`（碼頭），跟正常玩一樣。
-     ⚠ `stage:3` ＝ Ray 指定「初進北境插 Stage3」；正常玩是 `town.open` 從 2 升上來，
-       這裡是跳關工具，直接寫。
+     ⚠ `stage:2` ＝正常玩 sailOut 已把 1 升成 2，北泊抵達不再另升。
      ⚠ `flags` 只列**擋路的那幾支**（§6.5.8）：出航／船塢那一段要當成看過，
        不然一進城會被主線段落抓走。城鎮戰與碼頭那一幕的旗標**故意不給** ——
        那正是要測的東西。 */
-  { id:'stage3', name:'Stage 3', sub:'北方泊地・碼頭 → 城鎮戰 → 教堂 → 聖徒化教學戰',
-    stage:3, clockHour:13, named:true,
+  { id:'stage2', name:'Stage 2', sub:'北方泊地・碼頭 → 城鎮戰 → 教堂 → 聖徒化教學戰',
+    stage:2, clockHour:13, named:true,
     flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open',
            'set_sail','got_ship','dock_day2'],
     enter:'town', town:'northport' },
-  /* ══ Stage 4（ver -677）══ 北方泊地**第二天早上在旅店醒來**（Ray 定的 S4 起點）。
+  /* ══ Stage 3（原 -677 的 Stage 4）══ 北方泊地**第二天早上在旅店醒來**。
      ⚠ `np_day3` 要給、`np_day3_done` **不要給**：那是「閘門已經用掉了」與
        「早上那一幕演過了」的分別 —— 給了前者才不會一進去又被閘門抓一次，
        不給後者那一幕才演得到（那正是要測的東西）。
      ⚠ `clockHour:8` ＝ `firstHourAt(8)`（開局是 6/13 11:00，所以是**隔天 08:00**）。
      ⚠ 安全區旗要給：北方泊地這時已經不打仗了，不給的話走一格就被城鎮戰抓走。
      ⚠ `node:'inn'` ＝直接站在旅店裡（那一幕就在那裡演）。 */
-  { id:'stage4', name:'Stage 4', sub:'北方泊地・第二天早上（旅店） → 自由探索 → 墓地',
-    stage:4, clockHour:8, named:true,
+  { id:'stage3', name:'Stage 3', sub:'北方泊地・第二天早上（旅店） → 自由探索 → 墓地',
+    stage:3, clockHour:8, named:true,
     flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open',
            'set_sail','got_ship','dock_day2',
            'np_port_arrive','np_clear_church','np_claws_done','safehouse_northport',
            'np_burial','np_burial_done','np_night','np_night_done','np_day3'],
     enter:'town', town:'northport', node:'inn' },
-  /* ══ Stage 5（ver -743，Ray：「stage5 沒做進章節選擇」）══
-     北泊出航：直接站在碼頭，送行那一段（np_farewell）就緒 —— 演完自動插 S5
+  /* ══ Stage 4（原 -743 的 Stage 5）══
+     北泊出航：直接站在碼頭，送行那一段（np_farewell）就緒 —— 演完自動插 S4
      並出航（羽蛇遭遇接著測）。
-     ⚠ `stage:4`：S5 是**送行那一段自己插的**（act 的 stage 欄位），
+     ⚠ `stage:3`：S4 是**送行那一段自己插的**（act 的 stage 欄位），
        章節工具只把人擺到那一段之前。
      ⚠ `np_depart` 要給（閘門已用掉——直接站在碼頭，不再被抓一次）；
        `np_farewell` **不給**（那正是要演的）。 */
-  { id:'stage5', name:'Stage 5', sub:'北泊出航・送行 → 羽蛇 → 甲板混亂',
-    stage:4, clockHour:8, named:true,
+  { id:'stage4', name:'Stage 4', sub:'北泊出航・送行 → 羽蛇 → 甲板混亂',
+    stage:3, clockHour:8, named:true,
     flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open',
            'set_sail','got_ship','dock_day2','flight_centipede_met',
            'np_port_arrive','np_clear_church','np_claws_done','safehouse_northport',
            'np_burial','np_burial_done','np_night','np_night_done','np_day3',
            'np_day3_done','np_anya_join','np_dock_ask','np_grave_done','np_depart'],
     enter:'town', town:'northport', node:'port' },
-  /* ══ Stage 6（ver -824，Ray：「stage6 沒進章節列表」）══
+  /* ══ Stage 5（原 -824 的 Stage 6）══
      夏爾村・回到索菈娜的家（那一夜）——直接站在索菈娜家，`sv_night_done` 就緒。
      ⚠ `sv_evening` 給（18:00 閘門已用掉、時鐘定在 19:00）＋`sv_arrive` 給（村子已抵達，
-       廣場那一幕不重播）；`sv_night_done` **不給**——那正是 S6 要演的「回小屋後的劇情」。
-     ⚠ `stage:6` 直接寫（正常玩是 sv_evening 閘門把它從 5 升上來，這裡是跳關工具）。
+       廣場那一幕不重播）；`sv_night_done` **不給**——那正是這一章要演的「回小屋後的劇情」。
+     ⚠ `stage:5` 直接寫（正常玩是 sv_evening 閘門把它從 4 升上來，這裡是跳關工具）。
      ⚠ `clockHour:19` ＝ firstHourAt(19)＝夜景（band 19:00 起，ver -816）；羽蛇/甲板/
-       man_sorana 都在飛行/scene（無城鎮旗），所以旗只需 S5 那批＋sv_arrive＋sv_evening。 */
-  { id:'stage6', name:'Stage 6', sub:'夏爾村・回到索菈娜的家（那一夜） → 村內戰',
-    stage:6, clockHour:19, named:true,
+       man_sorana 都在飛行/scene（無城鎮旗），所以旗只需 S4 那批＋sv_arrive＋sv_evening。 */
+  { id:'stage5', name:'Stage 5', sub:'夏爾村・回到索菈娜的家（那一夜） → 村內戰',
+    stage:5, clockHour:19, named:true,
     flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open',
            'set_sail','got_ship','dock_day2','flight_centipede_met',
            'np_port_arrive','np_clear_church','np_claws_done','safehouse_northport',
