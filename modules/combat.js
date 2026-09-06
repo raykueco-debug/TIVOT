@@ -1179,6 +1179,11 @@ function ensureDelayRing(){
   return sv;
 }
 function ringTick(){
+  /* 戰鬥結束＝迴圈自滅（ver -853，新探針抓到：bootIdle 建背景盤面時把這條 rAF
+     帶起來、之後沒有人收 —— 首頁掛機它每幀空跑到天荒地老，鐵律 10）。
+     over=true 只在勝敗定案／bootIdle（overkill 窗口 over 仍是 false，不受影響）；
+     下一場 startIntervalTimer 會重新拉起來。 */
+  if(state.over){ stopDelayRing(); return; }
   ringRaf=requestAnimationFrame(ringTick);
   const sv=ensureDelayRing(); if(!sv) return;
   const lim=effIntervalLimit()*1000;

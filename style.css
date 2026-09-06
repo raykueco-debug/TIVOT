@@ -697,6 +697,15 @@
   body.timeattack #giveUpBtn{display:flex;}
   #testClearBtn{top:10px;left:10px;right:auto;font-size:12px;letter-spacing:1px;color:var(--holy);border-color:var(--holy);display:none;}
   body.testmode #testClearBtn{display:flex;}
+  /* 效能探針的常駐開關（ver -852，Ray：「首頁開了以後進遊戲關不掉」）——
+     testmode 限定、右下角、z 高於飛行 iframe(8200)與所有 overlay，任何畫面都按得到。
+     半透明小顆，不擋盤面右下那一格的點擊面積太多。 */
+  #perfToggle{position:fixed;right:8px;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);
+    z-index:99999;width:34px;height:34px;display:none;align-items:center;justify-content:center;
+    border:1px solid rgba(120,255,120,.55);border-radius:8px;color:#4f4;
+    background:rgba(0,0,0,.55);font:16px/1 monospace;user-select:none;-webkit-user-select:none;
+    cursor:pointer;opacity:.65;}
+  body.testmode #perfToggle{display:flex;}
   /* 鎖血鈕（管理人測試，ver -463）：清盤右側。開啟＝亮金（.on）。 */
   #hpLockBtn{top:10px;left:64px;right:auto;font-size:12px;letter-spacing:1px;color:var(--holy);border-color:var(--holy);display:none;}
   body.testmode #hpLockBtn{display:flex;}

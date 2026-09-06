@@ -1739,49 +1739,101 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
        ∞動畫＝正在跑的無限循環動畫（**發燙的頭號嫌犯清單**）｜timer＝活著的
        setInterval（毫秒與函式片段）｜♪＝正在播的媒體元素（**BGM 疊播直接看這行**）｜
        src＝活著的 WebAudio 音源｜層＝home/stage/app/flight 誰活著。 */
-    let frames=0, lastT=performance.now(), fps=0;
-    const rafTick=t=>{ frames++; if(t-lastT>=1000){ fps=Math.round(frames*1000/(t-lastT)); frames=0; lastT=t; } if(hud) requestAnimationFrame(rafTick); };
+    let frames=0, lastT=performance.now(), fps=0, prevT=0, maxDt=0, maxDtShow=0;
+    const rafTick=t=>{ frames++;
+      if(prevT) maxDt=Math.max(maxDt, t-prevT); prevT=t;
+      if(t-lastT>=1000){ fps=Math.round(frames*1000/(t-lastT)); frames=0; lastT=t;
+        maxDtShow=Math.round(maxDt); maxDt=0; }
+      if(hud) requestAnimationFrame(rafTick); };
     requestAnimationFrame(rafTick);
     let ltMs=0, ltLog=[];
-    let po=null;
+    let po=null, po2=null, resLog=[];
     try{ po=new PerformanceObserver(l=>{ for(const e of l.getEntries()){ ltLog.push({t:performance.now(), d:e.duration}); } });
          po.observe({entryTypes:['longtask']}); }catch(_){}
+    /* 網路觀察（ver -852）：過去 5 秒抓了幾個請求、幾 KB —— 意外的載入迴圈
+       （同一張圖一直重抓、404 重試）在這行會現形。 */
+    try{ po2=new PerformanceObserver(l=>{ for(const e of l.getEntries()){ resLog.push({t:performance.now(), b:e.transferSize||0}); } });
+         po2.observe({entryTypes:['resource']}); }catch(_){}
+    const P0=window.__perf||{};
+    let lastSto=P0.sto|0, lastRaf=P0.raf|0;                 // 每秒速率取差分
+    const domBase=document.getElementsByTagName('*').length; // dom 的基線（看有沒有越長越多）
     const upd=()=>{
-      const P=window.__perf||{timers:{},media:new Set(),srcLive:0};
+      const P=window.__perf||{timers:{},media:new Set(),srcLive:0,sto:0,raf:0};
       const now=performance.now();
       ltLog=ltLog.filter(x=>now-x.t<5000); ltMs=Math.round(ltLog.reduce((a,x)=>a+x.d,0));
-      let anims=[];
+      resLog=resLog.filter(x=>now-x.t<5000);
+      const netN=resLog.length, netKB=Math.round(resLog.reduce((a,x)=>a+x.b,0)/1024);
+      const stoRate=(P.sto|0)-lastSto; lastSto=P.sto|0;     // setTimeout 呼叫/秒
+      const rafRate=(P.raf|0)-lastRaf; lastRaf=P.raf|0;     // rAF 回呼/秒（>70 ＝不只一條 rAF 迴圈在跑）
       /* ⚠ ver -851：加「真的畫得到」的過濾 —— getAnimations 連 display:none／
          visibility:hidden（被蓋住的層）底下的動畫都列（桌機掃查時踩過），
          列出來會誤導判讀。藏著的＝不燒（不畫），不列。 */
       const paintable=(el)=>{ if(!el||el.nodeType!==1) return true;
         try{ if(el.checkVisibility) return el.checkVisibility({visibilityProperty:true});
              const cs=getComputedStyle(el); return cs.display!=='none'&&cs.visibility!=='hidden'; }catch(_){ return true; } };
-      try{ anims=document.getAnimations().filter(a=>{ const tm=a.effect&&a.effect.getTiming();
-             return a.playState==='running' && tm && tm.iterations===Infinity && paintable(a.effect.target); })
-           .map(a=>{ const t=a.effect.target; return (a.animationName||'?')+'@'+(t&&(t.id||String(t.className).split(' ')[0])||'?'); }); }catch(_){}
-      const med=[...P.media].filter(e=>!e.paused&&!e.ended)
+      /* 動畫全景（ver -852）：runAll＝**正在畫**的動畫總數（含一次性／transition），
+         ∞ 清單只列無限循環的（發燙頭號嫌犯）。 */
+      let anims=[], runAll=0;
+      try{ for(const a of document.getAnimations()){
+             const tm=a.effect&&a.effect.getTiming();
+             if(a.playState!=='running' || !paintable(a.effect&&a.effect.target)) continue;
+             runAll++;
+             if(tm && tm.iterations===Infinity){ const t=a.effect.target;
+               anims.push((a.animationName||'?')+'@'+(t&&(t.id||String(t.className).split(' ')[0])||'?')+(a.effect.pseudoElement||'')); }
+           } }catch(_){}
+      /* 媒體全景：正在播的逐支列（**重疊吃效能看這裡** —— BGM 疊播＝兩行）；
+         已註冊未播的只計數。 */
+      const medAll=[...P.media];
+      const med=medAll.filter(e=>!e.paused&&!e.ended)
         .map(e=>(e.currentSrc||e.src||'').split('/').pop().split('?')[0].slice(0,24)+(e.loop?'⟳':'')+' v'+e.volume.toFixed(2));
       const tms=Object.values(P.timers).map(t=>t.ms+'ms '+t.tag.slice(0,26));
       const mem=(performance.memory? Math.round(performance.memory.usedJSHeapSize/1048576)+'MB' : '—');
+      /* 圖的解碼記憶體估值（ver -852，寬×高×4 逐張、同 URL 不重複計）——
+         縮圖實驗的量尺；只算 <img>（CSS background 與 canvas 另計 canvas）。 */
+      let imgB=0, imgN=0; const seen=new Set();
+      try{ for(const im of document.images){ const u=im.currentSrc||im.src;
+             if(!u||seen.has(u)) continue; seen.add(u);
+             if(im.naturalWidth){ imgB+=im.naturalWidth*im.naturalHeight*4; imgN++; } } }catch(_){}
+      let cvB=0, cvN=0;
+      try{ for(const c of document.getElementsByTagName('canvas')){ cvB+=c.width*c.height*4; cvN++; } }catch(_){}
       const st=!!document.querySelector('#storyStage.on'), hm=$('home').classList.contains('on');
       const ff=$('flightFrame'), fl=ff&&!!ff.getAttribute('src');
+      /* 疊層全景：全螢幕層＋常見 overlay 誰活著（鐵律 10 的儀表）。 */
+      const ovl=[['prep','prepSheet'],['gear','gearSheet'],['loot','lootSheet'],['menu','gameMenu']]
+        .filter(([,id])=>{ const el=document.getElementById(id); return el && paintable(el); })
+        .map(([n])=>n).join(' ');
+      const ctxSt=(P.ctx&&P.ctx.state)||'—';
+      const domN=document.getElementsByTagName('*').length;
       hud.textContent=
-        VERSION+'  fps '+fps+'  long '+ltMs+'ms/5s'
-        +'\nheap '+mem+'  dom '+document.getElementsByTagName('*').length+'  src♪'+(P.srcLive|0)
-        +'\n層 home'+(hm?'●':'×')+' stage'+(st?'●':'×')+' app'+(getComputedStyle($('app')).visibility==='hidden'?'隱':'●')+' flight'+(fl?'●':'×')
-        +'\n∞動畫 '+anims.length+(anims.length?'：\n  '+anims.slice(0,8).join('\n  '):'')
+        VERSION+'  fps '+fps+'（最長幀 '+maxDtShow+'ms）  long '+ltMs+'ms/5s'
+        +'\nheap '+mem+'  dom '+domN+'（開機+'+ (domN-domBase) +'）'
+        +'\n圖估 '+Math.round(imgB/1048576)+'MB/'+imgN+'張  canvas '+Math.round(cvB/1048576)+'MB/'+cvN
+        +'\nrAF '+rafRate+'/s  sto '+stoRate+'/s  網5s '+netN+'req '+netKB+'KB'
+        /* app 那一格讀 #top（戰鬥 UI）不讀 #app —— #home 長在 #app 裡面，
+           整層永遠 visible（-851 的覆蓋規則藏的就是 #top/#bottom）。 */
+        +'\n層 home'+(hm?'●':'×')+' stage'+(st?'●':'×')+' 戰鬥'+(paintable($('top'))?'●':'隱')+' flight'+(fl?'●':'×')+(ovl?'  疊:'+ovl:'')
+        +'\n動畫中 '+runAll+'（∞ '+anims.length+'）'+(anims.length?'：\n  '+anims.slice(0,8).join('\n  '):'')
         +'\ntimer '+tms.length+(tms.length?'：\n  '+tms.slice(0,8).join('\n  '):'')
-        +'\n♪ '+(med.length?med.join('\n♪ '):'（無）')
+        +'\n♪ 播 '+med.length+'/載 '+medAll.length+'  src♪'+(P.srcLive|0)+'  ctx:'+ctxSt
+        +(med.length?'\n♪ '+med.join('\n♪ '):'')
         +'\n──────'
         +'\ninner '+innerWidth+'x'+innerHeight+'  vh '+pVH.offsetHeight+' dvh '+pDVH.offsetHeight
         +'\nsafe top '+pT.offsetHeight+' / bot '+pB.offsetHeight
         +'\nstandalone '+(navigator.standalone===true || (window.matchMedia&&matchMedia('(display-mode: standalone)').matches));
     };
     upd(); timer=setInterval(upd,1000);
-    const oldShowCleanup=()=>{ try{ po&&po.disconnect(); }catch(_){} };
+    const oldShowCleanup=()=>{ try{ po&&po.disconnect(); }catch(_){} try{ po2&&po2.disconnect(); }catch(_){} };
     hud.__cleanup=oldShowCleanup;
   }
+  /* ══ 常駐開關鈕（ver -852，Ray：「首頁開了以後進遊戲關不掉也無法測」）══
+     管理人模式（body.testmode）右下角一顆小鈕，任何畫面都按得到（z 99999 ＞
+     飛行 iframe 8200 ＞ 各 overlay）—— 開關同一支 show()。顯示與否交給 CSS
+     （style.css 的 #perfToggle，testmode 才出現），團徽連點 5 下照舊。 */
+  (function mkToggle(){
+    const b=document.createElement('div'); b.id='perfToggle'; b.textContent='☲';
+    document.body.appendChild(b);
+    b.addEventListener('click', e=>{ e.stopPropagation(); show(); });
+  })();
   // 觸發一：網址帶 ?debug
   if(location.search.indexOf('debug')>=0) show();
   // 觸發二：首頁團徽快速連點 5 下（主畫面 App 進不了帶參數網址時用）

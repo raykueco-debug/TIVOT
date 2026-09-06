@@ -23,8 +23,12 @@
      診斷 HUD（首頁連點團徽 5 下）。 -->
 <script>
 (function(){
-  var P = window.__perf = { timers:{}, media:new Set(), srcLive:0, srcTotal:0, raf:0 };
+  var P = window.__perf = { timers:{}, media:new Set(), srcLive:0, srcTotal:0, raf:0, sto:0, ctx:null };
   var tid=0;
+  /* setTimeout 只計「呼叫次數」（P.sto，HUD 取差分算每秒速率）——
+     逐筆登記會太吵（一次演出幾十筆），速率異常（每秒幾百）才是病。 */
+  var ost=window.setTimeout;
+  window.setTimeout=function(){ P.sto++; return ost.apply(window,arguments); };
   var osi=window.setInterval, oci=window.clearInterval;
   window.setInterval=function(fn,ms){
     var id=osi.apply(window,arguments);
@@ -36,6 +40,7 @@
   var AC=window.AudioContext||window.webkitAudioContext;
   if(AC){ var ob=AC.prototype.createBufferSource;
     AC.prototype.createBufferSource=function(){ var s=ob.apply(this,arguments);
+      P.ctx=this;   /* 記下遊戲在用的那顆 context（HUD 顯示 running/suspended —— 驗 -852 的背景守門） */
       P.srcTotal++; P.srcLive++; var done=false, fin=function(){ if(!done){done=true; P.srcLive--;} };
       s.addEventListener('ended',fin);
       setTimeout(function(){ try{ if(s.buffer&&isFinite(s.buffer.duration)) setTimeout(fin,(s.buffer.duration+2)*1000); else setTimeout(fin,15000); }catch(_){ setTimeout(fin,15000); } },0);
