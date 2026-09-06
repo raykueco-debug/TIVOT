@@ -1744,8 +1744,9 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
       if(prevT) maxDt=Math.max(maxDt, t-prevT); prevT=t;
       if(t-lastT>=1000){ fps=Math.round(frames*1000/(t-lastT)); frames=0; lastT=t;
         maxDtShow=Math.round(maxDt); maxDt=0; }
-      if(hud) requestAnimationFrame(rafTick); };
+      if(hud && !window.__frozen) requestAnimationFrame(rafTick); };
     requestAnimationFrame(rafTick);
+    window.__hudRafRestart=()=>{ prevT=0; requestAnimationFrame(rafTick); };   // 解凍時把幀率計拉回來
     let ltMs=0, ltLog=[];
     let po=null, po2=null, resLog=[];
     try{ po=new PerformanceObserver(l=>{ for(const e of l.getEntries()){ ltLog.push({t:performance.now(), d:e.duration}); } });
@@ -1833,6 +1834,29 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
     const b=document.createElement('div'); b.id='perfToggle'; b.textContent='☲';
     document.body.appendChild(b);
     b.addEventListener('click', e=>{ e.stopPropagation(); show(); });
+    /* ══ ❄ 全凍結（ver -855，「馬上發熱」的歸因實驗）══
+       按下＝把**這一刻頁面上所有動畫**暫停（Web Animations API，含 CSS/::after）、
+       停掉 BGM 與所有媒體、連 HUD 自己的幀率計 rAF 也停 —— 頁面完全靜止、
+       不再產生任何幀。凍著還熱＝不是頁面的渲染（是螢幕/天線/充電的基線）；
+       凍著就涼＝持續 60/120fps 合成是主因，再對症（拔閒置動畫/降幀）。
+       ⚠ 再按一次解凍：動畫 play 回來；BGM 不接（回首頁或換場自然會接）。
+       ⚠ 只凍主頁 document：飛行 iframe 是它自己的世界，這顆管不到。 */
+    const fz=document.createElement('div'); fz.id='perfFreeze'; fz.textContent='❄';
+    document.body.appendChild(fz);
+    let frozenAnims=[];
+    fz.addEventListener('click', e=>{ e.stopPropagation();
+      if(!window.__frozen){
+        window.__frozen=true; fz.classList.add('on');
+        try{ frozenAnims=document.getAnimations().filter(a=>a.playState==='running');
+             frozenAnims.forEach(a=>{ try{a.pause()}catch(_){} }); }catch(_){ frozenAnims=[]; }
+        try{ SFX.stopBgm(0); }catch(_){}
+        try{ const P=window.__perf; P&&[...P.media].forEach(m=>{ try{m.pause()}catch(_){} }); }catch(_){}
+      }else{
+        window.__frozen=false; fz.classList.remove('on');
+        frozenAnims.forEach(a=>{ try{a.play()}catch(_){} }); frozenAnims=[];
+        try{ window.__hudRafRestart&&window.__hudRafRestart(); }catch(_){}
+      }
+    });
   })();
   // 觸發一：網址帶 ?debug
   if(location.search.indexOf('debug')>=0) show();

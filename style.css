@@ -706,6 +706,14 @@
     background:rgba(0,0,0,.55);font:16px/1 monospace;user-select:none;-webkit-user-select:none;
     cursor:pointer;opacity:.65;}
   body.testmode #perfToggle{display:flex;}
+  /* ❄ 全凍結鈕（ver -855）：疊在探針鈕上方；凍結中亮起提醒（不然會忘記自己凍著）。 */
+  #perfFreeze{position:fixed;right:8px;bottom:calc(env(safe-area-inset-bottom,0px) + 50px);
+    z-index:99999;width:34px;height:34px;display:none;align-items:center;justify-content:center;
+    border:1px solid rgba(120,200,255,.55);border-radius:8px;color:#8cf;
+    background:rgba(0,0,0,.55);font:16px/1 monospace;user-select:none;-webkit-user-select:none;
+    cursor:pointer;opacity:.65;}
+  body.testmode #perfFreeze{display:flex;}
+  #perfFreeze.on{background:rgba(60,140,220,.75);color:#fff;opacity:1;}
   /* 鎖血鈕（管理人測試，ver -463）：清盤右側。開啟＝亮金（.on）。 */
   #hpLockBtn{top:10px;left:64px;right:auto;font-size:12px;letter-spacing:1px;color:var(--holy);border-color:var(--holy);display:none;}
   body.testmode #hpLockBtn{display:flex;}
