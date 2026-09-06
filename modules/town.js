@@ -25,7 +25,11 @@ import { state } from '../state.js';   // 只讀：`battleSession`（擁有者�
 const $ = id => document.getElementById(id);
 
 const HOLD_MS = 500;      // 箭頭要按住多久才走（Ray 指定 0.5 秒）
-const STEP_MIN = 10;      // 每移動一次花掉的遊戲內分鐘數
+const STEP_MIN = 10;      // 每移動一次花掉的遊戲內分鐘數（城鎮村落的預設）
+/* ══ 各圖的移動耗時（ver -871，Ray：「野外探索每次移動是1小時，遺跡是半小時，
+   城鎮村落是十分鐘」）══ 寫在**地圖**上（`TOWNS[].stepMin`，鐵律 1）：
+   夏爾森林 60、日後的遺跡圖 30、不寫＝10。跨圖那一步算**出發那張圖**的價。 */
+const stepMin = ()=> ((TOWNS[townId]||{}).stepMin || STEP_MIN);
 const ARRIVE_MS = 1000;   // 抵達新地點之後、對白開演之前的停頓（Ray：「先停一秒」）
 /* 立繪滑入的時間。⚠ 與 `modules/story.js` 的 `SLIDE_MS` 同值（450ms，§6.5 的 450ms ease-out）——
    兩邊必須一致：這裡是拿它來讓對話框「等人站定」。改一邊要改另一邊（鐵律 7 的但書）。 */
@@ -1537,7 +1541,7 @@ function go(to, dir){
     busy=true; showNav(false);
     document.body.classList.remove('town-nav');
     stepSfx();
-    clock.advance(STEP_MIN);          // 戰鬥探索移動也耗時（ver -815，Ray；跨圖同）
+    clock.advance(stepMin());          // 戰鬥探索移動也耗時（ver -815；耗時依圖 ver -871）
     story.veil(true, CUT_MS);
     setTimeout(()=>{ open(map, nd || undefined); }, CUT_MS);
     return;
@@ -1557,7 +1561,7 @@ function go(to, dir){
   /* ⚠⚠ **戰鬥探索中移動也耗時**（ver -815，Ray；推翻 -584 的「戰鬥地圖不花時間」）：
      「一步 10 分鐘」在城鎮戰一樣記帳 —— 在被禍魘襲擊的城裡跑一趟，時間照樣流逝
      （也讓夏爾村村戰從黃昏 19:00 隨著移動推進到夜景 20:00）。 */
-  clock.advance(STEP_MIN);
+  clock.advance(stepMin());   // 耗時依圖（ver -871：森林 60／遺跡 30／城村 10）
   sceneCut(to);          // 換景走淡入淡出（ver -438，見 sceneCut）
 }
 

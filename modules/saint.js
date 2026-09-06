@@ -136,6 +136,10 @@ export function activateCoop(dir){
   const sec = Math.max(c.minSec||3, (c.baseSec||12) * en/100);
   state.saintUsedThisBattle = true;                   // 與聖徒化／惡夢化同槽（一場一次）
   if(api.resetEnergy) api.resetEnergy();              // 消耗全部破防值
+  /* ⚠ 發動**那一刻**先把場上的攻擊圈收掉（ver -871，Ray：「索拉娜的共鬥發動時
+     不會清場上的攻擊圈」）—— 不清的話紅圈掛著陪整段 cut-in、一路留進無敵窗。
+     排程一併歸零；窗開起（startCoop）那邊照舊再 reset＋scheduleUlt。 */
+  if(api.resetEnemyTimers) api.resetEnemyTimers();
   SFX.unlock(); SFX.ultCharge();
   SFX.play(asset('sfx_saint'), sfxGain('sfx_saint'));
   /* 共鬥發動語音（ver -818）：pack/pack2 輪播 —— ver -837 起走 SFX.pickRot（鐵律 8）。 */

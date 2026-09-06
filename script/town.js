@@ -2245,6 +2245,9 @@ export const TOWNS = {
     /* 荒野圖（ver -862，Ray：「森林也會打烊是怎樣」）：19:00 全域打烊那條不罩這裡
        —— 野外的路沒有門可以關（判定在 modules/town.js 的 isOpenNow，鐵律 8）。 */
     wilderness: true,
+    /* 野外每步 1 小時（ver -871，Ray：「野外探索每次移動是1小時，遺跡是半小時，
+       城鎮村落是十分鐘」）—— 日後遺跡圖寫 stepMin:30。 */
+    stepMin: 60,
     /* ══ 槍棺地圖（ver -867，Ray 的 H 需求：「控制介面右下角放地圖選項，點開
        控制面板變成那張地圖，所在地閃爍光點」）══
        `spots`＝各節點在**圖上**的位置（比例座標，對著 Ray 交的手繪圖量的：
@@ -2348,8 +2351,11 @@ export const TOWNS = {
             sor('remind','那是傳說中的森林之神，'),
             sor('remind','所以我也不知道好不好吃。'),
             ren('scarejump','妳就沒有一點敬畏之心嗎！'),
-            Object.assign(nou('cringe','祂在看我們……'),
-                          { cgBack:'resources/enemy/mon_shinierforest_deerlook.webp' }),
+            /* 轉頭那一拍**清空立繪**（ver -871，Ray：「鹿主轉頭時也讓角色立繪退讓」）
+               —— 同變異拍的作法：無人演出拍吃 auto，下一句開口的人自然回台。 */
+            { speaker:'NOUVELLE', text:'', hide:['SORANA','RENNA','NOUVELLE','ANYA'],
+              cgBack:'resources/enemy/mon_shinierforest_deerlook.webp', auto:2000 },
+            nou('cringe','祂在看我們……'),
             nou('surprise','啊。'),
             Object.assign(nou('surprise','走掉了。'), { cgBack:null }),
             /* 自由行動，可直接進入遺跡（遺跡本體地圖未實裝——等 Ray 的規劃）。 */
@@ -2361,8 +2367,9 @@ export const TOWNS = {
             sor('remind','那是傳說中的森林之神，'),
             sor('remind','所以我也不知道好不好吃。'),
             ren('scarejump','妳就沒有一點敬畏之心嗎！'),
-            Object.assign(nou('cringe','牠好像不太歡迎我們……'),
-                          { cgBack:'resources/enemy/mon_shinierforest_deerlook.webp' }),
+            { speaker:'NOUVELLE', text:'', hide:['SORANA','RENNA','NOUVELLE','ANYA'],
+              cgBack:'resources/enemy/mon_shinierforest_deerlook.webp', auto:2000 },   // 轉頭＝清場（ver -871）
+            nou('cringe','牠好像不太歡迎我們……'),
             any('desperate','……！！'),
             /* 紫紅負片（tintHold，§6.5 -664）：出口＝進戰鬥，story.stopTint 自動收。 */
             Object.assign(any('terrifying','有什麼……要來了！'), { tintHold:'nightmare' }),

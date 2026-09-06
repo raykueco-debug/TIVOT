@@ -379,11 +379,15 @@ function tap(num,cell,e){
     hap.shot();                        // 破防窗口：**每一發**都震（ver -398，Ray 指定）
     enemyDamage(Math.round(dmg), false, false, 'dual');   // 破防窗口的射擊（ver -423：來源別）
     if(state.cells.every(c=>c.classList.contains('done'))){
-      SFX.clear(); clearAtkBuff(); weapon.endDual();
-      recordBoardTime((Date.now()-state.boardStartTime)/1000);
-      if(state.enemyHp<=0){ finishEnemyOrAdvance(); return; }   // 敵死→轉下一敵 or 結算
-      defense.resetEnemyTimers();   // 破防清盤瞬間即重置敵大絕與延遲懲罰
-      goNextBoard();
+      /* ⚠⚠ 走**同一支** `clearBoard()`（ver -871，Ray：「索拉娜被動技清盤也要算盤數」
+         —— 她的主動技直接進雙槍破防，BR 清掉整盤以前只記 recordBoardTime，
+         完美清盤（perfectBoards／清盤聖能）與獵手戰吼的連盤計數整條漏掉。
+         鐵律 8：清盤的記帳只有 clearBoard 一份，這裡不再手抄半套。
+         ⚠ 先收破防窗（endDual）再清盤：clearBoard → goNextBoard 會重建盤面，
+           窗開著的話 4 秒計時器到期又蓋一次。 */
+      weapon.endDual();
+      clearBoard();
+      return;
     }
     updateStatus();
     return;
