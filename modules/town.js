@@ -1958,6 +1958,9 @@ export function setGearWatch(fn){ gearWatch=fn||null; }
    ⚠ 注入而不是 import（同上）：城鎮不認識存檔層。 */
 let checkpoint=null;
 export function setCheckpoint(fn){ checkpoint=fn||null; }
+/* 跨圖離開荒野時收掉連戰段落（ver -869，見 open() 開頭）。注入＝combat.endSession。 */
+let sessionCloser=null;
+export function setSessionCloser(fn){ sessionCloser=fn||null; }
 
 function afterArrive(n){
   /* ══ 同行的諾薇兒走完殘留事件（ver -567，Ray 交稿）══════════════════════
@@ -2170,6 +2173,15 @@ inn.setup({
 /* `node`（選填，ver -429）＝從哪一格開始，不寫就是城的入口。
    目前只有「章節」那顆跳關鈕在用；日後要記住離開時站在哪（§6.9 的清單）也走這裡。 */
 export function open(town, node, opts){
+  /* ══⚠⚠ **跨圖離開荒野＝收段**（ver -869）══ 森林的野生遭遇整張圖是一場
+     （config.battles 的 session:'sf_wild'，收段＝斷崖那隻）——半途走回村子，
+     那一場就沒打完：段落要收掉（資源回滿、帳與掉落作廢，同城鎮戰半途離場的
+     既有語意），不然 session 掛著、下一張圖的資源永遠不回滿。
+     ⚠ 注入而不是 import（同 setCheckpoint）：城鎮不認識戰鬥層。
+     ⚠ 只在**換一張圖**時收（遭遇戰敗北回入口是同一張圖、走 goHome 那條本來就收）。 */
+  if(townId && townId!==(town||'capital') && (TOWNS[townId]||{}).wilderness && sessionCloser){
+    try{ sessionCloser(); }catch(_){}
+  }
   townId = town || 'capital';
   const T=TOWNS[townId]; if(!T) return;
   /* 進城就把體力回滿（ver -556，Ray 指定）：城＝安全區，走進來殘血歸零重算。

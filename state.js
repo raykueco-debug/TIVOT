@@ -238,6 +238,8 @@ export const state = {
        城裡走路更不經過戰鬥 —— 所以「不計算移動」是既有行為，不必另外扣。 */
   sessionStats: null,
   sessionMoney: 0,
+  sessionLoot: null,     // 連戰中間場記帳的掉落（ver -869，Ray：「戰利品也到結算時給」）；收段結算一起發
+
   pickedPartner: GAME_CONFIG.defaultPartner,   // 玩家實選搭檔（擁有者 partner；選人畫面經 setPickedPartner 寫入）
   lineupIndex: 0,        // 連戰序列游標（局內第幾隻敵，對應 GAME_CONFIG.lineup）
 

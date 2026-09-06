@@ -2888,13 +2888,14 @@
      齒輪的視覺平衡，不要考慮管理人專用的按鈕——該移的是管理員專用鈕」）：
      旅誌 icon 貼在**槍棺右下角**當第三件配件（左上吊墜、右上齒輪、右下旅誌），
      視覺份量對齊吊墜（寬 ~88px）、帶一點隨手擱著的斜度；金邊嵌板收進棺面的暗色。 */
+  /* ⚠ ver -869（Ray：「地圖 icon 不要放框，把書擺正」）：無邊框、無斜度 ——
+     素材自己的暗底融進棺面，只留柔影讓它浮起一點。 */
   #townMapBtn{position:absolute;right:10px;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);
     width:88px;height:59px;padding:0;pointer-events:auto;overflow:hidden;
-    background:transparent;border:1px solid rgba(217,198,138,.55);border-radius:7px;
-    box-shadow:0 5px 16px rgba(0,0,0,.65), inset 0 0 10px rgba(0,0,0,.5);
-    transform:rotate(-5deg);}
+    background:transparent;border:0;border-radius:6px;
+    box-shadow:0 5px 14px rgba(0,0,0,.6);}
   #townMapBtn img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;}
-  #townMapBtn:active{transform:rotate(-5deg) scale(.95);}
+  #townMapBtn:active{transform:scale(.95);}
   /* ⚠ z 與 #townNav 同層（7）＋ DOM 後生（map view 一定比 nav 晚建）＝壓過導覽字格；
      退出/跳段鈕（z-8）仍在其上，地圖開著也點得到。 */
   /* 地圖開著時導覽字格整組收掉（ver -867，Ray：「不用導覽字格」）。 */

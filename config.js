@@ -49,7 +49,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.07-868';
+export const VERSION = 'ver 2026.09.07-869';
 
 export const GAME_CONFIG = {
 
@@ -1348,18 +1348,26 @@ export const GAME_CONFIG = {
                 ]} ] },
     sv_altar: { enemy:'sv_reliquary', session:'shinier_siege' },
     sv_wild:  { enemy:'sv_bear', session:'shinier_siege', sessionEnd:true },
-    /* ══ 夏爾森林野生遭遇（ver -862）══ 一場一隻、無 session（每場自己結算），
-       由 modules/town.js 的 `wildActDue` 依 `shinier_forest.wildSpawn` 派場。 */
-    sf_lynx:           { enemy:'sf_lynx' },
-    sf_snake:          { enemy:'sf_snake' },
-    sf_hog:            { enemy:'sf_hog' },
-    sf_tiger:          { enemy:'sf_tiger' },
-    sf_crows:          { enemy:'sf_crows' },
+    /* ══ 夏爾森林野生遭遇（ver -862；-869 掛 session）══
+       由 modules/town.js 的 `wildActDue` 依 `shinier_forest.wildSpawn` 派場。
+       ⚠⚠ **進野戰地圖＝「一場」**（ver -869，Ray：「進入野戰地圖以後就算一場，
+       打到地圖結束才結算——夏爾森林打到斷崖邊的敵人消滅才算結束。戰利品也是
+       到那個時候結算」）：全部掛 `session:'sf_wild'`，斷崖那隻（鹿骸，日夜兩張卡）
+       ＝`sessionEnd`。中間場不結算、掉落與錢由 bankSessionGain 記帳、
+       資源（HP/聖徒化/主動技/破防）整場連著算、格間原地開閉棺 —— 全是既有的
+       session 機制（§6.5.4.3）。
+       ⚠ 中途離開地圖＝收段不結算（帳與掉落作廢）——同城鎮戰半途離場的既有語意。
+       ⚠ `sf_deer`（遺跡入口）不在這一場裡：斷崖已收段，牠是自己一場。 */
+    sf_lynx:           { enemy:'sf_lynx',           session:'sf_wild' },
+    sf_snake:          { enemy:'sf_snake',          session:'sf_wild' },
+    sf_hog:            { enemy:'sf_hog',            session:'sf_wild' },
+    sf_tiger:          { enemy:'sf_tiger',          session:'sf_wild' },
+    sf_crows:          { enemy:'sf_crows',          session:'sf_wild' },
     sf_deer:           { enemy:'sf_deer' },
-    sf_bear_husk:      { enemy:'sf_bear_husk' },
-    sf_bear_nightmare: { enemy:'sf_bear_nightmare' },
-    sf_stag_rot:       { enemy:'sf_stag_rot' },
-    sf_stag_nightmare: { enemy:'sf_stag_nightmare' },
+    sf_bear_husk:      { enemy:'sf_bear_husk',      session:'sf_wild' },
+    sf_bear_nightmare: { enemy:'sf_bear_nightmare', session:'sf_wild' },
+    sf_stag_rot:       { enemy:'sf_stag_rot',       session:'sf_wild', sessionEnd:true },
+    sf_stag_nightmare: { enemy:'sf_stag_nightmare', session:'sf_wild', sessionEnd:true },
     /* ══⚠⚠ 瓦礫中的紫黑之爪 ＝ **聖徒化教學戰**（ver -595，Ray 交稿）══
        腳本節奏：BOSS HP ≤30% → 劇情殺（主角 HP 歸零）→ 諾薇兒「我準備好了，現在
        聖徒化！」→ 雪鐵龍教學**右滑**發動聖徒化 → 聖徒化戰鬥 → 血回 99% 自動觸發

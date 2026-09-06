@@ -103,6 +103,14 @@ export function bankSessionGain(stats){
   acc.sawMaxBurst  = !!(acc.sawMaxBurst  || stats.sawMaxBurst);
   state.sessionStats = acc;
   state.sessionMoney = (state.sessionMoney|0) + rollBattleMoney();
+  /* ══⚠⚠ **中間場的掉落也記帳**（ver -869，Ray：「戰利品也是到那個時候（收段結算）
+     結算」）══ 每殺一隻就擲牠的 loot、堆進 `sessionLoot`，收段那一場的結算頁
+     一起發（見 settle 的併帳）。-586 的「拾得只在有結算頁的那一場給」被這一條
+     取代 —— 那時中間場的掉落是**整個蒸發**，不是延後。
+     ⚠ 半途離場照舊作廢（endSession → clearSessionGain）——帳與掉落同一個命運。 */
+  const en = GAME_CONFIG.enemies && GAME_CONFIG.enemies[state.currentEnemyKey];
+  const drops = rollLoot(en);
+  if(drops.length) state.sessionLoot = (state.sessionLoot||[]).concat(drops);
 }
 /* 收段那一場：把累計的併進這一場的統計（`settle` 用）。沒有累計就原樣回傳。 */
 export function mergeSessionStats(stats){
@@ -115,7 +123,7 @@ export function mergeSessionStats(stats){
   out.sawMaxBurst  = !!(out.sawMaxBurst  || acc.sawMaxBurst);
   return out;
 }
-export function clearSessionGain(){ state.sessionStats=null; state.sessionMoney=0; }
+export function clearSessionGain(){ state.sessionStats=null; state.sessionMoney=0; state.sessionLoot=null; }
 
 // 分數 → EXP：offset 質數基底 + score×mult，尾數微擾 + overkill 加成，避免整齊倍數。
 export function scoreToExp(score, stats, cfg = GAME_CONFIG.rating.exp){
@@ -345,10 +353,11 @@ export function settle(totalTime, stats, opts={}){
        併在分流**之前**，日後多一條結算路徑也自動吃到（鐵律 8）。
      ⚠ 領完就清：不然下一場會把上一段的再算一次。
      ⚠ 戰敗不併也不清 —— 那一頁不報帳，而這一段可能還要再打一次。 */
-  let sessionMoney = 0;
+  let sessionMoney = 0, sessionLoot = null;
   if(stats && !isLose){
     stats = mergeSessionStats(stats);
     sessionMoney = state.sessionMoney|0;
+    sessionLoot = state.sessionLoot || null;   // 中間場記帳的掉落（ver -869），下面併進拾得
     clearSessionGain();
     /* ⚠ 「這一場打了多久」也跟著變成整場的總和 —— 最佳紀錄、破紀錄獎品、
        畫面上的「戰鬥用時」全部同一個數字（鐵律 7）。 */
@@ -376,7 +385,7 @@ export function settle(totalTime, stats, opts={}){
   if(state.tutorialRun && !isLose){ tutorialSettle(totalTime, stats, sessionMoney); return; }
   /* 劇情插入戰（ver -375）：與教學結算同一頁 —— **沒有監察官、沒有等級**，
      只有戰績、EXP 與拾得。⚠ 不是教學，所以不走教學那兩句台詞。 */
-  if(state.scriptRun && !isLose){ scriptSettle(totalTime, stats, sessionMoney); return; }
+  if(state.scriptRun && !isLose){ scriptSettle(totalTime, stats, sessionMoney, sessionLoot); return; }
   if(isLose){
     const rows=combatStatsRows();
     showResultSequence(L.result.loseTitle, L.result.loseSub, rows, 'lose', true);
@@ -685,7 +694,7 @@ function tutorialSettle(totalTime, stats, sessionMoney){
    金錢是「HP 的 6~8 成隨機」。兩者都在敵人卡上，這裡只負責擲骰與呈現（鐵律 1）。
    ⚠ 沒有監察官、沒有等級：那一場是劇情中間插進來的一場架，不是驅逐任務。
    ⚠ 按鈕是「繼續」→ 回劇情/城鎮（不是回主畫面）。 */
-function scriptSettle(totalTime, stats, sessionMoney){
+function scriptSettle(totalTime, stats, sessionMoney, sessionLoot){
   state.sRankUnlocked = false;
   const ev = evaluate(stats);
   const en = GAME_CONFIG.enemies[state.currentEnemyKey] || {};
@@ -713,7 +722,9 @@ function scriptSettle(totalTime, stats, sessionMoney){
        · EXP／金錢 ＝ 這裡兩列，**當場入帳**（錢在下面 `inv.addMoney`）
        · 戰利品視窗只在**真的有道具**時彈（見下方 `_lootPending`）
      ⚠ 金錢要在**這裡**入帳：以前是 `showLoot` 入的，視窗不彈就沒人入了。 */
-  const en2loot = rollLoot(en);
+  /* ⚠ 連戰中間場記帳的掉落（ver -869，Ray：「戰利品也是到那個時候結算」）——
+     併在最後一隻自己的擲骰前面（先打到的先列）。 */
+  const en2loot = (sessionLoot||[]).concat(rollLoot(en));
   let money = 0;
   const mr = en.money && en.money.hpRatio;
   if(mr && !noReward){
