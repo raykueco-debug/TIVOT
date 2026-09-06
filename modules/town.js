@@ -797,15 +797,16 @@ function forceGo(to){
 function isOpenNow(n){
   const t = clock.hourF();
   /* ver -860（Ray：「所有營業場所七點以後不開，除了酒吧跟夏爾村餐廳」）：
-     19:00 起一律打烊——除非節點標 `lateNight:true`（酒吧／夏爾村餐廳）。
-     這是**全域規則**，收在唯一的 isOpenNow（鐵律 8）；各店的 `hours` 照舊
-     管早上開門，只是上界被這條 19:00 蓋住（除例外）。
-     ⚠⚠ **只有城鎮村落吃這一條**（ver -862，Ray：「只有槍店、工坊、餐廳、公會、
-     雜貨店、教堂、市鎮中心等城鎮村落地點才會打烊，森林也會打烊是怎樣」）——
-     荒野圖（地圖上標 `wilderness:true`，夏爾森林是第一張）的節點是野外的路，
-     沒有門可以關；那裡的「營業場所」若真有，用自己的 `hours` 照舊管。 */
+     19:00 起打烊——除非節點標 `lateNight:true`（酒吧／夏爾村餐廳）。
+     ⚠⚠⚠ **這條只罩「營業場所」＝帶 `hours` 的節點**（ver -863，Ray 連糾兩次：
+     「森林也會打烊是怎樣」「城鎮村落也不會全域打烊啊，旅店打烊怎麼辦？」）——
+     -861 那一版寫成全域，把旅店、街道、廣場、船塢、墓地、森林全部 19:00 關掉，
+     整個晚上無處可去。**沒有 `hours` 的節點沒有門可以關**（街道／旅店／野外），
+     一律不打烊；有 `hours` 的店上界被這條 19:00 蓋住（除 lateNight 例外）。
+     ⚠ 荒野圖（`wilderness:true`，夏爾森林）整張再免疫一層 —— 日後真有掛 hours
+     的野外設施也不吃 19:00 上限，用自己的 hours 管。 */
   const T=TOWNS[townId];
-  if(!(T && T.wilderness) && !(n && n.lateNight)){ if(t >= 19) return false; }
+  if(n && n.hours && !n.lateNight && !(T && T.wilderness)){ if(t >= 19) return false; }
   const h = n && n.hours;
   if(!h || h.length<2) return true;
   return (h[1] > h[0]) ? (t >= h[0] && t < h[1]) : (t >= h[0] || t < h[1]);

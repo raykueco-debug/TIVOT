@@ -675,7 +675,9 @@ export const TOWNS = {
         exits:{ back:'uptown' },
         /* 開到午夜（Ray 指定）。⚠ `[8,24]` 的意思是 23:59 還開著、00:00 就關 —— 見
            modules/town.js 的 `isOpenNow`（上界是**不含**的）。 */
-        hours:[8,24], closed:'椅子都翻上桌了。今晚的最後一輪早就結束。',
+        /* lateNight（ver -863）：-860 Ray 明說的例外「除了酒吧跟夏爾村餐廳」——
+           餐飲街晚上開的就是酒吧那一面，19:00 上限不罩，照自己的 hours 到午夜。 */
+        hours:[8,24], lateNight:true, closed:'椅子都翻上桌了。今晚的最後一輪早就結束。',
         once:true,
         /* ⚠ 那頓飯是上街區「肚子餓」的下文，同樣綁著第一天（ver -460，同上）。 */
         expire:'stage1_open',
