@@ -382,6 +382,7 @@ export const TOWNS = {
       church: {
         bg:'Capital_Church', name:'帝都　大教堂',
         exits:{ back:'midtown' },
+        hours:[8,19], closed:'大門闔上了。晚禱之後不再受理訪客。',   // ver -864，Ray 確認教堂打烊
         once:true,
         lines:[
           nou('surprise','雖說不及聖王廳，不過帝都的大教堂真是氣派呢。'),
@@ -410,6 +411,7 @@ export const TOWNS = {
       cityhall: {
         bg:'Capital_Cityhall', name:'帝都　行政廳',
         exits:{ back:'midtown' },
+        hours:[8,17], closed:'窗口都熄了燈。行政廳五點就下班了。',   // ver -864，Ray：「行政類都5點關門」
         /* ⚠ 蕾娜與諾薇兒**都是左側**（固定站位），這一段兩人同台 → 蕾娜暫時站右
            （§6.5：兩個角色要分左右；與 `capital_square` 那一幕同樣的整幕覆寫）。 */
         sides:{ RENNA:'R' },
@@ -1280,6 +1282,7 @@ export const TOWNS = {
          ⚠ 懸賞內容在 `config.bounties`（鐵律 1），這裡只指哪一座城。
          ⚠ 不寫 `keeperWho`＝沒有店主立繪，正合「沒有人」。 */
       guild:    { bg:'Northport_guild_BF', name:'北方泊地　賞金獵人公會', exits:{ back:'west' },
+        hours:[8,20], closed:'大門上了閂。委託要等明天早上八點。',   // ver -864，Ray 確認（同帝都公會）
         board:'northport',
         /* ver -858（Ray 交稿）：櫃台小姐上任（COUNTER_NP）——安葬後的自由探索
            就見得到（原本 need np_day3_done 的沉默一句取代掉）。懸賞單照舊走
@@ -1288,10 +1291,14 @@ export const TOWNS = {
           { speaker:'COUNTER_NP', text:'殺禍魘沒賞金領，人都跑光了。你隨意看看吧。',
             portrait:{ char:'COUNTER_NP', show:true } },
         ] } ] },
-      cityhall: { bg:'Northport_cityhall_BF', name:'北方泊地　市鎮中心',   exits:{ back:'north' } },
+      cityhall: { bg:'Northport_cityhall_BF', name:'北方泊地　市鎮中心',   exits:{ back:'north' },
+        hours:[8,17], closed:'窗口都熄了燈。市鎮中心五點就下班了。' },   // ver -864，Ray：「行政類都5點關門」
       /* ⚠ **城鎮戰期間唯一走得進去的末端**（Ray 指定，見城上的 `siege.keep`）——
          因為 Boss 在這裡（司祭：「守軍把禍魘吸引到城鎮中心去了」）。 */
       church:   { bg:'Northport_church_BF', name:'北方泊地　教堂',       exits:{ back:'north' },
+        hours:[8,19], closed:'大門闔上了。晚禱之後不再受理訪客。',   // ver -864，Ray 確認教堂打烊
+        /* ⚠ 城鎮戰（siege）期間這一格是 Boss 房 —— 打烊擋的是 go()，而 siege 的
+           路線管制走 exitsOf 的 keep 白名單，兩者不衝突；夜戰若被擋到要回報 Ray。 */
         /* ⚠ 這一格打的是 **Boss**（`np_boss`，ver -586）：戰鬥卡上有 `sessionEnd`，
            所以打贏它才閉棺、聖徒化／主動技／破防值回滿。
            ⚠ 它的 `flag` 同時是城鎮戰的**結束條件**（見城上的 `siege.until`）——
@@ -1637,6 +1644,7 @@ export const TOWNS = {
         ] },
       /* 餐飲街：廢墟（ver -664）。 */
       tavern:   { bg:'Northport_tavern_BF', name:'北方泊地　餐飲街',     exits:{ back:'east' },
+        hours:[8,24], lateNight:true, closed:'椅子都翻上桌了。今晚的最後一輪早就結束。',   // ver -864，Ray：「酒吧都是24:00才關」
         acts:[ { flag:'np_tavern_seen', need:'np_day3_done', lines:[ any('sobbing','……') ] } ] },
       /* ══ 旅店（ver -656，Ray 交稿）══════════════════════════════════════
          「六點前直接走進旅店，只有蕾娜會亮燈」＋「一過六點……強制轉移」那一夜。
@@ -2020,6 +2028,7 @@ export const TOWNS = {
            第一次踏進森林＝town.open 插 sv_forest_found（大地圖名牌＋可降落）。 */
         },
       workshop: { bg:'Shinier_Workshop', name:'夏爾村　工坊',   exits:{ back:'west' },
+        hours:[8,19], closed:'爐子熄了。杰羅大概收工回去了。',   // ver -864，Ray 確認工坊打烊
         /* ══ 杰羅的修船委託（ver -858，Ray 交稿；取代 -772 的工匠佔位）══
            S5 之前他不在（fromStage:5 ＝ 空房）；S5 起「蕃茄人11號」打靶：
            30 秒內打完＝約定修船。旗照舊 **sv_craftsman**（晚上蕾娜那段分歧
