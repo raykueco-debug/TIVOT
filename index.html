@@ -547,9 +547,8 @@
 </div>
 <div id="saveToast"></div>
 
-<!-- 全域靜音（管理人模式限定）：body 直屬 → 首頁/戰鬥/結算/讀取畫面都在，
-     不必逐個畫面各放一顆。狀態存 localStorage，flight/ 讀同一把鑰匙。 -->
-<button id="muteBtn" aria-label="Mute">🔊</button>
+<!-- 全域靜音的浮動鈕已拆（ver -856，Ray：「放到系統選單裡」）：
+     開關在選單面板（settings.js 的 gmMute），鑰匙照舊 tivot_mute_v1。 -->
 
 <!-- ══ 飛行頁（ver -388）══ 以 **iframe 內嵌**，不再跳頁。
      ⚠⚠ 為什麼：跳頁＝新的 document，音訊要那一頁自己的使用者手勢才解得開（iOS 一定要），

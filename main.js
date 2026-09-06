@@ -124,28 +124,25 @@ SFX.setLayerBase((GAME_CONFIG.tuning.loudness||{}).layer);
 SFX.setVoiceChain(GAME_CONFIG.tuning.voiceChain);
 SFX.setVoiceDuck(GAME_CONFIG.tuning.loudness && GAME_CONFIG.tuning.loudness.voiceDuck);   // 語音時 BGM 閃避（ver -847）
 
-/* ── 全域靜音（右上鈕，管理人模式限定）───────────────────────────
+/* ── 全域靜音（ver -856 起住在**選單面板**，Ray：「把靜音鈕拿掉，放到系統選單裡」；
+   浮動鈕已拆）───────────────────────────
    走 SFX.setMasterVolume(0)：SFX（合成音與取樣音經 limiter 後的主音量節）與 BGM
-   （各寫入點都乘 _master）都吃這一個係數，不必逐處攔。
+   （各寫入點都乘 _master）都吃這一個係數，不必逐處攔。套用只有 applyMute 一支（鐵律 8），
+   選單那一列透過 setMuteHook 注入來讀/切（settings 是葉模組，不 import main）。
    ⚠ 狀態存 localStorage 而非記憶體：flight/ 是另一個頁面（classic script、自帶一套
-     BGM），跨頁只能靠共用鑰匙 —— 兩邊讀同一個 MUTE_KEY 才叫「全域」。 */
+     BGM），跨頁只能靠共用鑰匙 —— 兩邊讀同一個 MUTE_KEY 才叫「全域」。
+     flight 端自 -856 起聽 storage 事件同步（選單能蓋在飛行上開，boot 快照會過期）。 */
 const MUTE_KEY='tivot_mute_v1';
 const isMuted =()=>{ try{ return localStorage.getItem(MUTE_KEY)==='1'; }catch(_){ return false; } };
 function applyMute(){
-  const m=isMuted();
-  SFX.setMasterVolume(m ? 0 : MASTER_VOL);
-  const b=$('muteBtn');
-  if(b){ b.textContent = m ? '🔇' : '🔊'; b.classList.toggle('muted', m); }
+  SFX.setMasterVolume(isMuted() ? 0 : MASTER_VOL);
 }
-(function bindMute(){
-  const b=$('muteBtn'); if(!b) return;
-  b.addEventListener('click', e=>{
-    e.stopPropagation();                       // 讀取畫面上按下不要順手觸發「點擊繼續」
-    try{ localStorage.setItem(MUTE_KEY, isMuted() ? '0' : '1'); }catch(_){}
-    applyMute();
-  });
-  applyMute();
-})();
+settings.setMuteHook({
+  get: isMuted,
+  toggle(){ try{ localStorage.setItem(MUTE_KEY, isMuted() ? '0' : '1'); }catch(_){}
+            applyMute(); return isMuted(); },
+});
+applyMute();
 
 // 普攻槍聲：固定用 Pistol_SE_03（不隨機）
 SFX.setShots([asset('se_pistol_03')].filter(Boolean), sfxGain('se_pistol_03'));
@@ -1758,6 +1755,16 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
     const P0=window.__perf||{};
     let lastSto=P0.sto|0, lastRaf=P0.raf|0;                 // 每秒速率取差分
     const domBase=document.getElementsByTagName('*').length; // dom 的基線（看有沒有越長越多）
+    /* ── 節流指數（ver -856，Ray：「手機溫度監測寫得進去嗎？」）──
+       網頁拿不到溫度（iOS 只給原生 App thermalState），用**降頻**當代理：
+       每 5 秒跑一段固定運算量、記耗時；本場最快的一次當基準，
+       顯示「現在／最快」的倍率 —— x1.0＝滿速，x1.5+＝機子熱到被 iOS 降頻了。
+       ⚠ 量測本身要便宜（單次幾 ms、0.1% 佔空比），不然探針自己變熱源。 */
+    let benchBest=0, benchLast=0, benchTick=0;
+    const bench=()=>{ const t0=performance.now(); let x=0;
+      for(let i=0;i<1.5e6;i++) x+=Math.sqrt(i);
+      benchLast=performance.now()-t0; if(x<0) console.log(x);   // 防死碼消除
+      if(!benchBest || benchLast<benchBest) benchBest=benchLast; };
     const upd=()=>{
       const P=window.__perf||{timers:{},media:new Set(),srcLive:0,sto:0,raf:0};
       const now=performance.now();
@@ -1805,8 +1812,11 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
         .map(([n])=>n).join(' ');
       const ctxSt=(P.ctx&&P.ctx.state)||'—';
       const domN=document.getElementsByTagName('*').length;
+      if(++benchTick>=5){ benchTick=0; bench(); }             // 每 5 秒量一次降頻
+      const thr=benchBest? (benchLast/benchBest) : 0;
       hud.textContent=
         VERSION+'  fps '+fps+'（最長幀 '+maxDtShow+'ms）  long '+ltMs+'ms/5s'
+        +'\n節流 x'+(thr?thr.toFixed(2):'—')+'（'+Math.round(benchLast)+'ms/基準'+Math.round(benchBest)+'ms）'
         +'\nheap '+mem+'  dom '+domN+'（開機+'+ (domN-domBase) +'）'
         +'\n圖估 '+Math.round(imgB/1048576)+'MB/'+imgN+'張  canvas '+Math.round(cvB/1048576)+'MB/'+cvN
         +'\nrAF '+rafRate+'/s  sto '+stoRate+'/s  網5s '+netN+'req '+netKB+'KB'

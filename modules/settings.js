@@ -34,6 +34,12 @@ const rd = k => { try{ return localStorage.getItem(k); }catch(e){ return null; }
 const wr = (k,v) => { try{ localStorage.setItem(k, String(v)); }catch(e){} };
 const num = (v, d) => { const n=parseFloat(v); return isFinite(n) ? n : d; };
 
+/* ── 全域靜音（ver -856，Ray：「把靜音鈕拿掉，放到系統選單裡」）──
+   鑰匙與套用都住在 main.js（applyMute 唯一實作，鐵律 8）—— 本模組是葉節點，
+   只拿注入的 {get, toggle} 畫那一列開關。沒注入（理論上不會）就不出這一列。 */
+let muteHook = null;
+export function setMuteHook(h){ muteHook = h; }
+
 export function volOf(layer){ return Math.max(0, Math.min(1, num(rd(K[layer]), 1))); }
 export function autoDelayMs(){
   return Math.max(AUTO_MIN, Math.min(AUTO_MAX, num(rd(K.auto), AUTO_DEFAULT)));
@@ -102,6 +108,11 @@ export function open(opts){
     panel.innerHTML =
         '<div class="gm-title">選　單</div>'
       + '<div class="gm-sec">音　量</div>'
+      + (muteHook
+        ? '<label class="gm-row gm-toggle"><span>靜　音</span>'
+          + '<button class="gm-sw'+(muteHook.get()?' on':'')+'" id="gmMute" type="button"><i></i></button>'
+          + '<b>'+(muteHook.get()?'靜音中':'關')+'</b></label>'
+        : '')
       +   row('gmBgm','音　樂', volOf('bgm'))
       +   row('gmSe', '音　效', volOf('se'))
       +   row('gmVo', '語　音', volOf('vo'))
@@ -139,6 +150,13 @@ export function open(opts){
       if(layer!=='bgm') el.addEventListener('change', ()=>{ try{ SFX.menuClick(); }catch(_){} });
     };
     bind('gmBgm','bgm'); bind('gmSe','se'); bind('gmVo','vo');
+    const mu=panel.querySelector('#gmMute');
+    if(mu) mu.addEventListener('click', e=>{ e.stopPropagation();
+      const on=muteHook.toggle();                       // 切完回讀真相（鑰匙在 main 那邊）
+      mu.classList.toggle('on', on);
+      const lab=mu.parentNode.querySelector('b'); if(lab) lab.textContent = on ? '靜音中' : '關';
+      if(!on) try{ SFX.menuClick(); }catch(_){}         // 解除靜音才試音（靜音中按下去本來就該無聲）
+    });
     const au=panel.querySelector('#gmAuto'), auV=panel.querySelector('#gmAutoV');
     au.addEventListener('input', ()=>{
       const ms=Math.round(AUTO_MIN + (+au.value)/100*(AUTO_MAX-AUTO_MIN));

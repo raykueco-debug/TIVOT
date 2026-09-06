@@ -47,16 +47,16 @@
     text-align:center;font-size:10px;letter-spacing:.18em;color:var(--parch);opacity:.28;}
   #fps{position:fixed;right:12px;top:calc(env(safe-area-inset-top) + 54px);
     font-size:9px;color:var(--parch);opacity:.35;}
-  #backBtn,#mapBtn,#muteBtn,#talkBtn,#bagBtn{position:fixed;top:calc(env(safe-area-inset-top) + 10px);z-index:40;
+  #backBtn,#mapBtn,#talkBtn,#bagBtn{position:fixed;top:calc(env(safe-area-inset-top) + 10px);z-index:40;
     background:rgba(5,6,12,.72);border:1px solid rgba(201,162,39,.5);color:var(--gold);
     font-family:inherit;font-size:11px;letter-spacing:.14em;padding:5px 12px;cursor:pointer;}
   /* 回到主畫面鍵（ver -775）：全域通用的圓形 ✕（同主遊戲的 .corner-btn 觀感）。 */
   #backBtn{right:12px;width:44px;height:44px;padding:0;border-radius:50%;
     font-size:20px;letter-spacing:0;display:flex;align-items:center;justify-content:center;}
-  #mapBtn{right:78px;} #muteBtn{right:144px;width:44px;padding:0;text-align:center;}
-  #talkBtn{right:196px;} #bagBtn{right:248px;}
-  #backBtn:active,#mapBtn:active,#muteBtn:active,#talkBtn:active,#bagBtn:active{background:rgba(201,162,39,.16);}
-  #muteBtn.muted{color:#d06a60;border-color:rgba(208,106,96,.7);}
+  /* 靜音鈕已拆（ver -856，Ray：「放到系統選單裡」）——對話/道具往右補位。 */
+  #mapBtn{right:78px;}
+  #talkBtn{right:144px;} #bagBtn{right:196px;}
+  #backBtn:active,#mapBtn:active,#talkBtn:active,#bagBtn:active{background:rgba(201,162,39,.16);}
   /* 生怪鈕：開發用。放操作盤左下角——舵輪佔滿面板中央，只有兩側下緣是空的。
      ⚠ z-index 要高過面板（面板是 canvas 直接畫的，本身不佔 DOM 層級），
        但低於地圖畫面(60)，免得地圖開著還按得到。 */
@@ -398,8 +398,7 @@
 <div class="hud" id="compass">北</div>
 <div id="place"><div class="nm" id="pnm"></div><div class="ty" id="pty"></div></div>
 <button id="mapBtn">地圖</button>
-<!-- 全域靜音：與 index.html 共用 localStorage 的 tivot_mute_v1 -->
-<button id="muteBtn" aria-label="Mute">🔊</button>
+<!-- 靜音鈕已拆（ver -856）：開關在主遊戲的選單面板；本頁靠 storage 事件同步 muted -->
 <button id="talkBtn">對話</button>
 <!-- 道具欄（ver -380，Ray：「道具欄只在飛行畫面有入口」）。
      ⚠ 走主遊戲那一支 `modules/loot.js` —— 道具與金錢是**同一份存檔**
@@ -522,7 +521,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -852';
+const FLIGHT_VER = 'ver -856';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -5347,16 +5346,11 @@ let sailMix=0;                       // 0＝停船 1＝航行，收斂跟隨避�
      所以不能靠記憶體共享狀態，只能兩邊各自讀鑰匙。 */
 const MUTE_KEY='tivot_mute_v1';
 let muted=(()=>{ try{ return localStorage.getItem(MUTE_KEY)==='1'; }catch(_){ return false; } })();
-(function bindMute(){
-  const b=document.getElementById('muteBtn'); if(!b) return;
-  const paint=()=>{ b.textContent = muted ? '🔇' : '🔊'; b.classList.toggle('muted', muted); };
-  b.addEventListener('click', ()=>{
-    muted=!muted;
-    try{ localStorage.setItem(MUTE_KEY, muted?'1':'0'); }catch(_){}
-    paint();
-  });
-  paint();
-})();
+/* 靜音鈕已拆（ver -856，Ray：「放到系統選單裡」）：開關住在主遊戲的選單面板。
+   選單能蓋在飛行畫面上開（-481 的 __flightHold），boot 快照會過期 ——
+   聽 storage 事件同步（另一個 document 寫 key 時這裡會收到；同頁寫入不觸發，
+   而本頁已無寫入點，正好）。 */
+window.addEventListener('storage', e=>{ if(e && e.key===MUTE_KEY) muted = (e.newValue==='1'); });
 function updateBgm(dt){
   // 門檻取很低：一有推進就切成航行曲，回到完全靜止才回待機
   const want=(Math.abs(cam.speed)>0.06)?1:0;
