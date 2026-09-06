@@ -338,13 +338,16 @@ export function enemyImage(en){
    ⚠ 這與**結算副標**的 `kind` 是兩回事：那邊 `slay` 仍是「已擊殺」、`harm` 是
      「已淨化」（`i18n` 的 `result.winSubBy`）—— 同一格 `kind` 兩種用途，
      各查各的表，不要為了對齊演出而去改副標。 */
-const PURIFY_KINDS = { harm:1, slay:1 };
+/* ⚠ `aerial`＝飛行敵人（ver -869，Ray：「不要跑 harm，擊敗一樣寫淨化」）——
+   羽蛇/蜈蚣分類獨立出來，但降臨與淨化**兩個演出都照禍魘那一套**（牠們本來就是
+   空中的禍魘，只是不再擠 harm 這一格）。 */
+const PURIFY_KINDS = { harm:1, slay:1, aerial:1 };
 /* ⚠⚠ **登場特效比淨化死法多一類：船（ver -787，Ray：「每一個船戰的敵人都會有出場
    特效，每次都要播」）**。降臨（rise＋震動＋衝擊波）與淨化（死亡散白光）本來共用
    `PURIFY_KINDS`，但 Ray 要**所有船戰敵人**都有登場震動衝擊波 —— 空賊船 `kind:'ship'`
    不是禍魘（死掉不該散白光），所以只把它加進**登場**這一類，**淨化死法維持
    harm/slay**。羽蛇／蜈蚣是 `harm`，本來就在登場類裡（＝「每次都播」已成立）。 */
-const ENTRANCE_KINDS = { harm:1, slay:1, ship:1 };
+const ENTRANCE_KINDS = { harm:1, slay:1, ship:1, aerial:1 };
 function isPurify(){
   const en = GAME_CONFIG.enemies[state.currentEnemyKey];
   return !!(en && PURIFY_KINDS[en.kind]);

@@ -165,7 +165,7 @@ export const STRINGS = {
     winTitle:     'Judgment',
     winSub:       '{name} Purified',
     winSubBy:     { harm:'{name} Purified', human:'{name} Defeated', ship:'{name} Sunk',
-                    target:'{name} Destroyed', beast:'{name} Hunted',
+                    target:'{name} Destroyed', beast:'{name} Hunted', aerial:'{name} Purified',
                     slay:'{name} Slain' },
     loseTitle:    'The Light Fades',
     loseSub:      'HUND has fallen...',

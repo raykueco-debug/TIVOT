@@ -194,7 +194,7 @@ export const STRINGS = {
     /* 結算副標的用詞，依敵人卡的 `kind`（ver -423；-432 補齊五類，Ray 指定）。
        ⚠ 沒寫 `kind` 的怪退回 `winSub` 那一句，不會壞。 */
     winSubBy:     { harm:'{name}已淨化', human:'{name}已擊敗', ship:'{name}已擊沉',
-                    target:'{name}已擊破', beast:'{name}已獵殺',
+                    target:'{name}已擊破', beast:'{name}已獵殺', aerial:'{name}已淨化',
                     slay:'{name}已擊殺' },
     loseTitle:    '聖光黯滅',
     loseSub:      'HUND 倒下了…',
