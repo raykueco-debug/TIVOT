@@ -516,6 +516,23 @@ export const CHAPTERS = [
            'np_day3_done','np_anya_join','np_dock_ask','np_grave_done','np_depart',
            'sv_arrive','sv_evening'],
     enter:'town', town:'shinier', node:'sorahome' },
+  /* ══ Stage 6（ver -870，Ray：「加入stage6 翌日早上起床那一幕」）══
+     夏爾村・翌日早上（索菈娜家 06:00）→ 晨戲 → 森林行 → 遺跡入口鹿主。
+     ⚠ `sv_forest_morning` 給（翌日閘門已用掉——直接站在屋裡）；
+       `sv_forest_go` **不給**（起床那一幕正是要演的，它自己會 setStage 6）。
+     ⚠ `shinier_siege`＋`sv_clear_wild`＋`safehouse_shinier` 都給：圍城已打完、
+       村子是安全區——少了 siege 旗踏出家門會重演出擊那一段（onLeave 的旗）。
+     ⚠ `clockHour:6` ＝ firstHourAt(6)＝隔天 06:00（開局 11:00 已過 6 點）。 */
+  { id:'stage6', name:'Stage 6', sub:'夏爾村・翌日早上 → 森林行 → 遺跡入口',
+    stage:6, clockHour:6, named:true,
+    flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open',
+           'set_sail','got_ship','dock_day2','flight_centipede_met',
+           'np_port_arrive','np_clear_church','np_claws_done','safehouse_northport',
+           'np_burial','np_burial_done','np_night','np_night_done','np_day3',
+           'np_day3_done','np_anya_join','np_dock_ask','np_grave_done','np_depart',
+           'sv_arrive','sv_evening','sv_night_done','shinier_siege',
+           'sv_clear_wild','safehouse_shinier','sv_forest_morning'],
+    enter:'town', town:'shinier', node:'sorahome' },
 ];
 
 export function newRun(){
