@@ -2180,6 +2180,33 @@ export const TOWNS = {
     /* BGM 暫代 misty（同村；Ray 指定森林曲後換）。 */
     bgm: 'misty',
     storyExplore: true,
+    /* 荒野圖（ver -862，Ray：「森林也會打烊是怎樣」）：19:00 全域打烊那條不罩這裡
+       —— 野外的路沒有門可以關（判定在 modules/town.js 的 isOpenNow，鐵律 8）。 */
+    wilderness: true,
+    /* ══ 野生刷怪（ver -862，Ray 的 F 表）══════════════════════════════════
+       實作只有 modules/town.js 的 `wildActDue` 一支（鐵律 8）。規則：
+       · `rate`＝隨機池的出怪率（每次抵達擲一次；踩過的格照樣擲）。
+       · `fixed`＝必出格（每趟進圖各一次；「洞窟tiger只一次，下次進地圖再生」）。
+       · **一趟進圖同一種怪不重複**（記在 town 的 wildDone，open() 歸零）。
+       · 值寫 `{day,night}`＝日夜差分（日/晨＝day、黃昏/夜/午夜＝night，
+         判定走 clock.band 的唯一一支 `wildVariant`）。
+       · `where:'connector'`＝非末端限定（末端＝算出來的，鐵律 7）。
+       · 入口不出怪（遭遇戰復活點）；safehouse 旗插著整套不動；acts 優先。 */
+    wildSpawn: {
+      rate: 0.25,
+      fixed: {
+        shoal:'sf_snake',                                        // 淺灘必出水蛇
+        cave:'sf_tiger',                                         // 洞窟必出虎王（一趟一次）
+        cliff:{ day:'sf_stag_rot', night:'sf_stag_nightmare' },  // 斷崖必出鹿骸（日夜差分）
+        ruins:'sf_deer',                                         // 遺跡入口＝樹靈鹿主
+      },
+      pool: [
+        { battle:{ day:'sf_bear_husk', night:'sf_bear_nightmare' } },  // 熊骸（日夜差分）
+        { battle:'sf_hog' },
+        { battle:'sf_lynx',  where:'connector' },                // 非末端限定
+        { battle:'sf_crows', where:'connector' },
+      ],
+    },
     nodes: {
       /* 入口＝遭遇戰復活點，**不可以有戰鬥**（§6.5.2 的鐵條）。下方回村（野外）。 */
       entry: { bg:'Forest_Entry', name:'夏爾森林　森林入口',

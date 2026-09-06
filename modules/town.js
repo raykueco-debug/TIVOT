@@ -597,6 +597,51 @@ function actDue(n){
      那是「開局起算的 24 小時塊」不是日曆日，隔天早上會被算成第 1 天（ver -427 修）。 */
 function dayNo(){ return clock.dayNo(); }
 
+/* ══ 野生刷怪（ver -862，Ray 的夏爾森林 F 表）══════════════════════════════
+   資料在地圖上（`TOWNS[].wildSpawn`，見 script/town.js 的 shinier_forest），
+   這裡是**唯一的一支**派場實作（鐵律 8）。規則：
+     · 必出格（`fixed`）優先，一趟進圖各一次；隨機池擲 `rate`（每次抵達都擲，
+       「踩過也可能出」）。
+     · **一趟進圖同一種怪不重複**：`wildDone` 記「種」（日夜差分算同一種），
+       `open()` 歸零 ——「洞窟 tiger 只一次，下次進地圖再生」就是這一條。
+     · 值寫 `{day,night}` ＝日夜差分：Dawn/Day ＝ day 卡，Dusk/night/midnight ＝
+       night 卡（`wildVariant` 是唯一的判定點，鐵律 8）。
+     · `where:'connector'` ＝ 非末端限定（末端＝算出來的 `connectorIds`，鐵律 7）。
+     · **入口不出怪**（遭遇戰復活點，§6.5.2 的鐵條）；安全區旗插著整套不動
+       （同 actDue 那一條的語意）；`acts` 優先（劇本先走，見 runArrival 的接線）。
+   ⚠ 它是**遭遇戰**（storyBattle 不設）：打輸走「回這張地圖的入口」那條回程。
+   ⚠ `wildDone` 是**這一趟**的狀態（同 eveningHeld）：不進存檔 —— 最壞情況是
+     讀檔回來重新能遇怪，而那正是「下次進地圖再生」。 */
+let wildDone = new Set();
+function wildSpecies(v){ return (typeof v==='string') ? v : (v && (v.day||v.night)) || ''; }
+function wildVariant(v){
+  if(!v) return null;
+  if(typeof v==='string') return v;
+  const b=clock.band();
+  return (b==='Dawn'||b==='Day') ? v.day : v.night;
+}
+function wildActDue(n){
+  const W=(TOWNS[townId]||{}).wildSpawn; if(!W || !n) return null;
+  if(nodeId===entryNodeId) return null;                 // 入口＝復活點，不可有戰鬥
+  if(prog.hasFlag(safehouseFlag())) return null;        // 安全區：遭遇戰整套不動
+  let pick=null;
+  const fx=W.fixed && W.fixed[nodeId];
+  if(fx && !wildDone.has(wildSpecies(fx))) pick=fx;
+  if(!pick){
+    if(Math.random() >= (W.rate||0)) return null;
+    const conn=connectorIds().includes(nodeId);
+    const cands=(W.pool||[]).filter(p=> !(p.where==='connector' && !conn)
+                                     && !wildDone.has(wildSpecies(p.battle)));
+    if(!cands.length) return null;
+    pick=cands[Math.floor(Math.random()*cands.length)].battle;
+  }
+  /* 取走就記（同一趟不再出同種）：這一場**立刻開打**（沒有可被中途放掉的對白），
+     打輸的回程會把城收掉重開 → open() 歸零，所以不會把「輸了的那一隻」鎖死。 */
+  wildDone.add(wildSpecies(pick));
+  const id=wildVariant(pick);
+  return id ? { lines:[ { battle:id } ] } : null;
+}
+
 /* ══ 傍晚：強制回旅店（ver -427，Ray 重寫）══════════════════════════════
    兩條觸發、兩句台詞（資料在 `TOWNS[].evening`）：
      · 走完所有地點、還沒到 18:00 → `bySeen`
@@ -754,8 +799,13 @@ function isOpenNow(n){
   /* ver -860（Ray：「所有營業場所七點以後不開，除了酒吧跟夏爾村餐廳」）：
      19:00 起一律打烊——除非節點標 `lateNight:true`（酒吧／夏爾村餐廳）。
      這是**全域規則**，收在唯一的 isOpenNow（鐵律 8）；各店的 `hours` 照舊
-     管早上開門，只是上界被這條 19:00 蓋住（除例外）。 */
-  if(!n || !n.lateNight){ if(t >= 19) return false; }
+     管早上開門，只是上界被這條 19:00 蓋住（除例外）。
+     ⚠⚠ **只有城鎮村落吃這一條**（ver -862，Ray：「只有槍店、工坊、餐廳、公會、
+     雜貨店、教堂、市鎮中心等城鎮村落地點才會打烊，森林也會打烊是怎樣」）——
+     荒野圖（地圖上標 `wilderness:true`，夏爾森林是第一張）的節點是野外的路，
+     沒有門可以關；那裡的「營業場所」若真有，用自己的 `hours` 照舊管。 */
+  const T=TOWNS[townId];
+  if(!(T && T.wilderness) && !(n && n.lateNight)){ if(t >= 19) return false; }
   const h = n && n.hours;
   if(!h || h.length<2) return true;
   return (h[1] > h[0]) ? (t >= h[0] && t < h[1]) : (t >= h[0] || t < h[1]);
@@ -1619,7 +1669,9 @@ export function enter(id){
   runArrival(false);
 
   function runArrival(immediate){
-  const act = actDue(n);
+  /* 野生刷怪（ver -862）：`acts` 優先（劇本先走）；接續那一次（immediate）不擲 ——
+     一段主線剛演完原地再冒一隻怪是兩段演出打架。 */
+  const act = actDue(n) || (immediate ? null : wildActDue(n));
   let ev = act ? null : eveningDue(n);
   /* 這一次抵達**原本**要演的進場對白（打烊、演過了、或段落裡有**回房休息的夥伴**
      （ver -459，見 linesBlockedByRest）就是空的 —— 後者旗標不記，之後照演）。
@@ -2091,6 +2143,7 @@ export function open(town, node, opts){
      `enter()` 消化 —— 初見還沒看過就演節點的 `wake` 那一拍（見 enter 的說明）。 */
   carriedIn = !!(opts && opts.carried);
   eveningHeld=false;          // 傍晚那一格的「讓過一次」是這一趟城鎮探索的狀態（ver -430）
+  wildDone=new Set();         // 野生刷怪的「這一趟出過誰」也是（ver -862）
   pendingFavor=null;          // 「下一步去哪」也是（ver -440，見 armFavor）
   /* 夥伴的所在（ver -461）：進城算一次。⚠ 要在 townId 設好之後（leftoverForNou 要查表）。 */
   escortNou=false;

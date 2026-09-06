@@ -49,7 +49,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.07-862';
+export const VERSION = 'ver 2026.09.07-863';
 
 export const GAME_CONFIG = {
 
@@ -709,9 +709,11 @@ export const GAME_CONFIG = {
          svHunterTrade）。⚠ 價格是我擬的草案。 */
       meat_lynx:  { name:'山貓腿肉', cat:'food', price:60,  desc:'緊實的山貓腿肉。烤過之後香氣四溢。' },
       meat_boar:  { name:'山豬腹肉', cat:'food', price:80,  desc:'油花漂亮的山豬腹肉。獵人的最愛。' },
-      antler_deer:{ name:'鹿角',     cat:'material', price:50,  desc:'分岔漂亮的鹿角。可入藥也可做工藝。' },
-      paw_bear:   { name:'熊掌',     cat:'material', price:120, desc:'稀有的熊掌。燉煮費工，滋味濃厚。' },
-      meat_snake: { name:'蛇肉',     cat:'material', price:40,  desc:'處理乾淨的蛇肉。意外地清爽可口。' },
+      /* ⚠ 這三樣是**食材**（ver -862 補正：-861 說「五食材改 cat:'food'」只改了兩樣）——
+         「五食材」＝ huntExchange.foods 那五樣，獵人兌換表與料理都當食材看。 */
+      antler_deer:{ name:'鹿角',     cat:'food', price:50,  desc:'分岔漂亮的鹿角。可入藥也可做工藝。' },
+      paw_bear:   { name:'熊掌',     cat:'food', price:120, desc:'稀有的熊掌。燉煮費工，滋味濃厚。' },
+      meat_snake: { name:'蛇肉',     cat:'food', price:40,  desc:'處理乾淨的蛇肉。意外地清爽可口。' },
       /* 禍魘素材（獵人兌換的獎勵；日後接九星配方）。⚠ 價格是我擬的草案。 */
       harm_claw_s:   { name:'禍魘的小爪', cat:'material', price:60,  desc:'小型禍魘的爪。泛著不祥的光。' },
       harm_claw:     { name:'禍魘之爪',   cat:'material', price:200, desc:'成體禍魘的利爪。堅硬異常。' },
@@ -1341,6 +1343,18 @@ export const GAME_CONFIG = {
                 ]} ] },
     sv_altar: { enemy:'sv_reliquary', session:'shinier_siege' },
     sv_wild:  { enemy:'sv_bear', session:'shinier_siege', sessionEnd:true },
+    /* ══ 夏爾森林野生遭遇（ver -862）══ 一場一隻、無 session（每場自己結算），
+       由 modules/town.js 的 `wildActDue` 依 `shinier_forest.wildSpawn` 派場。 */
+    sf_lynx:           { enemy:'sf_lynx' },
+    sf_snake:          { enemy:'sf_snake' },
+    sf_hog:            { enemy:'sf_hog' },
+    sf_tiger:          { enemy:'sf_tiger' },
+    sf_crows:          { enemy:'sf_crows' },
+    sf_deer:           { enemy:'sf_deer' },
+    sf_bear_husk:      { enemy:'sf_bear_husk' },
+    sf_bear_nightmare: { enemy:'sf_bear_nightmare' },
+    sf_stag_rot:       { enemy:'sf_stag_rot' },
+    sf_stag_nightmare: { enemy:'sf_stag_nightmare' },
     /* ══⚠⚠ 瓦礫中的紫黑之爪 ＝ **聖徒化教學戰**（ver -595，Ray 交稿）══
        腳本節奏：BOSS HP ≤30% → 劇情殺（主角 HP 歸零）→ 諾薇兒「我準備好了，現在
        聖徒化！」→ 雪鐵龍教學**右滑**發動聖徒化 → 聖徒化戰鬥 → 血回 99% 自動觸發
@@ -2250,6 +2264,16 @@ export const ASSETS = {
   enemy_sv_beast_shackle: "resources/enemy/mon_beast_shackle.webp?v=2",
   enemy_sv_bear:          "resources/enemy/mon_bear_nightmare.webp",   // 同上
   enemy_sv_reliquary:     "resources/enemy/mon_beast_reliquary.webp?v=2",
+  /* ══ 夏爾森林野生怪（ver -862，卡在 script/enemies.js 的 sf_ 系列）══
+     ⚠ 夜間的熊骸/鹿骸**沿用 enemy_sv_bear／enemy_sv_stag**（同一張圖一個鍵，鐵律 7）。 */
+  enemy_sf_lynx:      "resources/enemy/mon_shinierforest_lynx.webp",
+  enemy_sf_snake:     "resources/enemy/mon_shinierforest_snake.webp",
+  enemy_sf_hog:       "resources/enemy/mon_shinierforest_hog.webp",
+  enemy_sf_tiger:     "resources/enemy/mon_shinierforest_tiger.webp",
+  enemy_sf_crows:     "resources/enemy/mon_shinierforest_crows.webp",
+  enemy_sf_deer:      "resources/enemy/mon_shinierforest_deer.webp",
+  enemy_sf_bear_husk: "resources/enemy/mon_bear_husk.webp",
+  enemy_sf_stag_rot:  "resources/enemy/mon_stag_rot.webp",
 
   // ── 五張 cut-in 圖（v17.7 嵌入）──
   cutin_saint_luna: "resources/partner/Luna_CI_advent.jpg",   // 聖徒化降臨 cut-in（Luna）
