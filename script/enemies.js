@@ -736,9 +736,11 @@ export const ENEMIES = {
          黃昏黎明用 Centipi_dd」）。寫成 `{day,dd,night}` 三個槽，時段→槽的對應
          只有一處：`modules/enemy.js` 的 `enemyImage()`（鐵律 7）。 */
       image:{ day:'enemy_centipi_day', dd:'enemy_centipi_dd', night:'enemy_centipi_night' },
-      /* ⚠ `kind` ＝ 結算頁的用詞（Ray 指定）：`harm`＝禍魘→「已淨化」、
-         `human`→「已擊敗」、`ship`→「已擊沉」。對照表在 `modules/inspector.js`。 */
-      kind:'harm',
+      /* ⚠⚠ `kind:'aerial'`＝**飛行敵人自成一類**（ver -869，Ray：「把飛行敵人跟
+         一般敵人分開就好了，不要跑 harm，擊敗一樣寫淨化」）——
+         結算副標照樣「已淨化」（i18n winSubBy.aerial）、降臨/淨化特效照樣吃
+         （enemy.js 的 ENTRANCE_KINDS/PURIFY_KINDS 都含 aerial）。 */
+      kind:'aerial',
       hp:500,
       /* 蓄力攻擊（紅點那一發）：傷害 20、**3~5 秒發動一次**、不疊加。
          ⚠ `atkInterval` 給**區間**（陣列）＝每次隨機；給數字＝固定（舊卡不受影響）。 */
@@ -799,7 +801,7 @@ export const ENEMIES = {
       story:1, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
       weaponMod:{ '重機槍':[0,0.3], '霰彈槍':[0.5,-0.5], '萊福槍':[0,0.5] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       openUlt:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
-      kind:'harm',                 // 禍魘 → 已淨化
+      kind:'aerial',               // 飛行敵人自成一類（ver -869，Ray）→ 副標照樣「已淨化」
       image:{ day:'enemy_serpent_day', dd:'enemy_serpent_dd', night:'enemy_serpent_night' },
       hp:500,
       attack:20,                   // 蓄力攻擊（紅點那一發）
@@ -995,7 +997,7 @@ export const ENEMIES = {
       openUlt:[1,2], ultEvery:[2,4], assault:{ count:1, gap:0 }, ult:{},
       kind:'beast',
       image:'enemy_sf_deer',
-      bg:'Ruins_Entrance_Day',
+      bg:'ruins_shinier_entrance',        // ver -870：Ray 新交的遺跡入口（舊 Ruins_Entrance_* 已收走）
       fit:{ mode:'contain', pos:'center bottom' },
       hp:600, attack:20,                  // hp＝Ray 表；attack 暫定
       atkInterval:null,
@@ -1003,6 +1005,29 @@ export const ENEMIES = {
       resist:{}, weak:{}, landSe:null, special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{ delay:{ type:'blunt' },
+              wrong:{ type:'slash' },
+              assault:{ type:'claw', count:3, angle:'random' } },
+      loot:[ { id:'elf_antler', n:1 } ],
+    },
+    /* ══ 鹿主變異（ver -870，Ray 的森林行稿：「鹿主變異 mon_shinierforest_deernightmare
+       …蕾：『禍魘！』進入戰鬥」）══ 黃昏後抵達遺跡入口的劇情戰。
+       kind:'harm'＝變異成禍魘（降臨/淨化特效＋「已淨化」）。
+       ⚠ hp/attack 暫定（照本尊 600 上調一階；Ray 沒給這一張的數值）。 */
+    sf_deer_nightmare: {
+      name:'變異樹靈鹿主',
+      story:1, counterStagger:1,
+      weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
+      openUlt:[1,2], ultEvery:[2,4], assault:{ count:1, gap:0 }, ult:{},
+      kind:'harm',
+      image:'enemy_sf_deer_nightmare',
+      bg:'ruins_shinier_entrance',
+      fit:{ mode:'contain', pos:'center bottom' },
+      hp:700, attack:22,                  // ⚠ 暫定
+      atkInterval:null,
+      delayPenalty:{ seconds:5 },
+      resist:{}, weak:{}, landSe:null, special:[],
+      boardGrids:[9,9,9,9,9],
+      hitFx:{ delay:{ type:'blood', angle:'random' },
               wrong:{ type:'slash' },
               assault:{ type:'claw', count:3, angle:'random' } },
       loot:[ { id:'elf_antler', n:1 } ],

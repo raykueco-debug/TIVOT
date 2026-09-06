@@ -260,12 +260,21 @@ def main():
                         warn('%s：背景 %s 只有 .png，還沒轉成 .webp（§5 的規約）' % (tag, ln['bg']))
                     else:
                         err('%s：沒有這張背景 %s（找 %s）' % (tag, ln['bg'], d))
+            if ln.get('cgBack'):
+                # 中景層（ver -870）：一律明確路徑，存在性直接查
+                if not exists(ln['cgBack']):
+                    err('%s：沒有這張中景圖 %s' % (tag, ln['cgBack']))
             if ln.get('cg'):
                 # 插圖也吃時段差分（ver -427）：`005_Kerberos` 可能只有
                 # `_day` / `_dusk` 這些檔，原名反而不存在 —— 只要**有一個時段**在就算數。
                 # ⚠ 這裡不重算候選鏈（那在 modules/story.js 的 `bandNames`）——
                 #   只是「有沒有任何一張」的存在性檢查，不決定播的時候挑哪一張。
                 cg = ln['cg']
+                # ver -870：含 `/` 的插圖名＝明確路徑（story.cgList 的擴充）——存在性直接查那條路
+                if '/' in cg:
+                    if not exists(cg):
+                        err('%s：沒有這張插圖 %s' % (tag, cg))
+                    continue
                 bands = ('', '_Dawn', '_Day', '_Dusk', '_night', '_midnight',
                          '_dawn', '_day', '_dusk', '_Night', '_Midnight')
                 got = [b for b in bands

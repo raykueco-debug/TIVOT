@@ -1829,6 +1829,12 @@ export const TOWNS = {
       { flag:'sv_evening', need:'sv_arrive', hourOfDay:18, clockTo:19,
         goto:'sorahome', enterAgain:true, stage:5,   // 回到索拉娜小屋後的劇情＝S5（-857 重編號；原 -821 的 S6）
         lines:[ nou('front','找到你了！大家都在索菈娜家等著喔。') ] },
+      /* ══ 翌日 06:00（ver -870，Ray 的森林行稿：「三秒黑淡入淡出　翌日（黑透遮罩）
+         背景：索拉娜家，06:00」）══ 獸骸夜戰那一段（sv_clear_wild）演完就跳到
+         隔天清晨、人在索菈娜家 —— 晨戲掛在 sorahome 的 acts（need 這支旗）。
+         ⚠ 「三秒黑」目前走 forceGo 的標準黑幕（~1s）——要真的 3 秒再跟 Ray 調。 */
+      { flag:'sv_forest_morning', need:'sv_clear_wild', clockTo:6,
+        goto:'sorahome', enterAgain:true },
     ],
     nodes: {
       /* ── 樞紐：剝製廣場 ──「離開」＝下方出口（sail 那一套；舵還沒修好，
@@ -2111,7 +2117,43 @@ export const TOWNS = {
            警鐘（se_villagealarm）響起後**不點擊**緊接 bgm_warhorn（loop）。
            ⚠ 收在 readysmile「一起上吧！」＋待續卡 —— 魔獸戰的敵人卡還沒交
              （美術的 mon_* 是圖、數值未定），戰鬥拍等卡到再接。 */
-        acts:[ { flag:'sv_night_done', need:'sv_evening', sides:{ RENNA:'L' }, lines:[
+        acts:[
+        /* ══ 翌日清晨：出發前（ver -870，Ray 的森林行稿，台詞一字未改）══
+           時機＝sv_forest_morning 閘門把人搬回來的那一次抵達（06:00）。
+           ⚠ 稿上「插圖，由上往下平移 010_Anyaheadrubbing」＝ cg＋cgPan:'down'；
+             「回到原背景」＝下一拍 cg:null（收圖走黑幕，預設）。
+           ⚠ 「安：Anya_SI_sleepy」這類**只有差分沒有台詞**的拍＝空框演出拍
+             （台上有人→點擊推進，§6.5 -628）。 */
+        /* 這一幕＝**S6**（ver -870，Ray：「加入stage6 翌日早上起床那一幕」）。 */
+        { flag:'sv_forest_go', need:'sv_forest_morning', stage:6, lines:[
+          sor('side','好啦，趁早趕快出發吧！'),
+          any('sleepy',''),
+          ren('wake','這麼早嗎？'),
+          nou('sleepy',''),
+          sor('think','黃昏過後魔獸會變得不好對付，現在進森林頂多遇到一些動物吧。'),
+          ren('unbraid','『一些動物』？'),
+          sor('idea','蛇啊、山貓啊、狼啊、獨角虎之類的。'),
+          ren('upsetstare','最後那兩個是怎麼回事……'),
+          sor('lauaghbig','沒事啦，都不好吃。'),
+          ren('upsetstare','根本不構成對話……'),
+          ren('thinking','算了，這也是安全起見。'),
+          nou('front','安雅在這邊等我們回來喔。'),
+          ren('lookaway','……'),
+          ren('talkserious','不，安雅小姐要和我們一起走。'),
+          nou('concern','可是……'),
+          any('silent',''),
+          { speaker:'ANYA', text:'', cg:'010_Anyaheadrubbing', cgPan:'down' },
+          any(null,'！！'),
+          Object.assign(any('smileshy','好。'), { cg:null }),   // 回到原背景
+          nou('awkward','很有騎士精神呢。'),
+          ren('awkward','不不，他本來就是騎士……'),
+          sor('lauaghbig','好啦，吃完早飯就出發吧。'),
+          ren('dying','……'),
+          nou('cringe','……'),
+          any('dying','……'),
+          sor('smile','……是新鮮鹿肉啦，安心吧。'),
+        ] },
+        { flag:'sv_night_done', need:'sv_evening', sides:{ RENNA:'L' }, lines:[
           /* ver -858（Ray 交稿）：沒取得約定（sv_craftsman 未立）——
              T1 只有第一句；T2 追加吐槽一拍（tierMin，story.js -858 新增）。
              ⚠ 杰羅 -858 起 S5 才在工坊，所以第一晚**必然**走這一支 ——
@@ -2243,10 +2285,28 @@ export const TOWNS = {
         { battle:'sf_crows', where:'connector' },
       ],
     },
+    /* 高光地圖（ver -870，Ray 稿的「高光地圖」拍）：對白中量不到那顆鈕（nav 藏著），
+       所以走 tips 機制 —— 入口 intro 演完、nav 回來那一刻彈一次雪鐵龍箭。
+       ⚠ 與稿的順序略異（稿夾在兩句索菈娜之間）——機制限制，要改再跟 Ray 說。 */
+    tips: [
+      { flag:'sv_forest_maptip', need:'sv_forest_intro', at:'map',
+        text:'點開地圖，隨時確認自己的位置' },
+    ],
     nodes: {
       /* 入口＝遭遇戰復活點，**不可以有戰鬥**（§6.5.2 的鐵條）。下方回村（野外）。 */
       entry: { bg:'Forest_Entry', name:'夏爾森林　森林入口',
-        exits:{ up:'glade', down:'@shinier:wild' } },
+        exits:{ up:'glade', down:'@shinier:wild' },
+        /* ══ 森林入口（ver -870，Ray 的森林行稿）══ 出發前的叮嚀＋地圖教學。 */
+        acts:[ { flag:'sv_forest_intro', need:'sv_forest_go', lines:[
+          sor('remind','別走散囉，真的迷路的話就看看地圖吧。'),
+          sor('remind','往懸崖方向走，馬上就到。'),
+          ren('smile','姑且問一下——『馬上』是……？'),
+          sor('smile','大概天黑前能到吧。'),
+          ren('dying',''),
+          any('dying',''),
+          nou('awkward',''),
+          sor('readysmile','好啦，出發囉。'),
+        ] } ] },
       /* 戰①。⚠ **沒有 up**：北面是斷崖（設計的「不要一直線走到」）。 */
       glade: { bg:'Forest_Glade', name:'夏爾森林　林間空地',
         exits:{ left:'shoal', right:'nest', down:'entry' } },
@@ -2268,10 +2328,82 @@ export const TOWNS = {
       /* 終點前的喘息格（無戰）：日後 checkpoint／劇情拍放這裡。 */
       cliff: { bg:'Forest_Cliff', name:'夏爾森林　斷崖邊',
         exits:{ up:'ruins', left:'high' } },
-      /* 終點：遺跡入口 —— 背景直接用遺跡那批（美術已交 Ruins_Entrance_Day/Night）。
-         進遺跡本體（Ruins_* 那 20 張）是另一張圖，等 Ray 的規劃。 */
-      ruins: { bg:'Ruins_Entrance', name:'夏爾森林　遺跡入口',
-        exits:{ back:'cliff' } },
+      /* 終點：遺跡入口 —— 背景 ver -870 換 Ray 新交的 ruins_shinier_entrance
+         （單張、無時段差分；舊 Ruins_Entrance_* 已被美術收走）。
+         進遺跡本體是另一張圖，等 Ray 的規劃（遺跡背景美術重製中）。 */
+      ruins: { bg:'ruins_shinier_entrance', name:'夏爾森林　遺跡入口',
+        exits:{ back:'cliff' },
+        /* ══ 樹靈鹿主（ver -870，Ray 的森林行稿）══ 兩個分支＝兩段 acts（同一支
+           flag，先到先演）：**黃昏前**（hourOfDay [5,17]）鹿主看一眼就走；
+           **黃昏後**（沒寫 hourOfDay＝上面那段不成立就輪到它）鹿主變異成禍魘開打。
+           ⚠ 鹿主的「出現」＝中景層 `cgBack`（背景之上、**立繪之下** —— Ray：
+             「角色圖層應該在樹靈鹿主之上」）；差分切換走軟淡入不轉黑。
+           ⚠ 稿上分支1「安：『祂在看我們……』Nouvelle_SI_Cringe」——說話者與差分
+             對不上，視為筆誤照分支2的樣子用**諾**（Ray 要改再說）。 */
+        acts:[
+          { flag:'sv_deer_met', need:'sv_forest_intro', hourOfDay:[5,17], lines:[
+            Object.assign(sor('surprised','竟然是……樹靈鹿主！'),
+                          { cgBack:'resources/enemy/mon_shinierforest_deer.webp' }),
+            ren('shockedCalm','那是什麼？很麻煩嗎？'),
+            sor('remind','那是傳說中的森林之神，'),
+            sor('remind','所以我也不知道好不好吃。'),
+            ren('scarejump','妳就沒有一點敬畏之心嗎！'),
+            Object.assign(nou('cringe','祂在看我們……'),
+                          { cgBack:'resources/enemy/mon_shinierforest_deerlook.webp' }),
+            nou('surprise','啊。'),
+            Object.assign(nou('surprise','走掉了。'), { cgBack:null }),
+            /* 自由行動，可直接進入遺跡（遺跡本體地圖未實裝——等 Ray 的規劃）。 */
+          ] },
+          { flag:'sv_deer_met', need:'sv_forest_intro', storyBattle:true, lines:[
+            Object.assign(sor('surprised','竟然是……樹靈鹿主！'),
+                          { cgBack:'resources/enemy/mon_shinierforest_deer.webp', checkpoint:true }),   // 劇情戰的回檔點：站在遺跡入口、可自由行動
+            ren('shockedCalm','那是什麼？很麻煩嗎？'),
+            sor('remind','那是傳說中的森林之神，'),
+            sor('remind','所以我也不知道好不好吃。'),
+            ren('scarejump','妳就沒有一點敬畏之心嗎！'),
+            Object.assign(nou('cringe','牠好像不太歡迎我們……'),
+                          { cgBack:'resources/enemy/mon_shinierforest_deerlook.webp' }),
+            any('desperate','……！！'),
+            /* 紫紅負片（tintHold，§6.5 -664）：出口＝進戰鬥，story.stopTint 自動收。 */
+            Object.assign(any('terrifying','有什麼……要來了！'), { tintHold:'nightmare' }),
+            /* 變異那一拍**清空立繪**（Ray：「鹿主變異時把角色立繪都先撤出」）——
+               台上沒人的純演出拍吃 auto；下一句蕾娜開口自然重新上台。 */
+            { speaker:'ANYA', text:'', hide:['SORANA','RENNA','NOUVELLE','ANYA'],
+              cgBack:'resources/enemy/mon_shinierforest_deernightmare.webp', auto:2200 },
+            ren('cringe','那是……'),
+            ren('callangry','禍魘！'),
+            { battle:'sf_deer_nightmare' },
+            /* ══ 戰後：紮營討論（Ray 稿，台詞一字未改）══
+               ⚠ 收圖（cg:null）掛在**戰後第一拍**：battle 拍的分支先 return、
+                 不跑 applyPersist —— 掛在它身上會被整個忽略（ver -870 踩過）。 */
+            Object.assign(sor('guardtalk','可惡！連森林的守護神都被侵蝕了！'), { cgBack:null }),
+            ren('upsetstare','妳剛剛不是還想吃人家……'),
+            sor('embarassed','好奇嘛！'),
+            sor('smile','不過，天要黑了！不如先紮營吧？'),
+            ren('thinking','……'),
+            ren('talkwork','不。'),
+            ren('ask','現在紮營，萬一有更多禍魘出沒，會被遺蹟跟森林夾擊。'),
+            nou('shocked','！！'),
+            { speaker:'PLAYER', blank:true },
+            ren('commandsoft','沒錯。要嘛回頭，要嘛在這裡直接把佔據遺蹟的禍魘掃蕩掉。'),
+            ren('askserious','安雅小姐，妳可以嗎？'),
+            any('answer','我、我沒問題！'),
+            nou('steady','我也沒問題。'),
+            ren('talkwork','那就這樣了。'),
+            ren('bow','索菈娜小姐，感謝您的帶路。'),
+            sor('talk','妳在說什麼啊？我當然也要一起去啊！'),
+            ren('pause','欸？'),
+            sor('talk','那是當然的吧！把你們拉到這裡來丟著，我晚上哪還睡得著？'),
+            ren('smile','驅逐禍魘聖王廳的職責，索菈娜小姐不用在意的。'),
+            sor('lauaghbig','嘴上越是說著不在意，心裡會越糾結吧！'),
+            ren('lookaway','……'),
+            ren('lookawaytalk','那……您的人身安全，恕我們無法負責了。'),
+            Object.assign(sor('readysmile','噢！'), { flags:['sv_ruins_ready'] }),
+            /* 「劇情自動進入遺蹟」——遺跡本體地圖未實裝（背景美術重製中），
+               先收在情境卡；接遺跡圖時由 sv_ruins_ready 這支旗接。 */
+            { speaker:'NARRATION', card:'——　木雅克神殿・遺蹟探索　待續　——', auto:2600 },
+          ] },
+        ] },
     },
   },
 

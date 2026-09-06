@@ -590,6 +590,7 @@ function bgmSrc(n){ const k=String(n||'').toLowerCase();
    主選單換曲時只改 config，這裡自動跟著。音量也用 config 那一份。 */
 const HOME_BGM='resources/audio/bgm/bgm_mainmenu.m4a';   // ⚠ 音量問 fileGain(HOME_BGM)，不要在這裡記第二份（ver -441）
 let stageBg=null, stageCg=null, stageCi=null, stageBgm=null;   // 目前的持續狀態
+let stageCgBack=null;   // 中景層（ver -870）：立繪之下的去背圖（樹靈鹿主）
 
 function setImg(el, src){
   if(!el) return;
@@ -824,7 +825,13 @@ function flushCgCross(){
      編進去了。用基底名當鑰匙的話，天亮之後還會拿出黃昏那一張（時段差分整個失效）。
    ⚠ 一個都載不到就記 `null`（＝這張插圖不存在），下次不必再試一輪。 */
 const cgResolved = new Map();
-function cgList(base, noTime){ return bandNames(base, noTime).map(n=>CG_DIR+n); }
+function cgList(base, noTime){
+  /* ver -870：含 `/` 的插圖名＝**明確路徑**（含副檔名）——不吃時段候選鏈、不掛
+     CG_DIR。樹靈鹿主那三張住在 resources/enemy/（同時是戰鬥立繪；鐵律 7：
+     一張圖一份，不複製進 illustration/）。 */
+  if(String(base).indexOf('/')>=0) return [String(base)];
+  return bandNames(base, noTime).map(n=>CG_DIR+n);
+}
 /* 顯示時要試哪幾個：解析過就只回那一個，沒解析過就回整串（照舊逐個試）。 */
 function cgCandidates(base, noTime){
   const list = cgList(base, noTime);
@@ -1018,6 +1025,13 @@ function applyPersist(line){
     cgFaded = (line.cgSoft && line.cg)
       ? !cgCross($('storyCg'), cgCandidates(line.cg, line.cgNoTime))
       : cgFade($('storyCg'), line.cg ? cgCandidates(line.cg, line.cgNoTime) : '');
+  }
+  /* 中景層（ver -870，Ray：「角色圖層應該在樹靈鹿主之上」）：`cgBack:'<明確路徑>'`
+     疊在背景上、立繪之下；null 收掉。換圖走 swapImg（軟淡入，同背景那一套）——
+     差分切換（deer→deerlook→deernightmare）不轉黑。 */
+  if(line.cgBack!==undefined && line.cgBack!==stageCgBack){
+    stageCgBack=line.cgBack;
+    swapImg($('storyCgBack'), line.cgBack||'');
   }
   if(line.ci!==undefined){ stageCi=line.ci; setImg($('storyCi'), line.ci?SI_DIR+line.ci+'.webp':''); }
   /* 推時鐘（ver -739，Ray：「這一幕結束轉景後…時間是早上八點」）：拍上寫
@@ -2179,6 +2193,7 @@ function renderLine(){
        ⚠ 不走 `cgFade`：那要 CG_FADE_MS 才收得掉，而下一格畫面就是飛行頁的讀取頁 ——
          直接拿掉最乾淨（Ray：「用加載頁洗掉」）。 */
     flushCgFade(); stageCg=null; setImg($('storyCg'), '');
+    stageCgBack=null; setImg($('storyCgBack'), '');   // 中景也是持續狀態（ver -870）
     clearCast(); hideBubble();
     if(flightOpener){ endScene(); try{ flightOpener(line.goFlight); }catch(_){} return; }
     console.info('[story] 沒有註冊飛行頁開啟器，跳過 goFlight');
@@ -2536,8 +2551,8 @@ export function getPosition(){ return active && cur ? { scene:cur.sceneId, line:
    ⚠ 清除要放在 **open** 不是 playScene：scene 之間是**接續**的，bg 要能跨場沿用，
      每次 playScene 都清的話換場就會閃一下黑。 */
 function resetStage(){
-  stageBg=stageCg=stageCi=null; stageBgm=null;
-  for(const id of ['storyBg','storyCg','storyCi']){
+  stageBg=stageCg=stageCi=null; stageBgm=null; stageCgBack=null;
+  for(const id of ['storyBg','storyCg','storyCgBack','storyCi']){
     const el=$(id); if(el){ el.classList.remove('on','fading','pan-up'); el.removeAttribute('src'); }
   }
   const fx=$('storyFx'); if(fx) fx.innerHTML='';
@@ -3058,7 +3073,7 @@ export function flashLine(text, name){
    ⚠ 目標的代號 → DOM 的對照**只有這一張表**（腳本只寫代號，鐵律 7）。
    ⚠ 箭與文字的位置**每次現量**：這一頁的元素位置是 `layoutKerberos` 解出來的，
      而且會隨轉向變。⚠ 量不到（還沒排版）就直接放行 —— 卡住比沒教學糟得多。 */
-const HINT_TARGET = { pend:'kerbPend', gear:'storyExit' };
+const HINT_TARGET = { pend:'kerbPend', gear:'storyExit', map:'townMapBtn' };   // map＝槍棺地圖鈕（ver -870）
 /* 城鎮的一次性提示（ver -429）：與腳本的 `hint` 那一拍**走同一支**（鐵律 8）——
    遮罩、箭、抬層、關掉才過那一套只有一份。差別只在沒有「下一拍」要接。 */
 export function showHint(spec, done){ openHint(spec, done || (()=>{})); }

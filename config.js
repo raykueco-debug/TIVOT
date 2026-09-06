@@ -49,7 +49,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.07-869';
+export const VERSION = 'ver 2026.09.07-870';
 
 export const GAME_CONFIG = {
 
@@ -773,6 +773,9 @@ export const GAME_CONFIG = {
        ⚠ 賣光了不會自動補貨 —— **玩家賣給店家才會入庫再賣**（Ray 指定）。
          現在還剩幾個由 `script/shopstock.js` 記帳，這裡只有初始值（鐵律 1）。 */
     stock: {
+      /* 杰羅的工坊（ver -870）：**不賣東西**（只有改槍分頁）——貨單是空的，
+         這一格只為滿足「shop 都要有貨單」的資料契約。 */
+      sv_workshop: [],
       grocery: [ { id:'milk',     n:8 },
                  { id:'cheese',   n:5 },
                  { id:'lime_rum', n:3 } ],
@@ -1368,6 +1371,8 @@ export const GAME_CONFIG = {
     sf_bear_nightmare: { enemy:'sf_bear_nightmare', session:'sf_wild' },
     sf_stag_rot:       { enemy:'sf_stag_rot',       session:'sf_wild', sessionEnd:true },
     sf_stag_nightmare: { enemy:'sf_stag_nightmare', session:'sf_wild', sessionEnd:true },
+    /* 鹿主變異（ver -870，G 稿的黃昏後分支）：劇情戰、自己一場（斷崖已收段）。 */
+    sf_deer_nightmare: { enemy:'sf_deer_nightmare' },
     /* ══⚠⚠ 瓦礫中的紫黑之爪 ＝ **聖徒化教學戰**（ver -595，Ray 交稿）══
        腳本節奏：BOSS HP ≤30% → 劇情殺（主角 HP 歸零）→ 諾薇兒「我準備好了，現在
        聖徒化！」→ 雪鐵龍教學**右滑**發動聖徒化 → 聖徒化戰鬥 → 血回 99% 自動觸發
@@ -2295,6 +2300,7 @@ export const ASSETS = {
   enemy_sf_deer:      "resources/enemy/mon_shinierforest_deer.webp",
   enemy_sf_bear_husk: "resources/enemy/mon_bear_husk.webp",
   enemy_sf_stag_rot:  "resources/enemy/mon_stag_rot.webp",
+  enemy_sf_deer_nightmare: "resources/enemy/mon_shinierforest_deernightmare.webp",   // 鹿主變異（ver -870，G 稿）
 
   // ── 五張 cut-in 圖（v17.7 嵌入）──
   cutin_saint_luna: "resources/partner/Luna_CI_advent.jpg",   // 聖徒化降臨 cut-in（Luna）

@@ -143,7 +143,12 @@ export const ART = {
      ⚠ 取景值逐張量（ver -347，量法同下方諾薇兒那段）。 */
   renna: { cm:169, eye:32, fx:0.519, top:1, bot:1521,
            side:'L', alt:null, base:'resources/SI/Renna_SI_front.webp',
-           expr:{ smile:   { src:'resources/SI/Renna_SI_smile.webp',   top:5, bot:1530, fx:0.518 },
+           expr:{ /* ver -870（森林行 G 稿）——measure_si 量測。 */
+                  wake:       { src:'resources/SI/Renna_SI_wake.webp',        top:0, bot:1531, fx:0.539 },
+                  unbraid:    { src:'resources/SI/Renna_SI_unbraid.webp',     top:6, bot:1528, fx:0.550 },
+                  callangry:  { src:'resources/SI/Renna_SI_callangry.webp',   top:2, bot:1533, fx:0.516 },
+                  commandsoft:{ src:'resources/SI/Renna_SI_commandsoft.webp', top:6, bot:1532, fx:0.559 },
+                  smile:   { src:'resources/SI/Renna_SI_smile.webp',   top:5, bot:1530, fx:0.518 },
                   bow:     { src:'resources/SI/Renna_SI_bow.webp',     top:0, bot:1530, fx:0.507 },
                   awkward: { src:'resources/SI/Renna_SI_awkwerd.webp', top:6, bot:1526, fx:0.519 },
                   /* 帝都廣場那一段新增（ver -359）。`stare`＝直視／半瞇，用在她盯著人講話那幾拍。 */
@@ -231,6 +236,9 @@ export const ART = {
            side:'L', alt:null, base:'resources/SI/Nouvelle_SI_front.webp',
            expr:{ /* 艦鬥教學那幾拍（ver -424，Ray 交件）：她穩住陣腳的姿勢。 */
                   steady:   { src:'resources/SI/Nouvelle_SI_steady.webp',   top:8,  bot:1529, fx:0.534 },
+                  /* ver -870（森林行 G 稿）。front＝基本立繪的別名（稿上點名了它）。 */
+                  sleepy:   { src:'resources/SI/Nouvelle_SI_sleepy.webp',   top:5,  bot:1535, fx:0.580 },
+                  front:    { src:'resources/SI/Nouvelle_SI_front.webp',    top:3,  bot:1536, fx:0.582 },
                   /* 北方泊地碼頭那一幕的收尾（ver -582，Ray 交稿「沒錯！我們上吧！」）。
                      ⚠ 交件是 PNG，依 §5 的規約轉成 WebP 後才接（原 PNG 留在 resources/SI）。
                      ⚠ 取景值是 `tools/measure_si.py` 量的，不是沿用 `run` 那一張。 */
@@ -382,6 +390,9 @@ export const ART = {
     sleepy:    { src:'resources/SI/Anya_SI_sleepy.webp',     top:0, bot:1518, fx:0.441 },   // ver -772
     cry:       { src:'resources/SI/Anya_SI_Cry.webp',        top:0, bot:1528, fx:0.452 },
     terrifying:{ src:'resources/SI/Anya_SI_terrifying.webp', top:0, bot:1518, fx:0.448 },
+    /* ver -870（森林行 G 稿）——measure_si 量測。 */
+    answer:    { src:'resources/SI/Anya_SI_answer.webp',     top:3, bot:1531, fx:0.468 },
+    smileshy:  { src:'resources/SI/Anya_SI_smileshy.webp',   top:6, bot:1532, fx:0.454 },
     /* ══ 惡夢化（ver -671）══
        ⚠⚠ **不可以照量 alpha 上下緣**（Ray：「安雅的聖徒化 SI 太低太小了，要抓臉」）：
          她頭上有一圈金色法環，`tools/measure_si.py` 量到的 `top:1` 是**法環頂**

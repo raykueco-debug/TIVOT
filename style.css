@@ -2172,6 +2172,15 @@
   /* 背景：鋪滿、cover。⚠ 在立繪**之下**（z-index 0）—— 立繪要站在場景裡。 */
   /* ⚠ 背景換圖也走淡入淡出（ver -325，Ray 指定）—— 與插圖／立繪同一條規則。
      transition 的時間要與 story.js 的 FADE_MS 同值，改一邊要改另一邊。 */
+  /* 中景層（ver -870）：z 同背景（0）、DOM 在其後＝蓋過背景；立繪 z-1 在其上。
+     幾何與淡入淡出的 class 完全照 #storyBg（swapImg 共用同一套）。 */
+  #storyCgBack{position:absolute;left:0;right:0;top:0;height:var(--story-top);z-index:0;
+    /* cover（ver -870 實測）：鹿主那三張是橫式 1536×1024，contain 會縮成一小條 ——
+       cover 以高補滿、裁掉兩側樹林，鹿主本體才站得出來。 */
+    width:100%;object-fit:cover;object-position:center bottom;display:none;
+    opacity:1;transition:opacity .38s ease;}
+  #storyCgBack.fading{opacity:0;}
+  #storyCgBack.on{display:block;}
   #storyBg{position:absolute;left:0;right:0;top:0;height:var(--story-top);z-index:0;
     width:100%;object-fit:cover;display:none;pointer-events:none;
     opacity:1;transition:opacity .22s ease;}
