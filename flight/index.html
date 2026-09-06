@@ -522,7 +522,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -847';
+const FLIGHT_VER = 'ver -852';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -8322,6 +8322,23 @@ function afterBattleReturn(won, wasScripted, doneKey, scriptS){
   setTimeout(()=>{ if(!sayQueue) say(AFTER_SHIP_TALK, performance.now(), { sides:{ renna:'R' } }); }, 900);
 };
 window.__flightPause=function(){ extPaused=true; flightAudio(false); };
+/* ══ 切到背景＝音訊全停（ver -852，Ray 實測：電池「背景活動」16 分鐘）══
+   分頁凍結時 rAF 停了（updateBgm 跟著停），但正在播的 <audio> 會**維持當下音量
+   繼續播**（-388 那條的另一個現場：鎖屏／切 App，而不只是進戰鬥）—— 程序被音訊
+   保活著在背景燒電。鐵律 10 的音訊版：看不見＝不准出聲。
+   走**同一支** flightAudio（鐵律 8）；主遊戲那份在 audio.js（兩邊註解互指）。
+   · hidden → flightAudio(false) ＋ 收掉可能還在響的長音（心跳／Sturm）。
+   · visible → 沒被父頁暫停（!extPaused）才把循環床開回來 —— extPaused 時
+     本來就該安靜（戰鬥中／被蓋住），開回來會與別頁的曲子疊播。 */
+document.addEventListener('visibilitychange', ()=>{
+  if(document.hidden){
+    flightAudio(false);
+    try{ senseBeat.pause(); }catch(_){}
+    try{ sturmSE.pause(); }catch(_){}
+  }else if(!extPaused){
+    flightAudio(true);
+  }
+});
 /* ══ 強制戰打輸的回捲（ver -480 建、-486 抽鉤、-487 起**幾乎不再需要**）══
    -487 起 done 旗標「打贏才記」（見 toBattle／__flightResume）—— 敗北從結構上
    就是「沒發生過」，不必退旗標。這支保留兩個理由：

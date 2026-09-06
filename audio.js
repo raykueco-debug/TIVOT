@@ -568,3 +568,31 @@ export const SFX = {
   menuClick(){ if(_menuClickSrc) playSrc(_menuClickSrc, _menuClickGain); },
 };
 let _menuClickSrc = null, _menuClickGain = 1;
+
+/* ══ 切到背景＝音訊全停（ver -852，Ray 實測：電池的「背景活動」有 16 分鐘 ——
+   分頁凍結時 rAF 與計時器會停，但**正在播的 <audio> 不會**，程序被音訊保活著
+   在背景繼續燒電（§6.10 -388 早記過「audio 會維持音量繼續播」，當時只在進戰鬥收，
+   鎖屏／切 App 這條路沒人收）。鐵律 10 的音訊版：看不見＝不准出聲。
+   飛行頁是另一個 document，同一條規矩在 flight/index.html 自己那份（兩邊註解互指）。══
+   · hidden → BGM 暫停（記下「本來在播」）＋ AudioContext suspend（WebAudio 音源一併靜止）。
+   · visible → ctx resume（iOS 可能靜默失敗，之後任何手勢的 unlock 會再補）；
+     那首曲子還是現任（_bgmPlaying 沒被中途 stopBgm 清掉）才接著播，
+     音量直接寫回目標值 —— 背景期間可能凍在淡入淡出的半路上，不重設會停在半音量。
+     ⚠ 這也堵「解鎖後 iOS 自己恢復舊曲、與程式新換的曲疊播」那一族的雙 BGM。 */
+let _hiddenBgmResume = false;
+document.addEventListener('visibilitychange', ()=>{
+  if(document.hidden){
+    const el=_bgmEl;
+    _hiddenBgmResume = !!(el && !el.paused && el.src);
+    if(_hiddenBgmResume){ try{ el.pause(); }catch(_){} }
+    try{ if(_ctx && _ctx.state==='running') _ctx.suspend(); }catch(_){}
+  }else{
+    try{ if(_ctx) _ctx.resume(); }catch(_){}
+    const el=_bgmEl;
+    if(_hiddenBgmResume && el && _bgmPlaying){
+      try{ clearInterval(el.__fade); el.__fade=null;
+           el.volume=bgmTargetVol(); el.play().catch(()=>{}); }catch(_){}
+    }
+    _hiddenBgmResume = false;
+  }
+});
