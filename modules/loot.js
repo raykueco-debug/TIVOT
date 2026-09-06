@@ -366,7 +366,13 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
   let cart={};
   const cartCount=()=>Object.values(cart).reduce((a,b)=>a+b,0);
   /* 這一頁的單價：買＝市價、賣＝收購價（唯一那一支在算，鐵律 7）。 */
-  const unitOf=(id)=> (tab==='sell') ? inv.sellPrice(id) : inv.priceOf(id);
+  /* ══ 店家折扣（ver -858，Ray：「經歷過魔獸圍城…商品打 9 折」）══
+     `cfg.sale:{need,mul}`＝那支旗立了，**買價**整店乘 mul（賣價不動——
+     折扣是老闆的人情，不是市場崩盤）。只有 buyPrice 一個計算點（鐵律 7）：
+     單價、＋號的錢上限、結帳、列上的標價全部問它。 */
+  const saleMul=()=> (cfg.sale && prog.hasFlag(cfg.sale.need)) ? (cfg.sale.mul||1) : 1;
+  const buyPrice=(id)=> Math.round(inv.priceOf(id)*saleMul());
+  const unitOf=(id)=> (tab==='sell') ? inv.sellPrice(id) : buyPrice(id);
   const cartTotal=()=>Object.keys(cart).reduce((a,id)=>a+unitOf(id)*cart[id],0);
   /* 這一列最多能加幾個。
        買 → 店裡剩幾個／武器只有 1／上限 99
@@ -424,7 +430,7 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
     let rows='';
     if(tab==='buy'){
       rows = shelfNow.length ? shelfNow.map(e=>{
-        const id=e.id, d=inv.defOf(id)||{}, price=inv.priceOf(id);
+        const id=e.id, d=inv.defOf(id)||{}, price=buyPrice(id);
         const has=inv.count(id)>0 || ((GAME_CONFIG.weapons||{})[id]||{}).owned;
         /* 存貨：不限量的不標（標了反而讓人以為那是一個數字）；賣完的整列變暗、不能選。 */
         const out=(e.n<=0);
@@ -463,7 +469,7 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
     }
 
     const d=pick ? (inv.defOf(pick)||{}) : null;
-    const price = pick ? (tab==='buy' ? inv.priceOf(pick) : inv.sellPrice(pick)) : 0;
+    const price = pick ? (tab==='buy' ? buyPrice(pick) : inv.sellPrice(pick)) : 0;
     /* 結帳鈕（ver -496 購物車）：車裡有東西才亮。「錢不夠」不會發生在這裡 ——
        每一列的「＋」在總價會超過持有金額的那一刻就擋掉了。 */
     const total = cartTotal();
@@ -559,7 +565,7 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
       const n=cart[id]||0;
       if(n >= capOf(id)) return;
       /* 錢的上限只有**買**才擋（賣是進帳）。 */
-      if(tab==='buy' && cartTotal()+inv.priceOf(id) > inv.getMoney()) return;
+      if(tab==='buy' && cartTotal()+buyPrice(id) > inv.getMoney()) return;
       cart[id]=n+1; pick=id;
       try{ SFX.menuClick(); }catch(_){} render(); }));
     ov.querySelectorAll('.shop-row .cr-m').forEach(b=>b.addEventListener('click', e=>{
@@ -607,7 +613,7 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
         const got={}; let sum=0;
         for(const id of Object.keys(cart)){
           const g=shopStock.take(stockKey, id, cart[id]);
-          if(g>0){ got[id]=g; sum+=inv.priceOf(id)*g; }
+          if(g>0){ got[id]=g; sum+=buyPrice(id)*g; }
         }
         if(!sum) return;
         if(!inv.spendMoney(sum)){

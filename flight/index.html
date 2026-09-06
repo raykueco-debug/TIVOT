@@ -521,7 +521,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -857';
+const FLIGHT_VER = 'ver -858';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -1873,6 +1873,13 @@ const PLACES=[
      ⚠ 座標＝SETTLEMENTS 那一列（名牌跟著城走，§6.7.5）；拖城工具搬同名的兩份。
      ⚠ export_mapref.py 的 PLACES 要同步。 */
   {x:1098,y:798, name:'夏爾村',       type:'帝國・村落'},
+  /* ══ 夏爾森林（ver -858，Ray：「開啟的新地點會標在大地圖上，日後可直接降落」）══
+     `flag`＝**發現了才存在**（sv_forest_found，第一次從村子野外走進森林時
+     town.open 插）：drawPlaces 與著陸掃描都會跳過沒插旗的（見 -858 的兩處守門）。
+     座標在村子西南（森林在村外圍）；SETTLEMENTS 的同名著陸列要同步。 */
+  {x:1072,y:824, name:'夏爾森林', n:'夏爾森林', type:'森林', flag:'sv_forest_found',
+    town:'shinier_forest'},   /* `n`＝降落鈕的字（doLand 讀 S.n，同 SETTLEMENTS 欄名） */   /* ⚠ 不進 SETTLEMENTS（那張表會被道路網與程序建築
+                                 當成城）——著陸掃描（nearestTown）兼掃帶 town 的 PLACES。 */
 ];
 
 /* ══ 隱藏點位（★）══
@@ -7005,6 +7012,7 @@ function drawPlaces(scaleH,horizon,sinp,cosp){
   hotspots=[];
   const list=[];
   PLACES.forEach(P=>{
+    if(P.flag && !flagOn(P.flag)) return;   // ver -858：發現旗才畫（夏爾森林）
     const dx=P.wx-cam.x, dy=P.wy-cam.y;
     const z=dx*(-sinp)+dy*(-cosp);
     if(z<10||z>ZFAR*0.92) return;
@@ -9999,6 +10007,14 @@ function nearestTown(){
     const d=Math.hypot(cam.x-S.x*MAP_SCALE, cam.y-S.y*MAP_SCALE);
     if(d < townEdgeR(S)*LAND_K && d<bd){ bd=d; best=S; }
   }
+  /* ver -858：帶 `town` 的 PLACES 也是著陸點（夏爾森林 —— 不進 SETTLEMENTS，
+     那張表會長出道路與程序建築）。`flag`＝發現了才降得下去。 */
+  for(const P of PLACES){
+    if(!P.town) continue;
+    if(P.flag && !flagOn(P.flag)) continue;
+    const d=Math.hypot(cam.x-P.x*MAP_SCALE, cam.y-P.y*MAP_SCALE);
+    if(d < townEdgeR(P)*LAND_K && d<bd){ bd=d; best=P; }
+  }
   return best;
 }
 function updateLandBtn(){
@@ -10074,7 +10090,7 @@ function doLand(){
 /* ⚠⚠ **帝都也放行**（ver -432，Ray：「除了帝都與北方泊地都還不能進去」）——
    那是他剛出發的地方，擋掉等於回不了家。⚠ 寫成清單不是單一字串：
    日後多開一個地方只加一項（鐵律 1）。 */
-const STAGE1_DEST = ['北方泊地', '帝都'];
+const STAGE1_DEST = ['北方泊地', '帝都', '夏爾村', '夏爾森林'];   /* ver -858：Ray 解除夏爾村管制（S2 也可繞去） */
 const STAGE1_NAG  = [{ who:'renna', text:'別晃了，趕快往北方泊地去！' }];
 /* ══ 地點的章節鎖（ver -844，Ray：「在 stage5 前無法進入夏爾村，蕾娜會說
    『這個地方跟任務無關吧？請繼續任務。』『不然我扣分喔。』」）══
@@ -10082,8 +10098,9 @@ const STAGE1_NAG  = [{ who:'renna', text:'別晃了，趕快往北方泊地去�
    同一張表，鐵律 1）。判定只有 `placeLockedNag` 一支（鐵律 8）：
    降落（doLand）與名牌點擊（enterPlace）都問它，**擋在扣時間之前**
    （同 stage1Blocked「沒進去就不該收時間」的理由）。 */
-/* ver -857 章節重編號：夏爾村在**北泊出航章（S4）**起可進（原編號的 S5）。 */
-const PLACE_STAGE_FROM = { shinier:4, '夏爾村':4 };
+/* ver -858（Ray：「解除夏爾村的前期進入管制」）：表清空 —— 機制留著給
+   日後真的要鎖的地點（-844 的蕾娜扣分 nag 照舊由這張表驅動）。 */
+const PLACE_STAGE_FROM = {};
 const PLACE_LOCK_NAG = [
   { who:'renna', text:'這個地方跟任務無關吧？請繼續任務。' },
   { who:'renna', text:'不然我扣分喔。' },

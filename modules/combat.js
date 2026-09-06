@@ -691,8 +691,19 @@ function enemyAttack(dmg, kind, saintAmt){
        它自己會擋掉聖徒化（那一盤可以亂點，指一格反而誤導）、擋掉演出中與敵已死。 */
   if(T.hintNextCell) hintCurrentCell();
   /* ⚠ 計時挑戰：靶子**不攻擊**（ver -396）。守在這裡是因為所有會扣玩家血的路徑
-     （大絕／延時懲罰／按錯懲罰／格擋）都經過這一支 —— 守一次就全關掉（鐵律 8）。 */
-  if(state.timeAttack) return;
+     （大絕／延時懲罰／按錯懲罰／格擋）都經過這一支 —— 守一次就全關掉（鐵律 8）。
+     ⚠ `hitPenaltySec`（ver -858，蕃茄人11號）：被大絕**打中**＝碼表加秒
+       （同按錯那一套的 runElapsedMs 帳＋浮字）；**格擋成功不罰**（防住了）。 */
+  if(state.timeAttack){
+    const hp3=state.timeAttack.hitPenaltySec;
+    if(hp3>0 && kind==='ult'){
+      state.runElapsedMs += Math.round(hp3*1000);
+      const se=state.timeAttack.se;
+      if(se && asset(se)) SFX.play(asset(se), sfxGain(se)); else SFX.wrong();
+      floatDmg('+'+hp3+'s', '50%', '46%', true);
+    }
+    return;
+  }
   /* 受到敵人主動攻擊 → 震一下（ver -398，Ray 指定）。⚠ 守在這裡就涵蓋了所有扣血路徑
      （大絕／延時／按錯／格擋），與這一支「唯一入口」的定位一致（鐵律 8）。 */
   hap.hit();

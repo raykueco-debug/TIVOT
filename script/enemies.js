@@ -117,6 +117,27 @@ export const ENEMIES = {
         assault:{   type:'slash' },
       },
     },
+    /* ══ 蕃茄人11號（ver -858，Ray：杰羅的自動人型靶）══ 同固定立靶（沿用
+       Dart_timeattack 的圖），但**會攻擊**：戰鬥卡 timeAttack.ultOn 放行排程
+       （ultEvery 3 秒一發），被打中＝碼表 +3 秒（combat.enemyAttack 的
+       hitPenaltySec 分支）—— 不扣血，罰的是時間。 */
+    sv_dart: {
+      name:'蕃茄人11號',
+      story:0, counterStagger:1,
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
+      openUlt:[2,3],
+      kind:'target',
+      image:'enemy_dart_target',
+      hp:300,
+      attack:1,                      // 不會真的扣到血（timeAttack 擋在 enemyAttack）
+      atkInterval:null,
+      ultEvery:[3,3],                // Ray：「3 秒發動一次攻擊」
+      assault:{ count:1, gap:0 },
+      ult:{}, resist:{}, weak:{},
+      landSe:null, special:[],
+      boardGrids:[9,9,9,9,9],
+      hitFx:{ delay:{ type:'slash' }, wrong:{ type:'slash' }, assault:{ type:'slash' } },
+    },
     // ── 連戰第二隻（局內序列第二敵）：巨型聖徒。完全獨立一筆，非沿用 faceless。 ──
     //    非 Boss（不填 ult/delayPenalty/wrongPenalty → 普通怪走預設：單發大絕、無半傷減時）。
     //    差異：血更厚（300）＋攻擊更密（蓄力 4×1/1.2≈3.33s）；單擊傷害同一般值。

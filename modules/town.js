@@ -186,6 +186,13 @@ function townBgm(){
    例外是段落自己標了 `fromStage:<章>`（＝那是新章節的稿，日後 S5 的北泊稿用）。
    ⚠ 路人單句（chatter）不在此列：那是市井的氣氛，不是劇情對白。
    ⚠ 每一層自己問（鐵律 8，同 siegeOn 的作法）。 */
+/* ver -858：`need` 收**陣列**（全部都要成立）—— 「該回去看看了」那道門要等
+   雜貨店與公會兩支旗都齊（need:['np_med','np_guild_seen']）。單值照舊。 */
+function needOk(need){
+  if(!need) return true;
+  if(Array.isArray(need)) return need.every(f=>prog.hasFlag(f));
+  return prog.hasFlag(need);
+}
 function mutedTalks(){
   const T=TOWNS[townId]; if(!T || T.muteTalksFrom==null) return false;
   return prog.getStage() >= T.muteTalksFrom;
@@ -226,7 +233,12 @@ function storyExploreOn(){
   const T=TOWNS[townId]||{};
   return !!T.storyExplore && !prog.hasFlag(freeExploreFlag());
 }
-function actHasBattle(a){ return !!(a && (a.lines||[]).some(l=>l && l.battle)); }
+/* ver -858：`lines` 可以是**函式**（呼叫時現算）—— 獵人的每日兌換那種
+   「今天的內容由日序決定」的段落用。同一天內冪等（種子＝dayNo）。 */
+function actLines(a){ if(!a) return null;
+  const L=(typeof a.lines==='function') ? a.lines() : a.lines;
+  return L||null; }
+function actHasBattle(a){ const L=actLines(a); return !!(L && L.some(l=>l && l.battle)); }
 function siegeOn(){
   const g=(TOWNS[townId]||{}).siege;
   if(!g || !g.from || !prog.hasFlag(g.from)) return null;
@@ -533,9 +545,19 @@ function actDue(n){
     /* 舊章節封存（ver -753）：沒標 fromStage 的段落＝舊稿，封存後不再演；
        新章節的段落自己標 `fromStage`（同時也是「還沒到那一章不演」的門）。 */
     if(a.fromStage!=null && prog.getStage() < a.fromStage) continue;
+    /* `untilStage`（ver -858）：**到了這一章就不再演**（fromStage 的反向）——
+       夏爾村「S5 之前」那批早訪 NPC（村長）用。 */
+    if(a.untilStage!=null && prog.getStage() >= a.untilStage) continue;
     if(muted && a.fromStage==null) continue;
     if(a.flag && prog.hasFlag(a.flag)) continue;
-    if(a.need && !prog.hasFlag(a.need)) continue;
+    if(!needOk(a.need)) continue;
+    /* ver -858：acts 也吃 `hourOfDay`（同 gates 的語意：單值＝今天過了這個時刻、
+       `[起,迄]`＝時段且迄不含）—— 雜貨店退燒藥那一段限 18:00 前。 */
+    if(a.hourOfDay!=null){
+      const h=clock.hourF();
+      if(Array.isArray(a.hourOfDay)){ if(h < a.hourOfDay[0] || h >= a.hourOfDay[1]) continue; }
+      else if(h < a.hourOfDay) continue;
+    }
     /* ⚠⚠ `until` ＝**這支旗立了就不再演**（ver -668，Ray：「教堂諾薇兒卡在
        『不要催我』…每進去一次觸發一次直到下一個劇情事件結束解除」）。
        它是給**沒有 `flag`（每次抵達都演）**的段落收尾用的 —— 那種段落沒有
@@ -566,7 +588,7 @@ function actDue(n){
          「整個城鎮就回到戰鬥探索了」）。 */
     if(!a.storyBattle && !a.pullSafehouse
        && prog.hasFlag(safehouseFlag()) && actHasBattle(a)) continue;
-    if(a.lines && a.lines.length) return a;
+    { const L=actLines(a); if(L && L.length) return a; }
   }
   return null;
 }
@@ -631,7 +653,7 @@ function stageGate(){
   for(const g of gateList()){
     if(!g) continue;
     if(g.flag && prog.hasFlag(g.flag)) continue;
-    if(g.need && !prog.hasFlag(g.need)) continue;
+    if(!needOk(g.need)) continue;
     /* 「一進行地圖移動」：`backDir` 是這一次抵達由 `pendingDir` 推出來的 ——
        走過來才有，開城／強制轉場／讀檔都是空的（forceGo 會把 pendingDir 清掉）。 */
     if(g.onMove && !backDir) continue;
@@ -1079,6 +1101,12 @@ function exitsOf(){
   /* ══ 城鎮戰：通往末端的方向只留 `keep` 那幾格（ver -583）══
      ⚠ 擋在**這裡**而不是 `go()`：Ray 要的是「不用顯示箭頭」——
        箭頭都不出現，玩家才讀得出「那邊過不去」。 */
+  /* ver -858（Ray：「Stage5 之前無法進入索拉娜家，連箭頭都不會有」）：
+     目的節點自己宣告 `hideBelowStage:<章>` —— 章沒到，指向它的方向整個不出
+     （同 siege 的「不用顯示箭頭」語彙）。 */
+  { const T=TOWNS[townId]||{};
+    for(const d in ex){ const t=T.nodes && T.nodes[ex[d]];
+      if(t && t.hideBelowStage!=null && prog.getStage() < t.hideBelowStage) delete ex[d]; } }
   const sg=siegeOn();
   if(sg){
     const conn=new Set(connectorIds());
@@ -1604,7 +1632,7 @@ export function enter(id){
      初見已經看過＝什麼都不演（正常的安靜抵達）。 */
   const wake = (carried && !played && n.wake && n.wake.length) ? n.wake : null;
   if(act && act.storyBattle) storyActNow = true;   // 這一段是劇情戰（ver -680，見 storyBattleAct）
-  const lines = act ? act.lines
+  const lines = act ? actLines(act)
               : ev ? ev.lines
               : wake ? wake
               : own;
@@ -1633,6 +1661,11 @@ export function enter(id){
       story.playAdhoc(play, ()=>{ story.clearCast();
         if(act){
           if(act.pullSafehouse) prog.addFlags([safehouseFlag()]);   // 打完插回去（見上）
+          /* ver -858：acts 也吃 `line.aff`（演完一次記帳，同進場對白那一支）——
+             退燒藥那一段的蕾娜/諾薇兒 +5 掛在段落上，以前只有進場對白會結。
+             ⚠ applyAff 是**整段盲加**：有分歧的段落把 aff 放在無分歧的拍上
+               （分歧內的入帳走 story.js 的逐拍 take/give/money 那一族）。 */
+          applyAff(play);
           if(act.flag) prog.addFlags([act.flag]);                 // 主線段落：只演一次
           /* 段落自己的章節（ver -742，Ray：「北泊出航插 stage5，插在眾人給諾薇兒
              送行那一段」）—— 與閘門的 `stage` 同一個語意（clockGate 也是直接 set）；
@@ -2028,6 +2061,13 @@ export function open(town, node, opts){
      守門看**值**不看旗標：只從 0 升上來 —— 讀檔在更後面的章節不會被倒退，
      試玩版（無鑰匙，getStage 回測試預設 5）也不受影響。 */
   if(townId==='capital' && prog.getStage()===0) prog.setStage(1);
+  /* ver -858（Ray：「解除夏爾村的前期進入管制」）：主線抵達（S4）之前來過
+     就記一支旗 —— sv_arrive 那一幕的「之前我們好像來過」分歧讀它（鐵律 9：
+     插旗＝這一次早訪，沒有人拔）。 */
+  if(townId==='shinier' && prog.getStage()<4) prog.addFlags(['sv_visited_early']);
+  /* ver -858（Ray：「開啟的新地點會標在大地圖上，日後可直接降落」）：
+     第一次踏進夏爾森林＝發現 —— 大地圖的名牌與降落點由這支旗開。 */
+  if(townId==='shinier_forest') prog.addFlags(['sv_forest_found']);
   /* ⚠⚠ 章節重編號（ver -857，Ray：「章節編排錯誤，沒有第二章 —— 把第三章變成
      第二章，以降回推」）：初進北泊**不再升段** —— S2 涵蓋「出航～北泊第一天」
      （-600 的「初進北境插 Stage3」作廢）。新表：S0 開頭／S1 進帝都／S2 出航＋北泊

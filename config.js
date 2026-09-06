@@ -49,7 +49,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.06-857';
+export const VERSION = 'ver 2026.09.06-858';
 
 export const GAME_CONFIG = {
 
@@ -704,6 +704,20 @@ export const GAME_CONFIG = {
                         desc:'從訓練用聖徒上剝下來的爪。質地脆，勉強能當研磨材。' },
       /* 巨型蜈蚣的掉落（ver -423，Ray 的卡）。⚠ **價格是我填的**（卡上沒寫）——
          照既有素材的量級：常見的 6~8、稀有的 24 以上。要改直接動這裡。 */
+      /* ══ 夏爾森林狩獵食材（ver -858，Ray 交稿）══ 森林戰鬥的掉落（掉落表
+         等森林敵卡到了再接）；獵人謝尼每日收一種换獎勵（script/town.js 的
+         svHunterTrade）。⚠ 價格是我擬的草案。 */
+      meat_lynx:  { name:'山貓腿肉', cat:'material', price:60,  desc:'緊實的山貓腿肉。烤過之後香氣四溢。' },
+      meat_boar:  { name:'山豬腹肉', cat:'material', price:80,  desc:'油花漂亮的山豬腹肉。獵人的最愛。' },
+      antler_deer:{ name:'鹿角',     cat:'material', price:50,  desc:'分岔漂亮的鹿角。可入藥也可做工藝。' },
+      paw_bear:   { name:'熊掌',     cat:'material', price:120, desc:'稀有的熊掌。燉煮費工，滋味濃厚。' },
+      meat_snake: { name:'蛇肉',     cat:'material', price:40,  desc:'處理乾淨的蛇肉。意外地清爽可口。' },
+      /* 禍魘素材（獵人兌換的獎勵；日後接九星配方）。⚠ 價格是我擬的草案。 */
+      harm_claw_s:   { name:'禍魘的小爪', cat:'material', price:60,  desc:'小型禍魘的爪。泛著不祥的光。' },
+      harm_claw:     { name:'禍魘之爪',   cat:'material', price:200, desc:'成體禍魘的利爪。堅硬異常。' },
+      harm_bone_big: { name:'禍魘巨骨',   cat:'material', price:350, desc:'大型禍魘的骨。沉重而緻密。' },
+      harm_bone_frag:{ name:'禍魘碎骨',   cat:'material', price:120, desc:'禍魘骨骼的碎片。仍殘留著微弱的脈動。' },
+      harm_fang:     { name:'禍魘的細牙', cat:'material', price:80,  desc:'細小的禍魘牙。串起來像一條項鍊。' },
       venom_fang:     { name:'毒牙',               cat:'material', price:30,
                         desc:'蜈蚣型禍魘的毒牙。稀有，硝製後可作彈頭。' },
       venom_claw:     { name:'毒爪',               cat:'material', price:12,
@@ -771,6 +785,9 @@ export const GAME_CONFIG = {
       np_grocery:  [ { id:'milk',     n:8 },
                      { id:'cheese',   n:5 },
                      { id:'lime_rum', n:3 } ],
+      /* 夏爾村雜貨街（ver -858）：小村規模，貨比城裡少。 */
+      sv_grocery:  [ { id:'milk',     n:4 },
+                     { id:'cheese',   n:3 } ],
       np_gunstore: [ { id:'Shotgun_Dragon', n:1 },
                      { id:'MG_Squall_Kai',  n:1 },
                      { id:'Rifle_Shahin',   n:1 } ],
@@ -797,6 +814,12 @@ export const GAME_CONFIG = {
          （`np_range`，25 秒、要 200G）—— 最佳紀錄與帝都那一場也是分開的。 */
       np_grocery:  { title:'雜貨舖', art:'resources/SI/NPC_Grocery_SI_Northport.webp',
                      tabs:['buy','sell'] },
+      /* ══ 夏爾村雜貨街（ver -858，Ray 交稿）══ 退休行商。`sale`＝一起經歷過
+         魔獸圍城（safehouse_shinier）之後**商品打 9 折**（loot.js 只在買價乘，
+         賣價不動）。 */
+      sv_grocery:  { title:'雜貨街', art:'resources/SI/NPC_shinier_grocery_SI.webp',
+                     tabs:['buy','sell'],
+                     sale:{ need:'safehouse_shinier', mul:0.9 } },
       np_gunstore: { title:'武器店', art:'resources/SI/NPC_Gunsmith_SI_Northport.webp',
                      tabs:['buy','sell','mod'], tabName:{ buy:'買武器', sell:'賣武器', mod:'武器改裝' },
                      only:'weapon', compare:true,
@@ -1455,6 +1478,12 @@ export const GAME_CONFIG = {
          而且要在**玩家答應的那一刻**扣，卡上沒有那個時機。 */
     np_range: { enemy:'dart_target', record:'np_range', noReward:true, noEval:true,
                 timeAttack:{ wrongPenaltySec:3, se:'se_dart_fail', parSec:25 } },
+    /* ══ 蕃茄人11號（ver -858，杰羅的修船打靶）══ 同帝都配置＋兩個新旋鈕：
+       `ultOn` 放行大絕排程（3 秒一發，defense.scheduleUlt 的例外）、
+       `hitPenaltySec` 被打中＝碼表 +3 秒（combat.enemyAttack）。par 30 秒。 */
+    sv_range: { enemy:'sv_dart', record:'sv_range', noReward:true, noEval:true,
+                timeAttack:{ wrongPenaltySec:3, se:'se_dart_fail', parSec:30,
+                             hitPenaltySec:3, ultOn:true } },
     /* ══ 墓地那一場（ver -664，Ray：「教堂那隻中 boss，背景維持墓地」）══
        ⚠ **另開一張卡**不共用 `np_boss`：那一張是城鎮戰的收段場（`sessionEnd`、
          屬於 `siege` 那一段），這一場是自由探索期的單場遭遇 —— 同一隻怪、
@@ -1666,7 +1695,7 @@ export const GAME_CONFIG = {
     rolf: { name:'黑船洛爾夫', city:'capital', reward:500,
             desc:'在瓦爾士大公國與法爾登王國交界出沒的空賊。' },
     /* 北方泊地（ver -664，Ray 交稿）。 */
-    arad: { name:'北海暴徒阿拉德', city:'northport', reward:1000,
+    arad: { name:'北海暴徒阿拉德', city:'northport', reward:2000,   /* ver -858：Ray 改 2000G */
             desc:'出沒地：東北空域。' },
   },
 

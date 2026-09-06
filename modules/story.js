@@ -986,6 +986,12 @@ function applyPersist(line){
      ⚠ 與 `flags` 是兩件事：旗記「這件事發生過」（免除重挑戰的費用），
        星是**加成的唯一真相**。北方泊地那一拍兩個都寫。 */
   if(line.gunStar) prog.addStar(line.gunStar);
+  /* ══ 行內交易（ver -858，獵人的每日兌換）══ 逐拍處理（同 flags/gunStar：
+     走到這一拍才算數 —— 分歧沒走到的那一支不記帳，這正是 applyAff 那條
+     整段盲加做不到的）。`take` 先於 `give`（同商店「先扣再給」的原則）。 */
+  if(line.take) for(const k in line.take) inv.remove(k, line.take[k]);
+  if(line.give) for(const k in line.give) inv.add(k, line.give[k]);
+  if(line.money) inv.addMoney(line.money);
   persistFaded=false;
   let bgChanged=false;
   if(line.bg!==undefined && line.bg!==stageBg){
@@ -2108,6 +2114,14 @@ function renderLine(){
        腳本是資料，資料裡不放程式。 */
   if((line.onlyIf && !prog.hasFlag(line.onlyIf)) ||
      (line.skipIf &&  prog.hasFlag(line.skipIf))) return advance();
+  /* `tierMin`（ver -858）：**說話者自己的**好感段位達標才演這一拍 ——
+     「T2 才多講一句」這種稿（textByTier 換字做不到「多一拍」）。
+     段位解析同 lineText（門檻不是等於）。 */
+  if(line.tierMin!=null){
+    const k = SPEAKERS[line.speaker] && SPEAKERS[line.speaker].art;
+    const t = k ? prog.tierOf((prog.getAffection()||{})[k] || 0) : 0;
+    if(t < line.tierMin) return advance();
+  }
 
   if(line.goto){
     const at=indexOfLabel(cur.lines, line.goto);

@@ -59,6 +59,10 @@ export const SPEAKERS = {
   VILLAGER2:{ name:'村民',   art:'sh_villager2' },
   VILLAGER3:{ name:'村民',   art:'sh_craftsman' },   // ver -842：戰後稿的第三位（工匠的臉）
   CHIEF:    { name:'村長',   art:'sh_chief'     },
+  /* ver -858（Ray 交辦）：夏爾村三位有名字的 NPC —— 臉沿用 -838 量好的 sh_*。 */
+  JERO:     { name:'杰羅',   art:'sh_craftsman' },
+  HUNTER_SV:{ name:'謝尼',   art:'sh_villager'  },
+  GROCER_SV:{ name:'店主',   art:'sh_villager2' },
   /* 賞金獵人公會（ver -375）。⚠ 兩位都站**右**：與店主同一個邏輯 ——
      玩家的同伴在左，對面的人在右。 */
   HUNTER:   { name:'獵人',   art:'hunter'  },
@@ -75,6 +79,8 @@ export const SPEAKERS = {
   CROWD_NP:    { name:'群眾', art:'crowd_np' },
   SHOPKEEP_NP: { name:'店主', art:'grocer_np'   },
   COUNTER:  { name:'櫃台',   art:'counter' },
+  /* 北泊公會櫃台（ver -858，Ray 交辦「賞金獵人公會」）。 */
+  COUNTER_NP:{ name:'櫃台',  art:'counter_np' },
   /* 旅店前台（ver -392）。同樣站右（玩家的同伴在左、對面的人在右）。 */
   CLERK:    { name:'前台',   art:'clerk' },
   /* ══ 北方泊地的司祭（ver -582，Ray 交稿）══════════════════════════════
@@ -618,6 +624,10 @@ export const ART = {
   /* 公會櫃台（ver -375）。身高同樣是估的（168）。 */
   counter:{ cm:168, eye:32, fx:0.511, top:4, bot:1526,
            side:'R', alt:null, base:'resources/SI/GuildCounterCA_SI.webp', expr:{} },
+  /* 北泊公會櫃台（ver -858）。⚠ 原檔白底未去背 —— matte.py（isnet-anime）粗胚
+     先頂著（?v=2 蓋過快取），待 GPT 正式重製後**換圖要重量**（§5）。身高估 167。 */
+  counter_np:{ cm:167, eye:32, fx:0.490, top:24, bot:1522,
+           side:'R', alt:null, base:'resources/SI/NPC_GuildCounter_SI_Northport.webp?v=2', expr:{} },
   /* 旅店前台（ver -392）。⚠ 身高是**估的**（168）；取景值是量的（`tools/measure_si.py`）。
      ⚠ `top:0 / bot:1535` 不是漏量 —— 這張是**滿版取景**：髮髻碰到上緣、靴子碰到下緣
        （實測 row 0 與 row 1535 都有不透明像素）。 */

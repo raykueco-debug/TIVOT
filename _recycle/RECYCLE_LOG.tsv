@@ -52,3 +52,4 @@ when	from	to	reason
 20260905-214118	resources/audio/vo/vo_sorana_roar.m4a	_recycle/resources/audio/vo/vo_sorana_roar.m4a	vo 大更新（ver -837）：索拉娜語音整批換新錄音，舊版回收
 20260905-214118	resources/audio/vo/vo_sorana_obe.m4a	_recycle/resources/audio/vo/vo_sorana_obe.m4a	vo 大更新（ver -837）：索拉娜語音整批換新錄音，舊版回收
 20260905-214118	resources/audio/vo/vo_sorana_supply.m4a	_recycle/resources/audio/vo/vo_sorana_supply.m4a	vo 大更新（ver -837）：索拉娜語音整批換新錄音，舊版回收
+20260906-160837	resources/SI/NPC_GuildCounter_SI_Northport.webp	_recycle/resources/SI/NPC_GuildCounter_SI_Northport.webp	白底未去背版，matte.py 粗胚取代（待 GPT 正式重製）
