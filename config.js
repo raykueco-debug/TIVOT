@@ -49,7 +49,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.07-886';
+export const VERSION = 'ver 2026.09.07-887';
 
 export const GAME_CONFIG = {
 
@@ -391,12 +391,19 @@ export const GAME_CONFIG = {
         en:'Lucid Dream',
         buffSeconds:5,
         cutin:'ci_anya_lucid',
+        /* ══ 連續三次完美反擊 → reload 惡夢化（ver -887，Ray）══
+           那一發的 CI 與浮字換成「夢魘再臨 / Nightmare Returns」（只換字，圖沿用）。
+           實作只有 partner.onCounter 一支（鐵律 8）；解槽走 saint.resetInstallSlot。 */
+        reloadStreak:3,
+        reloadName:'夢魘再臨',
+        reloadEn:'Nightmare Returns',
         /* ver -759：四支輪播（Ray 指定）—— 陣列＝發動一次換下一支（fireBuff）。 */
         voice:'vo_anya_lucid',   // ver -837：Ray 交新單支，取代 -759 的 ×4 輪播（沒編號＝不輪播）
         /* ver -740（Ray）：發動期間追加「反擊不論哪一圈都算完美反擊（傷害與評價）」
            與「指引每一個應點格」—— 實作見 defense.resolveThreat 與 combat.markNext。 */
         desc:'完美反擊（紅圈）即發動，次數無上限：5 秒內普攻傷害加倍、'
-            +'任何反擊都視為完美反擊，並指引每一個應點格。效果結束後可立即再發動。',
+            +'任何反擊都視為完美反擊，並指引每一個應點格。效果結束後可立即再發動。'
+            +'連續三次完美反擊——夢魘再臨：惡夢化可再發動一次。',
       },
     },
     /* ══ 索菈娜（ver -803，Ray 交稿）══ 夏爾村村內戰一進場就強配（見 config.battles

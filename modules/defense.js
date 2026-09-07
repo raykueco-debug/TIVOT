@@ -320,6 +320,13 @@ export function resolveThreat(th){
        馬季諾的高裝藥彈不吃這一條）。 */
   const lucid = !!(api.lucidPerfect && api.lucidPerfect());
   let grade='block';   // 判定等級：'counter' | 'perfect' | 'block'（傳給教學層分流，見文末通知）
+  /* ⚠⚠ **「真的點到紅圈」與「被技能算成紅圈」要分開報**（ver -887，Ray：
+     「我偏向真實點到紅圈就發動，而靠技能強制算成紅圈發動的就不算」）。
+     `grade` 是**加成後**的等級（傷害、免傷、完美反擊計數與折秒、硬直都吃它，
+     ver -740 的定義不動）；`realGrade` 是**沒有明晰之夢時**會是什麼 ——
+     只有「要靠玩家真本事才給」的東西讀它（現在是安雅那條連續三次的計數）。
+     ⚠ 兩個都在這一支算（鐵律 7）：帶的判定只有這裡知道，呼叫端不准自己重算。 */
+  const realCounter = (ratio < counterWin);
   if(ratio < counterWin || lucid){
     // === Counter === 免傷 + 反擊武器大傷害（金色微閃）
     grade='counter';
@@ -397,7 +404,10 @@ export function resolveThreat(th){
      ⚠ 走 `combat.hintCurrentCell`（唯一那一支，鐵律 8）；它自己會擋掉聖徒化
        （那一盤可以亂點，指一格反而誤導）與演出中／敵已死。 */
   if(GAME_CONFIG.tuning.hintNextCell && api.hintCurrentCell) api.hintCurrentCell();
-  if(api.onThreatResolved) api.onThreatResolved(grade);   // 教學「首次防禦成功」節點通知（帶判定等級；教學外為 no-op）
+  /* 第二個參數＝**真實**判定等級（ver -887，見上面 realCounter 的說明）。
+     ⚠ 加成後與加成前一樣時兩者相同 —— 呼叫端不必分辨有沒有開技能。 */
+  const realGrade = realCounter ? 'counter' : (grade==='counter' ? 'block' : grade);
+  if(api.onThreatResolved) api.onThreatResolved(grade, realGrade);   // 教學「首次防禦成功」節點通知（帶判定等級；教學外為 no-op）
 }
 // 防禦統一閃光：color 'block'（白）或 'gold'（金）。整張敵圖微微一閃。
 export function flashDefense(color){

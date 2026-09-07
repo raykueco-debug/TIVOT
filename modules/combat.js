@@ -82,8 +82,12 @@ export function setup(){
                  /* ⚠ `g==='counter'` 才算「完美反擊」（ver -719，Ray 指定）——
                     黃圈與橘圈自 -706 起也會開火，但那不是**完美**反擊。
                     判定放在這裡是因為只有 defense 分得出帶（鐵律 7）。 */
-                 onThreatResolved: (g)=>{ weapon.onThreatResolved(); tutorial.onThreatResolved(g);
-                                          if(g==='counter') partner.onCounter(); },
+                 onThreatResolved: (g, real)=>{ weapon.onThreatResolved(); tutorial.onThreatResolved(g);
+                                          /* ⚠ partner 收的是**真實**判定（ver -887，Ray：
+                                             「真實點到紅圈就發動，靠技能強制算成紅圈的不算」）
+                                             —— 明晰之夢期間任何一圈都會被算成紅圈（-740），
+                                             拿加成後的等級來數，它就會自己養活自己。 */
+                                          partner.onThreatResolved(real || g); },
                  hintCurrentCell,   // 紅點解決了就指一下正確格（ver -718，見 tuning.hintNextCell）
                  lucidPerfect: partner.lucidActive,   // 明晰之夢發動中＝全帶皆完美反擊（ver -740）
                  onThreatEarly: tutorial.onEarlyBlock,

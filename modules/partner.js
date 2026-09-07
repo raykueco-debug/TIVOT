@@ -254,15 +254,42 @@ export function onEnemyCleared(){
   /* ⚠ ver -886：明晰之夢已改成無限制發動，沒有「用掉的一次」可以還 ——
      這顆星現在只回復即死防禦。 */
 }
+/* ══⚠⚠ **連續三次完美反擊 → reload 惡夢化**（ver -887，Ray：「安雅連續三次完美
+   反擊可以 reload 夢魘化，第三次完美反擊 CI 字改成 Nightmare Returns 夢魘再臨」）══
+   與索菈娜「獵手的戰吼」的兩段式同一個形狀（鐵律 8 的同族）：數連續次數，滿了
+   就 `api.resetInstallSlot()`（saint 的具名 setter，把 `saintUsedThisBattle` 解開）
+   —— 惡夢化與聖徒化、共鬥共用那一個槽，所以解開它就是「可以再發一次」。
+   ⚠ 「連續」＝中間不能有非紅圈的判定：`onThreatResolved` 收到 `counter` 以外的
+     等級就歸零（那是唯一知道判定等級的地方，鐵律 7）。
+   ⚠⚠ **收的是「真實」判定，不是加成後的**（ver -887，Ray：「我偏向真實點到紅圈
+     就發動，而靠技能強制算成紅圈發動的就不算」）：明晰之夢發動期間任何一圈都會被
+     算成紅圈（-740），拿加成後的等級來數，這條被動就會**自己養活自己**（發動中的
+     每一發都續一次連段）。`defense.resolveThreat` 現在同時報兩個等級，這裡讀
+     `realGrade`（見那一支的 `realCounter`）。
+   ⚠ 第三次那一發**即使效果還在跑也照演**：那一拍的重點是「夢魘再臨」這張 CI，
+     擋掉玩家就看不到自己把惡夢化賺回來了。 */
+let lucidStreak = 0;
+export function onThreatResolved(g){
+  if(g === 'counter'){ onCounter(); return; }
+  lucidStreak = 0;                 // 連續中斷
+}
 export function onCounter(){
   if(state.over || state.saintMode || state.niMode) return;   // 演出中不插隊（同 checkLowHpBuff）
   const p = currentPartner();
   const pas = p && p.passive;
   if(!(pas && pas.key==='firstCounter')) return;
+  lucidStreak++;
+  const need = pas.reloadStreak || 3;
+  const reload = lucidStreak >= need;
+  if(reload){
+    lucidStreak = 0;
+    if(api.resetInstallSlot) api.resetInstallSlot();   // 惡夢化可以再發一次
+  }
   /* 無限制發動（ver -886）：不再問「這隻怪用過了沒」。
-     ⚠ 只擋「這一段還在跑」——理由見 armFirstCounter 上面那一段。 */
-  if(state.lowHpBuff) return;
-  fireBuff(pas);
+     ⚠ 只擋「這一段還在跑」——理由見 armFirstCounter 上面那一段；
+       但**第三次那一發不擋**（見上）。 */
+  if(state.lowHpBuff && !reload) return;
+  fireBuff(pas, reload);
 }
 /* ══⚠⚠ 明晰之夢**發動中**？（ver -740，Ray：「明晰夢增加發動期間反擊不論哪一圈
    都算完美反擊，傷害跟評價都是。並且發動期間會指引每一個應點格」）══
@@ -326,7 +353,11 @@ export function onBoardCleared(clean){
   }, `${pas.name}<span class="cutin-en">${pas.en||''}</span>`, cut, { full:true });   // 被動技全屏（ver -874，Ray）
 }
 /* 「5 秒普攻加倍」的執行體（`lowHpBuff` 與 `firstCounter` 共用，鐵律 8）。 */
-function fireBuff(pas){
+function fireBuff(pas, reload){
+  /* `reload`＝這一發是「連續三次」那一發（ver -887）：CI 與浮字換成夢魘再臨。
+     ⚠ 只換**字**，圖沿用（Ray 只指定了字；要換圖再說）。 */
+  const nm = (reload && pas.reloadName) ? pas.reloadName : pas.name;
+  const en = (reload && pas.reloadEn)   ? pas.reloadEn   : pas.en;
   const sec = pas.buffSeconds || 10;
   const fire = ()=>{
     if(state.over) return;
@@ -346,14 +377,14 @@ function fireBuff(pas){
   /* 語音：陣列＝輪播（ver -759；-837 起走 SFX.pickRot，鐵律 8）。 */
   const vk = SFX.pickRot(pas.voice);
   const vo = asset(vk); if(vo) SFX.playVoice(vo, sfxGain(vk));
-  api.floatDmg(pas.name,'50%','34%',true);
+  api.floatDmg(nm,'50%','34%',true);
   if(state.cutinPlaying){ fire(); return; }   // 已有演出在播 → 只跳字、buff 立即起算
   api.playCutin(()=>{
     fire();                                   // cut-in 撤下才起算，秒數完整可用
     if(state.over) return;
     api.resetEnemyTimers();                   // 同其他 cut-in 的慣例
     api.scheduleUlt();
-  }, `${pas.name}<span class="cutin-en">${pas.en||''}</span>`, pas.cutin);
+  }, `${nm}<span class="cutin-en">${en||''}</span>`, pas.cutin);
 }
 export function checkLowHpBuff(){
   /* ⚠⚠ **惡夢化期間不發動**（ver -688，Ray：「明晰之夢在夢魘期間不發動，如果是
@@ -397,6 +428,7 @@ export function checkLowHpBuff(){
  * state.lowHpBuff 本體由 combat 於開場自清；此處只清 partner 自有狀態。 */
 export function reset(){
   /* ver -886：明晰之夢改成無限制發動，沒有「上膛」這回事了（`fcArmed` 已撤）。 */
+  lucidStreak = 0;                            // 連續完美反擊不跨場（ver -887）
   clearTimeout(lowHpTimer); lowHpTimer=null;
   lowHpArmed = true;
   immuneUntil = 0; guardHealUntil = 0;        // 免傷窗不跨場（ver -740）
