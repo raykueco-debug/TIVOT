@@ -2647,6 +2647,7 @@ function resetStage(){
   const fx=$('storyFx'); if(fx) fx.innerHTML='';
   const card=$('storyCard'); if(card) card.classList.remove('on');
   clearSceneFade();                       // 場景區的黑幕也是持續狀態（ver -881，見那一支）
+  closeHint();                            // 提示遮罩同理（ver -885，見那一支）
   const st2=$('storyStage'); if(st2) st2.classList.remove('shake','hold');
   slot={L:null,R:null}; slotExpr={L:null,R:null}; shown={};
   for(const s2 of ['L','R']){ const el=slotEl(s2);
@@ -3170,7 +3171,33 @@ const HINT_TARGET = { pend:'kerbPend', gear:'storyExit', map:'townMapBtn' };   /
 /* 城鎮的一次性提示（ver -429）：與腳本的 `hint` 那一拍**走同一支**（鐵律 8）——
    遮罩、箭、抬層、關掉才過那一套只有一份。差別只在沒有「下一拍」要接。 */
 export function showHint(spec, done){ openHint(spec, done || (()=>{})); }
+/* ══⚠⚠ **提示遮罩是持續狀態，而且絕對不准疊**（ver -885，Ray：「又黑掉囉」）══
+   `#storyHint` 是 `inset:0` 蓋滿整個舞台的 62% 深色罩（z-9，在對話框之上），
+   而 CSS 的 `#storyStage:has(#storyHint) #kerb{z-index:10}` 把槍棺抬到它之上
+   —— **所以症狀是「整個畫面連字都變暗、只有槍棺是亮的」**（Ray 的截圖）。
+   ⚠⚠ 兩個舊毛病，缺一不可地湊成這個 bug：
+     ① **只有兩個出口**（點被指的那顆鈕／點遮罩本身）—— 換節點、進戰鬥、演對白、
+        離城都不收它，於是它一直蓋著。
+     ② **每次都 `createElement` 新建**，沒有先收舊的 —— 提示的旗標是在 `done`
+        （＝`finish`）裡才記的，而 `finish` 沒跑過，所以**下一次抵達又會再彈一次**：
+        兩層 0.62 疊起來是 0.86、三層 0.95…… 畫面一次比一次黑。
+        這正是 Ray 的「**開始**變暗」與「好像不會每次都發作」。
+   ⚠ `closeHint()` **不叫 `done`**：玩家根本沒看到那一課，記成看過就等於把它吃掉了。
+     不記＝下次抵達會再教一次，那是對的行為（而且現在不會疊了）。
+   ⚠ 同 `clearSceneFade` 那一條的同族 —— §6.5.4 的檢查表再補一項：
+     **新增任何蓋在畫面上的層，先回答「換畫面時誰收它？」** */
+let hintOv=null, hintTgt=null, hintOff=null;
+export function closeHint(){
+  if(hintTgt) hintTgt.classList.remove('hint-spot');
+  if(hintOff){ try{ hintOff(); }catch(_){} }
+  if(hintOv && hintOv.parentNode) hintOv.parentNode.removeChild(hintOv);
+  hintOv=hintTgt=hintOff=null;
+  /* 保險：萬一有更早的殘留（同一個 id 疊了好幾層），一次掃乾淨。 */
+  document.querySelectorAll('#storyHint').forEach(n=>n.remove());
+  document.querySelectorAll('.hint-spot').forEach(n=>n.classList.remove('hint-spot'));
+}
 function openHint(spec, done){
+  closeHint();                     // ⚠ 絕對不准疊（見上）
   const o = (typeof spec==='string') ? { at:spec } : (spec||{});
   const tgt = document.getElementById(HINT_TARGET[o.at] || o.at);
   const st = $('storyStage');
@@ -3186,11 +3213,14 @@ function openHint(spec, done){
   a.style.top  = (r.top  - sr.top  - 6)+'px';
   ov.querySelector('.sh-txt').style.top = Math.max(8, r.top - sr.top - 62)+'px';
   tgt.classList.add('hint-spot');
+  hintOv=ov; hintTgt=tgt;
+  hintOff=()=>tgt.removeEventListener('click', onTgt, true);
   let fired=false;
   const finish=()=>{ if(fired) return; fired=true;
     tgt.classList.remove('hint-spot');
     tgt.removeEventListener('click', onTgt, true);
     if(ov.parentNode) ov.parentNode.removeChild(ov);
+    hintOv=hintTgt=hintOff=null;
     done && done();
   };
   /* ⚠ 點**目標**才算學會（那是這一拍要教的動作）；點提示本身只是收掉它，
