@@ -53,7 +53,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.07-919';
+export const VERSION = 'ver 2026.09.07-920';
 
 export const GAME_CONFIG = {
 
@@ -2454,9 +2454,7 @@ export const ASSETS = {
 
   /* ══ 木雅克神殿的怪（ver -919，Ray 交表）══ 圖是 Ray 交的 PNG，這一版轉成 webp
      （原 PNG 進 `resources/_originals/enemy/`，§5 的三步）。
-     ⚠ `mon_beast_bonemaw`（覆骨者）**庫裡還沒有那張圖** —— 卡與掉落先建好，
-       牠暫時不進刷怪池（見 script/town.js 的 `shinier_ruins.wildSpawn`），
-       圖進來把那一行的註解拿掉就會出現。 */
+     ⚠ `mon_beast_bonemaw`（覆骨者）ver -920 補進庫（Ray），已放回刷怪池。 */
   enemy_ruins_bonemaw:           "resources/enemy/mon_beast_bonemaw.webp",
   enemy_ruins_bellreacher:       "resources/enemy/mon_relic_bellreacher.webp",
   enemy_ruins_halo_ring:         "resources/enemy/mon_halo_ring.webp",

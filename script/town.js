@@ -2680,10 +2680,10 @@ export const TOWNS = {
         { battle:'ruins_halo_ring' },     // 王的容器：不限場域
         { battle:'ruins_heartripper' },   // 撕心者：不限場域
         { battle:'ruins_bellwalker' },    // 喪鐘：不限場域
-        /* ⚠⚠ 覆骨者（非末端限定）**先不放進池子**：`resources/enemy/mon_beast_bonemaw.webp`
-           還沒進庫，放了就是每一趟都遇到一隻**沒有立繪的怪**（畫面上是空的，
-           而那看起來像 bug 不像缺圖）。圖到了把這一行的註解拿掉就好，卡與掉落都建好了。 */
-        // { battle:'ruins_bonemaw', where:'connector' },
+        /* 覆骨者：**非末端限定**（`where:'connector'`，末端是算出來的，鐵律 7）。
+           ⚠ ver -920 圖進庫了（Ray：「mon_beast_bonemaw 補上」），-919 那一版
+             因為缺圖暫時抽掉，現在放回來。 */
+        { battle:'ruins_bonemaw', where:'connector' },
       ],
       /* ══ 指定遭遇（排在 fixed／pool 之前；由上往下取第一個成立的）══════════ */
       encounters: [

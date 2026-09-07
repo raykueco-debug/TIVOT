@@ -1201,7 +1201,7 @@ export const ENEMIES = {
       image:'enemy_ruins_bellwalker',
       bg:'Ruins_shinier_MossChamber',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:400, attack:16,                  // ⚠ hp 暫定（Ray 的表沒給這一隻的 hp）
+      hp:500, attack:16,                  // hp＝Ray 表（ver -920 補）；attack 暫定
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       resist:{}, weak:{}, landSe:null, special:[],
@@ -1265,7 +1265,8 @@ export const ENEMIES = {
               assault:{ type:'blunt', count:2 } },
       loot:[ { id:'saint_bone_big', n:1 } ],      // 100%
     },
-    /* BOSS（結算怪）。⚠ hp 暫定：Ray 的表只給了掉落。 */
+    /* BOSS（結算怪）。⚠ **牠還沒有出場的那一拍**：深部祭壇平時不出怪（ver -918），
+       Ray：「等等再補劇情給你」—— 卡與戰鬥卡都備好，接的時候是那一段 act 的一拍。 */
     ruins_saint_temperance: {
       name:'節制',
       story:0, counterStagger:1,
@@ -1275,7 +1276,7 @@ export const ENEMIES = {
       image:'enemy_ruins_saint_temperance',
       bg:'Ruins_shinier_DeepAltar',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:900, attack:20,                  // ⚠ 兩個都暫定（表上只有掉落）
+      hp:900, attack:20,                  // hp＝Ray 表（ver -920 補）；attack 暫定
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       resist:{}, weak:{}, landSe:null, special:[],
