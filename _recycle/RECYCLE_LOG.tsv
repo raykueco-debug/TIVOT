@@ -63,3 +63,6 @@ when	from	to	reason
 20260907-163316	resources/background/Ruins_shinier_Crossway_dawn.webp	_recycle/resources/background/Ruins_shinier_Crossway_dawn.webp	Crossway dawn 第一版比白天還亮、沒有晨霧，Gemini 重做
 20260907-164838	resources/_originals/effects/ef_claws.png	_recycle/resources/_originals/effects/ef_claws.png	ef_claws 舊版（ver -899 第一版）；Ray 交了新的一張，鍵值重做
 20260907-164849	resources/audio/se/se_enemy_dagger.m4a	_recycle/resources/audio/se/se_enemy_dagger.m4a	se_enemy_dagger 換新版（ver -899，Ray：「se_enemy_dagger 匕首受擊音改成這個」）
+20260907-172412	resources/background/Ruins_shinier_Crossway_day.webp	_recycle/resources/background/Ruins_shinier_Crossway_day.webp	Ruins_shinier_Crossway_day GPT 原版顆粒過重（Ray：刺眼），改用 Gemini 去顆粒重繪版
+20260907-172832	resources/background/Ruins_shinier_Brazier.webp	_recycle/resources/background/Ruins_shinier_Brazier.webp	Ruins_shinier_Brazier GPT 原版顆粒過重（Ray：刺眼），改用 Gemini 去顆粒重繪版
+20260907-173246	resources/background/Ruins_shinier_Hollow.webp	_recycle/resources/background/Ruins_shinier_Hollow.webp	Ruins_shinier_Hollow GPT 原版顆粒過重（Ray：刺眼），改用 Gemini 去顆粒重繪版
