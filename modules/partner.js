@@ -307,7 +307,7 @@ export function onBoardCleared(clean){
        cut-in 撤下時下一盤已經擺好（clearBoard → goNextBoard 是同步接著跑的）——
        指的就是新盤的第一格。走既有的 hintCurrentCell（鐵律 8）。 */
     if(api.hintCurrentCell) api.hintCurrentCell();
-  }, `${pas.name}<span class="cutin-en">${pas.en||''}</span>`, cut);
+  }, `${pas.name}<span class="cutin-en">${pas.en||''}</span>`, cut, { full:true });   // 被動技全屏（ver -874，Ray）
 }
 /* 「5 秒普攻加倍」的執行體（`lowHpBuff` 與 `firstCounter` 共用，鐵律 8）。 */
 function fireBuff(pas){

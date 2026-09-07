@@ -43,6 +43,7 @@ export const STRINGS = {
   },
   /* ═══ 3. 戰鬥中 UI／浮動字 ═══ */
   battle: {
+    coopMode:"Predator's Pack",   // 共鬥正式名（ver -874，Ray）
     skipBtn:      'SKIP',
     testClear:    'CLEAR',
     reloading:    'RELOADING',

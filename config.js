@@ -49,7 +49,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.07-873';
+export const VERSION = 'ver 2026.09.07-874';
 
 export const GAME_CONFIG = {
 
@@ -406,7 +406,7 @@ export const GAME_CONFIG = {
       name:'索菈娜',
       image:'partner_sorana',
       selectVoice:'vo_sorana_pack',   // 選人確認音（ver -839，Ray 指定）
-      install:{ name:'共鬥', en:"PREDATOR'S PACK",
+      install:{ name:'獵手的共鬥', en:"PREDATOR'S PACK",   // 正式名（ver -874，Ray）
         desc:'敵人框右滑發動（每場一次，消耗全部破防值）：進入無敵——秒數依破防值換算'
             +'（滿值 12 秒）。期間敵方攻擊一出手就被飛刀自動完美反擊；點錯格會縮短剩餘時間。' },
       siFit:{ zoom:1.6, top:0.01 },   // 估（同諾薇兒/安雅）；Ray 交專用選人立繪再重量

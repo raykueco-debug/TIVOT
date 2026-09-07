@@ -56,6 +56,7 @@ export const STRINGS = {
 
   /* ═══ 3. 戰鬥中 UI／浮動字 ═══ */
   battle: {
+    coopMode:'獵手的共鬥',   // 共鬥正式名（ver -874，Ray）
     skipBtn:      'SKIP',              // 教學左上跳過鈕（三語統一英文小字）
     testClear:    '清盤',              // 測試人員鈕（一般玩家看不到）
     reloading:    'RELOADING',        // [EN-STYLE] 換盤轉場

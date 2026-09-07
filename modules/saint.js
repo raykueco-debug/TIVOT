@@ -189,7 +189,9 @@ function endCoop(){
     const c = ((GAME_CONFIG.partners && GAME_CONFIG.partners[state.pickedPartner]) || {}).coop || {};
     const ek = SFX.pickRot(c.endVoice);   // ver -837：obe1/obe2 輪播
     if(ek) SFX.playVoice(asset(ek), sfxGain(ek));
-    if(c.endCutin) playCutin(()=>{}, c.endName || '', c.endCutin, { noShot:true });
+    if(c.endCutin) playCutin(()=>{ if(api.hintCurrentCell) api.hintCurrentCell(); },
+                             c.endName || '', c.endCutin, { noShot:true });
+    else if(api.hintCurrentCell) api.hintCurrentCell();   // 飛刀耗盡後指格（ver -874，同 OBE）
   }
 }
 export function coopActive(){ return !!state.coopMode; }
@@ -588,6 +590,7 @@ function finishNightmare(finalHpThunk){
     api.startIntervalTimer();
     api.scheduleUlt();
     if(api.clockResume) api.clockResume();
+    if(api.hintCurrentCell) api.hintCurrentCell();   // 熔斷後指格（ver -874，同 OBE）
   }
 }
 
@@ -755,6 +758,10 @@ function finishSaintMode(finalHpThunk){
     //   此處 saintMode 已由各結局的 exitSaint 關閉、cutinPlaying 亦已於 cut-in 收尾清除，
     //   故 clockResume 會真的起算（不靠玩家下一次點擊補起算，免得漏計那段空檔）。
     if(api.clockResume) api.clockResume();
+    /* OBE 之後指一下現在該點的格（ver -874，Ray：「obe 以後要指示下一個正確格子，
+       所有人 obe 後都要有」）——盤面剛換回殘局/新盤，玩家要先找到接點。
+       走既有的 hintCurrentCell（鐵律 8）。 */
+    if(api.hintCurrentCell) api.hintCurrentCell();
   }
 }
 
@@ -767,6 +774,9 @@ export function playCutin(done, label, imgKey, opts){
   state.cutinPlaying=true;
   if(api.clockPause) api.clockPause();     // 演出期間碼表暫停（非可點不計時；聖徒化降臨/雙槍破防共用）
   const c=$('cutin');
+  /* `opts.full`（ver -874，Ray：「索拉娜的被動技要放全屏」）：整張圖滿版 cover
+     淡入（CSS 的 #cutin.full）。**每次都要設**——上一張的 full 不能殘留。 */
+  if(c) c.classList.toggle('full', !!opts.full);
   if(label!==undefined) $('cutinText').innerHTML = label;
   const ci=$('cutinImg');
   const src=imgKey ? asset(imgKey) : null;

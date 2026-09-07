@@ -350,7 +350,11 @@ const PURIFY_KINDS = { harm:1, slay:1, aerial:1 };
 const ENTRANCE_KINDS = { harm:1, slay:1, ship:1, aerial:1 };
 function isPurify(){
   const en = GAME_CONFIG.enemies[state.currentEnemyKey];
-  return !!(en && PURIFY_KINDS[en.kind]);
+  /* `purgeFx:1`＝卡上的**明寫例外**（ver -874，Ray：「鹿主被消滅走禍魘拉長特效」）
+     —— 樹靈鹿主是 beast（副標「已獵殺」），只有死法借禍魘那一套。
+     ⚠ 這不是「要不要播特效」的第二個真相：kind 仍是預設判定，這一格只給
+       「分類與演出要分家」的個案用（同 aerial 分家的精神），能不寫就不寫。 */
+  return !!(en && (PURIFY_KINDS[en.kind] || en.purgeFx));
 }
 const RISE_DELAY_MS = 120;      // 背景先出的那一拍（讓玩家看得到「那裡本來就有個地方」）
 /* 落地的時刻（毫秒）。⚠ **必須對上 CSS `enemyRise` 的 78% 那一格**

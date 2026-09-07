@@ -2345,8 +2345,11 @@ export const TOWNS = {
              對不上，視為筆誤照分支2的樣子用**諾**（Ray 要改再說）。 */
         acts:[
           { flag:'sv_deer_met', need:'sv_forest_intro', hourOfDay:[5,17], lines:[
-            Object.assign(sor('surprised','竟然是……樹靈鹿主！'),
-                          { cgBack:'resources/enemy/mon_shinierforest_deer.webp' }),
+            /* 出場序（ver -874，Ray：「先出背景，再出鹿主，然後才是立繪對話」）——
+               背景在抵達那一拍已就位；這一拍鹿主獨場（無立繪），auto 一拍後才開講。 */
+            { speaker:'SORANA', text:'',
+              cgBack:'resources/enemy/mon_shinierforest_deer.webp', auto:2200 },
+            sor('surprised','竟然是……樹靈鹿主！'),
             ren('shockedCalm','那是什麼？很麻煩嗎？'),
             sor('remind','那是傳說中的森林之神，'),
             sor('remind','所以我也不知道好不好吃。'),
@@ -2361,8 +2364,10 @@ export const TOWNS = {
             /* 自由行動，可直接進入遺跡（遺跡本體地圖未實裝——等 Ray 的規劃）。 */
           ] },
           { flag:'sv_deer_met', need:'sv_forest_intro', storyBattle:true, lines:[
-            Object.assign(sor('surprised','竟然是……樹靈鹿主！'),
-                          { cgBack:'resources/enemy/mon_shinierforest_deer.webp', checkpoint:true }),   // 劇情戰的回檔點：站在遺跡入口、可自由行動
+            /* 出場序同上（ver -874）；checkpoint 掛在鹿主獨場那一拍。 */
+            { speaker:'SORANA', text:'',
+              cgBack:'resources/enemy/mon_shinierforest_deer.webp', auto:2200, checkpoint:true },
+            sor('surprised','竟然是……樹靈鹿主！'),   // 劇情戰的回檔點：站在遺跡入口、可自由行動
             ren('shockedCalm','那是什麼？很麻煩嗎？'),
             sor('remind','那是傳說中的森林之神，'),
             sor('remind','所以我也不知道好不好吃。'),

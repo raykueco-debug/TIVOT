@@ -52,6 +52,7 @@ export const STRINGS = {
 
   /* ═══ 3. 戰鬥中 UI／浮動字 ═══ */
   battle: {
+    coopMode:'狩人の共闘',   // 共鬥正式名（ver -874，Ray）
     skipBtn:      'SKIP',
     testClear:    'クリア',
     reloading:    'RELOADING',

@@ -960,7 +960,9 @@ export const ENEMIES = {
       kind:'beast',
       image:'enemy_sf_tiger',
       bg:'Forest_Cave_Day',
-      fit:{ mode:'contain', pos:'center bottom' },
+      /* 位置放高、虎頭對畫面中心（ver -874，Ray 指定）：橫式撲擊構圖，頭在圖高
+         約 45%——contain 縮完貼底會整隻沉在下緣，55% 讓頭落在敵區正中。 */
+      fit:{ mode:'contain', pos:'center 55%' },
       hp:500, attack:18,                  // hp＝Ray 表；attack 暫定
       atkInterval:null,
       delayPenalty:{ seconds:5 },
@@ -996,6 +998,10 @@ export const ENEMIES = {
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openUlt:[1,2], ultEvery:[2,4], assault:{ count:1, gap:0 }, ult:{},
       kind:'beast',
+      /* `purgeFx:1`（ver -874，Ray：「鹿主被消滅走禍魘拉長特效」）——kind 仍是
+         beast（結算「已獵殺」），只有**死法**借禍魘那一套（enemy.isPurify 的
+         卡上例外）。 */
+      purgeFx:1,
       image:'enemy_sf_deer',
       bg:'ruins_shinier_entrance',        // ver -870：Ray 新交的遺跡入口（舊 Ruins_Entrance_* 已收走）
       fit:{ mode:'contain', pos:'center bottom' },
