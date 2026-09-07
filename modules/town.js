@@ -1113,9 +1113,15 @@ function showMapCard(){
     ()=>{ const f=heldArrival; heldArrival=null; if(f) try{ f(); }catch(_){} });
 }
 
-let mapOn=false;
+/* ⚠⚠ **「地圖開著嗎」不另存一個布林**（ver -899）：那一層可能被別人收掉
+   （換場的 `story.clearStageLeftovers`），布林就會停在 true —— 下一次點鈕
+   變成「切換成關」，畫面上什麼都不會發生，而且沒有任何錯誤訊息（鐵律 7）。
+   直接問那個元素，只有一份真相。 */
+function mapIsOn(){
+  const v=document.getElementById('townMapView');
+  return !!(v && v.classList.contains('on'));
+}
 function mapClose(){
-  mapOn=false;
   const v=document.getElementById('townMapView'); if(v) v.classList.remove('on');
   if(layer) layer.classList.remove('map-on');   // 導覽字格回來（ver -867，見 renderMap）
 }
@@ -1125,9 +1131,16 @@ function mapClose(){
    「這裡到底有沒有地圖」，而那顆鈕是槍棺面盤上的固定配件，時有時無讀起來是壞了。
    ⚠ 「還沒畫」與「按不到」是兩件事：鈕照舊在、點下去由 `renderMap` 用一句
      「無資料」回答（同 §6.5.5「還不能做不要靠藏起鈕擋」那一條）。 */
+/* ⚠⚠⚠ **鈕住在舞台上，不住在導覽層裡**（ver -899，Ray：「對話期間 icon 也要常駐」）：
+   `#townNav` 在對白／演出期間整層 `display:none`（`showNav(false)`），鈕跟著不見 ——
+   而 Ray 要的是「**槍棺在它就在**」，槍棺在對白期間本來就在。
+   ⚠ 掛在 `#storyStage` 上（與地圖那一層同層），`right/bottom` 的落點不變；
+     z-8 ＝與退出／跳段鈕同層，壓得過楣（z-6）才點得到。
+   ⚠ 收在 `close()`（離城）—— 那是它唯一的終點。 */
 function showMapBtn(){
-  if(!layer) return;
-  let b=layer.querySelector('#townMapBtn');
+  const host = story.stageEl(); if(!host) return;
+  let b=document.getElementById('townMapBtn');
+  if(b && b.parentElement!==host){ b.remove(); b=null; }   // 舊版掛在導覽層裡的那一顆
   if(!b){
     b=document.createElement('button');
     b.type='button'; b.id='townMapBtn';
@@ -1137,9 +1150,9 @@ function showMapBtn(){
     b.addEventListener('pointerdown', e=>e.stopPropagation());
     b.addEventListener('pointerup', e=>{ e.stopPropagation();
       try{ SFX.unlock(); SFX.menuClick(); }catch(_){}
-      if(mapOn) mapClose(); else renderMap();
+      if(mapIsOn()) mapClose(); else renderMap();
     });
-    layer.appendChild(b);
+    host.appendChild(b);
   }
 }
 function renderMap(){
@@ -1173,7 +1186,7 @@ function renderMap(){
              + '<b></b><span>'+nm+'</span></i>';
       }).join('')
     + '</div>';
-  v.classList.add('on'); mapOn=true;
+  v.classList.add('on');
   /* 地圖開著＝導覽字格收掉（ver -867，Ray：「不用導覽字格」）——
      那幾片目的地字格會壓在羊皮紙上；看地圖的時候不需要它們。 */
   if(layer) layer.classList.add('map-on');
@@ -1331,9 +1344,10 @@ function refreshArrows(){
 function showNav(on){
   if(layer) layer.classList.toggle('on', !!on);
   document.body.classList.toggle('town-nav', !!on && !!townId);
-  if(!on) mapClose();          // 對白/演出接手＝地圖收掉（它跟著 nav 活，ver -867）
+  /* ⚠ 收的是**打開的那一張地圖**（它是 88% 的暗罩，蓋著就看不到對白），
+     **不是那顆鈕** —— 鈕自 ver -899 起常駐（見 showMapBtn）。 */
+  if(!on) mapClose();
   if(on){
-    showMapBtn();              // 槍棺地圖鈕（有 map 資料的城才出，ver -867）
     updateCompass();
     /* ⚠⚠ **字格的位置要在 `.on` 之後才量**（ver -406 修）：`#townNav` 沒有 `.on`
        時整層是 `display:none`，那時候量目的地字格得到的是 **0×0** —— 夾回畫面內那一段
@@ -1797,6 +1811,10 @@ export function enter(id){
   /* 上一個畫面留下來的舞台層一次收乾淨（ver -896，見 story.clearStageLeftovers）：
      黑幕／提示遮罩／染色／中景層。⚠ 新增舞台層時加進**那一支**，不要在這裡補。 */
   story.clearStageLeftovers();
+  /* 地圖鈕是**常駐配件**（ver -899）：每次進一格都確認它在（第一次會建，之後冪等）。
+     ⚠ 掛在這裡不掛在 `showNav(true)` 裡 —— 那一支在對白期間根本不會被叫到，
+       而 Ray 要的正是「對話期間 icon 也要在」。 */
+  showMapBtn();
   const T=TOWNS[townId]; if(!T) return;
   const n=T.nodes[id]; if(!n){ console.warn('[town] 沒有這個節點：', id); busy=false; return; }
   nodeId=id;
@@ -2447,6 +2465,7 @@ export function close(){
      而那一段的第一件事就是問「現在在哪一格」，此時城已經在收了 ⇒ 先清扣著的那一包。 */
   heldArrival=null; mapCardArmed=false;
   story.hideTitleCard();
+  { const b=document.getElementById('townMapBtn'); if(b) b.remove(); }   // 常駐鈕的唯一終點（ver -899）
   /* 外出行程（ver -575）：這裡才歸零 —— `close()` 才是「這一趟城鎮探索結束」
      （回主選單／killAllPages／讀檔換城）。`open()` 不清，見那一支的說明。 */
   outKey=null; outPlan=[];

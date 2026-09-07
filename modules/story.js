@@ -863,6 +863,13 @@ export function clearStageLeftovers(){
   cardDone=null;
   { const c=$('storyTitleCard'); if(c){ clearTimeout(c.__hideT); c.classList.remove('on','show','opaque'); }
     const g=$('storyCardCatch'); if(g) g.classList.remove('on'); }
+  /* ⚠⚠ 攤開的**槍棺地圖**（`#townMapView`，ver -899）：它是 88% 的暗罩蓋滿整個舞台
+     —— 開著的時候換場，畫面就是「整個變暗、點不掉」，與 -885 那個提示遮罩
+     一模一樣的病（§6.5.4 檢查表：新增任何蓋在畫面上的層，先回答「換畫面時誰收它？」）。
+     ⚠ 這裡只拔 class，不 import town（方向不對）—— 而它「開著沒」是**現讀 DOM** 的
+       （`town.mapIsOn`），所以拔掉就真的關了，不會有第二份狀態停在 true。 */
+  { const v=$('townMapView'); if(v) v.classList.remove('on');
+    const nv=$('townNav'); if(nv) nv.classList.remove('map-on'); }
 }
 export function clearSceneFade(){
   cgFadeT.forEach(clearTimeout); cgFadeT=[];

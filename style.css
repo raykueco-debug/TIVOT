@@ -2986,8 +2986,10 @@
      視覺份量對齊吊墜（寬 ~88px）、帶一點隨手擱著的斜度；金邊嵌板收進棺面的暗色。 */
   /* ⚠ ver -869（Ray：「地圖 icon 不要放框，把書擺正」）：無邊框、無斜度 ——
      素材自己的暗底融進棺面，只留柔影讓它浮起一點。 */
+  /* ⚠ z-8 ＝與退出／跳段鈕同層：ver -899 起這顆鈕**住在舞台上**（不再住導覽層裡，
+     見 modules/town.js 的 showMapBtn），所以要自己壓過楣（`#kerb` z-6）才點得到。 */
   #townMapBtn{position:absolute;right:10px;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);
-    width:88px;height:59px;padding:0;pointer-events:auto;overflow:hidden;
+    z-index:8;width:88px;height:59px;padding:0;pointer-events:auto;overflow:hidden;
     background:transparent;border:0;border-radius:6px;
     box-shadow:0 5px 14px rgba(0,0,0,.6);}
   #townMapBtn img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;}
