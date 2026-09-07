@@ -53,7 +53,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.08-921';
+export const VERSION = 'ver 2026.09.08-922';
 
 export const GAME_CONFIG = {
 
@@ -2178,6 +2178,10 @@ export const GAME_CONFIG = {
       /* ── UI ── */
       se_ui_click:4.750, se_ui_kagurabell:2.530, se_ui_pageflip:2.359,
       se_ui_sortie:1.184, se_ginclick:1.106, se_metalclip:1.139,
+      /* stage7 兩支（ver -922）：⚠ 增益是**對著已校準的鄰居** `se_metalclip`（−17.1 LUFS
+         → 1.139）推出來的 —— 實測 se_metalopen −16.7（大 0.4 dB）、
+         se_monsterroardeep −16.2（大 0.9 dB），所以各自往下折那麼多。 */
+      se_metalopen:1.09, se_monsterroardeep:1.03,
       se_buy:1.122, se_healing:1.461,   // ver -499（audio_scan 實測：−14.8／−17.1 LUFS）
       se_enemy_serpent:2.184,           // ver -500（audio_scan 實測：−20.6 LUFS）
       se_bulletpiece:1.49,              // ver -503（audio_scan 實測：−17.2 LUFS）
@@ -2410,6 +2414,8 @@ export const ASSETS = {
   ci_anya_dreambreaker: "resources/CI/CI_Anya_Dreambreaker.webp?v=3",   // ver -702：Ray 又換了一版
   /* 惡夢化熔斷（ver -692，Ray 交件 `CI_Anya_OBE`）：倒數槽抽乾的那一結局。 */
   ci_anya_obe:    "resources/CI/CI_Anya_OBE.webp",
+  /* stage7・養息之間那一拍（ver -922，Ray 的稿：安：CI_Anya_scared）。 */
+  ci_anya_scared: "resources/CI/CI_Anya_scared.webp",
   /* 明晰之夢（ver -681 交件／-682 定中文名）：安雅的被動 —— HP≤30% 普攻加倍 5 秒。 */
   ci_anya_lucid:  "resources/CI/CI_Anya_Luciddream.webp?v=2",   // ver -708：Ray 換了一版（同名覆蓋 → 必掛 ?v，§5）
   /* 賞金獵人（ver -375）：戰鬥立繪＝對話立繪的 `attack` 那張（去背，配 `bg` 用）。 */

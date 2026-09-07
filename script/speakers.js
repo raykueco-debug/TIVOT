@@ -145,6 +145,12 @@ export const ART = {
   renna: { cm:169, eye:32, fx:0.519, top:1, bot:1521,
            side:'L', alt:null, base:'resources/SI/Renna_SI_front.webp',
            expr:{ /* ver -870（森林行 G 稿）——measure_si 量測。 */
+                  /* ══ stage7・木雅克神殿（ver -922，Ray 交稿）══ 同上。
+                     ⚠ `front` 的圖早就在庫裡，只是一直沒進表（稿上點名了它）。 */
+                  sighsweat:    { src:'resources/SI/Renna_SI_sighsweat.webp', top:2, bot:1525, fx:0.536 },
+                  shockedopen:  { src:'resources/SI/Renna_SI_shockedopen.webp', top:4, bot:1519, fx:0.500 },
+                  sigh:         { src:'resources/SI/Renna_SI_sigh.webp', top:2, bot:1531, fx:0.522 },
+                  front:        { src:'resources/SI/Renna_SI_front.webp', top:5, bot:1521, fx:0.504 },
                   wake:       { src:'resources/SI/Renna_SI_wake.webp',        top:0, bot:1531, fx:0.539 },
                   unbraid:    { src:'resources/SI/Renna_SI_unbraid.webp',     top:6, bot:1528, fx:0.550 },
                   callangry:  { src:'resources/SI/Renna_SI_callangry.webp',   top:2, bot:1533, fx:0.516 },
@@ -236,6 +242,15 @@ export const ART = {
   nouvelle: { cm:165, eye:40, fx:0.582, top:3, bot:1536, mirror:true,
            side:'L', alt:null, base:'resources/SI/Nouvelle_SI_front.webp',
            expr:{ /* 艦鬥教學那幾拍（ver -424，Ray 交件）：她穩住陣腳的姿勢。 */
+                  /* ══ stage7・木雅克神殿（ver -922，Ray 交稿）══ 交件是 PNG，依 §5 轉 WebP；
+                     取景值是 `tools/measure_si.py` 量的（差分不沿用別張，§6.5）。
+                     ⚠ `decoding` ＝她「讀」古代文字那幾拍專用。 */
+                  worry:        { src:'resources/SI/Nouvelle_SI_worry.webp', top:4, bot:1535, fx:0.683 },
+                  thinking:     { src:'resources/SI/Nouvelle_SI_thinking.webp', top:3, bot:1535, fx:0.532 },
+                  decoding:     { src:'resources/SI/Nouvelle_SI_decoding.webp', top:4, bot:1528, fx:0.579 },
+                  sadsmilenoeye:{ src:'resources/SI/Nouvelle_SI_sadsmilenoeye.webp', top:2, bot:1527, fx:0.556 },
+                  bigsmileclose:{ src:'resources/SI/Nouvelle_SI_bigsmileclose.webp', top:4, bot:1529, fx:0.568 },
+                  dying:        { src:'resources/SI/Nouvelle_SI_dying.webp', top:4, bot:1524, fx:0.614 },
                   steady:   { src:'resources/SI/Nouvelle_SI_steady.webp',   top:8,  bot:1529, fx:0.534 },
                   /* ver -870（森林行 G 稿）。front＝基本立繪的別名（稿上點名了它）。 */
                   sleepy:   { src:'resources/SI/Nouvelle_SI_sleepy.webp',   top:5,  bot:1535, fx:0.580 },
@@ -309,6 +324,8 @@ export const ART = {
        `flight/index.html` 的 PORTRAIT.sorana 是同一組數字，改一邊要改另一邊。 */
   sorana: { cm:176, eye:27, fx:0.498, top:4, bot:1526, mirror:true,
            side:'R', alt:null, base:'resources/SI/Sorana_SI_side.webp?v=2', expr:{
+    /* stage7・木雅克神殿（ver -922，Ray 交稿）。 */
+    confuse:      { src:'resources/SI/Sorana_SI_confuse.webp', top:6, bot:1522, fx:0.510 },
     front:        { src:'resources/SI/Sorana_SI_front.webp?v=2',     top:3,  bot:1523, fx:0.659 },
     side:         { src:'resources/SI/Sorana_SI_side.webp?v=2',      top:4,  bot:1526, fx:0.498 },
     guard:        { src:'resources/SI/Sorana_SI_guard.webp',         top:9,  bot:1527, fx:0.651, cm:168 },
@@ -353,6 +370,11 @@ export const ART = {
      ⚠ 也不要動 `CAST_EYE_MIX`：那是全域旋鈕，會把另外三個人一起改掉。 */
   anya:   { cm:152, standCm:162, eye:34, fx:0.505, top:0, bot:1531,
            side:'R', alt:null, base:'resources/SI/Anya_SI_front.webp', expr:{
+    /* ══ stage7・木雅克神殿（ver -922，Ray 交稿）══
+       ⚠ `point` 的 `top:34` 是量出來的事實（她舉手指的姿勢，人物最上緣比別張低）。 */
+    point:        { src:'resources/SI/Anya_SI_point.webp', top:34, bot:1518, fx:0.406 },
+    watch:        { src:'resources/SI/Anya_SI_watch.webp', top:8, bot:1535, fx:0.476 },
+    talkshy:      { src:'resources/SI/Anya_SI_talkshy.webp', top:0, bot:1525, fx:0.451 },
     /* 北方泊地教堂那一幕（ver -624）。逐張量（tools/measure_si.py）。 */
     scared:   { src:'resources/SI/Anya_SI_Scared.webp',   top:0, bot:1511, fx:0.477 },
     runworry: { src:'resources/SI/Anya_SI_runworry.webp', top:0, bot:1534, fx:0.432 },
