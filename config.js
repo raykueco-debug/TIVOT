@@ -49,7 +49,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.07-888';
+export const VERSION = 'ver 2026.09.07-889';
 
 export const GAME_CONFIG = {
 
@@ -346,12 +346,13 @@ export const GAME_CONFIG = {
                 desc:'受到足以致死的攻擊時，為玩家保留1hp續命，'
                     +'並獲得10秒免傷；免傷期間普攻每次回復2%生命。' },
       /* ⚠ ver -740：發動一律回滿（不再看當前血量）。
-         ⚠⚠ ver -888（Ray：「諾薇兒的 life return 改成發動就回滿，不囉唆」）：
-           **`context` 由 `'saint'` 改成 `'any'`** —— 聖徒化限定那道門撤了，
-           盤面上隨時都能發。在聖徒化中發動照舊順手中止它（實作在 partner 的 handler）。 */
-      active:{ key:'lifeReturn', name:'生命歸還', context:'any',
+         ⚠⚠ **`context` 是 `'saint'`，不要再改**（ver -889，Ray：「只有聖徒化期間
+           才能發動是正確的，放回去」）—— -888 誤讀「不囉唆」把這道門拆成 `'any'`，
+           當天就被推翻。Ray 那句指的是**回滿**那一半，不是發動條件。
+           ⚠ 這已經是第二次被推翻（-740 同日也撤過一次「隨時可發＋免傷」）。 */
+      active:{ key:'lifeReturn', name:'生命歸還', context:'saint',
                cutin:'cutin_return', voice:'vo_nou_return',   // ver -711：她自己的語音
-               desc:'發動即生命完全回復（聖徒化期間發動會一併中止聖徒化）。' },
+               desc:'聖徒化期間發動：強制中止聖徒化，生命完全回復。' },
     },
     /* ══ 安雅（ver -671，Ray：「從玩家跟安雅一起出旅店後，夥伴就從諾薇兒
        換成安雅了」）══

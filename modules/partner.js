@@ -123,17 +123,18 @@ const ACTIVE_HANDLERS = {
      ⚠ 回滿在中止**之後**：`lifeReturnAbort` 的 `exitSaint` 同步收掉 saintMode，
        血條語意回到一般血，這時回滿才是回滿（聖徒化期間血條＝倒數槽，
        推滿＝OBE，先回滿就出事）；結局的 finalHpThunk 是 no-op，不會蓋回去。 */
-  /* ⚠⚠ **發動就回滿，不囉唆**（ver -888，Ray）—— -740 的「只有聖徒化期間可發動」
-     那道門撤掉（卡上 `context` 改 `'any'`）：現在盤面上隨時都能發。
-     ⚠ 中止聖徒化那一步**只在真的在聖徒化時做**：不在聖徒化卻叫 `lifeReturnAbort`
-       等於憑空收掉一個沒開的狀態。
-     ⚠ 回滿在中止**之後**（-740 的原話）：`exitSaint` 同步收掉 saintMode，血條的
-       語意才回到一般血 —— 先回滿的話那時的血條還是倒數槽，推滿＝OBE。 */
+  /* ⚠⚠ **聖徒化限定是對的**（ver -889，Ray：「只有聖徒化期間才能發動是正確的，
+     放回去」）—— -888 一度把 `context` 改成 `'any'`，**已撤回**。
+     ⚠ 這一條 ver -740 就定過（「生命歸還只有聖徒化期間可發動，只是原本回血是看
+       當前血量，現在發動一律直接全滿」），-888 誤讀 Ray 的「不囉唆」把門拆了
+       —— 他指的是**回滿**那一半，不是發動條件。**兩次都被推翻的東西不要再動。**
+     ⚠ 回滿在中止**之後**：`exitSaint` 同步收掉 saintMode，血條的語意才回到一般血
+       —— 先回滿的話那時的血條還是倒數槽，推滿＝OBE。 */
   lifeReturn(a, act){
-    if(state.over || state.enemyHp<=0) return false;
+    if(!state.saintMode) return false;   // 保險：非聖徒化不執行
     const vo = asset(act && act.voice); if(vo) SFX.playVoice(vo, sfxGain(act.voice));   // SE 與結局 cut-in 同步（→ vo_nou_return）
-    if(state.saintMode) a.saintApi.lifeReturnAbort();
-    api.healPlayer(state.playerMax);     // 一律全滿（ver -740／-888）
+    a.saintApi.lifeReturnAbort();
+    api.healPlayer(state.playerMax);     // 一律全滿（ver -740）
     return true;
   },
   // 前線補給（馬季諾·主動）：發動即進入雙槍破防射擊窗口（不吃破防值、不另播雙槍
