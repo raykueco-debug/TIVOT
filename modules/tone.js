@@ -71,6 +71,15 @@ export function matchPortraits(bgEl, castEl){
   /* ⚠ 判「看不看得見」用**實際尺寸**，不要用 `.on` class：劇情的背景靠 .on 控制顯示，
      但戰鬥的敵人底圖沒有那個 class（第一版這樣寫，戰鬥裡整段不生效）。 */
   if(!bgEl || !src || !(bgEl.offsetWidth > 0)){ castEl.style.filter = ''; return; }
+  /* ⚠⚠ **換圖進行中就不要量**（ver -880）：`.fading` ＝ `story.swapImg` 正在淡出，
+     元素上掛的還是**上一張**的 src —— 這時量到的是上一個場景的亮度，而且會被寫進
+     上一張的快取，於是這一場的立繪套著上一場的色調（Ray：「好像不會每次都發作」）。
+     等它載好再量；`load` 用 addEventListener 掛（swapImg 用的是 `el.onload=`，
+     兩邊不會互相蓋掉）。 */
+  if(bgEl.classList && bgEl.classList.contains('fading')){
+    bgEl.addEventListener('load', ()=>matchPortraits(bgEl, castEl), { once:true });
+    return;
+  }
   const hit = _cache.get(src);
   if(hit){ castEl.style.filter = hit.filter; return; }
   const apply = () => {

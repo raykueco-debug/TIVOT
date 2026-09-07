@@ -1029,10 +1029,17 @@ function applyPersist(line){
     bgChanged=true;
     stageBg=line.bg;
     setBgFlip(false);   // 主線場景不吃翻轉（那是城鎮節點的資料，ver -877）
-    swapImg($('storyBg'), line.bg?imgSrc(line.bg):'');
     /* 立繪的色調跟著背景走一點點（見 modules/tone.js）。
-       ⚠ 要等換圖跑完再量 —— swapImg 是先淡出、載好才換 src，太早量到的是舊圖。 */
-    setTimeout(()=>matchPortraits(toneSrcEl(), $('storyCast')), 420);
+       ⚠⚠ **在 swapImg 的收尾回呼裡量，不要用固定秒數猜**（ver -880）：
+         -631 是 `setTimeout(…,420)`，而 swapImg 的長度是「淡出 FADE_MS ＋ 圖自己的
+         載入解碼」—— 圖沒進快取時 420ms 根本不夠，於是量到的是**上一個場景**的背景，
+         還被寫進上一張的快取，畫面上就成了「這一場的立繪套著上一場的色調」，
+         要等下一次換場才會被蓋掉。這就是 Ray 回報的「好像不會每次都發作」。
+         `swapImg` 的第三個參數是 `whenPainted` 之後才叫的 —— 新的像素真的畫上去了。
+       ⚠ 同 §6.5「取景在 onload 那一刻才換」那一條的同族：凡是「依畫面算」的東西，
+         都要等畫面真的換好，不要另外猜一個秒數（鐵律 7）。 */
+    swapImg($('storyBg'), line.bg?imgSrc(line.bg):'',
+            ()=>matchPortraits(toneSrcEl(), $('storyCast')));
   }
   let cgChanged=false, cgFaded=false;
   if(line.cg!==undefined && line.cg!==stageCg){

@@ -2956,18 +2956,20 @@
 
   /* ══ 進新地圖的圖名卡（ver -879，Ray：「每到一個新的地圖都要全黑半透遮罩，稍大
      粗字顯示地圖名稱，地點下面顯示小一級字的年月日時間，點擊消失，只出一次」）══
-     ⚠ z 排在**黑幕（20）之下**、其餘全部之上（12）：切景要能把它一起蓋黑，
-       但它蓋得住導覽、地圖鈕與對話框。
-     ⚠⚠ **下界＝楣的上緣，不是 `--story-top`**（ver -880，Ray：「地名的黑遮罩不要
-       蓋在槍棺之上」）：槍棺的**楣**是往上凸出立繪區下緣的（約 60px，見
-       §6.5.4「單子的下界是楣的上緣」），罩到 `--story-top` 就會壓到那一截雕花。
-       `--kerb-clip-top` 是 `layoutKerberos` **解出來**的那個真值、發佈在 `:root` 上
-       （鐵律 7：不要在 CSS 裡用「56vh − 楣高」再算一次）。退路值同 `#kerb` 那兩條。
-     ⚠ 擋路是由 `gateArrival` 在**程式**上做的（點掉才開始演），不靠一片罩住全螢幕的黑。
+     ⚠⚠ **它在楣之下，而且要比楣長**（ver -880，Ray：「地名遮罩要在楣的下層，整體
+       長度要長過楣」）══
+       · **圖層**：`z-index:5` ＝ 背景／插圖／立繪（0~1）與情境卡（4）之上、
+         **楣（`#kerb` z-6）之下**。這正是 §6.5「楣是畫框：背景、插圖、立繪、
+         情境卡、黑幕全部在它之下，只有對話框在它之上」那一條 —— 這一層是報地點的
+         卡，不是對話框。
+       · **長度**：一路罩到 `--story-top`，**穿到楣的下面**去。-880 一度只罩到
+         `--kerb-clip-top`（楣的上緣）就切掉，那會在楣的邊緣留一條看得見的接縫；
+         蓋過去、由楣自己壓在上面才是乾淨的。楣以下那 93px 反正被楣蓋著，不會露出來。
+     ⚠ 擋路是由 `gateArrival` 在**程式**上做的（點掉才開始演），不靠圖層 ——
+       `#kerb` 是 `pointer-events:none`，所以點在楣上那一片照樣打到這張卡。
      ⚠ 字用 `clamp` 跟著畫面走 —— 390px 的手機與桌機同一份版面。 */
-  #townMapCard{position:absolute;left:0;right:0;top:0;
-    height:var(--kerb-clip-top, calc(var(--story-top) - var(--kerb-top-h, 0px)));
-    z-index:12;display:none;
+  #townMapCard{position:absolute;left:0;right:0;top:0;height:var(--story-top);
+    z-index:5;display:none;
     flex-direction:column;align-items:center;justify-content:center;gap:.55em;
     background:rgba(4,3,8,.72);pointer-events:auto;text-align:center;padding:0 8%;
     opacity:0;transition:opacity .45s ease;}
