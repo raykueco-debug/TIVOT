@@ -265,8 +265,9 @@ export function onEnemySet(){
    ⚠ 掛在 `combat.finishEnemyOrAdvance` 那個匯流點（自然清盤／按錯／逾時／
      聖徒化擊殺四條路都經過它，鐵律 8）。 */
 export function onEnemyCleared(){
-  /* ══ 連續無傷擊殺 → reload Install（ver -892，Ray：「諾薇兒的聖徒化，連續兩場
-     無傷 clear 就 reload」）══ 條件與次數在卡上（`installReload`，鐵律 1）。
+  /* ══ 連續無傷擊殺 → reload Install（ver -892 定為兩場；**ver -903 Ray 改成一場**：
+     「諾薇兒改無傷一場就恢復聖徒化」）══ **次數在卡上**（`installReload.flawless`，
+     鐵律 1）—— 這一支一個字都不必改，改的是那個數字。
      ⚠ 「無傷」逐隻算（`state.enemyHitsTaken`，同九星「方舟」的定義）——
        挨過一下就歸零重數。
      ⚠ 解槽走 `api.resetInstallSlot`（saint 的具名 setter，鐵律 9）。

@@ -1815,8 +1815,15 @@ export function enter(id){
      ⚠ 掛在這裡不掛在 `showNav(true)` 裡 —— 那一支在對白期間根本不會被叫到，
        而 Ray 要的正是「對話期間 icon 也要在」。 */
   showMapBtn();
-  const T=TOWNS[townId]; if(!T) return;
-  const n=T.nodes[id]; if(!n){ console.warn('[town] 沒有這個節點：', id); busy=false; return; }
+  /* ⚠⚠⚠ **提早 return 的路徑要自己把黑幕掀開**（ver -903，「畫面變黑」調查的第三處）：
+     切景是「`sceneCut` 淡到全黑 → `enter()` 擺好新的一景 → `enter()` 淡回來」，
+     **淡入的擁有者是 `enter()`**（§6.5.4「淡出與淡入的擁有者是分開的」）——
+     所以它中途 return 就等於「黑幕沒有人掀」，畫面全黑而且點不掉。
+     ⚠ 這兩道 return 是資料壞掉才會走到（沒有這座城／沒有這一格），但**壞資料不該
+       變成黑畫面**：要讓玩家看得見自己卡在哪裡，才有機會回報。 */
+  const bail = (why)=>{ console.warn('[town] '+why); story.veil(false, 0); busy=false; };
+  const T=TOWNS[townId]; if(!T){ bail('沒有這座城：'+townId); return; }
+  const n=T.nodes[id];  if(!n){ bail('沒有這個節點：'+id); return; }
   nodeId=id;
   const carried = carriedIn; carriedIn = false;   // 只吃這一次抵達（ver -496）
   storyActNow = false;                           // 換一格就重算（ver -680）

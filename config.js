@@ -53,7 +53,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.07-902';
+export const VERSION = 'ver 2026.09.07-903';
 
 export const GAME_CONFIG = {
 
@@ -357,20 +357,23 @@ export const GAME_CONFIG = {
       active:{ key:'lifeReturn', name:'生命歸還', context:'saint',
                cutin:'cutin_return', voice:'vo_nou_return',   // ver -711：她自己的語音
                desc:'聖徒化期間發動：強制中止聖徒化，生命完全回復。' },
-      /* ══ 連續兩隻無傷擊殺 → reload 聖徒化（ver -892，Ray：「諾薇兒的聖徒化，
-         連續兩場無傷 clear 就 reload」）══
+      /* ══ 無傷擊殺一場 → reload 聖徒化（ver -892 定為兩場，**ver -903 Ray 改成一場**：
+         「諾薇兒改無傷一場就恢復聖徒化」）══
          ⚠ 「無傷」是**逐場（逐隻怪）**算的（`state.enemyHitsTaken`，同九星「方舟」
            的定義，ver -708）—— 以整局算的話，同一局中途挨過一次就永遠回不來。
            （ver -893 用詞：局＝結算、場＝一隻怪）
-         ⚠ 與九星「方舟」是兩件事：那顆星是**一隻**無傷就回復已用的被動，
-           這一條要**連續兩隻**、回復的是聖徒化的槽（`saintUsedThisBattle`）。
+         ⚠ 與九星「方舟」仍是兩件事（雖然條件現在一樣是「一場無傷」）：
+           那顆星回復的是**已用掉的被動**，這一條回復的是**聖徒化的槽**
+           （`saintUsedThisBattle`）。兩者可以同時發生。
+         ⚠ `flawless` 這個欄位留著寫 1 不刪 —— 它是「連續幾場」這個**規則的旋鈕**，
+           -892 是 2、-903 是 1，日後要調只動這個數字（鐵律 1）。
          ⚠ 專屬 CI 已交件（ver -894，Ray：「reload CI 為 CI_Nouvelle_saintreload」）
            —— -893 借被動那張的過渡期結束。
-         ⚠ 插入的時機是**第二隻無傷打完最後一格那一刻**（Ray）—— 走
+         ⚠ 插入的時機是**那一隻無傷打完最後一格那一刻**（Ray）—— 走
            `combat.finishEnemyOrAdvance` 那個匯流點（自然清盤／按錯／逾時／聖徒化
            擊殺四條路都經過它），也就是 partner.onEnemyCleared。
          實作只有那一支（鐵律 8）。 */
-      installReload:{ flawless:2, name:'聖徒再臨', en:'SAINT RELOAD',
+      installReload:{ flawless:1, name:'聖徒再臨', en:'SAINT RELOAD',
                       cutin:'cutin_saintreload',      // ver -894：專屬 CI（原本借被動那張）
                       voice:'vo_nou_saintreload' },
     },

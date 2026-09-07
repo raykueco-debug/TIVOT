@@ -870,6 +870,15 @@ export function clearStageLeftovers(){
        （`town.mapIsOn`），所以拔掉就真的關了，不會有第二份狀態停在 true。 */
   { const v=$('townMapView'); if(v) v.classList.remove('on');
     const nv=$('townNav'); if(nv) nv.classList.remove('map-on'); }
+  /* ⚠⚠ 關棺收尾的 72% 暗罩（`kerb-veil`，ver -903）：它的擁有者是 `stopKerberos`，
+     這裡是**第二道保險** —— 換畫面時舞台上不該還有任何一片暗罩。
+     ⚠ 真的掃到就記一筆 console：那代表上游有一條路徑沒走 `stopKerberos`，
+       靜靜清掉會讓下一個同類 bug 查不出來（同 `verifyCastCleared` 的作法）。 */
+  { const st2=$('storyStage');
+    if(st2 && st2.classList.contains('kerb-veil')){
+      st2.classList.remove('kerb-veil');
+      console.info('[story] 換畫面時還留著 kerb-veil（關棺暗罩）—— 上游有路徑沒收它');
+    } }
 }
 export function clearSceneFade(){
   cgFadeT.forEach(clearTimeout); cgFadeT=[];
@@ -1933,7 +1942,13 @@ function stopKerberos(){
   const kb=$('kerb'), st=$('storyStage'), sm=$('kerbSmoke');
   if(kb) kb.classList.remove('rise','full','unlock','lift','open','glow','kerb-shut');
   if(sm) sm.innerHTML='';
-  if(st) st.classList.remove('kerb-open');
+  /* ⚠⚠⚠ **`kerb-veil` 一定要一起拔**（ver -903，Ray：「變黑那件事還是沒解決」）：
+     它是關棺收尾那一串計時器的第 ④ 步掛上的 **72% 全舞台暗罩**（`#storyStage.kerb-veil::after`），
+     第 ⑤ 步（460ms 後）才拔 —— 而這一支的第一件事就是 `kerbTimers.forEach(clearTimeout)`。
+     **在那 460ms 之間被中止（進戰鬥／回檔／換場／再演一次門），第 ⑤ 步就永遠不會跑**，
+     暗罩留在舞台上，症狀正是「整個畫面變暗、而且點不掉」。
+     -903 之前這裡只拔 `kerb-open`，等於漏了那一片真正會變暗的。 */
+  if(st) st.classList.remove('kerb-open','kerb-veil');
 }
 /* `opts.fromRisen`（ver -387）：**門已經在飛行頁推上來了** —— 從「已推到頂」的狀態
    接下去演（撞頂 → 解鎖 → 圓盤 → 開門），不重演上推、也不再播一次撞擊音。
