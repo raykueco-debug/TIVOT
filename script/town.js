@@ -2809,13 +2809,10 @@ export const TOWNS = {
             any('silent','我不知道……'),
             sor('amazed','嘿——'),
             sor('lauaghbig','好像小狗會說的話喔！'),
-            /* 安雅的 cut-in（Ray 的稿：安：CI_Anya_scared）。⚠ 走 `cg` 的**明確路徑**
-               分支（含 `/` 就不吃時段候選鏈）—— 圖住在 resources/CI/，不複製一份
-               進 illustration/（鐵律 7：一張圖一份）。 */
-            { speaker:'ANYA', text:'', portrait:{ char:'ANYA', show:false },
-              hide:['SORANA','RENNA','NOUVELLE','ANYA'],
-              cg:'resources/CI/CI_Anya_scared.webp', auto:2200 },
-            { speaker:'NARRATION', text:'', cg:null, auto:200 },
+            /* 安雅的 Q 版驚嚇圖（Ray 的稿：安：CI_Anya_scared）。
+               ⚠ ver -924 由**全螢幕插圖**改成**差分立繪**（Ray：「是 Q 版圖」「太大了」）
+                 —— 它是反應圖不是場景畫，取景值與 cm/standCm 見 speakers.js。 */
+            any('chibiscared',''),
           ] },
           { flag:'sr_gate_brazier', need:'ruins_gate_open', lines:[
             any('point','那邊……'),
@@ -2930,11 +2927,15 @@ export const TOWNS = {
           /* 立繪撤出 → 感應演出（光圈＋白光，見 story 的 `senseFx`）。 */
           { speaker:'ANYA', text:'', portrait:{ char:'ANYA', show:false },
             hide:['SORANA','RENNA','NOUVELLE','ANYA'], fx:'sense', auto:2600 },
-          /* 祭壇啟動：插旗（背景差分吃它）＋換到啟動版那一張。
+          /* ══ 祭壇 normal → active（ver -924，Ray：「中間要有全白的淡入淡出，2 秒」）══
+             拆成**兩拍**：① 白光淡入（900ms）② 在**全白之下**換圖、白光再淡出。
+             ⚠ 換圖一定要落在白的**中間**：同一拍又換圖又淡白的話，玩家會看到
+               背景先跳一格再變白（同 §6.5「換場要在全黑之下換」那一條的道理）。
              ⚠ 旗與 act 的 `flag` 是兩支：一支說「那一段演完了」、一支說
                「祭壇開著」（鐵律 9：一個狀態一個擁有事件）。 */
+          { speaker:'NARRATION', text:'', fx:'whiteflash', auto:900 },
           { speaker:'NARRATION', text:'', flags:['ruins_altar_on'],
-            bg:'Ruins_shinier_DeepAltaractive', auto:1200 },
+            bg:'Ruins_shinier_DeepAltaractive', auto:1100 },
           nou('shocked2','發、發生什麼事了？'),
           ren('shockedCalm','！！'),
           ren('shocked','難道說、安雅小姐妳是……！'),

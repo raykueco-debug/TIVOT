@@ -1469,9 +1469,16 @@ function purpleFlame(){
 function senseFx(){
   const box=$('storyFx'); if(!box) return;
   playSe('se_flight_heartbeat');
+  /* ⚠⚠ **CI 要出來**（ver -924，Ray：「安雅的搜索動畫沒出 ci」）：飛行頁那一套的
+     主角就是這張圖（`Anya_CI_Search`），少了它只剩光圈，讀不出「是她在感應」。
+     ⚠ 同一張圖兩邊共用（飛行頁 canvas／這裡 DOM）—— 路徑帶 `?v=2`：Ray 換過圖，
+       不掛 cache-buster 會拿到舊的那一份（§5）。 */
+  const ci=document.createElement('img'); ci.className='fx-sense-ci';
+  ci.src='resources/partner/Anya_CI_Search.webp?v=2'; ci.alt='';
   const ring=document.createElement('i'); ring.className='fx-sense-ring';
   const flash=document.createElement('div'); flash.className='fx-sense-flash';
-  box.appendChild(ring); box.appendChild(flash);
+  box.appendChild(ci); box.appendChild(ring); box.appendChild(flash);
+  fxTimers.push(setTimeout(()=>ci.remove(), 2600));
   fxTimers.push(setTimeout(()=>ring.remove(), 1400));
   fxTimers.push(setTimeout(()=>flash.remove(), 2200));
 }

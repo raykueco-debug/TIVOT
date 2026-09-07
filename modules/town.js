@@ -632,6 +632,13 @@ function dayNo(){ return clock.dayNo(); }
    ⚠ `wildDone` 是**這一趟**的狀態（同 eveningHeld）：不進存檔 —— 最壞情況是
      讀檔回來重新能遇怪，而那正是「下次進地圖再生」。 */
 let wildDone = new Set();
+/* ══⚠⚠ **清過的格子再出怪只有 25%**（ver -924，Ray：「已經擊敗敵人的區域，
+   再出敵人的機率是 25%」）══ 記的是「這一趟在哪幾格出過怪」（節點 id）。
+   ⚠ 與 `wildDone` 是**兩件事**：那個記「哪幾種怪出過了」（一趟同種不重複），
+     這個記「哪幾格出過了」（回頭走不該再必出一隻）。兩個都是這一趟的帳，
+     `open()` 一起歸零。
+   ⚠ 機率寫在 `config.tuning`（鐵律 1）不寫死在這裡。 */
+let wildCleared = new Set();
 function wildSpecies(v){ return (typeof v==='string') ? v : (v && (v.day||v.night)) || ''; }
 function wildVariant(v){
   if(!v) return null;
@@ -755,7 +762,12 @@ function wildActDue(n){
   const fx=W.fixed && W.fixed[nodeId];
   if(fx && !wildDone.has(wildSpecies(fx))) pick=fx;
   if(!pick){
-    if(Math.random() >= (W.rate||0)) return null;
+    /* 這一格這一趟已經出過怪了 → 改用「重刷率」（ver -924，Ray：25%）。
+       ⚠ 必出格（`fixed`）不受影響：那一格的那一隻本來就是一趟一次。 */
+    const rate = wildCleared.has(nodeId)
+      ? ((GAME_CONFIG.tuning||{}).wildRespawnRate!=null ? GAME_CONFIG.tuning.wildRespawnRate : 0.25)
+      : (W.rate||0);
+    if(Math.random() >= rate) return null;
     const conn=connectorIds().includes(nodeId);
     const cands=(W.pool||[]).filter(p=> !(p.where==='connector' && !conn)
                                      && !wildDone.has(wildSpecies(p.battle)));
@@ -765,6 +777,7 @@ function wildActDue(n){
   /* 取走就記（同一趟不再出同種）：這一場**立刻開打**（沒有可被中途放掉的對白），
      打輸的回程會把城收掉重開 → open() 歸零，所以不會把「輸了的那一隻」鎖死。 */
   wildDone.add(wildSpecies(pick));
+  wildCleared.add(nodeId);          // 這一格出過怪了（ver -924，見上面那一段）
   const id=wildVariant(pick);
   return id ? { lines:[ { battle:id } ] } : null;
 }
@@ -2516,6 +2529,7 @@ export function open(town, node, opts){
   carriedIn = !!(opts && opts.carried);
   eveningHeld=false;          // 傍晚那一格的「讓過一次」是這一趟城鎮探索的狀態（ver -430）
   wildDone=new Set();         // 野生刷怪的「這一趟出過誰」也是（ver -862）
+  wildCleared=new Set();      // 「這一趟哪幾格出過」（ver -924，重刷率用）
   pickEndNode(node);          // 結算怪擺哪一格（ver -895，見那一支）
   pendingFavor=null;          // 「下一步去哪」也是（ver -440，見 armFavor）
   /* 夥伴的所在（ver -461）：進城算一次。⚠ 要在 townId 設好之後（leftoverForNou 要查表）。 */

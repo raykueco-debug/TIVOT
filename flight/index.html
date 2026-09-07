@@ -2094,7 +2094,10 @@ let senseImg=null;
 function senseArt(){
   if(senseImg) return;
   senseImg=new Image();
-  senseImg.src='../resources/partner/Anya_CI_Search.webp';
+  /* ⚠ `?v=2`：Ray 於 ver -924 換了新圖（同名覆蓋）—— 不掛 cache-buster 的話
+     瀏覽器會抱著舊的那一份（§5 的老坑）。⚠ 這張圖現在**兩邊都在用**：
+     飛行頁的感應演出與劇情層 stage7 的感應那一拍（story 的 `senseFx`）。 */
+  senseImg.src='../resources/partner/Anya_CI_Search.webp?v=2';
 }
 
 /* ══ 探索疲勞 ══

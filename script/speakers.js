@@ -245,7 +245,15 @@ export const ART = {
                   /* ══ stage7・木雅克神殿（ver -922，Ray 交稿）══ 交件是 PNG，依 §5 轉 WebP；
                      取景值是 `tools/measure_si.py` 量的（差分不沿用別張，§6.5）。
                      ⚠ `decoding` ＝她「讀」古代文字那幾拍專用。 */
-                  worry:        { src:'resources/SI/Nouvelle_SI_worry.webp', top:4, bot:1535, fx:0.683 },
+                  /* ⚠⚠ **這一張是近景，不是全身**（ver -924，Ray：「諾薇兒 worry 不是全身圖」；
+                     §6.5「半身/近景絕對不能照量 alpha 上下緣」）：alpha 量到的 1531px
+                     被當成 165cm ⇒ 她整個放大 18% 壓過別人。
+                     · `cm:139` ＝**這張畫該佔多少公分**：量「頭頂→脖」的距離對照全身圖
+                       （worry 284px vs front 240px ⇒ 這張畫大 1.18 倍 ⇒ 165÷1.18≈139）。
+                     · `standCm:165` ＝她**站姿的身高**，只管頭頂擺多高（不然頭會掉下去）。
+                     ⚠ 只調 `cm` 一定失敗（那條規矩寫在 §6.5）：兩個旋鈕各管一件事。 */
+                  worry:        { src:'resources/SI/Nouvelle_SI_worry.webp', top:4, bot:1535, fx:0.683,
+                                  cm:139, standCm:165 },
                   thinking:     { src:'resources/SI/Nouvelle_SI_thinking.webp', top:3, bot:1535, fx:0.532 },
                   decoding:     { src:'resources/SI/Nouvelle_SI_decoding.webp', top:4, bot:1528, fx:0.579 },
                   sadsmilenoeye:{ src:'resources/SI/Nouvelle_SI_sadsmilenoeye.webp', top:2, bot:1527, fx:0.556 },
@@ -373,6 +381,20 @@ export const ART = {
     /* ══ stage7・木雅克神殿（ver -922，Ray 交稿）══
        ⚠ `point` 的 `top:34` 是量出來的事實（她舉手指的姿勢，人物最上緣比別張低）。 */
     point:        { src:'resources/SI/Anya_SI_point.webp', top:34, bot:1518, fx:0.406 },
+    /* ══⚠⚠ **Q 版的驚嚇圖**（ver -924，Ray：「安雅的 CI scare 是 Q 版圖」「太大了，
+       壓到平常的對話尺寸」）══ -923 是拿它當**全螢幕插圖**（`cg`）——那是錯的：
+       它不是一張場景畫，是一張「反應圖」。改成**差分立繪**擺，走既有的 cm／standCm
+       那兩個旋鈕（§6.5 的近景／坐姿那一條，娜塔莉是同一族）：
+       · `cm:95`     ＝這張畫該佔多少公分 ⇒ 比正常立繪小一號（Q 版本來就小）
+       · `standCm:162` ＝頭頂擺多高 ⇒ 與她平常的頭線同高。
+         ⚠ 一開始填 110（想讓她「縮成一團」）**是錯的**：舞台只看得到立繪的上面
+           約六成，頭線一往下壓，這張小圖就整個躲到楣的後面去了（實測只露出頭頂）。
+           小圖要**掛在原本的頭線上**才看得完整。
+       ⚠ 這兩個數字**沒有可靠的自動量法**（§6.5 明寫）：看渲染結果調，
+         要放大縮小只動 `cm`、要上下移只動 `standCm`，不要去碰 top/bot（那是事實）。
+       ⚠ `rescale:true`：這張圖的比例與基本立繪完全不同（Q 版），要用它自己的高。 */
+    chibiscared:  { src:'resources/CI/CI_Anya_scared.webp', top:11, bot:1252, fx:0.442,
+                    cm:95, standCm:162, rescale:true },
     watch:        { src:'resources/SI/Anya_SI_watch.webp', top:8, bot:1535, fx:0.476 },
     talkshy:      { src:'resources/SI/Anya_SI_talkshy.webp', top:0, bot:1525, fx:0.451 },
     /* 北方泊地教堂那一幕（ver -624）。逐張量（tools/measure_si.py）。 */

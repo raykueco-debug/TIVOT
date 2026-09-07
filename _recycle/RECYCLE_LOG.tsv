@@ -80,3 +80,4 @@ when	from	to	reason
 20260907-203404	resources/background/Ruins_shinier_Bridge_day.webp	_recycle/resources/background/Ruins_shinier_Bridge_day.webp	石橋撤掉時段差分改吃單張（Ray 指定，資料上補 noTime）—— 原本被 rm 掉，補走回收區留退路
 20260907-203404	resources/background/Ruins_shinier_Bridge_dusk.webp	_recycle/resources/background/Ruins_shinier_Bridge_dusk.webp	石橋撤掉時段差分改吃單張（Ray 指定，資料上補 noTime）—— 原本被 rm 掉，補走回收區留退路
 20260907-203404	resources/background/Ruins_shinier_Bridge_night.webp	_recycle/resources/background/Ruins_shinier_Bridge_night.webp	石橋撤掉時段差分改吃單張（Ray 指定，資料上補 noTime）—— 原本被 rm 掉，補走回收區留退路
+20260908-011815	resources/partner/Anya_CI_Search.webp	_recycle/resources/partner/Anya_CI_Search.webp	Ray 更新 Anya_CI_Search（ver -924 換新圖，同名覆蓋）
