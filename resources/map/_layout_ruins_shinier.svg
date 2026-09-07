@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1132 839" font-family="'PingFang TC','Noto Sans TC',sans-serif">
+<rect width="1132" height="839" fill="#ffffff"/>
+<g stroke="#141414" stroke-width="5" fill="none" stroke-linecap="round">
+<path d="M556 608 L404 608"/>
+<path d="M556 608 L860 608"/>
+<path d="M556 608 L556 736"/>
+<path d="M404 608 L404 480"/>
+<path d="M404 480 L252 480"/>
+<path d="M404 480 L404 352"/>
+<path d="M252 480 L252 352"/>
+<path d="M252 352 L100 352"/>
+<path d="M100 352 L100 480"/>
+<path d="M252 352 L252 224"/>
+<path d="M252 224 L252 96"/>
+<path d="M252 352 L252 288.0 L404 288.0 L404 224"/>
+<path d="M404 224 L556 224"/>
+<path d="M860 608 L860 480"/>
+<path d="M860 480 L860 352"/>
+<path d="M860 352 L860 224"/>
+<path d="M860 224 L708 224"/>
+<path d="M708 224 L708 96"/>
+<path d="M860 224 L1012 224"/>
+<path d="M1012 224 L1012 96"/>
+<path d="M860 224 L860 96"/>
+</g>
+<rect x="192" y="53" width="120" height="86" fill="#141414"/>
+<text x="252" y="91.0" text-anchor="middle" fill="#ffffff" font-size="27" font-weight="bold">深部</text>
+<text x="252" y="123.0" text-anchor="middle" fill="#ffffff" font-size="27" font-weight="bold">祭壇</text>
+<rect x="648" y="53" width="120" height="86" fill="#141414"/>
+<text x="708" y="91.0" text-anchor="middle" fill="#ffffff" font-size="27" font-weight="bold">黑暗</text>
+<text x="708" y="123.0" text-anchor="middle" fill="#ffffff" font-size="27" font-weight="bold">斷橋</text>
+<rect x="800" y="53" width="120" height="86" fill="#141414"/>
+<text x="860" y="107.0" text-anchor="middle" fill="#ffffff" font-size="27" font-weight="bold">命之泉</text>
+<rect x="952" y="53" width="120" height="86" fill="#141414"/>
+<text x="1012" y="91.0" text-anchor="middle" fill="#ffffff" font-size="27" font-weight="bold">地底</text>
+<text x="1012" y="123.0" text-anchor="middle" fill="#ffffff" font-size="27" font-weight="bold">裂隙</text>
+<rect x="192" y="181" width="120" height="86" fill="#141414"/>
+<text x="252" y="235.0" text-anchor="middle" fill="#ffffff" font-size="27" font-weight="bold">石橋</text>
+<rect x="344" y="181" width="120" height="86" fill="#141414"/>
+<text x="404" y="235.0" text-anchor="middle" fill="#ffffff" font-size="27" font-weight="bold">巨像廳</text>
+<rect x="496" y="181" width="120" height="86" fill="#141414"/>
+<text x="556" y="219.0" text-anchor="middle" fill="#ffffff" font-size="27" font-weight="bold">古代</text>
+<text x="556" y="251.0" text-anchor="middle" fill="#ffffff" font-size="27" font-weight="bold">機械</text>
+<rect x="648" y="181" width="120" height="86" fill="#141414"/>
+<text x="708" y="235.0" text-anchor="middle" fill="#ffffff" font-size="27" font-weight="bold">石牢區</text>
+<rect x="800" y="181" width="120" height="86" fill="#e8a838"/>
+<text x="860" y="219.0" text-anchor="middle" fill="#1a1208" font-size="27" font-weight="bold">苔穴</text>
+<text x="860" y="251.0" text-anchor="middle" fill="#1a1208" font-size="27" font-weight="bold">岔道</text>
+<rect x="952" y="181" width="120" height="86" fill="#141414"/>
+<text x="1012" y="219.0" text-anchor="middle" fill="#ffffff" font-size="27" font-weight="bold">青苔</text>
+<text x="1012" y="251.0" text-anchor="middle" fill="#ffffff" font-size="27" font-weight="bold">密室</text>
+<rect x="40" y="309" width="120" height="86" fill="#141414"/>
+<text x="100" y="347.0" text-anchor="middle" fill="#ffffff" font-size="27" font-weight="bold">崩塌</text>
+<text x="100" y="379.0" text-anchor="middle" fill="#ffffff" font-size="27" font-weight="bold">走道</text>
+<rect x="192" y="309" width="120" height="86" fill="#e8a838"/>
+<text x="252" y="347.0" text-anchor="middle" fill="#1a1208" font-size="27" font-weight="bold">養息</text>
+<text x="252" y="379.0" text-anchor="middle" fill="#1a1208" font-size="27" font-weight="bold">之間</text>
+<rect x="344" y="309" width="120" height="86" fill="#141414"/>
+<text x="404" y="363.0" text-anchor="middle" fill="#ffffff" font-size="27" font-weight="bold">圓井房</text>
+<rect x="800" y="309" width="120" height="86" fill="#141414"/>
+<text x="860" y="363.0" text-anchor="middle" fill="#ffffff" font-size="27" font-weight="bold">墓道</text>
+<rect x="40" y="437" width="120" height="86" fill="#141414"/>
+<text x="100" y="491.0" text-anchor="middle" fill="#ffffff" font-size="27" font-weight="bold">壁畫廳</text>
+<rect x="192" y="437" width="120" height="86" fill="#141414"/>
+<text x="252" y="475.0" text-anchor="middle" fill="#ffffff" font-size="27" font-weight="bold">上行</text>
+<text x="252" y="507.0" text-anchor="middle" fill="#ffffff" font-size="27" font-weight="bold">石階</text>
+<rect x="344" y="437" width="120" height="86" fill="#e8a838"/>
+<text x="404" y="491.0" text-anchor="middle" fill="#1a1208" font-size="27" font-weight="bold">岔道</text>
+<rect x="800" y="437" width="120" height="86" fill="#141414"/>
+<text x="860" y="475.0" text-anchor="middle" fill="#ffffff" font-size="27" font-weight="bold">下行</text>
+<text x="860" y="507.0" text-anchor="middle" fill="#ffffff" font-size="27" font-weight="bold">深階</text>
+<rect x="344" y="565" width="120" height="86" fill="#141414"/>
+<text x="404" y="619.0" text-anchor="middle" fill="#ffffff" font-size="27" font-weight="bold">長廊</text>
+<rect x="496" y="565" width="120" height="86" fill="#e8a838"/>
+<text x="556" y="619.0" text-anchor="middle" fill="#1a1208" font-size="27" font-weight="bold">前廳</text>
+<rect x="800" y="565" width="120" height="86" fill="#141414"/>
+<text x="860" y="603.0" text-anchor="middle" fill="#ffffff" font-size="27" font-weight="bold">拱門</text>
+<text x="860" y="635.0" text-anchor="middle" fill="#ffffff" font-size="27" font-weight="bold">長廊</text>
+<rect x="496" y="693" width="120" height="86" stroke="#141414" stroke-width="3" stroke-dasharray="8 6" fill="#ffffff"/>
+<text x="556" y="731.0" text-anchor="middle" fill="#141414" font-size="27" font-weight="bold">遺跡</text>
+<text x="556" y="763.0" text-anchor="middle" fill="#141414" font-size="27" font-weight="bold">入口</text>
+</svg>
