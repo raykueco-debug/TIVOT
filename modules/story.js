@@ -816,6 +816,27 @@ function toneSrcEl(){
      那一塊**不能**被 flush 收掉（它要蓋到新場景第一拍演完）。 */
 let cgFadeT=[], cgFinish=null, fadeOwner=null;
 const missingCg=new Set();   // 退回過的插圖：只提示一次，不然每一句都印一行
+/* ══⚠⚠ **場景區的黑幕是持續狀態，換畫面就要收**（ver -881，Ray：「森林入口就會
+   開始變暗」「不是時間分差」「好像不會每次都發作」）══
+   `#storyFade` 是**場景區那半片**黑幕（`top:0; height:--story-top; z-index:4`），
+   由三種人掛上去：插圖換場（`cgFade`）／場景讀取閘門（`runLoadGate`）／
+   腳本拍上的慢黑幕（`fadeOut:3000`，北泊那幾段用了三次）。
+   ⚠⚠ **以前沒有任何人在「換到別的畫面」時收它**：`resetStage()` 收了情境卡卻漏了它，
+     城鎮那條路徑（`town.enter`）根本不經過 resetStage —— 於是帶著 `fadeOut` 那一拍
+     離開場景（或那一段被城鎮接手）之後，那片黑幕就一直蓋在場景區上，**點不掉**
+     （`pointer-events:none`），而槍棺（z-6）在它之上所以看起來正常。
+     慢黑幕的 inline `transitionDuration` 還留著 3 秒，讀起來就是「**開始**變暗」。
+   ⚠ 這是鐵律 8 那張檢查表漏掉的一項：**新增任何進入/切換畫面的路徑，
+     先問「上一個畫面的持續狀態我收了哪些？」** —— 立繪、對白、計時器都寫進去了，
+     黑幕沒有。現在收在**這一支**，`resetStage` 與 `town.enter` 都叫它。
+   ⚠ 連 `fadeOwner` 與排隊中的 `cgFadeT` 一起清：留著的話下一次 `cgFade` 的收尾
+     會被上一場的計時器搶著關掉。 */
+export function clearSceneFade(){
+  cgFadeT.forEach(clearTimeout); cgFadeT=[];
+  cgFinish=null; fadeOwner=null;
+  const f=$('storyFade');
+  if(f){ f.classList.remove('on'); f.style.transitionDuration=''; }
+}
 function flushCgFade(){
   cgFadeT.forEach(clearTimeout); cgFadeT=[];
   if(cgFinish) cgFinish();
@@ -2616,6 +2637,7 @@ function resetStage(){
   }
   const fx=$('storyFx'); if(fx) fx.innerHTML='';
   const card=$('storyCard'); if(card) card.classList.remove('on');
+  clearSceneFade();                       // 場景區的黑幕也是持續狀態（ver -881，見那一支）
   const st2=$('storyStage'); if(st2) st2.classList.remove('shake','hold');
   slot={L:null,R:null}; slotExpr={L:null,R:null}; shown={};
   for(const s2 of ['L','R']){ const el=slotEl(s2);
