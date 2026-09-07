@@ -53,7 +53,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.07-909';
+export const VERSION = 'ver 2026.09.07-910';
 
 export const GAME_CONFIG = {
 
@@ -2827,6 +2827,16 @@ export const ASSET_VER = {
   'ruins_shinier_deepspring':   2,
   'ruins_shinier_well':         2,
   'ruins_shinier_darkbridge':   2,
+  /* ver -910：Ray 又換了一批（交件是 jpeg，已轉 webp、原檔進 `_originals/background/`）。
+     ⚠ `deepaltar` 不在這裡 —— 它是**新檔**（原本只有 _dawn/_day/_dusk/_night 四張，
+       那四張被 Ray 刪掉了），新檔沒有快取問題。但那四張**可能還在玩家的快取裡**，
+       而候選鏈會先試它們 ⇒ 節點改成 `noTime:true`，只試不帶時段的那一張。 */
+  'ruins_shinier_machine':      2,
+  'ruins_shinier_mosschamber':  2,
+  'ruins_shinier_prison':       2,
+  'ruins_shinier_rift':         2,
+  'ruins_shinier_stairdeep':    2,
+  'ruins_shinier_stairup':      2,
 };
 export function assetVer(nameOrPath){
   const n = String(nameOrPath||'').split('/').pop().split('?')[0]

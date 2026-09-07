@@ -2605,7 +2605,11 @@ export const TOWNS = {
       bridge:     { bg:'Ruins_shinier_Bridge', name:'木雅克神殿　石橋',
         /* ⚠ 窄橋跨在深淵上，兩側是空的 ⇒ 只有前後（ver -890，Ray 點名的那一格）。 */
         exits:{ down:'brazier', up:'deepaltar' } },
-      deepaltar:  { bg:'Ruins_shinier_DeepAltar', name:'木雅克神殿　深部祭壇',
+      /* ⚠⚠ `noTime`（ver -910）：Ray 把它的 dawn/day/dusk/night 四張刪掉、只留一張。
+         不寫的話候選鏈會先試那四個名字 —— 檔案雖然沒了，**玩家的瀏覽器快取裡可能還在**，
+         於是會拿出舊的那一張（§5 的同名覆蓋快取坑，這次是「檔案沒了但快取還在」的變體）。
+         ⚠ 日後若補了時段差分，把這一行拿掉。 */
+      deepaltar:  { bg:'Ruins_shinier_DeepAltar', name:'木雅克神殿　深部祭壇', noTime:true,
         /* ⚠ ver -908（Ray：「把巨像廳跟深部祭壇的連結給斷了」）：它現在是**末端**
            —— 走到底就是祭壇，沒有繞回去的路。 */
         exits:{ back:'bridge' } },

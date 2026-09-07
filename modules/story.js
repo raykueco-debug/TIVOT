@@ -619,7 +619,13 @@ function setImg(el, src){
      —— 本機測不出來，上線才 404。
    ⚠ 為什麼要兩種副檔名：規約是 WebP（§5），但交件常常先是 PNG。
    ⚠ `noTime` ＝這張圖沒有時段差分（室內背景），只試原名。 */
-const BAND_EXT = ['.webp', '.png'];
+/* ⚠⚠⚠ **`.jpeg`／`.jpg` 排在最後是保險**（ver -910，Ray 直接丟 jpeg 進 background/、
+   同時把對應的 webp 刪掉 —— 那六格當場變成**空背景**，而且畫面上沒有任何錯誤訊息）。
+   規約仍然是 WebP（§5），交件照樣要轉；但**候選鏈不該讓「還沒轉檔」＝「沒有背景」**
+   —— 那正是 `.png` 當初被加進來的同一個理由（「交件常常先是 PNG」）。
+   ⚠ 排最後：常見的 `.webp` 一次就中，只有真的沒有 webp 的那一格才多吃兩個 404，
+     而且 `bgResolved` 記得贏家，同一格同一時段只試一輪。 */
+const BAND_EXT = ['.webp', '.png', '.jpeg', '.jpg'];
 function altCase(name){
   const i=name.lastIndexOf('_'); if(i<0) return null;
   const head=name.slice(0,i+1), tail=name.slice(i+1);
