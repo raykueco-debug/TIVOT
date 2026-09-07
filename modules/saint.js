@@ -506,12 +506,17 @@ function niBurstResolve(){
     if(c.classList.contains('done')) continue;
     c.classList.add('done'); c.classList.remove('next'); api.shatterCell(c);
   }
-  /* 傷害 ＝ 敵人最大 HP × `burstPct`（ver -789，Ray：「發動時應該是對敵最大 hp 的
-     百分比進行扣除」）——**拿掉「清格數 ÷ 16」的縮放**：那個縮放讓份量隨清了幾格
-     而變，不是乾淨的「敵最大 HP 百分比」，清得少時打不到下限。現在發動就是固定
-     一個百分比、穩定爆到 `burstFloor`（＝Ray 要的「爆到只剩 5% 血」）。
-     ⚠ 綁在**敵人最大 HP** 上（不是當前 HP、不是累積傷害）：大場小場同一份量。 */
-  const dmg = Math.round((state.enemyMax||0) * NI_BURST_PCT);
+  /* ══⚠⚠ 傷害 ＝ 敵人最大 HP × `burstPct`(25%) × （**清掉的格數 ÷ 16**）══
+     （ver -897，Ray：「夢境粉碎應該要帶走敵最大 hp 的 25%，如果 16 格點完是 25%，
+       沒點完依點掉的格子比例計算傷害，也就是最大 23.4%（15 格），點掉的格子越多
+       炸的傷害越高」）
+     ⚠ ver -789 曾經**拿掉**這個縮放（改成固定 25%），這一版**照 Ray 的規格加回來** ——
+       兩者的取捨不同：固定值讓「早爆」與「打好再爆」等值，縮放才讓「點掉的格子
+       越多炸得越重」。回血（`burstHealPct`）用的是同一個比例，兩邊一致。
+     ⚠ 綁在**敵人最大 HP** 上（不是當前 HP、不是累積傷害）：大場小場同一份量。
+     ⚠ 分母是**滿盤 16**（`NI_BURST_FULL`，與回血共用同一個數字，鐵律 7）。 */
+  const ratio = Math.max(0, Math.min(1, (state.niCells||0) / (NI_BURST_FULL||16)));
+  const dmg = Math.round((state.enemyMax||0) * NI_BURST_PCT * ratio);
   exitNightmare();
   clearInterval(state.niTimer); state.niTimer=null;
   setReturnSwipe(false); restoreUltRate();
@@ -576,16 +581,23 @@ export function nightmareTap(num, cell){
     state.niDamage += d;
     state.niCells++;                 // 夢境粉碎的份量由「清了幾格」換算（ver -688）
   };
+  /* ══⚠⚠ **點完 16 格不出 MB，直接出夢境粉碎**（ver -897，Ray：「16 格點完不出 MB，
+     直接出夢境粉碎回血 25%」）══ 以前清空殘格走的是 `triggerNiBurst`（＝同 SI 的
+     MaxBurst：回滿血、追加期間總傷 20%）。現在改走**主動技那一支**（`nightmareActive`），
+     所以滿盤的結果是：傷害＝敵最大 HP 的 25%（滿比例）、回血＝玩家最大 HP 的 25%。
+     ⚠ 兩者的差別很大：MB 是「回滿血＋按累積傷害追打」，粉碎是「按敵最大 HP 的
+       百分比炸一發＋按格數回血」—— Ray 要的是後者。
+     ⚠ 敵已死那一支照舊：`nightmareActive` 的收尾自己會判 `enemyHp<=0` 並走處決。 */
   if(state.enemyHp<=0){                       // overkill：免順序追打（同聖徒化）
     hit(true);
-    if(state.cells.every(c=>c.classList.contains('done'))) triggerNiBurst();
+    if(state.cells.every(c=>c.classList.contains('done'))) nightmareActive();
     else startSaintReactTimer();
     return;
   }
   if(num===state.expect){
     hit(false);
     state.expect++;
-    if(state.expect>state.N) triggerNiBurst();
+    if(state.expect>state.N) nightmareActive();
     else { api.markNext(); startSaintReactTimer(); }
   }else{
     /* 點錯＝多抽一次血（聖徒化那邊是多推一次）。
