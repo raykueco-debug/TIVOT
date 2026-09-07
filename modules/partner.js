@@ -367,14 +367,20 @@ export function onBoardCleared(clean){
      · 滿 streak2(5)：再發動＋**重置共鬥**（api.resetInstallSlot → saint 的具名 setter），
        計數歸零重頭數。中間盤數（4）不發動；破功照舊歸零。 */
   const s1 = pas.streak || 3, s2 = pas.streak2 || 5;
-  let vkey;
+  let vkey, reload=false;
   if(state.svPerfectStreak === s1){ vkey = pas.voice; }
   else if(state.svPerfectStreak >= s2){
     vkey = pas.voice2 || pas.voice;
     state.svPerfectStreak = 0;
+    reload = true;                                     // 連 5 那一發＝共鬥再開（ver -894）
     if(api.resetInstallSlot) api.resetInstallSlot();   // 共鬥可以再發一次
   }
   else return;
+  /* ⚠ 連 5 那一發換字（ver -894，Ray：「索拉娜觸發第五次完美清盤時 CI 文字為
+     『共鬥再開』FANGS RELOAD」）—— 它報的是**共鬥可以再發一次**，不是技能名；
+     連 3 那一發照舊印「獵手的戰吼」。字在卡上（鐵律 1）。 */
+  const nm = (reload && pas.reloadName) ? pas.reloadName : pas.name;
+  const en = (reload && pas.reloadEn)   ? pas.reloadEn   : pas.en;
   const sec = pas.buffSeconds || 10;
   /* ⚠⚠ **計時器走既有的盤外金光柱**（ver -879，Ray：「索拉娜被動計時器加上」）——
      `api.lucidFlood(秒)` 就是 ver -749 為同一個問題（Ray：「諾薇兒的被動怎麼沒有
@@ -384,7 +390,7 @@ export function onBoardCleared(clean){
     state.energyBoostUntil = Date.now()+sec*1000;
     if(api.lucidFlood) api.lucidFlood(sec); };
   const vo = asset(vkey); if(vo) SFX.playVoice(vo, sfxGain(vkey));
-  api.floatDmg(pas.name,'50%','34%',true);
+  api.floatDmg(nm,'50%','34%',true);
   if(state.cutinPlaying){ fire(); return; }        // 已有演出在播 → 只跳字、buff 立即起算
   /* CI 隨機輪播（ver -809，Ray）：`cutin` 寫成陣列＝發動時隨機挑一張（三張合擊圖）。 */
   const cut = Array.isArray(pas.cutin) ? pas.cutin[Math.random()*pas.cutin.length|0] : pas.cutin;
@@ -396,12 +402,15 @@ export function onBoardCleared(clean){
        cut-in 撤下時下一盤已經擺好（clearBoard → goNextBoard 是同步接著跑的）——
        指的就是新盤的第一格。走既有的 hintCurrentCell（鐵律 8）。 */
     if(api.hintCurrentCell) api.hintCurrentCell();
-  }, `${pas.name}<span class="cutin-en">${pas.en||''}</span>`, cut, { full:true });   // 被動技全屏（ver -874，Ray）
+     /* reload 那一發的英文行加 `.reload`（ver -894）：與夢魘／聖徒再臨同一條金綠光，
+        玩家才認得出「這是賺回一次發動」。 */
+  }, `${nm}<span class="cutin-en${reload?' reload':''}">${en||''}</span>`, cut, { full:true });   // 被動技全屏（ver -874，Ray）
 }
 /* 「5 秒普攻加倍」的執行體（`lowHpBuff` 與 `firstCounter` 共用，鐵律 8）。 */
 function fireBuff(pas, reload){
-  /* `reload`＝這一發是「連續三次」那一發（ver -887）：CI 與浮字換成夢魘再臨。
-     ⚠ 只換**字**，圖沿用（Ray 只指定了字；要換圖再說）。 */
+  /* `reload`＝這一發是「連續三次」那一發（ver -887）：CI、浮字、語音都換成夢魘再臨。
+     ⚠ ver -894：專屬圖與語音已交件（卡上的 `reloadCutin`／`reloadVoice`）——
+       不再沿用明晰之夢那張。卡上沒寫就退回原本那一套（鐵律 1）。 */
   const nm = (reload && pas.reloadName) ? pas.reloadName : pas.name;
   const en = (reload && pas.reloadEn)   ? pas.reloadEn   : pas.en;
   const sec = pas.buffSeconds || 10;
@@ -420,8 +429,9 @@ function fireBuff(pas, reload){
        同一刻結束（爆散由 setLowHpBuff(false) 那一端演）。 */
     if(pas.key==='firstCounter' && api.lucidFlood) api.lucidFlood(sec);
   };
-  /* 語音：陣列＝輪播（ver -759；-837 起走 SFX.pickRot，鐵律 8）。 */
-  const vk = SFX.pickRot(pas.voice);
+  /* 語音：陣列＝輪播（ver -759；-837 起走 SFX.pickRot，鐵律 8）。
+     ⚠ reload 那一發用它自己的語音（ver -894）。 */
+  const vk = SFX.pickRot((reload && pas.reloadVoice) ? pas.reloadVoice : pas.voice);
   const vo = asset(vk); if(vo) SFX.playVoice(vo, sfxGain(vk));
   api.floatDmg(nm,'50%','34%',true);
   if(state.cutinPlaying){ fire(); return; }   // 已有演出在播 → 只跳字、buff 立即起算
@@ -433,7 +443,8 @@ function fireBuff(pas, reload){
      /* ⚠ reload 那一發的英文行加 `.reload`（ver -891，Ray：「用顯眼的字寫
         NIGHTMARE RELOAD…要讓人一看就知道夢魘可以再用了」）—— 副標平常是 16px 的
         小字，那一行要跳出來才讀得到「可以再發一次」。樣式在 style.css。 */
-  }, `${nm}<span class="cutin-en${reload?' reload':''}">${en||''}</span>`, pas.cutin);
+  }, `${nm}<span class="cutin-en${reload?' reload':''}">${en||''}</span>`,
+     (reload && pas.reloadCutin) ? pas.reloadCutin : pas.cutin);   // 專屬 CI（ver -894）
 }
 export function checkLowHpBuff(){
   /* ⚠⚠ **惡夢化期間不發動**（ver -688，Ray：「明晰之夢在夢魘期間不發動，如果是

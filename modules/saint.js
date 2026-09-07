@@ -148,7 +148,10 @@ export function activateCoop(dir){
     if(vk) SFX.playVoice(asset(vk), sfxGain(vk)); }
   playSlash(dir);
   playCutin(()=>{ if(state.over) return; startCoop(sec); },
-    (L.battle && L.battle.coopMode || '共鬥')+'<span class="cutin-en">PREDATOR\'S PACK!!</span>',
+    /* ⚠ 英文讀**卡上的 `install.en`**（ver -894 由 PACK 改成 FANGS，Ray 指定）——
+       以前寫死在這裡，改名要動兩處（鐵律 7）。卡沒寫才回去用預設。 */
+    (L.battle && L.battle.coopMode || '共鬥')
+      +'<span class="cutin-en">'+(((card.install&&card.install.en)||"PREDATOR'S FANGS")+'!!')+'</span>',
     card.cutin || 'ci_sorana_predator', { noShot:true });
 }
 function startCoop(sec){

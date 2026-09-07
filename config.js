@@ -49,7 +49,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.07-893';
+export const VERSION = 'ver 2026.09.07-894';
 
 export const GAME_CONFIG = {
 
@@ -360,14 +360,15 @@ export const GAME_CONFIG = {
            （ver -893 用詞：局＝結算、場＝一隻怪）
          ⚠ 與九星「方舟」是兩件事：那顆星是**一隻**無傷就回復已用的被動，
            這一條要**連續兩隻**、回復的是聖徒化的槽（`saintUsedThisBattle`）。
-         ⚠ 專屬 CI 還沒畫（Ray：「reload 畫面 CI 再補」「**先用被動 CI**」）——
-           `cutin` 不寫就沿用她被動（即死防禦）那張，字印「聖徒再臨／SAINT RELOAD」。
+         ⚠ 專屬 CI 已交件（ver -894，Ray：「reload CI 為 CI_Nouvelle_saintreload」）
+           —— -893 借被動那張的過渡期結束。
          ⚠ 插入的時機是**第二隻無傷打完最後一格那一刻**（Ray）—— 走
            `combat.finishEnemyOrAdvance` 那個匯流點（自然清盤／按錯／逾時／聖徒化
            擊殺四條路都經過它），也就是 partner.onEnemyCleared。
          實作只有那一支（鐵律 8）。 */
       installReload:{ flawless:2, name:'聖徒再臨', en:'SAINT RELOAD',
-                      voice:'vo_nou_saintreload' },   // ver -893，Ray 交件
+                      cutin:'cutin_saintreload',      // ver -894：專屬 CI（原本借被動那張）
+                      voice:'vo_nou_saintreload' },
     },
     /* ══ 安雅（ver -671，Ray：「從玩家跟安雅一起出旅店後，夥伴就從諾薇兒
        換成安雅了」）══
@@ -416,6 +417,9 @@ export const GAME_CONFIG = {
            實作只有 partner.onCounter 一支（鐵律 8）；解槽走 saint.resetInstallSlot。 */
         reloadStreak:3,
         reloadName:'夢魘再臨',
+        /* 專屬 CI 與語音（ver -894，Ray 交件）—— 那一發不再借明晰之夢那張圖。 */
+        reloadCutin:'cutin_nireload',
+        reloadVoice:'vo_anya_nireload',
         /* ⚠ 英文用 **NIGHTMARE RELOAD**（ver -891，Ray：「用顯眼的字寫
            NIGHTMARE RELOAD…要讓人一看就知道夢魘可以再用了」）——
            -887 的 `Nightmare Returns` 只講「它回來了」，講不出「你可以再發一次」。
@@ -440,7 +444,9 @@ export const GAME_CONFIG = {
       name:'索菈娜',
       image:'partner_sorana',
       selectVoice:'vo_sorana_pack',   // 選人確認音（ver -839，Ray 指定）
-      install:{ name:'獵手的共鬥', en:"PREDATOR'S PACK",   // 正式名（ver -874，Ray）
+      /* ⚠ 英文 ver -894 由 `PREDATOR'S PACK` 改成 **`PREDATOR'S FANGS`**（Ray 指定）。
+         中文「獵手的共鬥」不變。 */
+      install:{ name:'獵手的共鬥', en:"PREDATOR'S FANGS",
         desc:'敵人框右滑發動（每場一次，消耗全部破防值）：進入無敵——秒數依破防值換算'
             +'（滿值 12 秒）。期間敵方攻擊一出手就被飛刀自動完美反擊；點錯格會縮短剩餘時間。' },
       siFit:{ zoom:1.6, top:0.01 },   // 估（同諾薇兒/安雅）；Ray 交專用選人立繪再重量
@@ -476,7 +482,12 @@ export const GAME_CONFIG = {
          · 連 `streak2`(5) 盤 → **再發動一次＋重置共鬥**（saintUsedThisBattle 歸零，
            可再右滑共鬥），語音 `voice2`（roar），連擊計數歸零重頭數。
          ⚠ 3 那一發**不歸零**計數 —— 歸零的話 5 永遠到不了。CI 三張照舊隨機輪播。 */
+      /* ⚠ 連 `streak2`(5) 那一發的 CI 字另外給（ver -894，Ray：「索拉娜觸發第五次
+         完美清盤時 CI 文字為『共鬥再開』FANGS RELOAD」）—— 那一發的重點不是
+         「她又吼了」，是**共鬥可以再發一次**，所以字要換（同安雅的夢魘再臨）。
+         連 3 那一發照舊印「獵手的戰吼」。 */
       passive:{ key:'perfectStreak', name:'獵手的戰吼', en:"Predator's Roar",
+                reloadName:'共鬥再開', reloadEn:'FANGS RELOAD',
                 streak:3, buffSeconds:10, energyMul:2, voice:'vo_sorana_roar2',
                 streak2:5, voice2:'vo_sorana_roar',
                 cutin:['ci_sorana_roar_renna','ci_sorana_roar_anya','ci_sorana_roar_nouvelle'],
@@ -2075,9 +2086,12 @@ export const GAME_CONFIG = {
          手機 −12.11、平均 −13.50 LUFS（前一版是 −10.08，新錄音安靜 3.4 dB），
          峰值 −1.14 dBFS 未觸頂 ⇒ 0.77 → 1.141。 */
       vo_anya_luciddream:1.141,
-      /* ver -893：Ray 交件。voiceChain 之後 BS.1770 實測 —— 耳機 −15.14／手機 −16.63、
-         平均 −15.89 LUFS，峰值 −1.57 dBFS 未觸頂。 */
-      vo_nouvelle_saintreload:1.502,
+      /* ver -894：Ray 重錄，兩支一起量（voiceChain 之後 BS.1770）。
+         saintreload  耳機 −15.40／手機 −13.28、平均 −14.34、峰值 −1.28
+         nightmarereload 耳機 −12.83／手機 −11.54、平均 −12.19、峰值 −0.62
+         兩支都沒觸頂。 */
+      vo_nouvelle_saintreload:1.257,
+      vo_anya_nightmarereload:0.981,
       /* ver -837 整批新錄音（BS.1770＋voiceChain EQ 實測，耳機/手機平均，峰值夾 +2dB；
          未過壓縮器 —— 同 -818 的方法）。⚠ obe2 是氣音收尾（−28 LUFS），增益 5.22 是對的。 */
       vo_sorana_pack:0.69,  vo_sorana_pack2:0.57,
@@ -2576,8 +2590,12 @@ export const ASSETS = {
   /* 明晰之夢語音（ver -759 ×4 輪播 → ver -837 收成單支新錄音）。 */
   /* ?v=2：Ray 重錄後同名覆蓋（ver -881）——同名換檔一定要掛 cache-buster（§5）。 */
   vo_anya_lucid:     "resources/audio/vo/vo_anya_luciddream.m4a?v=2",
-  /* 聖徒再臨（ver -893，Ray 交件）——諾薇兒連兩隻無傷 clear 的 reload 語音。 */
-  vo_nou_saintreload:"resources/audio/vo/vo_nouvelle_saintreload.m4a",
+  /* Reload 三兄弟（ver -894，Ray 交件）——聖徒／夢魘各自的 reload 語音與 CI。
+     ⚠ `?v=2`：諾薇兒那支是**同名覆蓋**（-893 那版已被新錄音取代），必掛 buster（§5）。 */
+  vo_nou_saintreload:"resources/audio/vo/vo_nouvelle_saintreload.m4a?v=2",
+  vo_anya_nireload:  "resources/audio/vo/vo_anya_nightmarereload.m4a",
+  cutin_saintreload: "resources/CI/CI_Nouvelle_saintreload.webp",
+  cutin_nireload:    "resources/CI/CI_Anya_Nightmarereload.webp",
   /* 索菈娜語音（ver -818，Ray 交件）——共鬥發動 pack/pack2 輪播、共鬥結束 obe、
      供給技 supply；pack2 另作 man_sorana 敵登場音。 */
   vo_sorana_pack:    "resources/audio/vo/vo_sorana_pack.m4a?v=2",   // ?v=2：ver -837 新錄音同名覆蓋
