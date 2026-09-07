@@ -92,22 +92,24 @@ WebP q85 → `resources/background/`；原 PNG → `resources/_originals/backgro
 ## 深層 12 張（2026-09-07，Ray 交辦「同建築風格、不與原圖重覆、全無室外光」）
 
 **全部無天光 ⇒ 沒有時段差分**，光源只有三種：長明火（暖橘）／發光苔（青綠）／符文微光。
-GPT 產出（風格錨＝`Ruins_Antechamber` 那張），檔名一律 `Ruins_<名>.webp`（無時段後綴）。
+GPT 產出（風格錨＝`Ruins_shinier_Antechamber` 那張），檔名一律
+`Ruins_shinier_<名>.webp`（無時段後綴；ver -880 Ray 指定統一冠 `Ruins_shinier_` 前綴）。
+⚠ **其餘沒有 `shinier_` 前綴的 `Ruins_*` 是別座遺跡的素材**（town.js ver -876 的規約），不要一起改名。
 
 | 檔名 | 內容 | 主光源 |
 |---|---|---|
-| `Ruins_StairUp` | **向上石階** —— 往地面方向，頂端沒入黑暗拱門 | 長明火 |
-| `Ruins_StairDeep` | **向下石階** —— 往更深層，下半段苔光漸濃 | 火→苔 |
-| `Ruins_Mural` | 古老壁畫廳（兩壁滿刻上色壁畫、顏料剝落） | 長明火 |
-| `Ruins_DeepSpring` | 地下泉水（封閉，苔光從池底照亮水體） | 發光苔 |
-| `Ruins_Machine` | 壞掉的古代機械（石＋青銅齒輪、斷連桿） | 符文藍光＋火 |
-| `Ruins_MossChamber` | 幽光青苔密室（滿室苔光、飄浮孢子） | 發光苔 |
-| `Ruins_DarkBridge` | 黑暗深淵上的斷橋（垂鏈、底部全黑） | 長明火 |
-| `Ruins_Catacomb` | 骨龕墓道（滿壁骨龕、部分崩落） | 長明火 |
-| `Ruins_Colossus` | 巨像廳（巨大坐像、腳邊火盆、上半沒入黑暗） | 火盆 |
-| `Ruins_Prison` | 石牢區（石柱柵欄、撞斷的牢門、鏽鏈） | 長明火 |
-| `Ruins_Rift` | 地底裂隙窄道（人工砌石接天然岩隙） | 發光苔 |
-| `Ruins_Well` | 圓井房（深井、井壁苔光往上泛出光暈） | 井中苔光 |
+| `Ruins_shinier_StairUp` | **向上石階** —— 往地面方向，頂端沒入黑暗拱門 | 長明火 |
+| `Ruins_shinier_StairDeep` | **向下石階** —— 往更深層，下半段苔光漸濃 | 火→苔 |
+| `Ruins_shinier_Mural` | 古老壁畫廳（兩壁滿刻上色壁畫、顏料剝落） | 長明火 |
+| `Ruins_shinier_DeepSpring` | 地下泉水（封閉，苔光從池底照亮水體） | 發光苔 |
+| `Ruins_shinier_Machine` | 壞掉的古代機械（石＋青銅齒輪、斷連桿） | 符文藍光＋火 |
+| `Ruins_shinier_MossChamber` | 幽光青苔密室（滿室苔光、飄浮孢子） | 發光苔 |
+| `Ruins_shinier_DarkBridge` | 黑暗深淵上的斷橋（垂鏈、底部全黑） | 長明火 |
+| `Ruins_shinier_Catacomb` | 骨龕墓道（滿壁骨龕、部分崩落） | 長明火 |
+| `Ruins_shinier_Colossus` | 巨像廳（巨大坐像、腳邊火盆、上半沒入黑暗） | 火盆 |
+| `Ruins_shinier_Prison` | 石牢區（石柱柵欄、撞斷的牢門、鏽鏈） | 長明火 |
+| `Ruins_shinier_Rift` | 地底裂隙窄道（人工砌石接天然岩隙） | 發光苔 |
+| `Ruins_shinier_Well` | 圓井房（深井、井壁苔光往上泛出光暈） | 井中苔光 |
 
 - 原稿：`_originals/background/_temple_gpt/`；產線對話
   `chatgpt.com/c/6a9e2cd4-6020-83e8-8782-ff05614ef158`。
