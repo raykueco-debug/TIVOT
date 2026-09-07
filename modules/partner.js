@@ -229,11 +229,19 @@ export function guardHealPct(){
    ⚠ **每隻怪一次**（不是每場一次）：連戰換敵要重新上膛 —— 由 `enemy.setEnemy`
      經 combat 呼叫 `armFirstCounter()`（那是「換了一隻怪」的唯一時刻）。
    ⚠ 效果與原本同一支（`setLowHpBuff` ＋計時器）：只換觸發條件，不換效果。 */
-let fcArmed = false;
-export function armFirstCounter(){ fcArmed = true; }
+/* ══⚠⚠ **改成無限制發動**（ver -886，Ray：「把安雅的被動技改成無限制發動」）══
+   -693 的「每隻怪一次」（`fcArmed` 那把鑰匙）整個撤掉：現在**每一次完美反擊都發動**。
+   ⚠ 但保留一道「**同一段還在跑就不重播**」（`state.lowHpBuff`）——這不是回頭加上限，
+     是避免它把自己鎖死：ver -740 起「明晰之夢**發動期間任何反擊都算完美反擊**」，
+     所以不擋的話，發動中的每一次反擊都會再發動一次 ⇒ 每一發都插一張 cut-in
+     （cut-in 會凍住盤面），技能就變成連續播片。擋掉之後的行為是
+     「**5 秒跑完 → 下一次完美反擊立刻可以再開**」，那才是「無限制」的樣子。
+   ⚠ `armFirstCounter()` 留著當空殼：`enemy.setEnemy` 經 combat 還在叫它
+     （那是「換了一隻怪」的唯一時刻），拿掉呼叫端要動三個檔，而它現在無事可做。 */
+export function armFirstCounter(){ /* ver -886：無限制發動之後這裡不必上膛了 */ }
 /* ══ 九階強化「方舟」（ver -707，Ray：「無傷使敵 HP 歸零，可回復已使用的被動技」）══
    打倒一隻敵人的那一刻，**這一場全程無傷**就把用掉的一次性被動重新上膛：
-   即死防禦（`deathGuardUsed`）＋ 明晰之夢（`fcArmed`）。
+   即死防禦（`deathGuardUsed`）。⚠ ver -886 起明晰之夢是無限制發動，不在這裡回復。
    ⚠⚠ 「無傷」是**逐隻**算的（`state.enemyHitsTaken`，ver -708，Ray：「是用逐隻，
      連戰才有意義的技能」）—— 不是整場的 `hitsTaken`：整場算的話，連戰只要中途挨過
      一次就永遠回不了，而這顆星的用處正是在連戰裡把用掉的被動一隻一隻賺回來。
@@ -243,15 +251,17 @@ export function onEnemyCleared(){
   if(!prog.hasStar('safina')) return;
   if(state.enemyHitsTaken!==0) return;
   state.deathGuardUsed = false;
-  fcArmed = true;
+  /* ⚠ ver -886：明晰之夢已改成無限制發動，沒有「用掉的一次」可以還 ——
+     這顆星現在只回復即死防禦。 */
 }
 export function onCounter(){
   if(state.over || state.saintMode || state.niMode) return;   // 演出中不插隊（同 checkLowHpBuff）
   const p = currentPartner();
   const pas = p && p.passive;
   if(!(pas && pas.key==='firstCounter')) return;
-  if(!fcArmed) return;
-  fcArmed = false;
+  /* 無限制發動（ver -886）：不再問「這隻怪用過了沒」。
+     ⚠ 只擋「這一段還在跑」——理由見 armFirstCounter 上面那一段。 */
+  if(state.lowHpBuff) return;
   fireBuff(pas);
 }
 /* ══⚠⚠ 明晰之夢**發動中**？（ver -740，Ray：「明晰夢增加發動期間反擊不論哪一圈
@@ -386,7 +396,7 @@ export function checkLowHpBuff(){
 /* 全重置（combat.startGame / startIntruderFight 調度）：清 10 秒計時器、上膛旗標歸位。
  * state.lowHpBuff 本體由 combat 於開場自清；此處只清 partner 自有狀態。 */
 export function reset(){
-  fcArmed = true;                             // 開場就上膛（ver -693）
+  /* ver -886：明晰之夢改成無限制發動，沒有「上膛」這回事了（`fcArmed` 已撤）。 */
   clearTimeout(lowHpTimer); lowHpTimer=null;
   lowHpArmed = true;
   immuneUntil = 0; guardHealUntil = 0;        // 免傷窗不跨場（ver -740）
