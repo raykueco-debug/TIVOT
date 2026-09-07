@@ -1518,6 +1518,14 @@ function exitsOf(){
   if(n && n.exitIf){
     for(const d in n.exitIf){ if(!prog.hasFlag(n.exitIf[d])) delete ex[d]; }
   }
+  /* ══⚠ **方向的章節門檻**（`exitFrom:{ 方向:<第幾章> }`，ver -925，Ray：「stage6 之前
+     夏爾森林只能走到懸崖邊的前一個圖，懸崖邊不開放」）══
+     ⚠ 與 `exitIf` 是**兩件事**：那個看旗（某個事件開的門），這個看章節（劇情走到了沒）。
+       混用會逼出一支「只為了擋路」的旗，而那支旗沒有人插得起（鐵律 9）。
+     ⚠ 同樣擋在 `exitsOf`：箭頭直接不出現。 */
+  if(n && n.exitFrom){
+    for(const d in n.exitFrom){ if(prog.getStage() < (n.exitFrom[d]|0)) delete ex[d]; }
+  }
   if(n && n.sail && !ex.down) ex.down=SAIL_ID;
   if(back){
     /* 首選＝來時方向的反向；那一格已經有別的出口就退回「下」，再不行就找一格空的。 */
@@ -1880,11 +1888,24 @@ function sailHeld(){
   if(h.until && prog.hasFlag(h.until)) return null;
   return h;
 }
+/* ══⚠⚠ **「出不了港」有它的窗口**（ver -925，Ray：「stage4 前可自由進出夏爾村，
+   不會跳船沒修好不能離開」「stage7 結束後夏爾村就恢復自由進出」）══
+   `sail.blockFrom:<章>` ＝到那一章才開始擋；`sail.blockUntil:'<旗>'` ＝那支旗立了就不再擋。
+   窗口外一律當成「船能走」——連那句旁白都不出（那句話在窗口外是錯的：
+   早訪的玩家根本還沒有那條劇情線）。
+   ⚠ 為什麼不寫成「插一支旗解鎖」：解鎖旗要有人插，而 stage4 之前那一段根本
+     沒有事件可以插它（鐵律 9：答不出誰插的旗就不要加）。章節本來就是既有的量。 */
+function sailBlocked(sail){
+  if(!sail) return false;
+  if(sail.blockFrom!=null && prog.getStage() < (sail.blockFrom|0)) return false;
+  if(sail.blockUntil && prog.hasFlag(sail.blockUntil)) return false;
+  return !(!sail.flag || prog.hasFlag(sail.flag));
+}
 function setSail(){
   const n=node(), sail=n && n.sail; if(!sail) return;
   const held=sailHeld();
   if(held){ story.flashLine(held.text||'', ''); chatterOn=true; return; }
-  if(!sail.flag || prog.hasFlag(sail.flag)){
+  if(!sailBlocked(sail)){
     /* 船已經到手：交給飛行頁。⚠ 城鎮的位置目前不存 —— 飛行頁那邊回來時走的是
        `tivot_flight_ret_v1`（座標），城鎮節點要不要一起存是另一件事（§6.9 的清單）。 */
     stepSfx();

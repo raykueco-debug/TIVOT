@@ -1914,7 +1914,16 @@ export const TOWNS = {
            現在誰都沒插＝一律擋，正是 Ray 要的「劇情船還沒修好」）。⚠ `blocked` 是
            **行物件陣列**（走 playAdhoc）不是字串——字串會在 `.map` 崩。NARRATION＝旁白，
            名字欄空（主角自己的念頭）。 */
-        sail:{ flag:'shinier_leave_ok', blocked:[
+        /* ══⚠⚠ **「船沒修好」只在一段窗口內擋**（ver -925，Ray：「stage4 前可自由
+           進出夏爾村，不會跳船沒修好不能離開」「stage7 結束後夏爾村就恢復自由進出」）══
+           · `blockFrom:4`  —— S4 之前是玩家自己亂飛進來的空村，那條劇情線還沒開始，
+             跳「舵還沒修好」是在講一件還沒發生的事。
+           · `blockUntil:'sr_altar'` —— 神殿深部祭壇那一段（＝stage7 的最後一段）
+             演完就解除。⚠ 用**那一段自己的旗**不另立一支「stage7 結束了」
+             （鐵律 9：答得出誰插的才是旗；那一段演完就是它）。
+           ⚠ `flag:'shinier_leave_ok'`（修舵那一段立）照舊 —— 窗口內仍然是它說了算，
+             日後 Ray 的修舵稿到了就是正規的解法。 */
+        sail:{ flag:'shinier_leave_ok', blockFrom:4, blockUntil:'sr_altar', blocked:[
           { speaker:'NARRATION', text:'（舵還沒修好，現在還離不開夏爾村。）' } ] },
         /* ══ 抵達（ver -772，Ray 交稿）══ 湖上甲板 thenTown 進來的第一段。
            站位：索菈娜／安雅本位右，蕾娜整幕改左（同湖上甲板，§6.5）。
@@ -2468,7 +2477,12 @@ export const TOWNS = {
         exits:{ back:'trail' } },                       // 支線：寶箱
       /* 戰④。 */
       high:  { bg:'Forest_Highland', name:'夏爾森林　高地',
-        exits:{ right:'cliff', down:'trail' } },
+        exits:{ right:'cliff', down:'trail' },
+        /* ⚠⚠ **stage6 之前走不到斷崖邊**（ver -925，Ray：「Stage6 之前夏爾森林
+           只能走到懸崖邊的前一個圖，懸崖邊不開放」）—— 高地是「懸崖邊的前一個圖」，
+           所以擋的是**它往右那一條**。擋在 `exitsOf`（`exitFrom`）＝箭頭不出現。
+           ⚠ 斷崖邊是往遺跡入口的唯一通路，所以這一條同時把神殿擋在 S6 之後。 */
+        exitFrom:{ right:6 } },
       /* 終點前的喘息格（無戰）：日後 checkpoint／劇情拍放這裡。 */
       cliff: { bg:'Forest_Cliff', name:'夏爾森林　斷崖邊',
         exits:{ up:'ruins', left:'high' } },
