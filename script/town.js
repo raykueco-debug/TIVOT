@@ -2291,12 +2291,22 @@ export const TOWNS = {
       fixed: {
         shoal:'sf_snake',                                        // 淺灘必出水蛇
         cave:'sf_tiger',                                         // 洞窟必出虎王（一趟一次）
-        cliff:{ day:'sf_stag_rot', night:'sf_stag_nightmare' },  // 斷崖必出鹿骸（日夜差分）
+        /* ⚠ 鹿骸（結算怪）**不再寫死在斷崖**（ver -895）——見下面的 `endBattle`：
+           它要擺在「這一趟沒走進來的那個出口」，寫死一格的話從神殿那頭下來的人
+           第一格就撞到它。 */
         /* ⚠⚠ 遺跡入口**不刷怪**（ver -878，Ray：「鹿主不變異是不會有戰鬥的」）——
            樹靈鹿主在這一格是**演出**不是遭遇：白天分支牠看一眼就走，黃昏分支
            變異成禍魘才開打（那一場是 acts 裡的 `sf_deer_nightmare`）。
            -870 這裡曾寫 `ruins:'sf_deer'`，那會讓沒變異的鹿主也被打一場。 */
       },
+      /* ══⚠⚠ 結算怪（ver -895，Ray：「從 A 點進入，結算戰就發生在 B 點；從 B 點進入，
+         結算戰就發生在 A 點；如果有 C 點，就發生在 A 或 B 點」）══
+         夏爾森林兩個跨圖出口：`entry`（往下回夏爾村）與 `ruins`（往上進木雅克神殿）。
+         從村子進來 ⇒ 鹿骸擺在 `ruins`；從神殿下來 ⇒ 擺在 `entry`。
+         ⚠ 落點由 `modules/town.js` 的 `pickEndNode` 在**進圖那一刻**算一次並固定
+           （鐵律 7/8：判定只有那一支，資料只說「結算怪是誰」）。
+         ⚠ 日夜差分照舊（同 fixed 的寫法）。 */
+      endBattle: { day:'sf_stag_rot', night:'sf_stag_nightmare' },
       pool: [
         { battle:{ day:'sf_bear_husk', night:'sf_bear_nightmare' } },  // 熊骸（日夜差分）
         { battle:'sf_hog' },

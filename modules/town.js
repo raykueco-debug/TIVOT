@@ -624,10 +624,64 @@ function wildVariant(v){
   const b=clock.band();
   return (b==='Dawn'||b==='Day') ? v.day : v.night;
 }
+/* ══⚠⚠⚠ **結算怪擺在「你沒走進來的那個出口」**（ver -895，Ray 定案，已入憲 §6.5.4.3 後）══
+   > Ray：「像夏爾森林這種有頭尾跟其他地圖相聯的地圖，如果從 A 點進入，結算戰就發生在
+   >   B 點，從 B 點進入，結算戰就發生在 A 點，如果有 C 點，就發生在 A 或 B 點」
+   結算怪＝戰鬥卡帶 `sessionEnd:true` 的那一隻：打贏牠就閉棺、收掉這一局。
+   ⚠ 為什麼不寫死在資料上：同一張圖從兩邊都進得來，寫死一定有一邊是反的 ——
+     從另一頭走進來的人**第一格就撞到結算怪**，打完就結算，整張圖剩下的部分變成
+     空景。擺在對面那一端，不管從哪邊進來都是走完全程才收尾。
+   ⚠ **這一趟算一次就固定**（`open()` 呼叫）：每次抵達重擲的話，玩家走回頭路時
+     結算怪會跟著跑。歸零時機同 `wildDone`。
+   ⚠ 只有**連結型地圖**（兩個以上跨圖出口）吃這一條；末端型沒有「對面」，
+     照舊由資料指定（`endAt` 是 null，`wildActDue` 就走 `fixed` 那一套）。
+   ⚠ 判定的鑰匙是「**這一趟從哪裡進來**」（`open(town, node)` 的那個 node，
+     沒指定就是這張圖的入口）—— 不是節點資料上的欄位（同「回去掛在來時方向的反向」）。 */
+let endNodeId = null;
+function crossExitIds(){
+  const T=TOWNS[townId]; if(!T) return [];
+  return Object.keys(T.nodes||{}).filter(id=>{
+    const ex=(T.nodes[id]||{}).exits||{};
+    return Object.values(ex).some(v=>typeof v==='string' && v[0]==='@');
+  });
+}
+function pickEndNode(startNode){
+  endNodeId = null;
+  const T=TOWNS[townId]; if(!T || !T.wildSpawn || !T.wildSpawn.endBattle) return;
+  const outs = crossExitIds();
+  if(outs.length < 2) return;                       // 末端型：沒有「對面」
+  const came = (startNode && T.nodes[startNode]) ? startNode : entryNodeId;
+  /* ⚠⚠ **只排除「這一趟走進來的那一格」，不排除資料上的入口**（ver -895 修）：
+     從另一頭進來時，資料上的 `entry` 正是「對面那個出口」——把它排掉的話那一趟
+     根本算不出落點（實測：從 `ruins` 進來時回 null，等於沒有結算怪）。
+     ⚠ 這與 §6.5.2「入口那一格不可以有戰鬥」有張力：那條是為了**遭遇戰打輸回入口**
+       不要變成必死鏈。這裡的取捨是 Ray 的規則優先（結算怪就是要擺在對面那一端），
+       兜底仍在：連敗三次抬回旅店。 */
+  const cands = outs.filter(id=>id!==came);
+  if(!cands.length) return;
+  /* 三個以上就挑一個並記住（這一趟固定，不每次抵達重擲）。 */
+  endNodeId = cands[Math.floor(Math.random()*cands.length)];
+}
+/* 這一趟的結算怪落在哪一格（給 wildActDue 問；沒有就回 null）。 */
+export function endBattleNode(){ return endNodeId; }
+
 function wildActDue(n){
   const W=(TOWNS[townId]||{}).wildSpawn; if(!W || !n) return null;
-  if(nodeId===entryNodeId) return null;                 // 入口＝復活點，不可有戰鬥
   if(prog.hasFlag(safehouseFlag())) return null;        // 安全區：遭遇戰整套不動
+  /* ══ 結算怪（ver -895，見 pickEndNode）══ 擺在「這一趟沒走進來的那個出口」那一格。
+     ⚠⚠ 判定排在「入口＝復活點不可有戰鬥」**之前**：從另一頭進來時，資料上的
+       `entry` 正是對面那個出口 —— 排在後面的話它會被那道守門吃掉。
+       這是 Ray 的規則對 §6.5.2 那條的**明寫例外**（兜底：連敗三次抬回旅店）。
+     ⚠ 也排在 `noWild` 之前：那一格說的是「不出**野怪**」，結算怪是這張圖的句點。
+     ⚠ 打過了就不再出（進 `wildDone`，同「一趟同種不重複」的規約）。 */
+  if(endNodeId && nodeId===endNodeId && W.endBattle){
+    const eid=wildVariant(W.endBattle);
+    if(eid && !wildDone.has(wildSpecies(W.endBattle))){
+      wildDone.add(wildSpecies(W.endBattle));
+      return { lines:[ { battle:eid } ] };
+    }
+  }
+  if(nodeId===entryNodeId) return null;                 // 入口＝復活點，不可有戰鬥
   /* ══⚠⚠ **指定遭遇**（ver -879，Ray：「鹿主未變異日後則會在黃昏夜晚時段在夏爾森林
      隨機遇到，劇情從諾『牠好像不太歡迎我們』開始跑，進入戰鬥」「打完就沒了，
      不會出第二次，隨機遇到的機率是 5%」）══
@@ -2346,6 +2400,7 @@ export function open(town, node, opts){
   carriedIn = !!(opts && opts.carried);
   eveningHeld=false;          // 傍晚那一格的「讓過一次」是這一趟城鎮探索的狀態（ver -430）
   wildDone=new Set();         // 野生刷怪的「這一趟出過誰」也是（ver -862）
+  pickEndNode(node);          // 結算怪擺哪一格（ver -895，見那一支）
   pendingFavor=null;          // 「下一步去哪」也是（ver -440，見 armFavor）
   /* 夥伴的所在（ver -461）：進城算一次。⚠ 要在 townId 設好之後（leftoverForNou 要查表）。 */
   escortNou=false;
