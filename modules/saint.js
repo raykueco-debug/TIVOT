@@ -459,12 +459,14 @@ function triggerNiBurst(){
   if(state.enemyHp<=0){
     /* 「若在 NI 發動期間把敵 hp 清零一樣有 excute」（Ray 指定）。 */
     markExecution();
-    resetInstallSlot();                              // 處決＝賺回一次發動（ver -892）
-    playSaintCutin('execute', ()=>{ api.setPlayerHpRatio(1); api.onEnemyDefeated(); }, 'NIGHTMARE RELOAD');
+    const rlN = state.saintUsedThisBattle ? 'NIGHTMARE RELOAD' : null;   // 空槍才 reload（ver -896）
+    if(rlN) resetInstallSlot();
+    playSaintCutin('execute', ()=>{ api.setPlayerHpRatio(1); api.onEnemyDefeated(); }, rlN);
     return;
   }
   markMaxBurst();   // 惡夢化清空殘格＝MB（Ray：「同 SI 的 MB」，ver -675）
-  resetInstallSlot();                                // MB＝賺回一次發動（ver -892）
+  const rlMB = state.saintUsedThisBattle ? 'SAINT RELOAD' : null;   // 空槍才 reload（ver -896）
+  if(rlMB) resetInstallSlot();
   /* ⚠⚠ **要播 MB 的全畫面 cut-in**（ver -719，Ray：「NI 的 MB 跟 execute 沒接上」）——
      -675 只做了「算 MB 的傷害＋記旗標」，演出那一步漏了：擊殺那一支有
      `playSaintCutin('execute')`，未擊殺這一支卻直接跳收尾，畫面上只有一行浮字。
@@ -473,7 +475,7 @@ function triggerNiBurst(){
        那是這兩套唯一不同的地方，收尾的 thunk 照舊。 */
   playSaintCutin('burst', ()=>{
     finishNightmare(()=>api.setPlayerHpRatio(1));   // 「hp 全恢復」
-  }, 'NIGHTMARE RELOAD');
+  }, rlNMB);
 }
 /* 主動技（上滑）：一次清掉殘格造成相應傷害 —— **沒有 MB、不回血、直接結束，HP 剩 1**。 */
 export function nightmareActive(){
@@ -713,17 +715,21 @@ function triggerMaxBurst(){
     // 追加傷害讓敵人 HP 歸零 → EXSECUTIŌ 演出後 → 轉下一敵 or（最後一敵）結算。
     // 成功 MB 滿血獎勵（D2）：擊殺也回滿——連戰下 MB 秒殺一敵後帶滿血接下一隻。
     markExecution();   // sawExecution=true（評價 Execution 加乘）
-    resetInstallSlot();                              // 處決＝賺回一次發動（ver -892）
-    playSaintCutin('execute', ()=>{ api.setPlayerHpRatio(1); api.onEnemyDefeated(); }, 'SAINT RELOAD');
+    /* ⚠ 空槍才 reload（ver -896，Ray：「要空槍才有 reload」）—— 還沒發動過
+       聖徒化的話那一槍本來就在膛裡，印 SAINT RELOAD 是報一件沒發生的事。 */
+    const rl = state.saintUsedThisBattle ? 'SAINT RELOAD' : null;
+    if(rl) resetInstallSlot();                       // 處決＝賺回一次發動（ver -892）
+    playSaintCutin('execute', ()=>{ api.setPlayerHpRatio(1); api.onEnemyDefeated(); }, rl);
     return;
   }
   markMaxBurst();   // 未擊殺的 MB（ver -675）：評價折 10 秒，見 config.rating.penalty
-  resetInstallSlot();                                // MB＝賺回一次發動（ver -892）
+  const rlNMB = state.saintUsedThisBattle ? 'NIGHTMARE RELOAD' : null;   // 空槍才 reload（ver -896）
+  if(rlNMB) resetInstallSlot();
   // 敵人未死 → Maximum Burst 演出後回盤面。回血規則（2026-08-13 定案）：
   //   EXSECUTIŌ（MB 擊殺）→ 回滿；MaxBurst（未擊殺）→ 回 50%，並自然延續到同場下一敵。
   playSaintCutin('burst', ()=>{
     finishSaintMode(()=>api.setPlayerHpRatio(0.5));
-  }, 'SAINT RELOAD');
+  }, rlMB);
   if(api.onSaintEnded) api.onSaintEnded('mb');   // 教學終盤掛鉤（cut-in 結束後收尾台詞；非教學 no-op）
 }
 

@@ -831,6 +831,33 @@ const missingCg=new Set();   // 退回過的插圖：只提示一次，不然每
      黑幕沒有。現在收在**這一支**，`resetStage` 與 `town.enter` 都叫它。
    ⚠ 連 `fadeOwner` 與排隊中的 `cgFadeT` 一起清：留著的話下一次 `cgFade` 的收尾
      會被上一場的計時器搶著關掉。 */
+/* ══⚠⚠⚠ **換畫面時要收的「上一個畫面的舞台層」——收在這一支**（ver -896，Ray：
+   「我被 5% 出現的鹿主打死按了繼續，結果鹿主霸屏」「走到哪都有他」）══
+   同一族的病已經抓到第三次了，每次都是「**某一個蓋在畫面上的層沒有人在換畫面時收它**」：
+     · ver -881 `#storyFade`（場景區黑幕）—— 帶著 `fadeOut` 離場就一直黑
+     · ver -885 `#storyHint`（提示遮罩）—— 會疊，一次比一次暗
+     · ver -896 `#storyCgBack`（中景層）—— 劇情戰打輸回檔，鹿主跟著你走遍全圖
+   ⚠⚠ 所以**不要再逐個補**：新增任何舞台層時，把它加進這一支，
+     然後所有「換到別的畫面」的路徑只要叫這一支就好（鐵律 8）。
+   ⚠ 現在的呼叫端：`resetStage()`（腳本播放器換場）／`town.enter()`（城鎮換節點、
+     進城、讀檔回來、回檔）。
+   ⚠ 這一支**只收「上一個畫面的殘留」**，不碰立繪（那是 `clearCast` 的事）
+     與背景（那是 `enter()` 自己要換的）。 */
+export function clearStageLeftovers(){
+  clearSceneFade();                    // 場景區黑幕（ver -881）
+  closeHint();                         // 一次性提示遮罩（ver -885）
+  /* 跨句的染色（紫紅負片）。⚠ 除了走 `stopTint()`（它只認自己記著的那個名字），
+     再**把任何 `story-tint-*` 掃掉** —— 殘留的那一件正是它認不得的（實測踩過）。 */
+  stopTint();
+  { const st=$('storyStage');
+    if(st) [...st.classList].forEach(c=>{ if(c.indexOf('story-tint-')===0) st.classList.remove(c); }); }
+  /* 中景層（ver -870 的 `#storyCgBack`）：它是**持續狀態**，沒人撤就一直站在那裡。
+     劇情戰打輸走的是回檔（`save.loadLatest`→`town.open`），那條路不經過
+     `resetStage`，於是鹿主就留在畫面上跟著玩家走（Ray：「走到哪都有他」）。 */
+  stageCgBack=null;
+  { const el=$('storyCgBack');
+    if(el){ el.classList.remove('on','fading'); el.removeAttribute('src'); } }
+}
 export function clearSceneFade(){
   cgFadeT.forEach(clearTimeout); cgFadeT=[];
   cgFinish=null; fadeOwner=null;
@@ -2646,8 +2673,7 @@ function resetStage(){
   }
   const fx=$('storyFx'); if(fx) fx.innerHTML='';
   const card=$('storyCard'); if(card) card.classList.remove('on');
-  clearSceneFade();                       // 場景區的黑幕也是持續狀態（ver -881，見那一支）
-  closeHint();                            // 提示遮罩同理（ver -885，見那一支）
+  clearStageLeftovers();                  // 黑幕／提示遮罩／染色／中景層（ver -896，見那一支）
   const st2=$('storyStage'); if(st2) st2.classList.remove('shake','hold');
   slot={L:null,R:null}; slotExpr={L:null,R:null}; shown={};
   for(const s2 of ['L','R']){ const el=slotEl(s2);

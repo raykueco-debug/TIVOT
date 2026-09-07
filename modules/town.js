@@ -1797,8 +1797,9 @@ export function enter(id){
   /* ⚠ 上一個畫面的**場景黑幕**要收（ver -881，見 story.clearSceneFade）——
      城鎮不經過 story 的 resetStage，帶著 `fadeOut` 的那一拍離場之後那片黑幕會
      一直蓋在場景區上，而且點不掉。這是 §6.5.4 檢查表該有而漏掉的一項。 */
-  story.clearSceneFade();
-  story.closeHint();          // 提示遮罩也是（ver -885）——它蓋滿全螢幕且只收在自己的點擊裡
+  /* 上一個畫面留下來的舞台層一次收乾淨（ver -896，見 story.clearStageLeftovers）：
+     黑幕／提示遮罩／染色／中景層。⚠ 新增舞台層時加進**那一支**，不要在這裡補。 */
+  story.clearStageLeftovers();
   const T=TOWNS[townId]; if(!T) return;
   const n=T.nodes[id]; if(!n){ console.warn('[town] 沒有這個節點：', id); busy=false; return; }
   nodeId=id;

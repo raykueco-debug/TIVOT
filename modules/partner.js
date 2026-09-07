@@ -278,6 +278,10 @@ export function onEnemyCleared(){
         state.flawlessKills = (state.flawlessKills||0) + 1;
         if(state.flawlessKills >= ir.flawless){
           state.flawlessKills = 0;
+          /* ⚠ 空槍才演（ver -896，Ray）：聖徒化還沒發動過就什麼都不做 ——
+             那一槍本來就在膛裡，跳「聖徒再臨」是報一件沒發生的事。
+             ⚠ 計數照樣歸零（同另外兩支的理由）。 */
+          if(!state.saintUsedThisBattle) return;
           if(api.resetInstallSlot) api.resetInstallSlot();
           /* ⚠ 演出**先借她被動（即死防禦）那張 CI**（Ray：「先用被動 CI／聖徒再臨／
              SAINT RELOAD」；專屬圖之後再補 → 屆時在卡上寫 `installReload.cutin`）。
@@ -326,10 +330,16 @@ export function onCounter(){
   if(!(pas && pas.key==='firstCounter')) return;
   state.lucidStreak = (state.lucidStreak||0) + 1;
   const need = pas.reloadStreak || 3;
-  const reload = state.lucidStreak >= need;
-  if(reload){
+  /* ⚠⚠ **槽是空的才叫 reload**（ver -896，Ray：「如果該場還沒使用過聖夢鬥，就不會出
+     reload，要空槍才有 reload」）—— 惡夢化還沒發動過的話那一槍本來就在膛裡，
+     跳「夢魘再臨」等於報一件沒發生的事。
+     ⚠ 連段**照樣歸零**：那三次已經兌現過（只是這一次沒有東西可以還），
+       不歸零的話下一次完美反擊就會立刻又觸發一次。 */
+  const canReload = !!state.saintUsedThisBattle;
+  const reload = (state.lucidStreak >= need) && canReload;
+  if(state.lucidStreak >= need){
     state.lucidStreak = 0;
-    if(api.resetInstallSlot) api.resetInstallSlot();   // 惡夢化可以再發一次
+    if(canReload && api.resetInstallSlot) api.resetInstallSlot();   // 惡夢化可以再發一次
   }
   /* 無限制發動（ver -886）：不再問「這隻怪用過了沒」。
      ⚠ 只擋「這一段還在跑」——理由見 onThreatResolved 上面那一段；
@@ -372,8 +382,12 @@ export function onBoardCleared(clean){
   else if(state.svPerfectStreak >= s2){
     vkey = pas.voice2 || pas.voice;
     state.svPerfectStreak = 0;
-    reload = true;                                     // 連 5 那一發＝共鬥再開（ver -894）
-    if(api.resetInstallSlot) api.resetInstallSlot();   // 共鬥可以再發一次
+    /* ⚠ 空槍才叫 reload（ver -896，Ray）：共鬥還沒發動過就不報「共鬥再開」，
+       那一發照舊印「獵手的戰吼」。連段一樣歸零（見明晰之夢那一段的理由）。 */
+    if(state.saintUsedThisBattle){
+      reload = true;                                   // 連 5 那一發＝共鬥再開（ver -894）
+      if(api.resetInstallSlot) api.resetInstallSlot(); // 共鬥可以再發一次
+    }
   }
   else return;
   /* ⚠ 連 5 那一發換字（ver -894，Ray：「索拉娜觸發第五次完美清盤時 CI 文字為
