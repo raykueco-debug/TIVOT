@@ -3024,6 +3024,21 @@
      ⚠ 擋路是由 `gateArrival` 在**程式**上做的（點掉才開始演），不靠圖層 ——
        `#kerb` 是 `pointer-events:none`，所以點在楣上那一片照樣打到這張卡。
      ⚠ 字用 `clamp` 跟著畫面走 —— 390px 的手機與桌機同一份版面。 */
+  /* ══ 安雅的感應演出（ver -923，見 modules/story.js 的 `senseFx`）══
+     ⚠ 光圈的配方與 `flight/index.html` 的 `.sense-ring` **是同一份**（跨頁各存一份，
+       §6.10 的既有慣例）—— 改一邊要改另一邊。這裡的尺寸用 `vmax` 直接蓋滿舞台，
+       不必像飛行頁那樣由 JS 依「胸針到最遠螢幕角」算。 */
+  #storyFx .fx-sense-ring{position:absolute;left:50%;top:46%;z-index:3;pointer-events:none;
+    width:220vmax;height:220vmax;border-radius:50%;
+    background:radial-gradient(circle, rgba(150,215,245,0) 52%, rgba(150,215,245,.4) 66%,
+      rgba(205,240,255,.8) 75%, rgba(150,215,245,.3) 84%, transparent 93%);
+    transform:translate(-50%,-50%) scale(.03);opacity:.95;
+    animation:storySenseRing 1.15s cubic-bezier(.22,.62,.3,1) forwards;}
+  @keyframes storySenseRing{70%{opacity:.6;}100%{transform:translate(-50%,-50%) scale(1);opacity:0;}}
+  /* 白光「隨光圈」淡入、再淡出 —— 與光圈同一拍發（Ray 的稿）。 */
+  #storyFx .fx-sense-flash{position:absolute;inset:0;z-index:4;pointer-events:none;
+    background:#f2fbff;opacity:0;animation:storySenseFlash 2.1s ease forwards;}
+  @keyframes storySenseFlash{0%{opacity:0}26%{opacity:.92}52%{opacity:.92}100%{opacity:0}}
   #storyTitleCard{position:absolute;left:0;right:0;top:0;height:var(--story-top);
     z-index:5;display:none;
     flex-direction:column;align-items:center;justify-content:center;gap:.55em;

@@ -297,8 +297,9 @@ def main():
             for f, allowed in (('cgPan', ('up', 'down')), ('bgPan', ('up', 'down'))):
                 if ln.get(f) not in (None, *allowed) and f in ln:
                     err('%s：%s 只能是 up／down／null，收到 %r' % (tag, f, ln[f]))
-            if ln.get('fx') and ln['fx'] not in ('gunfire', 'purpleflame'):
-                err('%s：fx 目前只有 gunfire／purpleflame，收到 %r' % (tag, ln['fx']))
+            # ver -923：stage7 加了兩支（安雅的感應光圈／白光一閃，見 story 的 senseFx）
+            if ln.get('fx') and ln['fx'] not in ('gunfire', 'purpleflame', 'sense', 'whiteflash'):
+                err('%s：fx 只有 gunfire／purpleflame／sense／whiteflash，收到 %r' % (tag, ln['fx']))
             if ln.get('cgScale') is not None:
                 v = ln['cgScale']
                 if not (isinstance(v, (int, float)) and 0.5 <= v <= 3):

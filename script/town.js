@@ -2510,7 +2510,10 @@ export const TOWNS = {
               cgBack:'resources/enemy/mon_shinierforest_deerlook.webp', auto:2000 },
             nou('cringe','祂在看我們……'),
             nou('surprise','啊。'),
-            Object.assign(nou('surprise','走掉了。'), { cgBack:null }),
+            /* ⚠ stage6 的**另一個**結尾（ver -923，Ray：「stage6 結尾修正至擊敗鹿主，
+               或鹿主離開以後」）：白天分支牠看一眼就走 —— 那一刻同樣進 S7
+               （與黃昏分支打完鹿主是同一個里程碑，鐵律 7：兩條路一個答案）。 */
+            Object.assign(nou('surprise','走掉了。'), { cgBack:null, stage:7 }),
             /* 自由行動，可直接進入遺跡（遺跡本體地圖未實裝——等 Ray 的規劃）。 */
           ] },
           { flag:'sv_deer_met', need:'sv_forest_intro', storyBattle:true, lines:[
@@ -2745,7 +2748,33 @@ export const TOWNS = {
       antechamber:{ bg:'Ruins_shinier_Antechamber', name:'木雅克神殿　前廳',
         rest:true, noWild:true,
         /* 圖上：長廊在左、拱門長廊在右、遺跡入口在下。 */
-        exits:{ left:'corridora', right:'corridorb', down:'@shinier_forest:ruins' } },
+        exits:{ left:'corridora', right:'corridorb', down:'@shinier_forest:ruins' },
+        /* ══ stage7 開場（ver -923，Ray 交稿）══ 走進神殿的第一段＋迷宮機制解說。
+           ⚠ 機制那兩句是**旁白**（名字欄空著）：Ray 的稿沒有指定說話者，而它講的是
+             規則不是劇情。要改成索菈娜說（她小時候來過）只要把那兩拍換成 `sor(...)`。 */
+        acts:[ { flag:'sr_intro', lines:[
+          nou('surprise','好厲害的遺蹟……！'),
+          sor('amazed','會嗎？不就是些破石頭嘛。'),
+          sor('lauaghbig','小時候我們還常跑來這邊探險呢。'),
+          ren('ask','誰家小孩會跑整整一天路程——'),
+          sor('idea',''),
+          ren('sighsweat','當我沒說。'),
+          any('scared',''),
+          nou('worry','安雅小姐，妳還好嗎？'),
+          any('nervous','這裡……很奇怪。'),
+          ren('thinking','確實。有火有光，好像有人在使用這個地方一樣。'),
+          sor('amazed','不可能吧？魔獸都從這邊冒出來耶？'),
+          ren('talkwork','而且木雅克遺蹟是聖王廳列入目錄的禁地。'),
+          ren('talkserious','當年考古人員可是摸著黑進去臨摹壁畫的。'),
+          /* 深處傳來的嘶吼（Ray 的稿）：獨立一拍，`auto` 讓它自己過去 ——
+             台上有人的無台詞拍本來要點擊（§6.5），但這一拍是**聲音**不是表演。 */
+          { speaker:'NARRATION', text:'', se:'se_monsterroardeep', auto:1800 },
+          any('nervous',''),
+          nou('front','沒事，有我們在呢。'),
+          ren('command','在這裡站著想也沒用，進去一探虛實吧！'),
+          { speaker:'NARRATION', text:'踏破的區域會顯示在地圖上。' },
+          { speaker:'NARRATION', text:'找到安全點可結算戰鬥，回復狀態。' },
+        ] } ] },
       corridora:  { bg:'Ruins_shinier_CorridorA', name:'木雅克神殿　長廊',
         exits:{ right:'antechamber', up:'crossway' } },
       crossway:   { bg:'Ruins_shinier_Crossway', name:'木雅克神殿　岔道',
@@ -2764,7 +2793,46 @@ export const TOWNS = {
       /* ⚠ 養息之間**不是安全點**（ver -918，Ray：「把休養之間改成非安全區，
          把安全區移到 deepalter」）—— 它是這一層的十字路口（四向全用），
          安全點移到走到底的深部祭壇。名字留著（那是這個房間的樣子，不是機能）。 */
+      /* ══ stage7 的兩段（ver -923，Ray 交稿）══
+         ① 初次抵達：安雅指出「那個方向」。
+         ② 開門之後再回來：A／B 兩種說法，差別在**之前有沒有去過石橋**
+            （`seen_shinier_ruins_bridge` ＝既有的「走過了沒」旗，鐵律 7：
+            不另開一支「去過石橋」的旗）。 */
       brazier:    { bg:'Ruins_shinier_Brazier', name:'木雅克神殿　養息之間',
+        acts:[
+          { flag:'sr_brazier', lines:[
+            any('scared',''),
+            nou('worry','安雅小姐，怎麼了嗎？'),
+            any('point','那個方向……好像有什麼東西。'),
+            ren('thinking',''),
+            ren('talkwork','是什麼樣的東西呢？'),
+            any('silent','我不知道……'),
+            sor('amazed','嘿——'),
+            sor('lauaghbig','好像小狗會說的話喔！'),
+            /* 安雅的 cut-in（Ray 的稿：安：CI_Anya_scared）。⚠ 走 `cg` 的**明確路徑**
+               分支（含 `/` 就不吃時段候選鏈）—— 圖住在 resources/CI/，不複製一份
+               進 illustration/（鐵律 7：一張圖一份）。 */
+            { speaker:'ANYA', text:'', portrait:{ char:'ANYA', show:false },
+              hide:['SORANA','RENNA','NOUVELLE','ANYA'],
+              cg:'resources/CI/CI_Anya_scared.webp', auto:2200 },
+            { speaker:'NARRATION', text:'', cg:null, auto:200 },
+          ] },
+          { flag:'sr_gate_brazier', need:'ruins_gate_open', lines:[
+            any('point','那邊……'),
+            /* A：去過石橋（`onlyIf`）／B：沒去過（`skipIf`）—— 同一段裡兩條支線，
+               靠條件拍分岔（ver -656 的既有機制），不複製兩個 act。 */
+            Object.assign(ren('thinking','……剛剛打開的，會是那扇門嗎？'),
+                          { onlyIf:'seen_shinier_ruins_bridge' }),
+            Object.assign(sor('lauaghbig','妳還真喜歡那個方向呢。'),
+                          { skipIf:'seen_shinier_ruins_bridge' }),
+            Object.assign(any('dying',''),
+                          { skipIf:'seen_shinier_ruins_bridge' }),
+            Object.assign(ren('evaluating',''),
+                          { skipIf:'seen_shinier_ruins_bridge' }),
+            Object.assign(ren('evaluatingclosemouth','就去看看吧。說不定跟剛才的機關有關聯呢。'),
+                          { skipIf:'seen_shinier_ruins_bridge' }),
+          ] },
+        ],
         /* ⚠ 名字由「火盆」改成「養息之間」（ver -908，Ray）。**節點 id 不動** ——
            旗標（`seen_shinier_ruins_brazier`）、腳本、存檔都指著它，改 id 等於把
            那些全打斷；玩家看得到的只有 `name`。
@@ -2774,7 +2842,15 @@ export const TOWNS = {
       collapsed:  { bg:'Ruins_shinier_Collapsed', name:'木雅克神殿　崩塌走道',
         exits:{ right:'brazier', down:'mural' } },
       mural:      { bg:'Ruins_shinier_Mural', name:'木雅克神殿　壁畫廳',
-        exits:{ back:'collapsed' } },                   // 末端
+        exits:{ back:'collapsed' },                     // 末端
+        acts:[ { flag:'sr_mural', lines:[
+          sor('side','第一次看得這麼清楚耶！'),
+          sor('tease','從來沒看懂在畫什麼就是了。'),
+          ren('watch','伊甸的神王。'),
+          sor('amazed','什麼？'),
+          nou('front','是我們人類起源的故事喔。'),
+          any('watch',''),
+        ] } ] },
       /* ⚠⚠ `noTime`（ver -914，Ray：「石橋改用 Ruins_shinier_Bridge 不差分」）：
          四張時段差分已經撤掉、只留這一張（同深部祭壇）。**一定要明寫** ——
          不寫的話候選鏈會先試 `_Dawn/_Day/_Dusk/_night` 那四個名字，檔案雖然沒了，
@@ -2788,8 +2864,34 @@ export const TOWNS = {
            等 Ray 指定旗標（鐵律 9：旗要答得出誰插的）。接法是一行資料：
              `bgWhen:[{ need:'<那支旗>', bg:'Ruins_shinier_Bridgeopen', noTime:true }]` */
       bridge:     { bg:'Ruins_shinier_Bridge', name:'木雅克神殿　石橋', noTime:true,
+        /* 事件差分（ver -923）：開門之後換成「盡頭那道門開了」的那一張。 */
+        bgWhen:[ { need:'ruins_gate_open', bg:'Ruins_shinier_Bridgeopen', noTime:true } ],
         /* ⚠ 窄橋跨在深淵上，兩側是空的 ⇒ 只有前後（ver -890，Ray 點名的那一格）。 */
-        exits:{ down:'brazier', up:'deepaltar' } },
+        exits:{ down:'brazier', up:'deepaltar' },
+        /* ⚠⚠ **門開了才走得過去**（Ray 的稿：蕾「沒路了呢。」）——
+           擋在 `exitsOf`（連箭頭都不出現，見 modules/town.js 的 `exitIf`）。 */
+        exitIf:{ up:'ruins_gate_open' },
+        acts:[
+          { flag:'sr_bridge', lines:[
+            any('point','就在前面。'),
+            nou('awkward','就算你這麼說……'),
+            ren('thinking','沒路了呢。'),
+            /* 安雅想做什麼（Ray 的稿只給了音效）：獨立一拍，auto 過去。 */
+            { speaker:'ANYA', text:'', portrait:{ char:'ANYA', expr:'point', show:true },
+              se:'se_ui_sortie', auto:1200 },
+            ren('callangry','不可以！放下。'),
+            sor('tease','這邊比較像小狗呢。'),
+          ] },
+          { flag:'sr_gate_bridge', need:'ruins_gate_open', lines:[
+            /* A：之前來過（門本來是關的）才有「打開了……」這一句。 */
+            Object.assign(any('scared','打開了……'), { onlyIf:'sr_bridge' }),
+            any('point','在……那邊的盡頭。'),
+            ren('evaluating','妳怎麼會知道呢？'),
+            any('talk','我……不知道。只是……'),
+            nou('talk','大概是跟我類似的情形吧。'),
+            sor('readysmile','反正都來了，就走吧。'),
+          ] },
+        ] },
       /* ⚠⚠ `noTime`（ver -910）：Ray 把它的 dawn/day/dusk/night 四張刪掉、只留一張。
          不寫的話候選鏈會先試那四個名字 —— 檔案雖然沒了，**玩家的瀏覽器快取裡可能還在**，
          於是會拿出舊的那一張（§5 的同名覆蓋快取坑，這次是「檔案沒了但快取還在」的變體）。
@@ -2801,6 +2903,60 @@ export const TOWNS = {
            所以「平時是休息處、劇情一到就在同一格開打」兩句話同時成立。 */
       deepaltar:  { bg:'Ruins_shinier_DeepAltar', name:'木雅克神殿　深部祭壇', noTime:true,
         rest:true, noWild:true,
+        /* 事件差分（ver -923）：安雅把祭壇打開之後換成啟動版那一張。 */
+        bgWhen:[ { need:'ruins_altar_on', bg:'Ruins_shinier_DeepAltaractive', noTime:true } ],
+        /* ══ stage7 收尾（ver -923，Ray 交稿）══ 對話 → BOSS「節制」→ 安雅的感應
+           → 祭壇啟動 → 插圖 012_thedisk → 收尾對話。
+           ⚠ **BOSS 就掛在這一段裡**（Ray：「平時不出怪，劇情才出 BOSS」）——
+             `noWild` 擋的是隨機刷怪，`acts` 是劇本，兩件事各走各的路。
+           ⚠ `storyBattle:true` ＝打輸回檔（不是「回入口再打一次」）。回檔點：
+             這張圖的三個安全點之一（前廳／命之泉／這裡）＋進圖時自動落的那一筆。
+           ⚠ 旗**演完才記**：打輸回頭再走進來，整段（含 BOSS）重演。 */
+        acts:[ { flag:'sr_altar', storyBattle:true, lines:[
+          ren('watch','看起來只是某種祭壇呢。'),
+          nou('decoding','是算力集線裝置。'),
+          ren('shockedCalm','！！'),
+          ren('shockedopen','妳為什麼會知道那種事？'),
+          nou('front','知道什麼？'),
+          ren('lookaway','……沒事。'),
+          ren('ask','安雅小姐在意的，就是這個嗎？'),
+          any('talk','我也不知……'),
+          /* 禍魘咆哮 → 索菈娜警戒 → 開打。 */
+          { speaker:'NARRATION', text:'', se:'se_monsterroardeep', auto:1600 },
+          sor('guard','！！'),
+          { battle:'ruins_saint_temperance' },
+          /* ── 戰後 ── 週遭發光 → 安雅感應 → 祭壇啟動。 */
+          ren('shocked','安雅小姐……？'),
+          /* 立繪撤出 → 感應演出（光圈＋白光，見 story 的 `senseFx`）。 */
+          { speaker:'ANYA', text:'', portrait:{ char:'ANYA', show:false },
+            hide:['SORANA','RENNA','NOUVELLE','ANYA'], fx:'sense', auto:2600 },
+          /* 祭壇啟動：插旗（背景差分吃它）＋換到啟動版那一張。
+             ⚠ 旗與 act 的 `flag` 是兩支：一支說「那一段演完了」、一支說
+               「祭壇開著」（鐵律 9：一個狀態一個擁有事件）。 */
+          { speaker:'NARRATION', text:'', flags:['ruins_altar_on'],
+            bg:'Ruins_shinier_DeepAltaractive', auto:1200 },
+          nou('shocked2','發、發生什麼事了？'),
+          ren('shockedCalm','！！'),
+          ren('shocked','難道說、安雅小姐妳是……！'),
+          { speaker:'PLAYER', blank:true },
+          /* 插圖：圓盤（Ray 交件 012_thedisk）。 */
+          Object.assign(ren('thinking','那是……'), { cg:'012_thedisk', cgNoTime:true }),
+          ren('askserious','通用輸入介面？'),
+          /* 收圖回到原背景。 */
+          Object.assign(sor('confuse','那是什麼東西？'), { cg:null }),
+          ren('thinking','跟剛才諾薇兒習得術式的方式一樣。'),
+          ren('thinking','只是這種通用介面，非術師也能使用。'),
+          sor('confuse','非術……總覺得，妳們跟我想像中聖王廳的人不一樣耶。'),
+          sor('tease','修女不都是只會『神啊～』之類的嗎？'),
+          ren('front','我們是聖約騎士團。'),
+          nou('bigsmile','聖王廳的最高執行機關喔。'),
+          sor('confuse','……妳們是想這樣糊弄過去嗎？'),
+          ren('dying',''),
+          nou('dying',''),
+          ren('ask','話說回來，『安娜』大人。'),
+          any('desperate',''),
+          ren('talkwork','稍晚，得跟妳好好聊聊呢。'),
+        ] } ],
         /* ⚠ ver -908（Ray：「把巨像廳跟深部祭壇的連結給斷了」）：它現在是**末端**
            —— 走到底就是祭壇，沒有繞回去的路。 */
         exits:{ back:'bridge' } },
@@ -2810,7 +2966,83 @@ export const TOWNS = {
              留一道拱門不用是可以的（多接才是說謊）。 */
         exits:{ left:'brazier', right:'machine' } },
       machine:    { bg:'Ruins_shinier_Machine', name:'木雅克神殿　古代機械',
-        exits:{ back:'colossus' } },                    // 末端：斷連桿，過不去
+        exits:{ back:'colossus' },                      // 末端：斷連桿，過不去
+        /* ══ stage7・開門事件（ver -923，Ray 交稿）══════════════════════════
+           諾薇兒把古代術式讀進腦袋 → 喚風 → 某處的門開了（`ruins_gate_open`）。
+           ⚠⚠ **兩組分支都看「別人的」好感段位**（`tierWho`）：
+             · 第一組看**蕾娜**（稿：「分支1（蕾娜T1）／分支2（蕾娜T2以上）」）——
+               而兩條支線裡都有諾薇兒的台詞，所以不能只看說話者自己（ver -923 加的欄位）。
+             · 第二組看**諾薇兒**（稿：「分支1（諾T1）／分支2（諾T2）」）。
+           ⚠ 門檻不是等於：T1 那一條寫 `tierMax:1`、T2 以上寫 `tierMin:2`。
+           ⚠ 旗**演完才記**（`flag`，同城鎮所有段落）——中途離開下次再演一次。 */
+        acts:[ { flag:'ruins_gate_open', lines:[
+          ren('shockedopen','這個是……！'),
+          nou('thinking','好像……在哪裡看過這個機械？'),
+          nou('thinking','奇怪？想不起來……'),
+          ren('lookaway',''),
+          sor('think','好像是啟動的狀態耶，之前從來沒有這樣過。'),
+          sor('think','寫了一堆奇怪的東西，看都看不懂。'),
+          nou('talk','是古代文字……'),
+          nou('surprise','這是……！'),
+          any('nervous',''),
+          nou('surprise','封裝術式……'),
+          sor('think','封裝什麼？'),
+          nou('talk','跟我的治癒術式一樣。'),
+          nou('decoding','個體運算元的算力不足以自行覆寫以預寫的封裝路徑完成小範圍干涉無迴圈及邏輯錯誤並寫入完整結束旗標'),
+          ren('worry','諾、諾薇兒？'),
+          nou('surprise','嗯？怎麼了？'),
+          ren('lookawaytalk','……沒事。'),
+          sor('amazed','這些文字，妳看得懂？'),
+          nou('decoding','看不懂，但是可以讀。'),
+          sor('confuse','啥？'),
+          { speaker:'PLAYER', blank:true },
+          nou('talk','對。就像我可以把聖徒之力輸出給你那樣。'),
+          nou('talk','這些東西，也可以強行刻進我的腦袋裡。'),
+          nou('awkward','雖然我也不知道會被輸入什麼東西。'),
+          /* ── 分支①：蕾娜 T1（她要這份技術） ── */
+          Object.assign(ren('talkwork','是嗎？但是也不能放著不管呢。'), { tierWho:'RENNA', tierMax:1 }),
+          Object.assign(ren('ask','魔術革命以後這些技術就變得很珍貴了。'), { tierWho:'RENNA', tierMax:1 }),
+          Object.assign(ren('talkserious','對聖王廳而言也是。妳懂的吧？'), { tierWho:'RENNA', tierMax:1 }),
+          Object.assign(nou('sadsmilenoeye','我知道。'), { tierWho:'RENNA', tierMax:1 }),
+          Object.assign(nou('steady','那，我開始了。'), { tierWho:'RENNA', tierMax:1 }),
+          /* ── 分支②：蕾娜 T2 以上（她先護著人） ── */
+          Object.assign(ren('sigh','是嗎？不過應該也不是什麼大不了的東西。'), { tierWho:'RENNA', tierMin:2 }),
+          Object.assign(ren('smile','別管了吧。'), { tierWho:'RENNA', tierMin:2 }),
+          Object.assign(nou('awkward','……謝謝。妳在擔心我吧？'), { tierWho:'RENNA', tierMin:2 }),
+          Object.assign(ren('lookaway',''), { tierWho:'RENNA', tierMin:2 }),
+          Object.assign(nou('sadsmilenoeye','不要緊的。我知道這些東西對騎士團也很重要。'), { tierWho:'RENNA', tierMin:2 }),
+          /* ── 分支③：諾薇兒 T1 ── */
+          Object.assign({ speaker:'PLAYER', blank:true }, { tierWho:'NOUVELLE', tierMax:1 }),
+          Object.assign(nou('awkward','沒關係，我可以的。'), { tierWho:'NOUVELLE', tierMax:1 }),
+          /* ── 分支④：諾薇兒 T2 以上（多一句、而且白光） ── */
+          Object.assign({ speaker:'PLAYER', blank:true }, { tierWho:'NOUVELLE', tierMin:2 }),
+          Object.assign(nou('awkward','別這樣啦，我會想哭的。'), { tierWho:'NOUVELLE', tierMin:2 }),
+          Object.assign(nou('steady','那，我要開始了。'), { tierWho:'NOUVELLE', tierMin:2 }),
+          /* ── 合流：術式發動 ──
+             ⚠ 白光只在諾薇兒 T2 那一條（稿上「白光淡入／淡出」寫在分支2）——
+               所以 `fx:'whiteflash'` 掛在**帶 tierMin 的那一拍**上。 */
+          { speaker:'NARRATION', text:'', se:'se_saint_install', auto:1400 },
+          Object.assign({ speaker:'NARRATION', text:'', fx:'whiteflash', auto:900 },
+                        { tierWho:'NOUVELLE', tierMin:2 }),
+          any('scared','！！'),
+          Object.assign(ren('intense2','那是……！'), { se:'Sturm' }),
+          /* 喚風（Ray 交件的插圖）。 */
+          { speaker:'SORANA', text:'', portrait:{ char:'SORANA', show:false },
+            hide:['SORANA','RENNA','NOUVELLE','ANYA'],
+            cg:'011_Nouvellebreath', cgNoTime:true, auto:2400 },
+          Object.assign(sor('ready','風？'), { cg:null }),
+          nou('relief','呼——'),
+          nou('bigsmile','似乎是喚風的術式呢。'),
+          sor('tease','感覺在戰鬥中派不上用場。'),
+          ren('sigh','但那也是珍貴的技術。辛苦妳了。'),
+          any('talkshy','諾薇兒……很強。'),
+          nou('bigsmileclose','謝謝。'),
+          /* 某處的門開了 —— 這一拍就是 `ruins_gate_open` 那支旗的**唯一**插旗點
+             （act 的 `flag`，演完才記；鐵律 9）。同一支旗餵三件事：石橋的背景差分、
+             石橋往深部祭壇的出口、巨像廳的鳴鐘者。 */
+          { speaker:'NARRATION', text:'', se:'se_metalclip', seFollow:'se_metalopen', auto:1600 },
+          ren('ask','好像有什麼地方打開了？'),
+        ] } ] },
 
       /* ── 拱門長廊往下深處 ── */
       corridorb:  { bg:'Ruins_shinier_CorridorB', name:'木雅克神殿　拱門長廊',

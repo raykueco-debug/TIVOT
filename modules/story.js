@@ -1457,6 +1457,24 @@ function purpleFlame(){
     fxTimers.push(setTimeout(()=>f.remove(), 1500));
   }
 }
+/* ══⚠⚠ 安雅的**感應演出**（ver -923，Ray 的 stage7 稿：「安雅感應動畫。
+   （飛行畫面的搜索動畫整套）／白光隨光圈快速淡入／白光淡出」）══
+   飛行頁那一套的三件事：**心跳 → 由胸針放出的光圈掃滿全景 → 白光**。
+   ⚠ 這裡是**劇情層的版本**：飛行頁的立繪畫在 canvas 上（要被面板蓋住），
+     劇情層沒有那個需求 —— 立繪由腳本自己用 `portrait` 擺（稿上就是「立繪撤出」
+     之後才放安雅），這一支只負責光圈與白光。
+   ⚠ 光圈的配方**與飛行頁同一份**（`.sense-ring` 的漸層與 1.15s 曲線）——
+     兩邊各一份 CSS 是既有的跨頁慣例（§6.10），改一邊要改另一邊。
+   ⚠ 白光「隨光圈」＝同一拍發，不是等光圈跑完（Ray 的稿：「白光隨光圈快速淡入」）。 */
+function senseFx(){
+  const box=$('storyFx'); if(!box) return;
+  playSe('se_flight_heartbeat');
+  const ring=document.createElement('i'); ring.className='fx-sense-ring';
+  const flash=document.createElement('div'); flash.className='fx-sense-flash';
+  box.appendChild(ring); box.appendChild(flash);
+  fxTimers.push(setTimeout(()=>ring.remove(), 1400));
+  fxTimers.push(setTimeout(()=>flash.remove(), 2200));
+}
 function fireOneShot(line){
   if(line.se) playSe(line.se);
   /* ⚠ 抖動要**跟著演出的長度**（ver -327，Ray：「畫面抖動要連續直到射擊效果停止」）。
@@ -1504,6 +1522,12 @@ function fireOneShot(line){
   }
   if(line.fx==='gunfire') fireHits(GUNFIRE_MS);
   if(line.fx==='purpleflame') purpleFlame();
+  if(line.fx==='sense') senseFx();
+  /* 白光一閃（ver -923，stage7 諾薇兒讀術式那一拍）：與感應那一支共用同一片白
+     （`.fx-sense-flash`）—— 差別只有「有沒有光圈」，不另做一份配方（鐵律 7）。 */
+  if(line.fx==='whiteflash'){ const b=$('storyFx');
+    if(b){ const f=document.createElement('div'); f.className='fx-sense-flash';
+           b.appendChild(f); fxTimers.push(setTimeout(()=>f.remove(), 2200)); } }
 }
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -2293,10 +2317,19 @@ function renderLine(){
   /* `tierMin`（ver -858）：**說話者自己的**好感段位達標才演這一拍 ——
      「T2 才多講一句」這種稿（textByTier 換字做不到「多一拍」）。
      段位解析同 lineText（門檻不是等於）。 */
-  if(line.tierMin!=null){
-    const k = SPEAKERS[line.speaker] && SPEAKERS[line.speaker].art;
+  /* ⚠⚠ `tierWho` 與 `tierMax`（ver -923）：**分支不一定是說話者自己的段位**。
+     stage7 古代機械那一段的稿是「（蕾娜T1）… ／（蕾娜T2以上）…」，而**兩條支線裡
+     都有諾薇兒的台詞** —— 只看說話者的話，那幾拍就會照諾薇兒的好感分歧，分支會混。
+     · `tierWho:'<speaker id>'` ＝看**那個人**的段位（不寫＝說話者自己，舊行為不變）。
+     · `tierMax:N` ＝段位**不超過** N 才演（＝「T1 那一條」）。與 `tierMin` 一組。
+     ⚠ 兩者都是**門檻**不是等於（同 textByTier 的規約）：T1 那一條寫 `tierMax:1`、
+       T2 以上那一條寫 `tierMin:2`，日後多一段 T3 不必回頭改。 */
+  if(line.tierMin!=null || line.tierMax!=null){
+    const who = line.tierWho || line.speaker;
+    const k = SPEAKERS[who] && SPEAKERS[who].art;
     const t = k ? prog.tierOf((prog.getAffection()||{})[k] || 0) : 0;
-    if(t < line.tierMin) return advance();
+    if(line.tierMin!=null && t < line.tierMin) return advance();
+    if(line.tierMax!=null && t > line.tierMax) return advance();
   }
 
   if(line.goto){
