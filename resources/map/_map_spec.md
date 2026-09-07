@@ -52,7 +52,28 @@ Spring／Sarcophagus／PillarHall／Guardians／Ritual／Flooded／MuralGallery�
 | 中層・火與骨 | 長明火／符文 | StairUp, Catacomb, Prison, Mural, Machine, Colossus, Well, DarkBridge, StairDeep |
 | 深層・苔光 | 發光苔 | Rift, MossChamber, DeepSpring, DeepAltar |
 
-### 拓樸（線就照這個連，一條都不要多、不要少）
+### ⚠⚠⚠ 下面這張拓樸表已作廢，**不要照它畫**（2026-09-07）
+
+**神殿的地圖設計 Ray 收回去自己做了**（原話：「算了，給你設計這個根本浪費資源，
+我自己來」）。在他把新的定案交下來、程式端把 `script/town.js` 的
+`shinier_ruins.nodes` 接好之前，**美術不要再產任何一版神殿地圖** —— 節點與連線
+還在動，畫了就是白畫。
+
+作廢的經過（三版，兩週內連改）：
+
+| 版 | 誰改的 | 為什麼 |
+|---|---|---|
+| 18 格（下表） | 我 | 已交件，見「進度」 |
+| 21 格 A 案 | 程式端 ver -902 | `Bridge` 與 `StairUp` 兩端都掛 `up`，一直按同一個方向會在兩格之間彈（Ray：「單向一直走變成無法走出的迴圈」） |
+| 21 格 B 案 | 程式端 ver -903 | Ray：「根本一直線」，形狀整個重排（環①移到上層、環②橫跨中～深七格） |
+| — | **Ray 自己接手** | 停在這裡 |
+
+⚠ **教訓：地圖的拓樸不是美術的東西，是遊戲設計的東西。** 我照著程式端寄來的
+拓樸排了佈局圖、準備產圖，而那份拓樸在我畫的期間就已經被改掉兩次 ——
+**拓樸沒有定案就不要開始畫**，因為地圖的每一筆線都是拓樸的函數，改一條線
+＝整張重畫。等 `script/town.js` 裡真的接好、走得通了，再拿那一份當規格。
+
+### 拓樸（⚠ 這是 18 格那一版的，已作廢，只留作紀錄）
 
     Entrance — Antechamber                （自夏爾森林進來）
 
@@ -115,3 +136,5 @@ WebP q85（**帶 alpha**）→ `resources/map/`；alpha 原 PNG → `resources/_
       · 原稿：`_originals/map/map_ruins_shinier_art.png`；產線對話
         `chatgpt.com/c/6a9e5f7a-450c-83e8-a1ad-ab0f7b9c4ebd`。
       · 被退掉的兩版已進回收區（v1 一直線＋畫錯場景；v2 太細膩）。
+- [ ] ~~21 格重畫~~ —— **取消**，Ray 收回自己設計（見上面那一節）。
+      拓樸佈局圖畫到一半的 `topo21b.png` 留在 scratchpad，不要拿它產圖。
