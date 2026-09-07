@@ -182,8 +182,16 @@ DeepSpring 封閉的地下泉、苔光從池底照亮水體／DeepAltar 最深�
 ## 產出後
 
 WebP q85（**帶 alpha**）→ `resources/map/`；alpha 原 PNG → `resources/_originals/map/`。
-同名覆蓋要在 `script/town.js` 的 `map.img` 掛／改 `?v=N`（§5）。
-交件後由程式端量 `spots` 的比例座標。
+交件後由程式端掛 `map` 與 `spots`（美術可以直接附 `spots`，見 `tools/map_check.py`）。
+
+⚠⚠⚠ **地圖的快取與背景是兩套機制，不要弄混**（2026-09-07 程式端更正）：
+- **背景**走 `bandNames` 組出來的候選鏈，快取由 `config.js` 的 **`ASSET_VER`** 管
+  （美術報檔名、程式端加一列，見 `_ruins_spec.md` 開頭）。
+- **地圖**走節點資料上的 `map.img`（一個手寫字串），**`ASSET_VER` 管不到它** ——
+  只有 `story.bgUrl` 在查那張表。所以**同名覆蓋地圖之後，要請程式端改
+  `script/town.js` 裡那個字串的 `?v=N`**。
+- ⚠ 這是一個沒有人守的破口：`map_shinierforest.webp` 日後若同名覆蓋，
+  沒有任何工具會提醒。**覆蓋地圖 ＝ 交件訊息裡一定要點名。**
 
 ## 進度
 
