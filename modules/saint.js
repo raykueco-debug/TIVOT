@@ -60,6 +60,7 @@ const NI_BURST_FLOOR  = (NI.burstFloor!=null) ? NI.burstFloor : 0;     // 自爆
 const NI_MELT_NAME    = NI.meltdownName  || 'MELTDOWN';  // 熔斷的字
 const NI_MELT_CUTIN   = NI.meltdownCutin || '';          // 熔斷的 cut-in（ASSETS 鑰匙）
 const NI_BURST_PCT    = (NI.burstPct!=null) ? NI.burstPct : 0.25;      // 滿格自爆＝敵最大 HP 的幾成
+const NI_BURST_HEAL   = (NI.burstHealPct!=null) ? NI.burstHealPct : 0;  // 自爆回血＝玩家最大 HP 的幾成（滿格時）
 const NI_BURST_FULL   = (NI.burstFullCells!=null) ? NI.burstFullCells : 16;  // 「滿格」是幾格
 const NI_BURST_NAME   = NI.burstName  || '';       // 自爆的名字（cut-in 的字）
 const NI_BURST_CUTIN  = NI.burstCutin || '';       // 自爆的 cut-in 圖（ASSETS 鑰匙）
@@ -527,7 +528,23 @@ function niBurstResolve(){
     api.setPlayerHpRatio(0); api.onEnemyDefeated();
     return true;
   }
-  finishNightmare(()=>api.setPlayerHpRatio(0));   // HP 剩 1
+  /* ══⚠⚠ **粉碎的回血**（ver -888，Ray：「惡夢粉碎發動時可以回復最高 25% hp，
+     視你在 NI 打掉的格數而定，16 格都打掉就回最大 hp 的 25%」）══
+     先歸 1（那是惡夢化的代價，`setPlayerHpRatio(0)` 的既有語意），再依**期間清掉
+     幾格**補回來 —— 一格都沒清就還是 1，滿盤 16 格就回 25%。
+     ⚠ 分母用 `NI_BURST_FULL`（滿盤 16），不是「這一盤有幾格」：9 格盤清完不該與
+       16 格盤等值（同傷害那一條的理由，鐵律 7 —— 兩者共用同一個數字）。
+     ⚠ 走 `api.healPlayer`（combat 的唯一改血 API）：它自己夾上限、刷血條。
+     ⚠ 順序要在 `finishNightmare` 的收尾**之後** —— 那一支先把血設成結局值，
+       先回血會被它蓋掉（同 lifeReturn「回滿在中止之後」那條的理由）。 */
+  finishNightmare(()=>{
+    api.setPlayerHpRatio(0);                       // HP 剩 1
+    if(NI_BURST_HEAL>0){
+      const ratio = Math.max(0, Math.min(1, (state.niCells||0) / (NI_BURST_FULL||16)));
+      const heal  = Math.round((state.playerMax||0) * NI_BURST_HEAL * ratio);
+      if(heal>0) api.healPlayer(heal);
+    }
+  });
   return true;
 }
 /* 惡夢化的盤面點擊（combat.tap 於 niMode 委派至此）。

@@ -49,7 +49,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.07-887';
+export const VERSION = 'ver 2026.09.07-888';
 
 export const GAME_CONFIG = {
 
@@ -293,7 +293,10 @@ export const GAME_CONFIG = {
         oncePerBattle:true,      // true=整場只擋一次；false=每次都擋（不建議）
         cutin:'cutin_guard',     // 即死防禦專屬大圖（→ Renee_CI_pas.jpg）；程式讀此欄，不硬寫
         voice:'vo_death_guard',  // cut-in 對應 SE（→ Renee_VC_Pas.wav）
-        desc:'受到足以致死的攻擊時，為玩家保留1hp續命。',
+        /* ⚠ ver -888（Ray：「death guard 改成每一場（每個怪）都會 reload 一次」）：
+           `oncePerBattle` 的語意由「一場一次」收窄成「**一隻一次**」——
+           解鎖點是 partner.onEnemySet（換敵那一刻，鐵律 9）。 */
+        desc:'受到足以致死的攻擊時，為玩家保留1hp續命。每換一隻敵人可再觸發一次。',
       },
       // ── 主動技：生命歸還 ─────────────────────────────
       //   聖徒化中，由「下往上滑」發動：強制中止聖徒化，保留當前血量（第四結局）。
@@ -342,12 +345,13 @@ export const GAME_CONFIG = {
                 immuneSeconds:10, immuneHealPct:0.02,
                 desc:'受到足以致死的攻擊時，為玩家保留1hp續命，'
                     +'並獲得10秒免傷；免傷期間普攻每次回復2%生命。' },
-      /* ⚠ ver -740（Ray 定案：「生命歸還只有聖徒化期間可發動，只是原本回血是看
-         當前血量，現在發動一律直接全滿」）—— 同日一度改成「隨時可發＋免傷」，
-         已撤回：聖徒化限定照舊，唯一的改變是回滿（實作在 partner 的 handler）。 */
-      active:{ key:'lifeReturn', name:'生命歸還', context:'saint',
+      /* ⚠ ver -740：發動一律回滿（不再看當前血量）。
+         ⚠⚠ ver -888（Ray：「諾薇兒的 life return 改成發動就回滿，不囉唆」）：
+           **`context` 由 `'saint'` 改成 `'any'`** —— 聖徒化限定那道門撤了，
+           盤面上隨時都能發。在聖徒化中發動照舊順手中止它（實作在 partner 的 handler）。 */
+      active:{ key:'lifeReturn', name:'生命歸還', context:'any',
                cutin:'cutin_return', voice:'vo_nou_return',   // ver -711：她自己的語音
-               desc:'聖徒化期間發動：強制中止聖徒化，生命完全回復。' },
+               desc:'發動即生命完全回復（聖徒化期間發動會一併中止聖徒化）。' },
     },
     /* ══ 安雅（ver -671，Ray：「從玩家跟安雅一起出旅店後，夥伴就從諾薇兒
        換成安雅了」）══
@@ -2187,6 +2191,14 @@ export const GAME_CONFIG = {
          可以爆到她只剩 5% 血」）—— 它是「打不死」的下限，不是傷害本身。 */
       burstFloor: 0.05,
       burstPct: 0.25,
+      /* ══ 夢境粉碎的回血（ver -888，Ray：「惡夢粉碎發動時可以回復最高 25% hp，
+         視你在 NI 打掉的格數而定，NI 是 16 格，16 格都打掉就回最大 hp 的 25%」）══
+             回血 ＝ 玩家最大 HP × `burstHealPct` × （惡夢化期間清掉的格數 ÷ `burstFullCells`）
+         ⚠ 分母是**滿盤 16 格**（`burstFullCells`，與傷害那一條共用同一個數字）——
+           不是「這一盤有幾格」：9 格盤清完不該與 16 格盤等值。
+         ⚠ 這是**取代**「HP 剩 1」那一條，不是加在它上面：粉碎仍然先把血歸到 1
+           （那是惡夢化的代價），再依戰果補回來 —— 一格都沒清就還是 1。 */
+      burstHealPct: 0.25,
       burstFullCells: 16,
       /* 自爆的名字與 cut-in（ver -674，Ray：「CI_Anya_Dreambreaker／夢境粉碎／
          這是安雅的主動技」）。

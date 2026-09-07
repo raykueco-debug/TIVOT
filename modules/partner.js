@@ -123,11 +123,17 @@ const ACTIVE_HANDLERS = {
      ⚠ 回滿在中止**之後**：`lifeReturnAbort` 的 `exitSaint` 同步收掉 saintMode，
        血條語意回到一般血，這時回滿才是回滿（聖徒化期間血條＝倒數槽，
        推滿＝OBE，先回滿就出事）；結局的 finalHpThunk 是 no-op，不會蓋回去。 */
+  /* ⚠⚠ **發動就回滿，不囉唆**（ver -888，Ray）—— -740 的「只有聖徒化期間可發動」
+     那道門撤掉（卡上 `context` 改 `'any'`）：現在盤面上隨時都能發。
+     ⚠ 中止聖徒化那一步**只在真的在聖徒化時做**：不在聖徒化卻叫 `lifeReturnAbort`
+       等於憑空收掉一個沒開的狀態。
+     ⚠ 回滿在中止**之後**（-740 的原話）：`exitSaint` 同步收掉 saintMode，血條的
+       語意才回到一般血 —— 先回滿的話那時的血條還是倒數槽，推滿＝OBE。 */
   lifeReturn(a, act){
-    if(!state.saintMode) return false;   // 保險：非聖徒化不執行
+    if(state.over || state.enemyHp<=0) return false;
     const vo = asset(act && act.voice); if(vo) SFX.playVoice(vo, sfxGain(act.voice));   // SE 與結局 cut-in 同步（→ vo_nou_return）
-    a.saintApi.lifeReturnAbort();
-    api.healPlayer(state.playerMax);     // 一律全滿（ver -740）
+    if(state.saintMode) a.saintApi.lifeReturnAbort();
+    api.healPlayer(state.playerMax);     // 一律全滿（ver -740／-888）
     return true;
   },
   // 前線補給（馬季諾·主動）：發動即進入雙槍破防射擊窗口（不吃破防值、不另播雙槍
@@ -227,7 +233,7 @@ export function guardHealPct(){
      NI 的倒數槽本來就會把血抽到 1，於是「跌破 30%」與「進 NI 劇情」同時發生，
      兩段演出疊在一起就卡住了。改成**反擊**之後兩者再也不會撞。
    ⚠ **每隻怪一次**（不是每場一次）：連戰換敵要重新上膛 —— 由 `enemy.setEnemy`
-     經 combat 呼叫 `armFirstCounter()`（那是「換了一隻怪」的唯一時刻）。
+     經 combat 呼叫換敵鉤子（那是「換了一隻怪」的唯一時刻）。
    ⚠ 效果與原本同一支（`setLowHpBuff` ＋計時器）：只換觸發條件，不換效果。 */
 /* ══⚠⚠ **改成無限制發動**（ver -886，Ray：「把安雅的被動技改成無限制發動」）══
    -693 的「每隻怪一次」（`fcArmed` 那把鑰匙）整個撤掉：現在**每一次完美反擊都發動**。
@@ -236,9 +242,18 @@ export function guardHealPct(){
      所以不擋的話，發動中的每一次反擊都會再發動一次 ⇒ 每一發都插一張 cut-in
      （cut-in 會凍住盤面），技能就變成連續播片。擋掉之後的行為是
      「**5 秒跑完 → 下一次完美反擊立刻可以再開**」，那才是「無限制」的樣子。
-   ⚠ `armFirstCounter()` 留著當空殼：`enemy.setEnemy` 經 combat 還在叫它
-     （那是「換了一隻怪」的唯一時刻），拿掉呼叫端要動三個檔，而它現在無事可做。 */
-export function armFirstCounter(){ /* ver -886：無限制發動之後這裡不必上膛了 */ }
+   ⚠ 「每隻怪一次」那把鑰匙撤掉之後，`onEnemySet()` 換去做別的事（見那一支）。 */
+/* ══⚠⚠ **換了一隻怪**（`enemy.setEnemy` 經 combat 的 `onEnemySet` 注入，
+   那是「這一場換敵」的唯一時刻，鐵律 9）══
+   · **即死防禦每隻怪 reload 一次**（ver -888，Ray：「death guard 改成每一場
+     （每個怪）都會 reload 一次」）—— 卡上仍是 `oncePerBattle`，語意由「一場一次」
+     收窄成「**一隻一次**」：連戰時每換一隻就把 `deathGuardUsed` 解開。
+     ⚠ 這一支是唯一的解鎖點；九星「方舟」（無傷擊殺）那一條照舊獨立存在
+       —— 那是「同一隻怪身上再賺回一次」，與換敵是兩件事。
+   · 明晰之夢自 -886 起無限制發動，這裡不再需要上膛。 */
+export function onEnemySet(){
+  state.deathGuardUsed = false;
+}
 /* ══ 九階強化「方舟」（ver -707，Ray：「無傷使敵 HP 歸零，可回復已使用的被動技」）══
    打倒一隻敵人的那一刻，**這一場全程無傷**就把用掉的一次性被動重新上膛：
    即死防禦（`deathGuardUsed`）。⚠ ver -886 起明晰之夢是無限制發動，不在這裡回復。
@@ -286,7 +301,7 @@ export function onCounter(){
     if(api.resetInstallSlot) api.resetInstallSlot();   // 惡夢化可以再發一次
   }
   /* 無限制發動（ver -886）：不再問「這隻怪用過了沒」。
-     ⚠ 只擋「這一段還在跑」——理由見 armFirstCounter 上面那一段；
+     ⚠ 只擋「這一段還在跑」——理由見 onThreatResolved 上面那一段；
        但**第三次那一發不擋**（見上）。 */
   if(state.lowHpBuff && !reload) return;
   fireBuff(pas, reload);

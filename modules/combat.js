@@ -191,7 +191,7 @@ export function setup(){
     /* 換了一隻怪 → 明晰之夢重新上膛（ver -693，Ray：「不算場，每隻怪都可以觸發一次」）。
        ⚠ 掛在 `setEnemy` 是因為那是**「換了一隻怪」的唯一時刻**（開場、連戰換敵、
          Boss 亂入都經過它）—— 在別的地方各補一次一定會漏（鐵律 8）。 */
-    onEnemySet: partner.armFirstCounter });
+    onEnemySet: partner.onEnemySet });   // 換敵：即死防禦 reload（ver -888）
 }
 export function bootIdle(){
   // 開機停在首頁：先建立盤面/血條供背景顯示，但 over=true 讓計時與敵人不啟動
