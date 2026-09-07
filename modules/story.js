@@ -24,7 +24,7 @@
    輪廓界由 measureBounds 在載入時量一次。
    ══════════════════════════════════════════════════════════════════════ */
 
-import { GAME_CONFIG, fileGain } from '../config.js';   // 舞台幾何常數（castStage）與逐支音量（fileGain）：鐵律 7 的單一真相
+import { GAME_CONFIG, fileGain, assetVer } from '../config.js';   // 舞台幾何常數（castStage）與逐支音量（fileGain）：鐵律 7 的單一真相
 import { MAIN_SCRIPT, MAIN_ENTRY } from '../script/mainScript.js';
 import { SPEAKERS, ART, CAST_TALL, nameOf, artOf, exprSrc, frameOf } from '../script/speakers.js';
 import * as prog from '../script/progress.js';
@@ -670,10 +670,19 @@ export function bandNames(base, noTime){
 /* ⚠ `name` 可以自己帶副檔名（`Capital_Downtown_Day.png`）—— 城鎮的背景載入器
    （modules/town.js 的 `bgFor`）會逐個試 `.webp` / `.png`，試到哪一個就把**那一個**
    傳進來。沒帶就照預設補 `.webp`（§5 的規約：新圖一律轉 WebP）。 */
+/* ══⚠⚠ **背景／插圖的 URL 只有這一支在組**（ver -905，鐵律 7）══
+   -904 之前有**兩份**：這一支（顯示用）與 `modules/town.js` 的
+   `img.src='resources/background/'+name`（探測用）。兩份組出來的字串一樣，
+   所以一直沒出事 —— 但要加 `?v=` 的那一刻就露餡了：只改一邊，探測抓到帶版本的新圖、
+   顯示卻抓沒版本的舊快取（或反過來），而且**看起來只是「圖沒換」**。
+   現在 town 改叫 `bgUrl()`（就是這一支），版本尾巴自然兩邊一致。 */
 function imgSrc(name){
   const dir = /^\d{3}_/.test(name) ? CG_DIR : BG_DIR;
-  return dir + name + (/\.(webp|png|jpe?g)$/i.test(name) ? '' : '.webp');
+  const file = name + (/\.(webp|png|jpe?g)$/i.test(name) ? '' : '.webp');
+  return dir + file + assetVer(file);
 }
+/* 給 `modules/town.js` 的背景探測用（同一支，見上）。 */
+export function bgUrl(name){ return imgSrc(name); }
 /* 換圖：淡出 → 換 → 淡入。FADE_MS 與 style.css 的 transition 同值。
    ⚠⚠ `.fading` 要等**新圖載好**才拿掉（同 ver -322 立繪那個坑）：移除 class 的
      那一瞬間元素上還是舊圖，於是**舊圖先淡回來、新圖才蓋上去**＝兩張疊在一起。

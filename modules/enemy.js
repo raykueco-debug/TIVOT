@@ -17,6 +17,7 @@ import * as clock from '../script/clock.js';   // 立繪的時段差分（ver -4
 import { GAME_CONFIG, HITFX, asset, sfxGain } from '../config.js';
 import { state, initEnemyHp } from '../state.js';
 import { SFX } from '../audio.js';
+import * as story from './story.js';   // 背景 URL 只有 story.bgUrl 一支在組（ver -905，鐵律 7）
 import { sakuraBurst } from './sakura.js';   // 鹿主的櫻花狂亂（ver -899）——同一支花瓣引擎，見 spawnSakura
 
 const $ = id => document.getElementById(id);
@@ -663,12 +664,13 @@ export function setEnemy(key){
      ⚠ 覆寫存的是**檔名**（城鎮那邊真的載到的那一個，含副檔名與時段）；
        卡上的 `bg` 是**基底名**，要自己補 `.webp`。兩種寫法差在這裡，別搞混。
      ⚠ 沒寫要清掉 —— 同 setEnemy 的其他欄位，連戰換敵不能留上一隻的。 */
+  /* ⚠ URL 走 `story.bgUrl`（唯一那一支，ver -905）：同名覆蓋的圖要帶 `?v=` ——
+     這裡自己拼字串的話，戰鬥上半會吃到舊快取，而城鎮那半是新的（同一張圖兩個樣）。
+     ⚠ `bgUrl` 自己會補副檔名，所以覆寫（含副檔名）與卡上的基底名都丟給它就好。 */
   const topEl = $('top');
   if(topEl){
-    const ov = state.battleBg;
-    topEl.style.backgroundImage =
-      ov ? ('url("resources/background/'+ov+'")')
-         : (en.bg ? ('url("resources/background/'+en.bg+'.webp")') : '');
+    const nm = state.battleBg || en.bg || '';
+    topEl.style.backgroundImage = nm ? ('url("'+story.bgUrl(nm)+'")') : '';
   }
   loadEnemyPortrait(en);
   /* 換了一隻怪（ver -693）：讓搭檔的「每隻怪一次」那一類被動重新上膛。

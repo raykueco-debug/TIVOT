@@ -53,7 +53,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.07-904';
+export const VERSION = 'ver 2026.09.07-905';
 
 export const GAME_CONFIG = {
 
@@ -2802,6 +2802,33 @@ export function weaponDescText(key, story){
 }
 
 export function asset(key){ return (key && ASSETS[key] != null) ? ASSETS[key] : ""; }
+
+/* ══⚠⚠⚠ 同名覆蓋的圖要換一次快取（ver -905）══════════════════════════════
+   §5 的規約：「同名覆蓋的圖一定要加／改 `?v=N`」—— 但那條以前**只有 `ASSETS` 那條路
+   走得到**（路徑是手寫的字串，可以直接把 `?v=2` 打進去）。**背景不是**：
+   它的檔名是由 `bandNames` 把基底名＋時段＋副檔名**組出來的**，沒有地方讓人寫 `?v=`。
+   於是美術同名覆蓋一張背景，玩家端就會抱著舊圖不放（-650 娜塔莉那張踩過的同一個坑，
+   只是這次換成背景）。
+
+   所以這裡開一張**逐檔的版本表**，鑰匙與 `tuning.fileGain` 同一套：
+   **檔名、去副檔名、去 `?v=`、轉小寫**。沒列到的＝版本 1＝不加尾巴（不動快取）。
+   ⚠ **不要改成「全域一個版本號」**：那會讓每次覆蓋一張圖就把**所有**背景重抓一遍，
+     手機上是好幾 MB。只列真的被覆蓋過的那幾張。
+   ⚠ 加在**組 URL 的那一支**（`story.bgUrl`，鐵律 7 的唯一計算點）—— 不要在
+     呼叫端各自拼一次。 */
+export const ASSET_VER = {
+  /* ver -905：美術補跑 Gemini 去顆粒重繪、同名覆蓋（Ray：「顆粒多到刺眼」）。
+     ⚠ 只有主圖被覆蓋，dawn/dusk/night 本來就是 Gemini 產物、沒有動 —— 所以不列。 */
+  'ruins_shinier_crossway_day': 2,
+  'ruins_shinier_brazier':      2,
+  'ruins_shinier_hollow':       2,
+};
+export function assetVer(nameOrPath){
+  const n = String(nameOrPath||'').split('/').pop().split('?')[0]
+              .replace(/\.[^.]+$/,'').toLowerCase();
+  const v = ASSET_VER[n];
+  return v ? ('?v='+v) : '';
+}
 
 /* ══ 逐支音檔的增益（ver -441）══════════════════════════════════════════
    ⚠⚠ **一支音檔只有一個響度**，所以查表的鑰匙是**檔名**（去副檔名、去 `?v=`、

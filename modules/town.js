@@ -513,7 +513,9 @@ function bgFor(list, done){
       if(i>0 && !missingBg.has(cands[0])){ missingBg.add(cands[0]);
         console.info('[town] 沒有這個時段的背景，退回：', cands[0], '→', name); } };
     img.onerror=()=>{ if(my===bgSeq) tryAt(i+1); };
-    img.src='resources/background/'+name;
+    /* ⚠ 走 `story.bgUrl`（唯一那一支，ver -905）：同名覆蓋的圖要帶 `?v=`，
+       探測與顯示必須拿到**同一個 URL**，否則探測抓新圖、顯示吃舊快取。 */
+    img.src=story.bgUrl(name);
   };
   tryAt(0);
 }
