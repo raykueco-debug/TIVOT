@@ -3043,6 +3043,15 @@
        那一片黑要蓋得過它 —— 排到黑幕之上會變成「畫面全黑了還有一層在吃點擊」。 */
   #storyCardCatch{position:absolute;inset:0;z-index:19;display:none;background:transparent;
     pointer-events:auto;}
+  /* 暗罩守望的回報條（ver -903）：**管理人模式限定**，浮在最上層 6 秒。
+     ⚠ 它報的是「剛剛有一片黑幕沒人收，我幫你清掉了」—— 給 Ray 在手機上讀出名字用的，
+       一般玩家看到只會困惑（對他來說畫面已經好了）。 */
+  #darkToast{position:fixed;left:8px;right:8px;bottom:calc(env(safe-area-inset-bottom,0px) + 64px);
+    z-index:99998;display:none;padding:9px 12px;border-radius:8px;
+    background:rgba(90,20,20,.94);border:1px solid #d86a6a;color:#ffe0e0;
+    font-size:12px;line-height:1.5;letter-spacing:.5px;pointer-events:none;
+    box-shadow:0 6px 20px rgba(0,0,0,.6);}
+  #darkToast.on{display:block;}
   #storyCardCatch.on{display:block;}
   #storyTitleCard.on.show{opacity:1;}
   /* ⚠⚠ **字級調小＋上下兩條細橫線**（ver -880，Ray：「初見地名太大了，上下加兩條

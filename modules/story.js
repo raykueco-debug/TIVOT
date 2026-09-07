@@ -3240,6 +3240,47 @@ export function flashLine(text, name){
 /* 收掉對話框。⚠ 順便宣告「現在沒有在演」（ver -387）—— `flashLine` 開場時
    `markTalking(true)`，收場就該由**同一個層**關掉（§6.5：誰在演，誰負責宣告）。
    不關的話城鎮的地名／時刻會一直讓開，玩家看不到自己在哪、幾點。 */
+/* ══⚠⚠⚠ 暗罩守望（`assertNoDarkOverlay`，ver -903）══════════════════════
+   Ray：「變黑那件事還是沒解決」——**同一類 bug 已經第五次**，所以不再逐個猜，
+   改成「在玩家可以動的那一刻，檢查舞台上還有沒有暗罩」。
+
+   ⚠⚠ **判準是「玩家可以動了」**，不是「過了幾秒」：這幾片黑幕本來就會合法地
+     蓋著一段時間（切景 260ms、睡覺 10 秒、劇本指定的三秒黑），用時間去判一定誤殺。
+     但**只要導覽箭頭出來了、或對話框開始等你點**，畫面就不該還有任何一片黑 ——
+     那一刻還在的，一定是某條路徑忘了收。
+   ⚠ 這裡只列**沒有「點一下就收掉」出路**的那幾片：
+     `#storyHint` 與 `#townMapView` 點畫面就收，卡住也自己救得回來，不必守。
+   ⚠⚠ **清掉之後一定要留一行 console**（同 `verifyCastCleared`）：
+     這一支是**驗收**不是規矩 —— 真的驗到就是上游有 bug，靜靜清掉會讓下一次查不出來。
+     測試模式再多浮一行字，Ray 在手機上看得到是哪一片，回報時直接講名字。 */
+const DARK_LAYERS = [
+  { id:'storyVeil',  name:'切景黑幕 #storyVeil' },
+  { id:'storyFade',  name:'場景區黑幕 #storyFade' },
+  { id:'transition', name:'戰鬥過場 #transition' },
+];
+export function assertNoDarkOverlay(where){
+  const stuck=[];
+  for(const L of DARK_LAYERS){
+    const el=$(L.id);
+    if(el && el.classList.contains('on')){ el.classList.remove('on'); el.style.transitionDuration=''; stuck.push(L.name); }
+  }
+  { const st=$('storyStage');
+    if(st && st.classList.contains('kerb-veil')){ st.classList.remove('kerb-veil'); stuck.push('關棺暗罩 kerb-veil'); } }
+  if(!stuck.length) return false;
+  const msg='['+(where||'?')+'] 畫面該亮了卻還蓋著：'+stuck.join('、')+' —— 已清掉，上游有路徑沒收它';
+  console.warn('[story] '+msg);
+  /* 管理人模式才浮字：一般玩家看到這行只會困惑，而它對玩家來說已經修好了。 */
+  if(document.body.classList.contains('testmode')) flashDark(msg);
+  return true;
+}
+let darkToastT=null;
+function flashDark(msg){
+  let d=$('darkToast');
+  if(!d){ d=document.createElement('div'); d.id='darkToast'; document.body.appendChild(d); }
+  d.textContent=msg; d.classList.add('on');
+  clearTimeout(darkToastT); darkToastT=setTimeout(()=>d.classList.remove('on'), 6000);
+}
+
 /* ══⚠⚠ 報一件事的卡（`showTitleCard`，ver -899）══════════════════════════
    大字一行＋小一級的字一行，罩在場景區上，**點畫面任一處收掉、收掉才往下演**。
    現在有兩個用途，**共用這一支**（鐵律 8）：

@@ -1348,6 +1348,11 @@ function showNav(on){
      **不是那顆鈕** —— 鈕自 ver -899 起常駐（見 showMapBtn）。 */
   if(!on) mapClose();
   if(on){
+    /* ⚠⚠⚠ **「導覽箭頭出來了」＝玩家可以動了**（ver -903）：那一刻畫面上不該還有
+       任何一片黑幕。有的話就是某條路徑忘了收 —— 當場清掉並報出是哪一片
+       （`story.assertNoDarkOverlay`，那一支的說明寫著為什麼判準是這個而不是秒數）。
+       ⚠ 城鎮這一格是 Ray 玩最久的地方，也是他四次回報「變黑」的現場。 */
+    story.assertNoDarkOverlay('town.showNav');
     updateCompass();
     /* ⚠⚠ **字格的位置要在 `.on` 之後才量**（ver -406 修）：`#townNav` 沒有 `.on`
        時整層是 `display:none`，那時候量目的地字格得到的是 **0×0** —— 夾回畫面內那一段
