@@ -15,7 +15,7 @@
 
 import * as clock from '../script/clock.js';   // 立繪的時段差分（ver -423）
 import { GAME_CONFIG, HITFX, asset, sfxGain } from '../config.js';
-import { state, initEnemyHp } from '../state.js';
+import { state, initEnemyHp, addPartnerFight } from '../state.js';
 import { SFX } from '../audio.js';
 import * as story from './story.js';   // 背景 URL 只有 story.bgUrl 一支在組（ver -905，鐵律 7）
 import { sakuraBurst } from './sakura.js';   // 鹿主的櫻花狂亂（ver -899）——同一支花瓣引擎，見 spawnSakura
@@ -587,6 +587,10 @@ export function setEnemy(key){
   stopSakura();                                 // 換了一隻怪 → 上一隻的櫻花與 Sturm 一起收（ver -899）
   state.currentEnemyKey = key;                 // 3.7：記住目前怪 key，供 boardGridFor 查每盤格數
   state.enemyHitsTaken = 0;                     // 換了一隻怪 → 「這一隻」的受擊數歸零（九階「方舟」，ver -708）
+  /* 這一局的出場帳（ver -921，Ray：「好感度給出場數最多的那一位全拿」）——
+     記在**現在出場的那一位**頭上。⚠ 掛在這裡是因為 `setEnemy` 就是「一場」的
+     唯一邊界（§0.5）：連戰換第二隻也走這一支，那確實是新的一場。 */
+  addPartnerFight(state.pickedPartner);
   initEnemyHp(en.hp);                           // 3.2：敵血基準（載入時 setter）
   state.ULT_DAMAGE = en.attack;                 // 3.3：大絕單擊傷害
   /* 蓄力秒數。⚠ 卡上可以給**區間**（`[3,5]`，ver -423 的巨型蜈蚣）——

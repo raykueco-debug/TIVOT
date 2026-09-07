@@ -245,6 +245,14 @@ export const state = {
      ⚠ `clearTime` 本來就只累計實打時間（轉場、cut-in、對話都不計），
        城裡走路更不經過戰鬥 —— 所以「不計算移動」是既有行為，不必另外扣。 */
   sessionStats: null,
+  /* ══⚠⚠ **這一局裡誰打了幾場**（ver -921，Ray：「最後結算時的好感度給出場數
+     最多的那一位全拿，平手的話一人一半」）══ 鑰匙＝搭檔 key、值＝場數（怪的隻數）。
+     · **誰寫**：`enemy.setEnemy`（＝「換了一隻怪」的唯一時刻，§0.5 的「場」）。
+     · **誰清**：`inspector.clearSessionGain()`（＝結算領完帳的那一刻，與
+       `sessionStats` 同生共死）—— 這是「一局」的帳，不是「一場」的（鐵律 9）。
+     ⚠ 不可以在 `combat.startGame` 那排歸零裡清：同一局裡每一場都會走那一支，
+       清了就只剩最後一隻的帳（同 sessionStats 的理由）。 */
+  partnerFights: null,
   sessionMoney: 0,
   sessionLoot: null,     // 連戰中間場記帳的掉落（ver -869，Ray：「戰利品也到結算時給」）；收段結算一起發
 
@@ -389,6 +397,13 @@ export function addPerfect(){
  * partner.currentPartner() 讀此值決定能力歸屬——換人即技能切換。 */
 export function setPickedPartner(key){
   if(GAME_CONFIG.partners[key]) state.pickedPartner = key;
+}
+/* 這一局又多打了一場：記在**當時出場的那一位**頭上（ver -921）。
+   ⚠ 呼叫點只有 `enemy.setEnemy` 一處（鐵律 8）：那是「場」的唯一邊界。 */
+export function addPartnerFight(key){
+  if(!key) return;
+  if(!state.partnerFights) state.partnerFights = {};
+  state.partnerFights[key] = (state.partnerFights[key]|0) + 1;
 }
 
 /* enemy.js 專用：載入敵人時，初始化敵方血量（3.2 combat-owned 的載入時寫入）。

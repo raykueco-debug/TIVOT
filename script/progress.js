@@ -382,15 +382,22 @@ function getFloors(){
    · 索菈娜：方向相反，**D +1／C +0.5**（-557 的「C 以下都 +1」已由這張表取代）。
    · 蕾娜：不看搭檔欄，**S +0.5／A +0.25**（ver -724 全面 ×2 之後直接給小數）。
    回傳這一場加到誰（[]＝沒人），呼叫端要顯示可以用。 */
+/* ⚠⚠ 第二個參數可以是**一位**（字串，舊用法）或**一份分配表**（ver -921）：
+   `[{ key, mul }]` —— `mul` 是那一位拿到的**份額**（全拿 1、平手一人一半 0.5）。
+   誰拿、拿幾分之幾由呼叫端決定（`inspector.settleAffectionShares`，它才知道
+   這一局誰打了幾場）；**加多少**仍然只有這裡在查表（鐵律 7）。 */
 export function applyRankAffection(grade, partnerKey){
   const got=[];
   /* ⚠ 表在 config（`rating.affection`，鐵律 1）——這一支只負責照表加。 */
   const A=((GAME_CONFIG.rating||{}).affection)||{};
-  if(CHARS.indexOf(partnerKey)>=0){
+  const share = Array.isArray(partnerKey) ? partnerKey
+              : (CHARS.indexOf(partnerKey)>=0 ? [{ key:partnerKey, mul:1 }] : []);
+  for(const one of share){
+    const k=one && one.key; if(CHARS.indexOf(k)<0) continue;
     /* 索菈娜的方向與別人相反（評價越爛越加）；其餘搭檔照 `partner` 那一欄。 */
-    const tbl = (partnerKey==='sorana') ? (A.sorana||{}) : (A.partner||{});
+    const tbl = (k==='sorana') ? (A.sorana||{}) : (A.partner||{});
     const d = tbl[grade];
-    if(d){ addAffection(partnerKey, d); got.push(partnerKey); }
+    if(d){ addAffection(k, d * (one.mul!=null ? one.mul : 1)); got.push(k); }
   }
   /* 蕾娜：不看搭檔欄，照她自己那一欄加。
      ⚠ ver -724 起**直接給小數**（S +0.5／A +0.25）—— 兩個都對得上 `addAffection`

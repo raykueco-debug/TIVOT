@@ -123,7 +123,45 @@ export function mergeSessionStats(stats){
   out.sawMaxBurst  = !!(out.sawMaxBurst  || acc.sawMaxBurst);
   return out;
 }
-export function clearSessionGain(){ state.sessionStats=null; state.sessionMoney=0; state.sessionLoot=null; }
+export function clearSessionGain(){ state.sessionStats=null; state.sessionMoney=0; state.sessionLoot=null;
+  state.partnerFights=null;   // 出場帳與這一局同生共死（ver -921，見 state 的說明）
+}
+
+/* ══⚠⚠ **好感給誰：出場數最多的那一位全拿**（ver -921，Ray 定案）══
+   > 「最後結算時的好感度給出場數最多的那一位全拿，平手的話一人一半。
+   >   索拉娜是低評價高好感，如果是低評價她就獨拿不參與競爭，前提是有出場。
+   >   高評價的安諾才有競合問題」
+
+   ⇒ **兩個各自獨立的桶**，不是一張排行榜：
+     ① **索菈娜桶**：她那一欄（`rating.affection.sorana`＝低評價才給）有值，
+        而且**她這一局有出場** ⇒ 照表**全額獨拿**，不進競爭。
+     ② **競爭桶**：其餘出過場的搭檔（安雅／諾薇兒）比**場數**，最多的全拿；
+        平手就均分（`mul` 帶下去，`addAffection` 會對齊到 1/4）。
+   ⚠ 為什麼索菈娜不能丟進同一個排行榜比：她與別人**根本不是在爭同一份獎**
+     —— 她的獎在低評價那一格，安諾的在高評價那一格。同一場結算裡兩邊可以
+     各自成立（雖然現行的表沒有重疊的等第），排行榜會把它們錯誤地互斥掉。
+   ⚠ **出場數＝場（怪的隻數）**不是局數也不是盤數（§0.5）：帳在 `enemy.setEnemy`
+     記，這裡只讀。
+   ⚠ 沒有帳（舊存檔／完全沒打過架）就退回舊行為：算在現在這一位頭上。
+   ⚠ 蕾娜不在這裡：她走自己那一欄，`applyRankAffection` 一律加（她不是搭檔）。 */
+function settleAffectionShares(){
+  const f = state.partnerFights;
+  if(!f) return state.pickedPartner;                     // 退路：舊行為
+  const keys = Object.keys(f).filter(k=>f[k]>0);
+  if(!keys.length) return state.pickedPartner;
+  const out=[];
+  /* ① 索菈娜：有出場就自己一桶（她那一欄由 `applyRankAffection` 依 grade 查表 ——
+     這一支只決定「誰」與「幾分之幾」，不決定「加多少」，鐵律 7）。 */
+  if(keys.indexOf('sorana')>=0) out.push({ key:'sorana', mul:1 });
+  /* ② 其餘的比場數。 */
+  const rivals = keys.filter(k=>k!=='sorana');
+  if(rivals.length){
+    const top = Math.max(...rivals.map(k=>f[k]));
+    const win = rivals.filter(k=>f[k]===top);
+    win.forEach(k=>out.push({ key:k, mul:1/win.length }));   // 平手一人一半
+  }
+  return out;
+}
 
 // 分數 → EXP：offset 質數基底 + score×mult，尾數微擾 + overkill 加成，避免整齊倍數。
 export function scoreToExp(score, stats, cfg = GAME_CONFIG.rating.exp){
@@ -353,11 +391,15 @@ export function settle(totalTime, stats, opts={}){
        併在分流**之前**，日後多一條結算路徑也自動吃到（鐵律 8）。
      ⚠ 領完就清：不然下一場會把上一段的再算一次。
      ⚠ 戰敗不併也不清 —— 那一頁不報帳，而這一段可能還要再打一次。 */
-  let sessionMoney = 0, sessionLoot = null;
+  let sessionMoney = 0, sessionLoot = null, shares = null;
   if(stats && !isLose){
     stats = mergeSessionStats(stats);
     sessionMoney = state.sessionMoney|0;
     sessionLoot = state.sessionLoot || null;   // 中間場記帳的掉落（ver -869），下面併進拾得
+    /* ⚠⚠ **出場帳要在清帳之前算**（ver -921）：`clearSessionGain()` 會把
+       `partnerFights` 一起清掉（它是同一局的帳）—— 算在後面就永遠只剩退路那一支，
+       實測就是「誰都沒加到好感」。同 `sessionMoney` 先取值再清的理由。 */
+    shares = settleAffectionShares();
     clearSessionGain();
     /* ⚠ 「這一場打了多久」也跟著變成整場的總和 —— 最佳紀錄、破紀錄獎品、
        畫面上的「戰鬥用時」全部同一個數字（鐵律 7）。 */
@@ -386,11 +428,11 @@ export function settle(totalTime, stats, opts={}){
      排在所有分流**最前面**：這一頁沒有敵人（不是打完誰，是把這一路的帳結掉），
      底下那三條都要問 `state.currentEnemyKey`。⚠ 併帳／清帳／HP 回滿在上面已經做完
      —— 那是「一局的終點」共通的手續，這一條只是第四條結算路徑（鐵律 8）。 */
-  if(opts.rest && !isLose){ restSettle(totalTime, stats, sessionMoney, sessionLoot); return; }
+  if(opts.rest && !isLose){ restSettle(totalTime, stats, sessionMoney, sessionLoot, shares); return; }
   if(state.tutorialRun && !isLose){ tutorialSettle(totalTime, stats, sessionMoney); return; }
   /* 劇情插入戰（ver -375）：與教學結算同一頁 —— **沒有監察官、沒有等級**，
      只有戰績、EXP 與拾得。⚠ 不是教學，所以不走教學那兩句台詞。 */
-  if(state.scriptRun && !isLose){ scriptSettle(totalTime, stats, sessionMoney, sessionLoot); return; }
+  if(state.scriptRun && !isLose){ scriptSettle(totalTime, stats, sessionMoney, sessionLoot, shares); return; }
   if(isLose){
     const rows=combatStatsRows();
     showResultSequence(L.result.loseTitle, L.result.loseSub, rows, 'lose', true);
@@ -708,14 +750,14 @@ function tutorialSettle(totalTime, stats, sessionMoney){
      共用的部分本來就已經是抽出來的函式了。
    ⚠ 「沒打過架就不作動」擋在**呼叫端**（城鎮的 `restActDue` 問有沒有帳）——
      走到這裡就一定有帳可結。 */
-function restSettle(totalTime, stats, sessionMoney, sessionLoot){
+function restSettle(totalTime, stats, sessionMoney, sessionLoot, shares){
   state.sRankUnlocked = false;
   const ev = evaluate(stats);
   /* 評價者照舊（`battleId` 傳 null ＝沒有哪一場的專屬台詞，走章節／好感那張通用表）。
      ⚠ 這一局本來就是一場一場打出來的，等第與好感照給 —— 它與打贏結算怪的那一頁
        是同一件事，只是在休息處收尾。 */
   const spk = pickEvaluator(ev.grade, null);
-  prog.applyRankAffection(ev.grade, state.pickedPartner);
+  prog.applyRankAffection(ev.grade, shares || state.pickedPartner);   // ver -921：出場數最多的全拿
   let money = (sessionMoney|0);
   if(money) money = Math.round(money * (1 + prog.starBonus('moneyMul')));
   const exp = ev.exp|0;
@@ -751,7 +793,7 @@ function restSettle(totalTime, stats, sessionMoney, sessionLoot){
    金錢是「HP 的 6~8 成隨機」。兩者都在敵人卡上，這裡只負責擲骰與呈現（鐵律 1）。
    ⚠ 沒有監察官、沒有等級：那一場是劇情中間插進來的一場架，不是驅逐任務。
    ⚠ 按鈕是「繼續」→ 回劇情/城鎮（不是回主畫面）。 */
-function scriptSettle(totalTime, stats, sessionMoney, sessionLoot){
+function scriptSettle(totalTime, stats, sessionMoney, sessionLoot, shares){
   state.sRankUnlocked = false;
   const ev = evaluate(stats);
   const en = GAME_CONFIG.enemies[state.currentEnemyKey] || {};
@@ -771,7 +813,7 @@ function scriptSettle(totalTime, stats, sessionMoney, sessionLoot){
      搭檔 S +1（索菈娜改 C 以下）、蕾娜每 4 次 S +1。
      ⚠ 打靶（noReward）不算：那是可以重打到膩的練習場，刷 S 刷好感等於印鈔機
        （同 EXP/金錢不給的理由）。 */
-  if(!noReward) prog.applyRankAffection(ev.grade, state.pickedPartner);
+  if(!noReward) prog.applyRankAffection(ev.grade, shares || state.pickedPartner);   // ver -921
   /* ══⚠⚠ EXP 與金錢**直接放在結算頁**（ver -453，Ray：「exp 跟 g 直接放結算頁，
      不要另外跳視窗顯示，有戰利品才跳」）══
      -439 曾把兩者搬去戰利品那一頁 —— 於是**每一場**打完都要多點一頁，
