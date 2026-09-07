@@ -2675,8 +2675,12 @@ export const TOWNS = {
          **玩家的瀏覽器快取裡可能還在**，於是拿出舊的那一張（-910 那個「檔案沒了但
          快取還在」的坑）。
          ⚠ Ray：「會有事件差分我再補上」—— **事件差分與時段差分是兩件事**：
-           前者由劇情旗標換圖（同 `rebuild.bg` 那一族），不走 `bandNames`；
-           所以那一批到了也**不必**把這個 `noTime` 拿掉。 */
+           前者由劇情旗標換圖（節點的 `bgWhen`，見 modules/town.js 的 `bgCandsOf`），
+           所以那一批到了也**不必**把這個 `noTime` 拿掉。
+         ⚠⚠ **圖已經到了**（`Ruins_shinier_Bridgeopen`，美術 30206d2：走廊盡頭那道
+           發光的門**開了**），但**還沒接** —— 「什麼事件會把門打開」是劇本的事，
+           等 Ray 指定旗標（鐵律 9：旗要答得出誰插的）。接法是一行資料：
+             `bgWhen:[{ need:'<那支旗>', bg:'Ruins_shinier_Bridgeopen', noTime:true }]` */
       bridge:     { bg:'Ruins_shinier_Bridge', name:'木雅克神殿　石橋', noTime:true,
         /* ⚠ 窄橋跨在深淵上，兩側是空的 ⇒ 只有前後（ver -890，Ray 點名的那一格）。 */
         exits:{ down:'brazier', up:'deepaltar' } },

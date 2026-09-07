@@ -1520,6 +1520,20 @@ function bgCandsOf(n, id){
   const out=[];
   const add=(base, noTime)=>{ if(!base) return;
     for(const nm of story.bandNames(base, noTime)) if(out.indexOf(nm)<0) out.push(nm); };
+  /* ══⚠⚠ **事件差分**（ver -914，Ray：「會有事件差分我再補上」）══
+     節點寫 `bgWhen:[{ need:'<旗>', bg:'<基底名>', noTime? }]`，**由上往下取第一個
+     旗立著的**（同 `acts`／`innDoors` 的取法）。第一個用例是石橋盡頭那道門開了
+     （`Ruins_shinier_Bridgeopen`）。
+     ⚠⚠ **它與時段差分是兩件事**：那一條是「現在幾點」（`bandNames` 的候選鏈），
+       這一條是「世界變了」（旗標）—— 兩者可以並存（`bgWhen` 那一筆自己也吃候選鏈）。
+       同理它與 `rebuild.bg` 也是兩件事：那個是**整座城**跨章節換一組，這個是**一格**
+       因為某個事件換一張。
+     ⚠ 排在最前面（最specific）、**載不到就往下退**回重建版／節點原本那一張 ——
+       圖還沒交也不會變成空畫面（同分店與重建那兩條）。
+     ⚠ 鐵律 9：`need` 那支旗要答得出「誰插的」。**資料上還沒有人寫 `bgWhen`** ——
+       石橋那一張圖已經入庫，但「什麼事件會把門打開」是 Ray 的劇本，等他指定。 */
+  { const w=(n.bgWhen||[]).find(o=>o && o.need && prog.hasFlag(o.need));
+    if(w) add(w.bg, w.noTime!=null ? w.noTime : n.noTime); }
   const sc=dineSceneOf(id);
   if(sc) add(sc.bg, sc.noTime);
   /* 重建版優先、戰損版當退路 —— 圖還沒交也不會變成空畫面（同分店那一條）。 */
