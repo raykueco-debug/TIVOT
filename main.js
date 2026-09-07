@@ -281,8 +281,10 @@ function flightWin(){ const f=$('flightFrame'); return f ? f.contentWindow : nul
    劇情舞台上，蓋它的那一片本來就在。黑幕蓋滿之後才把 iframe 換上來 ——
    iframe 的底色是近黑，於是玩家看到的是「城鎮 → 黑 → 讀取頁的光圈亮起」一次剪接，
    而不是城鎮被一格黑畫面「啪」地換掉。
-   ⚠ 黑幕**不必收**：`body.flight-on` 會把整個劇情層藏起來（visibility），
-     連黑幕一起收走 —— 收回來時城鎮那邊自己會重新蓋上（`town.open` 的 `veil(true,0)`）。
+   ⚠⚠ 黑幕在 `flight-on` 掛上去的那一刻**就收掉**（ver -906）：-905 之前是靠
+     `body.flight-on` 的 `visibility:hidden` 把它藏起來 —— 那等於在舞台上留一片
+     「看不見但還亮著」的全黑，而拔掉 `flight-on` 的路徑不只一條。iframe 那時已經
+     蓋滿畫面（不透明底色），收掉是看不見的。**不要留靠別人藏著的黑幕。**
    ⚠ 打完戰鬥回飛行頁（`opts.resume`）**不走這一段**：那時畫面上是結算頁不是城鎮，
      劇情舞台是關著的 —— 黑幕看不見，只會白等 280ms。 */
 const FLIGHT_VEIL_MS = 280;
@@ -320,6 +322,15 @@ function openFlight(opts){
   else { try{ w.location.reload(); }catch(_){ f.setAttribute('src','flight/index.html'); } }
   f.classList.add('on');
   document.body.classList.add('flight-on');
+  /* ⚠⚠⚠ **黑幕在這裡收掉**（ver -906）：-905 之前是「刻意留著不收」——理由是
+     `body.flight-on` 會把整個劇情層 `visibility:hidden`，黑幕跟著看不見。
+     那個理由**只在飛行畫面開著的時候成立**：它等於在舞台上留了一片
+     「現在看不見、但還亮著」的全黑，而拔掉 `flight-on` 的路徑不只一條
+     （返回、交棒、killAllPages）—— 任何一條沒有重新蓋黑幕再掀開的，
+     露出來的就是一片全黑的舞台，而且**點不掉**。
+     iframe 這一刻已經蓋滿畫面（它有不透明底色 `#05060c`），所以收掉是看不見的
+     —— **不要留任何一片「靠別人藏著」的黑幕**（黑幕第六次的預防，不是修復）。 */
+  story.veil(false, 0);
   $('home').classList.remove('on');
 }
 /* ══ 飛行檢查點（ver -558，Ray：「飛行畫面中斷回原位置、戰鬥中中斷回遭遇位置」
