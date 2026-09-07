@@ -731,12 +731,16 @@ function wildActDue(n){
      它是劇情不是雜怪，撞在一起時它優先。一筆的欄位：
        need／not  前置旗／擋路旗（`not` 那一支就是「已經打過了」，鐵律 9）
        band       時段白名單（`clock.band()` 的字面）
+       at         只在這一格成立（不寫＝不限場域，ver -919）
        rate       每次抵達擲一次
        act        取到就照它演 —— `flag`／`storyBattle`／`lines` 全部照 `acts` 的規約，
                   由 `enter()` 那一套統一收尾（旗標**演完才記**，打輸回頭還遇得到）
      ⚠ 它**不進 `wildDone`**：那一組是「這一趟同種不重複」，而這一場一輩子只有一次，
        靠 `act.flag` 擋 —— 兩者不是同一件事，共用會讓「這一趟沒遇到」變成「永遠沒有」。 */
   for(const e of (W.encounters||[])){
+    /* `at:'<節點>'` ＝這一筆只在那一格成立（ver -919，神殿的鳴鐘者只出現在巨像廳）。
+       ⚠ 不寫＝不限場域（鹿主那一筆就是）—— 舊資料不受影響。 */
+    if(e.at && e.at!==nodeId) continue;
     if(e.need && !prog.hasFlag(e.need)) continue;
     if(e.not  &&  prog.hasFlag(e.not))  continue;
     if(e.band && !e.band.includes(clock.band())) continue;

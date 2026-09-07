@@ -2666,7 +2666,46 @@ export const TOWNS = {
          結算怪日後由 `fixed` 指定（等 Ray 的清單）。 */
     wildSpawn: {
       rate: 1,
-      pool: [],
+      /* ══ 場域限定的兩隻 ＝ 必出格（`fixed`：一趟進圖各一次）══
+         Ray 的表：鎖鍊聖徒「地牢限定」、監查者「斷橋限定，每次進地圖只出一次」。
+         ⚠ `fixed` 的語意本來就是「這一格必出、一趟一次」，所以第二句不必另外做。 */
+      fixed: {
+        prison:'ruins_saint_prison',          // 地牢（石牢區）限定
+        darkbridge:'ruins_saint_inspector',   // 斷橋限定（結算怪）
+      },
+      /* ══ 隨機池（`rate:1` ＝其他每一格必出，除了 `noWild` 的那六格）══
+         ⚠ 一趟進圖**同種不重複**（`wildDone`）：所以池子有幾隻，一趟就打幾場。
+         ⚠ `where:'connector'` ＝非末端限定（末端是算出來的，鐵律 7）。 */
+      pool: [
+        { battle:'ruins_halo_ring' },     // 王的容器：不限場域
+        { battle:'ruins_heartripper' },   // 撕心者：不限場域
+        { battle:'ruins_bellwalker' },    // 喪鐘：不限場域
+        /* ⚠⚠ 覆骨者（非末端限定）**先不放進池子**：`resources/enemy/mon_beast_bonemaw.webp`
+           還沒進庫，放了就是每一趟都遇到一隻**沒有立繪的怪**（畫面上是空的，
+           而那看起來像 bug 不像缺圖）。圖到了把這一行的註解拿掉就好，卡與掉落都建好了。 */
+        // { battle:'ruins_bonemaw', where:'connector' },
+      ],
+      /* ══ 指定遭遇（排在 fixed／pool 之前；由上往下取第一個成立的）══════════ */
+      encounters: [
+        /* ① **劇情中第一隻必定是巨型聖徒**（Ray 的表）＋打完那兩句。
+           ⚠ `rate:1` ＋ `not` 那支旗 ⇒ 進圖之後**第一格出得了怪的地方**就是牠，
+             打完插旗、這一輪不再出現（旗**演完才記**，打輸回頭還遇得到）。
+           ⚠ `storyBattle:true` ＝劇情戰：打輸走回檔那條路，不是「回入口再打一次」。 */
+        { not:'ruins_thug_met', rate:1,
+          act:{ flag:'ruins_thug_met', storyBattle:true, lines:[
+            { battle:'ruins_saint_thug' },
+            nou('shocked','剛剛那個是……聖徒？'),
+            ren('pause','……'),
+          ] } },
+        /* ② **開門事件之後，巨像廳的鳴鐘者**（結算怪）。
+           ⚠⚠ `need:'ruins_gate_open'` —— **這支旗還沒有人插**（鐵律 9）：
+             「開門事件」是 Ray 的劇本（石橋盡頭那道門，圖已入庫＝
+             `Ruins_shinier_Bridgeopen`）。旗名先取這個，插旗的那一拍由那一段自己認領；
+             同一支旗也給石橋的 `bgWhen` 用（見那一格的註解）。
+           ⚠ `at:'colossus'` ＝這一筆只在巨像廳成立（`wildActDue` 的欄位）。 */
+        { at:'colossus', need:'ruins_gate_open', not:'ruins_bell_done', rate:1,
+          act:{ flag:'ruins_bell_done', lines:[ { battle:'ruins_bellreacher' } ] } },
+      ],
     },
     nodes: {
       /* ══ 21 格 —— **照 Ray 畫的 `resources/map/map_ruins_shinier.png` 排**（ver -907）══

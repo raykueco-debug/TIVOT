@@ -1107,6 +1107,183 @@ export const ENEMIES = {
               assault:{ type:'claw', count:3, angle:'random' } },
       loot:[ { id:'antler_deer', n:1 } ],
     },
+    /* ══ 木雅克神殿的怪（ver -919，Ray 交表）══════════════════════════════
+       刷怪規則在 `script/town.js` 的 `shinier_ruins.wildSpawn`（實作只有
+       `modules/town.js` 的 `wildActDue` 一支，鐵律 8）。
+       · `kind` 分兩族：`relic`／`beast` 系是**禍魘**（`harm` ⇒ 降臨與淨化特效、
+         結算副標「已淨化」）、`saint_*` 是**聖徒系列**（`slay` ⇒ 同一套演出，
+         但副標是「已擊殺」，§6.5.4.4 的既有分野）。
+       · `story:0` ＝遭遇戰（無開場白；打輸回這張圖的入口）。
+       ⚠⚠ **hp 與掉落是 Ray 的表；`attack` 與其餘戰鬥參數是暫定**（他沒給）——
+         照森林那一批的 hp:attack 比例（約 25:1）估，交件後照改。
+       ⚠ 神殿在地底，背景 `bg` 給那一格自己的圖；城鎮插入戰交棒時
+         `state.battleBg` 會蓋過它（§6.5.4.4「戰鬥背景＝你站的那一格」），
+         所以這一欄只是「不在神殿打起來時」的退路。 */
+    ruins_bonemaw: {
+      name:'覆骨者',
+      story:0, counterStagger:1,
+      weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
+      openUlt:[1,2], ultEvery:[2,4], assault:{ count:1, gap:0 }, ult:{},
+      kind:'harm',
+      image:'enemy_ruins_bonemaw',
+      bg:'Ruins_shinier_Catacomb',
+      fit:{ mode:'contain', pos:'center bottom' },
+      hp:400, attack:16,                  // hp＝Ray 表；attack 暫定
+      atkInterval:null,
+      delayPenalty:{ seconds:5 },
+      resist:{}, weak:{}, landSe:null, special:[],
+      boardGrids:[9,9,9,9,9],
+      hitFx:{ delay:{ type:'bite' }, wrong:{ type:'slash' },
+              assault:{ type:'bite' } },
+      loot:[ { id:'harm_bone', n:1, p:0.10 } ],
+    },
+    ruins_bellreacher: {
+      name:'鳴鐘者',
+      story:0, counterStagger:1,
+      weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
+      openUlt:[1,2], ultEvery:[2,4], assault:{ count:1, gap:0 }, ult:{},
+      kind:'harm',
+      image:'enemy_ruins_bellreacher',
+      bg:'Ruins_shinier_Colossus',
+      fit:{ mode:'contain', pos:'center bottom' },
+      hp:500, attack:18,                  // hp＝Ray 表；attack 暫定
+      atkInterval:null,
+      delayPenalty:{ seconds:5 },
+      resist:{}, weak:{}, landSe:null, special:[],
+      boardGrids:[9,9,9,9,16],
+      hitFx:{ delay:{ type:'blunt' }, wrong:{ type:'slash' },
+              assault:{ type:'blunt', count:2 } },
+      loot:[ { id:'bell_shard', n:1, p:0.10 } ],
+    },
+    ruins_halo_ring: {
+      name:'王的容器',
+      story:0, counterStagger:1,
+      weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
+      openUlt:[1,2], ultEvery:[2,4], assault:{ count:1, gap:0 }, ult:{},
+      kind:'harm',
+      image:'enemy_ruins_halo_ring',
+      bg:'Ruins_shinier_Hollow',
+      fit:{ mode:'contain', pos:'center bottom' },
+      hp:350, attack:14,                  // hp＝Ray 表；attack 暫定
+      atkInterval:null,
+      delayPenalty:{ seconds:5 },
+      resist:{}, weak:{}, landSe:null, special:[],
+      boardGrids:[9,9,9,9,9],
+      hitFx:{ delay:{ type:'blood', angle:'random' }, wrong:{ type:'slash' },
+              assault:{ type:'claw', count:3, angle:'random' } },
+      /* ⚠ Ray 的表**沒給掉落** —— 空著（不是忘了，是還沒定）。 */
+      loot:[],
+    },
+    ruins_heartripper: {
+      name:'撕心者',
+      story:0, counterStagger:1,
+      weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
+      openUlt:[1,2], ultEvery:[2,4], assault:{ count:1, gap:0 }, ult:{},
+      kind:'harm',
+      image:'enemy_ruins_heartripper',
+      bg:'Ruins_shinier_Prison',
+      fit:{ mode:'contain', pos:'center bottom' },
+      hp:400, attack:16,                  // hp＝Ray 表；attack 暫定
+      atkInterval:null,
+      delayPenalty:{ seconds:5 },
+      resist:{}, weak:{}, landSe:null, special:[],
+      boardGrids:[9,9,9,9,9],
+      hitFx:{ delay:{ type:'claw', count:1, angle:'random' }, wrong:{ type:'slash' },
+              assault:{ type:'claw', count:3, angle:'random' } },
+      loot:[ { id:'harm_claw', n:1, p:0.10 } ],
+    },
+    ruins_bellwalker: {
+      name:'喪鐘',
+      story:0, counterStagger:1,
+      weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
+      openUlt:[1,2], ultEvery:[2,4], assault:{ count:1, gap:0 }, ult:{},
+      kind:'harm',
+      image:'enemy_ruins_bellwalker',
+      bg:'Ruins_shinier_MossChamber',
+      fit:{ mode:'contain', pos:'center bottom' },
+      hp:400, attack:16,                  // ⚠ hp 暫定（Ray 的表沒給這一隻的 hp）
+      atkInterval:null,
+      delayPenalty:{ seconds:5 },
+      resist:{}, weak:{}, landSe:null, special:[],
+      boardGrids:[9,9,9,9,9],
+      hitFx:{ delay:{ type:'blunt' }, wrong:{ type:'slash' },
+              assault:{ type:'blunt' } },
+      loot:[ { id:'bell_shard', n:1, p:0.10 } ],
+    },
+    /* ── 聖徒系列（`slay`：降臨與淨化照播，結算副標「已擊殺」）────────────── */
+    ruins_saint_prison: {
+      name:'鎖鍊聖徒',
+      story:0, counterStagger:1,
+      weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
+      openUlt:[1,2], ultEvery:[2,4], assault:{ count:1, gap:0 }, ult:{},
+      kind:'slay',
+      image:'enemy_ruins_saint_prison',
+      bg:'Ruins_shinier_Prison',
+      fit:{ mode:'contain', pos:'center bottom' },
+      hp:400, attack:16,                  // hp＝Ray 表；attack 暫定
+      atkInterval:null,
+      delayPenalty:{ seconds:5 },
+      resist:{}, weak:{}, landSe:null, special:[],
+      boardGrids:[9,9,9,9,9],
+      hitFx:{ delay:{ type:'blunt' }, wrong:{ type:'slash' },
+              assault:{ type:'claw', count:3, angle:'random' } },
+      loot:[ { id:'saint_claw', n:1 } ],          // 100%
+    },
+    ruins_saint_inspector: {
+      name:'監查者',
+      story:0, counterStagger:1,
+      weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
+      openUlt:[1,2], ultEvery:[2,4], assault:{ count:1, gap:0 }, ult:{},
+      kind:'slay',
+      image:'enemy_ruins_saint_inspector',
+      bg:'Ruins_shinier_DarkBridge',
+      fit:{ mode:'contain', pos:'center bottom' },
+      hp:400, attack:16,                  // hp＝Ray 表；attack 暫定
+      atkInterval:null,
+      delayPenalty:{ seconds:5 },
+      resist:{}, weak:{}, landSe:null, special:[],
+      boardGrids:[9,9,9,9,16],
+      hitFx:{ delay:{ type:'slash' }, wrong:{ type:'slash' },
+              assault:{ type:'slash', count:2 } },
+      loot:[ { id:'saint_fang', n:1 } ],          // 100%
+    },
+    ruins_saint_thug: {
+      name:'巨型聖徒',
+      story:0, counterStagger:1,
+      weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
+      openUlt:[1,2], ultEvery:[2,4], assault:{ count:1, gap:0 }, ult:{},
+      kind:'slay',
+      image:'enemy_ruins_saint_thug',
+      bg:'Ruins_shinier_CorridorA',
+      fit:{ mode:'contain', pos:'center bottom' },
+      hp:600, attack:18,                  // hp＝Ray 表；attack 暫定
+      atkInterval:null,
+      delayPenalty:{ seconds:5 },
+      resist:{}, weak:{}, landSe:null, special:[],
+      boardGrids:[9,9,9,9,16],
+      hitFx:{ delay:{ type:'blunt' }, wrong:{ type:'slash' },
+              assault:{ type:'blunt', count:2 } },
+      loot:[ { id:'saint_bone_big', n:1 } ],      // 100%
+    },
+    /* BOSS（結算怪）。⚠ hp 暫定：Ray 的表只給了掉落。 */
+    ruins_saint_temperance: {
+      name:'節制',
+      story:0, counterStagger:1,
+      weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
+      openUlt:[1,2], ultEvery:[2,4], assault:{ count:2, gap:0.35 }, ult:{},
+      kind:'slay',
+      image:'enemy_ruins_saint_temperance',
+      bg:'Ruins_shinier_DeepAltar',
+      fit:{ mode:'contain', pos:'center bottom' },
+      hp:900, attack:20,                  // ⚠ 兩個都暫定（表上只有掉落）
+      atkInterval:null,
+      delayPenalty:{ seconds:5 },
+      resist:{}, weak:{}, landSe:null, special:[],
+      boardGrids:[9,9,16,9,16],
+      hitFx:{ delay:{ type:'blunt' }, wrong:{ type:'slash' },
+              assault:{ type:'claw', count:3, angle:'random' } },
+      loot:[ { id:'saint_bone', n:1 } ],          // 100%
+    },
     // 例：新怪
     // giant: { name:'巨人', image:'enemy_giant', imageBase:'giant', hp:150, attack:30, atkInterval:5, sound:{}, special:[] },
 };

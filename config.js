@@ -53,7 +53,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.07-918';
+export const VERSION = 'ver 2026.09.07-919';
 
 export const GAME_CONFIG = {
 
@@ -782,6 +782,22 @@ export const GAME_CONFIG = {
       harm_bone_big: { name:'禍魘巨骨',   cat:'material', price:350, desc:'大型禍魘的骨。沉重而緻密。' },
       harm_bone_frag:{ name:'禍魘碎骨',   cat:'material', price:120, desc:'禍魘骨骼的碎片。仍殘留著微弱的脈動。' },
       harm_fang:     { name:'禍魘的細牙', cat:'material', price:80,  desc:'細小的禍魘牙。串起來像一條項鍊。' },
+      /* ══ 木雅克神殿的掉落（ver -919，Ray 交表）══ ⚠ **價格與說明是我擬的草案**
+         （表上只有名字與機率）：照既有素材的量級 —— 10% 的稀有品 200~400、
+         100% 的必掉品 120~350。要改直接動這裡（鐵律 1：數值住在資料上）。
+         ⚠ 「禍魘之爪」表上有，但**既有的 `harm_claw` 就是它**，不另開一筆（鐵律 7）。 */
+      harm_bone:      { name:'禍魘之骨',   cat:'material', price:260,
+                        desc:'成體禍魘的骨。比看起來輕，敲擊時會有餘響。' },
+      bell_shard:     { name:'喪鐘碎片',   cat:'material', price:300,
+                        desc:'鏽蝕的鐘體碎片。貼近耳邊仍聽得見很遠的一聲。' },
+      saint_claw:     { name:'聖徒之爪',   cat:'material', price:220,
+                        desc:'聖徒指端的角質。比鋼還硬，斷面像結晶。' },
+      saint_fang:     { name:'聖徒之牙',   cat:'material', price:240,
+                        desc:'聖徒的牙。齒根仍連著一小截未腐的組織。' },
+      saint_bone_big: { name:'聖徒巨骨',   cat:'material', price:350,
+                        desc:'大型聖徒的長骨。表面刻著看不懂的細密經文。' },
+      saint_bone:     { name:'聖徒之骨',   cat:'material', price:400,
+                        desc:'聖徒的骨。溫的 —— 明明已經不會動了。' },
       /* 夏爾森林獸掉落的素材（ver -860，改槍用）。⚠ 價格草案。 */
       tiger_horn:  { name:'虎王的獨角', cat:'material', price:400, desc:'森林之王額上的獨角。堅硬如鐵。' },
       crow_beak:   { name:'尖喙',       cat:'material', price:90,  desc:'食腐鴉的利喙。意外地鋒利。' },
@@ -1435,6 +1451,25 @@ export const GAME_CONFIG = {
     sf_bear_nightmare: { enemy:'sf_bear_nightmare', session:'sf_wild' },
     sf_stag_rot:       { enemy:'sf_stag_rot',       session:'sf_wild', sessionEnd:true },
     sf_stag_nightmare: { enemy:'sf_stag_nightmare', session:'sf_wild', sessionEnd:true },
+    /* ══ 木雅克神殿的野生遭遇（ver -919，Ray 交表）══
+       全部掛 `session:'ruins_wild'`（同森林那一批：進圖＝一局，資源連著算、
+       中間場不結算、格間原地開閉棺）。**三隻是結算怪**（`sessionEnd`）——
+       鳴鐘者（開門事件後的巨像廳）、監查者（黑暗斷橋）、BOSS 節制（深部祭壇）：
+       打贏牠就閉棺結算、收掉這一局。
+       ⚠ 這張圖另外有三個**安全點**（前廳／深部祭壇／命之泉，ver -918）：
+         走進去也會閉棺結算 —— 兩條路都收在同一個 `endSession`（鐵律 8）。
+       ⚠ 巨型聖徒（劇情中第一隻）是**劇情戰**：`storyBattle` 寫在那一段 act 上
+         （script/town.js 的 `wildSpawn.encounters`），不寫在卡上 —— 同鹿主那一場。 */
+    ruins_bonemaw:      { enemy:'ruins_bonemaw',      session:'ruins_wild' },
+    ruins_halo_ring:    { enemy:'ruins_halo_ring',    session:'ruins_wild' },
+    ruins_heartripper:  { enemy:'ruins_heartripper',  session:'ruins_wild' },
+    ruins_bellwalker:   { enemy:'ruins_bellwalker',   session:'ruins_wild' },
+    ruins_saint_prison: { enemy:'ruins_saint_prison', session:'ruins_wild' },
+    ruins_saint_thug:   { enemy:'ruins_saint_thug',   session:'ruins_wild' },
+    ruins_bellreacher:  { enemy:'ruins_bellreacher',  session:'ruins_wild', sessionEnd:true },
+    ruins_saint_inspector:{ enemy:'ruins_saint_inspector', session:'ruins_wild', sessionEnd:true },
+    /* BOSS。⚠ 曲子還沒指定（Ray 沒說），沒寫＝走 main 的 battleBgmOf 預設。 */
+    ruins_saint_temperance:{ enemy:'ruins_saint_temperance', session:'ruins_wild', sessionEnd:true },
     /* 鹿主變異（ver -870，G 稿的黃昏後分支）：劇情戰、自己一場（斷崖已收段）。 */
     sf_deer_nightmare: { enemy:'sf_deer_nightmare',
       /* 與異化那一段**同一首**（ver -877，Ray：「戰鬥用同一首」）——卡上明寫最優先，
@@ -2416,6 +2451,21 @@ export const ASSETS = {
   enemy_sf_bear_husk: "resources/enemy/mon_bear_husk.webp",
   enemy_sf_stag_rot:  "resources/enemy/mon_stag_rot.webp",
   enemy_sf_deer_nightmare: "resources/enemy/mon_shinierforest_deernightmare.webp",   // 鹿主變異（ver -870，G 稿）
+
+  /* ══ 木雅克神殿的怪（ver -919，Ray 交表）══ 圖是 Ray 交的 PNG，這一版轉成 webp
+     （原 PNG 進 `resources/_originals/enemy/`，§5 的三步）。
+     ⚠ `mon_beast_bonemaw`（覆骨者）**庫裡還沒有那張圖** —— 卡與掉落先建好，
+       牠暫時不進刷怪池（見 script/town.js 的 `shinier_ruins.wildSpawn`），
+       圖進來把那一行的註解拿掉就會出現。 */
+  enemy_ruins_bonemaw:           "resources/enemy/mon_beast_bonemaw.webp",
+  enemy_ruins_bellreacher:       "resources/enemy/mon_relic_bellreacher.webp",
+  enemy_ruins_halo_ring:         "resources/enemy/mon_halo_ring.webp",
+  enemy_ruins_heartripper:       "resources/enemy/mon_relic_heartripper.webp",
+  enemy_ruins_bellwalker:        "resources/enemy/mon_relic_bellwalker.webp",
+  enemy_ruins_saint_prison:      "resources/enemy/mon_saint_prison.webp",
+  enemy_ruins_saint_inspector:   "resources/enemy/mon_saint_inspector.webp",
+  enemy_ruins_saint_thug:        "resources/enemy/mon_saint_thug.webp",
+  enemy_ruins_saint_temperance:  "resources/enemy/mon_saint_Temperance.webp",
 
   // ── 五張 cut-in 圖（v17.7 嵌入）──
   cutin_saint_luna: "resources/partner/Luna_CI_advent.jpg",   // 聖徒化降臨 cut-in（Luna）
