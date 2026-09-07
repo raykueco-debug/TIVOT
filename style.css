@@ -2221,6 +2221,25 @@
      ⚠ 若之後覺得還是有顆粒：先確認那是**圖本身**還是**縮放**造成的 ——
        前者要調這個數字，後者的正解是出一張接近顯示尺寸的圖（少縮一半，雜訊就少一半）。 */
   #storyStage.town-on #storyBg{ filter:blur(0.6px) contrast(1.03); transform:scale(1.01); }
+  /* 背景水平翻轉（ver -877，Ray：「石橋右邊再放一個崩塌走道，水平翻轉」）——
+     節點資料寫 `bgFlip:true`，story.setBgFlip 掛/拔這個 class（鐵律 8）。
+     ⚠ transform 是整條取代：town 的 1.01 放大要一起寫，不然翻轉那一格會露軟邊。 */
+  /* 一次性紫炎（ver -877，鹿主異化）：火舌自下而上、紫閃打底。 */
+  .fx-pflash{position:absolute;left:0;right:0;top:0;height:var(--story-top);
+    background:radial-gradient(circle at 50% 62%, rgba(200,60,255,.55), rgba(120,20,180,.25) 45%, transparent 70%);
+    mix-blend-mode:screen;opacity:0;animation:pflash .9s ease-out;pointer-events:none;}
+  @keyframes pflash{0%{opacity:0;}12%{opacity:1;}100%{opacity:0;}}
+  .fx-pflame{position:absolute;width:26px;height:64px;pointer-events:none;
+    background:radial-gradient(ellipse 50% 70% at 50% 80%, #ffd9ff 0%, #e06aff 30%, #8a2be2 60%, transparent 75%);
+    border-radius:50% 50% 40% 40%;filter:blur(1px);mix-blend-mode:screen;opacity:0;
+    transform:scale(var(--sc,1));
+    animation:pflameUp 1.15s ease-out forwards;}
+  @keyframes pflameUp{
+    0%{opacity:0;transform:translate(0,0) scale(var(--sc,1));}
+    15%{opacity:1;}
+    100%{opacity:0;transform:translate(var(--dx,0), calc(var(--h,120px) * -1)) scale(calc(var(--sc,1)*.55));}}
+  #storyBg.flip{ transform:scaleX(-1); }
+  #storyStage.town-on #storyBg.flip{ transform:scale(1.01) scaleX(-1); }
   /* CG：全屏插圖，蓋過立繪。
      ⚠ object-fit **cover** 不是 contain：插圖是直幅、畫面是直幅，contain 會在
        上下留黑邊，讀起來像「貼了一張圖」而不是「鏡頭切到那裡」。 */
@@ -2927,8 +2946,10 @@
   #townMapView.on{display:flex;}
   #townMapView .tm-frame{position:relative;aspect-ratio:1536/1024;
     max-width:96%;max-height:82%;width:100%;}
+  /* ⚠ 圖是去背 alpha 版（ver -878，Ray：「小地圖要去白背」）——影子要沿**輪廓**
+     走 drop-shadow；box-shadow 沿矩形圖框畫，透明區外會浮出一圈方影。 */
   #townMapView .tm-img{position:absolute;inset:0;width:100%;height:100%;display:block;
-    border-radius:6px;box-shadow:0 10px 40px rgba(0,0,0,.7);}
+    filter:drop-shadow(0 10px 24px rgba(0,0,0,.65));}
   #townMapView .tm-spot{position:absolute;width:0;height:0;font-style:normal;}
   #townMapView .tm-spot b{position:absolute;left:-6px;top:-6px;width:12px;height:12px;
     border-radius:50%;background:#3b2a16;border:2px solid #efe3c2;

@@ -1015,9 +1015,13 @@ function renderMap(){
     v.addEventListener('pointerup', e=>{ e.stopPropagation(); mapClose(); });
     st.appendChild(v);
   }
-  const wild=!!T.wilderness;
+  /* ══ 迷霧識別 `mist`（ver -877，Ray：「遺跡及野外的小地圖都必須走到才顯示，
+     夏爾森林因為有索拉娜帶路所以一進去就全開，這屬特例——mist=1 就要用自己走的，
+     mist=0 就全開」）══ 沒寫＝照地圖性質推：荒野 1、城村 0（既有的開圖規則）；
+     寫了以資料為準（森林 wilderness 但 mist:0＝特例）。 */
+  const fog = (T.mist!=null) ? !!T.mist : !!T.wilderness;
   const ids=Object.keys(M.spots||{}).filter(id=> T.nodes[id]
-    && (!wild || id===nodeId || prog.hasFlag('seen_'+townId+'_'+id)));
+    && (!fog || id===nodeId || prog.hasFlag('seen_'+townId+'_'+id)));
   v.innerHTML='<div class="tm-frame">'
     + '<img class="tm-img" src="'+M.img+'" alt="">'
     + ids.map(id=>{
@@ -1707,6 +1711,7 @@ export function enter(id){
      中間可能插進一場戰鬥（戰鬥有自己的曲子），回來要接得回去。
      同曲重播由 `playBgm` 自己擋掉，所以重複呼叫是安全的。 */
   story.ensureBgm(townBgm());
+  story.setBgFlip(!!n.bgFlip);   // 背景鏡像（ver -877：崩塌走道×2 同圖翻轉）
   bgFor(bgCandsOf(n, id), needReveal ? reveal : null);
   ensureLayer(); bindInput(); refreshArrows(); showNav(false);
   /* ⚠⚠ 進場對白**一律只播一次**（ver -373，Ray：「對話只觸發一次，不重複觸發」）——

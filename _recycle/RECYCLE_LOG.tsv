@@ -54,3 +54,5 @@ when	from	to	reason
 20260905-214118	resources/audio/vo/vo_sorana_supply.m4a	_recycle/resources/audio/vo/vo_sorana_supply.m4a	vo 大更新（ver -837）：索拉娜語音整批換新錄音，舊版回收
 20260906-160837	resources/SI/NPC_GuildCounter_SI_Northport.webp	_recycle/resources/SI/NPC_GuildCounter_SI_Northport.webp	白底未去背版，matte.py 粗胚取代（待 GPT 正式重製）
 20260906-170707	resources/audio/vo/vo_sorana_roar.m4a	_recycle/resources/audio/vo/vo_sorana_roar.m4a.20260906-170707	vo_sorana_roar 舊版，Ray 更新 5連完美戰吼
+20260907-015443	resources/_originals/enemy/mon_shinierforest_deer.png	_recycle/resources/_originals/enemy/mon_shinierforest_deer.png	舊版鹿主原圖(21:48)，被 22:20 新版取代
+20260907-110647	resources/map/map_shinierforest.webp	_recycle/resources/map/map_shinierforest.webp	小地圖去白背改alpha版（ver -878）

@@ -49,7 +49,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.07-877';
+export const VERSION = 'ver 2026.09.07-878';
 
 export const GAME_CONFIG = {
 
@@ -663,6 +663,15 @@ export const GAME_CONFIG = {
     topRatio: 0.56,   // 立繪區佔視口高的比例 ＝ style.css 的 `#storyStage{--story-top:56%}`
     btnTop:   10,     // 角落鈕距容器頂 ＝ style.css 的 `#storyExit/#exitBtn{top:…+10px}`
     btnH:     44,     // 角落鈕高       ＝ style.css 的 `.corner-btn{height:44px}`
+    /* ══⚠⚠ 原則「戰鬥中對話立繪尺寸」（ver -878，Ray：「鹿主完成變身後恢復角色
+       立繪，稍小一點，並列入原則『戰鬥中對話立繪尺寸』」「從鹿主出現時立繪就採
+       戰鬥中對話立繪尺寸」）══ 敵人在畫面上的對話（戰鬥內對白、劇情頁的中景敵
+       cgBack 在場）立繪一律乘這個縮小比 —— 人讓一點位給怪，怪才是那一幕的主體。
+       單一真相（鐵律 7）：兩個消費者都讀這裡 ——
+         · modules/tutorial.js sizePortrait（戰鬥內對白，永遠適用）
+         · modules/story.js castLayout（stageCgBack 非空＝中景有敵人時）
+       0.85 是暫定值，Ray 說了算。 */
+    battleTalkScale: 0.85,
   },
 
   /* ------------------------------------------------------------------
@@ -1361,19 +1370,24 @@ export const GAME_CONFIG = {
        資源（HP/聖徒化/主動技/破防）整場連著算、格間原地開閉棺 —— 全是既有的
        session 機制（§6.5.4.3）。
        ⚠ 中途離開地圖＝收段不結算（帳與掉落作廢）——同城鎮戰半途離場的既有語意。
-       ⚠ `sf_deer`（遺跡入口）不在這一場裡：斷崖已收段，牠是自己一場。 */
+       ⚠⚠ **沒有 `sf_deer` 這一場**（ver -878，Ray：「鹿主不變異是不會有戰鬥的」）：
+         未變異的樹靈鹿主是**演出**（中景 cgBack）不是敵人 —— 打得到的只有黃昏分支
+         變異之後的 `sf_deer_nightmare`。-870 曾有一張 `sf_deer` 戰鬥卡＋遺跡入口的
+         必出設定，兩者已一起撤掉；敵人卡 `enemies.sf_deer` 也同步撤。 */
     sf_lynx:           { enemy:'sf_lynx',           session:'sf_wild' },
     sf_snake:          { enemy:'sf_snake',          session:'sf_wild' },
     sf_hog:            { enemy:'sf_hog',            session:'sf_wild' },
     sf_tiger:          { enemy:'sf_tiger',          session:'sf_wild' },
     sf_crows:          { enemy:'sf_crows',          session:'sf_wild' },
-    sf_deer:           { enemy:'sf_deer' },
     sf_bear_husk:      { enemy:'sf_bear_husk',      session:'sf_wild' },
     sf_bear_nightmare: { enemy:'sf_bear_nightmare', session:'sf_wild' },
     sf_stag_rot:       { enemy:'sf_stag_rot',       session:'sf_wild', sessionEnd:true },
     sf_stag_nightmare: { enemy:'sf_stag_nightmare', session:'sf_wild', sessionEnd:true },
     /* 鹿主變異（ver -870，G 稿的黃昏後分支）：劇情戰、自己一場（斷崖已收段）。 */
-    sf_deer_nightmare: { enemy:'sf_deer_nightmare' },
+    sf_deer_nightmare: { enemy:'sf_deer_nightmare',
+      /* 與異化那一段**同一首**（ver -877，Ray：「戰鬥用同一首」）——卡上明寫最優先，
+         同曲重播由 playBgm 擋掉＝開打不換曲（同 man_sorana/whirlwind 的作法）。 */
+      bgm:'bgm_lostplace' },
     /* ══⚠⚠ 瓦礫中的紫黑之爪 ＝ **聖徒化教學戰**（ver -595，Ray 交稿）══
        腳本節奏：BOSS HP ≤30% → 劇情殺（主角 HP 歸零）→ 諾薇兒「我準備好了，現在
        聖徒化！」→ 雪鐵龍教學**右滑**發動聖徒化 → 聖徒化戰鬥 → 血回 99% 自動觸發
@@ -2100,6 +2114,8 @@ export const GAME_CONFIG = {
       /* 木雅克神殿（ver -876 同尺實測 −14.4 LUFS → 1.265，**峰值觸頂夾到 1.175**
          （檔案峰值 +0.6dB、ceil +2）＝表上的 CAP。 */
       peritune_frosylva:1.175,
+      /* 鹿主異化～戰鬥（ver -877 同尺實測 −11.2 LUFS → 0.880，峰值 -0.7dB 未觸頂）。 */
+      peritunematerial_lost_place4_loop:0.880,
       bgm_piratebattle:1.277,
       /* 湖上甲板三首＋著岸音（ver -744，同一把尺）。 */
       peritune_misty_hollow_loop:0.569,
@@ -2551,6 +2567,7 @@ export const ASSETS = {
   /* 安雅為夥伴時的戰鬥曲（ver -873，Ray 指定 BattleField4——混亂 session 遺失件補回）。 */
   bgm_battlefield4: "resources/audio/bgm/PerituneMaterial_BattleField4.m4a",
   bgm_frosylva:     "resources/audio/bgm/PeriTune_Frosylva.m4a",   // 木雅克神殿（ver -876）
+  bgm_lostplace:    "resources/audio/bgm/PerituneMaterial_Lost_place4_loop.m4a",   // 鹿主異化～戰鬥（ver -877）
   bgm_piratebattle: "resources/audio/bgm/bgm_piratebattle.m4a",
   /* 湖上甲板那一段（ver -744，Ray 的 stage5 稿）。 */
   bgm_misty:        "resources/audio/bgm/Peritune_Misty_Hollow_loop.m4a",

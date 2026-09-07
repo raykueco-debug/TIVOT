@@ -197,8 +197,13 @@ function layout(){
       return { ...o, s:s0, headY:yT+s0*a.top, yTop:yT, fitStage:true,
                b:measureBounds(o.el, a.top, a.bot) };
     }
-    /* 縮放：鎖身高。faceAdj＝逐張的畫風補償（見 speakers.js 的說明），沒寫就是 1。 */
-    const s     = pxCm*a.cm/(a.bot-a.top) * (a.faceAdj||1);
+    /* 縮放：鎖身高。faceAdj＝逐張的畫風補償（見 speakers.js 的說明），沒寫就是 1。
+       ⚠⚠ 中景有敵人（stageCgBack 非空）時再乘「戰鬥中對話立繪尺寸」（ver -878，
+       Ray：「從鹿主出現時立繪就採戰鬥中對話立繪尺寸」）—— 單一真相在
+       config.castStage.battleTalkScale（鐵律 7），戰鬥內對白那邊（tutorial.js）
+       讀同一個數字。頭頂錨不動、由下面的 shift 把腳落回畫面底。 */
+    const btk   = stageCgBack ? (STAGE().battleTalkScale||1) : 1;
+    const s     = pxCm*a.cm/(a.bot-a.top) * (a.faceAdj||1) * btk;
     /* ⚠ 身高差的縱向讓位**只在兩人同台時**才做（ver -319，Ray：「立繪太低」）。
        它的用意是「四個人的腳落在同一條地平線上」—— 台上只有一個人的時候沒有
        對象可以對齊，那 (CAST_TALL−cm)×pxCm 就只是在頭頂上方空出一塊
@@ -568,6 +573,7 @@ const BGM_FILES=[
   'PeriTune_Harbor_Morning_loop.m4a',   // ver -753：stage5 起的北泊（rebuild.bgm；Credit 已加）
   'bgm_warhorn.m4a',   // ver -772：夏爾村魔獸來襲（警鐘後緊接，loop）
   'PeriTune_Frosylva.m4a',   // ver -876：木雅克神殿（Ray 指定；Credit 已加）
+  'PerituneMaterial_Lost_place4_loop.m4a',   // ver -877：鹿主異化～戰鬥（Ray 指定；Credit 已加）
 ];
 /* 別名：腳本裡慣用的短名 → 實際檔名（去副檔名）。加新別名只動這裡。 */
 const BGM_ALIAS={ crisis:'peritunematerial_crisis_loop', lunaria:'bgm_lunaria',
@@ -582,7 +588,8 @@ const BGM_ALIAS={ crisis:'peritunematerial_crisis_loop', lunaria:'bgm_lunaria',
                   whirlwind:'peritune_whirlwind',   // ver -747：索菈娜插畫登場～森住民戰
                   harbor:'peritune_harbor_morning_loop',   // ver -753：stage5 起的北泊
                   warhorn:'bgm_warhorn',   // ver -772：夏爾村魔獸來襲
-                  frosylva:'peritune_frosylva' };   // ver -876：木雅克神殿
+                  frosylva:'peritune_frosylva',   // ver -876：木雅克神殿
+                  lostplace:'peritunematerial_lost_place4_loop' };   // ver -877：鹿主異化
 const BGM_SRC=(()=>{ const m={};
   for(const f of BGM_FILES) m[f.replace(/\.[^.]+$/,'').toLowerCase()]='resources/audio/bgm/'+f;
   return m; })();
@@ -1006,6 +1013,7 @@ function applyPersist(line){
   if(line.bg!==undefined && line.bg!==stageBg){
     bgChanged=true;
     stageBg=line.bg;
+    setBgFlip(false);   // 主線場景不吃翻轉（那是城鎮節點的資料，ver -877）
     swapImg($('storyBg'), line.bg?imgSrc(line.bg):'');
     /* 立繪的色調跟著背景走一點點（見 modules/tone.js）。
        ⚠ 要等換圖跑完再量 —— swapImg 是先淡出、載好才換 src，太早量到的是舊圖。 */
@@ -1304,6 +1312,30 @@ function fireHits(ms){
   }
 }
 const GUNFIRE_MS = 2000;        // 掃射演出長度（Ray 指定：視覺持續兩秒）
+/* ══ 一次性紫炎（ver -877，Ray：「帶個一次性的紫炎特效把圖換成夢魘鹿主」）══
+   撒在**中景（鹿主）站的那一塊**：紫紅色火舌自下而上竄、中央一記紫閃 ——
+   蓋住 cgBack 的 swapImg 淡入交換，讀起來是「火裡換了一隻」。
+   樣式在 style.css 的 .fx-pflame*；粒子逐顆隨機（同淨化星芒的作法）。 */
+function purpleFlame(){
+  const box=$('storyFx'); if(!box) return;
+  const flash=document.createElement('div');
+  flash.className='fx-pflash';
+  box.appendChild(flash);
+  setTimeout(()=>flash.remove(), 900);
+  const N=18;
+  for(let i=0;i<N;i++){
+    const f=document.createElement('i');
+    f.className='fx-pflame';
+    f.style.left=(28+Math.random()*44)+'%';
+    f.style.bottom=(2+Math.random()*18)+'%';
+    f.style.setProperty('--dx', ((Math.random()*2-1)*30).toFixed(0)+'px');
+    f.style.setProperty('--h',  (90+Math.random()*160).toFixed(0)+'px');
+    f.style.setProperty('--sc', (0.6+Math.random()*0.9).toFixed(2));
+    f.style.animationDelay=(Math.random()*260|0)+'ms';
+    box.appendChild(f);
+    fxTimers.push(setTimeout(()=>f.remove(), 1500));
+  }
+}
 function fireOneShot(line){
   if(line.se) playSe(line.se);
   /* ⚠ 抖動要**跟著演出的長度**（ver -327，Ray：「畫面抖動要連續直到射擊效果停止」）。
@@ -1350,6 +1382,7 @@ function fireOneShot(line){
     }
   }
   if(line.fx==='gunfire') fireHits(GUNFIRE_MS);
+  if(line.fx==='purpleflame') purpleFlame();
 }
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -3222,6 +3255,11 @@ export function hideBubble(){
    ⚠ 為什麼要有：城鎮中間會插進一場戰鬥，戰鬥有自己的曲子；回到城鎮時要把地方的曲子
      接回來。**同曲重播由 `playBgm` 自己擋掉**，所以每次進節點都呼叫是安全的。
    ⚠ 走 `stageBgm` 記帳與腳本的 `bgm:` 同一份 —— 不然兩邊會各自以為自己在放。 */
+/* 背景水平翻轉（ver -877）：城鎮節點 `bgFlip:true` 用——鏡像沿用同一張圖
+   （崩塌走道×2）。唯一實作（鐵律 8）；town.enter 每次抵達都設。 */
+export function setBgFlip(on){
+  const el=$('storyBg'); if(el) el.classList.toggle('flip', !!on);
+}
 export function ensureBgm(name){
   if(!name) return;
   const src=bgmSrc(name);

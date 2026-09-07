@@ -864,7 +864,11 @@ function placePortraitX(el, side){
      那一張要用它自己的身高，否則玩家看到的就是「她變小了」。
      ⚠ 是**明寫的例外**不是自動判斷（門檻式的自動判斷會在雜訊邊界上跳）。 */
   const denom = (fr.rescale ? (fr.bot - fr.top) : (baseFr.bot - baseFr.top)) || 1;
-  const s     = pxCm * fr.cm / denom;
+  /* ⚠⚠ 原則「戰鬥中對話立繪尺寸」（ver -878，Ray）：戰鬥中的對白立繪一律稍小 ——
+     敵人在畫面上，人讓位給怪。單一真相＝config.castStage.battleTalkScale（鐵律 7），
+     劇情頁那邊（story.castLayout，中景有敵時）讀同一個數字。
+     ⚠ 這條疊在 -352「同一把尺」之上：尺還是劇情頁那一把，只是最後乘一個統一的縮小比。 */
+  const s     = pxCm * fr.cm / denom * (G.battleTalkScale||1);
   const h     = s * nH, w = s * nW;
   const sd    = side || (el.id==='tutCastR' ? 'right' : 'left');
   const fxc   = C.portraitFaceX;

@@ -2253,6 +2253,9 @@ export const TOWNS = {
     /* 荒野圖（ver -862，Ray：「森林也會打烊是怎樣」）：19:00 全域打烊那條不罩這裡
        —— 野外的路沒有門可以關（判定在 modules/town.js 的 isOpenNow，鐵律 8）。 */
     wilderness: true,
+    /* 小地圖特例（ver -877，Ray：「夏爾森林因為有索拉娜帶路所以一進去就全開」）
+       —— mist:0＝全開；其他荒野/遺跡預設走過才亮（mist:1）。 */
+    mist: 0,
     /* 野外每步 1 小時（ver -871，Ray：「野外探索每次移動是1小時，遺跡是半小時，
        城鎮村落是十分鐘」）—— 日後遺跡圖寫 stepMin:30。 */
     stepMin: 60,
@@ -2264,7 +2267,9 @@ export const TOWNS = {
        ⚠ 開圖規則（Ray）：**城村＝一進去就有全圖；荒野（wilderness）＝走過的
          節點才亮**（判定在 modules/town.js 的 renderMap，讀 seen_* 旗）。 */
     map: {
-      img: 'resources/map/map_shinierforest.webp',
+      /* ?v=2：去白背 alpha 版（ver -878，Ray：「小地圖要去白背，走alpha通道」）
+         —— 同名覆蓋必掛 cache-buster（§5）。 */
+      img: 'resources/map/map_shinierforest.webp?v=2',
       spots: {
         entry: [0.697, 0.857], glade: [0.635, 0.659], nest:  [0.846, 0.652],
         shoal: [0.423, 0.618], valley:[0.232, 0.672], trail: [0.383, 0.447],
@@ -2287,7 +2292,10 @@ export const TOWNS = {
         shoal:'sf_snake',                                        // 淺灘必出水蛇
         cave:'sf_tiger',                                         // 洞窟必出虎王（一趟一次）
         cliff:{ day:'sf_stag_rot', night:'sf_stag_nightmare' },  // 斷崖必出鹿骸（日夜差分）
-        ruins:'sf_deer',                                         // 遺跡入口＝樹靈鹿主
+        /* ⚠⚠ 遺跡入口**不刷怪**（ver -878，Ray：「鹿主不變異是不會有戰鬥的」）——
+           樹靈鹿主在這一格是**演出**不是遭遇：白天分支牠看一眼就走，黃昏分支
+           變異成禍魘才開打（那一場是 acts 裡的 `sf_deer_nightmare`）。
+           -870 這裡曾寫 `ruins:'sf_deer'`，那會讓沒變異的鹿主也被打一場。 */
       },
       pool: [
         { battle:{ day:'sf_bear_husk', night:'sf_bear_nightmare' } },  // 熊骸（日夜差分）
@@ -2355,16 +2363,20 @@ export const TOWNS = {
           { flag:'sv_deer_met', need:'sv_forest_intro', hourOfDay:[5,17], lines:[
             /* 出場序（ver -874，Ray：「先出背景，再出鹿主，然後才是立繪對話」）——
                背景在抵達那一拍已就位；這一拍鹿主獨場（無立繪），auto 一拍後才開講。 */
-            { speaker:'SORANA', text:'',
+            { speaker:'SORANA', text:'', portrait:{ char:'SORANA', show:false },
               cgBack:'resources/enemy/mon_shinierforest_deer.webp', auto:2200 },
+            /* ══ 立繪規則（ver -878，Ray 定案）══ 撤立繪**只為讓鹿主完整露出的那
+               幾禎**（初登場／轉頭／異化的獨場拍＝hide 清場）；那一禎結束後對話照常
+               上立繪，而且從鹿主現身起一律吃「戰鬥中對話立繪尺寸」（稍小 ——
+               config.castStage.battleTalkScale，story.castLayout 看 stageCgBack 自動套）。 */
             sor('surprised','竟然是……樹靈鹿主！'),
             ren('shockedCalm','那是什麼？很麻煩嗎？'),
             sor('remind','那是傳說中的森林之神，'),
             sor('remind','所以我也不知道好不好吃。'),
             ren('scarejump','妳就沒有一點敬畏之心嗎！'),
-            /* 轉頭那一拍**清空立繪**（ver -871，Ray：「鹿主轉頭時也讓角色立繪退讓」）
-               —— 同變異拍的作法：無人演出拍吃 auto，下一句開口的人自然回台。 */
-            { speaker:'NOUVELLE', text:'', hide:['SORANA','RENNA','NOUVELLE','ANYA'],
+            /* 轉頭＝鹿主獨場（清場那一禎，ver -871/-878）。 */
+            { speaker:'NOUVELLE', text:'', portrait:{ char:'NOUVELLE', show:false },
+              hide:['SORANA','RENNA','NOUVELLE','ANYA'],
               cgBack:'resources/enemy/mon_shinierforest_deerlook.webp', auto:2000 },
             nou('cringe','祂在看我們……'),
             nou('surprise','啊。'),
@@ -2373,23 +2385,32 @@ export const TOWNS = {
           ] },
           { flag:'sv_deer_met', need:'sv_forest_intro', storyBattle:true, lines:[
             /* 出場序同上（ver -874）；checkpoint 掛在鹿主獨場那一拍。 */
-            { speaker:'SORANA', text:'',
+            { speaker:'SORANA', text:'', portrait:{ char:'SORANA', show:false },
               cgBack:'resources/enemy/mon_shinierforest_deer.webp', auto:2200, checkpoint:true },
+            /* ══ 立繪規則同分支1（ver -878）：只有鹿主獨場的那幾禎清場，
+               對話照常上立繪、吃「戰鬥中對話立繪尺寸」。 */
             sor('surprised','竟然是……樹靈鹿主！'),   // 劇情戰的回檔點：站在遺跡入口、可自由行動
             ren('shockedCalm','那是什麼？很麻煩嗎？'),
             sor('remind','那是傳說中的森林之神，'),
             sor('remind','所以我也不知道好不好吃。'),
             ren('scarejump','妳就沒有一點敬畏之心嗎！'),
-            { speaker:'NOUVELLE', text:'', hide:['SORANA','RENNA','NOUVELLE','ANYA'],
-              cgBack:'resources/enemy/mon_shinierforest_deerlook.webp', auto:2000 },   // 轉頭＝清場（ver -871）
+            /* 轉頭＝鹿主獨場（清場那一禎，ver -871/-878）。 */
+            { speaker:'NOUVELLE', text:'', portrait:{ char:'NOUVELLE', show:false },
+              hide:['SORANA','RENNA','NOUVELLE','ANYA'],
+              cgBack:'resources/enemy/mon_shinierforest_deerlook.webp', auto:2000 },
             nou('cringe','牠好像不太歡迎我們……'),
             any('desperate','……！！'),
-            /* 紫紅負片（tintHold，§6.5 -664）：出口＝進戰鬥，story.stopTint 自動收。 */
-            Object.assign(any('terrifying','有什麼……要來了！'), { tintHold:'nightmare' }),
-            /* 變異那一拍**清空立繪**（Ray：「鹿主變異時把角色立繪都先撤出」）——
-               台上沒人的純演出拍吃 auto；下一句蕾娜開口自然重新上台。 */
-            { speaker:'ANYA', text:'', hide:['SORANA','RENNA','NOUVELLE','ANYA'],
+            /* 紫紅負片＋心跳＋換曲（ver -877，Ray：「紫紅負片時播放心跳音，同時 BGM
+               轉 Lost_place4，保持到進戰鬥」）——bgm 是持續狀態，battle 卡同一首
+               ＝開打也不換；tint 的出口＝進戰鬥（story.stopTint 自動收）。 */
+            Object.assign(any('terrifying','有什麼……要來了！'),
+              { tintHold:'nightmare', se:'se_flight_heartbeat', bgm:'lostplace' }),
+            /* 異化＝鹿主獨場（ver -877/-878，Ray：「安雅說『有什麼要來了』之後就撤
+               角色立繪」＋**一次性紫炎**蓋住換圖；負片持續到進戰鬥）。 */
+            { speaker:'ANYA', text:'', portrait:{ char:'ANYA', show:false },
+              hide:['SORANA','RENNA','NOUVELLE','ANYA'], fx:'purpleflame',
               cgBack:'resources/enemy/mon_shinierforest_deernightmare.webp', auto:2200 },
+            /* 變身完成 → 立繪恢復（ver -878，Ray：「鹿主完成變身後恢復角色立繪」）。 */
             ren('cringe','那是……'),
             ren('callangry','禍魘！'),
             { battle:'sf_deer_nightmare' },
@@ -2442,6 +2463,7 @@ export const TOWNS = {
     bgm: 'frosylva',         // PeriTune_Frosylva（ver -876，Ray 指定）
     storyExplore: true,
     wilderness: true,
+    mist: 1,                 // 小地圖走過才亮（ver -877，Ray；沒人帶路）
     stepMin: 30,             // 遺跡每步半小時（ver -872 那條的第二級）
     nodes: {
       /* ⚠ 路線帶迷宮感（ver -876，Ray：「末端不要一直線走到底」）：
@@ -2460,7 +2482,11 @@ export const TOWNS = {
       collapsed:  { bg:'Ruins_shinier_Collapsed', name:'木雅克神殿　崩塌走道',
         exits:{ back:'corridorb' } },   // 死路：正面被石堆塞住
       bridge:     { bg:'Ruins_shinier_Bridge', name:'木雅克神殿　石橋',
-        exits:{ up:'deepaltar', left:'corridorb' } },
+        exits:{ up:'deepaltar', left:'corridorb', right:'collapsed2' } },
+      /* 第二條崩塌走道（ver -877，Ray：「石橋右邊再放一個崩塌走道，水平翻轉」）
+         —— 同一張圖 bgFlip 鏡像。 */
+      collapsed2: { bg:'Ruins_shinier_Collapsed', bgFlip:true, name:'木雅克神殿　崩塌走道',
+        exits:{ back:'bridge' } },
       /* 終點：深部祭壇。 */
       deepaltar:  { bg:'Ruins_shinier_DeepAltar', name:'木雅克神殿　深部祭壇',
         exits:{ back:'bridge' } },
