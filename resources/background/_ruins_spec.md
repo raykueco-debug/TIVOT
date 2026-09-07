@@ -141,6 +141,12 @@ WebP q85 → `resources/background/`；原 PNG → `resources/_originals/backgro
 - `Ruins_Spring` 半解析的舊帳一併解掉（GPT 新版全解析）。
 - 差分規約：天光隨時段變（dawn 冷藍紫／dusk 暖橘金／night 銀白月光＋大幅變暗）；
   **發光苔與符文的青綠光不隨時段變**（DeepAltar／Bridge 的 prompt 有明寫）。
+- ⚠⚠ **`Ruins_shinier_Bridge` 與 `Ruins_shinier_DeepAltar` 已經撤掉時段差分**
+  （2026-09-07，Ray 指定；資料上都補了 `noTime:true`）—— 那四張 `_dawn/_day/_dusk/_night`
+  已經不存在，**不要再為這兩格開時段差分的產線**。
+  ⚠ 石橋改走**事件差分**（旗標換圖，不走時段候選鏈）：第一張是
+  `Ruins_shinier_Bridgeopen`（橋放下／通行狀態），2026-09-07 20:30 Ray 交件、
+  已轉 webp 入庫。那是**新檔不是覆蓋**，不必掛版本號；程式端要接旗標。
 
 ## 深層 12 張（2026-09-07，Ray 交辦「同建築風格、不與原圖重覆、全無室外光」）
 
