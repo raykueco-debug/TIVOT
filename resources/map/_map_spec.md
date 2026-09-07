@@ -116,9 +116,10 @@ Spring／Sarcophagus／PillarHall／Guardians／Ritual／Flooded／MuralGallery�
 ### ⚠⚠⚠ 下面這張拓樸表已作廢，**不要照它畫**（2026-09-07）
 
 **神殿的地圖設計 Ray 收回去自己做了**（原話：「算了，給你設計這個根本浪費資源，
-我自己來」）。在他把新的定案交下來、程式端把 `script/town.js` 的
-`shinier_ruins.nodes` 接好之前，**美術不要再產任何一版神殿地圖** —— 節點與連線
-還在動，畫了就是白畫。
+我自己來」）。當時的指示是「拓樸還在動，先不要畫」。
+**⚠ 那一段已經結束**：Ray 的定案接進 `script/town.js` 了（ver -908 → -909），
+現行的權威佈局是 `_layout_shinier_ruins.png`（見下面「進度」那一節）。
+下面這張 18 格的表只留作紀錄。
 
 作廢的經過（三版，兩週內連改）：
 
