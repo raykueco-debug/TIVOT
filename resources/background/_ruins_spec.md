@@ -180,4 +180,18 @@ WebP q85 → `resources/background/`；原檔 → `resources/_originals/backgrou
 交件後由程式端接進 `script/town.js` 的 `shinier_ruins`（節點與連線見
 `resources/map/_map_spec.md`），並重畫手繪地圖。
 
-- [ ] 未開工。
+- [x] **6 個檔全部完成**（2026-09-07）。
+  · `Ruins_shinier_Crossway_{day,dawn,dusk,night}` ／ `Ruins_shinier_Brazier` ／ `Ruins_shinier_Hollow`
+  · 三張主圖由 GPT 產（各自帶錨圖上傳）；Crossway 的三張差分由 Gemini 衍生。
+  · **三個出口都驗過是真通道**：正面＋左右各一，門框／缺口俱全、地板連續延伸進去、
+    洞內暗下去、三個大小相近且在視線高度 —— 沒有壁龕假路。
+  · 原稿：`_originals/background/_cross_gpt/`（GPT）與 `_cross_gem/`（Gemini 差分）。
+  · 產線對話：Crossway `chatgpt.com/c/6a9e6ea1-d940-83e8-8dee-c0d27512456c`／
+    Brazier `chatgpt.com/c/6a9e702f-d438-83e9-9283-cef55034d48e`／
+    Hollow `chatgpt.com/c/6a9e7185-dd3c-83e9-a334-a499d54f9f93`／
+    差分 `gemini.google.com/app/01b0e566bd6db963`
+  · ⚠ **dawn 與 night 各重做過一次**：第一版的 night 亮度與色溫幾乎等於 dusk（沒變夜）、
+    dawn 比 day 還亮且無晨霧。兩張舊版已進回收區。
+    **教訓：時段差分交件前用「平均亮度＋R/B 比」量一次**——
+    night 應明顯最暗且 R/B<1，dawn 應比 day 暗、R/B<1。目檢容易放過「暖光夜景」。
+  · 神殿現有 42 張，像素指紋兩兩互異。
