@@ -39,6 +39,14 @@ const num = (v, d) => { const n=parseFloat(v); return isFinite(n) ? n : d; };
    只拿注入的 {get, toggle} 畫那一列開關。沒注入（理論上不會）就不出這一列。 */
 let muteHook = null;
 export function setMuteHook(h){ muteHook = h; }
+/* ══⚠⚠ **管理人工具收進這一頁**（ver -926，Ray：「把凍結跟狀態 HUD 收到系統設定裡面，
+   限管理人使用」）══ 以前是右下角兩顆常駐小鈕（`#perfToggle`／`#perfFreeze`，ver -852/-855）
+   —— 它們蓋在遊戲畫面上，而且**一般玩家的 testmode 一開就看得到**。
+   ⚠ 實作仍住在 `main.js`（凍結要碰 combat 的真暫停、HUD 要量版面）——
+     這裡只放**入口**，由 main 注入（settings 是葉模組，不 import main）。
+   ⚠ 只在 `body.testmode` 時長出來（與首頁那條白名單同一個判準，§6.9）。 */
+let devTools = null;
+export function setDevTools(t){ devTools = t || null; }
 
 export function volOf(layer){ return Math.max(0, Math.min(1, num(rd(K[layer]), 1))); }
 export function autoDelayMs(){
@@ -134,6 +142,18 @@ export function open(opts){
       +   '<button class="gm-sw'+(haptics()?' on':'')+'" id="gmHap" type="button">'
       +     '<i></i></button>'
       +   '<b>'+(haptics()?'開':'關')+'</b></label>'
+      + ((devTools && document.body.classList.contains('testmode'))
+        ? '<div class="gm-sec">管理人</div>'
+          + '<label class="gm-row gm-toggle"><span>凍　結</span>'
+          +   '<button class="gm-sw'+(devTools.frozen&&devTools.frozen()?' on':'')+'" id="gmFreeze" type="button">'
+          +     '<i></i></button>'
+          +   '<b>'+(devTools.frozen&&devTools.frozen()?'凍結中':'關')+'</b></label>'
+          + '<label class="gm-row gm-toggle"><span>狀態 HUD</span>'
+          +   '<button class="gm-sw" id="gmHud" type="button"><i></i></button>'
+          +   '<b>開關</b></label>'
+          + '<div class="gm-note">凍結＝停掉這一刻所有動畫／音訊／戰鬥計時（再按解凍）。'
+          + 'HUD＝版本與幀率那一片。兩者都只有管理人模式看得到。</div>'
+        : '')
       + '<div class="gm-acts">'
       +   (o.onHome ? '<button class="gm-btn gm-home" type="button">回到主選單</button>' : '')
       +   '<button class="gm-btn gm-close" type="button">關　閉</button>'
@@ -176,6 +196,20 @@ export function open(opts){
       apply();   // 即時套用 body.dlg-large
       try{ SFX.menuClick(); }catch(_){}
     });
+    /* 管理人那兩顆（ver -926）：實作在 main.js，這裡只按下去。
+       ⚠ 凍結是**狀態**（要顯示現在凍著沒），HUD 是**動作**（開關同一支 show()）。 */
+    { const fz=panel.querySelector('#gmFreeze');
+      if(fz && devTools && devTools.freeze) fz.addEventListener('click', e=>{ e.stopPropagation();
+        devTools.freeze();
+        const on=!!(devTools.frozen && devTools.frozen());
+        fz.classList.toggle('on', on);
+        const lab=fz.parentNode.querySelector('b'); if(lab) lab.textContent = on ? '凍結中' : '關';
+        try{ SFX.menuClick(); }catch(_){}
+      });
+      const hd=panel.querySelector('#gmHud');
+      if(hd && devTools && devTools.hud) hd.addEventListener('click', e=>{ e.stopPropagation();
+        devTools.hud(); try{ SFX.menuClick(); }catch(_){}
+      }); }
     const sw=panel.querySelector('#gmHap');
     if(sw) sw.addEventListener('click', e=>{ e.stopPropagation();
       const on=!haptics(); setHaptics(on);

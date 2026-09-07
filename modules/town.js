@@ -529,6 +529,7 @@ function node(){ return (TOWNS[townId]||{}).nodes[nodeId] || null; }
      （中心區），有的對白被打烊擋掉 —— 那些也算走到過。所以另開一組旗標。 */
 /* ⚠ 戰鬥地圖不記（ver -584）：「走過這個地方」是探索的帳，
    在城鎮戰裡跑過一輪不算逛過這座城。 */
+let revealPending=false;   // 這一次抵達還在等背景（ver -926，見 enter 的 reveal）
 function markSeen(id){ if(siegeOn()) return; prog.addFlags(['seen_'+townId+'_'+id]); }
 /* ══⚠⚠ 迷霧（ver -913，Ray：「小地圖沒走到的地方用迷霧遮住，在控制面板上也顯示
    『？？？』。除非 mist=0，否則預設都是如此。大城市 mist 都是 0」）══
@@ -1425,7 +1426,9 @@ function showNav(on){
        任何一片黑幕。有的話就是某條路徑忘了收 —— 當場清掉並報出是哪一片
        （`story.assertNoDarkOverlay`，那一支的說明寫著為什麼判準是這個而不是秒數）。
        ⚠ 城鎮這一格是 Ray 玩最久的地方，也是他四次回報「變黑」的現場。 */
-    story.assertNoDarkOverlay('town.showNav');
+    /* ⚠ 還在等背景就不驗（ver -926）：那時候黑幕蓋著是**對的**（見 enter 的 reveal）。
+       -904 沒有這一條，於是慢網／冷快取下每進一格都誤報一次紅字。 */
+    if(!revealPending) story.assertNoDarkOverlay('town.showNav');
     updateCompass();
     /* ⚠⚠ **字格的位置要在 `.on` 之後才量**（ver -406 修）：`#townNav` 沒有 `.on`
        時整層是 `display:none`，那時候量目的地字格得到的是 **0×0** —— 夾回畫面內那一段
@@ -1995,9 +1998,14 @@ export function enter(id){
   const my=++enterSeq;
   const needReveal = story.veilOn();
   let revealed=false;
+  /* ⚠⚠ **背景還在載的那一段，黑幕蓋著是合法的**（ver -926）：暗罩守望的前提是
+     「導覽出來了 ⇒ 畫面就該亮」，但這裡是「亮不亮要等背景」（`bgFor` 的回呼）——
+     慢網或冷快取時導覽會比背景先到，於是每進一格都誤報一次。
+     `revealPending` ＝這一次抵達還在等背景；守望在那期間不驗（見 showNav）。 */
+  revealPending = needReveal;
   const reveal=()=>{
     if(revealed || my!==enterSeq) return;
-    revealed=true;
+    revealed=true; revealPending=false;
     /* ⚠ 隔一幀再掀：`setSceneBg` 那一下只是換 `src`，讓瀏覽器先畫出來再淡。
        ⚠ 時長讀 `cutMs`（這一次切景的黑幕多長，淡出淡入要同長，ver -739）——
          讀完歸位 CUT_MS：`open()`／resume 那些不經過 `sceneCut` 的 enter

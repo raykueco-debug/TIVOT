@@ -717,20 +717,9 @@
      半透明小顆，不擋盤面右下那一格的點擊面積太多。 */
   /* ⚠ ver -868（Ray：「該移的是管理員專用鈕」）：右下角讓給地圖 icon ——
      這兩顆診斷鈕（testmode 限定）移到**左緣**、SKIP 之上。 */
-  #perfToggle{position:fixed;left:8px;right:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 64px);
-    z-index:99999;width:34px;height:34px;display:none;align-items:center;justify-content:center;
-    border:1px solid rgba(120,255,120,.55);border-radius:8px;color:#4f4;
-    background:rgba(0,0,0,.55);font:16px/1 monospace;user-select:none;-webkit-user-select:none;
-    cursor:pointer;opacity:.65;}
-  body.testmode #perfToggle{display:flex;}
-  /* ❄ 全凍結鈕（ver -855）：疊在探針鈕上方；凍結中亮起提醒（不然會忘記自己凍著）。 */
-  #perfFreeze{position:fixed;left:8px;right:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 106px);
-    z-index:99999;width:34px;height:34px;display:none;align-items:center;justify-content:center;
-    border:1px solid rgba(120,200,255,.55);border-radius:8px;color:#8cf;
-    background:rgba(0,0,0,.55);font:16px/1 monospace;user-select:none;-webkit-user-select:none;
-    cursor:pointer;opacity:.65;}
-  body.testmode #perfFreeze{display:flex;}
-  #perfFreeze.on{background:rgba(60,140,220,.75);color:#fff;opacity:1;}
+  /* ⚠ `#perfToggle`／`#perfFreeze` 的 CSS 於 ver -926 撤掉：那兩顆常駐小鈕搬進
+     選單的「管理人」那一段了（Ray：「把凍結跟狀態 HUD 收到系統設定裡面」）——
+     元素不再產生，樣式留著只會讓下一個人以為它還在。 */
   /* 鎖血鈕（管理人測試，ver -463）：清盤右側。開啟＝亮金（.on）。 */
   #hpLockBtn{top:10px;left:64px;right:auto;font-size:12px;letter-spacing:1px;color:var(--holy);border-color:var(--holy);display:none;}
   body.testmode #hpLockBtn{display:flex;}
@@ -3077,12 +3066,9 @@
   /* 暗罩守望的回報條（ver -903）：**管理人模式限定**，浮在最上層 6 秒。
      ⚠ 它報的是「剛剛有一片黑幕沒人收，我幫你清掉了」—— 給 Ray 在手機上讀出名字用的，
        一般玩家看到只會困惑（對他來說畫面已經好了）。 */
-  #darkToast{position:fixed;left:8px;right:8px;bottom:calc(env(safe-area-inset-bottom,0px) + 64px);
-    z-index:99998;display:none;padding:9px 12px;border-radius:8px;
-    background:rgba(90,20,20,.94);border:1px solid #d86a6a;color:#ffe0e0;
-    font-size:12px;line-height:1.5;letter-spacing:.5px;pointer-events:none;
-    box-shadow:0 6px 20px rgba(0,0,0,.6);}
-  #darkToast.on{display:block;}
+  /* ⚠ `#darkToast` 的 CSS 於 ver -926 撤掉：暗罩守望不再浮字（Ray：「控制面板
+     會一直跳一條訊息出來擋住…把它拿掉」）—— 它現在只寫 console（見 story 的
+     `assertNoDarkOverlay`）。 */
   #storyCardCatch.on{display:block;}
   #storyTitleCard.on.show{opacity:1;}
   /* ⚠⚠ **字級調小＋上下兩條細橫線**（ver -880，Ray：「初見地名太大了，上下加兩條

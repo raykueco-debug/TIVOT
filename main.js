@@ -1886,14 +1886,16 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
     const oldShowCleanup=()=>{ try{ po&&po.disconnect(); }catch(_){} try{ po2&&po2.disconnect(); }catch(_){} };
     hud.__cleanup=oldShowCleanup;
   }
-  /* ══ 常駐開關鈕（ver -852，Ray：「首頁開了以後進遊戲關不掉也無法測」）══
-     管理人模式（body.testmode）右下角一顆小鈕，任何畫面都按得到（z 99999 ＞
-     飛行 iframe 8200 ＞ 各 overlay）—— 開關同一支 show()。顯示與否交給 CSS
-     （style.css 的 #perfToggle，testmode 才出現），團徽連點 5 下照舊。 */
+  /* ══ 管理人的兩個工具（ver -852／-855 是右下角兩顆常駐小鈕；**ver -926 搬進選單**）══
+     Ray（-852）當初要的是「進遊戲之後還關得掉」，所以做成常駐鈕；-926 他改成
+     「收到系統設定裡面，限管理人使用」—— 那兩顆蓋在遊戲畫面上，而且 testmode
+     一開就一直在。現在入口在選單的「管理人」那一段（settings.setDevTools），
+     團徽連點 5 下照舊。 */
+  /* ⚠⚠ ver -926（Ray：「把凍結跟狀態 HUD 收到系統設定裡面，限管理人使用」）：
+     那兩顆常駐小鈕**不再長在畫面上** —— 改成把兩個動作注入選單（settings 的
+     「管理人」那一段）。實作留在這裡（凍結要碰 combat 的真暫停、HUD 要量版面），
+     入口搬家而已（鐵律 8：動作只有一份實作）。 */
   (function mkToggle(){
-    const b=document.createElement('div'); b.id='perfToggle'; b.textContent='☲';
-    document.body.appendChild(b);
-    b.addEventListener('click', e=>{ e.stopPropagation(); show(); });
     /* ══ ❄ 全凍結（ver -855，「馬上發熱」的歸因實驗）══
        按下＝把**這一刻頁面上所有動畫**暫停（Web Animations API，含 CSS/::after）、
        停掉 BGM 與所有媒體、連 HUD 自己的幀率計 rAF 也停 —— 頁面完全靜止、
@@ -1901,12 +1903,10 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
        凍著就涼＝持續 60/120fps 合成是主因，再對症（拔閒置動畫/降幀）。
        ⚠ 再按一次解凍：動畫 play 回來；BGM 不接（回首頁或換場自然會接）。
        ⚠ 只凍主頁 document：飛行 iframe 是它自己的世界，這顆管不到。 */
-    const fz=document.createElement('div'); fz.id='perfFreeze'; fz.textContent='❄';
-    document.body.appendChild(fz);
     let frozenAnims=[], frozeBattle=false;
-    fz.addEventListener('click', e=>{ e.stopPropagation();
+    const toggleFreeze=()=>{
       if(!window.__frozen){
-        window.__frozen=true; fz.classList.add('on');
+        window.__frozen=true;
         /* 戰鬥中也要真的靜止（ver -857，Ray：「敵攻擊行為完全不會停」）——
            掛**既有的**真暫停（pauseForDialog：凍大絕排程/紅點/碼表/延時倒數，
            教學對話同一支，鐵律 8）；解凍走 resumeFromDialog 原樣接回。 */
@@ -1916,12 +1916,15 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
         try{ SFX.stopBgm(0); }catch(_){}
         try{ const P=window.__perf; P&&[...P.media].forEach(m=>{ try{m.pause()}catch(_){} }); }catch(_){}
       }else{
-        window.__frozen=false; fz.classList.remove('on');
+        window.__frozen=false;
         if(frozeBattle){ try{ combat.resumeFromDialog(); }catch(_){} frozeBattle=false; }
         frozenAnims.forEach(a=>{ try{a.play()}catch(_){} }); frozenAnims=[];
         try{ window.__hudRafRestart&&window.__hudRafRestart(); }catch(_){}
       }
-    });
+    };
+    /* 入口：選單的「管理人」那一段（ver -926）。⚠ settings 是葉模組（不 import main），
+       所以由這裡注入 —— 同 `story.setTownBgm` 那一族的作法。 */
+    settings.setDevTools({ hud:()=>show(), freeze:toggleFreeze, frozen:()=>!!window.__frozen });
   })();
   // 觸發一：網址帶 ?debug
   if(location.search.indexOf('debug')>=0) show();

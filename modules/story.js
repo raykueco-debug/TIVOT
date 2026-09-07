@@ -3369,17 +3369,12 @@ export function assertNoDarkOverlay(where){
     if(st && st.classList.contains('kerb-veil')){ st.classList.remove('kerb-veil'); stuck.push('關棺暗罩 kerb-veil'); } }
   if(!stuck.length) return false;
   const msg='['+(where||'?')+'] 畫面該亮了卻還蓋著：'+stuck.join('、')+' —— 已清掉，上游有路徑沒收它';
+  /* ⚠⚠ **不浮字**（ver -926，Ray：「現在遊戲中控制面板會一直跳一條訊息出來擋住…
+     把它拿掉」）：-904 那條紅字是給管理人讀的，但它蓋在控制面板上、而且一有
+     誤報就一直跳。**留 console 就夠了** —— 它是驗收不是通知，真的驗到東西時
+     翻 console 看得到（同 `verifyCastCleared` 的作法：靜靜修掉但留一筆紀錄）。 */
   console.warn('[story] '+msg);
-  /* 管理人模式才浮字：一般玩家看到這行只會困惑，而它對玩家來說已經修好了。 */
-  if(document.body.classList.contains('testmode')) flashDark(msg);
   return true;
-}
-let darkToastT=null;
-function flashDark(msg){
-  let d=$('darkToast');
-  if(!d){ d=document.createElement('div'); d.id='darkToast'; document.body.appendChild(d); }
-  d.textContent=msg; d.classList.add('on');
-  clearTimeout(darkToastT); darkToastT=setTimeout(()=>d.classList.remove('on'), 6000);
 }
 
 /* ══⚠⚠ 報一件事的卡（`showTitleCard`，ver -899）══════════════════════════
