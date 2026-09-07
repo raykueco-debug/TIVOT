@@ -239,6 +239,9 @@ export const TOWNS = {
     safehouse: true,
     name: '帝都',
     entry: 'square',
+    /* 大城市不上迷霧（ver -913，Ray：「大城市 mist 都是 0」）——
+       ⚠ **要明寫**：-913 起沒寫就是有霧（走過才亮、字格印「？？？」）。 */
+    mist: 0,
     /* 這座城的 BGM（ver -375）。⚠ 有它才能在**插入戰打完回來**時把曲子接回去 ——
        戰鬥有自己的曲子，回城鎮時沒人接的話會一路放著戰鬥曲。 */
     bgm: 'capital',
@@ -939,6 +942,8 @@ export const TOWNS = {
   northport: {
     name: '北方泊地',
     entry: 'entrance',
+    /* 大城市不上迷霧（ver -913，Ray：「大城市 mist 都是 0」）—— 見帝都那一列。 */
+    mist: 0,
     /* ══ 第一次（劇情）降落從**碼頭**進去（ver -582，Ray 指定）══════════════
        之後每次進城照舊從 `entry`（中央大道）開始。
        ⚠ 旗標是**那一段主線演完才記**的（`acts` 的收尾）—— 中途離開／打斷重來
@@ -1798,6 +1803,10 @@ export const TOWNS = {
   shinier: {
     name: '夏爾村',
     entry: 'plaza',
+    /* ⚠ 夏爾村也給 0（ver -913）：Ray 的原話是「大城市 mist 都是 0」，村子他沒點名 ——
+       這裡照「有人帶路的落腳處」比照辦理（同森林 mist:0 的理由：索菈娜是本地人）。
+       要改成走過才亮，把這一列拿掉就是預設值。 */
+    mist: 0,
     /* 村的曲子＝Whistling Winds（ver -772，Ray：「轉景：夏爾村剝製廣場
        BGM Peritune_Whistling_Winds_loop」）——湖上戰後的 bgmAfter 也是它，
        進村無縫接續。-757 的 misty 暫代退場。 */
@@ -2351,8 +2360,12 @@ export const TOWNS = {
                  所以只借一句收尾、不自己編對白。要加戲等 Ray 的稿。
                ⚠ 曲子要**自己接回**森林的 misty：`lostplace` 是持續狀態，
                  而這一段不經過 `enter()`（不會重新套節點的 bgm）。 */
+            /* ⚠ 曲子**不寫在這裡**（ver -913）：戰鬥卡的 `bgmAfter:'@town'` 會把
+               森林那一首接回來（-912 之前是靠這一拍手動寫 `bgm:'misty'`，而
+               遺跡入口那一段的同一場戰鬥沒有人寫 —— 那正是 Ray 回報的「打完還在放
+               lostplace」）。鐵律 7/8：一件事一個地方做。 */
             Object.assign(sor('guardtalk','可惡！連森林的守護神都被侵蝕了！'),
-              { cgBack:null, bgm:'misty', stage:7 }),   // 同一個里程碑（鹿主打完）＝同樣升 S7
+              { cgBack:null, stage:7 }),   // 同一個里程碑（鹿主打完）＝同樣升 S7
           ] } },
       ],
     },
@@ -2572,6 +2585,20 @@ export const TOWNS = {
         rift:[0.915, 0.274], darkbridge:[0.915, 0.120], mosschamber:[0.885, 0.374],
       },
     },
+    /* ══⚠⚠ 野生刷怪（ver -913，Ray：「不出怪的地方：樓梯、裂隙。其他地方必出怪，
+       怪的清單等等再補」）══ 實作在 modules/town.js 的 `wildActDue`（鐵律 8）。
+       ⚠⚠ **`pool` 還是空的**：Ray 的怪表還沒到 —— 空的就是「這一格擲了但抽不到人」，
+         畫面上不會有任何錯誤訊息，也不會擋住探索。**不要自己填怪**（同護符與
+         gunUpgrade 配方那兩批：卡沒到就先空著）。
+       ⚠ `rate:1` ＝「其他地方必出怪」：不出怪的那幾格由節點自己的 `noWild` 宣告
+         （樓梯兩格＋裂隙，加上三個安全點），不在這裡列名單 —— 名單會與節點走鐘。
+       ⚠ 入口那一格（`entry`＝前廳）本來就不出怪（遭遇戰復活點，§6.5.2）。
+       ⚠ 這張圖只有一個跨圖出口（末端型）⇒ `pickEndNode` 回 null，
+         結算怪日後由 `fixed` 指定（等 Ray 的清單）。 */
+    wildSpawn: {
+      rate: 1,
+      pool: [],
+    },
     nodes: {
       /* ══ 21 格 —— **照 Ray 畫的 `resources/map/map_ruins_shinier.png` 排**（ver -907）══
          Ray：「map_ruins_shinier 照這張排」。那張圖是**權威佈局**：節點、連線、
@@ -2601,7 +2628,14 @@ export const TOWNS = {
          ⚠ 這張圖沒有自己的入口節點（ver -879）：入口就是夏爾森林的「遺跡入口」。 */
 
       /* ── 入口這一帶 ── */
+      /* ══⚠⚠ **安全點（休息處）**（ver -913，Ray：「養息之間跟命之泉、前廳這三個是
+         安全點，進入就結算戰鬥」）══ `rest:true` ＝走進去就閉棺結算（判定與交棒在
+         modules/town.js 的 `restActDue`；沒打過架就不作動）。
+         ⚠ 三格一律 `noWild`：Ray 點名的不出怪清單是「樓梯、裂隙」，但**安全點**
+           三個字本身就是「這裡不會有東西撲上來」—— 而且它們是這一局的收尾點，
+           在收尾點刷怪等於「先打一場再結算」。要改成會出怪，把 noWild 拿掉就好。 */
       antechamber:{ bg:'Ruins_shinier_Antechamber', name:'木雅克神殿　前廳',
+        rest:true, noWild:true,
         /* 圖上：長廊在左、拱門長廊在右、遺跡入口在下。 */
         exits:{ left:'corridora', right:'corridorb', down:'@shinier_forest:ruins' } },
       corridora:  { bg:'Ruins_shinier_CorridorA', name:'木雅克神殿　長廊',
@@ -2612,13 +2646,15 @@ export const TOWNS = {
         exits:{ down:'corridora', left:'stairup', up:'well' } },
       well:       { bg:'Ruins_shinier_Well', name:'木雅克神殿　圓井房',
         exits:{ back:'crossway' } },                    // 末端：一口深井，沒有出口
-      stairup:    { bg:'Ruins_shinier_StairUp', name:'木雅克神殿　上行石階',
+      /* 樓梯不出怪（ver -913，Ray：「不出怪的地方：樓梯、裂隙」）。 */
+      stairup:    { bg:'Ruins_shinier_StairUp', name:'木雅克神殿　上行石階', noWild:true,
         /* ⚠ 階梯在正前方往上 ⇒ 按 `up` 就是拾級而上（Ray -890：「明明樓梯往上，
            箭頭卻只能往下」）；岔道在它右邊。 */
         exits:{ right:'crossway', up:'brazier' } },
 
       /* ── 火盆這一帶（環①） ── */
       brazier:    { bg:'Ruins_shinier_Brazier', name:'木雅克神殿　養息之間',
+        rest:true, noWild:true,                        // 安全點（見前廳那一段）
         /* ⚠ 名字由「火盆」改成「養息之間」（ver -908，Ray）。**節點 id 不動** ——
            旗標（`seen_shinier_ruins_brazier`）、腳本、存檔都指著它，改 id 等於把
            那些全打斷；玩家看得到的只有 `name`。
@@ -2654,7 +2690,7 @@ export const TOWNS = {
            兩側牆是實心的浮雕柱 —— 叫三叉會讓玩家一直在找不存在的岔路。 */
         exits:{ left:'antechamber', up:'stairdeep' } },
       /* ⚠ ver -908（Ray：「下行深階跟墓道位置對調」）：先下階梯，再走墓道。 */
-      stairdeep:  { bg:'Ruins_shinier_StairDeep', name:'木雅克神殿　下行深階',
+      stairdeep:  { bg:'Ruins_shinier_StairDeep', name:'木雅克神殿　下行深階', noWild:true,
         /* ⚠ 階梯在正前方往下 ⇒ 按 `up` 一樣是「走進畫面裡」，只是這一次是走下去。 */
         exits:{ down:'corridorb', up:'catacomb' } },
       catacomb:   { bg:'Ruins_shinier_Catacomb', name:'木雅克神殿　墓道',
@@ -2673,8 +2709,9 @@ export const TOWNS = {
       /* ⚠ ver -908（Ray：「把地下泉水跟地底裂隙的連結給斷了」）：兩格都變末端。
          ⚠ 泉水由「地下泉水」改名「命之泉」（Ray）—— 同養息之間，**id 不動**。 */
       deepspring: { bg:'Ruins_shinier_DeepSpring', name:'木雅克神殿　命之泉',
+        rest:true, noWild:true,                        // 安全點（見前廳那一段）
         exits:{ back:'hollow' } },                      // 末端
-      rift:       { bg:'Ruins_shinier_Rift', name:'木雅克神殿　地底裂隙',
+      rift:       { bg:'Ruins_shinier_Rift', name:'木雅克神殿　地底裂隙', noWild:true,   // 裂隙不出怪（ver -913，Ray）
         /* ⚠ ver -909（Ray：「把黑暗斷橋…接到地底裂隙上面」）：它不再是末端，
            往上通黑暗斷橋。 */
         exits:{ down:'mosschamber', up:'darkbridge' } },

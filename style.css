@@ -3075,7 +3075,9 @@
      走 drop-shadow；box-shadow 沿矩形圖框畫，透明區外會浮出一圈方影。 */
   #townMapView .tm-img{position:absolute;inset:0;width:100%;height:100%;display:block;
     filter:drop-shadow(0 10px 24px rgba(0,0,0,.65));}
-  #townMapView .tm-spot{position:absolute;width:0;height:0;font-style:normal;}
+  /* ⚠ 走過的那一格要壓在霧**之上**（ver -913）：兩格靠得近時，鄰居那團霧會蓋掉
+     這一格的中文地名（實測「養息之間（休息處）」被隔壁的霧吃掉半行）。 */
+  #townMapView .tm-spot{position:absolute;width:0;height:0;font-style:normal;z-index:2;}
   #townMapView .tm-spot b{position:absolute;left:-6px;top:-6px;width:12px;height:12px;
     border-radius:50%;background:#3b2a16;border:2px solid #efe3c2;
     box-shadow:0 0 6px rgba(0,0,0,.5);}
@@ -3090,6 +3092,34 @@
     white-space:nowrap;font-size:11.5px;letter-spacing:1px;color:#2a1c0c;font-weight:bold;
     text-shadow:0 0 3px #f2e4c4,0 0 3px #f2e4c4,0 0 5px #f2e4c4;}
   #townMapView .tm-spot.here span{color:#5a3506;}
+  /* ══ 迷霧（ver -913，Ray：「小地圖沒走到的地方用迷霧遮住」）══
+     一團與羊皮紙同色系的霧，蓋住那顆墨點**與圖上那個手寫地名**（草書名在墨點的
+     右下方約 13~16px，所以霧要往右下偏一點、而且要夠大）。
+     ⚠ 不是「不畫那一格」：整格不畫讀起來是「那裡沒東西」，蓋霧才是「還沒去過」。
+     ⚠ 邊緣要糊（徑向漸層＋blur）：硬邊的圓讀起來是貼紙，不是霧。 */
+  /* ⚠⚠ 尺寸寫成**地圖的百分比**不是 px（實測：固定 88px 的霧在 375 寬的手機上
+     蓋掉四分之一張圖）—— 所以它是 `.tm-frame` 的子元素，不是 0×0 錨點的 `::before`。
+     ⚠⚠ 顏色要**貼著羊皮紙**（實測紙面 rgb(208,170,118)）：第一版用偏白的
+     rgb(226,216,196)，在紙上讀起來是「一團白棉花」不是霧，而且太透 ——
+     墨點、草書名與連線全部看得穿（等於沒遮）。
+     ⚠ 往右下偏一點：圖上的草書地名在墨點的**右下方**，霧要連它一起蓋掉。 */
+  /* ⚠ 一格要蓋掉的是**三樣東西**：墨點上方的速寫圖示、墨點本身、右下的草書名 ——
+     所以框要比「一個點」大得多（實測只罩點的話圖示與名字照樣讀得出來）。 */
+  #townMapView .tm-fog{position:absolute;width:15.5%;height:19%;border-radius:50%;z-index:1;
+    transform:translate(-50%,-50%) translate(9%,-2%);
+    background:radial-gradient(ellipse at 46% 45%,
+      rgba(219,190,150,.995) 0%, rgba(217,187,146,.99) 50%,
+      rgba(214,183,142,.88) 68%, rgba(212,180,138,.38) 84%,
+      rgba(210,178,136,0) 100%);
+    filter:blur(3px);}
+  /* ══ 休息處：用筆圈起來（ver -913，Ray）══ 手繪地圖上的一個墨圈 ——
+     所以是**歪的、不等寬的**（旋轉 −12°、上下邊比左右粗一點），不是一個正圓框。
+     ⚠ 畫在 `b`（那顆墨點）上而不是另加一層：圈與點是同一個記號。 */
+  #townMapView .tm-spot.rest b::after{content:'';position:absolute;
+    left:-7px;top:-6px;right:-7px;bottom:-6px;border-radius:50%;
+    border:1.6px solid rgba(42,28,12,.78);border-width:2px 1.4px;
+    transform:rotate(-12deg);}
+  #townMapView .tm-spot.rest.here b::after{border-color:rgba(90,53,6,.9);}
 
   /* ── 槍棺的吊墜（ver -411／-412，Ray 指定）──────────────────────────
      掛在槍棺左上方。**吊掛點與槍棺鎖死**（它是 `#kerbDoor` 的子元素），

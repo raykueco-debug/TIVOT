@@ -1453,6 +1453,16 @@ story.setBattleCue((id)=>{
 /* 連續戰鬥的開棺判定（ver -585）：真相在 combat 的 `state.battleSession`，
    story 只問（它不 import combat，所以由這裡注入 —— 同 setGateHold 的理由）。 */
 story.setGateSkip(id => combat.battleNeedsGate(id));
+/* 休息處的閉棺結算（ver -913）：交棒與回程與插入戰**同一套**（storyResume →
+   setStoryReturn 的最後那一條），這裡只負責把場子交給結算頁。
+   ⚠ `flightBack=false`：這一頁不是飛行頁交棒過來的（同 setBattleHandler 的理由）。 */
+story.setSettleHandler((resume)=>{
+  storyResume = resume; flightBack = false;
+  combat.restSettle();
+});
+/* 「這張圖現在該放哪一首」（ver -913）：給戰鬥卡的 `bgmAfter:'@town'` 用 ——
+   曲名的真相只有 `TOWNS[].bgm` 一處（town.bgmKey），卡上不抄第二份（鐵律 7）。 */
+story.setTownBgm(()=> town.isOpen() ? town.bgmKey() : null);
 story.setGateOpened(()=>combat.releaseEnemyRise());   // 降臨等門開（ver -875）
 story.setBattleHandler((battleId, resume)=>{
   storyResume = resume;

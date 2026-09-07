@@ -528,6 +528,17 @@ function node(){ return (TOWNS[townId]||{}).nodes[nodeId] || null; }
 /* ⚠ 戰鬥地圖不記（ver -584）：「走過這個地方」是探索的帳，
    在城鎮戰裡跑過一輪不算逛過這座城。 */
 function markSeen(id){ if(siegeOn()) return; prog.addFlags(['seen_'+townId+'_'+id]); }
+/* ══⚠⚠ 迷霧（ver -913，Ray：「小地圖沒走到的地方用迷霧遮住，在控制面板上也顯示
+   『？？？』。除非 mist=0，否則預設都是如此。大城市 mist 都是 0」）══
+   **判定只有這一支**（鐵律 7/8）：小地圖那邊要決定畫不畫霧、目的地字格那邊要決定
+   印不印地名 —— 兩邊各寫一次的話一定有一邊忘了改。
+   ⚠ 預設有霧（`mist` 沒寫＝1）：忘了寫的下場是「多遮一點」，不是「整張攤開」。
+   ⚠ 「走到過」沿用既有的 `seen_*` 旗（`markSeen`），不另開一組（鐵律 7）——
+     所以戰鬥地圖裡走過的不算（那一條是 markSeen 自己的規矩）。
+   ⚠ **站著的那一格永遠算走到過**：`markSeen` 是 `enter()` 收尾才記的，
+     抵達的當下問它會問到「還沒記」（同「不要從畫面反推」那一族的坑）。 */
+function fogOn(){ const T=TOWNS[townId]; return !!T && T.mist!==0; }
+function seenNode(id){ return id===nodeId || prog.hasFlag('seen_'+townId+'_'+id); }
 /* 城裡的地點都走過了嗎。⚠ **不算旅店自己** —— 那是「走完之後要去的地方」，
    把它算進去的話玩家永遠等不到那句提醒。 */
 function allSeen(){
@@ -681,6 +692,20 @@ function pickEndNode(startNode){
 /* 這一趟的結算怪落在哪一格（給 wildActDue 問；沒有就回 null）。 */
 export function endBattleNode(){ return endNodeId; }
 
+/* ══⚠⚠ **休息處：走進去就閉棺結算**（ver -913，Ray：「養息之間跟命之泉、前廳這三個
+   是安全點，進入就結算戰鬥」「走進就閉棺，跳結算頁。但若之前沒有發生戰鬥就不會作動」）══
+   節點寫 `rest:true`（資料，鐵律 1）；這裡只回答「這一次抵達要不要結算」。
+   ⚠ **沒打過架就不作動**：問的是**帳**（`state.sessionStats`，收段那一場要報的
+     那一筆）—— 沒有帳就什麼都不做，不會為了走進來而彈一頁空白戰績。
+   ⚠ 交棒與回程走**戰鬥那一套**（`{settle:true}` 那一拍 → story → main → combat，
+     鐵律 8）—— 城鎮這邊不自己去碰結算頁。
+   ⚠ 排在 `actDue` **之後**、`wildActDue` **之前**：劇本最優先；而休息處本來就
+     不該在結算之前先冒一隻怪出來。 */
+function restActDue(n){
+  if(!n || !n.rest) return null;
+  if(!state.sessionStats) return null;          // 這一趟還沒打過架＝不作動（Ray）
+  return { lines:[ { settle:true } ] };
+}
 function wildActDue(n){
   const W=(TOWNS[townId]||{}).wildSpawn; if(!W || !n) return null;
   if(prog.hasFlag(safehouseFlag())) return null;        // 安全區：遭遇戰整套不動
@@ -1171,20 +1196,34 @@ function renderMap(){
     v.addEventListener('pointerup', e=>{ e.stopPropagation(); mapClose(); });
     st.appendChild(v);
   }
-  /* ══ 迷霧識別 `mist`（ver -877，Ray：「遺跡及野外的小地圖都必須走到才顯示，
-     夏爾森林因為有索拉娜帶路所以一進去就全開，這屬特例——mist=1 就要用自己走的，
-     mist=0 就全開」）══ 沒寫＝照地圖性質推：荒野 1、城村 0（既有的開圖規則）；
-     寫了以資料為準（森林 wilderness 但 mist:0＝特例）。 */
-  const fog = (T.mist!=null) ? !!T.mist : !!T.wilderness;
-  const ids=Object.keys(M.spots||{}).filter(id=> T.nodes[id]
-    && (!fog || id===nodeId || prog.hasFlag('seen_'+townId+'_'+id)));
+  /* ══ 迷霧 `mist`（ver -877；-913 改預設與畫法）══
+     Ray（-913）：「小地圖沒走到的地方用迷霧遮住，在控制面板上也顯示『？？？』。
+       除非 mist=0，否則預設都是如此。大城市 mist 都是 0。」
+     ⚠⚠ **預設是「有迷霧」**（-877 是「荒野才有」）：新開一張圖不寫就是走過才亮，
+       這樣忘了寫的下場是「多遮一點」而不是「整張圖直接攤開」（安全的那一邊）。
+       大城市在資料上明寫 `mist:0`。
+     ⚠⚠ 沒走到的**不是不畫，是蓋一團霧**（-913 改）：整格不畫的話玩家讀到的是
+       「那裡沒有東西」，蓋霧才讀得出「那裡有東西、我還沒去」。 */
+  const fog = fogOn();
+  const ids=Object.keys(M.spots||{}).filter(id=>T.nodes[id]);
   v.innerHTML='<div class="tm-frame">'
     + '<img class="tm-img" src="'+M.img+'" alt="">'
     + ids.map(id=>{
         const p=M.spots[id];
-        const nm=String((T.nodes[id]||{}).name||'').split('　').pop();
-        return '<i class="tm-spot'+(id===nodeId?' here':'')
-             + '" style="left:'+(p[0]*100).toFixed(1)+'%;top:'+(p[1]*100).toFixed(1)+'%">'
+        const pos='left:'+(p[0]*100).toFixed(1)+'%;top:'+(p[1]*100).toFixed(1)+'%';
+        /* 沒走到＝一團霧（沒有點、沒有名字）—— 連圖上那個手寫地名一起蓋掉。
+           ⚠⚠ 霧是**另一個元素**（`.tm-fog`）不是 `.tm-spot` 的 `::before`：
+             `.tm-spot` 是 0×0 的錨點，掛在它身上的東西只能用 px 給大小 ——
+             實測手機寬（375）時那團 88px 的霧會蓋掉四分之一張地圖。
+             直接掛在 `.tm-frame` 底下，大小才寫得成 **% of 地圖**，跟著圖縮放。 */
+        if(fog && !seenNode(id)) return '<i class="tm-fog" style="'+pos+'"></i>';
+        /* ══ 休息處（ver -913，Ray：「探索到以後用筆圈起來，並在中文後方加入
+           『（休息處）』」）══ 圈是 CSS 畫的（`.tm-spot.rest`），字在這裡加。
+           ⚠ 這一行**只有小地圖在用**：導覽字格那邊是另一支（`nameOfNode`）。 */
+        const rest=!!(T.nodes[id]||{}).rest;
+        const nm=String((T.nodes[id]||{}).name||'').split('　').pop() + (rest?'（休息處）':'');
+        return '<i class="tm-spot'+(id===nodeId?' here':'')+(rest?' rest':'')
+             + '" style="'+pos+'">'
              + '<b></b><span>'+nm+'</span></i>';
       }).join('')
     + '</div>';
@@ -1499,6 +1538,11 @@ function nameOfNode(id){
   }
   const n=(TOWNS[townId]||{}).nodes[id];
   if(!n) return '';
+  /* ══⚠⚠ 沒走到的地方＝「？？？」（ver -913，Ray：「在控制面板上也顯示『？？？』」）══
+     與小地圖的迷霧是**同一件事**，所以問同一支 `fogOn()`／`seenNode()`（鐵律 7）。
+     ⚠ 排在打烊那一條**之前**：連地名都還不知道的地方，不該先知道它幾點關門。
+     ⚠ 跨地圖出口（`@`）在上面就回掉了 —— 那是「往外走」不是這張圖的一格。 */
+  if(fogOn() && !seenNode(id)) return '？？？';
   /* ⚠ 打烊的地方在**目的地字格上就標出來**（ver -406）：走過去才發現關門是白走一趟，
      而移動要花掉遊戲內時間（時間是資源）。標在這裡＝所有顯示目的地名的地方
      （字格、蓄能提示）都吃得到，只有這一支在決定（鐵律 7）。 */
@@ -1945,7 +1989,7 @@ export function enter(id){
   function runArrival(immediate){
   /* 野生刷怪（ver -862）：`acts` 優先（劇本先走）；接續那一次（immediate）不擲 ——
      一段主線剛演完原地再冒一隻怪是兩段演出打架。 */
-  const act = actDue(n) || (immediate ? null : wildActDue(n));
+  const act = actDue(n) || restActDue(n) || (immediate ? null : wildActDue(n));
   let ev = act ? null : eveningDue(n);
   /* 這一次抵達**原本**要演的進場對白（打烊、演過了、或段落裡有**回房休息的夥伴**
      （ver -459，見 linesBlockedByRest）就是空的 —— 後者旗標不記，之後照演）。
@@ -2539,3 +2583,6 @@ export function placeName(pos){
    （見 main.js 的 `openFlight`：兩個 document 各有一套 BGM，不收會疊在一起），
    從飛行頁「返回」回到城鎮時要有人把它接回來。 */
 export function resumeBgm(){ const T=TOWNS[townId]; if(T) story.ensureBgm(townBgm()); }
+/* 這張圖現在該放哪一首（ver -913）：給 `bgmAfter:'@town'` 問的（main 注入給 story）。
+   ⚠ 只是把 `townBgm()` 這個唯一的計算點**開一個窗**，不是第二份判斷（鐵律 7）。 */
+export function bgmKey(){ return TOWNS[townId] ? townBgm() : null; }

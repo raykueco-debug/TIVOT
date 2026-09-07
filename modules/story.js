@@ -2383,6 +2383,28 @@ function renderLine(){
     return advance();
   }
 
+  /* ══ 休息處：閉棺結算（ver -913，見 setSettleHandler）══
+     `{ settle:true }` ＝把畫面交給結算頁；回程與 `line.battle` 完全同一套
+     （`storyResume` → `resumeFrom`），所以續播位置照那邊的寫法組。
+     ⚠ **不演開棺／閉棺的動畫**：探索期間槍棺本來就闔著（＝控制盤，§6.5.4.3），
+       再演一次「闔上」是演一個已經發生的狀態。
+     ⚠ 收舞台要在交棒**之前**：結算頁住在 `#app` 裡，而 `#storyStage.on` 時
+       `#app` 整層 `visibility:hidden`（鐵律 10 的落地）—— 不收就是「頁開了、看不見」。 */
+  if(line.settle){
+    stopShake(); stopTint();
+    if(!settleHandler){
+      console.info('[story] 沒有註冊結算發動器，跳過 settle');
+      return advance();
+    }
+    const rsm = cur.__adhoc
+      ? { adhoc: cur.lines, line: lineIdx+1, done: cur.__done, sides: sideOverride, bgm: stageBgm }
+      : { scene: cur.sceneId, line: lineIdx+1, bgm: stageBgm };
+    clearCast(); hideBubble();
+    close({ keepBgm:true });
+    try{ settleHandler(rsm); }catch(e){ console.info('[story] settleHandler 出錯', e); }
+    return;
+  }
+
   if(line.battle){
     stopShake(); stopTint();     // 進戰鬥就停（ver -638／-664，Ray 指定）
     if(!battleHandler){
@@ -3039,6 +3061,23 @@ export function open(pos, done){
 /* main.js 注入戰鬥發動器：fn(battleId, resumePos)。
    ⚠ 回來時由 main.js 呼叫 `open(resumePos)` 續播 —— story 自己不知道戰鬥何時結束。 */
 export function setBattleHandler(fn){ battleHandler = fn || null; }
+/* ══⚠⚠ **「這張圖現在該放哪一首」**（ver -913）══ 給 `bgmAfter:'@town'` 用的。
+   ⚠ 為什麼不在戰鬥卡上直接寫曲名：那會變成同一個量兩個計算點（鐵律 7）——
+     森林現在的 `misty` 是**暫代**（Ray：「森林曲後換」），換的時候只該改
+     `TOWNS[].bgm` 一處；卡上再抄一份，日後一定有一邊沒跟上。
+   ⚠ 注入不 import（story 不認識城鎮，同 `setTownOpener`）；不在城裡就回 null，
+     `resumeFrom` 自己退回「戰前那一首」。 */
+let townBgmFn = null;
+export function setTownBgm(fn){ townBgmFn = fn || null; }
+/* ══⚠⚠ **休息處：閉棺結算**（ver -913，Ray：「走進就閉棺，跳結算頁。但若之前
+   沒有發生戰鬥就不會作動」）══ 腳本／段落寫 `{ settle:true }` 那一拍。
+   ⚠ 它與 `line.battle` 是**同一族**（把畫面交出去、打完接回來），所以續播位置、
+     回程、收尾全部沿用那一套（鐵律 8）—— 差別只有「交給誰」：那一支交給戰鬥，
+     這一支交給結算頁。
+   ⚠ **沒有帳就不該走到這裡**：判斷在呼叫端（城鎮的 `restActDue` 問
+     `state.sessionStats`）—— 這裡只負責交棒。 */
+let settleHandler = null;
+export function setSettleHandler(fn){ settleHandler = fn || null; }
 /* 門全開的掛鉤（ver -875）：main 注入 combat.releaseEnemyRise——降臨等門開。 */
 let gateOpened=null;
 export function setGateOpened(fn){ gateOpened = fn || null; }
@@ -3597,7 +3636,13 @@ export function resumeFrom(pos, res){
      ⚠ 寫在**卡**上不寫在腳本裡（鐵律 1）：「這一場打完之後是什麼氣氛」是那一場
        的性質，日後同一隻怪在別的地方出現也該接同一首。 */
   const _bc = pos.battleId && GAME_CONFIG.battles && GAME_CONFIG.battles[pos.battleId];
-  const _after = (_bc && _bc.bgmAfter && !(res && res.lost)) ? _bc.bgmAfter : null;
+  let _after = (_bc && _bc.bgmAfter && !(res && res.lost)) ? _bc.bgmAfter : null;
+  /* ══⚠ `bgmAfter:'@town'` ＝**接回這張圖的曲子**（ver -913，Ray：「鹿主戰結束後
+     BGM 換回森林用的」）══ 這一場的戰前那一首是異化那一段的 `lostplace`（持續狀態），
+     所以「接回戰前」是錯的答案 —— 要接的是森林自己那一首。
+     ⚠ 曲名不寫在卡上：真相只有 `TOWNS[].bgm` 一處（見 setTownBgm 那一段）。
+     ⚠ 問不到（不在城裡／沒注入）就退回戰前那一首，不會變成一片安靜。 */
+  if(_after==='@town') _after = (townBgmFn ? townBgmFn() : null) || null;
   ensureBgm(_after || pos.bgm);             // 戰前那一首（見 renderLine 的 resume）
   /* ══⚠⚠ ver -430 的「再戰＝回這一幕的第 0 句」**已在 ver -697 推翻**══════════
      那一顆現在叫「繼續」，做的是**回檔**（`save.loadLatest`，分流在 main 的

@@ -53,7 +53,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.07-912';
+export const VERSION = 'ver 2026.09.07-913';
 
 export const GAME_CONFIG = {
 
@@ -1439,7 +1439,15 @@ export const GAME_CONFIG = {
     sf_deer_nightmare: { enemy:'sf_deer_nightmare',
       /* 與異化那一段**同一首**（ver -877，Ray：「戰鬥用同一首」）——卡上明寫最優先，
          同曲重播由 playBgm 擋掉＝開打不換曲（同 man_sorana/whirlwind 的作法）。 */
-      bgm:'bgm_lostplace' },
+      bgm:'bgm_lostplace',
+      /* ══⚠⚠ 打完接回**這張圖的曲子**（ver -913，Ray：「鹿主戰結束後 BGM 換回
+         森林用的」）══ 戰前那一首是異化那一段的 `lostplace`（跨句的持續狀態），
+         所以「接回戰前」在這一場是錯的答案。
+         ⚠ `'@town'` ＝現在站的那張圖的 `bgm`（`story.resumeFrom` 解，town 那邊
+           只有 `townBgm()` 一個計算點）—— **不要在這裡寫死 `'misty'`**：
+           森林那一首是暫代的（Ray：「森林曲後換」），寫死就是同一個量兩份真相（鐵律 7）。
+         ⚠ 只有打贏才換（`resumeFrom` 那一條規矩）：戰敗要再打一次。 */
+      bgmAfter:'@town' },
     /* ══⚠⚠ 瓦礫中的紫黑之爪 ＝ **聖徒化教學戰**（ver -595，Ray 交稿）══
        腳本節奏：BOSS HP ≤30% → 劇情殺（主角 HP 歸零）→ 諾薇兒「我準備好了，現在
        聖徒化！」→ 雪鐵龍教學**右滑**發動聖徒化 → 聖徒化戰鬥 → 血回 99% 自動觸發

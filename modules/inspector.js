@@ -382,6 +382,11 @@ export function settle(totalTime, stats, opts={}){
        玩家按了按鈕才回劇情／首頁 —— 交還的動作由 `tutorialDone` 這個回呼負責。 */
   /* ⚠ `!isLose`（ver -376）：教學／插入戰的結算頁是**給打贏用的**（戰績＋拾得）。
      戰敗一律走下面那一頁（Ray：除劇情殺／可戰敗之外，戰敗一律 Game Over 回主選單）。 */
+  /* ══ 休息處：閉棺結算（ver -913，Ray：「走進就閉棺，跳結算頁」）══
+     排在所有分流**最前面**：這一頁沒有敵人（不是打完誰，是把這一路的帳結掉），
+     底下那三條都要問 `state.currentEnemyKey`。⚠ 併帳／清帳／HP 回滿在上面已經做完
+     —— 那是「一局的終點」共通的手續，這一條只是第四條結算路徑（鐵律 8）。 */
+  if(opts.rest && !isLose){ restSettle(totalTime, stats, sessionMoney, sessionLoot); return; }
   if(state.tutorialRun && !isLose){ tutorialSettle(totalTime, stats, sessionMoney); return; }
   /* 劇情插入戰（ver -375）：與教學結算同一頁 —— **沒有監察官、沒有等級**，
      只有戰績、EXP 與拾得。⚠ 不是教學，所以不走教學那兩句台詞。 */
@@ -686,6 +691,50 @@ function tutorialSettle(totalTime, stats, sessionMoney){
     /* ⚠ 掛 `pointerup` 在捕獲階段：結算頁上有幾個 `pointer-events:none` 的層
        （對話框、立繪舞台），事件不一定冒泡到某個特定容器，掛 document 最穩。
        ⚠ `once:true` ＋ 旗標雙保險：連點兩下不會彈兩次。 */
+    document.addEventListener('pointerup', popLootOnce, { capture:true, once:true });
+  }
+}
+/* ══⚠⚠ 休息處的結算（ver -913，Ray：「養息之間跟命之泉、前廳這三個是安全點，
+   進入就結算戰鬥」「走進就閉棺，跳結算頁。但若之前沒有發生戰鬥就不會作動」）══
+   與 `scriptSettle` 是**兄弟**：同一個版面、同一支評分（`evaluate`）、同一位評價者
+   （`pickEvaluator`）、同一條拾得（`_lootPending`）—— 差別只有一件事：
+   **這一頁沒有敵人**。所以副標不是「XX 已淨化」，錢與掉落也只有這一路累積的帳
+   （`sessionMoney`／`sessionLoot`），不再擲最後一隻的骰。
+   ⚠ 不寫成 `scriptSettle` 的一個分支：那一支有六處要問 `state.currentEnemyKey`
+     （副標、掉落、金錢、名字、最佳紀錄、獎品），逐處加 `if` 只會讓兩種頁互相絆倒。
+     共用的部分本來就已經是抽出來的函式了。
+   ⚠ 「沒打過架就不作動」擋在**呼叫端**（城鎮的 `restActDue` 問有沒有帳）——
+     走到這裡就一定有帳可結。 */
+function restSettle(totalTime, stats, sessionMoney, sessionLoot){
+  state.sRankUnlocked = false;
+  const ev = evaluate(stats);
+  /* 評價者照舊（`battleId` 傳 null ＝沒有哪一場的專屬台詞，走章節／好感那張通用表）。
+     ⚠ 這一局本來就是一場一場打出來的，等第與好感照給 —— 它與打贏結算怪的那一頁
+       是同一件事，只是在休息處收尾。 */
+  const spk = pickEvaluator(ev.grade, null);
+  prog.applyRankAffection(ev.grade, state.pickedPartner);
+  let money = (sessionMoney|0);
+  if(money) money = Math.round(money * (1 + prog.starBonus('moneyMul')));
+  const exp = ev.exp|0;
+  if(money) inv.addMoney(money);
+  let rows = spk
+    ? ('<div class="grade-wrap"><b class="grade-badge rank-'+ev.grade+'">'+ev.grade+'</b>'
+       + '<span class="grade-meta"><span class="grade-cap">' + (L.result.gradeCap||'') + '</span>'
+       + '</span></div>')
+    : '';
+  rows += ratingStatsRows(stats, totalTime);
+  if(exp && showExp()) rows += '<div class="row"><span>EXP</span><b>＋'+exp+'</b></div>';
+  if(money) rows += '<div class="row"><span>'+inv.moneyName()+'</span><b>＋'+money+'</b></div>';
+  showResultSequence('休　息　處', '戰果整理', rows, ev.grade, false,
+                     spk ? { speaker:spk } : { noInspector:true });
+  const rbtn=$('rematchBtn');
+  if(rbtn) rbtn.textContent = '繼續';
+  /* 回程與劇情插入戰**同一條**（`script-continue` → storyReturn → 續播那一段）：
+     那一支已經知道「這一場是誰叫起來的、回去要接什麼」（鐵律 8）。 */
+  state.resultMode = 'script-continue';
+  _lootMoney = 0; _lootExp = 0;
+  _lootPending = (sessionLoot && sessionLoot.length) ? sessionLoot : null;
+  if(_lootPending){
     document.addEventListener('pointerup', popLootOnce, { capture:true, once:true });
   }
 }

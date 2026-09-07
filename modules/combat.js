@@ -1570,6 +1570,32 @@ export function endSession(){
        下一場 `startGame` 那排歸零就是乾淨的起點（見 sessionSave 那一段）。 */
   prog.clearHp();
 }
+/* ══⚠⚠ **休息處：把這一局的帳結掉**（ver -913，Ray：「養息之間跟命之泉、前廳這三個
+   是安全點，進入就結算戰鬥」「走進就閉棺，跳結算頁。但若之前沒有發生戰鬥就不會作動」）══
+   ＝ `sessionEnd` 那一場打贏時做的那兩件事（結算 → 收段），只是**沒有最後那一隻怪**。
+   ⚠ 「有沒有打過架」問的是**帳**（`state.sessionStats`，擁有者 inspector）不是
+     `battleSession` 本身：走進戰鬥地圖但一場都還沒打時 `battleSession` 也是空的，
+     而「打完最後一隻剛好走進休息處」時帳一定在（鐵律 9：看得到擁有者的那個值）。
+   ⚠ `accuracy` 取**最後一場**的（`state.correctTaps/wrongTaps` 還留著）——
+     與收段那一場的作法一致：它不在 `SUM_KEYS` 裡（比率不能相加），
+     整局的命中率本來就只報最後一場那一份（鐵律 7：不要在這裡另訂一種算法）。
+   ⚠ 結算頁的併帳／清帳／HP 回滿都在 `inspector.settle` 的開頭（那是所有結算路徑
+     共通的手續）；`endSession` 一定要**在它之後**（它會清帳，而那筆帳正是要報的）。 */
+export function hasSessionBank(){ return !!state.sessionStats; }
+export function restSettle(){
+  if(!hasSessionBank()) return false;
+  const totalTaps=state.correctTaps+state.wrongTaps;
+  const stats={
+    totalHP:0, isBoss:false, clearTime:0,
+    accuracy: totalTaps>0 ? state.correctTaps/totalTaps : 1,
+    maxCombo:0, perfectCounter:0, counterSec:0, counterDamage:0, overkill:0,
+    hitsTaken:0, sawExecution:false, sawMaxBurst:false, perfectBoards:0,
+    wrongTaps:0, ultHits:0, blocks:0, delays:0,
+  };
+  inspector.settle(0, stats, { isLose:false, rest:true });
+  endSession();
+  return true;
+}
 /* 這一場的戰鬥背景覆寫（ver -592）：由 `main.js` 在交棒的那一刻設 ——
    城鎮插入戰給「你站的那一格」那張圖，其餘一律 null（走敵人卡的 `bg`）。
    ⚠ **每次交棒都要明確設一次**（含設 null）：靠上一場收乾淨會漏，
