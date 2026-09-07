@@ -172,6 +172,10 @@ export const state = {
      ⚠ ver -891 由 partner 的模組變數搬進 state：連戰要**跨怪累積**（Ray），
        而搬運機制（combat 的 sessionCarry）只搬得動 state 上的東西。 */
   lucidStreak: 0,
+  /* 連續無傷擊殺數（挨一下就歸零）——諾薇兒「連兩隻無傷 clear → reload 聖徒化」
+     （ver -892）。⚠ 與兩個連段一樣要**跨怪累積**，所以住在 state（combat 的
+     sessionCarry 只搬得動 state 上的東西）。 */
+  flawlessKills: 0,
   energyBoostUntil: 0,   // 破防值累積加速（×N）的結束時刻（ms）；addEnergy 讀它
   enemyAtkSuppressUntil: 0,
 

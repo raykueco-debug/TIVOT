@@ -456,10 +456,12 @@ function triggerNiBurst(){
   if(state.enemyHp<=0){
     /* 「若在 NI 發動期間把敵 hp 清零一樣有 excute」（Ray 指定）。 */
     markExecution();
-    playSaintCutin('execute', ()=>{ api.setPlayerHpRatio(1); api.onEnemyDefeated(); });
+    resetInstallSlot();                              // 處決＝賺回一次發動（ver -892）
+    playSaintCutin('execute', ()=>{ api.setPlayerHpRatio(1); api.onEnemyDefeated(); }, 'NIGHTMARE RELOAD');
     return;
   }
   markMaxBurst();   // 惡夢化清空殘格＝MB（Ray：「同 SI 的 MB」，ver -675）
+  resetInstallSlot();                                // MB＝賺回一次發動（ver -892）
   /* ⚠⚠ **要播 MB 的全畫面 cut-in**（ver -719，Ray：「NI 的 MB 跟 execute 沒接上」）——
      -675 只做了「算 MB 的傷害＋記旗標」，演出那一步漏了：擊殺那一支有
      `playSaintCutin('execute')`，未擊殺這一支卻直接跳收尾，畫面上只有一行浮字。
@@ -468,7 +470,7 @@ function triggerNiBurst(){
        那是這兩套唯一不同的地方，收尾的 thunk 照舊。 */
   playSaintCutin('burst', ()=>{
     finishNightmare(()=>api.setPlayerHpRatio(1));   // 「hp 全恢復」
-  });
+  }, 'NIGHTMARE RELOAD');
 }
 /* 主動技（上滑）：一次清掉殘格造成相應傷害 —— **沒有 MB、不回血、直接結束，HP 剩 1**。 */
 export function nightmareActive(){
@@ -537,13 +539,21 @@ function niBurstResolve(){
      ⚠ 走 `api.healPlayer`（combat 的唯一改血 API）：它自己夾上限、刷血條。
      ⚠ 順序要在 `finishNightmare` 的收尾**之後** —— 那一支先把血設成結局值，
        先回血會被它蓋掉（同 lifeReturn「回滿在中止之後」那條的理由）。 */
+  /* ⚠⚠ **是「回血 25%」不是「回血到 25%」**（ver -892，Ray 更正 -888）：
+     -888 先 `setPlayerHpRatio(0)` 把血歸 1 再補 —— 那等於**起始血完全不影響結果**，
+     不管你帶著幾滴血進來，粉碎完永遠落在 1＋25%（實測：粉碎前 60、粉碎後 26）。
+     那讀起來就是「回到 25%」。現在**不歸 1**：惡夢化的倒數槽本來就一路把血抽下來，
+     那個抽血就是它的代價 —— 粉碎只在你**當下的血**上加回 25%×（清掉的格數÷16）。
+     ⚠ 連帶：早發動（清得少）＝血還多但幾乎沒得補；撐到清完＝血很低但補得最多。
+       這正是「視你在 NI 打掉的格數而定」該有的形狀。 */
   finishNightmare(()=>{
-    api.setPlayerHpRatio(0);                       // HP 剩 1
     if(NI_BURST_HEAL>0){
       const ratio = Math.max(0, Math.min(1, (state.niCells||0) / (NI_BURST_FULL||16)));
       const heal  = Math.round((state.playerMax||0) * NI_BURST_HEAL * ratio);
       if(heal>0) api.healPlayer(heal);
     }
+    /* 保險：抽乾那一刻剛好是 0 就墊回 1（惡夢化的規格是「剩 hp1 熔斷」，不是陣亡）。 */
+    if(state.playerHp<1) api.setPlayerHpRatio(0);
   });
   return true;
 }
@@ -700,15 +710,17 @@ function triggerMaxBurst(){
     // 追加傷害讓敵人 HP 歸零 → EXSECUTIŌ 演出後 → 轉下一敵 or（最後一敵）結算。
     // 成功 MB 滿血獎勵（D2）：擊殺也回滿——連戰下 MB 秒殺一敵後帶滿血接下一隻。
     markExecution();   // sawExecution=true（評價 Execution 加乘）
-    playSaintCutin('execute', ()=>{ api.setPlayerHpRatio(1); api.onEnemyDefeated(); });
+    resetInstallSlot();                              // 處決＝賺回一次發動（ver -892）
+    playSaintCutin('execute', ()=>{ api.setPlayerHpRatio(1); api.onEnemyDefeated(); }, 'SAINT RELOAD');
     return;
   }
   markMaxBurst();   // 未擊殺的 MB（ver -675）：評價折 10 秒，見 config.rating.penalty
+  resetInstallSlot();                                // MB＝賺回一次發動（ver -892）
   // 敵人未死 → Maximum Burst 演出後回盤面。回血規則（2026-08-13 定案）：
   //   EXSECUTIŌ（MB 擊殺）→ 回滿；MaxBurst（未擊殺）→ 回 50%，並自然延續到同場下一敵。
   playSaintCutin('burst', ()=>{
     finishSaintMode(()=>api.setPlayerHpRatio(0.5));
-  });
+  }, 'SAINT RELOAD');
   if(api.onSaintEnded) api.onSaintEnded('mb');   // 教學終盤掛鉤（cut-in 結束後收尾台詞；非教學 no-op）
 }
 
@@ -826,7 +838,14 @@ export function playCutin(done, label, imgKey, opts){
 }
 
 // 結局全畫面 cut-in（kind: 'burst' | 'obe' | 'execute' | 'return'）
-function playSaintCutin(kind, done){
+/* ══⚠⚠ **處決／MB 就 reload**（ver -892，Ray：「夢魘跟聖徒改成如果打出處決或 mb，
+   就會 reload，並在處決或 mb 的 CI 中顯示 SAINT RELOAD 或 NIGHTMARE RELOAD」）══
+   `reload` ＝這一張 CI 要不要多印一行「你賺回一次發動」。誰印由**呼叫端**決定
+   （聖徒化那條印 SAINT、惡夢化那條印 NIGHTMARE）—— cut-in 自己分不出這一場是哪一套
+   （`exitSaint`／`exitNightmare` 在叫它之前就跑掉了）。
+   ⚠ 解槽走 `resetInstallSlot()`（saint 自己的具名 setter，鐵律 9）：
+     聖徒化／惡夢化／共鬥共用 `saintUsedThisBattle` 那一個槽。 */
+function playSaintCutin(kind, done, reload){
   state.cutinPlaying=true;                 // 演出期間鎖定點擊
   if(api.clockPause) api.clockPause();     // 結局全畫面 cut-in 期間碼表暫停（非可點不計時）
   const c=$('saintCutin');
@@ -837,7 +856,14 @@ function playSaintCutin(kind, done){
   else if(kind==='return'){ title='LIFE\nRETURN'; sub=L.cutins.lifeReturnSub; }
   else { title='OVERWRITE\nBREAKER\nENGAGED'; sub=L.cutins.obeSub; }
   $('saintCutinTitle').textContent = title;
-  $('saintCutinSub').textContent   = sub;
+  /* reload 那一行掛在副標下面（樣式見 style.css 的 `.sc-reload`）。
+     ⚠ 用 innerHTML 是因為要多一個元素；`sub` 本身仍是純文字，不會被注入。 */
+  { const se=$('saintCutinSub');
+    se.textContent = sub;                       // 副標一律走 textContent（不注入）
+    if(reload){                                 // reload 那一行另外掛一個元素
+      const r=document.createElement('span'); r.className='sc-reload';
+      r.textContent = reload; se.appendChild(r);
+    } }
   // 依 kind 載入對應內嵌 cut-in 圖（資料放 ASSETS，程式只讀）
   /* ⚠ 生命歸還在**本篇**換成諾薇兒那一張（ver -454，Ray：「story 版的生命歸還 CI
      換成 Nouvelle_Sturm」）：本篇的搭檔是諾薇兒，演出裡出現蕾妮是錯的人。

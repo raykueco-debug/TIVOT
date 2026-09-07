@@ -49,7 +49,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.07-891';
+export const VERSION = 'ver 2026.09.07-892';
 
 export const GAME_CONFIG = {
 
@@ -353,6 +353,19 @@ export const GAME_CONFIG = {
       active:{ key:'lifeReturn', name:'生命歸還', context:'saint',
                cutin:'cutin_return', voice:'vo_nou_return',   // ver -711：她自己的語音
                desc:'聖徒化期間發動：強制中止聖徒化，生命完全回復。' },
+      /* ══ 連續兩隻無傷擊殺 → reload 聖徒化（ver -892，Ray：「諾薇兒的聖徒化，
+         連續兩場無傷 clear 就 reload」）══
+         ⚠ 「無傷」是**逐隻**算的（`state.enemyHitsTaken`，同九星「方舟」的定義，
+           ver -708）—— 整場算的話連戰中途挨過一次就永遠回不來。
+         ⚠ 與九星「方舟」是兩件事：那顆星是**一隻**無傷就回復已用的被動，
+           這一條要**連續兩隻**、回復的是聖徒化的槽（`saintUsedThisBattle`）。
+         ⚠ 專屬 CI 還沒畫（Ray：「reload 畫面 CI 再補」「**先用被動 CI**」）——
+           `cutin` 不寫就沿用她被動（即死防禦）那張，字印「聖徒再臨／SAINT RELOAD」。
+         ⚠ 插入的時機是**第二隻無傷打完最後一格那一刻**（Ray）—— 走
+           `combat.finishEnemyOrAdvance` 那個匯流點（自然清盤／按錯／逾時／聖徒化
+           擊殺四條路都經過它），也就是 partner.onEnemyCleared。
+         實作只有那一支（鐵律 8）。 */
+      installReload:{ flawless:2, name:'聖徒再臨', en:'SAINT RELOAD' },
     },
     /* ══ 安雅（ver -671，Ray：「從玩家跟安雅一起出旅店後，夥伴就從諾薇兒
        換成安雅了」）══

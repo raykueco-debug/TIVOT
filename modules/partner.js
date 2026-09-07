@@ -264,6 +264,32 @@ export function onEnemySet(){
    ⚠ 掛在 `combat.finishEnemyOrAdvance` 那個匯流點（自然清盤／按錯／逾時／
      聖徒化擊殺四條路都經過它，鐵律 8）。 */
 export function onEnemyCleared(){
+  /* ══ 連續無傷擊殺 → reload Install（ver -892，Ray：「諾薇兒的聖徒化，連續兩場
+     無傷 clear 就 reload」）══ 條件與次數在卡上（`installReload`，鐵律 1）。
+     ⚠ 「無傷」逐隻算（`state.enemyHitsTaken`，同九星「方舟」的定義）——
+       挨過一下就歸零重數。
+     ⚠ 解槽走 `api.resetInstallSlot`（saint 的具名 setter，鐵律 9）。
+     ⚠ 這一段在方舟那道守門**之前**：它與那顆星無關，沒有星也要生效。 */
+  { const p0=currentPartner(), ir=p0 && p0.installReload;
+    if(ir && ir.flawless){
+      if(state.enemyHitsTaken!==0) state.flawlessKills = 0;
+      else{
+        state.flawlessKills = (state.flawlessKills||0) + 1;
+        if(state.flawlessKills >= ir.flawless){
+          state.flawlessKills = 0;
+          if(api.resetInstallSlot) api.resetInstallSlot();
+          /* ⚠ 演出**先借她被動（即死防禦）那張 CI**（Ray：「先用被動 CI／聖徒再臨／
+             SAINT RELOAD」；專屬圖之後再補 → 屆時在卡上寫 `installReload.cutin`）。
+             ⚠ 英文那一行掛 `.reload`：與明晰之夢的 NIGHTMARE RELOAD 同一條金綠光，
+               玩家才認得出「這是賺回一次發動」（樣式見 style.css）。
+             ⚠ 已有演出在播就只跳字 —— 兩張 cut-in 疊在一起會互相蓋掉（同 fireBuff）。 */
+          const ci = ir.cutin || (p0.passive && p0.passive.cutin);
+          const label = `${ir.name||''}<span class="cutin-en reload">${ir.en||''}</span>`;
+          api.floatDmg(ir.name||'','50%','30%',true);
+          if(ci && !state.cutinPlaying && api.playCutin) api.playCutin(()=>{}, label, ci);
+        }
+      }
+    } }
   if(!prog.hasStar('safina')) return;
   if(state.enemyHitsTaken!==0) return;
   state.deathGuardUsed = false;

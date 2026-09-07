@@ -1169,6 +1169,14 @@
   @keyframes saintCutinTitle{0%{opacity:0;transform:translateY(-50%) skewX(-8deg) scale(2.2)}
     18%{opacity:1;transform:translateY(-50%) skewX(-8deg) scale(1)}
     82%{opacity:1}100%{opacity:0;transform:translateY(-50%) skewX(-8deg) scale(1.05)}}
+  /* ══ 「賺回一次發動」的那一行（ver -892，Ray：「在處決或 mb 的 CI 中顯示
+     SAINT RELOAD 或 NIGHTMARE RELOAD」）══ 掛在副標下面，比副標亮、比標題小 ——
+     它報的是**獲得**，要一眼看到，但不能搶走 EXSECUTIŌ／MAXIMUM BURST 的位置。
+     用與明晰之夢那一行同一條金綠光（`.cutin-en.reload`），玩家才認得出是同一件事。 */
+  #saintCutinSub .sc-reload{display:block;margin-top:10px;
+    font-size:22px;letter-spacing:6px;font-weight:800;color:#9dffd2;
+    text-shadow:0 0 18px #35ffb0,0 0 42px rgba(53,255,176,.6),0 2px 4px #000;
+    animation:ciReload .9s ease-out 2;}
   #saintCutinSub{position:absolute;top:60%;left:0;right:0;text-align:center;
     font-size:clamp(13px,3.5vw,18px);letter-spacing:6px;font-weight:bold;opacity:0;}
   #saintCutin.burst #saintCutinSub{color:var(--gold);text-shadow:0 0 12px var(--holy);}
