@@ -2669,7 +2669,15 @@ export const TOWNS = {
         exits:{ right:'brazier', down:'mural' } },
       mural:      { bg:'Ruins_shinier_Mural', name:'木雅克神殿　壁畫廳',
         exits:{ back:'collapsed' } },                   // 末端
-      bridge:     { bg:'Ruins_shinier_Bridge', name:'木雅克神殿　石橋',
+      /* ⚠⚠ `noTime`（ver -914，Ray：「石橋改用 Ruins_shinier_Bridge 不差分」）：
+         四張時段差分已經撤掉、只留這一張（同深部祭壇）。**一定要明寫** ——
+         不寫的話候選鏈會先試 `_Dawn/_Day/_Dusk/_night` 那四個名字，檔案雖然沒了，
+         **玩家的瀏覽器快取裡可能還在**，於是拿出舊的那一張（-910 那個「檔案沒了但
+         快取還在」的坑）。
+         ⚠ Ray：「會有事件差分我再補上」—— **事件差分與時段差分是兩件事**：
+           前者由劇情旗標換圖（同 `rebuild.bg` 那一族），不走 `bandNames`；
+           所以那一批到了也**不必**把這個 `noTime` 拿掉。 */
+      bridge:     { bg:'Ruins_shinier_Bridge', name:'木雅克神殿　石橋', noTime:true,
         /* ⚠ 窄橋跨在深淵上，兩側是空的 ⇒ 只有前後（ver -890，Ray 點名的那一格）。 */
         exits:{ down:'brazier', up:'deepaltar' } },
       /* ⚠⚠ `noTime`（ver -910）：Ray 把它的 dawn/day/dusk/night 四張刪掉、只留一張。
