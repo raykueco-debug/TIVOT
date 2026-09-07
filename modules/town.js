@@ -651,16 +651,30 @@ function pickEndNode(startNode){
   const outs = crossExitIds();
   if(outs.length < 2) return;                       // 末端型：沒有「對面」
   const came = (startNode && T.nodes[startNode]) ? startNode : entryNodeId;
-  /* ⚠⚠ **只排除「這一趟走進來的那一格」，不排除資料上的入口**（ver -895 修）：
-     從另一頭進來時，資料上的 `entry` 正是「對面那個出口」——把它排掉的話那一趟
-     根本算不出落點（實測：從 `ruins` 進來時回 null，等於沒有結算怪）。
-     ⚠ 這與 §6.5.2「入口那一格不可以有戰鬥」有張力：那條是為了**遭遇戰打輸回入口**
-       不要變成必死鏈。這裡的取捨是 Ray 的規則優先（結算怪就是要擺在對面那一端），
-       兜底仍在：連敗三次抬回旅店。 */
+  /* ⚠ 只排除「**這一趟走進來的那一格**」，不排除資料上的入口：從另一頭進來時，
+     資料上的 `entry` 正是「對面那個出口」——把它排掉的話那一趟算不出落點
+     （實測踩過：從 `ruins` 進來時回 null，等於整趟沒有結算怪）。 */
   const cands = outs.filter(id=>id!==came);
   if(!cands.length) return;
   /* 三個以上就挑一個並記住（這一趟固定，不每次抵達重擲）。 */
-  endNodeId = cands[Math.floor(Math.random()*cands.length)];
+  let end = cands[Math.floor(Math.random()*cands.length)];
+  /* ══⚠⚠ **那一格自己說「這裡不打」就退一格**（ver -898，Ray 回報「我從夏爾村進森林，
+     結果沒有在崖邊遇到結算怪」）══
+     -895 把結算怪擺在對面那個出口本身，於是它落在**遺跡入口** —— 但那一格
+     Ray 在 -879 宣告過「神殿入口除了鹿主戰之外是安全區，不出怪」（`noWild`），
+     而且資料上的入口還受 §6.5.2「入口那一格不可以有戰鬥」管。兩條規則打架。
+     解法：**擺在那個出口，除非那一格自己拒絕戰鬥；拒絕就退到它在圖內的鄰格。**
+     這樣三條規則同時成立 —— 結算怪仍然守在「對面那一端」，安全區照舊安全，
+     入口照舊沒有戰鬥（-895 那個「明寫例外」因此不必要了，已撤）。
+     ⚠ 退一格找的是**圖內**的鄰居（跨圖出口 `@` 不算）：遺跡入口只通斷崖邊，
+       森林入口只通林間空地 —— 兩邊都是唯一解。 */
+  const refuses = id => { const nd=(T.nodes||{})[id]; return !nd || nd.noWild || id===entryNodeId; };
+  if(refuses(end)){
+    const nb = Object.values(((T.nodes||{})[end]||{}).exits||{})
+      .find(v=>typeof v==='string' && v[0]!=='@' && (T.nodes||{})[v] && !refuses(v));
+    end = nb || null;
+  }
+  endNodeId = end;
 }
 /* 這一趟的結算怪落在哪一格（給 wildActDue 問；沒有就回 null）。 */
 export function endBattleNode(){ return endNodeId; }
@@ -668,11 +682,10 @@ export function endBattleNode(){ return endNodeId; }
 function wildActDue(n){
   const W=(TOWNS[townId]||{}).wildSpawn; if(!W || !n) return null;
   if(prog.hasFlag(safehouseFlag())) return null;        // 安全區：遭遇戰整套不動
-  /* ══ 結算怪（ver -895，見 pickEndNode）══ 擺在「這一趟沒走進來的那個出口」那一格。
-     ⚠⚠ 判定排在「入口＝復活點不可有戰鬥」**之前**：從另一頭進來時，資料上的
-       `entry` 正是對面那個出口 —— 排在後面的話它會被那道守門吃掉。
-       這是 Ray 的規則對 §6.5.2 那條的**明寫例外**（兜底：連敗三次抬回旅店）。
-     ⚠ 也排在 `noWild` 之前：那一格說的是「不出**野怪**」，結算怪是這張圖的句點。
+  /* ══ 結算怪（ver -895／-898，見 pickEndNode）══ 擺在「這一趟沒走進來的那個出口」，
+     那一格自己拒絕戰鬥（`noWild`／入口）就退到它在圖內的鄰格。
+     ⚠ 落點在 `pickEndNode` 就已經避開入口與 `noWild` 了，所以這裡**不必**再排在
+       那兩道守門之前（-895 曾為此開的明寫例外已撤）。
      ⚠ 打過了就不再出（進 `wildDone`，同「一趟同種不重複」的規約）。 */
   if(endNodeId && nodeId===endNodeId && W.endBattle){
     const eid=wildVariant(W.endBattle);
