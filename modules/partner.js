@@ -243,12 +243,13 @@ export function guardHealPct(){
      所以不擋的話，發動中的每一次反擊都會再發動一次 ⇒ 每一發都插一張 cut-in
      （cut-in 會凍住盤面），技能就變成連續播片。擋掉之後的行為是
      「**5 秒跑完 → 下一次完美反擊立刻可以再開**」，那才是「無限制」的樣子。
-   ⚠ 「每隻怪一次」那把鑰匙撤掉之後，`onEnemySet()` 換去做別的事（見那一支）。 */
+   ⚠ 「每場（怪）一次」那把鑰匙撤掉之後，`onEnemySet()` 換去做別的事（見那一支）。 */
 /* ══⚠⚠ **換了一隻怪**（`enemy.setEnemy` 經 combat 的 `onEnemySet` 注入，
    那是「這一場換敵」的唯一時刻，鐵律 9）══
-   · **即死防禦每隻怪 reload 一次**（ver -888，Ray：「death guard 改成每一場
-     （每個怪）都會 reload 一次」）—— 卡上仍是 `oncePerBattle`，語意由「一場一次」
-     收窄成「**一隻一次**」：連戰時每換一隻就把 `deathGuardUsed` 解開。
+   · **即死防禦每場（怪）reload 一次**（ver -888，Ray：「death guard 改成每一場
+     （每個怪）都會 reload 一次」）—— 卡上仍是 `oncePerBattle`，語意由「一局一次」
+     收窄成「**一場（怪）一次**」：同一局裡每換一隻怪就把 `deathGuardUsed` 解開。
+     （ver -893 用詞：局＝結算、場＝一隻怪、盤＝一次清盤）
      ⚠ 這一支是唯一的解鎖點；九星「方舟」（無傷擊殺）那一條照舊獨立存在
        —— 那是「同一隻怪身上再賺回一次」，與換敵是兩件事。
    · 明晰之夢自 -886 起無限制發動，這裡不再需要上膛。 */
@@ -285,6 +286,10 @@ export function onEnemyCleared(){
              ⚠ 已有演出在播就只跳字 —— 兩張 cut-in 疊在一起會互相蓋掉（同 fireBuff）。 */
           const ci = ir.cutin || (p0.passive && p0.passive.cutin);
           const label = `${ir.name||''}<span class="cutin-en reload">${ir.en||''}</span>`;
+          /* 語音（ver -893，Ray 交件 vo_nouvelle_saintreload）：與 CI 同步起播，
+             增益讀 tuning.fileGain 的逐支表（鐵律 7，不寫死在這裡）。 */
+          { const vk=SFX.pickRot(ir.voice); const vo=asset(vk);
+            if(vo) SFX.playVoice(vo, sfxGain(vk)); }
           api.floatDmg(ir.name||'','50%','30%',true);
           if(ci && !state.cutinPlaying && api.playCutin) api.playCutin(()=>{}, label, ci);
         }

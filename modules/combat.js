@@ -1615,7 +1615,8 @@ function sessionSave(){
   sessionCarry={ saintUsed:!!state.saintUsedThisBattle,
                  partnerUsed:!!state.partnerActiveUsed,
                  energy:state.energy||0,
-                 /* 兩個連段跨怪累積（ver -891，Ray）—— 一段連戰之內換敵不歸零。 */
+                 /* 三個連段**跨場（怪）累積**（ver -891/-892，Ray）——
+                    同一局之內換一隻怪不歸零，換局才歸零。（ver -893 用詞） */
                  svStreak:state.svPerfectStreak||0,
                  lucidStreak:state.lucidStreak||0,
                  flawlessKills:state.flawlessKills||0 };
@@ -1805,9 +1806,10 @@ export function startGame(){
   state.over=false; state.defeated=false; state.combo=0; state.energy=0; state.expect=1; state.boardIndex=0;
   state.atkBuff=false; state.lowHpBuff=false;
   state.partnerActiveUsed=false;   // 搭檔主動技每場次數重置
-  /* ⚠ 兩個連段（獵手的戰吼／明晰之夢）在這裡歸零，但**連戰會被 sessionCarry 搬回來**
-     （ver -891，Ray：「可跨場（怪）累積」）—— 同 saintUsed／energy 的作法：
-     在開頭乾淨歸零，接得上的那一格再放回去（鐵律 7：不要在歸零那排挖特例）。 */
+  /* ⚠ 三個連段（獵手的戰吼／明晰之夢／連續無傷擊殺）在這裡歸零，但**同一局的下一場
+     會被 sessionCarry 搬回來**（ver -891/-892，Ray：「可跨場（怪）累積」）——
+     同 saintUsed／energy 的作法：在開頭乾淨歸零，接得上同一局的那一場再放回去
+     （鐵律 7：不要在歸零那排挖特例）。**（ver -893 用詞：局＝結算、場＝一隻怪）** */
   state.coopUntil=0; state.svPerfectStreak=0; state.lucidStreak=0; state.flawlessKills=0; state.energyBoostUntil=0;
   saint.reset();   // 聖徒化狀態全重置（saintMode 經 exitSaint、清計時器、關手勢層、清 saint 旗標；共鬥 coopMode/coopTimer 一併）
   weapon.reset();  // 雙槍破防重置（清 dualWield/dualTimer + #grid dualwield class，防跨場殘留）
@@ -1976,7 +1978,7 @@ export function startIntruderFight(){
   state.over=false; state.defeated=false; state.combo=0; state.energy=0; state.expect=1; state.boardIndex=0;
   state.atkBuff=false; state.lowHpBuff=false;
   state.partnerActiveUsed=false;   // 新場：搭檔主動技每場次數重置
-  /* 亂入是**新的一場**（不接上一段），兩個連段一律歸零（ver -891）。 */
+  /* 亂入是**新的一局**（不接上一段），三個連段一律歸零（ver -891/-892；ver -893 用詞）。 */
   state.coopUntil=0; state.svPerfectStreak=0; state.lucidStreak=0; state.flawlessKills=0; state.energyBoostUntil=0;
   saint.reset();
   weapon.reset();

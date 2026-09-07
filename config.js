@@ -49,7 +49,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.07-892';
+export const VERSION = 'ver 2026.09.07-893';
 
 export const GAME_CONFIG = {
 
@@ -294,8 +294,8 @@ export const GAME_CONFIG = {
         cutin:'cutin_guard',     // 即死防禦專屬大圖（→ Renee_CI_pas.jpg）；程式讀此欄，不硬寫
         voice:'vo_death_guard',  // cut-in 對應 SE（→ Renee_VC_Pas.wav）
         /* ⚠ ver -888（Ray：「death guard 改成每一場（每個怪）都會 reload 一次」）：
-           `oncePerBattle` 的語意由「一場一次」收窄成「**一隻一次**」——
-           解鎖點是 partner.onEnemySet（換敵那一刻，鐵律 9）。 */
+           `oncePerBattle` 的語意由「一局一次」收窄成「**一場（怪）一次**」——
+           解鎖點是 partner.onEnemySet（換敵那一刻，鐵律 9）。（ver -893 用詞） */
         desc:'受到足以致死的攻擊時，為玩家保留1hp續命。每換一隻敵人可再觸發一次。',
       },
       // ── 主動技：生命歸還 ─────────────────────────────
@@ -355,8 +355,9 @@ export const GAME_CONFIG = {
                desc:'聖徒化期間發動：強制中止聖徒化，生命完全回復。' },
       /* ══ 連續兩隻無傷擊殺 → reload 聖徒化（ver -892，Ray：「諾薇兒的聖徒化，
          連續兩場無傷 clear 就 reload」）══
-         ⚠ 「無傷」是**逐隻**算的（`state.enemyHitsTaken`，同九星「方舟」的定義，
-           ver -708）—— 整場算的話連戰中途挨過一次就永遠回不來。
+         ⚠ 「無傷」是**逐場（逐隻怪）**算的（`state.enemyHitsTaken`，同九星「方舟」
+           的定義，ver -708）—— 以整局算的話，同一局中途挨過一次就永遠回不來。
+           （ver -893 用詞：局＝結算、場＝一隻怪）
          ⚠ 與九星「方舟」是兩件事：那顆星是**一隻**無傷就回復已用的被動，
            這一條要**連續兩隻**、回復的是聖徒化的槽（`saintUsedThisBattle`）。
          ⚠ 專屬 CI 還沒畫（Ray：「reload 畫面 CI 再補」「**先用被動 CI**」）——
@@ -365,7 +366,8 @@ export const GAME_CONFIG = {
            `combat.finishEnemyOrAdvance` 那個匯流點（自然清盤／按錯／逾時／聖徒化
            擊殺四條路都經過它），也就是 partner.onEnemyCleared。
          實作只有那一支（鐵律 8）。 */
-      installReload:{ flawless:2, name:'聖徒再臨', en:'SAINT RELOAD' },
+      installReload:{ flawless:2, name:'聖徒再臨', en:'SAINT RELOAD',
+                      voice:'vo_nou_saintreload' },   // ver -893，Ray 交件
     },
     /* ══ 安雅（ver -671，Ray：「從玩家跟安雅一起出旅店後，夥伴就從諾薇兒
        換成安雅了」）══
@@ -2073,6 +2075,9 @@ export const GAME_CONFIG = {
          手機 −12.11、平均 −13.50 LUFS（前一版是 −10.08，新錄音安靜 3.4 dB），
          峰值 −1.14 dBFS 未觸頂 ⇒ 0.77 → 1.141。 */
       vo_anya_luciddream:1.141,
+      /* ver -893：Ray 交件。voiceChain 之後 BS.1770 實測 —— 耳機 −15.14／手機 −16.63、
+         平均 −15.89 LUFS，峰值 −1.57 dBFS 未觸頂。 */
+      vo_nouvelle_saintreload:1.502,
       /* ver -837 整批新錄音（BS.1770＋voiceChain EQ 實測，耳機/手機平均，峰值夾 +2dB；
          未過壓縮器 —— 同 -818 的方法）。⚠ obe2 是氣音收尾（−28 LUFS），增益 5.22 是對的。 */
       vo_sorana_pack:0.69,  vo_sorana_pack2:0.57,
@@ -2571,6 +2576,8 @@ export const ASSETS = {
   /* 明晰之夢語音（ver -759 ×4 輪播 → ver -837 收成單支新錄音）。 */
   /* ?v=2：Ray 重錄後同名覆蓋（ver -881）——同名換檔一定要掛 cache-buster（§5）。 */
   vo_anya_lucid:     "resources/audio/vo/vo_anya_luciddream.m4a?v=2",
+  /* 聖徒再臨（ver -893，Ray 交件）——諾薇兒連兩隻無傷 clear 的 reload 語音。 */
+  vo_nou_saintreload:"resources/audio/vo/vo_nouvelle_saintreload.m4a",
   /* 索菈娜語音（ver -818，Ray 交件）——共鬥發動 pack/pack2 輪播、共鬥結束 obe、
      供給技 supply；pack2 另作 man_sorana 敵登場音。 */
   vo_sorana_pack:    "resources/audio/vo/vo_sorana_pack.m4a?v=2",   // ?v=2：ver -837 新錄音同名覆蓋
