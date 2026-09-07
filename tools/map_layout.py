@@ -26,6 +26,29 @@ FONT = '/System/Library/Fonts/PingFang.ttc'
 #    ⚠ 只有這一張表是手維護的；連線與名字都從資料讀。
 #    ⚠ 改動之後跑一次就好 —— 方向驗不過會直接報錯。
 POS = {
+  # ── 帝都（ver -915）：廣場為中心，三個街區各帶自己的末端 ──────────────
+  'capital': {
+    'midtown':(5,3), 'cityhall':(3,3), 'church':(7,3),
+    'dock':(2,4),    'inn':(8,4),
+    'gunstore':(0,6),'oldtown':(2,6), 'square':(5,6), 'uptown':(8,6), 'tavern':(10,6),
+    'guild':(2,8),   'grocery':(8,8),
+  },
+  # ── 北方泊地（ver -915）──────────────────────────────────────────
+  'northport': {
+    'cemetery':(5,1),
+    'cityhall':(3,3), 'north':(5,3), 'church':(7,3),
+    'port':(2,4),     'inn':(8,4),
+    'gunstore':(0,6), 'west':(2,6), 'entrance':(5,6), 'east':(8,6), 'tavern':(10,6),
+    'guild':(2,8),    'grocery':(8,8),
+  },
+  # ── 夏爾村（ver -915）────────────────────────────────────────────
+  'shinier': {
+    'lakeside':(5,1),
+    'chief':(3,3), 'north':(5,3), 'altar':(7,3),
+    'wild':(2,4),  'sorahome':(8,4),
+    'workshop':(0,6), 'west':(2,6), 'plaza':(5,6), 'east':(8,6), 'restaurant':(10,6),
+    'hunter':(2,8),   'grocery':(8,8),
+  },
   'shinier_ruins': {
     'deepaltar':(3,4), 'bridge':(3,5), 'colossus':(4,5), 'machine':(5,5),
     'collapsed':(2,6), 'brazier':(3,6), 'well':(4,6),
@@ -37,7 +60,10 @@ POS = {
   },
 }
 # 跨圖出口畫成一個虛線框（`@<圖>:<格>` → 標題）
-OUT_POS = { 'shinier_ruins': {'@shinier_forest:ruins': (5,9, '遺跡\n入口')} }
+OUT_POS = {
+  'shinier_ruins': {'@shinier_forest:ruins': (5,9, '遺跡\n入口')},
+  'shinier':       {'@shinier_forest':      (2,2, '夏爾\n森林')},
+}
 
 def load(town):
     """借 jsc 把 TOWNS 跑出來（同 script_lint.py 的作法，不用 regex 猜資料）。"""
