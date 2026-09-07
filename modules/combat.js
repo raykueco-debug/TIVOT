@@ -1614,7 +1614,10 @@ function sessionSave(){
   if(!state.battleSession) return;
   sessionCarry={ saintUsed:!!state.saintUsedThisBattle,
                  partnerUsed:!!state.partnerActiveUsed,
-                 energy:state.energy||0 };
+                 energy:state.energy||0,
+                 /* 兩個連段跨怪累積（ver -891，Ray）—— 一段連戰之內換敵不歸零。 */
+                 svStreak:state.svPerfectStreak||0,
+                 lucidStreak:state.lucidStreak||0 };
 }
 function storyBattleEnd(lost){
   if(!storyFramed()) return false;
@@ -1801,7 +1804,10 @@ export function startGame(){
   state.over=false; state.defeated=false; state.combo=0; state.energy=0; state.expect=1; state.boardIndex=0;
   state.atkBuff=false; state.lowHpBuff=false;
   state.partnerActiveUsed=false;   // 搭檔主動技每場次數重置
-  state.coopUntil=0; state.svPerfectStreak=0; state.energyBoostUntil=0;   // 共鬥/獵手的直覺 每場重置（ver -803）
+  /* ⚠ 兩個連段（獵手的戰吼／明晰之夢）在這裡歸零，但**連戰會被 sessionCarry 搬回來**
+     （ver -891，Ray：「可跨場（怪）累積」）—— 同 saintUsed／energy 的作法：
+     在開頭乾淨歸零，接得上的那一格再放回去（鐵律 7：不要在歸零那排挖特例）。 */
+  state.coopUntil=0; state.svPerfectStreak=0; state.lucidStreak=0; state.energyBoostUntil=0;
   saint.reset();   // 聖徒化狀態全重置（saintMode 經 exitSaint、清計時器、關手勢層、清 saint 旗標；共鬥 coopMode/coopTimer 一併）
   weapon.reset();  // 雙槍破防重置（清 dualWield/dualTimer + #grid dualwield class，防跨場殘留）
   weapon.resetWeaponSwitch();   // 副武器切換鈕（ver -410）：排隊中的切換不可以跨場留著
@@ -1913,6 +1919,8 @@ export function startGame(){
       state.saintUsedThisBattle = sessionCarry.saintUsed;
       state.partnerActiveUsed   = sessionCarry.partnerUsed;
       state.energy              = sessionCarry.energy;
+      state.svPerfectStreak     = sessionCarry.svStreak||0;      // 獵手的戰吼（ver -891）
+      state.lucidStreak         = sessionCarry.lucidStreak||0;   // 明晰之夢（ver -891）
       updateEnergyClasp();          // 破防值搬回來了，扣環要跟著畫（同一支，鐵律 8）
     }else if(sess){
       state.battleSession = sess;     // 這一段從這一場開始（開棺就演這一次）
@@ -1966,7 +1974,8 @@ export function startIntruderFight(){
   state.over=false; state.defeated=false; state.combo=0; state.energy=0; state.expect=1; state.boardIndex=0;
   state.atkBuff=false; state.lowHpBuff=false;
   state.partnerActiveUsed=false;   // 新場：搭檔主動技每場次數重置
-  state.coopUntil=0; state.svPerfectStreak=0; state.energyBoostUntil=0;   // 共鬥/獵手的直覺 每場重置（ver -803）
+  /* 亂入是**新的一場**（不接上一段），兩個連段一律歸零（ver -891）。 */
+  state.coopUntil=0; state.svPerfectStreak=0; state.lucidStreak=0; state.energyBoostUntil=0;
   saint.reset();
   weapon.reset();
   partner.reset();

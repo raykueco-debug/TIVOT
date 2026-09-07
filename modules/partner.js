@@ -284,21 +284,20 @@ export function onEnemyCleared(){
      `realGrade`（見那一支的 `realCounter`）。
    ⚠ 第三次那一發**即使效果還在跑也照演**：那一拍的重點是「夢魘再臨」這張 CI，
      擋掉玩家就看不到自己把惡夢化賺回來了。 */
-let lucidStreak = 0;
 export function onThreatResolved(g){
   if(g === 'counter'){ onCounter(); return; }
-  lucidStreak = 0;                 // 連續中斷
+  state.lucidStreak = 0;           // 連續中斷（非紅圈）
 }
 export function onCounter(){
   if(state.over || state.saintMode || state.niMode) return;   // 演出中不插隊（同 checkLowHpBuff）
   const p = currentPartner();
   const pas = p && p.passive;
   if(!(pas && pas.key==='firstCounter')) return;
-  lucidStreak++;
+  state.lucidStreak = (state.lucidStreak||0) + 1;
   const need = pas.reloadStreak || 3;
-  const reload = lucidStreak >= need;
+  const reload = state.lucidStreak >= need;
   if(reload){
-    lucidStreak = 0;
+    state.lucidStreak = 0;
     if(api.resetInstallSlot) api.resetInstallSlot();   // 惡夢化可以再發一次
   }
   /* 無限制發動（ver -886）：不再問「這隻怪用過了沒」。
@@ -400,7 +399,10 @@ function fireBuff(pas, reload){
     if(state.over) return;
     api.resetEnemyTimers();                   // 同其他 cut-in 的慣例
     api.scheduleUlt();
-  }, `${nm}<span class="cutin-en">${en||''}</span>`, pas.cutin);
+     /* ⚠ reload 那一發的英文行加 `.reload`（ver -891，Ray：「用顯眼的字寫
+        NIGHTMARE RELOAD…要讓人一看就知道夢魘可以再用了」）—— 副標平常是 16px 的
+        小字，那一行要跳出來才讀得到「可以再發一次」。樣式在 style.css。 */
+  }, `${nm}<span class="cutin-en${reload?' reload':''}">${en||''}</span>`, pas.cutin);
 }
 export function checkLowHpBuff(){
   /* ⚠⚠ **惡夢化期間不發動**（ver -688，Ray：「明晰之夢在夢魘期間不發動，如果是
@@ -444,7 +446,9 @@ export function checkLowHpBuff(){
  * state.lowHpBuff 本體由 combat 於開場自清；此處只清 partner 自有狀態。 */
 export function reset(){
   /* ver -886：明晰之夢改成無限制發動，沒有「上膛」這回事了（`fcArmed` 已撤）。 */
-  lucidStreak = 0;                            // 連續完美反擊不跨場（ver -887）
+  /* ⚠ ver -891：連段**不在這裡清**（Ray：「luciddream 跟獵手的戰吼次數可跨場
+     （怪）累積」）—— 清與搬都由 combat 的 startGame／sessionCarry 決定，
+     那裡才知道這一場接不接得上上一格（鐵律 9：一個狀態一個擁有事件）。 */
   clearTimeout(lowHpTimer); lowHpTimer=null;
   lowHpArmed = true;
   immuneUntil = 0; guardHealUntil = 0;        // 免傷窗不跨場（ver -740）

@@ -1070,6 +1070,18 @@
     font-family:Impact,"Arial Black",sans-serif;opacity:0;transform:skewX(-10deg);}
   #cutinText .cutin-en{display:block;font-size:16px;letter-spacing:4px;font-weight:700;
     margin-top:6px;opacity:.92;text-shadow:0 0 12px #c0308a,0 1px 3px #000;}
+  /* ══ 「可以再用了」的那一行（ver -891，Ray：「用顯眼的字寫 NIGHTMARE RELOAD，
+     要讓人一看就知道夢魘可以再用了」）══ 平常的副標是 16px 的暗紅小字，讀不到
+     「你賺回一次發動」這件事。這一行放大到 26px、拉開字距、換成惡夢化那條金綠光
+     並脈動兩下 —— 它報的是**獲得**，不是技能名。
+     ⚠ 只有帶 `.reload` 的那一發套（partner 在組字串時掛），一般發動不受影響。 */
+  #cutinText .cutin-en.reload{font-size:26px;letter-spacing:7px;opacity:1;
+    margin-top:10px;color:#9dffd2;
+    text-shadow:0 0 18px #35ffb0,0 0 42px rgba(53,255,176,.6),0 2px 4px #000;
+    animation:ciReload .9s ease-out 2;}
+  @keyframes ciReload{0%{transform:scale(1);filter:brightness(1);}
+    35%{transform:scale(1.10);filter:brightness(1.5);}
+    100%{transform:scale(1);filter:brightness(1);}}
   #cutin.on #cutinText{animation:cutinText 1.5s ease-out;}
   @keyframes cutinText{0%{opacity:0;transform:skewX(-10deg) scale(2)}
     20%{opacity:1;transform:skewX(-10deg) scale(1)}

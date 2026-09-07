@@ -167,7 +167,11 @@ export const state = {
   coopTimer: null,   // 100ms 輪詢：now≥coopUntil → 收窗（可被點錯縮短，所以不用固定 setTimeout）
   coopUntil: 0,      // 無敵窗的結束時刻（ms）；與 partner 的 immuneUntil 同步
   /* ══ 獵手的直覺（被動，ver -803）══ 連續 N 輪完美清盤 → 一段破防值加速窗。 */
-  svPerfectStreak: 0,    // 連續完美清盤數（斷了歸零）
+  svPerfectStreak: 0,    // 連續完美清盤數（斷了歸零）——獵手的戰吼
+  /* 連續完美反擊數（斷了歸零）——明晰之夢的「連三次 reload 惡夢化」（ver -887）。
+     ⚠ ver -891 由 partner 的模組變數搬進 state：連戰要**跨怪累積**（Ray），
+       而搬運機制（combat 的 sessionCarry）只搬得動 state 上的東西。 */
+  lucidStreak: 0,
   energyBoostUntil: 0,   // 破防值累積加速（×N）的結束時刻（ms）；addEnergy 讀它
   enemyAtkSuppressUntil: 0,
 

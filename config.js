@@ -49,7 +49,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.07-890';
+export const VERSION = 'ver 2026.09.07-891';
 
 export const GAME_CONFIG = {
 
@@ -401,7 +401,11 @@ export const GAME_CONFIG = {
            實作只有 partner.onCounter 一支（鐵律 8）；解槽走 saint.resetInstallSlot。 */
         reloadStreak:3,
         reloadName:'夢魘再臨',
-        reloadEn:'Nightmare Returns',
+        /* ⚠ 英文用 **NIGHTMARE RELOAD**（ver -891，Ray：「用顯眼的字寫
+           NIGHTMARE RELOAD…要讓人一看就知道夢魘可以再用了」）——
+           -887 的 `Nightmare Returns` 只講「它回來了」，講不出「你可以再發一次」。
+           全大寫是刻意的：CI 上那一行要一眼看到。 */
+        reloadEn:'NIGHTMARE RELOAD',
         /* ver -759：四支輪播（Ray 指定）—— 陣列＝發動一次換下一支（fireBuff）。 */
         voice:'vo_anya_lucid',   // ver -837：Ray 交新單支，取代 -759 的 ×4 輪播（沒編號＝不輪播）
         /* ver -740（Ray）：發動期間追加「反擊不論哪一圈都算完美反擊（傷害與評價）」
