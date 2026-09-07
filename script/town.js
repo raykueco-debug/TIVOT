@@ -2533,30 +2533,70 @@ export const TOWNS = {
     mist: 1,                 // 小地圖走過才亮（ver -877，Ray；沒人帶路）
     stepMin: 30,             // 遺跡每步半小時（ver -872 那條的第二級）
     nodes: {
-      /* ⚠ 路線帶迷宮感（ver -876，Ray：「末端不要一直線走到底」）：
-         上→左→上 拐著走；三叉拱道**直走（上）是被崩塌堵死的假正路**，
-         真路要**右轉**過石橋 —— 崩塌走道當「走不通的正路」正好對上它的題（#7
-         半塌走道）。 */
-      /* ⚠ 往下退＝**回夏爾森林的遺跡入口**（ver -879）：那一格就是這座神殿的門口，
-         不在這張圖上多擺一個 `entrance`。 */
+      /* ══⚠⚠ 18 格（ver -883，Ray：「可以，照這個排」）══════════════════════
+         只用 `Ruins_shinier_*`（原批 6 ＋ 深層 12）—— 沒冠前綴的那 12 個場景
+         是別座遺跡的素材（Ray：「不是所有 ruin 都是木雅克神殿」）。
+         · **三層照美術交件的光源分**（畫面的光跟著換，不必另外說明）：
+           上層＝天光（有四時段差分）／中層＝長明火與符文／深層＝發光苔。
+         · **階梯是層與層唯一的通道**（Ray：「有做階梯，階梯就是上下層的必經過道」）：
+           `stairup` 上層→中層、`stairdeep` 中層→深層。兩張圖畫的正是那件事
+           （StairUp 頂端沒入黑暗拱門＝從下往上看；StairDeep 下半段苔光漸濃＝火轉苔）。
+         · **末端只接一條路**（Ray：「適合當端點的圖就不要再衍生其他路」）：
+           prison／machine／darkbridge／well／mosschamber／deepspring 六個，
+           都是圖上就看得出走不通的房間（撞斷的牢門、壞掉的機械、斷橋、井、密室、封閉的泉）。
+         · **分岔給多重選擇**（二叉三叉都有）：antechamber 二叉／corridorb 三叉
+           （它的圖本來就是三叉拱道）／catacomb・mural・colossus・rift 各三叉。
+         · **兩個環路**：上層 antechamber →(corridora｜collapsed)→ corridorb；
+           中層 catacomb⇄mural⇄colossus 三角。最長不用選路的連走是三格。
+         ⚠ 這張圖**沒有自己的入口節點**（ver -879）：入口就是夏爾森林的「遺跡入口」，
+           所以 `entry` 是前廳、前廳往下退直接回森林。
+         ⚠ 還沒有怪與劇情（Ray 的稿未到）；手繪地圖重畫中（見 resources/map/_map_spec.md），
+           交件後才補 `map:{img,spots}`。 */
+
+      /* ── 上層・地表（天光，四時段差分） ── */
       antechamber:{ bg:'Ruins_shinier_Antechamber', name:'木雅克神殿　前廳',
-        exits:{ left:'corridora', down:'@shinier_forest:ruins' } },
+        /* 一進門就分兩條，兩條都通到三叉拱道（環路）。往下退＝回夏爾森林。 */
+        exits:{ up:'corridora', right:'collapsed', down:'@shinier_forest:ruins' } },
       corridora:  { bg:'Ruins_shinier_CorridorA', name:'木雅克神殿　長廊',
-        exits:{ up:'corridorb', right:'antechamber' } },
-      /* 樞紐：三叉拱道分岔口（規格表 #4 本來就是分岔）。 */
-      corridorb:  { bg:'Ruins_shinier_CorridorB', name:'木雅克神殿　三叉拱道',
-        exits:{ up:'collapsed', right:'bridge', down:'corridora' } },
+        exits:{ right:'corridorb', down:'antechamber' } },
       collapsed:  { bg:'Ruins_shinier_Collapsed', name:'木雅克神殿　崩塌走道',
-        exits:{ back:'corridorb' } },   // 死路：正面被石堆塞住
+        /* ⚠ 它**不是死路**：圖上就畫著「只能從石堆缺口鑽過去」——鑽過去接三叉拱道。 */
+        exits:{ up:'corridorb', left:'antechamber' } },
+      corridorb:  { bg:'Ruins_shinier_CorridorB', name:'木雅克神殿　三叉拱道',
+        exits:{ left:'corridora', down:'collapsed', right:'bridge' } },
       bridge:     { bg:'Ruins_shinier_Bridge', name:'木雅克神殿　石橋',
-        exits:{ up:'deepaltar', left:'corridorb', right:'collapsed2' } },
-      /* 第二條崩塌走道（ver -877，Ray：「石橋右邊再放一個崩塌走道，水平翻轉」）
-         —— 同一張圖 bgFlip 鏡像。 */
-      collapsed2: { bg:'Ruins_shinier_Collapsed', bgFlip:true, name:'木雅克神殿　崩塌走道',
-        exits:{ back:'bridge' } },
+        exits:{ left:'corridorb', right:'stairup' } },
+
+      /* ── 中層・火與骨（長明火／符文，單張無時段） ── */
+      stairup:    { bg:'Ruins_shinier_StairUp', name:'木雅克神殿　上行石階',
+        exits:{ left:'bridge', down:'catacomb' } },
+      catacomb:   { bg:'Ruins_shinier_Catacomb', name:'木雅克神殿　骨龕墓道',
+        exits:{ up:'stairup', left:'prison', right:'mural', down:'colossus' } },
+      prison:     { bg:'Ruins_shinier_Prison', name:'木雅克神殿　石牢區',
+        exits:{ back:'catacomb' } },                    // 末端：撞斷的牢門
+      mural:      { bg:'Ruins_shinier_Mural', name:'木雅克神殿　壁畫廳',
+        exits:{ left:'catacomb', up:'machine', right:'darkbridge', down:'colossus' } },
+      machine:    { bg:'Ruins_shinier_Machine', name:'木雅克神殿　古代機械',
+        exits:{ back:'mural' } },                       // 末端：壞掉的機械
+      darkbridge: { bg:'Ruins_shinier_DarkBridge', name:'木雅克神殿　黑暗斷橋',
+        exits:{ back:'mural' } },                       // 末端：深淵上的斷橋，過不去
+      colossus:   { bg:'Ruins_shinier_Colossus', name:'木雅克神殿　巨像廳',
+        exits:{ up:'mural', left:'catacomb', right:'well', down:'stairdeep' } },
+      well:       { bg:'Ruins_shinier_Well', name:'木雅克神殿　圓井房',
+        exits:{ back:'colossus' } },                    // 末端：深井
+      stairdeep:  { bg:'Ruins_shinier_StairDeep', name:'木雅克神殿　下行深階',
+        exits:{ up:'colossus', down:'rift' } },
+
+      /* ── 深層・苔光（無天光；祭壇有四時段差分，那是崩塌處漏下的光） ── */
+      rift:       { bg:'Ruins_shinier_Rift', name:'木雅克神殿　地底裂隙',
+        exits:{ up:'stairdeep', right:'mosschamber', down:'deepspring', left:'deepaltar' } },
+      mosschamber:{ bg:'Ruins_shinier_MossChamber', name:'木雅克神殿　幽光青苔密室',
+        exits:{ back:'rift' } },                        // 末端：密室
+      deepspring: { bg:'Ruins_shinier_DeepSpring', name:'木雅克神殿　地下泉水',
+        exits:{ back:'rift' } },                        // 末端：封閉的泉
       /* 終點：深部祭壇。 */
       deepaltar:  { bg:'Ruins_shinier_DeepAltar', name:'木雅克神殿　深部祭壇',
-        exits:{ back:'bridge' } },
+        exits:{ back:'rift' } },
     },
   },
 };
