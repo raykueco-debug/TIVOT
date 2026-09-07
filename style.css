@@ -2181,11 +2181,14 @@
      ⚠ 只在她**當說話者**（原色，無 dim/dark）時套 —— 被壓暗時本來就夠暗，
        而且 `:not(.dim):not(.dark)` 確保不與那兩條搶同一個 filter 屬性（同元素只有
        一個 filter，會互相蓋）。
-     ⚠ 幅度刻意小（Ray「不要太多」）：亮度 −10%、飽和 −10%、對比 −3%＝降階但不失色。
-       顏色維持中性（不加色偏）—— 臉上加色調風險高，要色偏 Ray 再指定。
+     ⚠⚠ **幅度再減半**（ver -880，Ray：「安雅加過遮罩以後太暗了，把遮罩不透明度
+       再減半」）：-786 是亮度 −10%／飽和 −10%／對比 −3%，現在各砍一半 ——
+       亮度 −5%／飽和 −5%／對比 −1.5%。她本來就偏亮，降階的用意是**融進場景**，
+       不是壓暗；壓過頭就與容器的場景色調（tone.js 的 min 0.85）相乘變成兩層暗。
+     ⚠ 顏色維持中性（不加色偏）—— 臉上加色調風險高，要色偏 Ray 再指定。
      ⚠ 與容器的場景色調（tone.js 套在 #storyCast）自然疊加，不衝突。 */
   #storyCast .story-portrait[data-who="ANYA"]:not(.dim):not(.dark){
-    filter:brightness(.9) saturate(.9) contrast(.97);
+    filter:brightness(.95) saturate(.95) contrast(.985);
   }
   /* 背景：鋪滿、cover。⚠ 在立繪**之下**（z-index 0）—— 立繪要站在場景裡。 */
   /* ⚠ 背景換圖也走淡入淡出（ver -325，Ray 指定）—— 與插圖／立繪同一條規則。
@@ -2955,12 +2958,15 @@
      粗字顯示地圖名稱，地點下面顯示小一級字的年月日時間，點擊消失，只出一次」）══
      ⚠ z 排在**黑幕（20）之下**、其餘全部之上（12）：切景要能把它一起蓋黑，
        但它蓋得住導覽、地圖鈕與對話框。
-     ⚠⚠ **只罩上半（`--story-top`），不壓控制區**（ver -879，Ray 指定）——
-       與 `#storyCgBack`／`#storyBg`／`#storyCard` 同一個框：下半是槍棺與面盤，
-       蓋住它等於把玩家的手也蓋住了。擋路是由 `gateArrival` 在**程式**上做的
-       （點掉才開始演），不靠一片罩住全螢幕的黑。
+     ⚠⚠ **下界＝楣的上緣，不是 `--story-top`**（ver -880，Ray：「地名的黑遮罩不要
+       蓋在槍棺之上」）：槍棺的**楣**是往上凸出立繪區下緣的（約 60px，見
+       §6.5.4「單子的下界是楣的上緣」），罩到 `--story-top` 就會壓到那一截雕花。
+       `--kerb-clip-top` 是 `layoutKerberos` **解出來**的那個真值、發佈在 `:root` 上
+       （鐵律 7：不要在 CSS 裡用「56vh − 楣高」再算一次）。退路值同 `#kerb` 那兩條。
+     ⚠ 擋路是由 `gateArrival` 在**程式**上做的（點掉才開始演），不靠一片罩住全螢幕的黑。
      ⚠ 字用 `clamp` 跟著畫面走 —— 390px 的手機與桌機同一份版面。 */
-  #townMapCard{position:absolute;left:0;right:0;top:0;height:var(--story-top);
+  #townMapCard{position:absolute;left:0;right:0;top:0;
+    height:var(--kerb-clip-top, calc(var(--story-top) - var(--kerb-top-h, 0px)));
     z-index:12;display:none;
     flex-direction:column;align-items:center;justify-content:center;gap:.55em;
     background:rgba(4,3,8,.72);pointer-events:auto;text-align:center;padding:0 8%;
@@ -2973,8 +2979,17 @@
      **錦上添花**的東西。 */
   #townMapCard.on{display:flex;}
   #townMapCard.on.show{opacity:1;}
-  #townMapCard b{font-size:clamp(26px,6.4vw,44px);font-weight:800;letter-spacing:.18em;
-    color:var(--gold,#e8cf8e);text-indent:.18em;
+  /* ⚠⚠ **字級調小＋上下兩條細橫線**（ver -880，Ray：「初見地名太大了，上下加兩條
+     細橫線」）：由 clamp(26,6.4vw,44) 降到 clamp(20,4.4vw,30)。
+     ⚠ 橫線用 `border-top/bottom` 畫在**字自己身上**，寬度就跟著字走 ——
+       另拉兩條固定寬的線在窄螢幕上會比字長、寬螢幕上會比字短。
+     ⚠ `text-indent` 補回 letter-spacing 在最後一個字後面多出來的那一格，
+       不然字在框裡看起來偏左（線是置中的，字不置中就露餡）。 */
+  #townMapCard b{font-size:clamp(20px,4.4vw,30px);font-weight:700;letter-spacing:.22em;
+    color:var(--gold,#e8cf8e);text-indent:.22em;
+    padding:.42em .1em .38em;
+    border-top:1px solid rgba(232,207,142,.42);
+    border-bottom:1px solid rgba(232,207,142,.42);
     text-shadow:0 2px 18px rgba(0,0,0,.85),0 0 26px rgba(232,207,142,.22);}
   /* 「小一級」＝約六成半，與上面那行拉開層級但仍讀得清楚。 */
   #townMapCard i{font-style:normal;font-size:clamp(13px,3.1vw,19px);letter-spacing:.12em;

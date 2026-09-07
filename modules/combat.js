@@ -113,6 +113,7 @@ export function setup(){
     resetEnemyTimers: defense.resetEnemyTimers,
     scheduleUlt: defense.scheduleUlt,
     markNext, buildGrid, resetEnergy,
+    addEnergy,                                    // 反擊給破防值（ver -880，見 weapon.counterEnergy）
     /* 反擊成功 → 通知搭檔的被動（ver -693，明晰之夢：每隻怪第一次反擊時發動）。 */
     /* ver -719：明晰之夢改由 `onThreatResolved` 的判定等級觸發（只有紅圈），
        weapon 那一支已成空殼 —— 這一條留著，日後「開火就觸發」的被動可以接回去。 */

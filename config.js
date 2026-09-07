@@ -49,7 +49,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.07-879';
+export const VERSION = 'ver 2026.09.07-880';
 
 export const GAME_CONFIG = {
 
@@ -1897,6 +1897,11 @@ export const GAME_CONFIG = {
 
     // 聖能與大絕蓄力
     energyPerHit:        2,     // 每次正確點擊給的聖能
+    /* 反擊給的破防值＝`energyPerHit × 這個 × (實傷/打滿的傷)`（ver -880，Ray：
+       「反擊也要依傷害比例增加破防值，一次反擊打滿大概是普攻兩倍的增加量」）。
+       ⚠ 2＝**打滿時**是普攻的兩倍（2×2＝4）；沒打滿就按比例縮 —— 機槍黃圈只有
+         三成命中率，那一次自然只拿到約三成。實作只有 weapon.counterEnergy 一支。 */
+    counterEnergyMul:    2,
     chargeSeconds:       4,     // 敵人大絕蓄力窗口（秒）
 
     // Overkill 限時（敵死後的追加輸出窗口）

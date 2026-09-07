@@ -90,6 +90,24 @@ export function subgunPowerMul(id){
    ⚠ 留著空殼是為了讓三個分支旁邊那一行不用刪 —— 日後若有「開火就觸發」的
      被動（不分帶），接回這裡就好。 */
 function onCounterFired(){ /* 見上：判定已移到 defense 的判定等級 */ }
+/* ══⚠⚠ 反擊也給破防值（ver -880，Ray：「反擊也要依傷害比例增加破防值，一次反擊
+   打滿大概是普攻兩倍的增加量」）══
+   給的量 ＝ `energyPerHit × counterEnergyMul × (這一次真的打出去的傷 ÷ 打滿的傷)`。
+   · **「打滿」是不計暴擊的基礎總傷**（`hits × base`）—— 暴擊是運氣，讓它參與的話
+     同一次全中的反擊給的破防值會忽高忽低（同 overkill 不折秒的理由，§6.5.2）。
+     比例夾到 1：暴擊讓實傷超過基礎總傷時，超出的部分不再加。
+   · 收在**這一支**（鐵律 8）：狙擊／散彈／機槍／共鬥飛刀四條開火路徑都叫它 ——
+     各自算一次必然有一條漏掉，而漏掉不會有任何錯誤訊息。
+   · 走 `api.addEnergy`（combat 的那一支，鐵律 7）：聖徒化期間不累積、索菈娜的加速窗
+     與九星「疾走」的加成全部自動吃到，這裡不重算。
+   · 乘數在 `tuning.counterEnergyMul`（鐵律 1）。 */
+function counterEnergy(sum, full){
+  if(!(full>0) || !api.addEnergy) return;
+  const T=GAME_CONFIG.tuning||{};
+  const per=(T.energyPerHit!=null)?T.energyPerHit:2;
+  const mul=(T.counterEnergyMul!=null)?T.counterEnergyMul:2;
+  api.addEnergy(per * mul * Math.max(0, Math.min(1, sum/full)));
+}
 /* `hitRate`（ver -706，Ray：「機槍黃圈命中率只有 30%，擊發數不變，沒中的跳 miss，
    橘圈 70%，紅圈 100%。**但不論如何第一發一定不會 miss**」）。
    ⚠ 第一發保底不是體貼，是必要的：8 發 30% 全 miss 的機率有 5.7% ——
@@ -190,13 +208,13 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll){
        （counterFired＝「開火了」），紅點的收點與硬直在 resolveThreat 那端不受影響。 */
     if(!hits(0)){
       api.floatDmg(MISS, '46%','32%', false, 'snipernum');
-      addCounter(0); onCounterFired();
+      addCounter(0); onCounterFired(); counterEnergy(0, base);
       flushPending();
       return;
     }
     const h=critHit(base);
     api.enemyDamage(h.dmg, true, true, 'counter');   // 靜默扣血（含 overkill/擊殺判定）
-    addCounter(h.dmg); onCounterFired();
+    addCounter(h.dmg); onCounterFired(); counterEnergy(h.dmg, base);
     api.floatDmg((h.crit?L.battle.crit:'')+h.dmg, '46%','32%', h.crit, 'snipernum');
     flushPending();                            // 單發：一瞬間就結束，排隊中的切換立刻生效
     return;
@@ -222,6 +240,8 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll){
       api.floatDmg((h.crit?L.battle.crit:'')+h.dmg, (bx-6+k*3)+'%', (34+(k%2)*6)+'%', true);
     }
     addCounter(sum); onCounterFired();
+    /* ⚠ `dmgRoll`（散彈黃圈的 [0,1] 那種）是絕對值清單，滿值＝清單最大值×發數。 */
+    counterEnergy(sum, roll ? w.hits*Math.max.apply(null, roll) : w.hits*base);
     flushPending();                            // 齊發：同上，一瞬間結束
     return;
   }
@@ -237,6 +257,7 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll){
     const h=critHit(base); rolls.push(h); sum+=h.dmg;
   }
   addCounter(sum); onCounterFired();
+  counterEnergy(sum, roll ? w.hits*Math.max.apply(null, roll) : w.hits*base);
   /* 連射間隔：預設 90ms；場次可覆寫（ver -476，Ray：「船戰的速射砲連射速度
      調降50%」→ flight 船戰卡 counterGapMs:180）。同 weaponSound 的機制：
      覆寫的是**場次**不是武器卡。震動長度與 setTimeout 都讀這一個變數（鐵律 7）。 */
@@ -300,6 +321,8 @@ export function coopCounter(){
         hap.shot();
         api.enemyDamage(per, true, true, 'counter');   // 靜默扣血（含 overkill/擊殺判定）
         addCounter(per);
+        /* 破防值（ver -880）：三刀＝一次反擊，所以每一刀給三分之一（滿＝3×per）。 */
+        counterEnergy(per, 3*per);
         api.floatDmg(String(per), (44+Math.random()*12)+'%', '34%', true);
       };
       if(api.throwDagger) api.throwDagger(px, py, onHit); else onHit();
