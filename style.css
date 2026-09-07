@@ -3091,9 +3091,18 @@
     0%,100%{box-shadow:0 0 4px 1px rgba(240,196,105,.55);}
     50%    {box-shadow:0 0 16px 7px rgba(240,196,105,.95);}}
   /* 中文地名（Ray：「每個地點都要有中文地名」）：標在光點下方，描邊確保羊皮紙上讀得出。 */
+  /* ⚠⚠ 中文地名是**壓在圖上的**（Ray 的規約：圖上只有英文極草書，可讀的那一層留給
+     code —— 這樣以後才翻得了譯）。所以它一定會蓋到那一串草書，**要蓋得乾淨**：
+     舊的三層淡光罩不住六個字的長名（實測帝都「賞金獵人公會」「攝政王廣場」與草書
+     糊成一團），改成一圈**厚的紙色暈**（八個方向 ×2 圈）——讀起來像是有人在紙上
+     把中文寫上去，而不是兩層字疊在一起。
+     ⚠ 用 text-shadow 疊不用 `-webkit-text-stroke`：後者在舊 Safari 會把筆畫吃掉。 */
   #townMapView .tm-spot span{position:absolute;left:50%;top:9px;transform:translateX(-50%);
     white-space:nowrap;font-size:11.5px;letter-spacing:1px;color:#2a1c0c;font-weight:bold;
-    text-shadow:0 0 3px #f2e4c4,0 0 3px #f2e4c4,0 0 5px #f2e4c4;}
+    text-shadow:
+      -2px -2px 2px #e9dcbe, 2px -2px 2px #e9dcbe, -2px 2px 2px #e9dcbe, 2px 2px 2px #e9dcbe,
+      0 -3px 3px #e9dcbe, 0 3px 3px #e9dcbe, -3px 0 3px #e9dcbe, 3px 0 3px #e9dcbe,
+      0 0 6px #e9dcbe, 0 0 9px #e9dcbe;}
   #townMapView .tm-spot.here span{color:#5a3506;}
   /* ══ 迷霧（ver -913，Ray：「小地圖沒走到的地方用迷霧遮住」）══
      一團與羊皮紙同色系的霧，蓋住那顆墨點**與圖上那個手寫地名**（草書名在墨點的
