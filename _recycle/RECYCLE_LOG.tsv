@@ -76,3 +76,7 @@ when	from	to	reason
 20260907-194452	resources/map/map_ruins_shinier.webp	_recycle/resources/map/map_ruins_shinier.webp.20260907-194452	神殿小地圖被 Ray 退（太細緻）—— 換成極簡『主角邊走邊畫』版
 20260907-200505	resources/map/map_ruins_shinier.webp	_recycle/resources/map/map_ruins_shinier.webp.20260907-200505	神殿小地圖再簡化一階（三個拱門不再描磚、齒輪 10 輻條改 3）
 20260907-203229	resources/background/Ruins_shinier_Bridgeopen.jpeg	_recycle/resources/background/Ruins_shinier_Bridgeopen.jpeg	已轉成 webp 入庫（原檔在 _originals/background/）
+20260907-203404	resources/background/Ruins_shinier_Bridge_dawn.webp	_recycle/resources/background/Ruins_shinier_Bridge_dawn.webp	石橋撤掉時段差分改吃單張（Ray 指定，資料上補 noTime）—— 原本被 rm 掉，補走回收區留退路
+20260907-203404	resources/background/Ruins_shinier_Bridge_day.webp	_recycle/resources/background/Ruins_shinier_Bridge_day.webp	石橋撤掉時段差分改吃單張（Ray 指定，資料上補 noTime）—— 原本被 rm 掉，補走回收區留退路
+20260907-203404	resources/background/Ruins_shinier_Bridge_dusk.webp	_recycle/resources/background/Ruins_shinier_Bridge_dusk.webp	石橋撤掉時段差分改吃單張（Ray 指定，資料上補 noTime）—— 原本被 rm 掉，補走回收區留退路
+20260907-203404	resources/background/Ruins_shinier_Bridge_night.webp	_recycle/resources/background/Ruins_shinier_Bridge_night.webp	石橋撤掉時段差分改吃單張（Ray 指定，資料上補 noTime）—— 原本被 rm 掉，補走回收區留退路
