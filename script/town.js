@@ -2545,26 +2545,31 @@ export const TOWNS = {
     wilderness: true,
     mist: 1,                 // 小地圖走過才亮（ver -877，Ray；沒人帶路）
     stepMin: 30,             // 遺跡每步半小時（ver -872 那條的第二級）
-    /* ══ 槍棺地圖（ver -911）══ 美術照 ver -909 的拓樸重畫（`_layout_shinier_ruins.png`）。
+    /* ══ 槍棺地圖（ver -911；-912 換成極簡版）══ 美術照 ver -909 的拓樸畫
+       （權威佈局＝`resources/map/_layout_shinier_ruins.png`）。
        `spots`＝各節點的墨點在圖上的比例座標。
-       ⚠⚠ **是量出來的，不是估的**：先用 `L<80 ＋ MinFilter(9)` 把墨點從羊皮紙裡挑出來
-         （細線會被侵蝕掉、污漬填充率不夠），再逐顆對著英文草書標籤指派 ——
-         **標籤一律在墨點的右下方約 13~16px**，那就是配對的判準。
-       ⚠ 圖上有兩顆**畫線轉折用的墨點**（石橋上方、崩塌走道左下），長得跟節點一樣但
-         沒有名字 —— 不要把它們算進來。判準同上：**沒有標籤指著它就不是節點**。
+       ⚠⚠ **是量出來的，不是估的**：座標的唯一來源是美術那邊跑
+         `tools/map_check.py` 產出的 `resources/map/_spots_shinier_ruins.json`
+         （抓墨點 → 用連通元件驗每一條邊真的有接上 → 印比例座標），
+         這裡照抄，**不要用眼睛在圖上估**。
+       ⚠ 圖上會有幾顆**畫線轉折用的墨點**，長得跟節點一樣但沒有名字 —— 不算節點。
        ⚠ 入口（Entrance）畫在圖上是為了讓玩家看得懂，但它是**夏爾森林**的格子，
-         不是這張圖的節點，所以 `spots` 裡沒有它。
-       ⚠ `?v=3`：這是同一個檔名的第三版（18格 → -908 → -909），同名覆蓋必掛（§5）。 */
+         不是這張圖的節點，所以 `spots` 裡沒有它（json 裡有，抄過來時要濾掉）。
+       ⚠⚠ 抄完要**驗一次方向**：每一條出口的方向必須等於兩顆墨點的相對位置
+         （`left` 的鄰居在左…），否則小地圖與畫面上的箭頭會互相矛盾。
+         判準同 `tools/map_layout.py` 那一支，21 格全部驗過。
+       ⚠ `?v=4`：同一個檔名的第四版（18格 → -908 → -909 → 極簡重畫），
+         同名覆蓋必掛（§5）—— 不掛的話瀏覽器會拿舊圖配新座標。 */
     map: {
-      img: 'resources/map/map_ruins_shinier.webp?v=3',
+      img: 'resources/map/map_ruins_shinier.webp?v=4',
       spots: {
-        antechamber:[0.542, 0.725], corridora:[0.371, 0.720], crossway:[0.370, 0.583],
-        well:[0.369, 0.436], stairup:[0.222, 0.594], brazier:[0.202, 0.429],
-        collapsed:[0.111, 0.437], mural:[0.081, 0.591], bridge:[0.201, 0.292],
-        deepaltar:[0.198, 0.159], colossus:[0.354, 0.290], machine:[0.465, 0.287],
-        corridorb:[0.755, 0.724], stairdeep:[0.755, 0.640], catacomb:[0.755, 0.531],
-        hollow:[0.755, 0.388], prison:[0.638, 0.389], deepspring:[0.753, 0.226],
-        rift:[0.896, 0.223], darkbridge:[0.896, 0.125], mosschamber:[0.896, 0.370],
+        antechamber:[0.523, 0.736], corridora:[0.371, 0.742], crossway:[0.371, 0.613],
+        well:[0.371, 0.522], stairup:[0.233, 0.594], brazier:[0.243, 0.465],
+        collapsed:[0.118, 0.476], mural:[0.101, 0.595], bridge:[0.236, 0.340],
+        deepaltar:[0.237, 0.213], colossus:[0.362, 0.370], machine:[0.502, 0.371],
+        corridorb:[0.752, 0.737], stairdeep:[0.757, 0.605], catacomb:[0.758, 0.535],
+        hollow:[0.740, 0.371], prison:[0.640, 0.371], deepspring:[0.759, 0.257],
+        rift:[0.915, 0.274], darkbridge:[0.915, 0.120], mosschamber:[0.885, 0.374],
       },
     },
     nodes: {
