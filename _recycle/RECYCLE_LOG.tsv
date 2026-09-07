@@ -66,3 +66,8 @@ when	from	to	reason
 20260907-172412	resources/background/Ruins_shinier_Crossway_day.webp	_recycle/resources/background/Ruins_shinier_Crossway_day.webp	Ruins_shinier_Crossway_day GPT 原版顆粒過重（Ray：刺眼），改用 Gemini 去顆粒重繪版
 20260907-172832	resources/background/Ruins_shinier_Brazier.webp	_recycle/resources/background/Ruins_shinier_Brazier.webp	Ruins_shinier_Brazier GPT 原版顆粒過重（Ray：刺眼），改用 Gemini 去顆粒重繪版
 20260907-173246	resources/background/Ruins_shinier_Hollow.webp	_recycle/resources/background/Ruins_shinier_Hollow.webp	Ruins_shinier_Hollow GPT 原版顆粒過重（Ray：刺眼），改用 Gemini 去顆粒重繪版
+20260907-184719	resources/background/Ruins_shinier_DeepSpring.webp	_recycle/resources/background/Ruins_shinier_DeepSpring.webp	神殿背景換新版（ver -909，Ray 交件 jpeg）＋黑暗斷橋水平翻轉
+20260907-184719	resources/background/Ruins_shinier_Well.webp	_recycle/resources/background/Ruins_shinier_Well.webp	神殿背景換新版（ver -909，Ray 交件 jpeg）＋黑暗斷橋水平翻轉
+20260907-184719	resources/background/Ruins_shinier_DarkBridge.webp	_recycle/resources/background/Ruins_shinier_DarkBridge.webp	神殿背景換新版（ver -909，Ray 交件 jpeg）＋黑暗斷橋水平翻轉
+20260907-184926	resources/map/_layout_ruins_shinier.png	_recycle/resources/map/_layout_ruins_shinier.png	檔名改成 _layout_<地圖id>（ver -909 起由 tools/map_layout.py 產出）
+20260907-184926	resources/map/_layout_ruins_shinier.svg	_recycle/resources/map/_layout_ruins_shinier.svg	檔名改成 _layout_<地圖id>（ver -909 起由 tools/map_layout.py 產出）

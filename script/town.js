@@ -2555,7 +2555,8 @@ export const TOWNS = {
            · 主幹　前廳 → 長廊 → 岔道 → 上行石階 → 養息之間 → 石橋 → 深部祭壇
            · 另一支　前廳 → 拱門長廊 → 下行深階 → 墓道 → 苔穴岔道 →（三個方向）
            · 抉擇點　前廳(3)・岔道(3)・養息之間(4)・苔穴岔道(4)・巨像廳(2)
-           · 末端 7　圓井房・壁畫廳・深部祭壇・古代機械・黑暗斷橋・命之泉・地底裂隙
+           · 末端 7　圓井房・壁畫廳・深部祭壇・古代機械・石牢區・命之泉・黑暗斷橋
+             （ver -909：黑暗斷橋改掛在地底裂隙上 ⇒ 石牢區變末端、地底裂隙變過道）
            ⚠ **沒有環是 Ray 的決定**（-908 明確要求斷開巨像廳↔深部祭壇、
              命之泉↔地底裂隙那兩條合攏邊）—— 不要「順手」把它接回去。
 
@@ -2633,9 +2634,9 @@ export const TOWNS = {
         /* -900 的三岔（深層版）：墓道在下、石牢區在左、青苔密室在右、命之泉在上。 */
         exits:{ down:'catacomb', left:'prison', right:'mosschamber', up:'deepspring' } },
       prison:     { bg:'Ruins_shinier_Prison', name:'木雅克神殿　石牢區',
-        exits:{ right:'hollow', up:'darkbridge' } },
-      darkbridge: { bg:'Ruins_shinier_DarkBridge', name:'木雅克神殿　黑暗斷橋',
-        exits:{ back:'prison' } },                      // 末端：橋斷了，過不去
+        /* ⚠ ver -909（Ray 把黑暗斷橋改掛到地底裂隙上）：這一格變成**末端**。
+           用 `back` 不寫死 `right` —— 讓「回去」自己掛在來時方向的反向。 */
+        exits:{ back:'hollow' } },                      // 末端
       mosschamber:{ bg:'Ruins_shinier_MossChamber', name:'木雅克神殿　青苔密室',
         exits:{ left:'hollow', up:'rift' } },
       /* ⚠ ver -908（Ray：「把地下泉水跟地底裂隙的連結給斷了」）：兩格都變末端。
@@ -2643,7 +2644,13 @@ export const TOWNS = {
       deepspring: { bg:'Ruins_shinier_DeepSpring', name:'木雅克神殿　命之泉',
         exits:{ back:'hollow' } },                      // 末端
       rift:       { bg:'Ruins_shinier_Rift', name:'木雅克神殿　地底裂隙',
-        exits:{ back:'mosschamber' } },                 // 末端
+        /* ⚠ ver -909（Ray：「把黑暗斷橋…接到地底裂隙上面」）：它不再是末端，
+           往上通黑暗斷橋。 */
+        exits:{ down:'mosschamber', up:'darkbridge' } },
+      darkbridge: { bg:'Ruins_shinier_DarkBridge', name:'木雅克神殿　黑暗斷橋',
+        /* ⚠ 那張圖 ver -909 **水平翻轉過**（Ray 指定）—— 同名覆蓋，見 config 的
+           `ASSET_VER`。 */
+        exits:{ back:'rift' } },                        // 末端：橋斷了，過不去
     },
   },
 };

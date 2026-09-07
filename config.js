@@ -53,7 +53,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.07-908';
+export const VERSION = 'ver 2026.09.07-909';
 
 export const GAME_CONFIG = {
 
@@ -2822,6 +2822,11 @@ export const ASSET_VER = {
   'ruins_shinier_crossway_day': 2,
   'ruins_shinier_brazier':      2,
   'ruins_shinier_hollow':       2,
+  /* ver -909：Ray 換了兩張新圖（命之泉／圓井房，交件是 jpeg，已轉 webp），
+     黑暗斷橋那張**水平翻轉**（Ray 指定）—— 三張都是同名覆蓋。 */
+  'ruins_shinier_deepspring':   2,
+  'ruins_shinier_well':         2,
+  'ruins_shinier_darkbridge':   2,
 };
 export function assetVer(nameOrPath){
   const n = String(nameOrPath||'').split('/').pop().split('?')[0]
