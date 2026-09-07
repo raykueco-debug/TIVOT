@@ -384,6 +384,14 @@ def main():
                             story_battle=bool(a.get('storyBattle')))
             # 傍晚的提醒掛在**城**上不是節點上，所以在外層另外驗（見下）。
 
+        # ⚠⚠ `wildSpawn.encounters` 的台詞也要驗（ver -879）：它掛在**城**上、
+        #   不在任何節點的 `acts` 裡 —— 不驗的話那一段的缺圖／打錯的差分名／
+        #   不存在的音效全部要等 5% 擲中才發現，而那可能是好幾十次移動之後。
+        for i, e in enumerate((town.get('wildSpawn') or {}).get('encounters') or []):
+            a = e.get('act') or {}
+            check_lines('%s.wildSpawn.encounters[%d]' % (tid, i), a.get('lines'),
+                        story_battle=bool(a.get('storyBattle')))
+
         # ══⚠⚠ 入口那一格不可以有戰鬥（ver -698，Ray：「入口不會有戰鬥」）══
         #   它是**遭遇戰的復活點**（打輸回這裡），有戰鬥就是必死鏈。
         #   ⚠ 入口是 `firstEntry.node`（劇情降落的那一格）或 `entry`，兩個都要驗。

@@ -689,12 +689,27 @@ function whenPainted(el, fn){
 }
 /* `done`＝**新圖真的在畫面上了**（ver -442）。城鎮的切景要靠它才知道什麼時候
    可以把黑幕掀開 —— 見 modules/town.js 的 `reveal`。 */
-function swapImg(el, src, done){
+function swapImg(el, src, done, opts){
   const fin=()=>{ if(done) done(); };
   if(!el){ fin(); return; }
   const on  = el.classList.contains('on');
   const cur = on ? el.getAttribute('src') : null;
   if(cur===src){ fin(); return; }
+  /* ⚠⚠ **「從無到有」也要淡入**（ver -879，Ray：「鹿主登場用淡入」）——
+     只在呼叫端明講 `fadeInFirst` 時才走這一條。下面那條「場上還沒有圖就直接上」
+     是給**背景／插圖**用的（開場直接上，不然會先黑一段空白）；
+     而中景層的第一張是「**牠出現了**」，直接跳出來讀起來是貼上去的。
+     作法：先掛 `.on.fading`（opacity 0）→ 等圖真的畫上去 → 拿掉 `.fading` 淡進來。 */
+  if(!on && src && opts && opts.fadeInFirst){
+    el.classList.add('fading');
+    const up=()=>{ el.onload=null;
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{ el.classList.remove('fading'); fin(); })); };
+    el.onload=up;
+    el.setAttribute('src', src);
+    el.classList.add('on');
+    if(el.complete && el.naturalWidth) up();
+    return;
+  }
   /* ⚠⚠ **黑幕蓋著就直接換，不要再淡一次**（ver -442，Ray：「城鎮場景切換都會
      多閃一下原場景」）。那一片黑本身就是這一次的轉場，在它底下淡出淡入
      沒有人看得到，卻要多花 `FADE_MS`：於是「換好了」比實際晚 220ms 才成立 ——
@@ -1040,8 +1055,9 @@ function applyPersist(line){
      疊在背景上、立繪之下；null 收掉。換圖走 swapImg（軟淡入，同背景那一套）——
      差分切換（deer→deerlook→deernightmare）不轉黑。 */
   if(line.cgBack!==undefined && line.cgBack!==stageCgBack){
+    const first = !stageCgBack;      // 場上還沒有中景圖＝這是「牠出現了」那一拍
     stageCgBack=line.cgBack;
-    swapImg($('storyCgBack'), line.cgBack||'');
+    swapImg($('storyCgBack'), line.cgBack||'', null, { fadeInFirst:first });
   }
   if(line.ci!==undefined){ stageCi=line.ci; setImg($('storyCi'), line.ci?SI_DIR+line.ci+'.webp':''); }
   /* 推時鐘（ver -739，Ray：「這一幕結束轉景後…時間是早上八點」）：拍上寫
@@ -1181,6 +1197,7 @@ const SE_FILES=[
   'se_land.m4a',   // 著岸（ver -744，湖上甲板）
   'se_woodbreak.m4a',   // 舵斷裂的木裂聲（ver -751，Ray 交件；取代暫代的 se_brickcrush）
   'se_villagealarm.m4a',   // 夏爾村警鐘（ver -772，Ray 交件）
+  'se_enemy_roardeer.m4a',   // 樹靈鹿主的吼（ver -879，Ray 交件；配變異那一拍的紫炎）
   'se_flight_heartbeat.m4a', 'se_flight_idle_loop.mp3', 'se_flight_sail_loop.mp3',
   'se_flight_seagull.m4a', 'se_flight_train.mp3', 'vo_lunaMG.m4a', 'se_punch.m4a',
   'se_brickcrush.m4a',                                       // 瓦礫崩落（北方泊地教堂，ver -624）

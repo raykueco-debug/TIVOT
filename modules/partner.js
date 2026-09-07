@@ -293,7 +293,13 @@ export function onBoardCleared(clean){
   }
   else return;
   const sec = pas.buffSeconds || 10;
-  const fire = ()=>{ if(state.over) return; state.energyBoostUntil = Date.now()+sec*1000; };
+  /* ⚠⚠ **計時器走既有的盤外金光柱**（ver -879，Ray：「索拉娜被動計時器加上」）——
+     `api.lucidFlood(秒)` 就是 ver -749 為同一個問題（Ray：「諾薇兒的被動怎麼沒有
+     計時器？」）做的那一支，現在服務明晰之夢與諾薇兒的免傷窗。獵手的戰吼開的
+     也是一段看不見的限時窗（破防加速），照鐵律 8 用同一支，不另做一套讀法不同的。 */
+  const fire = ()=>{ if(state.over) return;
+    state.energyBoostUntil = Date.now()+sec*1000;
+    if(api.lucidFlood) api.lucidFlood(sec); };
   const vo = asset(vkey); if(vo) SFX.playVoice(vo, sfxGain(vkey));
   api.floatDmg(pas.name,'50%','34%',true);
   if(state.cutinPlaying){ fire(); return; }        // 已有演出在播 → 只跳字、buff 立即起算

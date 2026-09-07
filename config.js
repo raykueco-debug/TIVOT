@@ -49,7 +49,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.07-878';
+export const VERSION = 'ver 2026.09.07-879';
 
 export const GAME_CONFIG = {
 
@@ -2083,6 +2083,9 @@ export const GAME_CONFIG = {
          增益沿用原音那一支（同一段素材，響度沒變）。 */
       se_nightmare_hp:1.0,
       se_earthquake:2.306,              // ver -636（audio_scan 實測：−21.1 LUFS）
+      /* 樹靈鹿主的吼（ver -879，Ray 交件）——瀏覽器內 BS.1770 實測
+         耳機 −19.64／手機 −24.18、平均 −21.91 LUFS，峰值 −8.33 dBFS（未觸頂）。 */
+      se_enemy_roardeer:3.006,
       /* ── 飛行頁（那一頁用 HTMLAudio，讀同一張表，見 flight/index.html）── */
       se_flight_heartbeat:5.064, se_flight_idle_loop:2.848,
       se_flight_sail_loop:7.928, se_flight_seagull:3.353, se_flight_train:5.059,

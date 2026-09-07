@@ -628,6 +628,29 @@ function wildActDue(n){
   const W=(TOWNS[townId]||{}).wildSpawn; if(!W || !n) return null;
   if(nodeId===entryNodeId) return null;                 // 入口＝復活點，不可有戰鬥
   if(prog.hasFlag(safehouseFlag())) return null;        // 安全區：遭遇戰整套不動
+  /* ══⚠⚠ **指定遭遇**（ver -879，Ray：「鹿主未變異日後則會在黃昏夜晚時段在夏爾森林
+     隨機遇到，劇情從諾『牠好像不太歡迎我們』開始跑，進入戰鬥」「打完就沒了，
+     不會出第二次，隨機遇到的機率是 5%」）══
+     ＝**劇本安排的那一場，只是不指定在哪一格**。排在 fixed／pool **之前**：
+     它是劇情不是雜怪，撞在一起時它優先。一筆的欄位：
+       need／not  前置旗／擋路旗（`not` 那一支就是「已經打過了」，鐵律 9）
+       band       時段白名單（`clock.band()` 的字面）
+       rate       每次抵達擲一次
+       act        取到就照它演 —— `flag`／`storyBattle`／`lines` 全部照 `acts` 的規約，
+                  由 `enter()` 那一套統一收尾（旗標**演完才記**，打輸回頭還遇得到）
+     ⚠ 它**不進 `wildDone`**：那一組是「這一趟同種不重複」，而這一場一輩子只有一次，
+       靠 `act.flag` 擋 —— 兩者不是同一件事，共用會讓「這一趟沒遇到」變成「永遠沒有」。 */
+  for(const e of (W.encounters||[])){
+    if(e.need && !prog.hasFlag(e.need)) continue;
+    if(e.not  &&  prog.hasFlag(e.not))  continue;
+    if(e.band && !e.band.includes(clock.band())) continue;
+    if(e.act && e.act.flag && prog.hasFlag(e.act.flag)) continue;
+    if(Math.random() >= (e.rate||0)) continue;
+    return e.act;
+  }
+  /* ⚠ 節點自己宣告「這裡不出野怪」（ver -879，Ray：「神殿入口除了鹿主戰之外是
+     安全區，不出怪」）——擋在**指定遭遇之後**：那一場是劇本，不受這條管。 */
+  if(n.noWild) return null;
   let pick=null;
   const fx=W.fixed && W.fixed[nodeId];
   if(fx && !wildDone.has(wildSpecies(fx))) pick=fx;
@@ -980,6 +1003,73 @@ function openStallSheet(st){
    · 每個光點標**中文地名**（節點 name 全形空白後那一段；日後翻譯標的）。
    · 點地圖任何一處＝收掉（它是查看用的覆蓋層，不是導航）。
    · 收在 nav 的生命週期裡：對白中鈕跟著 nav 藏、換節點/離城 mapClose（檢查表）。 */
+/* ══⚠⚠ 進新地圖的**圖名卡**（ver -879，Ray：「每到一個新的地圖都要全黑半透遮罩，
+   稍大粗字顯示地圖名稱（木雅克神殿或夏爾村、夏爾森林），地點下面顯示小一級字的
+   年月日時間，點擊消失，只出一次」）══
+   · 「一次」＝**每張圖一次**，記在旗標 `mapcard_<圖>` 上（鐵律 9：誰插＝這張卡演過了；
+     誰拔＝沒有人。它是一輪內的狀態，`newRun` 清、存讀檔帶 —— 走 progress 的旗標
+     就自動吃到這兩件事）。
+   · 報的是**地圖名**（`TOWNS[x].name`）不是節點名 —— Ray 舉的三個例子都是圖名。
+   · ⚠ 與腳本裡的情境卡（`#storyCard`）是**兩件事**：那一個是「這一拍要報個地點」，
+     由腳本逐拍指定、跟著對白走；這一個是「你踏進了一張新地圖」，由 `open()` 發，
+     一輩子一次。共用一個元素會讓兩者互相收掉對方。
+   · ⚠ 收在 `open()` 這個**進圖的唯一入口**（鐵律 8）：降落、讀檔、跨圖出口、
+     章節跳關全部經過它。 */
+function mapCardFlag(t){ return 'mapcard_' + (t||townId||''); }
+/* 這一趟要不要報圖名 —— 在 `enter()` **之前**決定（`open()` 開頭），
+   真正出現與擋路的時機在 `gateArrival`。 */
+let mapCardArmed=false, heldArrival=null;
+function armMapCard(){
+  const T=TOWNS[townId];
+  mapCardArmed = !!(T && T.name && !prog.hasFlag(mapCardFlag(townId)));
+}
+/* ⚠⚠ **抵達演出的閘門**（ver -879，Ray：「點掉之後才會開始對話或其他動作」）：
+   卡要出的時候，把「這一次抵達要演什麼」整包扣住，點掉才放行。
+   ⚠ 扣的是 `runArrival` 那一整包（進場對白／主線段落／野生遭遇／傍晚提醒全在裡面）
+     —— 收在**唯一那個呼叫點**（鐵律 8），不要在每一種演出各判一次。
+   ⚠ 沒有卡就直接跑：這一支是常態路徑上的一層，不能讓它變成「有時候不演」。 */
+function gateArrival(fn){
+  if(!mapCardArmed){ fn(); return; }
+  mapCardArmed=false;
+  heldArrival=fn;
+  if(!showMapCard()){ const f=heldArrival; heldArrival=null; if(f) f(); }   // 卡出不來就別擋路
+}
+function showMapCard(){
+  const T=TOWNS[townId]; if(!T || !T.name) return false;
+  const st=story.stageEl(); if(!st) return false;
+  prog.addFlags([mapCardFlag(townId)]);      // 出過了就記（點不點掉都算看過）
+  let c=document.getElementById('townMapCard');
+  if(!c){
+    c=document.createElement('div'); c.id='townMapCard';
+    /* 點畫面任何一處收掉（同路人單句／地圖覆蓋層的手勢）。
+       ⚠ `pointerup` 不是 `click`：這一層蓋在導覽之上，用 click 的話那一下會穿透
+         下去按到方向鈕。 */
+    c.addEventListener('pointerup', e=>{ e.stopPropagation(); hideMapCard(); });
+    st.appendChild(c);
+  }
+  c.innerHTML = '<b></b><i></i>';
+  c.querySelector('b').textContent = T.name;
+  c.querySelector('i').textContent = clock.dateText() + '　' + clock.timeText();
+  /* 先 `.on`（display 打開）→ 逼一次排版 → 再 `.show` 觸發 opacity 的 transition。
+     ⚠ 同一幀加上又加上會被合併成一次計算，淡入整個跳掉（同 story.veil 那條
+     `offsetWidth` 的理由）。 */
+  c.classList.remove('show');
+  c.classList.add('on');
+  void c.offsetWidth;
+  c.classList.add('show');
+  return true;
+}
+function hideMapCard(){
+  const c=document.getElementById('townMapCard');
+  if(c){ c.classList.remove('show');
+    /* 淡完才收掉 display，否則 transition 沒有機會跑（同 `#boot` 那條）。 */
+    clearTimeout(c.__hideT);
+    c.__hideT=setTimeout(()=>c.classList.remove('on'), 460); }
+  /* 放行被扣住的那一段抵達演出（ver -879）。⚠ 先清再叫：那一段裡可能又換節點，
+     留著會被下一次 `hideMapCard` 重跑一次。 */
+  const f=heldArrival; heldArrival=null; if(f) try{ f(); }catch(_){}
+}
+
 let mapOn=false;
 function mapClose(){
   mapOn=false;
@@ -1759,7 +1849,9 @@ export function enter(id){
      ⚠ 接續的那一次**不停一秒**（`immediate`）：抵達停頓是給「剛走到一個新地方」用的，
        原地接下一段再停一次只是空等。
      ⚠ 不會無限迴圈：`acts` 的旗標是演完才記的，記了 `actDue` 就不再回它。 */
-  runArrival(false);
+  /* ⚠⚠ 圖名卡擋在**抵達演出**之前（ver -879，Ray：「點掉之後才會開始對話或
+     其他動作」）：卡還在畫面上時什麼都不演，點掉才跑這一段（見 gateArrival）。 */
+  gateArrival(()=>runArrival(false));
 
   function runArrival(immediate){
   /* 野生刷怪（ver -862）：`acts` 優先（劇本先走）；接續那一次（immediate）不擲 ——
@@ -2281,6 +2373,7 @@ export function open(town, node, opts){
   entryNodeId = (fe && fe.node && T.nodes[fe.node] && !(fe.until && prog.hasFlag(fe.until)))
               ? fe.node : T.entry;
   const start = (node && T.nodes[node]) ? node : entryNodeId;
+  armMapCard();               // 這一趟要不要報圖名（ver -879）——在 enter 之前決定
   enter(start);
   /* 進城的檢查點（ver -590，見 setCheckpoint）。⚠ 一定要在 `enter()` 之後 ——
      存檔要記「人在哪一格」。
@@ -2291,6 +2384,7 @@ export function open(town, node, opts){
 export function close(){
   const st=story.stageEl(); if(st) st.classList.remove('town-on');
   showNav(false);
+  hideMapCard();              // 圖名卡也是覆蓋層（ver -879，同 mapClose 的理由）
   /* 外出行程（ver -575）：這裡才歸零 —— `close()` 才是「這一趟城鎮探索結束」
      （回主選單／killAllPages／讀檔換城）。`open()` 不清，見那一支的說明。 */
   outKey=null; outPlan=[];

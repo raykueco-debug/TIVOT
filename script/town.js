@@ -2303,6 +2303,48 @@ export const TOWNS = {
         { battle:'sf_lynx',  where:'connector' },                // 非末端限定
         { battle:'sf_crows', where:'connector' },
       ],
+      /* ══ 鹿主的第二次機會（ver -879，Ray）══════════════════════════════
+         「鹿主戰劇情只會出現一次，如果鹿主未變異日後則會在黃昏夜晚時段在夏爾森林
+           隨機遇到，劇情從諾『牠好像不太歡迎我們』開始跑，進入戰鬥」
+         「鹿主打完就沒了，不會出第二次，隨機遇到的機率是 5%」
+         ＝白天在遺跡入口碰到牠（牠看一眼就走）的那一輪，變異戰還沒發生 ——
+           日後在森林裡任何一格（入口除外，那是復活點）的黃昏／夜晚有 5% 補演。
+         ⚠ 三個條件各管一件事（鐵律 9）：
+             need `sv_deer_met`  ＝見過牠（白天那一段演過了）
+             not  `sv_deer_harm` ＝變異戰**還沒**打過（黃昏分支打完也會插這支旗）
+             act.flag 同一支     ＝這一場演完就永遠不再出
+         ⚠ `storyBattle:true`＝劇情戰（打輸回檔，不是被抬回旅店）；回檔點落在
+           抵達這一格的第一拍 —— 讀回來是「站在這一格、還沒遇到」，95% 走得掉。 */
+      encounters: [
+        { need:'sv_deer_met', not:'sv_deer_harm', rate:0.05,
+          band:['Dusk','night','midnight'],
+          act:{ flag:'sv_deer_harm', storyBattle:true, lines:[
+            /* 現身（獨場，同初見那一段的出場序：先出圖，才有人開口）。 */
+            { speaker:'NOUVELLE', text:'', portrait:{ char:'NOUVELLE', show:false },
+              hide:['SORANA','RENNA','NOUVELLE','ANYA'], checkpoint:true,
+              cgBack:'resources/enemy/mon_shinierforest_deerlook.webp', auto:2000 },
+            nou('cringe','牠好像不太歡迎我們……'),
+            any('desperate','……！！'),
+            Object.assign(any('terrifying','有什麼……要來了！'),
+              { tintHold:'nightmare', se:'se_flight_heartbeat', bgm:'lostplace' }),
+            { speaker:'ANYA', text:'', portrait:{ char:'ANYA', show:false },
+              hide:['SORANA','RENNA','NOUVELLE','ANYA'],
+              fx:'purpleflame', se:'se_enemy_roardeer',
+              cgBack:'resources/enemy/mon_shinierforest_deernightmare.webp', auto:2200 },
+            ren('cringe','那是……'),
+            ren('callangry','禍魘！'),
+            { battle:'sf_deer_nightmare' },
+            /* 戰後只收尾一句就放人走（**不接紮營那一段** —— 那是森林行第一天、
+               在遺跡入口的戲，接在這裡會把劇情推到不對的地方）。
+               ⚠⚠ 這一句是**沿用**索菈娜在初見那一段的台詞（Ray 的稿），不是我寫的新詞
+                 —— 這一段 Ray 只指定「從諾那句跑到進戰鬥」，戰後沒給稿，
+                 所以只借一句收尾、不自己編對白。要加戲等 Ray 的稿。
+               ⚠ 曲子要**自己接回**森林的 misty：`lostplace` 是持續狀態，
+                 而這一段不經過 `enter()`（不會重新套節點的 bgm）。 */
+            Object.assign(sor('guardtalk','可惡！連森林的守護神都被侵蝕了！'),
+              { cgBack:null, bgm:'misty' }),
+          ] } },
+      ],
     },
     /* 高光地圖（ver -870，Ray 稿的「高光地圖」拍）：對白中量不到那顆鈕（nav 藏著），
        所以走 tips 機制 —— 入口 intro 演完、nav 回來那一刻彈一次雪鐵龍箭。
@@ -2352,6 +2394,11 @@ export const TOWNS = {
          進遺跡本體是另一張圖，等 Ray 的規劃（遺跡背景美術重製中）。 */
       ruins: { bg:'ruins_shinier_entrance', name:'夏爾森林　遺跡入口',
         exits:{ back:'cliff', up:'@shinier_ruins' },   // 往上＝進神殿（ver -875）
+        /* ⚠⚠ **這一格不出野怪**（ver -879，Ray：「神殿入口除了鹿主戰之外是安全區，
+           不出怪」）——它是神殿的門口／回程的落腳處，不是獵場。
+           ⚠ 擋的只有 `wildSpawn` 的 fixed／pool；**指定遭遇（鹿主）照跑** ——
+             那是劇本，不是遭遇（判定見 modules/town.js 的 wildActDue）。 */
+        noWild: true,
         /* ══ 樹靈鹿主（ver -870，Ray 的森林行稿）══ 兩個分支＝兩段 acts（同一支
            flag，先到先演）：**黃昏前**（hourOfDay [5,17]）鹿主看一眼就走；
            **黃昏後**（沒寫 hourOfDay＝上面那段不成立就輪到它）鹿主變異成禍魘開打。
@@ -2384,9 +2431,15 @@ export const TOWNS = {
             /* 自由行動，可直接進入遺跡（遺跡本體地圖未實裝——等 Ray 的規劃）。 */
           ] },
           { flag:'sv_deer_met', need:'sv_forest_intro', storyBattle:true, lines:[
-            /* 出場序同上（ver -874）；checkpoint 掛在鹿主獨場那一拍。 */
+            /* 出場序同上（ver -874）。
+               ⚠⚠ **這一段不落回檔點**（ver -879，Ray：「鹿主戰戰敗退回懸崖戰後」）——
+                 落在這裡的話讀回來是「站在遺跡入口、鹿主正要現身」，那條路只有
+                 一個方向：再打一次同一場。退回**斷崖那一場打完**才是「能去買藥、
+                 換裝、再來一次」的地方（§6.5.2「落在強制鏈中間的 checkpoint 等於沒有」）。
+                 那一筆是引擎自己落的（有戰鬥的段落演完 → enter() 的 act 收尾），
+                 所以這裡**什麼都不用寫** —— 拿掉 -874 的 `checkpoint:true` 就是了。 */
             { speaker:'SORANA', text:'', portrait:{ char:'SORANA', show:false },
-              cgBack:'resources/enemy/mon_shinierforest_deer.webp', auto:2200, checkpoint:true },
+              cgBack:'resources/enemy/mon_shinierforest_deer.webp', auto:2200 },
             /* ══ 立繪規則同分支1（ver -878）：只有鹿主獨場的那幾禎清場，
                對話照常上立繪、吃「戰鬥中對話立繪尺寸」。 */
             sor('surprised','竟然是……樹靈鹿主！'),   // 劇情戰的回檔點：站在遺跡入口、可自由行動
@@ -2406,9 +2459,13 @@ export const TOWNS = {
             Object.assign(any('terrifying','有什麼……要來了！'),
               { tintHold:'nightmare', se:'se_flight_heartbeat', bgm:'lostplace' }),
             /* 異化＝鹿主獨場（ver -877/-878，Ray：「安雅說『有什麼要來了』之後就撤
-               角色立繪」＋**一次性紫炎**蓋住換圖；負片持續到進戰鬥）。 */
+               角色立繪」＋**一次性紫炎**蓋住換圖；負片持續到進戰鬥）。
+               ⚠ 吼聲與紫炎**同一拍**（ver -879，Ray：「鹿主變異同時給這個音效」）——
+                 se 與 fx 都在 fireOneShot 裡同步發（鐵律 8），不必另排時序。
+                 音檔 2.4 秒，這一拍 auto 2200＋下一句的打字，聽得完。 */
             { speaker:'ANYA', text:'', portrait:{ char:'ANYA', show:false },
-              hide:['SORANA','RENNA','NOUVELLE','ANYA'], fx:'purpleflame',
+              hide:['SORANA','RENNA','NOUVELLE','ANYA'],
+              fx:'purpleflame', se:'se_enemy_roardeer',
               cgBack:'resources/enemy/mon_shinierforest_deernightmare.webp', auto:2200 },
             /* 變身完成 → 立繪恢復（ver -878，Ray：「鹿主完成變身後恢復角色立繪」）。 */
             ren('cringe','那是……'),
@@ -2416,8 +2473,14 @@ export const TOWNS = {
             { battle:'sf_deer_nightmare' },
             /* ══ 戰後：紮營討論（Ray 稿，台詞一字未改）══
                ⚠ 收圖（cg:null）掛在**戰後第一拍**：battle 拍的分支先 return、
-                 不跑 applyPersist —— 掛在它身上會被整個忽略（ver -870 踩過）。 */
-            Object.assign(sor('guardtalk','可惡！連森林的守護神都被侵蝕了！'), { cgBack:null }),
+                 不跑 applyPersist —— 掛在它身上會被整個忽略（ver -870 踩過）。
+               ⚠⚠ `sv_deer_harm`＝**鹿主變異戰打完了**（ver -879，Ray：「鹿主打完就
+                 沒了，不會出第二次」）。它與 `sv_deer_met`（見過鹿主）是兩件事：
+                 白天分支只插後者，所以那一輪日後還會在黃昏／夜晚隨機遇到（見
+                 wildSpawn.encounters）。誰插：這一段、或那一場隨機遭遇，**演完才插**
+                 （打輸回頭還要能再打）；誰拔：沒有人。 */
+            Object.assign(sor('guardtalk','可惡！連森林的守護神都被侵蝕了！'),
+              { cgBack:null, flags:['sv_deer_harm'] }),
             ren('upsetstare','妳剛剛不是還想吃人家……'),
             sor('embarassed','好奇嘛！'),
             sor('smile','不過，天要黑了！不如先紮營吧？'),
@@ -2450,16 +2513,20 @@ export const TOWNS = {
 
   /* ══════════════════════════════════════════════════════════════════════
      木雅克神殿（ver -875；-876 依 Ray 更正縮編：「不是所有 ruin 都是木雅克神殿，
-     只有 ruin_shinier 才是」——**只用 Ruins_shinier_* 六間＋entrance**，
+     只有 ruin_shinier 才是」——**只用 Ruins_shinier_* 那幾間**，
      其餘 Ruins_*（星象室/石柱林/圓形大廳/石棺室/地下泉/下行石階/王座間/寶物庫
      ＋平圖四張）是**別座遺跡**的素材，留給日後的圖）
-     · 主幹：入口→前廳→長廊→三叉拱道（樞紐）→石橋→**深部祭壇（終點）**；
-       三叉拱道左手＝崩塌走道（側室）。
+     · 主幹：前廳→長廊→三叉拱道（樞紐）→石橋→**深部祭壇（終點）**；
+       三叉拱道直走＝崩塌走道（假正路），石橋右轉＝第二條崩塌走道。
+     ⚠⚠ **這座圖沒有自己的入口節點**（ver -879，Ray：「遺跡入口位於夏爾森林，
+       木雅克神殿不要再擺一個入口」）：入口就是**夏爾森林的『遺跡入口』那一格**
+       （它的 bg 正是 ruins_shinier_entrance）—— 擺兩個等於同一個地方走兩次。
+       所以 `entry` 是前廳，前廳往下退**直接回森林**。
      · 遺跡每步 30 分鐘；荒野規則同森林（不打烊、開圖走過才亮）。
      · ⚠ 還沒有怪與劇情（Ray 的稿未到）；槍棺地圖的手繪圖未交（`map:` 空著）。 */
   shinier_ruins: {
     name: '木雅克神殿',
-    entry: 'entrance',
+    entry: 'antechamber',        // ＝這座圖的第一格（入口在森林那邊，見上）
     bgm: 'frosylva',         // PeriTune_Frosylva（ver -876，Ray 指定）
     storyExplore: true,
     wilderness: true,
@@ -2470,10 +2537,10 @@ export const TOWNS = {
          上→左→上 拐著走；三叉拱道**直走（上）是被崩塌堵死的假正路**，
          真路要**右轉**過石橋 —— 崩塌走道當「走不通的正路」正好對上它的題（#7
          半塌走道）。 */
-      entrance:   { bg:'ruins_shinier_entrance', name:'木雅克神殿　入口',
-        exits:{ up:'antechamber', down:'@shinier_forest:ruins' } },
+      /* ⚠ 往下退＝**回夏爾森林的遺跡入口**（ver -879）：那一格就是這座神殿的門口，
+         不在這張圖上多擺一個 `entrance`。 */
       antechamber:{ bg:'Ruins_shinier_Antechamber', name:'木雅克神殿　前廳',
-        exits:{ left:'corridora', down:'entrance' } },
+        exits:{ left:'corridora', down:'@shinier_forest:ruins' } },
       corridora:  { bg:'Ruins_shinier_CorridorA', name:'木雅克神殿　長廊',
         exits:{ up:'corridorb', right:'antechamber' } },
       /* 樞紐：三叉拱道分岔口（規格表 #4 本來就是分岔）。 */

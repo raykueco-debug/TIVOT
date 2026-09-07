@@ -2137,6 +2137,12 @@
   /* 門在開的那一刻，舞台其餘的東西都要讓開（縫裡要露出底下的戰鬥畫面）。 */
   #storyStage.kerb-open{background:transparent;}
   #storyStage.kerb-open #storyBg,#storyStage.kerb-open #storyCast,
+  /* ⚠⚠ 中景層（ver -870 的 `#storyCgBack`）**也要讓開**（ver -879，Ray：「鹿主戰
+     在開門時要把舊的鹿主圖清掉，重新 harm」）—— 漏了它，門的縫裡露出的是**劇情層
+     那張舊的鹿主**，戰鬥層的降臨（harm）等於被蓋在後面。
+     這一層是這條規則寫完之後才加的，正是鐵律 8 那類漏接：**新增任何舞台層時，
+     先問「開門那一刻我要不要讓開？」** */
+  #storyStage.kerb-open #storyCgBack,
   #storyStage.kerb-open #storyCg,#storyStage.kerb-open #storyCi,
   #storyStage.kerb-open #storyFx,#storyStage.kerb-open #storyCard,
   #storyStage.kerb-open #storyBoard,#storyStage.kerb-open #storyBubble,
@@ -2944,6 +2950,35 @@
     background:rgba(6,5,10,.88);pointer-events:auto;
     align-items:center;justify-content:center;}
   #townMapView.on{display:flex;}
+
+  /* ══ 進新地圖的圖名卡（ver -879，Ray：「每到一個新的地圖都要全黑半透遮罩，稍大
+     粗字顯示地圖名稱，地點下面顯示小一級字的年月日時間，點擊消失，只出一次」）══
+     ⚠ z 排在**黑幕（20）之下**、其餘全部之上（12）：切景要能把它一起蓋黑，
+       但它蓋得住導覽、地圖鈕與對話框。
+     ⚠⚠ **只罩上半（`--story-top`），不壓控制區**（ver -879，Ray 指定）——
+       與 `#storyCgBack`／`#storyBg`／`#storyCard` 同一個框：下半是槍棺與面盤，
+       蓋住它等於把玩家的手也蓋住了。擋路是由 `gateArrival` 在**程式**上做的
+       （點掉才開始演），不靠一片罩住全螢幕的黑。
+     ⚠ 字用 `clamp` 跟著畫面走 —— 390px 的手機與桌機同一份版面。 */
+  #townMapCard{position:absolute;left:0;right:0;top:0;height:var(--story-top);
+    z-index:12;display:none;
+    flex-direction:column;align-items:center;justify-content:center;gap:.55em;
+    background:rgba(4,3,8,.72);pointer-events:auto;text-align:center;padding:0 8%;
+    opacity:0;transition:opacity .45s ease;}
+  /* ⚠⚠ **顯形靠 transition 不靠 animation**（ver -879 實測）：style.css 的
+     `body.perf-idle #storyStage *{animation-play-state:paused!important}`
+     會把這一層的動畫**凍在第 0 幀** —— 而 `mapCardIn` 的第 0 幀是 opacity:0，
+     於是卡「掛上去了、畫面上沒有」（`.on` 是真的、`getAnimations()` 是 paused）。
+     transition 不受那條規則管，所以基底可見度一律用它；animation 只准拿來做
+     **錦上添花**的東西。 */
+  #townMapCard.on{display:flex;}
+  #townMapCard.on.show{opacity:1;}
+  #townMapCard b{font-size:clamp(26px,6.4vw,44px);font-weight:800;letter-spacing:.18em;
+    color:var(--gold,#e8cf8e);text-indent:.18em;
+    text-shadow:0 2px 18px rgba(0,0,0,.85),0 0 26px rgba(232,207,142,.22);}
+  /* 「小一級」＝約六成半，與上面那行拉開層級但仍讀得清楚。 */
+  #townMapCard i{font-style:normal;font-size:clamp(13px,3.1vw,19px);letter-spacing:.12em;
+    color:#c8bda0;text-indent:.12em;text-shadow:0 2px 12px rgba(0,0,0,.8);}
   #townMapView .tm-frame{position:relative;aspect-ratio:1536/1024;
     max-width:96%;max-height:82%;width:100%;}
   /* ⚠ 圖是去背 alpha 版（ver -878，Ray：「小地圖要去白背」）——影子要沿**輪廓**
