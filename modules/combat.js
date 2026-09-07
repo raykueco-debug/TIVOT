@@ -1327,6 +1327,7 @@ function stopAll(){
   saint.stopTimers();    // 停聖徒化計時器（saintTimer / saintReactTimer）
   weapon.stopTimers();   // 停雙槍破防計時器（dualTimer）
   clearLucidFlood(false);   // 明晰之夢的金光（ver -746）：任何結束路徑都收掉，不爆散
+  enemy.stopSakura();    // 鹿主的櫻花狂亂（ver -899）：它是全螢幕的層＋一支還在響的音
 }
 
 /* ---- 計時碼表（連戰用；規則：只在「盤面可點且非 overkill／非聖徒化」時作動）----

@@ -16,17 +16,34 @@ export function sakuraBurst(opts) {
   const density = opts.density != null ? opts.density : 1;
   const rate    = (opts.rate   != null ? opts.rate    : 55) * density;  // 每秒補入花瓣數
   const safetyMs= opts.safetyMs!= null ? opts.safetyMs: 5000;   // 後備上限（正常永不觸發，花瓣早已飄出）
+  /* ⚠ `speed` ＝**這一陣風有多快**（ver -899，Ray：「鹿主的攻擊特效為櫻花狂亂飛舞…
+       把速度調快點」）：一個倍率同時放大**平移、亂流抖動與翻轉**，三者一起快才是
+       「狂亂」；只放大平移會變成一排整齊的花瓣射過去。
+     ⚠ 出陣那一段的過場**不傳它**（＝1），手感一個字都不動。
+     ⚠⚠ `mount` ＝**把花瓣關進某一塊裡**（ver -899，Ray：「花瓣不要蓋到盤面」）：
+       給了就 `position:absolute` 掛進那個元素、尺寸也改量它（不是量視窗）——
+       敵人框（`#top`）本身是 `position:relative; overflow:hidden`，所以花瓣自然
+       被裁在上半，數字盤一片都吃不到。
+       ⚠ 不給＝出陣過場那條路：`position:fixed` 蓋滿整個視窗，行為一個字不動。
+     ⚠ `zIndex`：滿版那條是 250（蓋在所有東西上）；掛進容器時由呼叫端指定，
+       那是「這一次用在哪裡」的事，不是花瓣的性質。 */
+  const speed   = opts.speed   != null ? opts.speed   : 1;
+  const mount   = opts.mount || null;
 
   const canvas = document.createElement('canvas');
   canvas.id = 'sakuraFx';
-  canvas.style.cssText = 'position:fixed;inset:0;z-index:250;pointer-events:none;';
-  document.body.appendChild(canvas);
+  canvas.style.cssText = (mount ? 'position:absolute' : 'position:fixed') +
+    ';inset:0;z-index:' + (opts.zIndex != null ? opts.zIndex : 250) + ';pointer-events:none;';
+  (mount || document.body).appendChild(canvas);
   const ctx = canvas.getContext('2d');
 
   let W = 0, H = 0, DPR = 1;
   function resize() {
     DPR = Math.min(2, window.devicePixelRatio || 1);
-    W = window.innerWidth; H = window.innerHeight;
+    /* ⚠ 掛進容器時量**容器**：拿視窗的尺寸去畫，花瓣會被裁掉大半、而且
+       「吹出右／下緣就除掉」那條會等到視窗外才成立 —— 等於永遠飄不完。 */
+    W = mount ? mount.clientWidth  : window.innerWidth;
+    H = mount ? mount.clientHeight : window.innerHeight;
     canvas.width = Math.round(W * DPR); canvas.height = Math.round(H * DPR);
     canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
@@ -50,13 +67,13 @@ export function sakuraBurst(opts) {
     }
     return {
       x, y, size,
-      vx: rnd(340, 680),                                       // 強風向右（亂；確保 ~2.5s 內飄出）
-      vy: rnd(90, 370),                                        // 向下（亂；配合 vx → 斜掃）
-      flutter: rnd(20, 75),                                    // 亂流抖動幅度
+      vx: rnd(340, 680) * speed,                               // 強風向右（亂；確保 ~2.5s 內飄出）
+      vy: rnd(90, 370) * speed,                                // 向下（亂；配合 vx → 斜掃）
+      flutter: rnd(20, 75) * speed,                            // 亂流抖動幅度
       flPh: Math.random() * Math.PI * 2,
-      flSp: rnd(2.5, 7),                                       // 抖動頻率
+      flSp: rnd(2.5, 7) * speed,                               // 抖動頻率
       rot: Math.random() * Math.PI * 2,
-      rotSp: rnd(-7, 7),                                       // 快速隨機翻轉
+      rotSp: rnd(-7, 7) * speed,                               // 快速隨機翻轉
       color: COLORS[(Math.random() * COLORS.length) | 0],
       alpha: 0.8 + Math.random() * 0.2,
       flip: Math.random() < 0.5 ? 1 : -1,

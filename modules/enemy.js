@@ -17,6 +17,7 @@ import * as clock from '../script/clock.js';   // 立繪的時段差分（ver -4
 import { GAME_CONFIG, HITFX, asset, sfxGain } from '../config.js';
 import { state, initEnemyHp } from '../state.js';
 import { SFX } from '../audio.js';
+import { sakuraBurst } from './sakura.js';   // 鹿主的櫻花狂亂（ver -899）——同一支花瓣引擎，見 spawnSakura
 
 const $ = id => document.getElementById(id);
 
@@ -45,6 +46,7 @@ export function showHitFx(kind){
     /* 鈍器受擊（ver -375）：不見血的悶擊 —— 一圈迅速擴散的衝擊環＋畫面一沉。
        ⚠ 與 `bullet`（玻璃碎裂）刻意不同：那一隻獵人是拿槍托招呼你，不是開槍。 */
     case 'blunt': spawnBlunt(fx.scale); break;
+    case 'sakura':spawnSakura(); break;
     default:      triggerClaw();
   }
   /* 受擊行可加掛**全畫面閃色**（ver -509，空賊船卡：「蓄力攻擊…畫面閃紅」）——
@@ -86,6 +88,49 @@ export function triggerClaw(count, randomAngle){
   if(randomAngle){ claw.style.transform = 'rotate('+((Math.random()*60)-30).toFixed(1)+'deg)'; }
   else { claw.style.transform=''; }
   claw.classList.remove('on'); void claw.offsetWidth; claw.classList.add('on');
+}
+/* ══ 櫻花狂亂（ver -899，Ray：「鹿主的攻擊特效為櫻花狂亂飛舞，萬幸我們已經有櫻花了，
+   把速度調快點，被命中的話是 3hits，音效用 sturm，但是跟櫻花一起播個兩秒就淡出」）══
+   花瓣走**既有的** `modules/sakura.js`（出陣過場那一支，鐵律 8）—— 這裡只給它
+   「這一次要多快多密」，不另寫一套花瓣。
+   ⚠⚠ **一陣風只有一層**：「3 hits」是 `assault:{count:3}` ——同一波三顆光圈、
+     每顆各自判定，全沒擋到就挨三下。三下若各生一層 canvas，就是三張全螢幕畫布
+     疊著跑（手機直接掉幀），而且讀起來是「三陣風」不是「一陣狂風掃過」。
+     所以**還在跑就不再開第二層**，音效也不重播。
+   ⚠ 音效**不掛在 `HITFX[type].se` 上**（那張表是給一次性的受擊音用的，
+     combat 會直接 `SFX.play` 放到底）—— Ray 要的是「跟櫻花一起播兩秒就淡出」，
+     那是**有頭有尾的演出**，長度由這一支決定，所以走 `SFX.playCue` 的把手。
+     ⚠ 這不是把音效寫成兩份：`HITFX.sakura` 那一列**刻意沒有 `se`**，
+       這一支才是它唯一的聲音（鐵律 7）。 */
+const SAKURA_SE_MS = 2000;      // Ray：「播個兩秒」
+const SAKURA_SE_FADE = 700;     // 「就淡出」——不是硬切
+let sakuraFx=null, sakuraSe=null;
+export function spawnSakura(){
+  if(sakuraFx) return;                       // 同一陣風不疊第二層（見上）
+  sakuraFx = sakuraBurst({
+    speed:2.2,        // 「速度調快點」：平移／亂流／翻轉一起放大（見 sakura.js 的 speed）
+    density:1.35, emitMs:900, safetyMs:4000,
+    /* ⚠⚠ **關在敵人框裡**（ver -899，Ray：「花瓣不要蓋到盤面」）：`#top` 是
+       `position:relative; overflow:hidden`，掛進去就自然被裁在上半 ——
+       玩家要一直讀數字盤，花瓣飄過去等於在攻擊他的眼睛。
+       z-8 ＝與受擊特效層同層（在立繪之上、楣與 HUD 之下）。 */
+    mount:$('top'), zIndex:8,
+    onDone:()=>{ sakuraFx=null; },
+  });
+  /* 受擊音（ver -899，Ray：「只在第一 hit 播」）：一波三顆，但這一支「還在跑就
+     直接 return」，所以它天生只響一次 —— 不必另外記「這是第幾下」。 */
+  { const hit=asset('em_sakura'); if(hit) SFX.play(hit, sfxGain('em_sakura')); }
+  const src=asset('se_sturm');
+  if(!src) return;
+  sakuraSe = SFX.playCue(src, sfxGain('se_sturm'));
+  setTimeout(()=>{ if(sakuraSe){ try{ sakuraSe.stop(SAKURA_SE_FADE); }catch(_){} sakuraSe=null; } },
+             SAKURA_SE_MS);
+}
+/* 收乾淨：換敵／離場時把還在飄的那一陣風與它的聲音一起收掉
+   （§6.5.4 的檢查表：新增任何蓋在畫面上的層，先回答「換畫面時誰收它？」）。 */
+export function stopSakura(){
+  if(sakuraFx){ try{ sakuraFx.stop(); }catch(_){} sakuraFx=null; }
+  if(sakuraSe){ try{ sakuraSe.stop(200); }catch(_){} sakuraSe=null; }
 }
 export function hitLayer(){ return $('hitFxLayer'); }
 export function addFx(el, life){ hitLayer().appendChild(el); setTimeout(()=>{ if(el.parentNode) el.remove(); }, life||650); }
@@ -538,6 +583,7 @@ export function displayEnemyName(name){ return String(name==null?'':name).split(
 export function setEnemy(key){
   const en = GAME_CONFIG.enemies[key];
   if(!en) return;
+  stopSakura();                                 // 換了一隻怪 → 上一隻的櫻花與 Sturm 一起收（ver -899）
   state.currentEnemyKey = key;                 // 3.7：記住目前怪 key，供 boardGridFor 查每盤格數
   state.enemyHitsTaken = 0;                     // 換了一隻怪 → 「這一隻」的受擊數歸零（九階「方舟」，ver -708）
   initEnemyHp(en.hp);                           // 3.2：敵血基準（載入時 setter）

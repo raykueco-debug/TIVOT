@@ -23,6 +23,10 @@ export const HITFX = {
   bite:   { base:'bite',   se:'em_slash'  },
   blood:  { base:'blood',  se:'em_smack'  },
   blunt:  { base:'blunt',  se:'em_smack'  },
+  /* 櫻花狂亂（ver -899，鹿主）：⚠⚠ **刻意沒有 `se`** —— 它的聲音是「跟花瓣一起播
+     兩秒再淡出」的**演出**，長度只有 `enemy.spawnSakura` 知道（走 `SFX.playCue`
+     的把手）。寫在這裡會被 combat 當一次性受擊音直接放到底，變成兩份聲音（鐵律 7）。 */
+  sakura: { base:'sakura' },
   bullet: { base:'bullet', se:'em_shot'   },
   dagger: { base:'slash',  se:'em_dagger' },   // 匕首（貝琳妲語彙）：slash 視覺＋匕首音
   // ── 特殊怪的簽名（視覺沿用 base、音效專屬）──
@@ -49,7 +53,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.07-898';
+export const VERSION = 'ver 2026.09.07-899';
 
 export const GAME_CONFIG = {
 
@@ -2114,7 +2118,14 @@ export const GAME_CONFIG = {
       se_weapon_cannon_120mm:0.839, se_weapon_heavygun:0.738,
       /* ── 敵人 ── */
       se_enemy_slash:0.602, se_enemy_smack:1.173, se_enemy_shot:0.854,
-      se_enemy_revolver:0.732, se_enemy_dagger:3.959, se_enemy_centipi:1.272,
+      se_enemy_revolver:0.732, se_enemy_dagger:2.192, se_enemy_centipi:1.272,
+      /* ver -899 兩支新音。⚠⚠ **值是「對照鄰居」定的，不是照公式硬算**：
+         本機用 numpy 重寫的 BS.1770 量出來，與這張表既有的值換算不回去
+         （對 5 支已知的反推，比例從 0.15 到 0.88 都有 —— 那批多半被手調過）。
+         所以改成**相對定位**：匕首對齊它自己的舊版（舊 −28.8 → 新 −23.7 LUFS，
+         3.959→2.192）、櫻花對齊同級的 se_enemy_slash（0.602）。
+         ⚠ 要精確就重跑 `tools/audio_scan.html`（瀏覽器內那一支才是這張表的來源）。 */
+      se_enemy_sakura:0.836,
       se_enemy_saintroar:2.910,
       /* ── 聖徒化／搭檔 ── */
       se_saint_install:1.059, vo_saint_maxburst:0.955, vo_lunamg:2.066,   // se_lunaMG → vo_lunaMG（Ray 改名，ver -508）；se_saint_maxburst → vo_saint_maxburst（ver -641）
@@ -2618,11 +2629,21 @@ export const ASSETS = {
   em_smack:          "resources/audio/se/se_enemy_smack.m4a",    // 聖徒：延時懲罰
   em_shot:           "resources/audio/se/se_enemy_shot.m4a",     // Boss：延時懲罰
   em_revolver:       "resources/audio/se/se_enemy_revolver.m4a", // Boss：大絕/不完美防禦（左輪）
-  em_dagger:         "resources/audio/se/se_enemy_dagger.m4a",   // Boss：按錯
+  em_dagger:         "resources/audio/se/se_enemy_dagger.m4a?v=2", // Boss：按錯（ver -899 換新音，同名覆蓋 → ?v）
+  /* 櫻花受擊（ver -899，Ray：「櫻花受擊音效是 se_enemy_sakura，只在第一 hit 播」）。
+     ⚠ 它**不掛在 `HITFX.sakura.se` 上** —— 那條路是每一擊都播，而這一招一波三顆。
+       由 `enemy.spawnSakura` 播，那一支「一陣風只跑一次」，所以自然只有第一下有聲。 */
+  em_sakura:         "resources/audio/se/se_enemy_sakura.m4a",
 
   /* 普攻槍聲：**固定用 pistol_03，不隨機**（ver -37 定案；main.js 的 setShots）。
      pistol_01/02 的 ASSETS 鍵已清（ver -567）——音檔本身仍在 SE_FILES（劇情層在用），別刪檔。 */
   se_pistol_03:      "resources/audio/se/se_weapon_pistol_03.m4a",  // 普攻槍聲（現行）
+  /* 鹿主的櫻花狂亂（ver -899，Ray：「音效用 sturm」）—— 與飛行頁的加速音同一支檔案
+     （那邊是 `../resources/audio/se/Sturm.m4a`，非 module 頁面自己 new Audio）。
+     ⚠ 它**不是**一次性受擊音：由 `enemy.spawnSakura` 用 `SFX.playCue` 播、兩秒淡出，
+       所以 `HITFX.sakura` 那一列刻意沒有 `se`（見那裡的說明）。
+     ⚠ 增益查表的鑰匙是**檔名**（`sturm`），`tuning.fileGain` 早就有那一列。 */
+  se_sturm:          "resources/audio/se/Sturm.m4a",
 
   // BGM（loop、不可交疊，切歌時前一首淡出）。
   //  BGM 一律 .m4a（AAC-LC 96k，自 128k MP3 轉檔，體積 −24%）：全平台原生支援；

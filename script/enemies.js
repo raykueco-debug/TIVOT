@@ -1005,7 +1005,12 @@ export const ENEMIES = {
       name:'變異樹靈鹿主',
       story:1, counterStagger:1,
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
-      openUlt:[1,2], ultEvery:[2,4], assault:{ count:1, gap:0 }, ult:{},
+      /* ⚠⚠ **一波三顆**（ver -899，Ray：「被命中的話是 3hits」）：櫻花狂亂是**一陣風**，
+         但風裡有三下 —— 三顆光圈各自判定，全沒擋到就挨三下。
+         ⚠ `gap` 給 0.35 秒（不是 0）：0 會三顆同時出現、疊在一起看不出是三下；
+           太長又會拆成三陣風。特效那一層**只生一層畫布**（見 enemy.spawnSakura），
+           所以畫面上仍然是一陣連續的狂風。 */
+      openUlt:[1,2], ultEvery:[2,4], assault:{ count:3, gap:0.35 }, ult:{},
       kind:'harm',
       image:'enemy_sf_deer_nightmare',
       bg:'ruins_shinier_entrance',
@@ -1015,9 +1020,11 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },
       resist:{}, weak:{}, landSe:null, special:[],
       boardGrids:[9,9,9,9,9],
+      /* 主動攻擊＝**櫻花狂亂飛舞**（ver -899，Ray 指定）：牠是樹靈，用爪痕不對。
+         音效（Sturm，兩秒淡出）綁在那一支演出裡，不在 HITFX 的 `se` 上。 */
       hitFx:{ delay:{ type:'blood', angle:'random' },
               wrong:{ type:'slash' },
-              assault:{ type:'claw', count:3, angle:'random' } },
+              assault:{ type:'sakura' } },
       loot:[ { id:'elf_antler', n:1 } ],
     },
     /* ── 骸系（禍魘）：日夜差分是**兩張卡**，刷怪時由 wildSpawn 依 clock.band 選

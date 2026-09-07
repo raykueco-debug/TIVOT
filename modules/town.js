@@ -1103,38 +1103,14 @@ function gateArrival(fn){
 }
 function showMapCard(){
   const T=TOWNS[townId]; if(!T || !T.name) return false;
-  const st=story.stageEl(); if(!st) return false;
   prog.addFlags([mapCardFlag(townId)]);      // 出過了就記（點不點掉都算看過）
-  let c=document.getElementById('townMapCard');
-  if(!c){
-    c=document.createElement('div'); c.id='townMapCard';
-    /* 點畫面任何一處收掉（同路人單句／地圖覆蓋層的手勢）。
-       ⚠ `pointerup` 不是 `click`：這一層蓋在導覽之上，用 click 的話那一下會穿透
-         下去按到方向鈕。 */
-    c.addEventListener('pointerup', e=>{ e.stopPropagation(); hideMapCard(); });
-    st.appendChild(c);
-  }
-  c.innerHTML = '<b></b><i></i>';
-  c.querySelector('b').textContent = T.name;
-  c.querySelector('i').textContent = clock.dateText() + '　' + clock.timeText();
-  /* 先 `.on`（display 打開）→ 逼一次排版 → 再 `.show` 觸發 opacity 的 transition。
-     ⚠ 同一幀加上又加上會被合併成一次計算，淡入整個跳掉（同 story.veil 那條
-     `offsetWidth` 的理由）。 */
-  c.classList.remove('show');
-  c.classList.add('on');
-  void c.offsetWidth;
-  c.classList.add('show');
-  return true;
-}
-function hideMapCard(){
-  const c=document.getElementById('townMapCard');
-  if(c){ c.classList.remove('show');
-    /* 淡完才收掉 display，否則 transition 沒有機會跑（同 `#boot` 那條）。 */
-    clearTimeout(c.__hideT);
-    c.__hideT=setTimeout(()=>c.classList.remove('on'), 460); }
-  /* 放行被扣住的那一段抵達演出（ver -879）。⚠ 先清再叫：那一段裡可能又換節點，
-     留著會被下一次 `hideMapCard` 重跑一次。 */
-  const f=heldArrival; heldArrival=null; if(f) try{ f(); }catch(_){}
+  /* ⚠⚠ **卡本身走 `story.showTitleCard`**（ver -899）：它與腳本的「翌日」卡是
+     同一種東西（大字＋小一級的字、罩在場景區、點畫面任一處收掉、收掉才往下演），
+     所以只有那一支實作（鐵律 8）—— -880 光是字級與那兩條細橫線就調過兩輪，
+     兩份必然走鐘。這裡只負責**這張卡要印什麼**與**誰在等它收掉**。 */
+  return story.showTitleCard(
+    { title:T.name, sub:clock.dateText()+'　'+clock.timeText() },
+    ()=>{ const f=heldArrival; heldArrival=null; if(f) try{ f(); }catch(_){} });
 }
 
 let mapOn=false;
@@ -1143,11 +1119,15 @@ function mapClose(){
   const v=document.getElementById('townMapView'); if(v) v.classList.remove('on');
   if(layer) layer.classList.remove('map-on');   // 導覽字格回來（ver -867，見 renderMap）
 }
+/* ══⚠⚠ 地圖鈕**常駐**（ver -899，Ray：「地圖的 icon 讓他常駐，槍棺在它就在。
+   沒地圖就先顯示無資料」）══
+   -867 是「這座城沒有 `map` 就整顆不出現」—— 那讓玩家每換一張圖就要重新確認
+   「這裡到底有沒有地圖」，而那顆鈕是槍棺面盤上的固定配件，時有時無讀起來是壞了。
+   ⚠ 「還沒畫」與「按不到」是兩件事：鈕照舊在、點下去由 `renderMap` 用一句
+     「無資料」回答（同 §6.5.5「還不能做不要靠藏起鈕擋」那一條）。 */
 function showMapBtn(){
   if(!layer) return;
   let b=layer.querySelector('#townMapBtn');
-  const T=TOWNS[townId];
-  if(!(T && T.map)){ if(b) b.remove(); return; }
   if(!b){
     b=document.createElement('button');
     b.type='button'; b.id='townMapBtn';
@@ -1163,7 +1143,11 @@ function showMapBtn(){
   }
 }
 function renderMap(){
-  const T=TOWNS[townId]; const M=T && T.map; if(!M) return;
+  const T=TOWNS[townId]; const M=T && T.map;
+  /* 這張圖還沒有手繪地圖（ver -899）：鈕照樣在，用一句話回答。
+     ⚠ 走路人單句那一套（`say`），不是另做一個面板 —— 它就是一句話。
+     ⚠ 名字欄空著＝旁白（主角自己的念頭），同旅店「現在不是睡覺的時候。」。 */
+  if(!M){ story.flashLine('這一帶還沒有留下地圖。', ''); chatterOn=true; return; }
   const st=story.stageEl(); if(!st) return;
   let v=document.getElementById('townMapView');
   if(!v){
@@ -2458,7 +2442,11 @@ export function open(town, node, opts){
 export function close(){
   const st=story.stageEl(); if(st) st.classList.remove('town-on');
   showNav(false);
-  hideMapCard();              // 圖名卡也是覆蓋層（ver -879，同 mapClose 的理由）
+  /* 圖名卡也是覆蓋層（ver -879，同 mapClose 的理由）。⚠ ver -899 起卡住在 story
+     那一層（與翌日卡同一支），所以這裡改叫它 —— 它會把還扣著的那一段抵達演出放行，
+     而那一段的第一件事就是問「現在在哪一格」，此時城已經在收了 ⇒ 先清扣著的那一包。 */
+  heldArrival=null; mapCardArmed=false;
+  story.hideTitleCard();
   /* 外出行程（ver -575）：這裡才歸零 —— `close()` 才是「這一趟城鎮探索結束」
      （回主選單／killAllPages／讀檔換城）。`open()` 不清，見那一支的說明。 */
   outKey=null; outPlan=[];

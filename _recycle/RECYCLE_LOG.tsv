@@ -61,3 +61,5 @@ when	from	to	reason
 20260907-162927	resources/background/Ruins_shinier_Crossway_night.webp	_recycle/resources/background/Ruins_shinier_Crossway_night.webp	Crossway night 第一版沒變夜（亮度/色溫等同 dusk），Gemini 重做
 20260907-163135	resources/vfx/11170091-fbc9-4691-84ee-0b55a3ac2f0d.png	_recycle/resources/vfx/11170091-fbc9-4691-84ee-0b55a3ac2f0d.png	ef_claws 的重複檔（與 resources/effects/ef_claws.png 同一個 sha1），已轉成 resources/effects/ef_claws.webp
 20260907-163316	resources/background/Ruins_shinier_Crossway_dawn.webp	_recycle/resources/background/Ruins_shinier_Crossway_dawn.webp	Crossway dawn 第一版比白天還亮、沒有晨霧，Gemini 重做
+20260907-164838	resources/_originals/effects/ef_claws.png	_recycle/resources/_originals/effects/ef_claws.png	ef_claws 舊版（ver -899 第一版）；Ray 交了新的一張，鍵值重做
+20260907-164849	resources/audio/se/se_enemy_dagger.m4a	_recycle/resources/audio/se/se_enemy_dagger.m4a	se_enemy_dagger 換新版（ver -899，Ray：「se_enemy_dagger 匕首受擊音改成這個」）

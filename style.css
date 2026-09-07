@@ -560,9 +560,27 @@
   @keyframes floatup{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-40px)}}
 
   /* 爪痕（被攻擊） */
-  #claw{position:absolute;inset:0;pointer-events:none;opacity:0;z-index:8;}
-  #claw.on{animation:clawFlash .5s ease-out;}
-  @keyframes clawFlash{0%{opacity:0}15%{opacity:1}100%{opacity:0}}
+  /* 爪擊（ver -899，Ray 交件 `ef_claws`）：四道紅光爪痕。
+     ⚠⚠⚠ **交件那張的 alpha 通道是壞的**（實測：84% 的像素 alpha＝0，連爪芯那些
+       亮紅像素平均也只有 59）—— 直接貼幾乎什麼都不顯示。所以入庫的 webp 是
+       **重新鍵出來的**：`alpha = clamp((lum-112)/88)^1.35`、顏色 unpremultiply 回
+       飽和紅（產法見 git log 這一版的說明；原檔在 `_originals/effects/`）。
+     ⚠⚠ **不要用 `mix-blend-mode:screen`**（-899 第一版試過，Ray 會看到一片粉紅霧）：
+       這張圖的爪痕只佔一小塊，其餘是**很大一片低亮度的紅光暈** —— screen 把那片
+       光暈整個加亮到敵人立繪上，讀起來是「畫面染紅」不是「被抓了四道」。
+       所以鍵的門檻是 **lum 112→200、γ1.35**（實測那張圖：lum>160 的「爪芯」只佔
+       2.7% 面積，其餘都是光暈）—— 壓完之後畫面上讀得出是四道爪痕，不是一片紅。
+     ⚠ `contain` 不是 `cover`：圖是 3:2、敵人框是直的，cover 會把它放大到只看得見
+       一道爪痕的局部（實測整個框被一道紅槓佔滿）。
+     ⚠ 圖畫在 `#claw` **自己身上**（不另包一層）：`enemy.triggerClaw()` 是在這個
+       元素上寫 `transform:rotate(...)` 的 —— 所以 `clawFlash` **只准動 opacity**，
+       在 keyframe 裡寫任何 transform 都會把那個旋轉蓋掉。 */
+  #claw{position:absolute;inset:0;pointer-events:none;opacity:0;z-index:8;
+    background:url('resources/effects/ef_claws.webp') center/contain no-repeat;}
+  #claw.on{animation:clawFlash .42s ease-out;}
+  /* 一記劃過：滿亮登場（不淡入，那是「被抓到」不是「浮現」）→ 收得快一點。
+     ⚠ 不加 scale 的 keyframe：那會蓋掉 `triggerClaw` 寫在 inline 的整體旋轉。 */
+  @keyframes clawFlash{0%{opacity:0}8%{opacity:1}45%{opacity:.9}100%{opacity:0}}
   #redFlash{position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,transparent 30%,rgba(150,0,0,.55));
     opacity:0;pointer-events:none;z-index:7;}
 
@@ -585,10 +603,16 @@
     animation:fxScreenFlash .32s ease-out forwards;pointer-events:none;}
   .fx-screenflash-red{background:rgba(214,40,32,.42);}
   @keyframes fxScreenFlash{0%{opacity:0;}18%{opacity:1;}100%{opacity:0;}}
-  .fx-slash{left:50%;top:46%;width:320px;height:12px;margin:-6px 0 0 -160px;
+  /* 刀痕（ver -899，Ray：「ef_slash 刀痕受擊特效」）：換成交件的
+     `resources/effects/ef_slash.webp`（帶自己的濺灑，**真的 alpha**）。
+     ⚠ 與 `ef_claws` 不同，**這一張不要 `mix-blend-mode:screen`**：它是實心的紅刀痕
+       （不是黑底紅光），screen 會把暗紅的刀身洗掉，只剩一條淡光。
+     ⚠ 圖是 3:1 的橫幅 → 框改成 340×113 才不會把刀痕壓扁；旋轉照舊吃 `--deg`
+       （`spawnSlash` 每次隨機的斜角），所以 keyframe 裡那三段 transform 一個字都不能少。 */
+  .fx-slash{left:50%;top:46%;width:340px;height:113px;margin:-56px 0 0 -170px;
     transform:translate(-50%,-50%) rotate(var(--deg,-25deg)) scaleX(.05);
-    background:linear-gradient(90deg,transparent,rgba(255,50,50,0) 5%,rgba(255,70,70,.98) 20%,rgba(200,0,10,1) 50%,rgba(255,70,70,.98) 80%,rgba(255,50,50,0) 95%,transparent);
-    border-radius:50%;filter:drop-shadow(0 0 9px rgba(230,0,25,.95));opacity:0;
+    background:url('resources/effects/ef_slash.webp') center/100% 100% no-repeat;
+    filter:drop-shadow(0 0 9px rgba(230,0,25,.65));opacity:0;
     animation:slashCut .42s ease-out forwards;}
   @keyframes slashCut{0%{opacity:0;transform:translate(-50%,-50%) rotate(var(--deg,-25deg)) scaleX(.05)}
     16%{opacity:1;transform:translate(-50%,-50%) rotate(var(--deg,-25deg)) scaleX(1)}
@@ -670,7 +694,10 @@
     font-family:inherit;-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);}
   .corner-btn:active{transform:scale(.9);}
   /* 控制鈕維持原 top:10px：#top 已被 #app padding 整體下移到瀏海之下，鈕相對 #top 定位即已安全，不再額外偏移（免雙重下推）。 */
-  #exitBtn{top:10px;left:auto;right:10px;font-size:18px;}
+  #exitBtn{top:10px;left:auto;right:10px;font-size:18px;gap:5px;}
+  /* 暫停的兩條槓（ver -899，Ray：「長得像 II」）。⚠ 畫出來不用字：見 index.html 那一段。
+     高度取 15px＝鈕內徑的三分之一強，粗 4px、圓端 —— 與齒輪／吊墜同一種金屬感。 */
+  #exitBtn i{width:4px;height:15px;border-radius:2px;background:currentColor;display:block;}
   /* 結算畫面（banner 開啟）時隱藏右上退出鈕：corner-btn z-37 高於 banner z-30，會浮在結算之上 */
   #app:has(#banner.on) #exitBtn{display:none;}
   /* v17：測試人員用「清盤」鈕（左上角）。z-index 同 corner-btn，聖徒化手勢層之上，確保可點。
@@ -2974,8 +3001,12 @@
     align-items:center;justify-content:center;}
   #townMapView.on{display:flex;}
 
-  /* ══ 進新地圖的圖名卡（ver -879，Ray：「每到一個新的地圖都要全黑半透遮罩，稍大
-     粗字顯示地圖名稱，地點下面顯示小一級字的年月日時間，點擊消失，只出一次」）══
+  /* ══ 報一件事的卡：圖名卡／翌日卡（ver -879；ver -899 兩者合一）══
+     · **圖名卡** —— 踏進一張新地圖（Ray：「每到一個新的地圖都要全黑半透遮罩，稍大
+       粗字顯示地圖名稱，地點下面顯示小一級字的年月日時間，點擊消失，只出一次」）
+     · **翌日卡** —— 腳本的 `dayBreak` 那一拍（Ray 的稿：「翌日（黑透遮罩）」）
+     ⚠ 兩者長得一樣、規矩也一樣，**版面只有這一份**（鐵律 8）——
+       實作是 `modules/story.js` 的 `showTitleCard`，差別只有印什麼字與罩子透不透。
      ⚠⚠ **它在楣之下，而且要比楣長**（ver -880，Ray：「地名遮罩要在楣的下層，整體
        長度要長過楣」）══
        · **圖層**：`z-index:5` ＝ 背景／插圖／立繪（0~1）與情境卡（4）之上、
@@ -2988,7 +3019,7 @@
      ⚠ 擋路是由 `gateArrival` 在**程式**上做的（點掉才開始演），不靠圖層 ——
        `#kerb` 是 `pointer-events:none`，所以點在楣上那一片照樣打到這張卡。
      ⚠ 字用 `clamp` 跟著畫面走 —— 390px 的手機與桌機同一份版面。 */
-  #townMapCard{position:absolute;left:0;right:0;top:0;height:var(--story-top);
+  #storyTitleCard{position:absolute;left:0;right:0;top:0;height:var(--story-top);
     z-index:5;display:none;
     flex-direction:column;align-items:center;justify-content:center;gap:.55em;
     background:rgba(4,3,8,.72);pointer-events:auto;text-align:center;padding:0 8%;
@@ -2999,22 +3030,33 @@
      於是卡「掛上去了、畫面上沒有」（`.on` 是真的、`getAnimations()` 是 paused）。
      transition 不受那條規則管，所以基底可見度一律用它；animation 只准拿來做
      **錦上添花**的東西。 */
-  #townMapCard.on{display:flex;}
-  #townMapCard.on.show{opacity:1;}
+  #storyTitleCard.on{display:flex;}
+  /* 黑透（翌日那一張，Ray：「黑透遮罩」）—— 圖名卡是半透的，它要**看不見底下**：
+     那一刻底下是上一幕的殘影，透出來就不是「過了一夜」是「時間卡住了」。 */
+  #storyTitleCard.opaque{background:#050409;}
+  /* ⚠⚠ 點畫面**任一處**收掉那張卡（ver -899）：透明、滿版、壓過所有可按的東西
+     （導覽 z-7／楣 z-6／角落鈕 z-8）。卡自己照舊留在楣之下 —— 見 modules/town.js
+     `showMapCard` 那一段：視覺在楣下、接點在最上，是兩個不同的要求。
+     ⚠ z-19 ＝**黑幕（`#storyVeil` z-20）之下**：它是所有可按元件裡最高的，但切景的
+       那一片黑要蓋得過它 —— 排到黑幕之上會變成「畫面全黑了還有一層在吃點擊」。 */
+  #storyCardCatch{position:absolute;inset:0;z-index:19;display:none;background:transparent;
+    pointer-events:auto;}
+  #storyCardCatch.on{display:block;}
+  #storyTitleCard.on.show{opacity:1;}
   /* ⚠⚠ **字級調小＋上下兩條細橫線**（ver -880，Ray：「初見地名太大了，上下加兩條
      細橫線」）：由 clamp(26,6.4vw,44) 降到 clamp(20,4.4vw,30)。
      ⚠ 橫線用 `border-top/bottom` 畫在**字自己身上**，寬度就跟著字走 ——
        另拉兩條固定寬的線在窄螢幕上會比字長、寬螢幕上會比字短。
      ⚠ `text-indent` 補回 letter-spacing 在最後一個字後面多出來的那一格，
        不然字在框裡看起來偏左（線是置中的，字不置中就露餡）。 */
-  #townMapCard b{font-size:clamp(20px,4.4vw,30px);font-weight:700;letter-spacing:.22em;
+  #storyTitleCard b{font-size:clamp(20px,4.4vw,30px);font-weight:700;letter-spacing:.22em;
     color:var(--gold,#e8cf8e);text-indent:.22em;
     padding:.42em .1em .38em;
     border-top:1px solid rgba(232,207,142,.42);
     border-bottom:1px solid rgba(232,207,142,.42);
     text-shadow:0 2px 18px rgba(0,0,0,.85),0 0 26px rgba(232,207,142,.22);}
   /* 「小一級」＝約六成半，與上面那行拉開層級但仍讀得清楚。 */
-  #townMapCard i{font-style:normal;font-size:clamp(13px,3.1vw,19px);letter-spacing:.12em;
+  #storyTitleCard i{font-style:normal;font-size:clamp(13px,3.1vw,19px);letter-spacing:.12em;
     color:#c8bda0;text-indent:.12em;text-shadow:0 2px 12px rgba(0,0,0,.8);}
   #townMapView .tm-frame{position:relative;aspect-ratio:1536/1024;
     max-width:96%;max-height:82%;width:100%;}

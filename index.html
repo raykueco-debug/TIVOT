@@ -53,7 +53,7 @@
      沒有 buster 時手機會沿用舊快取的 CSS —— Ray 回報「ovk 沒把點掉的方格撤掉」
      實測現行 CSS（-839 的 :not(.done)）行為正確，殘留裂紋是舊 CSS 快取。
      改 style.css 就順手 bump 這個號。 -->
-<link rel="stylesheet" href="style.css?v=898">
+<link rel="stylesheet" href="style.css?v=899">
   <!-- 拾得道具／道具欄／商店／懸賞榜（ver -380 抽出，飛行頁共用同一份）。
        ⚠ `data-lootsheet` 是給 `modules/loot.js` 認的：它看到已經掛過就不再掛一次。
          飛行頁沒有這一行，由那支模組自己掛上去。 -->
@@ -119,14 +119,12 @@
     <div id="fxTop"></div>
     <div id="redDots"></div>
     <div id="slashFx"></div>
-    <svg id="claw" viewBox="0 0 400 500" preserveAspectRatio="none">
-      <g stroke="rgba(200,30,30,.9)" stroke-width="6" fill="none" stroke-linecap="round"
-         filter="drop-shadow(0 0 4px #400)">
-        <path d="M60,40 C160,180 240,340 330,470"/>
-        <path d="M130,20 C220,170 300,330 380,450"/>
-        <path d="M10,90 C110,220 190,380 270,490"/>
-      </g>
-    </svg>
+    <!-- 爪擊（ver -899，Ray：「ef_claws 爪擊特效用這個」）：換成交件的
+         `resources/effects/ef_claws.webp`（黑底紅光四道爪痕，同 ef_bite 那一族）。
+         ⚠ **id 與結構都不動**：`enemy.triggerClaw()` 是在 `#claw` 自己身上寫
+           `transform:rotate(...)`＋`.on`，改成別的層級那一支就要跟著改（鐵律 8）。
+         ⚠ 舊的三道 SVG 手繪爪痕整組退役 —— 不要留著當退路，兩份會走鐘。 -->
+    <div id="claw"></div>
     <div id="hud">
       <div class="enemy-name" id="enemyName">地下聖徒</div>
     </div>
@@ -166,8 +164,13 @@
         <span class="ws-card" id="wpSwitchCard"></span>
       </button>
     </div>
-    <!-- 退出：右上角 → 回到首頁 -->
-    <button id="exitBtn" class="corner-btn">✕</button>
+    <!-- 暫停：右上角 → 真暫停＋「回主選單／繼續」（ver -899，Ray：「把右上的X鍵改成
+         暫停鍵，長得像 II」）。⚠ 行為一個字都沒改 —— 它本來就是 `pauseForDialog()`
+         的真暫停（凍結攻擊圈、碼表、延時懲罰、點擊）＋盤面模糊，✕ 那個字面
+         把它講成「離開」，與實際做的事對不上。兩條槓才是它真正的意思。
+         ⚠ 用兩個 `<i>` 畫，不用「‖」那個字：字寬與粗細各家字型差很多，
+           圓鈕正中的對稱靠字型碰運氣一定會歪。 -->
+    <button id="exitBtn" class="corner-btn" aria-label="暫停"><i></i><i></i></button>
     <!-- 棄權（ver -730，Ray：「給打靶遊戲都加個棄權鈕」）：只在計時挑戰（打靶）出現。
          按下去＝當成沒過關收場，走那一拍的 onLose 分歧回到店裡／劇情。
          ⚠ 擺在 ✕ 旁邊而不是盤面附近：打靶時手指一直在數字盤上，放近了會誤觸。 -->

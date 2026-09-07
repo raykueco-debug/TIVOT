@@ -857,6 +857,12 @@ export function clearStageLeftovers(){
   stageCgBack=null;
   { const el=$('storyCgBack');
     if(el){ el.classList.remove('on','fading'); el.removeAttribute('src'); } }
+  /* 報一件事的卡（圖名／翌日，ver -899）：它也是「蓋在畫面上、沒人收就一直在」的層。
+     ⚠⚠ **丟掉那個回呼、不要補跑它**（同 `closeHint` 不叫 `done` 的理由）：
+       這一支跑在換畫面的時候，補跑等於把上一個地點的抵達演出請到新畫面上來。 */
+  cardDone=null;
+  { const c=$('storyTitleCard'); if(c){ clearTimeout(c.__hideT); c.classList.remove('on','show','opaque'); }
+    const g=$('storyCardCatch'); if(g) g.classList.remove('on'); }
 }
 export function clearSceneFade(){
   cgFadeT.forEach(clearTimeout); cgFadeT=[];
@@ -1262,6 +1268,7 @@ const SE_FILES=[
   'se_woodbreak.m4a',   // 舵斷裂的木裂聲（ver -751，Ray 交件；取代暫代的 se_brickcrush）
   'se_villagealarm.m4a',   // 夏爾村警鐘（ver -772，Ray 交件）
   'se_enemy_roardeer.m4a',   // 樹靈鹿主的吼（ver -879，Ray 交件；配變異那一拍的紫炎）
+  'se_enemy_sakura.m4a',     // 櫻花狂亂的受擊音（ver -899，鹿主的主動攻擊）
   'se_flight_heartbeat.m4a', 'se_flight_idle_loop.mp3', 'se_flight_sail_loop.mp3',
   'se_flight_seagull.m4a', 'se_flight_train.mp3', 'vo_lunaMG.m4a', 'se_punch.m4a',
   'se_brickcrush.m4a',                                       // 瓦礫崩落（北方泊地教堂，ver -624）
@@ -2296,6 +2303,29 @@ function renderLine(){
     openHint(line.hint, ()=>advance());
     return;
   }
+
+  /* ══ 翌日（`dayBreak`，ver -899，Ray 的稿：「三秒黑淡入淡出／翌日（黑透遮罩）」）══
+     一個**閘門拍**：黑透的罩子上寫「翌日」，底下一行是**完整的年月日與時刻**，
+     點畫面任一處收掉才往下演。
+     ⚠ 那三秒黑用**既有的** `fadeOut:3000`／`fadeIn:3000`（ver -739 就有了）——
+       這一拍只負責那張卡，不要再造第二套慢黑幕（鐵律 8）。寫法：
+         { fadeOut:3000, auto:3200 }              ← 三秒黑下去
+         { dayBreak:true, clockToNext:6, bg:'…' } ← 黑幕底下換景＋推時鐘，出卡
+         { fadeIn:3000, auto:3200 }               ← 三秒亮回來
+     ⚠ `applyPersist` 排在出卡**之前**：這一拍要換的背景／推的時鐘都在黑幕底下做完，
+       卡上那一行日期才印得出**跳完之後**的時間（同 `clockToNext` 排在情境卡之前）。
+     ⚠ 字面寫在**資料**上（鐵律 1）：`dayBreak:true` ＝「翌日」，
+       要別的說法就寫 `dayBreak:'三日後'`。 */
+  if(line.dayBreak){
+    applyPersist(line);
+    /* ⚠ **台上要空、框要收**：這是一個換幕的分隔，上一幕的人與那一句話不該印在
+       翌日的卡上（對話框 z-7 在卡之上，不收的話字會浮在「翌日」上面）。 */
+    clearCast(); hideBubble();
+    const t = (typeof line.dayBreak==='string') ? line.dayBreak : '翌日';
+    showTitleCard({ title:t, sub:clock.dateText()+'　'+clock.timeText(), opaque:true },
+                  ()=>advance());
+    return;
+  }
   /* 出航：交給啟動層開飛行頁（`setFlightOpener` 注入）。⚠ 這一拍之後劇情就結束了。 */
   if(line.goFlight){
     /* ⚠ 旗標要**在開飛行頁之前**寫下去（ver -425）：讀取頁的說明者是由
@@ -3188,6 +3218,68 @@ export function flashLine(text, name){
 /* 收掉對話框。⚠ 順便宣告「現在沒有在演」（ver -387）—— `flashLine` 開場時
    `markTalking(true)`，收場就該由**同一個層**關掉（§6.5：誰在演，誰負責宣告）。
    不關的話城鎮的地名／時刻會一直讓開，玩家看不到自己在哪、幾點。 */
+/* ══⚠⚠ 報一件事的卡（`showTitleCard`，ver -899）══════════════════════════
+   大字一行＋小一級的字一行，罩在場景區上，**點畫面任一處收掉、收掉才往下演**。
+   現在有兩個用途，**共用這一支**（鐵律 8）：
+     · **圖名卡** —— 踏進一張新地圖（`modules/town.js` 的 `showMapCard`，ver -879）
+     · **翌日卡** —— 腳本的 `dayBreak` 那一拍（ver -899，Ray 的稿：「翌日（黑透遮罩）」）
+   ⚠⚠ 兩者長得一模一樣、規矩也一模一樣（大字／小字／點掉才放行），**所以不准
+     各寫一份**：-880 光是字級與那兩條細橫線就調過兩輪，兩份必然走鐘。
+     差別只有三件事，全部是參數：印什麼字、罩子透不透、誰在等它收掉。
+   ⚠ **圖層在楣之下**（`z-5`，ver -880，Ray：「地名遮罩要在楣的下層，整體長度要
+     長過楣」）—— 它是報地點的卡，不是對話框（§6.5「楣是畫框」那一條）。
+   ⚠⚠ 但**接點要在所有可按的東西之上**（ver -899，Ray：「顯示地名時點畫面任一處
+     就可關」）：卡只罩上半，下半的導覽箭頭／地圖鈕／角落鈕照樣吃得到點擊，
+     玩家點下半只會走一步、卡還留著。所以另外掛一片**透明、滿版**的接手層
+     （`#storyCardCatch`）—— 視覺在楣下、接點在最上，是兩條互相拉扯的要求
+     各自的落點，不是重複的兩個東西。
+   ⚠ 兩層一起生一起收：卡不在的時候畫面上不可以有任何一層在吃點擊。 */
+let cardDone=null;
+export function hideTitleCard(){
+  const g=$('storyCardCatch'); if(g) g.classList.remove('on');
+  const c=$('storyTitleCard');
+  if(c){ c.classList.remove('show');
+    /* 淡完才收掉 display，否則 transition 沒有機會跑（同 `#boot` 那一條）。 */
+    clearTimeout(c.__hideT);
+    c.__hideT=setTimeout(()=>c.classList.remove('on','opaque'), 460); }
+  /* 放行等它收掉的那一段。⚠ **先清再叫**：那一段裡可能又開一張卡，
+     留著會被下一次 `hideTitleCard` 重跑一次。 */
+  const f=cardDone; cardDone=null; if(f) try{ f(); }catch(_){}
+}
+export function showTitleCard(spec, done){
+  const st=$('storyStage'); const o=spec||{};
+  if(!st || !o.title){ done && done(); return false; }
+  cardDone = done || null;
+  let c=$('storyTitleCard');
+  if(!c){
+    c=document.createElement('div'); c.id='storyTitleCard';
+    /* ⚠ `pointerup` 不是 `click`：這一層蓋在導覽之上，用 click 的話那一下會穿透
+       下去按到方向鈕。 */
+    c.addEventListener('pointerup', e=>{ e.stopPropagation(); hideTitleCard(); });
+    st.appendChild(c);
+  }
+  let g=$('storyCardCatch');
+  if(!g){
+    g=document.createElement('div'); g.id='storyCardCatch';
+    g.addEventListener('pointerdown', e=>e.stopPropagation());
+    g.addEventListener('pointerup', e=>{ e.stopPropagation(); hideTitleCard(); });
+    st.appendChild(g);
+  }
+  c.innerHTML='<b></b><i></i>';
+  c.querySelector('b').textContent = o.title;
+  c.querySelector('i').textContent = o.sub || '';
+  /* `opaque` ＝黑透（翌日那一張，Ray：「黑透遮罩」）；圖名卡是半透的。 */
+  c.classList.toggle('opaque', !!o.opaque);
+  /* 先 `.on`（display 打開）→ 逼一次排版 → 再 `.show` 觸發 opacity 的 transition。
+     ⚠ 同一幀加上又加上會被合併成一次計算，淡入整個跳掉（同 `veil` 那條
+     `offsetWidth` 的理由）。 */
+  c.classList.remove('show');
+  c.classList.add('on');
+  void c.offsetWidth;
+  c.classList.add('show');
+  g.classList.add('on');
+  return true;
+}
 /* ══ 操作提示（ver -424）══════════════════════════════════════════════
    雪鐵龍箭指著畫面上的一個東西 ＋ 一句說明；點那個東西（或點說明）才過關。
    ⚠ 目標的代號 → DOM 的對照**只有這一張表**（腳本只寫代號，鐵律 7）。
