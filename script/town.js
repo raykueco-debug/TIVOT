@@ -2428,16 +2428,14 @@ export const TOWNS = {
   },
 
   /* ══════════════════════════════════════════════════════════════════════
-     木雅克神殿（ver -875，Ray：「Ruins_shinier 系列已入檔，以 entrance 為起點、
-     alter（DeepAltar）為終點，合理配置地圖」）
-     · 15 格全用已入檔素材：Ruins_shinier_* 六間（四時段）＋ Ruins_*（星象室／
-       石柱林／圓形大廳／石棺室／地下泉／下行石階／王座間／寶物庫，四時段）。
-     · 佈局照 _ruins_spec.md 的類型：過道串主幹、圓形大廳＝樞紐（塌天井光柱，
-       四向）、末端各掛在支線上；主幹 入口→前廳→長廊→圓形大廳→下行石階→
-       石橋→**深部祭壇（終點）**。
-     · 遺跡每步 30 分鐘（Ray 定的三級耗時）；荒野規則同森林（不打烊、開圖走過才亮）。
-     · ⚠ 還沒有怪與劇情（Ray 的稿未到）——先是可走的空神殿；wildSpawn 等卡。
-     · ⚠ 槍棺地圖的手繪圖未交 —— `map:` 空著，交件後照森林補 spots。 */
+     木雅克神殿（ver -875；-876 依 Ray 更正縮編：「不是所有 ruin 都是木雅克神殿，
+     只有 ruin_shinier 才是」——**只用 Ruins_shinier_* 六間＋entrance**，
+     其餘 Ruins_*（星象室/石柱林/圓形大廳/石棺室/地下泉/下行石階/王座間/寶物庫
+     ＋平圖四張）是**別座遺跡**的素材，留給日後的圖）
+     · 主幹：入口→前廳→長廊→三叉拱道（樞紐）→石橋→**深部祭壇（終點）**；
+       三叉拱道左手＝崩塌走道（側室）。
+     · 遺跡每步 30 分鐘；荒野規則同森林（不打烊、開圖走過才亮）。
+     · ⚠ 還沒有怪與劇情（Ray 的稿未到）；槍棺地圖的手繪圖未交（`map:` 空著）。 */
   shinier_ruins: {
     name: '木雅克神殿',
     entry: 'entrance',
@@ -2446,39 +2444,23 @@ export const TOWNS = {
     wilderness: true,
     stepMin: 30,             // 遺跡每步半小時（ver -872 那條的第二級）
     nodes: {
-      /* 起點（戶外）。下方回森林的遺跡入口格。 */
+      /* ⚠ 路線帶迷宮感（ver -876，Ray：「末端不要一直線走到底」）：
+         上→左→上 拐著走；三叉拱道**直走（上）是被崩塌堵死的假正路**，
+         真路要**右轉**過石橋 —— 崩塌走道當「走不通的正路」正好對上它的題（#7
+         半塌走道）。 */
       entrance:   { bg:'ruins_shinier_entrance', name:'木雅克神殿　入口',
         exits:{ up:'antechamber', down:'@shinier_forest:ruins' } },
       antechamber:{ bg:'Ruins_shinier_Antechamber', name:'木雅克神殿　前廳',
-        exits:{ up:'corridora', down:'entrance' } },
+        exits:{ left:'corridora', down:'entrance' } },
       corridora:  { bg:'Ruins_shinier_CorridorA', name:'木雅克神殿　長廊',
-        exits:{ up:'rotunda', down:'antechamber' } },
-      /* 樞紐：圓形大廳（塌天井、光柱直落）—— 四向。 */
-      rotunda:    { bg:'Ruins_Rotunda', name:'木雅克神殿　圓形大廳',
-        exits:{ up:'stairdown', left:'corridorb', right:'pillarhall', down:'corridora' } },
-      /* 西翼：三叉拱道 → 寶物庫／星象室。 */
+        exits:{ up:'corridorb', right:'antechamber' } },
+      /* 樞紐：三叉拱道分岔口（規格表 #4 本來就是分岔）。 */
       corridorb:  { bg:'Ruins_shinier_CorridorB', name:'木雅克神殿　三叉拱道',
-        exits:{ up:'observatory', left:'vault', right:'rotunda' } },
-      observatory:{ bg:'Ruins_Observatory', name:'木雅克神殿　星象室',
-        exits:{ back:'corridorb' } },
-      vault:      { bg:'Ruins_Vault', name:'木雅克神殿　寶物庫',
-        exits:{ back:'corridorb' } },
-      /* 東翼：石柱林 → 地下泉。 */
-      pillarhall: { bg:'Ruins_PillarHall', name:'木雅克神殿　石柱林',
-        exits:{ right:'spring', left:'rotunda' } },
-      spring:     { bg:'Ruins_Spring', name:'木雅克神殿　地下泉',
-        exits:{ back:'pillarhall' } },
-      /* 主幹下層：下行石階 →（崩塌走道 → 石棺室）→ 石橋。 */
-      stairdown:  { bg:'Ruins_StairDown', name:'木雅克神殿　下行石階',
-        exits:{ up:'bridge', right:'collapsed', down:'rotunda' } },
+        exits:{ up:'collapsed', right:'bridge', down:'corridora' } },
       collapsed:  { bg:'Ruins_shinier_Collapsed', name:'木雅克神殿　崩塌走道',
-        exits:{ right:'sarcophagus', left:'stairdown' } },
-      sarcophagus:{ bg:'Ruins_Sarcophagus', name:'木雅克神殿　石棺室',
-        exits:{ back:'collapsed' } },
+        exits:{ back:'corridorb' } },   // 死路：正面被石堆塞住
       bridge:     { bg:'Ruins_shinier_Bridge', name:'木雅克神殿　石橋',
-        exits:{ up:'deepaltar', right:'throne', down:'stairdown' } },
-      throne:     { bg:'Ruins_Throne', name:'木雅克神殿　王座間',
-        exits:{ back:'bridge' } },
+        exits:{ up:'deepaltar', left:'corridorb' } },
       /* 終點：深部祭壇。 */
       deepaltar:  { bg:'Ruins_shinier_DeepAltar', name:'木雅克神殿　深部祭壇',
         exits:{ back:'bridge' } },
