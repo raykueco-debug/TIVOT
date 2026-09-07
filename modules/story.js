@@ -1032,6 +1032,15 @@ function applyPersist(line){
      scene 有 `setFlags`（收尾才寫），但城鎮的 `acts` 不是 scene —— 這一條是逐拍的。
      ⚠ 演到就記（不是演完），所以只放「這一刻確實發生了」的事（出航、拿到東西…）。 */
   if(line.flags && line.flags.length) prog.addFlags(line.flags);
+  /* ⚠⚠ **這一拍起算的章節**（ver -884，Ray：「把擊敗鹿主後的對話劃作 stage7」）：
+     拍上寫 `stage:7`。與 `act.stage`（演完才記）／閘門的 `stage`（演台詞前先設）
+     是同一族的第三個時機 —— 「**從這一句起就是新的一章**」。
+     ⚠ 與 `flags` 同一個時機（演到就記），所以它也只該放「這一刻確實發生了」的事。
+     ⚠ 只升不降由 `prog.setStage` 那一支負責（鐵律 9：一個狀態一個擁有事件）；
+       重播由段落自己的 `flag` 擋著，讀檔到更後面的章節時那支旗早就立了。
+     ⚠ **戰鬥拍寫了沒有用**：`line.battle` 的分支先 return、不跑 applyPersist
+       （同 `cg:null` 那個坑，ver -870 踩過）—— 要寫在戰後的第一拍。 */
+  if(line.stage!=null) prog.setStage(line.stage);
   /* 主武器的強化（ver -707）：那一拍寫 `gunStar:'<星id>'` ＝**點亮那一顆星**
      （可多次的星就 +1 次）。Ray：「部分關鍵素材由劇情控制產出」——
      劇情直接給強化是**特殊事件**，一般的路是拿素材去槍店換（見 config.gunStars）。

@@ -533,6 +533,25 @@ export const CHAPTERS = [
            'sv_arrive','sv_evening','sv_night_done','shinier_siege',
            'sv_clear_wild','safehouse_shinier','sv_forest_morning'],
     enter:'town', town:'shinier', node:'sorahome' },
+  /* ══ Stage 7（ver -884，Ray：「把擊敗鹿主後的對話劃作 stage7」）══
+     鹿主變異戰 —— 直接站在**夏爾森林的遺跡入口**、時間已過黃昏，走進去就演。
+     ⚠ `stage:6`：S7 是**戰後那一段自己升的**（那一拍的 `stage:7`），
+       章節工具只把人擺到那一段之前（同 stage4 送行那一段的作法）。
+     ⚠ `clockHour:18` ＝ `firstHourAt(18)`；黃昏分支的條件就是「不在 [5,17] 內」。
+     ⚠ `sv_forest_intro` 要給（入口的叮嚀已經看過，不然一進去先被它抓走）；
+       `sv_deer_met`／`sv_deer_harm` **不給** —— 那正是要演的。
+     ⚠ `node:'ruins'` ＝直接站在遺跡入口那一格。 */
+  { id:'stage7', name:'Stage 7', sub:'夏爾森林・遺跡入口（黃昏）→ 樹靈鹿主 → 紮營討論',
+    stage:6, clockHour:18, named:true,
+    flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open',
+           'set_sail','got_ship','dock_day2','flight_centipede_met',
+           'np_port_arrive','np_clear_church','np_claws_done','safehouse_northport',
+           'np_burial','np_burial_done','np_night','np_night_done','np_day3',
+           'np_day3_done','np_anya_join','np_dock_ask','np_grave_done','np_depart',
+           'sv_arrive','sv_evening','sv_night_done','shinier_siege',
+           'sv_clear_wild','safehouse_shinier','sv_forest_morning',
+           'sv_forest_go','sv_forest_intro'],
+    enter:'town', town:'shinier_forest', node:'ruins' },
 ];
 
 export function newRun(){

@@ -2342,7 +2342,7 @@ export const TOWNS = {
                ⚠ 曲子要**自己接回**森林的 misty：`lostplace` 是持續狀態，
                  而這一段不經過 `enter()`（不會重新套節點的 bgm）。 */
             Object.assign(sor('guardtalk','可惡！連森林的守護神都被侵蝕了！'),
-              { cgBack:null, bgm:'misty' }),
+              { cgBack:null, bgm:'misty', stage:7 }),   // 同一個里程碑（鹿主打完）＝同樣升 S7
           ] } },
       ],
     },
@@ -2479,8 +2479,11 @@ export const TOWNS = {
                  白天分支只插後者，所以那一輪日後還會在黃昏／夜晚隨機遇到（見
                  wildSpawn.encounters）。誰插：這一段、或那一場隨機遭遇，**演完才插**
                  （打輸回頭還要能再打）；誰拔：沒有人。 */
+            /* ⚠ `stage:7`（ver -884，Ray：「把擊敗鹿主後的對話劃作 stage7」）——
+               **從這一句起**就是第七章（紮營討論那一整段）。寫在戰後第一拍：
+               戰鬥拍的分支先 return、不跑 applyPersist（同 cgBack:null 那個坑）。 */
             Object.assign(sor('guardtalk','可惡！連森林的守護神都被侵蝕了！'),
-              { cgBack:null, flags:['sv_deer_harm'] }),
+              { cgBack:null, flags:['sv_deer_harm'], stage:7 }),
             ren('upsetstare','妳剛剛不是還想吃人家……'),
             sor('embarassed','好奇嘛！'),
             sor('smile','不過，天要黑了！不如先紮營吧？'),
