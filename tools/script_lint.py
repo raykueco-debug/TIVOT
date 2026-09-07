@@ -341,6 +341,34 @@ def main():
                     continue
                 if to not in nodes:
                     err('%s：出口 %s 指到不存在的節點 %s' % (tag, d, to))
+
+        # ══⚠⚠⚠ 同一條邊的兩端必須是**相反方向**（ver -902）══
+        #   ＝專案既有的「左進右出、上進下出」（ver -405，Ray）寫成資料層的檢查。
+        #   破了這一條的症狀是 **一直按同一個方向會在兩格之間彈，走不出去**
+        #   （Ray -902 回報：「我單向一直走變成無法走出的迴圈」）——
+        #   而那**看資料看不出來**：兩行分開看都很合理，要對起來看才發現同名。
+        #   ⚠ `back` 不驗：它由 exitsOf 掛在「來時方向的反向」，本來就一定是對的。
+        OPP = {'up': 'down', 'down': 'up', 'left': 'right', 'right': 'left'}
+        for nid, n in nodes.items():
+            for d, to in (n.get('exits') or {}).items():
+                if d == 'back' or not isinstance(to, str) or to.startswith('@'):
+                    continue
+                t = nodes.get(to)
+                if not t:
+                    continue
+                tex = t.get('exits') or {}
+                # ⚠ 對方用 `back` 回來＝**自動正確**：exitsOf 把它掛在「來時方向的反向」，
+                #   不是資料寫死的（末端與 sub-hub 都走這條）。
+                if tex.get('back') == nid:
+                    continue
+                back = [d2 for d2, to2 in tex.items() if to2 == nid and d2 != 'back']
+                if not back:
+                    err('%s.%s：%s → %s 是**單向**的（%s 沒有回得來的出口）'
+                        % (tid, nid, d, to, to))
+                    continue
+                if OPP.get(d) not in back:
+                    err('%s.%s：%s → %s，但 %s 是用 `%s` 回來的 —— 同一條邊兩端要相反'
+                        '（一直按 %s 會在兩格之間彈）' % (tid, nid, d, to, to, back[0], d))
             bg = n.get('bg')
             # ⚠ `noTime` 的節點吃的是**基底檔**（沒有時段尾巴）——不能拿 `_Day` 當通過條件：
             #   ver -400 踩過：Ray 換成 `_day`/`_dusk` 之後基底檔沒了，lint 因為看到 `_Day`

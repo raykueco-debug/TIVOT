@@ -2546,83 +2546,95 @@ export const TOWNS = {
     mist: 1,                 // 小地圖走過才亮（ver -877，Ray；沒人帶路）
     stepMin: 30,             // 遺跡每步半小時（ver -872 那條的第二級）
     nodes: {
-      /* ══⚠⚠ 21 格 —— **方向要對得上背景圖**（ver -890，Ray：「地圖邏輯要跟背景圖
-         一致，比方石橋背景明顯只能往上方走，就不該有左右派生的路徑」「上行石階也是，
-         明明樓梯往上，箭頭卻只能往下」）══
-         **哪一格分得出岔，是圖決定的，不是我想擺就擺。** 現有 21 張裡只有六張畫得出
-         側向通道：
-           · `Antechamber` 正面門洞＋兩側牆各一道拱門              （3 向）
-           · `CorridorB`   正面大拱＋左側凹口                      （3 向）
-           · `Colossus`    巨像立於後牆前，左右各一道有火光的拱門  （3 向）
-           · `Crossway` / `Brazier` / `Hollow`（ver -900 交件的三張三岔）
-             —— 正面一個＋左右牆各一個，三個都是**真通道**（石造門框或塌開缺口、
-             地板石板連續延伸進去、洞內暗下去），所以各給 **4 向**（三條路＋來向）。
-         其餘十五張全部是「正前方一條路」的直廊或房間，一律只有 `up`（往前）＋
-         `down`（退回）；畫成盡頭的（斷橋、圓井、古代機械、青苔密室、地下泉、祭壇）
-         只有 `back`。
-         ⇒ 形狀：**兩個環（都在上層）＋ 每層一個三岔 ＋ 六個末端**。
-           · 環①　前廳 → 長廊 → 岔道 → 三叉拱道 → 前廳
-           · 環②　三叉拱道 → 崩塌走道 → 岔道 → 三叉拱道
-           · 末端　古代機械／圓井房／黑暗斷橋／幽光青苔密室／地下泉水／深部祭壇（終點）
-         ⚠ 三張三岔各自帶對應樓層的錨圖產出（Crossway←Antechamber_day／
-           Brazier←Catacomb／Hollow←Rift），所以石砌紋樣與苔色接得上；
-           **Crossway 有四時段差分**（它在地表），另兩張沒有（地底無天光）。
+      /* ══⚠⚠⚠ 21 格 —— 兩條硬規矩（ver -902 重接，Ray：「我單向一直走變成無法
+         走出的迴圈」）══
+
+         **規矩一：一格能開幾個方向，是那張背景圖決定的**（ver -890，Ray：「地圖邏輯
+           要跟背景圖一致」）。逐張放大看過：
+             · `Antechamber` 正面通道 ＋ **兩側牆各有拱門** → up/left/right/down
+             · `Colossus`    巨像在正後方（不是路），**左右各一道有火光的拱門** → left/right/down
+             · `Crossway`／`Brazier`／`Hollow`（ver -900 交件的三張三岔）
+               → 正面一個＋左右牆各一個，三個都是真通道 → up/left/right/down
+           其餘十五張**全部只有正前方一條路**（`up`＋`down`），畫成盡頭的只有 `back`。
+           ⚠⚠ **`CorridorB`「三叉拱道」不是三叉**（-901 我讀錯，-902 更正）：圖上只有
+             正中一道拱門，兩側牆是實心的浮雕柱 —— 它是**過道**。名字騙了我，圖沒有。
+           ⚠ 多接是說謊；少接只是「那邊沒路」，可以接受（前廳左邊那道拱門就留著不用）。
+
+         **規矩二：同一條邊的兩端必須是相反方向**（up↔down、left↔right）——
+           這就是專案既有的「左進右出、上進下出」（ver -405，Ray）寫成資料層的樣子。
+           ⚠⚠⚠ -901 破了這一條兩次，症狀正是 Ray 回報的那個：
+             · `bridge.up→stairup` 而 `stairup.up→bridge` → **一直按 up 就在這兩格之間彈**
+             · `crossway.left→corridorb` 而 `corridorb.left→crossway` → 按 left 也彈
+           ⚠ 過道只有 up/down ⇒ **每一條過道都是「垂直」的**：樞紐的 left/right 只能接
+             另一個樞紐或末端，接不到過道。這一條限制了整張圖的形狀，不是我偷懶。
+
+         **`up` 一律是「走進畫面裡」**，不是「往高處」。所以樓梯那兩格照畫面走：
+           `StairUp` 往上的階梯在正前方 ⇒ 按 up 就是拾級而上、穿過頂端的黑暗拱門；
+           `StairDeep` 往下的階梯在正前方 ⇒ 按 up 就是走下去。
+           兩格的 `down` 都是「退出畫面」＝回上一格。這樣整張圖只有一種語意，不會彈。
+
+         **形狀**：一條從入口直通終點的主軸（**一路按 up 走得到底、一路按 down 走得出去**）
+           ＋ 一個環（前廳↔岔道 有兩條路）＋ 兩條側翼 ＋ 六個末端。
+           ⚠ 只有一個環，因為**樞紐只有五個**（前廳／岔道／火盆岔道／巨像廳／苔穴岔道），
+             而過道接不出橫向。要第二個環就得再加一張「側面有開口」的圖。
+
          ⚠ 這張圖沒有自己的入口節點（ver -879）：入口就是夏爾森林的「遺跡入口」。 */
 
-      /* ══ 上層・地表（天光，四時段差分）══ 兩個環都在這一層 ══ */
+      /* ══ 上層・地表（天光，四時段差分）══ */
       antechamber:{ bg:'Ruins_shinier_Antechamber', name:'木雅克神殿　前廳',
-        /* 圖上正面一道門洞、兩側牆各一道拱門 ⇒ 分得出岔。往下退＝回夏爾森林。
-           ⚠ 左邊那道拱門**留著不用**：圖畫得出三條路不代表非得接三條 ——
-             多接是說謊，少接只是「那邊沒路」。 */
-        exits:{ up:'corridora', right:'corridorb', down:'@shinier_forest:ruins' } },
+        /* 正面通道＋兩側牆拱門。⚠ 左邊那道**留著不用** —— 圖畫得出三條路不代表
+           非得接三條。`right` 是繞過長廊直達岔道的側道（＝這張圖唯一的環）。 */
+        exits:{ up:'corridora', right:'crossway', down:'@shinier_forest:ruins' } },
       corridora:  { bg:'Ruins_shinier_CorridorA', name:'木雅克神殿　長廊',
-        exits:{ up:'crossway', down:'antechamber' } },
-      corridorb:  { bg:'Ruins_shinier_CorridorB', name:'木雅克神殿　三叉拱道',
-        /* 正面大拱＋左側凹口 ⇒ up ＋ left ＋ 來向。 */
-        exits:{ up:'collapsed', left:'crossway', down:'antechamber' } },
+        exits:{ up:'corridorb', down:'antechamber' } },
+      corridorb:  { bg:'Ruins_shinier_CorridorB', name:'木雅克神殿　拱門長廊',
+        /* ⚠ 名字由「三叉拱道」改成「拱門長廊」（ver -902）：圖上只有一道拱門，
+           叫三叉會讓玩家一直在找那兩條不存在的岔路。 */
+        exits:{ up:'collapsed', down:'corridora' } },
       collapsed:  { bg:'Ruins_shinier_Collapsed', name:'木雅克神殿　崩塌走道',
-        /* ⚠ 不是死路：圖上就畫著「只能從石堆缺口鑽過去」—— 它是環②的一段。 */
         exits:{ up:'crossway', down:'corridorb' } },
       crossway:   { bg:'Ruins_shinier_Crossway', name:'木雅克神殿　岔道',
-        /* ver -900 的三岔（地表版，四時段差分）。四條都用滿：
-           正面通石橋、左右各接回上層的兩條環、來向退回長廊。 */
-        exits:{ up:'bridge', left:'corridorb', right:'collapsed', down:'corridora' } },
+        /* ver -900 的三岔（地表版，四時段差分）：正面往石橋、左側那條繞回前廳
+           （環的另一半）、來向退回崩塌走道。右邊那道留著不用。 */
+        exits:{ up:'bridge', left:'antechamber', down:'collapsed' } },
       bridge:     { bg:'Ruins_shinier_Bridge', name:'木雅克神殿　石橋',
-        /* ⚠ 窄橋跨在水面上，兩側是水 ⇒ **只有前後**（ver -890，Ray 點名的那一格）。 */
+        /* ⚠ 窄橋跨在深淵上，兩側是空的 ⇒ 只有前後（ver -890，Ray 點名的那一格）。 */
         exits:{ up:'stairup', down:'crossway' } },
 
       /* ══ 中層・火與骨（長明火／符文，單張無時段）══ */
       stairup:    { bg:'Ruins_shinier_StairUp', name:'木雅克神殿　上行石階',
-        /* ⚠ 樓梯在畫面裡往上通向拱門 ⇒ **up 是回上層**（Ray：「明明樓梯往上，
-           箭頭卻只能往下」）；往深處是退下去。 */
-        exits:{ up:'bridge', down:'catacomb' } },
+        /* ⚠ 階梯在正前方往上、頂端沒入黑暗拱門 ⇒ **按 up 就是走上去**（Ray -890：
+           「明明樓梯往上，箭頭卻只能往下」）；`down` 是退回石橋。 */
+        exits:{ up:'catacomb', down:'bridge' } },
       catacomb:   { bg:'Ruins_shinier_Catacomb', name:'木雅克神殿　骨龕墓道',
         exits:{ up:'brazier', down:'stairup' } },      // 直廊：兩壁是骨龕，不是路
       brazier:    { bg:'Ruins_shinier_Brazier', name:'木雅克神殿　火盆岔道',
-        /* ver -900 的三岔（中層版）。左側翼是壁畫廳那一串、右側是圓井房（盡頭）、
-           正面往巨像廳。 */
-        exits:{ up:'colossus', left:'mural', right:'well', down:'catacomb' } },
-      mural:      { bg:'Ruins_shinier_Mural', name:'木雅克神殿　壁畫廳',
-        exits:{ up:'prison', down:'brazier' } },
-      prison:     { bg:'Ruins_shinier_Prison', name:'木雅克神殿　石牢區',
-        exits:{ up:'machine', down:'mural' } },
-      machine:    { bg:'Ruins_shinier_Machine', name:'木雅克神殿　古代機械',
-        exits:{ back:'prison' } },                      // 末端：斷連桿，過不去
+        /* ver -900 的三岔（中層版）＝這一層的樞紐：正面往深階、左邊是巨像廳那一翼、
+           右邊是圓井房（盡頭）、來向退回骨龕墓道。 */
+        exits:{ up:'stairdeep', left:'colossus', right:'well', down:'catacomb' } },
       well:       { bg:'Ruins_shinier_Well', name:'木雅克神殿　圓井房',
         exits:{ back:'brazier' } },                     // 末端：一口深井，沒有出口
       colossus:   { bg:'Ruins_shinier_Colossus', name:'木雅克神殿　巨像廳',
-        /* 巨像立在後牆前（不是路），左右各一道有火光的拱門 ⇒ 三向。 */
-        exits:{ left:'darkbridge', right:'stairdeep', down:'brazier' } },
+        /* 巨像立在正後方（不是路），左右各一道有火光的拱門 ⇒ 三向。
+           `right` 是回火盆岔道（左進右出）、`left` 通斷橋、`down` 往壁畫廳那一串。 */
+        exits:{ right:'brazier', left:'darkbridge', down:'mural' } },
       darkbridge: { bg:'Ruins_shinier_DarkBridge', name:'木雅克神殿　黑暗斷橋',
         exits:{ back:'colossus' } },                    // 末端：橋斷了，過不去
+      mural:      { bg:'Ruins_shinier_Mural', name:'木雅克神殿　壁畫廳',
+        exits:{ up:'colossus', down:'prison' } },
+      prison:     { bg:'Ruins_shinier_Prison', name:'木雅克神殿　石牢區',
+        exits:{ up:'mural', down:'machine' } },
+      machine:    { bg:'Ruins_shinier_Machine', name:'木雅克神殿　古代機械',
+        exits:{ back:'prison' } },                      // 末端：斷連桿，過不去
       stairdeep:  { bg:'Ruins_shinier_StairDeep', name:'木雅克神殿　下行深階',
-        exits:{ up:'rift', down:'colossus' } },
+        /* ⚠ 階梯在正前方往下 ⇒ 按 up 就是**走下去**（`up` 一律是「走進畫面裡」）。 */
+        exits:{ up:'rift', down:'brazier' } },
 
       /* ══ 深層・苔光（無天光；祭壇的光是崩塌處漏下來的）══ */
       rift:       { bg:'Ruins_shinier_Rift', name:'木雅克神殿　地底裂隙',
         exits:{ up:'hollow', down:'stairdeep' } },
       hollow:     { bg:'Ruins_shinier_Hollow', name:'木雅克神殿　苔穴岔道',
-        /* ver -900 的三岔（深層版）＝這張圖最後一個岔口：正面就是終點。 */
+        /* ver -900 的三岔（深層版）＝最後一個岔口：正面就是終點。 */
         exits:{ up:'deepaltar', left:'mosschamber', right:'deepspring', down:'rift' } },
       mosschamber:{ bg:'Ruins_shinier_MossChamber', name:'木雅克神殿　幽光青苔密室',
         exits:{ back:'hollow' } },                      // 末端
