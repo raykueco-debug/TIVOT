@@ -2383,13 +2383,17 @@ function renderLine(){
     return advance();
   }
 
-  /* ══ 休息處：閉棺結算（ver -913，見 setSettleHandler）══
+  /* ══ 休息處：閉棺結算（ver -913；-914 補上「閉棺」那一段，見 setSettleHandler）══
      `{ settle:true }` ＝把畫面交給結算頁；回程與 `line.battle` 完全同一套
      （`storyResume` → `resumeFrom`），所以續播位置照那邊的寫法組。
-     ⚠ **不演開棺／閉棺的動畫**：探索期間槍棺本來就闔著（＝控制盤，§6.5.4.3），
-       再演一次「闔上」是演一個已經發生的狀態。
-     ⚠ 收舞台要在交棒**之前**：結算頁住在 `#app` 裡，而 `#storyStage.on` 時
-       `#app` 整層 `visibility:hidden`（鐵律 10 的落地）—— 不收就是「頁開了、看不見」。 */
+     ⚠⚠ **一定要演關門**（ver -914，Ray：「應該是閉棺，結算，盤面早就清掉了，
+       棺直接把背景閉掉啊」）——走 **`playKerberosClose`**（＝戰鬥打完上結算的那一套，
+       鐵律 8）：兩扇合上 → 紋章轉回 → 鉚釘扣回 → **黑透遮罩** → 收舞台 → 結算。
+       · -913 那一版偷懶不演門（理由是「探索期間棺本來就闔著」），於是結算頁是
+         **半透地疊在 `#app` 上** —— 而這條路底下沒有剛打完的那一場，透出來的是
+         上一場的殘影。門與那片黑透遮罩本來就是這一段的「幕」，不演就會露出後臺。
+       · 所以**不要**在這裡自己 `close()`：那一支的第 ⑤ 步會收舞台，收完才叫結算
+         （結算頁住在 `#app`，而 `#storyStage.on` 時 `#app` 整層 `visibility:hidden`）。 */
   if(line.settle){
     stopShake(); stopTint();
     if(!settleHandler){
@@ -2400,8 +2404,9 @@ function renderLine(){
       ? { adhoc: cur.lines, line: lineIdx+1, done: cur.__done, sides: sideOverride, bgm: stageBgm }
       : { scene: cur.sceneId, line: lineIdx+1, bgm: stageBgm };
     clearCast(); hideBubble();
-    close({ keepBgm:true });
-    try{ settleHandler(rsm); }catch(e){ console.info('[story] settleHandler 出錯', e); }
+    playKerberosClose(()=>{
+      try{ settleHandler(rsm); }catch(e){ console.info('[story] settleHandler 出錯', e); }
+    });
     return;
   }
 

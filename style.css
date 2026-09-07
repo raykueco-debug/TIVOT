@@ -1226,6 +1226,9 @@
     /* 結算內容同樣避開瀏海（#banner 為絕對定位、吃不到 #app padding，需自帶墊高） */
     padding:var(--notch-bar-h) 0 0;overflow:hidden;}
   #banner.on{display:flex;}
+  /* 休息處的結算（ver -914）：底不透明 —— 那一條路底下沒有剛打完的那一場，
+     半透就會透出上一場留在 `#app` 的殘盤（見 inspector 的 restSettle）。 */
+  #banner.solid{background:#05040a;}
   /* 結算內容區（大標→rows→立繪），retry 固定在最底。固定不可滑動：overflow hidden + 禁回彈。 */
   #bannerScroll{flex:1 1 auto;width:100%;display:flex;flex-direction:column;align-items:center;
     justify-content:flex-start;overflow:hidden;overscroll-behavior:none;padding:10px 0 6px;position:relative;

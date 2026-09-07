@@ -540,6 +540,9 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose, opts){
   /* ⚠ 兩顆鈕的版面也要歸位（ver -430）：上一場戰敗留下的 `.two` 不收的話，
      下一場打贏的結算頁會多出一顆「放棄」。同 rbtn 那幾行的理由 —— 開場一律先歸零。 */
   const acts=$('bannerActs'); if(acts) acts.classList.remove('two');
+  /* ⚠ 休息處那一頁的**不透明底**每次開場先撤（ver -914，見 restSettle）：
+     與上面兩行同一個理由 —— 上一頁留下來的樣式不收，下一頁就會帶著它。 */
+  b.classList.remove('solid');
   const rbtn=$('rematchBtn');
   rbtn.textContent=L.result.rematch;
   rbtn.classList.remove('intercept','ready','saintinstall');
@@ -727,6 +730,11 @@ function restSettle(totalTime, stats, sessionMoney, sessionLoot){
   if(money) rows += '<div class="row"><span>'+inv.moneyName()+'</span><b>＋'+money+'</b></div>';
   showResultSequence('休　息　處', '戰果整理', rows, ev.grade, false,
                      spk ? { speaker:spk } : { noInspector:true });
+  /* ⚠⚠ 這一頁的底要**不透明**（ver -914，Ray：「盤面早就清掉了，棺直接把背景閉掉」）：
+     結算頁平時是 94% 的黑罩在**剛剛那一場的戰鬥畫面**上（那是它該有的樣子）——
+     但休息處這條路底下沒有剛打完的那一場，透出來的是上一場留在 `#app` 的殘盤。
+     ⚠ 撤掉的地方在 `showResultSequence` 開場（與其他歸位那幾行同一處，鐵律 8）。 */
+  { const b=$('banner'); if(b) b.classList.add('solid'); }
   const rbtn=$('rematchBtn');
   if(rbtn) rbtn.textContent = '繼續';
   /* 回程與劇情插入戰**同一條**（`script-continue` → storyReturn → 續播那一段）：
