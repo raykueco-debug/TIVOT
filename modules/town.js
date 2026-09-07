@@ -1148,9 +1148,19 @@ function mapIsOn(){
   const v=document.getElementById('townMapView');
   return !!(v && v.classList.contains('on'));
 }
+/* ══ 翻頁音（ver -915，Ray：「點小地圖時播 se_ui_pageflip」）══
+   ⚠ 掛在**狀態變化**（開／關）上，不掛在「按鈕被按了」上：地圖有兩個關法
+     （再按一次鈕、點地圖本身），掛在輸入上就得記得兩個地方都補，而按鈕那一條
+     還會與 `mapClose` 疊成兩聲（鐵律 8）。
+   ⚠ 走 `story.playSe`（劇情層那張 `SE_FILES`，同一支會帶上 `fileGain`）——
+     town 這邊沒有 `asset()`，而 `se_ui_pageflip` 早就登記在那張表裡了，
+     不必再抄一份路徑（鐵律 7）。整備頁換卡（weapon.js）用的是同一支音檔。 */
+function mapFlip(){ try{ story.playSe('se_ui_pageflip'); }catch(_){} }
 function mapClose(){
-  const v=document.getElementById('townMapView'); if(v) v.classList.remove('on');
+  const v=document.getElementById('townMapView'); if(!v || !v.classList.contains('on')) return;
+  v.classList.remove('on');
   if(layer) layer.classList.remove('map-on');   // 導覽字格回來（ver -867，見 renderMap）
+  mapFlip();
 }
 /* ══⚠⚠ 地圖鈕**常駐**（ver -899，Ray：「地圖的 icon 讓他常駐，槍棺在它就在。
    沒地圖就先顯示無資料」）══
@@ -1176,7 +1186,9 @@ function showMapBtn(){
     /* 同槍棺功能鍵：不讓「點畫面」吃到這一下（§story 的 swallowTap 同款理由）。 */
     b.addEventListener('pointerdown', e=>e.stopPropagation());
     b.addEventListener('pointerup', e=>{ e.stopPropagation();
-      try{ SFX.unlock(); SFX.menuClick(); }catch(_){}
+      /* ⚠ 不再播 `menuClick`（ver -915）：那是「按了一顆鈕」的聲音，而這一顆是
+         翻開旅誌 —— 音效改掛在開／關那兩支上（見 `mapFlip`）。 */
+      try{ SFX.unlock(); }catch(_){}
       if(mapIsOn()) mapClose(); else renderMap();
     });
     host.appendChild(b);
@@ -1228,6 +1240,7 @@ function renderMap(){
       }).join('')
     + '</div>';
   v.classList.add('on');
+  mapFlip();                        // 翻開旅誌（ver -915）
   /* 地圖開著＝導覽字格收掉（ver -867，Ray：「不用導覽字格」）——
      那幾片目的地字格會壓在羊皮紙上；看地圖的時候不需要它們。 */
   if(layer) layer.classList.add('map-on');
