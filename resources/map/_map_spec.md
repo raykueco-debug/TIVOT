@@ -105,7 +105,13 @@ WebP q85（**帶 alpha**）→ `resources/map/`；alpha 原 PNG → `resources/_
 ## 進度
 
 - [x] `map_shinierforest`（夏爾森林，10 格）—— 已上線，去白背 alpha 版 `?v=2`。
-- [ ] `map_shinier_ruins`（木雅克神殿，18 格）—— **第一版 `24eba4f` 被 Ray 退回**
-      （一直線、無分岔、且畫了 12 個不屬於神殿的場景）。
-      **拓樸已由 Ray 定案（ver -883：「可以，照這個排」）**，照上面那張表重畫，
-      畫風與字的規矩見「共用規格」。
+- [x] `map_ruins_shinier.webp`（木雅克神殿，18 格＋Entrance）—— **已交件**（2026-09-07）。
+      · 檔名照 Ray 放的節點佈局圖 `map_ruins_shinier.png`（**不是** spec 早先寫的
+        `map_shinier_ruins`）；程式端 `map.img` 還空著，接線時用這個名字。
+      · 節點位置與連線 100% 照 `resources/map/map_ruins_shinier.png`（Ray 的權威佈局）：
+        **一整張連續平面**，不是三條分開的紙帶。
+      · 極簡鋼筆簡筆（Ray：「草草幾筆而已」）、單色褐墨、撕邊外 alpha 透明、
+        只有英文極草書、無中文無圖例。1536×1024 q85。
+      · 原稿：`_originals/map/map_ruins_shinier_art.png`；產線對話
+        `chatgpt.com/c/6a9e5f7a-450c-83e8-a1ad-ab0f7b9c4ebd`。
+      · 被退掉的兩版已進回收區（v1 一直線＋畫錯場景；v2 太細膩）。
