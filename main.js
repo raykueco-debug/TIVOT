@@ -524,8 +524,10 @@ function bootBattleGate(req){
     preloadLateBgm();                     // 結算／失敗／Boss 那幾首（打完或打輸才用得到）
     story.setBattleCueId(req.battle);     // 同橋接那一條（ver -746）：曲子照這一場的卡挑
     story.playKerberosFromRisen(
-      ()=>{ $('home').classList.remove('on'); combat.startScriptBattle(req.battle, { story: req.scripted }); },   // 明確宣告才算，否則退回敵人卡（ver -495）
-      ()=>story.close({ keepBgm:true }));
+      ()=>{ $('home').classList.remove('on');
+            combat.holdEnemyRise();   // 降臨押到門全開（ver -875）
+            combat.startScriptBattle(req.battle, { story: req.scripted }); },   // 明確宣告才算，否則退回敵人卡（ver -495）
+      ()=>{ story.close({ keepBgm:true }); combat.releaseEnemyRise(); });
   };
   document.addEventListener('pointerdown', open);
 }
@@ -1440,9 +1442,11 @@ story.setBattleCue((id)=>{
 /* 連續戰鬥的開棺判定（ver -585）：真相在 combat 的 `state.battleSession`，
    story 只問（它不 import combat，所以由這裡注入 —— 同 setGateHold 的理由）。 */
 story.setGateSkip(id => combat.battleNeedsGate(id));
+story.setGateOpened(()=>combat.releaseEnemyRise());   // 降臨等門開（ver -875）
 story.setBattleHandler((battleId, resume)=>{
   storyResume = resume;
   flightBack = false;   // 劇情/城鎮的插入戰不是飛行頁交棒過來的（同 launchBattle 的理由）
+  combat.holdEnemyRise();   // 走門的場次：降臨（含掛圖）押到門全開（ver -875）
   /* 劇情插入戰（ver -375）：腳本寫 `{battle:'guild_hunter'}`，查得到 `config.battles`
      就開那一場（單敵、卡上的數值、不能聖徒化／用搭檔技）。
      ⚠ 查不到才退回教學那一場 —— 舊腳本（地宮那一段）寫的就是教學，不能被改掉。 */

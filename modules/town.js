@@ -1040,7 +1040,21 @@ function shopEnter(opts){
      也不進店舖模式（`setShopOn`）：沒有臉要讓，地名照舊。 */
   const sts=stallsOf(n);
   if(sts){ if(!(opts && opts.noMenu)) showStallBtns(true); return; }
-  if(!shopReady(n)) return;
+  /* ══ 駐店的人（`host`，ver -875，Ray：「夏爾村餐廳早上6點到晚上6點有人，
+     圖用cook，名字瑪麗亞」）══ 不是店（沒有單子、沒有鈕），只是**那個時段有人
+     站在那裡**：時段內擺立繪（castSolo，同店主那一套＝同一把尺），時段外空場。
+     ⚠ 開放空間不掛 `hours`（掛了會被打烊擋在門外——Ray：「只會沒人，不會無法
+       進入」），時段寫在 host 自己身上。收場走既有的 shopClose/clearCast。 */
+  if(!shopReady(n)){
+    const h=n.host;
+    if(h && h.who){
+      const t=clock.hourF();
+      const inHrs = !h.hours || (h.hours[1]>h.hours[0]
+        ? (t>=h.hours[0] && t<h.hours[1]) : (t>=h.hours[0] || t<h.hours[1]));
+      if(inHrs){ setShopOn(true); story.castSolo(h.who); }
+    }
+    return;
+  }
   setShopOn(true);
   const who=keeperOf(n);
   if(who) story.castSolo(who);

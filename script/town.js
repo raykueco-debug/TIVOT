@@ -2142,8 +2142,12 @@ export const TOWNS = {
           ren('talkserious','不，安雅小姐要和我們一起走。'),
           nou('concern','可是……'),
           any('silent',''),
-          { speaker:'ANYA', text:'', cg:'010_Anyaheadrubbing', cgPan:'down' },
+          /* ⚠ `cgNoTime`（ver -875，Ray：「手機版010插畫沒出來」）：這張沒有時段差分
+             —— adhoc 段落不經預載頁，顯示時逐個試候選，手機上先吃 4~5 個 404
+             圖就來不及上（-433 那條的 adhoc 版）。平移同版改**下到上**（Ray 指定）。 */
+          { speaker:'ANYA', text:'', cg:'010_Anyaheadrubbing', cgNoTime:true, cgPan:'up' },
           any(null,'！！'),
+          { speaker:'PLAYER', blank:true },   // ver -875，Ray：「好。」之前插主角空白格
           Object.assign(any('smileshy','好。'), { cg:null }),   // 回到原背景
           nou('awkward','很有騎士精神呢。'),
           ren('awkward','不不，他本來就是騎士……'),
@@ -2219,7 +2223,11 @@ export const TOWNS = {
           Object.assign(grcS(null,'跟你們一起打過那一仗，就算半個自己人了。算你們便宜點！'), { onlyIf:'safehouse_shinier' }),
           Object.assign(grcS(null,'村裡人都在說你們的事呢。多虧有你們啊。'), { onlyIf:'safehouse_shinier' }),
         ] },
-      restaurant:{ bg:'Shinier_Restaurant', name:'夏爾村　餐廳', exits:{ back:'east' } },
+      restaurant:{ bg:'Shinier_Restaurant', name:'夏爾村　餐廳', exits:{ back:'east' },
+        /* 駐店（ver -875，Ray：「餐廳早上6點到晚上6點有人，圖用cook，名字瑪麗亞」）
+           —— 開放空間**不掛 hours**（掛了會被打烊擋在門外；時段外只是沒人）。
+           台詞等 Ray 的稿（現在只有立繪站著）。 */
+        host:{ who:'COOK_SV', hours:[6,18] } },
     },
   },
 
@@ -2335,7 +2343,7 @@ export const TOWNS = {
          （單張、無時段差分；舊 Ruins_Entrance_* 已被美術收走）。
          進遺跡本體是另一張圖，等 Ray 的規劃（遺跡背景美術重製中）。 */
       ruins: { bg:'ruins_shinier_entrance', name:'夏爾森林　遺跡入口',
-        exits:{ back:'cliff' },
+        exits:{ back:'cliff', up:'@shinier_ruins' },   // 往上＝進神殿（ver -875）
         /* ══ 樹靈鹿主（ver -870，Ray 的森林行稿）══ 兩個分支＝兩段 acts（同一支
            flag，先到先演）：**黃昏前**（hourOfDay [5,17]）鹿主看一眼就走；
            **黃昏後**（沒寫 hourOfDay＝上面那段不成立就輪到它）鹿主變異成禍魘開打。
@@ -2419,4 +2427,61 @@ export const TOWNS = {
     },
   },
 
+  /* ══════════════════════════════════════════════════════════════════════
+     木雅克神殿（ver -875，Ray：「Ruins_shinier 系列已入檔，以 entrance 為起點、
+     alter（DeepAltar）為終點，合理配置地圖」）
+     · 15 格全用已入檔素材：Ruins_shinier_* 六間（四時段）＋ Ruins_*（星象室／
+       石柱林／圓形大廳／石棺室／地下泉／下行石階／王座間／寶物庫，四時段）。
+     · 佈局照 _ruins_spec.md 的類型：過道串主幹、圓形大廳＝樞紐（塌天井光柱，
+       四向）、末端各掛在支線上；主幹 入口→前廳→長廊→圓形大廳→下行石階→
+       石橋→**深部祭壇（終點）**。
+     · 遺跡每步 30 分鐘（Ray 定的三級耗時）；荒野規則同森林（不打烊、開圖走過才亮）。
+     · ⚠ 還沒有怪與劇情（Ray 的稿未到）——先是可走的空神殿；wildSpawn 等卡。
+     · ⚠ 槍棺地圖的手繪圖未交 —— `map:` 空著，交件後照森林補 spots。 */
+  shinier_ruins: {
+    name: '木雅克神殿',
+    entry: 'entrance',
+    bgm: 'misty',            // 暫代（同森林；Ray 指定神殿曲後換）
+    storyExplore: true,
+    wilderness: true,
+    stepMin: 30,             // 遺跡每步半小時（ver -872 那條的第二級）
+    nodes: {
+      /* 起點（戶外）。下方回森林的遺跡入口格。 */
+      entrance:   { bg:'ruins_shinier_entrance', name:'木雅克神殿　入口',
+        exits:{ up:'antechamber', down:'@shinier_forest:ruins' } },
+      antechamber:{ bg:'Ruins_shinier_Antechamber', name:'木雅克神殿　前廳',
+        exits:{ up:'corridora', down:'entrance' } },
+      corridora:  { bg:'Ruins_shinier_CorridorA', name:'木雅克神殿　長廊',
+        exits:{ up:'rotunda', down:'antechamber' } },
+      /* 樞紐：圓形大廳（塌天井、光柱直落）—— 四向。 */
+      rotunda:    { bg:'Ruins_Rotunda', name:'木雅克神殿　圓形大廳',
+        exits:{ up:'stairdown', left:'corridorb', right:'pillarhall', down:'corridora' } },
+      /* 西翼：三叉拱道 → 寶物庫／星象室。 */
+      corridorb:  { bg:'Ruins_shinier_CorridorB', name:'木雅克神殿　三叉拱道',
+        exits:{ up:'observatory', left:'vault', right:'rotunda' } },
+      observatory:{ bg:'Ruins_Observatory', name:'木雅克神殿　星象室',
+        exits:{ back:'corridorb' } },
+      vault:      { bg:'Ruins_Vault', name:'木雅克神殿　寶物庫',
+        exits:{ back:'corridorb' } },
+      /* 東翼：石柱林 → 地下泉。 */
+      pillarhall: { bg:'Ruins_PillarHall', name:'木雅克神殿　石柱林',
+        exits:{ right:'spring', left:'rotunda' } },
+      spring:     { bg:'Ruins_Spring', name:'木雅克神殿　地下泉',
+        exits:{ back:'pillarhall' } },
+      /* 主幹下層：下行石階 →（崩塌走道 → 石棺室）→ 石橋。 */
+      stairdown:  { bg:'Ruins_StairDown', name:'木雅克神殿　下行石階',
+        exits:{ up:'bridge', right:'collapsed', down:'rotunda' } },
+      collapsed:  { bg:'Ruins_shinier_Collapsed', name:'木雅克神殿　崩塌走道',
+        exits:{ right:'sarcophagus', left:'stairdown' } },
+      sarcophagus:{ bg:'Ruins_Sarcophagus', name:'木雅克神殿　石棺室',
+        exits:{ back:'collapsed' } },
+      bridge:     { bg:'Ruins_shinier_Bridge', name:'木雅克神殿　石橋',
+        exits:{ up:'deepaltar', right:'throne', down:'stairdown' } },
+      throne:     { bg:'Ruins_Throne', name:'木雅克神殿　王座間',
+        exits:{ back:'bridge' } },
+      /* 終點：深部祭壇。 */
+      deepaltar:  { bg:'Ruins_shinier_DeepAltar', name:'木雅克神殿　深部祭壇',
+        exits:{ back:'bridge' } },
+    },
+  },
 };

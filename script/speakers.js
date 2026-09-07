@@ -63,6 +63,7 @@ export const SPEAKERS = {
   JERO:     { name:'杰羅',   art:'sh_craftsman' },
   HUNTER_SV:{ name:'謝尼',   art:'sh_villager'  },
   GROCER_SV:{ name:'店主',   art:'sh_villager2' },
+  COOK_SV:  { name:'瑪麗亞', art:'sv_cook' },   // 夏爾村餐廳（ver -875，Ray：「圖用cook，名字瑪麗亞」）
   /* 賞金獵人公會（ver -375）。⚠ 兩位都站**右**：與店主同一個邏輯 ——
      玩家的同伴在左，對面的人在右。 */
   HUNTER:   { name:'獵人',   art:'hunter'  },
@@ -662,6 +663,9 @@ export const ART = {
                  base:'resources/SI/NPC_shinier_chief_SI.webp', expr:{} },
   sh_craftsman:{ cm:175, eye:32, fx:0.603, top:5, bot:1531, side:'R', alt:null,
                  base:'resources/SI/NPC_shinier_Gunsmith_SI.webp', expr:{} },
+  /* 夏爾村餐廳的瑪麗亞（ver -875，measure_si 量測）。 */
+  sv_cook: { cm:163, eye:32, fx:0.463, top:8, bot:1522, side:'R', alt:null,
+             base:'resources/SI/NPC_shinier_cook_SI.webp', expr:{} },
   priest: { cm:172, eye:32, fx:0.536, top:7, bot:1531,
            side:'R', alt:null, base:'resources/SI/Priest_SI_front.webp', expr:{} },
   /* ══ 北方泊地的群眾（ver -741，Ray 交件 NPC_northport_Crowd）══

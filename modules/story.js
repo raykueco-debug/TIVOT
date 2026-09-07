@@ -2227,14 +2227,14 @@ function renderLine(){
     /* 連續戰鬥的第二格起：**原地開棺**（ver -587）—— 不上推、不解鎖、不掀圓盤，
        門在控制盤的高度直接分開，露出底下的數字面盤。 */
     battleCueId = id;
+    /* 門全開才放行降臨（ver -875）：gateOpened＝main 注入的 combat.releaseEnemyRise。 */
+    const opened=()=>{ close({ keepBgm:true }); if(gateOpened) try{ gateOpened(); }catch(_){} };
     if(gateSkip && !gateSkip(id)){
-      playKerberosInPlace(()=>battleHandler(id, resume),
-                          ()=>close({ keepBgm:true }));
+      playKerberosInPlace(()=>battleHandler(id, resume), opened);
       return;
     }
     battleCueId = id;          // 這一場的曲子（ver -614）：撞頂那一拍的 riseCue 要用
-    playKerberos(()=>battleHandler(id, resume),
-                 ()=>close({ keepBgm:true }));
+    playKerberos(()=>battleHandler(id, resume), opened);
     return;
   }
 
@@ -2855,6 +2855,9 @@ export function open(pos, done){
 /* main.js 注入戰鬥發動器：fn(battleId, resumePos)。
    ⚠ 回來時由 main.js 呼叫 `open(resumePos)` 續播 —— story 自己不知道戰鬥何時結束。 */
 export function setBattleHandler(fn){ battleHandler = fn || null; }
+/* 門全開的掛鉤（ver -875）：main 注入 combat.releaseEnemyRise——降臨等門開。 */
+let gateOpened=null;
+export function setGateOpened(fn){ gateOpened = fn || null; }
 /* 門**撞頂**那一刻要做的事（ver -356 由「開始上推」改到這裡，Ray 指定）。
    ⚠ 由 main.js 注入，story.js 不去認識「戰鬥的曲子叫什麼」——單向資料流。
    ⚠ 為什麼不放在 `battleHandler` 裡：那一支是在門**開到縫**（onGap）才呼叫的，

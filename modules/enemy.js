@@ -373,11 +373,35 @@ let landT = 0;
    這與 §6.5「上場是延後執行的，所以撤場一定要把那個延後取消掉」是同一條。
    ⚠ 三樣都要收：`setTimeout` 的握把、`onload` 的回呼、著地的計時器。 */
 let riseT = 0;
+/* ══⚠⚠ 降臨的「等門開」（ver -875，Ray：「鹿主在進入戰鬥前開門瞬間不存在，
+   要 harm 出來」）══ 走 Kerberos 之門的場次，battleHandler 在門**開到縫**（onGap）
+   就開戰——降臨 0.9 秒在門還蓋著時演完，玩家看到的是「門一開怪已經站好」。
+   門路徑開戰前 holdRise()（main 的 battleHandler／bootBattleGate），門全開
+   releaseRise()（story 的 gateOpened 掛鉤）才起演——**押的是圖也押演出**：
+   held 期間立繪先不掛 src（門開前那一格不能已經站著），release 那一刻掛圖＋降臨。
+   ⚠ 沒被 hold 的路徑（出陣／亂入／連戰換敵）行為不變。
+   ⚠ release 沒來的保險：hold 起 10 秒自動放行（圖照樣出，只是降臨晚了）。 */
+let riseHeld=false, risePending=null, riseHoldT=0;
+export function holdRise(){
+  riseHeld=true; risePending=null;
+  /* 押住那一刻把場上的圖清空（ver -875 實測：門開瞬間殘著開機預設的舊敵圖）——
+     「開門瞬間不存在」是這一整套的目的，殘影等於沒押。 */
+  const eImg=$('enemyImg');
+  if(eImg){ eImg.onload=null; eImg.removeAttribute('src');
+            eImg.classList.remove('enemy-rise','enemy-purge'); }
+  clearTimeout(riseHoldT);
+  riseHoldT=setTimeout(()=>{ if(riseHeld) releaseRise(); }, 10000);
+}
+export function releaseRise(){
+  riseHeld=false; clearTimeout(riseHoldT); riseHoldT=0;
+  if(risePending){ const f=risePending; risePending=null; f(); }
+}
 export function loadEnemyPortrait(en){
   const eImg = $('enemyImg');
   if(!eImg) return;
   clearTimeout(riseT); riseT=0;
   clearTimeout(landT); landT=0;
+  risePending=null;
   eImg.onload = null;
   eImg.classList.remove('enemy-rise','enemy-purge');
   /* ⚠⚠ **演完要把 class 拿掉**（ver -598 修）：`enemy-rise` 帶 `both` 填充，
@@ -441,9 +465,19 @@ export function loadEnemyPortrait(en){
   }
   const arm=()=>{ eImg.onload=null; clearTimeout(riseT); riseT=setTimeout(rise, RISE_DELAY_MS);
                   if(playEntranceVo) playEntranceVo(); };
-  eImg.onload = arm;
-  eImg.src = enemyImage(en);
-  if(eImg.complete && eImg.naturalWidth) arm();
+  const mount=()=>{
+    eImg.onload = arm;
+    eImg.src = enemyImage(en);
+    if(eImg.complete && eImg.naturalWidth) arm();
+  };
+  /* 押住＝連圖都先不掛（門開前那一格不能已經站著）；release 那一刻掛圖＋降臨。
+     圖先在背景預熱（new Image），release 時大多已解碼完、rise 不會等載入。 */
+  if(riseHeld){
+    try{ const warm=new Image(); warm.src=enemyImage(en); }catch(_){}
+    risePending=mount;
+    return;
+  }
+  mount();
 }
 /* ══ 淨化：血歸零那一刻把怪抹掉（ver -588）══
    ⚠ 演出在 CSS（`enemy-purge`：聖光漂白 → 由下往上抹除），這裡只負責掛上去。

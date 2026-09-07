@@ -941,7 +941,7 @@ export const ENEMIES = {
       kind:'beast',
       image:'enemy_sf_hog',
       bg:'Forest_Trail_Day',
-      fit:{ mode:'contain', pos:'center bottom' },
+      fit:{ mode:'contain', pos:'center 70%' },   // 稍微移高（ver -875，Ray；幅度小於獨角虎的 55%）
       hp:350, attack:14,                  // hp＝Ray 表；attack 暫定
       atkInterval:null,
       delayPenalty:{ seconds:5 },
