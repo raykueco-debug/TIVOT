@@ -2722,8 +2722,10 @@ export const TOWNS = {
         exits:{ right:'crossway', up:'brazier' } },
 
       /* ── 火盆這一帶（環①） ── */
+      /* ⚠ 養息之間**不是安全點**（ver -918，Ray：「把休養之間改成非安全區，
+         把安全區移到 deepalter」）—— 它是這一層的十字路口（四向全用），
+         安全點移到走到底的深部祭壇。名字留著（那是這個房間的樣子，不是機能）。 */
       brazier:    { bg:'Ruins_shinier_Brazier', name:'木雅克神殿　養息之間',
-        rest:true, noWild:true,                        // 安全點（見前廳那一段）
         /* ⚠ 名字由「火盆」改成「養息之間」（ver -908，Ray）。**節點 id 不動** ——
            旗標（`seen_shinier_ruins_brazier`）、腳本、存檔都指著它，改 id 等於把
            那些全打斷；玩家看得到的只有 `name`。
@@ -2753,7 +2755,13 @@ export const TOWNS = {
          不寫的話候選鏈會先試那四個名字 —— 檔案雖然沒了，**玩家的瀏覽器快取裡可能還在**，
          於是會拿出舊的那一張（§5 的同名覆蓋快取坑，這次是「檔案沒了但快取還在」的變體）。
          ⚠ 日後若補了時段差分，把這一行拿掉。 */
+      /* ══⚠⚠ **安全點**（ver -918，Ray：「把安全區移到 deepalter，平時不出怪，
+         劇情才出 BOSS」）══ `rest`＝走進去就閉棺結算、`noWild`＝不刷野怪。
+         ⚠ **BOSS 不受 `noWild` 管**：那一場是劇本（節點的 `acts` 那一拍），
+           `noWild` 擋的只有 `wildSpawn` 的隨機刷怪 —— 兩件事各走各的路。
+           所以「平時是休息處、劇情一到就在同一格開打」兩句話同時成立。 */
       deepaltar:  { bg:'Ruins_shinier_DeepAltar', name:'木雅克神殿　深部祭壇', noTime:true,
+        rest:true, noWild:true,
         /* ⚠ ver -908（Ray：「把巨像廳跟深部祭壇的連結給斷了」）：它現在是**末端**
            —— 走到底就是祭壇，沒有繞回去的路。 */
         exits:{ back:'bridge' } },
