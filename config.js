@@ -49,7 +49,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.07-876';
+export const VERSION = 'ver 2026.09.07-877';
 
 export const GAME_CONFIG = {
 
@@ -2097,6 +2097,9 @@ export const GAME_CONFIG = {
       /* 安雅戰鬥曲（ver -873 本機 BS.1770 實測 −8.4 LUFS，錨校正 bgm_battle 0.849：
          尺差 ×1.18 對回表尺 → 0.636；峰值 1.1dB 未觸頂）。 */
       peritunematerial_battlefield4:0.636,
+      /* 木雅克神殿（ver -876 同尺實測 −14.4 LUFS → 1.265，**峰值觸頂夾到 1.175**
+         （檔案峰值 +0.6dB、ceil +2）＝表上的 CAP。 */
+      peritune_frosylva:1.175,
       bgm_piratebattle:1.277,
       /* 湖上甲板三首＋著岸音（ver -744，同一把尺）。 */
       peritune_misty_hollow_loop:0.569,
@@ -2547,6 +2550,7 @@ export const ASSETS = {
   bgm_epicbattle:   "resources/audio/bgm/PerituneMaterial_EpicBattle_loop.m4a",
   /* 安雅為夥伴時的戰鬥曲（ver -873，Ray 指定 BattleField4——混亂 session 遺失件補回）。 */
   bgm_battlefield4: "resources/audio/bgm/PerituneMaterial_BattleField4.m4a",
+  bgm_frosylva:     "resources/audio/bgm/PeriTune_Frosylva.m4a",   // 木雅克神殿（ver -876）
   bgm_piratebattle: "resources/audio/bgm/bgm_piratebattle.m4a",
   /* 湖上甲板那一段（ver -744，Ray 的 stage5 稿）。 */
   bgm_misty:        "resources/audio/bgm/Peritune_Misty_Hollow_loop.m4a",

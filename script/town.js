@@ -2439,7 +2439,7 @@ export const TOWNS = {
   shinier_ruins: {
     name: '木雅克神殿',
     entry: 'entrance',
-    bgm: 'misty',            // 暫代（同森林；Ray 指定神殿曲後換）
+    bgm: 'frosylva',         // PeriTune_Frosylva（ver -876，Ray 指定）
     storyExplore: true,
     wilderness: true,
     stepMin: 30,             // 遺跡每步半小時（ver -872 那條的第二級）

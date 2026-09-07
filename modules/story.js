@@ -567,6 +567,7 @@ const BGM_FILES=[
   'Peritune_Whirlwind.m4a',
   'PeriTune_Harbor_Morning_loop.m4a',   // ver -753：stage5 起的北泊（rebuild.bgm；Credit 已加）
   'bgm_warhorn.m4a',   // ver -772：夏爾村魔獸來襲（警鐘後緊接，loop）
+  'PeriTune_Frosylva.m4a',   // ver -876：木雅克神殿（Ray 指定；Credit 已加）
 ];
 /* 別名：腳本裡慣用的短名 → 實際檔名（去副檔名）。加新別名只動這裡。 */
 const BGM_ALIAS={ crisis:'peritunematerial_crisis_loop', lunaria:'bgm_lunaria',
@@ -580,7 +581,8 @@ const BGM_ALIAS={ crisis:'peritunematerial_crisis_loop', lunaria:'bgm_lunaria',
                   whistling:'peritune_whistling_winds_loop',   // ver -744；-752 起＝森住民戰後（bgmAfter）
                   whirlwind:'peritune_whirlwind',   // ver -747：索菈娜插畫登場～森住民戰
                   harbor:'peritune_harbor_morning_loop',   // ver -753：stage5 起的北泊
-                  warhorn:'bgm_warhorn' };   // ver -772：夏爾村魔獸來襲
+                  warhorn:'bgm_warhorn',   // ver -772：夏爾村魔獸來襲
+                  frosylva:'peritune_frosylva' };   // ver -876：木雅克神殿
 const BGM_SRC=(()=>{ const m={};
   for(const f of BGM_FILES) m[f.replace(/\.[^.]+$/,'').toLowerCase()]='resources/audio/bgm/'+f;
   return m; })();
