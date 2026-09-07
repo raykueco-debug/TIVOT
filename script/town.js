@@ -2545,6 +2545,28 @@ export const TOWNS = {
     wilderness: true,
     mist: 1,                 // 小地圖走過才亮（ver -877，Ray；沒人帶路）
     stepMin: 30,             // 遺跡每步半小時（ver -872 那條的第二級）
+    /* ══ 槍棺地圖（ver -911）══ 美術照 ver -909 的拓樸重畫（`_layout_shinier_ruins.png`）。
+       `spots`＝各節點的墨點在圖上的比例座標。
+       ⚠⚠ **是量出來的，不是估的**：先用 `L<80 ＋ MinFilter(9)` 把墨點從羊皮紙裡挑出來
+         （細線會被侵蝕掉、污漬填充率不夠），再逐顆對著英文草書標籤指派 ——
+         **標籤一律在墨點的右下方約 13~16px**，那就是配對的判準。
+       ⚠ 圖上有兩顆**畫線轉折用的墨點**（石橋上方、崩塌走道左下），長得跟節點一樣但
+         沒有名字 —— 不要把它們算進來。判準同上：**沒有標籤指著它就不是節點**。
+       ⚠ 入口（Entrance）畫在圖上是為了讓玩家看得懂，但它是**夏爾森林**的格子，
+         不是這張圖的節點，所以 `spots` 裡沒有它。
+       ⚠ `?v=3`：這是同一個檔名的第三版（18格 → -908 → -909），同名覆蓋必掛（§5）。 */
+    map: {
+      img: 'resources/map/map_ruins_shinier.webp?v=3',
+      spots: {
+        antechamber:[0.542, 0.725], corridora:[0.371, 0.720], crossway:[0.370, 0.583],
+        well:[0.369, 0.436], stairup:[0.222, 0.594], brazier:[0.202, 0.429],
+        collapsed:[0.111, 0.437], mural:[0.081, 0.591], bridge:[0.201, 0.292],
+        deepaltar:[0.198, 0.159], colossus:[0.354, 0.290], machine:[0.465, 0.287],
+        corridorb:[0.755, 0.724], stairdeep:[0.755, 0.640], catacomb:[0.755, 0.531],
+        hollow:[0.755, 0.388], prison:[0.638, 0.389], deepspring:[0.753, 0.226],
+        rift:[0.896, 0.223], darkbridge:[0.896, 0.125], mosschamber:[0.896, 0.370],
+      },
+    },
     nodes: {
       /* ══ 21 格 —— **照 Ray 畫的 `resources/map/map_ruins_shinier.png` 排**（ver -907）══
          Ray：「map_ruins_shinier 照這張排」。那張圖是**權威佈局**：節點、連線、
