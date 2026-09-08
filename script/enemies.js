@@ -648,6 +648,11 @@ export const ENEMIES = {
       bg:'Shinier_Wilds',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:480,                             // 心魘 +20%（比連接格怪池強）
+      /* ⚠ ver -943 補回來：-942 那一版這一格不見了（比對前後版本時抓到）——
+         `enemy.setEnemy` 是 `state.ASSAULT_DAMAGE = en.attack`，沒有這一格
+         就是 `undefined` → 傷害算出 NaN，而畫面上不會有錯誤訊息。
+         值沿用被刪掉之前的 18；要改就改（Excel 上那一格也可以）。 */
+      attack:18,
       atkInterval:null,
       delayPenalty:{ seconds:6 },
       resist:{},
