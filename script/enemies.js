@@ -124,7 +124,7 @@ export const ENEMIES = {
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[2,3],
-      ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 }, resist:{}, weak:{},
+      ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'target',
       image:'enemy_dart_counter',    // 蕃茄人11號自己的圖（ver -862，Ray 交件 Dart_counter.webp）
       hp:300,
