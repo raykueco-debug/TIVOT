@@ -703,6 +703,16 @@ function screenShake(){
   clearTimeout(screenShake._t);
   screenShake._t=setTimeout(()=>el.classList.remove('hitshake'), 300);
 }
+/* 受擊那一格的音效鑰匙（ver -951）：卡上寫的是**一個名字**（字串），
+   也仍吃得下舊的物件寫法 —— 兩種都收在這一支（鐵律 7/8：查表只有一處）。
+   ⚠ 沒有這一支的話字串寫法會走 `_hf.type` → undefined → **敵攻擊音整個消失**，
+     而畫面上完全看不出來（同 -932 那個「沉默的退化」）。 */
+function hitFxSe(hf, kind){
+  const raw = hf && (hf[kind] || (kind==='ult' ? hf.assault : null));
+  if(!raw) return null;
+  const key = (typeof raw === 'string') ? raw : raw.type;
+  return (HITFX[key] && HITFX[key].se) || null;
+}
 function enemyAttack(dmg, kind, saintAmt){
   saint.resetSaintCombo();   // 受擊／點錯／逾時 → 連擊斷（九階「源泉」，ver -707）
   /* ⚠⚠ **失誤之後指一下正確的格子**（ver -717，Ray 指定）。掛在**這一支**是因為
@@ -758,8 +768,7 @@ function enemyAttack(dmg, kind, saintAmt){
      敵攻擊自動完美反擊（全額）。點錯（kind==='wrong'）只吃「不受擊」，不反擊
      （縮短窗口由 tap 的 coopMode 分支做）。放在計數之前 → 期間一律不算失誤。 */
   if(state.coopMode){
-    const _hf0 = state.curEnemyHitFx && state.curEnemyHitFx[fxKind];
-    const sk0  = _hf0 && HITFX[_hf0.type] && HITFX[_hf0.type].se;
+    const sk0  = hitFxSe(state.curEnemyHitFx, fxKind);
     if(sk0) SFX.play(asset(sk0), sfxGain(sk0));
     screenShake();
     enemy.showHitFx(fxKind);
@@ -786,8 +795,7 @@ function enemyAttack(dmg, kind, saintAmt){
   /* 敵攻擊音（ver -800）：**綁在 hitFx 的 type 上**——同一格的受擊特效與音效是一組
      （HITFX 那張表：type→{base 視覺, se 音效}）。卡上不再有 `sound` 欄位，改 hitFx
      的 type 就連特效帶音一起換（Ray 定案）。block 讀 ult（fxKind 已折）。 */
-  const _hf = state.curEnemyHitFx && state.curEnemyHitFx[fxKind];
-  const sk  = _hf && HITFX[_hf.type] && HITFX[_hf.type].se;
+  const sk  = hitFxSe(state.curEnemyHitFx, fxKind);
   if(sk) SFX.play(asset(sk), sfxGain(sk));   // 受擊層增益（全域響度階層見 tuning.sfxGain）
   if(state.saintMode){
     // 聖徒化期間敵攻擊不扣血：改推進倒數槽（推滿＝OBE）。視覺（震動/受擊特效/紅閃）留在 combat，

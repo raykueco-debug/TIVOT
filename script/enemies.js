@@ -49,9 +49,9 @@ export const ENEMIES = {
       //   type 可用：'claw'（爪痕，可設 count 幾道）／'blood'（血痕）／'bite'（齒痕）／
       //             'bullet'（彈痕/玻璃碎裂）／'slash'（紅刀痕濺血）。
       hitFx:{
-        delay:{ type:'blood', angle:'random' },   // 延時懲罰 → 一道血痕、角度隨機
-        wrong:{ type:'slash' },                    // 按錯懲罰 → 一條紅刀痕濺血
-        assault:{   type:'bite' },   // 攻擊（一般圈）→ 牙印（ver -762，Ray：「地下聖徒跟巨型聖徒的攻擊都換成牙印」）
+        delay:'blood',   // 延時懲罰 → 一道血痕、角度隨機
+        wrong:'slash',                    // 按錯懲罰 → 一條紅刀痕濺血
+        assault:'bite',   // 攻擊（一般圈）→ 牙印（ver -762，Ray：「地下聖徒跟巨型聖徒的攻擊都換成牙印」）
       },
     },
     // ── 教學專用敵：訓練用聖徒（僅教學戰載入，不進 lineup）──
@@ -77,9 +77,9 @@ export const ENEMIES = {
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
-        delay:{ type:'blood', angle:'random' },
-        wrong:{ type:'slash' },
-        assault:{   type:'claw', count:3, angle:'random' },
+        delay:'blood',
+        wrong:'slash',
+        assault:'claw',
       },
     },
     /* ══ 固定立靶（ver -396，Ray 交件 `Dart_timeattack`）══
@@ -109,9 +109,9 @@ export const ENEMIES = {
       hitFx:{
         /* ⚠ 沙袋靶不噴血：受擊只有**碎屑**（沿用 slash 的刀痕當彈著），
            大絕與延時的特效根本不會演到（它不攻擊）。 */
-        delay:{ type:'slash' },
-        wrong:{ type:'slash' },
-        assault:{   type:'slash' },
+        delay:'slash',
+        wrong:'slash',
+        assault:'slash',
       },
     },
     /* ══ 蕃茄人11號（ver -858，Ray：杰羅的自動人型靶）══ 同固定立靶（圖用
@@ -134,7 +134,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       entrance:null, special:[],
       boardGrids:[9,9,9,9,9],
-      hitFx:{ delay:{ type:'slash' }, wrong:{ type:'slash' }, assault:{ type:'slash' } },
+      hitFx:{ delay:'slash', wrong:'slash', assault:'slash' },
     },
     // ── 連戰第二隻（局內序列第二敵）：巨型聖徒。完全獨立一筆，非沿用 faceless。 ──
     //    非 Boss（不填 ult/delayPenalty/wrongPenalty → 普通怪走預設：單發大絕、無半傷減時）。
@@ -160,9 +160,9 @@ export const ENEMIES = {
       special:[],
       boardGrids:[9,9,9,9,9],     // ver -792：貝琳妲以外全 9 宮格（Ray 指定）
       hitFx:{                        // 自帶獨立三件套（巨型聖徒風味：大絕爪數加重為 4）
-        delay:{ type:'blood', angle:'random' },
-        wrong:{ type:'slash' },      // 按錯 → 紅刀痕濺血
-        assault:{   type:'bite' },       // 攻擊（一般圈）→ 牙印（ver -762，同地下聖徒）
+        delay:'blood',
+        wrong:'slash',      // 按錯 → 紅刀痕濺血
+        assault:'bite',       // 攻擊（一般圈）→ 牙印（ver -762，同地下聖徒）
       },
     },
     /* ══ 森住民（man_sorana，ver -744，Ray 的卡：「數值用巨型聖徒，攻擊減半，
@@ -200,9 +200,9 @@ export const ENEMIES = {
       special:[],
       boardGrids:[9,9,9,9,16],
       hitFx:{
-        delay:{ type:'dagger' },     // 貝琳妲的 dagger（slash 視覺＋匕首音，見 config.HITFX）
-        wrong:{ type:'slash' },
-        assault:{   type:'claw', count:4, angle:'random' },
+        delay:'dagger',     // 貝琳妲的 dagger（slash 視覺＋匕首音，見 config.HITFX）
+        wrong:'slash',
+        assault:'claw4',
       },
     },
     /* ══ 禍魘娜塔莉（ver -671，Ray 交稿）══════════════════════════════════
@@ -230,9 +230,9 @@ export const ENEMIES = {
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
-        delay:{ type:'claw', count:4, angle:'random' },
-        wrong:{ type:'slash' },
-        assault:{   type:'bite', count:4, angle:'random' },
+        delay:'claw4',
+        wrong:'slash',
+        assault:'bite',
       },
     },
     // 亂入怪（無傷 45 秒內通關才會出現）— 先用同一隻怪測流程，正式再換
@@ -254,9 +254,9 @@ export const ENEMIES = {
       special:[],
       boardGrids:[9,9,9,9,9],   // v16：每盤格數手動覆寫（同上，聖徒化不受影響）
       hitFx:{                        // 佔位卡的預設三件套（沿用地下聖徒風味；triggerIntruder 載入真正的怪會整組覆寫）
-        delay:{ type:'blood', angle:'random' },
-        wrong:{ type:'slash' },
-        assault:{   type:'bite' },
+        delay:'blood',
+        wrong:'slash',
+        assault:'bite',
       },
     },
     // ── 槍之魔女（Boss）v17：S 評價後遭遇的隱藏 Boss ──
@@ -280,9 +280,9 @@ export const ENEMIES = {
       delayPenalty:{ dmgScale:0.5, timeDelta:-1 },           // 延時懲罰：攻擊力為一般怪一半、時限減 1 秒
       // v17.2：受擊特效 —— 大絕/延時走彈痕（玻璃碎裂），按錯改紅刀痕濺血
       hitFx:{
-        delay:{ type:'bullet', count:1, pos:'random' },   // 延時 → 彈痕＋槍聲（bullet→em_shot）
-        wrong:{ type:'dagger' },                           // 按錯 → 紅刀痕＋匕首音（dagger）
-        assault:{   type:'witch_revolver', count:1, pos:'random', scale:1.6 },   // 大絕 → 大彈痕＋左輪（專屬）
+        delay:'bullet',   // 延時 → 彈痕＋槍聲（bullet→em_shot）
+        wrong:'dagger',                           // 按錯 → 紅刀痕＋匕首音（dagger）
+        assault:'witch_revolver',   // 大絕 → 大彈痕＋左輪（專屬）
       },
     },
     /* ══ 賞金獵人（ver -375）══ 舊街區・賞金獵人公會那一場（劇情插入戰）。
@@ -349,9 +349,9 @@ export const ENEMIES = {
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
-        delay:{ type:'blood', angle:'random' },
-        wrong:{ type:'slash' },
-        assault:{   type:'blunt', },
+        delay:'blood',
+        wrong:'slash',
+        assault:'blunt',
       },
     },
     np_candlepenitent: {
@@ -375,9 +375,9 @@ export const ENEMIES = {
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
-        delay:{ type:'blood', angle:'random' },
-        wrong:{ type:'slash' },
-        assault:{   type:'claw', count:3, angle:'random' },
+        delay:'blood',
+        wrong:'slash',
+        assault:'claw',
       },
     },
     np_coralman: {
@@ -401,9 +401,9 @@ export const ENEMIES = {
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
-        delay:{ type:'blood', angle:'random' },
-        wrong:{ type:'slash' },
-        assault:{   type:'claw', count:3, angle:'random' },
+        delay:'blood',
+        wrong:'slash',
+        assault:'claw',
       },
     },
     np_reassembled: {
@@ -427,9 +427,9 @@ export const ENEMIES = {
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
-        delay:{ type:'blood', angle:'random' },
-        wrong:{ type:'slash' },
-        assault:{   type:'claw', count:3, angle:'random' },
+        delay:'blood',
+        wrong:'slash',
+        assault:'claw',
       },
     },
     /* ══ 教堂的 Boss（ver -586，Ray：「B2G01，教堂 boss 用這一隻，跟其他怪數值
@@ -459,9 +459,9 @@ export const ENEMIES = {
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
-        delay:{ type:'blunt' },
-        wrong:{ type:'blood', angle:'random' },
-        assault:{   type:'blunt' },
+        delay:'blunt',
+        wrong:'blood',
+        assault:'blunt',
       },
     },
     /* ══ 瓦礫中的紫黑之爪（ver -595，Ray 交稿）══ 教堂那一場之後的真 BOSS，
@@ -495,9 +495,9 @@ export const ENEMIES = {
       special:[],
       boardGrids:[9,9,9,9,16],
       hitFx:{
-        delay:{ type:'blood', angle:'random' },
-        wrong:{ type:'slash' },
-        assault:{   type:'claw', count:3, angle:'random' },
+        delay:'blood',
+        wrong:'slash',
+        assault:'claw',
       },
     },
     /* ══ 夏爾村村內戰（ver -802，Ray 交稿）══════════════════════════════════
@@ -530,9 +530,9 @@ export const ENEMIES = {
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
-        delay:{ type:'blood', angle:'random' },
-        wrong:{ type:'slash' },
-        assault:{   type:'claw', count:3, angle:'random' },
+        delay:'blood',
+        wrong:'slash',
+        assault:'claw',
       },
     },
     sv_beast_organ: {                     // 畸變野獸（器官外露，−5%）
@@ -556,9 +556,9 @@ export const ENEMIES = {
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
-        delay:{ type:'blood', angle:'random' },
-        wrong:{ type:'slash' },
-        assault:{   type:'claw', count:3, angle:'random' },
+        delay:'blood',
+        wrong:'slash',
+        assault:'claw',
       },
     },
     sv_stag: {                            // 鹿魘（基準值）
@@ -582,9 +582,9 @@ export const ENEMIES = {
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
-        delay:{ type:'blood', angle:'random' },
-        wrong:{ type:'slash' },
-        assault:{   type:'claw', count:3, angle:'random' },
+        delay:'blood',
+        wrong:'slash',
+        assault:'claw',
       },
     },
     sv_beast_shackle: {                   // 魔獸型（鐵環枷鎖長進肉裡，+10%）
@@ -608,9 +608,9 @@ export const ENEMIES = {
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
-        delay:{ type:'blood', angle:'random' },
-        wrong:{ type:'slash' },
-        assault:{   type:'claw', count:3, angle:'random' },
+        delay:'blood',
+        wrong:'slash',
+        assault:'claw',
       },
     },
     /* ── 野外那格（圍城的**收尾格**，config.battles.sv_wild 的 sessionEnd）──
@@ -642,9 +642,9 @@ export const ENEMIES = {
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
-        delay:{ type:'blood', angle:'random' },
-        wrong:{ type:'slash' },
-        assault:{   type:'claw', count:3, angle:'random' },
+        delay:'blood',
+        wrong:'slash',
+        assault:'claw',
       },
     },
     /* ── 祭壇那格（「最硬的一般格」，數值同 np_boss；Ray 指定）──
@@ -670,9 +670,9 @@ export const ENEMIES = {
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
-        delay:{ type:'blunt' },
-        wrong:{ type:'blood', angle:'random' },
-        assault:{   type:'blunt' },
+        delay:'blunt',
+        wrong:'blood',
+        assault:'blunt',
       },
     },
     guild_hunter: {
@@ -708,9 +708,9 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5, damage:5 },
       wrongPenalty:{ damage:5 },         // 點錯懲罰：傷害 5、鈍器受擊特效
       hitFx:{
-        delay:{ type:'bullet', count:1, pos:'random' },          // 彈孔
-        wrong:{ type:'blunt' },                                   // 鈍器
-        assault:{   type:'bullet', count:1, pos:'random', scale:1.8 },// 大彈孔
+        delay:'bullet',          // 彈孔
+        wrong:'blunt',                                   // 鈍器
+        assault:'bullet_big',// 大彈孔
       },
       /* ⚠ 抗性／弱點武器：**卡上有、程式還沒實作**。資料先照卡放著。 */
       /* 掉落物（固定掉，不擲骰）：黃銅彈殼 ×6。 */
@@ -757,9 +757,9 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5, damage:10 },
       wrongPenalty:{ damage:5 },
       hitFx:{
-        delay:{ type:'claw', count:1, angle:'random' },
-        wrong:{ type:'blunt' },
-        assault:{   type:'centipi_claw', count:3, angle:'random' },   // 專屬：爪痕＋蜈蚣叫聲
+        delay:'claw1',
+        wrong:'blunt',
+        assault:'centipi_claw',   // 專屬：爪痕＋蜈蚣叫聲
       },
       /* ⚠⚠ **抗性／弱點／破防增傷**（ver -423 起真的生效，之前只是放著）：
          值是**加減成**，套在 `combat.enemyDamage` 那一個計算點上（鐵律 7）。
@@ -809,9 +809,9 @@ export const ENEMIES = {
       wrongPenalty:{ damage:5 },
       /* 蓄力攻擊「毒牙特效」＝咬痕（bite）；延時單爪、點錯鈍器（同卡）。 */
       hitFx:{
-        delay:{ type:'claw', count:1, angle:'random' },
-        wrong:{ type:'blunt' },
-        assault:{   type:'serpent_bite' },   // 專屬：牙印＋羽蛇吼叫
+        delay:'claw1',
+        wrong:'blunt',
+        assault:'serpent_bite',   // 專屬：牙印＋羽蛇吼叫
       },
       /* 弱點：反擊武器 +100%、**散射武器（霰彈槍類）再 +150%**（Ray 的卡）——
          `cat:<武器類別>` 只對反擊傷害生效，判定在 combat.applyEnemyMods（唯一一處）。 */
@@ -853,9 +853,9 @@ export const ENEMIES = {
       /* 延時／點錯都是彈孔（牠是用砲跟槍招呼你的）；大絕＝**特大彈孔＋畫面閃紅**
          （`flash:'red'`，ver -509 新演出，實作在 enemy.showHitFx）。 */
       hitFx:{
-        delay:{ type:'pirate_shipcannon', count:1, pos:'random' },   // 專屬：艦砲（延時）
-        wrong:{ type:'pirate_sniper', count:1, pos:'random' },       // 專屬：狙擊（按錯）
-        assault:{   type:'pirate_cannon', count:1, pos:'random', scale:2.4, flash:'red' },   // 專屬：艦砲（大絕）
+        delay:'pirate_shipcannon',   // 專屬：艦砲（延時）
+        wrong:'pirate_sniper',       // 專屬：狙擊（按錯）
+        assault:'pirate_cannon',   // 專屬：艦砲（大絕）
       },
       /* 弱點：反擊 +100%、**單射武器（萊福槍類）再 +150%**（`cat:` 只對反擊生效，
          判定在 combat.applyEnemyMods，同羽蛇卡）。 */
@@ -893,9 +893,9 @@ export const ENEMIES = {
       entrance:null,
       special:[],
       boardGrids:[9,9,9,9,9],
-      hitFx:{ delay:{ type:'claw', count:1, angle:'random' },
-              wrong:{ type:'slash' },
-              assault:{ type:'bite', count:3, angle:'random' } },
+      hitFx:{ delay:'claw1',
+              wrong:'slash',
+              assault:'bite' },
       loot:[ { id:'meat_lynx', n:1 } ],
     },
     sf_snake: {
@@ -918,9 +918,9 @@ export const ENEMIES = {
       entrance:null,
       special:[],
       boardGrids:[9,9,9,9,9],
-      hitFx:{ delay:{ type:'bite' },
-              wrong:{ type:'slash' },
-              assault:{ type:'bite' } },
+      hitFx:{ delay:'bite',
+              wrong:'slash',
+              assault:'bite' },
       loot:[ { id:'meat_snake', n:1 } ],
     },
     sf_hog: {
@@ -943,9 +943,9 @@ export const ENEMIES = {
       entrance:null,
       special:[],
       boardGrids:[9,9,9,9,9],
-      hitFx:{ delay:{ type:'blunt' },
-              wrong:{ type:'slash' },
-              assault:{ type:'blunt' } },
+      hitFx:{ delay:'blunt',
+              wrong:'slash',
+              assault:'blunt' },
       loot:[ { id:'meat_boar', n:1 } ],
     },
     sf_tiger: {
@@ -970,9 +970,9 @@ export const ENEMIES = {
       entrance:null,
       special:[],
       boardGrids:[9,9,9,9,9],
-      hitFx:{ delay:{ type:'claw', count:1, angle:'random' },
-              wrong:{ type:'bite' },
-              assault:{ type:'claw', count:3, angle:'random' } },
+      hitFx:{ delay:'claw1',
+              wrong:'bite',
+              assault:'claw' },
       loot:[ { id:'tiger_horn', n:1, p:0.25 } ],   // 虎王的獨角 25%（Ray 表）
     },
     sf_crows: {
@@ -995,9 +995,9 @@ export const ENEMIES = {
       entrance:null,
       special:[],
       boardGrids:[9,9,9,9,9],
-      hitFx:{ delay:{ type:'slash' },
-              wrong:{ type:'slash' },
-              assault:{ type:'claw', count:3, angle:'random' } },
+      hitFx:{ delay:'slash',
+              wrong:'slash',
+              assault:'claw' },
       loot:[ { id:'crow_beak', n:1 } ],
     },
     /* ══⚠⚠ 樹靈鹿主（未變異）**沒有敵人卡**（ver -878，Ray：「鹿主不變異是不會
@@ -1036,9 +1036,9 @@ export const ENEMIES = {
       boardGrids:[9,9,9,9,9],
       /* 主動攻擊＝**櫻花狂亂飛舞**（ver -899，Ray 指定）：牠是樹靈，用爪痕不對。
          音效（Sturm，兩秒淡出）綁在那一支演出裡，不在 HITFX 的 `se` 上。 */
-      hitFx:{ delay:{ type:'blood', angle:'random' },
-              wrong:{ type:'slash' },
-              assault:{ type:'sakura' } },
+      hitFx:{ delay:'blood',
+              wrong:'slash',
+              assault:'sakura' },
       loot:[ { id:'elf_antler', n:1 } ],
     },
     /* ── 骸系（禍魘）：日夜差分是**兩張卡**，刷怪時由 wildSpawn 依 clock.band 選
@@ -1063,9 +1063,9 @@ export const ENEMIES = {
       entrance:null,
       special:[],
       boardGrids:[9,9,9,9,9],
-      hitFx:{ delay:{ type:'blood', angle:'random' },
-              wrong:{ type:'slash' },
-              assault:{ type:'claw', count:3, angle:'random' } },
+      hitFx:{ delay:'blood',
+              wrong:'slash',
+              assault:'claw' },
       loot:[ { id:'paw_bear', n:1 } ],
     },
     sf_bear_nightmare: {
@@ -1088,9 +1088,9 @@ export const ENEMIES = {
       entrance:null,
       special:[],
       boardGrids:[9,9,9,9,9],
-      hitFx:{ delay:{ type:'blood', angle:'random' },
-              wrong:{ type:'slash' },
-              assault:{ type:'claw', count:3, angle:'random' } },
+      hitFx:{ delay:'blood',
+              wrong:'slash',
+              assault:'claw' },
       loot:[ { id:'paw_bear', n:1 } ],
     },
     sf_stag_rot: {
@@ -1115,9 +1115,9 @@ export const ENEMIES = {
       entrance:null,
       special:[],
       boardGrids:[9,9,9,9,9],
-      hitFx:{ delay:{ type:'blood', angle:'random' },
-              wrong:{ type:'slash' },
-              assault:{ type:'claw', count:3, angle:'random' } },
+      hitFx:{ delay:'blood',
+              wrong:'slash',
+              assault:'claw' },
       loot:[ { id:'antler_deer', n:1 } ],
     },
     sf_stag_nightmare: {
@@ -1140,9 +1140,9 @@ export const ENEMIES = {
       entrance:null,
       special:[],
       boardGrids:[9,9,9,9,9],
-      hitFx:{ delay:{ type:'blood', angle:'random' },
-              wrong:{ type:'slash' },
-              assault:{ type:'claw', count:3, angle:'random' } },
+      hitFx:{ delay:'blood',
+              wrong:'slash',
+              assault:'claw' },
       loot:[ { id:'antler_deer', n:1 } ],
     },
     /* ══ 木雅克神殿的怪（ver -919，Ray 交表）══════════════════════════════
@@ -1177,8 +1177,8 @@ export const ENEMIES = {
       entrance:null,
       special:[],
       boardGrids:[9,9,9,9,9],
-      hitFx:{ delay:{ type:'bite' }, wrong:{ type:'slash' },
-              assault:{ type:'bite' } },
+      hitFx:{ delay:'bite', wrong:'slash',
+              assault:'bite' },
       loot:[ { id:'harm_bone', n:1, p:0.10 } ],
     },
     ruins_bellreacher: {
@@ -1201,8 +1201,8 @@ export const ENEMIES = {
       entrance:null,
       special:[],
       boardGrids:[9,9,9,9,16],
-      hitFx:{ delay:{ type:'blunt' }, wrong:{ type:'slash' },
-              assault:{ type:'blunt', count:2 } },
+      hitFx:{ delay:'blunt', wrong:'slash',
+              assault:'blunt' },
       loot:[ { id:'bell_shard', n:1, p:0.10 } ],
     },
     ruins_halo_ring: {
@@ -1225,8 +1225,8 @@ export const ENEMIES = {
       entrance:null,
       special:[],
       boardGrids:[9,9,9,9,9],
-      hitFx:{ delay:{ type:'blood', angle:'random' }, wrong:{ type:'slash' },
-              assault:{ type:'claw', count:3, angle:'random' } },
+      hitFx:{ delay:'blood', wrong:'slash',
+              assault:'claw' },
       /* ⚠ Ray 的表**沒給掉落** —— 空著（不是忘了，是還沒定）。 */
       loot:[],
     },
@@ -1250,8 +1250,8 @@ export const ENEMIES = {
       entrance:null,
       special:[],
       boardGrids:[9,9,9,9,9],
-      hitFx:{ delay:{ type:'claw', count:1, angle:'random' }, wrong:{ type:'slash' },
-              assault:{ type:'claw', count:3, angle:'random' } },
+      hitFx:{ delay:'claw1', wrong:'slash',
+              assault:'claw' },
       loot:[ { id:'harm_claw', n:1, p:0.10 } ],
     },
     ruins_bellwalker: {
@@ -1274,8 +1274,8 @@ export const ENEMIES = {
       entrance:null,
       special:[],
       boardGrids:[9,9,9,9,9],
-      hitFx:{ delay:{ type:'blunt' }, wrong:{ type:'slash' },
-              assault:{ type:'blunt' } },
+      hitFx:{ delay:'blunt', wrong:'slash',
+              assault:'blunt' },
       loot:[ { id:'bell_shard', n:1, p:0.10 } ],
     },
     /* ── 聖徒系列（`slay`：降臨與淨化照播，結算副標「已擊殺」）────────────── */
@@ -1299,8 +1299,8 @@ export const ENEMIES = {
       entrance:null,
       special:[],
       boardGrids:[9,9,9,9,9],
-      hitFx:{ delay:{ type:'blunt' }, wrong:{ type:'slash' },
-              assault:{ type:'claw', count:3, angle:'random' } },
+      hitFx:{ delay:'blunt', wrong:'slash',
+              assault:'claw' },
       loot:[ { id:'saint_claw', n:1 } ],          // 100%
     },
     ruins_saint_inspector: {
@@ -1323,8 +1323,8 @@ export const ENEMIES = {
       entrance:null,
       special:[],
       boardGrids:[9,9,9,9,16],
-      hitFx:{ delay:{ type:'slash' }, wrong:{ type:'slash' },
-              assault:{ type:'slash', count:2 } },
+      hitFx:{ delay:'slash', wrong:'slash',
+              assault:'slash' },
       loot:[ { id:'saint_fang', n:1 } ],          // 100%
     },
     ruins_saint_thug: {
@@ -1347,8 +1347,8 @@ export const ENEMIES = {
       entrance:null,
       special:[],
       boardGrids:[9,9,9,9,16],
-      hitFx:{ delay:{ type:'blunt' }, wrong:{ type:'slash' },
-              assault:{ type:'blunt', count:2 } },
+      hitFx:{ delay:'blunt', wrong:'slash',
+              assault:'blunt' },
       loot:[ { id:'saint_bone_big', n:1 } ],      // 100%
     },
     /* BOSS（結算怪）。⚠ **牠還沒有出場的那一拍**：深部祭壇平時不出怪（ver -918），
@@ -1373,8 +1373,8 @@ export const ENEMIES = {
       entrance:null,
       special:[],
       boardGrids:[9,9,16,9,16],
-      hitFx:{ delay:{ type:'blunt' }, wrong:{ type:'slash' },
-              assault:{ type:'claw', count:3, angle:'random' } },
+      hitFx:{ delay:'blunt', wrong:'slash',
+              assault:'claw' },
       loot:[ { id:'saint_bone', n:1 } ],          // 100%
     },
 
@@ -1418,9 +1418,9 @@ export const ENEMIES = {
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
-        delay:{ type:'blood', angle:'random' },
-        wrong:{ type:'slash' },
-        assault:{ type:'blunt' },
+        delay:'blood',
+        wrong:'slash',
+        assault:'blunt',
       },
     },
     relic_bellows: {                       // 軀幹是管風琴風箱，自己壓著自己呼吸
@@ -1444,9 +1444,9 @@ export const ENEMIES = {
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
-        delay:{ type:'blood', angle:'random' },
-        wrong:{ type:'slash' },
-        assault:{ type:'blunt' },
+        delay:'blood',
+        wrong:'slash',
+        assault:'blunt',
       },
     },
     relic_confessional: {                       // 身體是木造告解亭，一隻手從格柵裡貼著
@@ -1470,9 +1470,9 @@ export const ENEMIES = {
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
-        delay:{ type:'blood', angle:'random' },
-        wrong:{ type:'slash' },
-        assault:{ type:'blunt' },
+        delay:'blood',
+        wrong:'slash',
+        assault:'blunt',
       },
     },
     relic_hourglass: {                       // 胸腔嵌著巨大沙漏，落下的是灰不是沙
@@ -1496,9 +1496,9 @@ export const ENEMIES = {
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
-        delay:{ type:'blood', angle:'random' },
-        wrong:{ type:'slash' },
-        assault:{ type:'blunt' },
+        delay:'blood',
+        wrong:'slash',
+        assault:'blunt',
       },
     },
     relic_keyward: {                       // 頭是一團鑰匙，兩臂末端是鎖
@@ -1522,9 +1522,9 @@ export const ENEMIES = {
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
-        delay:{ type:'blood', angle:'random' },
-        wrong:{ type:'slash' },
-        assault:{ type:'blunt' },
+        delay:'blood',
+        wrong:'slash',
+        assault:'blunt',
       },
     },
     relic_lectern: {                       // 骨盆長出石造讀經台，十幾隻手按住書頁
@@ -1548,9 +1548,9 @@ export const ENEMIES = {
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
-        delay:{ type:'blood', angle:'random' },
-        wrong:{ type:'slash' },
-        assault:{ type:'blunt' },
+        delay:'blood',
+        wrong:'slash',
+        assault:'blunt',
       },
     },
     relic_censerlung: {                       // 肋骨外扳，胸腔裡擺盪著香爐
@@ -1574,9 +1574,9 @@ export const ENEMIES = {
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
-        delay:{ type:'blood', angle:'random' },
-        wrong:{ type:'slash' },
-        assault:{ type:'blunt' },
+        delay:'blood',
+        wrong:'slash',
+        assault:'blunt',
       },
     },
     relic_veilhands: {                       // 一整片祭壇帷幕，後面數不清的手往前推
@@ -1600,9 +1600,9 @@ export const ENEMIES = {
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
-        delay:{ type:'blood', angle:'random' },
-        wrong:{ type:'slash' },
-        assault:{ type:'blunt' },
+        delay:'blood',
+        wrong:'slash',
+        assault:'blunt',
       },
     },
     relic_wheelpsalm: {                       // 巨大的祈禱輪，輻條就是人的手臂
@@ -1626,9 +1626,9 @@ export const ENEMIES = {
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
-        delay:{ type:'blood', angle:'random' },
-        wrong:{ type:'slash' },
-        assault:{ type:'blunt' },
+        delay:'blood',
+        wrong:'slash',
+        assault:'blunt',
       },
     },
     relic_chalice: {                       // 頭是過大的聖爵，有手從杯口內側往上抓
@@ -1652,9 +1652,9 @@ export const ENEMIES = {
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
-        delay:{ type:'blood', angle:'random' },
-        wrong:{ type:'slash' },
-        assault:{ type:'blunt' },
+        delay:'blood',
+        wrong:'slash',
+        assault:'blunt',
       },
     },
 

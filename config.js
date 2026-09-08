@@ -16,9 +16,20 @@ import { ENEMIES } from './script/enemies.js';   // 敵人卡抽成獨立檔（v
    ⚠ 通用 type（claw/slash/…）＝通用音；**特殊怪**自己的簽名音用**專屬 type 名**
      （serpent_bite＝羽蛇吼叫、centipi_claw＝蜈蚣叫聲、pirate_*＝空賊船三種艦砲…），
      視覺沿用某個 base，音效獨立——別人用不到，改一格連 fx 帶音一起換掉。 */
+/* ══⚠⚠⚠ **受擊特效：一個名字就是一整個樣子**（ver -951，Ray：「受擊特效只要有
+   slash, bite 這些單名指定就好，已經全默認 random 了根本不用再列 angle」）══
+   敵人卡上那四格（延時／按錯／攻擊／大絕）現在只寫**一個名字**，
+   `count`／`pos`／`scale`／`flash`／`angle` 全部住在這張表裡。
+   ⚠ 為什麼搬過來：那些參數是「**這種特效**長什麼樣」，不是「這隻怪的性質」——
+     散在六十張卡上，同一個 `claw` 就出現了 1/3/4 三種爪數，看卡看不出差別在哪（鐵律 1）。
+   ⚠ 所以爪數不同的就**各給一個名字**（`claw1`／`claw`／`claw4`）：名字要能在
+     Excel 的下拉選單裡讀得懂，那是 Ray 挑特效的唯一介面。
+   ⚠ `angle` 一律 random，表上不再出現（`showHitFx` 的預設）。 */
 export const HITFX = {
   // ── 通用 ──
-  claw:   { base:'claw',   se:'em_slash'  },
+  claw1:  { base:'claw',   se:'em_slash', count:1 },   // 一道爪痕
+  claw:   { base:'claw',   se:'em_slash', count:3 },   // 三爪（預設）
+  claw4:  { base:'claw',   se:'em_slash', count:4 },   // 四爪（重擊）
   slash:  { base:'slash',  se:'em_slash'  },
   bite:   { base:'bite',   se:'em_slash'  },
   blood:  { base:'blood',  se:'em_smack'  },
@@ -27,15 +38,16 @@ export const HITFX = {
      兩秒再淡出」的**演出**，長度只有 `enemy.spawnSakura` 知道（走 `SFX.playCue`
      的把手）。寫在這裡會被 combat 當一次性受擊音直接放到底，變成兩份聲音（鐵律 7）。 */
   sakura: { base:'sakura' },
-  bullet: { base:'bullet', se:'em_shot'   },
+  bullet:     { base:'bullet', se:'em_shot', count:1, pos:'random' },              // 彈孔
+  bullet_big: { base:'bullet', se:'em_shot', count:1, pos:'random', scale:1.8 },  // 大彈孔
   dagger: { base:'slash',  se:'em_dagger' },   // 匕首（貝琳妲語彙）：slash 視覺＋匕首音
   // ── 特殊怪的簽名（視覺沿用 base、音效專屬）──
   serpent_bite:      { base:'bite',   se:'se_enemy_serpent' },   // 羽蛇：牙印＋吼叫
   centipi_claw:      { base:'claw',   se:'se_enemy_centipi' },   // 蜈蚣：爪痕＋叫聲
-  witch_revolver:    { base:'bullet', se:'em_revolver'      },   // 魔女大絕：彈痕＋左輪
-  pirate_cannon:     { base:'bullet', se:'se_weapon_cannon' },   // 空賊船大絕：艦砲
-  pirate_shipcannon: { base:'bullet', se:'se_ship_cannon'   },   // 空賊船延時：艦砲（另一支）
-  pirate_sniper:     { base:'bullet', se:'se_sniper_falcon' },   // 空賊船按錯：狙擊
+  witch_revolver:    { base:'bullet', se:'em_revolver',      count:1, pos:'random', scale:1.6 },  // 魔女大絕：彈痕＋左輪
+  pirate_cannon:     { base:'bullet', se:'se_weapon_cannon', count:1, pos:'random', scale:2.4, flash:'red' },  // 空賊船大絕：艦砲＋畫面閃紅
+  pirate_shipcannon: { base:'bullet', se:'se_ship_cannon',   count:1, pos:'random' },  // 空賊船延時：艦砲（另一支）
+  pirate_sniper:     { base:'bullet', se:'se_sniper_falcon', count:1, pos:'random' },  // 空賊船按錯：狙擊
 };
 
 /* ============================================================================
@@ -53,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.08-950';
+export const VERSION = 'ver 2026.09.08-951';
 
 export const GAME_CONFIG = {
 

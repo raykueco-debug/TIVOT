@@ -152,13 +152,16 @@ def cell(card, col):
         return arr[0] if which == '傷害' else arr[1]
     if col.startswith('hitFx.'):
         v = (card.get('hitFx') or {}).get(col.split('.')[1])
-        return json.dumps(v, ensure_ascii=False) if v else ''
+        if not v: return ''
+        return v if isinstance(v, str) else (v.get('type') or '')   # 舊的物件寫法只印 type
     if col.startswith('loot'):
         idx = int(col[4]) - 1; part = col.split('.')[1]
         arr = card.get('loot') or []
         if idx >= len(arr): return ''
         got = arr[idx].get(part)
-        return '' if got is None else got
+        if got is None: return ''
+        if part == 'id': return f"{ITEM_NAME.get(got, got)}｜{got}"   # 中文在前（見 item_opts）
+        return got
     if '.' in col:
         head, rest = col.split('.', 1)
         v = card.get(head)
@@ -190,7 +193,13 @@ def load_named(name, expr):
     except Exception: return None
 
 def load_assets(): return load_named('ASSETS', 'ASSETS') or {}
-def item_ids():    return load_named('GAME_CONFIG', 'Object.keys(GAME_CONFIG.items.defs)') or []
+def item_opts():
+    """掉落的下拉選項：**中文在前、id 在後**（ver -951，Ray：「掉落物選擇時把中文
+       也前綴上去」）—— 光看 id 認不出是什麼。格式 `中文｜id`，匯入時取 `｜` 之後那一段。
+       ⚠ 分隔用全形「｜」：道具 id 是 a-z0-9_，中文名裡也不會有它，切得乾淨。"""
+    d = load_named('GAME_CONFIG', 'GAME_CONFIG.items.defs') or {}
+    return [f"{(v or {}).get('name') or k}｜{k}" for k, v in d.items()]
+def hitfx_opts(): return load_named('HITFX', 'Object.keys(HITFX)') or []
 def bg_names():
     """背景的基底名（去副檔名、去重）—— 卡上的 `bg` 就是寫這個。"""
     d = os.path.join(ROOT, 'resources', 'background')
@@ -199,6 +208,12 @@ def bg_names():
     return sorted({os.path.splitext(f)[0] for f in fs if f.lower().endswith(('.webp', '.png', '.jpg', '.jpeg'))})
 
 # ── 匯出 ──────────────────────────────────────────────────────────────
+ITEM_NAME = {}          # id → 中文（匯出時填；給 loot 那幾格加前綴用）
+def strip_label(v):
+    """下拉選來的值是 `中文｜id`，卡上要存的是 id。⚠ 取**最後一段**：中文名裡
+       萬一也有分隔符也不會切錯。"""
+    return str(v).split('｜')[-1].strip() if v is not None else v
+
 STAMP = '__源檔指紋__'   # 匯出當下 enemies.js 的內容雜湊；匯入時對一次
 def do_export():
     import hashlib, tempfile
@@ -208,6 +223,9 @@ def do_export():
     from openpyxl.utils import get_column_letter as CL
     from openpyxl.worksheet.datavalidation import DataValidation
     data   = load_js()
+    global ITEM_NAME
+    ITEM_NAME = {k: (v or {}).get('name') or k
+                 for k, v in (load_named('GAME_CONFIG', 'GAME_CONFIG.items.defs') or {}).items()}
     assets = load_assets()
     files  = enemy_files()
     cols   = columns()
@@ -274,9 +292,11 @@ def do_export():
     #     背景有三百多個，直接塞會整條驗證失效（而且不會報錯）。
     lst = wb.create_sheet('__lists__')
     lst['A1'] = 'bg'; lst['B1'] = 'item'
-    bgs, items = bg_names(), item_ids()
+    bgs, items, fxs = bg_names(), item_opts(), hitfx_opts()
+    lst['C1'] = 'hitFx'
     for j, v in enumerate(bgs, 2):   lst.cell(j, 1).value = v
     for j, v in enumerate(items, 2): lst.cell(j, 2).value = v
+    for j, v in enumerate(fxs, 2):   lst.cell(j, 3).value = v
     def add_dv(colname, ref):
         if colname not in names: return
         i = names.index(colname) + 1
@@ -285,6 +305,8 @@ def do_export():
         dv.add(f'{CL(i)}4:{CL(i)}{ws.max_row}')
     add_dv('bg', f"'__lists__'!$A$2:$A${len(bgs)+1}")
     for i in range(1, LOOT_N + 1): add_dv(f'loot{i}.id', f"'__lists__'!$B$2:$B${len(items)+1}")
+    # 受擊特效四格：一個名字就是一整個樣子（ver -951，見 config.HITFX）
+    for sl in HITFX_SLOTS: add_dv(f'hitFx.{sl}', f"'__lists__'!$C$2:$C${len(fxs)+1}")
     lst.sheet_state = 'hidden'
 
     # ── 縮圖 ──
@@ -334,7 +356,7 @@ def set_scalar(src, key, path, val):
     i, j = sp; body = src[i:j]
     parts = path.split('.')
     if len(parts) == 1:
-        m = re.search(r'(\n\s*' + re.escape(parts[0]) + r':\s*)([^,\n]*)', body)
+        m = re.search(r'(\n\s*' + re.escape(parts[0]) + r':\s*)([^,\n]*?)(\s*)(?=,|\n|$)', body)
         if not m: return src, False
         body2 = body[:m.start(2)] + js_literal(val) + body[m.end(2):]
     else:
@@ -360,6 +382,57 @@ def set_scalar(src, key, path, val):
         body2 = body[:m.start(1)] + blob2 + body[m.end(1):]
     return src[:i] + body2 + src[j:], True
 
+
+def _span_after(body, key):
+    """找 `key:` 後面那一整塊（{…} 或 […]），回 (值的起, 值的迄)；找不到回 None。"""
+    m = re.search(r'\n\s*' + re.escape(key) + r':\s*', body)
+    if not m: return None
+    st = m.end()
+    if st >= len(body) or body[st] not in '[{': return None
+    op = body[st]; cl = ']' if op == '[' else '}'
+    d = 0; j = st
+    while j < len(body):
+        if body[j] == op: d += 1
+        elif body[j] == cl:
+            d -= 1
+            if d == 0: return (st, j + 1)
+        j += 1
+    return None
+
+def set_block(src, key, field, text):
+    """把 <卡>.<field> 那一整塊換成 text（loot／hitFx 用）。
+       ⚠ 為什麼要整塊重寫：那兩個是**陣列／多鍵物件**，Excel 上可能新增一列掉落、
+         也可能第一次填 hitFx.ult —— 逐格替換只改得動「已經存在的那一格」
+         （-951 的往返測試就是這樣漏掉 loot 與新增的 ult）。"""
+    sp = card_span(src, key)
+    if not sp: return src, False
+    i, j = sp; body = src[i:j]
+    at = _span_after(body, field)
+    if at:
+        body2 = body[:at[0]] + text + body[at[1]:]
+    else:
+        m = re.search(r'\n(\s*)([a-zA-Z_])', body)          # 照這張卡的縮排補一行
+        ind = m.group(1) if m else '      '
+        body2 = body.rstrip()
+        if not body2.endswith(','): body2 += ','
+        body2 += f'\n{ind}{field}:{text},\n' + ' ' * (len(ind) - 2)
+    return src[:i] + body2 + src[j:], True
+
+def loot_text(rows):
+    """rows: [(id, n, p)] → `[ { id:'x', n:1, p:0.33 }, … ]`（空的回 `[]`）。"""
+    out = []
+    for iid, n, pp in rows:
+        if not iid: continue
+        parts = [f"id:'{iid}'", f"n:{int(n) if n not in (None,'') else 1}"]
+        if pp not in (None, ''): parts.append('p:' + ('%g' % float(pp)))
+        out.append('{ ' + ', '.join(parts) + ' }')
+    return '[ ' + ', '.join(out) + ' ]' if out else '[]'
+
+def hitfx_text(slots):
+    """slots: {delay/wrong/assault/ult → 名字}（空的跳過）。"""
+    body = ', '.join(f"{k}:'{v}'" for k, v in slots.items() if v)
+    return '{ ' + body + ' }' if body else '{}'
+
 SKIP_COLS = {'__no__', '圖', '圖檔', 'key'}
 def do_import(path):
     import hashlib
@@ -384,13 +457,36 @@ def do_import(path):
         key = str(key).strip() if key else ''
         if not key: continue                    # 「有圖沒卡」那幾列
         if key not in cur: unknown.append(key); continue
+        # loot／hitFx 是整塊的：先把這一列的值收齊，最後一次寫（見 set_block）
+        rows_loot, slots_fx = [], {}
+        for n_ in range(1, LOOT_N + 1):
+            g = lambda part: ws.cell(r, names.index(f'loot{n_}.{part}') + 1).value if f'loot{n_}.{part}' in names else None
+            rows_loot.append((strip_label(g('id')) if g('id') else '', g('n'), g('p')))
+        for sl in HITFX_SLOTS:
+            if f'hitFx.{sl}' in names:
+                v = ws.cell(r, names.index(f'hitFx.{sl}') + 1).value
+                if v: slots_fx[sl] = str(v).strip()
+        want_loot = loot_text(rows_loot)
+        want_fx   = hitfx_text(slots_fx)
+        if want_loot != loot_text([(d.get('id',''), d.get('n'), d.get('p')) for d in (cur[key].get('loot') or [])]):
+            src, ok = set_block(src, key, 'loot', want_loot)
+            (changed if ok else skipped).append(f'{key}.loot → {want_loot}')
+        cur_fx = cur[key].get('hitFx') or {}
+        if want_fx != hitfx_text({k2: (v2 if isinstance(v2, str) else (v2 or {}).get('type')) for k2, v2 in cur_fx.items()}):
+            src, ok = set_block(src, key, 'hitFx', want_fx)
+            (changed if ok else skipped).append(f'{key}.hitFx → {want_fx}')
         for i, c in enumerate(names, 1):
             if not c or c in SKIP_COLS: continue
+            if c.startswith('loot') or c.startswith('hitFx.'): continue   # 上面整塊寫過了
             v = ws.cell(r, i).value
             old = cell(cur[key], c)
             new = '' if v is None else v
             if isinstance(old, float) and isinstance(new, (int, float)) and abs(old - new) < 1e-9: continue
             if str(old) == str(new): continue
+            if c.endswith('.id') and c.startswith('loot'):
+                new = strip_label(new)              # 「中文｜id」→ id
+                old = strip_label(old)
+                if str(old) == str(new): continue
             path = c
             if c.startswith('weaponMod.'):
                 _, w, which = c.split('.')

@@ -38,14 +38,20 @@ export function showHitFx(kind){
      （延時／按錯／攻擊／大絕），六十張既有的卡上只有前三格 —— 沒有退路的話
      門檻波打中會掉回預設的三爪，而那是**沉默的退化**（畫面上看不出是漏寫）。
      ⚠ 只退這一個方向：`assault` 缺了就是真的沒寫，照舊走三爪。 */
-  const fx = hf && (hf[kind] || (kind==='ult' ? hf.assault : null));
-  if(!fx){ triggerClaw(); return; }
-  /* 視覺 base（ver -800）：特殊 type（serpent_bite…）沿用某個 base 視覺，見 config.HITFX。
-     未登記的 type → 就用 type 本身（相容舊寫法），再退回三爪。 */
-  const base = (HITFX[fx.type] && HITFX[fx.type].base) || fx.type;
+  const raw = hf && (hf[kind] || (kind==='ult' ? hf.assault : null));
+  if(!raw){ triggerClaw(); return; }
+  /* ══⚠⚠ **卡上寫的是一個名字**（ver -951）：`'claw'`／`'bite'`…
+     樣子（爪數、位置、大小、閃色）全部查 `config.HITFX`（鐵律 1）——
+     卡上不再帶參數，Excel 那四格就是一個下拉選單。
+     ⚠ 仍吃得下舊的物件寫法（`{type:'claw',count:4}`）：卡上寫的優先、表上的當底，
+       這樣舊資料不會突然變樣；但**新資料一律寫名字**。
+     ⚠ `angle` 不再看卡：一律 random（Ray：「已經全默認 random 了根本不用再列」）。 */
+  const key = (typeof raw === 'string') ? raw : raw.type;
+  const fx  = Object.assign({}, HITFX[key] || {}, (typeof raw === 'string') ? {} : raw);
+  const base = (HITFX[key] && HITFX[key].base) || key;
   switch(base){
-    case 'claw':  triggerClaw(fx.count||3, fx.angle==='random'); break;
-    case 'blood': spawnBlood(fx.angle==='random'); break;
+    case 'claw':  triggerClaw(fx.count||3, true); break;
+    case 'blood': spawnBlood(true); break;
     case 'bite':  spawnBite(); break;
     case 'bullet':spawnBullets(fx.count||1, fx.pos==='random', fx.scale); break;
     case 'slash': spawnSlash(); break;
