@@ -53,7 +53,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.08-933';
+export const VERSION = 'ver 2026.09.08-934';
 
 export const GAME_CONFIG = {
 
@@ -2491,11 +2491,16 @@ export const ASSETS = {
   enemy_ruins_saint_thug:        "resources/enemy/mon_saint_thug.webp",
   enemy_ruins_saint_temperance:  "resources/enemy/mon_saint_Temperance.webp",
 
-  /* ══ 聖遺物系 10 隻（ver -930）══ 卡已備好但**還沒部署**（見 script/enemies.js）。
-     ⚠⚠ 登記在這裡就會進**開機第二段的背景預載**（main.js 的 `_restImgs`：進主選單
-       那一刻開載）—— 這 10 張合計 **3.87 MB**，而現在遊戲裡一隻都遇不到。
-       要完全零足跡就得把這一段先註解掉，但那樣卡會抓不到圖（`asset()` 回空字串）。
-       **接上戰鬥卡之前若嫌重，就把這 10 行整段註解掉**，兩邊一起。 */
+  /* ══⚠⚠⚠ 聖遺物系 10 隻 —— **先註解著，開峽谷的時候再放**（ver -934，Ray 定案）══
+     卡已經備好（`script/enemies.js` 的 `relic_*`，十張數值一樣等逐張調），
+     圖也已經入庫（`resources/enemy/mon_relic_*.webp`）—— **只有這一段沒接上**。
+     ⚠⚠ **為什麼要註解**：登記進 `ASSETS` 就會進**開機第二段的背景預載**
+       （main.js 的 `_restImgs`，進主選單那一刻開載）—— 這 10 張合計 **3.87 MB**，
+       而現在遊戲裡一隻都遇不到。手機冷啟動白背 3.87 MB 換不到任何東西。
+     ⚠⚠ **要放回來時，這一段與戰鬥卡兩邊一起改**（漏一邊都是沉默的失敗）：
+       ① 把下面十行的註解拿掉 ② 在**戰鬥卡**那邊把它們接進 `enemy:[…]` 或刷怪池。
+       只放①＝多載 3.87 MB 但還是遇不到；只放②＝`asset()` 回空字串、怪沒有立繪
+       （而畫面上不會有任何錯誤訊息 —— 同 -929 那隻教堂 Boss 踩過的坑）。
   enemy_relic_mirrorchoir:   "resources/enemy/mon_relic_mirrorchoir.webp",
   enemy_relic_bellows:       "resources/enemy/mon_relic_bellows.webp",
   enemy_relic_confessional:  "resources/enemy/mon_relic_confessional.webp",
@@ -2506,6 +2511,7 @@ export const ASSETS = {
   enemy_relic_veilhands:     "resources/enemy/mon_relic_veilhands.webp",
   enemy_relic_wheelpsalm:    "resources/enemy/mon_relic_wheelpsalm.webp",
   enemy_relic_chalice:       "resources/enemy/mon_relic_chalice.webp",
+  */
 
   // ── 五張 cut-in 圖（v17.7 嵌入）──
   cutin_saint_luna: "resources/partner/Luna_CI_advent.jpg",   // 聖徒化降臨 cut-in（Luna）
