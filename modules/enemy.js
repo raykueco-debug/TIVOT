@@ -608,10 +608,14 @@ export function setEnemy(key){
      [0]傷害＝反擊增傷率（正）/抗性減傷率（負），加法；[1]迴避＝額外 miss 率(0~1)，加法。 */
   state.enemyWeaponMod = en.weaponMod || null;
   state.enemyWeak      = en.weak || null;
-  state.enemyDualBonus = en.dualBonus || 0;
   state.enemyNoStack   = !!en.noStack;
-  state.enemyCounterBuff = en.counterBuff || null;
-  state.enemyCounterStun = en.counterStun || 0;
+  /* ⚠ ver -947 移除 `counterBuff` / `counterStun` / `dualBonus`（Ray 定案）：
+     · 反擊後的普攻增益改成**全域一套**（3 秒 ×2，`tuning.atkBuffSeconds`）——
+       逐卡再寫一份就是同一個量兩個計算點（鐵律 7），而且卡上的 `mult` 從來沒被讀過。
+     · **反擊硬直（`counterStun`）整個拿掉**（Ray：「完美反擊後那隻 3 秒不出手，
+       邏輯本身就不對，空戰要靠反擊打傷害，他不出手怎麼反擊？」）—— 獎勵不該
+       把玩家的輸出來源關掉。
+     · `dualBonus` 由卡上的欄位改成**船戰的規則**（見 combat.applyEnemyMods）。 */
   /* 反擊硬直（ver -495，Ray：「被反擊時延時歸零；預設為 1，0 的話就算被反擊
      延時計時也不會歸零」）。卡上沒寫＝1（會硬直）。判定在 defense 的反擊分支。 */
   state.enemyCounterStagger = (en.counterStagger!=null) ? en.counterStagger : 1;
@@ -663,8 +667,7 @@ export function setEnemy(key){
   const dp = en.delayPenalty || {};              // 3.3：延時懲罰縮放（Boss=0.5 / -1）
   state.DELAY_PENALTY_SCALE = dp.dmgScale!=null ? dp.dmgScale : 1;
   state.DELAY_TIME_DELTA    = dp.timeDelta!=null ? dp.timeDelta : 0;
-  const wp = en.wrongPenalty || {};              // 3.3：按錯懲罰縮放
-  state.WRONG_PENALTY_SCALE = wp.dmgScale!=null ? wp.dmgScale : 1;
+  const wp = en.wrongPenalty || {};              // 3.3：按錯懲罰（只剩絕對值 `damage`，ver -947）
   /* 絕對值版（ver -375，敵人標準卡的寫法）：卡上有寫就蓋過上面那組縮放。
      ⚠ 沒寫要寫回 null，不能留上一隻怪的值 —— setEnemy 是連戰換敵也會走的。 */
   state.DELAY_SECONDS = dp.seconds!=null ? dp.seconds : null;

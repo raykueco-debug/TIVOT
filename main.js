@@ -461,7 +461,9 @@ window.__tivotFlight = {
     story.playKerberosFromRisen(
       /* `scripted` 由飛行頁宣告（ver -493：隨機遭遇＝false，劇本遭遇＝true）——
          沒帶（舊鑰匙）＝沒宣告，combat 會退回敵人卡的 `story`（ver -495）。 */
-      ()=>{ $('home').classList.remove('on'); combat.startScriptBattle(id, { story: req && req.scripted }); },
+      /* `ship:true` ＝這一場是**船戰**（ver -947）：BR 窗口期間敵人多吃
+         `tuning.shipDualBonus`。飛行頁交棒的兩條路都要帶（見 bootBattleGate）。 */
+      ()=>{ $('home').classList.remove('on'); combat.startScriptBattle(id, { story: req && req.scripted, ship:true }); },
       ()=>story.close({ keepBgm:true }));
   },
   /* 降落（ver -416，Ray：「靠近城鎮時加入降落按鈕，點擊進入城鎮預設畫面」）。
@@ -549,7 +551,7 @@ function bootBattleGate(req){
     story.playKerberosFromRisen(
       ()=>{ $('home').classList.remove('on');
             combat.holdEnemyRise();   // 降臨押到門全開（ver -875）
-            combat.startScriptBattle(req.battle, { story: req.scripted }); },   // 明確宣告才算，否則退回敵人卡（ver -495）
+            combat.startScriptBattle(req.battle, { story: req.scripted, ship:true }); },   // 明確宣告才算，否則退回敵人卡（ver -495）；ship＝船戰（-947）
       ()=>{ story.close({ keepBgm:true }); combat.releaseEnemyRise(); });
   };
   document.addEventListener('pointerdown', open);
@@ -815,7 +817,7 @@ window.addEventListener('pagehide', refreshBoot);
            EpicBattle／piratebattle 在「開機直入戰鬥」這條路上會放錯首。 */
         const bk = battleBgmOf(req.battle);
         SFX.playBgm(asset(bk), { fadeOutMs:600, volume: bgmVol(bk) });
-        setTimeout(()=>{ $('home').classList.remove('on'); combat.startScriptBattle(req.battle); }, 2500);
+        setTimeout(()=>{ $('home').classList.remove('on'); combat.startScriptBattle(req.battle, { ship:true }); }, 2500);   // 同上：這條也是飛行交棒（-947）
       }
     };
     ov.addEventListener('click', go);

@@ -359,16 +359,15 @@ export function resolveThreat(th){
     grade='counter';
     flashDefense('gold');
     api.floatDmg(L.battle.counter,'50%','38%',true);
-    /* 反擊之後的兩件事，都讀**這一隻怪的卡**（ver -423）：
-         `counterBuff.seconds` 普攻增益持續幾秒（沒寫＝沿用預設 2 秒）
-         `counterStun`         被反擊後幾秒才發起下一次主動攻擊（硬直）
-       ⚠ 硬直借用既有的 `enemyAtkSuppressUntil`（cut-in 之後不發動用的那一支）——
-         那本來就是「這段時間內不要排大絕」的唯一旗標（鐵律 8）。 */
-    const cb=state.enemyCounterBuff;
-    api.triggerAtkBuff(cb && cb.seconds ? cb.seconds : 2);
-    if(state.enemyCounterStun>0)
-      state.enemyAtkSuppressUntil = Math.max(state.enemyAtkSuppressUntil,
-                                             Date.now() + state.enemyCounterStun*1000);
+    /* ══⚠⚠ **完美反擊的獎勵只剩一件，而且是全域的**（ver -947，Ray 定案）══
+       秒數走 `tuning.atkBuffSeconds`（3）、倍率走全域那一套 —— **不要傳參數**。
+       ⚠⚠ 舊版是 `api.triggerAtkBuff(cb && cb.seconds ? cb.seconds : 2)`：
+         那個寫死的 `2` **繞過了全域的 3**，於是實際跑起來是「四張老卡吃 5 秒、
+         其餘所有怪吃 2 秒、沒有人吃到 3」—— 同一個量兩處各寫一次的老毛病（鐵律 7）。
+       ⚠⚠ **反擊硬直（`counterStun`）整條拿掉**（Ray：「完美反擊後那隻 3 秒不出手，
+         邏輯本身就不對，空戰要靠反擊打傷害，他不出手怎麼反擊？」）——
+         那個「獎勵」會把玩家的輸出來源關掉，方向是反的。 */
+    api.triggerAtkBuff();
     /* ══ 完美反擊的折秒（ver -721）══ 秒數讀**武器卡**的 `counterSec`，
        沒寫才回去用 `rating.penalty.counter`（鐵律 1：狙擊 −3 寫在那一把槍上）。
        ⚠ 只有這一帶算 —— 黃橘圈自 -706 起也會開火，但那不是**完美**反擊。 */

@@ -47,8 +47,12 @@ OBJS = {                         # 欄位 → 子鍵（缺的留空）
     'ult':          ['on', 'hp', 'count', 'atk', 'gap', 'cd'],
     'assault':      ['count', 'gap'],
     'fit':          ['mode', 'pos'],
-    'delayPenalty': ['seconds', 'damage', 'dmgScale', 'timeDelta'],
-    'wrongPenalty': ['damage', 'dmgScale'],
+    # ⚠ 只出**絕對值**那兩格（ver -947，Ray 把倍率欄刪了）：dmgScale／timeDelta
+    #   是相對寫法，§6.5.2 的規約本來就是「卡上寫絕對值就存絕對值」。
+    # ⚠ delayPenalty.timeDelta 在 JS 裡**還活著**（只有 witch 用，−1）——
+    #   它是相對盤面 intervalLimit 的，換不成絕對值，所以留在 js、不上 Excel。
+    'delayPenalty': ['seconds', 'damage'],
+    'wrongPenalty': ['damage'],
 }
 # ── 圖：縮圖欄與「有圖沒卡」的列（ver -945，Ray：「有圖的敵人都先做進 excel，
 #      最好能在相應欄顯示縮圖」）────────────────────────────────────────────

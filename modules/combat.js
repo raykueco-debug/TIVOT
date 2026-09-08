@@ -943,7 +943,12 @@ function applyEnemyMods(dmg, src){
     const m = w && state.enemyWeaponMod[w.cat];
     if(m && m[0]) k += m[0];
   }
-  if(state.dualWield && state.enemyDualBonus) k += state.enemyDualBonus;
+  /* ══⚠⚠ **船戰：BR 窗口期間多吃一成傷害**（ver -947，Ray：「只要船戰敵都吃這個
+     就好了」）══ 以前是逐卡的 `dualBonus`（只有那三隻飛行遭遇填 0.2）——
+     那其實不是「這隻怪的性質」而是「**這種場次**的性質」，所以改成規則：
+     場次是船戰（由飛行頁交棒過來的那一場）就一律吃 `tuning.shipDualBonus`。
+     ⚠ 這樣日後新增任何一隻飛行遭遇的怪都自動吃到，不必記得在卡上補一格。 */
+  if(state.dualWield && state.shipBattle) k += (T.shipDualBonus||0);
   return Math.max(1, Math.round(dmg * Math.max(0, k)));
 }
 function enemyDamage(dmg,isCrit,silent,src){
@@ -1294,7 +1299,7 @@ function delayDamage(){
 }
 function wrongDamage(base){
   if(state.WRONG_DAMAGE!=null) return Math.max(1, Math.round(state.WRONG_DAMAGE));
-  return Math.max(1, Math.round(base*state.WRONG_PENALTY_SCALE));
+  return Math.max(1, Math.round(base));   // ver -947：`wrongPenalty.dmgScale` 已移除（沒有卡在用）
 }
 /* 本盤實際延時時限。卡上寫了絕對秒數（DELAY_SECONDS）就是那個數字，逐盤都一樣；
    否則＝盤面 intervalLimit + 該怪 DELAY_TIME_DELTA（Boss=-1）。下限 0.6 秒防呆。 */
@@ -1899,6 +1904,7 @@ export function startGame(){
     state.storyBattle = state.scriptRun &&
       (pendingScriptStory!==null ? pendingScriptStory : cardStory);
     pendingScriptStory = null; }
+  state.shipBattle = pendingScriptShip; pendingScriptShip = false;
   state.timeAttack = null; state.timeOver = false;   // 開場先歸零（同 noSaint：不要靠上一場收乾淨）
   state.weaponSound = null;                          // 武器音覆寫也是（ver -423）
   state.counterGapMs = null;                         // 連射間隔覆寫也是（ver -476）
@@ -2004,10 +2010,15 @@ let pendingScript = null;   // 下一次 startGame 要開的插入戰 id（交�
    null＝沒宣告（走敵人卡）；true/false＝宣告了（飛行交棒的 `scripted` 走這裡，優先）。
    startGame 寫進 state.storyBattle —— 開場白與 talkOnce 都只讀它分流。 */
 let pendingScriptStory = null;
+/* 這一場是不是**船戰**（飛行頁交棒過來的）—— 由發起端宣告（ver -947）。
+   ⚠ 為什麼不從敵人卡認：那三隻（蜈蚣／羽蛇／空賊船）不是靠 `kind` 分得出來的
+     （harm／ship 混著），而「船戰」本來就是**場次**的性質不是怪的性質。 */
+let pendingScriptShip = false;
 export function startScriptBattle(id, opts){
   pendingScript = id;
   /* 只有**明確的布林**才算宣告（ver -495）—— undefined/null 一律交給敵人卡。 */
   pendingScriptStory = (opts && typeof opts.story==='boolean') ? opts.story : null;
+  pendingScriptShip  = !!(opts && opts.ship);
   startGame();
 }
 

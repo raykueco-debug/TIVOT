@@ -89,7 +89,6 @@ export const state = {
   ASSAULT_OPEN_MAX: 2000,
   DELAY_PENALTY_SCALE: 1,
   DELAY_TIME_DELTA: 0,
-  WRONG_PENALTY_SCALE: 1,
   /* ── 絕對值版的懲罰（ver -375）─────────────────────────────────
      Ray 的「敵人資訊標準卡」寫的是**絕對值**（「延時懲罰 5 秒，攻擊力 5」），
      不是倍率。所以卡上有寫就用這三個、沒寫（null）才回去走上面那組縮放。
@@ -98,14 +97,16 @@ export const state = {
      ⚠ 擁有者同上：由 `enemy.setEnemy` 依敵人卡寫入，`combat`/`defense` 只讀。 */
   DELAY_SECONDS: null,   // 延時懲罰的時限（秒，絕對值）；null＝走盤面的 intervalLimit + DELAY_TIME_DELTA
   DELAY_DAMAGE: null,    // 延時懲罰傷害（絕對值）；null＝tuning.dmgDelay × DELAY_PENALTY_SCALE
-  WRONG_DAMAGE: null,    // 按錯懲罰傷害（絕對值）；null＝tuning.dmgWrong/dmgHeavy × WRONG_PENALTY_SCALE
+  WRONG_DAMAGE: null,    // 按錯懲罰傷害（絕對值）；null＝tuning.dmgWrong/dmgHeavy（ver -947 起沒有倍率）
 
   /* ── 3.4 武器/雙槍（擁有者：weapon） ─────────────────────────── */
   /* ── 這一隻怪的「打起來的手感」（ver -423 的敵人卡；擁有者：enemy）──
      ⚠ 每次 `setEnemy` 都要重寫，沒寫的回預設 —— 連戰換敵也會走那一支。 */
   enemyResist: null,        // { basic:0.20 } 之類：**減傷**的成數，依傷害來源
   enemyWeak: null,          // { counter:1.00 }：**增傷**的成數，依傷害來源
-  enemyDualBonus: 0,        // 破防（雙槍窗口）期間的增傷成數
+  /* 這一場是不是船戰（飛行頁交棒過來的）：BR 窗口期間多吃 tuning.shipDualBonus
+     （ver -947，取代逐卡的 `dualBonus`）。擁有者＝combat，由發起端宣告。 */
+  shipBattle: false,
   enemyNoStack: false,      // 紅點不疊加（場上同時只有一個）
   /* 副武器調整（ver -760 抗性→ ver -796 併成一欄，Ray：「弱點跟抗性做一起、
      迴避也做進同一欄、逗點格開、先傷害後迴避」）：
@@ -128,8 +129,6 @@ export const state = {
      攻擊 assault／大絕 ult）。擁有者＝defense（只有它分得出那一顆圈是誰生的），
      combat 的 fxKind 只讀（鐵律 7）。⚠ 不進存檔：它只活到那一擊演完。 */
   lastAssaultUlt: false,
-  enemyCounterBuff: null,   // { mult, seconds }：被反擊後玩家的普攻增益
-  enemyCounterStun: 0,      // 被反擊後幾秒才發起下一次主動攻擊
   enemyCounterStagger: 1,   // 反擊硬直（ver -495）：1＝被反擊時延時計時歸零、0＝不歸零。卡上沒寫＝1
   /* 「這一場」的武器音覆寫（ver -423，船艦戰）：`{武器鑰匙: 'se_key' | {key,times}}`。
      ⚠ 覆寫的是**場次**不是武器 —— 同一把槍在陸戰還是原本的聲音（擁有者：combat）。 */

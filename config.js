@@ -53,7 +53,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.08-946';
+export const VERSION = 'ver 2026.09.08-947';
 
 export const GAME_CONFIG = {
 
@@ -2373,7 +2373,11 @@ export const GAME_CONFIG = {
     saintLastHitRatio:   0.20,  // 結束前清盤 → 追加期間總傷害的 20%（MB 爆發；維持 reference）
 
     // 攻擊加倍 buff
-    atkBuffSeconds:      3,     // 攻擊加倍時長（秒）
+    atkBuffSeconds:      3,     // 攻擊加倍時長（秒）——完美反擊後的**唯一**獎勵（ver -947）
+    /* 船戰（飛行頁交棒的那一場）BR 窗口期間敵人多吃的成數（ver -947，Ray：
+       「只要船戰敵都吃這個就好了」）。取代逐卡的 `dualBonus`：那是**場次**的
+       性質不是怪的性質，寫成規則之後新增飛行遭遇不必記得補欄位。 */
+    shipDualBonus:       0.2,
 
     // 榴彈
     grenades:            1,     // 開局榴彈數

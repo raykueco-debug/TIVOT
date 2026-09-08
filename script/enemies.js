@@ -789,12 +789,9 @@ export const ENEMIES = {
            dualBonus      破防（雙槍窗口）增傷 20% */
       resist:{ basic:0.20 },
       weak:{ counter:1.00 },
-      dualBonus:0.20,
       /* 反擊之後的兩件事（卡上分開寫，程式也分開讀）：
            counterBuff  反擊攻擊增益：普攻 ×2、持續 5 秒
            counterStun  反擊硬直：被反擊後 3 秒才發起下一次主動攻擊 */
-      counterBuff:{ mult:2, seconds:5 },
-      counterStun:3,
       /* 掉落物：**各自擲骰**（Ray：「可能都掉，可能都不掉」）——
          `p` 是機率，沒寫＝必掉（舊卡不受影響）。 */
       loot:[ { id:'venom_fang',   n:1, p:0.10 },
@@ -843,9 +840,6 @@ export const ENEMIES = {
       /* 弱點：反擊武器 +100%、**散射武器（霰彈槍類）再 +150%**（Ray 的卡）——
          `cat:<武器類別>` 只對反擊傷害生效，判定在 combat.applyEnemyMods（唯一一處）。 */
       weak:{ counter:1.00 },
-      dualBonus:0.20,
-      counterBuff:{ mult:2, seconds:5 },
-      counterStun:3,
       loot:[ { id:'venom_fang',    n:1, p:0.10 },
              { id:'azure_scale',   n:1, p:0.33 },
              { id:'azure_feather', n:1, p:0.33 } ],
@@ -892,9 +886,6 @@ export const ENEMIES = {
       /* 弱點：反擊 +100%、**單射武器（萊福槍類）再 +150%**（`cat:` 只對反擊生效，
          判定在 combat.applyEnemyMods，同羽蛇卡）。 */
       weak:{ counter:1.00 },
-      dualBonus:0.20,
-      counterBuff:{ mult:2, seconds:5 },
-      counterStun:3,
       loot:[ { id:'brass_casing', n:1, p:0.33 } ],
       /* 金錢：HP 的 70%~90%。 */
       money:{ hpRatio:[0.7, 0.9] },
