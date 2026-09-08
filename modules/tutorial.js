@@ -186,6 +186,7 @@ export function maybeStart(){
   awaitDualEnd = false;
   queue = [];
   defendedDone = dualGuideDone = saintCritFired = false; dualForce = false; attackScoldCount = 0; deadHandled = false;
+  counterBoard = -1;                 // 反擊教學還沒做（ver -938，見 energyCapActive）
   pendingGate = null; gate = null;
   /* 跳過鈕：劇情帶起來的那一場**不給跳**（Ray 指定）——
      它是主線的一段，跳掉之後劇情接不下去（後面那幕接的是「打完了」）。
@@ -287,6 +288,16 @@ export function onThreatSpawned(){ fire('threat'); }
      **凡是把黃圈當成失敗的舊邏輯，都要重新問一次。** */
 export function onThreatResolved(grade){
   defendedDone = true;    // 防禦成功：延時懲罰恢復、罵人停用（「第二盤結束前不再跳任何提示」）
+  /* ══⚠⚠ **反擊教學要先做過一次，BR 才准滿**（ver -938，Ray：「要先做過一次反擊教學，
+     反擊教學那一局清盤後的下一盤打一發就滿 BR，進 BR 教學」）══
+     記下它是在**第幾盤**完成的 —— 破防值的封頂與「補到只差一發」都問這個數字
+     （見 energyCapActive／brPrimeDue）。舊版是寫死 `boardIndex<2`：玩家一路不防禦
+     的話反擊教學根本沒發生，第三盤 BR 照樣滿 → `onEnergyFull` 把 threat／defended
+     兩段整個丟掉，於是**先上 BR 教學、反擊教學再也不演**（Ray 說的「錯亂」）。 */
+  if(counterBoard < 0) counterBoard = state.boardIndex;
+  /* 箭頭那一門的完成條件就是「點掉這顆光圈」（ver -938）——收門要在 `fire` 之前：
+     `completeGate` 會把現在這一段靜靜收掉，收完才輪到 'defended' 開新的一段。 */
+  if(gate && gate.type==='threat') completeGate();
   fire('defended');
 }
 // combat 致死鏈呼叫（即死防禦已用盡/不可用時）：教學戰不設戰敗——
@@ -373,23 +384,37 @@ export function onBoardProgress(cleared){
       return;
     }
   }
-  /* ══ BR（雙槍破防／bulletsrain）教學提前（ver -807，Ray：「教學的破防改成該盤面
-     打完第二發就觸發」）══ 該盤打掉第二格就填滿破防值 → onEnergyFull → dualReady 引導
-     （破防教學早點來、也方便測 BR）。⚠ 走與削血保底同一條路（dualForce 解封頂
-     ＋ fillEnergy），所以 onEnergyFull 那邊的收尾（撤反擊殘步）自然一致。 */
-  if(!dualGuideDone && cleared >= 2){
-    dualForce = true;                       // 解除 preFullEnergy 封頂
-    if(api.fillEnergy) api.fillEnergy();    // 滿值瞬間 → onEnergyFull → dualReady
-    return;
-  }
+  /* ══⚠⚠⚠ **ver -807 的「打完第二發就進 BR 教學」已被 -938 取代**（Ray：「開場的教學
+     錯亂了，要先做過一次反擊教學，反擊教學那一局清盤後的下一盤打一發就滿 BR」）══
+     那一版是「**任何一盤**清掉第二格就填滿破防值」—— 而第一盤（`noAssaultBoards:1`）
+     根本不出光圈，於是 BR 教學固定在**第 0 盤第二格**跳出來，比反擊教學還早；
+     `onEnergyFull` 又會順手把 threat／defended 兩段從 `stepsLeft` 濾掉，
+     **反擊教學就再也不會演**。實測（-938 修之前）：第 0 盤就看到「牠露出破綻了」。
+     現在的路徑改成：反擊教學那一盤清完 → `combat.clearBoard` 問 `brPrimeDue()`
+     把破防值補到「只差一發」→ 下一盤第一發自然滿 → `onEnergyFull` → BR 教學。
+     ⚠ 所以這裡**什麼都不做**：不要為了「早點看到 BR」再加一條捷徑，
+       那正是這一版拆掉的東西。要測 BR 走首頁的「教學」鈕。 */
   const st = CFG().strike || {};
   if(state.boardIndex===3 && cleared >= (st.afterCells||8)) fire('strike');
 }
 // combat.addEnergy 詢問：雙槍引導前破防值封頂（preFullEnergy），第三盤放行。
 //   dualForce＝削血保底觸發中（敵 HP ≤ dualForceHpRatio）：解除封頂讓 fillEnergy 一次填滿。
 let dualForce = false;
+/* 反擊教學是在第幾盤完成的（-1＝還沒）。⚠ 每一場開頭要歸零，見 maybeStart。 */
+let counterBoard = -1;
+/* ⚠⚠ 封頂到「反擊教學那一盤」為止（ver -938）：舊版寫死 `boardIndex<2`，
+   等於**假設**反擊教學一定發生在第二盤 —— 玩家不防禦的話那個假設就破了。
+   現在問的是**事實**（反擊教學做完了沒、是在哪一盤），不是盤號。 */
 export function energyCapActive(){
-  return state.tutorialActive && !dualGuideDone && !dualForce && state.boardIndex<2;
+  if(!state.tutorialActive || dualGuideDone || dualForce) return false;
+  return counterBoard < 0 || state.boardIndex <= counterBoard;
+}
+/* 「反擊教學那一局清盤後的下一盤打一發就滿 BR」（ver -938）——
+   combat.clearBoard 收尾時問這一支：現在清掉的正是那一盤嗎？
+   ⚠ 要補到多少由 combat 算（只有它知道 `energyPerHit`）——這裡只回答時機。 */
+export function brPrimeDue(){
+  return state.tutorialActive && !dualGuideDone && counterBoard >= 0
+         && state.boardIndex === counterBoard;
 }
 // combat.enemyDamage 每次敵掉血呼叫（非教學為 no-op）：削血保底觸發——
 //   玩家用反擊猛削血時，破防/聖徒化教學不因「還沒輪到觸發條件」而被永遠跳過。
@@ -399,7 +424,18 @@ export function onEnemyHp(ratio){
   if(!state.tutorialActive || state.tutorialDialog || state.over) return;
   if(state.dualWield || state.saintMode || state.cutinPlaying) return;
   const t=CFG();
-  if(!dualGuideDone && ratio <= (t.dualForceHpRatio!=null ? t.dualForceHpRatio : 0.5)){
+  /* ══⚠⚠⚠ **削血保底不准搶在反擊教學前面**（ver -938，Ray：「開場的教學錯亂了，
+     要先做過一次反擊教學」）══ 這一條就是「錯亂」的真正成因：
+     第一盤（`noAssaultBoards:1`＝不出光圈）玩家一路點下去，敵血很快掉破 50%，
+     於是這裡把破防值一次填滿 → BR 教學在**第 0 盤**就跳出來，而 `onEnergyFull`
+     還會順手把 threat／defended 兩段從 `stepsLeft` 濾掉 —— **反擊教學再也不會演**。
+     實測（-938 修之前）：第 0 盤就看到「牠露出破綻了」。
+     ⚠ 現在的條件是「**反擊教學做完了，而且已經翻過那一盤**」——
+       與 `energyCapActive`／`brPrimeDue` 同一把尺（鐵律 7）。
+     ⚠ 不會卡死：教學期間敵血夾底 1（打不死），而第 1 盤起一定會出光圈，
+       玩家點掉它反擊教學就完成了。 */
+  const counterPast = counterBoard >= 0 && state.boardIndex > counterBoard;
+  if(!dualGuideDone && counterPast && ratio <= (t.dualForceHpRatio!=null ? t.dualForceHpRatio : 0.5)){
     dualForce = true;                       // 解除 preFullEnergy 封頂
     if(api.fillEnergy) api.fillEnergy();    // 滿值瞬間 → onEnergyFull → dualReady 引導
     return;
@@ -488,7 +524,20 @@ function fire(trigger){
   if(!state.tutorialActive){ talkFire(trigger); return; }
   const i = stepsLeft.findIndex(s=>s.trigger===trigger && whenOk(s));
   if(i<0) return;
-  const step = stepsLeft.splice(i,1)[0];
+  /* ══⚠⚠⚠ **劇情版的台詞要在「取段」那一刻就換好**（ver -938）══
+     舊版是在最後一行 `openStep(withStoryLines(step))` 才換 —— 於是**排隊的那一條路
+     整個漏掉**（`queue.push(step)` 推的是原始步驟，而排隊的段落由 1193 行的
+     `cur=queue.shift()` 直接開，不經過 `withStoryLines`）。
+     症狀：只要一個段落在**別的對話還開著**的時候被觸發（例如玩家在 threat 那一段
+     還沒讀完就先點掉了光圈），諾薇兒的教學裡就會冒出**芙蕾雅與蕾妮**的台詞。
+     實測就是這樣跑出「擋得不錯。記住——」「那樣的話，我的評價可不會留情。」。
+     ⚠ 換成在入口換一次（鐵律 8：一個動作一個實作），下游三條路都吃到。 */
+  const step = withStoryLines(stepsLeft.splice(i,1)[0]);
+  /* ⚠⚠ **劇情版把某一段的台詞設成空陣列＝那一段不演**（ver -938）：
+     `linesForStep` 查不到鍵時會**退回芙蕾雅那一份**，所以「這一段劇情版不要」
+     不能靠刪鍵表達（刪了會冒出另一個人的台詞）——要明寫 `[]`。
+     ⚠ 帶閘門的段落**不跳**：跳掉等於把那道門一起丟了，玩家會卡在沒有引導的地方。 */
+  if(step && Array.isArray(step.lines) && !step.lines.length && !step.gate) return;
   if(state.tutorialDialog){ queue.push(step); return; }   // 對話中觸發 → 排隊接續播
   // 開場白尚未插入（startDelayMs 未到）就被其他節點搶先 → 先講開場白，該節點排隊
   if(trigger!=='battleStart' && startTimer){
@@ -496,12 +545,12 @@ function fire(trigger){
     const bi = stepsLeft.findIndex(s=>s.trigger==='battleStart');
     if(bi>=0){
       const bs = stepsLeft.splice(bi,1)[0];
-      queue.push(step);
+      queue.push(step);            // step 已在上面換過台詞
       openStep(withStoryLines(bs));
       return;
     }
   }
-  openStep(withStoryLines(step));
+  openStep(step);
 }
 /* 劇情版：整段換掉 lines（流程／觸發點不動，只換誰在講、講什麼）。 */
 function withStoryLines(step){
@@ -935,6 +984,13 @@ const GATE_ACTIONS = {
 function resolveGate(g){
   if(!g) return null;
   if(typeof g.action === 'function') return g;          // 程式裡寫的那幾段，原樣
+  /* ⚠⚠ **沒有 `action` 的閘門是合法的**（ver -938）：像「點掉那顆光圈」——
+     那個動作**既有的路徑本來就會做**（defense.resolveThreat），閘門在這裡只負責
+     兩件事：把箭頭亮著、完成之前不放行。收門的人是 `onThreatResolved`。
+     ⚠ 沒有這一條的話 `GATE_ACTIONS[undefined]` 查不到 → 回 null → **門根本沒開**，
+       而且只在 console 留一行「不認得的閘門動作」—— 畫面上就是「箭頭沒出現」，
+       看起來像 CSS 壞掉（-938 實測踩過）。 */
+  if(g.action == null) return Object.assign({}, g, { name: g.type });
   const fn = GATE_ACTIONS[g.action];
   if(!fn){ console.info('[tutorial] 不認得的閘門動作：', g.action); return null; }
   return Object.assign({}, g, { action: fn, name: g.action });   // ⚠ 名字留著：熔斷讓位要問它（ver -705）
@@ -1297,6 +1353,21 @@ function showGuide(type, tone){
     dir='g-down'; label = labels.wswitch || '點擊切換';
     x = r.left + r.width/2;
     y = r.top - 52;
+  }else if(type==='threat'){
+    /* ══ 指著那顆光圈（ver -938，Ray：「雪鐵龍箭向上指反擊圈，點擊發動」）══
+       箭擺在圈的**下方、朝上指**：圈的上面是敵人立繪的臉，箭壓上去看不清楚。
+       ⚠ 位置**現算**（讀 `state.threats[0].el` 的 rect）不是寫死：紅點的落點是
+         `threatSpawn` 隨機出來的 —— 寫死一次，資料一動箭就指到空氣
+         （同「引導箭要現算」那一條）。
+       ⚠ 圈不在（被別的路徑收掉了）就退回敵人框中央，不要讓箭飛到畫面外。 */
+    const th=(state.threats && state.threats[0]) || null;
+    const r=(th && th.el) ? th.el.getBoundingClientRect() : null;
+    dir='g-up'; label = labels.click || 'CLICK！';
+    if(r && r.width){ x = r.left + r.width/2; y = r.bottom + 30; }
+    else{
+      const tr=$('top') ? $('top').getBoundingClientRect() : {left:0,top:0,width:innerWidth,height:innerHeight/2};
+      x = tr.left + tr.width*0.5; y = tr.top + tr.height*0.7;
+    }
   }else if(type==='right'){
     // 敵人框左緣往右閃、標示向右側滑動（貼框緣：立繪已移正中，箭頭不壓立繪）。
     // ⚠ #tutGuide 為 fixed（視口座標）：x 必須以 #top 的 rect.left 起算——

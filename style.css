@@ -3018,7 +3018,7 @@
      退出/跳段鈕（z-8）仍在其上，地圖開著也點得到。 */
   /* 地圖開著時導覽字格整組收掉（ver -867，Ray：「不用導覽字格」）。 */
   #townNav.map-on .town-dest{display:none !important;}
-  /* ══ 模擬存檔那一列（ver -936，管理人限定）══ 擺在羊皮紙**下面**、地圖層的底部；
+  /* ══ 小地圖裡的存檔那一列（ver -936；-937 起不再是管理人限定，Ray：「把這條取消」）══ 擺在羊皮紙**下面**、地圖層的底部；
      `.tm-frame` 裡的東西尺寸都是地圖的百分比，鈕放進去會跟著縮到按不到。 */
   #townMapView .tm-save{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);
     display:flex;align-items:center;justify-content:center;gap:10px;z-index:2;}

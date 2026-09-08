@@ -1291,7 +1291,8 @@ function renderMap(){
     /* ══ 模擬存檔那一列（ver -936；管理人限定，見 setSimSave）══
        ⚠ 擺在 `.tm-frame` **外面**：框裡是那張羊皮紙，尺寸與座標都是「地圖的百分比」
          （同 `.tm-fog` 那一條的理由）—— 鈕塞進去會跟著圖縮放，小螢幕上按不到。 */
-    + (simIO && document.body.classList.contains('testmode')
+    /* （ver -937：`body.testmode` 的守門已拿掉，見 setSimSave） */
+    + (simIO
         ? '<div class="tm-save">'
           + '<button class="tm-sv" type="button" data-a="save">存　檔</button>'
           + '<button class="tm-sv" type="button" data-a="load">讀　檔</button>'
@@ -2357,8 +2358,11 @@ export function setCheckpoint(fn){ checkpoint=fn||null; }
 /* ══ 小地圖裡的「模擬存檔」（ver -936，Ray：「幫我做個存檔鈕在小地圖選單，存的檔跟
    其他進度都錯開，獨立，用來模擬真實玩家推進」）══
    `{save, load, info}` 由 main 注入（城鎮不認識存檔層，同 setCheckpoint）。
-   ⚠⚠ **管理人限定**（`body.testmode`）：玩家的存檔規約是「睡一覺＝唯一那一份」
-     （§6.9），在地圖上多一顆隨手存檔會把那條規矩整個推翻。這一顆是試玩用的梯子。
+   ⚠⚠ **不是管理人限定**（ver -937，Ray：「把這條取消」）：-936 曾以「玩家的存檔規約
+     是睡一覺＝唯一那一份（§6.9）」為由鎖成 `body.testmode` —— 那條理由由 Ray 取消了，
+     所以這一列**一般玩家也看得到**。
+     ⚠ 它存的仍是**獨立的那一格**（`sim`），與 `main`／`auto` 互不相干、也不進
+       首頁「繼續」的比較 —— 「錯開」那一條沒有跟著取消。
    ⚠ 沒注入（單獨測 town）＝整組不出現，不會炸。 */
 let simIO=null;
 export function setSimSave(o){ simIO=o||null; }

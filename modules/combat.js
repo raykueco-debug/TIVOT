@@ -592,9 +592,14 @@ function clearBoard(){
   /* 索菈娜「獵手的直覺」被動（ver -803）：連續 N 輪完美清盤 → 破防值加速窗。
      ⚠ 帶這一盤的 `boardClean`（完美與否）：完美累加、破功歸零（partner 判是不是她）。 */
   partner.onBoardCleared(state.boardClean);
-  // 教學：第二盤清盤的最後一槍 → 破防值直接設為只差 1 滿（第三盤首擊即滿、進雙槍引導）
-  if(state.tutorialActive && state.boardIndex===1 && GAME_CONFIG.tutorial){
-    state.energy = GAME_CONFIG.tutorial.preFullEnergy != null ? GAME_CONFIG.tutorial.preFullEnergy : 99;
+  /* ══⚠⚠ **反擊教學那一盤清完 → 下一盤「打一發就滿 BR」**（ver -938，Ray）══
+     ⚠ 時機問 `tutorial.brPrimeDue()`（它知道反擊教學是在第幾盤做完的），
+       **不要**寫死盤號 —— 舊版是 `boardIndex===1`，等於假設反擊教學一定發生在
+       第二盤；玩家一路不防禦時那個假設就破了（見 tutorial.energyCapActive）。
+     ⚠ 補到 `100 − energyPerHit` 是**算出來的**不是抄一個常數（鐵律 7）：
+       「打一發就滿」是規則，數字跟著 `energyPerHit` 走。舊值 90 是「五發才滿」。 */
+  if(tutorial.brPrimeDue()){
+    state.energy = Math.max(state.energy, 100 - ENERGY_PER_HIT);
     updateEnergyClasp();
   }
   if(state.enemyHp<=0){ finishEnemyOrAdvance(); return; }   // 敵死 → 轉下一敵 or（最後一敵）結算

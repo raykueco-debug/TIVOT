@@ -53,7 +53,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.08-936';
+export const VERSION = 'ver 2026.09.08-938';
 
 export const GAME_CONFIG = {
 
@@ -1107,7 +1107,13 @@ export const GAME_CONFIG = {
       ]},
       // 第一顆紅點生成瞬間（凍結在畫面上講解）——防禦分級講確實：
       //   太早＝格擋（仍受一半傷害）；時機正確＝完美防禦（免傷）
-      { trigger:'threat', lines:[
+      /* ⚠⚠ **箭頭指著那個光圈、點掉才放行**（ver -938，Ray：「雪鐵龍箭向上指反擊圈，
+         點擊發動」）—— 以前這一段只有台詞、沒有箭：第一次看到光圈的人不知道那是可以
+         點的東西，而畫面又是凍結的，讀起來像卡住。
+         ⚠ 閘門寫在**共用的步驟**上（劇情版與首頁教學版同一套流程，只有台詞分兩份）
+           —— 那正是 tutorial.js 檔頭那條「只換台詞，不換流程」。
+         ⚠ 完成＝**點掉那顆光圈**（tutorial.onThreatResolved 收門），不是點畫面。 */
+      { trigger:'threat', gate:{ type:'threat', immediate:true }, lines:[
         { who:'partner',   text:'光圈會越縮越小——太早出手雖然擋得下來，但反擊的傷害很有限！' },
         { who:'partner',   text:'等光圈收得夠小、時機正確，反擊才真的打得痛！' },
         { who:'inspector', text:'防住給我看。' },
