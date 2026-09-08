@@ -614,6 +614,8 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose, opts){
      兩者共用的只有**這個版面**，不是那份資料（同「框是共用的，教學那一套不是」）。
      ⚠ `portrait` 是**直接路徑**不是 ASSETS 鍵：立繪住在 `speakers.js`，沒進 ASSETS。 */
   const spk = (opts && opts.speaker) || null;
+  /* 掉落的押制（ver -961）：每次進這一頁先放行，有亂入才押（見 `_lootHold`）。 */
+  _lootHold = !!(spk && spk.follow);
   // 監察官立繪＋台詞（一般失敗不跑監察官；Boss 戰失敗仍顯示監察官，播 Boss 失敗台詞）
   /* Boss 戰（挑戰）勝敗**都**由璐娜莉亞評（ver -553，Ray：「boss戰落敗的話
      Luna_SI_seat_angry『討人厭的夢......』」）—— -471 的「敗北回芙蕾雅」作廢。 */
@@ -691,6 +693,9 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose, opts){
             if(f.portrait){ portrait.src = f.portrait; portrait.style.display='block'; }
             if(f.name) nameEl.textContent = f.name;
             typeInspectorLine(lineEl, f.text || '', 1600);
+            /* 她那一句**打完**才放行戰利品（ver -961）。⚠ 用打字的長度不是固定秒數：
+               改台詞長度不必回來調這裡（同「自動推進掛在這一句唸完」的道理）。 */
+            setTimeout(()=>{ _lootHold = false; }, 1600);
             try{ portrait.animate(
               [ { transform:'translateX(46%)', opacity:0 },
                 { transform:'translateX(0)',   opacity:1 } ],
@@ -932,7 +937,20 @@ function rollLoot(en){
    ⚠ `_lootExp`（ver -439）：EXP 從結算頁那一行搬到這一頁，與金錢同一列 —— 見
      `modules/loot.js` 的 `showLoot`。 */
 let _lootPending = null, _lootMoney = 0, _lootExp = 0;
+/* ══⚠⚠ **索菈娜亂入完才跑掉落物**（ver -961，Ray 指定）══
+   掉落是掛在**下一次點擊**上的（`popLootOnce`）—— 而亂入要等 2.9 秒才開始演，
+   玩家在那之前點一下，戰利品視窗就蓋在她臉上（她的那一句根本沒機會出現）。
+   ⚠ 押著的期間**不是把點擊丟掉**，是**重新掛回去**：丟掉的話玩家會覺得
+     「點了沒反應」，而且那一次點擊之後就再也沒有人叫得動戰利品了。
+   ⚠ 由 `showResultSequence` 開關（它才知道這一頁有沒有亂入、演到哪）——
+     每次進那一頁先歸 false，有 follow 才押。 */
+let _lootHold = false;
 function popLootOnce(){
+  /* 亂入還沒演完 → 這一次點擊不開戰利品，把監聽掛回去等下一次（見 `_lootHold`）。 */
+  if(_lootHold){
+    if(_lootPending) document.addEventListener('pointerup', popLootOnce, { capture:true, once:true });
+    return;
+  }
   const list=_lootPending, money=_lootMoney, exp=_lootExp;
   _lootPending=null; _lootMoney=0; _lootExp=0;
   document.removeEventListener('pointerup', popLootOnce, { capture:true });
