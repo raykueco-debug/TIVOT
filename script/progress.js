@@ -601,6 +601,31 @@ export const CHAPTERS = [
            'sv_clear_wild','safehouse_shinier','sv_forest_morning',
            'sv_forest_go','sv_forest_intro'],
     enter:'town', town:'shinier_forest', node:'ruins' },
+  /* ══ Stage 8（ver -956，Ray 交稿）══ 索菈娜家 → 自由探索 → 餐廳（瑪麗亞的廚房、
+     科爾文登場）→ 索菈娜家（作戰課的指令）。
+     ⚠ **直接站在索菈娜家、時間中午 12:00** —— 正常玩是神殿收尾那道閘門
+       （`shinier_ruins` 的 `sv_s8_noon`）把人搬過來並把時鐘推到下一個中午，
+       跳關工具直接把那個結果擺好（同 stage6 用掉翌日閘門的作法）。
+     ⚠ `stage:8` 直接寫：正常玩是 `sv_s8_home` 那一段的第一拍升上來的，
+       這裡是跳關工具，人已經站在那一段之前。
+     ⚠ 神殿那一整串旗（`sr_*`／`ruins_*`）全給 —— 少了 `sr_altar`，
+       走回神殿會重演收尾那一段。
+     ⚠ `sv_s8_noon` 也要給：不給的話一走進神殿就會被那道閘門再搬一次。
+     ⚠ `sv_s8_home`／`sv_s8_dine`／`sv_s8_corvin` **不給** —— 那正是要演的。 */
+  { id:'stage8', name:'Stage 8', sub:'夏爾村・索菈娜家（正午）→ 餐廳・瑪麗亞的廚房 → 科爾文',
+    stage:8, clockHour:12, named:true,
+    flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open',
+           'set_sail','got_ship','dock_day2','flight_centipede_met',
+           'np_port_arrive','np_clear_church','np_claws_done','safehouse_northport',
+           'np_burial','np_burial_done','np_night','np_night_done','np_day3',
+           'np_day3_done','np_anya_join','np_dock_ask','np_grave_done','np_depart',
+           'sv_arrive','sv_evening','sv_night_done','shinier_siege',
+           'sv_clear_wild','safehouse_shinier','sv_forest_morning',
+           'sv_forest_go','sv_forest_intro','sv_deer_met','sv_deer_harm',
+           'sr_intro','sr_gate_brazier','sr_gate_bridge','sr_brazier','sr_bridge',
+           'sr_mural','ruins_gate_open','ruins_bell_done','ruins_thug_met','sr_altar',
+           'ruins_altar_on','sv_s8_noon'],
+    enter:'town', town:'shinier', node:'sorahome' },
 ];
 
 export function newRun(){

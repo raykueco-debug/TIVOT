@@ -969,6 +969,21 @@ function forceGo(to){
   document.body.classList.remove('town-nav');
   stepSfx();
   pendingDir=null;
+  /* ══ 跨圖的強制轉場（ver -956，Ray：「神殿攻略結束後自動跳轉回索拉娜家，
+     三秒淡入規則」）══ `@<地圖>:<節點>`，與出口的語法同一套（見 go()）。
+     ⚠ **三秒**（`STORY_CUT_MS`）不是走一步的 `CUT_MS` —— 這是劇情轉場，
+       與同圖的 `sceneCut` 同一個節奏（鐵律 7：那個秒數只有一個來源）。
+     ⚠ 分工同 `sceneCut`：這裡只負責**淡出**，淡回交給 `open()→enter()`
+       （只有它知道新的一景什麼時候擺好，§6.5.4）。
+     ⚠ 不走 `go()` 的跨圖分支：那一支會推時鐘、算 `afterMoves`、跑離圖收尾儀式
+       —— 那些是「玩家自己走出去」才該做的事。 */
+  if(typeof to==='string' && to[0]==='@'){
+    const seg=to.slice(1).split(':'), map=seg[0], nd=seg[1]||null;
+    if(!TOWNS[map]){ console.info('[town] 跨圖強制轉場：沒有這張圖', map); busy=false; return; }
+    story.veil(true, STORY_CUT_MS);
+    setTimeout(()=>{ open(map, nd || undefined); }, STORY_CUT_MS);
+    return;
+  }
   sceneCut(to, STORY_CUT_MS);   // 劇情轉場＝三秒（ver -739）
 }
 
@@ -1399,6 +1414,18 @@ function shopBtnName(n){
   const s=String(nameOf(nodeId) || (n && n.name) || '');
   const parts=s.split('　').filter(Boolean);
   return parts.length ? parts[parts.length-1] : s;
+}
+/* ══ 劇情那一拍要開的菜單（ver -956，Ray：「料理情節是要開菜單畫面讓玩家點選」）══
+   ⚠ 與店舖那條路走**同一支** `showKitchen`（鐵律 8），差別只有兩個：
+     · `mustCook` ＝挑一道煮了才過（那是劇情的閘門，不是逛街）
+     · 演出交還給呼叫端（story）—— 它要等演完才推下一句
+   ⚠ 導覽先收起來：菜單開著時不該還能走路。 */
+export function openKitchenForStory(onCook){
+  const n=node();
+  showNav(false); showShopBtn(false);
+  sheetClose = showKitchen({ info:infoText(n), mustCook:true,
+    onClose:()=>{ sheetClose=null; },
+    onCook:(id, first)=>{ sheetClose=null; if(onCook) onCook(id, first); } });
 }
 function showShopBtn(on){
   const b=layer && layer.querySelector('#townShopBtn'); if(!b) return;

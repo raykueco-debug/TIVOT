@@ -828,11 +828,19 @@ export function showKitchen(opts){
            + btn
            + '</div>';
     }).join('');
+    /* ══ `mustCook`（ver -956，Stage8 的料理那一拍）══ 這一次是**閘門**：
+       Ray 要「開菜單畫面讓玩家點選可料理的東西」，所以挑一道煮了才往下演。
+       ⚠⚠ **只有真的有得煮才收掉「關閉」**：一道都按不動時還把出口拿掉就是卡死
+         —— 那比 §6.5.5「還不能做不要靠藏起鈕擋」更糟（這裡連鈕都沒有）。
+         測試期間三樣食材是 `always:true`，所以正常情況一定有得煮。 */
+    const gate = !!o.mustCook && Object.keys(D).some(id=>canCook(id));
     ov.innerHTML='<div class="loot-panel"><div class="loot-title">瑪麗亞的廚房'
                + (o.info ? '<span class="shop-info">'+o.info+'</span>' : '')+'</div>'
-               + '<div class="shop-desc">帶食材來，我做給你們吃。一道菜是一份肉、一份菜、一份調味。</div>'
+               + '<div class="shop-desc">'
+               + (gate ? '想吃哪一道？' : '帶食材來，我做給你們吃。一道菜是一份肉、一份菜、一份調味。')
+               + '</div>'
                + '<div class="loot-list">'+body+'</div>'
-               + '<button class="loot-ok" type="button">關閉</button></div>';
+               + (gate ? '' : '<button class="loot-ok" type="button">關閉</button>')+'</div>';
     ov.querySelectorAll('.cook-row').forEach(row=>{
       const b=row.querySelector('button.cook-do'); if(!b) return;   // ⚠ 只有真的可按的那一態是 <button>
       b.addEventListener('click', e=>{ e.stopPropagation();
@@ -846,7 +854,8 @@ export function showKitchen(opts){
         if(o.onCook) o.onCook(id, r.first);
       });
     });
-    ov.querySelector('.loot-ok').addEventListener('click', e=>{ e.stopPropagation();
+    const okBtn=ov.querySelector('.loot-ok');
+    if(okBtn) okBtn.addEventListener('click', e=>{ e.stopPropagation();
       try{ SFX.unlock(); SFX.menuClick(); }catch(_){} close(); });
   };
   render();

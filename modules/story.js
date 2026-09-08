@@ -2474,6 +2474,21 @@ function renderLine(){
     hideBubble(); showBoon(line.boon, ()=>advance()); return;
   }
 
+  /* ══ `{ kitchen:true }` ＝**把菜單交給玩家**（ver -956，Ray：「料理情節是要開菜單
+     畫面讓玩家點選可料理的東西」）══
+     ⚠ 它是**閘門**：挑一道煮了才往下演（`mustCook`）。演出與帳照舊走同一支
+       （`playCooking`／`cookDish`）—— 這一拍只是把「煮哪一道」交還給玩家。
+     ⚠ 沒註冊 handler 就跳過（開發時直接跑腳本的情形），不要卡住。 */
+  if(line.kitchen){
+    hideBubble();
+    if(!kitchenHandler){ console.info('[story] 沒有註冊廚房開啟器，跳過'); return advance(); }
+    kitchenOpen=true;
+    try{ kitchenHandler((id, first)=>{ kitchenOpen=false; lastCookFirst=!!first;
+           playCooking(id, {}, ()=>advance()); }); }
+    catch(e){ kitchenOpen=false; console.info('[story] kitchenHandler 出錯', e); return advance(); }
+    return;
+  }
+
   if(line.cook){
     hideBubble();
     lastCookFirst=true;
@@ -2782,6 +2797,10 @@ function flushReveal(){
 /* ══ 推進 ══ */
 function advance(){
   if(kerbPlaying) return;            // Kerberos 之門演出中：點擊無效（不然會跳過整段演出）
+  /* 廚房菜單開著：那一拍是**閘門**（挑一道煮了才過）—— 點畫面不該把它跳過去。
+     ⚠ 實測時就是這樣跳過去的（單子在 z-9600、真的玩點不到底下，但程式化的點擊
+       打得到）。同 `kerbPlaying` 的理由：演出／閘門進行中，點擊無效。 */
+  if(kitchenOpen) return;
   const line = cur && cur.lines[lineIdx];
   const tx = $('storyText');
   clearTimeout(autoT); autoT=null;   // 玩家點了 → 演出拍提前收，別讓計時器再推一次
@@ -3226,6 +3245,10 @@ export function setSettleHandler(fn){ settleHandler = fn || null; }
    （那一層是道具與單子，方向不對）。回傳 { ok, first }。 */
 let cookHandler=null;
 export function setCookHandler(fn){ cookHandler = fn || null; }
+/* 打開廚房菜單（ver -956）：由 main 注入（story 不 import loot／town）。
+   參數是一個 `onCook(id, first)` 回呼 —— 玩家挑好之後由這裡接手演出。 */
+let kitchenHandler=null, kitchenOpen=false;
+export function setKitchenHandler(fn){ kitchenHandler = fn || null; }
 /* 門全開的掛鉤（ver -875）：main 注入 combat.releaseEnemyRise——降臨等門開。 */
 let gateOpened=null;
 export function setGateOpened(fn){ gateOpened = fn || null; }
@@ -3392,6 +3415,7 @@ export function veil(on, ms){
 export function veilOn(){ const v=$('storyVeil'); return !!(v && v.classList.contains('on')); }
 
 export function clearCast(){
+  kitchenOpen=false;   // 閘門的鎖：清場就一定解掉（不然下一段點不動，ver -956）
   darkWho=null;   // 剪影是「還沒表明身分」的狀態，清場就結束（ver -954）
   slot={L:null,R:null}; slotExpr={L:null,R:null}; shown={};
   leaveSlot('L'); leaveSlot('R');

@@ -116,9 +116,15 @@ const SV_S8_DINE = { flag:'sv_s8_dine', need:'sv_s8_home', fromStage:8, lines:[
      ⚠ 玩家本來就有的話會多出一份 —— 那比「+40 沒生效」好得多。 */
   Object.assign(nou('front','（在路邊採了一把迷迭香）'),
                 { text:'', se:'se_walk', give:{ meat_deer:1, season_butter:1, herb_rosemary:1 } }),
-  mar(null,'好的！奶油鹿腿一份，稍等一下喔！'),
-  /* 料理演出（`story.playCooking`）：鍋子交替＋COOKING…＋成品。帳走 `loot.cookDish`。 */
-  { speaker:'COOK_SV', cook:'deersteak' },
+  mar(null,'那，想吃什麼呢？'),
+  /* ══ 玩家自己挑（ver -956，Ray：「料理情節是要開菜單畫面讓玩家點選可料理的東西」）══
+     `{ kitchen:true }` ＝開菜單、挑一道煮了才往下演；演出與帳照舊走同一支。
+     ⚠⚠ 稿上原本是瑪：「好的！奶油鹿腿一份，稍等一下喔！」—— 那一句**點名了菜色**，
+       而菜色現在是玩家選的，所以改成點餐前的一問「那，想吃什麼呢？」。
+       ⚠ 不要把它擺在 `kitchen` 之後：那一拍的回呼**直接接演出**，擺後面會變成
+         「菜端上來了才說稍等一下」。
+     ⚠ 設計上這時一定有鹿排的食材（Ray）；測試期間那三樣是 `always:true`。 */
+  { speaker:'COOK_SV', kitchen:true },
   nou('surprise','這個！好好吃！'),
   mar(null,'對吧！綠月風格的奶油煎鹿肉。不用再調味就很好吃。'),
   sor('surprised','！！'),
@@ -143,7 +149,10 @@ const SV_S8_DINE = { flag:'sv_s8_dine', need:'sv_s8_home', fromStage:8, lines:[
   Object.assign(cor(null,'我是第五騎士團的，'),
                 { cg:'013_Corvin_intro', cgNoTime:true, cgPan:'up' }),
   cor('smile','科爾文。請多指教。'),
-  nou('surprise','作戰課……？'),
+  /* ⚠⚠ **報完名字就把插圖撤掉**（ver -956，Ray：「登場插畫以後就卡著了」）——
+     插圖是**持續狀態**，那一張是「他登場」的畫，登場演完就該收，
+     不然後面整段長對話都蓋在它底下（§6.5：一段演完就清）。 */
+  Object.assign(nou('surprise','作戰課……？'), { cg:null }),
   sor('laugh','啊？這個跟豆芽一樣森住民能作什麼戰？'),
   sor('remind','你有好好吃飯嗎？'),
   cor('smile','並不是只有打打殺殺才叫作戰，敬愛的女士。'),
@@ -205,8 +214,7 @@ const SV_S8_DINE = { flag:'sv_s8_dine', need:'sv_s8_home', fromStage:8, lines:[
   cor('think','……'),
   cor('talk','海森伯格小姐，關於這方面，能否請您分享一下情報呢？'),
   any('silent','……'),
-  /* ⚠ 插圖是**持續狀態**：這一段收尾前明寫收掉（`clearCast` 也會收，這裡是意圖）。 */
-  Object.assign(ren('pause','……我知道了。'), { cg:null }),
+  ren('pause','……我知道了。'),
 ] };
 
 
@@ -2049,17 +2057,6 @@ export const TOWNS = {
          ⚠ 「三秒黑」目前走 forceGo 的標準黑幕（~1s）——要真的 3 秒再跟 Ray 調。 */
       { flag:'sv_forest_morning', need:'sv_clear_wild', clockTo:6,
         goto:'sorahome', enterAgain:true },
-      /* ══ Stage 8 的起始（ver -954，Ray：「Stage8 起始時間是 stage7 結束後的
-         下一個中午 12 點」）══
-         ⚠⚠ **寫成閘門不是寫在 act 上**：閘門在**轉場之前**推時鐘（見 clockGate），
-           所以下一格的背景才會用推完之後的時段挑。寫在 act 上的話人已經站在那裡了，
-           背景是按**舊時刻**選的 —— 半夜走進來會看到夜景配中午的戲。
-         ⚠ `fromStage:7` 而不是某支旗：S7 有兩條分支（鹿主走掉／打贏），
-           插的旗不同、升的章相同（同 sv_s8_home 那一段的理由）。
-         ⚠ `advanceToNextHour(12)` ＝**下一個** 12:00（已經過了就是隔天中午）——
-           與 `advanceToHour`（推到今天、過了就不動）是兩支，不要混用。
-         ⚠ 沒有台詞：時間跳過去＋把人放到索菈娜家，戲由那一格的 acts 接。 */
-      { flag:'sv_s8_noon', fromStage:7, clockTo:12, goto:'sorahome', enterAgain:true },
       /* ══ Stage 8：逛太久就被抓去餐廳（ver -953，Ray：「超過一小時仍沒有去餐廳」
          →「不要那麼麻煩，移動六次就是一小時，第七次就出肚子餓劇情」）══
          ⚠ `afterMoves:6` ＝**這個閘門變成可觸發之後**又走了六步，第七步發動
@@ -2896,6 +2893,21 @@ export const TOWNS = {
   shinier_ruins: {
     name: '木雅克神殿',
     entry: 'antechamber',        // ＝這座圖的第一格（入口在森林那邊，見上）
+    /* ══ Stage 8 的入口（ver -956，Ray：「神殿攻略結束後自動跳轉回索拉娜家，
+       三秒淡入規則」＋「Stage8 起始時間是 stage7 結束後的下一個中午 12 點」）══
+       神殿收尾那一段（`deepaltar` 的 `sr_altar`）演完 → 這道閘門接手：
+       推時鐘到**下一個中午 12 點** → 三秒淡出 → 人放到索菈娜家 → 那一格的
+       `sv_s8_home` 接著演。
+       ⚠⚠ **`goto` 是跨圖的 `@地圖:節點`**（forceGo 的新分支，ver -956）：
+         索菈娜家在 `shinier`，不是這張圖。
+       ⚠ 兩件事併在同一道閘門是刻意的：它們是**同一個轉場**的兩半（時間跳過去、
+         人搬回去）。拆成兩道的話，時鐘那一道會在玩家還沒離開神殿時就先跳。
+       ⚠ 時鐘一定要在轉場**之前**推（clockGate 就是這個順序）：下一格的背景
+         才會用推完之後的時段挑（半夜走出神殿不該看到夜景配中午的戲）。
+       ⚠ `need` 用 `sr_altar`（那一段演完才記）—— 打輸回頭重演也不會提早觸發。 */
+    gates: [
+      { flag:'sv_s8_noon', need:'sr_altar', clockTo:12, goto:'@shinier:sorahome' },
+    ],
     bgm: 'frosylva',         // PeriTune_Frosylva（ver -876，Ray 指定）
     storyExplore: true,
     wilderness: true,

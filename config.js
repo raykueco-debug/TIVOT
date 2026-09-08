@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.08-955';
+export const VERSION = 'ver 2026.09.09-956';
 
 export const GAME_CONFIG = {
 
@@ -801,10 +801,19 @@ export const GAME_CONFIG = {
          ⚠⚠ `huntExchange.foods` 那五樣是**另一件事**（獵人每日兌換），
            不要因為這裡多了食材就去動那張表。
          ⚠ 價格是我擬的草案（照既有食材的量級：常見 20~60、費工的 80~120）。 */
-      meat_deer:      { name:'鹿腿肉',   cat:'food', food:'meat',   price:90,
+      meat_deer:      { name:'鹿腿肉',   cat:'food', food:'meat',   always:true, price:90,
                         desc:'厚實的鹿後腿肉。腥味淡，煎烤都合適。' },
+      /* ⚠⚠⚠ **那三樣的 `always:true` 是測試期間的暫時措施**（ver -956，Ray：「設計上
+         玩家此時一定會有鹿排食材，測試期間讓包裡永遠有那三樣就好」）——
+         鹿腿肉／迷迭香／草原奶油**目前遊戲裡拿不到**（沒有怪掉、沒有店賣），
+         而 Stage8 的料理那一段要玩家自己從菜單挑一道煮。
+         ⚠ `always` ＝不進道具欄的帳、數量無限（同薇拉馮德家的紋章）——
+           所以煮過一次也不會少。
+         ⚠⚠ **正式版要把這三個 `always` 拿掉**，改成真的拿得到：怪的掉落（鹿腿肉）
+           ／店貨（奶油）／野外採集（迷迭香）。拿掉的同時要確認 Stage8 那一段仍然
+           煮得出第一道 —— 不然那一拍會開著菜單卻一道都按不下去。 */
       /* ── 菜（蔬菜與香草）── */
-      herb_rosemary:  { name:'迷迭香',   cat:'food', food:'veg',    price:25,
+      herb_rosemary:  { name:'迷迭香',   cat:'food', food:'veg',    always:true, price:25,
                         desc:'林間隨處可見的香草。一小把就能壓住肉的腥。' },
       veg_wildgarlic: { name:'野蒜',     cat:'food', food:'veg',    price:20,
                         desc:'葉子寬而柔軟的野蒜。氣味比栽種的溫和些。' },
@@ -815,7 +824,7 @@ export const GAME_CONFIG = {
       veg_watercress: { name:'河芹',     cat:'food', food:'veg',    price:30,
                         desc:'淺灘邊成叢的水芹。清爽，帶一點辛。' },
       /* ── 調味 ── */
-      season_butter:  { name:'草原奶油', cat:'food', food:'season', price:60,
+      season_butter:  { name:'草原奶油', cat:'food', food:'season', always:true, price:60,
                         desc:'草原牧場的奶油。煎過之後香得很霸道。' },
       season_rocksalt:{ name:'岩鹽',     cat:'food', food:'season', price:20,
                         desc:'敲下來的粗粒岩鹽。撒上去就很夠味。' },
