@@ -53,7 +53,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.08-934';
+export const VERSION = 'ver 2026.09.08-935';
 
 export const GAME_CONFIG = {
 
@@ -459,9 +459,14 @@ export const GAME_CONFIG = {
       siFit:{ zoom:1.6, top:0.01 },   // 估（同諾薇兒/安雅）；Ray 交專用選人立繪再重量
       cutin:'ci_sorana_predator',     // 共鬥的變身 cut-in
       voice:null,
-      /* 難度加成（ver -805，Ray：「索拉娜為伙伴時，難度系數 +100」）——共鬥的無敵
-         讓她好打，評價的 timeK 就 +100（inspector.evaluate 讀，鐵律 1）。 */
-      timeKBonus:100,
+      /* ══ 難度加成（ver -805 立；**-935 由 Ray 調高**）══ 共鬥的無敵讓她好打，
+         評價就要更嚴 —— `inspector.evaluate` 把它加在全域 `timeK` 上（鐵律 1）。
+         ⚠⚠ Ray -935：「索拉娜搭檔**評價係數給到 650**」—— 那是**加完之後的值**：
+           全域 `rating.timeK` 400 ＋ 這裡的 250 ＝ **650**。
+           所以改全域 timeK 的時候**這個數字要跟著回推**，不然她那邊就不是 650 了
+           （這一格存的是差值不是絕對值 —— 它是「比別人嚴多少」）。
+         ⚠ -805 原本是 +100（＝當時的 500）。 */
+      timeKBonus:250,
       perk:'獵手的共鬥（共鬥/無敵）＋獵手的智慧（上滑 Bullets Rain）＋獵手的戰吼（被動）',
       /* ══ 共鬥（Predator's Pack）的參數（saint.activateCoop 讀，鐵律 1）══
          無敵秒數 ＝ baseSec × (破防值/100)（下夾 minSec），發動消耗全部破防值、
