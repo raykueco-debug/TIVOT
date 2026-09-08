@@ -53,7 +53,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.08-929';
+export const VERSION = 'ver 2026.09.08-930';
 
 export const GAME_CONFIG = {
 
@@ -2490,6 +2490,22 @@ export const ASSETS = {
   enemy_ruins_saint_inspector:   "resources/enemy/mon_saint_inspector.webp",
   enemy_ruins_saint_thug:        "resources/enemy/mon_saint_thug.webp",
   enemy_ruins_saint_temperance:  "resources/enemy/mon_saint_Temperance.webp",
+
+  /* ══ 聖遺物系 10 隻（ver -930）══ 卡已備好但**還沒部署**（見 script/enemies.js）。
+     ⚠⚠ 登記在這裡就會進**開機第二段的背景預載**（main.js 的 `_restImgs`：進主選單
+       那一刻開載）—— 這 10 張合計 **3.87 MB**，而現在遊戲裡一隻都遇不到。
+       要完全零足跡就得把這一段先註解掉，但那樣卡會抓不到圖（`asset()` 回空字串）。
+       **接上戰鬥卡之前若嫌重，就把這 10 行整段註解掉**，兩邊一起。 */
+  enemy_relic_mirrorchoir:   "resources/enemy/mon_relic_mirrorchoir.webp",
+  enemy_relic_bellows:       "resources/enemy/mon_relic_bellows.webp",
+  enemy_relic_confessional:  "resources/enemy/mon_relic_confessional.webp",
+  enemy_relic_hourglass:     "resources/enemy/mon_relic_hourglass.webp",
+  enemy_relic_keyward:       "resources/enemy/mon_relic_keyward.webp",
+  enemy_relic_lectern:       "resources/enemy/mon_relic_lectern.webp",
+  enemy_relic_censerlung:    "resources/enemy/mon_relic_censerlung.webp",
+  enemy_relic_veilhands:     "resources/enemy/mon_relic_veilhands.webp",
+  enemy_relic_wheelpsalm:    "resources/enemy/mon_relic_wheelpsalm.webp",
+  enemy_relic_chalice:       "resources/enemy/mon_relic_chalice.webp",
 
   // ── 五張 cut-in 圖（v17.7 嵌入）──
   cutin_saint_luna: "resources/partner/Luna_CI_advent.jpg",   // 聖徒化降臨 cut-in（Luna）
