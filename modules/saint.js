@@ -465,8 +465,11 @@ function triggerNiBurst(){
     return;
   }
   markMaxBurst();   // 惡夢化清空殘格＝MB（Ray：「同 SI 的 MB」，ver -675）
-  const rlMB = state.saintUsedThisBattle ? 'SAINT RELOAD' : null;   // 空槍才 reload（ver -896）
-  if(rlMB) resetInstallSlot();
+  /* ⚠⚠ **這一支是惡夢化**，所以標籤是 NIGHTMARE RELOAD（ver -963 修）：
+     -896 把兩支的變數名與標籤**交叉寫錯了** —— 這裡宣告 `rlMB`／印 `SAINT RELOAD`，
+     下面卻傳 `rlNMB`（未宣告）。見 triggerMaxBurst 那一支的同一段。 */
+  const rlNMB = state.saintUsedThisBattle ? 'NIGHTMARE RELOAD' : null;   // 空槍才 reload（ver -896）
+  if(rlNMB) resetInstallSlot();
   /* ⚠⚠ **要播 MB 的全畫面 cut-in**（ver -719，Ray：「NI 的 MB 跟 execute 沒接上」）——
      -675 只做了「算 MB 的傷害＋記旗標」，演出那一步漏了：擊殺那一支有
      `playSaintCutin('execute')`，未擊殺這一支卻直接跳收尾，畫面上只有一行浮字。
@@ -735,8 +738,17 @@ function triggerMaxBurst(){
     return;
   }
   markMaxBurst();   // 未擊殺的 MB（ver -675）：評價折 10 秒，見 config.rating.penalty
-  const rlNMB = state.saintUsedThisBattle ? 'NIGHTMARE RELOAD' : null;   // 空槍才 reload（ver -896）
-  if(rlNMB) resetInstallSlot();
+  /* ⚠⚠⚠ **ver -963 修：`rlMB` 從來沒有被宣告過，MB 一觸發就丟 ReferenceError**
+     （Ray：「諾薇兒聖徒化 MB 時整個盤面消失了玩不下去」）。
+     -896 把這兩支的變數名與標籤**交叉寫錯**：這裡宣告的是 `rlNMB`／印
+     `NIGHTMARE RELOAD`（那是惡夢化的字），而下面傳的是 `rlMB` —— 未宣告。
+     ⚠⚠ **症狀為什麼是「盤面消失」**：例外丟在 `$('grid').classList.remove('saint')`
+       與 `finishSaintMode()` **之間** —— 聖徒化的盤面已經拆掉、還原那一段永遠跑不到，
+       於是畫面上什麼都不剩。**兩支都壞了 66 版**（-896 起），惡夢化那一支同病。
+     ⚠ 自檢：這種錯 `jsc -m` 抓不到（未宣告的變數要**執行到那一行**才炸），
+       而它就藏在一個只有特定收尾方式才走得到的分支裡。 */
+  const rlMB = state.saintUsedThisBattle ? 'SAINT RELOAD' : null;   // 空槍才 reload（ver -896）
+  if(rlMB) resetInstallSlot();
   // 敵人未死 → Maximum Burst 演出後回盤面。回血規則（2026-08-13 定案）：
   //   EXSECUTIŌ（MB 擊殺）→ 回滿；MaxBurst（未擊殺）→ 回 50%，並自然延續到同場下一敵。
   playSaintCutin('burst', ()=>{
