@@ -3,7 +3,7 @@
 """敵人卡 ⇄ Excel（ver -943，Ray：「不要壓縮，給我統一格式，然後出一張 excel 給我，
    以後我直接輸 excel 你去讀」）
 
-    python3 tools/enemies_xlsx.py export            # enemies.js → tools/enemies.xlsx
+    python3 tools/enemies_xlsx.py export            # enemies.js → enemies.xlsx（專案根目錄）
     python3 tools/enemies_xlsx.py import [檔案]      # Excel → 改回 enemies.js（只動有變的格）
 
 ⚠⚠⚠ **匯入是「就地改值」不是「重新產生檔案」**。
@@ -32,7 +32,10 @@ import json, os, re, subprocess, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 JS   = os.path.join(ROOT, 'script', 'enemies.js')
-XLSX = os.path.join(ROOT, 'tools', 'enemies.xlsx')
+# ⚠⚠ 只有這一份 Excel（ver -952）：Ray 直接在**專案根目錄**編輯它，所以匯出也寫回同一個檔。
+#   以前匯出到 tools/、他改的卻是根目錄那份 —— 兩份必然走鐘（鐵律 7），
+#   而症狀是「匯入之後數值又跳回去」，事後看不出是哪一格被換走的。舊的那份已進回收區。
+XLSX = os.path.join(ROOT, 'enemies.xlsx')
 JSC  = '/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc'
 
 # ── 巢狀欄位怎麼攤平成欄 ───────────────────────────────────────────────

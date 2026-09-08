@@ -134,7 +134,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       entrance:null, special:[],
       boardGrids:[9,9,9,9,9],
-      hitFx:{ delay:'slash', wrong:'slash', assault:'slash' },
+      hitFx:{ delay:'blunt', wrong:'blunt', assault:'blunt' },
     },
     // ── 連戰第二隻（局內序列第二敵）：巨型聖徒。完全獨立一筆，非沿用 faceless。 ──
     //    非 Boss（不填 ult/delayPenalty/wrongPenalty → 普通怪走預設：單發大絕、無半傷減時）。
@@ -1020,9 +1020,9 @@ export const ENEMIES = {
            太長又會拆成三陣風。特效那一層**只生一層畫布**（見 enemy.spawnSakura），
            所以畫面上仍然是一陣連續的狂風。 */
       openAssault:[1,2],
-      ult:{ on:1, hp:40, count:2, atk:25, gap:1, cd:4 },
-      assaultEvery:[8,10],
-      assault:{ count:3, gap:0.35 },
+      ult:{ on:1, hp:50, count:4, atk:25, gap:1, cd:4 },
+      assaultEvery:[2,4],
+      assault:{ count:1, gap:0.35 },
       kind:'harm',
       image:'enemy_sf_deer_nightmare',
       bg:'ruins_shinier_entrance',
@@ -1063,9 +1063,7 @@ export const ENEMIES = {
       entrance:null,
       special:[],
       boardGrids:[9,9,9,9,9],
-      hitFx:{ delay:'blood',
-              wrong:'slash',
-              assault:'claw' },
+      hitFx:{ delay:'bite', wrong:'slash', assault:'claw' },
       loot:[ { id:'paw_bear', n:1 } ],
     },
     sf_bear_nightmare: {
@@ -1170,7 +1168,7 @@ export const ENEMIES = {
       image:'enemy_ruins_bonemaw',
       bg:'Ruins_shinier_Catacomb',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:400,
+      hp:300,
       attack:16,   // hp＝Ray 表；attack 暫定
       atkInterval:null,
       delayPenalty:{ seconds:5 },
@@ -1218,7 +1216,7 @@ export const ENEMIES = {
       image:'enemy_ruins_halo_ring',
       bg:'Ruins_shinier_Hollow',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:350,
+      hp:200,
       attack:14,   // hp＝Ray 表；attack 暫定
       atkInterval:null,
       delayPenalty:{ seconds:5 },
@@ -1267,7 +1265,7 @@ export const ENEMIES = {
       image:'enemy_ruins_bellwalker',
       bg:'Ruins_shinier_MossChamber',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:500,
+      hp:400,
       attack:16,   // hp＝Ray 表（ver -920 補）；attack 暫定
       atkInterval:null,
       delayPenalty:{ seconds:5 },
@@ -1316,7 +1314,7 @@ export const ENEMIES = {
       image:'enemy_ruins_saint_inspector',
       bg:'Ruins_shinier_DarkBridge',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:400,
+      hp:500,
       attack:16,   // hp＝Ray 表；attack 暫定
       atkInterval:null,
       delayPenalty:{ seconds:5 },
@@ -1354,7 +1352,7 @@ export const ENEMIES = {
     /* BOSS（結算怪）。⚠ **牠還沒有出場的那一拍**：深部祭壇平時不出怪（ver -918），
        Ray：「等等再補劇情給你」—— 卡與戰鬥卡都備好，接的時候是那一段 act 的一拍。 */
     ruins_saint_temperance: {
-      name:'節制',
+      name:'節制者',
       story:0, counterStagger:1,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
