@@ -22,6 +22,10 @@ export const SPEAKERS = {
   /* 索菈娜：報上名字之前是「？？？」（ver -752，湖上甲板登場稿）。
      同 GIRL／ANYA_Q／OFFICER 的慣例：顯示名不同就是兩個 id，art 同指。 */
   SORANA_Q: { name:'？？？',   art:'sorana'   },
+  /* 科爾文（ver -953）。報上名字之前是「？？？」＋暗調剪影（稿上的「陰影立繪」）
+     —— 同 SORANA_Q／ANYA_X／OFFICER 的慣例：顯示名不同就是兩個 id，art 同指。 */
+  CORVIN:   { name:'科爾文', art:'corvin'   },
+  CORVIN_Q: { name:'？？？',   art:'corvin'   },
   LUNA:     { name:'璐娜',   art:'luna'     },
   /* 璐娜莉亞：第四騎士團團長。⚠ 目前只以 **CG 與暗調 CI 插入**登場，不站立繪
      —— 所以 art 是 null。真的要讓她在對話裡站台，得先量取景值（見下方 ART 的
@@ -187,7 +191,7 @@ export const ART = {
                   /* ver -425 交件。`covermouth`＝掩口（驚訝／忍笑）、`cringe`＝尷尬皺眉。 */
                   covermouth:{src:'resources/SI/Renna_SI_covermouth.webp',top:2, bot:1528, fx:0.512 },
                   cringe:   { src:'resources/SI/Renna_SI_cringe.webp',    top:3, bot:1524, fx:0.502 },
-                  cutescare:{ src:'resources/SI/Renna_SI_cutescare.webp', top:0, bot:1530, fx:0.537 },
+                  cutescare:{ src:'resources/SI/Renna_SI_scarecute.webp', top:0, bot:1530, fx:0.537 },
                   dying:    { src:'resources/SI/Renna_SI_dying.webp',     top:2, bot:1518, fx:0.543 },
                   relief:   { src:'resources/SI/Renna_SI_relief.webp',    top:3, bot:1525, fx:0.518 },
                   /* 北方泊地教堂那一幕（ver -624，Ray 交稿）。逐張量（tools/measure_si.py）。
@@ -196,6 +200,7 @@ export const ART = {
                   worry:    { src:'resources/SI/Renna_SI_worry.webp',      top:6, bot:1527, fx:0.568 },
                   pause:    { src:'resources/SI/Renna_SI_Pause.webp',      top:3, bot:1525, fx:0.513 },
                   upsetstare:{src:'resources/SI/Renna_SI_upsetstare.webp', top:0, bot:1524, fx:0.503 },
+                  upset:    { src:'resources/SI/Renna_SI_upset.webp',      top:2, bot:1524, fx:0.507 },   // Stage8（ver -953）
                   evaluating:{src:'resources/SI/Renna_SI_evalutating.webp',top:6, bot:1524, fx:0.507 },
                   evaluatingclosemouth:{src:'resources/SI/Renna_SI_evalutatingclosemouth.webp', top:6, bot:1524, fx:0.508 },
                   chase:    { src:'resources/SI/Renna_SI_chase.webp',      top:4, bot:1532, fx:0.554 },
@@ -307,6 +312,11 @@ export const ART = {
                   /* 城鎮探索那一段新增（ver -369）。 */
                   sadsmile: { src:'resources/SI/Nouvelle_SI_sadsmile.webp',  top:5,  bot:1532, fx:0.587 },
                   hungry:   { src:'resources/SI/Nouvelle_SI_hungry.webp',    top:0,  bot:1536, fx:0.579 },
+                  /* Stage8（ver -953）。逐張量（measure_si.py）。
+                     ⚠ `awkwerd` 的鍵照檔名拼（Ray 的稿寫 Awkwerd）—— 鍵與檔名對得上才找得到圖，
+                       同 sorana 的 `lauaghbig`，不要「修正」它。 */
+                  risehand: { src:'resources/SI/Nouvelle_SI_risehand.webp',  top:1,  bot:1529, fx:0.393 },
+                  awkwerd:  { src:'resources/SI/Nouvelle_SI_Awkwerd.webp',   top:2,  bot:1533, fx:0.468 },
                   shocked:  { src:'resources/SI/Nouvelle_SI_Shocked.webp',   top:3,  bot:1534, fx:0.504 },
                   lookaway: { src:'resources/SI/Nouvelle_SI_Lookaway.webp',  top:5,  bot:1529, fx:0.504 },
                   angry:    { src:'resources/SI/Nouvelle_SI_angry.webp',      top:3,  bot:1535, fx:0.583 },   // ver -842
@@ -354,7 +364,12 @@ export const ART = {
     smirk:        { src:'resources/SI/Sorana_SI_smirk.webp',         top:8,  bot:1528, fx:0.582 },
     lauaghbig:    { src:'resources/SI/Sorana_SI_lauaghbig.webp',     top:4,  bot:1529, fx:0.492 },
     remind:       { src:'resources/SI/Sorana_SI_remind.webp',        top:4,  bot:1525, fx:0.523 },
-    smile:        { src:'resources/SI/Sorana_SI_smile.webp',         top:10, bot:1525, fx:0.547 },
+    /* ver -953：美術把 webp 換成新畫的 png，webp 版一度從磁碟消失（speakers 指得到、
+       檔案卻不在）。轉回 webp 並**重量取景**（fx 0.547→0.528，差 0.019＝橫向約 19px，
+       沿用舊值她會偏一格）；`?v=2` 是同名覆蓋的快取破除（§5）。 */
+    smile:        { src:'resources/SI/Sorana_SI_smile.webp?v=2',    top:9,  bot:1530, fx:0.528 },
+    /* ver -953：Ray 為 Stage8「索：dying」補的圖（他原話：「dying 進去了」）。 */
+    dying:        { src:'resources/SI/Sorana_SI_dying.webp',        top:7,  bot:1524, fx:0.452 },
     back:         { src:'resources/SI/Sorana_SI_back.webp?v=2',       top:1,  bot:1516, fx:0.533 },  // ver -786 換新圖＋重量取景
     ready:        { src:'resources/SI/Sorana_SI_ready.webp',         top:7,  bot:1521, fx:0.631 },
     readysmile:   { src:'resources/SI/Sorana_SI_readysmile.webp?v=2', top:6,  bot:1534, fx:0.578 },  // ver -837 換新圖＋重量取景（?v=2：同名覆蓋）
@@ -362,6 +377,14 @@ export const ART = {
        逐張量（measure_si.py）。腳本還沒有用到它 —— 先掛著備用。 */
     tease:        { src:'resources/SI/Sorana_SI_tease.webp',         top:7,  bot:1528, fx:0.583 },
     surprised:    { src:'resources/SI/Sorana_SI_surprised.webp',     top:9,  bot:1522, fx:0.537 },   // ver -842
+    /* Stage8（ver -953）。 */
+    upset:        { src:'resources/SI/Sorana_SI_upset.webp',         top:5,  bot:1526, fx:0.514 },
+    /* ⚠⚠ `furiousq` 的畫布是 **1205×1305**，不是規約的 1024×1536（§5）——
+       人物在它裡面只有 1288px 高，而基本立繪是 ~1520px。差分預設**沿用基本立繪的
+       像素身高**當分母（ver -346：避免每換一次表情就縮放一次），套在這張上會小一截，
+       所以要明寫 `rescale:true` ＝ 這一張用它自己的高（同諾薇兒 SAINT INSTALL 那張）。
+       ⚠ 圖若之後補成 1024×1536，這一行的 rescale 與 top/bot 都要重來。 */
+    furiousq:     { src:'resources/SI/Sorana_SI_furiousq.webp',      top:5,  bot:1293, fx:0.535, rescale:true },
     hug:          { src:'resources/SI/Sorana_SI_hug.webp?v=2',       top:11, bot:1485, fx:0.408 } } },  // ver -843：Ray 換新圖＋重量（?v=2 同名覆蓋）
   /* ⚠ 取景值於 ver -624 **重量**：`Anya_SI_front` 換過圖（舊的留成
      `XAnya_SI_front.webp`）—— §5「換圖一定要重量取景值」。
@@ -396,6 +419,7 @@ export const ART = {
     chibiscared:  { src:'resources/CI/CI_Anya_scared.webp', top:11, bot:1252, fx:0.442,
                     cm:95, standCm:162, rescale:true },
     watch:        { src:'resources/SI/Anya_SI_watch.webp', top:8, bot:1535, fx:0.476 },
+    surprised:    { src:'resources/SI/Anya_SI_surprised.webp', top:5, bot:1527, fx:0.458 },   // Stage8（ver -953）
     talkshy:      { src:'resources/SI/Anya_SI_talkshy.webp', top:0, bot:1525, fx:0.451 },
     /* 北方泊地教堂那一幕（ver -624）。逐張量（tools/measure_si.py）。 */
     scared:   { src:'resources/SI/Anya_SI_Scared.webp',   top:0, bot:1511, fx:0.477 },
@@ -482,7 +506,7 @@ export const ART = {
             `fx` 是「臉在那張圖裡的位置」，兩張圖各有各的實測值，抄同一個數字
             會讓她在斷氣那一拍橫向跳一大格。 */
   natalia:{ cm:150, standCm:152, eye:0, fx:0.363, fxShift:0.012, top:103, bot:1535,
-           side:'L', alt:null, base:'resources/SI/NPC_Natalia_SI_dying.webp?v=2', expr:{
+           side:'L', alt:null, base:'resources/SI/NPC/NPC_Natalia_SI_dying.webp?v=2', expr:{
     /* ⚠⚠ **`fx` 是「臉在**這張圖**裡的橫向位置」，不是螢幕位置** —— 所以**不能抄**。
        引擎做的是 `left = 畫面錨點 − 縮放 × fx × 圖寬`：只要每張圖的 `fx` 各自量對，
        兩張差分的**臉**就會落在同一個螢幕位置，圖自己會左右挪。
@@ -527,7 +551,7 @@ export const ART = {
     /* ⚠ `standCm` 比本尊低 4.7cm ＝ 這一張整個往下 20px（ver -654，Ray 指定）。
        換算走 390×844 那個驗收視口的每公分像素（4.28）—— 位移寫成 cm 才不會
        換一台機器就走鐘（headY 是 `(CAST_TALL−standCm)×pxCm` 算出來的）。 */
-    dead: { src:'resources/SI/NPC_Natalia_SI_dead.webp?v=2', top:47, bot:1535, cm:156, standCm:147.3, fxShift:0.130 },
+    dead: { src:'resources/SI/NPC/NPC_Natalia_SI_dead.webp?v=2', top:47, bot:1535, cm:156, standCm:147.3, fxShift:0.130 },
   } },
   /* 璐娜：戰鬥搭檔，劇情立繪尚未指定 —— 先指 cut-in 圖，數字**沒有量過**。
      ⚠ 真的要讓她在劇情裡站台，top/bot/fx 一定要重量（cut-in 是胸像構圖，
@@ -638,20 +662,20 @@ export const ART = {
   /* 雜貨舖店主（ver -369）。⚠ 身高是**估的**（170）—— 沒有設定，先給一個中間值；
      取景值是量的。日後 Ray 給了設定再改 cm 就好，取景不用重量。 */
   shopkeep:{ cm:170, eye:32, fx:0.434, top:6, bot:1533,
-           side:'R', alt:null, base:'resources/SI/NPC_Grocerie_SI.webp', expr:{} },
+           side:'R', alt:null, base:'resources/SI/NPC/NPC_Grocerie_SI.webp', expr:{} },
   /* 賞金獵人（ver -375）。⚠ 身高是**估的**（178，成年男性獵人）——沒有設定，
      取景值是量的（`tools/measure_si.py`）。日後有設定改 cm 即可，取景不用重量。
      ⚠ `attack` 這張同時是**戰鬥立繪**（config.enemies.guild_hunter.image），
        但戰鬥那邊是滿版取景、不吃這組數字 —— 同一張圖、兩套用途。 */
   hunter: { cm:178, eye:32, fx:0.485, top:6, bot:1529,
-           side:'R', alt:null, base:'resources/SI/NPC_GuildHunter_SI.webp',
-           expr:{ shocked:{ src:'resources/SI/NPC_GuildHunter_SI_Shocked.webp', top:0, bot:1535, fx:0.453 },
-                  attack: { src:'resources/SI/NPC_GuildHunter_SI_Attack.webp',  top:0, bot:1535, fx:0.546 },
-                  lost:   { src:'resources/SI/NPC_GuildHunter_SI_Lost.webp',    top:6, bot:1529, fx:0.487 } } },
+           side:'R', alt:null, base:'resources/SI/NPC/NPC_GuildHunter_SI.webp',
+           expr:{ shocked:{ src:'resources/SI/NPC/NPC_GuildHunter_SI_Shocked.webp', top:0, bot:1535, fx:0.453 },
+                  attack: { src:'resources/SI/NPC/NPC_GuildHunter_SI_Attack.webp',  top:0, bot:1535, fx:0.546 },
+                  lost:   { src:'resources/SI/NPC/NPC_GuildHunter_SI_Lost.webp',    top:6, bot:1529, fx:0.487 } } },
   /* 槍店店主（ver -377）。⚠ 身高是**估的**（175）；取景值是量的
      （`tools/measure_si.py`）。 */
   gunsmith:{ cm:175, eye:32, fx:0.476, top:6, bot:1531,
-           side:'R', alt:null, base:'resources/SI/NPC_Capital_Gunstore_SI.webp', expr:{} },
+           side:'R', alt:null, base:'resources/SI/NPC/NPC_Capital_Gunstore_SI.webp', expr:{} },
   /* 禍魘娜塔莉（ver -681）。⚠ `fx` **不是 `measure_si.py` 印的 0.626**：
      那一支量的是「頭頂往下 8% 那一帶的重心」，而她的頭髮往右上飛散一大片 ——
      重心被拉過去了（同槍匠扛長槍的那個坑）。0.542 是照臉的位置定的。
@@ -674,21 +698,21 @@ export const ART = {
      ⚠ 兩張都是全身圖（縱向佔 98.5%／98.7%），所以 `top`/`bot` 可以當身高用。
      ⚠ 站**右**：玩家的同伴在左、對面的人在右（同所有城鎮 NPC）。 */
   gunsmith_np:{ cm:176, eye:32, fx:0.547, top:11, bot:1524,
-           side:'R', alt:null, base:'resources/SI/NPC_Gunsmith_SI_Northport.webp', expr:{} },
+           side:'R', alt:null, base:'resources/SI/NPC/NPC_Gunsmith_SI_Northport.webp', expr:{} },
   grocer_np:{ cm:165, eye:32, fx:0.515, top:15, bot:1531,
-           side:'R', alt:null, base:'resources/SI/NPC_Grocery_SI_Northport.webp', expr:{} },
+           side:'R', alt:null, base:'resources/SI/NPC/NPC_Grocery_SI_Northport.webp', expr:{} },
   /* 公會櫃台（ver -375）。身高同樣是估的（168）。 */
   counter:{ cm:168, eye:32, fx:0.511, top:4, bot:1526,
            side:'R', alt:null, base:'resources/SI/GuildCounterCA_SI.webp', expr:{} },
   /* 北泊公會櫃台（ver -858）。⚠ 原檔白底未去背 —— matte.py（isnet-anime）粗胚
      先頂著（?v=2 蓋過快取），待 GPT 正式重製後**換圖要重量**（§5）。身高估 167。 */
   counter_np:{ cm:167, eye:32, fx:0.490, top:24, bot:1522,
-           side:'R', alt:null, base:'resources/SI/NPC_GuildCounter_SI_Northport.webp?v=2', expr:{} },
+           side:'R', alt:null, base:'resources/SI/NPC/NPC_GuildCounter_SI_Northport.webp?v=2', expr:{} },
   /* 旅店前台（ver -392）。⚠ 身高是**估的**（168）；取景值是量的（`tools/measure_si.py`）。
      ⚠ `top:0 / bot:1535` 不是漏量 —— 這張是**滿版取景**：髮髻碰到上緣、靴子碰到下緣
        （實測 row 0 與 row 1535 都有不透明像素）。 */
   clerk:  { cm:168, eye:32, fx:0.494, top:0, bot:1535,
-           side:'R', alt:null, base:'resources/SI/NPC_Hotel_Capital.webp', expr:{} },
+           side:'R', alt:null, base:'resources/SI/NPC/NPC_Hotel_Capital.webp', expr:{} },
   luna:   { cm:160, eye:30, fx:0.500, top:0, bot:1000,
            side:'L', alt:null, base:'resources/partner/Luna_CI_exc.webp', expr:{}, unmeasured:true },
   /* 北方泊地的司祭（ver -582，Ray 交件 `Priest_SI_front`）。
@@ -700,18 +724,41 @@ export const ART = {
      取景是量的（measure_si.py）。站位照店主邏輯：對面的人在右。
      `sh_craftsman`（NPC_shinier_Gunsmith）＝蕾娜口中的「工匠」，先備著沒戲。 */
   sh_villager: { cm:178, eye:32, fx:0.421, top:5, bot:1524, side:'R', alt:null,
-                 base:'resources/SI/NPC_shinier_hunter_SI.webp', expr:{} },
+                 base:'resources/SI/NPC/NPC_shinier_hunter_SI.webp', expr:{} },
   sh_villager2:{ cm:172, eye:32, fx:0.542, top:5, bot:1530, side:'R', alt:null,
-                 base:'resources/SI/NPC_shinier_grocery_SI.webp', expr:{} },
+                 base:'resources/SI/NPC/NPC_shinier_grocery_SI.webp', expr:{} },
   sh_chief:    { cm:164, eye:32, fx:0.537, top:6, bot:1520, side:'R', alt:null,
-                 base:'resources/SI/NPC_shinier_chief_SI.webp', expr:{} },
+                 base:'resources/SI/NPC/NPC_shinier_chief_SI.webp', expr:{} },
   sh_craftsman:{ cm:175, eye:32, fx:0.603, top:5, bot:1531, side:'R', alt:null,
-                 base:'resources/SI/NPC_shinier_Gunsmith_SI.webp', expr:{} },
+                 base:'resources/SI/NPC/NPC_shinier_Gunsmith_SI.webp', expr:{} },
   /* 夏爾村餐廳的瑪麗亞（ver -875，measure_si 量測）。 */
   sv_cook: { cm:163, eye:32, fx:0.463, top:8, bot:1522, side:'R', alt:null,
-             base:'resources/SI/NPC_shinier_cook_SI.webp', expr:{} },
+             base:'resources/SI/NPC/NPC_shinier_cook_SI.webp', expr:{} },
   priest: { cm:172, eye:32, fx:0.536, top:7, bot:1531,
            side:'R', alt:null, base:'resources/SI/Priest_SI_front.webp', expr:{} },
+  /* ══ 科爾文（第五騎士團・作戰課副團長，ver -953，Ray 的 Stage8 稿）══
+     ⚠ `cm:176` ＝ **Ray 指定「與索菈娜同高」**。不是隨手填的：`CAST_TALL` 取全體
+       `cm` 的最大值來算每公分像素，填 180（他原本說的）會讓**全體立繪縮小約 1.1%**
+       且他自己頂到框 —— 與索菈娜並列就剛好不動到那個基準。
+     ⚠ `top`/`bot`/`fx` 是 `tools/measure_si.py` 逐張量的（9 張全身 1024×1536，
+       無半身警告）—— **每一張各自量**，差分之間不可互抄（§6.5）。
+     ⚠ `eye:32` 沿用其他 NPC 的預設：`CAST_EYE_MIX` 現在是 0（純鎖身高），
+       這一格用不到，先給個合理值備用。
+     ⚠ `side:'R'` —— 他的對手戲主要是蕾娜（本位左）。⚠ 但索菈娜／安雅本位也是右，
+       那幾幕要靠 scene 的 `sides` 整幕覆寫把人分開（§6.5「兩個人同台就一定分站兩邊」）。
+     ⚠ 沒有 `mirror` ＝ 不翻。他的制服與配件不對稱，翻了會錯。 */
+  corvin: { cm:176, eye:32, fx:0.459, top:7, bot:1528,
+            side:'R', alt:null, base:'resources/SI/NPC/Corvin_SI_front.webp',
+            expr:{
+              smile:     { src:'resources/SI/NPC/Corvin_SI_smile.webp',     top:9, bot:1529, fx:0.451 },
+              stare:     { src:'resources/SI/NPC/Corvin_SI_stare.webp',     top:3, bot:1531, fx:0.455 },
+              talk:      { src:'resources/SI/NPC/Corvin_SI_talk.webp',      top:6, bot:1531, fx:0.459 },
+              shock:     { src:'resources/SI/NPC/Corvin_SI_shock.webp',     top:6, bot:1533, fx:0.462 },
+              ecstasy:   { src:'resources/SI/NPC/Corvin_SI_ecstasy.webp',   top:0, bot:1534, fx:0.443 },
+              think:     { src:'resources/SI/NPC/Corvin_SI_think.webp',     top:8, bot:1530, fx:0.450 },
+              read:      { src:'resources/SI/NPC/Corvin_SI_read.webp',      top:6, bot:1532, fx:0.459 },
+              lookaside: { src:'resources/SI/NPC/Corvin_SI_lookaside.webp', top:1, bot:1533, fx:0.501 },
+            } },
   /* ══ 北方泊地的群眾（ver -741，Ray 交件 NPC_northport_Crowd）══
      碼頭道別那一幕的送行人群 —— 一張圖畫好幾個人，當一個「角色」上台。
      ⚠ `cm` 是**估的**（畫面上最高那位 ≈172）：這張沒有單一的人可量，
@@ -723,7 +770,7 @@ export const ART = {
      **全員**往下推 —— 主角群高度跟著跑掉，Ray 回報的就是這個。
      ⚠ `cm` 只是名目值（fitStage 不用它），留著給 CAST_TALL 之類的彙整讀。 */
   crowd_np: { cm:172, fitStage:true, eye:32, fx:0.370, top:7, bot:1527,
-           side:'R', alt:null, base:'resources/SI/NPC_northport_Crowd.webp', expr:{} },
+           side:'R', alt:null, base:'resources/SI/NPC/NPC_northport_Crowd.webp', expr:{} },
 };
 
 /* 最高的人：她定義相機（頭頂貼在舞台頂線，其餘人依身高往下排）。 */

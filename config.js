@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.08-952';
+export const VERSION = 'ver 2026.09.08-953';
 
 export const GAME_CONFIG = {
 
@@ -786,13 +786,45 @@ export const GAME_CONFIG = {
       /* ══ 夏爾森林狩獵食材（ver -858，Ray 交稿）══ 森林戰鬥的掉落（掉落表
          等森林敵卡到了再接）；獵人謝尼每日收一種换獎勵（script/town.js 的
          svHunterTrade）。⚠ 價格是我擬的草案。 */
-      meat_lynx:  { name:'山貓腿肉', cat:'food', price:60,  desc:'緊實的山貓腿肉。烤過之後香氣四溢。' },
-      meat_boar:  { name:'山豬腹肉', cat:'food', price:80,  desc:'油花漂亮的山豬腹肉。獵人的最愛。' },
+      meat_lynx:  { name:'山貓腿肉', cat:'food', food:'meat', price:60,  desc:'緊實的山貓腿肉。烤過之後香氣四溢。' },
+      meat_boar:  { name:'山豬腹肉', cat:'food', food:'meat', price:80,  desc:'油花漂亮的山豬腹肉。獵人的最愛。' },
       /* ⚠ 這三樣是**食材**（ver -862 補正：-861 說「五食材改 cat:'food'」只改了兩樣）——
          「五食材」＝ huntExchange.foods 那五樣，獵人兌換表與料理都當食材看。 */
       antler_deer:{ name:'鹿角',     cat:'food', price:50,  desc:'分岔漂亮的鹿角。可入藥也可做工藝。' },
-      paw_bear:   { name:'熊掌',     cat:'food', price:120, desc:'稀有的熊掌。燉煮費工，滋味濃厚。' },
-      meat_snake: { name:'蛇肉',     cat:'food', price:40,  desc:'處理乾淨的蛇肉。意外地清爽可口。' },
+      paw_bear:   { name:'熊掌',     cat:'food', food:'meat', price:120, desc:'稀有的熊掌。燉煮費工，滋味濃厚。' },
+      meat_snake: { name:'蛇肉',     cat:'food', food:'meat', price:40,  desc:'處理乾淨的蛇肉。意外地清爽可口。' },
+      /* ══ 料理食材（ver -953，Ray：「食材做成道具，準備十道菜…材料都是一肉一菜一調味」）══
+         ⚠⚠ **`food` 這一格＝它在料理裡佔哪一格**（`meat` 肉／`veg` 菜／`season` 調味），
+           只有這裡在說（鐵律 7）：`cooking.dishes` 的配方只列三個 id，
+           哪個是肉哪個是調味由**道具自己**回答 —— 配方表再記一次必然走鐘。
+         ⚠ 沒有 `food` 的食材（鹿角）＝不能下鍋，只能賣或兌換。
+         ⚠⚠ `huntExchange.foods` 那五樣是**另一件事**（獵人每日兌換），
+           不要因為這裡多了食材就去動那張表。
+         ⚠ 價格是我擬的草案（照既有食材的量級：常見 20~60、費工的 80~120）。 */
+      meat_deer:      { name:'鹿腿肉',   cat:'food', food:'meat',   price:90,
+                        desc:'厚實的鹿後腿肉。腥味淡，煎烤都合適。' },
+      /* ── 菜（蔬菜與香草）── */
+      herb_rosemary:  { name:'迷迭香',   cat:'food', food:'veg',    price:25,
+                        desc:'林間隨處可見的香草。一小把就能壓住肉的腥。' },
+      veg_wildgarlic: { name:'野蒜',     cat:'food', food:'veg',    price:20,
+                        desc:'葉子寬而柔軟的野蒜。氣味比栽種的溫和些。' },
+      veg_mushroom:   { name:'林地菇',   cat:'food', food:'veg',    price:35,
+                        desc:'長在倒木背面的菇。摘的人得認得清楚才行。' },
+      veg_sorrel:     { name:'酸模葉',   cat:'food', food:'veg',    price:20,
+                        desc:'帶酸味的野菜。配油脂重的肉正好。' },
+      veg_watercress: { name:'河芹',     cat:'food', food:'veg',    price:30,
+                        desc:'淺灘邊成叢的水芹。清爽，帶一點辛。' },
+      /* ── 調味 ── */
+      season_butter:  { name:'草原奶油', cat:'food', food:'season', price:60,
+                        desc:'草原牧場的奶油。煎過之後香得很霸道。' },
+      season_rocksalt:{ name:'岩鹽',     cat:'food', food:'season', price:20,
+                        desc:'敲下來的粗粒岩鹽。撒上去就很夠味。' },
+      season_honey:   { name:'森蜜',     cat:'food', food:'season', price:80,
+                        desc:'森林裡取的野蜂蜜。收得少，甜得深。' },
+      season_pepper:  { name:'黑胡椒',   cat:'food', food:'season', price:70,
+                        desc:'從河港運來的黑胡椒。研碎了香氣才出得來。' },
+      season_limezest:{ name:'萊姆皮',   cat:'food', food:'season', price:40,
+                        desc:'刨下來曬乾的萊姆皮。去油膩的一手。' },
       /* 禍魘素材（獵人兌換的獎勵；日後接九星配方）。⚠ 價格是我擬的草案。 */
       harm_claw_s:   { name:'禍魘的小爪', cat:'material', price:60,  desc:'小型禍魘的爪。泛著不祥的光。' },
       harm_claw:     { name:'禍魘之爪',   cat:'material', price:200, desc:'成體禍魘的利爪。堅硬異常。' },
@@ -1899,6 +1931,70 @@ export const GAME_CONFIG = {
               { id:'harm_bone_big' }, { id:'harm_bone_frag' }, { id:'harm_fang' } ],
   },
 
+  /* ══ 瑪麗亞的廚房（ver -953，Ray：「食材做成道具，準備十道菜就好，除了第一道以外
+     其他你發揮，材料都是一肉一菜一調味」）══════════════════════════════════════
+     夏爾村餐廳（`shinier.restaurant`，店主 COOK_SV 瑪麗亞）。stage8 那一場開張。
+
+     ⚠⚠ **配方只列三個 id，不記「哪個是肉」** —— 那一格寫在**道具身上**
+       （`items.defs[x].food`＝`meat`／`veg`／`season`，鐵律 7）。
+       兩邊各記一次的話，同一樣東西會出現「在配方裡是調味、在道具欄是菜」。
+     ⚠⚠ **`boon` 的欄位名一律沿用九星那一套**（`dmgMul`／`critRate`／`critDmg`／
+       `energyMul`／`lootMul`／`moneyMul`），日後才接得回**同一個**加總點
+       （`progress.starBonus` 那一支）—— 料理另開一個計算點就是鐵律 7 的病。
+       `hpMax` 是這一版新增的欄位（劇本：吃完第一道 HP 上限 ＋40）。
+     ⚠⚠⚠ **效果值是我擬的草案，而且還沒有人讀它**：
+       · HP 上限要做成「一輪內」還是「永久」，Ray 還沒定 —— 接法等他決定。
+       · 廚房的介面（選食材→出菜）也還沒做；這一版只有**資料**。
+     ⚠ 圖：`ci` 是插圖鑰匙。**目前只有第一道有圖**（`dish_deersteak`），
+       其餘九道等美術 —— 沒有圖的那幾道演到時就不出插圖，不會壞。 */
+  cooking: {
+    dishes: {
+      /* 第一道是劇本指定的（Stage8 瑪麗亞的第一頓）。⚠ Ray 口頭說「羊腿排」，
+         但稿上的台詞是「奶油鹿腿一份」、交件的插圖也是 `di_deersteak`（鹿）
+         —— 以稿與圖為準寫成鹿腿。要改成羊的話，圖與台詞要一起改。 */
+      deersteak:  { name:'奶油鹿腿排',   ci:'dish_deersteak',
+                    mats:['meat_deer','herb_rosemary','season_butter'],
+                    boon:{ hpMax:40 },
+                    desc:'厚切鹿腿以奶油慢煎，最後撒上迷迭香。不用再調味就很好吃。' },
+      lynxgrill:  { name:'香煎山貓腿',   ci:'dish_lynxgrill',
+                    mats:['meat_lynx','veg_wildgarlic','season_rocksalt'],
+                    boon:{ dmgMul:0.03 },
+                    desc:'岩鹽抹過再下鍋，野蒜連葉子一起煎香。' },
+      boarhoney:  { name:'蜜燒山豬腹肉', ci:'dish_boarhoney',
+                    mats:['meat_boar','veg_mushroom','season_honey'],
+                    boon:{ hpMax:30 },
+                    desc:'油花厚的腹肉裹上森蜜，慢火燒到收汁。' },
+      snakestew:  { name:'胡椒燉蛇肉',   ci:'dish_snakestew',
+                    mats:['meat_snake','veg_watercress','season_pepper'],
+                    boon:{ critRate:0.03 },
+                    desc:'清爽的蛇肉配河芹，起鍋前才磨黑胡椒。' },
+      bearbutter: { name:'奶油燴熊掌',   ci:'dish_bearbutter',
+                    mats:['paw_bear','veg_mushroom','season_butter'],
+                    boon:{ hpMax:50 },
+                    desc:'燉了半天的熊掌，最後以奶油與林地菇收尾。費工，但值得。' },
+      deersorrel: { name:'酸模烤鹿腿',   ci:'dish_deersorrel',
+                    mats:['meat_deer','veg_sorrel','season_pepper'],
+                    boon:{ energyMul:0.05 },
+                    desc:'烤得焦香的鹿腿，佐一把帶酸的酸模葉解膩。' },
+      beargarlic: { name:'野蒜燜熊掌',   ci:'dish_beargarlic',
+                    mats:['paw_bear','veg_wildgarlic','season_rocksalt'],
+                    boon:{ dmgMul:0.04 },
+                    desc:'整顆野蒜跟熊掌一起燜，鹹香得能配三碗飯。' },
+      lynxhoney:  { name:'蜜漬山貓腿',   ci:'dish_lynxhoney',
+                    mats:['meat_lynx','veg_watercress','season_honey'],
+                    boon:{ lootMul:0.05 },
+                    desc:'先用森蜜漬過再烤，肉緊實卻不柴。' },
+      boarlime:   { name:'萊姆烤山豬',   ci:'dish_boarlime',
+                    mats:['meat_boar','herb_rosemary','season_limezest'],
+                    boon:{ critDmg:0.06 },
+                    desc:'萊姆皮與迷迭香一起塞進肉裡，烤出來滿屋子都是香的。' },
+      snakesteam: { name:'河芹清蒸蛇',   ci:'dish_snakesteam',
+                    mats:['meat_snake','veg_mushroom','season_limezest'],
+                    boon:{ moneyMul:0.08 },
+                    desc:'幾乎不加東西的清蒸，吃的是食材本身。瑪麗亞說這道最難。' },
+    },
+  },
+
   currentEnemy: 'faceless',   // 這場開場先打誰（填上面的鑰匙名）
 
   /* 連戰陣容（局＝同場清一隻接下一隻）。依序取,打完一敵接下一敵,最後一敵清完進結算。
@@ -2618,7 +2714,13 @@ export const ASSETS = {
   cutin_obe_nouvelle:    "resources/CI/CI_Nouvelle_OBE.webp",
   partner_malzeno: "resources/partner/Malzeno_SI_01.webp",   // 馬季諾 立繪
   cutin_boss: "resources/enemy/Belinda_CI_boss.jpg",   // v18d：Boss（貝琳妲）遭遇 cut-in 專屬圖
-  bg_sentou: "resources/background/SENTOUINSTALL.webp", // Boss 戰 S 級獎勵畫面（銭湯インストール）
+  bg_sentou: "resources/background/SENTOUINSTALL.webp",
+  /* 瑪麗亞的料理插圖（ver -953）。⚠ **只有第一道有圖**，其餘九道等美術；
+     `cooking.dishes[x].ci` 查不到就不出插圖，不會壞。 */
+  dish_deersteak: "resources/dishes/di_deersteak.webp",
+  /* 料理演出用的兩張鍋子（0.75 秒交替＝煎的動作，見 Stage8 的廚房拍）。 */
+  dish_panup:     "resources/dishes/panup.webp",
+  dish_pandown:   "resources/dishes/pandown.webp", // Boss 戰 S 級獎勵畫面（銭湯インストール）
 
   // ── 副武器圖（換裝選單縮圖）：鑰匙對應 weapons.image；檔名＝類型_武器名 ──
   /* 巨型蜈蚣（ver -423）：**三張時段差分**（Ray 指定：上午下午 day、晚上 night、
