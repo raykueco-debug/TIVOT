@@ -859,6 +859,7 @@ const missingCg=new Set();   // 退回過的插圖：只提示一次，不然每
    ⚠ 這一支**只收「上一個畫面的殘留」**，不碰立繪（那是 `clearCast` 的事）
      與背景（那是 `enter()` 自己要換的）。 */
 export function clearStageLeftovers(){
+  clearTimeout(cardAutoT); cardAutoT=null;   // 自動播放的卡自收計時器（ver -940）
   clearSceneFade();                    // 場景區黑幕（ver -881）
   closeHint();                         // 一次性提示遮罩（ver -885）
   /* 跨句的染色（紫紅負片）。⚠ 除了走 `stopTint()`（它只認自己記著的那個名字），
@@ -2357,6 +2358,9 @@ function renderLine(){
   /* ══ 選項（ver -396）══ 這一拍是**閘門**：列出幾個選擇，點下去跳到那個 `label`。
      ⚠ 不出對話框 —— 前一句就是問句，選項是**回答**，再包一層框只會多一次點擊。 */
   if(line.choice){
+    /* ⚠⚠ **選項要停自動播放**（ver -940，Ray 指定的兩個例外之一）：那一拍是要
+       玩家做決定的，自動播下去等於幫他選了。⚠ 加速也一起關（同一個理由）。 */
+    stopModes();
     applyPersist(line);
     openChoice(line.choice, to=>{
       const at=indexOfLabel(cur.lines, to);
@@ -2455,6 +2459,9 @@ function renderLine(){
 
   if(line.battle){
     stopShake(); stopTint();     // 進戰鬥就停（ver -638／-664，Ray 指定）
+    /* ⚠⚠ **戰鬥要停自動播放**（ver -940，Ray 指定的另一個例外）：畫面要交給玩家打，
+       打完回來還開著的話，他剛從戰鬥抬起頭就有台詞自己跑掉了。 */
+    stopModes();
     if(!battleHandler){
       console.info('[story] 沒有註冊戰鬥發動器，跳過：', line.battle);
       return advance();
@@ -2786,7 +2793,17 @@ function playScene(id){
      （`renderLine` 那一道保險是給「同一段之內」用的，換場走這裡。） */
   pendingReveal = null;
   sceneLog = [];                        // 回顧只留這一場（見 showBacklog）
-  stopModes();                          // 模式不跨場（見宣告處的說明）
+  /* ══⚠⚠⚠ **自動播放要跨場**（ver -940，Ray：「自動播放時不要被選項、戰鬥以外的
+     東西打斷，一路播到該段劇情結束」）══ 這一行原本是 `stopModes()`（§6.5 的
+     「兩種模式不跨場」）—— 但玩家心裡的「一段劇情」是**整條 `next` 鏈**，不是一個
+     scene：每接一幕就把自動播放關掉，等於他每隔幾句就要再滑一次。
+     ⚠ **加速（按住下拉）照舊關掉**：那是「手還按著」的狀態，換場之後手指早就
+       不在原來的地方了，留著會變成放開了還在衝。
+     ⚠ 打斷自動播放的只剩兩件事（Ray 指定）：**選項**與**戰鬥**，
+       各自在那一拍自己關（見 `line.choice`／`line.battle`）。
+     ⚠ 離場（`close`）與段落結束（`endScene` 的 adhoc 分支）照舊全關 ——
+       那才是「該段劇情結束」。 */
+  setFast(false);
   sideOverride = sc.sides || {};        // 這一幕的站位覆寫（見 sideOf）
   slot={L:null,R:null}; slotExpr={L:null,R:null}; shown={};
   leaveSlot('L'); leaveSlot('R');
@@ -3395,7 +3412,11 @@ export function assertNoDarkOverlay(where){
      各自的落點，不是重複的兩個東西。
    ⚠ 兩層一起生一起收：卡不在的時候畫面上不可以有任何一層在吃點擊。 */
 let cardDone=null;
+/* 自動播放時這張卡自己撐多久（ver -940）。⚠ 與 `autoDelayMs` 是兩件事，見 showTitleCard。 */
+const CARD_AUTO_MS = 2200;
+let cardAutoT = null;
 export function hideTitleCard(){
+  clearTimeout(cardAutoT); cardAutoT=null;
   const g=$('storyCardCatch'); if(g) g.classList.remove('on');
   const c=$('storyTitleCard');
   if(c){ c.classList.remove('show');
@@ -3438,6 +3459,15 @@ export function showTitleCard(spec, done){
   void c.offsetWidth;
   c.classList.add('show');
   g.classList.add('on');
+  /* ══⚠⚠ **自動播放時它自己收掉**（ver -940，Ray：「自動播放時不要被選項、戰鬥
+     以外的東西打斷」）══ 這張卡平常是「點畫面任一處收掉」的閘門 —— 自動播放中
+     沒有人點，整段就停在這裡，那正是「被打斷」。
+     ⚠ 停的長度用 `CARD_AUTO_MS` 不是 `autoDelayMs`：那個值的語意是「一句**唸完**
+       之後停多久」，而這張卡是要**讀完一整張**（大字＋日期）。
+     ⚠ 玩家先點掉也沒關係：`hideTitleCard` 是冪等的（`cardDone` 先清再叫）。
+     ⚠ 加速模式不另外處理 —— 它本來就會一路點過去。 */
+  clearTimeout(cardAutoT); cardAutoT=null;
+  if(autoPlay) cardAutoT=setTimeout(()=>{ cardAutoT=null; if(autoPlay) hideTitleCard(); }, CARD_AUTO_MS);
   return true;
 }
 /* ══ 操作提示（ver -424）══════════════════════════════════════════════
@@ -3676,7 +3706,9 @@ export function playAdhoc(lines, done, opts){
   clearCast();                      // ⚠ 新的一段＝新的台上（見 clearCast 的說明）
   sideOverride = (opts && opts.sides) || {};
   cur={ sceneId:'__town', lines, next:null, __adhoc:true, __done:done };
-  lineIdx=0; sceneLog=[]; stopModes();
+  /* ⚠ 同 `playScene`（ver -940）：只關加速、**留著自動播放** —— 城鎮的段落常常
+     一段接一段（進場對白 → 主線段落 → 戰後對白），每一段都關一次等於沒有自動播放。 */
+  lineIdx=0; sceneLog=[]; setFast(false);
   renderLine();
 }
 
