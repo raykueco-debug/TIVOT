@@ -628,12 +628,22 @@ export function setEnemy(key){
   const ue = Array.isArray(en.assaultEvery) ? en.assaultEvery : [4,8];   // 沒填＝退回 4~8 秒
   state.ASSAULT_MIN    = ue[0]*1000;
   state.ASSAULT_MAX    = ue[1]*1000;
-  /* 門檻波：`ult:{ hp:40, count:4, gap:0.4, cd:4 }` ＝血 ≤40% 起，一波 count 顆、每顆隔
-     gap 秒依次隨機出現、整波之間 CD cd 秒（沒寫 cd＝照常規頻率）。空 `{}`＝沒有門檻波。 */
-  state.enemyUltAct = (u.hp!=null) ? {
+  /* ══⚠⚠⚠ **大絕（`ult`）：每張卡都有，`on` 是總開關**（ver -939，Ray：「每張敵人卡
+     都要有 ult 選項，先設 01 開關，為 1 再設定發動條件血量低於 %、幾個圈、
+     每個圈 atk 多少、每個圈隔多久、cd 多久」）══
+       `ult:{ on:0 }`                                        ＝這隻沒有大絕
+       `ult:{ on:1, hp:40, count:4, atk:20, gap:0.4, cd:4 }`  ＝血 ≤40% 起，一波 4 顆、
+         每顆隔 0.4 秒依次出現、**每顆打 20**、整波之間 CD 4 秒。
+     ⚠⚠ **判斷看 `on` 不看「有沒有寫 hp」**（-939 之前是後者）：欄位現在每張卡都在，
+       用「有沒有寫」判等於沒有開關 —— 填了數值忘了開、或關掉卻沒清欄位，兩種都會
+       變成「看起來關著其實開著」（鐵律 9：狀態要有一個明確的擁有者，這裡就是 `on`）。
+     ⚠ `cd` 沒寫＝照常規頻率（`assaultEvery`）。`act` 是具名波的舊路（ULT_ACTS），保留。
+     ⚠ `atk` 由 defense 的 `ringDamage()` 讀（一個計算點）——這裡只搬過去。 */
+  state.enemyUltAct = (u.on==1) ? {
     hp:    u.hp||0,
     act:   u.act||null,                          // 具名波（相容舊 ring4）；沒寫走 count/gap
     count: (u.count!=null) ? u.count : 4,
+    atk:   (u.atk!=null)   ? u.atk   : 0,        // 0＝沒指定，退回這隻的一般攻擊力
     gapMs: (u.gap!=null)   ? u.gap*1000 : 0,
     cdMs:  (u.cd!=null)    ? u.cd*1000  : null,
   } : null;

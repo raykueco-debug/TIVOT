@@ -62,6 +62,18 @@ function hitDia(ratio){
 function effAssaultDamage(){
   return (state.tutorialRun && TUT().enemyAtkDamage!=null) ? TUT().enemyAtkDamage : state.ASSAULT_DAMAGE;
 }
+/* ══⚠⚠ **這一顆圈值多少傷害**（ver -939，Ray：「每個圈 atk 多少」）══
+   一般攻擊的圈＝敵人卡的 `attack`（`ASSAULT_DAMAGE`）；**大絕那一波的圈**另有
+   自己的攻擊力（`ult.atk`）—— 那正是「大絕」與「一般攻擊」的差別之一。
+   ⚠ 教學一律照 `enemyAtkDamage`（2）壓平：那一場的傷害是教材不是數值設計，
+     所以 `effAssaultDamage()` 優先，不讓大絕在教學裡把人打死。
+   ⚠ 一個計算點（鐵律 7）：滿額命中與擋一半都問這一支，不要各自去翻 `enemyUltAct`。 */
+function ringDamage(th){
+  if(state.tutorialRun && TUT().enemyAtkDamage!=null) return TUT().enemyAtkDamage;
+  const ua=state.enemyUltAct;
+  if(th && th.ult && ua && ua.atk>0) return ua.atk;
+  return effAssaultDamage();
+}
 
 /* ---------- 大絕頻率（擁有者管道）----------
  *  ASSAULT_MIN / ASSAULT_MAX 為 defense 擁有（3.3）。聖徒化需暫時改密集頻率、離場再還原——
@@ -220,7 +232,7 @@ export function releaseAssault(th){
        門檻波打中照樣算一次 assault。分開的是**受擊特效**，走 `state.lastAssaultUlt`
        —— 一個量一個計算點（鐵律 7），combat 的 fxKind 只讀不算。 */
   state.lastAssaultUlt = !!th.ult;
-  api.enemyAttack(effAssaultDamage(), 'assault');   // 教學中一律 2（見 effAssaultDamage）
+  api.enemyAttack(ringDamage(th), 'assault');   // 大絕那一波用 ult.atk（見 ringDamage）
   api.floatDmg(L.battle.hitByAssault,'45%','25%',true);
 }
 // 兼容舊呼叫：結束/清除所有攻擊點
@@ -382,7 +394,7 @@ export function resolveThreat(th){
     }
     if(bp.take>0){
       state.lastAssaultUlt = !!th.ult;      // 擋一半也是同一顆圈（ver -932）
-      const dmg=Math.max(1, Math.round(effAssaultDamage()*bp.take));
+      const dmg=Math.max(1, Math.round(ringDamage(th)*bp.take));
       /* 聖徒化（ver -755）：橘圈的 take 也是「擋下一部分」那一族 → 半格推進
          （同黃圈；不給的話 enemyAttack 會用全額 +1s，把橘圈打成挨大絕）。 */
       api.enemyAttack(dmg, 'block',
@@ -407,7 +419,7 @@ export function resolveThreat(th){
       }
       if(bb.take>0){
         state.lastAssaultUlt = !!th.ult;    // 同上（ver -932）
-        const dmg=Math.max(1, Math.round(effAssaultDamage()*bb.take));   // 教學：2 減半 → 1
+        const dmg=Math.max(1, Math.round(ringDamage(th)*bb.take));   // 教學：2 減半 → 1
         api.enemyAttack(dmg, 'block',
           state.saintMode ? state.playerMax/SAINT_BLOCK_DIVISOR : undefined);   // 聖徒化：格擋＝+0.5s
         api.floatDmg(fmt(L.battle.blockDmg,{n:dmg}),'50%','46%',false);

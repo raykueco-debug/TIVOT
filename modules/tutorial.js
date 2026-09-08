@@ -1403,6 +1403,22 @@ function showGuide(type, tone){
 }
 function hideGuide(){ const g=$('tutGuide'); if(g) g.classList.remove('on'); }
 
+/* ══⚠⚠⚠ 落點在**那顆光圈**上嗎（ver -939，Ray：「用強力的副武器阻止他根本點不了」）══
+   對話期間 `#tutTouch` 是蓋在最上層的透明層 —— 底下的紅點**收不到手指**
+   （我用程式直接對元素派事件所以測不出來，真的用手點才會發現）。
+   所以走與破防計量表那一門**同一個作法**：由這一層自己判落點，命中就代點。
+   ⚠ 半徑放寬 `pad`：圈會縮，凍結時可能已經很小，照原尺寸判會變成「要點得很準」。
+   ⚠ 回傳那顆圈本身，交給 `api.resolveThreat` —— 判定與反擊走 defense 既有那一支。 */
+function threatAt(x,y){
+  const list=state.threats||[];
+  const pad=26;
+  for(const th of list){
+    const el=th && th.el; if(!el) continue;
+    const r=el.getBoundingClientRect();
+    if(x>=r.left-pad && x<=r.right+pad && y>=r.top-pad && y<=r.bottom+pad) return th;
+  }
+  return null;
+}
 function inClaspArea(x,y){
   const el=$('energyClasp'); if(!el) return false;
   const r=el.getBoundingClientRect(), pad=26;
@@ -1503,6 +1519,13 @@ function bindUI(){
       if(gate){
         // 點擊閘門：落點在破防計量表附近才算完成
         if(gate.type==='click' && p && !p.moved && inClaspArea(e.clientX, e.clientY)){ completeGate(); return; }
+        /* 反擊教學：點在那顆光圈上＝代點（ver -939）。⚠ **不在這裡 completeGate** ——
+           收門的人是 `onThreatResolved`（那才是「真的擋下來了」），這裡只是把手指
+           轉交給 defense；圈可能因為別的原因沒被解掉，那時門就該繼續等。 */
+        if(gate.type==='threat' && p && !p.moved){
+          const th=threatAt(e.clientX, e.clientY);
+          if(th){ if(api.resolveThreat) api.resolveThreat(th); return; }
+        }
         // 即時閘門：未命中指定操作的一般點擊照常推台詞（滑動閘的滑動由 pointermove 判定）
         if(gate.immediate){ if(p && !p.moved) advance(); }
         return;

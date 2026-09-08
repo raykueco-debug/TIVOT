@@ -105,6 +105,11 @@ export function setup(){
     nightmareActive: saint.nightmareActive,  // 惡夢化的自爆（ver -672）：閘門 `action:'niBurst'`
     capEnemyHp: tutorialCapEnemyHp,
     respawnThreat: defense.startCharge,   // 反擊教學：太早格擋 → 罵完重放一次反擊圈
+    /* 反擊教學的閘門要能**代點那顆圈**（ver -939）：對話期間 `#tutTouch` 蓋在最上層，
+       玩家的手指碰不到底下的紅點（Ray：「用強力的副武器阻止他根本點不了」）。
+       ⚠ 走 defense 既有的那一支（鐵律 8）—— 判定、反擊、音效、計數全部一致，
+         不要在 tutorial 那邊另外模擬一次點擊。 */
+    resolveThreat: defense.resolveThreat,
     fillEnergy: ()=>addEnergy(100),       // 削血保底：直接填滿破防值（走滿值引導路徑）
     segmentRestart: tutorialSegmentRestart, // 教學陣亡：「重來！」該段重來（滿血重建本盤，不重播已完成段落）
     goHome,   // 跳過鈕：中止教學戰回主選單
