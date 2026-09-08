@@ -157,7 +157,26 @@ def do_export():
         ws.append([k, '', f] + [cell(card, c) for c in cols[3:]])
         if f: rows_img.append((ws.max_row, f))
     # 有圖、還沒有卡的：排在後面，key 留空（＝待辦，不是資料）
-    todo = [f for f in files if ('resources/enemy/' + f) not in used]
+    #   ⚠⚠ 這一段要**濾掉兩種假待辦**（ver -945b，Ray 同意）——它們有圖、也沒有卡，
+    #     但都不是「等著被做成敵人卡」的東西，留著只會讓真正的待辦被淹掉：
+    #     ① **同名的另一種副檔名**：`mon_x.png` 而卡在用 `mon_x.webp`
+    #        ——那是轉檔前的原圖（§5 的三步流程，原 PNG 本來就該進 `_originals`）。
+    #     ② **別的地方已經在用**：鹿主的中景層走腳本的 `cgBack:'resources/enemy/…'`
+    #        （那是背景之上、立繪之下的一層，不是敵人卡）。判法是**去腳本裡搜檔名**，
+    #        不是列一張名單——列名單日後一定漏。
+    used_stems = {os.path.splitext(os.path.basename(u))[0].lower() for u in used}
+    def referenced(fn):
+        for d, _, fs in os.walk(os.path.join(ROOT, 'script')):
+            for x in fs:
+                if x.endswith('.js'):
+                    try:
+                        if fn in open(os.path.join(d, x), encoding='utf-8').read(): return True
+                    except OSError: pass
+        return False
+    todo = [f for f in files
+            if ('resources/enemy/' + f) not in used
+            and os.path.splitext(f)[0].lower() not in used_stems
+            and not referenced(f)]
     for f in todo:
         rel = 'resources/enemy/' + f
         ws.append(['', '', rel] + [''] * (len(cols) - 3)); rows_img.append((ws.max_row, rel))
