@@ -786,15 +786,26 @@ function wildActDue(n){
   const fx=W.fixed && W.fixed[nodeId];
   if(fx && !wildDone.has(wildSpecies(fx))) pick=fx;
   if(!pick){
-    /* 這一格這一趟已經出過怪了 → 改用「重刷率」（ver -924，Ray：25%）。
-       ⚠ 必出格（`fixed`）不受影響：那一格的那一隻本來就是一趟一次。 */
-    const rate = wildCleared.has(nodeId)
+    const conn=connectorIds().includes(nodeId);
+    const okHere = p => !(p.where==='connector' && !conn);
+    /* 這一趟**還沒打過的**那幾隻（「一趟同種不重複」的規約）。 */
+    const fresh=(W.pool||[]).filter(p=> okHere(p) && !wildDone.has(wildSpecies(p.battle)));
+    /* ══⚠⚠ **池子清空之後要能重刷**（ver -958，Ray：「重複攻略神殿時路上要有 25%
+       機率遇怪，好像打完中 boss 走到休息點就幾乎碰不到怪了」）══
+       -924 就有「重刷率」了，但候選**照樣把 `wildDone` 濾掉** —— 於是池子裡那幾隻
+       各打過一次之後 `cands` 永遠是空的，那 25% 擲了也沒用（`return null`）。
+       神殿的池子只有四隻，走到中段就見底：那正是 Ray 看到的「幾乎碰不到怪」。
+       ⚠ 所以「重刷」有**兩個**觸發，任一成立就走 25%：
+         · 這一格這一趟已經出過怪了（`wildCleared`，-924 原本的那條）
+         · 這一趟**整池都打過了**（`repeat`，本版新增）—— 這時同種可以再遇
+       ⚠ `wildDone` 的語意沒有變：它管的是**第一輪**同種不重複，不是「永遠只遇一次」。
+       ⚠ 必出格（`fixed`）與結算怪不受影響：那兩種本來就是一趟一次。 */
+    const repeat = !fresh.length;
+    const rate = (repeat || wildCleared.has(nodeId))
       ? ((GAME_CONFIG.tuning||{}).wildRespawnRate!=null ? GAME_CONFIG.tuning.wildRespawnRate : 0.25)
       : (W.rate||0);
     if(Math.random() >= rate) return null;
-    const conn=connectorIds().includes(nodeId);
-    const cands=(W.pool||[]).filter(p=> !(p.where==='connector' && !conn)
-                                     && !wildDone.has(wildSpecies(p.battle)));
+    const cands = repeat ? (W.pool||[]).filter(okHere) : fresh;
     if(!cands.length) return null;
     pick=cands[Math.floor(Math.random()*cands.length)].battle;
   }

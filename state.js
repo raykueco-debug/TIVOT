@@ -200,6 +200,12 @@ export const state = {
   perfectCount: 0,
   sawExecution: false,
   sawMaxBurst: false,    // 以 Maximum Burst 收尾（未擊殺那一種；ver -675）
+  /* 共鬥（獵手的共鬥）這一**局**發動了幾次（ver -958，Ray：「獵手共鬥發動時評價＋5秒」）。
+     ⚠ 擁有者是 inspector（同 sawExecution／sawMaxBurst 的定位），唯一寫入是
+       `enterCoop()` —— 那是共鬥的唯一發動點（鐵律 9）。
+     ⚠ 記**次數**不記布林：現在一局只發動得了一次（槽是局為單位），但「發動時＋5」
+       這句話講的是每一次；日後放寬成可多次，這一格不必回頭改。 */
+  coopUses: 0,
   sRankUnlocked: false,
   /* 結算頁那顆（或那兩顆）底鈕現在是什麼意思。`modules/inspector.js` 擁有它，
      `onRematchBtn`／`onGiveupBtn` 依它分流：
@@ -357,7 +363,7 @@ export function exitSaint(){
 export function enterNightmare(){ state.niMode = true; }
 export function exitNightmare(){ state.niMode = false; }
 /* saint.js 專用：進入／離開共鬥。`coopMode` 的唯一寫入管道（同 saintMode 的規矩）。 */
-export function enterCoop(){ state.coopMode = true; }
+export function enterCoop(){ state.coopMode = true; state.coopUses++; }   // ver -958：評價要算次數
 export function exitCoop(){ state.coopMode = false; }
 
 /* saint.js 專用：以 Maximum Burst 擊殺 → 標記本場處決（EXSECUTIŌ）。

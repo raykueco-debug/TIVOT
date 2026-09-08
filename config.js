@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.09-957';
+export const VERSION = 'ver 2026.09.09-958';
 
 export const GAME_CONFIG = {
 
@@ -1358,8 +1358,11 @@ export const GAME_CONFIG = {
          `battleLoot.money` 的逐場擲骰 —— 同一筆收入三個來源，調起來永遠對不準（鐵律 7）。
        ⚠ 沒有 E 了（`tiers` 是 S/A/B/C/D 五階，D 接住所有人）。查不到就當 D。 */
     moneyByGrade: { S:0.9, A:0.8, B:0.7, C:0.6, D:0.5 },
+    /* ⚠ `coop` ＝**獵手的共鬥發動一次加 5 秒**（ver -958，Ray 指定）——
+       正號是刻意的：共鬥期間**無敵**，那一段本來就好打，評價要把它還回去
+       （同索菈娜搭檔卡上的 `timeKBonus`）。它是這張表裡唯一「用了技能反而變嚴」的項。 */
     penalty: { wrong: 2, assault: 3, block: 1, delay: 1, counter: -0.5,
-               overkill: 0, perfectBoard: -1, maxBurst: -10, execution: -15 },
+               overkill: 0, perfectBoard: -1, maxBurst: -10, execution: -15, coop: 5 },
     /* ══⚠⚠ **整場無傷 ＝ 等第下限**（ver -626，Ray：「無傷基本讓他保證 S」）══
        ver -620 是「折 10 秒」，已推翻 —— 定額折秒的份量被**場的大小稀釋**：
        同樣 10 秒在 300 血的場值 16.7 分、在 1500 血的城鎮戰只值 3.3 分（五倍差），

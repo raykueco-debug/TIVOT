@@ -1631,7 +1631,7 @@ export function restSettle(title){
     totalHP:0, isBoss:false, clearTime:0,
     accuracy: totalTaps>0 ? state.correctTaps/totalTaps : 1,
     maxCombo:0, perfectCounter:0, counterSec:0, counterDamage:0, overkill:0,
-    hitsTaken:0, sawExecution:false, sawMaxBurst:false, perfectBoards:0,
+    hitsTaken:0, sawExecution:false, sawMaxBurst:false, coopUses:0, perfectBoards:0,
     wrongTaps:0, assaultHits:0, blocks:0, delays:0,
   };
   inspector.settle(0, stats, { isLose:false, rest:true, restTitle:title||null });
@@ -1753,6 +1753,7 @@ function win(){
     sawExecution: !!state.sawExecution,
     /* 以 Maximum Burst 收尾（未擊殺那一種，ver -675）：折 10 秒。 */
     sawMaxBurst: !!state.sawMaxBurst,
+    coopUses:    state.coopUses|0,      // 共鬥發動次數（ver -958：評價每次＋5 秒）
     /* 完美清盤的盤數（ver -659）：折算成秒數（負的＝獎勵），見 config.rating.penalty。 */
     perfectBoards: state.perfectBoards|0,
     /* 失誤計數（ver -600）：新評價把它們折算成秒數加進攻略時間。 */
@@ -1885,7 +1886,7 @@ export function startGame(){
   weapon.resetWeaponSwitch();   // 副武器切換鈕（ver -410）：排隊中的切換不可以跨場留著
   partner.reset(); // 搭檔被動重置（高裝藥彈 10 秒計時器清除、上膛旗標歸位）
   state.overkill=0; state.killTime=0; state.transitioning=false;
-  state.counterFired=0; state.counterDamage=0; state.perfectCount=0; state.sawExecution=false; state.sawMaxBurst=false;
+  state.counterFired=0; state.counterDamage=0; state.perfectCount=0; state.sawExecution=false; state.sawMaxBurst=false; state.coopUses=0;
   state.perfectCounters=0; state.counterSec=0;   // 完美反擊（紅圈）的次數與折秒（ver -721）
   state.maxCombo=0; state.hitsTaken=0; state.correctTaps=0; state.wrongTaps=0; state.runOverkill=0; state.perfectBoards=0;   // 評價統計歸零
   state.penAssault=0; state.penBlock=0; state.penDelay=0;   // 失誤計數歸零（ver -600 的新評價）
@@ -2060,7 +2061,7 @@ export function startIntruderFight(){
   weapon.reset();
   partner.reset();
   state.overkill=0; state.killTime=0; state.transitioning=false;
-  state.counterFired=0; state.counterDamage=0; state.perfectCount=0; state.sawExecution=false; state.sawMaxBurst=false;
+  state.counterFired=0; state.counterDamage=0; state.perfectCount=0; state.sawExecution=false; state.sawMaxBurst=false; state.coopUses=0;
   state.perfectCounters=0; state.counterSec=0;   // 完美反擊（紅圈）的次數與折秒（ver -721）
   state.maxCombo=0; state.hitsTaken=0; state.correctTaps=0; state.wrongTaps=0; state.runOverkill=0; state.perfectBoards=0;   // 評價統計歸零
   state.penAssault=0; state.penBlock=0; state.penDelay=0;   // 失誤計數歸零（ver -600 的新評價）

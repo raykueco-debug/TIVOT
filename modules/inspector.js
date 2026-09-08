@@ -93,7 +93,8 @@ export function moneyOf(stats, grade){
      各場先各算一次再相加是另一件事，等第會失真。
    ⚠ 錢照舊逐場擲、逐場記（那是掉落，不是評價）。 */
 const SUM_KEYS = ['clearTime','totalHP','wrongTaps','assaultHits','blocks','delays',
-                  'perfectCounter','counterSec','counterDamage','overkill','hitsTaken','perfectBoards'];
+                  'perfectCounter','counterSec','counterDamage','overkill','hitsTaken','perfectBoards',
+                  'coopUses'];   // ver -958：共鬥發動次數也要併（連戰整段算一次）
 export function bankSessionGain(stats){
   const acc = state.sessionStats || {};
   for(const k of SUM_KEYS) acc[k] = (acc[k]||0) + (stats[k]||0);
@@ -209,7 +210,13 @@ export function evaluate(stats, cfg = GAME_CONFIG.rating){
                + (stats.sawExecution ? (pen.execution||0) : 0)
                /* MB（未擊殺那一種，ver -675）：同樣是**一次性**，不乘次數。
                   ⚠ 與處決互斥：擊殺的那一次是 EXSECUTIŌ，沒擊殺的才是 MB。 */
-               + (stats.sawMaxBurst  ? (pen.maxBurst ||0) : 0);
+               + (stats.sawMaxBurst  ? (pen.maxBurst ||0) : 0)
+               /* ══ 共鬥（獵手的共鬥）＝**加秒**（ver -958，Ray：「獵手共鬥發動時評價＋5 秒」）══
+                  它與上面兩條方向相反：MB／處決是「打得漂亮」的折抵，共鬥期間是**無敵**
+                  —— 那一段本來就好打，所以要在時間上還回去（同索菈娜搭檔的 `timeKBonus`
+                  的精神：好打的東西要在評價上更嚴）。
+                  ⚠ 乘次數不是一次性：句子講的是「發動時」。 */
+               + ((stats.coopUses||0) * (pen.coop||0));
   /* ⚠ 夾在 0 以上：反擊／overkill 夠多時折算會是負的，扣過頭會變成負秒數。 */
   const used = Math.max(0, (stats.clearTime||0) + penSec);
   /* ══ 搭檔難度加成（ver -805，Ray：「索拉娜為伙伴時，難度系數 +100」）══
@@ -305,7 +312,13 @@ function pickEvaluator(rankKey, battleId){
   /* ══ 亂入（ver -838，Ray：「評價D/C 蕾娜評價完索拉娜亂入評價畫面」）══
      `evaluation.js` 的 INTRUDE[場次][等第] → 第一句打完換人再講一句
      （showResultSequence 的 `spk.follow`；portrait 是直接路徑）。 */
-  const fol = (EVAL_INTRUDE[battleId]||{})[rankKey] || null;
+  /* ⚠⚠ **`default` ＝不分場次的通用亂入**（ver -958）：先查這一場專屬的，
+     沒有才回去查通用的（同 `BY_BATTLE` → 通用表那一層的查法）。
+     ⚠ 目前 `INTRUDE` 只有 `sv_wild` 一場有料 —— 所以在別的場次拿到 C／D
+       **什麼都不會發生**，那不是壞掉，是**還沒有那一場的台詞**（Ray 回報的正是這個）。
+       通用的那一組要 Ray 給稿（同護符與九星配方：卡沒到就先空著，不自己發明）。 */
+  const fol = (EVAL_INTRUDE[battleId]||{})[rankKey]
+           || (EVAL_INTRUDE.default||{})[rankKey] || null;
   return { name: who.name || '',
            portrait: (ex && ex.src) || art.base || '',
            line: one.text || '',
