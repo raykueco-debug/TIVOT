@@ -5,7 +5,7 @@
  *  （Ray 指定）。config.js 頂部 `import { ENEMIES }` 後照舊掛成 `enemies: ENEMIES`，
  *  所有讀取端（modules/enemy.js·combat.js·inspector.js 的 `GAME_CONFIG.enemies[key]`）
  *  一律不變。
- *  ⚠ 純資料檔，不 import 任何東西（不會與 config 成環）；`image`/`sound`/`landSe`
+ *  ⚠ 純資料檔，不 import 任何東西（不會與 config 成環）；`image`/`sound`/`entranceSe`
  *    這些是字串鑰匙，執行期才由 config 的 `asset()`／ASSETS 解析。
  *  ⚠ 大地圖的**刷新規則**（稀有度/登場 stage/陸域限定）不在這裡，在
  *    flight/index.html 的 ENEMY_KINDS（兩邊註解互指）。
@@ -41,7 +41,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },
       resist:{},                     // 依傷害來源(basic/counter/dual/saint)的減傷成數；無則 {}
       weak:{},                       // 依傷害來源的增傷成數；無則 {}
-      landSe:null,                   // 登場音（卡上覆寫）；無則 null
+      entranceSe:null,                   // 登場音（卡上覆寫）；無則 null
       special:[],      // 特殊行動預留（本版不實作邏輯，僅保留結構）
       // v16：每盤格數手動覆寫（index 對應第幾盤，0-based；null／缺項＝用預設規則：第三盤起 16 格）。
       //      作者日後可逐怪逐盤填數值微調難度，例：[9,9,16,16,20]。聖徒化 25 宮格不受此影響。
@@ -75,7 +75,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },   // 5 秒（ver -458，非魔女的預設）
       resist:{},                     // 依傷害來源(basic/counter/dual/saint)的減傷成數；無則 {}
       weak:{},                       // 依傷害來源的增傷成數；無則 {}
-      landSe:null,                   // 登場音（卡上覆寫）；無則 null
+      entranceSe:null,                   // 登場音（卡上覆寫）；無則 null
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
@@ -106,7 +106,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
       resist:{},                     // 依傷害來源(basic/counter/dual/saint)的減傷成數；無則 {}
       weak:{},                       // 依傷害來源的增傷成數；無則 {}
-      landSe:null,                   // 登場音（卡上覆寫）；無則 null
+      entranceSe:null,                   // 登場音（卡上覆寫）；無則 null
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
@@ -134,7 +134,7 @@ export const ENEMIES = {
       atkInterval:null,
       assaultEvery:[3,3],                // Ray：「3 秒發動一次攻擊」
       assault:{ count:1, gap:0 },
-      landSe:null, special:[],
+      entranceSe:null, special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{ delay:{ type:'slash' }, wrong:{ type:'slash' }, assault:{ type:'slash' } },
     },
@@ -159,7 +159,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },    // 5 秒（ver -458，非魔女的預設）
       resist:{},                     // 依傷害來源(basic/counter/dual/saint)的減傷成數；無則 {}
       weak:{},                       // 依傷害來源的增傷成數；無則 {}
-      landSe:null,                   // 登場音（卡上覆寫）；無則 null
+      entranceSe:null,                   // 登場音（卡上覆寫）；無則 null
       special:[],
       boardGrids:[9,9,9,9,9],     // ver -792：貝琳妲以外全 9 宮格（Ray 指定）
       hitFx:{                        // 自帶獨立三件套（巨型聖徒風味：大絕爪數加重為 4）
@@ -186,7 +186,7 @@ export const ENEMIES = {
          寫出來只是把原行為明文化，不是調數值。要讓大絕更痛就改這一格。 */
       kind:'human',
       image:'enemy_man_sorana',
-      entranceVo:'vo_sorana_pack2',   // 敵立繪一出現就播（ver -818，Ray）——她是 human 不吃降臨，另掛登場音
+      entranceSe:'vo_sorana_pack2',   // 敵立繪一出現就播（ver -818，Ray）——她是 human 不吃降臨，另掛登場音
       fit:{ pos:'50% 30%' },   // ver -745 換上專用戰鬥圖；構圖不對再調這格
       hp:400,
       attack:15,                     // 巨型聖徒 45 的一半
@@ -201,7 +201,6 @@ export const ENEMIES = {
       delayPenalty:{ seconds:4 },    // 快一秒（巨型聖徒是 5）
       resist:{},                     // 依傷害來源(basic/counter/dual/saint)的減傷成數；無則 {}
       weak:{},                       // 依傷害來源的增傷成數；無則 {}
-      landSe:null,                   // 登場音（卡上覆寫）；無則 null
       special:[],
       boardGrids:[9,9,9,9,16],
       hitFx:{
@@ -232,7 +231,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },
       resist:{},                     // 依傷害來源(basic/counter/dual/saint)的減傷成數；無則 {}
       weak:{},                       // 依傷害來源的增傷成數；無則 {}
-      landSe:null,                   // 登場音（卡上覆寫）；無則 null
+      entranceSe:null,                   // 登場音（卡上覆寫）；無則 null
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
@@ -257,7 +256,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },    // 5 秒（ver -458，非魔女的預設）
       resist:{},                     // 依傷害來源(basic/counter/dual/saint)的減傷成數；無則 {}
       weak:{},                       // 依傷害來源的增傷成數；無則 {}
-      landSe:null,                   // 登場音（卡上覆寫）；無則 null
+      entranceSe:null,                   // 登場音（卡上覆寫）；無則 null
       special:[],
       boardGrids:[9,9,9,9,9],   // v16：每盤格數手動覆寫（同上，聖徒化不受影響）
       hitFx:{                        // 佔位卡的預設三件套（沿用地下聖徒風味；triggerIntruder 載入真正的怪會整組覆寫）
@@ -282,7 +281,7 @@ export const ENEMIES = {
       assault:{ count:2, gap:1 },   // 一般主動攻擊：一次先後出 2 顆、間隔 1 秒（Boss；ver -801 由舊 ult.shots/gapMs 轉）
       resist:{},                     // 依傷害來源(basic/counter/dual/saint)的減傷成數；無則 {}
       weak:{},                       // 依傷害來源的增傷成數；無則 {}
-      landSe:null,                   // 登場音（卡上覆寫）；無則 null
+      entranceSe:null,                   // 登場音（卡上覆寫）；無則 null
       special:[],
       boardGrids:[9,9,16,16,16],
       delayPenalty:{ dmgScale:0.5, timeDelta:-1 },           // 延時懲罰：攻擊力為一般怪一半、時限減 1 秒
@@ -354,7 +353,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:6 },
       resist:{},                     // 依傷害來源(basic/counter/dual/saint)的減傷成數；無則 {}
       weak:{},                       // 依傷害來源的增傷成數；無則 {}
-      landSe:null,                   // 登場音（卡上覆寫）；無則 null
+      entranceSe:null,                   // 登場音（卡上覆寫）；無則 null
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
@@ -381,7 +380,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },
       resist:{},                     // 依傷害來源(basic/counter/dual/saint)的減傷成數；無則 {}
       weak:{},                       // 依傷害來源的增傷成數；無則 {}
-      landSe:null,                   // 登場音（卡上覆寫）；無則 null
+      entranceSe:null,                   // 登場音（卡上覆寫）；無則 null
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
@@ -408,7 +407,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },
       resist:{},                     // 依傷害來源(basic/counter/dual/saint)的減傷成數；無則 {}
       weak:{},                       // 依傷害來源的增傷成數；無則 {}
-      landSe:null,                   // 登場音（卡上覆寫）；無則 null
+      entranceSe:null,                   // 登場音（卡上覆寫）；無則 null
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
@@ -435,7 +434,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },
       resist:{},                     // 依傷害來源(basic/counter/dual/saint)的減傷成數；無則 {}
       weak:{},                       // 依傷害來源的增傷成數；無則 {}
-      landSe:null,                   // 登場音（卡上覆寫）；無則 null
+      entranceSe:null,                   // 登場音（卡上覆寫）；無則 null
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
@@ -468,7 +467,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:6 },
       resist:{},                     // 依傷害來源(basic/counter/dual/saint)的減傷成數；無則 {}
       weak:{},                       // 依傷害來源的增傷成數；無則 {}
-      landSe:null,                   // 登場音（卡上覆寫）；無則 null
+      entranceSe:null,                   // 登場音（卡上覆寫）；無則 null
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
@@ -505,7 +504,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },
       resist:{},                     // 依傷害來源(basic/counter/dual/saint)的減傷成數；無則 {}
       weak:{},                       // 依傷害來源的增傷成數；無則 {}
-      landSe:null,                   // 登場音（卡上覆寫）；無則 null
+      entranceSe:null,                   // 登場音（卡上覆寫）；無則 null
       special:[],
       boardGrids:[9,9,9,9,16],
       hitFx:{
@@ -541,7 +540,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },
       resist:{},
       weak:{},
-      landSe:null,
+      entranceSe:null,
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
@@ -568,7 +567,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },
       resist:{},
       weak:{},
-      landSe:null,
+      entranceSe:null,
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
@@ -595,7 +594,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },
       resist:{},
       weak:{},
-      landSe:null,
+      entranceSe:null,
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
@@ -622,7 +621,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },
       resist:{},
       weak:{},
-      landSe:null,
+      entranceSe:null,
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
@@ -657,7 +656,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:6 },
       resist:{},
       weak:{},
-      landSe:null,
+      entranceSe:null,
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
@@ -686,7 +685,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:6 },         // ＝np_boss
       resist:{},
       weak:{},
-      landSe:null,
+      entranceSe:null,
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
@@ -716,7 +715,7 @@ export const ENEMIES = {
       assaultEvery:[2,4],                 // 一般攻擊的頻率（秒）
       assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
       weak:{},                       // 依傷害來源的增傷成數；無則 {}
-      landSe:null,                   // 登場音（卡上覆寫）；無則 null
+      entranceSe:null,                   // 登場音（卡上覆寫）；無則 null
       special:[],
       /* 盤面配置 `33344, loop`：3＝九宮格、4＝16 宮格；**loop**＝打完五盤還沒死就從頭再來
          （這一隻血厚 200、傷害低，是「耐力戰」的設計）。 */
@@ -769,7 +768,7 @@ export const ENEMIES = {
       assaultEvery:[2,4],
       assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
       noStack:true,
-      landSe:'se_enemy_centipi',    // 登場音（ver -790，船戰各自獨立；蜈蚣＝自己的叫聲）
+      entranceSe:'se_enemy_centipi',    // 登場音（ver -790，船戰各自獨立；蜈蚣＝自己的叫聲）
       special:[],
       /* 盤面配置 `33344, loop`：3＝九宮格、4＝16 宮格，打完五盤沒死就從頭再來。 */
       boardGrids:[9,9,9,9,16],
@@ -824,7 +823,7 @@ export const ENEMIES = {
       noStack:true,                // 不疊加：場上同時只有一個紅點
       /* 降臨著地音（ver -745，Ray：「se 不放 se_saintintall 而是放羽蛇叫聲」）——
          禍魘的著地預設是 sfx_saint，這張卡覆寫成牠自己的吼叫（enemy.js 讀）。 */
-      landSe:'se_enemy_serpent',
+      entranceSe:'se_enemy_serpent',
       special:[],
       boardGrids:[9,9,9,9,16],    // 33344, loop
       boardLoop:true,
@@ -869,7 +868,7 @@ export const ENEMIES = {
       assaultEvery:[2,4],              // 發動頻率 2~4 秒一次
       assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
       noStack:true,                // 不疊加：場上同時只有一個紅點
-      landSe:'se_weapon_cannon',   // 登場音（ver -790，船戰各自獨立；空賊船＝艦砲）
+      entranceSe:'se_weapon_cannon',   // 登場音（ver -790，船戰各自獨立；空賊船＝艦砲）
       special:[],
       boardGrids:[9,9,9,9,16],    // 33344, loop
       boardLoop:true,
@@ -919,7 +918,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },
       resist:{},
       weak:{},
-      landSe:null,
+      entranceSe:null,
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{ delay:{ type:'claw', count:1, angle:'random' },
@@ -945,7 +944,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },
       resist:{},
       weak:{},
-      landSe:null,
+      entranceSe:null,
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{ delay:{ type:'bite' },
@@ -971,7 +970,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },
       resist:{},
       weak:{},
-      landSe:null,
+      entranceSe:null,
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{ delay:{ type:'blunt' },
@@ -999,7 +998,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },
       resist:{},
       weak:{},
-      landSe:null,
+      entranceSe:null,
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{ delay:{ type:'claw', count:1, angle:'random' },
@@ -1025,7 +1024,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },
       resist:{},
       weak:{},
-      landSe:null,
+      entranceSe:null,
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{ delay:{ type:'slash' },
@@ -1065,7 +1064,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },
       resist:{},
       weak:{},
-      landSe:null,
+      entranceSe:null,
       special:[],
       boardGrids:[9,9,9,9,9],
       /* 主動攻擊＝**櫻花狂亂飛舞**（ver -899，Ray 指定）：牠是樹靈，用爪痕不對。
@@ -1095,7 +1094,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },
       resist:{},
       weak:{},
-      landSe:null,
+      entranceSe:null,
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{ delay:{ type:'blood', angle:'random' },
@@ -1121,7 +1120,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },
       resist:{},
       weak:{},
-      landSe:null,
+      entranceSe:null,
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{ delay:{ type:'blood', angle:'random' },
@@ -1149,7 +1148,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },
       resist:{},
       weak:{},
-      landSe:null,
+      entranceSe:null,
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{ delay:{ type:'blood', angle:'random' },
@@ -1175,7 +1174,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },
       resist:{},
       weak:{},
-      landSe:null,
+      entranceSe:null,
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{ delay:{ type:'blood', angle:'random' },
@@ -1213,7 +1212,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },
       resist:{},
       weak:{},
-      landSe:null,
+      entranceSe:null,
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{ delay:{ type:'bite' }, wrong:{ type:'slash' },
@@ -1238,7 +1237,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },
       resist:{},
       weak:{},
-      landSe:null,
+      entranceSe:null,
       special:[],
       boardGrids:[9,9,9,9,16],
       hitFx:{ delay:{ type:'blunt' }, wrong:{ type:'slash' },
@@ -1263,7 +1262,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },
       resist:{},
       weak:{},
-      landSe:null,
+      entranceSe:null,
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{ delay:{ type:'blood', angle:'random' }, wrong:{ type:'slash' },
@@ -1289,7 +1288,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },
       resist:{},
       weak:{},
-      landSe:null,
+      entranceSe:null,
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{ delay:{ type:'claw', count:1, angle:'random' }, wrong:{ type:'slash' },
@@ -1314,7 +1313,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },
       resist:{},
       weak:{},
-      landSe:null,
+      entranceSe:null,
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{ delay:{ type:'blunt' }, wrong:{ type:'slash' },
@@ -1340,7 +1339,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },
       resist:{},
       weak:{},
-      landSe:null,
+      entranceSe:null,
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{ delay:{ type:'blunt' }, wrong:{ type:'slash' },
@@ -1365,7 +1364,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },
       resist:{},
       weak:{},
-      landSe:null,
+      entranceSe:null,
       special:[],
       boardGrids:[9,9,9,9,16],
       hitFx:{ delay:{ type:'slash' }, wrong:{ type:'slash' },
@@ -1390,7 +1389,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },
       resist:{},
       weak:{},
-      landSe:null,
+      entranceSe:null,
       special:[],
       boardGrids:[9,9,9,9,16],
       hitFx:{ delay:{ type:'blunt' }, wrong:{ type:'slash' },
@@ -1417,7 +1416,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },
       resist:{},
       weak:{},
-      landSe:null,
+      entranceSe:null,
       special:[],
       boardGrids:[9,9,16,9,16],
       hitFx:{ delay:{ type:'blunt' }, wrong:{ type:'slash' },
@@ -1462,7 +1461,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },
       resist:{},
       weak:{},
-      landSe:null,
+      entranceSe:null,
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
@@ -1489,7 +1488,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },
       resist:{},
       weak:{},
-      landSe:null,
+      entranceSe:null,
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
@@ -1516,7 +1515,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },
       resist:{},
       weak:{},
-      landSe:null,
+      entranceSe:null,
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
@@ -1543,7 +1542,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },
       resist:{},
       weak:{},
-      landSe:null,
+      entranceSe:null,
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
@@ -1570,7 +1569,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },
       resist:{},
       weak:{},
-      landSe:null,
+      entranceSe:null,
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
@@ -1597,7 +1596,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },
       resist:{},
       weak:{},
-      landSe:null,
+      entranceSe:null,
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
@@ -1624,7 +1623,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },
       resist:{},
       weak:{},
-      landSe:null,
+      entranceSe:null,
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
@@ -1651,7 +1650,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },
       resist:{},
       weak:{},
-      landSe:null,
+      entranceSe:null,
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
@@ -1678,7 +1677,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },
       resist:{},
       weak:{},
-      landSe:null,
+      entranceSe:null,
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{
@@ -1705,7 +1704,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },
       resist:{},
       weak:{},
-      landSe:null,
+      entranceSe:null,
       special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{

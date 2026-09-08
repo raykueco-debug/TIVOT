@@ -398,6 +398,19 @@ const PURIFY_KINDS = { harm:1, slay:1, aerial:1 };
    `PURIFY_KINDS`，但 Ray 要**所有船戰敵人**都有登場震動衝擊波 —— 空賊船 `kind:'ship'`
    不是禍魘（死掉不該散白光），所以只把它加進**登場**這一類，**淨化死法維持
    harm/slay**。羽蛇／蜈蚣是 `harm`，本來就在登場類裡（＝「每次都播」已成立）。 */
+/* 登場音的**唯一**播放點（ver -948）：路徑在 `/vo/` 底下就走語音那一軌
+   （`playVoice` 會過 `voiceChain`、吃 VO 的分層音量），否則走 SE。
+   ⚠ 判**路徑**不判鑰匙前綴：鑰匙的命名不是每一個都守規約（`sfx_saint` 就不是
+     `se_` 開頭），而路徑是實際檔案住哪一層 —— 那才是「它是不是語音」的事實。 */
+function playEntranceSe(key){
+  if(!key) return;
+  const p = asset(key);
+  if(!p) return;
+  try{
+    if(/\/vo\//.test(p)) SFX.playVoice(p, sfxGain(key));
+    else                  SFX.play(p, sfxGain(key));
+  }catch(_){}
+}
 const ENTRANCE_KINDS = { harm:1, slay:1, ship:1, aerial:1 };
 function isPurify(){
   const en = GAME_CONFIG.enemies[state.currentEnemyKey];
@@ -474,15 +487,14 @@ export function loadEnemyPortrait(en){
          ⚠ 增益問 `sfxGain`（全域響度階層，§6.6）。 */
       { /* 出場音效（ver -790，Ray 更正：「船戰登場特效音是每一個都有獨立的，跟陸戰
            禍魘分開」「原本放 se_saintinstall 的鐘聲變成受擊音了」）：
-           · **船戰敵人**（羽蛇／蜈蚣／空賊船）＝卡上各自的 `landSe`（每隻獨立）。
-           · **陸戰禍魘／聖徒**＝沒有 `landSe`，退回 `sfx_saint`（＝se_saintinstall 鐘聲，
-             ver -649 的原音）。
+           · **船戰敵人**（羽蛇／蜈蚣／空賊船）＝卡上各自的 `entranceSe`（每隻獨立）。
+           · **陸戰禍魘／聖徒**＝沒有 `entranceSe`，退回 `sfx_saint`（＝se_saintinstall
+             鐘聲，ver -649 的原音）。
            ⚠ -773 曾把預設改成「自己的攻擊音 `sound.ult`」——但 `sound.ult` 正是玩家
              被那隻怪打到的**受擊音**，套到陸戰的登臨就變成受擊音（Ray 回報）。所以
-             **拿掉那個 fallback**：船戰各自的登場音一律寫成卡上的 `landSe`（資料驅動，
+             **拿掉那個 fallback**：船戰各自的登場音一律寫成卡上的 `entranceSe`（資料驅動，
              鐵律 1），陸戰一律鐘聲。 */
-        const k=state.curEnemyLandSe || 'sfx_saint';
-        SFX.play(asset(k), sfxGain(k)); }
+        playEntranceSe(state.curEnemyEntranceSe || 'sfx_saint'); }
       if(api.screenShake) api.screenShake();
       const top=$('top');
       if(top){
@@ -497,10 +509,17 @@ export function loadEnemyPortrait(en){
       eImg.removeEventListener('animationend', off);
       eImg.classList.remove('enemy-rise');
     }); };
-  /* 登場語音（ver -818，Ray）：卡上 `entranceVo` ＝**敵立繪一出現就播**——不吃降臨，
-     不分 kind（man_sorana 是 human，走下面的非登場類分支）。走 playVoice（過 voiceChain）。 */
-  const voKey = en && en.entranceVo;
-  const playEntranceVo = voKey ? (()=>{ try{ SFX.playVoice(asset(voKey), sfxGain(voKey)); }catch(_){} }) : null;
+  /* ══⚠⚠ **登場音只有一格**（ver -948，Ray：「entranceVo 跟 landSe 應該是同一時間
+     發生，併為一格」）══ 卡上寫 `entranceSe`，播的**時機由這隻怪自己決定**：
+       · 有降臨的（`ENTRANCE_KINDS`：禍魘／聖徒／船）→ **著地那一刻**（見上面 landT）
+       · 沒有降臨的（human…）      → **立繪出現那一刻**
+     —— 兩者對玩家而言就是同一件事（「牠登場了」），所以資料上不該是兩格。
+     ⚠ **走哪一軌是算出來的**（`playEntranceSe`）：路徑落在 `/vo/` 就走 `playVoice`
+       （過 voiceChain、算 VO 那一層），否則走 `play`（SE 那一層）。
+       §6.6 的命名規約本來就是 `vo_<角色>_<技能>`，所以不必再開一格「這是語音嗎」。
+     ⚠ 沒寫＝有降臨的退回 `sfx_saint`（鐘聲），沒降臨的就沒有聲音。 */
+  const playEntranceVo = (en && en.entranceSe)
+    ? (()=>playEntranceSe(en.entranceSe)) : null;
   /* ⚠ 不在登場類就不演降臨（ver -657；-787 登場類含 ship）：立繪載到就直接在那裡。
      ⚠ 判定用**傳進來的這張卡**不是查 state：`setEnemy` 在寫
        `state.currentEnemyKey` 之前就可能叫到這裡，問 state 會問到上一隻。 */
@@ -674,7 +693,7 @@ export function setEnemy(key){
   state.DELAY_DAMAGE  = dp.damage !=null ? dp.damage  : null;
   state.WRONG_DAMAGE  = wp.damage !=null ? wp.damage  : null;
   state.curEnemyHitFx = en.hitFx || null;        // 3.7：本怪受擊特效三件套（音效綁在 type 上，見 config.HITFX；卡上不再有 sound，ver -800）
-  state.curEnemyLandSe = en.landSe || null;      // 降臨著地音的卡上覆寫（ver -745，羽蛇＝吼叫）
+  state.curEnemyEntranceSe = en.entranceSe || null;   // 登場音（ver -948 由 landSe／entranceVo 併成一格）
   // 名稱與立繪；取景（config fit.pos → object-position；未設＝回 CSS 預設 center top）
   const nameEl = $('enemyName');
   if(nameEl) nameEl.textContent = displayEnemyName(en.name);
