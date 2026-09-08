@@ -160,9 +160,11 @@ function render(){
   const fit=p.siFit||{};
   const rot = load.mode()==='rotate';
   /* 目前的體力（ver -497，Ray：「在整備頁顯示目前主角的hp」）。
-     戰鬥外的 HP 只有一份真相：progress 的持久 HP（沒有鑰匙＝滿血），
-     上限＝config 的 `tuning.playerHp` —— 兩個都不要在這裡另存。 */
-  const hpMax=GAME_CONFIG.tuning.playerHp;
+     戰鬥外的 HP 只有一份真相：progress 的持久 HP（沒有鑰匙＝滿血）。
+     ⚠⚠ 上限**不是** `tuning.playerHp` 那個常數（ver -953）：料理會把它墊高
+       （`boon.hpMax`，一輪內）。式子只有 `progress.playerMaxHp()` 一支（鐵律 7）。
+       ⚠ 不要改讀 `state.playerMax`：那一格是**戰鬥中**的值，整備頁在開戰前就打得開。 */
+  const hpMax=prog.playerMaxHp();
   const hpG=prog.getHp();
   const hpCur=(hpG!=null) ? Math.min(hpG, hpMax) : hpMax;
   const hpHtml =

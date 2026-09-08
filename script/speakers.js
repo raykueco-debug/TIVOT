@@ -50,6 +50,9 @@ export const SPEAKERS = {
        更需要名字欄來標明它是一句話。
      ⚠ 這是**唯一**的那個名字（鐵律 7）：`modules/town.js` 的路人單句問這裡，
        不要在那邊寫死字串。 */
+  /* 士兵（ver -953，Stage8）：只有一兩句傳令，**沒有立繪** —— 同 VOICE 的作法，
+     名字框標明是誰在講話就夠了（§6.5.4：路人單句要標名字）。 */
+  SOLDIER:  { name:'士兵',   art:null },
   VOICE:    { name:'路人',   art:null },
   /* 旁白（ver -656）：**沒有立繪、名字欄空著** —— 「跳一個對話框」那種畫面訊息
      （「該回去看看了。」）。⚠ 與 `VOICE` 的差別只有名字：那是「某個路人在講話」，
@@ -732,7 +735,13 @@ export const ART = {
   sh_craftsman:{ cm:175, eye:32, fx:0.603, top:5, bot:1531, side:'R', alt:null,
                  base:'resources/SI/NPC/NPC_shinier_Gunsmith_SI.webp', expr:{} },
   /* 夏爾村餐廳的瑪麗亞（ver -875，measure_si 量測）。 */
-  sv_cook: { cm:163, eye:32, fx:0.463, top:8, bot:1522, side:'R', alt:null,
+  /* ⚠⚠ `flip:true`（ver -953，Ray：「瑪麗亞立繪水平翻轉」）＝**這張圖本來就要翻**，
+     與 `mirror` 是兩件事，不要混用：
+       `mirror` ＝ 這張畫**可以**翻 → 只在被擺到 `side` 以外那一側時才翻（-625 的讓位）
+       `flip`   ＝ 這張畫**畫反了** → 不管站哪一邊都翻
+     瑪麗亞本位就是右，用 `mirror` 的話在她站右邊時**一次都不會翻** —— 那不是要的。
+     ⚠ 翻轉之後臉的錨點會跟著鏡射（`fx → 1-fx`），錨的永遠是臉不是圖框。 */
+  sv_cook: { cm:163, eye:32, fx:0.463, top:8, bot:1522, side:'R', alt:null, flip:true,
              base:'resources/SI/NPC/NPC_shinier_cook_SI.webp', expr:{} },
   priest: { cm:172, eye:32, fx:0.536, top:7, bot:1531,
            side:'R', alt:null, base:'resources/SI/Priest_SI_front.webp', expr:{} },

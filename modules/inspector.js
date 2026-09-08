@@ -480,7 +480,7 @@ export function settle(totalTime, stats, opts={}){
      ⚠ 錢**在這裡才真的入帳** —— 不然打到一半跑掉，錢已經進口袋了。
      ⚠ 領完就清（`clearSessionGain`），不然下一場會把上一段的再算一次。 */
   let gainMoney = moneyOf(stats, evalResult.grade);
-  if(gainMoney) gainMoney = Math.round(gainMoney * (1 + prog.starBonus('moneyMul')));
+  if(gainMoney) gainMoney = Math.round(gainMoney * (1 + prog.bonus('moneyMul')));
   const totalExp = evalResult.exp|0;      // EXP 由**整場的總和**算出來（ver -601）
   if(gainMoney) inv.addMoney(gainMoney);
   if(totalExp && showExp()) rows += '<div class="row"><span>EXP</span><b>＋'+totalExp+'</b></div>';
@@ -761,7 +761,7 @@ function restSettle(totalTime, stats, sessionLoot, shares, title){
   const spk = pickEvaluator(ev.grade, null);
   prog.applyRankAffection(ev.grade, shares || state.pickedPartner);   // ver -921：出場數最多的全拿
   let money = moneyOf(stats, ev.grade);
-  if(money) money = Math.round(money * (1 + prog.starBonus('moneyMul')));
+  if(money) money = Math.round(money * (1 + prog.bonus('moneyMul')));
   const exp = ev.exp|0;
   if(money) inv.addMoney(money);
   let rows = spk
@@ -831,7 +831,7 @@ function scriptSettle(totalTime, stats, sessionLoot, shares){
   let money = noReward ? 0 : moneyOf(stats, ev.grade);
   /* 九階強化「銀幣星」：金錢掉落加成（ver -707）。⚠ 在**併完連戰的帳之後**才乘 ——
      中間幾格的錢也是這一場打來的，只乘最後一格等於少算一大半。 */
-  if(money) money = Math.round(money * (1 + prog.starBonus('moneyMul')));
+  if(money) money = Math.round(money * (1 + prog.bonus('moneyMul')));
   const exp = noReward ? 0 : (ev.exp|0);
   if(money) inv.addMoney(money);
   /* ⚠ 沒有評價者、又沒有等第可印時整塊就不要出 —— 一個只寫著「評價」兩個字的空行
@@ -911,7 +911,7 @@ function showExp(){ return !!((GAME_CONFIG.rating||{}).showExp); }
 function rollLoot(en){
   /* 九階強化「幸運星」：掉落機率提升（ver -707）。⚠ 乘在**機率**上不是另外再擲一次
      （鐵律 7），而且夾到 1 —— 超過 1 的機率沒有意義，只會讓日後的除錯看不懂。 */
-  const lm = 1 + prog.starBonus('lootMul');
+  const lm = 1 + prog.bonus('lootMul');
   return (en && en.loot ? en.loot : []).filter(r=>!(r.p>0) || Math.random()<Math.min(1, r.p*lm))
                                        .map(r=>({ id:r.id, n:r.n }));
 }

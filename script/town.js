@@ -57,6 +57,15 @@ const nou = N('NOUVELLE'), ren = N('RENNA');
    玩家的同伴在左、對面的人在右，與店主同一個邏輯。 */
 const hun = N('HUNTER'), cnt = N('COUNTER');
 const gun = N('GUNSMITH');   // 槍店店主（ver -377）
+/* Stage8（ver -953）：科爾文（第五騎士團作戰課副團長）與夏爾村餐廳的瑪麗亞。
+   ⚠ 科爾文報上名字之前是 `CORVIN_Q`（顯示「？？？」）＋暗調剪影（稿上的「陰影立繪」）
+     —— 同索菈娜／司祭的作法：顯示名不同就是兩個 id，art 同指（見 speakers.js）。 */
+const cor = N('CORVIN'), corx = N('CORVIN_Q');
+
+
+const mar = N('COOK_SV'), sld = N('SOLDIER');
+
+
 /* 北方泊地的司祭（ver -582）。⚠ 兩個 id：報上身分之前是 `PRIEST_X`（顯示「？？？」），
    之後才是 `PRIEST` —— 畫面上同一個人，見 speakers.js 的說明。 */
 const prx = N('PRIEST_X'), pri = N('PRIEST');
@@ -71,6 +80,129 @@ const crd = N('CROWD_NP');
 const sor = N('SORANA');   // 夏爾村（ver -772）
 const vil = N('VILLAGER'), vil2 = N('VILLAGER2'), vil3 = N('VILLAGER3'), chf = N('CHIEF');   // 夏爾村村民×3/村長（-838/-842）
 const jer = N('JERO'), shen = N('HUNTER_SV'), grcS = N('GROCER_SV');   // 杰羅／謝尼／村雜貨店主（ver -858）
+
+/* ══════════════════════════════════════════════════════════════════════
+   Stage 8（ver -953，Ray 交稿）—— 索菈娜家 → 自由探索 → 餐廳 → 索菈娜家
+   ──────────────────────────────────────────────────────────────────────
+   ⚠ 台詞一字未改（除了下面明寫的三處）。
+   ⚠⚠ **稿上有兩處標記與說話者對不起來**，我按說話者處理，請 Ray 過目：
+     · 「索：『瑪麗亞的料理可是很美味的喔。』NPC_shinier_cook_SI」與下一句 ——
+       標的是瑪麗亞的立繪，但說話的是索菈娜（她在向大家介紹瑪麗亞）。
+     · 稿上寫「第一道羊腿排」，但這一段的台詞是「奶油鹿腿一份」、交件插圖是
+       `di_deersteak`（鹿）—— 以稿與圖為準寫成鹿。
+   ⚠ 「（耳語）」**保留原文**：它是那一拍的全部內容，拿掉就只剩一個空框
+     （§6.5 的「括號是舞台指示」是針對台詞**之外**的括號）。
+   ══════════════════════════════════════════════════════════════════════ */
+/* 餐廳那一段（掛在 restaurant 的 acts）。⚠ 寫成常數是因為它住在另一個節點上，
+   而稿是連著的 —— 三段擺在一起才讀得出順序。 */
+const SV_S8_DINE = { flag:'sv_s8_dine', need:'sv_s8_home', fromStage:8, lines:[
+  mar(null,'索菈娜！好久不見！'),
+  sor('side','噢！綠月好玩嗎？'),
+  mar(null,'超開心，我差點都不想回來了！'),
+  /* ⚠ 這兩句是**索菈娜**在介紹瑪麗亞（稿上標成瑪麗亞的立繪，見檔頭的說明）。 */
+  sor('smile','瑪麗亞的料理可是很美味的喔。'),
+  sor('remind','有時我都帶獵物來給她料理。'),
+  mar(null,'『有時』而已嗎？'),
+  sor('embarassed',''),
+  mar(null,'這次的修行之旅學到了好多。我在莫塔鎮碰到了一個很厲害的料理人呢！'),
+  nou('surprise','莫塔鎮？那個河港？'),
+  mar(null,'對啊！港口就是好啊！什麼食材香料都拿得到。'),
+  /* ⚠⚠ **這一句就是廚房開張**（`kitchenFrom:8` 已經讓那顆「料理」鈕在這一章出現）。 */
+  mar(null,'我有好多想試的新菜式，要是能帶食材來，就能招待你們囉。'),
+  /* ══⚠⚠ 三樣材料由劇情發（ver -953）══ 稿上是「此時行囊有草原奶油，鹿腿肉，
+     迷迭香現場劇情採」—— 但 `meat_deer` 與 `season_butter` **目前遊戲裡拿不到**
+     （沒有怪掉、沒有店賣，等 Ray 指派掉落／店貨）。不發的話這一段的 `cook` 會
+     扣不到料 → 加成默默不生效，而畫面上看不出任何異常。所以三樣一起發。
+     ⚠ 玩家本來就有的話會多出一份 —— 那比「+40 沒生效」好得多。 */
+  Object.assign(nou('front','（在路邊採了一把迷迭香）'),
+                { text:'', se:'se_walk', give:{ meat_deer:1, season_butter:1, herb_rosemary:1 } }),
+  mar(null,'好的！奶油鹿腿一份，稍等一下喔！'),
+  /* 料理演出（`story.playCooking`）：鍋子交替＋COOKING…＋成品。帳走 `loot.cookDish`。 */
+  { speaker:'COOK_SV', cook:'deersteak' },
+  nou('surprise','這個！好好吃！'),
+  mar(null,'對吧！綠月風格的奶油煎鹿肉。不用再調味就很好吃。'),
+  sor('surprised','！！'),
+  sor('surprised','這個人竟然已經吃完了！'),
+  /* HP 上限的大字（稿上排在這裡，不是接在料理完成那一刻 —— 見 story.showBoon）。 */
+  { speaker:'COOK_SV', boon:'deersteak' },
+  nou('bigsmile','很難得看到你露出那種表情呢。'),
+  /* ══ 科爾文登場：報上名字之前是「？？？」＋**暗調剪影**（稿上的「陰影立繪」）══ */
+  Object.assign(corx('smile','請問……'), { dark:true }),
+  Object.assign(corx('smile','幾位可是第四騎士團的人？'), { dark:true }),
+  nou('lookback','啊，我是十二課的支援人員，四課的是他。'),
+  Object.assign(corx(null,'原來如此。你們的監察官呢？'), { dark:true }),
+  nou('cringe','這……'),
+  { speaker:'PLAYER', blank:true },
+  Object.assign(corx(null,'失禮了。'), { dark:true }),
+  /* 稿上「插圖，由下而上」＝ 那一拍把剪影收掉、正式露臉（`cgPan:'up'` 是插圖的平移，
+     這裡沒有插圖檔 —— 所以只做「暗調收掉」這件事，等 Ray 給圖再補 `cg`。 */
+  cor(null,'我是第五騎士團的，'),
+  cor('smile','科爾文。請多指教。'),
+  nou('surprise','作戰課……？'),
+  sor('laugh','啊？這個跟豆芽一樣森住民能作什麼戰？'),
+  sor('remind','你有好好吃飯嗎？'),
+  cor('smile','並不是只有打打殺殺才叫作戰，敬愛的女士。'),
+  sor('dying',''),
+  nou('whisper','他們是戰略情報、政治作戰的專家。'),
+  sor('think','……就是比較聰明的人？'),
+  cor('smile','您能這麼理解，光榮之至。'),
+  sor('upset','你一定要那樣講話嗎？'),
+  { speaker:'RENNA', text:'', se:'se_steps', auto:1400 },   // （腳步聲）
+  ren('curious','科爾文……副團長！'),
+  cor(null,'許久不見了，海森伯格小姐。'),
+  ren('covermouth','怎麼會……勞您親自……'),
+  cor(null,'收到您的報告後，我立即就動身了。'),
+  cor('smile','萬幸，趕上了呢。'),
+  ren('ask','趕上？'),
+  cor('stare',''),
+  any('surprised',''),
+  cor('talk','你在報告裡說，要把這位小姐帶回聖王廳吧？'),
+  ren('talkwork','是的，我判斷她的狀況特殊，由騎士團加以保護較為穩妥。'),
+  cor('talk','疑似聖徒之力的力量……跟呼喚禍魘的嫌疑，是嗎？'),
+  ren('talkwork','是。'),
+  cor('stare','……'),
+  cor('smile','小姐，我該怎麼稱呼您呢？'),
+  any('talk','……安雅。'),
+  cor(null,'您是紫月的人士吧？隻身一人跑到銀月來，不會有些危險嗎？'),
+  cor('smile','雖然沒有交戰，基本還是敵國吧？'),
+  ren('lookaway','她的隨從在北方泊地亡故了。'),
+  any('desperate','……'),
+  cor('stare','隨從呀……？那真是令人遺憾。'),
+  cor('stare','像您這樣的千金之軀，想必吃了不少苦頭吧。'),
+  cor(null,'不如這樣。'),
+  cor('smile','由在下為您在帝都找個安身之地，再作打算？'),
+  ren('shockedCalm','！！'),
+  any('silent','……'),
+  { speaker:'PLAYER', blank:true },
+  cor('talk','HUND，我並沒有給你指令。'),
+  cor('talk','退下。'),
+  nou('angry',''),
+  sor('confuse','你的禮儀是突然被狗吃了嗎？'),
+  cor('smile','失禮。只是職業慣性罷了。'),
+  ren('askserious','帝都平民眾多，若發生什麼事，戍衛軍恐怕應接不暇……'),
+  cor(null,'真到那個時候，騎士團自會出兵相援。'),
+  ren('talkserious','那還不如一開始就將她保護在聖王廳！'),
+  ren('ask','我的意見，還是將安雅小姐先帶回聖域……'),
+  cor('stare','既然知道她有可能呼喚禍魘，妳還打算把她帶回聖王廳？'),
+  ren('shockedCalm','……！！'),
+  cor('stare','聖王廳這個神聖的淨土，憑空出現了禍魘。妳想讓人們怎麼看？'),
+  cor('talk','帝國又會怎麼看？'),
+  nou('angry','帝都的人們難道就無所謂嗎！'),
+  ren('lookaway','......'),
+  ren('lookawaytalk','十分抱歉。是我......思慮不周。'),
+  { speaker:'SOLDIER', text:'', se:'se_steps', auto:1200 },   // （跑步聲）
+  sld(null,'副座！'),
+  cor('shock','！'),
+  /* ⚠ 「（耳語）」是那一拍的全部內容，保留原文（見檔頭的說明）。 */
+  sld(null,'（耳語）'),
+  cor('ecstasy','是嗎？木雅克的遺跡……！'),
+  any('silent','……'),
+  cor('think','……'),
+  cor('talk','海森伯格小姐，關於這方面，能否請您分享一下情報呢？'),
+  any('silent','……'),
+  ren('pause','……我知道了。'),
+] };
+
 
 /* ══⚠⚠ 北方泊地槍店的射擊挑戰（ver -655，Ray 交稿）══════════════════════
    **這一段只寫一次**（鐵律 7）：初次進店的 `lines` 與店裡「射擊挑戰」鈕的
@@ -1911,6 +2043,23 @@ export const TOWNS = {
          ⚠ 「三秒黑」目前走 forceGo 的標準黑幕（~1s）——要真的 3 秒再跟 Ray 調。 */
       { flag:'sv_forest_morning', need:'sv_clear_wild', clockTo:6,
         goto:'sorahome', enterAgain:true },
+      /* ══ Stage 8：逛太久就被抓去餐廳（ver -953，Ray：「超過一小時仍沒有去餐廳」
+         →「不要那麼麻煩，移動六次就是一小時，第七次就出肚子餓劇情」）══
+         ⚠ `afterMoves:6` ＝**這個閘門變成可觸發之後**又走了六步，第七步發動
+           （走一步 10 分鐘）。計數是記憶體變數、不進存檔 —— 見 town.js 的 stageGate。
+         ⚠ 玩家自己走去餐廳的話 `sv_s8_dine` 那一段會先演完，這道閘門就再也不成立
+           （`need` 還在，但 `afterMoves` 的計數與它無關 —— 擋住它的是**餐廳那一段
+           已經演過**：那一段一演完，玩家就被下一道閘門搬回索菈娜家了）。 */
+      { flag:'sv_s8_hungry', need:'sv_s8_home', afterMoves:6,
+        goto:'restaurant', enterAgain:true,
+        lines:[ Object.assign(nou('hungry',''), { se:'Se_Tummy' }),
+                sor('surprised','哇！別亂逛了，諾薇兒快餓扁啦！'),
+                nou('lookaway','') ] },
+      /* ══ Stage 8：餐廳那一段演完 → 換場到索菈娜家（稿上的「索菈娜家。」）══
+         ⚠ 沒有台詞 ＝ 直接淡入淡出搬過去（`forceGo`），第三段的 acts 接手。
+         ⚠ `clockGate()` 在**對白演完之後**才判（見 town.js 的 runArrival），
+           所以這一道會緊接著餐廳那一段收尾發動，不必等玩家再走一步。 */
+      { flag:'sv_s8_to_home', need:'sv_s8_dine', goto:'sorahome', enterAgain:true },
     ],
     nodes: {
       /* ── 樞紐：剝製廣場 ──「離開」＝下方出口（sail 那一套；舵還沒修好，
@@ -2274,6 +2423,94 @@ export const TOWNS = {
           { speaker:'PLAYER', blank:true },
           Object.assign(sor('readysmile','噢！幫大忙了！一起上吧！'), { checkpoint:true }),
           /* 索菈娜衝出去迎擊 —— 圍城由**踏出家門**（`onLeave`）接續（ver -802）。 */
+        ] },
+        /* ══ Stage 8 第一段（ver -953，Ray 交稿）══ 鹿主那一段之後（S7）回到村子。
+           ⚠ `fromStage:7` 而不是某支旗：鹿主有**兩條分支**（白天牠走掉／黃昏打贏），
+             兩條都升 S7 但插的旗不同（`sv_deer_met`／`sv_deer_harm`）——
+             用旗當前置一定漏掉其中一條（鐵律 7：兩條路一個答案）。
+           ⚠ `stage:8` 寫在**這一段上**（第一拍就升章），同 gates 的作法。
+           ⚠ 四個人同台：蕾娜／諾薇兒本位左，索菈娜／安雅本位右 —— 同側換人由引擎
+             抽牌輪轉（§6.5），不必寫站位。 */
+        { flag:'sv_s8_home', fromStage:7, stage:8, checkpoint:true, lines:[
+          nou('risehand','我申請為安雅小姐宗教法庭辯護人！'),
+          ren('awkward','冷靜點，我又沒有要審訊她。'),
+          ren('smile','只是……想跟她單獨聊聊而已。'),
+          any('silent',''),
+          nou('shocked','可是……'),
+          ren('talkwork','妳難道不覺得奇怪嗎？'),
+          ren('askserious','遠從紫月來的異國人，竟然能像妳一樣輸出聖徒之力。'),
+          ren('talkserious','更不用提剛剛發生的事。'),
+          nou('sad','……'),
+          ren('writting','總而言之，昨天報告就已經發出去了。'),
+          ren('writting','最快明天就會有回覆了吧？'),
+          sor('remind','那也用不著單獨談嘛。妳看她嚇得都不會說話了。'),
+          nou('awkwerd','啊，她那是本來就不太會說標準語……'),
+          { speaker:'PLAYER', blank:true },
+          /* ══ 依**蕾娜自己的**好感段位分歧（稿上的「分支T1／分支T2以上」）══
+             ⚠ T1 一句、T2 兩句 —— 句數不同，所以走 `tierMax`／`tierMin`
+               （`textByTier` 只能換字，變不出「多一拍」）。
+             ⚠ 兩者都是**門檻**不是等於：日後多一段 T3 不必回頭改。 */
+          Object.assign(ren('writting','……放心，我會斟酌。'), { tierMax:1 }),
+          Object.assign(ren('writting','沒錯。聖王廳目前只知道疑似聖徒之力的情報，遺跡的事我還沒有回報。'), { tierMin:2 }),
+          Object.assign(ren('writting','不好好利用這段時間差搞清楚狀況，反而幫不了安雅小姐。'), { tierMin:2 }),
+          nou('concern','……'),
+          any('talk','諾薇兒……不要擔心。'),
+          any('answer','我……沒問題。'),
+          nou('surprise','安雅……'),
+          ren('front',''),
+          sor('smile','那就走吧。反正修女小姐也不像會欺負她的樣子。'),
+          sor('readysmile','也差不多到吃飯時間了，帶你們去瑪麗亞那邊吃一頓吧。'),
+          Object.assign(nou('hungry',''), { se:'Se_Tummy' }),
+          sor('amazed','沒錯沒錯，身體是不會騙人的喔。'),
+          ren('front','妳們去吧，應該花不了太長時間。'),
+          ren('front','一會我就帶她過去。'),
+        ] },
+        /* ══ Stage 8 第三段（ver -953）══ 餐廳那一段演完，被閘門搬回索菈娜家。 */
+        { flag:'sv_s8_corvin', need:'sv_s8_dine', fromStage:8, checkpoint:true, lines:[
+          cor('ecstasy','原來如此。『不知為何』啟動了遺蹟嗎……？'),
+          ren('lookaway','是。'),
+          cor('ecstasy','……'),
+          cor('smile',''),
+          cor(null,'那麼，就稍微改變一下計畫吧。'),
+          cor('smile','海森伯格小姐，知道銀月的四大遺蹟嗎？'),
+          ren('lookaway','......'),
+          ren('pause','北境的伊甸古墓、東海的貝魯特舊址、南境的木雅克神殿……'),
+          cor('talk','還有，位於埃蘭王國的廢城。'),
+          cor('think','過去我們曾經派人巡訪，遺跡都沒有作動的跡象。'),
+          ren('talkwork','不論永夜前後呢。'),
+          cor('stare','…….不如這樣吧。'),
+          cor(null,'海森伯格監察官，就由您帶隊，前往這四個遺蹟勘探。'),
+          cor(null,'安雅小姐也隨行。'),
+          any('surprised',''),
+          ren('shockedCalm','什……！'),
+          cor(null,'尤蒂雅團長那邊，我會妥善溝通。'),
+          ren('askserious','……第四課的人只是借調人員，我無法替他決定。'),
+          cor('smile','璐娜莉亞團長那邊，也交給我。'),
+          { speaker:'PLAYER', blank:true },
+          nou('angry','是真的喔。請副團長大人千萬小心用詞，別讓璐娜大人把您的頭給擰下來。'),
+          cor('smile','真嚇人哪。'),
+          cor('talk','好了，以上可以做為作戰課的正式指令。'),
+          cor('read','務必在兩個月內完成任務。'),
+          /* ══⚠⚠ 期限＝**當下日期＋60 天**（ver -953，Ray 指定）══
+             ⚠ 寫成 `{D+60}`，**顯示的那一刻才代換**（同 `{P}`／`{N}`）——
+               寫死一個日期的話，玩家幾號走到這一幕看到的都是同一天，而
+               「兩個月內完成」這條期限日後真要用時，日期就只有一個計算點。 */
+          ren('writting','……{D+60}之前嗎？'),
+          cor('read','航行、修整、探勘，這個時間算是相當寬裕了。'),
+          ren('lookawaytalk','……'),
+          ren('lookaway','我應該感到感激嗎？'),
+          cor('smile','誰知道呢？這已經是我所能想到的最上策了。'),
+          cor(null,'畢竟帝都的人們，也不是無所謂的。'),
+          nou('shocked','……'),
+          sld(null,'傳令！'),
+          cor('lookaside','喔，妳的電報回文了。'),
+          cor('lookaside','接下來要怎麼做，就憑監察官您的判斷了。'),
+          cor('talk','告辭。'),
+          ren('upset','…….'),
+          { speaker:'RENNA', text:'', se:'se_openletter', auto:1600 },   // 拆電報聲
+          ren('shockedCalm','！！'),
+          ren('cringe','那個人……早就算好一切了……！'),
+          sor('furiousq','我好討厭他！'),
         ] } ],
         /* ══ 踏出索菈娜家 → 村內戰開打（ver -802，Ray 交稿）══
            `flag:'shinier_siege'` ＝**它的已演旗就是圍城旗**（鐵律 9：插了就開圍城、
@@ -2310,9 +2547,14 @@ export const TOWNS = {
         ] },
       restaurant:{ bg:'Shinier_Restaurant', name:'夏爾村　餐廳', exits:{ back:'east' },
         /* 駐店（ver -875，Ray：「餐廳早上6點到晚上6點有人，圖用cook，名字瑪麗亞」）
-           —— 開放空間**不掛 hours**（掛了會被打烊擋在門外；時段外只是沒人）。
-           台詞等 Ray 的稿（現在只有立繪站著）。 */
-        host:{ who:'COOK_SV', hours:[6,18] } },
+           —— 開放空間**不掛 hours**（掛了會被打烊擋在門外；時段外只是沒人）。 */
+        host:{ who:'COOK_SV', hours:[6,18] },
+        /* ══ 瑪麗亞的廚房（ver -953，Ray 的 Stage8 稿）══
+           `kitchenFrom:8` ＝**stage8 之前無人**（Ray 原話）—— 廚房開張是這一章的事，
+           在那之前走進來只有立繪站著（同 `shopFrom` 的語意，但分開一格：
+           那一格管店在不在，這一格管廚房開了沒）。 */
+        kitchen:true, kitchenFrom:8,
+        acts:[ SV_S8_DINE ] },
     },
   },
 

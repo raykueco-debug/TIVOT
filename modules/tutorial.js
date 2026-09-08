@@ -685,7 +685,11 @@ function applyMirror(el, key){
      這裡自己的安排）是兩件事。寫兩份必然走鐘（鐵律 7）：劇情頁與戰鬥對白會出現
      「同一個人這邊翻、那邊不翻」。 */
   const a = ART[key];
-  el.classList.toggle('mirrored', !!(a && a.mirror && c.side && sd && sd!==c.side));
+  /* ⚠ `flip`＝這張圖本來就畫反了（ver -953）；與 `mirror` 是 XOR。
+     規則的說明在 `modules/story.js` 的 castLayout（那一份是同一條規矩的另一半，
+     兩套 DOM 各一份）—— **改一邊要改另一邊**。 */
+  el.classList.toggle('mirrored',
+    (!!(a && a.flip)) !== !!(a && a.mirror && c.side && sd && sd!==c.side));
 }
 function portraitEl(c, key){
   const side = key ? sideOf(key) : (c && c.side);

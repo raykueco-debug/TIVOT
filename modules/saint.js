@@ -283,7 +283,7 @@ function startSaintMode(){
 let siComboSeen = 0;
 export function onSaintTap(){
   if(!state.saintMode) return;
-  const need = prog.starBonus('saintCombo'), sec = prog.starBonus('saintSec');
+  const need = prog.bonus('saintCombo'), sec = prog.bonus('saintSec');
   if(!(need>0) || !(sec>0)) return;
   if(++siComboSeen < need) return;
   siComboSeen = 0;

@@ -42,6 +42,15 @@ export function now(){
 }
 const p2 = n => (n<10?'0':'')+n;
 export function dateText(){ const t=now(); return t.y+'年'+t.mo+'月'+t.d+'日'; }
+/* ══ N 天之後的日期（ver -953，Stage8 的「兩個月內完成任務」）══
+   ⚠ 走 `now()`＋真的 `Date`（跨月跨年由它算），不要自己數天數。
+   ⚠ 只回**日期**不回時刻：期限講的是哪一天，不是幾點幾分。 */
+export function dateTextIn(days){
+  const t=now();
+  const d=new Date(Date.UTC(t.y, t.mo-1, t.d, t.h, t.mi));
+  d.setUTCDate(d.getUTCDate()+(days|0));
+  return d.getUTCFullYear()+'年'+(d.getUTCMonth()+1)+'月'+d.getUTCDate()+'日';
+}
 export function timeText(){ const t=now(); return p2(t.h)+':'+p2(t.mi); }
 /* 現在的「小時」含分鐘的小數（8:30 → 8.5）。⚠ 營業時間之類的比較**一律問這支**
    （鐵律 7：一個量一個計算點）—— 不要在別處自己 `now().h + now().mi/60`。 */

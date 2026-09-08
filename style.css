@@ -3100,6 +3100,71 @@
   /* 黑透（翌日那一張，Ray：「黑透遮罩」）—— 圖名卡是半透的，它要**看不見底下**：
      那一刻底下是上一幕的殘影，透出來就不是「過了一夜」是「時間卡住了」。 */
   #storyTitleCard.opaque{background:#050409;}
+  /* ══⚠⚠ 料理演出（ver -953，Ray：「音效期間 panup、pandown 兩張圖交替播放成動畫，
+     0.75 秒交替一次；下面用較可愛的字寫 COOKING… 三個點重覆接連出現至完成」）══
+     ⚠⚠ **交替與點點都由 JS 的計時器驅動，不用 CSS animation** —— `body.perf-idle`
+       會把 `#storyStage *` 的 animation 凍在第 0 幀（見上面圖名卡那條 -879 的教訓），
+       用 animation 做的話待機一下鍋子就不動了，而且看起來像壞掉不像省電。
+     ⚠ 這一層留在**楣之下**（z-5，同圖名卡）：它是畫框裡的演出，不是對話框。 */
+  #storyCook{position:absolute;left:0;right:0;top:0;height:var(--story-top);
+    z-index:5;display:none;flex-direction:column;align-items:center;justify-content:center;
+    gap:.7em;background:rgba(4,3,8,.86);pointer-events:auto;
+    opacity:0;transition:opacity .4s ease;}
+  #storyCook.on{display:flex;}
+  #storyCook.show{opacity:1;}
+  #storyCook img{max-width:74%;max-height:60%;object-fit:contain;
+    filter:drop-shadow(0 12px 26px rgba(0,0,0,.6));position:relative;z-index:1;}
+  /* ══⚠⚠ 成品登場（ver -953，Ray：「菜品登場時（cooking 完成）縮小彈出，
+     登場那一刻背後有金色光線旋轉」）══
+     ⚠ 這一段是**錦上添花**，所以准用 animation（`body.perf-idle` 把它凍住也只是
+       少了彈跳，菜還是看得見）—— 基底的可見度仍然由 `#storyCook` 的 transition
+       決定（-879 那條：不要讓「看不看得見」靠 animation）。
+     ⚠ 彈出走 `cubic-bezier` 的**過衝**（0.55 → 1.06 → 1）：等速放大讀起來是
+       「圖被拉大」，過衝一下才是「端上來」。 */
+  /* ⚠⚠⚠ **顯形一律用 transition，不用 animation**（ver -953 實測踩到 -879 那個坑）：
+     `body.perf-idle #storyStage *{animation-play-state:paused!important}` 會把這一層的
+     animation 整個凍住 —— 而演這一段的時候玩家本來就沒在碰螢幕，perf-idle 幾乎一定
+     是開著的。第一版用 animation 做彈出與光線的淡入，實測 `opacity` 卡在 0：
+     **金光根本不會出現，而且畫面上看不出是為什麼**。
+     ⚠ animation 只留「旋轉」這種**凍住也無所謂**的錦上添花（凍住就只是不轉）。 */
+  #storyCook img{transition:transform .52s cubic-bezier(.2,1.5,.42,1), opacity .3s ease;}
+  #storyCook.dish-pre img{transform:scale(.55);opacity:0;}
+  #storyCook.dish img{transform:scale(1);opacity:1;}
+  /* 金色光線：`repeating-conic-gradient` 畫放射狀的光條，整層慢慢轉。
+     ⚠ `screen` 混合＋中心透明的遮罩：光是**加亮**上去的，不是一塊金色貼紙
+       （同 §6.5.4.4 白光星芒那一條）。
+     ⚠ 只在成品那一刻出現（`.dish`）—— 它是「端上來」的那一下，不是煎的時候。 */
+  #storyCook .cook-rays{position:absolute;left:50%;top:50%;width:150vmax;height:150vmax;
+    transform:translate(-50%,-50%);pointer-events:none;z-index:0;
+    mix-blend-mode:screen;opacity:0;transition:opacity .5s ease-out;
+    background:repeating-conic-gradient(from 0deg,
+      rgba(255,208,110,.55) 0deg 3deg, rgba(255,208,110,0) 3deg 11deg);
+    -webkit-mask-image:radial-gradient(circle, rgba(0,0,0,0) 8%, #000 26%, rgba(0,0,0,0) 62%);
+    mask-image:radial-gradient(circle, rgba(0,0,0,0) 8%, #000 26%, rgba(0,0,0,0) 62%);}
+  #storyCook.dish .cook-rays{opacity:.85;animation:cookRaysSpin 14s linear infinite;}
+  @keyframes cookRaysSpin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+  /* 「較可愛的字」：圓體優先、字距鬆、暖金色。⚠ 不要用襯線的那一套（那是這個
+     專案的正式字體）—— 這一拍的語氣是輕鬆的。 */
+  #storyCook .cook-label{
+    font-family:"Yuanti TC","YuanTi TC","Hiragino Maru Gothic ProN","Arial Rounded MT Bold",
+                "Noto Sans TC",system-ui,sans-serif;
+    font-weight:800;letter-spacing:.16em;
+    font-size:clamp(19px,5.4vw,30px);color:#ffd98a;
+    text-shadow:0 2px 12px rgba(0,0,0,.65), 0 0 18px rgba(255,190,90,.35);}
+  /* 點點固定寬度，不然「COOKING」會隨點數左右跳。 */
+  #storyCook .cook-label i{font-style:normal;display:inline-block;width:1.7em;text-align:left;}
+  /* ══ 加成的大字（ver -953，Ray：「HP上限增＋40（SI級大字）」）══
+     ⚠ 排在料理那一層**之上**（z-6 之下、料理之上）：它是那一拍的結論，
+       要壓在成品圖上面。⚠ 同樣用 transition 顯形（perf-idle 那條）。 */
+  #storyBoon{position:absolute;left:0;right:0;top:0;height:var(--story-top);
+    z-index:5;display:none;align-items:center;justify-content:center;
+    pointer-events:none;opacity:0;transition:opacity .38s ease;}
+  #storyBoon.on{display:flex;}
+  #storyBoon.show{opacity:1;}
+  #storyBoon b{font-weight:800;letter-spacing:.1em;text-align:center;
+    font-size:clamp(24px,7.4vw,44px);color:#ffe9b8;
+    text-shadow:0 0 10px rgba(255,214,130,.9), 0 0 34px rgba(255,170,60,.55),
+                0 3px 14px rgba(0,0,0,.7);}
   /* ⚠⚠ 點畫面**任一處**收掉那張卡（ver -899）：透明、滿版、壓過所有可按的東西
      （導覽 z-7／楣 z-6／角落鈕 z-8）。卡自己照舊留在楣之下 —— 見 modules/town.js
      `showMapCard` 那一段：視覺在楣下、接點在最上，是兩個不同的要求。

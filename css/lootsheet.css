@@ -144,6 +144,23 @@
   #lootSheet .mod-need{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:3px 8px;}
   #lootSheet .mod-mat{font-size:10px;color:var(--gold-dim);white-space:nowrap;}
   #lootSheet .mod-mat.lack{color:var(--danger);}
+  /* ══ 瑪麗亞的廚房（ver -953）══ 一列＝一道菜：上排菜名與加成、下排三樣材料。
+     ⚠ 材料做成一顆一顆的小籤（肉／菜／調味各標一個字）—— Ray 要「菜名跟材料都列出來」，
+       而「一肉一菜一調味」是這套料理的規則，標出來玩家才看得懂自己缺哪一格。
+     ⚠ 缺的那一樣走既有的 `.lack` 紅字（同改裝頁的素材），不另訂一個紅。 */
+  #lootSheet .cook-row{flex-wrap:wrap;align-items:flex-start;gap:4px 8px;}
+  #lootSheet .cook-head{flex:1 1 100%;display:flex;align-items:baseline;gap:8px;}
+  #lootSheet .cook-boon{font-size:10px;color:var(--gold-dim);white-space:nowrap;}
+  #lootSheet .cook-done{font-size:10px;color:var(--gold);opacity:.75;white-space:nowrap;}
+  #lootSheet .cook-mats{flex:1 1 auto;display:flex;flex-wrap:wrap;gap:4px;}
+  #lootSheet .cook-mat{display:inline-flex;align-items:center;gap:3px;
+    font-size:11px;line-height:1.5;padding:1px 6px;border-radius:9px;
+    border:1px solid rgba(201,162,39,.35);color:var(--ink);white-space:nowrap;}
+  #lootSheet .cook-mat i{font-style:normal;font-size:9px;opacity:.7;}
+  #lootSheet .cook-mat b{font-weight:600;opacity:.8;font-size:10px;}
+  /* 材料不足：整顆籤變紅，不是只有數字 —— 一眼要看得出缺的是哪一格。 */
+  #lootSheet .cook-mat.lack{border-color:rgba(214,64,64,.5);color:var(--danger);}
+  #lootSheet .cook-do{flex:0 0 auto;}
   /* ── 存貨（ver -405）──
      ⚠ 標在**品名後面**不是價錢那一欄：價錢那欄要保持「一個數字」才掃得快。
      ⚠ 售完那一列整列變暗**而且點不動**（JS 那邊擋）—— 只變暗的話玩家會一直戳。 */

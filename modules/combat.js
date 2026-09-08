@@ -506,7 +506,7 @@ function clearAtkBuff(){
 }
 function triggerAtkBuff(sec){
   /* 九階強化「交界點」：反擊後的增益延長（ver -707）。加在這唯一的發動點。 */
-  sec = (sec||ATK_BUFF_SECONDS) + prog.starBonus('buffSec');
+  sec = (sec||ATK_BUFF_SECONDS) + prog.bonus('buffSec');
   state.atkBuff=true;
   $('grid').classList.add('buffed');
   clearTimeout(state.atkBuffTimer);
@@ -664,11 +664,11 @@ function mainGunDmgMul(){ return gunTuneMul() * charmDmgMul(); }
 /* ══ 普攻暴擊：率與加傷（ver -707）══ 兩處點擊分支（聖徒化／一般）**共用這兩支**
    （鐵律 7）—— 九階強化的「運之王」（率 +10%）與「王之運」（加傷 +20%）
    只加在這裡。 */
-function critRateAt(cc){ return CRIT_BASE_RATE + cc*CRIT_PER_COMBO + prog.starBonus('critRate'); }
-function critDmgAt(cc){  return CRIT_DMG_BASE  + cc*CRIT_DMG_PER_COMBO + prog.starBonus('critDmg'); }
+function critRateAt(cc){ return CRIT_BASE_RATE + cc*CRIT_PER_COMBO + prog.bonus('critRate'); }
+function critDmgAt(cc){  return CRIT_DMG_BASE  + cc*CRIT_DMG_PER_COMBO + prog.bonus('critDmg'); }
 /* ver -707：普攻的永久強化＝九階裡的**吞噬者**（可多次，每次 +5%）。
    ⚠ -700 的線性等級已退役，舊存檔由 `progress.gunStars` 自動遷移成吞噬者的次數。 */
-function gunTuneMul(){ return 1 + prog.starBonus('dmgMul'); }
+function gunTuneMul(){ return 1 + prog.bonus('dmgMul'); }
 function hitDamage(){
   const c=Math.min(state.combo,DMG_COMBO_CAP);
   /* ⚠ 強化是**乘在整個普攻傷害上**（ver -656，Ray：「主槍普攻攻擊力強化5%」）——
@@ -873,6 +873,17 @@ function handlePlayerLethal(){
   lose();
 }
 
+/* ══⚠⚠ **體力上限是算出來的，不是常數**（ver -953，Ray：「HP 上限＋40 是一輪內」）══
+   `state.playerMax` 原本在 state.js 載入時就等於 `tuning.playerHp` —— 那是**模組常數**，
+   而料理是遊戲**中途**吃的，快取住的話要重整頁面才生效（同主槍強化 `gunTune` 那個坑）。
+   ⚠ 所以每次開戰重算一次，計算點只有這一支（鐵律 7/8）：
+       上限的**式子**住在 `progress.playerMaxHp()`（鐵律 7），這一支只負責把它寫進 state。
+   ⚠ 只在**重置血量的那兩處**呼叫（startGame／新場）：戰鬥中途改上限會讓血條跳。 */
+export function refreshPlayerMax(){
+  state.playerMax = prog.playerMaxHp();   // 計算點只有 progress.playerMaxHp 一支（鐵律 7）
+  return state.playerMax;
+}
+
 /* ============================================================================
  *  統一改血 API（Part A · 見 DECISIONS.md D3）
  *  ---------------------------------------------------------------------------
@@ -1013,7 +1024,7 @@ function addEnergy(v){
   }
   /* 九階強化「疾走」：破防值累積加速（ver -707）。⚠ 乘在**入口**這一處 ——
      呼叫端有好幾個（點擊、反擊…），各自乘一次必然漏掉其中一個（鐵律 7/8）。 */
-  state.energy=Math.min(100,state.energy+v*svBoost*(1+prog.starBonus('energyMul')));
+  state.energy=Math.min(100,state.energy+v*svBoost*(1+prog.bonus('energyMul')));
   // 教學：雙槍引導前破防值封頂於 preFullEnergy（第三盤起放行 → 首擊即滿、交給教學引導）
   if(tutorial.energyCapActive()){
     state.energy=Math.min(state.energy, (GAME_CONFIG.tutorial && GAME_CONFIG.tutorial.preFullEnergy) || 99);
@@ -1879,6 +1890,7 @@ export function startGame(){
   state.maxCombo=0; state.hitsTaken=0; state.correctTaps=0; state.wrongTaps=0; state.runOverkill=0; state.perfectBoards=0;   // 評價統計歸零
   state.penAssault=0; state.penBlock=0; state.penDelay=0;   // 失誤計數歸零（ver -600 的新評價）
   _scriptedHits=0;                                     // 教學劇情殺擊數（結算受擊數扣除用）
+  refreshPlayerMax();
   state.playerHp=state.playerMax;
   state.N=9; state.cols=3;
   state.runStartTime=Date.now(); resetClock();   // 計時碼表歸零（loadBoard 起算）
@@ -2053,6 +2065,7 @@ export function startIntruderFight(){
   state.maxCombo=0; state.hitsTaken=0; state.correctTaps=0; state.wrongTaps=0; state.runOverkill=0; state.perfectBoards=0;   // 評價統計歸零
   state.penAssault=0; state.penBlock=0; state.penDelay=0;   // 失誤計數歸零（ver -600 的新評價）
   _scriptedHits=0;                                     // 教學劇情殺擊數（結算受擊數扣除用）
+  refreshPlayerMax();
   state.playerHp=state.playerMax; state.enemyHp=state.enemyMax;
   state.N=9; state.cols=3;
   state.runStartTime=Date.now(); resetClock();   // 新場：計時碼表歸零

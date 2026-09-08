@@ -58,6 +58,12 @@ const K = {
   gunStars:  'tivot_gunstars_v1',
   /* 副武器的改裝等級（ver -714）：`{武器id: 階}`，0~卡上的 `maxMod`。一輪內。 */
   wmod:      'tivot_wmod_v1',
+  /* ══ 吃過的料理（ver -953，Ray：「HP 上限＋40 是一輪內」）══ 陣列，元素＝
+     `config.cooking.dishes` 的鑰匙。**每一道的加成只算一次** —— 存的是「吃過哪幾道」
+     不是「吃過幾次」，不然帶食材反覆煮同一道就能無限刷上限。
+     ⚠ 一輪內（同掛件／九星／改裝）：`newRun()` 清、`snapshot/restore` 帶。
+     ⚠ 鐵律 9：誰插＝`addCooked`（煮出來那一刻）；誰拔＝只有 newRun／restore。 */
+  dishes:    'tivot_dishes_v1',
   /* 杰羅的賭博式改造（ver -866，Ray 的 E 規格）：`{武器id: 加成小數}`（0.15~0.50，
      成功一次就定住）。一輪內（同 wmod）。 */
   jmod:      'tivot_jeromod_v1',
@@ -122,7 +128,7 @@ export function hasFlag(f){ return getFlags().indexOf(f)>=0; }
 export function useHealItem(id){
   const d=inv.defOf(id), u=d && d.use;
   if(!u || u.hp==null || inv.count(id)<=0) return null;
-  const max=GAME_CONFIG.tuning.playerHp;
+  const max=playerMaxHp();   // ⚠ 上限的計算點只有那一支（ver -953：料理會把它墊高）
   const g=getHp();
   const cur=(g!=null) ? Math.min(g, max) : max;
   if(cur>=max) return { full:true, hp:cur, max };
@@ -192,7 +198,7 @@ export function setCharm(barrel, id){
 
 /* ══⚠⚠ 主武器的九階強化（ver -707，Ray 交卡：水瓶座九顆星）══════════════════
    `{星id: 已升幾次}`。非線性 —— 玩家自由選要升哪一顆，沒有先後。
-   ⚠⚠ **累計加成只有 `starBonus` 一個查詢點**（鐵律 7）：九個效果散在
+   ⚠⚠ **累計加成只有 `bonus` 一個查詢點**（鐵律 7）：九個效果散在
      combat／weapon／defense／saint／inspector，各自去翻 `gunStars` 的話，
      哪天改欄位名就會有一半沒跟上。
    ⚠ 舊存檔（線性 Lv1~9）**遷移成「吞噬者」的次數**：那時的效果就是 +5% 普攻
@@ -233,12 +239,48 @@ export function setStarCount(id, n){
   return cur;
 }
 
-/* 某一項效果的累計值（沒點亮＝0）。`key` 就是 `gunStars[]` 上的欄位名。 */
-export function starBonus(key){
-  const owned=gunStars(); let sum=0;
+/* ══ 吃過的料理（ver -953）══ 一輪內；每一道只記一次（見 K.dishes 的說明）。 */
+export function cookedDishes(){
+  try{ const j=JSON.parse(rd(K.dishes)||'null'); if(Array.isArray(j)) return j; }catch(e){}
+  return [];
+}
+export function hasCooked(id){ return cookedDishes().indexOf(id)>=0; }
+/* 回傳「這一道是不是第一次」—— 演出端要靠它決定給不給加成的大字。 */
+export function addCooked(id){
+  const cur=cookedDishes();
+  if(cur.indexOf(id)>=0) return false;
+  cur.push(id); wr(K.dishes, JSON.stringify(cur));
+  return true;
+}
+
+/* ══⚠⚠ **體力上限的唯一計算點**（ver -953，鐵律 7）══
+   `tuning.playerHp` 是**出廠值**，料理會把它墊高（`boon.hpMax`，一輪內）。
+   兩個讀它的地方（`combat.refreshPlayerMax` 寫進 state、整備頁顯示上限）
+   一律問這一支 —— 各寫一次「基礎＋bonus」的式子就是第二個計算點，
+   而走鐘的症狀是「整備頁顯示 140、實際只有 100」，畫面上看不出誰對。 */
+export function playerMaxHp(){
+  return (GAME_CONFIG.tuning.playerHp|0) + bonus('hpMax');
+}
+
+/* ══⚠⚠ **累計加成的唯一查詢點**（鐵律 7）══════════════════════════════════
+   `key` ＝效果欄位名（`dmgMul`／`critRate`／`hpMax`…）。來源有兩條，都在這裡加總：
+     · 主武器九星  `config.gunStars`  的 `<key>` × 已升次數
+     · 吃過的料理  `config.cooking.dishes[].boon[<key>]`（一道算一次）
+   ⚠⚠ ver -953 由 `bonus` **改名**為 `bonus`：加了料理之後它就不只是「星」的
+     加成了，名字要說實話（同 `counterCount`→`counterFired` 的教訓）——
+     不然下一個人會以為料理沒算進去，於是在自己那邊再加一次（那就是第二個計算點）。
+   ⚠ 九個呼叫點（combat／inspector／saint）**一行都不必改邏輯**，料理自動吃到。 */
+export function bonus(key){
+  let sum=0;
+  const owned=gunStars();
   for(const d of starDefs()){
     const n=owned[d.id]|0;
     if(n>0 && d[key]!=null) sum += d[key]*n;
+  }
+  const dishes=(GAME_CONFIG.cooking||{}).dishes||{};
+  for(const id of cookedDishes()){
+    const b=(dishes[id]||{}).boon;
+    if(b && b[key]!=null) sum += b[key];
   }
   return sum;
 }
@@ -564,7 +606,7 @@ export const CHAPTERS = [
 export function newRun(){
   for(const k of [K.stage, K.flags, K.affection, K.affFloor, K.name, K.nick,
                   K.hp, K.innLast, K.flightLoss, K.rennaS, K.playtime,
-                  K.charms, K.gunLv, K.gunStars, K.wmod, K.jmod]) {   // 持久HP／上次旅店／連敗數／蕾娜S計數／遊玩時間／掛件／強化／杰羅改造
+                  K.charms, K.gunLv, K.gunStars, K.wmod, K.jmod, K.dishes]) {   // 持久HP／上次旅店／連敗數／蕾娜S計數／遊玩時間／掛件／強化／杰羅改造／吃過的料理
     try{ localStorage.removeItem(k); }catch(e){}
   }
   /* ⚠⚠ 從頭開始＝**S0 要寫進鑰匙**（ver -563）。清掉 stage 之後不寫回的話，
@@ -634,7 +676,8 @@ export function snapshot(){
            gunLvRaw:rawN(K.gunLv),       // 主武器強化等級（ver -700 的舊制，留著相容）
            gunStarsRaw:rawJ(K.gunStars),     // 主武器九階強化（ver -707，一輪內）
            wmodRaw:rawJ(K.wmod),            // 副武器改裝（ver -714，一輪內）
-           jmodRaw:rawJ(K.jmod) };          // 杰羅改造（ver -866，一輪內）
+           jmodRaw:rawJ(K.jmod),            // 杰羅改造（ver -866，一輪內）
+           dishesRaw:rawJ(K.dishes) };      // 吃過的料理（ver -953，一輪內）
 }
 export function restore(s){
   if(!s) return;
@@ -664,6 +707,7 @@ export function restore(s){
   putRaw(K.charms, ('charmsRaw' in s)?s.charmsRaw:null, true);
   putRaw(K.gunLv,  ('gunLvRaw'  in s)?s.gunLvRaw :null);
   putRaw(K.gunStars, ('gunStarsRaw' in s)?s.gunStarsRaw:null, true);
+  putRaw(K.dishes, ('dishesRaw' in s)?s.dishesRaw:null, true);   // 料理（ver -953）：舊存檔沒有＝原樣移除
   putRaw(K.wmod,     ('wmodRaw'     in s)?s.wmodRaw    :null, true);
   putRaw(K.jmod,     ('jmodRaw'     in s)?s.jmodRaw    :null, true);
 }

@@ -762,6 +762,88 @@ export function huntPairs(){
   const d=clock.dayNo(), P=H.prizes.length||1;
   return (H.foods||[]).map((f,i)=>({ food:f, prize:H.prizes[(d*3+i*7+1)%P] }));
 }
+/* ══ 瑪麗亞的廚房（ver -953，Ray：「食材做成道具，準備十道菜…材料都是一肉一菜一調味」）══
+   ⚠⚠ **交易只有這一支**（鐵律 8）：廚房介面那顆「煮」與腳本的 `cook:` 那一拍都走它 ——
+     扣食材與記「吃過了」是同一筆帳，兩邊各寫一次必然走鐘（一邊扣了沒記、一邊記了沒扣）。
+   ⚠ **演出不在這裡**（`story.playCooking`）：這一支只管帳，回傳讓演出知道要不要放大字。
+   回傳 { ok, first }：`first`＝這一道**第一次**煮成（加成只算一次，見 progress.addCooked）。 */
+export function dishMats(id){
+  const d=((GAME_CONFIG.cooking||{}).dishes||{})[id];
+  return (d && d.mats) ? d.mats.slice() : [];
+}
+export function canCook(id){
+  const m=dishMats(id);
+  return m.length>0 && m.every(x=> inv.count(x)>0);
+}
+export function cookDish(id){
+  if(!canCook(id)) return { ok:false, first:false };
+  for(const m of dishMats(id)) inv.remove(m,1);
+  return { ok:true, first: prog.addCooked(id) };
+}
+/* ══ 廚房的單子（ver -953，Ray：「十道菜名跟材料都列出來」）══
+   走 `showExchange` 那一套版面（同一份 CSS，鐵律 8）。逐道列出**三樣材料**，
+   ⚠ 材料的槽位（肉／菜／調味）問**道具自己**（`items.defs[x].food`）不在這裡判 ——
+     配方只列 id，那一格的真相在道具上（鐵律 7）。
+   ⚠ 已經吃過的照樣煮得出來（吃飯不必只吃一次），但**不再加上限** ——
+     所以那一列標「已習得」，免得玩家以為刷得到。 */
+const FOOD_SLOT={ meat:'肉', veg:'菜', season:'調味' };
+export function showKitchen(opts){
+  ensureCss();
+  const o=opts||{};
+  const D=(GAME_CONFIG.cooking||{}).dishes||{};
+  const ov=document.createElement('div'); ov.id='lootSheet'; ov.classList.add('bag','bounty','kitchen');
+  if(o.dock) ov.classList.add('dock-'+o.dock);
+  document.body.appendChild(ov);
+  const close=()=>{ ov.classList.remove('on');
+    setTimeout(()=>{ if(ov.parentNode) ov.parentNode.removeChild(ov); }, 220);
+    if(o.onClose){ const f=o.onClose; o.onClose=null; try{ f(); }catch(_){} } };
+  const render=()=>{
+    const body=Object.keys(D).map(id=>{
+      const d=D[id], mats=dishMats(id);
+      const mhtml=mats.map(m=>{
+        const def=inv.defOf(m)||{}, have=inv.count(m);
+        const slot=FOOD_SLOT[def.food]||'';
+        return '<span class="cook-mat'+(have>0?'':' lack')+'">'
+             + (slot?'<i>'+slot+'</i>':'') + inv.nameOf(m)
+             + '<b>'+(have>0?have:0)+'</b></span>';
+      }).join('');
+      const done=prog.hasCooked(id), can=canCook(id);
+      return '<div class="loot-row cook-row" data-id="'+id+'">'
+           + '<div class="cook-head"><span class="loot-name">'+d.name+'</span>'
+           +   (done ? '<span class="cook-done">已習得</span>'
+                     : '<span class="cook-boon">體力上限 ＋'+((d.boon||{}).hpMax||0)+'</span>')
+           + '</div>'
+           + '<div class="cook-mats">'+mhtml+'</div>'
+           + (can ? '<button class="cook-do" type="button">煮</button>'
+                  : '<span class="mod-mat lack">材料不足</span>')
+           + '</div>';
+    }).join('');
+    ov.innerHTML='<div class="loot-panel"><div class="loot-title">瑪麗亞的廚房'
+               + (o.info ? '<span class="shop-info">'+o.info+'</span>' : '')+'</div>'
+               + '<div class="shop-desc">帶食材來，我做給你們吃。一道菜是一份肉、一份菜、一份調味。</div>'
+               + '<div class="loot-list">'+body+'</div>'
+               + '<button class="loot-ok" type="button">關閉</button></div>';
+    ov.querySelectorAll('.cook-row').forEach(row=>{
+      const b=row.querySelector('.cook-do'); if(!b) return;
+      b.addEventListener('click', e=>{ e.stopPropagation();
+        const id=row.dataset.id;
+        const r=cookDish(id);
+        if(!r.ok){ render(); return; }
+        try{ SFX.unlock(); SFX.menuClick(); }catch(_){}
+        /* ⚠ **先收單子再演**：演出蓋滿場景區，單子留著會壓在上面。
+           收尾交給呼叫端（town）—— 它才知道演完要不要把店門的鈕擺回來。 */
+        close();
+        if(o.onCook) o.onCook(id, r.first);
+      });
+    });
+    ov.querySelector('.loot-ok').addEventListener('click', e=>{ e.stopPropagation();
+      try{ SFX.unlock(); SFX.menuClick(); }catch(_){} close(); });
+  };
+  render();
+  requestAnimationFrame(()=>ov.classList.add('on'));
+  return close;
+}
+
 export function showExchange(opts){
   ensureCss();
   const o=opts||{};

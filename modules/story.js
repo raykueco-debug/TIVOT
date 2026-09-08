@@ -24,7 +24,7 @@
    輪廓界由 measureBounds 在載入時量一次。
    ══════════════════════════════════════════════════════════════════════ */
 
-import { GAME_CONFIG, fileGain, assetVer } from '../config.js';   // 舞台幾何常數（castStage）與逐支音量（fileGain）：鐵律 7 的單一真相
+import { GAME_CONFIG, fileGain, assetVer, asset } from '../config.js';   // 舞台幾何常數（castStage）與逐支音量（fileGain）：鐵律 7 的單一真相；asset＝料理演出的鍋子與成品圖（ver -953）
 import { MAIN_SCRIPT, MAIN_ENTRY } from '../script/mainScript.js';
 import { SPEAKERS, ART, CAST_TALL, nameOf, artOf, exprSrc, frameOf } from '../script/speakers.js';
 import * as prog from '../script/progress.js';
@@ -279,7 +279,10 @@ function layout(){
          不改的話翻轉會把臉整個推到框外（錨的永遠是臉，不是圖框）。
        ⚠ 只有「可以翻的人」才翻；不能翻的人（蕾娜）換邊就是換邊，
          她的框細，左右對她的影響本來就小。 */
-    const mir = !!(a.mirror && a.side && o.side && o.side !== a.side);
+    /* ⚠⚠ `flip` ＝**這張圖本來就畫反了**（ver -953，瑪麗亞）：不管站哪一邊都翻。
+       與 `mirror`（可以翻 → 換邊才翻）是兩件事 —— 混成一個旗的話，本位在右的人
+       站在右邊時就永遠翻不到。兩者相加是 XOR：可翻的人被翻到另一側時再翻回來。 */
+    const mir = (!!a.flip) !== !!(a.mirror && a.side && o.side && o.side !== a.side);
     el.classList.toggle('mirrored', mir);
     /* ⚠⚠ `fxShift` ＝**這個角色整個往左右挪一點**（ver -645）：加在角色層，
        所以他的每一張差分一起移，而 `fx` 永遠保持**實測值**（見 speakers.js）。
@@ -484,9 +487,17 @@ function lineText(line){
   }
   return picked;
 }
+/* ══ 台詞裡的代換（顯示的那一刻才做，§6.5.5）══
+     {P} 名字／{N} 暱稱／**{D+N} ＝ 遊戲內「N 天之後」的日期**（ver -953）。
+   ⚠⚠ `{D+N}` 為什麼不寫死一個日期（Stage8 的「兩個月內完成任務」）：玩家幾號走到
+     那一幕是他自己決定的，寫死的話期限會與他的行程對不起來；而且日後真要用這條
+     期限（過期會怎樣）時，日期只有 `clock` 一個計算點（鐵律 7）。
+   ⚠ 數字寫在台詞裡（`{D+60}`）而不是另開欄位：它是**那一句話的內容**，
+     不是那一拍的演出參數。 */
 function subst(t){ return String(t==null?'':t)
   .split('{P}').join(prog.getPlayerName())
-  .split('{N}').join(prog.getPlayerNick()); }
+  .split('{N}').join(prog.getPlayerNick())
+  .replace(/\{D\+(\d+)\}/g, (_,n)=>clock.dateTextIn(+n)); }
 
 /* ══ 打字機 ══ */
 /* 打字機。⚠ 速度吃 `typeSpeed()` —— 按住下拉的加速模式要即時變快（ver -367），
@@ -890,6 +901,10 @@ export function clearStageLeftovers(){
      這裡是**第二道保險** —— 換畫面時舞台上不該還有任何一片暗罩。
      ⚠ 真的掃到就記一筆 console：那代表上游有一條路徑沒走 `stopKerberos`，
        靜靜清掉會讓下一個同類 bug 查不出來（同 `verifyCastCleared` 的作法）。 */
+  /* ⚠⚠ 料理演出（`#storyCook` 86% 暗罩＋`#storyBoon`，ver -953）：同上一條 ——
+     **新增任何一個蓋在畫面上、會變暗的層，當場就要寫進這一支**（-903 的規矩）。
+     ⚠ 丟掉回呼不補跑（同圖名卡）：補跑等於把上一個地點的演出請到新畫面上。 */
+  stopCooking();
   { const st2=$('storyStage');
     if(st2 && st2.classList.contains('kerb-veil')){
       st2.classList.remove('kerb-veil');
@@ -1298,6 +1313,10 @@ const SE_FILES=[
   'se_enemy_revolver.m4a', 'se_enemy_shot.m4a', 'se_enemy_slash.m4a', 'se_enemy_smack.m4a',
   'se_land.m4a',   // 著岸（ver -744，湖上甲板）
   'se_woodbreak.m4a',   // 舵斷裂的木裂聲（ver -751，Ray 交件；取代暫代的 se_brickcrush）
+  /* ══ Stage8（ver -953）══ 瑪麗亞的廚房與科爾文那一幕。
+     ⚠ `se_cooking` 有 **39.7 秒**（一整段煎煮）—— 演出只用前面幾秒，
+       所以它走 `SFX.playCue` 的把手收掉，不是 `playSe`（那一支會放到底）。 */
+  'se_cooking.m4a', 'se_openletter.m4a', 'vo_maria_dishdone.m4a',
   'se_villagealarm.m4a',   // 夏爾村警鐘（ver -772，Ray 交件）
   'se_enemy_roardeer.m4a',   // 樹靈鹿主的吼（ver -879，Ray 交件；配變異那一拍的紫炎）
   'se_enemy_sakura.m4a',     // 櫻花狂亂的受擊音（ver -899，鹿主的主動攻擊）
@@ -2440,6 +2459,30 @@ function renderLine(){
          上一場的殘影。門與那片黑透遮罩本來就是這一段的「幕」，不演就會露出後臺。
        · 所以**不要**在這裡自己 `close()`：那一支的第 ⑤ 步會收舞台，收完才叫結算
          （結算頁住在 `#app`，而 `#storyStage.on` 時 `#app` 整層 `visibility:hidden`）。 */
+  /* ══ 料理那一拍（ver -953，Stage8）══ `{ cook:'<菜id>' }`
+     ⚠⚠ **帳與演出分開**：扣食材／記「吃過了」走注入的 `cookHandler`（＝`loot.cookDish`，
+       廚房介面那顆「煮」走的是同一支，鐵律 8）；演出走 `playCooking`（也是同一支）。
+     ⚠ 沒註冊 handler 就當**第一次**演一遍：那是開發時直接跑腳本的情形，
+       演出照演比整段卡住好（同其他 handler 缺席時的作法）。
+     ⚠ 對話框要先收：它會留著上一句的字壓在演出下面。 */
+  /* `{ boon:'<菜id>' }` ＝那一道的加成大字（ver -953）。見 showBoon 的說明：
+     它與 `cook` 是**兩拍**，因為稿上中間夾著四句台詞。 */
+  if(line.boon){
+    /* ⚠ **沒有真的加到就不要報**：玩家可能在這一段之前就自己去廚房煮過同一道
+       （加成只算一次）。那時照報一次「＋40」是騙人的。 */
+    if(!lastCookFirst) return advance();
+    hideBubble(); showBoon(line.boon, ()=>advance()); return;
+  }
+
+  if(line.cook){
+    hideBubble();
+    lastCookFirst=true;
+    if(cookHandler){ try{ const r=cookHandler(line.cook); lastCookFirst=!!(r && r.first); }
+                     catch(e){ console.info('[story] cookHandler 出錯', e); } }
+    playCooking(line.cook, {}, ()=>advance());
+    return;
+  }
+
   if(line.settle){
     stopShake(); stopTint();
     if(!settleHandler){
@@ -2576,10 +2619,30 @@ function renderLine(){
 
   /* CG／背景／CI 由 applyPersist 處理（上面），這裡不再重複。 */
 
-  /* 暗調：套在**這一句說話者**的立繪上。⚠ 每一句都要清一次 —— 它是句子屬性
-     不是角色屬性，不清的話下一句她還是黑的。 */
-  for(const s2 of ['L','R']){ const el=slotEl(s2); if(el) el.classList.remove('dark'); }
-  if(line.dark && side){ const el=slotEl(side); if(el) el.classList.add('dark'); }
+  /* ══⚠⚠ 暗調（剪影）＝**跟著那個人走的狀態，不是句子屬性**（ver -954，Ray：
+       「謎之人影不說話時不要再加黑遮罩，不然會重疊，**全域原則**」）══
+     舊版是「每一句清一次、只套在這一句的說話者身上」—— 兩個毛病：
+       ① 謎之人影**在別人講話的那幾句會露臉**（他還沒報上名字，卻看得一清二楚），
+          輪到他說話又黑回去 —— 讀起來是閃爍。
+       ② 他不說話時拿到的是非說話者的壓暗（`.dim`），那是**另一層**黑 ——
+          兩層疊在一起就是 Ray 說的「重疊」。
+     現在：`dark:true` 那一句起，這個人就進入「還沒表明身分」的狀態，一直到
+     **他自己開口而那一句沒有 dark**（＝報上名字了）或離場為止。
+     ⚠⚠ 剪影的人**不再加 `.dim`**：他已經是黑的了，再壓一層只會更黑而且沒有意義
+       （`.dark` 與 `.dim` 都是 filter，同一個元素只會生效一個 —— 但把 `.dim` 拿掉
+        才是**意圖明確**的寫法，不要靠 CSS 的宣告順序去贏）。
+     ⚠ 判「是不是同一個人」比的是 **art**：報上名字前後是兩個 speaker id
+       （`CORVIN_Q` → `CORVIN`），但畫面上是同一個人（見 speakers.js）。 */
+  const spArt = artOf(line.speaker);
+  if(line.dark && line.speaker) darkWho = line.speaker;
+  else if(darkWho && spArt && spArt===artOf(darkWho)) darkWho = null;   // 他自己開口且沒 dark ＝ 揭曉
+  const dkArt = darkWho ? artOf(darkWho) : null;
+  for(const s2 of ['L','R']){
+    const el=slotEl(s2); if(!el) continue;
+    const isDark = !!(dkArt && slot[s2] && artOf(slot[s2])===dkArt);
+    el.classList.toggle('dark', isDark);
+    if(isDark) el.classList.remove('dim');
+  }
 
   /* 本場回顧：有台詞的才記（演出拍不是台詞）。⚠ 記的是**代換後**的字，
      玩家看到什麼、回顧就是什麼。 */
@@ -2647,6 +2710,22 @@ function renderLine(){
     if(line.auto>0 && !(onStage && !autoPlay && !fastMode && !line.noHold)){
       const wait = line.auto + (slidIn ? SLIDE_MS : 0);
       autoT=setTimeout(()=>{ autoT=null; advance(); }, wait);
+      return;
+    }
+    /* ══⚠⚠ **自動播放碰到「沒台詞的純立繪拍」會卡住**（ver -953，Ray 回報）══
+       自動播放的推進掛在**「這一句唸完」**的回呼上（`onTyped` → `scheduleAuto`，
+       §6.5「自動推進掛在這一句唸完，不是固定秒數」）—— 而這一種拍**沒有字**，
+       打字機根本不會跑，那個回呼永遠不來。上面那一條又只在**寫了 `auto:`** 時
+       才排計時器，所以 `any('silent','')` 這種拍（本章有十幾拍）就停在那裡不動了。
+       ⚠ 停多久用 `line.auto`（有寫就照寫的）否則 `BLANK_BEAT` ——
+         同空框那一拍的理由：那個值的語意是「**唸完**之後停多久」，
+         而這一拍一出現就等於唸完了。
+       ⚠ 立繪滑入的 450ms 照樣要加（同上一條 -351 的規矩）：不加的話自動播放下
+         她才剛滑到一半就被推走。
+       ⚠ 只補**自動／加速**這一條路：手動照舊等點擊（-628 那條規矩沒有變）。 */
+    if(autoPlay || fastMode){
+      const wait = (line.auto>0 ? line.auto : BLANK_BEAT) + (slidIn ? SLIDE_MS : 0);
+      autoT=setTimeout(()=>{ autoT=null; if(autoPlay||fastMode) advance(); }, wait);
     }
     return;
   }
@@ -3143,6 +3222,10 @@ export function setTownBgm(fn){ townBgmFn = fn || null; }
      `state.sessionStats`）—— 這裡只負責交棒。 */
 let settleHandler = null;
 export function setSettleHandler(fn){ settleHandler = fn || null; }
+/* 料理的**帳**（ver -953）：`loot.cookDish` 由 main 注入 —— story 不 import loot
+   （那一層是道具與單子，方向不對）。回傳 { ok, first }。 */
+let cookHandler=null;
+export function setCookHandler(fn){ cookHandler = fn || null; }
 /* 門全開的掛鉤（ver -875）：main 注入 combat.releaseEnemyRise——降臨等門開。 */
 let gateOpened=null;
 export function setGateOpened(fn){ gateOpened = fn || null; }
@@ -3309,6 +3392,7 @@ export function veil(on, ms){
 export function veilOn(){ const v=$('storyVeil'); return !!(v && v.classList.contains('on')); }
 
 export function clearCast(){
+  darkWho=null;   // 剪影是「還沒表明身分」的狀態，清場就結束（ver -954）
   slot={L:null,R:null}; slotExpr={L:null,R:null}; shown={};
   leaveSlot('L'); leaveSlot('R');
   const b=$('storyBubble'); if(b) b.style.visibility='hidden';
@@ -3376,6 +3460,7 @@ const DARK_LAYERS = [
   { id:'storyVeil',  name:'切景黑幕 #storyVeil' },
   { id:'storyFade',  name:'場景區黑幕 #storyFade' },
   { id:'transition', name:'戰鬥過場 #transition' },
+  { id:'storyCook',  name:'料理演出 #storyCook' },   // ver -953：86% 暗罩，沒有「點一下收掉」的出路
 ];
 export function assertNoDarkOverlay(where){
   const stuck=[];
@@ -3411,6 +3496,9 @@ export function assertNoDarkOverlay(where){
      （`#storyCardCatch`）—— 視覺在楣下、接點在最上，是兩條互相拉扯的要求
      各自的落點，不是重複的兩個東西。
    ⚠ 兩層一起生一起收：卡不在的時候畫面上不可以有任何一層在吃點擊。 */
+/* 現在誰還「沒表明身分」（剪影）。⚠ 鐵律 9：誰插＝`dark:true` 的那一句；
+   誰拔＝他自己開口而那一句沒有 dark、或清場（`clearCast`／`playScene`）。 */
+let darkWho=null;
 let cardDone=null;
 /* 自動播放時這張卡自己撐多久（ver -940）。⚠ 與 `autoDelayMs` 是兩件事，見 showTitleCard。 */
 const CARD_AUTO_MS = 2200;
@@ -3470,6 +3558,111 @@ export function showTitleCard(spec, done){
   if(autoPlay) cardAutoT=setTimeout(()=>{ cardAutoT=null; if(autoPlay) hideTitleCard(); }, CARD_AUTO_MS);
   return true;
 }
+/* ══⚠⚠ 料理演出（ver -953，Ray 的 Stage8 稿）═════════════════════════════
+   「（料理音效）se_cooking，音效期間 panup、pandown 兩張圖交替播放成動畫，
+     0.75 秒交替一次；下面用較可愛的字寫 COOKING…（三個點重覆接連出現至完成）；
+     完成 vo_maria_dishdone，料理 CI 插入 di_deersteak；HP 上限增＋40（SI 級大字）」
+
+   ⚠⚠ **實作只有這一支**（鐵律 8）：腳本的 `cook:` 那一拍與**廚房介面**那顆「煮」
+     都走它 —— 兩邊各演一次必然走鐘（而且第二份一定會漏掉收尾）。
+   ⚠⚠ **帳不在這裡**：扣食材與記「吃過了」是 `loot.cookDish` 的事（那一支同時被
+     介面與腳本用）。這裡只收 `first` 決定要不要放大字。
+   ⚠ 秒數全在 `config.cooking`（鐵律 1）。
+   ⚠ `se_cooking` 有 39.7 秒（一整段煎煮）—— 走 `SFX.playCue` 的把手，動畫一停就
+     淡掉；用 `playSe` 的話它會在對話演到下一幕時還在響。
+   ⚠ 成品**不走 `#storyCi`**：那一格是半寬的側插（給角色立繪用的，left:46%），
+     一張料理照片擠進去只看得到一半。做在自己這一層、全幅呈現。 */
+let cookT=[], cookCue=null, cookDone=null;
+/* 上一拍的 `cook` 是不是**第一次**煮成 —— `{ boon }` 那一拍靠它決定要不要報大字。 */
+let lastCookFirst=false;
+function cookClear(){
+  cookT.forEach(clearTimeout); cookT=[];
+  if(cookCue){ try{ cookCue.stop(420); }catch(_){} cookCue=null; }
+}
+export function stopCooking(){
+  cookClear(); cookDone=null;
+  const c=$('storyCook'); if(c){ c.classList.remove('show','on','dish','dish-pre'); const im=c.querySelector('img'); if(im) im.onload=null; }
+  const b=$('storyBoon'); if(b){ b.classList.remove('show'); b.classList.remove('on'); }
+}
+export function playCooking(dishId, opts, done){
+  const st=$('storyStage'); const o=opts||{};
+  const C=(GAME_CONFIG.cooking||{}), D=(C.dishes||{})[dishId];
+  if(!st || !D){ done && done(); return false; }
+  cookClear();
+  cookDone = done || null;
+  const finish=()=>{ const f=cookDone; cookDone=null; stopCooking(); if(f) try{ f(); }catch(_){} };
+
+  let c=$('storyCook');
+  if(!c){ c=document.createElement('div'); c.id='storyCook'; st.appendChild(c); }
+  c.classList.remove('dish','dish-pre');
+  c.innerHTML='<i class="cook-rays"></i><img alt=""><div class="cook-label">COOKING<i></i></div>';
+  const img=c.querySelector('img'), dots=c.querySelector('.cook-label i');
+  const panA=asset('dish_panup'), panB=asset('dish_pandown');
+  img.src = panA || '';
+  c.classList.remove('show'); c.classList.add('on'); void c.offsetWidth; c.classList.add('show');
+
+  /* 鍋子交替與點點：兩個獨立的節奏，都用 setInterval 的等價寫法（逐次排程），
+     ⚠ 存進 `cookT` 才收得掉（同 fxTimers 那一族）。 */
+  const panMs=C.panMs||750, dotMs=C.dotMs||420, animMs=C.animMs||4800;
+  let up=true;
+  const tickPan=()=>{ up=!up; img.src=(up?panA:panB)||''; cookT.push(setTimeout(tickPan, panMs)); };
+  cookT.push(setTimeout(tickPan, panMs));
+  let n=0;
+  const tickDot=()=>{ n=(n+1)%4; dots.textContent='.'.repeat(n); cookT.push(setTimeout(tickDot, dotMs)); };
+  cookT.push(setTimeout(tickDot, dotMs));
+
+  try{ SFX.unlock(); const src=seSrc('se_cooking');
+       if(src) cookCue=SFX.playCue(src, fileGain(src)); }catch(_){}
+
+  /* ── 完成：收鍋子、放語音、換成成品 ── */
+  cookT.push(setTimeout(()=>{
+    cookClear();                                   // 停交替、停點點、淡掉料理音
+    playSe('vo_maria_dishdone');
+    /* ══ 成品登場（ver -953，Ray：「縮小彈出，登場那一刻背後有金色光線旋轉」）══
+       `.dish` 這個 class 同時開兩件事：菜的過衝彈出、背後的金色放射光旋轉（CSS）。
+       ⚠ **等圖真的畫上去再彈**：`src` 一設就加 class 的話，圖還在解碼時彈的是
+         一張空白（同 §6.5「取景在 onload 那一刻才換」的道理）。快取命中走 complete。 */
+    const dish=D.ci ? asset(D.ci) : null;
+    /* ⚠ 兩段式：先 `dish-pre`（縮小、透明）→ 逼一次排版 → 再換成 `dish`（放大、實心）。
+       同一幀加上又拿掉會被合併成一次計算，transition 整個跳掉（同 `veil` 的 offsetWidth）。 */
+    const pop=()=>{ c.classList.remove('dish'); c.classList.add('dish-pre');
+                    void c.offsetWidth;
+                    c.classList.remove('dish-pre'); c.classList.add('dish'); };
+    if(dish){
+      img.onload=()=>{ img.onload=null; pop(); };
+      img.src=dish;
+      if(img.complete && img.naturalWidth) { img.onload=null; pop(); }
+    }else pop();
+    const lab=c.querySelector('.cook-label'); if(lab) lab.textContent=D.name||'';
+    cookT.push(setTimeout(finish, C.holdMs||1500));
+  }, animMs));
+  return true;
+}
+/* ══ 加成的大字（ver -953，Ray：「HP 上限增＋40（SI 級大字）」）══
+   ⚠⚠ **刻意不放進 `playCooking`**：Ray 的稿把它排在「索菈娜驚訝那幾句」**之後**，
+     不是接在料理完成那一刻 —— 而廚房介面那條路沒有那幾句，是煮完就報。
+     兩種時機不一樣，所以規則定成**演出永遠不含大字，大字永遠是另一次呼叫**：
+     腳本用 `{ boon:'<菜id>' }` 那一拍，介面在 `playCooking` 的回呼裡叫。
+     （做成 `playCooking` 的參數也可以，但那個參數一定會有人忘記傳，
+       而忘記的症狀是「加成默默生效、玩家不知道」。） */
+export function showBoon(dishId, done){
+  const st=$('storyStage');
+  const D=(((GAME_CONFIG.cooking||{}).dishes)||{})[dishId];
+  const up=D ? ((D.boon||{}).hpMax||0) : 0;
+  if(!st || !up){ done && done(); return false; }
+  const C=(GAME_CONFIG.cooking||{});
+  let b=$('storyBoon');
+  if(!b){ b=document.createElement('div'); b.id='storyBoon'; st.appendChild(b); }
+  b.innerHTML='<b>體力上限　＋'+up+'</b>';
+  b.classList.remove('show'); b.classList.add('on'); void b.offsetWidth;
+  cookT.push(setTimeout(()=>{ b.classList.add('show'); }, 40));
+  cookT.push(setTimeout(()=>{
+    b.classList.remove('show');
+    cookT.push(setTimeout(()=>{ b.classList.remove('on'); if(done) try{ done(); }catch(_){} }, 400));
+  }, (C.boonMs||1600)));
+  return true;
+}
+
 /* ══ 操作提示（ver -424）══════════════════════════════════════════════
    雪鐵龍箭指著畫面上的一個東西 ＋ 一句說明；點那個東西（或點說明）才過關。
    ⚠ 目標的代號 → DOM 的對照**只有這一張表**（腳本只寫代號，鐵律 7）。

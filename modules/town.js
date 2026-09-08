@@ -16,7 +16,7 @@ import * as clock from '../script/clock.js';
 import * as prog from '../script/progress.js';
 import * as story from './story.js';
 import * as inn from './inn.js';                 // 旅店大廳（伙伴門／獨自坐坐／回房睡覺）
-import { showShop, showBounty, showExchange } from './loot.js';
+import { showShop, showBounty, showExchange, showKitchen } from './loot.js';   // showKitchen＝瑪麗亞的廚房（ver -953）
 import * as gear from './gear.js';               // 戰前強制整備（ver -838，onLeave 的 gear 掛鉤）
 import { SPEAKERS } from '../script/speakers.js';
 import { SFX } from '../audio.js';
@@ -32,6 +32,10 @@ const STEP_MIN = 10;      // 每移動一次花掉的遊戲內分鐘數（城鎮
    比城市還大不合理」—— 神殿 21 格比帝都的 12 格還大，半小時一步全清要 20 小時）、
    不寫＝10。跨圖那一步算**出發那張圖**的價。 */
 const stepMin = ()=> ((TOWNS[townId]||{}).stepMin || STEP_MIN);
+/* 閘門的 `afterMoves` 計數（ver -953）：閘門旗 → 從它可觸發那一刻起走了幾步。
+   ⚠ **記憶體變數、不進存檔**：見 stageGate 那一段的說明。`open()` 歸零。 */
+let gateMoves={};
+function bumpGateMoves(){ for(const k in gateMoves) gateMoves[k]++; }
 const ARRIVE_MS = 1000;   // 抵達新地點之後、對白開演之前的停頓（Ray：「先停一秒」）
 /* 立繪滑入的時間。⚠ 與 `modules/story.js` 的 `SLIDE_MS` 同值（450ms，§6.5 的 450ms ease-out）——
    兩邊必須一致：這裡是拿它來讓對話框「等人站定」。改一邊要改另一邊（鐵律 7 的但書）。 */
@@ -843,6 +847,8 @@ function eveningDue(n){
                  寫成 `[起,迄]` ＝**時段**（迄不含）—— 「隔日早上那一幕」要用這個，
                  見下面的說明
      onMove      **走一步就觸發**（Ray：「一進行地圖移動，祭司會出現」）
+     afterMoves  這個閘門變成可觸發之後**又走了 N 步**才真的觸發（ver -953）——
+                 走一步 10 分鐘，所以 6 ＝一小時，第 7 步發動（Ray 指定的算法）
      goto        強制移到哪一格
      enterAgain  已經站在那一格時也要再 enter 一次（讓那一格的 acts 接手）
      clockTo     轉場前把時鐘推到**下一個**這個時刻（advanceToNextHour）
@@ -863,6 +869,18 @@ function stageGate(){
        走過來才有，開城／強制轉場／讀檔都是空的（forceGo 會把 pendingDir 清掉）。 */
     if(g.onMove && !backDir) continue;
     if(g.hour!=null && clock.elapsed() < clock.firstHourAt(g.hour)) continue;
+    /* ══ `afterMoves`（ver -953，Stage8：「自由探索。超過一小時仍沒有去餐廳」
+       → Ray：「不要那麼麻煩，移動六次就是一小時，第七次就出肚子餓劇情」）══
+       **從這個閘門變成可觸發的那一刻起**算走了幾步（走一步 10 分鐘，六步＝一小時）。
+       ⚠ 計數是**這一趟進城的記憶體變數**（`gateMoves`），不進存檔：它不是世界的
+         狀態，是「玩家在這一段裡逛了多久」。離城再回來重新算，那沒有壞處 ——
+         真的要卡也卡不住，餐廳本來就走得過去。
+       ⚠ 第一次看到它可以數了就記 0 並且**這一次不觸發**（那是起算點，不是第一步）。 */
+    if(g.afterMoves!=null){
+      const k=g.flag||g.goto||'';
+      if(gateMoves[k]==null){ gateMoves[k]=0; continue; }
+      if(gateMoves[k] < g.afterMoves) continue;
+    }
     /* ⚠⚠ `hourOfDay` 與 `hour` 是**兩種時刻**，不要混用（ver -656 踩過）：
        `firstHourAt(18)` ＝**開局那天**的 18:00（開局是 11:00，所以是第 7 小時）——
        北方泊地是第二天以後的事，那個點早就過了，寫 `hour:18` 等於「立刻成立」，
@@ -1079,6 +1097,7 @@ function keeperOf(n){
   if(n.shop) return 'SHOPKEEP';
   if(n.board) return 'COUNTER';
   if(n.exchange) return 'HUNTER_SV';   // ver -859：獵人兌換表也擺店主立繪
+  if(n.kitchen) return 'COOK_SV';      // ver -953：瑪麗亞的廚房
   return null;
 }
 /* 這個節點現在有沒有店舖畫面：要是店（或已登記的公會），而且**在營業時間內**。 */
@@ -1090,6 +1109,10 @@ function shopReady(n){
   if(n.shopFrom!=null && prog.getStage() < n.shopFrom) return false;
   if(n.shop) return true;
   if(n.exchange) return true;   // ver -859：獵人兌換表
+  /* 瑪麗亞的廚房（ver -953）：`kitchenFrom` ＝這一章之前廚房還沒開張
+     （Ray：「瑪麗亞的廚房開張，stage8 之前無人」）—— 同 `shopFrom` 的語意，
+     但**分開一格**：那一格管的是店在不在，這一格管的是廚房開了沒。 */
+  if(n.kitchen) return !(n.kitchenFrom!=null && prog.getStage() < n.kitchenFrom);
   return !!(n.board && (!n.boardFlag || prog.hasFlag(n.boardFlag)));
 }
 /* `opts.noMenu`＝只擺店主，**那顆鈕先不出來**（ver -430，Ray：「武器店的裝備教學
@@ -1376,7 +1399,10 @@ function showShopBtn(on){
   const b=layer && layer.querySelector('#townShopBtn'); if(!b) return;
   const n=node();
   if(on && n){
-    b.querySelector('b').textContent = n.shop ? (shopBtnName(n) || '買　賣') : (n.exchange ? '兌　換' : '懸賞榜');
+    b.querySelector('b').textContent = n.shop ? (shopBtnName(n) || '買　賣')
+                                      : n.exchange ? '兌　換'
+                                      : n.kitchen  ? '料　理'      // ver -953
+                                      : '懸賞榜';
   }
   b.classList.toggle('on', !!on);
 }
@@ -1400,6 +1426,24 @@ function openSheet(){
   if(n.exchange){
     sheetClose = showExchange({ info:infoText(n),
                                 onClose:()=>{ sheetClose=null; openMenu(); } });
+    return;
+  }
+  /* ══ 瑪麗亞的廚房（ver -953）══
+     ⚠ 「煮」按下去：單子自己收掉 → 這裡接手演出（`story.playCooking`，唯一那一支）
+       → 演完把導覽與店門的鈕擺回來。**演出期間不要開回單子**（它會壓在演出上面），
+       所以先 `showNav(false)`。
+     ⚠ `showKitchen` 在呼叫 `onCook` 之前已經 `close()` 過 —— 它的 `onClose` 也會跑，
+       那一支會把鈕擺回來；演出跑完再擺一次是冪等的（`openMenu` 已開就 return）。 */
+  if(n.kitchen){
+    sheetClose = showKitchen({ info:infoText(n),
+                               onClose:()=>{ sheetClose=null; openMenu(); },
+                               onCook:(id, first)=>{
+                                 showNav(false);
+                                 const back=()=>{ showNav(true); openMenu(); };
+                                 /* 第一次煮成才報加成的大字（見 story.showBoon 的說明：
+                                    大字永遠是另一次呼叫，不藏在演出裡）。 */
+                                 story.playCooking(id, {}, ()=> first ? story.showBoon(id, back) : back());
+                               } });
     return;
   }
   sheetClose = showBounty(n.board, { info:infoText(n),
@@ -1886,6 +1930,7 @@ function go(to, dir){
     document.body.classList.remove('town-nav');
     stepSfx();
     clock.advance(stepMin());          // 戰鬥探索移動也耗時（ver -815；耗時依圖 ver -871）
+    bumpGateMoves();   // 閘門的 afterMoves 計數（ver -953）：走一步就 +1
     /* 離開這張圖的收尾（ver -928，見 leaveMapRitual）：沒踩到結算怪就在這裡結算，
        沒帳也要先閉棺 —— 閉完才切到下一張圖。 */
     leaveMapRitual(()=>{
@@ -1910,6 +1955,7 @@ function go(to, dir){
      「一步 10 分鐘」在城鎮戰一樣記帳 —— 在被禍魘襲擊的城裡跑一趟，時間照樣流逝
      （也讓夏爾村村戰從黃昏 19:00 隨著移動推進到夜景 20:00）。 */
   clock.advance(stepMin());   // 耗時依圖（ver -871；-917 起：森林 60／遺跡 10／城村 10）
+  bumpGateMoves();   // 閘門的 afterMoves 計數（ver -953）：走一步就 +1
   sceneCut(to);          // 換景走淡入淡出（ver -438，見 sceneCut）
 }
 
@@ -2591,6 +2637,7 @@ export function open(town, node, opts){
     try{ sessionCloser(); }catch(_){}
   }
   townId = town || 'capital';
+  gateMoves={};   // 閘門的 afterMoves 計數：這一趟進城重新算（ver -953）
   const T=TOWNS[townId]; if(!T) return;
   /* 進城就把體力回滿（ver -556，Ray 指定）：城＝安全區，走進來殘血歸零重算。
      收在**入口唯一這一支**（鐵律 8）——正常進城、被抬回旅店（carried）、讀檔

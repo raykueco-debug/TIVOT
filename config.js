@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.08-953';
+export const VERSION = 'ver 2026.09.08-954';
 
 export const GAME_CONFIG = {
 
@@ -216,7 +216,7 @@ export const GAME_CONFIG = {
        「吞噬者」的次數 —— 那時的效果就是 +5% 普攻，語意完全對得上。
      ⚠⚠ **括號內的數值是內部參數，不顯示給玩家**（Ray 指定）：UI 只印星名、
        名稱與效果那一句。所以數值欄位與 `desc` 是分開的兩件事，不要把數字寫進 desc。
-     ⚠ 效果的**累計**只有一個查詢點：`progress.starBonus('<欄位名>')`（鐵律 7）——
+     ⚠ 效果的**累計**只有一個查詢點：`progress.bonus('<欄位名>')`（鐵律 7）——
        各模組一律問它，不要自己去翻 `gunStars`。
      ⚠ `repeat:true` ＝可多次升級（目前只有「吞噬者」，每次 +5% 普攻）。 */
   /* ⚠ ver -737（Ray）：王之運／運之王**拿掉「/ Ganymede α・β」字尾**（那兩個
@@ -1940,14 +1940,27 @@ export const GAME_CONFIG = {
        兩邊各記一次的話，同一樣東西會出現「在配方裡是調味、在道具欄是菜」。
      ⚠⚠ **`boon` 的欄位名一律沿用九星那一套**（`dmgMul`／`critRate`／`critDmg`／
        `energyMul`／`lootMul`／`moneyMul`），日後才接得回**同一個**加總點
-       （`progress.starBonus` 那一支）—— 料理另開一個計算點就是鐵律 7 的病。
+       （`progress.bonus` 那一支）—— 料理另開一個計算點就是鐵律 7 的病。
        `hpMax` 是這一版新增的欄位（劇本：吃完第一道 HP 上限 ＋40）。
-     ⚠⚠⚠ **效果值是我擬的草案，而且還沒有人讀它**：
-       · HP 上限要做成「一輪內」還是「永久」，Ray 還沒定 —— 接法等他決定。
-       · 廚房的介面（選食材→出菜）也還沒做；這一版只有**資料**。
+     ⚠⚠ **每一道固定 HP 上限 ＋40**（ver -953，Ray 定案）—— 十道吃滿 ＋400。
+       ⚠ **每一道只算一次**：記的是「吃過哪幾道」不是「吃過幾次」
+         （`progress.cookedDishes`），不然帶食材反覆煮同一道就能無限刷上限。
+       ⚠ 一輪內：`newRun()` 清、存檔帶。上限的式子只有 `progress.playerMaxHp()` 一支。
+       ⚠ 欄位名沿用九星那一套是為了**日後**要給別的加成時不必改結構 ——
+         現在十道都是 `hpMax`，那是 Ray 的決定，不要「順手」調成各有各的。
      ⚠ 圖：`ci` 是插圖鑰匙。**目前只有第一道有圖**（`dish_deersteak`），
        其餘九道等美術 —— 沒有圖的那幾道演到時就不出插圖，不會壞。 */
   cooking: {
+    /* ── 演出的秒數（`story.playCooking`，鐵律 1：程式不寫死時間）──
+       `panMs` 兩張鍋子交替的間隔（Ray 指定 0.75 秒）／`dotMs` COOKING 後面的點
+       每隔多久多一個／`animMs` 煎多久（⚠ 不是音檔長度：`se_cooking` 有 39.7 秒，
+       演出只用開頭，收尾把它淡掉）／`holdMs` 成品停多久／`boonDelayMs`＋`boonMs`
+       加成大字的延遲與停留。 */
+    /* ⚠⚠ `animMs` **對齊 `se_cooking` 的長度**（ver -954：Ray 換了新的音檔，
+       39.7 秒 → **3.73 秒**）—— Ray 的稿寫「**音效期間** panup、pandown 交替」，
+       所以煎多久就是那支音效多長。舊的 4800 是對著 39.7 秒那一版隨手取的段落。
+       ⚠ 音檔再換就要回來對一次（`afinfo resources/audio/se/se_cooking.m4a`）。 */
+    panMs:750, dotMs:420, animMs:3730, holdMs:1500, boonDelayMs:700, boonMs:1600,
     dishes: {
       /* 第一道是劇本指定的（Stage8 瑪麗亞的第一頓）。⚠ Ray 口頭說「羊腿排」，
          但稿上的台詞是「奶油鹿腿一份」、交件的插圖也是 `di_deersteak`（鹿）
@@ -1958,39 +1971,39 @@ export const GAME_CONFIG = {
                     desc:'厚切鹿腿以奶油慢煎，最後撒上迷迭香。不用再調味就很好吃。' },
       lynxgrill:  { name:'香煎山貓腿',   ci:'dish_lynxgrill',
                     mats:['meat_lynx','veg_wildgarlic','season_rocksalt'],
-                    boon:{ dmgMul:0.03 },
+                    boon:{ hpMax:40 },
                     desc:'岩鹽抹過再下鍋，野蒜連葉子一起煎香。' },
       boarhoney:  { name:'蜜燒山豬腹肉', ci:'dish_boarhoney',
                     mats:['meat_boar','veg_mushroom','season_honey'],
-                    boon:{ hpMax:30 },
+                    boon:{ hpMax:40 },
                     desc:'油花厚的腹肉裹上森蜜，慢火燒到收汁。' },
       snakestew:  { name:'胡椒燉蛇肉',   ci:'dish_snakestew',
                     mats:['meat_snake','veg_watercress','season_pepper'],
-                    boon:{ critRate:0.03 },
+                    boon:{ hpMax:40 },
                     desc:'清爽的蛇肉配河芹，起鍋前才磨黑胡椒。' },
       bearbutter: { name:'奶油燴熊掌',   ci:'dish_bearbutter',
                     mats:['paw_bear','veg_mushroom','season_butter'],
-                    boon:{ hpMax:50 },
+                    boon:{ hpMax:40 },
                     desc:'燉了半天的熊掌，最後以奶油與林地菇收尾。費工，但值得。' },
       deersorrel: { name:'酸模烤鹿腿',   ci:'dish_deersorrel',
                     mats:['meat_deer','veg_sorrel','season_pepper'],
-                    boon:{ energyMul:0.05 },
+                    boon:{ hpMax:40 },
                     desc:'烤得焦香的鹿腿，佐一把帶酸的酸模葉解膩。' },
       beargarlic: { name:'野蒜燜熊掌',   ci:'dish_beargarlic',
                     mats:['paw_bear','veg_wildgarlic','season_rocksalt'],
-                    boon:{ dmgMul:0.04 },
+                    boon:{ hpMax:40 },
                     desc:'整顆野蒜跟熊掌一起燜，鹹香得能配三碗飯。' },
       lynxhoney:  { name:'蜜漬山貓腿',   ci:'dish_lynxhoney',
                     mats:['meat_lynx','veg_watercress','season_honey'],
-                    boon:{ lootMul:0.05 },
+                    boon:{ hpMax:40 },
                     desc:'先用森蜜漬過再烤，肉緊實卻不柴。' },
       boarlime:   { name:'萊姆烤山豬',   ci:'dish_boarlime',
                     mats:['meat_boar','herb_rosemary','season_limezest'],
-                    boon:{ critDmg:0.06 },
+                    boon:{ hpMax:40 },
                     desc:'萊姆皮與迷迭香一起塞進肉裡，烤出來滿屋子都是香的。' },
       snakesteam: { name:'河芹清蒸蛇',   ci:'dish_snakesteam',
                     mats:['meat_snake','veg_mushroom','season_limezest'],
-                    boon:{ moneyMul:0.08 },
+                    boon:{ hpMax:40 },
                     desc:'幾乎不加東西的清蒸，吃的是食材本身。瑪麗亞說這道最難。' },
     },
   },
@@ -2300,6 +2313,14 @@ export const GAME_CONFIG = {
       /* ver -479 入表（本篇破防）：語音鏈近似（130Hz 高通）耳機 −18.7／手機 −20.7
          → 平均 −19.7 LUFS → 2.482 */
       vo_torsten_dualcrush:2.482,
+      /* ══ Stage8（ver -953）══ `tools/audio_scan.html` 現場量的建議值。
+         ⚠ 瑪麗亞這一支原始就有 −13.0 LUFS（比 −20 的目標**大聲**），所以建議值是
+           **衰減**（0.91）—— §6.6 那條「語音要過完 voiceChain 再量、掃描會低估 5 dB」
+           是針對**會被低估到聽不見**的情形；這一支不在那個風險裡。
+         ⚠ 實測那張表本身是混的：33 支語音的「現值÷掃描建議」從 0.69 到 2.62、
+           中位數 1.00 —— 多數本來就直接用掃描值，只有 -711 那一批過鏈另量。
+           所以這裡不套任何「修正係數」（套了就是憑空發明一個數字）。 */
+      se_cooking:1.59, se_openletter:3.70, vo_maria_dishdone:0.91,   // ⚠ se_cooking ver -954 換新檔（39.7→3.73 秒）重量
 
       /* ── 武器 ── */
       se_weapon_pistol_01:0.607, se_weapon_pistol_02:1.165, se_weapon_pistol_03:1.751,

@@ -67,6 +67,9 @@ export const state = {
 
   /* ── 3.2 生命/敵我（擁有者：combat；playerHp 唯一例外見 applyDeathGuard） ── */
   playerHp: T.playerHp,
+  /* ⚠⚠ 這只是**開機的起始值**：真正的上限由 `combat.refreshPlayerMax()` 在每次開戰時
+     重算（式子在 `progress.playerMaxHp()`，料理會把它墊高，ver -953）。
+     ⚠ 不要把 `T.playerHp` 當成上限去用 —— 那是出廠值，不是現在的上限。 */
   playerMax: T.playerHp,
   enemyHp: _enemy.hp,
   enemyMax: _enemy.hp,

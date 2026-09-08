@@ -1477,6 +1477,11 @@ story.setSettleHandler((resume, title)=>{
   storyResume = resume; flightBack = false;
   combat.restSettle(title);   // 大標由那一拍給（ver -928：休息處／撤離）
 });
+/* 料理那一拍的**帳**（ver -953，Stage8 的瑪麗亞）：扣食材＋記「吃過了」。
+   ⚠ 與廚房介面那顆「煮」走**同一支** `loot.cookDish`（鐵律 8）——
+     兩邊各記一次帳必然走鐘（一邊扣了沒記、一邊記了沒扣）。
+   ⚠ 注入而不是讓 story import loot：story 是演出層，不認識道具與單子。 */
+story.setCookHandler(id => loot.cookDish(id));
 /* 「這張圖現在該放哪一首」（ver -913）：給戰鬥卡的 `bgmAfter:'@town'` 用 ——
    曲名的真相只有 `TOWNS[].bgm` 一處（town.bgmKey），卡上不抄第二份（鐵律 7）。 */
 story.setTownBgm(()=> town.isOpen() ? town.bgmKey() : null);
