@@ -312,11 +312,10 @@ function pickEvaluator(rankKey, battleId){
   /* ══ 亂入（ver -838，Ray：「評價D/C 蕾娜評價完索拉娜亂入評價畫面」）══
      `evaluation.js` 的 INTRUDE[場次][等第] → 第一句打完換人再講一句
      （showResultSequence 的 `spk.follow`；portrait 是直接路徑）。 */
-  /* ⚠⚠ **`default` ＝不分場次的通用亂入**（ver -958）：先查這一場專屬的，
-     沒有才回去查通用的（同 `BY_BATTLE` → 通用表那一層的查法）。
-     ⚠ 目前 `INTRUDE` 只有 `sv_wild` 一場有料 —— 所以在別的場次拿到 C／D
-       **什麼都不會發生**，那不是壞掉，是**還沒有那一場的台詞**（Ray 回報的正是這個）。
-       通用的那一組要 Ray 給稿（同護符與九星配方：卡沒到就先空著，不自己發明）。 */
+  /* ⚠⚠ **亂入是全域通用的**（ver -959，Ray：「不是，是全域通用」）：
+     查表**專屬優先、沒有才走 `default`**（同 `BY_BATTLE` → 通用表那一層的查法）。
+     -838 原本只掛在村戰上，於是別的場次拿到 C／D 什麼都不會發生 —— 那不是壞掉，
+     是資料只有一場（Ray 回報的正是這個）。台詞已移進 `INTRUDE.default`。 */
   const fol = (EVAL_INTRUDE[battleId]||{})[rankKey]
            || (EVAL_INTRUDE.default||{})[rankKey] || null;
   return { name: who.name || '',
