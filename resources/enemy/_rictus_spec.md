@@ -146,8 +146,7 @@
 是 Gemini 出的原形本身太卡通。圖與聯絡表留在 scratchpad 當紀錄，**不進 resources**。
 
 ⚠ **完整的新產線寫在 `_gloom_spec.md`**（那一族是第一個照新流程跑的）。
-⚠ 這也推翻了 CLAUDE.md §5「怪＝Gemini 出原形 → GPT 加氣勢＋去背」那一段；
-  **CLAUDE.md 還沒改**（憲法由 Ray 決定），看到那一段以 `_gloom_spec.md` 為準。
+✔ CLAUDE.md §5 那一段**已經改掉了**（ver -930，Ray 授權）—— 以憲法為準。
 
 ## 產法（舊，僅供對照）
 
