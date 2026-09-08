@@ -29,7 +29,7 @@ const DEF_DEFENSE_MIN = T.defDefenseMin;   // ratio 0.35~1.0：Defense（傷害�
 const DEF_PERFECT_MIN = T.defPerfectMin;   // ratio 0.12~0.35：Perfect（免傷）
 const SAINT_BLOCK_DIVISOR = T.saintBlockDivisor;   // 聖徒化期間格擋推進量（下一輪聖徒化才會實際觸發）
 // 開場第一發的延遲改**逐怪**（ver -795）：範圍在 state.ULT_OPEN_MIN/MAX（由 enemy.setEnemy
-// 從卡上的 openUlt 讀，預設 1~2 秒）。原本寫死 0~3 秒的 ULT_OPEN_MS 已移除。
+// 從卡上的 openAssault 讀，預設 1~2 秒）。原本寫死 0~3 秒的 ULT_OPEN_MS 已移除。
 
 // combat 於啟動時注入所需回呼
 let api = {};

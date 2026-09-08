@@ -632,10 +632,16 @@ export function setEnemy(key){
     gapMs: (u.gap!=null)   ? u.gap*1000 : 0,
     cdMs:  (u.cd!=null)    ? u.cd*1000  : null,
   } : null;
-  /* 開場第一發大絕的延遲（ver -795，Ray：「編入逐個，預設 1~2 秒」）：卡上
-     `openUlt:[1,2]`（**秒**，同 ultEvery 的讀法）覆寫；沒寫＝預設 1~2 秒隨機。
-     以前是全域寫死 0~3 秒（defense 的 ULT_OPEN_MS），現在逐怪可調。 */
-  const oue = Array.isArray(en.openUlt) ? en.openUlt : null;
+  /* ══⚠⚠ 開場第一發**主動攻擊**的延遲（ver -795 立；**-931 由 `openUlt` 改名**）══
+     Ray：「openUlt 全部改名為 openAssault」「**ult 歸 ult 不要混用**」
+          「**assault 是普攻，ult 是特殊情形觸發的大絕**」
+     —— 這一格排的是**一般主動攻擊**（`assault` 那一族）的第一發，不是門檻波，
+     所以舊名 `openUlt` 從一開始就掛錯家族。卡上寫 `openAssault:[1,2]`（**秒**），
+     沒寫＝預設 1~2 秒隨機；以前是全域寫死 0~3 秒（defense 的 ULT_OPEN_MS）。
+     ⚠ 內部的 `state.ULT_OPEN_MIN/MAX` 與 defense 那一套仍沿用舊名（那是引擎的
+       紅點排程，不是卡上的欄位）—— 要一起正名再說，這一版只動**卡的欄位**。
+     ⚠ `ultEvery`（一般攻擊的**頻率**）也是同一個誤名，這一版**還沒動** —— 見上面。 */
+  const oue = Array.isArray(en.openAssault) ? en.openAssault : null;
   state.ULT_OPEN_MIN = oue ? oue[0]*1000 : 1000;
   state.ULT_OPEN_MAX = oue ? oue[1]*1000 : 2000;
   const dp = en.delayPenalty || {};              // 3.3：延時懲罰縮放（Boss=0.5 / -1）

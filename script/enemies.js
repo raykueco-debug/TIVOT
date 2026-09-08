@@ -25,7 +25,7 @@ export const ENEMIES = {
       name:'地下聖徒_A',        // UI 只顯示底線前的「地下聖徒」；底線後（_A）僅供作者辨識、不顯示
       story:0, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
-      openUlt:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
+      openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
       /* 聖徒系列的結算副標是「已擊殺」（ver -432，Ray 指定）。⚠ 對照表在 i18n 的
          `result.winSubBy`，這裡只標這一隻是哪一類（鐵律 1）。三種聖徒同一類。 */
       kind:'slay',
@@ -63,7 +63,7 @@ export const ENEMIES = {
       name:'訓練用聖徒',
       story:0, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
-      openUlt:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
+      openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
       kind:'slay',                   // 聖徒系列＝已擊殺（ver -432）
       image:'enemy_trainee',    // → resources/enemy/Saint_TR_CI.webp
       hp:500,
@@ -93,7 +93,7 @@ export const ENEMIES = {
       name:'固定立靶',
       story:0, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
-      openUlt:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
+      openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
       /* 結算副標的用詞（ver -432，Ray：「『靶』為已擊破」）。⚠ 對照表在 `i18n` 的
          `result.winSubBy`，這裡只標這一隻是哪一類（鐵律 1）。 */
       kind:'target',
@@ -125,7 +125,7 @@ export const ENEMIES = {
       name:'蕃茄人11號',
       story:0, counterStagger:1,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
-      openUlt:[2,3],
+      openAssault:[2,3],
       kind:'target',
       image:'enemy_dart_counter',    // 蕃茄人11號自己的圖（ver -862，Ray 交件 Dart_counter.webp）
       hp:300,
@@ -145,7 +145,7 @@ export const ENEMIES = {
       name:'巨型聖徒',
       story:0, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
-      openUlt:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
+      openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
       kind:'slay',                   // 聖徒系列＝已擊殺（ver -432）
       image:'enemy_facelessgiant',   // 內嵌立繪鑰匙 → resources/enemy/Saint_GT_CI.webp
       // 取景：主體在圖面右下（撲擊構圖），cover 裁切錨點右移下移——爪/頭/軀幹全入鏡
@@ -180,7 +180,7 @@ export const ENEMIES = {
       name:'森住民',
       story:1, counterStagger:1,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0.3], '萊福槍':[0,0.5] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
-      openUlt:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
+      openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
       kind:'human',
       image:'enemy_man_sorana',
       entranceVo:'vo_sorana_pack2',   // 敵立繪一出現就播（ver -818，Ray）——她是 human 不吃降臨，另掛登場音
@@ -217,7 +217,7 @@ export const ENEMIES = {
       name:'禍魘娜塔莉',
       story:1, counterStagger:1,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
-      openUlt:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
+      openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
       kind:'harm',
       image:'enemy_natalia',         // → resources/enemy/mon_natalia.webp
       fit:{ pos:'50% 30%' },
@@ -244,7 +244,7 @@ export const ENEMIES = {
       name:'亂入者 · ???',
       story:0, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
-      openUlt:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
+      openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
       image:'enemy_faceless',
       hp:400,
       attack:50,
@@ -269,7 +269,7 @@ export const ENEMIES = {
       name:'槍之魔女',
       story:0, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
       weaponMod:{ '重機槍':[0,0.3], '霰彈槍':[0,0.3], '萊福槍':[0,0.3] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
-      openUlt:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
+      openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
       kind:'human',                  // 槍之魔女是人類 → 已擊敗（ver -432，Ray 指定）
       image:'enemy_witch',      // 立繪鑰匙（附圖）
       hp:500,
@@ -329,7 +329,7 @@ export const ENEMIES = {
       name:'禍魘祭司',
       story:1, counterStagger:1,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[-0.5,0], '萊福槍':[0.5,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
-      openUlt:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
+      openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
       ultEvery:[2,4],
       assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
       ult:{},                        // hp 門檻特殊波 {hp,count,gap,cd}；無則留空
@@ -356,7 +356,7 @@ export const ENEMIES = {
       name:'罪之魔像',
       story:1, counterStagger:1,
       weaponMod:{ '重機槍':[0,-0.2], '霰彈槍':[0.5,0], '萊福槍':[-0.5,-0.3] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
-      openUlt:[0.5,1.5],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
+      openAssault:[0.5,1.5],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
       ultEvery:[2,4],
       assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
       ult:{},                        // hp 門檻特殊波 {hp,count,gap,cd}；無則留空
@@ -383,7 +383,7 @@ export const ENEMIES = {
       name:'魘魔',
       story:1, counterStagger:1,
       weaponMod:{ '重機槍':[0,-0.2], '霰彈槍':[0.5,0], '萊福槍':[-0.5,-0.3] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
-      openUlt:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
+      openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
       ultEvery:[2,4],
       assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
       ult:{},                        // hp 門檻特殊波 {hp,count,gap,cd}；無則留空
@@ -410,7 +410,7 @@ export const ENEMIES = {
       name:'心魘',
       story:1, counterStagger:1,
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
-      openUlt:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
+      openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
       ultEvery:[2,4],
       assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
       ult:{},                        // hp 門檻特殊波 {hp,count,gap,cd}；無則留空
@@ -443,7 +443,7 @@ export const ENEMIES = {
       name:'背負祭壇者',
       story:1, counterStagger:1,
       weaponMod:{ '重機槍':[-0.1,0], '霰彈槍':[-0.5,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
-      openUlt:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
+      openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
       ultEvery:[2,4],
       assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
       ult:{},                        // hp 門檻特殊波 {hp,count,gap,cd}；無則留空
@@ -481,7 +481,7 @@ export const ENEMIES = {
       name:'紫黑之爪',
       story:1, counterStagger:1,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
-      openUlt:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
+      openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
       ultEvery:[2,4],
       assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
       ult:{},                        // hp 門檻特殊波 {hp,count,gap,cd}；無則留空
@@ -516,7 +516,7 @@ export const ENEMIES = {
       name:'狼骸群',
       story:1, counterStagger:1,
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },   // ＝心魘（弱點/命中不動）
-      openUlt:[1,2],
+      openAssault:[1,2],
       ultEvery:[2,4],
       assault:{ count:1, gap:0 },
       ult:{},
@@ -543,7 +543,7 @@ export const ENEMIES = {
       name:'裂肉獸',
       story:1, counterStagger:1,
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
-      openUlt:[1,2],
+      openAssault:[1,2],
       ultEvery:[2,4],
       assault:{ count:1, gap:0 },
       ult:{},
@@ -570,7 +570,7 @@ export const ENEMIES = {
       name:'鹿骸',
       story:1, counterStagger:1,
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
-      openUlt:[1,2],
+      openAssault:[1,2],
       ultEvery:[2,4],
       assault:{ count:1, gap:0 },
       ult:{},
@@ -597,7 +597,7 @@ export const ENEMIES = {
       name:'枷獸',
       story:1, counterStagger:1,
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
-      openUlt:[1,2],
+      openAssault:[1,2],
       ultEvery:[2,4],
       assault:{ count:1, gap:0 },
       ult:{},
@@ -628,7 +628,7 @@ export const ENEMIES = {
       name:'熊骸',
       story:1, counterStagger:1,
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },   // ＝心魘（弱點/命中不動）
-      openUlt:[1,2],
+      openAssault:[1,2],
       ultEvery:[2,4],
       assault:{ count:1, gap:0 },
       ult:{},
@@ -657,7 +657,7 @@ export const ENEMIES = {
       name:'聖骨獸',
       story:1, counterStagger:1,
       weaponMod:{ '重機槍':[-0.1,0], '霰彈槍':[-0.5,0], '萊福槍':[0,0] },   // ＝np_boss
-      openUlt:[1,2],
+      openAssault:[1,2],
       ultEvery:[2,4],
       assault:{ count:1, gap:0 },
       ult:{},
@@ -684,7 +684,7 @@ export const ENEMIES = {
       name:'賞金獵人',
       story:1, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
-      openUlt:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
+      openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
       kind:'human',                      // 結算副標「已擊敗」（ver -432）
       image:'enemy_guild_hunter',        // ＝ NPC_GuildHunter_SI_Attack（與對話立繪同一張）
       /* ⚠ `bg`＝**戰鬥背景**（ver -375 新欄位）。這一隻的立繪是**去背**的
@@ -731,7 +731,7 @@ export const ENEMIES = {
       name:'巨型蜈蚣',
       story:1, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
       weaponMod:{ '重機槍':[1,0], '霰彈槍':[-0.5,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
-      openUlt:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
+      openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
       /* ⚠⚠ **三張時段差分**（Ray：「上午下午用 Centipi_day，晚上用 night，
          黃昏黎明用 Centipi_dd」）。寫成 `{day,dd,night}` 三個槽，時段→槽的對應
          只有一處：`modules/enemy.js` 的 `enemyImage()`（鐵律 7）。 */
@@ -800,7 +800,7 @@ export const ENEMIES = {
       name:'羽蛇_A',
       story:1, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
       weaponMod:{ '重機槍':[0,0.3], '霰彈槍':[0.5,-0.5], '萊福槍':[0,0.5] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
-      openUlt:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
+      openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
       kind:'aerial',               // 飛行敵人自成一類（ver -869，Ray）→ 副標照樣「已淨化」
       image:{ day:'enemy_serpent_day', dd:'enemy_serpent_dd', night:'enemy_serpent_night' },
       hp:500,
@@ -850,7 +850,7 @@ export const ENEMIES = {
       name:'空賊船_A',
       story:0, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
       weaponMod:{ '重機槍':[-0.3,0], '霰彈槍':[-0.3,0], '萊福槍':[0.5,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
-      openUlt:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
+      openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
       kind:'ship',                 // 船隻 → 已擊沉
       image:{ day:'enemy_pirate_day', dd:'enemy_pirate_dd', night:'enemy_pirate_night' },
       hp:500,
@@ -899,7 +899,7 @@ export const ENEMIES = {
       name:'森林山貓',
       story:0, counterStagger:1,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
-      openUlt:[1,2], ultEvery:[2,4], assault:{ count:1, gap:0 }, ult:{},
+      openAssault:[1,2], ultEvery:[2,4], assault:{ count:1, gap:0 }, ult:{},
       kind:'beast',
       image:'enemy_sf_lynx',
       bg:'Forest_Glade_Day',
@@ -918,7 +918,7 @@ export const ENEMIES = {
       name:'淺灘水蛇',
       story:0, counterStagger:1,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
-      openUlt:[1,2], ultEvery:[2,4], assault:{ count:1, gap:0 }, ult:{},
+      openAssault:[1,2], ultEvery:[2,4], assault:{ count:1, gap:0 }, ult:{},
       kind:'beast',
       image:'enemy_sf_snake',
       bg:'Forest_Shoal_Day',
@@ -937,7 +937,7 @@ export const ENEMIES = {
       name:'巨山豬',
       story:0, counterStagger:1,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
-      openUlt:[1,2], ultEvery:[2,4], assault:{ count:1, gap:0 }, ult:{},
+      openAssault:[1,2], ultEvery:[2,4], assault:{ count:1, gap:0 }, ult:{},
       kind:'beast',
       image:'enemy_sf_hog',
       bg:'Forest_Trail_Day',
@@ -956,7 +956,7 @@ export const ENEMIES = {
       name:'獨角虎王',
       story:0, counterStagger:1,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
-      openUlt:[1,2], ultEvery:[2,4], assault:{ count:1, gap:0 }, ult:{},
+      openAssault:[1,2], ultEvery:[2,4], assault:{ count:1, gap:0 }, ult:{},
       kind:'beast',
       image:'enemy_sf_tiger',
       bg:'Forest_Cave_Day',
@@ -977,7 +977,7 @@ export const ENEMIES = {
       name:'食腐鴉群',
       story:0, counterStagger:1,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
-      openUlt:[1,2], ultEvery:[2,4], assault:{ count:1, gap:0 }, ult:{},
+      openAssault:[1,2], ultEvery:[2,4], assault:{ count:1, gap:0 }, ult:{},
       kind:'beast',
       image:'enemy_sf_crows',
       bg:'Forest_Glade_Day',
@@ -1004,13 +1004,13 @@ export const ENEMIES = {
     sf_deer_nightmare: {
       name:'變異樹靈鹿主',
       story:1, counterStagger:1,
-      weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
+      weaponMod:{ '重機槍':[0,0.3], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
       /* ⚠⚠ **一波三顆**（ver -899，Ray：「被命中的話是 3hits」）：櫻花狂亂是**一陣風**，
          但風裡有三下 —— 三顆光圈各自判定，全沒擋到就挨三下。
          ⚠ `gap` 給 0.35 秒（不是 0）：0 會三顆同時出現、疊在一起看不出是三下；
            太長又會拆成三陣風。特效那一層**只生一層畫布**（見 enemy.spawnSakura），
            所以畫面上仍然是一陣連續的狂風。 */
-      openUlt:[1,2], ultEvery:[2,4], assault:{ count:3, gap:0.35 }, ult:{},
+      openAssault:[1,2], ultEvery:[8,10], assault:{ count:3, gap:0.35 }, ult:{},
       kind:'harm',
       image:'enemy_sf_deer_nightmare',
       bg:'ruins_shinier_entrance',
@@ -1033,7 +1033,7 @@ export const ENEMIES = {
       name:'熊骸',
       story:0, counterStagger:1,
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },   // ＝心魘（骸系照 sv）
-      openUlt:[1,2], ultEvery:[2,4], assault:{ count:1, gap:0 }, ult:{},
+      openAssault:[1,2], ultEvery:[8,10], assault:{ count:1, gap:0 }, ult:{},
       kind:'harm',
       image:'enemy_sf_bear_husk',
       bg:'Forest_Trail_Day',
@@ -1052,7 +1052,7 @@ export const ENEMIES = {
       name:'夢魘熊骸',
       story:0, counterStagger:1,
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
-      openUlt:[1,2], ultEvery:[2,4], assault:{ count:1, gap:0 }, ult:{},
+      openAssault:[1,2], ultEvery:[2,4], assault:{ count:1, gap:0 }, ult:{},
       kind:'harm',
       image:'enemy_sv_bear',              // ⚠ 與 sv_bear 同一張圖（mon_bear_nightmare，鐵律 7：一張圖一個鍵）
       bg:'Forest_Trail_Day',
@@ -1071,7 +1071,7 @@ export const ENEMIES = {
       name:'腐鹿骸',
       story:0, counterStagger:1,
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
-      openUlt:[1,2], ultEvery:[2,4], assault:{ count:1, gap:0 }, ult:{},
+      openAssault:[1,2], ultEvery:[2,4], assault:{ count:1, gap:0 }, ult:{},
       kind:'harm',
       image:'enemy_sf_stag_rot',
       bg:'Forest_Cliff_Day',
@@ -1092,7 +1092,7 @@ export const ENEMIES = {
       name:'夢魘鹿骸',
       story:0, counterStagger:1,
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
-      openUlt:[1,2], ultEvery:[2,4], assault:{ count:1, gap:0 }, ult:{},
+      openAssault:[1,2], ultEvery:[2,4], assault:{ count:1, gap:0 }, ult:{},
       kind:'harm',
       image:'enemy_sv_stag',              // ⚠ 與 sv_stag 同一張圖（mon_stag_nightmare，鐵律 7）
       bg:'Forest_Cliff_Day',
@@ -1122,8 +1122,8 @@ export const ENEMIES = {
     ruins_bonemaw: {
       name:'覆骨者',
       story:0, counterStagger:1,
-      weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
-      openUlt:[1,2], ultEvery:[2,4], assault:{ count:1, gap:0 }, ult:{},
+      weaponMod:{ '重機槍':[0.2,0.3], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
+      openAssault:[1,2], ultEvery:[8,10], assault:{ count:1, gap:0 }, ult:{},
       kind:'harm',
       image:'enemy_ruins_bonemaw',
       bg:'Ruins_shinier_Catacomb',
@@ -1140,8 +1140,8 @@ export const ENEMIES = {
     ruins_bellreacher: {
       name:'鳴鐘者',
       story:0, counterStagger:1,
-      weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
-      openUlt:[1,2], ultEvery:[2,4], assault:{ count:1, gap:0 }, ult:{},
+      weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[-0.3,0], '萊福槍':[1,0] },
+      openAssault:[1,2], ultEvery:[8,10], assault:{ count:1, gap:0 }, ult:{},
       kind:'harm',
       image:'enemy_ruins_bellreacher',
       bg:'Ruins_shinier_Colossus',
@@ -1159,7 +1159,7 @@ export const ENEMIES = {
       name:'王的容器',
       story:0, counterStagger:1,
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
-      openUlt:[1,2], ultEvery:[2,4], assault:{ count:1, gap:0 }, ult:{},
+      openAssault:[1,2], ultEvery:[8,10], assault:{ count:1, gap:0 }, ult:{},
       kind:'harm',
       image:'enemy_ruins_halo_ring',
       bg:'Ruins_shinier_Hollow',
@@ -1177,13 +1177,13 @@ export const ENEMIES = {
     ruins_heartripper: {
       name:'撕心者',
       story:0, counterStagger:1,
-      weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
-      openUlt:[1,2], ultEvery:[2,4], assault:{ count:1, gap:0 }, ult:{},
+      weaponMod:{ '重機槍':[0.2,0.3], '霰彈槍':[0.3,0], '萊福槍':[0,0] },
+      openAssault:[1,2], ultEvery:[2,4], assault:{ count:1, gap:0 }, ult:{},
       kind:'harm',
       image:'enemy_ruins_heartripper',
       bg:'Ruins_shinier_Prison',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:400, attack:16,                  // hp＝Ray 表；attack 暫定
+      hp:300, attack:16,                  // hp＝Ray 表；attack 暫定
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       resist:{}, weak:{}, landSe:null, special:[],
@@ -1195,8 +1195,8 @@ export const ENEMIES = {
     ruins_bellwalker: {
       name:'喪鐘',
       story:0, counterStagger:1,
-      weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
-      openUlt:[1,2], ultEvery:[2,4], assault:{ count:1, gap:0 }, ult:{},
+      weaponMod:{ '重機槍':[-0.2,0], '霰彈槍':[-0.5,0], '萊福槍':[1,0] },
+      openAssault:[1,2], ultEvery:[2,4], assault:{ count:1, gap:0 }, ult:{},
       kind:'harm',
       image:'enemy_ruins_bellwalker',
       bg:'Ruins_shinier_MossChamber',
@@ -1215,7 +1215,7 @@ export const ENEMIES = {
       name:'鎖鍊聖徒',
       story:0, counterStagger:1,
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
-      openUlt:[1,2], ultEvery:[2,4], assault:{ count:1, gap:0 }, ult:{},
+      openAssault:[1,2], ultEvery:[2,4], assault:{ count:1, gap:0 }, ult:{},
       kind:'slay',
       image:'enemy_ruins_saint_prison',
       bg:'Ruins_shinier_Prison',
@@ -1233,7 +1233,7 @@ export const ENEMIES = {
       name:'監查者',
       story:0, counterStagger:1,
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
-      openUlt:[1,2], ultEvery:[2,4], assault:{ count:1, gap:0 }, ult:{},
+      openAssault:[1,2], ultEvery:[2,4], assault:{ count:1, gap:0 }, ult:{},
       kind:'slay',
       image:'enemy_ruins_saint_inspector',
       bg:'Ruins_shinier_DarkBridge',
@@ -1251,7 +1251,7 @@ export const ENEMIES = {
       name:'巨型聖徒',
       story:0, counterStagger:1,
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
-      openUlt:[1,2], ultEvery:[2,4], assault:{ count:1, gap:0 }, ult:{},
+      openAssault:[1,2], ultEvery:[2,4], assault:{ count:1, gap:0 }, ult:{},
       kind:'slay',
       image:'enemy_ruins_saint_thug',
       bg:'Ruins_shinier_CorridorA',
@@ -1271,7 +1271,7 @@ export const ENEMIES = {
       name:'節制',
       story:0, counterStagger:1,
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
-      openUlt:[1,2], ultEvery:[2,4], assault:{ count:2, gap:0.35 }, ult:{},
+      openAssault:[1,2], ultEvery:[2,4], assault:{ count:2, gap:0.35 }, ult:{},
       kind:'slay',
       image:'enemy_ruins_saint_temperance',
       bg:'Ruins_shinier_DeepAltar',
@@ -1305,7 +1305,7 @@ export const ENEMIES = {
       name:'鏡唱者',
       story:1, counterStagger:1,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 中性起點，等 Ray 逐張調
-      openUlt:[1,2],
+      openAssault:[1,2],
       ultEvery:[2,4],
       assault:{ count:1, gap:0 },
       ult:{},
@@ -1332,7 +1332,7 @@ export const ENEMIES = {
       name:'風箱懺者',
       story:1, counterStagger:1,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 中性起點，等 Ray 逐張調
-      openUlt:[1,2],
+      openAssault:[1,2],
       ultEvery:[2,4],
       assault:{ count:1, gap:0 },
       ult:{},
@@ -1359,7 +1359,7 @@ export const ENEMIES = {
       name:'告解者',
       story:1, counterStagger:1,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 中性起點，等 Ray 逐張調
-      openUlt:[1,2],
+      openAssault:[1,2],
       ultEvery:[2,4],
       assault:{ count:1, gap:0 },
       ult:{},
@@ -1386,7 +1386,7 @@ export const ENEMIES = {
       name:'沙漏苦修者',
       story:1, counterStagger:1,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 中性起點，等 Ray 逐張調
-      openUlt:[1,2],
+      openAssault:[1,2],
       ultEvery:[2,4],
       assault:{ count:1, gap:0 },
       ult:{},
@@ -1413,7 +1413,7 @@ export const ENEMIES = {
       name:'鑰匙守',
       story:1, counterStagger:1,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 中性起點，等 Ray 逐張調
-      openUlt:[1,2],
+      openAssault:[1,2],
       ultEvery:[2,4],
       assault:{ count:1, gap:0 },
       ult:{},
@@ -1440,7 +1440,7 @@ export const ENEMIES = {
       name:'讀經台',
       story:1, counterStagger:1,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 中性起點，等 Ray 逐張調
-      openUlt:[1,2],
+      openAssault:[1,2],
       ultEvery:[2,4],
       assault:{ count:1, gap:0 },
       ult:{},
@@ -1467,7 +1467,7 @@ export const ENEMIES = {
       name:'香爐肺',
       story:1, counterStagger:1,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 中性起點，等 Ray 逐張調
-      openUlt:[1,2],
+      openAssault:[1,2],
       ultEvery:[2,4],
       assault:{ count:1, gap:0 },
       ult:{},
@@ -1494,7 +1494,7 @@ export const ENEMIES = {
       name:'帷幕手',
       story:1, counterStagger:1,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 中性起點，等 Ray 逐張調
-      openUlt:[1,2],
+      openAssault:[1,2],
       ultEvery:[2,4],
       assault:{ count:1, gap:0 },
       ult:{},
@@ -1521,7 +1521,7 @@ export const ENEMIES = {
       name:'詩輪',
       story:1, counterStagger:1,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 中性起點，等 Ray 逐張調
-      openUlt:[1,2],
+      openAssault:[1,2],
       ultEvery:[2,4],
       assault:{ count:1, gap:0 },
       ult:{},
@@ -1548,7 +1548,7 @@ export const ENEMIES = {
       name:'聖爵溺者',
       story:1, counterStagger:1,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 中性起點，等 Ray 逐張調
-      openUlt:[1,2],
+      openAssault:[1,2],
       ultEvery:[2,4],
       assault:{ count:1, gap:0 },
       ult:{},
