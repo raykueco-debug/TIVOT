@@ -113,6 +113,15 @@ function counterEnergy(sum, full){
    ⚠ 第一發保底不是體貼，是必要的：8 發 30% 全 miss 的機率有 5.7% ——
      那一次玩家會以為遊戲壞了，而不是「運氣不好」。
    ⚠ 命中率由**卡上的 `bands[帶].hit`** 決定，呼叫端只負責傳進來（鐵律 1＋7）。 */
+/* 這位搭檔對**這一類副武器**的命中倍率（ver -962）：沒寫＝1。
+   ⚠ 只有這一支在讀卡（鐵律 7）—— 呼叫端不必知道是誰在場、也不必知道規則長什麼樣。 */
+function partnerHitMul(cat){
+  const p = GAME_CONFIG.partners && GAME_CONFIG.partners[state.pickedPartner];
+  const h = p && p.counterHit;
+  if(!h || !(h.mul>=0)) return 1;
+  if(h.except && h.except.indexOf(cat)>=0) return 1;
+  return h.mul;
+}
 export function weaponCounter(dmgScale, hitRate, dmgRoll){
   /* ⚠ 本篇與試玩版是**兩套數值**（ver -378）——一律走 `weaponOf`，不要直接查 WEAPONS。 */
   const w = weaponOf(state.equippedWeapon, storyMode());
@@ -152,7 +161,15 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll){
      `hitRate` 是帶位命中（黃 30%／橘 70%／紅 100%，ver -706），迴避只咬**黃／橘圈**
      （baseHit<1）；紅圈一律 100%。 */
   const evade = (baseHit >= 1) ? 0 : resist;
-  const hitR  = Math.min(1, baseHit * (1-evade));   // 負迴避把命中往上加，夾到 100%
+  /* ══⚠⚠ **搭檔的命中修正**（ver -962，Ray：「索拉娜搭檔時副武器命中率減半，步槍除外」）══
+     規則在**搭檔卡**上（`partners[].counterHit:{mul, except}`，鐵律 1），這裡只讀。
+     ⚠ 乘在**最後**、與 `evade` 分開：`evade` 是「紅圈不吃迴避」那條規則的載體
+       （它看的是**帶**：`baseHit>=1` 就是紅圈）—— 先把 baseHit 砍半的話，
+       紅圈會變成 0.5 而開始吃迴避，等於一次改了兩件事。
+     ⚠ 減半照樣蓋到紅圈（Ray 只講了「步槍除外」這一個例外）；
+       第一發保底仍在（`hits(k)` 的 `k===0`），所以不會出現整串全 miss。 */
+  const pHit = partnerHitMul(w.cat);
+  const hitR  = Math.min(1, baseHit * (1-evade) * pHit);   // 負迴避把命中往上加，夾到 100%
   /* 第 k 發中不中。⚠ `k===0` 一定中（見上）—— **無迴避時**；有迴避一律擲
      （ver -760：不然單發武器吃不到迴避）。紅圈 evade=0＝走前一分支必中。 */
   const hits = (k)=> (evade<=0 && (hitR>=1 || k===0)) ? true : (Math.random() < hitR);

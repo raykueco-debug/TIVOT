@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.09-961';
+export const VERSION = 'ver 2026.09.09-962';
 
 export const GAME_CONFIG = {
 
@@ -471,6 +471,15 @@ export const GAME_CONFIG = {
       siFit:{ zoom:1.6, top:0.01 },   // 估（同諾薇兒/安雅）；Ray 交專用選人立繪再重量
       cutin:'ci_sorana_predator',     // 共鬥的變身 cut-in
       voice:null,
+      /* ══⚠⚠ **她搭檔時副武器命中率減半，步槍除外**（ver -962，Ray 指定）══
+         `counterHit:{ mul, except:[類別…] }` —— 乘在**副武器反擊的命中率**上。
+         ⚠ 這是她的**代價**：共鬥期間無敵、又有飛刀，所以近距離的那兩把要付出代價；
+           `萊福槍`（步槍）是遠距的那一把，不受影響（Ray 指定的唯一例外）。
+         ⚠ 寫在**搭檔卡**上不寫死在程式（鐵律 1，同 `timeKBonus`）：日後別的搭檔
+           要有自己的命中修正，加一格就好。
+         ⚠ 類別名照 `weapons[].cat`（重機槍／霰彈槍／萊福槍）—— 不要另立一套代號。
+         ⚠ 計算點只有 `weapon.weaponCounter` 的 `hitR` 一處（鐵律 7）。 */
+      counterHit:{ mul:0.5, except:['萊福槍'] },
       /* ══ 難度加成（ver -805 立；**-935 由 Ray 調高**）══ 共鬥的無敵讓她好打，
          評價就要更嚴 —— `inspector.evaluate` 把它加在全域 `timeK` 上（鐵律 1）。
          ⚠⚠ Ray -935：「索拉娜搭檔**評價係數給到 650**」—— 那是**加完之後的值**：
