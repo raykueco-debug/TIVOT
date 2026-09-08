@@ -346,6 +346,12 @@ export function resolveThreat(th){
      ⚠ 是不是明晰之夢由 partner 分辨（`lucidPerfect`＝安雅的 firstCounter 限定，
        馬季諾的高裝藥彈不吃這一條）。 */
   const lucid = !!(api.lucidPerfect && api.lucidPerfect());
+  /* ══⚠⚠ **惡夢化期間也一律算紅圈**（ver -959，Ray：「夢魘化期間反擊武器，
+     不管哪一圈打出來都是紅圈效果」）══ 與明晰之夢**併在同一個判定**（鐵律 7/8）——
+     帶的判定只有這一處，加在別的地方就會變成「傷害算紅圈、計數卻沒算」那種半套。
+     ⚠ 它**不影響 `realCounter`**：那一格問的是「玩家真的點到紅圈了嗎」
+       （ver -887，Ray：「靠技能強制算成紅圈的不算」）—— 惡夢化與明晰之夢同性質。 */
+  const niAll = !!state.niMode;
   let grade='block';   // 判定等級：'counter' | 'perfect' | 'block'（傳給教學層分流，見文末通知）
   /* ⚠⚠ **「真的點到紅圈」與「被技能算成紅圈」要分開報**（ver -887，Ray：
      「我偏向真實點到紅圈就發動，而靠技能強制算成紅圈發動的就不算」）。
@@ -354,7 +360,7 @@ export function resolveThreat(th){
      只有「要靠玩家真本事才給」的東西讀它（現在是安雅那條連續三次的計數）。
      ⚠ 兩個都在這一支算（鐵律 7）：帶的判定只有這裡知道，呼叫端不准自己重算。 */
   const realCounter = (ratio < counterWin);
-  if(ratio < counterWin || lucid){
+  if(ratio < counterWin || lucid || niAll){
     // === Counter === 免傷 + 反擊武器大傷害（金色微閃）
     grade='counter';
     flashDefense('gold');
