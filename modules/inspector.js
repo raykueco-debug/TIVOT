@@ -428,7 +428,7 @@ export function settle(totalTime, stats, opts={}){
      排在所有分流**最前面**：這一頁沒有敵人（不是打完誰，是把這一路的帳結掉），
      底下那三條都要問 `state.currentEnemyKey`。⚠ 併帳／清帳／HP 回滿在上面已經做完
      —— 那是「一局的終點」共通的手續，這一條只是第四條結算路徑（鐵律 8）。 */
-  if(opts.rest && !isLose){ restSettle(totalTime, stats, sessionMoney, sessionLoot, shares); return; }
+  if(opts.rest && !isLose){ restSettle(totalTime, stats, sessionMoney, sessionLoot, shares, opts.restTitle); return; }
   if(state.tutorialRun && !isLose){ tutorialSettle(totalTime, stats, sessionMoney); return; }
   /* 劇情插入戰（ver -375）：與教學結算同一頁 —— **沒有監察官、沒有等級**，
      只有戰績、EXP 與拾得。⚠ 不是教學，所以不走教學那兩句台詞。 */
@@ -750,7 +750,9 @@ function tutorialSettle(totalTime, stats, sessionMoney){
      共用的部分本來就已經是抽出來的函式了。
    ⚠ 「沒打過架就不作動」擋在**呼叫端**（城鎮的 `restActDue` 問有沒有帳）——
      走到這裡就一定有帳可結。 */
-function restSettle(totalTime, stats, sessionMoney, sessionLoot, shares){
+/* ⚠ `title` ＝這一頁的大標（ver -928）：休息處走進去是「休　息　處」，
+     走出這張地圖時結算是「撤　離」—— 同一頁兩個時機，字面由呼叫端給（鐵律 1）。 */
+function restSettle(totalTime, stats, sessionMoney, sessionLoot, shares, title){
   state.sRankUnlocked = false;
   const ev = evaluate(stats);
   /* 評價者照舊（`battleId` 傳 null ＝沒有哪一場的專屬台詞，走章節／好感那張通用表）。
@@ -770,7 +772,7 @@ function restSettle(totalTime, stats, sessionMoney, sessionLoot, shares){
   rows += ratingStatsRows(stats, totalTime);
   if(exp && showExp()) rows += '<div class="row"><span>EXP</span><b>＋'+exp+'</b></div>';
   if(money) rows += '<div class="row"><span>'+inv.moneyName()+'</span><b>＋'+money+'</b></div>';
-  showResultSequence('休　息　處', '戰果整理', rows, ev.grade, false,
+  showResultSequence(title || '休　息　處', '戰果整理', rows, ev.grade, false,
                      spk ? { speaker:spk } : { noInspector:true });
   /* ⚠⚠ 這一頁的底要**不透明**（ver -914，Ray：「盤面早就清掉了，棺直接把背景閉掉」）：
      結算頁平時是 94% 的黑罩在**剛剛那一場的戰鬥畫面**上（那是它該有的樣子）——

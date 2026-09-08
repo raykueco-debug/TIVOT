@@ -2447,7 +2447,8 @@ function renderLine(){
       : { scene: cur.sceneId, line: lineIdx+1, bgm: stageBgm };
     clearCast(); hideBubble();
     playKerberosClose(()=>{
-      try{ settleHandler(rsm); }catch(e){ console.info('[story] settleHandler 出錯', e); }
+      /* `settleTitle` ＝這一頁的大標（ver -928）：不寫＝休息處那一頁的預設。 */
+      try{ settleHandler(rsm, line.settleTitle||null); }catch(e){ console.info('[story] settleHandler 出錯', e); }
     });
     return;
   }
@@ -3463,14 +3464,32 @@ export function showHint(spec, done){ openHint(spec, done || (()=>{})); }
      不記＝下次抵達會再教一次，那是對的行為（而且現在不會疊了）。
    ⚠ 同 `clearSceneFade` 那一條的同族 —— §6.5.4 的檢查表再補一項：
      **新增任何蓋在畫面上的層，先回答「換畫面時誰收它？」** */
-let hintOv=null, hintTgt=null, hintOff=null;
+/* ══⚠⚠⚠ **暗罩與「箭＋說明」要分成兩層**（ver -928，Ray：「黑幕仍在，總是從進入
+     夏爾森林索拉娜講完話後開始」）══════════════════════════════════════════
+   那一刻彈的正是這一支（森林入口的地圖教學，`TOWNS.shinier_forest.tips`）。
+   舊版只有一層：暗罩 z-9，而 `#storyStage:has(#storyHint) #kerb{z-index:10}`
+   把整台槍棺抬到它之上（那是為了讓吊墜／齒輪這兩個**住在 `#kerb` 裡**的目標
+   看得見）。地圖鈕不住在 `#kerb` 裡 —— 它是舞台的兄弟元素、z-8，而它就**貼在
+   槍棺上**（實測 top 988，正落在門的範圍內）：
+     · 鈕 z-8 < 槍棺 z-10 → **被門整個蓋掉**（連 `.hint-spot` 的光都看不到）
+     · 箭與說明是暗罩的子孫 → 跟著暗罩的 z-9 一起被門蓋掉
+   結果畫面上只剩「整個上半變暗、什麼都沒有在指」＝ Ray 說的黑幕。
+   ⚠ 修法不是把暗罩抬上去（抬了吊墜／齒輪那兩個目標就反過來被壓在暗罩底下）——
+     是把**箭＋說明**拆成自己的一層 `#storyHintMark`（z-11，在抬起來的槍棺之上），
+     暗罩留在 z-9。這樣兩種目標都成立：
+       · 住在槍棺裡的（吊墜／齒輪）＝ 槍棺 10 > 暗罩 9，本來就亮著
+       · 貼在槍棺上的（地圖鈕）＝ `.hint-spot` 自己抬到 11
+     而箭永遠在最上面 —— 以前指吊墜時那支箭其實也被門吃掉了，一起修好。
+   ⚠ 標記層 `pointer-events:none`：點擊要落到暗罩（收掉）或目標（過關）身上。 */
+let hintOv=null, hintMk=null, hintTgt=null, hintOff=null;
 export function closeHint(){
   if(hintTgt) hintTgt.classList.remove('hint-spot');
   if(hintOff){ try{ hintOff(); }catch(_){} }
   if(hintOv && hintOv.parentNode) hintOv.parentNode.removeChild(hintOv);
-  hintOv=hintTgt=hintOff=null;
+  if(hintMk && hintMk.parentNode) hintMk.parentNode.removeChild(hintMk);
+  hintOv=hintMk=hintTgt=hintOff=null;
   /* 保險：萬一有更早的殘留（同一個 id 疊了好幾層），一次掃乾淨。 */
-  document.querySelectorAll('#storyHint').forEach(n=>n.remove());
+  document.querySelectorAll('#storyHint,#storyHintMark').forEach(n=>n.remove());
   document.querySelectorAll('.hint-spot').forEach(n=>n.classList.remove('hint-spot'));
 }
 function openHint(spec, done){
@@ -3483,21 +3502,24 @@ function openHint(spec, done){
   if(!r.width){ done && done(); return; }
   const sr = st.getBoundingClientRect();
   const ov = document.createElement('div'); ov.id='storyHint';
-  ov.innerHTML = '<i class="sh-arrow">▼</i><div class="sh-txt">'+(o.text||'')+'</div>';
   st.appendChild(ov);
-  const a = ov.querySelector('.sh-arrow');
+  const mk = document.createElement('div'); mk.id='storyHintMark';
+  mk.innerHTML = '<i class="sh-arrow">▼</i><div class="sh-txt">'+(o.text||'')+'</div>';
+  st.appendChild(mk);
+  const a = mk.querySelector('.sh-arrow');
   a.style.left = (r.left - sr.left + r.width/2)+'px';
   a.style.top  = (r.top  - sr.top  - 6)+'px';
-  ov.querySelector('.sh-txt').style.top = Math.max(8, r.top - sr.top - 62)+'px';
+  mk.querySelector('.sh-txt').style.top = Math.max(8, r.top - sr.top - 62)+'px';
   tgt.classList.add('hint-spot');
-  hintOv=ov; hintTgt=tgt;
+  hintOv=ov; hintMk=mk; hintTgt=tgt;
   hintOff=()=>tgt.removeEventListener('click', onTgt, true);
   let fired=false;
   const finish=()=>{ if(fired) return; fired=true;
     tgt.classList.remove('hint-spot');
     tgt.removeEventListener('click', onTgt, true);
     if(ov.parentNode) ov.parentNode.removeChild(ov);
-    hintOv=hintTgt=hintOff=null;
+    if(mk.parentNode) mk.parentNode.removeChild(mk);
+    hintOv=hintMk=hintTgt=hintOff=null;
     done && done();
   };
   /* ⚠ 點**目標**才算學會（那是這一拍要教的動作）；點提示本身只是收掉它，

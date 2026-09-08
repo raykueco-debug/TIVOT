@@ -1642,11 +1642,18 @@ export const TOWNS = {
                ③ 情境卡報日期時刻 —— {DATE}/{TIME} 顯示那一刻才問時鐘，
                  玩家在墓地拖到半夜日期也不會騙人（鐵律 7）；三秒亮回，
                  卡疊在亮回來的畫面上，點一下收場。
-               接下來的戲等 Ray 的稿 —— 這裡只演到「新的一天開始了」。 */
+               ⚠⚠ **改用翌日卡**（ver -928，Ray：「北泊出航送行前翌日三秒淡入出」）：
+                 原本是情境卡只印日期時刻 —— 那讀起來是「現在幾點」，不是「換了一天」。
+                 §6.5.3.9 的 `dayBreak` 就是為這件事做的（大字「翌日」＋小字完整日期、
+                 黑透罩、點一下收掉才往下演），三秒黑照舊走既有的 `fadeOut/fadeIn:3000`
+                 （鐵律 8：不要再造第二套慢黑幕）。
+               ⚠ `clockToNext:8` 移到 `dayBreak` 那一拍：卡上那一行日期是**顯示的那一刻**
+                 才問時鐘的，推完才印得出跳完之後的時間。
+               接下來就是碼頭道別（`np_farewell`，由 gates 的 `np_depart` 帶過去）。 */
             { speaker:'PLAYER', text:'', auto:3200, fadeOut:3000,
               hide:['RENNA','NOUVELLE','ANYA'] },
-            { speaker:'PLAYER', text:'', clockToNext:8, fadeIn:3000,
-              card:'大陸曆　{DATE}　{TIME}' },
+            { speaker:'PLAYER', text:'', dayBreak:true, clockToNext:8 },
+            { speaker:'PLAYER', text:'', auto:3200, fadeIn:3000 },
           ] },
         ] },
       /* ══ 雜貨店（ver -655，Ray 交稿）══ 功能與帝都相同（買／賣）。
@@ -2438,13 +2445,13 @@ export const TOWNS = {
           ] } },
       ],
     },
-    /* 高光地圖（ver -870，Ray 稿的「高光地圖」拍）：對白中量不到那顆鈕（nav 藏著），
-       所以走 tips 機制 —— 入口 intro 演完、nav 回來那一刻彈一次雪鐵龍箭。
-       ⚠ 與稿的順序略異（稿夾在兩句索菈娜之間）——機制限制，要改再跟 Ray 說。 */
-    tips: [
-      { flag:'sv_forest_maptip', need:'sv_forest_intro', at:'map',
-        text:'點開地圖，隨時確認自己的位置' },
-    ],
+    /* ⚠ 地圖教學**已拉掉**（ver -928，Ray：「那就把地圖教學拉掉」）。
+       原本是入口 intro 演完彈一次雪鐵龍箭指槍棺地圖鈕（`tips` 的 `at:'map'`）——
+       但那個暗罩把整個上半壓黑、被指的鈕又被抬起來的槍棺蓋住，讀起來就是
+       「索菈娜講完話畫面就黑了」（Ray 連報數次的那片黑幕）。地圖鈕自 ver -899
+       起本來就常駐在槍棺上，不必再教一次。
+       ⚠ `openHint` 那一邊的分層修正留著（見 modules/story.js）：吊墜／齒輪那兩則
+         提示的箭以前同樣被門吃掉，那是另一個要修的洞。 */
     nodes: {
       /* 入口＝遭遇戰復活點，**不可以有戰鬥**（§6.5.2 的鐵條）。下方回村（野外）。 */
       entry: { bg:'Forest_Entry', name:'夏爾森林　森林入口',
@@ -2606,9 +2613,9 @@ export const TOWNS = {
             ren('lookaway','……'),
             ren('lookawaytalk','那……您的人身安全，恕我們無法負責了。'),
             Object.assign(sor('readysmile','噢！'), { flags:['sv_ruins_ready'] }),
-            /* 「劇情自動進入遺蹟」——遺跡本體地圖未實裝（背景美術重製中），
-               先收在情境卡；接遺跡圖時由 sv_ruins_ready 這支旗接。 */
-            { speaker:'NARRATION', card:'——　木雅克神殿・遺蹟探索　待續　——', auto:2600 },
+            /* ⚠ ver -928：「待續」那張卡**撤了**（Ray：「戰勝鹿主後的待續移除」）——
+               它是遺跡本體還沒實裝時的收尾，現在神殿整張圖與 stage7 都在了，
+               玩家自己走上去就是（`sv_ruins_ready` 那支旗照舊留著）。 */
           ] },
         ] },
     },
@@ -3044,7 +3051,9 @@ export const TOWNS = {
           /* 喚風（Ray 交件的插圖）。 */
           { speaker:'SORANA', text:'', portrait:{ char:'SORANA', show:false },
             hide:['SORANA','RENNA','NOUVELLE','ANYA'],
-            cg:'011_Nouvellebreath', cgNoTime:true, auto:2400 },
+            /* ⚠ 下→上平移（ver -928，Ray：「諾插圖 breath 下至上平移」）——
+               風是由下往上捲的，鏡頭跟著走才讀得出「喚風」。 */
+            cg:'011_Nouvellebreath', cgNoTime:true, cgPan:'up', auto:2400 },
           Object.assign(sor('ready','風？'), { cg:null }),
           nou('relief','呼——'),
           nou('bigsmile','似乎是喚風的術式呢。'),

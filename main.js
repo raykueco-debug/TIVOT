@@ -1456,9 +1456,9 @@ story.setGateSkip(id => combat.battleNeedsGate(id));
 /* 休息處的閉棺結算（ver -913）：交棒與回程與插入戰**同一套**（storyResume →
    setStoryReturn 的最後那一條），這裡只負責把場子交給結算頁。
    ⚠ `flightBack=false`：這一頁不是飛行頁交棒過來的（同 setBattleHandler 的理由）。 */
-story.setSettleHandler((resume)=>{
+story.setSettleHandler((resume, title)=>{
   storyResume = resume; flightBack = false;
-  combat.restSettle();
+  combat.restSettle(title);   // 大標由那一拍給（ver -928：休息處／撤離）
 });
 /* 「這張圖現在該放哪一首」（ver -913）：給戰鬥卡的 `bgmAfter:'@town'` 用 ——
    曲名的真相只有 `TOWNS[].bgm` 一處（town.bgmKey），卡上不抄第二份（鐵律 7）。 */

@@ -2615,10 +2615,19 @@
     background:rgba(4,3,7,.74);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);
     opacity:0;transition:opacity .22s ease;}
   #gameMenu.on{opacity:1;}
+  /* ⚠⚠ **面板自己要能捲**（ver -928，Ray：「手機系統選單及章節無法滑動，會無法選擇」）：
+     容器是 `align-items:center` 的 flex —— 內容一長就從**上下兩端**同時溢出，
+     而溢出的那一截在 `#gameMenu` 上是看不到也捲不到的（章節有八章、選單加了
+     管理人那一段之後更高）。
+     ⚠ 捲軸給**面板**不是給容器：給容器的話 `align-items:center` 會把過高的子元素
+       頂端切掉（flex 的老問題），捲下去也回不到最上面那一列。
+     ⚠ `100%` 是容器的**內容框**（已經扣掉那 24px padding），所以不必再算一次。 */
   #gameMenu .gm-panel,#chapterSheet .gm-panel{width:100%;max-width:330px;padding:16px 18px 14px;
     background:var(--panel,rgba(14,11,20,.96));
     border:1px solid var(--gold-dim);border-radius:12px;
-    box-shadow:0 10px 34px rgba(0,0,0,.6);}
+    box-shadow:0 10px 34px rgba(0,0,0,.6);
+    max-height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;
+    overscroll-behavior:contain;}
   #gameMenu .gm-title,#chapterSheet .gm-title{text-align:center;font-size:14px;letter-spacing:6px;
     color:var(--gold);margin-bottom:12px;}
   #gameMenu .gm-sec{font-size:10px;letter-spacing:3px;color:var(--gold-dim);
@@ -3019,14 +3028,19 @@
        不必像飛行頁那樣由 JS 依「胸針到最遠螢幕角」算。 */
   /* 感應的立繪（ver -924）：飛行頁是「持續縮小、透明度緩降」，這裡照同一個語氣 ——
      它在光圈之下（光圈要蓋過所有東西），所以 z 比光圈低。 */
-  #storyFx .fx-sense-ci{position:absolute;left:50%;top:44%;z-index:2;pointer-events:none;
-    width:min(62vh,86%);transform:translate(-50%,-50%) scale(1.06);opacity:0;
+  /* ⚠⚠ **感應 CI 佔滿整個上半畫面**（ver -928，Ray：「安雅在祭壇發動 ci 時太小，
+     要全上方畫面」）。`#storyFx` 本來就是那一塊（`--story-top`），所以直接 `inset:0`
+     ＋ `object-fit:contain` —— 用 `width:min(62vh,86%)` 那一版在直式手機上只佔到
+     一半多一點，讀起來是「畫面中間貼了一張小圖」不是「她的感應罩下來」。
+     ⚠ `contain` 不 `cover`：Q 版圖裁掉頭或腳比小一點更糟。 */
+  #storyFx .fx-sense-ci{position:absolute;inset:0;z-index:2;pointer-events:none;
+    width:100%;height:100%;object-fit:contain;transform:scale(1.06);opacity:0;
     animation:storySenseCI 2.6s cubic-bezier(.3,.5,.3,1) forwards;}
   @keyframes storySenseCI{
-    0%{opacity:0;transform:translate(-50%,-50%) scale(1.06)}
-    14%{opacity:.96;transform:translate(-50%,-50%) scale(1)}
-    62%{opacity:.85;transform:translate(-50%,-50%) scale(.9)}
-    100%{opacity:0;transform:translate(-50%,-50%) scale(.82)}}
+    0%{opacity:0;transform:scale(1.06)}
+    14%{opacity:.96;transform:scale(1)}
+    62%{opacity:.85;transform:scale(.9)}
+    100%{opacity:0;transform:scale(.82)}}
   #storyFx .fx-sense-ring{position:absolute;left:50%;top:46%;z-index:3;pointer-events:none;
     width:220vmax;height:220vmax;border-radius:50%;
     background:radial-gradient(circle, rgba(150,215,245,0) 52%, rgba(150,215,245,.4) 66%,
@@ -3469,12 +3483,16 @@
        沿用別處 `-50%,-50%` 的那一支會整個跳位（同 ver -402 的坑）。 */
   #storyHint{position:absolute;inset:0;z-index:9;background:rgba(4,3,7,.62);
     pointer-events:auto;}
-  #storyHint .sh-arrow{position:absolute;transform:translate(-50%,-100%);font-style:normal;
+  /* ⚠⚠ **箭與說明自成一層，排在抬起來的槍棺（10）之上**（ver -928，見 story.js 的
+     `openHint`）：地圖鈕貼在槍棺上，箭若留在暗罩（9）裡會被門整個吃掉 ——
+     那正是「畫面一片黑、沒有東西在指」的成因。⚠ 不吃點擊（要落到暗罩／目標身上）。 */
+  #storyHintMark{position:absolute;inset:0;z-index:11;pointer-events:none;}
+  #storyHintMark .sh-arrow{position:absolute;transform:translate(-50%,-100%);font-style:normal;
     font-size:20px;color:var(--holy);text-shadow:0 0 10px rgba(111,179,212,.9);
     animation:shPoint 1s ease-in-out infinite alternate;}
   @keyframes shPoint{from{transform:translate(-50%,-100%) translateY(0);}
     to{transform:translate(-50%,-100%) translateY(-8px);}}
-  #storyHint .sh-txt{position:absolute;left:16px;right:16px;text-align:center;
+  #storyHintMark .sh-txt{position:absolute;left:16px;right:16px;text-align:center;
     font-size:12px;line-height:1.8;color:#fff;
     text-shadow:1px 0 0 rgba(0,0,0,.92),-1px 0 0 rgba(0,0,0,.92),
                 0 1px 0 rgba(0,0,0,.92),0 -1px 0 rgba(0,0,0,.92),0 1px 4px rgba(0,0,0,.7);}
@@ -3499,3 +3517,6 @@
 
   .hint-spot{position:relative;}
   #kerbPend.hint-spot,#storyExit.hint-spot{filter:drop-shadow(0 0 14px rgba(111,179,212,.95));}
+  /* ⚠⚠ 地圖鈕**不住在 `#kerb` 裡**（它是舞台的兄弟元素、z-8），卻貼在槍棺上 ——
+     提示開著時槍棺被抬到 10，它就整顆被門蓋掉。被指的那顆一定要在最上面（ver -928）。 */
+  #townMapBtn.hint-spot{z-index:11;filter:drop-shadow(0 0 14px rgba(111,179,212,.95));}

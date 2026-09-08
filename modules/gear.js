@@ -141,6 +141,15 @@ function mainGunHtml(){
 }
 
 function render(){
+  /* ⚠⚠ **重繪不要把玩家捲回頂端**（ver -928，Ray：「整備頁選擇伙伴後會跳回頂端，
+     還要再往下滑按一次確定，這不對」）：這一支是 `el.innerHTML = …` 整頁重建 ——
+     捲動位置跟著 DOM 一起沒了，而換搭檔（頁籤→確認）要重繪兩次，於是玩家每點一下
+     就被丟回最上面。作法：重建前把**現在在捲的那些元素**的位置記下來，
+     重建後照 class 對回去（DOM 是新的，只能靠 class 認）。
+     ⚠ 記整頁與逐塊都要：手機是整頁捲（`.gs-body` 直排），桌機是欄內各自捲。 */
+  const keep=[];
+  if(el) el.querySelectorAll('.gs-body,.gs-itemlist,.gs-perks,.gs-left,.gs-right')
+           .forEach(n=>{ if(n.scrollTop>0) keep.push([n.className, n.scrollTop]); });
   const cats=load.order();
   const SP=STORY_PARTNERS();
   /* 顯示的是**現任**（旗標＋玩家選擇，ver -741）；有待選就先預覽待選那一位
@@ -242,6 +251,12 @@ function render(){
     +   '</div>'
     + '</div>');
   bind();
+  /* 捲動位置對回去（見這一支開頭）。⚠ 同一幀就設得回去 —— 版面在 innerHTML
+     那一刻就已經算好了，不必等下一拍。 */
+  for(const [cls, top] of keep){
+    const n=el.querySelector('.'+String(cls).trim().split(/\s+/).join('.'));
+    if(n) n.scrollTop=top;
+  }
   /* ⚠ 提示要**等這一頁真的顯示了**才擺（`.on` 之前量到的 rect 全是 0，同 §6.5.4 的坑）——
      所以延到下一拍；`open()` 那邊也會在掛上 `.on` 之後再叫一次。 */
   setTimeout(maybeTip, 0);

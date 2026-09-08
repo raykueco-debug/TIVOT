@@ -1582,7 +1582,7 @@ export function endSession(){
    ⚠ 結算頁的併帳／清帳／HP 回滿都在 `inspector.settle` 的開頭（那是所有結算路徑
      共通的手續）；`endSession` 一定要**在它之後**（它會清帳，而那筆帳正是要報的）。 */
 export function hasSessionBank(){ return !!state.sessionStats; }
-export function restSettle(){
+export function restSettle(title){
   if(!hasSessionBank()) return false;
   const totalTaps=state.correctTaps+state.wrongTaps;
   const stats={
@@ -1592,7 +1592,7 @@ export function restSettle(){
     hitsTaken:0, sawExecution:false, sawMaxBurst:false, perfectBoards:0,
     wrongTaps:0, ultHits:0, blocks:0, delays:0,
   };
-  inspector.settle(0, stats, { isLose:false, rest:true });
+  inspector.settle(0, stats, { isLose:false, rest:true, restTitle:title||null });
   endSession();
   return true;
 }

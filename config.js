@@ -53,7 +53,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.08-927';
+export const VERSION = 'ver 2026.09.08-928';
 
 export const GAME_CONFIG = {
 
@@ -1004,6 +1004,12 @@ export const GAME_CONFIG = {
        speakers.js 的 expr 只帶 top/bot/fx，cm 在角色那一層，所以這裡要合進來。 */
     portraitFrames: (()=>{
       const N = ART.nouvelle, R = ART.renna, A = ART.anya, F = {};
+      /* ⚠⚠ 索菈娜與夏爾村那三位**也要有取景值**（ver -928，Ray：「夏爾圍城時村民立繪
+         又跑掉，不要放全身，比照主角們的比例位置」）—— -839 把他們加進 `cast`
+         與 `tutPortraits`，卻**漏了這張表**：查不到就退回「圖框貼邊」的舊路
+         （不鎖身高、不錨臉），畫面上就是一張**整張的全身圖**貼在邊上，
+         與旁邊鎖過身高的主角組完全不同尺。 */
+      const S = ART.sorana, V1 = ART.sh_villager, V2 = ART.sh_villager2, C = ART.sh_chief;
       /* ⚠ 取景值一律**抄 `ART`**（speakers.js 量的那一份，鐵律 7）——
          不要在這裡另填一組數字。`cm` 在角色那一層、expr 只帶 top/bot/fx，所以合起來。 */
       /* ⚠ `cm` 與 `fxShift` 在**角色**那一層、`expr` 只帶 top/bot/fx，所以要合進來
@@ -1030,6 +1036,13 @@ export const GAME_CONFIG = {
       /* 禍魘娜塔莉戰（ver -671，Ray 交稿）用到的差分。 */
       put('tut_anya_terrifying',    A, A.expr.terrifying);
       put('tut_anya_ni',            A, A.expr.nightmareinstall);
+      /* 夏爾村村戰的四位（ver -928）：索菈娜兩張差分＋三位村民的基本立繪。 */
+      put('tut_sorana',             S);
+      put('tut_sorana_guardtalk',   S, S.expr.guardtalk);
+      put('tut_sorana_ready',       S, S.expr.ready);
+      put('tut_sh_villager',        V1);
+      put('tut_sh_villager2',       V2);
+      put('tut_sh_chief',           C);
       return F;
     })(),
     cast: {

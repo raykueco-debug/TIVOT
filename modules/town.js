@@ -716,6 +716,25 @@ function restActDue(n){
   if(!state.sessionStats) return null;          // 這一趟還沒打過架＝不作動（Ray）
   return { lines:[ { settle:true } ] };
 }
+/* ══⚠⚠⚠ **離開這張地圖的收尾：先結算、再閉棺**（ver -928，Ray 兩條）══════════
+   · 「離開戰鬥探索時如果沒有踩到任何結算怪，於離開地圖時結算」
+   · 「點擊離開時先閉棺，然後才進其他地圖或飛行地圖」
+   兩句講的是同一個時刻，所以收成**一支**（鐵律 8）：跨圖出口（`@`）與出航都問它。
+   ⚠ **有帳就走結算那一條**（`{settle:true}`，與休息處同一支）—— 那一拍自己會
+     `playKerberosClose` 閉棺，這裡不要再多演一次門（會演兩次）。
+   ⚠ **沒帳才單純閉棺**（`playKerberosShut`，原高度開合）：那是「這張圖走完了」的
+     收尾，不是結算，所以不彈戰績頁。
+   ⚠ 判「有沒有帳」問 `state.sessionStats`（同 `restActDue`，鐵律 7）——
+     這一趟已經踩過結算怪的話帳早就清了，走出去不會再彈第二頁。
+   ⚠ 呼叫端要**先把導覽收掉、busy 立起來**：這一段期間畫面交給門與結算頁。 */
+function leaveMapRitual(done){
+  if(state.sessionStats){
+    story.playAdhoc([{ settle:true, settleTitle:'撤　離' }],
+                    ()=>{ story.clearCast(); done(); });
+    return;
+  }
+  story.playKerberosShut(done);
+}
 function wildActDue(n){
   const W=(TOWNS[townId]||{}).wildSpawn; if(!W || !n) return null;
   if(prog.hasFlag(safehouseFlag())) return null;        // 安全區：遭遇戰整套不動
@@ -1842,8 +1861,12 @@ function go(to, dir){
     document.body.classList.remove('town-nav');
     stepSfx();
     clock.advance(stepMin());          // 戰鬥探索移動也耗時（ver -815；耗時依圖 ver -871）
-    story.veil(true, CUT_MS);
-    setTimeout(()=>{ open(map, nd || undefined); }, CUT_MS);
+    /* 離開這張圖的收尾（ver -928，見 leaveMapRitual）：沒踩到結算怪就在這裡結算，
+       沒帳也要先閉棺 —— 閉完才切到下一張圖。 */
+    leaveMapRitual(()=>{
+      story.veil(true, CUT_MS);
+      setTimeout(()=>{ open(map, nd || undefined); }, CUT_MS);
+    });
     return;
   }
   /* ══ 打烊的店**進不去**（ver -406，Ray 指定）══
@@ -1922,15 +1945,22 @@ function setSail(){
     /* 船已經到手：交給飛行頁。⚠ 城鎮的位置目前不存 —— 飛行頁那邊回來時走的是
        `tivot_flight_ret_v1`（座標），城鎮節點要不要一起存是另一件事（§6.9 的清單）。 */
     stepSfx();
-    /* ⚠⚠ **先把城鎮的介面收起來**（ver -437）：`flight-on` 只是把舞台藏起來，
-       交棒進戰鬥那一刻它會被拿掉 —— 不收的話方向箭頭與地名就從槍棺底下冒出來
-       （見 `suspend()` 的說明）。狀態留著，回來時 `resume()` 接回去。 */
-    suspend();
-    /* ⚠ 走注入的開啟器（ver -388）：飛行頁現在是**內嵌 iframe**，不跳頁 ——
-       跳頁會讓音訊要重新解鎖（見 CLAUDE.md §6.10）。town 不 import main，所以用注入。 */
-    /* ⚠ 把這座城的**出港位**帶給啟動層（ver -565）：沒有這一手，出航一律重載
-       飛行頁＝船回到帝都出港位 —— 從北方泊地出航會瞬移回帝都。 */
-    if(flightOpener) flightOpener((TOWNS[townId]||{}).sailFrom||null); else location.href='flight/index.html';
+    /* 出航也是「離開這張地圖」（ver -928，見 leaveMapRitual）：沒踩到結算怪就在這裡
+       結算，沒帳也要先閉棺 —— 閉完才把畫面交給飛行頁。
+       ⚠ 先立 `busy`／收導覽：這一段期間門與結算頁在演，方向箭頭不該還按得動。 */
+    busy=true; showNav(false);
+    if(chatterOn){ story.hideBubble(); chatterOn=false; }
+    leaveMapRitual(()=>{
+      /* ⚠⚠ **先把城鎮的介面收起來**（ver -437）：`flight-on` 只是把舞台藏起來，
+         交棒進戰鬥那一刻它會被拿掉 —— 不收的話方向箭頭與地名就從槍棺底下冒出來
+         （見 `suspend()` 的說明）。狀態留著，回來時 `resume()` 接回去。 */
+      suspend();
+      /* ⚠ 走注入的開啟器（ver -388）：飛行頁現在是**內嵌 iframe**，不跳頁 ——
+         跳頁會讓音訊要重新解鎖（見 CLAUDE.md §6.10）。town 不 import main，所以用注入。 */
+      /* ⚠ 把這座城的**出港位**帶給啟動層（ver -565）：沒有這一手，出航一律重載
+         飛行頁＝船回到帝都出港位 —— 從北方泊地出航會瞬移回帝都。 */
+      if(flightOpener) flightOpener((TOWNS[townId]||{}).sailFrom||null); else location.href='flight/index.html';
+    });
     return;
   }
   if(!sail.blocked || !sail.blocked.length) return;
