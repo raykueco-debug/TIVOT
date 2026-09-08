@@ -181,7 +181,7 @@ export const ENEMIES = {
       story:1, counterStagger:1,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0.3], '萊福槍':[0,0.5] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
-      ult:{ on:1, hp:40, count:4, atk:22, gap:0.4, cd:4 },   // 血 ≤40%：每 0.4 秒丟一顆、連丟 4 顆、每顆打 22、然後歇 4 秒
+      ult:{ on:1, hp:40, count:2, atk:10, gap:0.4, cd:4 },   // 血 ≤40%：每 0.4 秒丟一顆、連丟 4 顆、每顆打 22、然後歇 4 秒
       /* ⚠ `atk:22` ＝她原本的一般攻擊力（ver -939 之前大絕的圈就是吃 `attack`）——
          寫出來只是把原行為明文化，不是調數值。要讓大絕更痛就改這一格。 */
       kind:'human',
@@ -189,7 +189,7 @@ export const ENEMIES = {
       entranceVo:'vo_sorana_pack2',   // 敵立繪一出現就播（ver -818，Ray）——她是 human 不吃降臨，另掛登場音
       fit:{ pos:'50% 30%' },   // ver -745 換上專用戰鬥圖；構圖不對再調這格
       hp:400,
-      attack:22,                     // 巨型聖徒 45 的一半
+      attack:15,                     // 巨型聖徒 45 的一半
       atkInterval:3.33,
       assaultEvery:[2,4],                 // 一般攻擊的頻率（秒）
       assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
@@ -220,11 +220,11 @@ export const ENEMIES = {
       story:1, counterStagger:1,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
-      ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },   // 大絕：on=1 才啟用（見檔頭格式說明）
+      ult:{ on:1, hp:40, count:2, atk:12, gap:0.4, cd:4 },   // 大絕：on=1 才啟用（見檔頭格式說明）
       kind:'harm',
       image:'enemy_natalia',         // → resources/enemy/mon_natalia.webp
       fit:{ pos:'50% 30%' },
-      hp:900,                        // Ray 指定
+      hp:700,                        // Ray 指定
       attack:22,                     // 巨型聖徒 45 的一半（減半，取整）
       atkInterval:3.33,              // 以下全部同巨型聖徒
       assaultEvery:[2,4],                 // 一般攻擊的頻率（秒）
@@ -272,7 +272,7 @@ export const ENEMIES = {
       story:0, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
       weaponMod:{ '重機槍':[0,0.3], '霰彈槍':[0,0.3], '萊福槍':[0,0.3] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
-      ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },   // 大絕：on=1 才啟用（見檔頭格式說明）
+      ult:{ on:1, hp:20, count:4, atk:20, gap:0.4, cd:4 },   // 大絕：on=1 才啟用（見檔頭格式說明）
       kind:'human',                  // 槍之魔女是人類 → 已擊敗（ver -432，Ray 指定）
       image:'enemy_witch',      // 立繪鑰匙（附圖）
       hp:500,
@@ -535,7 +535,7 @@ export const ENEMIES = {
       image:'enemy_sv_wolf_pack',
       bg:'Shinier_North',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:320,                             // 心魘 400 −20%
+      hp:300,                             // 心魘 400 −20%
       attack:12,                          // 心魘 15 −20%
       atkInterval:null,
       delayPenalty:{ seconds:5 },
@@ -616,7 +616,7 @@ export const ENEMIES = {
       image:'enemy_sv_beast_shackle',
       bg:'Shinier_North',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:440,                             // 心魘 +10%
+      hp:400,                             // 心魘 +10%
       attack:16,
       atkInterval:null,
       delayPenalty:{ seconds:5 },
@@ -648,7 +648,6 @@ export const ENEMIES = {
       bg:'Shinier_Wilds',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:480,                             // 心魘 +20%（比連接格怪池強）
-      attack:18,
       atkInterval:null,
       delayPenalty:{ seconds:6 },
       resist:{},
@@ -669,7 +668,7 @@ export const ENEMIES = {
       story:1, counterStagger:1,
       weaponMod:{ '重機槍':[-0.1,0], '霰彈槍':[-0.5,0], '萊福槍':[0,0] },   // ＝np_boss
       openAssault:[1,2],
-      ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
+      ult:{ on:1, hp:40, count:2, atk:20, gap:0.4, cd:4 },
       assaultEvery:[2,4],
       assault:{ count:1, gap:0 },
       kind:'harm',
@@ -743,7 +742,7 @@ export const ENEMIES = {
       story:1, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
       weaponMod:{ '重機槍':[1,0], '霰彈槍':[-0.5,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
-      ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },   // 大絕：on=1 才啟用（見檔頭格式說明）
+      ult:{ on:1, hp:40, count:2, atk:20, gap:0.4, cd:4 },   // 大絕：on=1 才啟用（見檔頭格式說明）
       /* ⚠ 「不疊加」＝場上同時只有一個紅點（見 defense.scheduleAssault 的 `noStack`）。 */
       /* ⚠⚠ **三張時段差分**（Ray：「上午下午用 Centipi_day，晚上用 night，
          黃昏黎明用 Centipi_dd」）。寫成 `{day,dd,night}` 三個槽，時段→槽的對應
@@ -810,9 +809,9 @@ export const ENEMIES = {
     serpent: {
       name:'羽蛇_A',
       story:1, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
-      weaponMod:{ '重機槍':[0,0.3], '霰彈槍':[0.5,-0.5], '萊福槍':[0,0.5] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
+      weaponMod:{ '重機槍':[0,0.3], '霰彈槍':[0.5,-0.5], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
-      ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },   // 大絕：on=1 才啟用（見檔頭格式說明）
+      ult:{ on:1, hp:40, count:4, atk:20, gap:0.4, cd:4 },   // 大絕：on=1 才啟用（見檔頭格式說明）
       kind:'aerial',               // 飛行敵人自成一類（ver -869，Ray）→ 副標照樣「已淨化」
       image:{ day:'enemy_serpent_day', dd:'enemy_serpent_dd', night:'enemy_serpent_night' },
       hp:500,
@@ -910,34 +909,48 @@ export const ENEMIES = {
       name:'森林山貓',
       story:0, counterStagger:1,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
-      openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 }, assaultEvery:[2,4], assault:{ count:1, gap:0 },
+      openAssault:[1,2],
+      ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
+      assaultEvery:[2,4],
+      assault:{ count:1, gap:0 },
       kind:'beast',
       image:'enemy_sf_lynx',
       bg:'Forest_Glade_Day',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:200, attack:10,                  // hp＝Ray 表；attack 暫定
+      hp:200,
+      attack:10,   // hp＝Ray 表；attack 暫定
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      resist:{}, weak:{}, landSe:null, special:[],
+      resist:{},
+      weak:{},
+      landSe:null,
+      special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{ delay:{ type:'claw', count:1, angle:'random' },
               wrong:{ type:'slash' },
-              assault:{ type:'claw', count:3, angle:'random' } },
+              assault:{ type:'bite', count:3, angle:'random' } },
       loot:[ { id:'meat_lynx', n:1 } ],
     },
     sf_snake: {
       name:'淺灘水蛇',
       story:0, counterStagger:1,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
-      openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 }, assaultEvery:[2,4], assault:{ count:1, gap:0 },
+      openAssault:[1,2],
+      ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
+      assaultEvery:[2,4],
+      assault:{ count:1, gap:0 },
       kind:'beast',
       image:'enemy_sf_snake',
       bg:'Forest_Shoal_Day',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:200, attack:10,                  // hp＝Ray 表；attack 暫定
+      hp:200,
+      attack:10,   // hp＝Ray 表；attack 暫定
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      resist:{}, weak:{}, landSe:null, special:[],
+      resist:{},
+      weak:{},
+      landSe:null,
+      special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{ delay:{ type:'bite' },
               wrong:{ type:'slash' },
@@ -948,15 +961,22 @@ export const ENEMIES = {
       name:'巨山豬',
       story:0, counterStagger:1,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
-      openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 }, assaultEvery:[2,4], assault:{ count:1, gap:0 },
+      openAssault:[1,2],
+      ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
+      assaultEvery:[2,4],
+      assault:{ count:1, gap:0 },
       kind:'beast',
       image:'enemy_sf_hog',
       bg:'Forest_Trail_Day',
       fit:{ mode:'contain', pos:'center 70%' },   // 稍微移高（ver -875，Ray；幅度小於獨角虎的 55%）
-      hp:350, attack:15,                  // hp＝Ray 表；attack 暫定
+      hp:350,
+      attack:15,   // hp＝Ray 表；attack 暫定
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      resist:{}, weak:{}, landSe:null, special:[],
+      resist:{},
+      weak:{},
+      landSe:null,
+      special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{ delay:{ type:'blunt' },
               wrong:{ type:'slash' },
@@ -967,36 +987,50 @@ export const ENEMIES = {
       name:'獨角虎王',
       story:0, counterStagger:1,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
-      openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 }, assaultEvery:[2,4], assault:{ count:1, gap:0 },
+      openAssault:[1,2],
+      ult:{ on:1, hp:40, count:2, atk:25, gap:1, cd:4 },
+      assaultEvery:[2,4],
+      assault:{ count:1, gap:0 },
       kind:'beast',
       image:'enemy_sf_tiger',
       bg:'Forest_Cave_Day',
       /* 位置放高、虎頭對畫面中心（ver -874，Ray 指定）：橫式撲擊構圖，頭在圖高
          約 45%——contain 縮完貼底會整隻沉在下緣，55% 讓頭落在敵區正中。 */
       fit:{ mode:'contain', pos:'center 55%' },
-      hp:500, attack:18,                  // hp＝Ray 表；attack 暫定
+      hp:500,
+      attack:20,   // hp＝Ray 表；attack 暫定
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      resist:{}, weak:{}, landSe:null, special:[],
+      resist:{},
+      weak:{},
+      landSe:null,
+      special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{ delay:{ type:'claw', count:1, angle:'random' },
-              wrong:{ type:'slash' },
+              wrong:{ type:'bite' },
               assault:{ type:'claw', count:3, angle:'random' } },
       loot:[ { id:'tiger_horn', n:1, p:0.25 } ],   // 虎王的獨角 25%（Ray 表）
     },
     sf_crows: {
       name:'食腐鴉群',
       story:0, counterStagger:1,
-      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
-      openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 }, assaultEvery:[2,4], assault:{ count:1, gap:0 },
+      weaponMod:{ '重機槍':[0,0.2], '霰彈槍':[0,-0.3], '萊福槍':[0.3,0] },
+      openAssault:[1,2],
+      ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
+      assaultEvery:[2,4],
+      assault:{ count:1, gap:0 },
       kind:'beast',
       image:'enemy_sf_crows',
       bg:'Forest_Glade_Day',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:300, attack:12,                  // hp＝Ray 表；attack 暫定
+      hp:250,
+      attack:12,   // hp＝Ray 表；attack 暫定
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      resist:{}, weak:{}, landSe:null, special:[],
+      resist:{},
+      weak:{},
+      landSe:null,
+      special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{ delay:{ type:'slash' },
               wrong:{ type:'slash' },
@@ -1021,15 +1055,22 @@ export const ENEMIES = {
          ⚠ `gap` 給 0.35 秒（不是 0）：0 會三顆同時出現、疊在一起看不出是三下；
            太長又會拆成三陣風。特效那一層**只生一層畫布**（見 enemy.spawnSakura），
            所以畫面上仍然是一陣連續的狂風。 */
-      openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 }, assaultEvery:[8,10], assault:{ count:3, gap:0.35 },
+      openAssault:[1,2],
+      ult:{ on:1, hp:40, count:2, atk:25, gap:1, cd:4 },
+      assaultEvery:[8,10],
+      assault:{ count:3, gap:0.35 },
       kind:'harm',
       image:'enemy_sf_deer_nightmare',
       bg:'ruins_shinier_entrance',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:700, attack:22,                  // ⚠ 暫定
+      hp:700,
+      attack:22,   // ⚠ 暫定
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      resist:{}, weak:{}, landSe:null, special:[],
+      resist:{},
+      weak:{},
+      landSe:null,
+      special:[],
       boardGrids:[9,9,9,9,9],
       /* 主動攻擊＝**櫻花狂亂飛舞**（ver -899，Ray 指定）：牠是樹靈，用爪痕不對。
          音效（Sturm，兩秒淡出）綁在那一支演出裡，不在 HITFX 的 `se` 上。 */
@@ -1044,15 +1085,22 @@ export const ENEMIES = {
       name:'熊骸',
       story:0, counterStagger:1,
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },   // ＝心魘（骸系照 sv）
-      openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 }, assaultEvery:[8,10], assault:{ count:1, gap:0 },
+      openAssault:[1,2],
+      ult:{ on:1, hp:40, count:2, atk:25, gap:1, cd:4 },
+      assaultEvery:[8,10],
+      assault:{ count:1, gap:0 },
       kind:'harm',
       image:'enemy_sf_bear_husk',
       bg:'Forest_Trail_Day',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:400, attack:15,                  // ⚠ 暫定（照 sv_stag 級）
+      hp:400,
+      attack:15,   // ⚠ 暫定（照 sv_stag 級）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      resist:{}, weak:{}, landSe:null, special:[],
+      resist:{},
+      weak:{},
+      landSe:null,
+      special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{ delay:{ type:'blood', angle:'random' },
               wrong:{ type:'slash' },
@@ -1063,15 +1111,22 @@ export const ENEMIES = {
       name:'夢魘熊骸',
       story:0, counterStagger:1,
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
-      openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 }, assaultEvery:[2,4], assault:{ count:1, gap:0 },
+      openAssault:[1,2],
+      ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
+      assaultEvery:[2,4],
+      assault:{ count:1, gap:0 },
       kind:'harm',
       image:'enemy_sv_bear',              // ⚠ 與 sv_bear 同一張圖（mon_bear_nightmare，鐵律 7：一張圖一個鍵）
       bg:'Forest_Trail_Day',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:500, attack:18,                  // ⚠ 暫定（夜間版比日間強一階）
+      hp:500,
+      attack:18,   // ⚠ 暫定（夜間版比日間強一階）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      resist:{}, weak:{}, landSe:null, special:[],
+      resist:{},
+      weak:{},
+      landSe:null,
+      special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{ delay:{ type:'blood', angle:'random' },
               wrong:{ type:'slash' },
@@ -1082,17 +1137,24 @@ export const ENEMIES = {
       name:'腐鹿骸',
       story:0, counterStagger:1,
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
-      openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 }, assaultEvery:[2,4], assault:{ count:1, gap:0 },
+      openAssault:[1,2],
+      ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
+      assaultEvery:[2,4],
+      assault:{ count:1, gap:0 },
       kind:'harm',
       image:'enemy_sf_stag_rot',
       bg:'Forest_Cliff_Day',
       /* 右貼邊（ver -869，Ray：「把鹿骸（半截的那隻）右移到貼邊」）——
          這張圖是前半身構圖、右緣本來就是裁切線，貼齊畫面右緣裁切線才藏得住。 */
       fit:{ mode:'contain', pos:'right bottom' },
-      hp:300, attack:12,                  // ⚠ 暫定
+      hp:300,
+      attack:12,   // ⚠ 暫定
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      resist:{}, weak:{}, landSe:null, special:[],
+      resist:{},
+      weak:{},
+      landSe:null,
+      special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{ delay:{ type:'blood', angle:'random' },
               wrong:{ type:'slash' },
@@ -1103,15 +1165,22 @@ export const ENEMIES = {
       name:'夢魘鹿骸',
       story:0, counterStagger:1,
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
-      openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 }, assaultEvery:[2,4], assault:{ count:1, gap:0 },
+      openAssault:[1,2],
+      ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
+      assaultEvery:[2,4],
+      assault:{ count:1, gap:0 },
       kind:'harm',
       image:'enemy_sv_stag',              // ⚠ 與 sv_stag 同一張圖（mon_stag_nightmare，鐵律 7）
       bg:'Forest_Cliff_Day',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:400, attack:15,                  // ⚠ 暫定
+      hp:400,
+      attack:15,   // ⚠ 暫定
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      resist:{}, weak:{}, landSe:null, special:[],
+      resist:{},
+      weak:{},
+      landSe:null,
+      special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{ delay:{ type:'blood', angle:'random' },
               wrong:{ type:'slash' },
@@ -1134,15 +1203,22 @@ export const ENEMIES = {
       name:'覆骨者',
       story:0, counterStagger:1,
       weaponMod:{ '重機槍':[0.2,0.3], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
-      openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 }, assaultEvery:[8,10], assault:{ count:1, gap:0 },
+      openAssault:[1,2],
+      ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
+      assaultEvery:[8,10],
+      assault:{ count:1, gap:0 },
       kind:'harm',
       image:'enemy_ruins_bonemaw',
       bg:'Ruins_shinier_Catacomb',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:400, attack:16,                  // hp＝Ray 表；attack 暫定
+      hp:400,
+      attack:16,   // hp＝Ray 表；attack 暫定
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      resist:{}, weak:{}, landSe:null, special:[],
+      resist:{},
+      weak:{},
+      landSe:null,
+      special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{ delay:{ type:'bite' }, wrong:{ type:'slash' },
               assault:{ type:'bite' } },
@@ -1152,15 +1228,22 @@ export const ENEMIES = {
       name:'鳴鐘者',
       story:0, counterStagger:1,
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[-0.3,0], '萊福槍':[1,0] },
-      openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 }, assaultEvery:[8,10], assault:{ count:1, gap:0 },
+      openAssault:[1,2],
+      ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
+      assaultEvery:[8,10],
+      assault:{ count:1, gap:0 },
       kind:'harm',
       image:'enemy_ruins_bellreacher',
       bg:'Ruins_shinier_Colossus',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:500, attack:18,                  // hp＝Ray 表；attack 暫定
+      hp:500,
+      attack:18,   // hp＝Ray 表；attack 暫定
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      resist:{}, weak:{}, landSe:null, special:[],
+      resist:{},
+      weak:{},
+      landSe:null,
+      special:[],
       boardGrids:[9,9,9,9,16],
       hitFx:{ delay:{ type:'blunt' }, wrong:{ type:'slash' },
               assault:{ type:'blunt', count:2 } },
@@ -1170,15 +1253,22 @@ export const ENEMIES = {
       name:'王的容器',
       story:0, counterStagger:1,
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
-      openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 }, assaultEvery:[8,10], assault:{ count:1, gap:0 },
+      openAssault:[1,2],
+      ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
+      assaultEvery:[8,10],
+      assault:{ count:1, gap:0 },
       kind:'harm',
       image:'enemy_ruins_halo_ring',
       bg:'Ruins_shinier_Hollow',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:350, attack:14,                  // hp＝Ray 表；attack 暫定
+      hp:350,
+      attack:14,   // hp＝Ray 表；attack 暫定
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      resist:{}, weak:{}, landSe:null, special:[],
+      resist:{},
+      weak:{},
+      landSe:null,
+      special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{ delay:{ type:'blood', angle:'random' }, wrong:{ type:'slash' },
               assault:{ type:'claw', count:3, angle:'random' } },
@@ -1189,15 +1279,22 @@ export const ENEMIES = {
       name:'撕心者',
       story:0, counterStagger:1,
       weaponMod:{ '重機槍':[0.2,0.3], '霰彈槍':[0.3,0], '萊福槍':[0,0] },
-      openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 }, assaultEvery:[2,4], assault:{ count:1, gap:0 },
+      openAssault:[1,2],
+      ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
+      assaultEvery:[2,4],
+      assault:{ count:1, gap:0 },
       kind:'harm',
       image:'enemy_ruins_heartripper',
       bg:'Ruins_shinier_Prison',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:300, attack:16,                  // hp＝Ray 表；attack 暫定
+      hp:300,
+      attack:16,   // hp＝Ray 表；attack 暫定
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      resist:{}, weak:{}, landSe:null, special:[],
+      resist:{},
+      weak:{},
+      landSe:null,
+      special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{ delay:{ type:'claw', count:1, angle:'random' }, wrong:{ type:'slash' },
               assault:{ type:'claw', count:3, angle:'random' } },
@@ -1207,15 +1304,22 @@ export const ENEMIES = {
       name:'喪鐘',
       story:0, counterStagger:1,
       weaponMod:{ '重機槍':[-0.2,0], '霰彈槍':[-0.5,0], '萊福槍':[1,0] },
-      openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 }, assaultEvery:[2,4], assault:{ count:1, gap:0 },
+      openAssault:[1,2],
+      ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
+      assaultEvery:[2,4],
+      assault:{ count:1, gap:0 },
       kind:'harm',
       image:'enemy_ruins_bellwalker',
       bg:'Ruins_shinier_MossChamber',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:500, attack:16,                  // hp＝Ray 表（ver -920 補）；attack 暫定
+      hp:500,
+      attack:16,   // hp＝Ray 表（ver -920 補）；attack 暫定
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      resist:{}, weak:{}, landSe:null, special:[],
+      resist:{},
+      weak:{},
+      landSe:null,
+      special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{ delay:{ type:'blunt' }, wrong:{ type:'slash' },
               assault:{ type:'blunt' } },
@@ -1226,15 +1330,22 @@ export const ENEMIES = {
       name:'鎖鍊聖徒',
       story:0, counterStagger:1,
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
-      openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 }, assaultEvery:[2,4], assault:{ count:1, gap:0 },
+      openAssault:[1,2],
+      ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
+      assaultEvery:[2,4],
+      assault:{ count:1, gap:0 },
       kind:'slay',
       image:'enemy_ruins_saint_prison',
       bg:'Ruins_shinier_Prison',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:400, attack:16,                  // hp＝Ray 表；attack 暫定
+      hp:400,
+      attack:16,   // hp＝Ray 表；attack 暫定
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      resist:{}, weak:{}, landSe:null, special:[],
+      resist:{},
+      weak:{},
+      landSe:null,
+      special:[],
       boardGrids:[9,9,9,9,9],
       hitFx:{ delay:{ type:'blunt' }, wrong:{ type:'slash' },
               assault:{ type:'claw', count:3, angle:'random' } },
@@ -1244,15 +1355,22 @@ export const ENEMIES = {
       name:'監查者',
       story:0, counterStagger:1,
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
-      openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 }, assaultEvery:[2,4], assault:{ count:1, gap:0 },
+      openAssault:[1,2],
+      ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
+      assaultEvery:[2,4],
+      assault:{ count:1, gap:0 },
       kind:'slay',
       image:'enemy_ruins_saint_inspector',
       bg:'Ruins_shinier_DarkBridge',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:400, attack:16,                  // hp＝Ray 表；attack 暫定
+      hp:400,
+      attack:16,   // hp＝Ray 表；attack 暫定
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      resist:{}, weak:{}, landSe:null, special:[],
+      resist:{},
+      weak:{},
+      landSe:null,
+      special:[],
       boardGrids:[9,9,9,9,16],
       hitFx:{ delay:{ type:'slash' }, wrong:{ type:'slash' },
               assault:{ type:'slash', count:2 } },
@@ -1262,15 +1380,22 @@ export const ENEMIES = {
       name:'巨型聖徒',
       story:0, counterStagger:1,
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
-      openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 }, assaultEvery:[2,4], assault:{ count:1, gap:0 },
+      openAssault:[1,2],
+      ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
+      assaultEvery:[2,4],
+      assault:{ count:1, gap:0 },
       kind:'slay',
       image:'enemy_ruins_saint_thug',
       bg:'Ruins_shinier_CorridorA',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:600, attack:18,                  // hp＝Ray 表；attack 暫定
+      hp:600,
+      attack:18,   // hp＝Ray 表；attack 暫定
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      resist:{}, weak:{}, landSe:null, special:[],
+      resist:{},
+      weak:{},
+      landSe:null,
+      special:[],
       boardGrids:[9,9,9,9,16],
       hitFx:{ delay:{ type:'blunt' }, wrong:{ type:'slash' },
               assault:{ type:'blunt', count:2 } },
@@ -1282,15 +1407,22 @@ export const ENEMIES = {
       name:'節制',
       story:0, counterStagger:1,
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
-      openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 }, assaultEvery:[2,4], assault:{ count:2, gap:0.35 },
+      openAssault:[1,2],
+      ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
+      assaultEvery:[2,4],
+      assault:{ count:2, gap:0.35 },
       kind:'slay',
       image:'enemy_ruins_saint_temperance',
       bg:'Ruins_shinier_DeepAltar',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:900, attack:20,                  // hp＝Ray 表（ver -920 補）；attack 暫定
+      hp:900,
+      attack:20,   // hp＝Ray 表（ver -920 補）；attack 暫定
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      resist:{}, weak:{}, landSe:null, special:[],
+      resist:{},
+      weak:{},
+      landSe:null,
+      special:[],
       boardGrids:[9,9,16,9,16],
       hitFx:{ delay:{ type:'blunt' }, wrong:{ type:'slash' },
               assault:{ type:'claw', count:3, angle:'random' } },
