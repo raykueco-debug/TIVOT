@@ -53,7 +53,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.08-928';
+export const VERSION = 'ver 2026.09.08-929';
 
 export const GAME_CONFIG = {
 
@@ -2448,7 +2448,10 @@ export const ASSETS = {
   enemy_np_candlepenitent: "resources/enemy/mon_relic_candlepenitent.webp",
   enemy_np_coralman:       "resources/enemy/mon_sea_coralman.webp",
   enemy_np_reassembled:    "resources/enemy/mon_relic_reassembled.webp",
-  enemy_np_boss: "resources/enemy/mon_beast_altar.webp",
+  /* ⚠ 美術把 `mon_beast_altar` 更名成 `mon_beast_reliquary`（ver -928 才發現）——
+     舊檔名一直指著一個不存在的檔案＝北泊教堂 Boss 沒有立繪，而**畫面上不會有錯誤訊息**。
+     自檢：把 config 裡所有 resources 路徑抓出來逐個 `test -f`（同 §5 的同名覆蓋自檢）。 */
+  enemy_np_boss: "resources/enemy/mon_beast_reliquary.webp",
   /* 教堂那一場之後的真 BOSS：**瓦礫中生出的紫黑之爪**（ver -595，Ray：「boss 圖為
      TheClaws」）。⚠ 這一張是**連背景一起畫的整張戰鬥圖**（規格見
      `resources/background/_boss_claw_spec.md`）—— 所以敵人卡**不給 `bg`、不給
