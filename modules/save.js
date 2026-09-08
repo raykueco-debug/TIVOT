@@ -58,9 +58,10 @@ export function setHost(h){ host = { ...host, ...(h||{}) }; }
 function load(){
   try{
     const j=JSON.parse(localStorage.getItem(KEY)||'null');
-    if(j && typeof j==='object') return { main:j.main||null, quick:j.quick||null, auto:j.auto||null, slots:j.slots||{} };
+    if(j && typeof j==='object') return { main:j.main||null, quick:j.quick||null, auto:j.auto||null,
+                                          sim:j.sim||null, slots:j.slots||{} };
   }catch(e){}
-  return { main:null, quick:null, auto:null, slots:{} };
+  return { main:null, quick:null, auto:null, sim:null, slots:{} };
 }
 function store(db){
   try{ localStorage.setItem(KEY, JSON.stringify(db)); }catch(e){}
@@ -190,6 +191,31 @@ export function loadLatest(opts){
   apply(rec, opts);
   return true;
 }
+
+/* ══⚠⚠⚠ 模擬存檔（`sim`，ver -936，Ray：「幫我做個存檔鈕在小地圖選單，存的檔跟
+   其他進度都錯開，獨立，用來模擬真實玩家推進」）══════════════════════════
+   **自己一格**，與 `main`（玩家睡覺存的那一份）、`auto`（檢查點）、`quick`／`slots`
+   全部錯開 —— 它是「Ray 的試玩進度」，不該與任何一條既有的路互相蓋掉。
+   ⚠⚠ **它不進 `latest()`**（那一支只看 `main`／`auto`）：首頁的「繼續」是玩家的路，
+     被試玩存檔搶走就等於把兩條進度混在一起 —— 而那正是這一格要避免的事。
+     要讀它只有小地圖裡那顆鈕（`town.js` 的 `.tm-sv`）。
+   ⚠⚠ **`clearRunSaves()` 不清它**（＝「開始故事」重來一輪也留著）：它與 `quick`／
+     `slots` 同族，是開發梯子不是那一輪的狀態。
+   ⚠ 存讀的動作本身完全沿用 `capture()`／`apply()`（鐵律 8）—— 換的只有存哪一格。 */
+export function simSave(){
+  const db=load(); db.sim=capture(); store(db);
+  toast('模擬存檔  '+db.sim.label);
+  return db.sim;
+}
+export function simLoad(){
+  const db=load();
+  if(!db.sim){ toast('還沒有模擬存檔'); return false; }
+  apply(db.sim);
+  toast('模擬讀檔  '+db.sim.label);
+  return true;
+}
+/* 那一格現在裝著什麼（給小地圖那顆鈕印在旁邊；沒有就回 null）。 */
+export function simInfo(){ return load().sim || null; }
 
 /* ══ 即時存讀（F4 / F7）══ */
 export function quickSave(){

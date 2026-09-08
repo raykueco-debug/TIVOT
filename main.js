@@ -1141,6 +1141,9 @@ town.setGearWatch(gear.onceClosed);
    「功能未開的城鎮裡戰死 → 回檔」會退回**上一次讀取頁**，把整段抵達的戲一起退掉。
    ⚠ 走**同一支** `autoSave`（劇情讀取頁的檢查點也是它，鐵律 8）。 */
 town.setCheckpoint(()=>{ saveSys.autoSave(); refreshContinue(); });
+/* 小地圖裡的「模擬存檔」（ver -936，見 save.js 的 sim 那一段）。
+   ⚠ 注入而不是 import（同 setCheckpoint）：城鎮不認識存檔層。 */
+town.setSimSave({ save:()=>saveSys.simSave(), load:()=>saveSys.simLoad(), info:()=>saveSys.simInfo() });
 /* 跨圖離開荒野＝收掉連戰段落（ver -869，見 town.open 開頭的說明）。 */
 town.setSessionCloser(()=>{ try{ combat.endSession(); }catch(_){} });
 /* ⚠⚠ **這顆鈕就是「從頭開始」**（ver -381，Ray：「從頭開始，城鎮探索的劇情要重新出現」）：

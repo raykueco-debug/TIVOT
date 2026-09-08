@@ -1287,7 +1287,31 @@ function renderMap(){
              + '" style="'+pos+'">'
              + '<b></b><span>'+nm+'</span></i>';
       }).join('')
-    + '</div>';
+    + '</div>'
+    /* ══ 模擬存檔那一列（ver -936；管理人限定，見 setSimSave）══
+       ⚠ 擺在 `.tm-frame` **外面**：框裡是那張羊皮紙，尺寸與座標都是「地圖的百分比」
+         （同 `.tm-fog` 那一條的理由）—— 鈕塞進去會跟著圖縮放，小螢幕上按不到。 */
+    + (simIO && document.body.classList.contains('testmode')
+        ? '<div class="tm-save">'
+          + '<button class="tm-sv" type="button" data-a="save">存　檔</button>'
+          + '<button class="tm-sv" type="button" data-a="load">讀　檔</button>'
+          + '<i>'+ (()=>{ const r=simIO.info&&simIO.info();
+                          return r ? String(r.label||'').replace(/</g,'&lt;') : '（空）'; })() +'</i>'
+          + '</div>'
+        : '');
+  /* ⚠⚠ 綁在 `pointerup` 並 `stopPropagation`：這一層自己有一條
+     「點任何地方就收掉地圖」的 pointerup（見上面 `v` 的建立）——
+     不擋的話按存檔會順手把地圖關掉，而且是**先關再存**，看不出到底存了沒。
+     ⚠ 存完才收地圖：那一下收掉是回饋（「做完了」），toast 由 save.js 自己浮。 */
+  v.querySelectorAll('.tm-sv').forEach(b=>{
+    b.addEventListener('pointerdown', e=>e.stopPropagation());
+    b.addEventListener('pointerup', e=>{
+      e.stopPropagation();
+      try{ SFX.menuClick(); }catch(_){}
+      if(b.dataset.a==='save'){ if(simIO.save) simIO.save(); mapClose(); }
+      else { mapClose(); if(simIO.load) simIO.load(); }   // 讀檔會換場：先收地圖
+    });
+  });
   v.classList.add('on');
   mapFlip();                        // 翻開旅誌（ver -915）
   /* 地圖開著＝導覽字格收掉（ver -867，Ray：「不用導覽字格」）——
@@ -2330,6 +2354,14 @@ export function setGearWatch(fn){ gearWatch=fn||null; }
    ⚠ 注入而不是 import（同上）：城鎮不認識存檔層。 */
 let checkpoint=null;
 export function setCheckpoint(fn){ checkpoint=fn||null; }
+/* ══ 小地圖裡的「模擬存檔」（ver -936，Ray：「幫我做個存檔鈕在小地圖選單，存的檔跟
+   其他進度都錯開，獨立，用來模擬真實玩家推進」）══
+   `{save, load, info}` 由 main 注入（城鎮不認識存檔層，同 setCheckpoint）。
+   ⚠⚠ **管理人限定**（`body.testmode`）：玩家的存檔規約是「睡一覺＝唯一那一份」
+     （§6.9），在地圖上多一顆隨手存檔會把那條規矩整個推翻。這一顆是試玩用的梯子。
+   ⚠ 沒注入（單獨測 town）＝整組不出現，不會炸。 */
+let simIO=null;
+export function setSimSave(o){ simIO=o||null; }
 /* 跨圖離開荒野時收掉連戰段落（ver -869，見 open() 開頭）。注入＝combat.endSession。 */
 let sessionCloser=null;
 export function setSessionCloser(fn){ sessionCloser=fn||null; }
