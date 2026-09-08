@@ -157,14 +157,26 @@ SFX.setVoiceDuck(GAME_CONFIG.tuning.loudness && GAME_CONFIG.tuning.loudness.voic
      flight 端自 -856 起聽 storage 事件同步（選單能蓋在飛行上開，boot 快照會過期）。 */
 const MUTE_KEY='tivot_mute_v1';
 const isMuted =()=>{ try{ return localStorage.getItem(MUTE_KEY)==='1'; }catch(_){ return false; } };
+/* ⚠⚠ **套用只有這一支**（鐵律 8）：主音量 ＋ 左上那顆鈕的字面／配色一起 ——
+   所以不管是從角落那顆鈕切、還是從選單面板那一列切，兩個 UI 都會同步（鐵律 7：
+   狀態的真相只有 `MUTE_KEY` 一份，畫面一律由這一支重新讀它畫出來）。 */
 function applyMute(){
-  SFX.setMasterVolume(isMuted() ? 0 : MASTER_VOL);
+  const m=isMuted();
+  SFX.setMasterVolume(m ? 0 : MASTER_VOL);
+  const b=$('muteBtn');
+  if(b){ b.textContent = m ? '🔇' : '🔊'; b.classList.toggle('muted', m); }
+  settings.syncMute();          // 選單面板那一列（開著才有作用），見那一支的說明
 }
-settings.setMuteHook({
-  get: isMuted,
-  toggle(){ try{ localStorage.setItem(MUTE_KEY, isMuted() ? '0' : '1'); }catch(_){}
-            applyMute(); return isMuted(); },
-});
+function toggleMute(){
+  try{ localStorage.setItem(MUTE_KEY, isMuted() ? '0' : '1'); }catch(_){}
+  applyMute(); return isMuted();
+}
+settings.setMuteHook({ get: isMuted, toggle: toggleMute });
+/* 左上最角落那顆（ver -933 放回來，Ray 指定；`body.testmode` 限定，見 style.css）。
+   ⚠ `stopPropagation`：它蓋在讀取頁（z 100000 > 99999）之上，不擋掉的話按靜音會
+     順手觸發那一頁的「點擊繼續」。 */
+{ const b=$('muteBtn');
+  if(b) b.addEventListener('click', e=>{ e.stopPropagation(); toggleMute(); }); }
 applyMute();
 
 // 普攻槍聲：固定用 Pistol_SE_03（不隨機）

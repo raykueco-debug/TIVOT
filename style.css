@@ -41,10 +41,27 @@
      為 webview 外完全不可視死區——100vh 撐高會讓內容伸進去被裁（戰鬥盤面遭蓋，已撤回）、
      狀態列改 black 亦遭忽略。定案：接受死區為底部邊框，html.vp-clipped（index.html 偵測）
      模式下拿回「白墊在死區裡的底部安全區」還給內容（首頁底排／結算鈕，見各處規則）。 */
-  /* ===== 全域靜音（ver -856，Ray：「把靜音鈕拿掉，放到系統選單裡」）=====
-     浮動鈕（-394 的左上那顆）已整組拆除 —— 開關改成選單面板裡的一列
-     （modules/settings.js 的 gmMute），玩家可見（不再是管理人限定）。
-     鑰匙照舊 tivot_mute_v1；套用仍走 main.js 的 applyMute（唯一實作，鐵律 8）。 */
+  /* ═════ 全域靜音（ver -933，Ray：「把靜音鈕放回左上最角落，全域有效，限管理人」）═════
+     -856 曾把這顆浮動鈕拆掉、只留選單面板那一列；這一版**放回來**，並照 Ray 的三條改：
+       · **左上最角落** —— 不再是 -394 的 `notch+56`（那是為了讓開 `#testClearBtn`）。
+         現在換成**清盤鈕讓開它**（下面那一條把 `#testClearBtn` 移到 left:56）——
+         兩顆都是 testmode 限定，讓位的該是後來的那一顆。
+       · **全域有效** —— `z-index:100000` 蓋過讀取頁（99999）與飛行 iframe（8200）；
+         ⚠⚠ -394 那一版曾寫 `body.flight-on #muteBtn{display:none}`（飛行畫面上不顯示）
+           —— **不要再加回來**：大地圖正是玩家待最久的畫面，在那裡按不到就不叫全域。
+       · **限管理人** —— `body.testmode` 才顯示。
+     ⚠ 選單面板那一列（settings 的 gmMute）**留著**：那是玩家唯一的入口。
+       兩個 UI 一份狀態 —— 鑰匙 `tivot_mute_v1`、套用只有 main.js 的 `applyMute` 一支
+       （它同時把這顆鈕的字面與 class 更新回來，所以從哪邊切都同步，鐵律 7/8）。 */
+  #muteBtn{display:none;position:fixed;z-index:100000;
+    top:calc(var(--notch-bar-h, 0px) + 4px);left:4px;right:auto;
+    width:36px;height:36px;padding:0;border-radius:18px;
+    background:rgba(10,8,14,.6);border:1px solid var(--gold-dim);color:var(--gold);
+    font-family:inherit;font-size:15px;line-height:1;
+    align-items:center;justify-content:center;}
+  body.testmode #muteBtn{display:flex;}
+  #muteBtn.muted{color:#d06a60;border-color:rgba(208,106,96,.7);}
+  #muteBtn:active{transform:scale(.92);}
 
   /* ===== 載入畫面（#assetLoader 由 main.js 動態建立）=====
      光圈＋百分比＋SAINT INSTALL 字樣；中下方監察官立繪。
@@ -710,7 +727,9 @@
   #giveUpBtn{top:10px;right:64px;width:auto;padding:0 12px;font-size:12px;letter-spacing:1px;
     color:var(--gold-dim);border-color:var(--gold-dim);display:none;}
   body.timeattack #giveUpBtn{display:flex;}
-  #testClearBtn{top:10px;left:10px;right:auto;font-size:12px;letter-spacing:1px;color:var(--holy);border-color:var(--holy);display:none;}
+  /* ⚠ 讓開左上角那顆靜音鈕（ver -933：36px＋左邊 4px → 右緣 40）——兩顆都是
+     testmode 限定，讓位的是後來的這一顆。 */
+  #testClearBtn{top:10px;left:56px;right:auto;font-size:12px;letter-spacing:1px;color:var(--holy);border-color:var(--holy);display:none;}
   body.testmode #testClearBtn{display:flex;}
   /* 效能探針的常駐開關（ver -852，Ray：「首頁開了以後進遊戲關不掉」）——
      testmode 限定、右下角、z 高於飛行 iframe(8200)與所有 overlay，任何畫面都按得到。

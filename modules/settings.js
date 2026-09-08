@@ -38,6 +38,22 @@ const num = (v, d) => { const n=parseFloat(v); return isFinite(n) ? n : d; };
    鑰匙與套用都住在 main.js（applyMute 唯一實作，鐵律 8）—— 本模組是葉節點，
    只拿注入的 {get, toggle} 畫那一列開關。沒注入（理論上不會）就不出這一列。 */
 let muteHook = null;
+/* ══⚠⚠ **靜音有兩個 UI，畫面一律由狀態重畫**（ver -933）══════════════════
+   左上最角落那顆浮動鈕（main.js）與這一列開關，讀寫的是**同一把鑰匙**
+   （`tivot_mute_v1`）。誰切都行，但**畫**只能有一條路：
+   `main.applyMute()` → 它畫角落那顆 ＋ 呼叫這一支畫這一列（鐵律 7/8）。
+   ⚠ -933 第一版讓這一列在自己的 click 裡畫自己 —— 於是**從角落那顆切的時候
+     這一列不會更新**（實測：鑰匙已經是 0，開關還亮著 `on`），而那不會有任何
+     錯誤訊息。凡是「同一個狀態有兩個顯示」，就要有一支把兩邊一起重畫。
+   ⚠ 面板沒開就是 no-op：它每次 `open()` 都重建 HTML，那時本來就會讀新的值。 */
+export function syncMute(){
+  const mu=document.getElementById('gmMute');
+  if(!mu || !muteHook) return;
+  const on=!!muteHook.get();
+  mu.classList.toggle('on', on);
+  const lab=mu.parentNode && mu.parentNode.querySelector('b');
+  if(lab) lab.textContent = on ? '靜音中' : '關';
+}
 export function setMuteHook(h){ muteHook = h; }
 /* ══⚠⚠ **管理人工具收進這一頁**（ver -926，Ray：「把凍結跟狀態 HUD 收到系統設定裡面，
    限管理人使用」）══ 以前是右下角兩顆常駐小鈕（`#perfToggle`／`#perfFreeze`，ver -852/-855）
@@ -173,8 +189,8 @@ export function open(opts){
     const mu=panel.querySelector('#gmMute');
     if(mu) mu.addEventListener('click', e=>{ e.stopPropagation();
       const on=muteHook.toggle();                       // 切完回讀真相（鑰匙在 main 那邊）
-      mu.classList.toggle('on', on);
-      const lab=mu.parentNode.querySelector('b'); if(lab) lab.textContent = on ? '靜音中' : '關';
+      /* ⚠ 這裡**不自己畫**：`toggle()` 走的是 main 的 `applyMute`，而那一支收尾會叫
+         `syncMute()` 把這一列重畫回來（見下）—— 自己再畫一次就是兩個畫法。 */
       if(!on) try{ SFX.menuClick(); }catch(_){}         // 解除靜音才試音（靜音中按下去本來就該無聲）
     });
     const au=panel.querySelector('#gmAuto'), auV=panel.querySelector('#gmAutoV');
