@@ -925,15 +925,15 @@ function resetEnergy(){ state.energy=0; updateEnergyClasp(); }
    ⚠⚠ **只有這一處在算**（鐵律 7）：所有打到敵人的傷害都走 `enemyDamage`，
      所以修正也只掛在這裡 —— 不要在反擊、普攻、雙槍那三邊各乘一次。
    ⚠ `src` ＝傷害來源（`basic`／`counter`／`dual`／`saint`…）。卡上的
-     `resist[src]` 是減傷成數、`weak[src]` 是增傷成數，兩者相加後套一次。
-   ⚠ `dualBonus` 是**破防窗口期間**的額外增傷（與來源無關，卡上分開寫的一欄）。
+     `Ganymede` 是主武器（普攻）的增減傷、`weaponMod[類別][0]` 是各把副武器的
+     （只對反擊生效）—— ver -949 起只有這兩條，舊的 `resist`／`weak` 已移除。
    ⚠ 至少留 1 點：減傷 100% 也不該變成打不動（那會讓玩家以為卡住）。 */
 function applyEnemyMods(dmg, src){
   if(!(dmg>0)) return dmg;
   let k = 1;
-  const R=state.enemyResist, Wk=state.enemyWeak;
-  if(R && R[src]) k -= R[src];
-  if(Wk && Wk[src]) k += Wk[src];
+  /* 主武器（普攻）的增減傷（ver -949）：與副武器那三把同一排，正＝增傷、負＝減傷。
+     ⚠ 只對 `basic` 生效 —— 迦尼米德就是點盤面開的那把槍。 */
+  if(src==='basic' && state.enemyGanymede) k += state.enemyGanymede;
   /* 副武器**傷害調整**（ver -796，Ray：一欄 `weaponMod:{ 類別:[傷害,迴避] }`，加法）：
      只對**反擊**生效（反擊打出去的就是當下裝備的副武器 state.equippedWeapon）。
      取 [0]＝傷害率：正=增傷、負=抗性減傷（0.1＝+10%、−0.2＝−20%，加進 k，不是乘）。

@@ -96,35 +96,75 @@ def file_of(card, assets, files):
             if os.path.splitext(f)[0].lower().endswith(stem): return 'resources/enemy/' + f
     return ''
 
-# 欄的順序：照卡上本來的順序排（讀第一張卡的鍵序），沒出現過的排在後面
-def columns(data):
-    seen, order = set(), []
-    for card in data.values():
-        for k in card:
-            if k not in seen:
-                seen.add(k); order.append(k)
-    cols = ['key'] + IMG_COLS
-    for k in order:
-        if k == 'weaponMod':
-            for w in WEAPONS: cols += [f'weaponMod.{w}.傷害', f'weaponMod.{w}.迴避']
-        elif k in PAIRS:  cols += [f'{k}.{s}' for s in PAIRS[k]]
-        elif k in OBJS:   cols += [f'{k}.{s}' for s in OBJS[k]]
-        else:             cols.append(k)
-    return cols
+
+# ══⚠⚠⚠ **版面照 Ray 交的那一份**（ver -949，他在根目錄放了 enemies.xlsx 當範本）══
+#   三列表頭：① 群組（合併）② 欄名（機器讀的）③ 中文顯名（人看的）；資料從第 4 列起。
+#   ⚠ **欄名那一列是唯一的真相**：匯入只認它，中文顯名純粹是給人看的，改了不影響匯入。
+#   ⚠ 群組與順序是 Ray 排的（他要照這個順序填），**不要自己重排** —— 那是他的工作動線。
+LAYOUT = [
+    ('編號',   [('__no__',          '')]),
+    ('基本資料', [('key',            ''), ('圖', '圖'), ('圖檔', '圖檔'), ('name', '顯名')]),
+    ('基本設定', [('story',          '劇情'), ('kind', '種類'), ('hp', 'HP'), ('attack', '攻擊力'),
+                ('counterStagger', '反擊硬直'), ('noStack', '不疊圈'), ('entrance', '進場音效'),
+                ('bg',             '指定地點')]),
+    ('武器增益', [('Ganymede',       '雙槍增傷'),
+                ('weaponMod.重機槍.傷害', '機槍增傷'), ('weaponMod.重機槍.迴避', '機槍迴避'),
+                ('weaponMod.霰彈槍.傷害', '霰彈增傷'), ('weaponMod.霰彈槍.迴避', '霰彈迴避'),
+                ('weaponMod.萊福槍.傷害', '萊福槍增傷'), ('weaponMod.萊福槍.迴避', '萊福槍迴避')]),
+    ('起手',   [('boardGrids',      '盤面'), ('openAssault.min', '先手起點'), ('openAssault.max', '先手終點')]),
+    ('攻擊',   [('atkInterval',     '縮圈秒數'), ('assaultEvery.min', '攻擊頻率下限'),
+                ('assaultEvery.max','攻擊頻率上限'), ('assault.count', '攻擊圈數'), ('assault.gap', '攻擊圈時間差')]),
+    ('大絕',   [('ult.on',          '大絕開關'), ('ult.hp', '大絕血量'), ('ult.count', '大絕數量'),
+                ('ult.atk',         '每顆攻擊'), ('ult.gap', '每顆間格'), ('ult.cd', '大絕cd')]),
+    ('延時',   [('delayPenalty.seconds', '延時秒數'), ('delayPenalty.damage', '延時攻擊')]),
+    ('錯誤',   [('wrongPenalty.damage',  '錯誤攻擊')]),
+    # 受擊特效拆四格（ver -948 的「受擊四種狀況」）：延時／按錯／攻擊／大絕
+    ('受擊特效', [('hitFx.delay',  '延時'), ('hitFx.wrong', '按錯'),
+                ('hitFx.assault','攻擊'), ('hitFx.ult',   '大絕')]),
+    ('圖幅',   [('fit.mode',        '取景模式'), ('fit.pos', '取景位置')]),
+    ('掉落',   [('loot1.id','掉落1'), ('loot1.n','數量'), ('loot1.p','機率'),
+                ('loot2.id','掉落2'), ('loot2.n','數量'), ('loot2.p','機率'),
+                ('loot3.id','掉落3'), ('loot3.n','數量'), ('loot3.p','機率'),
+                ('loot4.id','掉落4'), ('loot4.n','數量'), ('loot4.p','機率')]),
+    ('其他',   [('special',         '特殊')]),
+]
+HITFX_SLOTS = ['delay', 'wrong', 'assault', 'ult']
+LOOT_N = 4
+
+def columns():
+    """[(欄名, 中文顯名, 群組)] —— 版面的唯一來源就是 LAYOUT。"""
+    out=[]
+    for g, fields in LAYOUT:
+        for i,(n,lab) in enumerate(fields): out.append((n, lab, g if i==0 else None, len(fields)))
+    return out
 
 def cell(card, col):
-    """一格的值：攤平的取子鍵，其餘純量原樣、結構寫 JSON。"""
+    """一格的值。⚠ 只有這一支知道「欄名 → 卡上的哪個值」（鐵律 7）——匯出與匯入
+       的比對都問它，兩邊各寫一份必然走鐘。"""
+    if col == '__no__' or col in ('圖', '圖檔'): return ''
+    if col == 'entrance':  return card.get('entrance', '') or ''
+    if col == 'Ganymede':
+        # 主武器（普攻）的增傷／減傷：與三把副武器同一排（ver -949，取代舊的 resist.basic）
+        v = card.get('Ganymede'); return '' if v is None else v
+    if col.startswith('weaponMod.'):
+        _, w, which = col.split('.')
+        arr = (card.get('weaponMod') or {}).get(w) or [0, 0]
+        return arr[0] if which == '傷害' else arr[1]
+    if col.startswith('hitFx.'):
+        v = (card.get('hitFx') or {}).get(col.split('.')[1])
+        return json.dumps(v, ensure_ascii=False) if v else ''
+    if col.startswith('loot'):
+        idx = int(col[4]) - 1; part = col.split('.')[1]
+        arr = card.get('loot') or []
+        if idx >= len(arr): return ''
+        got = arr[idx].get(part)
+        return '' if got is None else got
     if '.' in col:
         head, rest = col.split('.', 1)
         v = card.get(head)
         if v is None: return ''
-        if head == 'weaponMod':
-            w, which = rest.split('.')
-            arr = (v or {}).get(w) or [0, 0]
-            return arr[0] if which == '傷害' else arr[1]
         if head in PAIRS:
-            i = PAIRS[head].index(rest)
-            return (v or [None, None])[i]
+            return (v or [None, None])[PAIRS[head].index(rest)]
         got = (v or {}).get(rest)
         return '' if got is None else got
     v = card.get(col)
@@ -141,33 +181,61 @@ def load_js():
         sys.exit('讀不到 enemies.js：\n' + (r.stderr or '')[:800])
     return json.loads(r.stdout)
 
+def load_named(name, expr):
+    tmp = f'/tmp/_tivot_dump_{name}.mjs'
+    with open(tmp, 'w', encoding='utf-8') as f:
+        f.write(f"import {{ {name} }} from '{os.path.join(ROOT,'config.js')}';\nprint(JSON.stringify({expr}));\n")
+    r = subprocess.run([JSC, '-m', tmp], capture_output=True, text=True)
+    try: return json.loads(r.stdout)
+    except Exception: return None
+
+def load_assets(): return load_named('ASSETS', 'ASSETS') or {}
+def item_ids():    return load_named('GAME_CONFIG', 'Object.keys(GAME_CONFIG.items.defs)') or []
+def bg_names():
+    """背景的基底名（去副檔名、去重）—— 卡上的 `bg` 就是寫這個。"""
+    d = os.path.join(ROOT, 'resources', 'background')
+    try: fs = os.listdir(d)
+    except OSError: return []
+    return sorted({os.path.splitext(f)[0] for f in fs if f.lower().endswith(('.webp', '.png', '.jpg', '.jpeg'))})
+
 # ── 匯出 ──────────────────────────────────────────────────────────────
 STAMP = '__源檔指紋__'   # 匯出當下 enemies.js 的內容雜湊；匯入時對一次
 def do_export():
     import hashlib, tempfile
     from openpyxl import Workbook
-    from openpyxl.styles import Font, Alignment, PatternFill
+    from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
     from openpyxl.drawing.image import Image as XLImage
+    from openpyxl.utils import get_column_letter as CL
+    from openpyxl.worksheet.datavalidation import DataValidation
     data   = load_js()
     assets = load_assets()
     files  = enemy_files()
-    cols   = columns(data)
+    cols   = columns()
+    names  = [c[0] for c in cols]
     wb = Workbook(); ws = wb.active; ws.title = '敵人卡'
-    ws.append(cols)
-    used, rows_img = set(), []          # rows_img：(列號, 圖檔) —— 縮圖等版面設好再貼
+
+    # 三列表頭
+    ws.append([c[2] or '' for c in cols])          # ① 群組
+    ws.append([c[0] for c in cols])                # ② 欄名（機器讀的）
+    ws.append([c[1] for c in cols])                # ③ 中文顯名
+    i = 1
+    for g, fields in LAYOUT:                       # 群組橫向合併
+        if len(fields) > 1: ws.merge_cells(start_row=1, start_column=i, end_row=1, end_column=i+len(fields)-1)
+        i += len(fields)
+    ws.merge_cells('A1:A3')                        # 編號那一欄縱向合併（同 Ray 那一份）
+
+    rows_img = []; used = set(); n = 0
+    def put(key, card, f):
+        nonlocal n
+        row = [f'{n:03d}'] + ['' if c in ('__no__',) else ('' if c == '圖' else (f if c == '圖檔' else cell(card, c))) for c in names[1:]]
+        ws.append(row); n += 1
+        if f: rows_img.append((ws.max_row, f))
     for k, card in data.items():
         f = file_of(card, assets, files)
         if f: used.add(f)
-        ws.append([k, '', f] + [cell(card, c) for c in cols[3:]])
-        if f: rows_img.append((ws.max_row, f))
-    # 有圖、還沒有卡的：排在後面，key 留空（＝待辦，不是資料）
-    #   ⚠⚠ 這一段要**濾掉兩種假待辦**（ver -945b，Ray 同意）——它們有圖、也沒有卡，
-    #     但都不是「等著被做成敵人卡」的東西，留著只會讓真正的待辦被淹掉：
-    #     ① **同名的另一種副檔名**：`mon_x.png` 而卡在用 `mon_x.webp`
-    #        ——那是轉檔前的原圖（§5 的三步流程，原 PNG 本來就該進 `_originals`）。
-    #     ② **別的地方已經在用**：鹿主的中景層走腳本的 `cgBack:'resources/enemy/…'`
-    #        （那是背景之上、立繪之下的一層，不是敵人卡）。判法是**去腳本裡搜檔名**，
-    #        不是列一張名單——列名單日後一定漏。
+        c2 = dict(card); c2['key'] = k
+        put(k, c2, f)
+        ws.cell(ws.max_row, names.index('key') + 1).value = k
     used_stems = {os.path.splitext(os.path.basename(u))[0].lower() for u in used}
     def referenced(fn):
         for d, _, fs in os.walk(os.path.join(ROOT, 'script')):
@@ -177,52 +245,76 @@ def do_export():
                         if fn in open(os.path.join(d, x), encoding='utf-8').read(): return True
                     except OSError: pass
         return False
-    todo = [f for f in files
-            if ('resources/enemy/' + f) not in used
-            and os.path.splitext(f)[0].lower() not in used_stems
-            and not referenced(f)]
-    for f in todo:
+    for f in files:
         rel = 'resources/enemy/' + f
-        ws.append(['', '', rel] + [''] * (len(cols) - 3)); rows_img.append((ws.max_row, rel))
-    # 版面：凍結首列與 key 欄、標題粗體、寬度依內容
-    ws.freeze_panes = 'B2'
-    head = Font(bold=True); fill = PatternFill('solid', fgColor='FFF2E0')
-    for c in ws[1]:
-        c.font = head; c.fill = fill; c.alignment = Alignment(vertical='center')
-    for i, col in enumerate(cols, 1):
-        w = max(len(str(col)), *(len(str(ws.cell(r, i).value or '')) for r in range(2, ws.max_row + 1)))
-        ws.column_dimensions[ws.cell(1, i).column_letter].width = min(max(w + 2, 8), 46)
+        if rel in used or os.path.splitext(f)[0].lower() in used_stems or referenced(f): continue
+        put('', {}, rel)
+
+    # ── 版面：格線、表頭、凍結 ──
+    thin = Side(style='thin', color='BFBFBF')
+    box  = Border(left=thin, right=thin, top=thin, bottom=thin)
+    grp  = PatternFill('solid', fgColor='E8D9BC')
+    hdr  = PatternFill('solid', fgColor='FFF2E0')
+    ctr  = Alignment(horizontal='center', vertical='center', wrap_text=True)
+    for r in ws.iter_rows(min_row=1, max_row=ws.max_row, max_col=len(cols)):
+        for c in r:
+            c.border = box
+            if c.row <= 3: c.alignment = ctr
+    for c in ws[1]: c.font = Font(bold=True); c.fill = grp
+    for c in ws[2]: c.font = Font(bold=True, size=9, color='808080'); c.fill = hdr
+    for c in ws[3]: c.font = Font(bold=True); c.fill = hdr
+    ws.freeze_panes = 'B4'
+    ws.row_dimensions[1].height = 22; ws.row_dimensions[2].height = 15; ws.row_dimensions[3].height = 34
+    for i, (nm, lab, _g, _n) in enumerate(cols, 1):
+        w = max(len(str(lab or nm)) * 2, *(len(str(ws.cell(r, i).value or '')) for r in range(4, ws.max_row + 1)))
+        ws.column_dimensions[CL(i)].width = min(max(w + 2, 7), 40)
+
+    # ── 下拉選單（bg／掉落物品）──
+    #   ⚠ 清單走**另一張表的範圍**不是逐字塞進公式：Excel 的 formula1 有 255 字上限，
+    #     背景有三百多個，直接塞會整條驗證失效（而且不會報錯）。
+    lst = wb.create_sheet('__lists__')
+    lst['A1'] = 'bg'; lst['B1'] = 'item'
+    bgs, items = bg_names(), item_ids()
+    for j, v in enumerate(bgs, 2):   lst.cell(j, 1).value = v
+    for j, v in enumerate(items, 2): lst.cell(j, 2).value = v
+    def add_dv(colname, ref):
+        if colname not in names: return
+        i = names.index(colname) + 1
+        dv = DataValidation(type='list', formula1=ref, allow_blank=True, showDropDown=False)
+        ws.add_data_validation(dv)
+        dv.add(f'{CL(i)}4:{CL(i)}{ws.max_row}')
+    add_dv('bg', f"'__lists__'!$A$2:$A${len(bgs)+1}")
+    for i in range(1, LOOT_N + 1): add_dv(f'loot{i}.id', f"'__lists__'!$B$2:$B${len(items)+1}")
+    lst.sheet_state = 'hidden'
+
     # ── 縮圖 ──
-    #   ⚠ 轉成 PNG 再貼：Excel 不吃 webp。轉檔放暫存資料夾，**存檔時 openpyxl 會把
-    #     圖片內嵌進 xlsx**，所以那些暫存檔之後刪掉也沒關係。
-    #   ⚠ 用 `thumbnail` 等比縮 —— 直接指定 width/height 會把 1024×1536 壓扁。
     tmpd = tempfile.mkdtemp(prefix='tivot_thumb_')
-    ws.column_dimensions['B'].width = THUMB_W / 7.0 + 2
+    ws.column_dimensions[CL(names.index('圖') + 1)].width = THUMB_W / 7.0 + 2
     for r, f in rows_img:
         try:
             from PIL import Image as PILImage
             im = PILImage.open(os.path.join(ROOT, f))
             if im.mode not in ('RGB', 'RGBA'): im = im.convert('RGBA')
-            im.thumbnail((THUMB_W, THUMB_W * 4))          # 高不設限，直式圖照自己的比例
-            bg = PILImage.new('RGBA', im.size, (255, 255, 255, 255))
-            bg.alpha_composite(im.convert('RGBA'))         # 去背圖墊白，不然縮圖是一團黑
-            out = os.path.join(tmpd, f'{r}.png'); bg.convert('RGB').save(out)
-            xi = XLImage(out); ws.add_image(xi, f'B{r}')
-            ws.row_dimensions[r].height = max(im.size[1] * 0.78, 18)   # px→pt 約 0.75，留一點餘裕
-        except Exception as e:
-            ws.cell(r, 2).value = '(縮圖失敗)'
-    
-    # 指紋放在另一張表，不干擾編輯
+            im.thumbnail((THUMB_W, THUMB_W * 4))
+            bgw = PILImage.new('RGBA', im.size, (255, 255, 255, 255))
+            bgw.alpha_composite(im.convert('RGBA'))
+            out = os.path.join(tmpd, f'{r}.png'); bgw.convert('RGB').save(out)
+            ws.add_image(XLImage(out), f'{CL(names.index("圖")+1)}{r}')
+            ws.row_dimensions[r].height = max(im.size[1] * 0.78, 18)
+        except Exception:
+            ws.cell(r, names.index('圖') + 1).value = '(縮圖失敗)'
+
     meta = wb.create_sheet('__meta__')
     meta.append([STAMP, hashlib.sha256(open(JS, 'rb').read()).hexdigest()])
     meta.append(['說明', '這一頁不要改。匯入時會拿它確認「你手上這份是從哪一版匯出的」。'])
+    meta.sheet_state = 'hidden'
     wb.save(XLSX)
-    print(f'寫出 {XLSX}：{len(data)} 張卡、{len(cols)} 欄')
+    print(f'寫出 {XLSX}：{len(data)} 張卡、{len(cols)} 欄（含 {len(rows_img)} 張縮圖）')
 
 # ── 匯入（就地改值）────────────────────────────────────────────────────
 def js_literal(v):
     if isinstance(v, bool):  return 'true' if v else 'false'
-    if isinstance(v, (int,)):return str(v)
+    if isinstance(v, int):   return str(v)
     if isinstance(v, float): return ('%g' % v)
     return "'" + str(v).replace("'", "\\'") + "'"
 
@@ -237,14 +329,12 @@ def card_span(src, key):
     return (i, j)
 
 def set_scalar(src, key, path, val):
-    """把 <卡>.<路徑> 的值換掉；路徑是 'attack' 或 'ult.atk' 或 'weaponMod.霰彈槍.1'。"""
     sp = card_span(src, key)
     if not sp: return src, False
     i, j = sp; body = src[i:j]
     parts = path.split('.')
     if len(parts) == 1:
-        pat = re.compile(r'(\n\s*' + re.escape(parts[0]) + r':\s*)([^,\n]*)')
-        m = pat.search(body)
+        m = re.search(r'(\n\s*' + re.escape(parts[0]) + r':\s*)([^,\n]*)', body)
         if not m: return src, False
         body2 = body[:m.start(2)] + js_literal(val) + body[m.end(2):]
     else:
@@ -260,18 +350,17 @@ def set_scalar(src, key, path, val):
             nums[idx] = js_literal(val)
             blob2 = blob[:mm.start(2)] + ','.join(nums) + blob[mm.end(2):]
         elif head in PAIRS:
-            idx = PAIRS[head].index(parts[1])
             nums = [x.strip() for x in blob.strip('[]').split(',')]
-            nums[idx] = js_literal(val)
+            nums[PAIRS[head].index(parts[1])] = js_literal(val)
             blob2 = '[' + ','.join(nums) + ']'
         else:
-            sub = parts[1]
-            mm = re.search(r'(\b' + re.escape(sub) + r'\s*:\s*)([^,}]*)', blob)
+            mm = re.search(r'(\b' + re.escape(parts[1]) + r'\s*:\s*)([^,}]*)', blob)
             if not mm: return src, False
             blob2 = blob[:mm.start(2)] + js_literal(val) + blob[mm.end(2):]
         body2 = body[:m.start(1)] + blob2 + body[m.end(1):]
     return src[:i] + body2 + src[j:], True
 
+SKIP_COLS = {'__no__', '圖', '圖檔', 'key'}
 def do_import(path):
     import hashlib
     from openpyxl import load_workbook
@@ -285,18 +374,19 @@ def do_import(path):
             print('   中間 enemies.js 被改過 —— 直接匯入會把那些改動蓋掉。')
             print('   建議：先 `export` 一份新的、把你的修改抄過去，再 import。')
             if input('   還是要繼續？(yes/N) ').strip().lower() != 'yes': return
-    ws = wb['敵人卡']; rows = list(ws.values)
-    cols = [str(c) for c in rows[0]]
+    ws = wb['敵人卡']
+    names = [c.value for c in ws[2]]           # ⚠ 第 2 列才是欄名（第 1 列是群組、第 3 列是中文）
     cur  = load_js()
     src  = open(JS, encoding='utf-8').read()
     changed, skipped, unknown = [], [], []
-    for row in rows[1:]:
-        if not row or not row[0]: continue
-        key = str(row[0]).strip()
-        if not key: continue                  # 「有圖沒卡」那幾列：key 是空的，跳過
+    for r in range(4, ws.max_row + 1):
+        key = ws.cell(r, names.index('key') + 1).value
+        key = str(key).strip() if key else ''
+        if not key: continue                    # 「有圖沒卡」那幾列
         if key not in cur: unknown.append(key); continue
-        for c, v in zip(cols[1:], row[1:]):
-            if c in IMG_COLS: continue        # 縮圖／圖檔是**看的**，不是卡上的欄位
+        for i, c in enumerate(names, 1):
+            if not c or c in SKIP_COLS: continue
+            v = ws.cell(r, i).value
             old = cell(cur[key], c)
             new = '' if v is None else v
             if isinstance(old, float) and isinstance(new, (int, float)) and abs(old - new) < 1e-9: continue
@@ -308,12 +398,11 @@ def do_import(path):
             src2, ok = set_scalar(src, key, path, new)
             if ok: src = src2; changed.append(f'{key}.{c}: {old} → {new}')
             else:  skipped.append(f'{key}.{c}（{old} → {new}）')
-    if changed:
-        open(JS, 'w', encoding='utf-8').write(src)
+    if changed: open(JS, 'w', encoding='utf-8').write(src)
     print(f'改了 {len(changed)} 格：')
     for l in changed: print('  ', l)
     if skipped:
-        print(f'⚠ 改不到 {len(skipped)} 格（結構太複雜，請直接改 enemies.js）：')
+        print(f'⚠ 改不到 {len(skipped)} 格（結構太複雜／欄位不存在，請直接改 enemies.js）：')
         for l in skipped: print('  ', l)
     if unknown:
         print('⚠ Excel 上有、enemies.js 沒有的卡（新增卡請直接寫進 js）：', unknown)

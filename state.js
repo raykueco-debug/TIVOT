@@ -102,8 +102,7 @@ export const state = {
   /* ── 3.4 武器/雙槍（擁有者：weapon） ─────────────────────────── */
   /* ── 這一隻怪的「打起來的手感」（ver -423 的敵人卡；擁有者：enemy）──
      ⚠ 每次 `setEnemy` 都要重寫，沒寫的回預設 —— 連戰換敵也會走那一支。 */
-  enemyResist: null,        // { basic:0.20 } 之類：**減傷**的成數，依傷害來源
-  enemyWeak: null,          // { counter:1.00 }：**增傷**的成數，依傷害來源
+  enemyGanymede: 0,        // 主武器（普攻）的增減傷（ver -949，取代 resist/weak）
   /* 這一場是不是船戰（飛行頁交棒過來的）：BR 窗口期間多吃 tuning.shipDualBonus
      （ver -947，取代逐卡的 `dualBonus`）。擁有者＝combat，由發起端宣告。 */
   shipBattle: false,
@@ -113,7 +112,7 @@ export const state = {
        `weaponMod:{ 重機槍:[傷害,迴避], 霰彈槍:[傷害,迴避], 萊福槍:[傷害,迴避] }`
      · [0] 傷害＝反擊增傷率（正）/抗性減傷率（負），加進 combat.applyEnemyMods 的 k。
      · [1] 迴避＝額外 miss 率(0~1)，weapon.weaponCounter 每一發命中 ×(1−r)。
-     都是**加法**（0.1＝+10%），預設 [0,0]。⚠ 與 `enemyResist/enemyWeak`（依傷害來源
+     都是**加法**（0.1＝+10%），預設 [0,0]。⚠ 與 `enemyGanymede`（主武器那一格，ver -949）
      的減/增傷）是兩件事，不要混用。 */
   enemyWeaponMod: null,
   /* 大絕（ver -760，Ray 的敵攻四態：延時／攻擊（一般圈）／失誤／**大絕**）：
@@ -213,7 +212,7 @@ export const state = {
   /* ── 3.7 亂入/Boss + 連戰序列（擁有者：enemy） ──────────────── */
   currentEnemyKey: GAME_CONFIG.currentEnemy,
   curEnemyHitFx: null,     // 當前怪受擊特效三件套（音效綁在 type 上，見 config.HITFX，ver -800）
-  curEnemyEntranceSe: null, // 登場音（ver -948：landSe／entranceVo 併成一格 entranceSe）
+  curEnemyEntranceSe: null, // 登場音（ver -948：landSe／entranceVo 併成一格；-949 欄名 entrance）
   intruderTriggered: false,
   inIntruderFight: false,
   deathGuardUsed: false,

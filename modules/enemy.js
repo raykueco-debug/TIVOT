@@ -487,12 +487,12 @@ export function loadEnemyPortrait(en){
          ⚠ 增益問 `sfxGain`（全域響度階層，§6.6）。 */
       { /* 出場音效（ver -790，Ray 更正：「船戰登場特效音是每一個都有獨立的，跟陸戰
            禍魘分開」「原本放 se_saintinstall 的鐘聲變成受擊音了」）：
-           · **船戰敵人**（羽蛇／蜈蚣／空賊船）＝卡上各自的 `entranceSe`（每隻獨立）。
-           · **陸戰禍魘／聖徒**＝沒有 `entranceSe`，退回 `sfx_saint`（＝se_saintinstall
+           · **船戰敵人**（羽蛇／蜈蚣／空賊船）＝卡上各自的 `entrance`（每隻獨立）。
+           · **陸戰禍魘／聖徒**＝沒有 `entrance`，退回 `sfx_saint`（＝se_saintinstall
              鐘聲，ver -649 的原音）。
            ⚠ -773 曾把預設改成「自己的攻擊音 `sound.ult`」——但 `sound.ult` 正是玩家
              被那隻怪打到的**受擊音**，套到陸戰的登臨就變成受擊音（Ray 回報）。所以
-             **拿掉那個 fallback**：船戰各自的登場音一律寫成卡上的 `entranceSe`（資料驅動，
+             **拿掉那個 fallback**：船戰各自的登場音一律寫成卡上的 `entrance`（資料驅動，
              鐵律 1），陸戰一律鐘聲。 */
         playEntranceSe(state.curEnemyEntranceSe || 'sfx_saint'); }
       if(api.screenShake) api.screenShake();
@@ -510,7 +510,7 @@ export function loadEnemyPortrait(en){
       eImg.classList.remove('enemy-rise');
     }); };
   /* ══⚠⚠ **登場音只有一格**（ver -948，Ray：「entranceVo 跟 landSe 應該是同一時間
-     發生，併為一格」）══ 卡上寫 `entranceSe`，播的**時機由這隻怪自己決定**：
+     發生，併為一格」）══ 卡上寫 `entrance`，播的**時機由這隻怪自己決定**：
        · 有降臨的（`ENTRANCE_KINDS`：禍魘／聖徒／船）→ **著地那一刻**（見上面 landT）
        · 沒有降臨的（human…）      → **立繪出現那一刻**
      —— 兩者對玩家而言就是同一件事（「牠登場了」），所以資料上不該是兩格。
@@ -518,8 +518,8 @@ export function loadEnemyPortrait(en){
        （過 voiceChain、算 VO 那一層），否則走 `play`（SE 那一層）。
        §6.6 的命名規約本來就是 `vo_<角色>_<技能>`，所以不必再開一格「這是語音嗎」。
      ⚠ 沒寫＝有降臨的退回 `sfx_saint`（鐘聲），沒降臨的就沒有聲音。 */
-  const playEntranceVo = (en && en.entranceSe)
-    ? (()=>playEntranceSe(en.entranceSe)) : null;
+  const playEntranceVo = (en && en.entrance)
+    ? (()=>playEntranceSe(en.entrance)) : null;
   /* ⚠ 不在登場類就不演降臨（ver -657；-787 登場類含 ship）：立繪載到就直接在那裡。
      ⚠ 判定用**傳進來的這張卡**不是查 state：`setEnemy` 在寫
        `state.currentEnemyKey` 之前就可能叫到這裡，問 state 會問到上一隻。 */
@@ -622,11 +622,17 @@ export function setEnemy(key){
   state.CHARGE_SECONDS = (en.atkInterval!=null) ? en.atkInterval : GAME_CONFIG.tuning.chargeSeconds;
   /* 這一隻的「打起來的手感」欄位（ver -423 的敵人卡）。⚠ 一律**每次換敵都寫**，
      沒寫要寫回預設 —— setEnemy 是連戰換敵也會走的（同下面那組絕對值的理由）。 */
-  state.enemyResist    = en.resist || null;
+  /* ══⚠⚠ **主武器（普攻）的增減傷改叫 `Ganymede`**（ver -949，Ray：「把原本的 resist
+     換成 ganymede，把他拿去跟副武的系統放一起」）══ 它與三把副武器的 `weaponMod`
+     是**同一排**：正＝增傷、負＝抗性減傷，一律加法。
+     ⚠ 取代舊的 `resist{basic}`／`weak{basic}`：那一套的鑰匙是「傷害來源」，
+       而玩家看得到的其實是「哪一把槍打得動牠」——同一件事用兩套表達（鐵律 7）。
+     ⚠ 舊的 `weak{counter:1}`（不分槍、反擊一律加倍）已折進那三張卡的 weaponMod
+       三把各 +1（-949 遷移），行為等值。 */
+  state.enemyGanymede  = (en.Ganymede != null) ? en.Ganymede : 0;
   /* 副武器調整（ver -796，Ray：一欄搞定）：`weaponMod:{ 類別:[傷害, 迴避] }` ——
      [0]傷害＝反擊增傷率（正）/抗性減傷率（負），加法；[1]迴避＝額外 miss 率(0~1)，加法。 */
   state.enemyWeaponMod = en.weaponMod || null;
-  state.enemyWeak      = en.weak || null;
   state.enemyNoStack   = !!en.noStack;
   /* ⚠ ver -947 移除 `counterBuff` / `counterStun` / `dualBonus`（Ray 定案）：
      · 反擊後的普攻增益改成**全域一套**（3 秒 ×2，`tuning.atkBuffSeconds`）——
@@ -693,7 +699,7 @@ export function setEnemy(key){
   state.DELAY_DAMAGE  = dp.damage !=null ? dp.damage  : null;
   state.WRONG_DAMAGE  = wp.damage !=null ? wp.damage  : null;
   state.curEnemyHitFx = en.hitFx || null;        // 3.7：本怪受擊特效三件套（音效綁在 type 上，見 config.HITFX；卡上不再有 sound，ver -800）
-  state.curEnemyEntranceSe = en.entranceSe || null;   // 登場音（ver -948 由 landSe／entranceVo 併成一格）
+  state.curEnemyEntranceSe = en.entrance || null;     // 登場音（ver -948 併成一格；-949 欄名定為 entrance）
   // 名稱與立繪；取景（config fit.pos → object-position；未設＝回 CSS 預設 center top）
   const nameEl = $('enemyName');
   if(nameEl) nameEl.textContent = displayEnemyName(en.name);
