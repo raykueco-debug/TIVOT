@@ -50,6 +50,48 @@ OBJS = {                         # 欄位 → 子鍵（缺的留空）
     'delayPenalty': ['seconds', 'damage', 'dmgScale', 'timeDelta'],
     'wrongPenalty': ['damage', 'dmgScale'],
 }
+# ── 圖：縮圖欄與「有圖沒卡」的列（ver -945，Ray：「有圖的敵人都先做進 excel，
+#      最好能在相應欄顯示縮圖」）────────────────────────────────────────────
+#   ⚠ 目的是**看著圖填卡**：美術先交圖、卡還沒寫的那幾隻也要在表上有一列，
+#     不然它們就只是躺在資料夾裡，很容易忘記。
+#   ⚠ 那幾列的 `key` 是**空的** —— 匯入時會被當成「不是既有的卡」跳過（新增整張卡
+#     仍要寫進 enemies.js，Ray 同意的作法）。它們在表上是**待辦**不是資料。
+IMG_DIR  = os.path.join(ROOT, 'resources', 'enemy')
+IMG_COLS = ['圖', '圖檔']
+THUMB_W  = 64          # 縮圖寬（px）；列高跟著它算
+def enemy_files():
+    """`resources/enemy/` 裡的怪圖。⚠ 只認 `mon_` 開頭（§5 的命名規約）——
+       同一個資料夾裡還有 cut-in 與靶（Belinda_CI／Kidd_CI／Dart_counter），那些不是怪。"""
+    try: fs = os.listdir(IMG_DIR)
+    except OSError: return []
+    return sorted(f for f in fs
+                  if f.lower().startswith('mon_') and f.lower().endswith(('.webp', '.png', '.jpg', '.jpeg')))
+def load_assets():
+    tmp = '/tmp/_tivot_dump_assets.mjs'
+    with open(tmp, 'w', encoding='utf-8') as f:
+        f.write(f"import {{ ASSETS }} from '{os.path.join(ROOT,'config.js')}';\nprint(JSON.stringify(ASSETS));\n")
+    r = subprocess.run([JSC, '-m', tmp], capture_output=True, text=True)
+    try: return json.loads(r.stdout)
+    except Exception: return {}
+def file_of(card, assets, files):
+    """這張卡用的是哪一個圖檔 —— 回**專案內的相對路徑**。
+       ⚠⚠ 不要只回檔名：敵人立繪不是全部住在 `resources/enemy/`（賞金獵人那張在
+         `resources/SI/`）—— 只留檔名再去 enemy 資料夾找，那一列的縮圖就貼不出來
+         （-945 實測就漏了 guild_hunter 一張）。
+       ⚠ ASSETS 查不到要再猜一次：聖遺物那 10 隻的 ASSETS 目前是**註解掉的**
+         （ver -934，等開峽谷才放）——查不到不代表沒有圖。"""
+    im = card.get('image')
+    keys = [im] if isinstance(im, str) else list((im or {}).values())
+    for k in keys:
+        p = assets.get(k)
+        if p: return p.split('?')[0]
+    for k in keys:                      # 退路：enemy_relic_chalice → mon_relic_chalice.webp
+        stem = re.sub(r'^enemy_', '', str(k or '')).lower()
+        if not stem: continue
+        for f in files:
+            if os.path.splitext(f)[0].lower().endswith(stem): return 'resources/enemy/' + f
+    return ''
+
 # 欄的順序：照卡上本來的順序排（讀第一張卡的鍵序），沒出現過的排在後面
 def columns(data):
     seen, order = set(), []
@@ -57,7 +99,7 @@ def columns(data):
         for k in card:
             if k not in seen:
                 seen.add(k); order.append(k)
-    cols = ['key']
+    cols = ['key'] + IMG_COLS
     for k in order:
         if k == 'weaponMod':
             for w in WEAPONS: cols += [f'weaponMod.{w}.傷害', f'weaponMod.{w}.迴避']
@@ -98,15 +140,27 @@ def load_js():
 # ── 匯出 ──────────────────────────────────────────────────────────────
 STAMP = '__源檔指紋__'   # 匯出當下 enemies.js 的內容雜湊；匯入時對一次
 def do_export():
-    import hashlib
+    import hashlib, tempfile
     from openpyxl import Workbook
     from openpyxl.styles import Font, Alignment, PatternFill
-    data = load_js()
-    cols = columns(data)
+    from openpyxl.drawing.image import Image as XLImage
+    data   = load_js()
+    assets = load_assets()
+    files  = enemy_files()
+    cols   = columns(data)
     wb = Workbook(); ws = wb.active; ws.title = '敵人卡'
     ws.append(cols)
+    used, rows_img = set(), []          # rows_img：(列號, 圖檔) —— 縮圖等版面設好再貼
     for k, card in data.items():
-        ws.append([k] + [cell(card, c) for c in cols[1:]])
+        f = file_of(card, assets, files)
+        if f: used.add(f)
+        ws.append([k, '', f] + [cell(card, c) for c in cols[3:]])
+        if f: rows_img.append((ws.max_row, f))
+    # 有圖、還沒有卡的：排在後面，key 留空（＝待辦，不是資料）
+    todo = [f for f in files if ('resources/enemy/' + f) not in used]
+    for f in todo:
+        rel = 'resources/enemy/' + f
+        ws.append(['', '', rel] + [''] * (len(cols) - 3)); rows_img.append((ws.max_row, rel))
     # 版面：凍結首列與 key 欄、標題粗體、寬度依內容
     ws.freeze_panes = 'B2'
     head = Font(bold=True); fill = PatternFill('solid', fgColor='FFF2E0')
@@ -115,6 +169,26 @@ def do_export():
     for i, col in enumerate(cols, 1):
         w = max(len(str(col)), *(len(str(ws.cell(r, i).value or '')) for r in range(2, ws.max_row + 1)))
         ws.column_dimensions[ws.cell(1, i).column_letter].width = min(max(w + 2, 8), 46)
+    # ── 縮圖 ──
+    #   ⚠ 轉成 PNG 再貼：Excel 不吃 webp。轉檔放暫存資料夾，**存檔時 openpyxl 會把
+    #     圖片內嵌進 xlsx**，所以那些暫存檔之後刪掉也沒關係。
+    #   ⚠ 用 `thumbnail` 等比縮 —— 直接指定 width/height 會把 1024×1536 壓扁。
+    tmpd = tempfile.mkdtemp(prefix='tivot_thumb_')
+    ws.column_dimensions['B'].width = THUMB_W / 7.0 + 2
+    for r, f in rows_img:
+        try:
+            from PIL import Image as PILImage
+            im = PILImage.open(os.path.join(ROOT, f))
+            if im.mode not in ('RGB', 'RGBA'): im = im.convert('RGBA')
+            im.thumbnail((THUMB_W, THUMB_W * 4))          # 高不設限，直式圖照自己的比例
+            bg = PILImage.new('RGBA', im.size, (255, 255, 255, 255))
+            bg.alpha_composite(im.convert('RGBA'))         # 去背圖墊白，不然縮圖是一團黑
+            out = os.path.join(tmpd, f'{r}.png'); bg.convert('RGB').save(out)
+            xi = XLImage(out); ws.add_image(xi, f'B{r}')
+            ws.row_dimensions[r].height = max(im.size[1] * 0.78, 18)   # px→pt 約 0.75，留一點餘裕
+        except Exception as e:
+            ws.cell(r, 2).value = '(縮圖失敗)'
+    
     # 指紋放在另一張表，不干擾編輯
     meta = wb.create_sheet('__meta__')
     meta.append([STAMP, hashlib.sha256(open(JS, 'rb').read()).hexdigest()])
@@ -196,8 +270,10 @@ def do_import(path):
     for row in rows[1:]:
         if not row or not row[0]: continue
         key = str(row[0]).strip()
+        if not key: continue                  # 「有圖沒卡」那幾列：key 是空的，跳過
         if key not in cur: unknown.append(key); continue
         for c, v in zip(cols[1:], row[1:]):
+            if c in IMG_COLS: continue        # 縮圖／圖檔是**看的**，不是卡上的欄位
             old = cell(cur[key], c)
             new = '' if v is None else v
             if isinstance(old, float) and isinstance(new, (int, float)) and abs(old - new) < 1e-9: continue
