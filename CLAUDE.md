@@ -1337,9 +1337,11 @@ Ray 交劇本稿一律照 **`script/SCRIPT_FORMAT.md`** —— 稿子的最小�
   ⚠ 兩層都是**門檻**不是等於（`pickByThreshold`，同 `config.inspectors` 的 `dialogues`）：
   現在只有 `1` / `0` 兩把鑰匙＝全部適用；日後第 3 章要換一批說法就加一把 `3`，
   第 1、2 章自動沿用舊的那一組。誰來評（`EVALUATOR`）、旗標、不評的場次也在那一檔。
-- **什麼時候開啟寫在戰鬥卡上**（`config.battles[x].evalFrom:true`），不寫死是哪一場。
-  ⚠ 旗標在**結算那一刻**才記，所以**那一場自己就評得到** —— Ray 的「第一次艦戰後」
-  指的是「從第一次艦戰開始」，不是「下一場才開始」。
+- ⚠⚠ **沒有「什麼時候開啟」這回事了**（-432 的 `evalFrom` 已隨旗標一起撤掉，ver -670）：
+  預設每一場都評，**要不評才寫**。卡上兩格，都是「不評」的宣告：
+  · `noEval:true`　　　　　永遠不評（打靶那三場：`range_trainee`／`np_range`／`sv_range`）
+  · `noEvalBeforeStage:N`　第 N 章之前不評（ver -756，`guild_hunter`）
+  ⚠ 兩格都是**特例的宣告**，不是開關 —— 不要再加一個「要評嗎」的正向欄位（鐵律 7）。
 - **評分公式用試玩版那一套**（Ray 指定）＝ `config.rating` 的 `evaluate()`，S/A/B/C/D/E。
   ⚠ **有人評才給等第**：`scriptSettle` 本來刻意是 `grade-noRank`（教學那一頁的規格），
   但「評價」的意思就是評出一個字母 —— 沒有它，她那句話沒有著落。
@@ -1434,8 +1436,10 @@ ver -706 把三帶都改成**會反擊**之後，「反擊」這個詞就有了�
   紅點就走中央帶（`config.tutorial.threatSpawn`）—— 左右是立繪、下方是對話框，
   落在那裡的紅點在講解時根本看不見。⚠ 兩種場次**共用同一組數字**（鐵律 7）：
   那組數字是對著**這個對話框**量的，不是「只給教學用」。
-- ⚠ **開場的大絕是 0~3 秒內隨機排的**（`scheduleOpeningUlt`），而開場白要等
-  `startDelayMs`（700ms）—— 所以「紅點比開場白先到」是常態不是例外，
+- ⚠ **開場的第一發主動攻擊是隨機排的**（`defense.scheduleOpeningAssault`，逐怪讀卡上的
+  `openAssault`，預設 1~2 秒；-931 由 `scheduleOpeningUlt`／`openUlt` 改名，寫死 0~3 秒的
+  `ULT_OPEN_MS` 已移除），而開場白要等 `startDelayMs`（700ms）——
+  所以「紅點比開場白先到」是常態不是例外，
   `talkFire` 必須有那條「先講開場白、這一段排隊接上」的分支。
 - ⚠⚠ `talkOnce` 的旗標**打贏才記**（ver -493，`combat.win`／`storyBattleEnd`；
   且僅劇情戰 `state.storyBattle`）：敗北重來每次都重播、打贏之後永久停播
@@ -1513,16 +1517,24 @@ ver -706 把三帶都改成**會反擊**之後，「反擊」這個詞就有了�
 
 ### ⚠⚠ 評價的失誤計數（ver -600 定欄位、**ver -619 才真的接上**）
 
-`penUlt`（挨大絕）／`penBlock`（擋下一半）／`penDelay`（延時懲罰）由
-`combat.enemyAttack` **唯一那個入口**累加，`inspector.evaluate` 折成秒數加進攻略時間。
+`penAssault`（挨主動攻擊；-931 由 `penUlt` 改名）／`penBlock`（擋下一半）／
+`penDelay`（延時懲罰）由 `combat.enemyAttack` **唯一那個入口**累加，
+`inspector.evaluate` 折成秒數加進攻略時間。
 
 - ⚠⚠ ver -600 定了欄位、結算也在讀，**但從來沒有人 `++`** —— 於是三項懲罰
   永遠是 0，只剩「點錯」在算。那就是「用滑鼠點都可以每場 S」的真正原因，
   `timeK` 一路被推到 550 也壓不住。**加欄位時要連「誰寫它」一起交代**（鐵律 9）。
-- ⚠⚠ `enemyAttack(dmg, kind)` 的 `kind` 有**兩個用途**，ver -600 之後不再是同一個值：
-  **計數**要分得出 `ult`／`block`，**演出**（音效、受擊特效）分不出來 ——
-  敵人卡上只有 `ult`/`delay`/`wrong` 三格。所以演出讀 `fxKind`（`block`→`ult`），
-  計數讀原值。-600 改了呼叫端卻沒加別名，格擋的敵大絕音與受擊特效整個掉了。
+- ⚠⚠ `enemyAttack(dmg, kind)` 的 `kind` 有**兩個用途**，而且**兩邊分的不是同一刀**：
+  · **計數**四格：`assault`／`block`／`delay`／`wrong`（挨打／擋一半／延時／點錯）
+  · **演出**四格：`delay`／`wrong`／`assault`／`ult`（ver -932，Ray：「受擊有四種狀況」）
+  差別在於**計數**分得出「有沒有擋到」（`block`），**演出**分得出「這一顆圈是不是
+  門檻波的大絕」（`ult`）—— 而擋一半的是同一顆圈，所以 `block` 跟著 `assault`／`ult` 走。
+  所以演出讀 `fxKind`、計數讀原值，`fxKind` 只在 `combat` 折一次。
+  ⚠⚠ **「這一顆圈是不是門檻波」只有 `defense` 算得出來**（鐵律 7）：它發佈
+    `state.lastAssaultUlt`，`combat` 只讀不算。
+  ⚠ **卡上沒寫 `hitFx.ult` ＝ 退回 `assault`**（`enemy.showHitFx`）—— 六十張卡不必
+    為了這一版全部補一格。
+  ⚠ -600 改了呼叫端卻沒加別名，格擋的敵大絕音與受擊特效整個掉了。
 - ⚠ **腳本演出的擊數不算**（劇情殺三連擊）：`_scriptedAtk` 那一段。
 
 ## 6.5.3 武器與商店（ver -377）
@@ -2584,9 +2596,14 @@ trigger 壞了」）**
   等同禍魘」—— `slay` 吃同一套演出，但**結算副標**仍是「已擊殺」不是「已淨化」，
   同一格 `kind` 兩種用途各查各的表）：那是同一件事的兩端 ——
   禍魘從惡夢裡降下來、被淨化之後散成白光。人類／靶／船／獸／聖徒系列各有各的
-  出場與死法，不該共用。**兩個演出共用同一份名單**（`HARM_KINDS`，鐵律 7），
-  判定看**敵人卡的 `kind`**（結算副標讀的也是它）—— 不要另立一個「要不要播特效」
-  的欄位。
+  出場與死法，不該共用。判定看**敵人卡的 `kind`**（結算副標讀的也是它）——
+  不要另立一個「要不要播特效」的欄位。
+  ⚠⚠ **兩份名單，內容不一樣**（舊的 `HARM_KINDS` 那一份共用已拆開，`modules/enemy.js`）：
+  · `ENTRANCE_KINDS`＝`harm`／`slay`／`ship`／`aerial` —— 有降臨
+  · `PURIFY_KINDS`　＝`harm`／`slay`／`aerial`　　　　—— 有淨化
+  差的是**船**：Ray 要所有船戰敵人都有登場的震動衝擊波，但船被打沉不是「被淨化」。
+  ⚠ 所以這兩件事**不可以再合回一份名單** —— 合了就得在其中一邊寫特例，
+    而那正是拆開的原因。單獨想破例的怪走卡上的 `purgeFx`。
   ⚠ 降臨那一支判的是**傳進來的那張卡**不是 `state.currentEnemyKey`：
   `setEnemy` 在寫那把鑰匙之前就可能叫到 `loadEnemyPortrait`，問 state 會問到上一隻。
   其餘 kind 目前沒有專屬死法（維持原行為），Ray 給了再照這裡加一支。
@@ -2978,9 +2995,9 @@ trigger 壞了」）**
   兩條路都走那一支（鐵律 8）。
 
 **主角的名字與暱稱**（ver -395）：`{P}`＝名字、`{N}`＝暱稱，**顯示的那一刻才代換**。
-- 預設 **凱勞諾斯／凱**（`progress.js` 的 `PLAYER_DEFAULT` / `NICK_DEFAULT`）。
-  ⚠ 西文 `Keraunos` / `Ky` 是**檔名與程式用的 id**，與玩家輸入**脫鉤** ——
-  不要拿玩家輸入的字去拼路徑。
+- 預設 **托爾斯坦／托爾**（`progress.js` 的 `PLAYER_DEFAULT` / `NICK_DEFAULT`；
+  ver -477 由「凱勞諾斯／凱」改定）。
+  ⚠ **不要拿玩家輸入的字去拼路徑**：名字是玩家自訂的，檔名與程式用的 id 一律另外寫死。
 - 輸入是一個**閘門拍**：腳本寫 `{ nameInput:true }`，沒有台詞、不出對話框，填完按確定才往下走。
 - ⚠ `PLAYER_DEFAULT` 在 `flight/index.html` 有**第二份**（非 module 頁面 import 不到）——
   改一邊要改另一邊（鐵律 7 的但書，兩邊註解已互指）。
@@ -3045,7 +3062,7 @@ trigger 壞了」）**
 
 **主角的稱呼**
 - ⚠⚠ **取名之前一律叫 `HUND`**（`progress.NAME_BEFORE`）：`{P}` 與 `{N}` 都代換成它。
-  「還沒取名」與「取了名」是**兩個顯示**，不是「預設值」—— 預設值（凱勞諾斯／凱）
+  「還沒取名」與「取了名」是**兩個顯示**，不是「預設值」—— 預設值（托爾斯坦／托爾）
   是**輸入框裡的預填**，玩家按確定才成立（`isNamed()` 判鑰匙存不存在）。
 - ⚠ `flight/index.html` 有第二份（非 module 頁面），改一邊要改另一邊。
 
@@ -3693,7 +3710,7 @@ Ray 提供的設計文件放 `docs/`,**內文一字不改**,歸檔時只在檔�
 
 **監察官＝蕾娜(Renna Heisenberg)** —— Ray 定案。**芙蕾雅(Freya)是暫代版。**
   所以設計文件 §5 的蕾娜機制不是新增角色,是接在現行監察官那個位子上。
-  正名要動:`config.js` 的 `inspectors` 鍵/`defaultInspector`/`ASSETS`/`castTable`、
+  正名要動:`config.js` 的 `inspectors` 鍵/`defaultInspector`/`ASSETS`/`tutorial.cast.inspector`、
   `i18n/` 三份的 `inspector.name`。`main.js` 已改走 `defaultInspector`(ver -256)。
   ⛔ **卡素材**:`resources/inspector/` 只有 `Freya_SI_01`,蕾娜立繪還沒有。
 
