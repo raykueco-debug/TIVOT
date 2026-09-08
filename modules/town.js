@@ -847,6 +847,7 @@ function eveningDue(n){
                  寫成 `[起,迄]` ＝**時段**（迄不含）—— 「隔日早上那一幕」要用這個，
                  見下面的說明
      onMove      **走一步就觸發**（Ray：「一進行地圖移動，祭司會出現」）
+     fromStage   到了這一章才有效（ver -954，同 acts 的同名欄位）
      afterMoves  這個閘門變成可觸發之後**又走了 N 步**才真的觸發（ver -953）——
                  走一步 10 分鐘，所以 6 ＝一小時，第 7 步發動（Ray 指定的算法）
      goto        強制移到哪一格
@@ -865,6 +866,10 @@ function stageGate(){
     if(!g) continue;
     if(g.flag && prog.hasFlag(g.flag)) continue;
     if(!needOk(g.need)) continue;
+    /* `fromStage`（ver -954）：**到了這一章**才有效。與 acts 的同名欄位同語意
+       —— Stage8 的起始時間那一道要的條件是「S7 演完了」，而 S7 有兩條分支
+       （鹿主走掉／打贏），插的旗不同、升的章相同，用旗當前置一定漏掉一條。 */
+    if(g.fromStage!=null && prog.getStage() < g.fromStage) continue;
     /* 「一進行地圖移動」：`backDir` 是這一次抵達由 `pendingDir` 推出來的 ——
        走過來才有，開城／強制轉場／讀檔都是空的（forceGo 會把 pendingDir 清掉）。 */
     if(g.onMove && !backDir) continue;

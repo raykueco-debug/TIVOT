@@ -134,9 +134,14 @@ const SV_S8_DINE = { flag:'sv_s8_dine', need:'sv_s8_home', fromStage:8, lines:[
   nou('cringe','這……'),
   { speaker:'PLAYER', blank:true },
   Object.assign(corx(null,'失禮了。'), { dark:true }),
-  /* 稿上「插圖，由下而上」＝ 那一拍把剪影收掉、正式露臉（`cgPan:'up'` 是插圖的平移，
-     這裡沒有插圖檔 —— 所以只做「暗調收掉」這件事，等 Ray 給圖再補 `cg`。 */
-  cor(null,'我是第五騎士團的，'),
+  /* ══ 稿上「插圖，由下而上：013_Corvin_intro」（ver -954，Ray 交件）══
+     §6.5 的詞彙表：`平移 上` ＝**由下往上**（終點在上方）→ `cgPan:'up'`。
+     ⚠ `cgNoTime` ＝這張沒有時段差分：不寫的話候選鏈會先吃 4~5 個 404，
+       adhoc 段落不經預載頁，手機上圖就來不及上（-433 那條）。
+     ⚠ 這一拍同時是**揭曉**：說話者由 `CORVIN_Q` 換成 `CORVIN` 且沒有 `dark`，
+       剪影就在這裡收掉（見 story 的 darkWho）。 */
+  Object.assign(cor(null,'我是第五騎士團的，'),
+                { cg:'013_Corvin_intro', cgNoTime:true, cgPan:'up' }),
   cor('smile','科爾文。請多指教。'),
   nou('surprise','作戰課……？'),
   sor('laugh','啊？這個跟豆芽一樣森住民能作什麼戰？'),
@@ -200,7 +205,8 @@ const SV_S8_DINE = { flag:'sv_s8_dine', need:'sv_s8_home', fromStage:8, lines:[
   cor('think','……'),
   cor('talk','海森伯格小姐，關於這方面，能否請您分享一下情報呢？'),
   any('silent','……'),
-  ren('pause','……我知道了。'),
+  /* ⚠ 插圖是**持續狀態**：這一段收尾前明寫收掉（`clearCast` 也會收，這裡是意圖）。 */
+  Object.assign(ren('pause','……我知道了。'), { cg:null }),
 ] };
 
 
@@ -2043,6 +2049,17 @@ export const TOWNS = {
          ⚠ 「三秒黑」目前走 forceGo 的標準黑幕（~1s）——要真的 3 秒再跟 Ray 調。 */
       { flag:'sv_forest_morning', need:'sv_clear_wild', clockTo:6,
         goto:'sorahome', enterAgain:true },
+      /* ══ Stage 8 的起始（ver -954，Ray：「Stage8 起始時間是 stage7 結束後的
+         下一個中午 12 點」）══
+         ⚠⚠ **寫成閘門不是寫在 act 上**：閘門在**轉場之前**推時鐘（見 clockGate），
+           所以下一格的背景才會用推完之後的時段挑。寫在 act 上的話人已經站在那裡了，
+           背景是按**舊時刻**選的 —— 半夜走進來會看到夜景配中午的戲。
+         ⚠ `fromStage:7` 而不是某支旗：S7 有兩條分支（鹿主走掉／打贏），
+           插的旗不同、升的章相同（同 sv_s8_home 那一段的理由）。
+         ⚠ `advanceToNextHour(12)` ＝**下一個** 12:00（已經過了就是隔天中午）——
+           與 `advanceToHour`（推到今天、過了就不動）是兩支，不要混用。
+         ⚠ 沒有台詞：時間跳過去＋把人放到索菈娜家，戲由那一格的 acts 接。 */
+      { flag:'sv_s8_noon', fromStage:7, clockTo:12, goto:'sorahome', enterAgain:true },
       /* ══ Stage 8：逛太久就被抓去餐廳（ver -953，Ray：「超過一小時仍沒有去餐廳」
          →「不要那麼麻煩，移動六次就是一小時，第七次就出肚子餓劇情」）══
          ⚠ `afterMoves:6` ＝**這個閘門變成可觸發之後**又走了六步，第七步發動

@@ -798,8 +798,18 @@ export function showKitchen(opts){
     setTimeout(()=>{ if(ov.parentNode) ov.parentNode.removeChild(ov); }, 220);
     if(o.onClose){ const f=o.onClose; o.onClose=null; try{ f(); }catch(_){} } };
   const render=()=>{
+    /* ══ 一列＝一道菜（ver -954，Ray 重排）══
+         左：菜圖（**還沒習得的一律「？？？」**）／中：菜名一列、材料一列／右：按鈕
+       ⚠ 按鈕**三態互斥**（Ray 指定）：
+         · 已習得  金色、按不動 —— 加成只給一次，再煮沒有意義，做成可按只會騙人
+         · 料理    材料齊 → 可按
+         · 料理    材料不齊 → 灰階、按不動
+       ⚠ 圖只有第一道有（其餘九道等美術）—— 沒有圖就算已習得也是「？？？」，
+         那是**缺圖**不是缺解鎖，但兩者長一樣不會誤導（都還沒東西可看）。 */
     const body=Object.keys(D).map(id=>{
       const d=D[id], mats=dishMats(id);
+      const done=prog.hasCooked(id), can=canCook(id);
+      const pic=(done && d.ci) ? asset(d.ci) : null;
       const mhtml=mats.map(m=>{
         const def=inv.defOf(m)||{}, have=inv.count(m);
         const slot=FOOD_SLOT[def.food]||'';
@@ -807,15 +817,15 @@ export function showKitchen(opts){
              + (slot?'<i>'+slot+'</i>':'') + inv.nameOf(m)
              + '<b>'+(have>0?have:0)+'</b></span>';
       }).join('');
-      const done=prog.hasCooked(id), can=canCook(id);
+      const btn = done ? '<span class="cook-do done">已習得</span>'
+                : can  ? '<button class="cook-do" type="button">料　理</button>'
+                       : '<span class="cook-do lack">料　理</span>';
       return '<div class="loot-row cook-row" data-id="'+id+'">'
-           + '<div class="cook-head"><span class="loot-name">'+d.name+'</span>'
-           +   (done ? '<span class="cook-done">已習得</span>'
-                     : '<span class="cook-boon">體力上限 ＋'+((d.boon||{}).hpMax||0)+'</span>')
-           + '</div>'
-           + '<div class="cook-mats">'+mhtml+'</div>'
-           + (can ? '<button class="cook-do" type="button">煮</button>'
-                  : '<span class="mod-mat lack">材料不足</span>')
+           + '<span class="cook-pic'+(pic?'':' unknown')+'"'
+           +   (pic?' style="background-image:url(\''+pic+'\')"':'')+'>'+(pic?'':'？？？')+'</span>'
+           + '<span class="cook-body"><b class="cook-name">'+d.name+'</b>'
+           +   '<span class="cook-mats">'+mhtml+'</span></span>'
+           + btn
            + '</div>';
     }).join('');
     ov.innerHTML='<div class="loot-panel"><div class="loot-title">瑪麗亞的廚房'
@@ -824,7 +834,7 @@ export function showKitchen(opts){
                + '<div class="loot-list">'+body+'</div>'
                + '<button class="loot-ok" type="button">關閉</button></div>';
     ov.querySelectorAll('.cook-row').forEach(row=>{
-      const b=row.querySelector('.cook-do'); if(!b) return;
+      const b=row.querySelector('button.cook-do'); if(!b) return;   // ⚠ 只有真的可按的那一態是 <button>
       b.addEventListener('click', e=>{ e.stopPropagation();
         const id=row.dataset.id;
         const r=cookDish(id);

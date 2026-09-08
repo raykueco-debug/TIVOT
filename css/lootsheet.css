@@ -144,15 +144,20 @@
   #lootSheet .mod-need{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:3px 8px;}
   #lootSheet .mod-mat{font-size:10px;color:var(--gold-dim);white-space:nowrap;}
   #lootSheet .mod-mat.lack{color:var(--danger);}
-  /* ══ 瑪麗亞的廚房（ver -953）══ 一列＝一道菜：上排菜名與加成、下排三樣材料。
-     ⚠ 材料做成一顆一顆的小籤（肉／菜／調味各標一個字）—— Ray 要「菜名跟材料都列出來」，
-       而「一肉一菜一調味」是這套料理的規則，標出來玩家才看得懂自己缺哪一格。
-     ⚠ 缺的那一樣走既有的 `.lack` 紅字（同改裝頁的素材），不另訂一個紅。 */
-  #lootSheet .cook-row{flex-wrap:wrap;align-items:flex-start;gap:4px 8px;}
-  #lootSheet .cook-head{flex:1 1 100%;display:flex;align-items:baseline;gap:8px;}
-  #lootSheet .cook-boon{font-size:10px;color:var(--gold-dim);white-space:nowrap;}
-  #lootSheet .cook-done{font-size:10px;color:var(--gold);opacity:.75;white-space:nowrap;}
-  #lootSheet .cook-mats{flex:1 1 auto;display:flex;flex-wrap:wrap;gap:4px;}
+  /* ══ 瑪麗亞的廚房（ver -954，Ray 重排）══ 一列＝一道菜，**橫向三段**：
+       左＝菜圖（還沒習得就是「？？？」）／中＝菜名一列、材料一列／右＝按鈕。
+     ⚠ 舊版（-953）把菜名與按鈕擠在同一排、材料折到第二排 —— 十道菜要捲很久
+       才看得完。現在一列的高度由縮圖決定，掃視的是**左邊那一直排的圖**。 */
+  #lootSheet .cook-row{align-items:center;gap:10px;}
+  #lootSheet .cook-pic{flex:0 0 auto;width:46px;height:46px;border-radius:6px;
+    background-size:cover;background-position:center;
+    border:1px solid rgba(201,162,39,.35);background-color:rgba(0,0,0,.25);}
+  /* 還沒習得：不放圖，放一格「？？？」—— 看得出「這裡以後會有東西」。 */
+  #lootSheet .cook-pic.unknown{display:flex;align-items:center;justify-content:center;
+    font-size:9px;letter-spacing:.02em;color:var(--gold-dim);}
+  #lootSheet .cook-body{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:3px;}
+  #lootSheet .cook-name{font-size:13px;font-weight:600;color:var(--ink);}
+  #lootSheet .cook-mats{display:flex;flex-wrap:wrap;gap:4px;}
   #lootSheet .cook-mat{display:inline-flex;align-items:center;gap:3px;
     font-size:11px;line-height:1.5;padding:1px 6px;border-radius:9px;
     border:1px solid rgba(201,162,39,.35);color:var(--ink);white-space:nowrap;}
@@ -160,7 +165,18 @@
   #lootSheet .cook-mat b{font-weight:600;opacity:.8;font-size:10px;}
   /* 材料不足：整顆籤變紅，不是只有數字 —— 一眼要看得出缺的是哪一格。 */
   #lootSheet .cook-mat.lack{border-color:rgba(214,64,64,.5);color:var(--danger);}
-  #lootSheet .cook-do{flex:0 0 auto;}
+  /* ══ 按鈕三態（Ray 指定，互斥）══
+       料理（可按）／料理（材料不足，灰階）／已習得（金色）。
+     ⚠ 只有可按的那一態是 `<button>`，另外兩態是 `<span>` —— 「按不動」用**元素種類**
+       表達，不是靠 `disabled` 或攔截點擊：那樣才不會有「看起來能按、按了沒反應」。 */
+  #lootSheet .cook-do{flex:0 0 auto;min-width:64px;text-align:center;
+    font-size:12px;line-height:1.9;padding:0 10px;border-radius:6px;white-space:nowrap;}
+  #lootSheet button.cook-do{border:1px solid var(--gold);background:rgba(201,162,39,.14);color:var(--gold);}
+  #lootSheet .cook-do.lack{border:1px solid rgba(140,140,140,.35);color:#8a8a8a;
+    background:rgba(120,120,120,.10);filter:grayscale(1);}
+  #lootSheet .cook-do.done{border:1px solid var(--gold);color:var(--gold);
+    background:rgba(201,162,39,.22);font-weight:600;
+    text-shadow:0 0 8px rgba(212,169,74,.45);}
   /* ── 存貨（ver -405）──
      ⚠ 標在**品名後面**不是價錢那一欄：價錢那欄要保持「一個數字」才掃得快。
      ⚠ 售完那一列整列變暗**而且點不動**（JS 那邊擋）—— 只變暗的話玩家會一直戳。 */
