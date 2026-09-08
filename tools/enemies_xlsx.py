@@ -5,6 +5,7 @@
 
     python3 tools/enemies_xlsx.py export            # enemies.js → enemies.xlsx（專案根目錄）
     python3 tools/enemies_xlsx.py import [檔案]      # Excel → 改回 enemies.js（只動有變的格）
+    python3 tools/enemies_xlsx.py newcards          # 有圖沒卡的怪 → 各建一張「最普通的怪」的卡
 
 ⚠⚠⚠ **匯入是「就地改值」不是「重新產生檔案」**。
   `script/enemies.js` 裡有大量 ⚠ 註解（哪個數字是 Ray 指定的、哪個是暫定、為什麼這樣調）
@@ -217,6 +218,33 @@ def strip_label(v):
        萬一也有分隔符也不會切錯。"""
     return str(v).split('｜')[-1].strip() if v is not None else v
 
+def orphan_images(data=None, assets=None, files=None):
+    """**有圖、還沒有卡**的那幾張 —— 回專案相對路徑的清單。
+       ⚠⚠ 只有這一支在算（鐵律 7）：匯出要把它們排成待辦列、`newcards` 要照它建卡。
+         兩邊各寫一份的話，會出現「Excel 上是待辦、建卡卻跳過」這種對不起來的狀況。
+       濾掉「假待辦」的兩條規則是**算的**不是名單：
+         ① 同名的另一種副檔名已經被某張卡用了（轉檔前的原圖）
+         ② 檔名在 `script/*.js` 被引用過（鹿主的中景層走 `cgBack`，不是敵人卡）"""
+    data   = load_js()      if data   is None else data
+    assets = load_assets()  if assets is None else assets
+    files  = enemy_files()  if files  is None else files
+    used = {f for f in (file_of(c, assets, files) for c in data.values()) if f}
+    stems = {os.path.splitext(os.path.basename(u))[0].lower() for u in used}
+    def referenced(fn):
+        for d, _, fs in os.walk(os.path.join(ROOT, 'script')):
+            for x in fs:
+                if x.endswith('.js'):
+                    try:
+                        if fn in open(os.path.join(d, x), encoding='utf-8').read(): return True
+                    except OSError: pass
+        return False
+    out = []
+    for f in files:
+        rel = 'resources/enemy/' + f
+        if rel in used or os.path.splitext(f)[0].lower() in stems or referenced(f): continue
+        out.append(rel)
+    return out
+
 STAMP = '__源檔指紋__'   # 匯出當下 enemies.js 的內容雜湊；匯入時對一次
 def do_export():
     import hashlib, tempfile
@@ -257,18 +285,7 @@ def do_export():
         c2 = dict(card); c2['key'] = k
         put(k, c2, f)
         ws.cell(ws.max_row, names.index('key') + 1).value = k
-    used_stems = {os.path.splitext(os.path.basename(u))[0].lower() for u in used}
-    def referenced(fn):
-        for d, _, fs in os.walk(os.path.join(ROOT, 'script')):
-            for x in fs:
-                if x.endswith('.js'):
-                    try:
-                        if fn in open(os.path.join(d, x), encoding='utf-8').read(): return True
-                    except OSError: pass
-        return False
-    for f in files:
-        rel = 'resources/enemy/' + f
-        if rel in used or os.path.splitext(f)[0].lower() in used_stems or referenced(f): continue
+    for rel in orphan_images(data, assets, files):    # 有圖沒卡＝待辦列（key 留空）
         put('', {}, rel)
 
     # ── 版面：格線、表頭、凍結 ──
@@ -437,6 +454,85 @@ def hitfx_text(slots):
     return '{ ' + body + ' }' if body else '{}'
 
 SKIP_COLS = {'__no__', '圖', '圖檔', 'key'}
+# ── 新怪圖 → 建一張「最普通的怪」的卡（ver -952，Ray：「之後有新怪圖我會指示你更新…
+#    套用一個最普通的怪數值，我再自己下去手動改」）─────────────────────────────
+#   範本＝`sf_lynx`（森林山貓）：沒有大絕、沒有特殊規則、九宮格五盤的一般野獸。
+#   ⚠⚠ **只建「最普通的」那一組，不要替 Ray 猜**：血量、攻擊、掉落、背景、kind
+#     都是那一隻的設計，猜出來的數字看起來像已經調過，反而更難發現還沒填。
+#     所以 `bg`／`loot` 留空、名字寫「（待命名）」—— 空著才看得出是待辦。
+#   ⚠⚠ **卡與 ASSETS 是一起的**：只建卡不補 ASSETS ＝「那一場沒有敵人立繪」，
+#     而畫面上不會有任何錯誤訊息（ver -929 的 `np_boss` 就是這樣）。兩邊一起寫。
+CARD_TMPL = """    {key}: {{
+      name:'（待命名）',
+      story:0, counterStagger:1,
+      Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
+      weaponMod:{{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] }},
+      openAssault:[1,2],
+      ult:{{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 }},
+      assaultEvery:[2,4],
+      assault:{{ count:1, gap:0 }},
+      kind:'beast',
+      image:'enemy_{key}',
+      bg:'',   // ⚠ 待填：戰鬥背景的基底名
+      fit:{{ mode:'contain', pos:'center bottom' }},
+      hp:200,
+      attack:10,
+      atkInterval:null,
+      delayPenalty:{{ seconds:5 }},
+      entrance:null,
+      special:[],
+      boardGrids:[9,9,9,9,9],
+      hitFx:{{ delay:'claw1',
+              wrong:'slash',
+              assault:'bite' }},
+      loot:[],   // ⚠ 待填
+    }},
+"""
+
+def do_newcards():
+    """有圖沒卡的每一張 → 在 enemies.js 補一張最普通的卡、在 config.js 補一行 ASSETS。"""
+    orphans = orphan_images()
+    if not orphans: print('沒有「有圖沒卡」的怪，什麼都不用做。'); return
+    js  = open(JS, encoding='utf-8').read()
+    cfg = open(os.path.join(ROOT, 'config.js'), encoding='utf-8').read()
+    cur = load_js()
+    # 卡要插在 ENEMIES 物件的最後一張之後 ——「例：新怪」那段註解之前
+    anchor = '\n    // 例：新怪'
+    if anchor not in js: sys.exit('✗ 找不到 enemies.js 的插入錨點（「// 例：新怪」那一段）')
+    # ASSETS 的敵人區：接在**最長的那一段連續 `enemy_`** 之後
+    # ⚠⚠ 不可以用「檔案裡最後一行 enemy_」當錨點：`enemy_man_sorana` 那一行夾在 BGM
+    #   區中間（ver -745 補的），照那個錨點插會把敵人立繪塞進音樂區 —— 語法沒錯、
+    #   遊戲也跑得動，所以**不會有任何錯誤訊息**，只有檔案越來越亂。
+    #   取**最後一段 3 行以上的**：落單的那一行進不來，而且新卡接在敵人區的尾巴。
+    runs, cur_run = [], []
+    for mo in re.finditer(r'^  enemy_[A-Za-z0-9_]+:.*$', cfg, re.M):
+        if cur_run and cfg.count('\n', cur_run[-1].end(), mo.start()) > 3: runs.append(cur_run); cur_run = []
+        cur_run.append(mo)
+    if cur_run: runs.append(cur_run)
+    runs = [r for r in runs if len(r) >= 3]
+    if not runs: sys.exit('✗ 找不到 config.js 的 ASSETS 敵人區')
+    a_last = runs[-1][-1]
+
+    cards, lines, made = '', '', []
+    for rel in orphans:
+        stem = os.path.splitext(os.path.basename(rel))[0]
+        key  = re.sub(r'^mon_', '', stem)          # ⚠ 機器推的鑰匙：檔名去掉 mon_
+        if key in cur: print(f'  略過 {key}（卡已經存在）'); continue
+        cards += CARD_TMPL.format(key=key)
+        lines += ('\n  enemy_' + key + ':').ljust(34) + f' "{rel}",'
+        made.append((key, rel))
+    if not made: print('沒有要新增的。'); return
+    hdr = ('\n  /* ══ 新怪圖：卡是 `newcards` 建的「最普通的怪」，數值等 Ray 手動改 ══ */'
+           if '新怪圖：卡是' not in cfg else '')
+    js  = js.replace(anchor, '\n' + cards + anchor, 1)
+    cfg = cfg[:a_last.end()] + hdr + lines + cfg[a_last.end():]
+    open(JS, 'w', encoding='utf-8').write(js)
+    open(os.path.join(ROOT, 'config.js'), 'w', encoding='utf-8').write(cfg)
+    print(f'建了 {len(made)} 張卡（enemies.js ＋ config.js 的 ASSETS）：')
+    for k, f in made: print(f'   {k:<24} ← {f}')
+    print('⚠ 鑰匙是**從檔名推的**（去掉 mon_）—— 要換成別的名字說一聲，趁還沒有人引用它最好改。')
+    print('⚠ 名字／背景／掉落／血量都還沒填：跑一次 export，在 Excel 上改。')
+
 def do_import(path):
     import hashlib
     from openpyxl import load_workbook
@@ -509,5 +605,6 @@ def do_import(path):
 if __name__ == '__main__':
     cmd = sys.argv[1] if len(sys.argv) > 1 else 'export'
     if cmd == 'export': do_export()
+    elif cmd == 'newcards': do_newcards()
     elif cmd == 'import': do_import(sys.argv[2] if len(sys.argv) > 2 else None)
     else: sys.exit(__doc__)

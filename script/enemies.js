@@ -1656,6 +1656,82 @@ export const ENEMIES = {
       },
     },
 
+    bug_mantis: {
+      name:'（待命名）',
+      story:0, counterStagger:1,
+      Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
+      openAssault:[1,2],
+      ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
+      assaultEvery:[2,4],
+      assault:{ count:1, gap:0 },
+      kind:'beast',
+      image:'enemy_bug_mantis',
+      bg:'',   // ⚠ 待填：戰鬥背景的基底名
+      fit:{ mode:'contain', pos:'center bottom' },
+      hp:200,
+      attack:10,
+      atkInterval:null,
+      delayPenalty:{ seconds:5 },
+      entrance:null,
+      special:[],
+      boardGrids:[9,9,9,9,9],
+      hitFx:{ delay:'claw1',
+              wrong:'slash',
+              assault:'bite' },
+      loot:[],   // ⚠ 待填
+    },
+    relic_bellascetic: {
+      name:'（待命名）',
+      story:0, counterStagger:1,
+      Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
+      openAssault:[1,2],
+      ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
+      assaultEvery:[2,4],
+      assault:{ count:1, gap:0 },
+      kind:'beast',
+      image:'enemy_relic_bellascetic',
+      bg:'',   // ⚠ 待填：戰鬥背景的基底名
+      fit:{ mode:'contain', pos:'center bottom' },
+      hp:200,
+      attack:10,
+      atkInterval:null,
+      delayPenalty:{ seconds:5 },
+      entrance:null,
+      special:[],
+      boardGrids:[9,9,9,9,9],
+      hitFx:{ delay:'claw1',
+              wrong:'slash',
+              assault:'bite' },
+      loot:[],   // ⚠ 待填
+    },
+    rictus_hooked: {
+      name:'（待命名）',
+      story:0, counterStagger:1,
+      Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
+      openAssault:[1,2],
+      ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
+      assaultEvery:[2,4],
+      assault:{ count:1, gap:0 },
+      kind:'beast',
+      image:'enemy_rictus_hooked',
+      bg:'',   // ⚠ 待填：戰鬥背景的基底名
+      fit:{ mode:'contain', pos:'center bottom' },
+      hp:200,
+      attack:10,
+      atkInterval:null,
+      delayPenalty:{ seconds:5 },
+      entrance:null,
+      special:[],
+      boardGrids:[9,9,9,9,9],
+      hitFx:{ delay:'claw1',
+              wrong:'slash',
+              assault:'bite' },
+      loot:[],   // ⚠ 待填
+    },
+
     // 例：新怪
     // giant: { name:'巨人', image:'enemy_giant', imageBase:'giant', hp:150, attack:30, atkInterval:5, sound:{}, special:[] },
 };

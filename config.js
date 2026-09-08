@@ -2632,6 +2632,10 @@ export const ASSETS = {
   enemy_serpent_night: "resources/enemy/Serpent_night.webp",
   enemy_centipi_night: "resources/enemy/Centipi_night.webp",
   enemy_centipi_dd:    "resources/enemy/Centipi_DD.webp",
+  /* ══ 新怪圖：卡是 `newcards` 建的「最普通的怪」，數值等 Ray 手動改 ══ */
+  enemy_bug_mantis:               "resources/enemy/mon_bug_mantis.webp",
+  enemy_relic_bellascetic:        "resources/enemy/mon_relic_bellascetic.webp",
+  enemy_rictus_hooked:            "resources/enemy/mon_rictus_hooked.webp",
   inspector_renna:     "resources/SI/Renna_SI_front.webp",         // 讀取頁的說明者（出航後）
   /* ── 破防計量的月牙（ver -539，Ray 交的 alpha 原圖，形狀 1px 不准差）──
      frame＝同輪廓的描邊版（未充滿時的「透明框」，由原圖 alpha 邊緣生成）。
