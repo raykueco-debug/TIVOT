@@ -1420,6 +1420,9 @@ function shopBtnName(n){
      · `mustCook` ＝挑一道煮了才過（那是劇情的閘門，不是逛街）
      · 演出交還給呼叫端（story）—— 它要等演完才推下一句
    ⚠ 導覽先收起來：菜單開著時不該還能走路。 */
+/* 這座城的出港位（ver -956）。⚠ 劇情的 `goFlight` 那一拍也要用它 —— 不然從
+   夏爾村走劇情出航一樣會在帝都起飛（那條路以前根本沒傳）。 */
+export function sailFrom(){ return (TOWNS[townId]||{}).sailFrom || null; }
 export function openKitchenForStory(onCook){
   const n=node();
   showNav(false); showShopBtn(false);

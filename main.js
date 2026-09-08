@@ -977,10 +977,21 @@ function sailOut(from){
   if(from && isFinite(from.x)){
     try{ localStorage.setItem('tivot_flight_ret_v1',
       JSON.stringify({ x:from.x*20, y:from.y*20 })); }catch(_){}
+  }else{
+    /* ⚠⚠ **沒有出港位＝會在帝都起飛**（ver -956，Ray：「從夏爾村出航，結果從帝都
+       起飛」）—— 那是飛行頁的 `SAIL_FROM_CAPITAL` 退路，而它**沒有任何錯誤訊息**：
+       船就是在別的地方而已，看起來像地圖畫錯。所以這裡吭一聲。
+       ⚠ 帝都自己不寫 `sailFrom` 是刻意的：它的出港位**就是**那個退路，
+         再抄一份到城鎮資料上就是同一個數字兩個地方（鐵律 7）。 */
+    const here=town.isOpen && town.isOpen() ? (town.getPosition()||{}).town : null;
+    if(here && here!=='capital')
+      console.warn('[main] 「'+here+'」沒有 sailFrom，出航會退回帝都出港位 —— 補一格到 script/town.js');
   }
   openFlight();
 }
-story.setFlightOpener(()=>{ town.suspend(); sailOut(); });
+/* ⚠ 劇情的出航拍也要帶**這座城的出港位**（ver -956）：以前這一條沒傳，
+   於是從夏爾村走劇情出航會退回帝都出港位（同城鎮那顆「出航」的老毛病）。 */
+story.setFlightOpener(()=>{ const f=town.sailFrom(); town.suspend(); sailOut(f); });
 // 首頁「教學」鈕：強制下一場進教學（不動已看旗標），不經整備頁直接出陣
 bindBtn('tutorialBtn', ()=>{ tutorial.requestReplay(); launchBattle(); });
 

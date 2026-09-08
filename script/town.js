@@ -2024,6 +2024,15 @@ export const TOWNS = {
        BGM Peritune_Whistling_Winds_loop」）——湖上戰後的 bgmAfter 也是它，
        進村無縫接續。-757 的 misty 暫代退場。 */
     bgm: 'whistling',
+    /* ══⚠⚠ 出港位（ver -956，Ray：「從夏爾村出航，結果從帝都起飛」）══
+       `sailFrom` ＝這座城的**出港位**（地圖座標，main.js 的 sailOut ×MAP_SCALE 寫進
+       回程鑰匙）。**沒寫的話飛行頁會退回寫死的 `SAIL_FROM_CAPITAL`（帝都出港位）**
+       —— 那正是 Ray 踩到的：夏爾村一直沒有這一格，所以從這裡出航會在帝都起飛，
+       而且畫面上不會有任何錯誤訊息（船就是在別的地方而已）。
+       ⚠ 取景是量過的（飛行頁的 HGT／RIV）：村子本身在**湖上**（湖畔村），
+         所以出港位取東南岸 —— 陸地、高度 59、離村 47（帝都 49／北泊 54，同一個量級）。
+       ⚠ 要挪就改這兩個數字；挪之前先確認新點不是水（`RIV`）也不是高峰。 */
+    sailFrom: { x:1130, y:832 },
     /* 主線帶進來的村子：預設劇情探索（同北方泊地，女角不排外出）。
        要開放自由探索＝那一段 act 寫 `endStoryExplore:true`（旗 free_explore_shinier）。 */
     storyExplore: true,
