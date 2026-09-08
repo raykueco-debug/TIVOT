@@ -53,7 +53,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.08-949';
+export const VERSION = 'ver 2026.09.08-950';
 
 export const GAME_CONFIG = {
 
@@ -1296,6 +1296,15 @@ export const GAME_CONFIG = {
        ⚠⚠ **只有紅圈算**（ver -721 修）：-706 之後黃圈與橘圈也會呼叫 `weaponCounter`，
          而計數掛在那裡 —— 於是「完美反擊」把三帶全算進去，一次威脅折 1.5 秒而不是
          0.5 秒，等第被灌水。判定只有 `defense` 分得出帶（同明晰之夢那一條，鐵律 7）。 */
+    /* ══⚠⚠⚠ **錢＝敵人血量 × 評價**（ver -950，Ray：「money 簡易化，一概取用
+       敵 hp x 評價：S 90% A80% B70% C60% D50%」）══
+       ⚠⚠ **連戰是用整局併帳後的等第算一次**（Ray 定案）—— 血量取 `stats.totalHP`
+         （中間幾場已經由 `bankSessionGain` 加總），等第取那一次併完的評價。
+         逐隻各算一次再相加是另一件事（等第會失真，同 -601 對分數的那一條）。
+       ⚠ 取代了兩套舊寫法：敵人卡的 `money.hpRatio`（逐卡的隨機區間）與
+         `battleLoot.money` 的逐場擲骰 —— 同一筆收入三個來源，調起來永遠對不準（鐵律 7）。
+       ⚠ 沒有 E 了（`tiers` 是 S/A/B/C/D 五階，D 接住所有人）。查不到就當 D。 */
+    moneyByGrade: { S:0.9, A:0.8, B:0.7, C:0.6, D:0.5 },
     penalty: { wrong: 2, assault: 3, block: 1, delay: 1, counter: -0.5,
                overkill: 0, perfectBoard: -1, maxBurst: -10, execution: -15 },
     /* ══⚠⚠ **整場無傷 ＝ 等第下限**（ver -626，Ray：「無傷基本讓他保證 S」）══

@@ -255,7 +255,6 @@ export const state = {
      ⚠ 不可以在 `combat.startGame` 那排歸零裡清：同一局裡每一場都會走那一支，
        清了就只剩最後一隻的帳（同 sessionStats 的理由）。 */
   partnerFights: null,
-  sessionMoney: 0,
   sessionLoot: null,     // 連戰中間場記帳的掉落（ver -869，Ray：「戰利品也到結算時給」）；收段結算一起發
 
   pickedPartner: GAME_CONFIG.defaultPartner,   // 玩家實選搭檔（擁有者 partner；選人畫面經 setPickedPartner 寫入）

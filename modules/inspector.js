@@ -74,16 +74,17 @@ function pickByThreshold(map, current, fallback){
  * ========================================================================== */
 const clamp01 = x => (x<0 ? 0 : (x>1 ? 1 : x));
 
-/* ══ 這一場掉多少錢（ver -595 抽成一支）══ 只擲骰、**不入帳** ——
-   連續戰鬥的中間幾場要先記帳、到收段那一場才一起入（見 settle 的說明）。
-   ⚠ 機率與範圍在 `config.battleLoot`（鐵律 1）；Boss 加成走 `bossMul`。 */
-export function rollBattleMoney(){
-  const bl=(GAME_CONFIG.battleLoot||{}).money;
-  if(!bl || Math.random() >= (bl.chance!=null?bl.chance:0)) return 0;
-  const lo=bl.min|0, hi=Math.max(lo, bl.max|0);
-  let m = lo + Math.floor(Math.random()*(hi-lo+1));
-  if(state.inIntruderFight && bl.bossMul>1) m=Math.round(m*bl.bossMul);
-  return m;
+/* ══⚠⚠⚠ **這一局賺多少錢：敵人血量 × 評價**（ver -950，Ray 定案）══
+   `stats.totalHP` 是**整局**的血量總和（中間幾場由 `bankSessionGain` 加起來），
+   等第是併帳後評出來的那一個 —— 所以連戰是**算一次**，不是逐隻算再相加。
+   ⚠ **唯一的計算點**（鐵律 7）：三條結算路徑（監察官／劇情插入戰／休息處）
+     都問這一支。以前錢有三個來源（敵人卡的 `money.hpRatio`、`battleLoot` 的逐場
+     擲骰、連戰的記帳），調起來永遠對不準。
+   ⚠ 「銀幣星」的加成**不在這裡乘** —— 那是玩家的強化，留在呼叫端與其他加成一起套。 */
+export function moneyOf(stats, grade){
+  const tbl = (GAME_CONFIG.rating && GAME_CONFIG.rating.moneyByGrade) || {};
+  const pct = tbl[grade] != null ? tbl[grade] : (tbl.D != null ? tbl.D : 0.5);
+  return Math.max(0, Math.round((stats && stats.totalHP || 0) * pct));
 }
 /* ══⚠⚠ 連續戰鬥的中間幾場：把這一場的**戰績**與錢記進帳（ver -595；-601 改）══
    由 combat 的 `win()` 在「不結算」那一支呼叫；到收段那一場由 `settle` 一起領走。
@@ -102,7 +103,6 @@ export function bankSessionGain(stats){
   acc.sawExecution = !!(acc.sawExecution || stats.sawExecution);
   acc.sawMaxBurst  = !!(acc.sawMaxBurst  || stats.sawMaxBurst);
   state.sessionStats = acc;
-  state.sessionMoney = (state.sessionMoney|0) + rollBattleMoney();
   /* ══⚠⚠ **中間場的掉落也記帳**（ver -869，Ray：「戰利品也是到那個時候（收段結算）
      結算」）══ 每殺一隻就擲牠的 loot、堆進 `sessionLoot`，收段那一場的結算頁
      一起發（見 settle 的併帳）。-586 的「拾得只在有結算頁的那一場給」被這一條
@@ -123,7 +123,7 @@ export function mergeSessionStats(stats){
   out.sawMaxBurst  = !!(out.sawMaxBurst  || acc.sawMaxBurst);
   return out;
 }
-export function clearSessionGain(){ state.sessionStats=null; state.sessionMoney=0; state.sessionLoot=null;
+export function clearSessionGain(){ state.sessionStats=null; state.sessionLoot=null;
   state.partnerFights=null;   // 出場帳與這一局同生共死（ver -921，見 state 的說明）
 }
 
@@ -383,7 +383,7 @@ export function settle(totalTime, stats, opts={}){
      所有以場為單位都是以結算為終點」）══
      「場」＝槍棺上彈 → 蕾娜評價（§6.5.4.3 的 session）。連續戰鬥中間幾格不彈
      結算頁，它們的用時／失誤／受擊／overkill 累在 `state.sessionStats`、
-     錢累在 `sessionMoney` —— **在這裡一次併進來**，之後每一條結算路徑
+     錢改由 `moneyOf` 在結算時一次算（ver -950） —— **在這裡一次併進來**，之後每一條結算路徑
      （監察官／教學／劇情插入戰）拿到的都是「整場」的統計。
      ⚠⚠ ver -601 的併帳只做在**監察官**那一頁，而城鎮戰／劇情戰走的是
        `scriptSettle` —— 於是整段累計的戰績與錢從來沒被領走過，
@@ -391,14 +391,13 @@ export function settle(totalTime, stats, opts={}){
        併在分流**之前**，日後多一條結算路徑也自動吃到（鐵律 8）。
      ⚠ 領完就清：不然下一場會把上一段的再算一次。
      ⚠ 戰敗不併也不清 —— 那一頁不報帳，而這一段可能還要再打一次。 */
-  let sessionMoney = 0, sessionLoot = null, shares = null;
+  let sessionLoot = null, shares = null;
   if(stats && !isLose){
     stats = mergeSessionStats(stats);
-    sessionMoney = state.sessionMoney|0;
     sessionLoot = state.sessionLoot || null;   // 中間場記帳的掉落（ver -869），下面併進拾得
     /* ⚠⚠ **出場帳要在清帳之前算**（ver -921）：`clearSessionGain()` 會把
        `partnerFights` 一起清掉（它是同一局的帳）—— 算在後面就永遠只剩退路那一支，
-       實測就是「誰都沒加到好感」。同 `sessionMoney` 先取值再清的理由。 */
+       實測就是「誰都沒加到好感」。同 `sessionLoot` 先取值再清的理由。 */
     shares = settleAffectionShares();
     clearSessionGain();
     /* ⚠ 「這一場打了多久」也跟著變成整場的總和 —— 最佳紀錄、破紀錄獎品、
@@ -428,11 +427,11 @@ export function settle(totalTime, stats, opts={}){
      排在所有分流**最前面**：這一頁沒有敵人（不是打完誰，是把這一路的帳結掉），
      底下那三條都要問 `state.currentEnemyKey`。⚠ 併帳／清帳／HP 回滿在上面已經做完
      —— 那是「一局的終點」共通的手續，這一條只是第四條結算路徑（鐵律 8）。 */
-  if(opts.rest && !isLose){ restSettle(totalTime, stats, sessionMoney, sessionLoot, shares, opts.restTitle); return; }
-  if(state.tutorialRun && !isLose){ tutorialSettle(totalTime, stats, sessionMoney); return; }
+  if(opts.rest && !isLose){ restSettle(totalTime, stats, sessionLoot, shares, opts.restTitle); return; }
+  if(state.tutorialRun && !isLose){ tutorialSettle(totalTime, stats); return; }
   /* 劇情插入戰（ver -375）：與教學結算同一頁 —— **沒有監察官、沒有等級**，
      只有戰績、EXP 與拾得。⚠ 不是教學，所以不走教學那兩句台詞。 */
-  if(state.scriptRun && !isLose){ scriptSettle(totalTime, stats, sessionMoney, sessionLoot, shares); return; }
+  if(state.scriptRun && !isLose){ scriptSettle(totalTime, stats, sessionLoot, shares); return; }
   if(isLose){
     const rows=combatStatsRows();
     showResultSequence(L.result.loseTitle, L.result.loseSub, rows, 'lose', true);
@@ -474,13 +473,14 @@ export function settle(totalTime, stats, opts={}){
        Boss 加成走 `bossMul`。一般戰沒有道具掉落，戰利品視窗因此整個不彈。 */
   /* ══⚠⚠ **連續戰鬥的 EXP 與錢是「整場」結算**（ver -595，Ray：「exp 跟錢都用
      『整場』來結算」）══ 城鎮戰那五格對玩家而言是同一場（§6.5.4.3），中間幾格
-     不彈結算頁 —— 那幾格的**戰績**累在 `state.sessionStats`、錢累在 `sessionMoney`，
+     不彈結算頁 —— 那幾格的**戰績**累在 `state.sessionStats`、錢改由 `moneyOf` 在結算時一次算（ver -950），
      到收段的那一場（Boss）**一起評一次等第**、一起入帳、一起顯示（ver -601：
      「戰鬥用時也是要用整場的全部戰鬥總和時間」）。
-     ⚠ 擲骰只有 `rollBattleMoney()` 一支（鐵律 7）：中間場與這裡都問它。
-     ⚠ 錢**在這裡才真的入帳**（中間場只記帳）—— 不然打到一半跑掉，錢已經進口袋了。
+     ⚠ 錢只有 `moneyOf` 一支在算（鐵律 7）：整局血量總和 × 併帳後的等第，一次算完。
+     ⚠ 錢**在這裡才真的入帳** —— 不然打到一半跑掉，錢已經進口袋了。
      ⚠ 領完就清（`clearSessionGain`），不然下一場會把上一段的再算一次。 */
-  let gainMoney = rollBattleMoney() + sessionMoney;
+  let gainMoney = moneyOf(stats, evalResult.grade);
+  if(gainMoney) gainMoney = Math.round(gainMoney * (1 + prog.starBonus('moneyMul')));
   const totalExp = evalResult.exp|0;      // EXP 由**整場的總和**算出來（ver -601）
   if(gainMoney) inv.addMoney(gainMoney);
   if(totalExp && showExp()) rows += '<div class="row"><span>EXP</span><b>＋'+totalExp+'</b></div>';
@@ -709,7 +709,7 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose, opts){
    ⚠ EXP 照樣用 `evaluate()` 算 —— 不評等級指的是「不顯示 S/A/B 那個大字」，
      不是「不算分」。等級之後要拿來解隱藏關，教學場不該污染那條線。
    ⚠ 掉落清單在 `config.tutorial.loot`，這裡不寫死。 */
-function tutorialSettle(totalTime, stats, sessionMoney){
+function tutorialSettle(totalTime, stats){
   state.sRankUnlocked = false;
   const ev = evaluate(stats);
   const tr = (GAME_CONFIG.tutorial && GAME_CONFIG.tutorial.result) || {};
@@ -744,7 +744,7 @@ function tutorialSettle(totalTime, stats, sessionMoney){
    與 `scriptSettle` 是**兄弟**：同一個版面、同一支評分（`evaluate`）、同一位評價者
    （`pickEvaluator`）、同一條拾得（`_lootPending`）—— 差別只有一件事：
    **這一頁沒有敵人**。所以副標不是「XX 已淨化」，錢與掉落也只有這一路累積的帳
-   （`sessionMoney`／`sessionLoot`），不再擲最後一隻的骰。
+   （錢走 `moneyOf`、掉落走 `sessionLoot`），不再擲最後一隻的骰。
    ⚠ 不寫成 `scriptSettle` 的一個分支：那一支有六處要問 `state.currentEnemyKey`
      （副標、掉落、金錢、名字、最佳紀錄、獎品），逐處加 `if` 只會讓兩種頁互相絆倒。
      共用的部分本來就已經是抽出來的函式了。
@@ -752,7 +752,7 @@ function tutorialSettle(totalTime, stats, sessionMoney){
      走到這裡就一定有帳可結。 */
 /* ⚠ `title` ＝這一頁的大標（ver -928）：休息處走進去是「休　息　處」，
      走出這張地圖時結算是「撤　離」—— 同一頁兩個時機，字面由呼叫端給（鐵律 1）。 */
-function restSettle(totalTime, stats, sessionMoney, sessionLoot, shares, title){
+function restSettle(totalTime, stats, sessionLoot, shares, title){
   state.sRankUnlocked = false;
   const ev = evaluate(stats);
   /* 評價者照舊（`battleId` 傳 null ＝沒有哪一場的專屬台詞，走章節／好感那張通用表）。
@@ -760,7 +760,7 @@ function restSettle(totalTime, stats, sessionMoney, sessionLoot, shares, title){
        是同一件事，只是在休息處收尾。 */
   const spk = pickEvaluator(ev.grade, null);
   prog.applyRankAffection(ev.grade, shares || state.pickedPartner);   // ver -921：出場數最多的全拿
-  let money = (sessionMoney|0);
+  let money = moneyOf(stats, ev.grade);
   if(money) money = Math.round(money * (1 + prog.starBonus('moneyMul')));
   const exp = ev.exp|0;
   if(money) inv.addMoney(money);
@@ -795,7 +795,7 @@ function restSettle(totalTime, stats, sessionMoney, sessionLoot, shares, title){
    金錢是「HP 的 6~8 成隨機」。兩者都在敵人卡上，這裡只負責擲骰與呈現（鐵律 1）。
    ⚠ 沒有監察官、沒有等級：那一場是劇情中間插進來的一場架，不是驅逐任務。
    ⚠ 按鈕是「繼續」→ 回劇情/城鎮（不是回主畫面）。 */
-function scriptSettle(totalTime, stats, sessionMoney, sessionLoot, shares){
+function scriptSettle(totalTime, stats, sessionLoot, shares){
   state.sRankUnlocked = false;
   const ev = evaluate(stats);
   const en = GAME_CONFIG.enemies[state.currentEnemyKey] || {};
@@ -826,15 +826,9 @@ function scriptSettle(totalTime, stats, sessionMoney, sessionLoot, shares){
   /* ⚠ 連戰中間場記帳的掉落（ver -869，Ray：「戰利品也是到那個時候結算」）——
      併在最後一隻自己的擲骰前面（先打到的先列）。 */
   const en2loot = (sessionLoot||[]).concat(rollLoot(en));
-  let money = 0;
-  const mr = en.money && en.money.hpRatio;
-  if(mr && !noReward){
-    const lo=mr[0], hi=mr[1]!=null?mr[1]:mr[0];
-    money = Math.round((en.hp||0) * (lo + Math.random()*(hi-lo)));
-  }
-  /* ⚠ 連續戰鬥中間幾格的錢在這裡一起入帳（ver -621）：那幾格不彈結算頁，
-     帳記在 `state.sessionMoney`，由 `settle` 併出來傳進來（見那裡）。 */
-  money += (sessionMoney|0);
+  /* 錢＝**整局血量總和 × 評價**（ver -950，見 moneyOf）——連戰算一次，不逐隻算。
+     ⚠ `noReward`（打靶那種）照舊不給。 */
+  let money = noReward ? 0 : moneyOf(stats, ev.grade);
   /* 九階強化「銀幣星」：金錢掉落加成（ver -707）。⚠ 在**併完連戰的帳之後**才乘 ——
      中間幾格的錢也是這一場打來的，只乘最後一格等於少算一大半。 */
   if(money) money = Math.round(money * (1 + prog.starBonus('moneyMul')));

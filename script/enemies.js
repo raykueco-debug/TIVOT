@@ -717,7 +717,6 @@ export const ENEMIES = {
       loot:[ { id:'brass_casing', n:6 } ],
       /* 金錢：**HP 的 6~8 成隨機**（卡上的寫法）。所以血越厚的怪給越多錢 ——
          這條規則寫在資料裡，程式只負責擲骰（鐵律 1）。 */
-      money:{ hpRatio:[0.6, 0.8] },
     },
     /* ══ 巨型蜈蚣（ver -423，Ray 的敵人卡）══════════════════════════════
        第一場**船艦戰**的怪。卡上的每一欄都照抄成絕對值（鐵律 1／§6.5.2）。 */
@@ -777,7 +776,6 @@ export const ENEMIES = {
              { id:'chitin_wing',  n:1, p:0.10 },
              { id:'chitin_shell', n:1, p:0.33 } ],
       /* 金錢：HP 的 120%~150%。 */
-      money:{ hpRatio:[1.2, 1.5] },
     },
     /* ══ 羽蛇（ver -500，Ray 的敵人卡）══════════════════════════════════
        飛行限定的隨機敵（[場景：飛行][區域：全陸域][稀有等級：E]—— 那三格住在
@@ -821,7 +819,6 @@ export const ENEMIES = {
              { id:'azure_scale',   n:1, p:0.33 },
              { id:'azure_feather', n:1, p:0.33 } ],
       /* 金錢：HP 的 50%~70%。 */
-      money:{ hpRatio:[0.5, 0.7] },
     },
     /* ══ 空賊船（ver -509，Ray 的敵人卡）══════════════════════════════════
        飛行限定隨機敵（[場景：飛行][區域：**薩梅爾空域外全域**][稀有等級：E]
@@ -864,7 +861,6 @@ export const ENEMIES = {
          判定在 combat.applyEnemyMods，同羽蛇卡）。 */
       loot:[ { id:'brass_casing', n:1, p:0.33 } ],
       /* 金錢：HP 的 70%~90%。 */
-      money:{ hpRatio:[0.7, 0.9] },
     },
     /* ══ 夏爾森林的野生怪（ver -862，Ray 交卡的 F 表）══════════════════════
        刷怪規則在 script/town.js 的 `shinier_forest.wildSpawn`（出怪率 25%/地點、
