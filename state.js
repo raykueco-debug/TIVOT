@@ -78,15 +78,15 @@ export const state = {
   /* ── 3.3 三級防禦/大絕（擁有者：defense；大寫參數由 enemy 設定敵人時寫入） ── */
   threats: [],
   threatTick: null,
-  ultCheckTimer: null,
+  assaultTimer: null,
   CHARGE_SECONDS: T.chargeSeconds,
-  ULT_DAMAGE: _enemy.attack,
-  ULT_SHOTS: 1,
-  ULT_GAP_MS: 0,
-  ULT_MIN: 4000,
-  ULT_MAX: 8000,
-  ULT_OPEN_MIN: 1000,   // 開場第一發大絕的延遲範圍（毫秒，ver -795）：逐怪卡上 openAssault:[秒,秒] 覆寫，預設 1~2 秒
-  ULT_OPEN_MAX: 2000,
+  ASSAULT_DAMAGE: _enemy.attack,
+  ASSAULT_SHOTS: 1,
+  ASSAULT_GAP_MS: 0,
+  ASSAULT_MIN: 4000,
+  ASSAULT_MAX: 8000,
+  ASSAULT_OPEN_MIN: 1000,   // 開場第一發大絕的延遲範圍（毫秒，ver -795）：逐怪卡上 openAssault:[秒,秒] 覆寫，預設 1~2 秒
+  ASSAULT_OPEN_MAX: 2000,
   DELAY_PENALTY_SCALE: 1,
   DELAY_TIME_DELTA: 0,
   WRONG_PENALTY_SCALE: 1,
@@ -121,9 +121,13 @@ export const state = {
      沒到門檻＝照常出一般圈。 */
   enemyUltAct: null,
   /* 這一發大絕（光圈）落點的座標（ver -766，Ray：「攻擊效果要跟光圈的位置一樣」）：
-     defense.releaseUlt 寫（圈的 left/top %）、enemy.spawnBite **讀完即清**（一次性）——
+     defense.releaseAssault 寫（圈的 left/top %）、enemy.spawnBite **讀完即清**（一次性）——
      不清的話劇情殺那種不經光圈的 'ult' 擊會沿用上一顆圈的舊位置。 */
-  lastUltPos: null,
+  lastAssaultPos: null,
+  /* 這一發是不是**血量門檻的特殊波**（ver -932，Ray 的受擊四態：延時／按錯／
+     攻擊 assault／大絕 ult）。擁有者＝defense（只有它分得出那一顆圈是誰生的），
+     combat 的 fxKind 只讀（鐵律 7）。⚠ 不進存檔：它只活到那一擊演完。 */
+  lastAssaultUlt: false,
   enemyCounterBuff: null,   // { mult, seconds }：被反擊後玩家的普攻增益
   enemyCounterStun: 0,      // 被反擊後幾秒才發起下一次主動攻擊
   enemyCounterStagger: 1,   // 反擊硬直（ver -495）：1＝被反擊時延時計時歸零、0＝不歸零。卡上沒寫＝1
@@ -147,7 +151,7 @@ export const state = {
   saintDamageDealt: 0,
   saintReactTimer: null,
   saintPrevBoard: null,
-  saintPrevUlt: null,
+  saintPrevAssault: null,
   /* ══ 惡夢化（Nightmare Install，ver -671，Ray 交稿）══
      聖徒化的**鏡像**：一樣由 saint.js 獨佔寫入（`niMode` 只有它能寫）。
      差別全在方向 —— 聖徒化是「血往上推，推滿＝OBE」，惡夢化是
@@ -234,9 +238,9 @@ export const state = {
      ⚠ 擁有者是 inspector（`bankSessionGain`／`clearSessionGain`），
        combat 的 `endSession()` 也會清 —— 半途離場不該把帳留到下一段。 */
   /* 失誤計數（ver -600 的新評價）：擁有者 combat（`enemyAttack` 加、`startGame` 歸零）。
-     `penUlt`＝被大絕命中、`penBlock`＝擋下一半、`penDelay`＝延時懲罰；
+     `penAssault`＝被大絕命中、`penBlock`＝擋下一半、`penDelay`＝延時懲罰；
      點錯格用既有的 `wrongTaps`。 */
-  penUlt: 0, penBlock: 0, penDelay: 0,
+  penAssault: 0, penBlock: 0, penDelay: 0,
   /* ⚠⚠ 連續戰鬥的**戰績累計**（ver -601，Ray：「戰鬥用時也是要用整場的全部戰鬥
      總和時間，不計算移動，只算戰鬥時間」）：中間幾格的用時與失誤累加在這裡，
      到收段那一場（Boss）**一起評一次**。null＝這一段還沒有累計。
@@ -297,7 +301,7 @@ export const state = {
   storyBattle: false,
   /* ══ 計時挑戰（ver -396，打靶場）══
      戰鬥卡的 `timeAttack` 直接放這裡（`{wrongPenaltySec, se}`；不是那種場次就是 null）。
-     ⚠ 它一開就把**整條攻擊路徑**關掉（`enemyAttack` 與 `defense.scheduleUlt` 各自守門），
+     ⚠ 它一開就把**整條攻擊路徑**關掉（`enemyAttack` 與 `defense.scheduleAssault` 各自守門），
        所以大絕紅點、蓄力槽、延時懲罰、按錯扣血通通不會演 —— 畫面上只剩「打靶」。
      ⚠ 唯一的懲罰是**時間**：按錯 → 碼表加 `wrongPenaltySec` 秒（見 combat 的 tap）。 */
   timeAttack: null,

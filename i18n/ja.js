@@ -59,7 +59,7 @@ export const STRINGS = {
     perfectClear: 'パーフェクトクリア +{n}',
     tooSlow:      '遅すぎ',
     crit:         'クリティカル ',
-    hitByUlt:     '被弾',
+    hitByAssault:     '被弾',
     overkill:     'OVERKILL！',
     overkillAdd:  'OVERKILL +{n}',
     counter:      'COUNTER！',

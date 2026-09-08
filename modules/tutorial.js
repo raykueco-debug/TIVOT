@@ -113,7 +113,7 @@ function talkFire(trigger){
   if(i<0) return;
   const step=talkTake(i);
   /* 開場白還沒插入就被別的節點搶先 → 先講開場白，這一段排隊接上（同 fire 的作法）。
-     ⚠ 這條路是**常態不是例外**：開場的大絕是 0~3 秒內隨機排的（`scheduleOpeningUlt`），
+     ⚠ 這條路是**常態不是例外**：開場的大絕是 0~3 秒內隨機排的（`scheduleOpeningAssault`），
        而開場白要等 `startDelayMs`（700ms）—— 紅點先到的機率不低。 */
   if(trigger!=='battleStart' && talkTimer){
     clearTimeout(talkTimer); talkTimer=null;
@@ -328,12 +328,12 @@ export function onEarlyBlock(){
 export function delayPenaltySuppressed(){
   return state.tutorialActive && state.boardIndex>=1 && !defendedDone;
 }
-// defense.scheduleUlt 詢問：教學中暫緩敵大絕的情境——
-//   ① 前 noUltBoards 回合（第一回合純清盤）② 第四回合聖徒化發動前（劇情殺腳本盤）
+// defense.scheduleAssault 詢問：教學中暫緩敵大絕的情境——
+//   ① 前 noAssaultBoards 回合（第一回合純清盤）② 第四回合聖徒化發動前（劇情殺腳本盤）
 //   ③ 場上已有紅點（教學全程一次只出一顆，凍結講解/立繪在場時不疊點）
-export function ultSuppressed(){
+export function assaultSuppressed(){
   if(!state.tutorialActive) return false;
-  if(state.boardIndex < (CFG().noUltBoards||0)) return true;
+  if(state.boardIndex < (CFG().noAssaultBoards||0)) return true;
   // ⚠ 劇情版沒有聖徒化腳本盤（saintUsedThisBattle 永遠 false）→ 這條會把大絕壓死，
   //   第四盤起敵人再也不出手。只有原版教學要它。
   if(!storyRun && state.boardIndex===3 && !state.saintUsedThisBattle) return true;

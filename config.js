@@ -53,7 +53,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.08-931';
+export const VERSION = 'ver 2026.09.08-932';
 
 export const GAME_CONFIG = {
 
@@ -67,7 +67,7 @@ export const GAME_CONFIG = {
    *  ⚠⚠ ver -706：三帶的行為改由卡上的 `bands` 表決定（見 weaponBand）。
    *     以下 defenseDamageScale／noPerfectBand／perfectDmgPerHit 的說明是**歷史**，
    *     六張卡都已改寫，程式端也沒有人再讀它們。
-   *  defenseDamageScale = Defense（格擋）段受傷倍率（相對大絕 ULT_DAMAGE）：
+   *  defenseDamageScale = Defense（格擋）段受傷倍率（相對大絕 ASSAULT_DAMAGE）：
    *                      0.5＝半傷（預設，重機槍等）、0.25＝四分之一傷（散彈的保命特性）、
    *                      0＝完全免傷。留 null 視為 0.5。
    *  noPerfectBand     = true → 取消 Perfect 免傷帶（橘圈被黃圈取代）：
@@ -926,7 +926,7 @@ export const GAME_CONFIG = {
     lineTypeMs: 30,        // 打字機每字間隔（ms）；點擊對話中先跳完整句、再點下一句
     // 教學戰鬥的規則調整（只在 tutorialActive 期間生效）：
     enemyAtkDamage: 2,     // 敵方所有攻擊（大絕/按錯/延時）基礎傷害一律此值；Defense 格擋再減半（=1）
-    noUltBoards: 1,        // 前 N 盤敵人不發動大絕（第一盤純練清盤，第二盤起反擊教學）
+    noAssaultBoards: 1,        // 前 N 盤敵人不發動大絕（第一盤純練清盤，第二盤起反擊教學）
     /* 教學戰敵人血量：開場固定、全程不變（不再於聖徒化後壓血）。
        ⚠ **300**（ver -362，Ray 指定；原 500）。血量只影響**節奏**不影響流程：
          教學段落未播完前（tutorialActive）敵血夾底 1 不可被殺
@@ -956,7 +956,7 @@ export const GAME_CONFIG = {
     finishEnemyHp: 70,
     // 教學期間大絕紅點的生成範圍（%），避開左右立繪與下方對話框——只在中央帶出現。
     //   first＝反擊教學第一顆紅點的固定位置（畫面正中偏上，凍結講解時不壓立繪）；
-    //   教學全程一次只出一顆（有紅點在場時暫緩下一發，見 tutorial.ultSuppressed）。
+    //   教學全程一次只出一顆（有紅點在場時暫緩下一發，見 tutorial.assaultSuppressed）。
     threatSpawn: { leftMin:38, leftMax:62, topMin:25, topMax:55, first:{ left:50, top:18 } },
     // 第四回合劇情殺（聖徒化前導）：玩家清滿 afterCells 格 → 監察官「小心！」→
     //   分三次擊倒（gapMs 間隔）；kinds 對應該敵 hitFx 三種受擊畫面（第二次＝三爪 ult）。
@@ -1089,7 +1089,7 @@ export const GAME_CONFIG = {
       early: [],
     },
     steps: [
-      // 第一盤：純清盤教學（noUltBoards=1 → 敵人不出大絕）
+      // 第一盤：純清盤教學（noAssaultBoards=1 → 敵人不出大絕）
       { trigger:'battleStart', lines:[
         { who:'inspector', text:'開始實戰考核。HUND，讓我看看你的基礎是否紮實。' },
         { who:'partner',   text:'別緊張！照著數字順序點擊下方的盤面，每一次命中都會對敵人開火！' },
@@ -1285,7 +1285,7 @@ export const GAME_CONFIG = {
        ⚠⚠ **只有紅圈算**（ver -721 修）：-706 之後黃圈與橘圈也會呼叫 `weaponCounter`，
          而計數掛在那裡 —— 於是「完美反擊」把三帶全算進去，一次威脅折 1.5 秒而不是
          0.5 秒，等第被灌水。判定只有 `defense` 分得出帶（同明晰之夢那一條，鐵律 7）。 */
-    penalty: { wrong: 2, ult: 3, block: 1, delay: 1, counter: -0.5,
+    penalty: { wrong: 2, assault: 3, block: 1, delay: 1, counter: -0.5,
                overkill: 0, perfectBoard: -1, maxBurst: -10, execution: -15 },
     /* ══⚠⚠ **整場無傷 ＝ 等第下限**（ver -626，Ray：「無傷基本讓他保證 S」）══
        ver -620 是「折 10 秒」，已推翻 —— 定額折秒的份量被**場的大小稀釋**：
@@ -1600,7 +1600,7 @@ export const GAME_CONFIG = {
        「敵 hp 300、**不攻擊**、點錯**加 3 秒**、播 se_dart_fail、
          敵 hp 清零結算時間、記錄玩家個人時間、破紀錄加 New Record 標籤」
        ⚠ `timeAttack` 一開就把**整條攻擊路徑**關掉（大絕排程、延時懲罰、按錯扣血）——
-         見 `modules/combat.js` 的 `enemyAttack` 與 `modules/defense.js` 的 `scheduleUlt`。
+         見 `modules/combat.js` 的 `enemyAttack` 與 `modules/defense.js` 的 `scheduleAssault`。
          這樣紅點、蓄力槽、血條變化通通不會演，畫面上只剩「打靶」。
        ⚠ 因此**不可能戰敗**（`allowLose` 不寫）。但**有「沒過關」**：`parSec` ＝ 標準時間，
          超過就走腳本的 `onLose` 那一支台詞（ver -396，Ray：「時間超過 50 秒出失敗分支的台詞」）
@@ -1638,11 +1638,11 @@ export const GAME_CONFIG = {
     np_range: { enemy:'dart_target', record:'np_range', noReward:true, noEval:true,
                 timeAttack:{ wrongPenaltySec:3, se:'se_dart_fail', parSec:25 } },
     /* ══ 蕃茄人11號（ver -858，杰羅的修船打靶）══ 同帝都配置＋兩個新旋鈕：
-       `ultOn` 放行大絕排程（3 秒一發，defense.scheduleUlt 的例外）、
+       `assaultOn` 放行大絕排程（3 秒一發，defense.scheduleAssault 的例外）、
        `hitPenaltySec` 被打中＝碼表 +3 秒（combat.enemyAttack）。par 30 秒。 */
     sv_range: { enemy:'sv_dart', record:'sv_range', noReward:true, noEval:true,
                 timeAttack:{ wrongPenaltySec:3, se:'se_dart_fail', parSec:30,
-                             hitPenaltySec:3, ultOn:true } },
+                             hitPenaltySec:3, assaultOn:true } },
     /* ══ 墓地那一場（ver -664，Ray：「教堂那隻中 boss，背景維持墓地」）══
        ⚠ **另開一張卡**不共用 `np_boss`：那一張是城鎮戰的收段場（`sessionEnd`、
          屬於 `siege` 那一段），這一場是自由探索期的單場遭遇 —— 同一隻怪、
@@ -2354,7 +2354,7 @@ export const GAME_CONFIG = {
     saintNoAtkAfterCutinSec: 3, // 聖徒化 cut-in 撤下後，敵不發動大絕的秒數（v16）
     /* ⚠⚠ **這兩個已經沒有人讀了**（ver -688，Ray：「把 boss 一進夢魘或聖徒就猛攻的
        設定拿掉」）—— 聖徒化／惡夢化期間不再改敵人的大絕頻率。欄位留著當紀錄，
-       日後要恢復就把 `saint.js` 那兩行 `setUltRate` 加回去。 */
+       日後要恢復就把 `saint.js` 那兩行 `setAssaultRate` 加回去。 */
     saintUltMinMs:       1200,  // v18：聖徒化期間敵大絕發動頻率下限（毫秒；越小越密集）
     saintUltMaxMs:       2600,  // v18：聖徒化期間敵大絕發動頻率上限（毫秒）
     saintComboStep:      1.0,   // 聖徒化每 combo 疊傷斜率（無上限）。reference 為 0.5；本專案調 1.0

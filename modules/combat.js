@@ -52,7 +52,7 @@ const SAINT_PASSIVE_HEAL_SEC=T.saintPassiveHealSec;
 const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;};
 
 // 教學期間敵方攻擊基礎傷害覆寫（config.tutorial.enemyAtkDamage；一律 2）。
-//   按錯/延時懲罰經此；大絕與 Defense 格擋由 defense 的 effUltDamage 同源處理（格擋＝再減半 → 1）。
+//   按錯/延時懲罰經此；大絕與 Defense 格擋由 defense 的 effAssaultDamage 同源處理（格擋＝再減半 → 1）。
 //   ⚠ 判定用 tutorialRun（存續到結算）而非 tutorialActive：聖徒化收尾台詞後段落結束
 //     （tutorialActive=false）但收尾盤仍是教學戰，攻擊力必須鎖 2 直到勝負。
 const tutAtkDmg = dmg => (state.tutorialRun && GAME_CONFIG.tutorial && GAME_CONFIG.tutorial.enemyAtkDamage!=null)
@@ -70,7 +70,7 @@ let _scriptedAtk  = false;   // 現在這一擊是腳本演出（劇情殺）—
 export function setup(){
   // combat 把自己擁有的狀態變動原語注入下游模組，切斷反向依賴
   //   onThreatSpawned/onThreatResolved：教學「首紅點/首次防禦成功」節點通知
-  //   ultSuppressed/firstThreatPending：教學暫緩大絕（一次一顆/腳本盤）與首顆固定位
+  //   assaultSuppressed/firstThreatPending：教學暫緩大絕（一次一顆/腳本盤）與首顆固定位
   //   （defense 不 import tutorial，經此轉交）
   defense.init({ enemyAttack, enemyDamage, floatDmg, triggerAtkBuff, weaponCounter: weapon.weaponCounter,
                  coopCounter: weapon.coopCounter,   // 共鬥：黃圈一出現就打的 3-hit 反擊（ver -822，Ray）
@@ -91,7 +91,7 @@ export function setup(){
                  hintCurrentCell,   // 紅點解決了就指一下正確格（ver -718，見 tuning.hintNextCell）
                  lucidPerfect: partner.lucidActive,   // 明晰之夢發動中＝全帶皆完美反擊（ver -740）
                  onThreatEarly: tutorial.onEarlyBlock,
-                 ultSuppressed: tutorial.ultSuppressed, firstThreatPending: tutorial.firstThreatPending,
+                 assaultSuppressed: tutorial.assaultSuppressed, firstThreatPending: tutorial.firstThreatPending,
                  threatBand: tutorial.threatBand });
   // 教學：真暫停/續戰＋腳本化終盤所需原語注入（雙槍/聖徒化/搭檔主動技/三爪腳本/敵血封頂）
   tutorial.init({
@@ -115,7 +115,7 @@ export function setup(){
     enemyDamage, floatDmg,
     playCutin: saint.playCutin,
     resetEnemyTimers: defense.resetEnemyTimers,
-    scheduleUlt: defense.scheduleUlt,
+    scheduleAssault: defense.scheduleAssault,
     markNext, buildGrid, resetEnergy,
     addEnergy,                                    // 反擊給破防值（ver -880，見 weapon.counterEnergy）
     /* 反擊成功 → 通知搭檔的被動（ver -693，明晰之夢：每隻怪第一次反擊時發動）。 */
@@ -143,10 +143,10 @@ export function setup(){
     /* 惡夢化收尾要補判一次被動的門檻（ver -688）：期間不發動，退掉才發動。 */
     checkLowHpBuff: partner.checkLowHpBuff,
     shatterCell: enemy.shatterCell,
-    // defense 原語（combat 代為轉交；大絕頻率經 setUltRate 擁有者管道）
-    scheduleUlt: defense.scheduleUlt, clearThreat: defense.clearThreat,
+    // defense 原語（combat 代為轉交；大絕頻率經 setAssaultRate 擁有者管道）
+    scheduleAssault: defense.scheduleAssault, clearThreat: defense.clearThreat,
     endCharge: defense.endCharge, resetEnemyTimers: defense.resetEnemyTimers,
-    setUltRate: defense.setUltRate,
+    setAssaultRate: defense.setAssaultRate,
     // 計時碼表：cut-in 演出期間暫停（playCutin/playSaintCutin 開頭呼叫），維持「非可點不計時」
     //   clockResume 供 finishSaintMode 於三結局收尾後接回碼表（聖徒化全程不計時）
     clockPause, clockResume,
@@ -155,12 +155,12 @@ export function setup(){
     coopImmune: partner.setImmuneUntil,
   });
   // 搭檔：combat 注入被動技所需原語 + 主動技各 handler 的分域 api。
-  //   被動（即死防禦）：updateBars / floatDmg / resetEnemyTimers / scheduleUlt / playCutin。
+  //   被動（即死防禦）：updateBars / floatDmg / resetEnemyTimers / scheduleAssault / playCutin。
   //   主動 saintApi（生命歸還）：saint 的中止+保血執行體。partner 不反向 import，一律經此注入。
   partner.init({
     updateBars, floatDmg, healPlayer,   // healPlayer：生命歸還回滿用（ver -740）
     resetEnemyTimers: defense.resetEnemyTimers,
-    scheduleUlt: defense.scheduleUlt,
+    scheduleAssault: defense.scheduleAssault,
     playCutin: saint.playCutin,
     hintCurrentCell,   // 即死防禦後標記當前應點格（一次性續命導航）
     lucidFlood,        // 明晰之夢的金光淹漲時限（ver -746；發動端在 partner.fireBuff）
@@ -255,7 +255,7 @@ export function loadBoard(idx){
   buildGrid();
   startIntervalTimer();
   clockResume();                  // 新盤載好、可點 → 碼表起算（開場/換盤/換敵首盤共用）
-  defense.scheduleOpeningUlt();   // 開場保證：每盤 3 秒內敵方就發動大絕
+  defense.scheduleOpeningAssault();   // 開場保證：每盤 3 秒內敵方就發動大絕
   updateStatus();
   tutorial.onBoardLoaded(idx);    // 教學 'board:N' 節點（非教學中為 no-op）
 }
@@ -709,7 +709,7 @@ function enemyAttack(dmg, kind, saintAmt){
        （同按錯那一套的 runElapsedMs 帳＋浮字）；**格擋成功不罰**（防住了）。 */
   if(state.timeAttack){
     const hp3=state.timeAttack.hitPenaltySec;
-    if(hp3>0 && kind==='ult'){
+    if(hp3>0 && kind==='assault'){
       state.runElapsedMs += Math.round(hp3*1000);
       const se=state.timeAttack.se;
       if(se && asset(se)) SFX.play(asset(se), sfxGain(se)); else SFX.wrong();
@@ -727,15 +727,23 @@ function enemyAttack(dmg, kind, saintAmt){
   state.combo=0;
   if(state.over) return;
   /* ══⚠⚠ `kind` 有**兩個用途**，ver -600 之後不再是同一個值（ver -619 修）══
-     · **計數**（評價的失誤秒數）要分得出「挨了大絕」與「擋下一半」→ 'ult' / 'block'
-     · **演出**（音效、受擊特效）分不出來：敵人卡上只有 ult/delay/wrong 三格
-       —— 'block' 就是「大絕擋了一半」，演出一律讀成 'ult'。
+     · **計數**（評價的失誤秒數）要分得出「打中了」與「擋下一半」→ 'assault' / 'block'
+     · **演出**（音效、受擊特效）分法不同 —— 見下面那一段。
      ⚠ 這是 ver -600 留下的破口：那一版把格擋的呼叫由 'ult' 改成 'block' 卻沒有
        別名，於是 `curEnemySound['block']`／`hitFx['block']` 全部查不到 ——
-       格擋的敵大絕音沒了、受擊特效退回預設的三爪。 */
-  /* hitFx/音效的 slot（ver -801）：主動攻擊由 `ult` 改叫 `assault`（Ray）——`kind` 的
-     'ult'（大絕命中）與 'block'（格擋）都讀 hitFx.assault；delay/wrong 照舊。 */
-  const fxKind = (kind==='block' || kind==='ult') ? 'assault' : kind;
+       格擋的敵攻擊音沒了、受擊特效退回預設的三爪。
+     ⚠ ver -932 起 `'ult'` 這個 kind **已經不存在**（Ray：「ult 歸 ult 不要混用」）：
+       一般主動攻擊一律 `'assault'`，`'ult'` 只保留給**血量門檻的特殊波**，
+       而那是**受擊特效**的分類、不是計數的分類。 */
+  /* ══⚠⚠ **受擊特效四分**（ver -932，Ray：「受擊有四種狀況：延時／按錯／攻擊 assault／
+     大絕 ult」）══ `kind` 是**計數**用的（assault／block／delay／wrong），
+     受擊特效另外分四格：延時／按錯／一般攻擊／門檻波的大絕。
+     ⚠ 「這一顆圈是不是門檻波」只有 defense 算得出來（鐵律 7），這裡只**讀**
+       它發佈的 `state.lastAssaultUlt`；擋一半（block）也是同一顆圈，所以一起吃。
+     ⚠ 卡上沒寫 `hitFx.ult` ＝ **退回 assault**（見 enemy.showHitFx）——
+       六十張卡不必為了這一版全部補一格。 */
+  const fxKind = (kind==='delay' || kind==='wrong') ? kind
+               : (state.lastAssaultUlt ? 'ult' : 'assault');
   /* ══ 共鬥（Predator's Pack，ver -803）══ 無敵：不扣血、不記失誤、無延時懲罰；
      敵攻擊自動完美反擊（全額）。點錯（kind==='wrong'）只吃「不受擊」，不反擊
      （縮短窗口由 tap 的 coopMode 分支做）。放在計數之前 → 期間一律不算失誤。 */
@@ -751,7 +759,7 @@ function enemyAttack(dmg, kind, saintAmt){
        只保留**無敵**（不扣血、不記失誤）當保險，不再在攻擊落地時反擊（免得雙重反擊）。 */
     return;                          // 無敵：不扣血、不記失誤
   }
-  /* ══⚠⚠ **失誤計數**（ver -619 補）══ ver -600 定了 `penUlt`／`penBlock`／`penDelay`
+  /* ══⚠⚠ **失誤計數**（ver -619 補）══ ver -600 定了 `penAssault`／`penBlock`／`penDelay`
      這三個欄位、結算也在讀它們，**但從來沒有人 ++** —— 於是新評價的懲罰秒數
      永遠只有「點錯」那一項，挨大絕／格擋／延時全部免費。
      （那就是「用滑鼠點都可以每場 S」的真正原因，timeK 一路被推到 550 也壓不住。）
@@ -760,7 +768,7 @@ function enemyAttack(dmg, kind, saintAmt){
      ⚠ 放在聖徒化分支**之前**：聖徒化期間挨打不掉血，但那一擊照樣把倒數槽推短，
        仍是失誤。 */
   if(!_scriptedAtk){
-    if(kind==='ult') state.penUlt++;
+    if(kind==='assault') state.penAssault++;
     else if(kind==='block') state.penBlock++;
     else if(kind==='delay') state.penDelay++;
     // 'wrong' 由 state.wrongTaps 記（點錯那一支自己的計數），不重複記
@@ -789,7 +797,7 @@ function enemyAttack(dmg, kind, saintAmt){
      而且它會隨**敵人的攻擊力**變動（換一隻怪手感就不一樣）。
      ⚠ 作法：把「這一發值多少秒」交給 saint 換算（`saint.niHitSeconds`），
        兩邊用**同一個秒數**（`saintPassiveHealSec / saintAdvanceDivisor`；格擋照舊減半）。
-     ⚠ 演出（震動／受擊特效／紅閃）與計數（penUlt…）照走 —— 只換「掉多少」。 */
+     ⚠ 演出（震動／受擊特效／紅閃）與計數（penAssault…）照走 —— 只換「掉多少」。 */
   if(state.niMode){
     const sec = (saintAmt!=null)
       ? (saintAmt / (state.playerMax/SAINT_PASSIVE_HEAL_SEC))   // 格擋那一半：換算回秒
@@ -1590,7 +1598,7 @@ export function restSettle(title){
     accuracy: totalTaps>0 ? state.correctTaps/totalTaps : 1,
     maxCombo:0, perfectCounter:0, counterSec:0, counterDamage:0, overkill:0,
     hitsTaken:0, sawExecution:false, sawMaxBurst:false, perfectBoards:0,
-    wrongTaps:0, ultHits:0, blocks:0, delays:0,
+    wrongTaps:0, assaultHits:0, blocks:0, delays:0,
   };
   inspector.settle(0, stats, { isLose:false, rest:true, restTitle:title||null });
   endSession();
@@ -1715,7 +1723,7 @@ function win(){
     perfectBoards: state.perfectBoards|0,
     /* 失誤計數（ver -600）：新評價把它們折算成秒數加進攻略時間。 */
     wrongTaps: state.wrongTaps|0,
-    ultHits:   state.penUlt|0,
+    assaultHits:   state.penAssault|0,
     blocks:    state.penBlock|0,
     delays:    state.penDelay|0,
   };
@@ -1846,7 +1854,7 @@ export function startGame(){
   state.counterFired=0; state.counterDamage=0; state.perfectCount=0; state.sawExecution=false; state.sawMaxBurst=false;
   state.perfectCounters=0; state.counterSec=0;   // 完美反擊（紅圈）的次數與折秒（ver -721）
   state.maxCombo=0; state.hitsTaken=0; state.correctTaps=0; state.wrongTaps=0; state.runOverkill=0; state.perfectBoards=0;   // 評價統計歸零
-  state.penUlt=0; state.penBlock=0; state.penDelay=0;   // 失誤計數歸零（ver -600 的新評價）
+  state.penAssault=0; state.penBlock=0; state.penDelay=0;   // 失誤計數歸零（ver -600 的新評價）
   _scriptedHits=0;                                     // 教學劇情殺擊數（結算受擊數扣除用）
   state.playerHp=state.playerMax;
   state.N=9; state.cols=3;
@@ -2014,7 +2022,7 @@ export function startIntruderFight(){
   state.counterFired=0; state.counterDamage=0; state.perfectCount=0; state.sawExecution=false; state.sawMaxBurst=false;
   state.perfectCounters=0; state.counterSec=0;   // 完美反擊（紅圈）的次數與折秒（ver -721）
   state.maxCombo=0; state.hitsTaken=0; state.correctTaps=0; state.wrongTaps=0; state.runOverkill=0; state.perfectBoards=0;   // 評價統計歸零
-  state.penUlt=0; state.penBlock=0; state.penDelay=0;   // 失誤計數歸零（ver -600 的新評價）
+  state.penAssault=0; state.penBlock=0; state.penDelay=0;   // 失誤計數歸零（ver -600 的新評價）
   _scriptedHits=0;                                     // 教學劇情殺擊數（結算受擊數扣除用）
   state.playerHp=state.playerMax; state.enemyHp=state.enemyMax;
   state.N=9; state.cols=3;
@@ -2030,7 +2038,7 @@ export function startIntruderFight(){
   $('grid').classList.remove('saint'); $('grid').classList.remove('buffed'); $('grid').classList.remove('alert','hot');
   state.cutinPlaying=false;
   stopAll();
-  loadBoard(0); updateBars();   // loadBoard 內含 scheduleOpeningUlt → 重啟敵大絕排程
+  loadBoard(0); updateBars();   // loadBoard 內含 scheduleOpeningAssault → 重啟敵大絕排程
 }
 // 全螢幕黑幕過場：淡出（轉黑）→ 全黑時執行 mid() 切畫面 → 淡入（浮現）。約 2×half ms。
 let _fadeOv=null;
@@ -2155,7 +2163,7 @@ function tutorialStrikeTo(leave){
   const to = Math.max(1, leave|0);
   const dmg = Math.max(1, state.playerHp - to);
   _scriptedAtk = true; _scriptedHits++;
-  enemyAttack(dmg, 'ult');
+  enemyAttack(dmg, 'assault');
   _scriptedAtk = false;
   return 0;
 }

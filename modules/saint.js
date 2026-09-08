@@ -16,8 +16,8 @@
  *      其他模組只讀 state.saintMode 分支。此契約若破＝退回舊單檔病灶。
  *    · 改血一律走 combat 的統一改血 API（api.healPlayer / api.setPlayerHpRatio，Part A）；
  *      saint 不得直接寫 state.playerHp。
- *    · 大絕頻率（ULT_MIN/MAX）為 defense 擁有：saint 只「讀」現值存進自有 saintPrevUlt，
- *      實際「寫」經 api.setUltRate（defense 擁有者管道）。
+ *    · 大絕頻率（ASSAULT_MIN/MAX）為 defense 擁有：saint 只「讀」現值存進自有 saintPrevAssault，
+ *      實際「寫」經 api.setAssaultRate（defense 擁有者管道）。
  *
  *  依賴：只 import state / config / audio。combat / defense / enemy / partner 的原語
  *    一律由 combat 於 setup() 注入 api（維持 §2 依賴方向，不反向 import）。
@@ -39,7 +39,7 @@ const SAINT_ADVANCE_DIVISOR   = T.saintAdvanceDivisor;   // 一次受擊推進�
 const SAINT_PASSIVE_HEAL_SEC  = T.saintPassiveHealSec;   // 無受擊時被動回滿約需秒數
 const SAINT_REACT_SEC_IN_SAINT= T.saintReactSecInSaint;  // 聖徒化期間放寬的每格反應時限（秒）
 /* ⚠ ver -688 起**沒有人讀這兩個**（Ray：「把 boss 一進夢魘或聖徒就猛攻的設定
-   拿掉」）—— 留著是為了讓「日後要恢復就把 setUltRate 加回去」有東西可指。 */
+   拿掉」）—— 留著是為了讓「日後要恢復就把 setAssaultRate 加回去」有東西可指。 */
 // const SAINT_ULT_MIN_MS = T.saintUltMinMs;   // 期間敵大絕頻率下限
 // const SAINT_ULT_MAX_MS = T.saintUltMaxMs;   // 期間敵大絕頻率上限
 const SAINT_COMBO_STEP        = T.saintComboStep;        // 期間每 combo 疊傷斜率（無上限）
@@ -139,7 +139,7 @@ export function activateCoop(dir){
   if(api.resetEnergy) api.resetEnergy();              // 消耗全部破防值
   /* ⚠ 發動**那一刻**先把場上的攻擊圈收掉（ver -871，Ray：「索拉娜的共鬥發動時
      不會清場上的攻擊圈」）—— 不清的話紅圈掛著陪整段 cut-in、一路留進無敵窗。
-     排程一併歸零；窗開起（startCoop）那邊照舊再 reset＋scheduleUlt。 */
+     排程一併歸零；窗開起（startCoop）那邊照舊再 reset＋scheduleAssault。 */
   if(api.resetEnemyTimers) api.resetEnemyTimers();
   SFX.unlock(); SFX.ultCharge();
   SFX.play(asset('sfx_saint'), sfxGain('sfx_saint'));
@@ -157,7 +157,7 @@ export function activateCoop(dir){
 function startCoop(sec){
   if(state.over) return;
   enterCoop();
-  api.resetEnemyTimers(); state.enemyAtkSuppressUntil = 0; api.scheduleUlt();
+  api.resetEnemyTimers(); state.enemyAtkSuppressUntil = 0; api.scheduleAssault();
   const until = Date.now() + sec*1000;
   state.coopUntil = until;
   if(api.coopImmune) api.coopImmune(until);            // 開無敵窗（partner.setImmuneUntil）
@@ -238,7 +238,7 @@ function startSaintMode(){
   // v18c/本輪裁決：不設 cut-in 後緩衝——一進聖徒化敵人就照常發動大絕（受擊會加速逼近 OBE）。
   api.resetEnemyTimers();
   state.enemyAtkSuppressUntil = 0;
-  api.scheduleUlt();                     // 立即排下一次大絕（不延後）
+  api.scheduleAssault();                     // 立即排下一次大絕（不延後）
   setReturnSwipe(true);                  // 開啟生命歸還手勢層
   state.saintDamageDealt = 0;
   state.combo = 0;                       // 期間 saint 代理盤面游標（combat 已讓出主迴圈）
@@ -263,8 +263,8 @@ function startSaintMode(){
     saintAdvance(healPerTick);           // 被動推進；推滿→OBE（由 saintAdvance 內部處理）
   }, 100);
   /* ⚠⚠ **聖徒化期間不再加密大絕**（ver -688，Ray：「把 boss 一進夢魘或聖徒就猛攻的
-     設定拿掉」）——原本這裡會把 `ULT_MIN/MAX` 換成 `saintUltMinMs/MaxMs`。
-     ⚠ `restoreUltRate()` 的呼叫留著：`saintPrevUlt` 是 null 時它直接 return，
+     設定拿掉」）——原本這裡會把 `ASSAULT_MIN/MAX` 換成 `saintUltMinMs/MaxMs`。
+     ⚠ `restoreAssaultRate()` 的呼叫留著：`saintPrevAssault` 是 null 時它直接 return，
        是冪等的保險；日後要恢復就把那兩行加回來。 */
   startSaintReactTimer();                // 起算第一格的反應時限
 }
@@ -341,7 +341,7 @@ function startNightmareMode(){
   enterNightmare();
   api.resetEnemyTimers();
   state.enemyAtkSuppressUntil = 0;
-  api.scheduleUlt();
+  api.scheduleAssault();
   setReturnSwipe(true);                  // 上滑＝惡夢化的主動技（見 nightmareActive）
   state.niDamage = 0;
   state.niCells  = 0;
@@ -435,7 +435,7 @@ function niMeltdown(){
   exitNightmare();
   clearInterval(state.niTimer); state.niTimer=null;
   clearSaintReactTimer(); setReturnSwipe(false);
-  restoreUltRate();
+  restoreAssaultRate();
   api.floatDmg(NI_MELT_NAME,'50%','28%',true);
   const done=()=>finishNightmare(()=>api.setPlayerHpRatio(0));   // 下限 floor 1 → 恰為 1 HP
   SFX.playVoice(asset('vo_anya_melt'), sfxGain('vo_anya_melt'));   // 熔斷語音（ver -711）
@@ -448,7 +448,7 @@ function triggerNiBurst(){
   exitNightmare();
   clearInterval(state.niTimer); state.niTimer=null;
   clearSaintReactTimer(); setReturnSwipe(false);
-  restoreUltRate();
+  restoreAssaultRate();
   if(state.niDamage>0){
     const last=Math.round(state.niDamage*SAINT_LAST_HIT_RATIO);
     api.enemyDamage(last, true, false, 'saint');
@@ -519,7 +519,7 @@ function niBurstResolve(){
   const dmg = Math.round((state.enemyMax||0) * NI_BURST_PCT * ratio);
   exitNightmare();
   clearInterval(state.niTimer); state.niTimer=null;
-  setReturnSwipe(false); restoreUltRate();
+  setReturnSwipe(false); restoreAssaultRate();
   if(dmg>0){
     SFX.gunshot(true);
     /* ⚠⚠ **自爆打不死**（ver -673，Ray：「炸不死也沒關係，最後留個 10%」）：
@@ -617,7 +617,7 @@ export function nightmareTap(num, cell){
    敵人排程歸零、接回碼表。 */
 function finishNightmare(finalHpThunk){
   $('grid').classList.remove('saint','ni'); setSaintBarFx(false);
-  restoreUltRate();
+  restoreAssaultRate();
   if(finalHpThunk) finalHpThunk();
   /* ⚠⚠ **惡夢化退掉才補判被動的門檻**（ver -688，Ray：「明晰之夢在夢魘期間不發動，
      如果是夢魘期間 hp 降到標準以下，要等夢魘退掉才會發動」）——
@@ -632,7 +632,7 @@ function finishNightmare(finalHpThunk){
     api.buildGrid();
     api.resetIntervalDeadline();
     api.startIntervalTimer();
-    api.scheduleUlt();
+    api.scheduleAssault();
     if(api.clockResume) api.clockResume();
     if(api.hintCurrentCell) api.hintCurrentCell();   // 熔斷後指格（ver -874，同 OBE）
   }
@@ -704,9 +704,9 @@ function setReturnSwipe(on){ const z=$('returnSwipe'); if(z) z.classList.toggle(
 /* ============================================================================
  *  三結局
  * ========================================================================== */
-// 還原敵大絕頻率（經 defense 擁有者管道；清掉自有 saintPrevUlt）
-function restoreUltRate(){
-  if(state.saintPrevUlt){ api.setUltRate(state.saintPrevUlt.min, state.saintPrevUlt.max); state.saintPrevUlt=null; }
+// 還原敵大絕頻率（經 defense 擁有者管道；清掉自有 saintPrevAssault）
+function restoreAssaultRate(){
+  if(state.saintPrevAssault){ api.setAssaultRate(state.saintPrevAssault.min, state.saintPrevAssault.max); state.saintPrevAssault=null; }
 }
 
 // Maximum Burst（EXSECUTIŌ）：推滿前把 16 格點完 → 追加期間總傷 20%；未擊殺則回血 50%（D2）。
@@ -715,7 +715,7 @@ function triggerMaxBurst(){
   exitSaint();
   clearInterval(state.saintTimer); state.saintTimer=null;
   clearSaintReactTimer(); setReturnSwipe(false);
-  restoreUltRate();
+  restoreAssaultRate();
   if(state.saintDamageDealt>0){
     const last=Math.round(state.saintDamageDealt*SAINT_LAST_HIT_RATIO);
     api.enemyDamage(last, true, false, 'saint');
@@ -751,7 +751,7 @@ function triggerOBE(){
   exitSaint();
   clearInterval(state.saintTimer); state.saintTimer=null;
   clearSaintReactTimer(); setReturnSwipe(false);
-  restoreUltRate();
+  restoreAssaultRate();
   api.floatDmg('O.B.E.','50%','28%',true);
   if(state.enemyHp<=0){
     // 聖徒化期間敵 HP 已歸零、但倒數槽先推滿 → 仍播 OBE 演出，收尾轉下一敵/結算。
@@ -775,7 +775,7 @@ export function lifeReturnAbort(){
   exitSaint();
   clearInterval(state.saintTimer); state.saintTimer=null;
   clearSaintReactTimer(); setReturnSwipe(false);
-  restoreUltRate();
+  restoreAssaultRate();
   api.floatDmg(L.battle.lifeReturn,'50%','28%',true);
   // 第四結局 cut-in → 結束後回盤面。⚠ 血量 ver -740 起由呼叫端（partner 的
   //   lifeReturn handler）在本函式返回後**回滿**（Ray：「現在發動一律直接全滿」）——
@@ -794,16 +794,16 @@ export function lifeReturnAbort(){
  * finalHpThunk：由各結局傳入，於此執行結局血量設定（一律走 combat 改血 API）。 */
 function finishSaintMode(finalHpThunk){
   $('grid').classList.remove('saint'); setSaintBarFx(false);
-  restoreUltRate();                      // 保險：還原敵大絕頻率（triggerX 已還原，冪等）
+  restoreAssaultRate();                      // 保險：還原敵大絕頻率（triggerX 已還原，冪等）
   if(finalHpThunk) finalHpThunk();       // 設定結局血量（走 combat 改血 API；生命歸還為 no-op）
   const back=state.saintPrevBoard||{N:16,cols:4};
   api.setBoard(back.N, back.cols);
-  api.resetEnemyTimers();                // 清紅圈、停蓄力、清大絕排程（含 ultCheckTimer）
+  api.resetEnemyTimers();                // 清紅圈、停蓄力、清大絕排程（含 assaultTimer）
   if(!state.over){
     api.buildGrid();
     api.resetIntervalDeadline();         // 間隔（點擊延遲）懲罰歸零
     api.startIntervalTimer();
-    api.scheduleUlt();                   // 敵大絕蓄力重新計時，恢復正常扣血攻擊
+    api.scheduleAssault();                   // 敵大絕蓄力重新計時，恢復正常扣血攻擊
     // 聖徒化全程不計時（clockResume 內以 saintMode 擋下）→ 收尾回盤面才接回碼表。
     //   此處 saintMode 已由各結局的 exitSaint 關閉、cutinPlaying 亦已於 cut-in 收尾清除，
     //   故 clockResume 會真的起算（不靠玩家下一次點擊補起算，免得漏計那段空檔）。
@@ -952,7 +952,7 @@ export function reset(){
   state.saintUsedThisBattle=false;
   state.saintDamageDealt=0;
   state.saintPrevBoard=null;
-  state.saintPrevUlt=null;
+  state.saintPrevAssault=null;
   state.enemyAtkSuppressUntil=0;
   setReturnSwipe(false);
   $('grid').classList.remove('saint'); setSaintBarFx(false);

@@ -50,7 +50,7 @@ export const STRINGS = {
     perfectClear: 'PERFECT CLEAR +{n}',
     tooSlow:      'TOO SLOW',
     crit:         'CRITICAL ',
-    hitByUlt:     'HIT',
+    hitByAssault:     'HIT',
     overkill:     'OVERKILL!',
     overkillAdd:  'OVERKILL +{n}',
     counter:      'COUNTER!',

@@ -63,7 +63,7 @@ export const STRINGS = {
     perfectClear: '完美清盤 +{n}',     // 完美清盤獎勵浮字
     tooSlow:      '太慢',              // 延時懲罰浮字
     crit:         '暴擊 ',             // 暴擊前綴（後接數字，保留尾空格）
-    hitByUlt:     '被擊中',            // 挨大絕浮字
+    hitByAssault:     '被擊中',            // 挨大絕浮字
     overkill:     'OVERKILL！',        // [EN-STYLE]
     overkillAdd:  'OVERKILL +{n}',    // [EN-STYLE]
     counter:      'COUNTER！',         // [EN-STYLE] 反擊成功

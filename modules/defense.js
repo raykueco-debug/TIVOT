@@ -7,9 +7,9 @@
  *      （config 的 `weaponBand`，唯一的計算點）。舊的 defenseDamageScale 等欄位已退役。
  *    ratio 0.12~0.35 → Perfect（免傷；散彈改 perfectDamageScale 打反擊傷）
  *    ratio 0~counterWin → Counter（免傷 + weapon 反擊）
- *    Boss 多發（ULT_SHOTS / ULT_GAP_MS）。
+ *    Boss 多發（ASSAULT_SHOTS / ASSAULT_GAP_MS）。
  *
- *  狀態擁有者：3.3（threats / threatTick / ultCheckTimer）。大絕大寫參數與門檻
+ *  狀態擁有者：3.3（threats / threatTick / assaultTimer）。大絕大寫參數與門檻
  *    由 enemy 於 setEnemy 寫入 state、本模組只讀。門檻常數讀 config。
  *
  *  依賴：import state / config / audio。對玩家/敵人造成效果一律走 combat 於
@@ -28,7 +28,7 @@ const T = GAME_CONFIG.tuning;
 const DEF_DEFENSE_MIN = T.defDefenseMin;   // ratio 0.35~1.0：Defense（傷害減半）
 const DEF_PERFECT_MIN = T.defPerfectMin;   // ratio 0.12~0.35：Perfect（免傷）
 const SAINT_BLOCK_DIVISOR = T.saintBlockDivisor;   // 聖徒化期間格擋推進量（下一輪聖徒化才會實際觸發）
-// 開場第一發的延遲改**逐怪**（ver -795）：範圍在 state.ULT_OPEN_MIN/MAX（由 enemy.setEnemy
+// 開場第一發的延遲改**逐怪**（ver -795）：範圍在 state.ASSAULT_OPEN_MIN/MAX（由 enemy.setEnemy
 // 從卡上的 openAssault 讀，預設 1~2 秒）。原本寫死 0~3 秒的 ULT_OPEN_MS 已移除。
 
 // combat 於啟動時注入所需回呼
@@ -36,7 +36,7 @@ let api = {};
 export function init(a){ api = a; }
 
 /* ---------- 教學調整（config.tutorial）----------
- *  effUltDamage：教學中敵大絕基礎傷害一律 enemyAtkDamage（=2）；
+ *  effAssaultDamage：教學中敵大絕基礎傷害一律 enemyAtkDamage（=2）；
  *    Defense 格擋沿用 defenseDamageScale 再減半 → 1（「除非被防禦減半」）。
  *  按錯/延時懲罰的同款覆寫在 combat 的 tutAtkDmg（同一 config 值，兩處同源）。
  *  ⚠ 判定用 tutorialRun（存續到勝負）：聖徒化收尾段落結束後（tutorialActive=false）
@@ -59,48 +59,48 @@ function hitDia(ratio){
   if(zone==='orangeOnRed' && ratio<DEF_PERFECT_MIN) return visDia(DEF_DEFENSE_MIN);
   return visDia(ratio);
 }
-function effUltDamage(){
-  return (state.tutorialRun && TUT().enemyAtkDamage!=null) ? TUT().enemyAtkDamage : state.ULT_DAMAGE;
+function effAssaultDamage(){
+  return (state.tutorialRun && TUT().enemyAtkDamage!=null) ? TUT().enemyAtkDamage : state.ASSAULT_DAMAGE;
 }
 
 /* ---------- 大絕頻率（擁有者管道）----------
- *  ULT_MIN / ULT_MAX 為 defense 擁有（3.3）。聖徒化需暫時改密集頻率、離場再還原——
- *  saint 只「讀」現值存進自有的 saintPrevUlt，實際「寫」一律經此 setter（經 combat 注入的 api），
+ *  ASSAULT_MIN / ASSAULT_MAX 為 defense 擁有（3.3）。聖徒化需暫時改密集頻率、離場再還原——
+ *  saint 只「讀」現值存進自有的 saintPrevAssault，實際「寫」一律經此 setter（經 combat 注入的 api），
  *  維持「跨擁有者寫入走擁有者管道」的契約（見 CLAUDE.md 3.3）。 */
-export function setUltRate(min, max){
-  state.ULT_MIN = min;
-  state.ULT_MAX = max;
+export function setAssaultRate(min, max){
+  state.ASSAULT_MIN = min;
+  state.ASSAULT_MAX = max;
 }
 
 /* ---------- 大絕排程 ---------- */
 // 每盤開場呼叫：開場保證，逐怪的延遲範圍內隨機發動第一發（ver -795，預設 1~2 秒）。
-export function scheduleOpeningUlt(){
-  const lo=state.ULT_OPEN_MIN, hi=state.ULT_OPEN_MAX;
-  scheduleUlt(lo + Math.random()*Math.max(0, hi-lo));
+export function scheduleOpeningAssault(){
+  const lo=state.ASSAULT_OPEN_MIN, hi=state.ASSAULT_OPEN_MAX;
+  scheduleAssault(lo + Math.random()*Math.max(0, hi-lo));
 }
 
-export function scheduleUlt(firstDelayMs){
-  clearTimeout(state.ultCheckTimer);
+export function scheduleAssault(firstDelayMs){
+  clearTimeout(state.assaultTimer);
   /* ⚠ 計時挑戰：靶子**不攻擊**（ver -396）—— 連排程都不要開，不然紅點與蓄力槽
      還是會演一遍（`enemyAttack` 只擋得住扣血，擋不住畫面）。
-     ⚠ 例外：`timeAttack.ultOn`（ver -858，杰羅的「蕃茄人11號」——Ray：「3秒發動
+     ⚠ 例外：`timeAttack.assaultOn`（ver -858，杰羅的「蕃茄人11號」——Ray：「3秒發動
        一次攻擊，被擊中的話時間加3秒」）＝照常排程，被打中的帳走 enemyAttack
        的加秒分支（hitPenaltySec）。 */
-  if(state.timeAttack && !state.timeAttack.ultOn) return;
+  if(state.timeAttack && !state.timeAttack.assaultOn) return;
   const delay = (firstDelayMs!=null) ? firstDelayMs
-                                     : state.ULT_MIN+Math.random()*(state.ULT_MAX-state.ULT_MIN);
-  state.ultCheckTimer=setTimeout(()=>{
+                                     : state.ASSAULT_MIN+Math.random()*(state.ASSAULT_MAX-state.ASSAULT_MIN);
+  state.assaultTimer=setTimeout(()=>{
     // overkill/演出/轉場期間不生成；聖徒化期間照常出攻擊點
-    if(state.over||state.enemyHp<=0||state.cutinPlaying||state.transitioning){ scheduleUlt(200); return; }
-    // 教學：暫緩大絕的情境統一問 tutorial.ultSuppressed（首回合純清盤／劇情殺盤／
+    if(state.over||state.enemyHp<=0||state.cutinPlaying||state.transitioning){ scheduleAssault(200); return; }
+    // 教學：暫緩大絕的情境統一問 tutorial.assaultSuppressed（首回合純清盤／劇情殺盤／
     //   場上已有紅點＝一次只出一顆），經 combat 注入轉交
-    if(api.ultSuppressed && api.ultSuppressed()){ scheduleUlt(250); return; }
+    if(api.assaultSuppressed && api.assaultSuppressed()){ scheduleAssault(250); return; }
     /* ⚠ 「不疊加」（ver -423 的敵人卡 `noStack`）：場上還有紅點就不再生一顆，
        等它被解掉。⚠ 用**重排**不是丟掉 —— 丟掉的話這一隻怪會在玩家慢一拍之後
        整場不再攻擊。 */
-    if(state.enemyNoStack && state.threats && state.threats.length){ scheduleUlt(300); return; }
+    if(state.enemyNoStack && state.threats && state.threats.length){ scheduleAssault(300); return; }
     // cut-in／清盤後緩衝期內敵不發動，等窗口過了再排
-    if(Date.now() < state.enemyAtkSuppressUntil){ scheduleUlt(state.enemyAtkSuppressUntil - Date.now() + 50); return; }
+    if(Date.now() < state.enemyAtkSuppressUntil){ scheduleAssault(state.enemyAtkSuppressUntil - Date.now() + 50); return; }
     /* ══ 大絕（ver -760，Ray 的敵攻四態定義：延時／攻擊（一般圈）／失誤／大絕）══
        卡上 `ult:{ hp:30, act:'ring4' }` ＝ hp 掉到 30% 以下起，這一次攻擊改走
        具名行為（ULT_ACTS 那張表）；沒到門檻＝照常出一般圈（startCharge）。
@@ -109,25 +109,29 @@ export function scheduleUlt(firstDelayMs){
     const belowHp = ua && state.enemyHp <= state.enemyMax*(ua.hp/100);
     if(belowHp){
       if(ua.act && ULT_ACTS[ua.act]) ULT_ACTS[ua.act]();   // 具名波（ring4＝4 同時）
-      else spawnWave(ua.count, ua.gapMs);                   // 依次波：count 顆、每顆隔 gapMs
+      else spawnWave(ua.count, ua.gapMs, true);             // 依次波：count 顆、每顆隔 gapMs
     }else startCharge();
     /* 下一波的排程（ver -798）：門檻行為可自訂 CD（整波之間的冷卻，自這一波起算）；
-       沒寫＝照常規頻率（ULT_MIN~MAX）。⚠ noStack 仍在排程層擋著：場上有圈就重排，
+       沒寫＝照常規頻率（ASSAULT_MIN~MAX）。⚠ noStack 仍在排程層擋著：場上有圈就重排，
        所以 CD 是「最快多久一波」，不是保證。 */
-    if(belowHp && ua.cdMs!=null) scheduleUlt(ua.cdMs);
-    else scheduleUlt();     // 立即排下一個 → 錯開生成、可累積多個
+    if(belowHp && ua.cdMs!=null) scheduleAssault(ua.cdMs);
+    else scheduleAssault();     // 立即排下一個 → 錯開生成、可累積多個
   }, delay);
 }
 /* 一波攻擊圈：`count` 顆、每顆隔 `gapMs` **依次**隨機出現（gapMs=0＝同時）。
-   ⚠ startCharge（Boss 的 ULT_SHOTS/GAP_MS）與 ring4 都是它的特例——同一支（鐵律 8）。 */
-function spawnWave(count, gapMs){
+   ⚠ startCharge（Boss 的 ASSAULT_SHOTS/GAP_MS）與 ring4 都是它的特例——同一支（鐵律 8）。 */
+/* `isUlt` ＝這一波是**血量門檻的特殊波**（卡上的 `ult:{hp,…}`）—— 由它生出來的圈
+   打中時走「大絕」那一種受擊特效（ver -932，見 releaseAssault）。 */
+function spawnWave(count, gapMs, isUlt){
   const n=Math.max(1, count||1), g=Math.max(0, gapMs||0);
+  waveIsUlt = !!isUlt;
   spawnThreat();
   $('chargeWarn').classList.add('on');
   if(!state.threatTick){ state.threatTick=setInterval(updateThreats,50); }
   for(let s=1;s<n;s++){
     setTimeout(()=>{
       if(state.over||state.enemyHp<=0||state.cutinPlaying||state.transitioning) return;
+      waveIsUlt = !!isUlt;
       spawnThreat();
       $('chargeWarn').classList.add('on');
       if(!state.threatTick){ state.threatTick=setInterval(updateThreats,50); }
@@ -141,9 +145,9 @@ const ULT_ACTS = {
      ＝ spawnWave(4, 0)（gap=0＝同一瞬間全上）。 */
   ring4(){ spawnWave(4, 0); },
 };
-// 生成一次大絕。Boss 可一次先後出多個點（ULT_SHOTS），每發間隔 ULT_GAP_MS
+// 生成一次大絕。Boss 可一次先後出多個點（ASSAULT_SHOTS），每發間隔 ASSAULT_GAP_MS
 //   —— ＝ spawnWave 的特例（鐵律 8）。
-export function startCharge(){ spawnWave(state.ULT_SHOTS, state.ULT_GAP_MS); }
+export function startCharge(){ spawnWave(state.ASSAULT_SHOTS, state.ASSAULT_GAP_MS); }
 // 更新所有攻擊點的視覺與倒數；到期則釋放
 export function updateThreats(){
   // 演出/對話暫停中一律凍結（教學對話於 spawnThreat 內觸發暫停後，
@@ -174,7 +178,7 @@ export function updateThreats(){
     vis.style.background=`radial-gradient(circle,${col},.75),${col},.3) 60%,transparent 72%)`;
     vis.style.borderColor=col+',.95)';
     vis.style.boxShadow=`0 0 22px ${col},.85),inset 0 0 12px ${col},.6)`;
-    if(left<=0){ releaseUlt(th); }
+    if(left<=0){ releaseAssault(th); }
   }
   /* 盤面警戒跟著圈走（ver -462，Ray：「亮黃圈時數字盤亮橘光，亮橘圈的時候
      數字盤轉紅光」）：alert（橘光）自 spawnThreat 起、.hot（紅光）自進橘圈帶起
@@ -203,17 +207,27 @@ export function resumeThreats(){
   if(state.threats.length && !state.threatTick){ state.threatTick=setInterval(updateThreats,50); }
 }
 // 某個攻擊點時間到 → 釋放攻擊，移除該點
-export function releaseUlt(th){
+export function releaseAssault(th){
   removeThreat(th);
   if(state.over||state.cutinPlaying) return;
   /* 受擊特效落在**這一顆圈**的位置（ver -766，Ray：「攻擊效果要跟光圈的位置
      一樣」）—— 座標發佈給 state，enemy.spawnBite 讀完即清。 */
-  state.lastUltPos = { x:th.lp, y:th.tp };
-  api.enemyAttack(effUltDamage(), 'ult');   // 教學中一律 2（見 effUltDamage）
-  api.floatDmg(L.battle.hitByUlt,'45%','25%',true);
+  state.lastAssaultPos = { x:th.lp, y:th.tp };
+  /* ══⚠⚠ **受擊有四種狀況**（ver -932，Ray：「延時／按錯／攻擊 assault／大絕 ult」）══
+     這一顆圈是**門檻波**（`ult:{hp,…}`）生出來的，還是一般攻擊？ —— 只有 defense
+     分得出來（旗在 spawnThreat 那一刻寫進 `th.ult`，見 spawnWave）。
+     ⚠ `kind` 仍是 `'assault'`：**計數**那一族只有四格（assault／block／delay／wrong），
+       門檻波打中照樣算一次 assault。分開的是**受擊特效**，走 `state.lastAssaultUlt`
+       —— 一個量一個計算點（鐵律 7），combat 的 fxKind 只讀不算。 */
+  state.lastAssaultUlt = !!th.ult;
+  api.enemyAttack(effAssaultDamage(), 'assault');   // 教學中一律 2（見 effAssaultDamage）
+  api.floatDmg(L.battle.hitByAssault,'45%','25%',true);
 }
 // 兼容舊呼叫：結束/清除所有攻擊點
 export function endCharge(){ clearThreat(); }
+/* 這一顆圈是不是門檻波生的（ver -932）：`spawnWave(…, true)` 之前設、
+   `spawnThreat` 讀完就歸零 —— 一般攻擊（startCharge／ring4 以外）一律 false。 */
+let waveIsUlt=false;
 export function spawnThreat(){
   const layer=$('redDots');
   const dot=document.createElement('div');
@@ -256,7 +270,8 @@ export function spawnThreat(){
   }
   dot.style.left=lp+'%';
   dot.style.top=tp+'%';
-  const th={el:dot, vis, t0:Date.now(), lp, tp};   // 圈的落點（ver -766：受擊特效要落在同一點）
+  const th={el:dot, vis, t0:Date.now(), lp, tp, ult:waveIsUlt};   // 圈的落點（ver -766）＋是不是門檻波（-932）
+  waveIsUlt=false;                                 // 讀完就歸零：下一顆預設是一般攻擊
   dot.addEventListener('touchstart',e=>{e.preventDefault();resolveThreat(th);},{passive:false});
   dot.addEventListener('click',()=>resolveThreat(th));
   layer.appendChild(dot);
@@ -366,7 +381,8 @@ export function resolveThreat(th){
       SFX.play(asset('se_guard'), sfxGain('se_guard'));   // 完美防禦音（免傷那一支）
     }
     if(bp.take>0){
-      const dmg=Math.max(1, Math.round(effUltDamage()*bp.take));
+      state.lastAssaultUlt = !!th.ult;      // 擋一半也是同一顆圈（ver -932）
+      const dmg=Math.max(1, Math.round(effAssaultDamage()*bp.take));
       /* 聖徒化（ver -755）：橘圈的 take 也是「擋下一部分」那一族 → 半格推進
          （同黃圈；不給的話 enemyAttack 會用全額 +1s，把橘圈打成挨大絕）。 */
       api.enemyAttack(dmg, 'block',
@@ -374,7 +390,7 @@ export function resolveThreat(th){
       api.floatDmg(fmt(L.battle.blockDmg,{n:dmg}),'50%','46%',false);
     }
   }else{
-    // === Defense（格擋＝不完美防禦，仍挨大絕）===（白色微閃）。攻擊音由下方 enemyAttack('ult') 出敵大絕音。
+    // === Defense（格擋＝不完美防禦，仍挨大絕）===（白色微閃）。攻擊音由下方 enemyAttack('assault') 出敵攻擊音。
     flashDefense('block');
     {
       /* ══ 黃圈（ver -706 改寫；**-755 起聖徒化也走同一套**，Ray：「聖徒化期間
@@ -390,7 +406,8 @@ export function resolveThreat(th){
         staggerOnCounter();
       }
       if(bb.take>0){
-        const dmg=Math.max(1, Math.round(effUltDamage()*bb.take));   // 教學：2 減半 → 1
+        state.lastAssaultUlt = !!th.ult;    // 同上（ver -932）
+        const dmg=Math.max(1, Math.round(effAssaultDamage()*bb.take));   // 教學：2 減半 → 1
         api.enemyAttack(dmg, 'block',
           state.saintMode ? state.playerMax/SAINT_BLOCK_DIVISOR : undefined);   // 聖徒化：格擋＝+0.5s
         api.floatDmg(fmt(L.battle.blockDmg,{n:dmg}),'50%','46%',false);
@@ -420,15 +437,15 @@ export function flashDefense(color){
 /* ---------- 清盤/換盤瞬間：重置敵大絕蓄力與排程 ----------
  *  只負責 threat/ult 部分；間隔（點擊延遲）懲罰倒數由 combat 於 loadBoard 重置。 */
 export function resetEnemyTimers(){
-  clearThreat(); endCharge(); clearTimeout(state.ultCheckTimer);
+  clearThreat(); endCharge(); clearTimeout(state.assaultTimer);
 }
 // 敵擊殺瞬間：停掉大絕蓄力與排程（combat.enemyDamage 於敵 HP 歸零時呼叫）
 export function killThreatSchedule(){
-  clearThreat(); endCharge(); clearTimeout(state.ultCheckTimer);
+  clearThreat(); endCharge(); clearTimeout(state.assaultTimer);
 }
 // 全停（combat.stopAll 調度）：清掉本模組所有計時器與紅點
 export function stopAll(){
-  clearTimeout(state.ultCheckTimer);
+  clearTimeout(state.assaultTimer);
   clearInterval(state.threatTick); state.threatTick=null;
   clearThreat();
 }

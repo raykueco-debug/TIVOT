@@ -30,10 +30,15 @@ export function init(a){ api = { ...api, ...a }; }
 
 /* ---------- 受擊特效派工 ----------
  *  依當前怪 curEnemyHitFx[kind] 播放對應特效。
- *  kind：'delay'（延時懲罰）/'wrong'（按錯懲罰）/'ult'（大絕）。
+ *  kind：'delay'（延時懲罰）/'wrong'（按錯懲罰）/'assault'（一般攻擊）/'ult'（門檻波的大絕，ver -932）。
  *  缺設定或未知 kind → 退回既有爪痕。 */
 export function showHitFx(kind){
-  const fx = state.curEnemyHitFx && state.curEnemyHitFx[kind];
+  const hf = state.curEnemyHitFx;
+  /* ⚠⚠ **缺 `ult` 就退回 `assault`**（ver -932）：受擊分四格是這一版才加的
+     （延時／按錯／攻擊／大絕），六十張既有的卡上只有前三格 —— 沒有退路的話
+     門檻波打中會掉回預設的三爪，而那是**沉默的退化**（畫面上看不出是漏寫）。
+     ⚠ 只退這一個方向：`assault` 缺了就是真的沒寫，照舊走三爪。 */
+  const fx = hf && (hf[kind] || (kind==='ult' ? hf.assault : null));
   if(!fx){ triggerClaw(); return; }
   /* 視覺 base（ver -800）：特殊 type（serpent_bite…）沿用某個 base 視覺，見 config.HITFX。
      未登記的 type → 就用 type 本身（相容舊寫法），再退回三爪。 */
@@ -152,8 +157,8 @@ export function spawnBite(){
   /* ver -761：改用 Ray 交件的 ef_bite（黑底紅光牙）——一個外層帶隨機旋轉縮放，
      裡面上下顎兩半各自閉合（動畫全在 style.css 的 .fx-bitei，變形式）。 */
   /* 落點＝剛剛那顆光圈（ver -766，Ray）：defense 發佈的座標**讀完即清**——
-     不經光圈的 'ult' 擊（劇情殺三擊那種）拿不到座標，照舊隨機。 */
-  const pos = state.lastUltPos; state.lastUltPos = null;
+     不經光圈的攻擊（劇情殺三擊那種）拿不到座標，照舊隨機。 */
+  const pos = state.lastAssaultPos; state.lastAssaultPos = null;
   const cx = pos ? pos.x : (30+Math.random()*40);
   const cy = pos ? pos.y : (36+Math.random()*24);
   const d=document.createElement('div');
@@ -592,9 +597,9 @@ export function setEnemy(key){
      唯一邊界（§0.5）：連戰換第二隻也走這一支，那確實是新的一場。 */
   addPartnerFight(state.pickedPartner);
   initEnemyHp(en.hp);                           // 3.2：敵血基準（載入時 setter）
-  state.ULT_DAMAGE = en.attack;                 // 3.3：大絕單擊傷害
+  state.ASSAULT_DAMAGE = en.attack;                 // 3.3：大絕單擊傷害
   /* 蓄力秒數。⚠ 卡上可以給**區間**（`[3,5]`，ver -423 的巨型蜈蚣）——
-     那時候每次排程各自擲一次（見 `defense.scheduleUlt`），所以這裡存的是整個欄位。 */
+     那時候每次排程各自擲一次（見 `defense.scheduleAssault`），所以這裡存的是整個欄位。 */
   state.CHARGE_SECONDS = (en.atkInterval!=null) ? en.atkInterval : GAME_CONFIG.tuning.chargeSeconds;
   /* 這一隻的「打起來的手感」欄位（ver -423 的敵人卡）。⚠ 一律**每次換敵都寫**，
      沒寫要寫回預設 —— setEnemy 是連戰換敵也會走的（同下面那組絕對值的理由）。 */
@@ -611,18 +616,18 @@ export function setEnemy(key){
      延時計時也不會歸零」）。卡上沒寫＝1（會硬直）。判定在 defense 的反擊分支。 */
   state.enemyCounterStagger = (en.counterStagger!=null) ? en.counterStagger : 1;
   /* ══ 主動攻擊三分（ver -801，Ray 定案）══
-     · `ultEvery:[min,max]`（秒）＝**頻率**（多久發一次；全卡必填）。
+     · `assaultEvery:[min,max]`（秒）＝**頻率**（多久發一次；全卡必填）。
      · `assault:{ count, gap }`＝**一般主動攻擊**的形狀：一波幾顆、每顆間隔秒
        （取代舊的 Boss `ult:{shots,gapMs}`；沒寫＝1 顆）。
      · `ult:{ hp, count, gap, cd }`＝**血量門檻的特殊波**（hp% 以下改走它；沒有就 `{}`）。
      三者分開：頻率／一般形狀／門檻波。 */
   const asl = en.assault || {};
   const u   = en.ult || {};
-  state.ULT_SHOTS  = (asl.count!=null) ? asl.count : 1;
-  state.ULT_GAP_MS = (asl.gap!=null)   ? asl.gap*1000 : 0;
-  const ue = Array.isArray(en.ultEvery) ? en.ultEvery : [4,8];   // 沒填＝退回 4~8 秒
-  state.ULT_MIN    = ue[0]*1000;
-  state.ULT_MAX    = ue[1]*1000;
+  state.ASSAULT_SHOTS  = (asl.count!=null) ? asl.count : 1;
+  state.ASSAULT_GAP_MS = (asl.gap!=null)   ? asl.gap*1000 : 0;
+  const ue = Array.isArray(en.assaultEvery) ? en.assaultEvery : [4,8];   // 沒填＝退回 4~8 秒
+  state.ASSAULT_MIN    = ue[0]*1000;
+  state.ASSAULT_MAX    = ue[1]*1000;
   /* 門檻波：`ult:{ hp:40, count:4, gap:0.4, cd:4 }` ＝血 ≤40% 起，一波 count 顆、每顆隔
      gap 秒依次隨機出現、整波之間 CD cd 秒（沒寫 cd＝照常規頻率）。空 `{}`＝沒有門檻波。 */
   state.enemyUltAct = (u.hp!=null) ? {
@@ -638,12 +643,13 @@ export function setEnemy(key){
      —— 這一格排的是**一般主動攻擊**（`assault` 那一族）的第一發，不是門檻波，
      所以舊名 `openUlt` 從一開始就掛錯家族。卡上寫 `openAssault:[1,2]`（**秒**），
      沒寫＝預設 1~2 秒隨機；以前是全域寫死 0~3 秒（defense 的 ULT_OPEN_MS）。
-     ⚠ 內部的 `state.ULT_OPEN_MIN/MAX` 與 defense 那一套仍沿用舊名（那是引擎的
-       紅點排程，不是卡上的欄位）—— 要一起正名再說，這一版只動**卡的欄位**。
-     ⚠ `ultEvery`（一般攻擊的**頻率**）也是同一個誤名，這一版**還沒動** —— 見上面。 */
+     ⚠ ver -932 起**引擎內部也一起正名**（Ray：「全改吧，不然我手動改的時候常常疑惑」）：
+       `ULT_*` → `ASSAULT_*`、`scheduleUlt` → `scheduleAssault`、`ultEvery` → `assaultEvery`…
+       整條路上現在只剩**血量門檻的特殊波**還叫 ult（`enemyUltAct`／`ULT_ACTS`／
+       卡上的 `ult:{hp,…}`）—— 那才是真的大絕。 */
   const oue = Array.isArray(en.openAssault) ? en.openAssault : null;
-  state.ULT_OPEN_MIN = oue ? oue[0]*1000 : 1000;
-  state.ULT_OPEN_MAX = oue ? oue[1]*1000 : 2000;
+  state.ASSAULT_OPEN_MIN = oue ? oue[0]*1000 : 1000;
+  state.ASSAULT_OPEN_MAX = oue ? oue[1]*1000 : 2000;
   const dp = en.delayPenalty || {};              // 3.3：延時懲罰縮放（Boss=0.5 / -1）
   state.DELAY_PENALTY_SCALE = dp.dmgScale!=null ? dp.dmgScale : 1;
   state.DELAY_TIME_DELTA    = dp.timeDelta!=null ? dp.timeDelta : 0;

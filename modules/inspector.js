@@ -66,7 +66,7 @@ function pickByThreshold(map, current, fallback){
  *  ---------------------------------------------------------------------------
  *  所有可調數值集中於 GAME_CONFIG.rating，本檔不硬編任何評分參數。
  *  evaluate / scoreToExp 為「純函式」（只吃 stats/cfg，不讀 state/DOM），方便單獨測試。
- *  stats 需含：totalHP、clearTime(秒)、失誤計數（wrongTaps/ultHits/blocks/delays）、
+ *  stats 需含：totalHP、clearTime(秒)、失誤計數（wrongTaps/assaultHits/blocks/delays）、
  *              perfectCounter；⚠ `isBoss` 自 ver -602 起**不參與評價**（難度用 HP 表達）。
  *  （以下是舊百分制留下的欄位說明，已退役）：accuracy(0~1)、maxCombo、
  *             perfectCounter、overkill、hitsTaken。
@@ -91,7 +91,7 @@ export function rollBattleMoney(){
      「戰鬥用時也是要用整場的全部戰鬥總和時間」）—— 分數要在**總和**上算一次；
      各場先各算一次再相加是另一件事，等第會失真。
    ⚠ 錢照舊逐場擲、逐場記（那是掉落，不是評價）。 */
-const SUM_KEYS = ['clearTime','totalHP','wrongTaps','ultHits','blocks','delays',
+const SUM_KEYS = ['clearTime','totalHP','wrongTaps','assaultHits','blocks','delays',
                   'perfectCounter','counterSec','counterDamage','overkill','hitsTaken','perfectBoards'];
 export function bankSessionGain(stats){
   const acc = state.sessionStats || {};
@@ -189,7 +189,7 @@ export function evaluate(stats, cfg = GAME_CONFIG.rating){
   const pen = cfg.penalty || {};
   const hp  = Math.max(1, stats.totalHP || 0);
   const penSec = (stats.wrongTaps     ||0) * (pen.wrong   ||0)
-               + (stats.ultHits       ||0) * (pen.ult     ||0)
+               + (stats.assaultHits       ||0) * (pen.assault ||0)
                + (stats.blocks        ||0) * (pen.block   ||0)
                + (stats.delays        ||0) * (pen.delay   ||0)
                /* ⚠ 反擊與 overkill 是**負的**（ver -601／-603）：它們是表現不是失誤。 */

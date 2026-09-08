@@ -25,7 +25,7 @@
  *    注入的 resetEnergy。
  *
  *  依賴：import state / config / audio；對敵傷害、盤面/演出/敵計時等一律走 combat 注入的 api
- *    （enemyDamage / floatDmg / playCutin / resetEnemyTimers / scheduleUlt / markNext /
+ *    （enemyDamage / floatDmg / playCutin / resetEnemyTimers / scheduleAssault / markNext /
  *     buildGrid / resetEnergy），不 import combat/saint/defense（維持依賴方向）。
  * ========================================================================== */
 
@@ -360,7 +360,7 @@ export function activateDual(){
     if(state.over||state.saintMode) return;
     // cut-in 撤下瞬間 → 重置敵大絕與延時（間隔）懲罰倒數，避免發動瞬間被連段
     api.resetEnemyTimers();
-    api.scheduleUlt();
+    api.scheduleAssault();
     startDualWindow();
   }, L.cutins.dualBreak+'<span class="cutin-en">Bullets Rain</span>',   // ver -750，Ray：「Bullets Rain 彈雨傾洩」
      /* 破防 cut-in 分流（ver -454，Ray：「story 版的破防 CI 換成這一張

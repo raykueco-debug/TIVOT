@@ -32,7 +32,7 @@ import * as prog from '../script/progress.js';   // 本篇搭檔換人的旗標�
 import * as load from '../script/loadout.js';    // 玩家的搭檔選擇（ver -741；同為葉節點資料層）
 
 /* combat 於啟動時注入的原語：
- *   被動技所需：updateBars / floatDmg / resetEnemyTimers / scheduleUlt / playCutin
+ *   被動技所需：updateBars / floatDmg / resetEnemyTimers / scheduleAssault / playCutin
  *   主動技分域 api：saintApi（本輪；未來再加 combatApi / defenseApi）
  * 每個 handler 只取所需，多來源共存於此單一注入袋。 */
 let api = {};
@@ -89,7 +89,7 @@ export function tryDeathGuard(){
     if(state.over||state.saintMode) return;
     // 即死防禦後：cut-in 撤下瞬間重置敵大絕與延時（間隔）懲罰倒數，避免剛保命就被連段擊殺
     api.resetEnemyTimers();
-    api.scheduleUlt();        // 重新排程敵大絕
+    api.scheduleAssault();        // 重新排程敵大絕
     /* 免傷窗（ver -740，Ray）：cut-in 撤下才起算，秒數完整可用（同 fireBuff）。
        秒數與回血比例都在諾薇兒的卡上（`immuneSeconds`／`immuneHealPct`）——
        蕾妮的卡沒寫＝沒有這扇窗（挑戰那一套不動，ver -694）。 */
@@ -153,7 +153,7 @@ const ACTIVE_HANDLERS = {
     a.playCutin(()=>{
       if(state.over||state.saintMode) return;
       a.resetEnemyTimers();   // cut-in 撤下瞬間重置敵大絕/延時倒數（同雙槍/即死防禦慣例）
-      a.scheduleUlt();
+      a.scheduleAssault();
       a.startDual();          // cut-in 撤下 → 直接進入雙槍破防窗口
     }, label, act && act.cutin);
     return true;
@@ -412,7 +412,7 @@ export function onBoardCleared(clean){
   api.playCutin(()=>{
     fire();
     if(state.over) return;
-    api.resetEnemyTimers(); api.scheduleUlt();
+    api.resetEnemyTimers(); api.scheduleAssault();
     /* 伙伴被動發動後標示當前應點格（ver -833，Ray）：獵手的直覺在清盤那一刻發動，
        cut-in 撤下時下一盤已經擺好（clearBoard → goNextBoard 是同步接著跑的）——
        指的就是新盤的第一格。走既有的 hintCurrentCell（鐵律 8）。 */
@@ -454,7 +454,7 @@ function fireBuff(pas, reload){
     fire();                                   // cut-in 撤下才起算，秒數完整可用
     if(state.over) return;
     api.resetEnemyTimers();                   // 同其他 cut-in 的慣例
-    api.scheduleUlt();
+    api.scheduleAssault();
      /* ⚠ reload 那一發的英文行加 `.reload`（ver -891，Ray：「用顯眼的字寫
         NIGHTMARE RELOAD…要讓人一看就知道夢魘可以再用了」）—— 副標平常是 16px 的
         小字，那一行要跳出來才讀得到「可以再發一次」。樣式在 style.css。 */
@@ -495,7 +495,7 @@ export function checkLowHpBuff(){
     fire();                                   // cut-in 撤下才起算，10 秒完整可用
     if(state.over) return;
     api.resetEnemyTimers();                   // cut-in 撤下瞬間重置敵大絕/延時倒數（同其他 cut-in 慣例）
-    api.scheduleUlt();
+    api.scheduleAssault();
   }, `${pas.name}<span class="cutin-en">${pas.en||''}</span>`, pas.cutin);
 }
 
