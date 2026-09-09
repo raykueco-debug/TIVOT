@@ -30,6 +30,11 @@ import * as story from './modules/story.js';   // 主線 scene 播放器（首�
 import * as saveSys from './modules/save.js';   // 劇情層存讀檔（F4/F7 即時、F5/F8 選欄）
 import * as settings from './modules/settings.js';   // 選單：分軌音量／自動播放速度（玩家偏好）
 import * as prog from './script/progress.js';
+/* ⚠⚠ **靜態 import**（ver -1001）：章節跳關的補給包本來走 `import(...).then(...)`，
+   那是**非同步**的 —— 而 `startChapter` 後面的 `openTownAt()` 同步接著跑，
+   進城會落一筆自動存檔點，**那一筆快照裡還沒有補給** → 之後任何一次回檔就把它抹掉
+   （Ray：「北峰奶油又沒了」）。改成靜態 import，補給在進場之前就發完。 */
+import * as inv from './script/inventory.js';
 import * as clock from './script/clock.js';   // 章節的起始時刻（firstHourAt）   // 進度／旗標／「一輪遊戲」的邊界（newRun）
 import './modules/enemy.js';
 
@@ -1215,9 +1220,12 @@ function startChapter(c){
   /* 測試補給（ver -499，Ray：「測試階段點章節進去也要給主角1000元與回復道具
      各10」）：章節跳關本來就是 body.testmode 限定的梯子，直接發。
      回復道具＝defs 裡有 `use.hp` 的那幾樣（鐵律 1：不寫死 id，加了新藥自動吃到）。 */
-  import('./script/inventory.js').then(inv=>{
-    inv.addMoney(1000);
-    const defs=(GAME_CONFIG.items||{}).defs||{};
+  /* ⚠⚠⚠ **這一段一定要同步跑完**（ver -1001）：下面的 `openTownAt()` 是同步接著走的，
+     而進城會落一筆自動存檔點 —— 補給若還沒發完，那一筆快照裡就沒有它，
+     之後任何一次回檔（劇情戰敗北、讀檔）都會把補給抹掉。
+     -999 用 `import(...).then(...)` 發，正是踩到這個（Ray：「北峰奶油又沒了」）。 */
+  inv.addMoney(1000);
+  { const defs=(GAME_CONFIG.items||{}).defs||{};
     for(const id of Object.keys(defs)){
       const d=defs[id]; if(!d) continue;
       if(d.use && d.use.hp!=null) inv.add(id,10);
@@ -1227,8 +1235,7 @@ function startChapter(c){
          而瑪麗亞的第一道菜指名要它 → 卡關。
          ⚠ 數量寫在**道具身上**（鐵律 1）：這裡不認識任何一個 id。 */
       if(d.devKit>0) inv.add(id, d.devKit);
-    }
-  });
+    } }
   if(c.named){ prog.setPlayerName(''); prog.setPlayerNick(''); }   // 空字串＝套預設（托爾斯坦／托爾）
   if(c.flags && c.flags.length) prog.addFlags(c.flags);
   if(c.stage!=null) prog.setStage(c.stage);
