@@ -655,11 +655,20 @@ function clearBoard(){
        ⚠ 條件就是既有的 `boardClean`，不另訂一套（鐵律 7）—— 給聖能與給折秒
          是**同一件事**的兩個獎勵。折算的秒數在 `config.rating.penalty.perfectBoard`。 */
     state.perfectBoards++;
-    const ideal=state.N*0.45;
-    const speed=Math.max(0.4, Math.min(1.6, ideal/Math.max(elapsed,0.1)));
-    const gain=Math.round(state.N*1.8*speed);
-    addEnergy(gain);
-    floatDmg(fmt(L.battle.perfectClear,{n:gain}),'50%','30%',false);
+    /* ══⚠⚠⚠ **共鬥期間不給清盤的破防值獎勵**（ver -1007，Ray：「共鬥期間沒有
+       清盤破防值獎勵」）══ -1005 起破防計量表**就是**共鬥的碼表，所以這一筆
+       （一盤十幾點）等於一次白送好幾秒 —— 那是「清一盤就再送你一段共鬥」。
+       ⚠ **折秒照給**（`perfectBoards++` 在上面）：那是評價的事，與破防值無關
+         —— 兩個獎勵條件同一個（`boardClean`），但份量各自決定。
+       ⚠ 擋在這裡不是擋在 `addEnergy`：那一支管的是「回充打幾折」（`energyBackMul`），
+         這一條是「這一筆根本不給」，兩件事分開才看得懂。 */
+    if(!state.coopMode){
+      const ideal=state.N*0.45;
+      const speed=Math.max(0.4, Math.min(1.6, ideal/Math.max(elapsed,0.1)));
+      const gain=Math.round(state.N*1.8*speed);
+      addEnergy(gain);
+      floatDmg(fmt(L.battle.perfectClear,{n:gain}),'50%','30%',false);
+    }
   }
   /* 索菈娜「獵手的直覺」被動（ver -803）：連續 N 輪完美清盤 → 破防值加速窗。
      ⚠ 帶這一盤的 `boardClean`（完美與否）：完美累加、破功歸零（partner 判是不是她）。 */
@@ -1574,6 +1583,17 @@ function autoClearOverkill(){
   }, OVERKILL_NEXT_DELAY_MS);
 }
 
+/* ══ 淨化演完才關門（ver -1007，Ray：「禍魘的淨化特效怎麼都沒了」）══
+   槍棺關門（與中間場的收門）第一件事就是 `#storyStage.on`，而那會把整個 `#app`
+   `visibility:hidden`＋暫停它所有動畫（鐵律 10）—— 與 `purgeEnemy()` 同一拍發生，
+   淨化因此一幀都看不到。剩多久問 `enemy.purgeHoldMs()`（唯一的計算點，鐵律 7）。
+   ⚠ 掛在**兩條收場路**上，不是掛在 `finishEnemyOrAdvance`：那時還沒 `state.over`，
+     延後等於讓玩家在一隻死掉的怪面前多活 0.6 秒（大絕還會打過來）。
+     `win()` 裡 `state.over=true; stopAll()` 之後才等，畫面是凍住的。 */
+function afterPurge(fn){
+  const ms = enemy.purgeHoldMs();
+  if(ms>0) setTimeout(fn, ms); else fn();
+}
 /* ---- 敵死收尾：局內還有下一敵→轉敵、否則→結算 ---- */
 /* 「這是不是最後一名敵人」只有這一支（鐵律 7）。
    教學戰／劇情插入戰＝單敵一場，永遠是最後一名。
@@ -1898,7 +1918,7 @@ function win(){
     /* EXP 與錢**整場結算**（ver -595）：中間這幾場先記帳，收段那一場一起入。 */
     inspector.bankSessionGain(stats);
     const back = ()=>{ if(storyReturn) storyReturn({ lost:false, inPlace:true }); };
-    if(storyShut) storyShut(back); else back();
+    afterPurge(()=>{ if(storyShut) storyShut(back); else back(); });
     return;
   }
   const toResult = ()=>{
@@ -1921,8 +1941,10 @@ function win(){
   /* ⚠ 劇情版教學：**先演「關門」**（進場那一套的倒放）再上結算（ver -366，Ray 指定）。
      進場是門推上來、打開露出戰場；打完就該把門關回去 —— 沒有這一段，畫面會從戰鬥
      硬切到結算頁。關門的最後一步會上黑透遮罩並把劇情層收掉，才輪到結算。 */
-  if(storyFramed() && storyClose) storyClose(toResult);
-  else playTransition('finish', toResult);
+  afterPurge(()=>{
+    if(storyFramed() && storyClose) storyClose(toResult);
+    else playTransition('finish', toResult);
+  });
 }
 function lose(){
   if(state.over) return;
