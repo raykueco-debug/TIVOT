@@ -7643,7 +7643,18 @@ function spawnEnemy(opt){
   // 軌跡先填成一條直線，否則剛生成的那幾幀身體還沒長出來
   for(let i=1;i<=Math.ceil(K.bodyLen/C.trailStep)+4;i++)
     enemy.trail.push({x:x-hx*C.trailStep*i, y:y-hy*C.trailStep*i});
-
+  /* ══⚠⚠⚠ **生了就把下一次的間隔排好**（ver -977，Ray：「飛行畫面劇情戰的時候，
+     似乎背景還在生怪，導致我一場戰鬥完馬上又來一隻」）══
+     `updateEnemy` 是 `enemyTimer-=dt; if(enemyTimer<=0) spawnEnemy();` —— **生完沒有
+     重設**，所以計時器一旦歸零就永遠是負的：`enemy` 一變回 null 的**下一幀**就再生一隻。
+     以前重設只有三處（engage 逾時／開發用生怪鈕／降落進城），交棒進戰鬥那一條沒有。
+     ⚠ 劇情戰特別明顯：打完那一刻 `done` 旗一立，雜怪的閘門
+       （`SCRIPTED_ENCOUNTERS.some(S=>!flagOn(S.done))`）同時打開，兩件事撞在一起。
+     ⚠ 收在**生成的那一支**（鐵律 8）：計時器歸零的路徑不只一條（交棒、掉頭離開、
+       劇本怪插隊），寫在各個呼叫端一定會漏掉其中一條 —— 這一次漏的就是交棒。
+     ⚠ 間隔在 `enemy` 存在期間是**凍著**的（`-=dt` 在 `if(!enemy)` 裡面），
+       所以這一行等於「這一隻處理完之後，再等一個完整的間隔」。 */
+  enemyTimer=C.gapMin+Math.random()*(C.gapMax-C.gapMin);
 }
 
 function updateEnemy(dt,now){

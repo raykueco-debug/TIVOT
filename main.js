@@ -1360,6 +1360,18 @@ combat.setStoryReturn((res)=>{
          戰前）。⚠ ver -845：iframe 死了問不到 __flightPos —— 座標直接讀回程鑰匙
          （toBattle 交棒那一刻寫的，就是遭遇位置，同一份真相）。 */
       const dead = !f.getAttribute('src');
+      /* ══⚠⚠⚠ **船戰打完（勝負都算）HP 回滿**（ver -977，Ray：「船戰現在 HP 不保留
+         到下一場，一樣走結算就回滿，破防歸零」）══
+         ⚠⚠ **這推翻了船戰那一半的持久 HP**（ver -481／-489）：-976 之前打贏會走
+           `combat.win` 的 `prog.setHp` 把殘量帶到下一場，只有**打輸**才回滿（-498）。
+           現在兩邊一致 —— 飛行遭遇是一場一場獨立的，天上又沒有地方補血，
+           帶著殘血打下一隻等於愈打愈死。破防值本來就歸零（飛行的戰鬥卡沒有
+           `session`，資源不跨局），所以那一半不必動。
+         ⚠ 走既有的 `prog.clearHp()`（＝飛行敗北回滿、羽蛇戰後回滿同一支，鐵律 8）——
+           「沒有鑰匙＝滿血」是持久 HP 的既有語意，不要寫一個滿值進去（鐵律 9）。
+         ⚠ 要在**落檢查點之前**：那一筆快照存的是「打完之後」的狀態。
+         ⚠ 城鎮／劇情戰**不受影響**：那幾條路不經過這裡，照舊帶著殘量。 */
+      prog.clearHp();
       combat.goHome(()=>{ openFlight({ resume:true, won });
                           if(won){
                             if(dead){ try{ const j=JSON.parse(localStorage.getItem('tivot_flight_ret_v1')||'null');
