@@ -60,6 +60,17 @@ const K = {
      ⚠ **只存 EXP，不存等級**：等級由累計值查 `config.girls.expTo` 推出來
        （鐵律 7 —— 存了就是第二個真相，兩者一定會走鐘）。 */
   girlExp:   'tivot_girlexp_v1',
+  /* ══ 戰績統計（ver -1023，Ray：「統計總局數、總擊場數、各女角的局數、平均得分」）══
+     `{ sessions, kills, byGirl:{ <who>:{ n, score } } }`
+       · `sessions` ＝**總局數**（一次結算算一局，§0.5 的「局」）
+       · `kills`    ＝**總擊場數**（打倒幾隻怪，§0.5 的「場」）
+       · `byGirl[x].n`／`.score` ＝那一位出過場的局數、與那幾局的**原始分**總和
+     ⚠⚠ **存原始分，不存鏡射過的**：索菈娜「反著算」是**顯示**的事
+       （名單在 `rating.exp.invertFor`，鏡射只有一個計算點，鐵律 7）——
+       存進去就再也分不出「這是原始分還是已經翻過的」。
+     ⚠⚠ **這是「一輪內」的東西**（§6.9）：`newRun()` 要清、`runSnapshot/runRestore`
+       要帶 —— 同一張清單的兩面。Ray：「這些都要跟存檔」。 */
+  stats:     'tivot_stats_v1',
   /* 副武器的改裝等級（ver -714）：`{武器id: 階}`，0~卡上的 `maxMod`。一輪內。 */
   wmod:      'tivot_wmod_v1',
   /* ══ 吃過的料理（ver -953，Ray：「HP 上限＋40 是一輪內」）══ 陣列，元素＝
@@ -769,7 +780,7 @@ export function newRun(){
   for(const k of [K.stage, K.flags, K.affection, K.affFloor, K.name, K.nick,
                   K.hp, K.innLast, K.flightLoss, K.rennaS, K.playtime,
                   K.charms, K.gunLv, K.gunStars, K.wmod, K.jmod, K.dishes,
-                  K.girlExp]) {   // 持久HP／上次旅店／連敗數／蕾娜S計數／遊玩時間／掛件／強化／杰羅改造／吃過的料理／女主等級（-970）
+                  K.girlExp, K.stats]) {   // stats＝戰績統計（ver -1023，一輪內）   // 持久HP／上次旅店／連敗數／蕾娜S計數／遊玩時間／掛件／強化／杰羅改造／吃過的料理／女主等級（-970）
     try{ localStorage.removeItem(k); }catch(e){}
   }
   /* ⚠⚠ 從頭開始＝**S0 要寫進鑰匙**（ver -563）。清掉 stage 之後不寫回的話，
@@ -841,7 +852,8 @@ export function snapshot(){
            wmodRaw:rawJ(K.wmod),            // 副武器改裝（ver -714，一輪內）
            jmodRaw:rawJ(K.jmod),            // 杰羅改造（ver -866，一輪內）
            dishesRaw:rawJ(K.dishes),        // 吃過的料理（ver -953，一輪內）
-           girlExpRaw:rawJ(K.girlExp) };    // 女主的九級（ver -970，一輪內）
+           girlExpRaw:rawJ(K.girlExp),      // 女主的九級（ver -970，一輪內）
+           statsRaw:rawJ(K.stats) };        // 戰績統計（ver -1023，一輪內）
 }
 export function restore(s){
   if(!s) return;
@@ -877,4 +889,35 @@ export function restore(s){
   /* 女主的九級（ver -970）：舊存檔沒有這一欄 → **原樣移除**（讀「還沒練」的檔
      不該帶著這一輪練出來的等級，§6.9 的兩面）。 */
   putRaw(K.girlExp,  ('girlExpRaw'  in s)?s.girlExpRaw :null, true);
+  /* 戰績統計（ver -1023）：同上，舊存檔沒有這一欄 → 原樣移除。 */
+  putRaw(K.stats,    ('statsRaw'    in s)?s.statsRaw   :null, true);
+}
+
+/* ══⚠⚠⚠ **戰績統計**（ver -1023，Ray 交辦）══════════════════════════════════
+   讀寫只有這三支（鐵律 7/8）：`getStats()` 讀、`addSessionStat()` 記一局、
+   `addKillStat()` 記一場。呼叫端不要自己碰那把鑰匙。
+   ⚠ 「局」與「場」的定義照 §0.5：局＝一次結算、場＝一隻怪。
+   ⚠ 分數存**原始分**；索菈娜的「反著算」在顯示端做（見 `settings` 的統計表）。 */
+const STATS0 = () => ({ sessions:0, kills:0, byGirl:{} });
+export function getStats(){
+  const o = rawJ(K.stats);
+  if(!o || typeof o!=='object') return STATS0();
+  return { sessions:o.sessions|0, kills:o.kills|0, byGirl:(o.byGirl&&typeof o.byGirl==='object')?o.byGirl:{} };
+}
+function putStats(o){ wr(K.stats, JSON.stringify(o)); }
+/* 一局結算：總局數 +1，並把**這一局出過場的每一位**各記一局與那一局的分數。
+   ⚠ `whos` 由呼叫端給（`state.partnerFights` 的參與者）—— progress 不讀戰鬥狀態。 */
+export function addSessionStat(whos, score){
+  const o = getStats();
+  o.sessions++;
+  for(const w of (whos||[])){
+    if(!isGirl(w)) continue;                       // 蕾妮／馬季諾不進帳（鐵律 9：答不出來的不記）
+    const g = o.byGirl[w] || (o.byGirl[w] = { n:0, score:0 });
+    g.n++; g.score += Math.round(+score||0);
+  }
+  putStats(o);
+  return o;
+}
+export function addKillStat(n){
+  const o = getStats(); o.kills += Math.max(1, n|0 || 1); putStats(o); return o;
 }

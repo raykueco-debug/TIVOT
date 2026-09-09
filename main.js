@@ -1094,6 +1094,51 @@ document.querySelectorAll('#originalSheet .os-link').forEach(a=>{
 // 沒看到清盤鈕就不會看到後臺鈕，一般使用者無從誤入。裝置的永久簽名（localStorage）
 // 只作遙測排除，不再於開機時直接顯示後臺鈕；已簽裝置要進後臺，每場重做解鎖手勢即可。
 bindBtn('statsBtn', ()=>{ window.location.href = 'stats.html'; });
+/* ══ 讀檔（ver -1023，Ray：「首頁做個讀檔鈕，一對一」）══ 讀**管理人專用的那一格**
+   （`save.devLoad`），與系統選單裡的「存檔」一對一。
+   ⚠ 與「繼續」是兩件事：那一顆讀玩家的最新存檔（main／auto），這一顆只讀管理人
+     那一格 —— `latest()` 根本不看 `dev`，所以兩邊互不影響（Ray：「進度不要被汙染」）。
+   ⚠ 讀進去之後**位置由存檔決定**（飛行 > 城鎮 > 劇情，`save.apply` 那一支）——
+     所以要先把首頁收掉那件事交給它：`apply` 走的三條路自己會開對應的頁。
+   ⚠ 管理人模式限定 —— 判斷在 CSS 的白名單（§6.9），這裡不重複判一次（鐵律 7）。 */
+bindBtn('devLoadBtn', ()=>{ saveSys.devLoad(); });
+
+/* ══⚠⚠⚠ **統計表的內容**（ver -1023，Ray：「統計總局數、總擊場數、各女角的局數，
+   平均得分（索拉娜是反著算）」）══════════════════════════════════════════════
+   數字的來源只有 `prog.getStats()`（唯一的帳本，鐵律 7）；這一支只負責**排版**。
+   ⚠⚠ **索菈娜的平均分「反著算」在這裡做**，而且用的是**同一份名單**
+     （`rating.exp.invertFor`）—— 她的 EXP 也是照那份名單鏡射的（ver -970），
+     一個角色一套方向，不要讓兩邊各講一套（鐵律 7）。
+     鏡射的式子也與那邊同一條：`100 − 分數`。
+   ⚠ 帳本存的是**原始分**：存進去就再也分不出「這是原始分還是已經翻過的」。
+   ⚠ 遊玩時間順手一起印（`prog.playSeconds`）——它本來就跟著存檔走，
+     而 Ray 的清單裡也有它。 */
+function buildStatRows(){
+  const st  = prog.getStats();
+  const inv = ((GAME_CONFIG.rating||{}).exp||{}).invertFor || [];
+  const rows = [
+    ['總局數',   String(st.sessions|0)],
+    ['總擊場數', String(st.kills|0)],
+  ];
+  const secs = (prog.playSeconds ? prog.playSeconds() : 0)|0;
+  if(secs>0){
+    const h=Math.floor(secs/3600), m=Math.floor(secs%3600/60);
+    rows.push(['遊玩時間', (h? h+' 小時 ':'')+m+' 分']);
+  }
+  let any=false;
+  for(const who of ((GAME_CONFIG.girls||{}).who || [])){
+    const g = st.byGirl[who]; if(!g || !(g.n>0)) continue;
+    any=true;
+    const pc = (GAME_CONFIG.partners||{})[who] || {};
+    const raw = g.score / g.n;
+    const avg = (inv.indexOf(who)>=0) ? (100 - raw) : raw;
+    rows.push([(pc.name||who)+'　局數', String(g.n)]);
+    rows.push([(pc.name||who)+'　平均得分',
+               avg.toFixed(1) + (inv.indexOf(who)>=0 ? '（反算）' : '')]);
+  }
+  return { rows, note: any ? '「反算」＝那一位的評價越低越好（同她的 EXP 方向）。'
+                           : '打完一場（結算）之後才會有各女角的資料。' };
+}
 // 試飛：大地圖飛行原型（管理人模式限定；鈕本身由 CSS 隱藏，見 style.css）
 // ver -388：內嵌 iframe，不再跳頁；ver -389：「進入」這條路會跑讀取頁（見 openFlight）
 bindBtn('flightBtn', ()=>openFlight());
@@ -2012,7 +2057,12 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
     };
     /* 入口：選單的「管理人」那一段（ver -926）。⚠ settings 是葉模組（不 import main），
        所以由這裡注入 —— 同 `story.setTownBgm` 那一族的作法。 */
-    settings.setDevTools({ hud:()=>show(), freeze:toggleFreeze, frozen:()=>!!window.__frozen });
+    /* ══ 注入管理人工具（ver -926 起）══ ver -1023 多兩件：**獨立存檔**與**統計表**。
+       ⚠ settings 不 import save／progress／config（它是設定面板，不該知道存檔怎麼存、
+         分數怎麼算、誰要反著算）—— 一律經這裡注入（同 hud／freeze 的作法）。 */
+    settings.setDevTools({ hud:()=>show(), freeze:toggleFreeze, frozen:()=>!!window.__frozen,
+                           devSave: ()=>saveSys.devSave(),
+                           stats: buildStatRows });
   })();
   // 觸發一：網址帶 ?debug
   if(location.search.indexOf('debug')>=0) show();

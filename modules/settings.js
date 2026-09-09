@@ -169,6 +169,16 @@ export function open(opts){
           +   '<b>開關</b></label>'
           + '<div class="gm-note">凍結＝停掉這一刻所有動畫／音訊／戰鬥計時（再按解凍）。'
           + 'HUD＝版本與幀率那一片。兩者都只有管理人模式看得到。</div>'
+          /* ══ 管理人的存檔與統計（ver -1023，Ray 交辦）══
+             · 存檔：**一對一**的獨立格（`save.devSave`），首頁那顆「讀檔」讀它。
+             · 統計：另開一頁（`renderStats`）。
+             ⚠ 只長在 `body.testmode` 裡（與上面那兩顆同一個判準）。 */
+          + '<div class="gm-acts gm-dev2">'
+          +   '<button class="gm-btn" id="gmDevSave" type="button">存　檔</button>'
+          +   '<button class="gm-btn" id="gmStats" type="button">統計表</button>'
+          + '</div>'
+          + '<div class="gm-note">存檔＝管理人專用的**獨立**一格（與玩家的存檔互不影響），'
+          + '在首頁用「讀檔」讀回來。</div>'
         : '')
       + '<div class="gm-acts">'
       +   (o.onHome ? '<button class="gm-btn gm-home" type="button">回到主選單</button>' : '')
@@ -236,6 +246,15 @@ export function open(opts){
          （iOS 完全沒有這個 API）。 */
       if(on && navigator && navigator.vibrate) try{ navigator.vibrate(45); }catch(_){}
     });
+    /* 管理人：存檔／統計（ver -1023）。實作經 `setDevTools` 注入（settings 不 import
+       save/progress —— 它是設定面板，不該知道存檔怎麼存，鐵律：依賴方向）。 */
+    { const ds=panel.querySelector('#gmDevSave');
+      if(ds) ds.addEventListener('click', e=>{ e.stopPropagation();
+        try{ SFX.menuClick(); }catch(_){}
+        if(devTools && devTools.devSave) devTools.devSave(); });
+      const stb=panel.querySelector('#gmStats');
+      if(stb) stb.addEventListener('click', e=>{ e.stopPropagation();
+        try{ SFX.menuClick(); }catch(_){} renderStats(); }); }
     const hb=panel.querySelector('.gm-home');
     if(hb) hb.addEventListener('click', e=>{ e.stopPropagation();
       try{ SFX.menuClick(); }catch(_){} renderConfirm(); });
@@ -258,6 +277,26 @@ export function open(opts){
       try{ SFX.menuClick(); }catch(_){} renderMain(); });
     panel.querySelector('.gm-yes').addEventListener('click', e=>{ e.stopPropagation();
       try{ SFX.menuClick(); }catch(_){} close(); if(o.onHome) o.onHome(); });
+  };
+
+  /* ══ 統計表（ver -1023，Ray：「在系統頁面做一個按鈕打開統計表，統計總局數、
+     總擊場數、各女角的局數，平均得分（索拉娜是反著算）」）══
+     ⚠ **數字由 `devTools.stats()` 交出來**（main 注入）—— settings 不 import
+       progress／config：它是設定面板，不該知道分數怎麼算、誰要反著算（依賴方向）。
+     ⚠ 用面板換頁不疊第二層（同「回到主選單」那一頁的理由）。 */
+  const renderStats = ()=>{
+    const d = (devTools && devTools.stats) ? devTools.stats() : null;
+    const rows = (d && d.rows || []).map(r =>
+        '<div class="gm-row gm-stat"><span>'+r[0]+'</span><b>'+r[1]+'</b></div>').join('');
+    panel.innerHTML =
+        '<div class="gm-title">統　計</div>'
+      + (rows || '<div class="gm-note">還沒有任何紀錄。</div>')
+      + (d && d.note ? '<div class="gm-note">'+d.note+'</div>' : '')
+      + '<div class="gm-acts">'
+      +   '<button class="gm-btn gm-back" type="button">返　回</button>'
+      + '</div>';
+    panel.querySelector('.gm-back').addEventListener('click', e=>{ e.stopPropagation();
+      try{ SFX.menuClick(); }catch(_){} renderMain(); });
   };
 
   renderMain();

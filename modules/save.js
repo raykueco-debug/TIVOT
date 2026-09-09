@@ -59,9 +59,9 @@ function load(){
   try{
     const j=JSON.parse(localStorage.getItem(KEY)||'null');
     if(j && typeof j==='object') return { main:j.main||null, quick:j.quick||null, auto:j.auto||null,
-                                          sim:j.sim||null, slots:j.slots||{} };
+                                          sim:j.sim||null, dev:j.dev||null, slots:j.slots||{} };
   }catch(e){}
-  return { main:null, quick:null, auto:null, sim:null, slots:{} };
+  return { main:null, quick:null, auto:null, sim:null, dev:null, slots:{} };
 }
 function store(db){
   try{ localStorage.setItem(KEY, JSON.stringify(db)); }catch(e){}
@@ -218,6 +218,33 @@ export function simLoad(){
 }
 /* 那一格現在裝著什麼（給小地圖那顆鈕印在旁邊；沒有就回 null）。 */
 export function simInfo(){ return load().sim || null; }
+
+/* ══⚠⚠⚠ **管理人的獨立存檔（`dev`，一對一）**（ver -1023，Ray：「要在管理人模式下
+   在系統選單做一個存檔鈕，首頁做個讀檔鈕，一對一，這個檔是獨立的，
+   進度不要被汙染」）══════════════════════════════════════════════════════
+   · **另開一格**，不借 `main`／`auto`（那兩格是**玩家的**）也不借 `quick`
+     —— 借哪一格都會讓「隨手存一下」蓋掉別的東西，那正是 ver -430 為 `main`
+     另開一格的同一個理由。
+   · ⚠⚠ **不進 `latest()` 的比較**：首頁的「繼續」只看 `main`／`auto`（ver -561）
+     —— 進去的話管理人存的檔就會借屍還魂到玩家的「繼續」上，那就是「污染」。
+   · 存讀的動作沿用 `capture()`／`apply()`（鐵律 8）—— 換的只有存哪一格，
+     所以**它存到的東西與玩家的存檔一模一樣**：好感、女主等級與九星、道具、
+     武器與改裝、錢、旗標、持久 HP、時鐘、遊玩時間、店鋪存貨、戰績統計。
+   ⚠ 只有 `body.testmode` 看得到那兩顆鈕（首頁那條白名單同一個判準，§6.9）——
+     但這一支本身不判：判斷是**畫面**的事，資料層只負責存讀（鐵律 8）。 */
+export function devSave(){
+  const db=load(); db.dev=capture(); store(db);
+  toast('管理人存檔  '+db.dev.label);
+  return db.dev;
+}
+export function devLoad(){
+  const db=load();
+  if(!db.dev){ toast('還沒有管理人存檔'); return false; }
+  apply(db.dev);
+  toast('管理人讀檔  '+db.dev.label);
+  return true;
+}
+export function devInfo(){ return load().dev || null; }
 
 /* ══ 即時存讀（F4 / F7）══ */
 export function quickSave(){

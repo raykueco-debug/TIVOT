@@ -578,7 +578,7 @@ export function settle(totalTime, stats, opts={}){
        併在分流**之前**，日後多一條結算路徑也自動吃到（鐵律 8）。
      ⚠ 領完就清：不然下一場會把上一段的再算一次。
      ⚠ 戰敗不併也不清 —— 那一頁不報帳，而這一段可能還要再打一次。 */
-  let sessionLoot = null, shares = null, expShares = null;
+  let sessionLoot = null, shares = null, expShares = null, statWhos = null;
   if(stats && !isLose){
     stats = mergeSessionStats(stats);
     sessionLoot = state.sessionLoot || null;   // 中間場記帳的掉落（ver -869），下面併進拾得
@@ -589,10 +589,31 @@ export function settle(totalTime, stats, opts={}){
     /* EXP 的收款人（ver -970）：**與好感是兩支 resolver**（規則不同，見那兩支的說明），
        但都要在 `clearSessionGain()` **之前**問 —— 出場帳一清就只剩退路了。 */
     expShares = settleExpShares();
+    /* ══⚠⚠⚠ **戰績統計**（ver -1023，Ray：「統計總局數、總擊場數、各女角的局數、
+       平均得分」）══ 記在**這裡**與 `shares`／`expShares` 同一拍 ——
+       理由一模一樣：`clearSessionGain()` 會把 `partnerFights` 清掉，那是「這一局
+       誰出過場」的唯一帳本（ver -921 的老坑）。
+       ⚠ 「各女角的局數」＝**出過場就算一局**（不是只有拿 EXP 的那一位）——
+         那正是 `partnerFights` 的鍵。⚠ 只有勝利那一支會走到（`!isLose`）：
+         戰敗那一頁不報帳，而且那一段可能還要再打一次。
+       ⚠ 分數存**原始分**，索菈娜的「反著算」在顯示端做（鏡射只有一處，鐵律 7）。
+       ⚠ 分數要在 `evaluate` 之後才有 —— 所以只先把名單留著，記帳挪到下面。 */
+    statWhos = Object.keys(state.partnerFights || {})
+                     .filter(k => (state.partnerFights[k]|0) > 0);
+    if(!statWhos.length && state.pickedPartner) statWhos = [state.pickedPartner];
     clearSessionGain();
     /* ⚠ 「這一場打了多久」也跟著變成整場的總和 —— 最佳紀錄、破紀錄獎品、
        畫面上的「戰鬥用時」全部同一個數字（鐵律 7）。 */
     if(stats.clearTime) totalTime = stats.clearTime;
+  }
+  /* ══ 戰績統計記帳（ver -1023）══ 收在**這裡**——分流到三條結算路徑**之前**
+     （鐵律 8，同上面併帳那一段的理由：日後多一條結算頁也自動吃到）。
+     ⚠ 只在勝利那一支記（`!isLose`）：戰敗那一頁不報帳，而且那一段可能還要再打一次。
+     ⚠ 分數再問一次 `evaluate(stats)` —— 它是**純函式**，同樣的 stats 一定同樣的分，
+       所以這不是「同一個量兩個計算點」（鐵律 7 管的是**存**兩份，不是算兩次）。
+       把 `ev` 從三條路徑各自傳上來反而會讓那三支的簽名各長一格。 */
+  if(statWhos && stats && !isLose){
+    try{ prog.addSessionStat(statWhos, evaluate(stats).score); }catch(_){}
   }
   /* ══⚠⚠ 名詞定義（ver -755，Ray 定案）：**一次結算為一局、一隻怪 hp 清零為一場、
      一次盤面清空為一盤**。══

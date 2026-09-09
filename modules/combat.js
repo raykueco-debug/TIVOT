@@ -1670,6 +1670,11 @@ function isLastEnemy(){
 }
 function finishEnemyOrAdvance(){
   endOverkillFx();   // overkill 藍光/限時統一在此清理（所有結束路徑的匯流點，冪等）
+  /* ══ 總擊場數 +1（ver -1023，Ray：「統計…總擊場數」）══ 「場」＝一隻怪（§0.5），
+     而**這裡是「一隻怪倒下」的唯一匯流點**（自然清盤／按錯／逾時／聖徒化擊殺
+     四條路都經過它，同上面那幾件事的理由，鐵律 8）——**包含連戰的中間場**。
+     ⚠ 教學戰不記：那一場的怪是打不死的道具，記進去統計就會騙人。 */
+  if(!state.tutorialRun){ try{ prog.addKillStat(1); }catch(_){} }
   partner.onEnemyCleared();   // 九階「方舟」：無傷擊殺 → 已用掉的一次性被動重新上膛（ver -707）
   /* 血歸零 → **淨化**（ver -588，Ray：「怪 hp 歸零後淡出」）。
      ⚠ 掛在這個**匯流點**（鐵律 8）：自然清盤／按錯／逾時／聖徒化擊殺四條路都經過它。

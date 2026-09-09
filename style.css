@@ -2755,6 +2755,15 @@
   /* 回到主選單的確認頁（ver -398）。⚠ 用面板**換頁**不疊第二層 —— 疊兩層很難點得準。 */
   #gameMenu .gm-warn{margin:14px 2px 2px;font-size:12px;line-height:1.9;text-align:center;
     color:var(--parch,#d8cdb4);}
+  /* ══ 統計表的一列（ver -1023）══ 借 `.gm-row` 的排版，但左右兩欄的寬度要放開：
+     那一套是給「標籤＋滑桿＋數字」用的（`span` 固定 44px、`b` 固定 34px），
+     塞不下「諾薇兒　平均得分」與「62.4（反算）」。 */
+  #gameMenu .gm-row.gm-stat{justify-content:space-between;margin:5px 0;}
+  #gameMenu .gm-row.gm-stat span{flex:1 1 auto;width:auto;color:#cbb98e;}
+  #gameMenu .gm-row.gm-stat b{flex:0 0 auto;width:auto;min-width:56px;color:var(--gold);
+    font-variant-numeric:tabular-nums;}
+  /* 管理人那兩顆（存檔／統計表）：與底下的動作列同款，但擠在管理人那一段內。 */
+  #gameMenu .gm-acts.gm-dev2{margin-top:8px;}
   #gameMenu .gm-acts,#chapterSheet .gm-acts{display:flex;gap:8px;margin-top:14px;}
   #gameMenu .gm-btn,#chapterSheet .gm-btn{flex:1;height:36px;font-family:inherit;font-size:12px;letter-spacing:2px;
     color:var(--gold);background:rgba(10,8,14,.7);
