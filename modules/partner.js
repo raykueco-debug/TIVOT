@@ -586,9 +586,16 @@ export function onBoardCleared(clean){
        cut-in 撤下時下一盤已經擺好（clearBoard → goNextBoard 是同步接著跑的）——
        指的就是新盤的第一格。走既有的 hintCurrentCell（鐵律 8）。 */
     if(api.hintCurrentCell) api.hintCurrentCell();
-     /* reload 那一發的英文行加 `.reload`（ver -894）：與夢魘／聖徒再臨同一條金綠光，
-        玩家才認得出「這是賺回一次發動」。 */
-  }, `${nm}<span class="cutin-en${reload?' reload':''}">${en||''}</span>`, cut, { full:true });   // 被動技全屏（ver -874，Ray）
+  /* ⚠⚠⚠ **ver -998 修：這裡本來還在用 `reload`，而那個變數 -976 就刪掉了** ══
+     -976 把戰吼由兩段式改成單段（reload 共鬥移到 Lv7 的主動技），連同
+     `let vkey, reload=false;` 一起拿掉 —— 但這一行的樣板字串沒跟著改。
+     樣板字串是**呼叫 playCutin 時就求值**的，所以戰吼一發動就丟 ReferenceError，
+     `onBoardCleared` 整支炸在 `clearBoard` 中間 → **下一盤沒被建出來＝盤面消失**
+     （Ray 回報：「盤面打到一半又不見了，用的是索拉娜，感覺是被動發動時不見的」）。
+     ⚠⚠ 這與 ver -963（MB 的 reload 標籤交叉寫錯）是**同一個病的第二次**：
+       改語意的那一版，**要把所有讀它的地方掃一遍**（教訓 5）。
+     ⚠ 單段的戰吼沒有「reload 那一發」，所以 `.reload` 那個 class 整個不要。 */
+  }, `${nm}<span class="cutin-en">${en||''}</span>`, cut, { full:true });   // 被動技全屏（ver -874，Ray）
 }
 /* 「5 秒普攻加倍」的執行體（`lowHpBuff` 與 `firstCounter` 共用，鐵律 8）。 */
 function fireBuff(pas, reload){

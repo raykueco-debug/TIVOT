@@ -124,8 +124,14 @@ partners.anya.active               -994  **純顯示**的夢境破碎（context:
 3. ⚠ **`innerText` 對 flex 會逐項斷行**（flex 子項被 blockify）—— 判斷「是不是同一行」
    要量 `getBoundingClientRect().top`，不要看 innerText。
 4. ⚠ **`padding-left` 不會移動 box 的 left** —— 量縮排要量文字（`Range`）不是元素。
-5. ⚠ **少 import 的東西語法檢查看不出來**：`weapon.js` 漏 import `weaponBand`，
-   那會是共鬥開火時才炸的 ReferenceError。改完跑一次瀏覽器煙霧測試（逐支 import）。
+5. ⚠⚠⚠ **改語意的那一版，要把所有讀它的地方掃一遍**（憲法教訓 5）——
+   這一輪犯了兩次同一個病：
+   · `weapon.js` 漏 import `weaponBand`（共鬥開火時才炸）
+   · `partner.js` 的戰吼：-976 把兩段式改單段時刪掉 `reload` 變數，
+     但 cut-in 的樣板字串還在用它 → **戰吼一發動就 ReferenceError、盤面消失**
+     （-998 修；與 ver -963「MB 的 reload 標籤交叉寫錯」是同一個病的第二次）。
+   ⚠⚠ **`jsc` 與「逐支 import」都抓不到這種** —— 它藏在回呼／樣板字串裡，
+     只有那一段真的跑起來才求值。**要把那幾支入口真的叫一遍**，配方見第 8 節。
 6. ⚠ python 批次替換**一個 assert 失敗＝整批都沒寫入**（寫檔在最後）—— 別以為前面幾條生效了。
 
 ---
@@ -141,3 +147,26 @@ partners.anya.active               -994  **純顯示**的夢境破碎（context:
   -975 就是這樣抓到賞金獵人那條漏改的路徑。
 - 戰鬥類不要自己開瀏覽器實測，交給 Ray（-939）；非戰鬥的照舊自己測。
 - `enemies.xlsx` 是 reference，只有 Ray 明講才 import。
+
+---
+
+## 8. 搭檔模組的煙霧測試（**改過 partner／saint 之後一定要跑**）
+
+`jsc` 與「逐支 import」抓不到回呼裡的 ReferenceError（-963／-998 都是這樣漏掉的）。
+把入口真的叫一遍才驗得出來 —— 瀏覽器 console：
+
+```js
+const [partner, st, prog, saint] = await Promise.all([import('/modules/partner.js'),
+  import('/state.js'), import('/script/progress.js'), import('/modules/saint.js')]);
+const errs=[], hit=[];
+partner.init({ floatDmg:()=>{}, updateBars:()=>{}, healPlayer:()=>{}, lucidFlood:()=>{},
+  resetEnemyTimers:()=>{}, scheduleAssault:()=>{}, hintCurrentCell:()=>{}, resetInstallSlot:()=>{},
+  startDual:()=>{}, setLowHpBuff:()=>{}, saintApi:{lifeReturnAbort:cb=>cb&&cb()},
+  playCutin:(cb,label)=>{ hit.push(String(label).replace(/<[^>]+>/g,'|'));
+                          try{cb();}catch(e){errs.push('cb:'+e.message);} } });
+// 三位 × 滿級，逐個入口叫：onBoardCleared / onThreatResolved / tryActive /
+//   onEnemySet / onEnemyCleared / tryDeathGuard / 各查詢點 / saint 的四支
+```
+
+⚠ 跑完看兩件事：`errs` 要空、`hit` 的 cut-in 標題要印得出名字（那一行正是 -998 炸掉的地方）。
+⚠ 跑完**重整頁面** —— `partner.init` 會把真正的 api 換掉。
