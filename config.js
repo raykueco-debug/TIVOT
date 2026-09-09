@@ -619,6 +619,11 @@ export const GAME_CONFIG = {
            命中判定，天生不受影響 —— 不必另外寫守門。
          · ⚠ 帶名照 `weaponBand` 的三個鑰匙（`block`／`perfect`／`counter`），
            不要另立代號。 */
+      /* ⚠⚠ **這條代價刻意不寫進技能文案**（ver -995，Ray：「目前只活在程式裡，
+         劇情或評價時再提就好」）—— 整備頁那三段是「這一招怎麼用」，
+         「帶她出場要付什麼代價」由劇情或蕾娜的結算評價講。
+         ⚠ 所以看到 `install`／`passive`／`active` 的 desc 沒提它**不是漏寫**，
+           不要好心補進去。 */
       counterHit:{ mul:0.5, except:['萊福槍'], bandMul:{ block:0.7, perfect:0.7 } },
       /* ══ 難度加成（ver -805 立；**-935 由 Ray 調高**）══ 共鬥的無敵讓她好打，
          評價就要更嚴 —— `inspector.evaluate` 把它加在全域 `timeK` 上（鐵律 1）。
