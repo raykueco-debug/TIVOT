@@ -297,6 +297,7 @@ function startSaintMode(){
   if(prog.girlHas(state.pickedPartner,'saintStartHp1') && api.setPlayerHpRatio) api.setPlayerHpRatio(0);
   state.saintDamageDealt = 0;
   state.combo = 0;                       // 期間 saint 代理盤面游標（combat 已讓出主迴圈）
+  siShots = 0;                           // 「終焉星」的射擊計數：這一段自己算（ver -1016）
   /* 破防值**不清**（ver -749，Ray：「聖徒化／夢魘化都不要清空破防值」）——
      期間本來就不累積（盤面由 saint 代理，不走 combat.tap 的 addEnergy），
      存量凍著，退出後接著用。 */
@@ -396,8 +397,23 @@ export function niForcedCounter(){
    ⚠⚠ 走 `api.drainPlayer`（下限夾 1 ＝「不可歸零」）——**不可以用
      `saintAdvance(負值)`**：`healPlayer` 開頭就 `Math.max(0, amount)`，
      負數會被整個吃掉、什麼都不會發生（ver -671 惡夢化抽血踩過同一個坑）。 */
+/* ══⚠⚠⚠ **「第 2 Hit 開始」數的是「這一段聖徒化的第幾發」，不是 `state.combo`**
+   （ver -1016，Ray：「終焉星效果沒發動啊」「被鹿主打得迷迷冒冒」）══
+   -988~-1015 的守門是 `state.combo >= 2`，而 **`combat.enemyAttack` 一律
+   `state.combo = 0`**（ver -522 的「只要受擊就歸 0」，聖徒化期間照樣執行 ——
+   那一條分支只是不扣血、改推槽）。
+   於是碰到高頻攻擊的怪（鹿主：`ult` 4 連發 ＋ `assault` 每 0.35 秒一顆），
+   連擊幾乎永遠停在 0~1，**這顆星等於整個沒作動**，而且畫面上沒有任何錯誤訊息。
+   ⇒ 改用**這一段聖徒化自己的射擊計數**（`siShots`）：它只會因為「你開了一槍」而增加，
+     不受挨打影響 —— 那才是卡上「聖徒化期間的**攻擊**可小幅延長爆發時間」的意思。
+   ⚠ 鐵律 9：誰插的＝每一發射擊；誰拔的＝`startSaintMode`（唯一的起點）。
+   ⚠ 匯率備忘：被動推進是每 100ms `playerMax×0.01`，而這一顆是每發 `playerMax×0.01`
+     —— **一發正好抵銷 100ms**，所以每秒點 4~5 發約可把 10 秒撐到 16~20 秒。 */
+let siShots = 0;
+export function resetSaintShots(){ siShots = 0; }
 function saintDrainTick(){
-  if(!state.saintMode || state.combo < 2) return;
+  if(!state.saintMode) return;
+  if(++siShots < 2) return;                 // 「第 2 Hit 開始」（Ray 交卡）
   const pct = prog.girlBonus(state.pickedPartner, 'saintDrainPct');
   if(pct>0 && api.drainPlayer) api.drainPlayer(state.playerMax * pct);
 }
