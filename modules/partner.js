@@ -282,10 +282,50 @@ export function saintComboKeep(){
   const p=currentPartner(), act=p&&p.active;
   return !!(act && act.key==='lifeReturn' && act.comboKeepSeconds>0);
 }
-/* 「引路星」（諾薇兒 Lv5）：那扇窗開著時全程指引下一格。
-   ⚠ 一次性的那一下（cut-in 撤下時指第一格）ver -833 就有了，這顆星加的是「全程」。 */
+/* 「全程指引下一格」的來源（`combat.hintAlways` 問它）。ver -974 起有兩個：
+   · 諾薇兒「引路星」（Lv5）：生命歸還那扇窗
+   · 安雅「築壩者星」（Lv2）：夢境破碎之後那扇窗
+   ⚠ 一次性的那一下（cut-in 撤下時指第一格）ver -833 就有了，這兩顆星加的是「全程」。 */
 export function guideActive(){
-  return lifeReturnWindow() && prog.girlHas(state.pickedPartner, 'lifeReturnHint');
+  const who = state.pickedPartner;
+  if(lifeReturnWindow() && prog.girlHas(who,'lifeReturnHint')) return true;
+  if(burstBuffActive()  && prog.girlHas(who,'burstHint'))      return true;
+  return false;
+}
+
+/* ══⚠⚠⚠ 反擊的「攻擊力帶」與「命中霸王條款」（ver -974，Ray 定案）══════════
+   > 「只有攻擊力走紅圈，判定還是分色。命中則是技能霸王條款覆蓋。」
+   `defense.resolveThreat` 問這兩支（經 combat 注入）—— 它只知道玩家點到哪一帶，
+   **不知道現在是誰、開著哪扇窗、點了哪幾顆星**（鐵律 7：這裡是那個唯一的答案）。
+
+   `counterAtkStep()` 0＝照判定那一帶／1＝橘圈攻擊力／2＝紅圈攻擊力。來源三個，**取最大**：
+     · 夢魘化期間        ＝ 2（安雅的基礎：卡上「攻擊力走紅圈」）
+     · 明晰之夢發動中    ＝ `counterAtk`（赤足星 1 → 蹄鐵星累計 2）
+     · 夢境破碎之後那扇窗＝ `burstAtk`  （築壩者星 1 → 赤爪星累計 2）
+   ⚠ 這幾扇窗可以同時開著，所以取最大不是相加（階數不是增益）。 */
+export function counterAtkStep(){
+  const who = state.pickedPartner;
+  let step = state.niMode ? 2 : 0;
+  if(lucidActive())     step = Math.max(step, prog.girlBonus(who,'counterAtk'));
+  if(burstBuffActive()) step = Math.max(step, prog.girlBonus(who,'burstAtk'));
+  return Math.max(0, Math.min(2, step|0));
+}
+/* 命中壓成 100%。⚠ 安雅的卡上兩處都明寫了（夢魘化期間、以及被動的 10 秒）——
+   夢境破碎那扇窗**沒有**（卡上只說攻擊力），所以不列進來。 */
+export function counterHitForced(){ return !!(state.niMode || lucidActive()); }
+
+/* ══ 夢境破碎之後的反擊增益窗（安雅「築壩者星」Lv2，ver -974）══
+   秒數與帶位全在星上（`burstBuffSec`／`burstAtk`／`burstHint`）—— 沒點星就是 0 秒
+   ＝這扇窗不存在。鐵律 9：誰插的＝`startBurstBuff`（夢境破碎收尾那一刻，由 saint
+   經 combat 呼叫）；誰拔的＝時間到；`reset()` 開場歸零（不跨場）。 */
+let burstBuffUntil = 0;
+export function burstBuffActive(){ return Date.now() < burstBuffUntil; }
+export function startBurstBuff(){
+  const sec = prog.girlBonus(state.pickedPartner, 'burstBuffSec');
+  if(!(sec>0) || state.over) return;
+  burstBuffUntil = Date.now() + sec*1000;
+  /* 計時器走既有的盤外金光柱（鐵律 8，同免傷窗／吸血窗／明晰之夢）。 */
+  if(api.lucidFlood) api.lucidFlood(sec);
 }
 
 /* ══⚠⚠ **明晰之夢：每隻怪第一次反擊成功時發動**（`firstCounter`，ver -693，Ray：
@@ -409,7 +449,11 @@ export function onCounter(){
      跳「夢魘再臨」等於報一件沒發生的事。
      ⚠ 連段**照樣歸零**：那三次已經兌現過（只是這一次沒有東西可以還），
        不歸零的話下一次完美反擊就會立刻又觸發一次。 */
-  const canReload = !!state.saintUsedThisBattle;
+  /* `reloadNeedStar`（ver -974）＝要有那顆星才會回填（安雅 Lv3「烙印星」）。
+     ⚠ 條件寫在**卡上**，這裡只讀（鐵律 1，同 `installReload.needStar`）。
+     ⚠ 只擋 **reload**，不擋連段計數與明晰之夢本體 —— 那兩件事本來就與這顆星無關。 */
+  const starOk = !pas.reloadNeedStar || prog.girlHas(state.pickedPartner, pas.reloadNeedStar);
+  const canReload = !!state.saintUsedThisBattle && starOk;
   const reload = (state.lucidStreak >= need) && canReload;
   if(state.lucidStreak >= need){
     state.lucidStreak = 0;
@@ -427,7 +471,12 @@ export function onCounter(){
    ⚠ 只有**安雅的明晰之夢**（passive `firstCounter`）算：馬季諾的高裝藥彈共用
      同一支旗標，但那是挑戰限定的另一招（ver -694：正篇不會有他，別動他）——
      所以判的是「旗亮著**而且**現任搭檔的被動是 firstCounter」。
-   讀它的兩處：defense.resolveThreat（全帶升紅圈）／combat.markNext（全程指格）。 */
+   ⚠⚠⚠ **ver -974（Ray 改定）：它不再把整帶升成紅圈**（-740 已推翻）——
+     現在只做兩件事：**命中壓成 100%**（`counterHitForced`）＋**攻擊力照星升級**
+     （`counterAtkStep`，赤足星→橘圈、蹄鐵星→紅圈）。免傷、完美反擊計數、折秒、
+     硬直一律照玩家**真的點到的那一帶**（「判定還是分色」）。
+   讀它的三處：`counterAtkStep`／`counterHitForced`（defense 問）／
+     `combat.markNext`（全程指格，這一條沒變）。 */
 export function lucidActive(){
   if(!state.lowHpBuff) return false;
   const p = currentPartner();
@@ -583,4 +632,5 @@ export function reset(){
   lowHpArmed = true;
   immuneUntil = 0; guardHealUntil = 0;        // 免傷窗不跨場（ver -740）
   vampUntil = 0;                              // 吸血窗不跨場（ver -964）
+  burstBuffUntil = 0;                         // 夢境破碎的反擊增益窗不跨場（ver -974）
 }

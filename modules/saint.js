@@ -309,6 +309,25 @@ export function resetSaintCombo(){ siComboSeen = 0; }
 export function saintComboStep(){
   return SAINT_COMBO_STEP * (1 + prog.girlBonus(state.pickedPartner, 'saintComboMul'));
 }
+/* ══ 「拳鬥者星」（安雅 Lv1，ver -974）：夢魘化期間普攻與反擊 ×1.2 ══
+   **只有這一支在算**（鐵律 7）：夢魘化的普攻在 `nightmareTap` 乘、反擊由 combat
+   注入給 `weapon.weaponCounter` 乘 —— 兩邊問同一支。
+   ⚠ 只在夢魘化期間；不快取（等級中途會變）。 */
+export function niAtkMul(){
+  if(!state.niMode) return 1;
+  return 1 + prog.girlBonus(state.pickedPartner, 'niDmgMul');
+}
+/* ══ 「雙生星」（安雅 Lv9，ver -974）：每一次反擊讓夢魘化的抽血停 0.5 秒 ══
+   實作＝把這一段的**總長**延長 0.5 秒。抽血是「從起點線性到 1」，總長一拉長，
+   之後每一刻扣得就少 —— 與「停 0.5 秒」等價，而且不必另做一套暫停／續跑的狀態
+   （那會與受擊、cut-in 凍結那幾條互相打架）。
+   ⚠ 呼叫點只有 combat 注入給 defense 的那個 `weaponCounter` 包裝（＝「反擊開火了」，
+     三帶都算）—— `partner.onCounter` 進不來（它在 niMode 直接 return）。 */
+export function niCounterPause(){
+  if(!state.niMode) return;
+  const sec = prog.girlBonus(state.pickedPartner, 'niCounterPauseSec');
+  if(sec>0) state.niTotalMs = (state.niTotalMs||0) + sec*1000;
+}
 /* ══ 「負行星」（諾薇兒 Lv8，ver -971）：聖徒化期間每一發射擊都延長倒數 ══
    聖徒化的血條＝倒數槽，**扣血＝延長**。第 2 hit 起，每發扣 `playerMax` 的 1%。
    ⚠ 「第 2 Hit 開始」＝`state.combo>=2`（點錯歸零之後要重新數，那正是 Ray 說的
@@ -401,17 +420,29 @@ function startNightmareMode(){
        **並在這裡註明那是我的判斷不是 Ray 的指定**。這一版由他正式定案：不灌滿。
        · 打架的那一半早就不存在了 —— 娜塔莉戰自 ver -672 起不走劇情殺（`strikeTo:1`
          已移除），改成玩家自己右滑，血量是玩家自己的。
-     ⚠⚠ **「依現有血量比例扣血」＝斜率由起點決定，長度不變**：從 `niFrom` 線性抽到 1，
-       跑完就是 `NI_MAX_SEC`。所以血少的人**每一刻扣得少**，但一樣撐 15 秒。
+     ⚠⚠⚠ **ver -974 改：長度由血量決定**（Ray：「滿血才 13 秒」）—— 抽血是固定速率，
+       所以血少的人**每一刻扣得一樣多，但總時間比較短**。
+       （-967 的舊形狀是「斜率隨起點變、長度一律 15 秒」，已推翻 —— 見 `niTotalMs`。）
      ⚠⚠ 連帶的設計後果（刻意）：**惡夢化變成「血多才划算」** —— 它與聖徒化正好
        相反（那條槽是往上推、滿血發動當場 OBE，所以瀕死才划算）。兩個鏡像技能的
        最佳時機因此分開了。
      ⚠ 邊角：血本來就是 1 的時候發動 ＝ 沒有東西可以燒，`niDrain` 第一拍就熔斷。
        那是這條規則的直接結果（「扣到 1 時 OBE」），不是 bug。 */
+  /* ══ 「前引星」（安雅 Lv6，ver -974）：發動時先把血灌滿 ══
+     > Ray：「夢魘化發動時無視現有 HP 多寡，從滿 HP 開始算 13 秒，最大化發動時間」
+     ⚠ 只有「**真的灌滿再抽**」這個讀法自洽：不灌血而用滿血的斜率去抽，會提早
+       見底、比原本還短。⚠ 要在 `state.niFrom` **之前**（它就是抽血的起點）。 */
+  if(prog.girlHas(state.pickedPartner,'niFullStart') && api.setPlayerHpRatio) api.setPlayerHpRatio(1);
   state.niFrom   = state.playerHp;
-  /* ver -967：**最長 15 秒**（`tuning.nightmare.maxSec`）—— 不再是 `16 格 × 0.8`。
-     「最長」＝沒挨打的話；受擊會抽掉額外的量，提早到底。 */
-  state.niTotalMs= Math.max(1, NI_MAX_SEC * 1000);
+  /* ══⚠⚠⚠ **ver -974（Ray 改定）：長度由血量決定 —— 滿血才有 `maxSec`** ══
+     > Q：13 秒是固定的還是滿血才有？　A：「**滿血才 13 秒**」
+     抽血是**固定速率**（滿血 → 1 剛好 `NI_MAX_SEC` 秒），所以半血發動只有一半的時間。
+     ⚠⚠ **推翻 ver -967**（「一律 15 秒、血少只是斜率變緩」）—— 那個形狀讓 Lv6
+       「前引星」完全沒有作用，而那顆星正是要買回這段時間。
+     ⚠ 下限夾 1 格（100ms）：血本來就是 1 的時候發動＝沒有東西可以燒，第一拍就熔斷
+       （那是「扣到 1 時 OBE」的直接結果，不是 bug）。 */
+  { const room = Math.max(0, state.niFrom - 1), full = Math.max(1, state.playerMax - 1);
+    state.niTotalMs = Math.max(100, Math.round(NI_MAX_SEC * 1000 * room / full)); }
   state.combo    = 0;
   /* 破防值不清（ver -749，同聖徒化那一條）。 */
   $('grid').classList.add('saint','ni');
@@ -527,11 +558,16 @@ function triggerNiBurst(){
      -675 只做了「算 MB 的傷害＋記旗標」，演出那一步漏了：擊殺那一支有
      `playSaintCutin('execute')`，未擊殺這一支卻直接跳收尾，畫面上只有一行浮字。
      「同 SI 的 MB」指的是整套，包含它的臉。
-     ⚠ 回血是**回滿**不是 SI 的 50%（Ray 的惡夢化規格：「清空殘格 hp 全恢復」）——
-       那是這兩套唯一不同的地方，收尾的 thunk 照舊。 */
-  playSaintCutin('burst', ()=>{
-    finishNightmare(()=>api.setPlayerHpRatio(1));   // 「hp 全恢復」
-  }, rlNMB);
+     ⚠⚠⚠ **回血＝回到發動夢魘化那一刻的血量**（ver -974，Ray 的雙子座卡：
+       「夢魘期間成功清完所有格子玩家 HP 會回到發動夢魘時的值」）——
+       推翻「回滿」（-675 的「清空殘格 hp 全恢復」）。
+       語意上這才對得起來：夢魘化**抽掉**的那一段是它的代價，清完就是把代價還你，
+       不是憑空送一條命（而「前引星」把起點灌滿，所以那顆星的人才會回滿）。
+     ⚠ 先抄成區域變數：`finishNightmare` 之後 `state.niFrom` 不保證還在。 */
+  { const back = state.niFrom || state.playerHp;
+    playSaintCutin('burst', ()=>{
+      finishNightmare(()=>api.setPlayerHpRatio(back / (state.playerMax||1)));
+    }, rlNMB); }
 }
 /* 主動技（上滑）：一次清掉殘格造成相應傷害 —— **沒有 MB、不回血、直接結束，HP 剩 1**。 */
 export function nightmareActive(){
@@ -558,6 +594,9 @@ function niBurstResolve(){
      改成夢魘期間清除格數的 2 倍傷害」）——舊算法的份量取決於**剩幾格**，
      於是玩家打得越好、殘格越少，自爆反而越弱，正好反過來。
      現在看的是**期間清掉了多少**（`niDamage`）：打得好就轟得重。 */
+  /* 「界心星」（安雅 Lv8，ver -974）：**剩最後一格時發動** → 直接帶走敵最大 HP 的 30%。
+     ⚠ 要在清格之前數（下面那一圈會把殘格全部標成 done）。 */
+  const cellsLeft = (state.cells||[]).filter(c=>!c.classList.contains('done')).length;
   for(const c of (state.cells||[])){
     if(c.classList.contains('done')) continue;
     c.classList.add('done'); c.classList.remove('next'); api.shatterCell(c);
@@ -572,7 +611,11 @@ function niBurstResolve(){
      ⚠ 綁在**敵人最大 HP** 上（不是當前 HP、不是累積傷害）：大場小場同一份量。
      ⚠ 分母是**滿盤 16**（`NI_BURST_FULL`，與回血共用同一個數字，鐵律 7）。 */
   const ratio = Math.max(0, Math.min(1, (state.niCells||0) / (NI_BURST_FULL||16)));
-  const dmg = Math.round((state.enemyMax||0) * NI_BURST_PCT * ratio);
+  /* 「界心星」（Lv8）：剩最後一格才成立，取代比例算法（比例算到 15/16 也只有 23.4%）。
+     ⚠ 「打不死」的下限（`NI_BURST_FLOOR`）照舊夾在下面 —— 那是另一條規則。 */
+  const lastPct = (cellsLeft===1) ? prog.girlBonus(state.pickedPartner,'burstLastCell') : 0;
+  const dmg = (lastPct>0) ? Math.round((state.enemyMax||0) * lastPct)
+                          : Math.round((state.enemyMax||0) * NI_BURST_PCT * ratio);
   exitNightmare();
   clearInterval(state.niTimer); state.niTimer=null;
   setReturnSwipe(false); restoreAssaultRate();
@@ -612,6 +655,11 @@ function niBurstResolve(){
      那個抽血就是它的代價 —— 粉碎只在你**當下的血**上加回 25%×（清掉的格數÷16）。
      ⚠ 連帶：早發動（清得少）＝血還多但幾乎沒得補；撐到清完＝血很低但補得最多。
        這正是「視你在 NI 打掉的格數而定」該有的形狀。 */
+  /* 「築壩者星」（安雅 Lv2，ver -974）：夢境破碎之後追加一扇反擊增益窗
+     （攻擊力升橘圈／赤爪星再升紅圈 ＋ 全程指引）。⚠ 窗口的擁有者是 partner，
+     這裡只通知（鐵律 8）；沒點星＝那邊 0 秒，等於沒有這扇窗。
+     ⚠ 敵已死那一支走不到這裡（上面就 return 了）—— 那時開窗也沒有意義。 */
+  if(api.onDreamBreak) api.onDreamBreak();
   finishNightmare(()=>{
     if(NI_BURST_HEAL>0){
       const ratio = Math.max(0, Math.min(1, (state.niCells||0) / (NI_BURST_FULL||16)));
@@ -632,28 +680,30 @@ export function nightmareTap(num, cell){
     SFX.gunshot(true);
     cell.classList.add('done'); cell.classList.remove('next'); api.shatterCell(cell);
     state.combo++;
-    const d=Math.round(api.hitDamage() + state.combo*saintComboStep());
+    const d=Math.round((api.hitDamage() + state.combo*saintComboStep()) * niAtkMul());   // ver -974：拳鬥者星
     api.enemyDamage(d, true, false, 'saint');
     state.niDamage += d;
     state.niCells++;                 // 夢境粉碎的份量由「清了幾格」換算（ver -688）
   };
-  /* ══⚠⚠ **點完 16 格不出 MB，直接出夢境粉碎**（ver -897，Ray：「16 格點完不出 MB，
-     直接出夢境粉碎回血 25%」）══ 以前清空殘格走的是 `triggerNiBurst`（＝同 SI 的
-     MaxBurst：回滿血、追加期間總傷 20%）。現在改走**主動技那一支**（`nightmareActive`），
-     所以滿盤的結果是：傷害＝敵最大 HP 的 25%（滿比例）、回血＝玩家最大 HP 的 25%。
-     ⚠ 兩者的差別很大：MB 是「回滿血＋按累積傷害追打」，粉碎是「按敵最大 HP 的
-       百分比炸一發＋按格數回血」—— Ray 要的是後者。
-     ⚠ 敵已死那一支照舊：`nightmareActive` 的收尾自己會判 `enemyHp<=0` 並走處決。 */
+  /* ══⚠⚠⚠ **ver -974（Ray 改定）：16 格點完＝MB／處決，夢粉歸夢粉** ══
+     > 「16 格清完改成 MB 或 execute，夢粉歸夢粉，**夢粉要比 MB 強才合理**，
+     >   MB 只是通常獎勵」
+     ⚠⚠ **推翻 ver -897**（「16 格點完不出 MB，直接出夢境粉碎回血 25%」）——
+       那一版讓「撐到清完」與「自己上滑」變成同一件事，主動技就沒有存在意義了。
+       現在兩條路分開：
+         · 點完 16 格   → `triggerNiBurst`（MB：期間總傷 20% 追打 ＋ **血回到發動時的值**）
+         · 自己上滑粉碎 → `nightmareActive`（敵最大 HP 的比例傷害，份量更重）
+     ⚠ 敵已死那一支照舊由 `triggerNiBurst` 自己判 `enemyHp<=0` 並走處決。 */
   if(state.enemyHp<=0){                       // overkill：免順序追打（同聖徒化）
     hit(true);
-    if(state.cells.every(c=>c.classList.contains('done'))) nightmareActive();
+    if(state.cells.every(c=>c.classList.contains('done'))) triggerNiBurst();
     else startSaintReactTimer();
     return;
   }
   if(num===state.expect){
     hit(false);
     state.expect++;
-    if(state.expect>state.N) nightmareActive();
+    if(state.expect>state.N) triggerNiBurst();
     else { api.markNext(); startSaintReactTimer(); }
   }else{
     /* 點錯＝多抽一次血（聖徒化那邊是多推一次）。

@@ -156,7 +156,11 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll, grade){
        （鐵律 7：不要在每個分支各乘一遍）。
      ⚠ 只影響反擊：副武器只在反擊時開火，普攻是主武器的事。 */
   const modMul = subgunPowerMul(state.equippedWeapon);
-  const scale = ((dmgScale==null) ? 1 : dmgScale) * modMul;
+  /* 安雅「拳鬥者星」（Lv1，ver -974）：夢魘化期間反擊攻擊力 ×1.2。
+     ⚠ **算的那一支在 saint**（`niAtkMul`，鐵律 7：普攻與反擊問同一支），
+       這裡只讀 —— weapon 不 import saint，由 combat 注入。 */
+  const niMul = api.niAtkMul ? api.niAtkMul() : 1;
+  const scale = ((dmgScale==null) ? 1 : dmgScale) * modMul * niMul;
   /* ══ 副武器迴避（ver -760；ver -796 併進 `weaponMod`）══ 卡上
      `weaponMod:{ 類別:[傷害, 迴避] }` 的 **[1]＝額外迴避率**（％數，即使全 miss 也會
      清掉延時跟主動攻擊）。每一發的命中 ×(1−r)。
@@ -196,7 +200,7 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll, grade){
      ⚠ 0 不呼叫 `enemyDamage`：那一支會帶受擊特效與擊殺判定，打 0 不該驚動它。 */
   const roll = Array.isArray(dmgRoll) && dmgRoll.length ? dmgRoll : null;
   /* ⚠ `dmgRoll` 走 `scale` 之外的路（它是絕對值清單），所以改裝要在這裡自己乘。 */
-  const rollOne = ()=> Math.round(roll[(Math.random()*roll.length)|0] * modMul);
+  const rollOne = ()=> Math.round(roll[(Math.random()*roll.length)|0] * modMul * niMul);
   // 反擊武器 SE：反擊（Counter）與完美防禦（散彈 Perfect 反擊）都會出聲——散彈 blast 兩路徑皆觸發。
   //   機槍＝逐發播（搭搭搭搭搭連續感）、散彈＝一發、狙擊＝一發。散彈完防由此 SE 出聲，defense 端不再疊合成重擊。
   /* ⚠ 「這一場」可以覆寫武器音（ver -423，Ray：船艦戰的機槍／霰彈／步槍各換一支）——

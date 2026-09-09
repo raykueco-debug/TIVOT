@@ -83,7 +83,15 @@ export function setup(){
                  weaponCounter: (sc, hit, roll, grade)=>{
                    weapon.weaponCounter(sc, hit, roll, grade);
                    if(prog.girlHas(state.pickedPartner,'guardHealCounter')) shotHeal();
+                   /* 安雅「雙生星」（Lv9，ver -974）：每一次反擊讓夢魘化的抽血停 0.5 秒。
+                      ⚠ 掛在這裡＝「**反擊開火了**」（三帶都算，同鐵律 ver -722 的分法）——
+                        `partner.onCounter` 進不來（它在 niMode 直接 return）。 */
+                   saint.niCounterPause();
                  },
+                 /* ver -974：反擊的「攻擊力帶」與「命中霸王條款」由 partner 回答
+                    （defense 不 import partner，經此轉交；理由見那兩支的說明）。 */
+                 counterAtkStep: partner.counterAtkStep,
+                 counterHitForced: partner.counterHitForced,
                  coopCounter: weapon.coopCounter,   // 共鬥：黃圈一出現就打的 3-hit 反擊（ver -822，Ray）
                  resetIntervalDeadline,   // 反擊硬直：被反擊時延時歸零（ver -495，卡上 counterStagger）
                  onThreatSpawned: tutorial.onThreatSpawned,
@@ -95,12 +103,13 @@ export function setup(){
                     判定放在這裡是因為只有 defense 分得出帶（鐵律 7）。 */
                  onThreatResolved: (g, real)=>{ weapon.onThreatResolved(); tutorial.onThreatResolved(g);
                                           /* ⚠ partner 收的是**真實**判定（ver -887，Ray：
-                                             「真實點到紅圈就發動，靠技能強制算成紅圈的不算」）
-                                             —— 明晰之夢期間任何一圈都會被算成紅圈（-740），
-                                             拿加成後的等級來數，它就會自己養活自己。 */
+                                             「真實點到紅圈就發動，靠技能強制算成紅圈的不算」）。
+                                             ⚠ ver -974 起判定不再被技能覆蓋（「判定還是分色」），
+                                               所以兩個等級恆等 —— 介面留著，語意沒變。 */
                                           partner.onThreatResolved(real || g); },
                  hintCurrentCell,   // 紅點解決了就指一下正確格（ver -718，見 tuning.hintNextCell）
-                 lucidPerfect: partner.lucidActive,   // 明晰之夢發動中＝全帶皆完美反擊（ver -740）
+                 /* ⚠ `lucidPerfect` 已於 ver -974 移除：明晰之夢不再把整帶升成紅圈，
+                    改由 `counterAtkStep`／`counterHitForced` 兩支分開回答（見上）。 */
                  onThreatEarly: tutorial.onEarlyBlock,
                  assaultSuppressed: tutorial.assaultSuppressed, firstThreatPending: tutorial.firstThreatPending,
                  threatBand: tutorial.threatBand });
@@ -138,6 +147,7 @@ export function setup(){
     /* ver -719：明晰之夢改由 `onThreatResolved` 的判定等級觸發（只有紅圈），
        weapon 那一支已成空殼 —— 這一條留著，日後「開火就觸發」的被動可以接回去。 */
     onCounter: partner.onCounter,
+    niAtkMul: saint.niAtkMul,                     // 夢魘化期間的反擊加成（安雅拳鬥者星，ver -974）
     ejectCounterShell: enemy.ejectCounterShell,   // 反擊開火時從反擊點噴彈殼（ver -812）
     throwDagger: enemy.throwDagger,               // 共鬥反擊的飛刀（ver -839；命中時刻由 enemy 唯一決定）
   });
@@ -173,6 +183,9 @@ export function setup(){
     // 共鬥（ver -803）：無敵窗的擁有者是 partner（免傷判定同一支 immune 窗）；
     //   saint 的 coop 經此設定/縮短/關窗（partner 不反向 import，一律經注入）。
     coopImmune: partner.setImmuneUntil,
+    /* 夢境破碎收尾 → 開安雅「築壩者星」（Lv2）那扇反擊增益窗（ver -974）。
+       窗口的擁有者是 partner（同免傷窗／吸血窗），saint 只負責通知。 */
+    onDreamBreak: partner.startBurstBuff,
   });
   // 搭檔：combat 注入被動技所需原語 + 主動技各 handler 的分域 api。
   //   被動（即死防禦）：updateBars / floatDmg / resetEnemyTimers / scheduleAssault / playCutin。

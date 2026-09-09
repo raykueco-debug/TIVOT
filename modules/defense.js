@@ -346,19 +346,40 @@ export function resolveThreat(th){
   SFX.confirm();
 
   const counterWin = w ? w.counterWin : DEF_PERFECT_MIN;
-  /* ══⚠⚠ 明晰之夢（ver -740，Ray：「明晰夢增加發動期間反擊不論哪一圈都算完美
-     反擊，傷害跟評價都是」）══ 發動中把**任何一帶**的解決一律走紅圈那一支 ——
-     全額反擊、免傷、完美反擊計數與折秒、硬直整套自動一致（帶的判定只有這一處，
-     鐵律 7；「這是完美反擊才給還是開火就給」那一問在這裡一次答完）。
-     ⚠ 是不是明晰之夢由 partner 分辨（`lucidPerfect`＝安雅的 firstCounter 限定，
-       馬季諾的高裝藥彈不吃這一條）。 */
-  const lucid = !!(api.lucidPerfect && api.lucidPerfect());
-  /* ══⚠⚠ **惡夢化期間也一律算紅圈**（ver -959，Ray：「夢魘化期間反擊武器，
-     不管哪一圈打出來都是紅圈效果」）══ 與明晰之夢**併在同一個判定**（鐵律 7/8）——
-     帶的判定只有這一處，加在別的地方就會變成「傷害算紅圈、計數卻沒算」那種半套。
-     ⚠ 它**不影響 `realCounter`**：那一格問的是「玩家真的點到紅圈了嗎」
-       （ver -887，Ray：「靠技能強制算成紅圈的不算」）—— 惡夢化與明晰之夢同性質。 */
-  const niAll = !!state.niMode;
+  /* ⚠ **被推翻的舊版留著當紀錄**：ver -740「明晰之夢發動期間反擊不論哪一圈都算
+     完美反擊，傷害跟評價都是」與 ver -959「惡夢化期間三帶一律紅圈」—— 兩者都是把
+     `grade` 直接改成 `'counter'`。ver -974 由 Ray 改成下面這一套三分法。 */
+  /* ══⚠⚠⚠ **ver -974（Ray 定案）：反擊是三件事，分開處理** ══
+     > 「只有**攻擊力**走紅圈，**判定**還是分色。**命中**則是技能霸王條款覆蓋。」
+
+       | 面向 | 誰決定 | 誰吃它 |
+       |---|---|---|
+       | **判定** `grade` | **只看 `ratio`**（玩家真的點到哪一帶） | 免傷、完美反擊計數與折秒、硬直、教學通知、烙印星的連段 |
+       | **攻擊力** `atkStep` | 技能（0＝照判定的那一帶／1＝橘圈／2＝紅圈） | 只有 `weaponCounter` 的傷害參數 |
+       | **命中** `hitForce` | 技能（壓成 100%） | 只有 `weaponCounter` 的命中率 |
+
+     ⚠⚠⚠ **這推翻了兩條舊規則**（舊註解會騙人）：
+       · ver -740「明晰之夢期間任何反擊都算完美反擊，**傷害跟評價都是**」
+       · ver -959「惡夢化期間三帶一律紅圈」
+       兩者原本都是把 `grade` 直接改成 `'counter'`（＝連免傷、評價、硬直一起送）。
+       現在**判定不再被覆蓋** —— 所以夢魘化期間點到黃圈**會照那一帶挨打**
+       （萊福槍的黃橘圈更是本來就不反擊，抬攻擊力也不會讓它開火）。
+     ⚠ 兩支查詢都由 `partner` 回答（經 combat 注入）：它才知道現在是誰、開著哪扇窗、
+       點了哪幾顆星（鐵律 7）。
+     ⚠ `realCounter`／`realGrade` 保留不動：判定分色之後它與 `grade` 恆等，
+       但呼叫端的介面不變（`onThreatResolved(grade, realGrade)`）。 */
+  const atkStep  = (api.counterAtkStep ? (api.counterAtkStep()|0) : 0);
+  const hitForce = !!(api.counterHitForced && api.counterHitForced());
+  /* 這一發反擊要用哪一組數值。`nat` ＝判定那一帶卡上的設定、`natHit` ＝它原本的命中。
+     ⚠ **不改變「開不開火」**：呼叫端只在 `bands[帶].counter` 為真時才叫這一支 ——
+       萊福槍的黃橘圈卡上沒有 `counter`，抬攻擊力也不會讓它開火（那是那一把槍的
+       性質：只有紅圈才反擊）。
+     ⚠ 階 2（紅圈）＝三個參數都不給 —— `weaponCounter` 的預設就是全額傷害、命中 1。 */
+  const fireArgs = (nat, natHit)=>{
+    if(atkStep>=2) return { scale:undefined, hit:undefined, roll:undefined };
+    const band = (atkStep===1) ? weaponBand(w,'perfect') : nat;
+    return { scale:band.scale, hit: hitForce ? 1 : natHit, roll:band.roll };
+  };
   let grade='block';   // 判定等級：'counter' | 'perfect' | 'block'（傳給教學層分流，見文末通知）
   /* ⚠⚠ **「真的點到紅圈」與「被技能算成紅圈」要分開報**（ver -887，Ray：
      「我偏向真實點到紅圈就發動，而靠技能強制算成紅圈發動的就不算」）。
@@ -367,7 +388,7 @@ export function resolveThreat(th){
      只有「要靠玩家真本事才給」的東西讀它（現在是安雅那條連續三次的計數）。
      ⚠ 兩個都在這一支算（鐵律 7）：帶的判定只有這裡知道，呼叫端不准自己重算。 */
   const realCounter = (ratio < counterWin);
-  if(ratio < counterWin || lucid || niAll){
+  if(ratio < counterWin){
     // === Counter === 免傷 + 反擊武器大傷害（金色微閃）
     grade='counter';
     flashDefense('gold');
@@ -399,7 +420,8 @@ export function resolveThreat(th){
     const bp = weaponBand(w, 'perfect');
     api.floatDmg(L.battle.perfect,'50%','40%',true);
     if(bp.counter){
-      api.weaponCounter(bp.scale, bp.hit, bp.roll, 'perfect');
+      const fa = fireArgs(bp, bp.hit);          // ver -974：攻擊力帶／命中可被技能覆蓋
+      api.weaponCounter(fa.scale, fa.hit, fa.roll, 'perfect');
       staggerOnCounter();
     }else if(bp.take<=0){
       SFX.play(asset('se_guard'), sfxGain('se_guard'));   // 完美防禦音（免傷那一支）
@@ -432,8 +454,9 @@ export function resolveThreat(th){
            大絕」答得出來的地方（`th.ult`，同 -932）。
 
            **壓得過的有三個，但走的是兩條不同的路** ——
-           · **安雅**（明晰之夢／惡夢化）：把**任何一帶**都判成紅圈
-             （上面的 `lucid || niAll`）—— 那時根本走不到這一支，不必在這裡判。
+           · **安雅**（明晰之夢／惡夢化）：**ver -974 起改由 `hitForce` 只壓命中**
+             （見上面那一段）—— 她現在照樣走到這一支，只是命中被壓成 1。
+             ⚠ -968~-973 是「把整帶判成紅圈」順便繞過這裡，那條已經推翻。
            · **獵手的共鬥**（索菈娜）：它**整個繞過帶位系統** —— 黃圈一生成就由
              `spawnThreat` 的共鬥分支收掉、`weapon.coopCounter` 打三把飛刀
              （固定傷害，沒有命中判定）。所以「共鬥壓得過」平時是自動成立的。
@@ -444,7 +467,11 @@ export function resolveThreat(th){
              完美反擊計數、評價折秒與硬直，那些 Ray 沒說要給（而且共鬥本來就無敵）。
            ⚠ 只動命中率 —— 減傷（`bb.take`）照舊，擋得住還是擋得住。 */
         const hit = (th.ult && !state.coopMode) ? ULT_BLOCK_HIT : bb.hit;
-        api.weaponCounter(bb.scale, hit, bb.roll, 'block');
+        /* ⚠⚠ 安雅的「命中霸王條款」壓得過大絕那條 0（ver -968 就寫了「除非被安雅的
+           技能壓過」）—— -974 之前那件事是靠「把整帶升成紅圈」順便達成的，
+           現在改由 `hitForce` **只壓命中**，免傷與評價照舊不送。 */
+        const fa = fireArgs(bb, hit);
+        api.weaponCounter(fa.scale, fa.hit, fa.roll, 'block');
         staggerOnCounter();
       }
       if(bb.take>0){
