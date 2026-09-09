@@ -55,7 +55,7 @@ const SAINT_LAST_HIT_RATIO    = T.saintLastHitRatio;     // 結束前清盤 → 
      聖徒化把血往上推（推滿＝OBE），惡夢化把血往下抽（抽乾＝熔斷）。
      所以實作放在**同一支模組**（鐵律 8）：兩者共用 `playCutin`／收尾／api。 */
 const NI = T.nightmare || {};
-const NI_SEC_PER_CELL = (NI.secPerCell!=null) ? NI.secPerCell : 0.8;   // 每一殘格給幾秒
+const NI_MAX_SEC      = (NI.maxSec!=null) ? NI.maxSec : 15;          // 沒挨打時這一段最長幾秒（ver -967）
 const NI_BURST_FLOOR  = (NI.burstFloor!=null) ? NI.burstFloor : 0;     // 自爆打不死：敵血最低留這個比例
 const NI_MELT_NAME    = NI.meltdownName  || 'MELTDOWN';  // 熔斷的字
 const NI_MELT_CUTIN   = NI.meltdownCutin || '';          // 熔斷的 cut-in（ASSETS 鑰匙）
@@ -327,38 +327,63 @@ export function saintAdvance(amount){
  *  ⚠ 讀 §config.tuning.nightmare 與 saint* 那一組（共用的數字不重寫，鐵律 7）。
  * ════════════════════════════════════════════════════════════════════════ */
 /* 發動。⚠⚠ **重建成 16 宮格**（ver -690，Ray：「夢魘改成固定 16 格吧，跟 SI 一樣」）——
-   -671~-689 是「沿用殘局」，秒數也隨殘格數變；現在與聖徒化同一套：滿盤 16 格、
-   固定 `16 × secPerCell` 秒（12.8 秒），收尾再把原本的盤面換回來。
+   -671~-689 是「沿用殘局」，秒數也隨殘格數變；現在盤面與聖徒化同一套：滿盤 16 格，
+   收尾再把原本的盤面換回來。**長度**自 ver -967 起是固定的最長 15 秒（見 `NI_MAX_SEC`）。
    ⚠ 連帶：`niCellsLeft` 那一支沒有人用了（份量改由 `niCells` 計數，見 `nightmareTap`）。 */
+/* ══⚠⚠⚠ **ver -967（Ray）：「夢魘發動不清盤面攻擊圈」** ══
+   發動的那一刻**不動敵人的任何計時器** —— 場上已經在縮的攻擊圈留著、蓄力留著、
+   下一次攻擊的排程也留著。惡夢化是「直接介入」，不是重開一局。
+   ⚠⚠ 但**光是不清掉還不夠**：cut-in 那 1.5 秒 `updateThreats` 會因 `cutinPlaying`
+     整個凍住（畫面不動），而每一顆圈的 `t0` 是**真實時間**在跑 —— 演出結束時
+     它們會一次縮掉 1.5 秒，時間到的那幾顆當場開火。玩家在那 1.5 秒**根本不能點**，
+     那是白挨的。所以要走既有的 `pauseThreats`／`resumeThreats`（鐵律 8，
+     退出確認框與戰鬥中對話用的同一對）：暫停時記下時刻、續玩時把時長補回每顆的
+     `t0` ＝**剩餘時間不變**。
+   ⚠ 這與聖徒化**刻意不同**（那邊照舊 `resetEnemyTimers()`＋重排）：Ray 只改了夢魘。
+   ⚠ cut-in 期間排到的那一次攻擊不會憑空消失 —— `scheduleAssault` 的計時器看到
+     `cutinPlaying` 會自己往後重排（defense.js:106），不必在這裡處理。 */
+let niPausedThreats = false;   // ver -967：這一次的攻擊圈凍結是不是我做的（見下）
 export function activateNightmare(){
   if(state.over || state.saintMode || state.niMode) return false;
   SFX.playVoice(asset('vo_anya_ni'), sfxGain('vo_anya_ni'));   // 惡夢化降臨語音（ver -711）
+  /* ⚠ 只有**這一次真的由我凍住的**才由我解凍（`pauseThreats` 的回傳值）——
+     這一招常常是在教學對話裡被觸發的，那時圈早就被 `pauseForDialog` 凍著了，
+     由我解凍會變成「對話還開著、圈卻在縮」。 */
+  niPausedThreats = !!(api.pauseThreats && api.pauseThreats() === true);
   playCutin(()=>startNightmareMode(), L.battle.nightmareLabel||'NIGHTMARE INSTALL', 'ci_anya_ni');
   return true;
 }
 function startNightmareMode(){
   if(state.over) return;
   enterNightmare();
-  api.resetEnemyTimers();
-  state.enemyAtkSuppressUntil = 0;
-  api.scheduleAssault();
+  /* ver -967（Ray：「夢魘發動不清盤面攻擊圈」）：**不** `resetEnemyTimers()`、
+     **不**重排 `scheduleAssault()`、**不**清 `enemyAtkSuppressUntil` ——
+     只把 cut-in 期間凍住的攻擊圈原樣接回（剩餘時間不變）。理由見 activateNightmare。 */
+  if(niPausedThreats && api.resumeThreats){ api.resumeThreats(); }
+  niPausedThreats = false;
   setReturnSwipe(true);                  // 上滑＝惡夢化的主動技（見 nightmareActive）
   state.niDamage = 0;
   state.niCells  = 0;
-  /* ══⚠⚠ **發動時先把血灌滿，再從滿血抽到 1**（ver -671）══
-     Ray 的稿有兩句在這裡打架：「玩家受擊，hp1」→ 安雅發動惡夢化，而惡夢化
-     「以現有的 hp 開始扣除，直到剩 hp1 熔斷」—— 現有的 hp 就是 1，這一段
-     會在發動的那一瞬間就熔斷（實測：`niTotalMs` 11.2 秒，但 `niFrom` 是 1，
-     倒數槽一格都跑不動）。
-     ⚠ 兩句只能留一句能成立的：**灌滿再抽**。那也是這個機制的語氣 ——
-       安雅把力量灌進來（血條瞬間填滿），然後一路流失；清空殘格＝守住了，
-       「hp 全恢復」（Ray 的原話）正好是同一個狀態。
-     ⚠ **這是我的判斷不是 Ray 的指定**：要改成「真的從現有 hp 開始抽」，
-       把下面這一行的 `setPlayerHpRatio(1)` 拿掉就好（那時劇情殺要留多一點血）。 */
-  api.setPlayerHpRatio(1);
+  /* ══⚠⚠⚠ **ver -967（Ray 定案）：不再灌滿，從現有血量抽起** ══
+     > Ray：「惡夢化改成最長 15 秒，**依玩家現有血量比例扣血**，扣到 1 時 OBE，
+     >   期間受擊機制維持原案」
+     ⚠⚠ 這裡**原本有一行 `api.setPlayerHpRatio(1)`**（ver -671）：Ray 的舊稿有兩句
+       在這裡打架（「玩家受擊，hp1」→ 發動惡夢化，而惡夢化「以現有的 hp 開始扣除，
+       直到剩 hp1 熔斷」—— hp 是 1 的話發動瞬間就熔斷），我當時選了「灌滿再抽」，
+       **並在這裡註明那是我的判斷不是 Ray 的指定**。這一版由他正式定案：不灌滿。
+       · 打架的那一半早就不存在了 —— 娜塔莉戰自 ver -672 起不走劇情殺（`strikeTo:1`
+         已移除），改成玩家自己右滑，血量是玩家自己的。
+     ⚠⚠ **「依現有血量比例扣血」＝斜率由起點決定，長度不變**：從 `niFrom` 線性抽到 1，
+       跑完就是 `NI_MAX_SEC`。所以血少的人**每一刻扣得少**，但一樣撐 15 秒。
+     ⚠⚠ 連帶的設計後果（刻意）：**惡夢化變成「血多才划算」** —— 它與聖徒化正好
+       相反（那條槽是往上推、滿血發動當場 OBE，所以瀕死才划算）。兩個鏡像技能的
+       最佳時機因此分開了。
+     ⚠ 邊角：血本來就是 1 的時候發動 ＝ 沒有東西可以燒，`niDrain` 第一拍就熔斷。
+       那是這條規則的直接結果（「扣到 1 時 OBE」），不是 bug。 */
   state.niFrom   = state.playerHp;
-  /* 固定 16 格 → 固定 12.8 秒（ver -690）。 */
-  state.niTotalMs= Math.max(1, SAINT_GRID * NI_SEC_PER_CELL * 1000);
+  /* ver -967：**最長 15 秒**（`tuning.nightmare.maxSec`）—— 不再是 `16 格 × 0.8`。
+     「最長」＝沒挨打的話；受擊會抽掉額外的量，提早到底。 */
+  state.niTotalMs= Math.max(1, NI_MAX_SEC * 1000);
   state.combo    = 0;
   /* 破防值不清（ver -749，同聖徒化那一條）。 */
   $('grid').classList.add('saint','ni');
@@ -970,6 +995,7 @@ export function reset(){
   exitNightmare();
   clearInterval(state.niTimer); state.niTimer=null;
   state.niDamage=0; state.niFrom=0; state.niTotalMs=0;
+  niPausedThreats=false;   // ver -967：發動途中被打斷（state.over）也不要把旗留著
   /* 共鬥（ver -803）：清窗口輪詢＋收 coopMode（同 niMode 的重置）；無敵窗歸 partner.reset。 */
   exitCoop(); clearInterval(coopTimer); coopTimer=null; state.coopUntil=0;
   const gc=$('grid'); if(gc) gc.classList.remove('coop');

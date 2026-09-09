@@ -152,6 +152,10 @@ export function setup(){
     scheduleAssault: defense.scheduleAssault, clearThreat: defense.clearThreat,
     endCharge: defense.endCharge, resetEnemyTimers: defense.resetEnemyTimers,
     setAssaultRate: defense.setAssaultRate,
+    /* 惡夢化發動時**凍住而不是清掉**攻擊圈（ver -967，Ray：「夢魘發動不清盤面
+       攻擊圈」）—— 走退出確認框／戰鬥中對話用的同一對（鐵律 8），續玩時把暫停
+       時長補回每一顆的 t0＝剩餘時間不變。 */
+    pauseThreats: defense.pauseThreats, resumeThreats: defense.resumeThreats,
     // 計時碼表：cut-in 演出期間暫停（playCutin/playSaintCutin 開頭呼叫），維持「非可點不計時」
     //   clockResume 供 finishSaintMode 於三結局收尾後接回碼表（聖徒化全程不計時）
     clockPause, clockResume,

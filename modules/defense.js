@@ -206,10 +206,15 @@ export function stopThreatTick(){
 /* 暫停/續玩（退出確認框用）：攻擊圈以 Date.now()-t0 計縮放，暫停時停 tick 凍結畫面，
  *  續玩時把暫停時長補回每個攻擊點的 t0 → 剩餘時間不變、無憑空提前釋放。 */
 let _threatPausedAt = 0;
+/* ⚠ 回傳值（ver -967）：**這一次真的由我暫停的才回 true** —— 已經暫停著就回 false。
+   惡夢化發動時要「凍住攻擊圈、演完再原樣接回」，但它可能是**在教學對話裡**被觸發的
+   （那時 `pauseForDialog` 已經暫停過了）—— 不分辨的話 saint 會在對話還開著時
+   把圈解凍，玩家一邊讀字一邊挨打。呼叫端據此決定自己該不該 resume。 */
 export function pauseThreats(){
-  if(_threatPausedAt) return;
+  if(_threatPausedAt) return false;
   _threatPausedAt = Date.now();
   clearInterval(state.threatTick); state.threatTick=null;   // 凍結縮圈（不動 chargeWarn 提示）
+  return true;
 }
 export function resumeThreats(){
   if(!_threatPausedAt) return;
