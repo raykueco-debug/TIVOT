@@ -3918,6 +3918,19 @@ export function setSceneBg(name, done){
    一樣要吃得到，不能只有主線 scene 有。 */
 export function playAdhoc(lines, done, opts){
   const st=$('storyStage'); if(!st || !lines || !lines.length){ done&&done(); return; }
+  /* ══⚠⚠⚠ **這一段裡的插圖先解析**（ver -975，Ray：「旅店的槍棺插畫很常跑不出來」）══
+     ver -433 立過規矩：「插圖的候選只解析一次，而且**在預載那一段就解好**」——
+     但那一段（`collectAssets`）只走 `MAIN_SCRIPT`，**城鎮／旅店的臨時段落從來沒吃到**，
+     於是每次演到都在顯示的當下才逐個試候選。
+     實測 `005_Kerberos`（只有 `_day` 與 `_DD` 兩張）：白天第一個候選就中，
+     **傍晚要 8 個請求、夜裡要 24 個**（4 種副檔名 × 大小寫變體 × 退路時段）才輪到
+     `_DD` —— 遠比黑幕那 900ms 久，黑幕先掀開了、圖還沒到 ＝ **插圖沒出現**。
+     那正是「白天好好的、晚上就不見」的成因。
+     ⚠ 不 await：解析與這一段的第一句同時起跑，而 `cgCandidates` 讀的是同一份快取
+       —— 解完之後只請求那一張。最壞情況（第一句就有插圖、又還沒解完）也不會比
+       以前差（顯示端那條路自己也會解析並寫回同一份快取）。
+     ⚠ 一段之內同一張只解一次（`resolveCg` 自己有快取）。 */
+  for(const ln of lines){ if(ln && ln.cg) resolveCg(ln.cg, ln.cgNoTime); }
   st.classList.add('on'); document.body.classList.add('story-on');
   active=true;
   clearCast();                      // ⚠ 新的一段＝新的台上（見 clearCast 的說明）

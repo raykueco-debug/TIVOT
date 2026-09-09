@@ -2571,12 +2571,15 @@ export const TOWNS = {
       restaurant:{ bg:'Shinier_Restaurant', name:'夏爾村　餐廳', exits:{ back:'east' },
         /* 駐店（ver -875，Ray：「餐廳早上6點到晚上6點有人，圖用cook，名字瑪麗亞」）
            —— 開放空間**不掛 hours**（掛了會被打烊擋在門外；時段外只是沒人）。 */
-        host:{ who:'COOK_SV', hours:[6,18] },
-        /* ══ 瑪麗亞的廚房（ver -953，Ray 的 Stage8 稿）══
-           `kitchenFrom:8` ＝**stage8 之前無人**（Ray 原話）—— 廚房開張是這一章的事，
-           在那之前走進來只有立繪站著（同 `shopFrom` 的語意，但分開一格：
-           那一格管店在不在，這一格管廚房開了沒）。 */
-        kitchen:true, kitchenFrom:8,
+        /* ⚠⚠⚠ **`from:8` ＝ stage8 之前她根本不在**（ver -975，Ray：「夏爾村在
+           stage8 之前不應該出現瑪麗亞」）。-875~-974 只掛了 `hours`，於是
+           **廚房沒開、人卻站在那裡** —— `shopReady` 被 `kitchenFrom` 擋掉之後
+           剛好掉進 host 那一支，六點到十八點照樣擺立繪。 */
+        host:{ who:'COOK_SV', hours:[6,18], from:8 },
+        /* ══ 瑪麗亞的廚房（ver -953，Ray 的 Stage8 稿）══ 廚房開張是這一章的事。
+           ⚠ **章節不寫第二次**（鐵律 7）：`kitchenFrom` 沒寫就跟著 `host.from` 走
+           —— 廚房是**這個人**開的，兩個 8 必然走鐘（見 `town.shopReady`）。 */
+        kitchen:true,
         acts:[ SV_S8_DINE ] },
     },
   },

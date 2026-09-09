@@ -1143,7 +1143,12 @@ function shopReady(n){
   /* 瑪麗亞的廚房（ver -953）：`kitchenFrom` ＝這一章之前廚房還沒開張
      （Ray：「瑪麗亞的廚房開張，stage8 之前無人」）—— 同 `shopFrom` 的語意，
      但**分開一格**：那一格管的是店在不在，這一格管的是廚房開了沒。 */
-  if(n.kitchen) return !(n.kitchenFrom!=null && prog.getStage() < n.kitchenFrom);
+  /* ⚠ `kitchenFrom` 沒寫就跟著**駐店那個人**的 `from` 走（ver -975，鐵律 7）：
+     廚房是那個人開的，章節寫兩次必然走鐘（夏爾村的瑪麗亞就是同一個 8）。 */
+  if(n.kitchen){
+    const kf = (n.kitchenFrom!=null) ? n.kitchenFrom : (n.host && n.host.from);
+    return !(kf!=null && prog.getStage() < kf);
+  }
   return !!(n.board && (!n.boardFlag || prog.hasFlag(n.boardFlag)));
 }
 /* `opts.noMenu`＝只擺店主，**那顆鈕先不出來**（ver -430，Ray：「武器店的裝備教學
@@ -1387,6 +1392,10 @@ function shopEnter(opts){
        進入」），時段寫在 host 自己身上。收場走既有的 shopClose/clearCast。 */
   if(!shopReady(n)){
     const h=n.host;
+    /* `from`（ver -975，Ray：「夏爾村在 stage8 之前不應該出現瑪麗亞」）＝
+       這一章之前**這個人根本不在**。同 `shopFrom`／`fromStage` 的語意。
+       ⚠ 它與 `hours` 是兩件事：`hours` 是「今天幾點在」，`from` 是「哪一章起才有這個人」。 */
+    if(h && h.from!=null && prog.getStage() < h.from) return;
     if(h && h.who){
       const t=clock.hourF();
       const inHrs = !h.hours || (h.hours[1]>h.hours[0]

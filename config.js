@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.09-974';
+export const VERSION = 'ver 2026.09.09-975';
 
 export const GAME_CONFIG = {
 
@@ -138,7 +138,16 @@ export const GAME_CONFIG = {
     Sniper_Falcon: { name:'85式萊福槍「嗜心者」', shortName:'嗜心者', cat:'萊福槍',
                      owned:true, critRate:0.20, maxMod:5, value:5000,
                      counterWin:0.06, hits:1, dmgPerHit:72, vfx:'single', image:'weapon_sniper_falcon', sound:'se_sniper_falcon',
-                     bands:{ block:{ take:0.5 }, perfect:{ take:0.25 } }, counterSec:-3,
+                     /* ══⚠⚠⚠ **ver -975（Ray）：黃橘圈也反擊，但攻擊力 −50%** ══
+                        > 「萊福槍改成黃橘圈也反擊，但 nerf 50% 攻擊力」
+                        ⚠ **`take` 照舊留著**：Ray 只說「也反擊」，沒說免傷 ——
+                          「三把裡唯一點了還是會挨打，但越接近完美挨得越少」
+                          （ver -706）仍是這把槍的性格，現在只是多了還手。
+                        ⚠ 起因：安雅的「赤足／蹄鐵星」抬的是**攻擊力**，而萊福槍的
+                          黃橘圈卡上沒有 `counter` ＝根本不開火，那兩顆星對狙擊手
+                          等於沒有效果（ver -974 我回報的第三個連帶後果）。 */
+                     bands:{ block:{ counter:true, take:0.5,  dmgScale:0.5 },
+                             perfect:{ counter:true, take:0.25, dmgScale:0.5 } }, counterSec:-3,
                      flavor:'賭上一切的單發重擊',
                      /* 本篇用的數值（ver -378，Ray 的「初始萊福槍」卡）：紅圈 1發56。 */
                      story:{ hits:1, dmgPerHit:56 } },
@@ -161,7 +170,9 @@ export const GAME_CONFIG = {
     Rifle_Shahin:  { name:'Shahin栓動萊福槍「遊隼」', shortName:'遊隼', cat:'萊福槍',
                      critRate:0.20, maxMod:5, price:5000,
                      counterWin:0.06, hits:1, dmgPerHit:72, vfx:'single', image:'weapon_sniper_falcon', sound:'se_sniper_falcon',
-                     bands:{ block:{ take:0.5 }, perfect:{ take:0.25 } }, counterSec:-3,
+                     // ver -975：同「嗜心者」（黃橘圈也反擊、攻擊力 −50%），見那張卡的說明。
+                     bands:{ block:{ counter:true, take:0.5,  dmgScale:0.5 },
+                             perfect:{ counter:true, take:0.25, dmgScale:0.5 } }, counterSec:-3,
                      flavor:'栓動、遠距、一擊定生死' },
     // 新武器：複製一段，鑰匙用「類型_武器名」（同圖檔基底名），image 指對應 ASSETS 鑰匙。
   },
@@ -911,7 +922,7 @@ export const GAME_CONFIG = {
           /* 取代比例算法的那一發（比例算到 15/16 也只有 23.4%）。
              ⚠ 「打不死」的下限（`burstFloor`）照舊 —— 那是另一條規則。 */
           burstLastCell:0.30 },
-        { star:'κ Geminorum',     name:'雙生星',
+        { star:'κ Geminorum',     name:'孿生星',
           desc:'每次反擊都讓夢魘化的體力流失暫停 0.5 秒。',
           /* 實作＝把那一段的總長延長 0.5 秒（抽血是「從起點線性到 1」，
              延長總長就是放慢那一刻之後的速度 —— 與「停 0.5 秒」等價，
@@ -2989,7 +3000,14 @@ export const ASSETS = {
   /* 明晰之夢（ver -681 交件／-682 定中文名）：安雅的被動 —— HP≤30% 普攻加倍 5 秒。 */
   ci_anya_lucid:  "resources/CI/CI_Anya_Luciddream.webp?v=2",   // ver -708：Ray 換了一版（同名覆蓋 → 必掛 ?v，§5）
   /* 賞金獵人（ver -375）：戰鬥立繪＝對話立繪的 `attack` 那張（去背，配 `bg` 用）。 */
-  enemy_guild_hunter: "resources/SI/NPC_GuildHunter_SI_Attack.webp",
+  /* ⚠⚠ **ver -975 修**（Ray 回報「賞金獵人戰中的敵人圖不見了」）：那 18 張 NPC 立繪
+     ver -955 搬進 `resources/SI/NPC/` 時**這一條漏改**，於是這張圖一直是 404 ——
+     而畫面上沒有任何錯誤訊息（同 -955 抓到的那一批）。
+     ⚠ 它與 `speakers.js` 的 `ART.hunter.expr.attack` 是**同一張圖**（對話立繪借來當
+       敵人立繪），那邊 -955 已經改對了，只有 ASSETS 這一份留在舊路徑。
+     ⚠ 自檢法：把 config 裡所有 `"resources/…"` 字串抓出來逐個 `test -f` ——
+       這一次全檔只有這一條是壞的。 */
+  enemy_guild_hunter: "resources/SI/NPC/NPC_GuildHunter_SI_Attack.webp",
   /* ══⚠⚠ 北方泊地城鎮戰的雜怪（ver -596，Ray 指定四隻隨機出）＋教堂的 Boss（祭壇獸）══
      ⚠⚠ **一定要放在 `resources/enemy/` 底下，不可以留在 `_drafts`**（ver -595，
        Ray 回報「手機端讀不到怪的圖」）：靜態空間（GitHub Pages）跑的是 Jekyll，
