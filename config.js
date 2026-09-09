@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.09-972';
+export const VERSION = 'ver 2026.09.09-973';
 
 export const GAME_CONFIG = {
 
@@ -769,7 +769,9 @@ export const GAME_CONFIG = {
           saintComboMul:0.50 },
         { star:'Guisuyi',           name:'端首星',
           desc:'聖徒化期間全程指引下一格。',
-          /* 走既有的「一直指下一格」那條路（`combat.markNext` 的 `hintAlways`，
+          /* ⚠ **「次回指引」＝發動期間不斷高光下一個該點的格**（ver -973 Ray 確認）
+             —— 不是「發動時指一下」（那個 ver -833 就有了）。
+             走既有的「一直指下一格」那條路（`combat.markNext` 的 `hintAlways`，
              與明晰之夢同一個開關，鐵律 8）—— 不另做一套提示。 */
           saintHint:1 },
         { star:'Nahn',              name:'探覓星',
@@ -780,21 +782,29 @@ export const GAME_CONFIG = {
                （`partner.onEnemyCleared`），該場已經結束了。 */
           saintReload:1 },
         { star:'Tegmine',           name:'堅殼星',
-          desc:'即死防禦的十秒回血窗提升為每次射擊回復最大體力 5%，反擊一次也算一發。',
+          desc:'即死防禦的十秒回血窗提升為每次射擊回復最大體力 5%，反擊一次也算一發；'
+              +'聖徒化期間不回血。',
           /* `guardHealPct` 是**增量**：卡上 0.02 ＋ 這裡 0.03 ＝ 5%。
              ⚠ 「單局一次」＝**即死防禦本身**一局一次（Ray 確認）——
                那正是 Lv1~6 的基礎行為（Lv7 的蟹生星才放寬成一場一次），
                所以這一格不必再寫一次那個限制。
              ⚠ `guardHealCounter` ＝副武器反擊也算一發（**一次反擊算 1 hit**，
-               不是每一顆子彈各算一次）。 */
+               不是每一顆子彈各算一次）。
+             ⚠⚠⚠ **聖徒化／惡夢化期間這個回血一律失效**（ver -973，Ray 定案：
+               「那就讓堅殼星的回血效果在聖徒化期間失效吧」）—— 那兩條血條是
+               倒數槽，回血＝把自己推向 OBE。會撞在一起是因為**反擊在聖徒化期間
+               打得出來**（另外三種射擊在 `tap` 就被分流給 saint 了，碰不到）：
+               即死防禦接住 → 10 秒窗開著 → 立刻右滑進聖徒化，那幾秒的每一次反擊
+               都會推槽。守門在 `combat.shotHeal()` 一支（鐵律 8）。 */
           guardHealPct:0.03, guardHealCounter:1 },
         { star:'Asellus Borealis',  name:'引路星',
           desc:'生命歸還的吸血與連擊延續延長為 15 秒，期間全程指引下一格。',
           /* `lifeReturnSec` 是**增量**：卡上 10 ＋ 5 ＝ 15 秒。
              ⚠⚠ 吸血窗與 combo 延續窗**是同一扇窗**（`partner.vampUntil`）——
                Ray 的卡上兩者永遠同一個數字，所以只有一個計時器（鐵律 7）。
-             ⚠ `lifeReturnHint`＝那扇窗開著時全程指引（一次性的那一下 ver -833
-               就有了，這顆星加的是「全程」）。 */
+             ⚠ `lifeReturnHint`＝那扇窗開著時**全程**指引（ver -973 Ray 確認
+               「次回指引」的定義就是不斷高光下一格）—— 一次性的那一下 ver -833
+               就有了，這顆星加的是「全程」。 */
           lifeReturnSec:5, lifeReturnHint:1 },
         { star:'Acubens',           name:'斷鉗星',
           desc:'聖徒化發動時體力降至 1，發動時間最大化。',
