@@ -261,15 +261,36 @@ const ACTIVE_HANDLERS = {
      窗口，是有時候瀕死救活結果按太快直接點錯死在那」）—— 一個防手滑、一個防手快。 */
 let missGuardArmed = true;
 export function armMissGuard(){ missGuardArmed = true; }
-export function tryMissGuard(){
+function tryMissGuard(){
   if(!missGuardArmed) return false;
   if(!prog.girlHas(state.pickedPartner, 'missGuard')) return false;
   missGuardArmed = false;
-  /* 被擋下來的那一聲（ver -1014，Ray：「點錯被擋的 se 等等補」）——
-     鑰匙寫在卡上（`partners.<who>.missGuardSe`，鐵律 1），沒填就不出聲。 */
-  const p = currentPartner(), k = p && p.missGuardSe;
-  if(k && asset(k)){ try{ SFX.play(asset(k), sfxGain(k)); }catch(_){} }
   return true;
+}
+/* ══⚠⚠⚠ **點錯的唯一入口**（ver -1015，Ray 交檔）══════════════════════════════
+   `combat.tap` 的按錯分支第一行就叫它，回傳「這一次要不要吃掉」。
+   把三件事收在一支（鐵律 8）—— 分開寫的話，容錯那條 return 會讓語音漏掉：
+     ① **失誤語音**：只要點錯就出（三支輪播，卡上的 `missVoice`）
+     ② **容錯**：吃掉這一次（諾薇兒 Lv2 引路星）
+     ③ **被擋下來的那一聲**：容錯吃掉、**或**在無敵窗裡點錯 → 與①**同時**再疊一聲
+        （卡上的 `missBlockSe`，Ray：「無敵期間點錯，容許點錯時與 se_windblock 一同播放」）
+   ⚠ ①與③是**同時**不是二選一：語音是她的反應，SE 是「這一下沒落在你身上」。
+   ⚠ 卡上沒寫那兩格＝什麼都不會發生（蕾妮／馬季諾的行為一個字不變）。
+   ⚠ 「無敵」問既有的 `immuneActive()`（獄門天鎖的免傷窗／共鬥窗共用那一支，鐵律 7）
+     —— 不要另外判「現在是不是在某某狀態」。 */
+export function onMissTap(){
+  const p = currentPartner();
+  /* ① 失誤語音（走既有的輪播助手，同戰吼／共鬥語音，鐵律 8） */
+  { const vk = SFX.pickRot(p && p.missVoice);
+    if(vk && asset(vk)){ try{ SFX.playVoice(asset(vk), sfxGain(vk)); }catch(_){} } }
+  /* ② 容錯（要在③之前算出來 —— ③要知道這一下有沒有被吃掉） */
+  const guarded = tryMissGuard();
+  /* ③ 被擋下來的那一聲 */
+  if(guarded || immuneActive()){
+    const k = p && p.missBlockSe;
+    if(k && asset(k)){ try{ SFX.play(asset(k), sfxGain(k)); }catch(_){} }
+  }
+  return guarded;
 }
 export function tryActive(context){
   /* ⚠ `noPartner`（ver -375）：這一場不准用搭檔技（劇情插入戰）。同 saint 的作法 ——

@@ -86,3 +86,10 @@ when	from	to	reason
 20260909-111507	tools/_sense_probe.html	_recycle/tools/_sense_probe.html	sense CI 的 CSS 驗證用臨時頁，驗完不留
 20260909-125033	lvcheck.mjs	_recycle/lvcheck.mjs	等級曲線驗算用的臨時腳本，驗完不留
 20260909-190713	resources/_originals/SI/NPC/Corvin_SI_ecstasy.png	_recycle/resources/_originals/SI/NPC/Corvin_SI_ecstasy.png	Corvin_SI_ecstasy 換新圖（ver -1002），舊的原始 PNG 讓位
+20260909-223504	resources/audio/vo/vo_nouvellemiss1.wav	_recycle/resources/audio/vo/vo_nouvellemiss1.wav	ver -1015：6 支 miss 語音已轉 m4a（§6.6 音效一律 AAC），原 wav 回收
+20260909-223504	resources/audio/vo/vo_nouvellemiss2.wav	_recycle/resources/audio/vo/vo_nouvellemiss2.wav	ver -1015：6 支 miss 語音已轉 m4a（§6.6 音效一律 AAC），原 wav 回收
+20260909-223504	resources/audio/vo/vo_nouvellemiss3.wav	_recycle/resources/audio/vo/vo_nouvellemiss3.wav	ver -1015：6 支 miss 語音已轉 m4a（§6.6 音效一律 AAC），原 wav 回收
+20260909-223504	resources/audio/vo/vo_sorana_miss1.wav	_recycle/resources/audio/vo/vo_sorana_miss1.wav	ver -1015：6 支 miss 語音已轉 m4a（§6.6 音效一律 AAC），原 wav 回收
+20260909-223504	resources/audio/vo/vo_sorana_miss2.wav	_recycle/resources/audio/vo/vo_sorana_miss2.wav	ver -1015：6 支 miss 語音已轉 m4a（§6.6 音效一律 AAC），原 wav 回收
+20260909-223504	resources/audio/vo/vo_sorana_miss3.wav	_recycle/resources/audio/vo/vo_sorana_miss3.wav	ver -1015：6 支 miss 語音已轉 m4a（§6.6 音效一律 AAC），原 wav 回收
+20260909-224027	resources/audio/se/se_windblock.mp3	_recycle/resources/audio/se/se_windblock.mp3	ver -1015：se_windblock 已轉 m4a（§6.6 音效一律 AAC），原 mp3 回收

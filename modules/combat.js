@@ -551,8 +551,11 @@ function tap(num,cell,e){
          所以 `wrongTaps` 那一行也在下面，一起跳過。
        ⚠ **連擊不斷**：她整套的價值就在 combo 疊傷；斷了的話「不算」只在計分上
          成立，手感上還是被打斷一次。
-       ⚠ 上膛與否的擁有者是 partner（鐵律 9），這裡只問一句（鐵律 8）。 */
-    if(partner.tryMissGuard()){
+       ⚠ 上膛與否的擁有者是 partner（鐵律 9），這裡只問一句（鐵律 8）。
+       ⚠⚠ ver -1015 起這一句同時負責**失誤語音**與**被擋下的那一聲**：
+         「只要點錯就出」的語音必須在容錯那條 return **之前**播，所以三件事
+         收在 `partner.onMissTap()` 一支裡（分開寫必然漏掉被吃掉的那一次）。 */
+    if(partner.onMissTap()){
       cell.classList.add('wrong'); setTimeout(()=>cell.classList.remove('wrong'),200);
       updateStatus();
       return;
@@ -567,6 +570,9 @@ function tap(num,cell,e){
     if(state.coopMode){
       const _c=(GAME_CONFIG.partners&&GAME_CONFIG.partners[state.pickedPartner])||{};
       saint.coopShorten((_c.coop&&_c.coop.wrongShortenSec)||1.5);
+      /* ver -1015（Ray）：「點錯會射『一支』飛刀，所以攻擊力只有 1/3，
+         但**失誤秒數扣全**」—— 上面那一行照扣，這一刀是她順手替你補的一下。 */
+      weapon.coopMissKnife();
     }
     /* ══ 計時挑戰（ver -396）：唯一的懲罰是**時間**══
        按錯 → 碼表直接加秒數（`runElapsedMs` 是碼表的累計，加在那裡就等於「多花了那麼久」），

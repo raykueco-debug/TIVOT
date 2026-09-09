@@ -361,6 +361,17 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll, grade){
    總傷＝副武器一次完整反擊 (hits×dmgPerHit×改裝×counterScale)，拆成 3 hits（每 hit≈1/3）。
    ⚠ 與一般 weaponCounter 的逐武器形態不同（固定 3 hits），另寫一支；由 defense.spawnThreat
      在共鬥中呼叫（api.coopCounter）。音效／彈殼／反擊點沿用同一套解析。 */
+/* 一支飛刀打多少（ver -1015 抽成唯一的計算點，鐵律 7）：
+   三刀合計＝一次普攻 × (1 ＋ 獵弓／天弓的加成) × 卡上的 `counterScale`，除以 3。 */
+function coopPerKnife(scale){
+  const card = (GAME_CONFIG.partners && GAME_CONFIG.partners[state.pickedPartner]) || {};
+  const cs = (scale!=null) ? scale
+           : ((card.coop && card.coop.counterScale!=null) ? card.coop.counterScale : 1);
+  const one   = Math.max(1, Math.round((api.hitDamage ? api.hitDamage() : 1)));
+  const mul   = 1 + prog.girlBonus(state.pickedPartner, 'coopCounterMul');
+  const total = Math.max(3, Math.round(one * mul * cs));       // 三刀合計
+  return Math.max(1, Math.round(total/3));
+}
 export function coopCounter(){
   const w = weaponOf(state.equippedWeapon, storyMode());
   if(!w || state.over || state.enemyHp<=0) return;
@@ -388,10 +399,7 @@ export function coopCounter(){
      · 獵弓星 +50%／天弓星 +100% → 滿星 ×2.5
      ⚠ **不吃連擊疊傷**：`hitDamage()` 是普攻的基底，combo 那一份是玩家自己點出來的。
      ⚠ 舊的 `coopAtk`（帶位）已從星表移除；`counterScale` 留在卡上當整體旋鈕。 */
-  const one   = Math.max(1, Math.round((api.hitDamage ? api.hitDamage() : 1)));
-  const mul   = 1 + prog.girlBonus(state.pickedPartner, 'coopCounterMul');
-  const total = Math.max(3, Math.round(one * mul * cs));       // 三刀合計
-  const per   = Math.max(1, Math.round(total/3));              // 拆 3 hits
+  const per   = coopPerKnife(cs);                              // 一支多少（唯一的計算點）
   /* ══ 飛刀（ver -839，Ray：「索拉娜的共鬥反擊特效用的是飛刀…每次 3 hits，
      每 0.2 秒 1 hit，射出音效是 se_soranacounter，命中音效是 se_soranacounterhit」）══
      取代 -822 的武器音＋彈殼：她擲的是飛刀，不是開槍。
@@ -399,29 +407,43 @@ export function coopCounter(){
        沒有值才退回畫面中央（保險）。
      · **傷害與命中音掛在飛刀命中那一刻**（enemy.throwDagger 的 onHit ——
        時刻由它唯一決定，鐵律 7），不再在擲出那一拍扣血。 */
+  for(let i=0;i<3;i++) setTimeout(()=>throwOne(per), i*200);   // 每 hit 隔 0.2s（ver -839，Ray 指定）
+}
+/* ══⚠⚠⚠ **擲一支飛刀**（ver -1015 抽出來的唯一實作，鐵律 8）══
+   共鬥的自動反擊擲三支、**點錯**擲一支（Ray：「點錯會射『一支』飛刀，所以攻擊力
+   只有 1/3，但失誤秒數扣全」）—— 兩邊共用這一支，音效／彈道／命中時刻只有一份。
+   ⚠ 反擊點＝那顆圈（defense 的共鬥分支在收圈前寫進 `state.counterPoint`）；
+     沒有值才退回畫面中央（點錯那條路本來就沒有圈，走的就是這個退路）。
+   ⚠ **傷害與命中音掛在飛刀命中那一刻**（`enemy.throwDagger` 的 onHit ——
+     時刻由它唯一決定，鐵律 7），不在擲出那一拍扣血。 */
+function throwOne(dmg){
   const px=(state.counterPoint&&state.counterPoint.x!=null)?state.counterPoint.x:(window.innerWidth||390)*0.5;
   const py=(state.counterPoint&&state.counterPoint.y!=null)?state.counterPoint.y:(window.innerHeight||760)*0.4;
-  for(let i=0;i<3;i++){
-    setTimeout(()=>{
-      if(state.over || state.enemyHp<=0) return;
-      try{ SFX.play(asset('se_soranacounter'), sfxGain('se_soranacounter')); }catch(_){}   // 射出
-      const onHit=()=>{
+  if(state.over || state.enemyHp<=0) return;
+  try{ SFX.play(asset('se_soranacounter'), sfxGain('se_soranacounter')); }catch(_){}   // 射出
+  const onHit=()=>{
         if(state.over || state.enemyHp<=0) return;
         try{ SFX.play(asset('se_soranacounterhit'), sfxGain('se_soranacounterhit')); }catch(_){}
         hap.shot();
-        api.enemyDamage(per, true, true, 'counter');   // 靜默扣血（含 overkill/擊殺判定）
-        addCounter(per);
+        api.enemyDamage(dmg, true, true, 'counter');   // 靜默扣血（含 overkill/擊殺判定）
+        addCounter(dmg);
         /* ══⚠⚠⚠ **飛刀不回充破防值**（ver -1006，Ray：「索拉娜飛刀也會加，
            兩個加上去整個自給自足，永動機」）══ -1005 起破防計量表**就是**共鬥的碼表，
            而這三刀是共鬥自己打出去的 —— 讓它回充等於「共鬥產生延長共鬥的資源」，
            打幾折都還是永動機。ver -880 那一行（每一刀給三分之一）因此整條撤掉。
            ⚠ 玩家自己點盤面／自己反擊那一份**照舊有**，只是打折（見 combat.addEnergy）：
              延長共鬥要靠玩家做了什麼，不是靠共鬥自己在跑。 */
-        api.floatDmg(String(per), (44+Math.random()*12)+'%', '34%', true);
-      };
-      if(api.throwDagger) api.throwDagger(px, py, onHit); else onHit();
-    }, i*200);   // 每 hit 隔 0.2s（ver -839，Ray 指定）
-  }
+        api.floatDmg(String(dmg), (44+Math.random()*12)+'%', '34%', true);
+  };
+  if(api.throwDagger) api.throwDagger(px, py, onHit); else onHit();
+}
+/* ══ 共鬥期間點錯 → 擲**一支**（ver -1015）══ 份量就是自動反擊的 1/3
+   （同一條匯率，鐵律 7：那一支的 `per` 與這裡的算法是同一段程式）。
+   ⚠ **失誤秒數照扣全**（`coopShorten`，Ray 指定）—— 這一刀不是補償，
+     是「她順手替你補了一下」，不影響點錯本來的代價。 */
+export function coopMissKnife(){
+  if(!state.coopMode || state.over || state.enemyHp<=0) return;
+  throwOne(coopPerKnife());
 }
 
 /* ============================================================================

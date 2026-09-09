@@ -85,6 +85,10 @@ def alias(name):
     m = re.search(r'const %s=\{(.*?)\};' % name, s, re.S)
     return dict(re.findall(r"(\w+)\s*:\s*'([^']+)'", m.group(1))) if m else {}
 
+# ⚠ ver -1015：`ASSETS` 裡登記過的音檔名（開機預載的另一半，見下面那支的說明）。
+#   由 main() 在讀完資料之後填進來 —— 這一支是模組級函式，拿不到 D。
+ASSETS_AUDIO = set()
+
 def check_audio_table(files, folder, label, resolve=None):
     """resolve(f) 回傳表項 f 的實際路徑（None＝就在 folder 裡）——
        與 modules/story.js 的 SE_SRC 同一條規則（ver -566：vo_ 開頭住 vo/），
@@ -94,7 +98,12 @@ def check_audio_table(files, folder, label, resolve=None):
     known = disk | ({f for f in files
                      if resolve and os.path.exists(os.path.join(ROOT, resolve(f)))}
                     if resolve else set())
-    for f in sorted(disk - files):   warn('%s 表裡沒有這個檔案（遊戲載不到）：%s' % (label, f))
+    # ⚠ ver -1015：**在 `ASSETS` 裡登記過的也算載得到** —— 開機預載那一批是
+    #   「ASSETS ∪ story 的 SE_FILES」（§6.6），所以戰鬥用的 SE 只登記在 ASSETS
+    #   是正常的（例：`se_windblock`）。不排除的話這裡會長出永久的假警告，
+    #   而假警告會把真的那幾條蓋掉。
+    for f in sorted(disk - files - ASSETS_AUDIO):
+        warn('%s 表裡沒有這個檔案（遊戲載不到）：%s' % (label, f))
     for f in sorted(files - known):  err ('%s 表指到不存在的檔案：%s' % (label, f))
     return {f.rsplit('.', 1)[0].lower(): f for f in known}
 
@@ -114,6 +123,13 @@ HINT_TARGETS = hint_targets()
 def main():
     D = load_data()
     script, entry, speakers, art = D['script'], D['entry'], D['speakers'], D['art']
+
+    # ⚠ ver -1015：先把 ASSETS 裡的音檔名收起來 —— 開機預載那一批是
+    #   「ASSETS ∪ story 的 SE_FILES」（§6.6），兩邊任一有登記就載得到。
+    global ASSETS_AUDIO
+    ASSETS_AUDIO = {os.path.basename(str(v).split('?')[0])
+                    for v in (D.get('assets') or {}).values()
+                    if isinstance(v, str) and v.lower().endswith(AUDIO_EXT)}
 
     se_map  = check_audio_table(table('SE_FILES'),  SE_DIR,  'SE_FILES', resolve=se_resolve)
     bgm_map = check_audio_table(table('BGM_FILES'), BGM_DIR, 'BGM_FILES')

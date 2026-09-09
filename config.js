@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.09-1014';
+export const VERSION = 'ver 2026.09.09-1015';
 
 export const GAME_CONFIG = {
 
@@ -483,9 +483,14 @@ export const GAME_CONFIG = {
                desc:'發動方式：戰鬥畫面上滑。<br>'
                    +'一般時間發動：至本盤清盤為止，每次射擊回復最大體力 5%。<br>'
                    +'聖徒化期間發動：強制中止爆發時間，保留已回復之 HP。' },
-      /* 點錯被容錯擋下的那一聲（ver -1014，Ray：「點錯被擋的 se 等等補」）——
-         鑰匙填進來就會響（`partner.tryMissGuard` 讀它），沒填就安靜。 */
-      missGuardSe:null,
+      /* ══ 點錯的兩層聲音（ver -1015，Ray 交檔）══
+         · `missVoice` ＝**只要點錯就出**的失誤語音（三支輪播，走 `SFX.pickRot`）。
+         · `missBlockSe` ＝那一下**被擋下來**時**同時**再疊一聲：
+           「無敵期間點錯」與「容錯吃掉」兩種都算（Ray 指定）。
+         ⚠ 兩者是**同時**不是二選一：語音是她的反應，SE 是「這一下沒落在你身上」。
+         ⚠ 沒填就安靜 —— 別的搭檔（蕾妮／馬季諾）卡上沒有這兩格，行為一個字不變。 */
+      missVoice:['vo_nouvellemiss1','vo_nouvellemiss2','vo_nouvellemiss3'],
+      missBlockSe:'se_windblock',
       /* ══ 無傷擊殺一場 → reload 聖徒化（ver -892 定為兩場，**ver -903 Ray 改成一場**：
          「諾薇兒改無傷一場就恢復聖徒化」）══
          ⚠ 「無傷」是**逐場（逐隻怪）**算的（`state.enemyHitsTaken`，同九星「方舟」
@@ -697,6 +702,10 @@ export const GAME_CONFIG = {
          ⚠ 它只在 Lv9「獵手星」開了閘門之後才有意義（之前是一點都不加）。
          ⚠ **飛刀不吃這一格，是根本不加**（見 weapon.coopCounter）：那是共鬥自己打的，
            回充自己就是自給自足，折多少都還是永動機。 */
+      /* 點錯的失誤語音（ver -1015，Ray 交檔）：三支輪播，只要點錯就出。
+         ⚠ 她**沒有** `missBlockSe`：那一聲（`se_windblock`）是諾薇兒那張卡的東西
+           （Ray 只指定她）——共鬥期間的無敵是另一回事，不要順手一起給。 */
+      missVoice:['vo_sorana_miss1','vo_sorana_miss2','vo_sorana_miss3'],
       coop:{ baseSec:12, minSec:3, wrongShortenSec:1, counterScale:1, energyBackMul:0.5,
              voice:['vo_sorana_pack','vo_sorana_pack2'],
              /* 共鬥結束＝飛刀耗盡（obe，ver -822）。ver -837：語音兩支輪播（Ray：「有編1、2的都是輪播」）。 */
@@ -2934,6 +2943,22 @@ export const GAME_CONFIG = {
       vo_sorana_supply1:0.98, vo_sorana_supply2:0.96,
       vo_sorana_obe1:1.17,  vo_sorana_obe2:5.22,
       vo_sorana_roar:0.76,  vo_sorana_roar2:0.69,
+      /* ══ 點錯的失誤語音與擋下音（ver -1015）══ 依 §6.6 的公式反推：
+         gain ＝ 10^((targetLufs − LUFS)/20) ÷ masterVolume，峰值超過 `peakCeilDb` 就夾住。
+         實測（WebAudio 閘控積分，未過手機喇叭模型）：
+           nouvellemiss1  −17.02／peak −1.36   miss2 −14.14／+0.11   miss3 −16.81／−2.31
+         ⚠⚠ **`fileGain` 的鑰匙是「檔名」不是 ASSETS 鍵**（§6.6）—— 第一版把它寫成
+           `vo_nouvelle_miss1`（我自己取的鍵名）而檔案叫 `vo_nouvellemiss1`，
+           於是那三支查不到增益、以母帶響度播出。ASSETS 鍵現在一律與檔名同名。
+           sorana_miss1   −23.78／peak −6.85（CAP）  miss2 −22.02／−7.58  miss3 −21.59／−10.27
+           se_windblock   −19.52／peak −0.33（CAP）
+         ⚠⚠ **這是第一手估值，不是定稿**：§6.6 要的是「耳機 ＋ 手機喇叭模型兩次量測的
+           平均」，而且語音要**過完 voiceChain** 才量 —— 用 tools/audio_scan.html
+           跑一次才是權威值。先補上是因為**沒補＝增益 1 ＝以母帶響度播出**
+           （`se_steps` 就是這樣「永遠不出來」的）。 */
+      vo_nouvellemiss1:1.45,  vo_nouvellemiss2:1.04,  vo_nouvellemiss3:1.41,
+      vo_sorana_miss1:2.77,   vo_sorana_miss2:2.58,   vo_sorana_miss3:2.45,   // miss1 CAP
+      se_windblock:1.31,      // CAP（峰值頂到 +2 dBFS）
       vo_luna_dualwield:1.483, vo_luna_execution:1.013, vo_luna_obe:1.163,
       vo_luna_saintinstall:1.345, vo_malzeno_hcrounds:2.647,
       vo_malzeno_supplyrefill:2.261, vo_renee_deathguard:1.563,
@@ -3535,6 +3560,10 @@ export const ASSETS = {
 
   // 完美防禦（完防）合成替代音（一般武器；散彈完防維持自己的槍聲）
   se_guard:          "resources/audio/se/se_weapon_guard.m4a",
+  /* 點錯**被擋下來**的那一聲（ver -1015，Ray：「無敵期間點錯，容許點錯時與
+     se_windblock 一同播放」）—— 與失誤語音是**同時**播的兩層：語音是她的反應，
+     這一聲是「這一下沒有落在你身上」。鑰匙在搭檔卡上的 `missBlockSe`。 */
+  se_windblock:      "resources/audio/se/se_windblock.m4a",
 
   // 搭檔演出 SE（Luna）：發動/結局 cut-in 同步播。放 resources/partner/。
   //  v2：母帶重 master（RMS −28→−11 dBFS + 軟限幅），內容更新 → 升 ?v 強制重抓
@@ -3577,6 +3606,17 @@ export const ASSETS = {
   vo_sorana_supply2: "resources/audio/vo/vo_sorana_supply2.m4a",
   vo_sorana_obe1:    "resources/audio/vo/vo_sorana_obe1.m4a",   // ver -837：飛刀耗盡 ×2 輪播
   vo_sorana_obe2:    "resources/audio/vo/vo_sorana_obe2.m4a",
+  /* ══ 點錯的失誤語音（ver -1015，Ray 交檔）══ 三支輪播，走 `SFX.pickRot`（鐵律 8）。
+     **只要點錯就出**（不分是不是被容錯／無敵擋下），鑰匙在搭檔卡上的 `missVoice`。
+     ⚠ 交件是 wav，已照 §6.6 轉成 m4a（96k）、原檔進回收區。
+     ⚠⚠ **`tuning.fileGain` 還沒量**（見那一節的說明）—— 沒補就是以母帶響度播出，
+       §6.6 的 `se_steps` 事件就是這樣「永遠不出來」的。用 tools/audio_scan.html 量。 */
+  vo_nouvellemiss1:  "resources/audio/vo/vo_nouvellemiss1.m4a",
+  vo_nouvellemiss2:  "resources/audio/vo/vo_nouvellemiss2.m4a",
+  vo_nouvellemiss3:  "resources/audio/vo/vo_nouvellemiss3.m4a",
+  vo_sorana_miss1:   "resources/audio/vo/vo_sorana_miss1.m4a",
+  vo_sorana_miss2:   "resources/audio/vo/vo_sorana_miss2.m4a",
+  vo_sorana_miss3:   "resources/audio/vo/vo_sorana_miss3.m4a",
   vo_sorana_roar:    "resources/audio/vo/vo_sorana_roar.m4a?v=3",   // ver -859：Ray 更新 5連完美戰吼   // 獵手的戰吼・連5盤那一發（ver -837 新錄音）
   vo_sorana_roar2:   "resources/audio/vo/vo_sorana_roar2.m4a",      // 獵手的戰吼・連3盤那一發
   se_luna_exc:       "resources/audio/vo/vo_luna_execution.m4a",    // 處決 EXSECUTIŌ cut-in
