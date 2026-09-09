@@ -115,7 +115,18 @@ export function setup(){
                  /* ⚠ `lucidPerfect` 已於 ver -974 移除：明晰之夢不再把整帶升成紅圈，
                     改由 `counterAtkStep`／`counterHitForced` 兩支分開回答（見上）。 */
                  onThreatEarly: tutorial.onEarlyBlock,
-                 assaultSuppressed: tutorial.assaultSuppressed, firstThreatPending: tutorial.firstThreatPending,
+                 /* ══⚠⚠⚠ **破防期間敵人不發動攻擊**（ver -1018，Ray 指定）══
+                    彈雨傾洩是**獎勵射擊窗口**（4 秒無視順序狂點）—— 中間插一顆圈
+                    等於把獎勵收回去一半，而玩家那時的注意力全在盤面上。
+                    ⚠ 包在**注入點**：`dualWield` 的擁有者是 weapon、排程的擁有者是
+                      defense，兩邊都不該去讀對方的旗（維持 §2 的依賴方向）。
+                    ⚠ 走**既有的** `assaultSuppressed`（教學暫緩大絕用的同一條路，
+                      鐵律 8）—— 它在 defense 那邊是「重排不是丟掉」，所以窗口一收
+                      下一顆自己會回來，不會整場不攻擊。
+                    ⚠ **已經在場上的圈不清**：`activateDual` 那一刻已經
+                      `resetEnemyTimers()` 過了（weapon.js），所以窗口是乾淨的。 */
+                 assaultSuppressed: ()=> !!state.dualWield || tutorial.assaultSuppressed(),
+                 firstThreatPending: tutorial.firstThreatPending,
                  threatBand: tutorial.threatBand });
   // 教學：真暫停/續戰＋腳本化終盤所需原語注入（雙槍/聖徒化/搭檔主動技/三爪腳本/敵血封頂）
   tutorial.init({

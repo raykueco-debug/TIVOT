@@ -137,10 +137,13 @@ export const INTRUDE = {
        「劇情與城鎮的每一場」，她不在隊上的場次本來就不會演到。
      格式：`{ name, portrait, text, delayMs? }`；`portrait` 是**直接路徑**
      （雙人合圖不進 ART —— 那不是誰的差分，是這一幕專用的一張畫）。 */
+  /* ⚠⚠ `partner` ＝**這一局要由誰出戰**才會亂入（ver -1018，Ray：「如果索拉娜沒有
+     在該局出戰，就算拿到 CD 評價她也不會出現」）—— 沒寫＝不限（舊行為）。
+     判定只有 `inspector.pickEvaluator` 一處（問 `state.pickedPartner`）。 */
   default: {
-    D: { name:'索菈娜', portrait:'resources/SI/RennaSorana_SI_annoyedD.webp',
+    D: { name:'索菈娜', partner:'sorana', portrait:'resources/SI/RennaSorana_SI_annoyedD.webp',
          text:'哈！這次算平手！' },
-    C: { name:'索菈娜', portrait:'resources/SI/RennaSorana_SI_annoyedC.webp',
+    C: { name:'索菈娜', partner:'sorana', portrait:'resources/SI/RennaSorana_SI_annoyedC.webp',
          text:'嘿嘿！要是沒有我你就倒楣了吧！' },
   },
 };

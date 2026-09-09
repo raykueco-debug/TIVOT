@@ -396,8 +396,16 @@ function pickEvaluator(rankKey, battleId){
      查表**專屬優先、沒有才走 `default`**（同 `BY_BATTLE` → 通用表那一層的查法）。
      -838 原本只掛在村戰上，於是別的場次拿到 C／D 什麼都不會發生 —— 那不是壞掉，
      是資料只有一場（Ray 回報的正是這個）。台詞已移進 `INTRUDE.default`。 */
-  const fol = (EVAL_INTRUDE[battleId]||{})[rankKey]
-           || (EVAL_INTRUDE.default||{})[rankKey] || null;
+  let fol = (EVAL_INTRUDE[battleId]||{})[rankKey]
+         || (EVAL_INTRUDE.default||{})[rankKey] || null;
+  /* ══⚠⚠⚠ **亂入的人要「這一局真的出戰」**（ver -1018，Ray：「如果索拉娜沒有在該局
+     出戰，就算拿到 CD 評價她也不會出現」）══
+     -959 把它改成全域通用（每一場 C／D 都會亂入），但那一版漏了一件事：
+     **她可能根本不在場**。一個沒上場的人跳出來嗆你，讀起來是穿幫不是驚喜。
+     ⚠ 條件寫在**資料**上（`INTRUDE[…].partner`，鐵律 1）不是寫死 'sorana' ——
+       日後換人亂入只要改那一格。沒寫 `partner` ＝不限（維持舊行為）。
+     ⚠ 問 `state.pickedPartner`（＝這一局出戰的那一位，唯一的真相）。 */
+  if(fol && fol.partner && state.pickedPartner !== fol.partner) fol = null;
   return { name: who.name || '',
            portrait: (ex && ex.src) || art.base || '',
            line: one.text || '',
