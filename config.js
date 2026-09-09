@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.09-1021';
+export const VERSION = 'ver 2026.09.10-1022';
 
 export const GAME_CONFIG = {
 
@@ -374,6 +374,9 @@ export const GAME_CONFIG = {
        ⚠ 本篇的整備頁**只列她一個**（見 modules/gear.js 的 `partnerKeys`）；
          試玩版的選人畫面照舊列全部。 */
     nouvelle: {
+      /* 升級語音（ver -1022，Ray：「升級要播 se 跟 vo，後補」）——
+         可寫陣列＝輪播（走 `SFX.pickRot`）；null ＝不出聲。 */
+      levelUpVoice:null,
       name:'諾薇兒',
       image:'partner_nouvelle',
       /* 整備頁伙伴卡的「變身」欄（ver -841，Ray：「伙伴卡也要記載聖徒化 夢魘化
@@ -525,6 +528,9 @@ export const GAME_CONFIG = {
          （右滑發動、上滑自爆），不經過搭檔的被動／主動系統。
        ⚠ `siFit` 是估的（同諾薇兒那一張的作法）—— 換成她自己的選人立繪時要重量。 */
     anya: {
+      /* 升級語音（ver -1022，Ray：「升級要播 se 跟 vo，後補」）——
+         可寫陣列＝輪播（走 `SFX.pickRot`）；null ＝不出聲。 */
+      levelUpVoice:null,
       install:{ name:'夢魘化', en:'NIGHTMARE INSTALL',
         /* ⚠ ver -967：「體力灌滿後」→「由**當下的體力**」（不再灌滿）。
            ⚠ ver -974：**滿血 13 秒**（長度由血量決定，不再是一律 15 秒）、
@@ -619,6 +625,9 @@ export const GAME_CONFIG = {
          同安雅的惡夢化。所以 `cutin` 是共鬥的變身圖。
        ⚠ 被動名「獵手的直覺」是**我填的佔位**（Ray 只給了效果與 CI_Sorana_cheer）。 */
     sorana: {
+      /* 升級語音（ver -1022，Ray：「升級要播 se 跟 vo，後補」）——
+         可寫陣列＝輪播（走 `SFX.pickRot`）；null ＝不出聲。 */
+      levelUpVoice:null,
       name:'索菈娜',
       image:'partner_sorana',
       selectVoice:'vo_sorana_pack',   // 選人確認音（ver -839，Ray 指定）

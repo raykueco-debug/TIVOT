@@ -225,7 +225,10 @@ export function awardExp(score, stats, shares){
     const r = prog.addGirlExp(one.key, amount);
     if(!r) continue;
     const pc = (GAME_CONFIG.partners||{})[one.key] || {};
-    out.push({ who:one.key, name:pc.name||one.key, gain:r.gain, from:r.from, to:r.to });
+    /* `exp` ＝**這一局之後**的累計（`r.exp`）—— 進度條要畫的「之前」是
+       `exp − gain`（ver -1022）。⚠ 不在畫面端另外讀一次存檔：那時已經加過了，
+       而且中間可能又被別的路徑動過（鐵律 7）。 */
+    out.push({ who:one.key, name:pc.name||one.key, gain:r.gain, from:r.from, to:r.to, exp:r.exp });
   }
   return out;
 }
@@ -248,14 +251,19 @@ function expRows(gains){
          `expTo` 減一次，那是同一個量的第二個計算點。
        ⚠ 滿級（`to` 為 null）印 MAX，不要印「還差 0」。
        ⚠ 印在**升級那一行之後**：先報喜（LEVEL UP），再報「下一站在哪」。 */
-    const pr = prog.girlProgress(g.who);
-    if(pr){
-      const star = prog.girlStarName(g.who, pr.lv+1);
-      rows += '<div class="row"><span>　　Lv'+pr.lv+'　'+pr.exp
-            + (pr.to!=null ? ' / '+pr.to : '') + '</span><b>'
-            + (pr.to==null ? 'MAX'
-                           : ('還差 '+pr.need + (star ? '　→　'+star : ''))) + '</b></div>';
-    }
+    /* ══⚠⚠⚠ **進度條**（ver -1022，Ray：「EXP 要做成進度條式的動畫，
+       升級要播 se 跟 vo」）══
+       這一列只把**起點與增量**寫進 data 屬性，動畫由 `animateExpBars()` 驅動
+       （rAF，見那一支）—— HTML 這邊不算任何位置，免得同一個量有兩個計算點。
+       ⚠ 起點 ＝ `g.exp − g.gain`（這一局之前的累計）；`awardExp` 已經把新的
+         累計交出來了，不要在這裡回頭讀存檔（那時已經加過）。
+       ⚠ 升級可能**不只一級**（跳關／大量 EXP），所以動畫是一段一段跑的，
+         這裡不預先決定要跑幾段。 */
+    rows += '<div class="row exp-prog" data-who="'+g.who+'"'
+          + ' data-exp="'+((g.exp|0) - (g.gain|0))+'" data-gain="'+(g.gain|0)+'">'
+          + '<span class="exp-lv">Lv-</span>'
+          + '<i class="exp-bar"><b></b></i>'
+          + '<span class="exp-num">—</span></div>';
   }
   return rows;
 }
@@ -267,6 +275,69 @@ export function scoreToExp(score, stats, cfg = GAME_CONFIG.rating.exp){
   exp += jitter;
   exp += (stats.overkill || 0) * cfg.overkillExp;   // 每次 overkill +overkillExp
   return Math.round(exp);
+}
+
+/* ══⚠⚠⚠ **EXP 進度條的動畫**（ver -1022，Ray：「EXP 要做成進度條式的動畫，
+   升級要播 se 跟 vo，後補」）══════════════════════════════════════════════════
+   一段一段跑：從「這一局之前」的位置開始，填滿一級就**歸零、換下一級**，
+   最後停在這一局結束時的位置。升級那一刻插一聲。
+     · 門檻表只有 `prog.girlProgressOf(exp)` 在查（鐵律 7）—— 這裡不碰 `expTo`。
+     · **升級不只一級**時自然會跑好幾段（跳關／大量 EXP），不必特判。
+     · 滿級最後一段直接填滿並印 MAX。
+   ⚠ **速度是「每一級固定秒數」不是「每點 EXP 固定秒數」**：後者在高等級
+     （門檻 5600 點）會跑到天荒地老，而玩家只想知道「我離下一顆星多遠」。
+   ⚠ 走 rAF、跑完自己收：這一頁會停留很久，留一支無限計時器在上面是發熱源
+     （鐵律 10 的精神，同共鬥的抽表）。
+   ⚠ 音效鑰匙在**資料**上（鐵律 1）：SE 走 `rating.exp.levelUpSe`（全域，
+     那是「升級」這件事的聲音），VO 走**搭檔卡**的 `levelUpVoice`（那是她的聲音，
+     可以是陣列＝輪播）。⚠ Ray 說「後補」——**兩格現在都是 null，沒填就不出聲**。 */
+const EXP_BAR_SEC = 0.9;            // 一級跑多久（秒）
+let expBarRaf = 0;
+export function stopExpBars(){ if(expBarRaf) cancelAnimationFrame(expBarRaf); expBarRaf = 0; }
+function levelUpSound(who){
+  const k = ((GAME_CONFIG.rating||{}).exp||{}).levelUpSe;
+  if(k && asset(k)){ try{ SFX.play(asset(k), sfxGain(k)); }catch(_){} }
+  const pc = (GAME_CONFIG.partners||{})[who] || {};
+  const vk = SFX.pickRot(pc.levelUpVoice);
+  if(vk && asset(vk)){ try{ SFX.playVoice(asset(vk), sfxGain(vk)); }catch(_){} }
+}
+function animateExpBars(){
+  stopExpBars();
+  const host = $('resultStats'); if(!host) return;
+  const rows = [].slice.call(host.querySelectorAll('.exp-prog[data-gain]'));
+  if(!rows.length) return;
+  const jobs = rows.map(el=>{
+    const who = el.dataset.who || '';
+    const exp0 = +el.dataset.exp || 0, gain = +el.dataset.gain || 0;
+    return { el, who, exp0, gain,
+             lvEl: el.querySelector('.exp-lv'), fill: el.querySelector('.exp-bar > b'),
+             numEl: el.querySelector('.exp-num'),
+             lastLv: prog.girlProgressOf(exp0).lv, t0: 0 };
+  });
+  /* 這一條總共要跑幾級 → 決定總長（每級 EXP_BAR_SEC，至少跑一段）。 */
+  jobs.forEach(j=>{
+    const a = prog.girlProgressOf(j.exp0), b = prog.girlProgressOf(j.exp0 + j.gain);
+    j.levels = Math.max(1, (b.lv - a.lv) + 1);
+    j.durMs  = j.levels * EXP_BAR_SEC * 1000;
+  });
+  const start = performance.now();
+  const tick = (now)=>{
+    let alive = false;
+    for(const j of jobs){
+      const p = Math.min(1, (now - start) / j.durMs);
+      if(p < 1) alive = true;
+      const pr = prog.girlProgressOf(j.exp0 + Math.round(j.gain * p));
+      if(pr.lv > j.lastLv){ j.lastLv = pr.lv; levelUpSound(j.who);
+                            j.el.classList.remove('lvup'); void j.el.offsetWidth;
+                            j.el.classList.add('lvup'); }
+      if(j.lvEl)  j.lvEl.textContent = 'Lv'+pr.lv;
+      if(j.fill)  j.fill.style.width = Math.round(pr.ratio*100)+'%';
+      if(j.numEl) j.numEl.textContent = (pr.to==null) ? 'MAX'
+                    : (pr.exp+' / '+pr.to+'　還差 '+pr.need);
+    }
+    expBarRaf = alive ? requestAnimationFrame(tick) : 0;
+  };
+  expBarRaf = requestAnimationFrame(tick);
 }
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -773,6 +844,12 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose, opts){
   rowEls.forEach((el,idx)=>{ el.style.animationDelay=(idx*step)+'ms'; });
   // 稍等立繪起手後再刷 rows
   setTimeout(()=>{ stats.classList.add('sweep'); }, 260);
+  /* EXP 進度條（ver -1022）：等那一列**刷進來之後**才開始跑 —— 提早跑的話玩家
+     看到的是「已經在動的一條線」，讀不出「它從哪裡出發」。
+     ⚠ 重進這一頁要先停掉上一次的 rAF（`animateExpBars` 開頭自己會 stop，
+       這裡是給「這一頁沒有 EXP 列」那條路用的保險）。 */
+  stopExpBars();
+  setTimeout(animateExpBars, 260 + (n>0 ? (n-1)*step : 0) + 220);
 
   // ── 階段三＋四：rows 刷完後彈出對話框，逐字顯示台詞（2 秒內）──
   //   教學戰（tutorialRun）走 tutorialSettle（noInspector，ver -358 起無台詞），不進這裡

@@ -272,15 +272,21 @@ export function girlLevel(who){
   return 1;
 }
 export function girlMaxLv(){ return (girlCfg().expTo || [0]).length; }
-/* 距離下一級還差多少／這一級的區間（顯示用）。滿級回 null。 */
-export function girlProgress(who){
+/* ══ 距離下一級還差多少／這一級的區間 ══ 滿級 `to` 回 null。
+   ⚠⚠ ver -1022：拆成**吃「累計 EXP」的純函式**（`girlProgressOf`）＋ 讀現況的
+   包裝（`girlProgress`）—— 結算頁的 EXP 進度條要畫「這一局之前」與「之後」兩個
+   位置，那個「之前」是算出來的，不是現在存檔裡的值。
+   ⇒ 等級的門檻表因此仍然**只有這一支在查**（鐵律 7）：呼叫端不要自己拿 `expTo` 比。 */
+export function girlProgressOf(exp){
   const tab = girlCfg().expTo || [0];
-  const lv = girlLevel(who), e = girlExp(who);
+  const e = Math.max(0, +exp||0);
+  let lv = 1; for(let i=tab.length-1; i>=0; i--){ if(e >= tab[i]){ lv = i+1; break; } }
   if(lv >= tab.length) return { lv, exp:e, from:tab[lv-1], to:null, need:0, ratio:1 };
   const from = tab[lv-1], to = tab[lv];
   return { lv, exp:e, from, to, need:Math.max(0, to-e),
            ratio: (to>from) ? Math.min(1, Math.max(0, (e-from)/(to-from))) : 1 };
 }
+export function girlProgress(who){ return girlProgressOf(girlExp(who)); }
 /* 加 EXP。回傳 `{who, gain, exp, from, to}`（`from`／`to` ＝等級，用來報升級）；
    不是這套系統裡的人就回 null。
    ⚠ **只有 `inspector` 的結算會叫它**（正規入口只有一個，鐵律 8）——
