@@ -2835,6 +2835,9 @@ function advance(){
      ⚠ 實測時就是這樣跳過去的（單子在 z-9600、真的玩點不到底下，但程式化的點擊
        打得到）。同 `kerbPlaying` 的理由：演出／閘門進行中，點擊無效。 */
   if(kitchenOpen) return;
+  /* 料理的「成品登場」在等點擊（ver -1000）：把它做完，**這一次點擊不推進對白**
+     —— 同 `flushReveal` 的規矩（一拍還沒演完，點下去就是把那一拍演完）。 */
+  if(cookWaitTap){ const f=cookWaitTap; cookWaitTap=null; try{ f(); }catch(_){} return; }
   const line = cur && cur.lines[lineIdx];
   const tx = $('storyText');
   clearTimeout(autoT); autoT=null;   // 玩家點了 → 演出拍提前收，別讓計時器再推一次
@@ -3634,14 +3637,22 @@ let cookT=[], cookCue=null, cookDone=null;
 /* 上一拍的 `cook` 是不是**第一次**煮成 —— `{ boon }` 那一拍靠它決定要不要報大字。 */
 let lastCookFirst=false;
 function cookClear(){
+  cookWaitTap = null;                  // ver -1000：重來一次就不要留著上一次的等待
   cookT.forEach(clearTimeout); cookT=[];
   if(cookCue){ try{ cookCue.stop(420); }catch(_){} cookCue=null; }
 }
 export function stopCooking(){
+  /* ⚠ 換畫面時**丟掉**那個等點擊的回呼，不補跑（同 `pendingReveal` 的規矩：
+     補跑等於把上一個畫面的演出請到新畫面上來）。 */
   cookClear(); cookDone=null;
-  const c=$('storyCook'); if(c){ c.classList.remove('show','on','dish','dish-pre'); const im=c.querySelector('img'); if(im) im.onload=null; }
+  const c=$('storyCook'); if(c){ c.classList.remove('show','on','dish','dish-pre','tap'); const im=c.querySelector('img'); if(im) im.onload=null; }
   const b=$('storyBoon'); if(b){ b.classList.remove('show'); b.classList.remove('on'); }
 }
+/* ══ 「成品登場」那一拍在等點擊（ver -1000）══ 存的是**還沒做完的那一件事**
+   （`finish`），`advance()` 進來第一件事就是把它做完並吃掉這一次點擊。
+   ⚠ 與 `pendingReveal` 同一個模式（鐵律 8）：被打斷就**做完**，不是取消。
+   ⚠ `cookClear`／`stopCooking` 要一起清掉它 —— 換畫面時不可以留著一個等點擊的殘念。 */
+let cookWaitTap = null;
 export function playCooking(dishId, opts, done){
   const st=$('storyStage'); const o=opts||{};
   const C=(GAME_CONFIG.cooking||{}), D=(C.dishes||{})[dishId];
@@ -3692,7 +3703,15 @@ export function playCooking(dishId, opts, done){
       if(img.complete && img.naturalWidth) { img.onload=null; pop(); }
     }else pop();
     const lab=c.querySelector('.cook-label'); if(lab) lab.textContent=D.name||'';
-    cookT.push(setTimeout(finish, C.holdMs||1500));
+    /* ══⚠⚠ **菜做好之後要點一下才往下推**（ver -1000，Ray：「菜作好以後要點擊才會
+       往下推進，跟對話一樣」）══ 原本是 `setTimeout(finish, holdMs)` 自己走掉 ——
+       那一拍是「成品登場」，玩家還在看那盤菜，時間到就跳掉等於沒給他看。
+       ⚠ 作法與對白同一族（ver -430 的 `flushReveal`）：把「還沒做完的那一件事」
+         存起來，`advance()` 第一件事就是把它做完 —— **不是**在 `#storyTouch` 上
+         另掛一個 listener（那會與 `advance` 打架：一次點擊兩邊都收到）。
+       ⚠ `.tap` ＝畫面上那個閃爍的 ▼（不給提示玩家不知道要點）。 */
+    c.classList.add('tap');
+    cookWaitTap = finish;
   }, animMs));
   return true;
 }
@@ -3711,12 +3730,24 @@ export function showBoon(dishId, done){
   const C=(GAME_CONFIG.cooking||{});
   let b=$('storyBoon');
   if(!b){ b=document.createElement('div'); b.id='storyBoon'; st.appendChild(b); }
+  /* ══⚠⚠ **ver -1000：改成「浮字上飄淡出」＋回復音**（Ray：「體力上限＋40 要像
+     回復道具特效一樣字往上飄然後淡出，搭 se_heal。字不要擺那麼大那麼開，
+     確保能看到的大小就好」）══
+     · 原本是一段 SI 級的巨大字淡入淡出（`clamp(24px,7.4vw,44px)`、字距 .1em）——
+       在場景區中央擋掉整盤菜。
+     · 現在：小一級、字距收緊，**升起同時淡出**（CSS 的 `.show` → `.out` 兩段）。
+     ⚠ 兩段要分開的 class：只靠移除 `.show` 的話它會**滑回原位**才消失，
+       讀起來是「掉下去」不是「飄上去」。
+     ⚠ 音效走既有的 `se_healing`（＝使用回復道具那一支，鐵律 8）—— 這一份加成
+       就是「補了體力上限」，用同一個聲音玩家一聽就懂。 */
   b.innerHTML='<b>體力上限　＋'+up+'</b>';
-  b.classList.remove('show'); b.classList.add('on'); void b.offsetWidth;
+  b.classList.remove('show','out'); b.classList.add('on'); void b.offsetWidth;
+  playSe('se_healing');
   cookT.push(setTimeout(()=>{ b.classList.add('show'); }, 40));
   cookT.push(setTimeout(()=>{
-    b.classList.remove('show');
-    cookT.push(setTimeout(()=>{ b.classList.remove('on'); if(done) try{ done(); }catch(_){} }, 400));
+    b.classList.add('out');
+    cookT.push(setTimeout(()=>{ b.classList.remove('on','show','out');
+                                if(done) try{ done(); }catch(_){} }, 520));
   }, (C.boonMs||1600)));
   return true;
 }

@@ -3205,15 +3205,29 @@
   /* ══ 加成的大字（ver -953，Ray：「HP上限增＋40（SI級大字）」）══
      ⚠ 排在料理那一層**之上**（z-6 之下、料理之上）：它是那一拍的結論，
        要壓在成品圖上面。⚠ 同樣用 transition 顯形（perf-idle 那條）。 */
+  /* ══ 加成的浮字（ver -1000，Ray：「像回復道具特效一樣字往上飄然後淡出…
+     字不要擺那麼大那麼開」）══ 原本是 SI 級的巨大字（clamp 24~44px、字距 .1em）
+     在場景區正中淡入淡出，把整盤菜擋掉。現在小一級、字距收緊、**升起同時淡出**。
+     ⚠ `.show` 與 `.out` 要分開：只移除 `.show` 的話它會滑回原位才消失，
+       讀起來是「掉下去」不是「飄上去」。 */
   #storyBoon{position:absolute;left:0;right:0;top:0;height:var(--story-top);
     z-index:5;display:none;align-items:center;justify-content:center;
-    pointer-events:none;opacity:0;transition:opacity .38s ease;}
+    pointer-events:none;opacity:0;transform:translateY(10px);
+    transition:opacity .34s ease, transform .34s ease;}
   #storyBoon.on{display:flex;}
-  #storyBoon.show{opacity:1;}
-  #storyBoon b{font-weight:800;letter-spacing:.1em;text-align:center;
-    font-size:clamp(24px,7.4vw,44px);color:#ffe9b8;
-    text-shadow:0 0 10px rgba(255,214,130,.9), 0 0 34px rgba(255,170,60,.55),
-                0 3px 14px rgba(0,0,0,.7);}
+  #storyBoon.show{opacity:1;transform:translateY(0);}
+  #storyBoon.out{opacity:0;transform:translateY(-34px);
+    transition:opacity .5s ease, transform .5s ease;}
+  #storyBoon b{font-weight:700;letter-spacing:.04em;text-align:center;
+    font-size:clamp(15px,4.2vw,22px);color:#ffe9b8;
+    text-shadow:0 0 8px rgba(255,214,130,.85), 0 0 20px rgba(255,170,60,.45),
+                0 2px 8px rgba(0,0,0,.7);}
+  /* 料理「成品登場」在等點擊時的 ▼（ver -1000）—— 不給提示玩家不知道要點。
+     ⚠ 沿用對話框那個箭頭的閃法（同一個語彙：畫面在等你點一下）。 */
+  #storyCook.tap .cook-label::after{content:'▼';display:block;margin-top:4px;
+    font-size:11px;color:var(--gold);opacity:.9;animation:boonTap 1s ease-in-out infinite alternate;}
+  @keyframes boonTap{from{opacity:.25;transform:translateY(0);}
+                     to{opacity:.95;transform:translateY(3px);}}
   /* ⚠⚠ 點畫面**任一處**收掉那張卡（ver -899）：透明、滿版、壓過所有可按的東西
      （導覽 z-7／楣 z-6／角落鈕 z-8）。卡自己照舊留在楣之下 —— 見 modules/town.js
      `showMapCard` 那一段：視覺在楣下、接點在最上，是兩個不同的要求。
