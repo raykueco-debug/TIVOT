@@ -240,6 +240,22 @@ function expRows(gains){
       rows += '<div class="row"><span>LEVEL UP</span><b>'+g.name+'　Lv'+g.to
             + (star ? '　'+star : '') + '</b></div>';
     }
+    /* ══⚠⚠⚠ **這一局之後她在哪裡**（ver -1021，Ray：「EXP 現在要在結算顯示」）══
+       原本只印「＋n」與升級那一行 —— 玩家（與我）因此**看不出離下一顆星還差多少**，
+       而這兩天「星怎麼沒亮」的排查有一半卡在這件事上（等級是累計 EXP 推出來的，
+       畫面上完全沒有第二個地方看得到它）。
+       ⚠ 進度問 `prog.girlProgress`（唯一查詢點，鐵律 7）—— 不要在這裡自己拿
+         `expTo` 減一次，那是同一個量的第二個計算點。
+       ⚠ 滿級（`to` 為 null）印 MAX，不要印「還差 0」。
+       ⚠ 印在**升級那一行之後**：先報喜（LEVEL UP），再報「下一站在哪」。 */
+    const pr = prog.girlProgress(g.who);
+    if(pr){
+      const star = prog.girlStarName(g.who, pr.lv+1);
+      rows += '<div class="row"><span>　　Lv'+pr.lv+'　'+pr.exp
+            + (pr.to!=null ? ' / '+pr.to : '') + '</span><b>'
+            + (pr.to==null ? 'MAX'
+                           : ('還差 '+pr.need + (star ? '　→　'+star : ''))) + '</b></div>';
+    }
   }
   return rows;
 }
