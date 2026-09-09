@@ -396,6 +396,11 @@ export function resolveThreat(th){
      ⚠ 開不出來就是**沒反擊**：那一帶的 `take` 照樣挨（上面 `takeOf` 的 `fired`）、
        硬直也不給。玩家要看得懂為什麼，所以浮一個 BOLT。 */
   const canFire = ()=> !api.counterReady || api.counterReady();
+  /* 霸王條款開了一發（ver -1012）：**只有 `hitForce` 真的把它抬成命中**才算 ——
+     玩家自己點到紅圈那一發不算（判定歸技術、覆蓋歸技能，ver -974 三分法）。
+     ⚠ 只有這一支答得出「這一發是不是靠技能開出去的」，所以由它通知（鐵律 7）；
+       收多少錢是 saint 的事（`niForcedCounter`）。 */
+  const billForced = ()=>{ if(hitForce && api.onForcedCounter) api.onForcedCounter(); };
   const boltFloat = ()=> api.floatDmg((L.battle && L.battle.boltCd) || 'BOLT','50%','34%',false);
   let grade='block';   // 判定等級：'counter' | 'perfect' | 'block'（傳給教學層分流，見文末通知）
   /* ⚠⚠ **「真的點到紅圈」與「被技能算成紅圈」要分開報**（ver -887，Ray：
@@ -445,6 +450,7 @@ export function resolveThreat(th){
       const fa = fireArgs(bp, bp.hit);          // ver -974：攻擊力帶／命中可被技能覆蓋
       api.weaponCounter(fa.scale, fa.hit, fa.roll, 'perfect');
       staggerOnCounter();
+      billForced();                             // ver -1012：橘圈靠霸王條款命中 → 收費
       bpFired = true;
     }else if(bp.counter){
       boltFloat();                              // ver -1009：拉栓中，這一發開不出來
@@ -501,6 +507,7 @@ export function resolveThreat(th){
           const fa = fireArgs(bb, hit);
           api.weaponCounter(fa.scale, fa.hit, fa.roll, 'block');
           staggerOnCounter();
+          billForced();                         // ver -1012：黃圈靠霸王條款命中 → 收費
           bbFired = true;
         }else boltFloat();                // ver -1009：拉栓中，這一發開不出來
       }

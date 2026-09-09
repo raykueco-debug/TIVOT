@@ -366,16 +366,28 @@ export function niAtkMul(){
   if(!state.niMode) return 1;
   return 1 + prog.girlBonus(state.pickedPartner, 'niDmgMul');
 }
-/* ══ 「雙生星」（安雅 Lv9，ver -974）：每一次反擊讓夢魘化的抽血停 0.5 秒 ══
-   實作＝把這一段的**總長**延長 0.5 秒。抽血是「從起點線性到 1」，總長一拉長，
-   之後每一刻扣得就少 —— 與「停 0.5 秒」等價，而且不必另做一套暫停／續跑的狀態
-   （那會與受擊、cut-in 凍結那幾條互相打架）。
-   ⚠ 呼叫點只有 combat 注入給 defense 的那個 `weaponCounter` 包裝（＝「反擊開火了」，
-     三帶都算）—— `partner.onCounter` 進不來（它在 niMode 直接 return）。 */
-export function niCounterPause(){
+/* ══⚠⚠⚠ **霸王條款的價目表**（ver -1012，Ray 定案）══════════════════════════
+   夢魘化期間，靠**命中霸王條款**保證命中的那一發反擊要付錢；
+   **玩家真的點到紅圈的完美反擊免費**（判定歸技術、覆蓋歸技能，ver -974 三分法）。
+     · 基礎：抽掉 `tuning.nightmare.forcedCounterSec`（1 秒）的倒數槽。
+     · Lv9「孿生星」：**先從破防計扣**（一次 1/3 表），扣完了才開始扣命。
+   ⚠ 呼叫點只有 `defense.resolveThreat` 真的用霸王條款開火那一次
+     （經 combat 注入為 `api.onForcedCounter`）—— 不要掛在 `weaponCounter` 上，
+     那一支被三帶＋所有搭檔共用，掛上去就變成「每一次反擊都收費」（鐵律 7）。
+   ⚠ `energy` 的擁有者是 combat，所以扣表走注入的 `api.setEnergy`（§3.1）。
+   ⚠⚠ ver -974~-1011 的「雙生星＝反擊讓抽血停 0.5 秒」已**整顆推翻**：
+     那是在補她已經最強的地方。 */
+export function niForcedCounter(){
   if(!state.niMode) return;
-  const sec = prog.girlBonus(state.pickedPartner, 'niCounterPauseSec');
-  if(sec>0) state.niTotalMs = (state.niTotalMs||0) + sec*1000;
+  /* Lv9 孿生星：破防計先付。⚠ 只要**還有一點**就整發由它付掉（不找零）——
+     「多扛三次」是 Ray 給的語感，不是精算。 */
+  const pct = prog.girlBonus(state.pickedPartner, 'niCounterEnergy');
+  if(pct>0 && state.energy>0){
+    if(api.setEnergy) api.setEnergy(state.energy - pct*100);
+    return;
+  }
+  const sec = (NI.forcedCounterSec!=null) ? NI.forcedCounterSec : 0;
+  if(sec>0) nightmareHit(sec);        // 換算成槽量的那一支只有一處（鐵律 7）
 }
 /* ══ 「負行星」（諾薇兒 Lv8，ver -971）：聖徒化期間每一發射擊都延長倒數 ══
    聖徒化的血條＝倒數槽，**扣血＝延長**。第 2 hit 起，每發扣 `playerMax` 的 1%。
@@ -729,7 +741,10 @@ export function nightmareTap(num, cell){
     SFX.gunshot(true);
     cell.classList.add('done'); cell.classList.remove('next'); api.shatterCell(cell);
     state.combo++;
-    const d=Math.round((api.hitDamage() + state.combo*saintComboStep()) * niAtkMul());   // ver -974：拳鬥者星
+    /* ⚠ ver -1012（Ray：「我記得夢魘化好像也會加普攻，拿掉」）：**盤面點格不吃
+       拳鬥者星** —— 那顆星現在只加反擊（`weapon.weaponCounter` 那一處）。
+       安雅的定位是反擊，普攻加成是白給的。 */
+    const d=Math.round(api.hitDamage() + state.combo*saintComboStep());
     api.enemyDamage(d, true, false, 'saint');
     state.niDamage += d;
     state.niCells++;                 // 夢境粉碎的份量由「清了幾格」換算（ver -688）

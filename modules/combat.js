@@ -86,11 +86,12 @@ export function setup(){
                  weaponCounter: (sc, hit, roll, grade)=>{
                    weapon.weaponCounter(sc, hit, roll, grade);
                    if(prog.girlHas(state.pickedPartner,'guardHealCounter')) shotHeal();
-                   /* 安雅「雙生星」（Lv9，ver -974）：每一次反擊讓夢魘化的抽血停 0.5 秒。
-                      ⚠ 掛在這裡＝「**反擊開火了**」（三帶都算，同鐵律 ver -722 的分法）——
-                        `partner.onCounter` 進不來（它在 niMode 直接 return）。 */
-                   saint.niCounterPause();
                  },
+                 /* ══ 霸王條款的價目表（ver -1012）══ **只有真的靠 `hitForce` 開出去
+                    的那一發**才收費（defense 才分得出來，鐵律 7）——
+                    掛在上面那個 `weaponCounter` 包裝的話會變成「每一次反擊都收費」，
+                    連玩家真本事點到的紅圈也要付，那正好與 -974 的三分法相反。 */
+                 onForcedCounter: saint.niForcedCounter,
                  /* ver -974：反擊的「攻擊力帶」與「命中霸王條款」由 partner 回答
                     （defense 不 import partner，經此轉交；理由見那兩支的說明）。 */
                  counterAtkStep: partner.counterAtkStep,
@@ -1132,6 +1133,14 @@ function addEnergy(v){
      ⚠ Lv9「獵手星」才解開它 —— 那顆星的整句話就是「共鬥期間可累積之破防值，
        延長爆發時間」：**先能累積，才有得換成時間**。
      ⚠ -976 那一版寫「共鬥期間本來就照常累積」是**錯的判讀**（我當時沒問）。 */
+  /* ══⚠⚠⚠ **三個變身期間都不累積破防值**（ver -1012，Ray：「夢魘化、聖徒化、
+     共鬥期間都不加破防值，共鬥要 Lv9 獵手星解鎖才會加」）══
+     ⚠ 為什麼要有這一條：破防計現在是**三個人的共通貨幣**，而且在兩個人身上
+       直接等於「時間」（索菈娜的共鬥碼表、安雅 Lv9 的抽血緩衝）——
+       變身期間還照常累積的話，那兩位都會變成永動機（共鬥 -1005 已經踩過一次）。
+     ⇒ 破防計因此是**進場前存好的彈藥**，不是場內的自動循環。
+     ⚠ 守門收在這一處（鐵律 8）：點擊、反擊、清盤獎勵所有加值都經過這裡。 */
+  if(state.saintMode || state.niMode) return;
   if(state.coopMode){
     if(!prog.girlHas(state.pickedPartner,'coopEnergyTime')) return;
     /* 索菈娜「獵手星」（Lv9）：這裡**不必再換算成秒**（ver -1005）——
