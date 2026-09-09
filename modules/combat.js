@@ -364,6 +364,25 @@ function glassShards(cell){
   }
 }
 
+/* ══⚠⚠ **這一發回多少血**（ver -740 即死防禦免傷 2%／ver -964 生命歸還吸血 5%）══
+   「回多少」問 `partner.shotHealPct()` 一支（兩扇窗取大的、不相加，鐵律 7），
+   「什麼時候回」由這一支負責 —— **實際射出去的每一發都算**（鐵律 8）。
+
+   ⚠⚠⚠ **ver -965（Ray 改定）：放寬到雙槍破防與 overkill**
+   > Ray：「放寬吧，強化諾的奶媽感」
+   -740~-964 只掛在普攻那一支（那是即死防禦那扇窗當初的範圍）—— 於是開了 BR
+   或進 overkill 的那幾秒，吸血窗**看起來像壞了**（明明在打、血一動都不動）。
+   兩扇窗都是諾薇兒的，放寬之後她才真的是奶媽。
+
+   ⚠ **聖徒化／惡夢化不會走到這裡**：那兩個模式在 `tap` 開頭就分流出去了
+     （`saint.saintTap`／`nightmareTap`）—— 而且**絕對不可以**讓它們回血：
+     那兩條血條是倒數槽／抽血槽，「回血」在那裡的語意是推向 OBE ／ 延長惡夢化。
+   ⚠ 至少回 1 —— `playerMax` 小的場次乘完會被 `round` 抹成 0。 */
+function shotHeal(){
+  const gp = partner.shotHealPct();
+  if(gp>0) healPlayer(Math.max(1, Math.round(state.playerMax*gp)));
+}
+
 /* ============================================================================
  *  點擊判定
  * ========================================================================== */
@@ -390,6 +409,7 @@ function tap(num,cell,e){
     SFX.gunshot(true);
     hap.shot();                        // 破防窗口：**每一發**都震（ver -398，Ray 指定）
     enemyDamage(Math.round(dmg), false, false, 'dual');   // 破防窗口的射擊（ver -423：來源別）
+    shotHeal();                        // 回血窗（ver -965：BR 的每一發也算）
     if(state.cells.every(c=>c.classList.contains('done'))){
       /* ⚠⚠ 走**同一支** `clearBoard()`（ver -871，Ray：「索拉娜被動技清盤也要算盤數」
          —— 她的主動技直接進雙槍破防，BR 清掉整盤以前只記 recordBoardTime，
@@ -433,6 +453,7 @@ function tap(num,cell,e){
     state.critCombo++;
     saint.onSaintTap();                  // 九階「源泉」：連續 3 發 → 微量延長聖徒化（ver -707）
     enemyDamage(Math.round(okDmg), okCrit, false, 'saint');
+    shotHeal();                          // 回血窗（ver -965：overkill 的追打也算）
     if(state.cells.every(c=>c.classList.contains('done'))){ clearBoard(); return; }
     updateStatus();
     return;
@@ -454,12 +475,7 @@ function tap(num,cell,e){
     }
     state.critCombo++;
     enemyDamage(Math.round(dmg),crit,false,'basic');   // 點擊直接扣敵血（crit=true → 敵區跳紅字「暴擊」）
-    /* 普攻的回血窗（ver -740 即死防禦免傷 2%／**ver -964 生命歸還吸血 5%**）：
-       「這一發回多少」只問 `partner.shotHealPct()` 一支（鐵律 7）——
-       兩扇窗同時開著取大的，都關著回 0。
-       這個分支必為普攻（聖徒化／雙槍走上面的獨立分支），不必再判模式。 */
-    { const gp=partner.shotHealPct();
-      if(gp>0) healPlayer(Math.max(1, Math.round(state.playerMax*gp))); }
+    shotHeal();                          // 回血窗（即死防禦免傷／生命歸還吸血，ver -965 三種射擊都算）
     state.expect++;
     tutorial.onBoardProgress(state.expect-1);   // 教學：第四回合清滿 N 格 → 劇情殺（非教學 no-op）
     if(state.expect>state.N) clearBoard(); else markNext();

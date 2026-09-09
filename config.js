@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.09-964';
+export const VERSION = 'ver 2026.09.09-965';
 
 export const GAME_CONFIG = {
 
@@ -361,7 +361,7 @@ export const GAME_CONFIG = {
                 cutin:'cutin_nouvelle_guard', voice:'vo_nou_guard',   // ver -711：她自己的語音（原本借蕾妮的）
                 immuneSeconds:10, immuneHealPct:0.02,
                 desc:'受到足以致死的攻擊時，為玩家保留1hp續命，'
-                    +'並獲得10秒免傷；免傷期間普攻每次回復2%生命。' },
+                    +'並獲得10秒免傷；免傷期間每一發射擊回復2%生命。' },
       /* ⚠⚠⚠ **ver -964（Ray 改定）：不再回滿，改成「保留現血量 ＋ 10 秒吸血」**
            > 「主動技中止聖徒化，**保留現血量**並發動 10 秒吸血 buff，
            >   **一發回復玩家最大血量 5%**」
@@ -369,8 +369,9 @@ export const GAME_CONFIG = {
            倒數槽推到哪裡就剩多少，回血全部靠自己打回來 —— 打得準才活得下去。
          ⚠ `lifestealSeconds`／`lifestealPct` 是**這張卡**的（鐵律 1）；
            窗口在 cut-in 撤下才起算，實作見 `partner.js` 的 `vampUntil`。
-         ⚠ **只有普攻回血**（沿用即死防禦那扇窗的既有範圍）：雙槍破防與 overkill
-           的追打不回血。要放寬得 Ray 明講。
+         ⚠ **實際射出去的每一發都回血**（ver -965，Ray：「放寬吧，強化諾的奶媽感」）
+           —— 普攻／雙槍破防／overkill 追打都算，實作只有 `combat.shotHeal()` 一支。
+           ⚠ 聖徒化／惡夢化期間走不到（那兩條血條是槽，回血＝推向 OBE／延長惡夢化）。
          ⚠ ver -740（已推翻）：發動一律回滿（不再看當前血量）。
          ⚠⚠ **`context` 是 `'saint'`，不要再改**（ver -889，Ray：「只有聖徒化期間
            才能發動是正確的，放回去」）—— -888 誤讀「不囉唆」把這道門拆成 `'any'`，
@@ -380,7 +381,7 @@ export const GAME_CONFIG = {
                cutin:'cutin_return', voice:'vo_nou_return',   // ver -711：她自己的語音
                lifestealSeconds:10, lifestealPct:0.05,        // ver -964：吸血窗（秒／每發回最大生命的比例）
                desc:'聖徒化期間發動：強制中止聖徒化並保留當前體力，'
-                   +'其後 10 秒內每一發普攻回復最大體力的 5%。' },
+                   +'其後 10 秒內每一發射擊回復最大體力的 5%。' },
       /* ══ 無傷擊殺一場 → reload 聖徒化（ver -892 定為兩場，**ver -903 Ray 改成一場**：
          「諾薇兒改無傷一場就恢復聖徒化」）══
          ⚠ 「無傷」是**逐場（逐隻怪）**算的（`state.enemyHitsTaken`，同九星「方舟」

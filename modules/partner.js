@@ -254,11 +254,11 @@ function vampHealPct(){
   const act = p && p.active;
   return (act && act.key==='lifeReturn' && act.lifestealPct) || 0;
 }
-/* ══ 「這一發普攻回多少血（佔 playerMax 的比例）」的**唯一**查詢點（ver -964）══
-   呼叫端只有 `combat.tap` 的普攻分支一處 —— 日後再多一扇窗也是加在這裡，
-   不要在呼叫端各問一次（鐵律 7/8）。
-   ⚠ 目前**只有普攻算**（沿用 ver -740 即死防禦那扇窗的既有範圍）：
-     雙槍破防與 overkill 的追打**不回血**。要放寬得 Ray 明講。 */
+/* ══ 「這一發回多少血（佔 playerMax 的比例）」的**唯一**查詢點（ver -964）══
+   日後再多一扇窗也是加在這裡，不要在呼叫端各問一次（鐵律 7/8）。
+   ⚠ 「什麼時候回」不歸這裡管 —— 那是 `combat.shotHeal()` 一支
+     （ver -965 起：普攻／雙槍破防／overkill 三種射擊都算，Ray：「放寬吧，
+     強化諾的奶媽感」）。 */
 export function shotHealPct(){ return Math.max(guardHealPct(), vampHealPct()); }
 
 /* ══⚠⚠ **明晰之夢：每隻怪第一次反擊成功時發動**（`firstCounter`，ver -693，Ray：
