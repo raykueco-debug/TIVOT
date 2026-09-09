@@ -3063,14 +3063,32 @@
      ＋ `object-fit:contain` —— 用 `width:min(62vh,86%)` 那一版在直式手機上只佔到
      一半多一點，讀起來是「畫面中間貼了一張小圖」不是「她的感應罩下來」。
      ⚠ `contain` 不 `cover`：Q 版圖裁掉頭或腳比小一點更糟。 */
+  /* ══⚠⚠ **ver -966（Ray 改定）：不縮放、不半透、佔滿場景區、淡入後脈動** ══
+     > Ray：「安雅發動探索 ci 不用縮放 不用透明，淡入以後脈動就好，
+     >   尺寸佔畫面上方全部，可稍超出畫面」
+     · **不縮放** —— 舊版是 1.06→1→.9→.82 一路縮小（讀起來是「往後退」，
+       而這一拍要的是「她逼近、在感應」）。整支動畫**不碰 transform**。
+     · **不透明** —— 舊版停在 .96／.85，於是背景從她身上透出來。淡入到 **1** 為止。
+     · **佔滿上方** —— `#storyFx` 本來就是場景區（`height:var(--story-top)`，
+       而且 `overflow:hidden`），所以 `object-fit:cover` ＝填滿並裁掉溢出的部分
+       ＝Ray 說的「佔畫面上方全部，可稍超出」。⚠ 不要用 `contain`（那會留邊）。
+       圖是 1254×1254 的正方形，直式手機的場景區比它高 → 只裁左右各約一成。
+     · **脈動** —— 亮度＋外光暈的來回呼吸，**不動大小、不動位置**。
+     ⚠⚠ 收尾**藏進白光裡**：整支對齊 `.fx-sense-flash` 的 2 秒包絡 ——
+       白光在 45~55%（0.9~1.1s）是純白，CI 在 50% 那一刻歸零，所以看不到它消失。
+       改白光的秒數要**一起改這裡**（兩邊註解互指，鐵律 7 的但書）。 */
   #storyFx .fx-sense-ci{position:absolute;inset:0;z-index:2;pointer-events:none;
-    width:100%;height:100%;object-fit:contain;transform:scale(1.06);opacity:0;
-    animation:storySenseCI 2.6s cubic-bezier(.3,.5,.3,1) forwards;}
+    width:100%;height:100%;object-fit:cover;opacity:0;
+    animation:storySenseCI 2s ease forwards;}
   @keyframes storySenseCI{
-    0%{opacity:0;transform:scale(1.06)}
-    14%{opacity:.96;transform:scale(1)}
-    62%{opacity:.85;transform:scale(.9)}
-    100%{opacity:0;transform:scale(.82)}}
+    0%  {opacity:0;filter:brightness(1)   drop-shadow(0 0 0     rgba(180,230,255,0))}
+    12% {opacity:1;filter:brightness(1)   drop-shadow(0 0 0     rgba(180,230,255,0))}
+    21% {opacity:1;filter:brightness(1.3) drop-shadow(0 0 18px  rgba(180,230,255,.75))}
+    30% {opacity:1;filter:brightness(1)   drop-shadow(0 0 4px   rgba(180,230,255,.2))}
+    39% {opacity:1;filter:brightness(1.3) drop-shadow(0 0 18px  rgba(180,230,255,.75))}
+    48% {opacity:1;filter:brightness(1)   drop-shadow(0 0 4px   rgba(180,230,255,.2))}
+    50% {opacity:0}
+    100%{opacity:0}}
   #storyFx .fx-sense-ring{position:absolute;left:50%;top:46%;z-index:3;pointer-events:none;
     width:220vmax;height:220vmax;border-radius:50%;
     background:radial-gradient(circle, rgba(150,215,245,0) 52%, rgba(150,215,245,.4) 66%,
@@ -3081,6 +3099,8 @@
   /* 白光「隨光圈」淡入、再淡出 —— 與光圈同一拍發（Ray 的稿）。 */
   /* ⚠ 2 秒的包絡（ver -924，Ray：「全白的淡入淡出，2秒」）：
      0~0.9s 淡入到全白 → 0.9~1.1s 全白（換圖就藏在這一段）→ 1.1~2s 淡出。
+     ⚠⚠ **CI 的收尾也對齊這個包絡**（ver -966）：`storySenseCI` 在 50%（1.0s）
+       把 CI 歸零，正好落在這一段純白裡 —— 改這裡的秒數要一起改那一支。
      ⚠ 全白那一段要**不透明**（1 不是 .92）：半透的話換圖會從白裡透出來被看見。 */
   #storyFx .fx-sense-flash{position:absolute;inset:0;z-index:4;pointer-events:none;
     background:#f6fcff;opacity:0;animation:storySenseFlash 2s ease forwards;}

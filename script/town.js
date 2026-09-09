@@ -3096,9 +3096,16 @@ export const TOWNS = {
          安全點移到走到底的深部祭壇。名字留著（那是這個房間的樣子，不是機能）。 */
       /* ══ stage7 的兩段（ver -923，Ray 交稿）══
          ① 初次抵達：安雅指出「那個方向」。
-         ② 開門之後再回來：A／B 兩種說法，差別在**之前有沒有去過石橋**
-            （`seen_shinier_ruins_bridge` ＝既有的「走過了沒」旗，鐵律 7：
-            不另開一支「去過石橋」的旗）。 */
+         ② 開門之後再回來：A／B 兩種說法，差別在**開門之前有沒有去過石橋**
+            —— 條件旗是 **`sr_bridge`**（石橋那一段對白的旗），見下方 `bridge`
+            那一格的 ver -966 註解：那一段掛了 `until:'ruins_gate_open'`，
+            所以 `sr_bridge` **只可能在開門之前立起來** ＝它本身就是那個快照，
+            不必另外開一支旗（鐵律 7／9）。
+            ⚠⚠ **ver -966 由 `seen_shinier_ruins_bridge` 改成 `sr_bridge`**
+              （Ray：「應該要視開門事件前有沒有去過石橋來決定分支」）：
+              `seen_*` 是「**現在**走過了沒」—— 開門之後才第一次走去石橋，
+              它一樣會亮，回頭到這裡就跑出 A（「剛剛打開的，會是那扇門嗎？」），
+              而那時他明明已經站在那扇開著的門前看過了。 */
       brazier:    { bg:'Ruins_shinier_Brazier', name:'木雅克神殿　養息之間',
         acts:[
           { flag:'sr_brazier', lines:[
@@ -3117,18 +3124,18 @@ export const TOWNS = {
           ] },
           { flag:'sr_gate_brazier', need:'ruins_gate_open', lines:[
             any('point','那邊……'),
-            /* A：去過石橋（`onlyIf`）／B：沒去過（`skipIf`）—— 同一段裡兩條支線，
-               靠條件拍分岔（ver -656 的既有機制），不複製兩個 act。 */
+            /* A：開門前去過石橋（`onlyIf`）／B：沒去過（`skipIf`）—— 同一段裡兩條
+               支線，靠條件拍分岔（ver -656 的既有機制），不複製兩個 act。 */
             Object.assign(ren('thinking','……剛剛打開的，會是那扇門嗎？'),
-                          { onlyIf:'seen_shinier_ruins_bridge' }),
+                          { onlyIf:'sr_bridge' }),
             Object.assign(sor('lauaghbig','妳還真喜歡那個方向呢。'),
-                          { skipIf:'seen_shinier_ruins_bridge' }),
+                          { skipIf:'sr_bridge' }),
             Object.assign(any('dying',''),
-                          { skipIf:'seen_shinier_ruins_bridge' }),
+                          { skipIf:'sr_bridge' }),
             Object.assign(ren('evaluating',''),
-                          { skipIf:'seen_shinier_ruins_bridge' }),
+                          { skipIf:'sr_bridge' }),
             Object.assign(ren('evaluatingclosemouth','就去看看吧。說不定跟剛才的機關有關聯呢。'),
-                          { skipIf:'seen_shinier_ruins_bridge' }),
+                          { skipIf:'sr_bridge' }),
           ] },
         ],
         /* ⚠ 名字由「火盆」改成「養息之間」（ver -908，Ray）。**節點 id 不動** ——
@@ -3170,7 +3177,24 @@ export const TOWNS = {
            擋在 `exitsOf`（連箭頭都不出現，見 modules/town.js 的 `exitIf`）。 */
         exitIf:{ up:'ruins_gate_open' },
         acts:[
-          { flag:'sr_bridge', lines:[
+          /* ══⚠⚠⚠ **ver -966（Ray 回報）：開門之後這一段就不該再演** ══
+             > Ray：「若沒去過石橋就發生開門事件，會把兩個分支都播出來，
+             >   應該要視開門事件前有沒有去過石橋來決定分支」
+             成因：沒來過石橋就先觸發開門事件的話，**`sr_bridge` 與 `sr_gate_bridge`
+             同時到期** —— 而城鎮的 `acts` 是「還有下一段就原地接上」（ver -669），
+             於是「沒路了呢」（門明明開著）接著「打開了……」（他根本沒看過門關著）
+             一口氣播完，兩條支線疊在一起。
+             ⚠ 修法是給它一個終點：`until:'ruins_gate_open'` ＝**開門那一刻，
+               這一段就過期了**（`until` 的語意正是「別人那一段演完了就不再演」，
+               modules/town.js 的 `actDue`）。
+             ⚠⚠ **副作用正是我們要的快照**：加了它之後 `sr_bridge` 這支旗
+               **只可能在開門之前立起來** —— 所以它就是「開門前有沒有去過石橋」
+               的唯一真相（鐵律 7），底下那一段與養息之間的 A／B 都讀它，
+               不必另開一支旗（鐵律 9：這支旗誰插的＝這一段演完；誰拔的＝沒有人）。
+             ⚠ 邊角：來過石橋但對白沒推完就走掉（`flag` 是演完才記）→ 之後開門，
+               會被當成「沒去過」走 B。那是刻意的：B 是比較通用的說法，
+               而 A 那句「剛剛打開的，會是那扇門嗎？」預設玩家看過那扇門是關的。 */
+          { flag:'sr_bridge', until:'ruins_gate_open', lines:[
             any('point','就在前面。'),
             nou('awkward','就算你這麼說……'),
             ren('thinking','沒路了呢。'),
@@ -3181,7 +3205,10 @@ export const TOWNS = {
             sor('tease','這邊比較像小狗呢。'),
           ] },
           { flag:'sr_gate_bridge', need:'ruins_gate_open', lines:[
-            /* A：之前來過（門本來是關的）才有「打開了……」這一句。 */
+            /* A：**開門之前**來過（看過門是關的）才有「打開了……」這一句。
+               ⚠ `sr_bridge` 只可能在開門前立起來（見上一段的 `until`），
+                 所以這個條件問的就是「開門前去過石橋沒」—— 與養息之間那一段
+                 讀的是**同一支旗**（ver -966，鐵律 7）。 */
             Object.assign(any('scared','打開了……'), { onlyIf:'sr_bridge' }),
             any('point','在……那邊的盡頭。'),
             ren('evaluating','妳怎麼會知道呢？'),
