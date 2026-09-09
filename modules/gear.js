@@ -160,10 +160,15 @@ function skillBtnHtml(key){
 function skillWinHtml(key){
   if(!skillOpen || !prog.isGirl(key)) return '';
   const p=(GAME_CONFIG.partners||{})[key]||{};
-  return '<div class="gs-skillwin">'
-       +   '<div class="gs-swtitle">'+(p.name||'')+'　技　能　表</div>'
-       +   girlStarListHtml(key)
-       +   '<div class="gs-swclose" data-skillclose="1">關　閉</div>'
+  /* ⚠ ver -993（Ray：「技能表開個大小剛好的視窗就好，不用全屏」）：
+     外層 `.gs-skillwin` 現在是**壓暗的底**（點它就關掉），真正的視窗是裡面那一盒
+     `.gs-swbox`（置中、依內容給尺寸、有邊框）。 */
+  return '<div class="gs-skillwin" data-skillclose="1">'
+       +   '<div class="gs-swbox">'
+       +     '<div class="gs-swtitle">'+(p.name||'')+'　技　能　表</div>'
+       +     girlStarListHtml(key)
+       +     '<div class="gs-swclose" data-skillclose="1">關　閉</div>'
+       +   '</div>'
        + '</div>';
 }
 function ensure(){
@@ -551,6 +556,9 @@ function bind(){
     try{ SFX.menuClick(); }catch(_){}
     render();
   }));
+  /* ⚠ 盒子自己吃掉點擊 —— 不然點視窗裡面任何一處都會關掉（底是關閉熱區）。 */
+  { const box=el.querySelector('.gs-swbox');
+    if(box) box.addEventListener('click', e=>e.stopPropagation()); }
   el.querySelectorAll('[data-skillclose]').forEach(d=>d.addEventListener('click', e=>{
     e.stopPropagation(); skillOpen=false;
     try{ SFX.menuClick(); }catch(_){}
