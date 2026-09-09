@@ -73,6 +73,37 @@ function girlLvHtml(key){
        + '</div>';
 }
 
+/* ══⚠⚠ **女主的九星：唯讀顯示 ＋ 管理人模式手動點亮**（ver -980，Ray：
+   「開發者模式下讓角色技能可以手動點亮」）══
+   版面**沿用主武器九星那一套**（`.gs-stars`／`.gs-star`，鐵律 8：同一個樣子
+   只有一份 CSS）—— 差別只有「點亮的判準」與「點下去做什麼」：
+     · 九星是**非線性**的：一顆一顆各自算次數（`starCount`）
+     · 女主是**線性** Lv1→Lv9：第 i 顆亮不亮 ＝ `girlLevel(who) >= i`
+   ⚠ 所以管理人點第 i 顆 ＝ **把等級設成 i**（等於「點到這裡」）；
+     點**目前最高的那一顆**＝歸 Lv1（一顆鈕就能來回，同九星那條梯子的手感）。
+   ⚠⚠ 這是**明寫的開發梯子**（鐵律 9 的例外，同 `setStarCount`／`setGirlLevel`）——
+     正規的路只有結算發 EXP。沒有它，技能到了根本測不動。
+   ⚠ 星名還沒填的（安雅／索菈娜的卡到之前是空的）就印「Lv N」當名字，
+     **不要自己編一個**（同 `girlStarName` 那一條）。 */
+function girlStarListHtml(key){
+  if(!prog.isGirl(key)) return '';
+  const arr=((GAME_CONFIG.girls||{}).levels||{})[key]||[];
+  if(!arr.length) return '';
+  const lv=prog.girlLevel(key);
+  const dev=document.body.classList.contains('testmode');
+  const rows=arr.map((st,i)=>{
+    const on=(lv>=i+1);
+    return '<div class="gs-star gs-gstar'+(on?' on':'')+(dev?' dev':'')+'"'
+         /* ⚠ `who` 寫進屬性：卡上顯示的是**玩家正在看的那一頁籤**（`pk`，
+            可能不是出戰中的那一位）—— 在事件那邊重推一次必然走鐘（鐵律 7）。 */
+         +   (dev?' data-gstar="'+key+':'+i+'"':'')+'>'
+         +   '<i class="gs-starname">'+(st.star||('Lv'+(i+1)))+'</i>'
+         +   '<b>'+(st.name||('Lv'+(i+1)))+(on?'　✓':'')+'</b>'
+         +   '<span>'+(st.desc||'—')+'</span>'
+         + '</div>';
+  }).join('');
+  return '<div class="gs-perk"><b>星辰</b></div><div class="gs-stars">'+rows+'</div>';
+}
 function ensure(){
   if(el && el.parentNode) return el;
   el=document.createElement('div'); el.id='gearSheet';
@@ -275,6 +306,9 @@ function render(){
     +       (p.active  ? '<div class="gs-perk"><b>'+p.active.name+'（主動）</b>'
                        + '<span>'+p.active.desc+'</span></div>' : '')
     +       '<div class="gs-perk empty"><b>常駐</b><span>—</span></div>'
+    /* 女主的九星（ver -980）：唯讀，管理人模式整列可點（見 girlStarListHtml）。
+       ⚠ 放在 `.gs-perks` 裡面 —— 那一塊本來就會自己捲，九列塞得下。 */
+    +       girlStarListHtml(pk)
     +     '</div>'
     +   '</div>'
     + '</div>');
@@ -415,7 +449,7 @@ function bind(){
       try{ SFX.menuClick(); }catch(_){}
       starsOpen=!starsOpen; render(); }); }
   /* 管理人：點一顆星 → +1，到上限歸零（ver -714）。 */
-  el.querySelectorAll('.gs-star.dev').forEach(d=>d.addEventListener('click', e=>{
+  el.querySelectorAll('.gs-star.dev[data-star]').forEach(d=>d.addEventListener('click', e=>{
     e.stopPropagation();
     const id=d.dataset.star;
     const st=(GAME_CONFIG.gunStars||[]).find(x=>x.id===id); if(!st) return;
@@ -427,6 +461,19 @@ function bind(){
   }));
   el.querySelectorAll('.gs-barrel').forEach(b=>b.addEventListener('click', e=>{
     e.stopPropagation(); openCharm(b.dataset.barrel);
+  }));
+  /* ══ 管理人：點第 i 顆星 → 等級設成 i（ver -980，Ray：「開發者模式下讓角色技能
+     可以手動點亮」）══ 女主是線性九級，所以「點亮第 i 顆」就是「等級 ＝ i」。
+     ⚠ 點**目前最高的那一顆**＝歸 Lv1（一顆鈕來回，同九星那條梯子的手感）——
+       Lv1 是出廠等級，沒有「全部熄掉」這個狀態（`girlLevel` 最低就是 1）。 */
+  el.querySelectorAll('.gs-star.dev[data-gstar]').forEach(d=>d.addEventListener('click', e=>{
+    e.stopPropagation();
+    const [who, idx] = String(d.dataset.gstar||'').split(':');
+    if(!prog.isGirl(who)) return;
+    const i=(idx|0)+1;
+    prog.setGirlLevel(who, (prog.girlLevel(who)===i) ? 1 : i);
+    try{ SFX.menuClick(); }catch(_){}
+    render();
   }));
   /* 管理人：點等級條 → +1，滿級歸 Lv1（ver -970，同九星那條梯子）。 */
   el.querySelectorAll('.gs-glv.dev').forEach(d=>d.addEventListener('click', e=>{
