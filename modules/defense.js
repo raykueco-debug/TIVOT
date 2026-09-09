@@ -136,6 +136,20 @@ export function scheduleAssault(firstDelayMs){
    ⚠ startCharge（Boss 的 ASSAULT_SHOTS/GAP_MS）與 ring4 都是它的特例——同一支（鐵律 8）。 */
 /* `isUlt` ＝這一波是**血量門檻的特殊波**（卡上的 `ult:{hp,…}`）—— 由它生出來的圈
    打中時走「大絕」那一種受擊特效（ver -932，見 releaseAssault）。 */
+/* ══⚠⚠⚠ **波內後續那幾顆的計時器要收得起來、而且要再問一次守門**
+   （ver -1019，Ray：「BR 時敵人還在丟攻擊圈啊，沒修正到」）══
+   -1018 把「破防期間不發動攻擊」擋在 `scheduleAssault` 的排程層 —— 但**一波多顆**
+   （鹿主的 `ult:{count:4, gap:1}`）是在**第一顆發射的那一刻**就把後面三顆的
+   `setTimeout` 全部排好了。那三顆：
+     · **不問 `assaultSuppressed`** → 破防窗口正中間照樣掉圈
+     · **沒有被任何人記著** → `resetEnemyTimers()`／`stopAll()` 清不掉它們
+       （換敵、結算、退出之後還會噴 —— 那是同一個洞的另一半）
+   ⇒ 兩件一起修：存進 `waveTimers`（唯一的清除點在 `clearWaveTimers`），
+     並在每一顆真的要出來之前**再問一次**那道守門。
+   ⚠ 守門成立時**這一顆就不出**（不是延後）：破防窗口只有 4 秒，延後等於窗口一收
+     全部一起爆出來 —— 那比照樣掉圈更糟。 */
+let waveTimers = [];
+function clearWaveTimers(){ waveTimers.forEach(clearTimeout); waveTimers = []; }
 function spawnWave(count, gapMs, isUlt){
   const n=Math.max(1, count||1), g=Math.max(0, gapMs||0);
   waveIsUlt = !!isUlt;
@@ -143,13 +157,14 @@ function spawnWave(count, gapMs, isUlt){
   $('chargeWarn').classList.add('on');
   if(!state.threatTick){ state.threatTick=setInterval(updateThreats,50); }
   for(let s=1;s<n;s++){
-    setTimeout(()=>{
+    waveTimers.push(setTimeout(()=>{
       if(state.over||state.enemyHp<=0||state.cutinPlaying||state.transitioning) return;
+      if(api.assaultSuppressed && api.assaultSuppressed()) return;   // ver -1019：破防／教學暫緩
       waveIsUlt = !!isUlt;
       spawnThreat();
       $('chargeWarn').classList.add('on');
       if(!state.threatTick){ state.threatTick=setInterval(updateThreats,50); }
-    }, s*g);
+    }, s*g));
   }
 }
 /* ══ 大絕的具名行為表（ver -760）══ 資料寫不了函式（同 tutorial 的 GATE_ACTIONS），
@@ -544,15 +559,16 @@ export function flashDefense(color){
 /* ---------- 清盤/換盤瞬間：重置敵大絕蓄力與排程 ----------
  *  只負責 threat/ult 部分；間隔（點擊延遲）懲罰倒數由 combat 於 loadBoard 重置。 */
 export function resetEnemyTimers(){
-  clearThreat(); endCharge(); clearTimeout(state.assaultTimer);
+  clearThreat(); endCharge(); clearTimeout(state.assaultTimer); clearWaveTimers();
 }
 // 敵擊殺瞬間：停掉大絕蓄力與排程（combat.enemyDamage 於敵 HP 歸零時呼叫）
 export function killThreatSchedule(){
-  clearThreat(); endCharge(); clearTimeout(state.assaultTimer);
+  clearThreat(); endCharge(); clearTimeout(state.assaultTimer); clearWaveTimers();
 }
 // 全停（combat.stopAll 調度）：清掉本模組所有計時器與紅點
 export function stopAll(){
   clearTimeout(state.assaultTimer);
   clearInterval(state.threatTick); state.threatTick=null;
+  clearWaveTimers();                      // ver -1019：一波多顆的後續計時器也要收
   clearThreat();
 }
