@@ -378,17 +378,20 @@ export function coopCounter(){
      ⚠ 「步槍 nerf 50%」**不必在這裡寫**：ver -975 已經把萊福槍的黃橘圈寫成
        `dmgScale:0.5`，讀帶位就自動吃到（那個 50% 全專案只有一處）。
      ⚠ `dmgRoll`（霰彈黃圈的 [0,1]）逐發抽，同 `weaponCounter` 的作法。 */
-  const step = api.counterAtkStep ? (api.counterAtkStep()|0) : 0;
-  const bKey = (step>=2) ? 'counter' : (step===1 ? 'perfect' : 'block');
-  const b = weaponBand(w, bKey);
-  let raw;
-  if(Array.isArray(b.roll) && b.roll.length){
-    raw = 0; for(let i=0;i<w.hits;i++) raw += b.roll[(Math.random()*b.roll.length)|0];
-  }else{
-    raw = w.hits * b.dmgPerHit;
-  }
-  const total = Math.max(3, Math.round(raw * modMul * cs));   // 一次完整反擊（依帶位）
-  const per   = Math.max(1, Math.round(total/3));                              // 拆 3 hits
+  /* ══⚠⚠⚠ **ver -1012（Ray 定案）：三刀合計 ＝ 一次普攻** ══
+     > 「自動反擊的威力改成 3 刀＝1 普攻」「獵弓星跟天弓星改成反擊威力 +50% 跟 +100%」
+     推翻 ver -976 的「以副武器在那一帶的攻擊力為準」（帶位、改裝、`counterScale`
+     整條退場）。**理由是分工不是數字**：安雅賣的是「反擊」，索菈娜賣的是
+     「你不用管圈」—— 飛刀的價值在**自動**，不在傷害。它一強就變成「自動打贏」，
+     而且那份傷害不收技術費（安雅的反擊要玩家點得到圈，這個不用）。
+     · 基礎 ＝ `api.hitDamage()`（＝一次普攻，唯一的計算點在 combat，鐵律 7）
+     · 獵弓星 +50%／天弓星 +100% → 滿星 ×2.5
+     ⚠ **不吃連擊疊傷**：`hitDamage()` 是普攻的基底，combo 那一份是玩家自己點出來的。
+     ⚠ 舊的 `coopAtk`（帶位）已從星表移除；`counterScale` 留在卡上當整體旋鈕。 */
+  const one   = Math.max(1, Math.round((api.hitDamage ? api.hitDamage() : 1)));
+  const mul   = 1 + prog.girlBonus(state.pickedPartner, 'coopCounterMul');
+  const total = Math.max(3, Math.round(one * mul * cs));       // 三刀合計
+  const per   = Math.max(1, Math.round(total/3));              // 拆 3 hits
   /* ══ 飛刀（ver -839，Ray：「索拉娜的共鬥反擊特效用的是飛刀…每次 3 hits，
      每 0.2 秒 1 hit，射出音效是 se_soranacounter，命中音效是 se_soranacounterhit」）══
      取代 -822 的武器音＋彈殼：她擲的是飛刀，不是開槍。

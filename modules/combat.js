@@ -152,7 +152,11 @@ export function setup(){
        weapon 那一支已成空殼 —— 這一條留著，日後「開火就觸發」的被動可以接回去。 */
     onCounter: partner.onCounter,
     niAtkMul: saint.niAtkMul,                     // 夢魘化期間的反擊加成（安雅拳鬥者星，ver -974）
-    counterAtkStep: partner.counterAtkStep,       // 共鬥的飛刀要用哪一帶的攻擊力（ver -976）
+    /* 共鬥的飛刀＝**一次普攻**（ver -1012）：基底只有 `hitDamage` 一處在算（鐵律 7）。
+       ⚠ `counterAtkStep` 留著給別的用途（`weaponCounter` 的帶位）—— 飛刀自 -1012
+         起不再問帶位（`coopAtk` 已從星表移除）。 */
+    hitDamage,
+    counterAtkStep: partner.counterAtkStep,       // 反擊的攻擊力帶（ver -974）
     ejectCounterShell: enemy.ejectCounterShell,   // 反擊開火時從反擊點噴彈殼（ver -812）
     throwDagger: enemy.throwDagger,               // 共鬥反擊的飛刀（ver -839；命中時刻由 enemy 唯一決定）
   });

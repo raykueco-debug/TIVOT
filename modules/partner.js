@@ -349,11 +349,9 @@ export function counterAtkStep(){
   let step = state.niMode ? 2 : 0;
   if(lucidActive())     step = Math.max(step, prog.girlBonus(who,'counterAtk'));
   if(burstBuffActive()) step = Math.max(step, prog.girlBonus(who,'burstAtk'));
-  /* 索菈娜的共鬥（ver -976，Ray：「初始為黃圈的攻擊力…以玩家現裝備的副武器攻擊力
-     為準」）：**基礎就是 0（黃圈）**，獵弓星 → 橘圈、天弓星 → 紅圈。
-     ⚠ 共鬥的自動反擊走 `weapon.coopCounter`（飛刀），不經過 `defense.resolveThreat`
-       —— 但「用哪一帶的攻擊力」是同一個問題，所以問同一支（鐵律 7）。 */
-  if(state.coopMode)    step = Math.max(step, prog.girlBonus(who,'coopAtk'));
+  /* ⚠ ver -1012：共鬥那一項（`coopAtk`）已移除 —— 飛刀改成「三刀合計＝一次普攻」，
+     不再問帶位（見 `weapon.coopCounter`）。共鬥期間玩家**自己**點到的圈仍走這裡的
+     其他來源（niMode／lucid／burst），所以這一支不必為共鬥特別處理。 */
   return Math.max(0, Math.min(2, step|0));
 }
 /* 命中壓成 100%。⚠ 安雅的卡上兩處都明寫了（夢魘化期間、以及被動的 10 秒）——
