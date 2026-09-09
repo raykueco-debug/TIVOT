@@ -148,6 +148,7 @@ export function setup(){
        weapon 那一支已成空殼 —— 這一條留著，日後「開火就觸發」的被動可以接回去。 */
     onCounter: partner.onCounter,
     niAtkMul: saint.niAtkMul,                     // 夢魘化期間的反擊加成（安雅拳鬥者星，ver -974）
+    counterAtkStep: partner.counterAtkStep,       // 共鬥的飛刀要用哪一帶的攻擊力（ver -976）
     ejectCounterShell: enemy.ejectCounterShell,   // 反擊開火時從反擊點噴彈殼（ver -812）
     throwDagger: enemy.throwDagger,               // 共鬥反擊的飛刀（ver -839；命中時刻由 enemy 唯一決定）
   });
@@ -450,7 +451,9 @@ function tap(num,cell,e){
     cell.classList.add('done'); enemy.shatterCell(cell); glassShards(cell);   // 彈雨：玻璃碎片落下（ver -805）
     state.combo++; if(state.combo>state.maxCombo) state.maxCombo=state.combo;
     resetIntervalDeadline();
-    const dmg=hitDamage()*DMG_DUAL_MULT;
+    /* 索菈娜「地弓星」（Lv1，ver -976）：破防彈雨的攻擊力 ×1.2。
+       ⚠ 只有這一支在算（鐵律 7）—— BR 的傷害就這一處。 */
+    const dmg=hitDamage()*DMG_DUAL_MULT*(1+prog.girlBonus(state.pickedPartner,'brDmgMul'));
     SFX.gunshot(true);
     hap.shot();                        // 破防窗口：**每一發**都震（ver -398，Ray 指定）
     enemyDamage(Math.round(dmg), false, false, 'dual');   // 破防窗口的射擊（ver -423：來源別）
@@ -839,6 +842,13 @@ function enemyAttack(dmg, kind, saintAmt){
      敵攻擊自動完美反擊（全額）。點錯（kind==='wrong'）只吃「不受擊」，不反擊
      （縮短窗口由 tap 的 coopMode 分支做）。放在計數之前 → 期間一律不算失誤。 */
   if(state.coopMode){
+    /* ⚠⚠ **延時懲罰也扣一秒**（ver -976，Ray：「玩家受擊會扣一秒（失誤或延時）」）——
+       -803~-975 只有點錯會縮短（那一支在 `tap` 的 coopMode 分支）。
+       份量讀卡上的 `coop.wrongShortenSec`（同一個數字，鐵律 7）。 */
+    if(kind==='delay'){
+      const _c=(GAME_CONFIG.partners&&GAME_CONFIG.partners[state.pickedPartner])||{};
+      saint.coopShorten((_c.coop&&_c.coop.wrongShortenSec)||1);
+    }
     const sk0  = hitFxSe(state.curEnemyHitFx, fxKind);
     if(sk0) SFX.play(asset(sk0), sfxGain(sk0));
     screenShake();
@@ -1100,7 +1110,14 @@ function addEnergy(v){
   }
   /* 九階強化「疾走」：破防值累積加速（ver -707）。⚠ 乘在**入口**這一處 ——
      呼叫端有好幾個（點擊、反擊…），各自乘一次必然漏掉其中一個（鐵律 7/8）。 */
-  state.energy=Math.min(100,state.energy+v*svBoost*(1+prog.bonus('energyMul')));
+  const gain = v*svBoost*(1+prog.bonus('energyMul'));
+  state.energy=Math.min(100,state.energy+gain);
+  /* 索菈娜「獵手星」（Lv9，ver -976，Ray：「共鬥期間每一 hit 可增加破防值，
+     即延長共鬥時間」）：把**這一份增量**即時換算成共鬥的延長秒數。
+     ⚠ 匯率與發動時同一條（`baseSec/100` 秒 per 點）—— 換算只有 saint 一處在做。
+     ⚠ 共鬥期間本來就照常累積破防值（共鬥不是盤面模式，玩家照樣點盤），
+       所以**不必發明「每 hit 幾點」**：用的就是既有的每擊破防量。 */
+  if(state.coopMode && prog.girlHas(state.pickedPartner,'coopEnergyTime')) saint.coopExtendByEnergy(gain);
   // 教學：雙槍引導前破防值封頂於 preFullEnergy（第三盤起放行 → 首擊即滿、交給教學引導）
   if(tutorial.energyCapActive()){
     state.energy=Math.min(state.energy, (GAME_CONFIG.tutorial && GAME_CONFIG.tutorial.preFullEnergy) || 99);

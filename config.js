@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.09-975';
+export const VERSION = 'ver 2026.09.09-976';
 
 export const GAME_CONFIG = {
 
@@ -577,15 +577,25 @@ export const GAME_CONFIG = {
          ⚠ baseSec=12＝滿破防的無敵秒數（Ray：「無敵12秒」＋「破防越高越長」）。 */
       /* 語音（ver -818，Ray）：`voice` 陣列＝發動時輪播（同安雅明晰之夢的輪播）；
          `endVoice`＝共鬥時間結束那一刻播。 */
-      coop:{ baseSec:12, minSec:3, wrongShortenSec:1.5, counterScale:1,
+      /* ⚠⚠ **ver -976（Ray 的射手座卡）：「玩家受擊會扣一秒（**失誤或延時**）」** ——
+         1.5 → **1**，而且**延時懲罰也算**（-803~-975 只有點錯會縮短）。
+         兩條路都走 `saint.coopShorten`（鐵律 8）：點錯在 `combat.tap`、
+         延時在 `combat.enemyAttack` 的 coopMode 分支。
+         ⚠ `baseSec` 是**上限**（實際秒數 ＝ baseSec × 破防值/100）；
+           Lv8「射手星」把它抬到 15。 */
+      coop:{ baseSec:12, minSec:3, wrongShortenSec:1, counterScale:1,
              voice:['vo_sorana_pack','vo_sorana_pack2'],
              /* 共鬥結束＝飛刀耗盡（obe，ver -822）。ver -837：語音兩支輪播（Ray：「有編1、2的都是輪播」）。 */
              endVoice:['vo_sorana_obe1','vo_sorana_obe2'], endCutin:'ci_sorana_obe', endName:'飛刀耗盡' },
       /* 主動技：**照搬馬季諾的前線補給**（Ray 指定）＝ supplyRefill（立即進入雙槍破防、
          不吃破防值）。上滑手勢（bindBoardActiveSwipe → tryActive('board')）發動，
          只換她自己的名字與 CI。 */
+      /* ⚠ `reloadName`／`reloadEn`／`reloadVoice` ＝ Lv7「聚落星」那一發的臉與聲音
+         （ver -976 由被動的 streak2 搬過來 —— 那一段已被 Ray 的新卡取代）。
+         CI 沿用被動那三張輪播（`passive.cutin`）：同一個人吼的同一件事。 */
       active:{ key:'supplyRefill', name:'獵手的智慧', en:"Predator's Wisdom", context:'board',
                oncePerBattle:true, cutin:'ci_sorana_supply', voice:['vo_sorana_supply1','vo_sorana_supply2'],   // ver -837 輪播
+               reloadName:'共鬥再開', reloadEn:'FANGS RELOAD', reloadVoice:'vo_sorana_roar',
                desc:'上滑：無視破防值，立即進入雙槍破防（Bullets Rain）。' },
       /* 被動：連續三輪完美清盤 → 10 秒破防值累積速度加倍，可重覆發動。
          實作＝ combat.clearBoard 累加 `svPerfectStreak`，滿 `streak` 由 partner.fireEnergyBuff
@@ -601,13 +611,20 @@ export const GAME_CONFIG = {
          完美清盤時 CI 文字為『共鬥再開』FANGS RELOAD」）—— 那一發的重點不是
          「她又吼了」，是**共鬥可以再發一次**，所以字要換（同安雅的夢魘再臨）。
          連 3 那一發照舊印「獵手的戰吼」。 */
+      /* ══⚠⚠⚠ **ver -976（Ray 的射手座卡）：改回單段** ══
+         > 「被動技：獵手的戰吼，**連 5 盤**完美清盤增加 10 秒的破防值累積量 200%」
+         ⚠⚠ **推翻 ver -837／-894 的兩段式**（連 3 發動／連 5 再發動＋重置共鬥）：
+           · 門檻 3 → **5**（Lv5「箭頭星」減 2 ＝ 回到 3）
+           · reload **主動技** 移到 Lv2「海宣星」（戰吼發動時）
+           · reload **共鬥**   移到 Lv7「聚落星」（主動技發動時）
+           所以 `streak2`／`voice2` 整組拿掉，「共鬥再開」的字與語音搬到 `active`。
+         ⚠ `voice` 改成**兩支輪播**（Ray：「被動語音改輪播」「兩個輪播」）——
+           走既有的 `SFX.pickRot`（同 `active.voice` 那一組的作法）。 */
       passive:{ key:'perfectStreak', name:'獵手的戰吼', en:"Predator's Roar",
-                reloadName:'共鬥再開', reloadEn:'FANGS RELOAD',
-                streak:3, buffSeconds:10, energyMul:2, voice:'vo_sorana_roar2',
-                streak2:5, voice2:'vo_sorana_roar',
+                streak:5, buffSeconds:10, energyMul:2,
+                voice:['vo_sorana_roar2','vo_sorana_roar'],
                 cutin:['ci_sorana_roar_renna','ci_sorana_roar_anya','ci_sorana_roar_nouvelle'],
-                desc:'連續三輪完美清盤時發動：10 秒內破防值累積速度加倍；'
-                    +'連續五輪再次發動並重置共鬥。' },
+                desc:'連續五輪完美清盤時發動：10 秒內破防值累積速度加倍。' },
     },
     // ── 第二搭檔：馬季諾 Malzeno ──────────────────────────
     malzeno: {
@@ -931,16 +948,71 @@ export const GAME_CONFIG = {
                ver -722 的「反擊開火了」那一欄），不是只有紅圈。 */
           niCounterPauseSec:0.5 },
       ],
+      /* ══⚠⚠⚠ 索菈娜（ver -976，Ray 交卡）—— **射手座九星** ══════════════════
+         > 「獵手的共鬥：以現玩家累積的破防值，最大進行 12 秒的全自動反擊。
+         >   玩家受擊會扣一秒（失誤或延時）。**初始為黃圈的攻擊力，命中都是 100%**。
+         >   被動技：獵手的戰吼，**連 5 盤**完美清盤增加 10 秒的破防值累積量 200%。
+         >   主動技：共鬥期間以外，可無視破防值立即進入破防彈雨。」
+
+         ⚠⚠⚠ **這張卡推翻了被動的兩段式**（ver -837／-894 的「連 3 發動／連 5 再發動
+           ＋重置共鬥」）—— Ray：「換成卡上的，被動語音改輪播」。現在是**單段**：
+             · 基礎＝連 **5** 盤（Lv5「箭頭星」降為 3 盤）
+             · reload **主動技** → Lv2「海宣星」
+             · reload **共鬥**   → Lv7「聚落星」（改掛在主動技發動時）
+           「共鬥再開 FANGS RELOAD」那張臉與語音**搬到 Lv7 那一發**（素材不浪費）。
+         ⚠⚠⚠ **共鬥的飛刀改吃副武器的帶位攻擊力**（Ray：「以玩家現裝備的副武器
+           攻擊力為準，步槍一樣 nerf 50%，**演出不變**」）：飛刀的動畫、音效、
+           三段時序一個字都沒動，只有**傷害的來源**換了 ——
+             基礎＝黃圈 → Lv4「獵弓星」橘圈 → Lv6「天弓星」紅圈，命中一律 100%。
+           ⚠ 「步槍一樣 nerf 50%」**自動成立**：ver -975 已經把萊福槍的黃橘圈寫成
+             `dmgScale:0.5`，共鬥讀帶位就吃到（鐵律 7：那個 50% 只有一處）。
+         ⚠ `coopAtk` 是**階數**（同安雅的 `counterAtk`）：1＝橘圈、2＝紅圈，
+           所以 Lv4 寫 1、Lv6 再寫 1（累計 2）。 */
       sorana: [
-        { name:'', desc:'' },   // Lv1
-        { name:'', desc:'' },   // Lv2
-        { name:'', desc:'' },   // Lv3
-        { name:'', desc:'' },   // Lv4
-        { name:'', desc:'' },   // Lv5
-        { name:'', desc:'' },   // Lv6
-        { name:'', desc:'' },   // Lv7
-        { name:'', desc:'' },   // Lv8
-        { name:'', desc:'' },   // Lv9
+        { star:'Kaus Australis',  name:'地弓星',
+          desc:'破防彈雨的攻擊力提升至 120%。',
+          /* 「破防攻擊力」＝雙槍破防（Bullets Rain）那一段的每一發。
+             唯一的計算點在 `combat.tap` 的 `dualWield` 分支。 */
+          brDmgMul:0.20 },
+        { star:'Nunki',           name:'海宣星',
+          desc:'獵手的戰吼發動時，回填主動技。',
+          /* ⚠ 「5 盤」是**戰吼的門檻**不是另一個數字 —— 點了箭頭星之後就是 3 盤
+             （鐵律 7：門檻只有 `passive.streak` 減去 `roarStreakCut` 一處在算）。 */
+          roarReloadActive:1 },
+        { star:'Ascella',         name:'曳弦星',
+          desc:'主動技發動後追加 10 秒破防值累積量 200%。',
+          /* 與戰吼**同一個執行體**（`partner.fireEnergyBuff`，鐵律 8）：
+             倍率照卡上的 `passive.energyMul`，這裡只給秒數。 */
+          activeEnergyBuffSec:10 },
+        { star:'Kaus Media',      name:'獵弓星',
+          desc:'共鬥期間的反擊改為橘圈攻擊力。',
+          coopAtk:1 },
+        { star:'Alnasl',          name:'箭頭星',
+          desc:'獵手的戰吼由連續五盤完美清盤改為三盤。',
+          /* 減量寫在星上（5 − 2 ＝ 3）：門檻的真相仍是卡上的 `passive.streak`。 */
+          roarStreakCut:2 },
+        { star:'Kaus Borealis',   name:'天弓星',
+          desc:'共鬥期間的反擊改為紅圈攻擊力。',
+          coopAtk:1 },
+        { star:'Albaldah',        name:'聚落星',
+          desc:'主動技發動時回填共鬥，同一場可以連續使用。',
+          /* 與海宣星串成一個循環：戰吼 → 回填主動技 → 主動技 → 回填共鬥。
+             ⚠ 「單場可連續使用」是這個循環的**結果**，不是另一條規則 ——
+               不必再開一個「共鬥不限次數」的旗（那會讓兩處各說一次）。 */
+          activeReloadCoop:1 },
+        { star:'Eta Sagittarii',  name:'射手星',
+          desc:'共鬥的最長時間延長為 15 秒。',
+          /* 增量：卡上的 `coop.baseSec` 12 ＋ 3 ＝ 15。
+             ⚠ 實際秒數仍照破防值換算（`baseSec × 破防值/100`）—— 這顆星抬的是**上限**。 */
+          coopSec:3 },
+        { star:'Phi Sagittarii',  name:'獵手星',
+          desc:'共鬥期間累積的破防值會即時換算成共鬥的延長時間。',
+          /* 「每一 hit 可增加破防值，即延長共鬥時間」—— 共鬥期間本來就照常
+             `addEnergy`（共鬥不是盤面模式，玩家照樣點盤），這顆星把**那一份增量**
+             即時換算成秒數（同一條匯率：`baseSec/100` 秒 per 點）。
+             ⚠ 所以**不必發明一個「每 hit 幾點」的數字**（鐵律 1：Ray 沒給就不要編）
+               —— 用的就是既有的每擊破防量。 */
+          coopEnergyTime:1 },
       ],
     },
   },

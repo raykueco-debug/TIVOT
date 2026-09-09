@@ -29,7 +29,7 @@
  *     buildGrid / resetEnergy），不 import combat/saint/defense（維持依賴方向）。
  * ========================================================================== */
 
-import { GAME_CONFIG, asset, sfxGain, weaponDescText, weaponOf } from '../config.js';
+import { GAME_CONFIG, asset, sfxGain, weaponDescText, weaponOf, weaponBand } from '../config.js';   // weaponBand：共鬥的飛刀依帶位取傷害（ver -976）
 import * as hap from './haptics.js';   // 震動（ver -398）
 import { state, addCounter, setPickedPartner, storyMode } from '../state.js';
 import { SFX } from '../audio.js';
@@ -338,7 +338,27 @@ export function coopCounter(){
   const modMul = subgunPowerMul(state.equippedWeapon);
   const card = (GAME_CONFIG.partners && GAME_CONFIG.partners[state.pickedPartner]) || {};
   const cs = (card.coop && card.coop.counterScale!=null) ? card.coop.counterScale : 1;
-  const total = Math.max(3, Math.round(w.hits * w.dmgPerHit * modMul * cs));   // 一次完整反擊
+  /* ══⚠⚠⚠ **ver -976（Ray）：傷害以「玩家現裝備的副武器在那一帶的攻擊力」為準** ══
+     > 「初始為**黃圈的攻擊力**，命中都是 100%」「以玩家現裝備的副武器攻擊力為準，
+     >   **步槍一樣 nerf 50%，演出不變**」
+     ⚠⚠ 推翻 ver -822／-839 的「固定＝一次完整反擊（＝紅圈全額）」——
+       現在基礎是**黃圈**，獵弓星（Lv4）→橘圈、天弓星（Lv6）→紅圈。
+       帶位問 `api.counterAtkStep()`（與安雅那兩顆星同一支，鐵律 7）。
+     ⚠ **演出一個字都沒動**：飛刀的動畫、兩支音效、三段 0.2 秒的時序照舊 ——
+       換的只有「一次反擊打多少」。
+     ⚠ 「步槍 nerf 50%」**不必在這裡寫**：ver -975 已經把萊福槍的黃橘圈寫成
+       `dmgScale:0.5`，讀帶位就自動吃到（那個 50% 全專案只有一處）。
+     ⚠ `dmgRoll`（霰彈黃圈的 [0,1]）逐發抽，同 `weaponCounter` 的作法。 */
+  const step = api.counterAtkStep ? (api.counterAtkStep()|0) : 0;
+  const bKey = (step>=2) ? 'counter' : (step===1 ? 'perfect' : 'block');
+  const b = weaponBand(w, bKey);
+  let raw;
+  if(Array.isArray(b.roll) && b.roll.length){
+    raw = 0; for(let i=0;i<w.hits;i++) raw += b.roll[(Math.random()*b.roll.length)|0];
+  }else{
+    raw = w.hits * b.dmgPerHit;
+  }
+  const total = Math.max(3, Math.round(raw * modMul * cs));   // 一次完整反擊（依帶位）
   const per   = Math.max(1, Math.round(total/3));                              // 拆 3 hits
   /* ══ 飛刀（ver -839，Ray：「索拉娜的共鬥反擊特效用的是飛刀…每次 3 hits，
      每 0.2 秒 1 hit，射出音效是 se_soranacounter，命中音效是 se_soranacounterhit」）══

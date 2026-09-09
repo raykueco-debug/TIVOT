@@ -178,6 +178,24 @@ const ACTIVE_HANDLERS = {
       a.resetEnemyTimers();   // cut-in 撤下瞬間重置敵大絕/延時倒數（同雙槍/即死防禦慣例）
       a.scheduleAssault();
       a.startDual();          // cut-in 撤下 → 直接進入雙槍破防窗口
+      /* ══ 索菈娜的兩顆星掛在**主動技發動之後**（ver -976）══
+         · 「曳弦星」（Lv3）：追加一段破防值累積 ×2 的窗（與戰吼同一個執行體）。
+         · 「聚落星」（Lv7）：**回填共鬥** —— 與「海宣星」（戰吼回填主動技）串成
+           一個循環：戰吼 → 主動技 → 共鬥 → …，那就是卡上「單場可連續使用」。
+         ⚠ 兩者都在 cut-in 撤下才起算（同免傷窗／吸血窗的理由：演出期間盤面鎖著）。
+         ⚠ 空槍才報「共鬥再開」（ver -896 的規矩）：還沒發動過共鬥就不報一件沒發生的事，
+           但**槽照樣解開**（下一次右滑本來就發得出來，這裡只是不演）。 */
+      const who = state.pickedPartner;
+      fireEnergyBuff(prog.girlBonus(who,'activeEnergyBuffSec'));
+      if(prog.girlHas(who,'activeReloadCoop')){
+        const had = !!state.saintUsedThisBattle;
+        if(a.resetInstallSlot) a.resetInstallSlot();
+        if(had && act && act.reloadName){
+          const vk = SFX.pickRot(act.reloadVoice); const vo = asset(vk);
+          if(vo) SFX.playVoice(vo, sfxGain(vk));
+          a.floatDmg(act.reloadName,'50%','34%',true);
+        }
+      }
     }, label, act && act.cutin);
     return true;
   },
@@ -308,6 +326,11 @@ export function counterAtkStep(){
   let step = state.niMode ? 2 : 0;
   if(lucidActive())     step = Math.max(step, prog.girlBonus(who,'counterAtk'));
   if(burstBuffActive()) step = Math.max(step, prog.girlBonus(who,'burstAtk'));
+  /* 索菈娜的共鬥（ver -976，Ray：「初始為黃圈的攻擊力…以玩家現裝備的副武器攻擊力
+     為準」）：**基礎就是 0（黃圈）**，獵弓星 → 橘圈、天弓星 → 紅圈。
+     ⚠ 共鬥的自動反擊走 `weapon.coopCounter`（飛刀），不經過 `defense.resolveThreat`
+       —— 但「用哪一帶的攻擊力」是同一個問題，所以問同一支（鐵律 7）。 */
+  if(state.coopMode)    step = Math.max(step, prog.girlBonus(who,'coopAtk'));
   return Math.max(0, Math.min(2, step|0));
 }
 /* 命中壓成 100%。⚠ 安雅的卡上兩處都明寫了（夢魘化期間、以及被動的 10 秒）——
@@ -487,6 +510,15 @@ export function lucidActive(){
    連續 `streak`（3）輪完美清盤 → 開一段 `energyBoostUntil`（破防值累積 ×`energyMul`）。
    ⚠ combat.clearBoard 每清一盤呼叫（帶那一盤的 `boardClean`）——完美就累加、破功歸零。
    ⚠ 變身／演出中不計不發（同 checkLowHpBuff 的守門）：那時清盤的語意不同。 */
+/* ══ 破防值累積加速的那一段窗（ver -976 抽出）══ 兩個地方共用**同一個執行體**
+   （鐵律 8）：獵手的戰吼（被動）與「曳弦星」（Lv3：主動技發動後追加 10 秒）。
+   ⚠ 倍率不在這裡 —— `addEnergy` 讀 `passive.energyMul`（那是卡上的，鐵律 1）。
+   ⚠ 計時器走既有的盤外金光柱（同免傷窗／吸血窗／明晰之夢）。 */
+function fireEnergyBuff(sec){
+  if(state.over || !(sec>0)) return;
+  state.energyBoostUntil = Date.now()+sec*1000;
+  if(api.lucidFlood) api.lucidFlood(sec);
+}
 export function onBoardCleared(clean){
   const p = currentPartner();
   const pas = p && p.passive;
@@ -494,38 +526,30 @@ export function onBoardCleared(clean){
   if(state.saintMode || state.niMode || state.coopMode || state.over) return;
   if(!clean){ state.svPerfectStreak = 0; return; }
   state.svPerfectStreak++;
-  /* ══ 兩段式（ver -837，Ray：「連三場會發動獵手戰吼，播 vo_sorana_roar2；
-     連五場會再發動一次並重置獵手的共鬥，播 vo_sorana_roar」）══
-     · 滿 streak(3)：發動（語音 voice＝roar2），**計數不歸零** —— 歸零 5 就到不了。
-     · 滿 streak2(5)：再發動＋**重置共鬥**（api.resetInstallSlot → saint 的具名 setter），
-       計數歸零重頭數。中間盤數（4）不發動；破功照舊歸零。 */
-  const s1 = pas.streak || 3, s2 = pas.streak2 || 5;
-  let vkey, reload=false;
-  if(state.svPerfectStreak === s1){ vkey = pas.voice; }
-  else if(state.svPerfectStreak >= s2){
-    vkey = pas.voice2 || pas.voice;
-    state.svPerfectStreak = 0;
-    /* ⚠ 空槍才叫 reload（ver -896，Ray）：共鬥還沒發動過就不報「共鬥再開」，
-       那一發照舊印「獵手的戰吼」。連段一樣歸零（見明晰之夢那一段的理由）。 */
-    if(state.saintUsedThisBattle){
-      reload = true;                                   // 連 5 那一發＝共鬥再開（ver -894）
-      if(api.resetInstallSlot) api.resetInstallSlot(); // 共鬥可以再發一次
-    }
-  }
-  else return;
-  /* ⚠ 連 5 那一發換字（ver -894，Ray：「索拉娜觸發第五次完美清盤時 CI 文字為
-     『共鬥再開』FANGS RELOAD」）—— 它報的是**共鬥可以再發一次**，不是技能名；
-     連 3 那一發照舊印「獵手的戰吼」。字在卡上（鐵律 1）。 */
-  const nm = (reload && pas.reloadName) ? pas.reloadName : pas.name;
-  const en = (reload && pas.reloadEn)   ? pas.reloadEn   : pas.en;
+  /* ══⚠⚠⚠ **ver -976（Ray 的射手座卡）：改回單段** ══
+     > 「被動技：獵手的戰吼，**連 5 盤**完美清盤增加 10 秒的破防值累積量 200%」
+     ⚠⚠ **推翻 ver -837／-894 的兩段式**（連 3 發動／連 5 再發動＋重置共鬥）：
+       門檻回到卡上那一個數字，reload 共鬥搬到 Lv7「聚落星」（主動技發動時）。
+     · 門檻 ＝ `passive.streak`(5) − Lv5「箭頭星」的 `roarStreakCut`(2) ＝ 3。
+       **只有這一處在算**（鐵律 7）：Lv2「海宣星」那句「5 盤戰吼可 reload 主動技」
+       指的就是這個門檻，不是另一個數字。
+     · 滿了就發動並**歸零重頭數**（單段沒有「留著等下一階」的理由）。
+     ⚠ 語音兩支輪播（Ray：「被動語音改輪播」）—— 走既有的 `SFX.pickRot`。 */
+  const need = Math.max(1, (pas.streak || 5) - prog.girlBonus(state.pickedPartner,'roarStreakCut'));
+  if(state.svPerfectStreak < need) return;
+  state.svPerfectStreak = 0;
+  const vkey = SFX.pickRot(pas.voice);
+  /* 「海宣星」（Lv2，ver -976）：戰吼發動時**回填主動技**。
+     ⚠ 與 Lv7 的「回填共鬥」是兩件事：那一個掛在主動技發動時（見 supplyRefill）。 */
+  if(prog.girlHas(state.pickedPartner,'roarReloadActive')) state.partnerActiveUsed = false;
+  const nm = pas.name;
+  const en = pas.en;
   const sec = pas.buffSeconds || 10;
   /* ⚠⚠ **計時器走既有的盤外金光柱**（ver -879，Ray：「索拉娜被動計時器加上」）——
      `api.lucidFlood(秒)` 就是 ver -749 為同一個問題（Ray：「諾薇兒的被動怎麼沒有
      計時器？」）做的那一支，現在服務明晰之夢與諾薇兒的免傷窗。獵手的戰吼開的
      也是一段看不見的限時窗（破防加速），照鐵律 8 用同一支，不另做一套讀法不同的。 */
-  const fire = ()=>{ if(state.over) return;
-    state.energyBoostUntil = Date.now()+sec*1000;
-    if(api.lucidFlood) api.lucidFlood(sec); };
+  const fire = ()=> fireEnergyBuff(sec);
   const vo = asset(vkey); if(vo) SFX.playVoice(vo, sfxGain(vkey));
   api.floatDmg(nm,'50%','34%',true);
   if(state.cutinPlaying){ fire(); return; }        // 已有演出在播 → 只跳字、buff 立即起算

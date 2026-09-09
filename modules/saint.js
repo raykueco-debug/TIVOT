@@ -134,7 +134,10 @@ export function activateCoop(dir){
   const card = (GAME_CONFIG.partners && GAME_CONFIG.partners[state.pickedPartner]) || {};
   const c = card.coop || {};
   const en = Math.max(0, Math.min(100, state.energy));
-  const sec = Math.max(c.minSec||3, (c.baseSec||12) * en/100);
+  /* 索菈娜「射手星」（Lv8，ver -976）：上限 12 → 15 秒（星上寫的是**增量**）。
+     ⚠ 實際秒數仍照破防值換算 —— 這顆星抬的是上限不是保證值。 */
+  const baseSec = (c.baseSec||12) + prog.girlBonus(state.pickedPartner,'coopSec');
+  const sec = Math.max(c.minSec||3, baseSec * en/100);
   state.saintUsedThisBattle = true;                   // 與聖徒化／惡夢化同槽（一場一次）
   if(api.resetEnergy) api.resetEnergy();              // 消耗全部破防值
   /* ⚠ 發動**那一刻**先把場上的攻擊圈收掉（ver -871，Ray：「索拉娜的共鬥發動時
@@ -173,6 +176,18 @@ function startCoop(sec){
   }, 100);
 }
 /* 點錯 → 縮短無敵窗（combat 的 coopMode 分支呼叫）。 */
+/* ══ 「獵手星」（索菈娜 Lv9，ver -976）：破防值 → 共鬥的延長秒數 ══
+   匯率與發動時**同一條**（`baseSec/100` 秒 per 點，鐵律 7）——
+   呼叫端（`combat.addEnergy`）只交出「這一次加了幾點」，不自己換算。
+   ⚠ 上限夾在那一次發動的滿值（`baseSec` 秒）：不夾的話一路點下去就永遠不會結束。 */
+export function coopExtendByEnergy(points){
+  if(!state.coopMode || !(points>0)) return;
+  const c = ((GAME_CONFIG.partners && GAME_CONFIG.partners[state.pickedPartner])||{}).coop || {};
+  const baseSec = (c.baseSec||12) + prog.girlBonus(state.pickedPartner,'coopSec');
+  const cap = Date.now() + baseSec*1000;
+  state.coopUntil = Math.min(cap, state.coopUntil + points*(baseSec/100)*1000);
+  if(api.coopImmune) api.coopImmune(state.coopUntil);
+}
 export function coopShorten(sec){
   if(!state.coopMode) return;
   state.coopUntil = Math.max(Date.now(), state.coopUntil - Math.max(0,sec)*1000);
