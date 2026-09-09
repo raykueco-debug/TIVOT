@@ -29,7 +29,7 @@
  *     buildGrid / resetEnergy），不 import combat/saint/defense（維持依賴方向）。
  * ========================================================================== */
 
-import { GAME_CONFIG, asset, sfxGain, weaponDescText, weaponOf, weaponBand } from '../config.js';   // weaponBand：共鬥的飛刀依帶位取傷害（ver -976）
+import { GAME_CONFIG, asset, sfxGain, weaponDescText, weaponOf } from '../config.js';   // ⚠ ver -1013 拿掉 weaponBand：飛刀改成「三刀＝一次普攻」，不再問帶位
 import * as hap from './haptics.js';   // 震動（ver -398）
 import { state, addCounter, setPickedPartner, storyMode } from '../state.js';
 import { SFX } from '../audio.js';
