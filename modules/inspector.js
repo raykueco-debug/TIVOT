@@ -164,6 +164,86 @@ function settleAffectionShares(){
   return out;
 }
 
+/* ══⚠⚠⚠ **EXP 給誰：單局出場數最多的那一位**（ver -970，Ray 定案）══
+   > 「exp 給單局最多出場數的那一個，**平手的話給好感度高的那一個**，
+   >   還是平手的話均分」
+
+   ⚠⚠ 出場帳沿用 ver -921 的 `state.partnerFights`（`enemy.setEnemy` 記，一局一份）
+     —— **不另開一份帳**：好感與 EXP 問的是同一件事「這一局誰打得多」（鐵律 7）。
+   ⚠⚠ **但分配規則與好感不一樣，所以是兩支 resolver**（`settleAffectionShares`
+     那邊索菈娜自己一桶：她的獎在低評價那一格，根本不與人爭）。
+     EXP 沒有那種事 —— 就是比場數，然後好感度，然後均分。
+   ⚠ **只算「是女主」的那幾位**（`config.girls.who`）：蕾妮／馬季諾是試玩版的，
+     出陣那條路不走這裡，但擋一道才不會有意外（鐵律 9：答不出來的就不要進帳）。
+   ⚠ 沒有帳（舊存檔／完全沒打過架）就退回現在這一位 —— 同好感那一支的退路。
+   ⚠ 回傳 `[{key, mul}]`，`mul` ＝那一位分到幾分之幾。 */
+function settleExpShares(){
+  const f = state.partnerFights;
+  const fallback = () => (prog.isGirl(state.pickedPartner)
+                          ? [{ key:state.pickedPartner, mul:1 }] : []);
+  if(!f) return fallback();
+  const keys = Object.keys(f).filter(k=>f[k]>0 && prog.isGirl(k));
+  if(!keys.length) return fallback();
+  /* ① 場數最多的。 */
+  const top = Math.max(...keys.map(k=>f[k]));
+  let win = keys.filter(k=>f[k]===top);
+  /* ② 平手 → 好感度高的那一位。⚠ 好感問 `prog.getAffection()`（唯一真相），
+     鑰匙與搭檔 key 同名（renna/nouvelle/sorana/anya，見 progress 的 CHARS）。 */
+  if(win.length>1){
+    const aff = prog.getAffection() || {};
+    const best = Math.max(...win.map(k=>+aff[k]||0));
+    const byAff = win.filter(k=>(+aff[k]||0)===best);
+    /* ③ 好感也平手 → 均分（`byAff` 就是那幾位）。 */
+    win = byAff;
+  }
+  return win.map(k=>({ key:k, mul:1/win.length }));
+}
+
+/* ══⚠⚠⚠ **這一位拿多少 EXP**（ver -970）══ 索菈娜方向相反（Ray：「如果是索拉娜
+   拿 exp 也就是 Rank 越低 exp 越高，跟其他兩人反過來」）——
+   作法是**把分數鏡射**（`100 − 分數`）再走同一條公式（鐵律 7：不另訂第二條式子）。
+   名單在 `rating.exp.invertFor`（鐵律 1）。
+   ⚠⚠ 所以 EXP 是**逐個收款人各算一次**的：平手均分時兩人各拿自己那條公式的一半，
+     不是同一個數字對切。這一支就是那個唯一的計算點。 */
+export function expForWho(who, score, stats, cfg = GAME_CONFIG.rating.exp){
+  const inv = (cfg.invertFor||[]).indexOf(who)>=0;
+  return scoreToExp(inv ? (100 - score) : score, stats, cfg);
+}
+
+/* ══⚠⚠ **發 EXP：唯一的入口**（ver -970，鐵律 8）══ 三條結算路徑都叫它。
+   回傳一份給畫面用的清單 `[{who, name, gain, from, to}]`（`from`／`to` ＝等級）。
+   ⚠ `noReward`（打靶）那一支**不要叫它**（同錢與 EXP 那一條，-439）。
+   ⚠ 收款人與金額分開算：**誰**問 `settleExpShares()`、**多少**問 `expForWho()`。 */
+export function awardExp(score, stats, shares){
+  const out=[];
+  /* ⚠⚠ **收款人要在 `settle()` 開頭就算好、傳進來** —— `clearSessionGain()` 會把
+     `partnerFights` 一起清掉（那是同一局的帳），在這裡才問一定只剩退路那一支
+     （ver -921 那個「誰都沒加到好感」的坑，一模一樣）。
+     ⚠ 沒傳＝就地算（保險，給日後別的呼叫端用）。 */
+  for(const one of (shares || settleExpShares())){
+    const amount = Math.round(expForWho(one.key, score, stats) * (one.mul!=null?one.mul:1));
+    const r = prog.addGirlExp(one.key, amount);
+    if(!r) continue;
+    const pc = (GAME_CONFIG.partners||{})[one.key] || {};
+    out.push({ who:one.key, name:pc.name||one.key, gain:r.gain, from:r.from, to:r.to });
+  }
+  return out;
+}
+/* EXP 那幾列（結算頁）。⚠ 兩條結算路徑共用（鐵律 8）—— 一邊印「＋n」一邊印
+   「LEVEL UP」會讓同一件事在兩頁長得不一樣。 */
+function expRows(gains){
+  let rows='';
+  for(const g of (gains||[])){
+    rows += '<div class="row"><span>EXP　'+g.name+'</span><b>＋'+g.gain+'</b></div>';
+    if(g.to>g.from){
+      const star = prog.girlStarName(g.who, g.to);
+      rows += '<div class="row"><span>LEVEL UP</span><b>'+g.name+'　Lv'+g.to
+            + (star ? '　'+star : '') + '</b></div>';
+    }
+  }
+  return rows;
+}
+
 // 分數 → EXP：offset 質數基底 + score×mult，尾數微擾 + overkill 加成，避免整齊倍數。
 export function scoreToExp(score, stats, cfg = GAME_CONFIG.rating.exp){
   let exp = cfg.offset + score * cfg.mult;
@@ -403,7 +483,7 @@ export function settle(totalTime, stats, opts={}){
        併在分流**之前**，日後多一條結算路徑也自動吃到（鐵律 8）。
      ⚠ 領完就清：不然下一場會把上一段的再算一次。
      ⚠ 戰敗不併也不清 —— 那一頁不報帳，而這一段可能還要再打一次。 */
-  let sessionLoot = null, shares = null;
+  let sessionLoot = null, shares = null, expShares = null;
   if(stats && !isLose){
     stats = mergeSessionStats(stats);
     sessionLoot = state.sessionLoot || null;   // 中間場記帳的掉落（ver -869），下面併進拾得
@@ -411,6 +491,9 @@ export function settle(totalTime, stats, opts={}){
        `partnerFights` 一起清掉（它是同一局的帳）—— 算在後面就永遠只剩退路那一支，
        實測就是「誰都沒加到好感」。同 `sessionLoot` 先取值再清的理由。 */
     shares = settleAffectionShares();
+    /* EXP 的收款人（ver -970）：**與好感是兩支 resolver**（規則不同，見那兩支的說明），
+       但都要在 `clearSessionGain()` **之前**問 —— 出場帳一清就只剩退路了。 */
+    expShares = settleExpShares();
     clearSessionGain();
     /* ⚠ 「這一場打了多久」也跟著變成整場的總和 —— 最佳紀錄、破紀錄獎品、
        畫面上的「戰鬥用時」全部同一個數字（鐵律 7）。 */
@@ -439,11 +522,11 @@ export function settle(totalTime, stats, opts={}){
      排在所有分流**最前面**：這一頁沒有敵人（不是打完誰，是把這一路的帳結掉），
      底下那三條都要問 `state.currentEnemyKey`。⚠ 併帳／清帳／HP 回滿在上面已經做完
      —— 那是「一局的終點」共通的手續，這一條只是第四條結算路徑（鐵律 8）。 */
-  if(opts.rest && !isLose){ restSettle(totalTime, stats, sessionLoot, shares, opts.restTitle); return; }
+  if(opts.rest && !isLose){ restSettle(totalTime, stats, sessionLoot, shares, opts.restTitle, expShares); return; }
   if(state.tutorialRun && !isLose){ tutorialSettle(totalTime, stats); return; }
   /* 劇情插入戰（ver -375）：與教學結算同一頁 —— **沒有監察官、沒有等級**，
      只有戰績、EXP 與拾得。⚠ 不是教學，所以不走教學那兩句台詞。 */
-  if(state.scriptRun && !isLose){ scriptSettle(totalTime, stats, sessionLoot, shares); return; }
+  if(state.scriptRun && !isLose){ scriptSettle(totalTime, stats, sessionLoot, shares, expShares); return; }
   if(isLose){
     const rows=combatStatsRows();
     showResultSequence(L.result.loseTitle, L.result.loseSub, rows, 'lose', true);
@@ -493,6 +576,11 @@ export function settle(totalTime, stats, opts={}){
      ⚠ 領完就清（`clearSessionGain`），不然下一場會把上一段的再算一次。 */
   let gainMoney = moneyOf(stats, evalResult.grade);
   if(gainMoney) gainMoney = Math.round(gainMoney * (1 + prog.bonus('moneyMul')));
+  /* ⚠⚠ **這一條路不發女主等級的 EXP**（ver -970）：它是**出陣（試玩版）**的結算，
+     搭檔是蕾妮／馬季諾，不在 `config.girls.who` 裡 —— `awardExp` 就算叫了也會
+     全部被 `isGirl` 擋掉。所以這裡照舊只印「這一局換算出來的 EXP」當戰績，
+     不入任何人的帳（本篇走 `scriptSettle`／`restSettle` 那兩條）。
+     ⚠ 日後要讓試玩版也給等級，改的是 `config.girls.who`，不是在這裡加一行。 */
   const totalExp = evalResult.exp|0;      // EXP 由**整場的總和**算出來（ver -601）
   if(gainMoney) inv.addMoney(gainMoney);
   if(totalExp && showExp()) rows += '<div class="row"><span>EXP</span><b>＋'+totalExp+'</b></div>';
@@ -769,7 +857,7 @@ function tutorialSettle(totalTime, stats){
      走到這裡就一定有帳可結。 */
 /* ⚠ `title` ＝這一頁的大標（ver -928）：休息處走進去是「休　息　處」，
      走出這張地圖時結算是「撤　離」—— 同一頁兩個時機，字面由呼叫端給（鐵律 1）。 */
-function restSettle(totalTime, stats, sessionLoot, shares, title){
+function restSettle(totalTime, stats, sessionLoot, shares, title, expShares){
   state.sRankUnlocked = false;
   const ev = evaluate(stats);
   /* 評價者照舊（`battleId` 傳 null ＝沒有哪一場的專屬台詞，走章節／好感那張通用表）。
@@ -779,7 +867,9 @@ function restSettle(totalTime, stats, sessionLoot, shares, title){
   prog.applyRankAffection(ev.grade, shares || state.pickedPartner);   // ver -921：出場數最多的全拿
   let money = moneyOf(stats, ev.grade);
   if(money) money = Math.round(money * (1 + prog.bonus('moneyMul')));
-  const exp = ev.exp|0;
+  /* EXP（ver -970）：**逐個收款人各算一次**（索菈娜方向相反），發放與顯示
+     都走那兩支唯一的入口（鐵律 8）。 */
+  const expGains = awardExp(ev.score, stats, expShares);
   if(money) inv.addMoney(money);
   let rows = spk
     ? ('<div class="grade-wrap"><b class="grade-badge rank-'+ev.grade+'">'+ev.grade+'</b>'
@@ -787,7 +877,7 @@ function restSettle(totalTime, stats, sessionLoot, shares, title){
        + '</span></div>')
     : '';
   rows += ratingStatsRows(stats, totalTime);
-  if(exp && showExp()) rows += '<div class="row"><span>EXP</span><b>＋'+exp+'</b></div>';
+  if(showExp()) rows += expRows(expGains);
   if(money) rows += '<div class="row"><span>'+inv.moneyName()+'</span><b>＋'+money+'</b></div>';
   showResultSequence(title || '休　息　處', '戰果整理', rows, ev.grade, false,
                      spk ? { speaker:spk } : { noInspector:true });
@@ -812,7 +902,7 @@ function restSettle(totalTime, stats, sessionLoot, shares, title){
    金錢是「HP 的 6~8 成隨機」。兩者都在敵人卡上，這裡只負責擲骰與呈現（鐵律 1）。
    ⚠ 沒有監察官、沒有等級：那一場是劇情中間插進來的一場架，不是驅逐任務。
    ⚠ 按鈕是「繼續」→ 回劇情/城鎮（不是回主畫面）。 */
-function scriptSettle(totalTime, stats, sessionLoot, shares){
+function scriptSettle(totalTime, stats, sessionLoot, shares, expShares){
   state.sRankUnlocked = false;
   const ev = evaluate(stats);
   const en = GAME_CONFIG.enemies[state.currentEnemyKey] || {};
@@ -849,7 +939,9 @@ function scriptSettle(totalTime, stats, sessionLoot, shares){
   /* 九階強化「銀幣星」：金錢掉落加成（ver -707）。⚠ 在**併完連戰的帳之後**才乘 ——
      中間幾格的錢也是這一場打來的，只乘最後一格等於少算一大半。 */
   if(money) money = Math.round(money * (1 + prog.bonus('moneyMul')));
-  const exp = noReward ? 0 : (ev.exp|0);
+  /* EXP（ver -970）：**逐個收款人各算一次**（索菈娜方向相反）。
+     ⚠ `noReward`（打靶）一毛都不給 —— 同錢的理由，那是可以重打到膩的練習場。 */
+  const expGains = noReward ? [] : awardExp(ev.score, stats, expShares);
   if(money) inv.addMoney(money);
   /* ⚠ 沒有評價者、又沒有等第可印時整塊就不要出 —— 一個只寫著「評價」兩個字的空行
        比沒有還糟（打靶就是這一種）。 */
@@ -859,7 +951,7 @@ function scriptSettle(totalTime, stats, sessionLoot, shares){
        + '</span></div>')
     : '';
   rows += ratingStatsRows(stats, totalTime);
-  if(exp && showExp()) rows += '<div class="row"><span>EXP</span><b>＋'+exp+'</b></div>';
+  if(showExp()) rows += expRows(expGains);
   if(money) rows += '<div class="row"><span>'+inv.moneyName()+'</span><b>＋'+money+'</b></div>';
   /* ══ 這一場自己的最佳紀錄（ver -377，Ray：「紀錄最佳紀錄，破紀錄時加上 New」）══
      ⚠ 只有卡上寫了 `record` 的場次才記（打靶場那種「一直挑戰」的）；

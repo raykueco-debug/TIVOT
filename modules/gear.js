@@ -51,6 +51,28 @@ let tab='gear';
    排第一 —— 這裡只是照抄，不另訂順序。 */
 let itemCat='item';
 
+/* ══ 搭檔卡上的等級條（ver -970）══
+   ⚠ **星名還沒填就只印 Lv N**（`girlStarName` 回空字串）—— 不要自己編一個名字
+     （Ray：「星名跟對應技能我會分角色給你」）。
+   ⚠ 滿級不印「還差多少」，改印 MAX：印一條永遠滿的進度條讀起來像壞了。 */
+function girlLvHtml(key){
+  if(!prog.isGirl(key)) return '';
+  const g = prog.girlProgress(key);
+  const star = prog.girlStarName(key, g.lv);
+  const max = (g.to==null);
+  /* ⚠⚠ **管理人模式可以直接點等級**（同九星那條梯子的作法，ver -714）：
+     點一下 +1、滿級再點歸 Lv1。**那是明寫的開發梯子**（鐵律 9 的例外）——
+     正規的路只有結算發 EXP，不然練一級要打好幾局，測技能根本測不動。 */
+  const dev = document.body.classList.contains('testmode');
+  return '<div class="gs-glv'+(dev?' dev':'')+'"'+(dev?' data-glv="'+key+'"':'')+'>'
+       +   '<div class="gs-glv-top"><b>Lv'+g.lv+'</b>'
+       +     (star ? '<span class="gs-glv-star">'+star+'</span>' : '')
+       +     '<span class="gs-glv-exp">'+(max ? 'MAX' : (g.exp+' / '+g.to))+'</span>'
+       +   '</div>'
+       +   '<div class="gs-glv-bar"><i style="width:'+Math.round(g.ratio*100)+'%"></i></div>'
+       + '</div>';
+}
+
 function ensure(){
   if(el && el.parentNode) return el;
   el=document.createElement('div'); el.id='gearSheet';
@@ -234,6 +256,10 @@ function render(){
                      + ' style="--gp-zoom:'+(fit.zoom||1)+';--gp-top:'+((fit.top||0)*100)+'%">' : '')
     +       '<div class="gs-pname">'+(p.name||'—')+'</div>'
     +     '</div>'
+    /* ══ 女主的九級（ver -970）══ 只有 `config.girls.who` 裡的那三位有這一條
+       （蕾娜沒有；蕾妮／馬季諾是試玩版的）。⚠ 等級與進度全部問 `progress`
+       那兩支（`girlLevel`／`girlProgress`，鐵律 7）—— 這裡一個數字都不自己算。 */
+    +     girlLvHtml(pk)
     /* ⚠⚠ 技能說明包成自己的一塊（ver -715，Ray：「伙伴立繪太大了，下方要有足夠
        空間說明主備動技能」）—— 立繪改成**不伸展**（見 CSS 的 `gs-pcard`），
        多出來的高度歸這一塊，塞不下就它自己捲。
@@ -401,6 +427,15 @@ function bind(){
   }));
   el.querySelectorAll('.gs-barrel').forEach(b=>b.addEventListener('click', e=>{
     e.stopPropagation(); openCharm(b.dataset.barrel);
+  }));
+  /* 管理人：點等級條 → +1，滿級歸 Lv1（ver -970，同九星那條梯子）。 */
+  el.querySelectorAll('.gs-glv.dev').forEach(d=>d.addEventListener('click', e=>{
+    e.stopPropagation();
+    const who=d.dataset.glv;
+    const lv=prog.girlLevel(who), max=prog.girlMaxLv();
+    prog.setGirlLevel(who, lv>=max ? 1 : lv+1);
+    try{ SFX.menuClick(); }catch(_){}
+    render();
   }));
 }
 

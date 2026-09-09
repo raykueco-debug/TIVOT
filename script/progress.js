@@ -56,6 +56,10 @@ const K = {
   gunLv:     'tivot_gunlv_v1',
   /* 主武器的九階強化（ver -707）：`{星id: 已升幾次}`。一輪內（同掛件）。 */
   gunStars:  'tivot_gunstars_v1',
+  /* ══ 女主的九級（ver -970）══ `{搭檔key: 累計 EXP}`。**一輪內**（同九星／掛件）。
+     ⚠ **只存 EXP，不存等級**：等級由累計值查 `config.girls.expTo` 推出來
+       （鐵律 7 —— 存了就是第二個真相，兩者一定會走鐘）。 */
+  girlExp:   'tivot_girlexp_v1',
   /* 副武器的改裝等級（ver -714）：`{武器id: 階}`，0~卡上的 `maxMod`。一輪內。 */
   wmod:      'tivot_wmod_v1',
   /* ══ 吃過的料理（ver -953，Ray：「HP 上限＋40 是一輪內」）══ 陣列，元素＝
@@ -237,6 +241,94 @@ export function setStarCount(id, n){
   if(v>0) cur[id]=v; else delete cur[id];
   wr(K.gunStars, JSON.stringify(cur));
   return cur;
+}
+
+/* ══⚠⚠⚠ 女主的九級（ver -970，Ray 交辦）══════════════════════════════════
+   > 「像嘉尼米德那樣分九級，但是**純吃 exp**」「你先放 lv1~lv9，星名跟對應技能
+   >   我會分角色給你」「蕾娜沒有」
+
+   ⚠⚠ **與九星刻意不共用**（它們不是同一個量）：九星是非線性、吃素材、`{id:次數}`；
+     這一套是線性 Lv1→Lv9、純吃 EXP、一位一個累計數字。
+   ⚠⚠ **只存 EXP，等級是算出來的**（鐵律 7）：`girlLevel()` 拿累計值去查
+     `config.girls.expTo` 的門檻 —— 存「等級」就是第二個真相，改了陡度就走鐘。
+   ⚠ 名單問 `config.girls.who`（＝三位戰鬥搭檔），不要在這裡抄一份。
+   ══════════════════════════════════════════════════════════════════════════ */
+function girlCfg(){ return (GAME_CONFIG.girls||{}); }
+function girlKeys(){ return girlCfg().who || []; }
+export function isGirl(who){ return girlKeys().indexOf(who)>=0; }
+/* 累計 EXP 表（`{key: exp}`）。⚠ 沒有鑰匙＝這一輪還沒有人拿過 EXP，回空物件。 */
+export function girlExpAll(){
+  try{ const j=JSON.parse(rd(K.girlExp)||'null'); if(j && typeof j==='object') return j; }catch(e){}
+  return {};
+}
+export function girlExp(who){ return (girlExpAll()[who]|0); }
+/* 累計 EXP → 等級（1~9）。⚠ 門檻是**累計值的下限**（同 `rating.tiers` 的讀法）：
+   由高往低找第一個過得了的。查不到表（還沒填）就一律 Lv1 —— 不要回 0，
+   「等級 0」在這個系統裡沒有意義，而且會讓顯示端跑出「Lv0」。 */
+export function girlLevel(who){
+  const tab = girlCfg().expTo || [0];
+  const e = girlExp(who);
+  for(let i=tab.length-1; i>=0; i--){ if(e >= tab[i]) return i+1; }
+  return 1;
+}
+export function girlMaxLv(){ return (girlCfg().expTo || [0]).length; }
+/* 距離下一級還差多少／這一級的區間（顯示用）。滿級回 null。 */
+export function girlProgress(who){
+  const tab = girlCfg().expTo || [0];
+  const lv = girlLevel(who), e = girlExp(who);
+  if(lv >= tab.length) return { lv, exp:e, from:tab[lv-1], to:null, need:0, ratio:1 };
+  const from = tab[lv-1], to = tab[lv];
+  return { lv, exp:e, from, to, need:Math.max(0, to-e),
+           ratio: (to>from) ? Math.min(1, Math.max(0, (e-from)/(to-from))) : 1 };
+}
+/* 加 EXP。回傳 `{who, gain, exp, from, to}`（`from`／`to` ＝等級，用來報升級）；
+   不是這套系統裡的人就回 null。
+   ⚠ **只有 `inspector` 的結算會叫它**（正規入口只有一個，鐵律 8）——
+     日後要在別的地方給 EXP（劇情獎勵那種），照 `gunStar:` 的作法走腳本那一拍。 */
+export function addGirlExp(who, n){
+  if(!isGirl(who)) return null;
+  const gain = Math.max(0, Math.round(+n||0));
+  if(!gain) return null;
+  const all = girlExpAll();
+  const before = girlLevel(who);
+  all[who] = (all[who]|0) + gain;
+  wr(K.girlExp, JSON.stringify(all));
+  return { who, gain, exp:all[who], from:before, to:girlLevel(who) };
+}
+/* ⚠⚠ **直接設等級：管理人模式限定的梯子**（同 `setStarCount` 的性質，鐵律 9 的
+   明寫例外）—— 把累計 EXP 寫成那一級的門檻值。正規的路只有結算發放。 */
+export function setGirlLevel(who, lv){
+  if(!isGirl(who)) return null;
+  const tab = girlCfg().expTo || [0];
+  const v = Math.max(1, Math.min(tab.length, lv|0));
+  const all = girlExpAll();
+  all[who] = tab[v-1]|0;
+  wr(K.girlExp, JSON.stringify(all));
+  return all;
+}
+/* ══⚠⚠ **女主等級的加成：唯一查詢點**（鐵律 7，同 `bonus()` 對九星做的事）══
+   把 Lv1~現在這一級的 `levels[who][i][key]` 加總。
+   ⚠⚠ **現在一定回 0** —— `config.girls.levels` 的九格是空的（星名與效果等 Ray
+     分角色給）。這一支先立好，卡填進去那一刻所有呼叫點自動吃到，一行都不必改。
+   ⚠ 它與 `bonus()` **分開**：那一支是「玩家自己」的加成（槍與料理），
+     這一支是「哪一位搭檔」的 —— 混在一起就答不出「換人之後還算不算」。 */
+export function girlBonus(who, key){
+  if(!isGirl(who)) return 0;
+  const arr = (girlCfg().levels||{})[who] || [];
+  const lv = girlLevel(who);
+  let sum = 0;
+  for(let i=0; i<lv && i<arr.length; i++){
+    const v = arr[i] && arr[i][key];
+    if(v!=null) sum += v;
+  }
+  return sum;
+}
+/* 這一級的星名（顯示用）。⚠ 還沒填就回空字串，**不要自己編一個** ——
+   顯示端看到空字串要印「Lv N」而不是印一個假名字。 */
+export function girlStarName(who, lv){
+  const arr = (girlCfg().levels||{})[who] || [];
+  const i = (lv==null ? girlLevel(who) : lv) - 1;
+  return (arr[i] && arr[i].name) || '';
 }
 
 /* ══ 吃過的料理（ver -953）══ 一輪內；每一道只記一次（見 K.dishes 的說明）。 */
@@ -631,7 +723,8 @@ export const CHAPTERS = [
 export function newRun(){
   for(const k of [K.stage, K.flags, K.affection, K.affFloor, K.name, K.nick,
                   K.hp, K.innLast, K.flightLoss, K.rennaS, K.playtime,
-                  K.charms, K.gunLv, K.gunStars, K.wmod, K.jmod, K.dishes]) {   // 持久HP／上次旅店／連敗數／蕾娜S計數／遊玩時間／掛件／強化／杰羅改造／吃過的料理
+                  K.charms, K.gunLv, K.gunStars, K.wmod, K.jmod, K.dishes,
+                  K.girlExp]) {   // 持久HP／上次旅店／連敗數／蕾娜S計數／遊玩時間／掛件／強化／杰羅改造／吃過的料理／女主等級（-970）
     try{ localStorage.removeItem(k); }catch(e){}
   }
   /* ⚠⚠ 從頭開始＝**S0 要寫進鑰匙**（ver -563）。清掉 stage 之後不寫回的話，
@@ -702,7 +795,8 @@ export function snapshot(){
            gunStarsRaw:rawJ(K.gunStars),     // 主武器九階強化（ver -707，一輪內）
            wmodRaw:rawJ(K.wmod),            // 副武器改裝（ver -714，一輪內）
            jmodRaw:rawJ(K.jmod),            // 杰羅改造（ver -866，一輪內）
-           dishesRaw:rawJ(K.dishes) };      // 吃過的料理（ver -953，一輪內）
+           dishesRaw:rawJ(K.dishes),        // 吃過的料理（ver -953，一輪內）
+           girlExpRaw:rawJ(K.girlExp) };    // 女主的九級（ver -970，一輪內）
 }
 export function restore(s){
   if(!s) return;
@@ -735,4 +829,7 @@ export function restore(s){
   putRaw(K.dishes, ('dishesRaw' in s)?s.dishesRaw:null, true);   // 料理（ver -953）：舊存檔沒有＝原樣移除
   putRaw(K.wmod,     ('wmodRaw'     in s)?s.wmodRaw    :null, true);
   putRaw(K.jmod,     ('jmodRaw'     in s)?s.jmodRaw    :null, true);
+  /* 女主的九級（ver -970）：舊存檔沒有這一欄 → **原樣移除**（讀「還沒練」的檔
+     不該帶著這一輪練出來的等級，§6.9 的兩面）。 */
+  putRaw(K.girlExp,  ('girlExpRaw'  in s)?s.girlExpRaw :null, true);
 }

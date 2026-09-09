@@ -51,6 +51,11 @@ export function init(a){ api = a; }
 export function storyPartnerPool(){
   const out=[];
   for(const r of (GAME_CONFIG.storyPartnerBy||[])){
+    /* `not`（ver -970）＝**這支旗立了這一條就不算**。用途：夏爾村圍城期間強配
+       索菈娜，圍城打完（`safehouse_shinier`）那一條就退場，改由不帶 `not` 的
+       那一條把她留在池子裡＝自由選（Ray：「過了夏爾村圍城夜之後就自由選」）。
+       ⚠ 同 `wildSpawn` 的 `not`（ver -919）：語意一致，不要另立一套代號。 */
+    if(r && r.not && prog.hasFlag(r.not)) continue;
     if(r && r.key && (!r.need || prog.hasFlag(r.need)) && GAME_CONFIG.partners[r.key]
        && out.indexOf(r.key)<0) out.push(r.key);
   }

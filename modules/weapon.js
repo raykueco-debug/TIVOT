@@ -114,15 +114,27 @@ function counterEnergy(sum, full){
      那一次玩家會以為遊戲壞了，而不是「運氣不好」。
    ⚠ 命中率由**卡上的 `bands[帶].hit`** 決定，呼叫端只負責傳進來（鐵律 1＋7）。 */
 /* 這位搭檔對**這一類副武器**的命中倍率（ver -962）：沒寫＝1。
-   ⚠ 只有這一支在讀卡（鐵律 7）—— 呼叫端不必知道是誰在場、也不必知道規則長什麼樣。 */
-function partnerHitMul(cat){
+   ⚠ 只有這一支在讀卡（鐵律 7）—— 呼叫端不必知道是誰在場、也不必知道規則長什麼樣。
+   ══⚠⚠ **`bandMul`：逐帶再乘一次**（ver -970，Ray：「索拉娜為隊友時，玩家自點
+     黃橘圈命中率降 30%」；理由：「她不是後方輔助是共鬥者，重武器為了要避免 TK
+     命中率會變低」）══
+   · 與 `mul` **相乘**不是取代：索菈娜現在黃／橘 0.5×0.7＝0.35、紅 0.5。
+   · `except` 同時管兩者（`萊福槍` 一律不受影響）—— TK 是重武器的問題。
+   · `grade` 沒傳（舊呼叫端）＝不套 bandMul，行為與 -962 完全一樣。 */
+function partnerHitMul(cat, grade){
   const p = GAME_CONFIG.partners && GAME_CONFIG.partners[state.pickedPartner];
   const h = p && p.counterHit;
-  if(!h || !(h.mul>=0)) return 1;
+  if(!h) return 1;
   if(h.except && h.except.indexOf(cat)>=0) return 1;
-  return h.mul;
+  let m = (h.mul>=0) ? h.mul : 1;
+  const bm = grade && h.bandMul && h.bandMul[grade];
+  if(bm>=0) m *= bm;
+  return m;
 }
-export function weaponCounter(dmgScale, hitRate, dmgRoll){
+/* `grade`（ver -970）＝這一發是哪一帶（`block`／`perfect`／`counter`）。
+   ⚠ 只有 `defense.resolveThreat` 答得出來，所以由它傳進來（鐵律 7）——
+     這一支不去反推帶位（`hitRate` 推不出來：卡上可以把兩帶寫成同一個命中率）。 */
+export function weaponCounter(dmgScale, hitRate, dmgRoll, grade){
   /* ⚠ 本篇與試玩版是**兩套數值**（ver -378）——一律走 `weaponOf`，不要直接查 WEAPONS。 */
   const w = weaponOf(state.equippedWeapon, storyMode());
   if(!w) return;
@@ -168,7 +180,7 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll){
        紅圈會變成 0.5 而開始吃迴避，等於一次改了兩件事。
      ⚠ 減半照樣蓋到紅圈（Ray 只講了「步槍除外」這一個例外）；
        第一發保底仍在（`hits(k)` 的 `k===0`），所以不會出現整串全 miss。 */
-  const pHit = partnerHitMul(w.cat);
+  const pHit = partnerHitMul(w.cat, grade);
   const hitR  = Math.min(1, baseHit * (1-evade) * pHit);   // 負迴避把命中往上加，夾到 100%
   /* 第 k 發中不中。⚠ `k===0` 一定中（見上）—— **無迴避時**；有迴避一律擲
      （ver -760：不然單發武器吃不到迴避）。紅圈 evade=0＝走前一分支必中。

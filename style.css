@@ -3554,6 +3554,26 @@
   #gearSheet .gs-pname{position:absolute;left:0;right:0;bottom:0;padding:6px 10px;
     font-size:12px;letter-spacing:3px;color:var(--gold);
     background:linear-gradient(180deg,rgba(8,6,12,0),rgba(8,6,12,.9) 60%);}
+  /* ══ 女主的九級（ver -970）══ 立繪與技能說明之間一條窄帶：Lv、星名、EXP 進度。
+     ⚠ `flex:0 0 auto` —— 它不吃高度（右欄剩下的高度歸技能說明，同 ver -715 那條
+       「伙伴立繪太大了，下方要有足夠空間說明技能」的理由）。 */
+  #gearSheet .gs-glv{flex:0 0 auto;margin-top:6px;}
+  /* 管理人模式：整條可點（+1 級）。給一點可按的樣子，但別搶走搭檔卡的注意力。 */
+  body.testmode #gearSheet .gs-glv.dev{cursor:pointer;border-radius:3px;
+    outline:1px dashed rgba(214,178,92,.35);outline-offset:3px;}
+  #gearSheet .gs-glv-top{display:flex;align-items:baseline;gap:6px;font-size:10px;
+    color:var(--gold-dim);}
+  #gearSheet .gs-glv-top b{font-weight:normal;font-size:12px;letter-spacing:1px;
+    color:var(--gold);}
+  #gearSheet .gs-glv-star{flex:1 1 auto;min-width:0;overflow:hidden;
+    text-overflow:ellipsis;white-space:nowrap;color:var(--gold);}
+  /* EXP 數字靠右；星名還沒填時它自己會被上面那個 flex:1 推到右邊。 */
+  #gearSheet .gs-glv-exp{margin-left:auto;font-variant-numeric:tabular-nums;}
+  #gearSheet .gs-glv-bar{margin-top:3px;height:3px;border-radius:2px;
+    background:rgba(255,255,255,.10);overflow:hidden;}
+  #gearSheet .gs-glv-bar i{display:block;height:100%;border-radius:2px;
+    background:linear-gradient(90deg,var(--gold-dim),var(--gold));
+    transition:width .35s ease;}
   /* 技能說明：吃掉右欄剩下的高度，塞不下就自己捲（不要把立繪擠掉）。 */
   #gearSheet .gs-perks{flex:1 1 auto;min-height:0;overflow-y:auto;}
   #gearSheet .gs-perk{margin-top:8px;font-size:10px;line-height:1.65;color:var(--gold-dim);}

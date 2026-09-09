@@ -386,7 +386,7 @@ export function resolveThreat(th){
        ⚠ 只有這一帶算 —— 黃橘圈自 -706 起也會開火，但那不是**完美**反擊。 */
     { const pc=(GAME_CONFIG.rating&&GAME_CONFIG.rating.penalty)||{};
       addPerfectCounter((w && w.counterSec!=null) ? w.counterSec : (pc.counter||0)); }
-    api.weaponCounter();
+    api.weaponCounter(undefined, undefined, undefined, 'counter');   // ver -970：帶名交給 weapon 查 bandMul
     staggerOnCounter();
   }else if(ratio < DEF_DEFENSE_MIN){
     // === Perfect Defense ===（金色微閃）
@@ -399,7 +399,7 @@ export function resolveThreat(th){
     const bp = weaponBand(w, 'perfect');
     api.floatDmg(L.battle.perfect,'50%','40%',true);
     if(bp.counter){
-      api.weaponCounter(bp.scale, bp.hit, bp.roll);
+      api.weaponCounter(bp.scale, bp.hit, bp.roll, 'perfect');
       staggerOnCounter();
     }else if(bp.take<=0){
       SFX.play(asset('se_guard'), sfxGain('se_guard'));   // 完美防禦音（免傷那一支）
@@ -444,7 +444,7 @@ export function resolveThreat(th){
              完美反擊計數、評價折秒與硬直，那些 Ray 沒說要給（而且共鬥本來就無敵）。
            ⚠ 只動命中率 —— 減傷（`bb.take`）照舊，擋得住還是擋得住。 */
         const hit = (th.ult && !state.coopMode) ? ULT_BLOCK_HIT : bb.hit;
-        api.weaponCounter(bb.scale, hit, bb.roll);
+        api.weaponCounter(bb.scale, hit, bb.roll, 'block');
         staggerOnCounter();
       }
       if(bb.take>0){
