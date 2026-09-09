@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.09-986';
+export const VERSION = 'ver 2026.09.09-987';
 
 export const GAME_CONFIG = {
 
@@ -837,7 +837,7 @@ export const GAME_CONFIG = {
            0.02 再加 3% ＝ 5%）。 */
       nouvelle: [
         { star:'Guisuer',           name:'先鋒星',
-          desc:'聖徒化的連擊疊傷提升至 150%，且無上限。',
+          desc:'聖徒化的連擊疊傷提升至 150%。',
           /* 聖徒化每 combo 的疊傷斜率（`tuning.saintComboStep` 1.0）**乘上 1+這個值**
              → 1.5。⚠ Ray 選的是「只調斜率」：「無上限」是對現況的確認
              （聖徒化那一段本來就沒有上限），**普攻 `dmgComboCap:20` 不解除**。 */
@@ -857,8 +857,8 @@ export const GAME_CONFIG = {
                （`partner.onEnemyCleared`），該場已經結束了。 */
           saintReload:1 },
         { star:'Tegmine',           name:'堅殼星',
-          desc:'獄門天鎖的十秒免傷期間，每次射擊回復最大體力 5%，反擊一次也算一發；'
-              +'聖徒化期間不回血。',
+          desc:'獄門天鎖的十秒免傷期間，每次射擊回復最大體力 5%。'
+              +'反擊一次算一發，聖徒化期間不回血（此二條同樣適用魂之歸所的回血）。',
           /* `guardHealPct` 是**增量**：卡上 0.02 ＋ 這裡 0.03 ＝ 5%。
              ⚠ 「單局一次」＝**即死防禦本身**一局一次（Ray 確認）——
                那正是 Lv1~6 的基礎行為（Lv7 的蟹生星才放寬成一場一次），
@@ -889,18 +889,18 @@ export const GAME_CONFIG = {
              ⚠ 走 `combat.setPlayerHpRatio(0)`（下限夾 1 HP，既有語意）。 */
           saintStartHp1:1 },
         { star:'Yuyu',              name:'蟹生星',
-          desc:'即死防禦改為每一場（每隻怪）各一次。',
+          desc:'獄門天鎖由每一局一次，改為每一場（每隻怪）各一次。',
           /* ＝ver -888 那條「每換一隻怪 reload」，現在是這一級的獎勵。
              ⚠ 九星「方舟」（無傷擊殺回復被動）與它**是兩件事**，照舊各自生效。 */
           guardPerEnemy:1 },
         { star:'Asellus Australis', name:'負行星',
-          desc:'聖徒化期間自第二連擊起，每一發射擊都延長倒數（不會歸零）。',
+          desc:'聖徒化期間自第二連擊起，每一發射擊扣除最大體力 1%，藉此延長倒數（不會歸零）。',
           /* 聖徒化期間血條＝倒數槽，**扣血＝延長**。第 2 hit 起每發扣
              `playerMax` 的 1%（走 `combat.drainPlayer`，下限夾 1 ＝「不可歸零」）。
              ⚠ 「第 2 Hit 開始」＝`state.combo>=2`（那正是 Ray 說的「隨 Combo」）。 */
           saintDrainPct:0.01 },
         { star:'Tarf',              name:'終焉星',
-          desc:'聖徒化期間受到攻擊不再推進倒數槽。',
+          desc:'聖徒化期間受到敵方攻擊不再推進倒數槽（點錯與反應逾時仍會推進）。',
           /* ⚠ 只擋**敵人的攻擊**（含格擋那一半）—— 點錯與反應逾時照舊推進
              （Ray 的卡寫的是「被攻擊不增血」）。守門在 `combat.enemyAttack` 的
              聖徒化分支，演出與失誤計數照走，只是不叫 `saintAdvance`。
