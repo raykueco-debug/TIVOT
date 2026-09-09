@@ -147,7 +147,10 @@ const ACTIVE_HANDLERS = {
          槽推到哪裡就是他現在剩多少 —— 那正是 Ray 要的「現血量」。
        ⚠ 窗口**在 cut-in 撤下才起算**（同即死防禦的免傷窗、同 fireBuff）：
          演出 1.5 秒期間盤面鎖著，從發動那一刻起算等於白送掉一成半。 */
-    const sec = act.lifestealSeconds || 0;
+    /* 「引路星」（諾薇兒 Lv5，ver -971）：卡上的 10 秒 ＋ 星的 5 ＝ 15 秒。
+       ⚠⚠ **吸血、連擊延續、全程指引共用這一扇窗**（鐵律 7）——
+         Ray 的卡上三者永遠同一個數字，分成三個計時器必然走鐘。 */
+    const sec = (act.lifestealSeconds || 0) + prog.girlBonus(state.pickedPartner, 'lifeReturnSec');
     a.saintApi.lifeReturnAbort(()=>{
       if(!(sec>0) || state.over) return;
       vampUntil = Date.now() + sec*1000;
@@ -251,7 +254,10 @@ function guardHealPct(){
   if(Date.now() >= guardHealUntil) return 0;
   const p = currentPartner();
   const pas = p && p.passive;
-  return (pas && pas.key==='deathGuard' && pas.immuneHealPct) || 0;
+  if(!(pas && pas.key==='deathGuard' && pas.immuneHealPct)) return 0;
+  /* 「堅殼星」（諾薇兒 Lv4，ver -971）：卡上的 2% ＋ 星的 3% ＝ 5%。
+     ⚠ 星寫的是**增量**，加總走 `prog.girlBonus` 那個唯一查詢點（鐵律 7）。 */
+  return pas.immuneHealPct + prog.girlBonus(state.pickedPartner, 'guardHealPct');
 }
 function vampHealPct(){
   if(Date.now() >= vampUntil) return 0;
@@ -265,6 +271,22 @@ function vampHealPct(){
      （ver -965 起：普攻／雙槍破防／overkill 三種射擊都算，Ray：「放寬吧，
      強化諾的奶媽感」）。 */
 export function shotHealPct(){ return Math.max(guardHealPct(), vampHealPct()); }
+/* ══ 生命歸還那一扇窗現在開著嗎（ver -971）══ 吸血是它、連擊延續也是它、
+   引路星的全程指引還是它 —— **一扇窗三個效果**（見諾薇兒卡上的 `comboKeepSeconds`）。
+   ⚠ 這一支只回答「開著嗎」；**要不要吃**由呼叫端各自問卡／問星（鐵律 7）。 */
+export function lifeReturnWindow(){ return Date.now() < vampUntil; }
+/* 聖徒化的連擊疊傷要不要延續到普攻上（＝那扇窗開著、而且卡上有寫秒數）。
+   ⚠ 卡上沒寫 `comboKeepSeconds` ＝沒有這件事（蕾妮那張就沒有）。 */
+export function saintComboKeep(){
+  if(!lifeReturnWindow()) return false;
+  const p=currentPartner(), act=p&&p.active;
+  return !!(act && act.key==='lifeReturn' && act.comboKeepSeconds>0);
+}
+/* 「引路星」（諾薇兒 Lv5）：那扇窗開著時全程指引下一格。
+   ⚠ 一次性的那一下（cut-in 撤下時指第一格）ver -833 就有了，這顆星加的是「全程」。 */
+export function guideActive(){
+  return lifeReturnWindow() && prog.girlHas(state.pickedPartner, 'lifeReturnHint');
+}
 
 /* ══⚠⚠ **明晰之夢：每隻怪第一次反擊成功時發動**（`firstCounter`，ver -693，Ray：
    「娜塔莉戰如果先觸發 lucid dream 再進入 NI 劇情會卡住，或者同時，所以我決定改
@@ -294,6 +316,14 @@ export function shotHealPct(){ return Math.max(guardHealPct(), vampHealPct()); }
        —— 那是「同一隻怪身上再賺回一次」，與換敵是兩件事。
    · 明晰之夢自 -886 起無限制發動，這裡不再需要上膛。 */
 export function onEnemySet(){
+  /* ⚠⚠⚠ **ver -971：每場 reload 收成 Lv7「蟹生星」的獎勵**（Ray：「兩條都收」）。
+     -888~-970 這裡是無條件解開的（＝一場一次）；現在**本篇的三位**要有那顆星
+     才解，沒有就退回卡上 `oncePerBattle` 的原義＝**一局一次**。
+     ⚠ **試玩版不受影響**：蕾妮／馬季諾不在 `girls.who` 裡（`isGirl` 為 false），
+       直接走到下面那一行 —— 他們照舊每換一隻怪 reload（§6.5.3「本篇與試玩版
+       是兩套」的同一個原則：動之前先確認那張卡是誰在用）。 */
+  const who = state.pickedPartner;
+  if(prog.isGirl(who) && !prog.girlHas(who, 'guardPerEnemy')) return;
   state.deathGuardUsed = false;
 }
 /* ══ 九階強化「方舟」（ver -707，Ray：「無傷使敵 HP 歸零，可回復已使用的被動技」）══
@@ -313,7 +343,10 @@ export function onEnemyCleared(){
      ⚠ 解槽走 `api.resetInstallSlot`（saint 的具名 setter，鐵律 9）。
      ⚠ 這一段在方舟那道守門**之前**：它與那顆星無關，沒有星也要生效。 */
   { const p0=currentPartner(), ir=p0 && p0.installReload;
-    if(ir && ir.flawless){
+    /* `needStar`（ver -971）＝要有那顆星才生效（諾薇兒 Lv3「探覓星」）。
+       ⚠ 條件寫在**卡上**，這裡只讀（鐵律 1）；沒寫 `needStar` 的卡照舊無條件生效。 */
+    const irOk = ir && (!ir.needStar || prog.girlHas(state.pickedPartner, ir.needStar));
+    if(irOk && ir.flawless){
       if(state.enemyHitsTaken!==0) state.flawlessKills = 0;
       else{
         state.flawlessKills = (state.flawlessKills||0) + 1;

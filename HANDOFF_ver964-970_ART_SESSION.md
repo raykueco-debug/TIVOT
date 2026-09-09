@@ -109,7 +109,11 @@ inspector.awardExp(score,stats,shares)
   ⚠ 要整體調快慢**只動那一排數字**，形狀（比例）不必碰。
 - **只存累計 EXP，等級是算出來的**（鐵律 7）—— 存「等級」就是第二個真相。
 - **一輪內**：`newRun()` 清、`snapshot/restore` 帶（§6.9 的兩面，兩支都加過了）。
-- ⛔⛔ **`girls.levels` 的 3 位 × 9 格是空的（`{name:'', desc:''}`）** ——
+- ✅ **諾薇兒的九格 ver -971/-972 已填**（Ray 交卡：巨蟹座九星）——
+  連帶把兩件現行預設的能力收成升級獎勵（Reload→Lv3、即死防禦每場 reload→Lv7），
+  並實作抬頭那句「連續聖徒化 combo 增益 10 秒」。細節見那一版的 commit 與
+  `config.js` 的 `girls.levels.nouvelle`。
+- ⛔⛔ **安雅與索菈娜的 9 格仍是空的（`{name:'', desc:''}`）** ——
   **不要自己發明星名或效果**（同 `items.defs` 的護符、`tuning.weaponPerks`：
   Ray 的卡還沒到就空著）。
   卡到了只要填 `name`／`desc` 與效果欄位：`prog.girlBonus(who, key)` 那個唯一查詢點

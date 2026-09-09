@@ -323,6 +323,12 @@ export function girlBonus(who, key){
   }
   return sum;
 }
+/* ══ 「這一位有沒有那顆星」的唯一查詢點（ver -971）══ 旗標型的效果（`saintHint`、
+   `saintReload`…）在卡上寫 `1`，所以「有沒有」就是加總 >0。
+   ⚠ 與 `girlBonus` 是同一件事的兩種讀法（**不要**在呼叫端自己寫 `>0`）——
+     日後要改成「可疊加的次數」時，只有這兩支要動（同 `hasStar`／`bonus` 那一對）。
+   ⚠ 不是這套系統裡的人（蕾妮／馬季諾）一律 false ＝ 這些規則只咬本篇的三位。 */
+export function girlHas(who, key){ return girlBonus(who, key) > 0; }
 /* 這一級的星名（顯示用）。⚠ 還沒填就回空字串，**不要自己編一個** ——
    顯示端看到空字串要印「Lv N」而不是印一個假名字。 */
 export function girlStarName(who, lv){

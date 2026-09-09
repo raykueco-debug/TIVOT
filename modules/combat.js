@@ -72,7 +72,18 @@ export function setup(){
   //   onThreatSpawned/onThreatResolved：教學「首紅點/首次防禦成功」節點通知
   //   assaultSuppressed/firstThreatPending：教學暫緩大絕（一次一顆/腳本盤）與首顆固定位
   //   （defense 不 import tutorial，經此轉交）
-  defense.init({ enemyAttack, enemyDamage, floatDmg, triggerAtkBuff, weaponCounter: weapon.weaponCounter,
+  defense.init({ enemyAttack, enemyDamage, floatDmg, triggerAtkBuff,
+                 /* ══ 「堅殼星」（諾薇兒 Lv4，ver -971）：**反擊一次也算一發** ══
+                    回血窗（即死防禦的免傷窗／生命歸還的吸血窗）本來只有三種射擊算
+                    （普攻／BR／overkill，ver -965）；這顆星把副武器反擊也算進來。
+                    ⚠ **一次反擊算 1 hit**（Ray 的卡）—— 不是每一顆子彈各算一次，
+                      所以掛在「這一次反擊開火了」而不是逐發（`weaponCounter` 一次呼叫）。
+                    ⚠ 包在**注入點**：weapon 不 import partner／combat，而
+                      `shotHeal()` 的擁有者是 combat（鐵律 8，同 onThreatResolved 那幾支）。 */
+                 weaponCounter: (sc, hit, roll, grade)=>{
+                   weapon.weaponCounter(sc, hit, roll, grade);
+                   if(prog.girlHas(state.pickedPartner,'guardHealCounter')) shotHeal();
+                 },
                  coopCounter: weapon.coopCounter,   // 共鬥：黃圈一出現就打的 3-hit 反擊（ver -822，Ray）
                  resetIntervalDeadline,   // 反擊硬直：被反擊時延時歸零（ver -495，卡上 counterStagger）
                  onThreatSpawned: tutorial.onThreatSpawned,
@@ -312,10 +323,20 @@ export function fitGridSquare(){
   grid.style.width=side+'px';
   grid.style.height=side+'px';
 }
+/* ══ 「現在要不要一直指下一格」的唯一查詢點（ver -971）══
+   新增任何一個「全程指引」的來源都加在這裡，不要在 `markNext` 裡串一長條 or
+   （鐵律 7/8：規矩收在一支，呼叫端只問它）。 */
+function hintAlways(){
+  if(partner.lucidActive()) return true;    // 明晰之夢發動中（ver -740）
+  if(partner.guideActive()) return true;    // 「引路星」：生命歸還那扇窗（ver -971）
+  return false;
+}
 function markNext(){
   state.cells.forEach(c=>c.classList.remove('next'));
   if(state.saintMode){   // 聖徒化：只提示第一格（顯示端見 style.css 的 #grid.saint .cell.next，ver -833）
-    if(state.expect!==1) return;
+    /* 「端首星」（諾薇兒 Lv2，ver -971）：聖徒化期間**全程**指引 ——
+       沒有那顆星就照舊只指第一格。 */
+    if(state.expect!==1 && !prog.girlHas(state.pickedPartner,'saintHint')) return;
     const c0=state.cells.find(c=>+c.dataset.num===state.expect);
     if(c0) c0.classList.add('next');
     return;
@@ -324,7 +345,7 @@ function markNext(){
      應點格」）—— `hint:false` 的盤也照指。markNext 在每次點對與每次換盤都會跑，
      所以「指引每一格」就是把這一道門讓開（發動那一刻的第一格由 partner 的
      fireBuff 叫 hintCurrentCell 指）。 */
-  if(!(BOARDS[state.boardIndex]||BOARDS[BOARDS.length-1]).hint && !partner.lucidActive()) return;
+  if(!(BOARDS[state.boardIndex]||BOARDS[BOARDS.length-1]).hint && !hintAlways()) return;
   const c=state.cells.find(c=>+c.dataset.num===state.expect);
   if(c) c.classList.add('next');
 }
@@ -383,6 +404,12 @@ function glassShards(cell){
      那兩條血條是倒數槽／抽血槽，「回血」在那裡的語意是推向 OBE ／ 延長惡夢化。
    ⚠ 至少回 1 —— `playerMax` 小的場次乘完會被 `round` 抹成 0。 */
 function shotHeal(){
+  /* ⚠⚠ **聖徒化／惡夢化期間一律不回血**（ver -971 補上的守門）：那兩條血條是
+     倒數槽，回血＝把自己推向 OBE（惡夢化則是延後熔斷）。
+     原本的三種射擊分支進不來（`tap` 早就分流給 saint 了），所以以前不必守；
+     但 -971 起**副武器反擊**也會叫它（「堅殼星」），而反擊在聖徒化期間打得出來。
+     守在這一支＝日後任何新的呼叫點都自動吃到（鐵律 8）。 */
+  if(state.saintMode || state.niMode) return;
   const gp = partner.shotHealPct();
   if(gp>0) healPlayer(Math.max(1, Math.round(state.playerMax*gp)));
 }
@@ -443,7 +470,7 @@ function tap(num,cell,e){
     state.combo++; if(state.combo>state.maxCombo) state.maxCombo=state.combo;
     state.correctTaps++;
     resetIntervalDeadline(); addEnergy(ENERGY_PER_HIT);
-    let okDmg=hitDamage(); if(state.atkBuff) okDmg*=2;
+    let okDmg=hitDamage()+comboKeepDmg(); if(state.atkBuff) okDmg*=2;   // 連擊延續（ver -971）
     if(inOrder){
       okDmg*=OVERKILL_ORDER_MULT;
       // 游標往後推到「下一個還沒消的號碼」——玩家先跳點過的號碼不該卡住順序鏈，
@@ -469,7 +496,7 @@ function tap(num,cell,e){
     state.combo++; if(state.combo>state.maxCombo) state.maxCombo=state.combo;
     state.correctTaps++;                 // 命中率分子（依序正確點擊）
     resetIntervalDeadline(); addEnergy(ENERGY_PER_HIT);
-    let dmg=hitDamage(); if(state.atkBuff||state.lowHpBuff) dmg*=2;   // 計時型（Counter）或低血量（高裝藥彈）皆加倍，不疊乘
+    let dmg=hitDamage()+comboKeepDmg(); if(state.atkBuff||state.lowHpBuff) dmg*=2;   // 計時型（Counter）或低血量（高裝藥彈）皆加倍，不疊乘；連擊延續見 comboKeepDmg（ver -971）
     // 暴擊（普攻）：此分支必為普攻（雙槍破防走上面獨立分支，本輪 saintMode 亦 return），暴擊率/加傷隨 critCombo 成長。
     //   本擊先以「現值」擲骰再 +1（首擊＝base 暴擊率）；命中則跳紅字「暴擊」（交由 enemyDamage 的 isCrit 呈現）。
     let crit=false;
@@ -692,6 +719,13 @@ function critDmgAt(cc){  return CRIT_DMG_BASE  + cc*CRIT_DMG_PER_COMBO + prog.bo
 /* ver -707：普攻的永久強化＝九階裡的**吞噬者**（可多次，每次 +5%）。
    ⚠ -700 的線性等級已退役，舊存檔由 `progress.gunStars` 自動遷移成吞噬者的次數。 */
 function gunTuneMul(){ return 1 + prog.bonus('dmgMul'); }
+/* ══ 生命歸還之後那扇窗：普攻維持**聖徒化的連擊疊傷**（ver -971）══
+   資料在諾薇兒卡的 `active.comboKeepSeconds`，窗口的擁有者是 partner
+   （與吸血窗同一扇），**斜率問 saint**（`saintComboStep`，唯一計算點，鐵律 7）。
+   ⚠ **雙槍破防（BR）不吃**：那一支本來就不吃暴擊與 atkBuff（降攻安全牌）。 */
+function comboKeepDmg(){
+  return partner.saintComboKeep() ? state.combo*saint.saintComboStep() : 0;
+}
 function hitDamage(){
   const c=Math.min(state.combo,DMG_COMBO_CAP);
   /* ⚠ 強化是**乘在整個普攻傷害上**（ver -656，Ray：「主槍普攻攻擊力強化5%」）——
@@ -828,7 +862,12 @@ function enemyAttack(dmg, kind, saintAmt){
     screenShake();                   // 畫面震一下（ver -593）
     enemy.showHitFx(fxKind);
     $('redFlash').style.opacity=.8; setTimeout(()=>$('redFlash').style.opacity=0,120);
-    saint.saintAdvance(amt);
+    /* ══ 「終焉星」（諾薇兒 Lv9，ver -971）：**被攻擊不推進倒數槽** ══
+       演出（震動／受擊特效／紅閃）與失誤計數照走 —— 只是不推槽。
+       ⚠ 只擋**敵人的攻擊**（含格擋那一半，兩者都走這條路）；點錯與反應逾時
+         照舊推進（那兩支在 `saint.js` 自己叫 `saintAdvance`）—— Ray 的卡寫的是
+         「被攻擊不增血」。 */
+    if(!prog.girlHas(state.pickedPartner,'saintNoHitAdvance')) saint.saintAdvance(amt);
     return;
   }
   /* ══⚠⚠ **惡夢化期間也一樣不扣「原始傷害」**（ver -691，Ray：「夢魘時被攻擊血掉得

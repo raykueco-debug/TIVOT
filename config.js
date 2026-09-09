@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.09-971';
+export const VERSION = 'ver 2026.09.09-972';
 
 export const GAME_CONFIG = {
 
@@ -355,6 +355,11 @@ export const GAME_CONFIG = {
          （「免傷仍算受擊，只是不扣血」—— 實作見 combat.enemyAttack 的扣血行）。
          `immuneSeconds`／`immuneHealPct` 是**這張卡**的：蕾妮的即死防禦沒寫
          ＝沒有這扇窗（挑戰那一套不動，ver -694）。 */
+      /* ⚠⚠⚠ **ver -971：`oncePerBattle` 回到原義＝一局一次**（Ray：「兩條都收」）。
+         ver -888~-970 是「每換一隻怪 reload」（＝一場一次），那條現在是
+         Lv7「蟹生星」的獎勵（`guardPerEnemy`）—— 守門在 `partner.onEnemySet`。
+         ⚠ **試玩版不動**：蕾妮／馬季諾不在 `girls.who` 裡，那道守門不咬他們，
+           他們照舊每場 reload（同「本篇與試玩版是兩套數值」，§6.5.3）。 */
       passive:{ key:'deathGuard', name:'即死防禦', oncePerBattle:true,
                 /* 她自己的 CI（ver -499，Ray 交件 CI_Nouvelle_Deathguard）——
                    之前借蕾妮的 `cutin_guard`；蕾妮那張是試玩版的，不動。 */
@@ -377,11 +382,22 @@ export const GAME_CONFIG = {
            才能發動是正確的，放回去」）—— -888 誤讀「不囉唆」把這道門拆成 `'any'`，
            當天就被推翻。Ray 那句指的是**回滿**那一半，不是發動條件。
            ⚠ 這已經是第二次被推翻（-740 同日也撤過一次「隨時可發＋免傷」）。 */
+      /* ══⚠⚠ **ver -971（Ray 的九星卡抬頭）：同一扇窗多一件事 —— 連擊延續** ══
+           > 「主動技：中止聖徒化，保留現血量，發動後 10 秒吸血 buff，
+           >   **並連續聖徒化 combo 增益 10 秒**，一發回最大血量 5%」
+         `comboKeepSeconds` ＝那扇窗開著時，普攻（與 overkill 追打）照樣吃
+         **聖徒化的連擊疊傷**（`tuning.saintComboStep`）—— 中止之後火力不會斷崖。
+         ⚠⚠ **它與 `lifestealSeconds` 是同一扇窗**（`partner.js` 的 `vampUntil`，
+           鐵律 7）：Ray 的卡上兩者永遠同一個數字，兩個計時器必然走鐘。
+           所以引路星（Lv5）的 `lifeReturnSec:5` 一次把兩者都推到 15 秒。
+         ⚠ **雙槍破防（BR）不吃**：那一支本來就不吃暴擊與 atkBuff（降攻安全牌）。 */
       active:{ key:'lifeReturn', name:'生命歸還', context:'saint',
                cutin:'cutin_return', voice:'vo_nou_return',   // ver -711：她自己的語音
                lifestealSeconds:10, lifestealPct:0.05,        // ver -964：吸血窗（秒／每發回最大生命的比例）
+               comboKeepSeconds:10,                           // ver -971：聖徒化連擊疊傷的延續（同一扇窗）
                desc:'聖徒化期間發動：強制中止聖徒化並保留當前體力，'
-                   +'其後 10 秒內每一發射擊回復最大體力的 5%。' },
+                   +'其後 10 秒內每一發射擊回復最大體力的 5%，'
+                   +'且期間普攻維持聖徒化的連擊疊傷。' },
       /* ══ 無傷擊殺一場 → reload 聖徒化（ver -892 定為兩場，**ver -903 Ray 改成一場**：
          「諾薇兒改無傷一場就恢復聖徒化」）══
          ⚠ 「無傷」是**逐場（逐隻怪）**算的（`state.enemyHitsTaken`，同九星「方舟」
@@ -398,7 +414,12 @@ export const GAME_CONFIG = {
            `combat.finishEnemyOrAdvance` 那個匯流點（自然清盤／按錯／逾時／聖徒化
            擊殺四條路都經過它），也就是 partner.onEnemyCleared。
          實作只有那一支（鐵律 8）。 */
+      /* ⚠⚠⚠ **ver -971：這一條改成 Lv3「探覓星」的獎勵**（Ray：「兩條都收」）——
+         `needStar` ＝要有那顆星才生效（`progress.girlHas` 那個唯一查詢點）。
+         -903~-970 它是預設就有的，現在 Lv1~2 沒有。⚠ 欄位寫在**卡上**不寫死在
+         `partner.js`（鐵律 1）：日後別的搭檔要有自己的回填條件，加一格就好。 */
       installReload:{ flawless:1, name:'聖徒再臨', en:'SAINT RELOAD',
+                      needStar:'saintReload',         // ver -971：諾薇兒 Lv3（探覓星）
                       cutin:'cutin_saintreload',      // ver -894：專屬 CI（原本借被動那張）
                       voice:'vo_nou_saintreload' },
     },
@@ -705,25 +726,100 @@ export const GAME_CONFIG = {
          不必存「等級」這個第二真相（鐵律 7 —— 存了就會與 EXP 走鐘）。 */
     expTo: [0, 600, 1500, 2800, 4600, 7000, 10200, 14400, 20000],
 
-    /* ══ 九格的內容 —— **等 Ray 分角色給**（他的原話：「星名跟對應技能我會分角色
+    /* ══ 九格的內容 —— **Ray 分角色給**（他的原話：「星名跟對應技能我會分角色
        給你，有不懂的就問別瞎做」）══
-       所以現在**只有等級、沒有內容**：`name` 是星名、`desc` 是給玩家看的說明，
-       效果欄位（像九星那樣的 `dmgMul`／`critRate`…）**等卡到了再加**。
-       ⚠⚠ **不要自己發明星名或效果**（同護符 `items.defs` 那一批、同副武器的
-         `weaponPerks`：那兩處也是「Ray 的卡還沒到就空著」）。
+       `star` 是西文星名、`name` 是中文星名、`desc` 是給玩家看的說明，
+       其餘欄位是效果（格式照 `gunStars`）。
+       ⚠⚠ **諾薇兒（巨蟹座九星）已交卡，ver -971 填好了**；
+         **安雅與索菈娜還是空的 —— 不要自己發明星名或效果**
+         （同護符 `items.defs` 那一批、同副武器的 `weaponPerks`：
+         那兩處也是「Ray 的卡還沒到就空著」）。
        ⚠ 一位九格、順序就是 Lv1→Lv9；填的時候只動 `name`／`desc` 與效果欄位，
          不要動陣列長度（`maxLv` 由 `expTo` 的長度推，鐵律 7）。 */
     levels: {
+      /* ══⚠⚠⚠ 諾薇兒（ver -971，Ray 交卡）—— **巨蟹座九星** ══════════════
+         > 「諾薇兒　聖徒化（血越少持續時間越長）／被動技：即死防禦／
+         >   主動技：中止聖徒化，保留現血量，發動後 10 秒吸血 buff，
+         >   **並連續聖徒化 combo 增益 10 秒**，一發回最大血量 5%」
+
+         ⚠⚠ **那段抬頭＝出廠就有的基礎組**（Ray 定案）。⚠ `expTo[0]` 是 0，
+           所以 **Lv1 同時就已經點亮「先鋒星」** —— 抬頭那一段是「一顆星都沒有時
+           她會什麼」，不是 Lv1 的全部。所以有兩件現行預設的能力
+           **被收回去當升級獎勵**（他選的是「兩條都收」）：
+           · 聖徒化 Reload（`installReload`，ver -903 起一直是預設）→ **Lv3** 才有
+           · 即死防禦「一場（怪）一次」（ver -888 起是預設）→ **Lv7** 才有；
+             Lv1~6 退回卡上 `oncePerBattle` 的原義＝**一局一次**
+           ⚠⚠ **試玩版不受影響**：蕾妮／馬季諾不在 `girls.who` 裡，
+             `onEnemySet` 那道守門只咬本篇的三位（同「本篇與試玩版是兩套」）。
+         ⚠ 抬頭裡的「連續聖徒化 combo 增益 10 秒」是**這一版才實作的**
+           （`active.comboKeepSeconds`）—— 舊版只有吸血窗。
+
+         格式照 `gunStars`：`star`＝西文星名、`name`＝中文星名、`desc`＝給玩家看的
+         一句話，其餘欄位是效果（讀值一律走 `progress.girlBonus/girlHas` 那個
+         唯一查詢點，鐵律 7 —— 呼叫端不自己翻這張表）。
+         ⚠ 效果是**累加到現在這一級為止**（`girlBonus` 把 Lv1~現級加總），
+           所以每一格寫的是**增量**不是絕對值（`guardHealPct:0.03` ＝卡上的
+           0.02 再加 3% ＝ 5%）。 */
       nouvelle: [
-        { name:'', desc:'' },   // Lv1
-        { name:'', desc:'' },   // Lv2
-        { name:'', desc:'' },   // Lv3
-        { name:'', desc:'' },   // Lv4
-        { name:'', desc:'' },   // Lv5
-        { name:'', desc:'' },   // Lv6
-        { name:'', desc:'' },   // Lv7
-        { name:'', desc:'' },   // Lv8
-        { name:'', desc:'' },   // Lv9
+        { star:'Guisuer',           name:'先鋒星',
+          desc:'聖徒化的連擊疊傷提升至 150%，且無上限。',
+          /* 聖徒化每 combo 的疊傷斜率（`tuning.saintComboStep` 1.0）**乘上 1+這個值**
+             → 1.5。⚠ Ray 選的是「只調斜率」：「無上限」是對現況的確認
+             （聖徒化那一段本來就沒有上限），**普攻 `dmgComboCap:20` 不解除**。 */
+          saintComboMul:0.50 },
+        { star:'Guisuyi',           name:'端首星',
+          desc:'聖徒化期間全程指引下一格。',
+          /* 走既有的「一直指下一格」那條路（`combat.markNext` 的 `hintAlways`，
+             與明晰之夢同一個開關，鐵律 8）—— 不另做一套提示。 */
+          saintHint:1 },
+        { star:'Nahn',              name:'探覓星',
+          desc:'單場無傷擊殺即回填聖徒化；該場不能再用，下一場起可用。',
+          /* ＝既有的 `installReload`（無傷擊殺一場就解槽，ver -903）。
+             「完勝」＝**那一隻無傷擊殺**（Ray 確認，同九星「方舟」的定義，ver -708）。
+             ⚠ 「本場不能再用」不必另寫：解槽掛在**那一隻被清掉**那一刻
+               （`partner.onEnemyCleared`），該場已經結束了。 */
+          saintReload:1 },
+        { star:'Tegmine',           name:'堅殼星',
+          desc:'即死防禦的十秒回血窗提升為每次射擊回復最大體力 5%，反擊一次也算一發。',
+          /* `guardHealPct` 是**增量**：卡上 0.02 ＋ 這裡 0.03 ＝ 5%。
+             ⚠ 「單局一次」＝**即死防禦本身**一局一次（Ray 確認）——
+               那正是 Lv1~6 的基礎行為（Lv7 的蟹生星才放寬成一場一次），
+               所以這一格不必再寫一次那個限制。
+             ⚠ `guardHealCounter` ＝副武器反擊也算一發（**一次反擊算 1 hit**，
+               不是每一顆子彈各算一次）。 */
+          guardHealPct:0.03, guardHealCounter:1 },
+        { star:'Asellus Borealis',  name:'引路星',
+          desc:'生命歸還的吸血與連擊延續延長為 15 秒，期間全程指引下一格。',
+          /* `lifeReturnSec` 是**增量**：卡上 10 ＋ 5 ＝ 15 秒。
+             ⚠⚠ 吸血窗與 combo 延續窗**是同一扇窗**（`partner.vampUntil`）——
+               Ray 的卡上兩者永遠同一個數字，所以只有一個計時器（鐵律 7）。
+             ⚠ `lifeReturnHint`＝那扇窗開著時全程指引（一次性的那一下 ver -833
+               就有了，這顆星加的是「全程」）。 */
+          lifeReturnSec:5, lifeReturnHint:1 },
+        { star:'Acubens',           name:'斷鉗星',
+          desc:'聖徒化發動時體力降至 1，發動時間最大化。',
+          /* 聖徒化的長度＝倒數槽從**當下血量**推到滿要多久，所以血越少撐越久
+             （抬頭那句「血越少持續時間越長」）。這顆星把它推到極限。
+             ⚠ 走 `combat.setPlayerHpRatio(0)`（下限夾 1 HP，既有語意）。 */
+          saintStartHp1:1 },
+        { star:'Yuyu',              name:'蟹生星',
+          desc:'即死防禦改為每一場（每隻怪）各一次。',
+          /* ＝ver -888 那條「每換一隻怪 reload」，現在是這一級的獎勵。
+             ⚠ 九星「方舟」（無傷擊殺回復被動）與它**是兩件事**，照舊各自生效。 */
+          guardPerEnemy:1 },
+        { star:'Asellus Australis', name:'負行星',
+          desc:'聖徒化期間自第二連擊起，每一發射擊都延長倒數（不會歸零）。',
+          /* 聖徒化期間血條＝倒數槽，**扣血＝延長**。第 2 hit 起每發扣
+             `playerMax` 的 1%（走 `combat.drainPlayer`，下限夾 1 ＝「不可歸零」）。
+             ⚠ 「第 2 Hit 開始」＝`state.combo>=2`（那正是 Ray 說的「隨 Combo」）。 */
+          saintDrainPct:0.01 },
+        { star:'Tarf',              name:'終焉星',
+          desc:'聖徒化期間受到攻擊不再推進倒數槽。',
+          /* ⚠ 只擋**敵人的攻擊**（含格擋那一半）—— 點錯與反應逾時照舊推進
+             （Ray 的卡寫的是「被攻擊不增血」）。守門在 `combat.enemyAttack` 的
+             聖徒化分支，演出與失誤計數照走，只是不叫 `saintAdvance`。
+             ⚠ 「血回滿就 OBE 結束聖徒化」是既有規則，不必另寫。 */
+          saintNoHitAdvance:1 },
       ],
       anya: [
         { name:'', desc:'' },   // Lv1

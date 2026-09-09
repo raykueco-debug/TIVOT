@@ -240,6 +240,12 @@ function startSaintMode(){
   state.enemyAtkSuppressUntil = 0;
   api.scheduleAssault();                     // 立即排下一次大絕（不延後）
   setReturnSwipe(true);                  // 開啟生命歸還手勢層
+  /* ══ 「斷鉗星」（諾薇兒 Lv6，ver -971）：發動時體力降至 1 ══
+     聖徒化的長度＝倒數槽從**當下血量**推到滿要多久，所以血越少撐越久
+     （Ray 的卡抬頭：「聖徒化（血越少持續時間越長）」）—— 這顆星把它推到極限。
+     ⚠ 要在 `enterSaint()` **之後**：血條的語意這時才由一般血換成倒數槽。
+     ⚠ 走 `api.setPlayerHpRatio(0)`（下限夾 1 HP，既有語意，鐵律 8）。 */
+  if(prog.girlHas(state.pickedPartner,'saintStartHp1') && api.setPlayerHpRatio) api.setPlayerHpRatio(0);
   state.saintDamageDealt = 0;
   state.combo = 0;                       // 期間 saint 代理盤面游標（combat 已讓出主迴圈）
   /* 破防值**不清**（ver -749，Ray：「聖徒化／夢魘化都不要清空破防值」）——
@@ -293,6 +299,28 @@ export function onSaintTap(){
   if(api.drainPlayer) api.drainPlayer((state.playerMax / SAINT_PASSIVE_HEAL_SEC) * sec);
 }
 export function resetSaintCombo(){ siComboSeen = 0; }
+/* ══⚠⚠ 聖徒化每 combo 的疊傷斜率：**唯一的計算點**（ver -971）══
+   底值在 `tuning.saintComboStep`（1.0），諾薇兒 Lv1「先鋒星」把它乘到 1.5
+   （卡上寫的是增量 `saintComboMul:0.5`，加總走 `prog.girlBonus`）。
+   ⚠ **不可以快取成模組常數**（像 `SAINT_COMBO_STEP` 那樣）：等級是遊戲中途才變的，
+     快取的話升級要重整頁面才生效（同 `gunTuneMul`／`playerMaxHp` 踩過的那個坑）。
+   ⚠ combat 也要用它（生命歸還之後那扇「連擊延續」窗，見諾薇兒卡的
+     `comboKeepSeconds`）—— 所以 export，不要在那邊再算一次。 */
+export function saintComboStep(){
+  return SAINT_COMBO_STEP * (1 + prog.girlBonus(state.pickedPartner, 'saintComboMul'));
+}
+/* ══ 「負行星」（諾薇兒 Lv8，ver -971）：聖徒化期間每一發射擊都延長倒數 ══
+   聖徒化的血條＝倒數槽，**扣血＝延長**。第 2 hit 起，每發扣 `playerMax` 的 1%。
+   ⚠ 「第 2 Hit 開始」＝`state.combo>=2`（點錯歸零之後要重新數，那正是 Ray 說的
+     「隨 Combo 緩增」）。
+   ⚠⚠ 走 `api.drainPlayer`（下限夾 1 ＝「不可歸零」）——**不可以用
+     `saintAdvance(負值)`**：`healPlayer` 開頭就 `Math.max(0, amount)`，
+     負數會被整個吃掉、什麼都不會發生（ver -671 惡夢化抽血踩過同一個坑）。 */
+function saintDrainTick(){
+  if(!state.saintMode || state.combo < 2) return;
+  const pct = prog.girlBonus(state.pickedPartner, 'saintDrainPct');
+  if(pct>0 && api.drainPlayer) api.drainPlayer(state.playerMax * pct);
+}
 export function saintAdvance(amount){
   if(!state.saintMode) return;
   /* 倒數槽推至臨界（滿-1，即 99）即攔截——不進 OBE，交由教學／劇情引導生命歸還。
@@ -604,7 +632,7 @@ export function nightmareTap(num, cell){
     SFX.gunshot(true);
     cell.classList.add('done'); cell.classList.remove('next'); api.shatterCell(cell);
     state.combo++;
-    const d=Math.round(api.hitDamage() + state.combo*SAINT_COMBO_STEP);
+    const d=Math.round(api.hitDamage() + state.combo*saintComboStep());
     api.enemyDamage(d, true, false, 'saint');
     state.niDamage += d;
     state.niCells++;                 // 夢境粉碎的份量由「清了幾格」換算（ver -688）
@@ -679,9 +707,10 @@ export function saintTap(num, cell){
     SFX.gunshot(true);
     cell.classList.add('done'); cell.classList.remove('next'); api.shatterCell(cell);
     state.combo++;
-    const okDmg=Math.round(api.hitDamage() + state.combo*SAINT_COMBO_STEP);
+    const okDmg=Math.round(api.hitDamage() + state.combo*saintComboStep());
     api.enemyDamage(okDmg, true, false, 'saint');
     state.saintDamageDealt += okDmg;
+    saintDrainTick();                            // 「負行星」：第 2 hit 起每發延長倒數（ver -971）
     if(state.cells.every(c=>c.classList.contains('done'))){ triggerMaxBurst(); }
     else startSaintReactTimer();
     return;
@@ -690,10 +719,11 @@ export function saintTap(num, cell){
     SFX.gunshot(true);
     cell.classList.add('done'); cell.classList.remove('next'); api.shatterCell(cell);
     state.combo++;
-    const dmg=api.hitDamage() + state.combo*SAINT_COMBO_STEP;   // 疊傷無上限
+    const dmg=api.hitDamage() + state.combo*saintComboStep();   // 疊傷無上限（斜率見 saintComboStep）
     const d=Math.round(dmg);
     api.enemyDamage(d, true, false, 'saint');
     state.saintDamageDealt += d;                 // 累計期間傷害（供最後一擊追加）
+    saintDrainTick();                            // 「負行星」：第 2 hit 起每發延長倒數（ver -971）
     state.expect++;
     if(state.expect>state.N){ triggerMaxBurst(); }              // 推滿前點完全盤 → Maximum Burst
     else { api.markNext(); startSaintReactTimer(); }           // 點對一格 → 重設反應時限
