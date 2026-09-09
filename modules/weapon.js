@@ -379,8 +379,12 @@ export function coopCounter(){
         hap.shot();
         api.enemyDamage(per, true, true, 'counter');   // 靜默扣血（含 overkill/擊殺判定）
         addCounter(per);
-        /* 破防值（ver -880）：三刀＝一次反擊，所以每一刀給三分之一（滿＝3×per）。 */
-        counterEnergy(per, 3*per);
+        /* ══⚠⚠⚠ **飛刀不回充破防值**（ver -1006，Ray：「索拉娜飛刀也會加，
+           兩個加上去整個自給自足，永動機」）══ -1005 起破防計量表**就是**共鬥的碼表，
+           而這三刀是共鬥自己打出去的 —— 讓它回充等於「共鬥產生延長共鬥的資源」，
+           打幾折都還是永動機。ver -880 那一行（每一刀給三分之一）因此整條撤掉。
+           ⚠ 玩家自己點盤面／自己反擊那一份**照舊有**，只是打折（見 combat.addEnergy）：
+             延長共鬥要靠玩家做了什麼，不是靠共鬥自己在跑。 */
         api.floatDmg(String(per), (44+Math.random()*12)+'%', '34%', true);
       };
       if(api.throwDagger) api.throwDagger(px, py, onHit); else onHit();
@@ -604,6 +608,25 @@ function tapSwitch(){
   flip();
   useWeapon(key);
   setTimeout(renderSwitch, WS_FLIP_MS/2);
+}
+/* ══⚠⚠⚠ **聖徒化／惡夢化期間也要按得到那顆鈕**（ver -1006，Ray：「夢魘化期間
+   不知為何不能切武器」）══
+   成因：上滑手勢層 `#returnSwipe`（`top:0;height:50%;z-index:35`）在那兩段整片蓋著
+   敵人框，而切換鈕住在 `#barsBlock`（z-index 6，而且它自己是一個堆疊脈絡）——
+   **鈕根本收不到 pointer 事件**，看得見卻按不動（§6.5.5 明令要避免的那種死介面）。
+   ⚠ **不把 `#barsBlock` 抬到手勢層之上**：那條血條帶橫跨整個下緣，正是玩家起滑的
+     地方 —— 抬上去等於把夢境粉碎的上滑吃掉一大半。
+   ⚠ 走**手勢層既有的「小位移＝點擊就放行」那條路**（它本來就會把點擊交還給紅點防禦，
+     鐵律 8）：多問一句「這一下點在鈕上嗎」，是就切槍。
+   ⚠ 判定寫在 weapon（鈕是它的），main 只負責把座標交過來。 */
+export function hitSwitchAt(x, y){
+  const b=$('wpSwitch');
+  if(!b || b.style.display==='none') return false;
+  const r=b.getBoundingClientRect();
+  if(!(r.width>0 && r.height>0)) return false;
+  if(x<r.left || x>r.right || y<r.top || y>r.bottom) return false;
+  tapSwitch();
+  return true;
 }
 export function bindWeaponSwitch(){
   const b=$('wpSwitch'); if(!b || b.__bound) return;

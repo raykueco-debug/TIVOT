@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.09-1005';
+export const VERSION = 'ver 2026.09.09-1006';
 
 export const GAME_CONFIG = {
 
@@ -650,7 +650,15 @@ export const GAME_CONFIG = {
          延時在 `combat.enemyAttack` 的 coopMode 分支。
          ⚠ `baseSec` 是**上限**（實際秒數 ＝ baseSec × 破防值/100）；
            Lv8「射手星」把它抬到 15。 */
-      coop:{ baseSec:12, minSec:3, wrongShortenSec:1, counterScale:1,
+      /* ══⚠⚠⚠ `energyBackMul` ＝ **共鬥期間普攻回充破防值的比例**（ver -1006，Ray：
+           「普攻加太多，索拉娜飛刀也會加，兩個加上去整個自給自足，永動機」）══
+         -1005 起破防計量表就是共鬥的碼表，所以「加破防值」＝「加時間」——
+         照平時的速率回充的話，點盤面每秒賺到的時間比抽掉的還多，共鬥就永遠不會結束。
+         現行 **0.5＝減半**（Ray 指定：「把普攻增加的量減半」）。
+         ⚠ 它只在 Lv9「獵手星」開了閘門之後才有意義（之前是一點都不加）。
+         ⚠ **飛刀不吃這一格，是根本不加**（見 weapon.coopCounter）：那是共鬥自己打的，
+           回充自己就是自給自足，折多少都還是永動機。 */
+      coop:{ baseSec:12, minSec:3, wrongShortenSec:1, counterScale:1, energyBackMul:0.5,
              voice:['vo_sorana_pack','vo_sorana_pack2'],
              /* 共鬥結束＝飛刀耗盡（obe，ver -822）。ver -837：語音兩支輪播（Ray：「有編1、2的都是輪播」）。 */
              endVoice:['vo_sorana_obe1','vo_sorana_obe2'], endCutin:'ci_sorana_obe', endName:'飛刀耗盡' },

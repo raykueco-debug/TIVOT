@@ -1113,18 +1113,25 @@ function addEnergy(v){
   }
   /* 九階強化「疾走」：破防值累積加速（ver -707）。⚠ 乘在**入口**這一處 ——
      呼叫端有好幾個（點擊、反擊…），各自乘一次必然漏掉其中一個（鐵律 7/8）。 */
-  const gain = v*svBoost*(1+prog.bonus('energyMul'));
+  let gain = v*svBoost*(1+prog.bonus('energyMul'));
   /* ══⚠⚠⚠ **共鬥期間預設不累積破防值**（ver -1002，Ray：「在索拉娜 lv9 之前，
      共鬥時是不會累計破防值的」）══ 共鬥是**消耗全部破防值**換來的一段，
      期間又照樣累積的話等於一邊燒一邊補。
      ⚠ Lv9「獵手星」才解開它 —— 那顆星的整句話就是「共鬥期間可累積之破防值，
        延長爆發時間」：**先能累積，才有得換成時間**。
      ⚠ -976 那一版寫「共鬥期間本來就照常累積」是**錯的判讀**（我當時沒問）。 */
-  if(state.coopMode && !prog.girlHas(state.pickedPartner,'coopEnergyTime')) return;
+  if(state.coopMode){
+    if(!prog.girlHas(state.pickedPartner,'coopEnergyTime')) return;
+    /* 索菈娜「獵手星」（Lv9）：這裡**不必再換算成秒**（ver -1005）——
+       共鬥期間破防計量表就是碼表（saint 的抽表逐拍把它推成 `coopUntil`），
+       所以加進表裡的點數自己就是延長的時間。ver -976 的 `coopExtendByEnergy` 已撤。
+       ⚠⚠ 但正因為如此，**回充要打折**（ver -1006）：照平時的速率加，
+         點盤面每秒賺到的時間比抽掉的還多 ＝ 永動機。
+         比例在卡上（`coop.energyBackMul`，現行 0.5＝減半，鐵律 1）。 */
+    const _cp=((GAME_CONFIG.partners&&GAME_CONFIG.partners[state.pickedPartner])||{}).coop||{};
+    gain *= (_cp.energyBackMul!=null ? _cp.energyBackMul : 0.5);   // Ray 定案：減半
+  }
   state.energy=Math.min(100,state.energy+gain);
-  /* 索菈娜「獵手星」（Lv9）：這裡**不必再換算成秒**（ver -1005）——
-     共鬥期間破防計量表就是碼表（saint 的抽表逐拍把它推成 `coopUntil`），
-     所以加進表裡的點數自己就是延長的時間。ver -976 的 `coopExtendByEnergy` 已撤。 */
   // 教學：雙槍引導前破防值封頂於 preFullEnergy（第三盤起放行 → 首擊即滿、交給教學引導）
   if(tutorial.energyCapActive()){
     state.energy=Math.min(state.energy, (GAME_CONFIG.tutorial && GAME_CONFIG.tutorial.preFullEnergy) || 99);

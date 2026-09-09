@@ -1686,6 +1686,10 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
     const wasTracking=tracking;
     tracking=false; hideAura();
     if(wasTracking && !fired && moved < TAP_SLOP){
+      /* 副武器切換鈕（ver -1006）：這一層蓋著它，點擊要交還回去 ——
+         判定與行為都在 weapon（`hitSwitchAt`），這裡只把座標交過去。
+         ⚠ 排在紅點之前：鈕的範圍小而且明確，重疊時以鈕優先。 */
+      if(weapon.hitSwitchAt(x, y)) return;
       const th = hitThreatAt(x, y);
       if(th) defense.resolveThreat(th);   // 聖徒化期間照常點紅點防禦
     }
