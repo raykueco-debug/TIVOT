@@ -7,7 +7,7 @@
  *    三結局：
  *      Maximum Burst（EXSECUTIŌ）：滿前清盤，追加期間總傷 20%，sawExecution=true。
  *        回血＝playerMax 的 50%（刻意偏離 reference 的 10%，見 DECISIONS.md D2）。
- *      OBE：推進到滿＝沒守住（HP→1）。
+ *      OBE：推進到滿＝沒守住（ver -964 起**不扣血**，維持當前血量＝全滿）。
  *      生命歸還：下滑觸發，中止並保留當前血量（第四結局，不改血）。
  *
  *  狀態擁有者：3.5 聖徒化（見 state.js）。
@@ -757,7 +757,15 @@ function triggerMaxBurst(){
   if(api.onSaintEnded) api.onSaintEnded('mb');   // 教學終盤掛鉤（cut-in 結束後收尾台詞；非教學 no-op）
 }
 
-// OBE：推進到滿＝沒守住（HP → 1）。
+/* OBE：推進到滿＝沒守住。
+   ⚠⚠⚠ **ver -964（Ray 改定）：不再扣回 HP 1，維持當前血量（＝全滿）** ——
+   > Ray：「OBE 改為維持當前血量(全滿)，不扣回 hp1」
+   聖徒化期間血條**就是**那條倒數槽（`saintAdvance` 走的是 `healPlayer`），
+   推滿才會走到這裡 —— 所以「維持當前血量」在這條路上必然等於滿血，
+   兩句話沒有矛盾，也**不需要在這裡補一行回滿**（鐵律 7：不改就是不改）。
+   ⚠ 舊行為（`setPlayerHpRatio(0)` → 下限夾成 1 HP）留在註解裡當紀錄：
+     推翻的是**懲罰**，不是 OBE 這個結局本身 —— 演出、評價、失去這一次
+     聖徒化的槽全部照舊。 */
 function triggerOBE(){
   if(!state.saintMode) return;
   exitSaint();
@@ -767,14 +775,17 @@ function triggerOBE(){
   api.floatDmg('O.B.E.','50%','28%',true);
   if(state.enemyHp<=0){
     // 聖徒化期間敵 HP 已歸零、但倒數槽先推滿 → 仍播 OBE 演出，收尾轉下一敵/結算。
-    // ⚠ OBE 懲罰（HP→1）照樣套用並延續到同場下一敵——推進=回血會把血推滿，
-    //   不套懲罰會變成「OBE 後滿血接下一隻」（悖離 OBE=沒守住 的語義）。
-    playSaintCutin('obe', ()=>{ $('grid').classList.remove('saint'); setSaintBarFx(false); api.setPlayerHpRatio(0); api.onEnemyDefeated(); });
+    /* ⚠⚠ ver -964 起**不扣血**：Ray 明訂「OBE 改為維持當前血量(全滿)，不扣回 hp1」
+       —— 所以「OBE 後滿血接下一隻」現在是**規格**，不是漏洞。
+       （舊註解說那悖離「OBE＝沒守住」的語義 —— 已推翻：沒守住的代價是
+        **這一次聖徒化用掉了、而且沒有 MB 的追加傷害**，不再是血。）
+       原本這裡有 `api.setPlayerHpRatio(0)` ＝ HP→1。 */
+    playSaintCutin('obe', ()=>{ $('grid').classList.remove('saint'); setSaintBarFx(false); api.onEnemyDefeated(); });
     return;
   }
-  // 全畫面 OVERWRITE BREAKER ENGAGED cut-in → 結束後回盤面（HP → 1）
+  // 全畫面 OVERWRITE BREAKER ENGAGED cut-in → 結束後回盤面（ver -964：血量不動）
   playSaintCutin('obe', ()=>{
-    finishSaintMode(()=>api.setPlayerHpRatio(0));   // setPlayerHpRatio 下限 floor 1 → 恰為 1 HP
+    finishSaintMode();   // ⚠ 不傳 finalHpThunk ＝ 維持當前血量（原本是 setPlayerHpRatio(0)→1 HP）
   });
 }
 
@@ -782,22 +793,26 @@ function triggerOBE(){
 //   ⚠ 「能否發、屬於誰」的判定已移至 partner.tryActive（單槽＋context 分派）；此處為純執行能力，
 //     由 combat 於 setup() 注入給 partner（saintApi.lifeReturnAbort）。saint 不知道誰觸發它。
 //     保留一個 saintMode 保險檢查，避免非聖徒化狀態被誤呼叫。
-export function lifeReturnAbort(){
+export function lifeReturnAbort(done){
   if(!state.saintMode) return;
   exitSaint();
   clearInterval(state.saintTimer); state.saintTimer=null;
   clearSaintReactTimer(); setReturnSwipe(false);
   restoreAssaultRate();
   api.floatDmg(L.battle.lifeReturn,'50%','28%',true);
-  // 第四結局 cut-in → 結束後回盤面。⚠ 血量 ver -740 起由呼叫端（partner 的
-  //   lifeReturn handler）在本函式返回後**回滿**（Ray：「現在發動一律直接全滿」）——
-  //   這裡的 finalHpThunk 維持 no-op，不要在兩處各寫一次血（鐵律 7）。
+  /* 第四結局 cut-in → 結束後回盤面。
+     ⚠⚠ **ver -964（Ray 改定）：血量一律不動**（「保留現血量」）—— -740 那條
+       「由呼叫端回滿」已推翻，`partner` 那邊的 `healPlayer(playerMax)` 已移除。
+       這裡的 `finalHpThunk` 仍是 no-op：**兩邊都不寫血**才是「保留」（鐵律 7）。
+     ⚠ `done` 是呼叫端的「窗口開了」掛鉤（吸血 buff）：與即死防禦的免傷窗同一個
+       時機 —— **cut-in 撤下、盤面重建之後**才起算，秒數才完整可用。 */
   playSaintCutin('return', ()=>{
-    finishSaintMode(()=>{ /* 血量由 lifeReturn handler 設（回滿），這裡不改 */ });
+    finishSaintMode();
     /* 伙伴主動技發動後標示當前應點格（ver -833，Ray）：生命歸還收尾是一張全新的
        一般盤面（buildGrid 剛跑完、盤多半 hint:false）—— 指一下第一格。
        ⚠ 要在 finishSaintMode **之後**（saintMode 已關、盤已重建，guard 才放行）。 */
     if(api.hintCurrentCell) api.hintCurrentCell();
+    if(done) done();                 // ver -964：吸血窗於此起算（呼叫端 partner 擁有）
   });
   if(api.onSaintEnded) api.onSaintEnded('return');   // 教學終盤掛鉤（非教學 no-op）
 }

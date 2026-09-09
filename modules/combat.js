@@ -163,7 +163,9 @@ export function setup(){
   //   被動（即死防禦）：updateBars / floatDmg / resetEnemyTimers / scheduleAssault / playCutin。
   //   主動 saintApi（生命歸還）：saint 的中止+保血執行體。partner 不反向 import，一律經此注入。
   partner.init({
-    updateBars, floatDmg, healPlayer,   // healPlayer：生命歸還回滿用（ver -740）
+    /* ⚠ `healPlayer` 留著（範例 handler 與日後的回血技會用）—— 生命歸還自
+       ver -964 起**不改血**（保留現血量），已經沒有人在這裡叫它。 */
+    updateBars, floatDmg, healPlayer,
     resetEnemyTimers: defense.resetEnemyTimers,
     scheduleAssault: defense.scheduleAssault,
     playCutin: saint.playCutin,
@@ -452,10 +454,11 @@ function tap(num,cell,e){
     }
     state.critCombo++;
     enemyDamage(Math.round(dmg),crit,false,'basic');   // 點擊直接扣敵血（crit=true → 敵區跳紅字「暴擊」）
-    /* 即死防禦的免傷窗（ver -740，Ray：「期間普攻每次回血2%」）：比例在
-       諾薇兒的卡上（`immuneHealPct`），窗關著回 0 —— 生命歸還的免傷不回血。
+    /* 普攻的回血窗（ver -740 即死防禦免傷 2%／**ver -964 生命歸還吸血 5%**）：
+       「這一發回多少」只問 `partner.shotHealPct()` 一支（鐵律 7）——
+       兩扇窗同時開著取大的，都關著回 0。
        這個分支必為普攻（聖徒化／雙槍走上面的獨立分支），不必再判模式。 */
-    { const gp=partner.guardHealPct();
+    { const gp=partner.shotHealPct();
       if(gp>0) healPlayer(Math.max(1, Math.round(state.playerMax*gp))); }
     state.expect++;
     tutorial.onBoardProgress(state.expect-1);   // 教學：第四回合清滿 N 格 → 劇情殺（非教學 no-op）

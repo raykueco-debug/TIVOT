@@ -133,8 +133,23 @@ const ACTIVE_HANDLERS = {
   lifeReturn(a, act){
     if(!state.saintMode) return false;   // 保險：非聖徒化不執行
     const vo = asset(act && act.voice); if(vo) SFX.playVoice(vo, sfxGain(act.voice));   // SE 與結局 cut-in 同步（→ vo_nou_return）
-    a.saintApi.lifeReturnAbort();
-    api.healPlayer(state.playerMax);     // 一律全滿（ver -740）
+    /* ══⚠⚠ **ver -964（Ray 改定）：不再回滿，改成「保留現血量 ＋ 10 秒吸血」** ══
+       > Ray：「主動技中止聖徒化，**保留現血量**並發動 10 秒吸血 buff，
+       >   **一發回復玩家最大血量 5%**」
+       ⚠ 「保留現血量」＝這裡與 saint 的 `finalHpThunk` **兩邊都不改血**
+         （鐵律 7：一個量一個計算點 —— 不改就是不改，不要在任何一邊補一行）。
+         聖徒化期間血條＝倒數槽，中止那一刻 `exitSaint` 把語意換回一般血，
+         槽推到哪裡就是他現在剩多少 —— 那正是 Ray 要的「現血量」。
+       ⚠ 窗口**在 cut-in 撤下才起算**（同即死防禦的免傷窗、同 fireBuff）：
+         演出 1.5 秒期間盤面鎖著，從發動那一刻起算等於白送掉一成半。 */
+    const sec = act.lifestealSeconds || 0;
+    a.saintApi.lifeReturnAbort(()=>{
+      if(!(sec>0) || state.over) return;
+      vampUntil = Date.now() + sec*1000;
+      /* 計時器：走既有的盤外金光柱（鐵律 8，同免傷窗與明晰之夢）——
+         ver -749 Ray 問過「諾薇兒的被動怎麼沒有計時器？」，這扇窗同理。 */
+      if(api.lucidFlood) api.lucidFlood(sec);
+    });
     return true;
   },
   // 前線補給（馬季諾·主動）：發動即進入雙槍破防射擊窗口（不吃破防值、不另播雙槍
@@ -212,6 +227,14 @@ let lowHpTimer = null;    // 10 秒 buff 計時器
    `reset()` 開場歸零。 */
 let immuneUntil = 0;
 let guardHealUntil = 0;
+/* ══ 吸血窗（ver -964，Ray：「發動 10 秒吸血 buff，一發回復玩家最大血量 5%」）══
+   生命歸還**專屬**的第三扇窗。與 `guardHealUntil` 是**兩件事**（一個是即死防禦的
+   免傷附贈、一個是主動技本體），但問「這一發回多少血」的地方只有一個
+   （`shotHealPct()`，鐵律 7/8）—— 兩扇窗同時開著取**大**的那一個，不相加：
+   它們是兩個獨立的來源，疊起來只會讓數值失控（同「Counter 與高裝藥彈不疊乘」）。
+   鐵律 9：誰插的＝lifeReturn handler（cut-in 撤下那一刻）；誰拔的＝時間到；
+   `reset()` 開場歸零（不跨場）。 */
+let vampUntil = 0;
 function startImmune(sec){ if(sec>0) immuneUntil = Math.max(immuneUntil, Date.now()+sec*1000); }
 export function immuneActive(){ return Date.now() < immuneUntil; }
 /* ══ 共鬥（ver -803）：無敵窗由 saint 的 coop **直接設定**結束時刻 ══
@@ -219,12 +242,24 @@ export function immuneActive(){ return Date.now() < immuneUntil; }
    共用 `immuneUntil`＝`combat.enemyAttack` 的免傷判定（免傷仍算受擊、只是不扣血），
    正是共鬥「無敵」要的語意（Ray）。 */
 export function setImmuneUntil(ts){ immuneUntil = ts||0; }
-export function guardHealPct(){
+function guardHealPct(){
   if(Date.now() >= guardHealUntil) return 0;
   const p = currentPartner();
   const pas = p && p.passive;
   return (pas && pas.key==='deathGuard' && pas.immuneHealPct) || 0;
 }
+function vampHealPct(){
+  if(Date.now() >= vampUntil) return 0;
+  const p = currentPartner();
+  const act = p && p.active;
+  return (act && act.key==='lifeReturn' && act.lifestealPct) || 0;
+}
+/* ══ 「這一發普攻回多少血（佔 playerMax 的比例）」的**唯一**查詢點（ver -964）══
+   呼叫端只有 `combat.tap` 的普攻分支一處 —— 日後再多一扇窗也是加在這裡，
+   不要在呼叫端各問一次（鐵律 7/8）。
+   ⚠ 目前**只有普攻算**（沿用 ver -740 即死防禦那扇窗的既有範圍）：
+     雙槍破防與 overkill 的追打**不回血**。要放寬得 Ray 明講。 */
+export function shotHealPct(){ return Math.max(guardHealPct(), vampHealPct()); }
 
 /* ══⚠⚠ **明晰之夢：每隻怪第一次反擊成功時發動**（`firstCounter`，ver -693，Ray：
    「娜塔莉戰如果先觸發 lucid dream 再進入 NI 劇情會卡住，或者同時，所以我決定改
@@ -509,4 +544,5 @@ export function reset(){
   clearTimeout(lowHpTimer); lowHpTimer=null;
   lowHpArmed = true;
   immuneUntil = 0; guardHealUntil = 0;        // 免傷窗不跨場（ver -740）
+  vampUntil = 0;                              // 吸血窗不跨場（ver -964）
 }
