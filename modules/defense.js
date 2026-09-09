@@ -427,12 +427,23 @@ export function resolveThreat(th){
       api.floatDmg(L.battle.block,'50%','42%',false);
       if(bb.counter){
         /* ══⚠⚠⚠ **大絕的黃圈打不中**（ver -968，Ray：「敵大絕 ult 的黃圈命中率
-           皆為 0，除非被安雅的技能壓過」）══ 規則在 `tuning.ultBlockHit`（鐵律 1），
-           這裡只是唯一那個「這一顆是不是大絕」答得出來的地方（`th.ult`，同 -932）。
-           ⚠ 「安雅的技能壓過」不必在這裡判：明晰之夢／惡夢化把任何一帶都判成紅圈
-             （上面的 `lucid || niAll`），那時根本走不到這一支。
+           皆為 0，除非被安雅的技能壓過」＋ ver -969：「還有獵手的共鬥也壓得過」）══
+           規則在 `tuning.ultBlockHit`（鐵律 1），這裡只是唯一那個「這一顆是不是
+           大絕」答得出來的地方（`th.ult`，同 -932）。
+
+           **壓得過的有三個，但走的是兩條不同的路** ——
+           · **安雅**（明晰之夢／惡夢化）：把**任何一帶**都判成紅圈
+             （上面的 `lucid || niAll`）—— 那時根本走不到這一支，不必在這裡判。
+           · **獵手的共鬥**（索菈娜）：它**整個繞過帶位系統** —— 黃圈一生成就由
+             `spawnThreat` 的共鬥分支收掉、`weapon.coopCounter` 打三把飛刀
+             （固定傷害，沒有命中判定）。所以「共鬥壓得過」平時是自動成立的。
+             ⚠⚠ **但有一個 90ms 的縫**：那一支是等 90ms 才收圈（讓玩家看得到
+               「出圈瞬間被打掉」），玩家在那之前手快點下去就會走到**這裡**——
+               不排除的話，共鬥期間點大絕圈反而是保證 0 傷。所以要明寫 `!coopMode`。
+           ⚠ **只把它排除在「命中率 0」之外，不把它升成紅圈**：升級會連帶送出免傷、
+             完美反擊計數、評價折秒與硬直，那些 Ray 沒說要給（而且共鬥本來就無敵）。
            ⚠ 只動命中率 —— 減傷（`bb.take`）照舊，擋得住還是擋得住。 */
-        const hit = th.ult ? ULT_BLOCK_HIT : bb.hit;
+        const hit = (th.ult && !state.coopMode) ? ULT_BLOCK_HIT : bb.hit;
         api.weaponCounter(bb.scale, hit, bb.roll);
         staggerOnCounter();
       }
