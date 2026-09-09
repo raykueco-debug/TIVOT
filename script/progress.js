@@ -479,8 +479,18 @@ export function getAffection(){
   return out;
 }
 export function setAffection(obj){ wr(K.affection, JSON.stringify(obj||{})); }
-export function tierOf(aff){ return Math.min(5, Math.max(1, Math.floor((aff-1)/TIER_W)+1)); }
-/* tier 的下限值（tier 1→1、2→21、3→41…）。棘輪就是「不跌破這條線」。
+/* ══⚠⚠⚠ **ver -981（Ray 定案）：T1＝1~19、20 進 T2** ══
+   > 「t1 應該是 1~19，20 進 t2」（起因：他的蕾娜 20.5、諾薇兒 20，兩位都還在跑 T1 的台詞）
+   舊式 `floor((aff−1)/20)+1` ＝ T1 1~20、T2 21~40 —— 差一點點，
+   而且 (20,21) 那個空隙**只有蕾娜會踩到**（她是唯一拿得到小數的：S 級 +0.25）。
+   新式 `floor(aff/20)+1` ＝ **每累積 20 點升一段**：T1 0~19.99／T2 20~39.99／
+   T3 40~59.99／T4 60~79.99／T5 80~100。
+   ⚠⚠ 這個式子在**兩個檔**各有一份（`flight/index.html` 的 `progTier`），改一邊要改另一邊
+     （鐵律 7 的但書，兩邊註解互指）。⚠ `flight/talks.js` 的 `AFFECTION_BANDS`
+     本來就是 `[20,40,60,80,100]`（取「不超過現值的最高門檻」），與新式天然一致，不必動。 */
+export function tierOf(aff){ return Math.min(5, Math.max(1, Math.floor((+aff||0)/TIER_W)+1)); }
+/* tier 的下限值（tier 1→1、2→**20**、3→40…，ver -981 跟著上面那一條改）。
+   棘輪就是「不跌破這條線」。
    ⚠⚠ ver -724：上限 50→**100**、一段 10→**20**（Ray：「好感度上限改成100…每20一個tier」）。
      ⚠ 這個寬度在**三個地方**各有一份（鐵律 7 的但書，改一處要改三處）：
        · 這裡（`TIER_W`）
@@ -488,7 +498,7 @@ export function tierOf(aff){ return Math.min(5, Math.max(1, Math.floor((aff-1)/T
        · `flight/talks.js` 的 `AFFECTION_BANDS`（閒聊台詞池的門檻）
      三邊的註解互指。 */
 const TIER_W = 20;
-export function tierFloor(t){ return Math.max(1, (Math.min(5,Math.max(1,t|0))-1)*TIER_W + 1); }
+export function tierFloor(t){ return Math.max(1, (Math.min(5,Math.max(1,t|0))-1)*TIER_W); }
 
 /* ── 好感度的加減（ver -358，四人各自計數）───────────────────────────
    ⚠⚠ 三條規矩，缺一個都會走鐘：
