@@ -153,10 +153,14 @@ const ACTIVE_HANDLERS = {
          槽推到哪裡就是他現在剩多少 —— 那正是 Ray 要的「現血量」。
        ⚠ 窗口**在 cut-in 撤下才起算**（同即死防禦的免傷窗、同 fireBuff）：
          演出 1.5 秒期間盤面鎖著，從發動那一刻起算等於白送掉一成半。 */
-    /* 「引路星」（諾薇兒 Lv5，ver -971）：卡上的 10 秒 ＋ 星的 5 ＝ 15 秒。
-       ⚠⚠ **吸血、連擊延續、全程指引共用這一扇窗**（鐵律 7）——
-         Ray 的卡上三者永遠同一個數字，分成三個計時器必然走鐘。 */
-    const sec = (act.lifestealSeconds || 0) + prog.girlBonus(state.pickedPartner, 'lifeReturnSec');
+    /* ══ 這一扇窗開多久（ver -986 改）══ 吸血、連擊延續、全程指引**共用它**
+       （鐵律 7：Ray 的卡上三者永遠同一個數字，分成三個計時器必然走鐘）。
+       ⚠⚠ 長度取**卡上兩個秒數的大者**再加星：ver -986 起基礎**不吸血**
+         （`lifestealSeconds:0`）但**連擊延續 10 秒是基礎的**（`comboKeepSeconds:10`）
+         —— 只讀吸血那一個的話，沒點星的人這扇窗會是 0 秒，連擊延續當場失效。
+       ⚠ 引路星 `lifeReturnSec:5` → 10 ＋ 5 ＝ 15 秒（吸血與連擊一起延長）。 */
+    const sec = Math.max(act.lifestealSeconds || 0, act.comboKeepSeconds || 0)
+              + prog.girlBonus(state.pickedPartner, 'lifeReturnSec');
     a.saintApi.lifeReturnAbort(()=>{
       if(!(sec>0) || state.over) return;
       vampUntil = Date.now() + sec*1000;
@@ -278,16 +282,24 @@ function guardHealPct(){
   if(Date.now() >= guardHealUntil) return 0;
   const p = currentPartner();
   const pas = p && p.passive;
-  if(!(pas && pas.key==='deathGuard' && pas.immuneHealPct)) return 0;
-  /* 「堅殼星」（諾薇兒 Lv4，ver -971）：卡上的 2% ＋ 星的 3% ＝ 5%。
-     ⚠ 星寫的是**增量**，加總走 `prog.girlBonus` 那個唯一查詢點（鐵律 7）。 */
-  return pas.immuneHealPct + prog.girlBonus(state.pickedPartner, 'guardHealPct');
+  if(!(pas && pas.key==='deathGuard')) return 0;
+  /* ══⚠⚠ ver -986（Ray 選 (C)）：**基礎不再回血，整份由「堅殼星」給** ══
+     卡上的 `immuneHealPct` 現在是 0（諾薇兒）／沒寫（蕾妮），5% 全部來自星。
+     ⚠ 仍然寫成「卡 ＋ 星」而不是「只讀星」：那一格是**這張卡的免傷窗回不回血**
+       的旋鈕，日後別的搭檔要有基礎回血，加一個數字就好（鐵律 1）。
+     ⚠ 兩者都是 0 就直接回 0（免得白跑一次 `shotHeal` 的 round）。 */
+  const base = pas.immuneHealPct || 0;
+  return base + prog.girlBonus(state.pickedPartner, 'guardHealPct');
 }
 function vampHealPct(){
   if(Date.now() >= vampUntil) return 0;
   const p = currentPartner();
   const act = p && p.active;
-  return (act && act.key==='lifeReturn' && act.lifestealPct) || 0;
+  if(!(act && act.key==='lifeReturn')) return 0;
+  /* ver -986（Ray 選 (C)）：**基礎不再吸血，整份由「引路星」給**（`lifeReturnPct`）。
+     ⚠ 蕾妮的卡沒有 `lifestealPct`，也不是 `girls.who` 裡的人 → 兩項都是 0＝她沒有這扇窗
+       的回血（試玩版不動）。 */
+  return (act.lifestealPct || 0) + prog.girlBonus(state.pickedPartner, 'lifeReturnPct');
 }
 /* ══ 「這一發回多少血（佔 playerMax 的比例）」的**唯一**查詢點（ver -964）══
    日後再多一扇窗也是加在這裡，不要在呼叫端各問一次（鐵律 7/8）。

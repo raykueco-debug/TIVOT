@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.09-985';
+export const VERSION = 'ver 2026.09.09-986';
 
 export const GAME_CONFIG = {
 
@@ -391,7 +391,14 @@ export const GAME_CONFIG = {
                 /* 她自己的 CI（ver -499，Ray 交件 CI_Nouvelle_Deathguard）——
                    之前借蕾妮的 `cutin_guard`；蕾妮那張是試玩版的，不動。 */
                 cutin:'cutin_nouvelle_guard', voice:'vo_nou_guard',   // ver -711：她自己的語音（原本借蕾妮的）
-                immuneSeconds:10, immuneHealPct:0.02,
+                /* ══⚠⚠⚠ **ver -986：基礎不再回血**（Ray 選 (C)：「那些其實不該在
+                   基礎技能裡，要移到星上」）══ `immuneHealPct` 由 0.02 **移到
+                   Lv4「堅殼星」**（那顆星原本寫「提升為 5%」，現在是「獲得 5%」——
+                   Ray 交卡時的原話就是「即死防禦發動後 10 秒吸血 Buff」＝**給**不是**升**）。
+                   ⚠ 欄位留著寫 0 不刪：它是「這張卡的免傷窗回不回血」那個旋鈕，
+                     蕾妮的卡沒寫＝沒有這扇窗（試玩版不動）。
+                   ⚠ 讀值走 `partner.guardHealPct`：那一支現在是 **卡上的值 ＋ 星**。 */
+                immuneSeconds:10, immuneHealPct:0,
                 desc:'發動方式：戰鬥中受到致死攻擊時保留 1 HP，並獲得 10 秒免傷。' },
       /* ⚠⚠⚠ **ver -964（Ray 改定）：不再回滿，改成「保留現血量 ＋ 10 秒吸血」**
            > 「主動技中止聖徒化，**保留現血量**並發動 10 秒吸血 buff，
@@ -423,10 +430,18 @@ export const GAME_CONFIG = {
            兩邊都改了。 */
       active:{ key:'lifeReturn', name:'魂之歸所', en:'Soul Return', context:'saint',
                cutin:'cutin_return', voice:'vo_nou_return',   // ver -711：她自己的語音
-               lifestealSeconds:10, lifestealPct:0.05,        // ver -964：吸血窗（秒／每發回最大生命的比例）
-               comboKeepSeconds:10,                           // ver -971：聖徒化連擊疊傷的延續（同一扇窗）
+               /* ══⚠⚠⚠ **ver -986：基礎不再吸血**（Ray 選 (C)）══ 吸血整組移到
+                  Lv5「引路星」（`lifeReturnPct` ＋ `lifeReturnSec`）—— 那顆星 Ray 交卡時
+                  寫的就是「發動後 15 秒吸血 buff…一發回最大血量 5%」＝**給**不是**升**。
+                  ⚠⚠ **連擊延續留在基礎**（Ray：「主動技延續聖徒化連擊增傷 10 秒，
+                    這個是要加在文案的」）—— 所以那扇窗**基礎就要開 10 秒**，
+                    只是期間不回血。窗長改由 `max(吸血秒, 連擊秒) ＋ 星` 算
+                    （見 `partner.js` 的 lifeReturn handler）。 */
+               lifestealSeconds:0, lifestealPct:0,            // ver -986：基礎不吸血（移到引路星）
+               comboKeepSeconds:10,                           // ver -971：聖徒化連擊疊傷的延續（基礎就有）
                desc:'發動方式：聖徒化期間戰鬥畫面上滑。<br>'
-                   +'聖徒化期間發動，強制中止爆發時間，保留已回復之 HP。' },
+                   +'聖徒化期間發動，強制中止爆發時間，保留已回復之 HP，'
+                   +'並延續聖徒化的連擊增傷 10 秒。' },
       /* ══ 無傷擊殺一場 → reload 聖徒化（ver -892 定為兩場，**ver -903 Ray 改成一場**：
          「諾薇兒改無傷一場就恢復聖徒化」）══
          ⚠ 「無傷」是**逐場（逐隻怪）**算的（`state.enemyHitsTaken`，同九星「方舟」
@@ -842,7 +857,7 @@ export const GAME_CONFIG = {
                （`partner.onEnemyCleared`），該場已經結束了。 */
           saintReload:1 },
         { star:'Tegmine',           name:'堅殼星',
-          desc:'即死防禦的十秒回血窗提升為每次射擊回復最大體力 5%，反擊一次也算一發；'
+          desc:'獄門天鎖的十秒免傷期間，每次射擊回復最大體力 5%，反擊一次也算一發；'
               +'聖徒化期間不回血。',
           /* `guardHealPct` 是**增量**：卡上 0.02 ＋ 這裡 0.03 ＝ 5%。
              ⚠ 「單局一次」＝**即死防禦本身**一局一次（Ray 確認）——
@@ -856,16 +871,17 @@ export const GAME_CONFIG = {
                打得出來**（另外三種射擊在 `tap` 就被分流給 saint 了，碰不到）：
                即死防禦接住 → 10 秒窗開著 → 立刻右滑進聖徒化，那幾秒的每一次反擊
                都會推槽。守門在 `combat.shotHeal()` 一支（鐵律 8）。 */
-          guardHealPct:0.03, guardHealCounter:1 },
+          guardHealPct:0.05, guardHealCounter:1 },
         { star:'Asellus Borealis',  name:'引路星',
-          desc:'生命歸還的吸血與連擊延續延長為 15 秒，期間全程指引下一格。',
+          desc:'魂之歸所發動後 15 秒內每次射擊回復最大體力 5%，'
+              +'連擊延續一併延長為 15 秒，期間全程指引下一格。',
           /* `lifeReturnSec` 是**增量**：卡上 10 ＋ 5 ＝ 15 秒。
              ⚠⚠ 吸血窗與 combo 延續窗**是同一扇窗**（`partner.vampUntil`）——
                Ray 的卡上兩者永遠同一個數字，所以只有一個計時器（鐵律 7）。
              ⚠ `lifeReturnHint`＝那扇窗開著時**全程**指引（ver -973 Ray 確認
                「次回指引」的定義就是不斷高光下一格）—— 一次性的那一下 ver -833
                就有了，這顆星加的是「全程」。 */
-          lifeReturnSec:5, lifeReturnHint:1 },
+          lifeReturnSec:5, lifeReturnPct:0.05, lifeReturnHint:1 },
         { star:'Acubens',           name:'斷鉗星',
           desc:'聖徒化發動時體力降至 1，發動時間最大化。',
           /* 聖徒化的長度＝倒數槽從**當下血量**推到滿要多久，所以血越少撐越久
