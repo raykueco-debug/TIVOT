@@ -1,5 +1,14 @@
 # HANDOFF — Stage 8（索菈娜家→餐廳→索菈娜家）／瑪麗亞的廚房 ver -953〜-955（2026-09-08）
 
+> ⚠⚠⚠ **開工前先讀 `HANDOFF_ver964-970_ART_SESSION.md`（2026-09-09）。**
+> `-964`〜`-970` 這七版是 Ray 在**美術（產圖）session** 裡交辦、由它做完並 commit 的
+> —— 這一份檔案（-955）之後的事它一件都沒記。**HEAD 已經是 `ver -970`。**
+> 那七版動過 `config.js`／`modules/{saint,combat,defense,partner,weapon,inspector,gear}.js`／
+> `script/{progress,town}.js`／`style.css`／`CLAUDE.md`，而且**推翻了好幾條舊規則**
+> （生命歸還回滿、OBE HP→1、惡夢化灌滿與 12.8 秒、`showExp:false`…）——
+> **舊註解會騙人，動那幾支之前先重讀。**
+> 憲法也多了**鐵律 11**（繪圖 session 被要求 coding 要先跳提醒）。
+
 > 前一份（-928〜-952）已被本檔取代；**檔尾的「環境備忘／教訓／快速測法／背景待辦」是沿用的**。
 > HEAD＝`ver 2026.09.08-955`。
 > ⚠ 工作樹只剩並行**美術 session** 的未追蹤檔（根目錄兩張 uuid png、
