@@ -21,9 +21,21 @@
      吃的是 var() 裡的 56vh fallback —— 那正是為它準備的。 */
   --ink:#ece6d8; --gold:#d4a94a; --gold-dim:#8a6d2e; --blood:#8a1f1f; --holy:#6fb3d4;
   --panel:#120f1a; --danger:#c0392b;   /* ver -701：改裝頁「素材不足」的紅（值同 style.css 的 :root） */
+  --scroll-thumb:rgba(212,169,74,.28); --scroll-thumb-hi:rgba(212,169,74,.52);   /* ver -978：捲軸（＝--gold 的 28%／52%） */
+  scrollbar-width:thin; scrollbar-color:var(--scroll-thumb) transparent;         /* Firefox（會繼承給裡面的清單） */
   font-family:"Iowan Old Style","Palatino Linotype",Georgia,"Songti TC",serif;
   color:var(--ink);-webkit-tap-highlight-color:transparent;
 }
+/* ══⚠⚠ 捲軸（ver -978，Ray：「現在極大極醜極不符 UI 整體性」）══
+   ⚠⚠ `style.css` 有一份**全域**的同樣規則 —— 這一份是給**飛行頁**用的
+   （那一頁不載 style.css，道具欄的正式入口卻在那裡）。**改一邊要改另一邊**
+   （鐵律 7 的但書，兩邊註解已互指）。
+   ⚠ 選擇器照這一份的規約以 `#lootSheet` 開頭：不去動宿主頁面的任何捲軸。 */
+#lootSheet ::-webkit-scrollbar{width:6px;height:6px;}
+#lootSheet ::-webkit-scrollbar-track{background:transparent;}
+#lootSheet ::-webkit-scrollbar-thumb{background:var(--scroll-thumb);border-radius:99px;}
+#lootSheet ::-webkit-scrollbar-thumb:hover{background:var(--scroll-thumb-hi);}
+#lootSheet ::-webkit-scrollbar-corner{background:transparent;}
 #lootSheet *{box-sizing:border-box;}
 #lootSheet button{font-family:inherit;cursor:pointer;}
 

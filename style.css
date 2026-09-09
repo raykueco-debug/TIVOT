@@ -15,6 +15,10 @@
     --notch-extra:0px;
     --notch-bar-h:calc(env(safe-area-inset-top, 0px) + var(--notch-extra));
     --notch-orn:var(--gold);
+    /* 捲軸的把手（ver -978）。⚠ ＝`--gold` 的 28%／52% —— 帶 alpha 所以引用不了
+       那個變數，**改 `--gold` 要一起改這兩行**（鐵律 7 的但書）。 */
+    --scroll-thumb:rgba(212,169,74,.28);
+    --scroll-thumb-hi:rgba(212,169,74,.52);
   }
   /* touch-action:manipulation＝取消「雙擊縮放」（快速連點盤面不再觸發放大；亦消 300ms 點擊延遲）。
      viewport 的 user-scalable=no 在 iOS Safari 被無障礙政策忽略，須靠此宣告。
@@ -25,6 +29,23 @@
   /* 全域禁圖片拖拉：桌機滑鼠在圖上按住拖動會觸發原生 drag、吃掉 pointermove，
      聖徒化左右滑/生命歸還上滑等手勢會斷（Firefox 另靠 main.js 的 dragstart 攔截） */
   img{-webkit-user-drag:none;user-drag:none;}
+  /* ══⚠⚠ 捲軸（ver -978，Ray：「現在極大極醜極不符 UI 整體性」）══════════════
+     這一版之前**一行樣式都沒有** —— 十幾個會捲的容器（道具欄／整備頁／存檔欄／
+     劇情紀錄／Credit／商店單子…）全部吃瀏覽器預設，桌機 Chrome 就是那條灰色粗軌。
+     ⚠ 寫成**一條全域規則**不逐個容器寫（鐵律 8）：容器有十幾個，逐個寫必漏，
+       而且日後新增一個會捲的面板不必記得補。
+     ⚠ **軌道透明**：畫一條灰槽出來等於在面板上多一條與 UI 無關的直線 ——
+       要的是「內容旁邊有一道細細的銅色痕」，不是一個控制元件。
+     ⚠ iOS Safari 是 overlay 捲軸、本來就幾乎看不到，這一條主要是修**桌機**。
+     ⚠⚠ `#lootSheet` 在**飛行頁**也會用到，而那一頁不載 style.css ——
+       `css/lootsheet.css` 有一份**同樣的**規則（scoped 在 #lootSheet 上），
+       改一邊要改另一邊（鐵律 7 的但書，兩邊註解已互指）。 */
+  html{scrollbar-width:thin;scrollbar-color:var(--scroll-thumb) transparent;}   /* Firefox（會繼承） */
+  ::-webkit-scrollbar{width:6px;height:6px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:var(--scroll-thumb);border-radius:99px;}
+  ::-webkit-scrollbar-thumb:hover{background:var(--scroll-thumb-hi);}
+  ::-webkit-scrollbar-corner{background:transparent;}
   /* overscroll-behavior:none＝斷開 overscroll 鏈結：部分瀏覽器/內嵌 WebView 以水平
      overscroll 觸發上下頁導航，本遊戲全域不捲動故一律關閉 */
   html,body{margin:0;padding:0;width:auto;height:auto;background:var(--bg);
