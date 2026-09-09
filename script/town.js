@@ -161,7 +161,9 @@ const SV_S8_DINE = { flag:'sv_s8_dine', need:'sv_s8_home', fromStage:8, lines:[
   sor('think','……就是比較聰明的人？'),
   cor('smile','您能這麼理解，光榮之至。'),
   sor('upset','你一定要那樣講話嗎？'),
-  { speaker:'RENNA', text:'', se:'se_steps', auto:1400 },   // （腳步聲）
+  /* ⚠ ver -1002（Ray）：這一拍的腳步改用 **se_highheels** —— 走進來的是科爾文，
+     那雙鞋的聲音就是蕾娜認出他的線索（`se_steps` 是一般腳步，誰都可能）。 */
+  { speaker:'RENNA', text:'', se:'se_highheels', auto:1400 },   // （高跟鞋的腳步聲）
   ren('curious','科爾文……副團長！'),
   cor(null,'許久不見了，海森伯格小姐。'),
   ren('covermouth','怎麼會……勞您親自……'),

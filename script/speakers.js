@@ -763,7 +763,13 @@ export const ART = {
               stare:     { src:'resources/SI/NPC/Corvin_SI_stare.webp',     top:3, bot:1531, fx:0.455 },
               talk:      { src:'resources/SI/NPC/Corvin_SI_talk.webp',      top:6, bot:1531, fx:0.459 },
               shock:     { src:'resources/SI/NPC/Corvin_SI_shock.webp',     top:6, bot:1533, fx:0.462 },
-              ecstasy:   { src:'resources/SI/NPC/Corvin_SI_ecstasy.webp',   top:0, bot:1534, fx:0.443 },
+              /* ⚠⚠ ver -1002：Ray 換了新圖（同名覆蓋）。`?v=2` 是**必要的** ——
+                 瀏覽器以 URL 為鍵，檔名沒變、內容變了它照樣拿舊的那一份（§5）。
+                 ⚠ `bot` 重量過：1534 → **1525**（新圖矮了 9px）；`top` 仍是 0。
+                 ⚠ `fx` **沿用 0.443**：量過新舊兩張的頭部中線（0.4902 / 0.4893）
+                   幾乎一樣＝同一個姿勢 —— 同姿勢的差分直接沿用，不要逐張重量
+                   （ver -649 的規矩）。 */
+              ecstasy:   { src:'resources/SI/NPC/Corvin_SI_ecstasy.webp?v=2', top:0, bot:1525, fx:0.443 },
               think:     { src:'resources/SI/NPC/Corvin_SI_think.webp',     top:8, bot:1530, fx:0.450 },
               read:      { src:'resources/SI/NPC/Corvin_SI_read.webp',      top:6, bot:1532, fx:0.459 },
               lookaside: { src:'resources/SI/NPC/Corvin_SI_lookaside.webp', top:1, bot:1533, fx:0.501 },

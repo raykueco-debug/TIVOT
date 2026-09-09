@@ -1347,6 +1347,12 @@ const SE_FILES=[
   'se_enemy_revolver.m4a', 'se_enemy_shot.m4a', 'se_enemy_slash.m4a', 'se_enemy_smack.m4a',
   'se_land.m4a',   // 著岸（ver -744，湖上甲板）
   'se_woodbreak.m4a',   // 舵斷裂的木裂聲（ver -751，Ray 交件；取代暫代的 se_brickcrush）
+  /* 高跟鞋的腳步（ver -1002，Ray：「蕾娜在說科爾文……副團長之前的 se 用 se_highheels」）。
+     ⚠⚠ 它是 **.mp3**（規約是 m4a，§6.6）—— 轉檔時**檔名別改**，改了這一行與
+       `tuning.fileGain` 都要跟著動。
+     ⚠⚠ **`fileGain` 還沒量**（沒有量測工具在手）：沒有那一列＝增益 1 ＝以母帶的響度播出，
+       正是 -441 抓到「跌倒音永遠不出來」的成因。要 Ray 用 `tools/audio_scan.html` 量一次。 */
+  'se_highheels.mp3',
   /* ══ Stage8（ver -953）══ 瑪麗亞的廚房與科爾文那一幕。
      ⚠ `se_cooking` 有 **39.7 秒**（一整段煎煮）—— 演出只用前面幾秒，
        所以它走 `SFX.playCue` 的把手收掉，不是 `playSe`（那一支會放到底）。 */

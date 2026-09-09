@@ -3161,6 +3161,13 @@
     opacity:0;transition:opacity .4s ease;}
   #storyCook.on{display:flex;}
   #storyCook.show{opacity:1;}
+  /* ══⚠⚠ **成品登場之後整片放行**（ver -1002，Ray：「料理完成畫面點了沒反應，
+     只能點控制面板，要全域都可點」）══
+     這一層是 `z-5`、蓋住整個場景區，而推進用的 `#storyTouch` 在 `z-3` ——
+     所以煮的時候它把上半的點擊全吃掉了（那是**刻意的**：煮到一半不該被跳過）。
+     `.tap` ＝成品已經登場、正在等點擊，那時就要讓整片都點得到。
+     ⚠ 只放行 `.tap` 這一段，不要整個改成 `none`：那會讓煮的過程可以被點掉。 */
+  #storyCook.tap{pointer-events:none;}
   #storyCook img{max-width:74%;max-height:60%;object-fit:contain;
     filter:drop-shadow(0 12px 26px rgba(0,0,0,.6));position:relative;z-index:1;}
   /* ══⚠⚠ 成品登場（ver -953，Ray：「菜品登場時（cooking 完成）縮小彈出，
