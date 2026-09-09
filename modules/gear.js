@@ -322,11 +322,17 @@ function render(){
     +     '<div class="gs-perks">'
     /* 變身（ver -841，Ray：「伙伴卡也要記載聖徒化 夢魘化 共鬥的效果」）——
        文案在搭檔卡的 `install`（鐵律 1），排最前：那是這位搭檔的招牌系統。 */
-    +       (p.install ? '<div class="gs-perk"><b>'+p.install.name+'（變身）</b>'
+    /* ══ 三種技能各自的顏色（ver -989，Ray：「聖徒化用金色字、主動技用淡紅、
+       被動技用藍色。**包含「主動技」等字樣也要跟對應的技能同色**，不然光看到
+       中二招式名玩家會搞不懂主被動」）══
+       ⚠ 招式名與「（主動）」那三個字**在同一個 `<b>` 裡**，所以上色一次就兩者同色
+         —— 那正是 Ray 要的（不要只有名字有顏色）。
+       ⚠ 顏色寫在 class 上、值在 CSS（鐵律 1）：`gs-perk` 加 `install/passive/active`。 */
+    +       (p.install ? '<div class="gs-perk install"><b>'+p.install.name+'（變身）</b>'
                        + '<span>'+p.install.desc+'</span></div>' : '')
-    +       (p.passive ? '<div class="gs-perk"><b>'+p.passive.name+'（被動）</b>'
+    +       (p.passive ? '<div class="gs-perk passive"><b>'+p.passive.name+'（被動）</b>'
                        + '<span>'+p.passive.desc+'</span></div>' : '')
-    +       (p.active  ? '<div class="gs-perk"><b>'+p.active.name+'（主動）</b>'
+    +       (p.active  ? '<div class="gs-perk active"><b>'+p.active.name+'（主動）</b>'
                        + '<span>'+p.active.desc+'</span></div>' : '')
     +       '<div class="gs-perk empty"><b>常駐</b><span>—</span></div>'
     /* 女主的九星（ver -980）：唯讀，管理人模式整列可點（見 girlStarListHtml）。

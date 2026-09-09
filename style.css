@@ -15,6 +15,11 @@
     --notch-extra:0px;
     --notch-bar-h:calc(env(safe-area-inset-top, 0px) + var(--notch-extra));
     --notch-orn:var(--gold);
+    /* ══ 三種技能的顏色（ver -989，Ray 指定）══ 變身＝金、主動＝淡紅、被動＝藍。
+       ⚠ 被動直接用既有的 `--holy`（那就是這個專案的藍），不另開一個色。
+       ⚠ 主動的「淡紅」是新的：`--danger`(#c0392b) 與 `--blood`(#8a1f1f) 都太暗，
+         在深底上壓不出「淡」的感覺，所以另給一個粉玫瑰。 */
+    --skill-active:#e2808c;
     /* 捲軸的把手（ver -978）。⚠ ＝`--gold` 的 28%／52% —— 帶 alpha 所以引用不了
        那個變數，**改 `--gold` 要一起改這兩行**（鐵律 7 的但書）。 */
     --scroll-thumb:rgba(212,169,74,.28);
@@ -3599,6 +3604,11 @@
   #gearSheet .gs-perks{flex:1 1 auto;min-height:0;overflow-y:auto;}
   #gearSheet .gs-perk{margin-top:8px;font-size:10px;line-height:1.65;color:var(--gold-dim);}
   #gearSheet .gs-perk b{display:block;font-weight:normal;color:var(--gold);margin-bottom:1px;}
+  /* ver -989：招式名與「（主動）」那三個字同色 —— 兩者在同一個 <b> 裡，
+     所以只要上這一層色就好（Ray：光看中二招式名分不出主被動）。 */
+  #gearSheet .gs-perk.install b{color:var(--gold);}
+  #gearSheet .gs-perk.active  b{color:var(--skill-active);}
+  #gearSheet .gs-perk.passive b{color:var(--holy);}
   /* 常駐技能：未實裝的留空欄（ver -715）。整格壓暗，但看得見它存在。 */
   #gearSheet .gs-perk.empty{opacity:.4;}
   #gearSheet .gs-perk.empty b{color:var(--gold-dim);}
