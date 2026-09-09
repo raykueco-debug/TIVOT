@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.09-983';
+export const VERSION = 'ver 2026.09.09-984';
 
 export const GAME_CONFIG = {
 
@@ -349,11 +349,16 @@ export const GAME_CONFIG = {
       image:'partner_nouvelle',
       /* 整備頁伙伴卡的「變身」欄（ver -841，Ray：「伙伴卡也要記載聖徒化 夢魘化
          共鬥的效果」）—— 純顯示文案（gear.js 讀），機制本體在 saint.js。 */
+      /* ══⚠⚠⚠ **ver -984：說明整組換掉**（Ray 交稿：「技能說明太囉唆了，改成這樣」）══
+         格式固定兩段：**發動方式**一行，然後一段白話。
+         ⚠⚠ **這是技能的初始值，點星之後不改**（Ray：「後面點星以後不需更改，
+           頁面放最基本的說明即可」）—— 所以這幾段字**不要**跟著九星去補條件，
+           星的效果各自寫在 `girls.levels` 的 `desc` 上（技能表視窗才看得到）。
+         ⚠ 換行用 `<br>`：整備頁是 innerHTML 塞進去的（`gear.js` 的 `.gs-perk`）。 */
       install:{ name:'聖徒化', en:'SAINT INSTALL',
-        desc:'敵人框右滑發動（每場一次）：盤面換成 16 宮格，血條化為倒數槽——'
-            +'受擊會推進、推滿即敗走（O.B.E.，體力不扣但這一次用掉了）；'
-            +'推滿前清盤＝Maximum Burst，回復體力並以期間總傷的兩成追加一擊。'
-            +'期間下滑可發動搭檔技。' },
+        desc:'發動方式：戰鬥畫面右滑<br>'
+            +'強行灌注聖徒之力的爆發模式。期間 HP 快速回復至全滿後結束聖徒化。'
+            +'HP 越低，持續時間越長。受敵攻擊僅會縮短時間，不會受到傷害，連擊疊傷無上限。' },
       /* 取景：她的立繪是全身直幅（1024×1536），蕾妮那張是膝上構圖 ——
          同樣的框要放到「頭大小相當」，得往下推並放大。⚠ 這是估的，Ray 換圖時要重量。 */
       siFit:{ zoom:1.6, top:0.01 },
@@ -371,13 +376,17 @@ export const GAME_CONFIG = {
          Lv7「蟹生星」的獎勵（`guardPerEnemy`）—— 守門在 `partner.onEnemySet`。
          ⚠ **試玩版不動**：蕾妮／馬季諾不在 `girls.who` 裡，那道守門不咬他們，
            他們照舊每場 reload（同「本篇與試玩版是兩套數值」，§6.5.3）。 */
-      passive:{ key:'deathGuard', name:'即死防禦', oncePerBattle:true,
+      /* ⚠⚠ **ver -984：名字改成「獄門天鎖」**（Ray 交稿）。`key` 仍是 `deathGuard`
+         —— 那是機制的識別碼，改它會牽動一整串判定（`pas.key==='deathGuard'`）。
+         ⚠ 它在**戰鬥中**印出來的字走 i18n（`L.cutins.deathGuard`／`L.battle.deathGuard`），
+           不是這裡的 `name` —— 兩邊都改了才不會一邊「獄門天鎖」一邊「即死防禦」。
+           英文副標維持 `Death Guard`（[EN-STYLE] 不譯；Ray 沒給新的英文名）。 */
+      passive:{ key:'deathGuard', name:'獄門天鎖', oncePerBattle:true,
                 /* 她自己的 CI（ver -499，Ray 交件 CI_Nouvelle_Deathguard）——
                    之前借蕾妮的 `cutin_guard`；蕾妮那張是試玩版的，不動。 */
                 cutin:'cutin_nouvelle_guard', voice:'vo_nou_guard',   // ver -711：她自己的語音（原本借蕾妮的）
                 immuneSeconds:10, immuneHealPct:0.02,
-                desc:'受到足以致死的攻擊時，為玩家保留1hp續命，'
-                    +'並獲得10秒免傷；免傷期間每一發射擊回復2%生命。' },
+                desc:'發動方式：戰鬥中受到致死攻擊時保留 1 HP，並獲得 10 秒免傷。' },
       /* ⚠⚠⚠ **ver -964（Ray 改定）：不再回滿，改成「保留現血量 ＋ 10 秒吸血」**
            > 「主動技中止聖徒化，**保留現血量**並發動 10 秒吸血 buff，
            >   **一發回復玩家最大血量 5%**」
@@ -402,13 +411,16 @@ export const GAME_CONFIG = {
            鐵律 7）：Ray 的卡上兩者永遠同一個數字，兩個計時器必然走鐘。
            所以引路星（Lv5）的 `lifeReturnSec:5` 一次把兩者都推到 15 秒。
          ⚠ **雙槍破防（BR）不吃**：那一支本來就不吃暴擊與 atkBuff（降攻安全牌）。 */
-      active:{ key:'lifeReturn', name:'生命歸還', context:'saint',
+      /* ⚠⚠ **ver -984：名字改成「魂之歸所」**（Ray 交稿）。`key` 仍是 `lifeReturn`。
+         ⚠ 這個 `name` **戰鬥中也會印**（`partner.js` 的 cut-in 標題與浮字都讀它），
+           所以改這裡就等於改了畫面上那一行；浮字另有一份在 i18n（`L.battle.lifeReturn`），
+           兩邊都改了。 */
+      active:{ key:'lifeReturn', name:'魂之歸所', context:'saint',
                cutin:'cutin_return', voice:'vo_nou_return',   // ver -711：她自己的語音
                lifestealSeconds:10, lifestealPct:0.05,        // ver -964：吸血窗（秒／每發回最大生命的比例）
                comboKeepSeconds:10,                           // ver -971：聖徒化連擊疊傷的延續（同一扇窗）
-               desc:'聖徒化期間發動：強制中止聖徒化並保留當前體力，'
-                   +'其後 10 秒內每一發射擊回復最大體力的 5%，'
-                   +'且期間普攻維持聖徒化的連擊疊傷。' },
+               desc:'發動方式：聖徒化期間戰鬥畫面上滑。<br>'
+                   +'聖徒化期間發動，強制中止爆發時間，保留已回復之 HP。' },
       /* ══ 無傷擊殺一場 → reload 聖徒化（ver -892 定為兩場，**ver -903 Ray 改成一場**：
          「諾薇兒改無傷一場就恢復聖徒化」）══
          ⚠ 「無傷」是**逐場（逐隻怪）**算的（`state.enemyHitsTaken`，同九星「方舟」
