@@ -773,8 +773,11 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose, opts){
         if(f.portrait){ const wi=new Image(); wi.src=f.portrait; }
         _inspFollowTimer = setTimeout(()=>{
           /* ══ 水平抽卡（ver -839，Ray：「索拉娜亂入用水平抽卡特效」）══
-             舊立繪往左抽走 → 換圖換名 → 新的一張從右滑入 —— §6.5「同側換人＝
-             抽牌輪轉」的語彙，這裡是同一個 img 的兩段動畫。 */
+             舊立繪往**右**抽走 → 換圖換名 → 新的一張從**左**滑入 —— §6.5「同側換人＝
+             抽牌輪轉」的語彙，這裡是同一個 img 的兩段動畫。
+             ⚠ ver -1004（Ray：「索拉娜亂入評價是由左邊進入」）：兩段的方向都翻過來
+               （-839~-1003 是「往左抽走、從右進來」）。**兩段要同方向**：
+               抽走與滑入是同一個橫向移動，反了會讀成「彈回來」。 */
           let swapped=false;
           const swap=()=>{
             if(swapped) return; swapped=true;
@@ -785,14 +788,14 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose, opts){
                改台詞長度不必回來調這裡（同「自動推進掛在這一句唸完」的道理）。 */
             setTimeout(()=>{ _lootHold = false; }, 1600);
             try{ portrait.animate(
-              [ { transform:'translateX(46%)', opacity:0 },
-                { transform:'translateX(0)',   opacity:1 } ],
+              [ { transform:'translateX(-46%)', opacity:0 },
+                { transform:'translateX(0)',    opacity:1 } ],
               { duration:240, easing:'ease-out' }); }catch(_){}
           };
           try{
             const out=portrait.animate(
-              [ { transform:'translateX(0)',    opacity:1 },
-                { transform:'translateX(-46%)', opacity:0 } ],
+              [ { transform:'translateX(0)',   opacity:1 },
+                { transform:'translateX(46%)', opacity:0 } ],
               { duration:180, easing:'ease-in' });
             out.onfinish=swap;
             setTimeout(swap, 400);   // 保險：onfinish 沒到也要換（swap 冪等）
