@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.09-978';
+export const VERSION = 'ver 2026.09.09-979';
 
 export const GAME_CONFIG = {
 
@@ -1246,6 +1246,17 @@ export const GAME_CONFIG = {
       /* ── 調味 ── */
       season_butter:  { name:'草原奶油', cat:'food', food:'season', always:true, price:60,
                         desc:'草原牧場的奶油。煎過之後香得很霸道。' },
+      /* ══ 北峰山羊奶油（ver -979，Ray 交辦）══ 北方泊地的居民在碼頭送行時塞給你的
+         那一份心意（`np_farewell` 那一拍 `give`），**也在北方泊地的雜貨舖買得到**。
+         ⚠ 它是**食材**（Ray 指定），佔調味那一格 —— 瑪麗亞第一道菜（奶油鹿腿排）
+           要的就是它（-953 原本寫 `season_butter`，這一版換過來）。
+         ⚠ **不是 `always`**：草原奶油掛 `always` 是因為它在遊戲裡拿不到（-955 的待辦），
+           這一個既送又賣，本來就拿得到。
+         ⚠⚠ 價格 90 是**我填的**（Ray 沒給）：調味這一族現在是岩鹽 20／萊姆皮 40／
+           草原奶油 60／黑胡椒 70／森蜜 80，它是「跟一般的奶油可不一樣」的高級品，
+           所以排在最上面。要改就改這一個數字。 */
+      season_goatbutter:{ name:'北峰山羊奶油', cat:'food', food:'season', price:90,
+                        desc:'北峰山羊奶製的奶油。奶香濃得多，煎起來會回甘。' },
       season_rocksalt:{ name:'岩鹽',     cat:'food', food:'season', price:20,
                         desc:'敲下來的粗粒岩鹽。撒上去就很夠味。' },
       season_honey:   { name:'森蜜',     cat:'food', food:'season', price:80,
@@ -1349,7 +1360,10 @@ export const GAME_CONFIG = {
            貨品有限」是**氣氛**，要真的砍貨單等 Ray 指定砍哪幾樣。 */
       np_grocery:  [ { id:'milk',     n:8 },
                      { id:'cheese',   n:5 },
-                     { id:'lime_rum', n:3 } ],
+                     { id:'lime_rum', n:3 },
+                     /* ver -979（Ray：「然後這個也可以在北泊的商店買到」）——
+                        送行那一份用掉之後還買得回來（第一道菜才不會變成死路）。 */
+                     { id:'season_goatbutter', n:4 } ],
       /* 夏爾村雜貨街（ver -858）：小村規模，貨比城裡少。 */
       sv_grocery:  [ { id:'milk',     n:4 },
                      { id:'cheese',   n:3 } ],
@@ -2409,8 +2423,11 @@ export const GAME_CONFIG = {
       /* 第一道是劇本指定的（Stage8 瑪麗亞的第一頓）。⚠ Ray 口頭說「羊腿排」，
          但稿上的台詞是「奶油鹿腿一份」、交件的插圖也是 `di_deersteak`（鹿）
          —— 以稿與圖為準寫成鹿腿。要改成羊的話，圖與台詞要一起改。 */
+      /* ⚠ 調味 ver -979 由 `season_butter` 換成 `season_goatbutter`（Ray：「瑪莉亞
+         第一道料理所需的就是這一個調味」）—— 那一份正是北方泊地居民送行時給的。
+         連帶解掉 -955 的待辦「草原奶油目前遊戲裡拿不到」：第一道菜不再依賴它。 */
       deersteak:  { name:'奶油鹿腿排',   ci:'dish_deersteak',
-                    mats:['meat_deer','herb_rosemary','season_butter'],
+                    mats:['meat_deer','herb_rosemary','season_goatbutter'],
                     boon:{ hpMax:40 },
                     desc:'厚切鹿腿以奶油慢煎，最後撒上迷迭香。不用再調味就很好吃。' },
       lynxgrill:  { name:'香煎山貓腿',   ci:'dish_lynxgrill',

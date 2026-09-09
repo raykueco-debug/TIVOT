@@ -1243,7 +1243,13 @@ export const TOWNS = {
          ⚠ `onMove` 同司祭那一格的理由：日期卡收在 act 裡，act 演完當下不重跑
            閘門 —— 玩家一抬腳就被接走，讀起來是「該出發了」。
          ⚠ 強制轉場現在是三秒黑幕（ver -739 的 forceGo）。 */
-      { flag:'np_depart', need:'np_grave_done', onMove:true,
+      /* ⚠⚠ **ver -979：拿掉 `onMove`**（Ray：「港口娜塔莉戰後的翌日要直接在碼頭」）——
+         `clockGate()` 本來就在**那一段對白演完之後**跑（`town.enter` 的 act 收尾），
+         而 `onMove` 讀的是「這一次抵達是走過來的」→ 演完當下沒有 `backDir`，
+         於是玩家得先抬腳走一步才被接走。拿掉之後翌日卡一收就直接轉場到碼頭。
+         ⚠ 上面那一段舊註解說「act 演完當下不重跑閘門」**是錯的**（-741 的判斷），
+           `enter()` 的 act 收尾就有 `if(clockGate()) return;`。 */
+      { flag:'np_depart', need:'np_grave_done',
         goto:'port', enterAgain:true },
     ],
     /* ══⚠⚠ **重建之後換一整組背景**（ver -627，Ray：「stage5 之後北泊改用這一組差分」）══
@@ -1421,6 +1427,16 @@ export const TOWNS = {
             ren('talkwork','沒錯。雖然對不起大家的熱情，我們得快點啟航了。'),
             ren('talkserious','這也是，為了這裡的人好。對吧？'),
             any('silent','……'),
+            /* ══ 居民的心意（ver -979，Ray 交稿，台詞一字未改）══
+               ⚠ 奶油在**「不一樣喔！」那一句**才進袋（`give`）—— 東西是那一句遞出來的；
+                 掛在「一點點心意」那一句上等於還沒說是什麼就已經在道具欄裡了。
+               ⚠ 它是**食材**（`season_goatbutter`，調味那一格）：瑪麗亞第一道菜
+                 「奶油鹿腿排」要的就是它。用掉之後北方泊地的雜貨舖買得回來。 */
+            crd(null,'這是我們的一點點心意！'),
+            nou('surprise','不用這樣啦……！'),
+            Object.assign(crd(null,'北峰山羊奶製的奶油，跟一般的奶油可不一樣喔！'),
+                          { give:{ season_goatbutter:1 } }),
+            nou('lookaway','……'),
             crd(null,'諾薇兒小姐！請一定要再回來看我們啊！'),
             /* 揮手＝演出拍（台上有人、無台詞 → 點一下才過，§6.5）；
                `np_leave_ok` 在這一拍插上（見上）。 */

@@ -841,6 +841,20 @@ function toneSrcEl(){
    ⚠ `fadeOwner` 是為了分辨黑幕是誰掛上去的：場景之間的讀取閘門也用同一塊黑幕，
      那一塊**不能**被 flush 收掉（它要蓋到新場景第一拍演完）。 */
 let cgFadeT=[], cgFinish=null, fadeOwner=null;
+/* ══⚠⚠⚠ **插圖的世代**（ver -979，Ray：「對話點太快還是常常卡插畫」）══
+   `cgFade`／`cgCross` 都是**逐個試候選**的非同步鏈（`onerror` → 下一個），而
+   `cgFadeT.forEach(clearTimeout)` 只清得掉**計時器**，清不掉掛在 `<img>` 上的
+   `onload`／`onerror`。於是被下一次換圖／收圖取代之後，**舊的那條鏈還在跑**：
+   它的 `onerror` 繼續 `setImg` 回同一個 `#storyCg`、或把 `#storyCg2` 的 `.on`
+   加回去 —— **把已經清掉的插圖再貼回畫面上**，那就是「卡插畫」。
+   ⚠⚠ ver -643 的 `flushCgCross` 修的是「**已經載完、等著交棒**」那一半；
+     這一條修的是「**還在試候選**」那一半 —— 那時 `cgCrossFinish` 還是 null，
+     flush 什麼都收不到（安雅醒來那兩張走的正是這一條，Ray 指名的就是它）。
+   作法：換圖／收圖一律 `++cgSeq`，每一個**非同步的續集**進來先問
+   「我還是最新的那一代嗎」，不是就收手（不要順手清畫面 —— 那是新的那一代的事）。
+   ⚠ `flushCgFade`／`flushCgCross` **不**動世代：它們是「把這一代做完」不是「換一代」。
+   ⚠ 實測（快點 12 下、每下 45ms）：修之前一段演完 `#storyCg` 還掛著上一張插圖。 */
+let cgSeq = 0;
 const missingCg=new Set();   // 退回過的插圖：只提示一次，不然每一句都印一行
 /* ══⚠⚠ **場景區的黑幕是持續狀態，換畫面就要收**（ver -881，Ray：「森林入口就會
    開始變暗」「不是時間分差」「好像不會每次都發作」）══
@@ -914,6 +928,7 @@ export function clearStageLeftovers(){
 export function clearSceneFade(){
   cgFadeT.forEach(clearTimeout); cgFadeT=[];
   cgFinish=null; fadeOwner=null;
+  cgSeq++;                       // ver -979：同 clearCg —— 舊的候選鏈不要再回頭貼圖
   const f=$('storyFade');
   if(f){ f.classList.remove('on'); f.style.transitionDuration=''; }
 }
@@ -1005,10 +1020,18 @@ function cgCross(el, src){
     top.style.objectPosition = cs.objectPosition;
     top.style.transform      = cs.transform==='none' ? '' : cs.transform;
     top.style.transformOrigin= cs.transformOrigin; }
+  const my = ++cgSeq;                              // ver -979：這一次換圖的世代（見 cgSeq）
   const tryAt=(i)=>{
+    /* ⚠⚠ **世代守門**（ver -979，Ray：「對話點太快還是常常卡插畫」；安雅醒來那兩張
+       走的正是這一條）：被下一次換圖／收圖取代了就收手 —— 不然這條鏈載完之後
+       會把第二層的 `.on` 加回去，那一層是不透明的，就這麼蓋在畫面上不走了。
+       ⚠ ver -643 的 `flushCgCross` 只收得到「**已經載完、等著交棒**」那一半；
+         還在試候選時 `cgCrossFinish` 還是 null，flush 什麼都收不到。 */
+    if(my!==cgSeq){ top.onload=null; top.onerror=null; return; }
     if(i>=list.length){ cgCrossFinish=null; top.classList.remove('on'); setImg(top,''); return; }
     setImg(top, list[i]);
     const done=()=>{ top.onload=null; top.onerror=null;
+      if(my!==cgSeq) return;                      // 同上：這一代已經不是最新的了
       cgResolved.set(list[0], list[i]);
       top.classList.add('on');                    // 淡入（CSS transition）
       /* 交棒：把第二層那一張交給主圖層。⚠⚠ **取景要一起交**（ver -631）：
@@ -1020,6 +1043,9 @@ function cgCross(el, src){
       const handoff=()=>{
         if(handed) return; handed=true;
         cgCrossFinish=null;
+        /* ⚠ 交棒也要守世代（ver -979）：被取代之後交棒＝把舊的那張塞回主圖層。
+           ⚠ 但第二層一定要收掉 —— 它是不透明的，留著就是那張卡住的圖。 */
+        if(my!==cgSeq){ top.classList.remove('on'); setImg(top,''); return; }
         el.style.objectPosition = top.style.objectPosition;
         if(top.style.transform){ el.style.transform=top.style.transform;
                                  el.style.transformOrigin=top.style.transformOrigin; }
@@ -1046,6 +1072,7 @@ export function clearCg(){
   flushCgCross();
   cgFadeT.forEach(clearTimeout); cgFadeT=[];
   cgCrossFinish=null; cgFinish=null;
+  cgSeq++;                       // ver -979：讓還在試候選的舊鏈收手（見 cgSeq 的說明）
   stageCg=null;
   const top=$('storyCg2'); if(top){ top.classList.remove('on'); setImg(top,''); }
   const cg=$('storyCg');
@@ -1060,22 +1087,29 @@ function cgFade(el, src){
      「沒有插圖 → 插入插圖」完全沒吃到，等於沒改。 */
   if(!el || !fade){ setImg(el, src); return false; }
   cgFadeT.forEach(clearTimeout); cgFadeT=[];
+  const my = ++cgSeq;                      // ver -979：這一次換圖的世代（見 cgSeq）
   fade.classList.add('on'); fadeOwner='cg';
   cgFinish=()=>{
     cgFinish=null;
+    if(my!==cgSeq) return;                 // 已經被下一次換圖／收圖取代
     const list = Array.isArray(src) ? src : (src ? [src] : []);
     /* 等新圖真的畫上去再收黑幕 —— 沒載完就收，會先看到一格舊圖或空白
        （同 ver -322 立繪、ver -325 背景踩過的那個坑）。 */
     const back=()=>{ el.onload=null; el.onerror=null;
+      if(my!==cgSeq) return;               // 黑幕現在是新的那一代的，不要替它掀
       if(fadeOwner==='cg'){ fade.classList.remove('on'); fadeOwner=null; } };
     /* ⚠ 試出來的結果要**記起來**（ver -433）：下一次演到同一張就只請求那一張。
        鑰匙是 `list[0]`（已經把時段編進去了，見 cgCandidates 的說明）。 */
     const win=(src2)=>{ if(list.length) cgResolved.set(list[0], src2||null); };
     const tryAt=(i)=>{
+      /* ⚠⚠ **世代守門**（ver -979）：被取代了就收手，而且**什麼都不要清** ——
+         畫面現在是新的那一代擺的，清掉等於幫倒忙。 */
+      if(my!==cgSeq){ el.onload=null; el.onerror=null; return; }
       if(i>=list.length){ win(null); setImg(el, ''); back(); return; }   // 一張都載不到：等於沒有插圖
       setImg(el, list[i]);
       if(el.complete && el.naturalWidth) { win(list[i]); back(); return; }
-      el.onload=()=>{ win(list[i]); back(); };
+      el.onload=()=>{ if(my!==cgSeq){ el.onload=null; el.onerror=null; return; }
+                      win(list[i]); back(); };
       el.onerror=()=>{ el.onload=null; el.onerror=null;
         if(i===0 && !missingCg.has(list[0])){ missingCg.add(list[0]);
           console.info('[story] 沒有這個時段的插圖，往下試：', list[0]); }
