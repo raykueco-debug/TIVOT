@@ -1218,7 +1218,16 @@ function startChapter(c){
   import('./script/inventory.js').then(inv=>{
     inv.addMoney(1000);
     const defs=(GAME_CONFIG.items||{}).defs||{};
-    for(const id of Object.keys(defs)) if(defs[id].use && defs[id].use.hp!=null) inv.add(id,10);
+    for(const id of Object.keys(defs)){
+      const d=defs[id]; if(!d) continue;
+      if(d.use && d.use.hp!=null) inv.add(id,10);
+      /* ⚠⚠ `devKit` ＝**跳關拿不到、但下游指名要它**的東西（ver -999，Ray：
+         「測試環境包裡要常備北峰奶油，不然會卡關」）。第一個是北峰山羊奶油：
+         它只從北泊送行那一拍與北泊雜貨舖來，跳進 Stage 8 兩個都沒經過，
+         而瑪麗亞的第一道菜指名要它 → 卡關。
+         ⚠ 數量寫在**道具身上**（鐵律 1）：這裡不認識任何一個 id。 */
+      if(d.devKit>0) inv.add(id, d.devKit);
+    }
   });
   if(c.named){ prog.setPlayerName(''); prog.setPlayerNick(''); }   // 空字串＝套預設（托爾斯坦／托爾）
   if(c.flags && c.flags.length) prog.addFlags(c.flags);

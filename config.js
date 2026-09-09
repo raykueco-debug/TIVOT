@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.09-998';
+export const VERSION = 'ver 2026.09.09-999';
 
 export const GAME_CONFIG = {
 
@@ -1351,7 +1351,15 @@ export const GAME_CONFIG = {
          ⚠⚠ 價格 90 是**我填的**（Ray 沒給）：調味這一族現在是岩鹽 20／萊姆皮 40／
            草原奶油 60／黑胡椒 70／森蜜 80，它是「跟一般的奶油可不一樣」的高級品，
            所以排在最上面。要改就改這一個數字。 */
-      season_goatbutter:{ name:'北峰山羊奶油', cat:'food', food:'season', price:90,
+      /* ⚠⚠ `devKit` ＝**章節跳關的測試補給要發幾個**（ver -999，Ray：「測試環境包裡
+         要常備北峰奶油，不然會卡關」）。
+         為什麼會卡：這一樣只有兩個來源 —— 北方泊地送行那一拍的 `give`，以及
+         北方泊地的雜貨舖。**跳關直接進 Stage 8 的話兩個都沒經過**，而瑪麗亞的
+         第一道菜（奶油鹿腿排）指名要它 → 那一段就過不去。
+         ⚠ 寫成**道具身上的一格**不是在 `main.js` 寫死 id（鐵律 1，同那一批回復道具
+           走 `use.hp` 的作法）—— 日後再有「劇情發的、跳關拿不到」的東西，
+           加一格就自動進補給包。 */
+      season_goatbutter:{ name:'北峰山羊奶油', cat:'food', food:'season', price:90, devKit:5,
                         desc:'北峰山羊奶製的奶油。奶香濃得多，煎起來會回甘。' },
       season_rocksalt:{ name:'岩鹽',     cat:'food', food:'season', price:20,
                         desc:'敲下來的粗粒岩鹽。撒上去就很夠味。' },
