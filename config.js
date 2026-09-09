@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.09-995';
+export const VERSION = 'ver 2026.09.09-996';
 
 export const GAME_CONFIG = {
 
@@ -585,7 +585,11 @@ export const GAME_CONFIG = {
          —— 那三件事機制照舊在（`saintUsedThisBattle` 的槽、`partner` 的免傷窗、
          `coop.baseSec`），只是不寫進這一段（同諾薇兒的 MB／每場一次）。 */
       install:{ name:'獵手的共鬥', en:"PREDATOR'S FANGS",
-        desc:'敵人框右滑發動，消耗全部破防值發動共鬥，期間索菈娜會自動反擊敵人攻擊。'
+        /* ⚠ ver -996：排版比照諾薇兒（「發動方式」一行 ＋ 一段白話）。
+           ⚠ 手勢那一句統一寫「**戰鬥畫面右滑**」—— 三位是同一個手勢，
+             -993 這裡寫「敵人框右滑」是三段裡唯一的異寫。 */
+        desc:'發動方式：戰鬥畫面右滑<br>'
+            +'消耗全部破防值發動共鬥，期間索菈娜會自動反擊敵人攻擊。'
             +'玩家射擊失誤會加速消耗。' },
       siFit:{ zoom:1.6, top:0.01 },   // 估（同諾薇兒/安雅）；Ray 交專用選人立繪再重量
       cutin:'ci_sorana_predator',     // 共鬥的變身 cut-in
@@ -660,7 +664,10 @@ export const GAME_CONFIG = {
                oncePerBattle:true, cutin:'ci_sorana_supply', voice:['vo_sorana_supply1','vo_sorana_supply2'],   // ver -837 輪播
                reloadName:'共鬥再開', reloadEn:'FANGS RELOAD', reloadVoice:'vo_sorana_roar',
                // ⚠ 定稿用「彈雨傾洩」（＝那扇窗的正式名字，i18n 的 cutins.dualBreak，ver -750）。
-               desc:'上滑：無視破防值，立即進入彈雨傾洩。' },
+               /* ⚠ 「共鬥期間以外」＝Ray 的卡上那一句（`context:'board'`：一般盤面才發得動，
+                  共鬥期間不算）—— 排版比照諾薇兒的主動技那一段。 */
+               desc:'發動方式：共鬥期間以外，戰鬥畫面上滑。<br>'
+                   +'無視破防值，立即進入彈雨傾洩。' },
       /* 被動：連續三輪完美清盤 → 10 秒破防值累積速度加倍，可重覆發動。
          實作＝ combat.clearBoard 累加 `svPerfectStreak`，滿 `streak` 由 partner.fireEnergyBuff
          開一段 `energyBoostUntil`（addEnergy 讀它 ×`energyMul`）。 */
@@ -690,7 +697,8 @@ export const GAME_CONFIG = {
                 cutin:['ci_sorana_roar_renna','ci_sorana_roar_anya','ci_sorana_roar_nouvelle'],
                 /* ⚠ 「同戰役內可跨戰鬥累計」＝既有行為（ver -891/-892：連段跨場不歸零、
                    換局才歸零；`sessionSave` 帶著 `svStreak` 過場）—— 定稿把它寫出來了。 */
-                desc:'連續五輪完美清盤時發動：10 秒內破防值累積速度加倍。同戰役內可跨戰鬥累計。' },
+                desc:'發動方式：連續五輪完美清盤即發動。<br>'
+                    +'10 秒內破防值累積速度加倍。同戰役內可跨戰鬥累計。' },
     },
     // ── 第二搭檔：馬季諾 Malzeno ──────────────────────────
     malzeno: {
