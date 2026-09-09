@@ -122,9 +122,24 @@ export function activateSaint(dir){
  *    · 免傷（走 partner 的 immune 窗；免傷仍算受擊、只是不扣血）＝「無敵」
  *    · 敵攻擊自動完美反擊、無延時懲罰（combat.enemyAttack 的 coopMode 分支）
  *    · 點錯不受擊，但每次點錯縮短窗口（combat.tap 的 coopMode 分支 → coopShorten）
- *  秒數 ＝ baseSec × (破防值/100)（下夾 minSec），發動消耗全部破防值。
+ *  ══⚠⚠⚠ **破防計量表就是共鬥的碼表**（ver -1005，Ray：「共鬥時破防計量表應該要
+ *    隨時間減少才對，然後 lv9 攻擊可以補一點回去，現在一開共鬥計量就歸零了，
+ *    明顯時間跟計量是脫鉤的」「你應該是在發動瞬間算出時間以後就不管計量了，
+ *    兩邊應該要同步」）══
+ *    **剩餘時間只有一個真相：`state.energy`**（鐵律 7）——
+ *      剩餘秒數 ＝ 破防值 × `baseSec/100`，窗開著時計量表**逐幀往下扣**，
+ *      扣到 0 就是窗結束。`state.coopUntil`（無敵窗的結束時刻）**是推出來的**，
+ *      每一拍由計量表重算並發佈給 partner，沒有人拿它反推時間。
+ *    · 發動**不歸零**破防值（-803~-1004 的 `resetEnergy` 已撤）：那正是脫鉤的來源
+ *      —— 歸零之後計量表與窗再也沒有關係，玩家看著空的表卻還有 12 秒可打。
+ *    · 下夾 `minSec` 改成**把計量表墊到那個秒數對應的點數**（同一條匯率），
+ *      不另外記一個「其實還有幾秒」。
+ *    · Lv9「獵手星」（`coopEnergyTime`）解開 `combat.addEnergy` 的閘門之後，
+ *      攻擊加的破防值**自動就是延長的時間** —— 不必再換算一次（`coopExtendByEnergy`
+ *      因此撤掉），上限也自然回到計量表本來的 100。
  *  ⚠ 參數全在 config.partners.sorana.coop（鐵律 1）；無敵窗的擁有者是 partner
- *    （`setImmuneUntil`，注入為 `api.coopImmune`），coopMode 旗由本模組獨佔寫入。
+ *    （`setImmuneUntil`，注入為 `api.coopImmune`），coopMode 旗由本模組獨佔寫入；
+ *    `state.energy` 的擁有者是 combat，所以寫入一律走注入的 `api.setEnergy`（§3.1）。
  * ========================================================================== */
 let coopTimer = null;
 export function activateCoop(dir){
@@ -136,10 +151,11 @@ export function activateCoop(dir){
   const en = Math.max(0, Math.min(100, state.energy));
   /* 索菈娜「射手星」（Lv8，ver -976）：上限 12 → 15 秒（星上寫的是**增量**）。
      ⚠ 實際秒數仍照破防值換算 —— 這顆星抬的是上限不是保證值。 */
-  const baseSec = (c.baseSec||12) + prog.girlBonus(state.pickedPartner,'coopSec');
-  const sec = Math.max(c.minSec||3, baseSec * en/100);
+  const baseSec = coopBaseSec();
+  /* 下夾 minSec ＝**把計量表墊到那個秒數對應的點數**（ver -1005）：
+     時間的真相是計量表，所以「至少 3 秒」也要寫在計量表上，不另存一份秒數。 */
   state.saintUsedThisBattle = true;                   // 與聖徒化／惡夢化同槽（一場一次）
-  if(api.resetEnergy) api.resetEnergy();              // 消耗全部破防值
+  if(api.setEnergy) api.setEnergy(Math.max(en, Math.min(100, (c.minSec||3)*100/baseSec)));
   /* ⚠ 發動**那一刻**先把場上的攻擊圈收掉（ver -871，Ray：「索拉娜的共鬥發動時
      不會清場上的攻擊圈」）—— 不清的話紅圈掛著陪整段 cut-in、一路留進無敵窗。
      排程一併歸零；窗開起（startCoop）那邊照舊再 reset＋scheduleAssault。 */
@@ -150,20 +166,32 @@ export function activateCoop(dir){
   { const vk = SFX.pickRot(c.voice);
     if(vk) SFX.playVoice(asset(vk), sfxGain(vk)); }
   playSlash(dir);
-  playCutin(()=>{ if(state.over) return; startCoop(sec); },
+  playCutin(()=>{ if(state.over) return; startCoop(); },
     /* ⚠ 英文讀**卡上的 `install.en`**（ver -894 由 PACK 改成 FANGS，Ray 指定）——
        以前寫死在這裡，改名要動兩處（鐵律 7）。卡沒寫才回去用預設。 */
     (L.battle && L.battle.coopMode || '共鬥')
       +'<span class="cutin-en">'+(((card.install&&card.install.en)||"PREDATOR'S FANGS")+'!!')+'</span>',
     card.cutin || 'ci_sorana_predator', { noShot:true });
 }
-function startCoop(sec){
+/* 匯率（鐵律 7）：滿表 100 點 ＝ `baseSec` 秒。發動、抽表、點錯縮短、Lv9 補時
+   全部走這一條 —— 呼叫端不自己乘一次。 */
+function coopBaseSec(){
+  const c = ((GAME_CONFIG.partners && GAME_CONFIG.partners[state.pickedPartner])||{}).coop || {};
+  return (c.baseSec||12) + prog.girlBonus(state.pickedPartner,'coopSec');
+}
+/* 把「現在的破防值」發佈成無敵窗的結束時刻（唯一的推導點）。 */
+function coopPublish(){
+  const left = Math.max(0, state.energy) * coopBaseSec()/100;   // 秒
+  state.coopUntil = Date.now() + left*1000;
+  if(api.coopImmune) api.coopImmune(state.coopUntil);
+}
+let coopLast = 0;
+function startCoop(){
   if(state.over) return;
   enterCoop();
   api.resetEnemyTimers(); state.enemyAtkSuppressUntil = 0; api.scheduleAssault();
-  const until = Date.now() + sec*1000;
-  state.coopUntil = until;
-  if(api.coopImmune) api.coopImmune(until);            // 開無敵窗（partner.setImmuneUntil）
+  coopLast = Date.now();
+  coopPublish();                                       // 開無敵窗（partner.setImmuneUntil）
   const g=$('grid'); if(g) g.classList.add('coop');
   api.floatDmg(L.battle && L.battle.coopMode || '共鬥','50%','20%',true);
   /* ⚠ 發動時指一下「現在該點的格子」（ver -833，Ray：「聖徒夢魘共鬥發動後都要
@@ -171,34 +199,40 @@ function startCoop(sec){
      走既有的 hintCurrentCell（鐵律 8）；只指這一次，之後照盤面自己的提示規則。 */
   if(api.hintCurrentCell) api.hintCurrentCell();
   clearInterval(coopTimer);
-  coopTimer = setInterval(()=>{
-    if(state.over || Date.now() >= state.coopUntil) endCoop();
-  }, 100);
+  coopTimer = setInterval(coopTick, 80);
 }
-/* 點錯 → 縮短無敵窗（combat 的 coopMode 分支呼叫）。 */
-/* ══ 「獵手星」（索菈娜 Lv9，ver -976）：破防值 → 共鬥的延長秒數 ══
-   匯率與發動時**同一條**（`baseSec/100` 秒 per 點，鐵律 7）——
-   呼叫端（`combat.addEnergy`）只交出「這一次加了幾點」，不自己換算。
-   ⚠ 上限夾在那一次發動的滿值（`baseSec` 秒）：不夾的話一路點下去就永遠不會結束。 */
-export function coopExtendByEnergy(points){
-  if(!state.coopMode || !(points>0)) return;
-  const c = ((GAME_CONFIG.partners && GAME_CONFIG.partners[state.pickedPartner])||{}).coop || {};
-  const baseSec = (c.baseSec||12) + prog.girlBonus(state.pickedPartner,'coopSec');
-  const cap = Date.now() + baseSec*1000;
-  state.coopUntil = Math.min(cap, state.coopUntil + points*(baseSec/100)*1000);
-  if(api.coopImmune) api.coopImmune(state.coopUntil);
+/* ══ 抽表：計量表隨時間往下掉，掉到 0 就是窗結束（ver -1005）══
+   ⚠ 用**實際經過的毫秒**扣，不用固定的一格 —— 分頁被節流或掉幀時
+     固定格會讓共鬥憑空變長（同惡夢化那條槽的作法）。
+   ⚠ 每一拍扣完就重新發佈 `coopUntil`：兩邊因此不可能走鐘。 */
+function coopTick(){
+  if(!state.coopMode) return;
+  if(state.over){ endCoop(); return; }
+  const now = Date.now(), dt = Math.max(0, now - coopLast); coopLast = now;
+  const drop = dt/1000 * 100/coopBaseSec();            // 這一拍掉幾點
+  if(api.setEnergy) api.setEnergy(state.energy - drop);
+  if(state.energy <= 0){ endCoop(); return; }
+  coopPublish();
 }
+/* 點錯 → 扣計量表（combat 的 coopMode 分支呼叫）。
+   ⚠ ver -1005 起扣的是**表**不是 `coopUntil`：時間是表推出來的，
+     只扣時間的話畫面上的表不會動，兩邊當場走鐘。
+   ⚠⚠ 「獵手星」（Lv9）的補時**不再有專屬函式**（`coopExtendByEnergy` 已撤）：
+     那顆星解開的是 `combat.addEnergy` 的閘門，加進表裡的點數本身就是時間，
+     上限也自然是表的 100（＝那一場的滿值）。 */
 export function coopShorten(sec){
   if(!state.coopMode) return;
-  state.coopUntil = Math.max(Date.now(), state.coopUntil - Math.max(0,sec)*1000);
-  if(api.coopImmune) api.coopImmune(state.coopUntil);
-  if(Date.now() >= state.coopUntil) endCoop();
+  const drop = Math.max(0, sec) * 100/coopBaseSec();
+  if(api.setEnergy) api.setEnergy(state.energy - drop);
+  if(state.energy <= 0){ endCoop(); return; }
+  coopPublish();
 }
 function endCoop(){
   if(!state.coopMode) return;
   clearInterval(coopTimer); coopTimer = null;
   exitCoop();
   state.coopUntil = 0;
+  if(api.setEnergy) api.setEnergy(0);                  // 表與窗同時見底（ver -1005）
   if(api.coopImmune) api.coopImmune(0);                // 關無敵窗
   const g=$('grid'); if(g) g.classList.remove('coop');
   /* 共鬥時間結束＝飛刀耗盡（obe，ver -818／-822，Ray）——只在**時間到／被縮短到 0**

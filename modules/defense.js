@@ -380,6 +380,17 @@ export function resolveThreat(th){
     const band = (atkStep===1) ? weaponBand(w,'perfect') : nat;
     return { scale:band.scale, hit: hitForce ? 1 : natHit, roll:band.roll };
   };
+  /* ══⚠⚠⚠ **命中被壓成 100% 那一帶就不扣血**（ver -1005，Ray：「安雅反擊命中率
+     100% 時，步槍不應該扣血，只要反擊發生就不扣」）══
+     萊福槍（`Sniper_Falcon`／`Rifle_Shahin`）的黃橘圈是「**會反擊、但仍挨一半／
+     四分之一**」（卡上的 `take`）—— 那個殘傷的意思是「你只擋掉一部分」。
+     可是命中被技能壓成 1 之後，那一發是**保證被反擊打掉**的，再扣一次血就自相矛盾。
+     ⚠ 條件是「**這一帶真的開火**（`band.counter`）**而且**命中被壓成 1」——
+       · 不開火的帶（萊福槍以外的黃圈…）照舊挨打：技能壓的是命中，不是傷害。
+       · 沒有 `hitForce` 時一個字都不變（`take` 照卡上的）。
+     ⚠ 只改「挨不挨那一發」，**判定（`grade`）不動**：完美反擊計數、折秒、免傷、
+       硬直照舊只看 `ratio`（ver -974 的三分法）。 */
+  const takeOf = (band)=> (band.counter && hitForce) ? 0 : (band.take||0);
   let grade='block';   // 判定等級：'counter' | 'perfect' | 'block'（傳給教學層分流，見文末通知）
   /* ⚠⚠ **「真的點到紅圈」與「被技能算成紅圈」要分開報**（ver -887，Ray：
      「我偏向真實點到紅圈就發動，而靠技能強制算成紅圈發動的就不算」）。
@@ -426,9 +437,10 @@ export function resolveThreat(th){
     }else if(bp.take<=0){
       SFX.play(asset('se_guard'), sfxGain('se_guard'));   // 完美防禦音（免傷那一支）
     }
-    if(bp.take>0){
+    const bpTake = takeOf(bp);              // ver -1005：命中壓成 1 的反擊 → 不扣血
+    if(bpTake>0){
       state.lastAssaultUlt = !!th.ult;      // 擋一半也是同一顆圈（ver -932）
-      const dmg=Math.max(1, Math.round(ringDamage(th)*bp.take));
+      const dmg=Math.max(1, Math.round(ringDamage(th)*bpTake));
       /* 聖徒化（ver -755）：橘圈的 take 也是「擋下一部分」那一族 → 半格推進
          （同黃圈；不給的話 enemyAttack 會用全額 +1s，把橘圈打成挨大絕）。 */
       api.enemyAttack(dmg, 'block',
@@ -474,9 +486,10 @@ export function resolveThreat(th){
         api.weaponCounter(fa.scale, fa.hit, fa.roll, 'block');
         staggerOnCounter();
       }
-      if(bb.take>0){
+      const bbTake = takeOf(bb);          // ver -1005：命中壓成 1 的反擊 → 不扣血
+      if(bbTake>0){
         state.lastAssaultUlt = !!th.ult;    // 同上（ver -932）
-        const dmg=Math.max(1, Math.round(ringDamage(th)*bb.take));   // 教學：2 減半 → 1
+        const dmg=Math.max(1, Math.round(ringDamage(th)*bbTake));   // 教學：2 減半 → 1
         api.enemyAttack(dmg, 'block',
           state.saintMode ? state.playerMax/SAINT_BLOCK_DIVISOR : undefined);   // 聖徒化：格擋＝+0.5s
         api.floatDmg(fmt(L.battle.blockDmg,{n:dmg}),'50%','46%',false);

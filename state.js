@@ -167,9 +167,13 @@ export const state = {
      一樣由 saint.js 獨佔寫入（`coopMode` 只有它能寫，同上兩者的規矩）。
      不是盤面模式（不換 16 格、不動血條）——它是一段**無敵窗**：期間免傷（走 partner
      的 immune 窗）、敵攻擊自動完美反擊、無延時懲罰；點錯不受擊但會縮短窗口。
-     秒數＝破防值換算（消耗全部破防值），每場一次（與 saintUsedThisBattle 同槽）。 */
+     ⚠ **破防計量表就是它的碼表**（ver -1005）：發動**不歸零**破防值，窗開著時
+     計量表逐拍往下扣（100 點＝baseSec 秒），扣到 0 就結束；每場一次（同 saintUsedThisBattle）。 */
   coopMode: false,
-  coopTimer: null,   // 100ms 輪詢：now≥coopUntil → 收窗（可被點錯縮短，所以不用固定 setTimeout）
+  coopTimer: null,   // 80ms 抽表：破防值隨時間往下扣，扣到 0 → 收窗（ver -1005）
+  /* ⚠⚠ `coopUntil` 是**推出來的**（ver -1005）：共鬥剩餘時間的唯一真相是
+     `energy`（剩餘秒數 ＝ 破防值 × baseSec/100），saint 每一拍重算這一格並
+     發佈給 partner 的 immuneUntil。不要拿它反推時間，也不要單獨改它。 */
   coopUntil: 0,      // 無敵窗的結束時刻（ms）；與 partner 的 immuneUntil 同步
   /* ══ 獵手的直覺（被動，ver -803）══ 連續 N 輪完美清盤 → 一段破防值加速窗。 */
   svPerfectStreak: 0,    // 連續完美清盤數（斷了歸零）——獵手的戰吼

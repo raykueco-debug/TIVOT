@@ -164,7 +164,7 @@ export function setup(){
     onSaintEnded: tutorial.onSaintEnded,
     // combat 盤面/傷害/UI 原語
     buildGrid, updateBars, startIntervalTimer, resetIntervalDeadline,
-    hitDamage, enemyDamage, floatDmg, markNext, setBoard, resetEnergy,
+    hitDamage, enemyDamage, floatDmg, markNext, setBoard, resetEnergy, setEnergy,
     onEnemyDefeated: finishEnemyOrAdvance,   // 聖徒化擊殺 → 轉下一敵 or（最後一敵）結算（連戰）
     hintCurrentCell,                         // 惡夢化發動時高光第一個該點的號碼（ver -683）
     /* 惡夢化收尾要補判一次被動的門檻（ver -688）：期間不發動，退掉才發動。 */
@@ -1024,6 +1024,9 @@ function hintCurrentCell(){
 }
 // 歸零聖能並更新 C 字計量表（聖徒化開場清零破防值；energy 為 combat 擁有）。
 function resetEnergy(){ state.energy=0; updateEnergyClasp(); }
+/* 直接設定破防值（夾 0~100）＋刷新計量表 —— `energy` 的擁有者是 combat（§3.1），
+   跨模組的寫一律走這支具名 setter（共鬥的抽表／點錯縮短／收窗都經它，ver -1005）。 */
+function setEnergy(v){ state.energy = Math.max(0, Math.min(100, +v||0)); updateEnergyClasp(); }
 
 // 對敵造成傷害（含 overkill / 擊殺凍結計時）
 /* ══ 抗性／弱點／破防增傷（ver -423，Ray 的敵人卡）══════════════════════
@@ -1119,9 +1122,9 @@ function addEnergy(v){
      ⚠ -976 那一版寫「共鬥期間本來就照常累積」是**錯的判讀**（我當時沒問）。 */
   if(state.coopMode && !prog.girlHas(state.pickedPartner,'coopEnergyTime')) return;
   state.energy=Math.min(100,state.energy+gain);
-  /* 索菈娜「獵手星」（Lv9，ver -976）：把**這一份增量**即時換算成共鬥的延長秒數。
-     ⚠ 匯率與發動時同一條（`baseSec/100` 秒 per 點）—— 換算只有 saint 一處在做。 */
-  if(state.coopMode) saint.coopExtendByEnergy(gain);
+  /* 索菈娜「獵手星」（Lv9）：這裡**不必再換算成秒**（ver -1005）——
+     共鬥期間破防計量表就是碼表（saint 的抽表逐拍把它推成 `coopUntil`），
+     所以加進表裡的點數自己就是延長的時間。ver -976 的 `coopExtendByEnergy` 已撤。 */
   // 教學：雙槍引導前破防值封頂於 preFullEnergy（第三盤起放行 → 首擊即滿、交給教學引導）
   if(tutorial.energyCapActive()){
     state.energy=Math.min(state.energy, (GAME_CONFIG.tutorial && GAME_CONFIG.tutorial.preFullEnergy) || 99);
