@@ -106,7 +106,16 @@ export function tryDeathGuard(){
        蕾妮的卡沒寫＝沒有這扇窗（挑戰那一套不動，ver -694）。 */
     if(pas.immuneSeconds){
       startImmune(pas.immuneSeconds);
-      if(pas.immuneHealPct) guardHealUntil = Date.now() + pas.immuneSeconds*1000;
+      /* ══⚠⚠⚠ **回血窗改成「到本盤清盤為止」**（ver -1014，Ray：「獄門天鎖改為
+         同機制」＝跟魂之歸所一樣以盤面為單位；⚠ **免傷那 10 秒不動**（Ray 選 B：
+         「10 秒不是為了增加保命窗口，是有時候瀕死救活結果按太快直接點錯死在那」）
+         —— 那 10 秒是**容錯**，與這扇回血窗是兩件事，所以兩個窗長度不同是刻意的。 */
+      /* ⚠⚠ **順手修掉一個從 ver -986 起就沒作用的 bug**：舊寫法是
+         `if(pas.immuneHealPct) …`，而 -986 已經把卡上的 `immuneHealPct` 改成 **0**
+         （5% 整份移到 Lv4「堅殼星」）—— 於是這扇窗**從來沒有被打開過**，
+         堅殼星等於完全沒生效，而且畫面上沒有任何錯誤訊息。
+         窗要不要開是「這張卡有沒有免傷窗」的事，回多少才是卡＋星的事（見 guardHealPct）。 */
+      guardHealBoard = true;
       /* 被動技計時器（ver -749，Ray：「諾薇兒的被動怎麼沒有計時器？」）——
          免傷窗也走盤外金光柱（與明晰之夢同一支 lucidFlood，鐵律 8），
          升滿＝窗關、到頂自己爆散（combat 端 rAF 收尾）。 */
@@ -142,7 +151,25 @@ const ACTIVE_HANDLERS = {
      ⚠ 回滿在中止**之後**：`exitSaint` 同步收掉 saintMode，血條的語意才回到一般血
        —— 先回滿的話那時的血條還是倒數槽，推滿＝OBE。 */
   lifeReturn(a, act){
-    if(!state.saintMode) return false;   // 保險：非聖徒化不執行
+    /* ══⚠⚠⚠ **ver -1014：一般時間也發得動**（Ray 交卡）══
+       > 「一般時間發動：至本盤清盤為止，每次射擊回復最大體力 5%。
+       >   聖徒化期間發動，強制中止爆發時間，保留已回復之 HP。」
+       ⚠ **這不是把 -889 那條推翻回去**：-888 想做的是「隨時可發＝隨時中止聖徒化」，
+         被 Ray 撤回過兩次。這一版是**兩個情境兩種效果** —— 聖徒化那半一個字沒動。
+       ⚠ 兩個入口早就分開了（main.js 的兩個手勢層 → `tryActive('board')` /
+         `tryActive('saint')`），所以這裡只要按 `state.saintMode` 分流。 */
+    if(!state.saintMode){
+      if(!(act.boardHealPct>0)) return false;      // 卡上沒寫＝這張卡沒有這一半
+      const vo = asset(act && act.voice); if(vo) SFX.playVoice(vo, sfxGain(act.voice));
+      /* 窗在 cut-in **撤下**才開（同即死防禦的免傷窗、同 fireBuff）：
+         演出期間盤面鎖著，從發動那一刻起算等於白送掉一段。
+         ⚠ 開窗那一刻若剛好已經清盤，`onBoardCleared` 會在下一次清盤再拔一次 ——
+           冪等，不必特別處理。 */
+      if(api.playCutin) api.playCutin(()=>{ if(!state.over) vampBoard = true; },
+                                      act.name || '', act.cutin || '', { noShot:true });
+      else vampBoard = true;
+      return true;
+    }
     const vo = asset(act && act.voice); if(vo) SFX.playVoice(vo, sfxGain(act.voice));   // SE 與結局 cut-in 同步（→ vo_nou_return）
     /* ══⚠⚠ **ver -964（Ray 改定）：不再回滿，改成「保留現血量 ＋ 10 秒吸血」** ══
        > Ray：「主動技中止聖徒化，**保留現血量**並發動 10 秒吸血 buff，
@@ -219,6 +246,31 @@ const ACTIVE_HANDLERS = {
  * 判定：當前搭檔有主動技、該技 config 的 context 與傳入情境相符（'any'＝皆可）、
  * 未耗盡每場次數（oncePerBattle）、且有對應 handler → 執行。
  * 任一不符回 false（不執行）。「能否發、屬於誰」全在此——換 partner 即該技消失。 */
+/* ══⚠⚠⚠ **容錯：點錯一次不算**（諾薇兒 Lv2「引路星」，ver -1014，Ray 交卡）══
+   > 「失誤一次不受擊，點擊正確就重置。」
+   這是三個人裡**第一個直接接進核心循環（舒爾特方格）的機制** —— 另外兩位都接在
+   戰鬥外圍（攻擊圈、計量表），這一顆接在**玩家的手**上。
+   · 被吃掉的那一次：不受擊、不破完美清盤、不推延時懲罰、**評價也不算**
+     （Ray：「留著，她就是衝評價女神，這是最開始我給她的定位」）。
+   · **連擊不斷**：她整套的價值就在 combo 疊傷，斷了的話「不算」只在計分上成立，
+     手感上還是被打斷一次。
+   · 「點擊正確就重置」＝下一次點對就重新上膛（`armMissGuard`）。
+   ⚠ 狀態的擁有者是 partner（誰插＝點對、誰拔＝吃掉一次，鐵律 9）；判定與扣血
+     在 combat.tap，那裡只問這一支（鐵律 8）。
+   ⚠ 它與獄門天鎖那 10 秒免傷是**同一件事的兩層**（Ray：「10 秒不是為了增加保命
+     窗口，是有時候瀕死救活結果按太快直接點錯死在那」）—— 一個防手滑、一個防手快。 */
+let missGuardArmed = true;
+export function armMissGuard(){ missGuardArmed = true; }
+export function tryMissGuard(){
+  if(!missGuardArmed) return false;
+  if(!prog.girlHas(state.pickedPartner, 'missGuard')) return false;
+  missGuardArmed = false;
+  /* 被擋下來的那一聲（ver -1014，Ray：「點錯被擋的 se 等等補」）——
+     鑰匙寫在卡上（`partners.<who>.missGuardSe`，鐵律 1），沒填就不出聲。 */
+  const p = currentPartner(), k = p && p.missGuardSe;
+  if(k && asset(k)){ try{ SFX.play(asset(k), sfxGain(k)); }catch(_){} }
+  return true;
+}
 export function tryActive(context){
   /* ⚠ `noPartner`（ver -375）：這一場不准用搭檔技（劇情插入戰）。同 saint 的作法 ——
      擋在唯一的發動點上，不要在每個呼叫端各擋一次。 */
@@ -257,14 +309,24 @@ let lowHpTimer = null;    // 10 秒 buff 計時器
    回血2%」「life return 改為…10 秒免傷」「免傷仍算受擊，只是不扣血」）══
    兩支技共用同一扇窗（`immuneUntil`）：窗開著時 `combat.enemyAttack` **只跳過
    扣血那一行** —— 受擊計數、破無傷、失誤折秒、震動特效全部照走（Ray 明訂）。
-   `guardHealUntil` 是**即死防禦專屬**的第二扇窗：期間普攻每次回血
+   `guardHealBoard` 是**即死防禦專屬**的第二扇窗（ver -1014 起以**盤**為單位）：期間每次射擊回血
    （比例在諾薇兒的卡上 `immuneHealPct`）—— 生命歸還的免傷不回血。
    鐵律 9：誰插的＝tryDeathGuard／lifeReturn；誰拔的＝時間到（唯一事件）；
    `reset()` 開場歸零。 */
 let immuneUntil = 0;
-let guardHealUntil = 0;
+/* ══⚠⚠ **盤面窗**（ver -1014，Ray：「限定在一個盤面內有效，不算秒數，清盤就結束」）══
+   兩扇回血窗都改成以**盤**為單位（§0.5 的「盤」＝一次清盤）：
+     · `guardHealBoard` ＝獄門天鎖的免傷回血（Lv4 堅殼星）
+     · `vampBoard`      ＝魂之歸所在**一般時間**發動的回血
+   鐵律 9：誰插的＝各自的發動點；**誰拔的＝`onBoardCleared` 這唯一一個事件**；
+   `reset()` 開場歸零（不跨場）。
+   ⚠ 為什麼是盤不是秒：份量因此由**盤面大小**決定（9 格最多 9 發＝45%、
+     16 格 80%），而玩家可以自己挑「開盤時發動」——那是技術表現，不是讀秒。
+   ⚠ 免傷窗（`immuneUntil`）**仍然是 10 秒**，不跟著改（見 tryDeathGuard 的說明）。 */
+let guardHealBoard = false;
+let vampBoard = false;
 /* ══ 吸血窗（ver -964，Ray：「發動 10 秒吸血 buff，一發回復玩家最大血量 5%」）══
-   生命歸還**專屬**的第三扇窗。與 `guardHealUntil` 是**兩件事**（一個是即死防禦的
+   生命歸還**專屬**的第三扇窗。與 `guardHealBoard` 是**兩件事**（一個是即死防禦的
    免傷附贈、一個是主動技本體），但問「這一發回多少血」的地方只有一個
    （`shotHealPct()`，鐵律 7/8）—— 兩扇窗同時開著取**大**的那一個，不相加：
    它們是兩個獨立的來源，疊起來只會讓數值失控（同「Counter 與高裝藥彈不疊乘」）。
@@ -279,7 +341,7 @@ export function immuneActive(){ return Date.now() < immuneUntil; }
    正是共鬥「無敵」要的語意（Ray）。 */
 export function setImmuneUntil(ts){ immuneUntil = ts||0; }
 function guardHealPct(){
-  if(Date.now() >= guardHealUntil) return 0;
+  if(!guardHealBoard) return 0;              // ver -1014：改成「到本盤清盤為止」
   const p = currentPartner();
   const pas = p && p.passive;
   if(!(pas && pas.key==='deathGuard')) return 0;
@@ -302,12 +364,22 @@ function vampHealPct(){
      它是「這扇窗回不回血」的旋鈕，哪天要加回來只要填一個數字（鐵律 1）。 */
   return (act.lifestealPct || 0) + prog.girlBonus(state.pickedPartner, 'lifeReturnPct');
 }
+/* ══ 魂之歸所在**一般時間**發動的回血（ver -1014）══ 與上面那一支是**兩件事**：
+   那一支是聖徒化期間中止之後那扇（秒數制、目前不回血），這一支是新的
+   「一般時間發動 → 到本盤清盤為止，每發回 `boardHealPct`」。
+   ⚠ 比例寫在**卡上**（`active.boardHealPct`，鐵律 1）——技能文案上那個 5% 就是它。 */
+function vampBoardPct(){
+  if(!vampBoard) return 0;
+  const p = currentPartner(), act = p && p.active;
+  if(!(act && act.key==='lifeReturn')) return 0;
+  return act.boardHealPct || 0;
+}
 /* ══ 「這一發回多少血（佔 playerMax 的比例）」的**唯一**查詢點（ver -964）══
    日後再多一扇窗也是加在這裡，不要在呼叫端各問一次（鐵律 7/8）。
    ⚠ 「什麼時候回」不歸這裡管 —— 那是 `combat.shotHeal()` 一支
      （ver -965 起：普攻／雙槍破防／overkill 三種射擊都算，Ray：「放寬吧，
      強化諾的奶媽感」）。 */
-export function shotHealPct(){ return Math.max(guardHealPct(), vampHealPct()); }
+export function shotHealPct(){ return Math.max(guardHealPct(), vampHealPct(), vampBoardPct()); }
 /* ══ 生命歸還那一扇窗現在開著嗎（ver -971）══ 吸血是它、連擊延續也是它、
    引路星的全程指引還是它 —— **一扇窗三個效果**（見諾薇兒卡上的 `comboKeepSeconds`）。
    ⚠ 這一支只回答「開著嗎」；**要不要吃**由呼叫端各自問卡／問星（鐵律 7）。 */
@@ -541,6 +613,10 @@ function fireEnergyBuff(sec){
   if(api.lucidFlood) api.lucidFlood(sec);
 }
 export function onBoardCleared(clean){
+  /* ══ 盤面窗的**唯一**拔旗點（ver -1014，鐵律 9）══ 放在最前面：底下那幾道
+     守門（不是索菈娜就 return、變身期間就 return）不該影響「清盤了」這件事。 */
+  guardHealBoard = false;
+  vampBoard = false;
   const p = currentPartner();
   const pas = p && p.passive;
   if(!(pas && pas.key==='perfectStreak')) return;
@@ -682,7 +758,8 @@ export function reset(){
      那裡才知道這一場接不接得上上一格（鐵律 9：一個狀態一個擁有事件）。 */
   clearTimeout(lowHpTimer); lowHpTimer=null;
   lowHpArmed = true;
-  immuneUntil = 0; guardHealUntil = 0;        // 免傷窗不跨場（ver -740）
-  vampUntil = 0;                              // 吸血窗不跨場（ver -964）
+  immuneUntil = 0; guardHealBoard = false;    // 免傷窗不跨場（ver -740）；回血窗改盤面制（-1014）
+  vampUntil = 0; vampBoard = false;           // 吸血窗不跨場（ver -964／-1014）
+  missGuardArmed = true;                      // 容錯（引路星）開場上膛（ver -1014）
   burstBuffUntil = 0;                         // 夢境破碎的反擊增益窗不跨場（ver -974）
 }

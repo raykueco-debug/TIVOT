@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.09-1013';
+export const VERSION = 'ver 2026.09.09-1014';
 
 export const GAME_CONFIG = {
 
@@ -451,7 +451,7 @@ export const GAME_CONFIG = {
          ⚠ 這個 `name` **戰鬥中也會印**（`partner.js` 的 cut-in 標題與浮字都讀它），
            所以改這裡就等於改了畫面上那一行；浮字另有一份在 i18n（`L.battle.lifeReturn`），
            兩邊都改了。 */
-      active:{ key:'lifeReturn', name:'魂之歸所', en:'Soul Return', context:'saint',
+      active:{ key:'lifeReturn', name:'魂之歸所', en:'Soul Return', context:'any',
                cutin:'cutin_return', voice:'vo_nou_return',   // ver -711：她自己的語音
                /* ══⚠⚠⚠ **ver -986：基礎不再吸血**（Ray 選 (C)）══ 吸血整組移到
                   Lv5「引路星」（`lifeReturnPct` ＋ `lifeReturnSec`）—— 那顆星 Ray 交卡時
@@ -466,10 +466,26 @@ export const GAME_CONFIG = {
                   · 連擊延續 -986 還在基礎，**-988 移到 Lv5「引路星」**。
                   ⚠ 兩個秒數都歸 0 ＝**基礎不開那扇窗**；引路星的 `lifeReturnSec:15`
                     是**絕對值**，窗長＝`max(卡上兩個秒數) ＋ 星`。 */
-               lifestealSeconds:0, lifestealPct:0,            // ver -986/-988：不吸血
-               comboKeepSeconds:0,                            // ver -988：連擊延續移到引路星
-               desc:'發動方式：聖徒化期間戰鬥畫面上滑。<br>'
-                   +'聖徒化期間發動，強制中止爆發時間，保留已回復之 HP。' },
+               lifestealSeconds:0, lifestealPct:0,            // ver -986/-988：那一扇（秒數制）窗不吸血
+               comboKeepSeconds:0,                            // ver -988：連擊延續曾在引路星（-1014 起無人給）
+               /* ══⚠⚠⚠ **ver -1014（Ray 交卡）：一般時間也發得動，而且會回血** ══
+                  > 「一般時間發動：至本盤清盤為止，每次射擊回復最大體力 5%。
+                  >   聖徒化期間發動，強制中止爆發時間，保留已回復之 HP。」
+                  · `context:'any'` ＝兩個手勢入口都吃（main.js 的兩層上滑早就分開了，
+                    `tryActive('board')` / `tryActive('saint')`），**聖徒化那半一個字沒動**。
+                  · `boardHealPct` ＝一般時間那扇窗每一發回多少（＝文案上的 5%）。
+                  ⚠⚠ 這**不是**把 -889 那條推翻回去：-888 想做的是「隨時可發＝隨時中止
+                    聖徒化」，被 Ray 撤回過兩次。這一版是**兩個情境兩種效果**。
+                  ⚠ 窗以**盤**為單位不算秒（Ray：「清盤就結束」）——份量因此由盤面大小
+                    決定（9 格最多 45%、16 格 80%），而玩家可以自己挑「開盤時發動」，
+                    那是技術表現不是讀秒。實作見 `partner.vampBoardPct`。 */
+               boardHealPct:0.05,
+               desc:'發動方式：戰鬥畫面上滑。<br>'
+                   +'一般時間發動：至本盤清盤為止，每次射擊回復最大體力 5%。<br>'
+                   +'聖徒化期間發動：強制中止爆發時間，保留已回復之 HP。' },
+      /* 點錯被容錯擋下的那一聲（ver -1014，Ray：「點錯被擋的 se 等等補」）——
+         鑰匙填進來就會響（`partner.tryMissGuard` 讀它），沒填就安靜。 */
+      missGuardSe:null,
       /* ══ 無傷擊殺一場 → reload 聖徒化（ver -892 定為兩場，**ver -903 Ray 改成一場**：
          「諾薇兒改無傷一場就恢復聖徒化」）══
          ⚠ 「無傷」是**逐場（逐隻怪）**算的（`state.enemyHitsTaken`，同九星「方舟」
@@ -914,20 +930,28 @@ export const GAME_CONFIG = {
              → 1.5。⚠ Ray 選的是「只調斜率」：「無上限」是對現況的確認
              （聖徒化那一段本來就沒有上限），**普攻 `dmgComboCap:20` 不解除**。 */
           saintComboMul:0.50 },
-        { star:'Guisuyi', skill:'install',           name:'端首星',
-          desc:'聖徒化期間全程指引下一格。',
-          /* ⚠ **「次回指引」＝發動期間不斷高光下一個該點的格**（ver -973 Ray 確認）
-             —— 不是「發動時指一下」（那個 ver -833 就有了）。
-             走既有的「一直指下一格」那條路（`combat.markNext` 的 `hintAlways`，
-             與明晰之夢同一個開關，鐵律 8）—— 不另做一套提示。 */
-          saintHint:1 },
-        { star:'Nahn', skill:'install',              name:'探覓星',
-          desc:'單場無傷擊殺即回填聖徒化。單場戰鬥不可連續使用，同戰役的次場戰鬥生效。',
-          /* ＝既有的 `installReload`（無傷擊殺一場就解槽，ver -903）。
-             「完勝」＝**那一隻無傷擊殺**（Ray 確認，同九星「方舟」的定義，ver -708）。
-             ⚠ 「本場不能再用」不必另寫：解槽掛在**那一隻被清掉**那一刻
-               （`partner.onEnemyCleared`），該場已經結束了。 */
-          saintReload:1 },
+        /* ══⚠⚠⚠ **ver -1014：Lv2 與 Lv5 對調，而且 Lv2 換成全新的效果**（Ray 交卡）══
+           診斷：她的前四顆星全部只在「聖徒化」與「獄門天鎖」那兩扇**一局一次**的窗裡
+           生效 —— 是**事件型**回報；而安雅 Lv1（每一顆圈）、索菈娜 Lv1~3（每一盤）
+           都是**頻率型**。玩家在練到 Lv8 之前感覺不到自己變強，所以在她真正發威之前
+           就把她換掉了 —— 那不是強度問題，是**兌現頻率**問題。
+           ⇒ 容錯是**每一次點擊**都在兌現的東西，放前期正是為了補這條曲線。
+           ⚠ 舊 Lv5「引路星」的效果（魂之歸所後延續連擊增傷 15 秒＋指引）**整顆退場**
+             （Ray：「先不用，本來就是湊數的」）—— 連擊延續的**基礎那 10 秒仍在**
+             （卡上的 `comboKeepSeconds`），沒有一起消失。 */
+        { star:'Asellus Borealis', skill:'install',  name:'引路星',
+          desc:'失誤一次不受擊，點擊正確就重置。並在聖徒化期間全程指引下一格。',
+          /* `missGuard` ＝容錯本體（實作見 `partner.tryMissGuard` ／ `combat.tap`）；
+             `saintHint` ＝聖徒化全程指引（舊「端首星」的那一半，搬過來合併）。
+             ⚠ 被吃掉的那一次**盤面與評價都不算**（Ray：「留著，她就是衝評價女神，
+               這是最開始我給她的定位」）、而且**連擊不斷**。 */
+          missGuard:1, saintHint:1 },
+        { star:'Nahn', skill:'active',               name:'探覓星',
+          desc:'發動彈雨傾洩可回復魂之歸所的使用次數。',
+          /* ver -1014（Ray 交卡）：舊效果（單場無傷擊殺回填聖徒化）搬到 Lv5「端首星」。
+             ⚠ 回填的是**主動技的次數**（`state.partnerActiveUsed`）——
+               掛在雙槍破防真的發動那一刻（`weapon.activateDual`），那是唯一的入口。 */
+          brReloadActive:1 },
         { star:'Tegmine', skill:'passive',           name:'堅殼星',
           desc:'獄門天鎖的十秒免傷期間，每次射擊回復最大體力 5%。'
               +'反擊一次算一發，聖徒化期間不作動。',
@@ -944,17 +968,12 @@ export const GAME_CONFIG = {
                即死防禦接住 → 10 秒窗開著 → 立刻右滑進聖徒化，那幾秒的每一次反擊
                都會推槽。守門在 `combat.shotHeal()` 一支（鐵律 8）。 */
           guardHealPct:0.05, guardHealCounter:1 },
-        { star:'Asellus Borealis', skill:'active',  name:'引路星',
-          desc:'魂之歸所發動後 15 秒內延續聖徒化的連擊增傷，期間全程指引下一格。',
-          /* ══ ver -988（Ray 定稿）：這顆星給的是**連擊延續 ＋ 全程指引** ══
-             · `lifeReturnSec:15` 是**絕對值**（基礎那扇窗是 0 秒＝不開）。
-             · `lifeReturnCombo` ＝連擊延續由它給（-987 之前在基礎的主動技上）。
-             · **吸血整個拿掉**：定稿的這一段不再提「一發回最大體力 5%」——
-               回血現在只存在於獄門天鎖那扇窗（Lv4 堅殼星）。
-             ⚠ 三個效果共用同一扇窗（`partner.vampUntil`，鐵律 7）。
-             ⚠ `lifeReturnHint`＝那扇窗開著時**全程**指引（ver -973 Ray 確認
-               「次回指引」＝不斷高光下一格）—— 一次性的那一下 ver -833 就有了。 */
-          lifeReturnSec:15, lifeReturnCombo:1, lifeReturnHint:1 },
+        { star:'Guisuyi', skill:'install',           name:'端首星',
+          desc:'單場無傷擊殺即回復聖徒化熔斷；同場戰鬥內不可連續使用。同戰役的次場戰鬥生效。',
+          /* ver -1014：由 Lv3「探覓星」搬過來（效果一個字沒改，只換星位）。
+             ⚠ 用字統一成「**熔斷**」（Ray：「聖徒跟夢魘用字都是熔斷」）——
+               聖徒化推滿與夢魘化抽乾是同一件事的兩端，兩邊同一個詞。 */
+          saintReload:1 },
         { star:'Acubens', skill:'install',           name:'斷鉗星',
           desc:'聖徒化時體力降至 1。',
           /* 聖徒化的長度＝倒數槽從**當下血量**推到滿要多久，所以血越少撐越久
@@ -1030,7 +1049,7 @@ export const GAME_CONFIG = {
         { star:'Alhena', skill:'install',          name:'烙印星',
           /* ⚠ Ray 的定稿這一句寫成「回填**聖徒化**」—— 那是諾薇兒的招，已確認是筆誤
              （「是筆誤，改夢魘化」），照實作寫成夢魘化。措辭比照諾薇兒的探覓星。 */
-          desc:'連續三次完美反擊即回填夢魘化。單場戰鬥不可連續使用，同戰役的次場戰鬥生效。',
+          desc:'連續三次完美反擊即回復夢魘化熔斷；同場戰鬥內不可連續使用。同戰役的次場戰鬥生效。',
           /* ＝既有的 `passive.reloadStreak`（ver -887），ver -974 起收成這一級的獎勵
              （同諾薇兒探覓星的作法，Ray：「收」）。守門走卡上的 `reloadNeedStar`。
              ⚠ 「連續三次**紅圈**」數的是 `realGrade` —— 靠技能算成紅圈的不算

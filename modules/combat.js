@@ -147,6 +147,9 @@ export function setup(){
     scheduleAssault: defense.scheduleAssault,
     markNext, buildGrid, resetEnergy,
     addEnergy,                                    // 反擊給破防值（ver -880，見 weapon.counterEnergy）
+    /* 諾薇兒 Lv3「探覓星」（ver -1014）：彈雨傾洩回復主動技次數。
+       `partnerActiveUsed` 的擁有者是 combat，跨模組的寫走具名 setter。 */
+    resetPartnerActive: ()=>{ state.partnerActiveUsed = false; },
     /* 反擊成功 → 通知搭檔的被動（ver -693，明晰之夢：每隻怪第一次反擊時發動）。 */
     /* ver -719：明晰之夢改由 `onThreatResolved` 的判定等級觸發（只有紅圈），
        weapon 那一支已成空殼 —— 這一條留著，日後「開火就觸發」的被動可以接回去。 */
@@ -494,6 +497,7 @@ function tap(num,cell,e){
     cell.classList.add('done'); cell.classList.remove('next'); enemy.shatterCell(cell); glassShards(cell);   // overkill：玻璃碎片落下（ver -805）
     state.combo++; if(state.combo>state.maxCombo) state.maxCombo=state.combo;
     state.correctTaps++;
+    partner.armMissGuard();              // 「點擊正確就重置」（引路星，ver -1014）
     resetIntervalDeadline(); addEnergy(ENERGY_PER_HIT);
     let okDmg=hitDamage()+comboKeepDmg(); if(state.atkBuff) okDmg*=2;   // 連擊延續（ver -971）
     if(inOrder){
@@ -520,6 +524,7 @@ function tap(num,cell,e){
     cell.classList.add('done'); cell.classList.remove('next'); enemy.shatterCell(cell); glassShards(cell);   // 一般點掉也噴玻璃碎片（ver -808，Ray）
     state.combo++; if(state.combo>state.maxCombo) state.maxCombo=state.combo;
     state.correctTaps++;                 // 命中率分子（依序正確點擊）
+    partner.armMissGuard();              // 「點擊正確就重置」（引路星，ver -1014）
     resetIntervalDeadline(); addEnergy(ENERGY_PER_HIT);
     let dmg=hitDamage()+comboKeepDmg(); if(state.atkBuff||state.lowHpBuff) dmg*=2;   // 計時型（Counter）或低血量（高裝藥彈）皆加倍，不疊乘；連擊延續見 comboKeepDmg（ver -971）
     // 暴擊（普攻）：此分支必為普攻（雙槍破防走上面獨立分支，本輪 saintMode 亦 return），暴擊率/加傷隨 critCombo 成長。
@@ -538,6 +543,20 @@ function tap(num,cell,e){
     updateStatus();
   }else{
     // （overkill 免順序已在上方分支攔截；此處必為敵存活時的按錯）
+    /* ══⚠⚠⚠ **容錯：點錯一次不算**（諾薇兒 Lv2「引路星」，ver -1014）══
+       擋在這個 `else` 的**第一行** —— 底下每一件事（破完美清盤、記命中率分母、
+       斷連擊、受擊、共鬥縮窗、計時挑戰加秒）都是「這一次點錯」的後果，
+       而這一顆星說的正是「這一次不算」。
+       ⚠ **評價也不算**（Ray：「留著，她就是衝評價女神，這是最開始我給她的定位」）——
+         所以 `wrongTaps` 那一行也在下面，一起跳過。
+       ⚠ **連擊不斷**：她整套的價值就在 combo 疊傷；斷了的話「不算」只在計分上
+         成立，手感上還是被打斷一次。
+       ⚠ 上膛與否的擁有者是 partner（鐵律 9），這裡只問一句（鐵律 8）。 */
+    if(partner.tryMissGuard()){
+      cell.classList.add('wrong'); setTimeout(()=>cell.classList.remove('wrong'),200);
+      updateStatus();
+      return;
+    }
     // 按錯：紅字期間按錯 → 重擊且紅字消失；否則普通按錯
     state.boardClean=false;
     state.wrongTaps++;                    // 命中率分母（按錯格）

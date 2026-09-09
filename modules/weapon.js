@@ -450,6 +450,12 @@ export function activateDual(){
                              : 'se_luna_dual';
   SFX.playVoice(asset(dualVo), sfxGain(dualVo));
   api.resetEnergy();                           // 破防值歸零 + 刷新計量表（energy 為 combat 擁有）
+  /* ══ 諾薇兒 Lv3「探覓星」（ver -1014）：發動彈雨傾洩 → 回復主動技的使用次數 ══
+     ⚠ 掛在**這一處**＝「彈雨傾洩真的發動了」的唯一時刻（鐵律 8）；
+       `partnerActiveUsed` 的擁有者是 combat（§3.6 那一族），所以走注入的 setter。
+     ⚠ 星鑰匙問 `prog.girlHas`，不是問「現在是不是諾薇兒」—— 日後別人有這顆星
+       也自動吃到（同其餘所有星的作法）。 */
+  if(prog.girlHas(state.pickedPartner,'brReloadActive') && api.resetPartnerActive) api.resetPartnerActive();
   api.playCutin(()=>{
     if(state.over||state.saintMode) return;
     // cut-in 撤下瞬間 → 重置敵大絕與延時（間隔）懲罰倒數，避免發動瞬間被連段
