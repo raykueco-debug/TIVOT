@@ -1062,8 +1062,11 @@ export const GAME_CONFIG = {
              倍率照卡上的 `passive.energyMul`，這裡只給秒數。 */
           activeEnergyBuffSec:10 },
         { star:'Kaus Media', skill:'install',      name:'獵弓星',
-          /* ⚠⚠ 定稿把「橘圈／紅圈」收起來不對玩家講 —— 所以 **Lv4 與 Lv6 的文案
-             一字不差**（Ray 的定稿就是這樣）。實作仍是兩階（`coopAtk` 累計 1→2）。 */
+          /* ⚠⚠⚠ **Lv4 與 Lv6 的文案一字不差，那是刻意的** —— 定稿把「橘圈／紅圈」
+             收起來不對玩家講，Ray 也確認過「不用區隔」。實作仍是**兩階**
+             （`coopAtk` 累計 1→2）。
+             ⚠ **不要把它當成複製貼上的錯誤去「修好」**：看到兩顆星寫同一句是正常的，
+               差別在凹槽亮起的順序與實際傷害，不在字面。 */
           desc:'獵手的共鬥期間，自動反擊攻擊力提升。',
           coopAtk:1 },
         { star:'Alnasl', skill:'passive',          name:'箭頭星',
@@ -1071,6 +1074,7 @@ export const GAME_CONFIG = {
           /* 減量寫在星上（5 − 2 ＝ 3）：門檻的真相仍是卡上的 `passive.streak`。 */
           roarStreakCut:2 },
         { star:'Kaus Borealis', skill:'install',   name:'天弓星',
+          /* ⚠ 與 Lv4「獵弓星」**同一句是刻意的**（見那一顆的說明）。 */
           desc:'獵手的共鬥期間，自動反擊攻擊力提升。',
           coopAtk:1 },
         { star:'Albaldah', skill:'active',        name:'聚落星',
