@@ -85,28 +85,9 @@ function girlLvHtml(key){
      正規的路只有結算發 EXP。沒有它，技能到了根本測不動。
    ⚠ 星名還沒填的（安雅／索菈娜的卡到之前是空的）就印「Lv N」當名字，
      **不要自己編一個**（同 `girlStarName` 那一條）。 */
-/* ══⚠⚠ **管理人：手動改好感度**（ver -982，Ray：「讓管理人可以在伙伴欄手動改好感度」）══
-   ⚠ **只有 `body.testmode` 看得到**（CSS 那一條）：好感的數字平時不對玩家顯示，
-     那是設計 —— 不要順手把它變成常駐 UI。
-   三個熱區：`−` / `＋` 各動 **1**（蕾娜的 0.25 用不到手調，她只吃評價），
-   中間的數字點一下**跳到下一段的地板**（0→20→40→60→80→回 0）——
-   要測段位差分時一顆就到位，不必按二十下。
-   ⚠ 寫入走 `prog.setAffectionDev`（那一支連棘輪的地板一起改，見它的說明）——
-     用 `addAffection` 的話只上得去下不來。
-   ⚠ `who` 寫進屬性（同九星那一族）：卡上顯示的是玩家正在看的那一頁籤。
-   ⚠⚠ **蕾娜不在這裡**：伙伴欄只有 `config.partners` 那幾位，她是監察官不是搭檔。
-     要調她的好感目前只能改 localStorage（`tivot_affection_v1`）—— Ray 要的話再加一格。 */
-function affRowHtml(key){
-  if(!prog.isGirl(key)) return '';
-  const v = (prog.getAffection()||{})[key] || 0;
-  const t = prog.tierOf(v);
-  return '<div class="gs-aff">'
-       +   '<b>好感</b>'
-       +   '<span class="gs-affb" data-aff="'+key+':-1">−</span>'
-       +   '<i class="gs-affv" data-affjump="'+key+'">'+v+'　T'+t+'</i>'
-       +   '<span class="gs-affb" data-aff="'+key+':1">＋</span>'
-       + '</div>';
-}
+/* ⚠ **好感的手動調整 ver -983 搬到飛行畫面的管理人進度面板**（Ray：「那就在
+   飛行畫面調吧」）—— 整備頁不再顯示好感（Ray：「不要顯示好感」）。
+   那一頁四個人都在（含蕾娜，她不是搭檔、伙伴欄本來就沒有她的格子）。 */
 function girlStarListHtml(key){
   if(!prog.isGirl(key)) return '';
   const arr=((GAME_CONFIG.girls||{}).levels||{})[key]||[];
@@ -124,7 +105,27 @@ function girlStarListHtml(key){
          +   '<span>'+(st.desc||'—')+'</span>'
          + '</div>';
   }).join('');
-  return '<div class="gs-perk"><b>星辰</b></div><div class="gs-stars">'+rows+'</div>';
+  return '<div class="gs-stars">'+rows+'</div>';
+}
+/* ══⚠⚠ **星辰收成一顆「技能表」鈕**（ver -983，Ray：「把星辰收斂成『技能表』，
+   點開才開視窗展開」）══ 九列攤在搭檔卡下面正是把手機版撐成一長條的主因。
+   ⚠ 鈕上順手報「已點亮幾顆」：收起來之後那是唯一看得到的進度線索。 */
+let skillOpen = false;
+function skillBtnHtml(key){
+  if(!prog.isGirl(key)) return '';
+  const arr=((GAME_CONFIG.girls||{}).levels||{})[key]||[];
+  if(!arr.length) return '';
+  return '<div class="gs-skillbtn" data-skills="'+key+'">技　能　表　'
+       +   prog.girlLevel(key)+' / '+prog.girlMaxLv()+'</div>';
+}
+function skillWinHtml(key){
+  if(!skillOpen || !prog.isGirl(key)) return '';
+  const p=(GAME_CONFIG.partners||{})[key]||{};
+  return '<div class="gs-skillwin">'
+       +   '<div class="gs-swtitle">'+(p.name||'')+'　技　能　表</div>'
+       +   girlStarListHtml(key)
+       +   '<div class="gs-swclose" data-skillclose="1">關　閉</div>'
+       + '</div>';
 }
 function ensure(){
   if(el && el.parentNode) return el;
@@ -313,7 +314,6 @@ function render(){
        （蕾娜沒有；蕾妮／馬季諾是試玩版的）。⚠ 等級與進度全部問 `progress`
        那兩支（`girlLevel`／`girlProgress`，鐵律 7）—— 這裡一個數字都不自己算。 */
     +     girlLvHtml(pk)
-    +     affRowHtml(pk)          // 管理人限定：手動改好感度（ver -982）
     /* ⚠⚠ 技能說明包成自己的一塊（ver -715，Ray：「伙伴立繪太大了，下方要有足夠
        空間說明主備動技能」）—— 立繪改成**不伸展**（見 CSS 的 `gs-pcard`），
        多出來的高度歸這一塊，塞不下就它自己捲。
@@ -331,9 +331,10 @@ function render(){
     +       '<div class="gs-perk empty"><b>常駐</b><span>—</span></div>'
     /* 女主的九星（ver -980）：唯讀，管理人模式整列可點（見 girlStarListHtml）。
        ⚠ 放在 `.gs-perks` 裡面 —— 那一塊本來就會自己捲，九列塞得下。 */
-    +       girlStarListHtml(pk)
+    +       skillBtnHtml(pk)          // 星辰收成一顆鈕（ver -983）
     +     '</div>'
     +   '</div>'
+    +   skillWinHtml(pk)             // 技能表視窗（蓋在整備頁裡面，ver -983）
     + '</div>');
   bind();
   /* 捲動位置對回去（見這一支開頭）。⚠ 同一幀就設得回去 —— 版面在 innerHTML
@@ -498,29 +499,15 @@ function bind(){
     try{ SFX.menuClick(); }catch(_){}
     render();
   }));
-  /* 管理人：好感 ±1（ver -982）。⚠ 走 `setAffectionDev` —— 它連棘輪的地板一起改。 */
-  el.querySelectorAll('.gs-affb[data-aff]').forEach(d=>d.addEventListener('click', e=>{
-    e.stopPropagation();
-    const [who, dv] = String(d.dataset.aff||'').split(':');
-    if(!prog.isGirl(who)) return;
-    const cur=(prog.getAffection()||{})[who]||0;
-    prog.setAffectionDev(who, cur + (+dv||0));
+  /* 技能表：開／關（ver -983）。⚠ 開著時**不重置捲動位置** —— render 那一支
+     本來就會把 `.gs-stars` 的 scrollTop 記回去（見它開頭那一段）。 */
+  el.querySelectorAll('.gs-skillbtn[data-skills]').forEach(d=>d.addEventListener('click', e=>{
+    e.stopPropagation(); skillOpen=true;
     try{ SFX.menuClick(); }catch(_){}
     render();
   }));
-  /* 管理人：點數字 → 跳到下一段的地板（0→20→40→60→80→回 0，ver -982）。
-     ⚠ 段位的地板問 `prog.tierFloor`（唯一那一支）—— 不要在這裡寫死 20/40/60/80。 */
-  el.querySelectorAll('.gs-affv[data-affjump]').forEach(d=>d.addEventListener('click', e=>{
-    e.stopPropagation();
-    const who=d.dataset.affjump;
-    if(!prog.isGirl(who)) return;
-    const cur=(prog.getAffection()||{})[who]||0;
-    const t=prog.tierOf(cur);
-    /* 已經站在這一段的地板上 → 跳下一段；否則先跳到這一段的地板。
-       ⚠ T5 的地板再點就歸 0（一顆鈕來回，同九星／等級那兩條梯子的手感）。 */
-    const here=prog.tierFloor(t);
-    const next = (cur===here) ? (t>=5 ? 0 : prog.tierFloor(t+1)) : here;
-    prog.setAffectionDev(who, next);
+  el.querySelectorAll('[data-skillclose]').forEach(d=>d.addEventListener('click', e=>{
+    e.stopPropagation(); skillOpen=false;
     try{ SFX.menuClick(); }catch(_){}
     render();
   }));
@@ -547,22 +534,37 @@ function openCharm(barrel){
             onClose(){ render(); } });
 }
 
-/* 一格：**點一下**開那個分類的道具欄換槍；**拖曳**改順位。
+/* 一格：**點一下**開那個分類的道具欄換槍；**長按拖曳**改順位。
    ⚠ 用 pointer 事件自己做拖曳，不用 HTML5 的 drag —— 那一套在觸控上根本不會動。
-   ⚠ 「點」與「拖」靠位移門檻分流（6px）：手指本來就會抖，門檻太小會變成點不動。 */
+   ══⚠⚠⚠ **ver -983：改成真的「長按」才起手**（Ray：「滑動時常常拖到武器順序」）══
+     舊版只看位移門檻（6px），所以**手指從順位格上滑過去就開始拖** —— 而手機版
+     那時整頁是可捲的（見 style.css 那條 480px 的媒體查詢），捲一下就把順序拖亂了。
+     ⚠⚠ **格子下面那行提示本來就寫著「長按拖曳可換順位」** —— 程式沒做，字先寫了。
+       這一版是把程式改成與那句話一致，不是加一條新規矩。
+     作法：`pointerdown` 起一個 `HOLD_MS` 的計時器；**時間到之前只要移動就取消**
+     （那是捲動或滑過去，不是要拖）。時間到才 `armed`，之後照舊按位移拖。
+     ⚠ 版面 -983 起不再整頁可捲，這一條是第二道保險（兩件事一起做才乾淨）。 */
+const SLOT_HOLD_MS = 230;
 function bindSlot(s){
-  let sy=0, moved=false, list=null, h=0, idx=0;
+  let sy=0, moved=false, list=null, h=0, idx=0, armed=false, holdT=0;
+  const disarm=()=>{ clearTimeout(holdT); holdT=0; };
   s.addEventListener('pointerdown', e=>{
-    sy=e.clientY; moved=false;
+    sy=e.clientY; moved=false; armed=false;
     list=[...el.querySelectorAll('.gs-slot')];
     idx=list.indexOf(s); h=s.getBoundingClientRect().height + 8;
     s.setPointerCapture(e.pointerId);
+    disarm();
+    holdT=setTimeout(()=>{ armed=true; s.classList.add('drag');
+      try{ SFX.menuClick(); }catch(_){}   // 起手要有回饋，不然玩家不知道按夠久了沒
+    }, SLOT_HOLD_MS);
   });
   s.addEventListener('pointermove', e=>{
     if(!list) return;
     const dy=e.clientY-sy;
+    /* 還沒按夠久：一移動就取消長按（那是捲動／滑過去）。 */
+    if(!armed){ if(Math.abs(dy)>=6) disarm(); return; }
     if(!moved && Math.abs(dy)<6) return;
-    if(!moved){ moved=true; s.classList.add('drag'); }
+    if(!moved){ moved=true; }
     e.preventDefault();
     s.style.transform='translateY('+dy+'px)';
     /* 其餘的格子讓位：跨過半格就位移一格。 */
@@ -577,6 +579,10 @@ function bindSlot(s){
   });
   const end=e=>{
     if(!list) return;
+    disarm();
+    if(!armed){ list=null; moved=false; s.classList.remove('drag');
+                openCat(s.dataset.cat); return; }   // 沒按夠久 → 當成點一下
+    armed=false;
     const dy=e.clientY-sy;
     const to=Math.max(0, Math.min(list.length-1, idx + Math.round(dy/h)));
     list.forEach(o=>{ o.style.transform=''; });
@@ -595,7 +601,8 @@ function bindSlot(s){
     }
   };
   s.addEventListener('pointerup', end);
-  s.addEventListener('pointercancel', ()=>{ if(list){ list.forEach(o=>o.style.transform='');
+  s.addEventListener('pointercancel', ()=>{ disarm(); armed=false;
+    if(list){ list.forEach(o=>o.style.transform='');
     s.classList.remove('drag'); list=null; moved=false; } });
 }
 
@@ -673,6 +680,7 @@ export function open(opts){
 }
 export function close(){
   closeGuide();          // 教學聚光燈跟著頁一起收（ver -743）
+  skillOpen=false;       // 技能表視窗不跨開關（ver -983，同 pendingPartner 的理由）
   pendingPartner=null;
   lockedTo=null;         // 鎖定不跨開關（ver -839）
   if(!el) return;

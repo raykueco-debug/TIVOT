@@ -540,8 +540,14 @@ export function resetWeaponSwitch(){
      不記回去的話整備頁與戰鬥裡會各說各話。 */
   const w=WEAPONS[state.equippedWeapon];
   if(w && w.cat) load.setPick(w.cat, state.equippedWeapon);
-  /* 固定模式：**永遠從一順位開始**（Ray 指定）。輪轉模式沿用玩家帶進來的那一把。 */
-  if(load.mode()==='fixed'){ const f=load.firstWeapon(); if(f) applyWeapon(f); }
+  /* ══⚠⚠⚠ **ver -983：每一場開戰都回到玩家設定的一順位**（Ray：「把副武器每次開戰
+     都固定成玩家設定的順序」）══ 兩種模式都適用 —— 輪轉模式**不再沿用上一場
+     打完時停在哪一把**（那等於「這一場帶哪把槍」由上一場的最後一次切換決定，
+     玩家在整備頁排的順序反而做不了主）。
+     ⚠ **只有本篇**（`storyMode()`）：試玩版的出擊整備是玩家在**開打前那一頁**
+       直接挑的，把它蓋成一順位等於把那一頁的選擇丟掉（同「本篇與試玩版是兩套」）。
+     ⚠ 在上面那一行**記回編成之後**才做：順序是「先把現況存回去，再依編成歸位」。 */
+  if(storyMode() || load.mode()==='fixed'){ const f=load.firstWeapon(); if(f) applyWeapon(f); }
   renderSwitch();
 }
 

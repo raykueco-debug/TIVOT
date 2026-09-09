@@ -3595,20 +3595,6 @@
   #gearSheet .gs-glv-bar i{display:block;height:100%;border-radius:2px;
     background:linear-gradient(90deg,var(--gold-dim),var(--gold));
     transition:width .35s ease;}
-  /* ══ 管理人：手動改好感度（ver -982）══ 只有 `body.testmode` 看得到這一條 ——
-     好感的數字**平時不對玩家顯示**（那是設計，不要順手把它變成常駐 UI）。
-     版面沿用等級條那一列的語彙（同樣的字級與金色），只是右邊多兩顆 ±。 */
-  #gearSheet .gs-aff{display:none;}
-  body.testmode #gearSheet .gs-aff{display:flex;align-items:center;gap:6px;
-    margin-top:5px;font-size:10px;color:var(--gold-dim);
-    border-radius:3px;outline:1px dashed rgba(214,178,92,.35);outline-offset:3px;}
-  #gearSheet .gs-aff b{font-weight:normal;font-size:12px;letter-spacing:1px;color:var(--gold);}
-  /* 數字本身也是熱區：點一下跳到下一段的地板（0→20→40→60→80→0）。 */
-  #gearSheet .gs-affv{flex:1 1 auto;cursor:pointer;color:var(--gold);
-    font-variant-numeric:tabular-nums;}
-  #gearSheet .gs-affb{cursor:pointer;min-width:22px;text-align:center;
-    padding:1px 0;border-radius:4px;background:rgba(212,169,74,.14);color:var(--ink);}
-  #gearSheet .gs-affb:active{background:rgba(212,169,74,.34);}
   /* 技能說明：吃掉右欄剩下的高度，塞不下就自己捲（不要把立繪擠掉）。 */
   #gearSheet .gs-perks{flex:1 1 auto;min-height:0;overflow-y:auto;}
   #gearSheet .gs-perk{margin-top:8px;font-size:10px;line-height:1.65;color:var(--gold-dim);}
@@ -3616,6 +3602,24 @@
   /* 常駐技能：未實裝的留空欄（ver -715）。整格壓暗，但看得見它存在。 */
   #gearSheet .gs-perk.empty{opacity:.4;}
   #gearSheet .gs-perk.empty b{color:var(--gold-dim);}
+  /* ══ 技能表視窗（ver -983，Ray：「把星辰收斂成『技能表』，點開才開視窗展開」）══
+     九列星辰本來是攤在搭檔卡下面的 —— 那正是把手機版撐成一長條的主因。
+     現在收成一顆鈕，點開才蓋一張視窗。⚠ 蓋在 `#gearSheet` 裡面（`inset:0`），
+     不另開一層 z-index：它是這一頁自己的東西，關掉就回到這一頁。 */
+  #gearSheet .gs-skillbtn{margin-top:8px;padding:6px 10px;border-radius:6px;
+    border:1px solid var(--gold-dim);background:rgba(212,169,74,.10);
+    color:var(--gold);font-size:11px;letter-spacing:1px;cursor:pointer;text-align:center;}
+  #gearSheet .gs-skillbtn:active{background:rgba(212,169,74,.24);}
+  #gearSheet .gs-skillwin{position:absolute;inset:0;z-index:5;display:flex;
+    flex-direction:column;padding:calc(env(safe-area-inset-top,0px) + 14px) 16px
+                                  calc(env(safe-area-inset-bottom,0px) + 14px);
+    background:radial-gradient(120% 90% at 50% 20%,#1a1330,#07050c 92%);}
+  #gearSheet .gs-skillwin .gs-swtitle{font-size:12px;letter-spacing:3px;color:var(--gold);
+    text-align:center;margin-bottom:10px;}
+  #gearSheet .gs-skillwin .gs-stars{flex:1 1 auto;min-height:0;overflow-y:auto;}
+  #gearSheet .gs-skillwin .gs-swclose{margin-top:10px;padding:8px;border-radius:6px;
+    border:1px solid var(--gold-dim);color:var(--gold);font-size:12px;letter-spacing:4px;
+    text-align:center;cursor:pointer;}
   /* ── 一次性教學（雪鐵龍箭，同旅店那一套）── */
   #gearSheet .gs-tip{position:fixed;inset:0;z-index:3;background:rgba(4,3,7,.62);}
   #gearSheet .gt-arrow{position:absolute;transform:translate(-50%,-100%);font-style:normal;
@@ -3630,13 +3634,24 @@
     text-shadow:1px 0 0 rgba(0,0,0,.92),-1px 0 0 rgba(0,0,0,.92),
                 0 1px 0 rgba(0,0,0,.92),0 -1px 0 rgba(0,0,0,.92);}
   #gearSheet .gs-slot.spot{z-index:4;}
-  /* 窄螢幕：左右改成上下（右邊那張卡本來就只放一張立繪與兩段字）。 */
+  /* ══⚠⚠⚠ **窄螢幕照樣左右分欄**（ver -983，Ray：「整備欄該優化一下了，手機上是
+     一長條的，很不直覺，而且滑動時常常拖到武器順序，要一眼看完，左槍右人」）══
+     ⚠⚠ **推翻舊的上下堆**：`flex-direction:column` ＋ `overflow-y:auto` 就是那條
+       「一長條」—— 而且它讓**捲動與拖曳搶同一個手勢**（順位格的拖曳只要 6px 位移
+       就起手），所以一捲就把武器順序拖亂了。
+     · 版面：**左槍右人**（與桌機同一個分割，不再換一套）
+     · **整頁不捲**（`overflow:hidden`）：一眼看完是這一版的驗收條件。
+       右欄擠得下的關鍵是「星辰」收成一顆鈕（技能表視窗），不再攤九列。
+     ⚠ 左欄給固定比例（順位格與開關寬度是固定的），剩下全給立繪那一欄。 */
   @media (max-width:480px){
-    /* ⚠ 上下堆的時候左欄**不要伸展**（`flex:0 0 auto`）—— 伸展的話模式說明與搭檔卡
-       之間會空出一大塊；右欄才是該吃掉剩餘高度的那一邊（立繪自己會撐）。 */
-    #gearSheet .gs-body{flex-direction:column;gap:10px;overflow-y:auto;}
-    #gearSheet .gs-left{flex:0 0 auto;}
-    #gearSheet .gs-right{flex:1 1 auto;min-height:0;}
+    #gearSheet{padding-left:10px;padding-right:10px;}
+    #gearSheet .gs-body{flex-direction:row;gap:8px;overflow:hidden;}
+    #gearSheet .gs-left{flex:1 1 0;min-width:0;overflow:hidden;}
+    #gearSheet .gs-right{flex:1 1 0;min-width:0;min-height:0;}
+    /* 順位格壓縮一點，三格＋開關才進得去半個螢幕。 */
+    #gearSheet .gs-slot{padding:5px 7px;gap:6px;}
+    #gearSheet .gs-hint{font-size:9px;margin-top:4px;}
+    #gearSheet .gs-perk{margin-top:6px;font-size:9.5px;line-height:1.55;}
     #gearSheet .gs-pcard{min-height:180px;max-height:38vh;}
   }
   /* 道具欄裡的「裝　備」（ver -422）：整備頁點一格進來時才有。 */

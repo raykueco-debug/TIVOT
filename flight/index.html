@@ -257,6 +257,12 @@
   #progPanel .pr-k{color:#9a927f;}
   #progPanel .pr-v{color:#e8e2d2;font-variant-numeric:tabular-nums;}
   #progPanel .pr-out{color:#7a6f5c;}
+  /* ver -983：好感那幾列可以直接調（見 renderProg）。 */
+  #progPanel .pr-v{display:flex;align-items:center;gap:6px;justify-content:flex-end;}
+  #progPanel .pr-aff{font-style:normal;cursor:pointer;}
+  #progPanel .pr-b{cursor:pointer;min-width:20px;text-align:center;font-weight:normal;
+    border-radius:4px;background:rgba(201,162,39,.16);color:#e8e2d2;}
+  #progPanel .pr-b:active{background:rgba(201,162,39,.36);}
   #progPanel .pr-sec{margin-top:12px;font-size:10px;letter-spacing:.2em;color:var(--gold);opacity:.75;}
   #progPanel .pr-note{margin-top:10px;font-size:10px;line-height:1.6;color:#7a7266;}
   #progClose{margin-top:12px;width:100%;background:transparent;border:1px solid rgba(201,162,39,.5);
@@ -2373,10 +2379,29 @@ function affection(who){
   const v=AFFECTION[who];
   return (typeof v==='number') ? v : AFFECTION_DEFAULT;
 }
+/* ══⚠⚠⚠ **ver -983：改成真的可以調**（Ray：「那就在飛行畫面調吧」）══
+   舊版有兩個問題，兩個都會讓「手動改好感」失真：
+     ① `v|0` **把小數截掉** —— 蕾娜是唯一拿得到小數的（S 級 +0.25），
+        `script/progress.js` 那一支早就註明「哪天要在飛行頁加減好感，那一行也得跟著改」。
+     ② **沒有動棘輪的地板**（`tivot_aff_floor_v1`）—— 主遊戲的 `addAffection` 會把值
+        往上夾到地板，所以只在這裡調小，下一次加好感就被彈回去，看起來像「改不動」。
+   ⚠ 對齊 1/4、夾在 [0,100]、地板照主遊戲的同一條規矩（達到那條線才抬）——
+     三件事都與 `progress.setAffectionDev` **是同一套規則的兩份**（本頁非 module，
+     import 不到那一支）。**改一邊要改另一邊**，兩邊註解互指。 */
+const AFF_FLOOR_KEY='tivot_aff_floor_v1';
+const AFF_MAX_F=100, TIER_W_F=20;
+function tierFloorF(t){ return Math.max(1, (Math.min(5,Math.max(1,t|0))-1)*TIER_W_F); }
 function setAffection(who, v){
   if(!(who in AFFECTION)) return null;
-  AFFECTION[who]=Math.max(0, v|0);
+  const val = Math.min(AFF_MAX_F, Math.max(0, Math.round((+v||0)*4)/4));
+  AFFECTION[who]=val;
   try{ localStorage.setItem(AFFECTION_KEY, JSON.stringify(AFFECTION)); }catch(e){}
+  try{
+    const fl=JSON.parse(localStorage.getItem(AFF_FLOOR_KEY)||'null') || {};
+    const nf=tierFloorF(progTier(val));
+    fl[who] = (val>=nf) ? nf : 0;
+    localStorage.setItem(AFF_FLOOR_KEY, JSON.stringify(fl));
+  }catch(e){}
   return AFFECTION[who];
 }
 
@@ -5035,12 +5060,21 @@ function renderProg(){
   rows.push(`<div class="pr-row"><span class="pr-k">章節 STAGE</span><span class="pr-v">${st}</span></div>`);
   rows.push(`<div class="pr-row"><span class="pr-k">主角</span><span class="pr-v">${playerName()}</span></div>`);
   rows.push('<div class="pr-sec">好　感</div>');
+  /* ══ ver -983：這幾列**可以直接調**（Ray：「那就在飛行畫面調吧」）══
+     三個熱區：`−`／`＋` 各動 1；中間的數字點一下**跳到下一段的地板**
+     （0→20→40→60→80→回 0）—— 要測段位差分時一顆就到位。
+     ⚠ 四個人**都在這裡**（含蕾娜）：她不是搭檔，整備頁的伙伴欄沒有她的格子，
+       而她正是唯一拿得到小數好感的那一位。 */
   for(const [k,nm] of PROG_CHARS){
     const v=affection(k), t=progTier(v);
     /* 不在隊的人照樣列出來但標明 —— 「這個人這一章不在」本身就是要看的資訊。 */
     const on=(typeof inParty==='function') ? inParty(k,st) : true;
     rows.push(`<div class="pr-row"><span class="pr-k${on?'':' pr-out'}">${nm}${on?'':'（未入隊）'}</span>`
-            + `<span class="pr-v${on?'':' pr-out'}">${v}　tier ${t}・${PROG_TIER_NAME[t-1]}</span></div>`);
+            + `<span class="pr-v${on?'':' pr-out'}">`
+            +   `<b class="pr-b" data-aff="${k}:-1">−</b>`
+            +   `<i class="pr-aff" data-affjump="${k}">${v}　tier ${t}・${PROG_TIER_NAME[t-1]}</i>`
+            +   `<b class="pr-b" data-aff="${k}:1">＋</b>`
+            + `</span></div>`);
   }
   /* 可播閒聊組數：內容缺口只會表現成「對話鈕好像沒反應」，很難回頭找，
      所以順手把 talkDebug 的數字放進來（talks.js 的註解就在警告這件事）。 */
@@ -5050,8 +5084,22 @@ function renderProg(){
     rows.push(`<div class="pr-row"><span class="pr-k">本章可播組數</span><span class="pr-v">${n}</span></div>`);
     if(!n) rows.push('<div class="pr-note">⚠ 這一章一組都播不出來。多半是 talks.js 的 PARTY 入隊章節與對話裡開口的人對不上（整組會被硬條件排除）。</div>');
   }
-  rows.push('<div class="pr-note">唯讀。改值用 setStage(n) / setAff(who,v)，改完重新開這個面板。</div>');
+  rows.push('<div class="pr-note">好感可直接按 ± 調整，點數字跳下一段。其餘唯讀 —— 章節用 setStage(n)。</div>');
   b.innerHTML=rows.join('');
+  /* 事件在每次 render 之後重掛（`innerHTML` 換掉了整批節點）。 */
+  b.querySelectorAll('.pr-b[data-aff]').forEach(d=>d.addEventListener('click',e=>{
+    e.stopPropagation();
+    const [who,dv]=String(d.dataset.aff||'').split(':');
+    setAffection(who, affection(who) + (+dv||0));
+    renderProg();
+  }));
+  b.querySelectorAll('.pr-aff[data-affjump]').forEach(d=>d.addEventListener('click',e=>{
+    e.stopPropagation();
+    const who=d.dataset.affjump, cur=affection(who), t=progTier(cur), here=tierFloorF(t);
+    /* 已經站在這一段的地板上 → 跳下一段；否則先跳到這一段的地板。T5 再點歸 0。 */
+    setAffection(who, (cur===here) ? (t>=5 ? 0 : tierFloorF(t+1)) : here);
+    renderProg();
+  }));
 }
 if(ADMIN){
   const pb=document.getElementById('progBtn'), pv=document.getElementById('progView');
