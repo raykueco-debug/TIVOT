@@ -88,6 +88,27 @@ function girlLvHtml(key){
 /* ⚠ **好感的手動調整 ver -983 搬到飛行畫面的管理人進度面板**（Ray：「那就在
    飛行畫面調吧」）—— 整備頁不再顯示好感（Ray：「不要顯示好感」）。
    那一頁四個人都在（含蕾娜，她不是搭檔、伙伴欄本來就沒有她的格子）。 */
+/* ══⚠⚠ **內文裡的技能名也要上對應色**（ver -992，Ray 指定）══
+   說明文字裡提到「聖徒化」「獄門天鎖」「魂之歸所」時，那三個詞要各自穿上
+   變身金／被動淡藍／主動淡紅 —— 玩家掃過去就知道這一句在講哪一招。
+   ⚠ 名字**從卡上讀**（`install/passive/active` 的 `name`，鐵律 1）：
+     安雅與索菈娜換一組名字就自動跟著換，這裡不寫死任何一個詞。
+   ⚠ 先換成佔位符再一次貼回去 —— 直接連續 replace 的話，前一輪插進去的
+     HTML（class 名）可能被後一輪的規則再咬一次。
+   ⚠ 名字長的先換：日後若有「聖徒化」與「聖徒化・改」這種包含關係，
+     短的先換會把長的切壞。 */
+function colorSkillWords(text, p){
+  if(!text || !p) return text || '';
+  const map=[[p.install&&p.install.name,'sk-i'],[p.passive&&p.passive.name,'sk-p'],
+             [p.active &&p.active.name, 'sk-a']].filter(x=>x[0]);
+  map.sort((a,b)=>b[0].length-a[0].length);
+  let out=String(text), slots=[];
+  map.forEach(([nm,cls])=>{
+    out = out.split(nm).join('\u0000'+slots.length+'\u0000');
+    slots.push('<i class="'+cls+'">'+nm+'</i>');
+  });
+  return out.replace(/\u0000(\d+)\u0000/g, (_,i)=>slots[+i]);
+}
 function girlStarListHtml(key){
   if(!prog.isGirl(key)) return '';
   const arr=((GAME_CONFIG.girls||{}).levels||{})[key]||[];
@@ -120,7 +141,7 @@ function girlStarListHtml(key){
          +     '<i class="gs-starname">'+(st.star||'')+'</i>'
          +     '<b>'+(st.name||('Lv'+(i+1)))+'</b>'
          +   '</div>'
-         +   '<span>'+(st.desc||'—')+'</span>'
+         +   '<span>'+colorSkillWords(st.desc||'—', (GAME_CONFIG.partners||{})[key])+'</span>'
          + '</div>';
   }).join('');
   return '<div class="gs-stars">'+rows+'</div>';
@@ -347,11 +368,11 @@ function render(){
          —— 那正是 Ray 要的（不要只有名字有顏色）。
        ⚠ 顏色寫在 class 上、值在 CSS（鐵律 1）：`gs-perk` 加 `install/passive/active`。 */
     +       (p.install ? '<div class="gs-perk install"><b>'+p.install.name+'（變身）</b>'
-                       + '<span>'+p.install.desc+'</span></div>' : '')
+                       + '<span>'+colorSkillWords(p.install.desc,p)+'</span></div>' : '')
     +       (p.passive ? '<div class="gs-perk passive"><b>'+p.passive.name+'（被動）</b>'
-                       + '<span>'+p.passive.desc+'</span></div>' : '')
+                       + '<span>'+colorSkillWords(p.passive.desc,p)+'</span></div>' : '')
     +       (p.active  ? '<div class="gs-perk active"><b>'+p.active.name+'（主動）</b>'
-                       + '<span>'+p.active.desc+'</span></div>' : '')
+                       + '<span>'+colorSkillWords(p.active.desc,p)+'</span></div>' : '')
     +       '<div class="gs-perk empty"><b>常駐</b><span>—</span></div>'
     /* 女主的九星（ver -980）：唯讀，管理人模式整列可點（見 girlStarListHtml）。
        ⚠ 放在 `.gs-perks` 裡面 —— 那一塊本來就會自己捲，九列塞得下。 */

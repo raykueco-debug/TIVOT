@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.09-991';
+export const VERSION = 'ver 2026.09.09-992';
 
 export const GAME_CONFIG = {
 
@@ -889,7 +889,7 @@ export const GAME_CONFIG = {
                「次回指引」＝不斷高光下一格）—— 一次性的那一下 ver -833 就有了。 */
           lifeReturnSec:15, lifeReturnCombo:1, lifeReturnHint:1 },
         { star:'Acubens', skill:'install',           name:'斷鉗星',
-          desc:'聖徒化發動時體力降至 1，發動時間最大化。',
+          desc:'聖徒化時體力降至 1。',
           /* 聖徒化的長度＝倒數槽從**當下血量**推到滿要多久，所以血越少撐越久
              （抬頭那句「血越少持續時間越長」）。這顆星把它推到極限。
              ⚠ 走 `combat.setPlayerHpRatio(0)`（下限夾 1 HP，既有語意）。 */

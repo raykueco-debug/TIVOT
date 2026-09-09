@@ -3504,8 +3504,13 @@
   #gearSheet .gs-starname{font-style:normal;font-size:8px;letter-spacing:1.5px;
     color:var(--gold-dim);text-transform:uppercase;flex:0 1 auto;min-width:0;
     overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  #gearSheet .gs-star b{font-size:11px;font-weight:normal;color:var(--ink);
+  #gearSheet .gs-star b{font-size:11px;font-weight:normal;color:var(--gold-dim);
     flex:0 0 auto;white-space:nowrap;}
+  /* ver -992：**內文裡提到的技能名**穿上那一招的顏色（Ray 指定）。
+     ⚠ 三個 class 只在整備頁裡有意義，所以掛在 `#gearSheet` 底下。 */
+  #gearSheet .sk-i{font-style:normal;color:var(--gold);}
+  #gearSheet .sk-a{font-style:normal;color:var(--skill-active);}
+  #gearSheet .sk-p{font-style:normal;color:var(--skill-passive);}
   /* 說明縮排到凹槽之後 —— 對齊第一行的文字起點。 */
   #gearSheet .gs-star span{display:block;font-size:9.5px;line-height:1.5;
     color:var(--ink);opacity:.7;padding-left:18px;margin-top:1px;}
@@ -3514,9 +3519,9 @@
      顏色沿用搭檔卡那三行的同一組變數（鐵律 1）。⚠ **不分點亮與否**：
      「這一顆屬於哪一招」是它的性質；亮不亮交給整列的 opacity 與凹槽。 */
   #gearSheet .gs-star{}
-  #gearSheet .gs-star.sk-install b{color:var(--gold);}
-  #gearSheet .gs-star.sk-active  b{color:var(--skill-active);}
-  #gearSheet .gs-star.sk-passive b{color:var(--skill-passive);}
+  /* ⚠ ver -992（Ray：「星名不用變色，跟英文同色就好」）：中文星名與西文星名同色
+     —— 「這一顆屬於哪一招」交給**凹槽**與**內文裡上色的技能名**，星名保持安靜。
+     （-990 曾經讓星名跟著分類變色，已撤。） */
   /* 凹槽：沒點亮是凹下去的暗孔（內陰影＋一道上緣高光）。 */
   #gearSheet .gs-gem{flex:0 0 auto;width:11px;height:11px;
     border-radius:50%;background:#0b0812;
