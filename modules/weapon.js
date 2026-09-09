@@ -478,6 +478,14 @@ export function activateDual(){
      ⚠ 星鑰匙問 `prog.girlHas`，不是問「現在是不是諾薇兒」—— 日後別人有這顆星
        也自動吃到（同其餘所有星的作法）。 */
   if(prog.girlHas(state.pickedPartner,'brReloadActive') && api.resetPartnerActive) api.resetPartnerActive();
+  /* ══⚠⚠⚠ **CI 一開始就把場上的攻擊清光**（ver -1020，Ray：「那就讓 BR 的 CI
+     清掉所有攻擊」）══ 底下那個 `resetEnemyTimers` 是在 **cut-in 撤下之後**才跑的，
+     於是那 1.5 秒演出期間場上的圈照樣在縮 —— 一波多顆的怪（鹿主）等於在你看
+     cut-in 的時候把剩下幾顆砸完，窗口一開就已經挨了。
+     ⚠ 與 `activateCoop` 同一個作法（ver -871 就是為了同一個症狀加的）。
+     ⚠ 下面那一支**留著不刪**：它還要 `scheduleAssault()` 重新排下一波，
+       而且清兩次是冪等的（同一支函式，鐵律 8）。 */
+  if(api.resetEnemyTimers) api.resetEnemyTimers();
   api.playCutin(()=>{
     if(state.over||state.saintMode) return;
     // cut-in 撤下瞬間 → 重置敵大絕與延時（間隔）懲罰倒數，避免發動瞬間被連段

@@ -1057,6 +1057,18 @@ export function playCutin(done, label, imgKey, opts){
       //   對話層收段時自會 resumeFromDialog。
       state.cutinPlaying = !!state.tutorialDialog;
       if(done) done();
+      /* ══⚠⚠⚠ **每一張 CI 撤下都指一次「現在該點哪一格」**（ver -1020，Ray：
+         「所有 CI 除了 BR 之外都要顯示下一個正確格」）══
+         cut-in 那 1.5 秒畫面上是一張大圖，撤下來的時候玩家要重新找「我剛剛點到幾了」
+         —— 而那一秒往往正好是最貴的（剛發動變身、剛被救回來）。
+         ⚠ 收在**這裡**（唯一的 CI 收尾點，鐵律 8）：以前是各發動點自己記得叫
+           （聖徒化／惡夢化／共鬥／即死防禦有，其餘沒有），新增一張 CI 必漏。
+           那幾處原本的呼叫**留著不刪** —— 冪等，而且讀起來就是那一段的收尾。
+         ⚠ 排在 `done()` **之後**：`done` 可能把盤面整個換掉（聖徒化換 16 宮格），
+           先指會指到舊盤面上的格子。
+         ⚠ **BR 不指**：`hintCurrentCell` 自己擋掉 `dualWield`（那一段無視順序，
+           指一格反而誤導）—— 同一個真相只有一處（鐵律 7），不必在這裡再判一次。 */
+      if(api.hintCurrentCell) api.hintCurrentCell();
     }, 1500);
   };
   if(ci && src){

@@ -1082,8 +1082,12 @@ export function setPlayerHpRatio(ratio){
 function setBoard(n, cols){ state.N=n; state.cols=cols; }
 // 一次性標記「當前應點的數字格」（即死防禦續命導航經注入呼叫）：沿用 .next 高亮；
 //   點掉該格後由 tap → markNext 回到該盤原本的提示規則，不持續提示。
+/* ⚠⚠ ver -1020：**聖徒化不再被擋掉**（Ray：「所有 CI 除了 BR 之外都要顯示下一個
+   正確格」）—— 舊註解寫的理由是「那一盤可以亂點，指一格反而誤導」，但那是**雙槍破防**
+   （`dualWield`）的性質：聖徒化的 16 格是**依序**點的（`saintTap` 要 `num===state.expect`），
+   指出來完全不誤導。真正該擋的只有 `dualWield`，那一格仍然擋著。 */
 function hintCurrentCell(){
-  if(state.over || state.saintMode || state.dualWield || state.enemyHp<=0) return;
+  if(state.over || state.dualWield || state.enemyHp<=0) return;
   const c=state.cells.find(x=>+x.dataset.num===state.expect && !x.classList.contains('done'));
   if(c) c.classList.add('next');
 }
