@@ -3495,31 +3495,45 @@
     padding:6px 8px;border-radius:8px;background:rgba(0,0,0,.28);}
   #gearSheet .gs-star{opacity:.42;}
   #gearSheet .gs-star.on{opacity:1;}
-  #gearSheet .gs-starname{display:block;font-style:normal;font-size:8px;letter-spacing:1.5px;
-    color:var(--gold-dim);text-transform:uppercase;}
-  #gearSheet .gs-star b{font-size:11px;font-weight:normal;color:var(--ink);}
-  #gearSheet .gs-star.on b{color:var(--gold);}
-  #gearSheet .gs-star span{display:block;font-size:9.5px;color:var(--ink);opacity:.7;}
+  /* ══ 一列兩行（ver -991，Ray：「O LV.1 GUISUER 先鋒星／（縮排）說明」）══
+     第一行擠在一條 flex 裡：凹槽・等級・西文星名・中文星名；說明縮排在下一行。
+     ⚠ 舊版把西文名獨佔一行，九列變成 27 行的字牆 —— 那就是 Ray 說的「排版有夠醜」。 */
+  #gearSheet .gs-shead{display:flex;align-items:center;gap:5px;min-width:0;}
+  #gearSheet .gs-slv{font-style:normal;font-size:8.5px;letter-spacing:.5px;
+    color:var(--gold-dim);font-variant-numeric:tabular-nums;flex:0 0 auto;}
+  #gearSheet .gs-starname{font-style:normal;font-size:8px;letter-spacing:1.5px;
+    color:var(--gold-dim);text-transform:uppercase;flex:0 1 auto;min-width:0;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  #gearSheet .gs-star b{font-size:11px;font-weight:normal;color:var(--ink);
+    flex:0 0 auto;white-space:nowrap;}
+  /* 說明縮排到凹槽之後 —— 對齊第一行的文字起點。 */
+  #gearSheet .gs-star span{display:block;font-size:9.5px;line-height:1.5;
+    color:var(--ink);opacity:.7;padding-left:18px;margin-top:1px;}
   /* 管理人模式：整列可點（點一下 +1，到上限歸零）。 */
   /* ══ 技能表的分類色與凹槽（ver -990，Ray 指定）══
      顏色沿用搭檔卡那三行的同一組變數（鐵律 1）。⚠ **不分點亮與否**：
      「這一顆屬於哪一招」是它的性質；亮不亮交給整列的 opacity 與凹槽。 */
-  #gearSheet .gs-star{position:relative;padding-left:19px;}
+  #gearSheet .gs-star{}
   #gearSheet .gs-star.sk-install b{color:var(--gold);}
   #gearSheet .gs-star.sk-active  b{color:var(--skill-active);}
   #gearSheet .gs-star.sk-passive b{color:var(--skill-passive);}
-  /* 凹槽：沒點亮是凹下去的暗孔（內陰影＋一道上緣高光），點亮就填上那一招的顏色。 */
-  #gearSheet .gs-gem{position:absolute;left:0;top:5px;width:11px;height:11px;
+  /* 凹槽：沒點亮是凹下去的暗孔（內陰影＋一道上緣高光）。 */
+  #gearSheet .gs-gem{flex:0 0 auto;width:11px;height:11px;
     border-radius:50%;background:#0b0812;
     box-shadow:inset 0 1px 2px rgba(0,0,0,.9), inset 0 -1px 0 rgba(255,255,255,.06),
                0 0 0 1px rgba(255,255,255,.07);}
-  #gearSheet .gs-star.on .gs-gem{background:radial-gradient(circle at 35% 30%,
-      rgba(255,255,255,.85), var(--gem,#d4a94a) 60%, rgba(0,0,0,.35));
-    box-shadow:0 0 6px 1px var(--gem,#d4a94a), inset 0 0 2px rgba(255,255,255,.5);}
+  /* ⚠⚠ **點亮的是一盞燈，不是一顆珠子**（ver -991，Ray：「星也太不亮了，
+     看起來像珠」）：-990 那版的高光偏在左上（35% 30%），那正是珍珠的畫法。
+     改成**從正中亮出來**（白芯 → 該招的顏色 → 外緣），外圈的光暈也加大加亮。 */
+  #gearSheet .gs-star.on .gs-gem{
+    background:radial-gradient(circle at 50% 50%,
+      #fff 0%, #fff 22%, var(--gem,#d4a94a) 62%, var(--gem,#d4a94a) 100%);
+    box-shadow:0 0 4px 1px var(--gem,#d4a94a), 0 0 11px 3px var(--gem,#d4a94a),
+               inset 0 0 3px rgba(255,255,255,.9);}
   #gearSheet .gs-star.sk-install{--gem:var(--gold);}
   #gearSheet .gs-star.sk-active {--gem:var(--skill-active);}
   #gearSheet .gs-star.sk-passive{--gem:var(--skill-passive);}
-  #gearSheet .gs-star.dev{cursor:pointer;padding:2px 4px 2px 19px;margin:-2px -4px;border-radius:6px;}
+  #gearSheet .gs-star.dev{cursor:pointer;padding:2px 4px;margin:-2px -4px;border-radius:6px;}
   #gearSheet .gs-star.dev:active{background:rgba(212,169,74,.14);}
   /* 副武器那一格的改裝階（唯讀；升級在槍店）。 */
   #gearSheet .gs-mod{flex:none;font-size:9.5px;color:var(--holy);white-space:nowrap;}

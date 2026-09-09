@@ -108,9 +108,18 @@ function girlStarListHtml(key){
          /* ⚠ `who` 寫進屬性：卡上顯示的是**玩家正在看的那一頁籤**（`pk`，
             可能不是出戰中的那一位）—— 在事件那邊重推一次必然走鐘（鐵律 7）。 */
          +   (dev?' data-gstar="'+key+':'+i+'"':'')+'>'
-         +   '<u class="gs-gem"></u>'
-         +   '<i class="gs-starname">'+(st.star||('Lv'+(i+1)))+'</i>'
-         +   '<b>'+(st.name||('Lv'+(i+1)))+'</b>'
+         /* ══ 一列兩行（ver -991，Ray 指定的排法）══
+              ○ LV.1 GUISUER 先鋒星
+                    聖徒化的連擊疊傷…
+            第一行是**一條**：凹槽／等級／西文星名／中文星名；說明縮排在第二行。
+            ⚠ 三段字在同一行 ＝ 一眼看得出「第幾級的哪一顆」，
+              舊版把西文名獨佔一行，九列就變成 27 行的字牆。 */
+         +   '<div class="gs-shead">'
+         +     '<u class="gs-gem"></u>'
+         +     '<em class="gs-slv">LV.'+(i+1)+'</em>'
+         +     '<i class="gs-starname">'+(st.star||'')+'</i>'
+         +     '<b>'+(st.name||('Lv'+(i+1)))+'</b>'
+         +   '</div>'
          +   '<span>'+(st.desc||'—')+'</span>'
          + '</div>';
   }).join('');
