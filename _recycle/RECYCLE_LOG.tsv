@@ -84,3 +84,4 @@ when	from	to	reason
 20260908-152035	tools/enemies.xlsx	_recycle/tools/enemies.xlsx	Excel 收成根目錄一份（ver -952，鐵律 7）：Ray 編輯的是根目錄那份
 20260909-001046	resources/enemy/_drown_spec.md	_recycle/resources/enemy/_drown_spec.md	Ray: 溺屍不要，換成以歐洲傳說為主的民俗傳說系（_folk_spec.md）
 20260909-111507	tools/_sense_probe.html	_recycle/tools/_sense_probe.html	sense CI 的 CSS 驗證用臨時頁，驗完不留
+20260909-125033	lvcheck.mjs	_recycle/lvcheck.mjs	等級曲線驗算用的臨時腳本，驗完不留
