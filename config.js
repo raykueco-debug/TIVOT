@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.09-1009';
+export const VERSION = 'ver 2026.09.09-1010';
 
 export const GAME_CONFIG = {
 
@@ -152,7 +152,8 @@ export const GAME_CONFIG = {
                      /* 本篇用的數值（ver -378，Ray 的「初始萊福槍」卡）：紅圈 1發56。
                         ══⚠⚠⚠ `counterCdSec` ＝ **拉栓時間：這把槍幾秒才能再開一發**
                         （ver -1009，Ray：「萊福槍還是太強，見面開夢魘 4.6 秒就送鹿主歸西」
-                        →「改成步槍不能連射，CD 3 秒」）══
+                        →「改成步槍不能連射，CD 3 秒」→ ver -1010「還是太強，鹿主被打成狗，
+                        把步槍 CD 改成 5 秒」）══
                         病因不是**單發威力**是**頻率**：安雅的霸王條款把每一顆黃圈都變成
                         保證命中、而且攻擊力走紅圈的滿額狙擊，四秒內連開六七發。
                         · 冷卻是**逐把槍**算的，所以「先開一槍 → 切槍 → 再換回來」是
@@ -162,7 +163,13 @@ export const GAME_CONFIG = {
                           （`bands.counter.take` 恆為 0）—— 完美反擊仍然值得點。
                         ⚠ **只寫在 `story`**：試玩版「挑戰」是另一套數值（§6.5.3），
                           那邊一個字都不動。 */
-                     story:{ hits:1, dmgPerHit:56, counterCdSec:3 } },
+                     story:{ hits:1, dmgPerHit:56, counterCdSec:5,
+                             /* ⚠ `flavor` 也在 `story` 覆寫（ver -1010，Ray：「文案要改，
+                                不然使用者要從 UI 才能學到步槍有 CD」）—— **不寫數字**
+                                （那是 `weaponStatRows` 從 `counterCdSec` 算出來的那一列，
+                                鐵律 7），這一句只負責把「它不能連射」講成人話。
+                                試玩版沒有這個冷卻，所以覆寫在 story，base 那句不動。 */
+                             flavor:'賭上一切的單發重擊；拉栓費時，開完一發要等' } },
 
     /* ── 槍店的貨（ver -377，Ray 的武器卡）──────────────────────────
        ⚠ 這三把**沒有自己的立繪與音效**：先借同類那一把的（`image`/`sound`）。
@@ -186,8 +193,10 @@ export const GAME_CONFIG = {
                      bands:{ block:{ counter:true, take:0.5,  dmgScale:0.5 },
                              perfect:{ counter:true, take:0.25, dmgScale:0.5 } }, counterSec:-3,
                      flavor:'栓動、遠距、一擊定生死',
-                     /* 拉栓時間同「嗜心者」（ver -1009）—— 說明見那一張卡。 */
-                     story:{ counterCdSec:3 } },
+                     /* 拉栓時間同「嗜心者」（ver -1009；-1010 由 3 改 5）—— 說明見那一張卡。
+                        ⚠ `flavor` 也在 `story` 覆寫：試玩版沒有這個冷卻，那邊照舊那一句。 */
+                     story:{ counterCdSec:5,
+                             flavor:'栓動、遠距、一擊定生死；每一發都要重新拉栓' } },
     // 新武器：複製一段，鑰匙用「類型_武器名」（同圖檔基底名），image 指對應 ASSETS 鑰匙。
   },
   /* ══⚠⚠ 戰鬥曲的預設（ver -658，Ray：「所有打靶遊戲都用這個音樂」）══════════
