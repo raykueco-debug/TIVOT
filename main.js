@@ -1948,6 +1948,23 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
         +'\ntimer '+tms.length+(tms.length?'：\n  '+tms.slice(0,8).join('\n  '):'')
         +'\n♪ 播 '+med.length+'/載 '+medAll.length+'  src♪'+(P.srcLive|0)+'  ctx:'+ctxSt
         +(med.length?'\n♪ '+med.join('\n♪ '):'')
+        /* ══ 搭檔與星（ver -1017，Ray：「終焉星效果沒發動啊」）══
+           那一整串排查全卡在同一個答不出來的問題：**那顆星現在到底亮著沒？**
+           等級是靠 EXP 算的、而管理人模式的手動點亮是「點第 i 顆＝等級設成 i」
+           （再點一次歸 Lv1）—— 所以「我以為我在 Lv9」與「實際幾級」很容易分家，
+           而畫面上完全看不出來。這一行把它攤開：搭檔／等級／幾顆關鍵旗標。
+           ⚠ 只印**旗標型**的那幾顆（有沒有）——數值型的看星表，不要在這裡重印一份。
+           ⚠ 讀 `prog.girlHas`（唯一查詢點，鐵律 7），不要自己翻 levels 陣列。 */
+        +'\n──────'
+        +'\n搭檔 '+(state.pickedPartner||'—')+' Lv'+(prog.isGirl(state.pickedPartner)?prog.girlLevel(state.pickedPartner):'-')
+        +(prog.isGirl(state.pickedPartner)
+            ? '\n星 '+['missGuard','saintHint','saintReload','brReloadActive','saintStartHp1',
+                       'saintNoHitAdvance','guardPerEnemy','guardHealCounter',
+                       'niReload','niFullStart','coopEnergyTime','roarReloadActive']
+                      .filter(k=>prog.girlHas(state.pickedPartner,k)).join(' ') || '（無）'
+              : '')
+        +'\n聖徒 '+(state.saintMode?'●':'×')+' 夢魘'+(state.niMode?'●':'×')+' 共鬥'+(state.coopMode?'●':'×')
+        +'  combo '+(state.combo|0)+'  破防 '+Math.round(state.energy||0)
         +'\n──────'
         +'\ninner '+innerWidth+'x'+innerHeight+'  vh '+pVH.offsetHeight+' dvh '+pDVH.offsetHeight
         +'\nsafe top '+pT.offsetHeight+' / bot '+pB.offsetHeight
