@@ -390,7 +390,13 @@ export function resolveThreat(th){
        · 沒有 `hitForce` 時一個字都不變（`take` 照卡上的）。
      ⚠ 只改「挨不挨那一發」，**判定（`grade`）不動**：完美反擊計數、折秒、免傷、
        硬直照舊只看 `ratio`（ver -974 的三分法）。 */
-  const takeOf = (band)=> (band.counter && hitForce) ? 0 : (band.take||0);
+  const takeOf = (band, fired)=> (fired && hitForce) ? 0 : (band.take||0);
+  /* ══ 拉栓冷卻（ver -1009）══ 這一發開不開得出來由 weapon 回答（`counterReady`，
+     鑰匙是那一把槍自己的 `counterCdSec`，鐵律 7）—— defense 只負責問。
+     ⚠ 開不出來就是**沒反擊**：那一帶的 `take` 照樣挨（上面 `takeOf` 的 `fired`）、
+       硬直也不給。玩家要看得懂為什麼，所以浮一個 BOLT。 */
+  const canFire = ()=> !api.counterReady || api.counterReady();
+  const boltFloat = ()=> api.floatDmg((L.battle && L.battle.boltCd) || 'BOLT','50%','34%',false);
   let grade='block';   // 判定等級：'counter' | 'perfect' | 'block'（傳給教學層分流，見文末通知）
   /* ⚠⚠ **「真的點到紅圈」與「被技能算成紅圈」要分開報**（ver -887，Ray：
      「我偏向真實點到紅圈就發動，而靠技能強制算成紅圈發動的就不算」）。
@@ -418,8 +424,12 @@ export function resolveThreat(th){
        ⚠ 只有這一帶算 —— 黃橘圈自 -706 起也會開火，但那不是**完美**反擊。 */
     { const pc=(GAME_CONFIG.rating&&GAME_CONFIG.rating.penalty)||{};
       addPerfectCounter((w && w.counterSec!=null) ? w.counterSec : (pc.counter||0)); }
-    api.weaponCounter(undefined, undefined, undefined, 'counter');   // ver -970：帶名交給 weapon 查 bandMul
-    staggerOnCounter();
+    /* ⚠ 紅圈也吃拉栓（栓動就是栓動）—— 但**免傷照給**（`bands.counter.take` 恆為 0），
+       完美反擊仍然值得點；沒開出來的只是那一發傷害。 */
+    if(canFire()){
+      api.weaponCounter(undefined, undefined, undefined, 'counter');   // ver -970：帶名交給 weapon 查 bandMul
+      staggerOnCounter();
+    }else boltFloat();
   }else if(ratio < DEF_DEFENSE_MIN){
     // === Perfect Defense ===（金色微閃）
     grade='perfect';
@@ -430,14 +440,18 @@ export function resolveThreat(th){
        ⚠ 反擊那一支的音由 `weaponCounter` 的武器 SE 出聲，這裡不再疊合成重擊音。 */
     const bp = weaponBand(w, 'perfect');
     api.floatDmg(L.battle.perfect,'50%','40%',true);
-    if(bp.counter){
+    let bpFired = false;
+    if(bp.counter && canFire()){
       const fa = fireArgs(bp, bp.hit);          // ver -974：攻擊力帶／命中可被技能覆蓋
       api.weaponCounter(fa.scale, fa.hit, fa.roll, 'perfect');
       staggerOnCounter();
+      bpFired = true;
+    }else if(bp.counter){
+      boltFloat();                              // ver -1009：拉栓中，這一發開不出來
     }else if(bp.take<=0){
       SFX.play(asset('se_guard'), sfxGain('se_guard'));   // 完美防禦音（免傷那一支）
     }
-    const bpTake = takeOf(bp);              // ver -1005：命中壓成 1 的反擊 → 不扣血
+    const bpTake = takeOf(bp, bpFired);      // ver -1005：命中壓成 1 的反擊 → 不扣血
     if(bpTake>0){
       state.lastAssaultUlt = !!th.ult;      // 擋一半也是同一顆圈（ver -932）
       const dmg=Math.max(1, Math.round(ringDamage(th)*bpTake));
@@ -458,6 +472,7 @@ export function resolveThreat(th){
          saintMode 分支（唯一入口），這裡只把「格擋＝+0.5s」的推進量交給它
          （舊規矩不變：擋下是半格推進，不看 take 折了多少）。 */
       const bb = weaponBand(w, 'block');
+      let bbFired = false;
       api.floatDmg(L.battle.block,'50%','42%',false);
       if(bb.counter){
         /* ══⚠⚠⚠ **大絕的黃圈打不中**（ver -968，Ray：「敵大絕 ult 的黃圈命中率
@@ -482,11 +497,14 @@ export function resolveThreat(th){
         /* ⚠⚠ 安雅的「命中霸王條款」壓得過大絕那條 0（ver -968 就寫了「除非被安雅的
            技能壓過」）—— -974 之前那件事是靠「把整帶升成紅圈」順便達成的，
            現在改由 `hitForce` **只壓命中**，免傷與評價照舊不送。 */
-        const fa = fireArgs(bb, hit);
-        api.weaponCounter(fa.scale, fa.hit, fa.roll, 'block');
-        staggerOnCounter();
+        if(canFire()){
+          const fa = fireArgs(bb, hit);
+          api.weaponCounter(fa.scale, fa.hit, fa.roll, 'block');
+          staggerOnCounter();
+          bbFired = true;
+        }else boltFloat();                // ver -1009：拉栓中，這一發開不出來
       }
-      const bbTake = takeOf(bb);          // ver -1005：命中壓成 1 的反擊 → 不扣血
+      const bbTake = takeOf(bb, bbFired);  // ver -1005：命中壓成 1 的反擊 → 不扣血
       if(bbTake>0){
         state.lastAssaultUlt = !!th.ult;    // 同上（ver -932）
         const dmg=Math.max(1, Math.round(ringDamage(th)*bbTake));   // 教學：2 減半 → 1

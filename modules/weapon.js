@@ -134,10 +134,39 @@ function partnerHitMul(cat, grade){
 /* `grade`（ver -970）＝這一發是哪一帶（`block`／`perfect`／`counter`）。
    ⚠ 只有 `defense.resolveThreat` 答得出來，所以由它傳進來（鐵律 7）——
      這一支不去反推帶位（`hitRate` 推不出來：卡上可以把兩帶寫成同一個命中率）。 */
+/* ══⚠⚠⚠ **拉栓冷卻（`counterCdSec`，ver -1009，Ray：「步槍不能連射，CD 3 秒」）** ══
+   萊福槍太強的病因不是單發威力是**頻率**：安雅的霸王條款把每一顆黃圈都變成保證命中、
+   而且攻擊力走紅圈的滿額狙擊，四秒內連開六七發（Ray 實測 4.6 秒送走鹿主）。
+   · 秒數在**武器卡**上（`counterCdSec`，只寫在 `story` —— 試玩版不動），這裡不寫數字。
+   · **逐把槍**記帳（鑰匙＝武器 id）：所以「先開一槍 → 切槍 → 再換回來」是刻意留下的
+     操作空間（Ray：「高手可以先開一槍，切槍，再換回來開步槍」）。
+   · **三帶一律吃**（紅圈也不能連射）；但紅圈的免傷照給（`bands.counter.take` 恆為 0）。
+   · 記帳點只有 `weaponCounter` 一處（＝副武器真的開火的唯一地方，鐵律 7/8）——
+     共鬥的飛刀不經過它，也不該吃拉栓（那是索菈娜在擲刀，不是玩家在拉栓）。 */
+let cdAt = Object.create(null);      // 武器 id → 上一次開火的時刻（ms）
+function cdSecOf(key){
+  const w = weaponOf(key || state.equippedWeapon, storyMode());
+  return (w && w.counterCdSec>0) ? w.counterCdSec : 0;
+}
+/* 這把槍還要幾毫秒才能再開一發（0＝現在就能開）。UI 與判定都問這一支。 */
+export function counterCdLeft(key){
+  const k = key || state.equippedWeapon;
+  const sec = cdSecOf(k); if(!sec) return 0;
+  const t = cdAt[k] || 0; if(!t) return 0;
+  return Math.max(0, sec*1000 - (Date.now()-t));
+}
+export function counterReady(key){ return counterCdLeft(key) <= 0; }
+export function counterCdTotalMs(key){ return cdSecOf(key)*1000; }
+/* 開場歸零：拉栓是**這一場**的節奏，不跨場（同 `resetWeaponSwitch` 的其他欄位）。 */
+export function resetCounterCd(){ cdAt = Object.create(null); cdRingStop(); }
+
 export function weaponCounter(dmgScale, hitRate, dmgRoll, grade){
   /* ⚠ 本篇與試玩版是**兩套數值**（ver -378）——一律走 `weaponOf`，不要直接查 WEAPONS。 */
   const w = weaponOf(state.equippedWeapon, storyMode());
   if(!w) return;
+  /* 拉栓冷卻的記帳點（ver -1009）：走到這裡就是**真的開火了**（能不能開由
+     `defense` 先問 `counterReady()`）。⚠ 三種 vfx 分支在下面才分開，記在入口一次就好。 */
+  if(w.counterCdSec>0){ cdAt[state.equippedWeapon]=Date.now(); cdRingStart(); }
   /* ══ 反擊彈殼（ver -812，Ray）══ 從反擊點噴、往下落，逐型別不同大小／顏色。
      船戰＝卡上有艦載武器音（`state.weaponSound`，即 config §158 對「船戰」的定義）。
        · 速射型（機槍 vfx:null）＝一般彈殼(shell.webp)，一發噴一個；船戰 2×。
@@ -539,6 +568,7 @@ export function onThreatResolved(){
 /* 開一場新的戰鬥／回主選單時歸零 —— 排隊中的切換不可以跨場留著。 */
 export function resetWeaponSwitch(){
   counterBusy=false; pendingWeapon=null; tapN=0; tapAt=0;
+  resetCounterCd();                       // 拉栓冷卻不跨場（ver -1009）
   const b=$('wpSwitch'); if(b) b.classList.remove('pending','flip');
   /* ⚠ 把現在這把記回編成：試玩版的出擊整備是直接改 `state.equippedWeapon` 的，
      不記回去的話整備頁與戰鬥裡會各說各話。 */
@@ -619,6 +649,27 @@ function tapSwitch(){
    ⚠ 走**手勢層既有的「小位移＝點擊就放行」那條路**（它本來就會把點擊交還給紅點防禦，
      鐵律 8）：多問一句「這一下點在鈕上嗎」，是就切槍。
    ⚠ 判定寫在 weapon（鈕是它的），main 只負責把座標交過來。 */
+/* ══ 裝填圈（ver -1009，Ray：「裝填時間讓 icon 外圈跑一圈」）══
+   進度畫在**鈕**上不是卡面上：卡面會翻面（`wsFlip`），圈跟著翻就讀不出是進度。
+   ⚠ 只在冷卻期間跑一支 rAF，跑完自己收 —— 常駐的無限動畫是發熱源（鐵律 10 的精神）。
+   ⚠ 換槍不必特別處理：圈畫的是**現在拿的那一把**，切走就自然停（`counterCdLeft` 回 0）。 */
+let cdRaf = 0;
+function cdRingStop(){
+  if(cdRaf) cancelAnimationFrame(cdRaf); cdRaf=0;
+  const b=$('wpSwitch'); if(b){ b.classList.remove('cd'); b.style.removeProperty('--cd'); }
+}
+function cdRingStart(){
+  const b=$('wpSwitch'); if(!b) return;
+  if(cdRaf) cancelAnimationFrame(cdRaf);
+  const tick=()=>{
+    const total=counterCdTotalMs(), left=counterCdLeft();
+    if(!(total>0) || left<=0){ cdRingStop(); return; }
+    b.classList.add('cd');
+    b.style.setProperty('--cd', (1 - left/total).toFixed(3));   // 0→1 跑一圈
+    cdRaf=requestAnimationFrame(tick);
+  };
+  tick();
+}
 export function hitSwitchAt(x, y){
   const b=$('wpSwitch');
   if(!b || b.style.display==='none') return false;

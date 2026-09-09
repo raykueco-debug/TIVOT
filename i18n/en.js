@@ -58,6 +58,7 @@ export const STRINGS = {
     block:        'BLOCK',
     blockDmg:     'BLOCK −{n}',
     miss:         'MISS',
+    boltCd:       'BOLT',
     tooSlowEn:    'TOO SLOW',
     saintMode:    'SAINT MODE',
     lifeReturn:   'LIFE RETURN',

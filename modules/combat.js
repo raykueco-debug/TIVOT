@@ -73,6 +73,9 @@ export function setup(){
   //   assaultSuppressed/firstThreatPending：教學暫緩大絕（一次一顆/腳本盤）與首顆固定位
   //   （defense 不 import tutorial，經此轉交）
   defense.init({ enemyAttack, enemyDamage, floatDmg, triggerAtkBuff,
+                 /* 拉栓冷卻（ver -1009）：這一發開不開得出來由 weapon 回答
+                    （鑰匙是那一把槍卡上的 `counterCdSec`）—— defense 不 import weapon。 */
+                 counterReady: weapon.counterReady,
                  /* ══ 「堅殼星」（諾薇兒 Lv4，ver -971）：**反擊一次也算一發** ══
                     回血窗（即死防禦的免傷窗／生命歸還的吸血窗）本來只有三種射擊算
                     （普攻／BR／overkill，ver -965）；這顆星把副武器反擊也算進來。

@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.09-1008';
+export const VERSION = 'ver 2026.09.09-1009';
 
 export const GAME_CONFIG = {
 
@@ -149,8 +149,20 @@ export const GAME_CONFIG = {
                      bands:{ block:{ counter:true, take:0.5,  dmgScale:0.5 },
                              perfect:{ counter:true, take:0.25, dmgScale:0.5 } }, counterSec:-3,
                      flavor:'賭上一切的單發重擊',
-                     /* 本篇用的數值（ver -378，Ray 的「初始萊福槍」卡）：紅圈 1發56。 */
-                     story:{ hits:1, dmgPerHit:56 } },
+                     /* 本篇用的數值（ver -378，Ray 的「初始萊福槍」卡）：紅圈 1發56。
+                        ══⚠⚠⚠ `counterCdSec` ＝ **拉栓時間：這把槍幾秒才能再開一發**
+                        （ver -1009，Ray：「萊福槍還是太強，見面開夢魘 4.6 秒就送鹿主歸西」
+                        →「改成步槍不能連射，CD 3 秒」）══
+                        病因不是**單發威力**是**頻率**：安雅的霸王條款把每一顆黃圈都變成
+                        保證命中、而且攻擊力走紅圈的滿額狙擊，四秒內連開六七發。
+                        · 冷卻是**逐把槍**算的，所以「先開一槍 → 切槍 → 再換回來」是
+                          刻意留下的操作空間（Ray：「高手可以先開一槍，切槍，再換回來開步槍」）——
+                          用切換順位換輸出，那正是副武器編成存在的意義。
+                        · 三帶一律吃（紅圈也不能連射）：栓動就是栓動。⚠ 但**紅圈的免傷照給**
+                          （`bands.counter.take` 恆為 0）—— 完美反擊仍然值得點。
+                        ⚠ **只寫在 `story`**：試玩版「挑戰」是另一套數值（§6.5.3），
+                          那邊一個字都不動。 */
+                     story:{ hits:1, dmgPerHit:56, counterCdSec:3 } },
 
     /* ── 槍店的貨（ver -377，Ray 的武器卡）──────────────────────────
        ⚠ 這三把**沒有自己的立繪與音效**：先借同類那一把的（`image`/`sound`）。
@@ -173,7 +185,9 @@ export const GAME_CONFIG = {
                      // ver -975：同「嗜心者」（黃橘圈也反擊、攻擊力 −50%），見那張卡的說明。
                      bands:{ block:{ counter:true, take:0.5,  dmgScale:0.5 },
                              perfect:{ counter:true, take:0.25, dmgScale:0.5 } }, counterSec:-3,
-                     flavor:'栓動、遠距、一擊定生死' },
+                     flavor:'栓動、遠距、一擊定生死',
+                     /* 拉栓時間同「嗜心者」（ver -1009）—— 說明見那一張卡。 */
+                     story:{ counterCdSec:3 } },
     // 新武器：複製一段，鑰匙用「類型_武器名」（同圖檔基底名），image 指對應 ASSETS 鑰匙。
   },
   /* ══⚠⚠ 戰鬥曲的預設（ver -658，Ray：「所有打靶遊戲都用這個音樂」）══════════
@@ -3684,6 +3698,10 @@ export function weaponStatRows(key, story){
   const crit = (w.critRate!=null ? w.critRate : GAME_CONFIG.tuning.counterCritRate);
   const rows=[['分類', w.cat||'—'], ['黃圈', line('block')], ['橘圈', line('perfect')],
               ['反擊', shots(w.dmgPerHit)], ['暴擊率', Math.round(crit*100)+'%']];
+  /* 裝填時間（ver -1009，Ray：「每一把步槍都描述加上裝填時間 3 秒」）：
+     ⚠ **算出來的不是手寫的**（鐵律 7）—— 數字只有卡上的 `counterCdSec` 一份，
+       改秒數不必回頭改文案；沒有這一格的槍不長這一列。 */
+  if(w.counterCdSec>0) rows.push(['裝填時間', w.counterCdSec+' 秒']);
   if(w.maxMod) rows.push(['最大改裝等級', String(w.maxMod)]);   // 卡上就寫「5」，不加單位
   return rows;
 }

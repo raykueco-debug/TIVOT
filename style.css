@@ -546,6 +546,21 @@
     50% {transform:rotateY(90deg)  scale(.86);}
     100%{transform:rotateY(0deg)   scale(1);}
   }
+  /* ══ 裝填圈（ver -1009，Ray：「裝填時間讓 icon 外圈跑一圈」）══
+     進度畫在**鈕**上不是卡面上：卡面會翻面（`wsFlip` 是 rotateY），圈跟著翻就讀不出
+     是進度。`--cd` 由 weapon.js 的 rAF 從 0 推到 1（只在冷卻那幾秒跑，跑完自己收）。
+     ⚠ 用 conic-gradient ＋ 環形遮罩畫，不用 SVG：一個偽元素就夠，也不必配合鈕的
+       尺寸重算幾何（鈕的大小由 combat.layoutClasp 決定，這裡只錨中心）。 */
+  #wpSwitch::after{content:'';position:absolute;left:50%;top:50%;
+    width:54px;height:54px;margin:-27px 0 0 -27px;border-radius:50%;
+    pointer-events:none;opacity:0;transition:opacity .18s ease;
+    background:conic-gradient(from -90deg,
+      var(--gold) calc(var(--cd,0) * 360deg), rgba(255,255,255,.14) 0);
+    -webkit-mask:radial-gradient(closest-side,transparent 80%,#000 82%);
+            mask:radial-gradient(closest-side,transparent 80%,#000 82%);}
+  #wpSwitch.cd::after{opacity:1;}
+  /* 冷卻中卡面壓暗一點：圈是「還要多久」，這是「現在不能用」——兩件事一起讀才清楚。 */
+  #wpSwitch.cd .ws-card{filter:brightness(.55) saturate(.7);}
   #wpSwitch.pending .ws-card{border-color:var(--holy);
     animation:wsPending .7s ease-in-out infinite alternate;}
   @keyframes wsPending{from{box-shadow:0 0 4px rgba(111,179,212,.4);}

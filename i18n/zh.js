@@ -71,6 +71,7 @@ export const STRINGS = {
     block:        'BLOCK',            // [EN-STYLE] 格擋
     blockDmg:     'BLOCK −{n}',       // [EN-STYLE] 格擋損傷
     miss:         'MISS',             // [EN-STYLE] 聖徒化按錯
+    boltCd:       'BOLT',                  // [EN-STYLE] 萊福槍拉栓中、這一發開不出來（ver -1009）
     tooSlowEn:    'TOO SLOW',         // [EN-STYLE] 聖徒化反應超時
     saintMode:    'SAINT MODE',       // [EN-STYLE] 聖徒化開始浮字
     lifeReturn:   '生命歸還',          // 主動技浮字的**退路**（ver -985：名字改讀搭檔卡的 active.name）
