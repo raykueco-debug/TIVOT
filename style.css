@@ -15,11 +15,14 @@
     --notch-extra:0px;
     --notch-bar-h:calc(env(safe-area-inset-top, 0px) + var(--notch-extra));
     --notch-orn:var(--gold);
-    /* ══ 三種技能的顏色（ver -989，Ray 指定）══ 變身＝金、主動＝淡紅、被動＝藍。
-       ⚠ 被動直接用既有的 `--holy`（那就是這個專案的藍），不另開一個色。
-       ⚠ 主動的「淡紅」是新的：`--danger`(#c0392b) 與 `--blood`(#8a1f1f) 都太暗，
-         在深底上壓不出「淡」的感覺，所以另給一個粉玫瑰。 */
-    --skill-active:#e2808c;
+    /* ══ 三種技能的顏色（ver -989 立、**-990 調淡**）══ 變身＝金、主動＝淡紅、被動＝淡藍。
+       ⚠⚠ ver -990（Ray：「紅有點太粉了，淡一點近白，藍也是」）：兩個都往白推 ——
+         紅 #e2808c → #f2c8cc、藍 #6fb3d4 → #cfe6f4。
+       ⚠ **不要去動 `--holy`**：那是這個專案的藍（雪鐵龍箭、防禦提示都在用），
+         技能標色另給一個變數才不會牽連（-989 一度直接用它）。
+       ⚠ `--danger`(#c0392b) 與 `--blood`(#8a1f1f) 在深底上太暗，壓不出「淡」。 */
+    --skill-active:#f2c8cc;
+    --skill-passive:#cfe6f4;
     /* 捲軸的把手（ver -978）。⚠ ＝`--gold` 的 28%／52% —— 帶 alpha 所以引用不了
        那個變數，**改 `--gold` 要一起改這兩行**（鐵律 7 的但書）。 */
     --scroll-thumb:rgba(212,169,74,.28);
@@ -3498,7 +3501,25 @@
   #gearSheet .gs-star.on b{color:var(--gold);}
   #gearSheet .gs-star span{display:block;font-size:9.5px;color:var(--ink);opacity:.7;}
   /* 管理人模式：整列可點（點一下 +1，到上限歸零）。 */
-  #gearSheet .gs-star.dev{cursor:pointer;padding:2px 4px;margin:-2px -4px;border-radius:6px;}
+  /* ══ 技能表的分類色與凹槽（ver -990，Ray 指定）══
+     顏色沿用搭檔卡那三行的同一組變數（鐵律 1）。⚠ **不分點亮與否**：
+     「這一顆屬於哪一招」是它的性質；亮不亮交給整列的 opacity 與凹槽。 */
+  #gearSheet .gs-star{position:relative;padding-left:19px;}
+  #gearSheet .gs-star.sk-install b{color:var(--gold);}
+  #gearSheet .gs-star.sk-active  b{color:var(--skill-active);}
+  #gearSheet .gs-star.sk-passive b{color:var(--skill-passive);}
+  /* 凹槽：沒點亮是凹下去的暗孔（內陰影＋一道上緣高光），點亮就填上那一招的顏色。 */
+  #gearSheet .gs-gem{position:absolute;left:0;top:5px;width:11px;height:11px;
+    border-radius:50%;background:#0b0812;
+    box-shadow:inset 0 1px 2px rgba(0,0,0,.9), inset 0 -1px 0 rgba(255,255,255,.06),
+               0 0 0 1px rgba(255,255,255,.07);}
+  #gearSheet .gs-star.on .gs-gem{background:radial-gradient(circle at 35% 30%,
+      rgba(255,255,255,.85), var(--gem,#d4a94a) 60%, rgba(0,0,0,.35));
+    box-shadow:0 0 6px 1px var(--gem,#d4a94a), inset 0 0 2px rgba(255,255,255,.5);}
+  #gearSheet .gs-star.sk-install{--gem:var(--gold);}
+  #gearSheet .gs-star.sk-active {--gem:var(--skill-active);}
+  #gearSheet .gs-star.sk-passive{--gem:var(--skill-passive);}
+  #gearSheet .gs-star.dev{cursor:pointer;padding:2px 4px 2px 19px;margin:-2px -4px;border-radius:6px;}
   #gearSheet .gs-star.dev:active{background:rgba(212,169,74,.14);}
   /* 副武器那一格的改裝階（唯讀；升級在槍店）。 */
   #gearSheet .gs-mod{flex:none;font-size:9.5px;color:var(--holy);white-space:nowrap;}
@@ -3608,7 +3629,7 @@
      所以只要上這一層色就好（Ray：光看中二招式名分不出主被動）。 */
   #gearSheet .gs-perk.install b{color:var(--gold);}
   #gearSheet .gs-perk.active  b{color:var(--skill-active);}
-  #gearSheet .gs-perk.passive b{color:var(--holy);}
+  #gearSheet .gs-perk.passive b{color:var(--skill-passive);}
   /* 常駐技能：未實裝的留空欄（ver -715）。整格壓暗，但看得見它存在。 */
   #gearSheet .gs-perk.empty{opacity:.4;}
   #gearSheet .gs-perk.empty b{color:var(--gold-dim);}

@@ -96,12 +96,21 @@ function girlStarListHtml(key){
   const dev=document.body.classList.contains('testmode');
   const rows=arr.map((st,i)=>{
     const on=(lv>=i+1);
-    return '<div class="gs-star gs-gstar'+(on?' on':'')+(dev?' dev':'')+'"'
+    /* ══ 顏色與凹槽（ver -990，Ray：「在技能表裡也要標色」「讓每個星前面有一個凹槽，
+       等級到了就點亮相對應的顏色」）══
+       · `sk-<install|passive|active>` ＝這一顆強化哪一招（資料在卡上的 `skill`）；
+         顏色與搭檔卡上那三行**同一套**（值在 CSS，鐵律 1）。
+       · `.gs-gem` ＝那個凹槽：沒點亮是凹下去的暗孔，點亮就填上那一招的顏色。
+       ⚠ 星名／說明的顏色**不分點亮與否**（分類是它的性質）；亮不亮交給
+         整列的 opacity 與凹槽 —— 那才是「等級到了」這件事的載體。 */
+    const sk = st.skill ? (' sk-'+st.skill) : '';
+    return '<div class="gs-star gs-gstar'+sk+(on?' on':'')+(dev?' dev':'')+'"'
          /* ⚠ `who` 寫進屬性：卡上顯示的是**玩家正在看的那一頁籤**（`pk`，
             可能不是出戰中的那一位）—— 在事件那邊重推一次必然走鐘（鐵律 7）。 */
          +   (dev?' data-gstar="'+key+':'+i+'"':'')+'>'
+         +   '<u class="gs-gem"></u>'
          +   '<i class="gs-starname">'+(st.star||('Lv'+(i+1)))+'</i>'
-         +   '<b>'+(st.name||('Lv'+(i+1)))+(on?'　✓':'')+'</b>'
+         +   '<b>'+(st.name||('Lv'+(i+1)))+'</b>'
          +   '<span>'+(st.desc||'—')+'</span>'
          + '</div>';
   }).join('');

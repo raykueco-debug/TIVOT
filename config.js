@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.09-989';
+export const VERSION = 'ver 2026.09.09-990';
 
 export const GAME_CONFIG = {
 
@@ -841,27 +841,27 @@ export const GAME_CONFIG = {
            所以每一格寫的是**增量**不是絕對值（`guardHealPct:0.03` ＝卡上的
            0.02 再加 3% ＝ 5%）。 */
       nouvelle: [
-        { star:'Guisuer',           name:'先鋒星',
+        { star:'Guisuer', skill:'install',           name:'先鋒星',
           desc:'聖徒化的連擊疊傷提升至 150%。',
           /* 聖徒化每 combo 的疊傷斜率（`tuning.saintComboStep` 1.0）**乘上 1+這個值**
              → 1.5。⚠ Ray 選的是「只調斜率」：「無上限」是對現況的確認
              （聖徒化那一段本來就沒有上限），**普攻 `dmgComboCap:20` 不解除**。 */
           saintComboMul:0.50 },
-        { star:'Guisuyi',           name:'端首星',
+        { star:'Guisuyi', skill:'install',           name:'端首星',
           desc:'聖徒化期間全程指引下一格。',
           /* ⚠ **「次回指引」＝發動期間不斷高光下一個該點的格**（ver -973 Ray 確認）
              —— 不是「發動時指一下」（那個 ver -833 就有了）。
              走既有的「一直指下一格」那條路（`combat.markNext` 的 `hintAlways`，
              與明晰之夢同一個開關，鐵律 8）—— 不另做一套提示。 */
           saintHint:1 },
-        { star:'Nahn',              name:'探覓星',
-          desc:'單場無傷擊殺即回填聖徒化；該場不能再用，下一場起可用。',
+        { star:'Nahn', skill:'install',              name:'探覓星',
+          desc:'單場無傷擊殺即回填聖徒化。單場戰鬥不可連續使用，同戰役的次場戰鬥生效。',
           /* ＝既有的 `installReload`（無傷擊殺一場就解槽，ver -903）。
              「完勝」＝**那一隻無傷擊殺**（Ray 確認，同九星「方舟」的定義，ver -708）。
              ⚠ 「本場不能再用」不必另寫：解槽掛在**那一隻被清掉**那一刻
                （`partner.onEnemyCleared`），該場已經結束了。 */
           saintReload:1 },
-        { star:'Tegmine',           name:'堅殼星',
+        { star:'Tegmine', skill:'passive',           name:'堅殼星',
           desc:'獄門天鎖的十秒免傷期間，每次射擊回復最大體力 5%。'
               +'反擊一次算一發，聖徒化期間不作動。',
           /* `guardHealPct` 是**增量**：卡上 0.02 ＋ 這裡 0.03 ＝ 5%。
@@ -877,7 +877,7 @@ export const GAME_CONFIG = {
                即死防禦接住 → 10 秒窗開著 → 立刻右滑進聖徒化，那幾秒的每一次反擊
                都會推槽。守門在 `combat.shotHeal()` 一支（鐵律 8）。 */
           guardHealPct:0.05, guardHealCounter:1 },
-        { star:'Asellus Borealis',  name:'引路星',
+        { star:'Asellus Borealis', skill:'active',  name:'引路星',
           desc:'魂之歸所發動後 15 秒內延續聖徒化的連擊增傷，期間全程指引下一格。',
           /* ══ ver -988（Ray 定稿）：這顆星給的是**連擊延續 ＋ 全程指引** ══
              · `lifeReturnSec:15` 是**絕對值**（基礎那扇窗是 0 秒＝不開）。
@@ -888,18 +888,18 @@ export const GAME_CONFIG = {
              ⚠ `lifeReturnHint`＝那扇窗開著時**全程**指引（ver -973 Ray 確認
                「次回指引」＝不斷高光下一格）—— 一次性的那一下 ver -833 就有了。 */
           lifeReturnSec:15, lifeReturnCombo:1, lifeReturnHint:1 },
-        { star:'Acubens',           name:'斷鉗星',
+        { star:'Acubens', skill:'install',           name:'斷鉗星',
           desc:'聖徒化發動時體力降至 1，發動時間最大化。',
           /* 聖徒化的長度＝倒數槽從**當下血量**推到滿要多久，所以血越少撐越久
              （抬頭那句「血越少持續時間越長」）。這顆星把它推到極限。
              ⚠ 走 `combat.setPlayerHpRatio(0)`（下限夾 1 HP，既有語意）。 */
           saintStartHp1:1 },
-        { star:'Yuyu',              name:'蟹生星',
+        { star:'Yuyu', skill:'passive',              name:'蟹生星',
           desc:'獄門天鎖於同場戰役內的每一場戰鬥都可發動一次。',
           /* ＝ver -888 那條「每換一隻怪 reload」，現在是這一級的獎勵。
              ⚠ 九星「方舟」（無傷擊殺回復被動）與它**是兩件事**，照舊各自生效。 */
           guardPerEnemy:1 },
-        { star:'Asellus Australis', name:'負行星',
+        { star:'Asellus Australis', skill:'install', name:'負行星',
           desc:'聖徒化時間不受到敵方攻擊減少。',
           /* ══⚠⚠⚠ **ver -988：Lv8 與 Lv9 的效果對調**（Ray 定稿）══
              星名與順位不動，換的是**效果**：這一顆現在是「受擊不推進倒數槽」
@@ -908,7 +908,7 @@ export const GAME_CONFIG = {
                那兩支在 `saint.js` 自己叫 `saintAdvance`，守門在
                `combat.enemyAttack` 的聖徒化分支。 */
           saintNoHitAdvance:1 },
-        { star:'Tarf',              name:'終焉星',
+        { star:'Tarf', skill:'install',              name:'終焉星',
           desc:'聖徒化期間的攻擊可小幅延長爆發時間。',
           /* ══⚠⚠⚠ **ver -988：與 Lv8 對調**（Ray 定稿）══ 這一顆現在是
              「每一發射擊延長倒數」（-987 之前在 Lv8 負行星）。
@@ -939,52 +939,58 @@ export const GAME_CONFIG = {
            判定只有 `defense.resolveThreat` 一支（鐵律 7），三者都在那裡分流。
 
          ⚠ `counterAtk`／`burstAtk` 是**階數**（girlBonus 會加總）：1＝橘圈攻擊力、
-           2＝紅圈攻擊力。所以 Lv4 寫 1、Lv7 再寫 1（累計 2），不要寫絕對值。 */
+           2＝紅圈攻擊力。所以 Lv4 寫 1、Lv7 再寫 1（累計 2），不要寫絕對值。
+         ⚠⚠ **`skill` ＝這一顆強化的是哪一招**（ver -990，Ray：「在技能表裡也要標色」）：
+           `install`（變身，金）／`passive`（被動，淡藍）／`active`（主動，淡紅）——
+           顏色與搭檔卡上那三行同一套（值在 CSS，鐵律 1）。
+           ⚠ 兩顆是**判斷題**（Ray 沒明說，跟著「敘述裡先出現哪一招」歸）：
+             索菈娜的「地弓星」（破防彈雨的攻擊力 → 歸主動，因為主動技就是直接進 BR）
+             與「海宣星」（戰吼發動時回填主動技 → 歸被動，因為觸發的是戰吼）。 */
       anya: [
-        { star:'Pollux',          name:'拳鬥者星',
+        { star:'Pollux', skill:'install',          name:'拳鬥者星',
           desc:'夢魘化期間的普攻與反擊攻擊力提升至 120%。',
           /* 只在**夢魘化期間**生效。普攻在 `saint.nightmareTap`、反擊在
              `weapon.weaponCounter` 的 `scale`（各自唯一的計算點，鐵律 7）。 */
           niDmgMul:0.20 },
-        { star:'Castor',          name:'築壩者星',
+        { star:'Castor', skill:'active',          name:'築壩者星',
           desc:'夢境破碎發動後追加 10 秒反擊增益：所有反擊皆為橘圈攻擊力，並全程指引下一格。',
           /* 那扇窗的擁有者是 `partner`（`burstBuffUntil`）—— 與生命歸還那扇窗
              同一個形狀。⚠ 這裡**只抬攻擊力**，不壓命中（卡上沒說）。 */
           burstBuffSec:10, burstAtk:1, burstHint:1 },
-        { star:'Alhena',          name:'烙印星',
+        { star:'Alhena', skill:'install',          name:'烙印星',
           desc:'連續三次紅圈反擊即回填夢魘化；該場不能再用，下一場起可用。',
           /* ＝既有的 `passive.reloadStreak`（ver -887），ver -974 起收成這一級的獎勵
              （同諾薇兒探覓星的作法，Ray：「收」）。守門走卡上的 `reloadNeedStar`。
              ⚠ 「連續三次**紅圈**」數的是 `realGrade` —— 靠技能算成紅圈的不算
                （ver -887 就定了）。判定分色之後這件事更單純：兩個等級現在一樣。 */
           niReload:1 },
-        { star:'Tejat',           name:'赤足星',
+        { star:'Tejat', skill:'passive',           name:'赤足星',
           desc:'明晰之夢延長為 15 秒，期間所有反擊皆為橘圈攻擊力。',
           /* `lucidSec` 是**增量**：卡上的 10 ＋ 5 ＝ 15 秒。 */
           lucidSec:5, counterAtk:1 },
-        { star:'Mebsuta',         name:'赤爪星',
+        { star:'Mebsuta', skill:'active',         name:'赤爪星',
           desc:'夢境破碎後的反擊增益提升為紅圈攻擊力。',
           /* 與築壩者星累計＝2（紅圈）。秒數不再加（卡上兩顆都寫「追加 10 秒」）。 */
           burstAtk:1 },
-        { star:'Propus',          name:'前引星',
+        { star:'Propus', skill:'install',          name:'前引星',
           desc:'夢魘化發動時體力先回滿，發動時間最大化。',
           /* 夢魘化的長度＝從**發動當下的血**以固定速率抽到 1（滿血＝`maxSec`），
              所以血少就比較短 —— 這顆星把起點拉回滿血＝一律撐滿 13 秒。
              ⚠ 「從滿 HP 開始算」只有「**真的把血灌滿再抽**」這一個讀法能自洽：
                不灌血而用滿血的斜率去抽，會提早見底，比原本還短。 */
           niFullStart:1 },
-        { star:'Alzirr',          name:'蹄鐵星',
+        { star:'Alzirr', skill:'passive',          name:'蹄鐵星',
           desc:'明晰之夢期間所有反擊皆為紅圈攻擊力。',
           /* 與赤足星累計＝2（紅圈）。⚠ Ray 的卡上這一顆只寫西文星名與
              「被動技升級」，中文名是**我暫填的**（Alzirr ＝ ξ Gem，阿拉伯語「鈕扣／
              蹄鐵」）—— 要換一個他自己的名字就改這一格。 */
           counterAtk:1 },
-        { star:'Wasat',           name:'界心星',
+        { star:'Wasat', skill:'active',           name:'界心星',
           desc:'夢境破碎若在只剩最後一格時發動，直接帶走敵人最大體力的 30%。',
           /* 取代比例算法的那一發（比例算到 15/16 也只有 23.4%）。
              ⚠ 「打不死」的下限（`burstFloor`）照舊 —— 那是另一條規則。 */
           burstLastCell:0.30 },
-        { star:'κ Geminorum',     name:'孿生星',
+        { star:'κ Geminorum', skill:'install',     name:'孿生星',
           desc:'每次反擊都讓夢魘化的體力流失暫停 0.5 秒。',
           /* 實作＝把那一段的總長延長 0.5 秒（抽血是「從起點線性到 1」，
              延長總長就是放慢那一刻之後的速度 —— 與「停 0.5 秒」等價，
@@ -1014,43 +1020,43 @@ export const GAME_CONFIG = {
          ⚠ `coopAtk` 是**階數**（同安雅的 `counterAtk`）：1＝橘圈、2＝紅圈，
            所以 Lv4 寫 1、Lv6 再寫 1（累計 2）。 */
       sorana: [
-        { star:'Kaus Australis',  name:'地弓星',
+        { star:'Kaus Australis', skill:'active',  name:'地弓星',
           desc:'破防彈雨的攻擊力提升至 120%。',
           /* 「破防攻擊力」＝雙槍破防（Bullets Rain）那一段的每一發。
              唯一的計算點在 `combat.tap` 的 `dualWield` 分支。 */
           brDmgMul:0.20 },
-        { star:'Nunki',           name:'海宣星',
+        { star:'Nunki', skill:'passive',           name:'海宣星',
           desc:'獵手的戰吼發動時，回填主動技。',
           /* ⚠ 「5 盤」是**戰吼的門檻**不是另一個數字 —— 點了箭頭星之後就是 3 盤
              （鐵律 7：門檻只有 `passive.streak` 減去 `roarStreakCut` 一處在算）。 */
           roarReloadActive:1 },
-        { star:'Ascella',         name:'曳弦星',
+        { star:'Ascella', skill:'active',         name:'曳弦星',
           desc:'主動技發動後追加 10 秒破防值累積量 200%。',
           /* 與戰吼**同一個執行體**（`partner.fireEnergyBuff`，鐵律 8）：
              倍率照卡上的 `passive.energyMul`，這裡只給秒數。 */
           activeEnergyBuffSec:10 },
-        { star:'Kaus Media',      name:'獵弓星',
+        { star:'Kaus Media', skill:'install',      name:'獵弓星',
           desc:'共鬥期間的反擊改為橘圈攻擊力。',
           coopAtk:1 },
-        { star:'Alnasl',          name:'箭頭星',
+        { star:'Alnasl', skill:'passive',          name:'箭頭星',
           desc:'獵手的戰吼由連續五盤完美清盤改為三盤。',
           /* 減量寫在星上（5 − 2 ＝ 3）：門檻的真相仍是卡上的 `passive.streak`。 */
           roarStreakCut:2 },
-        { star:'Kaus Borealis',   name:'天弓星',
+        { star:'Kaus Borealis', skill:'install',   name:'天弓星',
           desc:'共鬥期間的反擊改為紅圈攻擊力。',
           coopAtk:1 },
-        { star:'Albaldah',        name:'聚落星',
+        { star:'Albaldah', skill:'active',        name:'聚落星',
           desc:'主動技發動時回填共鬥，同一場可以連續使用。',
           /* 與海宣星串成一個循環：戰吼 → 回填主動技 → 主動技 → 回填共鬥。
              ⚠ 「單場可連續使用」是這個循環的**結果**，不是另一條規則 ——
                不必再開一個「共鬥不限次數」的旗（那會讓兩處各說一次）。 */
           activeReloadCoop:1 },
-        { star:'Eta Sagittarii',  name:'射手星',
+        { star:'Eta Sagittarii', skill:'install',  name:'射手星',
           desc:'共鬥的最長時間延長為 15 秒。',
           /* 增量：卡上的 `coop.baseSec` 12 ＋ 3 ＝ 15。
              ⚠ 實際秒數仍照破防值換算（`baseSec × 破防值/100`）—— 這顆星抬的是**上限**。 */
           coopSec:3 },
-        { star:'Phi Sagittarii',  name:'獵手星',
+        { star:'Phi Sagittarii', skill:'install',  name:'獵手星',
           desc:'共鬥期間累積的破防值會即時換算成共鬥的延長時間。',
           /* 「每一 hit 可增加破防值，即延長共鬥時間」—— 共鬥期間本來就照常
              `addEnergy`（共鬥不是盤面模式，玩家照樣點盤），這顆星把**那一份增量**
