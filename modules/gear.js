@@ -372,12 +372,17 @@ function render(){
        ⚠ 招式名與「（主動）」那三個字**在同一個 `<b>` 裡**，所以上色一次就兩者同色
          —— 那正是 Ray 要的（不要只有名字有顏色）。
        ⚠ 顏色寫在 class 上、值在 CSS（鐵律 1）：`gs-perk` 加 `install/passive/active`。 */
-    +       (p.install ? '<div class="gs-perk install"><b>'+p.install.name+'（變身）</b>'
+    /* ⚠⚠ **標題格式與順序由 Ray 定**（ver -997）：
+         覺醒技：聖徒化／主動技：魂之歸所／被動技：獄門天鎖
+       · 「（變身）」那個字面**撤掉** —— 這一族的正式稱呼是**覺醒技**。
+       · 前綴在**名字前面**、與名字同一個 `<b>`（所以同色，那是 -989 要的）。
+       · 順序改成 **覺醒 → 主動 → 被動**（-996 之前是 覺醒 → 被動 → 主動）。 */
+    +       (p.install ? '<div class="gs-perk install"><b>覺醒技：'+p.install.name+'</b>'
                        + '<span>'+colorSkillWords(p.install.desc,p)+'</span></div>' : '')
-    +       (p.passive ? '<div class="gs-perk passive"><b>'+p.passive.name+'（被動）</b>'
-                       + '<span>'+colorSkillWords(p.passive.desc,p)+'</span></div>' : '')
-    +       (p.active  ? '<div class="gs-perk active"><b>'+p.active.name+'（主動）</b>'
+    +       (p.active  ? '<div class="gs-perk active"><b>主動技：'+p.active.name+'</b>'
                        + '<span>'+colorSkillWords(p.active.desc,p)+'</span></div>' : '')
+    +       (p.passive ? '<div class="gs-perk passive"><b>被動技：'+p.passive.name+'</b>'
+                       + '<span>'+colorSkillWords(p.passive.desc,p)+'</span></div>' : '')
     +       '<div class="gs-perk empty"><b>常駐</b><span>—</span></div>'
     /* 女主的九星（ver -980）：唯讀，管理人模式整列可點（見 girlStarListHtml）。
        ⚠ 放在 `.gs-perks` 裡面 —— 那一塊本來就會自己捲，九列塞得下。 */
