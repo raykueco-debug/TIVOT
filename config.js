@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.09-987';
+export const VERSION = 'ver 2026.09.09-988';
 
 export const GAME_CONFIG = {
 
@@ -437,11 +437,16 @@ export const GAME_CONFIG = {
                     這個是要加在文案的」）—— 所以那扇窗**基礎就要開 10 秒**，
                     只是期間不回血。窗長改由 `max(吸血秒, 連擊秒) ＋ 星` 算
                     （見 `partner.js` 的 lifeReturn handler）。 */
-               lifestealSeconds:0, lifestealPct:0,            // ver -986：基礎不吸血（移到引路星）
-               comboKeepSeconds:10,                           // ver -971：聖徒化連擊疊傷的延續（基礎就有）
+               /* ══⚠⚠⚠ **ver -988（Ray 定稿）：基礎只剩「中止 ＋ 保留 HP」** ══
+                  · 吸血 -986 移到星，**-988 起連星上也沒有**（定稿把「一發回最大體力 5%」
+                    整句拿掉了）—— 回血現在**只存在於獄門天鎖那扇窗**（Lv4 堅殼星）。
+                  · 連擊延續 -986 還在基礎，**-988 移到 Lv5「引路星」**。
+                  ⚠ 兩個秒數都歸 0 ＝**基礎不開那扇窗**；引路星的 `lifeReturnSec:15`
+                    是**絕對值**，窗長＝`max(卡上兩個秒數) ＋ 星`。 */
+               lifestealSeconds:0, lifestealPct:0,            // ver -986/-988：不吸血
+               comboKeepSeconds:0,                            // ver -988：連擊延續移到引路星
                desc:'發動方式：聖徒化期間戰鬥畫面上滑。<br>'
-                   +'聖徒化期間發動，強制中止爆發時間，保留已回復之 HP，'
-                   +'並延續聖徒化的連擊增傷 10 秒。' },
+                   +'聖徒化期間發動，強制中止爆發時間，保留已回復之 HP。' },
       /* ══ 無傷擊殺一場 → reload 聖徒化（ver -892 定為兩場，**ver -903 Ray 改成一場**：
          「諾薇兒改無傷一場就恢復聖徒化」）══
          ⚠ 「無傷」是**逐場（逐隻怪）**算的（`state.enemyHitsTaken`，同九星「方舟」
@@ -858,7 +863,7 @@ export const GAME_CONFIG = {
           saintReload:1 },
         { star:'Tegmine',           name:'堅殼星',
           desc:'獄門天鎖的十秒免傷期間，每次射擊回復最大體力 5%。'
-              +'反擊一次算一發，聖徒化期間不回血（此二條同樣適用魂之歸所的回血）。',
+              +'反擊一次算一發，聖徒化期間不作動。',
           /* `guardHealPct` 是**增量**：卡上 0.02 ＋ 這裡 0.03 ＝ 5%。
              ⚠ 「單局一次」＝**即死防禦本身**一局一次（Ray 確認）——
                那正是 Lv1~6 的基礎行為（Lv7 的蟹生星才放寬成一場一次），
@@ -873,15 +878,16 @@ export const GAME_CONFIG = {
                都會推槽。守門在 `combat.shotHeal()` 一支（鐵律 8）。 */
           guardHealPct:0.05, guardHealCounter:1 },
         { star:'Asellus Borealis',  name:'引路星',
-          desc:'魂之歸所發動後 15 秒內每次射擊回復最大體力 5%，'
-              +'連擊延續一併延長為 15 秒，期間全程指引下一格。',
-          /* `lifeReturnSec` 是**增量**：卡上 10 ＋ 5 ＝ 15 秒。
-             ⚠⚠ 吸血窗與 combo 延續窗**是同一扇窗**（`partner.vampUntil`）——
-               Ray 的卡上兩者永遠同一個數字，所以只有一個計時器（鐵律 7）。
+          desc:'魂之歸所發動後 15 秒內延續聖徒化的連擊增傷，期間全程指引下一格。',
+          /* ══ ver -988（Ray 定稿）：這顆星給的是**連擊延續 ＋ 全程指引** ══
+             · `lifeReturnSec:15` 是**絕對值**（基礎那扇窗是 0 秒＝不開）。
+             · `lifeReturnCombo` ＝連擊延續由它給（-987 之前在基礎的主動技上）。
+             · **吸血整個拿掉**：定稿的這一段不再提「一發回最大體力 5%」——
+               回血現在只存在於獄門天鎖那扇窗（Lv4 堅殼星）。
+             ⚠ 三個效果共用同一扇窗（`partner.vampUntil`，鐵律 7）。
              ⚠ `lifeReturnHint`＝那扇窗開著時**全程**指引（ver -973 Ray 確認
-               「次回指引」的定義就是不斷高光下一格）—— 一次性的那一下 ver -833
-               就有了，這顆星加的是「全程」。 */
-          lifeReturnSec:5, lifeReturnPct:0.05, lifeReturnHint:1 },
+               「次回指引」＝不斷高光下一格）—— 一次性的那一下 ver -833 就有了。 */
+          lifeReturnSec:15, lifeReturnCombo:1, lifeReturnHint:1 },
         { star:'Acubens',           name:'斷鉗星',
           desc:'聖徒化發動時體力降至 1，發動時間最大化。',
           /* 聖徒化的長度＝倒數槽從**當下血量**推到滿要多久，所以血越少撐越久
@@ -889,23 +895,28 @@ export const GAME_CONFIG = {
              ⚠ 走 `combat.setPlayerHpRatio(0)`（下限夾 1 HP，既有語意）。 */
           saintStartHp1:1 },
         { star:'Yuyu',              name:'蟹生星',
-          desc:'獄門天鎖由每一局一次，改為每一場（每隻怪）各一次。',
+          desc:'獄門天鎖於同場戰役內的每一場戰鬥都可發動一次。',
           /* ＝ver -888 那條「每換一隻怪 reload」，現在是這一級的獎勵。
              ⚠ 九星「方舟」（無傷擊殺回復被動）與它**是兩件事**，照舊各自生效。 */
           guardPerEnemy:1 },
         { star:'Asellus Australis', name:'負行星',
-          desc:'聖徒化期間自第二連擊起，每一發射擊扣除最大體力 1%，藉此延長倒數（不會歸零）。',
-          /* 聖徒化期間血條＝倒數槽，**扣血＝延長**。第 2 hit 起每發扣
-             `playerMax` 的 1%（走 `combat.drainPlayer`，下限夾 1 ＝「不可歸零」）。
-             ⚠ 「第 2 Hit 開始」＝`state.combo>=2`（那正是 Ray 說的「隨 Combo」）。 */
-          saintDrainPct:0.01 },
-        { star:'Tarf',              name:'終焉星',
-          desc:'聖徒化期間受到敵方攻擊不再推進倒數槽（點錯與反應逾時仍會推進）。',
-          /* ⚠ 只擋**敵人的攻擊**（含格擋那一半）—— 點錯與反應逾時照舊推進
-             （Ray 的卡寫的是「被攻擊不增血」）。守門在 `combat.enemyAttack` 的
-             聖徒化分支，演出與失誤計數照走，只是不叫 `saintAdvance`。
-             ⚠ 「血回滿就 OBE 結束聖徒化」是既有規則，不必另寫。 */
+          desc:'聖徒化時間不受到敵方攻擊減少。',
+          /* ══⚠⚠⚠ **ver -988：Lv8 與 Lv9 的效果對調**（Ray 定稿）══
+             星名與順位不動，換的是**效果**：這一顆現在是「受擊不推進倒數槽」
+             （-987 之前在 Lv9 終焉星）。
+             ⚠ 只擋**敵方攻擊**（含格擋那一半）；點錯與反應逾時照舊推進 ——
+               那兩支在 `saint.js` 自己叫 `saintAdvance`，守門在
+               `combat.enemyAttack` 的聖徒化分支。 */
           saintNoHitAdvance:1 },
+        { star:'Tarf',              name:'終焉星',
+          desc:'聖徒化期間的攻擊可小幅延長爆發時間。',
+          /* ══⚠⚠⚠ **ver -988：與 Lv8 對調**（Ray 定稿）══ 這一顆現在是
+             「每一發射擊延長倒數」（-987 之前在 Lv8 負行星）。
+             聖徒化期間血條＝倒數槽，**扣血＝延長**：每發扣 `playerMax` 的 1%
+             （走 `combat.drainPlayer`，下限夾 1 ＝不會歸零）。
+             ⚠ 實作是**第 2 連擊起**才扣（`state.combo>=2`，Ray 交卡時的
+               「第 2 Hit 開始」）—— 定稿的這一句是概述，沒把那個條件寫進去。 */
+          saintDrainPct:0.01 },
       ],
       /* ══⚠⚠⚠ 安雅（ver -974，Ray 交卡）—— **雙子座九星** ══════════════════
          > 「夢魘降臨是以現有血量回扣倒數到 hp1 的時候熔斷，13 秒夢魘期間所有反擊

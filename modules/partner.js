@@ -296,9 +296,10 @@ function vampHealPct(){
   const p = currentPartner();
   const act = p && p.active;
   if(!(act && act.key==='lifeReturn')) return 0;
-  /* ver -986（Ray 選 (C)）：**基礎不再吸血，整份由「引路星」給**（`lifeReturnPct`）。
-     ⚠ 蕾妮的卡沒有 `lifestealPct`，也不是 `girls.who` 裡的人 → 兩項都是 0＝她沒有這扇窗
-       的回血（試玩版不動）。 */
+  /* ⚠⚠ ver -988：**魂之歸所那扇窗現在完全不回血** —— 定稿把引路星的
+     「一發回最大體力 5%」整句拿掉了，回血只剩獄門天鎖那扇窗（Lv4 堅殼星）。
+     這一支因此目前恆為 0；欄位與星鑰匙（`lifeReturnPct`）留著不刪 ——
+     它是「這扇窗回不回血」的旋鈕，哪天要加回來只要填一個數字（鐵律 1）。 */
   return (act.lifestealPct || 0) + prog.girlBonus(state.pickedPartner, 'lifeReturnPct');
 }
 /* ══ 「這一發回多少血（佔 playerMax 的比例）」的**唯一**查詢點（ver -964）══
@@ -316,7 +317,11 @@ export function lifeReturnWindow(){ return Date.now() < vampUntil; }
 export function saintComboKeep(){
   if(!lifeReturnWindow()) return false;
   const p=currentPartner(), act=p&&p.active;
-  return !!(act && act.key==='lifeReturn' && act.comboKeepSeconds>0);
+  if(!(act && act.key==='lifeReturn')) return false;
+  /* ver -988：連擊延續由 Lv5「引路星」給（`lifeReturnCombo`）——基礎那一格
+     （`comboKeepSeconds`）現在是 0。⚠ 仍然寫成「卡 ｜ 星」而不是「只讀星」：
+     那一格是**這張卡有沒有基礎連擊延續**的旋鈕（鐵律 1，同兩支回血查詢）。 */
+  return (act.comboKeepSeconds>0) || prog.girlHas(state.pickedPartner, 'lifeReturnCombo');
 }
 /* 「全程指引下一格」的來源（`combat.hintAlways` 問它）。ver -974 起有兩個：
    · 諾薇兒「引路星」（Lv5）：生命歸還那扇窗
