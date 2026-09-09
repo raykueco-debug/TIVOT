@@ -171,8 +171,13 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll){
   const pHit = partnerHitMul(w.cat);
   const hitR  = Math.min(1, baseHit * (1-evade) * pHit);   // 負迴避把命中往上加，夾到 100%
   /* 第 k 發中不中。⚠ `k===0` 一定中（見上）—— **無迴避時**；有迴避一律擲
-     （ver -760：不然單發武器吃不到迴避）。紅圈 evade=0＝走前一分支必中。 */
-  const hits = (k)=> (evade<=0 && (hitR>=1 || k===0)) ? true : (Math.random() < hitR);
+     （ver -760：不然單發武器吃不到迴避）。紅圈 evade=0＝走前一分支必中。
+     ⚠⚠ **命中率被明寫成 0 就是全 miss，第一發保底不適用**（ver -968，Ray：
+       「敵大絕 ult 的黃圈命中率**皆為 0**」）—— 保底當初的理由是「30% 全 miss
+       有 5.7%，玩家會以為壞了」（那是運氣問題）；寫死 0 是**規則**，
+       漏出一發反而讀成 bug。 */
+  const hits = (k)=> (hitR<=0) ? false
+                   : ((evade<=0 && (hitR>=1 || k===0)) ? true : (Math.random() < hitR));
   const MISS = (L.battle && L.battle.miss) || 'MISS';
   /* `dmgRoll`（ver -708）：這一發打幾點從清單裡等機率抽（散彈黃圈＝`[0,1]`）。
      ⚠ 抽到 0 **不是 miss** —— 照樣跳一個「0」出來（Ray：「不要全都 1 很沒感」）。

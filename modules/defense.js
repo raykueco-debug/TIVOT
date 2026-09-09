@@ -28,6 +28,8 @@ const T = GAME_CONFIG.tuning;
 const DEF_DEFENSE_MIN = T.defDefenseMin;   // ratio 0.35~1.0：Defense（傷害減半）
 const DEF_PERFECT_MIN = T.defPerfectMin;   // ratio 0.12~0.35：Perfect（免傷）
 const SAINT_BLOCK_DIVISOR = T.saintBlockDivisor;   // 聖徒化期間格擋推進量（下一輪聖徒化才會實際觸發）
+/* 大絕（門檻波）的黃圈反擊命中率（ver -968，Ray 定案）—— 見 config 那一段的說明。 */
+const ULT_BLOCK_HIT = (T.ultBlockHit!=null) ? T.ultBlockHit : 0;
 // 開場第一發的延遲改**逐怪**（ver -795）：範圍在 state.ASSAULT_OPEN_MIN/MAX（由 enemy.setEnemy
 // 從卡上的 openAssault 讀，預設 1~2 秒）。原本寫死 0~3 秒的 ULT_OPEN_MS 已移除。
 
@@ -424,7 +426,14 @@ export function resolveThreat(th){
       const bb = weaponBand(w, 'block');
       api.floatDmg(L.battle.block,'50%','42%',false);
       if(bb.counter){
-        api.weaponCounter(bb.scale, bb.hit, bb.roll);
+        /* ══⚠⚠⚠ **大絕的黃圈打不中**（ver -968，Ray：「敵大絕 ult 的黃圈命中率
+           皆為 0，除非被安雅的技能壓過」）══ 規則在 `tuning.ultBlockHit`（鐵律 1），
+           這裡只是唯一那個「這一顆是不是大絕」答得出來的地方（`th.ult`，同 -932）。
+           ⚠ 「安雅的技能壓過」不必在這裡判：明晰之夢／惡夢化把任何一帶都判成紅圈
+             （上面的 `lucid || niAll`），那時根本走不到這一支。
+           ⚠ 只動命中率 —— 減傷（`bb.take`）照舊，擋得住還是擋得住。 */
+        const hit = th.ult ? ULT_BLOCK_HIT : bb.hit;
+        api.weaponCounter(bb.scale, hit, bb.roll);
         staggerOnCounter();
       }
       if(bb.take>0){

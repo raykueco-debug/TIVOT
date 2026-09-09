@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.09-967';
+export const VERSION = 'ver 2026.09.09-968';
 
 export const GAME_CONFIG = {
 
@@ -2465,6 +2465,19 @@ export const GAME_CONFIG = {
     defDefenseMin:       0.35,  // 0.35~1.0 → Defense（傷害減半）
     defPerfectMin:       0.12,  // 0.12~0.35 → Perfect（免傷）
                                 // 0~0.12 → Counter（免傷+武器反擊）
+
+    /* ══⚠⚠⚠ **敵大絕（門檻波）的黃圈：反擊命中率一律 0**（ver -968，Ray 定案）══
+       > Ray：「敵大絕 ult 的黃圈命中率皆為 0，**除非被安雅的技能壓過**」
+       這是**規則不是卡的性質**（所以住在 tuning，不是逐張武器卡的 `bands.block.hit`）：
+       大絕來的時候太早按，擋得住、但**打不到** —— 想punish 就得等到橘圈或紅圈。
+       ⚠ 「大絕」＝卡上 `ult:{hp,…}` 那個血量門檻波生出來的圈（`th.ult`），
+         不是每一發主動攻擊（同 ver -932 受擊特效分 `ult`／`assault` 的那條線）。
+       ⚠⚠ **「安雅的技能壓過」不必另外寫**：明晰之夢與惡夢化把**任何一帶**
+         一律判成紅圈（`defense.resolveThreat` 的 `lucid || niAll`）—— 那時根本
+         走不到黃圈這一支，命中率自然是 100%。判定只有那一處（鐵律 7）。
+       ⚠ 它**只改命中率**，不改減傷：黃圈該擋掉的照舊擋掉（`bands.block.take`）。
+       ⚠ 連帶：那一次的破防值也自然是 0（`weapon.counterEnergy` 按實際打出的傷害給）。 */
+    ultBlockHit:         0,
 
     /* ══ 惡夢化（Nightmare Install，ver -671，Ray 交稿）══
        ⚠ 它與聖徒化共用大部分數字（連擊斜率、反應時限、追加 20%）——
