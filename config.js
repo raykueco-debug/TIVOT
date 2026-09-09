@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.09-984';
+export const VERSION = 'ver 2026.09.09-985';
 
 export const GAME_CONFIG = {
 
@@ -314,9 +314,14 @@ export const GAME_CONFIG = {
       perk:'即死防禦（被動）＋生命歸還（主動）',
       // ── 被動技：即死防禦 ─────────────────────────────
       //   整場一次性。受到足以致死的攻擊時，改為保留 1 HP，並插入 cut-in。用掉後失效。
+      /* ⚠⚠ **蕾妮的技能名不跟著諾薇兒改**（ver -985）：ver -984 把「即死防禦／生命歸還」
+         換成「獄門天鎖／魂之歸所」，那是**諾薇兒的**名字。這兩個字原本住在 i18n
+         （兩人共用），改那裡等於連試玩版的蕾妮一起改名（憲法：試玩版不要動）。
+         現在名字一律**讀卡**，所以這裡要把她自己的名字與英文明寫出來。 */
       passive:{
         key:'deathGuard',
         name:'即死防禦',
+        en:'Death Guard',
         oncePerBattle:true,      // true=整場只擋一次；false=每次都擋（不建議）
         cutin:'cutin_guard',     // 即死防禦專屬大圖（→ Renee_CI_pas.jpg）；程式讀此欄，不硬寫
         voice:'vo_death_guard',  // cut-in 對應 SE（→ Renee_VC_Pas.wav）
@@ -330,6 +335,7 @@ export const GAME_CONFIG = {
       active:{
         key:'lifeReturn',
         name:'生命歸還',
+        en:'Life Return',
         context:'saint',         // 發動情境：'saint'＝聖徒化內 / 'board'＝一般盤面 / 'any'＝兩者皆可
         cutin:'cutin_return',    // 生命歸還演出大圖（→ Renee_CI_act.jpg）；實際演出由 saint scImgKey.return 讀同一鑰匙
         voice:'vo_life_return',  // cut-in 對應 SE（→ Renee_VC_Act.wav）
@@ -381,7 +387,7 @@ export const GAME_CONFIG = {
          ⚠ 它在**戰鬥中**印出來的字走 i18n（`L.cutins.deathGuard`／`L.battle.deathGuard`），
            不是這裡的 `name` —— 兩邊都改了才不會一邊「獄門天鎖」一邊「即死防禦」。
            英文副標維持 `Death Guard`（[EN-STYLE] 不譯；Ray 沒給新的英文名）。 */
-      passive:{ key:'deathGuard', name:'獄門天鎖', oncePerBattle:true,
+      passive:{ key:'deathGuard', name:'獄門天鎖', en:'Hellgate Seal', oncePerBattle:true,
                 /* 她自己的 CI（ver -499，Ray 交件 CI_Nouvelle_Deathguard）——
                    之前借蕾妮的 `cutin_guard`；蕾妮那張是試玩版的，不動。 */
                 cutin:'cutin_nouvelle_guard', voice:'vo_nou_guard',   // ver -711：她自己的語音（原本借蕾妮的）
@@ -415,7 +421,7 @@ export const GAME_CONFIG = {
          ⚠ 這個 `name` **戰鬥中也會印**（`partner.js` 的 cut-in 標題與浮字都讀它），
            所以改這裡就等於改了畫面上那一行；浮字另有一份在 i18n（`L.battle.lifeReturn`），
            兩邊都改了。 */
-      active:{ key:'lifeReturn', name:'魂之歸所', context:'saint',
+      active:{ key:'lifeReturn', name:'魂之歸所', en:'Soul Return', context:'saint',
                cutin:'cutin_return', voice:'vo_nou_return',   // ver -711：她自己的語音
                lifestealSeconds:10, lifestealPct:0.05,        // ver -964：吸血窗（秒／每發回最大生命的比例）
                comboKeepSeconds:10,                           // ver -971：聖徒化連擊疊傷的延續（同一扇窗）

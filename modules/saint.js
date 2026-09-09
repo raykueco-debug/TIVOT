@@ -1021,7 +1021,15 @@ function playSaintCutin(kind, done, reload){
   const enName=(($('enemyName')&&$('enemyName').textContent)||'目標');
   if(kind==='burst'){ title='MAXIMUM BURST'; sub=L.cutins.mbSub; }       // MB 未擊殺＝回 50%（D2）
   else if(kind==='execute'){ title='EXSECUTIŌ'; sub=fmt(L.cutins.executeSub,{name:enName}); }
-  else if(kind==='return'){ title='LIFE\nRETURN'; sub=L.cutins.lifeReturnSub; }
+  else if(kind==='return'){
+    /* ══⚠⚠ 名字讀**搭檔卡**（ver -985，同 partner 的即死防禦那一段）══
+       諾薇兒＝魂之歸所／Soul Return、蕾妮＝生命歸還／Life Return。
+       i18n 那一條留著當退路（卡上沒寫名字的搭檔照舊拿得到字）。
+       ⚠ 大字是英文（兩行），副標是中文名＋「血量保留」—— 沿用原本的版面。 */
+    const _ac=((GAME_CONFIG.partners||{})[state.pickedPartner]||{}).active||{};
+    title=(_ac.en || 'Life Return').toUpperCase().replace(' ','\n');
+    sub=_ac.name ? (_ac.name+' · 血量保留') : L.cutins.lifeReturnSub;
+  }
   else { title='OVERWRITE\nBREAKER\nENGAGED'; sub=L.cutins.obeSub; }
   $('saintCutinTitle').textContent = title;
   /* reload 那一行掛在副標下面（樣式見 style.css 的 `.sc-reload`）。

@@ -73,8 +73,8 @@ export const STRINGS = {
     miss:         'MISS',             // [EN-STYLE] 聖徒化按錯
     tooSlowEn:    'TOO SLOW',         // [EN-STYLE] 聖徒化反應超時
     saintMode:    'SAINT MODE',       // [EN-STYLE] 聖徒化開始浮字
-    lifeReturn:   '魂之歸所',          // 主動技浮字（ver -984 由「生命歸還」改名，Ray 交稿）
-    deathGuard:   '獄門天鎖',          // 被動技浮字（ver -984 由「即死防禦」改名，Ray 交稿）
+    lifeReturn:   '生命歸還',          // 主動技浮字的**退路**（ver -985：名字改讀搭檔卡的 active.name）
+    deathGuard:   '即死防禦',          // 被動技浮字的**退路**（ver -985：名字改讀搭檔卡的 passive.name）
     immune:       '免傷',              // 免傷窗（ver -740）：受擊但不扣血的那一下
   },
 
@@ -90,10 +90,10 @@ export const STRINGS = {
   cutins: {
     saintInstall:      '聖徒降臨！！',          // 副標 SAINT INSTALL!! [EN-STYLE] 不譯
     dualBreak:         '彈雨傾洩',              // ver -750，Ray：「改成 Bullets Rain 彈雨傾洩」（副標在 weapon.js）
-    deathGuard:        '獄門天鎖',              // 副標 Death Guard [EN-STYLE] 不譯（ver -984 改名）
+    deathGuard:        '即死防禦',              // 副標的**退路**（ver -985：改讀卡上的 passive.name/en）
     mbSub:             '追加聖裁 · HP 50%',     // MAXIMUM BURST 副標
     executeSub:        '{name} · 消滅',        // EXSECUTIŌ 副標（{name}=敵名）
-    lifeReturnSub:     '魂之歸所 · 血量保留',    // LIFE RETURN 副標（ver -984 改名）
+    lifeReturnSub:     '生命歸還 · 血量保留',    // 副標的**退路**（ver -985：改讀卡上的 active.name）
     obeSub:            'O.B.E. · HP 1',        // [EN-STYLE] OVERWRITE BREAKER 副標
     newHustle:         'NEW HUSTLE INCOMING',  // [EN-STYLE] Boss 亂入
   },

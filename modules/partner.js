@@ -88,8 +88,14 @@ export function tryDeathGuard(){
   applyDeathGuard();          // 鎖 1 HP + 標記 deathGuardUsed（D3 契約例外的唯一入口）
   api.updateBars();           // applyDeathGuard 不碰 DOM，於此刷新血條（對齊 reference）
   const vo = asset(pas.voice); if(vo) SFX.playVoice(vo, sfxGain(pas.voice));   // SE 與 cut-in 同步（→ vo_death_guard；增益見 tuning.fileGain）
-  api.floatDmg(L.battle.deathGuard,'50%','40%',true);
-  const label = L.cutins.deathGuard+'<span class="cutin-en">Death Guard</span>';
+  /* ══⚠⚠ **名字讀卡，不讀 i18n**（ver -985）══ 那兩條 i18n 字串是**蕾妮與諾薇兒
+     共用**的 —— ver -984 直接改那裡，等於把試玩版蕾妮的技能一起改名了
+     （憲法：試玩版不要動）。名字是**那一張卡的性質**（鐵律 1）：
+     諾薇兒＝獄門天鎖／Hellgate Seal、蕾妮＝即死防禦／Death Guard。
+     ⚠ i18n 那兩條留著當**退路**：卡上沒寫名字的搭檔照舊拿得到字。 */
+  api.floatDmg(pas.name || L.battle.deathGuard,'50%','40%',true);
+  const label = (pas.name || L.cutins.deathGuard)
+              + '<span class="cutin-en">'+(pas.en || 'Death Guard')+'</span>';
   api.playCutin(()=>{
     if(state.over||state.saintMode) return;
     // 即死防禦後：cut-in 撤下瞬間重置敵大絕與延時（間隔）懲罰倒數，避免剛保命就被連段擊殺
