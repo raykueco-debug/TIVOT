@@ -1392,8 +1392,17 @@ const SE_SRC=(()=>{ const m={};
   for(const f of SE_FILES) m[f.replace(/\.[^.]+$/,'').toLowerCase()]=
     'resources/audio/'+(/^vo_/i.test(f)?'vo/':'se/')+f;
   return m; })();
+/* ══⚠⚠ **音效名 → 檔案：兩張登記表都要查**（ver -1003，Ray：「hp+40 的 se_healing
+   沒出來」）══ 這個專案的音效登記在**兩個地方**：
+     · `SE_FILES`（這一支上面那張）＝劇情層自己用的那 20 幾支，沒有 ASSETS 鍵
+     · `config.js` 的 `ASSETS`＝全遊戲共用的（`se_healing`／`se_buy`／武器音…）
+   `playSe` 以前只查前者，所以拿 ASSETS 那一族的名字來叫**靜靜不播**
+   （只印一行 console）—— 回復音就是這樣掉的。
+   ⚠⚠ 修在**這一支**、不要把檔名抄一份進 `SE_FILES`（鐵律 7：那會變成同一個檔案
+     兩張表，改檔名只改得到一邊 —— 上面那段註解警告的正是反方向的同一件事）。
+   ⚠ 增益不受影響：`fileGain` 的鑰匙是**檔名**，兩條路拿到的都是同一個路徑字串。 */
 function seSrc(n){ const k=String(n||'').toLowerCase();
-  return SE_SRC[k] || SE_SRC[SE_ALIAS[k]] || null; }
+  return SE_SRC[k] || SE_SRC[SE_ALIAS[k]] || asset(n) || asset(SE_ALIAS[k]) || null; }
 /* ⚠⚠ **劇情用的音效要一起進開機預載**（ver -433，Ray：「為什麼不能把 se 放在預載
    第一位？se 永遠都出不來，一開始的 step 跟 fall 在手機從來沒播過」）。
    ⚠ 真正的原因**不是順序**：`main.js` 的開機批次是從 `ASSETS` 掃出來的，而
