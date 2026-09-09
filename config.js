@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.09-994';
+export const VERSION = 'ver 2026.09.09-995';
 
 export const GAME_CONFIG = {
 
@@ -1004,12 +1004,12 @@ export const GAME_CONFIG = {
              ⚠ 「從滿 HP 開始算」只有「**真的把血灌滿再抽**」這一個讀法能自洽：
                不灌血而用滿血的斜率去抽，會提早見底，比原本還短。 */
           niFullStart:1 },
-        { star:'Alzirr', skill:'passive',          name:'蹄鐵星',
+        { star:'Alzirr', skill:'passive',          name:'鐵蹄星',
           desc:'明晰之夢延長為 15 秒，期間所有反擊攻擊力提升。',
           /* 攻擊力與赤足星累計＝2（紅圈）。**秒數也再 +5**（ver -994）：
              5 →（赤足星）10 →（這一顆）15 —— 定稿的兩句都寫了「延長為」。
-             ⚠ Ray 的卡上這一顆只寫西文星名與「被動技升級」，中文名是**我暫填的**
-               （Alzirr ＝ ξ Gem，阿拉伯語「鈕扣／蹄鐵」）—— 要換就改這一格。 */
+             ⚠ 中文名「鐵蹄星」由 Ray 定（ver -995）—— 他的卡上這一顆原本只有西文
+               星名與「被動技升級」，我一度暫填成「蹄鐵星」，已更正。 */
           lucidSec:5, counterAtk:1 },
         { star:'Wasat', skill:'active',           name:'界心星',
           desc:'夢境破碎若在夢魘化期間最後一格時發動，一次給與敵人最大體力的 30% 傷害。',
