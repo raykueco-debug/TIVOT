@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.09-970';
+export const VERSION = 'ver 2026.09.09-971';
 
 export const GAME_CONFIG = {
 
@@ -503,7 +503,14 @@ export const GAME_CONFIG = {
            黃橘是提早亂噴 —— 她就在你前面，噴得越亂越可能打到她。
          · ⚠ **同一條 `except` 也適用**（`萊福槍` 不受影響）：TK 是**重武器**的問題，
            Ray 那句理由講的就是重武器 —— 遠距單發的那一把沒有這個問題。
-           ⚠⚠ 這一條是我照他的理由推的，他沒有明說例外要不要沿用。
+           ⚠⚠ **ver -971 Ray 確認沿用**（「索是共鬥者，不是後方術師，而且定位玩法是
+             破防 loop，設定上防止重武器 TK 本來就會降命中」）—— 這一段不再是待決事項。
+           ⚠ 但**它對現有六把槍一發都不差**：萊福槍的黃橘圈本來就不反擊
+             （卡上 `block:{take:0.5}`／`perfect:{take:0.25}` 沒有 `counter:true`，
+             `defense.resolveThreat` 只在 `counter:true` 那兩支才叫 `weaponCounter`）
+             —— `except` 在 `bandMul` 這一格是空的，留著只為了語意一致：
+             日後真的給萊福槍開黃橘反擊時，規則不會突然變樣。
+             `except` 現在唯一真的在擋的是 `mul`（紅圈 ×0.5）。
          · ⚠ **只咬「玩家自點」那條路**：共鬥的飛刀（`weapon.coopCounter`）根本沒有
            命中判定，天生不受影響 —— 不必另外寫守門。
          · ⚠ 帶名照 `weaponBand` 的三個鑰匙（`block`／`perfect`／`counter`），
