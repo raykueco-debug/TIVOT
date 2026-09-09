@@ -1405,6 +1405,20 @@
      storyStage 是 body 直屬，藏 #app 不會誤傷舞台）。動畫暫停那條留著當保險。 */
   body:has(#storyStage.on) #app{ visibility:hidden; }
   body:has(#storyStage.on) #home *, body:has(#storyStage.on) #app *{ animation-play-state:paused !important; }
+  /* ══⚠⚠⚠ **門開著的那幾秒，戰鬥層要露回來**（ver -1008，Ray：「禍魘的淨化特效
+     怎麼都沒了」→「淨化跟關門同時就好，因為有些 boss 自帶背景，不同時會露陷」）══
+     `kerb-open` 那一段本來就寫著「縫裡要露出**底下的戰鬥畫面**」（見 §槍棺那一節），
+     但 -849 的鐵律 10 把 `#app` 整層藏掉之後，那句話就再也不成立了 ——
+     開棺看不到降臨、閉棺看不到淨化，而且**畫面上沒有任何錯誤訊息**。
+     · 淨化 600ms、兩扇合上 900ms（`KERB_T.open`）：怪在門闔上的過程中散掉，
+       門闔上時它剛好不見了 —— 不必把門押後（-1007 押過 0.6 秒，Ray 退回：
+       怪散開之後，卡上自帶背景的那幾隻會露出一張空背景）。
+     ⚠ 這**不是**在破鐵律 10：`kerb-open` 只在門的那一段演出期間存在（一兩秒），
+       舞台平時開著時 `#app` 照舊整層不畫。
+     ⚠ 動畫那一條要跟著解，不然 `animation-play-state:paused !important` 會把
+       淨化與降臨凍在第一幀（兩條同特異度，靠源序覆蓋）。 */
+  body:has(#storyStage.kerb-open) #app{ visibility:visible; }
+  body:has(#storyStage.kerb-open) #app *{ animation-play-state:running !important; }
   /* ══ 鐵律 10 補洞（ver -851，Ray 的實機 HUD 抓到：人在首頁，∞動畫列著
      moonCharge/moonBeam ＝ 月光計量表在首頁底下照畫）══
      #home 長在 #app **裡面**，所以不能整層藏 #app —— 藏的是戰鬥 UI 那兩塊

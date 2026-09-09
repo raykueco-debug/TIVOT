@@ -1583,17 +1583,15 @@ function autoClearOverkill(){
   }, OVERKILL_NEXT_DELAY_MS);
 }
 
-/* ══ 淨化演完才關門（ver -1007，Ray：「禍魘的淨化特效怎麼都沒了」）══
-   槍棺關門（與中間場的收門）第一件事就是 `#storyStage.on`，而那會把整個 `#app`
-   `visibility:hidden`＋暫停它所有動畫（鐵律 10）—— 與 `purgeEnemy()` 同一拍發生，
-   淨化因此一幀都看不到。剩多久問 `enemy.purgeHoldMs()`（唯一的計算點，鐵律 7）。
-   ⚠ 掛在**兩條收場路**上，不是掛在 `finishEnemyOrAdvance`：那時還沒 `state.over`，
-     延後等於讓玩家在一隻死掉的怪面前多活 0.6 秒（大絕還會打過來）。
-     `win()` 裡 `state.over=true; stopAll()` 之後才等，畫面是凍住的。 */
-function afterPurge(fn){
-  const ms = enemy.purgeHoldMs();
-  if(ms>0) setTimeout(fn, ms); else fn();
-}
+/* ══⚠⚠⚠ **淨化與關門是同時的，不要把門押後**（ver -1008，Ray：「淨化跟關門同時
+   就好，因為有些 boss 自帶背景，不同時會露陷」）══
+   -1007 曾經讓門等 0.6 秒，好讓淨化演得完 —— 但怪一散開，卡上自帶背景的那幾隻
+   就會露出一張**空的背景**（怪沒了、門還開著），那比看不到淨化更糟。
+   ⚠ 真正的洞不在時序，在**可見性**：`#storyStage.on` 會把 `#app` 整層藏起來
+     （鐵律 10，ver -849）。門開著的那幾秒本來就該露出戰鬥層（`kerb-open` 那一段
+     CSS 的原話：「縫裡要露出底下的戰鬥畫面」），修在 style.css 那一條例外。
+   ⇒ 兩件事因此同時成立：淨化 600ms、兩扇合上 900ms（`KERB_T.open`）——
+     怪在門闔上的過程中散掉，門闔上時它剛好不見了。 */
 /* ---- 敵死收尾：局內還有下一敵→轉敵、否則→結算 ---- */
 /* 「這是不是最後一名敵人」只有這一支（鐵律 7）。
    教學戰／劇情插入戰＝單敵一場，永遠是最後一名。
@@ -1918,7 +1916,7 @@ function win(){
     /* EXP 與錢**整場結算**（ver -595）：中間這幾場先記帳，收段那一場一起入。 */
     inspector.bankSessionGain(stats);
     const back = ()=>{ if(storyReturn) storyReturn({ lost:false, inPlace:true }); };
-    afterPurge(()=>{ if(storyShut) storyShut(back); else back(); });
+    if(storyShut) storyShut(back); else back();
     return;
   }
   const toResult = ()=>{
@@ -1941,10 +1939,8 @@ function win(){
   /* ⚠ 劇情版教學：**先演「關門」**（進場那一套的倒放）再上結算（ver -366，Ray 指定）。
      進場是門推上來、打開露出戰場；打完就該把門關回去 —— 沒有這一段，畫面會從戰鬥
      硬切到結算頁。關門的最後一步會上黑透遮罩並把劇情層收掉，才輪到結算。 */
-  afterPurge(()=>{
-    if(storyFramed() && storyClose) storyClose(toResult);
-    else playTransition('finish', toResult);
-  });
+  if(storyFramed() && storyClose) storyClose(toResult);
+  else playTransition('finish', toResult);
 }
 function lose(){
   if(state.over) return;

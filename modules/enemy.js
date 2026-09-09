@@ -596,28 +596,23 @@ function spawnPurgeStars(){
    ⚠ 判定看**敵人卡的 `kind`**（ver -423 就有的那一格，結算副標也是讀它）——
      不要另立一個「要不要播特效」的欄位，那是同一件事的第二個真相（鐵律 7）。
    ⚠ 其餘 kind 目前**沒有專屬死法**（維持原本的行為）；Ray 給了再照這裡加一支。 */
-/* ⚠⚠ **必須對上 CSS `enemyPurge` 的 .6s**（style.css 的 `#enemyImg.enemy-purge`）——
-   改一邊要改另一邊（鐵律 7 的但書，兩邊註解互指）。 */
-const PURGE_MS = 600;
-let purgeAt = 0;
+/* ══⚠⚠⚠ **它為什麼曾經「整個不見」**（ver -1007 查到／-1008 定案）══
+   演出本身沒壞（class 掛得上、18 顆星芒也生得出來）—— 壞的是**可見性**：
+   `combat.win()` 在這一支的**同一拍**就叫 `story.playKerberosClose`，而那一支開頭
+   就 `#storyStage.on`，CSS 的 `body:has(#storyStage.on) #app{visibility:hidden}`
+   （鐵律 10，ver -849）當場把整個戰鬥層藏起來、連動畫都 paused。
+   ⚠ 只在**劇情／城鎮戰**成立（那條路才走槍棺關門）；試玩版「挑戰」走
+     `playTransition`，`#app` 不會被藏 —— 所以那邊一直是好的，也因此一直沒被發現。
+   ⚠ 修在 style.css：門開著的那幾秒（`#storyStage.kerb-open`）把戰鬥層露回來
+     —— 那本來就是那一段 CSS 的原意（「縫裡要露出底下的戰鬥畫面」）。
+   ⚠⚠ **不要改成「等淨化演完再關門」**（-1007 試過，Ray 退回）：怪一散開，
+     卡上自帶背景的那幾隻就會露出一張空背景。淨化 600ms、兩扇合上 900ms，
+     **同時演**本來就演得完。 */
 export function purgeEnemy(){
   if(!isPurify()) return;
   const eImg = $('enemyImg');
   if(eImg) eImg.classList.add('enemy-purge');
   spawnPurgeStars();
-  purgeAt = Date.now();
-}
-/* ══⚠⚠⚠ **淨化要演完才准關門**（ver -1007，Ray：「禍魘的淨化特效怎麼都沒了」）══
-   成因：`combat.win()` 在 `purgeEnemy()` 的**同一拍**就叫 `story.playKerberosClose`，
-   而那一支開頭就 `#storyStage.on` —— CSS 的
-   `body:has(#storyStage.on) #app{visibility:hidden}`（鐵律 10，ver -849）當場把整個
-   戰鬥層藏起來、連 `animation-play-state` 都設成 paused。**淨化一幀都沒被看到。**
-   ⚠ 這一條只在**劇情／城鎮戰**成立（那條路才走槍棺關門）—— 試玩版「挑戰」走
-     `playTransition`，`#app` 不會被藏，所以那邊一直是好的（也因此不容易發現）。
-   ⚠ 修在**時序**不在演出：不要為了看得到就把 `#enemyImg` 抬出 `#app`（那會破鐵律 10，
-     而且結算頁一樣要蓋掉它）。呼叫端問這一支還要等多久，等完再關門。 */
-export function purgeHoldMs(){
-  return purgeAt ? Math.max(0, PURGE_MS - (Date.now()-purgeAt)) : 0;
 }
 
 // UI 顯示名：一律隱藏「_」之後的內容（如 '地下聖徒_A' → '地下聖徒'）。
@@ -633,7 +628,6 @@ export function setEnemy(key){
   if(!en) return;
   stopSakura();                                 // 換了一隻怪 → 上一隻的櫻花與 Sturm 一起收（ver -899）
   state.currentEnemyKey = key;                 // 3.7：記住目前怪 key，供 boardGridFor 查每盤格數
-  purgeAt = 0;                                 // 換了一隻怪＝上一隻的淨化不再有人在等（ver -1007）
   state.enemyHitsTaken = 0;                     // 換了一隻怪 → 「這一隻」的受擊數歸零（九階「方舟」，ver -708）
   /* 這一局的出場帳（ver -921，Ray：「好感度給出場數最多的那一位全拿」）——
      記在**現在出場的那一位**頭上。⚠ 掛在這裡是因為 `setEnemy` 就是「一場」的
