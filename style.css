@@ -3595,6 +3595,20 @@
   #gearSheet .gs-glv-bar i{display:block;height:100%;border-radius:2px;
     background:linear-gradient(90deg,var(--gold-dim),var(--gold));
     transition:width .35s ease;}
+  /* ══ 管理人：手動改好感度（ver -982）══ 只有 `body.testmode` 看得到這一條 ——
+     好感的數字**平時不對玩家顯示**（那是設計，不要順手把它變成常駐 UI）。
+     版面沿用等級條那一列的語彙（同樣的字級與金色），只是右邊多兩顆 ±。 */
+  #gearSheet .gs-aff{display:none;}
+  body.testmode #gearSheet .gs-aff{display:flex;align-items:center;gap:6px;
+    margin-top:5px;font-size:10px;color:var(--gold-dim);
+    border-radius:3px;outline:1px dashed rgba(214,178,92,.35);outline-offset:3px;}
+  #gearSheet .gs-aff b{font-weight:normal;font-size:12px;letter-spacing:1px;color:var(--gold);}
+  /* 數字本身也是熱區：點一下跳到下一段的地板（0→20→40→60→80→0）。 */
+  #gearSheet .gs-affv{flex:1 1 auto;cursor:pointer;color:var(--gold);
+    font-variant-numeric:tabular-nums;}
+  #gearSheet .gs-affb{cursor:pointer;min-width:22px;text-align:center;
+    padding:1px 0;border-radius:4px;background:rgba(212,169,74,.14);color:var(--ink);}
+  #gearSheet .gs-affb:active{background:rgba(212,169,74,.34);}
   /* 技能說明：吃掉右欄剩下的高度，塞不下就自己捲（不要把立繪擠掉）。 */
   #gearSheet .gs-perks{flex:1 1 auto;min-height:0;overflow-y:auto;}
   #gearSheet .gs-perk{margin-top:8px;font-size:10px;line-height:1.65;color:var(--gold-dim);}

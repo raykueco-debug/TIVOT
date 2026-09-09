@@ -85,6 +85,28 @@ function girlLvHtml(key){
      正規的路只有結算發 EXP。沒有它，技能到了根本測不動。
    ⚠ 星名還沒填的（安雅／索菈娜的卡到之前是空的）就印「Lv N」當名字，
      **不要自己編一個**（同 `girlStarName` 那一條）。 */
+/* ══⚠⚠ **管理人：手動改好感度**（ver -982，Ray：「讓管理人可以在伙伴欄手動改好感度」）══
+   ⚠ **只有 `body.testmode` 看得到**（CSS 那一條）：好感的數字平時不對玩家顯示，
+     那是設計 —— 不要順手把它變成常駐 UI。
+   三個熱區：`−` / `＋` 各動 **1**（蕾娜的 0.25 用不到手調，她只吃評價），
+   中間的數字點一下**跳到下一段的地板**（0→20→40→60→80→回 0）——
+   要測段位差分時一顆就到位，不必按二十下。
+   ⚠ 寫入走 `prog.setAffectionDev`（那一支連棘輪的地板一起改，見它的說明）——
+     用 `addAffection` 的話只上得去下不來。
+   ⚠ `who` 寫進屬性（同九星那一族）：卡上顯示的是玩家正在看的那一頁籤。
+   ⚠⚠ **蕾娜不在這裡**：伙伴欄只有 `config.partners` 那幾位，她是監察官不是搭檔。
+     要調她的好感目前只能改 localStorage（`tivot_affection_v1`）—— Ray 要的話再加一格。 */
+function affRowHtml(key){
+  if(!prog.isGirl(key)) return '';
+  const v = (prog.getAffection()||{})[key] || 0;
+  const t = prog.tierOf(v);
+  return '<div class="gs-aff">'
+       +   '<b>好感</b>'
+       +   '<span class="gs-affb" data-aff="'+key+':-1">−</span>'
+       +   '<i class="gs-affv" data-affjump="'+key+'">'+v+'　T'+t+'</i>'
+       +   '<span class="gs-affb" data-aff="'+key+':1">＋</span>'
+       + '</div>';
+}
 function girlStarListHtml(key){
   if(!prog.isGirl(key)) return '';
   const arr=((GAME_CONFIG.girls||{}).levels||{})[key]||[];
@@ -291,6 +313,7 @@ function render(){
        （蕾娜沒有；蕾妮／馬季諾是試玩版的）。⚠ 等級與進度全部問 `progress`
        那兩支（`girlLevel`／`girlProgress`，鐵律 7）—— 這裡一個數字都不自己算。 */
     +     girlLvHtml(pk)
+    +     affRowHtml(pk)          // 管理人限定：手動改好感度（ver -982）
     /* ⚠⚠ 技能說明包成自己的一塊（ver -715，Ray：「伙伴立繪太大了，下方要有足夠
        空間說明主備動技能」）—— 立繪改成**不伸展**（見 CSS 的 `gs-pcard`），
        多出來的高度歸這一塊，塞不下就它自己捲。
@@ -472,6 +495,32 @@ function bind(){
     if(!prog.isGirl(who)) return;
     const i=(idx|0)+1;
     prog.setGirlLevel(who, (prog.girlLevel(who)===i) ? 1 : i);
+    try{ SFX.menuClick(); }catch(_){}
+    render();
+  }));
+  /* 管理人：好感 ±1（ver -982）。⚠ 走 `setAffectionDev` —— 它連棘輪的地板一起改。 */
+  el.querySelectorAll('.gs-affb[data-aff]').forEach(d=>d.addEventListener('click', e=>{
+    e.stopPropagation();
+    const [who, dv] = String(d.dataset.aff||'').split(':');
+    if(!prog.isGirl(who)) return;
+    const cur=(prog.getAffection()||{})[who]||0;
+    prog.setAffectionDev(who, cur + (+dv||0));
+    try{ SFX.menuClick(); }catch(_){}
+    render();
+  }));
+  /* 管理人：點數字 → 跳到下一段的地板（0→20→40→60→80→回 0，ver -982）。
+     ⚠ 段位的地板問 `prog.tierFloor`（唯一那一支）—— 不要在這裡寫死 20/40/60/80。 */
+  el.querySelectorAll('.gs-affv[data-affjump]').forEach(d=>d.addEventListener('click', e=>{
+    e.stopPropagation();
+    const who=d.dataset.affjump;
+    if(!prog.isGirl(who)) return;
+    const cur=(prog.getAffection()||{})[who]||0;
+    const t=prog.tierOf(cur);
+    /* 已經站在這一段的地板上 → 跳下一段；否則先跳到這一段的地板。
+       ⚠ T5 的地板再點就歸 0（一顆鈕來回，同九星／等級那兩條梯子的手感）。 */
+    const here=prog.tierFloor(t);
+    const next = (cur===here) ? (t>=5 ? 0 : prog.tierFloor(t+1)) : here;
+    prog.setAffectionDev(who, next);
     try{ SFX.menuClick(); }catch(_){}
     render();
   }));

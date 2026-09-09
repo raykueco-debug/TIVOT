@@ -577,6 +577,25 @@ export function addAffection(who, delta){
   return v;
 }
 
+/* ══⚠⚠ **管理人限定：直接把好感設成某個值**（ver -982，Ray：「讓管理人可以在
+   伙伴欄手動改好感度」）══ 明寫的開發梯子（鐵律 9 的例外，同 `setStarCount`／
+   `setGirlLevel`）—— 正規的路只有 `applyRankAffection`（戰後評價）。
+   ⚠⚠ **連棘輪的地板一起改**：`addAffection` 只會把值往上夾（① 棘輪），
+     不動地板的話這個工具**只上得去下不來**，等於沒有用。
+   ⚠ 地板照 `addAffection` 的同一條規矩算（達到那條線才抬，見那一支的 ver -723 註解）
+     —— 不要在這裡另訂一套，不然開發時調出來的狀態與玩家真的玩出來的不一樣。
+   ⚠ 一樣對齊到 1/4（蕾娜的 +0.25）、夾在 [0, AFF_MAX]。 */
+export function setAffectionDev(who, v){
+  if(CHARS.indexOf(who)<0) return null;
+  const aff=getAffection(), floors=getFloors();
+  const val = Math.min(AFF_MAX, Math.max(0, Math.round((+v||0)*4)/4));
+  aff[who]=val; setAffection(aff);
+  const nf = tierFloor(tierOf(val));
+  floors[who] = (val >= nf) ? nf : 0;
+  wr(K.affFloor, JSON.stringify(floors));
+  return val;
+}
+
 /* ── 玩家名 ──
    ⚠ 台詞裡寫 {P}，**顯示的那一刻才代換**（存進播放佇列就換的話，玩家中途
      改名，正在播的那段還是舊名字）。代換函式在 story.js 的 subst。 */
