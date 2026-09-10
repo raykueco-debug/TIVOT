@@ -1246,32 +1246,46 @@ const ARC={
   /* ⚠ ver -1039（Ray：「讓計量從 6 點鐘方向開始跑」）：起角由 7 點改到 **6 點**，
      終點仍是 2 點 —— 所以掃角由 210° 變 **240°**（180 + 240 = 420 ≡ 60°＝2 點）。 */
   a0    : 180,     // 起角＝6 點（粗的那一端）
-  /* ⚠⚠ ver -1043（Ray：「計量表是同一條啊，順時針加上去」）：掃角由 240° 補到
-     **300°** —— 從 6 點順時針繞過 9 點、12 點、2 點，一路到 **4 點**收尾，
-     開口只剩右邊那 60°（＝ reference/gb 那張圖裡白環的樣子）。
-     ⚠ -1041 曾把「補到綠色那一截」做成另一段接到血條的橫槓 —— **那是誤讀**：
-       它是同一條環再往下繞的那一段，不是第二個元件。 */
-  sweep : 300,     // 順時針掃到 4 點（細的那一端）
+  /* ⚠⚠⚠ **形狀是「一截橫槓 ＋ 一圈環」，但它是同一條**（ver -1044，Ray：
+     「第二版的形狀是對的，只是你把他做成兩條了，照那個形狀做成一條就好了」）：
+     起點在血條左緣（橫槓的右端）→ 往左走到 6 點 → 順時針繞到 2 點。
+     ⚠ 橫槓與環在 6 點**天生接得上**：橫槓的中心線就是環在 6 點的中線
+       （`ri + w0/2`），上下緣正好是環的內外緣 —— 不必對齊，是同一個算式。
+     ⚠ -1043 曾把它改成「純環、掃角 300°」——那也是誤讀（那樣就沒有伸向血條的
+       那一截了）。 */
+  sweep : 240,     // 順時針掃到 2 點（細的那一端）
   /* ⚠⚠ **內緣是常數**（ver -1038，Ray：「計量要緊貼角色頭像」）：粗細一律往**外**長。
      中心線固定、往兩側長的話，越細的那一段內緣就離頭越遠 —— 那正好與「緊貼」相反。 */
-  /* ⚠ 比例 ver -1039 重排：整組縮到與切換武器鈕同大（見下），環帶就得讓位給臉 ——
-     頭像佔比由 0.50 提到 0.62，環帶改薄。 */
-  ri    : 31.5,    // 內緣半徑（頭像半徑 31 ＋ 0.5 的縫）
-  w0    : 16.5,    // 起點厚（前粗）→ 外緣 48
-  w1    : 3.5,     // 終點厚（後細；不給 0 —— 真的收成一點會鋸齒）
-  face  : 0.66,    // 頭像**寬度**佔 viewBox 的比例（ver -1040 由 0.62 再放大一點）
+  /* ⚠⚠ **比例 ver -1044 重排：頭像要比環的內緣窄**。-1040 那一版把頭像放到 0.66
+     （＝半徑 33 單位）而環的內緣是 31.5 —— 頭像整個壓在環上，畫面上幾乎只看得到
+     頭，環細得像一條線（我一度以為是沒畫出來）。
+     現在：頭像半徑 27 ＜ 內緣 29.5，左右兩側**讓開**環；而那一格仍往上長
+     （`faceH`），所以「頭頂稍遮住計量」照舊成立 —— 遮的是 12 點那一段。
+     ⚠ 外緣正好用滿 viewBox（29.5＋20.5＝50），整組的直徑就是 `BOX`。 */
+  ri    : 29.5,    // 內緣半徑（頭像半徑 27 ＋ 2.5 的縫）
+  w0    : 20.5,    // 起點厚（前粗）→ 外緣 50（貼齊框）
+  w1    : 8,       // 終點厚（後細；-1040 的 3.5 在 46px 的框裡只有 1.6px，看不見）
+  face  : 0.54,    // 頭像**寬度**佔 viewBox 的比例（半徑 27）
   faceH : 1.34,    // 頭像那一格的高＝寬 × 這個（往**上**長，讓頭頂蓋到環上）
   steps : 72,      // 折線近似的段數（每 ~3°）
 };
 /* 整組比切換武器鈕大多少（ver -1040，Ray：「計量跟女主頭像稍微放大」）。
-   ⚠ 上限是「面板左緣 → 血條左端」那一段：1.15 之下右緣只碰到血條的圓角，
-     再大就會真的遮到血量。 */
-const CLASP_UP=1.15;
-/* 錐形環帶的 path（唯一那一支）：外緣順掃、內緣逆掃，閉合成一片。
+   ⚠⚠ **上限是硬的**：能用的只有「面板左緣 → 血條左端」那 50px，扣掉左邊距 6px
+     ＝ 44px。1.10 正好用滿（40×1.10）；再大就是真的遮到血量。
+     ⚠ 所以頭像的大小也到頂了 —— 要再大只能把整組移出血條那一列（那又與
+       「下緣貼藍條」打架）。 */
+const CLASP_UP=1.10;
+/* ══ 那一條計量表的形狀（唯一那一支）══ 橫槓（右端→6 點）＋ 錐形環帶（6 點→2 點），
+   外緣順走、內緣逆走，閉合成**一片**。`tail` ＝橫槓在 viewBox 單位下的長度。
    ⚠ 角度→座標只有這裡在換：`(cx + R·sin a, cy − R·cos a)` —— SVG 的 y 向下，
-     所以這個式子同時滿足「0°在正上」與「順時針為正」，與 conic 遮罩對得起來。 */
-function arcPath(){
-  const cx=50, cy=50, out=[], inn=[];
+     所以這個式子同時滿足「0°在正上」與「順時針為正」。
+   ⚠ 橫槓的上下緣直接寫成 `ri` 與 `ri+w0`（＝環在 6 點的內外緣），所以兩段
+     **天生接得上**，不需要對齊、也不會有縫。 */
+function arcPath(tail){
+  const cx=50, cy=50, T=Math.max(0, tail||0), out=[], inn=[];
+  if(T>0){                                   // 橫槓：由右端走到 6 點
+    out.push([cx+T, cy+ARC.ri+ARC.w0]); inn.push([cx+T, cy+ARC.ri]);
+  }
   for(let i=0;i<=ARC.steps;i++){
     const k=i/ARC.steps, a=(ARC.a0+ARC.sweep*k)*Math.PI/180;
     const w=ARC.w0+(ARC.w1-ARC.w0)*k, si=Math.sin(a), co=Math.cos(a);
@@ -1284,6 +1298,19 @@ function arcPath(){
   for(let i=inn.length-1;i>=0;i--) d+='L'+P(inn[i]);
   return d+'Z';
 }
+/* 同一條的**中心線**（進度遮罩沿著它推進）：橫槓的中線 → 環的中線。
+   ⚠ 與 `arcPath` 是同一組數字算出來的兩個面向（形狀／進度），改一邊要改另一邊
+     —— 所以兩支放在一起，`tail` 也由同一個呼叫端傳。 */
+function arcMidPath(tail){
+  const cx=50, cy=50, T=Math.max(0, tail||0), pts=[];
+  if(T>0) pts.push([cx+T, cy+ARC.ri+ARC.w0/2]);
+  for(let i=0;i<=ARC.steps;i++){
+    const k=i/ARC.steps, a=(ARC.a0+ARC.sweep*k)*Math.PI/180;
+    const r=ARC.ri+(ARC.w0+(ARC.w1-ARC.w0)*k)/2;
+    pts.push([cx+r*Math.sin(a), cy-r*Math.cos(a)]);
+  }
+  return 'M'+pts.map(p=>p[0].toFixed(2)+','+p[1].toFixed(2)).join('L');
+}
 let claspSig='';
 let claspGeo=null;                                      // 遮罩/連擊數用的幾何（layoutClasp 算好，update 只讀）
 function layoutClasp(){
@@ -1291,9 +1318,6 @@ function layoutClasp(){
   const svgEl=$('claspArc'), track=$('claspArcTrack'), fillEl=$('claspArcFill');
   const blue=document.querySelector('.hpbar.player-bar'), red=document.querySelector('.hpbar.enemy-bar');
   if(!svgEl||!track||!fillEl||!blue||!red) return;
-  if(!track.getAttribute('d')){              // 形狀只算一次（它與尺寸無關 —— viewBox 自己縮放）
-    const d=arcPath(); track.setAttribute('d',d); fillEl.setAttribute('d',d);
-  }
   const hr=host.getBoundingClientRect(), br=blue.getBoundingClientRect(), rr=red.getBoundingClientRect();
   if(hr.height<10||br.width<10) return;      // 還沒排好 → 之後的重試再量
   const sig=[hr.x,hr.y,br.x,br.y,br.height,rr.y].map(v=>Math.round(v)).join(',');
@@ -1345,6 +1369,18 @@ function layoutClasp(){
   const CY=(br.y+br.height-2)-RAD-hr.y;                 // 底緣＝藍條底往上 2px
   svgEl.style.left=(CX-RAD)+'px'; svgEl.style.top=(CY-RAD)+'px';
   svgEl.style.width=BOX+'px';     svgEl.style.height=BOX+'px';
+  /* 橫槓那一截伸到**血條左緣內 2px**。換算成 viewBox 單位（圓心在 50）並夾住 ——
+     `arcPath` 的座標必須留在 0~100 內，不然會被 svg 的框裁掉。
+     ⚠ 形狀因此**與版面有關**（血條的位置會變），所以每次重量都重算一次 d；
+       兩條 path（形狀／中心線）由同一個 `tail` 產生（鐵律 7）。 */
+  const tailU=Math.max(0, Math.min(46, ((BL-hr.x)-2-CX)/BOX*100));
+  const dShape=arcPath(tailU);
+  track.setAttribute('d', dShape); fillEl.setAttribute('d', dShape);
+  const mp=$('claspProgPath');
+  if(mp){ mp.setAttribute('d', arcMidPath(tailU));
+          /* 筆畫要蓋得住最厚的地方（`w0`）＋一點餘裕；溢出到形狀外沒關係 ——
+             真正決定形狀的是 fill 那條 path，遮罩只管「走到哪裡」。 */
+          mp.setAttribute('stroke-width', String(ARC.w0+6)); }
   /* 副武器切換鈕（-549 與月對稱 → -550 移出血條 → -551 縮小靠右壓低）：
      盒＝月的 0.78 倍，右緣＝面板右緣內 BPAD、垂直中心＝兩條血條的中線；
      圓卡直徑＝盒的短邊。幾何只算這一處（鐵律 7），weapon.js 只管卡面與行為。 */
@@ -1493,24 +1529,16 @@ function armClaspLayout(){ claspSig=''; [0,120,400,1000].forEach(ms=>setTimeout(
 window.addEventListener('resize', ()=>{ claspSig=''; setTimeout(layoutClasp,60); });
 
 function updateEnergyClasp(){
-  /* 計量（ver -539 起的同一套邏輯，-1037 只把形狀換成環帶）：
-     金色那一片被 conic 遮罩由起角（`ARC.a0`＝7 點）順時針掃出來，
-     掃角＝energy 比例 × `ARC.sweep`。0＝整片藏起（只剩底槽）、
-     滿＝拿掉遮罩（避免 360° 接縫）。邊界羽化 ±0.6° 抗鋸齒。
-     ⚠ 遮罩的圓心就是 viewBox 的正中（50% 50%）＝環帶的圓心＝頭像的位置。 */
-  const fillEl=$('claspArcFill');
+  /* ══ 計量（ver -1044：conic → **沿路徑推進**）══
+     整條（橫槓 ＋ 環）是一條 path，進度用遮罩裡那一筆的 `stroke-dasharray` 表達：
+     `pathLength="100"` 讓它用 0~100 講話，所以「橫槓佔幾成」是**長度自己決定的**，
+     不必另外分配（-1041 那個 `tailFrac` 就是為了兩個元件才需要的東西）。
+     ⚠ 0＝整條藏起（只剩底槽）；滿＝畫滿。 */
+  const fillEl=$('claspArcFill'), progEl=$('claspProgPath');
   if(fillEl && claspGeo){
     const p=Math.max(0,Math.min(1,state.energy/100));
-    if(p<=0){ fillEl.style.visibility='hidden'; }
-    else if(p>=1){ fillEl.style.visibility='';
-      fillEl.style.webkitMaskImage='none'; fillEl.style.maskImage='none'; }
-    else{
-      const deg=p*ARC.sweep;
-      const m='conic-gradient(from '+ARC.a0+'deg at 50% 50%,'
-             +'#000 0deg,#000 '+Math.max(0,deg-0.6).toFixed(1)+'deg,rgba(0,0,0,0) '+(deg+0.6).toFixed(1)+'deg)';
-      fillEl.style.visibility='';
-      fillEl.style.webkitMaskImage=m; fillEl.style.maskImage=m;
-    }
+    fillEl.style.visibility = p<=0 ? 'hidden' : '';
+    if(progEl) progEl.setAttribute('stroke-dasharray', (p*100).toFixed(2)+' 100');
   }
   $('energyClasp').classList.toggle('full', state.energy>=100);
   /* 累積中隱隱發光（ver -543）：0<energy<100 掛 .charging（滿檔另有強光暈）。 */
