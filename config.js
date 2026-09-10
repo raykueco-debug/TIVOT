@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.11-1057';
+export const VERSION = 'ver 2026.09.11-1058';
 
 export const GAME_CONFIG = {
 
@@ -2983,8 +2983,18 @@ export const GAME_CONFIG = {
       /* ver -847（Ray：「語音全部被音樂壓住聽不見，調整響度讓語音清晰」「連開槍的
          音效都聽不見」）：bgm 由 -441 的 0.80 再壓一階到 **0.70** —— 音樂墊底，
          槍聲與語音才浮得出來。⚠ 飛行頁的 LAYER_BASE 是同一組數字的第二份
-         （非 module 頁面），改一邊要改另一邊。 */
-      layer: { vo:1.00, se:0.90, bgm:0.70 },
+         （非 module 頁面），改一邊要改另一邊。
+         ══⚠⚠ **ver -1058（Ray：「全域的語音都太小聲了，我捏著嗓子配的音給點面子」）**══
+         vo **1.00 → 1.40**（＋2.9 dB）、se 0.90 → **0.80**（−1 dB，讓出空間）。
+         ⚠ 這一層是**相對比例**，不是絕對音量：逐支的 `fileGain` 已經把每一支拉到
+           `targetLufs`，這裡只決定「語音比音效大多少」。
+         ⚠⚠ **峰值幾乎不會變**：語音的 gain 本來就夾在 `peakCeilDb`（+2 dBFS），
+           ×0.49 的 master 之後約 −6 dBFS，再 ×1.4 是 −3.3 dBFS ——
+           剛好落在匯流 limiter 的門檻（−6 dB／ratio 12）上，被輕壓成 ≈−5.8。
+           所以**變大的是響度（RMS）不是峰值**，不會削波。
+         ⚠ 還嫌不夠的話要動的是 `targetLufs`（−20 往上），但那等於**全部的
+           `fileGain` 都要重量**（每一支都是依它反推的）—— 不要只調其中幾支。 */
+      layer: { vo:1.40, se:0.80, bgm:0.70 },
       /* 語音時 BGM 自動閃避（ver -847）：語音開播把 BGM 壓到 level 倍、結束淡回。
          audio.js 的 setVoiceDuck 吃這一組（main 開機推入）。 */
       voiceDuck: { level:0.35, attackMs:120, releaseMs:350 },

@@ -2011,7 +2011,9 @@ function volOf(layer){
    ⚠ 數字是量出來的（`tools/audio_scan.html`），不要憑感覺改：
      gain = 10^((−20 − 平均LUFS)/20) ÷ master。 */
 const AUDIO_MASTER = 0.49;                          // ＝ config tuning.masterVolume
-const LAYER_BASE   = { bgm:0.70, se:0.90, vo:1.00 };// ＝ config tuning.loudness.layer（ver -847 bgm 0.80→0.70，兩邊互指）
+const LAYER_BASE   = { bgm:0.70, se:0.80, vo:1.40 };// ＝ config tuning.loudness.layer（ver -1058 vo 1.00→1.40／se 0.90→0.80，兩邊互指）
+/* ⚠ 這一頁的 `fileVol` 夾在 1（HTMLAudio 的 volume 上限），所以拉高 `vo` 在這裡
+   可能被夾住 —— 主遊戲走 WebAudio 沒有這個限制。數字仍要同步，不然兩邊走鐘。 */
 const FILE_GAIN = {
   bgm_flight:4.056, se_flight_sail_loop:7.928, se_flight_idle_loop:2.848,
   se_flight_train:5.059, se_flight_seagull:3.353, se_flight_heartbeat:5.064,
