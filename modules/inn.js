@@ -747,13 +747,26 @@ export function relayout(){
        ② **坐坐改成畫面上的固定落點**（不再問背景圖的 `bgPoint`）：它是常駐的
          操作鈕，不是場景裡的一個物件 —— 錨在背景圖上就會隨機器長寬比滑動。
      ⚠ `innSpots.sit` 因此沒有人讀了（欄位留著不刪，日後要改回來只動這裡）。 */
-  const SIT_AT = { x:0.20, y:0.76 };     // 畫面偏左下（stage 的比例，Ray 指定）
+  /* ══⚠⚠⚠ **行動鈕的下界是「楣的上緣」不是舞台底**（ver -1031，Ray：「獨自坐坐要在
+     上方畫面，不要跑到槍棺上」）══
+     `#storyStage` 是**整個舞台**（上半場景區 ＋ 下半槍棺）—— 拿 `sr.height` 當底
+     就等於允許鈕落在槍棺上。場景區的底是**楣的實際上緣**，那個值由 `layoutKerberos`
+     解出來並發佈成 `--kerb-clip-top`（ver -404 起也寫在 `:root`）。
+     ⚠ **讀它、不要用等價的式子再算一次**（鐵律 7）：那個位置是解出來的，
+       「舞台高 × 56%」在不同視窗比例下與它差好幾十 px（ver -364 的老教訓）。
+     ⚠ 量不到（還沒排版完）才退回 56% —— 那是估值，只在第一幀用得到。 */
+  const sceneBottom = (st, sr)=>{
+    const v = parseFloat(getComputedStyle(st).getPropertyValue('--kerb-clip-top'));
+    return (isFinite(v) && v > 0 && v <= sr.height) ? v : sr.height*0.56;
+  };
+  const SIT_AT = { x:0.20, y:0.80 };     // 場景區的偏左下（y 是**場景區**的比例，Ray 指定）
   const put=(sel, want, sp, fixed)=>{
     const b=layer.querySelector(sel); if(!b) return;
     const stF=story.stageEl();
     const p = !want ? null
             : (fixed && stF)
-              ? (r=>({ x:Math.round(r.width*fixed.x), y:Math.round(r.height*fixed.y) }))(stF.getBoundingClientRect())
+              ? (r=>({ x:Math.round(r.width*fixed.x),
+                       y:Math.round(sceneBottom(stF, r)*fixed.y) }))(stF.getBoundingClientRect())
               : ((sp && host && host.bgPoint) ? host.bgPoint(sp.x, sp.y) : null);
     if(!p){ b.classList.remove('on'); return; }
     b.style.left=p.x+'px'; b.style.top=p.y+'px';
@@ -774,7 +787,10 @@ export function relayout(){
        但 -478 之後鈕在對白期間本來就整顆淡出讓開（`body.story-talking`）——
        兩個機制管同一件事，而這一個還會**隨台詞長度把鈕挪來挪去**（見上面的說明）。
        下界改成單純的「畫面內」。 */
-    const bottom = sr.height - halfH - 8;
+    /* 下界＝**楣的上緣**（ver -1031）：兩顆鈕都不准落到槍棺上。
+       ⚠ 睡覺那顆錨在背景圖（櫃台）上，長寬比一變也可能被推下去 —— 同一道守門
+         守住兩顆（鐵律 8），不要只修被回報的那一顆。 */
+    const bottom = sceneBottom(st, sr) - halfH - 8;
     b.style.top = Math.min(Math.max(p.y, halfH+8), Math.max(halfH+8, bottom)) + 'px';
   };
   put('[data-act="sit"]',   wantSit,   spots.sit,   SIT_AT);   // 固定落點（ver -1028）
