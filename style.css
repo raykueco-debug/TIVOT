@@ -599,14 +599,33 @@
 
   /* 特效層（槍擊命中、彈殼、爪痕、飄字都畫在這） */
   #fxTop{position:absolute;inset:0;pointer-events:none;z-index:5;overflow:hidden;}
-  .muzzle{position:absolute;width:54px;height:54px;margin:-27px;pointer-events:none;
-    background:radial-gradient(circle,#fff 0%,#ffe08a 30%,rgba(212,169,74,.6) 55%,transparent 70%);
-    animation:muzzle .18s ease-out forwards;}
-  @keyframes muzzle{from{opacity:1;transform:scale(.5) rotate(0)}
-    to{opacity:0;transform:scale(1.4) rotate(25deg)}}
-  .spark{position:absolute;width:3px;height:14px;background:linear-gradient(#fff,#d4a94a);
-    pointer-events:none;animation:spark .25s ease-out forwards;transform-origin:center;}
-  @keyframes spark{from{opacity:1}to{opacity:0;transform:translateY(-18px) scaleY(.3)}}
+  /* ══ 槍火（ver -1052，Ray：「現在是個圓點而已，帶點不規則的芒跟火星如何？」）══
+     形狀是**程式生成**的（`combat.starPolygon` 每一發重擲頂點），這裡只給顏色與動作。
+     ⚠ 不用 `filter`（同 -1049 的碎玻璃）：這是每一發子彈都會跑的特效，
+       drop-shadow 會讓每一片都變成獨立繪製層。亮度用漸層自己給。
+     ⚠ 芒的中心保留白熱核 —— 少了它整團會讀成一片橘霧，不像槍口的火。 */
+  .muzzle{position:absolute;width:50px;height:50px;margin:-25px;pointer-events:none;
+    background:radial-gradient(circle,#fff 0 26%,#fff4c8 38%,#ffce6a 54%,
+      rgba(255,150,40,.85) 70%,rgba(255,90,20,.4) 84%,transparent 94%);
+    animation:muzzle .16s ease-out forwards;}
+  @keyframes muzzle{
+    from{opacity:1;transform:rotate(var(--mzr,0deg)) scale(.35);}
+    60% {opacity:1;transform:rotate(var(--mzr,0deg)) scale(1.15);}
+    to  {opacity:0;transform:rotate(var(--mzr,0deg)) scale(1.45);}}
+  /* 衝擊環：「炸開」的那一下 —— 極短、細、往外擴。 */
+  .mz-ring{position:absolute;width:34px;height:34px;margin:-17px;pointer-events:none;
+    border-radius:50%;border:1.5px solid rgba(255,226,160,.9);
+    animation:mzRing .2s ease-out forwards;}
+  @keyframes mzRing{from{opacity:.95;transform:scale(.25);}
+    to{opacity:0;transform:scale(1.7);}}
+  /* 火星：往外放射＋帶一點重力往下墜，長短快慢逐顆不同（`--dx/--dy` 與 duration 由 JS 給）。 */
+  .mz-spark{position:absolute;border-radius:50%;pointer-events:none;
+    background:linear-gradient(#fff,#ffcf74 55%,#ff8a2b);
+    animation:mzSpark .35s cubic-bezier(.12,.62,.35,1) forwards;}
+  @keyframes mzSpark{
+    0%  {opacity:1;transform:translate(0,0) scale(1.25);}
+    70% {opacity:.9;}
+    100%{opacity:0;transform:translate(var(--dx,0),var(--dy,0)) scale(.35);}}
   .dmgnum{position:absolute;font-size:18px;font-weight:bold;color:var(--gold);
     text-shadow:0 0 8px #000;pointer-events:none;animation:floatup .7s ease-out forwards;}
   .critnum{color:#fff;font-size:26px;text-shadow:0 0 12px var(--danger),0 0 4px #fff;}

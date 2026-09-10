@@ -784,15 +784,72 @@ function gunHitOnEnemy(cell){
   const top=$('top').getBoundingClientRect();
   const px=relX*top.width;
   const py=(0.2+relY*0.6)*top.height;
-  const m=document.createElement('div'); m.className='muzzle';
-  m.style.left=px+'px'; m.style.top=py+'px'; fxTop.appendChild(m);
-  setTimeout(()=>m.remove(),200);
-  for(let i=0;i<4;i++){
-    const s=document.createElement('div'); s.className='spark';
-    s.style.left=px+'px'; s.style.top=py+'px';
-    s.style.transform=`rotate(${Math.random()*360}deg)`;
-    fxTop.appendChild(s); setTimeout(()=>s.remove(),260);
+  muzzleBurst(fxTop, px, py);
+}
+/* ══ 槍火（ver -1052，Ray：「射擊時敵人身上槍火炸裂的感覺不夠…現在是個圓點而已，
+   帶點不規則的芒跟火星如何？」）══════════════════════════════════════════════
+   三層疊起來，全部是**程式生成**（不用圖）：
+     ① **不規則星芒**：`clip-path` 的多角星，頂點數與每個尖的長度**每次重擲** ——
+        同一發不會長得一樣，那正是「圓點」缺的東西。
+     ② **衝擊環**：極短的一圈（.2s）往外擴 —— 「炸開」的那一下靠它。
+     ③ **火星**：6~9 顆往外放射、帶一點重力往下墜，長短快慢各自不同。
+   ⚠ 這是**每一發子彈**都會跑的特效（頻率遠高於碎玻璃），所以照 -1049 那一套來：
+     **池化、不用 filter、夾住同時存活數**。三層加起來 8~11 個元素，
+     舊版是 5 個 —— 多出來的成本靠「沒有 filter」與池化補回來還有餘。
+   ⚠ 幾何（px/py）由呼叫端算好；這一支只管長相。 */
+const MZ_MAX=90;                     // 同時存活的碎屑上限（超過就少噴）
+let mzLive=0;
+const mzPool=[];
+function mzEl(cls){
+  const e=mzPool.pop() || document.createElement('div');
+  e.className=cls; e.style.cssText=''; return e;
+}
+function mzFree(e, ms){
+  mzLive++;
+  setTimeout(()=>{ e.remove(); mzLive--; if(mzPool.length<MZ_MAX) mzPool.push(e); }, ms);
+}
+/* 不規則多角星的 `clip-path`。
+   ⚠⚠ 外半徑用 **`random()²`** 分布（不是均勻）：多數尖短、偶爾竄出一兩根長的
+   —— 均勻分布長出來的是「卡通星星」（每根差不多長），爆開的火不是那個樣子。
+   ⚠ 角度也各自抖一點，不然尖與尖之間等距，一樣會讀成幾何圖形。 */
+function starPolygon(spikes){
+  const pts=[];
+  for(let i=0;i<spikes;i++){
+    const j=(Math.random()-0.5)*(Math.PI/spikes)*0.7;              // 角度抖動
+    const a0=(i/spikes)*Math.PI*2 + j, a1=a0+Math.PI/spikes;
+    const ro=0.30+Math.pow(Math.random(),2)*0.70, ri=0.14+Math.random()*0.14;
+    pts.push((50+Math.cos(a0)*50*ro).toFixed(1)+'% '+(50+Math.sin(a0)*50*ro).toFixed(1)+'%');
+    pts.push((50+Math.cos(a1)*50*ri).toFixed(1)+'% '+(50+Math.sin(a1)*50*ri).toFixed(1)+'%');
   }
+  return 'polygon('+pts.join(',')+')';
+}
+function muzzleBurst(host, px, py){
+  if(!host) return;
+  const frag=document.createDocumentFragment();
+  // ① 星芒
+  const m=mzEl('muzzle');
+  m.style.left=px+'px'; m.style.top=py+'px';
+  m.style.clipPath=starPolygon(7+(Math.random()*4|0));
+  m.style.setProperty('--mzr', (Math.random()*360|0)+'deg');
+  frag.appendChild(m); mzFree(m,240);
+  // ② 衝擊環
+  const r=mzEl('mz-ring');
+  r.style.left=px+'px'; r.style.top=py+'px';
+  frag.appendChild(r); mzFree(r,260);
+  // ③ 火星
+  const n=Math.min(9, MZ_MAX-mzLive);
+  for(let i=0;i<n;i++){
+    const s=mzEl('mz-spark');
+    const a=Math.random()*Math.PI*2, d=16+Math.random()*38;
+    s.style.left=px+'px'; s.style.top=py+'px';
+    const sz=(1.2+Math.random()*2.2).toFixed(1);
+    s.style.width=sz+'px'; s.style.height=sz+'px';
+    s.style.setProperty('--dx', (Math.cos(a)*d).toFixed(0)+'px');
+    s.style.setProperty('--dy', (Math.sin(a)*d + 10+Math.random()*22).toFixed(0)+'px');  // ＋重力
+    s.style.animationDuration=(0.28+Math.random()*0.22).toFixed(2)+'s';
+    frag.appendChild(s); mzFree(s,540);
+  }
+  host.appendChild(frag);
 }
 /* 主槍的永久強化（ver -655，北方泊地槍店）。⚠ **只有這一支在算**（鐵律 7）：
    資料在 `tuning.gunTune`、旗標在 progress，這裡只是把兩者接起來。
