@@ -704,7 +704,20 @@ export function settle(totalTime, stats, opts={}){
      （combat 的 prog.setHp）存到的就是滿值 ＝ 下一局滿血滿格開場。
      ⚠ 連戰（session）中間幾場**不經過這裡**（midSession 不結算）—— 局內延續照舊。
      ⚠ 戰敗不歸位：那一局還沒結（回捲／續戰各走各的路）。 */
-  if(!isLose){ state.playerHp = state.playerMax; state.energy = 0; }
+  if(!isLose){
+    state.playerHp = state.playerMax; state.energy = 0;
+    /* ══⚠⚠⚠ **歸位也要寫回存檔**（ver -1061，Ray：「羽蛇戰時不知為何總是承接上一回戰
+       的殘血…所有船戰都是『一局』，打完就結算回血，殘血跨場不跨局，一經結算狀態
+       馬上復歸」）══
+       -755 只把 `state.playerHp` 拉回滿值 —— 但**持久 HP 那把鑰匙是在這之前寫的**
+       （`combat.win()` 一進來就 `prog.setHp(殘量)`，好讓連戰的下一格帶著傷）。
+       於是「結算回滿」只活在這一局的記憶體裡，下一局讀存檔拿到的還是殘量。
+       ⚠ 拔鑰匙（`clearHp`）而不是寫一個滿值：滿值是 `tuning.playerHp` 算的，
+         寫死一份就是第二個計算點（同 -498 敗北回滿的作法，鐵律 7/8）。
+       ⚠ 只有**打贏**才拔：戰敗那一局還沒結（回捲／續戰各走各的路，-755 的原則）。
+       ⚠ 連戰中間幾場不經過這裡（`midSession` 不結算）—— 局內延續照舊。 */
+    try{ prog.clearHp(); }catch(_){}
+  }
   /* 劇情版教學（諾薇兒帶的那一場）：結算頁**整個不出**（Ray 指定，見
      script/TUTORIAL_LINES_NOUVELLE.md 第八節）。
      ⚠ 正常情況下**根本走不到這裡** —— ver -325 起 combat 的 win()/lose() 在

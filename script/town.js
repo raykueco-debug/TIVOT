@@ -136,10 +136,15 @@ const SV_S8_DINE = { flag:'sv_s8_dine', need:'sv_s8_home', fromStage:8, lines:[
   Object.assign(corx('smile','請問……'), { dark:true }),
   Object.assign(corx('smile','幾位可是第四騎士團的人？'), { dark:true }),
   nou('lookback','啊，我是十二課的支援人員，四課的是他。'),
-  Object.assign(corx(null,'原來如此。你們的監察官呢？'), { dark:true }),
+  /* ⚠ ver -1061（Ray：「克爾文說『原來如此，你們的檢察官呢』的時候就不用再打黑影了」）：
+     剪影（`dark`）到**上一句為止** —— 從這一句起他就站在燈下了，只是還沒報名字
+     （說話者仍是 `CORVIN_Q`＝「？？？」）。
+     ⚠ 「看清楚臉」與「知道名字」是兩件事，這樣拆開反而更像那一幕：
+       他先走近、被看清，才自報家門（名字仍由插圖那一拍揭曉）。 */
+  corx(null,'原來如此。你們的監察官呢？'),
   nou('cringe','這……'),
   { speaker:'PLAYER', blank:true },
-  Object.assign(corx(null,'失禮了。'), { dark:true }),
+  corx(null,'失禮了。'),
   /* ══ 稿上「插圖，由下而上：013_Corvin_intro」（ver -954，Ray 交件）══
      §6.5 的詞彙表：`平移 上` ＝**由下往上**（終點在上方）→ `cgPan:'up'`。
      ⚠ `cgNoTime` ＝這張沒有時段差分：不寫的話候選鏈會先吃 4~5 個 404，
@@ -3293,17 +3298,20 @@ export const TOWNS = {
           /* ── 戰後 ── 週遭發光 → 安雅感應 → 祭壇啟動。 */
           ren('shocked','安雅小姐……？'),
           /* 立繪撤出 → 感應演出（光圈＋白光，見 story 的 `senseFx`）。 */
+          /* ⚠ ver -1061（Ray：「安雅啟動神殿時的 ci 插入太短」）：感應那一段
+             2600 → **4200ms**，白光 900 → 1300、換圖那一拍 1100 → 1600。
+             那是全場最關鍵的一個轉折（她是誰的第一個線索），一閃而過就沒了。 */
           { speaker:'ANYA', text:'', portrait:{ char:'ANYA', show:false },
-            hide:['SORANA','RENNA','NOUVELLE','ANYA'], fx:'sense', auto:2600 },
+            hide:['SORANA','RENNA','NOUVELLE','ANYA'], fx:'sense', auto:4200 },
           /* ══ 祭壇 normal → active（ver -924，Ray：「中間要有全白的淡入淡出，2 秒」）══
              拆成**兩拍**：① 白光淡入（900ms）② 在**全白之下**換圖、白光再淡出。
              ⚠ 換圖一定要落在白的**中間**：同一拍又換圖又淡白的話，玩家會看到
                背景先跳一格再變白（同 §6.5「換場要在全黑之下換」那一條的道理）。
              ⚠ 旗與 act 的 `flag` 是兩支：一支說「那一段演完了」、一支說
                「祭壇開著」（鐵律 9：一個狀態一個擁有事件）。 */
-          { speaker:'NARRATION', text:'', fx:'whiteflash', auto:900 },
+          { speaker:'NARRATION', text:'', fx:'whiteflash', auto:1300 },
           { speaker:'NARRATION', text:'', flags:['ruins_altar_on'],
-            bg:'Ruins_shinier_DeepAltaractive', auto:1100 },
+            bg:'Ruins_shinier_DeepAltaractive', auto:1600 },
           nou('shocked2','發、發生什麼事了？'),
           ren('shockedCalm','！！'),
           ren('shocked','難道說、安雅小姐妳是……！'),
