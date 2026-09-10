@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.10-1034';
+export const VERSION = 'ver 2026.09.10-1035';
 
 export const GAME_CONFIG = {
 
@@ -454,8 +454,15 @@ export const GAME_CONFIG = {
          ⚠ 這個 `name` **戰鬥中也會印**（`partner.js` 的 cut-in 標題與浮字都讀它），
            所以改這裡就等於改了畫面上那一行；浮字另有一份在 i18n（`L.battle.lifeReturn`），
            兩邊都改了。 */
+      /* ⚠⚠ **CI 是她自己那一張**（ver -1035，Ray：「魂之歸所的 ci 錯了，應該是
+         CI_Nouvelle_Lifereturn」）—— 卡上原本寫 `cutin_return`＝**蕾妮**那張
+         （試玩版的圖）。聖徒化期間發動那一條看不出來，因為 saint 的結局 cut-in
+         另外做了 `storyMode()` 分流；但 ver -1014 起這一招**一般盤面也發得動**，
+         那一條走的是 partner 的 `act.cutin` ＝ 卡上這一格，於是本篇演出裡
+         出現了蕾妮（同 -454「本篇的搭檔是諾薇兒，演出裡出現蕾妮是錯的人」）。
+         ⚠ 蕾妮自己那張卡（`partners.renee`）不動 —— 試玩版照舊。 */
       active:{ key:'lifeReturn', name:'魂之歸所', en:'Soul Return', context:'any',
-               cutin:'cutin_return', voice:'vo_nou_return',   // ver -711：她自己的語音
+               cutin:'cutin_return_nouvelle', voice:'vo_nou_return',   // ver -711：她自己的語音
                /* ══⚠⚠⚠ **ver -986：基礎不再吸血**（Ray 選 (C)）══ 吸血整組移到
                   Lv5「引路星」（`lifeReturnPct` ＋ `lifeReturnSec`）—— 那顆星 Ray 交卡時
                   寫的就是「發動後 15 秒吸血 buff…一發回最大血量 5%」＝**給**不是**升**。
@@ -3023,13 +3030,14 @@ export const GAME_CONFIG = {
            平均」，而且語音要**過完 voiceChain** 才量 —— 用 tools/audio_scan.html
            跑一次才是權威值。先補上是因為**沒補＝增益 1 ＝以母帶響度播出**
            （`se_steps` 就是這樣「永遠不出來」的）。 */
-      /* ⚠⚠ `vo_nouvellemiss1` **ver -1032 重量**（Ray：「vo_nouvellemiss1 更新」）——
-         新錄音 **−11.62 LUFS**／peak −0.28（舊的 −17.02／−1.36），**大聲了 5.4 dB**。
-         增益因此由 1.45 降到 **0.78** —— 不重量的話它會比另外兩支響將近 10 dB
-         （5.4 的母帶差 ＋ 1.45/0.78 的增益差），輪播起來一支突然爆出來。
-         ⚠ 這正是 §5「換圖（換檔）一定要重量」與 §6.6「加新音檔一定要補 fileGain」
-           的同一條：**同名覆蓋不會有任何錯誤訊息**，只會聽起來怪。 */
-      vo_nouvellemiss1:0.78,  vo_nouvellemiss2:1.04,  vo_nouvellemiss3:1.41,
+      /* ⚠⚠⚠ `vo_nouvellemiss1` **ver -1035 退回 -1015 的原始錄音**（Ray：「我聽到的
+         就是那個行けまーす」）—— -1032 交進來的那一支**內容是安雅的夢魘裝填**
+         （同一句台詞的另一個 take：1.80 秒，而三支 miss 是 1.42／0.88／0.59）。
+         程式端沒有接錯：三個鍵各自指向同名的檔案，md5 與音訊指紋都不同 ——
+         **是那個檔案本身放錯了**。從回收區的 wav 重轉回來，量測與 -1015 一字不差
+         （−17.02／peak −1.36 → 增益 1.45），可以確認轉回的就是原本那一支。
+         ⚠ 真的要換新錄音時重交一次，照 §5／§6.6 走：轉 m4a → 重量 → 升 `?v=`。 */
+      vo_nouvellemiss1:1.45,  vo_nouvellemiss2:1.04,  vo_nouvellemiss3:1.41,
       vo_sorana_miss1:2.77,   vo_sorana_miss2:2.58,   vo_sorana_miss3:2.45,   // miss1 CAP
       se_windblock:1.31,      // CAP（峰值頂到 +2 dBFS）
       /* ══ 升級的 SE 與三支語音（ver -1033）══ 同上式反推，實測（WebAudio 閘控積分）：
@@ -3712,9 +3720,18 @@ export const ASSETS = {
   /* ⚠ `?v=2`（ver -1032）：Ray 換了新錄音而**檔名沒變** —— 不加 cache-buster 的話
      已經載過舊檔的瀏覽器會一直拿舊的那一份（§5 那條「同名覆蓋的圖一定要加 ?v=N」，
      音檔同理）。⚠ `tuning.fileGain` 的鑰匙會**去掉 `?v=`** 再查，所以不受影響。 */
-  vo_nouvellemiss1:  "resources/audio/vo/vo_nouvellemiss1.m4a?v=2",
-  vo_nouvellemiss2:  "resources/audio/vo/vo_nouvellemiss2.m4a",
-  vo_nouvellemiss3:  "resources/audio/vo/vo_nouvellemiss3.m4a",
+  /* ⚠⚠⚠ **`?v=3`：miss1 退回 -1015 的原始錄音**（ver -1035，Ray：「諾薇兒的 miss 音
+     接錯了，有一個接到 vo_anya_nightmarereload 去」「我聽到的就是那個行けまーす」）。
+     ⚠⚠ **接線沒有錯，錯的是那個檔案**：三個鍵各自指向同名的 m4a，三支的 md5 與
+       音訊指紋彼此不同、也都不等於 `vo_anya_nightmarereload` —— -1032 交進來的
+       那一支**內容本身**就是安雅那句台詞的另一個 take（1.80 秒，而三支 miss 是
+       1.42／0.88／0.59）。所以**沒有第二個地方可以接錯**，只能換檔。
+     ⚠ 這種錯**程式驗不出來**：檔名對、路徑對、載得到、響度也量得出來 ——
+       只有聽的人分得出那是誰在講話。交檔換錄音時值得順手確認一次時長。
+     ⚠ 三支**一起**掛 buster：`?v=` 漏掉哪一支，哪一支就被快取住（§5）。 */
+  vo_nouvellemiss1:  "resources/audio/vo/vo_nouvellemiss1.m4a?v=3",
+  vo_nouvellemiss2:  "resources/audio/vo/vo_nouvellemiss2.m4a?v=3",
+  vo_nouvellemiss3:  "resources/audio/vo/vo_nouvellemiss3.m4a?v=3",
   vo_sorana_miss1:   "resources/audio/vo/vo_sorana_miss1.m4a",
   vo_sorana_miss2:   "resources/audio/vo/vo_sorana_miss2.m4a",
   vo_sorana_miss3:   "resources/audio/vo/vo_sorana_miss3.m4a",

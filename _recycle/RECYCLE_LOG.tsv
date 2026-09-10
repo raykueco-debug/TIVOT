@@ -98,3 +98,4 @@ when	from	to	reason
 20260910-193537	resources/audio/vo/vo_anya_lvup.wav	_recycle/resources/audio/vo/vo_anya_lvup.wav	ver -1033：升級 SE／VO 已轉 m4a（§6.6），原檔回收
 20260910-193537	resources/audio/vo/vo_nouvelle_lvup.mp3	_recycle/resources/audio/vo/vo_nouvelle_lvup.mp3	ver -1033：升級 SE／VO 已轉 m4a（§6.6），原檔回收
 20260910-193537	resources/audio/vo/vo_sorana_lvup.wav	_recycle/resources/audio/vo/vo_sorana_lvup.wav	ver -1033：升級 SE／VO 已轉 m4a（§6.6），原檔回收
+20260910-203638	resources/audio/vo/vo_nouvellemiss1.m4a	_recycle/resources/audio/vo/vo_nouvellemiss1.m4a	ver -1035：-1032 交錯了檔（內容是安雅的『行けまーす』＝夢魘裝填），退回 -1015 的原始錄音

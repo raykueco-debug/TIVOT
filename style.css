@@ -1330,12 +1330,16 @@
      ⚠ 形狀用 `clip-path` 不用字元「▲」：字型不同，大小與基線都會跑。
      ⚠ 綠是寫死的（不吃 `--gold`）：它與金色的 EXP 條是**兩件事** ——
        條子是進度，這一支是「升上去了」。 */
-  #resultStats .row.exp-prog .exp-up{flex:none;width:13px;height:16px;opacity:0;
-    clip-path:polygon(50% 0,100% 50%,70% 50%,70% 100%,30% 100%,30% 50%,0 50%);
+  /* ⚠ 尺寸與比例 ver -1035 由 13×16 加到 **19×19**（Ray：「箭頭粗胖一點，不要細小」）：
+     頭部的肩線由 50% 壓到 **56%**（頭變矮＝變胖）、箭柄由 40% 寬加到 **44%**。
+     ⚠ 列高（11px 的字）撐不到 19px，所以這一列會被它決定高度 —— 那是刻意的，
+       升級那一下本來就該搶眼；`align-items:center` 讓另外兩欄自己置中。 */
+  #resultStats .row.exp-prog .exp-up{flex:none;width:19px;height:19px;opacity:0;
+    clip-path:polygon(50% 0,100% 56%,72% 56%,72% 100%,28% 100%,0 56%);
     background-image:linear-gradient(to top,
       #35c94a 0%, #35c94a 30%, #7dff8f 44%, #f4fff4 50%, #7dff8f 56%, #35c94a 70%, #35c94a 100%);
     background-size:100% 200%; background-position:50% 0%;
-    filter:drop-shadow(0 0 4px #5cff6a) drop-shadow(0 0 11px rgba(92,255,106,.75));}
+    filter:drop-shadow(0 0 5px #5cff6a) drop-shadow(0 0 13px rgba(92,255,106,.75));}
   /* 兩支動畫各管一件事：`Flow` ＝亮帶往上跑（循環），`Fade` ＝這一次露臉多久（一次）。
      ⚠ 不要合成一支：兩者的長度本來就不一樣（流光要跑好幾趟才讀得出是「在流」）。 */
   #resultStats .row.exp-prog.lvup .exp-up{
