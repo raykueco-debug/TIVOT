@@ -320,6 +320,10 @@ export function loadBoard(idx){
   tutorial.onBoardLoaded(idx);    // 教學 'board:N' 節點（非教學中為 no-op）
 }
 function buildGrid(){
+  /* ⚠⚠ 先收碎片再清盤面：`innerHTML=''` 會把它們的 DOM 掃掉，但**計數不會歸零**
+     —— 漏了這一句，`shardLive` 會一路累積到上限，之後就再也不噴了（而且沒有任何
+     錯誤訊息）。同一支也負責把元素收回池子。 */
+  clearShards();
   const grid=$('grid'); grid.innerHTML=''; state.cells=[];
   grid.style.gridTemplateColumns=`repeat(${state.cols},1fr)`;
   grid.style.gridTemplateRows=`repeat(${state.cols},1fr)`;
@@ -399,32 +403,61 @@ function advanceExpectPastCleared(){
   }
 }
 
-/* ══ 玻璃碎片落下（ver -805，Ray：「點擊消掉方塊時要有玻璃碎片落下效果」）══
-   雙槍彈雨／overkill 打掉一格時，從那一格灑幾片玻璃碎片、帶重力往下掉＋旋轉淡出。
-   碎片附在 #grid（relative）上，掉到盤底；CSS 見 style.css 的 `.glass-shard`。 */
+/* ══ 玻璃碎片落下（ver -805；-859 因效能停用；**ver -1049 加回來並重寫**，Ray：
+   「碎玻璃效果加回來好了，實在很沒手感，效能優化一下」）════════════════════
+   打掉一格時，從那一格灑幾片玻璃碎片：先往外上方炸開、再帶重力落到盤底。
+   ── -859 為什麼會慢，以及這一版逐項換掉的東西 ──────────────────────────
+     ① **每片一個 `drop-shadow`** —— filter 讓每一片都變成獨立的繪製層，
+        十幾片 × 十幾格就是上百層。→ **整個拿掉**，亮度改由漸層本身給。
+     ② **每片 create／remove** —— 一盤上百個短命節點，GC 與 layout 都在抖。
+        → **物件池**：用過的收回來重用，穩態下 `document.createElement` 是 0 次。
+     ③ **沒有上限** —— 連續清格會疊出幾百片同時在跑。
+        → `SHARD_MAX` 夾住「同時存活數」，滿了就這一格少噴幾片（看不出來）。
+     ④ 數量 9~13 → **6**，時長 .85s → **.62s**：同時存活數直接砍掉六成。
+     ⑤ 一格的碎片**一次 append**（DocumentFragment）—— 每片各 append 一次會踢
+        一次 layout。
+   ⚠ 手感是 Ray 要的（「實在很沒手感」），所以**噴的樣子不改** —— 動的是
+     怎麼畫、怎麼管，不是噴多遠、轉多少。
+   ⚠ 碎片附在 #grid（relative）上，掉到盤底；CSS 見 style.css 的 `.glass-shard`。 */
+const SHARD_MAX=42;           // 同時存活的上限（超過就少噴，不排隊）
+const SHARD_MS=620;           // ⚠ 與 CSS 的 `shardFall` 同一個數字 —— 改一邊要改另一邊
+const shardPool=[];
+let shardLive=0;
 function glassShards(cell){
-  /* ver -859（Ray：「碎玻璃耗太多效能，先拿掉看看」）：整支停用 ——
-     每格打掉生 4~6 個 DOM 元素跑 shardFall 動畫，一盤十幾格＝上百個短命節點。
-     留函式殼與 CSS，要還原就拿掉這一行。 */
-  return;
   const grid=$('grid'); if(!grid||!cell) return;
+  const n=Math.min(6, SHARD_MAX-shardLive);
+  if(n<=0) return;
   const gx=cell.offsetLeft+cell.offsetWidth/2, gy=cell.offsetTop+cell.offsetHeight/2;
   const cw=cell.offsetWidth, ch=cell.offsetHeight;
-  const n=9+(Math.random()*5|0);   // 9~13 片（ver -807：噴更多、更劇裂）
+  const fall=(grid.clientHeight - gy + 30).toFixed(0)+'px';
+  const frag=document.createDocumentFragment();
   for(let i=0;i<n;i++){
-    const s=document.createElement('div'); s.className='glass-shard';
-    const sz=3+Math.random()*11;                       // 大小差更大（碎屑～大塊）
+    const s=shardPool.pop() || document.createElement('div');
+    s.className='glass-shard';
+    const sz=3+Math.random()*11;                       // 大小差很大（碎屑～大塊）
     s.style.left=(gx+(Math.random()-0.5)*cw*0.7)+'px';
     s.style.top =(gy+(Math.random()-0.5)*ch*0.5)+'px';
     s.style.width=sz.toFixed(1)+'px'; s.style.height=(sz*(0.5+Math.random()*0.9)).toFixed(1)+'px';
-    s.style.setProperty('--dx',  ((Math.random()-0.5)*cw*1.5).toFixed(0)+'px');   // 往兩側噴更開
+    s.style.setProperty('--dx',  ((Math.random()-0.5)*cw*1.5).toFixed(0)+'px');   // 往兩側噴開
     s.style.setProperty('--pop', (-(12+Math.random()*46)).toFixed(0)+'px');       // 先往上炸一下
-    s.style.setProperty('--fall',(grid.clientHeight - gy + 30).toFixed(0)+'px');  // 再落到盤底
-    s.style.setProperty('--rot', ((Math.random()-0.5)*1100|0)+'deg');             // 轉更多
+    s.style.setProperty('--fall',fall);                                            // 再落到盤底
+    s.style.setProperty('--rot', ((Math.random()-0.5)*1100|0)+'deg');
     s.style.animationDelay=(Math.random()*0.05).toFixed(2)+'s';
-    grid.appendChild(s);
-    setTimeout(()=>s.remove(), 1000);
+    frag.appendChild(s); shardLive++;
+    /* ⚠ 回收＝**移出 DOM 再放回池子**：下一次 append 進來 animation 自己會重跑，
+       不必清 class 或 reflow。 */
+    setTimeout(()=>{ s.remove(); shardLive--; if(shardPool.length<SHARD_MAX) shardPool.push(s); },
+               SHARD_MS+80);
   }
+  grid.appendChild(frag);
+}
+/* 盤面收掉時把還在飛的碎片一起收（換盤／結算／退出）—— 不然它們會掛在
+   已經被清空的 #grid 上等計時器到期（鐵律 10 的精神：不用的東西當場殺掉）。 */
+function clearShards(){
+  const grid=$('grid'); if(!grid) return;
+  const list=grid.querySelectorAll('.glass-shard');
+  for(const s of list){ s.remove(); if(shardPool.length<SHARD_MAX) shardPool.push(s); }
+  shardLive=0;
 }
 
 /* ══⚠⚠ **這一發回多少血**（ver -740 即死防禦免傷 2%／ver -964 生命歸還吸血 5%）══
@@ -2561,6 +2594,7 @@ function fadeTransition(mid, half){
      的擁有者，鐵律 9）—— 這裡動 state 只會與那邊打架。
    ⚠ 收在**一支**（鐵律 8）：三條收場路都叫它（劇情交還／結算頁收掉／回首頁）。 */
 export function killBattleFrame(){
+  clearShards();                       // 還在飛的碎片一起收（ver -1049）
   const g=$('grid'); if(g){ g.innerHTML=''; g.className=''; }
   state.cells=[];
   const ei=$('enemyImg');

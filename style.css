@@ -969,11 +969,15 @@
   /* 玻璃碎片落下（ver -805，Ray：「點擊消掉方塊時要有玻璃碎片落下效果」）——
      打掉一格從那格灑 4~6 片碎玻璃：先小彈一下，再帶重力落到盤底、旋轉淡出。
      位置/位移/旋轉由 combat.glassShards 逐片設 --dx/--fall/--rot。 */
+  /* ⚠⚠ **不要 `filter`**（ver -1049）：-805 那一版每片掛一個 `drop-shadow`，
+     十幾片 × 十幾格＝上百個獨立繪製層，那正是 -859 把整支停掉的原因。
+     亮度改由漸層自己給（更白的高光 ＋ 更深的邊），讀起來一樣是玻璃。
+     ⚠ `.62s` 與 `combat.SHARD_MS` 是同一個數字 —— 改一邊要改另一邊。 */
   .glass-shard{position:absolute;z-index:5;pointer-events:none;
-    background:linear-gradient(135deg,#ffffff,#bfe6ff 55%,#7fb8e0);
+    background:linear-gradient(135deg,#ffffff,#eaf7ff 38%,#9fd2f2 62%,#5f9ec8);
     clip-path:polygon(0 0,100% 22%,72% 100%,8% 68%);
-    opacity:.98;filter:drop-shadow(0 1px 3px rgba(120,200,255,.6));
-    animation:shardFall .85s cubic-bezier(.2,.55,.5,1) forwards;}
+    opacity:.98;
+    animation:shardFall .62s cubic-bezier(.2,.55,.5,1) forwards;}
   /* ver -807：先往外＋往上「炸開」（--pop 上、--dx 更寬）再帶重力落下 → 更劇裂。 */
   /* ⚠ **往 viewer 噴的感覺**（ver -807，Ray）：飛出那一瞬間碎片放大（scale 0.5→1.8＝
      像飛到鏡頭前），之後落遠再縮小（→0.7）淡出。 */
