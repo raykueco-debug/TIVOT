@@ -399,56 +399,30 @@
   #energyClasp.full{cursor:pointer;pointer-events:auto;}
   /* 滿值時擴大點擊熱區（蓋住厚端那一片） */
   #energyClasp.full::before{content:"";position:absolute;top:-16px;bottom:-16px;left:-60px;right:-2px;}
-  /* 月牙圖層（ver -539）：frame（空圈）在下、fill（金月）在上，幾何由 layoutClasp 寫。
-     ver -548（Ray：「月不要半透明 金色光」）：月體不透明、發金色光。
-     ver -549（Ray：「月太橘 應該是金光」）：原圖的橙金（色相約 40°）往黃移 10°
-     成正金色 —— 這條色彩鏈是唯一一份，moonCharge 的 keyframes 以它為底。 */
-  #energyClasp .clasp-moon{position:absolute;pointer-events:none;
-    filter:drop-shadow(0 0 4px #000);}
-  /* ⚠ `#claspMoonOver`（疊在頭像上的下半）與 fill **共用整條色彩／發光鏈**
-     （ver -1036）：它就是同一片月，只是被切了一刀 —— 分開寫必然走鐘（鐵律 7）。 */
-  #claspMoonFill,#claspMoonOver{filter:hue-rotate(10deg) saturate(.95) brightness(1.06) drop-shadow(0 0 4px #000);}
-  #claspMoonOver{z-index:3;}
-  /* 計量累積中（0<energy<100，combat 掛 .charging）：金色光暈慢呼吸。
-     ⚠ 效能（ver -851，實機探針抓到）：舊版 keyframes 逐幀動 filter（drop-shadow 半徑
-       在變）＝整場戰鬥每幀重繪這一層 —— 與 emblemGlow 同族的發熱病灶。
-       改成**靜態 filter（光暈定格在中間值，渲染一次進合成層）＋ 動 opacity**
-       （純合成器，零重繪）：月體隨光一起微呼吸，讀感相同。 */
-  #energyClasp.charging #claspMoonFill,#energyClasp.charging #claspMoonOver{
-    filter:hue-rotate(10deg) saturate(.95) brightness(1.08) drop-shadow(0 0 6px rgba(255,216,110,.55)) drop-shadow(0 0 4px #000);
-    animation:moonCharge 1.8s ease-in-out infinite alternate;}
-  @keyframes moonCharge{from{opacity:.86;}to{opacity:1;}}
-  /* 能量流（ver -546 白色彗星束 → -547 改**漸層流光**，Ray：「不用白光，
-     用漸層的能量流」）：一整圈平滑起伏的白金漸層繞**缺口中心**順時針轉
-     （rotate 動畫，GPU 便宜）—— 沒有亮頭暗尾的斷點，讀起來是流體的光在循環。
-     外層 #claspMoonGlow 由 JS 掛與 fill 同一條計量扇形遮罩（流光只跑到蓄到的
-     位置，碰到充能前緣就被吃掉）；.glow-shape 再套月牙形遮罩。
-     光層方塊 220% 見方、中心＝缺口中心（(nx,ny)=(0.6957,0.4412) → left/top 由此推）。 */
-  #claspMoonGlow{overflow:hidden;filter:none;display:none;}
-  #energyClasp.charging #claspMoonGlow{display:block;}
-  #claspMoonGlow .glow-shape{position:absolute;inset:0;
-    -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
-    -webkit-mask-size:100% 100%;mask-size:100% 100%;}
-  #claspMoonGlow .glow-beam{position:absolute;display:block;
-    left:calc((0.6957 - 1.1)*100%);top:calc((0.4412 - 1.1)*100%);width:220%;height:220%;
-    background:conic-gradient(from 0deg at 50% 50%,
-      rgba(255,214,120,0) 0deg,
-      rgba(255,214,120,.20) 90deg,
-      rgba(255,228,150,.55) 200deg,
-      rgba(255,214,120,.20) 300deg,
-      rgba(255,214,120,0) 360deg);
-    animation:moonBeam 2.2s linear infinite;}
-  @keyframes moonBeam{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
-  /* 滿檔加強光暈：drop-shadow 加倍層 + ::after 呼吸光暈橢圓（::before 已作觸控擴區） */
-  /* 滿檔＝**白光**（ver -544，Ray：「月滿的時候呈白光」）：抽掉飽和、大幅提亮，
-     光暈換純白（原本聖藍 var(--holy) 那套撤掉）。 */
-  #energyClasp.full svg,#energyClasp.full .clasp-moon{filter:saturate(.20) brightness(1.75) drop-shadow(0 0 10px rgba(255,255,255,.95)) drop-shadow(0 0 22px rgba(255,250,235,.7)) drop-shadow(0 0 4px #000);}
-  #energyClasp.full::after{content:"";position:absolute;left:16px;bottom:16px;width:44px;height:52px;
-    transform:translate(-50%,20%);border-radius:50%;pointer-events:none;
-    background:radial-gradient(ellipse at center, rgba(150,215,245,.32), transparent 70%);
-    animation:claspHalo 1.1s ease-in-out infinite alternate;}
-  @keyframes claspHalo{from{opacity:.5;transform:translate(-50%,20%) scale(.9);}
-    to{opacity:1;transform:translate(-50%,20%) scale(1.18);}}
+  /* ══ 破防計量表（ver -1037，Ray 交規格：「放棄原本的計量設計，改成以角色圓頭像
+     為中心，在外圍 7 點到 2 點的角度做成破防計量表，前粗後細」）══
+     ver -539~-1036 那張月牙圖（`clasp_moon.webp` ＋ frame／glow／疊在臉上的下半）
+     整組退場 —— 現在中心是搭檔的圓頭像，外圍一條**錐形**環帶由 7 點順時針掃到 2 點。
+     ⚠ 形狀是**算出來的**（`combat.arcPath`，一處，鐵律 7）：viewBox 100×100、
+       中心 50,50，角度／半徑／粗細全在那支的 `ARC` 常數裡 —— CSS 只管顏色與光。
+     ⚠ 計量仍走**同一條 conic 遮罩**（`updateEnergyClasp`）：只有起角與掃角換成
+       `ARC` 的值，那套邏輯（0＝全藏、滿＝拿掉遮罩避免接縫、邊界羽化）一個字沒動。 */
+  #claspArc{position:absolute;overflow:visible;pointer-events:none;}
+  #claspArcTrack{fill:rgba(255,255,255,.085);}
+  #claspArcFill{fill:var(--gold);
+    filter:drop-shadow(0 0 4px rgba(255,214,110,.8)) drop-shadow(0 0 2px rgba(8,8,12,.9));}
+  /* 累積中（0<energy<100）：金光慢呼吸。⚠ 同 -851 的教訓 —— 動 opacity（合成器），
+     不要逐幀動 filter（那是整場戰鬥每幀重繪的發熱源）。 */
+  #energyClasp.charging #claspArcFill{animation:arcCharge 1.8s ease-in-out infinite alternate;}
+  @keyframes arcCharge{from{opacity:.86;}to{opacity:1;}}
+  /* 滿檔＝**白光**（沿用 ver -544 Ray 定的讀感：抽掉飽和、大幅提亮）。 */
+  #energyClasp.full #claspArcFill{fill:#fff;
+    filter:drop-shadow(0 0 8px rgba(255,255,255,.95)) drop-shadow(0 0 18px rgba(255,250,235,.72));
+    animation:arcFull .6s infinite alternate;}
+  @keyframes arcFull{from{opacity:.82;}to{opacity:1;}}
+  /* ⚠ ver -1037：滿檔的白光改由 `#claspArcFill` 自己那一條負責（見上）；
+     `::after` 那個寫死落點的呼吸光暈（對著月牙量的 left:16px/bottom:16px）一併退場
+     —— 中心換人了，那個座標已經不指向任何東西。 */
   /* 破防值滿瞬間：以計量表為中心擴散的半透漸層光圈（JS 動態掛 .energy-burst 於 body） */
   .energy-burst{position:fixed;width:190px;height:190px;z-index:45;pointer-events:none;border-radius:50%;
     background:radial-gradient(circle, rgba(150,215,245,0) 52%, rgba(150,215,245,.4) 66%,
@@ -461,8 +435,6 @@
   /* ver -521 對齊（Ray：「C的下臂與藍血條同高，上臂與hits剛好在紅血條的上方」）：
      viewBox＝顯示 1:1（76px），環的下緣＝面板內的藍條下緣（不再越出被裁），
      下臂帶正好是藍條那一帶、上臂帶壓在紅條上緣之上。 */
-  #energyClasp svg{position:absolute;left:-8px;bottom:-6px;width:76px;height:76px;
-    overflow:visible;pointer-events:none;filter:drop-shadow(0 0 4px #000);}
   /* 中央連擊數（ver -511，Ray：「像 VP1 那樣顯示連擊數在中間」）：
      錨在迴旋的圓心（viewBox 40,44 → 乘上顯示縮放再加 svg 的偏移）。 */
   #energyClasp .clasp-combo{position:absolute;left:23px;bottom:35px;transform:translate(-50%,50%);
@@ -510,18 +482,6 @@
   #energyClasp.charging .clasp-face{border-color:var(--gold);}
   #energyClasp.full .clasp-face{border-color:#fff;
     box-shadow:0 0 0 2px rgba(8,8,12,.85), 0 0 10px rgba(255,246,220,.9), 0 0 20px rgba(255,235,180,.6);}
-  /* HITS 小標：白粗字、蓋住上唇收尾（Ray 的示意圖）。 */
-  #energyClasp .clasp-hits{font-size:10px;font-weight:700;letter-spacing:1px;
-    fill:#fff;stroke:rgba(8,8,12,.9);stroke-width:2.8;paint-order:stroke;
-    font-family:Georgia,serif;}
-  /* 滿值：白月呼吸（獨立 keyframes —— 借通用 pulse 會把上面那條白光鏈整組蓋掉）；
-     半透明只給計量中，滿檔的月是實心的白。
-     ⚠ 效能（ver -851）：同 moonCharge —— filter 定格在偏亮那一端（靜態、渲染一次），
-       呼吸改動 opacity（合成器）。滿檔的白光讀感靠 ::after 的 claspHalo 補（它本來就在）。 */
-  #energyClasp.full #claspMoonFill,#energyClasp.full #claspMoonOver{
-    filter:saturate(.20) brightness(1.85) drop-shadow(0 0 10px rgba(255,255,255,.95)) drop-shadow(0 0 22px rgba(255,250,235,.7)) drop-shadow(0 0 4px #000);
-    animation:moonFull .6s infinite alternate;}
-  @keyframes moonFull{from{opacity:.80;}to{opacity:1;}}
   /* ── 副武器切換鈕（ver -410，Ray：「在敵我血條右側加入副武器切換鈕，大小同破防值」）──
      左邊是破防計量表、右邊是這一顆，兩側對稱夾著血條。
      ⚠ `#barsBlock` 整塊是 `pointer-events:none`（它只是 HUD），所以這一顆要自己打開。

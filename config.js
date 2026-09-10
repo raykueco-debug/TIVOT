@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.10-1036';
+export const VERSION = 'ver 2026.09.10-1037';
 
 export const GAME_CONFIG = {
 
@@ -3588,11 +3588,10 @@ export const ASSETS = {
   enemy_relic_bellascetic:        "resources/enemy/mon_relic_bellascetic.webp",
   enemy_rictus_hooked:            "resources/enemy/mon_rictus_hooked.webp",
   inspector_renna:     "resources/SI/Renna_SI_front.webp",         // 讀取頁的說明者（出航後）
-  /* ── 破防計量的月牙（ver -539，Ray 交的 alpha 原圖，形狀 1px 不准差）──
-     frame＝同輪廓的描邊版（未充滿時的「透明框」，由原圖 alpha 邊緣生成）。
-     ⚠ 換圖要重量 combat.js 的 MOON 常數（缺口中心／月角角度是**那張圖**的數字）。 */
-  clasp_moon:       "resources/vfx/clasp_moon.webp",
-  clasp_moon_frame: "resources/vfx/clasp_moon_frame.webp",
+  /* ⚠ ver -1037：破防計量表的月牙（`clasp_moon` / `clasp_moon_frame`）**已退場**
+     —— Ray：「放棄原本的計量設計，改成以角色圓頭像為中心…」。兩張圖仍留在
+     `resources/vfx/`（他的原圖，沒有回收），但**不再登記進 ASSETS**：留著只會讓
+     開機那一批白抓兩張沒有人要用的圖。要回頭用把這兩行接回來就行。 */
   /* ── 副武器切換鈕的類別徽章（ver -549，Ray 交件：連射/散射/高爆）──
      原檔白底 → 轉檔時沿金環裁圓去背、縮 256（原 PNG 在 _originals/vfx）。 */
   switch_mg:    "resources/vfx/Switch_MG.webp",

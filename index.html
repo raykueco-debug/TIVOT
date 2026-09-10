@@ -53,7 +53,7 @@
      沒有 buster 時手機會沿用舊快取的 CSS —— Ray 回報「ovk 沒把點掉的方格撤掉」
      實測現行 CSS（-839 的 :not(.done)）行為正確，殘留裂紋是舊 CSS 快取。
      改 style.css 就順手 bump 這個號。 -->
-<link rel="stylesheet" href="style.css?v=1036">
+<link rel="stylesheet" href="style.css?v=1037">
   <!-- 拾得道具／道具欄／商店／懸賞榜（ver -380 抽出，飛行頁共用同一份）。
        ⚠ `data-lootsheet` 是給 `modules/loot.js` 認的：它看到已經掛過就不再掛一次。
          飛行頁沒有這一行，由那支模組自己掛上去。 -->
@@ -131,31 +131,19 @@
     <!-- 敵我血條：橫置於敵人區下方，敵上我下；破防計量表 C 字扣左側 -->
     <div id="barsBlock">
       <div id="energyClasp">
-        <!-- 破防計量（ver -539，Ray 交圖定案）：**月牙圖直接鋪**（clasp_moon.webp
-             ＝他的原圖，形狀 1px 不准差）。frame＝同輪廓描邊（未充滿的透明框），
-             fill＝金月本體，計量＝conic 遮罩由下角**順時針**掃到上角。
-             幾何與 src 全由 combat.layoutClasp 掛（路徑只有 ASSETS 一份，鐵律 7）。
-             連擊數在月牙缺口中心：可蓋月牙、不可蓋過 HP 條。 -->
-        <img id="claspMoonFrame" class="clasp-moon" alt="">
-        <img id="claspMoonFill" class="clasp-moon" alt="">
-        <!-- 蓄能光（ver -546）：白光束繞缺口中心順時針轉，外層吃「計量扇形」遮罩
-             （只亮到目前蓄到的位置）、內層吃月牙形遮罩 —— 兩個遮罩分掛兩層才疊得起來。 -->
-        <div id="claspMoonGlow" class="clasp-moon"><div class="glow-shape"><i class="glow-beam"></i></div></div>
-        <svg viewBox="0 0 76 76">
-          <text class="clasp-hits" x="36" y="19">HITS</text>
+        <!-- ══ 破防計量表（ver -1037，Ray 交規格：「放棄原本的計量設計，改成以角色
+             圓頭像為中心，在外圍 7 點到 2 點的角度做成破防計量表，前粗後細」）══
+             中心＝搭檔的圓頭像（`speakers.faceStyle`，不是新素材）；外圍一條錐形
+             環帶由 7 點順時針掃到 2 點，**起點粗、終點細**。
+             形狀（`d`）與擺位全由 `combat.layoutClasp` 算並寫進來（鐵律 7）——
+             HTML 這邊一個座標都不寫死。track＝底槽、fill＝金色計量（吃 conic 遮罩）。
+             ⚠ 連擊數那一層留著：`tuning.claspFace:false` 時中心換回它（-511 的 VP1 風）。 -->
+        <svg id="claspArc" viewBox="0 0 100 100">
+          <path id="claspArcTrack" d=""></path>
+          <path id="claspArcFill"  d=""></path>
         </svg>
         <div class="clasp-combo"><b id="claspCombo">0</b></div>
-        <!-- 搭檔頭像（ver -1036，Ray：「試試看讓破防計量不顯示 hit 數，把搭檔的
-             頭像放月彎中間？」）：與連擊數**共用同一個錨**（月牙缺口中心），
-             兩者二選一 —— 開關在 config 的 `tuning.claspFace`。
-             圖不是新素材：拿她自己的立繪用量好的 `fx` 把臉挪到框中央
-             （`speakers.faceStyle`，鐵律 7/8）。 -->
         <i id="claspFace" class="clasp-face"></i>
-        <!-- 月牙的**下半**再畫一次，疊在頭像之上（ver -1036，Ray：「計量表下半壓在
-             角色圖層上方，尖端則是要壓在角色圖層後方」）：同一張圖、同一組幾何、
-             同一條計量遮罩（鐵律 7），只多一刀 `clip-path` 把上半切掉 ——
-             於是下面那隻角壓在臉上、上面的尖端被臉擋住，月牙就「嵌」住了頭像。 -->
-        <img id="claspMoonOver" class="clasp-moon" alt="">
       </div>
       <div id="barStack">
         <div class="hrow">

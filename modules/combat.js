@@ -1223,7 +1223,7 @@ function addEnergy(v){
 }
 // 破防值滿瞬間演出：以 C 字計量表為中心擴散一圈半透漸層光圈（~0.85s，不擋點擊）。
 function energyFullBurst(){
-  const clasp=$('claspMoonFill')||$('energyClasp'); if(!clasp) return;   // 光圈以月牙本體為中心（-539）
+  const clasp=$('claspArc')||$('energyClasp'); if(!clasp) return;   // 光圈以計量表本體為中心（-1037）
   const r=clasp.getBoundingClientRect();
   const d=document.createElement('div'); d.className='energy-burst';
   d.style.left=(r.left+r.width/2)+'px';
@@ -1231,34 +1231,52 @@ function energyFullBurst(){
   document.body.appendChild(d);
   setTimeout(()=>d.remove(), 900);
 }
-/* ══ 破防計量的取景（ver -539：Ray 交了月牙原圖，整支改成「圖直接鋪」）════
-   -536~-538 用比例參數化仿他的畫連錯四版 —— 那條路廢除（HANDOFF 的結論）。
-   形狀＝`clasp_moon.webp`（他畫的 alpha 月牙）本身，程式只管三件事：
-     ① 大小/位置錨定血條（S＝紅頂→藍底，§6.5 老原則：取景算成常數，之後只讀）
-     ② 空圈＝同輪廓描邊圖（frame；Ray：「未充滿時是透明框」）
-     ③ 計量＝conic-gradient 遮罩，由下月角**順時針**掃到上月角（Ray 拍板）
-   ── MOON＝那張圖量出來的常數（缺口中心對 360° 射線掃出月角；換圖要重量）──
-   量測對象：resources/_originals/vfx/clasp_moon_raw.png（276×272）。 */
-const MOON={
-  ar : 276/272,             // 圖的寬高比
-  nx : 0.6957, ny : 0.4412, // 缺口中心佔圖比例（連擊數的錨＝掃掠的軸心）
-  a0 : 165,                 // 下月角（CSS conic 慣例：0°=正上、順時針增加）
-  arc: 258.2,               // 下角→上角的掃角（順時針）
+/* ══ 破防計量表的幾何（ver -1037，Ray：「放棄原本的計量設計，改成以角色圓頭像
+   為中心，在外圍 7 點到 2 點的角度做成破防計量表，前粗後細」）════════════════
+   ver -539~-1036 那張月牙圖（`clasp_moon.webp` ＋ frame／glow／疊在臉上的下半）
+   整組退場。現在只有兩件東西：**中心的圓頭像** ＋ **外圍一條錐形環帶**。
+   程式管三件事（同以前）：
+     ① 大小／位置錨定血條（S＝紅頂→藍底，§6.5 老原則：取景算成常數，之後只讀）
+     ② 形狀＝`arcPath()` 算出來的 path（底槽與計量共用同一條 `d`）
+     ③ 計量＝conic-gradient 遮罩，由起角**順時針**掃 —— 那套邏輯一個字沒動
+   ⚠ 角度用 **CSS conic 的慣例**（0°＝正上、順時針increase），這樣 `ARC.a0`
+     可以直接餵給遮罩，不必在兩個座標系之間換算（鐵律 7）。
+   ⚠ 7 點＝210°、2 點＝60°，順時針從 210° 走 210° 正好到 60°。 */
+const ARC={
+  a0    : 210,     // 起角＝7 點（粗的那一端）
+  sweep : 210,     // 順時針掃到 2 點（細的那一端）
+  r     : 35,      // 環帶中心線半徑（viewBox 100×100，中心 50,50）
+  w0    : 14,      // 起點寬（前粗）
+  w1    : 2.2,     // 終點寬（後細；不給 0 —— 真的收成一點會鋸齒）
+  face  : 0.50,    // 頭像直徑佔 viewBox 的比例（半徑 25，環帶內緣最近處 28）
+  steps : 72,      // 折線近似的段數（每 ~3°）
 };
+/* 錐形環帶的 path（唯一那一支）：外緣順掃、內緣逆掃，閉合成一片。
+   ⚠ 角度→座標只有這裡在換：`(cx + R·sin a, cy − R·cos a)` —— SVG 的 y 向下，
+     所以這個式子同時滿足「0°在正上」與「順時針為正」，與 conic 遮罩對得起來。 */
+function arcPath(){
+  const cx=50, cy=50, out=[], inn=[];
+  for(let i=0;i<=ARC.steps;i++){
+    const k=i/ARC.steps, a=(ARC.a0+ARC.sweep*k)*Math.PI/180;
+    const w=ARC.w0+(ARC.w1-ARC.w0)*k, si=Math.sin(a), co=Math.cos(a);
+    out.push([cx+(ARC.r+w/2)*si, cy-(ARC.r+w/2)*co]);
+    inn.push([cx+(ARC.r-w/2)*si, cy-(ARC.r-w/2)*co]);
+  }
+  const P=p=>p[0].toFixed(2)+','+p[1].toFixed(2);
+  let d='M'+P(out[0]);
+  for(let i=1;i<out.length;i++) d+='L'+P(out[i]);
+  for(let i=inn.length-1;i>=0;i--) d+='L'+P(inn[i]);
+  return d+'Z';
+}
 let claspSig='';
 let claspGeo=null;                                      // 遮罩/連擊數用的幾何（layoutClasp 算好，update 只讀）
 function layoutClasp(){
   const host=$('energyClasp'); if(!host) return;
-  const frame=$('claspMoonFrame'), fillImg=$('claspMoonFill');
+  const svgEl=$('claspArc'), track=$('claspArcTrack'), fillEl=$('claspArcFill');
   const blue=document.querySelector('.hpbar.player-bar'), red=document.querySelector('.hpbar.enemy-bar');
-  if(!host||!frame||!fillImg||!blue||!red) return;
-  const glow=$('claspMoonGlow');
-  if(!frame.getAttribute('src')){            // src 只在這裡掛：路徑只有 ASSETS 一份（鐵律 7）
-    frame.src=asset('clasp_moon_frame'); fillImg.src=asset('clasp_moon');
-    const over=$('claspMoonOver'); if(over) over.src=asset('clasp_moon');   // 同一張圖（ver -1036）
-    const gs=glow&&glow.querySelector('.glow-shape');   // 蓄能光的月牙形遮罩＝同一張圖
-    if(gs){ const u='url("'+asset('clasp_moon')+'")';
-            gs.style.webkitMaskImage=u; gs.style.maskImage=u; }
+  if(!svgEl||!track||!fillEl||!blue||!red) return;
+  if(!track.getAttribute('d')){              // 形狀只算一次（它與尺寸無關 —— viewBox 自己縮放）
+    const d=arcPath(); track.setAttribute('d',d); fillEl.setAttribute('d',d);
   }
   const hr=host.getBoundingClientRect(), br=blue.getBoundingClientRect(), rr=red.getBoundingClientRect();
   if(hr.height<10||br.width<10) return;      // 還沒排好 → 之後的重試再量
@@ -1266,18 +1284,20 @@ function layoutClasp(){
   if(sig===claspSig) return; claspSig=sig;
   const S=(br.y+br.height)-rr.y;             // S＝紅條頂→藍條底（慣例單位）
   const BL=br.x;                             // 血條左緣（視口座標）
-  /* 擺位（ver -542，Ray：「月的位置跟大小參考未命名-2」）——
-     逐 px 量那張圖（存 resources/_originals/vfx/clasp_moon_mock2.png）換成 S 比例：
-     徽章 bbox 高 1.548S、上緣＝紅頂上方 0.516S、右緣＝血條左緣＋0.290S
-     （壓進血條左端；月牙圖層本來就在 HP 之下（-526），被蓋住的那一角是刻意的）。
-     -540/-541 的月角/臂厚錨定作廢。 */
-  const Hm=1.548*S, Wm=Hm*MOON.ar;
-  const OVER=0.290*S;                        // 月壓進血條左端的量（未命名-2 量出）
+  /* 擺位（ver -1037）：整組是**正方形**（viewBox 100×100），邊長由頭像倒推 ——
+     頭像直徑 `FACE_D`＝1.15S（連擊數的字高是 0.9S，臉要讀得出是誰得再大一點），
+     而頭像佔 viewBox 的 `ARC.face` → 邊長＝FACE_D ÷ ARC.face。
+     ⚠ 垂直中心沿用舊的錨（兩條血條之間偏上那一點）：那個位置 Ray 調過三版
+       （-542/-543），換的是形狀不是位置。
+     ⚠ 右緣照舊**不可越過血條左緣**（-550 那條）——夾在下面 placeClaspArc()。 */
+  const FACE_D=1.15*S, BOX=FACE_D/ARC.face;
   const GAPB=0.05*S;                         // 鈕與血條右端的縫（-550，Ray：「不要遮到 hp 條」）
   /* 鈕的尺寸與落點（-551，Ray：「小一點…更靠右一些 低一些」）：
      縮成月的 0.78、右緣貼齊面板右緣內 6px、垂直中心＝兩條血條的中線。 */
-  const BSC=0.78, Hb=Hm*BSC, Wb=Wm*BSC, BPAD=6;
-  const top=rr.y-0.516*S, left=BL+OVER-Wm;
+  /* ⚠ 鈕的大小**維持原尺寸**（ver -551 Ray 調過的那一版）：它以前寫成「月的 0.78」，
+     而月高是 1.548S —— 換算成 S 就是 1.207S，直接寫那個數字，行為一個像素不變。
+     不跟著新的 BOX 走：那會讓一個與它無關的改動悄悄改掉鈕的大小。 */
+  const Hb=1.207*S, Wb=Hb*(276/272), BPAD=6;
   /* 血條右側讓位（-549；-550 改「整顆讓開」）：鈕與月同大，但月在血條**之下**
      壓著左端無妨，鈕在血條**之上**（要點擊）—— 蓋到會遮住血量，所以鈕整顆
      排在血條右端之外。讓位量改變血條 rect，改了就重跑一次重量。
@@ -1291,11 +1311,14 @@ function layoutClasp(){
       stack.style.marginRight=want; claspSig=''; setTimeout(layoutClasp,30); return;
     }
   }
-  for(const el of [frame,fillImg,glow,$('claspMoonOver')]){
-    if(!el) continue;
-    el.style.left=(left-hr.x)+'px'; el.style.top=(top-hr.y)+'px';
-    el.style.width=Wm+'px'; el.style.height=Hm+'px';
-  }
+  /* 中心（host 座標）：**縱向沿用舊錨**（-542/-543 Ray 調過的那一點：紅條頂
+     再往下 0.047S），橫向也沿用（血條左緣往左 0.188S）—— 但右緣一律夾在
+     血條左緣內（-550「不要遮到 hp 條」）。夾的是「中心 ＋ 半徑」。 */
+  const RAD=BOX/2;
+  const CY=rr.y+0.047*S-hr.y;
+  const CX=Math.min(BL-0.188*S-hr.x, (BL-hr.x)-2-RAD);
+  svgEl.style.left=(CX-RAD)+'px'; svgEl.style.top=(CY-RAD)+'px';
+  svgEl.style.width=BOX+'px';     svgEl.style.height=BOX+'px';
   /* 副武器切換鈕（-549 與月對稱 → -550 移出血條 → -551 縮小靠右壓低）：
      盒＝月的 0.78 倍，右緣＝面板右緣內 BPAD、垂直中心＝兩條血條的中線；
      圓卡直徑＝盒的短邊。幾何只算這一處（鐵律 7），weapon.js 只管卡面與行為。 */
@@ -1308,44 +1331,23 @@ function layoutClasp(){
     const wc=btn.querySelector('.ws-card'); const d=Math.round(Math.min(Wb,Hb));
     if(wc){ wc.style.width=d+'px'; wc.style.height=d+'px'; }
   }
-  claspGeo={ nxpx:left+MOON.nx*Wm-hr.x,      // 缺口中心（host 座標）＝連擊數的錨
-             nypx:top+MOON.ny*Hm-hr.y,
-             blpx:BL-hr.x, S };
-  /* 連擊數（Ray 定稿）：白粗斜體黑邊、錨在**月牙缺口中心**；
-     可蓋月牙、**不可蓋過 HP 條**（右緣的夾在 updateEnergyClasp 換字時做，
+  claspGeo={ cx:CX, cy:CY, faceD:FACE_D, blpx:BL-hr.x, S };   // 中心（host 座標）＝頭像／連擊數的錨
+  /* 連擊數（Ray 定稿）：白粗斜體黑邊、錨在**環帶的圓心**（＝頭像的位置）；
+     **不可蓋過 HP 條**（右緣的夾在 updateEnergyClasp 換字時做，
      因為夾多少取決於當下的字寬）。 */
   const combo=host.querySelector('.clasp-combo');
-  /* 縱向＝缺口中心再上移 0.12S（ver -543，Ray：「連擊數字稍微上移一些」）。 */
-  if(combo){ combo.style.top=(claspGeo.nypx-0.12*S)+'px';
+  if(combo){ combo.style.top=CY+'px';
              combo.style.bottom='auto'; combo.style.transform='translate(-50%,-50%)';
              const b=combo.querySelector('b');
              if(b){ b.style.fontSize=Math.round(0.9*S)+'px';                  // 定稿截圖：字高≈0.9S
                     b.style.webkitTextStroke=Math.max(1.6,0.05*S).toFixed(1)+'px rgba(8,8,12,.9)'; }
              placeCombo(); }                                                  // 橫向＝夾位那一支（唯一實作）
-  /* ══ 搭檔頭像（ver -1036）══ 與連擊數**同一個錨**（缺口中心，再上移同樣的 0.12S）
-     ——它們是二選一的兩種內容，不是兩個東西（鐵律 7）。
-     ⚠ 直徑取 1.30S：連擊數的字高是 0.9S，臉要讀得出是誰得再大一點，
-       但不能大到蓋掉月牙的兩隻角。
-     ⚠ 橫向與縱向都走 `placeClaspFace()`（唯一那一支）—— 它與連擊數共用
-       「右緣不可越過 HP 條左緣」那條夾位。 */
+  /* ══ 搭檔頭像（ver -1036；-1037 起是這一組的中心）══ 與連擊數同一個錨。
+     ⚠ 直徑就是上面算 BOX 時用的 `FACE_D` —— 一個量一個計算點（鐵律 7）。 */
   const face = $('claspFace');
-  if(face){ const D=Math.round(1.30*S);
+  if(face){ const D=Math.round(FACE_D);
             face.style.width=D+'px'; face.style.height=D+'px';
-            face.style.top=(claspGeo.nypx-0.12*S)+'px';
-            placeClaspFace(); }
-  /* 那一刀（ver -1036）：切在**頭像的中心高度** —— 下面那隻角壓在臉上、
-     上面的尖端被臉擋住。⚠ 切點由頭像的錨現算，不寫死一個百分比：
-     錨一動（那個 0.12S）它自己跟著走（鐵律 7）。 */
-  { const over=$('claspMoonOver');
-    if(over){ const cut=((claspGeo.nypx-0.12*S)-(top-hr.y))/Hm;
-              over.style.clipPath='inset('+(Math.max(0,Math.min(1,cut))*100).toFixed(2)+'% 0 0 0)'; } }
-  /* HITS 照舊：起筆＝血條左緣、紅條上方（svg 76×76 1:1，座標＝相對 svg 的 px）。 */
-  const svg=host.querySelector('svg');
-  const hits=svg&&svg.querySelector('.clasp-hits');
-  if(hits){ const sr=svg.getBoundingClientRect();
-            hits.setAttribute('x', String(Math.round(BL-sr.x+0.02*S)));
-            hits.setAttribute('y', String(Math.round(rr.y-sr.y-0.28*S)));
-            hits.style.fontSize=Math.round(0.36*S)+'px'; }
+            face.style.left=(CX-D/2)+'px'; face.style.top=(CY-D/2)+'px'; }
   updateEnergyClasp();                       // 幾何換了 → 遮罩與連擊數重掛
 }
 /* 連擊數的橫向擺位（唯一實作，鐵律 8）：錨在缺口中心，但 Ray：「可覆蓋月牙、
@@ -1354,16 +1356,8 @@ function layoutClasp(){
 function placeCombo(){
   if(!claspGeo) return;
   const cb=$('claspCombo'); if(!cb) return;
-  const w=cb.offsetWidth;                     // 藏著時是 0 → 落在缺口中心，無妨
-  cb.parentNode.style.left=Math.min(claspGeo.nxpx, claspGeo.blpx-2-w/2)+'px';
-}
-/* 頭像的擺位（唯一那一支，同 placeCombo 的規矩）：錨在缺口中心，右緣夾在
-   血條左緣內 —— Ray 那條「可覆蓋月牙、**不可蓋過 HP 條**」對它一樣成立。
-   ⚠ 用 `translate(-50%,-50%)` 置中，所以夾的是「中心 ＋ 半徑」。 */
-function placeClaspFace(){
-  const face=$('claspFace'); if(!face||!claspGeo) return;
-  const r=(parseFloat(face.style.width)||0)/2;
-  face.style.left=(Math.min(claspGeo.nxpx, claspGeo.blpx-2-r)-r)+'px';
+  const w=cb.offsetWidth;                     // 藏著時是 0 → 落在圓心，無妨
+  cb.parentNode.style.left=Math.min(claspGeo.cx, claspGeo.blpx-2-w/2)+'px';
 }
 /* 頭像那一張圖的 CSS（唯一那一支）：
    ① 本篇三位走 `speakers.faceStyle` —— 立繪的臉位置（`fx`）量過（鐵律 7）。
@@ -1387,22 +1381,23 @@ function armClaspLayout(){ claspSig=''; [0,120,400,1000].forEach(ms=>setTimeout(
 window.addEventListener('resize', ()=>{ claspSig=''; setTimeout(layoutClasp,60); });
 
 function updateEnergyClasp(){
-  /* 計量（ver -539）：金月圖被 conic 遮罩由下角（MOON.a0）順時針掃出來，
-     掃角＝energy 比例 × MOON.arc。0＝整張藏起（只剩 frame 空圈）、
-     滿＝拿掉遮罩（避免 360° 接縫）。邊界羽化 ±0.6° 抗鋸齒。 */
-  const fillImg=$('claspMoonFill'), glowEl=$('claspMoonGlow');
-  if(fillImg && claspGeo){
+  /* 計量（ver -539 起的同一套邏輯，-1037 只把形狀換成環帶）：
+     金色那一片被 conic 遮罩由起角（`ARC.a0`＝7 點）順時針掃出來，
+     掃角＝energy 比例 × `ARC.sweep`。0＝整片藏起（只剩底槽）、
+     滿＝拿掉遮罩（避免 360° 接縫）。邊界羽化 ±0.6° 抗鋸齒。
+     ⚠ 遮罩的圓心就是 viewBox 的正中（50% 50%）＝環帶的圓心＝頭像的位置。 */
+  const fillEl=$('claspArcFill');
+  if(fillEl && claspGeo){
     const p=Math.max(0,Math.min(1,state.energy/100));
-    const els=[fillImg,glowEl,$('claspMoonOver')].filter(Boolean);   // 蓄能光與「疊在臉上的下半」吃同一條計量遮罩（鐵律 7）
-    if(p<=0){ for(const el of els) el.style.visibility='hidden'; }
-    else if(p>=1){ for(const el of els){ el.style.visibility='';
-      el.style.webkitMaskImage='none'; el.style.maskImage='none'; } }
+    if(p<=0){ fillEl.style.visibility='hidden'; }
+    else if(p>=1){ fillEl.style.visibility='';
+      fillEl.style.webkitMaskImage='none'; fillEl.style.maskImage='none'; }
     else{
-      const deg=p*MOON.arc;
-      const m='conic-gradient(from '+MOON.a0+'deg at '+(MOON.nx*100).toFixed(2)+'% '+(MOON.ny*100).toFixed(2)+'%,'
+      const deg=p*ARC.sweep;
+      const m='conic-gradient(from '+ARC.a0+'deg at 50% 50%,'
              +'#000 0deg,#000 '+Math.max(0,deg-0.6).toFixed(1)+'deg,rgba(0,0,0,0) '+(deg+0.6).toFixed(1)+'deg)';
-      for(const el of els){ el.style.visibility='';
-        el.style.webkitMaskImage=m; el.style.maskImage=m; }
+      fillEl.style.visibility='';
+      fillEl.style.webkitMaskImage=m; fillEl.style.maskImage=m;
     }
   }
   $('energyClasp').classList.toggle('full', state.energy>=100);
@@ -1415,26 +1410,23 @@ function updateEnergyClasp(){
        升 → 換數字＋由大縮小彈一下（.pop 重觸發走 reflow）
        斷（>0 → 0）→ **舊數字**轉紅縮小消散（textContent 不動），散完才藏
        開場歸零（本來就 0）→ 直接藏著 */
-  /* ══ 月彎中間：頭像或連擊數（ver -1036）══ 每次都問一次 `claspFaceOn()`
+  /* ══ 圓心放什麼：頭像或連擊數（ver -1036）══ 每次都問一次 `claspFaceOn()`
      ——搭檔是**這一場**才決定的（`startGame` 寫 `state.pickedPartner`），
      而這一支是每一拍都會經過的匯流點。變了才動 DOM（`dataset.who` 當指紋）。
-     ⚠ 連擊數那一整段照舊跑：切回去（`claspFace:false`）不必改任何程式。 */
+     ⚠ 連擊數那一整段照舊跑：切回去（`claspFace:false`）不必改任何程式。
+     ⚠ 只換**背景**，位置與大小是 `layoutClasp` 寫進 inline style 的，別動到。 */
   const faceOn = claspFaceOn();
   const face = $('claspFace');
   if(face){
     const who = faceOn ? (state.pickedPartner||'') : '';
     if(face.dataset.who !== who){
       face.dataset.who = who;
-      face.style.cssText = face.style.cssText.replace(/background-[^;]*;?/g,'');
+      face.style.backgroundImage=''; face.style.backgroundSize=''; face.style.backgroundPosition='';
       if(who){ const st=claspFaceCss(who);
                if(st) face.setAttribute('style', face.getAttribute('style')+';'+st); }
       face.classList.toggle('on', !!who);
-      if(who) placeClaspFace();
     }
   }
-  /* HITS 小標與連擊數一起讓位：它是那個數字的標籤，數字不在就沒有它的事。 */
-  { const hits=document.querySelector('#energyClasp .clasp-hits');
-    if(hits) hits.style.display = faceOn ? 'none' : ''; }
   const cb=$('claspCombo');
   if(cb && faceOn){ const wrap=cb.parentNode; if(wrap) wrap.classList.remove('on'); }
   if(cb && !faceOn){
