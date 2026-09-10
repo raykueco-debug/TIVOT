@@ -1313,29 +1313,35 @@
     display:block;}
   #resultStats .row.exp-prog .exp-bar > b{display:block;width:0;height:100%;border-radius:3px;
     background:linear-gradient(90deg,#c9a44a,#ffe6a6);box-shadow:0 0 8px rgba(255,214,120,.8);}
-  /* ══ 升級的綠色上升箭頭（ver -1033，Ray：「exp 條旁邊有個綠色向上發光箭頭，
-     ps1 的 jrpg 風格」）══ 硬邊的塊狀箭頭 ＋ 強光暈，**逐格**往上跳
-     （`steps(1,end)`，關鍵影格自己就是那幾格）—— PS1 那個年代沒有平滑補間，
-     用 ease 反而讀起來是現代 UI 的滑動。
+  /* ══ 升級的綠色箭頭（ver -1033；**-1034 改成流光**，Ray：「箭頭粗點，箭頭不要動，
+     用流光的方式向上」）══
+     箭頭**站著不動**，動的是它身上那一道亮帶：由下往上流過去。
+     ⚠ 亮帶是**背景**不是第二個元素：形狀已經由 `clip-path` 裁好，把漸層裝進同一個
+       盒子就自動被裁成箭頭的形狀 —— 疊一層會需要第二份一模一樣的 clip-path（鐵律 7）。
+     ⚠⚠ 流動用 `steps()`**逐格**跳（PS1 那個年代沒有平滑補間）；`background-position-y`
+       由 **0% 走到 100%** ＝ 亮帶**往上**。方向很容易寫反（第一版就是）：
+       背景比盒子高，`0%` ＝背景頂端貼盒子頂端（看到圖的上半），`100%` ＝背景底端
+       貼盒子底端（看到圖的下半）—— 所以 p 變大是**背景往上滑**，圖案跟著往上。
+     ⚠ `background-size` 的高度給 **200%**（正好是盒子的兩倍）：亮帶擺在背景的正中線，
+       p 從 0 到 100 剛好讓它由盒子底邊掃到頂邊 —— 全程看得見。
+       放大到 300% 的話有一半的格數亮帶還在盒子外，讀起來是「閃兩下」不是「在流」。
      ⚠ 它**永遠佔著位子**（只改 opacity），不然升級那一刻整列會橫向抖一下 ——
        同這一區「數字用等寬」的理由。
      ⚠ 形狀用 `clip-path` 不用字元「▲」：字型不同，大小與基線都會跑。
-     ⚠ 綠是寫死的（`#5cff6a`）不吃 `--gold`：它與金色的 EXP 條是**兩件事** ——
+     ⚠ 綠是寫死的（不吃 `--gold`）：它與金色的 EXP 條是**兩件事** ——
        條子是進度，這一支是「升上去了」。 */
-  #resultStats .row.exp-prog .exp-up{flex:none;width:9px;height:12px;opacity:0;
-    background:#5cff6a;
-    clip-path:polygon(50% 0,100% 52%,72% 52%,72% 100%,28% 100%,28% 52%,0 52%);
-    filter:drop-shadow(0 0 4px #5cff6a) drop-shadow(0 0 10px rgba(92,255,106,.7));}
-  #resultStats .row.exp-prog.lvup .exp-up{animation:expUpArrow .9s steps(1,end);}
-  @keyframes expUpArrow{
-    0%  {opacity:1;   transform:translateY(4px);}
-    14% {opacity:1;   transform:translateY(1px);}
-    28% {opacity:.30; transform:translateY(-2px);}
-    42% {opacity:1;   transform:translateY(-5px);}
-    56% {opacity:.30; transform:translateY(-8px);}
-    70% {opacity:1;   transform:translateY(-11px);}
-    86% {opacity:.30; transform:translateY(-14px);}
-    100%{opacity:0;   transform:translateY(-17px);}}
+  #resultStats .row.exp-prog .exp-up{flex:none;width:13px;height:16px;opacity:0;
+    clip-path:polygon(50% 0,100% 50%,70% 50%,70% 100%,30% 100%,30% 50%,0 50%);
+    background-image:linear-gradient(to top,
+      #35c94a 0%, #35c94a 30%, #7dff8f 44%, #f4fff4 50%, #7dff8f 56%, #35c94a 70%, #35c94a 100%);
+    background-size:100% 200%; background-position:50% 0%;
+    filter:drop-shadow(0 0 4px #5cff6a) drop-shadow(0 0 11px rgba(92,255,106,.75));}
+  /* 兩支動畫各管一件事：`Flow` ＝亮帶往上跑（循環），`Fade` ＝這一次露臉多久（一次）。
+     ⚠ 不要合成一支：兩者的長度本來就不一樣（流光要跑好幾趟才讀得出是「在流」）。 */
+  #resultStats .row.exp-prog.lvup .exp-up{
+    animation:expUpFlow .5s steps(6,end) infinite, expUpFade 1.1s ease-out forwards;}
+  @keyframes expUpFlow{ from{background-position:50% 0%;} to{background-position:50% 100%;} }
+  @keyframes expUpFade{ 0%{opacity:0;} 8%{opacity:1;} 76%{opacity:1;} 100%{opacity:0;} }
   /* 升級那一刻閃一下（`lvup` 由 JS 重新掛上去重播）。 */
   #resultStats .row.exp-prog.lvup .exp-bar{animation:expLvUp .5s ease-out;}
   #resultStats .row.exp-prog.lvup .exp-lv{animation:expLvUp .5s ease-out;}
