@@ -16,7 +16,7 @@
    ══════════════════════════════════════════════════════════════════════ */
 
 import { asset, sfxGain } from '../config.js';   // 睡覺音（ver -430）：路徑與增益都只有 config 一份
-import { SPEAKERS, ART } from '../script/speakers.js';
+import { SPEAKERS, faceStyle } from '../script/speakers.js';
 import * as prog from '../script/progress.js';
 import * as clock from '../script/clock.js';
 import * as story from './story.js';
@@ -255,16 +255,8 @@ function ensureLayer(){
   return layer;
 }
 
-/* 頭像：拿角色的立繪，用量好的 `fx` 把臉挪到框中央。
-   ⚠ `background-size` 給 260%：框是一個小方塊，整張全身圖塞進去只會看到一個人形色塊；
-     放大到只框住頭與肩才讀得出是誰。⚠ 縱向固定貼齊上緣（`top:0`）—— 這幾張立繪的
-     頭頂本來就在圖的最上緣（`ART[].top` 都是個位數）。 */
-function faceStyle(who){
-  const a = ART[(SPEAKERS[who]||{}).art] || null;
-  if(!a || !a.base) return '';
-  return 'background-image:url("'+a.base+'");background-size:260% auto;'
-       + 'background-position:'+(a.fx*100).toFixed(1)+'% 0%;';
-}
+/* 頭像：`speakers.faceStyle`（唯一那一支，ver -1035 搬過去 —— 破防計量表的月彎
+   也在用它）。這裡不再自己寫一份（鐵律 8）。 */
 
 /* 這一格現在是什麼狀態：`empty`（還沒有這個人）／`awake`／`asleep`。 */
 function doorState(who){

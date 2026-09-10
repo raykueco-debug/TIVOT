@@ -405,13 +405,16 @@
      成正金色 —— 這條色彩鏈是唯一一份，moonCharge 的 keyframes 以它為底。 */
   #energyClasp .clasp-moon{position:absolute;pointer-events:none;
     filter:drop-shadow(0 0 4px #000);}
-  #claspMoonFill{filter:hue-rotate(10deg) saturate(.95) brightness(1.06) drop-shadow(0 0 4px #000);}
+  /* ⚠ `#claspMoonOver`（疊在頭像上的下半）與 fill **共用整條色彩／發光鏈**
+     （ver -1036）：它就是同一片月，只是被切了一刀 —— 分開寫必然走鐘（鐵律 7）。 */
+  #claspMoonFill,#claspMoonOver{filter:hue-rotate(10deg) saturate(.95) brightness(1.06) drop-shadow(0 0 4px #000);}
+  #claspMoonOver{z-index:3;}
   /* 計量累積中（0<energy<100，combat 掛 .charging）：金色光暈慢呼吸。
      ⚠ 效能（ver -851，實機探針抓到）：舊版 keyframes 逐幀動 filter（drop-shadow 半徑
        在變）＝整場戰鬥每幀重繪這一層 —— 與 emblemGlow 同族的發熱病灶。
        改成**靜態 filter（光暈定格在中間值，渲染一次進合成層）＋ 動 opacity**
        （純合成器，零重繪）：月體隨光一起微呼吸，讀感相同。 */
-  #energyClasp.charging #claspMoonFill{
+  #energyClasp.charging #claspMoonFill,#energyClasp.charging #claspMoonOver{
     filter:hue-rotate(10deg) saturate(.95) brightness(1.08) drop-shadow(0 0 6px rgba(255,216,110,.55)) drop-shadow(0 0 4px #000);
     animation:moonCharge 1.8s ease-in-out infinite alternate;}
   @keyframes moonCharge{from{opacity:.86;}to{opacity:1;}}
@@ -494,6 +497,19 @@
     animation:comboBreak .45s ease-in forwards;}
   @keyframes comboBreak{0%{transform:scale(1);opacity:1;}
     100%{transform:scale(.5);opacity:0;}}
+  /* ══ 搭檔頭像（ver -1036）══ 圓框嵌在月牙缺口中心，尺寸與位置由
+     `combat.layoutClasp` 掛（幾何只有那一支在算，鐵律 7）——這裡只管長相。
+     ⚠ `pointer-events:none`：整個 `#energyClasp` 是發動破防的鈕，頭像不能吃掉點擊。
+     ⚠ 邊框走金色、外圈一層暗影：月牙本身是金的，沒有那圈暗影臉會糊進月裡。
+     ⚠ 滿檔（`.full`）時整圈亮起來 —— 那一刻它就是「可以發動了」的燈。 */
+  #energyClasp .clasp-face{position:absolute;display:none;border-radius:50%;
+    background-repeat:no-repeat;background-color:#0d0b12;
+    border:1.5px solid var(--gold-dim);z-index:2;pointer-events:none;
+    box-shadow:0 0 0 2px rgba(8,8,12,.85), 0 2px 6px rgba(0,0,0,.75);}
+  #energyClasp .clasp-face.on{display:block;}
+  #energyClasp.charging .clasp-face{border-color:var(--gold);}
+  #energyClasp.full .clasp-face{border-color:#fff;
+    box-shadow:0 0 0 2px rgba(8,8,12,.85), 0 0 10px rgba(255,246,220,.9), 0 0 20px rgba(255,235,180,.6);}
   /* HITS 小標：白粗字、蓋住上唇收尾（Ray 的示意圖）。 */
   #energyClasp .clasp-hits{font-size:10px;font-weight:700;letter-spacing:1px;
     fill:#fff;stroke:rgba(8,8,12,.9);stroke-width:2.8;paint-order:stroke;
@@ -502,7 +518,7 @@
      半透明只給計量中，滿檔的月是實心的白。
      ⚠ 效能（ver -851）：同 moonCharge —— filter 定格在偏亮那一端（靜態、渲染一次），
        呼吸改動 opacity（合成器）。滿檔的白光讀感靠 ::after 的 claspHalo 補（它本來就在）。 */
-  #energyClasp.full #claspMoonFill{
+  #energyClasp.full #claspMoonFill,#energyClasp.full #claspMoonOver{
     filter:saturate(.20) brightness(1.85) drop-shadow(0 0 10px rgba(255,255,255,.95)) drop-shadow(0 0 22px rgba(255,250,235,.7)) drop-shadow(0 0 4px #000);
     animation:moonFull .6s infinite alternate;}
   @keyframes moonFull{from{opacity:.80;}to{opacity:1;}}

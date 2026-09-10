@@ -29,6 +29,7 @@ import * as inspector from './inspector.js';
 import * as tutorial from './tutorial.js';   // 教學關卡（首次出陣穿插對話；暫停走 pauseForDialog）
 import { playTransition } from './transition.js';   // 過渡禎（勝利進結算前的「驅逐完成」）
 import * as prog from '../script/progress.js';      // 持久 HP／talkOnce 打贏才記（葉節點，無循環）
+import { faceStyle } from '../script/speakers.js';  // 立繪當頭像（月彎中間的搭檔臉，ver -1036；唯一那一支）
 
 const $ = id => document.getElementById(id);
 const T = GAME_CONFIG.tuning;
@@ -1254,6 +1255,7 @@ function layoutClasp(){
   const glow=$('claspMoonGlow');
   if(!frame.getAttribute('src')){            // src 只在這裡掛：路徑只有 ASSETS 一份（鐵律 7）
     frame.src=asset('clasp_moon_frame'); fillImg.src=asset('clasp_moon');
+    const over=$('claspMoonOver'); if(over) over.src=asset('clasp_moon');   // 同一張圖（ver -1036）
     const gs=glow&&glow.querySelector('.glow-shape');   // 蓄能光的月牙形遮罩＝同一張圖
     if(gs){ const u='url("'+asset('clasp_moon')+'")';
             gs.style.webkitMaskImage=u; gs.style.maskImage=u; }
@@ -1289,7 +1291,7 @@ function layoutClasp(){
       stack.style.marginRight=want; claspSig=''; setTimeout(layoutClasp,30); return;
     }
   }
-  for(const el of [frame,fillImg,glow]){
+  for(const el of [frame,fillImg,glow,$('claspMoonOver')]){
     if(!el) continue;
     el.style.left=(left-hr.x)+'px'; el.style.top=(top-hr.y)+'px';
     el.style.width=Wm+'px'; el.style.height=Hm+'px';
@@ -1320,6 +1322,23 @@ function layoutClasp(){
              if(b){ b.style.fontSize=Math.round(0.9*S)+'px';                  // 定稿截圖：字高≈0.9S
                     b.style.webkitTextStroke=Math.max(1.6,0.05*S).toFixed(1)+'px rgba(8,8,12,.9)'; }
              placeCombo(); }                                                  // 橫向＝夾位那一支（唯一實作）
+  /* ══ 搭檔頭像（ver -1036）══ 與連擊數**同一個錨**（缺口中心，再上移同樣的 0.12S）
+     ——它們是二選一的兩種內容，不是兩個東西（鐵律 7）。
+     ⚠ 直徑取 1.30S：連擊數的字高是 0.9S，臉要讀得出是誰得再大一點，
+       但不能大到蓋掉月牙的兩隻角。
+     ⚠ 橫向與縱向都走 `placeClaspFace()`（唯一那一支）—— 它與連擊數共用
+       「右緣不可越過 HP 條左緣」那條夾位。 */
+  const face = $('claspFace');
+  if(face){ const D=Math.round(1.30*S);
+            face.style.width=D+'px'; face.style.height=D+'px';
+            face.style.top=(claspGeo.nypx-0.12*S)+'px';
+            placeClaspFace(); }
+  /* 那一刀（ver -1036）：切在**頭像的中心高度** —— 下面那隻角壓在臉上、
+     上面的尖端被臉擋住。⚠ 切點由頭像的錨現算，不寫死一個百分比：
+     錨一動（那個 0.12S）它自己跟著走（鐵律 7）。 */
+  { const over=$('claspMoonOver');
+    if(over){ const cut=((claspGeo.nypx-0.12*S)-(top-hr.y))/Hm;
+              over.style.clipPath='inset('+(Math.max(0,Math.min(1,cut))*100).toFixed(2)+'% 0 0 0)'; } }
   /* HITS 照舊：起筆＝血條左緣、紅條上方（svg 76×76 1:1，座標＝相對 svg 的 px）。 */
   const svg=host.querySelector('svg');
   const hits=svg&&svg.querySelector('.clasp-hits');
@@ -1338,6 +1357,31 @@ function placeCombo(){
   const w=cb.offsetWidth;                     // 藏著時是 0 → 落在缺口中心，無妨
   cb.parentNode.style.left=Math.min(claspGeo.nxpx, claspGeo.blpx-2-w/2)+'px';
 }
+/* 頭像的擺位（唯一那一支，同 placeCombo 的規矩）：錨在缺口中心，右緣夾在
+   血條左緣內 —— Ray 那條「可覆蓋月牙、**不可蓋過 HP 條**」對它一樣成立。
+   ⚠ 用 `translate(-50%,-50%)` 置中，所以夾的是「中心 ＋ 半徑」。 */
+function placeClaspFace(){
+  const face=$('claspFace'); if(!face||!claspGeo) return;
+  const r=(parseFloat(face.style.width)||0)/2;
+  face.style.left=(Math.min(claspGeo.nxpx, claspGeo.blpx-2-r)-r)+'px';
+}
+/* 頭像那一張圖的 CSS（唯一那一支）：
+   ① 本篇三位走 `speakers.faceStyle` —— 立繪的臉位置（`fx`）量過（鐵律 7）。
+   ② 試玩版的蕾妮／馬季諾**不在 `SPEAKERS` 裡**（她們只存在於挑戰，§6.5.2），
+      退回搭檔卡的選人立繪 `image`，臉當作在正中上方。
+   ⚠ 兩張都拿不到就回空字串 → `claspFaceOn()` 退回連擊數（空的圓圈比數字糟）。 */
+function claspFaceCss(who){
+  const s = faceStyle(String(who||'').toUpperCase());
+  if(s) return s;
+  const p = (GAME_CONFIG.partners||{})[who] || {};
+  const src = p.image && asset(p.image);
+  return src ? 'background-image:url("'+src+'");background-size:260% auto;background-position:50% 0%;' : '';
+}
+/* 月彎中間現在該放頭像還是連擊數（唯一的判定，鐵律 7）。 */
+function claspFaceOn(){
+  if(!(GAME_CONFIG.tuning||{}).claspFace) return false;
+  return !!claspFaceCss(state.pickedPartner);
+}
 /* 進場後多試幾拍（血條要排好才量得到）；視窗變了整組重量。 */
 function armClaspLayout(){ claspSig=''; [0,120,400,1000].forEach(ms=>setTimeout(layoutClasp,ms)); }
 window.addEventListener('resize', ()=>{ claspSig=''; setTimeout(layoutClasp,60); });
@@ -1349,7 +1393,7 @@ function updateEnergyClasp(){
   const fillImg=$('claspMoonFill'), glowEl=$('claspMoonGlow');
   if(fillImg && claspGeo){
     const p=Math.max(0,Math.min(1,state.energy/100));
-    const els=[fillImg,glowEl].filter(Boolean);        // 蓄能光吃同一條計量遮罩（鐵律 7）
+    const els=[fillImg,glowEl,$('claspMoonOver')].filter(Boolean);   // 蓄能光與「疊在臉上的下半」吃同一條計量遮罩（鐵律 7）
     if(p<=0){ for(const el of els) el.style.visibility='hidden'; }
     else if(p>=1){ for(const el of els){ el.style.visibility='';
       el.style.webkitMaskImage='none'; el.style.maskImage='none'; } }
@@ -1371,8 +1415,29 @@ function updateEnergyClasp(){
        升 → 換數字＋由大縮小彈一下（.pop 重觸發走 reflow）
        斷（>0 → 0）→ **舊數字**轉紅縮小消散（textContent 不動），散完才藏
        開場歸零（本來就 0）→ 直接藏著 */
+  /* ══ 月彎中間：頭像或連擊數（ver -1036）══ 每次都問一次 `claspFaceOn()`
+     ——搭檔是**這一場**才決定的（`startGame` 寫 `state.pickedPartner`），
+     而這一支是每一拍都會經過的匯流點。變了才動 DOM（`dataset.who` 當指紋）。
+     ⚠ 連擊數那一整段照舊跑：切回去（`claspFace:false`）不必改任何程式。 */
+  const faceOn = claspFaceOn();
+  const face = $('claspFace');
+  if(face){
+    const who = faceOn ? (state.pickedPartner||'') : '';
+    if(face.dataset.who !== who){
+      face.dataset.who = who;
+      face.style.cssText = face.style.cssText.replace(/background-[^;]*;?/g,'');
+      if(who){ const st=claspFaceCss(who);
+               if(st) face.setAttribute('style', face.getAttribute('style')+';'+st); }
+      face.classList.toggle('on', !!who);
+      if(who) placeClaspFace();
+    }
+  }
+  /* HITS 小標與連擊數一起讓位：它是那個數字的標籤，數字不在就沒有它的事。 */
+  { const hits=document.querySelector('#energyClasp .clasp-hits');
+    if(hits) hits.style.display = faceOn ? 'none' : ''; }
   const cb=$('claspCombo');
-  if(cb){
+  if(cb && faceOn){ const wrap=cb.parentNode; if(wrap) wrap.classList.remove('on'); }
+  if(cb && !faceOn){
     const v=state.combo|0, prev=+cb.dataset.v||0;
     if(v!==prev){
       cb.dataset.v=v;

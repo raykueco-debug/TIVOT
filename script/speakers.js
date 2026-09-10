@@ -810,3 +810,19 @@ export function frameOf(id, expr){
   const e = a.expr && a.expr[expr];
   return (e && typeof e === 'object') ? Object.assign({}, a, e) : a;
 }
+
+/* ══⚠⚠ **立繪當頭像：唯一那一支**（ver -1035 由 `modules/inn.js` 搬上來，鐵律 8）══
+   拿角色自己的立繪，用量好的 `fx` 把臉挪到框中央 —— **不用新素材**，
+   而取景值（`fx`）只有 `ART` 這一份（鐵律 7）。
+   ⚠ `background-size` 給 260%：框是一個小方塊，整張全身圖塞進去只會看到一個人形
+     色塊；放大到只框住頭與肩才讀得出是誰。
+   ⚠ 縱向固定貼齊上緣（`top:0`）—— 這幾張立繪的頭頂本來就在圖的最上緣
+     （`ART[].top` 都是個位數）。
+   ⚠ 收在這裡而不是 inn：旅店的門、破防計量表的月彎（ver -1035）都要用它，
+     兩份必然走鐘。⚠ 參數是 **speaker 的鑰匙**（大寫，如 `NOUVELLE`）。 */
+export function faceStyle(who, zoom){
+  const a = ART[(SPEAKERS[who]||{}).art] || null;
+  if(!a || !a.base) return '';
+  return 'background-image:url("'+a.base+'");background-size:'+(zoom||260)+'% auto;'
+       + 'background-position:'+(a.fx*100).toFixed(1)+'% 0%;';
+}
