@@ -1360,8 +1360,13 @@ function layoutClasp(){
   let tailFrac=0;
   if(tail){
     const x0=CX, x1=(BL-hr.x)-2;                       // 由圓心起（環把左半蓋住）到血條左緣內 2px
-    const tw=Math.max(0, x1-x0), th=Math.max(3, br.height);
-    tail.style.left=x0+'px'; tail.style.top=(br.y-hr.y)+'px';
+    const tw=Math.max(0, x1-x0);
+    /* ⚠⚠ **厚度與環的粗端一模一樣、上緣接在環的內緣上**（ver -1042，Ray：「計量表
+       寬度要一樣不要斷開」）：-1041 那一版拿藍條的高當厚度（14px），而環在 6 點
+       只有 7.6px —— 兩段粗細不同、垂直位置也不同，看起來是兩個東西。
+       ⚠ 兩個值都從 `ARC` 換算，不另外寫一個數字（鐵律 7）：環的比例一改它自己跟著。 */
+    const th=ARC.w0*BOX/100, ty=CY+ARC.ri*BOX/100;
+    tail.style.left=x0+'px'; tail.style.top=ty+'px';
     tail.style.width=tw+'px'; tail.style.height=th+'px';
     tail.classList.toggle('on', tw>2);
     const midR=(ARC.ri+(ARC.w0+ARC.w1)/4)*BOX/100;
