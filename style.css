@@ -3128,6 +3128,23 @@
     box-shadow:0 5px 14px rgba(0,0,0,.6);}
   #townMapBtn img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;}
   #townMapBtn:active{transform:scale(.95);}
+  /* ══⚠⚠⚠ **槍棺一動就撤出**（ver -1030，Ray：「槍棺一旦開始動作進入戰鬥，右下的
+     地圖 icon 就要立刻撤出，閉棺時不用放回，因為會有評價頁過渡，評價結束直接放在
+     原位就好」）══
+     這顆鈕是**城鎮探索的配件**（-899 起常駐在舞台上）—— 門一開始推就已經不是
+     探索了，留在畫面上會與門的儀式打架（而且它 z-8，壓在楣之上，看起來像貼紙）。
+     · 判定讀**門自己的狀態**（`#kerb.rise`），不另外掛一個 class ——
+       同 ver -405 那顆「選單」鈕的作法（鐵律 8：門一動，該讓的東西一起讓）。
+     · **往右下滑出去**（它就住在右下角），220ms —— 比門的 0.7s 快，所以是
+       「立刻撤出」而不是陪著門一起飄。
+     ⚠ **閉棺不放回**（Ray 指定）：`playKerberosClose` 也會掛 `rise`，所以它整段
+       都在外面 —— 接著就是評價頁，放回來只會在結算頁底下閃一格。
+     ⚠ 回來的路徑是**重生不是還原**：`town.enter()` 每進一格都會確認這顆鈕在
+       （`showMapBtn`，冪等），而 `close()` 是它唯一的終點 —— 所以評價結束回到
+       城鎮時它自然就在原位（-899 的生死規矩，這裡不必碰）。 */
+  #townMapBtn{transition:transform .22s ease-in, opacity .22s ease-in;}
+  #storyStage:has(#kerb.rise) #townMapBtn{
+    transform:translate(120%, 120%); opacity:0; pointer-events:none;}
   /* ⚠ z 與 #townNav 同層（7）＋ DOM 後生（map view 一定比 nav 晚建）＝壓過導覽字格；
      退出/跳段鈕（z-8）仍在其上，地圖開著也點得到。 */
   /* 地圖開著時導覽字格整組收掉（ver -867，Ray：「不用導覽字格」）。 */
