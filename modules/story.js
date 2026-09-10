@@ -522,6 +522,15 @@ function typeOut(el, text){
   };
   typingMs=typeSpeed(); typing=setInterval(step, typingMs);
 }
+/* ══⚠⚠ **停打字機**（ver -1062，Ray：「北泊雜貨店與蕾娜對話，主角的空白話框留了
+   蕾娜上一句的『之後』」）══
+   有台詞的那一拍不會有事（`typeOut` 一進來就 `clearInterval`），但**空框**
+   （`line.blank`）與**空台詞的演出拍**只寫了 `textContent=''` —— 上一句的 interval
+   還活著，下一格就把「之後。」接著打進那個本該空白的框裡。
+   ⚠ 這正是 ver -430 註解裡描述過的同一個坑（那次只修了 `flushReveal` 那條路），
+     所以收成**一支**（鐵律 8）：日後任何「把框清空」的路徑都叫它。
+   ⚠ 不動 `onTyped`：那是自動播放用的回呼，兩條空框路徑都會自己 `scheduleAuto`。 */
+function stopTyping(){ clearInterval(typing); typing=null; }
 function typeFinish(el, text){
   clearInterval(typing); typing=null;
   el.innerHTML = decorateLine(subst(text));
@@ -2735,6 +2744,7 @@ function renderLine(){
        兩者都沒有字，差別在**有沒有人在說話**。 */
   if(line.blank){
     if(bub2) bub2.style.visibility='';
+    stopTyping();                       // ver -1062：不然上一句會接著打進這個空框
     if(tx) tx.textContent='';
     /* ⚠⚠ **空框也是快進／自動播放的對象**（ver -427，Ray：「主角的空白對話框也是
        快進對象，不停，自動播放也不停」）。以前這裡直接 return，於是那兩個模式都
@@ -2746,6 +2756,7 @@ function renderLine(){
   }
   if(!lineText(line)){
     if(bub2) bub2.style.visibility='hidden';
+    stopTyping();                       // 同上：演出拍也要停（框藏起來了，字還在跑）
     if(tx) tx.textContent='';
     /* auto：這一拍**自己走完**，不等玩家點（Ray：「對話框在播放完
        Se_enemy_Saintroar 後與立繪一同出現」）。

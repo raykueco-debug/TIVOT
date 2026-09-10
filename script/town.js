@@ -1221,7 +1221,15 @@ export const TOWNS = {
          ⚠ 與下面 18:00 那一格**同一支旗**（np_night）＝天然去重：哪一個先成立
            就走哪一個，另一個永遠不會再觸發（gates 由上往下取第一個成立的）。
          ⚠ `need` 陣列＝全部都要（-858 讓 need 收陣列，見 modules/town.js）。 */
-      { flag:'np_night', need:['np_med','np_guild_seen','np_gunstore_seen'], onMove:true,
+      /* ⚠⚠ ver -1062（Ray：「探索完所有的北泊強制回程，應該要在探索完的下一次移動
+         觸發」）：`onMove` → **`afterMoves:1`**。
+         `onMove` 只問「這一次抵達是走過來的」—— 而**最後一個 NPC 的那一段演完時，
+         這一次抵達本來就是走過來的**（`backDir` 還在），於是旗一齊、當場就被接走。
+         `afterMoves` 的語意是「可觸發之後**又走了 N 步**」，第一次看到它可以數了
+         只記 0 不觸發 —— 正好是「探索完的**下一次**移動」。
+         ⚠ `onMove` 留著：走一步一定有 `backDir`，兩個條件不衝突（and）。 */
+      { flag:'np_night', need:['np_med','np_guild_seen','np_gunstore_seen'],
+        onMove:true, afterMoves:1,
         goto:'inn', enterAgain:true,
         lines:[ { speaker:'NARRATION', text:'該回去看看了。' } ] },
       { flag:'np_night', need:'np_burial_done', hourOfDay:18,
@@ -1497,6 +1505,12 @@ export const TOWNS = {
       guild:    { bg:'Northport_guild_BF', name:'北方泊地　賞金獵人公會', exits:{ back:'west' },
         hours:[8,20], closed:'大門上了閂。委託要等明天早上八點。',   // ver -864，Ray 確認（同帝都公會）
         board:'northport',
+        /* ⚠ ver -1062（Ray：「北泊的賞金獵人公會，原 npc 講完台詞以後就被換成帝都的
+           npc 了」）：`keeperOf` 看到 `board` 就退回帝都的 `COUNTER` —— 那一段對白
+           用的是 `COUNTER_NP`（櫃台小姐），講完換成店主立繪時就換了個人。
+           ⚠ 兩位**顯示名一樣但不是同一個人**（§6.5.6 那一條的反面）：art 不同，
+             所以不能共用 id，也不能靠預設值帶過去。 */
+        keeperWho:'COUNTER_NP',
         /* ver -858（Ray 交稿）：櫃台小姐上任（COUNTER_NP）——安葬後的自由探索
            就見得到（原本 need np_day3_done 的沉默一句取代掉）。懸賞單照舊走
            `board`（阿拉德那一筆在 config.bounties，賞金 -858 改 2000）。 */
