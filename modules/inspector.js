@@ -565,6 +565,7 @@ function pickEvaluator(rankKey, battleId){
 /* 沒有評價時：記一行 console；管理人模式再把原因印進結算頁那一疊數字裡
    （`_evalNote`，`ratingStatsRows` 會把它接在最後）—— 手機上只有這一條路看得到。 */
 let _evalNote='';
+let _evalSeeT=0;      // 「畫面上看得到嗎」那一支驗收的計時器（ver -1051）
 function warnNoEval(rank, battleId){
   const why=evalWhyNot||'（沒有原因，代表這一頁本來就不該有評價）';
   console.warn('[eval] 這一場沒有評價：'+why+'　battle='+(battleId||'-')+' rank='+rank);
@@ -965,6 +966,33 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose, opts){
       : (pickInspectorDialogue(insp, rankKey, state.inIntruderFight) || L.result.lineMissing);
     // {rand3}＝隨機 3 位數，不足 3 位以 0 補滿（如 007 / 042）。Boss 落敗台詞用。
     line = line.replace('{rand3}', String(Math.floor(Math.random()*1000)).padStart(3,'0'));
+    /* ══⚠⚠ **驗收：評價算出來了，畫面上看得到嗎**（ver -1051，Ray：「手機版才發生」）══
+       -1050 的診斷回答的是「有沒有算出來」；他說桌機正常、**手機版才不見**，
+       那就代表算得出來、是**畫面**那一端掉了（同 -1024 的 `.knee` 遮罩那一次）。
+       我在 375×812 與 375×667 都複現不出來，所以改成讓它自己報：
+       這一頁開好 2.5 秒後，對話框若還是看不見（沒 `.show`／高度 0／整個在視口外），
+       就**當場補救 ＋ 記一行 console**，管理人模式再把量到的數字印在結算頁上。
+       ⚠ 這是驗收不是規矩：真的印出來就是上游有洞 —— 但至少玩家那一次看得到評價，
+         而我拿得到「究竟是哪一種看不見」。 */
+    clearTimeout(_evalSeeT);
+    _evalSeeT=setTimeout(()=>{
+      if(!spk) return;
+      const r=bubble.getBoundingClientRect(), shown=bubble.classList.contains('show');
+      const vh=window.innerHeight||0;
+      const bad = !shown || r.height<8 || r.bottom<=0 || r.top>=vh;
+      if(!bad) return;
+      const info='show='+shown+' rect='+[r.x,r.y,r.width,r.height].map(n=>Math.round(n)).join(',')
+               +' vh='+Math.round(vh)+' stage='+(()=>{const q=stage.getBoundingClientRect();
+                  return [q.x,q.y,q.width,q.height].map(n=>Math.round(n)).join(',');})();
+      console.warn('[eval] 評價算出來了，但畫面上看不到：'+info);
+      bubble.classList.add('show');                    // 先把它補回來（玩家這一次還是看得到）
+      const host=$('resultStats');
+      if(host && document.body.classList.contains('testmode')){
+        const d=document.createElement('div'); d.className='row';
+        d.innerHTML='<span>⚠ 評價被蓋住</span><b>'+info+'</b>';
+        host.appendChild(d);
+      }
+    }, 2500);
     setTimeout(()=>{
       bubble.classList.add('show');
       typeInspectorLine(lineEl, line, 2000);   // 2 秒內逐字
