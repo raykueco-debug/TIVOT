@@ -836,18 +836,22 @@ function muzzleBurst(host, px, py){
   const r=mzEl('mz-ring');
   r.style.left=px+'px'; r.style.top=py+'px';
   frag.appendChild(r); mzFree(r,260);
-  // ③ 火星
-  const n=Math.min(9, MZ_MAX-mzLive);
+  /* ③ 火星（ver -1053 放大並拉出尾跡，Ray：「太小了根本看不到，而且要有火星散開
+     消失的特效」）：**細長條**朝飛行方向，飛得越遠越小、末端轉暗紅熄掉。
+     ⚠ 圓點看起來是「灰塵」，長條才像**噴出去的火星** —— 所以要跟著方向轉
+       （`--a`，長條本身是直的，＋90° 才會頭朝外）。 */
+  const n=Math.min(14, MZ_MAX-mzLive);
   for(let i=0;i<n;i++){
     const s=mzEl('mz-spark');
-    const a=Math.random()*Math.PI*2, d=16+Math.random()*38;
+    const a=Math.random()*Math.PI*2, d=34+Math.random()*84;      // 散得更開
     s.style.left=px+'px'; s.style.top=py+'px';
-    const sz=(1.2+Math.random()*2.2).toFixed(1);
-    s.style.width=sz+'px'; s.style.height=sz+'px';
+    const w=(1.6+Math.random()*2.0), h=w*(2.4+Math.random()*3.2);
+    s.style.width=w.toFixed(1)+'px'; s.style.height=h.toFixed(1)+'px';
     s.style.setProperty('--dx', (Math.cos(a)*d).toFixed(0)+'px');
-    s.style.setProperty('--dy', (Math.sin(a)*d + 10+Math.random()*22).toFixed(0)+'px');  // ＋重力
-    s.style.animationDuration=(0.28+Math.random()*0.22).toFixed(2)+'s';
-    frag.appendChild(s); mzFree(s,540);
+    s.style.setProperty('--dy', (Math.sin(a)*d + 18+Math.random()*40).toFixed(0)+'px');  // ＋重力
+    s.style.setProperty('--a',  (a*180/Math.PI+90).toFixed(0)+'deg');                    // 頭朝飛行方向
+    s.style.animationDuration=(0.44+Math.random()*0.34).toFixed(2)+'s';                  // 慢一點才看得到它熄掉
+    frag.appendChild(s); mzFree(s,900);
   }
   host.appendChild(frag);
 }

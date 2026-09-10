@@ -604,7 +604,9 @@
      ⚠ 不用 `filter`（同 -1049 的碎玻璃）：這是每一發子彈都會跑的特效，
        drop-shadow 會讓每一片都變成獨立繪製層。亮度用漸層自己給。
      ⚠ 芒的中心保留白熱核 —— 少了它整團會讀成一片橘霧，不像槍口的火。 */
-  .muzzle{position:absolute;width:50px;height:50px;margin:-25px;pointer-events:none;
+  /* ⚠ ver -1053（Ray：「太小了根本看不到」）：50 → **96px**，環 34 → **68px**。
+     這一層畫在敵人立繪上，而立繪本身又雜又亮 —— 小於一格盤面的閃光會被吃掉。 */
+  .muzzle{position:absolute;width:96px;height:96px;margin:-48px;pointer-events:none;
     background:radial-gradient(circle,#fff 0 26%,#fff4c8 38%,#ffce6a 54%,
       rgba(255,150,40,.85) 70%,rgba(255,90,20,.4) 84%,transparent 94%);
     animation:muzzle .16s ease-out forwards;}
@@ -613,19 +615,23 @@
     60% {opacity:1;transform:rotate(var(--mzr,0deg)) scale(1.15);}
     to  {opacity:0;transform:rotate(var(--mzr,0deg)) scale(1.45);}}
   /* 衝擊環：「炸開」的那一下 —— 極短、細、往外擴。 */
-  .mz-ring{position:absolute;width:34px;height:34px;margin:-17px;pointer-events:none;
-    border-radius:50%;border:1.5px solid rgba(255,226,160,.9);
-    animation:mzRing .2s ease-out forwards;}
-  @keyframes mzRing{from{opacity:.95;transform:scale(.25);}
-    to{opacity:0;transform:scale(1.7);}}
-  /* 火星：往外放射＋帶一點重力往下墜，長短快慢逐顆不同（`--dx/--dy` 與 duration 由 JS 給）。 */
-  .mz-spark{position:absolute;border-radius:50%;pointer-events:none;
-    background:linear-gradient(#fff,#ffcf74 55%,#ff8a2b);
-    animation:mzSpark .35s cubic-bezier(.12,.62,.35,1) forwards;}
+  .mz-ring{position:absolute;width:68px;height:68px;margin:-34px;pointer-events:none;
+    border-radius:50%;border:2px solid rgba(255,226,160,.95);
+    animation:mzRing .24s ease-out forwards;}
+  @keyframes mzRing{from{opacity:.95;transform:scale(.2);}
+    to{opacity:0;transform:scale(1.8);}}
+  /* 火星（ver -1053 改成**細長條**）：往外放射＋帶一點重力往下墜，
+     頭朝飛行方向（`--a`），飛到末端縮小、轉暗紅、熄掉。
+     ⚠ 圓點看起來是灰塵，長條才像噴出去的火星。
+     ⚠ 尺寸／距離／方向／快慢全部由 JS 逐顆給，這裡只定顏色與那條軌跡的形狀。 */
+  .mz-spark{position:absolute;border-radius:40%;pointer-events:none;
+    background:linear-gradient(#fff,#ffd98a 40%,#ff8a2b 78%,#c33a06);
+    animation:mzSpark .5s cubic-bezier(.1,.68,.32,1) forwards;}
   @keyframes mzSpark{
-    0%  {opacity:1;transform:translate(0,0) scale(1.25);}
-    70% {opacity:.9;}
-    100%{opacity:0;transform:translate(var(--dx,0),var(--dy,0)) scale(.35);}}
+    0%  {opacity:1;transform:translate(0,0) rotate(var(--a,0deg)) scale(1.15);}
+    55% {opacity:1;}
+    80% {opacity:.75;}
+    100%{opacity:0;transform:translate(var(--dx,0),var(--dy,0)) rotate(var(--a,0deg)) scale(.45);}}
   .dmgnum{position:absolute;font-size:18px;font-weight:bold;color:var(--gold);
     text-shadow:0 0 8px #000;pointer-events:none;animation:floatup .7s ease-out forwards;}
   .critnum{color:#fff;font-size:26px;text-shadow:0 0 12px var(--danger),0 0 4px #fff;}
