@@ -109,7 +109,7 @@ LAYOUT = [
     ('編號',   [('__no__',          '')]),
     ('基本資料', [('key',            ''), ('圖', '圖'), ('圖檔', '圖檔'), ('name', '顯名')]),
     ('基本設定', [('story',          '劇情'), ('kind', '種類'), ('hp', 'HP'), ('attack', '攻擊力'),
-                ('counterStagger', '反擊硬直'), ('noStack', '不疊圈'), ('entrance', '進場音效'),
+                ('counterStagger', '反擊硬直'), ('boss', 'Boss'), ('noStack', '不疊圈'), ('entrance', '進場音效'),
                 ('bg',             '指定地點')]),
     ('武器增益', [('Ganymede',       '雙槍增傷'),
                 ('weaponMod.重機槍.傷害', '機槍增傷'), ('weaponMod.重機槍.迴避', '機槍迴避'),

@@ -19,11 +19,21 @@ export const ENEMIES = {
        `counterStagger`＝ **反擊硬直**（1/0，Ray：「預設為 1，0 的話就算被反擊
                          延時計時也不會歸零」）：被反擊（weaponCounter 真的開火）
                          時延時懲罰計時歸零。判定在 defense 的 staggerOnCounter。
-       兩格**每張卡都要寫**（統一），程式端沒寫時的預設：story 走發起端／true、
-       counterStagger＝1。 */
+       `boss`          ＝ **這一隻是不是 Boss**（1/0，ver -1024，Ray：「為敵人卡加上
+                         boss=1 或 0，boss 經驗 2 倍錢 2.5 倍」）。
+                         倍率在 `config.rating.bossMul`（鐵律 1），判定與相乘只有
+                         `inspector` 的 `bossMul()` 一處（鐵律 7）。
+                         ⚠ 連戰整段以**收段那一場**（帶 `sessionEnd` 的那隻）為準
+                           —— 結算是那一場的事（§0.5：局＝一次結算）。
+                         ⚠ 它與 `state.inIntruderFight`（挑戰的亂入 Boss）是兩件事：
+                           那是試玩版那條線的旗，這是**卡上的性質**。
+                         ⚠⚠ **ver -1024 先把 57 張全部填 0** —— 哪幾隻是 Boss
+                           由 Ray 指定（改這一格，或在 enemies.xlsx 的「Boss」欄改）。
+       三格**每張卡都要寫**（統一），程式端沒寫時的預設：story 走發起端／true、
+       counterStagger＝1、boss＝0。 */
     faceless: {
       name:'地下聖徒_A',        // UI 只顯示底線前的「地下聖徒」；底線後（_A）僅供作者辨識、不顯示
-      story:0, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
+      story:0, counterStagger:1, boss:0,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
@@ -60,7 +70,7 @@ export const ENEMIES = {
     //    hp/attack 仍填保底值。立繪：Saint_TR_CI。
     trainee: {
       name:'訓練用聖徒',
-      story:0, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
+      story:0, counterStagger:1, boss:0,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
@@ -89,7 +99,7 @@ export const ENEMIES = {
        ⚠ `attack` 仍留一個值只是為了資料完整；沒有任何一條路會讀到它。 */
     dart_target: {
       name:'固定立靶',
-      story:0, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
+      story:0, counterStagger:1, boss:0,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
@@ -120,7 +130,7 @@ export const ENEMIES = {
        hitPenaltySec 分支）—— 不扣血，罰的是時間。 */
     sv_dart: {
       name:'蕃茄人11號',
-      story:0, counterStagger:1,
+      story:0, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[2,3],
@@ -141,7 +151,7 @@ export const ENEMIES = {
     //    差異：血更厚（300）＋攻擊更密（蓄力 4×1/1.2≈3.33s）；單擊傷害同一般值。
     facelessgiant: {
       name:'巨型聖徒',
-      story:0, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
+      story:0, counterStagger:1, boss:0,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
@@ -175,7 +185,7 @@ export const ENEMIES = {
        ⚠ 立繪暫用索菈娜的 SI（見 ASSETS enemy_man_sorana）—— 等 Ray 的戰鬥圖。 */
     man_sorana: {
       name:'森住民',
-      story:1, counterStagger:1,
+      story:1, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0.3], '萊福槍':[0,0.5] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
@@ -212,7 +222,7 @@ export const ENEMIES = {
        ⚠ `kind:'harm'` ＝禍魘：吃降臨與淨化那一套演出，結算副標是「已淨化」。 */
     nightmare_natalia: {
       name:'禍魘娜塔莉',
-      story:1, counterStagger:1,
+      story:1, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
@@ -238,7 +248,7 @@ export const ENEMIES = {
     // 亂入怪（無傷 45 秒內通關才會出現）— 先用同一隻怪測流程，正式再換
     intruderEnemy: {
       name:'亂入者 · ???',
-      story:0, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
+      story:0, counterStagger:1, boss:0,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
@@ -262,7 +272,7 @@ export const ENEMIES = {
     // ── 槍之魔女（Boss）v17：S 評價後遭遇的隱藏 Boss ──
     witch: {
       name:'槍之魔女',
-      story:0, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
+      story:0, counterStagger:1, boss:0,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0,0.3], '霰彈槍':[0,0.3], '萊福槍':[0,0.3] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
@@ -330,7 +340,7 @@ export const ENEMIES = {
          背景蓋掉（ver -592），留著是為了在別處單獨叫用時不會身後一片黑。 */
     np_candletower: {
       name:'禍魘祭司',
-      story:1, counterStagger:1,
+      story:1, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[-0.5,0], '萊福槍':[0.5,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
@@ -356,7 +366,7 @@ export const ENEMIES = {
     },
     np_candlepenitent: {
       name:'罪之魔像',
-      story:1, counterStagger:1,
+      story:1, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0,-0.2], '霰彈槍':[0.5,0], '萊福槍':[-0.5,-0.3] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       openAssault:[0.5,1.5],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
@@ -382,7 +392,7 @@ export const ENEMIES = {
     },
     np_coralman: {
       name:'魘魔',
-      story:1, counterStagger:1,
+      story:1, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0,-0.2], '霰彈槍':[0.5,0], '萊福槍':[-0.5,-0.3] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
@@ -408,7 +418,7 @@ export const ENEMIES = {
     },
     np_reassembled: {
       name:'心魘',
-      story:1, counterStagger:1,
+      story:1, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
@@ -440,7 +450,7 @@ export const ENEMIES = {
        ⚠ 名字沿用「禍魘」：Ray 還沒給它專屬的名字，不自己編。 */
     np_boss: {
       name:'背負祭壇者',
-      story:1, counterStagger:1,
+      story:1, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[-0.1,0], '霰彈槍':[-0.5,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
@@ -477,7 +487,7 @@ export const ENEMIES = {
          與教學的節奏由腳本那一側管，不是靠數值。 */
     np_claws: {
       name:'紫黑之爪',
-      story:1, counterStagger:1,
+      story:1, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
@@ -511,7 +521,7 @@ export const ENEMIES = {
     /* ── 連接格怪池（心魘 ±20%，weaponMod 同心魘）── */
     sv_wolf_pack: {                       // 野外那格以外的怪之一：狼群（−20%）
       name:'狼骸群',
-      story:1, counterStagger:1,
+      story:1, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },   // ＝心魘（弱點/命中不動）
       openAssault:[1,2],
@@ -537,7 +547,7 @@ export const ENEMIES = {
     },
     sv_beast_organ: {                     // 畸變野獸（器官外露，−5%）
       name:'裂肉獸',
-      story:1, counterStagger:1,
+      story:1, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
       openAssault:[1,2],
@@ -563,7 +573,7 @@ export const ENEMIES = {
     },
     sv_stag: {                            // 鹿魘（基準值）
       name:'鹿骸',
-      story:1, counterStagger:1,
+      story:1, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
       openAssault:[1,2],
@@ -589,7 +599,7 @@ export const ENEMIES = {
     },
     sv_beast_shackle: {                   // 魔獸型（鐵環枷鎖長進肉裡，+10%）
       name:'枷獸',
-      story:1, counterStagger:1,
+      story:1, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
       openAssault:[1,2],
@@ -619,7 +629,7 @@ export const ENEMIES = {
        webp，見 ASSETS 註）。 */
     sv_bear: {
       name:'熊骸',
-      story:1, counterStagger:1,
+      story:1, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },   // ＝心魘（弱點/命中不動）
       openAssault:[1,2],
@@ -651,7 +661,7 @@ export const ENEMIES = {
        ⚠ weaponMod／hitFx 都**照 np_boss**（不是心魘）——「數值同 np_boss」。 */
     sv_reliquary: {
       name:'聖骨獸',
-      story:1, counterStagger:1,
+      story:1, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[-0.1,0], '霰彈槍':[-0.5,0], '萊福槍':[0,0] },   // ＝np_boss
       openAssault:[1,2],
@@ -677,7 +687,7 @@ export const ENEMIES = {
     },
     guild_hunter: {
       name:'賞金獵人',
-      story:1, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
+      story:1, counterStagger:1, boss:0,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
@@ -722,7 +732,7 @@ export const ENEMIES = {
        第一場**船艦戰**的怪。卡上的每一欄都照抄成絕對值（鐵律 1／§6.5.2）。 */
     centipi: {
       name:'巨型蜈蚣',
-      story:1, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
+      story:1, counterStagger:1, boss:0,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
       Ganymede:-0.2,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[2,0], '霰彈槍':[0.5,0], '萊福槍':[1,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
@@ -786,7 +796,7 @@ export const ENEMIES = {
          觸發點與素材（Deck_Chaos）都還沒有 —— 等 Ray 的 stage2 稿再接。 */
     serpent: {
       name:'羽蛇_A',
-      story:1, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
+      story:1, counterStagger:1, boss:0,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
       Ganymede:-0.2,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[1,0.3], '霰彈槍':[1.5,-0.5], '萊福槍':[1,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
@@ -831,7 +841,7 @@ export const ENEMIES = {
          照那三個入表。 */
     pirate_ship: {
       name:'空賊船_A',
-      story:0, counterStagger:1,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
+      story:0, counterStagger:1, boss:0,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
       Ganymede:-0.2,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0.7,0], '霰彈槍':[0.7,0], '萊福槍':[1.5,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
@@ -875,7 +885,7 @@ export const ENEMIES = {
        ⚠ 名字全部**暫定**（Ray 沒給名），交件後照改。 */
     sf_lynx: {
       name:'森林山貓',
-      story:0, counterStagger:1,
+      story:0, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2],
@@ -900,7 +910,7 @@ export const ENEMIES = {
     },
     sf_snake: {
       name:'淺灘水蛇',
-      story:0, counterStagger:1,
+      story:0, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2],
@@ -925,7 +935,7 @@ export const ENEMIES = {
     },
     sf_hog: {
       name:'巨山豬',
-      story:0, counterStagger:1,
+      story:0, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2],
@@ -950,7 +960,7 @@ export const ENEMIES = {
     },
     sf_tiger: {
       name:'獨角虎王',
-      story:0, counterStagger:1,
+      story:0, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2],
@@ -977,7 +987,7 @@ export const ENEMIES = {
     },
     sf_crows: {
       name:'食腐鴉群',
-      story:0, counterStagger:1,
+      story:0, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0,0.2], '霰彈槍':[0,-0.3], '萊福槍':[0.3,0] },
       openAssault:[1,2],
@@ -1011,7 +1021,7 @@ export const ENEMIES = {
        ⚠ hp/attack 暫定（照本尊 600 上調一階；Ray 沒給這一張的數值）。 */
     sf_deer_nightmare: {
       name:'變異樹靈鹿主',
-      story:1, counterStagger:1,
+      story:1, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0,0.3], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
       /* ⚠⚠ **一波三顆**（ver -899，Ray：「被命中的話是 3hits」）：櫻花狂亂是**一陣風**，
@@ -1045,7 +1055,7 @@ export const ENEMIES = {
        （日/晨＝這兩張、黃昏/夜＝nightmare 那兩張）。⚠ hp/attack 全部暫定（Ray 表寫 ?）。 */
     sf_bear_husk: {
       name:'熊骸',
-      story:0, counterStagger:1,
+      story:0, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },   // ＝心魘（骸系照 sv）
       openAssault:[1,2],
@@ -1068,7 +1078,7 @@ export const ENEMIES = {
     },
     sf_bear_nightmare: {
       name:'夢魘熊骸',
-      story:0, counterStagger:1,
+      story:0, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
       openAssault:[1,2],
@@ -1093,7 +1103,7 @@ export const ENEMIES = {
     },
     sf_stag_rot: {
       name:'腐鹿骸',
-      story:0, counterStagger:1,
+      story:0, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
       openAssault:[1,2],
@@ -1120,7 +1130,7 @@ export const ENEMIES = {
     },
     sf_stag_nightmare: {
       name:'夢魘鹿骸',
-      story:0, counterStagger:1,
+      story:0, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
       openAssault:[1,2],
@@ -1157,7 +1167,7 @@ export const ENEMIES = {
          所以這一欄只是「不在神殿打起來時」的退路。 */
     ruins_bonemaw: {
       name:'覆骨者',
-      story:0, counterStagger:1,
+      story:0, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0.2,0.3], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
       openAssault:[1,2],
@@ -1181,7 +1191,7 @@ export const ENEMIES = {
     },
     ruins_bellreacher: {
       name:'鳴鐘者',
-      story:0, counterStagger:1,
+      story:0, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[-0.3,0], '萊福槍':[1,0] },
       openAssault:[1,2],
@@ -1205,7 +1215,7 @@ export const ENEMIES = {
     },
     ruins_halo_ring: {
       name:'王的容器',
-      story:0, counterStagger:1,
+      story:0, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
       openAssault:[1,2],
@@ -1230,7 +1240,7 @@ export const ENEMIES = {
     },
     ruins_heartripper: {
       name:'撕心者',
-      story:0, counterStagger:1,
+      story:0, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0.2,0.3], '霰彈槍':[0.3,0], '萊福槍':[0,0] },
       openAssault:[1,2],
@@ -1254,7 +1264,7 @@ export const ENEMIES = {
     },
     ruins_bellwalker: {
       name:'喪鐘',
-      story:0, counterStagger:1,
+      story:0, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[-0.2,0], '霰彈槍':[-0.5,0], '萊福槍':[1,0] },
       openAssault:[1,2],
@@ -1279,7 +1289,7 @@ export const ENEMIES = {
     /* ── 聖徒系列（`slay`：降臨與淨化照播，結算副標「已擊殺」）────────────── */
     ruins_saint_prison: {
       name:'鎖鍊聖徒',
-      story:0, counterStagger:1,
+      story:0, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
       openAssault:[1,2],
@@ -1303,7 +1313,7 @@ export const ENEMIES = {
     },
     ruins_saint_inspector: {
       name:'監查者',
-      story:0, counterStagger:1,
+      story:0, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
       openAssault:[1,2],
@@ -1327,7 +1337,7 @@ export const ENEMIES = {
     },
     ruins_saint_thug: {
       name:'巨型聖徒',
-      story:0, counterStagger:1,
+      story:0, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
       openAssault:[1,2],
@@ -1353,7 +1363,7 @@ export const ENEMIES = {
        Ray：「等等再補劇情給你」—— 卡與戰鬥卡都備好，接的時候是那一段 act 的一拍。 */
     ruins_saint_temperance: {
       name:'節制者',
-      story:0, counterStagger:1,
+      story:0, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
       openAssault:[1,2],
@@ -1397,7 +1407,7 @@ export const ENEMIES = {
          地圖那一格的背景蓋掉（ver -592）。先放神殿那一張。 */
     relic_mirrorchoir: {                       // 裂開的高鏡當頭，手從玻璃內側壓出裂紋
       name:'鏡唱者',
-      story:1, counterStagger:1,
+      story:1, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 中性起點，等 Ray 逐張調
       openAssault:[1,2],
@@ -1423,7 +1433,7 @@ export const ENEMIES = {
     },
     relic_bellows: {                       // 軀幹是管風琴風箱，自己壓著自己呼吸
       name:'風箱懺者',
-      story:1, counterStagger:1,
+      story:1, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 中性起點，等 Ray 逐張調
       openAssault:[1,2],
@@ -1449,7 +1459,7 @@ export const ENEMIES = {
     },
     relic_confessional: {                       // 身體是木造告解亭，一隻手從格柵裡貼著
       name:'告解者',
-      story:1, counterStagger:1,
+      story:1, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 中性起點，等 Ray 逐張調
       openAssault:[1,2],
@@ -1475,7 +1485,7 @@ export const ENEMIES = {
     },
     relic_hourglass: {                       // 胸腔嵌著巨大沙漏，落下的是灰不是沙
       name:'沙漏苦修者',
-      story:1, counterStagger:1,
+      story:1, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 中性起點，等 Ray 逐張調
       openAssault:[1,2],
@@ -1501,7 +1511,7 @@ export const ENEMIES = {
     },
     relic_keyward: {                       // 頭是一團鑰匙，兩臂末端是鎖
       name:'鑰匙守',
-      story:1, counterStagger:1,
+      story:1, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 中性起點，等 Ray 逐張調
       openAssault:[1,2],
@@ -1527,7 +1537,7 @@ export const ENEMIES = {
     },
     relic_lectern: {                       // 骨盆長出石造讀經台，十幾隻手按住書頁
       name:'讀經台',
-      story:1, counterStagger:1,
+      story:1, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 中性起點，等 Ray 逐張調
       openAssault:[1,2],
@@ -1553,7 +1563,7 @@ export const ENEMIES = {
     },
     relic_censerlung: {                       // 肋骨外扳，胸腔裡擺盪著香爐
       name:'香爐肺',
-      story:1, counterStagger:1,
+      story:1, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 中性起點，等 Ray 逐張調
       openAssault:[1,2],
@@ -1579,7 +1589,7 @@ export const ENEMIES = {
     },
     relic_veilhands: {                       // 一整片祭壇帷幕，後面數不清的手往前推
       name:'帷幕手',
-      story:1, counterStagger:1,
+      story:1, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 中性起點，等 Ray 逐張調
       openAssault:[1,2],
@@ -1605,7 +1615,7 @@ export const ENEMIES = {
     },
     relic_wheelpsalm: {                       // 巨大的祈禱輪，輻條就是人的手臂
       name:'詩輪',
-      story:1, counterStagger:1,
+      story:1, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 中性起點，等 Ray 逐張調
       openAssault:[1,2],
@@ -1631,7 +1641,7 @@ export const ENEMIES = {
     },
     relic_chalice: {                       // 頭是過大的聖爵，有手從杯口內側往上抓
       name:'聖爵溺者',
-      story:1, counterStagger:1,
+      story:1, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 中性起點，等 Ray 逐張調
       openAssault:[1,2],
@@ -1658,7 +1668,7 @@ export const ENEMIES = {
 
     bug_mantis: {
       name:'（待命名）',
-      story:0, counterStagger:1,
+      story:0, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2],
@@ -1683,7 +1693,7 @@ export const ENEMIES = {
     },
     relic_bellascetic: {
       name:'（待命名）',
-      story:0, counterStagger:1,
+      story:0, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2],
@@ -1708,7 +1718,7 @@ export const ENEMIES = {
     },
     rictus_hooked: {
       name:'（待命名）',
-      story:0, counterStagger:1,
+      story:0, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2],

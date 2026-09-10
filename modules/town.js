@@ -651,60 +651,17 @@ function wildVariant(v){
   const b=clock.band();
   return (b==='Dawn'||b==='Day') ? v.day : v.night;
 }
-/* ══⚠⚠⚠ **結算怪擺在「你沒走進來的那個出口」**（ver -895，Ray 定案，已入憲 §6.5.4.3 後）══
-   > Ray：「像夏爾森林這種有頭尾跟其他地圖相聯的地圖，如果從 A 點進入，結算戰就發生在
-   >   B 點，從 B 點進入，結算戰就發生在 A 點，如果有 C 點，就發生在 A 或 B 點」
-   結算怪＝戰鬥卡帶 `sessionEnd:true` 的那一隻：打贏牠就閉棺、收掉這一局。
-   ⚠ 為什麼不寫死在資料上：同一張圖從兩邊都進得來，寫死一定有一邊是反的 ——
-     從另一頭走進來的人**第一格就撞到結算怪**，打完就結算，整張圖剩下的部分變成
-     空景。擺在對面那一端，不管從哪邊進來都是走完全程才收尾。
-   ⚠ **這一趟算一次就固定**（`open()` 呼叫）：每次抵達重擲的話，玩家走回頭路時
-     結算怪會跟著跑。歸零時機同 `wildDone`。
-   ⚠ 只有**連結型地圖**（兩個以上跨圖出口）吃這一條；末端型沒有「對面」，
-     照舊由資料指定（`endAt` 是 null，`wildActDue` 就走 `fixed` 那一套）。
-   ⚠ 判定的鑰匙是「**這一趟從哪裡進來**」（`open(town, node)` 的那個 node，
-     沒指定就是這張圖的入口）—— 不是節點資料上的欄位（同「回去掛在來時方向的反向」）。 */
-let endNodeId = null;
-function crossExitIds(){
-  const T=TOWNS[townId]; if(!T) return [];
-  return Object.keys(T.nodes||{}).filter(id=>{
-    const ex=(T.nodes[id]||{}).exits||{};
-    return Object.values(ex).some(v=>typeof v==='string' && v[0]==='@');
-  });
-}
-function pickEndNode(startNode){
-  endNodeId = null;
-  const T=TOWNS[townId]; if(!T || !T.wildSpawn || !T.wildSpawn.endBattle) return;
-  const outs = crossExitIds();
-  if(outs.length < 2) return;                       // 末端型：沒有「對面」
-  const came = (startNode && T.nodes[startNode]) ? startNode : entryNodeId;
-  /* ⚠ 只排除「**這一趟走進來的那一格**」，不排除資料上的入口：從另一頭進來時，
-     資料上的 `entry` 正是「對面那個出口」——把它排掉的話那一趟算不出落點
-     （實測踩過：從 `ruins` 進來時回 null，等於整趟沒有結算怪）。 */
-  const cands = outs.filter(id=>id!==came);
-  if(!cands.length) return;
-  /* 三個以上就挑一個並記住（這一趟固定，不每次抵達重擲）。 */
-  let end = cands[Math.floor(Math.random()*cands.length)];
-  /* ══⚠⚠ **那一格自己說「這裡不打」就退一格**（ver -898，Ray 回報「我從夏爾村進森林，
-     結果沒有在崖邊遇到結算怪」）══
-     -895 把結算怪擺在對面那個出口本身，於是它落在**遺跡入口** —— 但那一格
-     Ray 在 -879 宣告過「神殿入口除了鹿主戰之外是安全區，不出怪」（`noWild`），
-     而且資料上的入口還受 §6.5.2「入口那一格不可以有戰鬥」管。兩條規則打架。
-     解法：**擺在那個出口，除非那一格自己拒絕戰鬥；拒絕就退到它在圖內的鄰格。**
-     這樣三條規則同時成立 —— 結算怪仍然守在「對面那一端」，安全區照舊安全，
-     入口照舊沒有戰鬥（-895 那個「明寫例外」因此不必要了，已撤）。
-     ⚠ 退一格找的是**圖內**的鄰居（跨圖出口 `@` 不算）：遺跡入口只通斷崖邊，
-       森林入口只通林間空地 —— 兩邊都是唯一解。 */
-  const refuses = id => { const nd=(T.nodes||{})[id]; return !nd || nd.noWild || id===entryNodeId; };
-  if(refuses(end)){
-    const nb = Object.values(((T.nodes||{})[end]||{}).exits||{})
-      .find(v=>typeof v==='string' && v[0]!=='@' && (T.nodes||{})[v] && !refuses(v));
-    end = nb || null;
-  }
-  endNodeId = end;
-}
-/* 這一趟的結算怪落在哪一格（給 wildActDue 問；沒有就回 null）。 */
-export function endBattleNode(){ return endNodeId; }
+/* ══⚠⚠⚠ **結算怪已取消**（ver -1024，Ray：「取消結算怪的放置，一律以踏入結算點
+   為結算條件」）══════════════════════════════════════════════════════════════
+   ver -895／-898 那一整套（`pickEndNode`／`endNodeId`／`endBattleNode`／
+   `crossExitIds`）**整組移除**：它的工作是把 `wildSpawn.endBattle` 那一隻擺在
+   「這一趟沒走進來的那個出口」，那一格拒絕戰鬥就退一格。
+   ⇒ 現在**收局的條件只有一個**：踏進 `rest:true` 的結算點（見下面的 `restActDue`）。
+     離開地圖那一條（`leaveMapRitual`）留著當保險 —— 不讓帳被卡在圖裡。
+   ⚠ -895 當初的理由（「擺死一格的話，從另一頭進來第一格就撞到、剩下的圖變空景」）
+     在新規則下自然消失：結算點是**玩家自己走進去的**，走多遠由他決定。
+   ⚠ 資料上的 `wildSpawn.endBattle` 現在沒有人讀 —— 欄位留著不刪（它是「這張圖的
+     收局怪是誰」的宣告），但別再指望它會出現。 */
 
 /* ══⚠⚠ **休息處：走進去就閉棺結算**（ver -913，Ray：「養息之間跟命之泉、前廳這三個
    是安全點，進入就結算戰鬥」「走進就閉棺，跳結算頁。但若之前沒有發生戰鬥就不會作動」）══
@@ -726,8 +683,11 @@ function restActDue(n){
    兩句講的是同一個時刻，所以收成**一支**（鐵律 8）：跨圖出口（`@`）與出航都問它。
    ⚠ **有帳就走結算那一條**（`{settle:true}`，與休息處同一支）—— 那一拍自己會
      `playKerberosClose` 閉棺，這裡不要再多演一次門（會演兩次）。
-   ⚠ **沒帳才單純閉棺**（`playKerberosShut`，原高度開合）：那是「這張圖走完了」的
-     收尾，不是結算，所以不彈戰績頁。
+   ⚠⚠ **沒帳就什麼都不演**（ver -1024，Ray：「目前在帝都打完賞金獵人離開帝都時會
+     閉棺，像這種完全是多餘的，因為獵人戰完就已經閉棺結算了」）——
+     -928 的「沒帳也單純閉棺」（`playKerberosShut`）已撤：那一場**早就結算過**、
+     帳也清了，走出去再演一次門讀起來是「又結算了一次」。
+     ⚠ 門是**結算**的幕，不是「離開地圖」的幕 —— 沒有要報的帳就沒有幕可演。
    ⚠ 判「有沒有帳」問 `state.sessionStats`（同 `restActDue`，鐵律 7）——
      這一趟已經踩過結算怪的話帳早就清了，走出去不會再彈第二頁。
    ⚠ 呼叫端要**先把導覽收掉、busy 立起來**：這一段期間畫面交給門與結算頁。 */
@@ -737,23 +697,19 @@ function leaveMapRitual(done){
                     ()=>{ story.clearCast(); done(); });
     return;
   }
-  story.playKerberosShut(done);
+  done();                       // ver -1024：沒帳＝這一趟沒有要結算的東西，直接走
 }
 function wildActDue(n){
   const W=(TOWNS[townId]||{}).wildSpawn; if(!W || !n) return null;
   if(prog.hasFlag(safehouseFlag())) return null;        // 安全區：遭遇戰整套不動
-  /* ══ 結算怪（ver -895／-898，見 pickEndNode）══ 擺在「這一趟沒走進來的那個出口」，
-     那一格自己拒絕戰鬥（`noWild`／入口）就退到它在圖內的鄰格。
-     ⚠ 落點在 `pickEndNode` 就已經避開入口與 `noWild` 了，所以這裡**不必**再排在
-       那兩道守門之前（-895 曾為此開的明寫例外已撤）。
-     ⚠ 打過了就不再出（進 `wildDone`，同「一趟同種不重複」的規約）。 */
-  if(endNodeId && nodeId===endNodeId && W.endBattle){
-    const eid=wildVariant(W.endBattle);
-    if(eid && !wildDone.has(wildSpecies(W.endBattle))){
-      wildDone.add(wildSpecies(W.endBattle));
-      return { lines:[ { battle:eid } ] };
-    }
-  }
+  /* ══⚠⚠⚠ **結算怪已取消**（ver -1024，Ray：「取消結算怪的放置，一律以踏入結算點
+     為結算條件」）══ ver -895／-898 的那一套（把 `wildSpawn.endBattle` 擺在
+     「這一趟沒走進來的那個出口」、那一格拒絕戰鬥就退一格）**整組撤掉**：
+     `pickEndNode()`／`endNodeId`／`endBattleNode()` 與這裡的分支都沒了。
+     ⇒ 現在**收局的條件只有一個**：踏進 `rest:true` 的結算點（`restActDue`）。
+       離開地圖那一條（`leaveMapRitual`）是保險，不讓帳被卡在圖裡。
+     ⚠ 資料上的 `wildSpawn.endBattle` 現在**沒有人讀** —— 欄位留著不刪（它是
+       「這張圖的收局怪是誰」的宣告，日後要改回來只動程式），但別再指望它會出現。 */
   if(nodeId===entryNodeId) return null;                 // 入口＝復活點，不可有戰鬥
   /* ══⚠⚠ **指定遭遇**（ver -879，Ray：「鹿主未變異日後則會在黃昏夜晚時段在夏爾森林
      隨機遇到，劇情從諾『牠好像不太歡迎我們』開始跑，進入戰鬥」「打完就沒了，
@@ -2737,7 +2693,6 @@ export function open(town, node, opts){
   eveningHeld=false;          // 傍晚那一格的「讓過一次」是這一趟城鎮探索的狀態（ver -430）
   wildDone=new Set();         // 野生刷怪的「這一趟出過誰」也是（ver -862）
   wildCleared=new Set();      // 「這一趟哪幾格出過」（ver -924，重刷率用）
-  pickEndNode(node);          // 結算怪擺哪一格（ver -895，見那一支）
   pendingFavor=null;          // 「下一步去哪」也是（ver -440，見 armFavor）
   /* 夥伴的所在（ver -461）：進城算一次。⚠ 要在 townId 設好之後（leftoverForNou 要查表）。 */
   escortNou=false;

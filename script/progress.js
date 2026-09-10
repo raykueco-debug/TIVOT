@@ -567,7 +567,11 @@ export function applyRankAffection(grade, partnerKey){
     const k=one && one.key; if(CHARS.indexOf(k)<0) continue;
     /* 索菈娜的方向與別人相反（評價越爛越加）；其餘搭檔照 `partner` 那一欄。 */
     const tbl = (k==='sorana') ? (A.sorana||{}) : (A.partner||{});
-    const d = tbl[grade];
+    /* ══ `always` ＝**只要出場就給的保底**（ver -1024，Ray：「索拉娜只要出場就會
+       好感+1，D＋3 C+2」）══ 與等第那一格**相加**（D 總共 +4、C +3、其餘 +1）。
+       ⚠ 沒寫 `always` 的人（諾薇兒／安雅／蕾娜）行為一個字不變。
+       ⚠ 份額（`mul`）照乘：平手均分時保底也一起分（同等第那一份的處理）。 */
+    const d = (tbl.always || 0) + (tbl[grade] || 0);
     if(d){ addAffection(k, d * (one.mul!=null ? one.mul : 1)); got.push(k); }
   }
   /* 蕾娜：不看搭檔欄，照她自己那一欄加。

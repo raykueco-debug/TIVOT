@@ -415,7 +415,14 @@ export function resolveThreat(th){
      玩家自己點到紅圈那一發不算（判定歸技術、覆蓋歸技能，ver -974 三分法）。
      ⚠ 只有這一支答得出「這一發是不是靠技能開出去的」，所以由它通知（鐵律 7）；
        收多少錢是 saint 的事（`niForcedCounter`）。 */
-  const billForced = ()=>{ if(hitForce && api.onForcedCounter) api.onForcedCounter(); };
+  /* ⚠ ver -1024：帳單改**依這一發打了多少傷**（Ray：「安雅夢魘化扣秒依反擊照傷害
+     為比例」）。傷害量問 `state.counterDamage` 的**差值** —— `weaponCounter` 一進去
+     就把整串的總傷 `addCounter(sum)` 記完了（三種 vfx 都是先擲定再演），
+     所以呼叫回來的那一刻差值就是「這一發打了多少」（鐵律 7：不在這裡重算一次）。 */
+  const billForced = (d0)=>{
+    if(!hitForce || !api.onForcedCounter) return;
+    api.onForcedCounter(Math.max(0, (state.counterDamage||0) - (d0||0)));
+  };
   const boltFloat = ()=> api.floatDmg((L.battle && L.battle.boltCd) || 'BOLT','50%','34%',false);
   let grade='block';   // 判定等級：'counter' | 'perfect' | 'block'（傳給教學層分流，見文末通知）
   /* ⚠⚠ **「真的點到紅圈」與「被技能算成紅圈」要分開報**（ver -887，Ray：
@@ -463,9 +470,10 @@ export function resolveThreat(th){
     let bpFired = false;
     if(bp.counter && canFire()){
       const fa = fireArgs(bp, bp.hit);          // ver -974：攻擊力帶／命中可被技能覆蓋
+      const _d0 = state.counterDamage||0;
       api.weaponCounter(fa.scale, fa.hit, fa.roll, 'perfect');
       staggerOnCounter();
-      billForced();                             // ver -1012：橘圈靠霸王條款命中 → 收費
+      billForced(_d0);                          // ver -1012／-1024：橘圈靠霸王條款命中 → 依傷害收費
       bpFired = true;
     }else if(bp.counter){
       boltFloat();                              // ver -1009：拉栓中，這一發開不出來
@@ -520,9 +528,10 @@ export function resolveThreat(th){
            現在改由 `hitForce` **只壓命中**，免傷與評價照舊不送。 */
         if(canFire()){
           const fa = fireArgs(bb, hit);
+          const _d0 = state.counterDamage||0;
           api.weaponCounter(fa.scale, fa.hit, fa.roll, 'block');
           staggerOnCounter();
-          billForced();                         // ver -1012：黃圈靠霸王條款命中 → 收費
+          billForced(_d0);                      // ver -1012／-1024：黃圈靠霸王條款命中 → 依傷害收費
           bbFired = true;
         }else boltFloat();                // ver -1009：拉栓中，這一發開不出來
       }

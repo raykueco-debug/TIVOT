@@ -81,10 +81,30 @@ const clamp01 = x => (x<0 ? 0 : (x>1 ? 1 : x));
      都問這一支。以前錢有三個來源（敵人卡的 `money.hpRatio`、`battleLoot` 的逐場
      擲骰、連戰的記帳），調起來永遠對不準。
    ⚠ 「銀幣星」的加成**不在這裡乘** —— 那是玩家的強化，留在呼叫端與其他加成一起套。 */
+/* ══⚠⚠⚠ **這一場是不是 Boss**（ver -1024，Ray：「為敵人卡加上 boss=1 或 0，
+   boss 經驗 2 倍錢 2.5 倍」）══════════════════════════════════════════════════
+   問**收段那一場的敵人卡**（`state.currentEnemyKey`）—— 連戰整段以最後那一隻
+   （帶 `sessionEnd` 的那個）為準，因為結算是那一場的事（§0.5：局＝一次結算）。
+   ⚠ 倍率在 config（`rating.bossMul`，鐵律 1），判定與相乘只有這兩支
+   （`bossMulExp`／`bossMulMoney`，鐵律 7）—— 呼叫端不要自己讀卡再乘一次。
+   ⚠ 它與 `state.inIntruderFight`（挑戰的亂入 Boss）是**兩件事**：那個是試玩版
+     那條線的旗，這個是**敵人卡上的性質**，本篇的每一張卡都答得出來。 */
+function isBossFight(){
+  const en = GAME_CONFIG.enemies && GAME_CONFIG.enemies[state.currentEnemyKey];
+  return !!(en && en.boss);
+}
+function bossMul(which){
+  if(!isBossFight()) return 1;
+  const m = (GAME_CONFIG.rating||{}).bossMul || {};
+  const v = m[which];
+  return (v>0) ? v : 1;
+}
 export function moneyOf(stats, grade){
   const tbl = (GAME_CONFIG.rating && GAME_CONFIG.rating.moneyByGrade) || {};
   const pct = tbl[grade] != null ? tbl[grade] : (tbl.D != null ? tbl.D : 0.5);
-  return Math.max(0, Math.round((stats && stats.totalHP || 0) * pct));
+  /* Boss 的錢 ×2.5（ver -1024）。⚠ 乘在**這一支**：錢的計算點只有這裡，
+     三條結算路徑都問它（鐵律 7）。 */
+  return Math.max(0, Math.round((stats && stats.totalHP || 0) * pct * bossMul('money')));
 }
 /* ══⚠⚠ 連續戰鬥的中間幾場：把這一場的**戰績**與錢記進帳（ver -595；-601 改）══
    由 combat 的 `win()` 在「不結算」那一支呼叫；到收段那一場由 `settle` 一起領走。
@@ -207,7 +227,9 @@ function settleExpShares(){
      不是同一個數字對切。這一支就是那個唯一的計算點。 */
 export function expForWho(who, score, stats, cfg = GAME_CONFIG.rating.exp){
   const inv = (cfg.invertFor||[]).indexOf(who)>=0;
-  return scoreToExp(inv ? (100 - score) : score, stats, cfg);
+  /* Boss 的 EXP ×2（ver -1024）。⚠ 乘在**這一支**：它是「這一位拿多少」的唯一
+     計算點（鐵律 7），所以索菈娜的鏡射與 Boss 加成自然疊在一起、不會漏。 */
+  return Math.round(scoreToExp(inv ? (100 - score) : score, stats, cfg) * bossMul('exp'));
 }
 
 /* ══⚠⚠ **發 EXP：唯一的入口**（ver -970，鐵律 8）══ 三條結算路徑都叫它。
@@ -455,7 +477,26 @@ function pickEvaluator(rankKey, battleId){
   let one = bb ? bb[rankKey] : null;
   if(!one){
     /* 章節 → 好感，兩層都是**門檻**（取不超過現值的最高那一格，同 `dialogues` 的查表法）。 */
-    const byStage = pickByThreshold(EVAL_LINES, prog.getStage(), null);
+    /* ══⚠⚠⚠ **查不到那一章就退回最低的那一章**（ver -1024，Ray：「手機版常常沒跑
+       評價出來，連對話框都沒有」）══
+       `EVAL_LINES` 目前最低那一格是 **`1`（第 1 章起）**，而門檻查表的規矩是
+       「取不超過現值的最高那一格」—— 於是 **stage 0 一個都取不到 → 回 null**，
+       而 `scriptSettle` 在沒有 speaker 時是 `{noInspector:true}`：
+       **整頁沒有立繪也沒有對話框**（實測 stage0 唯一有洞，1~6 章六個等第全滿）。
+       ⚠ 「預設就有評價，沒有的是特例」是 ver -670 定的規矩（不評要寫在戰鬥卡上）
+         —— 所以「這一章的稿還沒寫」不該變成「這一場沒有評價」。
+       ⚠ **不發明台詞**：退回既有的最低那一章（第 1 章的稿在第 0 章一樣說得通，
+         她本來就在場）。真的要為第 0 章寫一組，加一格 `0:` 就會自動優先。
+       ⚠ 退回時記一行 console —— 靜靜退回會讓下一個同類的洞查不出來
+         （同 `verifyCastCleared` 的作法）。 */
+    let byStage = pickByThreshold(EVAL_LINES, prog.getStage(), null);
+    if(!byStage){
+      const ks = Object.keys(EVAL_LINES).map(Number).filter(n=>isFinite(n)).sort((a,b)=>a-b);
+      if(ks.length){
+        byStage = EVAL_LINES[ks[0]];
+        console.warn('[eval] 第 '+prog.getStage()+' 章沒有評價表，退回第 '+ks[0]+' 章的稿');
+      }
+    }
     if(!byStage) return null;
     const aff = (prog.getAffection() || {})[(who.art||'')] ;
     const byAff = pickByThreshold(byStage, (aff==null ? 0 : aff), null);
@@ -535,9 +576,12 @@ function ratingStatsRows(stats, totalTime){
   let r='';
   r += `<div class="row"><span>${L.result.rowCombo}</span><b>${stats.maxCombo}</b></div>`;
   r += `<div class="row"><span>${L.result.rowHits}</span><b>${stats.hitsTaken}</b></div>`;
-  r += `<div class="row"><span>${L.result.rowAccuracy}</span><b>${accPct}%</b></div>`;
-  r += `<div class="row"><span>${L.result.rowPerfectCtr}</span><b>${fmt(L.result.timesUnit,{n:stats.perfectCounter})}</b></div>`;
-  r += `<div class="row"><span>${L.result.rowCtrDamage}</span><b>${Math.round(stats.counterDamage || 0)}</b></div>`;
+  /* ══ ver -1024（Ray：「結算的反擊次數，命中率，反擊總傷移除」）══
+     三列拿掉：**命中率**（`rowAccuracy`）、**完美反擊次數**（`rowPerfectCtr`）、
+     **反擊總傷**（`rowCtrDamage`）。
+     ⚠ **只是不印**：三個量照樣在算、照樣進評價（命中率與完美反擊折秒都是分數的
+       輸入）—— 拿掉的是版面上的噪音，不是機制（`stats` 那幾格一個字沒動）。
+     ⚠ `accPct` 與 `L.result.rowAccuracy` 等字串留著不刪：日後要印回來只加一行。 */
   r += `<div class="row"><span>${L.result.rowTime}</span><b>${fmtTime(totalTime)}${flawlessTag}</b></div>`;
   return r;
 }

@@ -378,7 +378,7 @@ export function niAtkMul(){
    ⚠ `energy` 的擁有者是 combat，所以扣表走注入的 `api.setEnergy`（§3.1）。
    ⚠⚠ ver -974~-1011 的「雙生星＝反擊讓抽血停 0.5 秒」已**整顆推翻**：
      那是在補她已經最強的地方。 */
-export function niForcedCounter(){
+export function niForcedCounter(dmg){
   if(!state.niMode) return;
   /* Lv9 孿生星：破防計先付。⚠ 只要**還有一點**就整發由它付掉（不找零）——
      「多扛三次」是 Ray 給的語感，不是精算。 */
@@ -387,7 +387,15 @@ export function niForcedCounter(){
     if(api.setEnergy) api.setEnergy(state.energy - pct*100);
     return;
   }
-  const sec = (NI.forcedCounterSec!=null) ? NI.forcedCounterSec : 0;
+  /* ══⚠⚠⚠ **扣的秒數依這一發的傷害**（ver -1024，Ray：「安雅夢魘化扣秒依反擊照
+     傷害為比例，秒數先以傷害額的 0.2 來計」）══
+     `秒 ＝ 傷害 × forcedCounterPerDmg`（0.2）。推翻 -1012 的「一律 1 秒」。
+     ⚠ 這樣才公平：一發 112 的萊福槍與一串 40 的機槍付一樣的錢，本來就講不通。
+     ⚠ 傷害由 `defense` 交出來（它才量得到那一發打了多少）—— 這裡不去翻武器卡。
+     ⚠ 傳不到傷害（0）時退回舊的固定秒數 `forcedCounterSec`（保險，不會變成免費）。 */
+  const per = (NI.forcedCounterPerDmg!=null) ? NI.forcedCounterPerDmg : 0;
+  const sec = (dmg>0 && per>0) ? (dmg*per)
+                               : ((NI.forcedCounterSec!=null) ? NI.forcedCounterSec : 0);
   if(sec>0) nightmareHit(sec);        // 換算成槽量的那一支只有一處（鐵律 7）
 }
 /* ══ 「負行星」（諾薇兒 Lv8，ver -971）：聖徒化期間每一發射擊都延長倒數 ══

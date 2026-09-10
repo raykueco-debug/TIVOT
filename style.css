@@ -1372,7 +1372,25 @@
        裁切線之外（看不到）—— 不搬的話膝蓋處會是一條硬邊。
      ⚠ 只給 `opts.speaker` 那一頁（蕾娜）。監察官（芙蕾雅）用的是另一組立繪，
        取景不同，沒量過就不要一起套。 */
-  #inspectorStage.knee{overflow:hidden;align-items:flex-start;--knee:.72;
+  /* ══⚠⚠⚠ **遮罩只能套在立繪上，不能套在 stage 上**（ver -1024，Ray：「手機版常常
+     沒跑評價出來，連對話框都沒有」）══
+     `#inspectorBubble` 是 `#inspectorStage` 的**子元素**，而 mask 會套用到整個子樹
+     —— 舊寫法把「膝部以上」那條淡出遮罩掛在 stage 上（下 14% 漸透明），
+     而對話框正好坐在 `bottom:11%`：**整個落在那條淡出帶裡**。
+     · `.knee` **只在評價那一頁掛**（`stage.classList.toggle('knee', !!spk)`）——
+       所以監察官那一頁一直正常，只有蕾娜評價那一頁看不到，症狀讀起來就是
+       「沒跑評價」。
+     · 「常常」而不是「總是」：遮罩是**比例**（86%），而對話框的高度隨字數變 ——
+       字少時頂端還露一點，字多時整個沉進去；手機的 stage 更高，`bottom:11%` 的
+       絕對距離更大，所以在手機上更常整個不見。
+     ⇒ 立繪外面包一層 `#inspectorFrame`（見 index.html），裁切與遮罩都掛在**它**身上；
+       對話框是 stage 的子元素、不在框裡，因此不受影響。
+     ⚠ 不是 `.knee` 時 `#inspectorFrame` 是 `display:contents` ＝**等於不存在**，
+       立繪照舊是 stage 的直接 flex 子項（監察官那一頁的版面一個字不變）。 */
+  #inspectorFrame{display:contents;}
+  #inspectorStage.knee{align-items:flex-start;--knee:.72;}
+  #inspectorStage.knee #inspectorFrame{display:flex;position:absolute;inset:0;
+    align-items:flex-start;justify-content:center;overflow:hidden;
     -webkit-mask-image:linear-gradient(to bottom,#000 86%,transparent 100%);
     mask-image:linear-gradient(to bottom,#000 86%,transparent 100%);}
   #inspectorStage.knee #inspectorPortrait{max-width:none;max-height:none;

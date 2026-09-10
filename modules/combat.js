@@ -238,7 +238,8 @@ export function setup(){
                    /* ⚠ **參數要往下傳**（ver -430 修）：舊寫法 `()=>storyReturn()` 把結算頁
                       帶出來的 `res` 整個吃掉 —— 計時挑戰的「超時＝打輸」（`{lost:true}`）
                       因此接不上 `onLose` 那一支分歧，戰敗那三顆鈕也送不出去。 */
-                   storyReturn: (res)=>{ if(storyReturn) storyReturn(res); else goHome(); },
+                   storyReturn: (res)=>{ killBattleFrame();   // ver -1024：結算頁交還之前清空戰鬥層
+                                        if(storyReturn) storyReturn(res); else goHome(); },
                    /* 戰敗那一頁該給哪幾顆鈕（ver -430）：只有啟動層知道這一場是飛行頁
                       交棒過來的（船艦戰）、還是劇情插進來的（見 main.js 的 setLoseKind）。 */
                    loseKind: ()=> (loseKind ? loseKind() : 'home') });
@@ -1901,6 +1902,7 @@ function storyBattleEnd(lost){
   state.tutorialRun=false; state.tutorialStoryRun=false; state.scriptRun=false;
   state.over=true; clockPause(); stopAll();
   /* ⚠ 把**勝負**一起交還（ver -377）：可戰敗的場次要靠它決定接哪一支分歧。 */
+  killBattleFrame();                 // ver -1024：交還畫面之前先把戰鬥層清空（鐵律 10）
   if(storyReturn) storyReturn({ lost: !!lost });
   return true;
 }
@@ -1988,7 +1990,8 @@ function win(){
        不然玩家會先看到一次黑幕，門的動作就白演了。 */
     /* EXP 與錢**整場結算**（ver -595）：中間這幾場先記帳，收段那一場一起入。 */
     inspector.bankSessionGain(stats);
-    const back = ()=>{ if(storyReturn) storyReturn({ lost:false, inPlace:true }); };
+    const back = ()=>{ killBattleFrame();   // ver -1024（同上）
+                       if(storyReturn) storyReturn({ lost:false, inPlace:true }); };
     if(storyShut) storyShut(back); else back();
     return;
   }
@@ -2306,6 +2309,30 @@ function fadeTransition(mid, half){
 //   單次淡出淡入直達，不會先閃一下主選單/整備頁再轉場一次）。
 /* opts.noBgm＝黑幕下不起播主選單 BGM。劇情把戰鬥叫起來時用：黑幕之下要接的是
    劇情自己的曲子，起了主選單 BGM 只會在交棒的那一秒漏出半句（Ray：「BGM 切乾淨」）。 */
+/* ══⚠⚠⚠ **戰鬥打完就把戰鬥層清空**（ver -1024，Ray：「戰鬥結束後要把戰鬥頁面整個
+   kill 掉，不然閉棺都會有上一場戰鬥畫面殘留」）══════════════════════════════
+   鐵律 10 的落地：**一次只跑一個 frame**，被蓋住的層不是「藏起來」是**殺掉**。
+   ⚠⚠ 為什麼現在才浮出來：ver -1020 讓門開著的那幾秒（`#storyStage.kerb-open`）
+     把 `#app` 露回來（不然開棺看不到降臨、閉棺看不到淨化）—— 於是**下一次**開棺／
+     閉棺的縫裡看到的就是上一場的殘骸（敵人立繪、盤面、血條）。
+     兩件事都要：門要看得到底下，底下就不能留著上一場。
+   ⚠ 清的是**畫面**不是狀態：盤面格子、敵人立繪與它的動畫 class、受擊特效層、
+     浮字層、上半的背景圖。數值歸零由 `startGame` 那一排負責（它才是「新的一場」
+     的擁有者，鐵律 9）—— 這裡動 state 只會與那邊打架。
+   ⚠ 收在**一支**（鐵律 8）：三條收場路都叫它（劇情交還／結算頁收掉／回首頁）。 */
+export function killBattleFrame(){
+  const g=$('grid'); if(g){ g.innerHTML=''; g.className=''; }
+  state.cells=[];
+  const ei=$('enemyImg');
+  if(ei){ ei.classList.remove('enemy-rise','enemy-purge','enemy-enter','enemy-leave','hit','shake');
+          ei.removeAttribute('src'); ei.style.objectPosition=''; ei.style.objectFit=''; }
+  const top=$('top'); if(top) top.style.backgroundImage='';
+  for(const id of ['hitFxLayer','fxTop','redDots','slashFx']){ const el=$(id); if(el) el.innerHTML=''; }
+  const nm=$('enemyName'); if(nm) nm.textContent='';
+  const rf=$('redFlash'); if(rf) rf.style.opacity=0;
+  const cw=$('chargeWarn'); if(cw) cw.classList.remove('on');
+}
+
 export function goHome(onCovered, opts){
   fadeTransition(()=>{                        // 回主選單：淡出淡入約 3 秒
     state.over=true; stopAll();
