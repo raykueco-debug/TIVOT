@@ -1254,10 +1254,14 @@ const ARC={
   ri    : 31.5,    // 內緣半徑（頭像半徑 31 ＋ 0.5 的縫）
   w0    : 16.5,    // 起點厚（前粗）→ 外緣 48
   w1    : 3.5,     // 終點厚（後細；不給 0 —— 真的收成一點會鋸齒）
-  face  : 0.62,    // 頭像**寬度**佔 viewBox 的比例（半徑 31）
+  face  : 0.66,    // 頭像**寬度**佔 viewBox 的比例（ver -1040 由 0.62 再放大一點）
   faceH : 1.34,    // 頭像那一格的高＝寬 × 這個（往**上**長，讓頭頂蓋到環上）
   steps : 72,      // 折線近似的段數（每 ~3°）
 };
+/* 整組比切換武器鈕大多少（ver -1040，Ray：「計量跟女主頭像稍微放大」）。
+   ⚠ 上限是「面板左緣 → 血條左端」那一段：1.15 之下右緣只碰到血條的圓角，
+     再大就會真的遮到血量。 */
+const CLASP_UP=1.15;
 /* 錐形環帶的 path（唯一那一支）：外緣順掃、內緣逆掃，閉合成一片。
    ⚠ 角度→座標只有這裡在換：`(cx + R·sin a, cy − R·cos a)` —— SVG 的 y 向下，
      所以這個式子同時滿足「0°在正上」與「順時針為正」，與 conic 遮罩對得起來。 */
@@ -1322,12 +1326,18 @@ function layoutClasp(){
      它本來就落在「面板左緣 → 血條左端」那 48px 之內 —— 既不會被 `#top` 的
      `overflow:hidden` 裁掉（那是 -1038 抓到「整條計量表看不見」的真正原因），
      也不會壓到血條。**位置與大小現在只有「跟鈕對稱」這一條規則。** */
-  /* ⚠ 尺寸與落點都跟著鈕走（見上）：`Hb` 與 `BPAD` 是鈕那一段算出來的，
-     這裡只讀 —— 兩邊各算一次的話，調鈕的大小就會與這一組走鐘（鐵律 7）。 */
-  const BOX=Hb, RAD=BOX/2, FACE_D=BOX*ARC.face;
+  /* ⚠ 落點跟著鈕走（見上）：`BPAD` 是鈕那一段算出來的，這裡只讀 ——
+     兩邊各算一次的話，調鈕的位置就會與這一組走鐘（鐵律 7）。
+     ⚠⚠ 大小 ver -1040 由「＝鈕的高」改成 **鈕的高 × `CLASP_UP`**（Ray：「計量跟
+       女主頭像稍微放大」）：位置仍是鈕的鏡像，只有尺寸大一階。放大量寫成係數
+       而不是另一個絕對值 —— 鈕的大小一改，這一組還是跟著等比走。
+     ⚠⚠ **下緣貼著藍條**（Ray：「把計量下緣拉到與藍 hp 條緊貼，只留 2px」）：
+       縱向的錨因此由「兩條血條的中線」換成**藍條的底**往上 2px —— 放大時它就
+       往**上**長，不會越過血條往下擠。 */
+  const BOX=Hb*CLASP_UP, RAD=BOX/2, FACE_D=BOX*ARC.face;
   const par=btn&&btn.offsetParent ? btn.offsetParent.getBoundingClientRect() : {left:hr.x};
   const CX=(par.left+BPAD+RAD)-hr.x;                    // 鈕是「右緣內 BPAD」，這一組是左緣
-  const CY=(rr.y+br.y+br.height)/2-hr.y;                // 兩條血條的中線（與鈕同一條）
+  const CY=(br.y+br.height-2)-RAD-hr.y;                 // 底緣＝藍條底往上 2px
   svgEl.style.left=(CX-RAD)+'px'; svgEl.style.top=(CY-RAD)+'px';
   svgEl.style.width=BOX+'px';     svgEl.style.height=BOX+'px';
   /* 副武器切換鈕（-549 與月對稱 → -550 移出血條 → -551 縮小靠右壓低）：
@@ -1386,6 +1396,43 @@ function claspFaceCss(who){
   const p = (GAME_CONFIG.partners||{})[who] || {};
   const src = p.image && asset(p.image);
   return src ? 'background-image:url("'+src+'");background-size:'+FACE_ZOOM+'% auto;background-position:50% 0%;' : '';
+}
+/* ══⚠⚠ **下滑換搭檔**（ver -1040，Ray：「手勢下滑可以切換女主，測試期間先開放，
+   正式版這功能是三女主好感都滿了以後才開放」）════════════════════════════════
+   解鎖的判定只有這一支（鐵律 8）：測試期間看 `body.testmode`（明寫的開發梯子，
+   同章節跳關），正式版看名單上**每一位**的好感是否到門檻。名單與門檻在資料上。
+   ⚠ 用**名單**判好感，不是「所有角色」：蕾娜不是可以帶出場的搭檔，
+     把她算進去等於永遠解不開。 */
+export function partnerSwapUnlocked(){
+  const cfg=(GAME_CONFIG.tuning||{}).partnerSwap||{};
+  const keys=cfg.keys||[];
+  if(keys.length<2) return false;
+  if(document.body.classList.contains('testmode')) return true;
+  const need=cfg.needAffection;
+  if(need==null) return false;
+  const aff=prog.getAffection()||{};
+  return keys.every(k => (aff[k]||0) >= need);
+}
+/* 換下一位（`step` 給 −1 就是往回）。回傳有沒有真的換掉。
+   ⚠ 擋在**這一支**、不在手勢那一端（鐵律 8）：日後多一個入口（鍵盤、整備頁的鈕）
+     不必再抄一次守門。
+   ⚠⚠ **變身中一律不換**：聖徒化／夢魘化／共鬥／破防那幾段演出從頭到尾綁著
+     「現在是誰」（cut-in、語音、倒數槽的規則都是她的），中途抽換人就是走鐘。 */
+export function cyclePartner(step){
+  if(!partnerSwapUnlocked()) return false;
+  if(state.over || state.transitioning || state.cutinPlaying) return false;
+  if(state.saintMode || state.niMode || state.coopMode || state.dualWield) return false;
+  const keys=((GAME_CONFIG.tuning||{}).partnerSwap||{}).keys||[];
+  const i=keys.indexOf(state.pickedPartner);
+  const nx=keys[((i<0?0:i) + (step||1) + keys.length) % keys.length];
+  if(!nx || nx===state.pickedPartner) return false;
+  setPickedPartner(nx);
+  updateEnergyClasp();                       // 頭像立刻換（那就是「換了誰」的回饋）
+  /* 順便播她自己的選人確認音（卡上的 `selectVoice`）—— 沒寫就安靜換。 */
+  const pc=(GAME_CONFIG.partners||{})[nx]||{};
+  const vk=SFX.pickRot(pc.selectVoice);
+  if(vk && asset(vk)){ try{ SFX.playVoice(asset(vk), sfxGain(vk)); }catch(_){} }
+  return true;
 }
 /* 月彎中間現在該放頭像還是連擊數（唯一的判定，鐵律 7）。 */
 function claspFaceOn(){

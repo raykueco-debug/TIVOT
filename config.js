@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.10-1039';
+export const VERSION = 'ver 2026.09.10-1040';
 
 export const GAME_CONFIG = {
 
@@ -2834,6 +2834,15 @@ export const GAME_CONFIG = {
          所以這是一個開關不是兩套版面（鐵律 7）。切回去只改這一個值。
        ⚠ 沒有搭檔（或她沒有立繪）時自動退回連擊數 —— 空的圓圈比較糟。 */
     claspFace: true,
+    /* ══ 下滑換搭檔（ver -1040，Ray：「手勢下滑可以切換女主，測試期間先開放，
+       正式版這功能是三女主好感都滿了以後才開放」）══
+         keys          ＝ 輪替的順序（本篇三位；名單裡少於兩位就等於沒有這個功能）
+         needAffection ＝ 正式版的解鎖門檻：**名單上每一位**都要到這個值
+       ⚠ 測試期間由 `body.testmode` 直接放行 —— 那是明寫的開發梯子（同章節跳關），
+         判定只有 `combat.partnerSwapUnlocked()` 一支（鐵律 8）。
+       ⚠ 門檻寫成數字不寫「滿」：好感上限（`progress.AFF_MAX`）是程式那邊的常數，
+         兩邊各寫一個「滿」的定義必然走鐘。要改門檻只動這裡。 */
+    partnerSwap: { keys:['nouvelle','anya','sorana'], needAffection:100 },
     hintNextCell: true,
     /* 第 5 階給哪一個特殊能力（鑰匙＝武器 id）。⚠ 內容待 Ray 的卡，先空著 ——
        不要自己發明能力（同護符那一批的處理）。 */

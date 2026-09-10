@@ -1777,10 +1777,15 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
   zone.addEventListener('touchmove',e=>{
     if(!tracking) return;
     const t=e.touches[0];
-    const up=startY-t.clientY;
-    if(up>need() && up>Math.abs(t.clientX-startX)*1.0){
+    const up=startY-t.clientY, sideways=Math.abs(t.clientX-startX);
+    if(up>need() && up>sideways){
       tracking=false;
       partner.tryActive('board');   // 能否發、屬於誰由 partner 判定（renee 無 board 技 → no-op）
+    }else if(-up>need() && -up>sideways){
+      /* 下滑＝換搭檔（ver -1040）。能不能換、換成誰一律由 `combat.cyclePartner`
+         判定（鐵律 8）—— 這裡只負責「這是一個下滑」。 */
+      tracking=false;
+      combat.cyclePartner(1);
     }
   },{passive:true});
   zone.addEventListener('touchend',()=>{tracking=false;});
@@ -1792,11 +1797,9 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
   });
   zone.addEventListener('mousemove',e=>{
     if(!mDown) return;
-    const up=startY-e.clientY;
-    if(up>need() && up>Math.abs(e.clientX-startX)*1.0){
-      mDown=false;
-      partner.tryActive('board');
-    }
+    const up=startY-e.clientY, sideways=Math.abs(e.clientX-startX);
+    if(up>need() && up>sideways){ mDown=false; partner.tryActive('board'); }
+    else if(-up>need() && -up>sideways){ mDown=false; combat.cyclePartner(1); }
   });
   window.addEventListener('mouseup',()=>{mDown=false;});
 })();
@@ -1808,7 +1811,7 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
  *    非聖徒化 → tryActive('board')（盤面主動技，#top 層）
  *  守門條件逐條照抄各手勢的 guard，行為與滑動完全等價——不放寬、不繞過任何限制。 */
 (function bindGestureKeys(){
-  const KEYS = { ArrowLeft:'left', ArrowRight:'right', ArrowUp:'up' };
+  const KEYS = { ArrowLeft:'left', ArrowRight:'right', ArrowUp:'up', ArrowDown:'down' };
   // 手勢只存在於戰鬥畫面：首頁顯示中（#home.on）一律不受理，避免在選單誤觸
   const inBattle = ()=>{ const h=$('home'); return h && !h.classList.contains('on'); };
   /* 教學正在接管輸入時讓位，範圍與 #tutTouch 全畫面層一致（對話中觸控本來就進不來，
@@ -1831,7 +1834,9 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
     if(state.over || state.cutinPlaying) return;
     e.preventDefault();                                     // 擋掉方向鍵捲動頁面
     SFX.unlock();                                           // 鍵盤也是使用者手勢：可解鎖音訊
-    if(dir==='up'){
+    if(dir==='down'){
+      combat.cyclePartner(1);                               // 下滑＝換搭檔（ver -1040，守門全在那一支）
+    }else if(dir==='up'){
       // 與上滑手勢同：能否發、屬於誰一律由 partner 判定（無對應技＝no-op）
       if(state.saintMode){ partner.tryActive('saint'); return; }
       if(state.transitioning) return;                       // board 手勢的額外 guard（轉場中不受理）
