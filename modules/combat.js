@@ -1246,7 +1246,12 @@ const ARC={
   /* ⚠ ver -1039（Ray：「讓計量從 6 點鐘方向開始跑」）：起角由 7 點改到 **6 點**，
      終點仍是 2 點 —— 所以掃角由 210° 變 **240°**（180 + 240 = 420 ≡ 60°＝2 點）。 */
   a0    : 180,     // 起角＝6 點（粗的那一端）
-  sweep : 240,     // 順時針掃到 2 點（細的那一端）
+  /* ⚠⚠ ver -1043（Ray：「計量表是同一條啊，順時針加上去」）：掃角由 240° 補到
+     **300°** —— 從 6 點順時針繞過 9 點、12 點、2 點，一路到 **4 點**收尾，
+     開口只剩右邊那 60°（＝ reference/gb 那張圖裡白環的樣子）。
+     ⚠ -1041 曾把「補到綠色那一截」做成另一段接到血條的橫槓 —— **那是誤讀**：
+       它是同一條環再往下繞的那一段，不是第二個元件。 */
+  sweep : 300,     // 順時針掃到 4 點（細的那一端）
   /* ⚠⚠ **內緣是常數**（ver -1038，Ray：「計量要緊貼角色頭像」）：粗細一律往**外**長。
      中心線固定、往兩側長的話，越細的那一段內緣就離頭越遠 —— 那正好與「緊貼」相反。 */
   /* ⚠ 比例 ver -1039 重排：整組縮到與切換武器鈕同大（見下），環帶就得讓位給臉 ——
@@ -1352,28 +1357,7 @@ function layoutClasp(){
     const wc=btn.querySelector('.ws-card'); const d=Math.round(Math.min(Wb,Hb));
     if(wc){ wc.style.width=d+'px'; wc.style.height=d+'px'; }
   }
-  /* ══ 計量的起點那一截（ver -1041）══ 環的 6 點外緣 → 血條左緣，與**藍條同高**。
-     ⚠ 它與環是**同一條計量表**：進度要按長度分配，所以這裡順便把「尾巴佔幾成」
-       算好（`tailFrac`），`updateEnergyClasp` 只讀 —— 一個量一個計算點（鐵律 7）。
-     ⚠ 弧長取中線半徑（內緣 ＋ 平均厚度的一半）：那是眼睛讀到的那一條。 */
-  const tail=$('claspTail');
-  let tailFrac=0;
-  if(tail){
-    const x0=CX, x1=(BL-hr.x)-2;                       // 由圓心起（環把左半蓋住）到血條左緣內 2px
-    const tw=Math.max(0, x1-x0);
-    /* ⚠⚠ **厚度與環的粗端一模一樣、上緣接在環的內緣上**（ver -1042，Ray：「計量表
-       寬度要一樣不要斷開」）：-1041 那一版拿藍條的高當厚度（14px），而環在 6 點
-       只有 7.6px —— 兩段粗細不同、垂直位置也不同，看起來是兩個東西。
-       ⚠ 兩個值都從 `ARC` 換算，不另外寫一個數字（鐵律 7）：環的比例一改它自己跟著。 */
-    const th=ARC.w0*BOX/100, ty=CY+ARC.ri*BOX/100;
-    tail.style.left=x0+'px'; tail.style.top=ty+'px';
-    tail.style.width=tw+'px'; tail.style.height=th+'px';
-    tail.classList.toggle('on', tw>2);
-    const midR=(ARC.ri+(ARC.w0+ARC.w1)/4)*BOX/100;
-    const arcLen=ARC.sweep*Math.PI/180*midR;
-    tailFrac=(tw+arcLen)>0 ? tw/(tw+arcLen) : 0;
-  }
-  claspGeo={ cx:CX, cy:CY, faceD:FACE_D, blpx:BL-hr.x, S, tailFrac };   // 中心（host 座標）＝頭像／連擊數的錨
+  claspGeo={ cx:CX, cy:CY, faceD:FACE_D, blpx:BL-hr.x, S };   // 中心（host 座標）＝頭像／連擊數的錨
   /* 連擊數（Ray 定稿）：白粗斜體黑邊、錨在**環帶的圓心**（＝頭像的位置）；
      **不可蓋過 HP 條**（右緣的夾在 updateEnergyClasp 換字時做，
      因為夾多少取決於當下的字寬）。 */
@@ -1516,14 +1500,7 @@ function updateEnergyClasp(){
      ⚠ 遮罩的圓心就是 viewBox 的正中（50% 50%）＝環帶的圓心＝頭像的位置。 */
   const fillEl=$('claspArcFill');
   if(fillEl && claspGeo){
-    const p0=Math.max(0,Math.min(1,state.energy/100));
-    /* ══ 兩段一條（ver -1041）══ 先填尾巴、再繞環，比例按**長度**分（`tailFrac`）。
-       ⚠ 兩段各自把自己那一段的進度換算成 0~1，不要各用一次全域比例 ——
-         那會讓環在尾巴填滿之前就開始跑（同一個量兩種讀法）。 */
-    const tf=claspGeo.tailFrac||0;
-    const tb=$('claspTail') && $('claspTail').querySelector('b');
-    if(tb) tb.style.width=(tf>0 ? Math.min(1, p0/tf)*100 : 0)+'%';
-    const p=tf>=1 ? 0 : Math.max(0, Math.min(1, (p0-tf)/(1-tf)));
+    const p=Math.max(0,Math.min(1,state.energy/100));
     if(p<=0){ fillEl.style.visibility='hidden'; }
     else if(p>=1){ fillEl.style.visibility='';
       fillEl.style.webkitMaskImage='none'; fillEl.style.maskImage='none'; }
