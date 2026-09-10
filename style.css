@@ -2933,7 +2933,15 @@
   /* ⚠ 對白播放中行動鈕讓開（ver -478，Ray：「獨自坐坐壓到對話框了」）——
      與地名/時刻同一條規矩（§6.5 的 -385，`story-talking` 由演出層宣告）：
      對話框只在對白中存在，鈕淡出讓位、對白收了再回來，夾位怎麼夾都不會再壓到框。 */
-  body.story-talking #innLobby .inn-btn{opacity:0;pointer-events:none;}
+  /* ══⚠⚠⚠ **有對話時整個旅店介面都讓開**（ver -1029，Ray：「有對話時就不應該顯示
+     任何旅店介面」）══ 舊寫法只淡出**兩顆行動鈕**，伙伴門那一欄照樣站在畫面右邊
+     —— 而那一欄正好落在立繪與對話框旁邊。
+     ⚠ 掛在**整層**（`#innLobby`）而不是逐個元件：日後大廳多一個東西也自動吃到
+       （鐵律 8 —— 規矩要收在一個地方，不要每加一個元件就補一條）。
+     ⚠ `story-talking` 由**演出層宣告**（`story.markTalking`，§6.5 的 -385）——
+       不從畫面反推「現在有沒有在演」，那是踩過的坑。
+     ⚠ 淡出不硬切：對白一段接一段，硬切會閃。 */
+  body.story-talking #innLobby{opacity:0;pointer-events:none;transition:opacity .3s ease;}
   #innLobby .inn-btn.on{display:flex;flex-direction:column;align-items:center;
     justify-content:center;gap:1px;}
   #innLobby .inn-btn b{font-weight:normal;font-size:12px;}

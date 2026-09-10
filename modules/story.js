@@ -4101,35 +4101,50 @@ export function jumpTo(pos){
    ⚠ 只在管理人模式出現（CSS 的 `body.testmode`）—— 這是開發用的梯子，不是玩家功能。
    ⚠ 跳之前要把還在跑的東西收乾淨（打字機、等待、auto、演出計時器、黑幕），
      否則上一句的殘留會蓋到新段落上。 */
+/* ══⚠⚠⚠ **跳段 ＝「快轉」不是「跳過」**（ver -1029，Ray：「那就用快轉吧」）══════
+   ver -1028 之前是「把 `lineIdx` 直接搬到下一個閘門」——**中間那幾拍整個沒有執行**，
+   於是 `flags`／`checkpoint`／`give`／`nextFavor`／換場全部沒發生：段落「演完了」
+   但世界沒有變，接手的那一邊自然接不上（Ray：「事件不會自動跟上就卡了」）。
+
+   現在改成**逐拍照常執行**，只是不等 —— 作法是**反覆呼叫既有的 `advance()`**：
+     · 效果與演出**完全走原路**（`renderLine`），所以不會有第二份實作（鐵律 8）——
+       這正是 Ray 擔心的「出包」最容易發生的地方，所以刻意不拆那一支。
+     · 迴圈是**同步**的：中間那些幀根本不會畫出來，只有最後停下來的那一拍會 ——
+       視覺上就是「唰一下跳到那裡」，而該發生的事一件都沒少。
+     · `advance()` 自己會把每一種等待收掉（黑幕底下沒演完的 `pendingReveal`、
+       還在等的 `delay`、還在打的字）—— 那幾條各花一次迴圈，不必在這裡重寫。
+
+   **四道停下來的守門**（缺一就會出包，逐條寫明）：
+     ① **閘門**：渲染完那一拍就停 —— `battle`／`choice`／`nameInput`／`settle`／
+        `gate`／`load`。⚠ 是「**渲染完**才停」不是「看到就停」：看到就停等於那一拍
+        沒被執行，玩家還要自己點一下（那正是 -1028 之前的症狀）。
+     ② **段落結束**：`endScene` 會把 `active` 清掉 → 跳出。
+     ③ **換場**：`cur` 換了一本就停 —— 不然主線會從這裡一路快轉到結局。
+     ④ **演出／閘門正在跑**：`kerbPlaying`（槍棺）／`kitchenOpen`（廚房單子）
+        —— `advance()` 對它們是 no-op，不停下來就會空轉到上限。
+   ⚠ 上限 `FF_MAX` 是**保險絲**不是設計：真的撞到就是有一拍沒推進，
+     記一行 console 讓下一次查得出來（同 `verifyCastCleared` 的作法）。
+   ⚠ 名字留著 `skipToNextGate`：`main.js` 綁的是它，而且它做的事仍然是
+     「快轉到下一個閘門」。 */
+const FF_GATES = ['load','battle','choice','nameInput','settle','gate'];
+const isGateLine = (l)=> !!(l && FF_GATES.some(k=>l[k]!=null && l[k]!==false));
+const FF_MAX = 4000;
+let ffRunning = false;
 export function skipToNextGate(){
-  if(!active || !cur) return;
-  clearInterval(typing); typing=null;
-  pendingReveal=null;                // ⚠ 跳段：還沒演的那一拍丟掉（同 playScene，ver -430）
-  clearTimeout(waitT); waitT=null;
-  clearTimeout(autoT); autoT=null;
-  stopFx(); flushCgFade();
-  /* ══⚠⚠⚠ **跳段要停在「任何一種閘門」，不是只有讀取頁**（ver -1028，Ray：
-     「skip 會跳到對話最後一句，然後玩家要自點才會推進，不然對話全跑完事件不會
-     自動跟上就卡了」）══
-     舊寫法只認 `load`（讀取閘門），於是**所有有副作用的拍都被跳過去**：
-       `battle`（那一場架沒打）／`choice`（那個岔路沒選）／`nameInput`（沒取名）／
-       `settle`（沒結算）／`gate`（教學的手勢閘門）
-     —— 段落「演完了」但事件沒發生，接手的那一邊自然接不上，讀起來就是卡住。
-     ⇒ 改成：**往前找第一個閘門就停在那裡**（交給玩家或交給那一套流程）；
-       一路到底才 `endScene()`（＝正常收尾，`done` 會被叫到，事件跟得上）。
-     ⚠ **不順手把副作用補跑**（跳過去那幾拍的 `flags`／`checkpoint`／`give`…）——
-       那等於在這裡再寫一份 `renderLine`（鐵律 8）。跳段是**開發用的梯子**
-       （`body.testmode` 限定），要精確重現就別按它。
-     ⚠⚠ 真正「快轉而不跳過」的做法是**逐拍執行但不演出**（碰到閘門才停）——
-       那要把 `renderLine` 拆成「效果」與「演出」兩半，是一次大改。
-       目前的形狀已經把 Ray 回報的「卡住」解掉：閘門不再被跳過去。 */
-  const GATES = ['load','battle','choice','nameInput','settle','gate'];
-  const isGate = (l)=> !!(l && GATES.some(k=>l[k]!=null && l[k]!==false));
-  const lines=cur.lines||[];
-  for(let i=lineIdx+1;i<lines.length;i++){
-    if(isGate(lines[i])){ lineIdx=i; renderLine(); return; }
-  }
-  endScene();
+  if(!active || !cur || ffRunning) return;
+  ffRunning = true;
+  const book = cur;                                   // ③ 換場就停
+  try{
+    for(let n=0; n<FF_MAX; n++){
+      if(!active || !cur || cur!==book) return;        // ②③
+      if(kerbPlaying || kitchenOpen) return;           // ④
+      advance();
+      if(!active || !cur || cur!==book) return;        // ②③（advance 之後再驗一次）
+      if(isGateLine(cur.lines[lineIdx])) return;       // ① 那一拍已經渲染完了，交出去
+    }
+    console.warn('[story] 快轉撞到上限（'+FF_MAX+' 拍）—— 有一拍沒有推進，位置：',
+                 (cur && cur.sceneId) || 'adhoc', lineIdx);
+  } finally { ffRunning = false; }
 }
 
 /* 空框（`blank:true`）那一拍在自動播放下停多久（ver -427）。⚠ 不用 `autoDelayMs`
