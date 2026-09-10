@@ -1452,6 +1452,10 @@ const FACE_ZOOM=300;      // 這個框比旅店的門小，臉要再拉近一點
    ⚠ 結果快取在模組上（一場戰鬥只做一次）；還沒好就先回原圖 —— 先糊一下下，
      好了再自己重畫一次（`updateEnergyClasp`），不要讓臉整個不出現。
    ⚠ 同源圖才 `toDataURL` 得到（立繪都是本站的），拋了就退回原圖。 */
+/* 翻牌動畫的長度（ver -1048）。⚠ 與 style.css 的 `@keyframes faceFlip` 是同一個
+   數字（`.36s`）——改一邊要改另一邊（鐵律 7 的但書，兩邊註解互指）。 */
+const FLIP_MS=360;
+let faceFlipT=0;
 const faceThumbs=new Map();
 function faceThumb(src, wantW){
   const key=src+'@'+wantW;
@@ -1492,7 +1496,12 @@ function withThumb(css){
      不然會出現「圖換了、指紋沒變」＝ 換不過去。 */
 function claspFaceExpr(who){
   const p=(GAME_CONFIG.partners||{})[who]||{};
-  return (state.saintUsedThisBattle && p.faceSpent) ? p.faceSpent : '';
+  if(!p.faceSpent || !state.saintUsedThisBattle) return '';
+  /* ⚠⚠ **發動期間不換**（ver -1048，Ray：「發動期間不要換立繪，發動完畢後才換」）：
+     槽是在**發動那一刻**就鎖的，照它換的話，聖徒化／夢魘化／共鬥一開始她就先擺出
+     「沒招了」的臉 —— 那一段她正在打，換完才是。 */
+  if(state.saintMode || state.niMode || state.coopMode) return '';
+  return p.faceSpent;
 }
 function claspFaceCss(who){
   const s = faceStyle(String(who||'').toUpperCase(), FACE_ZOOM, claspFaceExpr(who));
@@ -1581,11 +1590,24 @@ function updateEnergyClasp(){
     /* 指紋＝**誰 ＋ 哪一張臉**：變身用掉那一刻要換圖，只比對「誰」會換不過去。 */
     const sig = who ? who+'#'+claspFaceExpr(who) : '';
     if(face.dataset.who !== sig){
+      const first = !face.dataset.who;          // 第一次上場沒有「前一張」，不翻
       face.dataset.who = sig;
-      face.style.backgroundImage=''; face.style.backgroundSize=''; face.style.backgroundPosition='';
-      if(who){ const st=withThumb(claspFaceCss(who));
-               if(st) face.setAttribute('style', face.getAttribute('style')+';'+st); }
-      face.classList.toggle('on', !!who);
+      const put=()=>{
+        face.style.backgroundImage=''; face.style.backgroundSize=''; face.style.backgroundPosition='';
+        if(who){ const st=withThumb(claspFaceCss(who));
+                 if(st) face.setAttribute('style', face.getAttribute('style')+';'+st); }
+        face.classList.toggle('on', !!who);
+      };
+      /* 翻牌（ver -1048，Ray：「立繪更換用翻牌效果」）：轉到側面那一刻才換牌，
+         再轉回來。⚠ 半程的時間與 CSS 的 `faceFlip` 是同一個數字（`FLIP_MS`／
+         那條 animation 的長度）—— 改一邊要改另一邊。
+         ⚠ 連著換第二次要把上一支計時器收掉，不然新牌會被舊的那一支蓋回去。 */
+      if(faceFlipT){ clearTimeout(faceFlipT); faceFlipT=0; }
+      if(first){ put(); }
+      else{
+        face.classList.remove('flip'); void face.offsetWidth; face.classList.add('flip');
+        faceFlipT=setTimeout(()=>{ faceFlipT=0; put(); }, FLIP_MS/2);
+      }
     }
   }
   const cb=$('claspCombo');

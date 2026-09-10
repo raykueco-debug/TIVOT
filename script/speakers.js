@@ -298,7 +298,7 @@ export const ART = {
                   run:      { src:'resources/SI/Nouvelle_SI_Run.webp',       top:13, bot:1533, fx:0.418 },
                   cringe:   { src:'resources/SI/Nouvelle_SI_Cringe.webp',    top:5,  bot:1533, fx:0.459 },
                   scared:   { src:'resources/SI/Nouvelle_SI_Scared.webp',    top:9,  bot:1530, fx:0.397 },
-                  desperate:{ src:'resources/SI/Nouvelle_SI_Desperate.webp', top:2,  bot:1532, fx:0.415, faceFx:0.450 },
+                  desperate:{ src:'resources/SI/Nouvelle_SI_Desperate.webp', top:2,  bot:1532, fx:0.415, faceFx:0.450, faceZoomK:0.79 },
                   surprise: { src:'resources/SI/Nouvelle_SI_Surprise.webp',  top:5,  bot:1524, fx:0.487 },
                   /* 會客廳那一幕的四張（ver -348）。
                      ⚠⚠ `gossip1` 的臉在 **0.710** —— 其他差分落在 0.39~0.60，這張她整個人
@@ -355,7 +355,7 @@ export const ART = {
        所以只量了頭像要的 `faceFx`（頭那一塊的水平重心）。
        **要拿去演對白之前，`top`／`bot`／`fx` 必須先量過**（§6.5「新增立繪要量什麼」）
        —— 現在不寫，`frameOf` 會沿用 side 那一張的取景，姿勢不同一定會歪。 */
-    panic:        { src:'resources/SI/Sorana_SI_panic.webp', faceFx:0.632 },
+    panic:        { src:'resources/SI/Sorana_SI_panic.webp', faceFx:0.632, faceZoomK:0.51 },
     guard:        { src:'resources/SI/Sorana_SI_guard.webp',         top:9,  bot:1527, fx:0.651, cm:168 },
     guardtalk:    { src:'resources/SI/Sorana_SI_guardtalk.webp',     top:5,  bot:1529, fx:0.653, cm:168 },
     guardthinking:{ src:'resources/SI/Sorana_SI_guardthinking.webp', top:8,  bot:1529, fx:0.672, cm:168 },
@@ -450,7 +450,7 @@ export const ART = {
        所以 `cm`／`standCm` 的近景修正整組拿掉，回到照量的預設。
        §5：換圖一定要重量取景值，這一組是重量的。 */
     crying:   { src:'resources/SI/Anya_SI_Crying.webp',    top:6,  bot:1527, fx:0.454 },
-    desperate:{ src:'resources/SI/Anya_SI_Desperate.webp', top:13, bot:1535, fx:0.402, cm:110, standCm:162, faceFx:0.465 },
+    desperate:{ src:'resources/SI/Anya_SI_Desperate.webp', top:13, bot:1535, fx:0.402, cm:110, standCm:162, faceFx:0.465, faceZoomK:0.63 },
     /* ⚠⚠ `sobbing` 是**裁到膝蓋**的近景，不是全身（§6.5：半身圖照量 alpha 上下緣
        會把人放大好幾倍）。畫面上看得到的大約是「頭頂→膝」＝身高的 75%，
        所以 `cm` 給 162×0.75 ≈ **122** —— 這樣她的**頭**才會與其他立繪一樣大，
@@ -845,6 +845,12 @@ export function faceStyle(who, zoom, expr){
   const fx = (e && e.faceFx!=null) ? e.faceFx
            : (e && e.fx!=null)     ? e.fx
            : (a.faceFx!=null)      ? a.faceFx : a.fx;
-  return 'background-image:url("'+((e&&e.src)||a.base)+'");background-size:'+(zoom||260)+'% auto;'
+  /* 縮放：差分的 `faceZoomK` ＝**相對基本立繪**的倍率（ver -1048，Ray：「索拉娜 obe
+     爆框了。安雅也爆，沒爆那麼多」）—— 那幾張的人物畫得比基本立繪滿（頭肩寬是
+     1.26／1.58／1.96 倍），照同一個 zoom 貼就會頂出框外。
+     ⚠ 寫成**倍率**不是絕對值：呼叫端的 zoom（旅店 260／計量表 300）各自不同，
+       絕對值會讓其中一邊走鐘。 */
+  const z = (zoom||260) * ((e && e.faceZoomK) || 1);
+  return 'background-image:url("'+((e&&e.src)||a.base)+'");background-size:'+z.toFixed(1)+'% auto;'
        + 'background-position:'+(fx*100).toFixed(1)+'% 0%;';
 }

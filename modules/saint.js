@@ -251,7 +251,14 @@ export function coopActive(){ return !!state.coopMode; }
 /* 重置 Install 槽（ver -837，Ray：「連五場會再發動一次並重置獵手的共鬥」）——
    `saintUsedThisBattle` 的擁有者是 saint（§3.5），跨模組的寫一律走具名 setter：
    partner 的獵手的戰吼經 combat 注入呼叫這一支，不直接改 state。 */
-export function resetInstallSlot(){ state.saintUsedThisBattle = false; }
+export function resetInstallSlot(){
+  state.saintUsedThisBattle = false;
+  /* ⚠⚠ 解槽之後**要推一次重畫**（ver -1048，Ray：「就算已經 reload，這場不能再用
+     的技能立繪也不會變回來喔」）：破防計量表中央那張臉看的就是這個槽，而它掛在
+     `updateBars` 上 —— reload 若發生在兩次攻擊之間，就沒有人叫得動它，臉會一直
+     停在「沒招了」那一張。⚠ 走注入的 api（saint 不反向 import combat）。 */
+  if(api.updateBars) api.updateBars();
+}
 
 /* 聖徒化回血特效開關：玩家血條（倒數槽）轉金＋末端強光點（CSS .saint-heal） */
 function setSaintBarFx(on){
