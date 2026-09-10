@@ -322,10 +322,13 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll, grade){
     hap.shot();
     ejectShell();                  // 散射型：只噴一顆（ver -812）
     const bx=40+Math.random()*20;
-    mzHit(1.2, 0.85);                                // 散射型：一團，落在圈內
     let sum=0;
     for(let k=0;k<w.hits;k++){
       if(!hits(k)){ api.floatDmg(MISS, (bx-6+k*3)+'%', (34+(k%2)*6)+'%', false); continue; }
+      /* ⚠ **每一顆彈丸各一個落點**（ver -1056，Ray：「散彈怎麼只給一個槍點啊？」）——
+         -1055 只在迴圈外噴了一次，而散彈的樣子就是**一次噴出好幾顆**。
+         ⚠ 打空的那幾顆不噴：這一層畫在**敵人身上**，是命中的火不是槍口的火。 */
+      mzHit(0.78, 0.95);
       if(roll){
         const n=rollOne(); sum+=n;
         if(n>0) api.enemyDamage(n, true, true, 'counter');
@@ -373,8 +376,8 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll, grade){
     const h=rolls[i];
     playSe();                      // 機槍：每 hit 播一次 → 搭搭搭搭搭（miss 也有槍聲，是打空不是沒開槍）
     ejectShell();                  // 速射型：一發噴一個（ver -812）
-    mzHit(0.8, 1);                 // 速射型：逐發在圈內亂跳（圈越大越散）
     if(h){
+      mzHit(0.8, 1);               // 速射型：逐發在圈內亂跳（圈越大越散）⚠ 打空的不噴（同散彈）
       if(!h.zero) api.enemyDamage(h.dmg, true, true, 'counter'); // 靜默扣血 → 由自訂 float 控制「暴擊」字樣
       api.floatDmg((h.crit?L.battle.crit:'')+h.dmg, (30+Math.random()*40)+'%','35%', !h.zero);
     }else{
