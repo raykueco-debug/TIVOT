@@ -324,11 +324,15 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll, grade){
     const bx=40+Math.random()*20;
     let sum=0;
     for(let k=0;k<w.hits;k++){
-      if(!hits(k)){ api.floatDmg(MISS, (bx-6+k*3)+'%', (34+(k%2)*6)+'%', false); continue; }
       /* ⚠ **每一顆彈丸各一個落點**（ver -1056，Ray：「散彈怎麼只給一個槍點啊？」）——
          -1055 只在迴圈外噴了一次，而散彈的樣子就是**一次噴出好幾顆**。
-         ⚠ 打空的那幾顆不噴：這一層畫在**敵人身上**，是命中的火不是槍口的火。 */
-      mzHit(0.78, 0.95);
+         ⚠⚠ ver -1057（Ray：「散彈槍火要小一點，才看得出來，打偏的也噴，視覺拉滿」）：
+           · 尺寸 0.78 → **0.55** —— 六顆同時炸開，每顆太大就糊成一團，
+             小一點反而**看得出是好幾顆**。
+           · **打偏的也噴**，而且散得更開（`spread` 1.3 ＞ 命中的 0.95）——
+             那正是「偏掉」的樣子。-1056 的「打空不噴」在此推翻。 */
+      if(!hits(k)){ mzHit(0.5, 1.3); api.floatDmg(MISS, (bx-6+k*3)+'%', (34+(k%2)*6)+'%', false); continue; }
+      mzHit(0.55, 0.95);
       if(roll){
         const n=rollOne(); sum+=n;
         if(n>0) api.enemyDamage(n, true, true, 'counter');
@@ -376,8 +380,10 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll, grade){
     const h=rolls[i];
     playSe();                      // 機槍：每 hit 播一次 → 搭搭搭搭搭（miss 也有槍聲，是打空不是沒開槍）
     ejectShell();                  // 速射型：一發噴一個（ver -812）
+    /* 打偏的也噴、而且更散（ver -1057，同散彈）—— 視覺拉滿。 */
+    if(!h) mzHit(0.68, 1.35);
     if(h){
-      mzHit(0.8, 1);               // 速射型：逐發在圈內亂跳（圈越大越散）⚠ 打空的不噴（同散彈）
+      mzHit(0.8, 1);               // 速射型：逐發在圈內亂跳（圈越大越散）
       if(!h.zero) api.enemyDamage(h.dmg, true, true, 'counter'); // 靜默扣血 → 由自訂 float 控制「暴擊」字樣
       api.floatDmg((h.crit?L.battle.crit:'')+h.dmg, (30+Math.random()*40)+'%','35%', !h.zero);
     }else{
