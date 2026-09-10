@@ -462,12 +462,24 @@ function getInspector(bossFight){
      而且與 `EVAL_SKIP` 那張名單擇一（名單已撤，同一件事不要有兩個真相）。
    ⚠ 回傳 `{name, portrait, line}`＝ `showResultSequence` 的 `opts.speaker` 契約；
      `portrait` 是**直接路徑**不是 ASSETS 鍵（立繪住在 `speakers.js`，不進 ASSETS）。 */
+/* ══⚠⚠ **為什麼這一頁沒有評價**（ver -1050，Ray：「剛剛帶索拉娜打到 B rank
+   評價又不見了」）══════════════════════════════════════════════════════════
+   「預設就有評價，沒有的是特例」（ver -670）—— 所以**沒有評價就是有原因的**，
+   而那個原因目前只有這一支知道。它有四個 null 出口，過去全部靜靜回 null，
+   於是在手機上看到的只有「這一頁怎麼少了一塊」，查不出是哪一個。
+   ⚠ 每個出口留下一句原因；`scriptSettle` 拿到 null 時記 console，
+     **管理人模式再把它印在結算頁上**（手機上看得到 console 的機會是零）。
+   ⚠ 這是**驗收**不是規矩：真的印出來就是上游有洞，不要靠它兜底
+     （同 `verifyCastCleared`／`assertNoDarkOverlay` 的作法）。 */
+let evalWhyNot='';
 function pickEvaluator(rankKey, battleId){
   const bt = (GAME_CONFIG.battles||{})[battleId] || {};
-  if(bt.noEval) return null;                                 // 這一場不評（特例，寫在卡上）
+  evalWhyNot='';                                             // 這一趟的診斷（見 evalWhyNot 的說明）
+  if(bt.noEval){ evalWhyNot='卡上 noEval'; return null; }     // 這一場不評（特例，寫在卡上）
   /* `noEvalBeforeStage:N`（ver -756，Ray：「帝都賞金獵人戰如在 stage2 才打，
      就要放蕾娜評價」）＝那一章之前不評、到了就評 —— 問**結算那一刻**的 stage。 */
-  if(bt.noEvalBeforeStage!=null && prog.getStage() < bt.noEvalBeforeStage) return null;
+  if(bt.noEvalBeforeStage!=null && prog.getStage() < bt.noEvalBeforeStage){
+    evalWhyNot='noEvalBeforeStage '+bt.noEvalBeforeStage+'（現在第 '+prog.getStage()+' 章）'; return null; }
   const who = SPEAKERS[EVALUATOR] || {};
   /* ⚠ **某一場專屬的台詞優先**（ver -597）：`evaluation.js` 的 `BY_BATTLE`
      查得到這一場就用它，查不到才回去走依章節／好感的通用表。
@@ -503,12 +515,16 @@ function pickEvaluator(rankKey, battleId){
         console.warn('[eval] 第 '+prog.getStage()+' 章沒有評價表，退回第 '+ks[0]+' 章的稿');
       }
     }
-    if(!byStage) return null;
+    if(!byStage){ evalWhyNot='EVAL_LINES 是空的'; return null; }
     const aff = (prog.getAffection() || {})[(who.art||'')] ;
     const byAff = pickByThreshold(byStage, (aff==null ? 0 : aff), null);
     one = byAff && byAff[rankKey];
   }
-  if(!one) return null;
+  if(!one){
+    evalWhyNot='查不到台詞：battle='+(battleId||'-')+' rank='+rankKey
+             +' stage='+prog.getStage()+' aff='+(((prog.getAffection()||{})[(who.art||'')])|0);
+    return null;
+  }
   /* ══⚠⚠ **這一句帶好感**（`aff`，ver -671，Ray：禍魘娜塔莉戰 S 那一句「好感＋5」）══
      ⚠ 只加一次：旗標記在 progress（進存檔、讀檔跟著回去，§6.9）—— 重看結算頁、
        或這一場再打一次拿到同一個等第，都不會再加。
@@ -546,6 +562,14 @@ function pickEvaluator(rankKey, battleId){
            follow: fol };
 }
 
+/* 沒有評價時：記一行 console；管理人模式再把原因印進結算頁那一疊數字裡
+   （`_evalNote`，`ratingStatsRows` 會把它接在最後）—— 手機上只有這一條路看得到。 */
+let _evalNote='';
+function warnNoEval(rank, battleId){
+  const why=evalWhyNot||'（沒有原因，代表這一頁本來就不該有評價）';
+  console.warn('[eval] 這一場沒有評價：'+why+'　battle='+(battleId||'-')+' rank='+rank);
+  _evalNote = document.body.classList.contains('testmode') ? why : '';
+}
 function pickInspectorPortrait(insp, rankKey){
   if(!insp) return null;
   /* 逐等第差分優先（ver -471，璐娜莉亞）：portraitsByRank[等第]；
@@ -577,6 +601,13 @@ function combatStatsRows(){
 
 // 勝利結算明細。Overkill 已在標題副行呈現、無傷改為「戰鬥用時」旁的貼標（達標才出現），故此處皆不另列。
 function ratingStatsRows(stats, totalTime){
+  /* ⚠ 管理人模式限定：這一頁**沒有評價**時，把原因印出來（ver -1050）——
+     它不是給玩家看的資料，是給下一次「評價又不見了」的人看的。 */
+  const note = _evalNote ? '<div class="row"><span>⚠ 無評價</span><b>'+_evalNote+'</b></div>' : '';
+  _evalNote='';
+  return note + ratingStatsRowsBody(stats, totalTime);
+}
+function ratingStatsRowsBody(stats, totalTime){
   const accPct = Math.round(clamp01(stats.accuracy) * 100);
   const flawlessTag = (stats.hitsTaken === 0) ? ` <span class="tag-flawless">${L.result.tagFlawless}</span>` : '';
   let r='';
@@ -1039,6 +1070,7 @@ function restSettle(totalTime, stats, sessionLoot, shares, title, expShares){
      ⚠ 這一局本來就是一場一場打出來的，等第與好感照給 —— 它與打贏結算怪的那一頁
        是同一件事，只是在休息處收尾。 */
   const spk = pickEvaluator(ev.grade, null);
+  if(!spk) warnNoEval(ev.grade, null);
   prog.applyRankAffection(ev.grade, shares || state.pickedPartner);   // ver -921：出場數最多的全拿
   let money = moneyOf(stats, ev.grade);
   if(money) money = Math.round(money * (1 + prog.bonus('moneyMul')));
@@ -1086,6 +1118,7 @@ function scriptSettle(totalTime, stats, sessionLoot, shares, expShares){
        但「評價」的意思就是評出一個等第 —— 沒有那個字母，她那句話就沒有著落。
      ⚠ 評分公式**用試玩版那一套**（Ray 指定）＝ 上面那個 `evaluate()`，不另訂。 */
   const spk = pickEvaluator(ev.grade, state.scriptBattleId);
+  if(!spk) warnNoEval(ev.grade, state.scriptBattleId);
   /* ══⚠⚠ **打靶不給 EXP 也不給錢**（ver -439，Ray：「靶不要給 exp 跟錢」）══════
      那是一場可以重打到膩的計時挑戰 —— 給獎勵等於開了一台印鈔機，而它的回報本來
      就是**紀錄**與**破紀錄的獎品**（`timeAttack.prize`，龍息），那兩樣照舊。
