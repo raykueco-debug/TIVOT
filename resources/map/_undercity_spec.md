@@ -185,9 +185,40 @@
 | 帶 | 進度 |
 |---|---|
 | **A 宮殿本體** | **12 / 12 完成** |
-| B 地下設施 | 0 / 10 |
-| C 入口側服務區 | 0 / 11（含古代祭壇） |
-| 戶外 4 格的時段差分 | 0 |
+| **B 地下設施** | **10 / 10 完成** |
+| **C 入口側服務區** | **11 / 11 完成**（含古代祭壇） |
+| **戶外 4 格** | **4 / 4 完成** |
+| 有室外光那幾格的時段差分 | 0（見下表） |
+
+**37 格全部產完**（ver -1050）。檔名對照：
+
+| 帶 | 中文 → 檔名 |
+|---|---|
+| A | 王座廳 `ThroneHall`・謁見前廳 `Antechamber`・寶冠室 `CrownRoom`・聖物室 `RelicRoom`・獅階 `LionStair`・甲冑廊 `ArmourGallery`・中央大廳 `GreatHall`・枝燈長廊 `ChandelierHall`・壁畫長廊 `MuralGallery`・星象室 `Orrery`・納骨堂 `Ossuary`・靜水池 `StillPool` |
+| B | 千柱廳 `Cistern`・旋梯井 `SpiralWell`・獅口水道 `LionSpout`・兵器工坊 `Forge`・三拱廳 `TriArch`・水牢 `WaterJail`・石棺廊 `Sarcophagi`・聖油室 `ChrismRoom`・鐘室 `BellRoom`・近衛墓室 `GuardTomb` |
+| C | 地下墓道 `Catacomb`・階梯大廳 `StairHall`・絞盤室 `Capstan`・暗渠 `Culvert`・鏡廊 `MirrorWalk`・燭廊 `CandleWalk`・銘碑廊 `SteleWalk`・積水甬道 `Floodway`・古代祭壇 `OldAltar`・前廳 `Foyer`・獸欄 `Cages` |
+| 戶外 | 下沉中庭 `SunkenCourt`・崩頂坡 `RoofFall`・排水崖口 `DrainCliff`・枯井底 `DryWell` |
+
+⚠ `Undercity_SunkenCourtB.webp` 是**多出來的一張**（下沉中庭的第二版構圖，戶外提示詞多產的）——
+  暫時入庫當備品，Ray 不要就回收。
+
+### ⚠⚠ 時段差分只給「有室外光」的那幾格（ver -1050，Ray：「有室外光才有差分」）
+
+推翻本檔上一版「戶外 4 格都要差分」那句 —— 判準改成**畫面上看得到日光**，
+所以室內但破了口的那幾格也算。逐張看過之後的名單：
+
+| 格 | 為什麼算 |
+|---|---|
+| 下沉中庭 `SunkenCourt` | 整片藍天 |
+| 崩頂坡 `RoofFall` | 坡頂開口見天 |
+| 排水崖口 `DrainCliff` | 峽谷全景 |
+| 枯井底 `DryWell` | 井口一個圓天 |
+| 前廳 `Foyer` | 左側崩口透進日光（＝spec 說的「回頭看得見外面的光」） |
+| 階梯大廳 `StairHall` | 深處券門透進冷白日光 |
+| 中央大廳 `GreatHall` | ⚠ **圖與 spec 打架**：spec 寫「垮了一半**但沒有天光**」，GPT 畫出了明顯的天光光柱。**以圖為準**（圖是資產），所以列進來 |
+
+`SunkenCourtB` 若留用也要一起做。
+其餘 30 格全是燭火／無光源，**不做差分**（寫 `noTime:true`）。
 
 產線對話：`chatgpt.com/c/6aa2be1b-c65c-83e8-a913-57f0ebf21882`（一組一串，畫風跟著第一張走）
 
