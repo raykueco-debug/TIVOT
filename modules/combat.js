@@ -1265,7 +1265,11 @@ const ARC={
   ri    : 29.5,    // 內緣半徑（頭像半徑 27 ＋ 2.5 的縫）
   w0    : 20.5,    // 起點厚（前粗）→ 外緣 50（貼齊框）
   w1    : 8,       // 終點厚（後細；-1040 的 3.5 在 46px 的框裡只有 1.6px，看不見）
-  face  : 0.54,    // 頭像**寬度**佔 viewBox 的比例（半徑 27）
+  /* ⚠ ver -1045（Ray：「角色放大，右邊與計量右側切齊」）：0.54 → **0.72**。
+     ⚠⚠ 放大之後它**不再置中**，改成右緣切齊橫槓的右端（見 layoutClasp）——
+       多出來的那一截正好落在環的開口（2 點～4 點）裡，所以左側仍然讓得開環。
+       上限就是那個「左緣不越過環的內緣」：0.72 之下差 1.3px，再大就會壓到環。 */
+  face  : 0.72,    // 頭像**寬度**佔 viewBox 的比例
   faceH : 1.34,    // 頭像那一格的高＝寬 × 這個（往**上**長，讓頭頂蓋到環上）
   steps : 72,      // 折線近似的段數（每 ~3°）
 };
@@ -1413,7 +1417,11 @@ function layoutClasp(){
   const face = $('claspFace');
   if(face){ const D=Math.round(FACE_D), H=Math.round(FACE_D*ARC.faceH);
             face.style.width=D+'px'; face.style.height=H+'px';
-            face.style.left=(CX-D/2)+'px'; face.style.top=(CY+D/2-H)+'px'; }
+            /* ⚠ 橫向**不置中**（ver -1045）：右緣切齊計量的右側（＝橫槓的右端，
+               也就是血條左緣內 2px），往左長。多出來的那一截落在環的開口裡
+               （2 點～4 點沒有環），所以左側照樣讓得開環。
+               ⚠ 縱向不變：底邊仍是那個圓的底，往上長的部分是頭頂。 */
+            face.style.left=(((BL-hr.x)-2)-D)+'px'; face.style.top=(CY+D/2-H)+'px'; }
   updateEnergyClasp();                       // 幾何換了 → 遮罩與連擊數重掛
 }
 /* 連擊數的橫向擺位（唯一實作，鐵律 8）：錨在缺口中心，但 Ray：「可覆蓋月牙、
