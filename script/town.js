@@ -2075,7 +2075,9 @@ export const TOWNS = {
          ⚠⚠ **強制回家時把時鐘定在晚上七點**（ver -805，Ray：「據情強制回到索拉娜家時，
            時間強制為晚上七點」）：`clockTo:19` ＝ advanceToNextHour(19)，觸發點在剛過
            18:00，所以是**當天 19:00**（clockGate 在演台詞/轉場之前先推）。 */
-      { flag:'sv_evening', need:'sv_arrive', hourOfDay:18, clockTo:19,
+      /* ⚠ ver -1060（Ray：「夏爾村改成 17:00 諾薇兒會來喊人，原 18:00」）——
+         推到的時刻跟著往前一小時（19:00 → 18:00），保持「喊完就過一小時」。 */
+      { flag:'sv_evening', need:'sv_arrive', hourOfDay:17, clockTo:18,
         goto:'sorahome', enterAgain:true, stage:5,   // 回到索拉娜小屋後的劇情＝S5（-857 重編號；原 -821 的 S6）
         lines:[ nou('front','找到你了！大家都在索菈娜家等著喔。') ] },
       /* ══ 翌日 06:00（ver -870，Ray 的森林行稿：「三秒黑淡入淡出　翌日（黑透遮罩）
@@ -2662,6 +2664,12 @@ export const TOWNS = {
       fixed: {
         shoal:'sf_snake',                                        // 淺灘必出水蛇
         cave:'sf_tiger',                                         // 洞窟必出虎王（一趟一次）
+        /* ⚠⚠ ver -1060（Ray：「夏爾森林斷崖邊固定出鹿骸」）：鹿骸回到**寫死一格**。
+           -895 曾把它做成「擺在這一趟沒走進來的那個出口」，但 -1024 收局的條件
+           已經改成「踏進結算點」，`endBattle` 那一套沒有人讀了 —— 現在它就是
+           一隻**必出的野怪**，掛在 `fixed` 這條唯一還活著的路上。
+           ⚠ 日夜差分照 `fixed` 的寫法（物件）。 */
+        cliff:{ day:'sf_stag_rot', night:'sf_stag_nightmare' },  // 斷崖邊必出鹿骸
         /* ⚠ 鹿骸（結算怪）**不再寫死在斷崖**（ver -895）——見下面的 `endBattle`：
            它要擺在「這一趟沒走進來的那個出口」，寫死一格的話從神殿那頭下來的人
            第一格就撞到它。 */
@@ -3004,6 +3012,10 @@ export const TOWNS = {
       fixed: {
         prison:'ruins_saint_prison',          // 地牢（石牢區）限定
         darkbridge:'ruins_saint_inspector',   // 斷橋限定（結算怪）
+        /* ver -1060（Ray：「神殿壁畫廳固定出王的容器」）。
+           ⚠ 牠也在 `pool` 裡（不限場域）—— 不必拿掉：`fixed` 先出，而一趟進圖
+             **同種不重複**（`wildDone`），所以不會再抽到牠。 */
+        mural:'ruins_halo_ring',              // 壁畫廳必出王的容器
       },
       /* ══ 隨機池（`rate:1` ＝其他每一格必出，除了 `noWild` 的那六格）══
          ⚠ 一趟進圖**同種不重複**（`wildDone`）：所以池子有幾隻，一趟就打幾場。

@@ -733,7 +733,11 @@ export const ART = {
   /* ══ 夏爾村的臉（ver -838，Ray 交件）══ 身高是**估的**（≤178 那條紅線），
      取景是量的（measure_si.py）。站位照店主邏輯：對面的人在右。
      `sh_craftsman`（NPC_shinier_Gunsmith）＝蕾娜口中的「工匠」，先備著沒戲。 */
-  sh_villager: { cm:178, eye:32, fx:0.421, top:5, bot:1524, side:'R', alt:null,
+  /* ⚠ `flip:true`（ver -1060，Ray：「謝尼的立繪水平翻轉」）＝**這張圖本來就畫反了**，
+     一律翻；與 `mirror`（可以翻 → 換邊才翻）是兩件事（見 story.castLayout 的說明）。
+     ⚠ 檔名就是 `hunter` —— 這張本來就是謝尼；`VILLAGER`（路人村民）借用同一張，
+       所以一起翻。要讓村民不翻就得給他另一張圖（同一張圖不可能一半翻一半不翻）。 */
+  sh_villager: { cm:178, eye:32, fx:0.421, top:5, bot:1524, side:'R', alt:null, flip:true,
                  base:'resources/SI/NPC/NPC_shinier_hunter_SI.webp', expr:{} },
   sh_villager2:{ cm:172, eye:32, fx:0.542, top:5, bot:1530, side:'R', alt:null,
                  base:'resources/SI/NPC/NPC_shinier_grocery_SI.webp', expr:{} },

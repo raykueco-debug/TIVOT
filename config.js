@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.11-1059';
+export const VERSION = 'ver 2026.09.11-1060';
 
 export const GAME_CONFIG = {
 
@@ -2176,7 +2176,9 @@ export const GAME_CONFIG = {
        stage 0/1 打＝她還是「監察官」，不評（-729 的理由）；玩家拖到出航之後
        （stage2+）才回頭打，她已經在結算頁講評了，這一場照評。
        判定在 inspector.pickEvaluator（問結算那一刻的 stage，唯一讀點）。 */
-    guild_hunter: { enemy:'guild_hunter', special:true, noEvalBeforeStage:2, noSaint:true, noPartner:true },
+    /* ⚠ ver -1060（Ray：「賞金獵人戰被加了一條沒有評價的註解，把它拿掉」）：
+       `noEvalBeforeStage:2` 撤掉 —— 回到 -670 的通則「預設就有評價」。 */
+    guild_hunter: { enemy:'guild_hunter', special:true, noSaint:true, noPartner:true },
     /* 北方泊地的城鎮戰（ver -583）：每一格走進去打一場，共用這一張佔位卡。
        ⚠ **不禁聖徒化／搭檔技**：Ray 沒說要禁（禁了要明寫 noSaint/noPartner）。
        ⚠ 打輸走一般流程 —— 城鎮插入戰的敗北會被抬回這座城的旅店（§6.5.2 那張表）。
@@ -2399,13 +2401,15 @@ export const GAME_CONFIG = {
          `prizeSec`（30）＝**拿獎品**的門檻。中間那一段是「過關但沒獎品」。
        ⚠ 已經有那把槍就不再給（見 inspector.scriptSettle）。 */
     /* ⚠⚠ `noReward`（ver -439，Ray：「靶不要給 exp 跟錢」）：這一場**不給 EXP、
-         不給金錢**。它可以重打到膩 —— 給獎勵就是一台印鈔機，而且「被評一次分」
-         本來就已經免了（卡上的 `noEval`）。
+         不給金錢**。它可以重打到膩 —— 給獎勵就是一台印鈔機。
+         ⚠ 「被評一次分」那一條 ver -1060 撤了（Ray 指定），現在打靶也會被評。
        ⚠ **破紀錄的獎品照給**（`timeAttack.prize`）：那是這一場的目的，不是報酬。
        ⚠ 判定在 `modules/inspector.js` 的 `scriptSettle` 讀這一欄，不認場次名。 */
-    /* ⚠ `noEval` ＝**這一場不出蕾娜的評價**（ver -670）：打靶是一直重打的計時挑戰，
-       每打一次被評一次很煩，而且那不是戰鬥。預設是**每一場都評**（見 script/evaluation.js）。 */
-    range_trainee: { enemy:'dart_target', record:'range', noReward:true, noEval:true,
+    /* ⚠⚠ ver -1060（Ray：「打靶也是」）：三場打靶的 `noEval` **一起撤掉** ——
+       回到 -670 的通則「預設就有評價，沒有的是特例」。
+       ⚠ -670 當初把打靶列為特例的理由是「重打很煩」，Ray 現在推翻它。
+       ⚠ 目前**沒有任何一場**寫 `noEval`／`noEvalBeforeStage` —— 那兩格留著給日後用。 */
+    range_trainee: { enemy:'dart_target', record:'range', noReward:true,
                      timeAttack:{ wrongPenaltySec:3, se:'se_dart_fail', parSec:50,
                                   prizeSec:30, prize:'Shotgun_Dragon' } },
     /* ══ 北方泊地的打靶（ver -655，Ray 交稿）══════════════════════════════
@@ -2420,12 +2424,12 @@ export const GAME_CONFIG = {
        ⚠ **挑戰費 200G 寫在腳本的選項上**（`choice` 的 `cost`），不寫在卡上 ——
          「打這一場要多少錢」是那家店的規矩，不是這場戰鬥的性質；
          而且要在**玩家答應的那一刻**扣，卡上沒有那個時機。 */
-    np_range: { enemy:'dart_target', record:'np_range', noReward:true, noEval:true,
+    np_range: { enemy:'dart_target', record:'np_range', noReward:true,
                 timeAttack:{ wrongPenaltySec:3, se:'se_dart_fail', parSec:25 } },
     /* ══ 蕃茄人11號（ver -858，杰羅的修船打靶）══ 同帝都配置＋兩個新旋鈕：
        `assaultOn` 放行大絕排程（3 秒一發，defense.scheduleAssault 的例外）、
        `hitPenaltySec` 被打中＝碼表 +3 秒（combat.enemyAttack）。par 30 秒。 */
-    sv_range: { enemy:'sv_dart', record:'sv_range', noReward:true, noEval:true,
+    sv_range: { enemy:'sv_dart', record:'sv_range', noReward:true,
                 timeAttack:{ wrongPenaltySec:3, se:'se_dart_fail', parSec:30,
                              hitPenaltySec:3, assaultOn:true } },
     /* ══ 墓地那一場（ver -664，Ray：「教堂那隻中 boss，背景維持墓地」）══
