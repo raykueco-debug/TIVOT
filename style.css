@@ -1313,6 +1313,29 @@
     display:block;}
   #resultStats .row.exp-prog .exp-bar > b{display:block;width:0;height:100%;border-radius:3px;
     background:linear-gradient(90deg,#c9a44a,#ffe6a6);box-shadow:0 0 8px rgba(255,214,120,.8);}
+  /* ══ 升級的綠色上升箭頭（ver -1033，Ray：「exp 條旁邊有個綠色向上發光箭頭，
+     ps1 的 jrpg 風格」）══ 硬邊的塊狀箭頭 ＋ 強光暈，**逐格**往上跳
+     （`steps(1,end)`，關鍵影格自己就是那幾格）—— PS1 那個年代沒有平滑補間，
+     用 ease 反而讀起來是現代 UI 的滑動。
+     ⚠ 它**永遠佔著位子**（只改 opacity），不然升級那一刻整列會橫向抖一下 ——
+       同這一區「數字用等寬」的理由。
+     ⚠ 形狀用 `clip-path` 不用字元「▲」：字型不同，大小與基線都會跑。
+     ⚠ 綠是寫死的（`#5cff6a`）不吃 `--gold`：它與金色的 EXP 條是**兩件事** ——
+       條子是進度，這一支是「升上去了」。 */
+  #resultStats .row.exp-prog .exp-up{flex:none;width:9px;height:12px;opacity:0;
+    background:#5cff6a;
+    clip-path:polygon(50% 0,100% 52%,72% 52%,72% 100%,28% 100%,28% 52%,0 52%);
+    filter:drop-shadow(0 0 4px #5cff6a) drop-shadow(0 0 10px rgba(92,255,106,.7));}
+  #resultStats .row.exp-prog.lvup .exp-up{animation:expUpArrow .9s steps(1,end);}
+  @keyframes expUpArrow{
+    0%  {opacity:1;   transform:translateY(4px);}
+    14% {opacity:1;   transform:translateY(1px);}
+    28% {opacity:.30; transform:translateY(-2px);}
+    42% {opacity:1;   transform:translateY(-5px);}
+    56% {opacity:.30; transform:translateY(-8px);}
+    70% {opacity:1;   transform:translateY(-11px);}
+    86% {opacity:.30; transform:translateY(-14px);}
+    100%{opacity:0;   transform:translateY(-17px);}}
   /* 升級那一刻閃一下（`lvup` 由 JS 重新掛上去重播）。 */
   #resultStats .row.exp-prog.lvup .exp-bar{animation:expLvUp .5s ease-out;}
   #resultStats .row.exp-prog.lvup .exp-lv{animation:expLvUp .5s ease-out;}

@@ -285,6 +285,11 @@ function expRows(gains){
           + ' data-exp="'+((g.exp|0) - (g.gain|0))+'" data-gain="'+(g.gain|0)+'">'
           + '<span class="exp-lv">Lv-</span>'
           + '<i class="exp-bar"><b></b></i>'
+          /* 升級的綠箭（ver -1033，Ray：「exp 條旁邊有個綠色向上發光箭頭，ps1 的
+             jrpg 風格」）—— 形狀與動畫全在 CSS（`.exp-up`），這裡只放一個空槽：
+             它**永遠佔著位子**、由 `.lvup` 那個 class 決定看不看得見，
+             所以升級那一刻整列不會橫向抖一下。 */
+          + '<i class="exp-up"></i>'
           + '<span class="exp-num">—</span></div>';
   }
   return rows;
@@ -312,7 +317,8 @@ export function scoreToExp(score, stats, cfg = GAME_CONFIG.rating.exp){
      （鐵律 10 的精神，同共鬥的抽表）。
    ⚠ 音效鑰匙在**資料**上（鐵律 1）：SE 走 `rating.exp.levelUpSe`（全域，
      那是「升級」這件事的聲音），VO 走**搭檔卡**的 `levelUpVoice`（那是她的聲音，
-     可以是陣列＝輪播）。⚠ Ray 說「後補」——**兩格現在都是 null，沒填就不出聲**。 */
+     可以是陣列＝輪播）。⚠ 沒填（null）就不出聲 —— 兩格 ver -1033 已補上
+     （`se_lvup` ＋ 三位各一支語音），日後換角色只動資料。 */
 const EXP_BAR_SEC = 0.9;            // 一級跑多久（秒）
 let expBarRaf = 0;
 export function stopExpBars(){ if(expBarRaf) cancelAnimationFrame(expBarRaf); expBarRaf = 0; }

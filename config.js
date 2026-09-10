@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.10-1032';
+export const VERSION = 'ver 2026.09.10-1033';
 
 export const GAME_CONFIG = {
 
@@ -376,7 +376,7 @@ export const GAME_CONFIG = {
     nouvelle: {
       /* 升級語音（ver -1022，Ray：「升級要播 se 跟 vo，後補」）——
          可寫陣列＝輪播（走 `SFX.pickRot`）；null ＝不出聲。 */
-      levelUpVoice:null,
+      levelUpVoice:'vo_nouvelle_lvup',
       name:'諾薇兒',
       image:'partner_nouvelle',
       /* 整備頁伙伴卡的「變身」欄（ver -841，Ray：「伙伴卡也要記載聖徒化 夢魘化
@@ -530,7 +530,7 @@ export const GAME_CONFIG = {
     anya: {
       /* 升級語音（ver -1022，Ray：「升級要播 se 跟 vo，後補」）——
          可寫陣列＝輪播（走 `SFX.pickRot`）；null ＝不出聲。 */
-      levelUpVoice:null,
+      levelUpVoice:'vo_anya_lvup',
       install:{ name:'夢魘化', en:'NIGHTMARE INSTALL',
         /* ⚠ ver -967：「體力灌滿後」→「由**當下的體力**」（不再灌滿）。
            ⚠ ver -974：**滿血 13 秒**（長度由血量決定，不再是一律 15 秒）、
@@ -627,7 +627,7 @@ export const GAME_CONFIG = {
     sorana: {
       /* 升級語音（ver -1022，Ray：「升級要播 se 跟 vo，後補」）——
          可寫陣列＝輪播（走 `SFX.pickRot`）；null ＝不出聲。 */
-      levelUpVoice:null,
+      levelUpVoice:'vo_sorana_lvup',
       name:'索菈娜',
       image:'partner_sorana',
       selectVoice:'vo_sorana_pack',   // 選人確認音（ver -839，Ray 指定）
@@ -2068,6 +2068,11 @@ export const GAME_CONFIG = {
            計算只有 `inspector.expForWho()` 一支（鐵律 7）。
          ⚠ 用名單不用布林：日後再有一位反向的角色就加進來（同 `except` 的寫法）。 */
       invertFor: ['sorana'],
+      /* ══ 升級的聲音（ver -1033，Ray：「升級播放 se_lvup…同時各角色語音」）══
+         SE 是**全域**的一聲（誰升級都一樣），角色語音在各自的搭檔卡上
+         （`partners[who].levelUpVoice`）—— 兩層同時播，播放只有
+         `inspector.levelUpSound()` 一支（鐵律 8）。 */
+      levelUpSe: 'se_lvup',
     },
   },
 
@@ -2953,7 +2958,15 @@ export const GAME_CONFIG = {
                 'vo_anya_lucid',
                 /* ver -818：索菈娜語音（共鬥/供給/共鬥結束）。 */
                 'vo_sorana_pack','vo_sorana_pack2','vo_sorana_supply1','vo_sorana_supply2',
-                'vo_sorana_obe1','vo_sorana_obe2','vo_sorana_roar','vo_sorana_roar2'],
+                'vo_sorana_obe1','vo_sorana_obe2','vo_sorana_roar','vo_sorana_roar2',
+                /* ver -1033 補登記：**歸屬**的漏網之魚。這幾支目前都由呼叫端直接
+                   `SFX.playVoice`（partner 的失誤語音、inspector 的升級語音），
+                   所以現在聽起來是對的 —— 但這張表是「誰是語音」的唯一真相，
+                   漏著就等於下一條改走通用 `SFX.play` 的路徑會把它當音效播。
+                   ⚠ -1015 那六支失誤語音當初就漏了。 */
+                'vo_nouvellemiss1','vo_nouvellemiss2','vo_nouvellemiss3',
+                'vo_sorana_miss1','vo_sorana_miss2','vo_sorana_miss3',
+                'vo_nouvelle_lvup','vo_anya_lvup','vo_sorana_lvup'],
 
     /* ══ 逐支增益：鑰匙是**檔名**（去副檔名、轉小寫）══════════════════
        ⚠⚠ 鑰匙用檔名不用 ASSETS 鍵（ver -441）：**一支音檔只有一個響度**，
@@ -3019,6 +3032,14 @@ export const GAME_CONFIG = {
       vo_nouvellemiss1:0.78,  vo_nouvellemiss2:1.04,  vo_nouvellemiss3:1.41,
       vo_sorana_miss1:2.77,   vo_sorana_miss2:2.58,   vo_sorana_miss3:2.45,   // miss1 CAP
       se_windblock:1.31,      // CAP（峰值頂到 +2 dBFS）
+      /* ══ 升級的 SE 與三支語音（ver -1033）══ 同上式反推，實測（WebAudio 閘控積分）：
+           se_lvup        −21.42／peak −6.43
+           nouvelle_lvup  −14.40／peak −0.54     anya_lvup −22.33／−11.97
+           sorana_lvup    −10.71／peak +0.08  ← 母帶本來就大聲，所以增益 <1
+         ⚠ 三支語音的母帶差了 11.6 dB（sorana 對 anya）—— 沒有這一列的話升級語音
+           會「有的震耳、有的聽不見」，正是 §6.6 說的「沒補＝以母帶響度播出」。 */
+      se_lvup:2.40,
+      vo_nouvelle_lvup:1.07,  vo_anya_lvup:2.67,  vo_sorana_lvup:0.70,
       vo_luna_dualwield:1.483, vo_luna_execution:1.013, vo_luna_obe:1.163,
       vo_luna_saintinstall:1.345, vo_malzeno_hcrounds:2.647,
       vo_malzeno_supplyrefill:2.261, vo_renee_deathguard:1.563,
@@ -3638,6 +3659,9 @@ export const ASSETS = {
      se_windblock 一同播放」）—— 與失誤語音是**同時**播的兩層：語音是她的反應，
      這一聲是「這一下沒有落在你身上」。鑰匙在搭檔卡上的 `missBlockSe`。 */
   se_windblock:      "resources/audio/se/se_windblock.m4a",
+  /* 升級音（ver -1033，Ray：「升級播放 se_lvup」）——結算頁 EXP 條推過一級時響一聲，
+     鑰匙在 `rating.exp.levelUpSe`（全域，不逐角色）。 */
+  se_lvup:           "resources/audio/se/se_lvup.m4a",
 
   // 搭檔演出 SE（Luna）：發動/結局 cut-in 同步播。放 resources/partner/。
   //  v2：母帶重 master（RMS −28→−11 dBFS + 軟限幅），內容更新 → 升 ?v 強制重抓
@@ -3694,6 +3718,14 @@ export const ASSETS = {
   vo_sorana_miss1:   "resources/audio/vo/vo_sorana_miss1.m4a",
   vo_sorana_miss2:   "resources/audio/vo/vo_sorana_miss2.m4a",
   vo_sorana_miss3:   "resources/audio/vo/vo_sorana_miss3.m4a",
+  /* ══ 升級語音（ver -1033，Ray 交檔）══ 三位各一支，與 `se_lvup` **同時**播：
+     SE 是系統的一聲、語音是她的反應（同失誤那兩層的關係）。
+     鑰匙在各自的搭檔卡 `levelUpVoice`（可寫陣列＝輪播）。
+     ⚠ Ray 只點名了 anya 與 sorana，但 `vo_nouvelle_lvup` 也在交件裡 —— 三位都接上，
+       少一位的話諾薇兒升級只有 SE，讀起來像漏了。 */
+  vo_nouvelle_lvup:  "resources/audio/vo/vo_nouvelle_lvup.m4a",
+  vo_anya_lvup:      "resources/audio/vo/vo_anya_lvup.m4a",
+  vo_sorana_lvup:    "resources/audio/vo/vo_sorana_lvup.m4a",
   vo_sorana_roar:    "resources/audio/vo/vo_sorana_roar.m4a?v=3",   // ver -859：Ray 更新 5連完美戰吼   // 獵手的戰吼・連5盤那一發（ver -837 新錄音）
   vo_sorana_roar2:   "resources/audio/vo/vo_sorana_roar2.m4a",      // 獵手的戰吼・連3盤那一發
   se_luna_exc:       "resources/audio/vo/vo_luna_execution.m4a",    // 處決 EXSECUTIŌ cut-in

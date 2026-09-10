@@ -2278,12 +2278,12 @@ export const TOWNS = {
           nou('surprise','咦？不要吧？'),
           ren('thinking','不......倒也不是不能試試。'),
           sor('tired','就你們幾個人想去探遺蹟？別鬧了，會出人命的。'),
-          /* ══ ver -843 修：這是**一拍的好感分歧**（Ray：「兩句都跑出來了」）——
-             T1 只播「討伐禍魘」句（front）、T2 以上只播「有他在」句（bow）。
-             稿上另外標的 talkwork／front 是各句另一段位的表情，選字之後用不到。 */
+          /* ══ ver -843：這一拍原本是**好感分歧**（Ray：「兩句都跑出來了」）——
+             ver -1033 Ray 交回定稿，**台詞兩個段位同一句**，分歧只剩表情
+             （T1 front／T2 以上 talkwork）。所以不寫 `textByTier`：
+             一句話寫兩次是同一個內容的兩個真相（鐵律 7），改一邊就會走鐘。 */
           { speaker:'RENNA', text:'討伐禍魘，本就是聖王廳的職責。',
-            textByTier:{ 1:'討伐禍魘，本就是聖王廳的職責。', 2:'有他在，區區禍魘威脅不了我們的。' },
-            portrait:{ char:'RENNA', exprByTier:{ 1:'front', 2:'bow' }, show:true } },
+            portrait:{ char:'RENNA', exprByTier:{ 1:'front', 2:'talkwork' }, show:true } },
           { speaker:'PLAYER', blank:true },
           { speaker:'RENNA', text:'所以請你這次務必寸步不離。',
             textByTier:{ 1:'所以請你這次務必寸步不離。', 2:'才、才不會好不好！那次是狀況特殊！' },
@@ -2537,7 +2537,7 @@ export const TOWNS = {
                寫死一個日期的話，玩家幾號走到這一幕看到的都是同一天，而
                「兩個月內完成」這條期限日後真要用時，日期就只有一個計算點。 */
           ren('writting','……{D+60}之前嗎？'),
-          cor('read','航行、修整、探勘，這個時間算是相當寬裕了。'),
+          cor('read','航行、休整、探勘，這個時間算是相當寬裕了。'),
           ren('lookawaytalk','……'),
           ren('lookaway','我應該感到感激嗎？'),
           cor('smile','誰知道呢？這已經是我所能想到的最上策了。'),
