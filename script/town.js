@@ -2740,7 +2740,11 @@ export const TOWNS = {
          提示的箭以前同樣被門吃掉，那是另一個要修的洞。 */
     nodes: {
       /* 入口＝遭遇戰復活點，**不可以有戰鬥**（§6.5.2 的鐵條）。下方回村（野外）。 */
-      entry: { bg:'Forest_Entry', name:'夏爾森林　森林入口',
+      /* ⚠ `rest:true`（ver -1026，Ray：「像夏爾森林這種連結兩個地圖的地方，就要把
+         起點跟終點各設一個結算點」）—— 這張圖的兩端（`entry` 通夏爾村、`ruins`
+         通神殿）都是結算點。哪一端是起點、哪一端是終點由**這一趟從哪邊進來**決定
+         （判定在 modules/town.js 的 `pickEnds`）：起點不出怪、終點必出結算怪。 */
+      entry: { bg:'Forest_Entry', name:'夏爾森林　森林入口', rest:true,
         exits:{ up:'glade', down:'@shinier:wild' },
         /* ══ 森林入口（ver -870，Ray 的森林行稿）══ 出發前的叮嚀＋地圖教學。 */
         acts:[ { flag:'sv_forest_intro', need:'sv_forest_go', lines:[
@@ -2782,7 +2786,10 @@ export const TOWNS = {
       /* 終點：遺跡入口 —— 背景 ver -870 換 Ray 新交的 ruins_shinier_entrance
          （單張、無時段差分；舊 Ruins_Entrance_* 已被美術收走）。
          進遺跡本體是另一張圖，等 Ray 的規劃（遺跡背景美術重製中）。 */
-      ruins: { bg:'ruins_shinier_entrance', name:'夏爾森林　遺跡入口',
+      /* ⚠ `rest:true`（ver -1026）：另一端，說明見上面的 `entry`。
+         ⚠ 底下的 `noWild` 留著 —— 它擋的是**隨機雜怪**；結算怪是指定遭遇，照樣會出
+           （正是 Ray 在 -879 說的「神殿入口**除了鹿主戰之外**是安全區」）。 */
+      ruins: { bg:'ruins_shinier_entrance', name:'夏爾森林　遺跡入口', rest:true,
         exits:{ back:'cliff', up:'@shinier_ruins' },   // 往上＝進神殿（ver -875）
         /* ⚠⚠ **這一格不出野怪**（ver -879，Ray：「神殿入口除了鹿主戰之外是安全區，
            不出怪」）——它是神殿的門口／回程的落腳處，不是獵場。

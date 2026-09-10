@@ -651,8 +651,46 @@ function wildVariant(v){
   const b=clock.band();
   return (b==='Dawn'||b==='Day') ? v.day : v.night;
 }
-/* ══⚠⚠⚠ **結算怪已取消**（ver -1024，Ray：「取消結算怪的放置，一律以踏入結算點
-   為結算條件」）══════════════════════════════════════════════════════════════
+/* ══⚠⚠⚠ **連結型地圖：兩端各一個結算點，起點不出怪、終點必出**
+   （ver -1026，Ray：「像夏爾森林這種連結兩個地圖的地方，就要把起點跟終點各設一個
+   結算點，看是從哪邊進入，起點必不出怪，終點必出」）══════════════════════════
+   · 「兩端」＝這張圖的**跨圖出口**（`exits` 裡以 `@` 開頭的那幾格）——**算出來的**，
+     不列死名單（大城地圖已經規則化，列一張表日後加一格就漏一次）。
+   · **起點** ＝這一趟真的走進來的那一格（`cameNodeId`）；沒指定（讀檔／跳關）
+     就退回這座城的入口。**起點必不出怪** —— 它同時是遭遇戰的復活點（§6.5.2）。
+   · **終點** ＝另一端。**必出**那一隻結算怪（`wildSpawn.endBattle`），打完接結算。
+     ⚠ 這與那一格的 `noWild` 不衝突：`noWild` 擋的是**隨機雜怪**，結算怪是
+       **指定遭遇** —— 正是 Ray 在 -879 說的「神殿入口**除了鹿主戰之外**是安全區」。
+   · 兩端都寫 `rest:true`（資料）＝**都是結算點**：走回起點一樣收局（-1024 的規矩）。
+   ⚠ 三個以上的跨圖出口：挑一個當終點並**這一趟固定**（不每次抵達重擲，
+     否則玩家走回頭路時終點會跟著跑）。歸零時機同 `wildDone`（`open()`）。
+   ⚠⚠ 這不是把 ver -895／-898 那一套接回來：那一套是「把結算怪擺在**隨便哪一格**、
+     那一格拒絕戰鬥就退一格」，落點與結算點無關；這一版落點**就是結算點本身**，
+     而收局的條件仍然只有一條（踏入結算點，-1024）。 */
+let cameNodeId = null;      // 這一趟從哪一格走進來（起點）
+let endNodeId  = null;      // 這一趟的終點（另一端的跨圖出口）
+function crossExitIds(){
+  const T=TOWNS[townId]; if(!T) return [];
+  return Object.keys(T.nodes||{}).filter(id=>{
+    const ex=(T.nodes[id]||{}).exits||{};
+    return Object.values(ex).some(v=>typeof v==='string' && v[0]==='@');
+  });
+}
+function pickEnds(startNode){
+  cameNodeId = null; endNodeId = null;
+  const T=TOWNS[townId]; if(!T) return;
+  const outs = crossExitIds();
+  if(outs.length < 2) return;                     // 末端型：沒有「對面」
+  cameNodeId = (startNode && T.nodes[startNode]) ? startNode : entryNodeId;
+  const cands = outs.filter(id=>id!==cameNodeId);
+  if(!cands.length) return;
+  endNodeId = cands[Math.floor(Math.random()*cands.length)];
+}
+/* 這一趟的起點／終點（給小地圖或除錯用；沒有就回 null）。 */
+export function tripEnds(){ return { start:cameNodeId, end:endNodeId }; }
+
+/* ══⚠⚠⚠ **-895／-898 的「結算怪擺在對面出口」已取消**（ver -1024，Ray：「取消結算怪
+   的放置，一律以踏入結算點為結算條件」）══════════════════════════════════════
    ver -895／-898 那一整套（`pickEndNode`／`endNodeId`／`endBattleNode`／
    `crossExitIds`）**整組移除**：它的工作是把 `wildSpawn.endBattle` 那一隻擺在
    「這一趟沒走進來的那個出口」，那一格拒絕戰鬥就退一格。
@@ -674,6 +712,21 @@ function wildVariant(v){
      不該在結算之前先冒一隻怪出來。 */
 function restActDue(n){
   if(!n || !n.rest) return null;
+  /* ══ **終點必出結算怪**（ver -1026）══ 這一格是這一趟的終點、卡還在、而且這一趟
+     還沒打過它 → **打完接結算**（同一段裡串兩拍，一次抵達就走完）。
+     ⚠ 串成一段而不是「這次打、下次結算」：後者要玩家再走一次才收局，
+       讀起來是「打完了卻沒有結束」。
+     ⚠ 記進 `wildDone`（同「一趟同種不重複」的規約）——打完再走回來就只剩結算。
+     ⚠ 擋在 `sessionStats` 那道守門**之前**：結算怪是這一格的正事，
+       不因為「還沒打過架」而不出（走進終點本來就該遇到牠）。 */
+  const W=(TOWNS[townId]||{}).wildSpawn;
+  if(W && W.endBattle && nodeId===endNodeId && !prog.hasFlag(safehouseFlag())){
+    const sp=wildSpecies(W.endBattle);
+    if(!wildDone.has(sp)){
+      const eid=wildVariant(W.endBattle);
+      if(eid){ wildDone.add(sp); return { lines:[ { battle:eid }, { settle:true } ] }; }
+    }
+  }
   if(!state.sessionStats) return null;          // 這一趟還沒打過架＝不作動（Ray）
   return { lines:[ { settle:true } ] };
 }
@@ -710,6 +763,10 @@ function wildActDue(n){
        離開地圖那一條（`leaveMapRitual`）是保險，不讓帳被卡在圖裡。
      ⚠ 資料上的 `wildSpawn.endBattle` 現在**沒有人讀** —— 欄位留著不刪（它是
        「這張圖的收局怪是誰」的宣告，日後要改回來只動程式），但別再指望它會出現。 */
+  /* **起點必不出怪**（ver -1026）：這一趟真的走進來的那一格 —— 它同時是遭遇戰的
+     復活點。⚠ 與 `entryNodeId`（資料上的入口）**兩個都擋**：讀檔／跳關可以落在
+     中間任何一格，那時 `cameNodeId` 是入口，兩者重合；從另一頭走進來時才分家。 */
+  if(cameNodeId && nodeId===cameNodeId) return null;
   if(nodeId===entryNodeId) return null;                 // 入口＝復活點，不可有戰鬥
   /* ══⚠⚠ **指定遭遇**（ver -879，Ray：「鹿主未變異日後則會在黃昏夜晚時段在夏爾森林
      隨機遇到，劇情從諾『牠好像不太歡迎我們』開始跑，進入戰鬥」「打完就沒了，
@@ -2725,6 +2782,7 @@ export function open(town, node, opts){
   entryNodeId = (fe && fe.node && T.nodes[fe.node] && !(fe.until && prog.hasFlag(fe.until)))
               ? fe.node : T.entry;
   const start = (node && T.nodes[node]) ? node : entryNodeId;
+  pickEnds(start);            // 這一趟的起點與終點（ver -1026，見 pickEnds）
   armMapCard();               // 這一趟要不要報圖名（ver -879）——在 enter 之前決定
   enter(start);
   /* 進城的檢查點（ver -590，見 setCheckpoint）。⚠ 一定要在 `enter()` 之後 ——
