@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.10-1031';
+export const VERSION = 'ver 2026.09.10-1032';
 
 export const GAME_CONFIG = {
 
@@ -3010,7 +3010,13 @@ export const GAME_CONFIG = {
            平均」，而且語音要**過完 voiceChain** 才量 —— 用 tools/audio_scan.html
            跑一次才是權威值。先補上是因為**沒補＝增益 1 ＝以母帶響度播出**
            （`se_steps` 就是這樣「永遠不出來」的）。 */
-      vo_nouvellemiss1:1.45,  vo_nouvellemiss2:1.04,  vo_nouvellemiss3:1.41,
+      /* ⚠⚠ `vo_nouvellemiss1` **ver -1032 重量**（Ray：「vo_nouvellemiss1 更新」）——
+         新錄音 **−11.62 LUFS**／peak −0.28（舊的 −17.02／−1.36），**大聲了 5.4 dB**。
+         增益因此由 1.45 降到 **0.78** —— 不重量的話它會比另外兩支響將近 10 dB
+         （5.4 的母帶差 ＋ 1.45/0.78 的增益差），輪播起來一支突然爆出來。
+         ⚠ 這正是 §5「換圖（換檔）一定要重量」與 §6.6「加新音檔一定要補 fileGain」
+           的同一條：**同名覆蓋不會有任何錯誤訊息**，只會聽起來怪。 */
+      vo_nouvellemiss1:0.78,  vo_nouvellemiss2:1.04,  vo_nouvellemiss3:1.41,
       vo_sorana_miss1:2.77,   vo_sorana_miss2:2.58,   vo_sorana_miss3:2.45,   // miss1 CAP
       se_windblock:1.31,      // CAP（峰值頂到 +2 dBFS）
       vo_luna_dualwield:1.483, vo_luna_execution:1.013, vo_luna_obe:1.163,
@@ -3679,7 +3685,10 @@ export const ASSETS = {
      ⚠ 交件是 wav，已照 §6.6 轉成 m4a（96k）、原檔進回收區。
      ⚠⚠ **`tuning.fileGain` 還沒量**（見那一節的說明）—— 沒補就是以母帶響度播出，
        §6.6 的 `se_steps` 事件就是這樣「永遠不出來」的。用 tools/audio_scan.html 量。 */
-  vo_nouvellemiss1:  "resources/audio/vo/vo_nouvellemiss1.m4a",
+  /* ⚠ `?v=2`（ver -1032）：Ray 換了新錄音而**檔名沒變** —— 不加 cache-buster 的話
+     已經載過舊檔的瀏覽器會一直拿舊的那一份（§5 那條「同名覆蓋的圖一定要加 ?v=N」，
+     音檔同理）。⚠ `tuning.fileGain` 的鑰匙會**去掉 `?v=`** 再查，所以不受影響。 */
+  vo_nouvellemiss1:  "resources/audio/vo/vo_nouvellemiss1.m4a?v=2",
   vo_nouvellemiss2:  "resources/audio/vo/vo_nouvellemiss2.m4a",
   vo_nouvellemiss3:  "resources/audio/vo/vo_nouvellemiss3.m4a",
   vo_sorana_miss1:   "resources/audio/vo/vo_sorana_miss1.m4a",
