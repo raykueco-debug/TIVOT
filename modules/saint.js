@@ -1088,12 +1088,20 @@ export function playCutin(done, label, imgKey, opts){
   };
   if(ci && src){
     if(ci.getAttribute('src')!==src) ci.src=src;
-    // ⚠ 圖未解碼完就起跑＝滑入動畫中途解碼大圖卡死主執行緒（cut-in 卡在一半的主因，
-    //   手機尤甚）→ 先 decode 再開演；解碼失敗或逾時 300ms 照樣開演不擋流程（go 冪等）。
+    /* ⚠⚠ 圖未解碼完就起跑＝滑入動畫中途解碼大圖卡死主執行緒（cut-in 卡在一半的
+       主因，手機尤甚）→ 先 decode 再開演；解碼失敗或逾時照樣開演（`go` 冪等）。
+       ⚠⚠ **逾時 300 → 900ms**（ver -1065，Ray：「手機 ci 常常只跳一半卡住」）：
+         300ms 在手機上**不夠解一張全屏 CI** —— 逾時一到就照樣開演，於是動畫的
+         前半段正好撞上解碼那一下的卡頓，看起來就是「跳到一半停住」。
+         ⚠ 代價是最壞情況下 CI 晚 0.6 秒出現；比起演到一半卡住，那是划算的。
+         ⚠ 逾時真的被用到就記一行 console —— 那代表這台機器解碼慢，是有用的線索
+           （同 -1051 的作法：驗收要留紀錄）。 */
     let started=false;
-    const go=()=>{ if(!started){ started=true; start(); } };
-    (ci.decode ? ci.decode() : Promise.resolve()).then(go, go);
-    setTimeout(go, 300);
+    const go=(why)=>{ if(started) return; started=true;
+      if(why==='timeout') console.warn('[cutin] 解碼逾時 900ms，照樣開演：'+src);
+      start(); };
+    (ci.decode ? ci.decode() : Promise.resolve()).then(()=>go(), ()=>go());
+    setTimeout(()=>go('timeout'), 900);
   } else start();
 }
 
