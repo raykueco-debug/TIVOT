@@ -1245,10 +1245,13 @@ function energyFullBurst(){
 const ARC={
   a0    : 210,     // 起角＝7 點（粗的那一端）
   sweep : 210,     // 順時針掃到 2 點（細的那一端）
-  r     : 35,      // 環帶中心線半徑（viewBox 100×100，中心 50,50）
-  w0    : 14,      // 起點寬（前粗）
-  w1    : 2.2,     // 終點寬（後細；不給 0 —— 真的收成一點會鋸齒）
-  face  : 0.50,    // 頭像直徑佔 viewBox 的比例（半徑 25，環帶內緣最近處 28）
+  /* ⚠⚠ **內緣是常數**（ver -1038，Ray：「計量要緊貼角色頭像」）：粗細一律往**外**長。
+     中心線固定、往兩側長的話，越細的那一段內緣就離頭越遠 —— 那正好與「緊貼」相反。 */
+  ri    : 25.8,    // 內緣半徑（頭像半徑 25 ＋ 0.8 的縫）
+  w0    : 13,      // 起點厚（前粗）→ 外緣 38.8
+  w1    : 2.5,     // 終點厚（後細；不給 0 —— 真的收成一點會鋸齒）
+  face  : 0.50,    // 頭像**寬度**佔 viewBox 的比例（半徑 25）
+  faceH : 1.34,    // 頭像那一格的高＝寬 × 這個（往**上**長，讓頭頂蓋到環上）
   steps : 72,      // 折線近似的段數（每 ~3°）
 };
 /* 錐形環帶的 path（唯一那一支）：外緣順掃、內緣逆掃，閉合成一片。
@@ -1259,8 +1262,8 @@ function arcPath(){
   for(let i=0;i<=ARC.steps;i++){
     const k=i/ARC.steps, a=(ARC.a0+ARC.sweep*k)*Math.PI/180;
     const w=ARC.w0+(ARC.w1-ARC.w0)*k, si=Math.sin(a), co=Math.cos(a);
-    out.push([cx+(ARC.r+w/2)*si, cy-(ARC.r+w/2)*co]);
-    inn.push([cx+(ARC.r-w/2)*si, cy-(ARC.r-w/2)*co]);
+    out.push([cx+(ARC.ri+w)*si, cy-(ARC.ri+w)*co]);
+    inn.push([cx+ARC.ri*si, cy-ARC.ri*co]);
   }
   const P=p=>p[0].toFixed(2)+','+p[1].toFixed(2);
   let d='M'+P(out[0]);
@@ -1312,11 +1315,26 @@ function layoutClasp(){
     }
   }
   /* 中心（host 座標）：**縱向沿用舊錨**（-542/-543 Ray 調過的那一點：紅條頂
-     再往下 0.047S），橫向也沿用（血條左緣往左 0.188S）—— 但右緣一律夾在
-     血條左緣內（-550「不要遮到 hp 條」）。夾的是「中心 ＋ 半徑」。 */
+     再往下 0.047S），橫向也沿用（血條左緣往左 0.188S）。兩道夾位：
+     ⚠⚠ **左邊是硬的**（ver -1038）：`#top` 是 `overflow:hidden` —— 超出它左緣的
+       部分**直接被裁掉，而且畫面上沒有任何錯誤訊息**。舊的月牙左側正好是缺口，
+       裁掉看不出來；新的環帶左側是 7~9 點那一段（＝**剛開始蓄能時唯一看得到的
+       那一段**），裁掉就等於整條計量表不見了（-1037 上線後第一眼就是這樣）。
+     ⚠ **右邊是軟的**：那條規矩（-550「不要遮到 hp 條」）是給跨在血條上的月牙用的。
+       整組**整個落在紅條之上**時它壓不到任何血量，就不必讓 —— 空間本來就只有
+       48px，兩邊都硬夾的話這一組會被壓到只剩一半。 */
   const RAD=BOX/2;
-  const CY=rr.y+0.047*S-hr.y;
-  const CX=Math.min(BL-0.188*S-hr.x, (BL-hr.x)-2-RAD);
+  const topEl=document.getElementById('top');
+  const TL=topEl ? topEl.getBoundingClientRect().left : hr.x;
+  /* ⚠⚠ **整組要整個落在紅條之上**（ver -1038）：左右能用的只有「面板左緣 → 血條
+     左端」那 48px，而這一組比它寬 —— 兩件事只能滿足一件，選**不遮血條**：
+     底邊夾到紅條頂之上，右邊就可以自由地伸過血條左端（那一段的下面沒有血條）。
+     ⚠ 舊的月牙是**跨在**血條上的（-542 的錨），所以它才需要「右緣不越過血條左緣」
+       那條規矩（-550）。位置改了，那條規矩的前提就不在了。 */
+  let CY=rr.y+0.047*S-hr.y;
+  CY=Math.min(CY, (rr.y-hr.y)-RAD-1);
+  /* 左邊是硬的（見上），右邊不必讓 —— 整組已經在血條之上。 */
+  const CX=Math.max((TL-hr.x)+RAD+1, BL-0.188*S-hr.x);
   svgEl.style.left=(CX-RAD)+'px'; svgEl.style.top=(CY-RAD)+'px';
   svgEl.style.width=BOX+'px';     svgEl.style.height=BOX+'px';
   /* 副武器切換鈕（-549 與月對稱 → -550 移出血條 → -551 縮小靠右壓低）：
@@ -1343,11 +1361,15 @@ function layoutClasp(){
                     b.style.webkitTextStroke=Math.max(1.6,0.05*S).toFixed(1)+'px rgba(8,8,12,.9)'; }
              placeCombo(); }                                                  // 橫向＝夾位那一支（唯一實作）
   /* ══ 搭檔頭像（ver -1036；-1037 起是這一組的中心）══ 與連擊數同一個錨。
-     ⚠ 直徑就是上面算 BOX 時用的 `FACE_D` —— 一個量一個計算點（鐵律 7）。 */
+     ⚠ 寬度就是上面算 BOX 時用的 `FACE_D`（一個量一個計算點，鐵律 7）。
+     ⚠⚠ 這一格**往上長**（高＝寬 × `ARC.faceH`，ver -1038，Ray：「角色頭頂可以稍
+       遮住計量」）：底邊仍是那個圓的底，多出來的高度全加在上面 —— 立繪的頭頂
+       本來就貼齊圖的上緣（`ART[].top` 都是個位數），所以那一段長出來的正好是頭頂，
+       它疊在環帶之上（`.clasp-face` 的 z-index 比 svg 高）就成了「頭伸出環外」。 */
   const face = $('claspFace');
-  if(face){ const D=Math.round(FACE_D);
-            face.style.width=D+'px'; face.style.height=D+'px';
-            face.style.left=(CX-D/2)+'px'; face.style.top=(CY-D/2)+'px'; }
+  if(face){ const D=Math.round(FACE_D), H=Math.round(FACE_D*ARC.faceH);
+            face.style.width=D+'px'; face.style.height=H+'px';
+            face.style.left=(CX-D/2)+'px'; face.style.top=(CY+D/2-H)+'px'; }
   updateEnergyClasp();                       // 幾何換了 → 遮罩與連擊數重掛
 }
 /* 連擊數的橫向擺位（唯一實作，鐵律 8）：錨在缺口中心，但 Ray：「可覆蓋月牙、
@@ -1364,12 +1386,13 @@ function placeCombo(){
    ② 試玩版的蕾妮／馬季諾**不在 `SPEAKERS` 裡**（她們只存在於挑戰，§6.5.2），
       退回搭檔卡的選人立繪 `image`，臉當作在正中上方。
    ⚠ 兩張都拿不到就回空字串 → `claspFaceOn()` 退回連擊數（空的圓圈比數字糟）。 */
+const FACE_ZOOM=300;      // 這個框比旅店的門小，臉要再拉近一點（旅店那邊照舊 260）
 function claspFaceCss(who){
-  const s = faceStyle(String(who||'').toUpperCase());
+  const s = faceStyle(String(who||'').toUpperCase(), FACE_ZOOM);
   if(s) return s;
   const p = (GAME_CONFIG.partners||{})[who] || {};
   const src = p.image && asset(p.image);
-  return src ? 'background-image:url("'+src+'");background-size:260% auto;background-position:50% 0%;' : '';
+  return src ? 'background-image:url("'+src+'");background-size:'+FACE_ZOOM+'% auto;background-position:50% 0%;' : '';
 }
 /* 月彎中間現在該放頭像還是連擊數（唯一的判定，鐵律 7）。 */
 function claspFaceOn(){

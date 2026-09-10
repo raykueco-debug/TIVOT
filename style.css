@@ -474,14 +474,20 @@
      ⚠ `pointer-events:none`：整個 `#energyClasp` 是發動破防的鈕，頭像不能吃掉點擊。
      ⚠ 邊框走金色、外圈一層暗影：月牙本身是金的，沒有那圈暗影臉會糊進月裡。
      ⚠ 滿檔（`.full`）時整圈亮起來 —— 那一刻它就是「可以發動了」的燈。 */
-  #energyClasp .clasp-face{position:absolute;display:none;border-radius:50%;
-    background-repeat:no-repeat;background-color:#0d0b12;
-    border:1.5px solid var(--gold-dim);z-index:2;pointer-events:none;
-    box-shadow:0 0 0 2px rgba(8,8,12,.85), 0 2px 6px rgba(0,0,0,.75);}
+  /* ⚠⚠ ver -1038（Ray：「頭像要 alpha 不要有外框，角色頭頂可以稍遮住計量」）：
+     圓框、底色、描邊、外圈陰影**整組拿掉** —— 立繪本來就是去背的，直接貼。
+     · 不裁圓（沒有 `border-radius`）：裁了頭頂就沒了，也就談不上「遮住計量」。
+     · 下緣用遮罩淡掉：那一格往上長（見 `ARC.faceH`），底下露出來的是脖子與胸口，
+       硬切一條邊會很難看 —— 淡出讀起來就是「人從環裡浮上來」。
+     · 只留一層貼身的暗影：去背的立繪疊在暗背景上，沒有它會糊進去。 */
+  #energyClasp .clasp-face{position:absolute;display:none;
+    background-repeat:no-repeat;z-index:2;pointer-events:none;
+    -webkit-mask-image:linear-gradient(to bottom,#000 0 64%,rgba(0,0,0,.55) 82%,transparent 97%);
+    mask-image:linear-gradient(to bottom,#000 0 64%,rgba(0,0,0,.55) 82%,transparent 97%);
+    filter:drop-shadow(0 1px 2px rgba(0,0,0,.9)) drop-shadow(0 0 5px rgba(0,0,0,.75));}
   #energyClasp .clasp-face.on{display:block;}
-  #energyClasp.charging .clasp-face{border-color:var(--gold);}
-  #energyClasp.full .clasp-face{border-color:#fff;
-    box-shadow:0 0 0 2px rgba(8,8,12,.85), 0 0 10px rgba(255,246,220,.9), 0 0 20px rgba(255,235,180,.6);}
+  /* 滿檔那一刻臉也亮一下（環是白的，臉還是原色會讀成兩張圖疊著）。 */
+  #energyClasp.full .clasp-face{filter:drop-shadow(0 1px 2px rgba(0,0,0,.9)) drop-shadow(0 0 8px rgba(255,246,220,.85));}
   /* ── 副武器切換鈕（ver -410，Ray：「在敵我血條右側加入副武器切換鈕，大小同破防值」）──
      左邊是破防計量表、右邊是這一顆，兩側對稱夾著血條。
      ⚠ `#barsBlock` 整塊是 `pointer-events:none`（它只是 HUD），所以這一顆要自己打開。
@@ -739,8 +745,15 @@
   #app:has(#banner.on) #exitBtn{display:none;}
   /* v17：測試人員用「清盤」鈕（左上角）。z-index 同 corner-btn，聖徒化手勢層之上，確保可點。
    *  預設隱藏：首頁手勢解鎖（團徽畫圓→橫劃團名，見 main.js testUnlockGesture）後 body.testmode 才顯示。 */
+  /* ══⚠⚠ **左上這一排是同一條數列**（ver -1038，Ray：「鎖血跟清盤疊一起了」）══
+     靜音鈕（36px，left 4 → 右緣 40）→ 清盤 → 鎖血 → 跳關，每兩顆之間留 6px，
+     圓鈕一律 44px（`.corner-btn`）：
+         清盤 46　鎖血 96（46+44+6）　跳關 146（96+44+6）
+     ⚠⚠ **改任何一顆都要把後面的一起推**。-933 為了讓開靜音鈕只把清盤從 10 推到 56，
+       鎖血還停在原本「清盤右側」的 64 —— 兩顆 44px 的圓相距 8px，等於疊在一起
+       （而且兩顆都是 testmode 限定，一般玩家看不到，所以一直沒有人回報）。 */
   /* 教學戰跳關鈕（開發者限定）：與清盤/鎖血同排、再靠右。只在管理人模式＋教學進行中出現。 */
-  #tutDevSkip{top:10px;left:118px;right:auto;width:auto;padding:0 12px;font-size:12px;
+  #tutDevSkip{top:10px;left:146px;right:auto;width:auto;padding:0 12px;font-size:12px;
     letter-spacing:2px;color:var(--holy);border-color:var(--holy);display:none;}
   body.testmode.tut-on #tutDevSkip{display:flex;}
   /* 棄權（ver -730）：只在計時挑戰出現，貼在右上 ✕ 的左邊。 */
@@ -748,8 +761,8 @@
     color:var(--gold-dim);border-color:var(--gold-dim);display:none;}
   body.timeattack #giveUpBtn{display:flex;}
   /* ⚠ 讓開左上角那顆靜音鈕（ver -933：36px＋左邊 4px → 右緣 40）——兩顆都是
-     testmode 限定，讓位的是後來的這一顆。 */
-  #testClearBtn{top:10px;left:56px;right:auto;font-size:12px;letter-spacing:1px;color:var(--holy);border-color:var(--holy);display:none;}
+     testmode 限定，讓位的是後來的這一顆。⚠ 位置見上面那條「同一條數列」。 */
+  #testClearBtn{top:10px;left:46px;right:auto;font-size:12px;letter-spacing:1px;color:var(--holy);border-color:var(--holy);display:none;}
   body.testmode #testClearBtn{display:flex;}
   /* 效能探針的常駐開關（ver -852，Ray：「首頁開了以後進遊戲關不掉」）——
      testmode 限定、右下角、z 高於飛行 iframe(8200)與所有 overlay，任何畫面都按得到。
@@ -759,8 +772,9 @@
   /* ⚠ `#perfToggle`／`#perfFreeze` 的 CSS 於 ver -926 撤掉：那兩顆常駐小鈕搬進
      選單的「管理人」那一段了（Ray：「把凍結跟狀態 HUD 收到系統設定裡面」）——
      元素不再產生，樣式留著只會讓下一個人以為它還在。 */
-  /* 鎖血鈕（管理人測試，ver -463）：清盤右側。開啟＝亮金（.on）。 */
-  #hpLockBtn{top:10px;left:64px;right:auto;font-size:12px;letter-spacing:1px;color:var(--holy);border-color:var(--holy);display:none;}
+  /* 鎖血鈕（管理人測試，ver -463）：清盤右側（ver -1038 由 64 推到 96 —— 見上面
+     那條「同一條數列」；64 是清盤還在最左邊時的值，早就該跟著推）。開啟＝亮金（.on）。 */
+  #hpLockBtn{top:10px;left:96px;right:auto;font-size:12px;letter-spacing:1px;color:var(--holy);border-color:var(--holy);display:none;}
   body.testmode #hpLockBtn{display:flex;}
   #hpLockBtn.on{color:var(--gold);border-color:var(--gold);
     box-shadow:0 0 10px var(--gold-dim),inset 0 0 8px rgba(240,196,105,.35);}
