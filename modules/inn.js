@@ -735,9 +735,26 @@ export function relayout(){
     if(!ds.length) return null;
     return Math.min(...ds.map(d=>d.getBoundingClientRect().left));
   };
-  const put=(sel, want, sp)=>{
+  /* ══⚠⚠⚠ **「獨自坐坐」固定在畫面偏左下**（ver -1028，Ray：「獨自坐坐鈕固定在
+     畫面偏左下，不知道為什麼每點一次就跑掉」）══
+     跑掉的原因是**夾的下界是「對話框的上緣」**，而對話框的高度**每一句都在變**
+     （敲門的回話、路人單句字數不同）—— 於是每點一次、框一換高，鈕就被夾到
+     不同的高度。⚠ `visibility:hidden` 的框照樣量得到 box，所以框沒顯示時
+     也照夾（那正是「明明沒在講話也會跑」的原因）。
+     ⇒ 兩件事一起改：
+       ① **對話框那道夾整條拿掉** —— ver -478 已經改成「對白播放中鈕淡出讓開」
+         （CSS 的 `body.story-talking`），同一件事有兩個機制就會走鐘（鐵律 7）。
+       ② **坐坐改成畫面上的固定落點**（不再問背景圖的 `bgPoint`）：它是常駐的
+         操作鈕，不是場景裡的一個物件 —— 錨在背景圖上就會隨機器長寬比滑動。
+     ⚠ `innSpots.sit` 因此沒有人讀了（欄位留著不刪，日後要改回來只動這裡）。 */
+  const SIT_AT = { x:0.20, y:0.76 };     // 畫面偏左下（stage 的比例，Ray 指定）
+  const put=(sel, want, sp, fixed)=>{
     const b=layer.querySelector(sel); if(!b) return;
-    const p = (want && sp && host && host.bgPoint) ? host.bgPoint(sp.x, sp.y) : null;
+    const stF=story.stageEl();
+    const p = !want ? null
+            : (fixed && stF)
+              ? (r=>({ x:Math.round(r.width*fixed.x), y:Math.round(r.height*fixed.y) }))(stF.getBoundingClientRect())
+              : ((sp && host && host.bgPoint) ? host.bgPoint(sp.x, sp.y) : null);
     if(!p){ b.classList.remove('on'); return; }
     b.style.left=p.x+'px'; b.style.top=p.y+'px';
     b.classList.add('on');
@@ -753,18 +770,15 @@ export function relayout(){
     const dl = doorLeft();
     if(dl!=null) right = Math.min(right, dl - sr.left - half - 8);
     b.style.left = Math.min(Math.max(p.x, half+8), Math.max(half+8, right)) + 'px';
-    /* ⚠⚠ **下界是對話框的上緣**（ver -409，Ray：「獨自坐坐壓到對話框了」）。
-       敲門的回話、路人單句都會把對話框叫出來，而鈕是常駐的 —— 壓在框上就點不到、
-       也擋住台詞。對話框的位置是 `layoutKerberos` 那組變數解出來的，**問它不要自己算**
-       （鐵律 7）：`visibility:hidden` 的元素照樣量得到 box，所以框沒顯示時也夾得準。 */
-    const bub=document.getElementById('storyBubble');
-    let bottom = sr.height - halfH - 8;
-    if(bub){ const r=bub.getBoundingClientRect();
-      if(r.height) bottom = Math.min(bottom, r.top - sr.top - halfH - 8); }
+    /* ⚠⚠ **對話框那道夾已撤**（ver -1028）：-409 加它是為了「坐坐壓到對話框」，
+       但 -478 之後鈕在對白期間本來就整顆淡出讓開（`body.story-talking`）——
+       兩個機制管同一件事，而這一個還會**隨台詞長度把鈕挪來挪去**（見上面的說明）。
+       下界改成單純的「畫面內」。 */
+    const bottom = sr.height - halfH - 8;
     b.style.top = Math.min(Math.max(p.y, halfH+8), Math.max(halfH+8, bottom)) + 'px';
   };
-  put('[data-act="sit"]',   wantSit,   spots.sit);
-  put('[data-act="sleep"]', wantSleep, spots.sleep);
+  put('[data-act="sit"]',   wantSit,   spots.sit,   SIT_AT);   // 固定落點（ver -1028）
+  put('[data-act="sleep"]', wantSleep, spots.sleep);            // 睡覺照舊錨在背景圖（櫃台上）
   /* ⚠⚠ **兩顆行動鈕互不相疊**（ver -478，Ray：「不要跟其他按鍵互相干擾」）：
      各自夾完畫面/門欄/對話框之後，可能被推進同一個夾角（實測就是這樣疊上的）。
      疊了就把「坐坐」往「睡覺」左側挪；左邊塞不下才改右側。
@@ -775,25 +789,31 @@ export function relayout(){
       const a=bs.getBoundingClientRect(), c=bp.getBoundingClientRect();
       if(a.width && c.width &&
          a.left < c.right+6 && a.right > c.left-6 && a.top < c.bottom+6 && a.bottom > c.top-6){
+        /* ⚠ ver -1028：**坐坐是固定的那一顆**（Ray 指定偏左下），所以重疊時
+           要挪的是**睡覺**不是坐坐 —— 挪固定的那一顆等於它又跑掉了。
+           下面沿用同一套退路，只是把「基準」與「被挪的」對調。 */
         const st=story.stageEl(), sr=st.getBoundingClientRect();
-        const half=a.width/2;
-        let nx=(c.left-sr.left)-half-10;                                   // 睡覺左側
-        if(nx < half+8){
+        const half=c.width/2;
+        let nx=(a.right-sr.left)+half+10;                                  // 坐坐右側
+        if(nx > sr.width-half-8){
           /* ⚠⚠ 右側的退路也要**讓開門欄**（ver -857，Ray：「坐坐鈕移到諾薇兒門口，
              你是想幹什麼？」）：傍晚分支二之後對話框把兩顆鈕往上夾到重疊，
              這條退路把坐坐推到睡覺右側 —— 而右側就是伙伴門那一欄（-407 的夾
              只做在 put() 裡，這裡漏了同一道）。右側也塞不下＝改放睡覺鈕正上方。 */
-          let rb=sr.width-half-8;
-          const dl=doorLeft();
-          if(dl!=null) rb=Math.min(rb, dl-sr.left-half-8);
-          nx=(c.right-sr.left)+half+10;
-          if(nx>rb){
-            bs.style.left=((c.left+c.right)/2-sr.left)+'px';
-            bs.style.top =Math.max(a.height/2+8, (c.top-sr.top)-a.height/2-10)+'px';
+          nx=(a.left-sr.left)-half-10;                                   // 改放坐坐左側
+          if(nx < half+8){
+            bp.style.left=((a.left+a.right)/2-sr.left)+'px';              // 兩邊都塞不下 → 坐坐正上方
+            bp.style.top =Math.max(c.height/2+8, (a.top-sr.top)-c.height/2-10)+'px';
             nx=null;
           }
         }
-        if(nx!=null) bs.style.left=nx+'px';
+        /* 右側的退路要**讓開門欄**（ver -857，Ray：「坐坐鈕移到諾薇兒門口，
+           你是想幹什麼？」）—— 現在被挪的是睡覺，同一道照樣要守。 */
+        if(nx!=null){
+          const dl=doorLeft();
+          if(dl!=null && nx > dl-sr.left-half-8) nx=(a.left-sr.left)-half-10;
+          if(nx>=half+8) bp.style.left=nx+'px';
+        }
       }
     }
   }

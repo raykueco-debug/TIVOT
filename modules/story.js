@@ -4108,9 +4108,26 @@ export function skipToNextGate(){
   clearTimeout(waitT); waitT=null;
   clearTimeout(autoT); autoT=null;
   stopFx(); flushCgFade();
+  /* ══⚠⚠⚠ **跳段要停在「任何一種閘門」，不是只有讀取頁**（ver -1028，Ray：
+     「skip 會跳到對話最後一句，然後玩家要自點才會推進，不然對話全跑完事件不會
+     自動跟上就卡了」）══
+     舊寫法只認 `load`（讀取閘門），於是**所有有副作用的拍都被跳過去**：
+       `battle`（那一場架沒打）／`choice`（那個岔路沒選）／`nameInput`（沒取名）／
+       `settle`（沒結算）／`gate`（教學的手勢閘門）
+     —— 段落「演完了」但事件沒發生，接手的那一邊自然接不上，讀起來就是卡住。
+     ⇒ 改成：**往前找第一個閘門就停在那裡**（交給玩家或交給那一套流程）；
+       一路到底才 `endScene()`（＝正常收尾，`done` 會被叫到，事件跟得上）。
+     ⚠ **不順手把副作用補跑**（跳過去那幾拍的 `flags`／`checkpoint`／`give`…）——
+       那等於在這裡再寫一份 `renderLine`（鐵律 8）。跳段是**開發用的梯子**
+       （`body.testmode` 限定），要精確重現就別按它。
+     ⚠⚠ 真正「快轉而不跳過」的做法是**逐拍執行但不演出**（碰到閘門才停）——
+       那要把 `renderLine` 拆成「效果」與「演出」兩半，是一次大改。
+       目前的形狀已經把 Ray 回報的「卡住」解掉：閘門不再被跳過去。 */
+  const GATES = ['load','battle','choice','nameInput','settle','gate'];
+  const isGate = (l)=> !!(l && GATES.some(k=>l[k]!=null && l[k]!==false));
   const lines=cur.lines||[];
   for(let i=lineIdx+1;i<lines.length;i++){
-    if(lines[i] && lines[i].load){ lineIdx=i; renderLine(); return; }
+    if(isGate(lines[i])){ lineIdx=i; renderLine(); return; }
   }
   endScene();
 }
