@@ -343,7 +343,9 @@ export const ART = {
        蓋過角色層；看渲染結果調的，重量 top/bot 不會治這個）。standCm 不動
        （舞台只看得見上半身，頭頂錨著就對）。
        `flight/index.html` 的 PORTRAIT.sorana 是同一組數字，改一邊要改另一邊。 */
-  sorana: { cm:176, eye:27, fx:0.498, top:4, bot:1526, mirror:true,
+  /* `faceFx` ＝小方框頭像的橫向錨（ver -1046）：側面圖的臉在正中、身體偏右，
+     照 `fx`（0.498）擺會把她右半切掉 —— 往右挪一截才框得住頭與肩。 */
+  sorana: { cm:176, eye:27, fx:0.498, faceFx:0.62, top:4, bot:1526, mirror:true,
            side:'R', alt:null, base:'resources/SI/Sorana_SI_side.webp?v=2', expr:{
     /* stage7・木雅克神殿（ver -922，Ray 交稿）。 */
     confuse:      { src:'resources/SI/Sorana_SI_confuse.webp', top:6, bot:1522, fx:0.510 },
@@ -823,6 +825,14 @@ export function frameOf(id, expr){
 export function faceStyle(who, zoom){
   const a = ART[(SPEAKERS[who]||{}).art] || null;
   if(!a || !a.base) return '';
+  /* ⚠⚠ 橫向的錨**可以逐角色覆寫**（`faceFx`，ver -1046，Ray：「索拉娜左移一點，
+     不要裁她右側」）：`fx` 是**臉**在圖上的位置（對白立繪用它把臉對到定位），
+     而這個小方框看的是「頭與肩那一塊」—— 側面圖的臉在中間、身體卻偏一邊，
+     照 `fx` 擺就會把她的右半切掉。
+     ⚠ 值越大＝圖往左移（露出更右邊）；沒寫就沿用 `fx`，其他人的行為一個字不變。
+     ⚠ 它是**那張圖的性質**，所以住在 `ART` 這一份（鐵律 7）——旅店的門與破防
+       計量表的頭像因此一起吃到，不會兩邊各調一次。 */
+  const fx = (a.faceFx!=null ? a.faceFx : a.fx);
   return 'background-image:url("'+a.base+'");background-size:'+(zoom||260)+'% auto;'
-       + 'background-position:'+(a.fx*100).toFixed(1)+'% 0%;';
+       + 'background-position:'+(fx*100).toFixed(1)+'% 0%;';
 }
