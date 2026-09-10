@@ -36,50 +36,57 @@ IDX  = 7        # PingFang TC Semibold —— 對齊 reference/maze.png 那種�
 #     這樣小地圖與畫面上的箭頭才會一致（憲法 §6.5.4.3 那條）。
 #   ⚠⚠ **名字都不一樣、而且各有各的樣子**（Ray：「不要都畫一樣，要有辨視度」）——
 #     逐格的特徵寫在 `resources/map/_undercity_spec.md`，那份才是給產圖用的。
+#   ⚠⚠⚠ **不要東方元素**（ver -1048，Ray 指定）：房間名整批換過一次 ——
+#     玉座／冕旒／龍紋／龍口／藻井／碑林／沉香／渾儀那一批**全部撤掉**，
+#     改成古代**歐式皇宮**的詞（王座廳・謁見前廳・甲冑廊・枝燈長廊・鏡廊・石棺廊…）。
+#     ⚠ 名字就是給美術的第一道指示，取錯字整張圖就會漂到唐風去。
+#   ⚠⚠ **三帶**（Ray：「某些地方看得出是古代皇宮」）：越深越華麗 ——
+#     列 0~3＝**宮殿本體**（被埋起來的正殿）／列 5~7＝**地下設施**／
+#     列 8~12＝**入口側的服務區**。玩家從最粗糙的地方一路走進最華麗的地方。
 NODES = {
     # 深處・玉座區（走到底才到得了）
     # ⚠⚠ **它掛在西側的儀衛廊，不掛在中央大殿** —— 這樣「從入口一路按上」會**停在
     #   中央大殿**，玩家得自己找到往西那一轉才上得去（憲法 ver -902 的自檢：
     #   一直按同一個方向要走到終點就停，而**不該直達 BOSS**）。
-    #   掛中央大殿的話主幹就是一條直通王座的電梯，十一個岔路口全白設計了。
-    'throne'   : (4, 0, '玉座間',  'end'),
-    'crown'    : (2, 1, '冕旒室',  'end'),
-    'antecham' : (4, 1, '御前廊',  'pass'),
-    'offering' : (6, 1, '供物室',  'end'),
-    'dragstair': (4, 2, '龍紋階',  'pass'),
+    #   掛中央大廳的話主幹就是一條直通王座的電梯，十一個岔路口全白設計了。
+    'throne'   : (4, 0, '王座廳',  'end'),
+    'crown'    : (2, 1, '寶冠室',  'end'),
+    'antecham' : (4, 1, '謁見前廳','pass'),
+    'offering' : (6, 1, '聖物室',  'end'),
+    'dragstair': (4, 2, '獅階',    'pass'),
     # 大殿層
-    'starroom' : (2, 3, '星圖室',  'end'),
-    'guardhall': (4, 3, '儀衛廊',  'pass'),
-    'greathall': (6, 3, '中央大殿','pass'),
-    'lamphall' : (8, 3, '燈火廊',  'pass'),
-    'ossuary'  : (10,3, '藏骨堂',  'end'),
-    'mirrorpool':(4, 4, '水鏡池',  'pass'),
-    'courtyard': (8, 4, '天井中庭','sky'),
+    'starroom' : (2, 3, '星象室',  'end'),
+    'guardhall': (4, 3, '甲冑廊',  'pass'),
+    'greathall': (6, 3, '中央大廳','pass'),
+    'lamphall' : (8, 3, '枝燈長廊','pass'),
+    'ossuary'  : (10,3, '納骨堂',  'end'),
+    'mirrorpool':(4, 4, '靜水池',  'pass'),
+    'courtyard': (8, 4, '下沉中庭','sky'),
     # 柱林層
-    'rooffall' : (0, 5, '崩頂裂口','sky'),
-    'muralwalk': (2, 5, '壁畫迴廊','pass'),
-    'stairwell': (4, 5, '階梯井',  'pass'),
-    'pillars'  : (6, 5, '柱林',    'pass'),
-    'dragonrace':(8, 5, '龍口渠',  'pass'),
+    'rooffall' : (0, 5, '崩頂坡',  'sky'),
+    'muralwalk': (2, 5, '壁畫長廊','pass'),
+    'stairwell': (4, 5, '旋梯井',  'pass'),
+    'pillars'  : (6, 5, '千柱廳',  'pass'),
+    'dragonrace':(8, 5, '獅口水道','pass'),
     'draincliff':(10,5, '排水崖口','sky'),
-    'incense'  : (4, 6, '沉香室',  'pass'),
+    'incense'  : (4, 6, '聖油室',  'pass'),
     'bellroom' : (8, 6, '鐘室',    'end'),
     # 水牢層
     'drywell'  : (0, 7, '枯井底',  'sky'),
-    'forge'    : (2, 7, '鍛冶遺室','pass'),
-    'trihall'  : (4, 7, '三岔廳',  'pass'),
+    'forge'    : (2, 7, '兵器工坊','pass'),
+    'trihall'  : (4, 7, '三拱廳',  'pass'),
     'waterjail': (6, 7, '水牢',    'pass'),
-    'bonerack' : (8, 7, '骨櫃廊',  'pass'),
-    'wardtomb' : (10,7, '守衛塚',  'end'),
+    'bonerack' : (8, 7, '石棺廊',  'pass'),
+    'wardtomb' : (10,7, '近衛墓室','end'),
     'culvert'  : (4, 8, '暗渠',    'pass'),
     'mirrorway': (8, 8, '鏡廊',    'pass'),
     # 入口層
-    'cages'    : (2, 9, '獸檻',    'end'),
-    'oldtomb'  : (4, 9, '舊墓道',  'pass'),
-    'capstan'  : (6, 9, '轉輪室',  'pass'),
+    'cages'    : (2, 9, '獸欄',    'end'),
+    'oldtomb'  : (4, 9, '地下墓道','pass'),
+    'capstan'  : (6, 9, '絞盤室',  'pass'),
     'candlewalk':(8, 9, '燭廊',    'pass'),
-    'stelae'   : (4,10, '碑林廊',  'pass'),
-    'stephall' : (6,10, '石階廳',  'pass'),
+    'stelae'   : (4,10, '銘碑廊',  'pass'),
+    'stephall' : (6,10, '階梯大廳','pass'),
     'floodway' : (8,10, '積水甬道','pass'),
     'foyer'    : (6,11, '前廳',    'pass'),
     'entrance' : (6,12, '地宮入口','gate'),
