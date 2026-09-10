@@ -408,6 +408,17 @@
      ⚠ 計量仍走**同一條 conic 遮罩**（`updateEnergyClasp`）：只有起角與掃角換成
        `ARC` 的值，那套邏輯（0＝全藏、滿＝拿掉遮罩避免接縫、邊界羽化）一個字沒動。 */
   #claspArc{position:absolute;overflow:visible;pointer-events:none;}
+  /* 計量的起點那一截（ver -1041）：與環帶共用同一套顏色與光 —— 它是同一條計量表
+     的頭段，不是另一個元件。⚠ 圓角只給右端（接血條那一頭）：左端要與環的粗端
+     對接，切齊才不會看到一條縫。 */
+  #claspTail{position:absolute;display:none;pointer-events:none;overflow:hidden;
+    background:rgba(255,255,255,.085);border-radius:0 3px 3px 0;}
+  #claspTail.on{display:block;}
+  #claspTail > b{display:block;width:0;height:100%;background:var(--gold);
+    filter:drop-shadow(0 0 4px rgba(255,214,110,.8));}
+  #energyClasp.charging #claspTail > b{animation:arcCharge 1.8s ease-in-out infinite alternate;}
+  #energyClasp.full #claspTail > b{background:#fff;
+    filter:drop-shadow(0 0 8px rgba(255,255,255,.95));animation:arcFull .6s infinite alternate;}
   #claspArcTrack{fill:rgba(255,255,255,.085);}
   #claspArcFill{fill:var(--gold);
     filter:drop-shadow(0 0 4px rgba(255,214,110,.8)) drop-shadow(0 0 2px rgba(8,8,12,.9));}

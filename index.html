@@ -53,7 +53,7 @@
      沒有 buster 時手機會沿用舊快取的 CSS —— Ray 回報「ovk 沒把點掉的方格撤掉」
      實測現行 CSS（-839 的 :not(.done)）行為正確，殘留裂紋是舊 CSS 快取。
      改 style.css 就順手 bump 這個號。 -->
-<link rel="stylesheet" href="style.css?v=1040">
+<link rel="stylesheet" href="style.css?v=1041">
   <!-- 拾得道具／道具欄／商店／懸賞榜（ver -380 抽出，飛行頁共用同一份）。
        ⚠ `data-lootsheet` 是給 `modules/loot.js` 認的：它看到已經掛過就不再掛一次。
          飛行頁沒有這一行，由那支模組自己掛上去。 -->
@@ -142,6 +142,12 @@
           <path id="claspArcTrack" d=""></path>
           <path id="claspArcFill"  d=""></path>
         </svg>
+        <!-- 計量的**起點那一截**（ver -1041，Ray：「計量表把長度補到綠色那一截，
+             參照 reference/gb」）：環的 6 點往右接一段水平尾巴，與藍條同高、
+             一路接到血條左緣 —— 讀起來是能量從血條那頭灌進來、再繞著頭像爬上去。
+             底槽是 `<i>` 本身、金色那一截是裡面的 `<b>`（寬度＝進度）。
+             幾何與進度都由 combat 算（鐵律 7）。 -->
+        <i id="claspTail"><b></b></i>
         <div class="clasp-combo"><b id="claspCombo">0</b></div>
         <i id="claspFace" class="clasp-face"></i>
       </div>

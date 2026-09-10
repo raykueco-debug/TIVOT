@@ -1352,7 +1352,23 @@ function layoutClasp(){
     const wc=btn.querySelector('.ws-card'); const d=Math.round(Math.min(Wb,Hb));
     if(wc){ wc.style.width=d+'px'; wc.style.height=d+'px'; }
   }
-  claspGeo={ cx:CX, cy:CY, faceD:FACE_D, blpx:BL-hr.x, S };   // 中心（host 座標）＝頭像／連擊數的錨
+  /* ══ 計量的起點那一截（ver -1041）══ 環的 6 點外緣 → 血條左緣，與**藍條同高**。
+     ⚠ 它與環是**同一條計量表**：進度要按長度分配，所以這裡順便把「尾巴佔幾成」
+       算好（`tailFrac`），`updateEnergyClasp` 只讀 —— 一個量一個計算點（鐵律 7）。
+     ⚠ 弧長取中線半徑（內緣 ＋ 平均厚度的一半）：那是眼睛讀到的那一條。 */
+  const tail=$('claspTail');
+  let tailFrac=0;
+  if(tail){
+    const x0=CX, x1=(BL-hr.x)-2;                       // 由圓心起（環把左半蓋住）到血條左緣內 2px
+    const tw=Math.max(0, x1-x0), th=Math.max(3, br.height);
+    tail.style.left=x0+'px'; tail.style.top=(br.y-hr.y)+'px';
+    tail.style.width=tw+'px'; tail.style.height=th+'px';
+    tail.classList.toggle('on', tw>2);
+    const midR=(ARC.ri+(ARC.w0+ARC.w1)/4)*BOX/100;
+    const arcLen=ARC.sweep*Math.PI/180*midR;
+    tailFrac=(tw+arcLen)>0 ? tw/(tw+arcLen) : 0;
+  }
+  claspGeo={ cx:CX, cy:CY, faceD:FACE_D, blpx:BL-hr.x, S, tailFrac };   // 中心（host 座標）＝頭像／連擊數的錨
   /* 連擊數（Ray 定稿）：白粗斜體黑邊、錨在**環帶的圓心**（＝頭像的位置）；
      **不可蓋過 HP 條**（右緣的夾在 updateEnergyClasp 換字時做，
      因為夾多少取決於當下的字寬）。 */
@@ -1390,6 +1406,50 @@ function placeCombo(){
       退回搭檔卡的選人立繪 `image`，臉當作在正中上方。
    ⚠ 兩張都拿不到就回空字串 → `claspFaceOn()` 退回連擊數（空的圓圈比數字糟）。 */
 const FACE_ZOOM=300;      // 這個框比旅店的門小，臉要再拉近一點（旅店那邊照舊 260）
+/* ══⚠⚠⚠ **逐次減半的預縮圖**（ver -1041，Ray：「怎麼破防計一亮 alpha 就糊了？」）══
+   立繪是 1024 寬，貼進這個框只有 ~90px（DPR2 也才 180）＝**縮小 6~11 倍**，而
+   canvas／瀏覽器縮小時只讀 2×2 個 texel —— 漏取樣，結果就是糊掉、髮絲變雜點。
+   §6.5「立繪縮小超過 2 倍要走逐次減半的預縮圖（等同 mipmap）」講的就是這件事，
+   -1036 直接把大圖丟給 `background-size` 是漏了那一條。
+   ⚠ 縮到「還差不到一半」才停，最後一次交給瀏覽器（那一步縮不到 2 倍，是乾淨的）。
+   ⚠ 結果快取在模組上（一場戰鬥只做一次）；還沒好就先回原圖 —— 先糊一下下，
+     好了再自己重畫一次（`updateEnergyClasp`），不要讓臉整個不出現。
+   ⚠ 同源圖才 `toDataURL` 得到（立繪都是本站的），拋了就退回原圖。 */
+const faceThumbs=new Map();
+function faceThumb(src, wantW){
+  const key=src+'@'+wantW;
+  if(faceThumbs.has(key)) return faceThumbs.get(key);
+  faceThumbs.set(key, null);                       // 佔位：不要重複發第二次請求
+  const img=new Image();
+  img.onload=()=>{
+    try{
+      let w=img.naturalWidth, h=img.naturalHeight;
+      let cv=document.createElement('canvas'); cv.width=w; cv.height=h;
+      cv.getContext('2d').drawImage(img,0,0);
+      while(w>wantW*2){
+        const nw=Math.max(1,Math.round(w/2)), nh=Math.max(1,Math.round(h/2));
+        const c2=document.createElement('canvas'); c2.width=nw; c2.height=nh;
+        const x2=c2.getContext('2d'); x2.imageSmoothingEnabled=true; x2.imageSmoothingQuality='high';
+        x2.drawImage(cv,0,0,nw,nh); cv=c2; w=nw; h=nh;
+      }
+      faceThumbs.set(key, cv.toDataURL('image/png'));
+      const f=$('claspFace'); if(f) f.dataset.who='';   // 指紋作廢 → 下一拍換上清晰版
+      updateEnergyClasp();
+    }catch(_){ faceThumbs.set(key, ''); }             // 拿不到就永遠用原圖
+  };
+  img.onerror=()=>faceThumbs.set(key, '');
+  img.src=src;
+  return null;
+}
+/* 把 `background-image:url(x)` 換成預縮好的那一張（還沒好就原樣回去）。 */
+function withThumb(css){
+  const m=/background-image:url\("([^"]+)"\)/.exec(css||'');
+  if(!m) return css;
+  const want=Math.max(48, Math.round((claspGeo?claspGeo.faceD:40) * (FACE_ZOOM/100)
+             * Math.min(2, window.devicePixelRatio||1)));
+  const th=faceThumb(m[1], want);
+  return th ? css.replace(m[1], th) : css;
+}
 function claspFaceCss(who){
   const s = faceStyle(String(who||'').toUpperCase(), FACE_ZOOM);
   if(s) return s;
@@ -1451,7 +1511,14 @@ function updateEnergyClasp(){
      ⚠ 遮罩的圓心就是 viewBox 的正中（50% 50%）＝環帶的圓心＝頭像的位置。 */
   const fillEl=$('claspArcFill');
   if(fillEl && claspGeo){
-    const p=Math.max(0,Math.min(1,state.energy/100));
+    const p0=Math.max(0,Math.min(1,state.energy/100));
+    /* ══ 兩段一條（ver -1041）══ 先填尾巴、再繞環，比例按**長度**分（`tailFrac`）。
+       ⚠ 兩段各自把自己那一段的進度換算成 0~1，不要各用一次全域比例 ——
+         那會讓環在尾巴填滿之前就開始跑（同一個量兩種讀法）。 */
+    const tf=claspGeo.tailFrac||0;
+    const tb=$('claspTail') && $('claspTail').querySelector('b');
+    if(tb) tb.style.width=(tf>0 ? Math.min(1, p0/tf)*100 : 0)+'%';
+    const p=tf>=1 ? 0 : Math.max(0, Math.min(1, (p0-tf)/(1-tf)));
     if(p<=0){ fillEl.style.visibility='hidden'; }
     else if(p>=1){ fillEl.style.visibility='';
       fillEl.style.webkitMaskImage='none'; fillEl.style.maskImage='none'; }
@@ -1485,7 +1552,7 @@ function updateEnergyClasp(){
     if(face.dataset.who !== who){
       face.dataset.who = who;
       face.style.backgroundImage=''; face.style.backgroundSize=''; face.style.backgroundPosition='';
-      if(who){ const st=claspFaceCss(who);
+      if(who){ const st=withThumb(claspFaceCss(who));
                if(st) face.setAttribute('style', face.getAttribute('style')+';'+st); }
       face.classList.toggle('on', !!who);
     }
