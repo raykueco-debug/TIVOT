@@ -2520,7 +2520,7 @@ export const TOWNS = {
           cor('think','過去我們曾經派人巡訪，遺跡都沒有作動的跡象。'),
           ren('talkwork','不論永夜前後呢。'),
           cor('stare','…….不如這樣吧。'),
-          cor(null,'海森伯格監察官，就由您帶隊，前往這四個遺蹟勘探。'),
+          cor(null,'海森伯格監察官，就由您帶隊，前往剩下三個遺蹟勘探。'),
           cor(null,'安雅小姐也隨行。'),
           any('surprised',''),
           ren('shockedCalm','什……！'),

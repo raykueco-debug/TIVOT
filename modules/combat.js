@@ -1487,8 +1487,15 @@ function withThumb(css){
   const th=faceThumb(m[1], want);
   return th ? css.replace(m[1], th) : css;
 }
+/* 她現在該用哪一張臉：變身的槽用掉了就換「沒招了」那一張（ver -1047）。
+   ⚠ 判定只有這一支（鐵律 8）—— `claspFaceCss` 與畫面指紋都問它，
+     不然會出現「圖換了、指紋沒變」＝ 換不過去。 */
+function claspFaceExpr(who){
+  const p=(GAME_CONFIG.partners||{})[who]||{};
+  return (state.saintUsedThisBattle && p.faceSpent) ? p.faceSpent : '';
+}
 function claspFaceCss(who){
-  const s = faceStyle(String(who||'').toUpperCase(), FACE_ZOOM);
+  const s = faceStyle(String(who||'').toUpperCase(), FACE_ZOOM, claspFaceExpr(who));
   if(s) return s;
   const p = (GAME_CONFIG.partners||{})[who] || {};
   const src = p.image && asset(p.image);
@@ -1571,8 +1578,10 @@ function updateEnergyClasp(){
   const face = $('claspFace');
   if(face){
     const who = faceOn ? (state.pickedPartner||'') : '';
-    if(face.dataset.who !== who){
-      face.dataset.who = who;
+    /* 指紋＝**誰 ＋ 哪一張臉**：變身用掉那一刻要換圖，只比對「誰」會換不過去。 */
+    const sig = who ? who+'#'+claspFaceExpr(who) : '';
+    if(face.dataset.who !== sig){
+      face.dataset.who = sig;
       face.style.backgroundImage=''; face.style.backgroundSize=''; face.style.backgroundPosition='';
       if(who){ const st=withThumb(claspFaceCss(who));
                if(st) face.setAttribute('style', face.getAttribute('style')+';'+st); }

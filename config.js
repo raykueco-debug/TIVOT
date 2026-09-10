@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.10-1046';
+export const VERSION = 'ver 2026.09.10-1047';
 
 export const GAME_CONFIG = {
 
@@ -376,6 +376,13 @@ export const GAME_CONFIG = {
     nouvelle: {
       /* 升級語音（ver -1022，Ray：「升級要播 se 跟 vo，後補」）——
          可寫陣列＝輪播（走 `SFX.pickRot`）；null ＝不出聲。 */
+      /* ══ 「這一局沒招了」的臉（ver -1047，Ray：「三人如果處於熔斷、無飛刀狀態
+         分別用的圖是 Anya_SI_Desperate／Sorana_SI_panic／Nouvelle_SI_Desperate」）══
+         破防計量表中央的頭像，在**變身的槽已經用掉**時換成這一張（`ART` 的差分鍵）。
+         ⚠ 三種變身共用同一個槽（`state.saintUsedThisBattle`，§0.5「局」）——
+           聖徒化／夢魘化／共鬥發動即鎖，所以「用掉了」對三個人是同一件事。
+         ⚠ 沒寫＝一直用基本立繪（蕾妮／馬季諾就是這樣）。 */
+      faceSpent:'desperate',
       levelUpVoice:'vo_nouvelle_lvup',
       name:'諾薇兒',
       image:'partner_nouvelle',
@@ -537,6 +544,13 @@ export const GAME_CONFIG = {
     anya: {
       /* 升級語音（ver -1022，Ray：「升級要播 se 跟 vo，後補」）——
          可寫陣列＝輪播（走 `SFX.pickRot`）；null ＝不出聲。 */
+      /* ══ 「這一局沒招了」的臉（ver -1047，Ray：「三人如果處於熔斷、無飛刀狀態
+         分別用的圖是 Anya_SI_Desperate／Sorana_SI_panic／Nouvelle_SI_Desperate」）══
+         破防計量表中央的頭像，在**變身的槽已經用掉**時換成這一張（`ART` 的差分鍵）。
+         ⚠ 三種變身共用同一個槽（`state.saintUsedThisBattle`，§0.5「局」）——
+           聖徒化／夢魘化／共鬥發動即鎖，所以「用掉了」對三個人是同一件事。
+         ⚠ 沒寫＝一直用基本立繪（蕾妮／馬季諾就是這樣）。 */
+      faceSpent:'desperate',
       levelUpVoice:'vo_anya_lvup',
       install:{ name:'夢魘化', en:'NIGHTMARE INSTALL',
         /* ⚠ ver -967：「體力灌滿後」→「由**當下的體力**」（不再灌滿）。
@@ -634,6 +648,13 @@ export const GAME_CONFIG = {
     sorana: {
       /* 升級語音（ver -1022，Ray：「升級要播 se 跟 vo，後補」）——
          可寫陣列＝輪播（走 `SFX.pickRot`）；null ＝不出聲。 */
+      /* ══ 「這一局沒招了」的臉（ver -1047，Ray：「三人如果處於熔斷、無飛刀狀態
+         分別用的圖是 Anya_SI_Desperate／Sorana_SI_panic／Nouvelle_SI_Desperate」）══
+         破防計量表中央的頭像，在**變身的槽已經用掉**時換成這一張（`ART` 的差分鍵）。
+         ⚠ 三種變身共用同一個槽（`state.saintUsedThisBattle`，§0.5「局」）——
+           聖徒化／夢魘化／共鬥發動即鎖，所以「用掉了」對三個人是同一件事。
+         ⚠ 沒寫＝一直用基本立繪（蕾妮／馬季諾就是這樣）。 */
+      faceSpent:'panic',
       levelUpVoice:'vo_sorana_lvup',
       name:'索菈娜',
       image:'partner_sorana',

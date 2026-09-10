@@ -298,7 +298,7 @@ export const ART = {
                   run:      { src:'resources/SI/Nouvelle_SI_Run.webp',       top:13, bot:1533, fx:0.418 },
                   cringe:   { src:'resources/SI/Nouvelle_SI_Cringe.webp',    top:5,  bot:1533, fx:0.459 },
                   scared:   { src:'resources/SI/Nouvelle_SI_Scared.webp',    top:9,  bot:1530, fx:0.397 },
-                  desperate:{ src:'resources/SI/Nouvelle_SI_Desperate.webp', top:2,  bot:1532, fx:0.415 },
+                  desperate:{ src:'resources/SI/Nouvelle_SI_Desperate.webp', top:2,  bot:1532, fx:0.415, faceFx:0.450 },
                   surprise: { src:'resources/SI/Nouvelle_SI_Surprise.webp',  top:5,  bot:1524, fx:0.487 },
                   /* 會客廳那一幕的四張（ver -348）。
                      ⚠⚠ `gossip1` 的臉在 **0.710** —— 其他差分落在 0.39~0.60，這張她整個人
@@ -351,6 +351,11 @@ export const ART = {
     confuse:      { src:'resources/SI/Sorana_SI_confuse.webp', top:6, bot:1522, fx:0.510 },
     front:        { src:'resources/SI/Sorana_SI_front.webp?v=2',     top:3,  bot:1523, fx:0.659 },
     side:         { src:'resources/SI/Sorana_SI_side.webp?v=2',      top:4,  bot:1526, fx:0.498 },
+    /* ⚠⚠ ver -1047 交件（「無飛刀」那一張）：目前**只給破防計量表的頭像用**，
+       所以只量了頭像要的 `faceFx`（頭那一塊的水平重心）。
+       **要拿去演對白之前，`top`／`bot`／`fx` 必須先量過**（§6.5「新增立繪要量什麼」）
+       —— 現在不寫，`frameOf` 會沿用 side 那一張的取景，姿勢不同一定會歪。 */
+    panic:        { src:'resources/SI/Sorana_SI_panic.webp', faceFx:0.632 },
     guard:        { src:'resources/SI/Sorana_SI_guard.webp',         top:9,  bot:1527, fx:0.651, cm:168 },
     guardtalk:    { src:'resources/SI/Sorana_SI_guardtalk.webp',     top:5,  bot:1529, fx:0.653, cm:168 },
     guardthinking:{ src:'resources/SI/Sorana_SI_guardthinking.webp', top:8,  bot:1529, fx:0.672, cm:168 },
@@ -445,7 +450,7 @@ export const ART = {
        所以 `cm`／`standCm` 的近景修正整組拿掉，回到照量的預設。
        §5：換圖一定要重量取景值，這一組是重量的。 */
     crying:   { src:'resources/SI/Anya_SI_Crying.webp',    top:6,  bot:1527, fx:0.454 },
-    desperate:{ src:'resources/SI/Anya_SI_Desperate.webp', top:13, bot:1535, fx:0.402, cm:110, standCm:162 },
+    desperate:{ src:'resources/SI/Anya_SI_Desperate.webp', top:13, bot:1535, fx:0.402, cm:110, standCm:162, faceFx:0.465 },
     /* ⚠⚠ `sobbing` 是**裁到膝蓋**的近景，不是全身（§6.5：半身圖照量 alpha 上下緣
        會把人放大好幾倍）。畫面上看得到的大約是「頭頂→膝」＝身高的 75%，
        所以 `cm` 給 162×0.75 ≈ **122** —— 這樣她的**頭**才會與其他立繪一樣大，
@@ -822,9 +827,12 @@ export function frameOf(id, expr){
      （`ART[].top` 都是個位數）。
    ⚠ 收在這裡而不是 inn：旅店的門、破防計量表的月彎（ver -1035）都要用它，
      兩份必然走鐘。⚠ 參數是 **speaker 的鑰匙**（大寫，如 `NOUVELLE`）。 */
-export function faceStyle(who, zoom){
+export function faceStyle(who, zoom, expr){
   const a = ART[(SPEAKERS[who]||{}).art] || null;
   if(!a || !a.base) return '';
+  /* `expr` ＝要用哪一張差分（ver -1047，「熔斷／無飛刀」那一組臉）。
+     查不到就退回基本立繪 —— 同 story 的 `missingExpr`，不要整個不出現。 */
+  const e = (expr && a.expr && a.expr[expr]) || null;
   /* ⚠⚠ 橫向的錨**可以逐角色覆寫**（`faceFx`，ver -1046，Ray：「索拉娜左移一點，
      不要裁她右側」）：`fx` 是**臉**在圖上的位置（對白立繪用它把臉對到定位），
      而這個小方框看的是「頭與肩那一塊」—— 側面圖的臉在中間、身體卻偏一邊，
@@ -832,7 +840,11 @@ export function faceStyle(who, zoom){
      ⚠ 值越大＝圖往左移（露出更右邊）；沒寫就沿用 `fx`，其他人的行為一個字不變。
      ⚠ 它是**那張圖的性質**，所以住在 `ART` 這一份（鐵律 7）——旅店的門與破防
        計量表的頭像因此一起吃到，不會兩邊各調一次。 */
-  const fx = (a.faceFx!=null ? a.faceFx : a.fx);
-  return 'background-image:url("'+a.base+'");background-size:'+(zoom||260)+'% auto;'
+  /* 橫向的錨：差分自己的 `faceFx` → 差分的 `fx` → 角色的 `faceFx` → 角色的 `fx`。
+     ⚠ 差分換了姿勢，人在圖上的位置就換了 —— 沿用本尊的錨會把她切掉一半。 */
+  const fx = (e && e.faceFx!=null) ? e.faceFx
+           : (e && e.fx!=null)     ? e.fx
+           : (a.faceFx!=null)      ? a.faceFx : a.fx;
+  return 'background-image:url("'+((e&&e.src)||a.base)+'");background-size:'+(zoom||260)+'% auto;'
        + 'background-position:'+(fx*100).toFixed(1)+'% 0%;';
 }
