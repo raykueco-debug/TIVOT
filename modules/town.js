@@ -2250,9 +2250,14 @@ export function enter(id){
   gateArrival(()=>runArrival(false));
 
   function runArrival(immediate){
-  /* 野生刷怪（ver -862）：`acts` 優先（劇本先走）；接續那一次（immediate）不擲 ——
-     一段主線剛演完原地再冒一隻怪是兩段演出打架。 */
-  const act = actDue(n) || restActDue(n) || (immediate ? null : wildActDue(n));
+  /* ══⚠⚠⚠ **出怪的優先權**（ver -1063，Ray：「有對話的場景如果出怪，默認先戰鬥，
+     戰鬥完才對話」）══ -862 原本是「`acts` 優先（劇本先走）」，現在**反過來**。
+     ⚠ 這不會把對話吃掉：野怪那一段演完，`enter` 的收尾會接續再跑一次
+       （`runArrival(true)`＝`immediate`），而 `immediate` **不擲野怪** ——
+       所以第二趟必定輪到 `actDue`，讀起來就是「打完才講話」。
+     ⚠ 一趟進圖同種不重複（`wildDone`），所以不會變成「打完又冒一隻」。
+     ⚠ 休息處（`restActDue`）不受影響：那幾格一律 `noWild`，本來就不出怪。 */
+  const act = (immediate ? null : wildActDue(n)) || actDue(n) || restActDue(n);
   let ev = act ? null : eveningDue(n);
   /* 這一次抵達**原本**要演的進場對白（打烊、演過了、或段落裡有**回房休息的夥伴**
      （ver -459，見 linesBlockedByRest）就是空的 —— 後者旗標不記，之後照演）。
