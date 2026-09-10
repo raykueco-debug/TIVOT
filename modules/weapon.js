@@ -176,6 +176,34 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll, grade){
   const ship = !!state.weaponSound;
   const cp = state.counterPoint ||
              {x:(window.innerWidth||390)*0.5, y:(window.innerHeight||760)*0.4};
+  /* ══ 反擊的槍火（ver -1054，Ray：「副武器也要有」「船戰要更大」）══
+     位置由這一端決定（反擊沒有盤面格子可映射），畫的東西與普攻**共用同一支**
+     （`api.muzzleAt`，鐵律 8）。
+       · 爆發型（狙擊）＝一發大的　　· 散射型（霰彈）＝一團中的
+       · 速射型（機槍）＝逐發小的（發數多，單發太大會糊成一片、也白吃上限）
+     ⚠ **船戰 ×1.8**：那一頁的敵人是整艘船，佔的面積比一隻怪大得多 ——
+       陸戰剛好的份量在船上會小到看不見（同彈殼在船戰放大的理由）。 */
+  const MZ_SHIP = ship ? 1.8 : 1;
+  /* ⚠⚠ **落點在「玩家點的那個圈」裡**（ver -1055，Ray：「機槍的命中點要在一定範圍內
+     亂跳，範圍就在玩家點的圈內，圈越大跳越散，散彈也是」）：
+     圈心與半徑由 defense 在 `resolveThreat` 發佈（`state.counterPoint`），
+     這裡只讀 —— 反擊端沒有辦法自己知道玩家剛剛點的是多大的圈（鐵律 7）。
+     ⚠ 圓內取點用 `√random`（不是 `random`）：直接乘半徑會讓點全部擠在圓心
+       —— 面積隨半徑平方成長，開根號才是圓內均勻。
+     ⚠ `spread` ＝用多少比例的半徑：機槍逐發跳滿圈、散彈一團也在圈內、
+       狙擊那一發是精準射擊，收在靠近圈心的地方。
+     ⚠ 沒有圈的反擊（共鬥的自動飛刀、霸王條款的強制反擊）退回畫面中央 —— 
+       那時本來就沒有「玩家點的圈」這回事。 */
+  const mz = (rx, ry, k)=>{ if(api.muzzleAt) api.muzzleAt(rx, ry, (k||1)*MZ_SHIP); };
+  const mzHit = (k, spread)=>{
+    const cp = state.counterPoint;
+    if(cp && cp.r && api.muzzleAtPoint){
+      const a=Math.random()*Math.PI*2, d=Math.sqrt(Math.random())*cp.r*(spread==null?1:spread);
+      api.muzzleAtPoint(cp.x+Math.cos(a)*d, cp.y+Math.sin(a)*d, (k||1)*MZ_SHIP);
+      return;
+    }
+    mz(0.42+Math.random()*0.16, 0.30+Math.random()*0.12, k);
+  };
   const shellOpt = (w.vfx==='burst')  ? (ship ? {sc:2,   down:true} : {sc:1.5, shotgun:true})
                  : (w.vfx==='single') ? (ship ? {sc:2.5, down:true} : {sl:1.3})          // 陸戰爆發：只拉長 30%
                  :                      (ship ? {sc:2,   down:true} : {sc:1, dir:1});      // 陸戰連射：一律往右（ver -814）
@@ -282,6 +310,7 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll, grade){
     const h=critHit(base);
     api.enemyDamage(h.dmg, true, true, 'counter');   // 靜默扣血（含 overkill/擊殺判定）
     addCounter(h.dmg); onCounterFired(); counterEnergy(h.dmg, base);
+    mzHit(1.45, 0.35);             // 爆發型：一發大的，收在圈心附近（精準射擊）
     api.floatDmg((h.crit?L.battle.crit:'')+h.dmg, '46%','32%', h.crit, 'snipernum');
     flushPending();                            // 單發：一瞬間就結束，排隊中的切換立刻生效
     return;
@@ -293,6 +322,7 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll, grade){
     hap.shot();
     ejectShell();                  // 散射型：只噴一顆（ver -812）
     const bx=40+Math.random()*20;
+    mzHit(1.2, 0.85);                                // 散射型：一團，落在圈內
     let sum=0;
     for(let k=0;k<w.hits;k++){
       if(!hits(k)){ api.floatDmg(MISS, (bx-6+k*3)+'%', (34+(k%2)*6)+'%', false); continue; }
@@ -343,6 +373,7 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll, grade){
     const h=rolls[i];
     playSe();                      // 機槍：每 hit 播一次 → 搭搭搭搭搭（miss 也有槍聲，是打空不是沒開槍）
     ejectShell();                  // 速射型：一發噴一個（ver -812）
+    mzHit(0.8, 1);                 // 速射型：逐發在圈內亂跳（圈越大越散）
     if(h){
       if(!h.zero) api.enemyDamage(h.dmg, true, true, 'counter'); // 靜默扣血 → 由自訂 float 控制「暴擊」字樣
       api.floatDmg((h.crit?L.battle.crit:'')+h.dmg, (30+Math.random()*40)+'%','35%', !h.zero);

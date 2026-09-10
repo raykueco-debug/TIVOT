@@ -154,6 +154,8 @@ export function setup(){
   // 武器：反擊演算所需（enemyDamage/floatDmg）+ 雙槍破防窗口所需（cut-in/敵計時/盤面/破防值歸零）。
   weapon.init({
     enemyDamage, floatDmg,
+    muzzleAt, muzzleAtPoint,                      // 反擊的槍火（ver -1054/-1055）：與普攻同一份特效
+
     playCutin: saint.playCutin,
     resetEnemyTimers: defense.resetEnemyTimers,
     scheduleAssault: defense.scheduleAssault,
@@ -823,37 +825,64 @@ function starPolygon(spikes){
   }
   return 'polygon('+pts.join(',')+')';
 }
-function muzzleBurst(host, px, py){
+/* `k` ＝尺寸倍率（ver -1054）：主武器普攻＝1；副武器逐槍種不同、船戰再放大
+   （呼叫端決定，這裡只照著畫）。⚠ 火星的**顆數也跟著 k 走** —— 小的那一發噴
+   十四顆會變成一團糊，而且白花上限。 */
+function muzzleBurst(host, px, py, k){
   if(!host) return;
+  k = (k>0 ? k : 1);
   const frag=document.createDocumentFragment();
   // ① 星芒
   const m=mzEl('muzzle');
   m.style.left=px+'px'; m.style.top=py+'px';
+  m.style.width=(96*k).toFixed(0)+'px'; m.style.height=(96*k).toFixed(0)+'px';
+  m.style.margin=(-48*k).toFixed(0)+'px';
   m.style.clipPath=starPolygon(7+(Math.random()*4|0));
   m.style.setProperty('--mzr', (Math.random()*360|0)+'deg');
   frag.appendChild(m); mzFree(m,240);
   // ② 衝擊環
   const r=mzEl('mz-ring');
   r.style.left=px+'px'; r.style.top=py+'px';
+  r.style.width=(68*k).toFixed(0)+'px'; r.style.height=(68*k).toFixed(0)+'px';
+  r.style.margin=(-34*k).toFixed(0)+'px';
   frag.appendChild(r); mzFree(r,260);
   /* ③ 火星（ver -1053 放大並拉出尾跡，Ray：「太小了根本看不到，而且要有火星散開
      消失的特效」）：**細長條**朝飛行方向，飛得越遠越小、末端轉暗紅熄掉。
      ⚠ 圓點看起來是「灰塵」，長條才像**噴出去的火星** —— 所以要跟著方向轉
        （`--a`，長條本身是直的，＋90° 才會頭朝外）。 */
-  const n=Math.min(14, MZ_MAX-mzLive);
+  const n=Math.min(Math.max(4, Math.round(14*k)), MZ_MAX-mzLive);
   for(let i=0;i<n;i++){
     const s=mzEl('mz-spark');
-    const a=Math.random()*Math.PI*2, d=34+Math.random()*84;      // 散得更開
+    const a=Math.random()*Math.PI*2, d=(34+Math.random()*84)*k;  // 散得更開
     s.style.left=px+'px'; s.style.top=py+'px';
-    const w=(1.6+Math.random()*2.0), h=w*(2.4+Math.random()*3.2);
+    const w=(1.6+Math.random()*2.0)*Math.sqrt(k), h=w*(2.4+Math.random()*3.2);
     s.style.width=w.toFixed(1)+'px'; s.style.height=h.toFixed(1)+'px';
     s.style.setProperty('--dx', (Math.cos(a)*d).toFixed(0)+'px');
-    s.style.setProperty('--dy', (Math.sin(a)*d + 18+Math.random()*40).toFixed(0)+'px');  // ＋重力
+    s.style.setProperty('--dy', (Math.sin(a)*d + (18+Math.random()*40)*k).toFixed(0)+'px');  // ＋重力
     s.style.setProperty('--a',  (a*180/Math.PI+90).toFixed(0)+'deg');                    // 頭朝飛行方向
     s.style.animationDuration=(0.44+Math.random()*0.34).toFixed(2)+'s';                  // 慢一點才看得到它熄掉
     frag.appendChild(s); mzFree(s,900);
   }
   host.appendChild(frag);
+}
+/* ══ 在敵人身上某個相對位置噴一發槍火（ver -1054，Ray：「副武器也要有」）══
+   `rx`／`ry` ＝相對 `#top` 的 0~1；`k` ＝尺寸倍率。
+   ⚠ 開這一支出去是為了讓 **weapon 的反擊**共用同一份槍火（鐵律 8）——
+     反擊沒有盤面格子可以映射，位置由它自己決定，但**畫的東西只有一份**。 */
+export function muzzleAt(rx, ry, k){
+  const fxTop=$('fxTop'), topEl=$('top');
+  if(!fxTop||!topEl) return;
+  const r=topEl.getBoundingClientRect();
+  muzzleBurst(fxTop, rx*r.width, ry*r.height, k);
+}
+/* 同上，但吃**視窗座標**（ver -1055）：反擊的落點是以「玩家點的那個圈」為中心算的，
+   而那個圈的座標是 defense 用 `getBoundingClientRect` 記的（`state.counterPoint`）。
+   ⚠ 換算只有這一處：`#fxTop` 的原點就是 `#top` 的左上（同 `muzzleAt`）。 */
+export function muzzleAtPoint(x, y, k){
+  const fxTop=$('fxTop'), topEl=$('top');
+  if(!fxTop||!topEl) return;
+  const r=topEl.getBoundingClientRect();
+  muzzleBurst(fxTop, x-r.left, y-r.top, k);
 }
 /* 主槍的永久強化（ver -655，北方泊地槍店）。⚠ **只有這一支在算**（鐵律 7）：
    資料在 `tuning.gunTune`、旗標在 progress，這裡只是把兩者接起來。
