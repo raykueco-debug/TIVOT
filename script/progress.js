@@ -778,6 +778,30 @@ export const CHAPTERS = [
            'sr_mural','ruins_gate_open','ruins_bell_done','ruins_thug_met','sr_altar',
            'ruins_altar_on','sv_s8_noon'],
     enter:'town', town:'shinier', node:'sorahome' },
+  /* ══ Stage 9（ver -1095，Ray：「把『我好討厭他』作為 stage8 的結束，
+     下一幕是 stage9，做入章節選擇」）══
+     落點＝**餐廳**：Stage9 的第一段（`sv_s9_order`，聖皇諭令那一幕）就演在那裡，
+     科爾文那一段一收它就原地接上。
+     ⚠ 旗只列**擋路的那幾支**（§6.5.8）：這一章要的是「Stage8 整段演完」——
+       `sv_s8_home`／`sv_s8_dine`／`sv_s8_corvin` 三支，缺一它就會從中間重演。
+     ⚠ `sv_s8_hungry` **也列進來**：不列的話跳進這一章之後走六步，
+       諾薇兒會再餓一次（ver -1095 那個 bug 的另一半 —— 章節工具這條路
+       `skipIf` 擋得到，但把它插著更直接：那一段本來就算演過了）。 */
+  { id:'stage9', name:'Stage 9', sub:'夏爾村・聖皇的諭令 → 自由探索（可約會）',
+    stage:9, clockHour:12, named:true,
+    flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open',
+           'set_sail','got_ship','dock_day2','flight_centipede_met',
+           'np_port_arrive','np_clear_church','np_claws_done','safehouse_northport',
+           'np_burial','np_burial_done','np_night','np_night_done','np_day3',
+           'np_day3_done','np_anya_join','np_dock_ask','np_grave_done','np_depart',
+           'sv_arrive','sv_evening','sv_night_done','shinier_siege',
+           'sv_clear_wild','safehouse_shinier','sv_forest_morning',
+           'sv_forest_go','sv_forest_intro','sv_deer_met','sv_deer_harm',
+           'sr_intro','sr_gate_brazier','sr_gate_bridge','sr_brazier','sr_bridge',
+           'sr_mural','ruins_gate_open','ruins_bell_done','ruins_thug_met','sr_altar',
+           'ruins_altar_on','sv_s8_noon',
+           'sv_s8_home','sv_s8_hungry','sv_s8_dine','sv_s8_corvin'],
+    enter:'town', town:'shinier', node:'restaurant' },
 ];
 
 export function newRun(){

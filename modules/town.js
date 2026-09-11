@@ -889,6 +889,18 @@ function stageGate(){
   for(const g of gateList()){
     if(!g) continue;
     if(g.flag && prog.hasFlag(g.flag)) continue;
+    /* ⚠⚠ `skipIf`（ver -1095）＝**這支旗立了就把這一道退休**。
+       與 `flag`（自己演完才記）是兩件事：那一支答「我演過了沒」，這一支答
+       「這件事**還有沒有意義**」—— 有些閘門的前提會被**別的段落**作廢。
+       ⚠ 起因：Stage8 的「諾薇兒肚子餓」（`sv_s8_hungry`）條件是「`sv_s8_home`
+         演完之後又走了六步」。玩家自己走去餐廳的話它從來沒被觸發，於是**一直
+         armed**；ver -1093 讓科爾文那一段演完就開放自由探索之後，玩家終於有地方
+         走六步了 —— 肚子餓就在 Stage9 又演了一次（Ray 回報）。
+         正解是給它一個**退場條件**（`skipIf:'sv_s8_dine'`：飯都吃過了，餓什麼），
+         不是去動 `afterMoves` 的計數。
+       ⚠ 同 `acts` 的 `until`（ver -668）是同一個概念：`flag` ＝我演過了、
+         `until`／`skipIf` ＝別人那一段演完了。 */
+    if(g.skipIf && prog.hasFlag(g.skipIf)) continue;
     if(!needOk(g.need)) continue;
     /* `fromStage`（ver -954）：**到了這一章**才有效。與 acts 的同名欄位同語意
        —— Stage8 的起始時間那一道要的條件是「S7 演完了」，而 S7 有兩條分支

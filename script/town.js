@@ -2109,10 +2109,16 @@ export const TOWNS = {
          →「不要那麼麻煩，移動六次就是一小時，第七次就出肚子餓劇情」）══
          ⚠ `afterMoves:6` ＝**這個閘門變成可觸發之後**又走了六步，第七步發動
            （走一步 10 分鐘）。計數是記憶體變數、不進存檔 —— 見 town.js 的 stageGate。
-         ⚠ 玩家自己走去餐廳的話 `sv_s8_dine` 那一段會先演完，這道閘門就再也不成立
-           （`need` 還在，但 `afterMoves` 的計數與它無關 —— 擋住它的是**餐廳那一段
-           已經演過**：那一段一演完，玩家就被下一道閘門搬回索菈娜家了）。 */
-      { flag:'sv_s8_hungry', need:'sv_s8_home', afterMoves:6,
+         ⚠⚠ **ver -1095 更正**：原本這裡寫「玩家自己走去餐廳的話這道閘門就再也
+           不成立」—— 那是錯的。它的條件從頭到尾都還成立，只是玩家沒有機會走六步；
+           真正擋住它的是「沒有自由探索」這個副作用，而那在 -1093 之後就沒有了。
+           退場條件現在明寫成 `skipIf:'sv_s8_dine'`（見下）。 */
+      /* ⚠⚠ `skipIf:'sv_s8_dine'`（ver -1095，Ray：「諾薇兒肚子餓在 stage9 又發生
+         一次」）：玩家自己走去餐廳的話這一道**從來沒被觸發過，所以一直 armed**
+         —— 上面那段註解說的「就再也不成立」是錯的，它只是**沒有地方走六步**。
+         -1093 讓科爾文那一段演完就開放自由探索之後，六步湊得出來了，於是它在
+         Stage9 又演了一次。飯都吃過了就該退休，這才是它真正的終點。 */
+      { flag:'sv_s8_hungry', need:'sv_s8_home', skipIf:'sv_s8_dine', afterMoves:6,
         goto:'restaurant', enterAgain:true,
         lines:[ Object.assign(nou('hungry',''), { se:'Se_Tummy' }),
                 sor('surprised','哇！別亂逛了，諾薇兒快餓扁啦！'),
@@ -2528,12 +2534,9 @@ export const TOWNS = {
           ren('front','一會我就帶她過去。'),
         ] },
         /* ══ Stage 8 第三段（ver -953）══ 餐廳那一段演完，被閘門搬回索菈娜家。 */
-        /* ⚠⚠ `endStoryExplore:true`（ver -1093）：這一段演完就**開放自由探索**
-           （旗 `free_explore_shinier`，§6.5.4.2）—— 稿上接著就是「自由探索。
-           敲敲看夥伴的門。」，而在那之前這張圖是劇情探索（碰不到女角、不排外出行程）。
-           ⚠ 演完才記（城鎮段落的通則）：中途離開或打輸回頭，探索還是鎖著的。 */
-        { flag:'sv_s8_corvin', need:'sv_s8_dine', fromStage:8, checkpoint:true,
-          endStoryExplore:true, lines:[
+        /* ⚠ ver -1095：`endStoryExplore` 搬到下一段（Stage9）—— Stage8 的結尾是
+           「我好討厭他」，那時還沒有人說可以去逛。 */
+        { flag:'sv_s8_corvin', need:'sv_s8_dine', fromStage:8, checkpoint:true, lines:[
           cor('ecstasy','原來如此。『不知為何』啟動了遺蹟嗎……？'),
           ren('lookaway','是。'),
           cor('ecstasy','……'),
@@ -2578,6 +2581,20 @@ export const TOWNS = {
           ren('shockedCalm','！！'),
           ren('cringe','那個人……早就算好一切了……！'),
           sor('furiousq','我好討厭他！'),
+        ] },
+        /* ══════════════════════════════════════════════════════════════
+           Stage 9（ver -1095，Ray：「把『我好討厭他』作為 stage8 的結束，
+           下一幕是 stage9，做入章節選擇」）
+           ──────────────────────────────────────────────────────────────
+           ⚠ 這一段**原地接上**（§6.5.4「還有下一段就原地接上」）：科爾文那一段
+             一收，`actDue` 在同一格找到它就接著演 —— 中間那三秒黑就是分幕。
+           ⚠ `stage:9` 由這一段自己升（同 Stage6 的 `sv_forest_go`）——
+             不另外寫一道閘門，一個章一個升點（鐵律 9）。
+           ⚠ `endStoryExplore:true` ＝演完開放自由探索（稿上接著就是「自由探索。
+             敲敲看夥伴的門。」）。它掛在**這一段**不是 Stage8 那一段：
+             Stage8 的結尾是「我好討厭他」，那時還沒有人說可以去逛。 */
+        { flag:'sv_s9_order', need:'sv_s8_corvin', fromStage:8, stage:9,
+          checkpoint:true, endStoryExplore:true, lines:[
           /* ══ 三秒轉場（ver -1093，Ray 交稿）══ **同一個場景**，只是過了一點時間 ——
              走既有的 `fadeOut`／`fadeIn`（-739 的三秒黑，照抄北泊翌朝那一段的寫法），
              不換背景、不換節點。`hide` 把台上四個人清掉，亮回來由下一句的說話者重新上場。
