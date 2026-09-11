@@ -4114,7 +4114,10 @@ async function primeArt(){
      它自己會在公開前預熱。這裡只處理開場就在手上的：縮圖、已到位的量體 atlas、
      棧橋、舵輪。 */
   take(cityPlanLo); take(cityPlanArt); take(cityMassArt); take(dockArt); take(helmArt);
-  take(deckArt);   // 甲板兩層（ver -1078）：每幀都貼，解碼要在載入階段付掉
+  /* 甲板兩層（ver -1078）：每幀都貼，解碼要在載入階段付掉。
+     ⚠ 這裡**只熱已經開抓的那一段**（`deckCache` 現有的），不要叫 `deckPair()` ——
+       那會在時段還沒掛上來時先把「白天」那一對抓下去，等於多載一對。 */
+  for(const b in deckCache) take(deckCache[b]);
   if(!imgs.length) return;
   let n=0;
   for(const im of imgs){ await warmImage(im); n++; }
@@ -11012,27 +11015,50 @@ const helmArt={ wheel:null, base:null, pointer:null };
   const one=(k,src)=>{ const im=new Image(); im.onload=()=>{helmArt[k]=im;}; im.src=src; };
   one('wheel','Wheel.webp'); one('base','Base.webp'); one('pointer','Pointer.webp');
 })();
-/* ══ 甲板背景：兩層（ver -1078；交接檔 `flight/HANDOFF_deck_layers.md`）══
+/* ══ 甲板背景：兩層（ver -1078；-1082 接上四時段）══
+   交接檔 `flight/HANDOFF_deck_layers.md`、美術規格 `flight/_deck_spec.md`。
    Ray：「我想把**雲海跟甲板分開**，雲海在船動的時候會**向後跑**」
-   · `Sky_<band>.webp`  3072×1024 RGB —— 雲海全景，**橫向無縫循環**（會捲動）
+   · `Sky_<band>.webp`  3072×1024 RGB  —— 雲海全景，**橫向無縫循環**（會動）
    · `Deck_<band>.webp` 1536×1024 RGBA —— 甲板＋圍欄＋繩梯＋船頭，天空是真 alpha（不動）
-   ⚠⚠ 兩張的**縱向尺度必須一致**（同一個 `s`），地平線才對得上 ——
+   ⚠⚠ 兩張的**縱向尺度必須一致**（同一個 `sc`），地平線才對得上 ——
      甲板層的地平線（圍欄上緣那條）是照天空層 18% 的地平線畫的。
-   ⚠ **圖還沒交也不會壞**：載不到就整段不畫，面板回到原本那層漸層（見 drawPanel）。
-     載失敗時把它記成 null 並不再重試 —— 每次開機噴一輪 404 是雜訊。
-   ⚠ 時段差分（`_dawn`／`_dusk`／`_night`）Ray 說「先是白天光」，還沒交件。
-     檔名走 `deckSrc()` 一支，到時只要把 `DECK_BAND` 接到這一頁既有的時段鑰匙
-     （不要另外再算一份晝夜，鐵律 7）。 */
-const DECK_BAND='day';
-const deckSrc=(kind,band)=>kind+'_'+(band||DECK_BAND)+'.webp';
-const deckArt={ deck:null, sky:null };
-(function loadDeck(){
-  const one=(k,kind)=>{ const im=new Image();
-    im.onload =()=>{ deckArt[k]=im; };
-    im.onerror=()=>{ deckArt[k]=null; };   // 還沒交件：安靜放棄，不重試
-    im.src=deckSrc(kind); };
-  one('deck','Deck'); one('sky','Sky');
-})();
+
+   ══⚠⚠⚠ 時段：**問主遊戲那一支，不在這裡再算一份晝夜**（鐵律 7）══
+   這一頁是非 module 的獨立文件，import 不到 `script/clock.js` —— 但頁尾那個
+   `<script type="module">` 可以，所以由它把 `band()` **掛上 window**，這裡只讀。
+   ⚠ 於是「幾點算黎明／白天／黃昏／夜」全站**只有 `script/clock.js` 一處**在定義
+     （城鎮背景、插圖、店舖背景吃的是同一支）—— 這一頁不再是「第二份真相」。
+   ⚠ 拿不到（module 掛了）就退回白天：那是**預設值**不是第二份規則，
+     最壞情況只是一直用日景，不會走鐘。
+   ⚠ 美術交的是**四張**（dawn/day/dusk/night），而 `band()` 有五段 ——
+     `midnight` 併進 `night`。這張表是「哪一段用哪張圖」，不是晝夜的定義。
+   ⚠ **逐時段載入、載過就快取**：一次只抓用得到的那一對（兩張約 0.7MB），
+     不要四段全抓。飛行本身不花時間（§6.5.4.0），所以一趟航行只會用到一段 ——
+     真的換段一定伴隨一次進出場，那時這一頁早就重載了。
+   ⚠ **圖載不到也不會壞**：整段不畫，面板回到原本那層漸層；
+     `onerror` 記成 null 且不重試（每次開機噴一輪 404 是雜訊）。 */
+const DECK_BAND_ART={ Dawn:'dawn', Day:'day', Dusk:'dusk', night:'night', midnight:'night' };
+const deckCache={};                      // 時段 → {deck, sky}
+function deckBand(){
+  const b = (typeof window.__clockBand==='function') ? window.__clockBand() : 'Day';
+  return DECK_BAND_ART[b] || 'day';
+}
+function deckPair(){
+  const b=deckBand();
+  let P=deckCache[b];
+  if(!P){
+    P=deckCache[b]={ deck:null, sky:null };
+    const one=(k,kind)=>{ const im=new Image();
+      im.onload =()=>{ P[k]=im; };
+      im.onerror=()=>{ P[k]=null; };     // 沒這一張：安靜放棄，不重試
+      im.src=kind+'_'+b+'.webp'; };
+    one('deck','Deck'); one('sky','Sky');
+  }
+  return P;
+}
+/* 頁尾的 module 掛好 `__clockBand` 之後叫這一支：用**正確的時段**提早開抓，
+   別讓第一幀才開始載（`primeArt` 的預熱也才有東西可熱）。 */
+window.__deckPrefetch=()=>{ try{ deckPair(); }catch(_){} };
 /* ══ 雲海怎麼動 ══（交接檔第四節；**ver -1080 改掉前進那一半**）
    · **轉向**綁 `cam.angle` —— 轉舵、天空橫掃。這一半是**物理正確**的，
      而且與上半 3D 視窗讀同一個 `cam.angle`（鐵律 7），兩邊不可能走鐘。
@@ -11177,15 +11203,16 @@ function drawPanel(S){
      ⚠⚠ **要裁在面板內**：cover-fit 的高一定 ≥ 面板高，不裁的話會蓋到 3D 視窗
        下緣（交接檔漏了這一條）。
      ⚠ 底下那層 `#12101a → #08070d` 的漸層留著：極端比例下左右會露一點邊。 */
-  if(deckArt.deck){
-    const D=deckArt.deck;
+  const DA=deckPair();
+  if(DA.deck){
+    const D=DA.deck;
     const sc=Math.max(W/D.width, ph/D.height);        // cover-fit 進面板
     const dw=D.width*sc, dh=D.height*sc;
     const dx=(W-dw)/2, dy=y0+(ph-dh)/2;
     ctx.save();
     ctx.beginPath(); ctx.rect(0,y0,W,ph); ctx.clip();
-    if(deckArt.sky){
-      const S2=deckArt.sky, sw0=S2.width*sc, sh0=S2.height*sc;
+    if(DA.sky){
+      const S2=DA.sky, sw0=S2.width*sc, sh0=S2.height*sc;
       const panX=cam.angle*SKY_PAN*W;                  // 轉向：螢幕空間的橫移（不受縮放影響）
       const foX=W/2, foY=dy+SKY_HORIZON*sh0;           // 消失點＝正前方的地平線那一點
       /* ⚠⚠⚠ **基準位置要把消失點擺在圖的正中**（ver -1081，Ray：「我往正前方飛
@@ -11671,7 +11698,15 @@ function preloadSfx(){
 </script>
 <!-- 道具欄：主遊戲的模組（ES module，與這一頁其餘的一般 <script> 並存）。 -->
 <script type="module">
+  import { band } from '../script/clock.js';
   import { showBag } from '../modules/loot.js';
+  /* ══ 把主遊戲的「時段」掛上 window（ver -1082）══
+     這一頁其餘的程式是非 module 的，import 不到 `script/clock.js`；由這裡代勞，
+     甲板／天空的時段差分就不必在飛行頁再算一份晝夜（鐵律 7）。
+     ⚠ module script 是 deferred 的：它在整份文件解析完之後、開機那一串 await
+       解開之前跑到，所以 `deckPair()` 拿得到正確的時段。 */
+  window.__clockBand = band;
+  try{ window.__deckPrefetch && window.__deckPrefetch(); }catch(_){}
   const b=document.getElementById('bagBtn');
   if(b) b.addEventListener('click', e=>{ e.preventDefault(); showBag(); });
 </script>
