@@ -323,10 +323,15 @@ export function open(opts){
     const st=prog.getStage(), aff=prog.getAffection();
     const rows=PROG_CHARS.map(([k,nm])=>{
       const v=(typeof aff[k]==='number')?aff[k]:0, t=prog.tierOf(v);
+      /* ⚠ ver -1124（Ray：「把好感設置的加個大鍵，一次加減10」）：±10 擺在**外側**、
+         ±1 在內側 —— 由外而內是「粗調 → 微調」，手指從邊緣往中間收，順序讀得出來。
+         一段是 20 點，所以 ±10 剛好是半段：連按兩下就跨一段。 */
       return '<div class="gm-row gm-stat gm-prog"><span>'+nm+'</span>'
+           +   '<b class="pr-b pr-big" data-aff="'+k+':-10">−10</b>'
            +   '<b class="pr-b" data-aff="'+k+':-1">−</b>'
            +   '<i class="pr-aff" data-affjump="'+k+'">'+v+'　T'+t+'・'+TIER_NAME[t-1]+'</i>'
            +   '<b class="pr-b" data-aff="'+k+':1">＋</b>'
+           +   '<b class="pr-b pr-big" data-aff="'+k+':10">＋10</b>'
            + '</div>';
     }).join('');
     panel.innerHTML =
@@ -337,7 +342,7 @@ export function open(opts){
       + '<div class="gm-sec">好　感</div>' + rows
       /* ⚠ 地板寫「1」不是 0：`progress.tierFloor` 對 T1 回的是 1（它有一道
          `Math.max(1,…)`）—— 這裡照它的實際行為寫，不要照「一段 20」推。 */
-      + '<div class="gm-note">± 各動 1；點中間的數字跳到下一段的地板'
+      + '<div class="gm-note">±10／± 各動 10 與 1；點中間的數字跳到下一段的地板'
       + '（1→20→40→60→80→回 0）。一段 20 點，上限 100。</div>'
       + '<div class="gm-acts">'
       +   '<button class="gm-btn gm-back" type="button">返　回</button>'

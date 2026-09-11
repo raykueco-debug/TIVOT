@@ -2923,6 +2923,18 @@
   #gameMenu .gm-row.gm-prog b.pr-b{min-width:26px;text-align:center;cursor:pointer;
     border:1px solid rgba(201,162,39,.45);border-radius:4px;padding:1px 0;margin-left:6px;}
   #gameMenu .gm-row.gm-prog b.pr-b:active{background:rgba(201,162,39,.3);}
+  /* ±10 的大鍵（ver -1124，Ray）：比 ±1 寬、字小一級 —— 它是粗調，
+     一眼要分得出「這顆一次動十點」，但不該搶走整列的重心（數字才是重點）。
+     ⚠⚠ 一列從四格變成**六格**，原本的 `gap:10px`＋`margin-left:6px`（每格各一份）
+       會把最右邊那顆 `＋10` **擠出面板**（實測就是這樣，右邊那顆被切掉一半）。
+       所以這一列自己收緊間距、名字欄不再搶寬（`flex:0 1 auto`），
+       數字欄的下限也收窄 —— 六格才排得進同一列。 */
+  #gameMenu .gm-row.gm-prog{gap:4px;}
+  #gameMenu .gm-row.gm-prog span{flex:0 1 auto;min-width:0;}
+  #gameMenu .gm-row.gm-prog b.pr-b{margin-left:0;}
+  #gameMenu .gm-row.gm-prog .pr-aff{min-width:74px;margin-left:2px;}
+  #gameMenu .gm-row.gm-prog b.pr-b.pr-big{min-width:36px;font-size:.84em;
+    letter-spacing:0;opacity:.92;padding-left:2px;padding-right:2px;}
   #gameMenu .gm-row .pr-aff{font-style:normal;cursor:pointer;color:#e8e2d2;
     font-variant-numeric:tabular-nums;margin-left:6px;min-width:96px;text-align:right;}
   #gameMenu .gm-row.gm-stat .pr-b{min-width:26px;text-align:center;cursor:pointer;
