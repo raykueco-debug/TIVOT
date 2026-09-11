@@ -8441,28 +8441,58 @@ function mapSayShow(name, text){
 }
 function mapSayHide(){ if(mapSayEl){ try{ mapSayEl.remove(); }catch(_){} mapSayEl=null; } }
 
-function departureTalkMaybe(){
-  if(!flagOn('np_leave_ok') || flagOn('np_depart_talk')) return;
-  if(sayQueue || mapOpen) return;
-  say([{ who:'renna/talkserious', text:'事不宜遲，直接回聖王廳去吧。' }],
-      performance.now(), { done:()=>{
-    openMapView();
-    /* 移鏡到**聖王廳**並落目的地標記（ver -743，Ray：「地圖沒有標出聖王廳，
-       要移過去然後標記」）—— 座標＝SETTLEMENTS 的聖王廳 (934,606)。 */
-    setMapMark(934, 606, '聖王廳');
-    setTimeout(()=>mapPanTo(934, 606, 1100), 350);
-    /* ══ 航向指引（ver -753；**-756 依 Ray 的定義搬位**：「大地圖＝開啟地圖畫面」
-       —— 這句話要出現在**地圖畫面上**，不是關掉地圖之後）══
-       蕾娜的無立繪話框疊在地圖下緣，地圖關掉就收（同 mapClosedCb 那一刻）。 */
-    /* 兩句都在大地圖上：點地圖推進，走完再點一下退出（ver -790）。
-       ⚠ 方向＝西南（-786：北泊 1516,150 → 聖王廳 934,606＝Δx 西582・Δy 南456）。 */
-    mapDlgStart([
+/* ══ 出航前的方向說明（ver -741 只有北泊那一段；**-1072 改成一張表**，Ray：
+   「在從帝都升空前往北泊時，插入一個方向說明，開大圖，標位置，蕾娜說明方向，
+     並補充『可別飛到非教區的國家，會被打下來的。』」）══
+   ⚠⚠ 兩段戲長得一模一樣（開地圖 → 落標記 → 移鏡 → 蕾娜在地圖上講幾句 →
+     關掉才記旗），所以**實作只有一支**（鐵律 8），差別全是資料（鐵律 1）：
+     何時演、標哪裡、講什麼。第三段來的時候只加一列。
+   ⚠ 由上往下取**第一個成立**的（同 `acts` 的取法）—— 北泊那一段的條件比較嚴
+     （要 `np_leave_ok`），帝都那一段只看章節，所以順序不重要，但規則要寫死。
+   ⚠ 旗標**演完才記**（關掉地圖那一刻），中途重整會重播 —— 城鎮段落同一個慣例。 */
+const DEPART_TALKS=[
+  /* ① 帝都 → 北方泊地（S2＝第一次出航那一段，§6.5.4.1 的編號）。
+     ⚠ 方向＝東北：帝都 (1005,600) → 北方泊地 (1516,150) ＝ Δx 東 511・Δy 北 450。
+       座標與 `SETTLEMENTS` 同一套（改城的位置這兩句要跟著改）。 */
+  { flag:'capital_depart_talk', stage:2,
+    mark:[1516, 150, '北方泊地'],
+    lines:[
+      { name:'蕾娜', text:'從這裡往東北方，一路飛過去。' },
+      { name:'蕾娜', text:'看到那片朝北的海灣，就是北方泊地了。' },
+      { name:'蕾娜', text:'可別飛到非教區的國家，會被打下來的。' },
+    ] },
+  /* ② 北方泊地 → 聖王廳（ver -741／-743／-753／-756／-786 的那一段，一字未動）。
+     ⚠ 方向＝西南：北泊 1516,150 → 聖王廳 934,606＝Δx 西 582・Δy 南 456。 */
+  { flag:'np_depart_talk', need:'np_leave_ok',
+    intro:{ who:'renna/talkserious', text:'事不宜遲，直接回聖王廳去吧。' },
+    mark:[934, 606, '聖王廳'],
+    lines:[
       { name:'蕾娜', text:'往西南方一路飛回去。' },
       { name:'蕾娜', text:'看到帝都就表示到了。' },
-    ]);
+    ] },
+];
+function departureTalkMaybe(){
+  if(sayQueue || mapOpen) return;
+  const D=DEPART_TALKS.find(d=>
+        !flagOn(d.flag)
+     && (!d.need  || flagOn(d.need))
+     && (!d.stage || gameStage()===d.stage));
+  if(!D) return;
+  /* 開地圖 → 落目的地標記（ver -743，Ray：「地圖沒有標出…要移過去然後標記」）
+     → 移鏡 → 蕾娜的無立繪話框疊在地圖下緣（ver -756：「大地圖」＝**開啟的地圖
+     畫面**，這幾句要出現在地圖上，不是關掉之後）。
+     ⚠ 點地圖推進，走完再點一下退出（ver -790）。 */
+  const show=()=>{
+    openMapView();
+    setMapMark(D.mark[0], D.mark[1], D.mark[2]);
+    setTimeout(()=>mapPanTo(D.mark[0], D.mark[1], 1100), 350);
+    mapDlgStart(D.lines.slice());
     /* 走完（點擊退出大地圖）或按 X 都記旗（演完才記，同城鎮通則）。 */
-    mapClosedCb=()=>addFlag('np_depart_talk');
-  }});
+    mapClosedCb=()=>addFlag(D.flag);
+  };
+  /* 有開場白就先講一句再開地圖；沒有就直接開（帝都那一段 Ray 只要「方向說明」）。 */
+  if(D.intro) say([D.intro], performance.now(), { done:show });
+  else show();
 }
 
 /* ══ stage2 甲板混亂（ver -741，Ray 的稿）══ 羽蛇戰打贏回到甲板：
