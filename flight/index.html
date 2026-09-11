@@ -4601,7 +4601,7 @@ stage.addEventListener('pointerdown',e=>{
      ⚠ 在手指還按著的時候就觸發（不是放開才生）—— 長按要當場有回饋，
        不然會讓人以為沒反應而一直按。一動或放開就取消。 */
   clearTimeout(spawnHoldT); spawnHoldT=0;
-  if(ADMIN && !onShip && !sturmT0)
+  if(canSpawnHold() && !onShip && !sturmT0)
     spawnHoldT=setTimeout(()=>{ spawnHoldT=0; spawnByHold(); }, SPAWN_HOLD_MS);
 });
 stage.addEventListener('pointermove',e=>{
@@ -8964,8 +8964,17 @@ document.getElementById('boostBtn').addEventListener('click',e=>{
      （油門是靠位移算的，手指不動＝0），不擋的話一般玩家一煞車就冒出一隻怪。
      那顆鈕原本沒有守門，但它是**看得見的**；換成隱藏手勢之後就非擋不可。
    ⚠ 間隔由 `spawnEnemy` 自己重排（ver -977），這裡不必再寫一次（鐵律 7）。 */
+/* ⚠⚠ **場上還有怪就不給再生**（ver -1091，Ray：「生怪在結束一場戰鬥前不能再使用」）：
+   -1086 那一版是 `enemy=null; spawnEnemy()` —— 等於**把正在追的那隻換掉**，
+   索菈娜的「發現了」也跟著重播一次。要生下一隻，先把手上這一隻解決掉
+   （打完、或牠自己放棄追擊撤場）。
+   ⚠ 交棒進戰鬥的那一秒（`battleGoing`）也擋：那時船與怪都停住了，
+     再生一隻只會在門推上去的背後多一個東西。
+   ⚠ 判定寫成一支（`canSpawnHold`）：按下去要**先問過**才排計時（沒排就沒有
+     那 1.2 秒的空等），計時到了**再問一次**（按著的這 1.2 秒裡可能剛好刷出一隻）。 */
+function canSpawnHold(){ return ADMIN && !enemy && !battleGoing; }
 function spawnByHold(){
-  enemy=null;
+  if(!canSpawnHold()) return;
   spawnEnemy();
 }
 
