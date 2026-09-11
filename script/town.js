@@ -2268,7 +2268,41 @@ export const TOWNS = {
         ] },
         /* 廣場（樞紐）在圍城期間也是一場（ver -802）：`sv_arrive` 早就演過，這時輪到
            戰鬥拍。 */
-        { flag:'sv_clear_plaza', need:'shinier_siege', lines:[ { battle:'sv_beast' } ] } ] },
+        { flag:'sv_clear_plaza', need:'shinier_siege', lines:[ { battle:'sv_beast' } ] } ],
+        /* ══⚠⚠ 離村（ver -1103，Ray 交稿；Ray：「還有，出村時的劇情還沒做嗎？」）══
+           「選擇離開夏爾村時，村子入口」＝**只有出航那一個出口**才演
+           （`sailOnly:true`，見 modules/town.js 的 `leaveDue`）—— 走去北側不算離村。
+           ⚠ `need:'sv_s9_order'` ＝聖皇諭令那一幕演完（Stage 9 的第一段）才有這一場；
+             `flag` 演完才記（同所有城鎮段落），所以中途打斷還會再演。
+           ⚠ 站位不覆寫：諾薇兒與蕾娜本位左、索菈娜與安雅本位右（speakers.js），
+             同側換人走既有的抽牌輪轉（§6.5）。
+           ⚠ 「安：驚」＝**只有立繪沒有台詞**的演出拍（台上有人 → 點擊推進，§6.5 -628）。
+           ⚠ 收尾那一拍是稿上的「三秒轉場」：三秒淡黑＋清場，黑幕之下接出航
+             （飛行畫面自己會把黑幕收掉）。
+           ⚠⚠ **索菈娜入隊**目前只由這支旗代表（`sv_s9_leave`）—— 飛行段那一串
+             （兩個教學＋三系統解鎖）還沒接，接的時候讀它。 */
+        onLeave:{ flag:'sv_s9_leave', need:'sv_s9_order', sailOnly:true, lines:[
+          nou('front','真是個不錯的村子呢。'),
+          ren('watch','是啊。將來有機會的話——'),
+          Object.assign(sor('hug','喂——'), { se:'se_steps' }),   // （跑步聲）
+          nou('surprise','索菈娜小姐？'),
+          ren('bow','叨擾那麼久，怎麼還好意思勞您遠送……'),
+          sor('side','遠送？我是要跟你們一起走啊！'),
+          ren('shockedopen','什……'),
+          any('surprised',''),                                   // 安：驚
+          sor('remind','一個舵手就想操作三桅陸浮船，你們也太小看航海了吧？'),
+          ren('shockedCalm','本來只是短期任務所以……'),
+          sor('smirk','所、以、說，'),
+          sor('idea','帶上我吧？森住民可是天生的帆手喔！'),
+          nou('surprise','哇——'),
+          ren('shockedCalm','……'),
+          ren('thinking','反正本來就要再招募……'),
+          ren('invite','那好吧。薪資照三等海員的價格給妳。'),
+          sor('lauaghbig','不用啦，好玩就好了！哈哈哈！'),
+          ren('sighsweat','……總覺得我一定會後悔。'),
+          { speaker:'PLAYER', text:'', auto:3200, fadeOut:3000,
+            hide:['RENNA','NOUVELLE','ANYA','SORANA'] },
+        ] } },
       /* ── 三個支點 ── */
       /* 三個連接格在圍城期間各一場（`sv_beast` 怪池，抽不重覆的一隻，ver -802）。
          ⚠ 旗**打贏才記**（同城鎮戰通則）—— 打輸回頭再走一次還會遇到。 */

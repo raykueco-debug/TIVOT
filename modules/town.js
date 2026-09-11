@@ -2050,12 +2050,17 @@ function stepSfx(){
    節點寫 `onLeave:{ flag, need, sides, lines }`：`need` 立了、`flag` 還沒立 →
    按下移動的那一刻先演完這一段，**演完才走**（旗標演完才記，同城鎮所有段落）。
    ⚠ 與 `acts`（抵達時演）是**兩個時機**，不要混用：這一段的語意就是「你要走了」。
-   ⚠ 出航（`__sail`）也吃得到 —— 它一樣是「離開這一格」。 */
-function leaveDue(n){
+   ⚠ 出航（`__sail`）也吃得到 —— 它一樣是「離開這一格」。
+   ⚠ `sailOnly:true` ＝**只有出航那一個出口**才演（ver -1103）。 */
+function leaveDue(n, to){
   if(mutedTalks()) return null;   // 舊章節封存（ver -753）
   const l = n && n.onLeave; if(!l) return null;
   if(l.flag && prog.hasFlag(l.flag)) return null;
   if(l.need && !prog.hasFlag(l.need)) return null;
+  /* ⚠⚠ `sailOnly:true` ＝**只有出航才演**（ver -1103，Ray 的離村稿：「選擇離開
+     夏爾村時，村子入口」）。那一段的語意是「離開這座城」，不是「離開這一格」——
+     少了這道，走去北側也會把索菈娜的送別戲演掉。 */
+  if(l.sailOnly && to!==SAIL_ID) return null;
   /* ver -839：onLeave 可以**沒有台詞只有整備**（村戰對白搬進戰鬥內之後就是這樣）。 */
   return ((l.lines && l.lines.length) || l.gear) ? l : null;
 }
@@ -2075,7 +2080,7 @@ function go(to, dir){
       story.flashLine(L.text||'', ''); chatterOn=true; return;
     }
   }
-  const lv = leaveDue(node());
+  const lv = leaveDue(node(), to);
   if(lv){
     busy=true; showNav(false);
     if(chatterOn){ story.hideBubble(); chatterOn=false; }
