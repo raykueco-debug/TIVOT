@@ -2074,8 +2074,27 @@ function senseUnlock(a){
    ⚠⚠ **暫填 3（＝`STAGE_DEFAULT`）**：預設進度下行為與 ver -432 完全一樣，
      只有真的在第 1、2 章才擋得到。真正解鎖的章節 Ray 定了就改這兩個數字
      （同 `flight/talks.js` 的 `PARTY`，那裡也是暫填 3）。 */
-const FEATURE_FROM = { sturm: 7, sense: 7 };   // ver -742：隨試飛預設推到 S7（能力解鎖的章節劇情還沒給，照舊「以防萬一」）
-function featureOn(k){ return gameStage() >= (FEATURE_FROM[k] || 1); }
+const FEATURE_FROM = { sturm: 7, sense: 7, scan: 1 };   // ver -742：隨試飛預設推到 S7（章節劇情還沒給時的假定值）
+/* ══⚠⚠⚠ **解鎖的真相是旗，章節只是「還沒走到那一段」的假定值**（ver -1104，
+   Ray 的 Stage9 飛行段稿：「加速系統解鎖。」「探索系統解鎖。索敵系統解鎖。」）══
+   · `feat_*` 旗 —— 誰插的：那一段教學**做出那個動作**的時候（`s9GateHit`）；
+     誰拔的：沒有人（鐵律 9）。
+   · **離村之前（`sv_s9_leave` 還沒立）一個字都不動**：照舊看章節預設 ——
+     試飛（沒跑主線，`STAGE_DEFAULT` 7）與 S7/S8 的既有行為完全不變。
+     一旦走到離村那一刻，解鎖就只認旗，於是那一段教學是真的在「給能力」。
+   · 教學進行中（`s9Tutor`）當然要放行：那一下正是要教的動作。
+   ⚠ `scan`（索敵＝方向計上的紅色敵方指示）也是同一套：Ray 把它列成第三個系統。 */
+const FEATURE_FLAG = { sturm:'feat_sturm', sense:'feat_sense', scan:'feat_scan' };
+const S9_NEED = 'sv_s9_leave';    // 離村那一段演完（索菈娜入隊）——見 script/town.js 的 plaza.onLeave
+const S9_FLAG = 'sv_s9_flight';   // 這一整段飛行戲演完了（演完才記）
+let s9On=false;                   // 這一段正在演（不刷怪、不給降落）
+let s9Tutor=null;                 // 現在正在教哪一個能力（'sturm'／'sense'；null＝沒有）
+function featureOn(k){
+  if(s9Tutor===k) return true;
+  if(flagOn(FEATURE_FLAG[k])) return true;
+  if(flagOn(S9_NEED)) return false;
+  return gameStage() >= (FEATURE_FROM[k] || 1);
+}
 
 /* ══ Sturm（衝刺）══════════════════════════════════════════════════
    長按**方向計**兩秒發動：十秒兩倍速，並自動前進一秒；充能一分鐘。
@@ -2656,6 +2675,45 @@ Object.assign(PORTRAIT_EXPR.renna, {
   intense:    { src:'../resources/SI/Renna_SI_intense.webp',     fx:0.629, top:6, bot:1526 },
   lookup:     { src:'../resources/SI/Renna_SI_lookup.webp',      fx:0.510, top:5, bot:1520 },  // ver -746 交件補量
 });
+/* ══ Stage 9 飛行段（ver -1104，Ray 的稿）══ 取景值一律抄 `script/speakers.js` 的
+   `ART[角色].expr`（同一張圖、同一次量測）—— **改一邊要改兩邊**（§5／§6.10）。
+   ⚠ 這裡只帶 `src/fx/top/bot`：`cm` 沿用本尊（`pkey` 的作法）。索菈娜的
+     `think`／`laugh` 在 speakers.js 另有近景用的 `cm/standCm`，飛行頁沒有
+     `standCm` 這個旋鈕 —— 差別約 5%，接受它，不要在這裡自己發明一組。 */
+Object.assign(PORTRAIT_EXPR.renna, {
+  upset:      { src:'../resources/SI/Renna_SI_upset.webp',       fx:0.507, top:2, bot:1524 },
+  writting:   { src:'../resources/SI/Renna_SI_writting.webp',    fx:0.507, top:4, bot:1524 },
+  scarejump:  { src:'../resources/SI/Renna_SI_scarejump.webp',   fx:0.632, top:0, bot:1533 },
+  dying:      { src:'../resources/SI/Renna_SI_dying.webp',       fx:0.543, top:2, bot:1518 },
+  ask:        { src:'../resources/SI/Renna_SI_ask.webp',         fx:0.489, top:3, bot:1525 },
+});
+Object.assign(PORTRAIT_EXPR.nouvelle, {
+  shocked:    { src:'../resources/SI/Nouvelle_SI_Shocked.webp',  fx:0.504, top:3, bot:1534 },
+  steady:     { src:'../resources/SI/Nouvelle_SI_steady.webp',   fx:0.534, top:8, bot:1529 },
+  decoding:   { src:'../resources/SI/Nouvelle_SI_decoding.webp', fx:0.579, top:4, bot:1528 },
+  relief:     { src:'../resources/SI/Nouvelle_SI_relief.webp',   fx:0.540, top:4, bot:1530 },
+});
+Object.assign(PORTRAIT_EXPR.anya, {
+  watch:      { src:'../resources/SI/Anya_SI_watch.webp',        fx:0.476, top:8,  bot:1535 },
+  argue:      { src:'../resources/SI/Anya_SI_argue.webp',        fx:0.512, top:0,  bot:1530 },
+  point:      { src:'../resources/SI/Anya_SI_point.webp',        fx:0.406, top:34, bot:1518 },
+  upset:      { src:'../resources/SI/Anya_SI_upset.webp',        fx:0.500, top:0,  bot:1523 },
+  silent:     { src:'../resources/SI/Anya_SI_Silent.webp',       fx:0.432, top:0,  bot:1527 },
+});
+/* 索菈娜在這一頁本來沒有差分表（她的台詞以前都用本尊那張 side）。 */
+PORTRAIT_EXPR.sorana = {
+  think:      { src:'../resources/SI/Sorana_SI_think.webp',      fx:0.529, top:3, bot:1530 },
+  side:       { src:'../resources/SI/Sorana_SI_side.webp?v=2',   fx:0.498, top:4, bot:1526 },
+  laugh:      { src:'../resources/SI/Sorana_SI_laugh.webp',      fx:0.579, top:3, bot:1529 },
+  amazed:     { src:'../resources/SI/Sorana_SI_amazed.webp',     fx:0.562, top:3, bot:1527 },
+  /* ⚠ Ray 在稿上標了「注意不要裁到角色」：她整個人偏右（fx 0.688）、下緣也高
+     （1487）—— 立繪的左右夾線走 `measureBounds` 的可見輪廓，本來就會把她推回框內。 */
+  excite2:    { src:'../resources/SI/Sorana_SI_excite2.webp',    fx:0.688, top:4, bot:1487 },
+  readysmile: { src:'../resources/SI/Sorana_SI_readysmile.webp?v=2', fx:0.578, top:6, bot:1534 },
+  smirk:      { src:'../resources/SI/Sorana_SI_smirk.webp',      fx:0.582, top:8, bot:1528 },
+  surprised:  { src:'../resources/SI/Sorana_SI_surprised.webp',  fx:0.537, top:9, bot:1522 },
+  cringe:     { src:'../resources/SI/Sorana_SI_cringe.webp',     fx:0.500, top:0, bot:1535 },
+};
 /* `renna/relief` → 本尊 id。⚠ **入隊判定（`inParty`）一定要走這一支**：
    直接拿 `renna/relief` 去問 PARTY 查不到，而 `inParty` 對查不到的人一律放行
    —— 那等於整組對話悄悄繞過「這個人在不在船上」的硬條件。 */
@@ -2964,6 +3022,9 @@ function senseRingCheck(now){
       playSfx(senseSE);
       senseTries.length=0;                // 有成果就把疲勞計數清掉
     }
+    /* 教學（ver -1104）：等這一整段演出落地才接下一句 —— 光圈與心跳還在跑的時候
+       把對白壓上去，兩段演出會疊在一起。 */
+    if(s9Tutor==='sense') setTimeout(()=>s9GateHit('sense'), 1400);
   }
 }
 
@@ -3047,7 +3108,8 @@ function drawBearingLights(CR, cbx, bw2, deg){
        時整條會是空的，那時讓下一順位遞補比留一條空帶有用 —— 而畫面上仍然
        只有一束，順位沒有被破壞。 */
   const SRC=[
-    ['255,90,74',  enemy ? [enemy.x, enemy.y] : null],                       // 敵
+    /* 敵（索敵系統，ver -1104）：解鎖之前這一束不亮 —— 順位讓給「標」與「感應」。 */
+    ['255,90,74',  (enemy && featureOn('scan')) ? [enemy.x, enemy.y] : null],  // 敵
     ['255,214,96', MV.pin ? [MV.pin[0]*MAP_SCALE, MV.pin[1]*MAP_SCALE] : null], // 標（大地圖釘選）
     ['95,224,230', st ? [st.x*MAP_SCALE, st.y*MAP_SCALE] : null],            // 感應（最近的已探索點）
   ];
@@ -4597,7 +4659,7 @@ const endDrag=e=>{
     /* **輕點船身＝閒聊**（ver -1086）。⚠ 用「按了多久」而不是「感應有沒有發動」
        來分辨輕點與長按：長按放手時 `senseT0` 已經被上面那一行收掉了，
        拿它當判準會讓每一次長按放手都再補一段閒聊。 */
-    if(!hitName && onShip && held<TAP_MS) talkTap();
+    if(!hitName && onShip && held<TAP_MS && !s9Tutor) talkTap();
   }
   if(dragId!==null){ try{ stage.releasePointerCapture(dragId); }catch(_){} }
   dragging=false; dragId=null; fwd=0; rgt=0;
@@ -5842,6 +5904,7 @@ function update(dt,now){
     sturmFlash     = now;
     playSfx(sturmSE);                      // 不 loop（Audio 預設就是）
     sturmT0=0;
+    s9GateHit('sturm');                    // 教學：這就是要教的那個動作（ver -1104）
   }
   // 鍵盤：傳統配置（WASD／方向鍵），直接餵進同一組操作向量
   let f=fwd, r=rgt;
@@ -7904,32 +7967,64 @@ function runSerpentIntro(S){
    玩家點吊墜（原本的熱區，遮罩不擋點擊）→ 父頁開整備頁並高光**夥伴欄**
    （橋上的 `_guidePartner` 一次性閂，gear.open 讀）。
    ⚠ 點提示文字本身也放行（§6.5.6 的規矩：不能把玩家鎖在教學裡）。 */
-function spotlightGearEntry(done){
-  try{ if(embedded()) window.parent.__tivotFlight._guidePartner=true; }catch(_){}
-  const pd=document.getElementById('fkerbPend');
-  const r=pd ? pd.getBoundingClientRect() : { left:20, top:innerHeight*0.62, width:60, height:80 };
+/* ══⚠⚠ 聚光燈（ver -743 的整備教學；ver -1104 抽成共用的一支，鐵律 8）══
+   壓暗全畫面 ＋ 目標一圈金光 ＋ 一句話。回傳 `{ off() }` —— 誰開的誰收。
+   ⚠⚠ 遮罩是 `pointer-events:none`：**要教的那個手勢照樣打得到 canvas** ——
+     教學是說明，不是把玩家鎖住（§6.5.5／§6.5.6）。
+   ⚠ `rectFn()` 回傳目標在螢幕上的矩形（會動的目標每 120ms 重問一次，
+     船在畫面上是會動的）。`shape:'rect'` 給方向計那種橫帶用 ——
+     圓形是照 `max(w,h)` 算半徑的，套在 330×30 的帶子上會變成蓋住半個畫面的大圈。
+   ⚠ 點提示本身＝放行（`onSkip`）：不能把玩家鎖在教學裡。 */
+function makeSpotlight(rectFn, html, opts){
+  opts=opts||{};
   const dim=document.createElement('div');
   dim.style.cssText='position:fixed;inset:0;z-index:58;background:rgba(0,0,0,.45);pointer-events:none;';
   const ring=document.createElement('div');
-  const cx=r.left+r.width/2, cy=r.top+r.height/2, rad=Math.max(r.width,r.height)*0.75+14;
-  ring.style.cssText='position:fixed;z-index:59;pointer-events:none;border:2px solid #d4a94a;'
-    +'border-radius:50%;box-shadow:0 0 18px rgba(212,169,74,.9),inset 0 0 14px rgba(212,169,74,.55);'
-    +'left:'+(cx-rad)+'px;top:'+(cy-rad)+'px;width:'+(rad*2)+'px;height:'+(rad*2)+'px;';
+  const base='position:fixed;z-index:59;pointer-events:none;border:2px solid #d4a94a;'
+    +'box-shadow:0 0 18px rgba(212,169,74,.9),inset 0 0 14px rgba(212,169,74,.55);';
+  const place=()=>{
+    const r=rectFn();
+    if(!r) return;
+    if(opts.shape==='rect'){
+      const pad=opts.pad!=null?opts.pad:10;
+      ring.style.cssText=base+'border-radius:10px;left:'+(r.left-pad)+'px;top:'+(r.top-pad)
+        +'px;width:'+(r.width+pad*2)+'px;height:'+(r.height+pad*2)+'px;';
+    }else{
+      const cx=r.left+r.width/2, cy=r.top+r.height/2, rad=Math.max(r.width,r.height)*0.75+14;
+      ring.style.cssText=base+'border-radius:50%;left:'+(cx-rad)+'px;top:'+(cy-rad)
+        +'px;width:'+(rad*2)+'px;height:'+(rad*2)+'px;';
+    }
+  };
+  place();
   const tip=document.createElement('div');
-  tip.style.cssText='position:fixed;z-index:59;left:50%;top:30%;transform:translate(-50%,-50%);'
+  tip.style.cssText='position:fixed;z-index:59;left:50%;top:'+(opts.tipTop||'30%')+';'
+    +'transform:translate(-50%,-50%);'
     +'max-width:76%;padding:12px 16px;border:1px solid #c9a227;border-radius:10px;'
     +'background:rgba(8,9,14,.9);color:#e8e0cd;font-size:14px;line-height:1.7;'
-    +'letter-spacing:1px;text-align:center;';
-  tip.innerHTML='<b style="color:#d4a94a">教學提示</b><br>點左下發光的<b style="color:#d4a94a">吊墜</b>'
-    +'進入整備畫面，可以切換戰鬥搭檔。';
+    +'letter-spacing:1px;text-align:center;pointer-events:auto;';
+  tip.innerHTML=html;
   document.body.appendChild(dim); document.body.appendChild(ring); document.body.appendChild(tip);
+  const tick=setInterval(place, 120);
   let fin=false;
   const off=()=>{ if(fin) return; fin=true;
-    for(const e of [dim,ring,tip]){ try{ e.remove(); }catch(_){} }
-    done(); };
-  /* 點提示放行（沒有要換人也走得下去）。 */
-  tip.style.pointerEvents='auto';
-  tip.addEventListener('pointerdown', e=>{ e.stopPropagation(); off(); }, { once:true });
+    clearInterval(tick);
+    for(const e of [dim,ring,tip]){ try{ e.remove(); }catch(_){} } };
+  tip.addEventListener('pointerdown', e=>{ e.stopPropagation(); if(opts.onSkip) opts.onSkip(); }, { once:true });
+  return { off };
+}
+function spotlightGearEntry(done){
+  try{ if(embedded()) window.parent.__tivotFlight._guidePartner=true; }catch(_){}
+  const pd=document.getElementById('fkerbPend');
+  const rect=()=>{
+    const el=document.getElementById('fkerbPend');
+    return el ? el.getBoundingClientRect() : { left:20, top:innerHeight*0.62, width:60, height:80 };
+  };
+  let fin=false;
+  const sp=makeSpotlight(rect,
+    '<b style="color:#d4a94a">教學提示</b><br>點左下發光的<b style="color:#d4a94a">吊墜</b>'
+    +'進入整備畫面，可以切換戰鬥搭檔。',
+    { onSkip:()=>off() });          // 點提示放行（沒有要換人也走得下去）
+  const off=()=>{ if(fin) return; fin=true; sp.off(); done(); };
   /* 開了整備頁＝教學接棒給父頁 → 這邊的聚光燈收掉。 */
   const poll=()=>{ if(fin) return;
     if(gearOpenNow()){ off(); return; }
@@ -8057,6 +8152,7 @@ function spawnEnemy(opt){
 
 function updateEnemy(dt,now){
   const C=ENEMY_CFG;
+  if(s9On) return;      // Stage9 飛行段演出中：不刷怪也不推進追擊（ver -1104）
   const K=enemy?ENEMY_KINDS[enemy.kind]:null;
   if(!enemy){
     /* 劇本遭遇**優先於自動刷新**：條件到了就立刻生，不等計時器（Ray：「立刻刷怪」）。 */
@@ -8654,6 +8750,174 @@ function departureTalkMaybe(){
   else show();
 }
 
+/* ══════════════════════════════════════════════════════════════════════
+   Stage 9：離村之後的飛行段（ver -1104，Ray 交稿，台詞一字未改）
+   ──────────────────────────────────────────────────────────────────────
+   四段，中間夾兩個教學：
+     ① 破船那一段對白 → **能力發動＝船加速**（借既有的 Sturm 演出，見 s9Boost）
+     ② 加速中的反應   → 教學一：長按方向計 → **加速系統解鎖**
+     ③ 安雅感應到東西 → 教學二：長按船身   → **探索・索敵系統解鎖**
+     ④ 「你決定吧」   → 三遺跡全開（旗），這一段收尾
+   ⚠⚠ 觸發條件只有兩支旗：`sv_s9_leave` 立了（離村演完＝索菈娜入隊）、
+     `sv_s9_flight` 還沒立（這一段沒演過）。**演完才記**（同城鎮通則）——
+     中途關掉／被戰鬥打斷，下一趟出航整段重演。
+   ⚠ 演出期間 `s9On`：不刷怪（updateEnemy 第一行）、不給降落（updateLandBtn）、
+     生怪鈕也收起來（canSpawnHold）—— 但**船照樣會動**：這一段的重點就是加速。
+   ⚠ 站位整段固定（`S9_SIDES`）：`say()` 的自動分邊是依「誰先開口」算的，
+     四段各自算一次的話同一個人會在段與段之間換邊（§6.5：例外只能到整幕為止）。
+   ⚠ 「（主角空白）」＝ `{who:'player'}`：他沒有 PORTRAIT 條目，所以台上的人不動。
+   ⚠⚠ 稿上兩句安雅的台詞標成 `Sorana_SI_point` —— 判讀為筆誤（說話的是安雅，
+     而索菈娜根本沒有 point 這張差分），用 `anya/point`。要照稿改回來跟我說。
+   ⚠ 「安：困惑」沒有對應的差分（安雅沒有 confused），用最接近的 `nervous`。
+   ══════════════════════════════════════════════════════════════════════ */
+const S9_SIDES = { renna:'L', nouvelle:'L', sorana:'R', anya:'R' };
+const S9_A=[
+  { who:'sorana/think',     text:'這破船，比我想像得還慢耶！' },
+  { who:'renna/upset',      text:'別說破船啊。帝國不會給聖王廳新船……這也沒辦法。' },
+  { who:'sorana/think',     text:'全得靠風吹了。對了，說起風……' },
+  { who:'sorana/side',      text:'諾薇兒剛才，不是學會了黑魔法嗎？' },
+  { who:'nouvelle/shocked2',text:'不是黑魔法啦！是術式！' },
+  { who:'sorana/think',     text:'嘿——以前都聽人家說那是黑魔法耶？' },
+  { who:'renna/writting',   text:'那是以前。永夜之後，聖王廳也不得不正視這些『技術』了。' },
+  { who:'renna/writting',   text:'畢竟這些事，都是異端管理局定義的。' },
+  { who:'nouvelle/shocked', text:'蕾娜小姐！這些事……' },
+  { who:'renna',            text:'公開的秘密啦。只是與世隔絕的夏爾村不知道吧。' },
+  { who:'sorana/think',     text:'反正我就是鄉巴佬。' },
+  { who:'anya',             text:'鄉巴佬……是什麼？' },
+  { who:'nouvelle/awkward', text:'不可以學這些難聽的話喔！' },
+  { who:'anya/nervous',     text:'' },
+  { who:'sorana/laugh',     text:'好啦好啦。那，諾薇兒的『那個』，能用在船上嗎？' },
+  { who:'nouvelle/steady',  text:'我試試看。' },
+  { who:'nouvelle/decoding',text:'向量指定……收束……出力設定……' },
+  { who:'sorana/amazed',    text:'奇怪的咒文……' },
+];
+const S9_B=[
+  { who:'sorana/excite2',   text:'喔哇！哈哈哈哈！' },
+  { who:'renna/scarejump',  text:'' },
+  { who:'anya/scared2',     text:'' },
+  { who:'sorana/readysmile',text:'好棒！再來！' },
+  { who:'renna/scarejump',  text:'還不住手！' },
+  { who:'renna/scarejump',  text:'這種破船哪能這樣折騰！' },
+  { who:'sorana/smirk',     text:'啊，妳自己還不是說『破船』。' },
+  { who:'renna/dying',      text:'' },
+  { who:'nouvelle/awkward', text:'抱歉，我也沒辦法一直施術。' },
+  { who:'nouvelle/relief',  text:'得休息一下才行。' },
+  { who:'sorana/amazed',    text:'呿——真沒勁。' },
+];
+const S9_C=[
+  { who:'anya/watch',       text:'……' },
+  { who:'sorana/side',      text:'算了，小公主都嚇傻了。' },
+  { who:'anya/argue',       text:'才不是！' },
+  { who:'sorana/cringe',    text:'！！' },
+  { who:'anya/point',       text:'這附近……有什麼東西。' },
+  { who:'renna/curious',    text:'有什麼東西？' },
+  { who:'sorana/surprised', text:'又來了！小狗模式！' },
+  { who:'anya/upset',       text:'……' },
+  { who:'renna/ask',        text:'能知道在什麼方向嗎？' },
+  { who:'anya/silent',      text:'我試試。' },
+];
+const S9_D=[
+  { who:'anya/point',       text:'在那裡！' },
+  { who:'renna/watch',      text:'那裡？我印象中那邊應該沒有什麼遺跡……' },
+  { who:'renna/watch',      text:'時間還很充裕，想先去看看的話也不是不行。' },
+  { who:'player',           text:'' },
+  { who:'renna',            text:'……我沒有意見，你決定吧。' },
+];
+function s9Talk(lines, done){ say(lines, performance.now(), { sides:S9_SIDES, done }); }
+
+/* 系統訊息（「加速系統　解鎖」那一類）：2.6 秒自己收，不吃點擊。 */
+let s9NoteEl=null, s9NoteT=0;
+function s9Note(text){
+  if(!s9NoteEl){
+    s9NoteEl=document.createElement('div');
+    s9NoteEl.style.cssText='position:fixed;z-index:59;left:50%;top:26%;'
+      +'transform:translate(-50%,-50%);padding:9px 18px;border:1px solid rgba(212,169,74,.75);'
+      +'border-radius:4px;background:rgba(8,9,14,.86);color:#f0e2b8;'
+      +'font-size:15px;letter-spacing:.22em;white-space:nowrap;pointer-events:none;'
+      +'opacity:0;transition:opacity .4s ease;';
+    document.body.appendChild(s9NoteEl);
+  }
+  s9NoteEl.textContent=text;
+  requestAnimationFrame(()=>{ s9NoteEl.style.opacity='1'; });
+  clearTimeout(s9NoteT);
+  s9NoteT=setTimeout(()=>{ s9NoteEl.style.opacity='0'; }, 2600);
+}
+
+/* 「能力發動」＝船加速：**借既有的 Sturm 演出**（同一組變數、同一個音效與閃光，
+   鐵律 8）—— 不另外做一套「劇情用的加速」。
+   ⚠ `sturmReady=0`：這一發是劇情給的，不吃冷卻 —— 下一拍就要教玩家自己按一次，
+     卡在充能上的話那個教學按不動。 */
+function s9Boost(){
+  const now=performance.now();
+  sturmUntil     = now + STURM_DUR_MS;
+  sturmAutoUntil = now + STURM_AUTO_MS;
+  sturmFlash     = now;
+  sturmReady     = 0;
+  try{ playSfx(sturmSE); }catch(_){}
+}
+
+/* 教學：開一盞聚光燈，等玩家真的做出那個動作（或點提示放行）。 */
+let s9GateSp=null, s9GateCb=null;
+function s9Gate(k, rectFn, html, opts, done){
+  s9Tutor=k; s9GateCb=done;
+  s9GateSp=makeSpotlight(rectFn, html,
+    Object.assign({ onSkip:()=>s9GateHit(k) }, opts||{}));
+}
+/* 完成（做到了／點提示放行）：解鎖那支旗**在這裡插**（誰插的答得出來，鐵律 9）。 */
+function s9GateHit(k){
+  if(s9Tutor!==k) return;
+  s9Tutor=null;
+  if(s9GateSp){ s9GateSp.off(); s9GateSp=null; }
+  addFlag(FEATURE_FLAG[k]);
+  const f=s9GateCb; s9GateCb=null;
+  if(f) f();
+}
+
+/* 這一趟要不要演。回傳 true＝接手了（開機那一支就不要再叫出航對白）。 */
+function s9FlightMaybe(){
+  if(sayQueue || mapOpen) return false;
+  if(!flagOn(S9_NEED) || flagOn(S9_FLAG)) return false;
+  s9On=true;
+  s9Talk(S9_A, ()=>{
+    s9Boost();                                   // 能力發動 → 船加速
+    setTimeout(()=>s9Talk(S9_B, ()=>{
+      s9Gate('sturm',
+        ()=>{ const CR=compassRect(); return { left:CR.x, top:CR.y, width:CR.w, height:CR.h }; },
+        '<b style="color:#d4a94a">教學提示</b><br>長按畫面下方的<b style="color:#d4a94a">方向計</b>，'
+        +'發動〈破凪之吐息〉。',
+        { shape:'rect', tipTop:'32%' },
+        ()=>{
+          s9Note('加速系統　解鎖');
+          setTimeout(()=>s9Talk(S9_C, ()=>{
+            s9Gate('sense',
+              ()=>shipHit ? { left:shipHit.x-shipHit.r, top:shipHit.y-shipHit.r,
+                              width:shipHit.r*2, height:shipHit.r*2 }
+                          : { left:W/2-60, top:VIEWH*0.45-60, width:120, height:120 },
+              '<b style="color:#d4a94a">教學提示</b><br>長按<b style="color:#d4a94a">船身</b>，'
+              +'發動〈混沌感知〉。',
+              { tipTop:'22%' },
+              ()=>{
+                /* 索敵（方向計上的紅色敵方指示）與探索同一拍解鎖 —— Ray 的稿把
+                   這兩個系統寫在同一個位置。`feat_sense` 由 `s9GateHit` 插，
+                   這一支只補它的同伴。 */
+                addFlag(FEATURE_FLAG.scan);
+                s9Note('探索系統・索敵系統　解鎖');
+                setTimeout(()=>s9Talk(S9_D, ()=>{
+                  /* 三遺跡全開（Ray：「自由探索，三遺跡全開」）。⚠ 三座遺跡的地點
+                     資料還沒有 —— 這支旗先立好，地點進來時讀它當開關（同 PLACES
+                     的 `flag` 那一套）。 */
+                  addFlag('s9_ruins_open');
+                  addFlag(S9_FLAG);              // 演完才記
+                  s9On=false;
+                }), 1500);
+              });
+          }), 1200);
+        });
+    }), 1600);
+  });
+  return true;
+}
+
 /* ══ stage2 甲板混亂（ver -741，Ray 的稿）══ 羽蛇戰打贏回到甲板：
    Se_sturm＋Se_Sail → 對白 → 淡入黑景＋se_shipcrush → 淡出。
    「在那片湖著水」之後的戲**等 Ray 的稿** —— 這裡收在黑幕掀開、船停住為止。
@@ -8892,7 +9156,7 @@ document.getElementById('boostBtn').addEventListener('click',e=>{
      再生一隻只會在門推上去的背後多一個東西。
    ⚠ 判定寫成一支（`canSpawnHold`）：按下去要**先問過**才排計時（沒排就沒有
      那 1.2 秒的空等），計時到了**再問一次**（按著的這 1.2 秒裡可能剛好刷出一隻）。 */
-function canSpawnHold(){ return ADMIN && !enemy && !battleGoing; }
+function canSpawnHold(){ return ADMIN && !enemy && !battleGoing && !s9On; }
 function spawnByHold(){
   if(!canSpawnHold()) return;
   spawnEnemy();
@@ -10515,7 +10779,7 @@ function nearestTown(){
   return best;
 }
 function updateLandBtn(){
-  const busy = battleGoing || mapOpen || (typeof booting!=='undefined' && booting);
+  const busy = battleGoing || mapOpen || s9On || (typeof booting!=='undefined' && booting);
   const S = busy ? null : nearestTown();
   /* 羽蛇登場演出中不給降落（ver -743）：插圖蓋著、對白在跑，點下去會把整段
      序列打斷（town.open 蓋過來）。演出收掉（introArt=null）就恢復。 */
@@ -11849,8 +12113,9 @@ function preloadSfx(){
        收進 retCtx），勝負由父頁在重開前補進 `won` 欄。等畫面真的還給玩家再演。 */
     if(retCtx){ const c=retCtx; retCtx=null;
       setTimeout(()=>{ try{ afterBattleReturn(!!c.won, !!c.scripted, c.doneKey||null, null); }catch(e){} }, 900); }
-    /* stage2 出航對白（ver -741，Ray 的稿）：讀取頁收乾淨之後才演。 */
-    setTimeout(departureTalkMaybe, 2600);
+    /* 出航之後的劇情：讀取頁收乾淨之後才演。
+       ⚠ Stage9 的飛行段優先（ver -1104）：它接手了就不要再疊一段出航對白上去。 */
+    setTimeout(()=>{ if(!s9FlightMaybe()) departureTalkMaybe(); }, 2600);
     requestAnimationFrame(loop);
   }catch(e){
     document.getElementById('bootMsg').textContent=e.message+'（需以 http 提供，不能直接雙擊開啟）';
