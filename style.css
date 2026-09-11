@@ -463,8 +463,10 @@
        順時針，與計量增加的方向一致。 */
   #claspArcShine{display:none;pointer-events:none;
     filter:drop-shadow(0 0 4px rgba(255,255,255,.9));}
-  #energyClasp.charging #claspArcShine{display:block;animation:arcShine 1.6s linear infinite;}
-  @keyframes arcShine{from{stroke-dashoffset:0;} to{stroke-dashoffset:-109;}}
+  /* ⚠ ver -1071（Ray：「流光效果不好，要快速像在充能」）：1.6s → **0.55s** ——
+     慢的讀起來是「一道光在散步」，快的才像**電流在灌**。 */
+  #energyClasp.charging #claspArcShine{display:block;animation:arcShine .55s linear infinite;}
+  @keyframes arcShine{from{stroke-dashoffset:0;} to{stroke-dashoffset:-106;}}
   /* ⚠ ver -1037：滿檔的白光改由 `#claspArcFill` 自己那一條負責（見上）；
      `::after` 那個寫死落點的呼吸光暈（對著月牙量的 left:16px/bottom:16px）一併退場
      —— 中心換人了，那個座標已經不指向任何東西。 */

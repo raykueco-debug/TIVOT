@@ -1407,9 +1407,12 @@ const ARC={
        計量從尾尖起跑 ——「從 6 點開始」因此變成「從 6 點**之前**一點」，
        那正是 G 的橫該在的位置。
      ⚠ `tailR`／`tailW` 是**相對 `ri`／`w0` 的倍率**：決定尾尖離圓心多近、多細。 */
-  tailDeg  : 52,   // 尾巴從 `a0` 往回幾度（視覺上落在 4~5 點）
-  tailR    : 0.45, // 尾尖的內半徑 ＝ `ri` × 這個
-  tailW    : 0.45, // 尾尖的厚度   ＝ `w0` × 這個
+  /* ⚠ ver -1071（Ray：「G 要再包到女角下緣一些」）：尾巴由 52° 拉到 **80°**
+     （起點從 4~5 點移到約 3~4 點）、尾尖再往內收（0.45 → **0.36**）——
+     那一橫因此橫過頭像的下緣，像托住她，而不是從外圈斜切進來。 */
+  tailDeg  : 80,   // 尾巴從 `a0` 往回幾度
+  tailR    : 0.36, // 尾尖的內半徑 ＝ `ri` × 這個
+  tailW    : 0.42, // 尾尖的厚度   ＝ `w0` × 這個
   tailSteps: 20,   // 尾巴那一段的段數
   steps : 72,      // 折線近似的段數（每 ~3°）
 };
@@ -1537,8 +1540,10 @@ function layoutClasp(){
   track.setAttribute('d', dShape); fillEl.setAttribute('d', dShape);
   const midD=arcMidPath();
   const sh=$('claspArcShine');
+  /* ⚠ 高光**不要太粗**（ver -1071，Ray）：0.8 → **0.42** 倍的 `w0` ——
+     它是掠過去的一道光，不是把整條蓋掉的第二層填色。 */
   if(sh){ sh.setAttribute('d', midD);
-          sh.setAttribute('stroke-width', String(ARC.w0*0.8)); }
+          sh.setAttribute('stroke-width', String(ARC.w0*0.42)); }
   const mp=$('claspProgPath');
   if(mp){ mp.setAttribute('d', midD);
           /* 筆畫要蓋得住最厚的地方（`w0`）＋一點餘裕；溢出到形狀外沒關係 ——
