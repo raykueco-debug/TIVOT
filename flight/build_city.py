@@ -178,13 +178,20 @@ JOBS = [{
     #   的量體擷取 —— 新圖的紅瓦與淺色石板廣場對比夠，切得出街廓。
     'src': 'shinier.png',
     'unsquash': 1.00,
-    'maxdim': 440,   # ver -836：Ray「太糊了都看不出來是村落」→ -827 的 200 恢復成全案預設 440（原圖 1534px，細節都在）
+    # ver -1115（Ray：「太過像素了，清晰50%」）：440→660。取樣層級那邊也細一階
+    # （index.html 的 CITY_LOD_K），兩邊一起才看得出來：來源不夠細的話，
+    # 取樣層級再細也只是把同一批 texel 放大。
+    'maxdim': 660,
     'val': 1.00, 'sat': 0.90,   # ver -1112：新圖本來就亮，不必再推（舊圖是 1.50/0.95）
     # ver -1114（Ray：「房子是平的，不能拉一點立體起來嗎？」）：沒有 hsrc 時所有
     # 建成區都是同一個 H_BUILT(0.20)＝每棟一樣高＝讀起來是平的。`towers` 打開
     # 「局部對比→高度」那一條：比鄰域亮的（屋頂受光面）拉高，樹與陰影不動，
     # 於是屋頂之間有高低差。⚠ 房子的**牆高**另外由 index.html 的 planTall 決定。
     'towers': 0.62,
+    # ver -1115（Ray：「做出立體感，像聖王廳那樣」）：村子要的是**一棟房子一塊**，
+    # 不是把屋頂切成碎塊 —— 聖王廳只有 24 塊，塊大、牆高、顏色淺，那才是立體感。
+    # 門檻照 660px 的尺度放大（面積是 440 的 2.25 倍），再往上推到「一棟房子」。
+    'blkMin': 900, 'blkSplit': 90000, 'blkCell': 70,
 
     'dst': 'shinier_plan.webp',
     'hdst': 'shinier_h.webp',
@@ -208,6 +215,12 @@ ROOF_Q = 60.0      # 建成區裡有多少比例算「街廓」（其餘是街�
 BLK_MIN = 20       # 小於這個面積的碎塊丟掉（雜訊）
 BLK_SPLIT = 900    # 大於這個面積的連通區要再切（不然是一塊台地）
 BLK_CELL = 30      # 切大街廓用的格距（插畫像素）
+# ⚠⚠ 這三個是**插畫像素**的門檻（ver -1115 起可逐 JOB 覆寫：`blkMin`/`blkSplit`/
+#   `blkCell`）。兩個理由一定要能逐城調：
+#   ① 它們隨 `maxdim` 變 —— 440→660 面積就是 2.25 倍，沿用同一組門檻會把一棟房子
+#      切成一堆碎塊（實測夏爾村 259→675 塊，fps 直接腰斬）。
+#   ② **密集市街與村子要的粒度不同**：帝都要切到街廓，村子要的是「一棟房子一塊」
+#      （聖王廳只有 24 塊，那正是它看起來立體的原因 —— 塊大、牆高、顏色淺）。
 POLY_EPS = 1.5     # 多邊形簡化容差（插畫像素）
 POLY_MAX = 12      # 單一街廓的頂點數上限
 ATLAS_PAD = 1
@@ -441,7 +454,22 @@ def _finish(parts, rgb, al, hm, fixed, note):
 
 
 def extract_blocks(rgb, al, built, hm, name, mode='dark', classes=None, nosplit=False,
-                   lmarks=None, lm_mx=0, lm_my=0, lm_hw=1, lm_hh=1):
+                   lmarks=None, lm_mx=0, lm_my=0, lm_hw=1, lm_hh=1,
+                   blk_min=None, blk_split=None, blk_cell=None):
+    global BLK_MIN, BLK_SPLIT, BLK_CELL
+    _keep = (BLK_MIN, BLK_SPLIT, BLK_CELL)
+    if blk_min is not None:   BLK_MIN = blk_min
+    if blk_split is not None: BLK_SPLIT = blk_split
+    if blk_cell is not None:  BLK_CELL = blk_cell
+    try:
+        return _extract_blocks(rgb, al, built, hm, name, mode, classes, nosplit,
+                               lmarks, lm_mx, lm_my, lm_hw, lm_hh)
+    finally:
+        BLK_MIN, BLK_SPLIT, BLK_CELL = _keep
+
+
+def _extract_blocks(rgb, al, built, hm, name, mode='dark', classes=None, nosplit=False,
+                    lmarks=None, lm_mx=0, lm_my=0, lm_hw=1, lm_hh=1):
     """回傳 (blocks, atlas_image)。blocks 是 dict 列表，座標都在插畫像素空間。
 
     classes 有給就走「逐類別固定高度」（聖王廳）；否則依 mode 從圖上分街廓。
@@ -764,7 +792,10 @@ for J in JOBS:
                                        lmarks=J.get('landmarkMass'),
                                        lm_mx=J['mx'], lm_my=J['my'],
                                        lm_hw=J['planW'] * 0.5,
-                                       lm_hh=J['planW'] * 0.5 * H2 / W2)
+                                       lm_hh=J['planW'] * 0.5 * H2 / W2,
+                                       blk_min=J.get('blkMin'),
+                                       blk_split=J.get('blkSplit'),
+                                       blk_cell=J.get('blkCell'))
         atlas.save(os.path.join(CITY, J['mdst']), quality=QUALITY, method=6)
         json.dump({
             'w': W2, 'h': H2,
