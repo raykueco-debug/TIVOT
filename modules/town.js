@@ -1570,7 +1570,10 @@ function shopBtnName(n){
    ⚠ 導覽先收起來：菜單開著時不該還能走路。 */
 /* 這座城的出港位（ver -956）。⚠ 劇情的 `goFlight` 那一拍也要用它 —— 不然從
    夏爾村走劇情出航一樣會在帝都起飛（那條路以前根本沒傳）。 */
-export function sailFrom(){ return (TOWNS[townId]||{}).sailFrom || null; }
+/* 出航時交給飛行頁的「從哪一座城起飛」（ver -1105，Ray：「要在城正上方升空，
+   所有地圖都一樣」）。⚠ **只傳鑰匙不傳座標**：城在地圖上的位置只有飛行頁的
+   `SETTLEMENTS` 那一份（鐵律 7）—— -565 的逐城 `sailFrom` 已刪。 */
+export function sailFrom(){ return townId ? { town:townId } : null; }
 export function openKitchenForStory(onCook){
   const n=node();
   showNav(false); showShopBtn(false);
@@ -2218,7 +2221,7 @@ function setSail(){
          跳頁會讓音訊要重新解鎖（見 CLAUDE.md §6.10）。town 不 import main，所以用注入。 */
       /* ⚠ 把這座城的**出港位**帶給啟動層（ver -565）：沒有這一手，出航一律重載
          飛行頁＝船回到帝都出港位 —— 從北方泊地出航會瞬移回帝都。 */
-      if(flightOpener) flightOpener((TOWNS[townId]||{}).sailFrom||null); else location.href='flight/index.html';
+      if(flightOpener) flightOpener(sailFrom()); else location.href='flight/index.html';
     });
     return;
   }
@@ -2497,7 +2500,7 @@ export function enter(id){
           if(act.sailOut){
             stepSfx();
             suspend();
-            if(flightOpener) flightOpener((TOWNS[townId]||{}).sailFrom||null);
+            if(flightOpener) flightOpener(sailFrom());
             return;
           }
           /* 還有下一段就**原地立刻接上**（ver -599）——不停一秒、不必走出去再回來。

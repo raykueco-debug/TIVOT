@@ -1889,8 +1889,19 @@ const PLACES=[
      town.open 插）：drawPlaces 與著陸掃描都會跳過沒插旗的（見 -858 的兩處守門）。
      座標在村子西南（森林在村外圍）；SETTLEMENTS 的同名著陸列要同步。 */
   {x:1072,y:824, name:'夏爾森林', n:'夏爾森林', type:'森林', flag:'sv_forest_found',
-    town:'shinier_forest'},   /* `n`＝降落鈕的字（doLand 讀 S.n，同 SETTLEMENTS 欄名） */   /* ⚠ 不進 SETTLEMENTS（那張表會被道路網與程序建築
-                                 當成城）——著陸掃描（nearestTown）兼掃帶 town 的 PLACES。 */
+    town:'shinier_forest'},   /* `n`＝降落鈕的字（doLand 讀 S.n，同 SETTLEMENTS 欄名）
+                                 ⚠ 不進 SETTLEMENTS（那張表會被道路網與程序建築當成城）
+                                 ——著陸掃描（nearestTown）兼掃帶 town 的 PLACES。 */
+  /* ══⚠⚠ 隱藏遺跡（ver -1105，Ray：「在 1144,788 位置放置一個隱藏遺跡，
+     要用安雅感知才掃得到」）══
+     · `sense:true` ＝ **平時完全不存在**：名牌、箭頭、地圖上一點痕跡都不留
+       （同隱藏點位 ★ 的規矩）——**只有混沌感知**（長按船身）掃得到，
+       而且要夠近（`STAR_SENSE_R`，與 ★ 同一個半徑）。
+     · `flag` ＝ 發現了沒。誰插的：感應掃到那一刻（`senseStars`）；沒有人拔（鐵律 9）。
+     ⚠ **沒有 `town` ＝ 還不能降落**：那座遺跡的地圖內容還沒有。做好了就補 `town:`
+       —— 著陸掃描（`nearestTown`）本來就兼掃帶 `town` 的 PLACES，不必再改程式。
+     ⚠ 位置與 `export_mapref.py` 的 PLACES 不同步（那張參考圖不該劇透隱藏點）。 */
+  {x:1144,y:788, name:'無名遺跡', type:'遺跡', sense:true, flag:'ruin_a_found'},
 ];
 
 /* ══ 隱藏點位（★）══
@@ -3097,6 +3108,13 @@ function nearestFoundStar(){
     const dx=p.x*MAP_SCALE-cam.x, dy=p.y*MAP_SCALE-cam.y, d=dx*dx+dy*dy;
     if(d<bd){ bd=d; best=p; }
   }
+  /* 感應掃到的隱藏地標也算「已探索的點」（ver -1105）：方向計那一束本來就是
+     「感應找到的東西在哪個方向」，找到遺跡卻不指它才奇怪。 */
+  for(const P of PLACES){
+    if(!P.sense || !P.flag || !flagOn(P.flag)) continue;
+    const dx=P.x*MAP_SCALE-cam.x, dy=P.y*MAP_SCALE-cam.y, d=dx*dx+dy*dy;
+    if(d<bd){ bd=d; best=P; }
+  }
   return best;
 }
 function drawBearingLights(CR, cbx, bw2, deg){
@@ -3439,6 +3457,15 @@ function senseStars(){
     if(dx*dx+dy*dy<R2){ starFound.add(p.id); hit.push(p); }
   }
   if(hit.length) saveStars();
+  /* 隱藏地標（`PLACES` 的 `sense:true`，ver -1105）：同一個半徑、同一個動作 ——
+     差別只在**它發現之後是一個地標**（有名牌、日後可以降落），不是一顆 ★。
+     ⚠ 與 ★ 走同一支（鐵律 8）：「感應掃到什麼」只有這裡在算，
+       日後多一種可發現的東西也加在這裡。 */
+  for(const P of PLACES){
+    if(!P.sense || !P.flag || flagOn(P.flag)) continue;
+    const dx=P.x*MAP_SCALE-cam.x, dy=P.y*MAP_SCALE-cam.y;
+    if(dx*dx+dy*dy<R2){ addFlag(P.flag); hit.push(P); }
+  }
   return hit;
 }
 
@@ -5043,6 +5070,32 @@ function drawMap(){
       }
     }
   }
+  /* 感應掃到的隱藏地標（ver -1105）：★＋名字，**名字一律標**（它是目的地，
+     不是地形點）。沒發現的照舊一點痕跡都不留（管理人視角 `starShow>=2` 才畫空心）。 */
+  if(starShow){
+    mctx.lineJoin='round';
+    for(const P of PLACES){
+      if(!P.sense || !P.flag) continue;
+      const found=flagOn(P.flag);
+      if(!found && starShow<2) continue;
+      const q=reliefXY(P.x,P.y);
+      const sx=ox+q.x*sc, sy=oy+q.y*sc;
+      if(sx<-24||sy<-24||sx>w+24||sy>h+24) continue;
+      const r=Math.max(6, Math.min(13, 6*Math.sqrt(MV.zoom)));
+      starPath(mctx,sx,sy,r);
+      if(found){
+        mctx.fillStyle='rgba(255,232,120,.92)'; mctx.fill();
+        mctx.strokeStyle='rgba(24,18,8,.85)'; mctx.lineWidth=1.4; mctx.stroke();
+      }else{
+        mctx.strokeStyle='rgba(255,232,120,.55)'; mctx.lineWidth=1.4; mctx.stroke();
+      }
+      if(!found) continue;
+      mctx.font='10px "Noto Serif TC",serif'; mctx.textAlign='center';
+      const tw=mctx.measureText(P.name).width;
+      mctx.fillStyle='rgba(8,7,12,.78)'; mctx.fillRect(sx-tw/2-4, sy+r+2, tw+8, 13);
+      mctx.fillStyle='#ffe878'; mctx.fillText(P.name, sx, sy+r+12);
+    }
+  }
 
   /* 自機：同樣坐在地表上 */
   const p=reliefXY(cam.x/MAP_SCALE, cam.y/MAP_SCALE);
@@ -5914,6 +5967,13 @@ function update(dt,now){
   if(keys.d||keys.arrowright) r=1;
   let held = dragging || keys.w||keys.s||keys.a||keys.d ||
              keys.arrowup||keys.arrowdown||keys.arrowleft||keys.arrowright;
+  /* ══ 劇情的那一發加速期間**不能操控**（ver -1105，Ray：「加速以後船暫時不能
+     操控，等船停下來才跑對話」）══ 那一發是諾薇兒的術式推出去的，不是玩家在開船。
+     ⚠ 擋在**算操作向量這一處**（唯一那一處，鐵律 8）：手勢、鍵盤、拖曳一次全吃到；
+       擋在 pointerdown 的話鍵盤那條會漏。
+     ⚠ 排在自動前進（`sturmAutoUntil`）**之前**：那一秒的推背感是演出的一部分，
+       要留著。之後油門歸零，船自己滑行到停 —— 停下來才接下一段對白。 */
+  if(s9Ride){ f=0; r=0; held=false; }
   /* 發動後自動前進一秒：把油門推滿。⚠ 要**同時**把 held 打開 —— 油門的目標值
      是 `held ? f*MAX_SPD : 0`，只給 f 而 held 是 false 的話目標仍是 0，
      船一動也不動。 */
@@ -8856,6 +8916,26 @@ function s9Boost(){
   try{ playSfx(sturmSE); }catch(_){}
 }
 
+/* ══ 那一發加速：期間不給操控，**等船真的停下來**才往下演（ver -1105，Ray）══
+   ⚠ 判「停了沒」用 `Math.abs(cam.speed)<=0.06` —— 與「船不動就不生怪」同一個
+     門檻（鐵律 7），不另訂一個數字。
+   ⚠ 至少要等自動前進那一秒跑完，不然一發動就「已經停了」（那時 speed 還沒起來）。
+   ⚠ 保險絲 15 秒：萬一速度因故不歸零，戲不能卡在這裡。 */
+let s9Ride=false;
+function s9RideWait(done){
+  s9Ride=true;
+  const t0=performance.now();
+  const tick=()=>{
+    const t=performance.now();
+    const early = t-t0 < STURM_AUTO_MS+600;
+    const moving = Math.abs(cam.speed)>0.06;
+    if((early || moving) && t-t0 < 15000){ setTimeout(tick,120); return; }
+    s9Ride=false;
+    setTimeout(done, 500);      // 停穩一拍再開口
+  };
+  setTimeout(tick, 200);
+}
+
 /* 教學：開一盞聚光燈，等玩家真的做出那個動作（或點提示放行）。 */
 let s9GateSp=null, s9GateCb=null;
 function s9Gate(k, rectFn, html, opts, done){
@@ -8880,7 +8960,7 @@ function s9FlightMaybe(){
   s9On=true;
   s9Talk(S9_A, ()=>{
     s9Boost();                                   // 能力發動 → 船加速
-    setTimeout(()=>s9Talk(S9_B, ()=>{
+    s9RideWait(()=>s9Talk(S9_B, ()=>{
       s9Gate('sturm',
         ()=>{ const CR=compassRect(); return { left:CR.x, top:CR.y, width:CR.w, height:CR.h }; },
         '<b style="color:#d4a94a">教學提示</b><br>長按畫面下方的<b style="color:#d4a94a">方向計</b>，'
@@ -8913,7 +8993,7 @@ function s9FlightMaybe(){
               });
           }), 1200);
         });
-    }), 1600);
+    }));
   });
   return true;
 }
@@ -9109,10 +9189,29 @@ window.__flightPos=function(){ return { x:cam.x, y:cam.y, angle:cam.angle, alt:c
 let retCtx=null;   // 戰鬥回程的上下文（ver -845）：開機收尾（afterBattleReturn）讀
 let retFromBattle=false;   // 這一次開機是不是戰鬥回程（ver -846：升空過場要跳過）——
                            // 與 retCtx 分開：retCtx 會被收尾消耗掉，這支活到 bootUI.done()
+/* ══⚠⚠⚠ **從哪座城起飛＝那座城的正上方**（ver -1105，Ray：「從夏爾村升空時，
+   要在夏爾村正上方升空，所有地圖都一樣」）══
+   位置的**唯一真相是這一頁的城表**（`SETTLEMENTS` 的 x/y、或帶 `town` 的 `PLACES`）——
+   主遊戲那一邊只傳「是哪一座城」，座標一律在這裡查。
+   ⚠ 這取代了 ver -565 的 `script/town.js` 逐城 `sailFrom`（手寫的出港位）：
+     那是同一個位置的第二份，城一搬（-834／-835 夏爾村搬過兩次）就會走鐘，
+     而且症狀只是「船出現在別的地方」，沒有任何錯誤訊息（鐵律 7）。
+   ⚠ 查不到就吭一聲並退回帝都出港位 —— 不要靜靜地把船擺在錯的地方。 */
+function townMapXY(id){
+  if(!id) return null;
+  for(const S of SETTLEMENTS) if(S.town===id) return { x:S.x, y:S.y };
+  for(const P of PLACES)      if(P.town===id) return { x:P.x, y:P.y };
+  return null;
+}
 (function restoreFlightPos(){
   try{
     const j=JSON.parse(localStorage.getItem('tivot_flight_ret_v1')||'null');
     localStorage.removeItem('tivot_flight_ret_v1');
+    if(j && j.town && !isFinite(j.x)){
+      const P=townMapXY(j.town);
+      if(P){ cam.x=P.x*MAP_SCALE; cam.y=P.y*MAP_SCALE; }
+      else console.warn('[flight] 查不到「'+j.town+'」在地圖上的位置，退回帝都出港位');
+    }
     if(j && isFinite(j.x) && isFinite(j.y)){
       cam.x=j.x; cam.y=j.y;
       if(isFinite(j.angle)) cam.angle=j.angle;
@@ -11476,6 +11575,15 @@ const SKY_PAN      = 0.6;     // ×W：每弧度捲動幾個畫面寬（轉 90°
 const SKY_HORIZON  = 0.18;    // 天空層的地平線佔圖高的比例（美術規格，換圖要重量）
 const SKY_ZOOM_F   = 1.6;     // 一個循環放大幾倍（＝兩層的尺度間距；最大倍率是它的平方）
 const SKY_ZOOM_PER = 4500;    // 前進幾個世界單位走完一個循環（滿速 360/秒 → 約 12 秒）
+/* ══⚠⚠ 升空／降落時天空層跟著上下（ver -1105，Ray：「船升空降落時控制版的背景
+   也要同步」）══ 起降是**高度**在動（`cam.alt` 由 `altTween` 驅動，400↔700），
+   而面板上那片天空原本只吃「轉向」與「前進」—— 於是升空那一段上半在爬、
+   下半紋風不動，兩個畫面各說各話。
+   · 升空（alt 變大）＝天空層**往下**滑（地平線沉下去），降落反過來。
+   · 幅度寫成**面板高的比例**（不是像素）：`TK_ALT_LOW` 那一端正好是 `SKY_ALT_SPAN`
+     個面板高 —— 起降的高度範圍改了它自己跟著對，不必重調（鐵律 7）。
+   ⚠ 甲板層**不動**：那是自己的船，它與鏡頭是一起升降的。動的只有背後的天空。 */
+const SKY_ALT_SPAN = 0.55;    // 低點與巡航之間，天空層上下移動幾個面板高
 const SEAM_FADE    = 0.10;    // 面板上緣沉進底色的高度（佔面板高）——「接線」那一條
 let skyZoom=0;                // 循環相位，累加在 update 的位移那一行（唯一那一處）
 const BORE={x:0.4481,y:0.1581};          // Base.webp 軸孔中心（佔圖寬/圖高的比例）
@@ -11618,12 +11726,15 @@ function drawPanel(S){
          把基準圖心釘在 `foX` 上（`skyX0 = foX − sw0/2`），圖心就恆等於 `foX`，
          任何倍率下都不動 —— 與地平線那一條是同一個道理（算式保證，不是調的）。 */
       const skyX0=foX-sw0/2;
+      /* 起降的高度差 → 天空層的縱向位移（見 SKY_ALT_SPAN）。平飛時 `cam.alt`
+         恆等於 `CRUISE_ALT`，這一項就是 0 —— 不影響既有的任何一幀。 */
+      const altDy=(cam.alt-CRUISE_ALT)/Math.max(1,(CRUISE_ALT-TK_ALT_LOW))*(ph*SKY_ALT_SPAN);
       /* 以 `(foX,foY)` 為中心放大 `k` 倍，再橫向平移 `panX`；橫向折回貼圖寬之內
          （轉舵可以轉到天涯海角，一定要折）。 */
       const layer=(k,alpha)=>{
         if(alpha<=0.004) return;
         const w2=sw0*k, h2=sh0*k;
-        const by=foY+(dy-foY)*k;
+        const by=foY+(dy-foY)*k+altDy;
         let x=foX+(skyX0-foX)*k+panX;                  // ＝ foX − w2/2 + panX（圖心永遠在 foX）
         x-=Math.ceil(x/w2)*w2;                         // 折到 ≤0 的第一張
         ctx.globalAlpha=alpha;

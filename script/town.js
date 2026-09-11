@@ -1186,9 +1186,8 @@ export const TOWNS = {
        所以 shop/kind/keeperWho/hours 一律先不寫（寫了 kind 會把「這種店的初見戲」
        在沒有店主的空房間裡演掉，那一戲就浪費了）。
      · 降落鈕：flight SETTLEMENTS 的 `town:'northport'`（兩邊互指）。
-     · `sailFrom`＝這座城的**出港位**（地圖座標；main.js 的 sailOut ×MAP_SCALE=20
-       寫進 tivot_flight_ret_v1）。城在 (1516,150)、北緣是海 —— 出港位在城南偏西，
-       **暫定**，Ray 看了要挪就改這兩個數字。
+     · 出港位**不寫在這裡**（ver -1105）：起飛一律在城的正上方，座標由飛行頁的
+       `SETTLEMENTS` 決定（Ray：「所有地圖都一樣」）—— -565 的 `sailFrom` 已刪。
      · 沒有 `evening`／`acts`：傍晚強制回旅店那一套是帝都 stage0 的流程。 */
   northport: {
     name: '北方泊地',
@@ -1235,7 +1234,6 @@ export const TOWNS = {
          `free_explore_northport`）；要再鎖回來寫 `storyExplore:true`。
        ⚠ 帝都**不寫**這一欄 ＝ 一直都是自由探索。 */
     storyExplore: true,
-    sailFrom: { x:1480, y:190 },
     /* ══⚠⚠ 城鎮戰（ver -583，Ray 交辦）══════════════════════════════════
        「城鎮戰所以沿用原圖，但是末端只留教堂，其他末端不可進，不用顯示箭頭，
          測試期間每張先放 B2G05 當怪。」
@@ -2141,15 +2139,11 @@ export const TOWNS = {
        BGM Peritune_Whistling_Winds_loop」）——湖上戰後的 bgmAfter 也是它，
        進村無縫接續。-757 的 misty 暫代退場。 */
     bgm: 'whistling',
-    /* ══⚠⚠ 出港位（ver -956，Ray：「從夏爾村出航，結果從帝都起飛」）══
-       `sailFrom` ＝這座城的**出港位**（地圖座標，main.js 的 sailOut ×MAP_SCALE 寫進
-       回程鑰匙）。**沒寫的話飛行頁會退回寫死的 `SAIL_FROM_CAPITAL`（帝都出港位）**
-       —— 那正是 Ray 踩到的：夏爾村一直沒有這一格，所以從這裡出航會在帝都起飛，
-       而且畫面上不會有任何錯誤訊息（船就是在別的地方而已）。
-       ⚠ 取景是量過的（飛行頁的 HGT／RIV）：村子本身在**湖上**（湖畔村），
-         所以出港位取東南岸 —— 陸地、高度 59、離村 47（帝都 49／北泊 54，同一個量級）。
-       ⚠ 要挪就改這兩個數字；挪之前先確認新點不是水（`RIV`）也不是高峰。 */
-    sailFrom: { x:1130, y:832 },
+    /* ══⚠⚠ 出港位（ver -956 加、**ver -1105 移除**）══
+       Ray：「從夏爾村升空時，要在夏爾村正上方升空，所有地圖都一樣」——
+       起飛位置不再逐城手寫，一律取那座城在飛行頁 `SETTLEMENTS` 上的座標。
+       ⚠ -956 那個「從夏爾村出航卻在帝都起飛」的舊坑由**傳城鎮鑰匙**解掉了
+         （main.js 的 sailOut；查不到會在 console 吭一聲）。 */
     /* 主線帶進來的村子：預設劇情探索（同北方泊地，女角不排外出）。
        要開放自由探索＝那一段 act 寫 `endStoryExplore:true`（旗 free_explore_shinier）。 */
     storyExplore: true,

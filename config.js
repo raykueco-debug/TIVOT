@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.11-1104';
+export const VERSION = 'ver 2026.09.11-1105';
 
 export const GAME_CONFIG = {
 
@@ -742,7 +742,7 @@ export const GAME_CONFIG = {
       /* 點錯的失誤語音（ver -1015，Ray 交檔）：三支輪播，只要點錯就出。
          ⚠ 她**沒有** `missBlockSe`：那一聲（`se_windblock`）是諾薇兒那張卡的東西
            （Ray 只指定她）——共鬥期間的無敵是另一回事，不要順手一起給。 */
-      missVoice:['vo_sorana_miss1','vo_sorana_miss2','vo_sorana_miss3'],
+      missVoice:['vo_sorana_miss1','vo_sorana_miss2','vo_sorana_miss3','vo_sorana_miss4'],
       coop:{ baseSec:12, minSec:3, wrongShortenSec:1, counterScale:1, energyBackMul:0.5,
              voice:['vo_sorana_pack','vo_sorana_pack2'],
              /* 共鬥結束＝飛刀耗盡（obe，ver -822）。ver -837：語音兩支輪播（Ray：「有編1、2的都是輪播」）。 */
@@ -3051,7 +3051,7 @@ export const GAME_CONFIG = {
                    漏著就等於下一條改走通用 `SFX.play` 的路徑會把它當音效播。
                    ⚠ -1015 那六支失誤語音當初就漏了。 */
                 'vo_nouvellemiss1','vo_nouvellemiss2','vo_nouvellemiss3',
-                'vo_sorana_miss1','vo_sorana_miss2','vo_sorana_miss3',
+                'vo_sorana_miss1','vo_sorana_miss2','vo_sorana_miss3','vo_sorana_miss4',
                 'vo_nouvelle_lvup','vo_anya_lvup','vo_sorana_lvup'],
 
     /* ══ 逐支增益：鑰匙是**檔名**（去副檔名、轉小寫）══════════════════
@@ -3124,6 +3124,11 @@ export const GAME_CONFIG = {
          ⚠ 真的要換新錄音時重交一次，照 §5／§6.6 走：轉 m4a → 重量 → 升 `?v=`。 */
       vo_nouvellemiss1:1.45,  vo_nouvellemiss2:1.04,  vo_nouvellemiss3:1.41,
       vo_sorana_miss1:2.77,   vo_sorana_miss2:2.58,   vo_sorana_miss3:2.45,   // miss1 CAP
+      /* 第四支（ver -1105，Ray：「wahetta.wav 現在被規到 sorana_miss 系列」）——
+         本機 BS.1770 實測 −16.44 LUFS／peak −1.78 dB，**錨在 miss3**（同尺 −21.25
+         ／表值 2.45）→ 2.45×10^((−21.25+16.44)/20)＝1.41；加上增益後峰值 +1.2 dBFS，
+         沒頂到 `peakCeilDb`(+2)。⚠ 它比另外三支響 5 dB，所以增益低很多是對的。 */
+      vo_sorana_miss4:1.41,
       se_windblock:1.31,      // CAP（峰值頂到 +2 dBFS）
       /* ══ 升級的 SE 與三支語音（ver -1033）══ 同上式反推，實測（WebAudio 閘控積分）：
            se_lvup        −21.42／peak −6.43
@@ -3209,8 +3214,17 @@ export const GAME_CONFIG = {
 
       /* ── 音樂 ── */
       bgm_mainmenu:1.735, bgm_battle:0.849, bgm_boss:0.665, bgm_result:0.855,
-      peritune_whirlwind:0.80,   // 索菈娜戰鬥曲（ver -847 錨校正：本機尺 ×0.82 對回表尺——
-                                 //   同尺量 bgm_battle 得 1.03 vs 表值 0.849，whirlwind 0.97→0.80）
+      /* ══⚠⚠⚠ 索菈娜的戰鬥曲（`Peritune_Whirlwind`）—— ver -1105 修**重複鑰匙**══
+         Ray：「角色戰鬥曲音量現在太低了」。這一支在這張表裡**被寫了兩次**：
+         -847 量出 0.80（索菈娜戰鬥曲），-744 的「湖上甲板三首」又寫了一次 0.588
+         —— 物件字面值**後寫的贏**，所以實際播出來一直是 0.588，比該有的低 **3.1 dB**。
+         ⚠ 這正是鐵律 7 的病：同一支檔案只有一個響度，這張表的鑰匙就是檔名，
+           寫第二次必然走鐘。重複的那一列已經刪掉，這裡是唯一的一處。
+         ⚠ 現值 0.842＝本機 BS.1770 實測 −8.29 LUFS，錨在 `bgm_battle`
+           （同尺 −8.37／表值 0.849）—— 兩首幾乎同響度，所以增益也幾乎一樣。
+         ⚠ 安雅的戰鬥曲（`peritunematerial_battlefield4`）同尺量是 −5.89 LUFS
+           → 0.637，與表上的 0.636 相符＝**她那一首本來就是對的**，不要跟著調。 */
+      peritune_whirlwind:0.842,
       se_soranacounter:1.47, se_soranacounterhit:1.04,   // 飛刀射出/命中（ver -839 實測；hit 峰值夾）
       se_glasscrack:1.94,   // 裂紋輻射（ver -839 實測 −19.5 LUFS）
       bgm_missionfailed:1.995, bgm_capital_day:1.213, bgm_lunaria:1.230,
@@ -3235,7 +3249,8 @@ export const GAME_CONFIG = {
       bgm_piratebattle:1.277,
       /* 湖上甲板三首＋著岸音（ver -744，同一把尺）。 */
       peritune_misty_hollow_loop:0.569,
-      peritune_whirlwind:0.588,
+      /* ⚠ `peritune_whirlwind` 原本在這裡還有第二份（-744 的 0.588）——
+         ver -1105 刪掉，值在上面那一處（同一支檔案只有一個響度）。 */
       peritune_whistling_winds_loop:0.698,
       peritune_harbor_morning_loop:0.758,   // ver -753（measure_lufs 實測：平均 −11.4 LUFS）
       se_land:3.143,
@@ -3819,6 +3834,7 @@ export const ASSETS = {
   vo_sorana_miss1:   "resources/audio/vo/vo_sorana_miss1.m4a",
   vo_sorana_miss2:   "resources/audio/vo/vo_sorana_miss2.m4a",
   vo_sorana_miss3:   "resources/audio/vo/vo_sorana_miss3.m4a",
+  vo_sorana_miss4:   "resources/audio/vo/vo_sorana_miss4.m4a",   // ver -1105（原 wahetta.wav）
   /* ══ 升級語音（ver -1033，Ray 交檔）══ 三位各一支，與 `se_lvup` **同時**播：
      SE 是系統的一聲、語音是她的反應（同失誤那兩層的關係）。
      鑰匙在各自的搭檔卡 `levelUpVoice`（可寫陣列＝輪播）。
@@ -3881,7 +3897,7 @@ export const ASSETS = {
   bgm_piratebattle: "resources/audio/bgm/bgm_piratebattle.m4a",
   /* 湖上甲板那一段（ver -744，Ray 的 stage5 稿）。 */
   bgm_misty:        "resources/audio/bgm/Peritune_Misty_Hollow_loop.m4a",
-  bgm_whirlwind:    "resources/audio/bgm/Peritune_Whirlwind.m4a",
+  bgm_whirlwind:    "resources/audio/bgm/Peritune_Whirlwind.m4a",   // 索菈娜為夥伴的戰鬥曲（ver -837；ver -1105 刪掉下面那份重複的）
   bgm_whistling:    "resources/audio/bgm/Peritune_Whistling_Winds_loop.m4a",
   /* ver -745：Ray 交專用戰鬥圖（man_sorana.jpg → webp，原檔入 _originals）。 */
   enemy_man_sorana: "resources/enemy/man_sorana.webp",
@@ -3890,7 +3906,6 @@ export const ASSETS = {
      ⚠ 哪一場用它**不寫在卡上**而是規則：見下面的 `battleBgm.timeAttack`。 */
   bgm_hopstep:    "resources/audio/bgm/Peritune_Hopstep_Battle_loop.m4a",
   bgm_battle:    "resources/audio/bgm/bgm_battle.m4a",      // 戰鬥（驅逐開始插入瞬間起播）
-  bgm_whirlwind: "resources/audio/bgm/Peritune_Whirlwind.m4a",   // 索菈娜為夥伴的戰鬥曲（ver -837，Ray 指定）
   bgm_lose:      "resources/audio/bgm/bgm_missionfailed.m4a", // 任務失敗（驅逐失敗插入起播）
   bgm_result:    "resources/audio/bgm/bgm_result.m4a",      // 結算（驅逐完成頁被點掉後起播）
   bgm_boss:      "resources/audio/bgm/bgm_boss.m4a",        // Boss 戰（點下迎擊起播）

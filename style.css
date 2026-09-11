@@ -1116,6 +1116,20 @@
   #grid.buffed .cell.next{
     border-color:#fff;color:#fff;
     animation:niNextPulse .7s infinite alternate;}
+  /* ══⚠⚠ **次格提示不可以被敵襲提示吃掉**（ver -1105，Ray：「次格提示不要被
+     敵襲提示吃掉」）══ 同 -684（NI）／-833（SI）／-746（明晰之夢）那個病的第四次：
+     敵人在蓄大絕時 `#grid.alert .cell` 把**每一格**的邊與字染成橘（id 選擇器，
+     權重贏 `.cell.next` 的 (0,2,0)），於是那一圈金邊等於隱形 ——
+     `markNext` 一直在指，玩家看不到，而畫面上沒有任何異狀。
+     同一帖藥：**權重更高、換白光**（整盤都是橘的，再加金光還是找不到）。
+     ⚠ 三條都要列：`#grid.saint.alert.hot .cell` 是 (1,4,0)，只寫
+       `#grid.alert .cell.next`(1,3,0) 在聖徒化＋紅圈那一段照樣被吃掉。
+     ⚠ 排在 saint／ni／buffed 那幾條**之後**：同權重靠源序，敵襲中要由這一條說了算。 */
+  #grid.alert .cell.next,
+  #grid.saint.alert .cell.next,
+  #grid.saint.alert.hot .cell.next{
+    border-color:#fff;color:#fff;
+    animation:niNextPulse .7s infinite alternate;}
   /* ══ 明晰之夢的時限＝盤面**兩側**的金光同步升起（ver -748，Ray 定案：
      「不要全盤面，讓盤面兩側同步升起金光，到頂結束」「一樣爆散」）══
      -746 的「整面從下淹起」與 -748 前半的三層夾心都撤了：`#grid.alert` 的警戒

@@ -980,23 +980,26 @@ story.setPrepOpener(()=>gear.open());
    試玩版「試飛」（無鑰匙，getStage=測試預設 5）不受影響。 */
 function sailOut(from){
   if(prog.getStage()===1) prog.setStage(2);
-  /* 出港位（ver -565）：城鎮資料的 `sailFrom`（**地圖座標**）→ 塞進回程鑰匙，
-     飛行頁開機的 restoreFlightPos 讀了就清、把船擺在那裡（鐵律 8：同一條還原路）。
-     沒帶＝重載後照舊從帝都出港位（SAIL_FROM_CAPITAL）開始。
-     ⚠ MAP_SCALE=20 是 flight/index.html 的複本（非 module 頁 import 不到）——
-       改那邊要改這裡（鐵律 7 的但書，兩邊註解互指）。 */
-  if(from && isFinite(from.x)){
+  /* 出港位（ver -565 起）：塞進回程鑰匙，飛行頁開機的 `restoreFlightPos` 讀了就清
+     （鐵律 8：同一條還原路）。沒帶＝退回帝都出港位（`SAIL_FROM_CAPITAL`）。 */
+  /* ══⚠⚠ ver -1105 改成**傳城鎮鑰匙，不傳座標**（Ray：「從夏爾村升空時，要在
+     夏爾村正上方升空，所有地圖都一樣」）══ 位置的唯一真相是飛行頁的城表
+     （`SETTLEMENTS`／帶 `town` 的 `PLACES`），這一邊只說「從哪一座城起飛」——
+     城一搬，出港位自己跟著走（鐵律 7；-565 那份手寫的 `sailFrom` 已刪）。
+     ⚠ 舊的座標寫法（`{x,y}`）留著相容：飛行頁兩種都認。 */
+  if(from && from.town){
+    try{ localStorage.setItem('tivot_flight_ret_v1',
+      JSON.stringify({ town:from.town })); }catch(_){}
+  }else if(from && isFinite(from.x)){
     try{ localStorage.setItem('tivot_flight_ret_v1',
       JSON.stringify({ x:from.x*20, y:from.y*20 })); }catch(_){}
   }else{
-    /* ⚠⚠ **沒有出港位＝會在帝都起飛**（ver -956，Ray：「從夏爾村出航，結果從帝都
-       起飛」）—— 那是飛行頁的 `SAIL_FROM_CAPITAL` 退路，而它**沒有任何錯誤訊息**：
-       船就是在別的地方而已，看起來像地圖畫錯。所以這裡吭一聲。
-       ⚠ 帝都自己不寫 `sailFrom` 是刻意的：它的出港位**就是**那個退路，
-         再抄一份到城鎮資料上就是同一個數字兩個地方（鐵律 7）。 */
+    /* ⚠⚠ **沒帶鑰匙＝會在帝都起飛**（ver -956 的舊坑，Ray：「從夏爾村出航，結果
+       從帝都起飛」）—— 那是飛行頁的 `SAIL_FROM_CAPITAL` 退路，而它**沒有任何
+       錯誤訊息**：船就是在別的地方而已，看起來像地圖畫錯。所以這裡吭一聲。 */
     const here=town.isOpen && town.isOpen() ? (town.getPosition()||{}).town : null;
-    if(here && here!=='capital')
-      console.warn('[main] 「'+here+'」沒有 sailFrom，出航會退回帝都出港位 —— 補一格到 script/town.js');
+    if(here)
+      console.warn('[main] 出航沒帶城鎮鑰匙（'+here+'），會退回帝都出港位');
   }
   openFlight();
 }
