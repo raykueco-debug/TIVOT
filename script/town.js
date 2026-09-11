@@ -3672,4 +3672,111 @@ export const TOWNS = {
         exits:{ back:'rift' } },                        // 末端：橋斷了，過不去
     },
   },
+
+  /* ══════════════════════════════════════════════════════════════════════
+     石製遺跡（ver -1121；美術交件 `resources/map/HANDOFF_fallen.md`，
+     權威規格 `resources/map/_fallen_spec.md`）
+     ──────────────────────────────────────────────────────────────────────
+     ⚠⚠ **本輪的範圍是「先搭景」**（Ray，2026-09-11：「沒關係，先搭景，交給 code
+       動手」）：只做到「降得下去、五格走得通、背景跟著時段換」。
+       **還沒接、等 Ray 的卡**：怪（`wildSpawn`）／劇情（`acts`）／休息處（`rest`）／
+       結算怪／`bgm`／槍棺小地圖。
+     ⚠ `map:` **整欄先不寫** —— 那張羊皮紙圖還沒畫（流程：程式先接進這裡 →
+       `tools/map_layout.py` 產權威佈局 → 美術照它畫 → `tools/map_check.py` 量座標）。
+       地圖鈕**照樣常駐**，點下去回一句「這一帶還沒有留下地圖。」（ver -899）。
+     ⚠⚠ 名字與大地圖那一筆**一致**（`flight/index.html` 的 PLACES 是「石製遺跡」）——
+       地名只有 `nameOf` 一支在算（鐵律 7）。要正名兩邊一起改。
+     ⚠ 背景是**新增**不是同名覆蓋 ⇒ 不必動 `ASSET_VER`；四時段差分全到齊，
+       所以節點只寫基底名、**不寫 `noTime`**，時段由 `bandNames()` 的候選鏈挑。 */
+  fallen: {
+    name: '石製遺跡',
+    entry: 'entry',
+    storyExplore: true,   // 不是城：女角不排外出行程（§6.5.4.2）
+    wilderness: true,     // 野外的路沒有門可以關（19:00 全域打烊不罩，ver -862）
+    mist: 1,              // 迷霧是預設（ver -913）：沒有人帶路，走過才亮
+    stepMin: 10,          // 遺跡那一級（ver -917，Ray：「遺跡內每次移動 10 分鐘」）
+    /* ⚠ `bgm` 待定（Ray 還沒給）：不寫＝沿用進來之前那一首，不會變成一片安靜。 */
+    nodes: {
+      /* 入口＝遭遇戰的復活點，**不可以有戰鬥**（§6.5.2 的鐵條）。下方＝出航。
+         ⚠⚠ 這座遺跡在大地圖上是**獨立的一點**，沒有鄰接的地面圖 —— 進出就是
+           降落／起飛，所以下方掛 `sail` 不是 `@某圖:某格`（美術那份交接檔標明
+           這是它的判讀）。日後真要從夏爾森林走過去，換成跨圖出口即可，拓樸不動。 */
+      entry:    { bg:'Fallen_Entry',    name:'石製遺跡　崩塌門廊',
+        exits:{ up:'causeway' },
+        sail:{ flag:'got_ship' } },
+      causeway: { bg:'Fallen_Causeway', name:'石製遺跡　斷柱道',
+        exits:{ up:'fork', back:'entry' } },            // 直廊：兩側是倒下的圓柱排
+      /* 唯一的岔口（三向）：三塊斜倚石板撐出的三角空地，三個方向都是真的走得進去的路。 */
+      fork:     { bg:'Fallen_Fork',     name:'石製遺跡　傾石岔口',
+        exits:{ up:'altar', left:'basin', back:'causeway' } },
+      basin:    { bg:'Fallen_Basin',    name:'石製遺跡　沉水石坑',
+        exits:{ back:'fork' } },                        // 末端：四面被石牆與土坡圍死
+      altar:    { bg:'Fallen_Altar',    name:'石製遺跡　祭壇',
+        exits:{ back:'fork' } },                        // 末端：路的盡頭
+    },
+  },
+
+  /* ══════════════════════════════════════════════════════════════════════
+     聖索菲亞城（ver -1121；美術交件 `resources/map/HANDOFF_santasofia.md`，
+     權威規格 `resources/map/_santasofia_spec.md`）
+     ──────────────────────────────────────────────────────────────────────
+     ⚠⚠ **本輪的範圍是「先搭景」**（同上）：只做到「降得下去、12 格走得通、
+       看得到背景」。**先不做**：店舖（`config.shop.shops.ss_*` 與各自的貨單鑰匙）／
+       店主與接待員的 speaker id 與立繪／旅店大廳與四扇伙伴門（所以 `inn` 那一格
+       **不寫 `inn:true`**）／餐飲街分店／`acts`／`bgm`／城鎮戰／安全區旗／小地圖。
+     ⚠⚠ **拓樸＝帝都那一套**（§6.5.4.2「大城地圖已經規則化」）：節點 id、出口、
+       樞紐與末端的分佈一格不改，只換 `name` 與 `bg`。
+     ⚠ 節點 id 是 `oldtown`、背景檔名是 `Sofia_Downtown` —— 帝都本來就是這樣
+       （id `oldtown` / bg `Capital_Downtown`），**不要順手統一成同一個字**。
+     ⚠ 帝都的公會背景拼錯成 `Captal_Guild`（少一個 i），那是既有檔名；這邊是正確的
+       `Sofia_Guild`，不要照抄那個錯字。 */
+  santasofia: {
+    name: '聖索菲亞城',
+    entry: 'square',
+    /* 大城市不上迷霧（ver -913）—— ⚠ **要明寫**：沒寫就是有霧。 */
+    mist: 0,
+    /* 餐飲街：這一格現在只是「碰得到人的地方」。⚠ **不給 `scenes`** —— 四家分店的
+       圖還沒有，城裡沒有那一家就不換、照節點原本那一張（§6.5.4.2）。 */
+    dining: { node:'tavern' },
+    /* ⚠⚠ **每一格都要 `noTime:true`**：這 12 張目前 0 張時段差分，不寫的話候選鏈
+       會先去試 `_dawn/_day/_dusk/_night` 四個名字，**每一格白吃四個 404**。
+       差分交件之後把這一批 `noTime` 一起拿掉。 */
+    nodes: {
+      /* ══ 主廣場 ══ 入口；上＝中心區、左＝舊街區、右＝上街區（照帝都）。
+         ⚠ 入口那一格**不可以有戰鬥**（§6.5.2）。出航掛在下方。 */
+      square:   { bg:'Sofia_Square',   name:'聖索菲亞　主廣場', noTime:true,
+        exits:{ up:'midtown', left:'oldtown', right:'uptown' },
+        sail:{ flag:'got_ship' } },
+
+      /* ── 一、中心區 ── 左＝市政廳、右＝大教堂、下＝廣場 */
+      midtown:  { bg:'Sofia_Midtown',  name:'聖索菲亞　中心區', noTime:true,
+        exits:{ left:'cityhall', right:'church', down:'square' } },
+      church:   { bg:'Sofia_Church',   name:'聖索菲亞　大教堂', noTime:true,
+        exits:{ back:'midtown' } },
+      cityhall: { bg:'Sofia_Cityhall', name:'聖索菲亞　市政廳', noTime:true,
+        exits:{ back:'midtown' } },
+
+      /* ── 二、舊街區（四向樞紐） ── 左＝武器店、右＝廣場、上＝船塢、下＝公會 */
+      oldtown:  { bg:'Sofia_Downtown', name:'聖索菲亞　舊街區', noTime:true,
+        exits:{ left:'gunstore', right:'square', up:'dock', down:'guild' } },
+      gunstore: { bg:'Sofia_Firearm',  name:'聖索菲亞　武器店', noTime:true,
+        exits:{ back:'oldtown' } },
+      dock:     { bg:'Sofia_Dock',     name:'聖索菲亞　船塢',   noTime:true,
+        exits:{ back:'oldtown' } },
+      guild:    { bg:'Sofia_Guild',    name:'聖索菲亞　賞金獵人公會', noTime:true,
+        exits:{ back:'oldtown' } },
+
+      /* ── 三、上街區（四向樞紐） ── 左＝廣場、右＝餐飲街、上＝旅店、下＝雜貨舖 */
+      uptown:   { bg:'Sofia_Uptown',   name:'聖索菲亞　上街區', noTime:true,
+        exits:{ left:'square', right:'tavern', up:'inn', down:'grocery' } },
+      tavern:   { bg:'Sofia_Bistro',   name:'聖索菲亞　餐飲街', noTime:true,
+        exits:{ back:'uptown' } },
+      grocery:  { bg:'Sofia_Grocerie', name:'聖索菲亞　雜貨舖', noTime:true,
+        exits:{ back:'uptown' } },
+      /* ⚠ 這一格**沒有** `inn:true`：旅店大廳與四扇伙伴門這一輪不做（立繪還沒交）。
+         只寫 `inn:true` 而沒有人應門的話，玩家會敲到一排空門。 */
+      inn:      { bg:'Sofia_Hotel',    name:'聖索菲亞　旅店',   noTime:true,
+        exits:{ back:'uptown' } },
+    },
+  },
 };

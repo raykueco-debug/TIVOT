@@ -780,7 +780,10 @@ const SETTLEMENTS = [
        開口，(559,562,0.79) 是三個全接通、且河真的貫穿南北的解。
      ⚠ 這三個值必須與 build_city.py 的 JOBS 一致；改插畫或改地形都要重跑搜尋。
          py flight/place_city.py stown */
-  { n:'聖索菲亞城', x:559, y:562, t:'city1', f:'free',
+  /* ⚠ `town:'santasofia'`（ver -1121）＝ 12 格的地圖內容做好了，降得下去了。
+     ⚠⚠ x/y/planRot **一個字都不要動**（見上面那一段：那是 place_city.py 搜出來的，
+       而且必須與 build_city.py 的 JOBS 一致）。 */
+  { n:'聖索菲亞城', x:559, y:562, t:'city1', f:'free', town:'santasofia',
     plan:'city/stown_plan.webp', planH:'city/stown_h.webp',
     planW:800, planRot:0.79, planTall:50 },
   /* ── 北方泊地（ver -444，Ray 交件 `Northport1516,150.png`）──────────────
@@ -1987,7 +1990,13 @@ const PLACES=[
        「遠遠先看到一塊地形不對勁 → 飛過去 → 按」（★ 那一節）—— 地上的斷柱
        就是那個「不對勁」。整塊看不見的話玩家沒有理由在這裡長按。
        要連石頭都藏起來的話，`drawRuins` 裡加一行問 `flagOn(P.flag)` 就好。 */
-  {x:1125,y:757, name:'石製遺跡', type:'遺跡', sense:true, flag:'ruin_b_found', ruin:'stone'},
+  /* ⚠ `town:'fallen'`（ver -1121）＝ 這座遺跡的地圖內容做好了，降得下去了。
+     `n:` ＝降落鈕上的字（`doLand` 讀 `S.n`，同 SETTLEMENTS 的欄名）。
+     ⚠ **不要進 SETTLEMENTS**：那張表會被道路網與程序建築當成城。著陸掃描
+       （`nearestTown`）本來就兼掃帶 `town` 的 PLACES，程式不必改。
+     ⚠ `sense:true` 不動 —— 名牌仍然要感知才掃得到，但地上的斷柱一直看得見。 */
+  {x:1125,y:757, name:'石製遺跡', n:'石製遺跡', type:'遺跡',
+   sense:true, flag:'ruin_b_found', ruin:'stone', town:'fallen'},
 ];
 
 /* ══════════════════════════════════════════════════════════════════════
