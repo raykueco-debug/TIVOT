@@ -92,9 +92,10 @@ let skyDrift=0;           // loop 裡：skyDrift += spd*SKY_DRIFT*dt;
 
 ## 六、之後
 
-- **時段差分**（`_dawn`／`_dusk`／`_night`）Ray 說「先是白天光」，還沒做。
-  接的時候請把檔名做成可換的（`Deck_<band>.webp`／`Sky_<band>.webp`），
-  時段鑰匙用飛行頁現有的那一支，不要另外再算一份（鐵律 7）。
+- **時段差分四張全部交件了**（ver -1063）：`Deck_{day,dawn,dusk,night}.webp`
+  ＋ `Sky_{day,dawn,dusk,night}.webp`，命名就是 `deckSrc()` 要的格式。
+  ⇒ **`DECK_BAND` 可以接到飛行頁現有的時段鑰匙了**（現在還寫死 `'day'`）。
+  ⚠ 換時段時如果要淡入淡出，記得**兩層要一起換**，不要一層先換。
 - 兩層分開之後，日後要加**第二層近雲做視差**只是再多一次 blit。
 
 ---
