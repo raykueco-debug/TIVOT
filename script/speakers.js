@@ -383,7 +383,11 @@ export const ART = {
        ⚠⚠ `excite2` 的人物比基本立繪短 2.4%（雙手舉高、`bot` 只到 1487）——
          Ray 交稿時特別註明「注意不要裁到角色」。不加 `rescale` 正是為了這件事：
          加了它會用這一張自己的身高當分母，人反而被放大、頭頂更容易頂出框。 */
-    cringe:       { src:'resources/SI/Sorana_SI_cringe.webp',        top:0,  bot:1535, fx:0.500 },
+    /* ⚠ ver -1105：Ray 換了新圖（同名覆蓋）→ `?v=2` 是**必要的**（§5：瀏覽器以 URL 為鍵，
+       檔名沒變、內容變了它照樣拿舊的那一份），取景值也**重量過**
+       （top 0→6／bot 1535→1526／fx 0.500→0.454，沿用舊值會歪一截）。
+       ⚠ `flight/index.html` 的 `PORTRAIT_EXPR.sorana.cringe` 是同一組數字，兩邊都改了。 */
+    cringe:       { src:'resources/SI/Sorana_SI_cringe.webp?v=2',   top:6,  bot:1526, fx:0.454 },
     excite:       { src:'resources/SI/Sorana_SI_excite.webp',        top:9,  bot:1521, fx:0.674 },
     excite2:      { src:'resources/SI/Sorana_SI_excite2.webp',       top:4,  bot:1487, fx:0.688 },
     furiouscute:  { src:'resources/SI/Sorana_SI_furiouscute.webp',   top:9,  bot:1527, fx:0.474 },
