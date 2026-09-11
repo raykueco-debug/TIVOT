@@ -88,7 +88,12 @@ const RESTING = [
    ⚠ 這一組是**這一趟探索**的狀態（同 eveningHeld）：`open()` 歸零、不進存檔。
    ⚠ 全部鎖在 `stage1_open` 之後 —— stage 0 的第一晚有自己的劇本
      （inn_wait 那一套），不能被這一套蓋掉。 */
-let escortNou=false;
+/* ⚠⚠ ver -1096 由布林 `escortNou` 改成**「同行的是誰」**（`escortId`）——
+   Ray 的 Stage9 稿四個人都約得出來（「T2 以上可以約會」），而舊的寫法把
+   「有人同行」與「那個人是諾薇兒」綁成同一個變數（`escortWho()` 直接回傳
+   `'NOUVELLE'`）。多一個人就要多一個布林，那正是鐵律 7 的病。
+   ⚠ 空字串／null ＝沒有人同行。 */
+let escortId=null;
 /* 同行的諾薇兒走完殘留事件（ver -567）：`nouTiredArmed`＝最後一段演完、等下一次
    抵達演「我累了」那一拍；`nouAsleep`＝演完回房，這一趟敲門只回旁白（睡著了）。
    ⚠ `escortLeftover`＝這一趟同行是**殘留事件**帶起的（open() 判的那一次）——
@@ -129,7 +134,7 @@ let outPlan=[];           // [{who, node, from, to}]，from/to＝開局起算的
 
 /* 同行的女伴是誰（目前只有敲門約出來的諾薇兒）。
    ⚠ 由 `escortNou` **推**出來，不另存一份（鐵律 7）—— 日後多一個人同行就改這一支。 */
-function escortWho(){ return escortNou ? 'NOUVELLE' : null; }
+function escortWho(){ return escortId || null; }
 /* 這一章在隊上的女角（`from` 同 flight/talks.js 的 `PARTY`，兩邊註解互指）。 */
 function girlsHere(){
   const st=prog.getStage(), who=OUTING.who||{};
@@ -313,7 +318,7 @@ function datedToday(who){ dateDayCheck(); return datedSet.has(who); }
 function markDated(who){ dateDayCheck(); datedSet.add(who); }
 /* ⚠⚠ 解除約會只有這一支（鐵律 8）：出城鎮（`suspend`／`close`）與回到旅店
    （`enter` 看到 `inn`）三條路都叫它 —— 寫在各個呼叫點一定會漏掉其中一條。 */
-function endDate(){ if(escortNou && !escortLeftover) escortNou=false; }
+function endDate(){ if(escortId && !escortLeftover) escortId=null; }
 
 /* ══ 宵禁（ver -576，Ray：「晚上九點以後女主角就不出門，約不出來…到隔天七點以後
    才恢復」）══ 判定只有這一支（鐵律 8）：外出行程與旅店敲門都問它。
@@ -329,6 +334,13 @@ function outNow(){
   /* ⚠ 行程本來就排在 8~18 點，這一條現在攔不到東西 —— 但**規則要寫在規則上**：
      日後把 `hours` 拉長，宵禁不必跟著改（鐵律 8）。 */
   if(isCurfew()) return {};
+  /* ⚠⚠ **約會中誰都不在外面**（ver -1096，Ray：「一旦進入約會狀態…期間不會
+     碰到其他女主角」）：那一段是兩個人的時間，路上撞見第三個人會把它打斷。
+     ⚠ 擋在這一支（唯一那個「現在誰在外面」的答案）—— 餐飲街開哪一家、
+       路上碰不碰得到人、門燈亮不亮全部問它，寫在各個呼叫點一定會漏（鐵律 8）。
+     ⚠ 只擋**約會**（`onInvite` 那一種）：殘留事件帶起來的同行不算（`escortLeftover`），
+       那一種有自己的收尾。 */
+  if(escortId && !escortLeftover) return {};
   rollOuting();
   const t=clock.elapsed(), m={};
   for(const o of outPlan) if(t>=o.from && t<o.to) m[o.who]=o.node;
@@ -409,7 +421,7 @@ function restingSet(){
   }
   /* Stage 1 起（ver -461）：諾薇兒在房內（沒被約出來）＝她不在場，
      她會插話的段落（店主對談等）不觸發；約出來（escortNou）就解封。 */
-  if(st1Active() && townId && !escortNou) s.NOUVELLE=1;
+  if(st1Active() && townId && escortId!=='NOUVELLE') s.NOUVELLE=1;
   return s;
 }
 function linesBlockedByRest(lines){
@@ -2167,7 +2179,13 @@ export function enter(id){
   /* ⚠ **回到旅店就解除約會**（ver -576，Ray 指定）：她把你送回門口，回自己房間 ——
      門燈跟著亮回來（`inRoom()` 現算）。要在 `afterArrive` 組 st1 之前做（鐵律 8：
      解除只有 `endDate()` 一支）。 */
-  if(n.inn) endDate();
+  /* ⚠⚠ **「走進旅店就解除約會」是逐城的**（ver -1096）：-576 的原話是
+     「出城鎮、回旅店以後就要解除約會」（帝都，諾薇兒約出來走一段就回房）；
+     Stage9 的夏爾村 Ray 改口「**要離開此地圖再進來才會恢復**」——
+     而那裡的旅店就是索菈娜家（一個一般的樞紐），走回去就解除等於約不成。
+     所以城上寫 `dateEndAtInn:false` 的那幾座不吃這一條；**沒寫＝維持舊行為**
+     （鐵律 9：例外要明寫，預設不動）。出城（`suspend`／`close`）照舊一律解除。 */
+  if(n.inn && (TOWNS[townId]||{}).dateEndAtInn!==false) endDate();
   story.endAdhoc();
   story.clearCast();
   chatterOn=false;          // ⚠ 第四件：上一個地點的路人單句（見 §6.5 的新路徑檢查表）
@@ -2509,19 +2527,19 @@ function afterArrive(n){
      下一次抵達、進場對白演完之後演 `TOWNS[].nouTired`，演完她回房：
      escortNou 收掉（restingSet 重新封她的插話）、nouAsleep 立起（敲門只回旁白）。
      ⚠ 要在 inn.arrive／店舖**之前**演 —— 她回房這件事會改門燈（st1.inRoom）。 */
-  if(nouTiredArmed && escortNou){
+  if(nouTiredArmed && escortId==='NOUVELLE'){
     nouTiredArmed=false; escortLeftover=false;
     const lines=(TOWNS[townId]||{}).nouTired;
     if(lines && lines.length){
       busy=true; showNav(false);
       story.playAdhoc(lines, ()=>{ story.clearCast();     // 鐵律 8：離開這一段就清場
-        escortNou=false; nouAsleep=true;
+        escortId=null; nouAsleep=true;
         busy=false; showNav(true);
         afterArrive2(n); });
       return;
     }
-    escortNou=false; nouAsleep=true;       // 沒有台詞資料也要完成狀態轉移
-  }else if(escortNou && escortLeftover && !leftoverForNou()){
+    escortId=null; nouAsleep=true;        // 沒有台詞資料也要完成狀態轉移
+  }else if(escortId==='NOUVELLE' && escortLeftover && !leftoverForNou()){
     nouTiredArmed=true;
   }
   afterArrive2(n);
@@ -2554,6 +2572,16 @@ function afterArrive2(n){
                                       ⚠ 不寫 `innDoors` ＝照這一章入隊的所有人（`girlsHere`）。 */
                                    roster: (innDoorSet(n).roster) || girlsHere(),
                                    inRoom: inRoom,
+                                   /* ══ 約會（ver -1096）══ 四個人共用一張表的那一套：
+                                      `escort()` ＝現在誰被約出去了（別人的門就敲不動）、
+                                      `dateAff` ＝好感門檻（`OUTING.dateAff`，唯一那個數字）。 */
+                                   /* ⚠⚠ 這裡要的是「**現在正在約會嗎**」不是
+                                      「有沒有人同行」：殘留事件帶起來的同行
+                                      （`escortLeftover`，ver -567 的諾薇兒）也是
+                                      同行，但那不是約會 —— 拿 `escortWho` 當判準的話，
+                                      一進城就可能把其他三扇門全鎖住。 */
+                                   dating: ()=> (escortId && !escortLeftover) ? escortId : null,
+                                   dateAff: (OUTING.dateAff!=null ? OUTING.dateAff : 20),
                                    /* 同行結束回房＝睡著了（ver -567）：敲門只回
                                       `innStage1.nouAsleep` 那句旁白，約不出來。 */
                                    /* ⚠ 節點可以指定「這幾位睡著了」（`innAsleep`，
@@ -2571,7 +2599,7 @@ function afterArrive2(n){
                                    /* 今天已經約過她了（ver -576）：回 `dateDone`，不再出門。 */
                                    dated: datedToday,
                                    data: n.innStage1||{},
-                                   onInvite(who){ escortNou=true; escortLeftover=false; markDated(who||'NOUVELLE'); },
+                                   onInvite(who){ escortId=who||'NOUVELLE'; escortLeftover=false; markDated(escortId); },
                                  } : null,
                                  /* 「還沒六點呢」的那個六點＝傍晚提醒的時刻（ver -405）。
                                     ⚠ 同一個數字只有這一處（鐵律 7）。 */
@@ -2769,9 +2797,11 @@ export function open(town, node, opts){
   wildCleared=new Set();      // 「這一趟哪幾格出過」（ver -924，重刷率用）
   pendingFavor=null;          // 「下一步去哪」也是（ver -440，見 armFavor）
   /* 夥伴的所在（ver -461）：進城算一次。⚠ 要在 townId 設好之後（leftoverForNou 要查表）。 */
-  escortNou=false;
+  escortId=null;
   nouTiredArmed=false; nouAsleep=false; escortLeftover=false;   // 同行收尾（ver -567）
-  if(st1Active()) escortNou=escortLeftover=leftoverForNou();
+  /* ⚠ 殘留事件帶起來的同行只可能是諾薇兒（`leftoverForNou`）—— ver -1096 改成
+     存「誰」之後這裡要明寫是她，不能再靠布林。 */
+  if(st1Active() && leftoverForNou()){ escortId='NOUVELLE'; escortLeftover=true; }
   /* ⚠⚠ 外出行程（ver -575）**這裡不歸零**：它的鑰匙是「這座城的這一天」
      （`rollOuting`），走出城再回來還是同一天就該是同一份行程 ——
      在這裡清掉等於「出城再進城」可以重擲，「一天最多兩次」就破了。

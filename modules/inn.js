@@ -398,6 +398,46 @@ function knock(i){
     /* ⚠ 逐人的敲門詞（`innDoors[].say`，ver -666）：安雅隔天只回「……」。
        排在所有分支之前（換完 `answerBy` 之後）—— 它就是「這個人現在會說什麼」。 */
     if(dset.say && dset.say[who]){ if(host && host.say) host.say(dset.say[who], nm); return; }
+    /* ══⚠⚠ 四個人共用的一張表（ver -1096，Ray 的 Stage9 稿）══════════════
+       `innStage1.knock[WHO] = { low, date:[…] }`：
+         · `low`  ＝好感不足時的婉拒（稿上的「T3 以下敲門」那一組）
+         · `date` ＝約得出來時要演的那幾拍，演完就**設同行**（＝約會開始）
+       門檻是 `st1.dateAff`（＝`OUTING.dateAff`，唯一那個數字，鐵律 7）。
+       ⚠⚠ **這一支擺在蕾娜／諾薇兒那兩條硬寫的分支之前**：有這張表的城走它、
+         沒有的（帝都）照舊走下面那兩條 —— 舊行為一個字不動。
+         日後帝都也寫了表就自然收斂成一條路（鐵律 8）。
+       ⚠⚠ **約會中其他人的門敲不動**（Ray：「無法再敲其他女主角的門」）：
+         擋在這裡而不是把門收起來（§6.5.5：藏起來只會被當成壞了）——
+         回一句話，玩家才知道為什麼。
+       ⚠ 被約出去的那一位**頭像本來就不見了**（`inRoom` 扣掉同行的人，-575），
+         所以這一條只會擋到「其他人」。 */
+    const KT=(st1.data.knock||{})[who];
+    if(KT){
+      /* ⚠ 問的是「正在約會嗎」（`dating`）不是「有沒有人同行」—— 殘留事件那一種
+         同行不是約會，拿它當判準會把其他三扇門一起鎖住（見 town.js 的說明）。 */
+      const esc = st1.dating && st1.dating();
+      if(esc && esc!==who){
+        const bl = KT.busy || st1.data.dateBusy;
+        if(bl && host && host.say) host.say(bl, '');
+        return;
+      }
+      /* 好感的鑰匙是小寫的角色 id（`progress` 的 CHARS）—— speaker id 轉一下。 */
+      const aff=(prog.getAffection()||{})[String(who).toLowerCase()]||0;
+      if(aff < (st1.dateAff!=null ? st1.dateAff : 20)){
+        if(KT.low && host && host.say) host.say(KT.low, nm);
+        return;
+      }
+      const lines=KT.date||[];
+      if(!lines.length || !host || !host.play || busy) return;
+      busy=true; if(host.lock) host.lock(true);
+      host.play(lines, ()=>{ story.clearCast(); busy=false;
+        if(host.lock) host.lock(false);
+        /* ⚠ 門燈由 `st1.inRoom()` 現算：`onInvite` 一設同行，下一次 `refresh()`
+           就是空房 —— 不必在這裡另外把旗放倒（鐵律 7）。 */
+        if(st1.onInvite) st1.onInvite(who);
+        refresh(); });
+      return;
+    }
     if(who==='RENNA'){
       /* ⚠ `rennaAlt`（ver -664）：某支旗立起來之後改講另一段（可以是好幾句）。
          北方泊地第三天出發前，她會說「先去吧，我等等去找你們」。

@@ -328,6 +328,13 @@ export const OUTING = {
      ⚠ 判定只有 `modules/town.js` 的 `isCurfew()` 一支：外出行程與旅店敲門
        都問它（鐵律 8）。敲門那一句在節點的 `innStage1.nightRest`。 */
   curfew: [21, 7],
+  /* ══⚠⚠ 約會的好感門檻（ver -1096，Ray：「T3 以上可以約會」→「不過這麼前期，
+     還是設成 T2 吧，免得連教學都開不了」）══
+     **一個數字一個地方**（鐵律 1/7）：`modules/town.js` 讀它、注入給 `inn.js`，
+     敲門那一支只比大小，不自己記門檻。
+     ⚠ 值＝**好感點數**不是段位號：段寬 20（`progress.tierOf`），T2 的地板就是 20。
+       寫段位號的話這裡就得再算一次 `tierFloor`，那是第二個計算點。 */
+  dateAff: 20,
   perDay: 2,             // Ray：一天最多出門兩次
   chance: 0.5,           // 每個窗各擲一次（Ray 只說「可能」，數字暫定）
   stay:  [60, 150],      // 一次在外面待多久（分鐘，窗內隨機；暫定）
@@ -2072,6 +2079,12 @@ export const TOWNS = {
     sailFrom: { x:1130, y:832 },
     /* 主線帶進來的村子：預設劇情探索（同北方泊地，女角不排外出）。
        要開放自由探索＝那一段 act 寫 `endStoryExplore:true`（旗 free_explore_shinier）。 */
+    /* ⚠⚠ **走進旅店不解除約會**（ver -1096，Ray：「一旦進入約會狀態…要離開
+       此地圖再進來才會恢復」）—— -576 的「回旅店就解除」是帝都那一套
+       （諾薇兒約出來走一段就回房）；這裡的旅店就是**索菈娜家**，一個一般的樞紐，
+       走回去就解除等於約不成。出城（`suspend`／`close`）照舊一律解除。
+       ⚠ 沒寫這一格的城**維持舊行為**（鐵律 9：例外明寫，預設不動）。 */
+    dateEndAtInn: false,
     storyExplore: true,
     /* ══ 戰鬥探索（村內戰，ver -802，Ray 交稿）══
        末端**只留祭壇與野外**（Ray：「末端地圖除了祭壇都不可進」＋「打到野外為止，
@@ -2410,9 +2423,44 @@ export const TOWNS = {
         inn:true, innFrom:'safehouse_shinier', innNoGuide:true,
         innSpots:{ sit:{ x:0.30, y:0.62 }, sleep:{ x:0.60, y:0.55 } },
         noSleep:'……還是先別睡，總覺得今晚不會太平靜。',
+        /* ══⚠⚠ 敲門（ver -1096，Ray 的 Stage9 稿）══════════════════════════
+           `knock[WHO] = { low, date }` —— 四個人一張表，`inn.js` 只有一條路在走
+           （鐵律 8；帝都沒有這張表，照舊走它自己那兩條硬寫的分支）。
+             · `low`  ＝好感未達門檻的婉拒（稿上的「T3 以下敲門」那一組）
+             · `date` ＝約得出來要演的那幾拍，演完就設同行 ＝ 約會開始
+           門檻讀 `OUTING.dateAff`（**20**＝T2；Ray：「這麼前期還是設成 T2 吧，
+           免得連教學都開不了」）。
+           ⚠⚠ **索菈娜的「T3 以下」稿上是「（不在）」** —— 那不是一句話，是**門上
+             沒有人**。但這一版**先照別人的寫法給一句**：`inn.js` 的門是由
+             `innDoors`／`inRoom` 決定亮不亮的，要做成「不在」得讓她的好感反過來
+             影響門的狀態，那是另一條規則（而且低好感就看不到她，讀起來像她消失了）。
+             ⚠ 那一句是**我暫代的**，等 Ray 給詞。
+           ⚠⚠ `dateBusy` 也是**我暫代的**：稿上只寫「無法再敲其他女主角的門」，
+             沒給台詞。沒有一句話的話那顆門就是「點了沒反應」（§6.5.5 明令要避免的）。 */
         innStage1:{ renna:'早點休息吧，明天還要趕路呢。',
                     nightRest:'這麼晚了，早點睡吧。',
-                    dateDone:'今天已經聊夠多囉，明天再說吧。' },
+                    dateDone:'今天已經聊夠多囉，明天再說吧。',
+                    dateBusy:'（已經約好人了，等等再說吧。）',   // ⚠ 暫代，等 Ray 的詞
+                    knock:{
+          NOUVELLE:{ low:'要整理行李呢，對不起喔。',
+                     date:[ nou('shy','我想……'),
+                            nou('lookaway','離開前再去一次瑪麗亞的餐廳，可以嗎？'),
+                            { speaker:'PLAYER', blank:true },
+                            nou('bigsmileclose','') ] },
+          ANYA:{     low:'我待在這裡就好……',
+                     date:[ any('talk','我也想出去走走……'),
+                            { speaker:'PLAYER', blank:true },
+                            any('scared','湖？'),
+                            any('smileshy','好。') ] },
+          SORANA:{   low:'（不在）',                              // ⚠ 暫代，見上
+                     date:[ sor('ready','噢，來得正好！'),
+                            sor('readysmile','謝尼要去森林裡打獵呢，一起來吧？') ] },
+          RENNA:{    low:'抱歉，我還得規畫路線，你們去吧。',
+                     date:[ ren('curious','出門？跟我？'),
+                            ren('thinking','......'),
+                            ren('front','正好我也想去村長那裡呢。要陪我一起去嗎？'),
+                            ren('smile','那就走吧。') ] },
+                    } },
         /* ══ 18:00 後（ver -772，Ray 交稿）══ 開頭依「找到工匠了沒」分歧
            （skipIf/onlyIf），未找到那句再依蕾娜好感 T1/T2 換字**與表情**
            （textByTier＋exprByTier，本版新增）。
