@@ -11084,6 +11084,7 @@ const SKY_PAN      = 0.6;     // ×W：每弧度捲動幾個畫面寬（轉 90°
 const SKY_HORIZON  = 0.18;    // 天空層的地平線佔圖高的比例（美術規格，換圖要重量）
 const SKY_ZOOM_F   = 1.6;     // 一個循環放大幾倍（＝兩層的尺度間距；最大倍率是它的平方）
 const SKY_ZOOM_PER = 4500;    // 前進幾個世界單位走完一個循環（滿速 360/秒 → 約 12 秒）
+const SEAM_FADE    = 0.10;    // 面板上緣沉進底色的高度（佔面板高）——「接線」那一條
 let skyZoom=0;                // 循環相位，累加在 update 的位移那一行（唯一那一處）
 const BORE={x:0.4481,y:0.1581};          // Base.webp 軸孔中心（佔圖寬/圖高的比例）
 const HEAD_R=0.2274;                     // 基座頭盤半徑佔基座寬的比例（95.5/420）
@@ -11242,7 +11243,28 @@ function drawPanel(S){
       ctx.globalAlpha=1;
     }
     ctx.drawImage(D, dx, dy, dw, dh);
+    /* ══ 接線（ver -1084，Ray：「控制面板跟飛行畫面的接線不太好看」）══
+       上半是**俯視**的地形（霧色偏亮、像素化），下半是**前視**的甲板 ——
+       兩個相機硬接在一條線上，讀起來就是兩張圖被切開；夜景尤其明顯
+       （上面亮霧、下面暗天，落差一個量級），而且甲板層的索具與桅杆是**被切斷**的。
+       作法：讓面板最上面那一截沉進面板自己的底色 —— 索具與天空變成
+       「沒入陰影」而不是「被切掉」，兩張圖之間就有了一條暗帶可以交接。
+       ⚠ 只罩**面板**，不碰 3D 視窗（那一層有自己的暗角，見 drawVignette）。
+       ⚠ 底色與面板的漸層頂端同一個值 —— 罩上去等於把那層底色拉回來，
+         不是另外疊一片黑（換底色時不會走鐘）。 */
+    {
+      const fh=Math.round(ph*SEAM_FADE);
+      const fg=ctx.createLinearGradient(0,y0,0,y0+fh);
+      fg.addColorStop(0,   'rgba(18,16,26,1)');
+      fg.addColorStop(0.55,'rgba(18,16,26,.55)');
+      fg.addColorStop(1,   'rgba(18,16,26,0)');
+      ctx.fillStyle=fg; ctx.fillRect(0,y0,W,fh);
+    }
     ctx.restore();
+    /* ⚠⚠ 金線要**畫在甲板之後**：函式開頭那一條（y0+0.5）畫得比甲板早，
+       整條被甲板層蓋掉了 —— 所以「本來就有的畫框線」一直沒出現在畫面上。 */
+    ctx.strokeStyle='rgba(201,162,39,.55)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(0,y0+0.5); ctx.lineTo(W,y0+0.5); ctx.stroke();
   }
 
   let gaugeR=R*0.47, tilt=0.86;          // 基座沒載到時的退路
