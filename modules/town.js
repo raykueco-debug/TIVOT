@@ -271,9 +271,15 @@ function siegeOn(){
    ⚠ **沒有指定地點的人照舊走連接場景**：那是「碰得到人」的保底，不是誰的專屬。
    ⚠ 逐城的指定地點寫 `nodesBy[城id]`（節點 id 是逐城的 —— 帝都的 `cityhall`
      在夏爾村根本不存在）；`nodes` 是不分城的預設。 */
+/* 她在**這座城**的指定地點（`nodesBy[城]` 覆寫不分城的 `nodes`）。
+   ⚠ 只有這一支在算（鐵律 7）：外出行程（`areaFor`）與碰面那一段戲都問它。 */
+function spotsFor(who){
+  const w=(OUTING.who||{})[who]||{};
+  return ((w.nodesBy||{})[townId]) || w.nodes || [];
+}
 function areaFor(who){
   const w=(OUTING.who||{})[who]||{}, T=TOWNS[townId]||{};
-  const own=((w.nodesBy||{})[townId]) || w.nodes || [];
+  const own=spotsFor(who);
   const set=new Set(own.length ? [] : connectorIds());
   for(const id of own) set.add(id);
   const dn=diningNode(); if(dn && w.dine) set.add(dn);
@@ -290,6 +296,9 @@ function rollOuting(){
   /* ⚠ 劇情探索期間**不排行程**（ver -666）：不是「排了再擋」——排了就會被
      `outingDebug` 印出來、也會被餐飲街的 `whoOutAt` 讀到，那是兩個真相。 */
   if(!townId || !st1Active() || storyExploreOn()){ outKey=null; outPlan=[]; return; }
+  /* 第一次進旅店那一趟：全員在家（ver -1102，見 innSeenFlag）。
+     ⚠ 不記鑰匙 —— 走出旅店之後那一天照常再擲一次。 */
+  if(innFirstVisit){ outKey=null; outPlan=[]; return; }
   const key = townId + '#' + clock.dayNo();
   if(outKey===key) return;
   outKey=key; outPlan=[];
@@ -331,9 +340,19 @@ function rollOuting(){
      所以「出城再進城」還是同一天就約不了第二次（同 `outKey` 的作法）。
    ⚠ 不進存檔：睡覺一定跨到隔天，醒來本來就該重來。 */
 let dateDay=null, datedSet=new Set();
-function dateDayCheck(){ const d=clock.dayNo(); if(dateDay!==d){ dateDay=d; datedSet=new Set(); } }
+/* 這一天已經演過的碰面戲（ver -1102）：鑰匙是 `誰#m`（碰到）／`誰#d`（約會派生）
+   —— 同一天走回同一格不重演，好感也就不會被刷（記帳走 `applyAff`，演完才記）。
+   ⚠ 與 `datedSet` 共用**同一支換日檢查**（鐵律 7：「換日了沒」只有一個答案）。 */
+let metSet=new Set();
+function dateDayCheck(){ const d=clock.dayNo(); if(dateDay!==d){ dateDay=d; datedSet=new Set(); metSet=new Set(); } }
 function datedToday(who){ dateDayCheck(); return datedSet.has(who); }
 function markDated(who){ dateDayCheck(); datedSet.add(who); }
+function metToday(k){ dateDayCheck(); return metSet.has(k); }
+function markMet(k){ dateDayCheck(); metSet.add(k); }
+/* ⚠⚠ **「現在正在跟誰約會」只有這一支**（ver -1102，鐵律 7/8）：敲門那一關、
+   「約會中誰都不在外面」、碰面的約會派生，三個地方問的是同一件事。
+   ⚠ 殘留事件帶起來的同行（`escortLeftover`，ver -567 的諾薇兒）**不算約會**。 */
+function datingWho(){ return (escortId && !escortLeftover) ? escortId : null; }
 /* ⚠⚠ 解除約會只有這一支（鐵律 8）：出城鎮（`suspend`／`close`）兩條路叫它。
    ⚠ ver -1097 起**「回到旅店」不再解除**（見 `enter()` 那一段的說明）——
      -576 那一條是帝都測試期的鷹架，那時約會還沒有內容。 */
@@ -359,7 +378,7 @@ function outNow(){
        路上碰不碰得到人、門燈亮不亮全部問它，寫在各個呼叫點一定會漏（鐵律 8）。
      ⚠ 只擋**約會**（`onInvite` 那一種）：殘留事件帶起來的同行不算（`escortLeftover`），
        那一種有自己的收尾。 */
-  if(escortId && !escortLeftover) return {};
+  if(datingWho()) return {};
   rollOuting();
   const t=clock.elapsed(), m={};
   for(const o of outPlan) if(t>=o.from && t<o.to) m[o.who]=o.node;
@@ -424,13 +443,44 @@ function hhmm(min){
 }
 
 /* 走到有人的那一格 → 碰到她（立繪＋一句話）。afterArrive 收尾呼叫。
-   ⚠ 走**路人單句那一套**（`flashLine` ＋ `chatterOn`）：再點一下收掉，節奏一致。 */
+   ⚠ 走**路人單句那一套**（`flashLine` ＋ `chatterOn`）：再點一下收掉，節奏一致。
+   ⚠ 有 `meetBy` 的城**先走整段戲**（見 `meetScene`），這一支是它的退路 —— 帝都
+     沒寫 `meetBy`，行為一個字都沒動。 */
 function maybeMeetOut(){
   const who=whoOutAt(nodeId); if(!who) return;
   const w=(OUTING.who||{})[who]||{};
   story.castSolo(who);
   if(w.line) story.flashLine(w.line, (SPEAKERS[who]||{}).name||'');
   chatterOn=true;
+}
+/* ══⚠⚠ 碰面的**整段戲**與約會派生（ver -1102，Ray 的 Stage9 稿）══════════════
+   回傳這一次抵達要演的那一段（沒有就 null）；資料在 `OUTING.who[誰].meetBy[城]`。
+   兩條路各自成立：
+     · **沒在約會** → 她今天排到這一格（`whoOutAt`）→ 演 `lines`。
+     · **正在跟她約會** → 走到**她的指定地點**（`spotsFor`）→ 演 `lines ＋ date.lines`。
+   ⚠⚠⚠ **派生只看「是不是正在跟她約會」，不看好感**（Ray：「通通約會才派生，
+     全部改成T2」）：好感那一關在旅店敲門時就判完了（`dateAff`），這裡再判一次
+     就是第二個計算點（鐵律 7）。
+   ⚠ 約會中 `outNow()` 一律是空的（那一段是兩個人的時間），所以約會這條路
+     **一定要自己問 `datingWho()`** —— 靠 `whoOutAt` 永遠等不到她。
+   ⚠ 約會中走到**別的**格子什麼都不演：她就在你旁邊，不需要「碰到」。
+   ⚠ 好感與「演過了」都是**演完才記**（`applyAff` ＋ `markMet`，見呼叫端）。 */
+function meetScene(){
+  const dw=datingWho(), who = dw || whoOutAt(nodeId);
+  if(!who) return null;
+  const M=(((OUTING.who||{})[who]||{}).meetBy||{})[townId];
+  if(!M) return null;
+  if(dw && spotsFor(who).indexOf(nodeId)<0) return null;
+  const key = who + (dw ? '#d' : '#m');
+  if(metToday(key)) return null;
+  /* 偶遇走 `meet`、約會走 `date` —— 兩條尾巴是**互斥**的（ver -1102，Ray：
+     「約會的時候蕾娜是不會有『啊，你也來啦』的，那是偶遇才會有」）。 */
+  const tail = dw ? ((M.date||{}).lines||[]) : ((M.meet||{}).lines||[]);
+  const lines=(M.lines||[]).concat(tail);
+  if(!lines.length) return null;
+  /* ⚠ 第一句加 `delay`：立繪滑入要 450ms，框要等她站定才出（§6.5，同 `enter()`）。 */
+  return { key, play: lines.map((l,i)=> (i===0 && l && l.delay==null)
+                                        ? Object.assign({}, l, { delay:SLIDE_MS }) : l) };
 }
 function restingSet(){
   const s={};
@@ -566,6 +616,28 @@ function node(){ return (TOWNS[townId]||{}).nodes[nodeId] || null; }
    在城鎮戰裡跑過一輪不算逛過這座城。 */
 let revealPending=false;   // 這一次抵達還在等背景（ver -926，見 enter 的 reveal）
 function markSeen(id){ if(siegeOn()) return; prog.addFlags(['seen_'+townId+'_'+id]); }
+/* ══⚠⚠ **這一格現在有沒有旅店功能**（伙伴門／獨自坐坐／回房睡覺）══
+   只有這一支在算（鐵律 7）：`enter()` 要拿它判「這是不是第一次進旅店」、
+   `afterArrive2()` 要拿它決定開不開大廳 —— 兩邊各寫一次條件必然走鐘。
+   ⚠ `innFrom`（ver -827）：夏爾村的索菈娜家要村戰打完（`safehouse_shinier`）
+     旅店功能才開 —— 所以「走進過那一格」與「進過旅店」是兩件事。 */
+function innActive(n){
+  return !!(n && n.inn && !siegeOn() && (!n.innFrom || prog.hasFlag(n.innFrom)));
+}
+/* ══⚠⚠⚠ **第一次進旅店：四扇門一定要全員在家**（ver -1102，Ray：「第一次進旅店時，
+   一定要所有女主角都在，這邊的話索菈娜是例外」）══
+   那一趟是玩家第一次看到這排門 —— 有人外出就是一扇沒有臉、也沒有任何說明的門，
+   讀起來是壞了，不是「她出去了」。
+   ⚠ 作法是**不排行程**（`rollOuting` 直接 return），不是「排了再擋」：排了就會被
+     `outingDebug` 印出來、也會被餐飲街的 `dineKey` 讀到，那是兩個真相（同 -666
+     劇情探索那一條）。
+   ⚠ **索菈娜是例外**：她那一格的空門是資料上明寫的（`knock.SORANA.absent`，
+     好感未達 `dateAff` ＝她根本不在房裡，ver -1099）—— 那是設計，不是排程。
+   ⚠ 旗標**逐城逐格**（`inn_seen_<城>_<格>`）：誰插的＝走進旅店那一刻（`afterArrive2`）；
+     沒有人拔（鐵律 9）。⚠ **不可以沿用 `seen_*`**：那一支在 `enter()` 開頭就記了，
+     而且夏爾村的索菈娜家在旅店功能開放之前就走過很多次了。 */
+function innSeenFlag(id){ return 'inn_seen_'+townId+'_'+id; }
+let innFirstVisit=false;
 /* ══⚠⚠ 迷霧（ver -913，Ray：「小地圖沒走到的地方用迷霧遮住，在控制面板上也顯示
    『？？？』。除非 mist=0，否則預設都是如此。大城市 mist 都是 0」）══
    **判定只有這一支**（鐵律 7/8）：小地圖那邊要決定畫不畫霧、目的地字格那邊要決定
@@ -2251,6 +2323,9 @@ export function enter(id){
   /* ⚠⚠ 進場對白**一律只播一次**（ver -373，Ray：「對話只觸發一次，不重複觸發」）——
      不再看節點的 `once` 欄位：漏寫就會變成每次進去都重播，那是「預設值站錯邊」。
      旗標記在 progress 的 flags，存檔要帶。 */
+  /* 這一趟是不是「第一次進這座城的旅店」（ver -1102，見 innSeenFlag 的說明）。
+     ⚠ 要算在**記旗之前**，而且每次抵達都重算 —— 走掉就自己歸零。 */
+  innFirstVisit = innActive(n) && !prog.hasFlag(innSeenFlag(id));
   markSeen(id);                       // 走到過（給「走完城裡所有地點」用，ver -392）
   /* ══ 初見劇情的旗標（ver -401，Ray：「城內其他地方的初見劇情保留，下次回來或
        **進入他城同質店**時觸發初見劇情」）══
@@ -2560,19 +2635,35 @@ function afterArrive(n){
   }else if(escortId==='NOUVELLE' && escortLeftover && !leftoverForNou()){
     nouTiredArmed=true;
   }
+  /* ══ 外出碰面／約會派生的那一段戲（ver -1102，見 `meetScene`）══
+     ⚠ 要在**旅店大廳與店舖之前**演完（同 nouTired 的理由）：那一段演的是
+       「這一格現在有誰」，店主與大廳是這一格的常駐介面，兩者疊在一起會打架。
+     ⚠ 演完才記（`applyAff` ＋ `markMet`）：中途離開就不算，好感也刷不到。
+     ⚠ 演完走 `afterArrive2(n, true)` —— 這一次抵達的碰面已經由這一段負責了，
+       不要再讓 `maybeMeetOut` 補一句單句上來（那會蓋掉剛演完的收尾）。 */
+  const ms=meetScene();
+  if(ms){
+    busy=true; showNav(false);
+    story.playAdhoc(ms.play, ()=>{ story.clearCast();   // 鐵律 8：離開這一段就清場
+      applyAff(ms.play); markMet(ms.key);
+      busy=false; showNav(true);
+      afterArrive2(n, true); });
+    return;
+  }
   afterArrive2(n);
 }
-function afterArrive2(n){
+function afterArrive2(n, metDone){
   /* ⚠ `introFlag` 由城鎮算好傳進去（ver -402）：旅店已經沒有 `kind` 了，
      旗標名只有 `enter()` 那一支知道（`kind` 版／節點版兩種）—— inn 自己拼會拼錯城。 */
-  maybeMeetOut();            // 有人外出時走到她那一格 → 碰到她（ver -575，取代 -461 的蕾娜版）
+  if(!metDone) maybeMeetOut();   // 有人外出時走到她那一格 → 碰到她（ver -575，取代 -461 的蕾娜版）
   /* ⚠ 戰鬥地圖不開旅店大廳（ver -584）—— 伙伴門／獨自坐坐／回房睡覺都是探索的機制。 */
   /* ⚠ 沒有初見對白的旅店（北方泊地）傳 **null**（ver -656）：那面旗永遠不會立，
      而大廳是等它才出現的 —— 見 `inn.introDone()`。 */
   /* ⚠ `innFrom`（ver -827，Ray：「第六章起點已經是戰鬥探索，索拉娜家的旅店在當時
      是關掉的」）：這一格的旅店功能要某支旗立了才開（夏爾村＝`safehouse_shinier`，
      ＝村戰打完、村子安全了才開放休息）；沒寫＝一直開（其他城照舊）。 */
-  if(n && n.inn && !siegeOn() && (!n.innFrom || prog.hasFlag(n.innFrom))) inn.arrive(n, { allSeen: allSeen(),
+  if(innActive(n)) prog.addFlags([innSeenFlag(nodeId)]);   // 「進過這家旅店了」（ver -1102）
+  if(innActive(n)) inn.arrive(n, { allSeen: allSeen(),
                                  introFlag: (n.lines && n.lines.length) ? flagOf(n, nodeId) : null,
                                  /* 這是哪一座城的哪個節點（ver -481）：睡覺那一刻要記
                                     「上一次睡覺的旅店」——連敗三場送回來用。 */
@@ -2598,7 +2689,7 @@ function afterArrive2(n){
                                       （`escortLeftover`，ver -567 的諾薇兒）也是
                                       同行，但那不是約會 —— 拿 `escortWho` 當判準的話，
                                       一進城就可能把其他三扇門全鎖住。 */
-                                   dating: ()=> (escortId && !escortLeftover) ? escortId : null,
+                                   dating: datingWho,
                                    dateAff: (OUTING.dateAff!=null ? OUTING.dateAff : 20),
                                    /* 同行結束回房＝睡著了（ver -567）：敲門只回
                                       `innStage1.nouAsleep` 那句旁白，約不出來。 */

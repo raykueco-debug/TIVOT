@@ -320,7 +320,9 @@ const NP_GROCER_LINES = [
    ⚠ `line` 是**佔位稿**（Ray 給了規則、沒給句子）：碰到她時她說的那一句。要換直接改。
    ══════════════════════════════════════════════════════════════════════ */
 export const OUTING = {
-  hours: [8, 18],        // Ray：早上 8:00 到下午 6 點
+  /* ⚠ ver -1102 由 [8,18] 改成 [9,19]（Ray 的 Stage9 稿：「夥伴有可能的出門時間
+     是 09：00 到 19：00」）—— 上界與 `backHour` 是同一個鐘點（出了門就待到 19:00）。 */
+  hours: [9, 19],
   /* ══ 宵禁（ver -576，Ray 定案）══════════════════════════════════════════
      「晚上九點以後女主角就不出門，約不出來。改放天晚休息了之類的台詞，
        到隔天七點以後才恢復。」
@@ -355,19 +357,71 @@ export const OUTING = {
      `nodes` 是不分城的預設，`nodesBy[城id]` 覆寫那一座。
      ⚠ 有指定地點的人**就只出現在那裡**（見 `modules/town.js` 的 `areaFor`）——
        不再加上連接場景，不然「她今天在湖畔」會變成「她可能在任何一條路上」。 */
+  /* ══⚠⚠ **碰面的那一段戲**（`meetBy[城id]`，ver -1102，Ray 的 Stage9 稿）══
+     `line` 是**單句**（路人單句那一套，點一下收掉）；`meetBy` 是**一整段對白**
+     （走劇情播放器，立繪／明暗／打字機與別處一致）。
+     · 沒寫 `meetBy` 的城照舊走 `line` —— **帝都一個字都不動**
+       （Ray：「帝都還沒有設計約會事件，只會變成無意義的動作」）。
+     · `lines`      ＝兩種情況都演的那一段。
+     · `meet.lines` ＝**偶遇才有**的收尾（Ray：「約會的時候蕾娜是不會有『啊，你也來啦』
+                      的，那是偶遇才會有」）—— 約會時整段跳過。
+     · `date.lines` ＝**約會派生**：接在 `lines` 後面（不接 `meet`）。
+     ⚠⚠⚠ **派生的判準是「現在正在跟她約會」，不是好感**（ver -1102，Ray：
+       「通通約會才派生，全部改成T2」）—— 稿上獵人小屋那格寫的「T3 以上或約會」
+       已由這句話統一掉：**四個地點一律只有約會才派生**，門檻一律 `dateAff`（T2＝20，
+       那是**約不約得出來**的門檻，在旅店敲門那一關就判完了，這裡不再判一次）。
+     ⚠ **地點就是 `nodesBy`／`nodes` 那一份**（鐵律 7）：不要在這裡再寫一次節點 id。
+     ⚠ 好感走**既有的** `line.aff`（`modules/town.js` 的 `applyAff`，唯一那個記帳點）
+       ＝**演完才記**，而且一天一次（見 `metSet`）。
+     ⚠ 獵人小屋那一段**沒有好感**：Ray 的稿只給了另外三個地點的數字（+1／+2／+3），
+       這一格他沒寫 —— 空著等他補，不要自己填一個。 */
   who: {
     NOUVELLE: { from:1, dine:'restaurant', nodes:['cityhall','church','grocery'],
                 nodesBy:{ shinier:['restaurant'] },
-                line:'啊，{N}！我正想著要不要買點什麼回去呢。' },
+                line:'啊，{N}！我正想著要不要買點什麼回去呢。',
+                meetBy:{ shinier:{
+                  lines:[ nou('concern','這麼棒的料理，我怕以後吃不到……') ],
+                  date:{ lines:[ { speaker:'PLAYER', blank:true },
+                                 nou('surprise','咦？你也是嗎？'),
+                                 nou('bigsmile','那我們一起吃吧！'),
+                                 nou('shy','……我可以再點一份嗎？', { aff:{ nouvelle:1 } }) ] } } } },
     RENNA:    { from:1, dine:'cafe',       nodes:['cityhall','church','grocery'],
                 nodesBy:{ shinier:['chief'] },
-                line:'寫報告寫累了，出來透透氣。' },
+                line:'寫報告寫累了，出來透透氣。',
+                /* ⚠ 蕾娜本位左、村長本位右（speakers.js）→ 兩個人自然分兩邊，
+                     不必給 `sides` 覆寫（§6.5）。 */
+                meetBy:{ shinier:{
+                  lines:[ ren('writting','原來如此……遺跡從未有過那樣的反應？'),
+                          chf(null,'這個村子建立也不過幾十年，再往前的事我也不清楚。'),
+                          chf(null,'不過魔獸的量明顯減少了，謝謝你們啊。'),
+                          ren('smile','不會，這是聖王廳應盡的職責……') ],
+                  /* ⚠⚠ 「啊，你也來啦。」是**偶遇**才有的（ver -1102，Ray：「約會的時候
+                     蕾娜是不會有『啊，你也來啦』的，那是偶遇才會有」）—— 約會是一起
+                     走進來的，她不會對身邊的人說「你也來啦」。 */
+                  meet:{ lines:[ { speaker:'PLAYER', blank:true },
+                                 ren('ask','啊，你也來啦。') ] },
+                  date:{ lines:[ ren('arguecute','也不能怪我們啊！從來沒有收到過求救嘛！'),
+                                 chf(null,'還不到需要求救的程度啦，魔獸的爪牙價格很好，源源不絕地自己送上門來也很不錯。'),
+                                 ren('shockedCalm','我這輩子沒想到能聽到這種話……', { aff:{ renna:2 } }) ] } } } },
     ANYA:     { from:5, dine:'dessert',    nodes:['grocery'],
                 nodesBy:{ shinier:['lakeside'] },
-                line:'……嗯。今天的份，還沒吃到。' },
+                line:'……嗯。今天的份，還沒吃到。',
+                meetBy:{ shinier:{
+                  lines:[ any('watch','好漂亮……'),
+                          { speaker:'PLAYER', blank:true },
+                          any('talk','有，可是都結冰。') ],
+                  date:{ lines:[ any('talk','這個地方，我很喜歡……'),
+                                 { speaker:'PLAYER', blank:true },
+                                 any('shy',''),
+                                 any('talkshy','好。', { aff:{ anya:3 } }) ] } } } },
     SORANA:   { from:5, dine:'bar',        nodes:['grocery','gunstore','guild'],
                 nodesBy:{ shinier:['hunter'] },
-                line:'喲。難得看你走這條路啊。' },
+                line:'喲。難得看你走這條路啊。',
+                meetBy:{ shinier:{
+                  lines:[ sor('lauaghbig','好，今天的目標是山豬！') ],
+                  date:{ lines:[ sor('smirk','要不要來比賽呀？'),
+                                 sor('tease','要是你贏的話……就……'),
+                                 sor('idea','就算你贏啦！') ] } } } },
   },
 };
 
