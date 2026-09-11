@@ -2528,7 +2528,12 @@ export const TOWNS = {
           ren('front','一會我就帶她過去。'),
         ] },
         /* ══ Stage 8 第三段（ver -953）══ 餐廳那一段演完，被閘門搬回索菈娜家。 */
-        { flag:'sv_s8_corvin', need:'sv_s8_dine', fromStage:8, checkpoint:true, lines:[
+        /* ⚠⚠ `endStoryExplore:true`（ver -1093）：這一段演完就**開放自由探索**
+           （旗 `free_explore_shinier`，§6.5.4.2）—— 稿上接著就是「自由探索。
+           敲敲看夥伴的門。」，而在那之前這張圖是劇情探索（碰不到女角、不排外出行程）。
+           ⚠ 演完才記（城鎮段落的通則）：中途離開或打輸回頭，探索還是鎖著的。 */
+        { flag:'sv_s8_corvin', need:'sv_s8_dine', fromStage:8, checkpoint:true,
+          endStoryExplore:true, lines:[
           cor('ecstasy','原來如此。『不知為何』啟動了遺蹟嗎……？'),
           ren('lookaway','是。'),
           cor('ecstasy','……'),
@@ -2573,6 +2578,38 @@ export const TOWNS = {
           ren('shockedCalm','！！'),
           ren('cringe','那個人……早就算好一切了……！'),
           sor('furiousq','我好討厭他！'),
+          /* ══ 三秒轉場（ver -1093，Ray 交稿）══ **同一個場景**，只是過了一點時間 ——
+             走既有的 `fadeOut`／`fadeIn`（-739 的三秒黑，照抄北泊翌朝那一段的寫法），
+             不換背景、不換節點。`hide` 把台上四個人清掉，亮回來由下一句的說話者重新上場。
+             ⚠ 兩拍都要 `speaker` 與 `auto`：`speaker` 是演出拍也要填的（lint 會擋，
+               它決定高亮誰）；`auto` 是因為全黑之下台上沒有人，空演出拍才走得動
+               （§6.5 -628：有立繪在台上的無台詞拍要點擊，沒人的才吃 auto）。 */
+          { speaker:'PLAYER', text:'', auto:3200, fadeOut:3000,
+            hide:['RENNA','NOUVELLE','SORANA','ANYA'] },
+          { speaker:'PLAYER', text:'', auto:3200, fadeIn:3000 },
+          ren('talkwork','那麼，就照科爾文副團長所說的，由我們帶安雅小姐到剩下三個遺跡探勘。'),
+          nou('surprise','那樣真的可以嗎？我是十二課的倒還好……'),
+          nou('shocked2','隨意調動璐娜團長的人的話……'),
+          { speaker:'PLAYER', blank:true },
+          ren('covermouth','真意外......連你也有怕的人啊？'),
+          ren('ask','不用擔心，那個人什麼都準備好了才來的。'),
+          /* （遞紙音）：走既有的 `se_openletter`（Stage8 那一幕拆電報用的同一支）——
+             這裡遞的是諭令，同一種「紙」的聲音，不另外要一支新音檔（鐵律 8）。 */
+          { speaker:'RENNA', text:'', se:'se_openletter', auto:1400 },
+          nou('surprise','這是……聖皇大人的諭令！'),
+          ren('evalutating','恐怕，聖王廳早就已經知道神殿甦醒的事了……'),
+          ren('evalutatingclosemouth','現在竟然連作戰課都摻和進來。'),
+          any('talk','那，我……'),
+          ren('smile','抱歉了，安雅小姐。還得委曲妳和我們同行一段時間，可以嗎？'),
+          any('shy','好……好！'),
+          /* ⚠ 稿上這一句沒有標差分 —— 立繪是**持續狀態**，不寫就是沿用上一張
+             （§6.5：不要為了「補一個」而換掉導演沒有要換的表情）。 */
+          sor(null,'看起來跟著你們反而比較開心呢。'),
+          /* ⚠ 只有立繪沒有台詞的一拍：**不給 `auto`** —— 台上有人的無台詞拍要
+             點一下才推進（§6.5 -628），那一拍是演給人看的。 */
+          any('smileshy',''),
+          ren('evalutatingclosemouth','……'),
+          ren('evalutating','那麼，在此地稍作休整，就出發吧。'),
         ] } ],
         /* ══ 踏出索菈娜家 → 村內戰開打（ver -802，Ray 交稿）══
            `flag:'shinier_siege'` ＝**它的已演旗就是圍城旗**（鐵律 9：插了就開圍城、
