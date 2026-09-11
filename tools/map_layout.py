@@ -58,6 +58,20 @@ POS = {
     'prison':(6,5),
     'mosschamber':(8,5), 'rift':(8,4), 'darkbridge':(8,3),
   },
+  # ── 石製遺跡（ver -1123）：一條主軸，中間一次岔路（左＝沉水石坑）──────
+  'fallen': {
+    'altar':(2,1),
+    'basin':(0,2), 'fork':(2,2),
+    'causeway':(2,3),
+    'entry':(2,4),
+  },
+  # ── 聖索菲亞城（ver -1123）：拓樸＝帝都，所以版面直接沿用 capital 那一組 ──
+  'santasofia': {
+    'midtown':(5,3), 'cityhall':(3,3), 'church':(7,3),
+    'dock':(2,4),    'inn':(8,4),
+    'gunstore':(0,6),'oldtown':(2,6), 'square':(5,6), 'uptown':(8,6), 'tavern':(10,6),
+    'guild':(2,8),   'grocery':(8,8),
+  },
 }
 # 跨圖出口畫成一個虛線框（`@<圖>:<格>` → 標題）
 OUT_POS = {
@@ -154,4 +168,5 @@ def main():
         '%s(%d)'%(N[k]['name'].split('　')[-1],deg[k]) for k in hubs)))
     print('  →', os.path.relpath(dst,ROOT))
 
-main()
+if __name__ == '__main__':
+    main()
