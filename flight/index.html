@@ -9502,10 +9502,17 @@ function s9Talk(lines, done){ say(lines, performance.now(), { sides:S9_SIDES, do
    鐵律 8）—— 不另外做一套「劇情用的加速」。
    ⚠ `sturmReady=0`：這一發是劇情給的，不吃冷卻 —— 下一拍就要教玩家自己按一次，
      卡在充能上的話那個教學按不動。 */
+/* ⚠⚠ **這一發推多久**（ver -1125，Ray：「劇情的風推船再往前推一秒，
+   不然掃不到遺跡」）：玩家自己按的 Sturm 是 `STURM_AUTO_MS`(1 秒) 的推背感，
+   而劇情這一發還要**把船送到遺跡的感應範圍內** —— 那一段戲的下一拍就是
+   長按船身感應，船停在半路的話掃出來是一片空的。
+   ⚠ 這個數字**只有劇情那一發在用**，玩家的 Sturm 一個字都沒動（那是手感，
+     不是劇情的節奏）。⚠ `s9RideWait` 的「至少等這麼久」讀同一個常數（鐵律 7）。 */
+const S9_PUSH_MS = STURM_AUTO_MS + 1000;
 function s9Boost(){
   const now=performance.now();
   sturmUntil     = now + STURM_DUR_MS;
-  sturmAutoUntil = now + STURM_AUTO_MS;
+  sturmAutoUntil = now + S9_PUSH_MS;
   sturmFlash     = now;
   sturmReady     = 0;
   try{ playSfx(sturmSE); }catch(_){}
@@ -9514,7 +9521,8 @@ function s9Boost(){
 /* ══ 那一發加速：期間不給操控，**等船真的停下來**才往下演（ver -1105，Ray）══
    ⚠ 判「停了沒」用 `Math.abs(cam.speed)<=0.06` —— 與「船不動就不生怪」同一個
      門檻（鐵律 7），不另訂一個數字。
-   ⚠ 至少要等自動前進那一秒跑完，不然一發動就「已經停了」（那時 speed 還沒起來）。
+   ⚠ 至少要等**那一發推完**（`S9_PUSH_MS`）才開始問速度，不然一發動就「已經停了」
+     （那時 speed 還沒起來）。
    ⚠ 保險絲 15 秒：萬一速度因故不歸零，戲不能卡在這裡。 */
 let s9Ride=false;
 function s9RideWait(done){
@@ -9522,7 +9530,7 @@ function s9RideWait(done){
   const t0=performance.now();
   const tick=()=>{
     const t=performance.now();
-    const early = t-t0 < STURM_AUTO_MS+600;
+    const early = t-t0 < S9_PUSH_MS+600;
     const moving = Math.abs(cam.speed)>0.06;
     if((early || moving) && t-t0 < 15000){ setTimeout(tick,120); return; }
     s9Ride=false;
