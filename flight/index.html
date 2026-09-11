@@ -3328,13 +3328,9 @@ function nearestFoundStar(){
     const dx=p.x*MAP_SCALE-cam.x, dy=p.y*MAP_SCALE-cam.y, d=dx*dx+dy*dy;
     if(d<bd){ bd=d; best=p; }
   }
-  /* 感應掃到的隱藏地標也算「已探索的點」（ver -1105）：方向計那一束本來就是
-     「感應找到的東西在哪個方向」，找到遺跡卻不指它才奇怪。 */
-  for(const P of PLACES){
-    if(!P.sense || !P.flag || !flagOn(P.flag)) continue;
-    const dx=P.x*MAP_SCALE-cam.x, dy=P.y*MAP_SCALE-cam.y, d=dx*dx+dy*dy;
-    if(d<bd){ bd=d; best=P; }
-  }
+  /* ⚠ ver -1116：**遺跡不再進方向計**（Ray：「被掃到的遺跡要產生一道光柱，
+     方向計的提示就不用了」）—— 光柱本身就是方向，而且它在世界裡，
+     玩家不必低頭看儀表。-1105 把遺跡併進這裡的那幾行已移除。 */
   return best;
 }
 function drawBearingLights(CR, cbx, bw2, deg){
@@ -6803,6 +6799,7 @@ function render(now){
   drawSettlements3D(scaleH,horizon,sinp,cosp);
   drawTrains(S,scaleH,horizon,sinp,cosp);                  // 火車跟城同一層（貼在地上）
   drawRuins(scaleH,horizon,sinp,cosp);                     // 地表的小型遺跡（ver -1107，同一層：貼在地上）
+  drawRuinBeams(scaleH,horizon,sinp,cosp,now);             // 掃到的遺跡射出的光柱（ver -1116）
   drawCitySmoke(S,scaleH,horizon,sinp,cosp,now);           // 炊煙蓋在城上（ver -446）
   drawPuffs(S,scaleH,horizon,sinp,cosp,0,Infinity);        // 雲蓋在城與煙上
   drawPlaces(scaleH,horizon,sinp,cosp);
@@ -7657,6 +7654,81 @@ function drawRuins(scaleH,horizon,sinp,cosp){
 }
 /* 剔除距離：遠到讀不出形狀就不畫（同火車「不如在那個距離就不要出現」的理由）。 */
 const RUIN_FAR=9000, RUIN_FADE=2200, RUIN_NEAR=60;
+
+/* ══⚠⚠ 被掃到的遺跡射出一道光柱（ver -1116，Ray：「被掃到的遺跡要產生一道光柱，
+   方向計的提示就不用了」）══
+   它**取代**方向計上那一束「感應」提示：光柱在世界裡，玩家抬頭就看得到方向與距離，
+   不必低頭讀儀表 —— 而且遠遠看到一道光正是「那裡有東西」最直接的說法。
+   ⚠ 看得到的距離**遠大於遺跡本身**（`BEAM_FAR` vs `RUIN_FAR`）：石頭幾十個像素就
+     糊了，光柱是燈塔，要在看不見石頭的距離就先看得到。
+   ⚠ 垂直線在這個相機下投影**仍然是垂直線**（沒有 roll），所以一根光柱就是
+     「同一個螢幕 x、兩個 y」，不必逐段投影。
+   ⚠ 遮擋走 `clipByTerrainDepth`：山擋得住它的下半截，露出山稜上方那一段 ——
+     那正好給了距離感。
+   ⚠ 顏色接感應那一系（青白）：它是混沌感知找出來的東西，同一個色系讀得出因果。
+   ⚠ 與地形同一顆像素（畫進低解析離屏再放大，§6.7）：畫在全解析上會是這個
+     畫面裡唯一一條「乾淨的漸層」，反而突兀。 */
+const BEAM_H=1100;        // 光柱高度（世界單位）
+const BEAM_W=34;          // 光柱寬度（世界單位）
+const BEAM_FAR=26000;     // 看得到的距離（遠大於遺跡本身）
+let beamFB=null, BFC=null;
+function drawRuinBeams(scaleH,horizon,sinp,cosp,now){
+  if(!MAPW) return;
+  const sxk=W/BW, syk=VIEWH/BH;
+  for(const P of PLACES){
+    if(!P.sense || !P.flag || !flagOn(P.flag)) continue;
+    const wx=P.x*MAP_SCALE, wy=P.y*MAP_SCALE;
+    const dx=wx-cam.x, dy=wy-cam.y;
+    const dist=Math.hypot(dx,dy);
+    if(dist>BEAM_FAR) continue;
+    const z=dx*(-sinp)+dy*(-cosp);
+    if(z<RUIN_NEAR||z>ZFAR*0.95) continue;
+    const sv=(dx*cosp+dy*(-sinp))/z;
+    if(sv<-1.3||sv>1.3) continue;
+    const gh=HGT[clamp(P.y|0,0,MAPH-1)*MAPW+clamp(P.x|0,0,MAPW-1)];
+    const cx=((sv+1)/2*BW)*sxk;
+    const yAt=h=>(((cam.alt-gh-h)/z + z*curvAt(sv))*scaleH+horizon)*syk;
+    const y0=yAt(0), y1=yAt(BEAM_H);
+    if(y1>VIEWH||y0<-VIEWH) continue;
+    const halfW=Math.max(1.2, BEAM_W*0.5*W/(2*z));
+    /* 脈動：慢、幅度小 —— 這是一道靜靜立著的光，不是警報器。 */
+    const pul=0.82+0.18*Math.sin(now*0.0016);
+    const top=Math.max(y1,-40), bot=Math.min(y0,VIEWH+20);
+    if(bot-top<2) continue;
+    const pad=Math.ceil(halfW*3)+6;
+    const fx0=Math.floor(cx-pad), fy0=Math.floor(top)-4;
+    const fbw=Math.ceil(pad*2), fbh=Math.ceil(bot-top)+8;
+    if(fbw<3||fbh<3||fbh>VIEWH*3) continue;
+    const pk=clamp(BW/W,0.15,1);
+    const bwp=Math.max(2,Math.round(fbw*pk)), bhp=Math.max(2,Math.round(fbh*pk));
+    if(!beamFB){ beamFB=document.createElement('canvas'); BFC=beamFB.getContext('2d'); }
+    if(beamFB.width<bwp||beamFB.height<bhp||beamFB.width>bwp*2||beamFB.height>bhp*2){
+      beamFB.width=bwp; beamFB.height=bhp; }
+    BFC.setTransform(1,0,0,1,0,0); BFC.clearRect(0,0,bwp,bhp);
+    BFC.setTransform(bwp/fbw,0,0,bhp/fbh,-fx0*bwp/fbw,-fy0*bhp/fbh);
+    /* 三層：外暈（寬、淡）→ 光柱（漸淡到頂）→ 核心（窄、亮）。
+       ⚠ 頂端要淡到 0：切齊的光柱讀起來是一根柱子，不是一道光。 */
+    const grad=(w,a0)=>{
+      const g=BFC.createLinearGradient(0,y0,0,y1);
+      g.addColorStop(0,   'rgba(150,236,244,'+(a0*pul).toFixed(3)+')');
+      g.addColorStop(0.45,'rgba(120,220,236,'+(a0*0.55*pul).toFixed(3)+')');
+      g.addColorStop(1,   'rgba(120,220,236,0)');
+      BFC.fillStyle=g; BFC.fillRect(cx-w,y1,w*2,y0-y1);
+    };
+    BFC.globalCompositeOperation='lighter';
+    grad(halfW*2.6, 0.16);
+    grad(halfW,     0.42);
+    grad(halfW*0.38,0.72);
+    BFC.globalCompositeOperation='source-over';
+    ctx.save();
+    clipByTerrainDepth(z, sxk, syk,
+      clamp(Math.floor((cx-pad)/sxk)-1,0,BW-1), clamp(Math.ceil((cx+pad)/sxk)+1,0,BW-1));
+    ctx.globalCompositeOperation='lighter';
+    ctx.drawImage(beamFB,0,0,bwp,bhp,fx0,fy0,fbw,fbh);
+    ctx.globalCompositeOperation='source-over';
+    ctx.restore();
+  }
+}
 
 function drawTrains(S,scaleH,horizon,sinp,cosp){
   if(!TRAINS.length) return;
