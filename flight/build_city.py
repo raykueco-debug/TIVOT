@@ -180,6 +180,11 @@ JOBS = [{
     'unsquash': 1.00,
     'maxdim': 440,   # ver -836：Ray「太糊了都看不出來是村落」→ -827 的 200 恢復成全案預設 440（原圖 1534px，細節都在）
     'val': 1.00, 'sat': 0.90,   # ver -1112：新圖本來就亮，不必再推（舊圖是 1.50/0.95）
+    # ver -1114（Ray：「房子是平的，不能拉一點立體起來嗎？」）：沒有 hsrc 時所有
+    # 建成區都是同一個 H_BUILT(0.20)＝每棟一樣高＝讀起來是平的。`towers` 打開
+    # 「局部對比→高度」那一條：比鄰域亮的（屋頂受光面）拉高，樹與陰影不動，
+    # 於是屋頂之間有高低差。⚠ 房子的**牆高**另外由 index.html 的 planTall 決定。
+    'towers': 0.62,
 
     'dst': 'shinier_plan.webp',
     'hdst': 'shinier_h.webp',
@@ -590,25 +595,37 @@ for J in JOBS:
     #   落點附近**的同類均色。乘法而不是換色 —— 插畫自己的明暗變化要留著。
     # ⚠ 增益夾在 [0.6,1.8]：插畫若本來就接近就幾乎不動，差太多也不會過曝。
     # ⚠ 遮罩要羽化，否則公園邊緣會出現一圈硬色階。
-    _ring = None
+    # ⚠⚠ ver -1114：城外那一圈**找不到同類就往外擴**（Ray：「綠色跟地形咬合得不好」）。
+    #   夏爾村的 planW 只有 360 → 半徑 9 個地圖像素，那一圈大半是湖與岩地，
+    #   綠地樣本不到 40 個就整個跳過對齊 —— 於是插畫的綠原封不動貼上去，
+    #   與周圍的森林是兩種綠。村子越小越容易踩到（圈是照 planW 算的）。
+    #   作法：由近而遠試幾圈，取**第一圈有足夠樣本的**（仍然是「附近」的顏色）。
+    _rings = None
     if J.get('toneMatch', True):
         _tr = np.asarray(Image.open(os.path.join(HERE, 'silvermoon_terrain.png'))
                          .convert('RGB')).astype(np.float32)
         _yy, _xx = np.mgrid[0:_tr.shape[0], 0:_tr.shape[1]]
         _rad = J['planW'] * 0.5 / MAP_SCALE
         _d = np.sqrt((_xx - J['mx']) ** 2 + (_yy - J['my']) ** 2)
-        _ring = _tr[(_d > _rad * 0.9) & (_d < _rad * 2.0)]     # 城外一圈
+        _rings = [(k, _tr[(_d > _rad * 0.9) & (_d < _rad * k)])
+                  for k in (2.0, 4.0, 8.0, 16.0)]
 
     def _match(mask, pick, name):
         """把 mask 內的像素乘一組增益，均色對上地圖同類的均色。"""
-        if _ring is None or mask.sum() < 40:
+        if _rings is None or mask.sum() < 40:
             return
-        mr, mg, mb = _ring[:, 0], _ring[:, 1], _ring[:, 2]
-        sel = pick(mr, mg, mb)
-        if sel.sum() < 40:
-            print('  逐類別對齊：地圖城外找不到足夠的%s，跳過' % name)
+        ring = sel = None
+        for k, rg in _rings:
+            s2 = pick(rg[:, 0], rg[:, 1], rg[:, 2])
+            if s2.sum() >= 40:
+                ring, sel = rg, s2
+                if k > 2.0:
+                    print('  逐類別對齊 %s：城外一圈樣本不足，擴到 %.0f 倍半徑' % (name, k))
+                break
+        if ring is None:
+            print('  逐類別對齊：地圖上找不到足夠的%s，跳過' % name)
             return
-        tgt = _ring[sel].mean(axis=0)
+        tgt = ring[sel].mean(axis=0)
         # ⚠ 地圖 PNG 的顏色是**畫面上的顏色之前**的東西：地形每像素還會再過一道
         #   GRADE_SAT 去飽和（index.html 的內迴圈）。直接拿原始色當目標，等於替
         #   綠地把去飽和還原掉，倍率正好 1/0.68 ≈ 1.47 —— 實測畫面上城的綠比
