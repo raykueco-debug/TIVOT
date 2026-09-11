@@ -1937,6 +1937,10 @@ const RUIN_ART = {
        ⚠ 這一組是**唯一的尺寸真相**：柱子的粗細與高度都是照地基推的比例寫的，
          要整座放大縮小只動 `base.r`（其餘按比例自己跟著走，見 drawRuins 的 `sc`）。 */
     base: { r:120, n:20, jit:0.055 },  // 圓形地基：半徑／幾邊形／邊緣的不規則量
+    /* 外圈的草（ver -1108，Ray：「周圍給他一圈不規則的草」）：外徑在地基的
+       1.02~1.34 倍之間逐段亂數 —— 等寬的一圈看起來是畫上去的環，不是長出來的草。
+       ⚠ 內緣直接用地基的多邊形（草壓在石板下面），兩者之間不留縫。 */
+    grass: { k0:1.02, k1:1.34 },
     speck: 26,                          // 表面斑駁：幾塊（位置與明暗是定數，不會閃）
     parts: [
       /* 倒柱（躺著）：`len` 長、`dia` 直徑、`seg` 斷成幾節（縫＝斷了） */
@@ -1954,12 +1958,18 @@ const RUIN_ART = {
 /* 石材的三個色階（頂／側／暗側）＋地基。像素風＝**平塗硬邊**，不做漸層。
    ⚠ 色要**壓得住**：第一版偏白，在深綠的地形上讀起來像一張紙。
    ⚠ 斑駁是**兩階色塊**（亮斑／暗斑）不是雜訊：低解析度下逐像素雜訊只會糊成灰。 */
-const RUIN_COL = { top:'#b0a488', side:'#5f584b', dark:'#39342c',
+const RUIN_COL = { top:'#b0a488', side:'#645d4e', dark:'#443e35',
                    floor:'#7a7264', floorDark:'#615a4e', floorLite:'#8b8272',
                    edge:'#38332c', shade:'rgba(38,34,28,.42)',
                    /* 交件的材質偏亮（灰白），不壓的話整塊在深綠的地形上像一張紙。
                      壓到比柱頂暗一階：**柱子要比地基亮**，才讀得出是立體的東西。 */
-                   texTint:'rgba(66,60,50,.56)' };
+                   texTint:'rgba(66,60,50,.56)',
+                   grass:'#3b4d3a', grassTint:'rgba(38,58,40,.34)',
+                   sideLit:'#8d8371' };
+/* 光從哪裡來（世界座標的方向向量，指向光源）。**由地形那一支每幀發佈**
+   （`drawTerrain` 的 lx/ly，隨日月移動）—— 這裡只讀，不自己算（鐵律 7）。
+   ⚠ 初值只是第一幀還沒跑到地形時的保險。 */
+const lightXY = { x:-0.55, y:-0.84 };
 /* ══ 石材（ver -1107，Ray 交件 `flight/geo/flight_ruins`）══
    交件是碎石鋪面（1254²）→ LANCZOS 縮到 256²（與 geo/ 其餘材質同規格）。
    ⚠ 用 `createPattern` ＋ `setTransform` 貼：把材質**釘在地面的座標系**上
@@ -1971,6 +1981,13 @@ let ruinTex=null, ruinTexPat=null;
 (function(){ const im=new Image();
   im.onload=()=>{ ruinTex=im; ruinTexPat=null; };
   im.src='geo/flight_ruins.webp?v=2'; })();   // ?v=2：Ray 換了新圖（同名覆蓋，§5）
+/* 草（ver -1108）：**沿用地形自己的森林材質**（`geo/forest_dark`）——
+   周圍本來就是林地，用同一張材質色調天生就合，也不必多要一張圖。 */
+let grassTex=null, grassPat=null;
+(function(){ const im=new Image();
+  im.onload=()=>{ grassTex=im; grassPat=null; };
+  im.src='geo/forest_dark.webp'; })();
+const GRASS_TEXEL=1.1;
 /* 一個材質像素等於幾個世界單位。⚠ 這個數字決定**一塊石板在畫面上多大**：
    新交件是碎石鋪面（橫向約 14 塊），1.4 讓整塊材質覆蓋 ~360 世界單位 ——
    直徑 240 的地基上看得到約 9 塊石板，而且**看不到接縫**（材質比地基大）。
@@ -1988,6 +2005,17 @@ function ruinShape(A){
     const a=i/B.n*Math.PI*2, r=B.r*(1+(rnd()-0.5)*2*B.jit);
     poly.push([Math.cos(a)*r, Math.sin(a)*r]);
   }
+  /* 外圈的草：**不規則**（每一段各自的外徑不同），而且要**咬進石板一點點**
+     —— 草與石板之間留一條縫的話，看起來是兩片貼紙疊在一起。 */
+  const gr=[];
+  if(A.grass){
+    for(let i=0;i<B.n;i++){
+      const a=i/B.n*Math.PI*2;
+      const r=B.r*(A.grass.k0+rnd()*(A.grass.k1-A.grass.k0));
+      gr.push([Math.cos(a)*r, Math.sin(a)*r]);
+    }
+  }
+  A._grass=gr;
   const sp=[];
   for(let i=0;i<(A.speck||0);i++){
     const a=rnd()*Math.PI*2, d=Math.sqrt(rnd())*B.r*0.86;
@@ -6219,6 +6247,10 @@ function render(now){
        月亮明明在西邊、山的受光面卻在東邊。 */
   const lx=lerp(Math.cos(MOON_AZ),Math.cos(S.az),S.day);
   const ly=lerp(Math.sin(MOON_AZ),Math.sin(S.az),S.day);
+  /* ⚠⚠ **光的方向發佈出去**（ver -1108）：地表以外的東西（遺跡的立面…）要用
+     **同一個**方向，不然同一個畫面上兩套光源 —— 而且這個方向會隨日月移動，
+     抄一份寫死的一定走鐘（鐵律 7：算的那一支把結果發佈，其他人只讀）。 */
+  lightXY.x=lx; lightXY.y=ly;
   const moonI=lerp(MOON_LIT,0.04,S.day);
   const sunI=clamp(S.el*0.85+0.20,0.05,0.50)+moonI;
   const ambI=lerp(0.46,0.52,S.day);   // 降低環境光：背光面要真的暗得下來
@@ -7319,9 +7351,11 @@ function drawRuins(scaleH,horizon,sinp,cosp){
         return px(lx,ly,0);
       });
       if(pts.some(q=>!q)) return null;
+      const loc=[[-hw,-hl],[hw,-hl],[hw,hl],[-hw,hl]].map(q=>[
+        x+(q[0]*c-q[1]*sn), y+(q[0]*sn+q[1]*c) ]);
       const top=pts.map(q=>({ x:q.x, y:q.y-(h||0)*dyk/q.z, z:q.z }));
       let z=0; for(const q of pts) z+=q.z;
-      return { base:pts, top, z:z/4 };
+      return { base:pts, top, loc, z:z/4 };
     };
     /* 這一座要畫的東西，先全部算出來（順便量螢幕外框）。 */
     const items=[];
@@ -7339,6 +7373,14 @@ function drawRuins(scaleH,horizon,sinp,cosp){
     { const pts=shape.map(q=>px(q[0],q[1],0));
       if(!pts.some(q=>!q)){ let z=0; for(const q of pts) z+=q.z;
                             slab={ base:pts, top:pts, z:z/pts.length }; take(slab); } }
+    /* 外圈的草：**要一起量進外框**，不然離屏會把它裁掉（草比地基大三成）。 */
+    let grassPts=null;
+    if(A._grass && A._grass.length){
+      const gp=A._grass.map(q=>px(q[0],q[1],0));
+      if(!gp.some(q=>!q)){ grassPts=gp;
+        for(const q of gp){ if(q.x<x0)x0=q.x; if(q.x>x1)x1=q.x;
+                            if(q.y<y0)y0=q.y; if(q.y>y1)y1=q.y; } }
+    }
     /* 表面斑駁：貼在地基上的小色塊（兩階，亮／暗）。 */
     const tiles=[];
     for(const t of (A._speck||[])){
@@ -7376,6 +7418,28 @@ function drawRuins(scaleH,horizon,sinp,cosp){
       g.moveTo(pts[0].x,pts[0].y);
       for(let i=1;i<pts.length;i++) g.lineTo(pts[i].x,pts[i].y);
       g.closePath(); };
+    /* ①a 外圈的草（畫在石板之前＝壓在它下面）。 */
+    if(grassPts){
+      { const gp=grassPts;
+        poly(RFC,gp);
+        let done=false;
+        if(grassTex){
+          if(!grassPat) grassPat=RFC.createPattern(grassTex,'repeat');
+          const O=px(0,0,0), XA=px(A.base.r,0,0), YA=px(0,A.base.r,0);
+          if(grassPat && O && XA && YA && grassPat.setTransform){
+            const k=GRASS_TEXEL/A.base.r;
+            try{
+              grassPat.setTransform(new DOMMatrix([
+                (XA.x-O.x)*k, (XA.y-O.y)*k, (YA.x-O.x)*k, (YA.y-O.y)*k, O.x, O.y ]));
+              RFC.fillStyle=grassPat; RFC.fill();
+              RFC.fillStyle=RUIN_COL.grassTint; RFC.fill();
+              done=true;
+            }catch(_){ done=false; }
+          }
+        }
+        if(!done){ RFC.fillStyle=RUIN_COL.grass; RFC.fill(); }
+      }
+    }
     /* ① 石地板（先畫，其餘都站在它上面）。有材質就貼材質＋壓色，沒有就平塗。 */
     if(slab){
       poly(RFC,slab.base);
@@ -7420,18 +7484,36 @@ function drawRuins(scaleH,horizon,sinp,cosp){
         if(k) RFC.lineTo(q.x+ox,q.y+oy); else RFC.moveTo(q.x+ox,q.y+oy); }
       RFC.closePath(); RFC.fill();
     }
-    /* ③ 方塊：由遠而近（畫家演算法）。牆一次 fill，頂面逐塊亮色。 */
-    RFC.beginPath();
+    /* ══ ③ 方塊：由遠而近（畫家演算法）══
+       ⚠⚠ **立面要分明暗**（ver -1108，Ray：「立面怎麼辦？」）：四面同一個顏色的話
+         柱子看起來是平的貼紙。這一層的立面在畫面上只有幾個像素高 —— 那個尺度下
+         **貼材看不出來，明暗看得出來**，所以走的是「朝光的亮一階、背光的暗一階」
+         （平塗硬邊，cel 的做法），不是貼圖。
+       ⚠ 法線在**世界座標**算（`loc` 是底面四角的世界偏移），所以船繞著飛時
+         亮面會跟著換 —— 用螢幕座標算的話轉一圈亮面不會動，馬上穿幫。
+       ⚠ 四個面**逐面由遠而近**畫（不再一次 fill）：不同顏色了，疊錯順序會讓
+         背面蓋過正面。一塊四面、十幾塊，成本仍然很小。 */
+    const LGT=lightXY;
     for(const B of items){
+      const faces=[];
       for(let k=0;k<4;k++){
-        const p0=B.base[k], p1=B.base[(k+1)%4], t1=B.top[(k+1)%4], t0=B.top[k];
-        RFC.moveTo(p0.x,p0.y); RFC.lineTo(p1.x,p1.y); RFC.lineTo(t1.x,t1.y); RFC.lineTo(t0.x,t0.y); RFC.closePath();
+        const a=B.loc[k], b=B.loc[(k+1)%4];
+        let nx=(b[1]-a[1]), ny=-(b[0]-a[0]);          // 邊的法線（順時針＝朝外）
+        const nl=Math.hypot(nx,ny)||1; nx/=nl; ny/=nl;
+        const d=nx*LGT.x+ny*LGT.y;                    // >0＝朝光
+        faces.push({ k, z:(B.base[k].z+B.base[(k+1)%4].z)/2,
+                     col: d>0.30 ? RUIN_COL.sideLit : (d<-0.30 ? RUIN_COL.dark : RUIN_COL.side) });
       }
+      faces.sort((p,q)=>q.z-p.z);
+      for(const f of faces){
+        const k=f.k, p0=B.base[k], p1=B.base[(k+1)%4], t1=B.top[(k+1)%4], t0=B.top[k];
+        RFC.beginPath();
+        RFC.moveTo(p0.x,p0.y); RFC.lineTo(p1.x,p1.y); RFC.lineTo(t1.x,t1.y); RFC.lineTo(t0.x,t0.y); RFC.closePath();
+        RFC.fillStyle=f.col; RFC.fill();
+      }
+      poly(RFC,B.top); RFC.fillStyle=RUIN_COL.top; RFC.fill();
+      RFC.strokeStyle=RUIN_COL.dark; RFC.lineWidth=Math.max(1,1.0*pk); RFC.stroke();
     }
-    RFC.fillStyle=RUIN_COL.side; RFC.fill();
-    RFC.strokeStyle=RUIN_COL.dark; RFC.lineWidth=Math.max(1,1.0*pk); RFC.stroke();
-    for(const B of items){ poly(RFC,B.top); RFC.fillStyle=RUIN_COL.top; RFC.fill();
-                           RFC.strokeStyle=RUIN_COL.dark; RFC.stroke(); }
     /* ④ 貼回主畫面：逐欄遮擋（山擋得住它）＋遠距淡出。 */
     ctx.save();
     clipByTerrainDepth(zmin, sxk, syk,
