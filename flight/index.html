@@ -47,45 +47,41 @@
     text-align:center;font-size:10px;letter-spacing:.18em;color:var(--parch);opacity:.28;}
   #fps{position:fixed;right:12px;top:calc(env(safe-area-inset-top) + 54px);
     font-size:9px;color:var(--parch);opacity:.35;}
-  #backBtn,#mapBtn,#talkBtn{position:fixed;top:calc(env(safe-area-inset-top) + 10px);z-index:40;
+  #backBtn{position:fixed;top:calc(env(safe-area-inset-top) + 10px);z-index:40;
     background:rgba(5,6,12,.72);border:1px solid rgba(201,162,39,.5);color:var(--gold);
-    font-family:inherit;font-size:11px;letter-spacing:.14em;padding:5px 12px;cursor:pointer;}
+    font-family:inherit;cursor:pointer;}
   /* ══ 系統鈕（ver -1085，Ray：「把飛行地圖右上的 ✕ 改成通用的 II 系統鈕」）══
      -775 是一顆圓形 ✕（＝離開）。現在它打開的是**系統選單**，所以字面也要跟著改
-     （同 -899 的原則：鈕的字面是它的規格，`✕` 讀起來是「離開」，與它做的事不一致）。
+     （同 -899 的原則：鈕的字面是它的規格）。
      ⚠ 兩條槓用**兩個 `<i>` 畫**，不用「‖」那個字：字寬與粗細各家字型差很多，
-       圓鈕正中的對稱靠字型碰運氣一定會歪（照抄主遊戲 `#exitBtn` 的作法與尺寸）。 */
+       圓鈕正中的對稱靠字型碰運氣一定會歪（照抄主遊戲 `#exitBtn` 的作法與尺寸）。
+     ⚠ ver -1086 起頂列**只剩這一顆**：對話改成輕點船、地圖搬到面板左下、
+       道具與進度已拆 —— 天空那一半還給畫面。 */
   #backBtn{right:12px;width:44px;height:44px;padding:0;border-radius:50%;
     letter-spacing:0;display:flex;align-items:center;justify-content:center;gap:5px;}
   #backBtn i{width:4px;height:15px;border-radius:2px;background:currentColor;display:block;}
-  /* ══ 地圖鈕改用**通用的旅誌 icon**（ver -1085，Ray：「地圖也拿掉，用通用的地圖
-     icon，位置一樣」）══ 與城鎮那一顆同一張圖（`resources/vfx/map.webp`，-868）——
-     玩家在城裡按的就是它，換個畫面不該換個長相。
-     ⚠ 位置不動（右緣仍在 78px）：只是把字換成圖，並照 88:59 的原比例縮成 52×35。
-     ⚠ 靜音鈕已拆（ver -856，「放到系統選單裡」）、道具鈕已拆（ver -1085）——
-       對話維持在 144，與地圖鈕（78+52＝130）之間還有 14px。 */
-  #mapBtn{right:78px;width:52px;height:35px;padding:0;overflow:hidden;
-    background:transparent;border:0;box-shadow:0 4px 10px rgba(0,0,0,.55);border-radius:5px;}
-  #mapBtn img{width:100%;height:100%;object-fit:cover;display:block;}
-  #mapBtn:active{transform:scale(.95);}
-  #talkBtn{right:144px;}
-  #backBtn:active,#talkBtn:active{background:rgba(201,162,39,.16);}
-  /* 生怪鈕：開發用。放操作盤左下角——舵輪佔滿面板中央，只有兩側下緣是空的。
-     ⚠ z-index 要高過面板（面板是 canvas 直接畫的，本身不佔 DOM 層級），
-       但低於地圖畫面(60)，免得地圖開著還按得到。 */
-  /* ⚠ 底下那一排鈕要**讓開楣**（ver -387）：楣常駐在畫面最底，高度是 JS 依圖比例
-     算出來的（`--fkerb-top-h`），寫死像素在別的螢幕寬度上一定蓋到。 */
-  #spawnBtn{position:fixed;left:12px;
+  #backBtn:active{background:rgba(201,162,39,.16);}
+  /* ══ 地圖鈕：**控制面板左下**（ver -1086，Ray：「地圖在控制面版左下」）══
+     圖與尺寸都與城鎮那一顆相同（`resources/vfx/map.webp` 88×59，ver -868/-899）——
+     玩家在城裡按的就是它，換個畫面不該換個長相也不該換個大小。
+     ⚠ 要**讓開楣**（同底下那一排）：楣常駐在畫面最底，高度由 JS 依圖比例算出來
+       （`--fkerb-top-h`），寫死像素在別的螢幕寬度上一定蓋到。 */
+  #mapBtn{position:fixed;left:12px;
     bottom:calc(env(safe-area-inset-bottom) + 12px + var(--fkerb-top-h,0px));
-    z-index:40;background:rgba(5,6,12,.72);border:1px solid rgba(201,162,39,.5);
-    color:var(--gold);font-family:inherit;font-size:11px;letter-spacing:.14em;
-    padding:5px 12px;cursor:pointer;}
-  #spawnBtn:active{background:rgba(201,162,39,.16);}
+    z-index:40;width:88px;height:59px;padding:0;overflow:hidden;
+    background:transparent;border:0;border-radius:6px;
+    box-shadow:0 5px 14px rgba(0,0,0,.6);cursor:pointer;}
+  #mapBtn img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;}
+  #mapBtn:active{transform:scale(.95);}
+  /* ⚠ 底下那一排要**讓開楣**（ver -387）：楣常駐在畫面最底，高度是 JS 依圖比例
+     算出來的（`--fkerb-top-h`），寫死像素在別的螢幕寬度上一定蓋到。
+     ⚠ 生怪鈕已拆（ver -1086，Ray：「生怪紐拿掉，生怪改成長按船身以外的飛行畫面」）。 */
   /* 免戰鈕（ver -383，Ray：「地圖設計時一直被怪打會煩死」）：
      開著＝碰到怪只跳「遭遇」那一格，**不進戰鬥**。放生怪鈕右邊，同一排。
      ⚠ `left` 用 `calc` 讓開生怪鈕的寬度 —— 那顆是四個中文字，寬度會隨字型變，
        寫死像素在別的裝置上會疊到。 */
-  #peaceBtn{position:fixed;left:calc(12px + 5.4em);
+  /* ⚠ ver -1086：生怪鈕退場、地圖 icon 搬進來 —— `left` 改成讓開那張圖（88＋12＋10）。 */
+  #peaceBtn{position:fixed;left:110px;
     bottom:calc(env(safe-area-inset-bottom) + 12px + var(--fkerb-top-h,0px));
     z-index:40;background:rgba(5,6,12,.72);border:1px solid rgba(201,162,39,.5);
     color:var(--gold);font-family:inherit;font-size:11px;letter-spacing:.14em;
@@ -430,13 +426,11 @@
 <div id="place"><div class="nm" id="pnm"></div><div class="ty" id="pty"></div></div>
 <button id="mapBtn" aria-label="地圖"><img src="../resources/vfx/map.webp" alt="地圖"></button>
 <!-- 靜音鈕已拆（ver -856）：開關在主遊戲的選單面板；本頁靠 storage 事件同步 muted -->
-<button id="talkBtn">對話</button>
 <!-- 道具欄（ver -380，Ray：「道具欄只在飛行畫面有入口」）。
      ⚠ 走主遊戲那一支 `modules/loot.js` —— 道具與金錢是**同一份存檔**
        （`tivot_inventory_v1` / `tivot_money_v1`），出城打完再入城都是連續的。
      ⚠ 樣式由那支模組自己掛（`css/lootsheet.css`），這一頁不載 `style.css`。 -->
 <button id="backBtn" aria-label="系統選單"><i></i><i></i></button>
-<button id="spawnBtn">生怪</button>
 <!-- 免戰（ver -383）：開著就不會被拉進戰鬥，畫地圖時用。狀態記在 localStorage。 -->
 <button id="peaceBtn">免戰</button>
 <!-- 降落（ver -416）：靠近有城鎮資料的聚落時才亮。 -->
@@ -4403,6 +4397,9 @@ let fwd=0, rgt=0, dragging=false, ox=0, oy=0, moved=0, dragId=null;
 let rudder=0;                               // 實際生效的舵量（含鍵盤）——只給面板顯示用
 const STEER_DEAD=14;                        // 橫向死區（像素）
 const TAP_SLOP=12;                          // 位移小於此值＝點擊而非拖曳
+const TAP_MS=320;                           // 按住短於此＝輕點（超過就是長按，見 senseT0）
+const SPAWN_HOLD_MS=1200;                   // 長按船身以外＝生怪（管理人限定，ver -1086）
+let downAt=0, onShip=false, spawnHoldT=0;   // 這一次按下的時戳／有沒有按在船上／生怪的長按計時
 const stage=document.getElementById('stage');
 stage.addEventListener('pointerdown',e=>{
   /* 對白進行中：點畫面任何一處推進一句，不進操舵也不進感應。
@@ -4427,15 +4424,26 @@ stage.addEventListener('pointerdown',e=>{
     sturmT0=performance.now();
     senseUnlock(sturmSE);          // ⚠ 必須在手勢裡解鎖，見 sturmSE 的說明
   }
+  /* ══ 船身的兩個力度（ver -1086，Ray：「對話改成輕點船，搜索是長按」）══
+     同一個物件、兩個力度：**點一下＝閒聊、按著不放＝感應**。
+     ⚠ 「點到船了沒」只算一次（`onShip`）—— 放手那一支要用同一個答案，
+       各算一次的話船在螢幕上是會動的（`shipHit` 每幀由 drawShip 更新），
+       按下與放開之間它已經不在原處了（鐵律 7）。 */
+  downAt=performance.now();
+  onShip=!!(shipHit && Math.hypot(e.clientX-shipHit.x, e.clientY-shipHit.y)<=shipHit.r);
   senseT0=0;
-  if(featureOn('sense') && shipHit){
-    const d=Math.hypot(e.clientX-shipHit.x, e.clientY-shipHit.y);
-    if(d<=shipHit.r){
-      senseT0=performance.now();
-      // ⚠ 一定要在這裡解鎖：這是唯一還在手勢裡的時機（見 senseUnlock）
-      senseUnlock(senseBeat); senseUnlock(senseSE);
-    }
+  if(featureOn('sense') && onShip){
+    senseT0=performance.now();
+    // ⚠ 一定要在這裡解鎖：這是唯一還在手勢裡的時機（見 senseUnlock）
+    senseUnlock(senseBeat); senseUnlock(senseSE);
   }
+  /* ══ 長按**船身以外**＝生怪（開發用，ver -1086）══
+     ⚠ 管理人限定，理由見 `spawnByHold`（按住不動是玩家的煞車動作）。
+     ⚠ 在手指還按著的時候就觸發（不是放開才生）—— 長按要當場有回饋，
+       不然會讓人以為沒反應而一直按。一動或放開就取消。 */
+  clearTimeout(spawnHoldT); spawnHoldT=0;
+  if(ADMIN && !onShip && !sturmT0)
+    spawnHoldT=setTimeout(()=>{ spawnHoldT=0; spawnByHold(); }, SPAWN_HOLD_MS);
 });
 stage.addEventListener('pointermove',e=>{
   if(e.pointerId!==dragId) return;
@@ -4443,6 +4451,7 @@ stage.addEventListener('pointermove',e=>{
   moved=Math.max(moved,Math.hypot(dx,dy));
   if(moved>TAP_SLOP && senseT0) senseCancel();      // 一動就不是長按
   if(moved>TAP_SLOP && sturmT0) sturmCancel();       // 同上：一動就不是長按
+  if(moved>TAP_SLOP && spawnHoldT){ clearTimeout(spawnHoldT); spawnHoldT=0; }
   fwd=clamp(dy/DRAG_FULL,-1,1);                   // 往下（往後）拉＝前進
   const mag=Math.max(0,Math.abs(dx)-STEER_DEAD);  // 扣掉死區後才算舵量
   rgt=clamp(-Math.sign(dx)*mag/(DRAG_FULL-STEER_DEAD),-1,1);   // 往左拉＝往右偏
@@ -4450,12 +4459,19 @@ stage.addEventListener('pointermove',e=>{
 const endDrag=e=>{
   if(e && e.pointerId!==dragId) return;
   if(senseT0) senseCancel();
+  clearTimeout(spawnHoldT); spawnHoldT=0;
+  const held = downAt ? performance.now()-downAt : 0;
   // 幾乎沒動＝點擊：命中已展開的名牌就進入該地標
   if(dragging && moved<TAP_SLOP && e && e.clientX!=null){
     const px=e.clientX, py=e.clientY;
+    let hitName=false;
     for(const h of hotspots){
-      if(px>=h.x&&px<=h.x+h.w&&py>=h.y&&py<=h.y+h.h){ enterPlace(h.P); break; }
+      if(px>=h.x&&px<=h.x+h.w&&py>=h.y&&py<=h.y+h.h){ enterPlace(h.P); hitName=true; break; }
     }
+    /* **輕點船身＝閒聊**（ver -1086）。⚠ 用「按了多久」而不是「感應有沒有發動」
+       來分辨輕點與長按：長按放手時 `senseT0` 已經被上面那一行收掉了，
+       拿它當判準會讓每一次長按放手都再補一段閒聊。 */
+    if(!hitName && onShip && held<TAP_MS) talkTap();
   }
   if(dragId!==null){ try{ stage.releasePointerCapture(dragId); }catch(_){} }
   dragging=false; dragId=null; fwd=0; rgt=0;
@@ -4928,13 +4944,16 @@ function drawMapPin(ox,oy,sc){
 }
 function updateMapMe(){ if(mapOpen) drawMap(); }
 
-/* 「對話」鈕：隨機播一段閒聊。
+/* 「閒聊」：隨機播一段。**輕點船身**觸發（ver -1086，Ray：「對話改成輕點船，
+   搜索是長按，對話鈕拿掉」）——「點一下說話、按著不放感應」是同一個物件的兩個
+   力度，比兩顆標籤鈕好記，也把頂列讓回給畫面。
    ⚠ 與探索演出／既有對白**互斥** —— 兩者都會佔用同一組立繪與對話框，
-     疊在一起會變成兩段對白搶同一個舞台。地圖開著時也不接（看不到）。 */
-document.getElementById('talkBtn').addEventListener('click',()=>{
+     疊在一起會變成兩段對白搶同一個舞台。地圖開著時也不接（看不到）。
+   ⚠ 判定只有這一支（鐵律 8）：呼叫端只有 `endDrag` 那一個輕點分支。 */
+function talkTap(){
   if(sayQueue || senseOn || senseFireAt || senseT0 || mapOpen) return;
   talkStart(performance.now());
-});
+}
 /* 開地圖（ver -741 抽出）：mapBtn 與出航對白（「地圖彈出」那一拍）共用（鐵律 8）。 */
 function openMapView(){
   // ⚠ 浮雕與聚落都是點開才算（2.6M 取樣 + 26 座聚落），不進飛行開場
@@ -8775,12 +8794,16 @@ document.getElementById('boostBtn').addEventListener('click',e=>{
   e.currentTarget.classList.toggle('on', SPD_BOOST>1);
 });
 
-/* 生怪鈕（開發用）：立刻換一隻新的，並把自動刷新的計時歸零重算，
-   免得手動生完隔幾秒又被自動刷新蓋掉。 */
-document.getElementById('spawnBtn').addEventListener('click',()=>{
+/* 生怪（開發用）：立刻換一隻新的。**長按船身以外的飛行畫面**觸發
+   （ver -1086，Ray：「生怪紐拿掉，生怪改成長按船身以外的飛行畫面」）。
+   ⚠⚠ **管理人限定**：按住不動正好是玩家「收油門讓船慢下來」的操作
+     （油門是靠位移算的，手指不動＝0），不擋的話一般玩家一煞車就冒出一隻怪。
+     那顆鈕原本沒有守門，但它是**看得見的**；換成隱藏手勢之後就非擋不可。
+   ⚠ 間隔由 `spawnEnemy` 自己重排（ver -977），這裡不必再寫一次（鐵律 7）。 */
+function spawnByHold(){
   enemy=null;
-  spawnEnemy();          // 它自己會重排間隔（ver -977）
-});
+  spawnEnemy();
+}
 
 /* 程序翅（drawWingsProc）已內聯進 drawEnemy3D（蟲翅/鳥翼兩個分支）——
    ver -495 清死碼時把零呼叫的原函式拆掉，畫法的說明見 drawEnemy3D 該兩段。 */
