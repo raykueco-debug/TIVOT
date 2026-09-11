@@ -1398,34 +1398,21 @@ const ARC={
        上限就是那個「左緣不越過環的內緣」：0.72 之下差 1.3px，再大就會壓到環。 */
   face  : 0.72,    // 頭像**寬度**佔 viewBox 的比例
   faceH : 1.34,    // 頭像那一格的高＝寬 × 這個（往**上**長，讓頭頂蓋到環上）
-  /* ══⚠⚠⚠ **尾巴＝「G」的那一橫**（ver -1070，Ray：「破防計的底部角度也修成圓弧狀，
-     往上收到角色立繪下方。有點像『G』的型狀」）══
-     -1044~-1069 的尾巴是一截**直的橫槓**（從 6 點往右伸到血條左緣）。現在改成
-     **同一條環再往回繞一小段、半徑同時往內收** —— 尾尖落在頭像（立繪）的下方，
-     整體就是 G 的輪廓。
-     ⚠ 它仍是**同一條路徑**（-1044 那條規矩沒變），只是最前面那一段的半徑會變；
-       計量從尾尖起跑 ——「從 6 點開始」因此變成「從 6 點**之前**一點」，
-       那正是 G 的橫該在的位置。
-     ⚠ `tailR`／`tailW` 是**相對 `ri`／`w0` 的倍率**：決定尾尖離圓心多近、多細。 */
-  /* ⚠ ver -1071（Ray：「G 要再包到女角下緣一些」）：尾巴由 52° 拉到 **80°**
-     （起點從 4~5 點移到約 3~4 點）、尾尖再往內收（0.45 → **0.36**）——
-     那一橫因此橫過頭像的下緣，像托住她，而不是從外圈斜切進來。 */
-  tailDeg  : 80,   // 尾巴從 `a0` 往回幾度
-  tailR    : 0.36, // 尾尖的內半徑 ＝ `ri` × 這個
-  tailW    : 0.42, // 尾尖的厚度   ＝ `w0` × 這個
-  tailSteps: 20,   // 尾巴那一段的段數
   steps : 72,      // 折線近似的段數（每 ~3°）
 };
-/* ══⚠⚠⚠ 尾巴再往外延長一截（ver -1072，Ray：「計量表應該長這樣，長度延伸到
-   綠色的部份。記得是**同一個計量表延伸，不是另一段**，顏色要一樣」）══
-   作法：在尾尖**沿著它自己的半徑方向**往外接一段直的 —— 角度不變、厚度不變、
-   內外緣接在同一個斷面上，所以它與 G 是**同一條路徑**（`arcSamples` 只是多吐
-   一個取樣點），填色、進度遮罩、高光三層自動一起吃到。
-   ⚠ **不要另外畫一個長方形**：那就是 -1041 被退回的「做成兩條」。
-   ⚠ 長度是**量出來的**（伸到血條左緣內 `EXT_PAD`px），不是常數 —— 版面一變它
-     就該跟著變；換算在 `layoutClasp`（唯一那一處，鐵律 7）。
-   ⚠ 它會伸出 viewBox 的右邊，所以 viewBox 的**寬**也由 `layoutClasp` 一起算
-     （高不變、每單位的像素數不變 ＝ 只是把畫布往右加寬）。 */
+/* ══⚠⚠⚠ **形狀照 `reference/gb.png` —— 沒有「G」，底下是一截平的橫槓**
+   （ver -1073，Ray：「計量不要往上勾，照我給你的圖畫…長度延伸到綠色的部份。
+     記得是同一個計量表延伸，不是另一段，顏色要一樣，不用往上勾，把『G』給忘了」）══
+   -1070／-1071 那個往內勾的尾巴**整個退場**，回到 -1044 定下來的形狀：
+   **橫槓（右端 → 6 點）＋ 錐形環帶（6 點 → 2 點），同一條路徑**。
+   ⚠ 橫槓的上下緣直接寫成 `ri` 與 `ri+w0`（＝環在 6 點的內外緣），所以兩段
+     **天生接得上** —— 不必對齊、也不會有縫，而且「同一個計量表延伸，不是另一段」
+     這句話在幾何上就是成立的（`arcSamples` 只是多吐一個取樣點）。
+   ⚠ 長度是**量出來的**（伸到血條左緣內 `ARC_EXT_PAD`px），不是常數 ——
+     版面一變它就該跟著變；換算在 `layoutClasp`（唯一那一處，鐵律 7）。
+   ⚠ 橫槓可能伸出 viewBox 的右邊，所以 viewBox 的**寬**也由 `layoutClasp` 一起算
+     （高不變、每單位的像素數不變 ＝ 只是把畫布往右加寬）——
+     -1069 那個「夾在 46」的上限因此不需要了（夾住只會讓它接不到血條）。 */
 const ARC_EXT_PAD=2;      // 橫槓右端與血條左緣的縫（px）
 /* 整組比切換武器鈕大多少（ver -1040，Ray：「計量跟女主頭像稍微放大」）。
    ⚠⚠ **上限是硬的**：能用的只有「面板左緣 → 血條左端」那 50px，扣掉左邊距 6px
@@ -1433,49 +1420,41 @@ const ARC_EXT_PAD=2;      // 橫槓右端與血條左緣的縫（px）
      ⚠ 所以頭像的大小也到頂了 —— 要再大只能把整組移出血條那一列（那又與
        「下緣貼藍條」打架）。 */
 const CLASP_UP=1.10;
-/* ══ 那一條計量表的形狀（唯一那一支）══ 尾巴（往內收的那一小段）＋ 錐形環帶，
-   外緣順走、內緣逆走，閉合成**一片**。
-   ⚠ 角度→座標只有這裡在換：`(cx + R·sin a, cy − R·cos a)` —— SVG 的 y 向下，
-     所以這個式子同時滿足「0°在正上」與「順時針為正」。
-   ⚠ 尾段與環段共用同一組 `ri`／`w0`：尾巴走到 `a0` 時半徑與厚度正好回到環的值，
-     **天生接得上**，不必對齊、也不會有縫（同 -1044 那條橫槓的道理）。
+/* ══ 那一條計量表的形狀（唯一那一支）══ 橫槓（右端 → 6 點）＋ 錐形環帶
+   （6 點 → 2 點），外緣順走、內緣逆走，閉合成**一片**。
+   `tail` ＝橫槓由圓心往右幾個 viewBox 單位（`layoutClasp` 量出來的）。
    ⚠⚠ 形狀與中心線（進度／高光沿著它跑）由**同一組取樣**算出來 ——
      兩邊各算一次的話，進度會與形狀對不起來（鐵律 7）。 */
-function arcSamples(extR){
-  const cx=50, cy=50, out=[], inn=[], mid=[];
-  const put=(a, r, w)=>{
-    const si=Math.sin(a), co=Math.cos(a);
-    out.push([cx+(r+w)*si, cy-(r+w)*co]);
-    inn.push([cx+r*si,     cy-r*co]);
-    mid.push([cx+(r+w/2)*si, cy-(r+w/2)*co]);
-  };
-  const aTip=(ARC.a0-ARC.tailDeg)*Math.PI/180;   // 尾尖那一個斷面的角度
-  const rTip=ARC.ri*ARC.tailR, wTip=ARC.w0*ARC.tailW;
-  /* ⓪ 延長段（ver -1072）：同一個角度、同一個厚度，只把半徑往外推 ——
-     兩個取樣點就是一段直的（中心線的長度因此也是準的，進度不會跑掉）。 */
-  if(extR>rTip) put(aTip, extR, wTip);
-  for(let i=0;i<ARC.tailSteps;i++){          // ① 尾巴：尾尖 → `a0`
-    const t=i/ARC.tailSteps;
-    put((ARC.a0-ARC.tailDeg*(1-t))*Math.PI/180,
-        ARC.ri*(ARC.tailR+(1-ARC.tailR)*t),
-        ARC.w0*(ARC.tailW+(1-ARC.tailW)*t));
+function arcSamples(tail){
+  const cx=50, cy=50, T=Math.max(0, tail||0), out=[], inn=[], mid=[];
+  /* ① 橫槓：由右端（血條左緣）平平走到 6 點。上下緣就是環在 6 點的內外緣。 */
+  if(T>0){
+    out.push([cx+T, cy+ARC.ri+ARC.w0]);
+    inn.push([cx+T, cy+ARC.ri]);
+    mid.push([cx+T, cy+ARC.ri+ARC.w0/2]);
   }
-  for(let i=0;i<=ARC.steps;i++){             // ② 環：`a0` 順時針掃 `sweep`，前粗後細
-    const k=i/ARC.steps;
-    put((ARC.a0+ARC.sweep*k)*Math.PI/180, ARC.ri, ARC.w0+(ARC.w1-ARC.w0)*k);
+  /* ② 環：`a0`（6 點）順時針掃 `sweep`，前粗後細。
+     ⚠ 角度→座標只有這裡在換：`(cx + R·sin a, cy − R·cos a)` —— SVG 的 y 向下，
+       所以這個式子同時滿足「0°在正上」與「順時針為正」。 */
+  for(let i=0;i<=ARC.steps;i++){
+    const k=i/ARC.steps, a=(ARC.a0+ARC.sweep*k)*Math.PI/180;
+    const w=ARC.w0+(ARC.w1-ARC.w0)*k, si=Math.sin(a), co=Math.cos(a);
+    out.push([cx+(ARC.ri+w)*si, cy-(ARC.ri+w)*co]);
+    inn.push([cx+ARC.ri*si,     cy-ARC.ri*co]);
+    mid.push([cx+(ARC.ri+w/2)*si, cy-(ARC.ri+w/2)*co]);
   }
   return {out, inn, mid};
 }
-function arcPath(extR){
-  const {out, inn}=arcSamples(extR);
+function arcPath(tail){
+  const {out, inn}=arcSamples(tail);
   const P=p=>p[0].toFixed(2)+','+p[1].toFixed(2);
   let d='M'+P(out[0]);
   for(let i=1;i<out.length;i++) d+='L'+P(out[i]);
   for(let i=inn.length-1;i>=0;i--) d+='L'+P(inn[i]);
   return d+'Z';
 }
-function arcMidPath(extR){
-  const {mid}=arcSamples(extR);
+function arcMidPath(tail){
+  const {mid}=arcSamples(tail);
   return 'M'+mid.map(p=>p[0].toFixed(2)+','+p[1].toFixed(2)).join('L');
 }
 /* ⚠ ver -1069：`claspSig`／`claspRetry` **回來了** —— Ray：「破防計的改動錯了，
@@ -1545,33 +1524,28 @@ function layoutClasp(){
   const CX=(par.left+BPAD+RAD)-hr.x;                    // 鈕是「右緣內 BPAD」，這一組是左緣
   const CY=(br.y+br.height-2)-RAD-hr.y;                 // 底緣＝藍條底往上 2px
   svgEl.style.left=(CX-RAD)+'px'; svgEl.style.top=(CY-RAD)+'px';
-  /* ══ 延長段的長度（ver -1072）══ 尾尖沿自己的半徑方向往外伸到**血條左緣內
+  /* ══ 橫槓的長度（ver -1072／-1073）══ 由圓心往右伸到**血條左緣內
      `ARC_EXT_PAD`px**。這裡是唯一的換算點（鐵律 7）：像素 → viewBox 單位。
-     ⚠ 畫布要跟著加寬（`vbW`），不然那一截會被 svg 的框裁掉；**高與每單位的
-       像素數都不變**，所以整組的大小、位置一個像素都沒動 —— 只是右邊多了一塊
-       可以畫的地方。
-     ⚠ `sin(aTip)` 是尾尖那個角度的水平分量：延長段不是水平的（它順著半徑走，
-       約低 10°），所以「伸到 x＝血條左緣」要除以它換回半徑。 */
+     ⚠ 畫布跟著加寬（`vbW`），不然超過 x=100 的那一截會被 svg 的框裁掉；
+       **高與每單位的像素數都不變**，所以整組的大小、位置一個像素都沒動 ——
+       只是右邊多了一塊可以畫的地方（-1069 的「夾在 46」因此退休）。 */
   const PXU=BOX/100;                                    // 1 viewBox 單位 ＝ 幾 px
-  const aTip=(ARC.a0-ARC.tailDeg)*Math.PI/180;
-  const endU=((BL-ARC_EXT_PAD)-(hr.x+CX-RAD))/PXU;      // 橫槓右端（viewBox x）
-  const extR=Math.max(ARC.ri*ARC.tailR,
-                      (endU-50-ARC.w0*ARC.tailW*Math.sin(aTip))/Math.sin(aTip));
-  const vbW=Math.max(100, Math.ceil(50+(extR+ARC.w0*ARC.tailW)*Math.sin(aTip))+2);
+  const tailU=Math.max(0, ((BL-hr.x)-ARC_EXT_PAD-CX)/PXU);   // 橫槓長度（由圓心往右）
+  const vbW=Math.max(100, Math.ceil(50+tailU)+2);
   svgEl.setAttribute('viewBox','0 0 '+vbW+' 100');
   svgEl.style.width=(BOX*vbW/100)+'px'; svgEl.style.height=BOX+'px';
   /* 進度遮罩的框也要跟著加寬 —— 它是 `userSpaceOnUse`，框外的筆畫不算數。 */
   const mk=document.getElementById('claspProg');
   if(mk){ mk.setAttribute('width', String(vbW+40)); }
   /* 橫槓那一截伸到**血條左緣內 2px**。換算成 viewBox 單位（圓心在 50）並夾住 ——
-     `arcPath` 的座標必須留在 0~100 內，不然會被 svg 的框裁掉。
+     ⚠ -1073 起 viewBox 的寬會跟著加（見上），所以不再需要「留在 0~100 內」。
      ⚠ 形狀因此**與版面有關**（血條的位置會變），所以每次重量都重算一次 d；
        兩條 path（形狀／中心線）由同一個 `tail` 產生（鐵律 7）。 */
-  /* ⚠ ver -1070：形狀不再吃「橫槓長度」—— 尾巴改成 G 的那一橫（角度制，全在 `ARC`）。
+  /* ⚠ ver -1073：形狀又吃「橫槓長度」了（-1070 的 G 尾巴退場，照 `reference/gb.png`）。
      ⚠ 高光那一層（`#claspArcShine`）與進度共用同一條中心線與同一個遮罩。 */
-  const dShape=arcPath(extR);
+  const dShape=arcPath(tailU);
   track.setAttribute('d', dShape); fillEl.setAttribute('d', dShape);
-  const midD=arcMidPath(extR);
+  const midD=arcMidPath(tailU);
   const sh=$('claspArcShine');
   /* ⚠ 高光**不要太粗**（ver -1071，Ray）：0.8 → **0.42** 倍的 `w0` ——
      它是掠過去的一道光，不是把整條蓋掉的第二層填色。 */
