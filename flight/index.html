@@ -1954,9 +1954,29 @@ const RUIN_ART = {
 /* 石材的三個色階（頂／側／暗側）＋地基。像素風＝**平塗硬邊**，不做漸層。
    ⚠ 色要**壓得住**：第一版偏白，在深綠的地形上讀起來像一張紙。
    ⚠ 斑駁是**兩階色塊**（亮斑／暗斑）不是雜訊：低解析度下逐像素雜訊只會糊成灰。 */
-const RUIN_COL = { top:'#a89c85', side:'#665e50', dark:'#3f3931',
+const RUIN_COL = { top:'#b0a488', side:'#5f584b', dark:'#39342c',
                    floor:'#7a7264', floorDark:'#615a4e', floorLite:'#8b8272',
-                   edge:'#38332c', shade:'rgba(38,34,28,.42)' };
+                   edge:'#38332c', shade:'rgba(38,34,28,.42)',
+                   /* 交件的材質偏亮（灰白），不壓的話整塊在深綠的地形上像一張紙。
+                     壓到比柱頂暗一階：**柱子要比地基亮**，才讀得出是立體的東西。 */
+                   texTint:'rgba(66,60,50,.56)' };
+/* ══ 石材（ver -1107，Ray 交件 `flight/geo/flight_ruins`）══
+   交件是碎石鋪面（1254²）→ LANCZOS 縮到 256²（與 geo/ 其餘材質同規格）。
+   ⚠ 用 `createPattern` ＋ `setTransform` 貼：把材質**釘在地面的座標系**上
+     （由投影出來的兩條軸向量算仿射）—— 不這樣做的話材質會黏在螢幕上，
+     船一動地基就像在材質上滑。
+   ⚠ 仿射＝沒有 1/z 的變化：對一塊直徑 240 的平盤夠用（同量體層的取捨）。
+   ⚠ 交件偏亮（灰白），貼完再罩一層半透暖灰壓進整體色調 —— 直接用會像一張紙。 */
+let ruinTex=null, ruinTexPat=null;
+(function(){ const im=new Image();
+  im.onload=()=>{ ruinTex=im; ruinTexPat=null; };
+  im.src='geo/flight_ruins.webp?v=2'; })();   // ?v=2：Ray 換了新圖（同名覆蓋，§5）
+/* 一個材質像素等於幾個世界單位。⚠ 這個數字決定**一塊石板在畫面上多大**：
+   新交件是碎石鋪面（橫向約 14 塊），1.4 讓整塊材質覆蓋 ~360 世界單位 ——
+   直徑 240 的地基上看得到約 9 塊石板，而且**看不到接縫**（材質比地基大）。
+   太小（如 0.55）在低解析度緩衝下會糊成一片灰，等於沒有材質。 */
+const RUIN_TEXEL=1.4;
+
 /* 形狀與斑駁**只算一次**（定數，逐幀重算會讓邊緣與斑點每一幀都在跳）。
    ⚠ 自己帶一個確定性亂數：`Math.random()` 會讓同一座遺跡每次開機長得不一樣。 */
 function ruinShape(A){
@@ -7266,6 +7286,10 @@ function drawRuins(scaleH,horizon,sinp,cosp){
   const sxk=W/BW, syk=VIEWH/BH, dyk=scaleH*syk;
   for(const P of PLACES){
     const A=P.ruin && RUIN_ART[P.ruin]; if(!A) continue;
+    /* ⚠⚠ **掃到才看得見**（ver -1107，Ray 定案）：沒感應到之前地表一點痕跡都沒有
+       —— 與隱藏點位 ★ 同一條規矩（沒發現的連問號都不給）。
+       ⚠ 於是「找到它」只有一條路：混沌感知。名牌／地圖標記也吃同一支旗。 */
+    if(P.flag && !flagOn(P.flag)) continue;
     const wx0=P.x*MAP_SCALE, wy0=P.y*MAP_SCALE;
     const ddx=wx0-cam.x, ddy=wy0-cam.y;
     const dist=Math.hypot(ddx,ddy);
@@ -7352,12 +7376,35 @@ function drawRuins(scaleH,horizon,sinp,cosp){
       g.moveTo(pts[0].x,pts[0].y);
       for(let i=1;i<pts.length;i++) g.lineTo(pts[i].x,pts[i].y);
       g.closePath(); };
-    /* ① 石地板（先畫，其餘都站在它上面） */
+    /* ① 石地板（先畫，其餘都站在它上面）。有材質就貼材質＋壓色，沒有就平塗。 */
     if(slab){
-      poly(RFC,slab.base); RFC.fillStyle=RUIN_COL.floor; RFC.fill();
+      poly(RFC,slab.base);
+      let textured=false;
+      if(ruinTex){
+        if(!ruinTexPat) ruinTexPat=RFC.createPattern(ruinTex,'repeat');
+        /* 地面座標系的兩條軸（投影出來的），換算成材質的仿射。 */
+        const O=px(0,0,0), XA=px(A.base.r,0,0), YA=px(0,A.base.r,0);
+        if(ruinTexPat && O && XA && YA && ruinTexPat.setTransform){
+          const k=RUIN_TEXEL/A.base.r;
+          try{
+            ruinTexPat.setTransform(new DOMMatrix([
+              (XA.x-O.x)*k, (XA.y-O.y)*k,
+              (YA.x-O.x)*k, (YA.y-O.y)*k, O.x, O.y ]));
+            RFC.fillStyle=ruinTexPat; RFC.fill();
+            RFC.fillStyle=RUIN_COL.texTint; RFC.fill();      // 壓進整體色調
+            textured=true;
+          }catch(_){ textured=false; }
+        }
+      }
+      if(!textured){ RFC.fillStyle=RUIN_COL.floor; RFC.fill(); }
       RFC.strokeStyle=RUIN_COL.edge; RFC.lineWidth=Math.max(1,1.2*pk); RFC.stroke();
-      for(const t of tiles){ poly(RFC,t.base);
-        RFC.fillStyle = t.lite ? RUIN_COL.floorLite : RUIN_COL.floorDark; RFC.fill(); }
+      /* 斑駁：材質已經有細碎的明暗，這時候只留**大塊**的剝落（數量減半、壓淡）。 */
+      let i=0;
+      for(const t of tiles){ if(textured && (i++&1)) continue;
+        poly(RFC,t.base);
+        RFC.globalAlpha=textured?0.45:1;
+        RFC.fillStyle = t.lite ? RUIN_COL.floorLite : RUIN_COL.floorDark; RFC.fill();
+        RFC.globalAlpha=1; }
     }
     /* ② 影子：底面往一側偏一點、壓暗。**有沒有影子決定它是「站在地上」還是
        「貼在地上」** —— 少了它，斷柱與地板上的斑駁看起來一模一樣。
