@@ -405,14 +405,14 @@
        它們是同一件事的兩端）。 */
   #barsBlock{position:absolute;left:0;right:0;bottom:6px;z-index:6;pointer-events:none;
     display:flex;align-items:stretch;gap:8px;padding:0 12px 2px;
-    --bars-s:33px; --ws-size:40px; --clasp-box:44px; --clasp-tail:8px;
-    /* 計量表整組比頭像的底再往下多少（ver -1068：Ray「下方太長，縮個 5px」→ 由
-       13px 收成 8px）。⚠ 它只影響**環**，頭像的底仍貼齊藍條中線。 */
-    --clasp-drop:3px;}
+    /* ⚠ ver -1069：只留副武器鈕要用的那一個 —— 計量表的尺寸與位置退回
+       `combat.layoutClasp` 去算（Ray：「破防計先回到上一版」）。
+       `--ws-size` 40px ≈ 1.207S（S＝血條那一疊的高 33px，-551 調過的鈕大小）。 */
+    --ws-size:40px;}
   /* 破防計量（ver -511 重設計）：鐮月形 —— 下粗上細，細尖往右鉤到血條上方，
      整體放大。SVG 是固定尺寸、錨在這一格的左下，往上與往右**刻意溢出**
      （細尖要騎在血條上方）；pointer-events 只有滿值時開。 */
-  #energyClasp{flex:none;width:var(--clasp-box);position:relative;align-self:stretch;
+  #energyClasp{flex:none;width:30px;position:relative;align-self:stretch;
     touch-action:manipulation;pointer-events:none;}   /* C 的圖層在 HP 之下（ver -526，Ray 指定；-515 的抬層取消） */
   #energyClasp.full{cursor:pointer;pointer-events:auto;}
   /* 滿值時擴大點擊熱區（蓋住厚端那一片） */
@@ -425,14 +425,9 @@
        中心 50,50，角度／半徑／粗細全在那支的 `ARC` 常數裡 —— CSS 只管顏色與光。
      ⚠ 計量仍走**同一條 conic 遮罩**（`updateEnergyClasp`）：只有起角與掃角換成
        `ARC` 的值，那套邏輯（0＝全藏、滿＝拿掉遮罩避免接縫、邊界羽化）一個字沒動。 */
-  /* 弧（ver -1068 改成純 CSS 定位）：寬＝盒 ＋ 橫槓那一截（溢進 flex 的 gap，
-     正好停在血條左緣內）；`bottom` 由 `--clasp-drop` 決定它比頭像的底多探出多少。
-     ⚠ `viewBox` 的寬度與這裡的寬度是同一件事（`combat.ARC.tail` 換算），
-       改一邊要改另一邊。 */
-  #claspArc{position:absolute;overflow:visible;pointer-events:none;
-    left:0; bottom:calc(0px - var(--clasp-drop));
-    width:calc(var(--clasp-box) + var(--clasp-tail));
-    height:var(--clasp-box);}
+  /* ⚠ ver -1069：座標交還 `combat.layoutClasp`（Ray：「破防計的改動錯了，
+     破防計先回到上一版」）—— -1068 那一版的 CSS 定位整組撤掉。 */
+  #claspArc{position:absolute;overflow:visible;pointer-events:none;}
   #claspArcTrack{fill:rgba(255,255,255,.085);}
   #claspArcFill{fill:var(--gold);
     filter:drop-shadow(0 0 4px rgba(255,214,110,.8)) drop-shadow(0 0 2px rgba(8,8,12,.9));}
@@ -462,12 +457,7 @@
      下臂帶正好是藍條那一帶、上臂帶壓在紅條上緣之上。 */
   /* 中央連擊數（ver -511，Ray：「像 VP1 那樣顯示連擊數在中間」）：
      錨在迴旋的圓心（viewBox 40,44 → 乘上顯示縮放再加 svg 的偏移）。 */
-  /* ver -1068：改成純 CSS（錨在弧的圓心＝頭像的位置）。⚠ `claspFace:true` 時
-     它整個不顯示，這一組座標是給切回連擊數那一版用的。 */
-  #energyClasp .clasp-combo{position:absolute;
-    left:calc(var(--clasp-box) / 2);
-    bottom:calc(var(--clasp-box) / 2 - var(--clasp-drop));
-    transform:translate(-50%,50%);
+  #energyClasp .clasp-combo{position:absolute;left:23px;bottom:35px;transform:translate(-50%,50%);
     pointer-events:none;text-align:center;line-height:1;z-index:2;}
   /* ⚠ 出現要**瞬顯**（ver -531）：斷連後的下一擊是 0→1，外框若在淡入，
      蓋章最大最透的前幾格會被外框的透明吃掉 —— Ray：「印章效果又不見了」。
@@ -510,18 +500,9 @@
      · 下緣用遮罩淡掉：那一格往上長（見 `ARC.faceH`），底下露出來的是脖子與胸口，
        硬切一條邊會很難看 —— 淡出讀起來就是「人從環裡浮上來」。
      · 只留一層貼身的暗影：去背的立繪疊在暗背景上，沒有它會糊進去。 */
-  /* 頭像（ver -1068 改成純 CSS 定位）：**底邊貼齊藍條中線**（-1046 定的錨）＝
-     從 `#barsBlock` 的內容底往上「padding-bottom 2px ＋ 半條 7px」；
-     右緣切齊橫槓的右端（-1045 定的），往左長；高＝寬 × 1.34（頭頂探出環外）。 */
   #energyClasp .clasp-face{position:absolute;display:none;
     background-repeat:no-repeat;z-index:2;pointer-events:none;
     transform-origin:50% 60%;
-    width:calc(var(--clasp-box) * 0.72);
-    height:calc(var(--clasp-box) * 0.72 * 1.34);
-    right:calc(0px - var(--clasp-tail) + 2px);
-    /* ⚠ 13px 是**量出來的**（ver -1068）：`#barsBlock` 的內容底到藍條中線那一段
-       ＝ padding-bottom ＋ 半條 ＋ 邊框那幾個像素。實測頭像底 576 ＝ 藍條中線 576。 */
-    bottom:13px;
     -webkit-mask-image:linear-gradient(to bottom,#000 0 64%,rgba(0,0,0,.55) 82%,transparent 97%);
     mask-image:linear-gradient(to bottom,#000 0 64%,rgba(0,0,0,.55) 82%,transparent 97%);
     filter:drop-shadow(0 1px 2px rgba(0,0,0,.9)) drop-shadow(0 0 5px rgba(0,0,0,.75));}
