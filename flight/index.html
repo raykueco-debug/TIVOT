@@ -7630,7 +7630,14 @@ const SCRIPTED_ENCOUNTERS = [
 /* 這一趟要不要演劇本遭遇：**開場算一次**。旗標不會在航行途中改變 —— 會改它的是
    主遊戲，而主遊戲在演的時候這一頁是停著的；每幀去 parse 一次 localStorage 是白花的。
    ⚠ 用完就地清成 null（連免戰模式也清）：免戰下不寫旗標，重整一次就能再測一遍。 */
-let scriptPending = SCRIPTED_ENCOUNTERS.find(S=>flagOn(S.flag) && !flagOn(S.done)) || null;
+let scriptPending = null;
+/* ⚠⚠⚠ **重算，不要只在檔頭算一次**（ver -1077）：旗標會在**這一頁的開機途中**被改
+   —— 戰鬥回程的 `done` 就是重載之後才補記的。算一次的話，補記之前那幾十幀
+   `scriptPending` 還指著剛剛打完的那一場（見 `settleScriptResult` 的說明）。 */
+function syncScriptPending(){
+  scriptPending = SCRIPTED_ENCOUNTERS.find(S=>flagOn(S.flag) && !flagOn(S.done)) || null;
+}
+syncScriptPending();
 function scriptedDue(){
   if(!scriptPending) return null;
   /* ⚠ 「現在在哪一國」讀 updateRegion 發佈的 `regionCur`（ver -484，Ray：「遊戲
@@ -8608,6 +8615,9 @@ window.__flightResume=function(opts){
   /* 剛打完一場：追兵清掉、間隔重排（ver -1076，與重載那條同一支，鐵律 8）。 */
   armEnemySpawn(true);
   const wasScripted = lastBattleScripted; lastBattleScripted = false;
+  /* 同上：記帳早於下一幀（`battleGoing` 上面剛歸零，怪的更新馬上就會跑）。 */
+  settleScriptResult(!!(opts && opts.won), wasScripted,
+                     (lastScriptS && lastScriptS.done) || null, lastScriptS);
   /* ⚠ 羽蛇登場插圖現在留到交棒（ver -786，見 toBattle）——回到這一頁一律先清乾淨：
      敗北回飛行不能還蓋著那張插圖；羽蛇打贏的甲板分支會在下面重設 introArt=甲板背景。 */
   introArt=null;
@@ -8617,18 +8627,34 @@ window.__flightResume=function(opts){
    · 活著被喚醒（__flightResume —— 保留給沒殺到的邊角）
    · **殺掉重載**（父頁交棒後卸載 iframe，回程由開機收尾呼叫；上下文在回程鑰匙）
    內容＝-487 的勝負記帳＋-453/-741 的首勝演出，一字未動搬進來。 */
-function afterBattleReturn(won, wasScripted, doneKey, scriptS){
-  /* ══ 劇本遭遇的勝負記帳（ver -487，唯一的記錄點）══
-     · 打贏：**這一刻**才記 done（敗北要等於沒發生過，憲法 §6.5.2）。
-     · 打輸：done 從來沒記（旗標不必退；退一次是治舊檔）。pending：活著那條重掛
-       in-page 記憶；**重載那條不必** —— 開機時 scriptPending 本來就由旗標重算。 */
-  if(wasScripted && doneKey){
-    if(won) addFlag(doneKey);
-    else{
-      removeFlag(doneKey);   // 治舊檔（見上）
-      if(scriptS) scriptPending = scriptS;
-    }
+/* ══ 劇本遭遇的勝負記帳（ver -487 立；**ver -1077 從演出裡拆出來**）══
+   · 打贏：**這一刻**才記 done（敗北要等於沒發生過，憲法 §6.5.2）。
+   · 打輸：done 從來沒記（旗標不必退；退一次是治舊檔），pending 重掛。
+   ⚠⚠⚠ **記帳一定要早於第一幀**（ver -1077，Ray：「蜈蚣戰後回到飛行畫面馬上又
+     一隻蜈蚣。進戰鬥以後就該 kill 掉飛行畫面了，怎麼會又冒一隻？」）——
+     他說得對，頁確實被殺掉重載了；冒出來的是**重載之後這一頁自己刷的**：
+       開機時 `scriptPending` 由旗標算出來（那時 `flight_centipede_met` 還沒記）
+       → 算出「蜈蚣這一場還沒打」→ `loop()` 一開跑 `scriptedDue()` 就成立
+       → 正前方生一隻蜈蚣（1.5 倍速、不放棄追擊）
+       → 900ms 後 `afterBattleReturn` 才把 done 記上去，**已經來不及了**。
+     -1076 查到刷新計時那一條是真的，但**不是這個症狀的原因**（那條管的是雜怪的
+     間隔，這一隻是劇本遭遇，它根本不吃計時器）。
+   ⚠ 所以記帳要收成獨立的一支，由**最早知道結果的地方**呼叫：
+     重載那條＝`restoreFlightPos`（開機、第一幀之前）；活著那條＝`__flightResume`。
+     演出（甲板混亂、首勝對白）留在 `afterBattleReturn`，它照舊可以晚一點演。
+   ⚠ 冪等：兩條路都會再經過 `afterBattleReturn`，重複呼叫不會出事。 */
+function settleScriptResult(won, wasScripted, doneKey, scriptS){
+  if(!(wasScripted && doneKey)) return;
+  if(won) addFlag(doneKey);
+  else{
+    removeFlag(doneKey);     // 治舊檔（舊版在交棒那一刻就記過 done）
+    if(scriptS) scriptPending = scriptS;
   }
+  /* 旗標動過就重算 —— 這一行就是「打完不會再冒同一隻」的保證。 */
+  if(won) syncScriptPending();
+}
+function afterBattleReturn(won, wasScripted, doneKey, scriptS){
+  settleScriptResult(won, wasScripted, doneKey, scriptS);   // 冪等（多半已經記過了）
   if(!won) return;
   /* ⚠⚠ **只有劇本遭遇打贏才演**（ver -453：隨機遭遇永遠不演首勝那段戲）。 */
   if(!wasScripted) return;
@@ -8709,7 +8735,14 @@ let retFromBattle=false;   // 這一次開機是不是戰鬥回程（ver -846：
     }
     /* ⚠⚠ 重載回程也要重排（ver -1076）：頂層那個 `gapMin*0.35` 是
        「一趟新航行的開場」用的，拿來當「剛打完一場」就是十秒後又一隻。 */
-    if(j && j.fromBattle){ retCtx=j; retFromBattle=true; armEnemySpawn(true); }
+    if(j && j.fromBattle){
+      retCtx=j; retFromBattle=true; armEnemySpawn(true);
+      /* ⚠⚠⚠ **勝負記帳在這裡就做掉**（ver -1077）：`afterBattleReturn` 是開機收尾
+         才跑的（再 +900ms），而 `loop()` 早就在跑了 —— 中間那幾十幀
+         `scriptPending` 還指著剛剛打完的那一場，正前方就又生一隻。
+         演出仍留給 `afterBattleReturn`（它晚一點演沒關係）。 */
+      settleScriptResult(!!j.won, !!j.scripted, j.doneKey||null, null);
+    }
   }catch(e){}
 })();
 
