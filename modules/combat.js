@@ -1443,6 +1443,7 @@ function arcMidPath(tail){
   return 'M'+pts.map(p=>p[0].toFixed(2)+','+p[1].toFixed(2)).join('L');
 }
 let claspSig='';
+let claspRetry=0;                                       // 「血條還沒排好」的重試次數（ver -1067）
 let claspGeo=null;                                      // 遮罩/連擊數用的幾何（layoutClasp 算好，update 只讀）
 function layoutClasp(){
   const host=$('energyClasp'); if(!host) return;
@@ -1450,7 +1451,19 @@ function layoutClasp(){
   const blue=document.querySelector('.hpbar.player-bar'), red=document.querySelector('.hpbar.enemy-bar');
   if(!svgEl||!track||!fillEl||!blue||!red) return;
   const hr=host.getBoundingClientRect(), br=blue.getBoundingClientRect(), rr=red.getBoundingClientRect();
-  if(hr.height<10||br.width<10) return;      // 還沒排好 → 之後的重試再量
+  /* ⚠⚠ 還沒排好 → **自己排下一次重試**（ver -1067，Ray：「某次鹿主戰換武器的
+     按鈕不見了」）。這一支不只擺計量表，**副武器切換鈕的 left/top/width/height
+     也是它寫的** —— 提早 return 就等於那顆鈕沒有被定位，停在 CSS 的預設位置
+     （`position:absolute` 沒有座標＝跟著上一個兄弟元素跑，實際上就是看不見）。
+     `armClaspLayout` 原本只排四次（0／120／400／1000ms），手機慢一點、或
+     那一場的立繪解碼卡住，四次全部落在「血條還沒排好」那一段就**永遠不會再量**。
+     ⚠ 退避重試，上限 12 次（約 2.5 秒）—— 再久就是別的地方壞了，不要無限排。
+     ⚠ 成功量到就把計數歸零：下一次進場重新算。 */
+  if(hr.height<10||br.width<10){
+    if(claspRetry<12){ claspRetry++; setTimeout(layoutClasp, 200); }
+    return;
+  }
+  claspRetry=0;
   const sig=[hr.x,hr.y,br.x,br.y,br.height,rr.y].map(v=>Math.round(v)).join(',');
   if(sig===claspSig) return; claspSig=sig;
   const S=(br.y+br.height)-rr.y;             // S＝紅條頂→藍條底（慣例單位）
@@ -1680,7 +1693,7 @@ function claspFaceOn(){
   return !!claspFaceCss(state.pickedPartner);
 }
 /* 進場後多試幾拍（血條要排好才量得到）；視窗變了整組重量。 */
-function armClaspLayout(){ claspSig=''; [0,120,400,1000].forEach(ms=>setTimeout(layoutClasp,ms)); }
+function armClaspLayout(){ claspSig=''; claspRetry=0; [0,120,400,1000].forEach(ms=>setTimeout(layoutClasp,ms)); }
 window.addEventListener('resize', ()=>{ claspSig=''; setTimeout(layoutClasp,60); });
 
 function updateEnergyClasp(){
@@ -2452,6 +2465,16 @@ export function startGame(){
   saint.reset();   // 聖徒化狀態全重置（saintMode 經 exitSaint、清計時器、關手勢層、清 saint 旗標；共鬥 coopMode/coopTimer 一併）
   weapon.reset();  // 雙槍破防重置（清 dualWield/dualTimer + #grid dualwield class，防跨場殘留）
   weapon.resetWeaponSwitch();   // 副武器切換鈕（ver -410）：排隊中的切換不可以跨場留著
+  /* ══⚠⚠⚠ **開戰要重新量一次版面**（ver -1067，Ray：「某次鹿主戰換武器的按鈕
+     不見了」）══ `layoutClasp` 不只擺破防計量表，**副武器切換鈕的 left／top／
+     width／height 也是它寫的**；而它有一道「血條位置沒變就整支 return」的快取
+     （`claspSig`）—— 進戰鬥時沒有人清那把鑰匙，於是**那顆鈕從來沒有被定位**，
+     停在 CSS 的預設位置（實測 rect 是 (12, −41)：整顆在畫面上緣之外）。
+     ⚠ 之所以是「某次」：轉向、網址列收合之類的 resize 會順手把它算回來 ——
+       沒發生那些事的那一場就一直不見。
+     ⚠ `armClaspLayout()` 會清 `claspSig` 並排四次重量（-1067 起量不到還會自己
+       退避重試），是這件事唯一的入口（鐵律 8）。 */
+  armClaspLayout();
   partner.reset(); // 搭檔被動重置（高裝藥彈 10 秒計時器清除、上膛旗標歸位）
   state.overkill=0; state.killTime=0; state.transitioning=false;
   state.counterFired=0; state.counterDamage=0; state.perfectCount=0; state.sawExecution=false; state.sawMaxBurst=false; state.coopUses=0;

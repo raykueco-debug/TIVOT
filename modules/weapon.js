@@ -679,6 +679,14 @@ function renderSwitch(){
   const w = WEAPONS[key];
   const has = load.activeCats().length>1;
   const disp = (w && has && (!state.tutorialRun || state.tutorialStoryRun)) ? '' : 'none';
+  /* ⚠ 藏起來的時候留一行原因（ver -1067）：三個條件都可能讓它消失，而畫面上
+     看起來一模一樣 —— Ray 回報「某次鹿主戰換武器的按鈕不見了」時，沒有任何
+     線索分得出是「只有一類武器」還是「查不到這把槍」。 */
+  if(disp==='none' && b.style.display!=='none'){
+    console.warn('[wpSwitch] 藏起來：'+(!w?('查不到武器 '+key):'')
+                +(!has?('只有 '+load.activeCats().length+' 個類別有槍'):'')
+                +((state.tutorialRun&&!state.tutorialStoryRun)?'試玩版教學戰':''));
+  }
   if(b.style.display!==disp){
     b.style.display=disp;
     /* 鈕的顯示與否影響血條讓位量（combat.layoutClasp）——用 resize 通知它重量，
