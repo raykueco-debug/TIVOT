@@ -1399,6 +1399,15 @@ const ARC={
   face  : 0.72,    // 頭像**寬度**佔 viewBox 的比例
   faceH : 1.34,    // 頭像那一格的高＝寬 × 這個（往**上**長，讓頭頂蓋到環上）
   steps : 72,      // 折線近似的段數（每 ~3°）
+  /* ⚠⚠ **下緣不要平**（ver -1074，Ray：「下緣不要平，要有一點弧度保持計量表整體
+     流線感」）：橫槓沿著一個**半徑很大、在 6 點與環相切**的圓走 —— 曲率方向與環
+     一致（往右走同時往上抬），只是緩得多，所以它讀起來是「環被攤平的那一段」，
+     不是接上去的一根棍子。
+     ⚠ 內外緣位移**同一個** `dy`，所以**厚度不變** —— 那一端是「粗邊」，
+       一變細就與 `w0`／`w1` 那條「前粗後細」的語言打架了。
+     ⚠ 數字越小越彎；90 在 44px 的框裡末端抬起約 2.7px（＝「一點弧度」）。 */
+  tailArcR : 90,   // 橫槓那一段的虛擬半徑（viewBox 單位）
+  tailSteps: 14,   // 橫槓的折線段數
 };
 /* ══⚠⚠⚠ **形狀照 `reference/gb.png` —— 沒有「G」，底下是一截平的橫槓**
    （ver -1073，Ray：「計量不要往上勾，照我給你的圖畫…長度延伸到綠色的部份。
@@ -1408,12 +1417,19 @@ const ARC={
    ⚠ 橫槓的上下緣直接寫成 `ri` 與 `ri+w0`（＝環在 6 點的內外緣），所以兩段
      **天生接得上** —— 不必對齊、也不會有縫，而且「同一個計量表延伸，不是另一段」
      這句話在幾何上就是成立的（`arcSamples` 只是多吐一個取樣點）。
-   ⚠ 長度是**量出來的**（伸到血條左緣內 `ARC_EXT_PAD`px），不是常數 ——
-     版面一變它就該跟著變；換算在 `layoutClasp`（唯一那一處，鐵律 7）。
-   ⚠ 橫槓可能伸出 viewBox 的右邊，所以 viewBox 的**寬**也由 `layoutClasp` 一起算
-     （高不變、每單位的像素數不變 ＝ 只是把畫布往右加寬）——
-     -1069 那個「夾在 46」的上限因此不需要了（夾住只會讓它接不到血條）。 */
-const ARC_EXT_PAD=2;      // 橫槓右端與血條左緣的縫（px）
+   ⚠ ver -1074 起長度是**算出來的**（與上緣切齊，見 `arcTail`）、下緣帶一點弧度
+     （見 `tailArcR`）—— -1072／-1073 的「量血條、伸到血條左緣」已被取代。 */
+/* 橫槓的右端 ＝ **上緣（環的細端）那一端的外緣**（ver -1074，Ray：「讓計量表的
+   下方（粗邊）往左縮，與上緣切齊」）。
+   ⚠⚠ 所以它**算得出來、不再量血條**（鐵律 7）：改 `sweep`／`w1`／`ri` 這一端
+     自己會跟上，不必記得回來調長度。
+   ⚠ -1072／-1073 那個「伸到血條左緣內 2px」已被這一條取代 —— 連帶 viewBox 的
+     動態加寬也不需要了（切齊之後 x 最遠只到 82.5，本來就在框內）。
+   ⚠ 環的細端就是它的**最右點**：外半徑一路縮，而 sin 在 60° 之前都還在長，
+     所以最右的就是終點那一個斷面。 */
+function arcTail(){
+  return (ARC.ri+ARC.w1)*Math.sin((ARC.a0+ARC.sweep)*Math.PI/180);
+}
 /* 整組比切換武器鈕大多少（ver -1040，Ray：「計量跟女主頭像稍微放大」）。
    ⚠⚠ **上限是硬的**：能用的只有「面板左緣 → 血條左端」那 50px，扣掉左邊距 6px
      ＝ 44px。1.10 正好用滿（40×1.10）；再大就是真的遮到血量。
@@ -1425,13 +1441,17 @@ const CLASP_UP=1.10;
    `tail` ＝橫槓由圓心往右幾個 viewBox 單位（`layoutClasp` 量出來的）。
    ⚠⚠ 形狀與中心線（進度／高光沿著它跑）由**同一組取樣**算出來 ——
      兩邊各算一次的話，進度會與形狀對不起來（鐵律 7）。 */
-function arcSamples(tail){
-  const cx=50, cy=50, T=Math.max(0, tail||0), out=[], inn=[], mid=[];
-  /* ① 橫槓：由右端（血條左緣）平平走到 6 點。上下緣就是環在 6 點的內外緣。 */
-  if(T>0){
-    out.push([cx+T, cy+ARC.ri+ARC.w0]);
-    inn.push([cx+T, cy+ARC.ri]);
-    mid.push([cx+T, cy+ARC.ri+ARC.w0/2]);
+function arcSamples(){
+  const cx=50, cy=50, T=Math.max(0, arcTail()), out=[], inn=[], mid=[];
+  /* ① 橫槓：由右端走到 6 點。上下緣就是環在 6 點的內外緣（`dy` 一起位移，
+     所以 6 點那一格天生對齊、也不會有縫），中間沿大圓弧微微抬起。 */
+  const R=ARC.tailArcR;
+  for(let i=0;i<ARC.tailSteps;i++){
+    const dx=T*(1-i/ARC.tailSteps);
+    const dy=R-Math.sqrt(Math.max(0, R*R-dx*dx));      // 相切於 6 點：dx=0 → dy=0
+    out.push([cx+dx, cy+ARC.ri+ARC.w0-dy]);
+    inn.push([cx+dx, cy+ARC.ri-dy]);
+    mid.push([cx+dx, cy+ARC.ri+ARC.w0/2-dy]);
   }
   /* ② 環：`a0`（6 點）順時針掃 `sweep`，前粗後細。
      ⚠ 角度→座標只有這裡在換：`(cx + R·sin a, cy − R·cos a)` —— SVG 的 y 向下，
@@ -1445,16 +1465,16 @@ function arcSamples(tail){
   }
   return {out, inn, mid};
 }
-function arcPath(tail){
-  const {out, inn}=arcSamples(tail);
+function arcPath(){
+  const {out, inn}=arcSamples();
   const P=p=>p[0].toFixed(2)+','+p[1].toFixed(2);
   let d='M'+P(out[0]);
   for(let i=1;i<out.length;i++) d+='L'+P(out[i]);
   for(let i=inn.length-1;i>=0;i--) d+='L'+P(inn[i]);
   return d+'Z';
 }
-function arcMidPath(tail){
-  const {mid}=arcSamples(tail);
+function arcMidPath(){
+  const {mid}=arcSamples();
   return 'M'+mid.map(p=>p[0].toFixed(2)+','+p[1].toFixed(2)).join('L');
 }
 /* ⚠ ver -1069：`claspSig`／`claspRetry` **回來了** —— Ray：「破防計的改動錯了，
@@ -1524,28 +1544,15 @@ function layoutClasp(){
   const CX=(par.left+BPAD+RAD)-hr.x;                    // 鈕是「右緣內 BPAD」，這一組是左緣
   const CY=(br.y+br.height-2)-RAD-hr.y;                 // 底緣＝藍條底往上 2px
   svgEl.style.left=(CX-RAD)+'px'; svgEl.style.top=(CY-RAD)+'px';
-  /* ══ 橫槓的長度（ver -1072／-1073）══ 由圓心往右伸到**血條左緣內
-     `ARC_EXT_PAD`px**。這裡是唯一的換算點（鐵律 7）：像素 → viewBox 單位。
-     ⚠ 畫布跟著加寬（`vbW`），不然超過 x=100 的那一截會被 svg 的框裁掉；
-       **高與每單位的像素數都不變**，所以整組的大小、位置一個像素都沒動 ——
-       只是右邊多了一塊可以畫的地方（-1069 的「夾在 46」因此退休）。 */
-  const PXU=BOX/100;                                    // 1 viewBox 單位 ＝ 幾 px
-  const tailU=Math.max(0, ((BL-hr.x)-ARC_EXT_PAD-CX)/PXU);   // 橫槓長度（由圓心往右）
-  const vbW=Math.max(100, Math.ceil(50+tailU)+2);
-  svgEl.setAttribute('viewBox','0 0 '+vbW+' 100');
-  svgEl.style.width=(BOX*vbW/100)+'px'; svgEl.style.height=BOX+'px';
-  /* 進度遮罩的框也要跟著加寬 —— 它是 `userSpaceOnUse`，框外的筆畫不算數。 */
-  const mk=document.getElementById('claspProg');
-  if(mk){ mk.setAttribute('width', String(vbW+40)); }
-  /* 橫槓那一截伸到**血條左緣內 2px**。換算成 viewBox 單位（圓心在 50）並夾住 ——
-     ⚠ -1073 起 viewBox 的寬會跟著加（見上），所以不再需要「留在 0~100 內」。
-     ⚠ 形狀因此**與版面有關**（血條的位置會變），所以每次重量都重算一次 d；
-       兩條 path（形狀／中心線）由同一個 `tail` 產生（鐵律 7）。 */
-  /* ⚠ ver -1073：形狀又吃「橫槓長度」了（-1070 的 G 尾巴退場，照 `reference/gb.png`）。
-     ⚠ 高光那一層（`#claspArcShine`）與進度共用同一條中心線與同一個遮罩。 */
-  const dShape=arcPath(tailU);
+  svgEl.style.width=BOX+'px';     svgEl.style.height=BOX+'px';
+  /* ⚠ ver -1074：形狀**完全由 `ARC` 決定**（橫槓與上緣切齊、下緣帶弧度），
+     不再吃版面量出來的長度 —— 所以 viewBox 回到固定的 100×100，
+     -1072 那段動態加寬也退休了。
+     ⚠ 高光那一層（`#claspArcShine`）與進度共用同一條中心線與同一個遮罩。
+     ⚠ `d` 仍在這裡設：整組的大小是量出來的，形狀跟著一起重掛最省事（而且冪等）。 */
+  const dShape=arcPath();
   track.setAttribute('d', dShape); fillEl.setAttribute('d', dShape);
-  const midD=arcMidPath(tailU);
+  const midD=arcMidPath();
   const sh=$('claspArcShine');
   /* ⚠ 高光**不要太粗**（ver -1071，Ray）：0.8 → **0.42** 倍的 `w0` ——
      它是掠過去的一道光，不是把整條蓋掉的第二層填色。 */
@@ -1578,9 +1585,12 @@ function layoutClasp(){
   const face = $('claspFace');
   if(face){ const D=Math.round(FACE_D), H=Math.round(FACE_D*ARC.faceH);
             face.style.width=D+'px'; face.style.height=H+'px';
-            /* ⚠ 橫向**不置中**（ver -1045）：右緣切齊計量的右側（＝橫槓的右端，
-               也就是血條左緣內 2px），往左長。多出來的那一截落在環的開口裡
-               （2 點～4 點沒有環），所以左側照樣讓得開環。
+            /* ⚠ 橫向**不置中**（ver -1045）：右緣切齊**血條左緣內 2px**，往左長。
+               多出來的那一截落在環的開口裡（2 點～4 點沒有環），所以左側照樣
+               讓得開環。
+               ⚠ ver -1074 起橫槓縮回「與上緣切齊」，所以她的右緣**比橫槓再往右**
+                 一點（她本來就會越過環的開口，見 gb.png）—— 兩者不再是同一條線，
+                 不要為了「對齊」把橫槓拉回去（那正是 Ray 要縮掉的東西）。
                ⚠⚠ 縱向的錨是**藍條的中線**（ver -1046，Ray：「所有角色下移，底線與
                  藍 hp 條中線齊平」）：她的**底邊**壓在那條線上，往上長的是頭頂。
                  ⚠ 不是「圓的底」也不是「計量的底」—— 那兩個會隨環的比例變，
