@@ -258,31 +258,7 @@
      top 同樣由 JS 設成 VIEWH+12 —— 面板上緣是算出來的，CSS 沒有那個數字。
      ⚠ 管理人限定：ARCHITECTURE §0.5 明訂**好感度不可視化**，
        一般玩家看到數字就違反那條設計。 */
-  /* 進度鈕的樣式已拿掉（ver -1085）：面板只剩 console 入口 `progHud()`。 */
-  #progView{position:fixed;inset:0;z-index:60;display:none;
-    background:rgba(3,4,9,.82);align-items:center;justify-content:center;}
-  #progView.on{display:flex;}
-  #progPanel{width:min(90%,340px);background:rgba(8,9,16,.96);
-    border:1px solid rgba(201,162,39,.5);padding:16px 18px 14px;
-    font-size:12px;letter-spacing:.06em;color:#d8d2c4;}
-  #progPanel h3{margin:0 0 10px;font-size:12px;letter-spacing:.24em;color:var(--gold);font-weight:normal;}
-  #progPanel .pr-row{display:flex;justify-content:space-between;gap:10px;padding:4px 0;
-    border-bottom:1px solid rgba(201,162,39,.14);}
-  #progPanel .pr-row:last-of-type{border-bottom:none;}
-  #progPanel .pr-k{color:#9a927f;}
-  #progPanel .pr-v{color:#e8e2d2;font-variant-numeric:tabular-nums;}
-  #progPanel .pr-out{color:#7a6f5c;}
-  /* ver -983：好感那幾列可以直接調（見 renderProg）。 */
-  #progPanel .pr-v{display:flex;align-items:center;gap:6px;justify-content:flex-end;}
-  #progPanel .pr-aff{font-style:normal;cursor:pointer;}
-  #progPanel .pr-b{cursor:pointer;min-width:20px;text-align:center;font-weight:normal;
-    border-radius:4px;background:rgba(201,162,39,.16);color:#e8e2d2;}
-  #progPanel .pr-b:active{background:rgba(201,162,39,.36);}
-  #progPanel .pr-sec{margin-top:12px;font-size:10px;letter-spacing:.2em;color:var(--gold);opacity:.75;}
-  #progPanel .pr-note{margin-top:10px;font-size:10px;line-height:1.6;color:#7a7266;}
-  #progClose{margin-top:12px;width:100%;background:transparent;border:1px solid rgba(201,162,39,.5);
-    color:var(--gold);font-family:inherit;font-size:11px;letter-spacing:.2em;padding:6px;cursor:pointer;}
-  #progClose:active{background:rgba(201,162,39,.16);}
+  /* ⚠ 進度面板的樣式 ver -1094 隨面板一起搬進系統選單（style.css 的 #gameMenu）。 */
 
   /* 地圖畫面：圖是點開才載的（見 openMap），不進開場載入 */
   #mapView{position:fixed;inset:0;z-index:60;background:rgba(4,5,9,.94);display:none;}
@@ -447,16 +423,6 @@
 <button id="landBtn"><span id="landTxt">降　落</span>
   <span class="land-arrow"><i></i><i></i></span></button>
 <button id="boostBtn">×1</button>
-<!-- 進度面板（管理人用）：ver -1085 起**畫面上沒有入口**（Ray：「進度鈕也拿掉」）——
-     要看就在 console 敲 `progHud()`。面板本身留著：它可以直接改 stage 與好感，
-     是除錯時真的會用到的工具，而它在 HUD 上本來就不該佔一顆鈕。 -->
-<div id="progView">
-  <div id="progPanel">
-    <h3>進　度</h3>
-    <div id="progBody"></div>
-    <button id="progClose">關閉</button>
-  </div>
-</div>
 <div id="mapView">
   <div id="mapWrap">
     <canvas id="mapCv"></canvas>
@@ -5361,7 +5327,7 @@ function pick3dAt(cssX,cssY){
    ⚠ ARCHITECTURE §0.5 明訂**好感度不可視化** —— 玩家端靠獨坐出場順序、
      敲門安全感、稱呼變化去感知。所以這個面板只在管理人模式出現，
      不要因為「好用」就把它放給一般玩家。 */
-const PROG_CHARS=[['renna','蕾娜'],['nouvelle','諾薇兒'],['sorana','索菈娜'],['anya','安雅']];
+/* ⚠ 角色名與段位名的表 ver -1094 隨進度面板搬進 `modules/settings.js`。 */
 /* tier 定義見 docs/TIVOT_IMPL_SPEC.md §2：tier=floor((aff-1)/20)+1 → 1..5。
    ⚠⚠ ver -724：好感上限 50→**100**、一段 10→**20**（Ray 指定）。這個寬度在
      **三個地方**各有一份（鐵律 7 的但書，改一處要改三處）：
@@ -5370,73 +5336,16 @@ const PROG_CHARS=[['renna','蕾娜'],['nouvelle','諾薇兒'],['sorana','索菈�
        · `flight/talks.js` 的 `AFFECTION_BANDS`
    ⚠ 這與 talks.js 的 affBand（取「不超過現值的最高門檻」）是**兩套不同的東西**：
      affBand 回傳門檻值（20/40/…）拿去查台詞池，tier 回傳級數（1..5）。別混用。 */
-const PROG_TIER_NAME=['同行','朋友','摯友','羈絆','愛'];
 /* ⚠⚠ ver -981（Ray：「t1 應該是 1~19，20 進 t2」）：**每累積 20 點升一段**
    （T1 0~19.99／T2 20~39.99／…）。舊式是 `floor((v−1)/20)+1`＝T2 從 21 起。
    ⚠ 這一支與 `script/progress.js` 的 `tierOf` **是同一個式子的兩份**（非 module 頁面
      import 不到那一支）—— **改一邊要改另一邊**，兩邊註解互指。 */
 function progTier(v){ return Math.min(5, Math.max(1, Math.floor((+v||0)/20)+1)); }
-function renderProg(){
-  const b=document.getElementById('progBody'); if(!b) return;
-  const st=gameStage();
-  const rows=[];
-  rows.push(`<div class="pr-row"><span class="pr-k">章節 STAGE</span><span class="pr-v">${st}</span></div>`);
-  rows.push(`<div class="pr-row"><span class="pr-k">主角</span><span class="pr-v">${playerName()}</span></div>`);
-  rows.push('<div class="pr-sec">好　感</div>');
-  /* ══ ver -983：這幾列**可以直接調**（Ray：「那就在飛行畫面調吧」）══
-     三個熱區：`−`／`＋` 各動 1；中間的數字點一下**跳到下一段的地板**
-     （0→20→40→60→80→回 0）—— 要測段位差分時一顆就到位。
-     ⚠ 四個人**都在這裡**（含蕾娜）：她不是搭檔，整備頁的伙伴欄沒有她的格子，
-       而她正是唯一拿得到小數好感的那一位。 */
-  for(const [k,nm] of PROG_CHARS){
-    const v=affection(k), t=progTier(v);
-    /* 不在隊的人照樣列出來但標明 —— 「這個人這一章不在」本身就是要看的資訊。 */
-    const on=(typeof inParty==='function') ? inParty(k,st) : true;
-    rows.push(`<div class="pr-row"><span class="pr-k${on?'':' pr-out'}">${nm}${on?'':'（未入隊）'}</span>`
-            + `<span class="pr-v${on?'':' pr-out'}">`
-            +   `<b class="pr-b" data-aff="${k}:-1">−</b>`
-            +   `<i class="pr-aff" data-affjump="${k}">${v}　tier ${t}・${PROG_TIER_NAME[t-1]}</i>`
-            +   `<b class="pr-b" data-aff="${k}:1">＋</b>`
-            + `</span></div>`);
-  }
-  /* 可播閒聊組數：內容缺口只會表現成「對話鈕好像沒反應」，很難回頭找，
-     所以順手把 talkDebug 的數字放進來（talks.js 的註解就在警告這件事）。 */
-  if(typeof talksFor==='function' && typeof talkHard==='function'){
-    const n=talksFor(st).filter(t=>talkHard(t,st)).length;
-    rows.push('<div class="pr-sec">閒　聊</div>');
-    rows.push(`<div class="pr-row"><span class="pr-k">本章可播組數</span><span class="pr-v">${n}</span></div>`);
-    if(!n) rows.push('<div class="pr-note">⚠ 這一章一組都播不出來。多半是 talks.js 的 PARTY 入隊章節與對話裡開口的人對不上（整組會被硬條件排除）。</div>');
-  }
-  rows.push('<div class="pr-note">好感可直接按 ± 調整，點數字跳下一段。其餘唯讀 —— 章節用 setStage(n)。</div>');
-  b.innerHTML=rows.join('');
-  /* 事件在每次 render 之後重掛（`innerHTML` 換掉了整批節點）。 */
-  b.querySelectorAll('.pr-b[data-aff]').forEach(d=>d.addEventListener('click',e=>{
-    e.stopPropagation();
-    const [who,dv]=String(d.dataset.aff||'').split(':');
-    setAffection(who, affection(who) + (+dv||0));
-    renderProg();
-  }));
-  b.querySelectorAll('.pr-aff[data-affjump]').forEach(d=>d.addEventListener('click',e=>{
-    e.stopPropagation();
-    const who=d.dataset.affjump, cur=affection(who), t=progTier(cur), here=tierFloorF(t);
-    /* 已經站在這一段的地板上 → 跳下一段；否則先跳到這一段的地板。T5 再點歸 0。 */
-    setAffection(who, (cur===here) ? (t>=5 ? 0 : tierFloorF(t+1)) : here);
-    renderProg();
-  }));
-}
-/* 進度面板的唯一入口（ver -1085）：console 敲 `progHud()`。
-   ⚠ 不再有鈕 —— 它是除錯工具，不是 HUD 的一部分。 */
-window.progHud=()=>{
-  const pv=document.getElementById('progView'); if(!pv) return;
-  renderProg(); pv.classList.add('on');
-};
-(function(){
-  const pv=document.getElementById('progView'); if(!pv) return;
-  const shut=e=>{ if(e) e.stopPropagation(); pv.classList.remove('on'); };
-  const c=document.getElementById('progClose'); if(c) c.addEventListener('click',shut);
-  /* 點面板外的暗幕也關 —— 但點面板本身不關（否則讀到一半手滑就消失）。 */
-  pv.addEventListener('click',e=>{ if(e.target===pv) shut(e); });
-})();
+/* ⚠⚠ 進度面板（-983 起住在這一頁）**ver -1094 整組搬走了** ——
+   現在住在系統選單的「管理人」那一段（`modules/settings.js` 的 `renderProg`）。
+   理由是**那一頁到得了**：城鎮、戰鬥、劇情、飛行都開得出系統選單，
+   而這一份只有出航時叫得到。搬家不是複製 —— 留一份在這裡就是同一個工具兩份，
+   改一邊另一邊不會跟上（鐵律 7／8）。 */
 if(ADMIN){
   /* 星號顯示開關：全部 → 已發現 → 關 → …（未發現的畫成空心，一眼分得出來）。
      ⚠ 只有管理人有這個鈕：一般玩家不該看得到還沒發現的點。 */

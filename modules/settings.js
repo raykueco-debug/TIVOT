@@ -10,6 +10,16 @@
    ══════════════════════════════════════════════════════════════════════ */
 
 import { SFX } from '../audio.js';
+/* ══ 進度面板（ver -1094，Ray：「不要在飛行畫面，把進度放到管理者限定的系統設定選單」）══
+   它以前住在 `flight/index.html`（-983 起，入口是那顆「進度」鈕；-1085 我把鈕拿掉
+   只剩 console）。搬過來的理由是**這一頁到得了**：城鎮、戰鬥、劇情、飛行都開得出
+   系統選單，而飛行頁那一份只有出航時叫得到。
+   ⚠⚠ 搬家不是複製：飛行頁那一份**整組刪掉**了 —— 留著就是同一個工具兩份，
+     改一邊另一邊不會跟上（鐵律 7／8）。
+   ⚠ 好感的寫入走 `setAffectionDev`（它會**連棘輪的地板一起改**）——
+     不要用 `addAffection`，那一支只上得去下不來，當成開發工具等於沒有用。
+   ⚠ 段位的寬度（20）只問 `progress.tierOf`／`tierFloor`，這裡不再算一份。 */
+import * as prog from '../script/progress.js';
 
 const K = {
   bgm:  'tivot_vol_bgm_v1',
@@ -176,6 +186,7 @@ export function open(opts){
           + '<div class="gm-acts gm-dev2">'
           +   '<button class="gm-btn" id="gmDevSave" type="button">存　檔</button>'
           +   '<button class="gm-btn" id="gmStats" type="button">統計表</button>'
+          +   '<button class="gm-btn" id="gmProg" type="button">進　度</button>'
           + '</div>'
           + '<div class="gm-note">存檔＝管理人專用的**獨立**一格（與玩家的存檔互不影響），'
           + '在首頁用「讀檔」讀回來。</div>'
@@ -252,6 +263,9 @@ export function open(opts){
       if(ds) ds.addEventListener('click', e=>{ e.stopPropagation();
         try{ SFX.menuClick(); }catch(_){}
         if(devTools && devTools.devSave) devTools.devSave(); });
+      const pgb=panel.querySelector('#gmProg');
+      if(pgb){ pgb.addEventListener('click', e=>{ e.stopPropagation();
+        try{ SFX.menuClick(); }catch(_){} renderProg(); }); }
       const stb=panel.querySelector('#gmStats');
       if(stb) stb.addEventListener('click', e=>{ e.stopPropagation();
         try{ SFX.menuClick(); }catch(_){} renderStats(); }); }
@@ -295,6 +309,60 @@ export function open(opts){
       + '<div class="gm-acts">'
       +   '<button class="gm-btn gm-back" type="button">返　回</button>'
       + '</div>';
+    panel.querySelector('.gm-back').addEventListener('click', e=>{ e.stopPropagation();
+      try{ SFX.menuClick(); }catch(_){} renderMain(); });
+  };
+
+  /* ══ 進度（管理人）══ 章節與四個人的好感，好感可直接調。
+     ⚠ 四個人**都列**（含蕾娜）：整備頁的伙伴欄沒有她的格子，而她正是唯一
+       拿得到小數好感的那一位（S +0.5／A +0.25），不列就看不到她。
+     ⚠ 段位名沿用 docs/TIVOT_IMPL_SPEC.md §2 的五段。 */
+  const PROG_CHARS=[['renna','蕾娜'],['nouvelle','諾薇兒'],['sorana','索菈娜'],['anya','安雅']];
+  const TIER_NAME=['同行','朋友','摯友','羈絆','愛'];
+  const renderProg = ()=>{
+    const st=prog.getStage(), aff=prog.getAffection();
+    const rows=PROG_CHARS.map(([k,nm])=>{
+      const v=(typeof aff[k]==='number')?aff[k]:0, t=prog.tierOf(v);
+      return '<div class="gm-row gm-stat gm-prog"><span>'+nm+'</span>'
+           +   '<b class="pr-b" data-aff="'+k+':-1">−</b>'
+           +   '<i class="pr-aff" data-affjump="'+k+'">'+v+'　T'+t+'・'+TIER_NAME[t-1]+'</i>'
+           +   '<b class="pr-b" data-aff="'+k+':1">＋</b>'
+           + '</div>';
+    }).join('');
+    panel.innerHTML =
+        '<div class="gm-title">進　度</div>'
+      + '<div class="gm-row gm-stat"><span>章節 STAGE</span>'
+      +   '<b class="pr-b" data-stage="-1">−</b><i class="pr-aff">'+st+'</i>'
+      +   '<b class="pr-b" data-stage="1">＋</b></div>'
+      + '<div class="gm-sec">好　感</div>' + rows
+      /* ⚠ 地板寫「1」不是 0：`progress.tierFloor` 對 T1 回的是 1（它有一道
+         `Math.max(1,…)`）—— 這裡照它的實際行為寫，不要照「一段 20」推。 */
+      + '<div class="gm-note">± 各動 1；點中間的數字跳到下一段的地板'
+      + '（1→20→40→60→80→回 0）。一段 20 點，上限 100。</div>'
+      + '<div class="gm-acts">'
+      +   '<button class="gm-btn gm-back" type="button">返　回</button>'
+      + '</div>';
+    /* 事件每次 render 之後重掛（`innerHTML` 換掉了整批節點）。 */
+    panel.querySelectorAll('.pr-b[data-aff]').forEach(d=>d.addEventListener('click', e=>{
+      e.stopPropagation();
+      const [who,dv]=String(d.dataset.aff||'').split(':');
+      const cur=prog.getAffection(); const now=(typeof cur[who]==='number')?cur[who]:0;
+      prog.setAffectionDev(who, now + (+dv||0));
+      renderProg();
+    }));
+    panel.querySelectorAll('.pr-aff[data-affjump]').forEach(d=>d.addEventListener('click', e=>{
+      e.stopPropagation();
+      const who=d.dataset.affjump, cur=prog.getAffection();
+      const v=(typeof cur[who]==='number')?cur[who]:0, t=prog.tierOf(v), here=prog.tierFloor(t);
+      /* 已經站在這一段的地板上 → 跳下一段；否則先跳到這一段的地板。T5 再點歸 0。 */
+      prog.setAffectionDev(who, (v===here) ? (t>=5 ? 0 : prog.tierFloor(t+1)) : here);
+      renderProg();
+    }));
+    panel.querySelectorAll('.pr-b[data-stage]').forEach(d=>d.addEventListener('click', e=>{
+      e.stopPropagation();
+      prog.setStage(Math.max(0, prog.getStage() + (+d.dataset.stage||0)));
+      renderProg();
+    }));
     panel.querySelector('.gm-back').addEventListener('click', e=>{ e.stopPropagation();
       try{ SFX.menuClick(); }catch(_){} renderMain(); });
   };

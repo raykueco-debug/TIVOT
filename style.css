@@ -2902,6 +2902,17 @@
   #gameMenu .gm-row.gm-stat span{flex:1 1 auto;width:auto;color:#cbb98e;}
   #gameMenu .gm-row.gm-stat b{flex:0 0 auto;width:auto;min-width:56px;color:var(--gold);
     font-variant-numeric:tabular-nums;}
+  /* ══ 進度面板的那三顆熱區（ver -1094）══ `−`／`＋` 各動 1、中間的數字點一下
+     跳到下一段的地板。⚠ 它們是 `.gm-stat` 那一列裡的**額外**元素，所以要自己
+     壓掉那一列給 `b` 的 `min-width:56px`（不壓的話兩顆加減號各佔 56px，
+     數字被擠到換行）。 */
+  #gameMenu .gm-row.gm-prog b.pr-b{min-width:26px;text-align:center;cursor:pointer;
+    border:1px solid rgba(201,162,39,.45);border-radius:4px;padding:1px 0;margin-left:6px;}
+  #gameMenu .gm-row.gm-prog b.pr-b:active{background:rgba(201,162,39,.3);}
+  #gameMenu .gm-row .pr-aff{font-style:normal;cursor:pointer;color:#e8e2d2;
+    font-variant-numeric:tabular-nums;margin-left:6px;min-width:96px;text-align:right;}
+  #gameMenu .gm-row.gm-stat .pr-b{min-width:26px;text-align:center;cursor:pointer;
+    border:1px solid rgba(201,162,39,.45);border-radius:4px;padding:1px 0;margin-left:6px;}
   /* 管理人那兩顆（存檔／統計表）：與底下的動作列同款，但擠在管理人那一段內。 */
   #gameMenu .gm-acts.gm-dev2{margin-top:8px;}
   #gameMenu .gm-acts,#chapterSheet .gm-acts{display:flex;gap:8px;margin-top:14px;}
