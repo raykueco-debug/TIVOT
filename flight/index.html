@@ -4114,6 +4114,7 @@ async function primeArt(){
      它自己會在公開前預熱。這裡只處理開場就在手上的：縮圖、已到位的量體 atlas、
      棧橋、舵輪。 */
   take(cityPlanLo); take(cityPlanArt); take(cityMassArt); take(dockArt); take(helmArt);
+  take(deckArt);   // 甲板兩層（ver -1078）：每幀都貼，解碼要在載入階段付掉
   if(!imgs.length) return;
   let n=0;
   for(const im of imgs){ await warmImage(im); n++; }
@@ -5826,6 +5827,8 @@ function update(dt,now){
     cam.speed += (cam.speed*ek - cam.speed)*bleed;
   }
   cam.x+=fx*mv; cam.y+=fy*mv;
+  /* 雲海的漂移跟著**實際位移**走（ver -1078）—— 這裡是船真的移動的唯一一行。 */
+  skyDrift += mv*SKY_DRIFT*0.001;
   clock.dist+=Math.abs(mv);              // 後退也是航行距離，不該倒扣
   /* ⚠⚠ **航行本身不再推進時間**（ver -435，Ray 定案）。以前是
      `clock.minutes += |mv| * 0.10` —— 時間跟著「走了多少世界單位」跑，
@@ -11009,6 +11012,41 @@ const helmArt={ wheel:null, base:null, pointer:null };
   const one=(k,src)=>{ const im=new Image(); im.onload=()=>{helmArt[k]=im;}; im.src=src; };
   one('wheel','Wheel.webp'); one('base','Base.webp'); one('pointer','Pointer.webp');
 })();
+/* ══ 甲板背景：兩層（ver -1078；交接檔 `flight/HANDOFF_deck_layers.md`）══
+   Ray：「我想把**雲海跟甲板分開**，雲海在船動的時候會**向後跑**」
+   · `Sky_<band>.webp`  3072×1024 RGB —— 雲海全景，**橫向無縫循環**（會捲動）
+   · `Deck_<band>.webp` 1536×1024 RGBA —— 甲板＋圍欄＋繩梯＋船頭，天空是真 alpha（不動）
+   ⚠⚠ 兩張的**縱向尺度必須一致**（同一個 `s`），地平線才對得上 ——
+     甲板層的地平線（圍欄上緣那條）是照天空層 18% 的地平線畫的。
+   ⚠ **圖還沒交也不會壞**：載不到就整段不畫，面板回到原本那層漸層（見 drawPanel）。
+     載失敗時把它記成 null 並不再重試 —— 每次開機噴一輪 404 是雜訊。
+   ⚠ 時段差分（`_dawn`／`_dusk`／`_night`）Ray 說「先是白天光」，還沒交件。
+     檔名走 `deckSrc()` 一支，到時只要把 `DECK_BAND` 接到這一頁既有的時段鑰匙
+     （不要另外再算一份晝夜，鐵律 7）。 */
+const DECK_BAND='day';
+const deckSrc=(kind,band)=>kind+'_'+(band||DECK_BAND)+'.webp';
+const deckArt={ deck:null, sky:null };
+(function loadDeck(){
+  const one=(k,kind)=>{ const im=new Image();
+    im.onload =()=>{ deckArt[k]=im; };
+    im.onerror=()=>{ deckArt[k]=null; };   // 還沒交件：安靜放棄，不重試
+    im.src=deckSrc(kind); };
+  one('deck','Deck'); one('sky','Sky');
+})();
+/* 雲海怎麼動（交接檔第四節）：
+   · **轉向**綁 `cam.angle` —— 轉舵、天空橫掃。這一半是**物理正確**的，
+     而且與上半 3D 視窗讀同一個 `cam.angle`（鐵律 7），兩邊不可能走鐘。
+   · **前進**綁**實際位移**（`mv`，見 update）—— Ray 要的「船動就往後跑」。
+     ⚠⚠ 這一半物理上是假的：從正前方看，直線前進不會讓雲橫向移動（遠雲是朝你
+       放大、往兩側掠過）。所以係數要**很小**，當成「風把雲吹過去」的氛圍，
+       不是速度表。看起來怪就把 `SKY_DRIFT` 設 0。
+     ⚠ 綁 `mv` 而不是 `cam.speed`：停船／交棒進戰鬥／對話暫停時 `mv` 本來就是 0，
+       Sturm 與開發用加速也自動吃到 —— 不必在這裡再判一次（鐵律 7/8）。
+   ⚠ `skyDrift` 是**純視覺狀態**：不進存檔、不跨場，回到飛行畫面歸零就好
+     （這一頁每次出航都重載，所以它本來就是 0）。 */
+const SKY_PAN   = 0.6;      // ×W：每弧度捲動幾個畫面寬（轉 90° ≈ 掃過一個畫面寬）
+const SKY_DRIFT = -0.06;    // ×W：每 1000 世界單位捲動幾個畫面寬（負＝往左＝往後）
+let skyDrift=0;             // 累加在 update 的位移那一行（唯一那一處）
 const BORE={x:0.4481,y:0.1581};          // Base.webp 軸孔中心（佔圖寬/圖高的比例）
 const HEAD_R=0.2274;                     // 基座頭盤半徑佔基座寬的比例（95.5/420）
 const WHEEL_SPIN=0.0052;                 // 舵量 → 舵輪角速度（rad/ms，滿舵約 0.83 轉/秒）
@@ -11118,6 +11156,32 @@ function drawPanel(S){
      看起來就是「不圓」（尤其接近 1:1 的縮放比，邊緣會一格一格週期性進出）。
      這一段畫完再關回去（見函式尾），地形的 blit 不受影響。 */
   ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality='high';
+
+  /* ══ 甲板背景（ver -1078）══ 天空層（捲動）→ 甲板層（不動），兩層都在
+     基座與舵輪**之後**畫 —— 它們是背景，舵要壓在前面。
+     ⚠⚠ 必須在 `imageSmoothingEnabled=true` 的區段裡畫：`resize()` 為了地形的
+       像素感把整個 ctx 的平滑關掉，天空層縮放時用最近鄰會出現週期性的階梯邊
+       （同上面舵輪那段的坑）。函式尾巴本來就會關回去。
+     ⚠⚠ **要裁在面板內**：cover-fit 的高一定 ≥ 面板高，不裁的話會蓋到 3D 視窗
+       下緣（交接檔漏了這一條）。
+     ⚠ 底下那層 `#12101a → #08070d` 的漸層留著：極端比例下左右會露一點邊。 */
+  if(deckArt.deck){
+    const D=deckArt.deck;
+    const sc=Math.max(W/D.width, ph/D.height);        // cover-fit 進面板
+    const dw=D.width*sc, dh=D.height*sc;
+    const dx=(W-dw)/2, dy=y0+(ph-dh)/2;
+    ctx.save();
+    ctx.beginPath(); ctx.rect(0,y0,W,ph); ctx.clip();
+    if(deckArt.sky){
+      const S2=deckArt.sky, sw=S2.width*sc, sh=S2.height*sc;
+      /* 轉向 ＋ 前進，兩者相加成一個橫向位移；`ox` 把它折回一個貼圖寬之內。 */
+      const pan=(cam.angle*SKY_PAN + skyDrift)*W;
+      const ox=((-pan%sw)+sw)%sw;
+      for(let k=-1;k<=Math.ceil(W/sw)+1;k++) ctx.drawImage(S2, dx-ox+k*sw, dy, sw, sh);
+    }
+    ctx.drawImage(D, dx, dy, dw, dh);
+    ctx.restore();
+  }
 
   let gaugeR=R*0.47, tilt=0.86;          // 基座沒載到時的退路
   if(helmArt.base){
