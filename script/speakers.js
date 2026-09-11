@@ -158,6 +158,15 @@ export const ART = {
                   shockedopen:  { src:'resources/SI/Renna_SI_shockedopen.webp', top:4, bot:1519, fx:0.500 },
                   sigh:         { src:'resources/SI/Renna_SI_sigh.webp', top:2, bot:1531, fx:0.522 },
                   front:        { src:'resources/SI/Renna_SI_front.webp', top:5, bot:1521, fx:0.504 },
+                  /* ══ Stage8 後段（ver -1092，Ray 交稿）══ 逐張量（alpha 上下緣＋
+                     頭部那一段的水平重心）。⚠ `evalutating`／`evalutatingclosemouth`
+                     的**圖早就在庫裡**，只是一直沒進表 —— 餐廳那一段的 lint 警告
+                     （「沒有這張差分，會回退基本立繪」）就是它。 */
+                  evalutating:  { src:'resources/SI/Renna_SI_evalutating.webp', top:1, bot:1524, fx:0.491 },
+                  evalutatingclosemouth:
+                                { src:'resources/SI/Renna_SI_evalutatingclosemouth.webp', top:3, bot:1524, fx:0.491 },
+                  argue:        { src:'resources/SI/Renna_SI_argue.webp',     top:9, bot:1524, fx:0.515 },
+                  arguecute:    { src:'resources/SI/Renna_SI_arguecute.webp', top:6, bot:1516, fx:0.515 },
                   wake:       { src:'resources/SI/Renna_SI_wake.webp',        top:0, bot:1531, fx:0.539 },
                   unbraid:    { src:'resources/SI/Renna_SI_unbraid.webp',     top:6, bot:1528, fx:0.550 },
                   callangry:  { src:'resources/SI/Renna_SI_callangry.webp',   top:2, bot:1533, fx:0.516 },
@@ -322,7 +331,10 @@ export const ART = {
                   awkwerd:  { src:'resources/SI/Nouvelle_SI_Awkwerd.webp',   top:2,  bot:1533, fx:0.468 },
                   shocked:  { src:'resources/SI/Nouvelle_SI_Shocked.webp',   top:3,  bot:1534, fx:0.504 },
                   lookaway: { src:'resources/SI/Nouvelle_SI_Lookaway.webp',  top:5,  bot:1529, fx:0.504 },
-                  angry:    { src:'resources/SI/Nouvelle_SI_angry.webp',      top:3,  bot:1535, fx:0.583 },   // ver -842
+                  /* ⚠ ver -1092 Ray **重交了這一張**（同名覆蓋）→ `?v=2`（§5：不掛
+                     cache-buster 的話瀏覽器會抱著舊的那一份），取景值也**重量過**
+                     （§5「換圖就要重量取景值」：0.583→0.517，差了 6.6% 的圖寬）。 */
+                  angry:    { src:'resources/SI/Nouvelle_SI_angry.webp?v=2',   top:8,  bot:1528, fx:0.517 },   // ver -842／-1092 換圖
                   bigsmile: { src:'resources/SI/Nouvelle_SI_bigsmile.webp',  top:4,  bot:1534, fx:0.565 },
                   /* 舊街區／公會那一段新增（ver -375）。取景由 `tools/measure_si.py` 量出來的。 */
                   concern:  { src:'resources/SI/Nouvelle_SI_concern.webp',   top:6,  bot:1529, fx:0.505 },
@@ -364,6 +376,17 @@ export const ART = {
     talk:         { src:'resources/SI/Sorana_SI_talk.webp',          top:7,  bot:1525, fx:0.508 },
     laugh:        { src:'resources/SI/Sorana_SI_laugh.webp',         top:3,  bot:1529, fx:0.579, cm:170, standCm:176 },
     amazed:       { src:'resources/SI/Sorana_SI_amazed.webp',        top:3,  bot:1527, fx:0.562 },
+    /* ══ Stage8 後段（ver -1092，Ray 交稿）══ 逐張量。
+       ⚠ `excite`／`excite2` 的畫布不是規約的 1024×1536（1028×1530／1026×1532）——
+         那是裁切的誤差，**不是另一個尺**，所以**不加 `rescale`**：讓它照基本立繪的
+         身高縮放，同一個人才不會忽大忽小（§5 的預設就是這樣）。
+       ⚠⚠ `excite2` 的人物比基本立繪短 2.4%（雙手舉高、`bot` 只到 1487）——
+         Ray 交稿時特別註明「注意不要裁到角色」。不加 `rescale` 正是為了這件事：
+         加了它會用這一張自己的身高當分母，人反而被放大、頭頂更容易頂出框。 */
+    cringe:       { src:'resources/SI/Sorana_SI_cringe.webp',        top:0,  bot:1535, fx:0.500 },
+    excite:       { src:'resources/SI/Sorana_SI_excite.webp',        top:9,  bot:1521, fx:0.674 },
+    excite2:      { src:'resources/SI/Sorana_SI_excite2.webp',       top:4,  bot:1487, fx:0.688 },
+    furiouscute:  { src:'resources/SI/Sorana_SI_furiouscute.webp',   top:9,  bot:1527, fx:0.474 },
     think:        { src:'resources/SI/Sorana_SI_think.webp',         top:3,  bot:1530, fx:0.529, cm:168, standCm:176 },
     idea:         { src:'resources/SI/Sorana_SI_idea.webp',          top:3,  bot:1525, fx:0.523 },
     /* 夏爾村抵達稿（ver -772，Ray 交稿）。逐張量（measure_si.py）。
@@ -461,7 +484,13 @@ export const ART = {
        —— 近景那幾張才要 `cm`／`standCm`（見上面的說明）。 */
     silent:    { src:'resources/SI/Anya_SI_Silent.webp',     top:0, bot:1527, fx:0.432 },
     panic:     { src:'resources/SI/Anya_SI_panic.webp',      top:0, bot:1535, fx:0.395 },   // ver -842
-    talk:      { src:'resources/SI/Anya_SI_talk.webp',       top:0, bot:1531, fx:0.426 },
+    /* ⚠ ver -1092 Ray **重交了這一張**（同名覆蓋）→ `?v=2` ＋ 取景值重量
+       （0.426→0.522：差了將近一成的圖寬，沿用舊值臉會明顯偏左）。 */
+    talk:      { src:'resources/SI/Anya_SI_talk.webp?v=2',   top:10, bot:1524, fx:0.522 },
+    /* ══ Stage8 後段（ver -1092，Ray 交稿）══ 逐張量。 */
+    argue:     { src:'resources/SI/Anya_SI_argue.webp',      top:0, bot:1530, fx:0.512 },
+    shy:       { src:'resources/SI/Anya_SI_shy.webp',        top:0, bot:1528, fx:0.472 },
+    upset:     { src:'resources/SI/Anya_SI_upset.webp',      top:0, bot:1523, fx:0.500 },
     /* 湖上甲板（ver -752，Ray 交稿）。逐張量（measure_si.py）。 */
     wheel:     { src:'resources/SI/Anya_SI_wheel.webp',      top:4, bot:1531, fx:0.483 },
     wheelpoint:{ src:'resources/SI/Anya_SI_wheelpoint.webp', top:0, bot:1529, fx:0.473 },
