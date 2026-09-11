@@ -819,6 +819,11 @@ const SETTLEMENTS = [
   { n:'夏爾村', x:1098, y:798, t:'village', f:'empire', town:'shinier',   // ver -835：Ray 二改（-834 的 (1116,828) 還是泡在湖裡）
     plan:'city/shinier_plan.webp', planH:'city/shinier_h.webp',
     planW:360, planRot:0.0, planTall:24,
+    /* ver -1112（Ray：「黑得像坨」）：插畫偏暗（見 cityTone）→ 提亮；
+       牆改成**受光的灰泥色**（同聖王廳那一格的理由）—— 村屋是木架灰泥，
+       用預設那個「屋瓦陰影」的暗色會讓整座村子糊成一團黑。 */
+    tone:1.55,
+    wallCol:'rgba(214,198,168,0.52)',
     podium:{ r:1.05, skirt:8, lift:0 } },
 ];
 /* 手繪平面圖：背景載，載不到就退回程序生成的街廓（同飛空艇/怪的雙軌）。
@@ -910,7 +915,22 @@ function loadMass(planKey){
        那一幀才解碼＋上傳 —— 手機上就是一次幾百毫秒的頓卡。 */
     cityArtReady.push(new Promise(res=>{
       // 預熱完才公開：這張現在可能是飛行中才載的，解碼不能落在進入視野那一幀
-      at.onload=()=>{ warmImage(at).then(()=>{ cityMassArt[planKey]=at; res(); }); };
+      at.onload=()=>{ warmImage(at).then(()=>{
+        /* 屋頂 atlas 與插畫同一個亮度係數（見 cityTone）：兩者是同一張圖切出來的，
+           只提亮其中一邊會變成「地面亮、屋頂黑」。烘一次，之後照舊當圖用。 */
+        const k=cityTone(planKey);
+        if(k!==1){
+          try{
+            const cv=document.createElement('canvas'); cv.width=at.width; cv.height=at.height;
+            const g=cv.getContext('2d'); g.drawImage(at,0,0);
+            const id=g.getImageData(0,0,cv.width,cv.height), d=id.data;
+            for(let i=0;i<d.length;i+=4){ if(!d[i+3]) continue;
+              d[i]=Math.min(255,d[i]*k); d[i+1]=Math.min(255,d[i+1]*k); d[i+2]=Math.min(255,d[i+2]*k); }
+            g.putImageData(id,0,0);
+            cityMassArt[planKey]=cv; res(); return;
+          }catch(_){ }
+        }
+        cityMassArt[planKey]=at; res(); }); };
       at.onerror=()=>res();
       setTimeout(res,6000);
     }));
@@ -943,6 +963,17 @@ function loadMass(planKey){
    ⚠ 舊的格網那一套**還在**：金字塔沒建好（極早期）或哪座城沒有遮罩時退回去畫。 */
 const CITY_PYR={};
 let CITYMASK=null, CITY_SAMPS=null;
+/* ══⚠⚠ 逐城的亮度（ver -1112，Ray：「夏爾村在飛行畫面上看起來還是黑得像坨」）══
+   村子的插畫本身就是暗的（實測 `shinier_plan` 平均亮度 71/255＝28%、屋頂 atlas
+   只有 55/255＝21%），而白天的地形大約落在 45~55% —— 旁邊那麼亮，它當然是一坨黑。
+   ⚠ 這是**素材的亮度**問題，不是打光問題：所以乘在**插畫進金字塔／atlas 進記憶體**
+     那一刻（一次），不是每幀去調 —— 也因此屋頂與地面用同一個係數，不會走鐘。
+   ⚠ 只有這一支在查（鐵律 7）：金字塔與 atlas 兩邊都問它。
+   ⚠ 要根治還是得換一張亮一點的插畫；這個旋鈕是「不動素材就能救回來」的那一格。 */
+function cityTone(planKey){
+  const S=SETTLEMENTS.find(x=>x.plan===planKey);
+  return (S && S.tone) || 1;
+}
 function buildCityPyramid(key, img, full){
   const had=CITY_PYR[key];
   if(had && had.full && !full) return;       // 全解析已經在了，縮圖不要蓋回去
@@ -960,7 +991,7 @@ function buildCityPyramid(key, img, full){
        校準只有一份，住在這裡）。 */
     {
       const id=g.getImageData(0,0,w,h), d=id.data;
-      const invS=1/GRADE_SAT, kv=CITY_TRIM/CITY_BAKED_VAL;
+      const invS=1/GRADE_SAT, kv=CITY_TRIM/CITY_BAKED_VAL*cityTone(key);
       for(let p=0;p<d.length;p+=4){
         if(!d[p+3]) continue;
         const r0=d[p], g0=d[p+1], b0=d[p+2];
