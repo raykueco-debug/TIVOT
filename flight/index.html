@@ -5827,8 +5827,8 @@ function update(dt,now){
     cam.speed += (cam.speed*ek - cam.speed)*bleed;
   }
   cam.x+=fx*mv; cam.y+=fy*mv;
-  /* 雲海的漂移跟著**實際位移**走（ver -1078）—— 這裡是船真的移動的唯一一行。 */
-  skyDrift += mv*SKY_DRIFT*0.001;
+  /* 雲海的擴張跟著**實際位移**走（ver -1080）—— 這裡是船真的移動的唯一一行。 */
+  skyZoom += mv/SKY_ZOOM_PER;
   clock.dist+=Math.abs(mv);              // 後退也是航行距離，不該倒扣
   /* ⚠⚠ **航行本身不再推進時間**（ver -435，Ray 定案）。以前是
      `clock.minutes += |mv| * 0.10` —— 時間跟著「走了多少世界單位」跑，
@@ -11033,20 +11033,32 @@ const deckArt={ deck:null, sky:null };
     im.src=deckSrc(kind); };
   one('deck','Deck'); one('sky','Sky');
 })();
-/* 雲海怎麼動（交接檔第四節）：
+/* ══ 雲海怎麼動 ══（交接檔第四節；**ver -1080 改掉前進那一半**）
    · **轉向**綁 `cam.angle` —— 轉舵、天空橫掃。這一半是**物理正確**的，
      而且與上半 3D 視窗讀同一個 `cam.angle`（鐵律 7），兩邊不可能走鐘。
-   · **前進**綁**實際位移**（`mv`，見 update）—— Ray 要的「船動就往後跑」。
-     ⚠⚠ 這一半物理上是假的：從正前方看，直線前進不會讓雲橫向移動（遠雲是朝你
-       放大、往兩側掠過）。所以係數要**很小**，當成「風把雲吹過去」的氛圍，
-       不是速度表。看起來怪就把 `SKY_DRIFT` 設 0。
-     ⚠ 綁 `mv` 而不是 `cam.speed`：停船／交棒進戰鬥／對話暫停時 `mv` 本來就是 0，
-       Sturm 與開發用加速也自動吃到 —— 不必在這裡再判一次（鐵律 7/8）。
-   ⚠ `skyDrift` 是**純視覺狀態**：不進存檔、不跨場，回到飛行畫面歸零就好
-     （這一頁每次出航都重載，所以它本來就是 0）。 */
-const SKY_PAN   = 0.6;      // ×W：每弧度捲動幾個畫面寬（轉 90° ≈ 掃過一個畫面寬）
-const SKY_DRIFT = -0.06;    // ×W：每 1000 世界單位捲動幾個畫面寬（負＝往左＝往後）
-let skyDrift=0;             // 累加在 update 的位移那一行（唯一那一處）
+   · **前進**＝**從消失點往外擴**（ver -1080，Ray：「前進的時候背景不應該左右平移吧？
+     應該要往 viewer 方向收」）。他是對的：直線前進的光流是**以正前方為中心的放射狀
+     擴張**（FOE＝focus of expansion），橫移是錯的 —— -1078 那一版是為了省事才做成
+     橫移，稿上也自己寫了「這一半物理上是假的」。
+     FOE ＝ **畫面橫向中心 × 天空層的地平線那一列**（正前方無限遠的那個點）：
+     以它為中心放大，地平線上的點不動、其餘往外擴 —— 那正是前進該有的樣子。
+   ⚠⚠ **放大要循環，而且不可以「放到底再跳回去」**（那是一次明顯的閃跳）。
+     作法是經典的無限縮放：**同時畫兩層**，尺度差一個 `SKY_ZOOM_F`，小的那層
+     淡入蓋在大的那層上；一個循環走完時，小的剛好長到大的那層的起始尺度，
+     兩者交棒，畫面上**完全接得起來**（自檢：u→1 時看到的是 F 倍的那一張，
+     u=0 時看到的也是 F 倍的那一張）。
+   ⚠ 兩層**都必然蓋滿面板**（尺度分別是 F^u≥1 與 F^(u+1)≥F），所以大的那層
+     可以用 α=1 當底 —— 不會透出下面的漸層。
+   ⚠ `F` 不要大：它同時決定**最大放大倍率**（F²）與交叉淡接時兩張圖的差距。
+     太大 → 尾段被放大到糊、而且淡接時看得出是同一張圖的兩個尺寸（疊影）。
+   ⚠ 綁 `mv` 而不是 `cam.speed`：停船／交棒進戰鬥／對話暫停時 `mv` 本來就是 0，
+     Sturm 與開發用加速也自動吃到 —— 不必在這裡再判一次（鐵律 7/8）。
+   ⚠ `skyZoom` 是**純視覺狀態**：不進存檔、不跨場（這一頁每次出航都重載）。 */
+const SKY_PAN      = 0.6;     // ×W：每弧度捲動幾個畫面寬（轉 90° ≈ 掃過一個畫面寬）
+const SKY_HORIZON  = 0.18;    // 天空層的地平線佔圖高的比例（美術規格，換圖要重量）
+const SKY_ZOOM_F   = 1.6;     // 一個循環放大幾倍（＝兩層的尺度間距；最大倍率是它的平方）
+const SKY_ZOOM_PER = 4500;    // 前進幾個世界單位走完一個循環（滿速 360/秒 → 約 12 秒）
+let skyZoom=0;                // 循環相位，累加在 update 的位移那一行（唯一那一處）
 const BORE={x:0.4481,y:0.1581};          // Base.webp 軸孔中心（佔圖寬/圖高的比例）
 const HEAD_R=0.2274;                     // 基座頭盤半徑佔基座寬的比例（95.5/420）
 const WHEEL_SPIN=0.0052;                 // 舵量 → 舵輪角速度（rad/ms，滿舵約 0.83 轉/秒）
@@ -11173,11 +11185,24 @@ function drawPanel(S){
     ctx.save();
     ctx.beginPath(); ctx.rect(0,y0,W,ph); ctx.clip();
     if(deckArt.sky){
-      const S2=deckArt.sky, sw=S2.width*sc, sh=S2.height*sc;
-      /* 轉向 ＋ 前進，兩者相加成一個橫向位移；`ox` 把它折回一個貼圖寬之內。 */
-      const pan=(cam.angle*SKY_PAN + skyDrift)*W;
-      const ox=((-pan%sw)+sw)%sw;
-      for(let k=-1;k<=Math.ceil(W/sw)+1;k++) ctx.drawImage(S2, dx-ox+k*sw, dy, sw, sh);
+      const S2=deckArt.sky, sw0=S2.width*sc, sh0=S2.height*sc;
+      const panX=cam.angle*SKY_PAN*W;                  // 轉向：螢幕空間的橫移（不受縮放影響）
+      const foX=W/2, foY=dy+SKY_HORIZON*sh0;           // 消失點＝正前方的地平線那一點
+      /* 以 `(foX,foY)` 為中心放大 `k` 倍，再橫向平移 `panX`；橫向折回貼圖寬之內
+         （轉舵可以轉到天涯海角，一定要折）。 */
+      const layer=(k,alpha)=>{
+        if(alpha<=0.004) return;
+        const w2=sw0*k, h2=sh0*k;
+        const by=foY+(dy-foY)*k;
+        let x=foX+(dx-foX)*k+panX;
+        x-=Math.ceil(x/w2)*w2;                         // 折到 ≤0 的第一張
+        ctx.globalAlpha=alpha;
+        for(; x<W; x+=w2) ctx.drawImage(S2, x, by, w2, h2);
+      };
+      const u=skyZoom-Math.floor(skyZoom);
+      layer(Math.pow(SKY_ZOOM_F,u+1), 1);              // 大的那層當底（必然蓋滿）
+      layer(Math.pow(SKY_ZOOM_F,u  ), u);              // 小的那層淡入蓋上去
+      ctx.globalAlpha=1;
     }
     ctx.drawImage(D, dx, dy, dw, dh);
     ctx.restore();
