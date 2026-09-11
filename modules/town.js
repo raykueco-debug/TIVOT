@@ -316,8 +316,9 @@ let dateDay=null, datedSet=new Set();
 function dateDayCheck(){ const d=clock.dayNo(); if(dateDay!==d){ dateDay=d; datedSet=new Set(); } }
 function datedToday(who){ dateDayCheck(); return datedSet.has(who); }
 function markDated(who){ dateDayCheck(); datedSet.add(who); }
-/* ⚠⚠ 解除約會只有這一支（鐵律 8）：出城鎮（`suspend`／`close`）與回到旅店
-   （`enter` 看到 `inn`）三條路都叫它 —— 寫在各個呼叫點一定會漏掉其中一條。 */
+/* ⚠⚠ 解除約會只有這一支（鐵律 8）：出城鎮（`suspend`／`close`）兩條路叫它。
+   ⚠ ver -1097 起**「回到旅店」不再解除**（見 `enter()` 那一段的說明）——
+     -576 那一條是帝都測試期的鷹架，那時約會還沒有內容。 */
 function endDate(){ if(escortId && !escortLeftover) escortId=null; }
 
 /* ══ 宵禁（ver -576，Ray：「晚上九點以後女主角就不出門，約不出來…到隔天七點以後
@@ -2176,16 +2177,15 @@ export function enter(id){
      上一個地點的對白會在**一秒後於新地點開演**（實測：從西區立刻回廣場，
      諾薇兒的「肚子餓」就跑到廣場上演了）。 */
   clearTimeout(arriveT); arriveT=0;
-  /* ⚠ **回到旅店就解除約會**（ver -576，Ray 指定）：她把你送回門口，回自己房間 ——
-     門燈跟著亮回來（`inRoom()` 現算）。要在 `afterArrive` 組 st1 之前做（鐵律 8：
-     解除只有 `endDate()` 一支）。 */
-  /* ⚠⚠ **「走進旅店就解除約會」是逐城的**（ver -1096）：-576 的原話是
-     「出城鎮、回旅店以後就要解除約會」（帝都，諾薇兒約出來走一段就回房）；
-     Stage9 的夏爾村 Ray 改口「**要離開此地圖再進來才會恢復**」——
-     而那裡的旅店就是索菈娜家（一個一般的樞紐），走回去就解除等於約不成。
-     所以城上寫 `dateEndAtInn:false` 的那幾座不吃這一條；**沒寫＝維持舊行為**
-     （鐵律 9：例外要明寫，預設不動）。出城（`suspend`／`close`）照舊一律解除。 */
-  if(n.inn && (TOWNS[townId]||{}).dateEndAtInn!==false) endDate();
+  /* ══⚠⚠⚠ 「走進旅店就解除約會」**整條拿掉**（ver -1097，Ray：「因為帝都還沒有
+     設計約會事件，只會變成無意義的動作，當初只是測試還沒放事件」）══
+     -576 寫的是「出城鎮、回旅店以後就要解除約會」，但那時帝都的約會**沒有內容**
+     ——「約出來走一段就回房」是測試用的鷹架，不是規矩。真正的規矩只有一條：
+     **離開這張地圖才解除**（`suspend`／`close`）。
+     ⚠ 所以 -1096 那個逐城的 `dateEndAtInn` 也一起退休了：一條規矩不需要例外，
+       留著就是同一件事兩個真相（鐵律 7）。
+     ⚠ 帝都的諾薇兒約會因此會撐到出城為止 —— 那正是它本來就該有的樣子。
+     ⚠ 「一天內同人不能約第二次」（`datedToday`）沒有動，重複約還是擋得住。 */
   story.endAdhoc();
   story.clearCast();
   chatterOn=false;          // ⚠ 第四件：上一個地點的路人單句（見 §6.5 的新路徑檢查表）

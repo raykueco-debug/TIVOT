@@ -787,7 +787,7 @@ export const CHAPTERS = [
      ⚠ `sv_s8_hungry` **也列進來**：不列的話跳進這一章之後走六步，
        諾薇兒會再餓一次（ver -1095 那個 bug 的另一半 —— 章節工具這條路
        `skipIf` 擋得到，但把它插著更直接：那一段本來就算演過了）。 */
-  { id:'stage9', name:'Stage 9', sub:'夏爾村・聖皇的諭令 → 自由探索（可約會）',
+  { id:'stage9', name:'Stage 9', sub:'夏爾村・索菈娜家：聖皇的諭令 → 自由探索（可約會）',
     stage:9, clockHour:12, named:true,
     flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open',
            'set_sail','got_ship','dock_day2','flight_centipede_met',
@@ -801,7 +801,10 @@ export const CHAPTERS = [
            'sr_mural','ruins_gate_open','ruins_bell_done','ruins_thug_met','sr_altar',
            'ruins_altar_on','sv_s8_noon',
            'sv_s8_home','sv_s8_hungry','sv_s8_dine','sv_s8_corvin'],
-    enter:'town', town:'shinier', node:'restaurant' },
+    /* ⚠ 落點＝**索菈娜家**（ver -1098，Ray：「第九章應該要直接從索菈家開始，
+       幹嘛從餐廳走回去？」）—— 諭令那一幕就演在那裡（正式流程是閘門
+       `sv_s8_to_home` 把人從餐廳三秒黑搬回家，章節工具直接落在終點）。 */
+    enter:'town', town:'shinier', node:'sorahome' },
 ];
 
 export function newRun(){
