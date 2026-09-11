@@ -263,10 +263,19 @@ function siegeOn(){
 }
 /* 她可能出現在哪：連接用場景 ∪ 她自己的清單 ∪ 餐飲街。
    ⚠ **旅店不算** —— 她就住在那裡，「出門」的意思是不在旅店。 */
+/* 她今天可能出現在哪幾格。
+   ⚠⚠ **有指定地點的人就只出現在那裡**（ver -1100，Ray：「有指定出現地點的話
+     就不會在其他地方碰到」）：-575 原本是「連接場景 ∪ 她自己的那幾格」——
+     那會讓「她今天在湖畔」變成「她可能在湖畔，也可能在任何一條路上」，
+     玩家找不到人，指定地點就沒有意義了。
+   ⚠ **沒有指定地點的人照舊走連接場景**：那是「碰得到人」的保底，不是誰的專屬。
+   ⚠ 逐城的指定地點寫 `nodesBy[城id]`（節點 id 是逐城的 —— 帝都的 `cityhall`
+     在夏爾村根本不存在）；`nodes` 是不分城的預設。 */
 function areaFor(who){
   const w=(OUTING.who||{})[who]||{}, T=TOWNS[townId]||{};
-  const set=new Set(connectorIds());
-  for(const id of (w.nodes||[])) set.add(id);
+  const own=((w.nodesBy||{})[townId]) || w.nodes || [];
+  const set=new Set(own.length ? [] : connectorIds());
+  for(const id of own) set.add(id);
   const dn=diningNode(); if(dn && w.dine) set.add(dn);
   return [...set].filter(id => T.nodes[id] && !T.nodes[id].inn);
 }
@@ -292,14 +301,23 @@ function rollOuting(){
     for(let k=0;k<per;k++){
       if(Math.random() >= ch) continue;
       const w0=H[0]*60 + span*k, w1=w0+span;
+      /* ══⚠⚠ **出了門就待到 `backHour`**（ver -1100，Ray：「角色如果出門，
+         在 19:00 之前不會回來」）══ -575 是「待 `stay` 分鐘就回房」，那會讓玩家
+         走到那一格時她剛好回去了，讀起來是撲空不是「她今天出門了」。
+         ⚠ `stay` 只剩**出門的時刻**還在用（在這個窗裡隨機挑一點出發），
+           結束時刻一律是 19:00。
+         ⚠ 一個人排到第一次就佔滿到 19:00，所以第二個窗的重疊檢查自然擋掉她 ——
+           不必另外寫「一天只出一次」（鐵律 7：讓既有的檢查自己成立）。 */
       const len=Math.min(rnd(stay[0], stay[1]), span);
       const from=mid + Math.round(rnd(w0, w1-len));
-      const to=from + Math.round(len);
+      const to=mid + Math.round(((OUTING.backHour!=null?OUTING.backHour:19))*60);
       /* ⚠ **同一格同一時段不放兩個人**：那樣「當下是誰在那個區域」就答不出唯一解，
          而餐飲街要靠它決定開哪一家店。挑不到空的就這一次不出門。 */
       const free=area.filter(id => !outPlan.some(o =>
         o.node===id && o.from<to && from<o.to));
       if(!free.length) continue;
+      /* ⚠ 已經排過一次的人不再排（她要待到 19:00，第二個窗沒有意義）。 */
+      if(outPlan.some(o=>o.who===who)) break;
       outPlan.push({ who, node: free[(Math.random()*free.length)|0], from, to });
     }
   }

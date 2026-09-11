@@ -335,19 +335,38 @@ export const OUTING = {
      ⚠ 值＝**好感點數**不是段位號：段寬 20（`progress.tierOf`），T2 的地板就是 20。
        寫段位號的話這裡就得再算一次 `tierFloor`，那是第二個計算點。 */
   dateAff: 20,
+  /* ══⚠⚠ **出了門就不回來，直到 19:00**（ver -1100，Ray：「角色如果出門，
+     在 19:00 之前不會回來」）══
+     原本是「一天最多兩次、每次待 `stay` 分鐘」（-575）—— 那會讓玩家走到那一格時
+     她剛好回房，讀起來是撲空而不是「她今天出門了」。現在一旦排出門，
+     結束時刻一律是這個鐘點。
+     ⚠ `perDay` 因此實際上只會成真一次（排到第一次就佔滿到 19:00）——
+       欄位留著：它仍然決定「一天有幾個機會擲」（時段切幾個窗），
+       只是不會再出現「出門→回房→再出門」。 */
+  backHour: 19,
   perDay: 2,             // Ray：一天最多出門兩次
   chance: 0.5,           // 每個窗各擲一次（Ray 只說「可能」，數字暫定）
   stay:  [60, 150],      // 一次在外面待多久（分鐘，窗內隨機；暫定）
   /* ⚠ 這張表的**順序就是旅店四扇門的順序**（modules/inn.js 的 `roster()`）——
      諾薇兒在第一格是既有的版面，不要換。 */
+  /* ⚠⚠ **指定地點是逐城的**（ver -1100）：節點 id 本來就逐城不同（帝都的
+     `cityhall` 在夏爾村根本不存在），而 Ray 的 Stage9 稿給了夏爾村四個專屬地點
+     —— 餐廳（諾薇兒）／村長的家（蕾娜）／湖畔（安雅）／獵人小屋（索菈娜）。
+     `nodes` 是不分城的預設，`nodesBy[城id]` 覆寫那一座。
+     ⚠ 有指定地點的人**就只出現在那裡**（見 `modules/town.js` 的 `areaFor`）——
+       不再加上連接場景，不然「她今天在湖畔」會變成「她可能在任何一條路上」。 */
   who: {
     NOUVELLE: { from:1, dine:'restaurant', nodes:['cityhall','church','grocery'],
+                nodesBy:{ shinier:['restaurant'] },
                 line:'啊，{N}！我正想著要不要買點什麼回去呢。' },
     RENNA:    { from:1, dine:'cafe',       nodes:['cityhall','church','grocery'],
+                nodesBy:{ shinier:['chief'] },
                 line:'寫報告寫累了，出來透透氣。' },
     ANYA:     { from:5, dine:'dessert',    nodes:['grocery'],
+                nodesBy:{ shinier:['lakeside'] },
                 line:'……嗯。今天的份，還沒吃到。' },
     SORANA:   { from:5, dine:'bar',        nodes:['grocery','gunstore','guild'],
+                nodesBy:{ shinier:['hunter'] },
                 line:'喲。難得看你走這條路啊。' },
   },
 };
