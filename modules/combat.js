@@ -1442,141 +1442,43 @@ function arcMidPath(tail){
   }
   return 'M'+pts.map(p=>p[0].toFixed(2)+','+p[1].toFixed(2)).join('L');
 }
-let claspSig='';
-let claspRetry=0;                                       // 「血條還沒排好」的重試次數（ver -1067）
+/* ⚠ ver -1068：`claspSig`（量到的血條位置快取）與 `claspRetry`（量不到就重試）
+   隨著「不再量 rect」一起退休 —— 位置與大小現在全由 CSS 決定。 */
 let claspGeo=null;                                      // 遮罩/連擊數用的幾何（layoutClasp 算好，update 只讀）
 function layoutClasp(){
-  const host=$('energyClasp'); if(!host) return;
+  /* ══⚠⚠⚠ **ver -1068：這一支不再量任何 rect** ══════════════════════════════
+     （Ray：「那就把破防值跟武器鍵定位鎖好不動，hp 條夾中間不覆蓋就不會跑了」）
+     破防計量表與副武器鈕的**位置與大小全部搬進 CSS**（`#barsBlock` 那一組變數）：
+     兩顆都是 flex 的子元素、血條 `flex:1` 夾在中間 —— 不必量、天然不重疊，
+     也不可能因為「量的時候還沒排好」而跑到畫面外（-1067 那顆鈕的病灶）。
+     ⇒ 這裡只剩**兩件與版面無關的事**：把 path 的 `d` 算出來、把頭像的圖掛上去。
+     ⚠ `claspSig`／`claspRetry`／`armClaspLayout` 的重試那一整套因此退休；
+       `armClaspLayout()` 留著當入口（呼叫端不必改），但它現在只是「重畫一次」。
+     ⚠ 血條右側的讓位（舊的 `marginRight`）也不必了 —— flex 的 gap 就是那道縫。 */
   const svgEl=$('claspArc'), track=$('claspArcTrack'), fillEl=$('claspArcFill');
-  const blue=document.querySelector('.hpbar.player-bar'), red=document.querySelector('.hpbar.enemy-bar');
-  if(!svgEl||!track||!fillEl||!blue||!red) return;
-  const hr=host.getBoundingClientRect(), br=blue.getBoundingClientRect(), rr=red.getBoundingClientRect();
-  /* ⚠⚠ 還沒排好 → **自己排下一次重試**（ver -1067，Ray：「某次鹿主戰換武器的
-     按鈕不見了」）。這一支不只擺計量表，**副武器切換鈕的 left/top/width/height
-     也是它寫的** —— 提早 return 就等於那顆鈕沒有被定位，停在 CSS 的預設位置
-     （`position:absolute` 沒有座標＝跟著上一個兄弟元素跑，實際上就是看不見）。
-     `armClaspLayout` 原本只排四次（0／120／400／1000ms），手機慢一點、或
-     那一場的立繪解碼卡住，四次全部落在「血條還沒排好」那一段就**永遠不會再量**。
-     ⚠ 退避重試，上限 12 次（約 2.5 秒）—— 再久就是別的地方壞了，不要無限排。
-     ⚠ 成功量到就把計數歸零：下一次進場重新算。 */
-  if(hr.height<10||br.width<10){
-    if(claspRetry<12){ claspRetry++; setTimeout(layoutClasp, 200); }
-    return;
-  }
-  claspRetry=0;
-  const sig=[hr.x,hr.y,br.x,br.y,br.height,rr.y].map(v=>Math.round(v)).join(',');
-  if(sig===claspSig) return; claspSig=sig;
-  const S=(br.y+br.height)-rr.y;             // S＝紅條頂→藍條底（慣例單位）
-  const BL=br.x;                             // 血條左緣（視口座標）
-  /* 擺位（ver -1039，Ray：「位置跟大小要跟切換武器的鈕對稱」）——
-     整組是**正方形**（viewBox 100×100），邊長＝**切換武器鈕的高**（`Hb`，見下），
-     垂直中心＝**兩條血條的中線**（與鈕同一條），水平則是鈕的鏡像：
-     鈕的右緣貼齊面板右緣內 `BPAD`，這一組的左緣就貼齊面板左緣內 `BPAD`。
-     ⚠ 一起解決了 -1038 那兩道夾位：縮到這個大小之後，整組落在「面板左緣 →
-       血條左端」那 48px 之內 —— 既不會被 `#top` 的 `overflow:hidden` 裁掉，
-       也不會壓到血條，兩條規矩自動成立，不必再夾。 */
-  const GAPB=0.05*S;                         // 鈕與血條右端的縫（-550，Ray：「不要遮到 hp 條」）
-  /* 鈕的尺寸與落點（-551，Ray：「小一點…更靠右一些 低一些」）：
-     縮成月的 0.78、右緣貼齊面板右緣內 6px、垂直中心＝兩條血條的中線。 */
-  /* ⚠ 鈕的大小**維持原尺寸**（ver -551 Ray 調過的那一版）：它以前寫成「月的 0.78」，
-     而月高是 1.548S —— 換算成 S 就是 1.207S，直接寫那個數字，行為一個像素不變。
-     不跟著新的 BOX 走：那會讓一個與它無關的改動悄悄改掉鈕的大小。 */
-  const Hb=1.207*S, Wb=Hb*(276/272), BPAD=6;
-  /* 血條右側讓位（-549；-550 改「整顆讓開」）：鈕與月同大，但月在血條**之下**
-     壓著左端無妨，鈕在血條**之上**（要點擊）—— 蓋到會遮住血量，所以鈕整顆
-     排在血條右端之外。讓位量改變血條 rect，改了就重跑一次重量。
-     鈕藏著（單一類別／試玩版教學）就不讓，血條照舊放滿。 */
-  const btn=document.getElementById('wpSwitch');
-  const stack=document.getElementById('barStack');
-  if(stack){
-    /* 讓位量＝鈕寬＋縫－右緣內縮差（blockPad 12 − BPAD 6）：血條右端正好停在鈕左緣外 GAPB。 */
-    const want=(btn && btn.style.display!=='none') ? Math.max(0,Math.round(Wb+GAPB-(12-BPAD)))+'px' : '0px';
-    if((stack.style.marginRight||'0px')!==want){
-      stack.style.marginRight=want; claspSig=''; setTimeout(layoutClasp,30); return;
-    }
-  }
-  /* ⚠⚠ **-1038 那兩道夾位已經不需要了**（ver -1039）：整組縮到與鈕同大之後，
-     它本來就落在「面板左緣 → 血條左端」那 48px 之內 —— 既不會被 `#top` 的
-     `overflow:hidden` 裁掉（那是 -1038 抓到「整條計量表看不見」的真正原因），
-     也不會壓到血條。**位置與大小現在只有「跟鈕對稱」這一條規則。** */
-  /* ⚠ 落點跟著鈕走（見上）：`BPAD` 是鈕那一段算出來的，這裡只讀 ——
-     兩邊各算一次的話，調鈕的位置就會與這一組走鐘（鐵律 7）。
-     ⚠⚠ 大小 ver -1040 由「＝鈕的高」改成 **鈕的高 × `CLASP_UP`**（Ray：「計量跟
-       女主頭像稍微放大」）：位置仍是鈕的鏡像，只有尺寸大一階。放大量寫成係數
-       而不是另一個絕對值 —— 鈕的大小一改，這一組還是跟著等比走。
-     ⚠⚠ **下緣貼著藍條**（Ray：「把計量下緣拉到與藍 hp 條緊貼，只留 2px」）：
-       縱向的錨因此由「兩條血條的中線」換成**藍條的底**往上 2px —— 放大時它就
-       往**上**長，不會越過血條往下擠。 */
-  const BOX=Hb*CLASP_UP, RAD=BOX/2, FACE_D=BOX*ARC.face;
-  const par=btn&&btn.offsetParent ? btn.offsetParent.getBoundingClientRect() : {left:hr.x};
-  const CX=(par.left+BPAD+RAD)-hr.x;                    // 鈕是「右緣內 BPAD」，這一組是左緣
-  const CY=(br.y+br.height-2)-RAD-hr.y;                 // 底緣＝藍條底往上 2px
-  svgEl.style.left=(CX-RAD)+'px'; svgEl.style.top=(CY-RAD)+'px';
-  svgEl.style.width=BOX+'px';     svgEl.style.height=BOX+'px';
-  /* 橫槓那一截伸到**血條左緣內 2px**。換算成 viewBox 單位（圓心在 50）並夾住 ——
-     `arcPath` 的座標必須留在 0~100 內，不然會被 svg 的框裁掉。
-     ⚠ 形狀因此**與版面有關**（血條的位置會變），所以每次重量都重算一次 d；
-       兩條 path（形狀／中心線）由同一個 `tail` 產生（鐵律 7）。 */
-  const tailU=Math.max(0, Math.min(46, ((BL-hr.x)-2-CX)/BOX*100));
+  if(!svgEl||!track||!fillEl) return;
+  /* 橫槓那一截伸到血條左緣內 2px。換算成 viewBox 單位：盒是 `--clasp-box`、
+     圓心在盒的正中（50 單位），而 svg 的寬度是「盒 ＋ `--clasp-tail`」。
+     ⚠ 這兩個數字與 CSS 的那兩個變數是同一件事，改一邊要改另一邊（鐵律 7 的但書）。 */
+  const cs=getComputedStyle($('barsBlock')||document.body);
+  const BOX=parseFloat(cs.getPropertyValue('--clasp-box'))||44;
+  const TAIL=parseFloat(cs.getPropertyValue('--clasp-tail'))||8;
+  svgEl.setAttribute('viewBox', '0 0 '+(((BOX+TAIL)/BOX)*100).toFixed(1)+' 100');
+  const tailU=Math.max(0, ((BOX/2+TAIL-2)/BOX)*100);
   const dShape=arcPath(tailU);
   track.setAttribute('d', dShape); fillEl.setAttribute('d', dShape);
   const mp=$('claspProgPath');
   if(mp){ mp.setAttribute('d', arcMidPath(tailU));
-          /* 筆畫要蓋得住最厚的地方（`w0`）＋一點餘裕；溢出到形狀外沒關係 ——
-             真正決定形狀的是 fill 那條 path，遮罩只管「走到哪裡」。 */
           mp.setAttribute('stroke-width', String(ARC.w0+6)); }
-  /* 副武器切換鈕（-549 與月對稱 → -550 移出血條 → -551 縮小靠右壓低）：
-     盒＝月的 0.78 倍，右緣＝面板右緣內 BPAD、垂直中心＝兩條血條的中線；
-     圓卡直徑＝盒的短邊。幾何只算這一處（鐵律 7），weapon.js 只管卡面與行為。 */
-  if(btn){
-    const bb2=btn.offsetParent?btn.offsetParent.getBoundingClientRect():{x:0,y:0};
-    const bL=bb2.right-BPAD-Wb;
-    const bT=(rr.y+br.y+br.height)/2-Hb/2;
-    btn.style.left=(bL-bb2.x)+'px'; btn.style.top=(bT-bb2.y)+'px';
-    btn.style.width=Wb+'px'; btn.style.height=Hb+'px';
-    const wc=btn.querySelector('.ws-card'); const d=Math.round(Math.min(Wb,Hb));
-    if(wc){ wc.style.width=d+'px'; wc.style.height=d+'px'; }
-  }
-  claspGeo={ cx:CX, cy:CY, faceD:FACE_D, blpx:BL-hr.x, S };   // 中心（host 座標）＝頭像／連擊數的錨
-  /* 連擊數（Ray 定稿）：白粗斜體黑邊、錨在**環帶的圓心**（＝頭像的位置）；
-     **不可蓋過 HP 條**（右緣的夾在 updateEnergyClasp 換字時做，
-     因為夾多少取決於當下的字寬）。 */
-  const combo=host.querySelector('.clasp-combo');
-  if(combo){ combo.style.top=CY+'px';
-             combo.style.bottom='auto'; combo.style.transform='translate(-50%,-50%)';
-             const b=combo.querySelector('b');
-             if(b){ b.style.fontSize=Math.round(0.9*S)+'px';                  // 定稿截圖：字高≈0.9S
-                    b.style.webkitTextStroke=Math.max(1.6,0.05*S).toFixed(1)+'px rgba(8,8,12,.9)'; }
-             placeCombo(); }                                                  // 橫向＝夾位那一支（唯一實作）
-  /* ══ 搭檔頭像（ver -1036；-1037 起是這一組的中心）══ 與連擊數同一個錨。
-     ⚠ 寬度就是上面算 BOX 時用的 `FACE_D`（一個量一個計算點，鐵律 7）。
-     ⚠⚠ 這一格**往上長**（高＝寬 × `ARC.faceH`，ver -1038，Ray：「角色頭頂可以稍
-       遮住計量」）：底邊仍是那個圓的底，多出來的高度全加在上面 —— 立繪的頭頂
-       本來就貼齊圖的上緣（`ART[].top` 都是個位數），所以那一段長出來的正好是頭頂，
-       它疊在環帶之上（`.clasp-face` 的 z-index 比 svg 高）就成了「頭伸出環外」。 */
-  const face = $('claspFace');
-  if(face){ const D=Math.round(FACE_D), H=Math.round(FACE_D*ARC.faceH);
-            face.style.width=D+'px'; face.style.height=H+'px';
-            /* ⚠ 橫向**不置中**（ver -1045）：右緣切齊計量的右側（＝橫槓的右端，
-               也就是血條左緣內 2px），往左長。多出來的那一截落在環的開口裡
-               （2 點～4 點沒有環），所以左側照樣讓得開環。
-               ⚠⚠ 縱向的錨是**藍條的中線**（ver -1046，Ray：「所有角色下移，底線與
-                 藍 hp 條中線齊平」）：她的**底邊**壓在那條線上，往上長的是頭頂。
-                 ⚠ 不是「圓的底」也不是「計量的底」—— 那兩個會隨環的比例變，
-                   而這一條是對著**血條**訂的，換誰上場、環怎麼調都不會跑掉。 */
-            const faceBase=(br.y+br.height/2)-hr.y;
-            face.style.left=(((BL-hr.x)-2)-D)+'px'; face.style.top=(faceBase-H)+'px'; }
-  updateEnergyClasp();                       // 幾何換了 → 遮罩與連擊數重掛
+  claspGeo={ box:BOX, tail:TAIL };            // 給 updateEnergyClasp 判「有沒有算過」
+  updateEnergyClasp();
 }
 /* 連擊數的橫向擺位（唯一實作，鐵律 8）：錨在缺口中心，但 Ray：「可覆蓋月牙、
    **不可蓋過 HP 條**」—— 依當下字寬把右緣夾在血條左緣內。layoutClasp（幾何變了）
    與 updateEnergyClasp（字換了、變寬了）都呼叫這一支。 */
-function placeCombo(){
-  if(!claspGeo) return;
-  const cb=$('claspCombo'); if(!cb) return;
-  const w=cb.offsetWidth;                     // 藏著時是 0 → 落在圓心，無妨
-  cb.parentNode.style.left=Math.min(claspGeo.cx, claspGeo.blpx-2-w/2)+'px';
-}
+/* ⚠ ver -1068：連擊數的擺位搬進 CSS（錨在弧的圓心）—— 這一支留成空殼，
+   呼叫端（`updateEnergyClasp` 換字時）不必改。 */
+function placeCombo(){}
 /* 頭像那一張圖的 CSS（唯一那一支）：
    ① 本篇三位走 `speakers.faceStyle` —— 立繪的臉位置（`fx`）量過（鐵律 7）。
    ② 試玩版的蕾妮／馬季諾**不在 `SPEAKERS` 裡**（她們只存在於挑戰，§6.5.2），
@@ -1626,7 +1528,10 @@ function faceThumb(src, wantW){
 function withThumb(css){
   const m=/background-image:url\("([^"]+)"\)/.exec(css||'');
   if(!m) return css;
-  const want=Math.max(48, Math.round((claspGeo?claspGeo.faceD:40) * (FACE_ZOOM/100)
+  /* 預縮圖的目標寬度：頭像的實際寬度（`--clasp-box` × 0.72，同 CSS）× zoom × DPR。
+     ⚠ 與 CSS 的那個 0.72 是同一個數字，改一邊要改另一邊。 */
+  const faceW=(claspGeo && claspGeo.box ? claspGeo.box : 44) * 0.72;
+  const want=Math.max(48, Math.round(faceW * (FACE_ZOOM/100)
              * Math.min(2, window.devicePixelRatio||1)));
   const th=faceThumb(m[1], want);
   return th ? css.replace(m[1], th) : css;
@@ -1693,8 +1598,10 @@ function claspFaceOn(){
   return !!claspFaceCss(state.pickedPartner);
 }
 /* 進場後多試幾拍（血條要排好才量得到）；視窗變了整組重量。 */
-function armClaspLayout(){ claspSig=''; claspRetry=0; [0,120,400,1000].forEach(ms=>setTimeout(layoutClasp,ms)); }
-window.addEventListener('resize', ()=>{ claspSig=''; setTimeout(layoutClasp,60); });
+/* 重畫一次（ver -1068 起只是「重算 path＋重掛頭像」，沒有量測了）。
+   ⚠ 入口留著：呼叫端（開機、開戰）不必因為這次重構而改。 */
+function armClaspLayout(){ layoutClasp(); }
+window.addEventListener('resize', ()=>{ setTimeout(layoutClasp,60); });
 
 function updateEnergyClasp(){
   /* ══ 計量（ver -1044：conic → **沿路徑推進**）══
@@ -2465,15 +2372,9 @@ export function startGame(){
   saint.reset();   // 聖徒化狀態全重置（saintMode 經 exitSaint、清計時器、關手勢層、清 saint 旗標；共鬥 coopMode/coopTimer 一併）
   weapon.reset();  // 雙槍破防重置（清 dualWield/dualTimer + #grid dualwield class，防跨場殘留）
   weapon.resetWeaponSwitch();   // 副武器切換鈕（ver -410）：排隊中的切換不可以跨場留著
-  /* ══⚠⚠⚠ **開戰要重新量一次版面**（ver -1067，Ray：「某次鹿主戰換武器的按鈕
-     不見了」）══ `layoutClasp` 不只擺破防計量表，**副武器切換鈕的 left／top／
-     width／height 也是它寫的**；而它有一道「血條位置沒變就整支 return」的快取
-     （`claspSig`）—— 進戰鬥時沒有人清那把鑰匙，於是**那顆鈕從來沒有被定位**，
-     停在 CSS 的預設位置（實測 rect 是 (12, −41)：整顆在畫面上緣之外）。
-     ⚠ 之所以是「某次」：轉向、網址列收合之類的 resize 會順手把它算回來 ——
-       沒發生那些事的那一場就一直不見。
-     ⚠ `armClaspLayout()` 會清 `claspSig` 並排四次重量（-1067 起量不到還會自己
-       退避重試），是這件事唯一的入口（鐵律 8）。 */
+  /* 重畫破防計量表（ver -1067 加，-1068 之後它只是重算 path＋重掛頭像）。
+     ⚠ -1067 那顆「換武器鈕不見了」的根因是**當時的座標要靠量血條算**，
+       而進戰鬥沒有人清那道快取 —— -1068 把位置整個搬進 CSS 之後那個坑就沒了。 */
   armClaspLayout();
   partner.reset(); // 搭檔被動重置（高裝藥彈 10 秒計時器清除、上膛旗標歸位）
   state.overkill=0; state.killTime=0; state.transitioning=false;
