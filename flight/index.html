@@ -1902,7 +1902,82 @@ const PLACES=[
        —— 著陸掃描（`nearestTown`）本來就兼掃帶 `town` 的 PLACES，不必再改程式。
      ⚠ 位置與 `export_mapref.py` 的 PLACES 不同步（那張參考圖不該劇透隱藏點）。 */
   {x:1144,y:788, name:'無名遺跡', type:'遺跡', sense:true, flag:'ruin_a_found'},
+  /* ══⚠⚠ 石製遺跡（ver -1107，Ray：「1125,757 放一個隱藏地點／石製遺跡，走 B，
+     要像素風，倒塌的石柱跟石地板」）══
+     `ruin:'stone'` ＝ 地表**真的有東西**（手寫量體，見 `RUIN_ART`／`drawRuins`）。
+     ⚠⚠ **石頭一直看得見，名牌與地圖標記才是隱藏的**：隱藏點的規矩是
+       「遠遠先看到一塊地形不對勁 → 飛過去 → 按」（★ 那一節）—— 地上的斷柱
+       就是那個「不對勁」。整塊看不見的話玩家沒有理由在這裡長按。
+       要連石頭都藏起來的話，`drawRuins` 裡加一行問 `flagOn(P.flag)` 就好。 */
+  {x:1125,y:757, name:'石製遺跡', type:'遺跡', sense:true, flag:'ruin_b_found', ruin:'stone'},
 ];
+
+/* ══════════════════════════════════════════════════════════════════════
+   地表的小型遺跡（ver -1107，Ray 選的 B 案：手寫量體，不走城那條插畫管線）
+   ──────────────────────────────────────────────────────────────────────
+   為什麼不走城那一套：城是「俯視插畫 → 取樣金字塔＋量體 atlas＋整地」，
+   對一個十幾公尺的東西來說整套都是負擔 —— 尤其**整地**會在地上壓出一塊
+   圓形平台（§6.7.5 的 podium），一座小遺跡不該把山坡削平。
+   這裡的做法：**一把方塊**（底面多邊形＋高度），投影方式與量體層同源
+   （垂直抬升不改變 sv，所以頂面只有 y 差 h·dyk/z），畫進**與地形同解析度**
+   的離屏再 1:1 放大貼回來 —— 於是它與地形是同一顆像素（§6.7 的通則，
+   與火車／炊煙同一套），Ray 要的「像素風」就是這個。
+   ⚠ 座標是**世界單位、以遺跡中心為原點**（`MAP_SCALE=20`，所以 20＝一個地圖像素）。
+   ⚠ 高度取遺跡中心那一格的地形高，整座共用一個底 —— 它本來就是一塊鋪好的
+     石地板（平台），不是貼著起伏走的東西。
+   ⚠ 倒柱畫成**幾節鼓**（seg）不是一根長方體：石柱倒下來會斷成柱鼓，
+     斷開的縫隙正是「倒塌」讀得出來的地方。
+   ══════════════════════════════════════════════════════════════════════ */
+const RUIN_ART = {
+  stone: {
+    /* ══ 石製遺跡（ver -1107，Ray：「地基是圓的，表面斑駁，縮小到跟船差不多大小」）══
+       尺寸：地基直徑 **240 世界單位**（＝12 個地圖像素）—— 船是**固定螢幕尺寸**
+       （約 155px），所以「跟船差不多大」只在某個距離成立：240 在 z≈520
+       （一般接近時的距離）是 154px，正好。
+       ⚠ 這一組是**唯一的尺寸真相**：柱子的粗細與高度都是照地基推的比例寫的，
+         要整座放大縮小只動 `base.r`（其餘按比例自己跟著走，見 drawRuins 的 `sc`）。 */
+    base: { r:120, n:20, jit:0.055 },  // 圓形地基：半徑／幾邊形／邊緣的不規則量
+    speck: 26,                          // 表面斑駁：幾塊（位置與明暗是定數，不會閃）
+    parts: [
+      /* 倒柱（躺著）：`len` 長、`dia` 直徑、`seg` 斷成幾節（縫＝斷了） */
+      { k:'fallen', x:-36, y: 36, rot: 0.95, len:104, dia:20, seg:3 },
+      { k:'fallen', x: 48, y:-16, rot:-0.42, len: 80, dia:18, seg:2 },
+      { k:'fallen', x: -8, y: 64, rot: 2.05, len: 68, dia:16, seg:2 },
+      /* 斷柱（站著）：高度不一，才看得出是斷掉的 */
+      { k:'stump',  x:-60, y:-44, dia:24, h:60 },
+      { k:'stump',  x: 60, y: 48, dia:22, h:26 },
+      { k:'stump',  x: 16, y:-64, dia:22, h:80 },
+      { k:'stump',  x:-68, y: 16, dia:18, h:16 },
+    ],
+  },
+};
+/* 石材的三個色階（頂／側／暗側）＋地基。像素風＝**平塗硬邊**，不做漸層。
+   ⚠ 色要**壓得住**：第一版偏白，在深綠的地形上讀起來像一張紙。
+   ⚠ 斑駁是**兩階色塊**（亮斑／暗斑）不是雜訊：低解析度下逐像素雜訊只會糊成灰。 */
+const RUIN_COL = { top:'#a89c85', side:'#665e50', dark:'#3f3931',
+                   floor:'#7a7264', floorDark:'#615a4e', floorLite:'#8b8272',
+                   edge:'#38332c', shade:'rgba(38,34,28,.42)' };
+/* 形狀與斑駁**只算一次**（定數，逐幀重算會讓邊緣與斑點每一幀都在跳）。
+   ⚠ 自己帶一個確定性亂數：`Math.random()` 會讓同一座遺跡每次開機長得不一樣。 */
+function ruinShape(A){
+  if(A._poly) return A._poly;
+  let sd=20250911;
+  const rnd=()=>{ sd=(sd*1664525+1013904223)&0x7fffffff; return sd/0x7fffffff; };
+  const B=A.base, poly=[];
+  for(let i=0;i<B.n;i++){
+    const a=i/B.n*Math.PI*2, r=B.r*(1+(rnd()-0.5)*2*B.jit);
+    poly.push([Math.cos(a)*r, Math.sin(a)*r]);
+  }
+  const sp=[];
+  for(let i=0;i<(A.speck||0);i++){
+    const a=rnd()*Math.PI*2, d=Math.sqrt(rnd())*B.r*0.86;
+    sp.push({ x:Math.cos(a)*d, y:Math.sin(a)*d,
+              w:B.r*(0.07+rnd()*0.13), l:B.r*(0.06+rnd()*0.11),
+              rot:rnd()*Math.PI, lite:rnd()<0.38 });
+  }
+  A._poly=poly; A._speck=sp;
+  return poly;
+}
 
 /* ══ 隱藏點位（★）══
    build_starpoints.py 從地形挑出 40 個「地形特殊」的位置（孤峰／斷崖／窪谷／
@@ -6544,6 +6619,7 @@ function render(now){
        重疊只有幾個像素、又是軟的，看不出來。 */
   drawSettlements3D(scaleH,horizon,sinp,cosp);
   drawTrains(S,scaleH,horizon,sinp,cosp);                  // 火車跟城同一層（貼在地上）
+  drawRuins(scaleH,horizon,sinp,cosp);                     // 地表的小型遺跡（ver -1107，同一層：貼在地上）
   drawCitySmoke(S,scaleH,horizon,sinp,cosp,now);           // 炊煙蓋在城上（ver -446）
   drawPuffs(S,scaleH,horizon,sinp,cosp,0,Infinity);        // 雲蓋在城與煙上
   drawPlaces(scaleH,horizon,sinp,cosp);
@@ -7177,6 +7253,151 @@ function drawCitySmoke(S,scaleH,horizon,sinp,cosp,now){
     ctx.restore();
   }
 }
+/* ══ 地表小型遺跡的繪製（ver -1107，見 RUIN_ART 的說明）══════════════════
+   投影與火車／地標同一套；遮擋走 `clipByTerrainDepth`；像素化走「畫進與地形
+   同解析度的離屏、再 1:1 放大」（§6.7 的通則）。
+   ⚠ 一座遺跡畫**一張離屏**：逐塊各開一張會多好幾次 canvas 配置，而它們本來
+     就擠在一小塊螢幕上。
+   ⚠ 畫家演算法：底板 → 由遠而近的方塊。方塊的牆累積成**一條路徑一次 fill**
+     （同量體層）：顏色一樣，重疊不影響外觀，省下幾十次 fill。 */
+let ruinFB=null, RFC=null;
+function drawRuins(scaleH,horizon,sinp,cosp){
+  if(!MAPW) return;
+  const sxk=W/BW, syk=VIEWH/BH, dyk=scaleH*syk;
+  for(const P of PLACES){
+    const A=P.ruin && RUIN_ART[P.ruin]; if(!A) continue;
+    const wx0=P.x*MAP_SCALE, wy0=P.y*MAP_SCALE;
+    const ddx=wx0-cam.x, ddy=wy0-cam.y;
+    const dist=Math.hypot(ddx,ddy);
+    if(dist>RUIN_FAR) continue;                    // 太遠：小到讀不出形狀，省下來
+    const zc=ddx*(-sinp)+ddy*(-cosp);
+    if(zc<RUIN_NEAR) continue;                     // 身後／正下方（那個角度本來就看不到）
+    const fade=clamp((RUIN_FAR-dist)/RUIN_FADE,0,1);
+    if(fade<=0.02) continue;
+    const gh=HGT[clamp(P.y|0,0,MAPH-1)*MAPW+clamp(P.x|0,0,MAPW-1)];   // 整座共用一個底（石地板是平台）
+    const ca=Math.cos(A.rot||0), sa=Math.sin(A.rot||0);
+    /* 局部座標（世界單位、以遺跡中心為原點）→ 螢幕。回 null＝這一點不能用。 */
+    const px=(lx,ly,h)=>{
+      const wx=wx0+(lx*ca-ly*sa), wy=wy0+(lx*sa+ly*ca);
+      const dx=wx-cam.x, dy=wy-cam.y;
+      const z=dx*(-sinp)+dy*(-cosp);
+      if(z<RUIN_NEAR) return null;
+      const sv=(dx*cosp+dy*(-sinp))/z;
+      if(sv<-1.6||sv>1.6) return null;
+      return { x:((sv+1)/2*BW)*sxk,
+               y:(((cam.alt-gh-(h||0))/z + z*curvAt(sv))*scaleH+horizon)*syk, z };
+    };
+    /* 一塊方塊：中心 (x,y)、尺寸 (w,l)、自轉 rot、高 h → 底面四點＋頂面四點。 */
+    const box=(x,y,w,l,rot,h)=>{
+      const c=Math.cos(rot||0), sn=Math.sin(rot||0), hw=w/2, hl=l/2;
+      const pts=[[-hw,-hl],[hw,-hl],[hw,hl],[-hw,hl]].map(q=>{
+        const lx=x+(q[0]*c-q[1]*sn), ly=y+(q[0]*sn+q[1]*c);
+        return px(lx,ly,0);
+      });
+      if(pts.some(q=>!q)) return null;
+      const top=pts.map(q=>({ x:q.x, y:q.y-(h||0)*dyk/q.z, z:q.z }));
+      let z=0; for(const q of pts) z+=q.z;
+      return { base:pts, top, z:z/4 };
+    };
+    /* 這一座要畫的東西，先全部算出來（順便量螢幕外框）。 */
+    const items=[];
+    let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9,zmin=1e9;
+    const take=B=>{ if(!B) return;
+      for(const q of B.base.concat(B.top)){
+        if(q.x<x0)x0=q.x; if(q.x>x1)x1=q.x;
+        if(q.y<y0)y0=q.y; if(q.y>y1)y1=q.y;
+      }
+      if(B.z<zmin) zmin=B.z;
+    };
+    /* 圓形地基：逐點投影的多邊形（邊緣帶一點不規則＝風化）。 */
+    const shape=ruinShape(A);
+    let slab=null;
+    { const pts=shape.map(q=>px(q[0],q[1],0));
+      if(!pts.some(q=>!q)){ let z=0; for(const q of pts) z+=q.z;
+                            slab={ base:pts, top:pts, z:z/pts.length }; take(slab); } }
+    /* 表面斑駁：貼在地基上的小色塊（兩階，亮／暗）。 */
+    const tiles=[];
+    for(const t of (A._speck||[])){
+      const b=box(t.x,t.y,t.w,t.l,t.rot,0);
+      if(b){ b.lite=t.lite; tiles.push(b); }
+    }
+    for(const pt of A.parts){
+      if(pt.k==='stump'){
+        const b=box(pt.x,pt.y,pt.dia,pt.dia,pt.rot||0,pt.h); if(b){ items.push(b); take(b); }
+      }else{
+        /* 倒柱＝幾節柱鼓排成一列，節與節之間留縫（那道縫就是「斷了」）。 */
+        const n=pt.seg||2, segL=pt.len/n*0.86, c=Math.cos(pt.rot), sn=Math.sin(pt.rot);
+        for(let i=0;i<n;i++){
+          const off=(i-(n-1)/2)*(pt.len/n);
+          const jx=pt.x+c*off, jy=pt.y+sn*off;
+          const b=box(jx,jy,segL,pt.dia,pt.rot+(i-1)*0.06,pt.dia*0.82);
+          if(b){ items.push(b); take(b); }
+        }
+      }
+    }
+    if(!items.length && !slab) continue;
+    const pad=6;
+    const fx0=Math.floor(x0)-pad, fy0=Math.floor(y0)-pad;
+    const fbw=Math.ceil(x1-x0)+pad*2, fbh=Math.ceil(y1-y0)+pad*2;
+    if(fbw<3||fbh<3||fbw>W*4||fbh>VIEWH*4) continue;
+    const pk=clamp(BW/W,0.15,1);                   // 與地形同一個解析度
+    const bwp=Math.max(2,Math.round(fbw*pk)), bhp=Math.max(2,Math.round(fbh*pk));
+    if(!ruinFB){ ruinFB=document.createElement('canvas'); RFC=ruinFB.getContext('2d'); }
+    if(ruinFB.width<bwp||ruinFB.height<bhp||ruinFB.width>bwp*2||ruinFB.height>bhp*2){
+      ruinFB.width=bwp; ruinFB.height=bhp; }
+    RFC.setTransform(1,0,0,1,0,0); RFC.clearRect(0,0,bwp,bhp);
+    RFC.setTransform(bwp/fbw,0,0,bhp/fbh,-fx0*bwp/fbw,-fy0*bhp/fbh);
+    RFC.lineJoin='round';
+    const poly=(g,pts)=>{ g.beginPath();
+      g.moveTo(pts[0].x,pts[0].y);
+      for(let i=1;i<pts.length;i++) g.lineTo(pts[i].x,pts[i].y);
+      g.closePath(); };
+    /* ① 石地板（先畫，其餘都站在它上面） */
+    if(slab){
+      poly(RFC,slab.base); RFC.fillStyle=RUIN_COL.floor; RFC.fill();
+      RFC.strokeStyle=RUIN_COL.edge; RFC.lineWidth=Math.max(1,1.2*pk); RFC.stroke();
+      for(const t of tiles){ poly(RFC,t.base);
+        RFC.fillStyle = t.lite ? RUIN_COL.floorLite : RUIN_COL.floorDark; RFC.fill(); }
+    }
+    /* ② 影子：底面往一側偏一點、壓暗。**有沒有影子決定它是「站在地上」還是
+       「貼在地上」** —— 少了它，斷柱與地板上的斑駁看起來一模一樣。
+       ⚠ 偏移量跟著**投影後的高度**走（近的柱子影子長），不是寫死幾個像素。 */
+    items.sort((a,b)=>b.z-a.z);
+    RFC.fillStyle=RUIN_COL.shade;
+    for(const B of items){
+      const hpx=Math.abs(B.base[0].y-B.top[0].y);
+      if(hpx<0.6) continue;
+      const ox=hpx*0.72, oy=hpx*0.20;
+      RFC.beginPath();
+      for(let k=0;k<4;k++){ const q=B.base[k];
+        if(k) RFC.lineTo(q.x+ox,q.y+oy); else RFC.moveTo(q.x+ox,q.y+oy); }
+      RFC.closePath(); RFC.fill();
+    }
+    /* ③ 方塊：由遠而近（畫家演算法）。牆一次 fill，頂面逐塊亮色。 */
+    RFC.beginPath();
+    for(const B of items){
+      for(let k=0;k<4;k++){
+        const p0=B.base[k], p1=B.base[(k+1)%4], t1=B.top[(k+1)%4], t0=B.top[k];
+        RFC.moveTo(p0.x,p0.y); RFC.lineTo(p1.x,p1.y); RFC.lineTo(t1.x,t1.y); RFC.lineTo(t0.x,t0.y); RFC.closePath();
+      }
+    }
+    RFC.fillStyle=RUIN_COL.side; RFC.fill();
+    RFC.strokeStyle=RUIN_COL.dark; RFC.lineWidth=Math.max(1,1.0*pk); RFC.stroke();
+    for(const B of items){ poly(RFC,B.top); RFC.fillStyle=RUIN_COL.top; RFC.fill();
+                           RFC.strokeStyle=RUIN_COL.dark; RFC.stroke(); }
+    /* ④ 貼回主畫面：逐欄遮擋（山擋得住它）＋遠距淡出。 */
+    ctx.save();
+    clipByTerrainDepth(zmin, sxk, syk,
+      clamp(Math.floor(x0/sxk)-2,0,BW-1), clamp(Math.ceil(x1/sxk)+2,0,BW-1));
+    ctx.globalAlpha=fade;
+    ctx.drawImage(ruinFB,0,0,bwp,bhp,fx0,fy0,fbw,fbh);
+    ctx.globalAlpha=1;
+    ctx.restore();
+  }
+}
+/* 剔除距離：遠到讀不出形狀就不畫（同火車「不如在那個距離就不要出現」的理由）。 */
+const RUIN_FAR=9000, RUIN_FADE=2200, RUIN_NEAR=60;
+
 function drawTrains(S,scaleH,horizon,sinp,cosp){
   if(!TRAINS.length) return;
   const sxk=W/BW, syk=VIEWH/BH;
