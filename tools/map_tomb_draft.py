@@ -23,75 +23,87 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #   ⚠ 列越小＝越深（`up` 一律是「走進畫面裡」，不是「往高處」，憲法 §6.5.4）
 NODES = {
   # ══ 第三層・玄室層（5 格，最小）══════════════════════════════
-  'crypt'      : ( 4,  0, '石棺主室',   'end',   3),
-  'vaultW'     : ( 2,  1, '西墓穴',     'end',   3),
-  'gallery3'   : ( 4,  1, '玄室前廊',   'hub',   3),
-  'vaultE'     : ( 6,  1, '東墓穴',     'end',   3),
-  'landing3'   : ( 4,  2, '三層梯廳',   'pass',  3),
+  'bonepit'    : ( 4,  0, '骨坑',       'end',   3),
+  'crypt'      : ( 6,  0, '石棺主室',   'end',   3),
+  'vaultW'     : ( 4,  1, '側墓穴',     'pass',  3),
+  'gallery3'   : ( 6,  1, '玄室前廊',   'hub',   3),
+  'landing3'   : ( 6,  2, '三層梯廳',   'pass',  3),
   # ══ 第二層・中層（12 格）════════════════════════════════════
-  'stair2'     : ( 4,  4, '第二道階梯', 'stair', 2),
-  'chapel2'    : ( 6,  4, '小禮拜堂',   'end',   2),
-  'niche2'     : ( 8,  4, '壁龕室',     'end',   2),
-  'ossuary'    : ( 4,  5, '骨室',       'hub',   2),
-  'hall2'      : ( 6,  5, '柱廳',       'hub',   2),
-  'rotunda'    : ( 8,  5, '圓廳',       'hub',   2),
-  'columbarium': (10,  5, '甕棺室',     'pass',  2),
-  'landing2'   : ( 4,  6, '二層梯廳',   'pass',  2),
-  'corrW2'     : ( 6,  6, '西廊',       'pass',  2),
-  'corrE2'     : ( 8,  6, '東廊',       'hub',   2),
-  'sarcE'      : (10,  6, '東石棺室',   'hub',   2),
-  'crematory'  : (12,  6, '火葬室',     'end',   2),
-  # ══ 第一層・上層（16 格，最大）══════════════════════════════
-  'stair1'     : ( 4,  8, '第一道階梯', 'stair', 1),
-  'cloisterW'  : ( 6,  8, '西迴廊',     'hub',   1),
-  'apse'       : ( 8,  8, '後殿',       'hub',   1),
-  'cloisterE'  : (10,  8, '東迴廊',     'hub',   1),
-  'treasury1'  : (12,  8, '藏寶龕',     'end',   1),
-  'chapelW'    : ( 6,  9, '西禮拜堂',   'hub',   1),
-  'crossing'   : ( 8,  9, '十字交會',   'hub',   1),
-  'chapelE'    : (10,  9, '東禮拜堂',   'hub',   1),
-  'tombW'      : ( 4, 10, '西墓龕',     'end',   1),
-  'aisleW'     : ( 6, 10, '西側廊',     'hub',   1),
-  'nave'       : ( 8, 10, '中殿',       'hub',   1),
-  'aisleE'     : (10, 10, '東側廊',     'hub',   1),
-  'tombE'      : (12, 10, '東墓龕',     'end',   1),
-  'lapidarium' : ( 6, 11, '碑廊',       'end',   1),
-  'vestibule'  : ( 8, 11, '前庭',       'hub',   1),
-  'gate'       : ( 8, 12, '墓門',       'end',   1),
-  'sky'        : ( 8, 13, '天空\n（降落）', 'sky', 1),
+  'stair2'     : ( 6,  4, '第二道階梯', 'stair', 2),
+  'cistern'    : ( 4,  5, '蓄水池',     'end',   2),
+  'ossuary'    : ( 6,  5, '骨室',       'pass',  2),
+  'nichehall'  : ( 8,  5, '壁龕廊',     'pass',  2),
+  'kiln'       : (12,  5, '焚化窯',     'end',   2),
+  'hall2'      : ( 4,  6, '柱廳',       'hub',   2),
+  'corr2'      : ( 6,  6, '長廊',       'hub',   2),
+  'rotunda'    : ( 8,  6, '圓廳',       'hub',   2),
+  'sarcE'      : (10,  6, '石棺室',     'pass',  2),
+  'ossuary2'   : (12,  6, '甕棺室',     'pass',  2),
+  'landing2'   : ( 4,  7, '二層梯廳',   'pass',  2),
+  'sump'       : ( 6,  7, '積水坑',     'end',   2),
+  # ══ 第一層・上層（17 格，最大）══════════════════════════════
+  'reliquary'  : ( 8,  9, '聖骨匣室',   'end',   1),
+  'stair1'     : ( 4, 10, '第一道階梯', 'stair', 1),
+  'cloister'   : ( 6, 10, '迴廊',       'pass',  1),
+  'apse'       : ( 8, 10, '後殿',       'hub',   1),
+  'ambulatory' : (10, 10, '繞行廊',     'pass',  1),
+  'chantry'    : ( 6, 11, '誦經室',     'end',   1),
+  'crossing'   : ( 8, 11, '十字交會',   'hub',   1),
+  'chapel'     : (10, 11, '禮拜堂',     'pass',  1),
+  'tombniche'  : ( 4, 12, '墓龕',       'pass',  1),
+  'aisleW'     : ( 6, 12, '側廊',       'pass',  1),
+  'nave'       : ( 8, 12, '中殿',       'hub',   1),
+  'cryptA'     : (12, 12, '家族墓室',   'end',   1),
+  'charnel'    : ( 4, 13, '藏骨所',     'end',   1),
+  'vestibule'  : ( 8, 13, '前庭',       'hub',   1),
+  'lapidarium' : (10, 13, '碑廊',       'pass',  1),
+  'ossuaryA'   : (12, 13, '骨甕廊',     'pass',  1),
+  'gate'       : ( 8, 14, '墓門',       'end',   1),
+  'sky'        : ( 8, 15, '天空\n（降落）', 'sky', 1),
 }
 
 # (a, b, a 這一端的方向) —— 另一端一定是相反方向（憲法 §6.5.4）
 EDGES = [
   ('sky','gate','up'), ('gate','vestibule','up'),
-  # ── 第一層：前庭 → 中殿十字 → 兩對禮拜堂 → 後殿迴廊（四個環）──────
-  ('vestibule','lapidarium','left'), ('vestibule','nave','up'),
-  ('nave','aisleW','left'), ('nave','aisleE','right'), ('nave','crossing','up'),
-  ('aisleW','tombW','left'), ('aisleE','tombE','right'),
-  ('aisleW','chapelW','up'), ('aisleE','chapelE','up'),
-  ('chapelW','crossing','right'), ('chapelE','crossing','left'),
-  ('chapelW','cloisterW','up'), ('chapelE','cloisterE','up'),
-  ('crossing','apse','up'),
-  ('apse','cloisterW','left'), ('apse','cloisterE','right'),
-  ('cloisterE','treasury1','right'),
-  # ── 第一道階梯：藏在西迴廊的盡頭，是下一層唯一的入口 ──────────────
-  ('cloisterW','stair1','left'), ('stair1','landing2','up'),
-  # ── 第二層：柱廳與圓廳的雙環 ───────────────────────────────
-  ('landing2','ossuary','up'),
-  ('ossuary','hall2','right'), ('hall2','rotunda','right'),
-  ('hall2','chapel2','up'), ('rotunda','niche2','up'),
-  ('hall2','corrW2','down'), ('rotunda','corrE2','down'),
-  ('corrW2','corrE2','right'),
-  ('rotunda','columbarium','right'), ('columbarium','sarcE','down'),
-  ('corrE2','sarcE','right'), ('sarcE','crematory','right'),
-  # ── 第二道階梯：藏在骨室後面 ──────────────────────────────
-  ('ossuary','stair2','up'), ('stair2','landing3','up'),
-  # ── 第三層：一條前廊帶兩個墓穴，盡頭是石棺主室 ────────────────
-  ('landing3','gallery3','up'),
-  ('gallery3','vaultW','left'), ('gallery3','vaultE','right'), ('gallery3','crypt','up'),
+  # ══ 第一層 ══ ★＝唯一正確的路；其餘每一條都是走進去才知道是死胡同
+  ('vestibule','nave','up'),                                    # ★
+  ('vestibule','lapidarium','right'),                           # ┐ 死胡同 A（三格深）
+  ('lapidarium','ossuaryA','right'), ('ossuaryA','cryptA','up'), # ┘
+  ('nave','crossing','up'),                                     # ★
+  ('nave','aisleW','left'),                                     # ┐ 死胡同 B（三格深）
+  ('aisleW','tombniche','left'), ('tombniche','charnel','down'), # ┘
+  ('crossing','chapel','right'),                                # ★
+  ('crossing','chantry','left'),                                # 死胡同 C（一格）
+  ('chapel','ambulatory','up'),                                 # ★
+  ('ambulatory','apse','left'),                                 # ★
+  ('apse','reliquary','up'),                                    # 死胡同 D（一格）
+  ('apse','cloister','left'),                                   # ★
+  ('cloister','stair1','left'),                                 # ★ 第一道階梯在迴廊的盡頭
+  ('stair1','landing2','up'),
+  # ══ 第二層 ══
+  ('landing2','hall2','up'),                                    # ★
+  ('hall2','cistern','up'),                                     # 死胡同 E（一格）
+  ('hall2','corr2','right'),                                    # ★
+  ('corr2','sump','down'),                                      # 死胡同 F（一格）
+  ('corr2','rotunda','right'),                                  # ★
+  ('rotunda','sarcE','right'),                                  # ┐ 死胡同 G（三格深）
+  ('sarcE','ossuary2','right'), ('ossuary2','kiln','up'),        # ┘
+  ('rotunda','nichehall','up'),                                 # ★
+  ('nichehall','ossuary','left'),                               # ★
+  ('ossuary','stair2','up'),                                    # ★ 第二道階梯在骨室的深處
+  ('stair2','landing3','up'),
+  # ══ 第三層 ══
+  ('landing3','gallery3','up'),                                 # ★
+  ('gallery3','vaultW','left'), ('vaultW','bonepit','up'),       # 死胡同 H（兩格深）
+  ('gallery3','crypt','up'),                                    # ★ 終點
 ]
 
-SUN = {'gate', 'apse'}                       # 有室外光 → 要四時段差分
+SUN = {'gate', 'apse'}
+# ★ 從墓門到石棺主室的**唯一**那一條路（樹狀圖裡本來就只有一條，列出來是為了畫粗線）
+PATH = ['gate','vestibule','nave','crossing','chapel','ambulatory','apse','cloister',
+        'stair1','landing2','hall2','corr2','rotunda','nichehall','ossuary','stair2',
+        'landing3','gallery3','crypt']   # 19 格；樹狀圖裡本來就只有這一條走得到終點
+PATH_E = {tuple(sorted(t)) for t in zip(PATH, PATH[1:])}                       # 有室外光 → 要四時段差分
 LEVEL_NAME = {1:'第一層・上層', 2:'第二層・中層', 3:'第三層・玄室層'}
 OPP = {'up':'down','down':'up','left':'right','right':'left'}
 
@@ -135,7 +147,9 @@ def main():
                 d.line([x1+(x2-x1)*i/n, y1+(y2-y1)*i/n,
                         x1+(x2-x1)*(i+1)/n, y1+(y2-y1)*(i+1)/n], fill=(20,20,20), width=5)
         elif ca == cb or ra == rb:
-            d.line([x1,y1,x2,y2], fill=(20,20,20), width=5)
+            onpath = tuple(sorted((a, b))) in PATH_E
+            d.line([x1,y1,x2,y2], fill=((20,20,20) if onpath else (176,176,182)),
+                   width=(11 if onpath else 5))
         else:                                            # 轉角：垂直→水平→垂直
             my = (y1+y2)//2
             for seg in ([x1,y1,x1,my],[x1,my,x2,my],[x2,my,x2,y2]):
