@@ -2063,7 +2063,7 @@ const FILE_GAIN = {
   /* 索菈娜的「發現了」（ver -1089；config tuning.fileGain 同值，兩邊互指）。
      實測 LUFS −18.06／−13.81；search1 的增益被 `peakCeilDb`(+2) 夾在 1.69
      （母帶峰值 −2.54 dB，再推就削頂）。 */
-  vo_sorana_search1:1.69, vo_sorana_search2:1.06,
+  vo_sorana_search1:1.69, vo_sorana_search2:1.06, vo_sorana_search3:1.89,
   vo_sorana_found1:0.86,  vo_sorana_found2:0.75,   // 實測 LUFS −11.94／−10.82
 };
 /* 這一支音檔最後該用多大的 volume。⚠ `Math.min(1,…)` 是 HTMLAudio 的硬上限：
@@ -3285,7 +3285,10 @@ function drawSenseCI(now){
      鏡頭拉遠；而且只要 `ay ≥ pad + fy×高`，**頭在任何倍率下都不會被切到**。
    ⚠ `k0` 不可大於 1：那是「寬度剛好貼齊」的倍率，超過就從左右切出去。
    ⚠ `k1` 要留得住殘影（`SPOT_GHOST_GROW` 撐開後仍 ≤1），不然脈動那一下會頂出框。 */
-const SPOT_FIT     = { k0:1.00, k1:0.80, fy:0.23, ay:240, pad:10 };
+/* ⚠ `fy`／`ay` 是**那一張圖**的數字：ver -1089b 換圖之後臉由 0.23 移到 0.15
+   （新構圖看得到全身，頭在框裡更靠上），`ay` 跟著由 240 收到 175 才不會在
+   畫面頂留一條空白（§5「換圖就要重量取景值」）。 */
+const SPOT_FIT     = { k0:1.00, k1:0.80, fy:0.15, ay:175, pad:10 };
 const SPOT_ALPHA0  = 0.62, SPOT_ALPHA1 = 0.34;                // 半透明，隨縮小再淡一階
 const SPOT_SCALE_MS= 1400;    // 由大縮小走完的時間
 const SPOT_MIN_MS  = 900;     // 至少演這麼久（語音很短時不要一閃而過）
@@ -3298,7 +3301,9 @@ function spotArt(){
   if(spotImg) return;
   spotImg=new Image();
   spotImg.onerror=()=>{ spotImg=null; };
-  spotImg.src='../resources/CI/CI_Sorana_search.webp';
+  /* ⚠ `?v=2`：ver -1089b 換了一張同名的圖（構圖改成看得到全身）——
+     不帶 cache-buster 的話瀏覽器會抱著舊的那一份不放（§5）。 */
+  spotImg.src='../resources/CI/CI_Sorana_search.webp?v=2';
 }
 /* 兩組語音（ver -1089，Ray：「播放 vo_sorana_search 系列…動畫快速淡出（同安雅），
    那一瞬間播放 vo_sorana_found 系列」）：
@@ -3308,10 +3313,13 @@ function spotArt(){
      剛剛播過的那一張 —— 只有兩支的時候這就是嚴格輪替。
      單純隨機在兩句的池子裡有一半機率連兩次同一句。
    ⚠ 實作只有 `voBag` 一支（鐵律 8）：日後補到三、四句也不必再寫一份。 */
-function voBag(names){
-  const list=names.map(n=>{
-    const a=new Audio('../resources/audio/vo/'+n+'.mp3'); a.preload='auto';
-    a.__baseVol=fileVol(n,'vo');          // ⚠ vo 那一軌，不是 se
+/* ⚠ 傳**完整檔名**（含副檔名）：交件的副檔名不統一（1/2 是 mp3、3 是 wav 轉的
+   m4a），寫死 `.mp3` 會讓新的那一支 404 —— 而 404 在這裡是無聲的，只會「沒聲音」。
+   ⚠ `fileGain` 的鑰匙是**去副檔名、轉小寫**的檔名（§6.6），所以那一邊照舊。 */
+function voBag(files){
+  const list=files.map(f=>{
+    const a=new Audio('../resources/audio/vo/'+f); a.preload='auto';
+    a.__baseVol=fileVol(f.replace(/\.[^.]+$/,'').toLowerCase(),'vo');   // ⚠ vo 那一軌，不是 se
     return a;
   });
   let bag=[], last=-1;
@@ -3327,8 +3335,8 @@ function voBag(names){
     return list[last];
   } };
 }
-const spotSearch=voBag(['vo_sorana_search1','vo_sorana_search2']);
-const spotFound =voBag(['vo_sorana_found1','vo_sorana_found2']);
+const spotSearch=voBag(['vo_sorana_search1.mp3','vo_sorana_search2.mp3','vo_sorana_search3.m4a']);
+const spotFound =voBag(['vo_sorana_found1.mp3','vo_sorana_found2.mp3']);
 function spotFire(){
   if(spotAt || spotOutAt) return;                 // 一次只演一個
   if(sayQueue || senseOn || senseFireAt) return;  // 與對白／感應互斥

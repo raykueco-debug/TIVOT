@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.11-1089';
+export const VERSION = 'ver 2026.09.11-1090';
 
 export const GAME_CONFIG = {
 
@@ -3099,7 +3099,7 @@ export const GAME_CONFIG = {
          `flight/index.html` 的 `FILE_GAIN` 有同值的一份（兩邊互指，§6.10）。
          實測 LUFS −18.06／−13.81；search1 的增益被 `peakCeilDb`(+2) 夾在 1.69
          （母帶峰值 −2.54 dB，再推就削頂）。 */
-      vo_sorana_search1:1.69, vo_sorana_search2:1.06,
+      vo_sorana_search1:1.69, vo_sorana_search2:1.06, vo_sorana_search3:1.89,
       vo_sorana_found1:0.86,  vo_sorana_found2:0.75,   // 「找到了」（實測 LUFS −11.94／−10.82）
       vo_sorana_roar:0.76,  vo_sorana_roar2:0.69,
       /* ══ 點錯的失誤語音與擋下音（ver -1015）══ 依 §6.6 的公式反推：
