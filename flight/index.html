@@ -1936,7 +1936,9 @@ const RUIN_ART = {
        （一般接近時的距離）是 154px，正好。
        ⚠ 這一組是**唯一的尺寸真相**：柱子的粗細與高度都是照地基推的比例寫的，
          要整座放大縮小只動 `base.r`（其餘按比例自己跟著走，見 drawRuins 的 `sc`）。 */
-    base: { r:120, n:20, jit:0.055 },  // 圓形地基：半徑／幾邊形／邊緣的不規則量
+    /* ⚠ ver -1110 整座縮到 50%（Ray：「遺跡太大，縮到50%」）：地基半徑 120→60，
+       柱子與斑駁一起等比。材質也跟著減半（`RUIN_TEXEL`），整體的「石板多大」不變。 */
+    base: { r:60, n:20, jit:0.055 },   // 圓形地基：半徑／幾邊形／邊緣的不規則量
     /* 外圈的草（ver -1108，Ray：「周圍給他一圈不規則的草」）：外徑在地基的
        1.02~1.34 倍之間逐段亂數 —— 等寬的一圈看起來是畫上去的環，不是長出來的草。
        ⚠ 內緣直接用地基的多邊形（草壓在石板下面），兩者之間不留縫。 */
@@ -1944,14 +1946,14 @@ const RUIN_ART = {
     speck: 26,                          // 表面斑駁：幾塊（位置與明暗是定數，不會閃）
     parts: [
       /* 倒柱（躺著）：`len` 長、`dia` 直徑、`seg` 斷成幾節（縫＝斷了） */
-      { k:'fallen', x:-36, y: 36, rot: 0.95, len:104, dia:20, seg:3 },
-      { k:'fallen', x: 48, y:-16, rot:-0.42, len: 80, dia:18, seg:2 },
-      { k:'fallen', x: -8, y: 64, rot: 2.05, len: 68, dia:16, seg:2 },
+      { k:'fallen', x:-18, y: 18, rot: 0.95, len:52, dia:10, seg:3 },
+      { k:'fallen', x: 24, y:-8,  rot:-0.42, len:40, dia: 9, seg:2 },
+      { k:'fallen', x: -4, y: 32, rot: 2.05, len:34, dia: 8, seg:2 },
       /* 斷柱（站著）：高度不一，才看得出是斷掉的 */
-      { k:'stump',  x:-60, y:-44, dia:24, h:60 },
-      { k:'stump',  x: 60, y: 48, dia:22, h:26 },
-      { k:'stump',  x: 16, y:-64, dia:22, h:80 },
-      { k:'stump',  x:-68, y: 16, dia:18, h:16 },
+      { k:'stump',  x:-30, y:-22, dia:12, h:30 },
+      { k:'stump',  x: 30, y: 24, dia:11, h:13 },
+      { k:'stump',  x:  8, y:-32, dia:11, h:40 },
+      { k:'stump',  x:-34, y:  8, dia: 9, h: 8 },
     ],
   },
 };
@@ -1988,11 +1990,47 @@ let grassTex=null, grassPat=null;
   im.onload=()=>{ grassTex=im; grassPat=null; };
   im.src='geo/forest_dark.webp'; })();
 const GRASS_TEXEL=1.1;
+/* ══⚠⚠ 草的顏色要**跟旁邊的地形對得起來**（ver -1110，Ray：「草跟鄰近的地型
+   顏色對不起來」）══
+   作法是**直接從畫面上取樣**：那是唯一把光照、分級、霧全部算進去的地方 ——
+   自己照著地形的式子再算一次（COL × 明暗 × 分級 × 霧）必然走鐘（鐵律 7），
+   而且那幾個係數還隨日月與距離變。
+   ⚠ `getImageData` 會同步 GPU，所以**每 0.4 秒取一次**就好並快取：草的顏色
+     變化本來就慢（飛一段距離、或天色變了才需要重取）。
+   ⚠ 取樣點取遺跡外框**外側一圈**（左右與下方）—— 上方可能是天空。
+   ⚠ 取到的是已經帶霧的顏色，所以遠處的草自動跟著霧化，不必另外做。 */
+let grassCol='#3b4d3a', grassAt=0;
+function grassSample(x0,y0,x1,y1){
+  const now=performance.now();
+  if(now-grassAt<400) return grassCol;
+  grassAt=now;
+  const dpr=ctx.canvas.width/W;
+  const pad=8;
+  const pts=[[x0-pad,(y0+y1)/2],[x1+pad,(y0+y1)/2],
+             [(x0+x1)/2,y1+pad],[x0-pad,y1+pad],[x1+pad,y1+pad]];
+  let r=0,g=0,b=0,n=0;
+  for(const q of pts){
+    const px2=Math.round(q[0]*dpr), py2=Math.round(q[1]*dpr);
+    if(px2<0||py2<0||px2>=ctx.canvas.width||py2>=ctx.canvas.height) continue;
+    try{
+      const d=ctx.getImageData(px2,py2,1,1).data;
+      if(d[3]<8) continue;
+      r+=d[0]; g+=d[1]; b+=d[2]; n++;
+    }catch(_){ }
+  }
+  if(!n) return grassCol;
+  /* 草比旁邊的地表**再暗一點、再綠一點**（石縫邊的草長得比較密），
+     不然它與地形一模一樣，讀起來就是「石板直接躺在地上」少了一圈收邊。 */
+  const k=0.86;
+  grassCol='rgb('+Math.round(r/n*k*0.94)+','+Math.round(g/n*k*1.06)+','+Math.round(b/n*k*0.94)+')';
+  return grassCol;
+}
 /* 一個材質像素等於幾個世界單位。⚠ 這個數字決定**一塊石板在畫面上多大**：
-   新交件是碎石鋪面（橫向約 14 塊），1.4 讓整塊材質覆蓋 ~360 世界單位 ——
-   直徑 240 的地基上看得到約 9 塊石板，而且**看不到接縫**（材質比地基大）。
+   新交件是碎石鋪面（橫向約 14 塊）；ver -1110 整座縮 50% 之後是 0.7 ——
+   一塊材質覆蓋 ~180 世界單位，直徑 120 的地基上看得到約 9 塊石板，
+   而且**看不到接縫**（材質比地基大）。石板要更大就調大這個數字。
    太小（如 0.55）在低解析度緩衝下會糊成一片灰，等於沒有材質。 */
-const RUIN_TEXEL=1.4;
+const RUIN_TEXEL=0.7;
 
 /* 形狀與斑駁**只算一次**（定數，逐幀重算會讓邊緣與斑點每一幀都在跳）。
    ⚠ 自己帶一個確定性亂數：`Math.random()` 會讓同一座遺跡每次開機長得不一樣。 */
@@ -7456,7 +7494,9 @@ function drawRuins(scaleH,horizon,sinp,cosp){
     if(grassPts){
       { const gp=grassPts;
         poly(RFC,gp);
-        let done=false;
+        /* 底色＝**畫面上旁邊那塊地形的顏色**（含光照與霧，見 grassSample）。 */
+        RFC.fillStyle=grassSample(x0,y0,x1,y1); RFC.fill();
+        /* 材質只疊薄薄一層當紋理：疊厚了就變回「一張綠貼紙」，顏色又對不上。 */
         if(grassTex){
           if(!grassPat) grassPat=RFC.createPattern(grassTex,'repeat');
           const O=px(0,0,0), XA=px(A.base.r,0,0), YA=px(0,A.base.r,0);
@@ -7465,13 +7505,10 @@ function drawRuins(scaleH,horizon,sinp,cosp){
             try{
               grassPat.setTransform(new DOMMatrix([
                 (XA.x-O.x)*k, (XA.y-O.y)*k, (YA.x-O.x)*k, (YA.y-O.y)*k, O.x, O.y ]));
-              RFC.fillStyle=grassPat; RFC.fill();
-              RFC.fillStyle=RUIN_COL.grassTint; RFC.fill();
-              done=true;
-            }catch(_){ done=false; }
+              RFC.globalAlpha=0.32; RFC.fillStyle=grassPat; RFC.fill(); RFC.globalAlpha=1;
+            }catch(_){ }
           }
         }
-        if(!done){ RFC.fillStyle=RUIN_COL.grass; RFC.fill(); }
       }
     }
     /* ① 石地板（先畫，其餘都站在它上面）。有材質就貼材質＋壓色，沒有就平塗。 */
@@ -9290,23 +9327,9 @@ const S9_D=[
 ];
 function s9Talk(lines, done){ say(lines, performance.now(), { sides:S9_SIDES, done }); }
 
-/* 系統訊息（「加速系統　解鎖」那一類）：2.6 秒自己收，不吃點擊。 */
-let s9NoteEl=null, s9NoteT=0;
-function s9Note(text){
-  if(!s9NoteEl){
-    s9NoteEl=document.createElement('div');
-    s9NoteEl.style.cssText='position:fixed;z-index:59;left:50%;top:26%;'
-      +'transform:translate(-50%,-50%);padding:9px 18px;border:1px solid rgba(212,169,74,.75);'
-      +'border-radius:4px;background:rgba(8,9,14,.86);color:#f0e2b8;'
-      +'font-size:15px;letter-spacing:.22em;white-space:nowrap;pointer-events:none;'
-      +'opacity:0;transition:opacity .4s ease;';
-    document.body.appendChild(s9NoteEl);
-  }
-  s9NoteEl.textContent=text;
-  requestAnimationFrame(()=>{ s9NoteEl.style.opacity='1'; });
-  clearTimeout(s9NoteT);
-  s9NoteT=setTimeout(()=>{ s9NoteEl.style.opacity='0'; }, 2600);
-}
+/* ⚠ ver -1110：**系統解鎖的提示整個拿掉**（Ray：「解鎖都拿掉，垃圾訊息」）——
+   能力是教學那一拍**當場做給玩家看**的，再浮一行字只是重複講一次。
+   旗照舊在 `s9GateHit` 插（那是狀態，不是訊息）。 */
 
 /* 「能力發動」＝船加速：**借既有的 Sturm 演出**（同一組變數、同一個音效與閃光，
    鐵律 8）—— 不另外做一套「劇情用的加速」。
@@ -9372,7 +9395,6 @@ function s9FlightMaybe(){
         +'發動〈破凪之吐息〉。',
         { shape:'rect', tipTop:'32%' },
         ()=>{
-          s9Note('加速系統　解鎖');
           setTimeout(()=>s9Talk(S9_C, ()=>{
             s9Gate('sense',
               ()=>shipHit ? { left:shipHit.x-shipHit.r, top:shipHit.y-shipHit.r,
@@ -9386,7 +9408,6 @@ function s9FlightMaybe(){
                    這兩個系統寫在同一個位置。`feat_sense` 由 `s9GateHit` 插，
                    這一支只補它的同伴。 */
                 addFlag(FEATURE_FLAG.scan);
-                s9Note('探索系統・索敵系統　解鎖');
                 setTimeout(()=>s9Talk(S9_D, ()=>{
                   /* 三遺跡全開（Ray：「自由探索，三遺跡全開」）。⚠ 三座遺跡的地點
                      資料還沒有 —— 這支旗先立好，地點進來時讀它當開關（同 PLACES
