@@ -1856,6 +1856,7 @@ function buildSettlements(){
     s.planH=S.planH||null; s.planTall=S.planTall||0;
     s.noLamps=!!S.noLamps; s.wallCol=S.wallCol||null;   // noWater 由原始條目 S 讀（relief 那邊的 noW），這裡不抄一份
     s.smoke=S.smoke||null;             // 炊煙（ver -446，見 drawCitySmoke）
+    s.town=S.town||null;               // 有城鎮內容的才降落得了（ver -1101：地圖上也一定標名）
     s.mx=S.x; s.my=S.y;
     /* ⚠ 高度一律走 settleGroundH —— 與 buildRelief 的整地同一個來源。
        不要在這裡重寫算式（先前就是這樣寫出 44 vs 124 的差異）。 */
@@ -4931,7 +4932,17 @@ function drawMap(){
       const rs=sc*R.ss, dia=s.radius*2*rs;
       if(sx<-dia-40||sy<-dia-40||sx>w+dia+40||sy>h+dia+40) continue;
       Settlement.draw(mctx, s, { ox:sx, oy:sy, scale:rs }, Settlement.DEBUG);
-      if(dia>26){
+      /* ══⚠⚠ **已解鎖的城鎮一定標名**（ver -1101，Ray：「已經解鎖的城鎮要上大地圖」）══
+         原本只看畫出來的直徑（`dia>26`）—— 那是給**裝飾用聚落**訂的（縮圖時一片
+         名字會糊成一團）。但**有城鎮內容的那幾座是目的地**：夏爾村是村子、半徑小，
+         在整張大陸的縮圖下永遠到不了 26px，於是玩家在地圖上根本看不到自己要去哪。
+         ⚠ 判準是「**降落得了嗎**」（`s.town` ＋ 沒有章節鎖），不是大小 ——
+           與 `doLand`／`nearestTown` 同一個條件（鐵律 7），不另訂一套「要不要標名」。
+         ⚠ 章節鎖問 `placeLockedNag` 那一支的資料（`PLACE_STAGE_FROM`），但**不呼叫它**：
+           那一支會讓蕾娜開口，畫地圖不該講話。 */
+      const unlocked = !!s.town &&
+        (PLACE_STAGE_FROM[s.name]==null || gameStage()>=PLACE_STAGE_FROM[s.name]);
+      if(dia>26 || unlocked){
         mctx.font='11px "Noto Serif TC",serif'; mctx.textAlign='center';
         const tw=mctx.measureText(s.name).width;
         mctx.fillStyle='rgba(8,7,12,.8)';
