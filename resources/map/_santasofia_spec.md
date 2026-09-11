@@ -13,20 +13,24 @@
 大城地圖已經規則化（憲法 §6.5.4.2），所以這一張**直接抄 `capital` 的 `nodes`**——
 節點 id、出口、末端／樞紐的分佈全部相同，只有 `name` 與 `bg` 換掉。
 
+⚠⚠ **節點 id 是 `oldtown`，不是 `downtown`** —— 帝都那一格的 id 就叫 `oldtown`，
+而它的背景檔名是 `Capital_Downtown`。**id 與檔名本來就不同名**，抄的時候不要「順手統一」：
+聖索菲亞這一格 id 用 `oldtown`、背景用 `Sofia_Downtown`。
+
 | 節點 id | 向數 | 出口 | 聖索菲亞的名字 |
 |---|---|---|---|
-| `square` | 三向 | up→midtown・left→downtown・right→uptown | 聖索菲亞　主廣場 |
+| `square` | 三向 | up→midtown・left→**oldtown**・right→uptown | 聖索菲亞　主廣場 |
 | `midtown` | 三向 | left→cityhall・right→church・down→square | 聖索菲亞　中心區 |
-| `church` | 端末 | back | 聖索菲亞　大教堂 |
-| `cityhall` | 端末 | back | 聖索菲亞　市政廳 |
-| `downtown` | **四向** | left→gunstore・right→square・up→dock・down→guild | 聖索菲亞　舊街區 |
-| `gunstore` | 端末 | back | 聖索菲亞　武器店 |
-| `dock` | 端末 | back | 聖索菲亞　船塢 |
-| `guild` | 端末 | back | 聖索菲亞　賞金獵人公會 |
+| `church` | 端末 | back→midtown | 聖索菲亞　大教堂 |
+| `cityhall` | 端末 | back→midtown | 聖索菲亞　市政廳 |
+| `oldtown` | **四向** | left→gunstore・right→square・up→dock・down→guild | 聖索菲亞　舊街區 |
+| `gunstore` | 端末 | back→oldtown | 聖索菲亞　武器店 |
+| `dock` | 端末 | back→oldtown | 聖索菲亞　船塢 |
+| `guild` | 端末 | back→oldtown | 聖索菲亞　賞金獵人公會 |
 | `uptown` | **四向** | left→square・right→tavern・up→inn・down→grocery | 聖索菲亞　上街區 |
-| `tavern` | 端末 | back | 聖索菲亞　餐飲街 |
-| `grocery` | 端末 | back | 聖索菲亞　雜貨舖 |
-| `inn` | 端末 | back | 聖索菲亞　旅店 |
+| `tavern` | 端末 | back→uptown | 聖索菲亞　餐飲街 |
+| `grocery` | 端末 | back→uptown | 聖索菲亞　雜貨舖 |
+| `inn` | 端末 | back→uptown | 聖索菲亞　旅店 |
 
 - **邊 11／環 0**（樹狀）—— 與帝都完全相同。`tools/map_layout.py` 的 `POS` 直接複製
   `capital` 那一組（節點 id 一樣，方向驗證自然會過）。
