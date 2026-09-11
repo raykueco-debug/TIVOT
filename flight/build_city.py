@@ -170,11 +170,16 @@ JOBS = [{
     # ⚠ planRot 待 3D 對齊地形湖水（Ray：「北向貼地形現有的湖水，可旋轉調整」）——
     #   先給 0.0，之後對著飛行畫面轉。mx/my/planW/planRot **必須與 index.html 的
     #   SETTLEMENTS 一致**。
-    'src': 'Shinier_topdown_gpt.png',
-    'hsrc': 'Shinier_topdown_height.png',
+    # ⚠⚠ ver -1112：Ray 交了**新的插畫** `shinier.png`（紅瓦、石板廣場、噴泉、
+    #   已去背）—— 原圖平均亮度 114/255（45%），舊的那張只有 71（28%），
+    #   那正是「黑得像坨」的根。舊的兩張（Shinier_topdown_gpt／_height）留著當紀錄。
+    # ⚠ 不吃 `hsrc`：那張高度圖是對著**舊構圖**畫的，新圖的房子位置全變了，
+    #   套上去等於拿別人的高度。改走顏色分類（水／植被／建成區）＋局部對比
+    #   的量體擷取 —— 新圖的紅瓦與淺色石板廣場對比夠，切得出街廓。
+    'src': 'shinier.png',
     'unsquash': 1.00,
     'maxdim': 440,   # ver -836：Ray「太糊了都看不出來是村落」→ -827 的 200 恢復成全案預設 440（原圖 1534px，細節都在）
-    'val': 1.50, 'sat': 0.95,   # ver -829：Ray「太黑跟坨大便一樣」→ 大幅提亮
+    'val': 1.00, 'sat': 0.90,   # ver -1112：新圖本來就亮，不必再推（舊圖是 1.50/0.95）
 
     'dst': 'shinier_plan.webp',
     'hdst': 'shinier_h.webp',
