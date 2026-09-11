@@ -8065,9 +8065,30 @@ function makeSpotlight(rectFn, html, opts){
   tip.innerHTML=html;
   document.body.appendChild(dim); document.body.appendChild(ring); document.body.appendChild(tip);
   const tick=setInterval(place, 120);
+  /* ══⚠⚠ **點畫面任一處都收得掉**（ver -1106，Ray：「教學提示點畫面任一處都可以
+     點掉」）══ 同劇情「點畫面任何一處推進一句」與圖名卡的規矩 —— 提示是說明，
+     不是一道要找地方點的門。
+     ⚠⚠ 判**輕點**才算（位移 < `TAP_SLOP` 且按住 < `TAP_MS`）：要教的動作本身是
+       **長按**，按下去就收的話，玩家一開始做那個手勢提示就沒了（而且會在他還按著
+       的時候把下一段戲推出去）。輕點＝「我知道了」，長按＝「我照做」，兩者都通。
+     ⚠ 掛在 window 的捕獲階段：提示是 DOM、要教的手勢在 canvas 上，兩邊都收得到。
+     ⚠ 提示框自己那一個保留（它是 `pointer-events:auto`，點在上面不會冒泡到畫面）。 */
+  let tapT=0, tapX=0, tapY=0;
+  const onDown=e=>{ tapT=performance.now(); tapX=e.clientX; tapY=e.clientY; };
+  const onUp=e=>{
+    if(!tapT) return;
+    const quick = (performance.now()-tapT < TAP_MS)
+               && Math.hypot((e.clientX||0)-tapX, (e.clientY||0)-tapY) < TAP_SLOP;
+    tapT=0;
+    if(quick && opts.onSkip) opts.onSkip();
+  };
+  addEventListener('pointerdown', onDown, true);
+  addEventListener('pointerup',   onUp,   true);
   let fin=false;
   const off=()=>{ if(fin) return; fin=true;
     clearInterval(tick);
+    removeEventListener('pointerdown', onDown, true);
+    removeEventListener('pointerup',   onUp,   true);
     for(const e of [dim,ring,tip]){ try{ e.remove(); }catch(_){} } };
   tip.addEventListener('pointerdown', e=>{ e.stopPropagation(); if(opts.onSkip) opts.onSkip(); }, { once:true });
   return { off };
