@@ -2591,7 +2591,24 @@ function afterArrive2(n){
                                                   || (who==='NOUVELLE' && nouAsleep),
                                    /* 「不在房裡」也可以由資料指定（ver -666）：
                                       諾薇兒隔天一早就去教堂了 —— 門在、燈滅、臉不畫。 */
-                                   out: who => (innDoorSet(n).out||[]).indexOf(who)>=0,
+                                   /* ⚠⚠ **好感不夠＝她根本不在房裡**（ver -1099，Ray：
+                                      「索拉娜不在的話頭像直接拿掉就好，不在的角色
+                                      頭像空」）：稿上索菈娜的 T2 以下那一格寫的是
+                                      「（不在）」—— 那不是一句台詞，是**門上沒有臉**。
+                                      ⚠ 所以它寫在 `knock[WHO].absent` 上（那張表本來就
+                                        管「這個人現在會怎樣」），由這裡併進 `out` 的
+                                        答案 —— 門的狀態只有 `doorState` 一支在算
+                                        （鐵律 7），不要另開一條「她要不要顯示」的路。
+                                      ⚠ `doorState` 回 `empty` 的門 `knock()` 開頭就
+                                        直接 return，所以連「點了沒反應」都不會發生：
+                                        那扇門本來就沒有人。 */
+                                   out: who => {
+                                     if((innDoorSet(n).out||[]).indexOf(who)>=0) return true;
+                                     const kt=((n.innStage1||{}).knock||{})[who];
+                                     if(!kt || !kt.absent) return false;
+                                     const need=(OUTING.dateAff!=null ? OUTING.dateAff : 20);
+                                     return ((prog.getAffection()||{})[String(who).toLowerCase()]||0) < need;
+                                   },
                                    /* 這一格現在的門設定（`answerBy` / 逐人的敲門詞）。 */
                                    doors: innDoorSet(n),
                                    /* 宵禁（ver -576）：敲門一律回 `nightRest`，約不出來。 */
