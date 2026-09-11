@@ -1416,6 +1416,17 @@ const ARC={
   tailSteps: 20,   // 尾巴那一段的段數
   steps : 72,      // 折線近似的段數（每 ~3°）
 };
+/* ══⚠⚠⚠ 尾巴再往外延長一截（ver -1072，Ray：「計量表應該長這樣，長度延伸到
+   綠色的部份。記得是**同一個計量表延伸，不是另一段**，顏色要一樣」）══
+   作法：在尾尖**沿著它自己的半徑方向**往外接一段直的 —— 角度不變、厚度不變、
+   內外緣接在同一個斷面上，所以它與 G 是**同一條路徑**（`arcSamples` 只是多吐
+   一個取樣點），填色、進度遮罩、高光三層自動一起吃到。
+   ⚠ **不要另外畫一個長方形**：那就是 -1041 被退回的「做成兩條」。
+   ⚠ 長度是**量出來的**（伸到血條左緣內 `EXT_PAD`px），不是常數 —— 版面一變它
+     就該跟著變；換算在 `layoutClasp`（唯一那一處，鐵律 7）。
+   ⚠ 它會伸出 viewBox 的右邊，所以 viewBox 的**寬**也由 `layoutClasp` 一起算
+     （高不變、每單位的像素數不變 ＝ 只是把畫布往右加寬）。 */
+const ARC_EXT_PAD=2;      // 橫槓右端與血條左緣的縫（px）
 /* 整組比切換武器鈕大多少（ver -1040，Ray：「計量跟女主頭像稍微放大」）。
    ⚠⚠ **上限是硬的**：能用的只有「面板左緣 → 血條左端」那 50px，扣掉左邊距 6px
      ＝ 44px。1.10 正好用滿（40×1.10）；再大就是真的遮到血量。
@@ -1430,7 +1441,7 @@ const CLASP_UP=1.10;
      **天生接得上**，不必對齊、也不會有縫（同 -1044 那條橫槓的道理）。
    ⚠⚠ 形狀與中心線（進度／高光沿著它跑）由**同一組取樣**算出來 ——
      兩邊各算一次的話，進度會與形狀對不起來（鐵律 7）。 */
-function arcSamples(){
+function arcSamples(extR){
   const cx=50, cy=50, out=[], inn=[], mid=[];
   const put=(a, r, w)=>{
     const si=Math.sin(a), co=Math.cos(a);
@@ -1438,6 +1449,11 @@ function arcSamples(){
     inn.push([cx+r*si,     cy-r*co]);
     mid.push([cx+(r+w/2)*si, cy-(r+w/2)*co]);
   };
+  const aTip=(ARC.a0-ARC.tailDeg)*Math.PI/180;   // 尾尖那一個斷面的角度
+  const rTip=ARC.ri*ARC.tailR, wTip=ARC.w0*ARC.tailW;
+  /* ⓪ 延長段（ver -1072）：同一個角度、同一個厚度，只把半徑往外推 ——
+     兩個取樣點就是一段直的（中心線的長度因此也是準的，進度不會跑掉）。 */
+  if(extR>rTip) put(aTip, extR, wTip);
   for(let i=0;i<ARC.tailSteps;i++){          // ① 尾巴：尾尖 → `a0`
     const t=i/ARC.tailSteps;
     put((ARC.a0-ARC.tailDeg*(1-t))*Math.PI/180,
@@ -1450,16 +1466,16 @@ function arcSamples(){
   }
   return {out, inn, mid};
 }
-function arcPath(){
-  const {out, inn}=arcSamples();
+function arcPath(extR){
+  const {out, inn}=arcSamples(extR);
   const P=p=>p[0].toFixed(2)+','+p[1].toFixed(2);
   let d='M'+P(out[0]);
   for(let i=1;i<out.length;i++) d+='L'+P(out[i]);
   for(let i=inn.length-1;i>=0;i--) d+='L'+P(inn[i]);
   return d+'Z';
 }
-function arcMidPath(){
-  const {mid}=arcSamples();
+function arcMidPath(extR){
+  const {mid}=arcSamples(extR);
   return 'M'+mid.map(p=>p[0].toFixed(2)+','+p[1].toFixed(2)).join('L');
 }
 /* ⚠ ver -1069：`claspSig`／`claspRetry` **回來了** —— Ray：「破防計的改動錯了，
@@ -1529,16 +1545,33 @@ function layoutClasp(){
   const CX=(par.left+BPAD+RAD)-hr.x;                    // 鈕是「右緣內 BPAD」，這一組是左緣
   const CY=(br.y+br.height-2)-RAD-hr.y;                 // 底緣＝藍條底往上 2px
   svgEl.style.left=(CX-RAD)+'px'; svgEl.style.top=(CY-RAD)+'px';
-  svgEl.style.width=BOX+'px';     svgEl.style.height=BOX+'px';
+  /* ══ 延長段的長度（ver -1072）══ 尾尖沿自己的半徑方向往外伸到**血條左緣內
+     `ARC_EXT_PAD`px**。這裡是唯一的換算點（鐵律 7）：像素 → viewBox 單位。
+     ⚠ 畫布要跟著加寬（`vbW`），不然那一截會被 svg 的框裁掉；**高與每單位的
+       像素數都不變**，所以整組的大小、位置一個像素都沒動 —— 只是右邊多了一塊
+       可以畫的地方。
+     ⚠ `sin(aTip)` 是尾尖那個角度的水平分量：延長段不是水平的（它順著半徑走，
+       約低 10°），所以「伸到 x＝血條左緣」要除以它換回半徑。 */
+  const PXU=BOX/100;                                    // 1 viewBox 單位 ＝ 幾 px
+  const aTip=(ARC.a0-ARC.tailDeg)*Math.PI/180;
+  const endU=((BL-ARC_EXT_PAD)-(hr.x+CX-RAD))/PXU;      // 橫槓右端（viewBox x）
+  const extR=Math.max(ARC.ri*ARC.tailR,
+                      (endU-50-ARC.w0*ARC.tailW*Math.sin(aTip))/Math.sin(aTip));
+  const vbW=Math.max(100, Math.ceil(50+(extR+ARC.w0*ARC.tailW)*Math.sin(aTip))+2);
+  svgEl.setAttribute('viewBox','0 0 '+vbW+' 100');
+  svgEl.style.width=(BOX*vbW/100)+'px'; svgEl.style.height=BOX+'px';
+  /* 進度遮罩的框也要跟著加寬 —— 它是 `userSpaceOnUse`，框外的筆畫不算數。 */
+  const mk=document.getElementById('claspProg');
+  if(mk){ mk.setAttribute('width', String(vbW+40)); }
   /* 橫槓那一截伸到**血條左緣內 2px**。換算成 viewBox 單位（圓心在 50）並夾住 ——
      `arcPath` 的座標必須留在 0~100 內，不然會被 svg 的框裁掉。
      ⚠ 形狀因此**與版面有關**（血條的位置會變），所以每次重量都重算一次 d；
        兩條 path（形狀／中心線）由同一個 `tail` 產生（鐵律 7）。 */
   /* ⚠ ver -1070：形狀不再吃「橫槓長度」—— 尾巴改成 G 的那一橫（角度制，全在 `ARC`）。
      ⚠ 高光那一層（`#claspArcShine`）與進度共用同一條中心線與同一個遮罩。 */
-  const dShape=arcPath();
+  const dShape=arcPath(extR);
   track.setAttribute('d', dShape); fillEl.setAttribute('d', dShape);
-  const midD=arcMidPath();
+  const midD=arcMidPath(extR);
   const sh=$('claspArcShine');
   /* ⚠ 高光**不要太粗**（ver -1071，Ray）：0.8 → **0.42** 倍的 `w0` ——
      它是掠過去的一道光，不是把整條蓋掉的第二層填色。 */

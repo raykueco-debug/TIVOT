@@ -290,6 +290,21 @@
   #starTgl[hidden]{display:none;}
   #mapClose{position:absolute;top:calc(env(safe-area-inset-top) + 10px);right:10px;z-index:2;
     min-width:64px;min-height:40px;}
+  /* 移城確認窗（ver -1072）：落定之後才跳，按「取消」把城搬回拖之前的座標。
+     ⚠ 蓋在地圖之上、吃掉點擊 —— 沒答之前不准再拖下一座（答案只能有一個）。 */
+  #settleAsk{position:absolute;inset:0;z-index:5;display:flex;align-items:center;
+    justify-content:center;background:rgba(4,5,9,.62);}
+  #settleAsk[hidden]{display:none;}
+  #settleAsk>*{max-width:min(86vw,420px);}
+  #settleAsk p{margin:0 0 14px;padding:16px 18px;border-radius:10px;
+    background:rgba(10,8,14,.92);border:1px solid var(--gold-dim);
+    color:var(--parch);font-size:13px;line-height:1.7;letter-spacing:.05em;
+    max-width:min(86vw,420px);text-align:center;}
+  #settleAsk .sa-btns{display:flex;gap:10px;justify-content:center;}
+  #settleAsk button{min-height:42px;padding:0 16px;border-radius:8px;
+    background:rgba(10,8,14,.9);border:1px solid var(--gold-dim);
+    color:var(--gold);font-family:inherit;font-size:13px;letter-spacing:1px;}
+  #settleYes{background:rgba(201,162,39,.18);}
   /* ══ 載入畫面 ══
      排版與主程式的啟動讀取畫面（style.css 的 #assetLoader）**逐項對齊**：
      圈徑/位置、立繪舞台高度、對話框寬度與錨點、底部訊息位置、字級與字距、
@@ -434,6 +449,15 @@
     <button id="mapClose">✕ 關閉</button>
     <!-- 星號顯示開關：管理人限定，由 ADMIN 區塊解除 display:none -->
     <button id="starTgl" hidden>★ 已發現</button>
+    <!-- 移城確認窗（ver -1072，Ray：「以後管理者移城完要跳確認窗，取消就搬回去」）。
+         ⚠ 它只有管理人看得到（拖城本身就是 ADMIN 限定）。 -->
+    <div id="settleAsk" hidden>
+      <p id="settleAskT"></p>
+      <div class="sa-btns">
+        <button id="settleNo">取消（搬回去）</button>
+        <button id="settleYes">確定移城</button>
+      </div>
+    </div>
   </div>
   <div id="mapCap">拖曳平移 · 滾輪／雙指縮放 · 放大可見市鎮街廓</div>
 </div>
@@ -2983,6 +3007,58 @@ function talkHideEase(){
 /* 下移距離：讓框底正好落在原本方向計的底部。改了方向計高度這裡自動跟著對。 */
 function talkHideDy(){ return compassRect().h + 8; }
 
+/* ══ 方向指示光（ver -1072，Ray：「方向計上方標出三種漸層光，緊貼方向計，
+   越靠近色越濃越亮。黃色是大地圖釘選的方向，紅色是敵人的方向，cyan 色是安雅
+   探索後觸及的地點方向」）══
+   三種來源各自算出**絕對方位**，再用方向計自己那條換算擺到帶上；
+   每一束是以那個方位為中心的橫向漸層 —— 中心最濃最亮，往兩側衰減到 0。
+   ⚠ 換算 `px=cbx+bw2/2+(a-deg)/90*(bw2/2)` 與刻度那一圈**是同一條式子**
+     （鐵律 7）：抄第二份的話光束與刻度會慢慢對不上，而那很難看出來。
+   ⚠ 只畫方位差在 ±`BEAR_CUT` 之內的（帶子只表達 ±90°）；貼邊的那一束會被
+     裁掉一半，那正是「快要轉出視野」該有的樣子。
+   ⚠ 畫在**帶子上緣之上**（緊貼，不重疊）：蓋在帶上會吃掉刻度與方位字。 */
+const BEAR_H=5;          // 光帶的厚度
+const BEAR_GAP=1;        // 與方向計上緣的間隙（「緊貼」）
+const BEAR_SPREAD=0.30;  // 一束的半寬 ＝ 帶寬 × 這個
+const BEAR_CUT=100;      // 超過這個方位差就不畫（度）
+/* 世界向量 → 絕對方位角（度，北＝0、順時針）。
+   ⚠ 與 `deg` 同一套：那一支是 `-cam.angle`，這裡用 atan2(dx,-dy) 對得上。 */
+function bearingOf(wx,wy){
+  return ((Math.atan2(wx-cam.x, -(wy-cam.y))*180/Math.PI)%360+360)%360;
+}
+function drawBearingLight(cbx,bw2,deg,y,a,rgbStr){
+  let d=((a-deg)%360+540)%360-180;                  // 折進 −180..180
+  if(Math.abs(d)>BEAR_CUT) return;
+  const px=cbx+bw2/2+d/90*(bw2/2), half=bw2*BEAR_SPREAD;
+  const g=ctx.createLinearGradient(px-half,0,px+half,0);
+  g.addColorStop(0,   'rgba('+rgbStr+',0)');
+  g.addColorStop(0.5, 'rgba('+rgbStr+',.85)');
+  g.addColorStop(1,   'rgba('+rgbStr+',0)');
+  ctx.fillStyle=g;
+  ctx.fillRect(px-half, y, half*2, BEAR_H);
+}
+function drawBearingLights(CR, cbx, bw2, deg){
+  const y=CR.y-BEAR_GAP-BEAR_H;
+  ctx.save();
+  /* 裁在帶子的寬度內：貼邊那一束不准溢出方向計的兩端。 */
+  ctx.beginPath(); ctx.rect(cbx, y-1, bw2, BEAR_H+2); ctx.clip();
+  ctx.globalCompositeOperation='lighter';            // 三束疊在一起是相加不是覆蓋
+  /* cyan：安雅探索觸及過的地點（＝已發現的星）。 */
+  if(typeof starFound!=='undefined' && typeof STARS!=='undefined'){
+    for(const p of STARS){
+      if(!starFound.has(p.id)) continue;
+      drawBearingLight(cbx,bw2,deg,y, bearingOf(p.x*MAP_SCALE, p.y*MAP_SCALE), '95,224,230');
+    }
+  }
+  /* 紅：敵人（場上最多一隻）。 */
+  if(typeof enemy!=='undefined' && enemy)
+    drawBearingLight(cbx,bw2,deg,y, bearingOf(enemy.x, enemy.y), '255,90,74');
+  /* 黃：大地圖上的釘選 —— 一次只有一個（見 MV.pin）。 */
+  if(typeof MV!=='undefined' && MV.pin)
+    drawBearingLight(cbx,bw2,deg,y, bearingOf(MV.pin[0]*MAP_SCALE, MV.pin[1]*MAP_SCALE), '255,214,96');
+  ctx.restore();
+}
+
 /* 橫條羅盤帶（方向計）的外框。
    ⚠ drawPanel 與對話框都吃這一份 —— 兩邊各自寫死遲早會走鐘，而「對話框與
      方向計同寬」是 Ray 指定的對齊關係，走鐘一眼就看得出來。 */
@@ -4738,6 +4814,7 @@ function drawMap(){
   mctx.beginPath(); mctx.arc(px,py,15,0,Math.PI*2); mctx.stroke();
 
   drawMapMark(ox,oy,sc,performance.now());   // 目的地標記（ver -743）：最上層
+  drawMapPin(ox,oy,sc);                      // 釘選（ver -1072）：只有一根
   /* 座標讀數：自機位置 ＋ 畫面中心（平移查看時就是「你在看哪裡」）。
      單位是**地圖像素**，與 SETTLEMENTS／build_city.py 同一套 —— 截圖回報時
      可以直接拿去對資料，不必再靠地形猜位置。 */
@@ -4800,6 +4877,23 @@ function drawMapMark(ox,oy,sc,now){
     mctx.fillStyle='#ffd660';
     mctx.fillText(MAP_MARK.label, x, y+24);
   }
+  mctx.restore();
+}
+/* 釘選的圖示（ver -1072）：一根黃色的針。顏色與方向計上那束黃光是同一個
+   （Ray：「黃色是大地圖釘選的方向」）—— 玩家要認得出兩者是同一件事。 */
+function drawMapPin(ox,oy,sc){
+  if(!MV.pin) return;
+  const q=reliefXY(MV.pin[0], MV.pin[1]);
+  const x=ox+q.x*sc, y=oy+q.y*sc;
+  mctx.save();
+  mctx.strokeStyle='rgba(10,10,16,.85)'; mctx.lineWidth=3.4;
+  mctx.beginPath(); mctx.moveTo(x,y); mctx.lineTo(x,y-17); mctx.stroke();
+  mctx.strokeStyle='#ffd660'; mctx.lineWidth=1.6;
+  mctx.beginPath(); mctx.moveTo(x,y); mctx.lineTo(x,y-17); mctx.stroke();
+  mctx.fillStyle='#ffd660';
+  mctx.beginPath(); mctx.arc(x,y-19,3.6,0,6.283); mctx.fill();
+  mctx.strokeStyle='rgba(255,214,96,.55)'; mctx.lineWidth=1;
+  mctx.beginPath(); mctx.ellipse(x,y,5,2.2,0,0,6.283); mctx.stroke();
   mctx.restore();
 }
 function updateMapMe(){ if(mapOpen) drawMap(); }
@@ -4919,7 +5013,26 @@ const ADMIN=(()=>{ try{ return localStorage.getItem('tivot_admin_v1')==='1'; }
      再 `settleDragClear()` 清掉覆寫 —— 不清的話這台機器永遠用拖的那一份，
      之後改 code 也看不出來（同 resetFlags 那一條的病）。 */
 const SETTLE_DRAG_KEY='tivot_settle_drag_v1';
+/* ⚠⚠ 一次性清帳（ver -1072，Ray：「我不小心移動了北方泊地，把他搬回去」）。
+   拖城的覆寫只活在**那一台機器的 localStorage**，程式端 grep 不到、git 也看不到
+   —— 所以「搬回去」不能靠改 code，要靠把那筆覆寫清掉（回到 SETTLEMENTS 寫的
+   北方泊地 1516,150，與 `flight/build_city.py` 的 JOB 互指，§6.7.5）。
+   作法是一支**版本戳**：戳記對不上就把整份覆寫倒掉再蓋新戳 —— 每台機器只清一次，
+   之後管理人照樣拖得動。日後再遇到同樣的事，把戳記換成新版本號即可。
+   ⚠ 這與 `settleDragClear()` 是同一件事的兩個入口（手動／自動），清的是同一把鑰匙。 */
+const SETTLE_DRAG_PURGE_KEY='tivot_settle_drag_purge_v1';
+const SETTLE_DRAG_PURGE='ver-1072';     // ← 要再倒一次帳就改這個字串
+(function(){
+  try{
+    if(localStorage.getItem(SETTLE_DRAG_PURGE_KEY)===SETTLE_DRAG_PURGE) return;
+    if(localStorage.getItem(SETTLE_DRAG_KEY))
+      console.warn('拖城覆寫已倒帳（'+SETTLE_DRAG_PURGE+'）：聚落回到 code 寫的座標');
+    localStorage.removeItem(SETTLE_DRAG_KEY);
+    localStorage.setItem(SETTLE_DRAG_PURGE_KEY, SETTLE_DRAG_PURGE);
+  }catch(_){}
+})();
 let dragSet=null, dragDrop=null;    // 拖曳中的聚落 ／ 最後落定 {n,x,y,warn}
+let dragFrom=null;                  // 拿起來那一刻的座標（取消就搬回這裡）
 window.settleDragClear=()=>{ try{ localStorage.removeItem(SETTLE_DRAG_KEY); }catch(_){}
   dragDrop=null; console.log('拖城覆寫已清除，重新整理後回到 code 寫的位置'); };
 (function(){
@@ -5191,28 +5304,71 @@ function moveSettlement(s,x,y){
   const P=PLACES.find(p=>p.name===s.name);    if(P){ P.x=x; P.y=y; }
   drawMap();
 }
-/* 拖城：落定 —— 存覆寫、印座標；整地／取樣要**重新整理**才會在新位置重烘。 */
+/* 拖城的覆寫帳本：讀一筆／寫一筆／刪一筆。
+   ⚠ 只有這三支碰得到 `SETTLE_DRAG_KEY`（鐵律 7：一份帳一個計算點）——
+     取消要回復的是**拖之前那一筆覆寫**，不是「把整筆刪掉」：
+     那座城可能早就被拖過、而且已經確認留下了。 */
+function settleOvRead(name){
+  let ov={}; try{ ov=JSON.parse(localStorage.getItem(SETTLE_DRAG_KEY)||'{}')||{}; }catch(_){}
+  return ov[name]||null;
+}
+function settleOvWrite(name,xy){
+  let ov={}; try{ ov=JSON.parse(localStorage.getItem(SETTLE_DRAG_KEY)||'{}')||{}; }catch(_){}
+  if(xy) ov[name]=xy; else delete ov[name];
+  try{ localStorage.setItem(SETTLE_DRAG_KEY, JSON.stringify(ov)); }catch(_){}
+}
+/* 拖城：落定 —— 先真的搬過去（插畫當場跟上，看得到才問得出答案），
+   再跳確認窗；取消就原路搬回（ver -1072）。整地要**重新整理**才會在新位置重烘。 */
 function dropSettlement(){
   const s=dragSet; dragSet=null; if(!s) return;
+  const from=dragFrom, prevOv=settleOvRead(s.name);
   const x=Math.round(s.mx), y=Math.round(s.my);
   moveSettlement(s,x,y);
   const warn=(HGT[y*MAPW+x]<=CLOUD_H)?'　⚠這一格是雲海/海':'';
   dragDrop={ n:s.name, x, y, warn };
-  let ov={}; try{ ov=JSON.parse(localStorage.getItem(SETTLE_DRAG_KEY)||'{}')||{}; }catch(_){}
-  ov[s.name]=[x,y];
-  try{ localStorage.setItem(SETTLE_DRAG_KEY, JSON.stringify(ov)); }catch(_){}
+  settleOvWrite(s.name,[x,y]);
   /* 「地圖手動移位時，舊的要刪掉」（ver -837，Ray）：落定就重建取樣遮罩 ——
      插畫與量體**當場搬家**，舊位置立刻回復成地形，不必等重整。
      ⚠ 整地（podium 削平）是 loadWorld 烘進 HGT 的，活著的世界改不動 ——
        舊位置會留一塊已整平的空地、新位置的地還沒整，重整一次才完整。 */
   try{ buildCityMask(); }catch(_){}
-  console.log('拖城落定：'+s.name+' ('+x+','+y+')'+warn+' —— 已存；插畫已搬（舊位置已清），整地要重整後才跟上');
   drawMap();
+  askSettleMove(s, from, prevOv, x, y, warn);
 }
+/* 移城確認窗（ver -1072，Ray：「以後管理者移城完要跳確認窗，取消就搬回去」）。
+   ⚠ 沒有原位可回（理論上不會發生：拿起來時一定記過）就不問 —— 問了也退不回去。 */
+function askSettleMove(s, from, prevOv, x, y, warn){
+  const box=document.getElementById('settleAsk');
+  if(!box || !from){ console.log('拖城落定：'+s.name+' ('+x+','+y+')'+warn); return; }
+  document.getElementById('settleAskT').textContent =
+    s.name+'　('+from.x+','+from.y+') → ('+x+','+y+')'+warn;
+  box.hidden=false;
+  const close=()=>{ box.hidden=true; drawMap(); };
+  box.onYes=()=>{ close();
+    console.log('拖城落定：'+s.name+' ('+x+','+y+')'+warn+
+      ' —— 已存；插畫已搬（舊位置已清），整地要重整後才跟上。'+
+      '定稿請寫回 SETTLEMENTS／build_city.py 再 settleDragClear()'); };
+  box.onNo=()=>{
+    moveSettlement(s, from.x, from.y);
+    settleOvWrite(s.name, prevOv);
+    try{ buildCityMask(); }catch(_){}
+    dragDrop=null; close();
+    console.log('移城已取消：'+s.name+' 搬回 ('+from.x+','+from.y+')'); };
+}
+document.getElementById('settleYes').addEventListener('click',
+  ()=>{ const b=document.getElementById('settleAsk'); b.onYes&&b.onYes(); });
+document.getElementById('settleNo').addEventListener('click',
+  ()=>{ const b=document.getElementById('settleAsk'); b.onNo&&b.onNo(); });
 function mapPick(cssX,cssY){
   const q=mapCoordAt(cssX,cssY);
   if(!q){ MV.pick=null; drawMap(); return; }
   MV.pick=q;
+  /* 釘選（ver -1072，Ray：「大地圖點一下就插釘選，一次只能釘一個」）——
+     所以它是**一個值不是一個清單**：再點一下就是把同一根釘子拔起來插到新的地方。
+     方向計上那束黃光讀的就是它（見 drawBearingLights）。
+     ⚠ 只活在記憶體裡：釘選是「這一趟想去哪」，重載＝新的一趟航行，
+       沒有人需要把上一趟的釘子撿回來（鐵律 9：插的是這一點、拔的是下一點）。 */
+  MV.pin=q;
   /* 管理人瞬移＝**快速點兩次**（ver -748，Ray：「管理人模式下要在地圖上快速
      點兩次才會瞬移過去」）—— 單點只落選取標記（誤觸地圖不再把船搬走），
      400ms 內在同一處（30px）再點一下才瞬移。
@@ -5224,7 +5380,10 @@ function mapPick(cssX,cssY){
     mapTapLast = dbl ? null : { t:now, x:cssX, y:cssY };
     if(dbl){
       const s=grabSettlementAt(MV.pick[0], MV.pick[1]);
-      if(s){ dragSet=s; dragDrop=null; drawMap(); return; }
+      /* ⚠ 原位要在**拿起來那一刻**記（取消要搬回這裡）—— 落定之後才問 s.mx
+         就已經是新座標了。 */
+      if(s){ dragSet=s; dragFrom={ x:Math.round(s.mx), y:Math.round(s.my) };
+             dragDrop=null; drawMap(); return; }
       cam.x=MV.pick[0]*MAP_SCALE; cam.y=MV.pick[1]*MAP_SCALE;
       /* 怪是依「離自機的距離」排程的，瞬移之後留在原地的那隻會突然變成
          幾千單位外的殘影 —— 直接回收，讓它照正常規則重新刷。 */
@@ -10932,6 +11091,7 @@ function drawPanel(S){
     }
   }
   ctx.restore();
+  drawBearingLights(CR, cbx, bw2, deg);
   /* ── Sturm 充能：從中間向兩邊發光 ──────────────────────────────
      ⚠ 用 `lighter` 疊加而不是實色覆蓋：方向計的刻度與方位字要透出來，
        蓋掉的話按住的兩秒等於看不到航向。
