@@ -831,7 +831,8 @@ const SETTLEMENTS = [
        「不動素材就能救回來」的旋鈕，素材換了就不該再乘）。
        牆仍改成**受光的灰泥色**（同聖王廳那一格的理由）—— 村屋是木架灰泥，
        預設那個「屋瓦陰影」的暗色會讓整座村子糊成一團黑。 */
-    wallCol:'rgba(214,198,168,0.52)',
+    wallCol:'rgba(214,198,168,0.52)',   // 貼材載不到時的退路
+    wallTex:'flight_villagewall',        // ver -1117（Ray 交件）：逐面貼材＋逐面明暗
     podium:{ r:1.05, skirt:8, lift:0 } },
 ];
 /* ══⚠⚠ 城素材的 cache-buster（ver -1112，§5）══
@@ -842,6 +843,24 @@ const SETTLEMENTS = [
      裡那一串就全斷了。所以只在**真的發請求**的那一刻（`src=`／`fetch`）掛上去。
    ⚠ 換素材時把這個數字改掉（全城共用一個，城的素材本來就是一起重跑的）。 */
 const CITY_V='?v=1115b';
+/* ══⚠⚠ 量體的貼材（ver -1117，Ray 交件 `geo/flight_villagewall`／`flight_rooftile`）══
+   牆本來是一塊平色（`wallCol`），所以房子讀起來是「立起來的色塊」而不是建築。
+   ⚠⚠ **逐城開關**（`wallTex`／`roofTex`）不是全域：貼材的牆要**逐面** pattern fill，
+     村子二十幾塊沒問題，帝都 344 塊 ×4 面就是每幀上千次 —— 大城維持平色。
+   ⚠ 一張材質覆蓋多少世界單位由 `GEO_TEX_WORLD` 決定（牆高 20~56，所以 40 讓
+     一面牆看得到約一層樓的石砌）。
+   ⚠ 只在**真的要畫**時才載（同 cityPlanArt 的雙軌）：載不到就退回平色，不會壞。 */
+const GEO_TEX={}, GEO_PAT={};
+const GEO_TEX_WORLD=40;
+function geoTex(name){
+  if(!name) return null;
+  if(name in GEO_TEX) return GEO_TEX[name];
+  GEO_TEX[name]=null;
+  const im=new Image();
+  im.onload=()=>{ GEO_TEX[name]=im; delete GEO_PAT[name]; };
+  im.src='geo/'+name+'.webp';
+  return null;
+}
 /* ══⚠⚠ 城的取樣銳利度（ver -1115，Ray：「夏爾村太過像素了，清晰50%」）══
    取樣層級的準則是「texel 的世界尺寸 ≥ 一個緩衝像素的世界寬 × 這個係數」。
    · 0.85（-445 的原值）＝ texel 比緩衝像素**大**一點 → 城比周圍的地形**更糊**，
@@ -1913,7 +1932,7 @@ function buildSettlements(){
     });
     s.plan=S.plan||null; s.planW=S.planW||0; s.planRot=S.planRot||0;
     s.planH=S.planH||null; s.planTall=S.planTall||0;
-    s.noLamps=!!S.noLamps; s.wallCol=S.wallCol||null;   // noWater 由原始條目 S 讀（relief 那邊的 noW），這裡不抄一份
+    s.noLamps=!!S.noLamps; s.wallCol=S.wallCol||null; s.wallTex=S.wallTex||null;   // noWater 由原始條目 S 讀（relief 那邊的 noW），這裡不抄一份
     s.smoke=S.smoke||null;             // 炊煙（ver -446，見 drawCitySmoke）
     s.town=S.town||null;               // 有城鎮內容的才降落得了（ver -1101：地圖上也一定標名）
     s.mx=S.x; s.my=S.y;
@@ -11101,7 +11120,11 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
              看得到一條極淡的接縫。全不透明時被蓋掉所以看不見。400ms 的過渡
              期間可接受；真的礙眼就得把量體改畫到另一張離屏再整張合成。 */
         CFB.globalAlpha=massA;
-        /* 第一趟：牆。整批累積成一條路徑，最後一次 fill。 */
+        /* 第一趟：牆。整批累積成一條路徑，最後一次 fill。
+           ⚠ 有貼材（`wallTex`）時改成**逐面**貼：一面牆一個仿射（沿牆走向 ×
+             沿牆高），順便按法線分明暗 —— 四面同色的話房子仍是「立起來的色塊」。
+             逐城開關，理由見 GEO_TEX 那一段。 */
+        const WT=o.s.wallTex?geoTex(o.s.wallTex):null;
         CFB.setTransform(kx,0,0,ky,-bx0*kx,-by0*ky);
         CFB.beginPath();
         let anyWall=false;
@@ -11162,14 +11185,43 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
                2520、破洞 257→432）。
                這種牆是一條「垂直帶」，纏繞方向只取決於 x 的走向，
                所以 x 往回走的那一面照反序送點即可。 */
-            if(qxx>=pxx){
+            if(WT){
+              /* 逐面：先鋪材質，再依法線疊一層明暗（平塗硬邊，同遺跡的做法）。
+                 ⚠ 材質的 U 沿牆走向、V 沿牆高；一張材質覆蓋 `GEO_TEX_WORLD` 個
+                   世界單位，所以牆越長重複越多次 —— 不是把一張圖硬拉滿一面牆。 */
+              const wlx=(au[k2]-au[k])*hw, wly=(av[k2]-av[k])*hh;
+              const wlen=Math.hypot(wlx,wly)||1;
+              let pat=GEO_PAT[o.s.wallTex];
+              if(!pat){ pat=CFB.createPattern(WT,'repeat'); GEO_PAT[o.s.wallTex]=pat; }
+              CFB.beginPath();
               CFB.moveTo(pxx,pyy-Lp); CFB.lineTo(qxx,qyy-Lq);
               CFB.lineTo(qxx,qyy);    CFB.lineTo(pxx,pyy);
+              CFB.closePath();
+              if(pat && pat.setTransform){
+                const ru=Math.max(0.15,wlen/GEO_TEX_WORLD)*WT.width;
+                const rv=Math.max(0.15,hW/GEO_TEX_WORLD)*WT.height;
+                try{
+                  pat.setTransform(new DOMMatrix([
+                    (qxx-pxx)/ru, (qyy-pyy)/ru, 0, -Lp/rv, pxx, pyy ]));
+                  CFB.fillStyle=pat; CFB.fill();
+                }catch(_){ CFB.fillStyle=o.s.wallCol||'rgba(34,30,26,0.62)'; CFB.fill(); }
+              }else{ CFB.fillStyle=o.s.wallCol||'rgba(34,30,26,0.62)'; CFB.fill(); }
+              /* 法線→明暗：世界座標算（船繞著飛時亮面會跟著換），三階平塗。 */
+              let nx=wly, ny=-wlx; const nl=Math.hypot(nx,ny)||1; nx/=nl; ny/=nl;
+              const dl=nx*lightXY.x+ny*lightXY.y;
+              CFB.fillStyle = dl>0.30 ? 'rgba(255,244,214,.10)'
+                            : (dl<-0.30 ? 'rgba(24,20,16,.42)' : 'rgba(24,20,16,.20)');
+              CFB.fill();
+              CFB.beginPath();                       // 收掉這一面，不要累積進共用路徑
+            }else if(qxx>=pxx){
+              CFB.moveTo(pxx,pyy-Lp); CFB.lineTo(qxx,qyy-Lq);
+              CFB.lineTo(qxx,qyy);    CFB.lineTo(pxx,pyy);
+              CFB.closePath(); anyWall=true;
             }else{
               CFB.moveTo(pxx,pyy);    CFB.lineTo(qxx,qyy);
               CFB.lineTo(qxx,qyy-Lq); CFB.lineTo(pxx,pyy-Lp);
+              CFB.closePath(); anyWall=true;
             }
-            CFB.closePath(); anyWall=true;
           }
           drawn.push(bi);
         }
