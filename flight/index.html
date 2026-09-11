@@ -61,12 +61,14 @@
     letter-spacing:0;display:flex;align-items:center;justify-content:center;gap:5px;}
   #backBtn i{width:4px;height:15px;border-radius:2px;background:currentColor;display:block;}
   #backBtn:active{background:rgba(201,162,39,.16);}
-  /* ══ 地圖鈕：**控制面板左下**（ver -1086，Ray：「地圖在控制面版左下」）══
-     圖與尺寸都與城鎮那一顆相同（`resources/vfx/map.webp` 88×59，ver -868/-899）——
-     玩家在城裡按的就是它，換個畫面不該換個長相也不該換個大小。
+  /* ══ 地圖鈕：**控制面板右下**（ver -1087，Ray：「地圖是放在右下角」——
+     -1086 我放成左下，更正）══
+     圖、尺寸**與角落都**與城鎮那一顆相同（`resources/vfx/map.webp` 88×59，
+     右下角，ver -868/-899）—— 玩家在城裡按的就是它，換個畫面不該換個長相、
+     換個大小，更不該換個角落。「通用」指的就是這三件事一起。
      ⚠ 要**讓開楣**（同底下那一排）：楣常駐在畫面最底，高度由 JS 依圖比例算出來
        （`--fkerb-top-h`），寫死像素在別的螢幕寬度上一定蓋到。 */
-  #mapBtn{position:fixed;left:12px;
+  #mapBtn{position:fixed;right:12px;
     bottom:calc(env(safe-area-inset-bottom) + 12px + var(--fkerb-top-h,0px));
     z-index:40;width:88px;height:59px;padding:0;overflow:hidden;
     background:transparent;border:0;border-radius:6px;
@@ -80,8 +82,8 @@
      開著＝碰到怪只跳「遭遇」那一格，**不進戰鬥**。放生怪鈕右邊，同一排。
      ⚠ `left` 用 `calc` 讓開生怪鈕的寬度 —— 那顆是四個中文字，寬度會隨字型變，
        寫死像素在別的裝置上會疊到。 */
-  /* ⚠ ver -1086：生怪鈕退場、地圖 icon 搬進來 —— `left` 改成讓開那張圖（88＋12＋10）。 */
-  #peaceBtn{position:fixed;left:110px;
+  /* ⚠ ver -1086 生怪鈕退場 → 免戰接收左下那個位置（-1087：地圖改放右下，不再擋路）。 */
+  #peaceBtn{position:fixed;left:12px;
     bottom:calc(env(safe-area-inset-bottom) + 12px + var(--fkerb-top-h,0px));
     z-index:40;background:rgba(5,6,12,.72);border:1px solid rgba(201,162,39,.5);
     color:var(--gold);font-family:inherit;font-size:11px;letter-spacing:.14em;
