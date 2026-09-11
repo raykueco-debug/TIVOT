@@ -2296,6 +2296,23 @@ function midSession(){
   const b = state.scriptBattleId && GAME_CONFIG.battles && GAME_CONFIG.battles[state.scriptBattleId];
   return !!(b && b.session && !b.sessionEnd);
 }
+/* ══⚠⚠⚠ 持久 HP **只在「局內」帶**（ver -1083，Ray：「空戰不分場，一場就是一局，
+   全域不分空陸戰一局結束 hp 會回滿，br 會歸零，就這麼簡單」）══
+   -481~-1061 的作法是**每一場打贏都把殘量寫進鑰匙**，再靠後面某一步去清
+   （-498 敗北、-786 羽蛇戰後、-977 船戰回程、-1061 結算頁各補了一次）——
+   **只要有一條收場路徑沒走到那一步，血就留下來了**，補四個地方也還是會漏。
+   Ray 連報三次「空戰殘血」問的就是這個。
+   現在反過來：**鑰匙只在局還要繼續（連戰的中間場）時才寫**，其餘一律拔掉。
+   「沒有鑰匙＝滿血」是持久 HP 既有的語意（§tivot_php_v1），所以
+   **任何**沒走到結算的收場路徑也自動回滿 —— 不必再逐條補。
+   ⚠ 破防值（BR）本來就已經是這樣：`startGame` 開頭一律 `state.energy=0`，
+     只有「同一段連戰」才從 `sessionCarry` 搬回來。這一條讓 HP 與它一致。
+   ⚠ 判準用 `midSession()`（＝卡上有 `session` 而且不是收段那一場）——
+     那就是「局還沒結束」的唯一定義，不要另外發明一個。 */
+function carryHpOrClear(){
+  if(midSession()) prog.setHp(Math.max(1, state.playerHp));
+  else prog.clearHp();
+}
 function sessionSave(){
   if(!state.battleSession) return;
   sessionCarry={ saintUsed:!!state.saintUsedThisBattle,
@@ -2309,9 +2326,8 @@ function sessionSave(){
 }
 function storyBattleEnd(lost){
   if(!storyFramed()) return false;
-  /* 持久 HP 寫回（ver -481）：打贏（或 allowLose 的劇本輸）把殘量帶去下一場。
-     真正的戰敗不經過這裡（lose() 直接走失敗流程）＝重生仍是進場前的殘量。 */
-  prog.setHp(Math.max(1, state.playerHp));
+  /* 持久 HP：局內（連戰中間場）才帶，局結束就拔鑰匙 —— 見 `carryHpOrClear`。 */
+  carryHpOrClear();
   sessionSave();                      // 連續戰鬥：把「每場一次」的資源帶去下一格（ver -585）
   /* talkOnce 也在這裡記（ver -493，同 win 的那一段）：allowLose 的「劇本輸」
      與跳關都算「這一場過去了」—— 劇情不再重播。 */
@@ -2332,7 +2348,9 @@ function win(){
      allowLose 在用，於是血量從來沒繼承過（Ray：「血量沒有繼承上一場的傷害」）。
      storyBattleEnd 那一份留著（它照顧自己那兩條路）。 */
   if(storyFramed()){
-    prog.setHp(Math.max(1, state.playerHp));
+    /* 持久 HP：局內（連戰中間場）才帶，局結束就拔鑰匙 —— 見 `carryHpOrClear`。
+       ⚠ ver -1083 之前這裡是無條件 `setHp(殘量)`，那正是「空戰殘血」的來源。 */
+    carryHpOrClear();
     sessionSave();                    // 連續戰鬥：資源帶去下一格（ver -585）
     /* ⚠⚠ **收段（`endSession`）要等結算頁領完帳才做**（ver -621）——
        它會 `clearSessionGain()`，而這一段的統計與錢正是結算頁要報的。

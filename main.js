@@ -434,11 +434,10 @@ window.__tivotFlight = {
   /* 甲板混亂 → 湖上甲板那一幕（ver -744）：船摔進湖裡，這一趟航行結束 ——
      城鎮（suspend 著的北泊）真的收掉、iframe 收掉，主線場景接手。 */
   lakeScene(){
-    /* ⚠ 羽蛇戰後 HP 回滿（ver -786，Ray：「羽蛇戰後主角的 hp 沒恢復，結算完應該都要
-       回到初始狀態」）—— 持久 HP（tivot_php_v1）平時是延續的，但這一場打完是**一段
-       落幕、接新場景**（湖上甲板→夏爾村），所以清掉傷害＝下一段從滿血開始。
-       ⚠ 走既有的 `prog.clearHp()`（＝飛行敗北回滿同一支，鐵律 8）。 */
-    prog.clearHp();
+    /* ⚠ 羽蛇戰後 HP 回滿（ver -786）：**這一行 ver -1083 拿掉了** ——
+       持久 HP 現在只在「局內」（連戰的中間場）才寫得進去，羽蛇戰是自己一局，
+       打完在 `combat.win` 就已經把鑰匙拔了（＝滿血）。留著等於同一條規矩四份
+       （鐵律 7），而那正是「空戰殘血」補不完的原因。真相在 `combat.carryHpOrClear`。 */
     try{ town.close(); }catch(_){}
     closeFlightFrame();
     story.open({ scene:'lake_deck' });
@@ -1405,10 +1404,9 @@ combat.setStoryReturn((res)=>{
          「繼續回飛行」與「連敗三場送回旅店」兩條路都要回捲（掛在 __flightResume
          裡的話旅店那條不經過，實際就漏了）。 */
       try{ const w=flightWin(); if(w && w.__flightLoseRollback) w.__flightLoseRollback(); }catch(_){}
-      /* ⚠ 飛行戰鬥敗北**回滿血**（ver -498，Ray：「死亡回檔時 hp 回滿，遊戲不要
-         那麼硬核」）—— 回捲到戰前但不帶著戰前的殘血重打；持久 HP 清掉＝滿血。
-         連敗三場送回旅店那條也吃得到（clearHp 在分流之前）。 */
-      prog.clearHp();
+      /* ⚠ 飛行戰鬥敗北回滿血（ver -498）：**這一行 ver -1083 拿掉了** ——
+         飛行的戰鬥卡沒有 `session`，所以一場就是一局，進場時鑰匙本來就是空的
+         （＝滿血），打輸更不會有人去寫它。真相在 `combat.carryHpOrClear`。 */
       const n = prog.lossStreak()+1;
       if(n>=3){ carriedToInn(); return; }
       prog.setLossStreak(n);
@@ -1421,21 +1419,14 @@ combat.setStoryReturn((res)=>{
          戰前）。⚠ ver -845：iframe 死了問不到 __flightPos —— 座標直接讀回程鑰匙
          （toBattle 交棒那一刻寫的，就是遭遇位置，同一份真相）。 */
       const dead = !f.getAttribute('src');
-      /* ══⚠⚠⚠ **船戰打完（勝負都算）HP 回滿**（ver -977，Ray：「船戰現在 HP 不保留
-         到下一場，一樣走結算就回滿，破防歸零」）══
-         ⚠⚠ **這推翻了船戰那一半的持久 HP**（ver -481／-489）：-976 之前打贏會走
-           `combat.win` 的 `prog.setHp` 把殘量帶到下一場，只有**打輸**才回滿（-498）。
-           ⚠ Ray 已確認（「現在船戰結束**不繼承**上一場的 hp」）—— 這是規格不是 bug，
-             不要看到 `win()` 那一支還在 `setHp` 就以為這裡漏了什麼：那一支照顧的是
-             城鎮／劇情戰，飛行這一條在它之後把鑰匙拔掉。
-           現在兩邊一致 —— 飛行遭遇是一場一場獨立的，天上又沒有地方補血，
-           帶著殘血打下一隻等於愈打愈死。破防值本來就歸零（飛行的戰鬥卡沒有
-           `session`，資源不跨局），所以那一半不必動。
-         ⚠ 走既有的 `prog.clearHp()`（＝飛行敗北回滿、羽蛇戰後回滿同一支，鐵律 8）——
-           「沒有鑰匙＝滿血」是持久 HP 的既有語意，不要寫一個滿值進去（鐵律 9）。
-         ⚠ 要在**落檢查點之前**：那一筆快照存的是「打完之後」的狀態。
-         ⚠ 城鎮／劇情戰**不受影響**：那幾條路不經過這裡，照舊帶著殘量。 */
-      prog.clearHp();
+      /* ══⚠⚠⚠ **船戰打完 HP 回滿**（ver -977，Ray：「船戰現在 HP 不保留到下一場，
+         一樣走結算就回滿，破防歸零」）══ **那一行 ver -1083 拿掉了。**
+         ⚠⚠ 規矩沒有變，變的是它住在哪裡：持久 HP 現在**只在局內（連戰的中間場）
+           才寫得進去**，飛行的戰鬥卡沒有 `session` ＝一場就是一局 ＝ 打完
+           `combat.win` 就把鑰匙拔了。這裡再清一次是同一條規矩的第四份
+           （-498／-786／-977／-1061 各補過一次），而那正是 Ray 連報三次
+           「空戰殘血」補不完的原因（鐵律 7）。真相只在 `combat.carryHpOrClear`。
+         ⚠ 城鎮／劇情戰照舊：它們有 `session` 的那幾場在局內仍然帶著傷。 */
       combat.goHome(()=>{ openFlight({ resume:true, won });
                           if(won){
                             if(dead){ try{ const j=JSON.parse(localStorage.getItem('tivot_flight_ret_v1')||'null');
