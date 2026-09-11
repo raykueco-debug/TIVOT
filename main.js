@@ -512,6 +512,13 @@ window.__tivotFlight = {
      與選單「回到主選單」同一支，鐵律 8）。與 `close()`（回底下那一頁）不同：
      這一支不管底下是城鎮還是首頁，一律殺光回主畫面。 */
   home(){ flightBack=false; storyResume=null; combat.goHome(); },
+  /* ══ 系統選單（ver -1085，Ray：「把飛行地圖右上的 ✕ 改成通用的 II 系統鈕」）══
+     飛行畫面右上那一顆 II 走這裡 —— 與槍棺齒輪**同一支** `settings.open`
+     （鐵律 8），所以分軌音量／震動／自動播放／回主選單一整套完全一致。
+     ⚠ 面板開著時飛行畫面會自己凍住（`settings.open` 裡的 `__flightHoldToggle`）。
+     ⚠ 「回到主選單」走飛行自己的 `home()`：它要先把交棒旗標收掉，
+       不是走劇情層那一支。 */
+  menu(){ settings.open({ onHome: ()=>window.__tivotFlight.home() }); },
 };
 
 function bootBattleGate(req){
