@@ -11188,13 +11188,23 @@ function drawPanel(S){
       const S2=deckArt.sky, sw0=S2.width*sc, sh0=S2.height*sc;
       const panX=cam.angle*SKY_PAN*W;                  // 轉向：螢幕空間的橫移（不受縮放影響）
       const foX=W/2, foY=dy+SKY_HORIZON*sh0;           // 消失點＝正前方的地平線那一點
+      /* ⚠⚠⚠ **基準位置要把消失點擺在圖的正中**（ver -1081，Ray：「我往正前方飛
+         還是有左右橫移」）。-1080 把天空層貼在**甲板層的左緣**（`dx`）—— 但天空層
+         有兩倍寬（3072 vs 1536），所以它的中心落在畫面中心**右邊 `dw/2`**。
+         橫向平鋪時那個偏移看不出來（平移一個貼圖寬長得一樣），**可是一旦以消失點
+         為中心放大，偏移就會跟著倍率一起長** ——
+             圖心 ＝ foX + k×(基準圖心 − foX)
+         基準圖心不等於 `foX` 的話，`k` 一變圖心就橫著跑。那就是他看到的橫移。
+         把基準圖心釘在 `foX` 上（`skyX0 = foX − sw0/2`），圖心就恆等於 `foX`，
+         任何倍率下都不動 —— 與地平線那一條是同一個道理（算式保證，不是調的）。 */
+      const skyX0=foX-sw0/2;
       /* 以 `(foX,foY)` 為中心放大 `k` 倍，再橫向平移 `panX`；橫向折回貼圖寬之內
          （轉舵可以轉到天涯海角，一定要折）。 */
       const layer=(k,alpha)=>{
         if(alpha<=0.004) return;
         const w2=sw0*k, h2=sh0*k;
         const by=foY+(dy-foY)*k;
-        let x=foX+(dx-foX)*k+panX;
+        let x=foX+(skyX0-foX)*k+panX;                  // ＝ foX − w2/2 + panX（圖心永遠在 foX）
         x-=Math.ceil(x/w2)*w2;                         // 折到 ≤0 的第一張
         ctx.globalAlpha=alpha;
         for(; x<W; x+=w2) ctx.drawImage(S2, x, by, w2, h2);
