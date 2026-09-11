@@ -7705,6 +7705,13 @@ function drawRuinBeams(scaleH,horizon,sinp,cosp,now){
   const sxk=W/BW, syk=VIEWH/BH;
   for(const P of PLACES){
     if(!P.sense || !P.flag || !flagOn(P.flag)) continue;
+    /* ⚠⚠ **去過就不再亮**（ver -1122，Ray：「遺跡探索過以後光柱就刪掉」）——
+       光柱是「那裡有東西、你還沒去」的記號，去過之後它就只是一根杵在地圖上的光。
+       ⚠ 判準用**踏進那張圖**的旗（`mapcard_<圖>`，§6.5.3.9 的圖名卡記的那一支）——
+         那是既有的唯一真相（誰插＝第一次走進去），不另立一支「探索過了」的旗（鐵律 9）。
+       ⚠ 沒有 `town` 的隱藏點（還沒做內容的那幾個）永遠沒有那支旗 → 光柱照亮，
+         那正是對的：你還去不了它。 */
+    if(P.town && flagOn('mapcard_'+P.town)) continue;
     const wx=P.x*MAP_SCALE, wy=P.y*MAP_SCALE;
     const dx=wx-cam.x, dy=wy-cam.y;
     const dist=Math.hypot(dx,dy);

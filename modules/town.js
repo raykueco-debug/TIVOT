@@ -1982,6 +1982,13 @@ function bindInput(){
     return !!a && (a.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)); };
   window.addEventListener('keydown', e=>{
     if(e.repeat || e.ctrlKey || e.altKey || e.metaKey || inField()) return;
+    /* ⚠⚠ **導覽沒開就不吃鍵**（ver -1122）：城鎮被暫停（出航／交棒進戰鬥）時
+       箭頭元素還在 DOM 上，`startHold` 照樣跑得動 —— 於是**在飛行畫面上按 WASD
+       會讓底下那座城裡的人偷偷走路**（時鐘也跟著推）。實測：出航後按了十下
+       方向鍵，回頭一看人已經從崩塌門廊走到斷柱道、時間多跑了一個多小時。
+       ⚠ 判準用 `body.town-nav`（`showNav` 唯一那支開關，鐵律 8）：暫停、對白中、
+         演出中它本來就是關的 —— 那幾個時刻本來也不該走路。 */
+    if(!document.body.classList.contains('town-nav')) return;
     const dir=KEY_DIR[(e.key||'').toLowerCase()]; if(!dir) return;
     const el=st.querySelector('.kerb-arrow[data-dir="'+dir+'"]');
     if(!startHold(el)) return;
