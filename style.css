@@ -405,10 +405,17 @@
        它們是同一件事的兩端）。 */
   #barsBlock{position:absolute;left:0;right:0;bottom:6px;z-index:6;pointer-events:none;
     display:flex;align-items:stretch;gap:8px;padding:0 12px 2px;
-    /* ⚠ ver -1069：只留副武器鈕要用的那一個 —— 計量表的尺寸與位置退回
+    /* ⚠ ver -1069：只留副武器鈕要用的那兩個 —— 計量表的尺寸與位置退回
        `combat.layoutClasp` 去算（Ray：「破防計先回到上一版」）。
-       `--ws-size` 40px ≈ 1.207S（S＝血條那一疊的高 33px，-551 調過的鈕大小）。 */
-    --ws-size:40px;}
+       ⚠⚠ ver -1070（Ray：「武器鍵大一點，大小位置要跟破防計平衡」）：
+         **40 → 44px**＝破防計的 `BOX`（`Hb`×`CLASP_UP` ＝ 1.207S×1.10）；
+         `--ws-bottom` 讓它的**中心**對到計量表的中心。
+       ⚠⚠ 4px 是**量出來的**，不是推出來的：計量表的縱向錨在 `combat.layoutClasp`
+         （-1040「底緣＝藍條底往上 2px」），而它與 `#barsBlock` 的內容底之間還隔著
+         padding 與邊框那幾個像素 —— 照公式推會差一截。
+       ⚠ 所以**改計量表的大小或位置時，要回來重量這個值**（把兩顆的 rect 印出來
+         對中心）——那是這兩個數字唯一的關係。 */
+    --ws-size:44px; --ws-bottom:4px;}
   /* 破防計量（ver -511 重設計）：鐮月形 —— 下粗上細，細尖往右鉤到血條上方，
      整體放大。SVG 是固定尺寸、錨在這一格的左下，往上與往右**刻意溢出**
      （細尖要騎在血條上方）；pointer-events 只有滿值時開。 */
@@ -436,10 +443,28 @@
   #energyClasp.charging #claspArcFill{animation:arcCharge 1.8s ease-in-out infinite alternate;}
   @keyframes arcCharge{from{opacity:.86;}to{opacity:1;}}
   /* 滿檔＝**白光**（沿用 ver -544 Ray 定的讀感：抽掉飽和、大幅提亮）。 */
-  #energyClasp.full #claspArcFill{fill:#fff;
-    filter:drop-shadow(0 0 8px rgba(255,255,255,.95)) drop-shadow(0 0 18px rgba(255,250,235,.72));
-    animation:arcFull .6s infinite alternate;}
-  @keyframes arcFull{from{opacity:.82;}to{opacity:1;}}
+  /* ══ 滿檔＝**綠白相間的呼吸光**（ver -1070，Ray：「滿的時後變成綠白相間呼吸光，
+     綠色用等級提升的那個綠」）══ 綠是 `#5cff6a`（-1033 結算頁那支升級箭頭的綠，
+     鐵律 7：同一個「升級／滿了」的綠只有一個值）。
+     ⚠ 呼吸在**顏色**上（綠 ⇄ 白）而不是只有亮度：白到白只是閃，綠白交替才讀得出
+       「它滿了、而且是好事」。光暈跟著同一條 keyframes 換色，不然會出現白光配綠身。 */
+  #energyClasp.full #claspArcFill{animation:arcFullGW 1.15s ease-in-out infinite;}
+  @keyframes arcFullGW{
+    0%  {fill:#ffffff; filter:drop-shadow(0 0 8px rgba(255,255,255,.95));}
+    50% {fill:#5cff6a; filter:drop-shadow(0 0 10px rgba(92,255,106,.95)) drop-shadow(0 0 20px rgba(92,255,106,.55));}
+    100%{fill:#ffffff; filter:drop-shadow(0 0 8px rgba(255,255,255,.95));}}
+  /* 滿檔時高光停下來（那一段已經是呼吸光了，再跑一道亮帶只是雜訊）。 */
+  #energyClasp.full #claspArcShine{display:none;}
+  /* ══ 高光順時針流動（ver -1070）══ 沿中心線跑的一小段亮筆畫。
+     ⚠ 只在**蓄能中**跑（`.charging`）：滿了有呼吸光、空了沒東西可跑。
+     ⚠ `pathLength="100"` ＋ `stroke-dasharray:9 100` ＝ 一段 9% 長的亮帶；
+       `stroke-dashoffset` 由 0 跑到 −109 剛好繞完一圈再接上（9＋100）。
+     ⚠ 方向：dashoffset 變**負**＝亮帶往路徑的**前進方向**走 ＝ 尾巴 → 6 點 →
+       順時針，與計量增加的方向一致。 */
+  #claspArcShine{display:none;pointer-events:none;
+    filter:drop-shadow(0 0 4px rgba(255,255,255,.9));}
+  #energyClasp.charging #claspArcShine{display:block;animation:arcShine 1.6s linear infinite;}
+  @keyframes arcShine{from{stroke-dashoffset:0;} to{stroke-dashoffset:-109;}}
   /* ⚠ ver -1037：滿檔的白光改由 `#claspArcFill` 自己那一條負責（見上）；
      `::after` 那個寫死落點的呼吸光暈（對著月牙量的 left:16px/bottom:16px）一併退場
      —— 中心換人了，那個座標已經不指向任何東西。 */
@@ -539,7 +564,13 @@
   /* ⚠⚠ ver -1068：由 `position:absolute`（座標靠 JS 量血條算）改成
      **flex 的子元素** —— 血條 `flex:1` 自己讓位，不必再算 `marginRight`，
      也不可能因為「量不到」而跑到畫面外（-1067 的病灶）。 */
-  #wpSwitch{position:static;flex:none;align-self:center;
+  /* ⚠⚠ ver -1070：鈕放大到 44px（＞血條那一疊的 33px）之後，只要它還在 flex 的
+     流裡就會**把 `#barsBlock` 撐高** —— 血條與計量表跟著一起被推上去（實測兩者
+     同時上移 13px，中心差距紋風不動）。所以改成**相對 `#barsBlock` 的絕對定位**：
+     它不再影響版面的高度，血條改用固定的 `margin-right` 讓位。
+     ⚠ 與 -1067 那個「量血條算座標」不一樣：這裡**全是固定值**，不量任何東西，
+       所以不會有「量不到就跑掉」的問題。 */
+  #wpSwitch{position:absolute;right:12px;bottom:var(--ws-bottom);
     width:var(--ws-size);height:var(--ws-size);padding:0;
     background:transparent;border:none;border-radius:0;
     display:flex;align-items:center;justify-content:center;
@@ -584,7 +615,9 @@
     to{box-shadow:0 0 12px rgba(111,179,212,.95);}}
 
   /* 兩條橫向血條 */
-  #barStack{flex:1 1 0;display:flex;flex-direction:column;gap:5px;min-width:0;}
+  /* ⚠ 右邊讓出副武器鈕的位置（ver -1070，它已不在 flex 的流裡）：鈕寬 ＋ 8px 的縫。 */
+  #barStack{flex:1 1 0;display:flex;flex-direction:column;gap:5px;min-width:0;
+    margin-right:calc(var(--ws-size) + 8px);}
   .hrow{position:relative;}
   .hpbar{height:14px;background:rgba(0,0,0,.75);border:1px solid var(--gold-dim);
     border-radius:3px;overflow:hidden;box-shadow:0 0 10px #000;}

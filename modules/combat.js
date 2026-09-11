@@ -1398,6 +1398,19 @@ const ARC={
        上限就是那個「左緣不越過環的內緣」：0.72 之下差 1.3px，再大就會壓到環。 */
   face  : 0.72,    // 頭像**寬度**佔 viewBox 的比例
   faceH : 1.34,    // 頭像那一格的高＝寬 × 這個（往**上**長，讓頭頂蓋到環上）
+  /* ══⚠⚠⚠ **尾巴＝「G」的那一橫**（ver -1070，Ray：「破防計的底部角度也修成圓弧狀，
+     往上收到角色立繪下方。有點像『G』的型狀」）══
+     -1044~-1069 的尾巴是一截**直的橫槓**（從 6 點往右伸到血條左緣）。現在改成
+     **同一條環再往回繞一小段、半徑同時往內收** —— 尾尖落在頭像（立繪）的下方，
+     整體就是 G 的輪廓。
+     ⚠ 它仍是**同一條路徑**（-1044 那條規矩沒變），只是最前面那一段的半徑會變；
+       計量從尾尖起跑 ——「從 6 點開始」因此變成「從 6 點**之前**一點」，
+       那正是 G 的橫該在的位置。
+     ⚠ `tailR`／`tailW` 是**相對 `ri`／`w0` 的倍率**：決定尾尖離圓心多近、多細。 */
+  tailDeg  : 52,   // 尾巴從 `a0` 往回幾度（視覺上落在 4~5 點）
+  tailR    : 0.45, // 尾尖的內半徑 ＝ `ri` × 這個
+  tailW    : 0.45, // 尾尖的厚度   ＝ `w0` × 這個
+  tailSteps: 20,   // 尾巴那一段的段數
   steps : 72,      // 折線近似的段數（每 ~3°）
 };
 /* 整組比切換武器鈕大多少（ver -1040，Ray：「計量跟女主頭像稍微放大」）。
@@ -1406,41 +1419,45 @@ const ARC={
      ⚠ 所以頭像的大小也到頂了 —— 要再大只能把整組移出血條那一列（那又與
        「下緣貼藍條」打架）。 */
 const CLASP_UP=1.10;
-/* ══ 那一條計量表的形狀（唯一那一支）══ 橫槓（右端→6 點）＋ 錐形環帶（6 點→2 點），
-   外緣順走、內緣逆走，閉合成**一片**。`tail` ＝橫槓在 viewBox 單位下的長度。
+/* ══ 那一條計量表的形狀（唯一那一支）══ 尾巴（往內收的那一小段）＋ 錐形環帶，
+   外緣順走、內緣逆走，閉合成**一片**。
    ⚠ 角度→座標只有這裡在換：`(cx + R·sin a, cy − R·cos a)` —— SVG 的 y 向下，
      所以這個式子同時滿足「0°在正上」與「順時針為正」。
-   ⚠ 橫槓的上下緣直接寫成 `ri` 與 `ri+w0`（＝環在 6 點的內外緣），所以兩段
-     **天生接得上**，不需要對齊、也不會有縫。 */
-function arcPath(tail){
-  const cx=50, cy=50, T=Math.max(0, tail||0), out=[], inn=[];
-  if(T>0){                                   // 橫槓：由右端走到 6 點
-    out.push([cx+T, cy+ARC.ri+ARC.w0]); inn.push([cx+T, cy+ARC.ri]);
+   ⚠ 尾段與環段共用同一組 `ri`／`w0`：尾巴走到 `a0` 時半徑與厚度正好回到環的值，
+     **天生接得上**，不必對齊、也不會有縫（同 -1044 那條橫槓的道理）。
+   ⚠⚠ 形狀與中心線（進度／高光沿著它跑）由**同一組取樣**算出來 ——
+     兩邊各算一次的話，進度會與形狀對不起來（鐵律 7）。 */
+function arcSamples(){
+  const cx=50, cy=50, out=[], inn=[], mid=[];
+  const put=(a, r, w)=>{
+    const si=Math.sin(a), co=Math.cos(a);
+    out.push([cx+(r+w)*si, cy-(r+w)*co]);
+    inn.push([cx+r*si,     cy-r*co]);
+    mid.push([cx+(r+w/2)*si, cy-(r+w/2)*co]);
+  };
+  for(let i=0;i<ARC.tailSteps;i++){          // ① 尾巴：尾尖 → `a0`
+    const t=i/ARC.tailSteps;
+    put((ARC.a0-ARC.tailDeg*(1-t))*Math.PI/180,
+        ARC.ri*(ARC.tailR+(1-ARC.tailR)*t),
+        ARC.w0*(ARC.tailW+(1-ARC.tailW)*t));
   }
-  for(let i=0;i<=ARC.steps;i++){
-    const k=i/ARC.steps, a=(ARC.a0+ARC.sweep*k)*Math.PI/180;
-    const w=ARC.w0+(ARC.w1-ARC.w0)*k, si=Math.sin(a), co=Math.cos(a);
-    out.push([cx+(ARC.ri+w)*si, cy-(ARC.ri+w)*co]);
-    inn.push([cx+ARC.ri*si, cy-ARC.ri*co]);
+  for(let i=0;i<=ARC.steps;i++){             // ② 環：`a0` 順時針掃 `sweep`，前粗後細
+    const k=i/ARC.steps;
+    put((ARC.a0+ARC.sweep*k)*Math.PI/180, ARC.ri, ARC.w0+(ARC.w1-ARC.w0)*k);
   }
+  return {out, inn, mid};
+}
+function arcPath(){
+  const {out, inn}=arcSamples();
   const P=p=>p[0].toFixed(2)+','+p[1].toFixed(2);
   let d='M'+P(out[0]);
   for(let i=1;i<out.length;i++) d+='L'+P(out[i]);
   for(let i=inn.length-1;i>=0;i--) d+='L'+P(inn[i]);
   return d+'Z';
 }
-/* 同一條的**中心線**（進度遮罩沿著它推進）：橫槓的中線 → 環的中線。
-   ⚠ 與 `arcPath` 是同一組數字算出來的兩個面向（形狀／進度），改一邊要改另一邊
-     —— 所以兩支放在一起，`tail` 也由同一個呼叫端傳。 */
-function arcMidPath(tail){
-  const cx=50, cy=50, T=Math.max(0, tail||0), pts=[];
-  if(T>0) pts.push([cx+T, cy+ARC.ri+ARC.w0/2]);
-  for(let i=0;i<=ARC.steps;i++){
-    const k=i/ARC.steps, a=(ARC.a0+ARC.sweep*k)*Math.PI/180;
-    const r=ARC.ri+(ARC.w0+(ARC.w1-ARC.w0)*k)/2;
-    pts.push([cx+r*Math.sin(a), cy-r*Math.cos(a)]);
-  }
-  return 'M'+pts.map(p=>p[0].toFixed(2)+','+p[1].toFixed(2)).join('L');
+function arcMidPath(){
+  const {mid}=arcSamples();
+  return 'M'+mid.map(p=>p[0].toFixed(2)+','+p[1].toFixed(2)).join('L');
 }
 /* ⚠ ver -1069：`claspSig`／`claspRetry` **回來了** —— Ray：「破防計的改動錯了，
    破防計先回到上一版」，計量表的定位退回 -1067 的量測版；
@@ -1514,11 +1531,16 @@ function layoutClasp(){
      `arcPath` 的座標必須留在 0~100 內，不然會被 svg 的框裁掉。
      ⚠ 形狀因此**與版面有關**（血條的位置會變），所以每次重量都重算一次 d；
        兩條 path（形狀／中心線）由同一個 `tail` 產生（鐵律 7）。 */
-  const tailU=Math.max(0, Math.min(46, ((BL-hr.x)-2-CX)/BOX*100));
-  const dShape=arcPath(tailU);
+  /* ⚠ ver -1070：形狀不再吃「橫槓長度」—— 尾巴改成 G 的那一橫（角度制，全在 `ARC`）。
+     ⚠ 高光那一層（`#claspArcShine`）與進度共用同一條中心線與同一個遮罩。 */
+  const dShape=arcPath();
   track.setAttribute('d', dShape); fillEl.setAttribute('d', dShape);
+  const midD=arcMidPath();
+  const sh=$('claspArcShine');
+  if(sh){ sh.setAttribute('d', midD);
+          sh.setAttribute('stroke-width', String(ARC.w0*0.8)); }
   const mp=$('claspProgPath');
-  if(mp){ mp.setAttribute('d', arcMidPath(tailU));
+  if(mp){ mp.setAttribute('d', midD);
           /* 筆畫要蓋得住最厚的地方（`w0`）＋一點餘裕；溢出到形狀外沒關係 ——
              真正決定形狀的是 fill 那條 path，遮罩只管「走到哪裡」。 */
           mp.setAttribute('stroke-width', String(ARC.w0+6)); }
