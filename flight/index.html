@@ -68,12 +68,20 @@
      換個大小，更不該換個角落。「通用」指的就是這三件事一起。
      ⚠ 要**讓開楣**（同底下那一排）：楣常駐在畫面最底，高度由 JS 依圖比例算出來
        （`--fkerb-top-h`），寫死像素在別的螢幕寬度上一定蓋到。 */
+  /* ⚠⚠ 陰影要用 `drop-shadow` **不要用 `box-shadow`**（ver -1088，Ray：「地圖的
+     alpha 邊框怎麼跑出來了」）：`box-shadow` 畫的是**方框**的影子，而這張圖有
+     三成是透明的（四角全透）—— 影子沿著看不見的方框描一圈，底一亮就變成
+     一個矩形外框。城鎮那一顆同樣寫法卻看不出來，是因為它貼在**暗的槍棺面**上；
+     這裡的底是亮的甲板與天空，就露餡了。
+     `drop-shadow` 跟著 **alpha 的輪廓**走，所以它描的是那本書的邊。
+     ⚠ 連帶 `overflow:hidden`／`border-radius` 也拿掉：透明圖沒有東西要裁，
+       留著只是讓人以為那裡有一個框。 */
   #mapBtn{position:fixed;right:12px;
     bottom:calc(env(safe-area-inset-bottom) + 12px + var(--fkerb-top-h,0px));
-    z-index:40;width:88px;height:59px;padding:0;overflow:hidden;
-    background:transparent;border:0;border-radius:6px;
-    box-shadow:0 5px 14px rgba(0,0,0,.6);cursor:pointer;}
-  #mapBtn img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;}
+    z-index:40;width:88px;height:59px;padding:0;
+    background:transparent;border:0;cursor:pointer;
+    filter:drop-shadow(0 4px 8px rgba(0,0,0,.75));}
+  #mapBtn img{display:block;width:100%;height:100%;object-fit:contain;}
   #mapBtn:active{transform:scale(.95);}
   /* ⚠ 底下那一排要**讓開楣**（ver -387）：楣常駐在畫面最底，高度是 JS 依圖比例
      算出來的（`--fkerb-top-h`），寫死像素在別的螢幕寬度上一定蓋到。
