@@ -7587,6 +7587,21 @@ const enemyArt={};
   }
 })();
 let enemyTimer=ENEMY_CFG.gapMin*0.35;             // 開場不要立刻刷
+/* ══⚠⚠⚠ 「剛剛才打完一場」＝ 追兵清掉、刷新計時**重排一個完整的間隔**
+   （ver -1076，Ray：「劇情船戰打完以後前方立刻有敵人的狀況還在」）══
+   ⚠⚠ -977 修過同一個症狀，但它修的是**活著的那條路**（把重排收進 `spawnEnemy`）。
+     ver -845 起打完戰鬥飛行頁是**整頁重載**的 —— 重載之後 `enemyTimer` 從模組頂層
+     重新初始化成 `gapMin*0.35`（＝10.5 秒，那是「一趟新航行的開場」用的值），
+     於是「打完回來十秒又一隻」。**in-page 的修法在重載那條路上一行都不算數。**
+   ⚠ 收成一支（鐵律 8）：清追兵＋重排的路徑有四條（降落進城、活著被喚醒、
+     重載回程、開發用生怪鈕），寫在各個呼叫端一定會漏掉其中一條 —— 這一次漏的
+     就是重載。
+   ⚠ 這裡**不碰** `scriptPending`：劇本遭遇是「條件到了就立刻生」，它不吃這個計時器
+     （而且打贏那一刻 done 已經記掉了，本來就不會再生）。 */
+function armEnemySpawn(clearFoe){
+  if(clearFoe) enemy=null;
+  enemyTimer=ENEMY_CFG.gapMin+Math.random()*(ENEMY_CFG.gapMax-ENEMY_CFG.gapMin);
+}
 
 /* ══ 劇本遭遇（ver -426，Ray：「出薩梅爾上空立刻刷怪，正前方，1.5 倍速，強行進入艦戰」）══
    主線指定的**強制**遭遇：不等刷新計時、不走橫向巡航 —— 條件一到就在**正前方**
@@ -8590,6 +8605,8 @@ window.__flightResume=function(opts){
      輸了聽到這句是錯的。勝負由父頁告訴我們（`{won:true}`）。
      ⚠ 等門收完再演（`FKERB_MS`）：槍棺還蓋著半個畫面時放人出來，
        立繪會從門後面滑出來。 */
+  /* 剛打完一場：追兵清掉、間隔重排（ver -1076，與重載那條同一支，鐵律 8）。 */
+  armEnemySpawn(true);
   const wasScripted = lastBattleScripted; lastBattleScripted = false;
   /* ⚠ 羽蛇登場插圖現在留到交棒（ver -786，見 toBattle）——回到這一頁一律先清乾淨：
      敗北回飛行不能還蓋著那張插圖；羽蛇打贏的甲板分支會在下面重設 introArt=甲板背景。 */
@@ -8690,7 +8707,9 @@ let retFromBattle=false;   // 這一次開機是不是戰鬥回程（ver -846：
       if(isFinite(j.angle)) cam.angle=j.angle;
       if(isFinite(j.alt))   cam.alt=j.alt;
     }
-    if(j && j.fromBattle){ retCtx=j; retFromBattle=true; }
+    /* ⚠⚠ 重載回程也要重排（ver -1076）：頂層那個 `gapMin*0.35` 是
+       「一趟新航行的開場」用的，拿來當「剛打完一場」就是十秒後又一隻。 */
+    if(j && j.fromBattle){ retCtx=j; retFromBattle=true; armEnemySpawn(true); }
   }catch(e){}
 })();
 
@@ -8709,8 +8728,7 @@ document.getElementById('boostBtn').addEventListener('click',e=>{
    免得手動生完隔幾秒又被自動刷新蓋掉。 */
 document.getElementById('spawnBtn').addEventListener('click',()=>{
   enemy=null;
-  spawnEnemy();
-  enemyTimer=ENEMY_CFG.gapMin+Math.random()*(ENEMY_CFG.gapMax-ENEMY_CFG.gapMin);
+  spawnEnemy();          // 它自己會重排間隔（ver -977）
 });
 
 /* 程序翅（drawWingsProc）已內聯進 drawEnemy3D（蟲翅/鳥翼兩個分支）——
@@ -10350,8 +10368,7 @@ function doLand(){
   if(placeLockedNag(S.town)) return;   // 章節鎖（ver -844）：蕾娜擋回來，不扣時間
   /* ⚠ **進入城鎮＝終止追擊**（ver -478，Ray：「進入城鎮也會終止追擊」）——
      追兵清掉、刷新計時重排；不清的話出城那一刻牠還貼在船尾，等於降落白降。 */
-  enemy=null;
-  enemyTimer=ENEMY_CFG.gapMin+Math.random()*(ENEMY_CFG.gapMax-ENEMY_CFG.gapMin);
+  armEnemySpawn(true);
   /* ⚠ **進入城鎮 1 小時**（ver -435，Ray：「進入其他城鎮或地圖 1 小時」）。
      ⚠ 記在這裡而不是進城之後：城鎮那一邊的計時是「每走一步 10 分鐘」，
        那是**城裡**的規矩；「飛過去降落」花掉的是大地圖的時間，兩者不能混（鐵律 7）。 */
