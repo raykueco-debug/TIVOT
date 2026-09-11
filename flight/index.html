@@ -2060,6 +2060,11 @@ const FILE_GAIN = {
   se_sail:2.056, se_shipcrush:2.358,
   se_enemy_serpent:2.184,   // 羽蛇登場的吼叫（ver -742；config 同值）
   peritunematerial_crisis_loop:1.077,   // 羽蛇劇情段（ver -745；config 同值）
+  /* 索菈娜的「發現了」（ver -1089；config tuning.fileGain 同值，兩邊互指）。
+     實測 LUFS −18.06／−13.81；search1 的增益被 `peakCeilDb`(+2) 夾在 1.69
+     （母帶峰值 −2.54 dB，再推就削頂）。 */
+  vo_sorana_search1:1.69, vo_sorana_search2:1.06,
+  vo_sorana_found1:0.86,  vo_sorana_found2:0.75,   // 實測 LUFS −11.94／−10.82
 };
 /* 這一支音檔最後該用多大的 volume。⚠ `Math.min(1,…)` 是 HTMLAudio 的硬上限：
    母帶太小聲的那幾支（航行環境音、飛行曲）會被夾住、拉不到目標 —— 那是母帶的
@@ -2073,7 +2078,8 @@ senseBeat.__baseVol = fileVol('se_flight_heartbeat');
 senseSE.__baseVol   = fileVol('se_ui_kagurabell');
 /* ⚠ 音效一律走這一支（唯一的播放點，鐵律 8）—— 音量在這裡乘進去，
    呼叫端不必記得，日後多一支音效也自動吃到。 */
-const playSfx=a=>{ try{ a.currentTime=0; a.volume=(a.__baseVol!=null?a.__baseVol:1)*volOf('se')*(muted?0:1);
+const playSfx=(a,layer)=>{ try{ a.currentTime=0;
+  a.volume=(a.__baseVol!=null?a.__baseVol:1)*volOf(layer||'se')*(muted?0:1);
   const q=a.play(); if(q) q.catch(()=>{}); }catch(_){} };
 /* ⚠ iOS 只認**手勢當下**呼叫的 play()。心跳是按住滿 1 秒才起播的，那時早就
    離開手勢了 —— 手機上因此完全沒聲音。而殘影又綁在音訊時鐘上，於是連脈動
@@ -3249,6 +3255,141 @@ function drawSenseCI(now){
   ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality='high';
   ctx.drawImage(senseImg,G.left,G.top,G.S,G.S);
   ctx.restore();                                  // save() 已經把平滑設定收在裡面
+}
+
+
+/* ══⚠⚠ 索菈娜「發現了」（ver -1089，Ray：「CI_Sorana_search 生怪時用張 CI，半透明，
+   由大縮小（安雅的搜索動畫同方法），播放 vo_sorana_search 系列，播完脈動動畫
+   快速淡出（同安雅）。輪播不要重覆」）══
+   怪一出現，她的半透明立繪**由大縮小**插進畫面、同時開口；語音播完就**脈動**
+   一下快速淡出。作法沿用安雅的搜索演出（`drawSenseCI`／`senseGhost`）——
+   **半透明、繞錨點縮放、殘影擴散**是同一套語言，只是這一段短得多。
+   ⚠ 與安雅那一段**不同的兩件事**（刻意）：
+     · **不壓暗背景**：安雅那一段是玩家自己按住發起的，暗下來是「進入感應」；
+       這一段是怪出現時插播，把整個視野壓暗會擋住玩家該看的東西。
+     · **收尾由語音長度決定**（`ended`／`currentTime`），不是寫死秒數 ——
+       長度的真相在音檔身上（同 §6.5.5 睡覺音那條，鐵律 7）。拿不到（還沒解碼、
+       被擋）才退回 `SPOT_MAX_MS`。
+   ⚠ **一次只演一個**：連著刷兩隻不疊第二張（疊起來是兩個索菈娜）。
+   ⚠ 與對白／安雅的感應**互斥**：三者共用同一塊畫面，疊在一起就是搶舞台。 */
+/* ══ 取景（ver -1089，Ray 兩次回饋：「不要被裁到」→「圖太小都被裁到了」）══
+   兩句話合起來的意思是：**頭與左右不准切掉，但也不要為了塞進去把她縮成一張小卡**。
+   這兩件事在 1024×1536 的胸像構圖上會打架 —— 可用的框（畫面頂 → 方向計上緣）
+   大約 668×720，比例接近 1:1.08，而她是 1:1.5：
+     · 照**高**塞進去（contain）＝整張看得到，但只有 473 寬，兩側空一大片 →「太小」
+     · 照**寬**塞進去＝夠大，但高度會超出可用框
+   解法：**照寬塞、讓超出的部分落到控制面板底下**。那不是「被裁掉」，是**被前景蓋住**
+   —— 安雅那一張本來就是這樣（`senseGeom` 取 `max(floorY, W)`，畫在 drawPanel 之前，
+   讓面板與舵輪真的蓋在她身上）。同一套語言。
+   ⚠ **錨的是臉**（`fy`）不是圖框：縮放時臉留在同一個螢幕點（`ay`），讀起來是
+     鏡頭拉遠；而且只要 `ay ≥ pad + fy×高`，**頭在任何倍率下都不會被切到**。
+   ⚠ `k0` 不可大於 1：那是「寬度剛好貼齊」的倍率，超過就從左右切出去。
+   ⚠ `k1` 要留得住殘影（`SPOT_GHOST_GROW` 撐開後仍 ≤1），不然脈動那一下會頂出框。 */
+const SPOT_FIT     = { k0:1.00, k1:0.80, fy:0.23, ay:240, pad:10 };
+const SPOT_ALPHA0  = 0.62, SPOT_ALPHA1 = 0.34;                // 半透明，隨縮小再淡一階
+const SPOT_SCALE_MS= 1400;    // 由大縮小走完的時間
+const SPOT_MIN_MS  = 900;     // 至少演這麼久（語音很短時不要一閃而過）
+const SPOT_MAX_MS  = 4200;    // 語音拿不到長度時的保底
+const SPOT_PULSE_MS= 380;     // 脈動（殘影擴散）
+const SPOT_OUT_MS  = 260;     // 快速淡出
+const SPOT_GHOST_GROW = 0.22; // 殘影撐開的幅度（同 SENSE_GHOST_GROW 的語意）
+let spotImg=null, spotAt=0, spotOutAt=0, spotVo=null;
+function spotArt(){
+  if(spotImg) return;
+  spotImg=new Image();
+  spotImg.onerror=()=>{ spotImg=null; };
+  spotImg.src='../resources/CI/CI_Sorana_search.webp';
+}
+/* 兩組語音（ver -1089，Ray：「播放 vo_sorana_search 系列…動畫快速淡出（同安雅），
+   那一瞬間播放 vo_sorana_found 系列」）：
+   · `search` ＝她在找（立繪插進來、由大縮小的那一段）
+   · `found`  ＝找到了（脈動＋快速淡出的**那一瞬間**）
+   ⚠ **輪播不重覆**（Ray 指定）：洗一副牌發完再洗，而且新的一副的第一張不等於
+     剛剛播過的那一張 —— 只有兩支的時候這就是嚴格輪替。
+     單純隨機在兩句的池子裡有一半機率連兩次同一句。
+   ⚠ 實作只有 `voBag` 一支（鐵律 8）：日後補到三、四句也不必再寫一份。 */
+function voBag(names){
+  const list=names.map(n=>{
+    const a=new Audio('../resources/audio/vo/'+n+'.mp3'); a.preload='auto';
+    a.__baseVol=fileVol(n,'vo');          // ⚠ vo 那一軌，不是 se
+    return a;
+  });
+  let bag=[], last=-1;
+  return { pick(){
+    if(!list.length) return null;
+    if(!bag.length){
+      bag=list.map((_,i)=>i);
+      for(let i=bag.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; [bag[i],bag[j]]=[bag[j],bag[i]]; }
+      if(bag.length>1 && bag[bag.length-1]===last)
+        [bag[bag.length-1],bag[0]]=[bag[0],bag[bag.length-1]];
+    }
+    last=bag.pop();
+    return list[last];
+  } };
+}
+const spotSearch=voBag(['vo_sorana_search1','vo_sorana_search2']);
+const spotFound =voBag(['vo_sorana_found1','vo_sorana_found2']);
+function spotFire(){
+  if(spotAt || spotOutAt) return;                 // 一次只演一個
+  if(sayQueue || senseOn || senseFireAt) return;  // 與對白／感應互斥
+  spotArt();
+  spotAt=performance.now();
+  spotVo=spotSearch.pick();
+  if(spotVo && !muted) playSfx(spotVo,'vo');
+}
+/* k=0..1 → 這一刻的方框（boost＝殘影的額外倍率，繞同一個錨點放大）。 */
+function spotGeom(k, boost){
+  const F=SPOT_FIT;
+  const base=(W-F.pad*2)/spotImg.width;                    // 寬度貼齊＝k 為 1 的倍率
+  const sc=base*(F.k0+(F.k1-F.k0)*k)*(boost||1);
+  const w=spotImg.width*sc, h=spotImg.height*sc;
+  /* 臉錨在 `ay`；夾一次保證頭不出框（縮放與殘影都吃得到）。 */
+  const top=Math.max(F.pad, F.ay-F.fy*h);
+  return { left:(W-w)/2, top, w, h };
+}
+/* ⚠ 畫在 3D 內容之上、**drawPanel 之前**（同 drawSenseCI）—— 面板與舵輪要真的
+   蓋在她身上，不是靠裁切避開。 */
+function drawSpotCI(now){
+  if(!spotAt && !spotOutAt) return;
+  if(!spotImg || !spotImg.width){ spotAt=0; spotOutAt=0; return; }
+  let k=1, al=0, ghost=-1;
+  if(spotAt){
+    const t=now-spotAt;
+    k=clamp(t/SPOT_SCALE_MS,0,1);
+    al=(SPOT_ALPHA0+(SPOT_ALPHA1-SPOT_ALPHA0)*k)*clamp(t/220,0,1);   // 插入時的淡入
+    /* 語音播完就收（長度的真相在音檔身上）—— 拿不到就靠 `SPOT_MAX_MS` 保底。 */
+    const d=spotVo && spotVo.duration;
+    const voDone = spotVo ? (spotVo.ended || (d>0 && spotVo.currentTime>=d-0.05)) : true;
+    if(t>=SPOT_MAX_MS || (t>=SPOT_MIN_MS && voDone)){
+      spotOutAt=now; spotAt=0;
+      /* 「找到了」就在**開始淡出的那一瞬間**（Ray 指定）—— 脈動與這一句是同一拍。 */
+      const f=spotFound.pick();
+      if(f && !muted) playSfx(f,'vo');
+    }
+  }
+  if(spotOutAt){
+    const t=now-spotOutAt;
+    if(t>=SPOT_PULSE_MS+SPOT_OUT_MS){ spotOutAt=0; return; }
+    k=1; ghost=clamp(t/SPOT_PULSE_MS,0,1);
+    al=SPOT_ALPHA1*(1-clamp((t-SPOT_PULSE_MS*0.35)/SPOT_OUT_MS,0,1));
+  }
+  if(al<=0.004) return;
+  ctx.save();
+  /* ⚠ 尺寸是連續變化的，做不了預縮圖快取 —— 至少要開高品質平滑，
+     否則就是最近鄰取樣，頭髮整片閃成雜點（同 drawSenseCI）。 */
+  ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality='high';
+  if(ghost>=0 && ghost<1){
+    /* 殘影走 ease-out（前段快）：等速的話前三分之一還貼在本體上，
+       那一段只會讓她變厚，不會讀成「擴散」（同 senseGhost）。 */
+    const e=1-(1-ghost)*(1-ghost);
+    const G2=spotGeom(k, 1+SPOT_GHOST_GROW*e);
+    ctx.globalAlpha=Math.min(1, al*0.85*Math.pow(1-ghost,1.4));
+    ctx.drawImage(spotImg,G2.left,G2.top,G2.w,G2.h);
+  }
+  const G=spotGeom(k);
+  ctx.globalAlpha=al;
+  ctx.drawImage(spotImg,G.left,G.top,G.w,G.h);
+  ctx.restore();
 }
 
 /* 判定：回傳這一次新發現的點（回饋由 senseFire 的演出負責）。 */
@@ -6371,6 +6512,7 @@ function render(now){
      之後 drawPanel 畫的面板與舵輪會蓋住她，不必也不該用裁切去避開。 */
   drawIntroArt(now);   // 羽蛇登場插圖背景（ver -743）：3D 之上、立繪與對白之下
   drawSenseCI(now);
+  drawSpotCI(now);   // 索菈娜「發現了」（ver -1089）：同一層，排在她後面
   drawSturmCI(now);
   drawTalk(now);
   /* 對白中收掉「時間地點」那兩塊 HUD（ver -384）。⚠ 真相來源就是 `sayQueue` ——
@@ -7979,6 +8121,10 @@ function spawnEnemy(opt){
      ⚠ 間隔在 `enemy` 存在期間是**凍著**的（`-=dt` 在 `if(!enemy)` 裡面），
        所以這一行等於「這一隻處理完之後，再等一個完整的間隔」。 */
   enemyTimer=C.gapMin+Math.random()*(C.gapMax-C.gapMin);
+  /* 索菈娜看到了（ver -1089）：怪一出現就插播她的半透明立繪＋一句話。
+     ⚠ 收在**生成的那一支**（鐵律 8）：劇本遭遇、自動刷新、開發用長按三條路
+       都經過這裡，寫在呼叫端一定會漏掉其中一條。 */
+  spotFire();
 }
 
 function updateEnemy(dt,now){
@@ -11757,7 +11903,7 @@ function preloadSfx(){
     bootUI.set(1);
     window.__loadMs=Math.round(performance.now()-t0);
     // 感應的立繪與各角色立繪：開場跑完才在背景抓（圖晚到不會壞，音效已經在上面等過了）
-    setTimeout(()=>{ senseArt();
+    setTimeout(()=>{ senseArt(); spotArt();
                      for(const k in PORTRAIT) portraitArt(k); }, 1200);
     window.__map=MAPW+'×'+MAPH;
     // 進度圈跑到滿再收，不要瞬間閃掉
