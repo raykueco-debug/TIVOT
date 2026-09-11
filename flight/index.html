@@ -5200,7 +5200,10 @@ function drawMap(){
     for(const P of PLACES){
       if(!P.sense || !P.flag) continue;
       const found=flagOn(P.flag);
-      if(!found && starShow<2) continue;
+      /* ⚠ 管理人**一律看得到**（沒發現的畫空心）：他要能在地圖上雙擊把它搬走
+         （ver -1109），而搬東西的工具不該被玩家的進度擋住。玩家照舊：沒發現＝
+         一點痕跡都沒有。 */
+      if(!found && starShow<2 && !ADMIN) continue;
       const q=reliefXY(P.x,P.y);
       const sx=ox+q.x*sc, sy=oy+q.y*sc;
       if(sx<-24||sy<-24||sx>w+24||sy>h+24) continue;
@@ -5467,6 +5470,13 @@ window.settleDragClear=()=>{ try{ localStorage.removeItem(SETTLE_DRAG_KEY); }cat
     const P=PLACES.find(p=>p.name===S.n); if(P){ P.x=o[0]; P.y=o[1]; }
     console.warn('⚠ 拖城覆寫生效：'+S.n+' → ('+o[0]+','+o[1]+')　定稿請寫回 SETTLEMENTS/build_city.py，再 settleDragClear()');
   }
+  /* 只住在 `PLACES` 的地點（遺跡那一族）—— 同一本帳、同一把鑰匙（名字）。
+     ⚠ 同名的城在上面那一圈已經處理過，這裡跳過，不要搬兩次。 */
+  for(const P of PLACES){ const o=ov[P.name]; if(!o) continue;
+    if(SETTLEMENTS.some(S=>S.n===P.name)) continue;
+    P.x=o[0]; P.y=o[1];
+    console.warn('⚠ 拖曳覆寫生效：'+P.name+' → ('+o[0]+','+o[1]+')　定稿請寫回 PLACES，再 settleDragClear()');
+  }
 })();
 /* 程式化傳送：tp(地圖x, 地圖y[, 航向rad])。
    ⚠ 這支存在的理由是「驗收要能到指定座標」。cam 是 top-level const，外部注入的
@@ -5653,7 +5663,12 @@ function mapCoordAt(cssX,cssY){
   const i=R.flat ? (ry*MAPW+rx) : R.pick[ry*R.w+rx];
   return i<0 ? null : [i%MAPW, (i/MAPW)|0];
 }
-/* 拖城：這一點抓得到哪座聚落（半徑取圖標／平面圖較大者，最少 12 地圖像素）。 */
+/* 拖城：這一點抓得到哪座聚落（半徑取圖標／平面圖較大者，最少 12 地圖像素）。
+   ⚠⚠ **遺跡（只住在 `PLACES` 的地點）也抓得到**（ver -1109，Ray：「遺跡也要可以
+     雙擊移動啊」）：包成同樣形狀的把手（`name`/`mx`/`my`），下游那幾支
+     （moveSettlement／dropSettlement／askSettleMove）一行都不必改（鐵律 8）。
+   ⚠ 聚落**優先**：同一點上兩者都抓得到時，先給城 —— 城比較大，遺跡多半在城外。
+   ⚠ 沒被感應到的遺跡照樣抓得到：那是管理人的工具，不該被玩家的進度擋住。 */
 function grabSettlementAt(mx,my){
   if(!ADMIN) return null;
   let best=null, bd=1e9;
@@ -5662,6 +5677,16 @@ function grabSettlementAt(mx,my){
     const d=Math.hypot(mx-s.mx, my-s.my);
     if(d<=r && d<bd){ best=s; bd=d; }
   }
+  if(best) return best;
+  for(const P of PLACES){
+    if(SETTLEMENTS.some(S=>S.n===P.name)) continue;      // 同名的城已經在上面處理
+    /* ⚠ 半徑讀 `base.r`（世界單位）→ 換成地圖像素再放寬 1.4 倍；
+       最小 10 地圖像素，不然縮圖時根本點不到（同聚落的 12）。 */
+    const A2=P.ruin && RUIN_ART[P.ruin];
+    const r=Math.max(10, A2 ? A2.base.r/MAP_SCALE*1.4 : 0);
+    const d=Math.hypot(mx-P.x, my-P.y);
+    if(d<=r && d<bd){ best={ name:P.name, mx:P.x, my:P.y, _place:P }; bd=d; }
+  }
   return best;
 }
 /* 拖城：把聚落搬到 (x,y) —— 地圖顯示層（settleCache 的 mx/my）與資料
@@ -5669,8 +5694,17 @@ function grabSettlementAt(mx,my){
 function moveSettlement(s,x,y){
   s.mx=x; s.my=y;
   const S=SETTLEMENTS.find(S2=>S2.n===s.name); if(S){ S.x=x; S.y=y; }
-  const P=PLACES.find(p=>p.name===s.name);    if(P){ P.x=x; P.y=y; }
+  const P=PLACES.find(p=>p.name===s.name);    if(P) placeMoveTo(P,x,y);
+  if(s._place && s._place!==P) placeMoveTo(s._place,x,y);
   drawMap();
+}
+/* 搬一個地標：**世界座標與地形高度要一起更新**（ver -1109）。
+   ⚠ `wx/wy/h` 是 `loadWorld` 收尾算好放著的（drawPlaces 讀它們）——
+     只改 x/y 的話名牌會留在舊位置，而且沒有任何錯誤訊息。 */
+function placeMoveTo(P,x,y){
+  P.x=x; P.y=y;
+  P.wx=x*MAP_SCALE; P.wy=y*MAP_SCALE;
+  if(MAPW) P.h=HGT[clamp(y|0,0,MAPH-1)*MAPW+clamp(x|0,0,MAPW-1)];
 }
 /* 拖城的覆寫帳本：讀一筆／寫一筆／刪一筆。
    ⚠ 只有這三支碰得到 `SETTLE_DRAG_KEY`（鐵律 7：一份帳一個計算點）——
