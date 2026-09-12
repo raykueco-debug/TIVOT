@@ -64,9 +64,13 @@ def run(check=False):
     if s != s0: dirty.append(('index.html', p, s))
 
     # ② flight/index.html：它是**非模組**的獨立頁面，三支 <script src> 自己帶版本號
+    #   ⚠ 順便同步它 HUD 上的版本字串（ver -1164）：那一行以前是手寫的，
+    #     從 -911 起就沒有人記得動 —— 而它是 Ray 在手機上唯一看得到「跑的是哪一版」
+    #     的地方（鐵律 7）。
     p, s0, s = patch('flight/index.html', [
         (r'src="(\.\./orientation|settlement|talks)\.js(\?v=[^"]*)?"',
          r'src="\1.js?v=<V>"'),
+        (r"const FLIGHT_VER = 'ver [^']*';", "const FLIGHT_VER = 'ver -<V>';"),
     ], v)
     if s != s0: dirty.append(('flight/index.html', p, s))
 

@@ -118,3 +118,5 @@ when	from	to	reason
 20260912-150224	resources/_originals/background/Tomb_Gate_dawn.png	_recycle/resources/_originals/background/Tomb_Gate_dawn.png	墓門改用開/關配對的新構圖（Ray 選 B 案）：舊的開門版與新的關門版構圖對不上，互換會讀成換了個地方 ver -1146
 20260912-150224	resources/_originals/background/Tomb_Gate_dusk.png	_recycle/resources/_originals/background/Tomb_Gate_dusk.png	墓門改用開/關配對的新構圖（Ray 選 B 案）：舊的開門版與新的關門版構圖對不上，互換會讀成換了個地方 ver -1146
 20260912-150224	resources/_originals/background/Tomb_Gate_night.png	_recycle/resources/_originals/background/Tomb_Gate_night.png	墓門改用開/關配對的新構圖（Ray 選 B 案）：舊的開門版與新的關門版構圖對不上，互換會讀成換了個地方 ver -1146
+20260912-171221	flight/geo/castle_wall.webp	_recycle/flight/geo/castle_wall.webp	ver -1164：色階重校為外廓實測的冷灰白／冷灰藍（原 webp 偏暖偏暗）
+20260912-171221	flight/geo/castle_roof.webp	_recycle/flight/geo/castle_roof.webp	ver -1164：色階重校為外廓實測的冷灰白／冷灰藍（原 webp 偏暖偏暗）

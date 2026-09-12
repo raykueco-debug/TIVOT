@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1163"></script>
+<script src="../orientation.js?v=1164"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -491,11 +491,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1163"></script>
+<script src="settlement.js?v=1164"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1163"></script>
+<script src="talks.js?v=1164"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -531,7 +531,11 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
       靠 DET_TILE（以世界座標平鋪 256 單位）補回高頻細節 ——
       世界放大後那層雜訊相對地貌變細，剛好幫忙蓋掉。 */
 /* 版本號（顯示在 HUD）。⚠ 與 config.js 的 VERSION 同步，改版本要一起改。 */
-const FLIGHT_VER = 'ver -911';
+/* ⚠⚠ 這一行由 `tools/bust.py` 與 `config.js` 的 `VERSION` 同步（ver -1164）。
+   以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
+   在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
+   ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
+const FLIGHT_VER = 'ver -1164';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -2164,77 +2168,126 @@ const RUIN_ART = {
     base: { w:250, l:340, n:64, jit:0.035, ox:62 },
     floor:'slab', floorCell:36, floorJoint:3.6,
     tex:'castle_wall', roofTex:'castle_roof',
+    pal:'pale',
     lift:10,
-    /* ══⚠⚠⚠ 照 `Belisar_Exterior.webp` 排（ver -1160；-1163 全面改用圓柱／圓錐）══
-       Ray -1163：「這是 minecraft 嗎？太方了，而且窗都開得比牆高了」。兩件都修：
-       ① **不再用方塊堆圓的東西** —— 塔是 `k:'tower'` 的十邊柱、尖頂是**一塊圓錐**
-          （`rTop` 收到 1.5），不是四層階梯。哥德的辨識度在**細而尖**，
-          而四方柱怎麼疊都是階梯。
-       ② **開口一律包在牆裡** —— 玫瑰窗原本 z 158~198 而門面頂才 184，所以「窗比牆高」。
-          現在每一個 `col:'door'` 的 z 區間都夾在它所屬那面牆的 z 區間內（見下方對照）。
-       另外加了三種**打破平面**的零件（哥德建築本來就有，而且很便宜）：
-         · **簷口**（cornice）：牆頂一道稍寬的薄板 —— 平頂的方塊一加簷口就不像積木
-         · **扶壁**（buttress）：中殿兩側的直條，頂上各一支**小尖塔**（pinnacle）
-         · **飛扶壁**：右翼那三支斜撐，每支頂端也收一個小錐
-       ⚠ 面數是成本：塔 n=10、簷口 n=8、小尖 n=6。 */
+    /* ══⚠⚠⚠ 照 `Belisar_Exterior.webp` 排（-1160 起）；**ver -1164 第三版**══
+       Ray：「還是太方，有沒有什麼方法讓它更接近外廓」。把外廓圖與量體並排量過之後，
+       「方」是**四件事**疊出來的，這一版四件一起修（成因按第一眼的影響排序）：
+
+       ① **頂緣是一條長直線** —— 外廓上找不到一條超過兩個塔寬的水平線。
+          → 引擎加 `crenel`（雉堞），牆頂與塔頂的平台一律撒齒。
+       ② **一整塊，沒有層層退縮** —— 外廓是順著懸崖五、六層階梯狀平台往上疊。
+          → ① 那一節改成**四層退縮的崖階**，每層的前緣各自帶雉堞與角塔。
+       ③ **塔太少太粗** —— 外廓目測 20＋根細長塔柱。
+          → 側塔由 4 支加到 6 支並收細，扶壁由「一道長板」拆成**逐支的柱**，
+            每支頂上一座小尖塔；塔身與錐頂改用 `cap` 自動接（不再各寫一行）。
+       ④ **顏色偏暗又偏黃** —— 外廓石面實測 (180,174,170) 冷灰白，
+          而 `castle_wall` 是 (155,143,126)、暗 15%。
+          → `pal:'pale'`（見 `RUIN_PAL`）＋兩張貼材依實測重校（`RUIN_TEX_VER`）。
+
+       另外 **中殿與左翼換上山牆屋頂**（`k:'gable'`）：哥德建築沒有平屋頂，
+       而平頂正是 ① 的來源之一。
+
+       ⚠⚠ **成本控制**：這一版的零件從 45 個變成約 190 個。撐得住是因為兩件事 ——
+         · `detail:true`／雉堞在投影高度不足 1.1px 時**整個不生成**（同 `RUIN_FAR`
+           「讀不出形狀就不要畫」）；
+         · 細節件標 `tiny`，繪製階段**跳過貼材**（`setTransform` 是這一層最貴的一步）。
+       ⚠ 多邊柱的雉堞要給**小尺寸**（`w:5,gap:5`）：一條邊只有十來個世界單位，
+         用牆的尺寸會被 `el < cw*2` 那道守門整圈跳掉（＝白寫）。
+       ⚠ **不整地**（沒有 `podium`）：腳下本來就是平的，而整地的半徑會咬進崖裡。
+       ⚠ 只 `lift:10`＋基座側壁：打破「地面與地板同高時逐欄深度打平手」（ver -1153）。
+       ⚠ 尺度：沿牆 340、進深 250 個世界單位；中央尖塔的尖端在 **302**
+         （崖頂約 98）—— 遠遠看得到一叢尖塔從崖線上冒出來，那是這座剪影的重點。 */
     parts: [
-      /* ── ① 岩台：兩階（這是平台，方的才對） ── */
-      { k:'stump', x:-46, y:  0, w:168, l:300, h:34 },
-      { k:'stump', x:-20, y:  0, w:118, l:250, h:26, z0:34 },
+      /* ── ① 崖階：四層退縮的平台（前緣逐層後退 111→89→67→45、逐層升高） ──
+         ⚠ `skip:[3]` ＝背面那一長邊不撒齒：它貼著上一層的牆根，撒了看不到還要付錢。 */
+      { k:'stump', x: -6, y:  0, w:234, l:300, h:16, z0: 0,  shrink:0.985 },
+      { k:'stump', x:-14, y:  0, w:206, l:270, h:15, z0:16,  shrink:0.985,
+        crenel:{ w:10, h:8, gap:14, t:8, skip:[3] } },
+      { k:'stump', x:-22, y:  0, w:178, l:240, h:15, z0:31,  shrink:0.985 },
+      { k:'stump', x:-30, y:  0, w:150, l:244, h:14, z0:46,  shrink:0.985,
+        crenel:{ w:9, h:8, gap:13, t:8, skip:[3] } },
 
-      /* ── ② 中殿：牆 60→164，簷口 158→168（稍寬，壓住平頂） ── */
-      { k:'stump', x:-34, y:  0, w:104, l:186, h:104, z0: 60 },
-      { k:'stump', x:-34, y:  0, w:112, l:194, h: 10, z0:158 },
+      /* 崖階的角塔：外廓上每一段牆的轉角都有一支帶錐頂的小塔。 */
+      { k:'tower', x: 86, y:-118, r:8, rTop:7, n:8, h:24, z0:31, detail:true, cap:{ h:18, r:7 } },
+      { k:'tower', x: 86, y: 118, r:8, rTop:7, n:8, h:24, z0:31, detail:true, cap:{ h:18, r:7 } },
+      { k:'tower', x: 86, y: -40, r:7, rTop:6, n:8, h:20, z0:31, detail:true, cap:{ h:15, r:6 } },
+      { k:'tower', x: 86, y:  40, r:7, rTop:6, n:8, h:20, z0:31, detail:true, cap:{ h:15, r:6 } },
+      { k:'tower', x: 41, y: -92, r:8, rTop:7, n:8, h:24, z0:60, detail:true, cap:{ h:18, r:7 } },
+      { k:'tower', x: 41, y:  92, r:8, rTop:7, n:8, h:24, z0:60, detail:true, cap:{ h:18, r:7 } },
 
-      /* ── ③ 西正面：牆 60→178，簷口 172→182 ── */
-      { k:'stump', x: 26, y:  0, w: 34, l:140, h:118, z0: 60 },
-      { k:'stump', x: 26, y:  0, w: 40, l:148, h: 10, z0:172 },
-      /* 玫瑰窗 115→149、大門 60→104 —— 兩個都**包在 60~178 之內** */
-      { k:'stump', x: 45, y:  0, w:  8, l: 38, h: 34, z0:115, col:'door' },
-      { k:'stump', x: 45, y:  0, w:  8, l: 28, h: 44, z0: 60, col:'door' },
+      /* ── ② 中殿：牆 60→154（微收分）、簷口、**山牆屋頂**（屋脊 202，沿 y） ── */
+      { k:'stump', x:-34, y:  0, w:104, l:186, h: 94, z0: 60, shrink:0.97 },
+      { k:'stump', x:-34, y:  0, w:112, l:194, h:  8, z0:154 },
+      { k:'gable', x:-34, y:  0, w:104, l:186, h: 40, z0:162 },
 
-      /* ── ④ 中央大尖塔：柱身（十邊、微收）＋**一塊圓錐** ── */
-      { k:'tower', x:-16, y:  0, r:28, rTop:24, n:12, h: 64, z0:164 },
-      { k:'tower', x:-16, y:  0, r:26, rTop: 2, n:12, h: 74, z0:228 },   // 尖端 302
+      /* ── ③ 西正面：牆 60→178、簷口帶齒、山牆（屋脊沿 x，正對前方） ── */
+      { k:'stump', x: 26, y:  0, w: 34, l:140, h:118, z0: 60, shrink:0.975 },
+      { k:'stump', x: 26, y:  0, w: 40, l:148, h:  9, z0:172,
+        crenel:{ w:8, h:7, gap:11, t:8 } },
+      { k:'gable', x: 26, y:  0, w: 34, l: 48, h: 26, z0:181, axis:'w' },
+      /* 玫瑰窗 115→149、大門 60→104 —— 兩個都**包在 60~178 之內**（-1163 的教訓） */
+      { k:'stump', x: 44, y:  0, w:  6, l: 26, h: 26, z0:120, col:'door' },
+      { k:'stump', x: 44, y:  0, w:  6, l: 20, h: 34, z0: 60, col:'door' },
+      /* ⚠ **尖拱窗試過了，拿掉**（ver -1164）：外廓整片都是細長的窗，但在這個
+         解析度下一道窗只有一兩個像素寬，畫出來是四塊分不出形狀的小黑斑 ——
+         「加細節」在讀不出來的尺度上等於加雜訊。牆面的節奏改由**扶壁**表達
+         （⑦ 那一排立起來的柱），那個在剪影上讀得出來。 */
 
-      /* ── ⑤ 側塔四支：高度刻意不齊；最右那一支**斷了**（沒有錐頂） ── */
-      { k:'tower', x: 16, y:-62, r:15, rTop:13, n:10, h: 92, z0:60 },
-      { k:'tower', x: 16, y:-62, r:15, rTop: 1.5, n:10, h:46, z0:152, mat:'roof' },
-      { k:'tower', x: 16, y: 62, r:15, rTop:13, n:10, h: 78, z0:60 },
-      { k:'tower', x: 16, y: 62, r:15, rTop: 1.5, n:10, h:42, z0:138, mat:'roof' },
-      { k:'tower', x:  4, y:-112, r:13, rTop:11, n:10, h: 68, z0:60 },
-      { k:'tower', x:  4, y:-112, r:13, rTop: 1.5, n:10, h:34, z0:128, mat:'roof' },
-      { k:'tower', x:  4, y: 112, r:13, rTop:12, n:10, h: 54, z0:60 },   // ← 斷塔
+      /* ── ④ 中央大尖塔：柱身（十二邊、微收）＋**女兒牆一圈**＋一塊圓錐（尖端 302） ── */
+      { k:'tower', x:-16, y:  0, r:26, rTop:22, n:12, h:62, z0:166,
+        crenel:{ w:5, h:7, gap:5, t:5 },
+        cap:{ h:74, r:19, rTop:2 } },
 
-      /* ── ⑥ 右翼：圓塔＋錐頂 ── */
-      { k:'tower', x:-18, y: 158, r:25, rTop:23, n:12, h:118, z0: 60 },
-      { k:'tower', x:-18, y: 158, r:27, rTop: 2, n:12, h: 58, z0:178, mat:'roof' },
+      /* ── ⑤ 側塔六支（由 4 支加密並收細）：高度刻意不齊；y=+136 那一支**斷了** ── */
+      { k:'tower', x: 14, y:-48,  r:12, rTop:10, n:10, h:96, z0:60, cap:{ h:44, r:9 } },
+      { k:'tower', x: 14, y: 48,  r:12, rTop:10, n:10, h:88, z0:60, cap:{ h:40, r:9 } },
+      { k:'tower', x:  8, y:-92,  r:11, rTop: 9, n:10, h:80, z0:60, cap:{ h:36, r:8 } },
+      { k:'tower', x:  8, y: 92,  r:11, rTop: 9, n:10, h:72, z0:60, cap:{ h:34, r:8 } },
+      { k:'tower', x:  2, y:-118, r:10, rTop: 8, n:10, h:66, z0:60, cap:{ h:30, r:7 } },
+      { k:'tower', x:  2, y: 118, r:10, rTop: 9, n:10, h:58, z0:60 },              // ← 斷塔
 
-      /* ── ⑦ 扶壁：中殿兩側各三支直條，頂上一支小尖塔 ── */
-      { k:'stump', x:-34, y:-100, w:104, l:12, h:88, z0:60 },
-      { k:'tower', x:-60, y:-100, r:7, rTop:1.2, n:6, h:26, z0:148, mat:'roof' },
-      { k:'tower', x: -8, y:-100, r:7, rTop:1.2, n:6, h:26, z0:148, mat:'roof' },
-      { k:'stump', x:-34, y: 100, w:104, l:12, h:88, z0:60 },
-      { k:'tower', x:-60, y: 100, r:7, rTop:1.2, n:6, h:26, z0:148, mat:'roof' },
-      { k:'tower', x: -8, y: 100, r:7, rTop:1.2, n:6, h:26, z0:148, mat:'roof' },
+      /* ── ⑥ 右翼：自己的岩台＋圓塔（女兒牆一圈）＋錐頂 ── */
+      { k:'stump', x:-24, y:142, w:96, l: 80, h:46, z0:0, shrink:0.96 },
+      { k:'tower', x:-18, y:142, r:21, rTop:19, n:12, h:118, z0:46,
+        crenel:{ w:4, h:7, gap:5, t:5 },
+        cap:{ h:58, r:17, rTop:2 } },
+
+      /* ── ⑦ 扶壁：中殿兩側各四支**獨立的柱**（原本是一道長板），每支頂一座小尖塔 ── */
+      { k:'stump', x:-70, y:-100, w:16, l:14, h:84, z0:60, shrink:0.88 },
+      { k:'tower', x:-70, y:-100, r:6, rTop:1.2, n:6, h:24, z0:144, mat:'roof', detail:true },
+      { k:'stump', x:-48, y:-100, w:16, l:14, h:88, z0:60, shrink:0.88 },
+      { k:'tower', x:-48, y:-100, r:6, rTop:1.2, n:6, h:26, z0:148, mat:'roof', detail:true },
+      { k:'stump', x:-26, y:-100, w:16, l:14, h:88, z0:60, shrink:0.88 },
+      { k:'tower', x:-26, y:-100, r:6, rTop:1.2, n:6, h:26, z0:148, mat:'roof', detail:true },
+      { k:'stump', x: -4, y:-100, w:16, l:14, h:84, z0:60, shrink:0.88 },
+      { k:'tower', x: -4, y:-100, r:6, rTop:1.2, n:6, h:24, z0:144, mat:'roof', detail:true },
+      { k:'stump', x:-70, y: 100, w:16, l:14, h:84, z0:60, shrink:0.88 },
+      { k:'tower', x:-70, y: 100, r:6, rTop:1.2, n:6, h:24, z0:144, mat:'roof', detail:true },
+      { k:'stump', x:-48, y: 100, w:16, l:14, h:88, z0:60, shrink:0.88 },
+      { k:'tower', x:-48, y: 100, r:6, rTop:1.2, n:6, h:26, z0:148, mat:'roof', detail:true },
+      { k:'stump', x:-26, y: 100, w:16, l:14, h:88, z0:60, shrink:0.88 },
+      { k:'tower', x:-26, y: 100, r:6, rTop:1.2, n:6, h:26, z0:148, mat:'roof', detail:true },
+      { k:'stump', x: -4, y: 100, w:16, l:14, h:84, z0:60, shrink:0.88 },
+      { k:'tower', x: -4, y: 100, r:6, rTop:1.2, n:6, h:24, z0:144, mat:'roof', detail:true },
 
       /* ── ⑧ 飛扶壁：右側三支，逐支往外降，每支收一個小錐 ── */
-      { k:'stump', x: 34, y: 122, w:12, l:14, h:70, z0:60 },
-      { k:'tower', x: 34, y: 122, r:6, rTop:1.2, n:6, h:18, z0:130, mat:'roof' },
-      { k:'stump', x: 56, y: 132, w:12, l:14, h:58, z0:52 },
-      { k:'tower', x: 56, y: 132, r:6, rTop:1.2, n:6, h:16, z0:110, mat:'roof' },
-      { k:'stump', x: 78, y: 142, w:12, l:14, h:46, z0:44 },
-      { k:'tower', x: 78, y: 142, r:6, rTop:1.2, n:6, h:14, z0: 90, mat:'roof' },
+      { k:'stump', x: 34, y: 112, w:12, l:14, h:70, z0:60, shrink:0.86 },
+      { k:'tower', x: 34, y: 112, r:6, rTop:1.2, n:6, h:18, z0:130, mat:'roof', detail:true },
+      { k:'stump', x: 56, y: 120, w:12, l:14, h:64, z0:46, shrink:0.86 },
+      { k:'tower', x: 56, y: 120, r:6, rTop:1.2, n:6, h:16, z0:110, mat:'roof', detail:true },
+      { k:'stump', x: 78, y: 128, w:12, l:14, h:59, z0:31, shrink:0.86 },
+      { k:'tower', x: 78, y: 128, r:6, rTop:1.2, n:6, h:14, z0: 90, mat:'roof', detail:true },
 
-      /* ── ⑨ 左翼：矮一階、屋頂沒了；角上一支小塔 ── */
-      { k:'stump', x:-28, y:-152, w:86, l: 74, h: 66, z0:60 },
-      { k:'tower', x:-10, y:-152, r:11, rTop:9, n:10, h:40, z0:126 },
-      { k:'tower', x:-10, y:-152, r:11, rTop:1.5, n:10, h:26, z0:166, mat:'roof' },
+      /* ── ⑨ 左翼：矮一階、**山牆屋頂**；角上一支小塔 ── */
+      { k:'stump', x:-28, y:-142, w:86, l: 74, h: 62, z0: 60, shrink:0.96 },
+      { k:'gable', x:-28, y:-142, w:86, l: 74, h: 26, z0:122, axis:'w' },
+      { k:'tower', x:-10, y:-142, r:11, rTop:9, n:10, h:40, z0:122, cap:{ h:28, r:8 } },
 
       /* ── ⑩ 前景的斷拱廊：三墩＋兩道拱，右端塌了 ── */
-      { k:'stump', x:150, y:-150, w:20, l:24, h:46 },
-      { k:'stump', x:150, y:-104, w:20, l:24, h:46 },
-      { k:'stump', x:150, y:- 58, w:20, l:24, h:42 },
+      { k:'stump', x:150, y:-150, w:20, l:24, h:46, shrink:0.93 },
+      { k:'stump', x:150, y:-104, w:20, l:24, h:46, shrink:0.93 },
+      { k:'stump', x:150, y:- 58, w:20, l:24, h:42, shrink:0.93 },
       { k:'stump', x:150, y:-127, w:14, l:22, h:12, z0:34 },
       { k:'stump', x:150, y:- 81, w:14, l:22, h:12, z0:34 },
       { k:'stump', x:150, y:-127, w: 6, l:18, h:30, z0:0, col:'door' },   // 拱洞 0→30 ＜ 墩 46
@@ -2268,6 +2321,32 @@ const RUIN_COL = { top:'#b0a488', side:'#645d4e', dark:'#443e35',
                    roofSide:'#464D56', roofDark:'#323842',
                    grass:'#3b4d3a', grassTint:'rgba(38,58,40,.34)',
                    sideLit:'#8d8371' };
+/* ══⚠⚠⚠ 逐座遺跡的色票（ver -1164，Ray：「還是太方，有沒有什麼方法讓它更接近外廓」）══
+   「方」有一半其實是**顏色**：量體是暖土黃又偏暗（`RUIN_COL.top` #b0a488），
+   而 `Belisar_Exterior` 的石面實測是**冷灰白 (180,174,170)**、錐頂 (117,120,129)。
+   同一個形狀換上對的色階，第一眼的收斂比再堆二十塊量體還大。
+   ⚠⚠ 做成**逐座的色票**不是直接改 `RUIN_COL`：石製遺跡與伊甸古墓的樣子 Ray
+     已經驗收過，那一組是它們的答案（鐵律 1：內容歸資料，不要為了新的一座去動舊的）。
+   ⚠ 明暗的**跨度也收窄了**（top→dark 由 176→68 改成 206→96）：外廓實測亮面 190、
+     暗面 130（比 0.68），舊色票的 0.39 在淺石上會讀成「髒」而不是「背光」。
+   ⚠ 立面的貼材是壓 0.42 疊在平塗上的，所以暗面要比目標再暗一階（合成後才對）。 */
+const RUIN_PAL = {
+  /* 白石（哥德古堡）：牆冷灰白、瓦冷灰藍 */
+  pale: Object.assign({}, RUIN_COL, {
+    /* ⚠⚠ **頂面比朝光立面暗一階**（與預設那一組相反，ver -1164）：飛行地圖是
+       **從空中俯瞰**，水平面佔的螢幕面積遠大於立面 —— 頂面最亮的話整座會讀成
+       一片白盤子，牆與屋頂的分界反而消失。壓暗之後，亮的是牆，剪影才立得起來。 */
+    top:'#a8a29c', sideLit:'#b4aeaa', side:'#928d8a', dark:'#606060',
+    floor:'#8a8580', floorDark:'#74706c', floorLite:'#9a958f',
+    texTint:'rgba(150,145,141,.34)',
+    shade:'rgba(58,56,58,.34)',
+    roofTop:'#808491', roofLit:'#8a8e9b', roofSide:'#70747f', roofDark:'#565a65',
+    /* ⚠ 淺石上的開口**不要用近黑**（ver -1164）：`#0d0c0f` 配 (180,174,170) 的牆
+       是滿對比，讀起來是「牆上被挖掉一塊」而不是一個看得到深處的門洞。
+       外廓圖上的窗與門是**偏冷的深灰**，不是黑。 */
+    door:'#3b3d45',
+  }),
+};
 /* 光從哪裡來（世界座標的方向向量，指向光源）。**由地形那一支每幀發佈**
    （`drawTerrain` 的 lx/ly，隨日月移動）—— 這裡只讀，不自己算（鐵律 7）。
    ⚠ 初值只是第一幀還沒跑到地形時的保險。 */
@@ -2301,12 +2380,16 @@ const RUIN_TEX={};
 setTimeout(()=>{ for(const k in RUIN_ART){ const A=RUIN_ART[k];
   if(A.tex && A.tex!==true) ruinTexOf(A.tex);
   if(A.roofTex) ruinTexOf(A.roofTex); } }, 0);
+/* ⚠⚠⚠ **同名覆蓋的材質一定要改版號**（§5）：檔名沒變、內容變了，瀏覽器照樣
+   拿舊的那一份，而且畫面上沒有任何錯誤訊息。這張表就是那個版號的唯一真相。
+   ver -1164：`castle_wall`／`castle_roof` 色階重校（暖土黃 → 外廓實測的冷灰白）。 */
+const RUIN_TEX_VER = { castle_wall:2, castle_roof:2 };
 function ruinTexOf(name){
   if(name===true||!name) return { img:ruinTex, pat:null, key:'_ruins' };
   let e=RUIN_TEX[name];
   if(!e){ e=RUIN_TEX[name]={ img:null, pat:null, key:name };
     const im=new Image(); im.onload=()=>{ e.img=im; e.pat=null; };
-    im.src='geo/'+name+'.webp'; }
+    im.src='geo/'+name+'.webp?v='+(RUIN_TEX_VER[name]||1); }
   return e;
 }
 /* 草（ver -1108）：**沿用地形自己的森林材質**（`geo/forest_dark`）——
@@ -7980,6 +8063,8 @@ function drawRuins(scaleH,horizon,sinp,cosp){
        當年在城上踩過一模一樣的坑）。墊高把平手打破。
        ⚠ 墊高**一定要配基座側壁**（下面 ①a），不然它就是浮在地上 8 個單位。
          這就是 Ray 說的「底加厚」——「厚」是讓「高」看起來有道理的那一半。 */
+    /* 這一座用哪一組色階（ver -1164）。沒寫＝預設那一組（石製遺跡／伊甸古墓）。 */
+    const C=(A.pal && RUIN_PAL[A.pal]) || RUIN_COL;
     const lift=A.lift||0;
     const gh=HGT[clamp(P.y|0,0,MAPH-1)*MAPW+clamp(P.x|0,0,MAPW-1)]+lift;   // 整座共用一個底（石地板是平台）
     const ca=Math.cos(A.rot||0), sa=Math.sin(A.rot||0);
@@ -7997,19 +8082,55 @@ function drawRuins(scaleH,horizon,sinp,cosp){
     /* 一塊方塊：中心 (x,y)、尺寸 (w,l)、自轉 rot、高 h → 底面四點＋頂面四點。 */
     /* `z0`＝底面離地多高（ver -1147）。堆疊用的：三角楣是疊在門面頂上的三層，
        門洞是架在最上一階上的。⚠ 沒給就是 0（貼地），既有的呼叫一個字都不必改。 */
-    const box=(x,y,w,l,rot,h,z0)=>{
+    /* `shrink`＝頂面相對底面的比例（ver -1164）。**收分（batter）**：中世紀石牆
+       本來就上窄下寬，給 0.92~0.96 那一點點就足以讓一塊方柱不再讀成積木。
+       ⚠ 有收分時頂面要**重新投影**（不能沿用「底面往上平移 h·dyk/z」那個近似，
+         那條捷徑假設頂底同一個平面位置）—— 代價是多四次 px()，只有用到的塊在付。
+       ⚠ `locTop` ＝頂面的**世界局部座標**：雉堞要沿著頂緣撒，撒在底緣就會凸出牆外。 */
+    const box=(x,y,w,l,rot,h,z0,shrink)=>{
       const c=Math.cos(rot||0), sn=Math.sin(rot||0), hw=w/2, hl=l/2;
       const b0=z0||0;
-      const pts=[[-hw,-hl],[hw,-hl],[hw,hl],[-hw,hl]].map(q=>{
-        const lx=x+(q[0]*c-q[1]*sn), ly=y+(q[0]*sn+q[1]*c);
-        return px(lx,ly,b0);
-      });
+      const L=(qx,qy)=>[ x+(qx*c-qy*sn), y+(qx*sn+qy*c) ];
+      const loc=[[-hw,-hl],[hw,-hl],[hw,hl],[-hw,hl]].map(q=>L(q[0],q[1]));
+      const pts=loc.map(q=>px(q[0],q[1],b0));
       if(pts.some(q=>!q)) return null;
-      const loc=[[-hw,-hl],[hw,-hl],[hw,hl],[-hw,hl]].map(q=>[
-        x+(q[0]*c-q[1]*sn), y+(q[0]*sn+q[1]*c) ]);
-      const top=pts.map(q=>({ x:q.x, y:q.y-(h||0)*dyk/q.z, z:q.z }));
+      let top, locTop;
+      if(shrink && shrink!==1){
+        const hw2=hw*shrink, hl2=hl*shrink;
+        locTop=[[-hw2,-hl2],[hw2,-hl2],[hw2,hl2],[-hw2,hl2]].map(q=>L(q[0],q[1]));
+        top=locTop.map(q=>px(q[0],q[1],b0+(h||0)));
+        if(top.some(q=>!q)) return null;
+      }else{
+        locTop=loc;
+        top=pts.map(q=>({ x:q.x, y:q.y-(h||0)*dyk/q.z, z:q.z }));
+      }
       let z=0; for(const q of pts) z+=q.z;
-      return { base:pts, top, loc, z:z/4, z0:b0, h:h||0 };
+      return { base:pts, top, loc, locTop, z:z/4, z0:b0, h:h||0 };
+    };
+    /* ══⚠⚠⚠ 山牆／雙斜屋頂（ver -1164，Ray：「還是太方」）══
+       「方」最大的一個來源是**每一塊的頂都是平的** —— 而哥德建築沒有平屋頂。
+       這一支把頂面收成一條**屋脊**：頂面的四點兩兩重合，於是
+         · 兩個端面自動成為**三角形山牆**
+         · 兩個側面自動成為**斜屋頂面**
+       ⚠⚠ 刻意讓 `top.length === base.length`（四點，其中兩對重合）——
+         下游的排序、影子、逐面明暗、貼材**一行都不必改**（同 `prism` 的作法）。
+         頂面 fill 退化成一條線，畫不出東西，無害。
+       ⚠ `axis:'w'` ＝屋脊沿 x 走（預設沿 y）。 */
+    const gable=(x,y,w,l,rot,h,z0,axisW)=>{
+      const c=Math.cos(rot||0), sn=Math.sin(rot||0), hw=w/2, hl=l/2;
+      const b0=z0||0;
+      const L=(qx,qy)=>[ x+(qx*c-qy*sn), y+(qx*sn+qy*c) ];
+      const loc=[[-hw,-hl],[hw,-hl],[hw,hl],[-hw,hl]].map(q=>L(q[0],q[1]));
+      const pts=loc.map(q=>px(q[0],q[1],b0));
+      if(pts.some(q=>!q)) return null;
+      /* 屋脊沿 y：四個頂點塌到 x=0；沿 x：塌到 y=0。 */
+      const rl = axisW ? [[-hw,0],[hw,0],[hw,0],[-hw,0]]
+                       : [[0,-hl],[0,-hl],[0,hl],[0,hl]];
+      const locTop=rl.map(q=>L(q[0],q[1]));
+      const top=locTop.map(q=>px(q[0],q[1],b0+(h||0)));
+      if(top.some(q=>!q)) return null;
+      let z=0; for(const q of pts) z+=q.z;
+      return { base:pts, top, loc, locTop, z:z/4, z0:b0, h:h||0, ridge:true };
     };
     /* ══⚠⚠⚠ 多邊柱／錐體（ver -1163，Ray：「這是 minecraft 嗎？太方了」）══
        `box` 只做得出四方柱，所以圓塔與尖頂以前都是用方塊硬堆 —— 那正是「太方」
@@ -8033,7 +8154,7 @@ function drawRuins(scaleH,horizon,sinp,cosp){
       const tps=topL.map(q=>px(q[0],q[1],b0+(h||0)));
       if(tps.some(q=>!q)) return null;
       let z=0; for(const q of pts) z+=q.z;
-      return { base:pts, top:tps, loc:ptsL, z:z/N, z0:b0, h:h||0 };
+      return { base:pts, top:tps, loc:ptsL, locTop:topL, z:z/N, z0:b0, h:h||0 };
     };
     /* 這一座要畫的東西，先全部算出來（順便量螢幕外框）。 */
     const items=[];
@@ -8066,13 +8187,17 @@ function drawRuins(scaleH,horizon,sinp,cosp){
       }
     };
 
-    const take=B=>{ if(!B) return;
+    /* `skipCol`（ver -1164）＝不要算它的逐欄最近深度。給**細節件**用：雉堞與小尖塔
+       都站在某一塊主體量體的頂上，那幾欄的近緣本來就由母塊決定了 —— 再走一次
+       `colSpan` 只是把同一個答案算第二遍，而它是逐欄逐邊的迴圈（最貴的一支）。
+       ⚠ 外框（bbox）**還是要量**：錐頂會高過母塊，不量會被離屏裁掉。 */
+    const take=(B,skipCol)=>{ if(!B) return;
       for(const q of B.base.concat(B.top)){
         if(q.x<x0)x0=q.x; if(q.x>x1)x1=q.x;
         if(q.y<y0)y0=q.y; if(q.y>y1)y1=q.y;
       }
       if(B.z<zmin) zmin=B.z;
-      colSpan(B.base);
+      if(!skipCol) colSpan(B.base);
     };
     /* 圓形地基：逐點投影的多邊形（邊緣帶一點不規則＝風化）。 */
     const shape=ruinShape(A);
@@ -8099,21 +8224,102 @@ function drawRuins(scaleH,horizon,sinp,cosp){
       const b=box(t.x,t.y,t.w,t.l,t.rot,0);
       if(b){ b.lite=t.lite; b.slab=t.slab; tiles.push(b); }
     }
+    /* ══⚠⚠ 細節件的 LOD（ver -1164）══
+       雉堞、小尖塔、角塔這些是**輪廓的調味**：在它們只剩一個像素高的距離，
+       畫出來只是雜訊，而數量又正好是它們最多的時候。與 `RUIN_FAR`
+       「讀不出形狀就不要畫」同一條理由 —— 讀不出來就不要付那個錢。
+       ⚠ 主體量體**不吃這一條**：剪影不可以隨距離改變。 */
+    /* ⚠⚠ 門檻要**量過再訂**（ver -1164）：第一版填 1.1px，而實測一顆 8 單位高的齒
+       在 RUIN_FAR（3600）那一端仍有 1.12px —— 整個視距之內**一顆都剔不掉**，
+       等於白寫。1.8px 起剔，換算約 1750 個世界單位之外；那個距離整座遺跡也才
+       三十幾個像素高，齒本來就讀不出來。 */
+    const DETAIL_PX=1.8;
+    /* ⚠⚠ **判在「建之前」不是「建之後」**（ver -1164 第二版）：第一版是把方塊投影
+       出來再量它幾個像素高 —— 剔除是對的，但**建構的錢已經付掉了**（逐點投影＋
+       逐欄深度＋外框），而細節件的數量正好在遠距最多。實測遠距與近距一樣貴（4.1ms
+       vs 3.9ms），完全沒有省到。
+       現在用**一次乘法**估：螢幕高 ≈ 世界高 × dyk ÷ 這座遺跡的深度。近似值在
+       這個用途上綽綽有餘 —— 它只回答「這東西還讀得出來嗎」。 */
+    const detailK=dyk/Math.max(zc,1);
+    const unreadable=h=>(h||0)*detailK<DETAIL_PX;
+    const push=(b,pt,detail)=>{
+      if(!b) return null;
+      if(pt && pt.col) b.col=C[pt.col]||pt.col;
+      /* ⚠ 這裡**只記種類**，不解析成 pattern（ver -1162）：
+         pattern 要 `RFC`，而那是繪製階段才建的 —— 在這裡取用會是 TDZ。 */
+      if(pt) b.mat=pt.mat;
+      /* ⚠⚠ **開口的頂面是石頭的楣，不是洞**（ver -1164）：`col` 原本套在**六個面**上，
+         於是從空中俯瞰時，門洞與窗洞露出來的是一塊**躺平的黑色矩形** ——
+         那正是飛行地圖最常見的視角。立面照舊是黑的（它是看不到底的開口）。 */
+      if(pt && pt.col==='door') b.colTop=C.top;
+      if(detail) b.tiny=true;         // 小到貼材只是雜訊：繪製階段跳過貼材（也省掉 setTransform）
+      items.push(b); take(b,detail); return b;
+    };
+    /* ══⚠⚠⚠ 雉堞／垛口（ver -1164）══
+       外廓圖上**找不到一條超過兩個塔寬的水平線** —— 每一段牆頂都有齒。
+       而我的量體每一塊都是平頂，那條長直線就是「方」最直接的來源。
+       所以做成**引擎的一支**（鐵律 8）：任何一塊（方柱或多邊柱）寫 `crenel:{…}`
+       就沿它的**頂緣**自動撒一圈齒 —— 日後任何一座遺跡的城牆都吃得到。
+       ⚠ 沿 `locTop` 撒不是 `loc`：有收分的塊，底緣比頂緣大一圈，撒在底緣會凸出牆外。
+       ⚠ 一段牆撒幾顆由**世界長度**決定（`w+gap` 一步），不是固定顆數 ——
+         長牆與短牆的齒才會一樣大。
+       ⚠ `mat` 跟著母塊走（牆是牆、瓦是瓦）。 */
+    const crenel=(B,pt)=>{
+      const K=pt.crenel; if(!K||!B) return;
+      const cw=K.w||9, ch=K.h||8, cg=K.gap||11, ct=K.t||7;
+      if(unreadable(ch)) return;                       // 整圈一起判（見 `unreadable`）
+      const P=B.locTop||B.loc, N=P.length, zTop=(pt.z0||0)+(pt.h||0);
+      for(let k=0;k<N;k++){
+        if(K.skip && K.skip.indexOf(k)>=0) continue;
+        const a=P[k], b=P[(k+1)%N];
+        const ex=b[0]-a[0], ey=b[1]-a[1], el=Math.hypot(ex,ey);
+        if(el<cw*2) continue;
+        const dir=Math.atan2(ey,ex), step=cw+cg;
+        const cnt=Math.max(1,Math.floor((el+cg)/step));
+        const used=cnt*step-cg, s0=(el-used)/2+cw/2;
+        /* ⚠⚠ **往內縮半個厚度**，讓齒整顆坐在牆頂上而不是跨在邊線上。兩個理由：
+           ① 跨在邊上的齒有一半懸空在牆外，近看是浮著的；
+           ② 那一半會落在母塊的**逐欄範圍之外**，而細節件為了省成本不自己算逐欄
+              深度（見 `take` 的 `skipCol`）—— 落在範圍外的欄位等於沒有遮擋，
+              那正是「遺跡穿山」那一族的破口（-1150〜-1153 追過三輪）。
+              縮進來之後，齒的每一欄都被母塊罩住，兩件事一起解決。
+           ⚠ 內法線＝外法線的反向；外法線與立面明暗那一段同一個式子（順時針朝外）。 */
+        const inx=-ey/el*(ct*0.5), iny=ex/el*(ct*0.5);
+        for(let i=0;i<cnt;i++){
+          const t=(s0+i*step)/el;
+          push(box(a[0]+ex*t+inx, a[1]+ey*t+iny, cw, ct, dir, ch, zTop), pt, true);
+        }
+      }
+    };
     for(const pt of A.parts){
       if(pt.k==='tower'){
         /* 圓柱／圓錐（ver -1163）：`r` 底半徑、`rTop` 頂半徑（不寫＝同 r）、
-           `n` 幾邊（不寫＝10）。 */
-        const b=prism(pt.x,pt.y,pt.r,(pt.rTop==null?pt.r:pt.rTop),pt.n||10,pt.rot||0,pt.h,pt.z0);
-        if(b){ if(pt.col) b.col=RUIN_COL[pt.col]||pt.col; b.mat=pt.mat; items.push(b); take(b); }
+           `n` 幾邊（不寫＝10）。
+           `cap`（ver -1164）＝**自動接一個錐頂**：塔身與尖頂以前要寫兩行，
+           兩行的 `x/y/n/z0` 一旦對不上就是「尖頂歪在旁邊」，而那是**算得出來的**
+           （鐵律 7）。`cap:{h, r?, rTop?, mat?}`，不寫 `r` 就接著塔頂的半徑。 */
+        const rT=(pt.rTop==null?pt.r:pt.rTop), n=pt.n||10, rot=pt.rot||0;
+        if(pt.detail && unreadable(pt.h+((pt.cap&&pt.cap.h)||0))) continue;
+        const b=push(prism(pt.x,pt.y,pt.r,rT,n,rot,pt.h,pt.z0),pt,pt.detail);
+        if(b) crenel(b,pt);
+        if(pt.cap){
+          const K=pt.cap, z1=(pt.z0||0)+(pt.h||0);
+          push(prism(pt.x,pt.y,(K.r==null?rT:K.r),(K.rTop==null?1.4:K.rTop),n,rot,K.h,z1),
+               { mat:(K.mat===undefined?'roof':K.mat) }, pt.detail);
+        }
+      }else if(pt.k==='gable'){
+        /* 山牆屋頂（ver -1164）：`axis:'w'` ＝屋脊沿 x。預設走屋頂材質。 */
+        if(pt.detail && unreadable(pt.h)) continue;
+        push(gable(pt.x,pt.y,pt.w||pt.dia,pt.l||pt.dia,pt.rot||0,pt.h,pt.z0,pt.axis==='w'),
+             { mat:(pt.mat===undefined?'roof':pt.mat), col:pt.col }, pt.detail);
       }else if(pt.k==='stump'){
         /* ⚠ `dia` 是**方柱**的邊長（既有用法）；`w`/`l` 給不是方的東西
-           （門面、階梯、散落的巨石）—— 不另開一種 `k`，那只會多一份實作（鐵律 8）。 */
-        const b=box(pt.x,pt.y,pt.w||pt.dia,pt.l||pt.dia,pt.rot||0,pt.h,pt.z0);
-        if(b){ if(pt.col) b.col=RUIN_COL[pt.col]||pt.col;
-               /* ⚠ 這裡**只記種類**，不解析成 pattern（ver -1162）：
-                  pattern 要 `RFC`，而那是繪製階段才建的 —— 在這裡取用會是 TDZ。 */
-               b.mat = pt.mat;
-               items.push(b); take(b); }
+           （門面、階梯、散落的巨石）—— 不另開一種 `k`，那只會多一份實作（鐵律 8）。
+           `shrink`（ver -1164）＝收分：頂面比底面窄的比例。 */
+        if(pt.detail && unreadable(pt.h)) continue;
+        const b=push(box(pt.x,pt.y,pt.w||pt.dia,pt.l||pt.dia,pt.rot||0,pt.h,pt.z0,pt.shrink),
+                     pt,pt.detail);
+        if(b) crenel(b,pt);
       }else{
         /* 倒柱＝幾節柱鼓排成一列，節與節之間留縫（那道縫就是「斷了」）。 */
         const n=pt.seg||2, segL=pt.len/n*0.86, c=Math.cos(pt.rot), sn=Math.sin(pt.rot);
@@ -8178,7 +8384,7 @@ function drawRuins(scaleH,horizon,sinp,cosp){
           RFC.moveTo(a0.x,a0.y); RFC.lineTo(b0.x,b0.y);
           RFC.lineTo(b1.x,b1.y); RFC.lineTo(a1.x,a1.y); RFC.closePath();
         }
-        RFC.fillStyle=RUIN_COL.dark; RFC.fill();
+        RFC.fillStyle=C.dark; RFC.fill();
       }
     }
     /* ① 石地板（先畫，其餘都站在它上面）。有材質就貼材質＋壓色，沒有就平塗。 */
@@ -8196,12 +8402,12 @@ function drawRuins(scaleH,horizon,sinp,cosp){
               (XA.x-O.x)*k, (XA.y-O.y)*k,
               (YA.x-O.x)*k, (YA.y-O.y)*k, O.x, O.y ]));
             RFC.fillStyle=ruinTexPat; RFC.fill();
-            RFC.fillStyle=RUIN_COL.texTint; RFC.fill();      // 壓進整體色調
+            RFC.fillStyle=C.texTint; RFC.fill();      // 壓進整體色調
             textured=true;
           }catch(_){ textured=false; }
         }
       }
-      if(!textured){ RFC.fillStyle=RUIN_COL.floor; RFC.fill(); }
+      if(!textured){ RFC.fillStyle=C.floor; RFC.fill(); }
       /* ⚠ ver -1114：**不描邊**（Ray：「石製遺蹟的物件不要有邊線」）——
          這一層是畫進低解析緩衝再放大的，1px 的描邊放大後會變成一圈粗黑框，
          讀起來像貼紙的裁切線。形狀靠色階分，不靠線。 */
@@ -8213,14 +8419,14 @@ function drawRuins(scaleH,horizon,sinp,cosp){
         if(!t.slab && textured && (i++&1)) continue;
         poly(RFC,t.base);
         RFC.globalAlpha = t.slab ? 0.72 : (textured?0.45:1);
-        RFC.fillStyle = t.lite ? RUIN_COL.floorLite : RUIN_COL.floorDark; RFC.fill();
+        RFC.fillStyle = t.lite ? C.floorLite : C.floorDark; RFC.fill();
         RFC.globalAlpha=1; }
     }
     /* ② 影子：底面往一側偏一點、壓暗。**有沒有影子決定它是「站在地上」還是
        「貼在地上」** —— 少了它，斷柱與地板上的斑駁看起來一模一樣。
        ⚠ 偏移量跟著**投影後的高度**走（近的柱子影子長），不是寫死幾個像素。 */
     items.sort((a,b)=>b.z-a.z);
-    RFC.fillStyle=RUIN_COL.shade;
+    RFC.fillStyle=C.shade;
     for(const B of items){
       /* ⚠ `z0>0` 的不投影：它站在別的方塊頂上，底下不是地 ——
          照投的話影子會浮在半空（三角楣尤其明顯）。那一疊的影子由最底下
@@ -8282,8 +8488,28 @@ function drawRuins(scaleH,horizon,sinp,cosp){
       }catch(_){ return false; }
     };
     for(const B of items){
-      const faces=[];
       const NS=B.base.length;                    // ver -1163：方柱 4、多邊柱 n
+      /* ══⚠⚠ 細節件：**一塊一條路徑、一個平色**（ver -1164）══
+         雉堞與小尖塔在畫面上只有三到八個像素高 —— 那個尺度下逐面的明暗**看不出來**，
+         而它要付的是「每一面各開一條路徑、各 fill 一次、還要先排序」。
+         實測這一層的成本不在像素而在**每塊的固定開銷**（近距與遠距一樣貴），
+         所以省的就是這個：一塊由 5~7 次 beginPath 收成 1 次。
+         ⚠ 同一塊內的面同色，所以**不必排序**（畫家演算法只管塊與塊之間）。
+         ⚠ 用「側面」那一階不是頂面：這些東西是立起來的齒與尖，
+           跟著牆走才讀得出它們是牆的一部分。 */
+      if(B.tiny){
+        const c=(B.mat==='roof')?C.roofSide:C.side;
+        RFC.beginPath();
+        for(let k=0;k<NS;k++){
+          const p0=B.base[k], p1=B.base[(k+1)%NS], t1=B.top[(k+1)%NS], t0=B.top[k];
+          RFC.moveTo(p0.x,p0.y); RFC.lineTo(p1.x,p1.y); RFC.lineTo(t1.x,t1.y); RFC.lineTo(t0.x,t0.y); RFC.closePath();
+        }
+        if(!B.ridge){ RFC.moveTo(B.top[0].x,B.top[0].y);
+          for(let k=1;k<NS;k++) RFC.lineTo(B.top[k].x,B.top[k].y); RFC.closePath(); }
+        RFC.fillStyle=c; RFC.fill();
+        continue;
+      }
+      const faces=[];
       for(let k=0;k<NS;k++){
         const a=B.loc[k], b=B.loc[(k+1)%NS];
         let nx=(b[1]-a[1]), ny=-(b[0]-a[0]);          // 邊的法線（順時針＝朝外）
@@ -8293,9 +8519,9 @@ function drawRuins(scaleH,horizon,sinp,cosp){
         faces.push({ k, z:(B.base[k].z+B.base[(k+1)%NS].z)/2,
                      /* `B.col`＝整塊同一個顏色、不分明暗（現在只有門洞在用）：
                         門洞要讀成**一個洞**，有明暗就變成一塊深色的板子。 */
-                     col: B.col || (d>0.30 ? (rf?RUIN_COL.roofLit :RUIN_COL.sideLit)
-                                  : (d<-0.30 ? (rf?RUIN_COL.roofDark:RUIN_COL.dark)
-                                             : (rf?RUIN_COL.roofSide:RUIN_COL.side))) });
+                     col: B.col || (d>0.30 ? (rf?C.roofLit :C.sideLit)
+                                  : (d<-0.30 ? (rf?C.roofDark:C.dark)
+                                             : (rf?C.roofSide:C.side))) });
       }
       faces.sort((p,q)=>q.z-p.z);
       for(const f of faces){
@@ -8303,19 +8529,24 @@ function drawRuins(scaleH,horizon,sinp,cosp){
         RFC.beginPath();
         RFC.moveTo(p0.x,p0.y); RFC.lineTo(p1.x,p1.y); RFC.lineTo(t1.x,t1.y); RFC.lineTo(t0.x,t0.y); RFC.closePath();
         RFC.fillStyle=f.col; RFC.fill();
-        /* ⚠ 門洞（`B.col`）不貼：它是一個洞，不是一塊石頭。 */
-        const tx = (B.mat==='roof' && roofTex) ? roofTex : wallTex;   // 瓦／牆
-        if(!B.col && tx){
+        /* ⚠ 門洞（`B.col`）不貼：它是一個洞，不是一塊石頭。
+           ⚠ `tiny`（ver -1164）也不貼：雉堞與小尖塔在畫面上只有一兩個像素，
+             貼材在那個尺度是雜訊，而 `setTransform` 是這一層最貴的一步 ——
+             細節件的數量又正好是它最多的時候。 */
+        const tx = (B.col||B.tiny) ? null : ((B.mat==='roof' && roofTex) ? roofTex : wallTex);
+        if(tx){
           const a=B.loc[k], b=B.loc[(k+1)%NS];
           if(texQuad(tx,p0,p1,t0,Math.hypot(b[0]-a[0],b[1]-a[1]),B.h)){
             RFC.globalAlpha=0.42; RFC.fillStyle=tx; RFC.fill(); RFC.globalAlpha=1;
           }
         }
       }
+      /* ⚠ 山牆（`ridge`）沒有頂面 —— 它的「頂」是一條屋脊線，fill 出來是零面積。 */
+      if(B.ridge) continue;
       poly(RFC,B.top);
-      RFC.fillStyle = B.col || (B.mat==='roof' ? RUIN_COL.roofTop : RUIN_COL.top); RFC.fill();
-      { const tx = (B.mat==='roof' && roofTex) ? roofTex : wallTex;
-        if(!B.col && tx){
+      RFC.fillStyle = B.colTop || B.col || (B.mat==='roof' ? C.roofTop : C.top); RFC.fill();
+      { const tx = (B.col||B.tiny) ? null : ((B.mat==='roof' && roofTex) ? roofTex : wallTex);
+        if(tx){
           const a=B.loc[0], b=B.loc[1], d=B.loc[B.loc.length-1];
           if(texQuad(tx,B.top[0],B.top[1],B.top[3],
                      Math.hypot(b[0]-a[0],b[1]-a[1]), Math.hypot(d[0]-a[0],d[1]-a[1]))){
