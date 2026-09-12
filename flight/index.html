@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1165"></script>
+<script src="../orientation.js?v=1166"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -491,11 +491,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1165"></script>
+<script src="settlement.js?v=1166"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1165"></script>
+<script src="talks.js?v=1166"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -535,7 +535,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1165';
+const FLIGHT_VER = 'ver -1166';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -2203,10 +2203,10 @@ const RUIN_ART = {
          ⚠ `skip:[3]` ＝背面那一長邊不撒齒：它貼著上一層的牆根，撒了看不到還要付錢。 */
       { k:'stump', x: -6, y:  0, w:234, l:300, h:16, z0: 0,  shrink:0.985 },
       { k:'stump', x:-14, y:  0, w:206, l:270, h:15, z0:16,  shrink:0.985,
-        crenel:{ w:10, h:8, gap:14, t:8, skip:[3] } },
+        crenel:{ w:10, h:8, gap:14, t:8, skip:[3], broken:0.28 } },
       { k:'stump', x:-22, y:  0, w:178, l:240, h:15, z0:31,  shrink:0.985 },
       { k:'stump', x:-30, y:  0, w:150, l:244, h:14, z0:46,  shrink:0.985,
-        crenel:{ w:9, h:8, gap:13, t:8, skip:[3] } },
+        crenel:{ w:9, h:8, gap:13, t:8, skip:[3], broken:0.22 } },
 
       /* 崖階的角塔：外廓上每一段牆的轉角都有一支帶錐頂的小塔。 */
       { k:'tower', x: 86, y:-118, r:8, rTop:7, n:8, h:24, z0:31, detail:true, cap:{ h:18, r:7 } },
@@ -2219,12 +2219,19 @@ const RUIN_ART = {
       /* ── ② 中殿：牆 60→154（微收分）、簷口、**山牆屋頂**（屋脊 202，沿 y） ── */
       { k:'stump', x:-34, y:  0, w:104, l:186, h: 94, z0: 60, shrink:0.97 },
       { k:'stump', x:-34, y:  0, w:112, l:194, h:  8, z0:154 },
-      { k:'gable', x:-34, y:  0, w:104, l:186, h: 40, z0:162 },
+      /* ⚠ 屋頂**中間塌了一段**（ver -1165，Ray：「城要有一點破敗感」）：
+         不是把屋頂拿掉，是斷成兩截、缺口露出簷口的頂面 —— 那才讀得出「塌過」。
+         缺口 y −31…+9（40 個單位寬，約屋頂長度的兩成）。 */
+      { k:'gable', x:-34, y:-62, w:104, l: 62, h: 40, z0:162 },
+      { k:'gable', x:-34, y: 51, w:104, l: 84, h: 40, z0:162 },
+      /* 塌下來的屋架：落在下面那一階崖階上，兩塊歪的板 */
+      { k:'stump', x: 12, y:-18, w:26, l:34, rot: 0.5, h:9, z0:60 },
+      { k:'stump', x: 20, y: 12, w:22, l:28, rot:-0.7, h:7, z0:60 },
 
       /* ── ③ 西正面：牆 60→178、簷口帶齒、山牆（屋脊沿 x，正對前方） ── */
       { k:'stump', x: 26, y:  0, w: 34, l:140, h:118, z0: 60, shrink:0.975 },
       { k:'stump', x: 26, y:  0, w: 40, l:148, h:  9, z0:172,
-        crenel:{ w:8, h:7, gap:11, t:8 } },
+        crenel:{ w:8, h:7, gap:11, t:8, broken:0.18 } },
       { k:'gable', x: 26, y:  0, w: 34, l: 48, h: 26, z0:181, axis:'w' },
       /* 玫瑰窗 115→149、大門 60→104 —— 兩個都**包在 60~178 之內**（-1163 的教訓） */
       { k:'stump', x: 44, y:  0, w:  6, l: 26, h: 26, z0:120, col:'door' },
@@ -2236,7 +2243,7 @@ const RUIN_ART = {
 
       /* ── ④ 中央大尖塔：柱身（十二邊、微收）＋**女兒牆一圈**＋一塊圓錐（尖端 302） ── */
       { k:'tower', x:-16, y:  0, r:26, rTop:22, n:12, h:62, z0:166,
-        crenel:{ w:5, h:7, gap:5, t:5 },
+        crenel:{ w:5, h:7, gap:5, t:5, broken:0.25 },
         cap:{ h:74, r:19, rTop:2 } },
 
       /* ── ⑤ 側塔六支（由 4 支加密並收細）：高度刻意不齊；y=+136 那一支**斷了** ── */
@@ -2250,7 +2257,7 @@ const RUIN_ART = {
       /* ── ⑥ 右翼：自己的岩台＋圓塔（女兒牆一圈）＋錐頂 ── */
       { k:'stump', x:-24, y:142, w:96, l: 80, h:46, z0:0, shrink:0.96 },
       { k:'tower', x:-18, y:142, r:21, rTop:19, n:12, h:118, z0:46,
-        crenel:{ w:4, h:7, gap:5, t:5 },
+        crenel:{ w:4, h:7, gap:5, t:5, broken:0.34 },
         cap:{ h:58, r:17, rTop:2 } },
 
       /* ── ⑦ 扶壁：中殿兩側各四支**獨立的柱**（原本是一道長板），每支頂一座小尖塔 ── */
@@ -2351,6 +2358,13 @@ const RUIN_PAL = {
    （`drawTerrain` 的 lx/ly，隨日月移動）—— 這裡只讀，不自己算（鐵律 7）。
    ⚠ 初值只是第一幀還沒跑到地形時的保險。 */
 const lightXY = { x:-0.55, y:-0.84 };
+/* 位置算出來的假亂數（ver -1165）：同樣的輸入永遠得到同樣的輸出。
+   ⚠ 逐禎重建的東西**一律不准用 `Math.random()`** —— 每禎換一個答案就是閃動。 */
+function hash01(a,b){
+  let h=(a*374761393+((b*668265263)|0))|0;
+  h=Math.imul(h^(h>>>13),1274126177);
+  return ((h^(h>>>16))>>>0)/4294967296;
+}
 /* ══ 石材（ver -1107，Ray 交件 `flight/geo/flight_ruins`）══
    交件是碎石鋪面（1254²）→ LANCZOS 縮到 256²（與 geo/ 其餘材質同規格）。
    ⚠ 用 `createPattern` ＋ `setTransform` 貼：把材質**釘在地面的座標系**上
@@ -2409,29 +2423,53 @@ const GRASS_TEXEL=1.1;
    ⚠ 取樣點取遺跡外框**外側一圈**（左右與下方）—— 上方可能是天空。
    ⚠ 取到的是已經帶霧的顏色，所以遠處的草自動跟著霧化，不必另外做。 */
 let grassCol='#3b4d3a', grassAt=0;
-function grassSample(x0,y0,x1,y1){
+/* ══⚠⚠ 畫面取樣：外框外側一圈的平均色（ver -1165 由 `grassSample` 抽出來）══
+   那是**唯一**把光照、分級、霧全部算進去的地方 —— 自己照著地形的式子再算一次
+   必然走鐘（鐵律 7），而且那幾個係數還隨日月與距離變。
+   ⚠ `getImageData` 會同步 GPU，所以每 0.4 秒取一次就好並快取。
+   ⚠ 取外框**外側**（左右與下方）—— 上方可能是天空。
+   現在有兩個用戶：草的底色（再壓暗壓綠一階）、遺跡的環境光（見 drawRuins 收尾）。 */
+let smpRGB=null, smpAt=0;
+function screenSample(x0,y0,x1,y1,inside){
   const now=performance.now();
-  if(now-grassAt<400) return grassCol;
-  grassAt=now;
+  if(smpRGB && now-smpAt<400) return smpRGB;
+  smpAt=now;
   const dpr=ctx.canvas.width/W;
   const pad=8;
-  const pts=[[x0-pad,(y0+y1)/2],[x1+pad,(y0+y1)/2],
-             [(x0+x1)/2,y1+pad],[x0-pad,y1+pad],[x1+pad,y1+pad]];
+  const pts = inside
+    /* `inside`＝在框**內**取樣。給遺跡的環境光用：這一支跑在遺跡貼回畫面**之前**，
+       所以框內此刻還是純地形 —— 那正是它坐落的環境。 */
+    ? [[(x0+x1)/2,(y0+y1)/2],[x0+(x1-x0)*0.25,(y0+y1)/2],[x0+(x1-x0)*0.75,(y0+y1)/2],
+       [(x0+x1)/2,y0+(y1-y0)*0.3],[(x0+x1)/2,y0+(y1-y0)*0.7]]
+    : [[x0-pad,(y0+y1)/2],[x1+pad,(y0+y1)/2],
+       [(x0+x1)/2,y1+pad],[x0-pad,y1+pad],[x1+pad,y1+pad]];
+  /* ⚠⚠⚠ **夾進「天空／地形」那一格，不要落到畫面下半**（ver -1165）。
+     出界就跳過的舊寫法有一個很難查的破口：遺跡的外框可以比畫面還大
+     （貝利薩爾連同崖階與斷拱廊是 645×1108 螢幕像素），於是左右兩點出界被跳掉、
+     下方三點落進**舵輪那一層** —— 那是一張靜態圖，**日夜都一樣**。
+     症狀是「環境光完全不隨時段變」，而且沒有任何錯誤訊息（實測踩到）。
+     ⚠ 上界取地平線之下：取到天空會把地面的東西照亮，方向正好相反。 */
+  const yHi=(PROJ && PROJ.ok) ? PROJ.horizon*(VIEWH/BH)+4 : 4;
+  const cx=v=>Math.min(ctx.canvas.width-1, Math.max(0, Math.round(v*dpr)));
+  const cy=v=>Math.min(Math.round((VIEWH-2)*dpr), Math.max(Math.round(yHi*dpr), Math.round(v*dpr)));
   let r=0,g=0,b=0,n=0;
   for(const q of pts){
-    const px2=Math.round(q[0]*dpr), py2=Math.round(q[1]*dpr);
-    if(px2<0||py2<0||px2>=ctx.canvas.width||py2>=ctx.canvas.height) continue;
     try{
-      const d=ctx.getImageData(px2,py2,1,1).data;
+      const d=ctx.getImageData(cx(q[0]),cy(q[1]),1,1).data;
       if(d[3]<8) continue;
       r+=d[0]; g+=d[1]; b+=d[2]; n++;
     }catch(_){ }
   }
-  if(!n) return grassCol;
+  if(!n) return (smpRGB || [69,90,68]);
+  smpRGB=[r/n, g/n, b/n];
+  return smpRGB;
+}
+function grassSample(x0,y0,x1,y1){
+  const S=screenSample(x0,y0,x1,y1);
   /* 草比旁邊的地表**再暗一點、再綠一點**（石縫邊的草長得比較密），
      不然它與地形一模一樣，讀起來就是「石板直接躺在地上」少了一圈收邊。 */
   const k=0.86;
-  grassCol='rgb('+Math.round(r/n*k*0.94)+','+Math.round(g/n*k*1.06)+','+Math.round(b/n*k*0.94)+')';
+  grassCol='rgb('+Math.round(S[0]*k*0.94)+','+Math.round(S[1]*k*1.06)+','+Math.round(S[2]*k*0.94)+')';
   return grassCol;
 }
 /* 一個材質像素等於幾個世界單位。⚠ 這個數字決定**一塊石板在畫面上多大**：
@@ -8037,6 +8075,16 @@ function drawCitySmoke(S,scaleH,horizon,sinp,cosp,now){
    ⚠ 畫家演算法：底板 → 由遠而近的方塊。方塊的牆累積成**一條路徑一次 fill**
      （同量體層）：顏色一樣，重疊不影響外觀，省下幾十次 fill。 */
 let ruinFB=null, RFC=null;
+/* 環境光的三個旋鈕（ver -1165）。`AMB`＝白天也吃這麼多（「多吃一點環境光」）；
+   `AMB_NIGHT`＝夜裡**額外**吃的份量（實測把夜裡的亮度比由 1.34 拉回 1.16）；
+   `EASE`＝逐禎往新取樣逼近的比例（取樣是 0.4 秒一次的，不平滑會跳階）。 */
+const RUIN_AMB=0.08, RUIN_AMB_NIGHT=0.20, RUIN_AMB_EASE=0.08;
+/* ⚠⚠ 這兩個數字是**解出來的**，不是憑感覺（ver -1165）。量「畫面亮部的九十百分位」，
+   分別在 a=0 與 a=0.16／0.66 兩個點上量，反推斜率，再解到目標比值：
+     白天 遺跡／地形 ≈ 1.10（Ray 驗收過的樣子，只再往環境靠一點點）
+     夜裡 遺跡／地形 ≈ 1.01（原本 1.21~1.34 —— 那就是「晚上太亮」）
+   ⚠ 目標不是「夜裡與地形一樣暗」：石頭本來就比林地淺，壓到比地形還暗反而是另一種錯。 */
+let ruinAmb=null;
 let RZMIN=null;                 // 遺跡的逐欄最近深度（見 drawRuins 的 colSpan）
 function drawRuins(scaleH,horizon,sinp,cosp){
   if(!MAPW) return;
@@ -8274,6 +8322,11 @@ function drawRuins(scaleH,horizon,sinp,cosp){
     const crenel=(B,pt)=>{
       const K=pt.crenel; if(!K||!B) return;
       const cw=K.w||9, ch=K.h||8, cg=K.gap||11, ct=K.t||7;
+      /* `broken`（ver -1165，Ray：「城要有一點破敗感」）＝缺齒的比例。
+         ⚠⚠ **一定要用位置算出來的假亂數，不可以用 `Math.random()`** ——
+           這一層每一禎重算一次，真亂數會讓齒每禎換一批，那就是閃動
+           （這一版剛花力氣修掉的東西，不要自己再造一個）。 */
+      const brk=K.broken||0;
       if(unreadable(ch)) return;                       // 整圈一起判（見 `unreadable`）
       const P=B.locTop||B.loc, N=P.length, zTop=(pt.z0||0)+(pt.h||0);
       for(let k=0;k<N;k++){
@@ -8293,6 +8346,7 @@ function drawRuins(scaleH,horizon,sinp,cosp){
            ⚠ 內法線＝外法線的反向；外法線與立面明暗那一段同一個式子（順時針朝外）。 */
         const inx=-ey/el*(ct*0.5), iny=ex/el*(ct*0.5);
         for(let i=0;i<cnt;i++){
+          if(brk>0 && hash01(k*257+i, zTop)<brk) continue;      // 這一顆崩掉了
           const t=(s0+i*step)/el;
           push(box(a[0]+ex*t+inx, a[1]+ey*t+iny, cw, ct, dir, ch, zTop), pt, true);
         }
@@ -8591,7 +8645,32 @@ function drawRuins(scaleH,horizon,sinp,cosp){
           }
         } }
     }
-    /* ④ 貼回主畫面：逐欄遮擋（山擋得住它）＋遠距淡出。 */
+    /* ══⚠⚠⚠ ④ 環境光（ver -1165，Ray：「3d 模型都多吃一點環境光，晚上不該那麼亮」）══
+       量體的顏色本來是**常數**（`RUIN_COL`／`RUIN_PAL`）—— 地形會隨日月變暗變色，
+       它不會。實測（白石古堡，取畫面亮部的九十百分位）：
+         白天 遺跡 191／地形 165（比 1.16）　　夜裡 遺跡 165／地形 123（比 **1.34**）
+       —— 白天的關係 Ray 已經驗收過，夜裡那 1.34 就是「晚上太亮」。
+
+       作法：**整張離屏往「畫面上旁邊那塊地形的顏色」靠**（`screenSample`）。
+       用取樣不用公式：那一個顏色已經把光照、分級、**霧**、時段全部算進去了，
+       自己再算一次必然走鐘（鐵律 7，同草的底色）。於是這一支同時做完兩件事 ——
+       「多吃環境光」（白天也吃 16%）與「晚上不該那麼亮」（夜裡吃到 66%）。
+       ⚠ `source-atop` ＝只蓋在**已經畫上去的像素**上（拿量體自己的 alpha 當遮罩）——
+         同 §6.5 立繪 `buildDim` 那一招。用 `multiply` 會把透明區也填滿。
+       ⚠⚠ 取樣是 0.4 秒一次的，而夜裡它佔到 66% 的權重 —— **直接用會每 0.4 秒跳一次**
+         （那正是這一版剛修掉的那種閃動）。所以逐禎往新值**指數逼近**，跳階就看不見了。
+       ⚠ 夜的份量走 `nightK`，與敵人立繪、船同一盞燈（`drawEnemy3D` 的同一條式子）。 */
+    { const sc=screenSample(x0,y0,x1,y1,true);
+      if(!ruinAmb) ruinAmb=sc.slice();
+      else for(let q=0;q<3;q++) ruinAmb[q]+=(sc[q]-ruinAmb[q])*RUIN_AMB_EASE;
+      const SK=sky(), nightK=clamp(1-SK.day*1.2,0,1);
+      RFC.setTransform(1,0,0,1,0,0);
+      RFC.globalCompositeOperation='source-atop';
+      RFC.globalAlpha=RUIN_AMB+RUIN_AMB_NIGHT*nightK;
+      RFC.fillStyle='rgb('+(ruinAmb[0]|0)+','+(ruinAmb[1]|0)+','+(ruinAmb[2]|0)+')';
+      RFC.fillRect(0,0,bwp,bhp);
+      RFC.globalAlpha=1; RFC.globalCompositeOperation='source-over'; }
+    /* ⑤ 貼回主畫面：逐欄遮擋（山擋得住它）＋遠距淡出。 */
     ctx.save();
     /* ⚠ 逐欄裁（見上面 colMin）—— 不是拿 `zmin` 一個深度裁整座。
        ⚠ 只裁遺跡真的畫得到的那幾欄（同 `clipByTerrainDepth` 的 c0/c1：
