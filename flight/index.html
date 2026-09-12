@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1194"></script>
+<script src="../orientation.js?v=1195"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -500,11 +500,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1194"></script>
+<script src="settlement.js?v=1195"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1194"></script>
+<script src="talks.js?v=1195"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -544,7 +544,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1194';
+const FLIGHT_VER = 'ver -1195';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -895,7 +895,7 @@ const SETTLEMENTS = [
 /* ver -1179：東方泊地挖掉城緣綠地（-1178 是換第二版插畫）——兩次都是（`Eastport_topdown.png` 同名覆蓋），
    `city/eastport_*` 那一族跟著重算 —— 不動這個數字的話瀏覽器照樣拿舊的那一份，
    而症狀只是「城看起來沒變」，查不出原因。 */
-const CITY_V='?v=1194';   // ver -1194：ravnsdal_* 同名重跑（-1193 那一版 Ray 已經載過）
+const CITY_V='?v=1195';   // ver -1194：ravnsdal_* 同名重跑（-1193 那一版 Ray 已經載過）
 /* ══⚠⚠ 量體的貼材（ver -1117，Ray 交件 `geo/flight_villagewall`／`flight_rooftile`）══
    牆本來是一塊平色（`wallCol`），所以房子讀起來是「立起來的色塊」而不是建築。
    ⚠⚠ **逐城開關**（`wallTex`／`roofTex`）不是全域：貼材的牆要**逐面** pattern fill，
@@ -1279,6 +1279,39 @@ function prefetchCityArt(){
     if(!s.plan || cityArtWanted[s.plan]) continue;
     const dx=s.mx*MAP_SCALE-cam.x, dy=s.my*MAP_SCALE-cam.y;
     if(dx*dx+dy*dy<R2) ensureCityArt(s);
+  }
+  releaseFarCityArt();
+}
+
+/* ══⚠⚠ 飛遠了要把全解析的取樣金字塔還回去（ver -1195）════════════════
+   `ensureCityArt` 只進不出（`cityArtWanted` 插了就不拔），所以飛過整片大陸
+   之後**每一座城的全解析金字塔都還抱在記憶體裡**。實測飛完八座：
+   金字塔 18.7MB ＋ 解碼後的 <img> 13.9MB ＝ **32MB，而且只會再往上加**
+   （拉芬 7.4MB、東泊 5.3MB —— 新的城插畫越來越大張）。
+   手機吃不下就開始換頁與重解碼，那是「發燙」的另一半。
+   ⚠ 放掉的是**全解析那一份**，開機建的 192px 縮圖金字塔要補回去 ——
+     §6.7.5 那條「永遠有得取樣、不存在空窗」不能破：少了它，飛回來的路上
+     那座城會有幾百毫秒完全不畫。
+   ⚠ `CITY_PYR[key]` 要**先刪掉**再重建：`buildCityPyramid` 有一道
+     「全解析已經在了，縮圖不要蓋回去」的守門，不刪就等於什麼都沒放掉。
+   ⚠ 釋放半徑要**大於**預取半徑（1.5 倍），不然會在邊界上一載一放地抖 ——
+     那比不放還糟（每次重載都要重新解碼＋重建金字塔）。
+   ⚠ 量體（`cityMass`／`cityMassArt`）不動：那是 atlas，小得多，而且它自己
+     有距離門檻，留著不花每禎的錢。 */
+const RELEASE_R = PREFETCH_R * 1.5;
+function releaseFarCityArt(){
+  if(!window.Settlement || !MAPW) return;
+  const R2=RELEASE_R*RELEASE_R;
+  for(const s of buildSettlements()){
+    const key=s.plan;
+    if(!key || !cityArtWanted[key]) continue;
+    const dx=s.mx*MAP_SCALE-cam.x, dy=s.my*MAP_SCALE-cam.y;
+    if(dx*dx+dy*dy<R2) continue;
+    delete cityArtWanted[key];
+    delete cityPlanArt[key];
+    delete CITY_PYR[key];                       // ⚠ 先刪，否則下一行被守門擋掉
+    const lo=cityPlanLo[key];
+    if(lo) { try{ buildCityPyramid(key, lo, false); }catch(_){} }
   }
 }
 
@@ -5385,6 +5418,29 @@ const QUALITY = [
    要替低配機省，該動的是 blk（小塊先不畫，是漸進的）與 dpr/bwf ——
    把整層一次抹掉是視覺懸崖，不是降級。 */
 const MASS_ON_PX = 27;
+/* ══⚠⚠⚠ 門檻的真正尺標是「**一塊**街廓有多大」，不是「整座城有多大」
+   （ver -1195，Ray：「1194 飛行畫面大掉禎，手機馬上發燙」）════════════
+   實測（東方泊地，桌機 q0~q4）：量體層吃 10.7ms，而且**自適應畫質一毫秒都
+   降不下來**（地形 18.2→10.7、量體 10.7→10.6）。手機一路掉到 q4 之後它就佔
+   整禎的一半，**再也沒有路可以退** —— 那就是掉禎與發燙的來源。
+
+   成本的分布（東方泊地，340 塊）：
+     城寬 355px→3.5ms（太近，已在淡出）　158px→10.9ms　**62px→11.3ms（峰值）**
+     39px→8.2ms　27px→2.7ms　22px→0
+   峰值落在城寬 62px ＝ 每塊只有 **3.4 緩衝像素** —— 截圖上那座城是天邊一小撮
+   色塊，立體感一點都讀不出來，卻要花 11.3ms 逐塊投影＋逐塊一次屋頂仿射。
+
+   ⚠⚠ **為什麼舊的 27 不夠**：那是「整座城的寬度」，而成本是**逐塊**的。
+     聖王廳 24 塊，城寬 27px 時每塊 5.5px（讀得出來、也只有 24 次迴圈）；
+     東方泊地 340 塊，同樣 27px 每塊只有 1.5px（讀不出來、卻是 14 倍的工）。
+     **同一個數字對這兩座城的意思完全不同。**
+   ⇒ 改成「一塊街廓至少要有 `MASS_BLK_PX` 個緩衝像素」。塊數少的城行為幾乎
+     不變（仍被 27 這個下限綁著），塊數多的城自動晚一點才長出來 ——
+     而那正好就是貴的那幾座。
+   ⚠ 它**仍然是固定值，不隨自適應畫質變**（-285 那一條沒有被破）：
+     換檔不會改變塊數，所以門檻不會跳，也就不會重演「一換檔整層抹掉」。
+   ⚠ 淡入淡出與遲滯照舊（400ms ＋ MASS_OFF），所以不是硬切、也不會在邊界抖。 */
+const MASS_BLK_PX = 6;
 /* 距離遲滯：長出來之後要縮到門檻的 MASS_OFF 倍才收回去。門檻不再跳動之後，
    它只剩「別在邊界上抖」這一個用途。 */
 const MASS_OFF = 0.6;
@@ -12754,7 +12810,11 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
            物件上，逐城各自記各自的。 */
       const mdx=o.s.mx*MAP_SCALE-cam.x, mdy=o.s.my*MAP_SCALE-cam.y;
       const massW=o.s.planW*W/(2*Math.max(60,Math.hypot(mdx,mdy)))*pkRaw;
-      const massT=MASS_ON_PX;
+      /* 門檻：整座城至少 MASS_ON_PX 寬（下限），而且**一塊街廓**至少
+         MASS_BLK_PX 寬。塊在螢幕上的邊長 ≈ 城寬 ÷ √塊數（街廓大致鋪滿方形的
+         城區）—— 這是估計不是精算，但它抓的正是「塊小到讀不出來」那件事。
+         ⚠ 量體還沒載到（MS 是 null）時退回舊行為：那時本來也畫不出東西。 */
+      const massT=Math.max(MASS_ON_PX, MS ? MASS_BLK_PX*Math.sqrt(MS.n) : 0);
       /* ⚠⚠ **太近也要收掉**（ver -444，Ray：「經過、離開畫面時底圖被拉伸」）。
          量體是一根根稜柱，牆的螢幕高度是 `牆高 × dyk ÷ z` —— z 一小就爆炸：
          實測飛到城的上空時，最近那幾塊的牆各自是**一整片蓋滿畫面的暗色板**，
