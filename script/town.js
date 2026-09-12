@@ -4068,10 +4068,15 @@ export const TOWNS = {
       starroom:  { bg:'Belisar_Orrery', name:'貝利薩爾遺址　星象室', noTime:true, exits:{ right:'guardhall' } },
       guardhall: { bg:'Belisar_ArmourGallery', name:'貝利薩爾遺址　甲冑廊', noTime:true, exits:{ up:'dragstair', left:'starroom', right:'greathall', down:'mirrorpool' } },
       greathall: { bg:'Belisar_GreatHall', name:'貝利薩爾遺址　中央大廳', noTime:true, exits:{ left:'guardhall', right:'lamphall', down:'pillars' } },
-      lamphall:  { bg:'Belisar_ChandelierHall', name:'貝利薩爾遺址　枝燈長廊', noTime:true, exits:{ left:'greathall', right:'ossuary', down:'courtyard' } },
+      lamphall:  { bg:'Belisar_ChandelierHall', name:'貝利薩爾遺址　枝燈長廊', noTime:true, exits:{ up:'courtyard', left:'greathall', right:'ossuary' } },
       ossuary:   { bg:'Belisar_Ossuary', name:'貝利薩爾遺址　納骨堂', noTime:true, exits:{ left:'lamphall' } },
       mirrorpool:{ bg:'Belisar_StillPool', name:'貝利薩爾遺址　靜水池', noTime:true, exits:{ up:'guardhall', down:'stairwell' } },
-      courtyard: { bg:'Belisar_SunkenCourt', name:'貝利薩爾遺址　下沉中庭', noWild:true, rest:true, exits:{ up:'lamphall' } },
+      /* ⚠ 枝燈長廊↔下沉中庭是 **`up`／`down`**（ver -1159，Ray：「枝燈長廊往下沉中庭
+         應該往上吧」）—— 與佈局圖上的相對位置相反（圖上中庭畫在長廊**下面**）。
+         ⚠⚠ **所以小地圖的版面要跟著改**：`tools/map_layout.py` 的 belisar 版面
+           （還沒建）要把 `courtyard` 畫在 `lamphall` **上方**，不然那支工具的自動
+           驗證會報錯，而且小地圖會與畫面上的箭頭矛盾（憲法 ver -907／-909）。 */
+      courtyard: { bg:'Belisar_SunkenCourt', name:'貝利薩爾遺址　下沉中庭', noWild:true, rest:true, exits:{ down:'lamphall' } },
       rooffall:  { bg:'Belisar_RoofFall', name:'貝利薩爾遺址　崩頂坡', noWild:true, exits:{ right:'muralwalk' } },
       muralwalk: { bg:'Belisar_MuralGallery', name:'貝利薩爾遺址　壁畫長廊', noTime:true, exits:{ left:'rooffall', right:'stairwell', down:'forge' } },
       stairwell: { bg:'Belisar_SpiralWell', name:'貝利薩爾遺址　旋梯井', noTime:true, noWild:true, exits:{ up:'mirrorpool', left:'muralwalk', down:'incense' } },
