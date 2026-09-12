@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1171"></script>
+<script src="../orientation.js?v=1172"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -500,11 +500,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1171"></script>
+<script src="settlement.js?v=1172"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1171"></script>
+<script src="talks.js?v=1172"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -544,7 +544,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1171';
+const FLIGHT_VER = 'ver -1172';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -5439,7 +5439,15 @@ stage.addEventListener('pointerdown',e=>{
        —— 輕點畫面任一處仍然收得掉提示（`makeSpotlight` 的 `onSkip`，掛在
        window 的**捕獲**階段，所以這裡 return 掉也照樣收得到）。
        擋掉的是**別的**操作，不是這一段的出口。 */
-  if(s9Tutor){
+  /* ⚠⚠ 升空／降落的過場期間也不給碰船（ver -1172，Ray：「期間玩家不可操作船體」）
+     —— 主迴圈那時早退、`update()` 不跑，所以船本來就不會動；但手勢照樣會起，
+     舵量的顯示會跟著跑，放手那一下還會插釘子。 */
+  if(takeoffPlaying) return;
+  /* ⚠⚠⚠ 守門是 **`s9On`（整段）**不是 `s9Tutor`（只有聚光燈亮著時）——
+     ver -1172 放寬（Ray：「不可操作」）。中間那一段「劇情推的加速」
+     （`s9Boost`→`s9RideWait`）沒有對白也沒有聚光燈，舊版在那裡是**完全自由**的。
+     ⚠ 對白照樣點得動：`sayAdvance` 排在這一行**之前**。 */
+  if(s9On){
     const only = (s9Tutor==='sturm' && sturmHit(e.clientX,e.clientY))
               || (s9Tutor==='sense' && onShipAt(e.clientX,e.clientY));
     if(!only) return;
@@ -10716,17 +10724,23 @@ function s9RideWait(done){
 let s9GateSp=null, s9GateCb=null;
 function s9Gate(k, rectFn, html, opts, done){
   s9Tutor=k; s9GateCb=done;
-  /* 這一拍不給別的操作（ver -1170）。⚠ 開關**只有這一對**（`s9Gate` 開、
-     `s9GateHit` 關）—— 誰插的誰拔（鐵律 9）。 */
-  try{ document.body.classList.add('tutor-lock'); }catch(_){}
-  s9GateSp=makeSpotlight(rectFn, html,
-    Object.assign({ onSkip:()=>s9GateHit(k) }, opts||{}));
+  /* ══⚠⚠⚠ **這是閘門，不是提示 —— 點畫面不放行**（ver -1172，Ray：「現在感知教學
+     只要點一下畫面對話就會自動推進到『在那裡』，這是錯的，玩家要依指示長按船身，
+     完成探索才會跑『在那裡！』的劇情」）══
+     `makeSpotlight` 的 `onSkip`（輕點任一處收掉）是給**提示**用的（整備教學那種：
+     §6.5.6「不能把玩家鎖在教學裡」）。Stage9 這兩個是**閘門** —— 它們要的就是
+     那一個動作，帶過去等於把教學跳掉，而且下一段戲（「在那裡！」）的前提是
+     **探索真的跑過一次**。同 §6.5.7「教學的閘門不吃空白」。
+     ⚠ 所以這裡**不傳 `onSkip`**。`makeSpotlight` 兩個放行點都寫了
+       `if(opts.onSkip)`，不傳就是不放行。
+     ⚠ 卡不住：要教的動作在教學中一定做得到（`featureOn` 看 `s9Tutor` 放行），
+       而且閘門完成的路徑是既有的（加速＝長按方向計、感應＝掃描演完）。 */
+  s9GateSp=makeSpotlight(rectFn, html, opts||{});
 }
 /* 完成（做到了／點提示放行）：解鎖那支旗**在這裡插**（誰插的答得出來，鐵律 9）。 */
 function s9GateHit(k){
   if(s9Tutor!==k) return;
   s9Tutor=null;
-  try{ document.body.classList.remove('tutor-lock'); }catch(_){}
   if(s9GateSp){ s9GateSp.off(); s9GateSp=null; }
   addFlag(FEATURE_FLAG[k]);
   const f=s9GateCb; s9GateCb=null;
@@ -10737,7 +10751,9 @@ function s9GateHit(k){
 function s9FlightMaybe(){
   if(sayQueue || mapOpen) return false;
   if(!flagOn(S9_NEED) || flagOn(S9_FLAG)) return false;
-  s9On=true;
+  /* ⚠ `tutor-lock` 的擁有者是 **`s9On`**（ver -1172 由 `s9Gate` 移過來）：
+     HUD 上那幾顆鈕整段都不給按，不只聚光燈亮著的那兩拍。誰插的誰拔（鐵律 9）。 */
+  s9On=true; try{ document.body.classList.add('tutor-lock'); }catch(_){}
   s9Talk(S9_A, ()=>{
     s9Boost();                                   // 能力發動 → 船加速
     s9RideWait(()=>s9Talk(S9_B, ()=>{
@@ -10771,7 +10787,7 @@ function s9FlightMaybe(){
                      的 `flag` 那一套）。 */
                   addFlag('s9_ruins_open');
                   addFlag(S9_FLAG);              // 演完才記
-                  s9On=false;
+                  s9On=false; try{ document.body.classList.remove('tutor-lock'); }catch(_){}
                 }), 1500);
               });
           });
@@ -14124,6 +14140,15 @@ function tkOverlay(){
 /* 出城（起飛）：**一出城就是 100**（ver -783，Ray）——立刻設 alt=100＋黑幕全黑
    （撐住蓋過讀取頁淡出，不露 700）→ 停一下 → 同步「黑幕淡出＋高度 100→700 上升」，
    掀開第一眼就是低空從黑裡浮現。與進城完全對稱（反向）。 */
+/* 升空／降落的過場演完了沒。⚠ 保險絲 12 秒：萬一旗標因故沒收，戲不能卡在這裡
+   （同 `s9RideWait` 的作法）。 */
+function afterTakeoff(fn, t0){
+  t0=t0||performance.now();
+  if((takeoffPlaying || altTween) && performance.now()-t0 < 12000){
+    setTimeout(()=>afterTakeoff(fn,t0), 120); return;
+  }
+  fn();
+}
 function playTakeoff(){
   if(takeoffPlaying || altTween) return;
   takeoffPlaying=true;
@@ -14211,7 +14236,14 @@ function preloadSfx(){
       setTimeout(()=>{ try{ afterBattleReturn(!!c.won, !!c.scripted, c.doneKey||null, null); }catch(e){} }, 900); }
     /* 出航之後的劇情：讀取頁收乾淨之後才演。
        ⚠ Stage9 的飛行段優先（ver -1104）：它接手了就不要再疊一段出航對白上去。 */
-    setTimeout(()=>{ if(!s9FlightMaybe()) departureTalkMaybe(); }, 2600);
+    /* ⚠⚠⚠ **等升空真的演完才開口**（ver -1172，Ray：「索拉娜的『這破船』等到船
+       完全升空才播放，不要在升空中播放」）：舊版是「開機後 2600ms」，而升空是
+       `HOLD(520)+2060 = 2580ms` —— 兩個**各自獨立**的數字剛好差 20ms，任何一邊
+       動一下（讀取慢一點、`playTakeoff` 晚一點才開始）就會疊在一起
+       （鐵律 7：同一個時刻不要用兩個式子各算一次）。改成**問狀態**。 */
+    setTimeout(()=>afterTakeoff(()=>{
+      if(!s9FlightMaybe()) departureTalkMaybe();
+    }), 700);
     requestAnimationFrame(loop);
   }catch(e){
     document.getElementById('bootMsg').textContent=e.message+'（需以 http 提供，不能直接雙擊開啟）';
