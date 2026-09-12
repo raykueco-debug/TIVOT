@@ -2014,6 +2014,9 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
                        'niReload','niFullStart','coopEnergyTime','roarReloadActive']
                       .filter(k=>prog.girlHas(state.pickedPartner,k)).join(' ') || '（無）'
               : '')
+        /* 最近一次結算有沒有評價（ver -1128）：手機上看不到 console，
+           而「蕾娜評價不見了」已經回報過三次 —— 結論留在這裡才問得出原因。 */
+        +'\n評價 '+inspector.evalDiag()
         +'\n聖徒 '+(state.saintMode?'●':'×')+' 夢魘'+(state.niMode?'●':'×')+' 共鬥'+(state.coopMode?'●':'×')
         +'  combo '+(state.combo|0)+'  破防 '+Math.round(state.energy||0)
         +'\n──────'

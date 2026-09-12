@@ -566,6 +566,18 @@ function pickEvaluator(rankKey, battleId){
    （`_evalNote`，`ratingStatsRows` 會把它接在最後）—— 手機上只有這一條路看得到。 */
 let _evalNote='';
 let _evalSeeT=0;      // 「畫面上看得到嗎」那一支驗收的計時器（ver -1051）
+/* ══⚠⚠⚠ **最近一次結算的評價決定**（ver -1128，Ray：「蕾娜評價手機上完全消失」）══
+   -1050 記 console、-1051 量畫面 —— 兩者**在手機上都看不到**（沒有 console，
+   而 -1050 那一列印在 `#resultStats` 裡、離場就沒了）。
+   這一支把結論留下來，印在**診斷 HUD**（首頁連點團徽 5 下）——那是手機上唯一
+   讀得到的地方，而且它在結算頁關掉之後還在。
+   ⚠ 它是**驗收**不是機制：內容只有「哪一場／什麼等第／有沒有評價／為什麼沒有」。 */
+let _evalLast='—';
+export function evalDiag(){ return _evalLast; }
+function evalDiagSet(battleId, rank, spk){
+  _evalLast = (battleId||'(無場次)')+' '+rank+' → '
+            + (spk ? ('有：'+(spk.name||'?')+(spk.follow?'（有亂入）':'')) : ('無：'+(evalWhyNot||'?')));
+}
 function warnNoEval(rank, battleId){
   const why=evalWhyNot||'（沒有原因，代表這一頁本來就不該有評價）';
   console.warn('[eval] 這一場沒有評價：'+why+'　battle='+(battleId||'-')+' rank='+rank);
@@ -732,7 +744,7 @@ export function settle(totalTime, stats, opts={}){
      底下那三條都要問 `state.currentEnemyKey`。⚠ 併帳／清帳／HP 回滿在上面已經做完
      —— 那是「一局的終點」共通的手續，這一條只是第四條結算路徑（鐵律 8）。 */
   if(opts.rest && !isLose){ restSettle(totalTime, stats, sessionLoot, shares, opts.restTitle, expShares); return; }
-  if(state.tutorialRun && !isLose){ tutorialSettle(totalTime, stats); return; }
+  if(state.tutorialRun && !isLose){ _evalLast='教學結算（這一頁本來就沒有評價）'; tutorialSettle(totalTime, stats); return; }
   /* 劇情插入戰（ver -375）：與教學結算同一頁 —— **沒有監察官、沒有等級**，
      只有戰績、EXP 與拾得。⚠ 不是教學，所以不走教學那兩句台詞。 */
   if(state.scriptRun && !isLose){ scriptSettle(totalTime, stats, sessionLoot, shares, expShares); return; }
@@ -911,14 +923,28 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose, opts){
      兩者共用的只有**這個版面**，不是那份資料（同「框是共用的，教學那一套不是」）。
      ⚠ `portrait` 是**直接路徑**不是 ASSETS 鍵：立繪住在 `speakers.js`，沒進 ASSETS。 */
   const spk = (opts && opts.speaker) || null;
-  /* 掉落的押制（ver -961）：每次進這一頁先放行，有亂入才押（見 `_lootHold`）。 */
-  _lootHold = !!(spk && spk.follow);
   // 監察官立繪＋台詞（一般失敗不跑監察官；Boss 戰失敗仍顯示監察官，播 Boss 失敗台詞）
   /* Boss 戰（挑戰）勝敗**都**由璐娜莉亞評（ver -553，Ray：「boss戰落敗的話
      Luna_SI_seat_angry『討人厭的夢......』」）—— -471 的「敗北回芙蕾雅」作廢。 */
   const insp = spk ? null
              : (opts && opts.noInspector) ? null
              : ((isLose && !state.inIntruderFight) ? null : getInspector(state.inIntruderFight));
+  /* ══⚠⚠ **有人要講話 → 講完之前不放行戰利品**（ver -1128）══
+     `_lootHold` 是 ver -961 為索菈娜亂入做的（「亂入那一句演完才彈戰利品」）——
+     **第一句（蕾娜自己那一句）有一模一樣的問題**，而且更嚴重：
+       ① 結算頁一開，**下一次 `pointerup` 就彈戰利品**（`popLootOnce` 掛在 document）
+       ② 戰利品確認完會**直接離開結算頁**（ver -439 的 `afterLoot` 自動按「繼續」）
+       ③ 而評價要等 rows 刷完（≈1.1~1.3 秒）才出框、再逐字打 2 秒
+     ⇒ 手指快一點（手機一路連點）就會 ①→②，她從頭到尾沒機會出現，而且沒有任何
+       錯誤訊息。-961 只擋了第二句，等於把同一條規矩寫了一半。
+     ⚠⚠ **這不等於就是「手機上評價完全消失」的病因**：目前 `config.enemies` 裡
+       **只有教學戰有 `loot`**，一般怪都沒有 —— 所以多數場次根本不會彈戰利品。
+       這一條是順手把洞補上（打靶拿到龍息那一次會真的踩到），**病因還在查**，
+       靠的是下面那支看門狗與 `evalDiag()`（診斷 HUD 的「評價」那一行）。
+     ⚠ 押著不是把點擊丟掉：`popLootOnce` 會把監聽掛回去（-961 就是這樣寫的），
+       玩家那一下不會消失，只是排在她後面；而玩家**自己按「繼續」不吃押制**
+       （見 `popLootOnce` 的 `e` 參數）。 */
+  _lootHold = !!(spk || insp);
   const stage=$('inspectorStage');
   const bubble=$('inspectorBubble');
   const portrait=$('inspectorPortrait');
@@ -927,6 +953,9 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose, opts){
   clearTimeout(_inspTypeTimer);
   clearTimeout(_inspFollowTimer);   // 亂入的第二句（ver -838）：重進這一頁要收乾淨
   bubble.classList.remove('show');
+  /* ⚠ 補救留下的 inline 可見性要清掉（ver -1128）：不清的話**下一頁**一進來
+     那個框就已經亮著、而且裝著上一場的字。 */
+  bubble.style.opacity=''; bubble.style.visibility='';
   lineEl.textContent='';
   /* ⚠ **膝部以上只給評價者那一頁**（ver -439，Ray 指定）：裁切的比例是照
      `speakers.js` 那組立繪量的（見 style.css 的 `--knee`），監察官（芙蕾雅）用的是
@@ -990,13 +1019,38 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose, opts){
       if(!spk) return;
       const r=bubble.getBoundingClientRect(), shown=bubble.classList.contains('show');
       const vh=window.innerHeight||0;
-      const bad = !shown || r.height<8 || r.bottom<=0 || r.top>=vh;
+      const cs=getComputedStyle(bubble);
+      /* ══⚠⚠ **「有沒有被別的東西蓋住」要問瀏覽器，不要用猜的**（ver -1128）══
+         -1024／-1050／-1051 三次都卡在同一個問題：算出來了、位置也對，
+         那為什麼手機上看不到？剩下的可能只有「上面還有一層」——
+         而那一層是誰，只有 `elementFromPoint` 答得出來。
+         ⚠ 對話框是 `pointer-events:none`（它不該吃點擊），所以要**暫時打開**再問，
+           問完立刻還原 —— 不然命中測試永遠不會回它自己。 */
+      let covered='';
+      try{
+        const pe=bubble.style.pointerEvents; bubble.style.pointerEvents='auto';
+        const hit=document.elementFromPoint(Math.round(r.left+r.width/2), Math.round(r.top+r.height/2));
+        bubble.style.pointerEvents=pe;
+        if(hit && !(hit===bubble || bubble.contains(hit))){
+          const hz=getComputedStyle(hit).zIndex;
+          covered=' 被蓋:'+(hit.id?('#'+hit.id):hit.tagName)
+                 +(hit.className&&typeof hit.className==='string'?('.'+hit.className.trim().split(/\s+/).join('.')):'')
+                 +' z'+hz;
+        }
+      }catch(_){}
+      const bad = !shown || r.height<8 || r.bottom<=0 || r.top>=vh
+               || +cs.opacity < 0.1 || cs.visibility==='hidden' || !!covered;
       if(!bad) return;
-      const info='show='+shown+' rect='+[r.x,r.y,r.width,r.height].map(n=>Math.round(n)).join(',')
+      const info='show='+shown+' op='+cs.opacity+' vis='+cs.visibility
+               +' rect='+[r.x,r.y,r.width,r.height].map(n=>Math.round(n)).join(',')
                +' vh='+Math.round(vh)+' stage='+(()=>{const q=stage.getBoundingClientRect();
-                  return [q.x,q.y,q.width,q.height].map(n=>Math.round(n)).join(',');})();
+                  return [q.x,q.y,q.width,q.height].map(n=>Math.round(n)).join(',');})()+covered;
       console.warn('[eval] 評價算出來了，但畫面上看不到：'+info);
-      bubble.classList.add('show');                    // 先把它補回來（玩家這一次還是看得到）
+      _evalLast += '｜⚠ 算出來了但畫面上看不到 '+info;   // ver -1128：留給診斷 HUD
+      /* 先把它補回來（玩家這一次還是看得到）：class ＋ **inline 的可見性**
+         —— 只加 class 救不了「動畫沒跑／被誰壓成透明」那幾種（ver -1128）。 */
+      bubble.classList.add('show');
+      bubble.style.opacity='1'; bubble.style.visibility='visible';
       const host=$('resultStats');
       if(host && document.body.classList.contains('testmode')){
         const d=document.createElement('div'); d.className='row';
@@ -1006,7 +1060,9 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose, opts){
     }, 2500);
     setTimeout(()=>{
       bubble.classList.add('show');
-      typeInspectorLine(lineEl, line, 2000);   // 2 秒內逐字
+      /* ⚠ 打完才放行戰利品（ver -1128，見上面 `_lootHold` 那一段）——
+         **有亂入的話不在這裡放**：那一句還沒演，放了就會被蓋掉（ver -961）。 */
+      typeInspectorLine(lineEl, line, 2000, ()=>{ if(!(spk && spk.follow)) _lootHold=false; });   // 2 秒內逐字
       /* ══ 亂入（ver -838）══ 第一句打完停一拍 → 換立繪、換名字、重打第二句。
          只有 `spk.follow` 有料才演（evaluation.js 的 INTRUDE）。 */
       if(spk && spk.follow){
@@ -1025,10 +1081,9 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose, opts){
             if(swapped) return; swapped=true;
             if(f.portrait){ portrait.src = f.portrait; portrait.style.display='block'; }
             if(f.name) nameEl.textContent = f.name;
-            typeInspectorLine(lineEl, f.text || '', 1600);
-            /* 她那一句**打完**才放行戰利品（ver -961）。⚠ 用打字的長度不是固定秒數：
-               改台詞長度不必回來調這裡（同「自動推進掛在這一句唸完」的道理）。 */
-            setTimeout(()=>{ _lootHold = false; }, 1600);
+            /* 她那一句**打完**才放行戰利品（ver -961；-1128 改走打字機自己的回呼——
+               原本是另排一個同樣長度的 setTimeout，那是同一個量兩個計算點，鐵律 7）。 */
+            typeInspectorLine(lineEl, f.text || '', 1600, ()=>{ _lootHold = false; });
             try{ portrait.animate(
               [ { transform:'translateX(-46%)', opacity:0 },
                 { transform:'translateX(0)',    opacity:1 } ],
@@ -1109,6 +1164,7 @@ function restSettle(totalTime, stats, sessionLoot, shares, title, expShares){
      ⚠ 這一局本來就是一場一場打出來的，等第與好感照給 —— 它與打贏結算怪的那一頁
        是同一件事，只是在休息處收尾。 */
   const spk = pickEvaluator(ev.grade, null);
+  evalDiagSet('(休息處)', ev.grade, spk);
   if(!spk) warnNoEval(ev.grade, null);
   prog.applyRankAffection(ev.grade, shares || state.pickedPartner);   // ver -921：出場數最多的全拿
   let money = moneyOf(stats, ev.grade);
@@ -1157,6 +1213,7 @@ function scriptSettle(totalTime, stats, sessionLoot, shares, expShares){
        但「評價」的意思就是評出一個等第 —— 沒有那個字母，她那句話就沒有著落。
      ⚠ 評分公式**用試玩版那一套**（Ray 指定）＝ 上面那個 `evaluate()`，不另訂。 */
   const spk = pickEvaluator(ev.grade, state.scriptBattleId);
+  evalDiagSet(state.scriptBattleId, ev.grade, spk);   // ver -1128：結論留給診斷 HUD
   if(!spk) warnNoEval(ev.grade, state.scriptBattleId);
   /* ══⚠⚠ **打靶不給 EXP 也不給錢**（ver -439，Ray：「靶不要給 exp 跟錢」）══════
      那是一場可以重打到膩的計時挑戰 —— 給獎勵等於開了一台印鈔機，而它的回報本來
@@ -1282,11 +1339,16 @@ let _lootPending = null, _lootMoney = 0, _lootExp = 0;
    ⚠ 押著的期間**不是把點擊丟掉**，是**重新掛回去**：丟掉的話玩家會覺得
      「點了沒反應」，而且那一次點擊之後就再也沒有人叫得動戰利品了。
    ⚠ 由 `showResultSequence` 開關（它才知道這一頁有沒有亂入、演到哪）——
-     每次進那一頁先歸 false，有 follow 才押。 */
+     每次進那一頁先歸 false，**有人要講話就押**（ver -1128 由「有 follow 才押」放大，
+     見那裡的說明）。 */
 let _lootHold = false;
-function popLootOnce(){
-  /* 亂入還沒演完 → 這一次點擊不開戰利品，把監聽掛回去等下一次（見 `_lootHold`）。 */
-  if(_lootHold){
+/* `e`＝這一支是被**畫面上的那一下**叫起來的（監聽器一定帶著事件物件）。
+   ⚠⚠ **玩家自己按「繼續」時不吃押制**（ver -1128）：`onRematchBtn` 是不帶參數叫的 ——
+     按鈕的語意就是「我看完了」，押著會變成**按了沒反應**（而且評價那一段若因為
+     任何原因沒跑完回呼，整頁就永遠離不開）。押制只擋「順手那一下」。 */
+function popLootOnce(e){
+  /* 評價還沒演完 → 這一次點擊不開戰利品，把監聽掛回去等下一次（見 `_lootHold`）。 */
+  if(_lootHold && e){
     if(_lootPending) document.addEventListener('pointerup', popLootOnce, { capture:true, once:true });
     return;
   }
@@ -1364,7 +1426,9 @@ function openSentouReward(){
 }
 
 // 逐字打字機：total 毫秒內把整句顯示完
-function typeInspectorLine(el, text, total){
+/* `done`＝**這一句打完了**（ver -1128）。⚠ 用回呼不用「再排一個同樣長度的 setTimeout」：
+   那是同一個量兩個計算點（鐵律 7）—— 字數一改就走鐘。 */
+function typeInspectorLine(el, text, total, done){
   clearTimeout(_inspTypeTimer);
   const chars=[...text];
   const per = chars.length ? Math.max(30, total/chars.length) : 0;
@@ -1375,7 +1439,7 @@ function typeInspectorLine(el, text, total){
       el.innerHTML = decorateLine(chars.slice(0,i+1).join(''));   // 關鍵字（聖徒化）金色粗字
       i++;
       _inspTypeTimer=setTimeout(tick, per);
-    }
+    }else if(done) done();
   };
   tick();
 }

@@ -1498,7 +1498,7 @@
     display:flex;justify-content:center;align-items:flex-end;flex:1 1 auto;min-height:0;}
   #inspectorPortrait{width:auto;max-width:100%;max-height:100%;object-fit:contain;object-position:bottom;
     filter:drop-shadow(0 6px 24px rgba(0,0,0,.7));
-    opacity:0;transform:translateY(14px) scale(.98);
+    /* ⚠ 基底不再是 `opacity:0`（ver -1128，見下面 `#banner.seq` 那一條的說明）。 */
     -webkit-mask-image:linear-gradient(to bottom,#000 86%,transparent 100%);
     mask-image:linear-gradient(to bottom,#000 86%,transparent 100%);}
   /* ══⚠⚠ **膝部以上**（ver -439，Ray：「蕾娜的結算畫面不用全身，膝部以上」）══════
@@ -1544,7 +1544,10 @@
   #inspectorStage.knee #inspectorPortrait{max-width:none;max-height:none;
     width:auto;height:calc(100% / var(--knee));
     -webkit-mask-image:none;mask-image:none;}
-  #banner.seq #inspectorPortrait{animation:portraitIn .5s cubic-bezier(.2,.7,.3,1) both;}
+  /* ⚠⚠ `both` 拿掉（ver -1128）：`opacity:0` 的基底＋`both` ＝「動畫沒套到就永遠透明」，
+     而且不會有任何錯誤訊息 —— 這一塊已經被回報過三次看不見。基底改成可見（上面那一條
+     的 `opacity:0` 一併拿掉），動畫只負責「怎麼出現」，不負責「有沒有出現」。 */
+  #banner.seq #inspectorPortrait{animation:portraitIn .5s cubic-bezier(.2,.7,.3,1);}
   @keyframes portraitIn{ from{opacity:0;transform:translateY(14px) scale(.98);}
     to{opacity:1;transform:none;} }
   /* 對話框：絕對定位，疊在立繪偏下方，半透明 */
@@ -1553,7 +1556,9 @@
     border:1px solid var(--gold-dim);border-radius:8px;padding:10px 13px;text-align:left;
     box-shadow:0 4px 20px rgba(0,0,0,.55);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);
     opacity:0;pointer-events:none;}
-  #inspectorBubble.show{animation:bubbleIn .3s ease-out forwards;}
+  /* ⚠ `opacity:1` 寫在 class 上、`forwards` 拿掉（ver -1128，同立繪那一條的理由）：
+     靠動畫的終點撐住可見性 ＝ 動畫不跑就等於沒出現。 */
+  #inspectorBubble.show{opacity:1;animation:bubbleIn .3s ease-out;}
   @keyframes bubbleIn{ from{opacity:0;transform:translateX(-50%) translateY(8px);}
     to{opacity:1;transform:translateX(-50%) translateY(0);} }
   #inspectorBubble .insp-name{font-size:11px;letter-spacing:2px;color:var(--gold);
