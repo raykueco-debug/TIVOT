@@ -762,7 +762,13 @@ export function settle(totalTime, stats, opts={}){
      只有戰績、EXP 與拾得。⚠ 不是教學，所以不走教學那兩句台詞。 */
   if(state.scriptRun && !isLose){ scriptSettle(totalTime, stats, sessionLoot, shares, expShares); return; }
   if(isLose){
-    const rows=combatStatsRows();
+    let rows=combatStatsRows();
+    /* 死亡代價（ver -1135）：那一場的搭檔掉了多少戰鬥紀錄 —— 不印的話玩家
+       不知道自己付了代價，那個代價就等於不存在。
+       ⚠ 算是 `combat.lose()` 做的（`state.deathPenalty`），這裡只印。 */
+    { const d=state.deathPenalty;
+      if(d && d.lost>0) rows += '<div class="row"><span>'+(L.result.rowRecord||'EXP')
+        + '　' + d.name + '</span><b>－' + d.lost + '</b></div>'; }
     showResultSequence(L.result.loseTitle, L.result.loseSub, rows, 'lose', true);
     setupLoseNav();
     return;

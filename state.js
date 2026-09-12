@@ -273,6 +273,11 @@ export const state = {
   pickedPartner: GAME_CONFIG.defaultPartner,   // 玩家實選搭檔（擁有者 partner；選人畫面經 setPickedPartner 寫入）
   lineupIndex: 0,        // 連戰序列游標（局內第幾隻敵，對應 GAME_CONFIG.lineup）
 
+  /* 這一次戰敗罰掉了誰的多少戰鬥紀錄（ver -1135，擁有者 combat／讀者 inspector）。
+     `{who, name, lost}`；null＝這一次沒有罰到（無夥伴、或她本來就是 0）。
+     ⚠ 它是**給結算頁印一列**用的，不是狀態 —— 每次 `lose()` 重設一次。 */
+  deathPenalty: null,
+
   /* ── 3.8 增益（擁有者：combat） ─────────────────────────────── */
   atkBuff: false,
   atkBuffTimer: null,

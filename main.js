@@ -1470,8 +1470,13 @@ combat.setStoryReturn((res)=>{
 
      | | 遭遇戰（非劇情戰） | 劇情戰 |
      |---|---|---|
-     | 回檔點 | 引擎自動落：進城（town.setCheckpoint）／打贏那一刻 | 腳本明寫 `checkpoint:true` |
+     | 回檔點 | 引擎自動落：進城／**一場戰鬥結束**／**安全點**（ver -1135） | 腳本明寫 `checkpoint:true` |
      | 防卡死 | **連敗三次 → 抬回旅店**（見 carriedToInn） | **落點必須在「主角仍可自由行動」處**（規約，script_lint 驗） |
+
+     ⚠⚠ **ver -1135（Ray）：「戰鬥中死亡回到上一個踩過的安全點或結算點」**——
+       兩邊因此**完全一樣**了（都是 `loadLatest()`，位置也跟著快照走）：
+       「上一個踩過的安全點或結算點」就是最新的那一筆檢查點。
+       差別只剩**誰落那一筆**（引擎／腳本）與**防卡死怎麼做**。
 
      ⚠ 為什麼劇情戰不用「三次送旅店」：被送走等於把那一段戲跳過去了。它的出路是
        回到一個**還能去買藥、換裝、練級**的地方再來一次 —— 那是**落點**的責任，
@@ -1486,7 +1491,11 @@ combat.setStoryReturn((res)=>{
     storyResume = null;
     const bt = state.lastBattleId && GAME_CONFIG.battles && GAME_CONFIG.battles[state.lastBattleId];
     /* ① **特殊戰**（賞金獵人挑釁、抓賊…玩家自己走過去挑的）→ **一次就後送旅店**，
-       不計連敗、**不回檔**：那一場「過了就沒了」，回捲等於把它變成沒發生過。 */
+       不計連敗、**不回檔**：那一場「過了就沒了」，回捲等於把它變成沒發生過。
+       ⚠⚠ ver -1135（Ray：「城鎮探索（賞金獵人戰這種支線戰鬥、非戰役，**給他一個
+         flag 因為那是非常態**）中死亡則回旅店」）—— 那個「flag」**就是卡上的
+         `special:true`**（ver -698 他自己定的那一格），不要再加第二個旗（鐵律 7）。
+         它的意思正是「這一場是城鎮探索裡的支線，不是戰役」。 */
     if(bt && bt.special){ carriedToInn({ rollback:false }); return; }
     /* ② **劇情戰** → 讀最新的那一筆快照。回檔點是**腳本明寫**的（`checkpoint:true`），
        而且必須落在玩家還能自由行動的地方 —— 那是寫劇本時的責任。 */
@@ -1495,20 +1504,21 @@ combat.setStoryReturn((res)=>{
       combat.goHome(()=>{ try{ saveSys.loadLatest(); }catch(_){} }, { noBgm:true });
       return;
     }
-    /* ③ **遭遇戰** → 回這張地圖的**入口**（Ray：「入口不會有戰鬥」）。
-       ⚠⚠ 「回入口」與「回檔」是**兩件事**：進度照最新的那一筆放回去
-         （戰勝即存檔 —— 已經清掉的格子不該白打），只有**位置**回到入口。
-         所以是 `noJump` ＋ 明指節點，不是讓快照決定人在哪。
-       ⚠ 連敗三次 → 抬回旅店（那一條才回捲，見 carriedToInn）。 */
+    /* ③ **遭遇戰** → **回到上一個踩過的安全點或結算點**（ver -1135，Ray 定案：
+         「戰鬥中死亡回到上一個踩過的安全點或結算點」）。
+       ⚠⚠ 那就是「讀最新的那一筆快照」——**位置也跟著快照走**，因為檢查點正好
+         落在那幾個地方（鐵律 7：不要在這裡再算一次「該回哪」）：
+           · 進城（`town.setCheckpoint`）
+           · **一場戰鬥結束**（`enter()` 的 act 收尾，旗標之後）
+           · **安全點／休息處**（`{settle:true}` 那一拍，ver -1135 補上）
+           · 腳本明寫的 `checkpoint:true`／飛行每 600 距離
+       ⚠⚠ ver -697~-1134 是「回這張地圖的**入口**」（`noJump` ＋ 明指節點）——
+         那一版把「進度」與「位置」拆成兩件事，於是在遺跡裡走了半張圖、收過一次局，
+         死掉還是被丟回門口。Ray 這一版把兩件事合回去：**回到你上一次站穩的地方**。
+       ⚠ 連敗三次 → 抬回旅店（防卡死那一條不動，見 carriedToInn）。 */
     const n = prog.lossStreak()+1;
     if(n>=3){ carriedToInn(); return; }
     prog.setLossStreak(n);
-    const pos = town.getPosition(), gate = town.entryNode();
-    if(pos && gate){
-      combat.goHome(()=>{ try{ saveSys.loadLatest({ noJump:true }); }catch(_){}
-                          town.open(pos.town, gate); }, { noBgm:true });
-      return;
-    }
     combat.goHome(()=>{ try{ saveSys.loadLatest(); }catch(_){} }, { noBgm:true });
     return;
   }

@@ -2479,6 +2479,19 @@ function lose(){
   state.lastBattleId = state.scriptBattleId;
   state.scriptRun=false; state.scriptBattleId=null;
   state.tutorialRun=false; state.tutorialStoryRun=false;
+  /* ══⚠⚠⚠ **死亡代價：那一場的搭檔掉一半戰鬥紀錄**（ver -1135，Ray：「死亡代價是
+     掉一半現有 exp，但是已經升的級不會往下掉，等級是棘輪」「掉該場夥伴的一半」）══
+     ⚠ 罰則的算法只有 `prog.penalizeGirlExp` 一支（棘輪夾在現在這一級的門檻上，
+       鐵律 7）—— 這裡只負責「什麼時候罰」。
+     ⚠ 位置：在 `allowLose`（劇本要你輸）那道早退**之後** —— 那不是失敗，是劇情。
+     ⚠ 結算頁要印出來（`state.deathPenalty`，由 inspector 讀）：不印的話玩家
+       不會知道自己付了代價，那個代價就等於不存在。 */
+  state.deathPenalty = null;
+  try{
+    const _p = prog.penalizeGirlExp(state.pickedPartner);
+    if(_p) state.deathPenalty = { who:_p.who, lost:_p.lost,
+      name:((GAME_CONFIG.partners||{})[_p.who]||{}).name || _p.who };
+  }catch(_){}
   state.over=true; clockPause(); stopAll();
   TEL.runEnd({ partner:state.pickedPartner, weapon:state.equippedWeapon,
                boss:state.inIntruderFight, result:'lose', time_ms:Math.round(clockElapsedMs()) });

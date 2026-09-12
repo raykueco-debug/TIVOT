@@ -388,6 +388,32 @@ export function lightGirlStar(who, i, free){
   set[i]=1; wr(K.girlStars, JSON.stringify(all));
   return true;
 }
+/* ══⚠⚠⚠ **死亡代價：掉一半現有戰鬥紀錄，但等級是棘輪**（ver -1135，Ray：
+   「死亡代價是掉一半現有 exp，但是已經升的級不會往下掉，等級是棘輪」
+   「掉**該場夥伴**的一半現有 exp」）══════════════════════════════════════════
+   · 掉的是**點數**（`girlExp`），不是已經點亮的星 —— 星是花道具換的，不退。
+   · **棘輪**：夾在**現在這一級的門檻**上，所以等級一階都不會掉
+     （門檻表只有 `girlProgressOf`／這裡在查，鐵律 7 —— 呼叫端不要自己拿 `expTo` 比）。
+   · 已經升起來的那一級因此只會「離下一級更遠」，不會變成 Lv 掉一格。
+   ⚠ 只有**那一場出戰的搭檔**（`state.pickedPartner`，由呼叫端傳進來）——
+     無夥伴（`solo`）那幾場傳 null，`isGirl` 擋掉，什麼都不會發生。
+   ⚠ 唯一的呼叫點是 `combat.lose()`（鐵律 8）：`allowLose` 的「劇本要你輸」
+     那幾場**不罰** —— 那是劇情不是失敗。
+   回傳 `{who, from, to, lost, lv}`（沒有可罰的就 null），給結算頁印那一列。 */
+export function penalizeGirlExp(who){
+  if(!isGirl(who)) return null;
+  const all = girlExpAll();
+  const cur = all[who]|0;
+  if(cur <= 0) return null;
+  const tab = girlCfg().expTo || [0];
+  const lv  = girlLevel(who);
+  const floorExp = tab[lv-1]|0;                    // 這一級的門檻＝棘輪的地板
+  const next = Math.max(floorExp, Math.floor(cur/2));
+  if(next >= cur) return null;
+  all[who] = next; wr(K.girlExp, JSON.stringify(all));
+  return { who, from:cur, to:next, lost:cur-next, lv };
+}
+
 /* ⚠⚠ **直接設等級：管理人模式限定的梯子**（同 `setStarCount` 的性質，鐵律 9 的
    明寫例外）—— 把累計 EXP 寫成那一級的門檻值。正規的路只有結算發放。 */
 export function setGirlLevel(who, lv){

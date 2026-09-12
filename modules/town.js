@@ -254,6 +254,10 @@ function actLines(a){ if(!a) return null;
   const L=(typeof a.lines==='function') ? a.lines() : a.lines;
   return L||null; }
 function actHasBattle(a){ const L=actLines(a); return !!(L && L.some(l=>l && l.battle)); }
+/* 這一段有沒有**收局**（`{settle:true}`：休息處／撤離那一拍，ver -913）。
+   ⚠ ver -1135 起它與「有戰鬥」一樣會落一個檢查點 —— Ray：「戰鬥中死亡回到上一個
+     踩過的安全點或結算點」，安全點正是這一種段落。 */
+function actHasSettle(a){ const L=actLines(a); return !!(L && L.some(l=>l && l.settle)); }
 function siegeOn(){
   const g=(TOWNS[townId]||{}).siege;
   if(!g || !g.from || !prog.hasFlag(g.from)) return null;
@@ -2498,7 +2502,12 @@ export function enter(id){
                  收段那一場（Boss）打贏時 `endSession()` 已經把它清掉了，
                  所以那一格照樣落得到 —— 正好就是「戰鬥結算後才有」。
                ⚠ 純對白的段落不受影響（那時 `battleSession` 本來就是 null）。 */
-          if(checkpoint && !state.battleSession && actHasBattle(act)) try{ checkpoint(); }catch(_){}
+          /* ⚠⚠ ver -1135：**安全點（`{settle:true}`）也落**（Ray：「戰鬥中死亡回到
+             上一個踩過的安全點或結算點」）—— 休息處走進去就收局，那一刻正是
+             「上一個踩過的結算點」。不落的話玩家在遺跡裡走了半張圖收了一次局，
+             死掉卻退回進圖那一筆，中間全白走。 */
+          if(checkpoint && !state.battleSession && (actHasBattle(act) || actHasSettle(act)))
+            try{ checkpoint(); }catch(_){}
           /* ══ 演完就出航（`sailOut:true`，ver -741，Ray 的 stage2 稿：碼頭道別
              之後「進入飛行畫面」）══ 走與 `setSail` 同一條交棒（suspend →
              flightOpener 帶出港位，鐵律 8）。不看 `sail.hold` —— 這是劇本要走，
