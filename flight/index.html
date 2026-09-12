@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1187"></script>
+<script src="../orientation.js?v=1188"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -500,11 +500,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1187"></script>
+<script src="settlement.js?v=1188"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1187"></script>
+<script src="talks.js?v=1188"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -544,7 +544,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1187';
+const FLIGHT_VER = 'ver -1188';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -9692,7 +9692,18 @@ const ENEMY_KINDS = {
   },
 };
 
-const ENEMY_RARITY_W={E:30,D:25,C:20,B:15,A:10,S:5};   // 稀有等級 → 權重（ver -500，Ray 指定）
+/* ══⚠⚠⚠ 稀有等級 → **出現率**（ver -1188，Ray 定案）══════════════════════════
+   > 「E 是 50% 的出現率／D 20%／C 15%／B 10%／A 5%／S 滿足特定條件才出現」
+   ⚠⚠ **這是「等級」的出現率，不是「那一隻」的**（-500 的舊表是逐隻加權，
+     五隻 E 的怪加起來會把別的等級擠掉）—— 所以抽法改成**兩段**：
+       ① 先照這張表抽**等級**（只在**有合格成員**的等級之間正規化）
+       ② 再在那一級裡**等機率**抽一隻
+     這樣「E 是 50%」才真的是 50%，與那一級裡有幾隻無關。
+   ⚠⚠ **S 不進隨機抽選**（Ray：「滿足特定條件才出現」，條件他還沒給）——
+     劇本遭遇（指定 kind）照舊叫得出 S 的怪，那條路不經過這裡。
+     條件給了之後：把它加進 `RARITY_ROLL`、並在 `enemyKindEligible` 補那道守門。 */
+const ENEMY_RARITY_P={E:50,D:20,C:15,B:10,A:5};        // ⚠ S 不在表上＝不隨機出
+const RARITY_ROLL=['E','D','C','B','A'];               // 抽選的順序（只影響除錯時好不好讀）
 function enemyKindEligible(k, x, y){
   const K=ENEMY_KINDS[k];
   if(K.fromStage && gameStage() < K.fromStage) return false;
@@ -9710,31 +9721,40 @@ function enemyKindEligible(k, x, y){
   }
   return true;
 }
-/* ══⚠⚠ 〈獵手之眼〉：**稀有的怪更容易出現**（ver -1186，Ray：「在船上發現稀有
-   敵人的機率增加」）══
-   ⚠⚠ 「稀有」是**相對**的：權重表 `E30 D25 C20 B15 A10 S5` 越稀有權重越小 ——
-     所以作法是把**稀有那幾檔的權重放大**，不是把機率整個加 10%
-     （那句話沒有「哪一隻」的對象，加在總量上等於什麼都沒加）。
-   ⚠ 幅度：`E` 不動、越稀有放得越多（`(30/w)` 當級距）—— LV.2 之下
-     `E 30→30／D 25→25.5／C 20→21／B 15→16.5／A 10→12／S 5→7.5`
-     （S 的權重 +50%），常見的怪幾乎不被擠掉。
-   ⚠⚠ **現在量不出效果是正常的**（ver -1186 實測）：飛行的三隻怪
-     （centipede／serpent／pirate）稀有度**全是 E**，而 E 是不動的那一檔
-     —— `ENEMY_KINDS` 那邊的註解本來就寫著「蜈蚣／空賊的稀有度是**暫定 E**
-     （卡還沒給）」。卡一到、稀有度分開，這一支自然就有東西可咬。
-   ⚠ 只在這裡乘一次（鐵律 7）。 */
-function rarityW(k){
-  const w=ENEMY_RARITY_W[ENEMY_KINDS[k].rarity]||30;
-  const b=niemBonus('sorana');
-  return b ? w*(1+b*(30/w-1)) : w;
+/* ══⚠⚠ 〈獵手之眼〉：**稀有的怪更容易出現**（ver -1186／-1188 改寫）══
+   Ray：「在船上發現稀有敵人的機率增加。（10%）」
+   ⇒ **E 以外的每一級各 ×(1＋10%×等級)**，再連同 E 一起正規化。
+     LV.2 之下：`E 50 D 22 C 16.5 B 11 A 5.5` → 正規化後
+     `E 47.6%／D 21.0%／C 15.7%／B 10.5%／A 5.2%`（稀有合計 50%→52.4%）。
+   ⚠ 只在這裡乘一次（鐵律 7）。
+   ⚠⚠ **現在量不出效果是正常的**：飛行那三隻怪（centipede／serpent／pirate）
+     稀有度**全是 E**，而 E 是不動的那一檔 —— `ENEMY_KINDS` 本來就註明
+     「蜈蚣／空賊的稀有度是**暫定 E**（卡還沒給）」。等級分開了自然就有東西可咬。 */
+function rarityP(r){
+  const p=ENEMY_RARITY_P[r]||0;
+  if(r==='E' || !p) return p;
+  return p*(1+niemBonus('sorana'));
 }
+/* 兩段抽：**先抽等級、再在那一級裡等機率抽一隻**（見 `ENEMY_RARITY_P` 的說明）。 */
 function pickEnemyKind(x, y){
   const pool=Object.keys(ENEMY_KINDS).filter(k=>enemyKindEligible(k,x,y));
   if(!pool.length) return null;
-  let tot=0; for(const k of pool) tot+=rarityW(k);
-  let r=Math.random()*tot;
-  for(const k of pool){ r-=rarityW(k); if(r<=0) return k; }
-  return pool[pool.length-1];
+  /* 依等級分堆。⚠ 沒有成員的等級**不參與正規化** —— 不然「那一級抽到了但沒人」
+     就得重抽，而重抽會把機率悄悄推回去。 */
+  const by={}; 
+  for(const k of pool){
+    const r=ENEMY_KINDS[k].rarity;
+    if(!ENEMY_RARITY_P[r]) continue;            // ⚠ S（或沒寫等級）不進隨機池
+    (by[r]=by[r]||[]).push(k);
+  }
+  const tiers=RARITY_ROLL.filter(r=>by[r] && by[r].length);
+  /* 整池都是 S／沒寫等級 ⇒ 退回「等機率抽一隻」，不要回 null（那會變成不出怪）。 */
+  if(!tiers.length) return pool[(Math.random()*pool.length)|0];
+  let tot=0; for(const r of tiers) tot+=rarityP(r);
+  let x2=Math.random()*tot, pick=tiers[tiers.length-1];
+  for(const r of tiers){ x2-=rarityP(r); if(x2<=0){ pick=r; break; } }
+  const g=by[pick];
+  return g[(Math.random()*g.length)|0];
 }
 let enemy=null;                                   // {x,y,alt,hx,hy,d0,state,tEngage,kind}
 let enemyFB=null, EC=null;                        // 低解析繪製緩衝（見 drawEnemy3D）

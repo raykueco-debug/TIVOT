@@ -3758,6 +3758,7 @@ export const TOWNS = {
        所以節點只寫基底名、**不寫 `noTime`**，時段由 `bandNames()` 的候選鏈挑。 */
   fallen: {
     name: '石製遺蹟',
+    visitFlag: 'fallen_seen',         // 同上（ver -1188）
     /* ══⚠⚠ 進去過就改叫「瓦努努石陣」（ver -1184，Ray 交稿：
          「石製遺蹟：（進入後改名為瓦努努石陣）」）══
        ⚠⚠ **不要直接把 `name` 改掉**：大地圖上那塊名牌、玩家還沒下去看之前，
@@ -4002,6 +4003,7 @@ export const TOWNS = {
   tomb: {
     name: '伊甸古墓',
     entry: 'gate',
+    visitFlag: 'tomb_seen',            // 同上（ver -1188）
     storyExplore: true,   // 不是城：女角不排外出行程（§6.5.4.2）
     wilderness: true,     // 野外的路沒有門可以關（19:00 全域打烊不罩，ver -862）
     stepMin: 10,          // 遺蹟那一級（ver -917，Ray：「遺蹟內每次移動 10 分鐘」）
@@ -4078,7 +4080,60 @@ export const TOWNS = {
         exitIf:{ up:'tomb_opened' },
         /* ⚠⚠ **不掛 `flag`**：同石製遺蹟 —— 只飛得到的地方，到得了就走得了
            （ver -1154，Ray 回報「進了遺蹟無法出航」）。 */
-        sail:{} },
+        sail:{},
+        /* ══⚠⚠⚠ 墓門・初次抵達（ver -1188，Ray 交稿，stage8 以後）══════════════
+           門是關著的（`tomb_opened` 還沒有人插），所以這一段就是**站在門外**
+           的一場戲 —— 蕾娜那句「正好，石壁關著我們也進不去」正是那個狀態。
+           ⚠⚠ **分歧的條件是「先去了哪一座」**（Ray：「如果先走伊甸古墓而非
+             貝利薩爾：分支多一句／如果已經先走去過貝利薩爾：…」）——
+             旗是 `belisar_seen`（進圖就插，見 `TOWNS.belisar.visitFlag`）。
+             · **沒去過**貝利薩爾 ⇒ 多一句「為什麼偏偏先來這裡……」（`onlyIf` 反過來
+               寫成 `skipIf`）。
+             · 其餘整段兩種情形都演 —— Ray 說的是「**多**一句」。
+             ⚠ 這是**我的判讀**：他把長段落標在「已經去過貝利薩爾」那一行底下，
+               但「分支多一句」只有在「兩邊共用同一段」時才講得通。要改成
+               「長段只在去過貝利薩爾時演」的話，把那幾拍全部掛上
+               `onlyIf:'belisar_seen'` 即可 —— 資料改，程式不必動。
+           ⚠ `fromStage:8`（Ray：「stage8 以後」）。
+           ⚠ 四人同台 ⇒ 分兩邊：`RENNA:'L'`（§6.5 的站位表，碰到安雅蕾娜放左）。 */
+        acts:[ { flag:'tomb_gate', fromStage:8, sides:{ RENNA:'L' }, lines:[
+          /* 先來這裡（還沒去過貝利薩爾）才有的那一句。 */
+          Object.assign(ren('intense2','為什麼偏偏先來這裡……'), { skipIf:'belisar_seen' }),
+          sor('amazed','好寒酸的遺蹟。'),
+          nou('awkward','竟然說寒酸……'),
+          ren('ask','畢竟是墓穴嘛。聽說裡面有一整座城呢。'),
+          nou('surprise','聽說？'),
+          ren('writting','因為進去的探勘隊，都沒回來。'),
+          any('panic',''),
+          ren('watch','正好，石壁關著我們也進不去。就這樣回報吧！'),
+          { speaker:'PLAYER', blank:true },
+          ren('smile','……'),
+          ren('smile','對，我就是怕。'),
+          ren('smile','打死我都不想進去。'),
+          sor('talk','怕？怕什麼？'),
+          ren('meltdown','就是……幽靈之類的。'),
+          sor('surprised','船一樣大的魔獸妳都不怕，怕那個？'),
+          ren('scarejump','有什麼辦法！人家就是怕嘛！'),
+          nou('awkward',''),
+          any('talk','幽靈……要是有就好了。'),
+          ren('scarejump','連安雅小姐都……'),
+          /* ⚠ 這兩拍稿上沒標表情 ⇒ **不動立繪**（立繪是持續狀態，§6.5）。 */
+          nou(null,'某種意義上來說，那些死去的人……'),
+          nou(null,'都曾經是對某人來說特別的存在吧？'),
+          ren('sad','……'),
+          any('sobbing',''),
+          ren(null,'好啦，反正打不開就是打不開。'),
+          /* ⚠ 稿上那個 `Varnholm` 是**地名的西文**（瓦恩霍姆城），不是立繪
+             —— `resources/SI/` 沒有這張圖，這一拍照上一拍的表情演。 */
+          ren(null,'先到瓦恩霍姆城休整一下吧，或許能有相關的情報吧。'),
+          sor('whisper','我說……修女小姐是不是全力想逃離這裡？'),
+          nou('awkward','好像是……'),
+          any('answer','幽靈……交給我。不要怕。'),
+          /* ⚠⚠ 稿上寫 `dyingcute`，但 `resources/SI/` **沒有這張圖**
+             （只有 `dying` 與 `cutescare`）。先用最接近的 `dying`，
+             要新圖或改指另一張再說。 */
+          ren('dying','啊——夠了！出發了！'),
+        ] } ] },
       vestibule:  { bg:'Tomb_Vestibule', name:'伊甸古墓　前庭', noTime:true,
         exits:{ up:'nave', right:'lapidarium', back:'gate' } },
       /* 死胡同 A 的第一格 —— 圖上**不可以畫得像盡頭**（見交接檔 §六）。 */
@@ -4210,6 +4265,9 @@ export const TOWNS = {
   belisar: {
     name: '貝利薩爾遺址',
     entry: 'entrance',
+    /* 「來過這張圖了」（ver -1188）：三座遺蹟的順序是玩家自己挑的，
+       「先去了哪一座」是分歧的條件（見 `tomb.gate` 那一段）。誰插＝進圖、誰拔＝沒有人。 */
+    visitFlag: 'belisar_seen',
     storyExplore: true,   // 不是城：女角不排外出行程（§6.5.4.2）
     wilderness: true,     // 野外的路沒有門可以關（19:00 全域打烊不罩）
     stepMin: 10,          // 遺蹟那一級（ver -917）

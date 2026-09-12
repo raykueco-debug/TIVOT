@@ -238,6 +238,9 @@ export const ART = {
                   lookup:      { src:'resources/SI/Renna_SI_lookup.webp',      top:5,  bot:1520, fx:0.510 },   // ver -746 交件補量
                   /* 湖上甲板（ver -744，Ray 的 stage5 稿）。逐張量。 */
                   intense2:    { src:'resources/SI/Renna_SI_intense2.webp',    top:5,  bot:1520, fx:0.510 },
+                  /* ══ 伊甸古墓・墓門那一段（ver -1188，Ray 交稿）══ 交件是 PNG，
+                     依 §5 轉 WebP；取景值逐張量（`tools/measure_si.py`）。 */
+                  sad:         { src:'resources/SI/Renna_SI_sad.webp',         top:5,  bot:1517, fx:0.520 },
                   askserious:  { src:'resources/SI/Renna_SI_askserious.webp',  top:3,  bot:1527, fx:0.525 } } },
   /* ⚠⚠ 諾薇兒的表情差分是**不同姿勢**（跑、畏縮、驚恐、絕望、驚訝），不是換臉，
        所以每一張**各帶自己的 top/bot/fx**（ver -325 量完）。
@@ -403,6 +406,8 @@ export const ART = {
     talk:         { src:'resources/SI/Sorana_SI_talk.webp',          top:7,  bot:1525, fx:0.508 },
     laugh:        { src:'resources/SI/Sorana_SI_laugh.webp',         top:3,  bot:1529, fx:0.579, cm:170, standCm:176 },
     amazed:       { src:'resources/SI/Sorana_SI_amazed.webp',        top:3,  bot:1527, fx:0.562 },
+    /* 伊甸古墓・墓門那一段（ver -1188，同上，逐張量）。 */
+    whisper:      { src:'resources/SI/Sorana_SI_whisper.webp',       top:4,  bot:1524, fx:0.524 },
     /* ══ Stage8 後段（ver -1092，Ray 交稿）══ 逐張量。
        ⚠ `excite`／`excite2` 的畫布不是規約的 1024×1536（1028×1530／1026×1532）——
          那是裁切的誤差，**不是另一個尺**，所以**不加 `rescale`**：讓它照基本立繪的
