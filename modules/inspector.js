@@ -251,7 +251,8 @@ export function awardExp(score, stats, shares){
     /* `exp` ＝**這一局之後**的累計（`r.exp`）—— 進度條要畫的「之前」是
        `exp − gain`（ver -1022）。⚠ 不在畫面端另外讀一次存檔：那時已經加過了，
        而且中間可能又被別的路徑動過（鐵律 7）。 */
-    out.push({ who:one.key, name:pc.name||one.key, gain:r.gain, from:r.from, to:r.to, exp:r.exp });
+    out.push({ who:one.key, name:pc.name||one.key, gain:r.gain, from:r.from, to:r.to, exp:r.exp,
+               records:r.records|0 });   // ver -1132：升級入手的《戰鬥紀錄》份數
   }
   return out;
 }
@@ -260,11 +261,18 @@ export function awardExp(score, stats, shares){
 function expRows(gains){
   let rows='';
   for(const g of (gains||[])){
-    rows += '<div class="row"><span>EXP　'+g.name+'</span><b>＋'+g.gain+'</b></div>';
+    /* ⚠ 抬頭 ver -1132 由「EXP」改成**戰鬥紀錄**（Ray：「把 exp 改成戰鬥紀錄」）——
+       字串在 i18n（`result.rowRecord`），不要寫死中文。 */
+    rows += '<div class="row"><span>'+(L.result.rowRecord||'EXP')+'　'+g.name+'</span><b>＋'+g.gain+'</b></div>';
     if(g.to>g.from){
-      const star = prog.girlStarName(g.who, g.to);
+      /* ══⚠⚠ 升級那一行報的是**入手幾份**，不再報星名（ver -1132）══
+         等級到了**不會自動亮星**了 —— 印星名會讓玩家以為那一顆已經有了。
+         她拿到的是《她的戰鬥紀錄》×N，拿去整備頁的技能表點亮才算數。
+         ⚠ 份數用 `g.records`（`addGirlExp` 發放時算好的），不要在這裡乘一次
+           `recordPerLevel`（同一個量兩個計算點，鐵律 7）。 */
       rows += '<div class="row"><span>LEVEL UP</span><b>'+g.name+'　Lv'+g.to
-            + (star ? '　'+star : '') + '</b></div>';
+            + (g.records ? '　'+fmt(L.result.recordGain||'＋{n}', {n:g.records}) : '')
+            + '</b></div>';
     }
     /* ══⚠⚠⚠ **這一局之後她在哪裡**（ver -1021，Ray：「EXP 現在要在結算顯示」）══
        原本只印「＋n」與升級那一行 —— 玩家（與我）因此**看不出離下一顆星還差多少**，

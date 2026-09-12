@@ -190,6 +190,8 @@ export const STRINGS = {
     loseSub:      'HUND、倒れる…',
     gradeCap:     '評価',
     expLabel:     'EXP {n}',
+    rowRecord:    '戦闘記録',
+    recordGain:   '戦闘記録 ＋{n}',
     rowCombo:     'コンボ数',
     rowHits:      '被弾数',
     rowAccuracy:  '命中率',

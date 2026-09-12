@@ -3805,6 +3805,23 @@
     overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   #gearSheet .gs-star b{font-size:11px;font-weight:normal;color:var(--gold-dim);
     flex:0 0 auto;white-space:nowrap;}
+  /* ══ 點亮鈕（ver -1132，Ray：「女主的星要用戰鬥紀錄點亮」）══ 靠右，三種樣子：
+       · `.on`（已點亮）＝只是一行字，不是鈕
+       · `.go`（點得動）＝金框亮字
+       · 兩者都不是（等級不夠／份數不夠）＝暗著，但**數字照樣看得見**
+         （§6.5.5：還不能做的事不要靠藏起來擋，要讓玩家知道差多少）。
+     ⚠ `margin-left:auto` 把它推到那一行的最右邊：中文星名長度不一，靠 gap 排不齊。 */
+  #gearSheet .gs-light{margin-left:auto;flex:0 0 auto;white-space:nowrap;
+    font-size:9.5px;letter-spacing:.5px;font-weight:normal;
+    padding:2px 7px;border-radius:5px;border:1px solid transparent;
+    color:var(--gold-dim);opacity:.55;}
+  #gearSheet .gs-light.go{border-color:var(--gold);color:var(--gold);opacity:1;
+    background:rgba(212,169,74,.12);cursor:pointer;}
+  #gearSheet .gs-light.go:active{background:rgba(212,169,74,.3);}
+  #gearSheet .gs-light.on{opacity:.8;border-color:transparent;color:var(--holy);}
+  /* 手上有幾份《戰鬥紀錄》：技能表鈕與視窗標題各一處，同一個樣子。 */
+  #gearSheet .gs-recn{font-style:normal;margin-left:8px;font-size:9.5px;
+    letter-spacing:.5px;color:var(--gold-dim);}
   /* ver -992：**內文裡提到的技能名**穿上那一招的顏色（Ray 指定）。
      ⚠ 三個 class 只在整備頁裡有意義，所以掛在 `#gearSheet` 底下。 */
   #gearSheet .sk-i{font-style:normal;color:var(--gold);}

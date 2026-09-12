@@ -52,13 +52,15 @@ let tab='gear';
 let itemCat='item';
 
 /* ══ 搭檔卡上的等級條（ver -970）══
-   ⚠ **星名還沒填就只印 Lv N**（`girlStarName` 回空字串）—— 不要自己編一個名字
-     （Ray：「星名跟對應技能我會分角色給你」）。
-   ⚠ 滿級不印「還差多少」，改印 MAX：印一條永遠滿的進度條讀起來像壞了。 */
+   ⚠ 滿級不印「還差多少」，改印 MAX：印一條永遠滿的進度條讀起來像壞了。
+   ⚠⚠ **ver -1132：不再印「這一級的星名」** —— 等級到了星**不會自動亮**了
+     （要花《戰鬥紀錄》點亮），印星名會讓玩家以為那一顆已經有了。
+     改印**已點亮幾顆 ＋ 手上幾份**，那才是現在真正的進度。 */
 function girlLvHtml(key){
   if(!prog.isGirl(key)) return '';
   const g = prog.girlProgress(key);
-  const star = prog.girlStarName(key, g.lv);
+  let lit=0; for(let i=1;i<=prog.girlMaxLv();i++) if(prog.girlStarOn(key,i)) lit++;
+  const star = '★'+lit+'/'+prog.girlMaxLv()+'　◆'+prog.girlRecords(key);
   const max = (g.to==null);
   /* ⚠⚠ **管理人模式可以直接點等級**（同九星那條梯子的作法，ver -714）：
      點一下 +1、滿級再點歸 Lv1。**那是明寫的開發梯子**（鐵律 9 的例外）——
@@ -116,7 +118,24 @@ function girlStarListHtml(key){
   const lv=prog.girlLevel(key);
   const dev=document.body.classList.contains('testmode');
   const rows=arr.map((st,i)=>{
-    const on=(lv>=i+1);
+    /* ══⚠⚠⚠ **ver -1132：亮不亮看「有沒有點亮」，不是看等級**（Ray：「女主的星要
+       用戰鬥紀錄點亮，等級越高的星所需的戰鬥紀錄量越多」）══
+       等級只決定**點不點得動**（門檻），真的要亮還得花《她的戰鬥紀錄》。
+       判定全部問 `prog.canLightStar`（唯一一支，鐵律 7）—— 這裡只負責畫。 */
+    const on=prog.girlStarOn(key, i+1);
+    const can=prog.canLightStar(key, i+1);
+    const cost=can.cost;
+    /* 右邊那一顆的三種樣子：已點亮／點得動／點不動（等級不夠或份數不夠）。
+       ⚠ **點不動也要看得見成本**（§6.5.5「還不能做不要靠藏起來擋」）：
+         玩家要知道「差多少」才知道該去做什麼。 */
+    const btn = on
+      ? '<b class="gs-light on">已點亮</b>'
+      : '<b class="gs-light'+(can.ok?' go':'')+'" data-glight="'+key+':'+(i+1)+'">'
+        /* 三種字面：等級不夠＝報還要幾級；份數不夠＝只報成本（不寫「點亮」，
+           那個詞是動作，按不動的東西不該假裝自己是鈕）；點得動＝「點亮 ◆N」。 */
+        + (can.why==='level' ? ('LV.'+(i+1))
+         : can.ok            ? ('點亮 ◆'+cost)
+         :                     ('◆'+cost)) + '</b>';
     /* ══ 顏色與凹槽（ver -990，Ray：「在技能表裡也要標色」「讓每個星前面有一個凹槽，
        等級到了就點亮相對應的顏色」）══
        · `sk-<install|passive|active>` ＝這一顆強化哪一招（資料在卡上的 `skill`）；
@@ -140,6 +159,7 @@ function girlStarListHtml(key){
          +     '<em class="gs-slv">LV.'+(i+1)+'</em>'
          +     '<i class="gs-starname">'+(st.star||'')+'</i>'
          +     '<b>'+(st.name||('Lv'+(i+1)))+'</b>'
+         +     btn
          +   '</div>'
          +   '<span>'+colorSkillWords(st.desc||'—', (GAME_CONFIG.partners||{})[key])+'</span>'
          + '</div>';
@@ -154,8 +174,13 @@ function skillBtnHtml(key){
   if(!prog.isGirl(key)) return '';
   const arr=((GAME_CONFIG.girls||{}).levels||{})[key]||[];
   if(!arr.length) return '';
+  /* ⚠ ver -1132：報的是**已點亮幾顆**（那才是現在的進度），順手報手上幾份
+     《戰鬥紀錄》—— 收起來之後這是唯一看得到的線索。 */
+  let lit=0; for(let i=1;i<=arr.length;i++) if(prog.girlStarOn(key,i)) lit++;
+  const rec=prog.girlRecords(key);
   return '<div class="gs-skillbtn" data-skills="'+key+'">技　能　表　'
-       +   prog.girlLevel(key)+' / '+prog.girlMaxLv()+'</div>';
+       +   lit+' / '+prog.girlMaxLv()
+       +   '<em class="gs-recn">◆'+rec+'</em></div>';
 }
 function skillWinHtml(key){
   if(!skillOpen || !prog.isGirl(key)) return '';
@@ -165,7 +190,8 @@ function skillWinHtml(key){
      `.gs-swbox`（置中、依內容給尺寸、有邊框）。 */
   return '<div class="gs-skillwin" data-skillclose="1">'
        +   '<div class="gs-swbox">'
-       +     '<div class="gs-swtitle">'+(p.name||'')+'　技　能　表</div>'
+       +     '<div class="gs-swtitle">'+(p.name||'')+'　技　能　表'
+       +       '<em class="gs-recn">戰鬥紀錄 ◆'+prog.girlRecords(key)+'</em></div>'
        +     girlStarListHtml(key)
        +     '<div class="gs-swclose" data-skillclose="1">關　閉</div>'
        +   '</div>'
@@ -545,12 +571,29 @@ function bind(){
      可以手動點亮」）══ 女主是線性九級，所以「點亮第 i 顆」就是「等級 ＝ i」。
      ⚠ 點**目前最高的那一顆**＝歸 Lv1（一顆鈕來回，同九星那條梯子的手感）——
        Lv1 是出廠等級，沒有「全部熄掉」這個狀態（`girlLevel` 最低就是 1）。 */
+  /* ══ 點亮一顆星（ver -1132）══ 正式路徑：花掉《她的戰鬥紀錄》。
+     ⚠ 判定不在這裡（`prog.lightGirlStar` 自己會問 `canLightStar`，鐵律 8）——
+       這裡只負責「按下去」與回饋。 */
+  el.querySelectorAll('.gs-light[data-glight]').forEach(d=>d.addEventListener('click', e=>{
+    e.stopPropagation();
+    const [who, idx] = String(d.dataset.glight||'').split(':');
+    if(prog.lightGirlStar(who, idx|0, false)){
+      try{ SFX.confirm ? SFX.confirm() : SFX.menuClick(); }catch(_){}
+      render();
+    }else{
+      try{ SFX.wrong ? SFX.wrong() : SFX.menuClick(); }catch(_){}
+    }
+  }));
+  /* ══ 管理人：點那一列 ＝ **免費點亮／熄滅**（ver -1132 改）══
+     -980 這顆梯子原本是「點第 i 顆＝把等級設成 i」，但等級的梯子本來就有
+     （`.gs-glv.dev`，點等級條 +1）—— 兩顆做同一件事沒有意義。現在它管的是
+     **星本身**：免費點亮、再點一次熄掉，星的效果才測得動。
+     ⚠ 明寫的開發梯子（鐵律 9 的例外），正規的路只有上面那一顆鈕。 */
   el.querySelectorAll('.gs-star.dev[data-gstar]').forEach(d=>d.addEventListener('click', e=>{
     e.stopPropagation();
     const [who, idx] = String(d.dataset.gstar||'').split(':');
     if(!prog.isGirl(who)) return;
-    const i=(idx|0)+1;
-    prog.setGirlLevel(who, (prog.girlLevel(who)===i) ? 1 : i);
+    prog.lightGirlStar(who, (idx|0)+1, true);
     try{ SFX.menuClick(); }catch(_){}
     render();
   }));

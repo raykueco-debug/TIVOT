@@ -57,7 +57,17 @@ export function defOf(id){
      `weaponDescText(key, false)`（ver -378，兩套數值的分界見 config.weapons[].story）。 */
   return w ? { name:w.name, cat:'weapon', price:w.price, desc:weaponDescText(id, true) } : null;
 }
-export function nameOf(id){ const d=defOf(id); return d ? d.name : String(id); }
+/* ⚠⚠ `girl` ＝這一件是**某個人的**東西（ver -1132 的《戰鬥紀錄》）：名字由
+   `partners[key].name` 組出來，卡上不抄一份她的名字（鐵律 7）。
+   ⚠ 查不到那張卡（理論上不會）就退回 id，不要印出半句話。 */
+export function nameOf(id){
+  const d=defOf(id); if(!d) return String(id);
+  if(d.girl){
+    const nm=((GAME_CONFIG.partners||{})[d.girl]||{}).name;
+    return nm ? (nm+'的戰鬥紀錄') : String(id);
+  }
+  return d.name;
+}
 export function catOf(id){ const d=defOf(id); return d ? d.cat : 'item'; }
 
 /* ══ 武器的持有 ══

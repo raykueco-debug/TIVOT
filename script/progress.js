@@ -60,6 +60,12 @@ const K = {
      ⚠ **只存 EXP，不存等級**：等級由累計值查 `config.girls.expTo` 推出來
        （鐵律 7 —— 存了就是第二個真相，兩者一定會走鐘）。 */
   girlExp:   'tivot_girlexp_v1',
+  /* ══ 女主**已點亮的星**（ver -1132，Ray：「女主的星要用戰鬥紀錄點亮」）══
+     `{搭檔key: {星序(1起): 1}}`。**一輪內**（同 EXP／九星／掛件）。
+     ⚠ 與等級是**兩件事**：等級（由 EXP 推）只決定「能不能點」，
+       真的亮不亮看這裡（`girlBonus` 只加這裡有的）。
+     ⚠ 鑰匙不存在 ＝ **舊存檔**，見 `girlStarsAll()` 的一次性遷移。 */
+  girlStars: 'tivot_girlstars_v1',
   /* ══ 戰績統計（ver -1023，Ray：「統計總局數、總擊場數、各女角的局數、平均得分」）══
      `{ sessions, kills, byGirl:{ <who>:{ n, score } } }`
        · `sessions` ＝**總局數**（一次結算算一局，§0.5 的「局」）
@@ -310,7 +316,77 @@ export function addGirlExp(who, n){
   const before = girlLevel(who);
   all[who] = (all[who]|0) + gain;
   wr(K.girlExp, JSON.stringify(all));
-  return { who, gain, exp:all[who], from:before, to:girlLevel(who) };
+  const after = girlLevel(who);
+  /* ══⚠⚠⚠ **升一級 ＝ 入袋一份《她的戰鬥紀錄》**（ver -1132，Ray 交辦）══
+     發放**只有這一處**（鐵律 8）：任何加戰鬥紀錄的路徑都經過這一支，
+     所以「升級就給」不必在每個呼叫端記得寫。
+     ⚠ 一次升好幾級（跳關／大量點數）就給好幾份 —— 乘的是**級數差**。
+     ⚠ 份數在資料上（`girls.recordPerLevel`，鐵律 1）。
+     ⚠ 回傳多一格 `records`：結算頁要印「入手 ×N」（畫面端不要自己再算一次）。 */
+  let records = 0;
+  if(after > before){
+    records = Math.max(0, (after-before) * ((girlCfg().recordPerLevel|0) || 0));
+    if(records) inv.add(recordIdOf(who), records);
+  }
+  return { who, gain, exp:all[who], from:before, to:after, records };
+}
+/* 《她的戰鬥紀錄》的道具 id ——**只有這一支在拼**（鐵律 7）：`items.defs` 那三筆
+   的鍵就是這個規則（`rec_<搭檔key>`）。 */
+export function recordIdOf(who){ return 'rec_'+who; }
+/* 她手上有幾份（讀道具袋，唯一的帳本）。 */
+export function girlRecords(who){ return inv.count(recordIdOf(who))|0; }
+
+/* ══⚠⚠⚠ **已點亮的星**（ver -1132）══════════════════════════════════════════
+   `{who:{星序:1}}`。⚠ 星序**1 起算**（與畫面上的 LV.n 同一個數字，免得兩邊差一）。
+   ⚠⚠ **舊存檔的遷移**：這把鑰匙不存在 ＝ 這個檔是 -1132 之前的，那時**等級到了
+     星就自動亮** —— 直接沒收玩家手上已經有的能力是錯的，所以視為
+     「Lv1~現等級全部已點亮」並寫回去（一次性，寫完就有鑰匙了）。
+   ⚠ 之後新升的等級**不會**自動亮：那正是這一版要改的事。 */
+export function girlStarsAll(){
+  let j=null;
+  try{ j=JSON.parse(rd(K.girlStars)||'null'); }catch(e){}
+  if(j && typeof j==='object') return j;
+  const out={};
+  for(const w of girlKeys()){
+    const lv=girlLevel(w), set={};
+    /* ⚠ 只有真的練過的人要遷移（Lv1 且 EXP 0 ＝ 還沒開始，給她一顆 Lv1 星
+       反而是憑空多給）。 */
+    if(girlExp(w) > 0) for(let i=1;i<=lv;i++) set[i]=1;
+    if(Object.keys(set).length) out[w]=set;
+  }
+  wr(K.girlStars, JSON.stringify(out));
+  return out;
+}
+export function girlStarOn(who, i){ return !!((girlStarsAll()[who]||{})[i]); }
+/* 第 i 顆星要幾份戰鬥紀錄（資料在 `girls.starCost`，鐵律 1）。
+   ⚠ 表短了就用最後一格（不要回 0 ＝ 免費）。 */
+export function girlStarCost(i){
+  const t=girlCfg().starCost||[];
+  if(!t.length) return 0;
+  return Math.max(0, (t[Math.min(i, t.length)-1]|0));
+}
+/* 「現在點得動這一顆嗎」——**唯一的判定**（鐵律 7/8）：UI 畫暗、按下去、
+   日後任何自動點亮的路徑都問它。回傳 `{ok, why, cost, have}`。 */
+export function canLightStar(who, i){
+  const cost=girlStarCost(i), have=girlRecords(who);
+  if(!isGirl(who))            return { ok:false, why:'notgirl', cost, have };
+  if(girlStarOn(who,i))       return { ok:false, why:'on',      cost, have };
+  if(girlLevel(who) < i)      return { ok:false, why:'level',   cost, have };
+  if(have < cost)             return { ok:false, why:'record',  cost, have };
+  return { ok:true, why:'', cost, have };
+}
+/* 點亮。`free`＝管理人模式的梯子（不扣道具、不看門檻，同 `setGirlLevel`／
+   `setStarCount` 的性質，鐵律 9 的明寫例外）。回傳有沒有真的點亮。 */
+export function lightGirlStar(who, i, free){
+  if(!isGirl(who)) return false;
+  if(!free && !canLightStar(who,i).ok) return false;
+  if(girlStarOn(who,i) && !free) return false;
+  const all=girlStarsAll();
+  const set=all[who]||(all[who]={});
+  if(free && set[i]){ delete set[i]; wr(K.girlStars, JSON.stringify(all)); return true; }   // 管理人：再點一次熄掉
+  if(!free){ const c=girlStarCost(i); if(c) inv.remove(recordIdOf(who), c); }
+  set[i]=1; wr(K.girlStars, JSON.stringify(all));
+  return true;
 }
 /* ⚠⚠ **直接設等級：管理人模式限定的梯子**（同 `setStarCount` 的性質，鐵律 9 的
    明寫例外）—— 把累計 EXP 寫成那一級的門檻值。正規的路只有結算發放。 */
@@ -332,9 +408,14 @@ export function setGirlLevel(who, lv){
 export function girlBonus(who, key){
   if(!isGirl(who)) return 0;
   const arr = (girlCfg().levels||{})[who] || [];
-  const lv = girlLevel(who);
+  /* ⚠⚠⚠ **ver -1132：只加「已點亮」的星**（原本是 Lv1~現等級全加）——
+     等級現在只是「能不能點」的門檻，真的要生效還得花《戰鬥紀錄》點亮。
+     ⚠ 這是**唯一**一處在決定「她現在有哪些能力」（鐵律 7）：呼叫端照舊只問
+       `girlBonus`／`girlHas`，一行都不必改。 */
+  const lit = girlStarsAll()[who] || {};
   let sum = 0;
-  for(let i=0; i<lv && i<arr.length; i++){
+  for(let i=0; i<arr.length; i++){
+    if(!lit[i+1]) continue;
     const v = arr[i] && arr[i][key];
     if(v!=null) sum += v;
   }
@@ -811,7 +892,7 @@ export function newRun(){
   for(const k of [K.stage, K.flags, K.affection, K.affFloor, K.name, K.nick,
                   K.hp, K.innLast, K.flightLoss, K.rennaS, K.playtime,
                   K.charms, K.gunLv, K.gunStars, K.wmod, K.jmod, K.dishes,
-                  K.girlExp, K.stats]) {   // stats＝戰績統計（ver -1023，一輪內）   // 持久HP／上次旅店／連敗數／蕾娜S計數／遊玩時間／掛件／強化／杰羅改造／吃過的料理／女主等級（-970）
+                  K.girlExp, K.girlStars, K.stats]) {   // stats＝戰績統計（ver -1023，一輪內）   // 持久HP／上次旅店／連敗數／蕾娜S計數／遊玩時間／掛件／強化／杰羅改造／吃過的料理／女主等級（-970）
     try{ localStorage.removeItem(k); }catch(e){}
   }
   /* ⚠⚠ 從頭開始＝**S0 要寫進鑰匙**（ver -563）。清掉 stage 之後不寫回的話，
@@ -884,6 +965,7 @@ export function snapshot(){
            jmodRaw:rawJ(K.jmod),            // 杰羅改造（ver -866，一輪內）
            dishesRaw:rawJ(K.dishes),        // 吃過的料理（ver -953，一輪內）
            girlExpRaw:rawJ(K.girlExp),      // 女主的九級（ver -970，一輪內）
+           girlStarsRaw:rawJ(K.girlStars),  // 女主已點亮的星（ver -1132，一輪內）
            statsRaw:rawJ(K.stats) };        // 戰績統計（ver -1023，一輪內）
 }
 export function restore(s){
@@ -920,6 +1002,9 @@ export function restore(s){
   /* 女主的九級（ver -970）：舊存檔沒有這一欄 → **原樣移除**（讀「還沒練」的檔
      不該帶著這一輪練出來的等級，§6.9 的兩面）。 */
   putRaw(K.girlExp,  ('girlExpRaw'  in s)?s.girlExpRaw :null, true);
+  /* 已點亮的星（ver -1132）：同上，舊存檔沒有這一欄 → 原樣移除
+     （讀回去之後 `girlStarsAll()` 會依那個檔的等級重新遷移一次）。 */
+  putRaw(K.girlStars,('girlStarsRaw'in s)?s.girlStarsRaw:null, true);
   /* 戰績統計（ver -1023）：同上，舊存檔沒有這一欄 → 原樣移除。 */
   putRaw(K.stats,    ('statsRaw'    in s)?s.statsRaw   :null, true);
 }

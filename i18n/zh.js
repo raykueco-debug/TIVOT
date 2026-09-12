@@ -202,6 +202,12 @@ export const STRINGS = {
     loseSub:      'HUND 倒下了…',
     gradeCap:     '評價',
     expLabel:     'EXP {n}',            // [EN-STYLE] EXP 可不譯
+    /* ══ ver -1132（Ray：「把 exp 改成戰鬥紀錄」）══ 結算頁那一列的抬頭。
+       ⚠ 舊的 `expLabel` 留著不刪（別處還在用），這一條才是結算頁的那一列。
+       ⚠ 道具《她的戰鬥紀錄》的名字**不在這裡**：那是由 `partners[key].name`
+         組出來的（見 `inventory.nameOf`），i18n 這邊不要再寫一份她的名字。 */
+    rowRecord:    '戰鬥紀錄',
+    recordGain:   '戰鬥紀錄 ＋{n}',      // 升級那一行右邊：入手幾份
     rowCombo:     '連擊數',
     rowHits:      '受擊數',
     rowAccuracy:  '命中率',

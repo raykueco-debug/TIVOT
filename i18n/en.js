@@ -173,6 +173,8 @@ export const STRINGS = {
     loseSub:      'HUND has fallen...',
     gradeCap:     'RATING',
     expLabel:     'EXP {n}',
+    rowRecord:    'BATTLE LOG',
+    recordGain:   'BATTLE LOG +{n}',
     rowCombo:     'COMBO',
     rowHits:      'HITS TAKEN',
     rowAccuracy:  'ACCURACY',
