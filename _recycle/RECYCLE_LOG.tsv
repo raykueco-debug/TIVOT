@@ -109,3 +109,4 @@ when	from	to	reason
 20260911-232629	resources/_originals/background/Fallen_Causeway.png	_recycle/resources/_originals/background/Fallen_Causeway.png	Fallen 五景改為四時段差分（畫法寫進生成提示詞，去顆粒），無時段版本退役 ver -1067
 20260911-232629	resources/_originals/background/Fallen_Entry.png	_recycle/resources/_originals/background/Fallen_Entry.png	Fallen 五景改為四時段差分（畫法寫進生成提示詞，去顆粒），無時段版本退役 ver -1067
 20260911-232629	resources/_originals/background/Fallen_Fork.png	_recycle/resources/_originals/background/Fallen_Fork.png	Fallen 五景改為四時段差分（畫法寫進生成提示詞，去顆粒），無時段版本退役 ver -1067
+20260912-141156	tools/map_tomb_draft.py	_recycle/tools/map_tomb_draft.py	拓樸已進 script/town.js，權威佈局改由 tools/map_layout.py tomb 產（鐵律 7：同一個拓樸不留兩份）
