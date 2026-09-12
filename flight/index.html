@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1164"></script>
+<script src="../orientation.js?v=1165"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -491,11 +491,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1164"></script>
+<script src="settlement.js?v=1165"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1164"></script>
+<script src="talks.js?v=1165"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -535,7 +535,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1164';
+const FLIGHT_VER = 'ver -1165';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -8229,18 +8229,25 @@ function drawRuins(scaleH,horizon,sinp,cosp){
        畫出來只是雜訊，而數量又正好是它們最多的時候。與 `RUIN_FAR`
        「讀不出形狀就不要畫」同一條理由 —— 讀不出來就不要付那個錢。
        ⚠ 主體量體**不吃這一條**：剪影不可以隨距離改變。 */
-    /* ⚠⚠ 門檻要**量過再訂**（ver -1164）：第一版填 1.1px，而實測一顆 8 單位高的齒
-       在 RUIN_FAR（3600）那一端仍有 1.12px —— 整個視距之內**一顆都剔不掉**，
-       等於白寫。1.8px 起剔，換算約 1750 個世界單位之外；那個距離整座遺跡也才
-       三十幾個像素高，齒本來就讀不出來。 */
-    const DETAIL_PX=1.8;
+    /* ⚠⚠⚠ 門檻的**單位是「緩衝像素」不是「螢幕像素」**（ver -1165 更正）。
+       -1164 拿螢幕像素去量，而這一層畫在**低解析緩衝**上（一個緩衝像素＝ sxk≈3 個
+       螢幕像素）—— 於是「1.8 個螢幕像素高」的齒在緩衝上只有 0.6 像素，**是次像素**：
+       它的覆蓋率隨相機移動在 0.2~0.8 之間跳，放大之後就是一塊 3×3 的方塊在明滅。
+       量錯單位的東西，門檻調再多次都不會對。
+       ⚠ 2.2 個緩衝像素 ≈「齒與齒之間看得出一道縫」的下限（齒 9 單位、縫 11 單位，
+         縫要看得見，齒至少要兩個像素）。
+       ⚠ 門檻要**量過再訂**：-1164 第一版填 1.1（螢幕）px，實測在 RUIN_FAR 那一端
+         一顆都剔不掉 —— 等於白寫。 */
+    const DETAIL_PX=2.2;
     /* ⚠⚠ **判在「建之前」不是「建之後」**（ver -1164 第二版）：第一版是把方塊投影
        出來再量它幾個像素高 —— 剔除是對的，但**建構的錢已經付掉了**（逐點投影＋
        逐欄深度＋外框），而細節件的數量正好在遠距最多。實測遠距與近距一樣貴（4.1ms
        vs 3.9ms），完全沒有省到。
        現在用**一次乘法**估：螢幕高 ≈ 世界高 × dyk ÷ 這座遺跡的深度。近似值在
        這個用途上綽綽有餘 —— 它只回答「這東西還讀得出來嗎」。 */
-    const detailK=dyk/Math.max(zc,1);
+    /* 世界單位 → **緩衝**像素（高度方向）。`dyk = scaleH×syk` 是螢幕像素，
+       再除以 syk 就回到緩衝像素 —— 所以這裡直接用 scaleH（鐵律 7：不要乘了再除）。 */
+    const detailK=scaleH/Math.max(zc,1);
     const unreadable=h=>(h||0)*detailK<DETAIL_PX;
     const push=(b,pt,detail)=>{
       if(!b) return null;
@@ -8332,17 +8339,31 @@ function drawRuins(scaleH,horizon,sinp,cosp){
       }
     }
     if(!items.length && !slab) continue;
-    const pad=6;
-    const fx0=Math.floor(x0)-pad, fy0=Math.floor(y0)-pad;
-    const fbw=Math.ceil(x1-x0)+pad*2, fbh=Math.ceil(y1-y0)+pad*2;
-    if(fbw<3||fbh<3||fbw>W*4||fbh>VIEWH*4) continue;
-    const pk=clamp(BW/W,0.15,1);                   // 與地形同一個解析度
-    const bwp=Math.max(2,Math.round(fbw*pk)), bhp=Math.max(2,Math.round(fbh*pk));
+    /* ══⚠⚠⚠ 離屏緩衝要**對齊地形的像素格**（ver -1165，Ray：「移動時閃動」）══
+       這一層是畫進低解析緩衝再放大的（§6.7：貼在地形上的東西要跟著像素化）。
+       -1148〜-1164 的寫法是：外框取**螢幕整數像素**（`floor(x0)-6`），緩衝尺寸再
+       `round(fbw × BW/W)` —— 兩次獨立的四捨五入，於是
+         · 放大倍率 `fbw/bwp` **每隔幾個像素就變一次**（3.00 → 3.03 → 3.06…）
+         · 緩衝的像素格與地形的像素格**相位一直在漂**
+       相機一動，整張遺跡就週期性地重採樣一次 —— 實測（相機每禎前進 2.5 個世界單位）
+       逐禎差分平時 9.5，**每六、七禎跳到 15**，那就是 Ray 看到的閃動。
+       ⚠ 靜止時差分是 0，所以不是亂數、不是排序不穩 —— 純粹是取樣格在動。
+
+       作法：**外框改用地形的格子去量**（`i0…i1` 都是地形像素的整數索引）：
+         · 放大倍率永遠正好 `sxk`／`syk`，一個緩衝像素恰好對到一個地形格 → 不再重採樣
+         · 原點永遠落在格線上 → 遺跡的像素塊與地形的像素塊**同相**，一起整格移動
+       ⚠ 這也順便修好「遺跡的馬賽克與地形的馬賽克對不齊」那個更難講的違和感。 */
+    const pad=2;                                   // 留白：2 個**地形格**（不是螢幕像素）
+    const i0=Math.floor(x0/sxk)-pad, j0=Math.floor(y0/syk)-pad;
+    const i1=Math.ceil (x1/sxk)+pad, j1=Math.ceil (y1/syk)+pad;
+    const bwp=i1-i0, bhp=j1-j0;
+    const fx0=i0*sxk, fy0=j0*syk, fbw=bwp*sxk, fbh=bhp*syk;
+    if(bwp<3||bhp<3||fbw>W*4||fbh>VIEWH*4) continue;
     if(!ruinFB){ ruinFB=document.createElement('canvas'); RFC=ruinFB.getContext('2d'); }
     if(ruinFB.width<bwp||ruinFB.height<bhp||ruinFB.width>bwp*2||ruinFB.height>bhp*2){
       ruinFB.width=bwp; ruinFB.height=bhp; }
     RFC.setTransform(1,0,0,1,0,0); RFC.clearRect(0,0,bwp,bhp);
-    RFC.setTransform(bwp/fbw,0,0,bhp/fbh,-fx0*bwp/fbw,-fy0*bhp/fbh);
+    RFC.setTransform(1/sxk,0,0,1/syk,-i0,-j0);
     RFC.lineJoin='round';
     const poly=(g,pts)=>{ g.beginPath();
       g.moveTo(pts[0].x,pts[0].y);
@@ -8425,7 +8446,23 @@ function drawRuins(scaleH,horizon,sinp,cosp){
     /* ② 影子：底面往一側偏一點、壓暗。**有沒有影子決定它是「站在地上」還是
        「貼在地上」** —— 少了它，斷柱與地板上的斑駁看起來一模一樣。
        ⚠ 偏移量跟著**投影後的高度**走（近的柱子影子長），不是寫死幾個像素。 */
-    items.sort((a,b)=>b.z-a.z);
+    /* ══⚠⚠⚠ 排序的主鍵是「底面多高」不是「多遠」（ver -1165，Ray：「移動時閃動」）══
+       畫家演算法本來是「由遠而近」（`b.z-a.z`）。**那對堆疊的東西是錯的**：
+       一塊坐在另一塊頭上時，兩者的水平深度只差它們的中心偏移 —— 相機一移動，
+       那個差就會**變號**，前後關係當場對調，重疊的那幾個像素整片換色。
+       這就是閃動：靜止時逐禎差分是 0，一移動就每隔幾禎跳一次
+       （實測尖峰／平均 1.42；把排序拿掉之後 1.07）。
+
+       正解是**照「堆上去」的順序畫**：`z0`（底面離地多高）**與相機無關**，
+       所以同一疊的先後**永遠不會翻**。同一層的（`z0` 相同）才比深度 ——
+       那些是真的並排的東西，深度交叉時它們在畫面上本來就不重疊。
+       ⚠ 為什麼不是「真 3D 距離」：那條也修不好這個。四層崖階是**互相內嵌又往後退**
+         的，水平深度差（≈24 單位）大過高度帶來的距離差（≈5），主鍵仍然是深度。
+       ⚠ 這條成立的前提是**相機從空中俯瞰**：底面高的東西畫面上也在上面，
+         不會被「近而矮」的東西擋住。飛行地圖永遠是這個視角。
+       ⚠ 第三順位用**資料順序**（`sort` 在 V8/JSC 都是穩定排序）—— 兩個鍵都相同時
+         照作者寫的先後，那也是「先寫的先蓋」的直覺。 */
+    items.sort((a,b)=>(a.z0-b.z0) || (b.z-a.z));
     RFC.fillStyle=C.shade;
     for(const B of items){
       /* ⚠ `z0>0` 的不投影：它站在別的方塊頂上，底下不是地 ——
