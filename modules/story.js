@@ -928,6 +928,10 @@ export function clearStageLeftovers(){
      **新增任何一個蓋在畫面上、會變暗的層，當場就要寫進這一支**（-903 的規矩）。
      ⚠ 丟掉回呼不補跑（同圖名卡）：補跑等於把上一個地點的演出請到新畫面上。 */
   stopCooking();
+  /* ⚠⚠ 安雅感應的第四拍那片**白光**（`#storySenseBurst`，ver -1185）：它跨句，
+     所以 `stopFx` 收不到它 —— 換畫面時留著就是「整個場景區一片白、點不掉」，
+     與那幾片黑幕是同一種病（-903 的規矩不分顏色）。 */
+  stopSenseBurst();
   { const st2=$('storyStage');
     if(st2 && st2.classList.contains('kerb-veil')){
       st2.classList.remove('kerb-veil');
@@ -1544,21 +1548,156 @@ function purpleFlame(){
    ⚠ 光圈的配方**與飛行頁同一份**（`.sense-ring` 的漸層與 1.15s 曲線）——
      兩邊各一份 CSS 是既有的跨頁慣例（§6.10），改一邊要改另一邊。
    ⚠ 白光「隨光圈」＝同一拍發，不是等光圈跑完（Ray 的稿：「白光隨光圈快速淡入」）。 */
+/* ══⚠⚠ 第四拍的白光（`#storySenseBurst`）════════════════════════════════
+   Ray（ver -1185）：「第四拍白光從她手中圓型擴散到全畫面，用首頁讀取頁那個效果，
+   然後再淡入到下一個畫面」。
+   ⚠⚠ 它是**跨句的層**（§6.5：跨句的演出要另開一個欄位，不要沿用一次性的那個）
+     —— 換背景那一拍要藏在白裡，所以它的計時器**不進 `fxTimers`**（那一組每推一句
+     就被 `stopFx` 清掉，連 `#storyFx` 整層一起清）。
+   ⚠⚠ 出口清單（鐵律 8，全部走 `stopSenseBurst()`）：換場（`playScene`）／
+     離場（`close`）／換畫面（`clearStageLeftovers`）。它是會蓋滿畫面的層，
+     留著就是「整個場景區一片白、而且沒有任何錯誤訊息」（-903 那條規矩的白色版）。 */
+let senseBurstT=[];
+function stopSenseBurst(){
+  senseBurstT.forEach(clearTimeout); senseBurstT=[];
+  const el=$('storySenseBurst');
+  if(el){ el.className=''; el.innerHTML=''; }
+}
+/* ══⚠⚠⚠ **照搬飛行頁的探索動畫**（ver -1185，Ray 說了三次）══════════════
+   > Ray：「照搬探索動畫就好了啊」「她要一邊淡入一邊縮小一邊脈動」
+   下面這一組取景／透明度的數字**全部是 `flight/index.html` 的原值**
+   （`SENSE_FIT`／`SENSE_BROOCH`／`SENSE_ALPHA0/1`／`SENSE_HOLD_MS`／`SENSE_GHOST_*`）
+   —— 兩個 document 各存一份是 §6.10 的既有慣例，**改一邊要改另一邊**
+   （鐵律 7 的但書，兩邊註解互指）。
+   ⚠⚠ 這一版**推翻 -928／-966**（「不縮放、不半透、`cover` 佔滿上方」）：那兩版是
+     「把探索的 CI 搬過來、但另外重做一套演出」，而 Ray 要的是**同一段演出**
+     （淡入 ＋ 一路縮小 ＋ 踩著心跳脈動）。
+   ⚠ 與飛行頁的差別只有兩件事，都是 Ray 這一輪明講的：
+     ① **第四拍放的是白光**（從她手中擴散，開機那一頁的聖光），不是藍光圈收尾；
+     ② 這裡沒有舵輪，所以 `floorY` 就是場景區的高。 */
+const SENSE_FIT={ s0:1.604, s1:1.021, bx0:0.470, bx1:0.486,
+                  by0:0.414, by1:0.429, w0:1.10, w1:1.005 };
+const SENSE_BROOCH={ x:0.4934, y:0.3864 };     // 胸針＝縮放與脈動的錨點
+const SENSE_HAND=[0.529, 0.548];               // 手＝白光的圓心（Ray：「從她手中」）
+const SENSE_ALPHA0=0.72, SENSE_ALPHA1=0.26;    // 透明度緩降
+const SENSE_HOLD_MS=3560;                      // 縮小走完（＝第四拍 − 380ms，同飛行頁）
+/* k=0..1 → 這一刻的尺寸與左上角（與飛行頁的 `senseGeom` 同一條式子）。 */
+function senseGeom(k,w,h){
+  const F=SENSE_FIT, L=(a,b)=>a+(b-a)*k;
+  const S=Math.max(h*L(F.s0,F.s1), w*L(F.w0,F.w1));
+  return { S, left:w*L(F.bx0,F.bx1)-SENSE_BROOCH.x*S,
+               top: h*L(F.by0,F.by1)-SENSE_BROOCH.y*S };
+}
+/* ══⚠⚠⚠ 拍子表 ＝ **心跳音檔上那四下的時刻**（ver -1185，Ray：「拍子要對」
+   「照搬探索動畫就好了啊」）════════════════════════════════════════════
+   `se_flight_heartbeat`（5.0s）的四下心跳落在 0.45／1.61／2.78／3.94 秒。
+   ⚠⚠ **這一份與 `flight/index.html` 的 `SENSE_BEATS` 是同一組數字**（那邊是秒、
+     這邊是毫秒）—— 兩個 document，各存一份是 §6.10 的既有慣例，
+     **改一邊要改另一邊**（鐵律 7 的但書，兩邊註解互指）。
+   ⚠ 拍子不是「每 620ms 一下」那種湊出來的整數：它是**那支音檔**的節奏，
+     自己訂一組必然與聽到的心跳錯開 —— 那就是 Ray 說的「拍子不對」。
+   前三下＝脈動（半透明殘影放大消失），**第四下＝白光從她手中擴散**（同一瞬）。 */
+const SENSE_BEATS=[450, 1610, 2780, 3940];
+/* ⚠⚠ 白光**第三拍就開始跑**（ver -1185，Ray：「光圈速快一點，第三拍脈動就可以
+   開始跑了」）—— 原本排在第四拍（3.94s），整段拖到 8 秒才收。
+   climax 的殘影（`amp 2.2`）也跟著移到第三拍：它與白光**必須同一瞬**。 */
+const SENSE_CLIMAX=2;
+/* ⚠ 同一張圖兩邊共用（飛行頁 canvas／這裡 DOM）—— 路徑帶 `?v=2`：Ray 換過圖，
+   不掛 cache-buster 會拿到舊的那一份（§5）。 */
+const SENSE_CI_SRC='resources/partner/Anya_CI_Search.webp?v=2';
+const SENSE_BURST_AT=SENSE_BEATS[SENSE_CLIMAX];
+/* ⚠ `HOLD` 要**撐過換背景那一拍**：那一拍在 4400ms 起跑（`town.js` 的 `auto`），
+   `swapImg` 再淡 220ms —— 所以白光最早只能在 2780+2000＝4780ms 才開始淡，
+   不然玩家會看到背景在半透的白底下換過去。
+   ⚠ 擴散 1.5s（Ray：「光圈速快一點」）。秒數與 `style.css` 的 `.sb-glow`
+   transition 是同一個數字（鐵律 7 的但書，兩邊註解互指）。 */
+const SENSE_BURST_GROW=1500, SENSE_BURST_HOLD=2000;
+/* 「她的手」在容器裡的座標。⚠ 取 **k=1**（第四拍那一刻她已經縮到定位）——
+   白光的圓心要與那一刻畫面上的手對得起來（鐵律 7：只有這一支在算）。 */
+function senseHandAt(w,h){
+  const g=senseGeom(1,w,h);
+  return [ g.left+SENSE_HAND[0]*g.S, g.top+SENSE_HAND[1]*g.S ];
+}
+function senseBurst(){
+  const el=$('storySenseBurst'), box=$('storyFx'); if(!el||!box) return;
+  const w=box.clientWidth||360, h=box.clientHeight||420;
+  const [hx,hy]=senseHandAt(w,h);
+  /* 起手是她手中的一小團光；要放到多大＝「圓心到最遠角 ×2」，
+     再除以 0.30（光暈的實心區只到半徑的 30%）—— 與開機那一頁同一條式子。 */
+  const d0=Math.max(44, Math.min(w,h)*0.13);
+  const need=2*Math.hypot(Math.max(hx,w-hx), Math.max(hy,h-hy));
+  el.innerHTML='<i class="sb-glow"></i>';
+  const g=el.firstChild;
+  g.style.left=hx+'px'; g.style.top=hy+'px';
+  g.style.width=d0+'px'; g.style.height=d0+'px';
+  /* ⚠ **不加餘裕**（-1185 的第一版乘了 1.25）：那等於把終點推遠、前段跑得更快，
+     擴散的過程反而被吃掉。與開機那一頁同一條式子就好。 */
+  el.style.setProperty('--sb-scale', (need/d0/0.30).toFixed(2));
+  /* ⚠⚠⚠ **要先逼一次排版，起點才算得出來**（-1185 實測，查了三輪）：
+     這一層平常是 `display:none`，`display:none → block` 的同一拍就加 `.grow` 的話，
+     瀏覽器**從來沒有算過起始的 transform**，於是整段 transition 被跳過 ——
+     畫面上是「瞬間全白」，而且沒有任何錯誤訊息（我連調兩次曲線都沒用，
+     因為根本沒有在跑）。`void offsetWidth` 就是 `story.veil` 那條同樣的理由。
+     ⚠ `requestAnimationFrame` **不夠**：它排在同一幀的樣式計算之前。 */
+  el.className='on';
+  void el.offsetWidth;
+  el.classList.add('grow');
+  senseBurstT.push(setTimeout(()=>el.classList.add('fade'), SENSE_BURST_HOLD));
+  senseBurstT.push(setTimeout(stopSenseBurst, SENSE_BURST_HOLD+1200));
+}
 function senseFx(){
   const box=$('storyFx'); if(!box) return;
   playSe('se_flight_heartbeat');
-  /* ⚠⚠ **CI 要出來**（ver -924，Ray：「安雅的搜索動畫沒出 ci」）：飛行頁那一套的
-     主角就是這張圖（`Anya_CI_Search`），少了它只剩光圈，讀不出「是她在感應」。
-     ⚠ 同一張圖兩邊共用（飛行頁 canvas／這裡 DOM）—— 路徑帶 `?v=2`：Ray 換過圖，
-       不掛 cache-buster 會拿到舊的那一份（§5）。 */
+  const w=box.clientWidth||360, h=box.clientHeight||420;
+  const g0=senseGeom(0,w,h), g1=senseGeom(1,w,h);
+  /* 背景壓暗（飛行頁那一層 `rgba(3,3,7,.55)`）—— 她是半透明的，
+     少了這一層背景會從她身上整片透出來。 */
+  box.appendChild(Object.assign(document.createElement('div'),{className:'fx-sense-dim'}));
+  /* 取景層：**只負責「縮小」**（位置與大小都在這一層），裡面的東西自動跟著走。
+     ⚠ 基底擺在 k=0 的幾何，再用 transform 走到 k=1 —— `S`／`left`／`top` 三者都是
+       k 的線性函式，所以「線性內插的 transform」與逐幀重算**完全一致**。 */
+  const fit=document.createElement('div'); fit.className='fx-sense-fit';
+  fit.style.left=g0.left+'px'; fit.style.top=g0.top+'px';
+  fit.style.width=g0.S+'px';   fit.style.height=g0.S+'px';
+  fit.style.setProperty('--fit-dx',(g1.left-g0.left).toFixed(2)+'px');
+  fit.style.setProperty('--fit-dy',(g1.top -g0.top ).toFixed(2)+'px');
+  fit.style.setProperty('--fit-k', (g1.S/g0.S).toFixed(5));
+  box.appendChild(fit);
+  /* ══ 脈動 ＝ 每一下心跳一層**半透明的殘影，繞著胸針放大、淡掉**（飛行頁的
+     `senseGhost`）══
+     ⚠⚠ 殘影排在本體**之前**（底下）：中間被本體蓋住，只有往外撐出來的那一圈
+       看得到 —— 那才是「以胸針為中心擴散」。畫在上面會整個人糊掉（飛行頁原話）。
+       ⚠ 這條成立的前提是**本體半透明**（.72→.26）；-1185 中途做成不透明時，
+         殘影放底下會被蓋死，那是「沒照搬」造成的，不是這條規矩錯。
+     ⚠ 逐拍的強度不同，因為本體的不透明度一路降：`a = base(k) × amp × 0.85`。
+       第四拍是 climax（`amp 2.2`），與白光同一瞬。 */
+  SENSE_BEATS.forEach((at,i)=>{
+    const k=Math.min(1, at/SENSE_HOLD_MS);
+    const base=SENSE_ALPHA0+(SENSE_ALPHA1-SENSE_ALPHA0)*k;
+    const amp=(i===SENSE_CLIMAX)?2.2:1;
+    const gh=document.createElement('img'); gh.className='fx-sense-ghost';
+    gh.src=SENSE_CI_SRC; gh.alt='';
+    gh.style.animationDelay=at+'ms';
+    gh.style.setProperty('--g-a',    Math.min(1, base*amp*0.85).toFixed(3));
+    gh.style.setProperty('--g-grow', (1+0.45*amp).toFixed(3));
+    fit.appendChild(gh);
+  });
+  /* 本體：**淡入 260ms ＋ 透明度緩降 .72→.26**（位置與大小交給外層那一層）。 */
   const ci=document.createElement('img'); ci.className='fx-sense-ci';
-  ci.src='resources/partner/Anya_CI_Search.webp?v=2'; ci.alt='';
-  const ring=document.createElement('i'); ring.className='fx-sense-ring';
-  const flash=document.createElement('div'); flash.className='fx-sense-flash';
-  box.appendChild(ci); box.appendChild(ring); box.appendChild(flash);
-  fxTimers.push(setTimeout(()=>ci.remove(), 2600));
-  fxTimers.push(setTimeout(()=>ring.remove(), 1400));
-  fxTimers.push(setTimeout(()=>flash.remove(), 2200));
+  ci.src=SENSE_CI_SRC; ci.alt='';
+  fit.appendChild(ci);
+  /* 光圈：與白光**同一個圓心（她的手）**、同一拍發 —— 它是白光的前緣。
+     ⚠ 延遲交給 CSS 的 `--ring-delay`，不要另外開一個 `setTimeout`
+       （那一組會被 `stopFx` 清掉，而這一拍還沒結束）。 */
+  { const [hx,hy]=senseHandAt(w,h);
+    const ring=document.createElement('i'); ring.className='fx-sense-ring';
+    ring.style.setProperty('--hx', hx+'px');
+    ring.style.setProperty('--hy', hy+'px');
+    ring.style.setProperty('--ring-delay', SENSE_BURST_AT+'ms');
+    box.appendChild(ring); }
+  /* 第四拍：白光。**不進 fxTimers** —— 它要撐過下一拍（換背景），見 senseBurst。 */
+  stopSenseBurst();
+  senseBurstT.push(setTimeout(senseBurst, SENSE_BURST_AT));
 }
 function fireOneShot(line){
   if(line.se) playSe(line.se);
@@ -2564,7 +2703,7 @@ function renderLine(){
   }
 
   if(line.settle){
-    stopShake(); stopTint();
+    stopShake(); stopTint(); stopSenseBurst();
     if(!settleHandler){
       console.info('[story] 沒有註冊結算發動器，跳過 settle');
       return advance();
@@ -2581,7 +2720,7 @@ function renderLine(){
   }
 
   if(line.battle){
-    stopShake(); stopTint();     // 進戰鬥就停（ver -638／-664，Ray 指定）
+    stopShake(); stopTint(); stopSenseBurst();   // 進戰鬥就停（-638／-664／-1185）
     /* ⚠⚠ **戰鬥要停自動播放**（ver -940，Ray 指定的另一個例外）：畫面要交給玩家打，
        打完回來還開著的話，他剛從戰鬥抬起頭就有台詞自己跑掉了。 */
     stopModes();
@@ -2952,7 +3091,7 @@ function endScene(){
 }
 
 function playScene(id){
-  stopShake(); stopTint();       // 換場一定停（ver -638／-664，跨句演出的三個出口之一）
+  stopShake(); stopTint(); stopSenseBurst();   // 換場一定停（跨句演出的出口，-638／-664／-1185）
   const sc = MAIN_SCRIPT[id];
   if(!sc){ console.warn('[story] 找不到 scene：', id); close(); return; }
   cur = sc; lineIdx = 0;
@@ -3344,7 +3483,7 @@ let townOpener = null;
 export function setTownOpener(fn){ townOpener = fn || null; }
 
 export function close(opts){
-  stopShake(); stopTint();       // 離場一定停（ver -638／-664，跨句演出的三個出口之一）
+  stopShake(); stopTint(); stopSenseBurst();   // 離場一定停（跨句演出的出口，-638／-664／-1185）
   clearInterval(typing); typing=null;
   pendingReveal=null;                // ⚠ 離場：還沒演的那一拍**丟掉**（同 playScene，ver -430）
   clearTimeout(waitT); waitT=null;

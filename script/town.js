@@ -3509,21 +3509,33 @@ export const TOWNS = {
           { battle:'ruins_saint_temperance' },
           /* ── 戰後 ── 週遭發光 → 安雅感應 → 祭壇啟動。 */
           ren('shocked','安雅小姐……？'),
-          /* 立繪撤出 → 感應演出（光圈＋白光，見 story 的 `senseFx`）。 */
-          /* ⚠ ver -1061（Ray：「安雅啟動神殿時的 ci 插入太短」）：感應那一段
-             2600 → **4200ms**，白光 900 → 1300、換圖那一拍 1100 → 1600。
-             那是全場最關鍵的一個轉折（她是誰的第一個線索），一閃而過就沒了。 */
+          /* ══ 立繪撤出 → 感應演出（見 story 的 `senseFx`）══════════════════
+             ⚠⚠ **ver -1185（Ray 再改）**：「ci 停留時間太短，應該是 CI 不縮放淡入，
+               脈動三拍，第四拍白光從她手中圓型擴散到全畫面，用首頁讀取頁那個效果，
+               然後再淡入到下一個畫面」。
+             ⚠⚠ **拍子是心跳音檔決定的**（Ray：「拍子要對」「照搬探索動畫就好了啊」）：
+               `se_flight_heartbeat` 的四下落在 0.45／1.61／2.78／**3.94** 秒 ——
+               前兩下脈動（半透明殘影放大消失，同飛行頁探索那一支），
+               **第三下**白光從她手中擴散（1.5s 蓋滿；Ray：「光圈速快一點，
+               第三拍脈動就可以開始跑了」）⇒ **4.4s 之後畫面是純白**，
+               所以這一拍 `auto:4400`。
+             ⚠⚠ 拍子表只有一份（`story.js` 的 `SENSE_BEATS`，與飛行頁那一份互指）
+               —— 這個 `auto` 是**讀**它算出來的，不要在這裡另外湊一組整數。
+             ⚠ -1061 的 4200 與 -924 拆出來的那一拍 `fx:'whiteflash'` **都撤了** ——
+               白光現在是感應演出自己的第四拍，不是另外補的一片白。 */
           { speaker:'ANYA', text:'', portrait:{ char:'ANYA', show:false },
-            hide:['SORANA','RENNA','NOUVELLE','ANYA'], fx:'sense', auto:4200 },
-          /* ══ 祭壇 normal → active（ver -924，Ray：「中間要有全白的淡入淡出，2 秒」）══
-             拆成**兩拍**：① 白光淡入（900ms）② 在**全白之下**換圖、白光再淡出。
+            hide:['SORANA','RENNA','NOUVELLE','ANYA'], fx:'sense', auto:4400 },
+          /* ══ 祭壇 normal → active ══ 在**全白之下**換圖，白光再淡出
+             （Ray：「然後再淡入到下一個畫面」）。
              ⚠ 換圖一定要落在白的**中間**：同一拍又換圖又淡白的話，玩家會看到
                背景先跳一格再變白（同 §6.5「換場要在全黑之下換」那一條的道理）。
+             ⚠ 白光是**跨句**的層（`#storySenseBurst`），所以撐得過這一拍 ——
+               它在第三拍起算 2.0s（＝這一拍開始後 0.38s，換圖早就淡完了）才開始
+               淡出、1.1s 淡完，故這一拍 `auto:1500`。
              ⚠ 旗與 act 的 `flag` 是兩支：一支說「那一段演完了」、一支說
                「祭壇開著」（鐵律 9：一個狀態一個擁有事件）。 */
-          { speaker:'NARRATION', text:'', fx:'whiteflash', auto:1300 },
           { speaker:'NARRATION', text:'', flags:['ruins_altar_on'],
-            bg:'Ruins_shinier_DeepAltaractive', auto:1600 },
+            bg:'Ruins_shinier_DeepAltaractive', auto:1500 },
           nou('shocked2','發、發生什麼事了？'),
           ren('shockedCalm','！！'),
           ren('shocked','難道說、安雅小姐妳是……！'),
