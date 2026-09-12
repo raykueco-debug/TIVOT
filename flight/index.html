@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1161"></script>
+<script src="../orientation.js?v=1162"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -491,11 +491,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1161"></script>
+<script src="settlement.js?v=1162"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1161"></script>
+<script src="talks.js?v=1162"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -2163,7 +2163,10 @@ const RUIN_ART = {
     rot: -2.678,
     base: { w:250, l:340, n:64, jit:0.035, ox:62 },
     floor:'slab', floorCell:36, floorJoint:3.6,
-    tex:true,
+    /* ══ 材質（ver -1162，Ray 交件）══ 牆＝砌石（暖灰 #9B8F7E）、
+       瓦＝鱗片狀板岩（冷灰 #464D56）。冷暖對比是外觀圖上原本的關係（實測取色）。
+       ⚠ 只有**收尖的那幾層**寫 `mat:'roof'` —— 塔身是石造的，屋頂才是瓦。 */
+    tex:'castle_wall', roofTex:'castle_roof',
     lift:10,
     /* ══⚠⚠⚠ 這一組是**照著 `Belisar_Exterior.webp` 排的**（ver -1160，Ray：
        「3d 模型要盡量接近外廓」「目前這樣是對的，但不夠細緻跟外廓也有出入」）══
@@ -2194,26 +2197,26 @@ const RUIN_ART = {
 
       /* ── ④ 中央大尖塔：最高的那一支，四階收尖 ── */
       { k:'stump', x:-16, y:  0, dia:56, h: 72, z0:164 },        // 164→236
-      { k:'stump', x:-16, y:  0, dia:42, h: 24, z0:236 },
-      { k:'stump', x:-16, y:  0, dia:28, h: 22, z0:260 },
-      { k:'stump', x:-16, y:  0, dia:14, h: 20, z0:282 },        // 尖端 302
+      { k:'stump', x:-16, y:  0, dia:42, h: 24, z0:236, mat:'roof' },
+      { k:'stump', x:-16, y:  0, dia:28, h: 22, z0:260, mat:'roof' },
+      { k:'stump', x:-16, y:  0, dia:14, h: 20, z0:282, mat:'roof' },        // 尖端 302
 
       /* ── ⑤ 側塔四支：高度**刻意不齊**，最右那一支是**斷的**（沒有尖頂） ── */
       { k:'stump', x: 16, y:-62, dia:30, h: 92, z0:60 },
-      { k:'stump', x: 16, y:-62, dia:20, h: 26, z0:152 },
-      { k:'stump', x: 16, y:-62, dia:10, h: 22, z0:178 },
+      { k:'stump', x: 16, y:-62, dia:20, h: 26, z0:152, mat:'roof' },
+      { k:'stump', x: 16, y:-62, dia:10, h: 22, z0:178, mat:'roof' },
       { k:'stump', x: 16, y: 62, dia:30, h: 78, z0:60 },
-      { k:'stump', x: 16, y: 62, dia:20, h: 24, z0:138 },
-      { k:'stump', x: 16, y: 62, dia:10, h: 20, z0:162 },
+      { k:'stump', x: 16, y: 62, dia:20, h: 24, z0:138, mat:'roof' },
+      { k:'stump', x: 16, y: 62, dia:10, h: 20, z0:162, mat:'roof' },
       { k:'stump', x:  4, y:-112, dia:26, h: 68, z0:60 },
-      { k:'stump', x:  4, y:-112, dia:16, h: 22, z0:128 },
+      { k:'stump', x:  4, y:-112, dia:16, h: 22, z0:128, mat:'roof' },
       { k:'stump', x:  4, y: 112, dia:26, h: 54, z0:60 },        // ← 斷塔：不收尖
 
       /* ── ⑥ 右翼：圓塔＋錐頂 ── */
       { k:'stump', x:-18, y: 158, dia:50, h:118, z0:60 },        // 頂 178
-      { k:'stump', x:-18, y: 158, dia:40, h: 20, z0:178 },
-      { k:'stump', x:-18, y: 158, dia:24, h: 20, z0:198 },
-      { k:'stump', x:-18, y: 158, dia:10, h: 18, z0:218 },       // 錐尖 236
+      { k:'stump', x:-18, y: 158, dia:40, h: 20, z0:178, mat:'roof' },
+      { k:'stump', x:-18, y: 158, dia:24, h: 20, z0:198, mat:'roof' },
+      { k:'stump', x:-18, y: 158, dia:10, h: 18, z0:218, mat:'roof' },       // 錐尖 236
 
       /* ── ⑦ 飛扶壁：右側一排，逐支往外降 ── */
       { k:'stump', x: 34, y: 122, w:14, l:16, h:70, z0:60 },
@@ -2222,7 +2225,7 @@ const RUIN_ART = {
 
       /* ── ⑧ 左翼：矮一階、屋頂沒了 ── */
       { k:'stump', x:-28, y:-152, w:86, l: 74, h: 66, z0:60 },
-      { k:'stump', x:-10, y:-152, dia:22, h: 40, z0:126 },
+      { k:'stump', x:-10, y:-152, dia:22, h: 40, z0:126, mat:'roof' },
 
       /* ── ⑨ 前景的斷拱廊：四個墩＋中間的拱洞，**右端塌了**（只有三墩） ── */
       { k:'stump', x:150, y:-150, w:20, l:24, h:46 },
@@ -2253,6 +2256,12 @@ const RUIN_COL = { top:'#b0a488', side:'#645d4e', dark:'#443e35',
                    texTint:'rgba(66,60,50,.56)',
                    /* 門洞（ver -1147）：不是深灰是**近黑** —— 那是一個看不到底的開口。 */
                    door:'#0d0c0f',
+                   /* ══ 屋頂（ver -1162）══ 板岩的**冷灰**，與牆的暖灰成對比。
+                      ⚠ 只換貼材不夠：貼材是壓半透疊在平塗上的，底色一樣的話
+                        整座還是同一個灰。色是從交件的 `castle_roof` 取的平均
+                        （#464D56），再依朝光／背光各推一階。 */
+                   roofTop:'#545D6B', roofLit:'#606A7A',
+                   roofSide:'#464D56', roofDark:'#323842',
                    grass:'#3b4d3a', grassTint:'rgba(38,58,40,.34)',
                    sideLit:'#8d8371' };
 /* 光從哪裡來（世界座標的方向向量，指向光源）。**由地形那一支每幀發佈**
@@ -2270,6 +2279,32 @@ let ruinTex=null, ruinTexPat=null;
 (function(){ const im=new Image();
   im.onload=()=>{ ruinTex=im; ruinTexPat=null; };
   im.src='geo/flight_ruins.webp?v=2'; })();   // ?v=2：Ray 換了新圖（同名覆蓋，§5）
+/* ══⚠⚠ 逐座遺跡的材質（ver -1162，Ray 交件 `castle_wall`／`castle_roof`）══
+   `RUIN_ART[x].tex` 寫材質名（`true` ＝沿用上面那張碎石鋪面），
+   `RUIN_ART[x].roofTex` ＋ 零件上的 `mat:'roof'` ＝那一塊改用屋頂材質。
+   ⚠ 為什麼要分兩張：碎石鋪面貼在**垂直的牆**上讀起來是碎石路；而尖塔與錐頂
+     跟牆同一種灰的話，整座就是一塊灰。牆暖（#9B8F7E）、瓦冷（#464D56），
+     那個冷暖對比正是外觀圖上原本的關係（實測取色）。
+   ⚠⚠ **不必擔心垂直接縫**：貼材是按「世界單位／texel」貼的，一格覆蓋
+     256×`RUIN_TEXEL`＝179 個世界單位，而古堡最高的一塊量體只有 124
+     （＝177 texture px）—— **垂直方向根本重複不到**。橫向會重複，而交件的
+     橫向本來就是無縫的（實測左右接縫差 12.6／7.3，與內部相鄰欄同量級）。
+   ⚠ pattern 物件要**逐材質一個**：`setTransform` 是寫在 pattern 上的狀態，
+     共用一個的話後畫的會把先畫的轉換蓋掉。 */
+const RUIN_TEX={};
+/* ⚠ **開機就預載**（不要等第一次畫到才抓）：`drawRuins` 只在遺跡進視距時才跑，
+   懶載會讓它入鏡頭的頭一兩禎是平色、然後才「長出」材質。這幾張只有十幾 KB。 */
+setTimeout(()=>{ for(const k in RUIN_ART){ const A=RUIN_ART[k];
+  if(A.tex && A.tex!==true) ruinTexOf(A.tex);
+  if(A.roofTex) ruinTexOf(A.roofTex); } }, 0);
+function ruinTexOf(name){
+  if(name===true||!name) return { img:ruinTex, pat:null, key:'_ruins' };
+  let e=RUIN_TEX[name];
+  if(!e){ e=RUIN_TEX[name]={ img:null, pat:null, key:name };
+    const im=new Image(); im.onload=()=>{ e.img=im; e.pat=null; };
+    im.src='geo/'+name+'.webp'; }
+  return e;
+}
 /* 草（ver -1108）：**沿用地形自己的森林材質**（`geo/forest_dark`）——
    周圍本來就是林地，用同一張材質色調天生就合，也不必多要一張圖。 */
 let grassTex=null, grassPat=null;
@@ -8041,7 +8076,11 @@ function drawRuins(scaleH,horizon,sinp,cosp){
         /* ⚠ `dia` 是**方柱**的邊長（既有用法）；`w`/`l` 給不是方的東西
            （門面、階梯、散落的巨石）—— 不另開一種 `k`，那只會多一份實作（鐵律 8）。 */
         const b=box(pt.x,pt.y,pt.w||pt.dia,pt.l||pt.dia,pt.rot||0,pt.h,pt.z0);
-        if(b){ if(pt.col) b.col=RUIN_COL[pt.col]||pt.col; items.push(b); take(b); }
+        if(b){ if(pt.col) b.col=RUIN_COL[pt.col]||pt.col;
+               /* ⚠ 這裡**只記種類**，不解析成 pattern（ver -1162）：
+                  pattern 要 `RFC`，而那是繪製階段才建的 —— 在這裡取用會是 TDZ。 */
+               b.mat = pt.mat;
+               items.push(b); take(b); }
       }else{
         /* 倒柱＝幾節柱鼓排成一列，節與節之間留縫（那道縫就是「斷了」）。 */
         const n=pt.seg||2, segL=pt.len/n*0.86, c=Math.cos(pt.rot), sn=Math.sin(pt.rot);
@@ -8184,12 +8223,22 @@ function drawRuins(scaleH,horizon,sinp,cosp){
          唯一讀得出立體的線索，貼材只補表面的顆粒，不可以把明暗洗掉。
        ⚠ `A.tex` 是**明寫的開關**：石製遺跡維持原樣（它的零件太小，貼了只是雜訊，
          而且那個樣子 Ray 已經驗收過）。 */
-    const faceTex = (A.tex && ruinTex) ? (()=>{
-      if(!ruinTexPat) ruinTexPat=RFC.createPattern(ruinTex,'repeat');
-      return ruinTexPat;
-    })() : null;
+    /* 牆與瓦各一個 pattern（見 `ruinTexOf` 的說明：pattern 不可共用）。 */
+    const patOf=name=>{
+      if(!name) return null;
+      if(name===true||name==='_ruins'){
+        if(!ruinTex) return null;
+        if(!ruinTexPat) ruinTexPat=RFC.createPattern(ruinTex,'repeat');
+        return ruinTexPat;
+      }
+      const e=ruinTexOf(name); if(!e.img) return null;
+      if(!e.pat) e.pat=RFC.createPattern(e.img,'repeat');
+      return e.pat;
+    };
+    const wallTex = A.tex ? patOf(A.tex) : null;
+    const roofTex = A.roofTex ? patOf(A.roofTex) : null;
     /* p0→p1 是底邊（世界長 wlen）、p0→q0 是另一條邊（世界長 vlen）。 */
-    const texQuad=(p0,p1,q0,wlen,vlen)=>{
+    const texQuad=(faceTex,p0,p1,q0,wlen,vlen)=>{
       if(!faceTex || !faceTex.setTransform || wlen<1e-3 || vlen<1e-3) return false;
       const nu=wlen/RUIN_TEXEL, nv=vlen/RUIN_TEXEL;
       try{
@@ -8206,10 +8255,13 @@ function drawRuins(scaleH,horizon,sinp,cosp){
         let nx=(b[1]-a[1]), ny=-(b[0]-a[0]);          // 邊的法線（順時針＝朝外）
         const nl=Math.hypot(nx,ny)||1; nx/=nl; ny/=nl;
         const d=nx*LGT.x+ny*LGT.y;                    // >0＝朝光
+        const rf = B.mat==='roof';       // 屋頂走冷灰那一組（ver -1162）
         faces.push({ k, z:(B.base[k].z+B.base[(k+1)%4].z)/2,
                      /* `B.col`＝整塊同一個顏色、不分明暗（現在只有門洞在用）：
                         門洞要讀成**一個洞**，有明暗就變成一塊深色的板子。 */
-                     col: B.col || (d>0.30 ? RUIN_COL.sideLit : (d<-0.30 ? RUIN_COL.dark : RUIN_COL.side)) });
+                     col: B.col || (d>0.30 ? (rf?RUIN_COL.roofLit :RUIN_COL.sideLit)
+                                  : (d<-0.30 ? (rf?RUIN_COL.roofDark:RUIN_COL.dark)
+                                             : (rf?RUIN_COL.roofSide:RUIN_COL.side))) });
       }
       faces.sort((p,q)=>q.z-p.z);
       for(const f of faces){
@@ -8218,21 +8270,24 @@ function drawRuins(scaleH,horizon,sinp,cosp){
         RFC.moveTo(p0.x,p0.y); RFC.lineTo(p1.x,p1.y); RFC.lineTo(t1.x,t1.y); RFC.lineTo(t0.x,t0.y); RFC.closePath();
         RFC.fillStyle=f.col; RFC.fill();
         /* ⚠ 門洞（`B.col`）不貼：它是一個洞，不是一塊石頭。 */
-        if(!B.col){
+        const tx = (B.mat==='roof' && roofTex) ? roofTex : wallTex;   // 瓦／牆
+        if(!B.col && tx){
           const a=B.loc[k], b=B.loc[(k+1)%4];
-          if(texQuad(p0,p1,t0,Math.hypot(b[0]-a[0],b[1]-a[1]),B.h)){
-            RFC.globalAlpha=0.42; RFC.fillStyle=faceTex; RFC.fill(); RFC.globalAlpha=1;
+          if(texQuad(tx,p0,p1,t0,Math.hypot(b[0]-a[0],b[1]-a[1]),B.h)){
+            RFC.globalAlpha=0.42; RFC.fillStyle=tx; RFC.fill(); RFC.globalAlpha=1;
           }
         }
       }
-      poly(RFC,B.top); RFC.fillStyle=B.col||RUIN_COL.top; RFC.fill();
-      if(!B.col){
-        const a=B.loc[0], b=B.loc[1], d=B.loc[3];
-        if(texQuad(B.top[0],B.top[1],B.top[3],
-                   Math.hypot(b[0]-a[0],b[1]-a[1]), Math.hypot(d[0]-a[0],d[1]-a[1]))){
-          RFC.globalAlpha=0.42; RFC.fillStyle=faceTex; RFC.fill(); RFC.globalAlpha=1;
-        }
-      }
+      poly(RFC,B.top);
+      RFC.fillStyle = B.col || (B.mat==='roof' ? RUIN_COL.roofTop : RUIN_COL.top); RFC.fill();
+      { const tx = (B.mat==='roof' && roofTex) ? roofTex : wallTex;
+        if(!B.col && tx){
+          const a=B.loc[0], b=B.loc[1], d=B.loc[3];
+          if(texQuad(tx,B.top[0],B.top[1],B.top[3],
+                     Math.hypot(b[0]-a[0],b[1]-a[1]), Math.hypot(d[0]-a[0],d[1]-a[1]))){
+            RFC.globalAlpha=0.42; RFC.fillStyle=tx; RFC.fill(); RFC.globalAlpha=1;
+          }
+        } }
     }
     /* ④ 貼回主畫面：逐欄遮擋（山擋得住它）＋遠距淡出。 */
     ctx.save();
