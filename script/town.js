@@ -3858,18 +3858,26 @@ export const TOWNS = {
              秒數的由來寫在木雅克那一段，兩邊同一條時間軸）。
            ⚠ 旗與 act 的 `flag` 是兩支：一支說「這一段演完了」、一支說
              「祭壇開著」（鐵律 9：一個狀態一個擁有事件）。 */
-        bgWhen:[ { need:'fallen_altar_on', bg:'Fallen_Altaractive', noTime:true } ],
+        /* ⚠⚠ **不寫 `noTime`**（ver -1187，美術交件時特別點名）：這一組**四張時段
+           差分都有**（`Fallen_Altaractive_{dawn,day,dusk,night}`）。
+           先例 `Ruins_shinier_DeepAltaractive` 只有單張，那一張才要 `noTime:true`
+           —— 兩者不要互抄（抄了就是「天亮之後還拿夜景」或「四張全部 404」）。
+           ⚠ 新增不是同名覆蓋 ⇒ **不必動 `ASSET_VER`**（§5）。 */
+        bgWhen:[ { need:'fallen_altar_on', bg:'Fallen_Altaractive' } ],
         acts:[ { flag:'fallen_altar', sides:{ RENNA:'L' }, lines:[
           ren('ask','跟木亞克遺蹟一樣的裝置……安雅小姐？'),
           any('talk','好。'),
           /* 立繪撤出 → 感應演出 → 在全白之下把祭壇換成啟動版（同木雅克）。 */
           { speaker:'ANYA', text:'', portrait:{ char:'ANYA', show:false },
             hide:['SORANA','RENNA','NOUVELLE','ANYA'], fx:'sense', auto:4400 },
-          /* ⚠⚠ **這一拍先不換背景**：`Fallen_Altaractive` 還沒交件，而拍上的 `bg:`
-             是硬指定（沒有候選鏈）—— 指到不存在的圖就是**空背景**（§5）。
-             啟動版由上面那條 `bgWhen` 掛著：圖一交件，下次走進來就是亮的；
-             要「當場亮起來」再把 `bg:'Fallen_Altaractive'` 加回這一拍。 */
-          { speaker:'NARRATION', text:'', flags:['fallen_altar_on'], auto:1500 },
+          /* 在**全白之下**換成啟動版（ver -1187，圖到齊了）——同木雅克那一段。
+             ⚠⚠ 用 `bgBand:` **不是** `bg:`：這一組有四時段差分，而 `bg:` 是硬指定
+               （寫死某一個時段的話，半夜啟動祭壇、白光一退會是大白天）。
+               `bgBand` 走的是與城鎮背景同一條候選鏈（鐵律 7）。
+             ⚠ 旗與 act 的 `flag` 是兩支（鐵律 9）：一支說「這一段演完了」、
+               一支說「祭壇開著」。 */
+          { speaker:'NARRATION', text:'', flags:['fallen_altar_on'],
+            bgBand:'Fallen_Altaractive', auto:1500 },
           ren('shockedopen','果然，安雅小姐有感應並啟動遺蹟的能力。'),
           nou('talk','可是，這些遺蹟啟動以後會怎麼樣呢？'),
           ren('thinking','……不曉得。'),

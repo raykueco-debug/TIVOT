@@ -268,6 +268,13 @@ def main():
                 if h not in speakers:
                     err('%s：hide 指到不存在的角色 %s' % (tag, h))
 
+            # `bgBand`（ver -1187）＝走時段候選鏈的換背景：驗的是**基底名**
+            # （與節點的 `bg` 同一條規矩：`_Day` 或不帶時段的那一張在不在）。
+            if ln.get('bgBand'):
+                b0 = ln['bgBand']
+                if not (exists(BG_DIR + b0 + '_Day.webp') or exists(BG_DIR + b0 + '_day.webp')
+                        or exists(BG_DIR + b0 + '.webp')):
+                    err('%s：沒有這張背景 %s（bgBand，找 %s，含 _Day／_day）' % (tag, b0, BG_DIR))
             if ln.get('bg'):
                 d = CG_DIR if re.match(r'^\d{3}_', ln['bg']) else BG_DIR
                 if not exists(d + ln['bg'] + '.webp'):

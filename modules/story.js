@@ -1198,6 +1198,31 @@ function applyPersist(line){
     swapImg($('storyBg'), line.bg?imgSrc(line.bg):'',
             ()=>matchPortraits(toneSrcEl(), $('storyCast')));
   }
+  /* ══⚠⚠ `bgBand:'<基底名>'` ＝ **走時段候選鏈**的換背景（ver -1187）══════════
+     `bg:` 是**硬指定**（一個檔名、不吃時段）—— 只有單張的圖用它就好
+     （`Ruins_shinier_DeepAltaractive` 就是那一種）。
+     但有四時段差分的圖（`Fallen_Altaractive_{dawn,day,dusk,night}`）用 `bg:` 的話，
+     腳本就得**寫死某一個時段** —— 玩家半夜啟動祭壇，白光一退是大白天，
+     要走出去再走回來才會變成夜景。那是 §6.5.4「退路沿明暗軸走」那條的反面。
+     ⚠⚠ 候選鏈**只有一份**（`bandNames`，鐵律 7）：城鎮背景、插圖、這裡都問它。
+     ⚠ 逐個試到載得動為止（同 `story.resolveCg`／`town.bgFor` 的作法）——
+       非同步，但這種拍本來就藏在白光／黑幕底下，有的是時間。
+     ⚠ 只認**這一次**的解析結果：解完才動 `stageBg`，中途被下一拍換掉就作廢。 */
+  if(line.bgBand){
+    const cands=bandNames(line.bgBand, line.bgNoTime);
+    const want=line.bgBand;
+    (function tryNext(i){
+      if(i>=cands.length){ console.warn('[story] bgBand 一張都載不到：', want); return; }
+      const nm=cands[i], im=new Image();
+      im.onload=()=>{
+        if(stageBg===want) return;              // 已經在這一張上了
+        stageBg=want;                           // ⚠ 記**基底名**：下一拍寫同一個才不會重換
+        swapImg($('storyBg'), imgSrc(nm), ()=>matchPortraits(toneSrcEl(), $('storyCast')));
+      };
+      im.onerror=()=>tryNext(i+1);
+      im.src=imgSrc(nm);
+    })(0);
+  }
   let cgChanged=false, cgFaded=false;
   if(line.cg!==undefined && line.cg!==stageCg){
     cgChanged=true;
