@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1145"></script>
+<script src="../orientation.js?v=1146"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -491,11 +491,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1145"></script>
+<script src="settlement.js?v=1146"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1145"></script>
+<script src="talks.js?v=1146"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -2010,7 +2010,15 @@ const PLACES=[
      ⚠ 座標是 Ray 指定的 (735,196)：高度圖上 h=143（全場最高的一族，帝都才 129）
        ——「半嵌在山壁裡的巨大石造門面」正好落在山地上。
      ⚠ `export_mapref.py` 的 PLACES 要同步（那張參考圖是給美術對位置用的）。 */
-  {x:735, y:196, name:'伊甸古墓', n:'伊甸古墓', type:'遺跡', town:'tomb'},
+  /* ⚠⚠ **座標由 (735,196) 改為 (726,186)**（ver -1146，Ray：「位置微調，讓他在
+       灰色峭壁旁」→ 他自己飛過去指名「726,186 有峭壁，放在那裡」）。
+     ⚠ 實測那一格是 h=220、坡度 64 的**陡林坡**，緊鄰的 (725~726,189~190) 才是
+       岩壁，而且是**褐岩**不是灰岩 —— 這一帶（諾爾維亞王國境內）整片沒有成片灰岩，
+       因為崖面高度 218~298 全在 `BIOME_ROCKALT`(300) 之下。真正成片的灰岩崖在
+       x≈697~706（已經跨進埃爾比斯王國）。照 Ray 指名的那一格放。
+     ⚠ 這一格與 `export_mapref.py` 的 PLACES **兩邊都要改**（那張參考圖是給美術
+       對位置用的，不同步就會標在舊位置）。 */
+  {x:726, y:186, name:'伊甸古墓', n:'伊甸古墓', type:'遺跡', town:'tomb'},
 ];
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -4456,6 +4464,26 @@ async function loadWorld(){
     }
   }
 
+  /* ══⚠⚠⚠ 坡度（`SLX`／`SLY`）—— **一定要排在生物群系打表之前**（ver -1146）══
+     給逐幀光照用，也是**崖面判定的輸入**（下面 `step(0.82)` 那一段的 `sl`）。
+     ⚠ 必須在「整平邊緣／河面／城鎮地基」之後算，否則崖頂的法線是舊的。
+     ⚠⚠⚠ **ver -1146 之前它被擺在打表後面**（檔案裡在 `step(0.92)` 前），於是
+       打表讀到的是剛配置好、**全是 0** 的坡度 —— 崖面那條分支從來沒有成立過，
+       `rock_grey`／`rock_brown` 兩類地貌**整張圖 0 格**（實測），而那兩張貼圖
+       一直照常載入。修好之後灰岩 5.4 萬格、褐岩 14.8 萬格（陸地的 7.8%）。
+       ⚠ 線索是 `step()` 的進度**倒退**（…0.78 → 0.82 → 0.70 → 0.92）——
+         新增任何一段時順手看一眼那串數字是不是遞增的。 */
+  step(0.70);   // 計算坡度…
+  for(let y=0;y<MAPH;y++){
+    const ym=y>0?y-1:0, yp=y<MAPH-1?y+1:MAPH-1;
+    for(let x=0;x<MAPW;x++){
+      const i=y*MAPW+x;
+      const xm=x>0?x-1:0, xp=x<MAPW-1?x+1:MAPW-1;
+      SLX[i]=clamp((raw[y*MAPW+xp]-raw[y*MAPW+xm])*760,-127,127)|0;
+      SLY[i]=clamp((raw[yp*MAPW+x]-raw[ym*MAPW+x])*760,-127,127)|0;
+    }
+  }
+
   /* ── 地貌貼圖 ────────────────────────────────────────────
      全圖鋪設，沒有覆蓋權重表：哪裡鋪哪一張由取樣時的生物群系選擇器決定
      （高度＋坡度＋低頻噪聲），不需要一張 2.6MB 的逐像素分類圖。 */
@@ -4579,17 +4607,6 @@ async function loadWorld(){
     }
   }
 
-  // 坡度（給逐幀光照用）—— 必須在邊緣抬升之後，否則崖頂的法線是舊的
-  step(0.70);   // 計算坡度…
-  for(let y=0;y<MAPH;y++){
-    const ym=y>0?y-1:0, yp=y<MAPH-1?y+1:MAPH-1;
-    for(let x=0;x<MAPW;x++){
-      const i=y*MAPW+x;
-      const xm=x>0?x-1:0, xp=x<MAPW-1?x+1:MAPW-1;
-      SLX[i]=clamp((raw[y*MAPW+xp]-raw[y*MAPW+xm])*760,-127,127)|0;
-      SLY[i]=clamp((raw[yp*MAPW+x]-raw[ym*MAPW+x])*760,-127,127)|0;
-    }
-  }
   // 地標：x/y 是「地圖像素」座標 → 換算成世界座標 wx/wy 供投影使用
   PLACES.forEach(P=>{
     const xi=clamp(P.x|0,0,MAPW-1), yi=clamp(P.y|0,0,MAPH-1);
@@ -5004,6 +5021,26 @@ const endDrag=e=>{
        來分辨輕點與長按：長按放手時 `senseT0` 已經被上面那一行收掉了，
        拿它當判準會讓每一次長按放手都再補一段閒聊。 */
     if(!hitName && onShip && held<TAP_MS && !s9Tutor) talkTap();
+    /* ══ 釘選：點一下飛行畫面 → 地面射出一道光柱＋座標；再點一下移除
+       （ver -1146，Ray：「加入飛行畫面釘選工具」「點一下飛行畫面，可生成從地面
+         發出的光柱」「並顯示該座標」「再點一下可移除」）══
+       ⚠⚠ **與大地圖的釘選是同一根釘子**（`MV.pin`，鐵律 7）：在天上插的，
+         打開地圖就在那裡；方向計上那束黃光也自動指過去，不必另接。
+       ⚠⚠ 「再點一下移除」＝**切換**，與路人單句「點一下出、再點一下收」同一個
+         慣例（§6.5.4）—— 所以有釘子時**不重新定位**，先拔掉。要移到別處就點兩下
+         （拔、再插），這比「點哪就跳哪、沒辦法收掉」好懂。
+       ⚠ 這一支排在船身與名牌**之後**：那兩者各有自己的意思（閒聊／進入地標），
+         釘選吃的是「剩下的那片畫面」。排除區與 `onShip` 那一組完全一致：
+         · `py<skyBottom()`　控制盤面不是飛行窗（含伸進窗裡的方向計與舵輪）
+         · `!sturmHit()`　　 方向計那一帶歸加速
+         · `!onShip`／`!hitName`　船身歸閒聊、名牌歸進入
+       ⚠ 點到天空（射線整條都沒撞到地形）＝**什麼都不做**，不是「插在無限遠」。 */
+    if(!hitName && !onShip && !mapOpen && held<TAP_MS
+       && py<skyBottom() && !sturmHit(px,py)){
+      if(MV.pin) MV.pin=null;
+      else { const q=pickTerrain(px,py); if(q) MV.pin=q; }
+      if(mapOpen) drawMap();
+    }
   }
   if(dragId!==null){ try{ stage.releasePointerCapture(dragId); }catch(_){} }
   dragging=false; dragId=null; fwd=0; rgt=0;
@@ -6549,6 +6586,13 @@ function render(now){
   LIT.amb=ambI; LIT.sun=sunI; LIT.r=lightR; LIT.g=lightG; LIT.b=lightB;
 
   const sinp=Math.sin(cam.angle), cosp=Math.cos(cam.angle);
+  /* ══⚠⚠ 當幀的投影常數**發佈**出去（ver -1146）══
+     `pickTerrain()`（點飛行畫面插釘選）要把螢幕上的一點反解回地圖座標，
+     用的必須是**這一幀真的畫出來的那一組**。自己照著式子再算一次就是鐵律 7 的病：
+     `cam.angle` 每幀都在動，而 `scaleH`／`horizon` 還吃 `BH` 與 `HORIZON_F`
+     （畫質檔一變就跟著變）—— 兩處各算一次，點下去的位置就會與看到的差一截。
+     ⚠ 這裡只「寫」，其他人只「讀」。 */
+  PROJ.scaleH=scaleH; PROJ.horizon=horizon; PROJ.sinp=sinp; PROJ.cosp=cosp; PROJ.ok=true;
   const FOGS=ZFAR*FOG_START;
   const fr=SC.hz[0], fg=SC.hz[1], fb=SC.hz[2];
   /* ⚠ 不取整。原本 (now*0.006)|0 每 167ms 才跳一個地圖像素（＝20 世界單位），
@@ -7827,40 +7871,40 @@ const BEAM_H=1100;        // 光柱高度（世界單位）
 const BEAM_W=34;          // 光柱寬度（世界單位）
 const BEAM_FAR=26000;     // 看得到的距離（遠大於遺跡本身）
 let beamFB=null, BFC=null;
-function drawRuinBeams(scaleH,horizon,sinp,cosp,now){
-  if(!MAPW) return;
-  const sxk=W/BW, syk=VIEWH/BH;
-  for(const P of PLACES){
-    if(!P.sense || !P.flag || !flagOn(P.flag)) continue;
-    /* ⚠⚠ **去過就不再亮**（ver -1122，Ray：「遺跡探索過以後光柱就刪掉」）——
-       光柱是「那裡有東西、你還沒去」的記號，去過之後它就只是一根杵在地圖上的光。
-       ⚠ 判準用**踏進那張圖**的旗（`mapcard_<圖>`，§6.5.3.9 的圖名卡記的那一支）——
-         那是既有的唯一真相（誰插＝第一次走進去），不另立一支「探索過了」的旗（鐵律 9）。
-       ⚠ 沒有 `town` 的隱藏點（還沒做內容的那幾個）永遠沒有那支旗 → 光柱照亮，
-         那正是對的：你還去不了它。 */
-    if(P.town && flagOn('mapcard_'+P.town)) continue;
-    const wx=P.x*MAP_SCALE, wy=P.y*MAP_SCALE;
+/* 兩種光柱的顏色。⚠ 釘選用**金色**，與大地圖那根針、方向計上那束黃光同一個
+   （`drawMapPin` 的註解：「玩家要認得出兩者是同一件事」）—— 它們本來就是同一根釘子。 */
+const BEAM_TINT = {
+  sense: { hot:'150,236,244', cool:'120,220,236' },   // 混沌感知找出來的遺跡（青白）
+  pin:   { hot:'255,236,170', cool:'255,214,96'  },   // 釘選（金）
+};
+/* ══⚠⚠ 畫**一道**光柱（ver -1146 由 drawRuinBeams 抽出來）══
+   原本這一段寫死在「掃到的遺跡」那個迴圈裡；釘選也要一模一樣的一道光，
+   所以抽成一支、兩邊都呼叫它（鐵律 8：一個動作一個實作）。
+   ⚠ 抽出來時**行為一個字都沒改** —— 遺跡那一支只是把自己的顏色與距離傳進來。 */
+function drawBeamAt(mx,my,tint,far,scaleH,horizon,sinp,cosp,now){
+    const sxk=W/BW, syk=VIEWH/BH;
+    const wx=mx*MAP_SCALE, wy=my*MAP_SCALE;
     const dx=wx-cam.x, dy=wy-cam.y;
     const dist=Math.hypot(dx,dy);
-    if(dist>BEAM_FAR) continue;
+    if(dist>far) return null;
     const z=dx*(-sinp)+dy*(-cosp);
-    if(z<RUIN_NEAR||z>ZFAR*0.95) continue;
+    if(z<RUIN_NEAR||z>ZFAR*0.95) return null;
     const sv=(dx*cosp+dy*(-sinp))/z;
-    if(sv<-1.3||sv>1.3) continue;
-    const gh=HGT[clamp(P.y|0,0,MAPH-1)*MAPW+clamp(P.x|0,0,MAPW-1)];
+    if(sv<-1.3||sv>1.3) return null;
+    const gh=HGT[clamp(my|0,0,MAPH-1)*MAPW+clamp(mx|0,0,MAPW-1)];
     const cx=((sv+1)/2*BW)*sxk;
     const yAt=h=>(((cam.alt-gh-h)/z + z*curvAt(sv))*scaleH+horizon)*syk;
     const y0=yAt(0), y1=yAt(BEAM_H);
-    if(y1>VIEWH||y0<-VIEWH) continue;
+    if(y1>VIEWH||y0<-VIEWH) return null;
     const halfW=Math.max(1.2, BEAM_W*0.5*W/(2*z));
     /* 脈動：慢、幅度小 —— 這是一道靜靜立著的光，不是警報器。 */
     const pul=0.82+0.18*Math.sin(now*0.0016);
     const top=Math.max(y1,-40), bot=Math.min(y0,VIEWH+20);
-    if(bot-top<2) continue;
+    if(bot-top<2) return null;
     const pad=Math.ceil(halfW*3)+6;
     const fx0=Math.floor(cx-pad), fy0=Math.floor(top)-4;
     const fbw=Math.ceil(pad*2), fbh=Math.ceil(bot-top)+8;
-    if(fbw<3||fbh<3||fbh>VIEWH*3) continue;
+    if(fbw<3||fbh<3||fbh>VIEWH*3) return null;
     const pk=clamp(BW/W,0.15,1);
     const bwp=Math.max(2,Math.round(fbw*pk)), bhp=Math.max(2,Math.round(fbh*pk));
     if(!beamFB){ beamFB=document.createElement('canvas'); BFC=beamFB.getContext('2d'); }
@@ -7872,9 +7916,9 @@ function drawRuinBeams(scaleH,horizon,sinp,cosp,now){
        ⚠ 頂端要淡到 0：切齊的光柱讀起來是一根柱子，不是一道光。 */
     const grad=(w,a0)=>{
       const g=BFC.createLinearGradient(0,y0,0,y1);
-      g.addColorStop(0,   'rgba(150,236,244,'+(a0*pul).toFixed(3)+')');
-      g.addColorStop(0.45,'rgba(120,220,236,'+(a0*0.55*pul).toFixed(3)+')');
-      g.addColorStop(1,   'rgba(120,220,236,0)');
+      g.addColorStop(0,   'rgba('+tint.hot +','+(a0*pul).toFixed(3)+')');
+      g.addColorStop(0.45,'rgba('+tint.cool+','+(a0*0.55*pul).toFixed(3)+')');
+      g.addColorStop(1,   'rgba('+tint.cool+',0)');
       BFC.fillStyle=g; BFC.fillRect(cx-w,y1,w*2,y0-y1);
     };
     BFC.globalCompositeOperation='lighter';
@@ -7889,7 +7933,49 @@ function drawRuinBeams(scaleH,horizon,sinp,cosp,now){
     ctx.drawImage(beamFB,0,0,bwp,bhp,fx0,fy0,fbw,fbh);
     ctx.globalCompositeOperation='source-over';
     ctx.restore();
+    return { cx, y0, z };          // 呼叫端要拿它掛讀數（釘選的座標）
+}
+/* 掃到的遺跡射出的光柱（誰要畫）＋**釘選的那一根**（ver -1146）。 */
+function drawRuinBeams(scaleH,horizon,sinp,cosp,now){
+  if(!MAPW) return;
+  for(const P of PLACES){
+    if(!P.sense || !P.flag || !flagOn(P.flag)) continue;
+    if(P.town && flagOn('mapcard_'+P.town)) continue;
+    drawBeamAt(P.x,P.y,BEAM_TINT.sense,BEAM_FAR,scaleH,horizon,sinp,cosp,now);
   }
+  /* ══ 釘選（Ray：「點一下飛行畫面，可生成從地面發出的光柱」「並顯示該座標」）══
+     ⚠ 釘子只有一根，而且與大地圖共用同一個 `MV.pin`（鐵律 7）——
+       在天上插的釘子，打開地圖就在那裡；方向計那束黃光也自動指過去。
+     ⚠ 剔除距離用 `ZFAR`（地形畫多遠、光柱就看得到多遠）而不是遺跡那個
+       `BEAM_FAR`：遺跡是「走近才發現」，釘選是玩家自己插的，他知道它在那裡，
+       看得到才有意義。 */
+  if(MV.pin){
+    const r=drawBeamAt(MV.pin[0],MV.pin[1],BEAM_TINT.pin,ZFAR*0.95,
+                       scaleH,horizon,sinp,cosp,now);
+    if(r) drawPinLabel(r.cx, r.y0, MV.pin);
+  }
+}
+/* 光柱底下的座標讀數。
+   ⚠⚠ 畫在**主畫布**（全解析），不進那張低解析離屏 —— 光柱要跟地形同一顆像素
+     （§6.7），但**數字不是世界裡的東西**，跟著像素化就糊到讀不出來。
+   ⚠ 底部可能落在畫面外（站得很近、或光柱在腳下）：夾回窗內，不然讀數會消失。
+   ⚠⚠ 下界夾的是 **`skyBottom()`** 不是 `VIEWH`：羅盤與舵輪就壓在那一截，
+     夾到 `VIEWH` 會讓讀數躲到羅盤後面（實測就是）。而它正好也是**點擊**的下界
+     —— 讀數與釘選共用同一條邊界，不另訂一個數字（鐵律 7）。 */
+function drawPinLabel(cx,y0,pin){
+  const txt='('+pin[0]+','+pin[1]+')';
+  const y=clamp(y0, 22, skyBottom()-4);
+  ctx.save();
+  ctx.font='600 13px ui-monospace,Menlo,monospace';
+  ctx.textAlign='center'; ctx.textBaseline='bottom';
+  const w=ctx.measureText(txt).width;
+  ctx.fillStyle='rgba(8,10,16,.62)';
+  ctx.fillRect(cx-w/2-6, y-16, w+12, 17);
+  ctx.strokeStyle='rgba(255,214,96,.55)'; ctx.lineWidth=1;
+  ctx.strokeRect(cx-w/2-6, y-16, w+12, 17);
+  ctx.fillStyle='#ffd660';
+  ctx.fillText(txt, cx, y-3);
+  ctx.restore();
 }
 
 function drawTrains(S,scaleH,horizon,sinp,cosp){
@@ -12046,6 +12132,36 @@ function updateShipVisual(dt,now){
    疊在地形上（原本 0.88 的帆會透出背景，現在只透一次）。 */
 let shipFB=null, SC=null;
 let shipHit=null;          // {x,y,r}：船在螢幕上的命中圈，每幀由 drawShip 更新
+/* 當幀的投影常數（唯一的寫入點是 `render()`，見那裡的說明）。 */
+const PROJ={ ok:false, scaleH:0, horizon:0, sinp:0, cosp:1 };
+/* ══⚠⚠ 螢幕上的一點 → 地形上的地圖座標（ver -1146，釘選工具用）══
+   作法與地形本身同一套**體素射線**：沿著那一欄的視線由近而遠推進，
+   每一步算出地面在螢幕上的 y，**第一次**升到點擊點之上的那一步就是命中
+   —— 「取第一次」正好就是遮擋（前面的山擋住後面的谷），不必另做一套。
+   ⚠ 投影參數讀 `PROJ`（render 每幀發佈），不自己再算一次（鐵律 7）。
+   ⚠ 步長由近而遠**等比放大**：近處要準（一步 4 個世界單位＝地圖像素的 1/5），
+     遠處一個地圖像素本來就不到一個螢幕像素，再細也讀不出來。
+   ⚠ 回 null ＝ 點到天空（那一欄的地形整條都在點擊點之下），呼叫端當成「沒插」。 */
+function pickTerrain(sx,sy){
+  if(!PROJ.ok || !MAPW) return null;
+  const scaleH=PROJ.scaleH, horizon=PROJ.horizon, sinp=PROJ.sinp, cosp=PROJ.cosp;
+  const syk=VIEWH/BH;
+  const sv=sx/W*2-1;                      // 螢幕 x → 視線的橫向座標（同 px() 的逆）
+  if(sv<-1.6||sv>1.6) return null;
+  const curv=curvAt(sv);
+  for(let z=60; z<ZFAR; z+=Math.max(4,z*0.012)){
+    /* 前向 (-sinp,-cosp) 與右向 (cosp,-sinp) 是正交單位向量，
+       所以視線上距離 z、橫向 sv·z 的那一點就是這兩個的線性組合。 */
+    const dx=z*(-sinp)+sv*z*cosp;
+    const dy=z*(-cosp)+sv*z*(-sinp);
+    const mx=(cam.x+dx)/MAP_SCALE, my=(cam.y+dy)/MAP_SCALE;
+    if(mx<0||my<0||mx>=MAPW||my>=MAPH) return null;
+    const h=HGT[(my|0)*MAPW+(mx|0)];
+    const ys=(((cam.alt-h)/z + z*curv)*scaleH+horizon)*syk;
+    if(ys<=sy) return [Math.round(mx), Math.round(my)];
+  }
+  return null;
+}
 function drawShip(now){
   const V=SHIP_VISUAL;
   const k=Math.min(2.9,W/135);
