@@ -1870,9 +1870,19 @@ function bgCandsOf(n, id){
        因為某個事件換一張。
      ⚠ 排在最前面（最specific）、**載不到就往下退**回重建版／節點原本那一張 ——
        圖還沒交也不會變成空畫面（同分店與重建那兩條）。
-     ⚠ 鐵律 9：`need` 那支旗要答得出「誰插的」。**資料上還沒有人寫 `bgWhen`** ——
-       石橋那一張圖已經入庫，但「什麼事件會把門打開」是 Ray 的劇本，等他指定。 */
-  { const w=(n.bgWhen||[]).find(o=>o && o.need && prog.hasFlag(o.need));
+     ⚠ 鐵律 9：那支旗要答得出「誰插的」。
+     ⚠⚠ **`not:` ＝反過來：那支旗**還沒**立的時候用這一張**（ver -1142，
+       Ray：「做一張關閉的墓門」「同一格的另一個狀態」）。
+       為什麼需要它：伊甸古墓的門**預設是關的**，開了才變成現在那張撬開一道縫的。
+       寫成 `need` 的話「關著」就得當成節點的 `bg`（基底），而基底同時是**退路** ——
+       關著那張還沒交件時就會變成空畫面。寫成 `not` 就能把**已經交件的那一張**
+       留在基底當退路，圖沒到也不會開天窗（同分店與重建那兩條的精神）。
+       ⚠ 寫法與 `acts`／`storyPartnerBy` 的 `not` 同義（ver -970），不另發明字。
+       ⚠ 兩格可以並用（`need` 且 `not`）；**兩格都不寫的那一筆一律不算**
+         —— 不然它會永遠贏，等於把節點的 `bg` 換掉，那不是這個欄位的用途。 */
+  { const w=(n.bgWhen||[]).find(o=>o && (o.need || o.not)
+              && (!o.need || prog.hasFlag(o.need))
+              && (!o.not  || !prog.hasFlag(o.not)));
     if(w) add(w.bg, w.noTime!=null ? w.noTime : n.noTime); }
   const sc=dineSceneOf(id);
   if(sc) add(sc.bg, sc.noTime);
