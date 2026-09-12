@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1133"></script>
+<script src="../orientation.js?v=1134"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -491,11 +491,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1133"></script>
+<script src="settlement.js?v=1134"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1133"></script>
+<script src="talks.js?v=1134"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -1997,6 +1997,20 @@ const PLACES=[
      ⚠ `sense:true` 不動 —— 名牌仍然要感知才掃得到，但地上的斷柱一直看得見。 */
   {x:1125,y:757, name:'石製遺跡', n:'石製遺跡', type:'遺跡',
    sense:true, flag:'ruin_b_found', ruin:'stone', town:'fallen'},
+  /* ══⚠⚠ 伊甸古墓（ver -1134，Ray：「在 735 196 放置地點伊甸古墓，拓樸跟圖已經交了」）══
+     · **不是隱藏點**（沒有 `sense`／`flag`）：遠遠就看得到金箭頭與名牌，
+       同帝都／夏爾村那一族 —— Ray 說的是「放置**地點**」。
+     · `town:'tomb'` ＝ 降得下去（34 格的迷宮，見 `script/town.js`）；
+       `n:` ＝降落鈕上的字（`doLand` 讀 `S.n`）。
+     · ⚠ **不要進 SETTLEMENTS**：那張表會被道路網與程序建築當成「城」，
+       而這是一座嵌在山壁裡的墓門。著陸掃描（`nearestTown`）本來就兼掃帶 `town`
+       的 PLACES，程式不必改（同夏爾森林與石製遺跡）。
+     · ⚠ 地表沒有手寫量體（沒有 `ruin:`）—— 墓門那一格的樣子畫在**城鎮背景**上，
+       大地圖上只有名牌。要在地表長出東西再補 `RUIN_ART` 的一條。
+     ⚠ 座標是 Ray 指定的 (735,196)：高度圖上 h=143（全場最高的一族，帝都才 129）
+       ——「半嵌在山壁裡的巨大石造門面」正好落在山地上。
+     ⚠ `export_mapref.py` 的 PLACES 要同步（那張參考圖是給美術對位置用的）。 */
+  {x:735, y:196, name:'伊甸古墓', n:'伊甸古墓', type:'遺跡', town:'tomb'},
 ];
 
 /* ══════════════════════════════════════════════════════════════════════

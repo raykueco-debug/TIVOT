@@ -271,8 +271,41 @@ perfect maze ＝ 無環 ＋ 唯一解 ＋ 大量 dead end）。
 
 | 段 | 狀態 |
 |---|---|
-| 拓樸 | **提案完成，等 Ray 拍板**（34 格・33 邊・環 0・三層 17/12/5・15 格是死胡同） |
-| 背景圖 | 0 / 40 |
-| 槍棺小地圖 | 未開始（要等拓樸接進 `script/town.js` 才產得出權威佈局） |
+| 拓樸 | **Ray 拍板、程式端已接**（ver -1134，見下） |
+| 背景圖 | 0 / 40 —— **可以開始畫了**（檔名見下） |
+| 槍棺小地圖 | 可以開始（權威佈局已經產得出來：`python3 tools/map_layout.py tomb`） |
 
-⚠ **在 Ray 拍板之前不要開始畫背景** —— 40 張是一個晚上的產線，拓樸改一格就白跑一批。
+---
+
+## 八、程式端已接（ver -1134，程式 session 回覆）
+
+> Ray：「在 735 196 放置地點伊甸古墓，拓樸跟圖已經交了，動手吧」
+
+- **`script/town.js` 的 `TOWNS.tomb`**：34 格一格不改照抄本文件第二節。
+  `entry:'gate'`／`storyExplore:true`／`wilderness:true`／`stepMin:10`／迷霧照預設（有霧）。
+- **大地圖**：`flight/index.html` 的 `PLACES` 多一列 `(735,196) 伊甸古墓`，
+  `town:'tomb'` ＝降得下去；**不是隱藏點**（遠遠就看得到名牌與金箭頭）。
+  `flight/export_mapref.py` 也同步了（參考圖上會標出來）。
+- ⚠⚠ **背景檔名已經定好了，請照這個交**（程式端不必再改）：
+
+  ```
+  Tomb_<節點id>            例：Tomb_Gate / Tomb_Vestibule / Tomb_Lapidarium …
+  ```
+  節點 id 就是第二節那三張表的第一欄（大小寫照抄：`Tomb_OssuaryA`／`Tomb_SarcE`／
+  `Tomb_VaultW`／`Tomb_Corr2`／`Tomb_Hall2`／`Tomb_Gallery3`／`Tomb_Landing2`…）。
+  · **32 格不見天光** ＝ 單張、**不帶時段尾巴**（節點上已寫 `noTime:true`）
+  · **墓門 `Tomb_Gate` 與後殿 `Tomb_Apse`** ＝ ☀ 四時段差分
+    `_dawn` / `_day` / `_dusk` / `_night`（**全小寫**，同既有交件慣例）
+- **每一格現在都掛著 `bgPending:true`** ＝「知道缺，圖在路上」。
+  `tools/script_lint.py` 因此只報提醒不報錯；**交件之後那一格的 `bgPending` 要拔掉**
+  （lint 會反過來提醒「已交件，bgPending 可以拔了」）。
+- **佈局圖已改由權威來源產生**：`python3 tools/map_layout.py tomb`
+  （它直接讀 `script/town.js`，圖與遊戲不可能走鐘）——`_layout_tomb.png` 已重產，
+  驗算 **34 格・33 邊・環數 0** 與本文件一致。
+  ⚠ 提案期的 `tools/map_tomb_draft.py` 現在是**第二份真相**了（它自己的檔頭也這麼寫）
+    —— 回收由美術那一邊決定（那是你們的檔，程式端不動）。
+- **小地圖**：`TOWNS.tomb` 還**沒有** `map:` 欄位，所以槍棺的地圖鈕現在回
+  「這一帶還沒有留下地圖。」（實測）。交件時照石製遺跡那一套給
+  `resources/map/map_tomb.webp` ＋ `_spots_tomb.json`，程式端再抄座標接上。
+- **實測**（-1134）：從墓門走完那條唯一正確的路到石棺主室（19 格、16 次移動）全通；
+  每走一格 10 分鐘；沒有出口的方向按了不動；反方向回得來。

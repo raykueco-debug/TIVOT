@@ -3810,4 +3810,134 @@ export const TOWNS = {
         exits:{ back:'uptown' } },
     },
   },
+
+  /* ══════════════════════════════════════════════════════════════════════
+     伊甸古墓（ver -1134；Ray：「在 735 196 放置地點伊甸古墓，拓樸跟圖已經交了」）
+     ──────────────────────────────────────────────────────────────────────
+     權威規格：`resources/map/_tomb_spec.md`（美術交件，含逐格特徵與畫風規格）；
+     佈局圖：`resources/map/_layout_tomb.png`。**這裡照抄，一格都不改**
+     （憲法 ver -907：地圖的拓樸是 Ray 的設計，不是我的）。
+
+     **34 格・33 邊・環數 0（樹）**＝ Ray 要的「只有一條正確的路」：
+     有環就有第二條走法，那句話就不成立。迷宮感靠**岔口多、而且大半通往死胡同**
+     （perfect maze）—— 正確的路 19 格，其餘 15 格是死路。
+
+       | 層 | 格數 | 死胡同 |
+       | 一・上層   | 17 | A 家族墓室(3) / B 藏骨所(3) / C 誦經室(1) / D 聖骨匣室(1) |
+       | 二・中層   | 12 | G 焚化窯(3) / E 蓄水池(1) / F 積水坑(1) |
+       | 三・玄室層 |  5 | H 骨坑(2) |
+
+     ⚠⚠ **兩道階梯是樹上的「橋」**（`stair1`／`stair2`）：找不到就真的下不去。
+     ⚠ 只有一個對外出口（起飛）＝**末端型**，ver -895「結算怪擺在沒走進來的那個
+       出口」不適用；結算點日後由資料指定（規格建議 `crypt`）。
+     ⚠⚠⚠ **背景圖 0 / 40 —— 這一版是「先搭景」**（同石製遺跡與聖索菲亞那兩座的
+       第一版）：走得進去、走得通、地名與方向都對，但每一格都還沒有圖。
+       檔名已經先定好（`Tomb_<節點id>`，見下），美術交件時**不必改這裡**。
+       · 32 格不見天光＝單張、`noTime:true`
+       · **墓門**與**後殿**帶 ☀＝四時段差分（`_dawn/_day/_dusk/_night`），
+         所以那兩格**不寫 `noTime`**。
+     ⚠ **沒有 `map:`** ＝ 槍棺的地圖鈕會回「這一帶還沒有留下地圖。」（ver -899 的
+       既有行為）。小地圖要等美術用 `tools/map_layout.py tomb` 產出權威佈局再畫
+       —— 那一支現在讀得到這座墓了（`POS` 已補）。
+     ⚠ `bgm` 待定（Ray 還沒給）：不寫＝沿用進來之前那一首，不會變成一片安靜。
+     ══════════════════════════════════════════════════════════════════════ */
+  tomb: {
+    name: '伊甸古墓',
+    entry: 'gate',
+    storyExplore: true,   // 不是城：女角不排外出行程（§6.5.4.2）
+    wilderness: true,     // 野外的路沒有門可以關（19:00 全域打烊不罩，ver -862）
+    stepMin: 10,          // 遺跡那一級（ver -917，Ray：「遺跡內每次移動 10 分鐘」）
+    /* ⚠ 迷霧是預設（ver -913）—— **不要寫 `mist:0`**：這張是迷宮，走過才亮
+       正是它的玩法。 */
+    nodes: {
+      /* 入口＝遭遇戰的復活點，**不可以有戰鬥**（§6.5.2）。下方＝起飛（獨立的一點，
+         沒有鄰接的地面圖）。☀ 全圖唯一看得到天空的一格 → 有四時段差分。 */
+      gate:       { bg:'Tomb_Gate', name:'伊甸古墓　墓門', bgPending:true,
+        exits:{ up:'vestibule' },
+        sail:{ flag:'got_ship' } },
+      vestibule:  { bg:'Tomb_Vestibule', name:'伊甸古墓　前庭', bgPending:true, noTime:true,
+        exits:{ up:'nave', right:'lapidarium', back:'gate' } },
+      /* 死胡同 A 的第一格 —— 圖上**不可以畫得像盡頭**（見交接檔 §六）。 */
+      lapidarium: { bg:'Tomb_Lapidarium', name:'伊甸古墓　碑廊', bgPending:true, noTime:true,
+        exits:{ left:'vestibule', right:'ossuaryA' } },
+      ossuaryA:   { bg:'Tomb_OssuaryA', name:'伊甸古墓　骨甕廊', bgPending:true, noTime:true,
+        exits:{ left:'lapidarium', up:'cryptA' } },
+      /* ← 死胡同 A（三格深） */
+      cryptA:     { bg:'Tomb_CryptA', name:'伊甸古墓　家族墓室', bgPending:true, noTime:true,
+        exits:{ back:'ossuaryA' } },
+      /* 全場最高的一格 */
+      nave:       { bg:'Tomb_Nave', name:'伊甸古墓　中殿', bgPending:true, noTime:true,
+        exits:{ up:'crossing', left:'aisleW', down:'vestibule' } },
+      aisleW:     { bg:'Tomb_AisleW', name:'伊甸古墓　側廊', bgPending:true, noTime:true,
+        exits:{ right:'nave', left:'tombniche' } },
+      tombniche:  { bg:'Tomb_Tombniche', name:'伊甸古墓　墓龕', bgPending:true, noTime:true,
+        exits:{ right:'aisleW', down:'charnel' } },
+      /* ← 死胡同 B（三格深） */
+      charnel:    { bg:'Tomb_Charnel', name:'伊甸古墓　藏骨所', bgPending:true, noTime:true,
+        exits:{ back:'tombniche' } },
+      /* 四條拱廊交會，但**只有三個方向通得過去**（第四個砌死了） */
+      crossing:   { bg:'Tomb_Crossing', name:'伊甸古墓　十字交會', bgPending:true, noTime:true,
+        exits:{ right:'chapel', left:'chantry', down:'nave' } },
+      /* ← 死胡同 C（一格） */
+      chantry:    { bg:'Tomb_Chantry', name:'伊甸古墓　誦經室', bgPending:true, noTime:true,
+        exits:{ back:'crossing' } },
+      chapel:     { bg:'Tomb_Chapel', name:'伊甸古墓　禮拜堂', bgPending:true, noTime:true,
+        exits:{ left:'crossing', up:'ambulatory' } },
+      ambulatory: { bg:'Tomb_Ambulatory', name:'伊甸古墓　繞行廊', bgPending:true, noTime:true,
+        exits:{ down:'chapel', left:'apse' } },
+      /* ☀ 拱頂塌了一個洞，光柱斜插下來 → **有四時段差分**（另一格是墓門） */
+      apse:       { bg:'Tomb_Apse', name:'伊甸古墓　後殿', bgPending:true,
+        exits:{ right:'ambulatory', up:'reliquary', left:'cloister' } },
+      /* ← 死胡同 D（一格） */
+      reliquary:  { bg:'Tomb_Reliquary', name:'伊甸古墓　聖骨匣室', bgPending:true, noTime:true,
+        exits:{ back:'apse' } },
+      cloister:   { bg:'Tomb_Cloister', name:'伊甸古墓　迴廊', bgPending:true, noTime:true,
+        exits:{ right:'apse', left:'stair1' } },
+      /* ⚠ 樹上的**橋**：找不到就真的下不去，沒有第二條路 */
+      stair1:     { bg:'Tomb_Stair1', name:'伊甸古墓　第一道階梯', bgPending:true, noTime:true,
+        exits:{ right:'cloister', up:'landing2' } },
+      landing2:   { bg:'Tomb_Landing2', name:'伊甸古墓　二層梯廳', bgPending:true, noTime:true,
+        exits:{ up:'hall2', back:'stair1' } },
+      hall2:      { bg:'Tomb_Hall2', name:'伊甸古墓　柱廳', bgPending:true, noTime:true,
+        exits:{ up:'cistern', right:'corr2', down:'landing2' } },
+      /* ← 死胡同 E（一格） */
+      cistern:    { bg:'Tomb_Cistern', name:'伊甸古墓　蓄水池', bgPending:true, noTime:true,
+        exits:{ back:'hall2' } },
+      corr2:      { bg:'Tomb_Corr2', name:'伊甸古墓　長廊', bgPending:true, noTime:true,
+        exits:{ left:'hall2', down:'sump', right:'rotunda' } },
+      /* ← 死胡同 F（一格） */
+      sump:       { bg:'Tomb_Sump', name:'伊甸古墓　積水坑', bgPending:true, noTime:true,
+        exits:{ back:'corr2' } },
+      rotunda:    { bg:'Tomb_Rotunda', name:'伊甸古墓　圓廳', bgPending:true, noTime:true,
+        exits:{ left:'corr2', up:'nichehall', right:'sarcE' } },
+      /* 死胡同 G 的第一格 —— 圖要畫得**比正路還氣派**（把玩家騙進來） */
+      sarcE:      { bg:'Tomb_SarcE', name:'伊甸古墓　石棺室', bgPending:true, noTime:true,
+        exits:{ left:'rotunda', right:'ossuary2' } },
+      ossuary2:   { bg:'Tomb_Ossuary2', name:'伊甸古墓　甕棺廊', bgPending:true, noTime:true,
+        exits:{ left:'sarcE', up:'kiln' } },
+      /* ← 死胡同 G（三格深） */
+      kiln:       { bg:'Tomb_Kiln', name:'伊甸古墓　焚化窯', bgPending:true, noTime:true,
+        exits:{ back:'ossuary2' } },
+      nichehall:  { bg:'Tomb_Nichehall', name:'伊甸古墓　壁龕廊', bgPending:true, noTime:true,
+        exits:{ down:'rotunda', left:'ossuary' } },
+      /* 骨牆後面那一道窄門就是第二道階梯（很容易被當成裝飾） */
+      ossuary:    { bg:'Tomb_Ossuary', name:'伊甸古墓　骨室', bgPending:true, noTime:true,
+        exits:{ right:'nichehall', up:'stair2' } },
+      /* ⚠ 同上：樹上的橋 */
+      stair2:     { bg:'Tomb_Stair2', name:'伊甸古墓　第二道階梯', bgPending:true, noTime:true,
+        exits:{ down:'ossuary', up:'landing3' } },
+      landing3:   { bg:'Tomb_Landing3', name:'伊甸古墓　三層梯廳', bgPending:true, noTime:true,
+        exits:{ up:'gallery3', back:'stair2' } },
+      gallery3:   { bg:'Tomb_Gallery3', name:'伊甸古墓　玄室前廊', bgPending:true, noTime:true,
+        exits:{ up:'crypt', left:'vaultW', down:'landing3' } },
+      vaultW:     { bg:'Tomb_VaultW', name:'伊甸古墓　側墓穴', bgPending:true, noTime:true,
+        exits:{ right:'gallery3', up:'bonepit' } },
+      /* ← 死胡同 H（兩格深） */
+      bonepit:    { bg:'Tomb_Bonepit', name:'伊甸古墓　骨坑', bgPending:true, noTime:true,
+        exits:{ back:'vaultW' } },
+      /* ★ **終點**（最深處） */
+      crypt:      { bg:'Tomb_Crypt', name:'伊甸古墓　石棺主室', bgPending:true, noTime:true,
+        exits:{ back:'gallery3' } },
+    },
+  },
 };

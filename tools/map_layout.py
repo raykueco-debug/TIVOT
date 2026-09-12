@@ -65,6 +65,50 @@ POS = {
     'causeway':(2,3),
     'entry':(2,4),
   },
+  # ══ 伊甸古墓（ver -1134）：三層・34 格・樹狀迷宮 ══════════════════════
+  #   ⚠ (欄,列) **照美術那份草圖抄**（`tools/map_tomb_draft.py` 的 NODES）——
+  #     版面是它畫出來的那一張，`resources/map/_layout_tomb.png` 與這裡同源。
+  #   ⚠ **列越小＝越深**（第三層在最上面）：`up` 一律是「走進畫面裡」不是「往高處」
+  #     （§6.5.4），所以往下挖的三層畫成由上而下的三段，正好對得上。
+  #   ⚠⚠ 拓樸現在住在 `script/town.js`（這一支直接讀它）—— 草圖那一支是**提案期**
+  #     的產物，它自己的檔頭就寫著「搬進去之後這一支要回收掉」（鐵律 7：同一個
+  #     拓樸不留兩份）。回收由美術那一邊做（那是他們的檔）。
+  'tomb': {
+    'bonepit':(4,0),
+    'crypt':(6,0),
+    'vaultW':(4,1),
+    'gallery3':(6,1),
+    'landing3':(6,2),
+    'stair2':(6,4),
+    'cistern':(4,5),
+    'ossuary':(6,5),
+    'nichehall':(8,5),
+    'kiln':(12,5),
+    'hall2':(4,6),
+    'corr2':(6,6),
+    'rotunda':(8,6),
+    'sarcE':(10,6),
+    'ossuary2':(12,6),
+    'landing2':(4,7),
+    'sump':(6,7),
+    'reliquary':(8,9),
+    'stair1':(4,10),
+    'cloister':(6,10),
+    'apse':(8,10),
+    'ambulatory':(10,10),
+    'chantry':(6,11),
+    'crossing':(8,11),
+    'chapel':(10,11),
+    'tombniche':(4,12),
+    'aisleW':(6,12),
+    'nave':(8,12),
+    'cryptA':(12,12),
+    'charnel':(4,13),
+    'vestibule':(8,13),
+    'lapidarium':(10,13),
+    'ossuaryA':(12,13),
+    'gate':(8,14),
+  },
   # ── 聖索菲亞城（ver -1123）：拓樸＝帝都，所以版面直接沿用 capital 那一組 ──
   'santasofia': {
     'midtown':(5,3), 'cityhall':(3,3), 'church':(7,3),

@@ -392,8 +392,14 @@ def main():
             #   就放行，遊戲卻整片沒有背景（`noTime` 的候選鏈根本不找 `_Day`）。
             if bg and n.get('noTime') and not (exists(BG_DIR + bg + '.webp')
                                                or exists(BG_DIR + bg + '.png')):
-                err('%s：noTime 的節點要有**基底**背景 %s（找 %s，不含時段尾巴）'
-                    % (tag, bg, BG_DIR))
+                # ⚠ `bgPending`（ver -757 的既有機制）**noTime 這一支也要認**（ver -1134）：
+                #   伊甸古墓是「拓樸先接、背景後畫」的 34 格，而它幾乎整座都是 noTime
+                #   —— 不認的話一次噴 32 個 ❌，把真正的錯誤淹掉、lint 從此恆為失敗。
+                if n.get('bgPending'):
+                    warn('%s：背景 %s 產圖中（bgPending）——交件後拔掉 bgPending' % (tag, bg))
+                else:
+                    err('%s：noTime 的節點要有**基底**背景 %s（找 %s，不含時段尾巴）'
+                        % (tag, bg, BG_DIR))
             elif bg and not n.get('noTime') and not (exists(BG_DIR + bg + '_Day.webp') or exists(BG_DIR + bg + '.webp')):
                 # 同上：有 PNG 只是還沒轉檔（`bgFor` 兩個副檔名都試），不是「缺圖」
                 if exists(BG_DIR + bg + '_Day.png') or exists(BG_DIR + bg + '.png'):
@@ -404,7 +410,9 @@ def main():
                     warn('%s：背景 %s 產圖中（bgPending）——交件後拔掉 bgPending' % (tag, bg))
                 else:
                     err('%s：沒有這張背景 %s（找 %s，含 _Day）' % (tag, bg, BG_DIR))
-            if bg and n.get('bgPending') and (exists(BG_DIR + bg + '_Day.webp') or exists(BG_DIR + bg + '.webp')):
+            if bg and n.get('bgPending') and (exists(BG_DIR + bg + '_Day.webp')
+                                              or exists(BG_DIR + bg + '_day.webp')
+                                              or exists(BG_DIR + bg + '.webp')):
                 warn('%s：背景 %s 已交件，bgPending 可以拔了' % (tag, bg))
             if n.get('shop') and n['shop'] not in ((cfg.get('shop') or {}).get('stock') or {}):
                 err('%s：shop 指到 config.shop.stock 裡沒有的貨單 %s' % (tag, n['shop']))
