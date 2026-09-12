@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1151"></script>
+<script src="../orientation.js?v=1152"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -491,11 +491,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1151"></script>
+<script src="settlement.js?v=1152"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1151"></script>
+<script src="talks.js?v=1152"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -4777,10 +4777,23 @@ let topFrac=null;    // 每欄頂端的次像素未覆蓋比例 → 收尾時做
 
    切片用平方分佈（近密遠疏）：近處一格幾十世界單位、遠處幾百，
    而遠處本來就被霧洗掉，誤差看不出來。
-   成本：每幀 ZSLICES×BW ≈ 5.6k 次寫入 + 每個查詢一次乘法，可忽略。 */
-const ZSLICES=24;
+   成本：每幀 ZSLICES×BW 次寫入（typed-array 的 `set`）+ 每個查詢一次乘法，可忽略。
+
+   ⚠⚠⚠ **切片數由 24 提到 96（ver -1152）**，因為 24 太粗，兩件事都壞：
+     ① Ray 回報「移動時地形的貼圖會**波浪狀一次一次往遺蹟上面跳**」——
+        實測同一欄第 6 片＝125 列、第 7 片＝102 列，跨界一次跳 23 列（≈70 螢幕像素）；
+        每一欄跨界的時機不同，整排看起來就是一道波浪掃過去。
+     ② 光靠**內插**補救會出另一個錯：伊甸古墓緊貼著崖（崖面只在基座遠緣後方 9 個
+        單位），與它同在一片裡 —— 內插等於把「界線之後才該算進來的崖」提前混進來
+        81%，用背後的山把自己遮掉，整座古墓消失（實測）。
+     所以是**切細＋內插一起**：切細讓「混進來的東西」本來就離得很近（誤差小），
+     內插讓邊界連續移動（不跳）。單靠任何一邊都不行。
+   ⚠ 96 片在 z≈600 的間距是 31 個世界單位（24 片時是 119）。 */
+const ZSLICES=96;
 const ZS_BOUND=new Float32Array(ZSLICES);
 for(let b=0;b<ZSLICES;b++){ const t=b/ZSLICES; ZS_BOUND[b]=ZFAR*t*t; }
+/* 深度 → 切片編號。⚠ ver -1152 起**沒有人用整數切片查表了**（會跳，見 `colLimAt`）
+   —— 留著是因為它是那個對應關係的定義，`colLimAt` 的連續版就是它去掉取整。 */
 const zSliceOf=Z=>{
   const b=(Math.sqrt((Z>0?Z:0)/ZFAR)*ZSLICES)|0;
   return b<0?0:(b>=ZSLICES?ZSLICES-1:b);
@@ -11072,10 +11085,11 @@ function drawEnemy3D(scaleH,horizon,sinp,cosp,now){
 function clipByTerrainDepth(Z,sxk,syk,c0,c1){
   const a=(c0===undefined)?0:clamp(c0|0,0,BW-1);
   const b=(c1===undefined)?BW-1:clamp(c1|0,0,BW-1);
-  const base=zSliceOf(Z)*BW;
   ctx.beginPath();
   for(let i=a;i<=b;i++){
-    const lim=ZTOP[base+i];
+    /* ⚠ 也走內插（見 `colLimAt`）：整格跳的話，光柱與量體會在跨切片的那一幀
+       整個往上／往下彈一截（ver -1152）。 */
+    const lim=colLimAt(Z,i);
     if(lim<=0) continue;
     ctx.rect(i*sxk,0,sxk+0.6,lim*syk);
   }
@@ -11094,13 +11108,30 @@ function clipByCityDepth(sxk,syk,c0,c1){ clipByColDepth(CZMIN,sxk,syk,c0,c1); }
    所以這裡收成一支吃「逐欄深度表」的通用版，城與遺跡各給自己那張表（鐵律 8）。
    ⚠ 石製遺跡佔地只有 120、零件又都很小，單一深度的誤差本來就看不出來 ——
      它走同一支之後行為幾乎不變，但**不再靠「東西夠小」這個巧合**。 */
+/* ══⚠⚠⚠ 深度要在兩個切片之間**內插**，不可以整格跳（ver -1152）══
+   Ray：「移動時地形的貼圖會波浪狀一次一次往遺蹟上面跳，跟當初聖王廳的狀況很像。」
+   成因是 `ZTOP` 把深度量化成 24 個切片（`ZS_BOUND`，二次間距）：實測同一欄
+   第 6 片＝125 列、第 7 片＝102 列 —— 船一往前走跨過那條界線，`lim` **一次跳 23 列**
+   （約 70 個螢幕像素）；而每一欄跨界的時機不同，整排看起來就是一道波浪掃過去。
+   ⚠ 切片本身不能細分了事：ZSLICES 要翻好幾倍才壓得住，而那是每幀 ZSLICES×BW 的
+     寫入量（見 ZTOP 的說明）。內插只多一次讀取與一次乘加，效果好得多。
+   ⚠ 內插之後 `lim` 是**小數列**——正好，裁切本來就吃小數，邊界因此連續移動。
+   ⚠ 這是**近似**（遮擋本來就只有逐欄一個深度），換到的是「不會跳」。
+     這一層整套都是近似，跳動比誤差難看得多。 */
+function colLimAt(z,i){
+  if(z===Infinity) return BH;            // 沒佔到的欄位不裁
+  const t=Math.sqrt((z>0?z:0)/ZFAR)*ZSLICES;
+  const b=t|0;
+  if(b>=ZSLICES-1) return ZTOP[(ZSLICES-1)*BW+i];
+  if(b<0) return ZTOP[i];
+  const f=t-b, lo=ZTOP[b*BW+i], hi=ZTOP[(b+1)*BW+i];
+  return lo+(hi-lo)*f;
+}
 function clipByColDepth(ZMIN,sxk,syk,c0,c1){
   const a=clamp(c0|0,0,BW-1), b=clamp(c1|0,0,BW-1);
   ctx.beginPath();
   for(let i=a;i<=b;i++){
-    const z=ZMIN[i];
-    // 沒佔到的欄位不裁：緩衝在那裡本來就是透明的
-    const lim=(z===Infinity)?BH:ZTOP[zSliceOf(z)*BW+i];
+    const lim=colLimAt(ZMIN[i],i);
     if(lim<=0) continue;
     ctx.rect(i*sxk,0,sxk+0.6,lim*syk);
   }
