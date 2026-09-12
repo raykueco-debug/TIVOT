@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1169"></script>
+<script src="../orientation.js?v=1170"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -145,6 +145,15 @@
     animation:landChev 1.4s linear infinite;}
   #landBtn .land-arrow i:last-child{animation-delay:.35s;}
   @keyframes landChev{0%{opacity:.18;} 18%{opacity:1;} 55%{opacity:.18;} 100%{opacity:.18;}}
+  /* ══⚠⚠ 教學進行中把 HUD 上的鈕收掉（ver -1170，Ray：「加速教學中也不要有
+     其他操作空間」）══ 手勢那一半擋在 `stage` 的 pointerdown（見 s9Tutor 那一段），
+     這幾顆是 canvas 之上的 DOM，根本不經過那裡，所以要各自收。
+     ⚠ 壓到 .22 而不是整個 `display:none`：藏起來玩家會以為壞了（§6.5.5）——
+       看得見、但這一拍不給按，與聚光燈壓暗整個畫面是同一句話。
+     ⚠ 出口不在這裡：輕點畫面任一處仍然收得掉提示。 */
+  body.tutor-lock #mapBtn, body.tutor-lock #backBtn,
+  body.tutor-lock #peaceBtn, body.tutor-lock #boostBtn,
+  body.tutor-lock #landBtn{ opacity:.22 !important; pointer-events:none !important; }
   /* ══ Kerberos 之門（ver -387，Ray：「飛行畫面時將楣常置於操控面板底部，
        遭遇敵人時槍棺彈出，進入戰鬥畫面」）══
      平常：整扇槍棺沉在畫面之下，只有**楣**露在操控面板的底緣 —— 那是「棺就在腳下」
@@ -491,11 +500,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1169"></script>
+<script src="settlement.js?v=1170"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1169"></script>
+<script src="talks.js?v=1170"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -535,7 +544,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1169';
+const FLIGHT_VER = 'ver -1170';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -5402,6 +5411,14 @@ const cam={x:SAIL_FROM_CAPITAL.x*MAP_SCALE,y:SAIL_FROM_CAPITAL.y*MAP_SCALE,
      （不是從死區邊界跳到某個值），越過門檻時才不會頓一下。 */
 let fwd=0, rgt=0, dragging=false, ox=0, oy=0, moved=0, dragId=null;
 
+/* 「這一點算不算按在船上」（ver -1170 由 pointerdown 內抽出來，鐵律 7）：
+   教學鎖要在 pointerdown 的**最前面**就問得到，而 `onShip` 是在後面才算的。
+   ⚠ 圈本身稍微放大（`SHIP_HIT_PAD`），排除區是硬的 —— 理由見呼叫處那一大段。 */
+const SHIP_HIT_PAD = 1.18;
+function onShipAt(x,y){
+  return !!(shipHit && y < skyBottom() && !sturmHit(x,y)
+            && Math.hypot(x-shipHit.x, y-shipHit.y) <= shipHit.r*SHIP_HIT_PAD);
+}
 let rudder=0;                               // 實際生效的舵量（含鍵盤）——只給面板顯示用
 const STEER_DEAD=14;                        // 橫向死區（像素）
 const TAP_SLOP=12;                          // 位移小於此值＝點擊而非拖曳
@@ -5414,6 +5431,19 @@ stage.addEventListener('pointerdown',e=>{
      ⚠ 按鈕（地圖／返回／生怪／靜音）是 canvas 之上的 DOM，點在它們身上
        根本不會走到這裡，所以「無按鈕處」自動成立。 */
   if(sayQueue && sayAdvance(performance.now())) return;
+  /* ══⚠⚠⚠ 教學進行中：**只有正在教的那一個動作打得進來**（ver -1170，Ray：
+     「加速教學中也不要有其他操作空間」）══
+     聚光燈的遮罩刻意是 `pointer-events:none`（要教的手勢才打得到 canvas）——
+     代價是**其他每一個操作也都打得到**：教到一半還能操舵、點船閒聊、長按生怪。
+     ⚠⚠ 這**不違反** §6.5.5「不能把玩家鎖在教學裡」：放行的出口一個字都沒動
+       —— 輕點畫面任一處仍然收得掉提示（`makeSpotlight` 的 `onSkip`，掛在
+       window 的**捕獲**階段，所以這裡 return 掉也照樣收得到）。
+       擋掉的是**別的**操作，不是這一段的出口。 */
+  if(s9Tutor){
+    const only = (s9Tutor==='sturm' && sturmHit(e.clientX,e.clientY))
+              || (s9Tutor==='sense' && onShipAt(e.clientX,e.clientY));
+    if(!only) return;
+  }
   if(dragId!==null) return;                       // 單手操作：只認第一根手指
   dragId=e.pointerId; dragging=true;
   /* ⚠ 一定要抓住指標。桌機上滑鼠一旦拖出操作區，pointermove 就不再進來，
@@ -5452,9 +5482,7 @@ stage.addEventListener('pointerdown',e=>{
      ⚠ 圈本身**稍微放大**（`SHIP_HIT_PAD`，同 Ray 那句「實際點擊範圍稍微增大」）：
        範圍收窄之後要按得到才行 —— 排除區是硬的，圈是鬆的，兩者不衝突。
      ⚠ 仍然只算一次（`onShip`）：放手那一支要用同一個答案（鐵律 7）。 */
-  const SHIP_HIT_PAD = 1.18;
-  onShip=!!(shipHit && e.clientY < skyBottom() && !sturmHit(e.clientX,e.clientY)
-            && Math.hypot(e.clientX-shipHit.x, e.clientY-shipHit.y) <= shipHit.r*SHIP_HIT_PAD);
+  onShip=onShipAt(e.clientX,e.clientY);
   senseT0=0;
   if(featureOn('sense') && onShip){
     senseT0=performance.now();
@@ -10673,6 +10701,9 @@ function s9RideWait(done){
 let s9GateSp=null, s9GateCb=null;
 function s9Gate(k, rectFn, html, opts, done){
   s9Tutor=k; s9GateCb=done;
+  /* 這一拍不給別的操作（ver -1170）。⚠ 開關**只有這一對**（`s9Gate` 開、
+     `s9GateHit` 關）—— 誰插的誰拔（鐵律 9）。 */
+  try{ document.body.classList.add('tutor-lock'); }catch(_){}
   s9GateSp=makeSpotlight(rectFn, html,
     Object.assign({ onSkip:()=>s9GateHit(k) }, opts||{}));
 }
@@ -10680,6 +10711,7 @@ function s9Gate(k, rectFn, html, opts, done){
 function s9GateHit(k){
   if(s9Tutor!==k) return;
   s9Tutor=null;
+  try{ document.body.classList.remove('tutor-lock'); }catch(_){}
   if(s9GateSp){ s9GateSp.off(); s9GateSp=null; }
   addFlag(FEATURE_FLAG[k]);
   const f=s9GateCb; s9GateCb=null;
@@ -10700,7 +10732,12 @@ function s9FlightMaybe(){
         +'發動〈破凪之吐息〉。',
         { shape:'rect', tipTop:'32%' },
         ()=>{
-          setTimeout(()=>s9Talk(S9_C, ()=>{
+          /* ⚠⚠⚠ **緊接著安雅，中間不給任何操作空間**（ver -1170，Ray 指定）。
+             原本空 1200ms 再開口 —— 那 1.2 秒 `sayQueue` 是空的，玩家可以操舵、
+             點船閒聊，等於把教學與下一段戲之間剖出一個自由操作的縫。
+             ⚠ 同步呼叫（不要 `setTimeout(...,0)`）：`sayQueue` 在**同一個 tick**
+               就設起來，連一禎的空檔都沒有。 */
+          s9Talk(S9_C, ()=>{
             s9Gate('sense',
               ()=>shipHit ? { left:shipHit.x-shipHit.r, top:shipHit.y-shipHit.r,
                               width:shipHit.r*2, height:shipHit.r*2 }
@@ -10722,7 +10759,7 @@ function s9FlightMaybe(){
                   s9On=false;
                 }), 1500);
               });
-          }), 1200);
+          });
         });
     }));
   });
@@ -12766,7 +12803,13 @@ function nearestTown(){
   return best;
 }
 function updateLandBtn(){
-  const busy = battleGoing || mapOpen || s9On || (typeof booting!=='undefined' && booting);
+  /* ⚠⚠ **對白進行中不給降落**（ver -1170，Ray：「飛行畫面對話中不要有降落選項」）——
+     那顆鈕浮在 3D 視窗正中央，正好壓在立繪與對話框上；而且降落是收不回來的一步
+     （交棒整頁），對白演到一半被切走就是把那一段戲吃掉。
+     ⚠ 真相來源就是 `sayQueue`（`drawTalk` 用的同一個，鐵律 7）—— 與「對白中收掉
+       時間地點那兩塊 HUD」是同一條規矩的另一半（§6.5，ver -385）。 */
+  const busy = battleGoing || mapOpen || s9On || !!sayQueue
+            || (typeof booting!=='undefined' && booting);
   const S = busy ? null : nearestTown();
   /* 羽蛇登場演出中不給降落（ver -743）：插圖蓋著、對白在跑，點下去會把整段
      序列打斷（town.open 蓋過來）。演出收掉（introArt=null）就恢復。 */
@@ -13862,6 +13905,16 @@ function onQualityChange(){
 
 function loop(now){
   const dt=Math.min(40,now-last); last=now;
+  /* ══⚠⚠⚠ 降落鈕要在**所有早退之前**更新（ver -1170，Ray：「飛行畫面對話中
+     不要有降落選項」）══
+     `updateLandBtn()` 本來排在迴圈尾端 —— 而它上面有三道早退（父頁暫停／大地圖、
+     **對白中**、升降過場），那幾種狀態一開始，這一支就再也不跑，鈕**保持在進入
+     那個狀態之前的樣子**。所以對白一開始時若鈕剛好亮著，它會**整段對白都亮著**，
+     浮在立繪正中央 —— 那就是 Ray 看到的東西。
+     ⚠⚠ 把判斷寫進 `busy` 是不夠的：**沒有人去問它**。
+       這是「狀態沒有人更新」而不是「狀態算錯」—— 查的時候差一步就會修錯地方。
+     ⚠ 成本可以忽略：`busy` 成立時它連掃都不掃就 return。 */
+  updateLandBtn();
   /* ⚠⚠ 父頁說停（畫面收起／戰鬥中／整備・設定窗蓋著）＝整幀跳過（ver -481）：
      不更新也不畫 —— 反正看不見。dt 已經吃掉（last=now），恢復那一幀不會補跑。
      ⚠ **開大地圖也凍**（ver -776，Ray：「開大地圖、整備頁、選單、回主選單期間
@@ -13910,7 +13963,6 @@ function loop(now){
   edgeNag(now);      // 快飛出圖了 → 蕾娜叫你回頭（軟邊界）
   const wt0=performance.now();
   update(dt,now); updateRegion(now); updateTrains(dt/1000); render(now); updateBgm(dt); updateMapMe();
-  updateLandBtn();
   qualityTick(performance.now()-wt0);
   acc+=dt;n++;
   /* HUD 加上**地圖座標與航向** —— 截圖時才知道人在哪。
