@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1190"></script>
+<script src="../orientation.js?v=1191"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -500,11 +500,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1190"></script>
+<script src="settlement.js?v=1191"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1190"></script>
+<script src="talks.js?v=1191"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -544,7 +544,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1190';
+const FLIGHT_VER = 'ver -1191';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -2001,6 +2001,31 @@ const PLACES=[
      ⚠ 座標＝SETTLEMENTS 那一列（名牌跟著城走，§6.7.5）；拖城工具搬同名的兩份。
      ⚠ export_mapref.py 的 PLACES 要同步。 */
   {x:1098,y:798, name:'夏爾村',       type:'帝國・村落'},
+  /* ══⚠⚠ 拉芬斯達爾城（Ravnsdal，ver -1191，Ray 指定 (577,243)）══════════════
+     規格在 `resources/map/_ravnsdal_spec.md`（美術 ver -1162/-1163）。
+     · **只有名牌，還沒有城**：`SETTLEMENTS` 那一列要等城的俯視插畫與
+       `build_city.py` 的 JOB（§6.7.5 的流程），現在只放 PLACES ——
+       遠遠看得到金箭頭與名牌，地上還是原本的地形。
+     · **也還沒有 `town:`**：`script/town.js` 的 12 格要等那 11 張背景交件
+       （美術正在跑）。補上 `town:'ravnsdal'` 就有降落鈕（同東方泊地那一條的作法）。
+     ⚠ 地形實測（遊戲自己的 `HGT`）：**h=73，是陸地**，四周 ±48 格全是陸；
+       最近的海在 (498,308)、102 格外，最近的水面（河／湖，地貌色 88,116,132）
+       在南方約 20 格。⇒ 城坐在水岸內側的緩坡上，規格裡那片「俯瞰港灣」的景
+       成立（出航是**飛空艇**，不必真的靠海）。
+     ⚠⚠⚠ **驗地形不要直接拿 PNG 的灰階去比 `CLOUD_H`**（-1191 我踩過，
+       第一版把這裡誤判成「浮在海灣上」）：`CLOUD_H`(44) 是**世界高度**，
+       而 `silvermoon_heightmap.png` 是 8-bit 灰階 —— 兩者差一個 `PEAK_SCALE`(520)。
+         世界高 ＝ 灰階 ÷ 255 × 520　　海平面的灰階門檻 ＝ 44 ÷ 520 × 255 ＝ **21.6**
+       這裡灰階 36 ⇒ 世界高 73 ⇒ 陸。拿 36 去比 44 就會得到相反的答案。
+       **最省事的驗法是問遊戲自己**：飛行頁的 `HGT[my*MAPW+mx]`（已經換算過）。
+     ⚠⚠ 它落在**埃爾比斯王國**境內（`regionAt`＝5，實測）——
+       不是薩梅爾帝國。地理筆記裡埃爾比斯與帝國有**礦權衝突**、而且
+       「聖王廳無免許過境」，所以蕾娜一行人去那裡休整是有份量的一句話，
+       不是隨便挑一座城。⚠ 這一點請 Ray 確認是不是他要的。
+     ⚠ 城的插畫落地之後**名牌要跟著城走**（同薇拉馮德／東方泊地那兩條的理由），
+       到時以 `place_city.py` 搜出來的那一點為準。
+     ⚠ `export_mapref.py` 的 PLACES 要同步（那張參考圖是給美術對位置用的）。 */
+  {x:577, y:243, name:'拉芬斯達爾城', type:'港市'},
   /* ══ 夏爾森林（ver -858，Ray：「開啟的新地點會標在大地圖上，日後可直接降落」）══
      `flag`＝**發現了才存在**（sv_forest_found，第一次從村子野外走進森林時
      town.open 插）：drawPlaces 與著陸掃描都會跳過沒插旗的（見 -858 的兩處守門）。
