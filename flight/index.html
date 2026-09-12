@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1154"></script>
+<script src="../orientation.js?v=1155"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -491,11 +491,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1154"></script>
+<script src="settlement.js?v=1155"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1154"></script>
+<script src="talks.js?v=1155"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -7807,7 +7807,9 @@ function drawRuins(scaleH,horizon,sinp,cosp){
     if(dist>RUIN_FAR) continue;                    // 太遠：小到讀不出形狀，省下來
     const zc=ddx*(-sinp)+ddy*(-cosp);
     if(zc<RUIN_NEAR) continue;                     // 身後／正下方（那個角度本來就看不到）
-    const fade=clamp((RUIN_FAR-dist)/RUIN_FADE,0,1);
+    /* 淡入走 smoothstep 不走線性（ver -1155）：線性在剛跨進視距那一格會「啪」地
+       出現一層薄影，兩端收平才讀得出是**浮出來**的。 */
+    const fk=clamp((RUIN_FAR-dist)/RUIN_FADE,0,1), fade=fk*fk*(3-2*fk);
     if(fade<=0.02) continue;
     /* ══⚠⚠ 墊高（ver -1153，Ray：「底加厚墊高」）══
        整地之後地面與石地板會**完全等高**，而逐欄的深度遮擋在同高時是打平手 ——
@@ -8136,8 +8138,20 @@ function drawRuins(scaleH,horizon,sinp,cosp){
     ctx.restore();
   }
 }
-/* 剔除距離：遠到讀不出形狀就不畫（同火車「不如在那個距離就不要出現」的理由）。 */
-const RUIN_FAR=9000, RUIN_FADE=2200, RUIN_NEAR=60;
+/* ══⚠⚠ 剔除距離：遠到讀不出形狀就不畫（同火車「不如在那個距離就不要出現」的理由）══
+   ⚠⚠⚠ **ver -1155 由 9000 收到 3600**（Ray：「遠距離還是會看到古墓穿山」
+     →「那讓 3D 物件到一定距離才畫，並且是淡入出現這樣就好」）。
+     遠距離的遮擋本來就只有**逐欄一個深度**的精度（見 `clipByColDepth` 那一段的
+     取捨表），而距離越遠、深度切片越粗、物件越小 —— 想在那裡做對，代價遠高於
+     它值得的。**Ray 的解法是繞開它**：那個距離本來就讀不出形狀，不如不要畫。
+   ⚠ 尺度感：9000＝450 地圖像素（整個大陸的五分之一）；3600＝180 像素，
+     古墓（沿壁 170 世界單位）在那裡約 18 個螢幕像素 —— 剛好是「看得出那裡有東西」
+     的下限。再近就一路清楚起來。
+   ⚠ **名牌與金箭頭不受這條管**（`drawPlaces` 自己一套）：遠遠仍然看得到「那裡有
+     一個地點」，飛近了實體才浮出來 —— 那正是要的節奏。
+   ⚠ 日後某一座要看得更遠，在 `RUIN_ART[x]` 加一個 `far` 覆寫即可（現在還不需要，
+     一個數字先別拆成兩個）。 */
+const RUIN_FAR=3600, RUIN_FADE=1400, RUIN_NEAR=60;
 
 /* ══⚠⚠ 被掃到的遺跡射出一道光柱（ver -1116，Ray：「被掃到的遺跡要產生一道光柱，
    方向計的提示就不用了」）══
