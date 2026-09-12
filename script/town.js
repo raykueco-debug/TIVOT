@@ -3690,6 +3690,20 @@ export const TOWNS = {
        所以節點只寫基底名、**不寫 `noTime`**，時段由 `bandNames()` 的候選鏈挑。 */
   fallen: {
     name: '石製遺跡',
+    /* ══⚠⚠ 進去過就改叫「瓦努努石陣」（ver -1184，Ray 交稿：
+         「石製遺跡：（進入後改名為瓦努努石陣）」）══
+       ⚠⚠ **不要直接把 `name` 改掉**：大地圖上那塊名牌、玩家還沒下去看之前，
+         叫的就該是「石製遺跡」（他只看得出那裡有一堆倒下的石柱）。名字是
+         **走進去之後才知道的**，所以它是一個**狀態**，不是一個常數。
+       ⚠ 由上往下取第一個成立的（同 `acts`／`bgWhen`／`innDoors` 的取法）；
+         `need`／`not` 兩格都不寫的一筆不算（不然它永遠贏，等於把 `name` 換掉）。
+       ⚠ 鐵律 9 —— **誰插**：入口那一段（`fallen_entry` 的收尾）演完才插。
+         **誰拔**：沒有人（知道了就是知道了，同 `got_ship` 那一族）。
+       ⚠⚠ 節點名的前綴（`石製遺跡　崩塌門廊`）**不必逐格改**：`nameOf` 會拿
+         現在的圖名換掉那個前綴（modules/town.js，鐵律 7 —— 一個名字一個計算點）。
+       ⚠ 大地圖那一半是另一個 document：`flight/index.html` 的 PLACES 有一份
+         **同義**的 `nameWhen`（同一支旗），兩邊註解互指（§6.10 的跨頁慣例）。 */
+    nameWhen: [ { need:'fallen_named', name:'瓦努努石陣' } ],
     entry: 'entry',
     /* ══ 槍棺地圖（ver -1123，美術交件）══ 座標是**量出來的**：唯一來源是
        `resources/map/_spots_fallen.json`（美術跑 `tools/map_check2.py` 產），
@@ -3723,7 +3737,38 @@ export const TOWNS = {
            跳關、讀舊檔）上就是**走得進來、出不去**。
            ⚠ 有陸路可以走到的地方（帝都／北方泊地／夏爾村）照舊要旗：那裡
              「還沒有船」是真的成立。 */
-        sail:{} },
+        sail:{},
+        /* ══⚠⚠ 第一次踏進來（ver -1184，Ray 交稿：「石製遺跡：入口：」）══
+           ⚠ `flag` **演完才記**（城鎮所有段落的通則）—— 中途被打斷還會再演一次。
+           ⚠⚠ 最後一拍插 `fallen_named` ＝ 從此這裡叫「瓦努努石陣」（見上面
+             `nameWhen` 那一段的鐵律 9 說明）。**兩支旗是兩件事**：
+             `fallen_entry` 回答「這一段演過了沒」、`fallen_named` 回答
+             「玩家知道這裡的名字了沒」—— 合成一支的話，日後要在別處
+             （例如索菈娜事後想起來）改名就沒有第二個插旗點。
+           ⚠⚠ 四個人同台 ⇒ **要分兩邊**（§6.5）：諾薇兒本位左、索菈娜與安雅本位右，
+             蕾娜的規矩是「原則右，碰到安雅就放左」—— 所以 `RENNA:'L'`，
+             與夏爾村抵達那一幕（`sv_arrive`）同一個安排。
+           ⚠ 稿上的差分名對到 `speakers.js` 的鍵：`shockcalm`→`shockedCalm`、
+             蕾娜的 `think`→`thinking`（她沒有 `think`）、安雅的 `scare`→`scared`、
+             `emarassed`→`embarassed`（檔名本來就是這個拼法）。
+           ⚠ 「蕾：「……」」那一拍沒有台詞但台上有人 ⇒ 要點一下才推進（ver -628），
+             引擎自己判，這裡不必寫 `auto`。 */
+        acts:[ { flag:'fallen_entry', sides:{ RENNA:'L' }, lines:[
+          ren('watch',       '這種地方竟然有這種規模的遺跡……！'),
+          sor('think',       '奇怪，之前有這些東西嗎？'),
+          ren('shockedCalm', '！！'),
+          nou('surprise',    '索菈娜小姐也不知道嗎？離夏爾村那麼近耶！'),
+          sor('think',       '好像知道又好像不知道……不確定。'),
+          sor('embarassed',  '我很少離開村子啦！'),
+          ren('thinking',    '離驛道跟鐵路也不算遠……為什麼現在才……'),
+          any('scared',      '……？'),
+          ren('lookaway',    '……'),
+          ren('lookawaytalk','恐怕這片大陸上，還有許多未知的秘境……'),
+          sor('readysmile',  '那還等什麼？探險囉。'),
+          /* ⚠ 改名插在**最後這一拍**（`line.flags`，story.js 的既有欄位）而不是
+             段落層 —— 中途被打斷就不算數，下次重演一次才改名（同「演完才記」）。 */
+          Object.assign(ren('chase','等、等一下！'), { flags:['fallen_named'] }),
+        ] } ] },
       causeway: { bg:'Fallen_Causeway', name:'石製遺跡　斷柱道',
         exits:{ up:'fork', back:'entry' } },            // 直廊：兩側是倒下的圓柱排
       /* 唯一的岔口（三向）：三塊斜倚石板撐出的三角空地，三個方向都是真的走得進去的路。 */

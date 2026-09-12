@@ -1376,7 +1376,7 @@ function showMapCard(){
      所以只有那一支實作（鐵律 8）—— -880 光是字級與那兩條細橫線就調過兩輪，
      兩份必然走鐘。這裡只負責**這張卡要印什麼**與**誰在等它收掉**。 */
   return story.showTitleCard(
-    { title:T.name, sub:clock.dateText()+'　'+clock.timeText() },
+    { title:townName(), sub:clock.dateText()+'　'+clock.timeText() },
     ()=>{ const f=heldArrival; heldArrival=null; if(f) try{ f(); }catch(_){} });
 }
 
@@ -1836,9 +1836,32 @@ const SAIL_NO_SHIP='沒有船，離不開這裡。';
      改成餐飲街，點進去會進哪邊取決於你跟哪個角色在一起」）。-575~-579 曾經印成
      `帝都　餐酒館・餐廳` —— 那把「這是一條街」講成了「這是一家叫餐廳的餐酒館」，
      而且等於在箭頭上先劇透了裡面是誰。玩家看得出自己在哪一家靠的是**背景與路人語**。 */
+/* ══⚠⚠ 這張圖**現在**叫什麼（ver -1184）══════════════════════════════
+   Ray：「石製遺跡：（進入後改名為瓦努努石陣）」—— 地名可以是一個**狀態**
+   （走進去之後才知道它真正的名字），不只是一個常數。
+   ⚠⚠ **只有這一支在決定**（鐵律 7/8）：上緣那一行、目的地字格、圖名卡、
+     跨圖出口的字格全部問它 —— 各自讀 `T.name` 的話，改名就只會改到其中幾個。
+   ⚠ 由上往下取第一個成立的（同 `acts`／`bgWhen`／`innDoors`）；
+     `need`／`not` 兩格都不寫的一筆不算（不然它永遠贏＝把 `name` 換掉）。
+   ⚠ 大地圖那一半是另一個 document，`flight/index.html` 的 PLACES 有一份同義的
+     `nameWhen`（同一支旗）—— 改一邊要改另一邊（§6.10，兩邊註解互指）。 */
+function townName(id){
+  const T=TOWNS[id||townId]; if(!T) return '';
+  const w=(T.nameWhen||[]).find(o=>o && (o.need || o.not)
+            && (!o.need || prog.hasFlag(o.need))
+            && (!o.not  || !prog.hasFlag(o.not)));
+  return String((w && w.name) || T.name || '');
+}
 function nameOf(id){
-  const n=(TOWNS[townId]||{}).nodes[id];
-  return n ? String(n.name||'') : '';
+  const T=TOWNS[townId]||{}, n=(T.nodes||{})[id];
+  if(!n) return '';
+  const s=String(n.name||'');
+  /* 節點名裡的城名前綴（`石製遺跡　崩塌門廊`）跟著改（ver -1184）——
+     ⚠ 這樣資料那一邊**逐格的 `name` 一個字都不必動**：圖改名只改 `nameWhen`
+       一處（鐵律 7）。前綴對不上就原樣回傳（別座城的節點名本來就沒有前綴問題）。 */
+  const base=String(T.name||''), now=townName();
+  if(base && now && now!==base && s.indexOf(base+'　')===0) return now+s.slice(base.length);
+  return s;
 }
 /* 這一格要試哪些底圖檔名（ver -575；-578 改成逐張展開候選鏈）：
    **分店優先，載不到退回節點原本那一張** —— 所以圖還沒交也不會變成空畫面。
@@ -1900,7 +1923,7 @@ function nameOfNode(id){
     const seg=id.slice(1).split(':'), T=TOWNS[seg[0]];
     if(!T) return '';
     if(seg[1] && T.nodes && T.nodes[seg[1]] && T.nodes[seg[1]].name) return T.nodes[seg[1]].name;
-    return T.name || '';
+    return townName(seg[0]) || '';
   }
   const n=(TOWNS[townId]||{}).nodes[id];
   if(!n) return '';
@@ -1919,9 +1942,16 @@ function nameOfNode(id){
    ⚠ 城名從 `TOWNS[townId].name` 推，不寫死是哪座城（鐵律 7；舊版寫死 `^帝都　`，
      北方泊地的箭就整排帶著前綴）。只有這一支在做（鐵律 8）—— 字格、打烊浮條都問它。 */
 function stripTownPrefix(name){
-  const tn=(TOWNS[townId]||{}).name;
   const s=String(name||'');
-  return tn ? s.replace(new RegExp('^'+tn+'　'), '') : s;
+  /* ⚠ 兩個前綴都要認（ver -1184）：`nameOf` 出來的是**現在的**圖名（改名後是
+     「瓦努努石陣　崩塌門廊」），而資料上寫的是原名 —— 有些呼叫端傳的是後者
+     （例如 `n.name` 的退路）。認一個就會剩下另一個沒剝乾淨。 */
+  for(const tn of [townName(), (TOWNS[townId]||{}).name]){
+    if(!tn) continue;
+    const p=tn+'　';
+    if(s.indexOf(p)===0) return s.slice(p.length);
+  }
+  return s;
 }
 /* 營業時間那一行。⚠ 只有這一支在把 `hours` 排成字（鐵律 7）—— 打烊提示與日後
    任何要顯示營業時間的地方都問它。 */

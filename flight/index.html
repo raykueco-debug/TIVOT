@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1183"></script>
+<script src="../orientation.js?v=1184"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -500,11 +500,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1183"></script>
+<script src="settlement.js?v=1184"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1183"></script>
+<script src="talks.js?v=1184"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -544,7 +544,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1183';
+const FLIGHT_VER = 'ver -1184';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -2031,7 +2031,14 @@ const PLACES=[
      ⚠ **不要進 SETTLEMENTS**：那張表會被道路網與程序建築當成城。著陸掃描
        （`nearestTown`）本來就兼掃帶 `town` 的 PLACES，程式不必改。
      ⚠ `sense:true` 不動 —— 名牌仍然要感知才掃得到，但地上的斷柱一直看得見。 */
+  /* ⚠⚠ **進去過就改叫「瓦努努石陣」**（ver -1184，Ray 交稿）：`nameWhen` 只換
+       **顯示的字**，`name` 仍是資料上的識別字串（`markOf`／`STAGE1_DEST`／
+       拖城覆寫都拿它比對 —— 換掉那個會把那幾條一起打斷）。
+     ⚠ 同一支旗在城鎮那一半也有一份同義的 `nameWhen`（`script/town.js` 的
+       `TOWNS.fallen`）—— 改一邊要改另一邊（§6.10 的跨頁慣例）。旗由那邊的
+       入口段落插（鐵律 9：誰插寫在那裡）。 */
   {x:1125,y:757, name:'石製遺跡', n:'石製遺跡', type:'遺跡',
+   nameWhen:[{ need:'fallen_named', name:'瓦努努石陣' }],
    sense:true, flag:'ruin_b_found', ruin:'stone', town:'fallen'},
   /* ══⚠⚠ 伊甸古墓（ver -1134，Ray：「在 735 196 放置地點伊甸古墓，拓樸跟圖已經交了」）══
      · **不是隱藏點**（沒有 `sense`／`flag`）：遠遠就看得到金箭頭與名牌，
@@ -6068,9 +6075,10 @@ function drawMap(){
       }
       if(!found) continue;
       mctx.font='10px "Noto Serif TC",serif'; mctx.textAlign='center';
-      const tw=mctx.measureText(P.name).width;
+      const nm=placeName(P);
+      const tw=mctx.measureText(nm).width;
       mctx.fillStyle='rgba(8,7,12,.78)'; mctx.fillRect(sx-tw/2-4, sy+r+2, tw+8, 13);
-      mctx.fillStyle='#ffe878'; mctx.fillText(P.name, sx, sy+r+12);
+      mctx.fillStyle='#ffe878'; mctx.fillText(nm, sx, sy+r+12);
     }
   }
 
@@ -9355,6 +9363,20 @@ function drawTrains(S,scaleH,horizon,sinp,cosp){
 /* 1800 世界單位＝90 地圖像素。大陸放大一倍後跟著加倍，維持「相對地圖」
    的同一段距離；沿用 900 會變成要飛到幾乎貼著地標才跳出名字。 */
 const NAME_DIST = 1800;   // 進入此距離才顯示名稱＝可進入
+/* ══⚠⚠ 這個地點**現在**顯示成什麼字（ver -1184）════════════════════════
+   Ray：「石製遺跡：（進入後改名為瓦努努石陣）」—— 地名可以是一個**狀態**。
+   ⚠⚠ **只有這一支在決定**（鐵律 7/8）：名牌、大地圖上的標籤、降落鈕、進入時
+     那張地名卡全部問它。各自讀 `P.name` 的話，改名就只會改到其中幾個。
+   ⚠⚠ **`P.name` 本身不動** —— 它是識別字串（`markOf`／`STAGE1_DEST`／拖城覆寫
+     都拿它比對）。要改的是「印出來的字」，不是「它是誰」。
+   ⚠ SETTLEMENTS 那一族用 `n` 當名字（沒有 `name`），所以退路要兩個都吃。 */
+function placeName(P){
+  if(!P) return '';
+  const w=(P.nameWhen||[]).find(o=>o && (o.need || o.not)
+            && (!o.need || flagOn(o.need))
+            && (!o.not  || !flagOn(o.not)));
+  return String((w && w.name) || P.name || P.n || '');
+}
 let hotspots=[];
 function drawPlaces(scaleH,horizon,sinp,cosp){
   const sxk=W/BW, syk=VIEWH/BH;
@@ -9399,11 +9421,12 @@ function drawPlaces(scaleH,horizon,sinp,cosp){
     // 近距離才展開名牌（＝可點擊）
     if(o.near){
       ctx.font='11px "Noto Serif TC",serif'; ctx.textAlign='center';
-      const tw=Math.round(ctx.measureText(o.P.name).width);
+      const nm=placeName(o.P);
+      const tw=Math.round(ctx.measureText(nm).width);
       const bx0=bx-((tw/2)|0)-9, by0=ay-32, bwid=tw+18, bhei=18;
       ctx.fillStyle='rgba(5,6,12,.8)'; ctx.fillRect(bx0,by0,bwid,bhei);
       ctx.strokeStyle='#c9a227'; ctx.lineWidth=1; ctx.strokeRect(bx0+0.5,by0+0.5,bwid,bhei);
-      ctx.fillStyle='#c9a227'; ctx.fillText(o.P.name,bx,by0+13);
+      ctx.fillStyle='#c9a227'; ctx.fillText(nm,bx,by0+13);
       // 點擊熱區放大一圈，手指才好按
       hotspots.push({x:bx0-8,y:by0-8,w:bwid+16,h:bhei+22,P:o.P});
     }
@@ -13029,6 +13052,7 @@ function nearestTown(){
   }
   return best;
 }
+let landLabel='';
 function updateLandBtn(){
   /* ⚠⚠ **對白進行中不給降落**（ver -1170，Ray：「飛行畫面對話中不要有降落選項」）——
      那顆鈕浮在 3D 視窗正中央，正好壓在立繪與對話框上；而且降落是收不回來的一步
@@ -13041,10 +13065,14 @@ function updateLandBtn(){
   /* 羽蛇登場演出中不給降落（ver -743）：插圖蓋著、對白在跑，點下去會把整段
      序列打斷（town.open 蓋過來）。演出收掉（introArt=null）就恢復。 */
   const want = !!S && !introArt;
-  if(S!==landTarget){
-    landTarget=S;
+  /* ⚠ 鈕上的字快取在 `landLabel` 而不是只看 `S` 有沒有換（ver -1184）：
+       地名現在可以改（`placeName`／`nameWhen`），同一個地點的字會變 ——
+       只比物件的話，玩家從遺跡走回天上，鈕上還印著舊名字。 */
+  const label = S ? '降落　'+placeName(S) : '';
+  if(S!==landTarget || label!==landLabel){
+    landTarget=S; landLabel=label;
     const t=document.getElementById('landTxt');
-    if(t && S) t.textContent='降落　'+S.n;
+    if(t && S) t.textContent=label;
   }
   if(want!==landOn){
     landOn=want;
@@ -13168,7 +13196,7 @@ function enterPlace(P){
   try{ window.parent.__tivotFlight.checkpoint(); }catch(_){}
   entering={P,t:performance.now()};
   const pn=document.getElementById('place');
-  document.getElementById('pnm').textContent=P.name;
+  document.getElementById('pnm').textContent=placeName(P);
   document.getElementById('pty').textContent='—　進入　—';
   pn.classList.add('show');
   setTimeout(()=>{ entering=null; pn.classList.remove('show'); },1400);
