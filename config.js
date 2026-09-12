@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.12-1185';
+export const VERSION = 'ver 2026.09.12-1186';
 
 export const GAME_CONFIG = {
 
@@ -979,6 +979,31 @@ export const GAME_CONFIG = {
     recordPerLevel: 1,
     starCost: [1, 1, 2, 2, 3, 3, 4, 4, 5],
 
+    /* ══⚠⚠⚠ NIEM ＝ 她們**飛行能力**的等級（ver -1186，Ray 交稿）══════════════
+       > 「跳出訊息『獵手之眼』等級提升為 LV.2」
+       > 「諾薇兒：破凪之吐息冷卻時間減少 10%／安雅：混沌感知範圍增加 10%」
+       ⚠⚠ **這與九星（`levels`）是兩套**，不要混：
+         · 九星＝**戰鬥**裡的能力，用《戰鬥紀錄》點亮（打架賺來的）
+         · NIEM＝**飛行地圖**上的能力，用 NIEM 提升（啟動遺蹟換來的）
+       ⚠ 出廠就是 **LV.1**（等級＝1＋用掉的份數），所以第一份用下去是「提升為 LV.2」。
+       ⚠⚠ `per` 是**每一級的幅度**，不是總量；`desc` **不寫數字**
+         （Ray：「括號內的字不用寫進 UI」）。
+       ⚠ 生效的地方在**飛行頁**（另一個 document，讀 `tivot_girlniem_v1`）——
+         那邊各有一處在乘（鐵律 7），註解互指。 */
+    niem: {
+      voice: { sorana:'vo_sorana_roar2', nouvelle:'vo_nouvelle_saintreload', anya:'vo_anya_lvup' },
+      skill: {
+        sorana:   { name:'獵手之眼',   per:0.10, desc:'在船上發現稀有敵人的機率增加。' },
+        nouvelle: { name:'破凪之吐息', per:0.10, desc:'破凪之吐息的冷卻時間減少。' },
+        anya:     { name:'混沌感知',   per:0.10, desc:'混沌感知的範圍增加。' },
+      },
+      /* ⚠⚠ **第一份一定給索菈娜**（Ray：「使用對象三女角，但只有索菈娜高光可點」）
+         —— 那一段戲就是她自告奮勇。教過之後（`niem_taught`）三位都能選。
+         ⚠ 鐵律 9：`niem_taught` 由那一段的最後一拍插，沒有人拔。 */
+      firstTo: 'sorana',
+      taughtFlag: 'niem_taught',
+    },
+
     /* ══ 九格的內容 —— **Ray 分角色給**（他的原話：「星名跟對應技能我會分角色
        給你，有不懂的就問別瞎做」）══
        `star` 是西文星名、`name` 是中文星名、`desc` 是給玩家看的說明，
@@ -1467,6 +1492,17 @@ export const GAME_CONFIG = {
       rec_nouvelle: { girl:'nouvelle', cat:'special', desc:'與她並肩作戰的紀錄。整理之後，能看出下一步該練什麼。' },
       rec_anya:     { girl:'anya',     cat:'special', desc:'與她並肩作戰的紀錄。整理之後，能看出下一步該練什麼。' },
       rec_sorana:   { girl:'sorana',   cat:'special', desc:'與她並肩作戰的紀錄。整理之後，能看出下一步該練什麼。' },
+      /* ══⚠⚠⚠ NIEM（ver -1186，Ray 交稿）══════════════════════════════════════
+         > 蕾：「『神經介面擴張模組』。簡單來說，可以提升人的認知能力。」「太古文明的遺產。」
+         遺蹟啟動的產物：每啟動一座拿一份，用在**一位女角**身上提升她的飛行能力
+         （對應表在 `girls.niem`）。
+         ⚠ 沒有 `price`／`sellValue` ＝**不能買也不能賣**（同戰鬥紀錄：那不是貨）。
+         ⚠ `cat:'special'` ＝道具欄的「特殊」頁籤。
+         ⚠⚠ **前文的「通用輸入介面」已正名為 NIEM**（Ray 指定，木雅克那一段也改了）
+           —— 同一個東西只有一個名字（鐵律 7 的精神）。 */
+      niem: { name:'NIEM', cat:'special',
+              use:{ niem:true },          // ← 道具欄長「使　用」（見 loot.bagListHtml）
+              desc:'神經介面擴張模組。太古文明的遺產，能擴張使用者的認知能力。' },
       verafond_crest: { name:'薇拉馮德家的紋章', cat:'item', sellValue:10000, always:true,   /* ver -859：Ray 改 10000 */
                         desc:'薇拉馮德家的家徽。同樣的東西他身上似乎總還有一個。' },
       saint_claw_low: { name:'聖徒之爪（低品質）', cat:'material', price:24,
@@ -2281,7 +2317,7 @@ export const GAME_CONFIG = {
        ⚠ 中途離開地圖＝收段不結算（帳與掉落作廢）——同城鎮戰半途離場的既有語意。
        ⚠⚠ **沒有 `sf_deer` 這一場**（ver -878，Ray：「鹿主不變異是不會有戰鬥的」）：
          未變異的樹靈鹿主是**演出**（中景 cgBack）不是敵人 —— 打得到的只有黃昏分支
-         變異之後的 `sf_deer_nightmare`。-870 曾有一張 `sf_deer` 戰鬥卡＋遺跡入口的
+         變異之後的 `sf_deer_nightmare`。-870 曾有一張 `sf_deer` 戰鬥卡＋遺蹟入口的
          必出設定，兩者已一起撤掉；敵人卡 `enemies.sf_deer` 也同步撤。 */
     sf_lynx:           { enemy:'sf_lynx',           session:'sf_wild' },
     sf_snake:          { enemy:'sf_snake',          session:'sf_wild' },

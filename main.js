@@ -431,8 +431,8 @@ function killAllPages(){
 /* 飛行頁（iframe 內）呼叫得到的掛鉤。⚠ 掛在 window 上是**刻意**的 ——
    那一頁是非 module 的獨立文件，import 不到這裡的任何東西。 */
 window.__tivotFlight = {
-  /* ══ 入口存檔（ver -698，Ray：「進城鎮、遺跡、特殊地點就自動在入口存檔一次」）══
-     飛行頁走進地標／遺跡那一刻叫它。城鎮那一邊由 `town.open` 自己落（同一支
+  /* ══ 入口存檔（ver -698，Ray：「進城鎮、遺蹟、特殊地點就自動在入口存檔一次」）══
+     飛行頁走進地標／遺蹟那一刻叫它。城鎮那一邊由 `town.open` 自己落（同一支
      `saveSys.autoSave`，鐵律 8）—— 這裡只補「還留在大地圖上」的那幾種入口。
      ⚠ 走 `flightCheckpointNow`（＝帶座標的那一種）：人還在天上，回檔要回到座標。 */
   checkpoint(){ flightCheckpointNow(); },
@@ -976,7 +976,9 @@ bindBtn('prepGo', ()=>{ const st=prepStoryMode; closePrep(); if(!st) launchBattl
 /* 劇情層（槍棺上的吊墜）開整備頁：story 不 import main，所以用注入。 */
 /* ⚠ 吊墜開的是**本篇的整備頁**（`modules/gear.js`），不是試玩版的出陣整備
    （ver -422，Ray：「整備畫面錯了，開啟全畫面視窗，有三個功能」）。 */
-story.setPrepOpener(()=>gear.open());
+/* ⚠ 帶著 opts（ver -1186）：劇情那一拍要能指定「開在哪一頁、高光哪一項」
+   —— 玩家自己點吊墜時不帶，行為一個字都沒變。 */
+story.setPrepOpener(o=>gear.open(o||undefined));
 /* 劇情裡的「出航」那一拍（ver -424）：交給同一支 `openFlight`（唯一的入口，鐵律 8）。 */
 /* ⚠ 腳本的 `goFlight` 那一拍（主線的出航）也要先收城鎮的介面（ver -437）——
    與城鎮自己那顆「出航」走同一條規矩（鐵律 8）：`town.suspend()` 只收介面不收狀態，
@@ -1513,7 +1515,7 @@ combat.setStoryReturn((res)=>{
            · **安全點／休息處**（`{settle:true}` 那一拍，ver -1135 補上）
            · 腳本明寫的 `checkpoint:true`／飛行每 600 距離
        ⚠⚠ ver -697~-1134 是「回這張地圖的**入口**」（`noJump` ＋ 明指節點）——
-         那一版把「進度」與「位置」拆成兩件事，於是在遺跡裡走了半張圖、收過一次局，
+         那一版把「進度」與「位置」拆成兩件事，於是在遺蹟裡走了半張圖、收過一次局，
          死掉還是被丟回門口。Ray 這一版把兩件事合回去：**回到你上一次站穩的地方**。
        ⚠ 連敗三次 → 抬回旅店（防卡死那一條不動，見 carriedToInn）。 */
     const n = prog.lossStreak()+1;

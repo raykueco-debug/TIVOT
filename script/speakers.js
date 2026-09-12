@@ -258,7 +258,19 @@ export const ART = {
        受左右影響小」）—— 她換邊就是換邊，不翻。 */
   nouvelle: { cm:165, eye:40, fx:0.582, top:3, bot:1536, mirror:true,
            side:'L', alt:null, base:'resources/SI/Nouvelle_SI_front.webp',
-           expr:{ /* 艦鬥教學那幾拍（ver -424，Ray 交件）：她穩住陣腳的姿勢。 */
+           expr:{ /* ══ 瓦努努遺蹟・NIEM 那一段（ver -1186，Ray 交稿）══ 同上，逐張量。
+                     ⚠ 檔名 `expain2` 是交件時的拼字（少一個 l），鍵名照 Ray 的稿寫
+                       —— 他的腳本上就是 `Nouvelle_SI_expain2`。
+                     ⚠ `think` 與既有的 `thinking` 是**兩張不同的圖**，不要合併。 */
+                  expain2:  { src:'resources/SI/Nouvelle_SI_expain2.webp', top:3, bot:1535, fx:0.579 },
+                  /* ⚠ **同一張圖的別名**（ver -1186）：交件的檔名少一個 l（`expain2`），
+                     而 Ray 的稿有時寫 `explain2`（正確拼法）。兩個鍵指同一張、
+                     取景值照抄（§6.5：同一個姿勢就直接沿用，不要逐張重量）。
+                     ⚠ `shinier_ruins.darkbridge` 那一段本來就在用 `explain2`，
+                       之前一直回退基本立繪 —— 這一條順手把它修好。 */
+                  explain2: { src:'resources/SI/Nouvelle_SI_expain2.webp', top:3, bot:1535, fx:0.579 },
+                  think:    { src:'resources/SI/Nouvelle_SI_think.webp',   top:5, bot:1525, fx:0.551 },
+                  /* 艦鬥教學那幾拍（ver -424，Ray 交件）：她穩住陣腳的姿勢。 */
                   /* ══ stage7・木雅克神殿（ver -922，Ray 交稿）══ 交件是 PNG，依 §5 轉 WebP；
                      取景值是 `tools/measure_si.py` 量的（差分不沿用別張，§6.5）。
                      ⚠ `decoding` ＝她「讀」古代文字那幾拍專用。 */
@@ -330,6 +342,8 @@ export const ART = {
                   risehand: { src:'resources/SI/Nouvelle_SI_risehand.webp',  top:1,  bot:1529, fx:0.393 },
                   awkwerd:  { src:'resources/SI/Nouvelle_SI_Awkwerd.webp',   top:2,  bot:1533, fx:0.468 },
                   shocked:  { src:'resources/SI/Nouvelle_SI_Shocked.webp',   top:3,  bot:1534, fx:0.504 },
+                  /* ⚠ 別名（同上，ver -1186）：Ray 的稿寫 `shock`。 */
+                  shock:    { src:'resources/SI/Nouvelle_SI_Shocked.webp',   top:3,  bot:1534, fx:0.504 },
                   lookaway: { src:'resources/SI/Nouvelle_SI_Lookaway.webp',  top:5,  bot:1529, fx:0.504 },
                   /* ⚠ ver -1092 Ray **重交了這一張**（同名覆蓋）→ `?v=2`（§5：不掛
                      cache-buster 的話瀏覽器會抱著舊的那一份），取景值也**重量過**
@@ -451,6 +465,9 @@ export const ART = {
      ⚠ 也不要動 `CAST_EYE_MIX`：那是全域旋鈕，會把另外三個人一起改掉。 */
   anya:   { cm:152, standCm:162, eye:34, fx:0.505, top:0, bot:1531,
            side:'R', alt:null, base:'resources/SI/Anya_SI_front.webp', expr:{
+    /* ══ 瓦努努遺蹟・NIEM 那一段（ver -1186，Ray 交稿）══ 交件是 PNG，依 §5 轉 WebP；
+       取景值逐張量（`tools/measure_si.py`），不沿用別張（§6.5）。 */
+    smilesneaky:  { src:'resources/SI/Anya_SI_smilesneaky.webp', top:2, bot:1530, fx:0.441 },
     /* ══ stage7・木雅克神殿（ver -922，Ray 交稿）══
        ⚠ `point` 的 `top:34` 是量出來的事實（她舉手指的姿勢，人物最上緣比別張低）。 */
     point:        { src:'resources/SI/Anya_SI_point.webp', top:34, bot:1518, fx:0.406 },

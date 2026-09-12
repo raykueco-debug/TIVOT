@@ -107,7 +107,7 @@ Sorana 全部有 alpha、全部是 webp、沒有裸 PNG 混在裡面。
 - 已入庫的原形送 GPT 加工（加氣勢＋去背），加工串 `chatgpt.com/c/6a996546-…`
 
 ### 其他
-- **遺跡 20 張交給 GPT 重繪**（Ray 早先的指示，Gemini 那批是卡通風不合格）
+- **遺蹟 20 張交給 GPT 重繪**（Ray 早先的指示，Gemini 那批是卡通風不合格）
 - `Ruins_Spring` 重抓全解析（現在只有 1264×848）
 - 凱爾特地宮試作：GPT 5/20，在 `resources/_originals/background/_celtic_trial/`
   ⚠ 前 4 張是**舊條款**畫的（Ray：「太死，每個看起來都一樣，而且有些應該要有岔路」），

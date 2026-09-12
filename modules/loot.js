@@ -126,10 +126,14 @@ export function bagListHtml(catFilter, opts){
   return inv.grouped().filter(g=>!catFilter || g.name===catFilter || g.cat===catFilter).map(g=>{
     const rows=g.rows.length
       ? g.rows.map(r=>{
-          /* 「使　用」只長在**有使用效果**的道具上（`defs[].use`，目前只有回 HP）——
-             呼叫端開 `o.use` 才給（ver -497，整備頁；按下去做什麼由呼叫端綁）。 */
+          /* 「使　用」只長在**有使用效果**的道具上（`defs[].use`）——
+             呼叫端開 `o.use` 才給（ver -497，整備頁；按下去做什麼由呼叫端綁）。
+             ⚠ ver -1186 起不只回 HP：NIEM 的 `use.niem` 也長得出來
+               （**按下去做什麼**照舊由呼叫端決定，這裡只管長不長）。
+             ⚠ 判「有沒有使用效果」看**那張卡自己說的**，不要在這裡列白名單
+               —— 日後多一種用途只要卡上寫 `use:{…}`（鐵律 1）。 */
           const u=o.use && ((inv.defOf(r.id)||{}).use||null);
-          const useBtn=(u && u.hp!=null)
+          const useBtn=(u && (u.hp!=null || u.niem))
             ? '<button class="bag-use" data-id="'+r.id+'" type="button">使　用</button>' : '';
           return '<div class="loot-row"><span class="loot-name">'+r.name+'</span>'
                + '<span class="loot-n">×'+qtyText(r.n)+'</span>'

@@ -1744,6 +1744,12 @@ function fireOneShot(line){
       fxTimers.push(st.__shakeT);
     }
   }
+  /* ══⚠⚠ 這一拍**把整備頁叫出來**（ver -1186，Ray：「教學，跳出選單，直接開道具欄的
+     特殊頁面，高光 NIEM」）══ 腳本寫 `gear:{tab:'items', itemCat:'special', spot:'niem'}`。
+     ⚠ 走**既有的** `prepOpener`（＝吊墜那顆鈕的同一支，鐵律 8）——
+       不要為了劇情再開一條進整備頁的路。
+     ⚠ 這是「指給玩家看」不是閘門：頁一開就交還給他，劇情這一段到此為止。 */
+  if(line.gear && prepOpener) prepOpener(line.gear);
   if(line.fx==='gunfire') fireHits(GUNFIRE_MS);
   if(line.fx==='purpleflame') purpleFlame();
   if(line.fx==='sense') senseFx();

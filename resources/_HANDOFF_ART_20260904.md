@@ -8,7 +8,7 @@
 ## 1. 已完成入庫（resources/background/）
 
 - **場景差分 55/55**：帝都 Dawn×11＋Guild Dawn/Dusk、北方泊地 14 節點×Dawn/Dusk（含
-  Hotel_room 從夜景衍生）、西湖村 Dawn×11＋chiefhouse Dusk、遺跡入口 Dawn/Dusk、
+  Hotel_room 從夜景衍生）、西湖村 Dawn×11＋chiefhouse Dusk、遺蹟入口 Dawn/Dusk、
   `Shinier_Plaza_Dusk` 換新（舊 _dd 版已進回收區）。
 - **夏爾森林 27/27**：Entry/Glade/Nest/Shoal/Valley/Trail/Cave/Highland/Cliff
   各 ×Day/Dusk/Night —— GPT 出日景原稿（`_originals/background/_forest_gpt/`，
@@ -48,7 +48,7 @@ lh3 的 rd-gg-dl 簽名 URL 一次性、navigation 二次使用 403。
   石棺獸 sarcophagus／提燈獸 lantern／聖書獸 codex／鐘樓獸 bellfry／
   燭台獸 candelabra／面紗獸 veil／鎖骨聖釘獸 nail
   ⚠ 其中若有先前點過下載的則（handoff_734 提過下載嘗試），token 可能已耗，得重生成。
-- 已入庫怪的 GPT 加工線（加氣勢＋去背）、遺跡 20 張 GPT 重繪、凱爾特地宮、
+- 已入庫怪的 GPT 加工線（加氣勢＋去背）、遺蹟 20 張 GPT 重繪、凱爾特地宮、
   北泊 `_BF` 差分（Ray 未決）——照 _HANDOFF_734 §4。
 - Forest 品質抽查只看了 Entry Night（合格：構圖鎖定、銀色滿月、平塗硬邊）——
   其餘靠 Ray 遊戲內驗收；哪張不行就用 §2 流程重衍生（很便宜）。

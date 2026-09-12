@@ -1011,12 +1011,12 @@ export const ENEMIES = {
       loot:[ { id:'crow_beak', n:1 } ],
     },
     /* ══⚠⚠ 樹靈鹿主（未變異）**沒有敵人卡**（ver -878，Ray：「鹿主不變異是不會
-       有戰鬥的」）══ 牠在遺跡入口是**演出**（中景層 cgBack 的一張去背圖），不是
+       有戰鬥的」）══ 牠在遺蹟入口是**演出**（中景層 cgBack 的一張去背圖），不是
        可以打的東西 —— 打得到的只有下面那張變異版。
        -870 這裡曾有一張 `sf_deer`（hp600/atk20/purgeFx），連同 config.battles 的
-       同名戰鬥卡與遺跡入口的必出設定一起撤掉了；圖仍在 ASSETS.enemy_sf_deer（預載用）。 */
+       同名戰鬥卡與遺蹟入口的必出設定一起撤掉了；圖仍在 ASSETS.enemy_sf_deer（預載用）。 */
     /* ══ 鹿主變異（ver -870，Ray 的森林行稿：「鹿主變異 mon_shinierforest_deernightmare
-       …蕾：『禍魘！』進入戰鬥」）══ 黃昏後抵達遺跡入口的劇情戰。
+       …蕾：『禍魘！』進入戰鬥」）══ 黃昏後抵達遺蹟入口的劇情戰。
        kind:'harm'＝變異成禍魘（降臨/淨化特效＋「已淨化」）。
        ⚠ hp/attack 暫定（照本尊 600 上調一階；Ray 沒給這一張的數值）。 */
     sf_deer_nightmare: {

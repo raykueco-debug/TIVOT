@@ -58,7 +58,7 @@ POS = {
     'prison':(6,5),
     'mosschamber':(8,5), 'rift':(8,4), 'darkbridge':(8,3),
   },
-  # ── 石製遺跡（ver -1123）：一條主軸，中間一次岔路（左＝沉水石坑）──────
+  # ── 石製遺蹟（ver -1123）：一條主軸，中間一次岔路（左＝沉水石坑）──────
   'fallen': {
     'altar':(2,1),
     'basin':(0,2), 'fork':(2,2),
@@ -121,7 +121,7 @@ POS = {
 }
 # 跨圖出口畫成一個虛線框（`@<圖>:<格>` → 標題）
 OUT_POS = {
-  'shinier_ruins': {'@shinier_forest:ruins': (5,9, '遺跡\n入口')},
+  'shinier_ruins': {'@shinier_forest:ruins': (5,9, '遺蹟\n入口')},
   'shinier':       {'@shinier_forest':      (2,2, '夏爾\n森林')},
 }
 

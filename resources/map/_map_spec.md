@@ -62,7 +62,7 @@
 
 ⚠⚠⚠ **根因是「畫風基準圖」在跟指令打架**（-909 之後才想通）：
 前三版我都拿 `map_shinierforest.webp` 當畫風錨 —— **但那張本身就很細**
-（山有排線、遺跡有陰影），等於一邊叫模型簡化、一邊給它一張精細的範本看。
+（山有排線、遺蹟有陰影），等於一邊叫模型簡化、一邊給它一張精細的範本看。
 **正解：材料與畫法要分開餵。**
 - 只裁**沒有插畫的部分**當材料參考（紙色、皺褶、撕邊、墨線的串珠感、圓墨點、草書字體）
   —— 現行的 `scratchpad/ref_material.jpg` 就是從森林那張裁「一段線＋一個地名」＋
@@ -117,9 +117,9 @@
 ⚠⚠ **只用 `Ruins_shinier_*` 那 18 個場景**（Ray：「不是所有 ruin 都是木雅克神殿，
 只有 ruin_shinier 才是」）。第一版畫進去的 Rotunda／Observatory／Throne／Vault／
 Spring／Sarcophagus／PillarHall／Guardians／Ritual／Flooded／MuralGallery／StairDown
-**沒有 shinier 前綴 ＝ 別座遺跡的素材，不要畫**。
+**沒有 shinier 前綴 ＝ 別座遺蹟的素材，不要畫**。
 
-入口（Entrance）畫在圖上當起點，但它是**夏爾森林的「遺跡入口」那一格**，不是神殿的節點。
+入口（Entrance）畫在圖上當起點，但它是**夏爾森林的「遺蹟入口」那一格**，不是神殿的節點。
 
 ### 三層（照美術交件的光源分，畫面的光要跟著換）
 
@@ -263,7 +263,7 @@ WebP q85（**帶 alpha**）→ `resources/map/`；alpha 原 PNG → `resources/_
 
 ## 進度
 
-- [x] **`map_fallen.webp`（石製遺跡，5 格）＋ `map_santasofia.webp`（聖索菲亞城，12 格）**
+- [x] **`map_fallen.webp`（石製遺蹟，5 格）＋ `map_santasofia.webp`（聖索菲亞城，12 格）**
       —— **已交件**（ver -1123）。原稿 `_originals/map/map_*.png`，1536×1024、q90＋alpha_q100。
       產線對話 `chatgpt.com/c/6aa420f8-50d4-83e8-b3cd-923fa9f1a111`（兩張同一串，
       第二張明寫「同一本地圖集的下一頁」）。座標見 `_spots_fallen.json`／`_spots_santasofia.json`。

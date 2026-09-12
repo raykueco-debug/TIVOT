@@ -66,6 +66,13 @@ const K = {
        真的亮不亮看這裡（`girlBonus` 只加這裡有的）。
      ⚠ 鑰匙不存在 ＝ **舊存檔**，見 `girlStarsAll()` 的一次性遷移。 */
   girlStars: 'tivot_girlstars_v1',
+  /* ══ 女主的 **NIEM 等級**（ver -1186，Ray 交稿）══
+     `{搭檔key: 用掉幾份}`。等級＝1＋這個數字（出廠就是 LV.1）。
+     ⚠⚠ 與九星（`girlStars`）是**兩套**：那是戰鬥裡的能力（戰鬥紀錄點亮），
+       這是**飛行地圖**上的能力（NIEM 提升）。見 `config.girls.niem`。
+     ⚠ **一輪內**（同 EXP／九星／掛件）：`newRun` 要清、快照要帶。
+     ⚠ 飛行頁是另一個 document，**直接讀這把鑰匙**（§6.10 的跨頁慣例）。 */
+  girlNiem:  'tivot_girlniem_v1',
   /* ══ 戰績統計（ver -1023，Ray：「統計總局數、總擊場數、各女角的局數、平均得分」）══
      `{ sessions, kills, byGirl:{ <who>:{ n, score } } }`
        · `sessions` ＝**總局數**（一次結算算一局，§0.5 的「局」）
@@ -199,7 +206,7 @@ export function charms(){
 export function charmOf(barrel){ return charms()[barrel] || null; }
 /* ⚠⚠ **同一張護符不能同時掛兩支槍**（ver -700）：身上只有一個就只掛得了一支 ——
    裝到另一支等於**移過去**（原本那一支自動空出來）。持有兩個以上才各掛一個。
-   ⚠ 收在這一支（鐵律 8）：日後有別的地方會裝護符（劇情給、遺跡開到就自動裝上），
+   ⚠ 收在這一支（鐵律 8）：日後有別的地方會裝護符（劇情給、遺蹟開到就自動裝上），
      那條路不必記得再判一次。
    ⚠ `id` 傳 null／空 ＝ **卸下**。 */
 export function setCharm(barrel, id){
@@ -358,6 +365,51 @@ export function girlStarsAll(){
   return out;
 }
 export function girlStarOn(who, i){ return !!((girlStarsAll()[who]||{})[i]); }
+
+/* ══⚠⚠⚠ NIEM ＝ 她們飛行能力的等級（ver -1186）══════════════════════════════
+   ⚠ **只存「用掉幾份」，不存等級**（同 EXP 那一條，鐵律 7）：
+     等級是 `1 + 份數` 推出來的，存了就是第二個真相。 */
+export function girlNiemAll(){
+  let j=null;
+  try{ j=JSON.parse(rd(K.girlNiem)||'null'); }catch(e){}
+  return (j && typeof j==='object') ? j : {};
+}
+export function girlNiemUsed(who){ return (girlNiemAll()[who]|0); }
+/* 畫面上印的那個 LV.n。出廠 LV.1 ⇒ 第一份用下去就是「提升為 LV.2」（Ray 的稿）。 */
+export function girlNiemLv(who){ return isGirl(who) ? 1+girlNiemUsed(who) : 0; }
+/* 這一位的 NIEM 技能卡（`config.girls.niem.skill[who]`，鐵律 1）。 */
+export function girlNiemSkill(who){ return ((girlCfg().niem||{}).skill||{})[who] || null; }
+/* 累計加成（每一級 `per`）。⚠ **只有這一支在算**（鐵律 7）——
+   飛行頁那三處乘的都是它算出來的數字。 */
+export function girlNiemBonus(who){
+  const sk=girlNiemSkill(who); if(!sk) return 0;
+  return (sk.per||0) * girlNiemUsed(who);
+}
+/* 「現在能把 NIEM 用在她身上嗎」——**唯一的判定**（鐵律 7/8）：UI 畫暗、
+   按下去、日後任何自動使用的路徑都問它。回傳 `{ok, why}`。
+   ⚠⚠ **教過之前只給 `firstTo`（索菈娜）**：Ray 的稿是「使用對象三女角，
+     但只有索菈娜高光可點」—— 那一段戲就是她自告奮勇。
+     教過（`niem_taught`）之後三位都能選。 */
+export function canUseNiem(who){
+  const N=girlCfg().niem||{};
+  if(!isGirl(who))                 return { ok:false, why:'notgirl' };
+  if(!girlNiemSkill(who))          return { ok:false, why:'noskill' };
+  if(inv.count('niem') <= 0)       return { ok:false, why:'none' };
+  if(N.taughtFlag && !hasFlag(N.taughtFlag) && N.firstTo && who!==N.firstTo)
+                                   return { ok:false, why:'first' };
+  return { ok:true, why:'' };
+}
+/* 用一份 NIEM。回傳 `{ who, lv, skill, voice }`，不成立回 null。
+   ⚠ 扣道具與加等級是**同一支**（鐵律 8）：日後劇情要直接給也走它。 */
+export function useNiem(who){
+  if(!canUseNiem(who).ok) return null;
+  if(!inv.remove('niem', 1)) return null;
+  const all=girlNiemAll();
+  all[who]=(all[who]|0)+1;
+  wr(K.girlNiem, JSON.stringify(all));
+  const N=girlCfg().niem||{};
+  return { who, lv:girlNiemLv(who), skill:girlNiemSkill(who), voice:(N.voice||{})[who]||'' };
+}
 /* 第 i 顆星要幾份戰鬥紀錄（資料在 `girls.starCost`，鐵律 1）。
    ⚠ 表短了就用最後一格（不要回 0 ＝ 免費）。 */
 export function girlStarCost(i){
@@ -825,13 +877,13 @@ export const CHAPTERS = [
            'sv_arrive','sv_evening'],
     enter:'town', town:'shinier', node:'sorahome' },
   /* ══ Stage 6（ver -870，Ray：「加入stage6 翌日早上起床那一幕」）══
-     夏爾村・翌日早上（索菈娜家 06:00）→ 晨戲 → 森林行 → 遺跡入口鹿主。
+     夏爾村・翌日早上（索菈娜家 06:00）→ 晨戲 → 森林行 → 遺蹟入口鹿主。
      ⚠ `sv_forest_morning` 給（翌日閘門已用掉——直接站在屋裡）；
        `sv_forest_go` **不給**（起床那一幕正是要演的，它自己會 setStage 6）。
      ⚠ `shinier_siege`＋`sv_clear_wild`＋`safehouse_shinier` 都給：圍城已打完、
        村子是安全區——少了 siege 旗踏出家門會重演出擊那一段（onLeave 的旗）。
      ⚠ `clockHour:6` ＝ firstHourAt(6)＝隔天 06:00（開局 11:00 已過 6 點）。 */
-  { id:'stage6', name:'Stage 6', sub:'夏爾村・翌日早上 → 森林行 → 遺跡入口',
+  { id:'stage6', name:'Stage 6', sub:'夏爾村・翌日早上 → 森林行 → 遺蹟入口',
     stage:6, clockHour:6, named:true,
     flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open',
            'set_sail','got_ship','dock_day2','flight_centipede_met',
@@ -842,14 +894,14 @@ export const CHAPTERS = [
            'sv_clear_wild','safehouse_shinier','sv_forest_morning'],
     enter:'town', town:'shinier', node:'sorahome' },
   /* ══ Stage 7（ver -884，Ray：「把擊敗鹿主後的對話劃作 stage7」）══
-     鹿主變異戰 —— 直接站在**夏爾森林的遺跡入口**、時間已過黃昏，走進去就演。
+     鹿主變異戰 —— 直接站在**夏爾森林的遺蹟入口**、時間已過黃昏，走進去就演。
      ⚠ `stage:6`：S7 是**戰後那一段自己升的**（那一拍的 `stage:7`），
        章節工具只把人擺到那一段之前（同 stage4 送行那一段的作法）。
      ⚠ `clockHour:18` ＝ `firstHourAt(18)`；黃昏分支的條件就是「不在 [5,17] 內」。
      ⚠ `sv_forest_intro` 要給（入口的叮嚀已經看過，不然一進去先被它抓走）；
        `sv_deer_met`／`sv_deer_harm` **不給** —— 那正是要演的。
-     ⚠ `node:'ruins'` ＝直接站在遺跡入口那一格。 */
-  { id:'stage7', name:'Stage 7', sub:'夏爾森林・遺跡入口（黃昏）→ 樹靈鹿主 → 紮營討論',
+     ⚠ `node:'ruins'` ＝直接站在遺蹟入口那一格。 */
+  { id:'stage7', name:'Stage 7', sub:'夏爾森林・遺蹟入口（黃昏）→ 樹靈鹿主 → 紮營討論',
     stage:6, clockHour:18, named:true,
     flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open',
            'set_sail','got_ship','dock_day2','flight_centipede_met',
@@ -918,7 +970,7 @@ export function newRun(){
   for(const k of [K.stage, K.flags, K.affection, K.affFloor, K.name, K.nick,
                   K.hp, K.innLast, K.flightLoss, K.rennaS, K.playtime,
                   K.charms, K.gunLv, K.gunStars, K.wmod, K.jmod, K.dishes,
-                  K.girlExp, K.girlStars, K.stats]) {   // stats＝戰績統計（ver -1023，一輪內）   // 持久HP／上次旅店／連敗數／蕾娜S計數／遊玩時間／掛件／強化／杰羅改造／吃過的料理／女主等級（-970）
+                  K.girlExp, K.girlStars, K.girlNiem, K.stats]) {   // stats＝戰績統計（ver -1023，一輪內）   // 持久HP／上次旅店／連敗數／蕾娜S計數／遊玩時間／掛件／強化／杰羅改造／吃過的料理／女主等級（-970）
     try{ localStorage.removeItem(k); }catch(e){}
   }
   /* ⚠⚠ 從頭開始＝**S0 要寫進鑰匙**（ver -563）。清掉 stage 之後不寫回的話，
@@ -992,6 +1044,7 @@ export function snapshot(){
            dishesRaw:rawJ(K.dishes),        // 吃過的料理（ver -953，一輪內）
            girlExpRaw:rawJ(K.girlExp),      // 女主的九級（ver -970，一輪內）
            girlStarsRaw:rawJ(K.girlStars),  // 女主已點亮的星（ver -1132，一輪內）
+           girlNiemRaw:rawJ(K.girlNiem),    // 女主的 NIEM 等級（ver -1186，一輪內）
            statsRaw:rawJ(K.stats) };        // 戰績統計（ver -1023，一輪內）
 }
 export function restore(s){
@@ -1031,6 +1084,8 @@ export function restore(s){
   /* 已點亮的星（ver -1132）：同上，舊存檔沒有這一欄 → 原樣移除
      （讀回去之後 `girlStarsAll()` 會依那個檔的等級重新遷移一次）。 */
   putRaw(K.girlStars,('girlStarsRaw'in s)?s.girlStarsRaw:null, true);
+  /* NIEM 等級（ver -1186）：同上，舊存檔沒有這一欄 → 原樣移除（＝三位都是 LV.1）。 */
+  putRaw(K.girlNiem, ('girlNiemRaw' in s)?s.girlNiemRaw :null, true);
   /* 戰績統計（ver -1023）：同上，舊存檔沒有這一欄 → 原樣移除。 */
   putRaw(K.stats,    ('statsRaw'    in s)?s.statsRaw   :null, true);
 }

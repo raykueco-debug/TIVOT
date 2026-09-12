@@ -96,7 +96,7 @@ python3 tools/bust.py --check  # 只檢查（script_lint.py 每次也會順手�
 |---|---|---|
 | 伊甸古墓的 12 隻怪 | 同上 | 同一個下載問題 |
 | `Tomb_Gate_Sealed_{dawn,day,dusk,night}` | 同上 | 需求已發：同構圖同機位同光，只有門扇完全閉合 |
-| `tomb_opened` 誰插 | Ray 的劇本 | 條件已定：**另一座遺跡啟動才會開**。⚠ 現有的遺跡啟動旗有兩支（`ruins_altar_on`／`ruins_gate_open`），**不要發明第三支**，直接在那一段收尾加 `flags:['tomb_opened']` |
+| `tomb_opened` 誰插 | Ray 的劇本 | 條件已定：**另一座遺蹟啟動才會開**。⚠ 現有的遺蹟啟動旗有兩支（`ruins_altar_on`／`ruins_gate_open`），**不要發明第三支**，直接在那一段收尾加 `flags:['tomb_opened']` |
 | `girls.recordPerLevel` / `starCost` | Ray | 我填的是草案（1 與 `[1,1,2,2,3,3,4,4,5]`）：九級只產 9 份、全點要 23 份 ⇒ **點不滿，要選**。要「練滿能全點」把 `recordPerLevel` 調到 3 |
 | 門關著要不要**走不進去** | Ray | 現在照樣走得進去（他只要了一張圖） |
 

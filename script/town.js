@@ -82,6 +82,58 @@ const vil = N('VILLAGER'), vil2 = N('VILLAGER2'), vil3 = N('VILLAGER3'), chf = N
 const jer = N('JERO'), shen = N('HUNTER_SV'), grcS = N('GROCER_SV');   // 杰羅／謝尼／村雜貨店主（ver -858）
 
 /* ══════════════════════════════════════════════════════════════════════
+   NIEM（ver -1186，Ray 交稿）—— **每一座遺蹟啟動之後共用的收尾**
+   ──────────────────────────────────────────────────────────────────────
+   Ray：「若為此為第二次獲得 NIEM（第一次為木雅克遺蹟，玩家如果乖乖地一開始就走進
+     瓦努努石陣就是第二次，如果不探索任何隱藏遺蹟直衝主線，就會在下一個主線遺蹟的
+     結束點拿到第二個）播放以下」
+
+   ⚠⚠ **所以它不能寫死在某一座祭壇上**（鐵律 8）：哪一座是「第二次」是玩家走出來的。
+     這一份接在**每一座**啟動段落的尾巴，由兩支旗自己分流：
+       · `niem_got1`   ＝「已經拿過至少一份」→ 沒有它就是第一次，到此為止
+       · `niem_taught` ＝「那一段解說演過了」→ 有它就不再演（第三次以後）
+     ⚠ 順序**不能反**：先問旗、再插旗 —— 插在前面的話第一次就會演到解說。
+     ⚠ `end:true` 那一拍會先 `applyPersist`（旗照插）再收段，所以「插旗＋結束」
+       寫在同一拍是對的（見 modules/story.js 的 `line.end` 那一行）。
+   ⚠ 鐵律 9：兩支旗都**沒有人拔**（拿過就是拿過、教過就是教過）。
+   ⚠⚠ 最後一拍把整備頁叫出來（`gear:`）——「教學，跳出選單，直接開道具欄的
+     特殊頁面，高光 NIEM」。真正的「只有索菈娜可點」是 `progress.canUseNiem`
+     在判（鐵律 7），不是這一段寫死的。 */
+const NIEM_TAIL = [
+  { speaker:'NARRATION', text:'', give:{ niem:1 }, auto:900 },
+  { end:true, onlyIf:'niem_taught' },                        // 教過了 → 只給道具
+  { end:true, skipIf:'niem_got1', flags:['niem_got1'] },     // 這是第一份 → 插旗、收
+  /* ── 第二次才演的那一段（Ray 的稿，一字未改） ── */
+  nou('surprise','啊。'),
+  { speaker:'PLAYER', blank:true },
+  nou('shock','又是NIEM。'),
+  sor('confuse','之前就想問了，那是什麼東西啊？'),
+  ren('writting','『神經介面擴張模組』。簡單來說，可以提升人的認知能力。'),
+  ren('talkwork','太古文明的遺產。'),
+  sor('amazed','認知能力？'),
+  nou('expain2','比方說，如果讓我使用的話，就能提升術式的強度。'),
+  nou('think','安雅小姐的話，或許感應能力會增強吧。'),
+  sor('talk','喔……那他呢？'),
+  { speaker:'PLAYER', blank:true },
+  sor('amazed','用不了？為什麼？'),
+  ren('lookawaytalk','很多原因啦。'),
+  nou('explain','不、不曉得索菈娜小姐用了會有什麼效果喔？'),
+  sor('amazed','欸？我也可以嗎？'),
+  ren('stare','妳想試試嗎？'),
+  sor('lauaghbig','嗯，好啊。'),
+  ren('scarejump','妳也太隨便了吧！'),
+  sor('lauaghbig','反正妳們也不會害我吧。正好我也想看看自己到底擅長什麼。'),
+  any('smilesneaky','……搗蛋。'),
+  sor('smirk','……妳等著，真是那樣的話我回頭先捉弄妳。'),
+  any('dying',''),
+  Object.assign(nou('explain2','把它放在視線中心，然後讓雙眼散焦……'),
+                { flags:['niem_taught'] }),
+  /* 教學：直接把玩家放到「道具 → 特殊」那一頁，NIEM 那一列亮著。 */
+  { speaker:'NARRATION', text:'', hide:['SORANA','RENNA','NOUVELLE','ANYA'],
+    gear:{ tab:'items', itemCat:'special', spot:'niem' }, auto:400 },
+];
+
+/* ══════════════════════════════════════════════════════════════════════
    Stage 8（ver -953，Ray 交稿）—— 索菈娜家 → 自由探索 → 餐廳 → 索菈娜家
    ──────────────────────────────────────────────────────────────────────
    ⚠ 台詞一字未改（除了下面明寫的三處）。
@@ -216,7 +268,7 @@ const SV_S8_DINE = { flag:'sv_s8_dine', need:'sv_s8_home', fromStage:8, lines:[
   cor('shock','！'),
   /* ⚠ 「（耳語）」是那一拍的全部內容，保留原文（見檔頭的說明）。 */
   sld(null,'（耳語）'),
-  cor('ecstasy','是嗎？木雅克的遺跡……！'),
+  cor('ecstasy','是嗎？木雅克的遺蹟……！'),
   any('silent','……'),
   cor('think','……'),
   cor('talk','海森伯格小姐，關於這方面，能否請您分享一下情報呢？'),
@@ -391,7 +443,7 @@ export const OUTING = {
                 /* ⚠ 蕾娜本位左、村長本位右（speakers.js）→ 兩個人自然分兩邊，
                      不必給 `sides` 覆寫（§6.5）。 */
                 meetBy:{ shinier:{
-                  lines:[ ren('writting','原來如此……遺跡從未有過那樣的反應？'),
+                  lines:[ ren('writting','原來如此……遺蹟從未有過那樣的反應？'),
                           chf(null,'這個村子建立也不過幾十年，再往前的事我也不清楚。'),
                           chf(null,'不過魔獸的量明顯減少了，謝謝你們啊。'),
                           ren('smile','不會，這是聖王廳應盡的職責……') ],
@@ -2380,7 +2432,7 @@ export const TOWNS = {
           any('silent','……'),
           nou('talk','也不一定是那樣吧……跟上次的，好像不太一樣。'),
           ren('talkwork','確實，這次是從村子外面跑進來的，但是——'),
-          sor('tired','唉——又是南面那個遺跡，沒完沒了！'),
+          sor('tired','唉——又是南面那個遺蹟，沒完沒了！'),
           sor('tired','這個月都第三次了。'),
           nou('talk','這個月？'),
           ren('evalutatingclosemouth','……'),
@@ -2399,7 +2451,7 @@ export const TOWNS = {
           sor('embarassed','開玩笑、開玩笑的啦！'),
           sor('tease','都我祖奶奶那一輩的事了，誰還記得呀！'),
           ren('dying','……'),
-          ren('ask','不過，妳剛剛提到的遺跡……知道名字嗎？'),
+          ren('ask','不過，妳剛剛提到的遺蹟……知道名字嗎？'),
           sor('think','好像叫木雅克神殿吧？之前那個學者說的。'),
           ren('shockedCalm','木雅克神殿！'),
           ren('thinking','原來我們掉到這裡來了......那表示離聖王廳不遠。'),
@@ -2664,7 +2716,7 @@ export const TOWNS = {
              （-739 的 forceGo）。再寫一次就是黑兩次（鐵律 7／8：一個動作一個實作）。
              ⚠ 稿上的「同場景」指的是科爾文那一段的下一拍不換人不換鏡；
                「回索菈娜家」是閘門的事，不是這一段的事。 */
-          ren('talkwork','那麼，就照科爾文副團長所說的，由我們帶安雅小姐到剩下三個遺跡探勘。'),
+          ren('talkwork','那麼，就照科爾文副團長所說的，由我們帶安雅小姐到剩下三個遺蹟探勘。'),
           nou('surprise','那樣真的可以嗎？我是十二課的倒還好……'),
           nou('shocked2','隨意調動璐娜團長的人的話……'),
           { speaker:'PLAYER', blank:true },
@@ -2708,7 +2760,7 @@ export const TOWNS = {
                （`textByTier` 只能換字，變不出「多一拍」）。
              ⚠ 兩者都是**門檻**不是等於：日後多一段 T3 不必回頭改。 */
           Object.assign(ren('writting','……放心，我會斟酌。'), { tierMax:1 }),
-          Object.assign(ren('writting','沒錯。聖王廳目前只知道疑似聖徒之力的情報，遺跡的事我還沒有回報。'), { tierMin:2 }),
+          Object.assign(ren('writting','沒錯。聖王廳目前只知道疑似聖徒之力的情報，遺蹟的事我還沒有回報。'), { tierMin:2 }),
           Object.assign(ren('writting','不好好利用這段時間差搞清楚狀況，反而幫不了安雅小姐。'), { tierMin:2 }),
           nou('concern','……'),
           any('talk','諾薇兒……不要擔心。'),
@@ -2735,7 +2787,7 @@ export const TOWNS = {
           ren('lookaway','......'),
           ren('pause','北境的伊甸古墓、東海的貝利薩爾舊址、南境的木雅克神殿……'),
           cor('talk','還有，位於埃蘭王國的廢城。'),
-          cor('think','過去我們曾經派人巡訪，遺跡都沒有作動的跡象。'),
+          cor('think','過去我們曾經派人巡訪，遺蹟都沒有作動的跡象。'),
           ren('talkwork','不論永夜前後呢。'),
           cor('stare','…….不如這樣吧。'),
           cor(null,'海森伯格監察官，就由您帶隊，前往剩下三個遺蹟勘探。'),
@@ -2828,12 +2880,12 @@ export const TOWNS = {
      ⚠ 為什麼自成一張圖不掛在村子的節點樹上：安全區旗（safehouse_<map>）與
        遭遇戰「回入口」都是**每張地圖自己的** —— 村子平時安全、森林有怪，
        同一張圖裝不下這兩件事。與村子的走廊＝跨地圖出口（@ 語法）。
-     ⚠ 最短路徑四場：林間空地①→淺灘②→舊獵道③→高地④；終點（遺跡入口）在
+     ⚠ 最短路徑四場：林間空地①→淺灘②→舊獵道③→高地④；終點（遺蹟入口）在
        入口正北，但林間空地**沒有 up**（斷崖）——要往西繞上高地折回東側。
      ⚠ **骨架**：四場主線戰＋獸巢選打的怪卡、支線的寶箱／採集、各段對白全部
        等 Ray 的稿（戰鬥拍照城鎮戰掛 acts 的 {battle} 那一套）。
      背景已全部交件（Forest_<節點>_Day/_Dusk/_Night 共 27 張，ver -791）；
-       終點直接用遺跡那批的 Ruins_Entrance。 */
+       終點直接用遺蹟那批的 Ruins_Entrance。 */
   shinier_forest: {
     name: '夏爾森林',
     entry: 'entry',
@@ -2844,16 +2896,16 @@ export const TOWNS = {
        —— 野外的路沒有門可以關（判定在 modules/town.js 的 isOpenNow，鐵律 8）。 */
     wilderness: true,
     /* 小地圖特例（ver -877，Ray：「夏爾森林因為有索拉娜帶路所以一進去就全開」）
-       —— mist:0＝全開；其他荒野/遺跡預設走過才亮（mist:1）。 */
+       —— mist:0＝全開；其他荒野/遺蹟預設走過才亮（mist:1）。 */
     mist: 0,
-    /* 野外每步 1 小時（ver -871，Ray：「野外探索每次移動是1小時，遺跡是半小時，
-       城鎮村落是十分鐘」）—— ⚠ 遺跡那一級 ver -917 由 30 改成 **10**（見神殿那一列）。 */
+    /* 野外每步 1 小時（ver -871，Ray：「野外探索每次移動是1小時，遺蹟是半小時，
+       城鎮村落是十分鐘」）—— ⚠ 遺蹟那一級 ver -917 由 30 改成 **10**（見神殿那一列）。 */
     stepMin: 60,
     /* ══ 槍棺地圖（ver -867，Ray 的 H 需求：「控制介面右下角放地圖選項，點開
        控制面板變成那張地圖，所在地閃爍光點」）══
        `spots`＝各節點在**圖上**的位置（比例座標，對著 Ray 交的手繪圖量的：
        Woods=入口／Forest=空地／Beast Nest=獸巢／Shallows=淺灘／River=河谷／
-       Old Hunt=舊獵道／Cave=岩窟／Hill=高地／Cliff=斷崖／Ruins=遺跡）。
+       Old Hunt=舊獵道／Cave=岩窟／Hill=高地／Cliff=斷崖／Ruins=遺蹟）。
        ⚠ 開圖規則（Ray）：**城村＝一進去就有全圖；荒野（wilderness）＝走過的
          節點才亮**（判定在 modules/town.js 的 renderMap，讀 seen_* 旗）。 */
     map: {
@@ -2890,7 +2942,7 @@ export const TOWNS = {
         /* ⚠ 鹿骸（結算怪）**不再寫死在斷崖**（ver -895）——見下面的 `endBattle`：
            它要擺在「這一趟沒走進來的那個出口」，寫死一格的話從神殿那頭下來的人
            第一格就撞到它。 */
-        /* ⚠⚠ 遺跡入口**不刷怪**（ver -878，Ray：「鹿主不變異是不會有戰鬥的」）——
+        /* ⚠⚠ 遺蹟入口**不刷怪**（ver -878，Ray：「鹿主不變異是不會有戰鬥的」）——
            樹靈鹿主在這一格是**演出**不是遭遇：白天分支牠看一眼就走，黃昏分支
            變異成禍魘才開打（那一場是 acts 裡的 `sf_deer_nightmare`）。
            -870 這裡曾寫 `ruins:'sf_deer'`，那會讓沒變異的鹿主也被打一場。 */
@@ -2913,7 +2965,7 @@ export const TOWNS = {
          「鹿主戰劇情只會出現一次，如果鹿主未變異日後則會在黃昏夜晚時段在夏爾森林
            隨機遇到，劇情從諾『牠好像不太歡迎我們』開始跑，進入戰鬥」
          「鹿主打完就沒了，不會出第二次，隨機遇到的機率是 5%」
-         ＝白天在遺跡入口碰到牠（牠看一眼就走）的那一輪，變異戰還沒發生 ——
+         ＝白天在遺蹟入口碰到牠（牠看一眼就走）的那一輪，變異戰還沒發生 ——
            日後在森林裡任何一格（入口除外，那是復活點）的黃昏／夜晚有 5% 補演。
          ⚠ 三個條件各管一件事（鐵律 9）：
              need `sv_deer_met`  ＝見過牠（白天那一段演過了）
@@ -2941,7 +2993,7 @@ export const TOWNS = {
             ren('callangry','禍魘！'),
             { battle:'sf_deer_nightmare' },
             /* 戰後只收尾一句就放人走（**不接紮營那一段** —— 那是森林行第一天、
-               在遺跡入口的戲，接在這裡會把劇情推到不對的地方）。
+               在遺蹟入口的戲，接在這裡會把劇情推到不對的地方）。
                ⚠⚠ 這一句是**沿用**索菈娜在初見那一段的台詞（Ray 的稿），不是我寫的新詞
                  —— 這一段 Ray 只指定「從諾那句跑到進戰鬥」，戰後沒給稿，
                  所以只借一句收尾、不自己編對白。要加戲等 Ray 的稿。
@@ -2949,7 +3001,7 @@ export const TOWNS = {
                  而這一段不經過 `enter()`（不會重新套節點的 bgm）。 */
             /* ⚠ 曲子**不寫在這裡**（ver -913）：戰鬥卡的 `bgmAfter:'@town'` 會把
                森林那一首接回來（-912 之前是靠這一拍手動寫 `bgm:'misty'`，而
-               遺跡入口那一段的同一場戰鬥沒有人寫 —— 那正是 Ray 回報的「打完還在放
+               遺蹟入口那一段的同一場戰鬥沒有人寫 —— 那正是 Ray 回報的「打完還在放
                lostplace」）。鐵律 7/8：一件事一個地方做。 */
             Object.assign(sor('guardtalk','可惡！連森林的守護神都被侵蝕了！'),
               { cgBack:null, stage:7 }),   // 同一個里程碑（鹿主打完）＝同樣升 S7
@@ -3003,18 +3055,18 @@ export const TOWNS = {
         /* ⚠⚠ **stage6 之前走不到斷崖邊**（ver -925，Ray：「Stage6 之前夏爾森林
            只能走到懸崖邊的前一個圖，懸崖邊不開放」）—— 高地是「懸崖邊的前一個圖」，
            所以擋的是**它往右那一條**。擋在 `exitsOf`（`exitFrom`）＝箭頭不出現。
-           ⚠ 斷崖邊是往遺跡入口的唯一通路，所以這一條同時把神殿擋在 S6 之後。 */
+           ⚠ 斷崖邊是往遺蹟入口的唯一通路，所以這一條同時把神殿擋在 S6 之後。 */
         exitFrom:{ right:6 } },
       /* 終點前的喘息格（無戰）：日後 checkpoint／劇情拍放這裡。 */
       cliff: { bg:'Forest_Cliff', name:'夏爾森林　斷崖邊',
         exits:{ up:'ruins', left:'high' } },
-      /* 終點：遺跡入口 —— 背景 ver -870 換 Ray 新交的 ruins_shinier_entrance
+      /* 終點：遺蹟入口 —— 背景 ver -870 換 Ray 新交的 ruins_shinier_entrance
          （單張、無時段差分；舊 Ruins_Entrance_* 已被美術收走）。
-         進遺跡本體是另一張圖，等 Ray 的規劃（遺跡背景美術重製中）。 */
+         進遺蹟本體是另一張圖，等 Ray 的規劃（遺蹟背景美術重製中）。 */
       /* ⚠ `rest:true`（ver -1026）：另一端，說明見上面的 `entry`。
          ⚠ 底下的 `noWild` 留著 —— 它擋的是**隨機雜怪**；結算怪是指定遭遇，照樣會出
            （正是 Ray 在 -879 說的「神殿入口**除了鹿主戰之外**是安全區」）。 */
-      ruins: { bg:'ruins_shinier_entrance', name:'夏爾森林　遺跡入口', rest:true,
+      ruins: { bg:'ruins_shinier_entrance', name:'夏爾森林　遺蹟入口', rest:true,
         exits:{ back:'cliff', up:'@shinier_ruins' },   // 往上＝進神殿（ver -875）
         /* ⚠⚠ **這一格不出野怪**（ver -879，Ray：「神殿入口除了鹿主戰之外是安全區，
            不出怪」）——它是神殿的門口／回程的落腳處，不是獵場。
@@ -3053,12 +3105,12 @@ export const TOWNS = {
                或鹿主離開以後」）：白天分支牠看一眼就走 —— 那一刻同樣進 S7
                （與黃昏分支打完鹿主是同一個里程碑，鐵律 7：兩條路一個答案）。 */
             Object.assign(nou('surprise','走掉了。'), { cgBack:null, stage:7 }),
-            /* 自由行動，可直接進入遺跡（遺跡本體地圖未實裝——等 Ray 的規劃）。 */
+            /* 自由行動，可直接進入遺蹟（遺蹟本體地圖未實裝——等 Ray 的規劃）。 */
           ] },
           { flag:'sv_deer_met', need:'sv_forest_intro', storyBattle:true, lines:[
             /* 出場序同上（ver -874）。
                ⚠⚠ **這一段不落回檔點**（ver -879，Ray：「鹿主戰戰敗退回懸崖戰後」）——
-                 落在這裡的話讀回來是「站在遺跡入口、鹿主正要現身」，那條路只有
+                 落在這裡的話讀回來是「站在遺蹟入口、鹿主正要現身」，那條路只有
                  一個方向：再打一次同一場。退回**斷崖那一場打完**才是「能去買藥、
                  換裝、再來一次」的地方（§6.5.2「落在強制鏈中間的 checkpoint 等於沒有」）。
                  那一筆是引擎自己落的（有戰鬥的段落演完 → enter() 的 act 收尾），
@@ -3067,7 +3119,7 @@ export const TOWNS = {
               cgBack:'resources/enemy/mon_shinierforest_deer.webp', auto:2200 },
             /* ══ 立繪規則同分支1（ver -878）：只有鹿主獨場的那幾禎清場，
                對話照常上立繪、吃「戰鬥中對話立繪尺寸」。 */
-            sor('surprised','竟然是……樹靈鹿主！'),   // 劇情戰的回檔點：站在遺跡入口、可自由行動
+            sor('surprised','竟然是……樹靈鹿主！'),   // 劇情戰的回檔點：站在遺蹟入口、可自由行動
             ren('shockedCalm','那是什麼？很麻煩嗎？'),
             sor('remind','那是傳說中的森林之神，'),
             sor('remind','所以我也不知道好不好吃。'),
@@ -3132,7 +3184,7 @@ export const TOWNS = {
             ren('lookawaytalk','那……您的人身安全，恕我們無法負責了。'),
             Object.assign(sor('readysmile','噢！'), { flags:['sv_ruins_ready'] }),
             /* ⚠ ver -928：「待續」那張卡**撤了**（Ray：「戰勝鹿主後的待續移除」）——
-               它是遺跡本體還沒實裝時的收尾，現在神殿整張圖與 stage7 都在了，
+               它是遺蹟本體還沒實裝時的收尾，現在神殿整張圖與 stage7 都在了，
                玩家自己走上去就是（`sv_ruins_ready` 那支旗照舊留著）。 */
           ] },
         ] },
@@ -3143,14 +3195,14 @@ export const TOWNS = {
      木雅克神殿（ver -875；-876 依 Ray 更正縮編：「不是所有 ruin 都是木雅克神殿，
      只有 ruin_shinier 才是」——**只用 Ruins_shinier_* 那幾間**，
      其餘 Ruins_*（星象室/石柱林/圓形大廳/石棺室/地下泉/下行石階/王座間/寶物庫
-     ＋平圖四張）是**別座遺跡**的素材，留給日後的圖）
+     ＋平圖四張）是**別座遺蹟**的素材，留給日後的圖）
      · 主幹：前廳→長廊→三叉拱道（樞紐）→石橋→**深部祭壇（終點）**；
        三叉拱道直走＝崩塌走道（假正路），石橋右轉＝第二條崩塌走道。
-     ⚠⚠ **這座圖沒有自己的入口節點**（ver -879，Ray：「遺跡入口位於夏爾森林，
-       木雅克神殿不要再擺一個入口」）：入口就是**夏爾森林的『遺跡入口』那一格**
+     ⚠⚠ **這座圖沒有自己的入口節點**（ver -879，Ray：「遺蹟入口位於夏爾森林，
+       木雅克神殿不要再擺一個入口」）：入口就是**夏爾森林的『遺蹟入口』那一格**
        （它的 bg 正是 ruins_shinier_entrance）—— 擺兩個等於同一個地方走兩次。
        所以 `entry` 是前廳，前廳往下退**直接回森林**。
-     · 遺跡每步 30 分鐘；荒野規則同森林（不打烊、開圖走過才亮）。
+     · 遺蹟每步 30 分鐘；荒野規則同森林（不打烊、開圖走過才亮）。
      · ⚠ 還沒有怪與劇情（Ray 的稿未到）；槍棺地圖的手繪圖未交（`map:` 空著）。 */
   shinier_ruins: {
     name: '木雅克神殿',
@@ -3174,11 +3226,11 @@ export const TOWNS = {
     storyExplore: true,
     wilderness: true,
     mist: 1,                 // 小地圖走過才亮（ver -877，Ray；沒人帶路）
-    /* ══ 遺跡每步 **10 分鐘**（ver -917，Ray：「遺跡內每次移動10分鐘好了，
-       比城市還大不合理」）══ -871 原本是半小時，那是照「野外60／遺跡30／城村10」
+    /* ══ 遺蹟每步 **10 分鐘**（ver -917，Ray：「遺蹟內每次移動10分鐘好了，
+       比城市還大不合理」）══ -871 原本是半小時，那是照「野外60／遺蹟30／城村10」
        的分級來的 —— 但神殿有 21 格（帝都才 12），全清一趟要走 40 步：
-       半小時一步＝遊戲內 20 小時，一座遺跡吃掉快一天。
-       ⚠ 森林那條（60）不動：Ray 只改遺跡。 */
+       半小時一步＝遊戲內 20 小時，一座遺蹟吃掉快一天。
+       ⚠ 森林那條（60）不動：Ray 只改遺蹟。 */
     stepMin: 10,
     /* ══ 槍棺地圖（ver -911；-912 換成極簡版）══ 美術照 ver -909 的拓樸畫
        （權威佈局＝`resources/map/_layout_shinier_ruins.png`）。
@@ -3294,7 +3346,7 @@ export const TOWNS = {
            括號線）取**兩格的相對位置**定方向：巨像廳在祭壇的下方 ⇒ 祭壇 `up`／巨像 `down`；
            地底裂隙在地下泉水的右邊 ⇒ 泉水 `right`／裂隙 `left`。
          ⚠ 末端一律只寫 `back`：它由 `exitsOf` 現算成「來時方向的反向」，永遠不會反。
-         ⚠ 這張圖沒有自己的入口節點（ver -879）：入口就是夏爾森林的「遺跡入口」。 */
+         ⚠ 這張圖沒有自己的入口節點（ver -879）：入口就是夏爾森林的「遺蹟入口」。 */
 
       /* ── 入口這一帶 ── */
       /* ══⚠⚠ **安全點（休息處）**（ver -913，Ray：「養息之間跟命之泉、前廳這三個是
@@ -3305,7 +3357,7 @@ export const TOWNS = {
            在收尾點刷怪等於「先打一場再結算」。要改成會出怪，把 noWild 拿掉就好。 */
       antechamber:{ bg:'Ruins_shinier_Antechamber', name:'木雅克神殿　前廳',
         rest:true, noWild:true,
-        /* 圖上：長廊在左、拱門長廊在右、遺跡入口在下。 */
+        /* 圖上：長廊在左、拱門長廊在右、遺蹟入口在下。 */
         exits:{ left:'corridora', right:'corridorb', down:'@shinier_forest:ruins' },
         /* ══ stage7 開場（ver -923，Ray 交稿）══ 走進神殿的第一段＋迷宮機制解說。
            ⚠ 機制那兩句是**旁白**（名字欄空著）：Ray 的稿沒有指定說話者，而它講的是
@@ -3542,11 +3594,13 @@ export const TOWNS = {
           { speaker:'PLAYER', blank:true },
           /* 插圖：圓盤（Ray 交件 012_thedisk）。 */
           Object.assign(ren('thinking','那是……'), { cg:'012_thedisk', cgNoTime:true }),
-          ren('askserious','通用輸入介面？'),
+          ren('askserious','NIEM？'),
           /* 收圖回到原背景。 */
           Object.assign(sor('confuse','那是什麼東西？'), { cg:null }),
           ren('thinking','跟剛才諾薇兒習得術式的方式一樣。'),
-          ren('thinking','只是這種通用介面，非術師也能使用。'),
+          /* ⚠ ver -1186：「通用輸入介面」正名為 **NIEM**（Ray 指定）——
+             同一個東西只有一個名字（鐵律 7 的精神），道具卡上也是這個字。 */
+          ren('thinking','只是這種介面，非術師也能使用。'),
           sor('confuse','非術……總覺得，妳們跟我想像中聖王廳的人不一樣耶。'),
           sor('tease','修女不都是只會『神啊～』之類的嗎？'),
           ren('front','我們是聖約騎士團。'),
@@ -3557,6 +3611,8 @@ export const TOWNS = {
           ren('ask','話說回來，『安娜』大人。'),
           any('desperate',''),
           ren('talkwork','稍晚，得跟妳好好聊聊呢。'),
+          /* ══ 獲得 NIEM（ver -1186）══ 每一座遺蹟共用的收尾，見檔頭的 `NIEM_TAIL`。 */
+          ...NIEM_TAIL,
         ] } ],
         /* ⚠ ver -908（Ray：「把巨像廳跟深部祭壇的連結給斷了」）：它現在是**末端**
            —— 走到底就是祭壇，沒有繞回去的路。 */
@@ -3686,7 +3742,7 @@ export const TOWNS = {
   },
 
   /* ══════════════════════════════════════════════════════════════════════
-     石製遺跡（ver -1121；美術交件 `resources/map/HANDOFF_fallen.md`，
+     石製遺蹟（ver -1121；美術交件 `resources/map/HANDOFF_fallen.md`，
      權威規格 `resources/map/_fallen_spec.md`）
      ──────────────────────────────────────────────────────────────────────
      ⚠⚠ **本輪的範圍是「先搭景」**（Ray，2026-09-11：「沒關係，先搭景，交給 code
@@ -3696,22 +3752,22 @@ export const TOWNS = {
      ⚠ `map:` **整欄先不寫** —— 那張羊皮紙圖還沒畫（流程：程式先接進這裡 →
        `tools/map_layout.py` 產權威佈局 → 美術照它畫 → `tools/map_check.py` 量座標）。
        地圖鈕**照樣常駐**，點下去回一句「這一帶還沒有留下地圖。」（ver -899）。
-     ⚠⚠ 名字與大地圖那一筆**一致**（`flight/index.html` 的 PLACES 是「石製遺跡」）——
+     ⚠⚠ 名字與大地圖那一筆**一致**（`flight/index.html` 的 PLACES 是「石製遺蹟」）——
        地名只有 `nameOf` 一支在算（鐵律 7）。要正名兩邊一起改。
      ⚠ 背景是**新增**不是同名覆蓋 ⇒ 不必動 `ASSET_VER`；四時段差分全到齊，
        所以節點只寫基底名、**不寫 `noTime`**，時段由 `bandNames()` 的候選鏈挑。 */
   fallen: {
-    name: '石製遺跡',
+    name: '石製遺蹟',
     /* ══⚠⚠ 進去過就改叫「瓦努努石陣」（ver -1184，Ray 交稿：
-         「石製遺跡：（進入後改名為瓦努努石陣）」）══
+         「石製遺蹟：（進入後改名為瓦努努石陣）」）══
        ⚠⚠ **不要直接把 `name` 改掉**：大地圖上那塊名牌、玩家還沒下去看之前，
-         叫的就該是「石製遺跡」（他只看得出那裡有一堆倒下的石柱）。名字是
+         叫的就該是「石製遺蹟」（他只看得出那裡有一堆倒下的石柱）。名字是
          **走進去之後才知道的**，所以它是一個**狀態**，不是一個常數。
        ⚠ 由上往下取第一個成立的（同 `acts`／`bgWhen`／`innDoors` 的取法）；
          `need`／`not` 兩格都不寫的一筆不算（不然它永遠贏，等於把 `name` 換掉）。
        ⚠ 鐵律 9 —— **誰插**：入口那一段（`fallen_entry` 的收尾）演完才插。
          **誰拔**：沒有人（知道了就是知道了，同 `got_ship` 那一族）。
-       ⚠⚠ 節點名的前綴（`石製遺跡　崩塌門廊`）**不必逐格改**：`nameOf` 會拿
+       ⚠⚠ 節點名的前綴（`石製遺蹟　崩塌門廊`）**不必逐格改**：`nameOf` 會拿
          現在的圖名換掉那個前綴（modules/town.js，鐵律 7 —— 一個名字一個計算點）。
        ⚠ 大地圖那一半是另一個 document：`flight/index.html` 的 PLACES 有一份
          **同義**的 `nameWhen`（同一支旗），兩邊註解互指（§6.10 的跨頁慣例）。 */
@@ -3734,14 +3790,14 @@ export const TOWNS = {
     storyExplore: true,   // 不是城：女角不排外出行程（§6.5.4.2）
     wilderness: true,     // 野外的路沒有門可以關（19:00 全域打烊不罩，ver -862）
     mist: 1,              // 迷霧是預設（ver -913）：沒有人帶路，走過才亮
-    stepMin: 10,          // 遺跡那一級（ver -917，Ray：「遺跡內每次移動 10 分鐘」）
+    stepMin: 10,          // 遺蹟那一級（ver -917，Ray：「遺蹟內每次移動 10 分鐘」）
     /* ⚠ `bgm` 待定（Ray 還沒給）：不寫＝沿用進來之前那一首，不會變成一片安靜。 */
     nodes: {
       /* 入口＝遭遇戰的復活點，**不可以有戰鬥**（§6.5.2 的鐵條）。下方＝出航。
-         ⚠⚠ 這座遺跡在大地圖上是**獨立的一點**，沒有鄰接的地面圖 —— 進出就是
+         ⚠⚠ 這座遺蹟在大地圖上是**獨立的一點**，沒有鄰接的地面圖 —— 進出就是
            降落／起飛，所以下方掛 `sail` 不是 `@某圖:某格`（美術那份交接檔標明
            這是它的判讀）。日後真要從夏爾森林走過去，換成跨圖出口即可，拓樸不動。 */
-      entry:    { bg:'Fallen_Entry',    name:'石製遺跡　崩塌門廊',
+      entry:    { bg:'Fallen_Entry',    name:'石製遺蹟　崩塌門廊',
         exits:{ up:'causeway' },
         /* ⚠⚠ **不掛 `flag`**（ver -1154）：這裡是**只飛得到的地方**（上面那一段：
            大地圖上是獨立的一點，沒有鄰接的地面圖）—— 人能站在這裡，就表示他是
@@ -3750,7 +3806,7 @@ export const TOWNS = {
            ⚠ 有陸路可以走到的地方（帝都／北方泊地／夏爾村）照舊要旗：那裡
              「還沒有船」是真的成立。 */
         sail:{},
-        /* ══⚠⚠ 第一次踏進來（ver -1184，Ray 交稿：「石製遺跡：入口：」）══
+        /* ══⚠⚠ 第一次踏進來（ver -1184，Ray 交稿：「石製遺蹟：入口：」）══
            ⚠ `flag` **演完才記**（城鎮所有段落的通則）—— 中途被打斷還會再演一次。
            ⚠⚠ 最後一拍插 `fallen_named` ＝ 從此這裡叫「瓦努努石陣」（見上面
              `nameWhen` 那一段的鐵律 9 說明）。**兩支旗是兩件事**：
@@ -3766,7 +3822,7 @@ export const TOWNS = {
            ⚠ 「蕾：「……」」那一拍沒有台詞但台上有人 ⇒ 要點一下才推進（ver -628），
              引擎自己判，這裡不必寫 `auto`。 */
         acts:[ { flag:'fallen_entry', sides:{ RENNA:'L' }, lines:[
-          ren('watch',       '這種地方竟然有這種規模的遺跡……！'),
+          ren('watch',       '這種地方竟然有這種規模的遺蹟……！'),
           sor('think',       '奇怪，之前有這些東西嗎？'),
           ren('shockedCalm', '！！'),
           nou('surprise',    '索菈娜小姐也不知道嗎？離夏爾村那麼近耶！'),
@@ -3781,15 +3837,48 @@ export const TOWNS = {
              段落層 —— 中途被打斷就不算數，下次重演一次才改名（同「演完才記」）。 */
           Object.assign(ren('chase','等、等一下！'), { flags:['fallen_named'] }),
         ] } ] },
-      causeway: { bg:'Fallen_Causeway', name:'石製遺跡　斷柱道',
+      causeway: { bg:'Fallen_Causeway', name:'石製遺蹟　斷柱道',
         exits:{ up:'fork', back:'entry' } },            // 直廊：兩側是倒下的圓柱排
       /* 唯一的岔口（三向）：三塊斜倚石板撐出的三角空地，三個方向都是真的走得進去的路。 */
-      fork:     { bg:'Fallen_Fork',     name:'石製遺跡　傾石岔口',
+      fork:     { bg:'Fallen_Fork',     name:'石製遺蹟　傾石岔口',
         exits:{ up:'altar', left:'basin', back:'causeway' } },
-      basin:    { bg:'Fallen_Basin',    name:'石製遺跡　沉水石坑',
+      basin:    { bg:'Fallen_Basin',    name:'石製遺蹟　沉水石坑',
         exits:{ back:'fork' } },                        // 末端：四面被石牆與土坡圍死
-      altar:    { bg:'Fallen_Altar',    name:'石製遺跡　祭壇',
-        exits:{ back:'fork' } },                        // 末端：路的盡頭
+      altar:    { bg:'Fallen_Altar',    name:'石製遺蹟　祭壇',
+        exits:{ back:'fork' },                          // 末端：路的盡頭
+        /* ══⚠⚠⚠ 瓦努努遺蹟・祭壇（ver -1186，Ray 交稿）══════════════════════
+           > 「Boss 戰，戰後。」→ 對白 → 安雅發動探索 → 遺蹟啟動（走同樣的動畫）
+           >   → 蕾娜三句 → 獲得 NIEM。
+           ⚠⚠⚠ **Boss 那一拍還沒接：Ray 還沒給那張卡**（同護符與安雅／索菈娜的
+             九星 —— 卡沒到就空著，不要自己發明一隻怪）。到時在 `lines` 最前面
+             補一拍 `{ battle:'<id>' }` 就好，其餘一個字都不必動。
+             ⚠ 補的時候記得這一段要寫 `storyBattle:true`（打輸回檔，不是回入口）。
+           ⚠ 啟動的演出**與木雅克那一段完全一樣**（Ray：「走同樣的動畫」）——
+             `fx:'sense'` ＋ 在全白之下換背景（見 modules/story.js 的 senseFx；
+             秒數的由來寫在木雅克那一段，兩邊同一條時間軸）。
+           ⚠ 旗與 act 的 `flag` 是兩支：一支說「這一段演完了」、一支說
+             「祭壇開著」（鐵律 9：一個狀態一個擁有事件）。 */
+        bgWhen:[ { need:'fallen_altar_on', bg:'Fallen_Altaractive', noTime:true } ],
+        acts:[ { flag:'fallen_altar', sides:{ RENNA:'L' }, lines:[
+          ren('ask','跟木亞克遺蹟一樣的裝置……安雅小姐？'),
+          any('talk','好。'),
+          /* 立繪撤出 → 感應演出 → 在全白之下把祭壇換成啟動版（同木雅克）。 */
+          { speaker:'ANYA', text:'', portrait:{ char:'ANYA', show:false },
+            hide:['SORANA','RENNA','NOUVELLE','ANYA'], fx:'sense', auto:4400 },
+          /* ⚠⚠ **這一拍先不換背景**：`Fallen_Altaractive` 還沒交件，而拍上的 `bg:`
+             是硬指定（沒有候選鏈）—— 指到不存在的圖就是**空背景**（§5）。
+             啟動版由上面那條 `bgWhen` 掛著：圖一交件，下次走進來就是亮的；
+             要「當場亮起來」再把 `bg:'Fallen_Altaractive'` 加回這一拍。 */
+          { speaker:'NARRATION', text:'', flags:['fallen_altar_on'], auto:1500 },
+          ren('shockedopen','果然，安雅小姐有感應並啟動遺蹟的能力。'),
+          nou('talk','可是，這些遺蹟啟動以後會怎麼樣呢？'),
+          ren('thinking','……不曉得。'),
+          ren('lookawaytalk','曾經聖王廳跟諸國都試著重啟，卻全無反應。'),
+          ren('lookaway','啟動的條件究竟是『永夜』，還是安雅小姐……。'),
+          ren('lookawaytalk','或者……兩邊都是呢？'),
+          /* ══ 獲得 NIEM（ver -1186）══ 每一座遺蹟共用的收尾，見檔頭的 `NIEM_TAIL`。 */
+          ...NIEM_TAIL,
+        ] } ] }
     },
   },
 
@@ -3907,7 +3996,7 @@ export const TOWNS = {
     entry: 'gate',
     storyExplore: true,   // 不是城：女角不排外出行程（§6.5.4.2）
     wilderness: true,     // 野外的路沒有門可以關（19:00 全域打烊不罩，ver -862）
-    stepMin: 10,          // 遺跡那一級（ver -917，Ray：「遺跡內每次移動 10 分鐘」）
+    stepMin: 10,          // 遺蹟那一級（ver -917，Ray：「遺蹟內每次移動 10 分鐘」）
     /* ⚠ 迷霧是預設（ver -913）—— **不要寫 `mist:0`**：這張是迷宮，走過才亮
        正是它的玩法。 */
     /* ══ 槍棺地圖（ver -1145）══════════════════════════════════════════════
@@ -3952,10 +4041,10 @@ export const TOWNS = {
              把「關著」寫成基底的話，那張圖還沒交件時這一格會變成空畫面。
              這樣寫則是「關著的那張載不到 → 自動退回開著的那張」，不會開天窗。
            ⚠⚠ **鐵律 9：`tomb_opened` 誰插的 —— Ray 已經定了條件，實作後補**
-             （ver -1143，他的原話：「後面補，**要找到另一個遺跡啟動才會開**」）：
-             · **誰插**：那座遺跡**啟動**的那一段（劇本還沒寫）。
+             （ver -1143，他的原話：「後面補，**要找到另一個遺蹟啟動才會開**」）：
+             · **誰插**：那座遺蹟**啟動**的那一段（劇本還沒寫）。
              · **誰拔**：沒有人（一去不回，同 `got_ship` 那一族）。
-             · ⚠ 寫那一段的人**不要再發明第三支旗**：現有的「遺跡啟動」旗有兩支 ——
+             · ⚠ 寫那一段的人**不要再發明第三支旗**：現有的「遺蹟啟動」旗有兩支 ——
                `ruins_altar_on`（木雅克神殿・深部祭壇，ver -923 已接上事件差分）與
                `ruins_gate_open`（石橋那道門）。如果 Ray 指的就是其中一座，
                直接在**那一段的收尾**順手 `flags:['tomb_opened']` 即可，
@@ -3979,7 +4068,7 @@ export const TOWNS = {
            ⚠⚠ **所以現在整座墓是進不去的**（`tomb_opened` 還沒有人插，見上面鐵律 9
              那一段）。要測內容就先立那支旗。 */
         exitIf:{ up:'tomb_opened' },
-        /* ⚠⚠ **不掛 `flag`**：同石製遺跡 —— 只飛得到的地方，到得了就走得了
+        /* ⚠⚠ **不掛 `flag`**：同石製遺蹟 —— 只飛得到的地方，到得了就走得了
            （ver -1154，Ray 回報「進了遺蹟無法出航」）。 */
         sail:{} },
       vestibule:  { bg:'Tomb_Vestibule', name:'伊甸古墓　前庭', noTime:true,
@@ -4115,7 +4204,7 @@ export const TOWNS = {
     entry: 'entrance',
     storyExplore: true,   // 不是城：女角不排外出行程（§6.5.4.2）
     wilderness: true,     // 野外的路沒有門可以關（19:00 全域打烊不罩）
-    stepMin: 10,          // 遺跡那一級（ver -917）
+    stepMin: 10,          // 遺蹟那一級（ver -917）
     nodes: {
       throne:    { bg:'Belisar_ThroneHall', name:'貝利薩爾遺址　王座廳', noTime:true, exits:{ down:'antecham' } },
       crown:     { bg:'Belisar_CrownRoom', name:'貝利薩爾遺址　寶冠室', noTime:true, exits:{ right:'antecham' } },

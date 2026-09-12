@@ -50,6 +50,11 @@ let tab='gear';
    類別的順序＝config 的 `catOrder`（鐵律 1），而那張表本來就把 `item`（使用類）
    排第一 —— 這裡只是照抄，不另訂順序。 */
 let itemCat='item';
+/* 這一次開啟要高光哪一項道具（劇情教學用；`close()` 清掉）。 */
+let spotItem=null;
+/* NIEM 的對象選單開著嗎（`null`＝沒開）。⚠ 它是**這一頁上的一層**，
+   不是另一個 frame —— 關頁面就跟著沒了。 */
+let niemPick=false;
 
 /* ══ 搭檔卡上的等級條（ver -970）══
    ⚠ 滿級不印「還差多少」，改印 MAX：印一條永遠滿的進度條讀起來像壞了。
@@ -331,6 +336,7 @@ function render(){
                      + ' type="button">'+((IT.catName||{})[c]||c)+'</button>').join('')
     +   '</div>'
     +   '<div class="gs-itemlist">'+bagListHtml(itemCat, { use:true })+'</div>'
+    +   (niemPick ? niemPickHtml() : '')
     + '</div>';
   el.innerHTML =
       '<button class="gs-close" type="button" aria-label="關閉">✕</button>'
@@ -467,6 +473,30 @@ function closeGuide(){
 /* 小提示（ver -497）：使用道具的回饋一句話，浮在體力條旁邊，1.4 秒自己收。
    ⚠ 不用 alert 也不彈窗 —— 這只是回饋，不是要玩家做決定。 */
 let noteT=0;
+/* ══⚠⚠⚠ NIEM 的對象選單（ver -1186，Ray：「使用對象三女角，但只有索菈娜高光可點」）══
+   ⚠⚠ **「能不能點」只問 `prog.canUseNiem`**（鐵律 7/8）：這裡只負責畫暗、
+     按下去也再問它一次 —— UI 與判定各寫一份必然走鐘。
+   ⚠ 名字讀 `partners[key].name`（鐵律 7：她的名字只有一處）；
+     技能名與說明讀 `config.girls.niem.skill`（鐵律 1）。
+   ⚠ 說明**不寫數字**（Ray：「括號內的字不用寫進 UI」）。 */
+function niemPickHtml(){
+  const who=(GAME_CONFIG.girls||{}).who||[];
+  const rows=who.map(k=>{
+    const sk=prog.girlNiemSkill(k); if(!sk) return '';
+    const nm=((GAME_CONFIG.partners||{})[k]||{}).name || k;
+    const can=prog.canUseNiem(k);
+    const lv=prog.girlNiemLv(k);
+    return '<button class="gs-niemrow'+(can.ok?'':' off')+'" data-who="'+k+'" type="button"'
+         + (can.ok?'':' disabled')+'>'
+         +   '<span class="gs-niemwho">'+nm+'</span>'
+         +   '<span class="gs-niemsk">'+sk.name+'　<b>LV.'+lv+'</b></span>'
+         +   '<span class="gs-niemdesc">'+sk.desc+'</span>'
+         + '</button>';
+  }).join('');
+  return '<div class="gs-niem"><div class="gs-niemhd">要用在誰身上？</div>'+rows
+       + '<button class="gs-niemcancel" type="button">取　消</button></div>';
+}
+
 function gsNote(txt){
   if(!el) return;
   let n=el.querySelector('.gs-note');
@@ -507,6 +537,27 @@ function bind(){
       closeGuide();          // 教學聚光燈（有開的話）到此收（ver -743）
       render();
     }); }
+  /* 劇情指定的高光（ver -1186）：一圈金光框住那一列，玩家才知道要按哪個。
+     ⚠ 只是**指**，不是鎖 —— 別的東西照樣按得到（§6.5.5「一次性說明的遮罩是
+       說明不是鎖」的同一個精神）。 */
+  if(spotItem){
+    const ub=el.querySelector('.bag-use[data-id="'+spotItem+'"]');
+    const row=ub && ub.closest('.loot-row');
+    if(row) row.classList.add('spot');
+  }
+  /* NIEM 的對象選單（ver -1186）。 */
+  const nc=el.querySelector('.gs-niemcancel');
+  if(nc) nc.addEventListener('click', e=>{ e.stopPropagation();
+    try{ SFX.menuClick(); }catch(_){} niemPick=false; render(); });
+  el.querySelectorAll('.gs-niemrow').forEach(b=>b.addEventListener('click', e=>{ e.stopPropagation();
+    const res=prog.useNiem(b.dataset.who);
+    if(!res){ gsNote('現在不能用在她身上。'); return; }
+    /* 語音由卡上指定（`girls.niem.voice`，鐵律 1）：索菈娜 roar2／
+       諾薇兒 saintreload／安雅 lvup —— Ray 逐位點名的那三支。 */
+    if(res.voice){ try{ SFX.unlock(); SFX.playVoice(asset(res.voice), sfxGain(res.voice)); }catch(_){} }
+    niemPick=false; spotItem=null; render();
+    gsNote('〈'+res.skill.name+'〉等級提升為 LV.'+res.lv);
+  }));
   /* 道具的類別頁籤（ver -497）。 */
   el.querySelectorAll('.gs-icat').forEach(b=>b.addEventListener('click', e=>{ e.stopPropagation();
     if(b.dataset.cat===itemCat) return;
@@ -516,6 +567,14 @@ function bind(){
   /* 「使　用」：回復道具（ver -497）。滿血不消耗，浮一句說明；用掉就重畫
      （數量、體力條、錢那一行一起跟上）。 */
   el.querySelectorAll('.bag-use').forEach(b=>b.addEventListener('click', e=>{ e.stopPropagation();
+    /* ══ NIEM：不是吃下去就好，要先挑對象（ver -1186）══
+       ⚠ 分流看**那張卡怎麼說**（`use.niem`），不要在這裡比對 id（鐵律 1）。 */
+    const def=inv.defOf(b.dataset.id)||{};
+    if(def.use && def.use.niem){
+      try{ SFX.menuClick(); }catch(_){}
+      niemPick=true; render();
+      return;
+    }
     const res=prog.useHealItem(b.dataset.id);
     if(!res) return;
     if(res.full){ try{ SFX.menuClick(); }catch(_){} gsNote('體力已滿'); return; }
@@ -758,6 +817,12 @@ export function open(opts){
      掛鉤走 window（main.js 掛的）：這一支是葉模組，構不到 iframe。 */
   if(document.body.classList.contains('flight-on') && window.__flightHoldToggle) window.__flightHoldToggle(true);
   tab='gear';        // 每次開都回到整備 —— 吊墜的語意是「整備」，道具是它的第二頁
+  /* ══ 劇情把玩家直接帶到某一頁（ver -1186，Ray：「跳出選單，直接開道具欄的
+     特殊頁面，高光 NIEM」）══ `opts.tab`／`opts.itemCat`／`opts.spot`。
+     ⚠ 高光是**這一次開啟**的事，不是持久狀態：`close()` 會清掉（見那裡）。 */
+  if(opts && opts.tab) tab=opts.tab;
+  if(opts && opts.itemCat) itemCat=opts.itemCat;
+  spotItem=(opts && opts.spot) || null;
   /* 本篇現任搭檔＝旗標＋玩家選擇（`storyPartnerKey`，ver -741）。
      ⚠ 走 `setPickedPartner`（唯一管道，§3.6）。 */
   /* 劇情強配（ver -838，夏爾村戰前的強制整備）：`opts.forcePartner` 先寫進
@@ -782,6 +847,7 @@ export function open(opts){
 export function close(){
   closeGuide();          // 教學聚光燈跟著頁一起收（ver -743）
   skillOpen=false;       // 技能表視窗不跨開關（ver -983，同 pendingPartner 的理由）
+  niemPick=false; spotItem=null;   // NIEM 的選單與高光也不跨開關（ver -1186，同上）
   pendingPartner=null;
   lockedTo=null;         // 鎖定不跨開關（ver -839）
   if(!el) return;

@@ -3848,6 +3848,32 @@
     background:rgba(10,8,14,.9);border:1px solid var(--gold-dim);border-radius:14px;
     opacity:0;pointer-events:none;transition:opacity .25s ease, transform .25s ease;z-index:5;}
   #gearSheet .gs-note.on{opacity:1;transform:translate(-50%,0);}
+  /* ══ NIEM（ver -1186）══ 劇情指定的高光：一圈金光框住那一列。
+     ⚠ 只是**指**不是鎖 —— 別的東西照樣按得到（§6.5.5 的同一個精神）。 */
+  #gearSheet .loot-row.spot{position:relative;border-radius:8px;
+    box-shadow:0 0 0 1px var(--gold), 0 0 14px rgba(212,169,74,.55);
+    animation:gsSpot 1.6s ease-in-out infinite;}
+  @keyframes gsSpot{0%,100%{box-shadow:0 0 0 1px var(--gold),0 0 10px rgba(212,169,74,.40)}
+                    50%    {box-shadow:0 0 0 1px var(--gold),0 0 20px rgba(212,169,74,.75)}}
+  /* 對象選單：疊在道具清單之上的一張小卡（不是另一個 frame，關頁面就跟著沒了）。 */
+  #gearSheet .gs-niem{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    width:min(340px,86%);max-height:76%;overflow:auto;z-index:6;
+    padding:14px 14px 10px;border:1px solid var(--gold-dim);border-radius:12px;
+    background:rgba(10,8,14,.97);display:flex;flex-direction:column;gap:8px;}
+  #gearSheet .gs-niemhd{font-size:11px;letter-spacing:3px;color:var(--gold);text-align:center;}
+  #gearSheet .gs-niemrow{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;
+    text-align:left;padding:9px 11px;border:1px solid var(--gold-dim);border-radius:8px;
+    background:rgba(28,22,40,.75);color:var(--ink);font:inherit;cursor:pointer;}
+  #gearSheet .gs-niemrow:active{transform:scale(.98);}
+  /* ⚠ 不能用的那幾位**留在畫面上、壓暗**（§6.5.5「還不能做不要靠藏起鈕擋」）：
+     藏起來玩家只會以為壞了，暗著才讀得出「那是之後的事」。 */
+  #gearSheet .gs-niemrow.off{opacity:.34;cursor:default;}
+  #gearSheet .gs-niemwho{font-size:13px;color:var(--gold);letter-spacing:1px;}
+  #gearSheet .gs-niemsk{font-size:11px;color:var(--ink);opacity:.9;}
+  #gearSheet .gs-niemsk b{color:var(--gold);}
+  #gearSheet .gs-niemdesc{grid-column:1 / -1;font-size:10.5px;line-height:1.5;opacity:.72;}
+  #gearSheet .gs-niemcancel{margin-top:2px;padding:7px;font-size:11px;letter-spacing:2px;
+    color:var(--gold-dim);background:none;border:1px solid var(--gold-dim);border-radius:8px;cursor:pointer;}
   #gearSheet .gs-body{flex:1 1 auto;min-height:0;display:flex;gap:12px;}
   #gearSheet .gs-left{flex:1 1 0;min-width:0;display:flex;flex-direction:column;}
   #gearSheet .gs-right{flex:1 1 0;min-width:0;display:flex;flex-direction:column;}
