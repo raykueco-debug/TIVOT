@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1147"></script>
+<script src="../orientation.js?v=1149"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -491,11 +491,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1147"></script>
+<script src="settlement.js?v=1149"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1147"></script>
+<script src="talks.js?v=1149"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -2010,15 +2010,16 @@ const PLACES=[
      ⚠ 座標是 Ray 指定的 (735,196)：高度圖上 h=143（全場最高的一族，帝都才 129）
        ——「半嵌在山壁裡的巨大石造門面」正好落在山地上。
      ⚠ `export_mapref.py` 的 PLACES 要同步（那張參考圖是給美術對位置用的）。 */
-  /* ⚠⚠ **座標由 (735,196) 改為 (726,186)**（ver -1146，Ray：「位置微調，讓他在
-       灰色峭壁旁」→ 他自己飛過去指名「726,186 有峭壁，放在那裡」）。
-     ⚠ 實測那一格是 h=220、坡度 64 的**陡林坡**，緊鄰的 (725~726,189~190) 才是
-       岩壁，而且是**褐岩**不是灰岩 —— 這一帶（諾爾維亞王國境內）整片沒有成片灰岩，
-       因為崖面高度 218~298 全在 `BIOME_ROCKALT`(300) 之下。真正成片的灰岩崖在
-       x≈697~706（已經跨進埃爾比斯王國）。照 Ray 指名的那一格放。
+  /* ⚠⚠ **座標**：(735,196) →（-1146）(726,186) →（**-1147**）**(723,137)**
+     —— Ray 用飛行畫面的釘選工具指的那一點：「把古墓搬到 723,137 的壁上」
+     「不是放在壁的上方，是把墓門嵌在壁面」。
+     實測那一格 h=47（壁腳）、往東一格 145 ⇒ 一道 98 單位高的垂直壁；壁腳整片是平的。
+     ⚠ `ruin:'tomb'` ＝ 地表**真的有東西**（手寫量體，見 `RUIN_ART.tomb`）——
+       Ray 選的是這一條，不是城的插畫管線（那一套的整地會把崖削平）。
+     ⚠ `sense` 不加：它不是隱藏點，遠遠就該看得到名牌（-1134 起就是這樣）。
      ⚠ 這一格與 `export_mapref.py` 的 PLACES **兩邊都要改**（那張參考圖是給美術
        對位置用的，不同步就會標在舊位置）。 */
-  {x:726, y:186, name:'伊甸古墓', n:'伊甸古墓', type:'遺跡', town:'tomb'},
+  {x:723, y:137, name:'伊甸古墓', n:'伊甸古墓', type:'遺跡', town:'tomb', ruin:'tomb'},
 ];
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -2065,6 +2066,64 @@ const RUIN_ART = {
       { k:'stump',  x:-34, y:  8, dia: 9, h: 8 },
     ],
   },
+  /* ══⚠⚠⚠ 伊甸古墓（ver -1147，Ray：「把古墓搬到 723,137 的壁上」
+     →「**不是放在壁的上方，是把墓門嵌在壁面**」「製作 3D 物件時把地板也換成石製」
+     「構造以 gate 為準」）══
+     ── 這一格長什麼樣（實測）────────────────────────────────────
+     (723,137) 是一道**垂直壁的壁腳**：這一格 h=47，往東一格就跳到 145
+     ——「壁」有 98 個世界單位高，而壁腳那一片是全平的（整片 47，就在雲海邊緣）。
+     所以：**平台鋪在壁腳、門面嵌進壁面**，不是站在崖頂上。
+     ⚠ `rot` 是算出來的**壁的法線**：那道壁在高度圖上每 2 列往東退 1 格
+       ⇒ 走向 (0.5,1)、朝外的法線 ≈ (−0.894,+0.447)（西南西）。
+       門面向外＝局部 +x 對到那個方向 ⇒ rot = atan2(0.447,−0.894) ≈ 2.677。
+     ⚠ **後半本來就埋在崖體裡**，那正是「嵌在壁面」：從外面看是一面貼著崖的門面，
+       從崖頂那一側看則整個被 `clipByTerrainDepth` 擋掉（terrain 在前）——
+       兩邊都對，不必另做遮擋。
+
+     ── 構造照 `resources/background/Tomb_Gate_day.webp`（Ray：「構造以 gate 為準」）──
+       三角楣 ／ 四根壁柱 ／ 青銅雙門（畫成一個看不到底的洞）／ 四階石階 ／
+       大塊石板鋪的前庭 ／ 散落的巨石 ／ 左邊那支鐵鑄火盆架。
+     ⚠ **高度收在 88**（門面 62 ＋ 楣 26）而壁高 98：崖頂要露在楣之上，
+       不然讀起來是「一棟蓋在崖邊的房子」，不是「嵌進崖裡的門」。
+     ⚠ `base.ox`＝把前庭整片往外推：釘選的那一點是**門**，前庭在門的外側。
+     ⚠ 尺度照 Ray 定的「跟石製遺跡一個量級」：沿壁 170、進深 110（石製遺跡是 120）。 */
+  tomb: {
+    rot: 2.677,
+    base: { w:110, l:170, n:44, jit:0.045, ox:57 },
+    floor:'slab', floorCell:27, floorJoint:3,     // 地板換成石製（Ray 指定）
+    tex:true,                                     // 立面與頂面也貼石材（Ray：「再把貼材貼上」）
+    parts: [
+      /* 門面：前緣凸出壁面一點（art 裡的壁柱本來就是浮出崖面的），後半埋進崖裡 */
+      { k:'stump', x:-13, y:  0, w:30, l:150, h:62 },
+      /* 三角楣：三階收攏 ＝ 這個解析度下讀得出來的三角剪影
+         ⚠ 用堆疊的方塊而不是真的三角柱：一來剪影一樣，二來不必為了一個形狀
+           在幾何層多開一種零件（鐵律 8）。 */
+      { k:'stump', x:-13, y:  0, w:32, l:112, h: 9, z0:62 },
+      { k:'stump', x:-13, y:  0, w:32, l: 76, h: 9, z0:71 },
+      { k:'stump', x:-13, y:  0, w:32, l: 40, h: 8, z0:80 },
+      /* 四根壁柱（art 是半圓壁柱）：半邊嵌在門面裡，所以中心比門面前緣再外一點 */
+      { k:'stump', x:  3, y:-56, dia:16, h:58 },
+      { k:'stump', x:  3, y:-20, dia:16, h:58 },
+      { k:'stump', x:  3, y: 20, dia:16, h:58 },
+      { k:'stump', x:  3, y: 56, dia:16, h:58 },
+      /* 門洞：夾在中間兩根壁柱之間，架在最上一階上（z0＝那一階的高度） */
+      { k:'stump', x:  0, y:  0, w:10, l:26, h:46, z0:12, col:'door' },
+      /* 石階四階，往外遞降 */
+      { k:'stump', x: 16, y:  0, w:10, l:92, h:12 },
+      { k:'stump', x: 26, y:  0, w:10, l:92, h: 9 },
+      { k:'stump', x: 36, y:  0, w:10, l:92, h: 6 },
+      { k:'stump', x: 46, y:  0, w:10, l:92, h: 3 },
+      /* 散落的巨石（art 裡階梯兩側那幾塊崩落的石塊） */
+      { k:'stump', x: 30, y:-74, w:26, l:20, rot: 0.42, h:15 },
+      { k:'stump', x: 62, y: 68, w:30, l:22, rot:-0.30, h:17 },
+      { k:'stump', x: 88, y:-52, w:22, l:18, rot: 0.95, h:11 },
+      { k:'stump', x: 54, y:-88, w:18, l:16, rot:-0.62, h: 9 },
+      { k:'stump', x:100, y: 24, w:20, l:16, rot: 0.18, h: 8 },
+      /* 鐵鑄的火盆架（art 左邊那一支）：細桿＋上面一只盆 */
+      { k:'stump', x: 34, y:-84, dia: 5, h:30 },
+      { k:'stump', x: 34, y:-84, dia:13, h: 5, z0:30 },
+    ],
+  },
 };
 /* 石材的三個色階（頂／側／暗側）＋地基。像素風＝**平塗硬邊**，不做漸層。
    ⚠ 色要**壓得住**：第一版偏白，在深綠的地形上讀起來像一張紙。
@@ -2075,6 +2134,8 @@ const RUIN_COL = { top:'#b0a488', side:'#645d4e', dark:'#443e35',
                    /* 交件的材質偏亮（灰白），不壓的話整塊在深綠的地形上像一張紙。
                      壓到比柱頂暗一階：**柱子要比地基亮**，才讀得出是立體的東西。 */
                    texTint:'rgba(66,60,50,.56)',
+                   /* 門洞（ver -1147）：不是深灰是**近黑** —— 那是一個看不到底的開口。 */
+                   door:'#0d0c0f',
                    grass:'#3b4d3a', grassTint:'rgba(38,58,40,.34)',
                    sideLit:'#8d8371' };
 /* 光從哪裡來（世界座標的方向向量，指向光源）。**由地形那一支每幀發佈**
@@ -2143,19 +2204,42 @@ const RUIN_TEXEL=0.7;
 
 /* 形狀與斑駁**只算一次**（定數，逐幀重算會讓邊緣與斑點每一幀都在跳）。
    ⚠ 自己帶一個確定性亂數：`Math.random()` 會讓同一座遺跡每次開機長得不一樣。 */
+/* 基座的「參考半徑」：材質的仿射與投影軸都拿它當尺。
+   圓形基座就是 `r`；方形基座取長邊的一半（同一個量級，材質密度才不會差一截）。 */
+function baseR(A){ const B=A.base; return B.r || Math.max(B.w||0,B.l||0)/2 || 1; }
 function ruinShape(A){
   if(A._poly) return A._poly;
   let sd=20250911;
   const rnd=()=>{ sd=(sd*1664525+1013904223)&0x7fffffff; return sd/0x7fffffff; };
   const B=A.base, poly=[];
-  for(let i=0;i<B.n;i++){
-    const a=i/B.n*Math.PI*2, r=B.r*(1+(rnd()-0.5)*2*B.jit);
-    poly.push([Math.cos(a)*r, Math.sin(a)*r]);
+  if(B.r){
+    for(let i=0;i<B.n;i++){
+      const a=i/B.n*Math.PI*2, r=B.r*(1+(rnd()-0.5)*2*B.jit);
+      poly.push([Math.cos(a)*r, Math.sin(a)*r]);
+    }
+  }else{
+    /* ══ 方形基座（ver -1147，伊甸古墓的前庭）══
+       沿著周長等距取 n 點，各自**往外**抖一點 —— 抖的是法線方向，
+       所以四個邊仍然是四個邊（往任意方向抖會把方形抖成一團）。
+       ⚠ 與圓形共用同一條「逐點抖動」的作法（鐵律 8）：風化的邊緣是這一層的
+         共同語彙，不要為了方的再寫一份。 */
+    const hw=B.w/2, hl=B.l/2, per=2*(B.w+B.l), amp=B.jit*Math.max(B.w,B.l)*0.5;
+    for(let i=0;i<B.n;i++){
+      let t=i/B.n*per, x,y,nx,ny;
+      if(t<B.w){            x=-hw+t;  y=-hl;    nx=0;  ny=-1; }
+      else if((t-=B.w)<B.l){ x=hw;    y=-hl+t;  nx=1;  ny=0;  }
+      else if((t-=B.l)<B.w){ x=hw-t;  y=hl;     nx=0;  ny=1;  }
+      else {                 t-=B.w;  x=-hw; y=hl-t; nx=-1; ny=0; }
+      const j=(rnd()-0.5)*2*amp;
+      /* `ox`＝基座沿局部 x 的偏移（ver -1147）：釘選的那一點是**門**，
+         而前庭整片在門的外側 —— 不給偏移的話前庭會有一半埋在崖體裡。 */
+      poly.push([x+nx*j+(B.ox||0), y+ny*j]);
+    }
   }
   /* 外圈的草：**不規則**（每一段各自的外徑不同），而且要**咬進石板一點點**
      —— 草與石板之間留一條縫的話，看起來是兩片貼紙疊在一起。 */
   const gr=[];
-  if(A.grass){
+  if(A.grass && B.r){
     for(let i=0;i<B.n;i++){
       const a=i/B.n*Math.PI*2;
       const r=B.r*(A.grass.k0+rnd()*(A.grass.k1-A.grass.k0));
@@ -2164,6 +2248,21 @@ function ruinShape(A){
   }
   A._grass=gr;
   const sp=[];
+  if(A.floor==='slab'){
+    /* ══ 石板鋪面（ver -1147，Ray：「把地板也換成石製」；構造以 `Tomb_Gate` 為準）══
+       把前庭切成一格一格的石板，**每一塊自己有形狀、四周留接縫**
+       —— 這正是 §5 那條「石板／磚這類重複元素要變成每一塊有形狀有描邊」。
+       ⚠ 明暗**隨機**不做棋盤格：交錯的兩色在這個尺度下讀起來是西洋棋盤，
+         不是磨損的石板。
+       ⚠ 接縫是「不畫」出來的（石板比格子小一圈，露出底下那層材質），
+         不是另外畫線 —— 低解析緩衝裡 1px 的線會糊掉。 */
+    const cell=A.floorCell||26, jt=A.floorJoint||2.6;
+    const nx=Math.max(1,Math.round(B.w/cell)), ny=Math.max(1,Math.round(B.l/cell));
+    const cw=B.w/nx, cl=B.l/ny;
+    for(let iy=0;iy<ny;iy++) for(let ix=0;ix<nx;ix++)
+      sp.push({ x:(B.ox||0)-B.w/2+cw*(ix+0.5), y:-B.l/2+cl*(iy+0.5),
+                w:cw-jt, l:cl-jt, rot:0, lite:rnd()<0.34, slab:true });
+  }
   for(let i=0;i<(A.speck||0);i++){
     const a=rnd()*Math.PI*2, d=Math.sqrt(rnd())*B.r*0.86;
     sp.push({ x:Math.cos(a)*d, y:Math.sin(a)*d,
@@ -7671,18 +7770,21 @@ function drawRuins(scaleH,horizon,sinp,cosp){
                y:(((cam.alt-gh-(h||0))/z + z*curvAt(sv))*scaleH+horizon)*syk, z };
     };
     /* 一塊方塊：中心 (x,y)、尺寸 (w,l)、自轉 rot、高 h → 底面四點＋頂面四點。 */
-    const box=(x,y,w,l,rot,h)=>{
+    /* `z0`＝底面離地多高（ver -1147）。堆疊用的：三角楣是疊在門面頂上的三層，
+       門洞是架在最上一階上的。⚠ 沒給就是 0（貼地），既有的呼叫一個字都不必改。 */
+    const box=(x,y,w,l,rot,h,z0)=>{
       const c=Math.cos(rot||0), sn=Math.sin(rot||0), hw=w/2, hl=l/2;
+      const b0=z0||0;
       const pts=[[-hw,-hl],[hw,-hl],[hw,hl],[-hw,hl]].map(q=>{
         const lx=x+(q[0]*c-q[1]*sn), ly=y+(q[0]*sn+q[1]*c);
-        return px(lx,ly,0);
+        return px(lx,ly,b0);
       });
       if(pts.some(q=>!q)) return null;
       const loc=[[-hw,-hl],[hw,-hl],[hw,hl],[-hw,hl]].map(q=>[
         x+(q[0]*c-q[1]*sn), y+(q[0]*sn+q[1]*c) ]);
       const top=pts.map(q=>({ x:q.x, y:q.y-(h||0)*dyk/q.z, z:q.z }));
       let z=0; for(const q of pts) z+=q.z;
-      return { base:pts, top, loc, z:z/4 };
+      return { base:pts, top, loc, z:z/4, z0:b0, h:h||0 };
     };
     /* 這一座要畫的東西，先全部算出來（順便量螢幕外框）。 */
     const items=[];
@@ -7712,11 +7814,14 @@ function drawRuins(scaleH,horizon,sinp,cosp){
     const tiles=[];
     for(const t of (A._speck||[])){
       const b=box(t.x,t.y,t.w,t.l,t.rot,0);
-      if(b){ b.lite=t.lite; tiles.push(b); }
+      if(b){ b.lite=t.lite; b.slab=t.slab; tiles.push(b); }
     }
     for(const pt of A.parts){
       if(pt.k==='stump'){
-        const b=box(pt.x,pt.y,pt.dia,pt.dia,pt.rot||0,pt.h); if(b){ items.push(b); take(b); }
+        /* ⚠ `dia` 是**方柱**的邊長（既有用法）；`w`/`l` 給不是方的東西
+           （門面、階梯、散落的巨石）—— 不另開一種 `k`，那只會多一份實作（鐵律 8）。 */
+        const b=box(pt.x,pt.y,pt.w||pt.dia,pt.l||pt.dia,pt.rot||0,pt.h,pt.z0);
+        if(b){ if(pt.col) b.col=RUIN_COL[pt.col]||pt.col; items.push(b); take(b); }
       }else{
         /* 倒柱＝幾節柱鼓排成一列，節與節之間留縫（那道縫就是「斷了」）。 */
         const n=pt.seg||2, segL=pt.len/n*0.86, c=Math.cos(pt.rot), sn=Math.sin(pt.rot);
@@ -7754,9 +7859,9 @@ function drawRuins(scaleH,horizon,sinp,cosp){
         /* 材質只疊薄薄一層當紋理：疊厚了就變回「一張綠貼紙」，顏色又對不上。 */
         if(grassTex){
           if(!grassPat) grassPat=RFC.createPattern(grassTex,'repeat');
-          const O=px(0,0,0), XA=px(A.base.r,0,0), YA=px(0,A.base.r,0);
+          const O=px(0,0,0), XA=px(baseR(A),0,0), YA=px(0,baseR(A),0);
           if(grassPat && O && XA && YA && grassPat.setTransform){
-            const k=GRASS_TEXEL/A.base.r;
+            const k=GRASS_TEXEL/baseR(A);
             try{
               grassPat.setTransform(new DOMMatrix([
                 (XA.x-O.x)*k, (XA.y-O.y)*k, (YA.x-O.x)*k, (YA.y-O.y)*k, O.x, O.y ]));
@@ -7773,9 +7878,9 @@ function drawRuins(scaleH,horizon,sinp,cosp){
       if(ruinTex){
         if(!ruinTexPat) ruinTexPat=RFC.createPattern(ruinTex,'repeat');
         /* 地面座標系的兩條軸（投影出來的），換算成材質的仿射。 */
-        const O=px(0,0,0), XA=px(A.base.r,0,0), YA=px(0,A.base.r,0);
+        const O=px(0,0,0), XA=px(baseR(A),0,0), YA=px(0,baseR(A),0);
         if(ruinTexPat && O && XA && YA && ruinTexPat.setTransform){
-          const k=RUIN_TEXEL/A.base.r;
+          const k=RUIN_TEXEL/baseR(A);
           try{
             ruinTexPat.setTransform(new DOMMatrix([
               (XA.x-O.x)*k, (XA.y-O.y)*k,
@@ -7792,9 +7897,12 @@ function drawRuins(scaleH,horizon,sinp,cosp){
          讀起來像貼紙的裁切線。形狀靠色階分，不靠線。 */
       /* 斑駁：材質已經有細碎的明暗，這時候只留**大塊**的剝落（數量減半、壓淡）。 */
       let i=0;
-      for(const t of tiles){ if(textured && (i++&1)) continue;
+      for(const t of tiles){
+        /* ⚠ **石板與斑駁是兩件事**：斑駁是「剝落的痕跡」（有材質時只留大塊、壓淡、
+           隔一塊畫一塊），石板是**鋪面本身**（每一塊都要畫、而且要看得出接縫）。 */
+        if(!t.slab && textured && (i++&1)) continue;
         poly(RFC,t.base);
-        RFC.globalAlpha=textured?0.45:1;
+        RFC.globalAlpha = t.slab ? 0.72 : (textured?0.45:1);
         RFC.fillStyle = t.lite ? RUIN_COL.floorLite : RUIN_COL.floorDark; RFC.fill();
         RFC.globalAlpha=1; }
     }
@@ -7804,6 +7912,10 @@ function drawRuins(scaleH,horizon,sinp,cosp){
     items.sort((a,b)=>b.z-a.z);
     RFC.fillStyle=RUIN_COL.shade;
     for(const B of items){
+      /* ⚠ `z0>0` 的不投影：它站在別的方塊頂上，底下不是地 ——
+         照投的話影子會浮在半空（三角楣尤其明顯）。那一疊的影子由最底下
+         那一塊負責，本來就投對了。 */
+      if(B.z0>0) continue;
       const hpx=Math.abs(B.base[0].y-B.top[0].y);
       if(hpx<0.6) continue;
       const ox=hpx*0.72, oy=hpx*0.20;
@@ -7822,6 +7934,33 @@ function drawRuins(scaleH,horizon,sinp,cosp){
        ⚠ 四個面**逐面由遠而近**畫（不再一次 fill）：不同顏色了，疊錯順序會讓
          背面蓋過正面。一塊四面、十幾塊，成本仍然很小。 */
     const LGT=lightXY;
+    /* ══⚠⚠ 方塊也貼石材（ver -1148，Ray：「再把貼材貼上就好了」）══
+       原本只有**地板**貼材質，方塊是平塗的 —— 理由寫在下面那段註解：石製遺跡的
+       斷柱在畫面上只有幾個像素高，那個尺度下貼材看不出來。**古墓推翻了那個前提**：
+       它的門面有 150×62 個世界單位，平塗就是一大片白板（§5：「在深綠的地形上
+       讀起來像一張紙」）。
+       ⚠⚠ **貼在那一面自己的座標系上**，不是貼在螢幕上：用那一面的兩條邊
+         （底邊＝世界長 `wlen`、垂直邊＝世界高 `B.h`）解出仿射 —— 貼螢幕的話
+         船一動，石頭表面會像在材質上滑（同地板那一條的理由）。
+       ⚠ 蓋在平塗**之上**而且壓半透：明暗（朝光／背光／頂面）是這個解析度下
+         唯一讀得出立體的線索，貼材只補表面的顆粒，不可以把明暗洗掉。
+       ⚠ `A.tex` 是**明寫的開關**：石製遺跡維持原樣（它的零件太小，貼了只是雜訊，
+         而且那個樣子 Ray 已經驗收過）。 */
+    const faceTex = (A.tex && ruinTex) ? (()=>{
+      if(!ruinTexPat) ruinTexPat=RFC.createPattern(ruinTex,'repeat');
+      return ruinTexPat;
+    })() : null;
+    /* p0→p1 是底邊（世界長 wlen）、p0→q0 是另一條邊（世界長 vlen）。 */
+    const texQuad=(p0,p1,q0,wlen,vlen)=>{
+      if(!faceTex || !faceTex.setTransform || wlen<1e-3 || vlen<1e-3) return false;
+      const nu=wlen/RUIN_TEXEL, nv=vlen/RUIN_TEXEL;
+      try{
+        faceTex.setTransform(new DOMMatrix([
+          (p1.x-p0.x)/nu, (p1.y-p0.y)/nu,
+          (q0.x-p0.x)/nv, (q0.y-p0.y)/nv, p0.x, p0.y ]));
+        return true;
+      }catch(_){ return false; }
+    };
     for(const B of items){
       const faces=[];
       for(let k=0;k<4;k++){
@@ -7830,7 +7969,9 @@ function drawRuins(scaleH,horizon,sinp,cosp){
         const nl=Math.hypot(nx,ny)||1; nx/=nl; ny/=nl;
         const d=nx*LGT.x+ny*LGT.y;                    // >0＝朝光
         faces.push({ k, z:(B.base[k].z+B.base[(k+1)%4].z)/2,
-                     col: d>0.30 ? RUIN_COL.sideLit : (d<-0.30 ? RUIN_COL.dark : RUIN_COL.side) });
+                     /* `B.col`＝整塊同一個顏色、不分明暗（現在只有門洞在用）：
+                        門洞要讀成**一個洞**，有明暗就變成一塊深色的板子。 */
+                     col: B.col || (d>0.30 ? RUIN_COL.sideLit : (d<-0.30 ? RUIN_COL.dark : RUIN_COL.side)) });
       }
       faces.sort((p,q)=>q.z-p.z);
       for(const f of faces){
@@ -7838,8 +7979,22 @@ function drawRuins(scaleH,horizon,sinp,cosp){
         RFC.beginPath();
         RFC.moveTo(p0.x,p0.y); RFC.lineTo(p1.x,p1.y); RFC.lineTo(t1.x,t1.y); RFC.lineTo(t0.x,t0.y); RFC.closePath();
         RFC.fillStyle=f.col; RFC.fill();
+        /* ⚠ 門洞（`B.col`）不貼：它是一個洞，不是一塊石頭。 */
+        if(!B.col){
+          const a=B.loc[k], b=B.loc[(k+1)%4];
+          if(texQuad(p0,p1,t0,Math.hypot(b[0]-a[0],b[1]-a[1]),B.h)){
+            RFC.globalAlpha=0.42; RFC.fillStyle=faceTex; RFC.fill(); RFC.globalAlpha=1;
+          }
+        }
       }
-      poly(RFC,B.top); RFC.fillStyle=RUIN_COL.top; RFC.fill();
+      poly(RFC,B.top); RFC.fillStyle=B.col||RUIN_COL.top; RFC.fill();
+      if(!B.col){
+        const a=B.loc[0], b=B.loc[1], d=B.loc[3];
+        if(texQuad(B.top[0],B.top[1],B.top[3],
+                   Math.hypot(b[0]-a[0],b[1]-a[1]), Math.hypot(d[0]-a[0],d[1]-a[1]))){
+          RFC.globalAlpha=0.42; RFC.fillStyle=faceTex; RFC.fill(); RFC.globalAlpha=1;
+        }
+      }
     }
     /* ④ 貼回主畫面：逐欄遮擋（山擋得住它）＋遠距淡出。 */
     ctx.save();
