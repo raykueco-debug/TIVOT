@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1170"></script>
+<script src="../orientation.js?v=1171"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -500,11 +500,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1170"></script>
+<script src="settlement.js?v=1171"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1170"></script>
+<script src="talks.js?v=1171"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -544,7 +544,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1170';
+const FLIGHT_VER = 'ver -1171';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -5524,10 +5524,10 @@ const endDrag=e=>{
     for(const h of hotspots){
       if(px>=h.x&&px<=h.x+h.w&&py>=h.y&&py<=h.y+h.h){ enterPlace(h.P); hitName=true; break; }
     }
-    /* **輕點船身＝閒聊**（ver -1086）。⚠ 用「按了多久」而不是「感應有沒有發動」
-       來分辨輕點與長按：長按放手時 `senseT0` 已經被上面那一行收掉了，
-       拿它當判準會讓每一次長按放手都再補一段閒聊。 */
-    if(!hitName && onShip && held<TAP_MS && !s9Tutor) talkTap();
+    /* **輕點船身＝閒聊**（ver -1086；**ver -1171 起預設關閉**，見 `SHIP_TAP_TALK`）。
+       ⚠ 用「按了多久」而不是「感應有沒有發動」來分辨輕點與長按：長按放手時
+       `senseT0` 已經被上面那一行收掉了，拿它當判準會讓每一次長按放手都再補一段閒聊。 */
+    if(SHIP_TAP_TALK && !hitName && onShip && held<TAP_MS && !s9Tutor) talkTap();
     /* ══ 釘選：點一下飛行畫面 → 地面射出一道光柱＋座標；再點一下移除
        （ver -1146，Ray：「加入飛行畫面釘選工具」「點一下飛行畫面，可生成從地面
          發出的光柱」「並顯示該座標」「再點一下可移除」）══
@@ -5536,11 +5536,12 @@ const endDrag=e=>{
        ⚠⚠ 「再點一下移除」＝**切換**，與路人單句「點一下出、再點一下收」同一個
          慣例（§6.5.4）—— 所以有釘子時**不重新定位**，先拔掉。要移到別處就點兩下
          （拔、再插），這比「點哪就跳哪、沒辦法收掉」好懂。
-       ⚠ 這一支排在船身與名牌**之後**：那兩者各有自己的意思（閒聊／進入地標），
-         釘選吃的是「剩下的那片畫面」。排除區與 `onShip` 那一組完全一致：
+       ⚠ 這一支排在船身與名牌**之後**：那兩者各有自己的意思，釘選吃的是
+         「剩下的那片畫面」。排除區與 `onShip` 那一組完全一致：
          · `py<skyBottom()`　控制盤面不是飛行窗（含伸進窗裡的方向計與舵輪）
          · `!sturmHit()`　　 方向計那一帶歸加速
-         · `!onShip`／`!hitName`　船身歸閒聊、名牌歸進入
+         · `!onShip`／`!hitName`　**船身歸長按感應**（ver -1171 起輕點不再閒聊，
+           但這一條**不要跟著放寬** —— 船身讓給感應，不是讓給釘選）、名牌歸進入
        ⚠ 點到天空（射線整條都沒撞到地形）＝**什麼都不做**，不是「插在無限遠」。 */
     if(!hitName && !onShip && !mapOpen && held<TAP_MS
        && py<skyBottom() && !sturmHit(px,py)){
@@ -6105,12 +6106,26 @@ function drawMapPin(ox,oy,sc){
 }
 function updateMapMe(){ if(mapOpen) drawMap(); }
 
-/* 「閒聊」：隨機播一段。**輕點船身**觸發（ver -1086，Ray：「對話改成輕點船，
-   搜索是長按，對話鈕拿掉」）——「點一下說話、按著不放感應」是同一個物件的兩個
-   力度，比兩顆標籤鈕好記，也把頂列讓回給畫面。
+/* ══⚠⚠⚠ **輕點船身＝閒聊：先關掉**（ver -1171，Ray：「把點船閒聊這件事先拿掉
+   好了，再想想要放哪，不然常常干擾到」）══
+   為什麼會干擾：船的命中圈就在**飛行窗正中央**，而操舵本身就是在那裡按下去 ——
+   位移小於 `TAP_SLOP`(12px)、按住短於 `TAP_MS`(320ms) 的每一次小幅修正都會被判成
+   「輕點船」，於是常常在不想聽的時候冒出一段閒聊。
+   ⚠ 同一個病灶 -1127 已經處理過一次（Ray：「索敵在按加速以及長按控制盤面都會
+     誤觸發」）—— 那次是把**範圍**收窄；這次的結論是**入口本身不對**。
+   ⚠⚠ **關掉不是刪掉**：Ray 說「再想想要放哪」。內容（`TALKS`／立繪／語音）與
+     播放路徑（`talkStart`）一個字都沒動，日後換一個入口只要把這個開關改回 true
+     ——或者把 `talkTap()` 接到新的入口上。
+   ⚠ 只有這一個開關（鐵律 8）：不要在呼叫端各自 comment 掉。
+   ⚠ 關掉之後**船身只剩長按感應**：釘選那一支本來就排除 `onShip`（見 endDrag），
+     所以輕點船身是「什麼都不做」，不會掉到別的功能上。
+
+   ── 以下是它原本的規格，留著給日後接新入口用 ──
+   「閒聊」：隨機播一段。原本由**輕點船身**觸發（ver -1086，Ray：「對話改成輕點船，
+   搜索是長按，對話鈕拿掉」）。
    ⚠ 與探索演出／既有對白**互斥** —— 兩者都會佔用同一組立繪與對話框，
-     疊在一起會變成兩段對白搶同一個舞台。地圖開著時也不接（看不到）。
-   ⚠ 判定只有這一支（鐵律 8）：呼叫端只有 `endDrag` 那一個輕點分支。 */
+     疊在一起會變成兩段對白搶同一個舞台。地圖開著時也不接（看不到）。 */
+const SHIP_TAP_TALK = false;
 function talkTap(){
   if(sayQueue || senseOn || senseFireAt || senseT0 || mapOpen) return;
   talkStart(performance.now());
