@@ -1,10 +1,14 @@
-# 哥德古堡（暫名 `castle`）— 外觀參考圖 ＋ 這一批的畫風錨
+# 貝利薩爾（Belisar）— 哥德古堡・外觀參考圖 ＋ 這一批的畫風錨
+
+> ⚠ **正名（Ray，2026-09-12）：「古城名改 Belisar 貝利薩爾」** ——
+> 地圖 id `belisar`、中文「貝利薩爾」、檔名前綴 **`Belisar_`**。
+> 暫名 `castle`／`Castle_` 已作廢（那批檔案已改名，還沒上線所以沒有快取問題）。
 
 > Ray（2026-09-12）：「哥德古堡那一批背景，幫我生一個**古堡外觀參考圖**，
 > **外觀已經破敗，倚在懸崖前，古堡高處比崖高**」
 
-**參考圖**：`resources/background/Castle_Exterior.webp`（1536×1024、q85）
-原稿 `resources/_originals/background/Castle_Exterior.png`。
+**參考圖**：`resources/background/Belisar_Exterior.webp`（1536×1024、q85）
+原稿 `resources/_originals/background/Belisar_Exterior.png`。
 產線對話：`chatgpt.com`「哥德古堡概念圖」（兩版，收 v2）。
 
 ⚠ 這張目前**沒有接進遊戲**（`script/town.js` 還沒有這座城）。它有兩個用途：
@@ -50,7 +54,17 @@ v1 畫成了一座大教堂（玫瑰窗＋中殿正面）。哥德式的垂直�
 
 ---
 
-## 三、還沒做的
+## 三、檔名規約
+
+```
+resources/background/Belisar_<節點id>.webp        不見天光的格子（單張）
+resources/background/Belisar_<節點id>_<時段>.webp  有室外光的格子（dawn/day/dusk/night，全小寫）
+```
+⚠ 尾綴全小寫（靜態空間分大小寫）。外觀這一張是 `Belisar_Exterior`。
+
+---
+
+## 四、還沒做的
 
 | 段 | 狀態 |
 |---|---|
