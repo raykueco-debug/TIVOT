@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1152"></script>
+<script src="../orientation.js?v=1153"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -491,11 +491,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1152"></script>
+<script src="settlement.js?v=1153"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1152"></script>
+<script src="talks.js?v=1153"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -2049,6 +2049,10 @@ const RUIN_ART = {
     /* ⚠ ver -1110 整座縮到 50%（Ray：「遺跡太大，縮到50%」）：地基半徑 120→60，
        柱子與斑駁一起等比。材質也跟著減半（`RUIN_TEXEL`），整體的「石板多大」不變。 */
     base: { r:60, n:20, jit:0.055 },   // 圓形地基：半徑／幾邊形／邊緣的不規則量
+    /* ⚠⚠ 它坐在**陡坡**上（實測半徑 4 格內落差 130，而石台只有 120 寬）——
+       不整地的話上坡側比它高又比它近，遮擋算對了就是整座看不見（ver -1153）。 */
+    podium: { r:1.35, skirt:5 },
+    lift: 10,                          // 墊高＋基座側壁（見 drawRuins 的說明）
     /* 外圈的草（ver -1108，Ray：「周圍給他一圈不規則的草」）：外徑在地基的
        1.02~1.34 倍之間逐段亂數 —— 等寬的一圈看起來是畫上去的環，不是長出來的草。
        ⚠ 內緣直接用地基的多邊形（草壓在石板下面），兩者之間不留縫。 */
@@ -2091,6 +2095,9 @@ const RUIN_ART = {
     rot: 2.677,
     base: { w:110, l:170, n:44, jit:0.045, ox:57 },
     floor:'slab', floorCell:27, floorJoint:3,     // 地板換成石製（Ray 指定）
+    /* ⚠ 只墊高、**不整地**：它腳下的壁腳本來就是全平的（整片 47），
+       而整地的半徑會咬進崖裡，把「嵌在壁面」那件事削掉。 */
+    lift: 8,
     tex:true,                                     // 立面與頂面也貼石材（Ray：「再把貼材貼上」）
     parts: [
       /* 門面：前緣凸出壁面一點（art 裡的壁柱本來就是浮出崖面的），後半埋進崖裡 */
@@ -4296,6 +4303,38 @@ async function loadWorld(){
       }
       window.__cityWater=(window.__cityWater||0)+water;
       window.__cityLand=(window.__cityLand||0)+land;
+    }
+  }
+
+  /* ══⚠⚠⚠ 地表遺跡的台座（ver -1153，Ray：「石製遺跡整個不見了，
+     用聖王廳的方法底加厚墊高吧」）══
+     症狀與當年聖王廳一模一樣，成因也一樣：**遺跡坐在坡上**。
+     實測石製遺跡 (1125,757) 中心高 169，而半徑 4 格內的地形從 102 到 232
+     —— 落差 130，而它的石台只有 120 個世界單位寬。上坡側比它高 45 又比它近，
+     逐欄的深度遮擋當然把它整個吃掉。
+     ⚠ 這**不是**遮擋演算法的錯（-1150~-1152 那三版都在那條線上打轉）：
+       一個東西真的埋在坡裡，遮擋算對了就是看不見。要它看得見就得整地。
+     作法與城完全相同（鐵律 8，就在上面那一段）：削平 footprint、給裙邊、
+     再把遺跡墊高一點打破「同高平手」（`PODIUM_CLEAR` 那一段的理由）。
+     ⚠ 逐座開關（`RUIN_ART[x].podium`），沒填的遺跡完全不受影響。
+     ⚠ 削平的高度用**遺跡中心那一格**（遺跡沒有設計高度，城才有 `S.gh`）。
+     ⚠ 排在坡度（step 0.70）與生物群系（0.82）之前 —— 它改了地形。 */
+  for(const P of PLACES){
+    const A=P.ruin && RUIN_ART[P.ruin]; if(!A || !A.podium) continue;
+    const cxm=clamp(P.x|0,0,MAPW-1), cym=clamp(P.y|0,0,MAPH-1);
+    const ghP=HGT[cym*MAPW+cxm];
+    const R0=baseR(A)*(A.podium.r||1.25)/MAP_SCALE;
+    const R1=R0+(A.podium.skirt||4), R1c=Math.ceil(R1);
+    for(let dy=-R1c;dy<=R1c;dy++)for(let dx=-R1c;dx<=R1c;dx++){
+      const x=cxm+dx, y=cym+dy;
+      if(x<0||y<0||x>=MAPW||y>=MAPH) continue;
+      const rad=Math.hypot(dx,dy); if(rad>R1) continue;
+      const i=y*MAPW+x;
+      if(RIV[i] || HGT[i]<=CLOUD_H) continue;      // 水面與雲海不動（同城）
+      const w = rad<=R0 ? 1 : 1-(rad-R0)/(R1-R0);
+      const k = w*w*(3-2*w);                        // smoothstep：線性會留兩道折線
+      HGT[i]=HGT[i]*(1-k)+ghP*k;
+      raw[i]=HGT[i]/PEAK_SCALE;
     }
   }
 
@@ -7752,9 +7791,7 @@ function drawCitySmoke(S,scaleH,horizon,sinp,cosp,now){
    ⚠ 畫家演算法：底板 → 由遠而近的方塊。方塊的牆累積成**一條路徑一次 fill**
      （同量體層）：顏色一樣，重疊不影響外觀，省下幾十次 fill。 */
 let ruinFB=null, RFC=null;
-/* 遺跡的逐欄深度（見 drawRuins 的 colSpan／RZCLIP 那一段）：
-   RZMIN＝整座的最近、RZFOOT＝**基座**的最遠、RZCLIP＝實際拿去裁的那一份。 */
-let RZMIN=null, RZFOOT=null, RZCLIP=null;
+let RZMIN=null;                 // 遺跡的逐欄最近深度（見 drawRuins 的 colSpan）
 function drawRuins(scaleH,horizon,sinp,cosp){
   if(!MAPW) return;
   const sxk=W/BW, syk=VIEWH/BH, dyk=scaleH*syk;
@@ -7772,7 +7809,14 @@ function drawRuins(scaleH,horizon,sinp,cosp){
     if(zc<RUIN_NEAR) continue;                     // 身後／正下方（那個角度本來就看不到）
     const fade=clamp((RUIN_FAR-dist)/RUIN_FADE,0,1);
     if(fade<=0.02) continue;
-    const gh=HGT[clamp(P.y|0,0,MAPH-1)*MAPW+clamp(P.x|0,0,MAPW-1)];   // 整座共用一個底（石地板是平台）
+    /* ══⚠⚠ 墊高（ver -1153，Ray：「底加厚墊高」）══
+       整地之後地面與石地板會**完全等高**，而逐欄的深度遮擋在同高時是打平手 ——
+       哪一欄被裁掉全看浮點誤差，畫面上就是斑駁的破洞（`PODIUM_CLEAR` 那一段
+       當年在城上踩過一模一樣的坑）。墊高把平手打破。
+       ⚠ 墊高**一定要配基座側壁**（下面 ①a），不然它就是浮在地上 8 個單位。
+         這就是 Ray 說的「底加厚」——「厚」是讓「高」看起來有道理的那一半。 */
+    const lift=A.lift||0;
+    const gh=HGT[clamp(P.y|0,0,MAPH-1)*MAPW+clamp(P.x|0,0,MAPW-1)]+lift;   // 整座共用一個底（石地板是平台）
     const ca=Math.cos(A.rot||0), sa=Math.sin(A.rot||0);
     /* 局部座標（世界單位、以遺跡中心為原點）→ 螢幕。回 null＝這一點不能用。 */
     const px=(lx,ly,h)=>{
@@ -7813,11 +7857,10 @@ function drawRuins(scaleH,horizon,sinp,cosp){
        ⚠ 沿著每個形狀的**周邊**走一圈、逐欄內插深度取最小 —— 凸形的周邊
          在每一欄的最小值就是它的近緣，正是要的東西。
        ⚠ 陣列重用，每座遺跡開頭清一次（BW≈420 次寫入，跟它省下的相比可以忽略）。 */
-    if(!RZMIN || RZMIN.length<BW){
-      RZMIN=new Float64Array(BW); RZFOOT=new Float64Array(BW); RZCLIP=new Float64Array(BW); }
-    RZMIN.fill(Infinity,0,BW); RZFOOT.fill(0,0,BW);
+    if(!RZMIN || RZMIN.length<BW){       RZMIN=new Float64Array(BW); }
+    RZMIN.fill(Infinity,0,BW);
     let rc0=BW-1, rc1=0;
-    const colSpan=(pts,foot)=>{
+    const colSpan=pts=>{
       for(let k=0;k<pts.length;k++){
         const p=pts[k], q=pts[(k+1)%pts.length];
         let i0=clamp(Math.floor(Math.min(p.x,q.x)/sxk),0,BW-1);
@@ -7828,7 +7871,6 @@ function drawRuins(scaleH,horizon,sinp,cosp){
           const t=Math.abs(dxs)<1e-6?0:clamp((xc-p.x)/dxs,0,1);
           const z=p.z+(q.z-p.z)*t;
           if(z<RZMIN[i]) RZMIN[i]=z;
-          if(foot && z>RZFOOT[i]) RZFOOT[i]=z;
           if(i<rc0) rc0=i;
           if(i>rc1) rc1=i;
         }
@@ -7841,7 +7883,7 @@ function drawRuins(scaleH,horizon,sinp,cosp){
         if(q.y<y0)y0=q.y; if(q.y>y1)y1=q.y;
       }
       if(B.z<zmin) zmin=B.z;
-      colSpan(B.base,false);
+      colSpan(B.base);
     };
     /* 圓形地基：逐點投影的多邊形（邊緣帶一點不規則＝風化）。 */
     const shape=ruinShape(A);
@@ -7849,7 +7891,11 @@ function drawRuins(scaleH,horizon,sinp,cosp){
     { const pts=shape.map(q=>px(q[0],q[1],0));
       if(!pts.some(q=>!q)){ let z=0; for(const q of pts) z+=q.z;
                             slab={ base:pts, top:pts, z:z/pts.length }; take(slab);
-                            colSpan(pts,true); } }   // ⚠ 基座＝貼地的那一塊，另記一次（見 RZCLIP）
+                            /* ⚠ 基座側壁往下伸 `lift`，**外框要在這裡就罩住它** ——
+                               留到繪製階段才改 y1 已經太晚（離屏的尺寸早算好了），
+                               側壁下緣會被裁掉。 */
+                            if(lift>0){ const lo=shape.map(q=>px(q[0],q[1],-lift));
+                              if(!lo.some(q=>!q)) for(const q of lo) if(q.y>y1) y1=q.y; } } }
     /* 外圈的草：**要一起量進外框**，不然離屏會把它裁掉（草比地基大三成）。 */
     let grassPts=null;
     if(A._grass && A._grass.length){
@@ -7917,6 +7963,24 @@ function drawRuins(scaleH,horizon,sinp,cosp){
             }catch(_){ }
           }
         }
+      }
+    }
+    /* ①a 基座的側壁（ver -1153）：把石地板從地面**墊高**之後露出來的那一截。
+       ⚠ 畫在石地板**之前**：地板隨後蓋上來，只會留下外緣那一圈，正好就是
+         「一塊有厚度的石台」。
+       ⚠ 逐段梯形一次 fill 成同一條路徑：顏色一樣，重疊不影響外觀（同量體層）。
+       ⚠ 用**暗面**的色：它是背光的立面，與頂面分得開才看得出厚度。 */
+    if(slab && lift>0){
+      const low=shape.map(q=>px(q[0],q[1],-lift));
+      if(!low.some(q=>!q)){
+        RFC.beginPath();
+        for(let k=0;k<shape.length;k++){
+          const a0=slab.base[k], b0=slab.base[(k+1)%shape.length];
+          const a1=low[k],       b1=low[(k+1)%shape.length];
+          RFC.moveTo(a0.x,a0.y); RFC.lineTo(b0.x,b0.y);
+          RFC.lineTo(b1.x,b1.y); RFC.lineTo(a1.x,a1.y); RFC.closePath();
+        }
+        RFC.fillStyle=RUIN_COL.dark; RFC.fill();
       }
     }
     /* ① 石地板（先畫，其餘都站在它上面）。有材質就貼材質＋壓色，沒有就平塗。 */
@@ -8049,19 +8113,23 @@ function drawRuins(scaleH,horizon,sinp,cosp){
     /* ⚠ 逐欄裁（見上面 colMin）—— 不是拿 `zmin` 一個深度裁整座。
        ⚠ 只裁遺跡真的畫得到的那幾欄（同 `clipByTerrainDepth` 的 c0/c1：
          裁切路徑越複雜，之後每一次繪製都要跟著付）。 */
-    /* ══⚠⚠⚠ 用哪一個深度去裁（ver -1151，實測定案）══
-       單一深度必須在兩種錯法之間選一個，而**兩種都試過、都會出事**：
-         · 逐欄**最近**（-1150）→ 石製遺跡整片石台畫在本該擋住它的山坡上（Ray 回報的穿山）
-         · 逐欄**最遠**　　　　 → 伊甸古墓整個消失：它的門面**故意埋在崖體裡**，
-                                 最遠點落在山裡，於是崖面本身被算成「擋在前面」
-       正解是**只看貼著地面的那一塊**（基座多邊形）的逐欄最遠點：
-       那是真正壓在地形上、也是地形該拿來比的東西；埋進崖裡的門面不參與。
-       · 石製遺跡：基座＝整個圓台 ⇒ 最遠點＝石台後緣 ⇒ 山擋得住它 ✔
-       · 伊甸古墓：基座＝前庭（`ox` 推到崖外）⇒ 最遠點＝門面前緣 ⇒ 崖不會把自己擋掉 ✔
-       ⚠ 基座沒蓋到的欄位（伸出基座的零件：散落的巨石）退回該欄的最近點 ——
-         那些是小東西，在那裡寬鬆一點是兩害相權的輕者。 */
-    for(let i=rc0;i<=rc1;i++) RZCLIP[i] = RZFOOT[i]>0 ? RZFOOT[i] : RZMIN[i];
-    clipByColDepth(RZCLIP, sxk, syk, rc0, rc1);
+    /* ══⚠⚠⚠ 用哪一個深度去裁 —— 逐欄的**最近**點（ver -1153 定案）══
+       遺跡是**躺在地上**的東西，所以能擋住它的只有「比它近緣更近」的地形；
+       近緣到遠緣之間那一段地形，就是它自己腳下踩著的地，本來就擋不到它。
+       ⚠⚠ 這條路 -1150 走過、-1151 又推翻了，來回一趟的原因值得記下來：
+         · -1150 用最近點 → Ray 回報石製遺跡**穿過山體**。看起來像判定太寬鬆，
+           其實是**遺跡坐在陡坡上**：它自己 footprint 裡的上坡地比它高又比它近，
+           落在近緣與遠緣之間 —— 那一段本來就不該擋它，判定沒錯，**地形才是問題**。
+         · -1151 改用基座**遠**緣把它壓住 → 治好穿山，卻對**貼地的平板**系統性地錯：
+           那個深度上的地形就是石台腳下的地、高度一樣，於是每一欄的 `lim` 都落在
+           石台自己身上，近半邊被裁掉 —— 畫面上圓台變成一道**弧**（實測：石台在
+           第 155 列，逐欄 lim 154~157）。
+         **真正的解是把地整平**（`A.podium`，見 loadWorld 那一段）：footprint 之內
+         不再有比遺跡高的地，最近點就是對的了。兩件事要一起，缺一邊都會回到上面
+         那兩種症狀之一。
+       ⚠ 所以：**坐在坡上的遺跡一定要給 `podium`**。不給的下場不是「少一點細節」，
+         是整座被自己腳下的坡吃掉。 */
+    clipByColDepth(RZMIN, sxk, syk, rc0, rc1);
     ctx.globalAlpha=fade;
     ctx.drawImage(ruinFB,0,0,bwp,bhp,fx0,fy0,fbw,fbh);
     ctx.globalAlpha=1;
