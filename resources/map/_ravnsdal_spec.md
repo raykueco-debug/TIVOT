@@ -173,5 +173,34 @@
 | 風格 | ✔ 北歐・1900、⛔ 無旗幟無國標 |
 | 十一格美術簡報 | ✔ 寫好了（ver -1162 補上瞭望台與火車站） |
 | 留白 | ⬜ **只剩大教堂** —— 等 Ray 給方向 |
-| 背景圖 | 產製中 / 11（＋留白 1） |
+| 背景圖 | ✔ **11 / 11**（ver -1163）＋留白 1（大教堂） |
 | 槍棺小地圖 | 未開始（走 `tools/map_compose.py` 那條，spots 算得出來） |
+| 大地圖平面圖 | ✔ `flight/city/Ravnsdal_topdown.png`（交件單 `flight/city/_ravnsdal_plan.md`） |
+
+### 交件清單（ver -1163）
+
+`resources/background/Ravn_<X>.webp` —— 1536×1024 原生、webp q85、**11 支**：
+
+    Square  Midtown  Oldtown  Uptown  Firearm  Guild  Bistro  Grocerie  Hotel  Lookout  Station
+
+⚠⚠ **檔名不帶時段尾綴**（不是 `_day`）：那 11 格程式端要寫 `noTime:true`，
+而 `noTime` ＝**只試不帶時段的那一個名字** —— 帶了 `_day` 就整排 404
+（同聖索菲亞那 12 張的作法）。時段差分交件時再一起拿掉 `noTime`、改成帶尾綴的四張。
+
+⚠ `Ravn_Church` **還沒有**（留白）—— 程式端掛 `bgPending:true`。
+
+### 顆粒量測（平坦區高頻，相鄰差分 RMS）
+
+| 格 | | 格 | | 格 | |
+|---|---|---|---|---|---|
+| Lookout | 6.28 | Hotel | 8.04 | Oldtown | 9.67 |
+| Guild | 7.39 | Grocerie | 8.95 | Square | 9.81 |
+| Firearm | 8.18 | Bistro | 10.94 | Midtown | 12.64 |
+| Station | 12.82 | Uptown | 13.09 | | |
+
+校準點：`Sofia_Square` 4.31（同類的城鎮圖，已驗收）／`Fallen_Altar_day` 6.13。
+
+⚠⚠ **數字比聖索菲亞高，但不是顆粒**（§5 ver -906 的同一個結論）：
+100% 裁切並排看，石面是整塊平面＋硬邊陰影、鐵件有乾淨的深色描邊、殘雪是有形狀的色塊，
+**沒有斑點雜訊**。高出來的來自**這一組本來就密**的資訊 —— 鵝卵石鋪面的石縫、
+成百的窗、電車架空線、老虎窗。那是有形狀有邊界的資訊，不是雜訊。
