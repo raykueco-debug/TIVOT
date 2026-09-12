@@ -2365,6 +2365,13 @@ export function playKerberosClose(onDone){
 function renderLine(){
   const line = cur.lines[lineIdx];
   if(!line) return;
+  /* ══⚠⚠ **換一拍就先停上一拍的打字機**（ver -1127）══
+     -1062 把它補在空框與演出拍那兩個分支裡，但那是「哪幾種拍會出事」的清單 ——
+     清單就是會漏（黑幕底下延後的 `reveal`、`goto`／`label` 跳轉、閘門自己 advance
+     這幾條都不經過那兩個分支，卻一樣把框交給了下一拍）。
+     規矩是「**這一拍開始了，上一句就不准再往框裡打字**」，所以收在**唯一的入口**
+     （鐵律 8）：有台詞的那一拍照樣會被 `typeOut` 重設，這一行對它是冪等的。 */
+  stopTyping();
   stopFx();       // 上一拍的演出（掃射／持續抖動）到此為止，別讓它蓋到這一句上
   flushCgFade();  // 上一拍的黑幕若還沒收，**立刻做完**（見 cgFade 的說明），不要取消
   /* ⚠ 上一拍**還沒演的立繪指令**要先補完（ver -430）：`stopFx()` 只是把計時器清掉，
@@ -3478,6 +3485,7 @@ export function veil(on, ms){
 export function veilOn(){ const v=$('storyVeil'); return !!(v && v.classList.contains('on')); }
 
 export function clearCast(){
+  stopTyping();   // ver -1127：清場＝這一段結束，框裡不可以還有字在跑（同 renderLine）
   kitchenOpen=false;   // 閘門的鎖：清場就一定解掉（不然下一段點不動，ver -956）
   darkWho=null;   // 剪影是「還沒表明身分」的狀態，清場就結束（ver -954）
   slot={L:null,R:null}; slotExpr={L:null,R:null}; shown={};

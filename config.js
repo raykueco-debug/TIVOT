@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.12-1125';
+export const VERSION = 'ver 2026.09.12-1127';
 
 export const GAME_CONFIG = {
 
@@ -2402,14 +2402,17 @@ export const GAME_CONFIG = {
        ⚠ 已經有那把槍就不再給（見 inspector.scriptSettle）。 */
     /* ⚠⚠ `noReward`（ver -439，Ray：「靶不要給 exp 跟錢」）：這一場**不給 EXP、
          不給金錢**。它可以重打到膩 —— 給獎勵就是一台印鈔機。
-         ⚠ 「被評一次分」那一條 ver -1060 撤了（Ray 指定），現在打靶也會被評。
+         ⚠ 「不給評價」那一條 -1060 撤過一次，**ver -1127 又加回來**（見下）。
        ⚠ **破紀錄的獎品照給**（`timeAttack.prize`）：那是這一場的目的，不是報酬。
        ⚠ 判定在 `modules/inspector.js` 的 `scriptSettle` 讀這一欄，不認場次名。 */
-    /* ⚠⚠ ver -1060（Ray：「打靶也是」）：三場打靶的 `noEval` **一起撤掉** ——
-       回到 -670 的通則「預設就有評價，沒有的是特例」。
-       ⚠ -670 當初把打靶列為特例的理由是「重打很煩」，Ray 現在推翻它。
-       ⚠ 目前**沒有任何一場**寫 `noEval`／`noEvalBeforeStage` —— 那兩格留著給日後用。 */
-    range_trainee: { enemy:'dart_target', record:'range', noReward:true,
+    /* ⚠⚠ ver -1127（Ray：「帝都打靶出現蕾娜評價，打靶不該有評價」）：三場打靶的
+       `noEval` **加回來**。-1060 曾經照 Ray 當時那句「打靶也是」把它撤掉，
+       -1126 他推翻了 —— 打靶是可以重打到膩的小遊戲（`noReward` 也是同一個理由），
+       每打一次被評一次等第讀起來像正式戰鬥。
+       ⚠ 通則仍然是 -670 的「預設就有評價，沒有的是特例」：特例寫在**卡**上
+         （`noEval` 永遠不評／`noEvalBeforeStage:N` 第 N 章之前不評），
+         不要在 inspector 那邊另列一張不評的場次名單（鐵律 7）。 */
+    range_trainee: { enemy:'dart_target', record:'range', noReward:true, noEval:true,
                      timeAttack:{ wrongPenaltySec:3, se:'se_dart_fail', parSec:50,
                                   prizeSec:30, prize:'Shotgun_Dragon' } },
     /* ══ 北方泊地的打靶（ver -655，Ray 交稿）══════════════════════════════
@@ -2424,12 +2427,12 @@ export const GAME_CONFIG = {
        ⚠ **挑戰費 200G 寫在腳本的選項上**（`choice` 的 `cost`），不寫在卡上 ——
          「打這一場要多少錢」是那家店的規矩，不是這場戰鬥的性質；
          而且要在**玩家答應的那一刻**扣，卡上沒有那個時機。 */
-    np_range: { enemy:'dart_target', record:'np_range', noReward:true,
+    np_range: { enemy:'dart_target', record:'np_range', noReward:true, noEval:true,
                 timeAttack:{ wrongPenaltySec:3, se:'se_dart_fail', parSec:25 } },
     /* ══ 蕃茄人11號（ver -858，杰羅的修船打靶）══ 同帝都配置＋兩個新旋鈕：
        `assaultOn` 放行大絕排程（3 秒一發，defense.scheduleAssault 的例外）、
        `hitPenaltySec` 被打中＝碼表 +3 秒（combat.enemyAttack）。par 30 秒。 */
-    sv_range: { enemy:'sv_dart', record:'sv_range', noReward:true,
+    sv_range: { enemy:'sv_dart', record:'sv_range', noReward:true, noEval:true,
                 timeAttack:{ wrongPenaltySec:3, se:'se_dart_fail', parSec:30,
                              hitPenaltySec:3, assaultOn:true } },
     /* ══ 墓地那一場（ver -664，Ray：「教堂那隻中 boss，背景維持墓地」）══
@@ -2443,7 +2446,14 @@ export const GAME_CONFIG = {
        諾薇兒去了教堂、安雅還沒介入。所以聖徒化與搭檔技都關掉。
        ⚠ 禁令擋在**唯一的發動點**（`saint.activateSaint` 的 `noSaint`／
          `partner.tryActive` 的 `noPartner`），不是在手勢那邊各擋一次（鐵律 8）。 */
-    np_cemetery: { enemy:'np_boss', noSaint:true, noPartner:true },
+    /* ⚠⚠⚠ `solo:true`（ver -1127，Ray：「北泊墓地戰的第一戰是處於無夥伴的狀態，
+         娜塔莉戰才強制換安雅」）＝**身邊真的沒有人**：`state.pickedPartner` 設 null
+         （唯一真相，見 state.setPickedPartner）—— 破防計量表不放頭像、**即死防禦
+         那類被動也不會發動**。
+       ⚠ 與 `noPartner` 是兩件事：那一格是「有人但不准用主動技」，擋不住被動
+         （-681 之後墓地第一場仍然會被諾薇兒接住一次，那就是這一版修掉的）。
+         兩格都留著：`solo` 已經涵蓋 `noPartner`，但寫出來才讀得出意圖。 */
+    np_cemetery: { enemy:'np_boss', solo:true, noSaint:true, noPartner:true },
     /* ══ 禍魘娜塔莉戰（ver -671，Ray 交稿）══════════════════════════════════
        敵 HP 50% 以下 → 劇情殺（**一擊**打到剩 1）→ 安雅接手惡夢化。
        ⚠ 與聖徒化教學那一場的三連擊是**兩種劇情殺**：那一套要走即死防禦
@@ -2462,7 +2472,15 @@ export const GAME_CONFIG = {
          **不是** ASSETS 的鍵 —— 寫成 `bgm_suspense` 查不到（-631 起啞了六版，
          -637 才抓到）。與黑爪戰同一個收尾（ver -720，Ray 指定）。
          ⚠ 只有打贏才換：戰敗要再打一次，換了曲子等於先畫句點。 */
-      burstVoice:'vo_anya_burst2', noSaint:true, noPartner:true,
+      /* ⚠⚠ **這一場強制換安雅**（ver -1127，Ray：「娜塔莉戰才強制換安雅」）：
+         她是這一幕的主角（惡夢化與夢境粉碎都是她的），破防計量表上的臉、
+         被動（明晰之夢）與 `burstVoice` 都要對得起來。
+         ⚠ 走**戰鬥卡的 `partner` 覆寫**（combat.startGame 那條挑人鏈的第一順位）——
+           不要為這一場在 `storyPartnerBy` 加一條：那張表管的是「這一章身邊是誰」，
+           這裡要的是「這一場是誰」。
+         ⚠ `noPartner` 照留：主動技仍然要等安雅干涉（腳本的閘門直接呼叫，
+           不經過那道守門）。 */
+      partner:'anya', burstVoice:'vo_anya_burst2', noSaint:true, noPartner:true,
       /* ⚠ 站位：安雅本位右 → 蕾娜讓到**左**（§6.5 的表）。 */
       talkSides:{ renna:'left', anya:'right' },
       talk:[

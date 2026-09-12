@@ -409,7 +409,15 @@ export function addPerfect(){
 
 /* 搭檔選人畫面專用：切換實選搭檔（pickedPartner 唯一寫入管道）。
  * partner.currentPartner() 讀此值決定能力歸屬——換人即技能切換。 */
+/* ══⚠⚠ **`null` ＝ 這一場身邊沒有人**（ver -1127，Ray：「北泊墓地戰的第一戰是處於
+   無夥伴的狀態」）══ `state.pickedPartner` 是「誰在你旁邊」的**唯一真相**
+   （十幾處直接讀 `GAME_CONFIG.partners[state.pickedPartner]`，鐵律 7）——
+   所以「沒有人」就用 null 表達，不要另立一支「其實有人但當作沒有」的旗。
+   ⚠ **只有明寫 null 才清**：其餘查不到的鍵照舊忽略（那是打錯字，不是「沒有人」）。
+   ⚠ 誰把它放回去：下一場戰鬥的 `combat.startGame`（劇情戰問 `storyPartnerKey()`、
+     其餘退回上一位）與整備頁開啟時（`gear.js`）—— 鐵律 9。 */
 export function setPickedPartner(key){
+  if(key===null){ state.pickedPartner = null; return; }
   if(GAME_CONFIG.partners[key]) state.pickedPartner = key;
 }
 /* 這一局又多打了一場：記在**當時出場的那一位**頭上（ver -921）。

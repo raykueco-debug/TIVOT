@@ -1726,6 +1726,7 @@ export function cyclePartner(step){
 /* 月彎中間現在該放頭像還是連擊數（唯一的判定，鐵律 7）。 */
 function claspFaceOn(){
   if(!(GAME_CONFIG.tuning||{}).claspFace) return false;
+  if(state.pickedPartner===null) return false;   // 無夥伴（ver -1127）→ 圓心放連擊數
   return !!claspFaceCss(state.pickedPartner);
 }
 /* 進場後多試幾拍（血條要排好才量得到）；視窗變了整組重量。 */
@@ -2581,7 +2582,11 @@ export function startGame(){
      ① 戰鬥卡若明寫 `partner` 就覆寫（一般性的逃生口，目前沒有卡在用 ——
         夏爾村村內戰改由劇情設定，見 storyPartnerBy 的 sv_night_done 分支，ver -804）。
      ② 否則走章節預設 `partner.storyPartnerKey()`。 */
-  if(sb && sb.partner) setPickedPartner(sb.partner);
+  /* ③ 上一場是無夥伴（`solo`）的話，先把人放回來 —— 那是**那一場**的狀態，
+        不是玩家的選擇（鐵律 9：誰拔的誰放回去）。放在①②之前，它們才蓋得掉。 */
+  if(state.pickedPartner===null) setPickedPartner(partner.storyPartnerKey());
+  if(sb && sb.solo) setPickedPartner(null);   // ⚠ 這一場身邊沒有人（見 state.setPickedPartner）
+  else if(sb && sb.partner) setPickedPartner(sb.partner);
   else if(state.scriptRun) setPickedPartner(partner.storyPartnerKey());
   if(sb && GAME_CONFIG.enemies[pickBattleEnemy(sb)]){
     enemy.setEnemy(pickBattleEnemy(sb));
@@ -2655,8 +2660,15 @@ export function startGame(){
   if(state.scriptRun){ updateBars(); return; }   // 劇情插入戰不進教學
   tutorial.maybeStart();   // 首次出陣 → 進教學（穿插式；看過/跳過後恆 no-op）
   if(state.tutorialActive && GAME_CONFIG.tutorial){
-    // 教學固定裝備：蕾妮＋機槍（原選擇暫存，goHome 還原）
-    weapon.forceTutorialLoadout();
+    /* 教學固定裝備：機槍＋（試玩版）蕾妮（原選擇暫存，goHome 還原）。
+       ══⚠⚠ **劇情版教學的搭檔是本篇那一位，不是蕾妮**（ver -1127，Ray：
+         「開場教學關卡破防計量表夥伴顯示錯誤，應該是諾薇兒卻放成蕾妮」）══
+       `defaultPartner`（蕾妮）是**試玩版**的預設（§6.5.3「本篇與試玩版是兩套」）——
+       而開場那一場是劇情帶起來的教學（`tutorialStoryRun`），身邊的人是諾薇兒。
+       ⚠ 誰是本篇的搭檔只有 `partner.storyPartnerKey()` 一支在算（鐵律 7／8）：
+         **在這裡問**再傳進去，不要讓 weapon 反過來 import partner（依賴方向，§2）。
+       ⚠ 這同時修好她的聖徒化 cut-in 分流（saint.js 認的是 `state.pickedPartner`）。 */
+    weapon.forceTutorialLoadout(state.tutorialStoryRun ? partner.storyPartnerKey() : null);
     // 教學戰：換上教學專用敵（訓練用聖徒；單敵一場，finishEnemyOrAdvance 的 tutorialRun 守門不走 lineup）
     const tk=GAME_CONFIG.tutorial.enemyKey;
     if(tk && GAME_CONFIG.enemies[tk]) enemy.setEnemy(tk);

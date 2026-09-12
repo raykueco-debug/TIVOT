@@ -1087,6 +1087,18 @@
   #grid.saint.overkill .cell{border-color:var(--holy);color:#bfe6ff;background:#18202e;
     text-shadow:0 0 10px #4fc3ff,0 0 22px rgba(79,195,255,.55);}
   #grid.saint.overkill{filter:none;}
+  /* ══⚠⚠⚠ **打掉的格子不准在 overkill 裡冒回來**（ver -1127，Ray：「聖徒化把敵 hp
+     打空，打掉的格子在 okv 時又冒出來」）══
+     上面那一條是 `#grid.saint.overkill .cell`（1 id ＋ 3 class），權重**贏過**
+     「打掉的格全黑不留框」那一條（`#grid.overkill .cell.done`，1 id ＋ 2 class）
+     —— 於是聖徒化中擊殺、進了 overkill 之後，剛剛點掉的格子全部被重新畫上
+     藍框與 `#18202e` 的底，讀起來就是「它們又長回來了」。
+     ⚠ 這與 ver -684（`.next` 被 `#grid.saint .cell` 蓋掉）是**同一種病**：
+       盤面的狀態類樣式（`.done`／`.next`）一律要比模式類（`.saint`／`.overkill`／
+       `.dualwield`）**多一級權重**，不然模式一疊上去就把狀態洗掉。
+     ⚠ 值照抄 `#grid.overkill .cell.done` 那一條（同一件事：那一格是空的）。 */
+  #grid.saint.overkill .cell.done{
+    background:#000;border-color:transparent;box-shadow:none;animation:none;}
   /* ══⚠⚠ **惡夢化發動時那一格要看得見**（ver -684，Ray：「NI 後的第一格還是
      沒有標出來，會找不到」）══
      `hintCurrentCell` 加的 `.next` 在惡夢化底下**等於隱形**：

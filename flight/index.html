@@ -2378,9 +2378,17 @@ const sturmSE = new Audio('../resources/audio/se/Sturm.m4a'); sturmSE.preload='a
 sturmSE.__baseVol = fileVol('sturm');   // 逐支增益（ver -441，見 fileVol）
 const sturmCI = new Image(); sturmCI.src='../resources/CI/Nouvelle_Sturm.webp';
 /* 方向計的命中框：往外放一點才好按（那條帶只有 30px 高）。 */
+/* 方向計（＝加速 Sturm）的實際點擊範圍。
+   ⚠⚠ **比畫出來的那一條粗**（ver -1127，Ray：「為防止誤觸將船體搜索及方向計加速的
+     實際點擊範圍稍微增大」）：那一條只有 30px 高，照圖判定手指很容易落在它外面
+     ——落在外面就會被下面那一段當成「按在船上」而發成感應。
+   ⚠ 這一支同時是**感應的排除區**（見 pointerdown 的 `onShip`）：放大它＝方向計
+     這一帶一律歸加速，兩個長按不會再同時起算（鐵律 8：一個區域一個主人）。 */
+const STURM_PAD_X = 18, STURM_PAD_Y = 16;
 function sturmHit(px,py){
   const C=compassRect();
-  return px>=C.x-8 && px<=C.x+C.w+8 && py>=C.y-10 && py<=C.y+C.h+10;
+  return px>=C.x-STURM_PAD_X && px<=C.x+C.w+STURM_PAD_X
+      && py>=C.y-STURM_PAD_Y && py<=C.y+C.h+STURM_PAD_Y;
 }
 function sturmCancel(){ sturmT0=0; }
 
@@ -4889,7 +4897,22 @@ stage.addEventListener('pointerdown',e=>{
        各算一次的話船在螢幕上是會動的（`shipHit` 每幀由 drawShip 更新），
        按下與放開之間它已經不在原處了（鐵律 7）。 */
   downAt=performance.now();
-  onShip=!!(shipHit && Math.hypot(e.clientX-shipHit.x, e.clientY-shipHit.y)<=shipHit.r);
+  /* ══⚠⚠⚠ **感應的範圍：飛行窗裡的船體，而且不含方向計**（ver -1127，Ray：
+       「索敵在按加速以及長按控制盤面都會誤觸發，嚴格把觸發範圍限制在飛行窗
+         船體及方向計以外的區域」）══
+     船的命中圈是 `shipHit`（每幀由 drawShip 更新，圓心 `VIEWH*0.76`、半徑 `R*0.8`）
+     —— 它**本來就會溢出兩個不該碰的地方**：
+       · 下緣越過 `VIEWH` → 長按**控制盤面**（操舵那一整塊）也算按在船上
+       · 方向計畫在 `VIEWH-61 ~ VIEWH-31`，正好落在圈內 → 長按**加速**同時起算感應
+     所以這裡加兩道硬條件（兩道都是「這一點屬不屬於船」的一部分，收在同一個算式）：
+       ① `clientY < VIEWH`：控制盤面不是飛行窗
+       ② `!sturmHit()`：方向計那一帶歸加速（它剛剛才判過，範圍已放大）
+     ⚠ 圈本身**稍微放大**（`SHIP_HIT_PAD`，同 Ray 那句「實際點擊範圍稍微增大」）：
+       範圍收窄之後要按得到才行 —— 排除區是硬的，圈是鬆的，兩者不衝突。
+     ⚠ 仍然只算一次（`onShip`）：放手那一支要用同一個答案（鐵律 7）。 */
+  const SHIP_HIT_PAD = 1.18;
+  onShip=!!(shipHit && e.clientY < VIEWH && !sturmHit(e.clientX,e.clientY)
+            && Math.hypot(e.clientX-shipHit.x, e.clientY-shipHit.y) <= shipHit.r*SHIP_HIT_PAD);
   senseT0=0;
   if(featureOn('sense') && onShip){
     senseT0=performance.now();
@@ -4901,7 +4924,11 @@ stage.addEventListener('pointerdown',e=>{
      ⚠ 在手指還按著的時候就觸發（不是放開才生）—— 長按要當場有回饋，
        不然會讓人以為沒反應而一直按。一動或放開就取消。 */
   clearTimeout(spawnHoldT); spawnHoldT=0;
-  if(canSpawnHold() && !onShip && !sturmT0)
+  /* ⚠⚠ 「船身以外」指的是**天空**，不是控制盤面（ver -1127）：-1086 寫這一條時
+     船的命中圈還蓋著盤面上緣，所以盤面落在感應那一邊、沒人發現；-1127 把感應
+     收進飛行窗之後，盤面就會掉到這裡來 —— 而**按住盤面不動是玩家的煞車動作**，
+     在那裡生一隻怪出來是實打實的誤觸。所以這一條也一起收進飛行窗（同 `onShip` 的①）。 */
+  if(canSpawnHold() && e.clientY < VIEWH && !onShip && !sturmT0)
     spawnHoldT=setTimeout(()=>{ spawnHoldT=0; spawnByHold(); }, SPAWN_HOLD_MS);
 });
 stage.addEventListener('pointermove',e=>{

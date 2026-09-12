@@ -802,11 +802,14 @@ export function refreshLoadoutLabels(){
  *  教學戰開場（combat.startGame 教學分支）強制換上；玩家原選擇暫存，
  *  回主選單（combat.goHome）還原。equippedWeapon/pickedPartner 皆本模組擁有（§3.4）。 */
 let _tutLoadoutStash = null;
-export function forceTutorialLoadout(){
+/* `partnerKey`：這一場教學該站誰（ver -1127）。null／不傳＝試玩版的預設蕾妮；
+   劇情版教學由 `combat` 傳 `partner.storyPartnerKey()`（本篇的搭檔）進來 ——
+   ⚠ 判定留在呼叫端：weapon 不可以 import partner（依賴方向，§2）。 */
+export function forceTutorialLoadout(partnerKey){
   if(_tutLoadoutStash) return;   // 教學段內重開（陣亡該段重來）不重複暫存
   _tutLoadoutStash = { w: state.equippedWeapon, p: state.pickedPartner };
   state.equippedWeapon = GAME_CONFIG.defaultWeapon;      // 機槍（MG_Squall）
-  setPickedPartner(GAME_CONFIG.defaultPartner);          // 蕾妮（renee）
+  setPickedPartner(partnerKey || GAME_CONFIG.defaultPartner);   // 預設＝蕾妮（renee）
   refreshLoadoutLabels();
 }
 export function restoreTutorialLoadout(){
