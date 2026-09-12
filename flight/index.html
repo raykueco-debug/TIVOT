@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1195"></script>
+<script src="../orientation.js?v=1196"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -500,11 +500,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1195"></script>
+<script src="settlement.js?v=1196"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1195"></script>
+<script src="talks.js?v=1196"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -544,7 +544,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1195';
+const FLIGHT_VER = 'ver -1196';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -5494,6 +5494,26 @@ let qLevel = 0, qLocked = false;
 let GRIDDBG=false;
 { const m=/[?&]grid=1/.exec(location.search); if(m) GRIDDBG=true; }
 const Q = () => QUALITY[qLevel];
+/* ══⚠⚠⚠ 緩衝寬的**下限要跟著視窗走**，不可以寫死（ver -1196）════════════
+   Ray 的手機 `innerWidth` 只有 **320**（HUD 那行 `inner 320x645`），而舊的下限是
+   寫死的 160 —— 於是整個自適應階梯的**下面三階全部撞到地板、變成同一階**：
+
+     q0 320×0.60=192 → 192
+     q1 320×0.54=173 → 173
+     q2 320×0.48=154 → **160**  ← 地板
+     q3 320×0.40=128 → **160**  ← 地板
+     q4 320×0.33=106 → **160**  ← 地板
+
+   也就是說他那台機子**從 q2 開始，再怎麼降畫質緩衝都不會變小** ——
+   調節器把 qLevel 一路推到 4，看起來在降級，實際上一個像素都沒省。
+   那就是「掉到 q4 還是掉禎」的結構性原因（-755 加 q4 那一階等於白加）。
+   ⚠ 430px 的機子也吃到：q4 要 142，照樣被 160 夾回去。
+   ⇒ 下限改成**由階梯自己的最後一階推**（鐵律 7：一個量一個計算點）——
+     最低那一階要多少就給多少，另外留一個絕對硬底 96 給極窄的視窗。
+   ⚠ 這不會讓高畫質變差：上面幾階本來就高於下限，一個字都沒動。 */
+const BUF_HARD_MIN = 96;
+const bufFloor = w => Math.max(BUF_HARD_MIN,
+                               Math.round(w * QUALITY[QUALITY.length-1].bwf));
 
 /* ── 裝置像素比 ───────────────────────────────────────────────────
    ⚠ 畫布**要開到裝置像素**，不能只開 CSS 像素。地形本來就是低解析度緩衝
@@ -5517,7 +5537,7 @@ function applyResize(){
      ⚠ 一定要**連 BW 一起比**：QUALITY 的第 2、3 級 dpr 同樣是 1，只有 bwf
        不同（0.48 vs 0.40）。只比視窗與 DPR 的話，q2→q3 會被誤判成「沒變」而
        整個跳過，緩衝解析度永遠降不下去 —— 調節器就形同壞掉。 */
-  const nBW=clamp(Math.round(nw*Q().bwf),160,420);
+  const nBW=clamp(Math.round(nw*Q().bwf),bufFloor(nw),420);
   if(nw===W && nh===H && ndpr===DPR && nBW===BW && cv.width===Math.round(nw*ndpr)) return;
   W=nw;H=nh;
   DPR=ndpr;
@@ -5544,7 +5564,7 @@ function applyResize(){
        額度讓出來，效能餘裕留給手機。
      要更銳就調這個值，但**一定要在實機上看 HUD 的 fps**：
      開發用的瀏覽器分頁一離開前景 rAF 就停，量到的數字不可信。 */
-  BW=clamp(Math.round(W*Q().bwf),160,420);
+  BW=clamp(Math.round(W*Q().bwf),bufFloor(W),420);
   BH=Math.round(BW*VIEWH/W);          // 緩衝比例對齊「3D 視窗」而非整個畫面
   bcv=document.createElement('canvas');bcv.width=BW;bcv.height=BH;
   bctx=bcv.getContext('2d');
