@@ -4105,9 +4105,15 @@ export const TOWNS = {
          ⚠ **只飛得到的地方不掛 `sail.flag`**（ver -1154 那條）：人能站在這裡就表示
            他是飛來的，再要求 `got_ship` 在其他路徑上就是「走得進來、出不去」。
          ⚠ 入口＝遭遇戰的復活點，**不可以有戰鬥**（§6.5.2）⇒ `noWild`。
-         ⚠ 交件是**黃昏**那一張，而它在戶外 —— 該有四時段差分（§5）。差分還沒做，
-           先寫 `noTime` 擋掉四個 404；交件之後把 base 改名 `_dusk` 並拿掉 `noTime`。 */
-      entrance:  { bg:'Belisar_Exterior', name:'貝利薩爾遺址　外廓', noTime:true, noWild:true,
+         ⚠⚠ **四時段差分已交件**（ver -1161，美術 commit 570d5be）：`_dawn/_day/_dusk/
+           _night` 四張，`_dusk` 就是原本拍板的那一張。所以這一格**不寫 `noTime`**
+           —— 候選鏈自己會依 `clock.band()` 去挑（§6.5.4）。
+           ⚠ 實測四張的 8×8 亮度：day 133.7 ＞ dawn 103.9 ＞ dusk 81.8 ＞ night 50.5，
+             而 `_dusk` 與舊的無時段那張指紋差 0.0（同一張）。
+           ⚠ 不帶時段的 `Belisar_Exterior.webp` 現在**沒有人讀**了，可以退役 ——
+             那是美術的檔，由他們走 `tools/recycle.sh` 收（已回報）。
+           ⚠ 這是**新增不是同名覆蓋**（四個都是新檔名）⇒ 不必動 `ASSET_VER`。 */
+      entrance:  { bg:'Belisar_Exterior', name:'貝利薩爾遺址　外廓', noWild:true,
         exits:{ up:'foyer' }, sail:{} },
       altar:     { bg:'Belisar_OldAltar', name:'貝利薩爾遺址　古代祭壇', noTime:true, exits:{ up:'floodway' } },
     },
