@@ -1,172 +1,131 @@
-# HANDOFF — ver -971〜-995（2026-09-09）／女主九星・技能文案・整備頁改版
+# HANDOFF — ver -1127〜-1143（2026-09-12）／七件修正・戰鬥紀錄・伊甸古墓・禁航區
 
-> **HEAD ＝ `ver 2026.09.09-995`**（`config.js` 的 `VERSION`）。
-> 前一份（-953〜-955）與 `HANDOFF_ver964-970_ART_SESSION.md`（美術 session 做的 -964〜-970）
-> 都**已被這一份取代**；那兩份留著當紀錄，**檔尾的「環境備忘／教訓／快速測法」仍然有效**
-> （抄在本檔第 7 節）。
+> **HEAD ＝ `ver 2026.09.12-1143`**（`config.js` 的 `VERSION`）。
+> 前一份是 `HANDOFF_ver971-995.md`（-971〜-995），**它的第 7、8 節（環境備忘／
+> 搭檔煙霧測試）仍然有效**，本檔不重抄，改過 `partner`／`saint` 之後照樣要跑那一支。
 >
-> ⚠⚠⚠ **這一輪推翻了非常多舊規則 —— 舊註解會騙人。** 動下面任何一支檔案之前，
-> 先看第 2 節那張「被推翻」表，再重讀那一支。
+> ⚠⚠⚠ **這一輪有三條規則被推翻、一條新的建置步驟**（第 2、3 節）。動任何一支檔案
+> 之前先看那兩節 —— 舊註解會騙人。
 
 ---
 
-## 0. 版本 → 動了哪幾支檔案（**重讀清單**）
+## 0. 版本 → 動了哪幾支檔案（**重讀清單**，鐵律 11）
 
 | 版本 | 主題 | 動到的檔案 |
 |---|---|---|
-| `-971` | 索菈娜黃橘圈 ×0.7 沿用萊福槍例外（Ray 確認，行為零改動） | `config.js` |
-| `-972` | **諾薇兒的巨蟹座九星** | `config.js` `script/progress.js` `modules/{combat,partner,saint}.js` |
-| `-973` | 次回指引＝全程高光／堅殼星聖徒化期間不回血（Ray 定案） | `config.js` `modules/combat.js` |
-| `-974` | **安雅的雙子座九星**＋反擊三分法 | `config.js` `modules/{combat,defense,partner,saint,weapon}.js` |
-| `-975` | 賞金獵人的圖／旅店插畫／瑪麗亞提早出現／萊福槍黃橘圈也反擊 | `config.js` `modules/{story,town}.js` `script/town.js` |
-| `-976` | **索菈娜的射手座九星** | `config.js` `modules/{combat,partner,saint,weapon}.js` |
-| `-977` | 飛行打完馬上又來一隻／船戰 HP 走結算就回滿 | `config.js` `main.js` `flight/index.html` |
-| `-978` | 捲軸改成細銅色 | `style.css` `css/lootsheet.css` `index.html` |
-| `-979` | 北泊送行加四句＋北峰山羊奶油／翌日直接落碼頭／插圖世代守門 | `config.js` `modules/story.js` `script/town.js` |
-| `-980` | 開發者模式手動點亮九星 | `config.js` `modules/gear.js` |
-| `-981` | **好感段位邊界改成「累積 20 點進 T2」** | `config.js` `script/progress.js` `flight/index.html` |
-| `-982` | 管理人手動改好感（後由 -983 搬到飛行頁） | `config.js` `script/progress.js` `modules/gear.js` `style.css` |
-| `-983` | 整備頁手機版改版／好感搬到飛行頁／副武器每場歸一順位 | `config.js` `modules/{gear,weapon}.js` `flight/index.html` `style.css` `index.html` |
-| `-984` | 諾薇兒技能文案短版＋改名 | `config.js` `i18n/zh.js` |
-| `-985` | 技能名改成讀搭檔卡（蕾妮不跟著改名） | `config.js` `i18n/zh.js` `modules/{partner,saint}.js` |
-| `-986` | 免傷回血與吸血由基礎移到星上 | `config.js` `modules/partner.js` |
-| `-987` | 諾薇兒九星文案對齊實作 | `config.js` |
-| `-988` | 諾薇兒定稿；連擊延續移到引路星、**Lv8/Lv9 效果對調** | `config.js` `modules/partner.js` |
-| `-989`〜`-992` | 技能分色／技能表排版與凹槽／內文技能名上色 | `config.js` `modules/gear.js` `style.css` `index.html` |
-| `-993` | **索菈娜文案定稿**；技能表改成置中視窗 | `config.js` `modules/gear.js` `style.css` `index.html` |
-| `-994` | **安雅文案定稿**；明晰之夢 5→10→15、夢境破碎不再回血 | `config.js` |
-| `-995` | Alzirr ＝鐵蹄星；兩則刻意不寫進文案的註記 | `config.js` |
+| `-1127` | Ray 的七件一次修（教學搭檔／打靶不評／索敵誤觸／聖徒 ovk 殘格／墓地無夥伴…） | `config.js` `state.js` `style.css` `index.html` `flight/index.html` `modules/{combat,weapon,partner,story}.js` |
+| `-1128` | 「評價完全消失」的診斷：HUD 多一行＋抓「是誰蓋住它」 | `config.js` `style.css` `index.html` `main.js` `modules/inspector.js` |
+| `-1129` | 賞金獵人 stage0/1 不評（-756 那條加回來；**-1130 又被收斂掉**） | `config.js` `modules/inspector.js` |
+| `-1130` | **第 1 章起除打靶外每場必評**（全域一條線） | `config.js` `modules/inspector.js` `script/evaluation.js` |
+| `-1131` | **importmap 快取破除**＋`tools/bust.py` | `config.js` `index.html` `flight/index.html` `main.js` `tools/{bust,script_lint}.py` |
+| `-1132` | 控制面板不算飛行窗／索敵與生怪推到第 8 章 | `config.js` `index.html` `flight/index.html` |
+| `-1133` | **女主的星改用《戰鬥紀錄》點亮**（逐角色）／EXP 正名 | `config.js` `style.css` `index.html` `flight/index.html` `i18n/{zh,en,ja}.js` `modules/{gear,inspector}.js` `script/{inventory,progress}.js` |
+| `-1134` | **伊甸古墓**接上（(735,196) 降落點＋34 格樹狀迷宮） | `config.js` `index.html` `flight/{index.html,export_mapref.py}` `script/town.js` `tools/{map_layout,script_lint}.py` `resources/map/_tomb_spec.md` `_layout_tomb.png` |
+| `-1135` | **死亡回到上一個安全點／結算點**＋掉一半戰鬥紀錄（等級棘輪） | `config.js` `state.js` `index.html` `flight/index.html` `main.js` `modules/{combat,inspector,town}.js` `script/progress.js` |
+| `-1136`〜`-1139` | **禁航區**（空氣牆／自動轉舵／蕾娜三句／地圖紅罩）　⚠ -1137・-1138 是中途版號，一起併進 -1139 那一筆 | `config.js` `index.html` `flight/index.html` |
+| `-1140` | 伊甸古墓背景 40 張交件 → 拔掉 34 個 `bgPending` | `config.js` `index.html` `script/town.js` |
+| `-1141` | `map_layout.py` 的 tomb 版面註解對回被回收的草圖工具（純註解） | `tools/map_layout.py` |
+| `-1142` | **墓門的「關著」狀態**（`bgWhen` 加 `not:`） | `config.js` `index.html` `flight/index.html` `modules/town.js` `script/town.js` |
+| `-1143` | 記下 `tomb_opened` 的擁有事件（純註解） | `config.js` `index.html` `flight/index.html` `script/town.js` |
 
-**熱區**：`config.js`（幾乎每一版）／`modules/{partner,gear,saint}.js`／`style.css`。
-
-⚠ 工作樹裡的未追蹤檔（根目錄兩張 uuid png、`resources/SI/*.png`、`flight/Reference/`、
-兩個 .docx、`resources/vfx/42452231-….png` 的改動）**是 Ray 自己丟進來的美術素材** ——
-不要動、不要提交。
+⚠ `config.js`／`index.html`／`flight/index.html` 幾乎每一版都在清單裡，因為**版號與
+快取戳記**在那三支（見第 3 節）——看 diff 時先跳過那三行再看內容。
 
 ---
 
-## 1. 這一輪的成果（三句話）
+## 1. 這一輪的成果（四句話）
 
-1. **三位女主的九星全部上線**（27 顆），效果、文案、名字都由 Ray 定案，沒有暫填的了。
-2. **整備頁改版**：手機版左槍右人、整頁不捲；星辰收進「技能表」置中視窗（凹槽＋分色）。
-3. 一批 bug：賞金獵人的圖、旅店插畫、瑪麗亞提早出現、飛行打完馬上又來一隻、好感段位邊界。
+1. **玩家的四個新機制**：星要花《戰鬥紀錄》點亮／死亡回安全點且掉一半紀錄／
+   四國禁航區有空氣牆／伊甸古墓（34 格迷宮）可以降落探索。
+2. **評價收斂成一條線**：第 1 章起除打靶外每場必評（旗標與名單全部退場）。
+3. **建置多一個步驟**：改完程式要跑 `python3 tools/bust.py`（見第 3 節）。
+4. 七件回報全修掉，其中「手機上評價完全消失」是**規格疊出來的**不是壞掉（見第 4 節）。
 
 ---
 
-## 2. **被推翻的舊規則**（最重要 —— 舊註解會騙人）
+## 2. **被推翻的舊規則**（舊註解會騙人）
 
-| 版本 | 推翻了什麼 | 現在是 |
+| 舊規則 | 現在 | 版本 |
 |---|---|---|
-| -974 | ver -740「明晰之夢期間任何反擊都算完美反擊，傷害跟評價都是」 | **判定分色**：只壓命中，攻擊力要點星 |
-| -974 | ver -959「惡夢化期間三帶一律紅圈」 | 同上（攻擊力紅圈＋命中 100%，判定照實際帶） |
-| -974 | ver -897「16 格點完不出 MB，直接出夢境粉碎」 | **點完＝MB／處決**，夢粉歸夢粉 |
-| -974 | ver -967「夢魘化一律 15 秒、斜率變緩」 | **固定抽血速率**：滿血 13 秒，血少更短 |
-| -975 | 萊福槍「黃橘圈不反擊」 | **黃橘圈也反擊，攻擊力 −50%**（`dmgScale:0.5`） |
-| -977 | ver -481/-489 在**船戰**那一半的持久 HP | 船戰走結算就回滿（Ray 確認是規格） |
-| -981 | `floor((aff−1)/20)+1`（T2 從 21 起） | **`floor(aff/20)+1`**：0~19=T1、20~39=T2… |
-| -983 | 整備頁 480px 的上下堆＋整頁可捲 | 左右分欄、不捲；拖曳改成**真的長按** 230ms |
-| -983 | 副武器輪轉模式沿用上一場停在哪一把 | 本篇**每場開戰都回一順位** |
-| -984/-985 | 技能名住在 i18n（蕾妮與諾薇兒共用） | **名字讀卡**：諾薇兒＝獄門天鎖／魂之歸所，蕾妮不動 |
-| -986/-988 | 諾薇兒基礎的免傷回血 2%／吸血 10 秒／連擊延續 | 全部移到星上（連擊延續在引路星） |
-| -988 | 諾薇兒 Lv8 與 Lv9 的效果 | **對調**（Lv8＝受擊不推進、Lv9＝每發延長） |
-| -994 | 安雅明晰之夢 10 秒（-974 定的） | **基礎 5 秒**，赤足星 10、鐵蹄星 15 |
-| -994 | ver -888/-892「夢境粉碎回復最高 25% hp」 | **不再回血**（`burstHealPct:0`，欄位留著） |
+| 女主等級到了**自動亮星**（`girlBonus` 加 Lv1~現級） | **只加已點亮的星**；亮星要花《她的戰鬥紀錄》（升一級產一份） | `-1133` |
+| 戰敗（遭遇戰）回**這張地圖的入口**（`noJump`＋明指節點） | **讀最新的檢查點**（位置也跟著快照走）＝上一個踩過的安全點／結算點 | `-1135` |
+| 打靶**有**評價（-1060 撤掉 `noEval`） | 打靶三場一律 `noEval`；評價改由 `evaluation.js` 的 `FROM_STAGE=1` 全域控制 | `-1127`／`-1130` |
+| 索敵／加速／掃描從 **stage 7** 開 | **stage 8**；試飛（沒有章節鑰匙）不受限 | `-1132` |
+| 長按天空生怪只看 `ADMIN` | 還要 `featureOn('sense')`，而且**控制面板（含伸進窗裡的方向計與舵輪）不算天空** | `-1132` |
+| 安全點（`{settle:true}`）**不落**檢查點 | 與「有戰鬥的段落」同等對待，會落 | `-1135` |
 
 ---
 
-## 3. 新增／改了語意的 API 與資料
+## 3. ⚠⚠ 新的建置步驟：`tools/bust.py`（**忘了跑＝玩家拿到舊 JS**）
 
-```
-progress.girlHas(who,key)          -972  「這一位有沒有那顆星」的唯一查詢點
-progress.setAffectionDev(who,v)    -982  管理人改好感（**連棘輪地板一起改**）
-progress.tierOf / tierFloor        -981  邊界改成 floor(aff/20)+1；地板 1/20/40/60/80
-partner.counterAtkStep()           -974  反擊用哪一帶的**攻擊力**（0照判定/1橘/2紅）
-partner.counterHitForced()         -974  命中壓成 100%
-partner.lifeReturnWindow/saintComboKeep/guideActive/burstBuffActive/startBurstBuff
-saint.saintComboStep/niAtkMul/niCounterPause/coopExtendByEnergy
-combat.hintAlways()                -971  「要不要一直指下一格」的唯一查詢點
-girls.levels[].skill               -990  這一顆強化哪一招（install/passive/active，決定顏色）
-partners.anya.active               -994  **純顯示**的夢境破碎（context:'none'，不接主動技系統）
+`index.html` 現在掛一張 **importmap**，把 39 支模組指到「同一支 ＋ `?v=<版號>`」。
+版號的唯一真相是 `config.js` 的 `VERSION`，同步靠：
+
+```bash
+python3 tools/bust.py          # 改完 VERSION 之後跑這一支
+python3 tools/bust.py --check  # 只檢查（script_lint.py 每次也會順手檢查）
 ```
 
----
-
-## 4. 刻意如此、**不要「修好」它**的三件事
-
-1. **索菈娜 Lv4 與 Lv6 的文案一字不差**（Ray：「一次升橘一次升紅，玩家不用知道數據」）。
-2. **索菈娜的三段文案沒提「副武器命中減半」**（Ray：「目前只活在程式裡，劇情或評價時再提就好」）。
-3. **三位的基礎文案都略去了細節**（每場一次／MB／命中 100%…）—— Ray：「頁面放最基本的說明即可」。
+- 入口那兩支（`main.js`／`orientation.js`）是 `<script src>`，吃不到 importmap，
+  由工具直接改 `src`。飛行頁是另一個 document：iframe 的 `src` 由 `main.js` 讀
+  `VERSION` 現組（`FLIGHT_SRC`），它自己那三支 `<script src>` 由工具改。
+- **症狀**：沒跑的話 lint 會多一條提醒；真的漏掉就是「我改好了他手機上還是舊行為」。
 
 ---
 
-## 5. 等 Ray 的
+## 4. 刻意如此、**不要「修好」它**的四件事
 
-1. **三位女主九星的戰鬥實測**（照 -939 的規矩交給他）。
-2. ⚠ **「對話點太快卡插畫」**：-979 補了世代守門，但**我沒能在測試環境重現**
-   （安雅醒來那兩張、九種點擊間隔各跑一輪都是乾淨的）。要他回報**卡住當下的畫面**
-   （插圖蓋著不走／點了沒反應／黑幕不掀）才收得掉。
-3. `saintAdvanceDivisor` 的 A/B：註解寫「受擊 −1 秒」但實際 0.67 秒
-   （`saintPassiveHealSec` 由 15 改 10 之後匯率變了）。**惡夢化共用這個數字**。
-4. Stage 8 兩處稿面（瑪麗亞立繪標記、鹿腿）／鹿腿肉的取得管道。
-5. 聖遺物 10 隻部署；三張新卡（`bug_mantis`／`relic_bellascetic`／`rictus_hooked`）的鑰匙與數值。
-6. 安雅／索菈娜的**基礎技能沒有「常駐」欄**（三位都留空，Ray：「先留空」）。
+1. **第 0 章沒有任何評價**（`evaluation.js` 的 `FROM_STAGE=1`），而第 0/1 章的帝都
+   只有打靶（`noEval`）與賞金獵人兩場 —— 那一段「看不到評價」是規格疊出來的。
+2. **墓門現在一律是關的**（`tomb_opened` 沒有人插），而關著那張圖還沒交，
+   所以畫面上暫時**退回開著那張** —— 候選鏈的退路，不是壞掉。
+3. **禁航掉頭是在對白收掉之後才開始轉**：ver -481 定的「對白播放中整個世界暫停」
+   還在。要「一邊講一邊轉」得把禁航排除在那個暫停之外，**Ray 還沒說要**。
+4. **`TOWNS.tomb` 沒有 `map:`**：小地圖的座標兩邊都量不出來（見第 5 節）。
+
+---
+
+## 5. 等別人的（**不要自己動手**）
+
+| 事 | 卡在誰 | 備註 |
+|---|---|---|
+| 伊甸古墓的小地圖（圖＋`_spots_tomb.json`） | 美術 session（`tivot-a3`） | 他們寫好了合成器 `tools/map_compose.py`（spots 由 `map_layout.py` 的版面**算**出來），卡在 chatgpt.com 的下載確認框。**兩個檔一起收**，不要拿現在 repo 裡那張舊圖配新座標 |
+| 伊甸古墓的 12 隻怪 | 同上 | 同一個下載問題 |
+| `Tomb_Gate_Sealed_{dawn,day,dusk,night}` | 同上 | 需求已發：同構圖同機位同光，只有門扇完全閉合 |
+| `tomb_opened` 誰插 | Ray 的劇本 | 條件已定：**另一座遺跡啟動才會開**。⚠ 現有的遺跡啟動旗有兩支（`ruins_altar_on`／`ruins_gate_open`），**不要發明第三支**，直接在那一段收尾加 `flags:['tomb_opened']` |
+| `girls.recordPerLevel` / `starCost` | Ray | 我填的是草案（1 與 `[1,1,2,2,3,3,4,4,5]`）：九級只產 9 份、全點要 23 份 ⇒ **點不滿，要選**。要「練滿能全點」把 `recordPerLevel` 調到 3 |
+| 門關著要不要**走不進去** | Ray | 現在照樣走得進去（他只要了一張圖） |
 
 ---
 
 ## 6. 這一輪踩到的坑（逐字遵守）
 
-1. ⚠⚠ **改共用的 i18n 等於改到別人**：-984 把「即死防禦／生命歸還」改名，那兩條是
-   **蕾妮與諾薇兒共用**的 → 試玩版被一起改名。名字是**卡的性質**（鐵律 1），-985 收回卡上。
-2. ⚠⚠ **量錯東西會得到相反的結論**：追「卡插畫」時我用 `src` 判斷插圖在不在 ——
-   `setImg(el,'')` **只拔 `.on` class、故意留著 src**（淡出時圖必須還在）。
-   後來又拿 `#storyCg2` 的 `display` 判斷（它是 opacity 控制）。**兩層的判準不一樣**：
-   `#storyCg` 看 `display`、`#storyCg2` 看 `opacity`。
-3. ⚠ **`innerText` 對 flex 會逐項斷行**（flex 子項被 blockify）—— 判斷「是不是同一行」
-   要量 `getBoundingClientRect().top`，不要看 innerText。
-4. ⚠ **`padding-left` 不會移動 box 的 left** —— 量縮排要量文字（`Range`）不是元素。
-5. ⚠⚠⚠ **改語意的那一版，要把所有讀它的地方掃一遍**（憲法教訓 5）——
-   這一輪犯了兩次同一個病：
-   · `weapon.js` 漏 import `weaponBand`（共鬥開火時才炸）
-   · `partner.js` 的戰吼：-976 把兩段式改單段時刪掉 `reload` 變數，
-     但 cut-in 的樣板字串還在用它 → **戰吼一發動就 ReferenceError、盤面消失**
-     （-998 修；與 ver -963「MB 的 reload 標籤交叉寫錯」是同一個病的第二次）。
-   ⚠⚠ **`jsc` 與「逐支 import」都抓不到這種** —— 它藏在回呼／樣板字串裡，
-     只有那一段真的跑起來才求值。**要把那幾支入口真的叫一遍**，配方見第 8 節。
-6. ⚠ python 批次替換**一個 assert 失敗＝整批都沒寫入**（寫檔在最後）—— 別以為前面幾條生效了。
+1. **`?v=` 只保護 CSS 是不夠的** —— 模組的網址一版不變，iOS「加到主畫面」那個
+   webview 會抱著舊 JS 不放，而且**沒有任何錯誤訊息**。（→ 第 3 節）
+2. **「畫面上看不見」不要用猜的** —— 問 `document.elementFromPoint` 誰在上面。
+   -1128 的看門狗當場抓到 `#assetLoader`（讀取頁沒點掉）與 `#startBtn`（首頁還開著）。
+3. **可見性不可以由動畫決定**：`opacity:0` 基底 ＋ `animation ... both/forwards`
+   ＝ 動畫沒套到就永遠透明。基底要是「看得見的樣子」，動畫只負責怎麼出現。
+4. **`_lootHold` 那條規矩只寫了一半**（-961 只擋亂入那一句）：結算頁一開，下一次
+   點擊就彈戰利品、確認完還會自動離場 —— 評價要 1.1 秒才出框。已補成「有人要講話
+   就押著」。
+5. **CSS 權重**：狀態類（`.done`／`.next`）要比模式類（`.saint`／`.overkill`）**多一級**，
+   不然模式一疊上去就把狀態洗掉（-684 與 -1127 是同一種病）。
+6. **飛行頁測試**：`document.hidden` 時 rAF 整個停 —— 在背景分頁量到的「船不動」
+   是假象。要逐幀資料就**在頁內裝 rAF 記錄器**，一次讀回來（外部逐次 `eval` 會
+   把節奏打散）。另外 `takeoffPlaying` 期間 `update()` 不跑，等 `clock.dist>0` 才算起飛完。
+7. **小地圖的墨點不是每格一顆**（有些是連線接點、有些與圖示黏在一起）——
+   「偵測墨點 → 配回節點」這條路在伊甸古墓上不成立。合成才是正解。
 
 ---
 
-## 7. 環境備忘／快速測法（沿用）
+## 7. 環境備忘／快速測法
 
-- dev server 用 `preview_start`（埠會變）。⚠ **第一步永遠是先點一次把開機讀取頁點掉**，
-  等首頁穩定才下程式化指令（憲法 §6 的第 4 條）。
-  ⚠ 程式化 `click()` **點不掉那一層**，要真的 `computer.left_click`。
-- `jsc` 在 `/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc`
-  （`node` 這台機器沒有）。⚠ 它會執行模組，看到 `document` 未定義＝**語法沒問題**。
-- 資源路徑自檢：`grep -o '"resources/[^"]*"' config.js | ... | test -f` ——
-  -975 就是這樣抓到賞金獵人那條漏改的路徑。
-- 戰鬥類不要自己開瀏覽器實測，交給 Ray（-939）；非戰鬥的照舊自己測。
-- `enemies.xlsx` 是 reference，只有 Ray 明講才 import。
+**沿用 `HANDOFF_ver971-995.md` 的第 7、8 節**（jsc 路徑、資源路徑自檢、戰鬥類交給 Ray、
+搭檔模組煙霧測試）。這一輪再補三條：
 
----
-
-## 8. 搭檔模組的煙霧測試（**改過 partner／saint 之後一定要跑**）
-
-`jsc` 與「逐支 import」抓不到回呼裡的 ReferenceError（-963／-998 都是這樣漏掉的）。
-把入口真的叫一遍才驗得出來 —— 瀏覽器 console：
-
-```js
-const [partner, st, prog, saint] = await Promise.all([import('/modules/partner.js'),
-  import('/state.js'), import('/script/progress.js'), import('/modules/saint.js')]);
-const errs=[], hit=[];
-partner.init({ floatDmg:()=>{}, updateBars:()=>{}, healPlayer:()=>{}, lucidFlood:()=>{},
-  resetEnemyTimers:()=>{}, scheduleAssault:()=>{}, hintCurrentCell:()=>{}, resetInstallSlot:()=>{},
-  startDual:()=>{}, setLowHpBuff:()=>{}, saintApi:{lifeReturnAbort:cb=>cb&&cb()},
-  playCutin:(cb,label)=>{ hit.push(String(label).replace(/<[^>]+>/g,'|'));
-                          try{cb();}catch(e){errs.push('cb:'+e.message);} } });
-// 三位 × 滿級，逐個入口叫：onBoardCleared / onThreatResolved / tryActive /
-//   onEnemySet / onEnemyCleared / tryDeathGuard / 各查詢點 / saint 的四支
-```
-
-⚠ 跑完看兩件事：`errs` 要空、`hit` 的 cut-in 標題要印得出名字（那一行正是 -998 炸掉的地方）。
-⚠ 跑完**重整頁面** —— `partner.init` 會把真正的 api 換掉。
+- 改完程式：`python3 tools/bust.py` → `python3 tools/script_lint.py`（0 錯誤才算完）。
+- 飛行頁語法檢查：把 HTML 註解剝掉、抽出非 module 的 `<script>` 存成 `/tmp/fl_check.js`
+  再 `jsc` 跑它；看到 `Can't find variable: Image` ＝ **語法沒問題**。
+- 瀏覽器實測前先 `fetch(路徑,{cache:'reload'})` 再 `location.reload()`；
+  **開機讀取頁一定要用真的 `computer.left_click` 點掉**（程式化 `click()` 點不掉）。
