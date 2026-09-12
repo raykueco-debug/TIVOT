@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1136"></script>
+<script src="../orientation.js?v=1139"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -491,11 +491,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1136"></script>
+<script src="settlement.js?v=1139"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1136"></script>
+<script src="talks.js?v=1139"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -6385,6 +6385,11 @@ function update(dt,now){
        指向中心的話在角落會轉一個大彎，而且沿著邊界平飛時也會被硬掰回去。 */
   const wall=wallSteer(cam.x/MAP_SCALE, cam.y/MAP_SCALE, cam.angle);
   if(wall.latched) r = wall.rudder;      // 打滿舵、直接接管，不與玩家的舵混合
+  /* 禁航區的自動掉頭（ver -1137）：同樣**直接接管**舵量 —— 兩道牆的手感一致。
+     ⚠ 排在 `wallSteer` 之後：真的同時貼到世界邊緣與國界時，讓禁航這一邊贏
+       （它有明確的目標航向，邊緣那一條只是「往裡推」）。 */
+  const nfR = noflySteer(cam.angle);
+  if(nfR) r = nfR;
 
   rudder=r;
   // 舵輪：角速度 ∝ 舵量。放手就停在當下角度 —— 實體舵輪本來就不會自己回正
@@ -6414,7 +6419,9 @@ function update(dt,now){
   /* ⚠ 自動掉頭時舵效直接給滿：空氣牆把速度吃掉了，而「慢速時舵不吃水」會讓
      自動轉舵完全轉不動 —— 貼在牆上動彈不得，那正是最糟的手感。
      「全速轉舵一次到位」也就是這個 1 的意思：用得到的最大角速度轉完。 */
-  const eff=Math.max(spinEff, clamp(mov*2.2,0,1), wall.latched?1:0);
+  /* ⚠ 禁航掉頭給 `NOFLY_TURN_MUL`（>1）：`eff` 本來就是乘在 `TURN_RATE*dt` 上的
+     舵效係數，要「快速轉」在這裡放大就好，不必另寫一條轉向公式（鐵律 7）。 */
+  const eff=Math.max(spinEff, clamp(mov*2.2,0,1), wall.latched?1:0, nfR?NOFLY_TURN_MUL:0);
   if(Math.abs(r)>0.015 && eff>0.001){
     const step=clamp(r,-1,1)*TURN_RATE*dt*eff;
     cam.angle-=step;                                // 角度遞減＝向右偏（見 compass 換算）
@@ -10113,25 +10120,70 @@ const NOFLY_LINES = [
   { who:'renna/talkwork', text:'非教區的國家可不認聖王廳紋章，要入國得乖乖辦手續。' },
   { who:'renna/bow',      text:'如果你非要硬闖，可以先把我們放下船嗎？。' },
 ];
-const NOFLY_SILENT = { who:'renna/upsetstare', text:'......' };
+const NOFLY_SILENT = { who:'renna/upsetstare', text:'......就跟你說是禁航區了。' };
 const NOFLY_FLAG = 'nofly_told';
 const NOFLY_COOL = 1200;            // 同一次撞牆不重複說話（ms）
 let noflyIdx = 0;                   // 這一趟講到第幾句（旗立了就一律最後那一句）
 let noflySafe = null;               // 最後一個**合法**位置（撞到就退回這裡）
 let noflySaidAt = 0;
+/* ══⚠⚠ **掉頭是「自動轉舵」不是「跳 180°」**（ver -1137，Ray：「調轉 180 度要自動
+   轉舵，不是直接跳 180」）══
+   作法與地圖邊緣那道牆**同一套**（`wallSteer`，鐵律 8）：把舵量**注入 r**，
+   讓既有的轉向那一行（`cam.angle -= step`）自己轉過去 —— 於是舵輪會跟著轉、
+   船身會側傾、角速度也照既有的曲線走。直接改 `cam.angle` 的話那三件事全部沒有，
+   畫面上就是「瞬間換了個方向」。
+   ⚠ 目標航向在**撞到的那一刻**記下來（`noflyWant`），之後一路轉到它為止 ——
+     不是每幀重算「現在的反向」（那會轉不完：每轉一點目標就跟著跑）。
+   ⚠ 180° 是最短路的退化情形（da 正好 ±π），固定往右轉，不要讓它每幀左右猶豫。 */
+/* ⚠⚠ **掉頭要快、而且船要照樣往前滑一點**（ver -1138，Ray：「讓它快速轉 180 度
+   的同時稍微前進一點，不然一直觸發國境線對話」）══
+   -1137 是「位置每幀退回上一個合法點」＝ 船**釘在牆上不動**，而轉舵要一兩秒 ——
+   那一兩秒裡它每一幀都還在禁區的判定裡，對白於是一直被觸發（而且船看起來像卡住）。
+   現在改成：撞到就**往回推一小段**（脫離線上）＋ **鎖住判定直到轉完**，
+   轉的那半秒船照它自己的速度往前滑 —— 讀起來是「急轉彎」不是「撞牆定格」。
+   ⚠ 角速度倍率走 `eff`（那一行本來就是 `TURN_RATE*dt*eff`）：不另外寫一條轉向公式。 */
+const NOFLY_TURN_MUL = 3.2;   // 自動掉頭的角速度倍率（180° 約半秒轉完）
+const NOFLY_NUDGE    = 6;     // 撞到時往回推幾個**地圖像素**（只要脫離線上就好）
+let noflyTurn = 0, noflyWant = 0;
+/* 「這一次撞牆已經處理過了」——飛出禁區才重新上膛（見 noflyCheck 的②）。 */
+let noflyArmed = true;
+function noflyBounce(){
+  if(noflyTurn) return;                       // 已經在轉了
+  noflyWant = cam.angle + Math.PI;
+  noflyTurn = 1;
+}
+/* 回傳這一幀要打多少舵（0＝沒在自動轉）。⚠ 與 `wallSteer` 同一個符號約定：
+   角度遞減＝向右偏，所以舵量取 -sign(da)。 */
+function noflySteer(ang){
+  if(!noflyTurn) return 0;
+  let da = noflyWant - ang;
+  while(da>Math.PI) da-=Math.PI*2;
+  while(da<-Math.PI) da+=Math.PI*2;
+  if(Math.abs(da)<0.12){ noflyTurn=0; return 0; }   // 轉到了 → 鬆手
+  return (da>0 ? -1 : 1);
+}
 
 /* 每一幀跑一次：撞到就掉頭。⚠ 掛在 `update()` 真的移動那一行之後（唯一的呼叫點）。 */
 function noflyCheck(now){
   if(!REGION || s9On) return;                       // 劇情飛行段不擋（那一段是照劇本走的）
   const mx=cam.x/MAP_SCALE, my=cam.y/MAP_SCALE;
-  if(!noflyAt(mx,my)){ noflySafe={x:cam.x, y:cam.y}; return; }
-  /* ⚠ 開場那一幀就在禁區裡（理論上到不了：出港點與所有降落點都在教區內）——
-     那時沒有「上一個合法位置」可退，硬轉 180° 只會讓船原地打陀螺。
-     收下當作合法起點，等他自己飛出去。 */
-  if(!noflySafe){ noflySafe={x:cam.x, y:cam.y}; return; }
-  /* 撞牆：退回上一個合法位置 ＋ 轉 180°。 */
-  cam.x=noflySafe.x; cam.y=noflySafe.y;
-  cam.angle += Math.PI;
+  /* 飛出去了 → 重新上膛（下一次撞牆才會再演一次）。 */
+  if(!noflyAt(mx,my)){ noflySafe={x:cam.x, y:cam.y}; noflyArmed=true; return; }
+  /* ══ 在禁區裡 ══ 兩件事分開做（ver -1138）：
+     ① **不准再深入** —— 位置退回上一個合法點。⚠ 這不是「定格」：掉頭是逐幀轉的，
+        船頭一轉出去，下一幀的位移就合法了 —— 讀起來是「貼著牆急轉」而不是卡住。
+     ② **一次撞牆只演一次** —— `noflyArmed` 要等真的飛出去才重新上膛
+        （Ray：「不然一直觸發國境線對話」）。掉頭那一段船會在線上蹭幾幀，
+        沒有這道門就會一幀一句。 */
+  if(noflySafe){ cam.x=noflySafe.x; cam.y=noflySafe.y; }
+  if(!noflyArmed) return;
+  noflyArmed=false;
+  /* 撞牆：**往回推一小段**（脫離線上，不是整個退回去）＋ 開始自動轉舵。 */
+  const bx=-Math.sin(cam.angle), by=-Math.cos(cam.angle);
+  cam.x -= bx*NOFLY_NUDGE*MAP_SCALE;
+  cam.y -= by*NOFLY_NUDGE*MAP_SCALE;
+  noflySafe={x:cam.x, y:cam.y};
+  noflyBounce();
   if(now - noflySaidAt < NOFLY_COOL) return;
   noflySaidAt = now;
   if(sayQueue || senseOn || mapOpen || battleGoing) return;   // 畫面上已經有人在講話就不插隊
