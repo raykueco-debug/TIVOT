@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1182"></script>
+<script src="../orientation.js?v=1183"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -500,11 +500,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1182"></script>
+<script src="settlement.js?v=1183"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1182"></script>
+<script src="talks.js?v=1183"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -544,7 +544,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1182';
+const FLIGHT_VER = 'ver -1183';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -3386,6 +3386,14 @@ const CAST_SAT   = 0.75;
 let sayQueue=null, sayAt=0, sayIdx=0, sayEndAt=0;
 let sayDone=null;   // 這一段對白收完要做的事（ver -741：出航／羽蛇那幾段要串場）
 let hudTalking=false;   // 目前有沒有把「時間地點」收起來（見繪製迴圈裡的同步）
+/* ⚠⚠ **「現在正在演對白嗎」只有這一支在答**（ver -1183，鐵律 7/8）。
+   Ray：「對話時的降落 地名標還是沒有移除……播放器播完再放回來而已啊」——
+   `body.talking` 那條 CSS 只管得到 DOM 的 #top/#place，**地名牌與金箭頭是畫在
+   canvas 上的**（drawPlaces／drawStarMarks），完全不受它管，所以對白期間照樣
+   壓在立繪的臉上。作法就是這一支：每一個「對白期間要讓開」的東西都問它，
+   不要各自寫一份 `!!sayQueue`（漏一處就是這次這種「明明修過了還在」）。
+   ⚠ 真相來源就是 `sayQueue`（drawTalk 用的同一個）—— 它一收場，那幾層自己回來。 */
+function talkingNow(){ return !!sayQueue; }
 let cast=[];               // [{who,side,t0,out}]：out＝退場起始時戳（0＝在場）
 
 const easeOut=k=>1-Math.pow(1-k,3);
@@ -7656,7 +7664,7 @@ function render(now){
   drawTalk(now);
   /* 對白中收掉「時間地點」那兩塊 HUD（ver -384）。⚠ 真相來源就是 `sayQueue` ——
      不要另外記一份「現在在講話嗎」，那會與 drawTalk 的收場時機錯開。 */
-  { const on=!!sayQueue;
+  { const on=talkingNow();
     if(on!==hudTalking){ hudTalking=on; document.body.classList.toggle('talking', on); } }
   ctx.restore();
 
@@ -7720,6 +7728,8 @@ const STAR_MARK_NEW_MS=6000;
 let starNewAt=0;
 function drawStarMarks(scaleH,horizon,sinp,cosp,now){
   if(!STARS.length || !starFound.size) return;
+  if(talkingNow()) return;                 // 同 drawPlaces（ver -1183）：對白期間讓開
+
   const sxk=W/BW, syk=VIEWH/BH;
   const fresh=new Set(starNew.map(p=>p.id));
   const hot=(now-starNewAt)<STAR_MARK_NEW_MS;
@@ -9349,6 +9359,10 @@ let hotspots=[];
 function drawPlaces(scaleH,horizon,sinp,cosp){
   const sxk=W/BW, syk=VIEWH/BH;
   hotspots=[];
+  /* 對白中整層讓開（ver -1183）：名牌與金箭頭就落在立繪的臉與對話框上。
+     ⚠ `hotspots` 要**先清空再 return** —— 只是不畫的話上一幀的熱區還留著，
+       玩家推對白點到那個位置就會被判成「點地標」（而畫面上根本沒有東西）。 */
+  if(talkingNow()) return;
   const list=[];
   PLACES.forEach(P=>{
     if(P.flag && !flagOn(P.flag)) return;   // ver -858：發現旗才畫（夏爾森林）
@@ -13021,7 +13035,7 @@ function updateLandBtn(){
      （交棒整頁），對白演到一半被切走就是把那一段戲吃掉。
      ⚠ 真相來源就是 `sayQueue`（`drawTalk` 用的同一個，鐵律 7）—— 與「對白中收掉
        時間地點那兩塊 HUD」是同一條規矩的另一半（§6.5，ver -385）。 */
-  const busy = battleGoing || mapOpen || s9On || !!sayQueue
+  const busy = battleGoing || mapOpen || s9On || talkingNow()
             || (typeof booting!=='undefined' && booting);
   const S = busy ? null : nearestTown();
   /* 羽蛇登場演出中不給降落（ver -743）：插圖蓋著、對白在跑，點下去會把整段
