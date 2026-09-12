@@ -1,6 +1,6 @@
-# HANDOFF — ver -1127〜-1143（2026-09-12）／七件修正・戰鬥紀錄・伊甸古墓・禁航區
+# HANDOFF — ver -1127〜-1145（2026-09-12）／七件修正・戰鬥紀錄・伊甸古墓・禁航區
 
-> **HEAD ＝ `ver 2026.09.12-1143`**（`config.js` 的 `VERSION`）。
+> **HEAD ＝ `ver 2026.09.12-1145`**（`config.js` 的 `VERSION`）。
 > 前一份是 `HANDOFF_ver971-995.md`（-971〜-995），**它的第 7、8 節（環境備忘／
 > 搭檔煙霧測試）仍然有效**，本檔不重抄，改過 `partner`／`saint` 之後照樣要跑那一支。
 >
@@ -27,6 +27,8 @@
 | `-1141` | `map_layout.py` 的 tomb 版面註解對回被回收的草圖工具（純註解） | `tools/map_layout.py` |
 | `-1142` | **墓門的「關著」狀態**（`bgWhen` 加 `not:`） | `config.js` `index.html` `flight/index.html` `modules/town.js` `script/town.js` |
 | `-1143` | 記下 `tomb_opened` 的擁有事件（純註解） | `config.js` `index.html` `flight/index.html` `script/town.js` |
+| `-1144` | **（美術 session）** 伊甸古墓小地圖改用程式合成 —— 圖與 spots 同一次產出 | `resources/map/{map_tomb.webp,_spots_tomb.json}` `tools/map_compose.py` |
+| `-1145` | **伊甸古墓的小地圖接上**（`TOWNS.tomb.map`，座標照抄那份 json） | `config.js` `index.html` `flight/index.html` `script/town.js` |
 
 ⚠ `config.js`／`index.html`／`flight/index.html` 幾乎每一版都在清單裡，因為**版號與
 快取戳記**在那三支（見第 3 節）——看 diff 時先跳過那三行再看內容。
@@ -81,7 +83,10 @@ python3 tools/bust.py --check  # 只檢查（script_lint.py 每次也會順手�
    所以畫面上暫時**退回開著那張** —— 候選鏈的退路，不是壞掉。
 3. **禁航掉頭是在對白收掉之後才開始轉**：ver -481 定的「對白播放中整個世界暫停」
    還在。要「一邊講一邊轉」得把禁航排除在那個暫停之外，**Ray 還沒說要**。
-4. **`TOWNS.tomb` 沒有 `map:`**：小地圖的座標兩邊都量不出來（見第 5 節）。
+4. **伊甸古墓的小地圖是「算出來的」不是量出來的**（ver -1144/-1145）：`_spots_tomb.json`
+   由 `tools/map_compose.py` 依 `tools/map_layout.py` 的版面與那張圖**同一次產出**。
+   日後那張圖重畫，**兩個檔要一起重跑、一起收** —— 不要拿新圖配舊座標，
+   也不要回頭去偵測墨點（第 6 節第 7 條）。
 
 ---
 
@@ -89,7 +94,6 @@ python3 tools/bust.py --check  # 只檢查（script_lint.py 每次也會順手�
 
 | 事 | 卡在誰 | 備註 |
 |---|---|---|
-| 伊甸古墓的小地圖（圖＋`_spots_tomb.json`） | 美術 session（`tivot-a3`） | 他們寫好了合成器 `tools/map_compose.py`（spots 由 `map_layout.py` 的版面**算**出來），卡在 chatgpt.com 的下載確認框。**兩個檔一起收**，不要拿現在 repo 裡那張舊圖配新座標 |
 | 伊甸古墓的 12 隻怪 | 同上 | 同一個下載問題 |
 | `Tomb_Gate_Sealed_{dawn,day,dusk,night}` | 同上 | 需求已發：同構圖同機位同光，只有門扇完全閉合 |
 | `tomb_opened` 誰插 | Ray 的劇本 | 條件已定：**另一座遺跡啟動才會開**。⚠ 現有的遺跡啟動旗有兩支（`ruins_altar_on`／`ruins_gate_open`），**不要發明第三支**，直接在那一段收尾加 `flags:['tomb_opened']` |
