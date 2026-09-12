@@ -1015,8 +1015,14 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose, opts){
        ⚠ 這是驗收不是規矩：真的印出來就是上游有洞 —— 但至少玩家那一次看得到評價，
          而我拿得到「究竟是哪一種看不見」。 */
     clearTimeout(_evalSeeT);
+    /* ⚠ 這一趟的診斷字串先記起來（ver -1129）：2.5 秒之後若**已經換了一頁**
+       （另一場結算、或這一頁被收掉了），量到的就不是同一件事 —— 不記的話那句
+       「算出來了但畫面上看不到」會掛到**下一場**的診斷後面，反而騙人。 */
+    const _diagAtOpen=_evalLast;
     _evalSeeT=setTimeout(()=>{
       if(!spk) return;
+      if(_evalLast!==_diagAtOpen) return;                 // 已經換頁
+      if(!b.classList.contains('on')) return;             // 結算頁已經收掉了
       const r=bubble.getBoundingClientRect(), shown=bubble.classList.contains('show');
       const vh=window.innerHeight||0;
       const cs=getComputedStyle(bubble);
