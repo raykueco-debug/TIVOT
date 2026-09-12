@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1173"></script>
+<script src="../orientation.js?v=1174"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -500,11 +500,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1173"></script>
+<script src="settlement.js?v=1174"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1173"></script>
+<script src="talks.js?v=1174"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -544,7 +544,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1173';
+const FLIGHT_VER = 'ver -1174';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -5444,8 +5444,8 @@ stage.addEventListener('pointerdown',e=>{
      舵量的顯示會跟著跑，放手那一下還會插釘子。 */
   if(takeoffPlaying) return;
   /* ⚠⚠⚠ 守門是 **`s9On`（整段）**不是 `s9Tutor`（只有聚光燈亮著時）——
-     ver -1172 放寬（Ray：「不可操作」）。中間那一段「劇情推的加速」
-     （`s9Boost`→`s9RideWait`）沒有對白也沒有聚光燈，舊版在那裡是**完全自由**的。
+     ver -1172 放寬（Ray：「不可操作」）。中間那一段「船被推著走」（`s9RideWait`）
+     沒有對白也沒有聚光燈，舊版在那裡是**完全自由**的。
      ⚠ 對白照樣點得動：`sayAdvance` 排在這一行**之前**。 */
   if(s9On){
     const only = (s9Tutor==='sturm' && sturmHit(e.clientX,e.clientY))
@@ -6937,7 +6937,11 @@ function update(dt,now){
   }
   if(sturmT0 && now-sturmT0>=STURM_HOLD_MS){
     sturmUntil     = now + STURM_DUR_MS;
-    sturmAutoUntil = now + STURM_AUTO_MS;
+    /* ⚠⚠⚠ Stage9 那一發（玩家在教學裡按的那一次）要用**劇情的推程**
+       （`S9_PUSH_MS`，比平時多一秒）—— 船到不了遺跡的感應範圍的話，下一段
+       「長按船身」會掃出一片空的（ver -1125 的理由，-1174 從 `s9Boost` 搬到這裡）。
+       ⚠ 只有這一個判斷點（鐵律 7）：`s9RideWait` 的「至少等這麼久」讀同一個常數。 */
+    sturmAutoUntil = now + (s9Tutor==='sturm' ? S9_PUSH_MS : STURM_AUTO_MS);
     sturmReady     = now + STURM_CD_MS;    // 充能由**發動**起算，不是由結束起算
     sturmFlash     = now;
     playSfx(sturmSE);                      // 不 loop（Audio 預設就是）
@@ -10632,10 +10636,11 @@ function departureTalkMaybe(){
 /* ══════════════════════════════════════════════════════════════════════
    Stage 9：離村之後的飛行段（ver -1104，Ray 交稿，台詞一字未改）
    ──────────────────────────────────────────────────────────────────────
-   四段，中間夾兩個教學：
-     ① 破船那一段對白 → **能力發動＝船加速**（借既有的 Sturm 演出，見 s9Boost）
-     ② 加速中的反應   → 教學一：長按方向計 → **加速系統解鎖**
-     ③ 安雅感應到東西 → 教學二：長按船身   → **探索・索敵系統解鎖**
+   四段，中間夾兩個教學（⚠ 順序 ver -1174 重排，見 `s9FlightMaybe` 的說明）：
+     ① 破船那一段對白（諾薇兒唸完咒文）
+        → **教學一：長按方向計** —— 玩家那一下**就是**能力第一次發動（船加速）
+     ② 加速中的反應（S9_B）→ **直接接** ③（Ray：「後面那一拍就不用提示了」）
+     ③ 安雅感應到東西 → **教學二：長按船身** → 探索・索敵系統解鎖
      ④ 「你決定吧」   → 三遺跡全開（旗），這一段收尾
    ⚠⚠ 觸發條件只有兩支旗：`sv_s9_leave` 立了（離村演完＝索菈娜入隊）、
      `sv_s9_flight` 還沒立（這一段沒演過）。**演完才記**（同城鎮通則）——
@@ -10708,10 +10713,11 @@ function s9Talk(lines, done){ say(lines, performance.now(), { sides:S9_SIDES, do
    能力是教學那一拍**當場做給玩家看**的，再浮一行字只是重複講一次。
    旗照舊在 `s9GateHit` 插（那是狀態，不是訊息）。 */
 
-/* 「能力發動」＝船加速：**借既有的 Sturm 演出**（同一組變數、同一個音效與閃光，
-   鐵律 8）—— 不另外做一套「劇情用的加速」。
-   ⚠ `sturmReady=0`：這一發是劇情給的，不吃冷卻 —— 下一拍就要教玩家自己按一次，
-     卡在充能上的話那個教學按不動。 */
+/* ⚠⚠ **`s9Boost()` 已移除**（ver -1174）：那是「劇情自己放一發」的作法，而現在
+   那一發**就是玩家在教學裡按的那一次**（見 `s9FlightMaybe` 的順序說明）。
+   它原本做的兩件事各自有了去處：**推程**搬進 `update()` 的發動點（`S9_PUSH_MS`）、
+   **冷卻歸零**不再需要（後面沒有第二次加速教學了，而且冷卻正好對上諾薇兒
+   「得休息一下才行」那句話）。 */
 /* ⚠⚠ **這一發推多久**（ver -1125，Ray：「劇情的風推船再往前推一秒，
    不然掃不到遺跡」）：玩家自己按的 Sturm 是 `STURM_AUTO_MS`(1 秒) 的推背感，
    而劇情這一發還要**把船送到遺跡的感應範圍內** —— 那一段戲的下一拍就是
@@ -10719,14 +10725,6 @@ function s9Talk(lines, done){ say(lines, performance.now(), { sides:S9_SIDES, do
    ⚠ 這個數字**只有劇情那一發在用**，玩家的 Sturm 一個字都沒動（那是手感，
      不是劇情的節奏）。⚠ `s9RideWait` 的「至少等這麼久」讀同一個常數（鐵律 7）。 */
 const S9_PUSH_MS = STURM_AUTO_MS + 1000;
-function s9Boost(){
-  const now=performance.now();
-  sturmUntil     = now + STURM_DUR_MS;
-  sturmAutoUntil = now + S9_PUSH_MS;
-  sturmFlash     = now;
-  sturmReady     = 0;
-  try{ playSfx(sturmSE); }catch(_){}
-}
 
 /* ══ 那一發加速：期間不給操控，**等船真的停下來**才往下演（ver -1105，Ray）══
    ⚠ 判「停了沒」用 `Math.abs(cam.speed)<=0.06` —— 與「船不動就不生怪」同一個
@@ -10773,6 +10771,9 @@ function s9Gate(k, rectFn, html, opts, done){
        給感應教學用 —— Ray：「玩家要依指示長按船身，完成探索才會跑『在那裡！』」，
        因為下一段戲的前提就是探索真的跑過一次。同 §6.5.7「教學的閘門不吃空白」。
      ⚠ 旗標兩條路都是 `s9GateHit` 插（誰插的答得出來，鐵律 9）。 */
+  /* ⚠ `hint` **目前沒有人用**（ver -1174 把加速教學改回閘門之後空出來）——
+     留著是因為「提示」與「閘門」是兩種真的會用到的東西，而它只是一個旗標。
+     日後要加一段「只是講給你聽、點掉就走」的教學，寫 `hint:true` 就好。 */
   const O=Object.assign({}, opts||{});
   if(O.hint){ O.block=true; O.onSkip=()=>s9GateHit(k); }
   s9GateSp=makeSpotlight(rectFn, html, O);
@@ -10794,23 +10795,32 @@ function s9FlightMaybe(){
   /* ⚠ `tutor-lock` 的擁有者是 **`s9On`**（ver -1172 由 `s9Gate` 移過來）：
      HUD 上那幾顆鈕整段都不給按，不只聚光燈亮著的那兩拍。誰插的誰拔（鐵律 9）。 */
   s9On=true; try{ document.body.classList.add('tutor-lock'); }catch(_){}
+  /* ══⚠⚠⚠ **順序：諾薇兒第一次發動能力的那一刻就教長按**（ver -1174，Ray：
+     「那你一開始的順序就是錯的，讓諾薇兒第一次發動能力時就提示玩家長按，
+       後面那一拍就不用提示了」）══
+     -1104〜-1173 是「劇情自己放一發（`s9Boost`）→ 演完反應 → 才教玩家按一次」——
+     於是那個教學是**多出來的一次**：玩家剛看完船被推走，又被要求再放一發。
+     ⚠ 那也正是 -1173 那一串問題的根：再放一發會撞冷卻、會打亂節奏，所以才要
+       全畫面遮罩去擋。**順序對了，那些就都不需要了** —— 教學現在是**閘門**
+       （遮罩不擋手勢），玩家那一下長按**就是**諾薇兒施術的那一發。
+     ⚠⚠ 那一發要用**劇情的推程**（`S9_PUSH_MS`，比玩家平時的多一秒）——
+       不然船到不了遺跡的感應範圍，下一段「長按船身」會掃出一片空的（ver -1125）。
+       實作在 `update()` 的發動點（見那裡的 `s9Tutor==='sturm'` 那一行）。
+     ⚠ 冷卻照算：S9_B 第一句就是諾薇兒「我也沒辦法一直施術」「得休息一下才行」
+       —— 冷卻正好就是那句話的機制面，不必像 -1104 那樣把它歸零。 */
   s9Talk(S9_A, ()=>{
-    s9Boost();                                   // 能力發動 → 船加速
-    s9RideWait(()=>s9Talk(S9_B, ()=>{
-      s9Gate('sturm',
-        ()=>{ const CR=compassRect(); return { left:CR.x, top:CR.y, width:CR.w, height:CR.h }; },
-        '<b style="color:#d4a94a">教學提示</b><br>長按畫面下方的<b style="color:#d4a94a">方向計</b>，'
-        +'發動〈破凪之吐息〉。'
-        /* ⚠ 這一行是**必要的**，不是裝飾：遮罩擋著，照提示長按不會有任何反應 ——
-           不寫的話玩家只會一直按（ver -1173）。 */
-        +'<br><span style="opacity:.66;font-size:12px">（點一下畫面繼續）</span>',
-        { shape:'rect', tipTop:'32%', hint:true },
-        ()=>{
-          /* ⚠⚠⚠ **緊接著安雅，中間不給任何操作空間**（ver -1170，Ray 指定）。
-             原本空 1200ms 再開口 —— 那 1.2 秒 `sayQueue` 是空的，玩家可以操舵、
-             點船閒聊，等於把教學與下一段戲之間剖出一個自由操作的縫。
-             ⚠ 同步呼叫（不要 `setTimeout(...,0)`）：`sayQueue` 在**同一個 tick**
-               就設起來，連一禎的空檔都沒有。 */
+    s9Gate('sturm',
+      ()=>{ const CR=compassRect(); return { left:CR.x, top:CR.y, width:CR.w, height:CR.h }; },
+      '<b style="color:#d4a94a">教學提示</b><br>長按畫面下方的<b style="color:#d4a94a">方向計</b>，'
+      +'發動〈破凪之吐息〉。',
+      { shape:'rect', tipTop:'32%' },
+      ()=>{
+        /* 這一拍玩家已經真的放出那一發了（`update()` 的發動點順手叫了 `s9GateHit`）。 */
+        s9RideWait(()=>s9Talk(S9_B, ()=>{
+          /* ⚠⚠⚠ **緊接著安雅，中間不給任何操作空間**（ver -1170，Ray 指定）：
+             同步呼叫（不要 `setTimeout`）—— `sayQueue` 在**同一個 tick** 就設起來，
+             連一禎的空檔都沒有。
+             ⚠ 這裡**不再有第二次加速教學**（ver -1174，Ray：「後面那一拍就不用提示了」）。 */
           s9Talk(S9_C, ()=>{
             s9Gate('sense',
               ()=>shipHit ? { left:shipHit.x-shipHit.r, top:shipHit.y-shipHit.r,
@@ -10834,8 +10844,8 @@ function s9FlightMaybe(){
                 }), 1500);
               });
           });
-        });
-    }));
+        }));
+      });
   });
   return true;
 }
