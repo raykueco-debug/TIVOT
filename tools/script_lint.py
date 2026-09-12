@@ -526,6 +526,16 @@ def main():
                 if not str(ln.get('text') or '').strip():
                     err('%s.lines[%d]：空台詞' % (tag, j))
 
+    # ══ 快取版本號有沒有同步（ver -1131）══ index.html 的 `?v=` 由 tools/bust.py
+    #    從 config.js 的 VERSION 產生 —— 忘了跑就等於「玩家拿到舊 JS 而且驗不出來」。
+    try:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import bust
+        if bust.run(check=True) != 0:
+            warns.append('快取版本號沒同步 —— 跑 `python3 tools/bust.py`（見那支工具的說明）')
+    except Exception as e:
+        warns.append('快取版本號檢查跑不起來：%s' % e)
+
     for m in errs:  print('❌ ' + m)
     for m in warns: print('⚠  ' + m)
     print('\n%d 個錯誤、%d 個提醒。' % (len(errs), len(warns)))

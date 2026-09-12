@@ -16,7 +16,7 @@
 <link rel="apple-touch-icon" href="resources/background/TIVOT_Emblem.png">
 <title>TIVOT</title>
 <!-- 全域鎖直向（真鎖 + 橫向擋板）；classic script，需在版面就緒前掛上 -->
-<script src="orientation.js"></script>
+<script src="orientation.js?v=1131"></script>
 <!-- ══ 效能探針・計數層（ver -850，Ray：「沒有辦法寫一個偵測程式進去看是什麼
      東西在吃資源嗎？」）══ 要在**所有程式之前**掛（晚掛就數不到早開的計時器），
      所以住在這裡。只做登記（Set/計數，開銷趨近零）；讀取與呈現在 main.js 的
@@ -53,11 +53,64 @@
      沒有 buster 時手機會沿用舊快取的 CSS —— Ray 回報「ovk 沒把點掉的方格撤掉」
      實測現行 CSS（-839 的 :not(.done)）行為正確，殘留裂紋是舊 CSS 快取。
      改 style.css 就順手 bump 這個號。 -->
-<link rel="stylesheet" href="style.css?v=1128">
+<!-- ══ 快取破除（ver -1131）══ 模組的網址一版不變，瀏覽器（尤其 iOS「加到主畫面」
+     那個 webview）就會抱著舊的那一份不放 —— 症狀是「改好了他手機上還是舊行為」，
+     而且沒有任何錯誤訊息。這張 importmap 把每一支模組指到「同一支 ＋ ?v=版號」。
+     ⚠⚠ **不要手改**：跑 `python3 tools/bust.py`（它從 config.js 的 VERSION 產生）。
+     ⚠ 必須排在 `<script type="module">` **之前**，而且整份文件只能有一張。
+     ⚠ 舊瀏覽器不支援 importmap ＝ 整張被忽略、退回原本的行為（能跑，只是會快取）。 -->
+<!-- BUST:START （由 tools/bust.py 產生，不要手改） -->
+<script type="importmap">
+{
+  "imports": {
+    "./audio.js": "./audio.js?v=1131",
+    "./config.js": "./config.js?v=1131",
+    "./i18n.js": "./i18n.js?v=1131",
+    "./main.js": "./main.js?v=1131",
+    "./orientation.js": "./orientation.js?v=1131",
+    "./state.js": "./state.js?v=1131",
+    "./telemetry.js": "./telemetry.js?v=1131",
+    "./modules/combat.js": "./modules/combat.js?v=1131",
+    "./modules/defense.js": "./modules/defense.js?v=1131",
+    "./modules/enemy.js": "./modules/enemy.js?v=1131",
+    "./modules/gear.js": "./modules/gear.js?v=1131",
+    "./modules/haptics.js": "./modules/haptics.js?v=1131",
+    "./modules/inn.js": "./modules/inn.js?v=1131",
+    "./modules/inspector.js": "./modules/inspector.js?v=1131",
+    "./modules/loot.js": "./modules/loot.js?v=1131",
+    "./modules/partner.js": "./modules/partner.js?v=1131",
+    "./modules/saint.js": "./modules/saint.js?v=1131",
+    "./modules/sakura.js": "./modules/sakura.js?v=1131",
+    "./modules/save.js": "./modules/save.js?v=1131",
+    "./modules/settings.js": "./modules/settings.js?v=1131",
+    "./modules/story.js": "./modules/story.js?v=1131",
+    "./modules/tone.js": "./modules/tone.js?v=1131",
+    "./modules/town.js": "./modules/town.js?v=1131",
+    "./modules/transition.js": "./modules/transition.js?v=1131",
+    "./modules/tutorial.js": "./modules/tutorial.js?v=1131",
+    "./modules/weapon.js": "./modules/weapon.js?v=1131",
+    "./script/clock.js": "./script/clock.js?v=1131",
+    "./script/enemies.js": "./script/enemies.js?v=1131",
+    "./script/evaluation.js": "./script/evaluation.js?v=1131",
+    "./script/inventory.js": "./script/inventory.js?v=1131",
+    "./script/loadout.js": "./script/loadout.js?v=1131",
+    "./script/mainScript.js": "./script/mainScript.js?v=1131",
+    "./script/progress.js": "./script/progress.js?v=1131",
+    "./script/shopstock.js": "./script/shopstock.js?v=1131",
+    "./script/speakers.js": "./script/speakers.js?v=1131",
+    "./script/town.js": "./script/town.js?v=1131",
+    "./i18n/en.js": "./i18n/en.js?v=1131",
+    "./i18n/ja.js": "./i18n/ja.js?v=1131",
+    "./i18n/zh.js": "./i18n/zh.js?v=1131"
+  }
+}
+</script>
+<!-- BUST:END -->
+<link rel="stylesheet" href="style.css?v=1131">
   <!-- 拾得道具／道具欄／商店／懸賞榜（ver -380 抽出，飛行頁共用同一份）。
        ⚠ `data-lootsheet` 是給 `modules/loot.js` 認的：它看到已經掛過就不再掛一次。
          飛行頁沒有這一行，由那支模組自己掛上去。 -->
-  <link rel="stylesheet" href="css/lootsheet.css" data-lootsheet="1">
+  <link rel="stylesheet" href="css/lootsheet.css?v=1131" data-lootsheet="1">
 <!-- 主畫面 App（standalone）偵測：首繪前在 <html> 蓋 .standalone，
      供 CSS 修 iOS 26 版面視窗少算頂部安全區高度（底部露黑帶）的問題 -->
 <script>
@@ -602,6 +655,6 @@
      ⚠ src 是**按下去才給**的（lazy）：不然每次開機都要多載一整個飛行頁。 -->
 <iframe id="flightFrame" title="飛行"></iframe>
 
-<script type="module" src="main.js"></script>
+<script type="module" src="main.js?v=1131"></script>
 </body>
 </html>

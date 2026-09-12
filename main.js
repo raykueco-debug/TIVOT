@@ -293,6 +293,13 @@ function flightWin(){ const f=$('flightFrame'); return f ? f.contentWindow : nul
        船還在原座標（ver -388，Ray：「戰鬥結束不要另跑預載頁」）。
    ⚠ 兩條路的差別只有一件事：進入時把 iframe **重載**，回程只是把它顯示回來。
    ⚠ 重載要走 `contentWindow.location.reload()` —— 把 `src` 設成同一個字串**不會**重載。 */
+
+/* ══⚠⚠ 飛行頁的網址（ver -1131）══ 它是**另一個 document**，不吃 index.html 那張
+   importmap，所以版本號要自己掛在 `src` 上 —— 不掛的話「加到主畫面」那個 webview
+   會一直拿舊的飛行頁（改了沒反應，而且沒有任何錯誤訊息）。
+   ⚠ 版號直接讀 `VERSION`（唯一真相，鐵律 7）—— 不要在這裡再寫一個數字。
+   ⚠ 飛行頁**自己那三支 `<script src>`** 的版本號由 `tools/bust.py` 寫進去。 */
+const FLIGHT_SRC = 'flight/index.html?v=' + encodeURIComponent(VERSION.replace(/^ver\s+/,''));
 /* 出航／試飛 → 飛行頁的**黑色淡入**（ver -439，Ray：「進預載頁、結束預載頁都要
    黑色淡入淡出」）。⚠ 走 `story.veil()`（唯一那一片黑幕，鐵律 8）：城鎮就演在
    劇情舞台上，蓋它的那一片本來就在。黑幕蓋滿之後才把 iframe 換上來 ——
@@ -331,12 +338,12 @@ function openFlight(opts){
       try{ const j=JSON.parse(localStorage.getItem('tivot_flight_ret_v1')||'null');
            if(j){ j.won = opts.won?1:0; localStorage.setItem('tivot_flight_ret_v1', JSON.stringify(j)); } }catch(_){}
     }
-    f.setAttribute('src','flight/index.html');
+    f.setAttribute('src', FLIGHT_SRC);
   }
   /* ⚠ **勝負要帶過去**（ver -432）：飛行頁那一邊有「第一場艦戰打完」的一段對白，
      輸了聽到「小命保住了」是錯的。活著的舊路保留（萬一哪條路沒殺到）。 */
   else if(opts && opts.resume){ if(w && w.__flightResume) w.__flightResume({ won: !!opts.won }); }
-  else { try{ w.location.reload(); }catch(_){ f.setAttribute('src','flight/index.html'); } }
+  else { try{ w.location.reload(); }catch(_){ f.setAttribute('src', FLIGHT_SRC); } }
   f.classList.add('on');
   document.body.classList.add('flight-on');
   /* ⚠⚠⚠ **黑幕在這裡收掉**（ver -906）：-905 之前是「刻意留著不收」——理由是
@@ -1446,7 +1453,7 @@ combat.setStoryReturn((res)=>{
                     { noBgm:true, keepPages:true });
       return;
     }
-    location.href='flight/index.html'; return;
+    location.href=FLIGHT_SRC; return;
   }
   /* ══⚠⚠ 回檔（ver -697，Ray 定的戰鬥分級）══════════════════════════════════
      Ray：「遭遇戰，非劇情戰都用 1（原則）; 劇情戰都用 2（每次手動設回檔點）」
