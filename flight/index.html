@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1149"></script>
+<script src="../orientation.js?v=1150"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -491,11 +491,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1149"></script>
+<script src="settlement.js?v=1150"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1149"></script>
+<script src="talks.js?v=1150"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -7739,6 +7739,7 @@ function drawCitySmoke(S,scaleH,horizon,sinp,cosp,now){
    ⚠ 畫家演算法：底板 → 由遠而近的方塊。方塊的牆累積成**一條路徑一次 fill**
      （同量體層）：顏色一樣，重疊不影響外觀，省下幾十次 fill。 */
 let ruinFB=null, RFC=null;
+let RZMIN=null;                 // 遺跡的逐欄最近深度（見 drawRuins 的 colMin）
 function drawRuins(scaleH,horizon,sinp,cosp){
   if(!MAPW) return;
   const sxk=W/BW, syk=VIEWH/BH, dyk=scaleH*syk;
@@ -7789,12 +7790,40 @@ function drawRuins(scaleH,horizon,sinp,cosp){
     /* 這一座要畫的東西，先全部算出來（順便量螢幕外框）。 */
     const items=[];
     let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9,zmin=1e9;
+    /* ══⚠⚠ 逐欄的最近深度（ver -1150）══
+       遮擋不能拿**一個**深度去裁整座遺跡：古墓的前庭進深 200 個世界單位，
+       近緣比中心近一百多 —— 用中心深度去裁，近緣就被判成「被前面的地形擋住」
+       而整欄切掉（Ray 回報的「遠距離破圖透視」；同 `clipByCityDepth` 註解裡
+       「飛近帝都時下半座城整片消失」那個病）。
+       ⚠ 沿著每個形狀的**周邊**走一圈、逐欄內插深度取最小 —— 凸形的周邊
+         在每一欄的最小值就是它的近緣，正是要的東西。
+       ⚠ 陣列重用，每座遺跡開頭清一次（BW≈420 次寫入，跟它省下的相比可以忽略）。 */
+    if(!RZMIN || RZMIN.length<BW) RZMIN=new Float64Array(BW);
+    RZMIN.fill(Infinity,0,BW);
+    let rc0=BW-1, rc1=0;
+    const colMin=pts=>{
+      for(let k=0;k<pts.length;k++){
+        const p=pts[k], q=pts[(k+1)%pts.length];
+        let i0=clamp(Math.floor(Math.min(p.x,q.x)/sxk),0,BW-1);
+        let i1=clamp(Math.ceil (Math.max(p.x,q.x)/sxk),0,BW-1);
+        const dxs=q.x-p.x;
+        for(let i=i0;i<=i1;i++){
+          const xc=(i+0.5)*sxk;
+          const t=Math.abs(dxs)<1e-6?0:clamp((xc-p.x)/dxs,0,1);
+          const z=p.z+(q.z-p.z)*t;
+          if(z<RZMIN[i]) RZMIN[i]=z;
+          if(i<rc0) rc0=i;
+          if(i>rc1) rc1=i;
+        }
+      }
+    };
     const take=B=>{ if(!B) return;
       for(const q of B.base.concat(B.top)){
         if(q.x<x0)x0=q.x; if(q.x>x1)x1=q.x;
         if(q.y<y0)y0=q.y; if(q.y>y1)y1=q.y;
       }
       if(B.z<zmin) zmin=B.z;
+      colMin(B.base);
     };
     /* 圓形地基：逐點投影的多邊形（邊緣帶一點不規則＝風化）。 */
     const shape=ruinShape(A);
@@ -7998,8 +8027,10 @@ function drawRuins(scaleH,horizon,sinp,cosp){
     }
     /* ④ 貼回主畫面：逐欄遮擋（山擋得住它）＋遠距淡出。 */
     ctx.save();
-    clipByTerrainDepth(zmin, sxk, syk,
-      clamp(Math.floor(x0/sxk)-2,0,BW-1), clamp(Math.ceil(x1/sxk)+2,0,BW-1));
+    /* ⚠ 逐欄裁（見上面 colMin）—— 不是拿 `zmin` 一個深度裁整座。
+       ⚠ 只裁遺跡真的畫得到的那幾欄（同 `clipByTerrainDepth` 的 c0/c1：
+         裁切路徑越複雜，之後每一次繪製都要跟著付）。 */
+    clipByColDepth(RZMIN, sxk, syk, rc0, rc1);
     ctx.globalAlpha=fade;
     ctx.drawImage(ruinFB,0,0,bwp,bhp,fx0,fy0,fbw,fbh);
     ctx.globalAlpha=1;
@@ -11038,11 +11069,19 @@ function clipByTerrainDepth(Z,sxk,syk,c0,c1){
    整片消失）；拿整座的最近點去裁又太寬鬆，前面明明有山也擋不住。
    逐欄取「這一欄裡城最近的那一點」（CZMIN，由網格投影順手算出）才兩邊都對：
    比它更近的地形，在這一欄就是真的擋在城前面。 */
-function clipByCityDepth(sxk,syk,c0,c1){
+function clipByCityDepth(sxk,syk,c0,c1){ clipByColDepth(CZMIN,sxk,syk,c0,c1); }
+/* ⚠⚠ 上面那段道理**不是城獨有的**（ver -1150）：任何「貼在地面上、有一定進深」
+   的東西都一樣 —— 伊甸古墓的前庭 110×170，進深跨了 200 個世界單位，拿一個深度
+   去裁就會把自己的近半邊當成被擋住而切掉（Ray 回報的「遠距離破圖透視」）。
+   所以這裡收成一支吃「逐欄深度表」的通用版，城與遺跡各給自己那張表（鐵律 8）。
+   ⚠ 石製遺跡佔地只有 120、零件又都很小，單一深度的誤差本來就看不出來 ——
+     它走同一支之後行為幾乎不變，但**不再靠「東西夠小」這個巧合**。 */
+function clipByColDepth(ZMIN,sxk,syk,c0,c1){
+  const a=clamp(c0|0,0,BW-1), b=clamp(c1|0,0,BW-1);
   ctx.beginPath();
-  for(let i=c0;i<=c1;i++){
-    const z=CZMIN[i];
-    // 城沒佔到的欄位不裁：緩衝在那裡本來就是透明的
+  for(let i=a;i<=b;i++){
+    const z=ZMIN[i];
+    // 沒佔到的欄位不裁：緩衝在那裡本來就是透明的
     const lim=(z===Infinity)?BH:ZTOP[zSliceOf(z)*BW+i];
     if(lim<=0) continue;
     ctx.rect(i*sxk,0,sxk+0.6,lim*syk);
