@@ -1827,6 +1827,8 @@ function exitsOf(){
   return ex;
 }
 const SAIL_ID='__sail';
+/* 出航被擋、而那一格又沒寫自己的台詞時的預設旁白（見 setSail）。 */
+const SAIL_NO_SHIP='沒有船，離不開這裡。';
 /* ══ 節點的顯示名（含城名前綴）══════════════════════════════════════════
    ⚠⚠ **只有這一支在決定**（鐵律 7）：上緣那一行、目的地字格、店舖鈕、閉門羹的
      名字欄全部問它 —— 四個地方各自讀 `n.name` 的話，哪天有一個要變就只有一個會變。
@@ -2246,7 +2248,16 @@ function setSail(){
     });
     return;
   }
-  if(!sail.blocked || !sail.blocked.length) return;
+  /* ══⚠⚠⚠ **擋下來就一定要說一句**（ver -1154，Ray：「進了遺蹟無法出航」）══
+     以前這裡是 `if(!sail.blocked) return;` —— 旗沒立、又沒寫台詞的節點，
+     按下去**什麼都不會發生，也沒有任何訊息**。玩家（與我）只會讀成「壞了」。
+     實測：試飛落在伊甸古墓（`got_ship` 沒立），出航箭頭在、按下去毫無反應。
+     ⚠ 這與 §6.5.5「還不能做不要靠藏起鈕擋」是同一條的另一半：
+       鈕要在，**而且按下去要有回應** —— 沉默比藏起來更糟，它看起來像壞掉。
+     ⚠ 名字欄空著＝旁白（同旅店「現在不是睡覺的時候。」）。 */
+  if(!sail.blocked || !sail.blocked.length){
+    story.flashLine(SAIL_NO_SHIP, ''); chatterOn=true; return;
+  }
   busy=true; showNav(false);
   if(chatterOn){ story.hideBubble(); chatterOn=false; }
   /* 第一句等立繪站定（同 enter 的作法：立繪滑入 450ms，框太早上就變成「先講話人才到」）。 */

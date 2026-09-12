@@ -3717,7 +3717,13 @@ export const TOWNS = {
            這是它的判讀）。日後真要從夏爾森林走過去，換成跨圖出口即可，拓樸不動。 */
       entry:    { bg:'Fallen_Entry',    name:'石製遺跡　崩塌門廊',
         exits:{ up:'causeway' },
-        sail:{ flag:'got_ship' } },
+        /* ⚠⚠ **不掛 `flag`**（ver -1154）：這裡是**只飛得到的地方**（上面那一段：
+           大地圖上是獨立的一點，沒有鄰接的地面圖）—— 人能站在這裡，就表示他是
+           飛來的。再要求 `got_ship` 在正常流程裡是多餘的，在其他路徑（試飛、
+           跳關、讀舊檔）上就是**走得進來、出不去**。
+           ⚠ 有陸路可以走到的地方（帝都／北方泊地／夏爾村）照舊要旗：那裡
+             「還沒有船」是真的成立。 */
+        sail:{} },
       causeway: { bg:'Fallen_Causeway', name:'石製遺跡　斷柱道',
         exits:{ up:'fork', back:'entry' } },            // 直廊：兩側是倒下的圓柱排
       /* 唯一的岔口（三向）：三塊斜倚石板撐出的三角空地，三個方向都是真的走得進去的路。 */
@@ -3904,7 +3910,9 @@ export const TOWNS = {
              `Tomb_Gate_Sealed_dawn/_day/_dusk/_night`（全小寫，同既有交件慣例）。 */
         bgWhen:[ { not:'tomb_opened', bg:'Tomb_Gate_Sealed' } ],
         exits:{ up:'vestibule' },
-        sail:{ flag:'got_ship' } },
+        /* ⚠⚠ **不掛 `flag`**：同石製遺跡 —— 只飛得到的地方，到得了就走得了
+           （ver -1154，Ray 回報「進了遺蹟無法出航」）。 */
+        sail:{} },
       vestibule:  { bg:'Tomb_Vestibule', name:'伊甸古墓　前庭', noTime:true,
         exits:{ up:'nave', right:'lapidarium', back:'gate' } },
       /* 死胡同 A 的第一格 —— 圖上**不可以畫得像盡頭**（見交接檔 §六）。 */
