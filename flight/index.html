@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1172"></script>
+<script src="../orientation.js?v=1173"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -500,11 +500,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1172"></script>
+<script src="settlement.js?v=1173"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1172"></script>
+<script src="talks.js?v=1173"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -544,7 +544,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1172';
+const FLIGHT_VER = 'ver -1173';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -5466,9 +5466,11 @@ stage.addEventListener('pointerdown',e=>{
   /* 長按方向計＝Sturm 充能。⚠ 充能未滿就不起算 —— 讓「按了沒反應」直接
      對應到「還沒充好」，不會讓人以為是判定失靈。 */
   sturmT0=0;
-  if(featureOn('sturm') && sturmHit(e.clientX,e.clientY) && performance.now()>=sturmReady){
-    sturmT0=performance.now();
-    senseUnlock(sturmSE);          // ⚠ 必須在手勢裡解鎖，見 sturmSE 的說明
+  if(featureOn('sturm') && sturmHit(e.clientX,e.clientY)){
+    if(performance.now()>=sturmReady){
+      sturmT0=performance.now();
+      senseUnlock(sturmSE);        // ⚠ 必須在手勢裡解鎖，見 sturmSE 的說明
+    }else sturmNag();              // 還沒充好 → 諾薇兒開口（ver -1173）
   }
   /* ══ 船身的兩個力度（ver -1086，Ray：「對話改成輕點船，搜索是長按」）══
      同一個物件、兩個力度：**點一下＝閒聊、按著不放＝感應**。
@@ -6133,6 +6135,25 @@ function updateMapMe(){ if(mapOpen) drawMap(); }
    搜索是長按，對話鈕拿掉」）。
    ⚠ 與探索演出／既有對白**互斥** —— 兩者都會佔用同一組立繪與對話框，
      疊在一起會變成兩段對白搶同一個舞台。地圖開著時也不接（看不到）。 */
+/* ══⚠⚠ 充能未滿時長按方向計 → 諾薇兒開口（ver -1173，Ray：「加速有 CD 時間，
+   cd 未完成長按的話會跳出諾：『抱歉，讓我休息一下。』relief」）══
+   ⚠ 舊版是**刻意**的「按了沒反應」（-1104 的註解：「讓『按了沒反應』直接對應到
+     『還沒充好』」）—— 但沒反應分不出「還沒充好」與「判定壞了」。Ray 改成給一句話。
+   ⚠⚠ **一次冷卻只講一次**（鑰匙＝那一次的 `sturmReady`）：每按一次就唸一遍會變成
+     懲罰而不是玩笑（同 `senseNagged` 的理由）。冷卻一結束 `sturmReady` 歸 0，
+     下一次充能是新的鑰匙，自然又能講一次。
+   ⚠ 互斥條件與 `talkTap` 完全一樣：兩者共用同一組立繪與對話框，疊上去會變成
+     兩段對白搶同一個舞台。
+   ⚠ `s9On` 期間不唸 —— 那一段的 pointerdown 早就被守門擋掉了，這裡再擋一次是保險
+     （而且教學提示現在是全畫面遮罩，根本碰不到方向計）。 */
+const STURM_NAG=[{ who:'nouvelle/relief', text:'抱歉，讓我休息一下。' }];
+let sturmNagFor=0;
+function sturmNag(){
+  if(s9On || sayQueue || senseOn || senseFireAt || senseT0 || mapOpen) return;
+  if(!sturmReady || sturmNagFor===sturmReady) return;
+  sturmNagFor=sturmReady;
+  say(STURM_NAG, performance.now());
+}
 const SHIP_TAP_TALK = false;
 function talkTap(){
   if(sayQueue || senseOn || senseFireAt || senseT0 || mapOpen) return;
@@ -9807,7 +9828,13 @@ function runSerpentIntro(S){
 function makeSpotlight(rectFn, html, opts){
   opts=opts||{};
   const dim=document.createElement('div');
-  dim.style.cssText='position:fixed;inset:0;z-index:58;background:rgba(0,0,0,.45);pointer-events:none;';
+  /* ⚠⚠⚠ `block`＝**全畫面遮罩，把底下的手勢整個擋掉**（ver -1173，Ray：
+     「教學提示的方向計長按還是會發動加速…讓教學提示生成一個全畫面遮罩，點掉才繼續」
+     「簡單地說教學提示中不要讓玩家再發動一次加速」）。
+     預設仍是 `pointer-events:none` —— **閘門**要的就是讓那個手勢打得到 canvas
+     （感應教學：一定要真的長按船身）。兩種教學兩種遮罩，見 `s9Gate` 的 `hint`。 */
+  dim.style.cssText='position:fixed;inset:0;z-index:58;background:rgba(0,0,0,'
+    +(opts.block?'.62':'.45')+');pointer-events:'+(opts.block?'auto':'none')+';';
   const ring=document.createElement('div');
   const base='position:fixed;z-index:59;pointer-events:none;border:2px solid #d4a94a;'
     +'box-shadow:0 0 18px rgba(212,169,74,.9),inset 0 0 14px rgba(212,169,74,.55);';
@@ -9849,7 +9876,9 @@ function makeSpotlight(rectFn, html, opts){
     const quick = (performance.now()-tapT < TAP_MS)
                && Math.hypot((e.clientX||0)-tapX, (e.clientY||0)-tapY) < TAP_SLOP;
     tapT=0;
-    if(quick && opts.onSkip) opts.onSkip();
+    /* ⚠ `block` 的遮罩底下**沒有動作可做**，所以長按也算「我知道了」——
+       只認輕點的話，玩家照著提示長按會發現什麼都沒發生（ver -1173）。 */
+    if((quick||opts.block) && opts.onSkip) opts.onSkip();
   };
   addEventListener('pointerdown', onDown, true);
   addEventListener('pointerup',   onUp,   true);
@@ -10735,7 +10764,18 @@ function s9Gate(k, rectFn, html, opts, done){
        `if(opts.onSkip)`，不傳就是不放行。
      ⚠ 卡不住：要教的動作在教學中一定做得到（`featureOn` 看 `s9Tutor` 放行），
        而且閘門完成的路徑是既有的（加速＝長按方向計、感應＝掃描演完）。 */
-  s9GateSp=makeSpotlight(rectFn, html, opts||{});
+  /* ══⚠⚠⚠ **兩種教學，兩套規矩**（ver -1173 定案）══
+     · `hint:true`　**提示**：全畫面遮罩擋住底下的手勢，**點掉才繼續**。
+       給加速教學用 —— Ray：「教學提示中不要讓玩家再發動一次加速」。
+       那一發加速是**劇情推的**，玩家在提示期間再放一發既會撞冷卻（然後什麼都
+       沒發生），也會把這一段的節奏打亂。
+     · 不寫　　　　**閘門**：遮罩不擋手勢、**點畫面不放行**，一定要做出那個動作。
+       給感應教學用 —— Ray：「玩家要依指示長按船身，完成探索才會跑『在那裡！』」，
+       因為下一段戲的前提就是探索真的跑過一次。同 §6.5.7「教學的閘門不吃空白」。
+     ⚠ 旗標兩條路都是 `s9GateHit` 插（誰插的答得出來，鐵律 9）。 */
+  const O=Object.assign({}, opts||{});
+  if(O.hint){ O.block=true; O.onSkip=()=>s9GateHit(k); }
+  s9GateSp=makeSpotlight(rectFn, html, O);
 }
 /* 完成（做到了／點提示放行）：解鎖那支旗**在這裡插**（誰插的答得出來，鐵律 9）。 */
 function s9GateHit(k){
@@ -10760,8 +10800,11 @@ function s9FlightMaybe(){
       s9Gate('sturm',
         ()=>{ const CR=compassRect(); return { left:CR.x, top:CR.y, width:CR.w, height:CR.h }; },
         '<b style="color:#d4a94a">教學提示</b><br>長按畫面下方的<b style="color:#d4a94a">方向計</b>，'
-        +'發動〈破凪之吐息〉。',
-        { shape:'rect', tipTop:'32%' },
+        +'發動〈破凪之吐息〉。'
+        /* ⚠ 這一行是**必要的**，不是裝飾：遮罩擋著，照提示長按不會有任何反應 ——
+           不寫的話玩家只會一直按（ver -1173）。 */
+        +'<br><span style="opacity:.66;font-size:12px">（點一下畫面繼續）</span>',
+        { shape:'rect', tipTop:'32%', hint:true },
         ()=>{
           /* ⚠⚠⚠ **緊接著安雅，中間不給任何操作空間**（ver -1170，Ray 指定）。
              原本空 1200ms 再開口 —— 那 1.2 秒 `sayQueue` 是空的，玩家可以操舵、
