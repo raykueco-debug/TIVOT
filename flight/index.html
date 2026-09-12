@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1131"></script>
+<script src="../orientation.js?v=1132"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -491,11 +491,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1131"></script>
+<script src="settlement.js?v=1132"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1131"></script>
+<script src="talks.js?v=1132"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -2333,7 +2333,10 @@ function senseUnlock(a){
    ⚠⚠ **暫填 3（＝`STAGE_DEFAULT`）**：預設進度下行為與 ver -432 完全一樣，
      只有真的在第 1、2 章才擋得到。真正解鎖的章節 Ray 定了就改這兩個數字
      （同 `flight/talks.js` 的 `PARTY`，那裡也是暫填 3）。 */
-const FEATURE_FROM = { sturm: 7, sense: 7, scan: 1 };   // ver -742：隨試飛預設推到 S7（章節劇情還沒給時的假定值）
+/* ⚠⚠ **第 8 章才開**（ver -1132，Ray：「Stage8 以後才會開啟索敵探索跟加速」
+   「stage8 之前根本不應該開啟索敵生怪」）—— -742 的 7 與 `scan:1` 都推翻。
+   ⚠ 三個系統同一個數字：Ray 那句話把它們並列（索敵／探索／加速）。 */
+const FEATURE_FROM = { sturm: 8, sense: 8, scan: 8 };
 /* ══⚠⚠⚠ **解鎖的真相是旗，章節只是「還沒走到那一段」的假定值**（ver -1104，
    Ray 的 Stage9 飛行段稿：「加速系統解鎖。」「探索系統解鎖。索敵系統解鎖。」）══
    · `feat_*` 旗 —— 誰插的：那一段教學**做出那個動作**的時候（`s9GateHit`）；
@@ -2352,6 +2355,10 @@ function featureOn(k){
   if(s9Tutor===k) return true;
   if(flagOn(FEATURE_FLAG[k])) return true;
   if(flagOn(S9_NEED)) return false;
+  /* ⚠ **試飛不受章節限制**（ver -1132）：那一頁根本沒跑主線（章節鑰匙不存在，
+     `gameStage()` 回的是 `STAGE_DEFAULT` 這個假定值）—— 它是開發／試玩的入口，
+     東西全開才有得測。真的在跑主線的存檔一律照章節。 */
+  if(!hasStageKey()) return true;
   return gameStage() >= (FEATURE_FROM[k] || 1);
 }
 
@@ -2385,6 +2392,14 @@ const sturmCI = new Image(); sturmCI.src='../resources/CI/Nouvelle_Sturm.webp';
    ⚠ 這一支同時是**感應的排除區**（見 pointerdown 的 `onShip`）：放大它＝方向計
      這一帶一律歸加速，兩個長按不會再同時起算（鐵律 8：一個區域一個主人）。 */
 const STURM_PAD_X = 18, STURM_PAD_Y = 16;
+/* ══⚠⚠⚠ **飛行窗裡「可以長按」的下界**（ver -1132，Ray：「控制面板不算飛行畫面
+   長按範圍」）══ 控制面板不是只有 `VIEWH` 以下那一塊 —— **方向計**（畫在
+   `VIEWH-61 ~ VIEWH-31`）與**舵輪**（往上突出 `HELM_OUT`）都伸進飛行窗裡，
+   它們是面板的一部分。-1127 只擋了 `clientY < VIEWH`，所以按在方向計那一帶
+   仍然算「在天上」——長按就生怪（Ray 在 stage2 踩到的就是這個）。
+   ⚠ 取兩者較高的那一條再讓 8px：面板那一組零件不管誰比較高都在線下面。
+   ⚠ 只有這一支在算（鐵律 7）：船身長按（索敵）與長按生怪都問它。 */
+function skyBottom(){ return Math.min(VIEWH - HELM_OUT, compassRect().y) - 8; }
 function sturmHit(px,py){
   const C=compassRect();
   return px>=C.x-STURM_PAD_X && px<=C.x+C.w+STURM_PAD_X
@@ -2605,6 +2620,14 @@ let talkLastId=null;
      不然內容缺口只會表現成「按鈕好像沒反應」，很難回頭找。 */
 const STAGE_KEY='tivot_stage_v1';
 const STAGE_DEFAULT=7;   // ver -742（Ray：「試飛改 stage7」）：S5＝北泊出航已定案（與 script/progress.js 同值，改一邊要改另一邊）
+/* 「主線的章節鑰匙到底存不存在」——＝有沒有在跑主線（試飛沒有）。
+   ⚠ 與 `gameStage()` 分開：那一支回的是**可以拿來比大小的數字**（沒有鑰匙就給
+     假定值），這一支回的是**有沒有那把鑰匙**（鐵律 9：不准讓「鑰匙不存在」
+     混進遊戲邏輯 —— 要用就要問得明白）。 */
+function hasStageKey(){
+  try{ const v=parseInt(localStorage.getItem(STAGE_KEY),10); return isFinite(v) && v>0; }
+  catch(e){ return false; }
+}
 function gameStage(){
   try{
     const v=parseInt(localStorage.getItem(STAGE_KEY),10);
@@ -4903,15 +4926,16 @@ stage.addEventListener('pointerdown',e=>{
      船的命中圈是 `shipHit`（每幀由 drawShip 更新，圓心 `VIEWH*0.76`、半徑 `R*0.8`）
      —— 它**本來就會溢出兩個不該碰的地方**：
        · 下緣越過 `VIEWH` → 長按**控制盤面**（操舵那一整塊）也算按在船上
+         （-1132 起下界改成 `skyBottom()`：方向計與舵輪也是面板，見那一支）
        · 方向計畫在 `VIEWH-61 ~ VIEWH-31`，正好落在圈內 → 長按**加速**同時起算感應
      所以這裡加兩道硬條件（兩道都是「這一點屬不屬於船」的一部分，收在同一個算式）：
-       ① `clientY < VIEWH`：控制盤面不是飛行窗
+       ① `clientY < skyBottom()`：控制盤面不是飛行窗（含伸進窗裡的方向計與舵輪）
        ② `!sturmHit()`：方向計那一帶歸加速（它剛剛才判過，範圍已放大）
      ⚠ 圈本身**稍微放大**（`SHIP_HIT_PAD`，同 Ray 那句「實際點擊範圍稍微增大」）：
        範圍收窄之後要按得到才行 —— 排除區是硬的，圈是鬆的，兩者不衝突。
      ⚠ 仍然只算一次（`onShip`）：放手那一支要用同一個答案（鐵律 7）。 */
   const SHIP_HIT_PAD = 1.18;
-  onShip=!!(shipHit && e.clientY < VIEWH && !sturmHit(e.clientX,e.clientY)
+  onShip=!!(shipHit && e.clientY < skyBottom() && !sturmHit(e.clientX,e.clientY)
             && Math.hypot(e.clientX-shipHit.x, e.clientY-shipHit.y) <= shipHit.r*SHIP_HIT_PAD);
   senseT0=0;
   if(featureOn('sense') && onShip){
@@ -4928,7 +4952,7 @@ stage.addEventListener('pointerdown',e=>{
      船的命中圈還蓋著盤面上緣，所以盤面落在感應那一邊、沒人發現；-1127 把感應
      收進飛行窗之後，盤面就會掉到這裡來 —— 而**按住盤面不動是玩家的煞車動作**，
      在那裡生一隻怪出來是實打實的誤觸。所以這一條也一起收進飛行窗（同 `onShip` 的①）。 */
-  if(canSpawnHold() && e.clientY < VIEWH && !onShip && !sturmT0)
+  if(canSpawnHold() && e.clientY < skyBottom() && !onShip && !sturmT0)
     spawnHoldT=setTimeout(()=>{ spawnHoldT=0; spawnByHold(); }, SPAWN_HOLD_MS);
 });
 stage.addEventListener('pointermove',e=>{
@@ -9883,7 +9907,10 @@ document.getElementById('boostBtn').addEventListener('click',e=>{
      再生一隻只會在門推上去的背後多一個東西。
    ⚠ 判定寫成一支（`canSpawnHold`）：按下去要**先問過**才排計時（沒排就沒有
      那 1.2 秒的空等），計時到了**再問一次**（按著的這 1.2 秒裡可能剛好刷出一隻）。 */
-function canSpawnHold(){ return ADMIN && !enemy && !battleGoing && !s9On; }
+/* ⚠⚠ **生怪吃與索敵同一道門**（ver -1132，Ray：「stage8 之前根本不應該開啟
+   索敵生怪」）：它是「長按天空」——與索敵（長按船身）是同一族手勢的開發雙胞胎，
+   能力還沒給的章節裡整個手勢都不該有反應。 */
+function canSpawnHold(){ return ADMIN && featureOn('sense') && !enemy && !battleGoing && !s9On; }
 function spawnByHold(){
   if(!canSpawnHold()) return;
   spawnEnemy();
