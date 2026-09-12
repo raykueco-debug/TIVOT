@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1180"></script>
+<script src="../orientation.js?v=1181"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -500,11 +500,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1180"></script>
+<script src="settlement.js?v=1181"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1180"></script>
+<script src="talks.js?v=1181"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -544,7 +544,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1180';
+const FLIGHT_VER = 'ver -1181';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -3506,6 +3506,25 @@ PORTRAIT_EXPR.sorana = {
   surprised:  { src:'../resources/SI/Sorana_SI_surprised.webp',  fx:0.537, top:9, bot:1522 },
   cringe:     { src:'../resources/SI/Sorana_SI_cringe.webp?v=2', fx:0.454, top:6, bot:1526 },   // ver -1105 換新圖＋重量（?v=2 同名覆蓋）
 };
+/* ══ Stage 9 收尾（ver -1181，Ray 的稿）══ 那一段用到、而飛行頁還沒登記的三張。
+   取景值一律抄 `script/speakers.js` 的 `ART[角色].expr`（同一張圖、同一次量測）
+   —— **改一邊要改兩邊**（§5／§6.10）。三張都已經在那邊量好了，**沒有一個數字是
+   我新量的**（§5：差分之間不可以互抄 fx）。
+   ⚠⚠⚠ **一定要排在上面那個字面覆寫之後** —— `PORTRAIT_EXPR.sorana = {…}` 是
+     **整個蓋掉**不是合併。我第一版寫在它前面，結果是
+     `Object.assign(undefined, …)` 當場爆掉，而且就算不爆也會被下一行蓋回去。
+     ⚠ `jsc` **檢不出來**（它在更早的 `Image` 就停了）—— 同 -1162 那個 TDZ：
+       這一類只有瀏覽器測得出來。新增差分請照這個順序寫在**最下面**。 */
+Object.assign(PORTRAIT_EXPR.renna, {
+  meltdowncry:{ src:'../resources/SI/Renna_SI_meltdowncry.webp',fx:0.607, top:4,  bot:1532 },
+});
+Object.assign(PORTRAIT_EXPR.sorana, {
+  sorry:      { src:'../resources/SI/Sorana_SI_sorry.webp',     fx:0.511, top:12, bot:1528 },
+});
+Object.assign(PORTRAIT_EXPR.anya, {
+  talk:       { src:'../resources/SI/Anya_SI_talk.webp?v=2',    fx:0.522, top:10, bot:1524 },
+  smileshy:   { src:'../resources/SI/Anya_SI_smileshy.webp',    fx:0.454, top:6,  bot:1532 },
+});
 /* `renna/relief` → 本尊 id。⚠ **入隊判定（`inParty`）一定要走這一支**：
    直接拿 `renna/relief` 去問 PARTY 查不到，而 `inParty` 對查不到的人一律放行
    —— 那等於整組對話悄悄繞過「這個人在不在船上」的硬條件。 */
@@ -6224,14 +6243,30 @@ document.getElementById('mapClose').addEventListener('click',e=>{ e.stopPropagat
    點地圖：有對話框→推進到下一句／最後一句→收掉對話框；無對話框→退出大地圖
    （走 closeMapView，X 鈕同一條路）。 */
 let mapDlgActive=false, mapDlgLines=null;
+/* ══⚠⚠ 一句可以自己帶一個標記（ver -1181，Ray：「根據對話移動大地圖設標」）══
+   `mark:[x,y,標籤]` ／ `markName:'地點名'`。
+   ⚠⚠ **優先用 `markName`**：座標由 `PLACES`／`SETTLEMENTS` **現查**（鐵律 7）——
+     抄一份座標進台詞表，地點一搬就走鐘，而我這兩天才因為同一件事把貝利薩爾
+     搬錯過一次（-1168/-1175）。`DEPART_TALKS` 那兩列的字面座標是舊寫法，
+     新的一律寫名字。 */
+function markOf(name){
+  for(const P of PLACES) if((P.name||P.n)===name) return [P.x,P.y,name];
+  for(const S of SETTLEMENTS) if((S.n||S.name)===name) return [S.x,S.y,name];
+  return null;
+}
+function mapDlgShow(l){
+  mapSayShow(l.name, l.text);
+  const m = l.markName ? markOf(l.markName) : l.mark;
+  if(m){ setMapMark(m[0], m[1], m[2]||''); mapPanTo(m[0], m[1], 700); }
+}
 function mapDlgStart(lines){
   mapDlgActive=true; mapDlgLines=lines.slice(1);
-  mapSayShow(lines[0].name, lines[0].text);
+  mapDlgShow(lines[0]);
 }
 function mapDlgTap(){
   if(!mapDlgActive) return;
   if(mapSayEl && mapDlgLines && mapDlgLines.length){       // 推進到下一句
-    const l=mapDlgLines.shift(); mapSayShow(l.name, l.text); return;
+    const l=mapDlgLines.shift(); mapDlgShow(l); return;
   }
   if(mapSayEl){ mapSayHide(); return; }                    // 最後一句 → 收掉對話框（此後＝無對話）
   mapDlgActive=false; mapDlgLines=null; closeMapView();     // 無對話框 → 退出大地圖
@@ -10729,12 +10764,59 @@ const S9_C=[
   { who:'renna/ask',        text:'能知道在什麼方向嗎？' },
   { who:'anya/silent',      text:'我試試。' },
 ];
+/* ⚠⚠⚠ **任務期限的日期是暫填的**（ver -1181）：Ray 的稿上寫的是「X月Y日」
+   ——那是留給他填的欄位，不是台詞。開局是大陸曆 1908-06-13，Stage 9 在那之後幾天，
+   先填 **7月1日**（約兩週）。**要改只改這一處。**
+   ⚠⚠ 這個日期目前**沒有任何機制在讀**：沒有倒數、沒有逾期判定、沒有旗。
+     真的要做期限是另一件事 —— 那要答得出「誰插旗、誰判逾期」（鐵律 9）。
+     現在它只是台詞裡的一個日期。 */
+const S9_DEADLINE={ mo:7, d:1 };
+const s9Deadline=()=>S9_DEADLINE.mo+'月'+S9_DEADLINE.d+'日';
 const S9_D=[
   { who:'anya/point',       text:'在那裡！' },
   { who:'renna/watch',      text:'那裡？我印象中那邊應該沒有什麼遺跡……' },
   { who:'renna/watch',      text:'時間還很充裕，想先去看看的話也不是不行。' },
   { who:'player',           text:'' },
   { who:'renna',            text:'……我沒有意見，你決定吧。' },
+  { who:'renna',            text:'但是記得'+s9Deadline()+'前要完成任務喔！' },
+];
+/* ④-b **大地圖**（ver -1181，Ray：「這句話結束以後，跳大地圖，根據對話移動大地圖
+   設標」）：三個去處，一句一個標記。
+   ⚠ 走既有的那一套（`openMapView`＋`mapDlgStart`，鐵律 8）—— 出航方向說明
+     （`DEPART_TALKS`）用的是同一支，這裡只是多了「逐句移標」那一個欄位。
+   ⚠ 地點用**名字**不寫座標（見 `markOf`）。
+   ⚠ 「安雅找到的遺跡」＝ 感應教學那一拍掃到的那一座 ＝ **石製遺跡**
+     （另外兩座 Ray 自己在台詞裡點名了：東海的貝利薩爾、北境的伊甸古墓）。 */
+const S9_MAP=[
+  { name:'蕾娜', text:'是要先去看看安雅找到的遺跡呢，', markName:'石製遺跡' },
+  { name:'蕾娜', text:'是要去東海的貝利薩爾遺址呢？',   markName:'貝利薩爾遺址' },
+  { name:'蕾娜', text:'還是……要先去北境伊甸古墓？',     markName:'伊甸古墓' },
+];
+/* ④-c **回飛行畫面**（ver -1181，Ray 的稿，台詞一字未改）。
+   ⚠ 「安：「不哭。」」那一句稿上**沒有標差分** —— 依 §6.5「立繪是持續狀態」，
+     沿用她上一個表情 `smileshy`（寫 `who:'anya'` 會切回本尊＝換了表情）。
+   ⚠ 「埃爾王國的廢城」是**第四座遺跡**，目前只存在於台詞裡（沒有地點資料、
+     也不在大地圖那三個標記裡）—— 那正是這一段在說的事：得先辦入境許可才去得了。 */
+const S9_E=[
+  { who:'sorana/think',      text:'不是還有一個西面的什麼來著？' },
+  { who:'anya/talk',         text:'埃爾王國的廢城。' },
+  { who:'sorana/cringe',     text:'！！' },
+  { who:'sorana/smirk',      text:'小公主很厲害嘛。' },
+  { who:'anya/upset',        text:'' },
+  { who:'player',            text:'' },
+  { who:'anya/smileshy',     text:'' },
+  { who:'nouvelle/awkward',  text:'總覺得你越來越會哄安雅了。' },
+  { who:'renna/talkwork',    text:'埃爾王國不是聖王廳教圈，沒辦法直接飛過去。' },
+  { who:'renna/talkwork',    text:'得先去聖索菲亞辦入境許可。' },
+  { who:'sorana/think',      text:'偷偷從海上繞過去的話？' },
+  { who:'renna/ask',         text:'那可是能與帝國在海外爭殖民地的國家喔。' },
+  { who:'nouvelle/awkward',  text:'這艘破船應該馬上就會被擊沉了吧……' },
+  { who:'renna/dying',       text:'連諾薇兒都說他是破船……' },
+  { who:'renna/meltdowncry', text:'為了讓旅途舒適點我費好大勁才申請到的！' },
+  { who:'nouvelle/surprise', text:'是、是這樣嗎？' },
+  { who:'sorana/sorry',      text:'總覺得有點不好意思了……' },
+  { who:'anya/smileshy',     text:'不哭。' },
+  { who:'renna/upsetstare',  text:'哼。' },
 ];
 function s9Talk(lines, done){ say(lines, performance.now(), { sides:S9_SIDES, done }); }
 
@@ -10864,12 +10946,24 @@ function s9FlightMaybe(){
                    這一支只補它的同伴。 */
                 addFlag(FEATURE_FLAG.scan);
                 setTimeout(()=>s9Talk(S9_D, ()=>{
-                  /* 三遺跡全開（Ray：「自由探索，三遺跡全開」）。⚠ 三座遺跡的地點
-                     資料還沒有 —— 這支旗先立好，地點進來時讀它當開關（同 PLACES
-                     的 `flag` 那一套）。 */
+                  /* 三遺跡全開（Ray：「自由探索，三遺跡全開」）——**在開地圖之前**插，
+                     不然大地圖上那三個標記指到的地點還沒解鎖。 */
                   addFlag('s9_ruins_open');
-                  addFlag(S9_FLAG);              // 演完才記
-                  s9On=false; try{ document.body.classList.remove('tutor-lock'); }catch(_){}
+                  /* ④-b 跳大地圖（Ray 指定）→ 三句、逐句移標 → 關掉才接下去。 */
+                  openMapView();
+                  mapDlgStart(S9_MAP);
+                  mapClosedCb=()=>{
+                    /* ⚠ 把標記**清掉**：這一段是「三個去處你挑一個」，不是指定目的地。
+                       留著最後那一個（伊甸古墓）等於替玩家決定了 —— 而那根釘子是
+                       他自己的工具（`MAP_MARK` 會存進 localStorage）。
+                       ⚠ 這與出航方向說明不同：那一段只有**一個**目的地，留著才對。 */
+                    clearMapMark();
+                    /* ④-c 回飛行畫面把剩下的演完 */
+                    s9Talk(S9_E, ()=>{
+                      addFlag(S9_FLAG);              // 演完才記
+                      s9On=false; try{ document.body.classList.remove('tutor-lock'); }catch(_){}
+                    });
+                  };
                 }), 1500);
               });
           });
