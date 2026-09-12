@@ -236,6 +236,8 @@ JOBS = [{
     'unsquash': 1.00,
     'sat': 0.72, 'val': 0.56,
     'towers': 0.55,
+    'dropGreen': True,   # ver -1179（Ray：「把東泊的綠色拿掉，純礙事」）——見上方那一段
+
     'dst': 'eastport_plan.webp',
     'hdst': 'eastport_h.webp',
     'mdst': 'eastport_mass.webp', 'jdst': 'eastport_mass.json',
@@ -647,6 +649,43 @@ for J in JOBS:
 
     arr = np.asarray(im).astype(np.float32)
     rgb, al = arr[:, :, :3], arr[:, :, 3:]
+
+    # ══⚠⚠⚠ `dropGreen`：把**城緣的綠地**從 footprint 挖掉（ver -1179，Ray：
+    #   「把東泊的綠色拿掉，純礙事」）══════════════════════════════════
+    # 為什麼在這裡做而不是請美術重畫：那是一次生圖額度，而這件事**程式端算得出來**
+    # —— 挖掉之後那一塊就交還給地形，周圍本來就是森林，接得比畫的還自然。
+    #
+    # ⚠⚠⚠ **只挖「與城外相連」的那一片**，不是所有綠色。
+    #   城裡本來就有小綠院子與行道樹，一起挖掉就會在輪廓之內開出破洞 ——
+    #   而那正是憲法 §6.8 的硬條件（「輪廓之內必須完全不透明」），
+    #   破洞在畫面上與**渲染的破圖長得一模一樣**，會害人查錯方向。
+    #   作法：把「透明 ∪ 綠」當成可通行，從**四邊**做連通分量；
+    #   碰得到邊界的那些分量裡的綠才挖。被房子圍起來的院子通不到外面，自然留著。
+    #   （同這個管線鍵掉 Gemini 棋盤格時用的那一招。）
+    # ⚠ 判綠用**原圖**（sat/val 之前）：色調對齊會把綠地推向地形色，判過再對齊
+    #   才不會互相干擾。挖完那一片也就不會再進「綠地」的取樣，對齊只管院子。
+    # ⚠ 門檻寫成參數：`dropGreen` 給 True 用預設，給數字＝要綠多少才算
+    #   （G 比 R、B 各高多少）。太鬆會咬到偏綠的鋪面。
+    if J.get('dropGreen'):
+        _gt = 10 if J['dropGreen'] is True else int(J['dropGreen'])
+        _R0, _G0, _B0 = rgb[:, :, 0], rgb[:, :, 1], rgb[:, :, 2]
+        _green = (_G0 > _R0 + _gt) & (_G0 > _B0 + _gt)
+        _clear = al[:, :, 0] <= 40
+        _pass = (_green | _clear).astype(np.uint8)
+        if cv2 is not None:
+            _n, _lab = cv2.connectedComponentsWithAlgorithm(
+                _pass, 4, cv2.CV_32S, cv2.CCL_DEFAULT) if hasattr(cv2, 'CCL_DEFAULT') \
+                else cv2.connectedComponents(_pass, 4)
+            _edge = set(np.unique(np.concatenate([
+                _lab[0, :], _lab[-1, :], _lab[:, 0], _lab[:, -1]]))) - {0}
+            _outside = np.isin(_lab, list(_edge)) if _edge else np.zeros_like(_pass, bool)
+        else:
+            # 沒有 cv2 的退路：整片綠都挖（會連院子一起挖掉，所以只是退路）
+            _outside = _pass.astype(bool)
+        _kill = _green & _outside & (~_clear)
+        al[_kill] = 0
+        print('  挖掉城緣綠地：%.1f%% 的像素（門檻 G−R,G−B > %d）'
+              % (_kill.mean() * 100, _gt))
 
     # 底圖投影量測（只印數字，不改像素 —— 修圖是美術端的工作）
     if J.get('shadowCheck'):

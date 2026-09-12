@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1178"></script>
+<script src="../orientation.js?v=1179"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -500,11 +500,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1178"></script>
+<script src="settlement.js?v=1179"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1178"></script>
+<script src="talks.js?v=1179"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -544,7 +544,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1178';
+const FLIGHT_VER = 'ver -1179';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -875,10 +875,10 @@ const SETTLEMENTS = [
      為鍵，而且 `loadMass` 是拿 `_plan.webp` 換成 `_mass` 推出來的 —— 版本混進鑰匙
      裡那一串就全斷了。所以只在**真的發請求**的那一刻（`src=`／`fetch`）掛上去。
    ⚠ 換素材時把這個數字改掉（全城共用一個，城的素材本來就是一起重跑的）。 */
-/* ver -1178：東方泊地換第二版插畫（`Eastport_topdown.png` 同名覆蓋），
+/* ver -1179：東方泊地挖掉城緣綠地（-1178 是換第二版插畫）——兩次都是（`Eastport_topdown.png` 同名覆蓋），
    `city/eastport_*` 那一族跟著重算 —— 不動這個數字的話瀏覽器照樣拿舊的那一份，
    而症狀只是「城看起來沒變」，查不出原因。 */
-const CITY_V='?v=1178';
+const CITY_V='?v=1179';
 /* ══⚠⚠ 量體的貼材（ver -1117，Ray 交件 `geo/flight_villagewall`／`flight_rooftile`）══
    牆本來是一塊平色（`wallCol`），所以房子讀起來是「立起來的色塊」而不是建築。
    ⚠⚠ **逐城開關**（`wallTex`／`roofTex`）不是全域：貼材的牆要**逐面** pattern fill，
