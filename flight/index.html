@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1175"></script>
+<script src="../orientation.js?v=1176"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -500,11 +500,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1175"></script>
+<script src="settlement.js?v=1176"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1175"></script>
+<script src="talks.js?v=1176"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -544,7 +544,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1175';
+const FLIGHT_VER = 'ver -1176';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -2049,7 +2049,15 @@ const PLACES=[
      ⚠ -1168 Ray 說「降落座標改為 1951,651」，我把整組都搬了 —— 於是**城堡也跟著
        跑掉**（Ray：「當初我只是要改降落點的座標，沒有要改模型位置啊」）。
        ver -1175 搬回 (1972,656)，另外開一格 `land` 只給降落判定用。
-     `land:{x,y}`＝**要飛到哪裡才亮降落鈕**（不寫＝就用 `x/y`，其餘地點都沒寫）。 */
+     `land:{x,y}`＝**要飛到哪裡才亮降落鈕**（不寫＝就用 `x/y`，其餘地點都沒寫）。
+     ⚠⚠⚠ **為什麼要挪開：不然降落時船會撞進模型**（ver -1175，Ray：「故意的，
+       不然船下降會撞進模型」）。`playLanding` 是**原地垂直下降**（700→100），而這座
+       城堡的中央尖塔頂在 **302** —— 降落點就落在量體裡的話，過場那一段船會從塔身
+       穿過去。挪到 (1951,651)＝城堡外緣再往外一點，垂直下降的那一條線就是空的。
+     ⚠⚠ **所以「降落鈕在城堡正上方不亮」是對的，不是 bug**：降落半徑 384 個世界單位，
+       而降落點到城堡 432 —— 差的那 48 就是讓開量體用的。看到這裡想「順手修一下」
+       之前先讀這一段。
+     ⚠ 只有這一座需要（其餘遺跡最高 88，撞不到）；日後再有很高的量體照這個辦法挪。 */
   {x:1972, y:656, name:'貝利薩爾遺址', n:'貝利薩爾遺址', type:'遺跡',
    town:'belisar', ruin:'belisar', land:{x:1951, y:651}},
 ];
