@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.12-1146';
+export const VERSION = 'ver 2026.09.12-1147';
 
 export const GAME_CONFIG = {
 
@@ -4124,6 +4124,17 @@ export const ASSET_VER = {
   'ruins_shinier_rift':         2,
   'ruins_shinier_stairdeep':    2,
   'ruins_shinier_stairup':      2,
+  /* ver -1146／-1147：墓門改用**開／關配對**的新構圖（美術 commit 6671993）。
+     ⚠⚠ 四張「開著的」是**同名覆蓋** —— 舊的那一組還在玩家的快取裡，不帶 `?v=`
+       就會拿到舊圖，而且畫面上沒有任何錯誤訊息（§5 那條的老坑）。
+       實測舊／新的 8×8 像素指紋差 15.7~34.7，是真的換了圖。
+     ⚠ **一組差分要一起帶**：漏掉哪一張，哪一張就被快取住。
+     ⚠ `Tomb_Gate_Sealed_*`（關著的那四張）**不必列** —— 新檔名，快取裡沒有。
+     背景為什麼走這張表而不是 `?v=`：檔名是 `bandNames` 組出來的，見本表檔頭。 */
+  'tomb_gate_day':              2,
+  'tomb_gate_dawn':             2,
+  'tomb_gate_dusk':             2,
+  'tomb_gate_night':            2,
 };
 export function assetVer(nameOrPath){
   const n = String(nameOrPath||'').split('/').pop().split('?')[0]
