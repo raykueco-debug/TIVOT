@@ -1,10 +1,18 @@
-# 北方港市（暫名 `nordcity`／前綴 `Nord_`）— 城市設計
+# 拉芬斯達爾 Ravnsdal — 城市設計（北歐・1900）
+
+> **城名（Ray 2026-09-12 交辦「取個 19 世紀北歐內陸風的名，不要跟現實城市撞名」）**
+> **Ravnsdal ／ 拉芬斯達爾** —— 地圖 id `ravnsdal`、檔名前綴 `Ravn_`。
+> · `ravn` ＝ 北歐語（丹麥／挪威）的**渡鴉**；`dal` ＝**谷** ⇒「渡鴉谷」。
+> · `-dal` 是**內陸**地名的後綴（海邊會用 `-vik`／`-havn`／`-nes`）——
+>   照 Ray 要的「內陸風」。⚠ 這座城其實是**港市**：名字留著它從谷地聚落長成港口的來歷，
+>   那是可以用的設定，不是矛盾。
+> · **撞名檢查**：查過沒有叫 Ravnsdal 的城鎮。相近但不同的是
+>   Ravnkilde（丹麥，312 人的村）、Ravnsnæs（丹麥，584 人）、Ravnholm（哥本哈根北郊的一區）、
+>   Ravnedalen（挪威 Kristiansand 的一座公園）—— 都不是城、也都不是這個拼法。
+>   ⚠ 北歐的小地名多如牛毛，我只能保證「不撞到任何叫得出名字的城市」。
 
 > Ray（2026-09-12）：「設計一個城市，**用帝都當藍圖**，**市鎮中心、碼頭、大教堂都先留白**」
 > →「**北歐風 1900 年，不要有任何旗幟跟國標**」
-
-⚠ **名字等 Ray 給**。檔名前綴與地圖 id 先用 `Nord_`／`nordcity`，一句話就能改
-（還沒上線，改名沒有快取問題）。
 
 ---
 
@@ -15,22 +23,22 @@
 
 | 節點 id | 向數 | 出口 | 中文名 | `bg` |
 |---|---|---|---|---|
-| `square` | 3 | `{ up:'midtown', left:'oldtown', right:'uptown' }` ＋ `sail`（下方＝出航） | 〈城名〉　港口廣場 | `Nord_Square` |
-| `midtown` | 3 | `{ left:'cityhall', right:'church', down:'square' }` | 〈城名〉　中心區 | `Nord_Midtown` |
-| `church` | 末 | `{ back:'midtown' }` | 〈城名〉　大教堂 | `Nord_Church` ⬜ |
-| `cityhall` | 末 | `{ back:'midtown' }` | 〈城名〉　行政廳 | `Nord_Cityhall` ⬜ |
-| `oldtown` | **4** | `{ left:'gunstore', right:'square', up:'dock', down:'guild' }` | 〈城名〉　舊街區 | `Nord_Oldtown` |
-| `gunstore` | 末 | `{ back:'oldtown' }` | 〈城名〉　武器店 | `Nord_Firearm` |
-| `dock` | 末 | `{ back:'oldtown' }` | 〈城名〉　碼頭 | `Nord_Dock` ⬜ |
-| `guild` | 末 | `{ back:'oldtown' }` | 〈城名〉　賞金獵人公會 | `Nord_Guild` |
-| `uptown` | **4** | `{ left:'square', right:'tavern', up:'inn', down:'grocery' }` | 〈城名〉　上街區 | `Nord_Uptown` |
-| `tavern` | 末 | `{ back:'uptown' }` | 〈城名〉　餐飲街 | `Nord_Bistro` |
-| `grocery` | 末 | `{ back:'uptown' }` | 〈城名〉　雜貨舖 | `Nord_Grocerie` |
-| `inn` | 末 | `{ back:'uptown' }` | 〈城名〉　旅店 | `Nord_Hotel` |
+| `square` | 3 | `{ up:'midtown', left:'oldtown', right:'uptown' }` ＋ `sail`（下方＝出航） | 拉芬斯達爾　港口廣場 | `Ravn_Square` |
+| `midtown` | 3 | `{ left:'cityhall', right:'church', down:'square' }` | 拉芬斯達爾　中心區 | `Ravn_Midtown` |
+| `church` | 末 | `{ back:'midtown' }` | 拉芬斯達爾　大教堂 | `Ravn_Church` ⬜ |
+| `cityhall` | 末 | `{ back:'midtown' }` | 拉芬斯達爾　行政廳 | `Ravn_Cityhall` ⬜ |
+| `oldtown` | **4** | `{ left:'gunstore', right:'square', up:'dock', down:'guild' }` | 拉芬斯達爾　舊街區 | `Ravn_Oldtown` |
+| `gunstore` | 末 | `{ back:'oldtown' }` | 拉芬斯達爾　武器店 | `Ravn_Firearm` |
+| `dock` | 末 | `{ back:'oldtown' }` | 拉芬斯達爾　碼頭 | `Ravn_Dock` ⬜ |
+| `guild` | 末 | `{ back:'oldtown' }` | 拉芬斯達爾　賞金獵人公會 | `Ravn_Guild` |
+| `uptown` | **4** | `{ left:'square', right:'tavern', up:'inn', down:'grocery' }` | 拉芬斯達爾　上街區 | `Ravn_Uptown` |
+| `tavern` | 末 | `{ back:'uptown' }` | 拉芬斯達爾　餐飲街 | `Ravn_Bistro` |
+| `grocery` | 末 | `{ back:'uptown' }` | 拉芬斯達爾　雜貨舖 | `Ravn_Grocerie` |
+| `inn` | 末 | `{ back:'uptown' }` | 拉芬斯達爾　旅店 | `Ravn_Hotel` |
 
 ⬜ ＝ **Ray 指定先留白**（見 §三）。
 
-- ⚠ **節點 id 是 `oldtown`，背景檔名是 `Nord_Oldtown`** —— 帝都那一格的 id 也是 `oldtown`，
+- ⚠ **節點 id 是 `oldtown`，背景檔名是 `Ravn_Oldtown`** —— 帝都那一格的 id 也是 `oldtown`，
   但它的 bg 叫 `Capital_Downtown`。**id 與檔名本來就不同名**，這裡我讓它們一致，
   但**不要**回頭把帝都那邊「順手統一」。
 - ⚠ **入口是 `square`，不可以有戰鬥**（§6.5.2：它是遭遇戰的復活點）。出航掛在它的下方。
@@ -84,7 +92,7 @@
 Ray 更正「**是行政廳那一格留白**」。所以留白的是 `cityhall`，`midtown` 要畫。
 
 ⚠ **留白＝先不寫美術簡報、先不畫**，不是「不接進遊戲」：
-節點照樣存在、出口照樣接好，`bg` 的檔名也先定好（`Nord_Cityhall`／`Nord_Dock`／`Nord_Church`），
+節點照樣存在、出口照樣接好，`bg` 的檔名也先定好（`Ravn_Cityhall`／`Ravn_Dock`／`Ravn_Church`），
 這樣 Ray 一給方向就能直接補圖，程式端不必改。
 ⚠ 在圖交出來之前，那三格由程式端掛 `bgPending:true`（同伊甸古墓的作法），
 `script_lint.py` 只報提醒不報錯。
@@ -129,7 +137,7 @@ Ray 更正「**是行政廳那一格留白**」。所以留白的是 `cityhall`�
 
 | 段 | 狀態 |
 |---|---|
-| 城名 | **等 Ray** |
+| 城名 | ✔ **Ravnsdal 拉芬斯達爾**（id `ravnsdal`／前綴 `Ravn_`） |
 | 拓樸 | ✔ 照抄 `capital`，12 格・11 邊・環 0 |
 | 風格 | ✔ 北歐・1900、⛔ 無旗幟無國標 |
 | 九格美術簡報 | ✔ 寫好了，**等 Ray 說開跑** |
