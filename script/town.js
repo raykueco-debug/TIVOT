@@ -4130,10 +4130,9 @@ export const TOWNS = {
           sor('whisper','我說……修女小姐是不是全力想逃離這裡？'),
           nou('awkward','好像是……'),
           any('answer','幽靈……交給我。不要怕。'),
-          /* ⚠⚠ 稿上寫 `dyingcute`，但 `resources/SI/` **沒有這張圖**
-             （只有 `dying` 與 `cutescare`）。先用最接近的 `dying`，
-             要新圖或改指另一張再說。 */
-          ren('dying','啊——夠了！出發了！'),
+          /* ⚠ 稿上寫的 `dyingcute` 沒有這張圖，ver -1189 由 Ray 改指
+             `Renna_SI_scarecute`（鍵 `scarecute`，與 `cutescare` 同一張）。 */
+          ren('scarecute','啊——夠了！出發了！'),
         ] } ] },
       vestibule:  { bg:'Tomb_Vestibule', name:'伊甸古墓　前庭', noTime:true,
         exits:{ up:'nave', right:'lapidarium', back:'gate' } },
