@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1192"></script>
+<script src="../orientation.js?v=1193"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -500,11 +500,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1192"></script>
+<script src="settlement.js?v=1193"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1192"></script>
+<script src="talks.js?v=1193"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -544,7 +544,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1192';
+const FLIGHT_VER = 'ver -1193';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -866,6 +866,23 @@ const SETTLEMENTS = [
   { n:'東方泊地', x:2003, y:590, t:'city2', f:'free', c:1, sea:0.0,
     plan:'city/eastport_plan.webp', planH:'city/eastport_h.webp',
     planW:700, planRot:-1.5708, planTall:40,
+    podium:{ r:1.05, skirt:8, lift:0 } },
+  /* ══ 拉芬斯達爾城（ver -1193，美術交件 `Ravnsdal_topdown.png`）══════════
+     ⚠⚠ x/y/planW/planRot **必須與 `build_city.py` 的 JOB 一致**（§6.7.5）——
+       落點是 Ray 指定的 (577,243)，`planRot=−π/2` 的四個方向與理由寫在那邊
+       （碼頭朝南對著大河、圖的下緣朝東接另一條河、鐵路朝北往內陸）。
+     ⚠ **沒有 `town:` ＝ 還不能降落** —— `script/town.js` 還沒有 ravnsdal 的
+       12 格（那 11 張背景美術正在跑）。補上 `town:'ravnsdal'` 就有降落鈕
+       （同東方泊地那一條的作法）。
+     ⚠ `planTall` 45：正規城市但不到帝都級（帝都 55、聖王廳 68、兩座泊地 40）。
+     ⚠ 整地照聖王廳那一套（§6.7.5 步驟 3）；它靠河不靠海，`sea:0` 照舊。
+     ⚠ 色調驗收（§6.7.5 步驟 5，量**成品**）：**V 0.423／S 0.196**
+       —— 北方泊地 0.401/0.135 與帝都 0.422/0.235 之間，正是規格要的那一段。
+     ⚠ 街廓 280 塊：在既有城的範圍內（聖王廳 24／夏爾村 23／北方泊地 180／
+       帝都 344）—— `maxdim` 給 1254（不縮）時門檻一定要跟著放大，見 JOB。 */
+  { n:'拉芬斯達爾城', x:577, y:243, t:'city2', f:'free', c:1, sea:0.0,
+    plan:'city/ravnsdal_plan.webp', planH:'city/ravnsdal_h.webp',
+    planW:700, planRot:-1.5708, planTall:45,
     podium:{ r:1.05, skirt:8, lift:0 } },
 ];
 /* ══⚠⚠ 城素材的 cache-buster（ver -1112，§5）══

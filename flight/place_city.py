@@ -108,6 +108,11 @@ def main():
     ap.add_argument('--rots', type=int, default=16)
     ap.add_argument('--top', type=int, default=8)
     ap.add_argument('--minsep', type=float, default=120.0, help='與既有城的最小距離（地圖像素）')
+    # ⚠⚠ **Ray 已經指定落點時用這個**（ver -1193）：全圖搜出來的是「哪裡最像」，
+    #   而那一題只在「還沒決定放哪」的時候才成立。位置定了之後要問的是**另一題**：
+    #   「在**這一點**，哪一個 planRot／planW 讓城裡的河對得上地圖的河？」
+    #   —— 不加這道限制，搜尋會誠實地把城搬到大陸另一頭去（實測前十名散落全圖）。
+    ap.add_argument('--near', default='', help='限制在 x,y[,半徑] 附近搜（Ray 指定落點時用）')
     a = ap.parse_args()
 
     plan = os.path.join(CITY, a.city + '_plan.webp')
@@ -123,6 +128,15 @@ def main():
     far = np.ones((H, W), bool)
     for (cx, cy, cw) in KEEP:
         far &= ((xx - cx) ** 2 + (yy - cy) ** 2) > (a.minsep + cw / MAP_SCALE) ** 2
+
+    # 限制在指定落點附近（見 --near 的說明）
+    nearMask = None
+    if a.near:
+        pp = [float(t) for t in a.near.split(',')]
+        nx, ny = pp[0], pp[1]
+        nr = pp[2] if len(pp) > 2 else 40.0
+        nearMask = ((xx - nx) ** 2 + (yy - ny) ** 2) <= nr * nr
+        print('只搜 (%.0f,%.0f) 半徑 %.0f 內的 %d 格' % (nx, ny, nr, int(nearMask.sum())))
 
     best = []
     for planW in [float(s) for s in a.planw.split(',')]:
@@ -153,6 +167,8 @@ def main():
             score = ok * (0.35 + 0.65 * dice_a)
             score[seaU > 0.02 * kc.sum()] = 0        # 城不能壓到雲海
             score[~far] = 0
+            if nearMask is not None:
+                score[~nearMask] = 0
 
             i = int(np.argmax(score))
             y0, x0 = divmod(i, W)
