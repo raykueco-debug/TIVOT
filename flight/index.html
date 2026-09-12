@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1181"></script>
+<script src="../orientation.js?v=1182"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -500,11 +500,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1181"></script>
+<script src="settlement.js?v=1182"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1181"></script>
+<script src="talks.js?v=1182"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -544,7 +544,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1181';
+const FLIGHT_VER = 'ver -1182';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -10764,12 +10764,14 @@ const S9_C=[
   { who:'renna/ask',        text:'能知道在什麼方向嗎？' },
   { who:'anya/silent',      text:'我試試。' },
 ];
-/* ⚠⚠⚠ **任務期限的日期是暫填的**（ver -1181）：Ray 的稿上寫的是「X月Y日」
-   ——那是留給他填的欄位，不是台詞。開局是大陸曆 1908-06-13，Stage 9 在那之後幾天，
-   先填 **7月1日**（約兩週）。**要改只改這一處。**
-   ⚠⚠ 這個日期目前**沒有任何機制在讀**：沒有倒數、沒有逾期判定、沒有旗。
-     真的要做期限是另一件事 —— 那要答得出「誰插旗、誰判逾期」（鐵律 9）。
-     現在它只是台詞裡的一個日期。 */
+/* ══⚠⚠⚠ 任務期限：**這個值的擁有者是劇本，不是這裡**（ver -1182，Ray：
+   「走劇情就會有，交給劇情定」）══
+   Ray 的稿上寫的是「X月Y日」＝留給劇本填的欄位。下面這一組只是**暫填**
+   （開局是大陸曆 1908-06-13，Stage 9 在那之後幾天 ⇒ 先給 7月1日，約兩週）。
+   ⚠⚠ **不要在這裡「決定」期限** —— 劇情走到那裡自然會有一個日期，
+     到時候把它搬成劇本給的值（同旗標那一套：答得出誰插、誰能改，鐵律 9）。
+   ⚠ 在那之前它只是台詞裡的一個日期：沒有倒數、沒有逾期判定、沒有旗在讀它。
+   ⚠ 要改只改這一處。 */
 const S9_DEADLINE={ mo:7, d:1 };
 const s9Deadline=()=>S9_DEADLINE.mo+'月'+S9_DEADLINE.d+'日';
 const S9_D=[

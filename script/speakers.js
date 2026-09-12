@@ -334,7 +334,20 @@ export const ART = {
                   /* ⚠ ver -1092 Ray **重交了這一張**（同名覆蓋）→ `?v=2`（§5：不掛
                      cache-buster 的話瀏覽器會抱著舊的那一份），取景值也**重量過**
                      （§5「換圖就要重量取景值」：0.583→0.517，差了 6.6% 的圖寬）。 */
-                  angry:    { src:'resources/SI/Nouvelle_SI_angry.webp?v=2',   top:8,  bot:1528, fx:0.517 },   // ver -842／-1092 換圖
+                  /* ⚠⚠⚠ ver -1182：美術把 -1092 交的那張改名成 `Nouvelle_SI_furious`，
+                     **舊的那張 angry 放回原檔名** —— 所以這裡是**兩張圖兩筆**，
+                     不是改個名字而已。
+                     ⚠ 取景值是**那一張圖**的（§5）：`angry` 那一組（3/1535/0.583）是
+                       ver -842 對舊圖量的、`furious` 那一組（8/1528/0.517）是 -1092 對
+                       新圖量的 —— **不要互換也不要互抄**。
+                       驗過：兩張的 alpha 上下緣正好是 3..1535 與 8..1528。
+                     ⚠ `angry` 掛 **?v=3**：同一個檔名的內容又換了一次（新圖→舊圖），
+                       不跳號的話瀏覽器拿到的還是「已經改名走了的那一張」（§5）。
+                     ⚠ `_originals/SI/` 那張 PNG 實測就是**新圖**，已一併改名成
+                       `Nouvelle_SI_furious.png`。**舊 angry 沒有 `_originals` 備份**
+                       （-1092 同名覆蓋時就沒了），它現在的來源是 git 歷史。 */
+                  angry:    { src:'resources/SI/Nouvelle_SI_angry.webp?v=3',   top:3,  bot:1535, fx:0.583 },   // ver -842 的舊圖（-1182 放回來）
+                  furious:  { src:'resources/SI/Nouvelle_SI_furious.webp',     top:8,  bot:1528, fx:0.517 },   // ver -1092 交的那張（-1182 改名）
                   bigsmile: { src:'resources/SI/Nouvelle_SI_bigsmile.webp',  top:4,  bot:1534, fx:0.565 },
                   /* 舊街區／公會那一段新增（ver -375）。取景由 `tools/measure_si.py` 量出來的。 */
                   concern:  { src:'resources/SI/Nouvelle_SI_concern.webp',   top:6,  bot:1529, fx:0.505 },
