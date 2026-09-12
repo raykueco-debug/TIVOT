@@ -26,7 +26,8 @@ import * as prog from '../script/progress.js';   // 拿到獎品記一個旗標�
 /* 蕾娜的結算評價（ver -432）：內容全在那一檔，這裡只負責挑與演（鐵律 1）。 */
 import { EVALUATOR, LINES as EVAL_LINES,
          BY_BATTLE as EVAL_BY_BATTLE,
-         INTRUDE as EVAL_INTRUDE } from '../script/evaluation.js';
+         INTRUDE as EVAL_INTRUDE,
+         FROM_STAGE as EVAL_FROM } from '../script/evaluation.js';
 import { SPEAKERS, ART } from '../script/speakers.js';   // 評價者的顯示名與立繪＝與對白同一份
 import { state } from '../state.js';
 import { SFX } from '../audio.js';   // Boss BGM 於「再度執槍（S 解鎖）」瞬間起播
@@ -476,6 +477,10 @@ function pickEvaluator(rankKey, battleId){
   const bt = (GAME_CONFIG.battles||{})[battleId] || {};
   evalWhyNot='';                                             // 這一趟的診斷（見 evalWhyNot 的說明）
   if(bt.noEval){ evalWhyNot='卡上 noEval'; return null; }     // 這一場不評（特例，寫在卡上）
+  /* 第 N 章之前整段不評（ver -1130，資料在 `evaluation.js` 的 `FROM_STAGE`）。
+     ⚠ 排在卡上的特例之後、通用表之前：它是「這一套評價什麼時候開始運作」。 */
+  if(prog.getStage() < EVAL_FROM){
+    evalWhyNot='第 '+EVAL_FROM+' 章才開始評（現在第 '+prog.getStage()+' 章）'; return null; }
   /* `noEvalBeforeStage:N`（ver -756，Ray：「帝都賞金獵人戰如在 stage2 才打，
      就要放蕾娜評價」）＝那一章之前不評、到了就評 —— 問**結算那一刻**的 stage。 */
   if(bt.noEvalBeforeStage!=null && prog.getStage() < bt.noEvalBeforeStage){

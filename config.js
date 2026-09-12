@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.12-1129';
+export const VERSION = 'ver 2026.09.12-1130';
 
 export const GAME_CONFIG = {
 
@@ -2178,17 +2178,13 @@ export const GAME_CONFIG = {
        判定在 inspector.pickEvaluator（問結算那一刻的 stage，唯一讀點）。 */
     /* ⚠ ver -1060（Ray：「賞金獵人戰被加了一條沒有評價的註解，把它拿掉」）：
        `noEvalBeforeStage:2` 撤掉 —— 回到 -670 的通則「預設就有評價」。 */
-    /* ⚠⚠ **ver -1129（Ray：「賞金獵人戰在 stage0 時不會有蕾娜評價」）：加回來。**
-       ＝ -756 那一條原封不動（`noEvalBeforeStage:2`：stage 0/1 不評、stage2+ 照評），
-       -1060 撤掉的那一趟推翻。
-       ⚠ 這個數字管的是**兩章**（0 與 1），不是只有 stage 0 —— -756 的原話是
-         「如在 stage2 才打，就要放蕾娜評價」，兩句話一致（0/1 都在 2 之前）。
-         要改成「只有 stage0 不評、stage1 就評」的話把它改成 1，這裡只有一個數字。
-       ⚠⚠ 連帶：**stage 0/1 的帝都只有兩場架** —— 打靶（-1127 加回 `noEval`）
-         與這一場。兩場都不評 ＝ 那一段**畫面上完全看不到評價**，那是規格不是壞掉
-         （「蕾娜評價完全消失」查到這裡收束）。 */
-    guild_hunter: { enemy:'guild_hunter', special:true, noSaint:true, noPartner:true,
-                    noEvalBeforeStage:2 },
+    /* ⚠⚠⚠ **ver -1130 收斂成一條全域規則**（Ray：「stg1 以後打靶之外每場必出評價，
+       就這麼簡單」）：這一場**不再自己寫** `noEvalBeforeStage` ——
+       「第 0 章不評」現在是 `script/evaluation.js` 的 `FROM_STAGE`（全域一處），
+       打靶則是卡上的 `noEval`。兩層加起來就是 Ray 那一句話。
+       （-1129 曾在這裡填 `noEvalBeforeStage:2`，那會讓 stage1 也不評，與他的話相反。
+         欄位機制留著給日後某一場真的要特例時用，目前沒有卡在用。） */
+    guild_hunter: { enemy:'guild_hunter', special:true, noSaint:true, noPartner:true },
     /* 北方泊地的城鎮戰（ver -583）：每一格走進去打一場，共用這一張佔位卡。
        ⚠ **不禁聖徒化／搭檔技**：Ray 沒說要禁（禁了要明寫 noSaint/noPartner）。
        ⚠ 打輸走一般流程 —— 城鎮插入戰的敗北會被抬回這座城的旅店（§6.5.2 那張表）。
