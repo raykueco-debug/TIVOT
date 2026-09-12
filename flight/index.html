@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1162"></script>
+<script src="../orientation.js?v=1163"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -491,11 +491,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1162"></script>
+<script src="settlement.js?v=1163"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1162"></script>
+<script src="talks.js?v=1163"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -2163,80 +2163,84 @@ const RUIN_ART = {
     rot: -2.678,
     base: { w:250, l:340, n:64, jit:0.035, ox:62 },
     floor:'slab', floorCell:36, floorJoint:3.6,
-    /* ══ 材質（ver -1162，Ray 交件）══ 牆＝砌石（暖灰 #9B8F7E）、
-       瓦＝鱗片狀板岩（冷灰 #464D56）。冷暖對比是外觀圖上原本的關係（實測取色）。
-       ⚠ 只有**收尖的那幾層**寫 `mat:'roof'` —— 塔身是石造的，屋頂才是瓦。 */
     tex:'castle_wall', roofTex:'castle_roof',
     lift:10,
-    /* ══⚠⚠⚠ 這一組是**照著 `Belisar_Exterior.webp` 排的**（ver -1160，Ray：
-       「3d 模型要盡量接近外廓」「目前這樣是對的，但不夠細緻跟外廓也有出入」）══
-       外觀圖的讀法（由左而右、由下而上）：
-         · 整座**坐在一塊岩台上**，往上分三階
-         · 西正面：**玫瑰窗**居中、底下一道大門、左右各一列細長尖窗
-         · **一叢尖塔**：中央一支最高，兩側各二、高度不齊（有一支是斷的）
-         · 右翼：**圓塔＋錐頂**，再往右是一排**飛扶壁**
-         · 前景左下：一道**斷掉的拱廊**（幾個拱洞，一端塌了）
-       ⚠⚠ 與上一版最大的差別是**垂直性**：圖上的氣勢全在高度，
-         上一版主塔才 110（比崖線 98 高一點點），這一版主尖塔到 **238**。
-       ⚠ 「崩壞」照舊靠**高度不齊**與**開口／缺口**讀出來：有一支塔是斷的（沒有尖頂）、
-         拱廊留兩個缺口、左翼沒有屋頂。
-       ⚠ 尖塔用**四階收窄**逼出錐形剪影 —— 這個解析度下錐形與方塊的差別就在
-         「有沒有收尖」，不在圓不圓。 */
+    /* ══⚠⚠⚠ 照 `Belisar_Exterior.webp` 排（ver -1160；-1163 全面改用圓柱／圓錐）══
+       Ray -1163：「這是 minecraft 嗎？太方了，而且窗都開得比牆高了」。兩件都修：
+       ① **不再用方塊堆圓的東西** —— 塔是 `k:'tower'` 的十邊柱、尖頂是**一塊圓錐**
+          （`rTop` 收到 1.5），不是四層階梯。哥德的辨識度在**細而尖**，
+          而四方柱怎麼疊都是階梯。
+       ② **開口一律包在牆裡** —— 玫瑰窗原本 z 158~198 而門面頂才 184，所以「窗比牆高」。
+          現在每一個 `col:'door'` 的 z 區間都夾在它所屬那面牆的 z 區間內（見下方對照）。
+       另外加了三種**打破平面**的零件（哥德建築本來就有，而且很便宜）：
+         · **簷口**（cornice）：牆頂一道稍寬的薄板 —— 平頂的方塊一加簷口就不像積木
+         · **扶壁**（buttress）：中殿兩側的直條，頂上各一支**小尖塔**（pinnacle）
+         · **飛扶壁**：右翼那三支斜撐，每支頂端也收一個小錐
+       ⚠ 面數是成本：塔 n=10、簷口 n=8、小尖 n=6。 */
     parts: [
-      /* ── ① 岩台：整座的基座，往上分階（圖上城是長在岩體上的） ── */
+      /* ── ① 岩台：兩階（這是平台，方的才對） ── */
       { k:'stump', x:-46, y:  0, w:168, l:300, h:34 },
       { k:'stump', x:-20, y:  0, w:118, l:250, h:26, z0:34 },
 
-      /* ── ② 主堂（中殿量體） ── */
-      { k:'stump', x:-34, y:  0, w:104, l:186, h:104, z0:60 },   // 頂 164
+      /* ── ② 中殿：牆 60→164，簷口 158→168（稍寬，壓住平頂） ── */
+      { k:'stump', x:-34, y:  0, w:104, l:186, h:104, z0: 60 },
+      { k:'stump', x:-34, y:  0, w:112, l:194, h: 10, z0:158 },
 
-      /* ── ③ 西正面：玫瑰窗居中、底下大門 ── */
-      { k:'stump', x: 26, y:  0, w: 34, l:140, h:124, z0:60 },   // 頂 184
-      { k:'stump', x: 45, y:  0, w:  8, l: 40, h: 40, z0:158, col:'door' },  // 玫瑰窗
-      { k:'stump', x: 45, y:  0, w:  8, l: 30, h: 44, z0: 60, col:'door' },  // 大門
+      /* ── ③ 西正面：牆 60→178，簷口 172→182 ── */
+      { k:'stump', x: 26, y:  0, w: 34, l:140, h:118, z0: 60 },
+      { k:'stump', x: 26, y:  0, w: 40, l:148, h: 10, z0:172 },
+      /* 玫瑰窗 115→149、大門 60→104 —— 兩個都**包在 60~178 之內** */
+      { k:'stump', x: 45, y:  0, w:  8, l: 38, h: 34, z0:115, col:'door' },
+      { k:'stump', x: 45, y:  0, w:  8, l: 28, h: 44, z0: 60, col:'door' },
 
-      /* ── ④ 中央大尖塔：最高的那一支，四階收尖 ── */
-      { k:'stump', x:-16, y:  0, dia:56, h: 72, z0:164 },        // 164→236
-      { k:'stump', x:-16, y:  0, dia:42, h: 24, z0:236, mat:'roof' },
-      { k:'stump', x:-16, y:  0, dia:28, h: 22, z0:260, mat:'roof' },
-      { k:'stump', x:-16, y:  0, dia:14, h: 20, z0:282, mat:'roof' },        // 尖端 302
+      /* ── ④ 中央大尖塔：柱身（十邊、微收）＋**一塊圓錐** ── */
+      { k:'tower', x:-16, y:  0, r:28, rTop:24, n:12, h: 64, z0:164 },
+      { k:'tower', x:-16, y:  0, r:26, rTop: 2, n:12, h: 74, z0:228 },   // 尖端 302
 
-      /* ── ⑤ 側塔四支：高度**刻意不齊**，最右那一支是**斷的**（沒有尖頂） ── */
-      { k:'stump', x: 16, y:-62, dia:30, h: 92, z0:60 },
-      { k:'stump', x: 16, y:-62, dia:20, h: 26, z0:152, mat:'roof' },
-      { k:'stump', x: 16, y:-62, dia:10, h: 22, z0:178, mat:'roof' },
-      { k:'stump', x: 16, y: 62, dia:30, h: 78, z0:60 },
-      { k:'stump', x: 16, y: 62, dia:20, h: 24, z0:138, mat:'roof' },
-      { k:'stump', x: 16, y: 62, dia:10, h: 20, z0:162, mat:'roof' },
-      { k:'stump', x:  4, y:-112, dia:26, h: 68, z0:60 },
-      { k:'stump', x:  4, y:-112, dia:16, h: 22, z0:128, mat:'roof' },
-      { k:'stump', x:  4, y: 112, dia:26, h: 54, z0:60 },        // ← 斷塔：不收尖
+      /* ── ⑤ 側塔四支：高度刻意不齊；最右那一支**斷了**（沒有錐頂） ── */
+      { k:'tower', x: 16, y:-62, r:15, rTop:13, n:10, h: 92, z0:60 },
+      { k:'tower', x: 16, y:-62, r:15, rTop: 1.5, n:10, h:46, z0:152, mat:'roof' },
+      { k:'tower', x: 16, y: 62, r:15, rTop:13, n:10, h: 78, z0:60 },
+      { k:'tower', x: 16, y: 62, r:15, rTop: 1.5, n:10, h:42, z0:138, mat:'roof' },
+      { k:'tower', x:  4, y:-112, r:13, rTop:11, n:10, h: 68, z0:60 },
+      { k:'tower', x:  4, y:-112, r:13, rTop: 1.5, n:10, h:34, z0:128, mat:'roof' },
+      { k:'tower', x:  4, y: 112, r:13, rTop:12, n:10, h: 54, z0:60 },   // ← 斷塔
 
       /* ── ⑥ 右翼：圓塔＋錐頂 ── */
-      { k:'stump', x:-18, y: 158, dia:50, h:118, z0:60 },        // 頂 178
-      { k:'stump', x:-18, y: 158, dia:40, h: 20, z0:178, mat:'roof' },
-      { k:'stump', x:-18, y: 158, dia:24, h: 20, z0:198, mat:'roof' },
-      { k:'stump', x:-18, y: 158, dia:10, h: 18, z0:218, mat:'roof' },       // 錐尖 236
+      { k:'tower', x:-18, y: 158, r:25, rTop:23, n:12, h:118, z0: 60 },
+      { k:'tower', x:-18, y: 158, r:27, rTop: 2, n:12, h: 58, z0:178, mat:'roof' },
 
-      /* ── ⑦ 飛扶壁：右側一排，逐支往外降 ── */
-      { k:'stump', x: 34, y: 122, w:14, l:16, h:70, z0:60 },
-      { k:'stump', x: 56, y: 132, w:14, l:16, h:58, z0:52 },
-      { k:'stump', x: 78, y: 142, w:14, l:16, h:46, z0:44 },
+      /* ── ⑦ 扶壁：中殿兩側各三支直條，頂上一支小尖塔 ── */
+      { k:'stump', x:-34, y:-100, w:104, l:12, h:88, z0:60 },
+      { k:'tower', x:-60, y:-100, r:7, rTop:1.2, n:6, h:26, z0:148, mat:'roof' },
+      { k:'tower', x: -8, y:-100, r:7, rTop:1.2, n:6, h:26, z0:148, mat:'roof' },
+      { k:'stump', x:-34, y: 100, w:104, l:12, h:88, z0:60 },
+      { k:'tower', x:-60, y: 100, r:7, rTop:1.2, n:6, h:26, z0:148, mat:'roof' },
+      { k:'tower', x: -8, y: 100, r:7, rTop:1.2, n:6, h:26, z0:148, mat:'roof' },
 
-      /* ── ⑧ 左翼：矮一階、屋頂沒了 ── */
+      /* ── ⑧ 飛扶壁：右側三支，逐支往外降，每支收一個小錐 ── */
+      { k:'stump', x: 34, y: 122, w:12, l:14, h:70, z0:60 },
+      { k:'tower', x: 34, y: 122, r:6, rTop:1.2, n:6, h:18, z0:130, mat:'roof' },
+      { k:'stump', x: 56, y: 132, w:12, l:14, h:58, z0:52 },
+      { k:'tower', x: 56, y: 132, r:6, rTop:1.2, n:6, h:16, z0:110, mat:'roof' },
+      { k:'stump', x: 78, y: 142, w:12, l:14, h:46, z0:44 },
+      { k:'tower', x: 78, y: 142, r:6, rTop:1.2, n:6, h:14, z0: 90, mat:'roof' },
+
+      /* ── ⑨ 左翼：矮一階、屋頂沒了；角上一支小塔 ── */
       { k:'stump', x:-28, y:-152, w:86, l: 74, h: 66, z0:60 },
-      { k:'stump', x:-10, y:-152, dia:22, h: 40, z0:126, mat:'roof' },
+      { k:'tower', x:-10, y:-152, r:11, rTop:9, n:10, h:40, z0:126 },
+      { k:'tower', x:-10, y:-152, r:11, rTop:1.5, n:10, h:26, z0:166, mat:'roof' },
 
-      /* ── ⑨ 前景的斷拱廊：四個墩＋中間的拱洞，**右端塌了**（只有三墩） ── */
+      /* ── ⑩ 前景的斷拱廊：三墩＋兩道拱，右端塌了 ── */
       { k:'stump', x:150, y:-150, w:20, l:24, h:46 },
       { k:'stump', x:150, y:-104, w:20, l:24, h:46 },
       { k:'stump', x:150, y:- 58, w:20, l:24, h:42 },
-      { k:'stump', x:150, y:-127, w:14, l:22, h:12, z0:34 },     // 拱頂（連兩墩）
+      { k:'stump', x:150, y:-127, w:14, l:22, h:12, z0:34 },
       { k:'stump', x:150, y:- 81, w:14, l:22, h:12, z0:34 },
-      { k:'stump', x:150, y:-127, w: 6, l:18, h:26, col:'door' },// 拱洞
-      { k:'stump', x:150, y:- 81, w: 6, l:18, h:24, col:'door' },
+      { k:'stump', x:150, y:-127, w: 6, l:18, h:30, z0:0, col:'door' },   // 拱洞 0→30 ＜ 墩 46
+      { k:'stump', x:150, y:- 81, w: 6, l:18, h:28, z0:0, col:'door' },
 
-      /* ── ⑩ 散落的碎石（塌掉那一端最多） ── */
+      /* ── ⑪ 散落的碎石 ── */
       { k:'stump', x:148, y:  4, w:32, l:26, rot: 0.42, h:18 },
       { k:'stump', x:124, y: 48, w:26, l:22, rot:-0.55, h:14 },
       { k:'stump', x:172, y:-18, w:24, l:20, rot: 0.9,  h:12 },
@@ -8007,6 +8011,30 @@ function drawRuins(scaleH,horizon,sinp,cosp){
       let z=0; for(const q of pts) z+=q.z;
       return { base:pts, top, loc, z:z/4, z0:b0, h:h||0 };
     };
+    /* ══⚠⚠⚠ 多邊柱／錐體（ver -1163，Ray：「這是 minecraft 嗎？太方了」）══
+       `box` 只做得出四方柱，所以圓塔與尖頂以前都是用方塊硬堆 —— 那正是「太方」
+       的來源。這一支做 n 邊柱，而且**上下半徑可以不同**：
+         · `rTop === r`  → 圓柱（n 給 8~12 就夠圓，這個解析度下再多也看不出來）
+         · `rTop → 0`    → **圓錐**（尖頂一塊搞定，不必疊四層階梯）
+         · `rTop > r`    → 上寬下窄（簷口、柱頭）
+       ⚠ 面數是**成本**：n 邊柱要畫 n 個立面。塔用 10、簷口用 8、小東西用 6。
+       ⚠ 回傳的結構與 `box` 一樣（base/top/loc/z/z0/h），所以下游的排序、影子、
+         立面明暗、貼材一行都不必改 —— 只要把寫死的 `4` 換成 `base.length`。 */
+    const prism=(x,y,r,rTop,n,rot,h,z0)=>{
+      const b0=z0||0, N=Math.max(3,n|0), a0=rot||0;
+      const ptsL=[], topL=[];
+      for(let i=0;i<N;i++){
+        const a=a0+i/N*Math.PI*2;
+        ptsL.push([x+Math.cos(a)*r, y+Math.sin(a)*r]);
+        topL.push([x+Math.cos(a)*rTop, y+Math.sin(a)*rTop]);
+      }
+      const pts=ptsL.map(q=>px(q[0],q[1],b0));
+      if(pts.some(q=>!q)) return null;
+      const tps=topL.map(q=>px(q[0],q[1],b0+(h||0)));
+      if(tps.some(q=>!q)) return null;
+      let z=0; for(const q of pts) z+=q.z;
+      return { base:pts, top:tps, loc:ptsL, z:z/N, z0:b0, h:h||0 };
+    };
     /* 這一座要畫的東西，先全部算出來（順便量螢幕外框）。 */
     const items=[];
     let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9,zmin=1e9;
@@ -8072,7 +8100,12 @@ function drawRuins(scaleH,horizon,sinp,cosp){
       if(b){ b.lite=t.lite; b.slab=t.slab; tiles.push(b); }
     }
     for(const pt of A.parts){
-      if(pt.k==='stump'){
+      if(pt.k==='tower'){
+        /* 圓柱／圓錐（ver -1163）：`r` 底半徑、`rTop` 頂半徑（不寫＝同 r）、
+           `n` 幾邊（不寫＝10）。 */
+        const b=prism(pt.x,pt.y,pt.r,(pt.rTop==null?pt.r:pt.rTop),pt.n||10,pt.rot||0,pt.h,pt.z0);
+        if(b){ if(pt.col) b.col=RUIN_COL[pt.col]||pt.col; b.mat=pt.mat; items.push(b); take(b); }
+      }else if(pt.k==='stump'){
         /* ⚠ `dia` 是**方柱**的邊長（既有用法）；`w`/`l` 給不是方的東西
            （門面、階梯、散落的巨石）—— 不另開一種 `k`，那只會多一份實作（鐵律 8）。 */
         const b=box(pt.x,pt.y,pt.w||pt.dia,pt.l||pt.dia,pt.rot||0,pt.h,pt.z0);
@@ -8197,7 +8230,7 @@ function drawRuins(scaleH,horizon,sinp,cosp){
       if(hpx<0.6) continue;
       const ox=hpx*0.72, oy=hpx*0.20;
       RFC.beginPath();
-      for(let k=0;k<4;k++){ const q=B.base[k];
+      for(let k=0;k<B.base.length;k++){ const q=B.base[k];
         if(k) RFC.lineTo(q.x+ox,q.y+oy); else RFC.moveTo(q.x+ox,q.y+oy); }
       RFC.closePath(); RFC.fill();
     }
@@ -8250,13 +8283,14 @@ function drawRuins(scaleH,horizon,sinp,cosp){
     };
     for(const B of items){
       const faces=[];
-      for(let k=0;k<4;k++){
-        const a=B.loc[k], b=B.loc[(k+1)%4];
+      const NS=B.base.length;                    // ver -1163：方柱 4、多邊柱 n
+      for(let k=0;k<NS;k++){
+        const a=B.loc[k], b=B.loc[(k+1)%NS];
         let nx=(b[1]-a[1]), ny=-(b[0]-a[0]);          // 邊的法線（順時針＝朝外）
         const nl=Math.hypot(nx,ny)||1; nx/=nl; ny/=nl;
         const d=nx*LGT.x+ny*LGT.y;                    // >0＝朝光
         const rf = B.mat==='roof';       // 屋頂走冷灰那一組（ver -1162）
-        faces.push({ k, z:(B.base[k].z+B.base[(k+1)%4].z)/2,
+        faces.push({ k, z:(B.base[k].z+B.base[(k+1)%NS].z)/2,
                      /* `B.col`＝整塊同一個顏色、不分明暗（現在只有門洞在用）：
                         門洞要讀成**一個洞**，有明暗就變成一塊深色的板子。 */
                      col: B.col || (d>0.30 ? (rf?RUIN_COL.roofLit :RUIN_COL.sideLit)
@@ -8265,14 +8299,14 @@ function drawRuins(scaleH,horizon,sinp,cosp){
       }
       faces.sort((p,q)=>q.z-p.z);
       for(const f of faces){
-        const k=f.k, p0=B.base[k], p1=B.base[(k+1)%4], t1=B.top[(k+1)%4], t0=B.top[k];
+        const k=f.k, p0=B.base[k], p1=B.base[(k+1)%NS], t1=B.top[(k+1)%NS], t0=B.top[k];
         RFC.beginPath();
         RFC.moveTo(p0.x,p0.y); RFC.lineTo(p1.x,p1.y); RFC.lineTo(t1.x,t1.y); RFC.lineTo(t0.x,t0.y); RFC.closePath();
         RFC.fillStyle=f.col; RFC.fill();
         /* ⚠ 門洞（`B.col`）不貼：它是一個洞，不是一塊石頭。 */
         const tx = (B.mat==='roof' && roofTex) ? roofTex : wallTex;   // 瓦／牆
         if(!B.col && tx){
-          const a=B.loc[k], b=B.loc[(k+1)%4];
+          const a=B.loc[k], b=B.loc[(k+1)%NS];
           if(texQuad(tx,p0,p1,t0,Math.hypot(b[0]-a[0],b[1]-a[1]),B.h)){
             RFC.globalAlpha=0.42; RFC.fillStyle=tx; RFC.fill(); RFC.globalAlpha=1;
           }
@@ -8282,7 +8316,7 @@ function drawRuins(scaleH,horizon,sinp,cosp){
       RFC.fillStyle = B.col || (B.mat==='roof' ? RUIN_COL.roofTop : RUIN_COL.top); RFC.fill();
       { const tx = (B.mat==='roof' && roofTex) ? roofTex : wallTex;
         if(!B.col && tx){
-          const a=B.loc[0], b=B.loc[1], d=B.loc[3];
+          const a=B.loc[0], b=B.loc[1], d=B.loc[B.loc.length-1];
           if(texQuad(tx,B.top[0],B.top[1],B.top[3],
                      Math.hypot(b[0]-a[0],b[1]-a[1]), Math.hypot(d[0]-a[0],d[1]-a[1]))){
             RFC.globalAlpha=0.42; RFC.fillStyle=tx; RFC.fill(); RFC.globalAlpha=1;
