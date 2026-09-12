@@ -4010,4 +4010,84 @@ export const TOWNS = {
         exits:{ back:'gallery3' } },
     },
   },
+
+  /* ══════════════════════════════════════════════════════════════════════
+     貝魯特遺址（ver -1156；Ray：「在 1972,656 放一個崩壞的哥德式的古堡…
+     地點為貝魯特遺址」→「**沒有地宮，就是整個哥德古堡**」→「地宮入口就是入口而已」）
+     ──────────────────────────────────────────────────────────────────────
+     權威規格：`resources/map/_undercity_spec.md`（美術交件，含逐格特徵與畫風規格）；
+     佈局圖：`resources/map/_layout_undercity.png`。
+     ⚠⚠ 拓樸**照抄** `tools/map_undercity_draft.py` 的 `NODES`／`EDGES`（Ray ver -1049
+       認可過的那一份），**方向由格子的相對位置算出來** —— 這樣小地圖與畫面上的箭頭
+       必然一致（憲法 ver -907／-909），而且同一條邊兩端必為相反方向（ver -902）。
+       ⚠ 那支產生器現在可以回收了：同一個拓樸不留兩份（鐵律 7）。
+
+     **37 格・41 邊・環 4**。四向口 4（謁見前廳・甲冑廊・地下墓道・階梯大廳）、
+     三向口 12、通道 8、端末 13（其中**戶外 4**：下沉中庭・崩頂坡・排水崖口・枯井底）。
+     ⚠⚠ 王室層**掛在西側的甲冑廊，不掛中央大廳** —— 一路按↑會停在中央大廳，
+       玩家得自己找到往西那一轉才上得去（憲法 ver -902 的自檢：主幹不該直達 BOSS）。
+
+     ⚠⚠⚠ **「地宮入口」那一格不存在**（Ray 定案）：它在佈局圖上是「跨圖出口」的
+       記號，但這裡**沒有第二張圖** —— 前廳本來就是入口內側（規格：「一半塌了，
+       回頭看得見外面的光」），所以降落＝`foyer`、起飛也在 `foyer`。
+       同伊甸古墓的墓門：一格兼入口與起飛點。
+
+     ⚠ **檔名還是 `Undercity_*`**：那是美術的暫名（規格 §五），還沒上線所以改名零成本，
+       但那 47 個檔是美術 session 的地盤 —— 要改請他們一起改（鐵律 11：不要兩邊同時
+       動同一批檔案）。程式這邊改名只要掃這一段的 `bg:`。
+     ⚠ **時段差分只有三格交了**（下沉中庭・崩頂坡・排水崖口）：那三格不寫 `noTime`。
+       前廳／階梯大廳／中央大廳／枯井底 **也該有**（規格 §五：畫面上看得到日光），
+       但差分還沒做 —— 先寫 `noTime` 擋掉每格四個 404，交件後把它們的 `noTime` 拿掉。
+     ⚠ **還沒有怪**（`wildSpawn` 整組沒寫）：美術 0 張、數值卡也還沒有。
+       建議的結算點是**王座廳**的 BOSS（規格 §四）。
+     ⚠ **小地圖還沒畫**（`map:` 空著）：節點數一變那張就得重畫，所以規格要求等拓樸
+       真的落進這裡再請美術畫 —— 現在落好了，可以發需求了。
+     ⚠ 迷霧是預設（不寫 `mist:0`）：這是迷宮，走過才亮正是它的玩法。
+     ══════════════════════════════════════════════════════════════════════ */
+  beirut: {
+    name: '貝魯特遺址',
+    entry: 'foyer',
+    storyExplore: true,   // 不是城：女角不排外出行程（§6.5.4.2）
+    wilderness: true,     // 野外的路沒有門可以關（19:00 全域打烊不罩）
+    stepMin: 10,          // 遺跡那一級（ver -917）
+    nodes: {
+      throne:    { bg:'Undercity_ThroneHall', name:'貝魯特遺址　王座廳', noTime:true, exits:{ down:'antecham' } },
+      crown:     { bg:'Undercity_CrownRoom', name:'貝魯特遺址　寶冠室', noTime:true, exits:{ right:'antecham' } },
+      antecham:  { bg:'Undercity_Antechamber', name:'貝魯特遺址　謁見前廳', noTime:true, exits:{ up:'throne', left:'crown', right:'offering', down:'dragstair' } },
+      offering:  { bg:'Undercity_RelicRoom', name:'貝魯特遺址　聖物室', noTime:true, exits:{ left:'antecham' } },
+      dragstair: { bg:'Undercity_LionStair', name:'貝魯特遺址　獅階', noTime:true, noWild:true, exits:{ up:'antecham', down:'guardhall' } },
+      starroom:  { bg:'Undercity_Orrery', name:'貝魯特遺址　星象室', noTime:true, exits:{ right:'guardhall' } },
+      guardhall: { bg:'Undercity_ArmourGallery', name:'貝魯特遺址　甲冑廊', noTime:true, exits:{ up:'dragstair', left:'starroom', right:'greathall', down:'mirrorpool' } },
+      greathall: { bg:'Undercity_GreatHall', name:'貝魯特遺址　中央大廳', noTime:true, exits:{ left:'guardhall', right:'lamphall', down:'pillars' } },
+      lamphall:  { bg:'Undercity_ChandelierHall', name:'貝魯特遺址　枝燈長廊', noTime:true, exits:{ left:'greathall', right:'ossuary', down:'courtyard' } },
+      ossuary:   { bg:'Undercity_Ossuary', name:'貝魯特遺址　納骨堂', noTime:true, exits:{ left:'lamphall' } },
+      mirrorpool:{ bg:'Undercity_StillPool', name:'貝魯特遺址　靜水池', noTime:true, exits:{ up:'guardhall', down:'stairwell' } },
+      courtyard: { bg:'Undercity_SunkenCourt', name:'貝魯特遺址　下沉中庭', noWild:true, rest:true, exits:{ up:'lamphall' } },
+      rooffall:  { bg:'Undercity_RoofFall', name:'貝魯特遺址　崩頂坡', noWild:true, exits:{ right:'muralwalk' } },
+      muralwalk: { bg:'Undercity_MuralGallery', name:'貝魯特遺址　壁畫長廊', noTime:true, exits:{ left:'rooffall', right:'stairwell', down:'forge' } },
+      stairwell: { bg:'Undercity_SpiralWell', name:'貝魯特遺址　旋梯井', noTime:true, noWild:true, exits:{ up:'mirrorpool', left:'muralwalk', down:'incense' } },
+      pillars:   { bg:'Undercity_Cistern', name:'貝魯特遺址　千柱廳', noTime:true, exits:{ up:'greathall', right:'dragonrace', down:'waterjail' } },
+      dragonrace:{ bg:'Undercity_LionSpout', name:'貝魯特遺址　獅口水道', noTime:true, exits:{ left:'pillars', right:'draincliff', down:'bellroom' } },
+      draincliff:{ bg:'Undercity_DrainCliff', name:'貝魯特遺址　排水崖口', exits:{ left:'dragonrace' } },
+      incense:   { bg:'Undercity_ChrismRoom', name:'貝魯特遺址　聖油室', noTime:true, exits:{ up:'stairwell', down:'trihall' } },
+      bellroom:  { bg:'Undercity_BellRoom', name:'貝魯特遺址　鐘室', noTime:true, exits:{ up:'dragonrace' } },
+      drywell:   { bg:'Undercity_DryWell', name:'貝魯特遺址　枯井底', noTime:true, noWild:true, exits:{ right:'forge' } },
+      forge:     { bg:'Undercity_Forge', name:'貝魯特遺址　兵器工坊', noTime:true, exits:{ up:'muralwalk', left:'drywell', right:'trihall' } },
+      trihall:   { bg:'Undercity_TriArch', name:'貝魯特遺址　三拱廳', noTime:true, exits:{ up:'incense', left:'forge', down:'culvert' } },
+      waterjail: { bg:'Undercity_WaterJail', name:'貝魯特遺址　水牢', noTime:true, exits:{ up:'pillars', right:'bonerack', down:'capstan' } },
+      bonerack:  { bg:'Undercity_Sarcophagi', name:'貝魯特遺址　石棺廊', noTime:true, exits:{ left:'waterjail', right:'wardtomb', down:'mirrorway' } },
+      wardtomb:  { bg:'Undercity_GuardTomb', name:'貝魯特遺址　近衛墓室', noTime:true, exits:{ left:'bonerack' } },
+      culvert:   { bg:'Undercity_Culvert', name:'貝魯特遺址　暗渠', noTime:true, exits:{ up:'trihall', down:'oldtomb' } },
+      mirrorway: { bg:'Undercity_MirrorWalk', name:'貝魯特遺址　鏡廊', noTime:true, exits:{ up:'bonerack', down:'candlewalk' } },
+      cages:     { bg:'Undercity_Cages', name:'貝魯特遺址　獸欄', noTime:true, exits:{ right:'oldtomb' } },
+      oldtomb:   { bg:'Undercity_Catacomb', name:'貝魯特遺址　地下墓道', noTime:true, exits:{ up:'culvert', left:'cages', right:'capstan', down:'stelae' } },
+      capstan:   { bg:'Undercity_Capstan', name:'貝魯特遺址　絞盤室', noTime:true, exits:{ up:'waterjail', left:'oldtomb', down:'stephall' } },
+      candlewalk:{ bg:'Undercity_CandleWalk', name:'貝魯特遺址　燭廊', noTime:true, exits:{ up:'mirrorway', down:'floodway' } },
+      stelae:    { bg:'Undercity_SteleWalk', name:'貝魯特遺址　銘碑廊', noTime:true, exits:{ up:'oldtomb', right:'stephall' } },
+      stephall:  { bg:'Undercity_StairHall', name:'貝魯特遺址　階梯大廳', noTime:true, exits:{ up:'capstan', left:'stelae', right:'floodway', down:'foyer' } },
+      floodway:  { bg:'Undercity_Floodway', name:'貝魯特遺址　積水甬道', noTime:true, exits:{ up:'candlewalk', left:'stephall', down:'altar' } },
+      foyer:     { bg:'Undercity_Foyer', name:'貝魯特遺址　前廳', noTime:true, noWild:true, rest:true, exits:{ up:'stephall' }, sail:{} },
+      altar:     { bg:'Undercity_OldAltar', name:'貝魯特遺址　古代祭壇', noTime:true, exits:{ up:'floodway' } },
+    },
+  },
 };
