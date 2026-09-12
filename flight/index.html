@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1135"></script>
+<script src="../orientation.js?v=1136"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -491,11 +491,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1135"></script>
+<script src="settlement.js?v=1136"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1135"></script>
+<script src="talks.js?v=1136"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -2984,6 +2984,14 @@ Object.assign(PORTRAIT_EXPR.renna, {
    ⚠ 這裡只帶 `src/fx/top/bot`：`cm` 沿用本尊（`pkey` 的作法）。索菈娜的
      `think`／`laugh` 在 speakers.js 另有近景用的 `cm/standCm`，飛行頁沒有
      `standCm` 這個旋鈕 —— 差別約 5%，接受它，不要在這裡自己發明一組。 */
+/* ══ 禁航區（ver -1136，Ray 的稿）══ 取景值同樣抄 `script/speakers.js` 的
+   `ART.renna.expr`（同一張圖、同一次量測）—— **改一邊要改兩邊**（§5／§6.10）。 */
+Object.assign(PORTRAIT_EXPR.renna, {
+  chase:      { src:'../resources/SI/Renna_SI_chase.webp',       fx:0.554, top:4, bot:1532 },
+  talkwork:   { src:'../resources/SI/Renna_SI_talkwork.webp',    fx:0.509, top:3, bot:1519 },
+  bow:        { src:'../resources/SI/Renna_SI_bow.webp',         fx:0.507, top:0, bot:1530 },
+  upsetstare: { src:'../resources/SI/Renna_SI_upsetstare.webp',  fx:0.503, top:0, bot:1524 },
+});
 Object.assign(PORTRAIT_EXPR.renna, {
   upset:      { src:'../resources/SI/Renna_SI_upset.webp',       fx:0.507, top:2, bot:1524 },
   writting:   { src:'../resources/SI/Renna_SI_writting.webp',    fx:0.507, top:4, bot:1524 },
@@ -5178,6 +5186,40 @@ function reliefXY(mx,my){
   return { x:mx*MAP_SS, y:my*MAP_SS*MAP_TILT+R.maxRise-hh*R.hK };
 }
 
+/* ══ 禁航區的紅罩（ver -1136）══ 烘一次就好：逐個**浮雕像素**問它是哪一格地圖
+   （`relief.pick` 反查表，平面模式直接是 1:1），那一格落在禁航國就塗紅。
+   ⚠ 地形圖與國界表都齊了才烘得出來（開機時 REGION 可能還在路上）——
+     沒烘成就回 null，下一幀再試（畫面上就是「地圖開著、罩晚一拍才出現」）。
+   ⚠ 名單改了要重烘：`noflyMaskCv=null` 就好（目前只有開機一次，沒有人改）。 */
+let noflyMaskCv=null;
+function noflyMask(){
+  if(noflyMaskCv) return noflyMaskCv;
+  if(!REGION || !MAPW || !relief) return null;
+  const R=relief;
+  const cv=document.createElement('canvas'); cv.width=R.w; cv.height=R.h;
+  const c=cv.getContext('2d');
+  const img=c.createImageData(R.w,R.h), U=new Uint32Array(img.data.buffer);
+  /* ABGR（同 `rgb()` 那一套）：紅、約 22% 不透明 —— 「半透淡」是 Ray 的字，
+     太濃會把地貌蓋掉，那張圖玩家還要拿來認路。 */
+  const RED = (56<<24) | (48<<16) | (48<<8) | 210;
+  const inNofly = new Uint8Array(REGION_W*REGION_H);
+  for(let i=0;i<inNofly.length;i++) inNofly[i] = NOFLY_IDS.indexOf(REGION[i])>=0 ? 1 : 0;
+  const kx=REGION_W/MAPW, ky=REGION_H/MAPH;
+  for(let y=0;y<R.h;y++){
+    for(let x=0;x<R.w;x++){
+      const o=y*R.w+x;
+      let mi;
+      if(R.flat) mi = y*MAPW + x;                 // 平面：畫布就是地圖
+      else { mi = R.pick[o]; if(mi<0) continue; } // 浮雕：反查表（-1＝這一點沒有地表）
+      const mx=mi%MAPW, my=(mi/MAPW)|0;
+      const ri=((my*ky)|0)*REGION_W + ((mx*kx)|0);
+      if(inNofly[ri]) U[o]=RED;
+    }
+  }
+  c.putImageData(img,0,0);
+  noflyMaskCv=cv; return cv;
+}
+
 const mapView=document.getElementById('mapView'), mapCv=document.getElementById('mapCv');
 const mctx=mapCv.getContext('2d');
 let mapOpen=false;
@@ -5238,8 +5280,20 @@ function drawMap(){
   mctx.imageSmoothingEnabled=MV.zoom<2.5;                  // 放很大改硬像素，免得糊成一團
   mctx.drawImage(R.cv, ox, oy, R.w*sc, R.h*sc);
 
+  /* ══ 禁航區的紅色薄罩（ver -1136，Ray：「禁航區用紅色半透淡遮罩」）══
+     畫在地形**之上、國界線之下** —— 線是輪廓、罩是「這一塊不准進」，線要壓在罩上面
+     才讀得出邊界在哪。
+     ⚠⚠ 罩是**烘一次的離屏畫布**（`noflyMask()`），不是每幀逐像素算：它與地形共用
+       同一個 `drawImage` 變換（`R.cv` 那一行的 ox/oy/sc），所以永遠對得準，
+       而且逐幀成本只有一次貼圖。
+     ⚠ 用浮雕的反查表（`R.pick`）決定每個浮雕像素是哪一格地圖 —— 斜角投影沒有
+       解析的反函式（見 buildRelief 的說明），這是唯一精確的作法。 */
+  { const nm=noflyMask(); if(nm) mctx.drawImage(nm, ox, oy, R.w*sc, R.h*sc); }
+
   /* ══ 國界（ver -736，Ray：「地圖也要畫出明顯國界線」「線就好，不用色塊，
-     因為隨 stage 禁航區會變」）══ 畫在地形之上、公路之下。
+     因為隨 stage 禁航區會變」；⚠ ver -1136 起**禁航的那幾國另外鋪一層紅罩**，
+     見上面那一段 —— 「不用色塊」那句話針對的是「每一國一個顏色」，不是這個）══
+     畫在地形之上、公路之下。
      製圖學的國界符號：深色打底＋暗紅**點劃線** —— 虛線與鐵路同理（自然界
      沒有虛線），而且與公路（金）／鐵路（深＋淺枕木）／河（藍灰）都分得開。
      ⚠ 虛線節距跟著縮放走（同鐵路那一條的理由）；畫完要把 dash 歸零，
@@ -6406,6 +6460,7 @@ function update(dt,now){
     cam.speed += (cam.speed*ek - cam.speed)*bleed;
   }
   cam.x+=fx*mv; cam.y+=fy*mv;
+  noflyCheck(now);        // 禁航區的空氣牆（ver -1136）：撞到就退回去並掉頭
   /* 雲海的擴張跟著**實際位移**走（ver -1080）—— 這裡是船真的移動的唯一一行。 */
   skyZoom += mv/SKY_ZOOM_PER;
   clock.dist+=Math.abs(mv);              // 後退也是航行距離，不該倒扣
@@ -10034,6 +10089,56 @@ function regionAt(mx,my){
   const x=(mx*REGION_W/MAPW)|0, y=(my*REGION_H/MAPH)|0;
   if(x<0||y<0||x>=REGION_W||y>=REGION_H) return 0;
   return REGION[y*REGION_W+x];
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   禁航區（ver -1136，Ray：「在大地圖上把伊斯維亞、羅賽爾、埃蘭、阿斯佩里亞
+   劃為禁航區，國境線有空氣牆，撞到會自動轉 180 度」）
+   ──────────────────────────────────────────────────────────────────────
+   · **名單是國界表的 id**（`region_map.json`）—— 不寫座標、不畫第二份多邊形：
+     國界本來就有逐像素的查表（`regionAt`），禁航只是「這幾個 id 不准進」（鐵律 7）。
+   · 撞牆＝**退回撞牆前那一格 ＋ 航向轉 180°**。只轉向不退位的話，船會卡在
+     線上反覆觸發；只退位不轉向則是「推不動的牆」，玩家不知道發生什麼事。
+   · ⚠ 這與地圖邊緣的空氣牆（`edgeDamp`／`wallSteer`）是**兩件事**：那一條是
+     「世界到此為止」（軟阻尼，不說話），這一條是**政治邊界**（硬掉頭＋蕾娜出聲）。
+   ⚠⚠ 日後某一國開放（Ray -736 的原話：「隨 stage 禁航區會變」），把 id 從這裡
+     拿掉即可；要依章節開放就在這一支加條件 —— 判定只有 `noflyAt()` 一處。 */
+const NOFLY_IDS = [3, 9, 12, 13];   // 伊斯維亞／羅賽爾／埃蘭／阿斯佩里亞（region_map.json）
+function noflyAt(mx,my){ return NOFLY_IDS.indexOf(regionAt(mx,my))>=0; }
+/* 蕾娜的三句（Ray 的稿，一字未改）＋播完之後的那一句。
+   ⚠ 「播完了沒」記成**旗**（`nofly_told`）：誰插的＝第三句播出去那一刻；
+     沒有人拔（鐵律 9）。不記旗的話每次出航都會再聽一輪。 */
+const NOFLY_LINES = [
+  { who:'renna/chase',    text:'慢著！那邊不是教區！直接飛進去會被打下來的！' },
+  { who:'renna/talkwork', text:'非教區的國家可不認聖王廳紋章，要入國得乖乖辦手續。' },
+  { who:'renna/bow',      text:'如果你非要硬闖，可以先把我們放下船嗎？。' },
+];
+const NOFLY_SILENT = { who:'renna/upsetstare', text:'......' };
+const NOFLY_FLAG = 'nofly_told';
+const NOFLY_COOL = 1200;            // 同一次撞牆不重複說話（ms）
+let noflyIdx = 0;                   // 這一趟講到第幾句（旗立了就一律最後那一句）
+let noflySafe = null;               // 最後一個**合法**位置（撞到就退回這裡）
+let noflySaidAt = 0;
+
+/* 每一幀跑一次：撞到就掉頭。⚠ 掛在 `update()` 真的移動那一行之後（唯一的呼叫點）。 */
+function noflyCheck(now){
+  if(!REGION || s9On) return;                       // 劇情飛行段不擋（那一段是照劇本走的）
+  const mx=cam.x/MAP_SCALE, my=cam.y/MAP_SCALE;
+  if(!noflyAt(mx,my)){ noflySafe={x:cam.x, y:cam.y}; return; }
+  /* ⚠ 開場那一幀就在禁區裡（理論上到不了：出港點與所有降落點都在教區內）——
+     那時沒有「上一個合法位置」可退，硬轉 180° 只會讓船原地打陀螺。
+     收下當作合法起點，等他自己飛出去。 */
+  if(!noflySafe){ noflySafe={x:cam.x, y:cam.y}; return; }
+  /* 撞牆：退回上一個合法位置 ＋ 轉 180°。 */
+  cam.x=noflySafe.x; cam.y=noflySafe.y;
+  cam.angle += Math.PI;
+  if(now - noflySaidAt < NOFLY_COOL) return;
+  noflySaidAt = now;
+  if(sayQueue || senseOn || mapOpen || battleGoing) return;   // 畫面上已經有人在講話就不插隊
+  if(flagOn(NOFLY_FLAG) || noflyIdx >= NOFLY_LINES.length){ say([NOFLY_SILENT], now); return; }
+  const b = NOFLY_LINES[noflyIdx++];
+  say([b], now);
+  if(noflyIdx >= NOFLY_LINES.length) addFlag(NOFLY_FLAG);     // 三句都講完了（鐵律 9）
 }
 
 /* 每幀檢查所在國；換了就重新計時。
