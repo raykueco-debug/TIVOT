@@ -28,9 +28,10 @@ sys.path.insert(0, os.path.join(ROOT, 'tools'))
 from map_layout import POS, load            # 同一份版面、同一支讀取器（鐵律 7）
 
 W, H = 1536, 1024
-MARGIN  = 0.08
-ICON_PX = 46
-NAME_PX = 24
+# ⚠ 四邊不對稱：草書名往**右**長，所以右邊要留最多；紙的撕邊也會吃掉一圈
+MARG = dict(l=0.085, r=0.175, t=0.140, b=0.085)
+ICON_PX = 52
+NAME_PX = 26
 DOT_R   = 7                               # 紙的四周留白（比例）
 INK   = (62, 38, 22)
 FONT_CURSIVE = '/System/Library/Fonts/Supplemental/SnellRoundhand.ttc'
@@ -45,9 +46,9 @@ def frac_positions(town, nodes=None):
     pos = {k: v for k, v in POS[town].items() if (nodes is None or k in nodes)}
     cs = sorted({c for c, _ in pos.values()}); rs = sorted({r for _, r in pos.values()})
     ci = {c: i for i, c in enumerate(cs)}; ri = {r: i for i, r in enumerate(rs)}
-    sx = (1 - 2*MARGIN) / max(1, len(cs)-1)
-    sy = (1 - 2*MARGIN) / max(1, len(rs)-1)
-    return {k: (MARGIN + ci[c]*sx, MARGIN + ri[r]*sy) for k, (c, r) in pos.items()}
+    sx = (1 - MARG['l'] - MARG['r']) / max(1, len(cs)-1)
+    sy = (1 - MARG['t'] - MARG['b']) / max(1, len(rs)-1)
+    return {k: (MARG['l'] + ci[c]*sx, MARG['t'] + ri[r]*sy) for k, (c, r) in pos.items()}
 
 def edges_of(T):
     N = T['nodes']; e = set()
