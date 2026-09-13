@@ -12,7 +12,11 @@
 ⚠ 屋頂的**坡**表達不出來（高度圖只有一個高度）：山牆與錐頂仍由程式端的
   `k:'gable'` / `cap` 產生，高度圖只管**量體與footprint**。
 
-用法：  python3 tools/ruin_heightmap.py belisar
+用法：  python3 tools/ruin_heightmap.py belisar [HMAX]
+
+⚠⚠ **`HMAX` 要配那一座的高度**（ver -1229）：它是寫死 320 的（照貝利薩爾的 302），
+   而木雅克最高只有 62 —— 用 320 畫出來整張只有 19% 的灰，**美術根本看不出形狀**，
+   等於交了一張黑圖。第二個參數就是給這個用的：取「那一座的最高點再多兩三成」。
 """
 import io, json, os, re, subprocess, sys, math
 
@@ -20,6 +24,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 JSC  = '/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc'
 PPU  = 3          # 每個世界單位幾個像素
 HMAX = 320.0      # 白（255）＝這麼高。⚠ 貝利薩爾最高的尖端是 302
+if len(sys.argv) > 2: HMAX = float(sys.argv[2])   # 逐座覆寫（見檔頭）
 PAD  = 8          # 四邊留白（世界單位）
 
 def parts_of(key):
