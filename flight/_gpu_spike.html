@@ -1,0 +1,295 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>GPU 試作：地形光線行進</title>
+<style>
+html,body{margin:0;background:#05060c;color:#cfe;font:13px/1.5 -apple-system,system-ui,sans-serif;
+  -webkit-text-size-adjust:100%}
+#wrap{position:relative}
+canvas{display:block;width:100vw;image-rendering:pixelated}
+#hud{position:fixed;left:0;right:0;top:0;padding:6px 8px;background:rgba(0,0,0,.72);
+  font:12px/1.45 ui-monospace,Menlo,monospace;white-space:pre-wrap;color:#8f8}
+#bar{position:fixed;left:0;right:0;bottom:0;padding:8px;background:rgba(0,0,0,.8);
+  display:flex;gap:6px;flex-wrap:wrap}
+button{font:12px/1 system-ui;padding:8px 10px;background:#1b2233;color:#cfe;
+  border:1px solid #38445e;border-radius:6px}
+button.on{background:#2d4a2d;border-color:#5a8f5a}
+</style></head><body>
+<div id="hud">載入中…</div>
+<div id="wrap"><canvas id="cv"></canvas><canvas id="cv2"></canvas></div>
+<div id="bar">
+  <button id="bCpu">CPU / GPU</button>
+  <button id="bQ">緩衝 106</button>
+  <button id="bSpot">取景 1/4</button>
+  <button id="bStep">步進 標準</button>
+</div>
+<script>
+/* ══ GPU 試作（ver -1198）══════════════════════════════════════════════
+   目的只有一個：回答「地形這一層搬到 WebGL2 划不划算」。
+   ⚠ 這**不是**遊戲的一部分 —— 底線開頭的檔名不會被載入（同 _originals 的慣例）。
+   ⚠ 只搬地形＋雲海＋霧，**沒有**城、遺蹟、林草、分級、抖色 ——
+     所以畫面不會與正式版一模一樣；要比的是**每禎毫秒數**與大致的形狀。
+   ⚠ 兩邊用同一份 PNG、同一組常數、同一條投影式子，取景也同一組。 */
+const MAP_SCALE=20, INV_SCALE=1/20, PEAK_SCALE=520, CLOUD_H=44;
+const ZFAR=3600, HORIZON_F=0.22, VIEW_F=0.66, PLANET_R=40000;
+const FOG_START=0.38, FOG_MAX=0.94, FOGS=ZFAR*FOG_START;
+const HEIGHT_URL='silvermoon_heightmap.png?v=2', COLOR_URL='silvermoon_terrain.png?v=2';
+
+/* 取景：與正式版對照用的四個點（地圖座標＋高度＋航向） */
+const SPOTS=[
+  {n:'空曠海面', x:1300, y:1100, alt:400, a:0},
+  {n:'東方泊地', x:2003, y:630,  alt:400, a:0},
+  {n:'貝利薩爾', x:1972, y:711,  alt:400, a:0},
+  {n:'帝都',     x:1005, y:640,  alt:400, a:0},
+];
+let spot=0, useGPU=true, BW=106, BH=141, stepMul=1;
+
+const cv=document.getElementById('cv'), cv2=document.getElementById('cv2'),
+      hud=document.getElementById('hud');
+/* ⚠⚠ **一張畫布不能同時要 webgl2 與 2d** —— 第二次 getContext 回 null。
+   所以 GPU 與 CPU 各用一張，靠 display 切換（試作要能在實機上按鈕對照，
+   那正是它存在的理由）。 */
+let MAPW=0,MAPH=0,HGT=null,COL=null,hImg=null,cImg=null;
+
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const curvAt=s=>(1+s*s)/(2*PLANET_R);
+
+function loadImg(u){ return new Promise((res,rej)=>{ const i=new Image();
+  i.onload=()=>res(i); i.onerror=()=>rej(new Error('載不到 '+u)); i.src=u; }); }
+
+/* ══ 資料：與 loadWorld 同一條路（高度取紅通道、×PEAK_SCALE）══ */
+async function boot(){
+  hud.textContent='載入高度圖與地貌圖…';
+  [hImg,cImg]=await Promise.all([loadImg(HEIGHT_URL),loadImg(COLOR_URL)]);
+  MAPW=hImg.naturalWidth; MAPH=hImg.naturalHeight;
+  const c=document.createElement('canvas'); c.width=MAPW; c.height=MAPH;
+  const g=c.getContext('2d',{willReadFrequently:true});
+  g.drawImage(hImg,0,0); const hd=g.getImageData(0,0,MAPW,MAPH).data;
+  g.clearRect(0,0,MAPW,MAPH); g.drawImage(cImg,0,0);
+  const cd=g.getImageData(0,0,MAPW,MAPH).data;
+  const N=MAPW*MAPH; HGT=new Uint16Array(N); COL=new Uint32Array(N);
+  for(let i=0;i<N;i++){
+    HGT[i]=clamp(Math.round(hd[i*4]/255*PEAK_SCALE),0,65535);
+    COL[i]=(255<<24)|(cd[i*4+2]<<16)|(cd[i*4+1]<<8)|cd[i*4];
+  }
+  initGL(); resize(); requestAnimationFrame(loop);
+}
+
+/* ══ GPU：per-pixel 光線行進 ══════════════════════════════════════════
+   ⚠ 與 CPU 的 span 版**演算法不同**：CPU 是逐深度切片畫整欄（一禎約
+     743 切片 × BW 欄 ≈ 79k 次取樣）；shader 是逐像素各自行進
+     （743 步 × BW×BH 像素 ≈ 1,110 萬次）——**工作量多兩個數量級**，
+     但攤給 GPU 幾百個核心平行跑。這支試作就是要量這筆帳划不划算。
+   ⚠ 命中即停（early exit）是省下大半工作的關鍵：只有天空像素才會走滿全程。 */
+let gl=null, prog=null, vao=null, texH=null, texC=null, uni={};
+const VS=`#version 300 es
+in vec2 p; void main(){ gl_Position=vec4(p,0.,1.); }`;
+const FS=`#version 300 es
+precision highp float; precision highp int;
+uniform sampler2D uH, uC;
+uniform vec2 uMap;          // MAPW, MAPH
+uniform vec2 uBuf;          // BW, BH
+uniform vec3 uCam;          // cam.x, cam.y, cam.alt（世界座標）
+uniform vec2 uDir;          // sinp, cosp
+uniform float uStep;        // 步進倍率（1＝與 CPU 同）
+out vec4 o;
+
+float hAt(vec2 mf){                       // 地圖座標 → 世界高度（最近鄰，同 CPU 的命中測試）
+  vec2 uv=(floor(mf)+0.5)/uMap;
+  if(mf.x<0.||mf.y<0.||mf.x>=uMap.x||mf.y>=uMap.y) return 0.;
+  return texture(uH,uv).r*255.0/255.0*${PEAK_SCALE}.0;
+}
+void main(){
+  float px=gl_FragCoord.x, py=uBuf.y-gl_FragCoord.y;      // 上下翻（canvas 原點在左上）
+  float sv=(px+0.5)/uBuf.x*2.0-1.0;
+  float scaleH=uBuf.y*0.62, horizon=uBuf.y*${HORIZON_F};
+  float sinp=uDir.x, cosp=uDir.y;
+  // 這一欄的射線方向（與 CPU 的 plx/prx 同一條式子）
+  vec2 dir=vec2(sv*cosp - sinp, -sv*sinp - cosp);
+  float curv=(1.0+sv*sv)/(2.0*${PLANET_R}.0);
+  float k=(py-horizon)/scaleH;                            // 螢幕 y → (camAlt-h)/z + z*curv
+  float z=1.0, dz=0.75*uStep;
+  vec3 col=vec3(-1.0);
+  for(int i=0;i<1600;i++){
+    if(z>=${ZFAR}.0) break;
+    // 這個像素在深度 z 對應的世界高度
+    float hNeed=uCam.z-(k-z*curv)*z;
+    vec2 wp=uCam.xy+dir*z;
+    vec2 mf=wp*${INV_SCALE};
+    float hh=hAt(mf);
+    bool cloud=hh<=${CLOUD_H}.0;
+    float hs=cloud?${CLOUD_H}.0:hh;
+    if(hs>=hNeed){                                        // 命中
+      vec2 uv=(floor(mf)+0.5)/uMap;
+      vec3 c=cloud?vec3(0.82,0.86,0.92):texture(uC,uv).rgb;
+      float fog=clamp((z-${FOGS}.0)/(${ZFAR}.0-${FOGS}.0),0.,1.)*${FOG_MAX};
+      col=mix(c,vec3(0.72,0.78,0.86),fog);
+      break;
+    }
+    z+=dz; dz+=0.011*uStep;
+  }
+  if(col.x<0.0) col=vec3(0.70,0.77,0.87);                 // 沒命中＝天空
+  o=vec4(col,1.0);
+}`;
+function sh(t,src){ const s=gl.createShader(t); gl.shaderSource(s,src); gl.compileShader(s);
+  if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; }
+function initGL(){
+  const g2=cv.getContext('webgl2',{antialias:false,depth:false,alpha:false,
+                                   powerPreference:'high-performance'});
+  if(!g2){ hud.textContent='這台機器沒有 WebGL2 —— 試作到此為止。'; return; }
+  gl=g2;
+  prog=gl.createProgram();
+  gl.attachShader(prog,sh(gl.VERTEX_SHADER,VS));
+  gl.attachShader(prog,sh(gl.FRAGMENT_SHADER,FS));
+  gl.linkProgram(prog);
+  if(!gl.getProgramParameter(prog,gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
+  gl.useProgram(prog);
+  vao=gl.createVertexArray(); gl.bindVertexArray(vao);
+  const b=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,b);
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
+  const loc=gl.getAttribLocation(prog,'p');
+  gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
+  const mk=(img,unit)=>{ const t=gl.createTexture();
+    gl.activeTexture(gl.TEXTURE0+unit); gl.bindTexture(gl.TEXTURE_2D,t);
+    gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA8,gl.RGBA,gl.UNSIGNED_BYTE,img);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE); return t; };
+  texH=mk(hImg,0); texC=mk(cImg,1);
+  gl.uniform1i(gl.getUniformLocation(prog,'uH'),0);
+  gl.uniform1i(gl.getUniformLocation(prog,'uC'),1);
+  for(const n of ['uMap','uBuf','uCam','uDir','uStep']) uni[n]=gl.getUniformLocation(prog,n);
+  gl.uniform2f(uni.uMap,MAPW,MAPH);
+}
+
+/* ══ CPU 參照：同一條投影、同一份資料的 span 版（簡化，只有地形與霧）══ */
+let cctx=null, cbuf=null, cbufU32=null, cbcv=null, cbctx=null;
+function initCPU(){
+  cbcv=document.createElement('canvas'); cbcv.width=BW; cbcv.height=BH;
+  cbctx=cbcv.getContext('2d'); cbuf=cbctx.createImageData(BW,BH);
+  cbufU32=new Uint32Array(cbuf.data.buffer);
+}
+function renderCPU(cam){
+  const scaleH=BH*0.62, horizon=BH*HORIZON_F;
+  const sinp=Math.sin(cam.a), cosp=Math.cos(cam.a);
+  const SKY=(255<<24)|(0xdf<<16)|(0xc4<<8)|0xb3;
+  cbufU32.fill(SKY);
+  const ybuf=new Int32Array(BW).fill(BH);
+  let z=1.0, dz=0.75*stepMul;
+  while(z<ZFAR){
+    let plx=(-cosp*z-sinp*z)+cam.x, ply=(sinp*z-cosp*z)+cam.y;
+    const prx=(cosp*z-sinp*z)+cam.x, pry=(-sinp*z-cosp*z)+cam.y;
+    const ddx=(prx-plx)/BW, ddy=(pry-ply)/BW;
+    const fog=clamp((z-FOGS)/(ZFAR-FOGS),0,1)*FOG_MAX;
+    const invz=1/z;
+    for(let i=0;i<BW;i++){
+      const xi=(plx*INV_SCALE)|0, yi=(ply*INV_SCALE)|0;
+      plx+=ddx; ply+=ddy;
+      const outside=(xi<0||yi<0||xi>=MAPW||yi>=MAPH);
+      const mi=outside?0:yi*MAPW+xi;
+      const th=outside?0:HGT[mi];
+      const cloud=(outside||th<=CLOUD_H);
+      const hh=cloud?CLOUD_H:th;
+      const sv=(i+0.5)/BW*2-1;
+      let y=(((cam.alt-hh)*invz + z*curvAt(sv))*scaleH+horizon)|0;
+      if(y<0)y=0;
+      if(y>=ybuf[i]) continue;
+      let r,g,b;
+      if(cloud){ r=209; g=219; b=235; }
+      else { const c=COL[mi]; r=c&255; g=(c>>8)&255; b=(c>>16)&255; }
+      r=r+(184-r)*fog; g=g+(199-g)*fog; b=b+(219-b)*fog;
+      const px=(255<<24)|((b|0)<<16)|((g|0)<<8)|(r|0);
+      for(let yy=y; yy<ybuf[i]; yy++) cbufU32[yy*BW+i]=px;
+      ybuf[i]=y;
+    }
+    z+=dz; dz+=0.011*stepMul;
+  }
+  cbctx.putImageData(cbuf,0,0);
+  if(!cctx) cctx=cv2.getContext('2d');
+  cctx.imageSmoothingEnabled=false;
+  cctx.drawImage(cbcv,0,0,BW,BH,0,0,cv.width,cv.height);
+}
+
+function resize(){
+  const w=innerWidth, h=Math.round(innerHeight*VIEW_F);
+  BH=Math.round(BW*h/w);
+  cv.style.height=h+'px'; cv2.style.height=h+'px';
+  cv.style.display  = useGPU?'block':'none';
+  cv2.style.display = useGPU?'none':'block';
+  if(gl){ cv.width=BW; cv.height=BH; gl.viewport(0,0,BW,BH); }
+  cv2.width=w; cv2.height=h;
+  if(!useGPU) initCPU();
+}
+addEventListener('resize',resize);
+
+let acc=0, nf=0, shown=0, gpuWork=0, rafFps=0, lastT=0, rafAcc=0, rafN=0;
+const px1px=new Uint8Array(4);
+/* ══⚠⚠⚠ GPU 的「工作量」要批次量，不可以每禎量（ver -1198 踩過）══════════
+   · `gl.finish()` **量不到東西**：11,872 px 與 1,036,640 px 都回報 0.04ms
+     （像素多 87 倍、時間不變）—— 那只量到「送指令」。
+   · 每禎 `readPixels` 則**過度悲觀**：它會把管線整個排空，實測同一個取景
+     每禎 2.61ms，其中約 2.4ms 是**同步本身**，不是畫圖 —— 比 CPU 還慢，
+     但正式渲染根本不會這樣做。
+   ⇒ 正解：連畫 K 次、最後 readPixels 一次、除以 K。同步成本被攤掉，
+     剩下的才是真的工作量。實測 0.167ms（與像素數成正比，這才對得上）。 */
+function benchGPU(K=40){
+  if(!gl) return 0;
+  gl.drawArrays(gl.TRIANGLES,0,3);
+  gl.readPixels(0,0,1,1,gl.RGBA,gl.UNSIGNED_BYTE,px1px);      // 暖機＋排空
+  const t0=performance.now();
+  for(let i=0;i<K;i++) gl.drawArrays(gl.TRIANGLES,0,3);
+  gl.readPixels(0,0,1,1,gl.RGBA,gl.UNSIGNED_BYTE,px1px);
+  return (performance.now()-t0)/K;
+}
+function loop(){
+  const S=SPOTS[spot];
+  const cam={x:S.x*MAP_SCALE, y:S.y*MAP_SCALE, alt:S.alt, a:S.a};
+  const t0=performance.now();
+  if(useGPU && gl){
+    gl.useProgram(prog); gl.bindVertexArray(vao);
+    gl.uniform2f(uni.uBuf,BW,BH);
+    gl.uniform3f(uni.uCam,cam.x,cam.y,cam.alt);
+    gl.uniform2f(uni.uDir,Math.sin(cam.a),Math.cos(cam.a));
+    gl.uniform1f(uni.uStep,stepMul);
+    gl.drawArrays(gl.TRIANGLES,0,3);
+    /* ⚠⚠⚠ **這裡刻意不強迫同步** —— 正式渲染本來就不會。
+       量 GPU 真正的工作量走下面的 `benchGPU()`（批次量一次），
+       每禎的表現則看 rAF 實測 fps。兩個數字的意義不同，都要看。 */
+  } else {
+    if(!cbcv) initCPU();
+    renderCPU(cam);
+  }
+  const dt=performance.now()-t0;
+  acc+=dt; nf++;
+  const nowT=performance.now();
+  if(lastT){ rafAcc+=nowT-lastT; rafN++; } lastT=nowT;
+  if(nf>=30){
+    shown=acc/nf; acc=0; nf=0;
+    rafFps=rafN? 1000/(rafAcc/rafN) : 0; rafAcc=0; rafN=0;
+    if(useGPU) gpuWork=benchGPU();
+    hud.textContent=
+      (useGPU?'GPU（WebGL2 逐像素行進）':'CPU（span，與正式版同演算法）')
+      +'\n實測 '+rafFps.toFixed(0)+' fps　（rAF，無強迫同步＝真實表現）'
+      +'\n'+(useGPU
+          ? '這一層的工作量 '+gpuWork.toFixed(3)+' ms／禎（批次量測）'
+          : '這一層的工作量 '+shown.toFixed(2)+' ms／禎')
+      +'\n緩衝 '+BW+'×'+BH+'（'+(BW*BH).toLocaleString()+' px）　步進 ×'+stepMul
+      +'\n取景 '+SPOTS[spot].n+'　地圖 '+MAPW+'×'+MAPH
+      +'\n⚠ 只有地形＋雲海＋霧，沒有城／遺蹟／林草／分級';
+  }
+  requestAnimationFrame(loop);
+}
+
+document.getElementById('bCpu').onclick=e=>{ useGPU=!useGPU;
+  e.target.classList.toggle('on',!useGPU);
+  e.target.textContent=useGPU?'現在：GPU':'現在：CPU';
+  acc=0; nf=0; resize(); };
+document.getElementById('bQ').onclick=e=>{ BW=(BW===106)?160:(BW===160)?248:106;
+  e.target.textContent='緩衝 '+BW; resize(); };
+document.getElementById('bSpot').onclick=e=>{ spot=(spot+1)%SPOTS.length;
+  e.target.textContent='取景 '+(spot+1)+'/'+SPOTS.length+' '+SPOTS[spot].n; };
+document.getElementById('bStep').onclick=e=>{ stepMul=stepMul===1?2:stepMul===2?4:1;
+  e.target.textContent='步進 ×'+stepMul; };
+
+boot().catch(e=>{ hud.textContent='試作啟動失敗：'+e.message; console.error(e); });
+</script></body></html>
