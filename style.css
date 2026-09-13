@@ -2550,7 +2550,11 @@
   /* ══ 背景上的鐘（ver -1249，Ray：「背景的時間跟遊戲時間永遠對不上，對我來說那算 bug」）══
      外框、z-index、濾鏡、transform **全部照 `#storyBg`** —— 見上面那一條的警語。
      ⚠ `pointer-events:none`：它只是畫上去的東西，不吃點擊。 */
-  #townClock{position:absolute;left:0;right:0;top:0;height:var(--story-top);
+  /* ⚠⚠⚠ `<svg>` 是**替換元素**：`width:auto` 時用的是它的**內在寬度 300px**，
+     `left:0;right:0` 不會把它撐開（`<img>` 那一條能撐開是因為另有 width）。
+     ver -1249 第一版就是這樣 —— 元素在、內容也對，但錶心 x≈375 落在 300 之外
+     被裁掉，畫面上完全看不到，而且**沒有任何錯誤訊息**。所以要明寫 `width:100%`。 */
+  #townClock{position:absolute;left:0;top:0;width:100%;height:var(--story-top);
     z-index:0;pointer-events:none;display:none;}
   #townClock.on{display:block;}
   #storyStage.town-on #townClock{ filter:blur(0.6px) contrast(1.03); transform:scale(1.01); }

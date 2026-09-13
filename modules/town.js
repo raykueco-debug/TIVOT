@@ -600,7 +600,10 @@ function bgFor(list, done){
       /* 旅店那兩顆行動鈕（獨自坐坐／回房睡覺）要靠圖的原始比例換算位置（見 bgPoint），
          所以在這裡記下來 —— 這一支本來就要載那張圖，不必另外再抓一次
          （鐵律 7：算的那一支發佈出去）。 */
-      bgNat=[img.naturalWidth, img.naturalHeight]; inn.relayout();
+      /* ⚠⚠ **背景載到才算數**：`bgNat` 在這一刻才有值，而 `refreshArrows()` 早就跑完了
+         —— 靠背景圖定位的東西**都要在這裡再擺一次**，不然第一次進來那一格是空的
+         （旅店那兩顆鈕當年就是這樣才加的 `inn.relayout()`；ver -1249 的背景鐘同病）。 */
+      bgNat=[img.naturalWidth, img.naturalHeight]; inn.relayout(); syncBgClock();
       if(i>0 && !missingBg.has(cands[0])){ missingBg.add(cands[0]);
         console.info('[town] 沒有這個時段的背景，退回：', cands[0], '→', name); } };
     img.onerror=()=>{ if(my===bgSeq) tryAt(i+1); };
