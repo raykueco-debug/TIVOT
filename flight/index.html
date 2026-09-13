@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1209"></script>
+<script src="../orientation.js?v=1210"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -512,11 +512,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1209"></script>
+<script src="settlement.js?v=1210"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1209"></script>
+<script src="talks.js?v=1210"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -556,7 +556,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1209';
+const FLIGHT_VER = 'ver -1210';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -7462,6 +7462,7 @@ uniform vec3 uLcol;            // lightR, G, B
 uniform vec2 uLi;              // ambI, sunI
 uniform vec3 uFog;             // 霧色（地平線色）
 uniform float uCloudLit;
+uniform float uTime;      // 毫秒，瀑布的水流動畫用
 out vec4 o;
 
 float hRaw(ivec2 t){ return float(texelFetch(uH, t, 0).r); }
@@ -7566,6 +7567,7 @@ void main(){
              螢幕列會隨相機移動而游移（§6.8.1「逐禎重建的東西不准用亂數」
              同一族的問題）。用世界高度＝真正的水平岩層，而且穩定。
            ⚠ 落差由「靠鏡頭那一側的地面」反推（多一次 texelFetch，很便宜）。 */
+        bool cliffDone=false;
         float below=hs-hNeed;
         if(below>1.5){
           vec2 mfF=(uCam.xy+dir*max(z-${MAP_SCALE}.0,1.0))*${INV_SCALE};
@@ -7576,16 +7578,34 @@ void main(){
             float strat=fract(sin(floor(hNeed*0.5)*12.9898+floor(wp.x*0.05)*4.1414)*43758.5453);
             float v=(1.0-dd*0.34)*(0.88+strat*0.14);
             float rocky=clamp((drop-16.0)/(${CLIFF_DH}.0*1.5),0.0,1.0);
-            c*=v;
-            if(rocky>0.01) c=mix(c, vec3(152.,138.,126.)/255.0*v, rocky);
-            if(below<3.0) c*=1.20;                  // 崖唇受光提亮
+            /* ══ 瀑布（ver -1210）══════════════════════════════════════
+               只有兩種情形算瀑布（與 CPU 同一條判準）：
+               ① 水掉進雲海（靠鏡頭那一側已經是雲海）② 真的掛在斷崖上（落差 >111）。
+               ⚠ 內陸的河**預設不是瀑布** —— 河面比岸低，沿岸落差很容易超過門檻，
+                 不設這兩個條件的話整條河的岸邊都會變成翻白的水（-190 踩過）。
+               ⚠ 色相取河道自己的地貌色再往白沫提亮，而且**要吃日照** ——
+                 寫死純白的話夜裡整條瀑布像螢光漆。 */
+            uint bw=texelFetch(uBiome,clampT(ti),0).r & 15u;
+            bool isWater=(bw==8u||bw==9u);
+            bool fall = isWater && (hF<=${CLOUD_H}.0+12.0 || drop>${CLIFF_DH}.0*1.5*0.85);
+            if(fall){
+              float flow=fract(sin(floor(wp.x*0.3)*7.1+floor((hNeed*2.0-uTime*0.03))*3.7)*43758.5453);
+              float foam=clamp(0.46+flow*0.26-dd*0.14+smoothstep(0.55,1.0,dd)*0.34,0.0,1.0);
+              float wsh=(uLi.x+uLi.y*0.75)*${GRADE_EXPO};
+              c=mix(c, vec3(248.0/255.0), foam)*wsh*uLcol;
+            }else{
+              c*=v;
+              if(rocky>0.01) c=mix(c, vec3(152.,138.,126.)/255.0*v, rocky);
+              if(below<3.0) c*=1.20;                // 崖唇受光提亮
+            }
+            cliffDone = fall;                        // 瀑布自己算完光了，後面不要再乘一次
           }
         }
         /* 坡度打光（與舊路徑同一條式子：0.62 + (slx*lx+sly*ly)*LIGHT_DIR_K） */
         vec2 sl=texelFetch(uS,clampT(ti),0).rg*255.0-128.0;
         float nl=clamp(0.62+dot(sl,uLdir)*${'0.030'}, 0.0, 1.5);
         float shd=(uLi.x+uLi.y*nl)*${GRADE_EXPO};
-        c=c*shd*uLcol;
+        if(!cliffDone) c=c*shd*uLcol;              // ⚠ 瀑布在上面已經自己套過光了
         float lum=dot(c, vec3(0.299,0.587,0.114));
         c=vec3(lum)+(c-vec3(lum))*${GRADE_SAT};   // VP1 分級：往亮度收斂
       }
@@ -7635,7 +7655,7 @@ function glInit(){
   g.bufferData(g.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),g.STATIC_DRAW);
   const lp=g.getAttribLocation(glProg,'p');
   g.enableVertexAttribArray(lp); g.vertexAttribPointer(lp,2,g.FLOAT,false,0,0);
-  for(const n of ['uH','uC','uS','uSky','uMap','uBuf','uCam','uDir','uLdir','uLcol','uLi','uFog','uCloudLit',
+  for(const n of ['uH','uC','uS','uSky','uMap','uBuf','uCam','uDir','uLdir','uLcol','uLi','uFog','uCloudLit','uTime',
                   'uCityA','uCityB','uCityA0','uCityB0','uCityA1','uCityB1','uInvS',
                   'uBiome','uMask','uGeo','uRailDir','uRD','uGeoOn'])
     glU[n]=g.getUniformLocation(glProg,n);
@@ -7774,6 +7794,7 @@ function glDrawTerrain(S, sinp, cosp, lx, ly, ambI, sunI, lightR, lightG, lightB
   g.uniform2f(glU.uLi,ambI,sunI);
   g.uniform3f(glU.uFog,fr/255,fg/255,fb/255);
   g.uniform1f(glU.uCloudLit,cloudLit);
+  g.uniform1f(glU.uTime, performance.now());
   g.uniform2f(glU.uRD, RD_W||1, RD_H||1);
   g.uniform1f(glU.uGeoOn, glGeoUp?1:0);
   /* 城的手繪地面（最多兩座）。kv＝反分級的亮度係數，逐城（`tone` 是逐城的）。 */
@@ -13853,14 +13874,19 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
          —— 這裡只把它交給 GL，不另算一份（鐵律 7）。
          ⚠ 網格是**懶建**的：`cityMass` 與 atlas 都是非同步載的，
            第一次不成功就下一禎再試（`glMassBuild` 自己會擋重複）。 */
+      /* ⚠⚠ **只換掉量體那一段，不可以 `continue`**（ver -1210 修 -1207 的回歸）：
+         這一圈在量體之後還要畫**棧橋**與**夜間路燈**（燈要在城上面才畫）。
+         -1207 我寫成 `ctx.restore(); continue;` —— 於是 `?gl=1` 的城
+         **晚上沒有燈、港口沒有棧橋**，而且不會有任何錯誤訊息。 */
+      let glMassDone=false;
       if(GLON && glReady && MS && MA && tall>0){
         glMassBuild(o.s);
         if(glMassHas(o.s.plan)){
           glDrawMass(o.s, massA, sinp, cosp, LIT.fr, LIT.fg, LIT.fb);
-          ctx.restore(); continue;                 // CPU 那一大段整個跳過
+          glMassDone=true;
         }
       }
-      if(MS&&MA&&tall>0&&massA>0.003){
+      if(!glMassDone && MS&&MA&&tall>0&&massA>0.003){
         const dyk=scaleH*syk;
         /* 方位桶：由遠而近的順序只取決於 (gradU,gradV) 的方向（見 loadMass）。 */
         let az=Math.atan2(gradV,gradU)/(Math.PI*2); az-=Math.floor(az);
