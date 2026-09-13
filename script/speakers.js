@@ -402,6 +402,15 @@ export const ART = {
     guardtalk:    { src:'resources/SI/Sorana_SI_guardtalk.webp',     top:5,  bot:1529, fx:0.653, cm:168 },
     guardthinking:{ src:'resources/SI/Sorana_SI_guardthinking.webp', top:8,  bot:1529, fx:0.672, cm:168 },
     embarassed:   { src:'resources/SI/Sorana_SI_embarassed.webp',    top:5,  bot:1527, fx:0.551 },
+    /* 夏爾村・夜襲之後那一段（`shinier.wild`）的「唉——又是南面那個遺蹟」。
+       圖 ver -772 那一批就交了，但一直沒轉檔也沒登記 —— 於是那三句一路回退成
+       基本立繪（script_lint 每次都在喊「SORANA 沒有 tired 這張差分」），ver -1290 補上。
+       ⚠ `fx` **不是 measure_si.py 那個 0.489**：她把左手舉到頭後，手臂落進
+         「頭頂往下 8% 身高」那條取樣帶裡，把重心拉偏了（同 §5 法環污染那一條）。
+         改量兩眼睫毛的中點＝0.511（銀白髮的橫向重心 0.508 獨立佐證）。
+       ⚠ 人物像素身高 1520，與基本立繪的 1522 差 0.1%＝雜訊，所以**不加 `rescale`**。
+       ⚠ `bot` 是腳底不是裙襬的流蘇：實測 y=1500 只剩 x518..637（那是腳），流蘇沒那麼低。 */
+    tired:        { src:'resources/SI/Sorana_SI_tired.webp',         top:2,  bot:1522, fx:0.511 },
     /* 瞭望（ver -1281，貝利薩爾降不下去那一段）。⚠ 取景值與 `flight/index.html`
        的 `PORTRAIT_EXPR.sorana.watch` **是同一次量測**，改一邊要改兩邊（§5／§6.10）。
        ⚠ 飛行頁那一邊另外掛了 `cm:80 / standCm:176 / anchorBot`（那張畫在那個舞台上

@@ -141,3 +141,5 @@ when	from	to	reason
 20260913-151642	flight/geo/moss_stone.webp	_recycle/flight/geo/moss_stone.webp	接縫做壞的第一版（cross-fade 寫錯，接縫 34.8 反而比原圖 12.0 差）
 20260913-153122	flight/geo/moss_stone.webp	_recycle/flight/geo/moss_stone.webp.20260913-153122	v1 苔只有 16.6%，Ray 要三成；改用照他提示詞跑的 v3
 20260913-181606	resources/audio/bgm/Peritune_Portside_Cafe_loop.ogg	_recycle/resources/audio/bgm/Peritune_Portside_Cafe_loop.ogg	誤帶進來的 ogg（BGM 一律 m4a，§6.6）；同一份原檔仍在 ~/Downloads/Peritune_Portside_Cafe/
+20260914-003031	HANDOFF_ver1252-1289.md	_recycle/HANDOFF_ver1252-1289.md	Ray：不用寫交接
+20260914-003425	resources/SI/776a05f2-758d-43f0-a437-2b5bce06f2cc.png	_recycle/resources/SI/776a05f2-758d-43f0-a437-2b5bce06f2cc.png	ver -1290：Sorana_SI_watch.png 的重複交件（位元組完全相同，原檔已在 _originals/SI/）
