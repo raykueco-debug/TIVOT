@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1216"></script>
+<script src="../orientation.js?v=1217"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1216');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1217');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1216");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1216");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1217");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1217");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1216");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1216");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1217");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1217");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -483,25 +483,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1216" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1217" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1216" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1216" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1216" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1216" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1216" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1216" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1216" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1216" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1216" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1216" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1217" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1217" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1217" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1217" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1217" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1217" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1217" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1217" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1217" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1217" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1216" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1217" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1216" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1217" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -522,11 +522,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1216"></script>
+<script src="settlement.js?v=1217"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1216"></script>
+<script src="talks.js?v=1217"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -566,7 +566,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1216';
+const FLIGHT_VER = 'ver -1217';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -7442,7 +7442,7 @@ const ybuf=new Int32Array(512);
      掛早了而 WebGL2 又開不起來（舊機、driver 黑名單）的話，2D 那張畫布的視窗區
      會被清成透明、而底下的 GL 畫布是空的 ＝ **整片沒有地形**，而且沒有錯誤訊息。 */
 const GLON = !/[?&]gl=0/.test(location.search);
-let glTexBiome=null, glTexMask=null, glTexRail=null, glTexGeo=null, glGeoUp=false;
+let glTexBiome=null, glTexMask=null, glTexRail=null, glTexGeo=null, glTexMot=null, glGeoUp=false;
 let glSmpPbo=null, glSmpFence=null;
 const glSmpBuf=new Uint8Array(8*8*4);   // 環境光取樣的非同步回讀落點（見 screenSample）
 let GLX=null, glProg=null, glVao=null, glU={}, glTexH=null, glTexHs=null, glTexC=null, glTexS=null,
@@ -7468,7 +7468,8 @@ uniform highp usampler2D uH;   // 高度（世界單位，Uint16；最近鄰，�
      判定交給它就不會有「海面被抬起來一點」這種事。 */
 uniform sampler2D uHs;         // 高度（平滑；R16F + LINEAR）
 uniform sampler2D uC;          // 地貌色
-uniform sampler2D uS;          // 坡度 (slx,sly)，0..1 編碼
+uniform sampler2D uS;          // 坡度 (slx,sly)，0..1 編碼（LINEAR：逐格會變成方格光影）
+uniform sampler2D uMot;        // 低頻亮度起伏（BIOME 的高 4 bit，抽出來單獨一張才濾得了）
 uniform sampler2D uSky;        // 這一禎的天空漸層（1 x BH）
 /* 城的手繪地面（ver -1206）：最多兩座同時在畫面上 —— 城之間隔得夠遠，
    而 CITYMASK 保證同一點最多屬於一座城。
@@ -7567,11 +7568,16 @@ void main(){
       }else{
         /* 雙線性：⚠ 只在「四角都是陸地」時才內插 —— 靠海岸時鄰格是雲海高度，
            內插會把大陸邊緣拉成緩坡，斷崖就沒了（舊路徑同一條守門）。 */
-        ivec2 t10=clampT(ti+ivec2(1,0)), t01=clampT(ti+ivec2(0,1)), t11=clampT(ti+ivec2(1,1));
+        /* ⚠ 內插要錨在**格心**（ver -1217）：texel i 的中心在 mf=i+0.5，
+             所以四個角要從 floor(mf-0.5) 起算。原本用 floor(mf) 等於把格值錨在
+             格角上 —— 顏色會與高度差半格，而且在格心取到的是四格的混色。 */
+        vec2 pc=mf-0.5; ivec2 tc=ivec2(floor(pc));
+        ivec2 t00=clampT(tc), t10=clampT(tc+ivec2(1,0)),
+              t01=clampT(tc+ivec2(0,1)), t11=clampT(tc+ivec2(1,1));
         float h10=hRaw(t10), h01=hRaw(t01), h11=hRaw(t11);
-        vec2 f=mf-floor(mf);
-        vec3 c00=texelFetch(uC,clampT(ti),0).rgb;
-        if(h10>${CLOUD_H}.0 && h01>${CLOUD_H}.0 && h11>${CLOUD_H}.0){
+        vec2 f=pc-floor(pc);
+        vec3 c00=texelFetch(uC,t00,0).rgb;
+        if(hRaw(t00)>${CLOUD_H}.0 && h10>${CLOUD_H}.0 && h01>${CLOUD_H}.0 && h11>${CLOUD_H}.0){
           vec3 c10=texelFetch(uC,t10,0).rgb, c01=texelFetch(uC,t01,0).rgb, c11=texelFetch(uC,t11,0).rgb;
           c=mix(mix(c00,c10,f.x), mix(c01,c11,f.x), f.y);
         }else{ c=c00; }
@@ -7607,7 +7613,11 @@ void main(){
           }
           ivec2 gi=ivec2(int(floor(gxy.x)) & 255, int(floor(gxy.y)) & 255);
           vec3 k=texelFetch(uGeo, ivec2(gi.x, int(tx)*256+gi.y), 0).rgb*(255.0/128.0);
-          float mot=1.0+((float(bi>>4u)/15.0)-0.5)*2.0*${GEO_MOT}*vegAmt;
+          /* ⚠ 低頻亮度起伏**一定要內插**（ver -1217，Ray：「靠近山體時還是會露出方塊粒」）。
+             它是逐格 ±18% 的亮度乘數 —— 逐格取的話，地形幾何再平滑，表面照樣是
+             一格一格的亮暗方塊。BIOME 是 R8UI（整數貼圖濾不了），所以把高 4 bit
+             抽成單獨一張 R8 + LINEAR。 */
+          float mot=1.0+(texture(uMot, mf/uMap).r-0.5)*2.0*${GEO_MOT}*vegAmt;
           c*=(vec3(1.0)+(k-vec3(1.0))*vegAmt)*mot;
         }
         /* 城的手繪地面：蓋掉地貌色，**在光照之前** —— 日夜與霧才會照地形走
@@ -7671,8 +7681,11 @@ void main(){
             cliffDone = fall;                        // 瀑布自己算完光了，後面不要再乘一次
           }
         }
-        /* 坡度打光（與舊路徑同一條式子：0.62 + (slx*lx+sly*ly)*LIGHT_DIR_K） */
-        vec2 sl=texelFetch(uS,clampT(ti),0).rg*255.0-128.0;
+        /* 坡度打光（與舊路徑同一條式子：0.62 + (slx*lx+sly*ly)*LIGHT_DIR_K）
+           ⚠ 這一張也要雙線性（ver -1217）：逐格取＝**逐格一個固定的明暗**，
+             那就是靠近山體時看到的方格。RG8 是可濾的格式，換個 filter 就好，
+             取樣次數一樣是一次 —— 不花錢。 */
+        vec2 sl=texture(uS, mf/uMap).rg*255.0-128.0;
         float nl=clamp(0.62+dot(sl,uLdir)*${'0.030'}, 0.0, 1.5);
         float shd=(uLi.x+uLi.y*nl)*${GRADE_EXPO};
         if(!cliffDone) c=c*shd*uLcol;              // ⚠ 瀑布在上面已經自己套過光了
@@ -7760,12 +7773,12 @@ function glInit(){
   g.enableVertexAttribArray(lp); g.vertexAttribPointer(lp,2,g.FLOAT,false,0,0);
   for(const n of ['uH','uHs','uC','uS','uSky','uMap','uBuf','uCam','uDir','uLdir','uLcol','uLi','uFog','uCloudLit','uTime',
                   'uCityA','uCityB','uCityA0','uCityB0','uCityA1','uCityB1','uCityT','uInvS',
-                  'uBiome','uMask','uGeo','uRailDir','uRD','uGeoOn'])
+                  'uBiome','uMask','uGeo','uRailDir','uRD','uGeoOn','uMot'])
     glU[n]=g.getUniformLocation(glProg,n);
   g.uniform1i(glU.uH,0); g.uniform1i(glU.uHs,11); g.uniform1i(glU.uC,1); g.uniform1i(glU.uS,2); g.uniform1i(glU.uSky,3);
   g.uniform1i(glU.uCityA,4); g.uniform1i(glU.uCityB,5);
   g.uniform1f(glU.uInvS, 1/GRADE_SAT);
-  g.uniform1i(glU.uBiome,7); g.uniform1i(glU.uMask,8);
+  g.uniform1i(glU.uBiome,7); g.uniform1i(glU.uMask,8); g.uniform1i(glU.uMot,12);
   g.uniform1i(glU.uGeo,9);   g.uniform1i(glU.uRailDir,10);
   return true;
 }
@@ -7804,12 +7817,25 @@ function glUploadWorld(){
   for(let i=0,n=MAPW*MAPH;i<n;i++){ sl[i*2]=SLX[i]+128; sl[i*2+1]=SLY[i]+128; }
   glTexS=mk(2);
   g.texImage2D(g.TEXTURE_2D,0,g.RG8,MAPW,MAPH,0,g.RG,g.UNSIGNED_BYTE,sl);
+  /* ⚠ 坡度要 LINEAR（ver -1217）：逐格取＝逐格一個固定的明暗，靠近山體就是方格。 */
+  g.texParameteri(g.TEXTURE_2D,g.TEXTURE_MIN_FILTER,g.LINEAR);
+  g.texParameteri(g.TEXTURE_2D,g.TEXTURE_MAG_FILTER,g.LINEAR);
   glTexSky=mk(3);
   /* ══ 地貌貼圖層的資料（ver -1208）══════════════════════════════════════
      ⚠ 四張遮罩**打包成一張 RGBA8**（railbr / railw / roadw / subw）——
        分四張要四次 texelFetch，打包只要一次，而且省三份貼圖描述子。 */
   glTexBiome=mk(7);
   g.texImage2D(g.TEXTURE_2D,0,g.R8UI,MAPW,MAPH,0,g.RED_INTEGER,g.UNSIGNED_BYTE,BIOME);
+  /* 低頻亮度起伏：BIOME 的高 4 bit 抽成單獨一張 R8＋LINEAR（ver -1217）。
+     ⚠ 為什麼不能直接從 BIOME 取：它是 R8UI，**整數貼圖不可濾**。
+       而這一項是逐格 ±18% 的亮度乘數 —— 不內插的話幾何再平滑，
+       表面照樣是一格一格的亮暗方塊。 */
+  { const mo=new Uint8Array(MAPW*MAPH);
+    for(let i=0,n=mo.length;i<n;i++) mo[i]=((BIOME[i]>>4)*17);   // 0..15 → 0..255
+    glTexMot=mk(12);
+    g.texImage2D(g.TEXTURE_2D,0,g.R8,MAPW,MAPH,0,g.RED,g.UNSIGNED_BYTE,mo);
+    g.texParameteri(g.TEXTURE_2D,g.TEXTURE_MIN_FILTER,g.LINEAR);
+    g.texParameteri(g.TEXTURE_2D,g.TEXTURE_MAG_FILTER,g.LINEAR); }
   { const N=MAPW*MAPH, m=new Uint8Array(N*4);
     for(let i=0;i<N;i++){
       m[i*4]  = RAILBR?RAILBR[i]:0;
