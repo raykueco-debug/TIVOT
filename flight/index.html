@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1268"></script>
+<script src="../orientation.js?v=1269"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1268');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1269');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1268");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1268");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1269");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1269");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1268");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1268");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1269");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1269");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -468,6 +468,18 @@
   #meMat{position:absolute;left:0;right:0;top:0;z-index:2;display:none;flex-wrap:wrap;gap:4px;
     padding:5px 8px;background:rgba(6,7,12,.86);}
   #meMat.on{display:flex;}
+  /* 鏟平高度（ver -1269）：與色票同一個機制 —— 只在選了「平」的時候出現，
+     `top` 一樣由 `meLayoutBar()` 量出來寫進去（工具列會換行，高度不固定）。 */
+  #meFlatBar{position:absolute;left:0;right:0;top:0;z-index:2;display:none;
+    flex-wrap:wrap;gap:6px;align-items:center;padding:5px 8px;background:rgba(6,7,12,.86);}
+  #meFlatBar.on{display:flex;}
+  #meFlatBar label{color:var(--parch);font-size:11px;display:flex;align-items:center;gap:5px;}
+  #meFlatBar input{width:78px;font-family:inherit;font-size:12px;padding:5px 7px;
+    border-radius:6px;background:rgba(16,14,22,.9);border:1px solid var(--gold-dim,#6b5a1e);
+    color:var(--parch);}
+  #meFlatBar button{font-family:inherit;font-size:11px;padding:5px 9px;border-radius:6px;
+    background:rgba(16,14,22,.9);border:1px solid rgba(217,198,138,.25);color:var(--parch);}
+  #meFlatBar b{color:var(--gold,#c9a227);font-size:11px;}
   #meMat button{font-family:inherit;font-size:11px;padding:5px 8px;border-radius:6px;
     background:rgba(16,14,22,.9);border:1px solid rgba(217,198,138,.25);color:var(--parch);}
   #meMat button.on{outline:2px solid var(--gold,#c9a227);}
@@ -564,6 +576,13 @@
     <button id="meClose">✕ 關閉</button>
   </div>
   <div id="meMat"></div>
+  <!-- 鏟平高度（ver -1269，Ray：「把鏟平功能加入指定鏟平高度，可直接手動輸入」）。
+       ⚠ 預設仍是帝都高（-1264 定的地面基準），只是現在改得動。 -->
+  <div id="meFlatBar">
+    <label>鏟平高度<input id="meFlatH" type="number" min="0" max="520" step="1"></label>
+    <button id="meFlatCap">帝都高 <b id="meFlatCapN">—</b></button>
+    <button id="meFlatPick">取游標下的高度</button>
+  </div>
   <div id="meInfo"></div>
   <!-- 每一次改變的確認（ver -1256）。⚠ 先套用再問 —— 看不到結果就答不出來
        （同 ver -1072 的移城確認窗：「落定之後才跳，按取消就搬回去」）。 -->
@@ -585,25 +604,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1268" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1269" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1268" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1268" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1268" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1268" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1268" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1268" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1268" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1268" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1268" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1268" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1269" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1269" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1269" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1269" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1269" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1269" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1269" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1269" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1269" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1269" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1268" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1269" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1268" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1269" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -624,11 +643,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1268"></script>
+<script src="settlement.js?v=1269"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1268"></script>
+<script src="talks.js?v=1269"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -680,7 +699,7 @@ const COLOR_URL  = 'silvermoon_terrain.png'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1268';
+const FLIGHT_VER = 'ver -1269';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -8697,11 +8716,17 @@ function meBuildBase(){
    高度只有量得到，不能寫死（同 §6.7「量 rect 之前先確認它真的顯示著」）。
    ⚠ 回傳「上緣被蓋掉多少」，`meFit` 拿它讓開。 */
 function meLayoutBar(){
-  const bar=meEl('meBar'), mat=meEl('meMat');
+  const bar=meEl('meBar');
   if(!bar) return 0;
   const h=bar.offsetHeight||0;
-  if(mat){ mat.style.top=h+'px'; }
-  return h + ((mat && mat.classList.contains('on')) ? (mat.offsetHeight||0) : 0);
+  let extra=0;
+  /* ⚠ 只會有一條 strip 是開著的（工具是單選），所以兩條都貼在工具列正下方。 */
+  for(const id of ['meMat','meFlatBar']){
+    const el=meEl(id); if(!el) continue;
+    el.style.top=h+'px';
+    if(el.classList.contains('on')) extra=el.offsetHeight||0;
+  }
+  return h+extra;
 }
 function meFit(){
   const c=meEl('meCv'), W=c.clientWidth||innerWidth, H=c.clientHeight||innerHeight;
@@ -8863,6 +8888,14 @@ function meSetTool(t){
   for(const b of document.querySelectorAll('#meBar button[data-tool]'))
     b.classList.toggle('on', b.dataset.tool===t);
   meEl('meMat').classList.toggle('on', t==='mat');
+  meEl('meFlatBar').classList.toggle('on', t==='flat');
+  if(t==='flat'){
+    /* 預設仍是帝都高（ver -1264 定的地面基準）—— 只有**還沒填過**才預填，
+       不然每次切回來都會把手打的數字蓋掉。 */
+    const inp=meEl('meFlatH'), cap=capitalH();
+    meEl('meFlatCapN').textContent=cap;
+    if(inp.value==='') inp.value=cap;
+  }
   meLayoutBar();
   meEl('meCv').style.cursor = (t==='pan')?'grab':(t==='move'?'move':'crosshair');
 }
@@ -8926,7 +8959,12 @@ function meStrokeBegin(mx,my){
      平：**帝都那一格**的高度（Ray 指定的地面基準，見 capitalH）。 */
   if(meTool==='lake')
     meCur.h=HGT[clamp(my|0,0,MAPH-1)*MAPW+clamp(mx|0,0,MAPW-1)];
-  if(meTool==='flat') meCur.h=capitalH();
+  /* 平：鏟到**輸入框裡的高度**（ver -1269，Ray：「可直接手動輸入」）。
+     ⚠ 空白／打了怪東西就退回帝都高 —— 那是 -1264 定的地面基準，也是預設值。 */
+  if(meTool==='flat'){
+    const v=parseFloat(meEl('meFlatH').value);
+    meCur.h=clamp(isFinite(v)?Math.round(v):capitalH(), 0, PEAK_SCALE);
+  }
   meSnapStart(); meDirty=null;
   meStrokeStep(mx,my,true);
 }
@@ -9027,7 +9065,8 @@ function meStrokeEnd(){
         meLabel(E.t)+'　大小 '+(E.r||0)+
         (E.a!=null?('　力道 '+E.a):'')+
         (E.t==='dig'?('　深 '+DIG_STEP):'')+
-        (E.h!=null?((E.t==='lake'?'　水面 ':(E.t==='flat'?'　鏟到帝都高 ':'　鏟到 '))+E.h):'')+
+        (E.h!=null?((E.t==='lake'?'　水面 ':'　鏟到 ')+E.h
+                    +(E.t==='flat'&&E.h===capitalH()?'（帝都高）':'')):'')+
         (E.g!=null?('　'+((MAT_PALETTE.find(m=>m.g===E.g)||{}).n||'')):'')+
         '　'+E.pts.length+' 點　共 '+(meSnapI.length)+' 格');
   meSnapI=null;
@@ -9139,6 +9178,19 @@ function meStrokeBox(E){
   const syncN=()=>{ document.getElementById('meSizeN').textContent=sz.value;
                     document.getElementById('meAmpN').textContent=am.value; meDraw(); };
   sz.addEventListener('input',syncN); am.addEventListener('input',syncN);
+  /* 鏟平高度：帝都高／取游標下（ver -1269）。
+     ⚠ 「取游標下」讀的是 `meBrushAt`（最後一次滑過的位置）—— 那是唯一知道
+        「游標在地圖上的哪裡」的地方，不要另外去算一次（鐵律 7）。 */
+  document.getElementById('meFlatCap').addEventListener('click', ()=>{
+    meEl('meFlatH').value=capitalH(); meFlash('鏟平高度 → 帝都高 '+capitalH());
+  });
+  document.getElementById('meFlatPick').addEventListener('click', ()=>{
+    if(!meBrushAt){ meFlash('先把游標移到地圖上要取高度的那一點'); return; }
+    const x=clamp(meBrushAt[0]|0,0,MAPW-1), y=clamp(meBrushAt[1]|0,0,MAPH-1);
+    const v=HGT[y*MAPW+x];
+    meEl('meFlatH').value=v;
+    meFlash('鏟平高度 → ('+x+','+y+') 的高度 '+v);
+  });
   document.getElementById('meAskYes').addEventListener('click', meAskYes);
   document.getElementById('meAskNo').addEventListener('click', meAskNo);
   document.getElementById('meUndo').addEventListener('click', meDoUndo);
