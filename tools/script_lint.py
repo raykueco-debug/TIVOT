@@ -112,6 +112,10 @@ def se_resolve(f):
 
 def exists(rel):  return os.path.exists(os.path.join(ROOT, rel))
 
+# ⚠ 「這一拍自己就是畫面」的欄位（ver -1290）——空台詞也不算漏寫。
+#   改 modules/story.js 的 renderLine 時，新增同類的拍要補進這裡。
+SELF_SHOWN = ('cg', 'dayBreak', 'kitchen', 'boon')
+
 # `hint` 拍認得的目標代號。⚠ 與 `modules/story.js` 的 `HINT_TARGET` 是同一份 ——
 #   那邊加了新代號，這裡也要加（否則 lint 會誤報）。
 def hint_targets():
@@ -338,8 +342,14 @@ def main():
             #    才往下播」是規矩不是漏寫（§6.5）—— 那一拍就是要玩家看清楚她的表情。
             #    這裡只認**這一拍自己有指定立繪**的（`portrait`）；沿用上一拍的看不出來，
             #    寧可少報也不要每一拍都吵。
+            #  ⚠⚠ ver -1290：`SELF_SHOWN` 那一族也不算 —— 它們**自己就是畫面**
+            #    （插圖／翌日卡／廚房／加成大字），而且各自帶著自己的出口
+            #    （`showBoon`／`showTitleCard` 都是「點一下收掉才往下演」）。
+            #    不排除的話這四拍是**永久的假警告**，而假警告會把真的那幾條蓋掉
+            #    （同 ver -1015 為 ASSETS 音檔加的那個排除）。
             if (not ln.get('text') and not ln.get('card') and not ln.get('auto')
-                    and not ln.get('blank') and not ln.get('portrait')):
+                    and not ln.get('blank') and not ln.get('portrait')
+                    and not any(ln.get(k) for k in SELF_SHOWN)):
                 warn('%s：空台詞又沒有 auto —— 畫面上不會有提示，玩家可能以為卡住' % tag)
 
     for sid, sc in script.items():
