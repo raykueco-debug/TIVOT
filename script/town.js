@@ -4112,6 +4112,112 @@ export const TOWNS = {
   },
 
   /* ══════════════════════════════════════════════════════════════════════
+     東方泊地（ver -1255；Ray：「做東泊城市，在中央區加一個大學分支」）
+     ──────────────────────────────────────────────────────────────────────
+     權威規格：`resources/map/_eastport_spec.md`（逐格美術簡報與畫風）。
+     19 世紀地中海港都：曬白的石灰牆、赤陶筒瓦、窄巷、碼頭倉庫；亮、暖、光很硬
+     —— ⚠ 與拉芬斯達爾（冷、低彩、暗）**要看得出是兩個地方**。
+
+     **13 格・12 邊・環 0**＝ `capital` 那一套（12 格）**＋ 大學一格**。
+
+     ⚠⚠⚠ **`midtown` 因此是四向，不是三向**（Ray 指定「在中央區加一個大學分支」）。
+       這一條是**給美術的硬約束**，不是程式的方便：憲法 §6.5.4「地圖的形狀是圖
+       決定的」—— 中心區那張圖必須畫得出**四條真的走得進去的路**（左＝海關署、
+       右＝主教座堂、上＝大學、下＝回廣場）。規格 §三 那一列已經跟著改了。
+       ⚠ 幸好這一批背景還沒開畫；反過來（圖畫完才排路線）就一定接不通。
+
+     ⚠ 兩格與拉芬斯達爾不同，理由在規格 §一：
+       · `dock` 留著是**倉庫碼頭**（這是海港，俯視插畫上碼頭邊就是一排倉庫）
+       · `cityhall` 的**招牌**改成「海關署」（地中海港都的行政重心是關稅）——
+         ⚠ **id 不動**：那一格仍然是「官方的辦公建築」，換的是招牌不是性質。
+         （拉芬斯達爾那邊 `cityhall`→`lookout` 是因為**那一格變成了另一種東西**。）
+
+     ⚠⚠⚠ **背景圖一張都還沒進來**（實測：全機 `East_*` ＝ 0 個檔案；
+       已交的是**大地圖的俯視插畫** `flight/city/eastport_plan.webp`，那是另一件事）。
+       所以 `flight/index.html` 的 `SETTLEMENTS` 那一列**還沒補 `town:'eastport'`**
+       —— 規格 §六 記著理由：`bgFor` 在候選鏈全部載不到時是「照樣放行」，畫面會
+       **停在前一格的背景**，於是同一格從不同方向走進來會長得不一樣。13 格全缺
+       就是整座城都這樣，那比「還不能降落」糟得多（拉芬斯達爾的大教堂實測過）。
+       ⇒ **圖到齊只要補那一行 `town:'eastport'`，這裡一個字都不必改。**
+
+     ⚠ 這一輪**不做店舖與旅店大廳**（同聖索菲亞／拉芬斯達爾）：只寫 `inn:true`
+       而沒有人應門的話，玩家會敲到一排空門（§6.5.5）。
+     ⚠ 小地圖未做 ⇒ **不寫 `map:`**，槍棺那顆地圖鈕會回「這一帶還沒有留下地圖。」
+     ══════════════════════════════════════════════════════════════════════ */
+  eastport: {
+    name: '東方泊地',
+    entry: 'square',
+    /* BGM（ver -1251 就先接好了，Ray：「Peritune_Portside_Cafe_loop / 東泊放這首」）。
+       那一版的註解寫著「等 TOWNS.eastport 建起來只要加這一行」—— 就是這一行。 */
+    bgm: 'portside',
+    /* 大城市不上迷霧（ver -913）—— ⚠ **要明寫**：沒寫就是有霧。 */
+    mist: 0,
+    /* ══ 餐飲街一格三張圖（§6.5.4.2）══
+       節點自己的 `bg` ＝ 酒吧（`DINE.fallback` 就是 `bar`），另外兩家寫在這裡。
+       ⚠⚠ **沒有甜品店（`dessert`）**：安雅那一支在這座城查不到那個鍵 → 不換、
+         退回節點原本那一張（＝酒吧）。那是既有行為不是壞掉；要給她一家店就再補一張圖。
+       ⚠ 背景檔名寫**完整基底名**不是後綴（ver -578 的教訓：拼出來的名字一定走鐘）。 */
+    dining: { node:'tavern', scenes:{
+      cafe:       { bg:'East_Cafe',       noTime:true },
+      restaurant: { bg:'East_Restaurant', noTime:true },
+      bar:        { bg:'East_Bistro',     noTime:true },
+    } },
+    /* ⚠⚠ **每一格都要 `noTime:true`**：這一批 0 張時段差分，不寫的話候選鏈會
+       先去試 `_dawn/_day/_dusk/_night` 四個名字，**每一格白吃四個 404**。
+       差分交件之後整批拿掉（同聖索菲亞／拉芬斯達爾）。
+       ⚠⚠ **每一格也都寫 `bgPending:true`**（＝骨架先行、美術產圖中，ver -757 夏爾村
+         與 -1134 伊甸古墓用的同一支旗）：`script_lint.py` 於是把「背景不存在」
+         從**錯誤**降成**提醒**，而且**交件之後會自己反過來叫你拔掉它**
+         （「背景 X 已交件，bgPending 可以拔了」）。
+       ⚠ 這與拉芬斯達爾大教堂那種 `bgPending:'Ravn_Church'`（字串形）是兩回事：
+         那是「`bg` 先借別張、真正要的是這一張」；這裡 `bg` 寫的就是真正要的檔名，
+         只是還沒到 —— 所以**圖一進來，這裡只要整批拔掉 `bgPending` 就好**。 */
+    nodes: {
+      /* ══ 港口廣場 ══ 入口；上＝中心區、左＝舊城區、右＝上城區（照帝都）。
+         ⚠ 入口那一格**不可以有戰鬥**（§6.5.2：它是遭遇戰的復活點）。
+         ⚠ 出航掛在**下方**（§6.5.4）—— 所以碼頭是不是走得進去，與出航無關。 */
+      square:     { bg:'East_Square',     name:'東方泊地　港口廣場', noTime:true, bgPending:true,
+        exits:{ up:'midtown', left:'oldtown', right:'uptown' },
+        sail:{ flag:'got_ship' } },
+
+      /* ── 一、中心區（**四向**樞紐）── 左＝海關署、右＝主教座堂、上＝大學、下＝廣場 */
+      midtown:    { bg:'East_Midtown',    name:'東方泊地　中心區',   noTime:true, bgPending:true,
+        exits:{ left:'cityhall', right:'church', up:'university', down:'square' } },
+      church:     { bg:'East_Church',     name:'東方泊地　主教座堂', noTime:true, bgPending:true,
+        exits:{ back:'midtown' } },
+      /* ⚠ id 是 `cityhall`（官方的辦公建築），招牌是「海關署」—— 見檔頭。 */
+      cityhall:   { bg:'East_Customs',    name:'東方泊地　海關署',   noTime:true, bgPending:true,
+        exits:{ back:'midtown' } },
+      /* ⚠⚠ 大學（ver -1255，Ray 指定）。**末端**：一格，與主教座堂／海關署同級。
+         要擴成校門→講堂→圖書館那種一串的話再說 —— 那會讓中心區這一支變成一條
+         走廊，`up` 的語意（走進畫面裡）照舊成立，只是多幾格。 */
+      university: { bg:'East_University', name:'東方泊地　大學',     noTime:true, bgPending:true,
+        exits:{ back:'midtown' } },
+
+      /* ── 二、舊城區（四向樞紐） ── 左＝武器店、右＝廣場、上＝倉庫碼頭、下＝公會 */
+      oldtown:    { bg:'East_Oldtown',    name:'東方泊地　舊城區',   noTime:true, bgPending:true,
+        exits:{ left:'gunstore', right:'square', up:'dock', down:'guild' } },
+      gunstore:   { bg:'East_Firearm',    name:'東方泊地　武器店',   noTime:true, bgPending:true,
+        exits:{ back:'oldtown' } },
+      dock:       { bg:'East_Dock',       name:'東方泊地　倉庫碼頭', noTime:true, bgPending:true,
+        exits:{ back:'oldtown' } },
+      guild:      { bg:'East_Guild',      name:'東方泊地　賞金獵人公會', noTime:true, bgPending:true,
+        exits:{ back:'oldtown' } },
+
+      /* ── 三、上城區（四向樞紐） ── 左＝廣場、右＝餐飲街、上＝旅店、下＝雜貨舖 */
+      uptown:     { bg:'East_Uptown',     name:'東方泊地　上城區',   noTime:true, bgPending:true,
+        exits:{ left:'square', right:'tavern', up:'inn', down:'grocery' } },
+      tavern:     { bg:'East_Bistro',     name:'東方泊地　餐飲街',   noTime:true, bgPending:true,
+        exits:{ back:'uptown' } },
+      grocery:    { bg:'East_Grocerie',   name:'東方泊地　雜貨舖',   noTime:true, bgPending:true,
+        exits:{ back:'uptown' } },
+      /* ⚠ 這一格**沒有** `inn:true`：旅店大廳與四扇伙伴門這一輪不做（同上）。 */
+      inn:        { bg:'East_Hotel',      name:'東方泊地　旅店',     noTime:true, bgPending:true,
+        exits:{ back:'uptown' } },
+    },
+  },
+
+  /* ══════════════════════════════════════════════════════════════════════
      伊甸古墓（ver -1134；Ray：「在 735 196 放置地點伊甸古墓，拓樸跟圖已經交了」）
      ──────────────────────────────────────────────────────────────────────
      權威規格：`resources/map/_tomb_spec.md`（美術交件，含逐格特徵與畫風規格）；

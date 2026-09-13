@@ -111,6 +111,16 @@ POS = {
     'ossuaryA':(12,13),
     'gate':(8,14),
   },
+  # ── 東方泊地（ver -1255）：拓樸＝帝都 **＋ 大學一格**（Ray：「在中央區加一個
+  #    大學分支」）。大學掛在中心區的 `up`，所以版面上它必須畫在中心區**正上方**
+  #    —— 出口的方向就是相對位置，畫錯這支工具會直接報錯不出圖。
+  'eastport': {
+    'university':(5,1),
+    'midtown':(5,3), 'cityhall':(3,3), 'church':(7,3),
+    'dock':(2,4),    'inn':(8,4),
+    'gunstore':(0,6),'oldtown':(2,6), 'square':(5,6), 'uptown':(8,6), 'tavern':(10,6),
+    'guild':(2,8),   'grocery':(8,8),
+  },
   # ── 聖索菲亞城（ver -1123）：拓樸＝帝都，所以版面直接沿用 capital 那一組 ──
   'santasofia': {
     'midtown':(5,3), 'cityhall':(3,3), 'church':(7,3),
