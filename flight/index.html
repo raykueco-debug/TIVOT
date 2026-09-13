@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1251"></script>
+<script src="../orientation.js?v=1252"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1251');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1252');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1251");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1251");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1252");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1252");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1251");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1251");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1252");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1252");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -483,25 +483,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1251" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1252" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1251" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1251" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1251" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1251" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1251" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1251" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1251" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1251" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1251" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1251" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1252" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1252" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1252" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1252" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1252" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1252" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1252" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1252" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1252" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1252" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1251" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1252" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1251" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1252" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -522,11 +522,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1251"></script>
+<script src="settlement.js?v=1252"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1251"></script>
+<script src="talks.js?v=1252"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -566,7 +566,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1251';
+const FLIGHT_VER = 'ver -1252';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -1720,6 +1720,14 @@ let RAILBR=null;                              // Uint8Array：石橋橋面（鐵
      而那是 BIOME／ROADW 那一級的量，不值得。 */
 let RAILDIR=null, RD_W=0, RD_H=0;
 let RAIL_PATHS=[];                            // 折線（地圖座標），地圖畫面與火車都要用
+/* ⚠⚠⚠ 文物禁區（ver -1252，Ray：「火車不要經過貝利薩爾遺址，破壞文物啊」）。
+   Float32Array，尺寸同尋路的降取樣格（W2×H2）—— 每一格額外的通行代價，
+   遺蹟量體之內最貴、往外漸收到 0。只有 `railCost` 在讀（公路不受影響：
+   人走去看遺蹟是合理的，把幹線鐵路鋪過人家頭上不是）。
+   ⚠ 為什麼是「很貴」不是「不能走」：硬擋有機會把兩座城之間唯一的通道封死，
+     那一條線就整個消失（`gridPath` 走不到回 null）而且畫面上沒有任何錯誤訊息。
+     有限的代價則保證圖永遠是連通的 —— Dijkstra 自己會去繞。 */
+let RAIL_KEEP=null;
 
 /* 成本場：一步的代價。爬坡是主要成本 —— 這是讓路自己去繞河谷的關鍵。 */
 function roadCost(h0,h1,riv){
@@ -1750,11 +1758,68 @@ const RAIL_GRADE=3;
    Dijkstra 會自己挑便宜的那條。6 的意思是「為了少挖一格隧道，最多值得多繞
    六格（720 世界單位）」—— 短的山脊直接鑽過去，長的還是繞路。 */
 const RAIL_TUNNEL=6;
-function railCost(h0,h1,riv){
+function railCost(h0,h1,riv,ni){
   const dh=Math.abs(h1-h0);
   const over=dh-RAIL_GRADE;
   const climb=dh*0.9 + (over>0?over*over*0.8:0);
-  return 1 + Math.min(climb, RAIL_TUNNEL) + (riv?90:0);
+  /* ⚠ 文物禁區（ver -1252）：`ni` 是**目的格**的索引，由 `gridPath` 傳進來。
+     `roadCost` 不看它 —— 同一支尋路、兩種成本，差別只在這一項。 */
+  const keep=RAIL_KEEP?RAIL_KEEP[ni]:0;
+  return 1 + Math.min(climb, RAIL_TUNNEL) + (riv?90:0) + keep;
+}
+
+/* ── 文物禁區場（ver -1252）──────────────────────────────────────
+   Ray：「火車不要經過貝利薩爾遺址，破壞文物啊」。
+   實測 -1251：東方泊地↔北方泊地那條線最近只離貝利薩爾**中心 100 個世界單位**，
+   而那座古堡的量體外緣是 222 —— 軌道是真的從城堡裡穿過去的。
+
+   ⚠⚠ 這是**通則不是特例**：四座有量體的遺蹟（石製／伊甸古墓／木雅克／貝利薩爾）
+     一律禁行。寫成特例的話，下一座遺蹟放下去又會被輾一次，而那不會有任何錯誤訊息
+     —— 要飛到那個座標上空才看得見（鐵律 8）。
+   ⚠⚠ 半徑由**量體自己**算出來（`ruinR`），不是逐座手填一個數字：模型改大改小、
+     或新增一座，禁區自己跟著變（鐵律 7：「這座遺蹟多大」只有一個計算點）。
+   ⚠ 只擋 `ruin:` 那幾筆（地表真的有東西）。只有名牌的「無名遺蹟」不擋 ——
+     地上什麼都沒有，繞它是繞空氣。 */
+const RAIL_KEEP_MUL=1.25;      // 禁區內圈 ＝ 量體外緣 ×1.25（碎石、階梯不在 parts 裡）
+const RAIL_KEEP_FADE=220;      // 再往外漸收這麼多世界單位（≈ 一列車的長度 206：整列車要在遺蹟外）
+/* ⚠⚠ **內圈要「貴到不可能」，近域只是「不鼓勵」** —— 兩件事，兩個數字。
+   內圈 200：一格＝ROAD_DS×MAP_SCALE＝120 世界單位，穿過貝利薩爾內圈約 4.6 格
+   ＝ 900 以上的代價，任何繞路都比它便宜。**不要為了「省一點」把它調小**：
+   哪天有座遺蹟坐在兩城之間唯一的地峽上，小的數字就會被繞路的成本壓過去，
+   線又輾過去了，而且畫面上不會有任何錯誤訊息。
+   近域 6：靠近要付一點錢，但不值得為此多繞一大圈。 */
+const RAIL_KEEP_COST=200;      // 內圈每一格的額外代價（實質禁行，但仍是有限值）
+const RAIL_KEEP_NEAR=6;        // 漸變帶最內側的代價
+/* ⚠⚠⚠ **實測：這三個數字在貝利薩爾這一案完全不影響結果**（ver -1252 掃過
+     內圈 45~200 × 近域 0~45 × 漸變 0~220 × 倍率 0.8~1.6 —— 弧長一律 1293、
+     最近點一律離中心 597）。原因是那裡是**懸崖式的二選一**，不是連續的取捨：
+     古堡正好坐在山脊唯一的隘口上，禁區半徑只要 ≥ 量體的 0.8 倍（178 世界單位），
+     隘口就封死，Dijkstra 當場改走南邊的海岸線；再小則整條線照樣從城堡裡穿過去
+     （0.6 倍時最近點 141，還在量體 222 之內）。
+   ⇒ **下一個人不必再調這幾個數字去「微調軌道離遺蹟多遠」** —— 它們只決定
+     「走不走那個隘口」。要改線形得動地形或動遺蹟的位置。 */
+function buildRailKeepOut(G){
+  RAIL_KEEP=new Float32Array(G.W2*G.H2);
+  const cell=ROAD_DS*MAP_SCALE;                 // 一格有多少世界單位
+  for(const P of PLACES){
+    const A=P.ruin && RUIN_ART[P.ruin]; if(!A) continue;
+    const g0=ruinR(A)*RAIL_KEEP_MUL/cell, g1=g0+RAIL_KEEP_FADE/cell, g1c=Math.ceil(g1);
+    const cx=Math.round(P.x/ROAD_DS), cy=Math.round(P.y/ROAD_DS);
+    for(let dy=-g1c;dy<=g1c;dy++)for(let dx=-g1c;dx<=g1c;dx++){
+      const x=cx+dx, y=cy+dy;
+      if(x<0||y<0||x>=G.W2||y>=G.H2) continue;
+      const rad=Math.hypot(dx,dy); if(rad>g1) continue;
+      let v;
+      if(rad<=g0) v=RAIL_KEEP_COST;
+      else{
+        /* smoothstep：線性的話禁區邊緣是一道折線，軌道會沿著它走出一段可疑的直邊。 */
+        const t=1-(rad-g0)/(g1-g0);
+        v=RAIL_KEEP_NEAR*t*t*(3-2*t);
+      }
+      const i=y*G.W2+x;
+      if(RAIL_KEEP[i]<v) RAIL_KEEP[i]=v;        // 兩座重疊時取大的那個
+    }
+  }
 }
 
 /* ── 縱斷面（設計高程）─────────────────────────────────────────────
@@ -1862,7 +1927,7 @@ function gridPath(G, cost, s0, t0){
       if(nx<0||ny<0||nx>=W2||ny>=H2) continue;
       const ni=ny*W2+nx;
       if(seen[ni]||gh[ni]<=CLOUD_H) continue;     // 雲海不能走
-      const w=cost(ch,gh[ni],gr[ni])*((dx&&dy)?1.414:1);
+      const w=cost(ch,gh[ni],gr[ni],ni)*((dx&&dy)?1.414:1);
       const nd=cd+w;
       if(nd<dist[ni]){ dist[ni]=nd; prev[ni]=cur; push(ni,nd); }
     }
@@ -2022,6 +2087,7 @@ function buildRails(){
   const big=SETTLEMENTS.filter(S=>/^city/.test(S.t||''));
   if(big.length<2){ RAIL_PATHS=[]; RAILW=null; return; }
   const G=PFGRID||buildPathGrid();
+  buildRailKeepOut(G);                  // ⚠ 一定要在 gridPath 之前：railCost 讀的就是它
   const nodes=big.map(S=>({x:Math.round(S.x/ROAD_DS), y:Math.round(S.y/ROAD_DS), n:S.n}));
   const paths=[];
   for(const [a2,b2] of mstEdges(nodes)){
@@ -3257,6 +3323,23 @@ const RUIN_TEXEL=0.7;
 /* 基座的「參考半徑」：材質的仿射與投影軸都拿它當尺。
    圓形基座就是 `r`；方形基座取長邊的一半（同一個量級，材質密度才不會差一截）。 */
 function baseR(A){ const B=A.base; return B.r || Math.max(B.w||0,B.l||0)/2 || 1; }
+/* 這座遺蹟在地面上真正佔到多遠（世界單位，中心起算）。
+   ⚠⚠ **不等於 `baseR`**：`base` 只是腳下那一圈碎石台，塔、扶壁、斷拱廊常常伸出去
+     一大截 —— 實測伊甸古墓 85→113、木雅克 165→255、貝利薩爾 170→222。
+     拿 `baseR` 當「多大」用過的地方（整地的 `podium`）是**刻意**只削腳下那一圈，
+     兩者各有各的用途，不要合併。
+   ⚠ 快取在 art 物件上（同 `ruinShape` 的 `_poly`）：`RUIN_ART` 是常數資料，
+     算一次就夠。 */
+function ruinR(A){
+  if(A._outR!=null) return A._outR;
+  let m=baseR(A);
+  for(const p of (A.parts||[])){
+    const hw=Math.max(p.w||0, p.d||0, (p.r||0)*2, (p.rTop||0)*2)/2;
+    const d=Math.hypot(p.x||0, p.y||0)+hw;
+    if(d>m) m=d;
+  }
+  return (A._outR=m);
+}
 function ruinShape(A){
   if(A._poly) return A._poly;
   let sd=20250911;
