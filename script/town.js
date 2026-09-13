@@ -3068,6 +3068,14 @@ export const TOWNS = {
            （正是 Ray 在 -879 說的「神殿入口**除了鹿主戰之外**是安全區」）。 */
       ruins: { bg:'ruins_shinier_entrance', name:'夏爾森林　遺蹟入口', rest:true,
         exits:{ back:'cliff', up:'@shinier_ruins' },   // 往上＝進神殿（ver -875）
+        /* ══ 出航（ver -1221，Ray：「入口在遺跡入口，往左走是出航」）══
+           木雅克神殿在大地圖上是**降落得了**的地點（flight 的 PLACES，stage8 起），
+           所以這一格要有回天上的路。
+           ⚠⚠ **掛在左邊**不是預設的下方：這一格的下方是 `back`（回斷崖邊），
+             而 `exitsOf` 的 `back` 在沒有來時方向時就是退回「下」——
+             兩者搶同一格的話，降落進來會**走不回斷崖邊**。
+           ⚠ `flag:'got_ship'` 同其他城：船還沒到手就不給（那是一去不回的前置）。 */
+        sail:{ dir:'left', flag:'got_ship' },
         /* ⚠⚠ **這一格不出野怪**（ver -879，Ray：「神殿入口除了鹿主戰之外是安全區，
            不出怪」）——它是神殿的門口／回程的落腳處，不是獵場。
            ⚠ 擋的只有 `wildSpawn` 的 fixed／pool；**指定遭遇（鹿主）照跑** ——

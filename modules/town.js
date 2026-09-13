@@ -1817,7 +1817,11 @@ function exitsOf(){
   if(n && n.exitFrom){
     for(const d in n.exitFrom){ if(prog.getStage() < (n.exitFrom[d]|0)) delete ex[d]; }
   }
-  if(n && n.sail && !ex.down) ex.down=SAIL_ID;
+  /* 出航（ver -1221 起可指定方向）：預設掛在**下方**（§6.5.4：對玩家而言
+     「往下走」與「出航」是同一個動作）。⚠ 那一格的下方已經被別人占著時要寫
+     `sail.dir`（木雅克神殿的遺蹟入口：下方是回斷崖邊的路，所以出航掛在**左**）。
+     ⚠ 寫在資料上不寫死在程式裡 —— 哪一格的哪一邊是出口，那是那張圖的事。 */
+  if(n && n.sail){ const sd=n.sail.dir||'down'; if(!ex[sd]) ex[sd]=SAIL_ID; }
   if(back){
     /* 首選＝來時方向的反向；那一格已經有別的出口就退回「下」，再不行就找一格空的。 */
     const want = (backDir && !ex[backDir]) ? backDir

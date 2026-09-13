@@ -481,12 +481,15 @@ window.__tivotFlight = {
      ⚠ 走**同一支** `town.open()`（＝從入口節點開始），不另做一條「降落專用」的進城路徑。
      ⚠ 城鎮的 BGM 由 `town.open` 自己接（`story.ensureBgm`）—— 進飛行頁時主遊戲的
        曲子被 `openFlight` 收掉了，不接回來會一片安靜。 */
-  land(id){
+  /* ⚠ `node`（ver -1221）：降落**落在指定的那一格**而不是入口 —— 木雅克神殿
+     是從夏爾森林那張圖的「遺蹟入口」進去的（Ray：「入口在遺跡入口」），
+     那一格不是 `shinier_forest` 的 entry。不給就照舊走入口。 */
+  land(id, node){
     /* ver -845：降落＝這一趟航行結束，iframe 殺掉（下一次出航本來就整頁重載）。 */
     setTimeout(()=>{ try{ killFlightFrame(); }catch(_){} }, 600);
     closeFlightFrame();
     $('home').classList.remove('on');
-    town.open(id || 'capital');
+    town.open(id || 'capital', node || undefined);
   },
   /* 吊墜＝整備（ver -482，Ray：「飛行畫面吊墜點了沒有整備效果」）：飛行頁的吊墜
      固定在面板左上（ver -481），點它開的是**同一頁整備**（gear.open，鐵律 8）。
@@ -607,7 +610,7 @@ window.addEventListener('pagehide', refreshBoot);
   try{
     const L=JSON.parse(localStorage.getItem('tivot_land_req_v1')||'null');
     localStorage.removeItem('tivot_land_req_v1');
-    if(L && L.town){ markBooted(); $('home').classList.remove('on'); town.open(L.town); return; }
+    if(L && L.town){ markBooted(); $('home').classList.remove('on'); town.open(L.town, L.node||undefined); return; }
   }catch(e){}
   const imgs=[], sfx=[], bgm=[];
   for(const k of Object.keys(ASSETS)){
