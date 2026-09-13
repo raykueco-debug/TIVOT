@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1245"></script>
+<script src="../orientation.js?v=1246"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1245');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1246');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1245");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1245");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1246");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1246");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1245");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1245");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1246");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1246");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -483,25 +483,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1245" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1246" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1245" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1245" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1245" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1245" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1245" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1245" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1245" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1245" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1245" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1245" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1246" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1246" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1246" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1246" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1246" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1246" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1246" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1246" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1246" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1246" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1245" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1246" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1245" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1246" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -522,11 +522,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1245"></script>
+<script src="settlement.js?v=1246"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1245"></script>
+<script src="talks.js?v=1246"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -566,7 +566,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1245';
+const FLIGHT_VER = 'ver -1246';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -863,9 +863,14 @@ const TERRAIN_VALLEY = [
     wob:0.38, ridgeWob:0.18, sway:9,
     detail:0.95,                 // 保留原地形高頻（-1237 由 0.55 拉滿，見下）
     rough:24, bow:1.35,          // 坡面的 2D 亂度／剖面的凹度（>1 更凹）
-    /* 谷底鋪**棕石地**（ver -1237，Ray：「谷不要草地，用棕石地」）。
-       `rockTo` ＝往上鋪到「谷底半寬 ＋ rise×這個比例」，邊界自己抖。 */
-    rock:{ to:0.45, jit:0.30, col:[134,108,78], mix:0.85 } },
+    /* ══ 谷底的地色（ver -1246，Ray：「把地形的山谷色用小圖的灰填滿」）══
+       -1237 是棕（`[134,108,78]`，那時的指示是「谷不要草地，用棕石地」）。
+       平面圖交進來之後改成**照那張圖的灰**，兩者才接得上。
+       ⚠ **量出來的**：`canyon_plan.webp` 裡低彩度（S<0.16）那 40% 的像素
+         平均 **(115,114,113)**（砂徑那一半是 (142,119,93)，不取）。
+       `to` ＝往上鋪到「谷底半寬 ＋ rise×這個比例」，邊界自己抖；
+       `mix` 0.85→**0.92**（「填滿」＝少留一點原地形的色）。 */
+    rock:{ to:0.45, jit:0.30, col:[115,114,113], mix:0.92 } },
 ];
 /* ── 操作手感 ──────────────────────────────────────────────────
    拖曳世界的模型：手指把畫面往後拉 → 船往前走（拉的是地面，不是船）。
@@ -6059,9 +6064,16 @@ async function loadWorld(){
         BIOME[i]=tex|(mot<<4);
       }
     }
-    /* 谷底的棕石地（ver -1237）：沿用那一格算好的 `mot`（高 4 bit），只換類別。
+    /* 谷底的地貌貼圖：沿用那一格算好的 `mot`（高 4 bit），只換類別。
+       ⚠⚠ ver -1246 由 `G_RB`（rock_brown）改成 **`G_GL`（gravel_light）**：
+         平面圖畫的是**灰岩碎石坡＋乾河床的砂徑**，而 `rock_brown` 是
+         「棕色的大塊崖岩」、`rock_grey` 是「灰色的大塊崖岩」——
+         兩者的尺度都是**崖面**，鋪在谷底會讀成一地的巨石。
+         `gravel_light` 是「淺色地面上散著碎石」，尺度與那張圖對得上。
+       ⚠ 這一層是**相乘**的細節紋理（存的是相對自身均值的倍率），色相由 `COL`
+         決定 —— 所以貼圖換成灰岩、底色換成那張圖的灰，兩件要一起改（-1237 的教訓）。
        ⚠ 掃的是谷地那幾千格，不是 258 萬格 —— 不要塞進上面的主迴圈。 */
-    for(const i of valleyRock) BIOME[i]=G_RB|(BIOME[i]&0xf0);
+    for(const i of valleyRock) BIOME[i]=G_GL|(BIOME[i]&0xf0);
   }
 
   /* 碼頭位置：城區內「水面貼著陸地」的那一圈就是濱水面。從中挑幾個彼此拉開的
