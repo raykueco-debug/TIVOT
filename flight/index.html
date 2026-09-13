@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1283"></script>
+<script src="../orientation.js?v=1284"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1283');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1284');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1283");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1283");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1284");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1284");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1283");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1283");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1284");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1284");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -604,25 +604,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1283" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1284" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1283" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1283" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1283" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1283" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1283" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1283" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1283" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1283" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1283" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1283" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1284" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1284" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1284" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1284" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1284" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1284" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1284" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1284" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1284" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1284" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1283" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1284" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1283" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1284" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -643,11 +643,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1283"></script>
+<script src="settlement.js?v=1284"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1283"></script>
+<script src="talks.js?v=1284"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -699,7 +699,7 @@ const COLOR_URL  = 'silvermoon_terrain.png'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1283';
+const FLIGHT_VER = 'ver -1284';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -5045,30 +5045,24 @@ Object.assign(PORTRAIT_EXPR.nouvelle, {
 Object.assign(PORTRAIT_EXPR.anya, {
   shy:        { src:'../resources/SI/Anya_SI_shy.webp',         fx:0.472, top:0,  bot:1528 },
 });
-/* ══ 索菈娜的瞭望立繪（ver -1281 交件，-1282 改回立繪規則）══
-   ⚠⚠⚠ **一般立繪規則 ＋ §6.5 的兩個旋鈕**（Ray：「對臉，套用立繪規則，下可截，
-   她身高176」→「太大了吧，抓臉大小。縮個30%應該差不多」）：
-     `cm`      123 ＝ 176 × 0.7 → 管**大小**（縮放的分子）
-     `standCm` 176 ＝ 她真正的身高 → 只管**頭頂擺多高**
-   ⚠⚠ **為什麼這張要兩個旋鈕**：她是**斜倚、屈膝**的姿勢，alpha 的上下緣
-     （1515px）**不等於一個站直的 176cm** —— 同一個 cm 之下，這張圖的臉就會比
-     站姿那幾張大。§6.5 的原話：「近景要 cm 小（頭才不會比別人大）＋ standCm
-     給她真正的身高（頭才回到該在的位置）」，屈膝的姿勢同理。
-   ⚠ 只調 `cm` 一定失敗：cm 同時是縮放的分子**與**身高讓位的鑰匙，
-     只降 cm 會把她整個往下壓（頭越小、擺得越低），正好相反。
-   · -1279~-1281 曾經是「縮到 80、錨在底、整個人塞進畫面」（那時用的是裁到
-     大腿的 CI 暫代圖）—— 全身版交件之後改回一般規則。
-   ⚠⚠ `top` 是 **6 ＝她舉起來遮陽的那隻手**，不是頭頂。這裡**刻意不改**：
-     改成量頭頂的話，圖會整個往上推、那隻手會被畫面上緣切掉，而 Ray 要的是
-     「**下**可截」。代價是她的頭比別人低約 40px —— 那是這張構圖本來的樣子
-     （同 §6.5「誇張髮飾會把整個人往下壓」，只是這次是手）。
-   ⚠ `fx` 0.680 用**綠瞳**算的（兩群在 x=667／726 取中點）；脖子上那顆綠寶石
-     （y≈300）要濾掉，不然臉心會被拉到 0.64。
-   ⚠ 這一組數字與 `script/speakers.js` 的 `ART.sorana.expr.watch` **是同一次量測**，
+/* ══ 索菈娜的瞭望立繪（ver -1281 交件，-1284 定案）══
+   ⚠⚠⚠ **與 `Sorana_SI_front` 同一套，沒有任何覆寫**（Ray：「這又不是她第一張
+   寬圖，去參考 front 的大小，就照那個」）：兩張都是**全身站姿、人物佔滿畫布**
+   的 1024×1536 —— front 是 `top 3 / bot 1523`、這張是 `top 6 / bot 1521`，
+   內容高差 0.5%，所以**同一個 cm（沿用本尊 176）就是同一個大小**。
+   ⚠⚠ -1279~-1283 我在這裡加過 `cm:80/107/123`、`standCm`、`anchorBot` 三種覆寫，
+     **全部拿掉了**。那幾版是拿「把整個人塞進畫面」當目標在湊數字 —— 而§6.5 的
+     規則是**鎖身高**，框裡放不放得下不在規則裡（腿被面板切掉是常態，
+     蕾娜／諾薇兒／安雅三個都是）。
+   ⚠ 真的需要覆寫 cm 的是**姿勢明顯不同**的那幾張（她的 `guard` 系列就寫了
+     `cm:168`）—— 判準是「人物在畫布裡佔的高度變了」，不是「看起來大小」。
+   ⚠ `top` 6 ＝她**舉起來遮陽的那隻手**，不是頭頂；刻意不改（改了圖會往上推、
+     手被畫面上緣切掉，而 Ray 要的是「下可截」）。
+   ⚠ `fx` 0.680 用綠瞳算的（兩群在 x=667／726 取中點），脖子上那顆綠寶石要濾掉。
+   ⚠ 這一組與 `script/speakers.js` 的 `ART.sorana.expr.watch` 是同一次量測，
      改一邊要改兩邊（§5／§6.10）。 */
 Object.assign(PORTRAIT_EXPR.sorana, {
-  watch:      { src:'../resources/SI/Sorana_SI_watch.webp',     fx:0.680, top:6,  bot:1521,
-                cm:123, standCm:176 },
+  watch:      { src:'../resources/SI/Sorana_SI_watch.webp',     fx:0.680, top:6,  bot:1521 },
 });
 /* `renna/relief` → 本尊 id。⚠ **入隊判定（`inParty`）一定要走這一支**：
    直接拿 `renna/relief` 去問 PARTY 查不到，而 `inParty` 對查不到的人一律放行
