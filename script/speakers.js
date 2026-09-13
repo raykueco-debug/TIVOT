@@ -413,9 +413,12 @@ export const ART = {
     tired:        { src:'resources/SI/Sorana_SI_tired.webp',         top:2,  bot:1522, fx:0.511 },
     /* 瞭望（ver -1281，貝利薩爾降不下去那一段）。⚠ 取景值與 `flight/index.html`
        的 `PORTRAIT_EXPR.sorana.watch` **是同一次量測**，改一邊要改兩邊（§5／§6.10）。
-       ⚠ 飛行頁那一邊另外掛了 `cm:80 / standCm:176 / anchorBot`（那張畫在那個舞台上
-         要縮小並錨在底，見該處說明）—— 那是**那個畫面的擺法**，不是這張圖的性質，
-         所以不抄過來；這裡要用到時再照劇情頁自己的規矩調。 */
+       ⚠⚠ 飛行頁那一邊另外掛 **`cm:132 / standCm:168`**（ver -1289 的定案值，Ray 驗收過）
+         —— 那是**那個畫面的擺法**，不是這張圖的性質，所以不抄過來；
+         這裡要用到時再照劇情頁自己的規矩調。
+       ⚠ ver -1291 更正：這一段原本寫的是 `cm:80 / standCm:176 / anchorBot`，
+         那是 **-1280 的中途值**，被 -1281~-1289 那一串取代了（`anchorBot` 也拿掉了）。
+         交叉註解寫錯比沒寫更糟 —— 下一個人會照著它去改另一邊。 */
     watch:        { src:'resources/SI/Sorana_SI_watch.webp',        top:6,  bot:1521, fx:0.680 },
     sorry:        { src:'resources/SI/Sorana_SI_sorry.webp',         top:12, bot:1528, fx:0.511, cm:166 },
     talk:         { src:'resources/SI/Sorana_SI_talk.webp',          top:7,  bot:1525, fx:0.508 },
