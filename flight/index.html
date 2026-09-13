@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1200"></script>
+<script src="../orientation.js?v=1201"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -512,11 +512,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1200"></script>
+<script src="settlement.js?v=1201"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1200"></script>
+<script src="talks.js?v=1201"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -556,7 +556,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1200';
+const FLIGHT_VER = 'ver -1201';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -2654,12 +2654,38 @@ function screenSample(x0,y0,x1,y1,inside){
   const cx=v=>Math.min(ctx.canvas.width-1, Math.max(0, Math.round(v*dpr)));
   const cy=v=>Math.min(Math.round((VIEWH-2)*dpr), Math.max(Math.round(yHi*dpr), Math.round(v*dpr)));
   let r=0,g=0,b=0,n=0;
-  for(const q of pts){
-    try{
-      const d=ctx.getImageData(cx(q[0]),cy(q[1]),1,1).data;
-      if(d[3]<8) continue;
-      r+=d[0]; g+=d[1]; b+=d[2]; n++;
-    }catch(_){ }
+  /* ══⚠⚠⚠ GLON：地形畫在 **GL 畫布**上，2D 這一張的視窗區是透明的（ver -1201）══
+     不分流的話會同時壞兩件事，而且兩件都不會報錯：
+     ① **功能**：五個取樣點全部 alpha=0 → 一個都不算數 → 退回快取／寫死的
+        [69,90,68]，遺蹟的環境光**完全不再隨日夜變**（正是 -1165 修過的那個症狀）。
+     ② **效能**：從**非不透明**的畫布 readback 慢得多 —— 實測 `getImageData`
+        由每禎 0.1ms 變成 **3.1ms（31 倍）**，而 `drawRuins` 從 3.2ms 變 6.2ms。
+        那正好發生在貝利薩爾近距離，也就是 Ray 回報「過古城會卡」的地方。
+     ⇒ 改用 `GLX.readPixels` 直接讀 GL 畫布。
+     ⚠ 座標系要換兩次：CSS 像素 → 緩衝像素（×BW/W），再上下翻（GL 原點在左下）。
+     ⚠ readPixels 會讓管線同步，但這一支 **400ms 才跑一次**（見開頭的快取），
+       攤下來可以忽略 —— 逐禎做才是災難（那是試作 ver -1198 量到的 2.4ms 停頓）。 */
+  const useGL = GLON && glReady && GLX;
+  if(useGL){
+    const px=new Uint8Array(4);
+    for(const q of pts){
+      try{
+        const bx=Math.min(BW-1, Math.max(0, Math.round(q[0]/W*BW)));
+        const byTop=Math.min(BH-1, Math.max(0, Math.round(
+          Math.min(Math.max(q[1], yHi), VIEWH-2)/VIEWH*BH)));
+        GLX.readPixels(bx, BH-1-byTop, 1,1, GLX.RGBA, GLX.UNSIGNED_BYTE, px);
+        if(px[3]<8) continue;
+        r+=px[0]; g+=px[1]; b+=px[2]; n++;
+      }catch(_){ }
+    }
+  }else{
+    for(const q of pts){
+      try{
+        const d=ctx.getImageData(cx(q[0]),cy(q[1]),1,1).data;
+        if(d[3]<8) continue;
+        r+=d[0]; g+=d[1]; b+=d[2]; n++;
+      }catch(_){ }
+    }
   }
   if(!n) return (smpRGB || [69,90,68]);
   smpRGB=[r/n, g/n, b/n];
@@ -7535,6 +7561,9 @@ function render(now){
     const sr=lerp(SC.top[0],SC.hz[0],tt), sg=lerp(SC.top[1],SC.hz[1],tt), sb=lerp(SC.top[2],SC.hz[2],tt);
     const row=y*BW, br=(y&3)<<2;
     SKYROW[y]=rgb(sr|0,sg|0,sb|0);        // 未抖動的純天空色，輪廓混色用
+    /* ⚠ GLON：天空由 shader 讀 SKYROW 那張 1×BH 貼圖畫，這裡**不必填 bufU32**
+       —— 那一整片算完就丟。抖色也交給 shader（Stage 1b 還沒接，先不抖）。 */
+    if(GLON && glReady) continue;
     // 天空是整片平滑漸層 → 8bit 量化會出色帶，逐像素套 Bayer 打散
     for(let x=0;x<BW;x++){
       const d=BAYER[br|(x&3)]*DITHER;
@@ -7596,6 +7625,45 @@ function render(now){
   const cloudLit=lerp(0.80,1.0,S.day);   // 銀月照著，夜裡的雲不該是灰的
 
   let z=1.0, dz=0.75;
+  /* ══⚠⚠⚠ GLON：地形改由 shader 畫，這裡只留「逐欄地平線」（ver -1201）══
+     下面那一大圈（約 350 行：地貌貼圖層、崖面、瀑布、抖色、城的取樣…）在
+     `?gl=1` 之下**算完就丟** —— 畫面上看到的全部是 GL 畫的。所以拿掉它是
+     **純效能改動，視覺零變化**（與 Stage 1a 的畫面一模一樣）。
+     但 `ybuf`／`ZTOP` 還得留著：那八個 `clipByTerrainDepth` 的呼叫者
+     （量體層、遺蹟、火車、炊煙、地標、船、怪）還在 2D 那張畫布上，
+     要靠它做遮擋。等那些也搬進 GL、改吃深度測試，這一段就能整個刪掉。
+     ⚠ 粗版就夠：遮擋只要近似。實測 dz×2＋隔欄取樣，地平線與精確版**誤差 0**，
+       而成本由 1.005ms 降到 0.345ms（試作 ver -1198 量的）。
+     ⚠ 隔欄沒算到的那幾欄取鄰欄的**較小值**（＝地平線較高）——
+       遮擋寧可多擋一點，也不要讓該被擋住的東西露出來。
+     ⚠⚠ `PICK3D`（管理人右鍵點地形）在 GLON 下不會被填 —— 那是開發用工具，
+       等 overlay 都搬完會改由深度緩衝反解。 */
+  if(GLON && glReady){
+    const CS=2, DM=2;
+    let zh=1.0, dzh=0.75*DM;
+    while(zh<ZFAR){
+      while(zsNext<ZSLICES && ZS_BOUND[zsNext]<=zh){ ZTOP.set(ybufRow,zsNext*BW); zsNext++; }
+      let plx=(-cosp*zh-sinp*zh)+cam.x, ply=(sinp*zh-cosp*zh)+cam.y;
+      const prx=(cosp*zh-sinp*zh)+cam.x, pry=(-sinp*zh-cosp*zh)+cam.y;
+      const ddx=(prx-plx)/BW*CS, ddy=(pry-ply)/BW*CS, invz=1/zh;
+      for(let i=0;i<BW;i+=CS){
+        const xi=(plx*INV_SCALE)|0, yi=(ply*INV_SCALE)|0;
+        plx+=ddx; ply+=ddy;
+        const out=(xi<0||yi<0||xi>=MAPW||yi>=MAPH);
+        const th=out?0:HGT[yi*MAPW+xi];
+        const hh=(out||th<=CLOUD_H)?CLOUD_H:th;
+        let y=(((cam.alt-hh)*invz + zh*curvK[i])*scaleH+horizon)|0;
+        if(y<0) y=0;
+        if(y<ybuf[i]) ybuf[i]=y;
+      }
+      zh+=dzh; dzh+=0.011*DM;
+    }
+    for(let i=1;i<BW;i+=CS){
+      const a=ybuf[i-1], b=(i+1<BW)?ybuf[i+1]:a;
+      ybuf[i]=a<b?a:b;
+    }
+    z=ZFAR;                                  // ⚠ 讓下面那一大圈整個跳過
+  }
   while(z<ZFAR){
     /* 跨過切片界線就存一次快照。此刻 ybuf 裡是所有深度 < z 的地形，
        而 ZS_BOUND[zsNext] ≤ z，正好是「比這個界線近的東西」。 */
