@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1262"></script>
+<script src="../orientation.js?v=1263"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1262');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1263');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1262");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1262");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1263");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1263");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1262");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1262");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1263");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1263");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -581,25 +581,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1262" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1263" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1262" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1262" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1262" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1262" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1262" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1262" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1262" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1262" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1262" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1262" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1263" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1263" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1263" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1263" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1263" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1263" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1263" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1263" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1263" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1263" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1262" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1263" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1262" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1263" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -620,11 +620,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1262"></script>
+<script src="settlement.js?v=1263"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1262"></script>
+<script src="talks.js?v=1263"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -664,7 +664,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1262';
+const FLIGHT_VER = 'ver -1263';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -8067,8 +8067,30 @@ const SETTLE_DRAG_PURGE='ver-1072';     // ← 要再倒一次帳就改這個字
     localStorage.setItem(SETTLE_DRAG_PURGE_KEY, SETTLE_DRAG_PURGE);
   }catch(_){}
 })();
-window.settleDragClear=()=>{ try{ localStorage.removeItem(SETTLE_DRAG_KEY); }catch(_){}
-  console.log('拖城覆寫已清除，重新整理後回到 code 寫的位置'); };
+/* ⚠⚠ 同 `mapEditClear`（ver -1263）：**不真的刪，先留一份**。
+   我在 -1252 的驗收裡清過一次這把鑰匙（為了讓量測對得上 code 寫的座標）——
+   那同樣是 Ray 的瀏覽器、Ray 的移城成果。回收區的規矩對 localStorage 一樣適用。 */
+const SETTLE_DRAG_BAK='tivot_settle_drag_bak_v1';
+window.settleDragClear=()=>{
+  try{
+    const cur=localStorage.getItem(SETTLE_DRAG_KEY);
+    if(cur && cur!=='{}'){
+      const a=JSON.parse(localStorage.getItem(SETTLE_DRAG_BAK)||'[]');
+      a.unshift({ t:Date.now(), d:cur }); while(a.length>12) a.pop();
+      localStorage.setItem(SETTLE_DRAG_BAK, JSON.stringify(a));
+    }
+    localStorage.removeItem(SETTLE_DRAG_KEY);
+  }catch(_){}
+  console.log('拖城覆寫已收進回收區，重整後回到 code 寫的位置；要拿回來用 settleDragRestore()');
+};
+window.settleDragBackups=()=>{ try{ return JSON.parse(localStorage.getItem(SETTLE_DRAG_BAK)||'[]')
+  .map((e,i)=>({'#':i, 時間:new Date(e.t).toLocaleString(), 內容:e.d})); }catch(_){ return []; } };
+window.settleDragRestore=(i)=>{
+  try{ const a=JSON.parse(localStorage.getItem(SETTLE_DRAG_BAK)||'[]'), e=a[i||0];
+    if(!e){ console.warn('回收區裡沒有那一份'); return false; }
+    localStorage.setItem(SETTLE_DRAG_KEY, e.d);
+    console.log('已放回；**重新整理**才會生效'); return true;
+  }catch(_){ return false; } };
 (function(){
   if(!ADMIN) return;
   let ov=null; try{ ov=JSON.parse(localStorage.getItem(SETTLE_DRAG_KEY)||'null'); }catch(_){}
@@ -8363,9 +8385,61 @@ let meMid=null;                      // 中鍵平移中（ver -1256）：{id,x,y
 let meDirty=null;                    // 這一筆畫累積的髒區（畫布重繪用）
 
 function meEl(id){ return document.getElementById(id); }
-function meSave(){ try{ localStorage.setItem(MAPEDIT_KEY, JSON.stringify(MAP_EDITS)); }catch(_){} }
-window.mapEditClear=()=>{ try{ localStorage.removeItem(MAPEDIT_KEY); }catch(_){}
-  console.log('地圖編輯覆寫已清除，重新整理後回到 code 寫的地形'); };
+/* ══════════ 地圖編輯的回收區（ver -1263）══════════════════════════════
+   ⚠⚠⚠ **這一段是賠罪，也是制度**。ver -1254~-1262 之間，我在每一輪驗收收尾都
+     跑 `mapEditClear()` 清掉測試用的筆畫 —— 而那是**Ray 的瀏覽器、同一把鑰匙**，
+     清掉的是整份 `tivot_mapedit_v1`，**包括他自己畫的**。六次。沒有備份。
+     Ray：「為什麼我每次編輯過的地圖，你一修正就會回複原狀？」
+   憲法的「回收區」（§5，Ray ver -696：「以後不要刪我的東西」）本來就規定
+   **本專案唯一的刪除出口是搬進 `_recycle/`，永遠不真的刪**；
+   那條規矩只寫了檔案，沒寫 localStorage —— 現在補上。
+
+   作法與 `tools/recycle.sh` 完全同構：
+     · **覆蓋前先留一份**（`meSave` 每次存檔都把**上一版**推進環形備份）
+     · **`mapEditClear()` 不再真的刪**：它把現在這一份推進備份再清空
+     · `mapEditBackups()` 看有哪幾份、`mapEditRestore(i)` 放回去
+   ⚠ 備份留 12 份、總量夾在 1.5MB 以內（localStorage 只有 ~5MB，
+     而這一頁還住著存檔與道具 —— 撐爆了會連存檔都寫不進去）。 */
+const MAPEDIT_BAK='tivot_mapedit_bak_v1';
+const MAPEDIT_BAK_N=12, MAPEDIT_BAK_MAX=1500000;
+function meBakRead(){ try{ const a=JSON.parse(localStorage.getItem(MAPEDIT_BAK)||'[]');
+  return Array.isArray(a)?a:[]; }catch(_){ return []; } }
+function meBakPush(why){
+  let cur=null; try{ cur=localStorage.getItem(MAPEDIT_KEY); }catch(_){}
+  if(!cur || cur==='[]') return;                       // 空的不必留
+  const a=meBakRead();
+  if(a.length && a[0].d===cur) return;                 // 與最新的一份相同就不重複留
+  a.unshift({ t:Date.now(), why:why||'', d:cur });
+  while(a.length>MAPEDIT_BAK_N) a.pop();
+  let tot=0; const keep=[];
+  for(const e of a){ tot+=e.d.length; if(tot>MAPEDIT_BAK_MAX) break; keep.push(e); }
+  try{ localStorage.setItem(MAPEDIT_BAK, JSON.stringify(keep)); }catch(_){}
+}
+function meSave(){
+  meBakPush('存檔前');                                  // ⚠ 先留上一版，再覆蓋
+  try{ localStorage.setItem(MAPEDIT_KEY, JSON.stringify(MAP_EDITS)); }catch(_){}
+}
+/* ⚠ 它**不是**刪除，是「搬進回收區」。要真的清空備份得自己動手改 localStorage ——
+   同「清空回收區是 Ray 的決定，沒有任何 session 被授權清它」。 */
+window.mapEditClear=()=>{
+  meBakPush('mapEditClear');
+  try{ localStorage.removeItem(MAPEDIT_KEY); }catch(_){}
+  const n=meBakRead().length;
+  console.log('地圖編輯覆寫已收進回收區（共 '+n+' 份備份）。'
+            +'重整後回到 code 寫的地形；要拿回來用 mapEditRestore()');
+};
+window.mapEditBackups=()=>meBakRead().map((e,i)=>({
+  '#':i, 時間:new Date(e.t).toLocaleString(), 原因:e.why,
+  筆畫數:(()=>{ try{ return JSON.parse(e.d).length; }catch(_){ return '?'; } })(),
+  位元組:e.d.length }));
+window.mapEditRestore=(i)=>{
+  const a=meBakRead(), e=a[i||0];
+  if(!e){ console.warn('回收區裡沒有第 '+(i||0)+' 份（mapEditBackups() 看清單）'); return false; }
+  meBakPush('restore 前');
+  try{ localStorage.setItem(MAPEDIT_KEY, e.d); }catch(_){}
+  console.log('已放回 '+new Date(e.t).toLocaleString()+' 那一份；**重新整理**才會生效');
+  return true;
+};
 
 /* ── 底圖 ────────────────────────────────────────────────────────
    1:1 的離屏畫布（2152×1200），視圖只是把它縮放貼上 —— 平移縮放不必重算像素。
