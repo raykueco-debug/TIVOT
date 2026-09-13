@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1208"></script>
+<script src="../orientation.js?v=1209"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -512,11 +512,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1208"></script>
+<script src="settlement.js?v=1209"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1208"></script>
+<script src="talks.js?v=1209"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -556,7 +556,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1208';
+const FLIGHT_VER = 'ver -1209';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -7558,6 +7558,29 @@ void main(){
         if(ca.a>0.0) c=mix(c,ca.rgb,ca.a);
         vec4 cb2=citySample(uCityB,uCityB0,uCityB1,wp);
         if(cb2.a>0.0) c=mix(c,cb2.rgb,cb2.a);
+        /* ══ 崖面（ver -1209）══════════════════════════════════════════
+           CPU 那一支是 span 演算法：畫完頂面之後往下補一條立面（§6.8.1 的
+           「崖面是 span 演算法」就是指它）。逐像素的作法不同但更直接：
+           **這一點在方塊頂面之下多深**（hs − hNeed）就是它在立面上的位置。
+           ⚠ 條紋用**世界高度**不用螢幕列（CPU 用的是螢幕列 yy>>1）——
+             螢幕列會隨相機移動而游移（§6.8.1「逐禎重建的東西不准用亂數」
+             同一族的問題）。用世界高度＝真正的水平岩層，而且穩定。
+           ⚠ 落差由「靠鏡頭那一側的地面」反推（多一次 texelFetch，很便宜）。 */
+        float below=hs-hNeed;
+        if(below>1.5){
+          vec2 mfF=(uCam.xy+dir*max(z-${MAP_SCALE}.0,1.0))*${INV_SCALE};
+          float hF=hRaw(clampT(ivec2(floor(mfF))));
+          float drop=max(hs-hF, 0.0);
+          if(drop>4.0){
+            float dd=clamp(below/max(drop,1.0),0.0,1.0);
+            float strat=fract(sin(floor(hNeed*0.5)*12.9898+floor(wp.x*0.05)*4.1414)*43758.5453);
+            float v=(1.0-dd*0.34)*(0.88+strat*0.14);
+            float rocky=clamp((drop-16.0)/(${CLIFF_DH}.0*1.5),0.0,1.0);
+            c*=v;
+            if(rocky>0.01) c=mix(c, vec3(152.,138.,126.)/255.0*v, rocky);
+            if(below<3.0) c*=1.20;                  // 崖唇受光提亮
+          }
+        }
         /* 坡度打光（與舊路徑同一條式子：0.62 + (slx*lx+sly*ly)*LIGHT_DIR_K） */
         vec2 sl=texelFetch(uS,clampT(ti),0).rg*255.0-128.0;
         float nl=clamp(0.62+dot(sl,uLdir)*${'0.030'}, 0.0, 1.5);
@@ -7568,7 +7591,13 @@ void main(){
       }
       float fogS=${ZFAR}.0*${FOG_START};
       float fog=clamp((z-fogS)/(${ZFAR}.0-fogS),0.0,1.0)*${FOG_MAX};
-      o=vec4(mix(c,uFog,fog),1.0);
+      c=mix(c,uFog,fog);
+      /* 抖色（ver -1209）：8bit 量化在平滑的天空與霧上會出色帶，
+         逐像素套 4×4 Bayer 打散 —— 與 CPU 同一張表、同一個幅度。 */
+      int bx=int(px)&3, by=int(py)&3;
+      float bay=float((by*4+bx)*17%16)/16.0-0.5;
+      c+=vec3(bay*${DITHER}/255.0);
+      o=vec4(c,1.0);
       gl_FragDepth=clamp(z/${ZFAR}.0,0.0,1.0);
       return;
     }
@@ -7593,6 +7622,14 @@ function glInit(){
   g.linkProgram(glProg);
   if(!g.getProgramParameter(glProg,g.LINK_STATUS)) throw new Error(g.getProgramInfoLog(glProg));
   g.useProgram(glProg);
+  /* ⚠⚠⚠ **單位元組的貼圖一定要把 UNPACK_ALIGNMENT 設成 1**（ver -1209）：
+     預設是 4，而 `RAILDIR` 的寬是 `ceil(2152/6)=359` —— 每列 359 bytes 不是 4 的
+     倍數，上傳時最後一列會讀出界 ⇒ `INVALID_OPERATION(1282)`，
+     **而且畫面上完全沒有症狀**（貼圖是空的，鐵軌的軌道座標系靜靜失效，
+     退回一般的地貌 UV）。查了很久才用「逐步重跑每一次 texImage2D」二分出來。
+     ⚠ 這裡一次設定就涵蓋所有上傳；BIOME（寬 2152）與 GEOK（每列 768）剛好
+       都是 4 的倍數所以沒事，但那是巧合，不要依賴。 */
+  g.pixelStorei(g.UNPACK_ALIGNMENT, 1);
   glVao=g.createVertexArray(); g.bindVertexArray(glVao);
   const vb=g.createBuffer(); g.bindBuffer(g.ARRAY_BUFFER,vb);
   g.bufferData(g.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),g.STATIC_DRAW);
