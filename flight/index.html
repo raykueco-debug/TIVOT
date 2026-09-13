@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1276"></script>
+<script src="../orientation.js?v=1277"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1276');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1277');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1276");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1276");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1277");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1277");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1276");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1276");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1277");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1277");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -604,25 +604,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1276" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1277" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1276" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1276" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1276" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1276" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1276" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1276" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1276" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1276" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1276" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1276" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1277" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1277" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1277" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1277" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1277" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1277" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1277" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1277" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1277" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1277" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1276" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1277" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1276" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1277" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -643,11 +643,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1276"></script>
+<script src="settlement.js?v=1277"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1276"></script>
+<script src="talks.js?v=1277"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -699,7 +699,7 @@ const COLOR_URL  = 'silvermoon_terrain.png'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1276';
+const FLIGHT_VER = 'ver -1277';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -5918,6 +5918,16 @@ async function loadWorld(){
   // 高度：取紅通道（灰階三通道相同）。0＝大陸之外。
   const raw=new Float32Array(N);
   for(let i=0;i<N;i++) raw[i]=hd[i*4]/255;
+  /* ⚠⚠⚠ **「滿畫面的黑線」不是這裡**（ver -1277 的三次誤判，留著當紀錄）。
+     我依序怪過：① 鐵路折線畫在大地圖上 ② 8-bit 高度圖的階梯（在這裡加過一道
+     低通，已拆掉）③ GL 的崖面閘門（改過，已還原）。**三個都不是。**
+     真兇是 `glUploadWorld` 裡的 `uRailW`：沒有鐵路時那個貼圖單元**什麼都沒綁**，
+     取樣不完整貼圖是未定義行為（見那一段的說明）。Ray 一開始就說「是鐵軌」，
+     而且第三次講的時候指名了是「兩條平行灰線那一件」—— 那正是 uRailW 進來的那一版。
+     ⚠⚠ 自檢，下次看到整片規律紋路照這個順序：
+       ① `?gl=0` 分 GL／CPU（這一次 CPU 一直是乾淨的 ⇒ 兇手在著色器）
+       ② **先查那一版新加的 sampler／uniform 有沒有漏綁**，再去懷疑既有的演算法
+       ③ 最後才動資料。我這次是倒著做的，白跑了三輪。 */
   let rivCnt=0;
   for(let i=0;i<N;i++){
     HGT[i]=clamp(Math.round(raw[i]*PEAK_SCALE),0,65535);
@@ -10475,9 +10485,20 @@ function glUploadWorld(){
     g.texImage2D(g.TEXTURE_2D,0,g.RGBA8,MAPW,MAPH,0,g.RGBA,g.UNSIGNED_BYTE,m);
     console.log('[gl] 地貌遮罩 '+(m.byteLength/1048576).toFixed(1)+'MB');
   }
-  if(RAILW){ glTexRailW=mk(14);
+  /* ⚠⚠⚠ **沒有鐵路也一定要綁一張**（ver -1277，Ray：「是我叫你鐵軌用兩條平行
+     灰線這一件」）：著色器那一段是**無條件取樣** `uRailW` 的（unit 14），
+     而 `RAILS_ON=false`／少於兩座大城時 `RAILW` 是 null —— 舊寫法就直接不建貼圖，
+     於是 **unit 14 上什麼都沒綁**。WebGL2 取樣一個不完整的貼圖是**未定義行為**：
+     驅動可以回 (0,0,0,1)，也可以回 (1,1,1,1)。回 1 的話 `rwv` 恆為 1 →
+     離中線距離恆為 0 → 那一段的 smoothstep 變成「隨螢幕列（也就是距離）起伏」
+     的一個值，整個畫面就會鋪上一層**隨距離變化的橫條**。
+     ⇒ 沒有鐵路就綁一張 1×1、值 0 的 R8：取樣永遠是 0，那一段自己就跳過了。
+     ⚠ 這一條是通則：**任何一個 sampler，只要著色器會取樣它，就一定要有東西綁著** ——
+       「資料還沒好」不可以用「不綁」表示。 */
+  if(RAILW || true){ glTexRailW=mk(14);
     /* ⚠ ver -1274 由 RG8 改回 R8：G 通道原本裝隧道口，那一整套拿掉了。 */
-    g.texImage2D(g.TEXTURE_2D,0,g.R8,MAPW,MAPH,0,g.RED,g.UNSIGNED_BYTE,RAILW);
+    if(RAILW) g.texImage2D(g.TEXTURE_2D,0,g.R8,MAPW,MAPH,0,g.RED,g.UNSIGNED_BYTE,RAILW);
+    else      g.texImage2D(g.TEXTURE_2D,0,g.R8,1,1,0,g.RED,g.UNSIGNED_BYTE,new Uint8Array([0]));
     /* ⚠ LINEAR：走廊只有 3 px 寬，不內插就沒有連續的橫越座標（見 uRailW 的說明）。 */
     g.texParameteri(g.TEXTURE_2D,g.TEXTURE_MIN_FILTER,g.LINEAR);
     g.texParameteri(g.TEXTURE_2D,g.TEXTURE_MAG_FILTER,g.LINEAR); }
