@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1252"></script>
+<script src="../orientation.js?v=1254"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1252');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1254');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1252");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1252");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1254");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1254");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1252");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1252");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1254");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1254");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -312,22 +312,6 @@
   #starTgl[hidden]{display:none;}
   #mapClose{position:absolute;top:calc(env(safe-area-inset-top) + 10px);right:10px;z-index:2;
     min-width:64px;min-height:40px;}
-  /* 移城確認窗（ver -1072）：落定之後才跳，按「取消」把城搬回拖之前的座標。
-     ⚠ 蓋在地圖之上、吃掉點擊 —— 沒答之前不准再拖下一座（答案只能有一個）。 */
-  /* ⚠ **直的**：訊息在上、兩顆鈕在下。`display:flex` 預設是 row —— 那會把
-     訊息與鈕排成一橫排（-1074 實測就是這樣，整句話被擠成一條）。 */
-  #settleAsk{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;
-    align-items:center;justify-content:center;background:rgba(4,5,9,.62);}
-  #settleAsk[hidden]{display:none;}
-  #settleAsk p{margin:0 0 14px;padding:16px 18px;border-radius:10px;
-    background:rgba(10,8,14,.92);border:1px solid var(--gold-dim);
-    color:var(--parch);font-size:13px;line-height:1.7;letter-spacing:.05em;
-    max-width:min(86vw,420px);text-align:center;}
-  #settleAsk .sa-btns{display:flex;gap:10px;justify-content:center;}
-  #settleAsk button{min-height:42px;padding:0 16px;border-radius:8px;
-    background:rgba(10,8,14,.9);border:1px solid var(--gold-dim);
-    color:var(--gold);font-family:inherit;font-size:13px;letter-spacing:1px;}
-  #settleYes{background:rgba(201,162,39,.18);}
   /* ══ 載入畫面 ══
      排版與主程式的啟動讀取畫面（style.css 的 #assetLoader）**逐項對齊**：
      圈徑/位置、立繪舞台高度、對話框寬度與錨點、底部訊息位置、字級與字距、
@@ -423,6 +407,57 @@
 
   #bMsg small{display:block;color:var(--ink);opacity:.5;font-size:10px;
     letter-spacing:1px;margin-top:6px;}
+
+  /* ══════════ 地圖編輯器（ver -1254，管理人限定）══════════════════════
+     Ray：「開發者模式在大地圖加個鈕，進入地圖編輯，全地圖平面顯示不要有立體，
+       高度用深淺表示，移城改到地圖編輯進行，放幾個畫筆…還有鐵路跟公路」
+     ⚠ 刻意**不共用** `#mapView` 的版面：那一頁是給玩家看的立體浮雕圖
+       （`reliefXY` 投影），這一頁要的是正射的平面圖。同一個容器塞兩種投影
+       只會讓兩邊互相牽制。 */
+  #mapEdit{position:fixed;inset:0;z-index:70;background:#0b0d13;display:none;
+    touch-action:none;user-select:none;-webkit-user-select:none;}
+  #mapEdit.on{display:block;}
+  #meCv{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:crosshair;}
+  /* 工具列：貼在上緣，讓開瀏海。⚠ `pointer-events` 逐塊給 —— 整條吃掉點擊的話
+     底下的畫布在工具列後面那一段就畫不了。 */
+  #meBar{position:absolute;left:0;right:0;top:0;z-index:2;
+    padding:calc(env(safe-area-inset-top) + 6px) 8px 6px;
+    background:linear-gradient(180deg,rgba(6,7,12,.94),rgba(6,7,12,.76) 70%,rgba(6,7,12,0));
+    display:flex;flex-wrap:wrap;gap:5px;align-items:center;}
+  #meBar button,#meBar select{font-family:inherit;font-size:12px;letter-spacing:.06em;
+    padding:6px 9px;border-radius:7px;background:rgba(16,14,22,.86);
+    border:1px solid var(--gold-dim,#6b5a1e);color:var(--parch);min-height:34px;}
+  #meBar button.on{background:var(--gold,#c9a227);color:#14110a;border-color:var(--gold,#c9a227);}
+  #meBar button:disabled{opacity:.38;}
+  #meBar .sep{width:1px;height:22px;background:rgba(217,198,138,.22);margin:0 2px;}
+  #meBar label{color:var(--parch);font-size:11px;opacity:.8;display:flex;align-items:center;gap:4px;}
+  #meBar input[type=range]{width:96px;accent-color:var(--gold,#c9a227);}
+  /* 讀數：游標下的座標與高度。畫筆調參時要看得到數字，不然全是憑感覺。 */
+  #meInfo{position:absolute;left:8px;bottom:calc(env(safe-area-inset-bottom) + 8px);z-index:2;
+    color:var(--parch);font-size:11px;line-height:1.5;letter-spacing:.05em;
+    background:rgba(6,7,12,.72);border:1px solid rgba(217,198,138,.18);
+    border-radius:7px;padding:6px 9px;pointer-events:none;white-space:pre;}
+  #meHint{position:absolute;right:8px;bottom:calc(env(safe-area-inset-bottom) + 8px);z-index:2;
+    color:var(--parch);font-size:10px;opacity:.5;letter-spacing:.12em;pointer-events:none;
+    text-align:right;line-height:1.6;}
+  /* 貼材色票：只在選了貼材筆時出現。 */
+  /* ⚠ **一定要有 `top`**：只寫 left/right 的 absolute 元素 `top` 是 auto ＝
+     排在它靜態位置上，於是整條色票疊到工具列上面、把畫筆鈕全遮住（-1254 實測）。
+     工具列會換行，高度不固定 —— 所以 top 由 `meLayoutBar()` 量出來寫進來。 */
+  #meMat{position:absolute;left:0;right:0;top:0;z-index:2;display:none;flex-wrap:wrap;gap:4px;
+    padding:5px 8px;background:rgba(6,7,12,.86);}
+  #meMat.on{display:flex;}
+  #meMat button{font-family:inherit;font-size:11px;padding:5px 8px;border-radius:6px;
+    background:rgba(16,14,22,.9);border:1px solid rgba(217,198,138,.25);color:var(--parch);}
+  #meMat button.on{outline:2px solid var(--gold,#c9a227);}
+  #meMat button i{display:inline-block;width:10px;height:10px;border-radius:2px;
+    margin-right:5px;vertical-align:-1px;}
+  /* 管理人入口鈕：疊在地圖鈕下面一格。⚠ 預設 display:none，由 ADMIN 區塊解除。 */
+  #meBtn{position:fixed;right:12px;z-index:20;display:none;
+    min-height:38px;padding:6px 10px;border-radius:8px;
+    background:rgba(10,8,14,.78);border:1px solid var(--gold-dim,#6b5a1e);
+    color:var(--gold,#c9a227);font-family:inherit;font-size:12px;letter-spacing:.1em;}
+  #meBtn:active{transform:scale(.95);}
 </style>
 </head>
 <body>
@@ -460,17 +495,36 @@
     <button id="mapClose">✕ 關閉</button>
     <!-- 星號顯示開關：管理人限定，由 ADMIN 區塊解除 display:none -->
     <button id="starTgl" hidden>★ 已發現</button>
-    <!-- 移城確認窗（ver -1072，Ray：「以後管理者移城完要跳確認窗，取消就搬回去」）。
-         ⚠ 它只有管理人看得到（拖城本身就是 ADMIN 限定）。 -->
-    <div id="settleAsk" hidden>
-      <p id="settleAskT"></p>
-      <div class="sa-btns">
-        <button id="settleNo">取消（搬回去）</button>
-        <button id="settleYes">確定移城</button>
-      </div>
-    </div>
   </div>
   <div id="mapCap">拖曳平移 · 滾輪／雙指縮放 · 放大可見市鎮街廓</div>
+</div>
+<!-- ══ 地圖編輯（ver -1254，管理人限定）══
+     入口鈕的座標由 `layoutMeBtn()` 對齊地圖鈕算出來（鐵律 7：地圖鈕的位置
+     本來就是 CSS 算的，這裡只讀它的 rect，不另外抄一份數字）。 -->
+<button id="meBtn" hidden>✎ 地圖編輯</button>
+<div id="mapEdit">
+  <canvas id="meCv"></canvas>
+  <div id="meBar">
+    <button data-tool="pan" class="on">✋ 平移</button>
+    <button data-tool="hill">⛰ 山</button>
+    <button data-tool="dig">⛏ 挖</button>
+    <button data-tool="water">〜 水</button>
+    <button data-tool="mat">▦ 貼材</button>
+    <button data-tool="rail">＝ 鐵路</button>
+    <button data-tool="road">— 公路</button>
+    <button data-tool="move">⌖ 移城</button>
+    <span class="sep"></span>
+    <label>大小<input id="meSize" type="range" min="1" max="90" value="18"><b id="meSizeN">18</b></label>
+    <label>力道<input id="meAmp" type="range" min="5" max="100" value="45"><b id="meAmpN">45</b></label>
+    <span class="sep"></span>
+    <button id="meUndo">↶ 復原</button>
+    <button id="meLayers">◱ 圖層</button>
+    <button id="meExport">⇩ 匯出</button>
+    <button id="meClose">✕ 關閉</button>
+  </div>
+  <div id="meMat"></div>
+  <div id="meInfo"></div>
+  <div id="meHint">拖曳平移 · 滾輪／雙指縮放<br>畫筆：按住拖曳</div>
 </div>
 <div id="fps"></div>
 <!-- Kerberos 之門（ver -387）：楣常駐在操控面板底緣；遭遇敵人時整扇槍棺推上來蓋滿畫面，
@@ -483,25 +537,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1252" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1254" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1252" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1252" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1252" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1252" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1252" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1252" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1252" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1252" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1252" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1252" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1254" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1254" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1254" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1254" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1254" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1254" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1254" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1254" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1254" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1254" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1252" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1254" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1252" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1254" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -522,11 +576,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1252"></script>
+<script src="settlement.js?v=1254"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1252"></script>
+<script src="talks.js?v=1254"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -566,7 +620,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1252';
+const FLIGHT_VER = 'ver -1254';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -1729,6 +1783,184 @@ let RAIL_PATHS=[];                            // 折線（地圖座標），地�
      有限的代價則保證圖永遠是連通的 —— Dijkstra 自己會去繞。 */
 let RAIL_KEEP=null;
 
+/* ══════════ 地圖編輯的筆畫（ver -1254，管理人限定）══════════════════
+   Ray：「開發者模式在大地圖加個鈕，進入地圖編輯…放幾個畫筆：山（可調大小，
+     按住畫出山脈），挖（可挖除地面），水（可調粗細），還有貼材筆」「還有鐵路跟公路」
+
+   一筆畫 ＝ `{t, r, a, g, pts:[[x,y],…]}`（地圖座標）：
+     t  ＝ hill／dig／water／mat／rail／road
+     r  ＝ 筆刷半徑（地圖像素）　a ＝ 力道（世界高度單位）　g ＝ 貼材的 GEO 類別
+   ⚠⚠ **筆畫是資料不是結果**（鐵律 1）：存的是「在哪裡畫了什麼」，不是烘好的
+     高度圖。所以每次開機都在 `loadWorld` 的固定位置重放一次，
+     **道路、鐵路、地貌、整地、取樣遮罩全部跟著重算** —— 畫完的世界與
+     「美術重畫一張高度圖交進來」是同一種東西，沒有第二套真相。
+   ⚠⚠ 覆寫住在 localStorage，**git 看不到、程式端 grep 不到**（同拖城，ver -835）。
+     定稿一定要按「匯出」把內容貼進 `MAP_EDITS_SRC`，再 `mapEditClear()` ——
+     不清的話這台機器永遠用畫的那一份，之後改 code 也看不出來。 */
+const MAPEDIT_KEY='tivot_mapedit_v1';
+const MAP_EDITS_SRC=[];        // ← 定稿後把匯出的陣列內容貼進這裡（會進版控）
+let MAP_EDITS=MAP_EDITS_SRC;   // 實際生效的那一份（管理人有覆寫就換成覆寫）
+
+/* ── 筆畫的光柵化（唯一一支，鐵律 8）───────────────────────────────
+   編輯器的即時預覽與開機重放**走同一支** —— 兩份必然走鐘，而「畫的時候好好的、
+   重整之後變了樣」是最難查的一種。
+   作法：沿折線以半徑的三分之一為步長蓋圓，覆蓋率取 **max** 存進 `meCov`，
+   只有**變大**的格子才回呼。於是：
+     · 按住不動不會無限累加（同一格的 cov 不再變大）
+     · 拖出去就是一條山脊（沿線每一格都被蓋到一次）
+   ⚠ 回呼給的是 `(i, 增量, 新覆蓋率)`：連續量（山／挖）用增量累加，
+     門檻量（水／貼材）看新舊覆蓋率有沒有跨過 0.5。
+   ⚠ `meCov` 是**跨呼叫保留**的：即時畫圖時一次只送新的那一段線，
+     整筆畫的 max 才連得起來。收筆時由呼叫端清掉髒區。 */
+/* ⚠⚠⚠ **不可以用「逐次累加」把高度加上去**（ver -1254 實測抓到）：
+   `HGT` 是 Uint16，而拖曳每 0.8 地圖像素就送一段線進來 —— 一筆畫會拆成三百次
+   `HGT[i] += amp*dc`，每次的增量只有 0.2 個單位，**存進 Uint16 時整數截斷，
+   那 0.2 就消失了**。實測：力道 70 的山脊，密取樣只長到 **+57**，
+   同一條線簡化成 9 點反而長到 +67 —— 「畫得越慢越矮」，而且畫面上看不出哪裡錯。
+   正解是**不累加**：記下這一筆畫第一次碰到那一格時的原高度（`meBaseH`），
+   之後永遠算 `base + amp × 覆蓋率`。順帶把「按住不動不會無限長高」變成
+   結構上的保證，而不是靠 max 覆蓋率間接達成。 */
+let meCov=null, meBaseH=null, meCovW=0;
+function meCovEnsure(){
+  if(!meCov || meCovW!==MAPW || meCov.length!==MAPW*MAPH){
+    meCov=new Float32Array(MAPW*MAPH);
+    meBaseH=new Uint16Array(MAPW*MAPH);      // 高度本來就是整數，不必用 Float32
+    meCovW=MAPW;
+  }
+}
+function meCovClear(d){
+  if(!meCov||!d) return;
+  for(let y=d.y0;y<=d.y1;y++){ const r=y*MAPW; meCov.fill(0, r+d.x0, r+d.x1+1); }
+}
+/* 回傳髒區 {x0,y0,x1,y1}；沒蓋到任何東西回 null。 */
+function meStroke(pts, r, cb){
+  if(!pts||!pts.length||!MAPW) return null;
+  meCovEnsure();
+  /* ⚠ 相鄰兩個圓心的間距**要夾在 3 個地圖像素以內**（實測 ver -1254）：
+     `R/3` 在大筆刷（R=24）下是 8px，於是取樣點最遠會落在兩個圓心的正中間、
+     離最近的圓心 4px —— 覆蓋率掉到 0.95，畫出來的山脊比力道少 4~5 個單位，
+     而且**只在簡化過的折線上才看得出來**（拖曳時的原始點距只有 0.8px，
+     密到看不出這件事）。夾住之後「畫的時候」與「重放」差不到 1 個單位。 */
+  const R=Math.max(0.8,r), R2=R*R, step=Math.max(0.7, Math.min(R/3, 3));
+  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+  const blob=(cx,cy)=>{
+    const ax=Math.max(0,Math.floor(cx-R)), bx=Math.min(MAPW-1,Math.ceil(cx+R));
+    const ay=Math.max(0,Math.floor(cy-R)), by=Math.min(MAPH-1,Math.ceil(cy+R));
+    for(let y=ay;y<=by;y++){ const dy=y-cy, row=y*MAPW;
+      for(let x=ax;x<=bx;x++){ const dx=x-cx, d2=dx*dx+dy*dy;
+        if(d2>R2) continue;
+        /* smoothstep 的落差：線性的圓邊在山上會留一圈折角。 */
+        const t=1-Math.sqrt(d2)/R, c=t*t*(3-2*t);
+        const i=row+x, prev=meCov[i];
+        if(c<=prev) continue;
+        meCov[i]=c; cb(i, c-prev, c, x, y);
+        if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y;
+      } }
+  };
+  if(pts.length===1) blob(pts[0][0], pts[0][1]);
+  for(let k=1;k<pts.length;k++){
+    const ax=pts[k-1][0], ay=pts[k-1][1], bx=pts[k][0], by=pts[k][1];
+    const L=Math.hypot(bx-ax,by-ay), n=Math.max(1,Math.ceil(L/step));
+    for(let q=(k===1?0:1);q<=n;q++) blob(ax+(bx-ax)*q/n, ay+(by-ay)*q/n);
+  }
+  return x1<x0 ? null : {x0,y0,x1,y1};
+}
+
+/* 貼材筆的色票。⚠ **兩件事要一起改**：`BIOME` 的類別（相乘的細節紋理）與
+   `COL` 的底色（色相）—— 只改其中一個的下場見 -1237／-1246 的教訓
+   （換了貼圖沒換底色，谷底讀成一地巨石）。底色取 `geo/*.webp` 的均值再往
+   地圖的明度靠，所以這裡是**手訂的代表色**，不是從貼圖算的。
+   ⚠ 不給屋頂（G_RH/RM/RL）與鐵路／石橋（G_RAIL/G_BRDG）：那三族是
+     郊區與軌道自己算出來的，手塗會與 `buildRoads`／`buildRails` 打架。
+   ⚠ 水也不給 —— 那是「水」筆的事（它還要設 RIV）。 */
+const MAT_PALETTE=[
+  { g:0,  n:'深林', c:[ 58, 72, 48] },
+  { g:1,  n:'疏林', c:[ 92,102, 62] },
+  { g:2,  n:'灰岩', c:[124,124,124] },
+  { g:3,  n:'棕岩', c:[122,104, 82] },
+  { g:4,  n:'暗礫', c:[ 92, 88, 80] },
+  { g:5,  n:'淺礫', c:[150,142,126] },
+  { g:6,  n:'荒土', c:[136,116, 84] },
+  { g:7,  n:'雪原', c:[224,228,234] },
+];
+const RIVER_COL=[88,116,132];   // ⚠ 與 loadWorld 的河道偵測同一組數字（見那一段的註解）
+
+/* ── 開機重放 ────────────────────────────────────────────────────
+   `phase` ＝ 'terrain'（山／挖／水，要 `raw` 一起改）／ 'mat'（貼材）。
+   鐵路與公路走另一條路（`mapEditPaths`），由 buildRoads／buildRails 取用。
+   ⚠ `raw` 一定要跟著改：坡度是從 `raw` 差分算的，只改 HGT 的話畫出來的山
+     **沒有法線**（看起來是一塊平的色斑），而且不會有任何錯誤訊息
+     —— 同「邊緣抬升」那一段記著的坑。 */
+/* 把**一筆畫的一段**套用到世界的陣列上。編輯器的即時預覽與開機重放都走它
+   （鐵律 8）—— 兩份必然走鐘，而「畫的時候好好的、重整之後變了樣」最難查。
+   · `raw` 給了就一起改（坡度是從它差分算的；編輯器事後沒有 raw，那時給 null，
+     法線要等重整才跟上 —— 這是編輯器的已知限制，寫在說明列上）。
+   · `snap` 給了就把**第一次被碰到**的格子原值記下來（給編輯器的「復原」用）。
+     判「第一次」看的是 `c-dc<=0`（這一格先前的覆蓋率是 0），不是看值有沒有變 ——
+     水／貼材要跨過 0.5 才寫，第一次碰到時還沒寫，但復原照樣得認得它。
+   回傳髒區（呼叫端自己決定要不要清 meCov）。 */
+function meApply(E, pts, raw, snap){
+  const t=E.t;
+  if(t==='hill'||t==='dig'){
+    const amp=(t==='dig'?-1:1)*(E.a||45);
+    return meStroke(pts, E.r||18, (i,dc,c)=>{
+      if(c-dc<=0){ meBaseH[i]=HGT[i]; if(snap) snap(i); }   // 這一筆畫第一次碰到它
+      const v=clamp(Math.round(meBaseH[i]+amp*c), 0, PEAK_SCALE);
+      HGT[i]=v; if(raw) raw[i]=v/PEAK_SCALE;
+    });
+  }
+  if(t==='water'){
+    return meStroke(pts, E.r||4, (i,dc,c)=>{
+      if(snap && c-dc<=0) snap(i);
+      if(c<0.5 || c-dc>=0.5) return;
+      RIV[i]=1; COL[i]=rgb(RIVER_COL[0],RIVER_COL[1],RIVER_COL[2]);
+    });
+  }
+  if(t==='mat'){
+    const M=MAT_PALETTE.find(m=>m.g===E.g)||MAT_PALETTE[0];
+    return meStroke(pts, E.r||18, (i,dc,c)=>{
+      if(snap && c-dc<=0) snap(i);
+      if(c<0.5 || c-dc>=0.5) return;
+      if(HGT[i]<=CLOUD_H) return;                 // 雲海不塗（那裡的 BIOME 用不到）
+      if(BIOME) BIOME[i]=M.g|(BIOME[i]&0xf0);     // 高 4 bit 是那一格的細節抖動，留著
+      COL[i]=rgb(M.c[0],M.c[1],M.c[2]);
+    });
+  }
+  return null;                                    // rail／road 不碰陣列（見 mapEditPaths）
+}
+/* ── 開機重放 ────────────────────────────────────────────────────
+   `phase` ＝ 'terrain'（山／挖／水，要 `raw` 一起改）／ 'mat'（貼材）。
+   鐵路與公路走另一條路（`mapEditPaths`），由 buildRoads／buildRails 取用。 */
+function applyMapEdits(phase, raw){
+  if(!MAP_EDITS||!MAP_EDITS.length||!MAPW) return;
+  const want = phase==='mat' ? ['mat'] : ['hill','dig','water'];
+  for(const E of MAP_EDITS){
+    if(want.indexOf(E.t)<0) continue;
+    meCovClear(meApply(E, E.pts, raw, null));
+  }
+}
+/* 手繪的鐵路／公路：轉成與 `gridPath` 同格式的折線（地圖座標、約 ROAD_DS 一點），
+   由 buildRoads／buildRails 接到自動產生的那幾條後面。
+   ⚠⚠ 手繪是**加上去**不是取代：自動網路照舊在（城與城本來就該連得到），
+     畫的是額外要的那幾條。要讓某一段不見得靠「挖掉」，不是靠把整張網關掉。
+   ⚠ 點距要與 `gridPath` 一致（ROAD_DS＝6）：`railProfile` 的坡度夾是照
+     「每格」算的，點距不同等於偷偷換了坡度上限。 */
+function mapEditPaths(kind){
+  const out=[];
+  for(const E of MAP_EDITS){
+    if(E.t!==kind || !E.pts || E.pts.length<2) continue;
+    const pts=[];
+    for(let k=1;k<E.pts.length;k++){
+      const ax=E.pts[k-1][0], ay=E.pts[k-1][1], bx=E.pts[k][0], by=E.pts[k][1];
+      const L=Math.hypot(bx-ax,by-ay), n=Math.max(1,Math.round(L/ROAD_DS));
+      for(let q=(k===1?0:1);q<=n;q++)
+        pts.push([clamp(ax+(bx-ax)*q/n,0,MAPW-1), clamp(ay+(by-ay)*q/n,0,MAPH-1)]);
+    }
+    if(pts.length>=2){ pts.hand=true; out.push(pts); }
+  }
+  return out;
+}
+
 /* 成本場：一步的代價。爬坡是主要成本 —— 這是讓路自己去繞河谷的關鍵。 */
 function roadCost(h0,h1,riv){
   const dh=Math.abs(h1-h0);
@@ -2056,6 +2288,8 @@ function buildRoads(){
     }
   }
   ROAD_PATHS=paths;
+  /* 手繪的公路（ver -1254）：接在自動網路後面，之後的鋪面／地貌一視同仁。 */
+  for(const h of mapEditPaths('road')) paths.push(h);
   ROADW=stampPaths(paths, 2.2);
   window.__roads=paths.length;
   /* 路網簽章（條數:總點數:折線雜湊）。動到 gridPath／roadCost／MST 之後拿它
@@ -2098,6 +2332,13 @@ function buildRails(){
     pts.ends=[big[b2], big[a2]];
     paths.push(pts);
   }
+  /* 手繪的鐵路（ver -1254）：⚠ 一定要在**縱斷面之前**接進來 —— 那一段會替
+     每一條線算 `prof`／`tun`／`via`，接晚了手繪那幾條沒有縱斷面，
+     下游讀 `pts.tun[k]` 就是 undefined（隧道判成假、橋也不會架），
+     而且不會有任何錯誤訊息。
+     ⚠ 車站（`railStations`）看的是「折線有沒有經過城」，不是 `pts.ends`，
+     所以手繪的線不必交代兩端是誰；沒經過城就沒有站場，那是對的。 */
+  for(const h of mapEditPaths('rail')) paths.push(h);
   /* ── 縱斷面與隧道 ────────────────────────────────────────────
      每條線先算出受坡度限制的設計高程；地面高過它 TUNNEL_MIN 以上的那幾段
      ＝**在山裡**，地表不鋪軌（鋪了會看到鐵軌爬過山頂）。 */
@@ -5506,6 +5747,17 @@ async function loadWorld(){
      ⚠ HGT 與 raw 都要改：下面的坡度是從 raw 差分算的，只改 HGT 會讓
        城邊的法線還是舊坡度（同邊緣抬升那段的理由）。
      ⚠ 外圈留一段裙帶平滑過渡，否則城界會是一圈垂直斷崖。 */
+  /* ══ 地圖編輯的地形筆畫（ver -1254）══
+     ⚠⚠ **排在這裡是刻意的**：
+       · 在「整平大陸邊緣」**之後** —— 陸塊的龍骨是結構，畫的山不該把它頂開；
+         反過來說，畫在海岸上的一刀也就不會被邊緣抬升重新填回去。
+       · 在「整平河面」「整平城鎮地基」「坡度」「道路／鐵路」「判地貌」**之前**
+         —— 畫的河會被整平成真的水面、畫的山會長出法線與植被、路與軌會繞開它。
+         換句話說：**畫完的地形與美術交一張新的高度圖是同一種東西**，
+         下游沒有任何一段需要知道它是畫出來的。
+     ⚠ `raw` 要一起改（坡度是從它差分算的）—— 見 applyMapEdits 的註解。 */
+  applyMapEdits('terrain', raw);
+
   /* ── 河面整平 ─────────────────────────────────────────────────
      ⚠ 源頭在上游：terrain_generator.py 把河道刻成一個**固定灰階**（34，
        ＝69 世界單位），所以每條河都是「平底＋垂直壁」的溝。實測三處剖面
@@ -6157,6 +6409,10 @@ async function loadWorld(){
          決定 —— 所以貼圖換成灰岩、底色換成那張圖的灰，兩件要一起改（-1237 的教訓）。
        ⚠ 掃的是谷地那幾千格，不是 258 萬格 —— 不要塞進上面的主迴圈。 */
     for(const i of valleyRock) BIOME[i]=G_GL|(BIOME[i]&0xf0);
+    /* 貼材筆（ver -1254）：⚠ 一定要在這裡，不能更早 —— BIOME 是這一段
+       現生出來的，早一步塗會被整張蓋掉。與 `valleyRock` 同理，也同樣要
+       **連 COL 的底色一起換**（見 MAT_PALETTE 的註解）。 */
+    applyMapEdits('mat');
   }
 
   /* 碼頭位置：城區內「水面貼著陸地」的那一圈就是濱水面。從中挑幾個彼此拉開的
@@ -7295,9 +7551,9 @@ function drawMap(){
     /* 點選讀數（開發用）：回報位置問題時直接把這組數字給我，
        不必再從地形猜 —— HANDOFF A3 那條教訓。 */
     const t3=MV.pick?('點選 ('+MV.pick[0]+','+MV.pick[1]+')'):null;
-    /* 拖城狀態（ver -835）：拖曳中即時座標／落定結果（重整後 3D 才生效）。 */
-    const t4=dragSet ? ('拖曳中 '+dragSet.name+' ('+Math.round(dragSet.mx)+','+Math.round(dragSet.my)+')　放開＝落定')
-           : (dragDrop ? ('已落定 '+dragDrop.n+' ('+dragDrop.x+','+dragDrop.y+')'+dragDrop.warn+'　已搬（整地重整後跟上）') : null);
+    /* ⚠ 拖城的狀態列已隨移城搬進地圖編輯器（ver -1254）——
+       這一頁不再拿得起任何聚落，讀數也就沒有第四行。 */
+    const t4=null;
     mctx.font='11px "Noto Sans TC",monospace'; mctx.textAlign='left';
     let w1=Math.max(mctx.measureText(t1).width, mctx.measureText(t2).width);
     if(t3) w1=Math.max(w1, mctx.measureText(t3).width);
@@ -7311,7 +7567,7 @@ function drawMap(){
     mctx.fillStyle='rgba(217,198,138,.72)'; mctx.fillText(t2,15,37);
     let ty=37;
     if(t3){ ty+=14; mctx.fillStyle='#7fd0a0'; mctx.fillText(t3,15,ty); }
-    if(t4){ ty+=14; mctx.fillStyle=dragSet?'#ffd660':'#7fd0a0'; mctx.fillText(t4,15,ty); }
+    if(t4){ ty+=14; mctx.fillStyle='#7fd0a0'; mctx.fillText(t4,15,ty); }
   }
 }
 /* 目的地標記（ver -743）：畫在最上層（drawMap 的收尾呼叫）。 */
@@ -7494,13 +7750,6 @@ mapCv.addEventListener('pointermove',e=>{
   const dx=e.clientX-p.x, dy=e.clientY-p.y;
   p.x=e.clientX; p.y=e.clientY;
   const { base }=mapFit(), sc=base*MV.zoom;
-  /* 拖城中：單指＝搬聚落，不平移地圖（放開落定，見 mUp）。 */
-  if(dragSet && mPts.size===1){
-    const r=mapCv.getBoundingClientRect();
-    const q=mapCoordAt(e.clientX-r.left, e.clientY-r.top);
-    if(q) moveSettlement(dragSet, q[0], q[1]);
-    return;
-  }
   if(mPts.size===1){ MV.cx-=dx/sc; MV.cy-=dy/sc; drawMap(); }
   else if(mPts.size===2){
     const [a,b]=[...mPts.values()];
@@ -7545,10 +7794,8 @@ const SETTLE_DRAG_PURGE='ver-1072';     // ← 要再倒一次帳就改這個字
     localStorage.setItem(SETTLE_DRAG_PURGE_KEY, SETTLE_DRAG_PURGE);
   }catch(_){}
 })();
-let dragSet=null, dragDrop=null;    // 拖曳中的聚落 ／ 最後落定 {n,x,y,warn}
-let dragFrom=null;                  // 拿起來那一刻的座標（取消就搬回這裡）
 window.settleDragClear=()=>{ try{ localStorage.removeItem(SETTLE_DRAG_KEY); }catch(_){}
-  dragDrop=null; console.log('拖城覆寫已清除，重新整理後回到 code 寫的位置'); };
+  console.log('拖城覆寫已清除，重新整理後回到 code 寫的位置'); };
 (function(){
   if(!ADMIN) return;
   let ov=null; try{ ov=JSON.parse(localStorage.getItem(SETTLE_DRAG_KEY)||'null'); }catch(_){}
@@ -7753,8 +8000,9 @@ function mapCoordAt(cssX,cssY){
 }
 /* 拖城：這一點抓得到哪座聚落（半徑取圖標／平面圖較大者，最少 12 地圖像素）。
    ⚠⚠ **遺蹟（只住在 `PLACES` 的地點）也抓得到**（ver -1109，Ray：「遺蹟也要可以
-     雙擊移動啊」）：包成同樣形狀的把手（`name`/`mx`/`my`），下游那幾支
-     （moveSettlement／dropSettlement／askSettleMove）一行都不必改（鐵律 8）。
+     雙擊移動啊」）：包成同樣形狀的把手（`name`/`mx`/`my`），下游
+     （`moveSettlement`）一行都不必改（鐵律 8）。
+   ⚠ ver -1254 起唯一的呼叫端是**地圖編輯器的「移城」筆**。
    ⚠ 聚落**優先**：同一點上兩者都抓得到時，先給城 —— 城比較大，遺蹟多半在城外。
    ⚠ 沒被感應到的遺蹟照樣抓得到：那是管理人的工具，不該被玩家的進度擋住。 */
 function grabSettlementAt(mx,my){
@@ -7807,48 +8055,474 @@ function settleOvWrite(name,xy){
   if(xy) ov[name]=xy; else delete ov[name];
   try{ localStorage.setItem(SETTLE_DRAG_KEY, JSON.stringify(ov)); }catch(_){}
 }
-/* 拖城：落定 —— 先真的搬過去（插畫當場跟上，看得到才問得出答案），
-   再跳確認窗；取消就原路搬回（ver -1072）。整地要**重新整理**才會在新位置重烘。 */
-function dropSettlement(){
-  const s=dragSet; dragSet=null; if(!s) return;
-  const from=dragFrom, prevOv=settleOvRead(s.name);
-  const x=Math.round(s.mx), y=Math.round(s.my);
-  moveSettlement(s,x,y);
-  const warn=(HGT[y*MAPW+x]<=CLOUD_H)?'　⚠這一格是雲海/海':'';
-  dragDrop={ n:s.name, x, y, warn };
-  settleOvWrite(s.name,[x,y]);
-  /* 「地圖手動移位時，舊的要刪掉」（ver -837，Ray）：落定就重建取樣遮罩 ——
-     插畫與量體**當場搬家**，舊位置立刻回復成地形，不必等重整。
-     ⚠ 整地（podium 削平）是 loadWorld 烘進 HGT 的，活著的世界改不動 ——
-       舊位置會留一塊已整平的空地、新位置的地還沒整，重整一次才完整。 */
-  try{ buildCityMask(); }catch(_){}
-  drawMap();
-  askSettleMove(s, from, prevOv, x, y, warn);
+/* ⚠⚠ `dropSettlement()`／`askSettleMove()`（ver -835／-1072 的落定與確認窗）
+   已於 ver -1254 移除：移城搬進地圖編輯器之後，那一套是同一個動作的第二份實作
+   （鐵律 8）。確認窗的用途由編輯器的「復原」接手 —— 它對每一種筆畫一視同仁，
+   不必為了一個動作多開一層 modal。落定的三件事（搬、寫覆寫、重建取樣遮罩）
+   現在收在編輯器的 pointerup 一處。 */
+
+/* ══════════════ 地圖編輯器（ver -1254，管理人限定）════════════════════
+   Ray：「開發者模式在大地圖加個鈕，進入地圖編輯，全地圖平面顯示不要有立體，
+     高度用深淺表示，移城改到地圖編輯進行，放幾個畫筆：山（可調大小，按住畫出
+     山脈），挖（可挖除地面），水（可調粗細），還有貼材筆」「還有鐵路跟公路」
+
+   ⚠⚠ 它直接改**活著的世界陣列**（HGT／RIV／COL／BIOME），不另備一份 ——
+     兩份必然走鐘（鐵律 7），而且「編輯器裡看到的」與「世界裡真的是的」
+     是同一件事才有意義。代價是**離開一定要重整**：坡度／道路／鐵路／地貌／
+     取樣遮罩／整地都是 `loadWorld` 烘出來的，活著的世界改不動。
+   ⚠⚠ 筆畫本身是資料（`MAP_EDITS`），重整之後在 `loadWorld` 的固定位置重放 ——
+     所以重整不是「丟掉剛才畫的」，而是「把整個世界照新地形重算一次」。 */
+let meOpen=false, meTool='pan', meMode=0, meMatG=0;
+let meView={x:0,y:0,s:1};            // 螢幕 = (地圖座標 - x) * s
+let meImg=null, meBase=null, meBaseG=null;
+let meCur=null, meCurLast=null;      // 正在畫的那一筆／上一個取樣點
+let meSnapI=null, meSnapN=0, meSnapH=null, meSnapR=null, meSnapC=null, meSnapB=null;
+let meUndo=[];                       // 最多 MEUNDO_MAX 筆
+const MEUNDO_MAX=24;
+let mePts=new Map(), mePinch=0, meDown=null, meDragS=null;
+let meDirty=null;                    // 這一筆畫累積的髒區（畫布重繪用）
+
+function meEl(id){ return document.getElementById(id); }
+function meSave(){ try{ localStorage.setItem(MAPEDIT_KEY, JSON.stringify(MAP_EDITS)); }catch(_){} }
+window.mapEditClear=()=>{ try{ localStorage.removeItem(MAPEDIT_KEY); }catch(_){}
+  console.log('地圖編輯覆寫已清除，重新整理後回到 code 寫的地形'); };
+
+/* ── 底圖 ────────────────────────────────────────────────────────
+   1:1 的離屏畫布（2152×1200），視圖只是把它縮放貼上 —— 平移縮放不必重算像素。
+   ⚠ 全圖重畫約 250 萬格，開一次編輯器／切一次模式才做；畫筆只重畫髒區
+     （`putImageData` 的髒矩形版本）。 */
+function mePix(i,h){
+  if(h<=CLOUD_H){                                   // 雲海：越深越暗，讀得出大陸的形狀
+    const k=clamp(h/CLOUD_H,0,1);
+    return [18+k*14, 26+k*20, 44+k*26];
+  }
+  if(meMode===1 && BIOME){                          // 地貌模式：塗的是貼材的代表色
+    const g=BIOME[i]&0x0f, M=MAT_PALETTE.find(m=>m.g===g);
+    const c=M?M.c:[ (COL[i]&255), (COL[i]>>8)&255, (COL[i]>>16)&255 ];
+    const k=0.62+0.38*clamp((h-CLOUD_H)/(PEAK_SCALE-CLOUD_H),0,1);
+    return [c[0]*k, c[1]*k, c[2]*k];
+  }
+  /* 高度模式：純明度。⚠ Ray 指定「高度用深淺表示」—— 不要加陰影或彩色分層，
+     那會讓「這一塊比那一塊高多少」變成用猜的。
+     ⚠⚠ **要伽瑪，不能線性**：陸地高度 45~521 但**平均只有 169**（實測，
+       51.6% 的格子是陸地）—— 線性映射會把大半個大陸壓在最暗的三分之一，
+       整張圖看起來只有幾座山是亮的，中間的起伏全部糊成一片黑。
+       0.62 次方把平均值抬到中灰，山還是最亮。 */
+  const k=clamp((h-CLOUD_H)/(PEAK_SCALE-CLOUD_H),0,1);
+  const v=32+216*Math.pow(k,0.62);
+  return [v, v*0.985, v*0.93];
 }
-/* 移城確認窗（ver -1072，Ray：「以後管理者移城完要跳確認窗，取消就搬回去」）。
-   ⚠ 沒有原位可回（理論上不會發生：拿起來時一定記過）就不問 —— 問了也退不回去。 */
-function askSettleMove(s, from, prevOv, x, y, warn){
-  const box=document.getElementById('settleAsk');
-  if(!box || !from){ console.log('拖城落定：'+s.name+' ('+x+','+y+')'+warn); return; }
-  document.getElementById('settleAskT').textContent =
-    s.name+'　('+from.x+','+from.y+') → ('+x+','+y+')'+warn;
-  box.hidden=false;
-  const close=()=>{ box.hidden=true; drawMap(); };
-  box.onYes=()=>{ close();
-    console.log('拖城落定：'+s.name+' ('+x+','+y+')'+warn+
-      ' —— 已存；插畫已搬（舊位置已清），整地要重整後才跟上。'+
-      '定稿請寫回 SETTLEMENTS／build_city.py 再 settleDragClear()'); };
-  box.onNo=()=>{
-    moveSettlement(s, from.x, from.y);
-    settleOvWrite(s.name, prevOv);
+function mePaint(d){
+  if(!meImg) return;
+  const D=meImg.data;
+  const x0=d?Math.max(0,d.x0):0, x1=d?Math.min(MAPW-1,d.x1):MAPW-1;
+  const y0=d?Math.max(0,d.y0):0, y1=d?Math.min(MAPH-1,d.y1):MAPH-1;
+  for(let y=y0;y<=y1;y++){
+    const row=y*MAPW;
+    for(let x=x0;x<=x1;x++){
+      const i=row+x, o=i*4;
+      let c;
+      if(RIV[i] && HGT[i]>CLOUD_H){                 // 河：一律畫得出來（編輯時要看得見）
+        const k=clamp((HGT[i]-CLOUD_H)/(PEAK_SCALE-CLOUD_H),0,1);
+        c=[52+40*k, 92+46*k, 118+50*k];
+      }else c=mePix(i,HGT[i]);
+      D[o]=c[0]; D[o+1]=c[1]; D[o+2]=c[2]; D[o+3]=255;
+    }
+  }
+  if(d) meBaseG.putImageData(meImg, 0,0, x0,y0, x1-x0+1, y1-y0+1);
+  else  meBaseG.putImageData(meImg, 0,0);
+}
+function meBuildBase(){
+  if(!meBase){ meBase=document.createElement('canvas'); }
+  if(meBase.width!==MAPW||meBase.height!==MAPH){
+    meBase.width=MAPW; meBase.height=MAPH; meBaseG=meBase.getContext('2d');
+    meImg=meBaseG.createImageData(MAPW,MAPH);
+  }
+  mePaint(null);
+}
+
+/* ── 視圖 ──────────────────────────────────────────────────────── */
+/* 工具列與色票的版面：兩者都是覆蓋層，而工具列會換行（手機上三四排都有可能）——
+   高度只有量得到，不能寫死（同 §6.7「量 rect 之前先確認它真的顯示著」）。
+   ⚠ 回傳「上緣被蓋掉多少」，`meFit` 拿它讓開。 */
+function meLayoutBar(){
+  const bar=meEl('meBar'), mat=meEl('meMat');
+  if(!bar) return 0;
+  const h=bar.offsetHeight||0;
+  if(mat){ mat.style.top=h+'px'; }
+  return h + ((mat && mat.classList.contains('on')) ? (mat.offsetHeight||0) : 0);
+}
+function meFit(){
+  const c=meEl('meCv'), W=c.clientWidth||innerWidth, H=c.clientHeight||innerHeight;
+  /* ⚠ 讓開工具列：不讓的話「全地圖平面顯示」有一截永遠壓在鈕底下，
+     而那一截通常正是剛畫完的東西（-1254 實測，畫的山脊整條藏在工具列後面）。 */
+  const top=meLayoutBar(), Hv=Math.max(80, H-top-16);
+  meView.s=Math.min(W/MAPW, Hv/MAPH);
+  meView.x=MAPW/2 - W/(2*meView.s);
+  meView.y=(MAPH/2 - Hv/(2*meView.s)) - top/meView.s;
+}
+function meToMap(cx,cy){ return [meView.x+cx/meView.s, meView.y+cy/meView.s]; }
+function meDraw(){
+  if(!meOpen) return;
+  const c=meEl('meCv'), dpr=Math.min(2,devicePixelRatio||1);
+  const W=c.clientWidth, H=c.clientHeight;
+  if(c.width!==Math.round(W*dpr)||c.height!==Math.round(H*dpr)){ c.width=Math.round(W*dpr); c.height=Math.round(H*dpr); }
+  const g=c.getContext('2d');
+  g.setTransform(dpr,0,0,dpr,0,0);
+  g.fillStyle='#0b0d13'; g.fillRect(0,0,W,H);
+  g.imageSmoothingEnabled=false;
+  const s=meView.s;
+  g.drawImage(meBase, -meView.x*s, -meView.y*s, MAPW*s, MAPH*s);
+  const P=(x,y)=>[(x-meView.x)*s, (y-meView.y)*s];
+  const poly=(pts,col,w,dash)=>{
+    g.beginPath();
+    for(let k=0;k<pts.length;k++){ const q=P(pts[k][0],pts[k][1]); k?g.lineTo(q[0],q[1]):g.moveTo(q[0],q[1]); }
+    g.setLineDash(dash||[]); g.strokeStyle=col; g.lineWidth=w; g.stroke(); g.setLineDash([]);
+  };
+  g.lineCap='round'; g.lineJoin='round';
+  for(const pts of ROAD_PATHS) poly(pts,'rgba(214,178,92,.85)',Math.max(1,s*1.6));
+  for(const pts of RAIL_PATHS) poly(pts,'rgba(226,232,240,.92)',Math.max(1,s*1.4),[Math.max(2,s*3),Math.max(2,s*2.4)]);
+  /* 手繪但還沒生效的線（要重整才會真的鋪出來）—— 用亮青色與上面分開。 */
+  for(const E of MAP_EDITS){
+    if(E.t!=='rail'&&E.t!=='road') continue;
+    poly(E.pts, E.t==='rail'?'rgba(80,255,255,.95)':'rgba(120,255,190,.95)', Math.max(1.6,s*2));
+  }
+  if(meCur&&(meCur.t==='rail'||meCur.t==='road')&&meCur.pts.length>1)
+    poly(meCur.pts,'rgba(255,240,140,.95)',Math.max(1.6,s*2));
+  /* 聚落與地標 */
+  g.font='11px system-ui,sans-serif'; g.textBaseline='middle';
+  for(const S of SETTLEMENTS){
+    const q=P(S.x,S.y);
+    g.fillStyle='#ffd24a'; g.fillRect(q[0]-3,q[1]-3,6,6);
+    g.fillStyle='rgba(255,255,255,.92)'; g.fillText(S.n, q[0]+7, q[1]);
+  }
+  for(const pl of PLACES){
+    if(SETTLEMENTS.some(S=>S.n===pl.name)) continue;
+    const q=P(pl.x,pl.y);
+    g.strokeStyle='#9fd8ff'; g.lineWidth=1.4;
+    g.beginPath(); g.arc(q[0],q[1],4,0,7); g.stroke();
+    if(s>0.35){ g.fillStyle='rgba(190,225,255,.85)'; g.fillText(pl.name||'', q[0]+7, q[1]); }
+  }
+  /* 筆刷游標 */
+  if(meBrushAt && meTool!=='pan' && meTool!=='move' && meTool!=='rail' && meTool!=='road'){
+    const q=P(meBrushAt[0],meBrushAt[1]);
+    g.beginPath(); g.arc(q[0],q[1], Math.max(2,meBrushR()*s), 0, 7);
+    g.strokeStyle='rgba(255,255,255,.75)'; g.lineWidth=1; g.stroke();
+  }
+}
+let meBrushAt=null;
+function meBrushR(){ return +meEl('meSize').value||18; }
+function meBrushA(){ return +meEl('meAmp').value||45; }
+
+/* ── 復原 ────────────────────────────────────────────────────────
+   筆畫開始時開一本帳，**第一次被碰到**的格子才記原值（見 meApply 的 snap）。
+   ⚠ 記的是「碰到的格子」不是「改到的格子」：水／貼材要跨過 0.5 才寫，
+     但復原要能把整個筆刷範圍還原回去。 */
+function meSnapStart(){
+  meSnapI=[]; meSnapH=[]; meSnapR=[]; meSnapC=[]; meSnapB=[]; meSnapN=0;
+}
+function meSnapPush(i){
+  meSnapI.push(i); meSnapH.push(HGT[i]); meSnapR.push(RIV[i]);
+  meSnapC.push(COL[i]); meSnapB.push(BIOME?BIOME[i]:0); meSnapN++;
+}
+function meUndoPush(rec){ meUndo.push(rec); if(meUndo.length>MEUNDO_MAX) meUndo.shift(); }
+function meDoUndo(){
+  const u=meUndo.pop();
+  if(!u){ meFlash('沒有可以復原的步驟'); return; }
+  if(u.k==='move'){
+    const tgt=buildSettlements().find(z=>z.name===u.name) ||
+              { name:u.name, _place:PLACES.find(p=>p.name===u.name) };
+    moveSettlement(tgt, u.from[0], u.from[1]);
+    settleOvWrite(u.name, u.prevOv);
     try{ buildCityMask(); }catch(_){}
-    dragDrop=null; close();
-    console.log('移城已取消：'+s.name+' 搬回 ('+from.x+','+from.y+')'); };
+    meFlash('已搬回 '+u.name+' ('+u.from[0]+','+u.from[1]+')');
+  }else{
+    const k=MAP_EDITS.indexOf(u.e); if(k>=0) MAP_EDITS.splice(k,1);
+    if(u.i){
+      for(let n=0;n<u.i.length;n++){
+        const i=u.i[n];
+        HGT[i]=u.h[n]; RIV[i]=u.r[n]; COL[i]=u.c[n];
+        if(BIOME) BIOME[i]=u.b[n];
+      }
+      mePaint(u.d);
+    }
+    meSave();
+    meFlash('已復原一筆（'+meLabel(u.e.t)+'）');
+  }
+  meDraw();
 }
-document.getElementById('settleYes').addEventListener('click',
-  ()=>{ const b=document.getElementById('settleAsk'); b.onYes&&b.onYes(); });
-document.getElementById('settleNo').addEventListener('click',
-  ()=>{ const b=document.getElementById('settleAsk'); b.onNo&&b.onNo(); });
+function meLabel(t){ return {hill:'山',dig:'挖',water:'水',mat:'貼材',rail:'鐵路',road:'公路'}[t]||t; }
+let meFlashT=0;
+function meFlash(msg){ meFlashT=performance.now(); meEl('meInfo').textContent=msg; }
+
+/* ── 開關 ──────────────────────────────────────────────────────── */
+function openMapEdit(){
+  if(!ADMIN||!MAPW) return;
+  meOpen=true; meEl('mapEdit').classList.add('on');
+  meBuildBase(); meFit(); meDraw();
+  meFlash('筆畫 '+MAP_EDITS.length+' 筆　⚠ 關閉時會重新載入，讓地形重新烘一次');
+}
+function closeMapEdit(){
+  meOpen=false; meEl('mapEdit').classList.remove('on');
+  /* ⚠⚠ **一定要重整**：坡度、道路、鐵路、地貌、整地、取樣遮罩全是 loadWorld
+     烘出來的，活著的世界改不動（同拖城那一條，ver -835）。不重整的話畫面上
+     是「地形變了但路還在山上」，而那看起來像 bug，其實只是還沒重算。 */
+  location.reload();
+}
+
+/* ── 工具列 ────────────────────────────────────────────────────── */
+function meSetTool(t){
+  meTool=t;
+  for(const b of document.querySelectorAll('#meBar button[data-tool]'))
+    b.classList.toggle('on', b.dataset.tool===t);
+  meEl('meMat').classList.toggle('on', t==='mat');
+  meLayoutBar();
+  meEl('meCv').style.cursor = (t==='pan')?'grab':(t==='move'?'move':'crosshair');
+}
+function meBuildMatPalette(){
+  const box=meEl('meMat'); box.innerHTML='';
+  MAT_PALETTE.forEach(M=>{
+    const b=document.createElement('button');
+    b.innerHTML='<i style="background:rgb('+M.c.join(',')+')"></i>'+M.n;
+    b.onclick=()=>{ meMatG=M.g;
+      for(const q of box.children) q.classList.remove('on');
+      b.classList.add('on'); };
+    if(M.g===meMatG) b.classList.add('on');
+    box.appendChild(b);
+  });
+}
+/* 匯出：印成可以直接貼進 `MAP_EDITS_SRC` 的一段 JS。
+   ⚠ 座標取整數、力道與半徑也取整 —— 那是設計值，不是量出來的浮點數，
+     留一串小數只會讓 diff 難讀。 */
+function meExport(){
+  const body=MAP_EDITS.map(E=>{
+    const o=['t:'+JSON.stringify(E.t)];
+    if(E.r!=null) o.push('r:'+Math.round(E.r));
+    if(E.a!=null) o.push('a:'+Math.round(E.a));
+    if(E.g!=null) o.push('g:'+E.g);
+    o.push('pts:['+E.pts.map(q=>'['+Math.round(q[0])+','+Math.round(q[1])+']').join(',')+']');
+    return '  {'+o.join(', ')+'},';
+  }).join('\n');
+  const txt='const MAP_EDITS_SRC=[\n'+body+'\n];';
+  console.log('%c[地圖編輯] 貼進 flight/index.html 的 MAP_EDITS_SRC，再 mapEditClear()','color:#c9a227');
+  console.log(txt);
+  try{ navigator.clipboard.writeText(txt); meFlash('已複製到剪貼簿（'+MAP_EDITS.length+' 筆），也印在 console'); }
+  catch(_){ meFlash('已印在 console（'+MAP_EDITS.length+' 筆）'); }
+}
+
+/* ── 指標 ──────────────────────────────────────────────────────── */
+function meStrokeBegin(mx,my){
+  if(meTool==='rail'||meTool==='road'){
+    meCur={ t:meTool, pts:[[mx,my]] };
+    return;
+  }
+  meCur={ t:meTool, r:meBrushR(), pts:[[mx,my]] };
+  if(meTool==='hill'||meTool==='dig') meCur.a=meBrushA();
+  if(meTool==='mat') meCur.g=meMatG;
+  meSnapStart(); meDirty=null;
+  meStrokeStep(mx,my,true);
+}
+function meStrokeStep(mx,my,first){
+  if(!meCur) return;
+  if(meCur.t==='rail'||meCur.t==='road'){
+    const l=meCur.pts[meCur.pts.length-1];
+    if(Math.hypot(mx-l[0],my-l[1])>=3) meCur.pts.push([mx,my]);
+    return;
+  }
+  const l=meCur.pts[meCur.pts.length-1];
+  const seg = first ? [[mx,my]] : [l,[mx,my]];
+  if(!first){
+    if(Math.hypot(mx-l[0],my-l[1])<0.7) return;
+    meCur.pts.push([mx,my]);
+  }
+  /* ⚠ 編輯器沒有 `raw`（那是 loadWorld 的區域變數）—— 所以這裡不更新坡度，
+     畫出來的山在**重整之後**才長出法線。說明列已經寫了。 */
+  const d=meApply(meCur, seg, null, meSnapPush);
+  if(d){
+    mePaint(d);
+    meDirty = meDirty ? { x0:Math.min(meDirty.x0,d.x0), y0:Math.min(meDirty.y0,d.y0),
+                          x1:Math.max(meDirty.x1,d.x1), y1:Math.max(meDirty.y1,d.y1) } : d;
+  }
+}
+function meStrokeEnd(){
+  if(!meCur) return;
+  const E=meCur; meCur=null;
+  if(E.t==='rail'||E.t==='road'){
+    if(E.pts.length<2){ meDraw(); return; }
+    E.pts=meSimplify(E.pts, 2);
+    MAP_EDITS.push(E); meUndoPush({k:'edit', e:E});
+    meSave(); meFlash('已畫一條'+meLabel(E.t)+'（'+E.pts.length+' 點）⚠ 重整後才會真的鋪出來');
+    meDraw(); return;
+  }
+  meCovClear(meDirty); meDirty=null;
+  if(!meSnapI||!meSnapI.length){ meDraw(); return; }
+  const box=meStrokeBox(E);                 // ⚠ 要在簡化**之前**量：復原的髒區照原線算才蓋得滿
+  E.pts=meSimplify(E.pts, Math.max(0.5,(E.r||18)/8));
+  MAP_EDITS.push(E);
+  meUndoPush({ k:'edit', e:E, i:meSnapI, h:meSnapH, r:meSnapR, c:meSnapC, b:meSnapB, d:box });
+  meSnapI=null;
+  meSave(); meFlash('已畫一筆'+meLabel(E.t)+'（共 '+MAP_EDITS.length+' 筆）');
+  meDraw();
+}
+/* 折線簡化（Douglas–Peucker）。拖曳每 0.7 地圖像素就記一點，一條 200px 的筆畫
+   會留下近三百個點 —— 存進 localStorage 與匯出到程式裡都難看，而那些點**沒有
+   資訊量**：筆刷半徑本來就比取樣間距大一個數量級。
+   ⚠ 容差取**筆刷半徑的八分之一**（最少 0.5）：那遠小於一個筆刷，重放出來的
+     山脊與畫的時候看到的差不到一格。容差再大就會開始削掉真的轉折。 */
+function meSimplify(pts, tol){
+  if(pts.length<3) return pts;
+  const keep=new Uint8Array(pts.length); keep[0]=keep[pts.length-1]=1;
+  const st=[[0,pts.length-1]];
+  while(st.length){
+    const [a,b]=st.pop(); if(b<=a+1) continue;
+    const ax=pts[a][0], ay=pts[a][1], bx=pts[b][0], by=pts[b][1];
+    const dx=bx-ax, dy=by-ay, L=Math.hypot(dx,dy)||1;
+    let bi=-1, bd=tol;
+    for(let k=a+1;k<b;k++){
+      const d=Math.abs((pts[k][0]-ax)*dy-(pts[k][1]-ay)*dx)/L;
+      if(d>bd){ bd=d; bi=k; }
+    }
+    if(bi>0){ keep[bi]=1; st.push([a,bi],[bi,b]); }
+  }
+  const out=[]; for(let k=0;k<pts.length;k++) if(keep[k]) out.push(pts[k]);
+  return out;
+}
+function meStrokeBox(E){
+  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9; const r=(E.r||18)+2;
+  for(const q of E.pts){ if(q[0]-r<x0)x0=q[0]-r; if(q[0]+r>x1)x1=q[0]+r;
+                         if(q[1]-r<y0)y0=q[1]-r; if(q[1]+r>y1)y1=q[1]+r; }
+  return { x0:Math.max(0,x0|0), y0:Math.max(0,y0|0),
+           x1:Math.min(MAPW-1,Math.ceil(x1)), y1:Math.min(MAPH-1,Math.ceil(y1)) };
+}
+
+
+/* ── 地圖編輯：事件綁定（ver -1254）──────────────────────────────── */
+(function(){
+  const cv=document.getElementById('meCv'); if(!cv) return;
+  const rectOf=()=>cv.getBoundingClientRect();
+  const mapAt=e=>{ const r=rectOf(); return meToMap(e.clientX-r.left, e.clientY-r.top); };
+
+  for(const b of document.querySelectorAll('#meBar button[data-tool]'))
+    b.addEventListener('click', ()=>meSetTool(b.dataset.tool));
+  const sz=document.getElementById('meSize'), am=document.getElementById('meAmp');
+  const syncN=()=>{ document.getElementById('meSizeN').textContent=sz.value;
+                    document.getElementById('meAmpN').textContent=am.value; meDraw(); };
+  sz.addEventListener('input',syncN); am.addEventListener('input',syncN);
+  document.getElementById('meUndo').addEventListener('click', meDoUndo);
+  document.getElementById('meExport').addEventListener('click', meExport);
+  document.getElementById('meClose').addEventListener('click', closeMapEdit);
+  document.getElementById('meLayers').addEventListener('click', function(){
+    meMode=meMode?0:1; this.classList.toggle('on', meMode===1);
+    this.textContent = meMode ? '◱ 地貌' : '◱ 圖層';
+    mePaint(null); meDraw();
+  });
+
+  cv.addEventListener('pointerdown', e=>{
+    cv.setPointerCapture(e.pointerId);
+    mePts.set(e.pointerId,[e.clientX,e.clientY]);
+    if(mePts.size===2){                       // 兩指：縮放（畫到一半就收筆）
+      if(meCur) meStrokeEnd();
+      const v=[...mePts.values()];
+      mePinch=Math.hypot(v[0][0]-v[1][0], v[0][1]-v[1][1]);
+      meDown=null; return;
+    }
+    const q=mapAt(e);
+    if(meTool==='pan'){ meDown={x:e.clientX,y:e.clientY,vx:meView.x,vy:meView.y}; return; }
+    if(meTool==='move'){
+      /* 移城（ver -1254 由地圖頁搬過來）：點在聚落／地標上才拿得起來。 */
+      const g=grabSettlementAt(q[0],q[1]);
+      if(g){ meDragS={ s:g, from:[Math.round(g.mx),Math.round(g.my)],
+                       prevOv:settleOvRead(g.name) }; meFlash('拿起 '+g.name); }
+      else meFlash('這裡沒有聚落或地標');
+      return;
+    }
+    meStrokeBegin(q[0],q[1]);
+    meDraw();
+  });
+
+  cv.addEventListener('pointermove', e=>{
+    if(mePts.has(e.pointerId)) mePts.set(e.pointerId,[e.clientX,e.clientY]);
+    const q=mapAt(e); meBrushAt=q;
+    if(mePts.size===2 && mePinch){
+      const v=[...mePts.values()];
+      const d=Math.hypot(v[0][0]-v[1][0], v[0][1]-v[1][1]);
+      if(d>4){ const r=rectOf();
+        const cx=(v[0][0]+v[1][0])/2-r.left, cy=(v[0][1]+v[1][1])/2-r.top;
+        meZoom(d/mePinch, cx, cy); mePinch=d; }
+      return;
+    }
+    if(meDown){ meView.x=meDown.vx-(e.clientX-meDown.x)/meView.s;
+                meView.y=meDown.vy-(e.clientY-meDown.y)/meView.s; meDraw(); return; }
+    if(meDragS){ moveSettlement(meDragS.s, Math.round(q[0]), Math.round(q[1])); meDraw(); return; }
+    if(meCur){ meStrokeStep(q[0],q[1],false); meDraw(); return; }
+    /* 讀數：座標＋高度。畫筆調參要看得到數字，不然全是憑感覺（§6.7 那條）。 */
+    if(performance.now()-meFlashT>2200){
+      const x=clamp(q[0]|0,0,MAPW-1), y=clamp(q[1]|0,0,MAPH-1), i=y*MAPW+x;
+      const h=HGT[i];
+      document.getElementById('meInfo').textContent =
+        '('+x+', '+y+')　高 '+h+(h<=CLOUD_H?'　雲海':'')+(RIV[i]?'　河':'')+
+        '\n筆畫 '+MAP_EDITS.length+' 筆　縮放 '+meView.s.toFixed(2)+'×';
+    }
+    meDraw();
+  });
+
+  const up=e=>{
+    mePts.delete(e.pointerId); if(mePts.size<2) mePinch=0;
+    meDown=null;
+    if(meDragS){
+      const g=meDragS; meDragS=null;
+      const x=Math.round(g.s.mx), y=Math.round(g.s.my);
+      settleOvWrite(g.name||g.s.name,[x,y]);
+      try{ buildCityMask(); }catch(_){}
+      meUndoPush({ k:'move', name:g.s.name, from:g.from, prevOv:g.prevOv, x, y });
+      meFlash(g.s.name+'　('+g.from[0]+','+g.from[1]+') → ('+x+','+y+')'+
+              (HGT[clamp(y,0,MAPH-1)*MAPW+clamp(x,0,MAPW-1)]<=CLOUD_H?'　⚠這一格是雲海/海':'')+
+              '\n⚠ 定稿請寫回 SETTLEMENTS／build_city.py 再 settleDragClear()');
+      console.log('移城落定：'+g.s.name+' ('+x+','+y+')　定稿請寫回 SETTLEMENTS／build_city.py，再 settleDragClear()');
+      meDraw(); return;
+    }
+    if(meCur) meStrokeEnd();
+  };
+  cv.addEventListener('pointerup',up);
+  cv.addEventListener('pointercancel',up);
+  cv.addEventListener('wheel', e=>{ e.preventDefault();
+    const r=rectOf(); meZoom(Math.pow(1.0016, -e.deltaY), e.clientX-r.left, e.clientY-r.top);
+  }, {passive:false});
+  addEventListener('resize', ()=>{ if(meOpen){ meLayoutBar(); meDraw(); } });
+})();
+/* 以游標為心縮放：先把游標下的地圖座標算出來，縮完再把它擺回同一個螢幕位置。
+   ⚠ 直接乘縮放而不修 x/y 的話，畫面會往左上角跑 —— 那是每一個縮放實作
+     第一次都會踩的坑。 */
+function meZoom(k, cx, cy){
+  const a=meToMap(cx,cy);
+  meView.s=clamp(meView.s*k, 0.08, 8);
+  meView.x=a[0]-cx/meView.s; meView.y=a[1]-cy/meView.s;
+  meDraw();
+}
+/* 入口鈕（管理人限定）。位置**讀地圖鈕的 rect** 算出來，不另抄一份數字（鐵律 7）。 */
+function layoutMeBtn(){
+  const b=document.getElementById('meBtn'), m=document.getElementById('mapBtn');
+  if(!b||!m) return;
+  const r=m.getBoundingClientRect();
+  b.style.top=Math.round(r.bottom+8)+'px';
+}
+if(ADMIN){
+  const b=document.getElementById('meBtn');
+  if(b){ b.hidden=false; b.style.display='block';
+         b.addEventListener('click', openMapEdit);
+         layoutMeBtn(); addEventListener('resize', layoutMeBtn);
+         setTimeout(layoutMeBtn, 300); }
+  meBuildMatPalette();
+  /* 覆寫：管理人畫過的那一份優先（同拖城，ver -835）。
+     ⚠ 讀在這裡而不是宣告處 —— `ADMIN` 在檔案下方才宣告，早讀會撞 TDZ。 */
+  try{
+    const raw=localStorage.getItem(MAPEDIT_KEY);
+    if(raw){ const a=JSON.parse(raw);
+      if(Array.isArray(a)&&a.length){ MAP_EDITS=a;
+        console.warn('⚠ 地圖編輯覆寫生效：'+a.length+' 筆筆畫　定稿請按「匯出」貼進 MAP_EDITS_SRC，再 mapEditClear()'); } }
+  }catch(_){}
+}
+
 function mapPick(cssX,cssY){
   const q=mapCoordAt(cssX,cssY);
   if(!q){ MV.pick=null; drawMap(); return; }
@@ -7869,11 +8543,9 @@ function mapPick(cssX,cssY){
              && Math.abs(cssX-mapTapLast.x)<30 && Math.abs(cssY-mapTapLast.y)<30;
     mapTapLast = dbl ? null : { t:now, x:cssX, y:cssY };
     if(dbl){
-      const s=grabSettlementAt(MV.pick[0], MV.pick[1]);
-      /* ⚠ 原位要在**拿起來那一刻**記（取消要搬回這裡）—— 落定之後才問 s.mx
-         就已經是新座標了。 */
-      if(s){ dragSet=s; dragFrom={ x:Math.round(s.mx), y:Math.round(s.my) };
-             dragDrop=null; drawMap(); return; }
+      /* ⚠⚠ 這裡以前是「雙點落在聚落上＝把它拿起來拖」（ver -835）。
+         ver -1254 起**移城只在地圖編輯器裡做**（Ray：「移城改到地圖編輯進行」）——
+         這一頁的雙點只剩瞬移。同一個動作不要有兩個入口（鐵律 8）。 */
       cam.x=MV.pick[0]*MAP_SCALE; cam.y=MV.pick[1]*MAP_SCALE;
       /* 怪是依「離自機的距離」排程的，瞬移之後留在原地的那隻會突然變成
          幾千單位外的殘影 —— 直接回收，讓它照正常規則重新刷。 */
@@ -7886,17 +8558,6 @@ let mapTapLast=null;   // 上一次的單點（管理人雙點瞬移判定用；
 const mUp=e=>{
   const isTap = mDown && mDown.n===1 && mPts.size===1 &&
      Math.abs(e.clientX-mDown.x)<4 && Math.abs(e.clientY-mDown.y)<4;
-  /* 拖城中：這一次放開＝落定。點一下（沒拖）＝直接把聚落放到點的那一格。 */
-  if(dragSet){
-    if(isTap){
-      const r=mapCv.getBoundingClientRect();
-      const q=mapCoordAt(e.clientX-r.left, e.clientY-r.top);
-      if(q) moveSettlement(dragSet, q[0], q[1]);
-    }
-    dropSettlement();
-    mDown=null; mPts.delete(e.pointerId); if(mPts.size<2) mPinch=0;
-    return;
-  }
   /* 對話中：點地圖＝推進／退出（ver -790），吃掉這一擊、不做管理人瞬移。 */
   if(isTap && mapDlgActive){
     mDown=null; mPts.delete(e.pointerId); if(mPts.size<2) mPinch=0;
