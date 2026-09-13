@@ -402,6 +402,12 @@ export const ART = {
     guardtalk:    { src:'resources/SI/Sorana_SI_guardtalk.webp',     top:5,  bot:1529, fx:0.653, cm:168 },
     guardthinking:{ src:'resources/SI/Sorana_SI_guardthinking.webp', top:8,  bot:1529, fx:0.672, cm:168 },
     embarassed:   { src:'resources/SI/Sorana_SI_embarassed.webp',    top:5,  bot:1527, fx:0.551 },
+    /* 瞭望（ver -1281，貝利薩爾降不下去那一段）。⚠ 取景值與 `flight/index.html`
+       的 `PORTRAIT_EXPR.sorana.watch` **是同一次量測**，改一邊要改兩邊（§5／§6.10）。
+       ⚠ 飛行頁那一邊另外掛了 `cm:80 / standCm:176 / anchorBot`（那張畫在那個舞台上
+         要縮小並錨在底，見該處說明）—— 那是**那個畫面的擺法**，不是這張圖的性質，
+         所以不抄過來；這裡要用到時再照劇情頁自己的規矩調。 */
+    watch:        { src:'resources/SI/Sorana_SI_watch.webp',        top:6,  bot:1521, fx:0.680 },
     sorry:        { src:'resources/SI/Sorana_SI_sorry.webp',         top:12, bot:1528, fx:0.511, cm:166 },
     talk:         { src:'resources/SI/Sorana_SI_talk.webp',          top:7,  bot:1525, fx:0.508 },
     laugh:        { src:'resources/SI/Sorana_SI_laugh.webp',         top:3,  bot:1529, fx:0.579, cm:170, standCm:176 },
