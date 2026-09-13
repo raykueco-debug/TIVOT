@@ -2189,6 +2189,17 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
     if(!playing) return;
     prog.addPlaySeconds(5);
   },5000);
+  /* ══⚠⚠ 版本號常駐在這一列（ver -1202，Ray：「把版本號也放入常駐 hud，
+     在下排的好感度列表之前」）════════════════════════════════════════════
+     §6 那條「版本號不動就等於沒有版本號」的另一面：以前只有**連點團徽五下**
+     的診斷 HUD 看得到版本，而回報問題時多半是隨手截一張圖 —— 缺了那一項，
+     我量到改善、Ray 看到一模一樣，兩邊講的可能根本不是同一份程式
+     （-1194~-1201 這一串就差點發生：他手機停在 1197、我以為他測的是新版）。
+     ⚠⚠ **取短碼不是整串**：實測整串 `stage 9｜ver 2026.09.12-1201｜蕾0…｜⏱`
+       在 320px 的機子上要 **320px**，而那一列可用寬度只有約 296px —— 會爆行。
+       短碼 260px，剛好。完整日期在診斷 HUD 上照樣看得到。
+     ⚠ 一律**從 `VERSION` 推**，不要在這裡另寫一個字串（鐵律 7：那必然走鐘）。 */
+  const VER_SHORT = 'ver -' + (String(VERSION).split('-').pop() || '?');
   (function devStat(){
     const d=document.createElement('div'); d.id='devStat';
     d.style.cssText='position:fixed;left:8px;bottom:8px;z-index:9999;display:none;'
@@ -2205,6 +2216,7 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
       const ps=prog.playSeconds();
       const t=Math.floor(ps/3600)+':'+String(Math.floor(ps/60)%60).padStart(2,'0')+':'+String(ps%60).padStart(2,'0');
       d.textContent='stage '+prog.getStage()
+        +'｜'+VER_SHORT
         +'｜蕾'+v('renna')+' 諾'+v('nouvelle')+' 索'+v('sorana')+' 安'+v('anya')
         +'｜⏱'+t;
     },1000);
