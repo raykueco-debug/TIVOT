@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1228"></script>
+<script src="../orientation.js?v=1230"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1228');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1230');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1228");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1228");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1230");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1230");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1228");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1228");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1230");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1230");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -483,25 +483,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1228" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1230" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1228" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1228" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1228" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1228" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1228" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1228" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1228" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1228" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1228" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1228" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1230" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1230" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1230" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1230" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1230" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1230" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1230" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1230" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1230" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1230" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1228" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1230" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1228" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1230" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -522,11 +522,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1228"></script>
+<script src="settlement.js?v=1230"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1228"></script>
+<script src="talks.js?v=1230"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -566,7 +566,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1228';
+const FLIGHT_VER = 'ver -1230';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -2386,165 +2386,128 @@ const RUIN_ART = {
        塔頂用兩層收窄（斷口）、城牆刻意留兩個缺口、大廳不給屋頂。
      ⚠ 尺度：沿牆 300、進深 220 個世界單位（伊甸古墓是 170×110）——
        它是一座城堡，不是一道門。 */
-  /* ══⚠⚠⚠ 木雅克神殿（ver -1221，Ray：「把木雅克遺蹟放在 1038,798…並且依斷崖邊的
-     遺蹟遠景畫出 3D 模」）══════════════════════════════════════════════════
-     ── 參考圖＝`resources/background/Forest_Cliff_Day.webp`（夏爾森林．斷崖邊）──
-     圖上那座遺蹟的構造（左→右）：
-       ① 左端一支**細高的塔**，開一道高拱，頂端斷掉（沒有屋頂）
-       ② 一道**連續的帷幕牆**，牆面一排拱形開口，頂緣是雉堞、缺齒很多
-       ③ 中央**門樓**：寬塊＋大拱門，兩側各一支方形角塔高過牆，頂上一層層退縮的冠
-       ④ 門前一段**石階**
-       ⑤ 右段牆逐漸塌矮，最後散成幾截斷牆
-     ── 為什麼是這個量體而不是別的（§6.8.1 的流程）──────────────────
-     · **先量顏色**：見 `RUIN_PAL.mossgrey`（實測，不是憑感覺挑的）。
-     · **形狀交給原語**：塔用 `tower`＋`shrink`（方柱是「太方」的來源）、
-       牆頂一律 `crenel`（一條長直線是「太方」的第一名）、開口用 `col`。
-     · **破敗靠不齊與斷開**：右段牆逐段降高、雉堞 `broken` 給大值、
-       左塔不給 `cap`（斷頭），而不是灑碎石。
-     ⚠ **地形**：(1038,798) 是一個**盆地底**（h=171，半徑 6 格內最高 336、
-       10 格內 392）—— 不整地的話它會被四周的稜線整個擋掉（同石製遺蹟 -1153）。
-       所以 `podium.h:250`（削平到**指定高度**，不是中心那一格的 171）＋ `lift:14`：
-       它站在盆底自己的一層台地上，但仍低於四周的稜線 —— 讀起來是「藏在山坳裡的神殿」。
-     ⚠ `rot:0` ＝門朝 +x（東），也就是從夏爾村那一側飛過來時正對著門。
-     ⚠ 尺度：沿牆 300、進深 150（貝利薩爾是 340×250、石製遺蹟 120）——
-       中央門樓的塔尖在 **118**，比四周稜線低，那是刻意的（見上）。 */
+  /* ══⚠⚠⚠ 木雅克神殿 —— **照 `flight/Reference/Muyak_Exterior.png` 重排**
+     （ver -1230，Ray：「柱太多太細太長，長得不像外觀，我讓美術生個外觀圖給你」）══
+     ── 這一版為什麼整個重寫 ──────────────────────────────────────────
+     把舊量體用 `tools/ruin_elevation.py` 畫成**正立面**，與外觀圖並排一比就清楚了
+     （§6.8.1「先量參考圖，不要憑眼睛排」—— 我先前比的是俯視圖，方向根本不對）：
+
+       | | 舊量體（-1221〜-1229） | 外觀圖 |
+       |---|---|---|
+       | 元素之間 | **完全沒有縫**，46 塊邊靠邊 | **大半是天空**，柱與柱之間都看得穿 |
+       | 天際線 | 一排高低差 ±10 的方塊 | 一支塔壓倒性地高，其餘落差很大 |
+       | 頂緣 | **每一塊都撒雉堞** | **一顆雉堞都沒有** —— 那是教堂不是城堡 |
+       | 柱 | 13 支 n:4/6/8 的塔，粗細相近 | 方柱，**粗細一致、高度亂七八糟** |
+       | 沿牆 | 373（露出地面才 62）＝ **6:1 的一道籬笆** | 約 2:1 的一叢 |
+
+     ⇒ 四件事一起改：**① 拉開縫 ② 立一支主塔 ③ 拿掉全部雉堞 ④ 沿牆 373→265**。
+     ⚠⚠ 「雉堞」是 -1164 貝利薩爾（**城堡**）那一輪的解法，我把它整套搬過來了 ——
+       這一座是**石造神殿／教堂**，破敗要靠「斷口與高度不齊」讀出來，不是靠齒。
+     ⚠⚠⚠ **平面位置仍然是估的**：外觀圖是仰角透視，量得出**比例**（數量、粗細、
+       誰比誰高），量不出誰在前誰在後（§6.8.1 那條鐵則，也寫在
+       `resources/map/_muyak_spec.md`）。要對得上外廓要另一張正俯視高度圖。
+
+     ── 構造（照外觀圖左→右）────────────────────────────────────────
+       ① **兩層的拱廊正面**：三段牆，各開一道高拱，牆頂一圈**簷板**（那就是「兩層」）
+       ② 牆與牆之間的**扶壁方柱**，比牆高出一截，頂端斷平
+       ③ **主塔**：一支明顯最高、也最粗的方塔，高處一道窗，頂上斷了一角
+       ④ **斷柱林**：六支**同粗細**的方柱，高度 20〜50 亂跳，腳下由矮殘牆串起來
+       ⑤ 一支**帶柱頭的圓柱**（外觀圖右側那一支，全場唯一的圓）
+       ⑥ 躺著的**柱鼓**與散落石塊
+     ⚠ 尺度：沿牆 265、進深 96；地面上最高 62（＝主塔，與上一版同高 —— Ray
+       已經驗收過高度，這一版**只重分配不加高**）。
+
+     ⚠ **地形**：(1038,798) 是一個盆地底（h=171）。`noBase`＋不整地＋`lift:8`，
+       每一段露出多少由它腳下的地形決定（理由見下面 `noBase` 那一段）。
+     ⚠ `rot:0` ＝正面朝 +x（東），從夏爾村那一側飛過來時正對著拱廊。 */
   muyak: {
     rot: 0,
     /* `base` **不會被畫出來**（`noBase`），它只是貼材與外框的尺標（鐵律 7）。 */
-    base: { w:156, l:312, n:56, jit:0.04 },
+    base: { w:110, l:270, n:48, jit:0.04 },
     /* ══ 貼材（ver -1224，Ray 交件 `flight/geo/moss_stone.webp`）══
-       在此之前是借貝利薩爾的 `castle_wall`／`castle_roof`（哥德古堡的砌石，
-       與參考圖上的風化石灰岩不是同一種材質）。
-       ⚠ **一張就夠**：這一座整座沒有屋頂面（零件全是牆、塔、開口與斷柱），
+       ⚠ **一張就夠**：這一座整座沒有屋頂面（零件全是牆、柱與斷口），
          `roofTex` 指同一張，不必另外交一張屋頂材。
-       ⚠ **第一次交件是新檔名 ⇒ 不掛 `?v=`**（§5：新增比覆蓋安全）。
-         `RUIN_TEX_VER` 那張表只有**同名覆蓋**時才要加一列 —— 覆蓋而不加版本號
-         的下場是「改了圖但看起來沒變」，而且沒有任何錯誤訊息。 */
+       ⚠ 貼材是**相乘**上去的（ver -1228，Ray：「貼材顏色太白太亮」）——
+         `mix()` 會把每一面拉向貼材自己的亮度，等於把明暗壓平。 */
     tex:'moss_stone', roofTex:'moss_stone',
     pal:'mossgrey',
     /* ⚠⚠⚠ **不要地基、跟山體嵌在一起**（ver -1222，Ray 的兩張參考圖）：
        · `noBase:true` ＝ 石板鋪面／外圈的草／基座側壁整組不畫。
        · **沒有 `podium`** ＝ 不整地。地形照原樣起伏，所以量體的下半會被山吃掉 ——
-         那正是「嵌在一起」：每一段牆露出多少由它腳下的地形決定，不是我排的。
+         那正是「嵌在一起」：每一段露出多少由它腳下的地形決定，不是我排的。
        · `lift:8` ＝基準面壓到**盆底**（171+8=179，footprint 內的地形最低 169）；
-         每一個零件的 `z0` 從 **−40** 起跳（世界高 139，比 footprint 的地形最低點 169
-         還低）—— 所以**沒有任何一塊的底面會露出來**，那就是 Ray 說的「地基」。
+         每一個站在地上的零件 `z0` 從 **−40** 起跳 —— 所以沒有任何一塊的底面
+         會露出來，那就是 Ray 說的「地基」。
        ⚠⚠⚠ **不要再往下長更多**（-1226 踩過：試過 −200）：這個渲染器的深度存的是
-         **水平距離**，不是真 3D 距離 —— 一根垂直的柱子與它正上方的地面**水平距離相同**，
-         所以「埋在地下」不等於「在後面」，多長出來的那一截會**直接穿過地面畫出來**，
-         整座變成一片細長的白柱。埋，只要埋到地形最低點之下就夠了。
-         ⚠ 低於地面的那一截由深度測試吃掉（GL 的 `gl_FragDepth`），不必另外裁。
-       ⚠ 這與伊甸古墓的「嵌在壁面」是同一族，差別只在那邊埋的是**背面**、
-         這邊埋的是**下半**。 */
+         **水平距離**，不是真 3D 距離 —— 一根垂直的柱子與它正上方的地面水平距離相同，
+         所以「埋在地下」不等於「在後面」，多長出來的那一截會**直接穿過地面畫出來**。
+       ⚠ 所以下面每一塊的 `h` 都是「**露出來的高度 ＋ 40**」，註解寫的是露出來的那個。 */
     noBase: true,
-    /* ⚠⚠⚠ `lift` 要壓到**盆底**（ver -1226，Ray：「不要有地基，整個嵌進山裡」）。
-       兩個坑方向相反，必須同時避開：
-       ① `lift` **太高** → 零件的底浮在地形之上，寬牆的**底面露出來就是一塊地基**
-          （-1225 實測：footprint 有 **28%** 的地形低於零件的底 —— 那就是 Ray 說的地基）。
-       ② 底往地下長很多（`z0:-200`）解掉了 ①，但 `lift` 還是高的話，
-          **埋下去的那一截會在低處反而露出來** —— 塔被拉成一根細長的白柱
-          （-1226 實測：基準面 237、盆底 171 ⇒ 多露 66，設計高 89 的塔畫成 155）。
-       ⇒ 正解是**兩件一起**：底埋很深（不會浮）＋基準面壓到地形最低點附近
-         （不會多露）。剩下的交給地形：高的地方埋掉、低的地方露出來。 */
     lift: 8,
     parts: [
-      /* ══ 讀參考圖讀到的三件事（Ray 的兩張圖）══
-         ① 它是**建築群**不是一座門樓：一整片高低不齊的塔與柱擠在一起，
-            天際線像一排斷掉的梳齒 —— 那是這座剪影的重點。
-         ② **高度差距要大**：最高的細柱是最矮的殘牆的四五倍。
-         ③ 大拱門不只一個，而且散在不同位置，被牆與塔切得斷斷續續。
-         ⚠ 所以下面刻意**不對稱**、也不等距：等距與對稱正是「像一棟建築」而不是
-           「一片廢城」的來源。 */
+      /* ── ① 拱廊正面：三段牆（x≈20，正面朝 +x），段與段之間留 6〜8 的縫 ── */
+      { k:'stump', x:20, y:-100, w:13, l:44, h:71, z0:-40, shrink:0.99 },   // 露 31
+      { k:'stump', x:20, y: -50, w:13, l:48, h:75, z0:-40, shrink:0.99 },   // 露 35
+      { k:'stump', x:20, y:  -2, w:13, l:38, h:68, z0:-40, shrink:0.99 },   // 露 28
+      /* 簷板：往外挑出一圈。**這一圈就是「兩層」的讀法** —— 外觀圖的牆是上下兩段，
+         中間一道水平線；在飛行距離畫不出下層的窄縫（讀不出來的細節就是雜訊），
+         所以只留這條線。 */
+      { k:'stump', x:20, y:-100, w:17, l:48, h:3, z0:31, detail:true },
+      { k:'stump', x:20, y: -50, w:17, l:52, h:3, z0:35, detail:true },
+      { k:'stump', x:20, y:  -2, w:17, l:42, h:3, z0:28, detail:true },
+      /* 高拱（`col:'door'` ＝整塊同色的凹洞）。⚠ 上界要包在那一段牆裡（-1163：
+         窗不可以開得比牆高），`z0` 從**地面**起算 —— 牆往地下長，拱門不能跟著埋。 */
+      { k:'stump', x:26, y:-100, w:8, l:14, h:25, z0:1.5, col:'door', detail:true },
+      { k:'stump', x:26, y: -50, w:8, l:16, h:30, z0:1.5, col:'door', detail:true },
+      { k:'stump', x:26, y:  -2, w:8, l:13, h:22, z0:1.5, col:'door', detail:true },
 
-      /* ── 前排：面向 +x（東）的一道連續牆，切成六段、各自不同高 ── */
-      { k:'stump', x:21.3, y:-137.8, w:13.1, l:42.6, h:61.6, z0:-40, shrink:0.99,
-        crenel:{ w:5, h:61.6, gap:9, t:5, broken:0.55 } },
-      { k:'stump', x:21.3, y:-91.8, w:13.1, l:45.9, h:70, z0:-40, shrink:0.99,
-        crenel:{ w:5, h:70, gap:9, t:5, broken:0.34 } },
-      { k:'stump', x:21.3, y:-42.6, w:13.1, l:47.6, h:66.2, z0:-40, shrink:0.99,
-        crenel:{ w:5, h:66.2, gap:9, t:5, broken:0.42 } },
-      { k:'stump', x:21.3, y:18, w:13.1, l:50.8, h:73.1, z0:-40, shrink:0.99,
-        crenel:{ w:5, h:73.1, gap:9, t:5, broken:0.28 } },
-      { k:'stump', x:21.3, y:75.4, w:13.1, l:47.6, h:63.1, z0:-40, shrink:0.99,
-        crenel:{ w:5, h:63.1, gap:9, t:5, broken:0.50 } },
-      { k:'stump', x:21.3, y:123, w:12.3, l:37.7, h:54.6, z0:-40, shrink:0.99,
-        crenel:{ w:5, h:54.6, gap:9, t:5, broken:0.66 } },
-      /* 牆上的拱：三個大的（門）＋幾個小的（連拱廊）。
-         ⚠ z 區間要包在牆裡（-1163 的教訓：窗不可以開得比牆高）。 */
-      /* ⚠⚠ 開口的 `z0` 要從**地面**（0）起算，不是從牆的底（−90）—— 牆往地下長，
-         拱門不能跟著埋下去。第一版把它們排在 −46，實測整排拱**幾乎全在地面之下**
-         （自檢抓出來的：五個開口的頂只到 +10~+22）。
-         ⚠ 上界仍然要包在那一段牆裡（-1163：窗不可以開得比牆高）——
-           那六段牆的頂分別是 56／78／68／86／60／38。 */
-      { k:'col', x:26.2, y:-91.8, w:8.2, l:21.3, h:22.3, z0:1.5 },
-      { k:'col', x:26.2, y:18, w:8.2, l:24.6, h:25.4, z0:1.5 },
-      { k:'col', x:26.2, y:75.4, w:8.2, l:19.7, h:17.7, z0:1.5 },
-      { k:'col', x:26.2, y:-137.8, w:6.6, l:11.5, h:13.1, z0:2.3 },
-      { k:'col', x:26.2, y:-42.6, w:6.6, l:11.5, h:16.9, z0:2.3 },
-      { k:'col', x:26.2, y:123, w:6.6, l:10.7, h:9.2, z0:1.5 },
+      /* ── ② 扶壁方柱：夾在牆段之間，比牆高出 8〜12，頂端斷平（不給 cap、不給齒） ── */
+      { k:'tower', x:20, y:-126, r:7.5, rTop:6.8, n:4, h:82, z0:-40 },      // 露 42
+      { k:'tower', x:20, y: -75, r:8,   rTop:7.2, n:4, h:87, z0:-40 },      // 露 47
+      { k:'tower', x:20, y: -25, r:7.5, rTop:6.8, n:4, h:80, z0:-40 },      // 露 40
+      { k:'tower', x:20, y:  22, r:7,   rTop:6.4, n:4, h:74, z0:-40 },      // 露 34
 
-      /* ── 前排的塔：夾在牆段之間，高過牆一截（高度全部不一樣） ── */
-      { k:'tower', x:21.3, y:-114.8, r:10.7, rTop:9.3, n:4, h:73.4, z0:-40, detail:true,
-        crenel:{ w:4, h:73.4, gap:4, t:4, broken:0.30 } },
-      { k:'tower', x:21.3, y:-67.2, r:9, rTop:7.9, n:6, h:65.9, z0:-40, detail:true,
-        crenel:{ w:4, h:65.9, gap:4, t:4, broken:0.52 } },
-      { k:'tower', x:21.3, y:-18, r:9.8, rTop:8.5, n:4, h:79.3, z0:-40, detail:true,
-        crenel:{ w:4, h:79.3, gap:4, t:4, broken:0.22 } },
-      { k:'tower', x:21.3, y:45.9, r:9.8, rTop:8.4, n:4, h:70.7, z0:-40, detail:true,
-        crenel:{ w:4, h:70.7, gap:4, t:4, broken:0.44 } },
-      { k:'tower', x:21.3, y:100, r:8.2, rTop:7.1, n:6, h:59.4, z0:-40, detail:true,
-        crenel:{ w:4, h:59.4, gap:4, t:4, broken:0.60 } },
+      /* ── ③ 主塔：全場最高**也最粗**的一支（外觀圖的重點就是它）。
+             頂上那一塊**偏一邊、只有一半寬** ＝ 斷了一角，不是尖頂。 ── */
+      { k:'stump', x:14, y: 44, w:26, l:26, h:94, z0:-40, shrink:0.965 },   // 露 54
+      { k:'stump', x:18, y: 40, w:16, l:20, h: 8, z0:54 },                  // 斷口 → 62
+      { k:'stump', x:26, y: 44, w: 8, l:10, h:18, z0:30, col:'door', detail:true },
 
-      /* ── 中排：退後一段的高塊與方塔，天際線的第二層 ── */
-      { k:'stump', x:-11.5, y:-78.7, w:32.8, l:54.1, h:80.8, z0:-40, shrink:0.965 },
-      { k:'stump', x:-11.5, y:-78.7, w:37.7, l:59, h:3.1, z0:40.8 },                 // 簷口
-      { k:'stump', x:-13.1, y:8.2, w:36.1, l:64, h:91.6, z0:-40, shrink:0.965 },
-      { k:'stump', x:-13.1, y:8.2, w:41, l:68.9, h:3.1, z0:51.6 },
-      { k:'stump', x:-13.1, y:8.2, w:31.2, l:50.8, h:3.8, z0:54.7, shrink:0.96,
-        crenel:{ w:5, h:3.8, gap:8, t:5, broken:0.32 } },
-      { k:'stump', x:-9.8, y:88.6, w:29.5, l:47.6, h:70.8, z0:-40, shrink:0.965,
-        crenel:{ w:5, h:70.8, gap:9, t:5, broken:0.48 } },
-      { k:'tower', x:-11.5, y:-42.6, r:9, rTop:7.7, n:4, h:82.6, z0:-40, detail:true,
-        crenel:{ w:4, h:82.6, gap:4, t:4, broken:0.26 } },
-      { k:'tower', x:-13.1, y:47.6, r:9, rTop:7.5, n:4, h:87.5, z0:-40, detail:true,
-        crenel:{ w:4, h:87.5, gap:4, t:4, broken:0.18 } },
-      /* 中排那兩塊高塊上的拱（大殿的正面）。 */
-      { k:'col', x:4.9, y:-78.7, w:8.2, l:19.7, h:23.9, z0:2.3 },
-      { k:'col', x:4.9, y:8.2, w:8.2, l:23, h:27.7, z0:2.3 },
+      /* ── ④ 斷柱林：**粗細一致**（r 6.5〜8）、**高度亂跳**（20〜50）。
+             兩排錯開，不要對齊 —— 對齊就讀成柵欄。 ── */
+      { k:'tower', x:  2, y: 76, r:8,   rTop:7.2, n:4, h:84, z0:-40 },      // 露 44
+      { k:'tower', x:  2, y: 98, r:7,   rTop:6.4, n:4, h:66, z0:-40 },      // 露 26
+      { k:'tower', x:  0, y:118, r:6.5, rTop:5.9, n:4, h:74, z0:-40 },      // 露 34
+      { k:'tower', x:-28, y: 70, r:8,   rTop:7.1, n:4, h:90, z0:-40 },      // 露 50
+      { k:'tower', x:-28, y: 94, r:7,   rTop:6.4, n:4, h:60, z0:-40 },      // 露 20
+      { k:'tower', x:-30, y:112, r:6.5, rTop:5.9, n:4, h:70, z0:-40 },      // 露 30
+      /* 腳下的矮殘牆：把斷柱串起來（外觀圖裡它們不是憑空插在草地上的）。
+         ⚠ 這也是「不像外觀」的一半 —— 少了它，一排柱子讀起來就是電線桿。 */
+      { k:'stump', x:-13, y: 82, w:44, l:16, h:50, z0:-40, shrink:0.99 },   // 露 10
+      { k:'stump', x:-13, y:106, w:44, l:14, h:48, z0:-40, shrink:0.99 },   // 露  8
 
-      /* ── 後排：最高的一叢細柱（參考圖上那兩三根特別高的） ── */
-      { k:'tower', x:-42.6, y:-55.8, r:6.6, rTop:5.2, n:6, h:96.6, z0:-40, detail:true },
-      { k:'tower', x:-45.9, y:-36.1, r:5.7, rTop:4.6, n:6, h:87.9, z0:-40, detail:true },
-      { k:'tower', x:-41, y:-3.3, r:7.4, rTop:5.9, n:8, h:102.5, z0:-40, detail:true,
-        crenel:{ w:4, h:102.5, gap:4, t:4, broken:0.34 } },
-      { k:'tower', x:-47.6, y:27.9, r:5.7, rTop:4.4, n:6, h:83.7, z0:-40, detail:true },
-      { k:'tower', x:-42.6, y:70.5, r:6.6, rTop:5.1, n:6, h:73.4, z0:-40, detail:true },
-      /* 後排的連牆：把細柱串起來，不然它們讀起來是一排電線桿。 */
-      { k:'stump', x:-44.3, y:-24.6, w:9.8, l:78.7, h:59.2, z0:-40, shrink:0.985,
-        crenel:{ w:5, h:59.2, gap:8, t:4, broken:0.70 } },
-      { k:'stump', x:-44.3, y:50.8, w:9.8, l:52.5, h:50.8, z0:-40, shrink:0.985,
-        crenel:{ w:5, h:50.8, gap:8, t:4, broken:0.74 } },
+      /* ── ⑤ 唯一的圓柱（帶柱頭）：全場都是方的，一支圓的才讀得出「這是柱子」 ── */
+      { k:'tower', x:-46, y: 98, r:6, rTop:5.6, n:10, h:64, z0:-40 },       // 露 24
+      { k:'stump', x:-46, y: 98, w:14, l:14, h:3.5, z0:24, detail:true },   // 柱頭
 
-      /* ── 兩端：塌得最兇的一段，高度一路掉下去（收尾不要齊） ── */
-      { k:'stump', x:6.6, y:-160.7, w:27.9, l:24.6, h:48.5, z0:-40, shrink:0.985,
-        crenel:{ w:5, h:48.5, gap:9, t:5, broken:0.72 } },
-      { k:'stump', x:-6.6, y:-175.5, w:21.3, l:16.4, h:42.3, z0:-40, shrink:0.98 },
-      { k:'stump', x:4.9, y:150.9, w:24.6, l:21.3, h:45.4, z0:-40, shrink:0.985,
-        crenel:{ w:5, h:45.4, gap:9, t:5, broken:0.78 } },
-      { k:'stump', x:-8.2, y:168.9, w:19.7, l:14.8, h:37.7, z0:-40, shrink:0.98 },
-      { k:'stump', x:-24.6, y:183.7, w:16.4, l:11.5, h:32.3, z0:-40, shrink:0.98 },
+      /* ── 後方的側翼：再退一層的殘塊（讀起來是「後面還有」） ── */
+      { k:'stump', x:-46, y:-42, w:14, l:52, h:62, z0:-40, shrink:0.985 },  // 露 22
+      { k:'tower', x:-48, y: -6, r:8, rTop:7.2, n:4, h:78, z0:-40 },        // 露 38
+      { k:'stump', x:-50, y:-78, w:12, l:28, h:55, z0:-40, shrink:0.98 },   // 露 15
 
-      /* ── 側翼：往 −x 深處再退一層的殘塊（讀起來是「還有後面」） ── */
-      { k:'stump', x:-68.9, y:-11.5, w:18, l:44.3, h:53.9, z0:-40, shrink:0.98,
-        crenel:{ w:5, h:53.9, gap:8, t:4, broken:0.66 } },
-      { k:'stump', x:-70.5, y:60.7, w:16.4, l:29.5, h:45.4, z0:-40, shrink:0.98 },
-      { k:'tower', x:-72.2, y:-54.1, r:7.4, rTop:6.1, n:6, h:63.2, z0:-40, detail:true },
+      /* ── 左端：一道**還立著的獨立拱**（外觀圖右段那種「看得穿」的剪影）。
+             ⚠ 這是整座唯一一處**天空穿過量體**的地方 —— 遠看就靠它讀出「這是廢墟」，
+               其餘都是實心的塊，再多也只是一片灰。 ── */
+      { k:'tower', x:  8, y:-160, r:5, rTop:4.6, n:4, h:66, z0:-40 },       // 露 26
+      { k:'tower', x:  8, y:-136, r:5, rTop:4.6, n:4, h:64, z0:-40 },       // 露 24
+      { k:'stump', x:  8, y:-148, w:10, l:34, h:7, z0:24 },                 // 楣 → 31
 
-      /* ── 散落的斷柱（躺著），壓在量體之間的空隙上 ── */
-      { k:'fallen', x:42.6, y:-24.6, rot: 0.55, len:27.9, dia:6.6, seg:2 },
-      { k:'fallen', x:39.4, y:60.7, rot:-1.05, len:21.3, dia:5.7, seg:2 },
-      { k:'fallen', x:45.9, y:-98.4, rot: 2.35, len:18, dia:5.7, seg:2 },
-      { k:'fallen', x:0, y:131.2, rot: 1.25, len:23, dia:6.6, seg:3 },
+      /* ── ⑥ 躺著的柱鼓與散落石塊（外觀圖前景那幾塊） ── */
+      { k:'fallen', x: 38, y: -70, rot: 0.50, len:26, dia:7, seg:2 },
+      { k:'fallen', x: 36, y:  30, rot:-1.00, len:22, dia:6, seg:2 },
+      { k:'fallen', x:-14, y: 126, rot: 1.30, len:24, dia:7, seg:3 },
+      { k:'stump',  x: 44, y:-118, w:20, l:16, rot: 0.42, h:52, z0:-40 },   // 露 12
+      { k:'stump',  x: 40, y:  92, w:18, l:15, rot:-0.30, h:50, z0:-40 },   // 露 10
     ],
   },
   belisar: {
