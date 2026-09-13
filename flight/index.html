@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1213"></script>
+<script src="../orientation.js?v=1214"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -164,8 +164,18 @@
        看得見、但這一拍不給按，與聚光燈壓暗整個畫面是同一句話。
      ⚠ 出口不在這裡：輕點畫面任一處仍然收得掉提示。 */
   body.tutor-lock #mapBtn, body.tutor-lock #backBtn,
-  body.tutor-lock #peaceBtn, body.tutor-lock #boostBtn,
-  body.tutor-lock #landBtn{ opacity:.22 !important; pointer-events:none !important; }
+  body.tutor-lock #peaceBtn, body.tutor-lock #boostBtn{
+    opacity:.22 !important; pointer-events:none !important; }
+  /* ⚠⚠⚠ 降落鈕要**分開寫**（ver -1214，Ray：「對話中的降落標籤仍在」）——
+     那四顆是常駐的，壓暗就對了；**降落鈕有「不在」這個狀態**（`#landBtn`
+     平常是 `opacity:0`，靠 `.on` 才亮）。把它併進上面那條，`!important`
+     就會把**該消失的鈕壓成 22% 的半透明幽靈**，浮在立繪與對話框正中央
+     —— 而 `updateLandBtn()` 那邊看起來完全正常（`landOn` 是 false、`.on`
+     也真的拔掉了），所以查 JS 一輩子都查不到。
+     ⚠ 判準：`!important` 的壓暗只能套在**本來就看得見**的東西上。
+       會隱藏的元件要把壓暗綁在它的顯示狀態上（這裡是 `.on`）。 */
+  body.tutor-lock #landBtn{ pointer-events:none !important; }
+  body.tutor-lock #landBtn.on{ opacity:.22 !important; }
   /* ══ Kerberos 之門（ver -387，Ray：「飛行畫面時將楣常置於操控面板底部，
        遭遇敵人時槍棺彈出，進入戰鬥畫面」）══
      平常：整扇槍棺沉在畫面之下，只有**楣**露在操控面板的底緣 —— 那是「棺就在腳下」
@@ -512,11 +522,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1213"></script>
+<script src="settlement.js?v=1214"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1213"></script>
+<script src="talks.js?v=1214"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -556,7 +566,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1213';
+const FLIGHT_VER = 'ver -1214';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
