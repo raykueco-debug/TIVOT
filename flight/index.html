@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1196"></script>
+<script src="../orientation.js?v=1197"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -500,11 +500,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1196"></script>
+<script src="settlement.js?v=1197"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1196"></script>
+<script src="talks.js?v=1197"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -544,7 +544,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1196';
+const FLIGHT_VER = 'ver -1197';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -8666,7 +8666,37 @@ function drawRuins(scaleH,horizon,sinp,cosp){
        再除以 syk 就回到緩衝像素 —— 所以這裡直接用 scaleH（鐵律 7：不要乘了再除）。 */
     const detailK=scaleH/Math.max(zc,1);
     const unreadable=h=>(h||0)*detailK<DETAIL_PX;
-    const push=(b,pt,detail)=>{
+    /* ══⚠⚠⚠ 主零件也要有距離 LOD（ver -1197）════════════════════════════
+       `unreadable` 只擋 `detail:true`，所以**主零件不管多遠都照建**：實測貝利薩爾
+       在 d15 到 d140 都是 3.1~3.6ms、每禎 ~950 次 `fill()` —— 而 d140 那座城堡在
+       畫面上只剩幾個像素。**成本完全不隨距離降**，與量體層 -1195 同源。
+       ⚠⚠ **尺標要取「高與底面的較大者」，不可以只看高**：只看高的話，又寬又扁的
+         **基座**（平台、石地板）會先被剔掉，站在它上面的塔就浮在半空 ——
+         那是比多畫幾個面嚴重得多的錯。取較大者 ⇒ 基座一定活著（底面大），
+         被剔掉的是「高也小、底面也小」的零星小塊，而那些本來就是最上層的裝飾，
+         拿掉不會讓任何東西失去支撐。
+       ⚠ 門檻比細節件低（1.3 vs 2.2 緩衝像素）：主零件扛的是**剪影**，
+         寧可多留一點；真的低於 1.3 個緩衝像素就是連一個像素都佔不滿。
+       ⚠ 與 -1195 的量體層一樣：這一條**不隨自適應畫質變**（`detailK` 只看深度與
+         `scaleH`），換檔不會讓零件忽隱忽現。 */
+    const MAIN_PX=1.3;
+    const tooSmall=(...ds)=>Math.max(...ds.map(v=>v||0))*detailK<MAIN_PX;
+    /* ══⚠⚠⚠ 小到一定程度就走「一塊一個平色」的快路（ver -1197）════════════
+       繪製階段本來就有這條快路（`B.tiny`），但**只有作者寫 `detail:true` 的零件
+       吃得到** —— 主零件不管在畫面上多小，一律逐面排序、逐面 setTransform、
+       逐面 fill。實測貝利薩爾 d25：**每禎 743 次 `fill()`，其中 307 次是貼材**
+       （每一次都要為了對齊材質各設一次 transform）。
+       ⚠⚠ **這才是手機跑不動的真正原因**：Canvas 2D 的每一次 fill 都是一次
+         JS→原生的呼叫，成本幾乎全在**呼叫本身**而不在像素（那些面只有幾個像素大）。
+         實測約 4µs／次 —— 740 次就是 3ms，與量到的數字對得上。
+       ⇒ 把同一條判準套到主零件：投影尺寸低於 `FLAT_PX` 就 `tiny`
+         （一條路徑、一次 fill、不貼材、不排序）。
+       ⚠ 門檻取 6 個緩衝像素：原註解寫「三到八個像素高那個尺度逐面明暗看不出來」，
+         取它的中間。**大於這個尺寸的零件一個都沒動** —— 近距離的城堡與現在完全一樣。
+       ⚠ 與 `tooSmall`（整塊不畫）是兩階：先看要不要畫，再看要不要簡化。 */
+    const FLAT_PX=6;
+    const flatten=(...ds)=>Math.max(...ds.map(v=>v||0))*detailK<FLAT_PX;
+    const push=(b,pt,detail,flat)=>{
       if(!b) return null;
       if(pt && pt.col) b.col=C[pt.col]||pt.col;
       /* ⚠ 這裡**只記種類**，不解析成 pattern（ver -1162）：
@@ -8676,7 +8706,9 @@ function drawRuins(scaleH,horizon,sinp,cosp){
          於是從空中俯瞰時，門洞與窗洞露出來的是一塊**躺平的黑色矩形** ——
          那正是飛行地圖最常見的視角。立面照舊是黑的（它是看不到底的開口）。 */
       if(pt && pt.col) b.colTop=C.top;
-      if(detail) b.tiny=true;         // 小到貼材只是雜訊：繪製階段跳過貼材（也省掉 setTransform）
+      /* ⚠⚠ `tiny` ＝繪製階段走「一塊一條路徑、一個平色」的快路（見那一段的說明）。
+         ver -1197 起它**也由螢幕大小觸發**（`flat`），不再只看作者寫的 `detail` —— 見 `flatten`。 */
+      if(detail||flat) b.tiny=true;   // 小到貼材只是雜訊：繪製階段跳過貼材（也省掉 setTransform）
       items.push(b); take(b,detail); return b;
     };
     /* ══⚠⚠⚠ 雉堞／垛口（ver -1164）══
@@ -8728,27 +8760,46 @@ function drawRuins(scaleH,horizon,sinp,cosp){
            `cap`（ver -1164）＝**自動接一個錐頂**：塔身與尖頂以前要寫兩行，
            兩行的 `x/y/n/z0` 一旦對不上就是「尖頂歪在旁邊」，而那是**算得出來的**
            （鐵律 7）。`cap:{h, r?, rTop?, mat?}`，不寫 `r` 就接著塔頂的半徑。 */
-        const rT=(pt.rTop==null?pt.r:pt.rTop), n=pt.n||10, rot=pt.rot||0;
-        if(pt.detail && unreadable(pt.h+((pt.cap&&pt.cap.h)||0))) continue;
-        const b=push(prism(pt.x,pt.y,pt.r,rT,n,rot,pt.h,pt.z0),pt,pt.detail);
+        const rT=(pt.rTop==null?pt.r:pt.rTop), rot=pt.rot||0;
+        /* ══⚠⚠⚠ 邊數要跟著螢幕大小降（ver -1197，Ray：「東泊跟古城只要接近就掉禎
+           掉到幾乎動不了」）════════════════════════════════════════════════
+           實測貝利薩爾（26 座塔）：`drawRuins` 在 **d15 到 d140 都是 3.1~3.6ms**，
+           每禎 **~950 次 fill()**，而 d140 那座城堡在畫面上只剩幾個像素 ——
+           **成本完全不隨距離降**（927 次 vs 959 次）。
+           那是因為 `unreadable` 只擋 `detail:true` 的細節件，主零件照建不誤，
+           而一座 n 邊柱每禎就是 n 個面：26 座塔 × (塔身 10 ＋ 錐頂 10) ≈ 520 個面，
+           佔了 950 的六成 —— 與量體層 -1195 那個病完全同源（沒有距離 LOD）。
+           ⇒ 邊數改成由**投影直徑**推：大約一個面對一個緩衝像素，夾在 [4, 作者寫的 n]。
+           ⚠ 這**不會改剪影**：直徑只有 4px 的塔，畫 10 邊與畫 4 邊在畫面上同一個
+             樣子（兩者都被取整到同幾個像素）；近距離 `detailK` 大，照樣拿回滿邊數。
+           ⚠ 也**不會有零件浮空**：只降邊數、不刪零件 —— 這是與「整個剔掉」的差別，
+             所以它是安全的那一半，可以先上。
+           ⚠ `n` 至少 4：再少就不是柱子是片。 */
+        const nAuthor=pt.n||10;
+        const n=Math.max(4, Math.min(nAuthor, Math.round(pt.r*2*detailK)));
+        const hAll=pt.h+((pt.cap&&pt.cap.h)||0);
+        if(pt.detail ? unreadable(hAll) : tooSmall(hAll, pt.r*2)) continue;
+        const flatT=flatten(hAll, pt.r*2);
+        const b=push(prism(pt.x,pt.y,pt.r,rT,n,rot,pt.h,pt.z0),pt,pt.detail,flatT);
         if(b) crenel(b,pt);
         if(pt.cap){
           const K=pt.cap, z1=(pt.z0||0)+(pt.h||0);
           push(prism(pt.x,pt.y,(K.r==null?rT:K.r),(K.rTop==null?1.4:K.rTop),n,rot,K.h,z1),
-               { mat:(K.mat===undefined?'roof':K.mat) }, pt.detail);
+               { mat:(K.mat===undefined?'roof':K.mat) }, pt.detail, flatT);
         }
       }else if(pt.k==='gable'){
         /* 山牆屋頂（ver -1164）：`axis:'w'` ＝屋脊沿 x。預設走屋頂材質。 */
-        if(pt.detail && unreadable(pt.h)) continue;
+        if(pt.detail ? unreadable(pt.h) : tooSmall(pt.h, pt.w||pt.dia, pt.l||pt.dia)) continue;
         push(gable(pt.x,pt.y,pt.w||pt.dia,pt.l||pt.dia,pt.rot||0,pt.h,pt.z0,pt.axis==='w'),
-             { mat:(pt.mat===undefined?'roof':pt.mat), col:pt.col }, pt.detail);
+             { mat:(pt.mat===undefined?'roof':pt.mat), col:pt.col }, pt.detail,
+             flatten(pt.h, pt.w||pt.dia, pt.l||pt.dia));
       }else if(pt.k==='stump'){
         /* ⚠ `dia` 是**方柱**的邊長（既有用法）；`w`/`l` 給不是方的東西
            （門面、階梯、散落的巨石）—— 不另開一種 `k`，那只會多一份實作（鐵律 8）。
            `shrink`（ver -1164）＝收分：頂面比底面窄的比例。 */
-        if(pt.detail && unreadable(pt.h)) continue;
+        if(pt.detail ? unreadable(pt.h) : tooSmall(pt.h, pt.w||pt.dia, pt.l||pt.dia)) continue;
         const b=push(box(pt.x,pt.y,pt.w||pt.dia,pt.l||pt.dia,pt.rot||0,pt.h,pt.z0,pt.shrink),
-                     pt,pt.detail);
+                     pt,pt.detail,flatten(pt.h, pt.w||pt.dia, pt.l||pt.dia));
         if(b) crenel(b,pt);
       }else{
         /* 倒柱＝幾節柱鼓排成一列，節與節之間留縫（那道縫就是「斷了」）。 */
