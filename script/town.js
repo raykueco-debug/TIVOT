@@ -4062,17 +4062,24 @@ export const TOWNS = {
       restaurant:{ bg:'Ravn_Restaurant', noTime:true },
       bar:       { bg:'Ravn_Bistro',     noTime:true },
     } },
-    /* ⚠⚠ **每一格都要 `noTime:true`**：這 12 張目前 0 張時段差分，不寫的話候選鏈
-       會先去試 `_dawn/_day/_dusk/_night` 四個名字，**每一格白吃四個 404**
-       （交件單 `_ravnsdal_spec.md` §五也是這樣要求的）。差分交件之後整批拿掉。 */
+    /* ══⚠⚠ **`noTime` 逐格看，不是整批**（ver -1293，室外六格的四時段差分到齊）══
+       · **室外六格**（廣場／中心區／瞭望台／舊街區／火車站／上街區）＝四差分都在
+         ⇒ **不寫 `noTime`**，讓候選鏈照 `BAND_FALL` 挑時段。
+       · **室內六格**（武器店／公會／餐飲街／雜貨舖／旅店＋大教堂）＝單張
+         ⇒ **要寫 `noTime:true`**，不寫就白吃四個 404（§5）。
+       ⚠⚠⚠ **大教堂也拿掉了 `noTime`**，雖然它是室內 —— 它借用的是 `Ravn_Midtown`，
+         而**那張的無尾綴檔已經被回收**（美術只留四個時段版）。留著 `noTime` ＝
+         只試 `Ravn_Midtown.webp` ＝ 那一格整個空白，**而且畫面上沒有任何錯誤訊息**。
+         `Ravn_Church` 交件之後要把 `noTime:true` 加回來（它會是單張）。
+       ⚠ 室內為什麼不做四差分：§5「有室外光才有差分」，同貝利薩爾那一把尺。 */
     nodes: {
       /* ══ 港口廣場 ══ 入口；上＝中心區、左＝舊街區、右＝上街區（照帝都）。 */
-      square:   { bg:'Ravn_Square',   name:'拉芬斯達爾　港口廣場', noTime:true,
+      square:   { bg:'Ravn_Square',   name:'拉芬斯達爾　港口廣場',
         exits:{ up:'midtown', left:'oldtown', right:'uptown' },
         sail:{ flag:'got_ship' } },
 
       /* ── 一、中心區 ── 左＝瞭望台、右＝大教堂、下＝廣場 */
-      midtown:  { bg:'Ravn_Midtown',  name:'拉芬斯達爾　中心區',   noTime:true,
+      midtown:  { bg:'Ravn_Midtown',  name:'拉芬斯達爾　中心區',  
         exits:{ left:'lookout', right:'church', down:'square' } },
       /* ⚠⚠ **大教堂是規格上唯一留白的一格**（`_ravnsdal_spec.md` §三：宗教建築的
          形制是世界觀的事，Ray 還沒給方向）。`Ravn_Church` 這張圖**還不存在**。
@@ -4083,13 +4090,13 @@ export const TOWNS = {
            借中心區也讀得通：那條側街本來就是從中心區往深處沒入海霧的那一條。
          ⚠ `bgPending` 寫成**還缺哪一張的檔名**（`script_lint.py` 會提醒）——
            圖交進來就只要把 `bg` 改成 `Ravn_Church`、拔掉 `bgPending`，其餘不動。 */
-      church:   { bg:'Ravn_Midtown',   name:'拉芬斯達爾　大教堂',   noTime:true,
+      church:   { bg:'Ravn_Midtown',   name:'拉芬斯達爾　大教堂',  
         bgPending:'Ravn_Church', exits:{ back:'midtown' } },
-      lookout:  { bg:'Ravn_Lookout',  name:'拉芬斯達爾　瞭望台',   noTime:true,
+      lookout:  { bg:'Ravn_Lookout',  name:'拉芬斯達爾　瞭望台',  
         exits:{ back:'midtown' } },
 
       /* ── 二、舊街區（四向樞紐） ── 左＝武器店、右＝廣場、上＝火車站、下＝公會 */
-      oldtown:  { bg:'Ravn_Oldtown',  name:'拉芬斯達爾　舊街區',   noTime:true,
+      oldtown:  { bg:'Ravn_Oldtown',  name:'拉芬斯達爾　舊街區',  
         exits:{ left:'gunstore', right:'square', up:'station', down:'guild' } },
       gunstore: { bg:'Ravn_Firearm',  name:'拉芬斯達爾　武器店',   noTime:true,
         exits:{ back:'oldtown' } },
@@ -4098,7 +4105,7 @@ export const TOWNS = {
          錶心 (767,170) ⇒ (0.4993, 0.1660)；`r` 是盤面半徑 50px ÷ 圖寬 1536 ＝ 0.0326。
          引擎會先用盤面色蓋掉畫上去的那兩根（盤面是平的，見 `syncBgClock` 的說明），
          再擺上時針分針 —— **不轉動、進場抓一次**。 */
-      station:  { bg:'Ravn_Station',  name:'拉芬斯達爾　火車站',   noTime:true,
+      station:  { bg:'Ravn_Station',  name:'拉芬斯達爾　火車站',  
         /* `wipe`＝畫上去的分針伸出盤面圓之外的那一截（實測到 r≈56，補丁只到 50）
            —— 不抹的話三點鐘方向會留一小截黑。一項＝[角度°, r0, r1, 半寬]，
            後三個以盤面半徑為單位。 */
@@ -4108,7 +4115,7 @@ export const TOWNS = {
         exits:{ back:'oldtown' } },
 
       /* ── 三、上街區（四向樞紐） ── 左＝廣場、右＝餐飲街、上＝旅店、下＝雜貨舖 */
-      uptown:   { bg:'Ravn_Uptown',   name:'拉芬斯達爾　上街區',   noTime:true,
+      uptown:   { bg:'Ravn_Uptown',   name:'拉芬斯達爾　上街區',  
         exits:{ left:'square', right:'tavern', up:'inn', down:'grocery' } },
       tavern:   { bg:'Ravn_Bistro',   name:'拉芬斯達爾　餐飲街',   noTime:true,
         exits:{ back:'uptown' } },
@@ -4181,48 +4188,56 @@ export const TOWNS = {
          （「背景 X 已交件，bgPending 可以拔了」）。
        ⚠ 這與拉芬斯達爾大教堂那種 `bgPending:'Ravn_Church'`（字串形）是兩回事：
          那是「`bg` 先借別張、真正要的是這一張」；這裡 `bg` 寫的就是真正要的檔名，
-         只是還沒到 —— 所以**圖一進來，這裡只要整批拔掉 `bgPending` 就好**。 */
+         只是還沒到 —— 所以**圖一進來，這裡只要整批拔掉 `bgPending` 就好**。
+       ══⚠⚠ **ver -1293：15 張全部交件，`bgPending` 已整批拔掉**（室外 8×4＝32
+         ＋室內 7 單張）══
+         · **室外八格**（廣場／中心區／大教堂／海關／大學／舊城區／船塢／上城區）
+           ＝四差分都在 ⇒ **不寫 `noTime`**。
+         · **室內五格**（武器店／公會／餐飲街／雜貨舖／旅店）＝單張
+           ⇒ **要寫 `noTime:true`**，不寫就白吃四個 404（§5）。
+         ⚠ 室外那八張**沒有無尾綴版**，所以 `noTime` 留著就是空背景（同拉芬斯達爾
+           大教堂那一條）—— 兩件事是一體的，不要只做一半。 */
     nodes: {
       /* ══ 港口廣場 ══ 入口；上＝中心區、左＝舊城區、右＝上城區（照帝都）。
          ⚠ 入口那一格**不可以有戰鬥**（§6.5.2：它是遭遇戰的復活點）。
          ⚠ 出航掛在**下方**（§6.5.4）—— 所以碼頭是不是走得進去，與出航無關。 */
-      square:     { bg:'East_Square',     name:'東方泊地　港口廣場', noTime:true, bgPending:true,
+      square:     { bg:'East_Square',     name:'東方泊地　港口廣場',
         exits:{ up:'midtown', left:'oldtown', right:'uptown' },
         sail:{ flag:'got_ship' } },
 
       /* ── 一、中心區（**四向**樞紐）── 左＝海關署、右＝主教座堂、上＝大學、下＝廣場 */
-      midtown:    { bg:'East_Midtown',    name:'東方泊地　中心區',   noTime:true, bgPending:true,
+      midtown:    { bg:'East_Midtown',    name:'東方泊地　中心區',
         exits:{ left:'cityhall', right:'church', up:'university', down:'square' } },
-      church:     { bg:'East_Church',     name:'東方泊地　主教座堂', noTime:true, bgPending:true,
+      church:     { bg:'East_Church',     name:'東方泊地　主教座堂',
         exits:{ back:'midtown' } },
       /* ⚠ id 是 `cityhall`（官方的辦公建築），招牌是「海關署」—— 見檔頭。 */
-      cityhall:   { bg:'East_Customs',    name:'東方泊地　海關署',   noTime:true, bgPending:true,
+      cityhall:   { bg:'East_Customs',    name:'東方泊地　海關署',
         exits:{ back:'midtown' } },
       /* ⚠⚠ 大學（ver -1255，Ray 指定）。**末端**：一格，與主教座堂／海關署同級。
          要擴成校門→講堂→圖書館那種一串的話再說 —— 那會讓中心區這一支變成一條
          走廊，`up` 的語意（走進畫面裡）照舊成立，只是多幾格。 */
-      university: { bg:'East_University', name:'東方泊地　大學',     noTime:true, bgPending:true,
+      university: { bg:'East_University', name:'東方泊地　大學',
         exits:{ back:'midtown' } },
 
       /* ── 二、舊城區（四向樞紐） ── 左＝武器店、右＝廣場、上＝倉庫碼頭、下＝公會 */
-      oldtown:    { bg:'East_Oldtown',    name:'東方泊地　舊城區',   noTime:true, bgPending:true,
+      oldtown:    { bg:'East_Oldtown',    name:'東方泊地　舊城區',
         exits:{ left:'gunstore', right:'square', up:'dock', down:'guild' } },
-      gunstore:   { bg:'East_Firearm',    name:'東方泊地　武器店',   noTime:true, bgPending:true,
+      gunstore:   { bg:'East_Firearm',    name:'東方泊地　武器店',   noTime:true,
         exits:{ back:'oldtown' } },
-      dock:       { bg:'East_Dock',       name:'東方泊地　倉庫碼頭', noTime:true, bgPending:true,
+      dock:       { bg:'East_Dock',       name:'東方泊地　倉庫碼頭',
         exits:{ back:'oldtown' } },
-      guild:      { bg:'East_Guild',      name:'東方泊地　賞金獵人公會', noTime:true, bgPending:true,
+      guild:      { bg:'East_Guild',      name:'東方泊地　賞金獵人公會', noTime:true,
         exits:{ back:'oldtown' } },
 
       /* ── 三、上城區（四向樞紐） ── 左＝廣場、右＝餐飲街、上＝旅店、下＝雜貨舖 */
-      uptown:     { bg:'East_Uptown',     name:'東方泊地　上城區',   noTime:true, bgPending:true,
+      uptown:     { bg:'East_Uptown',     name:'東方泊地　上城區',
         exits:{ left:'square', right:'tavern', up:'inn', down:'grocery' } },
-      tavern:     { bg:'East_Bistro',     name:'東方泊地　餐飲街',   noTime:true, bgPending:true,
+      tavern:     { bg:'East_Bistro',     name:'東方泊地　餐飲街',   noTime:true,
         exits:{ back:'uptown' } },
-      grocery:    { bg:'East_Grocerie',   name:'東方泊地　雜貨舖',   noTime:true, bgPending:true,
+      grocery:    { bg:'East_Grocerie',   name:'東方泊地　雜貨舖',   noTime:true,
         exits:{ back:'uptown' } },
       /* ⚠ 這一格**沒有** `inn:true`：旅店大廳與四扇伙伴門這一輪不做（同上）。 */
-      inn:        { bg:'East_Hotel',      name:'東方泊地　旅店',     noTime:true, bgPending:true,
+      inn:        { bg:'East_Hotel',      name:'東方泊地　旅店',     noTime:true,
         exits:{ back:'uptown' } },
     },
   },

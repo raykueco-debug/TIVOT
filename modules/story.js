@@ -676,17 +676,41 @@ const BAND_FALL = {
   midnight: ['midnight','night','Dusk','DD'],
 };
 export function bandNames(base, noTime){
-  const names=[]; const push=n=>{ if(n && names.indexOf(n)<0) names.push(n); };
-  if(noTime){ push(base); }
+  /* ══⚠⚠⚠ **大小寫變體要與本尊「貼在一起」，不是排在四個副檔名之後**（ver -1293）══
+     `clock.band()` 出的是大寫（`Dawn/Day/Dusk/night/midnight`），而**新交件全是小寫**
+     （實測全專案 198 張小寫 vs 161 張大寫 —— 帝都／夏爾／北方泊地／森林是大寫，
+     貝利薩爾／山谷／東泊／拉芬／遺蹟／古墓／幽墓是小寫）。兩邊都有，所以不能靠
+     「翻一下順序」解決。
+     ⚠⚠ 舊的排法是 `for 名字 { for 副檔名 }` ⇒ 小寫那一張排在
+       `_Dawn.webp/.png/.jpeg/.jpg` **四個 404 之後**才試得到（實測第 5 次才中）。
+       macOS 不分大小寫所以本機測不出來，**靜態空間分** —— 那四個 404 是真的。
+     ⚠ 改成**逐時段一組**（`groups`），組內先把兩種大小寫的同一個副檔名試完
+       再換下一個副檔名 ⇒ 小寫那一張變成**第 2 次**就中。
+     ⚠⚠ **不可以改成「所有名字的 .webp 先試完再試 .png」** —— 那會讓
+       「退路時段的 webp」贏過「正確時段的 png」，暗的時段會退回白天
+       （§6.5.4 的 ver -576 那條）。`.png`／`.jpeg` 是「還沒轉檔」的備援，
+       **正確的時段永遠優先於正確的格式**。 */
+  /* ⚠⚠ 大小寫變體**只套在帶時段尾綴的名字上**（`band:true`）。`altCase` 取的是
+     「最後一個底線段」—— 對**沒有尾綴**的基底名（`East_Firearm`、`Capital_Square`）
+     它會去改**名字本身**（→`East_firearm`），那不是時段變體，是把檔名寫錯。
+     無害（排在真檔之後，永遠試不到）但語意是錯的，而且真檔缺席時會多一個
+     看不懂的 404。 */
+  const groups=[];
+  const pushG=(n, band)=>{
+    if(!n) return;
+    const a = band ? altCase(n) : null;
+    groups.push(a && a!==n ? [n,a] : [n]);
+  };
+  if(noTime) pushG(base, false);
   else{
     const cur=clock.band();
-    for(const b of (BAND_FALL[cur] || [cur,'Day'])){
-      const n=base+'_'+b; push(n); push(altCase(n));
-    }
-    push(base);
+    for(const b of (BAND_FALL[cur] || [cur,'Day'])) pushG(base+'_'+b, true);
+    pushG(base, false);
   }
-  const out=[];
-  for(const n of names) for(const e of BAND_EXT) out.push(n+e);
+  const out=[], seen=new Set();
+  for(const g of groups) for(const e of BAND_EXT) for(const n of g){
+    const f=n+e; if(!seen.has(f)){ seen.add(f); out.push(f); }
+  }
   return out;
 }
 /* 背景／插圖的來源路徑。⚠ **插圖也可以當背景用**（ver -325，Ray：「『對不起，
@@ -1803,7 +1827,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1292';
+const KERB_V='?v=1293';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，

@@ -28,16 +28,17 @@
 1. **`belisar_land_ok` 這支旗還沒有人插** ⇒ 貝利薩爾目前**永遠降不下去**。
    等 Ray 的下一段稿決定由哪一拍插旗（作法同北方泊地的 `sail.hold.until`）。
    常數在 `flight/index.html` 的 `BELISAR_LAND_OK`，那裡的註解也寫著「現在還沒有人插」。
-2. **東方泊地 15 張背景**（`East_Square/Midtown/Church/Customs/University/Oldtown/
-   Firearm/Dock/Guild/Uptown/Grocerie/Hotel` ＋ 餐飲街的 `East_Bistro/Cafe/Restaurant`）。
-   交件後：拔 13 格的 `bgPending`、補 `SETTLEMENTS` 的 `town:'eastport'`
-   （⚠ `flight/index.html` 那一行的理由註解 -1291 已更正：城鎮資料早就有了，缺的是圖）。
-3. **拉芬斯達爾**：那 7 張店內／室內圖 **ver -1291 已交件並接完**（美術 commit
-   `69a52a3`）—— 5 張同名覆蓋補了 `ASSET_VER`（`ravn_bistro/firearm/grocerie/guild/
-   hotel` 各 `:2`，實測新舊 8×8 指紋差 27.6~46.1）、2 張新增接進 `dining.scenes`
-   （咖啡廳／餐廳／酒吧）。**還缺的只有 `Ravn_Church`**（`church` 那一格現在借用
-   `Ravn_Midtown`，掛著 `bgPending`）。
+2. ~~東方泊地 15 張背景~~ **ver -1293 全部交件並接完**（室外 8 格×四時段＝32
+   ＋室內 7 單張）：13 格的 `bgPending` 已整批拔掉、室外八格拿掉 `noTime`、
+   `SETTLEMENTS` 補上 `town:'eastport'`（降落鈕會亮了）。
+3. **拉芬斯達爾**：室內 7 張（-1291）＋室外 6 格×四時段（-1293）都接完了。
+   **還缺的只有 `Ravn_Church`** —— `church` 那一格現在借用 `Ravn_Midtown`，
+   掛著 `bgPending`。
+   ⚠⚠ 那一格**現在沒有 `noTime`**（因為它借的 `Ravn_Midtown` 已經只剩四個時段版、
+     無尾綴檔被回收了）。`Ravn_Church` 交件時是單張 ⇒ **要把 `noTime:true` 加回來**，
+     否則白吃四個 404。
    ⚠ 分店的 `chatter`（路人語）還沒給 —— 現在退回節點那一組，那是既有行為不是壞掉。
+   ⚠ 室內不做四差分是刻意的（§5「有室外光才有差分」，同貝利薩爾那一把尺）。
 4. **卡耶爾山谷**：① 小地圖 `resources/map/map_canyon.webp`（去白背走 alpha，底稿可以
    直接用 `_canyon_map.webp`）② **遭遇戰的敵人卡還沒有**，所以 `wildSpawn` 先沒給；
    谷底祭場（`altar`）是 Boss 場。工單 `resources/background/_canyon_spec.md`。
@@ -49,7 +50,7 @@
 ## 驗收指令
 
 ```bash
-python3 tools/script_lint.py     # 現況基準：0 個錯誤、30 個提醒
+python3 tools/script_lint.py     # 現況基準：0 個錯誤、17 個提醒
 python3 tools/bust.py            # 改完 config.js 的 VERSION 之後跑
 ```
 
@@ -57,7 +58,7 @@ python3 tools/bust.py            # 改完 config.js 的 VERSION 之後跑
 
 | 數量 | 內容 | 判定 |
 |---|---|---|
-| 14 | `bgPending`（東方泊地 13 ＋ 拉芬斯達爾 church） | 等美術，見上面第 2、3 項 |
+| 1 | `bgPending`（只剩拉芬斯達爾的 `church`） | 等 `Ravn_Church`，見上面第 3 項 |
 | 6 | 「劇情戰之前沒有 checkpoint」 | ✔ **都不會卡死**，回捲點：北方泊地墓地兩場→**教堂**（`church.acts[1][12]`）；`sf_deer_nightmare`→**斷崖邊**（結算怪 `sf_stag_*` 打完就落點，只差一格）；神殿兩場→**前廳／命之泉**（`deepaltar` 的節點註解已載明）；`man_sorana` 在還沒上線的 `lake_deck` |
 | 2 | 「入口那一格有戰鬥」（northport / shinier） | 已知設計債，憲法 §6.5.2 寫明靠「連敗三次抬回旅店」兜底，Ray 未定 |
 | 2 | `prologue_audience／prologue_fall` 走不到 | ⚠ **不是 Ray 在玩的那個序章**。現行序章＝地宮（`MAIN_ENTRY='dungeon_chase'`，`CHAPTERS.stage0` 也走它）。這兩幕是**舊草稿**，`mainScript.js:619` 的註解寫著「正式串主線時改回 `prologue_audience`」。要不要退役等 Ray 決定 |
