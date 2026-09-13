@@ -492,6 +492,28 @@ def apply_hydro(h, t, land0):
     return carve_water(filled, h1, acc, land0, prot, t)
 
 
+def bump_terrain_v():
+    """⚠⚠⚠ 蓋掉圖之後把 `TERRAIN_V` 加一（§5：同名覆蓋一定要跳版本號）。
+
+    這兩張是**同名覆蓋**的，檔名永遠一樣 —— 不跳的話瀏覽器拿快取裡的舊那一份，
+    而**症狀只是「地圖看起來沒變」**，沒有任何錯誤訊息。ver -1266／-1267 連踩兩次
+    （重整水文、又還原回去，兩次都忘了跳，Ray 那邊看到的一直是舊的）。
+    ⚠ 由**蓋掉檔案的這一支**負責跳，不要指望人記得（鐵律 8）。
+    ⚠ 不交給 `tools/bust.py`：那一支綁全域 `VERSION`，每改一次程式就要玩家
+      重抓 1.7MB 的地形圖（同 `ASSET_VER` 不做成全域版本號的理由）。
+    """
+    p = os.path.join(HERE, 'index.html')
+    s = open(p, encoding='utf-8').read()
+    m = re.search(r"const TERRAIN_V\s*=\s*'\?v=(\d+)'", s)
+    if not m:
+        print('  ⚠ 找不到 TERRAIN_V，版本號沒跳 —— 瀏覽器會拿到舊的地形圖！')
+        return
+    n = int(m.group(1)) + 1
+    s = s[:m.start()] + ("const TERRAIN_V  = '?v=%d'" % n) + s[m.end():]
+    open(p, 'w', encoding='utf-8').write(s)
+    print('  TERRAIN_V → ?v=%d（同名覆蓋，不跳的話瀏覽器會用快取）' % n)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--only', default='')
@@ -562,6 +584,7 @@ def main():
 
     Image.fromarray(np.clip(h, 0, 255).astype(np.uint8)).save(OUT_H)
     Image.fromarray(np.clip(t, 0, 255).astype(np.uint8)).save(OUT_T)
+    bump_terrain_v()
     print('→ %s / %s' % (os.path.basename(OUT_H), os.path.basename(OUT_T)))
 
 
