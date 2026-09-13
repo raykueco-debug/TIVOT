@@ -32,11 +32,12 @@
    Firearm/Dock/Guild/Uptown/Grocerie/Hotel` ＋ 餐飲街的 `East_Bistro/Cafe/Restaurant`）。
    交件後：拔 13 格的 `bgPending`、補 `SETTLEMENTS` 的 `town:'eastport'`
    （⚠ `flight/index.html` 那一行的理由註解 -1291 已更正：城鎮資料早就有了，缺的是圖）。
-3. **拉芬斯達爾 7 張店內／室內圖**（表在 `resources/map/_ravnsdal_spec.md` §四）：
-   · **5 張同名覆蓋** `Ravn_Firearm／Guild／Grocerie／Hotel／Bistro` → 交件時**要補
-     `config.js` 的 `ASSET_VER` 五列**（§5：背景寫不了 `?v=`，走版本表）
-   · **2 張新增** `Ravn_Cafe／Ravn_Restaurant` → 新檔名，**不必**動 `ASSET_VER`
-   · 另外還有 `Ravn_Church`（`church` 那一格現在借用 `Ravn_Midtown`，`bgPending`）
+3. **拉芬斯達爾**：那 7 張店內／室內圖 **ver -1291 已交件並接完**（美術 commit
+   `69a52a3`）—— 5 張同名覆蓋補了 `ASSET_VER`（`ravn_bistro/firearm/grocerie/guild/
+   hotel` 各 `:2`，實測新舊 8×8 指紋差 27.6~46.1）、2 張新增接進 `dining.scenes`
+   （咖啡廳／餐廳／酒吧）。**還缺的只有 `Ravn_Church`**（`church` 那一格現在借用
+   `Ravn_Midtown`，掛著 `bgPending`）。
+   ⚠ 分店的 `chatter`（路人語）還沒給 —— 現在退回節點那一組，那是既有行為不是壞掉。
 4. **卡耶爾山谷**：① 小地圖 `resources/map/map_canyon.webp`（去白背走 alpha，底稿可以
    直接用 `_canyon_map.webp`）② **遭遇戰的敵人卡還沒有**，所以 `wildSpawn` 先沒給；
    谷底祭場（`altar`）是 Boss 場。工單 `resources/background/_canyon_spec.md`。

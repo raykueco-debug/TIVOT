@@ -4214,6 +4214,17 @@ export const ASSET_VER = {
   'tomb_gate_dawn':             2,
   'tomb_gate_dusk':             2,
   'tomb_gate_night':            2,
+  /* ver -1291：拉芬斯達爾「有店的七格改畫店內」（美術 commit 69a52a3）。
+     ⚠⚠ 這五張是**同名覆蓋** —— 舊的還在玩家的快取裡，不帶 `?v=` 就會拿到舊圖，
+       而且畫面上沒有任何錯誤訊息（§5 那條的老坑）。
+       實測新／舊的 8×8 像素指紋差 27.6~46.1，是真的換了圖。
+     ⚠ `Ravn_Cafe`／`Ravn_Restaurant` **不必列** —— 新檔名，快取裡沒有。
+     ⚠ 這七格都是 `noTime:true`（沒有時段差分），所以一格只要帶一個名字。 */
+  'ravn_bistro':                2,
+  'ravn_firearm':               2,
+  'ravn_grocerie':              2,
+  'ravn_guild':                 2,
+  'ravn_hotel':                 2,
 };
 export function assetVer(nameOrPath){
   const n = String(nameOrPath||'').split('/').pop().split('?')[0]

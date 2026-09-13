@@ -4049,9 +4049,19 @@ export const TOWNS = {
     bgm: 'taisho2',
     /* 大城市不上迷霧（ver -913）—— ⚠ **要明寫**：沒寫就是有霧。 */
     mist: 0,
-    /* 餐飲街：這一格現在只是「碰得到人的地方」。⚠ **不給 `scenes`** —— 四家分店的
-       圖還沒有，城裡沒有那一家就不換、照節點原本那一張（§6.5.4.2）。 */
-    dining: { node:'tavern' },
+    /* ══ 餐飲街：一格三張圖（ver -1291，美術 commit 69a52a3 交件）══
+       ⚠ **沒有甜品店**（`dessert`）—— 安雅那一支在這座城不存在，`scenes` 查不到
+         那個鍵就**不換、退回節點原本那張**（＝酒吧）。那是 §6.5.4.2 的既有行為，
+         不是壞掉，所以不必為它補一張圖。
+       ⚠ `bar` 的圖與節點的 `bg` 是同一張（`Ravn_Bistro`）—— `DINE.fallback` 就是
+         `bar`，兩邊一致才不會「預設那一家反而換了圖」。
+       ⚠ **不給 `chatter`**：分店的路人語是內容（Ray 還沒給），而 §6.5.4.2 寫明
+         沒寫就回去用節點那一組 —— 不要自己編（鐵律 1）。東方泊地目前也是這樣。 */
+    dining: { node:'tavern', scenes:{
+      cafe:      { bg:'Ravn_Cafe',       noTime:true },
+      restaurant:{ bg:'Ravn_Restaurant', noTime:true },
+      bar:       { bg:'Ravn_Bistro',     noTime:true },
+    } },
     /* ⚠⚠ **每一格都要 `noTime:true`**：這 12 張目前 0 張時段差分，不寫的話候選鏈
        會先去試 `_dawn/_day/_dusk/_night` 四個名字，**每一格白吃四個 404**
        （交件單 `_ravnsdal_spec.md` §五也是這樣要求的）。差分交件之後整批拿掉。 */
