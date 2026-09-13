@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1210"></script>
+<script src="../orientation.js?v=1211"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -512,11 +512,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1210"></script>
+<script src="settlement.js?v=1211"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1210"></script>
+<script src="talks.js?v=1211"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -556,7 +556,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1210';
+const FLIGHT_VER = 'ver -1211';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -7453,6 +7453,7 @@ uniform float uGeoOn;             // atlas 還沒載到就是 0
 uniform sampler2D uCityA, uCityB;
 uniform vec4 uCityA0, uCityB0;   // wx, wy, ca, sa
 uniform vec4 uCityA1, uCityB1;   // iw, ih, kv(反分級亮度), 有效
+uniform vec2 uCityT;             // 逐城的「每 1 世界單位幾個 texel」（A, B），挑 LOD 用
 uniform float uInvS;             // 反分級：1/GRADE_SAT
 uniform vec2 uMap, uBuf;
 uniform vec3 uCam;             // x, y, alt
@@ -7465,18 +7466,31 @@ uniform float uCloudLit;
 uniform float uTime;      // 毫秒，瀑布的水流動畫用
 out vec4 o;
 
+const float BAY[16]=float[16](${[...BAYER].map(v=>v.toFixed(5)).join(',')});
 float hRaw(ivec2 t){ return float(texelFetch(uH, t, 0).r); }
 /* 城的地面：世界座標 → 這座城的 uv（與 CPU 同一條式子），回 rgb + alpha。
    ⚠ 反分級要在這裡做（CPU 是烘進金字塔的，§6.7.5）：插畫的色調是對著
      「不吃 GRADE_SAT、只除 BAKED_VAL 乘 TRIM」那條舊路校的，取樣路把城當地形畫
      會**再分級一次** —— 不反轉的話整座城會洗成灰白。 */
-vec4 citySample(sampler2D tex, vec4 P0, vec4 P1, vec2 wp){
+vec4 citySample(sampler2D tex, vec4 P0, vec4 P1, float tpw, vec2 wp, float z){
   if(P1.w<0.5) return vec4(0.0);
   vec2 r=wp-P0.xy;
   float u=(r.x*P0.z+r.y*P0.w)*P1.x+0.5;
   float v=(-r.x*P0.w+r.y*P0.z)*P1.y+0.5;
   if(u<0.0||u>=1.0||v<0.0||v>=1.0) return vec4(0.0);
-  vec4 c=texture(tex, vec2(u,v));
+  /* ⚠⚠⚠ 一定要 textureLod，**不可以用 texture()**（ver -1211，Ray 回報
+     「帝都亂七八糟還有方型的底」「底色會隨著移動有直條在底部移動」）。
+     texture() 的層級是硬體用**螢幕空間的導數**挑的，而這裡是 raymarch：
+     相鄰的兩個像素可能打在天差地遠的深度上，導數是垃圾 → 每個 2×2 quad
+     各挑一個亂七八糟的層級。挑到最粗那幾層時，整張插畫被平均成一塊（含輪廓外
+     那一圈本來 alpha=0 的地方）→ alpha 不再是 0 → **整個外接矩形被畫出來**
+     ＝「方型的底」；而層級逐欄跳動 ＝「隨著移動的直條」。
+     正解是自己算：一個緩衝像素在這個深度覆蓋 2z/BW 個世界單位（wpp），
+     層級 = log2(每世界單位的 texel 數 × wpp × CITY_LOD_K)
+     —— 與 CPU 那一支挑金字塔層級的判準是同一條式子（鐵律 7）。 */
+  float wpp=2.0*z/uBuf.x;
+  float lod=max(log2(max(tpw*wpp*${CITY_LOD_K}, 1e-6)), 0.0);
+  vec4 c=textureLod(tex, vec2(u,v), lod);
   if(c.a<=0.02) return vec4(0.0);
   float lum=dot(c.rgb, vec3(0.299,0.587,0.114));
   c.rgb=(vec3(lum)+(c.rgb-vec3(lum))*uInvS)*P1.z;
@@ -7504,6 +7518,9 @@ void main(){
     bool cloud = outside || th<=${CLOUD_H}.0;
     float hs = cloud ? ${CLOUD_H}.0 : th;
     if(hs>=hNeed){
+      /* 霧提前算 —— 崖面那一段要用它當閘門（同 CPU 的 fog<0.86）。 */
+      float fogS=${ZFAR}.0*${FOG_START};
+      float fog=clamp((z-fogS)/(${ZFAR}.0-fogS),0.0,1.0)*${FOG_MAX};
       vec3 c;
       if(cloud){
         c=vec3(0.82,0.86,0.92)*uCloudLit;
@@ -7555,27 +7572,40 @@ void main(){
         }
         /* 城的手繪地面：蓋掉地貌色，**在光照之前** —— 日夜與霧才會照地形走
            （§6.7.5：插在地貌細節之後、光照之前）。 */
-        vec4 ca=citySample(uCityA,uCityA0,uCityA1,wp);
+        vec4 ca=citySample(uCityA,uCityA0,uCityA1,uCityT.x,wp,z);
         if(ca.a>0.0) c=mix(c,ca.rgb,ca.a);
-        vec4 cb2=citySample(uCityB,uCityB0,uCityB1,wp);
+        vec4 cb2=citySample(uCityB,uCityB0,uCityB1,uCityT.y,wp,z);
         if(cb2.a>0.0) c=mix(c,cb2.rgb,cb2.a);
         /* ══ 崖面（ver -1209）══════════════════════════════════════════
            CPU 那一支是 span 演算法：畫完頂面之後往下補一條立面（§6.8.1 的
            「崖面是 span 演算法」就是指它）。逐像素的作法不同但更直接：
            **這一點在方塊頂面之下多深**（hs − hNeed）就是它在立面上的位置。
-           ⚠ 條紋用**世界高度**不用螢幕列（CPU 用的是螢幕列 yy>>1）——
-             螢幕列會隨相機移動而游移（§6.8.1「逐禎重建的東西不准用亂數」
-             同一族的問題）。用世界高度＝真正的水平岩層，而且穩定。
-           ⚠ 落差由「靠鏡頭那一側的地面」反推（多一次 texelFetch，很便宜）。 */
+           ⚠ 落差由「上一個射線步進落在哪一格」反推（多一次 texelFetch，很便宜）
+             —— 為什麼一定要是「一步」而不是「一格地圖」，見下面那一段。 */
         bool cliffDone=false;
         float below=hs-hNeed;
-        if(below>1.5){
-          vec2 mfF=(uCam.xy+dir*max(z-${MAP_SCALE}.0,1.0))*${INV_SCALE};
+        /* ⚠⚠⚠ 落差要量「相對**上一個射線步進**」（＝CPU 的 hh−prevH），
+           不可以量「相對一格地圖」（ver -1211，Ray：「山都變顆粒狀的了」）。
+           一格是 20 世界單位，山坡在一格裡本來就有幾十單位的落差 —— 拿它當判準
+           等於把**整座山的每一個像素**都當成崖面，然後各自套上一個隨機的岩層
+           條紋係數，那就是顆粒。射線一步只有 0.75~8 單位，山坡一步的落差很小，
+           真正的崖（射線是「一進到那一格就撞上」）才會量到整面牆的高度。
+         ⚠ 再補上 CPU 本來就有的兩道閘門：立面在螢幕上要高過 3 列（CPU 的
+           「bot-y0>3」；螢幕高度＝落差×scaleH/z），而且霧還沒把它吃掉（fog<0.86）。 */
+        if(below>0.0 && fog<0.86){
+          vec2 mfF=(uCam.xy+dir*max(z-dz,1.0))*${INV_SCALE};
           float hF=hRaw(clampT(ivec2(floor(mfF))));
           float drop=max(hs-hF, 0.0);
-          if(drop>4.0){
+          if(drop*scaleH/z>3.0){
             float dd=clamp(below/max(drop,1.0),0.0,1.0);
-            float strat=fract(sin(floor(hNeed*0.5)*12.9898+floor(wp.x*0.05)*4.1414)*43758.5453);
+            /* 岩層條紋：與 CPU 同一把種子 —— **地圖格 ＋ 螢幕列/2**
+               （CPU 的 「STRAT[(wx*5+wy*3+(yy>>1))&255]」）。
+               ⚠ 原本改用「世界高度 ＋ 世界 x」量化，想避開「螢幕列會隨相機游移」
+                 —— 但那兩個量在崖面上**逐像素**都在變，等於每個像素一個亂數，
+                 條紋變成白雜訊。地圖格在一整面牆上是常數，這才是 CPU 看起來
+                 像水平岩層的原因。 */
+            float si=float((ti.x*5+ti.y*3+(int(py)>>1)) & 255);
+            float strat=fract(sin(si*12.9898+78.233)*43758.5453);
             float v=(1.0-dd*0.34)*(0.88+strat*0.14);
             float rocky=clamp((drop-16.0)/(${CLIFF_DH}.0*1.5),0.0,1.0);
             /* ══ 瀑布（ver -1210）══════════════════════════════════════
@@ -7609,14 +7639,14 @@ void main(){
         float lum=dot(c, vec3(0.299,0.587,0.114));
         c=vec3(lum)+(c-vec3(lum))*${GRADE_SAT};   // VP1 分級：往亮度收斂
       }
-      float fogS=${ZFAR}.0*${FOG_START};
-      float fog=clamp((z-fogS)/(${ZFAR}.0-fogS),0.0,1.0)*${FOG_MAX};
       c=mix(c,uFog,fog);
+      int bx=int(px)&3, by=int(py)&3;
       /* 抖色（ver -1209）：8bit 量化在平滑的天空與霧上會出色帶，
          逐像素套 4×4 Bayer 打散 —— 與 CPU 同一張表、同一個幅度。 */
-      int bx=int(px)&3, by=int(py)&3;
-      float bay=float((by*4+bx)*17%16)/16.0-0.5;
-      c+=vec3(bay*${DITHER}/255.0);
+      /* ⚠ 這張表是從 JS 的 BAYER 直接帶進來的（鐵律 7：同一份係數）。
+         先前這裡是手寫的 (by*4+bx)*17%16 —— 17 ≡ 1 (mod 16)，等於
+         by*4+bx，是一條線性斜坡**不是** Bayer 的分散矩陣。 */
+      c+=vec3(BAY[(by<<2)|bx]*${DITHER}/255.0);
       o=vec4(c,1.0);
       gl_FragDepth=clamp(z/${ZFAR}.0,0.0,1.0);
       return;
@@ -7656,7 +7686,7 @@ function glInit(){
   const lp=g.getAttribLocation(glProg,'p');
   g.enableVertexAttribArray(lp); g.vertexAttribPointer(lp,2,g.FLOAT,false,0,0);
   for(const n of ['uH','uC','uS','uSky','uMap','uBuf','uCam','uDir','uLdir','uLcol','uLi','uFog','uCloudLit','uTime',
-                  'uCityA','uCityB','uCityA0','uCityB0','uCityA1','uCityB1','uInvS',
+                  'uCityA','uCityB','uCityA0','uCityB0','uCityA1','uCityB1','uCityT','uInvS',
                   'uBiome','uMask','uGeo','uRailDir','uRD','uGeoOn'])
     glU[n]=g.getUniformLocation(glProg,n);
   g.uniform1i(glU.uH,0); g.uniform1i(glU.uC,1); g.uniform1i(glU.uS,2); g.uniform1i(glU.uSky,3);
@@ -7799,15 +7829,21 @@ function glDrawTerrain(S, sinp, cosp, lx, ly, ambI, sunI, lightR, lightG, lightB
   g.uniform1f(glU.uGeoOn, glGeoUp?1:0);
   /* 城的手繪地面（最多兩座）。kv＝反分級的亮度係數，逐城（`tone` 是逐城的）。 */
   const CC=glPickCities();
+  /* tpw＝這張貼圖「每 1 世界單位幾個 texel」（＝imgW/planW；iw 是 1/planW，
+     所以 imgW*iw 就是它）。shader 拿它算 LOD —— raymarch 裡不可以用隱含層級。 */
+  const tpw=[1,1];
   for(let i=0;i<2;i++){
     const C=CC[i], unit=4+i;
     const U0=i?glU.uCityB0:glU.uCityA0, U1=i?glU.uCityB1:glU.uCityA1;
     const tex=C?glCityTexture(C.key):null;
     if(!tex){ g.uniform4f(U1,1,1,1,0); continue; }
+    const src=cityPlanArt[C.key]||cityPlanLo[C.key];
+    tpw[i]=(src&&src.width?src.width:1)*C.iw;
     g.activeTexture(g.TEXTURE0+unit); g.bindTexture(g.TEXTURE_2D,tex);
     g.uniform4f(U0, C.wx, C.wy, C.ca, C.sa);
     g.uniform4f(U1, C.iw, C.ih, CITY_TRIM/CITY_BAKED_VAL*cityTone(C.key), 1);
   }
+  g.uniform2f(glU.uCityT, tpw[0], tpw[1]);
   g.drawArrays(g.TRIANGLES,0,3);
   return true;
 }
