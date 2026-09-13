@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1206"></script>
+<script src="../orientation.js?v=1207"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -512,11 +512,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1206"></script>
+<script src="settlement.js?v=1207"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1206"></script>
+<script src="talks.js?v=1207"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -556,7 +556,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1206';
+const FLIGHT_VER = 'ver -1207';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -7865,6 +7865,172 @@ function glDrawRuins(sinp,cosp,lx,ly,dayK){
   g.bindVertexArray(null);
 }
 
+
+/* ══════════════════════════════════════════════════════════════════════
+   GL 量體層（ver -1207）—— 城的街廓，靜態網格
+   ══════════════════════════════════════════════════════════════════════
+   Ray：「以後飛行地圖的量體會加 10 倍以上」。CPU 那一支的成本是**逐塊**的
+   （東方泊地 340 塊，實測每禎 ~300 次 drawImage ＋ 數百次 fill，3~11ms）——
+   加十倍就是加十倍。GPU 上與數量脫鉤。
+
+   ⚠⚠⚠ **GPU 上「屋頂的 6×6 仿射細分」整套不需要**：那是 Canvas 2D 只有仿射、
+     吃不下 1/z 才要的補丁（§6.7 整章、以及 -1163 那段 RSPLIT 的註解）。
+     硬體光柵器本來就有透視正確的插值 —— 一個四邊形貼一次就對了。
+   ⚠ 幾何來源是 `cityMass`（`loadMass` 解出來的多邊形），本來就是**局部座標**，
+     不必像遺蹟那樣開擷取模式。
+   ⚠ 牆用 `wallCol`（半透的暗色，疊在地面插畫上）—— 與 CPU 同一個值。
+   ⚠ 屋頂貼 `cityMassArt` 那張 atlas：每塊在 atlas 上有自己的一格（帶 alpha），
+     所以**不必逐塊 clip**（clip 要重新光柵化路徑，幾百塊就吃掉畫格）。 */
+let glMassProg=null, glMassU={}, glMass={};   // plan key → {vao, n, tex}
+
+const GL_MASS_VS=`#version 300 es
+in vec3 p;        // 局部座標（u*hw, v*hh, 高度）
+in vec2 nrm;      // 牆的法線（屋頂給 0,0）
+in float kind;    // 0 牆 1 屋頂
+in vec2 uv;       // 屋頂在 atlas 上的座標
+uniform vec2 uBuf; uniform vec3 uCam; uniform vec2 uDir;
+uniform vec3 uOrigin; uniform vec2 uRot;
+out float vKind; out vec2 vUv; out float vZ; out float vShade;
+void main(){
+  float wx=uOrigin.x+(p.x*uRot.x-p.y*uRot.y);
+  float wy=uOrigin.y+(p.x*uRot.y+p.y*uRot.x);
+  float wz=uOrigin.z+p.z;
+  vec2 d=vec2(wx,wy)-uCam.xy;
+  float sinp=uDir.x, cosp=uDir.y;
+  float z=d.x*(-sinp)+d.y*(-cosp);
+  if(z<8.0){ gl_Position=vec4(2.,2.,2.,1.); vZ=1.0; vKind=0.0; vUv=vec2(0.); vShade=1.0; return; }
+  float sv=(d.x*cosp+d.y*(-sinp))/z;
+  float scaleH=uBuf.y*0.62, horizon=uBuf.y*${HORIZON_F};
+  float curv=(1.0+sv*sv)/(2.0*${PLANET_R}.0);
+  float sy=((uCam.z-wz)/z + z*curv)*scaleH+horizon;
+  gl_Position=vec4(sv, 1.0-2.0*sy/uBuf.y, 0.0, 1.0);
+  vZ=clamp(z/${ZFAR}.0,0.0,1.0);
+  vKind=kind; vUv=uv; vShade=1.0;
+}`;
+const GL_MASS_FS=`#version 300 es
+precision highp float;
+in float vKind; in vec2 vUv; in float vZ; in float vShade;
+uniform sampler2D uAtlas;
+uniform vec4 uWall;     // 牆色（含 alpha，與 CPU 的 wallCol 同值）
+uniform float uAlpha;   // 這一禎整層的濃度（淡入淡出，與 CPU 同一個 _massA）
+uniform vec3 uFog; uniform float uFogK;
+out vec4 o;
+void main(){
+  vec4 c;
+  if(vKind>0.5){ c=texture(uAtlas,vUv); if(c.a<0.02) discard; }
+  else          c=uWall;
+  /* 霧：與地形同一條曲線（量體是貼在地上的東西，要跟著沉進大氣）。 */
+  float fogS=${ZFAR}.0*${FOG_START};
+  float fog=clamp((vZ*${ZFAR}.0-fogS)/(${ZFAR}.0-fogS),0.0,1.0)*${FOG_MAX}*uFogK;
+  o=vec4(mix(c.rgb,uFog,fog), c.a*uAlpha);
+  gl_FragDepth=vZ;
+}`;
+
+function glMassInit(){
+  if(glMassProg || !GLX) return;
+  const g=GLX;
+  glMassProg=g.createProgram();
+  g.attachShader(glMassProg,glSh(g.VERTEX_SHADER,GL_MASS_VS));
+  g.attachShader(glMassProg,glSh(g.FRAGMENT_SHADER,GL_MASS_FS));
+  g.linkProgram(glMassProg);
+  if(!g.getProgramParameter(glMassProg,g.LINK_STATUS)){
+    console.warn('[gl] 量體 shader 連結失敗', g.getProgramInfoLog(glMassProg)); glMassProg=null; return; }
+  for(const n of ['uBuf','uCam','uDir','uOrigin','uRot','uAtlas','uWall','uAlpha','uFog','uFogK'])
+    glMassU[n]=g.getUniformLocation(glMassProg,n);
+  /* ⚠ 設 uniform **之前一定要 useProgram** —— 不然是 INVALID_OPERATION(1282)，
+     而且 `gl.getError()` 不看的話完全沒有症狀（sampler 停在 0，屋頂會去取到
+     高度圖那張貼圖）。踩過一次。 */
+  g.useProgram(glMassProg);
+  g.uniform1i(glMassU.uAtlas,6);
+}
+
+/* 一座城的量體網格（懶建：要等 cityMass 與 atlas 都到位）。 */
+function glMassBuild(s){
+  const key=s.plan; if(!key || glMass[key]!==undefined) return glMass[key];
+  const MS=cityMass[key], MA=cityMassArt[key], img=cityPlanLo[key]||cityPlanArt[key];
+  if(!MS || !MA || !img || !img.width) return null;     // 還沒到位，下一禎再試
+  glMassInit(); if(!glMassProg) return null;
+  const g=GLX;
+  const hw=s.planW*0.5, hh=hw*img.height/img.width, tall=s.planTall||0;
+  const V=[];
+  const push=(x,y,z,nx,ny,k,u,v)=>{ V.push(x,y,z,nx,ny,k,u,v); };
+  for(let i=0;i<MS.n;i++){
+    const au=MS.pu[i], av=MS.pv[i], NS=au.length, hW=MS.h[i]*tall;
+    if(hW<=0.5) continue;
+    /* 牆：每條邊一個四邊形（地面 → 屋頂高）。 */
+    for(let k=0;k<NS;k++){
+      const k2=(k+1)%NS;
+      const ax=au[k]*hw, ay=av[k]*hh, bx=au[k2]*hw, by=av[k2]*hh;
+      let nx=(by-ay), ny=-(bx-ax); const nl=Math.hypot(nx,ny)||1; nx/=nl; ny/=nl;
+      push(ax,ay,0,nx,ny,0,0,0); push(bx,by,0,nx,ny,0,0,0); push(bx,by,hW,nx,ny,0,0,0);
+      push(ax,ay,0,nx,ny,0,0,0); push(bx,by,hW,nx,ny,0,0,0); push(ax,ay,hW,nx,ny,0,0,0);
+    }
+    /* 屋頂：一個四邊形蓋住這一塊的外框，貼 atlas 上屬於它的那一格。
+       ⚠ atlas 那一格自己帶 alpha（街廓的形狀），所以不必 clip。 */
+    const ax2=MS.bb[i*4], ay2=MS.bb[i*4+1], bw2=MS.bb[i*4+2], bh2=MS.bb[i*4+3];
+    if(bw2<1||bh2<1) continue;
+    const gx0=MS.bbx[i*4], gy0=MS.bbx[i*4+1], gx1=MS.bbx[i*4+2], gy1=MS.bbx[i*4+3];
+    const u0=ax2/MS.aw, v0=ay2/MS.ah, u1=(ax2+bw2)/MS.aw, v1=(ay2+bh2)/MS.ah;
+    const X0=gx0*hw, Y0=gy0*hh, X1=gx1*hw, Y1=gy1*hh;
+    push(X0,Y0,hW,0,0,1,u0,v0); push(X1,Y0,hW,0,0,1,u1,v0); push(X1,Y1,hW,0,0,1,u1,v1);
+    push(X0,Y0,hW,0,0,1,u0,v0); push(X1,Y1,hW,0,0,1,u1,v1); push(X0,Y1,hW,0,0,1,u0,v1);
+  }
+  if(!V.length){ glMass[key]=null; return null; }
+  const vao=g.createVertexArray(); g.bindVertexArray(vao);
+  const vb=g.createBuffer(); g.bindBuffer(g.ARRAY_BUFFER,vb);
+  g.bufferData(g.ARRAY_BUFFER,new Float32Array(V),g.STATIC_DRAW);
+  const ST=8*4;
+  const bind=(nm,size,off)=>{ const L=g.getAttribLocation(glMassProg,nm);
+    if(L<0) return; g.enableVertexAttribArray(L); g.vertexAttribPointer(L,size,g.FLOAT,false,ST,off); };
+  bind('p',3,0); bind('nrm',2,12); bind('kind',1,20); bind('uv',2,24);
+  g.bindVertexArray(null);
+  const tex=g.createTexture();
+  g.activeTexture(g.TEXTURE6); g.bindTexture(g.TEXTURE_2D,tex);
+  g.texImage2D(g.TEXTURE_2D,0,g.RGBA8,g.RGBA,g.UNSIGNED_BYTE,MA);
+  g.generateMipmap(g.TEXTURE_2D);
+  g.texParameteri(g.TEXTURE_2D,g.TEXTURE_MIN_FILTER,g.LINEAR_MIPMAP_LINEAR);
+  g.texParameteri(g.TEXTURE_2D,g.TEXTURE_MAG_FILTER,g.LINEAR);
+  g.texParameteri(g.TEXTURE_2D,g.TEXTURE_WRAP_S,g.CLAMP_TO_EDGE);
+  g.texParameteri(g.TEXTURE_2D,g.TEXTURE_WRAP_T,g.CLAMP_TO_EDGE);
+  glMass[key]={ vao, n:V.length/8, tex };
+  console.log('[gl] 量體網格 '+key.split('/').pop()+'：'+MS.n+' 塊 / '+(V.length/8)+' 頂點');
+  return glMass[key];
+}
+function glMassHas(key){ return !!(key && glMass[key]); }
+
+/* 畫一座城的量體。⚠ 濃度 `massA` **由 CPU 那一支算**（淡入淡出、遲滯、
+   -1195 的逐塊門檻都在那裡）—— 這裡只讀，不另算一份（鐵律 7）。 */
+function glDrawMass(s, massA, sinp, cosp, fr, fg, fb){
+  const M=glMass[s.plan]; if(!M || !(massA>0.003)) return;
+  const g=GLX;
+  g.useProgram(glMassProg);
+  g.enable(g.DEPTH_TEST); g.depthFunc(g.LEQUAL);
+  g.enable(g.BLEND); g.blendFunc(g.SRC_ALPHA, g.ONE_MINUS_SRC_ALPHA);
+  g.uniform2f(glMassU.uBuf,BW,BH);
+  g.uniform3f(glMassU.uCam,cam.x,cam.y,cam.alt);
+  g.uniform2f(glMassU.uDir,sinp,cosp);
+  g.uniform3f(glMassU.uOrigin, s.mx*MAP_SCALE, s.my*MAP_SCALE, s.gh);
+  const rot=s.planRot||0;
+  g.uniform2f(glMassU.uRot, Math.cos(rot), Math.sin(rot));
+  const wc=glCss4(s.wallCol||'rgba(34,30,26,0.62)');
+  g.uniform4f(glMassU.uWall, wc[0],wc[1],wc[2],wc[3]);
+  g.uniform1f(glMassU.uAlpha, massA);
+  g.uniform3f(glMassU.uFog, fr/255, fg/255, fb/255);
+  g.uniform1f(glMassU.uFogK, 1);
+  g.activeTexture(g.TEXTURE6); g.bindTexture(g.TEXTURE_2D,M.tex);
+  g.bindVertexArray(M.vao);
+  g.drawArrays(g.TRIANGLES,0,M.n);
+  g.bindVertexArray(null);
+  g.disable(g.BLEND);
+}
+/* 帶 alpha 的色字串 → [r,g,b,a]（0..1）。 */
+function glCss4(c){
+  const m=/rgba?\(([^)]+)\)/.exec(c);
+  if(m){ const v=m[1].split(',').map(Number);
+         return [v[0]/255, v[1]/255, v[2]/255, v.length>3?v[3]:1]; }
+  const r=glCss3(c); return [r[0],r[1],r[2],1];
+}
+
 function render(now){
   const S=sky(), SC=skyColors(S);
   const scaleH=BH*0.62;
@@ -7921,6 +8087,9 @@ function render(now){
   /* 當幀的光照存起來：城是畫在自己的緩衝上的，拿不到這些區域變數，
      但它必須跟地面吃**同一盞燈**，否則黎明黃昏時城會亮得像另一個時區。 */
   LIT.amb=ambI; LIT.sun=sunI; LIT.r=lightR; LIT.g=lightG; LIT.b=lightB;
+  /* 霧色也發佈（ver -1207）：量體層搬到 GL 之後那邊也要同一份 ——
+     自己再 `skyColors()` 算一次就是鐵律 7 的病。 */
+  LIT.fr=SC.hz[0]; LIT.fg=SC.hz[1]; LIT.fb=SC.hz[2];
 
   const sinp=Math.sin(cam.angle), cosp=Math.cos(cam.angle);
   /* ══⚠⚠ 當幀的投影常數**發佈**出去（ver -1146）══
@@ -13563,6 +13732,18 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
         a = (a<tgt) ? Math.min(tgt,a+stp) : Math.max(tgt,a-stp);
         o.s._massA=a; }
       const massA=o.s._massA;
+      /* ══⚠⚠ GLON：量體改由 GPU 畫（ver -1207）══════════════════════════
+         濃度 `massA` **仍由上面那一段算**（淡入淡出、遲滯、-1195 的逐塊門檻）
+         —— 這裡只把它交給 GL，不另算一份（鐵律 7）。
+         ⚠ 網格是**懶建**的：`cityMass` 與 atlas 都是非同步載的，
+           第一次不成功就下一禎再試（`glMassBuild` 自己會擋重複）。 */
+      if(GLON && glReady && MS && MA && tall>0){
+        glMassBuild(o.s);
+        if(glMassHas(o.s.plan)){
+          glDrawMass(o.s, massA, sinp, cosp, LIT.fr, LIT.fg, LIT.fb);
+          ctx.restore(); continue;                 // CPU 那一大段整個跳過
+        }
+      }
       if(MS&&MA&&tall>0&&massA>0.003){
         const dyk=scaleH*syk;
         /* 方位桶：由遠而近的順序只取決於 (gradU,gradV) 的方向（見 loadMass）。 */
