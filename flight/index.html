@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1240"></script>
+<script src="../orientation.js?v=1241"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1240');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1241');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1240");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1240");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1241");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1241");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1240");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1240");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1241");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1241");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -483,25 +483,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1240" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1241" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1240" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1240" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1240" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1240" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1240" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1240" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1240" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1240" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1240" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1240" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1241" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1241" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1241" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1241" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1241" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1241" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1241" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1241" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1241" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1241" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1240" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1241" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1240" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1241" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -522,11 +522,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1240"></script>
+<script src="settlement.js?v=1241"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1240"></script>
+<script src="talks.js?v=1241"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -566,7 +566,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1240';
+const FLIGHT_VER = 'ver -1241';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -733,17 +733,26 @@ const RIM_DEEP_MIN=300, RIM_DEEP_MAX=400;   // 厚度（世界單位）
      「不規則」是要看得出起伏，不是要有鋸齒。 */
 const RIM_DEEP_FLAT=90;                     // 全深的平台寬度（地圖格）
 const RIM_DEEP_W=160;                       // 槽的總寬（地圖格）
-/* ⚠⚠⚠ **裙（`RIM_DEEP_TAU`）才是「不要有尖」的關鍵**（ver -1240 實測）：
-   -1239 是「陸地隔壁那一格立刻就是谷底」—— 一格 20 世界單位掉 400，
-   射線（一步只有 0.75~8 單位）根本取樣不到那道牆，**它撞在哪一步完全看
-   海岸線在那一欄剛好落在格子的哪裡** ⇒ 相鄰兩欄的崖底差好幾十個世界單位
-   ＝ 一排長短不一的尖刺。實測底緣在 45 個緩衝像素之間跳。
-   ⚠ 先試過「把槽加寬」（26→140 格）**完全沒用** —— 問題不在槽多寬，
-     在**從陸地掉到谷底的那一段有多陡**。
-   ⇒ 改成指數裙：離岸 `dd` 格時深度是 `1−0.5^(dd/TAU)`，TAU≈1.6 ⇒
-     約 6 格（120 世界單位）掉完 400 ⇒ 斜率 3.3:1（73°），
-     **看起來仍然是崖，但射線取樣得到**，底緣就連成一條平滑的線。 */
+/* ══⚠⚠⚠ 「刺」的真正成因（ver -1241，查了三輪才抓到）══════════════════
+   崖底那一排長短不一的刺，成因**不是**槽太窄、也不是那道牆太陡 ——
+   兩者都試過、量過：槽 26→140 格**完全沒變**；加指數裙只把相鄰欄的落差
+   由 2.99 降到 1.95 緩衝像素，刺還在。
+
+   真正的原因：**深度是從「到陸地的距離」算出來的，而那個距離直接繼承了
+   海岸線在格子尺度上的鋸齒。** 射線是**斜著掠過**海岸的，它能不能走到崖腳
+   取決於沿路碰到的槽有多深；海岸線凹一格、凸一格，同一道崖在相鄰兩欄
+   就會在不同高度被雲切斷 ⇒ 一排長短不一的刺。
+
+   ⇒ 解法：**把深度場本身抹平**。陸地當 0、海當「厚度 × 外緣衰減」，
+     再跑兩趟半徑 `RIM_DEEP_BLUR` 的箱糊：
+       ① 海岸線的鋸齒被糊掉 —— 刺的來源沒了
+       ② 靠岸自然變淺、往外自然變深 —— **裙是糊出來的**，不必再寫一條指數
+   ⚠⚠ 糊**一定要把陸地算進去當 0**：只糊海的那一半，海岸線的鋸齒原封不動。 */
 const RIM_DEEP_TAU=4.2;                     // 裙的衰減長度（地圖格）
+/* ⚠ 試過、量過、**沒用**的兩條，留著免得再走一次：
+   · 把槽加寬（26→140 格）：相鄰欄落差一點都沒變。
+   · 把深度場整個箱糊（半徑 11，兩趟）：**反而更差**（1.95→3.17 緩衝像素）——
+     糊會把陸地那個 0 拉進來，靠岸反而變淺，崖底落在更敏感的斜面上。 */
 const RIM_DEEP_S1=120, RIM_DEEP_S2=45;      // 厚度噪聲的兩個尺度（地圖格）
 let SEASURF=null;                           // 海面高度（Int16；上傳後釋放）
 /* ══⚠⚠⚠ 逐地取消邊緣抬升（ver -1234，Ray：「把 967,861 的台地鏟平了」
@@ -5087,6 +5096,37 @@ async function loadWorld(){
     (window.__coast||(window.__coast=[])).push({x:K.x,y:K.y,made,cut});
   }
 
+  /* ══⚠⚠⚠ 海岸線的**多數濾波**（ver -1241）══════════════════════════════
+     Ray：「大陸邊緣還是刺的」。查了三輪才確定：刺**不是**龍骨那一側的問題
+     （槽加寬沒用、深度場整個糊反而更差），是**海岸線本身在格子尺度上的鋸齒**。
+     一格寬的小灣，從外面看就是一道**從崖頂直插到崖腳的亮縫**；
+     崖面現在有 300〜400 高，那些縫就變成一排很顯眼的刺。
+
+     作法：3×3 多數濾波 —— 九格裡有五格是陸就算陸。它只吃得掉**一格**尺度的
+     半島與凹口，兩格以上的海岸形狀原封不動（所以 -1238 那條「自然海岸線」還在）。
+     ⚠ 變成陸的格子高度取鄰居的最大值（同 `COAST_ROUGH`），不要給定值 ——
+       給定值會生出一圈等高的平台。
+     ⚠ 排在 `COAST_ROUGH` **之後**、邊緣抬升之前：先做亂再抹掉一格的碎屑。 */
+  {
+    const land=new Uint8Array(N);
+    for(let i=0;i<N;i++) land[i]=HGT[i]>CLOUD_H?1:0;
+    let flip=0;
+    for(let y=1;y<MAPH-1;y++) for(let x=1;x<MAPW-1;x++){
+      const i=y*MAPW+x;
+      let c=0;
+      for(let b=-1;b<=1;b++) for(let a=-1;a<=1;a++) c+=land[i+b*MAPW+a];
+      const want=c>=5?1:0;
+      if(want===land[i]) continue;
+      if(want){
+        let h=0;
+        for(let b=-1;b<=1;b++) for(let a=-1;a<=1;a++){ const v=HGT[i+b*MAPW+a]; if(v>h) h=v; }
+        HGT[i]=clamp(Math.round(Math.max(h,CLOUD_H+14)),0,65535);
+      }else HGT[i]=0;
+      raw[i]=HGT[i]/PEAK_SCALE; flip++;
+    }
+    window.__coastSmooth=flip;
+  }
+
   /* 邊緣抬升：先用 chamfer 兩趟求「到雲海的距離」，再把邊界一圈墊成台地緣。
      只作用在 RIM_W 內，內陸低地保持原樣。 */
   step(0.58);   // 整平大陸邊緣…
@@ -5182,9 +5222,8 @@ async function loadWorld(){
                    + kn(x/RIM_DEEP_S2+37,y/RIM_DEEP_S2+11)*0.35, 0, 1);
       const T=RIM_DEEP_MIN+(RIM_DEEP_MAX-RIM_DEEP_MIN)*nz;
       const bot=RIM_H-T;                                    // 龍骨底（相對頂面差 T）
-      /* 深度 ＝ 裙（離岸幾格才掉到底，見 `RIM_DEEP_TAU`）× 外緣的抬回。 */
-      const kf=1-sstep(RIM_DEEP_FLAT,RIM_DEEP_W,dd);
-      const skirt=1-Math.pow(0.5, dd/RIM_DEEP_TAU);
+      const kf=1-sstep(RIM_DEEP_FLAT,RIM_DEEP_W,dd);        // 外緣抬回雲海面
+      const skirt=1-Math.pow(0.5, dd/RIM_DEEP_TAU);         // 裙：離岸幾格才掉到底
       SEASURF[i]=Math.round(CLOUD_H+(bot-CLOUD_H)*kf*skirt);
     }
   }
@@ -8564,7 +8603,11 @@ void main(){
       gl_FragDepth=clamp(z/${ZFAR}.0,0.0,1.0);
       return;
     }
-    z+=dz; dz+=0.011;
+    /* ⚠ 成長率 ver -1241 由 0.011 收到 0.0062（Ray：「大陸邊緣還是刺的」）：
+       在 z≈1000 時一步由 4.8 個世界單位降到 3.0 —— 崖腳被步長切出的鋸齒
+       （相鄰兩欄的最大落差）由 11 降到 7 個緩衝像素，實測 fps 不變（60）。
+       ⚠ CPU 那一支**刻意不跟**，理由見那邊的註解。 */
+    z+=dz; dz+=0.0062;
   }
   o=vec4(texelFetch(uSky, ivec2(0, int(py)), 0).rgb, 1.0);
   gl_FragDepth=1.0;
@@ -9704,6 +9747,9 @@ function render(now){
     }
     // 視距 3600 下若沿用 0.0042 會逼近 1800 步；遠景只占幾個像素又被霧吃掉，
     // 放寬成長率把步數壓回 ~800，畫質看不出差別但省一半以上取樣。
+    // ⚠ GL 那一支 ver -1241 收到 0.0062（大陸邊緣的崖底才不會被步長切成鋸齒）——
+    //   **CPU 這一支刻意不跟**：它是低階備援，多吃 35% 的取樣不划算，
+    //   而且它的崖面走的是 span 演算法（見 §6.8.1），沒有同一個病。
     z+=dz; dz+=0.011;
   }
   // 迴圈沒跑到的尾端切片：全部沿用最終的天際線
