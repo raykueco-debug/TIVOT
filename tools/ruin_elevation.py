@@ -30,6 +30,15 @@ def art_of(key):
     if out.returncode: raise SystemExit(out.stderr)
     return json.loads(out.stdout.strip())
 
+def place_of(key):
+    """PLACES 裡那一筆（要 x/y 才取樣得到地形）。"""
+    src = open(os.path.join(ROOT, 'flight/index.html'), encoding='utf-8').read()
+    i = src.index('const PLACES'); j = src.index('\n];', i) + 3
+    js = src[i:j] + '\nprint(JSON.stringify(PLACES.filter(p=>p.ruin===%s)[0]||null));' % json.dumps(key)
+    out = subprocess.run([JSC, '-e', js], capture_output=True, text=True)
+    if out.returncode: raise SystemExit(out.stderr)
+    return json.loads(out.stdout.strip())
+
 def main():
     key = sys.argv[1]
     dst = sys.argv[2] if len(sys.argv) > 2 else \
@@ -37,8 +46,37 @@ def main():
     A = art_of(key)
     parts = A['parts']
 
+    # ══ drape（ver -1231）：每一塊踩自己腳下的地形。畫立面時一定要跟著算，
+    #    不然看到的是「攤平在一個平面上」的假象 —— 而那正是 -1230 沒看出
+    #    「22 塊埋在地下」的原因。
+    dzf = lambda lx, ly, w, l: 0.0
+    ground = None
+    if A.get('drape'):
+        from PIL import Image as _I
+        import numpy as _np
+        P = place_of(key)
+        hm = _np.asarray(_I.open(os.path.join(ROOT, 'flight/silvermoon_heightmap.png'))
+                         .convert('L')).astype(float) / 255.0 * 520.0
+        CX, CY = P['x'], P['y']
+        rot = A.get('rot', 0); ca, sa = math.cos(rot), math.sin(rot)
+        GH = hm[CY, CX] + A.get('lift', 0)
+        def hl(lx, ly):
+            wx = CX + (lx * ca - ly * sa) / 20.0
+            wy = CY + (lx * sa + ly * ca) / 20.0
+            ix, iy = int(wx), int(wy); fx, fy = wx - ix, wy - iy
+            h0 = hm[iy, ix] * (1 - fx) + hm[iy, ix + 1] * fx
+            h1 = hm[iy + 1, ix] * (1 - fx) + hm[iy + 1, ix + 1] * fx
+            return (h0 * (1 - fy) + h1 * fy) - GH
+        def dzf(lx, ly, w, l):
+            m = hl(lx, ly)
+            for dx, dy in ((-w/2, -l/2), (w/2, -l/2), (-w/2, l/2), (w/2, l/2)):
+                m = min(m, hl(lx + dx, ly + dy))
+            return m
+        ground = hl
+
     # ── 每個零件在立面上的矩形（y 範圍 × z 範圍）＋ 它的 x（深度）──
     rects = []
+    cur = 0.0
     for p in parts:
         k = p.get('k', 'fallen')
         x, y = p.get('x', 0), p.get('y', 0)
@@ -51,6 +89,11 @@ def main():
             h = p.get('dia', 0) * 0.82
         else:                                    # stump / gable
             w = p.get('l', p.get('dia', 0)); h = p.get('h', 0)
+        # ⚠ 規約同引擎：z0<=0 ＝踩地（自己取樣）、z0>0 ＝跟著前一塊踩地的
+        if p.get('z0', 0) <= 0:
+            dw = p['r'] * 2 if k == 'tower' else p.get('w', p.get('dia', p.get('len', 0)))
+            cur = dzf(x, y, dw, w)
+        z0 += cur
         rects.append((y - w / 2, y + w / 2, z0, z0 + h, x, k, p.get('col')))
 
     ys = [r[0] for r in rects] + [r[1] for r in rects]
@@ -70,9 +113,16 @@ def main():
         a = ((r[0] - y0) * PPU, (z1 - r[3]) * PPU)
         b = ((r[1] - y0) * PPU, (z1 - r[2]) * PPU)
         d.rectangle([a, b], fill=c, outline=(18, 18, 20))
-    # 地面線（z=0）
-    gy = (z1 - 0) * PPU
-    d.line([(0, gy), (W, gy)], fill=(220, 60, 60), width=2)
+    # 地面：drape 時畫**真正的地形剖面**（沿長軸掃一遍，取那一條線上的高度）
+    if ground:
+        pts = []
+        for sx in range(W):
+            ly = y0 + sx / PPU
+            pts.append((sx, (z1 - ground(0, ly)) * PPU))
+        d.line(pts, fill=(200, 90, 60), width=2)
+    else:
+        gy = (z1 - 0) * PPU
+        d.line([(0, gy), (W, gy)], fill=(220, 60, 60), width=2)
     im.save(dst)
     above = [r for r in rects if r[3] > 0]
     print('%s  %dx%d px  (%.0f/PPU=%d)  零件 %d  露出地面 %d' %
