@@ -103,12 +103,41 @@ def check_audio_table(files, folder, label, resolve=None):
     #   是正常的（例：`se_windblock`）。不排除的話這裡會長出永久的假警告，
     #   而假警告會把真的那幾條蓋掉。
     for f in sorted(disk - files - ASSETS_AUDIO):
+        if referenced(f): continue
         warn('%s 表裡沒有這個檔案（遊戲載不到）：%s' % (label, f))
     for f in sorted(files - known):  err ('%s 表指到不存在的檔案：%s' % (label, f))
     return {f.rsplit('.', 1)[0].lower(): f for f in known}
 
 def se_resolve(f):
     return ('resources/audio/vo/' if re.match(r'(?i)^vo_', f) else SE_DIR) + f
+
+# ══⚠⚠⚠ 「這支音檔有沒有人用」要看**全部三條路**，不是只看 story 的表（ver -1290）══
+#   ver -1015 已經補過一次（ASSETS），但**還漏了兩條**，於是 se_sail／se_shipcrush／
+#   se_weapon_cannon 長出永久假警告 —— Ray 回報「我明明有跑到 shipcrush」。
+#     ① modules/story.js 的 SE_FILES／BGM_FILES（劇情層）
+#     ② config.js 的 ASSETS（開機預載）
+#     ③ ⚠ **飛行頁自己那一組 HTMLAudio**（§6.10：另一個 document，import 不到主遊戲）
+#     ④ ⚠ **只用「鑰匙」引用的**（config 的 `se:'se_weapon_cannon'`、敵人卡的 entrance）
+#   ③④ 沒有路徑字串可以比對，所以改成「**檔名的主幹出現在任何一支原始碼裡就算有人用**」。
+#   ⚠ 要用 `\b` 邊界：不然 `se_weapon_cannon` 會被 `se_weapon_cannon_120mm` 誤認成有人用。
+#   假警告會把真的那幾條蓋掉 —— 這一條的代價比漏報大（同 ver -1015 的理由）。
+SCAN_FILES = ('config.js', 'main.js', 'modules/story.js', 'modules/enemy.js',
+              'modules/combat.js', 'modules/inn.js', 'modules/town.js',
+              'script/enemies.js', 'script/town.js', 'script/mainScript.js',
+              'flight/index.html', 'flight/talks.js')
+
+def _scan_src():
+    out = []
+    for f in SCAN_FILES:
+        try: out.append(open(os.path.join(ROOT, f), encoding='utf-8').read())
+        except OSError: pass
+    return '\n'.join(out)
+SRC_TEXT = _scan_src()
+
+def referenced(fname):
+    """fname（含副檔名）的主幹有沒有出現在原始碼裡（詞邊界比對）。"""
+    stem = re.escape(fname.rsplit('.', 1)[0])
+    return re.search(r'(?<![\w])%s(?![\w])' % stem, SRC_TEXT) is not None
 
 def exists(rel):  return os.path.exists(os.path.join(ROOT, rel))
 
@@ -146,7 +175,14 @@ def main():
     # ── scene 鏈 ──
     if entry not in script:
         err('MAIN_ENTRY 指到不存在的場景：%s' % entry)
-    reached, q = set(), [entry]
+    # ⚠⚠⚠ 起點不只 MAIN_ENTRY（ver -1290）——一幕也可能由**程式**直接叫起來
+    #   （`story.open({scene:'lake_deck'})` 在 main.js 的羽蛇戰收尾），`next` 鏈當然
+    #   走不到它。只看鏈的話那種幕會被誤報成孤兒（Ray：「序章一直都沒有問題」）。
+    #   ⚠ 這裡連 MAIN_ENTRY **被改指過**的情況也一起吃掉：mainScript.js 現在
+    #     刻意指著 `dungeon_chase`（該處有 ⚠ 註解說「正式串主線時改回
+    #     prologue_audience」）—— 那是**明寫的暫時狀態**，不是斷鏈。
+    opened = set(re.findall(r"scene\s*:\s*'([A-Za-z0-9_]+)'", SRC_TEXT))
+    reached, q = set(), [entry] + [s2 for s2 in opened if s2 in script]
     while q:
         sid = q.pop()
         if sid in reached or sid not in script: continue
