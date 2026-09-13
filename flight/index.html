@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1205"></script>
+<script src="../orientation.js?v=1206"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -512,11 +512,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1205"></script>
+<script src="settlement.js?v=1206"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1205"></script>
+<script src="talks.js?v=1206"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -556,7 +556,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1205';
+const FLIGHT_VER = 'ver -1206';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -7438,6 +7438,15 @@ uniform highp usampler2D uH;   // 高度（世界單位，Uint16）
 uniform sampler2D uC;          // 地貌色
 uniform sampler2D uS;          // 坡度 (slx,sly)，0..1 編碼
 uniform sampler2D uSky;        // 這一禎的天空漸層（1 x BH）
+/* 城的手繪地面（ver -1206）：最多兩座同時在畫面上 —— 城之間隔得夠遠，
+   而 CITYMASK 保證同一點最多屬於一座城。
+   ⚠⚠ 這一段在 GLSL 模板字串裡，**不可以用反引號**（會把字串截斷；踩第二次了）。
+   ⚠ GL 的 mipmap 直接取代了 CPU 那一整套 CITY_PYR 取樣金字塔
+     （§6.7.5 的「逐次減半」與逐深度挑層級全部不需要了）。 */
+uniform sampler2D uCityA, uCityB;
+uniform vec4 uCityA0, uCityB0;   // wx, wy, ca, sa
+uniform vec4 uCityA1, uCityB1;   // iw, ih, kv(反分級亮度), 有效
+uniform float uInvS;             // 反分級：1/GRADE_SAT
 uniform vec2 uMap, uBuf;
 uniform vec3 uCam;             // x, y, alt
 uniform vec2 uDir;             // sinp, cosp
@@ -7449,6 +7458,22 @@ uniform float uCloudLit;
 out vec4 o;
 
 float hRaw(ivec2 t){ return float(texelFetch(uH, t, 0).r); }
+/* 城的地面：世界座標 → 這座城的 uv（與 CPU 同一條式子），回 rgb + alpha。
+   ⚠ 反分級要在這裡做（CPU 是烘進金字塔的，§6.7.5）：插畫的色調是對著
+     「不吃 GRADE_SAT、只除 BAKED_VAL 乘 TRIM」那條舊路校的，取樣路把城當地形畫
+     會**再分級一次** —— 不反轉的話整座城會洗成灰白。 */
+vec4 citySample(sampler2D tex, vec4 P0, vec4 P1, vec2 wp){
+  if(P1.w<0.5) return vec4(0.0);
+  vec2 r=wp-P0.xy;
+  float u=(r.x*P0.z+r.y*P0.w)*P1.x+0.5;
+  float v=(-r.x*P0.w+r.y*P0.z)*P1.y+0.5;
+  if(u<0.0||u>=1.0||v<0.0||v>=1.0) return vec4(0.0);
+  vec4 c=texture(tex, vec2(u,v));
+  if(c.a<=0.02) return vec4(0.0);
+  float lum=dot(c.rgb, vec3(0.299,0.587,0.114));
+  c.rgb=(vec3(lum)+(c.rgb-vec3(lum))*uInvS)*P1.z;
+  return c;
+}
 ivec2 clampT(ivec2 t){ return clamp(t, ivec2(0), ivec2(uMap)-1); }
 
 void main(){
@@ -7485,6 +7510,12 @@ void main(){
           vec3 c10=texelFetch(uC,t10,0).rgb, c01=texelFetch(uC,t01,0).rgb, c11=texelFetch(uC,t11,0).rgb;
           c=mix(mix(c00,c10,f.x), mix(c01,c11,f.x), f.y);
         }else{ c=c00; }
+        /* 城的手繪地面：蓋掉地貌色，**在光照之前** —— 日夜與霧才會照地形走
+           （§6.7.5：插在地貌細節之後、光照之前）。 */
+        vec4 ca=citySample(uCityA,uCityA0,uCityA1,wp);
+        if(ca.a>0.0) c=mix(c,ca.rgb,ca.a);
+        vec4 cb2=citySample(uCityB,uCityB0,uCityB1,wp);
+        if(cb2.a>0.0) c=mix(c,cb2.rgb,cb2.a);
         /* 坡度打光（與舊路徑同一條式子：0.62 + (slx*lx+sly*ly)*LIGHT_DIR_K） */
         vec2 sl=texelFetch(uS,clampT(ti),0).rg*255.0-128.0;
         float nl=clamp(0.62+dot(sl,uLdir)*${'0.030'}, 0.0, 1.5);
@@ -7525,9 +7556,12 @@ function glInit(){
   g.bufferData(g.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),g.STATIC_DRAW);
   const lp=g.getAttribLocation(glProg,'p');
   g.enableVertexAttribArray(lp); g.vertexAttribPointer(lp,2,g.FLOAT,false,0,0);
-  for(const n of ['uH','uC','uS','uSky','uMap','uBuf','uCam','uDir','uLdir','uLcol','uLi','uFog','uCloudLit'])
+  for(const n of ['uH','uC','uS','uSky','uMap','uBuf','uCam','uDir','uLdir','uLcol','uLi','uFog','uCloudLit',
+                  'uCityA','uCityB','uCityA0','uCityB0','uCityA1','uCityB1','uInvS'])
     glU[n]=g.getUniformLocation(glProg,n);
   g.uniform1i(glU.uH,0); g.uniform1i(glU.uC,1); g.uniform1i(glU.uS,2); g.uniform1i(glU.uSky,3);
+  g.uniform1i(glU.uCityA,4); g.uniform1i(glU.uCityB,5);
+  g.uniform1f(glU.uInvS, 1/GRADE_SAT);
   return true;
 }
 
@@ -7558,6 +7592,47 @@ function glUploadWorld(){
     'MB、坡度 '+(sl.byteLength/1048576).toFixed(1)+'MB）');
 }
 
+/* ══ 城的手繪地面：上傳成貼圖（ver -1206）══════════════════════════════
+   ⚠ GL 的 mipmap 取代 `CITY_PYR` 那一整套逐次減半的金字塔與逐深度挑層級
+     （§6.7.5）—— 硬體本來就會做，而且做得比較好。
+   ⚠ 用**全解析**那一張（`cityPlanArt`）；還沒載到就先用 192px 縮圖，
+     載到之後換上（同舊路徑「永遠有得取樣、不存在空窗」的保證）。 */
+const glCityTex={}, glCityFull={};
+function glCityTexture(key){
+  if(!GLX) return null;
+  const g=GLX;
+  const full=cityPlanArt[key], lo=cityPlanLo[key];
+  const img=full||lo;
+  if(!img || !img.width) return null;
+  const wantFull=!!full;
+  if(glCityTex[key] && glCityFull[key]===wantFull) return glCityTex[key];
+  let t=glCityTex[key];
+  if(!t){ t=g.createTexture(); glCityTex[key]=t; }
+  g.activeTexture(g.TEXTURE4); g.bindTexture(g.TEXTURE_2D,t);
+  g.texImage2D(g.TEXTURE_2D,0,g.RGBA8,g.RGBA,g.UNSIGNED_BYTE,img);
+  g.generateMipmap(g.TEXTURE_2D);
+  g.texParameteri(g.TEXTURE_2D,g.TEXTURE_MIN_FILTER,g.LINEAR_MIPMAP_LINEAR);
+  g.texParameteri(g.TEXTURE_2D,g.TEXTURE_MAG_FILTER,g.LINEAR);
+  g.texParameteri(g.TEXTURE_2D,g.TEXTURE_WRAP_S,g.CLAMP_TO_EDGE);
+  g.texParameteri(g.TEXTURE_2D,g.TEXTURE_WRAP_T,g.CLAMP_TO_EDGE);
+  glCityFull[key]=wantFull;
+  return t;
+}
+/* 這一禎要畫哪兩座城：取最近的兩座（CITYMASK 保證同一點最多屬於一座城，
+   而城之間隔得夠遠，兩個槽實務上夠用）。 */
+function glPickCities(){
+  if(!CITY_SAMPS) return [];
+  const L=[];
+  for(const C of CITY_SAMPS){
+    const dx=C.wx-cam.x, dy=C.wy-cam.y;
+    const d=Math.hypot(dx,dy);
+    if(d>ZFAR+C.planW) continue;
+    L.push({C,d});
+  }
+  L.sort((a,b)=>a.d-b.d);
+  return L.slice(0,2).map(e=>e.C);
+}
+
 /* 每禎：把這一禎的相機／光照／天空交給 shader 畫一次。 */
 function glDrawTerrain(S, sinp, cosp, lx, ly, ambI, sunI, lightR, lightG, lightB,
                        fr, fg, fb, cloudLit){
@@ -7585,6 +7660,17 @@ function glDrawTerrain(S, sinp, cosp, lx, ly, ambI, sunI, lightR, lightG, lightB
   g.uniform2f(glU.uLi,ambI,sunI);
   g.uniform3f(glU.uFog,fr/255,fg/255,fb/255);
   g.uniform1f(glU.uCloudLit,cloudLit);
+  /* 城的手繪地面（最多兩座）。kv＝反分級的亮度係數，逐城（`tone` 是逐城的）。 */
+  const CC=glPickCities();
+  for(let i=0;i<2;i++){
+    const C=CC[i], unit=4+i;
+    const U0=i?glU.uCityB0:glU.uCityA0, U1=i?glU.uCityB1:glU.uCityA1;
+    const tex=C?glCityTexture(C.key):null;
+    if(!tex){ g.uniform4f(U1,1,1,1,0); continue; }
+    g.activeTexture(g.TEXTURE0+unit); g.bindTexture(g.TEXTURE_2D,tex);
+    g.uniform4f(U0, C.wx, C.wy, C.ca, C.sa);
+    g.uniform4f(U1, C.iw, C.ih, CITY_TRIM/CITY_BAKED_VAL*cityTone(C.key), 1);
+  }
   g.drawArrays(g.TRIANGLES,0,3);
   return true;
 }
