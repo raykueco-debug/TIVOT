@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1261"></script>
+<script src="../orientation.js?v=1262"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1261');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1262');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1261");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1261");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1262");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1262");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1261");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1261");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1262");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1262");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -581,25 +581,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1261" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1262" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1261" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1261" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1261" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1261" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1261" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1261" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1261" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1261" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1261" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1261" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1262" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1262" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1262" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1262" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1262" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1262" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1262" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1262" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1262" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1262" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1261" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1262" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1261" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1262" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -620,11 +620,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1261"></script>
+<script src="settlement.js?v=1262"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1261"></script>
+<script src="talks.js?v=1262"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -664,7 +664,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1261';
+const FLIGHT_VER = 'ver -1262';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -1947,6 +1947,9 @@ const DIG_STEP=100;
    湖的水面在畫的當下就已經是平的、也已經是對的，不需要任何人再幫它算一次。
    ⚠ 每次 `loadWorld` 重放時重建（`applyMapEdits('terrain')`）。 */
 let LAKEM=null;
+/* 上一次擦除真的動到幾格**水**（確認列用）。⚠ 不可以拿「筆刷碰到幾格」代替 ——
+   那是整個圓的面積，報出來會變成「擦掉 317 格水」而其實只有幾格是水（-1262 實測）。 */
+let meEraseWet=0;
 function lakeMask(){
   if(!LAKEM || LAKEM.length!==MAPW*MAPH) LAKEM=new Uint8Array(MAPW*MAPH);
   return LAKEM;
@@ -2009,6 +2012,61 @@ function meApply(E, pts, raw, snap){
        那正是 ver -1254 花力氣立下的那條不變式（逐段送＝一次送，最大差 0）。
      ⚠ 半徑隨筆刷走但夾在 2~8：再大就不是「跟鄰居接上」而是把整片抹平，
        而抹平已經有「平」那支筆了。 */
+  /* ══ 擦除的「水」那一半（ver -1262，Ray：「讓擦除也可以擦水」）══════════
+     折線（公路／鐵路）那一半是 `mapEditCut` 在鋪之前剪掉；水是**逐格的光柵**
+     （`RIV` ＋ `COL`，河還連著被刻深的河床），所以要在這裡真的改回去。
+
+     ⚠⚠ **擦掉水不能只把 `RIV` 關掉**：河床在上游就被刻成一條溝（`terrain_generator`
+       把河道壓到固定灰階，兩岸落差 111~332），只關旗標會留下一條**沒有水的乾溝**，
+       而那比留著水還怪。所以三件事一起做：關水、把**高度**填回周圍的地面、
+       把**底色**換成周圍地面的顏色 —— 這正是「自動修正」那支筆的同一條原則
+       （動過的地方要與鄰接的地形對得起來）。
+     ⚠⚠ **由外往內收斂**：大湖的正中心方圓幾十格都是水，一輪找不到任何陸地鄰居。
+       所以先補有陸地鄰居的那一圈，補完的格子在下一輪就算數，再往內補 —— 
+       跑 6 輪；真的還收斂不完的（極大的湖心）就維持原樣不動，
+       那比拿一個瞎猜的高度去填好。
+     ⚠ 與自動修正一樣是**兩段式**（先算完再一起寫）：邊算邊寫會讓結果取決於
+       掃描順序。 */
+  if(t==='erase'){
+    const R=clamp(Math.round((E.r||14)*0.6), 3, 10);
+    const cells=[], mark=new Set();
+    const d=meStroke(pts, E.r||14, (i,dc,c)=>{
+      if(c-dc<=0){ meBaseH[i]=HGT[i]; if(snap) snap(i); }
+      if(c<0.5 || c-dc>=0.5) return;
+      if(RIV[i]){ cells.push(i); mark.add(i); }
+    }, HARD_CORE);
+    meEraseWet=cells.length;            // 真的擦掉幾格水（確認列要報這個數字）
+    if(!cells.length) return d;
+    let left=cells.slice();
+    for(let pass=0; pass<6 && left.length; pass++){
+      const got=[], rest=[];
+      for(const i of left){
+        const x=i%MAPW, y=(i/MAPW)|0;
+        let sh=0, sr=0, sg=0, sb=0, n=0;
+        for(let dy=-R;dy<=R;dy++){
+          const py=y+dy; if(py<0||py>=MAPH) continue;
+          for(let dx=-R;dx<=R;dx++){
+            const px=x+dx; if(px<0||px>=MAPW) continue;
+            const j=py*MAPW+px;
+            if(mark.has(j) || RIV[j] || HGT[j]<=CLOUD_H) continue;   // 只取陸上的鄰居
+            const c2=COL[j];
+            sh+=HGT[j]; sr+=c2&255; sg+=(c2>>8)&255; sb+=(c2>>16)&255; n++;
+          }
+        }
+        if(n) got.push([i, sh/n, sr/n, sg/n, sb/n]); else rest.push(i);
+      }
+      if(!got.length) break;
+      for(const [i,h,r2,g2,b2] of got){
+        const v=clamp(Math.round(h),0,PEAK_SCALE);
+        HGT[i]=v; if(raw) raw[i]=v/PEAK_SCALE;
+        COL[i]=rgb(Math.round(r2),Math.round(g2),Math.round(b2));
+        RIV[i]=0; if(LAKEM) LAKEM[i]=0;
+        mark.delete(i);                       // 補好了 —— 下一輪它就是合格的鄰居
+      }
+      left=rest;
+    }
+    return d;
+  }
   if(t==='fix'){
     const R=clamp(Math.round((E.r||18)*0.3), 2, 8);
     const cells=[], covs=[];
@@ -2079,7 +2137,7 @@ function meApply(E, pts, raw, snap){
 function applyMapEdits(phase, raw){
   if(!MAP_EDITS||!MAP_EDITS.length||!MAPW) return;
   if(phase==='terrain' && MAP_EDITS.some(e=>e.t==='lake')) lakeMask().fill(0);
-  const want = phase==='mat' ? ['mat'] : ['hill','dig','flat','fix','water','lake'];
+  const want = phase==='mat' ? ['mat'] : ['hill','dig','flat','fix','water','lake','erase'];
   for(const E of MAP_EDITS){
     if(want.indexOf(E.t)<0) continue;
     meCovClear(meApply(E, E.pts, raw, null));
@@ -8571,7 +8629,15 @@ function meStrokeBegin(mx,my){
   /* ⚠⚠ 守門擺在**這裡**不是擺在事件處理器裡（鐵律 8）：起筆的入口只有這一支，
      日後多一條路（鍵盤、腳本、驗收）會自動吃到。事件那邊只負責那句提示。 */
   if(meBusy()){ meNag(); return; }
-  if(meTool==='erase'||meTool==='rail'||meTool==='road'){
+  if(meTool==='erase'){
+    meCur={ t:'erase', r:meBrushR(), pts:[[mx,my]] };
+    /* ⚠ 擦除現在也會動陣列（水那一半）⇒ 要開復原帳。
+       ⚠⚠ 與自動修正同理，**放開才套用一次**：填回去的值取自「周圍現在長什麼樣」，
+         分段套用時後面幾段會讀到前面剛補好的格子 ⇒ 畫的時候與重整之後會不一樣。 */
+    meSnapStart(); meDirty=null;
+    return;
+  }
+  if(meTool==='rail'||meTool==='road'){
     meCur={ t:meTool, pts:[[mx,my]] };
     if(meTool==='erase') meCur.r=meBrushR();
     return;
@@ -8622,12 +8688,27 @@ function meStrokeEnd(){
   if(!meCur) return;
   const E=meCur; meCur=null;
   if(E.t==='erase'){
-    /* 擦到什麼沒有就不必問。⚠ 判斷走**同一支** `meLineNear`（畫面上剪不剪也是它，
-       鐵律 7）—— 另寫一個「有沒有碰到」的判斷，遲早會與畫面對不起來。 */
-    const n=meEraseCount(E);
-    if(!n){ meFlash('這一筆沒有擦到任何公路或鐵路'); meDraw(); return; }
+    /* ① 折線：只是數一數會剪到幾個節點（真的剪是在鋪之前，`mapEditCut`）。
+       ⚠ 判斷走**同一支** `meLineNear`（畫面上剪不剪也是它，鐵律 7）。 */
+    const nLine=meEraseCount(E);
+    /* ② 水：這一半會真的改陣列，而且整條一次算完（與重放同一條路，鐵律 8）。 */
+    meEraseWet=0;
+    const d=meApply(E, E.pts, null, meSnapPush);
+    if(d){ mePaint(d); meDirty=d; }
+    const nWet=meEraseWet;
+    meCovClear(meDirty); meDirty=null;
+    if(!nLine && !nWet){
+      meSnapI=null;
+      meFlash('這一筆沒有擦到任何公路、鐵路或水');
+      meDraw(); return;
+    }
     E.pts=meSimplify(E.pts, Math.max(0.5,(E.r||14)/6));
-    meAsk({ k:'edit', e:E }, '擦除　大小 '+(E.r||14)+'　擦掉 '+n+' 格軌道／路面');
+    meAsk({ k:'edit', e:E, i:meSnapI, h:meSnapH, r:meSnapR, c:meSnapC, b:meSnapB,
+            d:meStrokeBox(E) },
+          '擦除　大小 '+(E.r||14)+
+          (nLine?('　軌道／路面 '+nLine+' 節'):'')+
+          (nWet?('　水面 '+nWet+' 格'):''));
+    meSnapI=null;
     meDraw(); return;
   }
   if(E.t==='rail'||E.t==='road'){
