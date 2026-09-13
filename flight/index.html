@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1217"></script>
+<script src="../orientation.js?v=1218"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1217');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1218');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1217");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1217");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1218");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1218");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1217");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1217");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1218");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1218");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -483,25 +483,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1217" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1218" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1217" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1217" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1217" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1217" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1217" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1217" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1217" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1217" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1217" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1217" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1218" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1218" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1218" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1218" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1218" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1218" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1218" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1218" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1218" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1218" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1217" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1218" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1217" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1218" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -522,11 +522,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1217"></script>
+<script src="settlement.js?v=1218"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1217"></script>
+<script src="talks.js?v=1218"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -566,7 +566,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1217';
+const FLIGHT_VER = 'ver -1218';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -1408,6 +1408,11 @@ const GT=256, GTM=GT-1;                    // 貼圖邊長（2 的次方）
 /* 一個 texel 代表幾個世界單位。1.0 時整片讀起來太密、樹冠太小；
    1.6 之後樹冠約 26 世界單位（≈13 公尺級的樹頂），一格貼圖 410 單位。 */
 const GEO_SCALE=1.6, GEO_INV=1/GEO_SCALE;
+/* 地貌貼圖的 mipmap 層級偏移（ver -1218，GL 專用）。0＝理論上剛好不疊頻；
+   負的＝更銳但開始有顆粒、正的＝更柔。這一版取 −0.35：留一點顆粒分明的
+   像素質感（這個畫面的調性），但遠離「每個像素亂點一個 texel」那一端。
+   ⚠ **要調鬆緊就只動這一個數字**，不要回去改 LOD 的算式（那是量出來的足跡）。 */
+const GEO_LOD_BIAS=-0.35;
 /* 鐵軌貼圖沿軌方向的世界單位／texel。⚠ 橫越方向是「整張貼圖寬鋪滿軌道寬」
    （軌道半徑 1.9 地圖像素＝76 世界單位寬 → 0.30 世界單位／texel）。沿軌若照
    同樣的 0.30 走，枕木間距只有 3 個螢幕像素，在降取樣的地形緩衝裡會閃 ——
@@ -7478,7 +7483,19 @@ uniform sampler2D uSky;        // 這一禎的天空漸層（1 x BH）
      （§6.7.5 的「逐次減半」與逐深度挑層級全部不需要了）。 */
 uniform highp usampler2D uBiome;  // 低 4 bit＝類別，高 4 bit＝低頻亮度
 uniform sampler2D uMask;          // r 石橋 g 鐵路 b 道路 a 郊區
-uniform sampler2D uGeo;           // 地貌貼圖 atlas（256 寬 × 類別數×256 高）
+/* ⚠⚠⚠ 地貌貼圖改成 **2D array ＋ mipmap**（ver -1218，Ray：「立面陡坡才出線」）。
+   實測把這一層關掉，直條紋的指標由 1.375 掉到 0.171 —— 條紋整條是它。
+   原因是**縮小取樣的疊頻**：貼圖是貼在世界座標上的（一個 texel 1.6 世界單位），
+   而一個螢幕像素在遠處／在**幾乎與視線平行的陡坡**上可以跨好幾十個世界單位。
+   NEAREST 又沒有 mipmap ＝ 每個像素在那一片貼圖上亂點一個 texel ⇒ 直條紋與顆粒。
+   ⚠ 為什麼要換成 array 而不是替原本那張「類別疊在一起」的 atlas 開 mipmap：
+     那張圖是 256 寬 × (類別數×256) 高、靠程式自己 (&255) 兜出重複；
+     一做 mipmap，相鄰類別的像素就會在低階層互相混進來，而且那個手兜的重複也壞了。
+     array 每一層自己一片 256×256、自己 REPEAT、自己一套 mipmap，兩個問題一起沒有。 */
+/* ⚠ sampler2DArray **一定要自己標精度** —— 檔頭的 precision highp float/int 不涵蓋它，
+   漏了就是 'sampler2DArray' : No precision specified，整支 shader 編不過 →
+   glReady:false → 悄悄退回 CPU（踩到當下唯一的徵兆是「怎麼又變慢了」）。 */
+uniform highp sampler2DArray uGeo;   // 地貌貼圖（每個類別一層 256×256）
 uniform sampler2D uRailDir;       // 軌道方向（降取樣）
 uniform vec2 uRD;                 // RD_W, RD_H
 uniform float uGeoOn;             // atlas 還沒載到就是 0
@@ -7546,7 +7563,8 @@ void main(){
   float sinp=uDir.x, cosp=uDir.y;
   vec2 dir=vec2(sv*cosp - sinp, -sv*sinp - cosp);
   float curv=(1.0+sv*sv)/(2.0*${PLANET_R}.0);
-  float k=(py-horizon)/scaleH;          // (camAlt-h)/z + z*curv
+  float k2=(py-horizon)/scaleH;         // (camAlt-h)/z + z*curv
+  float k=k2;                           // （k 在下面的區塊裡會被 vec3 遮蔽，所以留一份 k2）
   float z=1.0, dz=0.75;
   for(int i=0;i<900;i++){
     if(z>=${ZFAR}.0) break;
@@ -7563,6 +7581,11 @@ void main(){
       vec3 c;
       /* ⚠ below 兩支都要有（雲海的天際線一樣要抗鋸齒）—— 所以提到外面宣告。 */
       float below=hs-hNeed;
+      /* 上一個射線步進落在哪一格的地面：立面的落差與地貌貼圖的縱向足跡都要它。
+         算一次就好（鐵律 7）—— 原本只有立面那一段在算。 */
+      vec2 mfP=(uCam.xy+dir*max(z-dz,1.0))*${INV_SCALE};
+      bool cP; float hPrev=hSurf(mfP, clampT(ivec2(floor(mfP))),
+                                 mfP.x<0.0||mfP.y<0.0||mfP.x>=uMap.x||mfP.y>=uMap.y, cP);
       if(cloud){
         c=vec3(0.82,0.86,0.92)*uCloudLit;
       }else{
@@ -7611,8 +7634,19 @@ void main(){
           }else{
             gxy=(wp+vec2(40960.0))*${'1.0/1.6'};
           }
-          ivec2 gi=ivec2(int(floor(gxy.x)) & 255, int(floor(gxy.y)) & 255);
-          vec3 k=texelFetch(uGeo, ivec2(gi.x, int(tx)*256+gi.y), 0).rgb*(255.0/128.0);
+          /* 這個像素在貼圖上的足跡（texel 為單位），兩軸各算一次：
+             · 橫向：一欄在這個深度覆蓋 2z/BW 個世界單位
+             · 縱向：一列覆蓋 (z/scaleH)/(地表沿射線的坡度 ＋ 射線自己的下降率)
+               —— 分母趨近 0 就是「面幾乎與視線平行」，也就是 Ray 說的立面陡坡，
+               足跡會爆開，正是那裡條紋最兇。
+             ⚠ raymarch 裡**不可以**讓硬體用導數去挑層級（相鄰像素的深度可以差很遠，
+               導數是垃圾）—— 與城的插畫同一條教訓（ver -1211）。 */
+          float rr=abs(k2-2.0*z*curv);
+          float gg=(hs-hPrev)/max(dz,0.001);
+          float fpx=(2.0*z/uBuf.x)*${'1.0/1.6'};
+          float fpy=(z/scaleH)/max(gg+rr,0.02)*${'1.0/1.6'};
+          float glod=max(0.5*log2(max(fpx*fpx, fpy*fpy))+${GEO_LOD_BIAS}, 0.0);
+          vec3 k=textureLod(uGeo, vec3(gxy/256.0, float(tx)), glod).rgb*(255.0/128.0);
           /* ⚠ 低頻亮度起伏**一定要內插**（ver -1217，Ray：「靠近山體時還是會露出方塊粒」）。
              它是逐格 ±18% 的亮度乘數 —— 逐格取的話，地形幾何再平滑，表面照樣是
              一格一格的亮暗方塊。BIOME 是 R8UI（整數貼圖濾不了），所以把高 4 bit
@@ -7642,11 +7676,22 @@ void main(){
          ⚠ 再補上 CPU 本來就有的兩道閘門：立面在螢幕上要高過 3 列（CPU 的
            「bot-y0>3」；螢幕高度＝落差×scaleH/z），而且霧還沒把它吃掉（fog<0.86）。 */
         if(below>0.0 && fog<0.86){
-          vec2 mfF=(uCam.xy+dir*max(z-dz,1.0))*${INV_SCALE};
-          bool cF; float hF=hSurf(mfF, clampT(ivec2(floor(mfF))),
-                                  mfF.x<0.0||mfF.y<0.0||mfF.x>=uMap.x||mfF.y>=uMap.y, cF);
+          float hF=hPrev;
           float drop=max(hs-hF, 0.0);
-          if(drop*scaleH/z>3.0){
+          /* ⚠⚠⚠ **只有真正的牆才畫立面**（ver -1218，Ray：「立面陡坡才出線」）。
+             這一段是**方塊時代的遺物**：那時每一格是平頂方塊，格與格之間有一道
+             真的垂直面，要有人替它上色（CPU 的「每根柱子都有立面」）。
+             -1216 把高度改成雙線性之後，**地表已經是連續曲面，沒有垂直面了** ——
+             再對著陡坡套這一段，畫出來的是假的：
+               dd = below/drop 的 below 是**行進步進的過衝**、drop 是一步的落差，
+               兩個都是量化誤差，相鄰兩欄各自不同 → 亮度差到 34% → **直條紋**。
+               而陡坡本來就由坡度打光（nl，-1217 起也是雙線性）處理，不需要它。
+             真正還需要立面的只剩**浮空大陸的邊緣**：那裡地表一步就掉進雲海，
+             是唯一還存在的高度不連續（因為陸海的判定走最近鄰，見 hSurf）。
+             判準沿用瀑布那一條（同一個量，鐵律 7）：靠鏡頭那一側已經是雲海，
+             或一步就掉超過 111 個世界單位。 */
+          bool wall = (hF<=${CLOUD_H}.0+12.0) || (drop>${CLIFF_DH}.0*1.5*0.85);
+          if(wall && drop*scaleH/z>3.0){
             float dd=clamp(below/max(drop,1.0),0.0,1.0);
             /* 岩層條紋：與 CPU 同一把種子 —— **地圖格 ＋ 螢幕列/2**
                （CPU 的 「STRAT[(wx*5+wy*3+(yy>>1))&255]」）。
@@ -7915,15 +7960,24 @@ function glDrawTerrain(S, sinp, cosp, lx, ly, ambI, sunI, lightR, lightG, lightB
      ⚠ 它的記憶體佈局**正好**就是 256 寬 × (類別數×256) 高的 RGB8，
        不必重新打包（`base=slot*GEO_STRIDE`、索引 `(gy*256+gx)*3`）。 */
   if(!glGeoUp && geoReady && GEOK){
+    /* 2D array：每個類別一層 256×256（ver -1218）。GEOK 的佈局本來就是
+       `slot*GEO_STRIDE` 一層、層內 row-major 256×256×3 —— 正好就是 array 的佈局，
+       不必重新打包。
+       ⚠ REPEAT ＋ mipmap：重複交給取樣器（原本是程式自己 &255），層級由 shader
+         明算（raymarch 不可以用導數挑層級）。
+       ⚠ MAG 用 NEAREST：近看要維持顆粒分明的像素質感（那是這個畫面的調性）；
+         會出事的是**縮小**那一端，所以只有 MIN 走 mipmap。 */
+    const layers=GEOK.length/GEO_STRIDE;
     glTexGeo=g.createTexture(); g.activeTexture(g.TEXTURE9);
-    g.bindTexture(g.TEXTURE_2D,glTexGeo);
-    g.texImage2D(g.TEXTURE_2D,0,g.RGB8,GT,GEOK.length/(GT*3),0,g.RGB,g.UNSIGNED_BYTE,GEOK);
-    g.texParameteri(g.TEXTURE_2D,g.TEXTURE_MIN_FILTER,g.NEAREST);
-    g.texParameteri(g.TEXTURE_2D,g.TEXTURE_MAG_FILTER,g.NEAREST);
-    g.texParameteri(g.TEXTURE_2D,g.TEXTURE_WRAP_S,g.CLAMP_TO_EDGE);
-    g.texParameteri(g.TEXTURE_2D,g.TEXTURE_WRAP_T,g.CLAMP_TO_EDGE);
+    g.bindTexture(g.TEXTURE_2D_ARRAY,glTexGeo);
+    g.texImage3D(g.TEXTURE_2D_ARRAY,0,g.RGB8,GT,GT,layers,0,g.RGB,g.UNSIGNED_BYTE,GEOK);
+    g.generateMipmap(g.TEXTURE_2D_ARRAY);
+    g.texParameteri(g.TEXTURE_2D_ARRAY,g.TEXTURE_MIN_FILTER,g.LINEAR_MIPMAP_LINEAR);
+    g.texParameteri(g.TEXTURE_2D_ARRAY,g.TEXTURE_MAG_FILTER,g.NEAREST);
+    g.texParameteri(g.TEXTURE_2D_ARRAY,g.TEXTURE_WRAP_S,g.REPEAT);
+    g.texParameteri(g.TEXTURE_2D_ARRAY,g.TEXTURE_WRAP_T,g.REPEAT);
     glGeoUp=true;
-    console.log('[gl] 地貌貼圖 atlas '+GT+'×'+(GEOK.length/(GT*3)));
+    console.log('[gl] 地貌貼圖 array '+GT+'×'+GT+'×'+layers+'（含 mipmap）');
   }
   g.useProgram(glProg); g.bindVertexArray(glVao);
   g.enable(g.DEPTH_TEST); g.depthFunc(g.LEQUAL);
