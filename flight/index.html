@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1203"></script>
+<script src="../orientation.js?v=1204"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -512,11 +512,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1203"></script>
+<script src="settlement.js?v=1204"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1203"></script>
+<script src="talks.js?v=1204"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -556,7 +556,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1203';
+const FLIGHT_VER = 'ver -1204';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -9342,7 +9342,26 @@ function drawRuins(scaleH,horizon,sinp,cosp){
         continue;
       }
       const faces=[];
+      /* ══⚠⚠⚠ 剔除背面（ver -1204，Ray：「還是微卡」）═══════════════════════
+         這一支**從來沒有剔過背面** —— NS 個面全部畫，靠 `faces.sort` 的畫家順序
+         讓正面蓋住背面。量體層（`drawSettlements3D`）早在 -304 就剔了，這裡漏掉。
+         實測貝利薩爾 d15：**每禎 890 次 `fill()`**（359 貼材 ＋ 531 平色），
+         而 `drawRuins` 是那個取景最長那幾禎的唯一主因（4.3~5.5ms）。
+         ⚠ **不透明凸體的背面本來就被正面完全蓋住**，所以剔掉它畫面零變化，
+           純粹是省掉一半的路徑與一半的 `setTransform`（貼材那一步最貴）。
+         ⚠ 判法與量體層同一條（鐵律 8 的精神）：拿**頂面的帶號**（shoelace）
+           當朝向基準，邊的走向與它同號＝背對鏡頭。
+         ⚠ `ridge`（山牆）的頂面是一條線、帶號為 0 —— 那時不能剔，否則整個屋頂
+           會消失。退回「全部畫」（山牆只有四個面，本來就便宜）。 */
+      let S2f=0;
+      for(let k=0;k<NS;k++){ const k2=(k+1)%NS;
+        S2f += B.top[k].x*B.top[k2].y - B.top[k2].x*B.top[k].y; }
+      const cullBack = !B.ridge && Math.abs(S2f)>1e-3;
       for(let k=0;k<NS;k++){
+        if(cullBack){
+          const p0=B.base[k], p1=B.base[(k+1)%NS];
+          if((p1.x-p0.x)*S2f >= 0) continue;          // 與頂面同號＝背面
+        }
         const a=B.loc[k], b=B.loc[(k+1)%NS];
         let nx=(b[1]-a[1]), ny=-(b[0]-a[0]);          // 邊的法線（順時針＝朝外）
         const nl=Math.hypot(nx,ny)||1; nx/=nl; ny/=nl;
