@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1215"></script>
+<script src="../orientation.js?v=1216"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1215');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1216');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1215");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1215");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1216");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1216");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1215");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1215");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1216");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1216");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -483,25 +483,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1215" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1216" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1215" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1215" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1215" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1215" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1215" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1215" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1215" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1215" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1215" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1215" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1216" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1216" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1216" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1216" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1216" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1216" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1216" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1216" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1216" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1216" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1215" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1216" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1215" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1216" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -522,11 +522,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1215"></script>
+<script src="settlement.js?v=1216"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1215"></script>
+<script src="talks.js?v=1216"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -566,7 +566,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1215';
+const FLIGHT_VER = 'ver -1216';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -7445,7 +7445,7 @@ const GLON = !/[?&]gl=0/.test(location.search);
 let glTexBiome=null, glTexMask=null, glTexRail=null, glTexGeo=null, glGeoUp=false;
 let glSmpPbo=null, glSmpFence=null;
 const glSmpBuf=new Uint8Array(8*8*4);   // 環境光取樣的非同步回讀落點（見 screenSample）
-let GLX=null, glProg=null, glVao=null, glU={}, glTexH=null, glTexC=null, glTexS=null,
+let GLX=null, glProg=null, glVao=null, glU={}, glTexH=null, glTexHs=null, glTexC=null, glTexS=null,
     glTexSky=null, glReady=false, glSkyBuf=null;
 
 const GL_VS=`#version 300 es
@@ -7455,7 +7455,18 @@ in vec2 p; void main(){ gl_Position=vec4(p,0.,1.); }`;
    （試作踩過，症狀是離原因很遠的 SyntaxError）。 */
 const GL_FS=`#version 300 es
 precision highp float; precision highp int;
-uniform highp usampler2D uH;   // 高度（世界單位，Uint16）
+uniform highp usampler2D uH;   // 高度（世界單位，Uint16；最近鄰，判陸海用）
+/* ══ 平滑高度（ver -1216）══════════════════════════════════════════════
+   Ray：「山根本是方塊堆的」。成因不是 GPU —— CPU 路徑在同一個相機下長得
+   一模一樣：地形的高度是**逐格最近鄰**取的，一格 20 世界單位，所以每一格
+   就是一個平頂方塊，山＝一疊階梯。CPU 只是因為手機上畫質檔被推到最低、
+   緩衝更小，糊掉之後看不出來而已。
+   ⚠ 解法不能是「在迴圈裡抓四個角自己內插」——那是把行進迴圈裡最熱的一次
+     texelFetch 變成四次。改成**多上傳一張 R16F 的高度圖、交給硬體做雙線性**：
+     一次 texture() 就是內插好的值，而且是取樣器免費做的。
+   ⚠ 陸海的判定仍然走最近鄰那一張（uH）：內插會把海岸的高度往海裡拉，
+     判定交給它就不會有「海面被抬起來一點」這種事。 */
+uniform sampler2D uHs;         // 高度（平滑；R16F + LINEAR）
 uniform sampler2D uC;          // 地貌色
 uniform sampler2D uS;          // 坡度 (slx,sly)，0..1 編碼
 uniform sampler2D uSky;        // 這一禎的天空漸層（1 x BH）
@@ -7488,6 +7499,15 @@ out vec4 o;
 
 const float BAY[16]=float[16](${[...BAYER].map(v=>v.toFixed(5)).join(',')});
 float hRaw(ivec2 t){ return float(texelFetch(uH, t, 0).r); }
+/* 這一點的地表高度：陸海看最近鄰、表面高度看平滑那一張。
+   ⚠ uv 用 mf/uMap —— texel 中心在 (i+0.5)，所以 mf=i+0.5 剛好取到整格的值、
+     格與格之間才內插（與最近鄰版在格心完全一致，不會整體位移）。 */
+float hSurf(vec2 mf, ivec2 ti, bool outside, out bool cloud){
+  float tn = outside ? 0.0 : hRaw(ti);
+  cloud = outside || tn<=${CLOUD_H}.0;
+  if(cloud) return ${CLOUD_H}.0;
+  return max(texture(uHs, mf/uMap).r, ${CLOUD_H}.0+0.5);
+}
 /* 城的地面：世界座標 → 這座城的 uv（與 CPU 同一條式子），回 rgb + alpha。
    ⚠ 反分級要在這裡做（CPU 是烘進金字塔的，§6.7.5）：插畫的色調是對著
      「不吃 GRADE_SAT、只除 BAKED_VAL 乘 TRIM」那條舊路校的，取樣路把城當地形畫
@@ -7534,9 +7554,7 @@ void main(){
     vec2 mf=wp*${INV_SCALE};
     ivec2 ti=ivec2(floor(mf));
     bool outside = mf.x<0.0||mf.y<0.0||mf.x>=uMap.x||mf.y>=uMap.y;
-    float th = outside ? 0.0 : hRaw(ti);
-    bool cloud = outside || th<=${CLOUD_H}.0;
-    float hs = cloud ? ${CLOUD_H}.0 : th;
+    bool cloud; float hs=hSurf(mf, ti, outside, cloud);
     if(hs>=hNeed){
       /* 霧提前算 —— 崖面那一段要用它當閘門（同 CPU 的 fog<0.86）。 */
       float fogS=${ZFAR}.0*${FOG_START};
@@ -7615,7 +7633,8 @@ void main(){
            「bot-y0>3」；螢幕高度＝落差×scaleH/z），而且霧還沒把它吃掉（fog<0.86）。 */
         if(below>0.0 && fog<0.86){
           vec2 mfF=(uCam.xy+dir*max(z-dz,1.0))*${INV_SCALE};
-          float hF=hRaw(clampT(ivec2(floor(mfF))));
+          bool cF; float hF=hSurf(mfF, clampT(ivec2(floor(mfF))),
+                                  mfF.x<0.0||mfF.y<0.0||mfF.x>=uMap.x||mfF.y>=uMap.y, cF);
           float drop=max(hs-hF, 0.0);
           if(drop*scaleH/z>3.0){
             float dd=clamp(below/max(drop,1.0),0.0,1.0);
@@ -7688,8 +7707,7 @@ void main(){
           float hN2=uCam.z-(kUp-z2*curv)*z2;
           vec2 mf2=(uCam.xy+dir*z2)*${INV_SCALE};
           bool o2 = mf2.x<0.0||mf2.y<0.0||mf2.x>=uMap.x||mf2.y>=uMap.y;
-          float t2 = o2 ? 0.0 : hRaw(ivec2(floor(mf2)));
-          float s2 = (o2||t2<=${CLOUD_H}.0) ? ${CLOUD_H}.0 : t2;
+          bool c2; float s2=hSurf(mf2, clampT(ivec2(floor(mf2))), o2, c2);
           if(s2>=hN2){ blocked=true; break; }
           z2+=dz2; dz2+=0.011;
         }
@@ -7740,11 +7758,11 @@ function glInit(){
   g.bufferData(g.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),g.STATIC_DRAW);
   const lp=g.getAttribLocation(glProg,'p');
   g.enableVertexAttribArray(lp); g.vertexAttribPointer(lp,2,g.FLOAT,false,0,0);
-  for(const n of ['uH','uC','uS','uSky','uMap','uBuf','uCam','uDir','uLdir','uLcol','uLi','uFog','uCloudLit','uTime',
+  for(const n of ['uH','uHs','uC','uS','uSky','uMap','uBuf','uCam','uDir','uLdir','uLcol','uLi','uFog','uCloudLit','uTime',
                   'uCityA','uCityB','uCityA0','uCityB0','uCityA1','uCityB1','uCityT','uInvS',
                   'uBiome','uMask','uGeo','uRailDir','uRD','uGeoOn'])
     glU[n]=g.getUniformLocation(glProg,n);
-  g.uniform1i(glU.uH,0); g.uniform1i(glU.uC,1); g.uniform1i(glU.uS,2); g.uniform1i(glU.uSky,3);
+  g.uniform1i(glU.uH,0); g.uniform1i(glU.uHs,11); g.uniform1i(glU.uC,1); g.uniform1i(glU.uS,2); g.uniform1i(glU.uSky,3);
   g.uniform1i(glU.uCityA,4); g.uniform1i(glU.uCityB,5);
   g.uniform1f(glU.uInvS, 1/GRADE_SAT);
   g.uniform1i(glU.uBiome,7); g.uniform1i(glU.uMask,8);
@@ -7764,6 +7782,20 @@ function glUploadWorld(){
     g.texParameteri(g.TEXTURE_2D,g.TEXTURE_WRAP_T,g.CLAMP_TO_EDGE); return t; };
   glTexH=mk(0);
   g.texImage2D(g.TEXTURE_2D,0,g.R16UI,MAPW,MAPH,0,g.RED_INTEGER,g.UNSIGNED_SHORT,HGT);
+  /* 平滑高度（ver -1216）：同一份 HGT，改存成 R16F 並開 LINEAR ——
+     行進迴圈就只要一次 texture() 就拿到雙線性內插好的高度（取樣器免費做）。
+     ⚠ 傳 Float32Array、internalformat 給 R16F：GPU 存的是 2 bytes/texel
+       （＝與 R16UI 同大小，2152×1200 約 4.9MB），暫時的 Float32 只是上傳緩衝。
+     ⚠ MIN/MAG 都要 LINEAR；WRAP 照舊 CLAMP（地圖外由 outside 那一支擋掉）。 */
+  { const hf=new Float32Array(MAPW*MAPH);
+    for(let i=0,n=hf.length;i<n;i++) hf[i]=HGT[i];
+    glTexHs=g.createTexture(); g.activeTexture(g.TEXTURE0+11);
+    g.bindTexture(g.TEXTURE_2D,glTexHs);
+    g.texImage2D(g.TEXTURE_2D,0,g.R16F,MAPW,MAPH,0,g.RED,g.FLOAT,hf);
+    g.texParameteri(g.TEXTURE_2D,g.TEXTURE_MIN_FILTER,g.LINEAR);
+    g.texParameteri(g.TEXTURE_2D,g.TEXTURE_MAG_FILTER,g.LINEAR);
+    g.texParameteri(g.TEXTURE_2D,g.TEXTURE_WRAP_S,g.CLAMP_TO_EDGE);
+    g.texParameteri(g.TEXTURE_2D,g.TEXTURE_WRAP_T,g.CLAMP_TO_EDGE); }
   glTexC=mk(1);
   g.texImage2D(g.TEXTURE_2D,0,g.RGBA8,MAPW,MAPH,0,g.RGBA,g.UNSIGNED_BYTE,
                new Uint8Array(COL.buffer,COL.byteOffset,COL.byteLength));
