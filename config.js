@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.13-1250';
+export const VERSION = 'ver 2026.09.13-1251';
 
 export const GAME_CONFIG = {
 
@@ -3362,6 +3362,11 @@ export const GAME_CONFIG = {
          ⚠ 它的手機模型只低 4.0 dB（前兩首是 6.2／7.5）＝低頻沒那麼重，
            在手機上不會像那兩首一樣縮一截。 */
       peritunematerial_taishoroman_theme2_loop:0.897,
+      /* 東方泊地（ver -1251，同一把尺、同一個錨）：
+           Peritune_Portside_Cafe_loop  LUFS −8.79／手機 −14.73 → 平均 **−11.76**
+         ⇒ 0.849×10^(1.40/20)＝0.997。峰值 0.00 dBFS × 0.997 ＝ −0.03 dBFS，未觸頂。
+         ⚠ 手機模型低 5.9 dB（中間值）。 */
+      peritune_portside_cafe_loop:0.997,
       /* ⚠ 這兩首的「手機喇叭模型」比原始量測低 6.2／7.5 dB（一般曲子約 4~5）——
          它們的低頻本來就重。增益對的是**兩者的平均**（§6.6：只對其中一邊會讓
          低頻重的曲子在另一端突出 4~7 dB）。 */
@@ -4016,6 +4021,12 @@ export const ASSETS = {
   bgm_moonlit:      "resources/audio/bgm/Peritune_Moonlit_Dancer_loop.m4a",        // 聖索菲亞城（ver -1247）
   bgm_blackcrystal: "resources/audio/bgm/Peritune_Black_Crystal_loop.m4a",         // 伊甸古墓（ver -1247）
   bgm_taisho2:      "resources/audio/bgm/PerituneMaterial_TaishoRoman_Theme2_loop.m4a",   // 拉芬斯達爾城（ver -1248）
+  /* ⚠⚠ 東方泊地（ver -1251，Ray：「東泊放這首」）。**這座城還沒有地圖內容**
+     （`script/town.js` 沒有 `eastport`，12 張 `East_*` 背景一張都還沒交），
+     所以這一首**現在還沒有人叫它** —— 素材、鑰匙、增益、Credit 先備好，
+     `TOWNS.eastport` 建起來的那一刻只要寫 `bgm:'portside'` 就接上。
+     ⚠ 先進來是刻意的：等到要用才補，就是 §6.6 那條「加音檔忘了補 fileGain」的溫床。 */
+  bgm_portside:     "resources/audio/bgm/Peritune_Portside_Cafe_loop.m4a",                // 東方泊地（ver -1251，待 TOWNS.eastport）
   bgm_piratebattle: "resources/audio/bgm/bgm_piratebattle.m4a",
   /* 湖上甲板那一段（ver -744，Ray 的 stage5 稿）。 */
   bgm_misty:        "resources/audio/bgm/Peritune_Misty_Hollow_loop.m4a",

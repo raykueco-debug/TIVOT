@@ -140,3 +140,4 @@ when	from	to	reason
 20260913-142555	flight/city/ravnsdal_mass.json	_recycle/flight/city/ravnsdal_mass.json	ver -1220 重跑 ravnsdal（城內綠地改積雪色）
 20260913-151642	flight/geo/moss_stone.webp	_recycle/flight/geo/moss_stone.webp	接縫做壞的第一版（cross-fade 寫錯，接縫 34.8 反而比原圖 12.0 差）
 20260913-153122	flight/geo/moss_stone.webp	_recycle/flight/geo/moss_stone.webp.20260913-153122	v1 苔只有 16.6%，Ray 要三成；改用照他提示詞跑的 v3
+20260913-181606	resources/audio/bgm/Peritune_Portside_Cafe_loop.ogg	_recycle/resources/audio/bgm/Peritune_Portside_Cafe_loop.ogg	誤帶進來的 ogg（BGM 一律 m4a，§6.6）；同一份原檔仍在 ~/Downloads/Peritune_Portside_Cafe/
