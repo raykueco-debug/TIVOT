@@ -1799,6 +1799,12 @@ function fireOneShot(line){
    ⚠ 四支箭飛出去的是**複製品**，圓盤上的箭不會消失 —— 它們不是獨立零件
      （上下兩支是同一支十字架的兩端），挖掉會把紋章弄壞。理由記在那支腳本裡。 */
 const KERB_DIR='resources/vfx/';
+/* ⚠⚠ 門的素材是**會被同名覆蓋**的（ver -1215 削掉了 alpha 底噪），所以一定要帶
+   cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
+   「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
+   飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
+const KERB_V='?v=1215';
+const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
      只要中心擺對，轉幾度都落在該落的地方。 */
@@ -1911,7 +1917,7 @@ function layoutKerberos(){
   dr.style.width=Wd+'px'; dr.style.height=Hd+'px';
   dr.style.left=dx+'px'; dr.style.top=top+'px';
   kb.style.setProperty('--kerb-rise', Math.max(0,top)+'px');
-  kb.style.setProperty('--kerb-door', 'url("'+KERB_DIR+'kerberos_door.webp")');
+  kb.style.setProperty('--kerb-door', 'url("'+kerbUrl('kerberos_door')+'")');
   /* 開門時「左半扇＋圓盤」這個剛體要走多遠：兩者取大的 ——
        ① 左扇自己出畫面：半扇寬 ×1.04
        ② 圓盤的右緣也要出畫面（要算 lift 放大之後的，係數 1.14＝1.11 再留餘裕）
@@ -2103,17 +2109,17 @@ function layoutKerberos(){
     kerbReady=true;
     const src={ kerbPlate:'kerberos_plate', kerbTop:'kerberos_top', kerbPendImg:'kerberos_pendant',
                 kerbGearImg:'kerberos_gear' };
-    for(const id in src){ const el=$(id); if(el) el.src=KERB_DIR+src[id]+'.webp'; }
+    for(const id in src){ const el=$(id); if(el) el.src=kerbUrl(src[id]); }
     const gsi=$('kerbGearSm'), gsimg=gsi && gsi.querySelector('img');
-    if(gsimg) gsimg.src=KERB_DIR+'kerberos_gear.webp';
+    if(gsimg) gsimg.src=kerbUrl('kerberos_gear');
     const gbb=$('storyExit');
-    if(gbb) gbb.style.setProperty('--kg-mask', 'url("'+KERB_DIR+'kerberos_gear.webp")');
+    if(gbb) gbb.style.setProperty('--kg-mask', 'url("'+kerbUrl('kerberos_gear')+'")');
     /* 高光的遮罩＝**吊墜自己那張圖**（鐵律 7：路徑只有 `KERB_DIR` 這一份）。 */
     const pdw=$('kerbPend');
-    if(pdw) pdw.style.setProperty('--kp-mask', 'url("'+KERB_DIR+'kerberos_pendant.webp")');
+    if(pdw) pdw.style.setProperty('--kp-mask', 'url("'+kerbUrl('kerberos_pendant')+'")');
     bindPend();
-    for(const k of KERB_ARROWS){ const a=kb.querySelector('.kerb-arrow.'+k); if(a) a.src=KERB_DIR+'kerberos_arrow.webp'; }
-    for(const k of KERB_RIVETS){ const r=kb.querySelector('.kerb-rivet.'+k); if(r) r.src=KERB_DIR+'kerberos_rivet.webp'; }
+    for(const k of KERB_ARROWS){ const a=kb.querySelector('.kerb-arrow.'+k); if(a) a.src=kerbUrl('kerberos_arrow'); }
+    for(const k of KERB_RIVETS){ const r=kb.querySelector('.kerb-rivet.'+k); if(r) r.src=kerbUrl('kerberos_rivet'); }
   }
 }
 
@@ -3231,7 +3237,7 @@ function preloadStory(startId, onProgress){
   /* ⚠ 門的素材也要預載：它是**進戰鬥那一刻**才動起來的，沒先抓的話升上去是一片空白。 */
   for(const f of ['kerberos_door','kerberos_plate','kerberos_arrow','kerberos_rivet','kerberos_top',
                   'kerberos_pendant','kerberos_gear'])
-    A.imgs.push(KERB_DIR+f+'.webp');
+    A.imgs.push(kerbUrl(f));
   /* ⚠ 門的三支音效也要預載：撞擊音在演出**第 0 毫秒**就要響，
      現抓的話一定遲到（audio.js 的 LATE_PLAY_MS 是 1.5 秒，遲到就乾脆不播）。 */
   for(const k in KERB_SFX) if(KERB_SFX[k]) A.ses.push(KERB_SE_DIR+KERB_SFX[k]+'.'+(KERB_SFX_EXT[k]||'m4a'));

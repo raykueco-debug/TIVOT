@@ -71,8 +71,17 @@ def run(check=False):
         (r'src="(\.\./orientation|settlement|talks)\.js(\?v=[^"]*)?"',
          r'src="\1.js?v=<V>"'),
         (r"const FLIGHT_VER = 'ver [^']*';", "const FLIGHT_VER = 'ver -<V>';"),
+        # ⚠ 門的素材是會被同名覆蓋的（-1215 削過 alpha 底噪），所以圖也要帶版本號。
+        #   §5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是「看起來沒變」。
+        (r'(\.\./resources/vfx/kerberos_[a-z]+\.webp)(\?v=[0-9.]*)?', r'\1?v=<V>'),
     ], v)
     if s != s0: dirty.append(('flight/index.html', p, s))
+
+    # ③ modules/story.js：門的素材路徑由 kerbUrl() 一支組，版本號就一個常數
+    p, s0, s = patch('modules/story.js', [
+        (r"const KERB_V='\?v=[^']*';", "const KERB_V='?v=<V>';"),
+    ], v)
+    if s != s0: dirty.append(('modules/story.js', p, s))
 
     if check:
         if dirty:

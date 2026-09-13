@@ -122,3 +122,13 @@ when	from	to	reason
 20260912-171221	flight/geo/castle_roof.webp	_recycle/flight/geo/castle_roof.webp	ver -1164：色階重校為外廓實測的冷灰白／冷灰藍（原 webp 偏暖偏暗）
 20260912-203729	flight/city/Eastport_topdown.png	_recycle/flight/city/Eastport_topdown.png	東方泊地平面圖第二版：Ray 說第一版太密、顏色太深（實測城內 V95/S0.40 vs 北方泊地 112/0.18）ver -1178
 20260913-130935	flight/_dbg.html	_recycle/flight/_dbg.html	GPU 除錯用的暫時副本（ver -1211 查山的顆粒），已不需要
+20260913-134813	resources/vfx/kerberos_pendant.webp	_recycle/resources/vfx/kerberos_pendant.webp	alpha 底噪版（ver -1215 削掉 alpha<8 的殘留）
+20260913-134820	resources/vfx/kerberos_gear.webp	_recycle/resources/vfx/kerberos_gear.webp	alpha 底噪版（ver -1215 削掉 alpha<8 的殘留）
+20260913-134832	resources/vfx/kerberos_top.webp	_recycle/resources/vfx/kerberos_top.webp	alpha 底噪版（ver -1215 削掉 alpha<8 的殘留）
+20260913-134836	resources/vfx/kerberos_plate.webp	_recycle/resources/vfx/kerberos_plate.webp	alpha 底噪版（ver -1215 削掉 alpha<8 的殘留）
+20260913-134839	resources/vfx/kerberos_arrow.webp	_recycle/resources/vfx/kerberos_arrow.webp	alpha 底噪版（ver -1215 削掉 alpha<8 的殘留）
+20260913-134840	resources/vfx/kerberos_rivet.webp	_recycle/resources/vfx/kerberos_rivet.webp	alpha 底噪版（ver -1215 削掉 alpha<8 的殘留）
+20260913-134857	resources/vfx/kerberos_pendant.webp	_recycle/resources/vfx/kerberos_pendant.webp.20260913-134857	q92 二次編碼版（ver -1215 改回從 _originals 的 PNG 一次編碼）
+20260913-134904	resources/vfx/kerberos_gear.webp	_recycle/resources/vfx/kerberos_gear.webp.20260913-134904	q92 二次編碼版（ver -1215 改回從 _originals 的 PNG 一次編碼）
+20260913-134916	resources/vfx/kerberos_rivet.webp	_recycle/resources/vfx/kerberos_rivet.webp.20260913-134916	q92 二次編碼版（ver -1215 改回從 _originals 的 PNG 一次編碼）
+20260913-135052	flight/_pend_old.webp	_recycle/flight/_pend_old.webp	A/B 用的舊吊墜（alpha 底噪版），比對完了
