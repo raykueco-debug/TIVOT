@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1211"></script>
+<script src="../orientation.js?v=1212"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -512,11 +512,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1211"></script>
+<script src="settlement.js?v=1212"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1211"></script>
+<script src="talks.js?v=1212"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -556,7 +556,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1211';
+const FLIGHT_VER = 'ver -1212';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -5341,7 +5341,10 @@ async function loadWorld(){
   try{ buildCityMask(); }catch(e){ console.warn('[city] 遮罩建不出來', e); }
   /* GL 地形（ver -1200，`?gl=1`）：⚠ 一定要在這裡才上傳 —— loadWorld 的邊緣抬升、
      城的整地、河道與水位全部改過 HGT/COL，早一步上傳就會與畫面上的地形對不起來。 */
-  if(GLON){ try{ if(glInit()){ glUploadWorld(); glBuildRuins(); } }
+  /* ⚠ `gl-on` 那個 class 掛在**這裡**（初始化真的成功之後），不是在 GLON 那一行 ——
+     理由見 GLON 的註解：開不起來時掛上去會變成「整片沒有地形」。 */
+  if(GLON){ try{ if(glInit()){ glUploadWorld(); glBuildRuins();
+                               document.body.classList.add('gl-on'); } }
             catch(e){ console.warn('[gl] 初始化失敗，維持 CPU 路徑', e); } }
 
   step(0.94);   // 預熱貼圖…
@@ -7419,9 +7422,16 @@ const ybuf=new Int32Array(512);
      深度輸出。**還沒有**：地貌貼圖層（BIOME／鐵路／道路／屋頂）、崖面岩層、
      瀑布、抖色、城的金字塔取樣。所以畫面會比舊路徑「平」——那是預期的，
      不是壞掉；那些是 Stage 1b。
-   ⚠ 舊路徑**一行都沒改**：`?gl=1` 才走這裡，隨時可以 A/B。 */
-const GLON = /[?&]gl=1/.test(location.search);
-if(GLON) document.body.classList.add('gl-on');
+   ⚠⚠⚠ **ver -1212 起 GPU 是預設**（Ray：「飛行地圖全部交給 gpu，這是死命令」）。
+     `?gl=0` 才退回 CPU 路徑，留著隨時可以 A/B。
+     為什麼一定要改成預設：`GLON` 讀的是**這一頁自己的**網址，而正式玩法是
+     主遊戲把它當 iframe 內嵌（`main.js` 的 `FLIGHT_SRC`，只帶 `?v=`）——
+     所以「加 `?gl=1` 才開」等於**玩家永遠吃不到 GPU**，只有我直接開這一頁時才會走到。
+     Ray 在手機上跑 -1211 回報「卡頓更嚴重了」就是這個：他跑的是 CPU 路徑。
+   ⚠ `body.gl-on` **不在這裡掛** —— 它要等 `glInit()` 真的成功（見 loadWorld 收尾）。
+     掛早了而 WebGL2 又開不起來（舊機、driver 黑名單）的話，2D 那張畫布的視窗區
+     會被清成透明、而底下的 GL 畫布是空的 ＝ **整片沒有地形**，而且沒有錯誤訊息。 */
+const GLON = !/[?&]gl=0/.test(location.search);
 let glTexBiome=null, glTexMask=null, glTexRail=null, glTexGeo=null, glGeoUp=false;
 let glSmpPbo=null, glSmpFence=null;
 const glSmpBuf=new Uint8Array(8*8*4);   // 環境光取樣的非同步回讀落點（見 screenSample）
@@ -15489,6 +15499,11 @@ function loop(now){
          版本號先查這裡。 */
     document.getElementById('fps').textContent=
       FLIGHT_VER+'  '+Math.round(1000/(acc/n))+' fps '+BW+'×'+BH+' q'+qLevel+(qLocked?'!':'')
+      /* ⚠ 「現在走的是哪一條渲染路徑」一定要印出來（ver -1212）。-1211 那一次
+         Ray 在手機上回報「卡頓更嚴重了」，實際上他跑的是 CPU 路徑 —— 因為
+         `?gl=1` 讀的是這一頁自己的網址，而主遊戲是把它當 iframe 內嵌的。
+         截圖裡看得到 gpu/cpu，這一整類誤判就不會再發生（同版本號那一條）。 */
+      +(GLON&&glReady?' gpu':' cpu')
       +'  ('+mx+','+my+') '+deg+'° h'+Math.round(cam.alt);
     acc=0;n=0;
   }
