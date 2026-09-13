@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1232"></script>
+<script src="../orientation.js?v=1233"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1232');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1233');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1232");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1232");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1233");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1233");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1232");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1232");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1233");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1233");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -483,25 +483,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1232" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1233" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1232" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1232" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1232" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1232" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1232" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1232" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1232" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1232" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1232" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1232" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1233" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1233" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1233" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1233" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1233" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1233" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1233" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1233" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1233" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1233" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1232" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1233" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1232" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1233" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -522,11 +522,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1232"></script>
+<script src="settlement.js?v=1233"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1232"></script>
+<script src="talks.js?v=1233"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -566,7 +566,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1232';
+const FLIGHT_VER = 'ver -1233';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -2441,6 +2441,12 @@ const RUIN_ART = {
   muyak: {
     rot: 0,
     drape: true,
+    /* ⚠⚠ ver -1233（Ray：「神殿整體高度位置上移一些，中間露出一點地基」）：
+       整座往上抬 10。下面每一塊的 `z0` 是 −14（埋在自己腳下最低點之下 14），
+       抬完只剩 **4** 的餘裕 —— 那 4 就是「不浮起來」的全部本錢，所以
+       `drapeDz` 同時由 3×3 改成 5×5 取樣（見那一段）。
+       ⚠ 再往上抬就要把 `z0` 一起加深，不然坑底那幾塊會開始浮。 */
+    drapeUp: 10,
     /* `base` **不會被畫出來**（`noBase`），它只是貼材與外框的尺標（鐵律 7）。 */
     base: { w:330, l:330, n:52, jit:0.04, ox:95 },
     /* ══ 貼材（ver -1224，Ray 交件 `flight/geo/moss_stone.webp`）══
@@ -2465,6 +2471,20 @@ const RUIN_ART = {
     noBase: true,
     lift: 8,
     parts: [
+      /* ══⚠⚠ ⓪ **中央那一組的基腳**（ver -1233，Ray：「中間露出一點地基」）══
+         比牆再寬一圈的一道矮台，**只鋪在拱廊與主塔底下** —— 外圍（斷柱林、側翼、
+         參道）照舊整個嵌在山裡，所以露出來的地基就只有「中間」那一段。
+         ⚠ `drape` 取的是**自己 footprint 內最低的那一點**，所以這三塊在各自最低的
+           地方露出約 8，往兩端地面一高就吃回去 —— 那正是「露出一點」而不是
+           「墊一塊大平台」（-1222 Ray 退過的那個）。
+         ⚠⚠ `z0` 給 **−16**（比別人低 2）不是 −14：排序的主鍵是 `z0`（§6.8.1 一），
+           與牆同值的話就要靠第二順位的深度決勝，而基腳與牆幾乎同深 ——
+           相機一動前後關係就會換邊，那就是閃動。低 2 讓它**永遠**先畫。
+         ⚠ 切成三段、各自錯開，不要一條 190 長的直邊（§6.8.1 二的第一名）。 */
+      { k:'stump', x:18, y:-103, w:36, l:58, h:24, z0:-16, shrink:0.99 },   // 露 8
+      { k:'stump', x:18, y: -48, w:36, l:52, h:24, z0:-16, shrink:0.99 },   // 露 8
+      { k:'stump', x:16, y:  22, w:40, l:78, h:26, z0:-16, shrink:0.99 },   // 露 10
+
       /* ── ① 拱廊正面：三段牆（x≈20，正面朝 +x），段與段之間留 6〜8 的縫 ── */
       /* ⚠⚠⚠ **一段牆與它的簷板、拱要連著寫**（ver -1231）：`drape` 的規約是
          「`z0>0` 的跟著**前一塊踩地的**零件」—— 三段牆先寫完再寫三片簷板的話，
@@ -2550,12 +2570,12 @@ const RUIN_ART = {
       { k:'stump', x:232, y: 59, w:14, l:44, h: 8, z0:32 },                  // 楣 → 40
 
       /* ── ⑥ 躺著的柱鼓與散落石塊（外觀圖前景那幾塊） ── */
-      { k:'fallen', x: 38, y: -70, rot: 0.50, len:26, dia:7, seg:2 },
-      { k:'fallen', x: 36, y:  30, rot:-1.00, len:22, dia:6, seg:2 },
-      { k:'fallen', x:-14, y: 126, rot: 1.30, len:24, dia:7, seg:3 },
+      { k:'fallen', x: 38, y: -70, rot: 0.50, len:26, dia:7, seg:2, z0:-12 },
+      { k:'fallen', x: 36, y:  30, rot:-1.00, len:22, dia:6, seg:2, z0:-12 },
+      { k:'fallen', x:-14, y: 126, rot: 1.30, len:24, dia:7, seg:3, z0:-12 },
       { k:'stump',  x: 44, y:-118, w:20, l:16, rot: 0.42, h:30, z0:-14 },   // 露 16
       { k:'stump',  x: 40, y:  92, w:18, l:15, rot:-0.30, h:29, z0:-14 },   // 露 15
-      { k:'fallen', x:118, y: -8, rot: 0.20, len:22, dia:6, seg:2 },
+      { k:'fallen', x:118, y: -8, rot: 0.20, len:22, dia:6, seg:2, z0:-12 },
       { k:'stump',  x:168, y:  8, w:16, l:14, rot: 0.60, h:27, z0:-14 },     // 露 13
     ],
   },
@@ -10075,12 +10095,17 @@ function drawRuins(scaleH,horizon,sinp,cosp){
        兩端的地面可以差 40 —— 取中心的話高的那一端會**浮在地上**（那正是
        -1225 被 Ray 指出的「地基」的另一種長相）。取最低點 ⇒ 高的那一端多埋一點，
        而多埋只會讓它更貼山，不會露底。 */
+    /* ⚠ `drapeUp`（ver -1233，Ray：「神殿整體高度位置上移一些，中間露出一點地基」）
+       ＝整座**一起往上抬**這麼多。抬了之後每一塊的底離它腳下最低點只剩
+       `|z0| − drapeUp`，所以**取樣要更準**（5×5 不是 3×3）：GL 的地形走的是
+       平滑高度圖，我這邊少抓到一點低點，差額就是一塊**浮在地上**的零件。 */
+    const drapeUp=A.drapeUp||0;
     const drapeDz=(lx,ly,w,l)=>{
       const hw=(w||0)/2, hl=(l||0)/2;
       let m=Infinity;
-      for(let i=-1;i<=1;i++) for(let k=-1;k<=1;k++)
-        m=Math.min(m, hAtLocal(lx+i*hw, ly+k*hl));
-      return m;
+      for(let i=-2;i<=2;i++) for(let k=-2;k<=2;k++)
+        m=Math.min(m, hAtLocal(lx+i*hw*0.5, ly+k*hl*0.5));
+      return m+drapeUp;
     };
     /* 局部座標（世界單位、以遺蹟中心為原點）→ 螢幕。回 null＝這一點不能用。 */
     const px=(lx,ly,h)=>{

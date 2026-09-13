@@ -67,11 +67,11 @@ def main():
             h0 = hm[iy, ix] * (1 - fx) + hm[iy, ix + 1] * fx
             h1 = hm[iy + 1, ix] * (1 - fx) + hm[iy + 1, ix + 1] * fx
             return (h0 * (1 - fy) + h1 * fy) - GH
+        UP = A.get('drapeUp', 0)          # 整座一起往上抬（ver -1233）
         def dzf(lx, ly, w, l):
-            m = hl(lx, ly)
-            for dx, dy in ((-w/2, -l/2), (w/2, -l/2), (-w/2, l/2), (w/2, l/2)):
-                m = min(m, hl(lx + dx, ly + dy))
-            return m
+            m = min(hl(lx + a * w / 4.0, ly + b * l / 4.0)
+                    for a in range(-2, 3) for b in range(-2, 3))
+            return m + UP
         ground = hl
 
     # ── 每個零件在立面上的矩形（y 範圍 × z 範圍）＋ 它的 x（深度）──
