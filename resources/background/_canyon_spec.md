@@ -46,7 +46,22 @@
 - [x] 全谷俯瞰地圖 `_canyon_map.webp`（設計參考，1→5 節點路線；底線開頭不被載入）。
 - 原稿：GPT 日景 5 張＋地圖在 `_originals/background/_canyon_gpt/`、
   Gemini 成品原檔在 `_originals/background/_canyon_gem/`。
-- [ ] `script/town.js` 的節點資料還沒接（程式 session 的事）。
+- [x] **`script/town.js` 的節點資料已接**（ver -1240，Ray：「把那一組放在卡耶爾山谷」）：
+      地圖 id `canyon`，拓樸照 `_canyon_map.webp`（入口→迴廊→白骨→祭場一條主線，
+      斷橋從白骨之地往右岔出去的死路）；飛行地圖上的降落點是 `PLACES` 的
+      **卡耶爾山谷 (985,858)**（`type:'險地'`）。
+      · `wilderness:true`（野外不打烊）／`stepMin:60`（每步一小時）／有霧（走過才亮）。
+      · 入口是復活點兼結算點（`rest`），往**下**＝出航離開。
+
+## 還缺的兩件（程式端等美術／等 Ray）
+
+- [ ] **小地圖** `resources/map/map_canyon.webp`（去白背、走 alpha；同
+      `map_shinierforest.webp` 的規格）。現在點地圖鈕會回「這一帶還沒有留下地圖。」
+      · 底稿可以直接用 `_canyon_map.webp`：1→5 的路線圖本來就是照拓樸畫的。
+      · 交件後程式端補 `map:{img, spots:{entry,corridor,bones,bridge,altar}}`
+        （`spots` 是各節點在圖上的比例座標，要對著成品量）。
+- [ ] **遭遇戰的敵人卡**：這一組還沒有怪，所以 `wildSpawn` 先沒給
+      （自己發明數值會違反鐵律 1）。祭場是 Boss 場，卡到了再接。
 
 ### 產線對話（要重衍生時用）
 | 節點 | Gemini 對話 |

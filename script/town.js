@@ -2886,6 +2886,45 @@ export const TOWNS = {
        等 Ray 的稿（戰鬥拍照城鎮戰掛 acts 的 {battle} 那一套）。
      背景已全部交件（Forest_<節點>_Day/_Dusk/_Night 共 27 張，ver -791）；
        終點直接用遺蹟那批的 Ruins_Entrance。 */
+  /* ══⚠⚠⚠ 卡耶爾山谷（死亡峽谷）—— ver -1240，Ray：「美術很久以前有交一份山谷
+     地形的背景，把那一組放在卡耶爾山谷」══════════════════════════════════
+     美術 2026-09-06 交的 `Canyon_*` 那一組（15 張 ＝ 5 節點 × day/dusk/night），
+     工單見 `resources/background/_canyon_spec.md` —— 它最後一條待辦就是
+     「`script/town.js` 的節點資料還沒接（程式 session 的事）」，這一版接上。
+     ⚠ 拓樸照美術一起交的 `_canyon_map.webp`（底線開頭＝設計參考，不會被載入）：
+       **1 入口 → 2 迴廊 → 3 白骨 → 5 祭場**一條主線，**4 斷橋**從白骨之地
+       往右岔出去的死路。
+     ⚠ 出口方向兩端要相反（§6.5.4.3 的鐵條）：所以每一條都明寫反向，
+       不用 `back` —— 這樣畫面上的箭頭與小地圖才對得起來。
+     ⚠ `wilderness:true`＝野外沒有門可以關（19:00 全域打烊那條不罩這裡）。
+     ⚠ `stepMin:60`＝野外每步一小時（同夏爾森林）。
+     ⚠ `mist` 不寫＝**預設有霧**（走過的節點才亮）——只有大城市寫 `mist:0`。
+     ⚠⚠ **還沒有小地圖**：`map` 先不給，點地圖鈕會回「這一帶還沒有留下地圖。」
+       （§6.5.4「還不能做不要靠藏起鈕擋」）。美術工單已寫進 `_canyon_spec.md`。
+     ⚠⚠ **還沒有遭遇戰**：`wildSpawn` 先不給 —— 那一組怪的敵人卡還沒有，
+       自己發明數值會違反鐵律 1（內容歸資料、資料由 Ray 給）。
+       祭場（`altar`）在工單上是 Boss 場，卡到了再接。 */
+  canyon: {
+    name: '卡耶爾山谷',
+    entry: 'entry',
+    bgm: 'lostplace',              // 荒廢之地（死谷）
+    wilderness: true,
+    stepMin: 60,
+    nodes: {
+      /* 入口＝復活點，**不可以有戰鬥**（§6.5.2）。往下＝出航離開這張圖 ——
+         玩家是從天上降落進來的，這裡沒有相鄰的城可以走回去。 */
+      entry:    { bg:'Canyon_entry',    name:'卡耶爾山谷　峽谷入口', rest:true,
+                  exits:{ up:'corridor' }, sail:{ dir:'down' } },
+      corridor: { bg:'Canyon_corridor', name:'卡耶爾山谷　風蝕迴廊',
+                  exits:{ up:'bones', down:'entry' } },
+      bones:    { bg:'Canyon_bones',    name:'卡耶爾山谷　白骨之地',
+                  exits:{ up:'altar', right:'bridge', down:'corridor' } },
+      bridge:   { bg:'Canyon_bridge',   name:'卡耶爾山谷　斷橋',
+                  exits:{ left:'bones' } },                    // 岔出去的死路
+      altar:    { bg:'Canyon_altar',    name:'卡耶爾山谷　谷底祭場', rest:true,
+                  exits:{ down:'bones' } },                    // 谷底盡頭（Boss 場）
+    },
+  },
   shinier_forest: {
     name: '夏爾森林',
     entry: 'entry',
