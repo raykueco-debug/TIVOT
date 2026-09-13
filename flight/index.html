@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1256"></script>
+<script src="../orientation.js?v=1257"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1256');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1257');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1256");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1256");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1257");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1257");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1256");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1256");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1257");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1257");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -528,7 +528,8 @@
     <button data-tool="mat">▦ 貼材</button>
     <button data-tool="rail">＝ 鐵路</button>
     <button data-tool="road">— 公路</button>
-    <!-- ⚠ 擦除**只擦手繪的公路與鐵路**（ver -1256，Ray：「再生一個擦除鍵 專擦公路鐵路」）。
+    <!-- ⚠ 擦除**擦公路與鐵路**（ver -1256 加、-1257 擴到自動產生的那一套，
+         Ray：「我要擦你畫的公路鐵路」）：自動的與手繪的一視同仁，掃過就剪斷。
          地形與貼材不歸它管：那兩種是逐格的光柵，要收回去走「挖」或重塗。 -->
     <button data-tool="erase">⌫ 擦除</button>
     <button data-tool="move">⌖ 移城</button>
@@ -563,25 +564,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1256" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1257" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1256" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1256" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1256" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1256" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1256" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1256" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1256" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1256" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1256" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1256" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1257" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1257" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1257" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1257" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1257" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1257" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1257" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1257" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1257" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1257" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1256" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1257" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1256" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1257" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -602,11 +603,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1256"></script>
+<script src="settlement.js?v=1257"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1256"></script>
+<script src="talks.js?v=1257"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -646,7 +647,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1256';
+const FLIGHT_VER = 'ver -1257';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -1965,6 +1966,53 @@ function applyMapEdits(phase, raw){
     meCovClear(meApply(E, E.pts, raw, null));
   }
 }
+/* ── 擦除（ver -1257）────────────────────────────────────────────
+   Ray：「我要擦你畫的公路鐵路」。
+   ⚠⚠⚠ **自動產生的那一套不是資料，是每次開機算出來的**（`buildRoads`／
+     `buildRails` 的 MST ＋ Dijkstra）—— 所以「擦掉」不可能是「從清單裡刪一筆」。
+     作法是：**折線鋪出去之前，先把落在擦除筆下的點拿掉、把線就地剪斷**。
+     那一段於是既不鋪路面、也沒有軌道、火車也不跑過去（`buildTrains` 吃的就是
+     剪過的 `RAIL_PATHS`）—— 不是「看不見但東西還在」。
+   ⚠⚠ **一支橡皮擦管全部**（-1257 收掉了 -1256 的「整條刪掉手繪那一條」）：
+     玩家心裡沒有「這條是自動的、那條是我畫的」之分，鏡頭下就是一條路。
+     兩種行為一支筆是鐵律 8 的病。手繪的線因此也是**被剪斷**而不是被刪掉 ——
+     資料留著，「取消」只要把擦除那一筆丟掉就好。
+   ⚠ 剪出來的每一段各自是一條線：鐵路那邊要在**算縱斷面之前**剪，
+     不然剪出來的段沒有 `prof`／`tun`／`via`。 */
+function meLineNear(E, x, y){       // 這一點在不在擦除筆 E 的筆跡之內
+  const r=(E.r||14), r2=r*r, P=E.pts;
+  if(P.length===1){ const dx=P[0][0]-x, dy=P[0][1]-y; return dx*dx+dy*dy<=r2; }
+  for(let k=1;k<P.length;k++){
+    const ax=P[k-1][0], ay=P[k-1][1], bx=P[k][0], by=P[k][1];
+    const dx=bx-ax, dy=by-ay, L2=dx*dx+dy*dy;
+    let t = L2 ? ((x-ax)*dx+(y-ay)*dy)/L2 : 0;
+    t = t<0?0:(t>1?1:t);
+    const qx=ax+dx*t-x, qy=ay+dy*t-y;
+    if(qx*qx+qy*qy<=r2) return true;
+  }
+  return false;
+}
+/* 把一組折線照擦除筆剪開。`extra` ＝還沒生效的那一筆（編輯器的即時預覽用）。
+   ⚠ 完全沒被碰到的線**原樣回傳同一個物件**：掛在陣列上的 `ends`／`prof`／`hand`
+     才不會被複製掉，也省下白做的工。 */
+function mapEditCut(paths, extra){
+  const ES=MAP_EDITS.filter(e=>e.t==='erase');
+  if(extra) for(const e of extra) if(e && e.t==='erase' && e.pts && e.pts.length) ES.push(e);
+  if(!ES.length) return paths;
+  const hit=(x,y)=>{ for(const E of ES) if(meLineNear(E,x,y)) return true; return false; };
+  const out=[];
+  for(const pts of paths){
+    let any=false;
+    for(const q of pts) if(hit(q[0],q[1])){ any=true; break; }
+    if(!any){ out.push(pts); continue; }
+    let run=[];
+    const flush=()=>{ if(run.length>=2){ if(pts.hand) run.hand=true; out.push(run); } run=[]; };
+    for(const q of pts){ if(hit(q[0],q[1])) flush(); else run.push(q); }
+    flush();
+  }
+  return out;
+}
+
 /* 手繪的鐵路／公路：轉成與 `gridPath` 同格式的折線（地圖座標、約 ROAD_DS 一點），
    由 buildRoads／buildRails 接到自動產生的那幾條後面。
    ⚠⚠ 手繪是**加上去**不是取代：自動網路照舊在（城與城本來就該連得到），
@@ -2290,7 +2338,7 @@ function mstEdges(nodes){
 function buildRoads(){
   const G=PFGRID||buildPathGrid();
   const nodes=SETTLEMENTS.map(S=>({x:Math.round(S.x/ROAD_DS), y:Math.round(S.y/ROAD_DS), n:S.n}));
-  const paths=[];
+  let paths=[];                         // ⚠ let：橡皮擦會整個換掉它（mapEditCut）
   for(const [a2,b2] of mstEdges(nodes)){
     const pts=gridPath(G, roadCost, nodes[a2].y*G.W2+nodes[a2].x, nodes[b2].y*G.W2+nodes[b2].x);
     if(pts) paths.push(pts);
@@ -2313,9 +2361,14 @@ function buildRoads(){
       if(sp) paths.push(sp);
     }
   }
-  ROAD_PATHS=paths;
   /* 手繪的公路（ver -1254）：接在自動網路後面，之後的鋪面／地貌一視同仁。 */
   for(const h of mapEditPaths('road')) paths.push(h);
+  /* 橡皮擦（ver -1257）：⚠ 一定要在 `stampPaths` **之前** —— 剪的是折線本身，
+     所以那一段不會鋪路面。 */
+  paths=mapEditCut(paths);
+  /* ⚠ `ROAD_PATHS` 移到這裡才指派（ver -1257）：地圖畫面與編輯器讀的就是它，
+     早一步指派的話**手繪的與擦掉的都不會反映在圖上**（鋪面是對的、圖是錯的）。 */
+  ROAD_PATHS=paths;
   ROADW=stampPaths(paths, 2.2);
   window.__roads=paths.length;
   /* 路網簽章（條數:總點數:折線雜湊）。動到 gridPath／roadCost／MST 之後拿它
@@ -2349,7 +2402,7 @@ function buildRails(){
   const G=PFGRID||buildPathGrid();
   buildRailKeepOut(G);                  // ⚠ 一定要在 gridPath 之前：railCost 讀的就是它
   const nodes=big.map(S=>({x:Math.round(S.x/ROAD_DS), y:Math.round(S.y/ROAD_DS), n:S.n}));
-  const paths=[];
+  let paths=[];                         // ⚠ let：橡皮擦會整個換掉它（mapEditCut）
   for(const [a2,b2] of mstEdges(nodes)){
     const pts=gridPath(G, railCost, nodes[a2].y*G.W2+nodes[a2].x, nodes[b2].y*G.W2+nodes[b2].x);
     if(!pts || pts.length<2) continue;
@@ -2365,6 +2418,12 @@ function buildRails(){
      ⚠ 車站（`railStations`）看的是「折線有沒有經過城」，不是 `pts.ends`，
      所以手繪的線不必交代兩端是誰；沒經過城就沒有站場，那是對的。 */
   for(const h of mapEditPaths('rail')) paths.push(h);
+  /* 橡皮擦（ver -1257）：⚠⚠ 一定要在**縱斷面之前** —— 那一段會替每一條線算
+     `prof`／`tun`／`via`，剪晚了剪出來的段沒有縱斷面，下游讀 `pts.tun[k]` 是
+     undefined（隧道判成假、橋也不會架），而且不會有任何錯誤訊息。
+     ⚠ 在這裡剪，火車也一起對了：`buildTrains` 吃的就是剪過的 `RAIL_PATHS`，
+     所以不會有「軌道擦掉了、車還在那條看不見的線上跑」。 */
+  paths=mapEditCut(paths);
   /* ── 縱斷面與隧道 ────────────────────────────────────────────
      每條線先算出受坡度限制的設計高程；地面高過它 TUNNEL_MIN 以上的那幾段
      ＝**在山裡**，地表不鋪軌（鋪了會看到鐵軌爬過山頂）。 */
@@ -8213,8 +8272,12 @@ function meDraw(){
     g.setLineDash(dash||[]); g.strokeStyle=col; g.lineWidth=w; g.stroke(); g.setLineDash([]);
   };
   g.lineCap='round'; g.lineJoin='round';
-  for(const pts of ROAD_PATHS) poly(pts,'rgba(214,178,92,.85)',Math.max(1,s*1.6));
-  for(const pts of RAIL_PATHS) poly(pts,'rgba(226,232,240,.92)',Math.max(1,s*1.4),[Math.max(2,s*3),Math.max(2,s*2.4)]);
+  /* ⚠⚠ 畫之前先照橡皮擦剪一次 —— **包含正在畫的／還沒確認的那一筆**（`extra`）。
+     `ROAD_PATHS`／`RAIL_PATHS` 本身已經是開機時剪過的，再剪一次是冪等的。
+     這就是「先套用再問」對擦除的實現：擦到哪裡，那一段當場就不見了。 */
+  const extra = [meCur, mePend && mePend.k==='edit' ? mePend.e : null].filter(e=>e && e.t==='erase');
+  for(const pts of mapEditCut(ROAD_PATHS, extra)) poly(pts,'rgba(214,178,92,.85)',Math.max(1,s*1.6));
+  for(const pts of mapEditCut(RAIL_PATHS, extra)) poly(pts,'rgba(226,232,240,.92)',Math.max(1,s*1.4),[Math.max(2,s*3),Math.max(2,s*2.4)]);
   /* 手繪但還沒生效的線（要重整才會真的鋪出來）—— 用亮青色與上面分開。
      ⚠ 擦除筆碰到的那幾條畫成紅色虛線＝「按確定就會消失」（ver -1256）。
      ⚠⚠ **等待確認的那一條也要畫**：它刻意還沒進 `MAP_EDITS`（那才是「生效」），
@@ -8225,10 +8288,10 @@ function meDraw(){
               ? MAP_EDITS.concat([mePend.e]) : MAP_EDITS;
   for(const E of lines){
     if(E.t!=='rail'&&E.t!=='road') continue;
-    const doomed = meEraseHit && meEraseHit.has(E);
-    poly(E.pts, doomed ? 'rgba(255,90,90,.95)'
-                       : (E.t==='rail'?'rgba(80,255,255,.95)':'rgba(120,255,190,.95)'),
-         Math.max(1.6,s*2), doomed?[Math.max(3,s*4),Math.max(3,s*3)]:null);
+    /* ⚠ 手繪的線也吃橡皮擦（一視同仁）：畫的時候與重整之後才會是同一件事 ——
+       重放時它與自動的那幾條一起進 `mapEditCut`。 */
+    const col=E.t==='rail'?'rgba(80,255,255,.95)':'rgba(120,255,190,.95)';
+    for(const seg of mapEditCut([E.pts], extra)) poly(seg, col, Math.max(1.6,s*2));
   }
   if(meCur&&(meCur.t==='rail'||meCur.t==='road')&&meCur.pts.length>1)
     poly(meCur.pts,'rgba(255,240,140,.95)',Math.max(1.6,s*2));
@@ -8254,43 +8317,19 @@ function meDraw(){
   }
 }
 let meBrushAt=null;
-/* ── 擦除（ver -1256）────────────────────────────────────────────
-   Ray：「再生一個擦除鍵 專擦公路鐵路」。
-   ⚠⚠ 擦的是**手繪的那幾條**（`MAP_EDITS` 裡 `t:'rail'/'road'` 的筆畫），
-     **一碰到就整條擦掉**，不切段。理由有兩個：
-       · 切段要把一條折線拆成兩條，而「一條線」正是重放時 `railProfile`
-         算縱斷面、`railStations` 找車站的單位 —— 從中間剪開等於生出兩條
-         各自有站有隧道的線，那不是玩家想像中的「擦掉一段」。
-       · 要擦掉一段的正解是**重畫**：擦掉整條再畫想要的那一條。
-   ⚠⚠ **自動產生的路網擦不掉** —— 那是每次開機由 Dijkstra 算出來的
-     （`buildRoads`／`buildRails` 的 MST），不是資料。要它改道走的是成本場
-     （同 ver -1252 的文物禁區），不是橡皮擦。畫面上會照舊看到那幾條。 */
-let meEraseHit=null;              // 擦除中：這一筆會擦掉哪幾條（Set of edit）
-function meLineHit(E, x, y, r){
-  const r2=r*r;
-  for(let k=1;k<E.pts.length;k++){
-    const ax=E.pts[k-1][0], ay=E.pts[k-1][1], bx=E.pts[k][0], by=E.pts[k][1];
-    const dx=bx-ax, dy=by-ay, L2=dx*dx+dy*dy;
-    let t = L2 ? ((x-ax)*dx+(y-ay)*dy)/L2 : 0;
-    t = t<0?0:(t>1?1:t);
-    const qx=ax+dx*t-x, qy=ay+dy*t-y;
-    if(qx*qx+qy*qy<=r2) return true;
-  }
-  /* 只有一個點的線（還沒拖出去就放開）也要擦得到。 */
-  if(E.pts.length===1){
-    const qx=E.pts[0][0]-x, qy=E.pts[0][1]-y;
-    return qx*qx+qy*qy<=r2;
-  }
-  return false;
+/* 這一筆擦除會吃掉幾個折線節點（0 ＝什麼都沒碰到）。 */
+function meEraseCount(E){
+  let n=0;
+  for(const list of [ROAD_PATHS, RAIL_PATHS])
+    for(const pts of list)
+      for(const q of pts) if(meLineNear(E,q[0],q[1])) n++;
+  return n;
 }
-function meEraseAt(x,y,r){
-  if(!meEraseHit) meEraseHit=new Set();
-  for(const E of MAP_EDITS){
-    if(E.t!=='rail' && E.t!=='road') continue;
-    if(meEraseHit.has(E)) continue;
-    if(meLineHit(E,x,y,r)) meEraseHit.add(E);
-  }
-}
+/* ⚠⚠ 擦除的實作**不在這裡**：它現在只是一支普通的筆畫（`t:'erase'`），
+   真正做事的是 `mapEditCut()`（見上方「擦除」那一節）—— 折線鋪出去之前先被剪斷。
+   ver -1256 那一版是「碰到就把手繪的那一條整條從 `MAP_EDITS` 刪掉」，
+   -1257 收掉了：自動產生的路網刪不掉（它不是資料），而同一支筆對兩種線有兩種
+   行為是鐵律 8 的病。 */
 function meBrushR(){ return +meEl('meSize').value||18; }
 function meBrushA(){ return +meEl('meAmp').value||45; }
 
@@ -8320,7 +8359,6 @@ function meDoUndo(){
 }
 function meUndoLabel(u){
   if(u.k==='move')  return u.name+' 搬回 ('+u.from[0]+','+u.from[1]+')';
-  if(u.k==='erase') return '擦掉的 '+u.removed.length+' 條放回來';
   return meLabel(u.e.t);
 }
 function meLabel(t){ return {hill:'山',dig:'挖',water:'水',mat:'貼材',
@@ -8391,13 +8429,9 @@ function meStrokeBegin(mx,my){
   /* ⚠⚠ 守門擺在**這裡**不是擺在事件處理器裡（鐵律 8）：起筆的入口只有這一支，
      日後多一條路（鍵盤、腳本、驗收）會自動吃到。事件那邊只負責那句提示。 */
   if(meBusy()) return;
-  if(meTool==='erase'){
-    meCur={ t:'erase', r:meBrushR(), pts:[[mx,my]] };
-    meEraseHit=new Set(); meEraseAt(mx,my,meCur.r);
-    return;
-  }
-  if(meTool==='rail'||meTool==='road'){
+  if(meTool==='erase'||meTool==='rail'||meTool==='road'){
     meCur={ t:meTool, pts:[[mx,my]] };
+    if(meTool==='erase') meCur.r=meBrushR();
     return;
   }
   meCur={ t:meTool, r:meBrushR(), pts:[[mx,my]] };
@@ -8408,17 +8442,12 @@ function meStrokeBegin(mx,my){
 }
 function meStrokeStep(mx,my,first){
   if(!meCur) return;
-  if(meCur.t==='erase'){
-    /* 沿著這一段線每 r/2 取樣一次 —— 只看端點的話拖快一點會從線上跳過去。 */
+  if(meCur.t==='erase'||meCur.t==='rail'||meCur.t==='road'){
     const l=meCur.pts[meCur.pts.length-1];
-    const L=Math.hypot(mx-l[0],my-l[1]), n=Math.max(1,Math.ceil(L/Math.max(1,meCur.r/2)));
-    for(let q=1;q<=n;q++) meEraseAt(l[0]+(mx-l[0])*q/n, l[1]+(my-l[1])*q/n, meCur.r);
-    meCur.pts.push([mx,my]);
-    return;
-  }
-  if(meCur.t==='rail'||meCur.t==='road'){
-    const l=meCur.pts[meCur.pts.length-1];
-    if(Math.hypot(mx-l[0],my-l[1])>=3) meCur.pts.push([mx,my]);
+    /* ⚠ 擦除的取樣要密（半徑的一半）：只記端點的話拖快一點會從路上跳過去，
+       中間那一段沒被剪到 —— 畫面上是「擦了但沒斷」。 */
+    const step = meCur.t==='erase' ? Math.max(1,(meCur.r||14)/2) : 3;
+    if(Math.hypot(mx-l[0],my-l[1])>=step) meCur.pts.push([mx,my]);
     return;
   }
   const l=meCur.pts[meCur.pts.length-1];
@@ -8440,16 +8469,12 @@ function meStrokeEnd(){
   if(!meCur) return;
   const E=meCur; meCur=null;
   if(E.t==='erase'){
-    const hit=meEraseHit ? [...meEraseHit] : [];
-    meEraseHit=null;
-    if(!hit.length){ meFlash('這裡沒有手繪的公路或鐵路　⚠ 自動產生的路網擦不掉（見註解）'); meDraw(); return; }
-    /* 先真的擦掉再問（看得到才答得出來，同移城）——記下**原本的位置**，
-       取消要插回原位，不是接到最後（順序＝重放順序）。 */
-    const removed=hit.map(e=>({ e, i:MAP_EDITS.indexOf(e) })).sort((a,b)=>b.i-a.i);
-    for(const r of removed) if(r.i>=0) MAP_EDITS.splice(r.i,1);
-    const nr=hit.filter(e=>e.t==='rail').length, nd=hit.length-nr;
-    meAsk({ k:'erase', removed },
-          '擦除　'+(nr?('鐵路 '+nr+' 條'):'')+(nr&&nd?'、':'')+(nd?('公路 '+nd+' 條'):''));
+    /* 擦到什麼沒有就不必問。⚠ 判斷走**同一支** `meLineNear`（畫面上剪不剪也是它，
+       鐵律 7）—— 另寫一個「有沒有碰到」的判斷，遲早會與畫面對不起來。 */
+    const n=meEraseCount(E);
+    if(!n){ meFlash('這一筆沒有擦到任何公路或鐵路'); meDraw(); return; }
+    E.pts=meSimplify(E.pts, Math.max(0.5,(E.r||14)/6));
+    meAsk({ k:'edit', e:E }, '擦除　大小 '+(E.r||14)+'　擦掉 '+n+' 格軌道／路面');
     meDraw(); return;
   }
   if(E.t==='rail'||E.t==='road'){
@@ -8497,9 +8522,6 @@ function meAskYes(){
     meUndoPush(u);
     meFlash(u.name+' → ('+u.x+','+u.y+')　已生效\n⚠ 定稿請寫回 SETTLEMENTS／build_city.py 再 settleDragClear()');
     console.log('移城落定：'+u.name+' ('+u.x+','+u.y+')　定稿請寫回 SETTLEMENTS／build_city.py，再 settleDragClear()');
-  }else if(u.k==='erase'){
-    meUndoPush(u); meSave();
-    meFlash('已擦掉 '+u.removed.length+' 條（剩 '+MAP_EDITS.length+' 筆）');
   }else{
     MAP_EDITS.push(u.e); meUndoPush(u); meSave();
     meFlash('已生效：'+meLabel(u.e.t)+'（共 '+MAP_EDITS.length+' 筆）');
@@ -8515,13 +8537,6 @@ function meAskNo(){
 }
 /* 還原一筆（取消與復原**共用**，鐵律 8）。 */
 function meRevert(u){
-  /* 擦除：把擦掉的那幾條**插回原本的位置**（不是 push 到最後）——
-     `MAP_EDITS` 的順序就是重放的順序，山畫在貼材之前與之後是兩回事。 */
-  if(u.k==='erase'){
-    for(const r of u.removed.slice().sort((a,b)=>a.i-b.i))
-      MAP_EDITS.splice(Math.min(r.i, MAP_EDITS.length), 0, r.e);
-    return;
-  }
   if(u.k==='move'){
     const tgt=buildSettlements().find(z=>z.name===u.name) ||
               { name:u.name, _place:PLACES.find(p=>p.name===u.name) };
