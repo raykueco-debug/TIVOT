@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1236"></script>
+<script src="../orientation.js?v=1237"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1236');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1237');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1236");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1236");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1237");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1237");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1236");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1236");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1237");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1237");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -483,25 +483,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1236" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1237" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1236" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1236" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1236" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1236" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1236" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1236" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1236" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1236" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1236" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1236" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1237" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1237" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1237" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1237" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1237" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1237" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1237" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1237" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1237" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1237" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1236" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1237" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1236" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1237" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -522,11 +522,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1236"></script>
+<script src="settlement.js?v=1237"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1236"></script>
+<script src="talks.js?v=1237"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -566,7 +566,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1236';
+const FLIGHT_VER = 'ver -1237';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -740,7 +740,29 @@ const RIM_SKIP = [
 
    逐項：`pts` 折線／`floor` 各節點谷底高／`ridge` 各節點脊頂高／
    `w` 谷底半寬／`rise` 谷底到脊頂的水平距離／`outer` 脊頂往外攤回原地形／
-   `wob`,`ridgeWob`,`sway` 起伏量／`detail` 保留多少原地形高頻。
+   `wob`,`ridgeWob`,`sway` 起伏量／`detail` 保留多少原地形高頻／
+   `rough` 坡面疊的 2D 亂度（世界單位）／`bow` 剖面凹度（>1 更凹）。
+
+   ══⚠⚠⚠ ver -1237（Ray：「地上仍有明顯的線，可以再凹一點」）══
+   ① **那條線是「樹線」不是接縫**：我只改了**高度**，`COL` 與林相是照高度算的 ——
+      目標剖面是一條數學上很平滑的曲面，於是它的**等高線**（＝林木的上界）
+      也跟著平滑，在畫面上就是一條長長的、規則到不自然的弧。
+      ⇒ 兩手一起：`detail` 0.55→**0.95**（原地形的蝕溝與稜線幾乎全留），
+        再在坡面上疊一層 **2D fbm**（`rough`，谷底少、坡面多）——
+        等高線被打斷，線就散掉了。
+      ⚠ **不要用降低對比／模糊去蓋它**：線的成因是「太平滑」，糊只會更平滑。
+   ② **再凹一點**：谷底整條降，山脊抬 25，剖面由 `sstep` 改成 `sstep^bow`
+      （1.35）—— 谷底待得更低更久，坡在上半段才陡起來，讀起來才是「凹」。
+      ⚠⚠⚠ **不准把陸地挖成雲海**：谷底降到 47 又疊了 ±24 的亂度之後，靠海那一段
+        有一片一片掉到 `CLOUD_H`(44) 以下 —— 畫面上是**谷底被打出一個一個洞**
+        （雲從地上冒出來）。原本是陸地的格子一律夾在雲海之上留一段餘裕。
+   ③ **谷底鋪棕石地**（Ray：「谷不要草地，用棕石地」）：`rock`。
+      兩件事一起才成立 —— **`BIOME` 換成 `G_RB`（rock_brown）**（那一層是相乘的
+      細節紋理，決定「看起來是什麼地面」）＋**`COL` 往棕色推**（底色，
+      決定色相）。只改其中一個的話：只換貼圖會留在綠色的色相上，
+      只換底色則地面紋理還是森林。
+      ⚠ 覆寫排在 `BIOME` 建完**之後**（它要沿用那一格算好的 `mot` 高 4 bit），
+        而且只掃谷地那幾千格，不進 258 萬格的主迴圈。
    ⚠⚠ **排在邊緣抬升之後**：之前跑的話，靠海那一截谷底會被 `RIM_H` 墊回 145。
    ⚠⚠⚠ 節點值用**節點自己的弧長位置**內插，不是「平均分成 n 段」：這三段長度
      差很多（92／52／44），平均分的話寫在節點上的數字根本不會出現在那個節點
@@ -749,10 +771,15 @@ const RIM_SKIP = [
      那個地名現在對得上地形了。 */
 const TERRAIN_VALLEY = [
   { pts:[[938,712],[976,796],[978,848],[950,882]],
-    floor:[86,110,72,51],        // 谷底：由內陸一路降到海岸
-    ridge:[260,360,320,230],     // 兩側山脊
+    floor:[64,86,58,56],         // 谷底：由內陸一路降到海岸（-1237 再凹）
+    ridge:[285,385,345,255],     // 兩側山脊
     w:14, rise:30, outer:26,
-    wob:0.38, ridgeWob:0.18, sway:9, detail:0.55 },
+    wob:0.38, ridgeWob:0.18, sway:9,
+    detail:0.95,                 // 保留原地形高頻（-1237 由 0.55 拉滿，見下）
+    rough:24, bow:1.35,          // 坡面的 2D 亂度／剖面的凹度（>1 更凹）
+    /* 谷底鋪**棕石地**（ver -1237，Ray：「谷不要草地，用棕石地」）。
+       `rockTo` ＝往上鋪到「谷底半寬 ＋ rise×這個比例」，邊界自己抖。 */
+    rock:{ to:0.45, jit:0.30, col:[134,108,78], mix:0.85 } },
 ];
 /* ── 操作手感 ──────────────────────────────────────────────────
    拖曳世界的模型：手指把畫面往後拉 → 船往前走（拉的是地面，不是船）。
@@ -4981,8 +5008,9 @@ async function loadWorld(){
     window.__rimLifted=lifted;
   }
 
-  /* ══ 手刻的谷地（`TERRAIN_VALLEY`，ver -1236）══
+  /* ══ 手刻的谷地（`TERRAIN_VALLEY`，ver -1236／-1237）══
      ⚠ **一定要排在邊緣抬升之後**（理由見 `TERRAIN_VALLEY` 的說明）。 */
+  const valleyRock=[];               // 谷底要鋪棕石地的格（`BIOME` 建完才覆寫）
   for(const V of TERRAIN_VALLEY){
     const P=V.pts, DET=V.detail, SWAY=V.sway||0;
     const seg=[]; let tot=0;
@@ -5005,6 +5033,16 @@ async function loadWorld(){
     const n1=(t,sd)=>{ const i2=Math.floor(t), f=t-i2, g=f*f*(3-2*f);
       return hash01(i2,sd)*(1-g)+hash01(i2+1,sd)*g; };
     const wig=(t,sd)=>(n1(t,sd)-0.5)*2;
+    /* 坡面上疊的 2D 值噪（fbm 三個八度）。⚠ 它的用途是**打斷等高線**，
+       不是做細節 —— 細節由 `detail` 那一項從原地形借。 */
+    const n2=(x,y,sd)=>{
+      const xi=Math.floor(x), yi=Math.floor(y);
+      let fx=x-xi, fy=y-yi; fx=fx*fx*(3-2*fx); fy=fy*fy*(3-2*fy);
+      const a=hash01(xi*9176+sd, yi), b=hash01((xi+1)*9176+sd, yi);
+      const c=hash01(xi*9176+sd, yi+1), d=hash01((xi+1)*9176+sd, yi+1);
+      return (a*(1-fx)+b*fx)*(1-fy)+(c*(1-fx)+d*fx)*fy; };
+    const fbm2=(x,y)=>n2(x,y,101)*0.55+n2(x*2.1+13,y*2.1+7,211)*0.30
+                     +n2(x*4.3+31,y*4.3+17,331)*0.15;
     const RMAX=V.w*(1+V.wob)+V.rise*1.4+V.outer+SWAY+4;
     let bx0=1e9,by0=1e9,bx1=-1e9,by1=-1e9;
     for(const q of P){ bx0=Math.min(bx0,q[0]); bx1=Math.max(bx1,q[0]);
@@ -5029,6 +5067,7 @@ async function loadWorld(){
     };
     os.set(src); blur(os,tmp,5); blur(os,tmp,5);
     let touched=0;
+    const RK=V.rock;
     for(let y=by0;y<=by1;y++) for(let x=bx0;x<=bx1;x++){
       const i=y*MAPW+x;
       if(HGT[i]<=0) continue;                       // 大陸之外不動
@@ -5052,11 +5091,32 @@ async function loadWorld(){
       const Rm=Math.max(r,osv);                     // ④ 不把既有的山削掉
       let t2;
       if(d2<=Wv)      t2=f+8*(d2/Math.max(Wv,1e-6))**2;      // 谷底：微凹不是死平
-      else if(d2<=Sv) t2=f+(Rm-f)*sstep(Wv,Sv,d2);           // 山坡
+      else if(d2<=Sv) t2=f+(Rm-f)*Math.pow(sstep(Wv,Sv,d2), V.bow||1);   // 山坡
       else            t2=Rm;                                  // 脊頂
+      /* 打斷等高線（見 `TERRAIN_VALLEY` §-1237 ①）：谷底少、坡面多。 */
+      if(V.rough) t2+=(fbm2(x/11,y/11)-0.5)*2*V.rough*(0.30+0.70*sstep(Wv*0.4,Sv,d2));
       const bl=1-sstep(Sv,Sv+V.outer,d2);           // 往外攤回原地形（無縫）
-      const v=o*(1-bl)+(t2+(o-osv)*DET)*bl;         // ③ 把原地形的高頻加回去
+      let v=o*(1-bl)+(t2+(o-osv)*DET)*bl;           // ③ 把原地形的高頻加回去
+      /* ⚠⚠⚠ **不准把陸地挖成雲海**（ver -1237 踩到）：谷底降到 47、又疊了
+         ±24 的 2D 亂度之後，靠海那一段有一片一片掉到 `CLOUD_H`(44) 以下 ——
+         畫面上就是**谷底被打出一個一個洞**（雲從地上冒出來）。
+         原本是陸地的格子一律夾在雲海之上留一段餘裕。 */
+      if(o>CLOUD_H) v=Math.max(v, CLOUD_H+10);
       HGT[i]=clamp(Math.round(v),0,65535); raw[i]=HGT[i]/PEAK_SCALE; touched++;
+      /* ── 谷底的棕石地：記下來，`BIOME` 建完之後再覆寫（見說明 ③） ── */
+      if(RK){
+        const rEdge=Wv+V.rise*RK.to*(1+RK.jit*wig(u*11.0+3,71));
+        if(d2<=rEdge){
+          valleyRock.push(i);
+          /* 底色往棕推，並用同一張 fbm 給它深淺 —— 一整片同色會讀成一塊貼紙。 */
+          const k=RK.mix*(1-sstep(rEdge*0.75,rEdge,d2)*0.55);
+          const sh=0.86+0.28*fbm2(x/7,y/7);
+          const cr=COL[i], r0=cr&255, g0=(cr>>8)&255, b0=(cr>>16)&255;
+          COL[i]=rgb(clamp(Math.round(r0*(1-k)+RK.col[0]*sh*k),0,255),
+                     clamp(Math.round(g0*(1-k)+RK.col[1]*sh*k),0,255),
+                     clamp(Math.round(b0*(1-k)+RK.col[2]*sh*k),0,255));
+        }
+      }
     }
     (window.__valley||(window.__valley=[])).push({cells:touched});
   }
@@ -5712,6 +5772,9 @@ async function loadWorld(){
         BIOME[i]=tex|(mot<<4);
       }
     }
+    /* 谷底的棕石地（ver -1237）：沿用那一格算好的 `mot`（高 4 bit），只換類別。
+       ⚠ 掃的是谷地那幾千格，不是 258 萬格 —— 不要塞進上面的主迴圈。 */
+    for(const i of valleyRock) BIOME[i]=G_RB|(BIOME[i]&0xf0);
   }
 
   /* 碼頭位置：城區內「水面貼著陸地」的那一圈就是濱水面。從中挑幾個彼此拉開的
