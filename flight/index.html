@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1242"></script>
+<script src="../orientation.js?v=1243"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1242');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1243');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1242");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1242");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1243");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1243");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1242");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1242");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1243");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1243");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -483,25 +483,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1242" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1243" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1242" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1242" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1242" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1242" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1242" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1242" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1242" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1242" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1242" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1242" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1243" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1243" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1243" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1243" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1243" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1243" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1243" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1243" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1243" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1243" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1242" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1243" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1242" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1243" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -522,11 +522,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1242"></script>
+<script src="settlement.js?v=1243"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1242"></script>
+<script src="talks.js?v=1243"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -566,7 +566,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1242';
+const FLIGHT_VER = 'ver -1243';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -1310,25 +1310,50 @@ function buildCityPyramid(key, img, full){
 }
 /* 遮罩與逐城參數。⚠ 要等 MAPW 有值、縮圖載完（半高要圖的長寬比）——
    由 buildRelief 的收尾呼叫（那時兩者都齊了）。 */
+/* ══⚠⚠⚠ 「貼平面圖」與「不要被當成城」的衝突（ver -1243）══════════════════
+   美術要交卡耶爾山谷的正俯視平面圖，但那一格**是地形不是城**，
+   `PLACES` 那一列刻意沒有進 `SETTLEMENTS`（進了就會被 `buildRoads` 連一條路
+   通到死谷、被 `buildSettlements` 長出程序建築、被整地那一段鏟平）。
+   而 `plan`/`planW`/`planRot` 原本**只有 `SETTLEMENTS` 讀得到**。
+
+   ⇒ 解法：**只讓「取樣器」這一端也吃 `PLACES`**，其餘一概不動。
+     取樣器 ＝ 這一支（遮罩與逐城參數）＋ 縮圖載入 ＋ 全解析預取，三處而已；
+     道路、鐵路、程序聚落、整地、碼頭、路燈、量體、河口**全部照舊只看
+     `SETTLEMENTS`**，所以一格地形不會長出任何城的東西。
+   ⚠⚠ **不要反過來做**（把它加進 `SETTLEMENTS` 再逐項加旗標）：那要在七、八個
+     迴圈裡各插一個守門，漏一個就是「死谷裡有一條公路」，而且不會有錯誤訊息。
+   ⚠ `PLACES` 是 `const` 且宣告在這一支**後面**，所以只能在**呼叫時**取用
+     （`buildCityMask` 是 `buildRelief` 收尾才叫的，那時早就初始化好了）——
+     模組求值當下就跑的那一支（`loadCityPlansLo` 的 IIFE）碰它會撞 TDZ。 */
+function cityPlates(){
+  const out=SETTLEMENTS.slice();
+  for(const P of PLACES) if(P.plan) out.push(P);
+  return out;
+}
 function buildCityMask(){
   if(!MAPW) return;
   CITYMASK=new Uint8Array(MAPW*MAPH);
   CITY_SAMPS=[];
-  for(const S of SETTLEMENTS){
+  for(const S of cityPlates()){
     if(!S.plan) continue;
     const img=cityPlanLo[S.plan]; if(!img) continue;   // 沒縮圖＝退回舊格網
     const hw=S.planW*0.5, hh=hw*img.height/img.width;  // 世界單位的半寬/半高
     const rot=S.planRot||0, ca=Math.cos(rot), sa=Math.sin(rot);
+    /* ⚠ `planX`/`planY`（ver -1243）＝**平面圖自己的中心**，不寫就是地點的座標。
+       城用不到（插畫就是以城為中心畫的），但**地形**的平面圖不是：
+       卡耶爾山谷的地點釘在谷口 (985,858)，而那張圖要蓋的是整段谷 ——
+       兩者差好幾十格。地點座標同時是降落點與名牌位置，不能為了貼圖去搬它。 */
+    const px0=(S.planX!=null?S.planX:S.x), py0=(S.planY!=null?S.planY:S.y);
     const idx=CITY_SAMPS.length;
     if(idx>=255) break;
     CITY_SAMPS.push({ key:S.plan, planW:S.planW,
-                      wx:S.x*MAP_SCALE, wy:S.y*MAP_SCALE,
+                      wx:px0*MAP_SCALE, wy:py0*MAP_SCALE,
                       ca, sa, iw:0.5/hw, ih:0.5/hh, cur:null });
     /* 粗遮罩：整張圖的外接矩形（含旋轉）。角落的透明像素只是白讀一次 alpha，
        比逐格去問縮圖的 alpha 便宜也穩（精確邊緣本來就該由全解析的 alpha 決定）。 */
     const rr=Math.ceil(Math.max(hw,hh)/MAP_SCALE)+2;
     for(let dy=-rr;dy<=rr;dy++)for(let dx=-rr;dx<=rr;dx++){
-      const x=S.x+dx, y=S.y+dy;
+      const x=px0+dx, y=py0+dy;
       if(x<0||y<0||x>=MAPW||y>=MAPH) continue;
       const wx2=dx*MAP_SCALE, wy2=dy*MAP_SCALE;
       const lx=wx2*ca+wy2*sa, ly=-wx2*sa+wy2*ca;
@@ -1337,11 +1362,14 @@ function buildCityMask(){
   }
 }
 const cityPlansReady=[];
-(function loadCityPlansLo(){
-  const seen={};
-  for(const S of SETTLEMENTS){
-    if(!S.plan || seen[S.plan]) continue;    // 十一座市鎮共用同一張 stown_plan
-    seen[S.plan]=1;
+const cityPlateSeen={};                      // plan 路徑 → 已排載入（兩批共用）
+/* ⚠ 抽成函式是為了**分兩批**：`SETTLEMENTS` 在模組求值當下就排得了，
+   `PLACES` 要等它自己初始化完（TDZ，見 `cityPlates` 的說明）——
+   後者由 `loadWorld` 開頭補叫一次，仍然趕在 `await Promise.all(cityPlansReady)` 之前。 */
+function loadCityPlansLo(list){
+  for(const S of list){
+    if(!S.plan || cityPlateSeen[S.plan]) continue;   // 十一座市鎮共用同一張 stown_plan
+    cityPlateSeen[S.plan]=1;
     const lo=S.plan.replace('_plan.webp','_plan_lo.webp');
     const im=new Image();
     cityPlansReady.push(new Promise(res=>{
@@ -1362,7 +1390,8 @@ const cityPlansReady=[];
     }));
     im.src=cityURL(lo);
   }
-})();
+}
+loadCityPlansLo(SETTLEMENTS);
 
 /* ══ 城的全解析資產：飛近才載 ══
    開場全抓在四座城時只是浪費 536KB，但城數量一上去就是線性成長的開場延遲。
@@ -1471,6 +1500,13 @@ function prefetchCityArt(){
     if(!s.plan || cityArtWanted[s.plan]) continue;
     const dx=s.mx*MAP_SCALE-cam.x, dy=s.my*MAP_SCALE-cam.y;
     if(dx*dx+dy*dy<R2) ensureCityArt(s);
+  }
+  /* `PLACES` 上的平面圖（地形用，不是城）走 `CITY_SAMPS` —— 那張表兩邊都有
+     （見 `cityPlates`）。⚠ 只要插畫，不要 `planH`：地形平面圖不整地。 */
+  if(CITY_SAMPS) for(const C of CITY_SAMPS){
+    if(cityArtWanted[C.key]) continue;
+    const dx=C.wx-cam.x, dy=C.wy-cam.y;
+    if(dx*dx+dy*dy<R2) ensureCityArt({plan:C.key});
   }
   releaseFarCityArt();
 }
@@ -2251,6 +2287,17 @@ const PLACES=[
        那張表會被道路網與程序建築當成城）—— 著陸掃描兼掃帶 `town` 的 PLACES。
      ⚠ 這一格的地形正是 ver -1235~-1237 手刻的那道谷（`TERRAIN_VALLEY`），
        名字現在對得上地形。 */
+  /* ⚠⚠ **平面圖的接點已經備好**（ver -1243，美術預告 `flight/city/Canyon_topdown.png`）：
+       圖交進來、跑完 `build_city.py` 之後，這一列補四個鍵就會貼上去 ——
+         plan:'city/canyon_plan.webp', planX:963, planY:840, planW:1200, planRot:0
+       · `planX/planY` ＝**圖自己的中心**（谷段的中段），與地點座標 (985,858) 分開：
+         那一點是**降落點與名牌**，不能為了貼圖去搬。
+       · `planW:1200` ⇒ 1200×1800 世界單位（60×90 地圖格），蓋住谷的南段
+         （y 795~885，軸心 x 976→948 都在框內），解析度 0.85 texel/世界單位
+         —— 與帝都同級。⚠ **不要一張蓋完整條谷**：整段谷含兩側坡是 3600×6200，
+         一張 1024 寬的圖攤上去只有 0.28 texel/世界單位，就是 Ray 退過兩次的「太灰太糊」。
+       · `planRot:0`（圖的上緣＝北＝內陸、下緣＝南＝海岸，與美術的方位一致）。
+       · **不要 `podium`**（不整地）、**不要進 `SETTLEMENTS`**（見 `cityPlates` 那一段）。 */
   {x:985, y:858, name:'卡耶爾山谷', n:'卡耶爾山谷', type:'險地', town:'canyon'},
   /* ⚠ ver -313 由 Ray 現場指定 (1496,160)；ver -444 城的插畫落地在 (1516,150)
      （檔名自帶座標），名牌跟著城走（同薇拉馮德那一條的理由）。
@@ -5007,6 +5054,9 @@ function loadImg(url){
 }
 async function loadWorld(){
   const step=p=>{ loadWorld._p=p; bootUI.set(p); };
+  /* `PLACES` 上的平面圖（地形用）：這時 PLACES 已經初始化好了（見 `cityPlates`）。
+     ⚠ 一定要在下面那句 `await Promise.all(cityPlansReady)` **之前**排進去。 */
+  loadCityPlansLo(PLACES);
   step(0.20);   // 讀取高度圖…
   const [hi,ci]=await Promise.all([loadImg(HEIGHT_URL),loadImg(COLOR_URL)]);
   if(hi.naturalWidth!==ci.naturalWidth || hi.naturalHeight!==ci.naturalHeight)
