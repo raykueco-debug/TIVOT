@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1259"></script>
+<script src="../orientation.js?v=1260"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1259');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1260');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1259");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1259");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1260");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1260");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1259");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1259");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1260");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1260");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -533,6 +533,11 @@
          的高度 —— 那是「以這裡為準把它弄平」，而不是壓到某個寫死的海拔。 -->
     <button data-tool="flat">▬ 平</button>
     <button data-tool="water">〜 水</button>
+    <!-- 湖（ver -1260，Ray：「再加一個湖，不論地勢高低都會削平變成湖」「保持高度」）：
+         筆刷之內一律削平成**起筆那一格的高度**再變成水面 —— 高山湖就留在高山上。
+         ⚠ 與「水」是兩件事：那是河（跟著地勢走、由整平河面決定水位），這是湖（平的、
+            高度自己說了算）。 -->
+    <button data-tool="lake">◎ 湖</button>
     <button data-tool="mat">▦ 貼材</button>
     <button data-tool="rail">＝ 鐵路</button>
     <button data-tool="road">— 公路</button>
@@ -572,25 +577,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1259" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1260" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1259" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1259" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1259" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1259" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1259" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1259" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1259" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1259" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1259" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1259" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1260" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1260" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1260" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1260" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1260" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1260" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1260" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1260" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1260" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1260" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1259" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1260" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1259" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1260" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -611,11 +616,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1259"></script>
+<script src="settlement.js?v=1260"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1259"></script>
+<script src="talks.js?v=1260"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -655,7 +660,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1259';
+const FLIGHT_VER = 'ver -1260';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -1931,8 +1936,25 @@ const RIVER_COL=[88,116,132];   // ⚠ 與 loadWorld 的河道偵測同一組數
 /* 挖一刀的深度（世界單位，ver -1259 Ray 指定）。⚠ 它是**常數不是滑桿** ——
    「每點一次挖 100」要的是可預期的一刀，不是每次都得先確認滑桿在哪裡。 */
 const DIG_STEP=100;
+/* ⚠⚠⚠ 湖的遮罩（ver -1260）。存在的理由只有一個：**「整平河面」那一段要跳過它**。
+   那一段是給**河**寫的 —— 它拿岸高的分位數決定水位，而且「只抬不降」。
+   湖若讓它處理，靠岸那一圈會被抬到 `岸-6`，再由三趟平滑把那個高度往內拌進來 ⇒
+   **水面就不平了，而且也不是你畫的那個高度**（Ray：「保持高度」）。
+   湖的水面在畫的當下就已經是平的、也已經是對的，不需要任何人再幫它算一次。
+   ⚠ 每次 `loadWorld` 重放時重建（`applyMapEdits('terrain')`）。 */
+let LAKEM=null;
+function lakeMask(){
+  if(!LAKEM || LAKEM.length!==MAPW*MAPH) LAKEM=new Uint8Array(MAPW*MAPH);
+  return LAKEM;
+}
 /* 滿覆蓋的核心佔半徑多少（見 meStroke 的 `core`）。 */
 const DIG_CORE=0.55, FLAT_CORE=0.70;
+/* ⚠⚠⚠ **門檻式的筆（水／貼材／湖）要 `core:1`＝整個圓都是滿覆蓋**（ver -1260 修）。
+   它們的判準是「覆蓋率過半才寫」，而圓頂的覆蓋率要到**半徑的一半**才掉到 0.5 ——
+   於是游標畫著半徑 34 的圈，真正變成湖的只有 17（實測：筆刷 34 畫出來的湖只有
+   ±15）。**游標圈就是會被塗到的範圍**，這是使用者唯一能依據的東西，不能說謊。
+   ⚠ 它們本來也不需要羽化：水面、材質邊界都該是明確的一條線。 */
+const HARD_CORE=1;
 
 /* ── 開機重放 ────────────────────────────────────────────────────
    `phase` ＝ 'terrain'（山／挖／水，要 `raw` 一起改）／ 'mat'（貼材）。
@@ -1954,6 +1976,21 @@ function meApply(E, pts, raw, snap){
      記下來而不是重放時現算：重放時前面幾筆已經動過地形，現算會得到另一個值 ——
      那就是「畫的時候與重整之後不一樣」。覆蓋率當權重 ⇒ 邊緣自然收進原地形，
      不會留一圈斷崖。 */
+  /* ⚠⚠ 湖（ver -1260）：門檻式（覆蓋率過半才算），**不是**羽化的 ——
+     湖要有明確的岸線；羽化出來的是「一圈半水半地」，那既不是水也不是地。
+     筆刷之內一律 `HGT = E.h`（起筆那一格的高度，起筆時就記進筆畫）⇒
+     不論原本的地勢高低都削平，而且**保持在那個高度**。 */
+  if(t==='lake'){
+    const M=lakeMask();
+    return meStroke(pts, E.r||18, (i,dc,c)=>{
+      if(c-dc<=0){ meBaseH[i]=HGT[i]; if(snap) snap(i); }
+      if(c<0.5 || c-dc>=0.5) return;
+      const h=E.h|0;
+      HGT[i]=h; if(raw) raw[i]=h/PEAK_SCALE;
+      RIV[i]=1; COL[i]=rgb(RIVER_COL[0],RIVER_COL[1],RIVER_COL[2]);
+      M[i]=1;
+    }, HARD_CORE);
+  }
   if(t==='flat'){
     return meStroke(pts, E.r||18, (i,dc,c)=>{
       if(c-dc<=0){ meBaseH[i]=HGT[i]; if(snap) snap(i); }
@@ -1977,7 +2014,7 @@ function meApply(E, pts, raw, snap){
       if(snap && c-dc<=0) snap(i);
       if(c<0.5 || c-dc>=0.5) return;
       RIV[i]=1; COL[i]=rgb(RIVER_COL[0],RIVER_COL[1],RIVER_COL[2]);
-    });
+    }, HARD_CORE);
   }
   if(t==='mat'){
     const M=MAT_PALETTE.find(m=>m.g===E.g)||MAT_PALETTE[0];
@@ -1987,7 +2024,7 @@ function meApply(E, pts, raw, snap){
       if(HGT[i]<=CLOUD_H) return;                 // 雲海不塗（那裡的 BIOME 用不到）
       if(BIOME) BIOME[i]=M.g|(BIOME[i]&0xf0);     // 高 4 bit 是那一格的細節抖動，留著
       COL[i]=rgb(M.c[0],M.c[1],M.c[2]);
-    });
+    }, HARD_CORE);
   }
   return null;                                    // rail／road 不碰陣列（見 mapEditPaths）
 }
@@ -1996,7 +2033,8 @@ function meApply(E, pts, raw, snap){
    鐵路與公路走另一條路（`mapEditPaths`），由 buildRoads／buildRails 取用。 */
 function applyMapEdits(phase, raw){
   if(!MAP_EDITS||!MAP_EDITS.length||!MAPW) return;
-  const want = phase==='mat' ? ['mat'] : ['hill','dig','flat','water'];
+  if(phase==='terrain' && MAP_EDITS.some(e=>e.t==='lake')) lakeMask().fill(0);
+  const want = phase==='mat' ? ['mat'] : ['hill','dig','flat','water','lake'];
   for(const E of MAP_EDITS){
     if(want.indexOf(E.t)<0) continue;
     meCovClear(meApply(E, E.pts, raw, null));
@@ -5898,7 +5936,12 @@ async function loadWorld(){
     const CUT=6;                       // 水面比岸低這麼多
     const BANK_Q=0.35;                 // 岸高取這個分位數
     const idx=[];
-    for(let i=0;i<MAPW*MAPH;i++) if(RIV[i]&&HGT[i]>CLOUD_H) idx.push(i);
+    /* ⚠⚠ **湖不進來**（ver -1260）：這一段是給**河**寫的 —— 拿岸高的分位數決定
+       水位而且「只抬不降」。湖的水面在畫的當下就已經是平的、也已經是你要的那個
+       高度（Ray：「保持高度」），讓它再算一次只會把靠岸那一圈抬到「岸−6」，
+       再由下面三趟平滑往內拌 ⇒ 水面不平、高度也跑掉。 */
+    for(let i=0;i<MAPW*MAPH;i++)
+      if(RIV[i] && HGT[i]>CLOUD_H && !(LAKEM&&LAKEM[i])) idx.push(i);
     const lv=new Float32Array(idx.length);
     const ring=[];
     for(let k=0;k<idx.length;k++){
@@ -6530,6 +6573,12 @@ async function loadWorld(){
          決定 —— 所以貼圖換成灰岩、底色換成那張圖的灰，兩件要一起改（-1237 的教訓）。
        ⚠ 掃的是谷地那幾千格，不是 258 萬格 —— 不要塞進上面的主迴圈。 */
     for(const i of valleyRock) BIOME[i]=G_GL|(BIOME[i]&0xf0);
+    /* ⚠⚠ 湖一律是水面地貌（ver -1260）：上面那張分類表在判水之前先判**坡度**
+       （`sl>BIOME_CLIFF` ⇒ 岩），而湖若畫在坡上，靠岸那一圈的坡度是陡的 ⇒
+       會沿著湖緣長出一圈岩石。湖就是水，不必問坡度。
+       ⚠ 高 4 bit（那一格的細節抖動）留著；深淺兩種水沿用它決定，才不會整片同調。 */
+    if(LAKEM) for(let i=0;i<LAKEM.length;i++) if(LAKEM[i])
+      BIOME[i]=((BIOME[i]>>4)>=8?G_WL:G_WD)|(BIOME[i]&0xf0);
     /* 貼材筆（ver -1254）：⚠ 一定要在這裡，不能更早 —— BIOME 是這一段
        現生出來的，早一步塗會被整張蓋掉。與 `valleyRock` 同理，也同樣要
        **連 COL 的底色一起換**（見 MAT_PALETTE 的註解）。 */
@@ -8409,7 +8458,7 @@ function meUndoLabel(u){
   if(u.k==='move')  return u.name+' 搬回 ('+u.from[0]+','+u.from[1]+')';
   return meLabel(u.e.t);
 }
-function meLabel(t){ return {hill:'山',dig:'挖',flat:'平',water:'水',mat:'貼材',
+function meLabel(t){ return {hill:'山',dig:'挖',flat:'平',water:'水',lake:'湖',mat:'貼材',
   rail:'鐵路',road:'公路',erase:'擦除'}[t]||t; }
 let meFlashT=0;
 function meFlash(msg){ meFlashT=performance.now(); meEl('meInfo').textContent=msg; }
@@ -8485,8 +8534,8 @@ function meStrokeBegin(mx,my){
   meCur={ t:meTool, r:meBrushR(), pts:[[mx,my]] };
   if(meTool==='hill') meCur.a=meBrushA();      // ⚠ 挖不讀力道（固定 DIG_STEP）
   if(meTool==='mat')  meCur.g=meMatG;
-  /* 平：**起筆那一格**的高度就是這一筆的目標（見 meApply 的說明）。 */
-  if(meTool==='flat')
+  /* 平與湖：**起筆那一格**的高度就是這一筆的目標／水面（見 meApply 的說明）。 */
+  if(meTool==='flat'||meTool==='lake')
     meCur.h=HGT[clamp(my|0,0,MAPH-1)*MAPW+clamp(mx|0,0,MAPW-1)];
   meSnapStart(); meDirty=null;
   meStrokeStep(mx,my,true);
@@ -8552,7 +8601,7 @@ function meStrokeEnd(){
         meLabel(E.t)+'　大小 '+(E.r||0)+
         (E.a!=null?('　力道 '+E.a):'')+
         (E.t==='dig'?('　深 '+DIG_STEP):'')+
-        (E.h!=null?('　鏟到 '+E.h):'')+
+        (E.h!=null?((E.t==='lake'?'　水面 ':'　鏟到 ')+E.h):'')+
         (E.g!=null?('　'+((MAT_PALETTE.find(m=>m.g===E.g)||{}).n||'')):'')+
         '　'+E.pts.length+' 點　共 '+(meSnapI.length)+' 格');
   meSnapI=null;
