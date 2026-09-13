@@ -1,135 +1,76 @@
-# HANDOFF — ver -1127〜-1145（2026-09-12）／七件修正・戰鬥紀錄・伊甸古墓・禁航區
+# HANDOFF — 截至 `ver 2026.09.14-1291`
 
-> **HEAD ＝ `ver 2026.09.12-1145`**（`config.js` 的 `VERSION`）。
-> 前一份是 `HANDOFF_ver971-995.md`（-971〜-995），**它的第 7、8 節（環境備忘／
-> 搭檔煙霧測試）仍然有效**，本檔不重抄，改過 `partner`／`saint` 之後照樣要跑那一支。
+> 這一份是**唯一**的交接檔。前面那四份（-861 / -964~-970 / -971~-995 / -1127~-1145
+> ＋ `HANDOFF_ver1289.md`）已經走回收區 —— 內容都在 git 歷史裡，不必留在工作目錄
+> 互相矛盾。**下一次交接請直接改這一份，不要再開新檔。**
 >
-> ⚠⚠⚠ **這一輪有三條規則被推翻、一條新的建置步驟**（第 2、3 節）。動任何一支檔案
-> 之前先看那兩節 —— 舊註解會騙人。
+> ⚠⚠⚠ **寫進這裡的每一條都要當場驗過**（ver -1291 的教訓，Ray：「我明明有跑到
+> shipcrush」「序章一直都沒有問題」）：上一份交接把**已經被 revert 掉的鐵路暫停**
+> 寫成現況，把 lint 的假警告寫成待辦，於是下一個 session 照著它做了錯的判斷。
+> **沒有 `grep` 過的事實不要寫。**
 
----
+## 現有進度（逐條驗過）
 
-## 0. 版本 → 動了哪幾支檔案（**重讀清單**，鐵律 11）
+| 項目 | 狀態 |
+|---|---|
+| **地圖編輯器** | 完成並在用。13 支筆：平移／山／挖／平／自動修正／水／湖／河／貼材／**鐵路**／**公路**／擦除／移城。中鍵平移、每次改動要確認、復原、匯出。`mapEditClear()` 是**搬進回收區**不真的刪 |
+| **鐵路／火車** | ⚠⚠ **是開著的，不是暫停。** ver -1276 曾經做過「整套暫停」（`RAILS_ON`），但 ver -1269 那一次 `revert(flight): 整串鐵路改動退回`（Ray 指定）把它一起退掉了 —— **現在專案裡沒有 `RAILS_ON` 這個名字**，軌道／路基／石橋／站場／火車／大地圖虛線全部照常出，編輯器的「鐵路」筆也正常 |
+| **地形圖** | 水文重整已退回（Ray：修改痕跡太重）。來源＝`flight/_src/terrain/heightmap_base.png`（⚠ 在 `flight/` 底下，不是根目錄）；上線的是 `flight/silvermoon_heightmap.png`，同名覆蓋走 `TERRAIN_V`（現行 `?v=3`，`build_terrain.py` 自動遞增，不要手改） |
+| **貝利薩爾第一次降落** | 已上線（-1279）：按降落 → 演十拍（索菈娜找不到落點 → 改去東方泊地）→ 開大地圖標記東方泊地 → 蕾娜一句 → 關地圖記旗。之後再按降落只出蕾娜「先去東方泊地吧。」（`belisarLandGate`） |
+| **索菈娜 `watch` 立繪** | 已進版。取景 Ray 驗收過，**不要再動**：`fx:0.680／top:6／bot:1521`，飛行頁另掛 `cm:132／standCm:168`。⚠ `top:6` 是**遮陽的手**不是頭頂（頭頂在 y≈17） |
+| **索菈娜 `tired` 立繪** | ver -1290 補上（圖 -772 就交了，一直沒轉檔也沒登記）。`top:2／bot:1522／fx:0.511` —— ⚠ `fx` **不能用 `measure_si.py` 的 0.489**，舉起的手臂污染了取樣帶，改量兩眼睫毛中點 |
+| **東方泊地** | 城鎮資料**已經在** `script/town.js`（13 格、`bgm:portside`、`entry:square`）；佈局圖、`SETTLEMENTS` 那一筆都在。**缺的只有 15 張背景**（13 格＋餐飲街一格三張） |
+| **BGM 音量** | ver -1291 由 0.32 → **0.42**（Ray：「BGM 都太小聲，提高音量 10」）。⚠ 兩份：`config.js` 的 `tuning.loudness.layer` 與 `flight/index.html` 的 `LAYER_BASE` |
+| git | 全部已 push。本機用 SSH 金鑰，`git push` 不會問密碼 |
 
-| 版本 | 主題 | 動到的檔案 |
-|---|---|---|
-| `-1127` | Ray 的七件一次修（教學搭檔／打靶不評／索敵誤觸／聖徒 ovk 殘格／墓地無夥伴…） | `config.js` `state.js` `style.css` `index.html` `flight/index.html` `modules/{combat,weapon,partner,story}.js` |
-| `-1128` | 「評價完全消失」的診斷：HUD 多一行＋抓「是誰蓋住它」 | `config.js` `style.css` `index.html` `main.js` `modules/inspector.js` |
-| `-1129` | 賞金獵人 stage0/1 不評（-756 那條加回來；**-1130 又被收斂掉**） | `config.js` `modules/inspector.js` |
-| `-1130` | **第 1 章起除打靶外每場必評**（全域一條線） | `config.js` `modules/inspector.js` `script/evaluation.js` |
-| `-1131` | **importmap 快取破除**＋`tools/bust.py` | `config.js` `index.html` `flight/index.html` `main.js` `tools/{bust,script_lint}.py` |
-| `-1132` | 控制面板不算飛行窗／索敵與生怪推到第 8 章 | `config.js` `index.html` `flight/index.html` |
-| `-1133` | **女主的星改用《戰鬥紀錄》點亮**（逐角色）／EXP 正名 | `config.js` `style.css` `index.html` `flight/index.html` `i18n/{zh,en,ja}.js` `modules/{gear,inspector}.js` `script/{inventory,progress}.js` |
-| `-1134` | **伊甸古墓**接上（(735,196) 降落點＋34 格樹狀迷宮） | `config.js` `index.html` `flight/{index.html,export_mapref.py}` `script/town.js` `tools/{map_layout,script_lint}.py` `resources/map/_tomb_spec.md` `_layout_tomb.png` |
-| `-1135` | **死亡回到上一個安全點／結算點**＋掉一半戰鬥紀錄（等級棘輪） | `config.js` `state.js` `index.html` `flight/index.html` `main.js` `modules/{combat,inspector,town}.js` `script/progress.js` |
-| `-1136`〜`-1139` | **禁航區**（空氣牆／自動轉舵／蕾娜三句／地圖紅罩）　⚠ -1137・-1138 是中途版號，一起併進 -1139 那一筆 | `config.js` `index.html` `flight/index.html` |
-| `-1140` | 伊甸古墓背景 40 張交件 → 拔掉 34 個 `bgPending` | `config.js` `index.html` `script/town.js` |
-| `-1141` | `map_layout.py` 的 tomb 版面註解對回被回收的草圖工具（純註解） | `tools/map_layout.py` |
-| `-1142` | **墓門的「關著」狀態**（`bgWhen` 加 `not:`） | `config.js` `index.html` `flight/index.html` `modules/town.js` `script/town.js` |
-| `-1143` | 記下 `tomb_opened` 的擁有事件（純註解） | `config.js` `index.html` `flight/index.html` `script/town.js` |
-| `-1144` | **（美術 session）** 伊甸古墓小地圖改用程式合成 —— 圖與 spots 同一次產出 | `resources/map/{map_tomb.webp,_spots_tomb.json}` `tools/map_compose.py` |
-| `-1145` | **伊甸古墓的小地圖接上**（`TOWNS.tomb.map`，座標照抄那份 json） | `config.js` `index.html` `flight/index.html` `script/town.js` |
+## 接下來的事項
 
-⚠ `config.js`／`index.html`／`flight/index.html` 幾乎每一版都在清單裡，因為**版號與
-快取戳記**在那三支（見第 3 節）——看 diff 時先跳過那三行再看內容。
+1. **`belisar_land_ok` 這支旗還沒有人插** ⇒ 貝利薩爾目前**永遠降不下去**。
+   等 Ray 的下一段稿決定由哪一拍插旗（作法同北方泊地的 `sail.hold.until`）。
+   常數在 `flight/index.html` 的 `BELISAR_LAND_OK`，那裡的註解也寫著「現在還沒有人插」。
+2. **東方泊地 15 張背景**（`East_Square/Midtown/Church/Customs/University/Oldtown/
+   Firearm/Dock/Guild/Uptown/Grocerie/Hotel` ＋ 餐飲街的 `East_Bistro/Cafe/Restaurant`）。
+   交件後：拔 13 格的 `bgPending`、補 `SETTLEMENTS` 的 `town:'eastport'`
+   （⚠ `flight/index.html` 那一行的理由註解 -1291 已更正：城鎮資料早就有了，缺的是圖）。
+3. **拉芬斯達爾 7 張店內／室內圖**（表在 `resources/map/_ravnsdal_spec.md` §四）：
+   · **5 張同名覆蓋** `Ravn_Firearm／Guild／Grocerie／Hotel／Bistro` → 交件時**要補
+     `config.js` 的 `ASSET_VER` 五列**（§5：背景寫不了 `?v=`，走版本表）
+   · **2 張新增** `Ravn_Cafe／Ravn_Restaurant` → 新檔名，**不必**動 `ASSET_VER`
+   · 另外還有 `Ravn_Church`（`church` 那一格現在借用 `Ravn_Midtown`，`bgPending`）
+4. **卡耶爾山谷**：① 小地圖 `resources/map/map_canyon.webp`（去白背走 alpha，底稿可以
+   直接用 `_canyon_map.webp`）② **遭遇戰的敵人卡還沒有**，所以 `wildSpawn` 先沒給；
+   谷底祭場（`altar`）是 Boss 場。工單 `resources/background/_canyon_spec.md`。
+5. **瓦努努遺蹟的 Boss 卡**（`script/town.js:3900` 那一拍，Ray 還沒給）。
+6. 鐵路要不要**重做**是 Ray 的決定（他之前說「故事寫完城都做完再一次做」）。
+   真的重做時要重跑 `RAIL_CLIMB`，並過兩條驗收：① 沿線坡度（可以有一點點坡，
+   不可以爬山）② 大地圖上的線密度（不可以變成一張網）。
 
----
-
-## 1. 這一輪的成果（四句話）
-
-1. **玩家的四個新機制**：星要花《戰鬥紀錄》點亮／死亡回安全點且掉一半紀錄／
-   四國禁航區有空氣牆／伊甸古墓（34 格迷宮）可以降落探索。
-2. **評價收斂成一條線**：第 1 章起除打靶外每場必評（旗標與名單全部退場）。
-3. **建置多一個步驟**：改完程式要跑 `python3 tools/bust.py`（見第 3 節）。
-4. 七件回報全修掉，其中「手機上評價完全消失」是**規格疊出來的**不是壞掉（見第 4 節）。
-
----
-
-## 2. **被推翻的舊規則**（舊註解會騙人）
-
-| 舊規則 | 現在 | 版本 |
-|---|---|---|
-| 女主等級到了**自動亮星**（`girlBonus` 加 Lv1~現級） | **只加已點亮的星**；亮星要花《她的戰鬥紀錄》（升一級產一份） | `-1133` |
-| 戰敗（遭遇戰）回**這張地圖的入口**（`noJump`＋明指節點） | **讀最新的檢查點**（位置也跟著快照走）＝上一個踩過的安全點／結算點 | `-1135` |
-| 打靶**有**評價（-1060 撤掉 `noEval`） | 打靶三場一律 `noEval`；評價改由 `evaluation.js` 的 `FROM_STAGE=1` 全域控制 | `-1127`／`-1130` |
-| 索敵／加速／掃描從 **stage 7** 開 | **stage 8**；試飛（沒有章節鑰匙）不受限 | `-1132` |
-| 長按天空生怪只看 `ADMIN` | 還要 `featureOn('sense')`，而且**控制面板（含伸進窗裡的方向計與舵輪）不算天空** | `-1132` |
-| 安全點（`{settle:true}`）**不落**檢查點 | 與「有戰鬥的段落」同等對待，會落 | `-1135` |
-
----
-
-## 3. ⚠⚠ 新的建置步驟：`tools/bust.py`（**忘了跑＝玩家拿到舊 JS**）
-
-`index.html` 現在掛一張 **importmap**，把 39 支模組指到「同一支 ＋ `?v=<版號>`」。
-版號的唯一真相是 `config.js` 的 `VERSION`，同步靠：
+## 驗收指令
 
 ```bash
-python3 tools/bust.py          # 改完 VERSION 之後跑這一支
-python3 tools/bust.py --check  # 只檢查（script_lint.py 每次也會順手檢查）
+python3 tools/script_lint.py     # 現況基準：0 個錯誤、30 個提醒
+python3 tools/bust.py            # 改完 config.js 的 VERSION 之後跑
 ```
 
-- 入口那兩支（`main.js`／`orientation.js`）是 `<script src>`，吃不到 importmap，
-  由工具直接改 `src`。飛行頁是另一個 document：iframe 的 `src` 由 `main.js` 讀
-  `VERSION` 現組（`FLIGHT_SRC`），它自己那三支 `<script src>` 由工具改。
-- **症狀**：沒跑的話 lint 會多一條提醒；真的漏掉就是「我改好了他手機上還是舊行為」。
+**那 30 個提醒都是什麼**（ver -1291 逐條追過，**沒有一條是 bug**）：
 
----
-
-## 4. 刻意如此、**不要「修好」它**的四件事
-
-1. **第 0 章沒有任何評價**（`evaluation.js` 的 `FROM_STAGE=1`），而第 0/1 章的帝都
-   只有打靶（`noEval`）與賞金獵人兩場 —— 那一段「看不到評價」是規格疊出來的。
-2. **墓門現在一律是關的**（`tomb_opened` 沒有人插），而關著那張圖還沒交，
-   所以畫面上暫時**退回開著那張** —— 候選鏈的退路，不是壞掉。
-3. **禁航掉頭是在對白收掉之後才開始轉**：ver -481 定的「對白播放中整個世界暫停」
-   還在。要「一邊講一邊轉」得把禁航排除在那個暫停之外，**Ray 還沒說要**。
-4. **伊甸古墓的小地圖是「算出來的」不是量出來的**（ver -1144/-1145）：`_spots_tomb.json`
-   由 `tools/map_compose.py` 依 `tools/map_layout.py` 的版面與那張圖**同一次產出**。
-   日後那張圖重畫，**兩個檔要一起重跑、一起收** —— 不要拿新圖配舊座標，
-   也不要回頭去偵測墨點（第 6 節第 7 條）。
-
----
-
-## 5. 等別人的（**不要自己動手**）
-
-| 事 | 卡在誰 | 備註 |
+| 數量 | 內容 | 判定 |
 |---|---|---|
-| 伊甸古墓的 12 隻怪 | 同上 | 同一個下載問題 |
-| `Tomb_Gate_Sealed_{dawn,day,dusk,night}` | 同上 | 需求已發：同構圖同機位同光，只有門扇完全閉合 |
-| `tomb_opened` 誰插 | Ray 的劇本 | 條件已定：**另一座遺蹟啟動才會開**。⚠ 現有的遺蹟啟動旗有兩支（`ruins_altar_on`／`ruins_gate_open`），**不要發明第三支**，直接在那一段收尾加 `flags:['tomb_opened']` |
-| `girls.recordPerLevel` / `starCost` | Ray | 我填的是草案（1 與 `[1,1,2,2,3,3,4,4,5]`）：九級只產 9 份、全點要 23 份 ⇒ **點不滿，要選**。要「練滿能全點」把 `recordPerLevel` 調到 3 |
-| 門關著要不要**走不進去** | Ray | 現在照樣走得進去（他只要了一張圖） |
+| 14 | `bgPending`（東方泊地 13 ＋ 拉芬斯達爾 church） | 等美術，見上面第 2、3 項 |
+| 6 | 「劇情戰之前沒有 checkpoint」 | ✔ **都不會卡死**，回捲點：北方泊地墓地兩場→**教堂**（`church.acts[1][12]`）；`sf_deer_nightmare`→**斷崖邊**（結算怪 `sf_stag_*` 打完就落點，只差一格）；神殿兩場→**前廳／命之泉**（`deepaltar` 的節點註解已載明）；`man_sorana` 在還沒上線的 `lake_deck` |
+| 2 | 「入口那一格有戰鬥」（northport / shinier） | 已知設計債，憲法 §6.5.2 寫明靠「連敗三次抬回旅店」兜底，Ray 未定 |
+| 2 | `prologue_audience／prologue_fall` 走不到 | ⚠ **不是 Ray 在玩的那個序章**。現行序章＝地宮（`MAIN_ENTRY='dungeon_chase'`，`CHAPTERS.stage0` 也走它）。這兩幕是**舊草稿**，`mainScript.js:619` 的註解寫著「正式串主線時改回 `prologue_audience`」。要不要退役等 Ray 決定 |
+| 4 | `gentle／stunned／pain／fluster` 沒有差分 | 全部**只出現在上面那兩幕舊草稿裡**，玩得到的內容一張都沒缺。缺圖時引擎本來就回退基本立繪，不會壞 |
+| 2 | `se_cannonslide.mp3`／`Peritune_Mystic_Tides_loop.m4a` 沒人用 | 真的零引用，大概是先丟進來備用的，沒有壞任何事 |
 
----
+⚠⚠ **lint 曾經謊報過三類，ver -1290/-1291 已修**，別再被它騙：
+① 音檔「載不到」原本只認 `SE_FILES` 與 `ASSETS` 兩條登記路，漏了**飛行頁自己那組
+HTMLAudio**（`se_sail`／`se_shipcrush`）與**只用鑰匙引用的**（`se_weapon_cannon`）；
+② 孤兒場景原本只走 `next` 鏈，看不到 `story.open({scene:…})`（`lake_deck`）；
+③ 「空台詞又沒有 auto」漏掉**自己就是畫面**的那幾種拍（`cg`／`dayBreak`／`kitchen`／`boon`）。
 
-## 6. 這一輪踩到的坑（逐字遵守）
-
-1. **`?v=` 只保護 CSS 是不夠的** —— 模組的網址一版不變，iOS「加到主畫面」那個
-   webview 會抱著舊 JS 不放，而且**沒有任何錯誤訊息**。（→ 第 3 節）
-2. **「畫面上看不見」不要用猜的** —— 問 `document.elementFromPoint` 誰在上面。
-   -1128 的看門狗當場抓到 `#assetLoader`（讀取頁沒點掉）與 `#startBtn`（首頁還開著）。
-3. **可見性不可以由動畫決定**：`opacity:0` 基底 ＋ `animation ... both/forwards`
-   ＝ 動畫沒套到就永遠透明。基底要是「看得見的樣子」，動畫只負責怎麼出現。
-4. **`_lootHold` 那條規矩只寫了一半**（-961 只擋亂入那一句）：結算頁一開，下一次
-   點擊就彈戰利品、確認完還會自動離場 —— 評價要 1.1 秒才出框。已補成「有人要講話
-   就押著」。
-5. **CSS 權重**：狀態類（`.done`／`.next`）要比模式類（`.saint`／`.overkill`）**多一級**，
-   不然模式一疊上去就把狀態洗掉（-684 與 -1127 是同一種病）。
-6. **飛行頁測試**：`document.hidden` 時 rAF 整個停 —— 在背景分頁量到的「船不動」
-   是假象。要逐幀資料就**在頁內裝 rAF 記錄器**，一次讀回來（外部逐次 `eval` 會
-   把節奏打散）。另外 `takeoffPlaying` 期間 `update()` 不跑，等 `clock.dist>0` 才算起飛完。
-7. **小地圖的墨點不是每格一顆**（有些是連線接點、有些與圖示黏在一起）——
-   「偵測墨點 → 配回節點」這條路在伊甸古墓上不成立。合成才是正解。
-
----
-
-## 7. 環境備忘／快速測法
-
-**沿用 `HANDOFF_ver971-995.md` 的第 7、8 節**（jsc 路徑、資源路徑自檢、戰鬥類交給 Ray、
-搭檔模組煙霧測試）。這一輪再補三條：
-
-- 改完程式：`python3 tools/bust.py` → `python3 tools/script_lint.py`（0 錯誤才算完）。
-- 飛行頁語法檢查：把 HTML 註解剝掉、抽出非 module 的 `<script>` 存成 `/tmp/fl_check.js`
-  再 `jsc` 跑它；看到 `Can't find variable: Image` ＝ **語法沒問題**。
-- 瀏覽器實測前先 `fetch(路徑,{cache:'reload'})` 再 `location.reload()`；
-  **開機讀取頁一定要用真的 `computer.left_click` 點掉**（程式化 `click()` 點不掉）。
+**語法檢查**：抽出 `flight/index.html` 最大的 `<script>`，用 macOS 的 `jsc`
+（`/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc`）跑
+`new Function(...)`。⚠ `jsc` 檢不出 GLSL 的錯 —— shader 壞掉是**悄悄退回 CPU**
+（`glReady` 變 false、無錯誤訊息），改完 shader 一定要在瀏覽器確認 `glReady===true`。
+⚠ GLSL 在 JS 樣板字串裡，**註解不可以有反引號**。
