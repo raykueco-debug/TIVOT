@@ -2543,7 +2543,17 @@
        「失焦」。3% 是看不出色偏、但摸得到銳利度的量。不想要就把它拿掉，是獨立的一項。
      ⚠ 若之後覺得還是有顆粒：先確認那是**圖本身**還是**縮放**造成的 ——
        前者要調這個數字，後者的正解是出一張接近顯示尺寸的圖（少縮一半，雜訊就少一半）。 */
+  /* ⚠⚠ 這一條與下面 `#townClock` 那一條**必須一模一樣**（ver -1249）：
+     背景上的鐘是疊在同一個外框上的 SVG，兩者吃同一個 scale(1.01) 才會鎖在一起。
+     改一邊就要改另一邊（鐵律 7 的但書）。 */
   #storyStage.town-on #storyBg{ filter:blur(0.6px) contrast(1.03); transform:scale(1.01); }
+  /* ══ 背景上的鐘（ver -1249，Ray：「背景的時間跟遊戲時間永遠對不上，對我來說那算 bug」）══
+     外框、z-index、濾鏡、transform **全部照 `#storyBg`** —— 見上面那一條的警語。
+     ⚠ `pointer-events:none`：它只是畫上去的東西，不吃點擊。 */
+  #townClock{position:absolute;left:0;right:0;top:0;height:var(--story-top);
+    z-index:0;pointer-events:none;display:none;}
+  #townClock.on{display:block;}
+  #storyStage.town-on #townClock{ filter:blur(0.6px) contrast(1.03); transform:scale(1.01); }
   /* 背景水平翻轉（ver -877，Ray：「石橋右邊再放一個崩塌走道，水平翻轉」）——
      節點資料寫 `bgFlip:true`，story.setBgFlip 掛/拔這個 class（鐵律 8）。
      ⚠ transform 是整條取代：town 的 1.01 放大要一起寫，不然翻轉那一格會露軟邊。 */

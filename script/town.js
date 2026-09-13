@@ -4083,7 +4083,16 @@ export const TOWNS = {
         exits:{ left:'gunstore', right:'square', up:'station', down:'guild' } },
       gunstore: { bg:'Ravn_Firearm',  name:'拉芬斯達爾　武器店',   noTime:true,
         exits:{ back:'oldtown' } },
+      /* ⚠⚠ 站房上那面大鐘的指針**由遊戲時間擺**（ver -1249，Ray：「不然背景的時間
+         跟遊戲時間永遠對不上，對我來說那算 bug」）。座標是**量出來的**（圖 1536×1024）：
+         錶心 (767,170) ⇒ (0.4993, 0.1660)；`r` 是盤面半徑 50px ÷ 圖寬 1536 ＝ 0.0326。
+         引擎會先用盤面色蓋掉畫上去的那兩根（盤面是平的，見 `syncBgClock` 的說明），
+         再擺上時針分針 —— **不轉動、進場抓一次**。 */
       station:  { bg:'Ravn_Station',  name:'拉芬斯達爾　火車站',   noTime:true,
+        /* `wipe`＝畫上去的分針伸出盤面圓之外的那一截（實測到 r≈56，補丁只到 50）
+           —— 不抹的話三點鐘方向會留一小截黑。一項＝[角度°, r0, r1, 半寬]，
+           後三個以盤面半徑為單位。 */
+        clock:{ x:0.4993, y:0.1660, r:0.0326, wipe:[[100.5, 0.94, 1.20, 0.11]] },
         exits:{ back:'oldtown' } },
       guild:    { bg:'Ravn_Guild',    name:'拉芬斯達爾　賞金獵人公會', noTime:true,
         exits:{ back:'oldtown' } },

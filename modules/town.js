@@ -1645,6 +1645,76 @@ function infoText(n){
   return (n ? nameOf(nodeId) : '') + '　' + clock.timeText() + (isOpenNow(n) ? '' : '　已打烊');
 }
 
+/* ══⚠⚠⚠ 背景上的鐘（ver -1249，Ray：「如果要讓時鐘的分針時針隨遊戲時間變動
+     會很麻煩嗎？」「做得到就做，不然背景的時間跟遊戲時間永遠對不上，對我來說那算 bug」）══
+   節點寫 `clock:{x,y,r}` —— 圖上的**比例**座標（`x`/`y` 同 `bgPoint`；
+   `r` 是盤面半徑，單位是**圖寬**）。可選：`face`／`hand`（顏色）。
+
+   ── 為什麼不用重畫背景 ──────────────────────────────────────────
+   畫上去的那兩根指針**用程式蓋掉**就好：那面盤是平的 —— 實測 `Ravn_Station.webp`
+   半徑 12~46 的盤面是 **(142,141,146)，標準差只有 1.9~3.4** ⇒ 填一塊同色的圓
+   看不出接縫。半徑 `r`(50px) 只切掉刻度最內側 1~2 個**原圖**像素，
+   在 390 寬的手機上是 0.03 px。**不必動美術、不必跳 `ASSET_VER`。**
+
+   ── 為什麼是疊一層 SVG，而不是畫在背景上 ────────────────────────
+   `#storyBg` 是 `<img>`，畫不上去。所以另開 `#townClock`，
+   **外框、z-index、filter、transform 全部照它**（見 style.css 那兩條，改一邊要改另一邊）：
+   城鎮背景有 `scale(1.01)`，而 `bgPoint` **不含**那個 scale ——
+   兩層同框同 transform，縮放才會一起走，指針不會偏（錶盤離圖心 342px，
+   1% 就是 3.4 個原圖像素）。
+
+   ⚠ 時間只讀 `clock.hourF()`（鐵律 7），不自己算。
+   ⚠⚠ **不轉動、只在進場抓一次**（Ray 指定）：遊戲時間本來就是跳的
+     （走一步 10 分鐘、進城／戰鬥各一小時），逐幀轉針是白花的成本。
+     掛在 `refreshArrows()` ＝ 「誰更新上緣那一行時刻，誰順便擺指針」（鐵律 8）。
+   ⚠ 背景還沒載完時 `bgPoint` 回 null ⇒ **先不要畫**（擺在錯的地方比晚一拍糟）。
+   ⚠ 誰收它：`close()` 移除；換到沒有鐘的節點時 `refreshArrows` 自己把它藏起來。 */
+let clockEl=null;
+function syncBgClock(){
+  const st=story.stageEl(); if(!st) return;
+  if(clockEl && !clockEl.isConnected) clockEl=null;      // 舞台被整層收掉過
+  const hide=()=>{ if(clockEl) clockEl.classList.remove('on'); };
+  const n=node(), C=n && n.clock;
+  if(!C) return hide();
+  const c=bgPoint(C.x, C.y), a=bgPoint(0,0), b=bgPoint(1,0);
+  if(!c || !a || !b) return hide();                      // 圖還沒載完
+  const R=(b.x-a.x)*C.r;
+  if(!(R>1.2)) return hide();                            // 小到讀不出來就別畫（同 §6.8.1）
+  const t=clock.hourF();
+  const degM=(t%1)*360, degH=((t%12)/12)*360;            // 12 點起算、順時針
+  const tip=(len,deg)=>{ const k=deg*Math.PI/180;
+    return [c.x+len*Math.sin(k), c.y-len*Math.cos(k)]; };
+  const [hx,hy]=tip(R*0.78, degH), [mx,my]=tip(R*1.06, degM);
+  const face=C.face||'142,141,146', hand=C.hand||'62,63,70';
+  /* ⚠ `wipe`＝**畫上去的指針伸出盤面圓之外的那一截**要另外抹掉
+     （`Ravn_Station` 的分針畫到 r≈56，而盤面補丁只到 50 —— 不抹的話
+     三點鐘方向會留一小截黑，那正是「對不上」的另一種長相）。
+     一項＝`[角度°, r0, r1, 半寬]`，後三個的單位都是**盤面半徑**。
+     ⚠ 把補丁整個放大到 56 不行：刻度就從 r≈48 開始，會被吃掉一半。 */
+  let wipe='';
+  for(const w of (C.wipe||[])){
+    const [wd,w0,w1,ww]=w, p0=tip(R*w0,wd), p1=tip(R*w1,wd);
+    wipe += '<line x1="'+p0[0].toFixed(2)+'" y1="'+p0[1].toFixed(2)+'" '
+          + 'x2="'+p1[0].toFixed(2)+'" y2="'+p1[1].toFixed(2)+'" stroke="rgb('+face+')" '
+          + 'stroke-width="'+(R*ww*2).toFixed(2)+'" stroke-linecap="round"/>';
+  }
+  if(!clockEl){
+    clockEl=document.createElementNS('http://www.w3.org/2000/svg','svg');
+    clockEl.id='townClock';
+    st.appendChild(clockEl);                             // 排在 #storyBg 之後＝疊在它上面
+  }
+  const f=v=>v.toFixed(2);
+  clockEl.innerHTML =
+      '<circle cx="'+f(c.x)+'" cy="'+f(c.y)+'" r="'+f(R)+'" fill="rgb('+face+')"/>'
+    + wipe
+    + '<line x1="'+f(c.x)+'" y1="'+f(c.y)+'" x2="'+f(hx)+'" y2="'+f(hy)+'" '
+      + 'stroke="rgb('+hand+')" stroke-width="'+f(Math.max(R*0.11,0.8))+'" stroke-linecap="round"/>'
+    + '<line x1="'+f(c.x)+'" y1="'+f(c.y)+'" x2="'+f(mx)+'" y2="'+f(my)+'" '
+      + 'stroke="rgb('+hand+')" stroke-width="'+f(Math.max(R*0.075,0.6))+'" stroke-linecap="round"/>'
+    + '<circle cx="'+f(c.x)+'" cy="'+f(c.y)+'" r="'+f(Math.max(R*0.13,0.7))+'" fill="rgb('+hand+')"/>';
+  clockEl.classList.add('on');
+}
+
 function refreshArrows(){
   const n=node(); if(!n || !layer) return;
   const info=layer.querySelector('#townInfo');
@@ -1660,6 +1730,8 @@ function refreshArrows(){
     +   '<span class="ti-time">' + clock.timeText() + '</span>'
     +   (isOpenNow(n) ? '' : '<span class="ti-shut">已打烊</span>')
     + '</span>';
+  /* 背景上的鐘：誰更新這一行時刻，誰順便擺指針（鐵律 8，見 `syncBgClock`）。 */
+  syncBgClock();
   /* 目的地字格：有那個方向才出現，字是目的地名，**位置貼著那一支箭**
      （ver -374，Ray：「地名是放在箭頭左右上方」）。
      ⚠ 箭的座標問 `getBoundingClientRect`，不要自己算（鐵律 7）。
@@ -3064,6 +3136,7 @@ export function close(){
   heldArrival=null; mapCardArmed=false;
   story.hideTitleCard();
   { const b=document.getElementById('townMapBtn'); if(b) b.remove(); }   // 常駐鈕的唯一終點（ver -899）
+  if(clockEl){ clockEl.remove(); clockEl=null; }        // 背景上的鐘的唯一終點（ver -1249）
   /* 外出行程（ver -575）：這裡才歸零 —— `close()` 才是「這一趟城鎮探索結束」
      （回主選單／killAllPages／讀檔換城）。`open()` 不清，見那一支的說明。 */
   outKey=null; outPlan=[];
