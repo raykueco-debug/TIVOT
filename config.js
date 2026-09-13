@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.14-1290';
+export const VERSION = 'ver 2026.09.14-1291';
 
 export const GAME_CONFIG = {
 
@@ -3119,8 +3119,13 @@ export const GAME_CONFIG = {
            剛好落在匯流 limiter 的門檻（−6 dB／ratio 12）上，被輕壓成 ≈−5.8。
            所以**變大的是響度（RMS）不是峰值**，不會削波。
          ⚠ 還嫌不夠的話要動的是 `targetLufs`（−20 往上），但那等於**全部的
-           `fileGain` 都要重量**（每一支都是依它反推的）—— 不要只調其中幾支。 */
-      layer: { vo:1.85, se:1.20, bgm:0.32 },
+           `fileGain` 都要重量**（每一支都是依它反推的）—— 不要只調其中幾支。
+         ══⚠⚠ **ver -1291（Ray：「BGM 都太小聲，提高音量 10」）**══
+         **bgm 0.32 → 0.42**（＋10 個百分點＝＋2.4 dB）。⚠ 這是把 -1063 那一階
+         （0.45→0.32）退回去一半 —— 當時是為了讓語音浮出來而壓的，vo 隨後在 -1066
+         已經自己抬到 1.85，所以音樂不必再墊那麼低。
+         ⚠ vo／se 一個字不動：Ray 說的是 BGM 太小聲，動別的層等於改變它們之間的比例。 */
+      layer: { vo:1.85, se:1.20, bgm:0.42 },
       /* 語音時 BGM 自動閃避（ver -847）：語音開播把 BGM 壓到 level 倍、結束淡回。
          audio.js 的 setVoiceDuck 吃這一組（main 開機推入）。 */
       voiceDuck: { level:0.25, attackMs:120, releaseMs:350 },   // ver -1063：閃避更深
