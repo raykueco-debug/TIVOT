@@ -293,6 +293,9 @@ JOBS = [{
     #   ⚠ `dropGreen` 只拿掉**從圖框外緣連得進來的**綠 —— 城**內部**的公園與
     #     行道樹不受影響，市街核心一格都不會少。
     'dropGreen': True,
+    # 城**內部**剩下的綠（公園／行道樹／內側菜畦）改成積雪的地色（ver -1220，
+    # Ray：「拉分斯達爾的飛行地圖上不要有綠色塊」）—— 見 dropGreen 底下那一段。
+    'greenSnow': 0.9,
     'dst': 'ravnsdal_plan.webp',
     'hdst': 'ravnsdal_h.webp',
     'mdst': 'ravnsdal_mass.webp', 'jdst': 'ravnsdal_mass.json',
@@ -762,6 +765,30 @@ for J in JOBS:
         al[_kill] = 0
         print('  挖掉城緣綠地：%.1f%% 的像素（門檻 G−R,G−B > %d）'
               % (_kill.mean() * 100, _gt))
+
+        # ══⚠⚠ `greenSnow`：**城內部**剩下的綠改成積雪的地色（ver -1220，Ray：
+        #   「拉分斯達爾的飛行地圖上不要有綠色塊」）══════════════════════
+        # `dropGreen` 只處理得了「與城外相連」的那一片 —— 被房子圍起來的公園、
+        # 行道樹、內側的菜畦通不到外面，所以照樣是綠的，在雪城上特別刺眼。
+        # ⚠⚠ **不可以挖掉**：輪廓之內必須完全不透明（憲法 §6.8），挖了就是破洞，
+        #   而破洞在畫面上與**渲染的破圖長得一模一樣**，會害下一個人查錯方向。
+        #   所以這裡是**改色**不是挖洞。
+        # ⚠ 改成雪色而不是石色：這座城的城鎮背景本來就在下雪（見
+        #   `resources/map/_ravnsdal_spec.md` §七），空拍卻一片雪都沒有 ——
+        #   順手把兩邊拉近一步。⚠ 真正的積雪（屋頂受雪面／背陽面）仍然是美術的事。
+        # ⚠ 用 `mix` 不用整片填死：留一點原本的明暗，不然那幾塊會變成無紋理的白斑。
+        if J.get('greenSnow'):
+            _ss = 0.85 if J['greenSnow'] is True else float(J['greenSnow'])
+            _rest = _green & (~_kill) & (~_clear)
+            if _rest.any():
+                _sc = np.array([226.0, 233.0, 242.0])          # 偏冷的雪白
+                _px = rgb[_rest].astype(np.float64)
+                _lum = (_px * np.array([0.299, 0.587, 0.114])).sum(axis=1, keepdims=True)
+                # 保留原本的明暗（±12%），只把**色相**換掉
+                _tgt = _sc * (0.88 + 0.24 * (_lum / 255.0))
+                rgb[_rest] = np.clip(_px + (_tgt - _px) * _ss, 0, 255)
+                print('  城內綠地改積雪色：%.1f%% 的像素（強度 %.2f）'
+                      % (_rest.mean() * 100, _ss))
 
     # 底圖投影量測（只印數字，不改像素 —— 修圖是美術端的工作）
     if J.get('shadowCheck'):

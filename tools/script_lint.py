@@ -374,6 +374,12 @@ def main():
         #   ⚠ `back` 不驗：它由 exitsOf 掛在「來時方向的反向」，本來就一定是對的。
         OPP = {'up': 'down', 'down': 'up', 'left': 'right', 'right': 'left'}
         for nid, n in nodes.items():
+            # ⚠⚠ `tag` 要**這一圈自己算**（ver -1220 修）：上面那一圈也有 `tag`，
+            #   而這裡沒有重算 —— 於是這一圈裡**每一則**警告（背景缺圖／shop／懸賞榜／
+            #   對白／acts）印出來的節點都是**上一圈最後一格**的名字。
+            #   實測：ravnsdal 的大教堂缺圖被印成 `ravnsdal.inn`。
+            #   這種錯誤特別貴：訊息本身看起來完全正常，照著它去查會查錯格。
+            tag = '%s.%s' % (tid, nid)
             for d, to in (n.get('exits') or {}).items():
                 if d == 'back' or not isinstance(to, str) or to.startswith('@'):
                     continue
@@ -417,10 +423,20 @@ def main():
                     warn('%s：背景 %s 產圖中（bgPending）——交件後拔掉 bgPending' % (tag, bg))
                 else:
                     err('%s：沒有這張背景 %s（找 %s，含 _Day）' % (tag, bg, BG_DIR))
-            if bg and n.get('bgPending') and (exists(BG_DIR + bg + '_Day.webp')
-                                              or exists(BG_DIR + bg + '_day.webp')
-                                              or exists(BG_DIR + bg + '.webp')):
-                warn('%s：背景 %s 已交件，bgPending 可以拔了' % (tag, bg))
+            # ⚠ `bgPending` 有兩種寫法（ver -1220）：
+            #   · `true`      ＝ 這一格的 `bg` 還沒交件（骨架先行，會 404 → 畫面停在前一格）
+            #   · `'<檔名>'`  ＝ **這一格暫時借了一張存在的圖**，真正要的是那個檔名
+            #     （拉芬斯達爾的大教堂：借中心區那張，免得同一格每次長得不一樣）
+            pend = n.get('bgPending')
+            want = pend if isinstance(pend, str) else bg
+            if pend and (exists(BG_DIR + want + '_Day.webp')
+                         or exists(BG_DIR + want + '_day.webp')
+                         or exists(BG_DIR + want + '.webp')):
+                warn('%s：背景 %s 已交件，bgPending 可以拔了'
+                     '%s' % (tag, want, ('（順手把 bg 改成它）' if isinstance(pend, str) else '')))
+            elif isinstance(pend, str):
+                warn('%s：暫時借用背景 %s，真正要的 %s 還沒交件'
+                     % (tag, bg, want))
             if n.get('shop') and n['shop'] not in ((cfg.get('shop') or {}).get('stock') or {}):
                 err('%s：shop 指到 config.shop.stock 裡沒有的貨單 %s' % (tag, n['shop']))
             if n.get('board'):

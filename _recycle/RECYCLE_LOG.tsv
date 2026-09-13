@@ -133,3 +133,8 @@ when	from	to	reason
 20260913-134916	resources/vfx/kerberos_rivet.webp	_recycle/resources/vfx/kerberos_rivet.webp.20260913-134916	q92 二次編碼版（ver -1215 改回從 _originals 的 PNG 一次編碼）
 20260913-135052	flight/_pend_old.webp	_recycle/flight/_pend_old.webp	A/B 用的舊吊墜（alpha 底噪版），比對完了
 20260913-141339	flight/_before.html	_recycle/flight/_before.html	A/B 用的 -1217 快照，比對完了
+20260913-142555	flight/city/ravnsdal_plan.webp	_recycle/flight/city/ravnsdal_plan.webp	ver -1220 重跑 ravnsdal（城內綠地改積雪色）
+20260913-142555	flight/city/ravnsdal_plan_lo.webp	_recycle/flight/city/ravnsdal_plan_lo.webp	ver -1220 重跑 ravnsdal（城內綠地改積雪色）
+20260913-142555	flight/city/ravnsdal_h.webp	_recycle/flight/city/ravnsdal_h.webp	ver -1220 重跑 ravnsdal（城內綠地改積雪色）
+20260913-142555	flight/city/ravnsdal_mass.webp	_recycle/flight/city/ravnsdal_mass.webp	ver -1220 重跑 ravnsdal（城內綠地改積雪色）
+20260913-142555	flight/city/ravnsdal_mass.json	_recycle/flight/city/ravnsdal_mass.json	ver -1220 重跑 ravnsdal（城內綠地改積雪色）

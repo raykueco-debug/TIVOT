@@ -3973,6 +3973,83 @@ export const TOWNS = {
   },
 
   /* ══════════════════════════════════════════════════════════════════════
+     拉芬斯達爾城（ver -1220；Ray：「接下來做兩座城，東泊跟拉芬斯達爾」）
+     ──────────────────────────────────────────────────────────────────────
+     權威規格：`resources/map/_ravnsdal_spec.md`（美術交件，含逐格簡報與畫風）。
+     **這裡照抄，一格都不改**（憲法 ver -907：地圖的拓樸是 Ray 的設計，不是我的）。
+
+     **12 格・11 邊・環 0** —— 拓樸與 `capital`／`santasofia` 完全相同，只換名字與
+     背景；兩格的**內容**換了（規格 ver -1162）：
+       · `cityhall` → **`lookout` 瞭望台**（全城唯一看得到整座城的地方）
+       · `dock`     → **`station` 火車站**（客貨上岸走河港、內陸轉運走鐵路）
+     ⚠ **id 跟著內容改**：留著 `dock` 當火車站的鑰匙，下一個讀這份資料的人一定會
+       以為那裡有船。⚠ 這與聖索菲亞那條「不要順手統一 id」不衝突 —— 那邊改的是
+       顯示名，這邊改的是**那一格是什麼**。
+     ⚠ **出航掛在 `square` 的下方**（§6.5.4），不是走 `station` 那一格 ——
+       所以碼頭換成火車站，出航一行程式都不必動。
+     ⚠ 入口 `square` **不可以有戰鬥**（§6.5.2：它是遭遇戰的復活點）。
+     ⚠ 小地圖還沒有（規格 §六「槍棺小地圖 未開始」）⇒ **不寫 `map:`**，
+       槍棺上那顆地圖鈕會回一句「這一帶還沒有留下地圖。」（§6.5.4 的既有行為）。
+     ══════════════════════════════════════════════════════════════════════ */
+  ravnsdal: {
+    name: '拉芬斯達爾城',
+    entry: 'square',
+    /* 大城市不上迷霧（ver -913）—— ⚠ **要明寫**：沒寫就是有霧。 */
+    mist: 0,
+    /* 餐飲街：這一格現在只是「碰得到人的地方」。⚠ **不給 `scenes`** —— 四家分店的
+       圖還沒有，城裡沒有那一家就不換、照節點原本那一張（§6.5.4.2）。 */
+    dining: { node:'tavern' },
+    /* ⚠⚠ **每一格都要 `noTime:true`**：這 12 張目前 0 張時段差分，不寫的話候選鏈
+       會先去試 `_dawn/_day/_dusk/_night` 四個名字，**每一格白吃四個 404**
+       （交件單 `_ravnsdal_spec.md` §五也是這樣要求的）。差分交件之後整批拿掉。 */
+    nodes: {
+      /* ══ 港口廣場 ══ 入口；上＝中心區、左＝舊街區、右＝上街區（照帝都）。 */
+      square:   { bg:'Ravn_Square',   name:'拉芬斯達爾　港口廣場', noTime:true,
+        exits:{ up:'midtown', left:'oldtown', right:'uptown' },
+        sail:{ flag:'got_ship' } },
+
+      /* ── 一、中心區 ── 左＝瞭望台、右＝大教堂、下＝廣場 */
+      midtown:  { bg:'Ravn_Midtown',  name:'拉芬斯達爾　中心區',   noTime:true,
+        exits:{ left:'lookout', right:'church', down:'square' } },
+      /* ⚠⚠ **大教堂是規格上唯一留白的一格**（`_ravnsdal_spec.md` §三：宗教建築的
+         形制是世界觀的事，Ray 還沒給方向）。`Ravn_Church` 這張圖**還不存在**。
+         ⚠⚠ 所以 `bg` **暫時指中心區那一張**，不是指一個不存在的檔名 ——
+           候選鏈一張都載不到時 `bgFor` 是「照樣放行」，畫面會**停在前一格**，
+           於是從瞭望台繞過來會看到瞭望台、從廣場上來會看到中心區：
+           **同一格每次長得不一樣**，那比「暫時借一張」更糟（實測確認過）。
+           借中心區也讀得通：那條側街本來就是從中心區往深處沒入海霧的那一條。
+         ⚠ `bgPending` 寫成**還缺哪一張的檔名**（`script_lint.py` 會提醒）——
+           圖交進來就只要把 `bg` 改成 `Ravn_Church`、拔掉 `bgPending`，其餘不動。 */
+      church:   { bg:'Ravn_Midtown',   name:'拉芬斯達爾　大教堂',   noTime:true,
+        bgPending:'Ravn_Church', exits:{ back:'midtown' } },
+      lookout:  { bg:'Ravn_Lookout',  name:'拉芬斯達爾　瞭望台',   noTime:true,
+        exits:{ back:'midtown' } },
+
+      /* ── 二、舊街區（四向樞紐） ── 左＝武器店、右＝廣場、上＝火車站、下＝公會 */
+      oldtown:  { bg:'Ravn_Oldtown',  name:'拉芬斯達爾　舊街區',   noTime:true,
+        exits:{ left:'gunstore', right:'square', up:'station', down:'guild' } },
+      gunstore: { bg:'Ravn_Firearm',  name:'拉芬斯達爾　武器店',   noTime:true,
+        exits:{ back:'oldtown' } },
+      station:  { bg:'Ravn_Station',  name:'拉芬斯達爾　火車站',   noTime:true,
+        exits:{ back:'oldtown' } },
+      guild:    { bg:'Ravn_Guild',    name:'拉芬斯達爾　賞金獵人公會', noTime:true,
+        exits:{ back:'oldtown' } },
+
+      /* ── 三、上街區（四向樞紐） ── 左＝廣場、右＝餐飲街、上＝旅店、下＝雜貨舖 */
+      uptown:   { bg:'Ravn_Uptown',   name:'拉芬斯達爾　上街區',   noTime:true,
+        exits:{ left:'square', right:'tavern', up:'inn', down:'grocery' } },
+      tavern:   { bg:'Ravn_Bistro',   name:'拉芬斯達爾　餐飲街',   noTime:true,
+        exits:{ back:'uptown' } },
+      grocery:  { bg:'Ravn_Grocerie', name:'拉芬斯達爾　雜貨舖',   noTime:true,
+        exits:{ back:'uptown' } },
+      /* ⚠ 這一格**沒有** `inn:true`：旅店大廳與四扇伙伴門這一輪不做（同聖索菲亞）
+         —— 只寫 `inn:true` 而沒有人應門的話，玩家會敲到一排空門（§6.5.5）。 */
+      inn:      { bg:'Ravn_Hotel',    name:'拉芬斯達爾　旅店',     noTime:true,
+        exits:{ back:'uptown' } },
+    },
+  },
+
+  /* ══════════════════════════════════════════════════════════════════════
      伊甸古墓（ver -1134；Ray：「在 735 196 放置地點伊甸古墓，拓樸跟圖已經交了」）
      ──────────────────────────────────────────────────────────────────────
      權威規格：`resources/map/_tomb_spec.md`（美術交件，含逐格特徵與畫風規格）；

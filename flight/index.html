@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1219"></script>
+<script src="../orientation.js?v=1220"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1219');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1220');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1219");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1219");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1220");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1220");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1219");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1219");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1220");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1220");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -483,25 +483,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1219" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1220" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1219" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1219" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1219" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1219" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1219" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1219" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1219" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1219" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1219" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1219" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1220" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1220" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1220" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1220" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1220" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1220" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1220" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1220" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1220" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1220" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1219" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1220" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1219" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1220" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -522,11 +522,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1219"></script>
+<script src="settlement.js?v=1220"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1219"></script>
+<script src="talks.js?v=1220"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -566,7 +566,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1219';
+const FLIGHT_VER = 'ver -1220';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -893,9 +893,9 @@ const SETTLEMENTS = [
      ⚠⚠ x/y/planW/planRot **必須與 `build_city.py` 的 JOB 一致**（§6.7.5）——
        落點是 Ray 指定的 (577,243)，`planRot=−π/2` 的四個方向與理由寫在那邊
        （碼頭朝南對著大河、圖的下緣朝東接另一條河、鐵路朝北往內陸）。
-     ⚠ **沒有 `town:` ＝ 還不能降落** —— `script/town.js` 還沒有 ravnsdal 的
-       12 格（那 11 張背景美術正在跑）。補上 `town:'ravnsdal'` 就有降落鈕
-       （同東方泊地那一條的作法）。
+     ⚠ `town:'ravnsdal'` ＝ 降落得了（ver -1220：`script/town.js` 的 12 格已經寫好，
+       權威規格 `resources/map/_ravnsdal_spec.md`）。大教堂那一格的背景仍留白 ——
+       那是**資料**的狀態，不影響降落。
      ⚠ `planTall` 45：正規城市但不到帝都級（帝都 55、聖王廳 68、兩座泊地 40）。
      ⚠ 整地照聖王廳那一套（§6.7.5 步驟 3）；它靠河不靠海，`sea:0` 照舊。
      ⚠ 色調驗收（§6.7.5 步驟 5，量**成品**）：**V 0.423／S 0.196**
@@ -903,6 +903,7 @@ const SETTLEMENTS = [
      ⚠ 街廓 280 塊：在既有城的範圍內（聖王廳 24／夏爾村 23／北方泊地 180／
        帝都 344）—— `maxdim` 給 1254（不縮）時門檻一定要跟著放大，見 JOB。 */
   { n:'拉芬斯達爾城', x:577, y:243, t:'city2', f:'free', c:1, sea:0.0,
+    town:'ravnsdal',
     plan:'city/ravnsdal_plan.webp', planH:'city/ravnsdal_h.webp',
     planW:800, planRot:-1.5708, planTall:45,
     podium:{ r:1.05, skirt:8, lift:0 } },
@@ -917,7 +918,7 @@ const SETTLEMENTS = [
 /* ver -1179：東方泊地挖掉城緣綠地（-1178 是換第二版插畫）——兩次都是（`Eastport_topdown.png` 同名覆蓋），
    `city/eastport_*` 那一族跟著重算 —— 不動這個數字的話瀏覽器照樣拿舊的那一份，
    而症狀只是「城看起來沒變」，查不出原因。 */
-const CITY_V='?v=1195';   // ver -1194：ravnsdal_* 同名重跑（-1193 那一版 Ray 已經載過）
+const CITY_V='?v=1220';   // ver -1220：ravnsdal_* 同名重跑（城內綠地改積雪色）
 /* ══⚠⚠ 量體的貼材（ver -1117，Ray 交件 `geo/flight_villagewall`／`flight_rooftile`）══
    牆本來是一塊平色（`wallCol`），所以房子讀起來是「立起來的色塊」而不是建築。
    ⚠⚠ **逐城開關**（`wallTex`／`roofTex`）不是全域：貼材的牆要**逐面** pattern fill，
@@ -1485,6 +1486,9 @@ let ROADW=null;                               // Uint8Array：每地圖像素的
    ⚠ 存成逐像素而不是「取樣時算到每座城的距離」：後者在內迴圈要對 27 座城
      各算一次，這裡每幀跑十七萬次。載入時算一次、取樣時讀一個 byte。 */
 let SUBW=null;
+/* 逐格的雪量（0~255，ver -1220）。由 loadWorld 的「北國的雪」那一段算並發佈；
+   渲染端只讀它把植被貼圖的強度壓掉（雪地上不該長出森林的紋理）。 */
+let SNOW=null;
 /* ── 生物群系查表 ──────────────────────────────────────────────
    每個地圖像素一個 byte：低 4 bit＝貼圖類別、高 4 bit＝低頻亮度起伏（0~15）。
    ⚠ 為什麼要打表：判定要讀坡度、高度、河道、郊區、路，還要對低頻噪聲做兩次
@@ -2087,11 +2091,10 @@ const PLACES=[
   {x:1098,y:798, name:'夏爾村',       type:'帝國・村落'},
   /* ══⚠⚠ 拉芬斯達爾城（Ravnsdal，ver -1191，Ray 指定 (577,243)）══════════════
      規格在 `resources/map/_ravnsdal_spec.md`（美術 ver -1162/-1163）。
-     · **只有名牌，還沒有城**：`SETTLEMENTS` 那一列要等城的俯視插畫與
-       `build_city.py` 的 JOB（§6.7.5 的流程），現在只放 PLACES ——
-       遠遠看得到金箭頭與名牌，地上還是原本的地形。
-     · **也還沒有 `town:`**：`script/town.js` 的 12 格要等那 11 張背景交件
-       （美術正在跑）。補上 `town:'ravnsdal'` 就有降落鈕（同東方泊地那一條的作法）。
+     · 城本體在 `SETTLEMENTS`（ver -1193 落地），**降落鈕也掛在那一列**
+       （`town:'ravnsdal'`，ver -1220）—— `nearestTown()` 先掃 SETTLEMENTS，
+       這裡**不要**再寫一次 `town:`，會變成同一座城登記兩遍。
+     · 這一列現在只負責**名牌**（金箭頭與城名）。
      ⚠ 地形實測（遊戲自己的 `HGT`）：**h=73，是陸地**，四周 ±48 格全是陸；
        最近的海在 (498,308)、102 格外，最近的水面（河／湖，地貌色 88,116,132）
        在南方約 20 格。⇒ 城坐在水岸內側的緩坡上，規格裡那片「俯瞰港灣」的景
@@ -5348,6 +5351,67 @@ async function loadWorld(){
     }
   }
 
+  /* ══⚠⚠ 北國的雪（ver -1220，Ray：「以 Ravnsdal 為起點，飛行地圖上要加一些雪點」
+     「地上要有雪」）══════════════════════════════════════════════════════
+     ⚠⚠ **烘進 `COL`，不要寫進 shader**（鐵律 7/8）：COL 這一份 CPU 路徑直接讀、
+       GL 路徑由 `glUploadWorld` 上傳 —— 烘一次兩條路都吃到，而且**不會走鐘**。
+       寫進 shader 的話 `?gl=0` 會沒有雪，那是同一個量兩個計算點。
+     ⚠ **一定要排在 `step(0.82)` 判地貌之後**：BIOME 是**從 COL 的顏色分類出來的**，
+       先漂白會把整片北方判成別的地貌（貼圖與道路色一起錯）。雪是「看起來的顏色」，
+       不是「這裡是什麼地」。
+     配方三項相乘：
+       · **緯度**：`SNOW_Y0`(400) 開始有、`SNOW_Y1`(40) 滿 —— 拉芬斯達爾 (243) 落在 0.44，
+         北方泊地 (150) 0.69。Ray 說的「以 Ravnsdal 為起點」＝那裡要看得出開始積雪，
+         所以起點放在它**南邊**一段，不是壓在它身上（壓在身上它自己就一片雪都沒有）。
+       · **高度**：同一緯度先積在高處（`SNOW_H0`~`SNOW_H1`），山頂比谷地白。
+       · **斑塊**：低頻值噪聲（6 格一格、雙線性內插）——「加一些雪點」要的是**斑駁**，
+         不是一條緯度線以北整片刷白。⚠ 用 `hash()` 不用 `Math.random()`：
+         這一份會被存進 COL、而且重載要長一樣（§6.8.1）。
+     ⚠ 水面（`RIV`）與雲海不積雪：河要看得出還是河（結冰是另一件事，Ray 沒說）。
+     ⚠ 城的手繪底圖蓋在這之上（取樣路），所以**城本身不受影響** ——
+       城裡要不要有雪是那張插畫的事（見 `resources/map/_ravnsdal_spec.md` §七）。 */
+  {
+    /* ⚠ 這四個數字是**看著畫面調的**（Ray：「地上要有雪」——第一版只有高處白、
+       拉芬斯達爾一帶還是綠森林，等於沒下）。現行值在拉芬斯達爾 (y=243) 的谷地
+       算出來約 0.35（看得出是雪地、但地貌還讀得出來），北方泊地 (y=150) 的高地
+       接近 0.83（幾乎全白）。要調濃淡先動 `SNOW_Y0`（雪線往南／往北移）。 */
+    const SNOW_Y0=500, SNOW_Y1=100;       // 緯度：開始／滿
+    const SNOW_H0=60,  SNOW_H1=260;       // 高度：開始／滿
+    const SNOW_MAX=0.92;                  // 最深也留一點地色，不要純白
+    const SR=232, SG=238, SB=246;         // 雪色（偏冷的白）
+    const G=6;                            // 斑塊的格距（地圖格）
+    const sn=(gx,gy)=>hash(gx*7+11, gy*13+5);
+    /* ⚠⚠ 雪量要**發佈出去**（鐵律 7）：地貌貼圖層（森林／草）是**乘**在底色上的，
+       底色漂白了、貼圖照乘，雪地就會被乘回褐綠色 —— 實測諾爾維亞的低地就是這樣。
+       所以把每一格的雪量存成一張圖，兩條渲染路徑都讀它去**壓掉植被貼圖的強度**。
+       ⚠ 這是「算一次、別人只讀」，不是「兩邊各算一次」。 */
+    SNOW=new Uint8Array(MAPW*MAPH);
+    let painted=0;
+    for(let y=0;y<MAPH;y++){
+      const latT=clamp((SNOW_Y0-y)/(SNOW_Y0-SNOW_Y1),0,1);
+      if(latT<=0) continue;
+      const fy=y/G, gy=Math.floor(fy), ty=fy-gy, wy=ty*ty*(3-2*ty);
+      for(let x=0;x<MAPW;x++){
+        const i=y*MAPW+x;
+        const hh=HGT[i];
+        if(hh<=CLOUD_H || RIV[i]) continue;
+        const fx=x/G, gx=Math.floor(fx), tx=fx-gx, wx=tx*tx*(3-2*tx);
+        const p00=sn(gx,gy), p10=sn(gx+1,gy), p01=sn(gx,gy+1), p11=sn(gx+1,gy+1);
+        const patch=(p00+(p10-p00)*wx)+((p01+(p11-p01)*wx)-(p00+(p10-p00)*wx))*wy;
+        const altT=clamp((hh-SNOW_H0)/(SNOW_H1-SNOW_H0),0,1);
+        /* 斑塊只調**濃淡**不做全有全無：0.35~1.0，所以雪線附近是零星的雪點，
+           再往北整片才連起來。 */
+        const a=clamp(latT*(0.70+0.30*altT)*(0.45+0.55*patch),0,1)*SNOW_MAX;
+        if(a<0.02) continue;
+        const c=COL[i], r=c&255, g2=(c>>8)&255, b=(c>>16)&255;
+        COL[i]=rgb((r+(SR-r)*a)|0, (g2+(SG-g2)*a)|0, (b+(SB-b)*a)|0);
+        SNOW[i]=(a*255)|0;
+        painted++;
+      }
+    }
+    console.log('[world] 北國的雪：'+(painted/(MAPW*MAPH)*100).toFixed(1)+'% 的地表著雪');
+  }
+
   // 地標：x/y 是「地圖像素」座標 → 換算成世界座標 wx/wy 供投影使用
   PLACES.forEach(P=>{
     const xi=clamp(P.x|0,0,MAPW-1), yi=clamp(P.y|0,0,MAPH-1);
@@ -7454,7 +7518,8 @@ const ybuf=new Int32Array(512);
      掛早了而 WebGL2 又開不起來（舊機、driver 黑名單）的話，2D 那張畫布的視窗區
      會被清成透明、而底下的 GL 畫布是空的 ＝ **整片沒有地形**，而且沒有錯誤訊息。 */
 const GLON = !/[?&]gl=0/.test(location.search);
-let glTexBiome=null, glTexMask=null, glTexRail=null, glTexGeo=null, glTexMot=null, glGeoUp=false;
+let glTexBiome=null, glTexMask=null, glTexRail=null, glTexGeo=null, glTexMot=null,
+    glTexSnow=null, glGeoUp=false;
 let glSmpPbo=null, glSmpFence=null;
 const glSmpBuf=new Uint8Array(8*8*4);   // 環境光取樣的非同步回讀落點（見 screenSample）
 let GLX=null, glProg=null, glVao=null, glU={}, glTexH=null, glTexHs=null, glTexC=null, glTexS=null,
@@ -7482,6 +7547,7 @@ uniform sampler2D uHs;         // 高度（平滑；R16F + LINEAR）
 uniform sampler2D uC;          // 地貌色
 uniform sampler2D uS;          // 坡度 (slx,sly)，0..1 編碼（LINEAR：逐格會變成方格光影）
 uniform sampler2D uMot;        // 低頻亮度起伏（BIOME 的高 4 bit，抽出來單獨一張才濾得了）
+uniform sampler2D uSnow;       // 逐格雪量（ver -1220）：雪地要壓掉植被貼圖的強度
 uniform sampler2D uSky;        // 這一禎的天空漸層（1 x BH）
 /* 城的手繪地面（ver -1206）：最多兩座同時在畫面上 —— 城之間隔得夠遠，
    而 CITYMASK 保證同一點最多屬於一座城。
@@ -7624,6 +7690,9 @@ void main(){
            ⚠ 乘而不換：底色帶著地貌形狀與烘焙好的 hillshade，直接換色會把山攤平。
            ⚠ 強度隨深度淡出（GEO_FAR 之後歸零）——遠景看不出紋理，省下來。 */
         float vegAmt=${GEO_AMP}*(z<${GEO_FAR}.0 ? 1.0-(z/${GEO_FAR}.0)*(z/${GEO_FAR}.0) : 0.0);
+        /* 雪地壓掉植被貼圖（ver -1220）：底色已經漂白（雪烘在 COL 裡），
+           再乘森林的紋理就會被乘回褐綠。⚠ 留一成，雪下面的樹梢還看得出來。 */
+        vegAmt *= 1.0 - 0.88*texture(uSnow, mf/uMap).r;
         if(uGeoOn>0.5 && vegAmt>0.004){
           uint bi=texelFetch(uBiome,clampT(ti),0).r;
           uint tx=bi&15u;
@@ -7865,12 +7934,13 @@ function glInit(){
   g.enableVertexAttribArray(lp); g.vertexAttribPointer(lp,2,g.FLOAT,false,0,0);
   for(const n of ['uH','uHs','uC','uS','uSky','uMap','uBuf','uCam','uDir','uLdir','uLcol','uLi','uFog','uCloudLit','uTime',
                   'uCityA','uCityB','uCityA0','uCityB0','uCityA1','uCityB1','uCityT','uInvS',
-                  'uBiome','uMask','uGeo','uRailDir','uRD','uGeoOn','uMot'])
+                  'uBiome','uMask','uGeo','uRailDir','uRD','uGeoOn','uMot','uSnow'])
     glU[n]=g.getUniformLocation(glProg,n);
   g.uniform1i(glU.uH,0); g.uniform1i(glU.uHs,11); g.uniform1i(glU.uC,1); g.uniform1i(glU.uS,2); g.uniform1i(glU.uSky,3);
   g.uniform1i(glU.uCityA,4); g.uniform1i(glU.uCityB,5);
   g.uniform1f(glU.uInvS, 1/GRADE_SAT);
   g.uniform1i(glU.uBiome,7); g.uniform1i(glU.uMask,8); g.uniform1i(glU.uMot,12);
+  g.uniform1i(glU.uSnow,13);
   g.uniform1i(glU.uGeo,9);   g.uniform1i(glU.uRailDir,10);
   return true;
 }
@@ -7922,6 +7992,12 @@ function glUploadWorld(){
      ⚠ 為什麼不能直接從 BIOME 取：它是 R8UI，**整數貼圖不可濾**。
        而這一項是逐格 ±18% 的亮度乘數 —— 不內插的話幾何再平滑，
        表面照樣是一格一格的亮暗方塊。 */
+  if(SNOW){
+    glTexSnow=mk(13);
+    g.texImage2D(g.TEXTURE_2D,0,g.R8,MAPW,MAPH,0,g.RED,g.UNSIGNED_BYTE,SNOW);
+    g.texParameteri(g.TEXTURE_2D,g.TEXTURE_MIN_FILTER,g.LINEAR);
+    g.texParameteri(g.TEXTURE_2D,g.TEXTURE_MAG_FILTER,g.LINEAR);
+  }
   { const mo=new Uint8Array(MAPW*MAPH);
     for(let i=0,n=mo.length;i<n;i++) mo[i]=((BIOME[i]>>4)*17);   // 0..15 → 0..255
     glTexMot=mk(12);
@@ -8705,9 +8781,12 @@ function render(now){
           /* 低頻亮度起伏：週期與貼圖週期互質得夠遠，兩者的節奏不會對齊，
              重複感就散掉了。量化成 4 bit 存在 BIOME 的高位。 */
           const mot=1+(((bi>>4)/15)-0.5)*2*GEO_MOT*vegAmt;
-          cr*=(1+(k0-1)*vegAmt)*mot;
-          cg*=(1+(k1-1)*vegAmt)*mot;
-          cb*=(1+(k2-1)*vegAmt)*mot;
+          /* 雪地壓掉植被貼圖（ver -1220）：底色已經漂白，再乘森林的紋理就會被
+             乘回褐綠。⚠ 不要壓到 0 —— 留一成，雪下面的樹梢與地形起伏還看得出來。 */
+          const vA = SNOW ? vegAmt*(1-0.88*(SNOW[mi]/255)) : vegAmt;
+          cr*=(1+(k0-1)*vA)*mot;
+          cg*=(1+(k1-1)*vA)*mot;
+          cb*=(1+(k2-1)*vA)*mot;
         }
         /* ── 城的底圖：逐像素取樣（ver -445，A 案的本體）──────────────────
            射線打到城的範圍 → 拿插畫的顏色取代地形色。透視由取樣天生正確
@@ -8981,6 +9060,7 @@ function render(now){
   drawIntroArt(now);   // 羽蛇登場插圖背景（ver -743）：3D 之上、立繪與對白之下
   drawSenseCI(now);
   drawSpotCI(now);   // 索菈娜「發現了」（ver -1089）：同一層，排在她後面
+  drawSnowFall(now);      // 飄雪（ver -1220）：在 3D 內容之上、立繪與面板之下
   drawSturmCI(now);
   drawTalk(now);
   /* 對白中收掉「時間地點」那兩塊 HUD（ver -384）。⚠ 真相來源就是 `sayQueue` ——
@@ -12930,6 +13010,16 @@ function noflyCheck(now){
 /* 每幀檢查所在國；換了就重新計時。
    ⚠ 0（無主之地／雲海）不觸發橫幅 —— 飛出海岸線再飛回來會一直閃。
      但仍要更新 regionCur，否則出海再回同一國不會提示。 */
+/* ══ 飄雪（ver -1220，Ray：「進入諾爾維亞王國後畫面有 20% 機率開始飄雪特效」）══
+   ⚠ 觸發是**進入那一刻**擲一次，不是每一幀擲 —— 每幀擲的話不管機率多低，
+     待久了一定會下，「20%」就沒有意義（同一族：狀態要答得出誰插誰拔，鐵律 9）。
+   ⚠ **離開就停**（淡出），下次再進來重新擲：所以同一趟航行裡走出去再走回來
+     是**另一次**機會，這是刻意的 —— 不然玩家永遠沒辦法「再試一次」。
+   ⚠ 不寫進存檔：天氣是這一趟飛行的事，重載一次天氣本來就該重擲。 */
+const SNOW_REGION=4;          // 諾爾維亞王國（REGION_NAME[4]）
+const SNOW_CHANCE=0.20;
+const SNOW_FADE_MS=2600;      // 進／出都用它淡
+let snowOn=false, snowAt=0, snowOffAt=0;
 function updateRegion(now){
   if(!REGION) return;
   const r=regionAt(cam.x/MAP_SCALE, cam.y/MAP_SCALE);
@@ -12937,7 +13027,50 @@ function updateRegion(now){
     const was=regionCur;
     regionCur=r;
     if(r!==0 && was!==-1) regionShownAt=now;      // 開場那次不提示
+    /* ⚠ `was!==-1`：開場那一次不算「進入」（玩家沒有跨過任何界）。 */
+    if(r===SNOW_REGION && was!==SNOW_REGION && was!==-1){
+      if(Math.random()<SNOW_CHANCE){ snowOn=true; snowAt=now; snowOffAt=0; }
+    }else if(r!==SNOW_REGION && snowOn){
+      snowOn=false; snowOffAt=now;
+    }
   }
+}
+/* 雪花：**位置存在螢幕空間**、逐幀往下飄並左右擺。
+   ⚠ 不存世界座標：這是「擋風玻璃上的雪」，不是地面上的物件 —— 存世界座標的話
+     轉個彎雪就整片掃出畫面，讀起來是雪在跑不是船在轉。
+   ⚠ 種子用 `hash()` 不用 `Math.random()`（§6.8.1）：逐幀重建的東西不准用真亂數，
+     這裡每一片的相位是**它自己的 id 算出來的**，所以不會閃。 */
+const SNOW_N=150;
+function snowAlpha(now){
+  if(snowOn) return Math.min(1,(now-snowAt)/SNOW_FADE_MS);
+  if(!snowOffAt) return 0;
+  const a=1-(now-snowOffAt)/SNOW_FADE_MS;
+  if(a<=0){ snowOffAt=0; return 0; }
+  return a;
+}
+function drawSnowFall(now){
+  const A=snowAlpha(now); if(A<=0.002) return;
+  /* ⚠ 與地形同一個像素格（§6.7「畫在地形上的東西要跟著像素化」）：
+     雪花畫成**緩衝像素**大小的方塊、落在整數格上，不然一片抗鋸齒的圓點貼在
+     馬賽克地形上讀起來就是貼紙。 */
+  const sx=W/BW, sy=VIEWH/BH;
+  ctx.save();
+  ctx.beginPath(); ctx.rect(0,0,W,VIEWH); ctx.clip();
+  for(let i=0;i<SNOW_N;i++){
+    const seed=hash(i*13+7, i*29+3);            // 這一片的相位（固定，不逐幀重擲）
+    const dep=0.35+0.65*hash(i*17+5, i*7+11);   // 遠近：決定速度、大小與亮度
+    const spd=(26+dep*70)/1000;                 // 緩衝像素／毫秒
+    const yy=((now*spd + seed*BH*3) % (BH+8)) - 4;
+    const sway=Math.sin(now*0.0013*(0.6+dep) + seed*6.283)*(1.5+dep*3.5);
+    const xx=((seed*BW*7 + hash(i*3+1,i*11+2)*BW) % BW + sway + BW) % BW;
+    const px=Math.round(xx)*sx, py=Math.round(yy)*sy;
+    if(py<-sy || py>VIEWH) continue;
+    const w=Math.max(1,Math.round(dep*1.6))*sx;
+    ctx.globalAlpha=A*(0.30+dep*0.55);
+    ctx.fillStyle='#eef4ff';
+    ctx.fillRect(px, py, w, w);
+  }
+  ctx.restore();
 }
 
 function drawRegionBanner(now){
