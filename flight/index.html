@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1234"></script>
+<script src="../orientation.js?v=1235"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1234');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1235');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1234");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1234");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1235");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1235");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1234");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1234");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1235");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1235");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -483,25 +483,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1234" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1235" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1234" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1234" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1234" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1234" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1234" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1234" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1234" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1234" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1234" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1234" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1235" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1235" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1235" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1235" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1235" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1235" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1235" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1235" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1235" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1235" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1234" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1235" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1234" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1235" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -522,11 +522,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1234"></script>
+<script src="settlement.js?v=1235"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1234"></script>
+<script src="talks.js?v=1235"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -566,7 +566,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1234';
+const FLIGHT_VER = 'ver -1235';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -719,6 +719,28 @@ const RIM_W = 34;         // 抬升作用範圍（距邊界的「地圖像素」
 const RIM_SKIP = [
   /* 卡耶爾山谷西側的沿海低地。 */
   { x:967, y:861, r:70, below:60 },
+];
+/* ══⚠⚠⚠ 手刻的谷地（ver -1235，Ray：「海岸線太平了，讓 938,712 到 976,796 到
+     978,848 到 950,882 形成一個兩邊有山的谷地，可以有峭壁」）══════════════
+   -1234 把那一片沿海低地的「墊高」拿掉之後，海岸線變得又平又沒有事件 ——
+   這一條沿著他指的折線刻一道**峽谷**：谷底壓平並一路降到海岸，兩側**先垂直拔起
+   成崖**，再往外攤回原本的地形。谷口開在 (950,882) 的海岸上，於是那一段海岸線
+   從「一條平邊」變成一道有崖壁的谷口。
+   逐項：`pts` 折線／`floor` 各節點的谷底高／`ridge` 各節點的崖頂高／
+         `w` 谷底半寬／`wall` 崖面寬（**小＝陡**）／`rise` 崖頂往外攤回原地形的寬度。
+   ⚠⚠ **只抬不壓**（崖那一段取 `max(原地形, 目標)`）：那一帶本來就有 200〜350 的山，
+     壓下去等於把既有的地貌削掉，只留我畫的那一條 —— 要的是「順著既有的山刻一道谷」。
+   ⚠ 谷底是**設定值不是取 min**：不壓平的話中段（本來 216〜304）根本不成谷。
+   ⚠ `sstep` 過渡不要用線性：線性在崖頂那一格會留一道硬折線。
+   ⚠⚠ 這一段要跑在**邊緣抬升之後** —— 之前跑的話，靠海那一截谷底會被
+     `RIM_H` 整個墊回 145（谷就沒了）。
+   ⚠ 實測：路徑 32 格內**沒有**河道、公路、鐵路或地點（卡耶爾山谷在 12 格外，
+     它正好就是這道谷 —— 那個名字現在對得上地形了）。 */
+const TERRAIN_VALLEY = [
+  { pts:[[938,712],[976,796],[978,848],[950,882]],
+    floor:[82,96,66,51],        // 谷底：由內陸一路降到海岸
+    ridge:[230,330,300,200],    // 崖頂
+    w:6, wall:3, rise:22 },
 ];
 /* ── 操作手感 ──────────────────────────────────────────────────
    拖曳世界的模型：手指把畫面往後拉 → 船往前走（拉的是地面，不是船）。
@@ -4945,6 +4967,56 @@ async function loadWorld(){
       if(HGT[i]<RIM_H){ HGT[i]=RIM_H; raw[i]=RIM_H/PEAK_SCALE; lifted++; }
     }
     window.__rimLifted=lifted;
+  }
+
+  /* ══ 手刻的谷地（`TERRAIN_VALLEY`，ver -1235）══
+     ⚠ **一定要排在邊緣抬升之後**（理由見 `TERRAIN_VALLEY` 的說明）。 */
+  for(const V of TERRAIN_VALLEY){
+    const P=V.pts, HWd=V.w, WLd=V.wall, RMAX=V.w+V.wall+V.rise;
+    const seg=[]; let tot=0;
+    for(let k=0;k<P.length-1;k++){
+      const ax=P[k][0], ay=P[k][1], bx=P[k+1][0], by=P[k+1][1];
+      const L=Math.hypot(bx-ax,by-ay);
+      seg.push({ax,ay,vx:bx-ax,vy:by-ay,L,s0:tot}); tot+=L;
+    }
+    /* 節點值沿折線內插（`sstep` 讓節點附近不出現折角）。
+       ⚠⚠ 用**節點自己的弧長位置**，不是「平均分成 n 段」：這幾段長度差很多
+         （92 / 52 / 44），平均分的話寫在節點上的數字**根本不會出現在那個節點**
+         —— 實測 (976,796) 寫 96 卻算出 82。 */
+    const nodeU=[0]; for(const S of seg) nodeU.push((S.s0+S.L)/tot);
+    const along=(arr,u)=>{
+      const c=clamp(u,0,1);
+      let k=0; while(k<nodeU.length-2 && c>nodeU[k+1]) k++;
+      const span=nodeU[k+1]-nodeU[k];
+      let g=span>1e-9 ? (c-nodeU[k])/span : 0;
+      g=clamp(g,0,1); g=g*g*(3-2*g);
+      return arr[k]*(1-g)+arr[k+1]*g; };
+    let bx0=1e9,by0=1e9,bx1=-1e9,by1=-1e9;
+    for(const q of P){ bx0=Math.min(bx0,q[0]); bx1=Math.max(bx1,q[0]);
+                       by0=Math.min(by0,q[1]); by1=Math.max(by1,q[1]); }
+    bx0=clamp((bx0-RMAX)|0,0,MAPW-1); bx1=clamp((bx1+RMAX)|0,0,MAPW-1);
+    by0=clamp((by0-RMAX)|0,0,MAPH-1); by1=clamp((by1+RMAX)|0,0,MAPH-1);
+    let touched=0;
+    for(let y=by0;y<=by1;y++) for(let x=bx0;x<=bx1;x++){
+      const i=y*MAPW+x;
+      if(HGT[i]<=0) continue;                       // 大陸之外不動
+      let bd=1e9, bu=0;
+      for(const S of seg){
+        const t=clamp(((x-S.ax)*S.vx+(y-S.ay)*S.vy)/(S.L*S.L),0,1);
+        const dx=x-(S.ax+S.vx*t), dy=y-(S.ay+S.vy*t);
+        const d=Math.hypot(dx,dy);
+        if(d<bd){ bd=d; bu=(S.s0+t*S.L)/tot; }
+      }
+      if(bd>RMAX) continue;
+      const f=along(V.floor,bu), r=along(V.ridge,bu), o=HGT[i];
+      let v;
+      if(bd<=HWd)            v=f;                                   // 谷底：壓平
+      else if(bd<=HWd+WLd)   v=f+(Math.max(o,r)-f)*sstep(HWd,HWd+WLd,bd);   // 崖面
+      else { const k=1-sstep(HWd+WLd,RMAX,bd);                      // 崖頂→攤回原地形
+             v=Math.max(o, f+(r-f)*k); }
+      HGT[i]=clamp(Math.round(v),0,65535); raw[i]=HGT[i]/PEAK_SCALE; touched++;
+    }
+    (window.__valley||(window.__valley=[])).push({cells:touched});
   }
 
   /* ── 鏟平城下地形 ─────────────────────────────────────────────
