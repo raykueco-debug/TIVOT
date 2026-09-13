@@ -209,10 +209,23 @@ dining:{ node:'tavern', scenes:{
 
 ## 五、時段差分
 
-12 格幾乎全是室外 ⇒ 照「有室外光才有差分」，全做就是 **48 張**。
-⚠ 要不要做、先做哪幾格由 Ray 定；建議先做四個樞紐
-（`square`／`midtown`／`oldtown`／`uptown`）。
-**在差分交件之前，節點要寫 `noTime:true`**，否則每一格白吃四個 404。
+### ✔ 已完成（ver -1259/-1261）：**室外六格 × 四時段 ＝ 24 張**
+
+`Square`／`Midtown`／`Oldtown`／`Uptown`／`Lookout`／`Station` 各有
+`_day`／`_dawn`／`_dusk`／`_night`。
+
+⚠⚠ **程式端要改兩件事**：
+1. **那六格拿掉 `noTime:true`**（四張都在了，留著等於只吃不帶時段的那一張 ⇒ 404）。
+2. 舊的**無尾綴** `Ravn_<X>.webp` 已走回收區 —— 不要再引用。
+
+### 室內七格**維持單張、維持 `noTime:true`**
+
+`Firearm`／`Guild`／`Grocerie`／`Hotel`／`Bistro`／`Cafe`／`Restaurant`。
+理由照憲法 §5「**有室外光才有差分**」，與貝利薩爾同一把尺：那邊 52 張裡
+只有看得到天的四格（`Exterior`／`SunkenCourt`／`RoofFall`／`DrainCliff`）做四差分，
+其餘 36 張室內與地下都是單張。
+
+⚠ `Church`（大教堂）仍留白 —— 圖交了再決定要不要差分（它是室外，照理要四張）。
 
 ---
 
@@ -225,7 +238,7 @@ dining:{ node:'tavern', scenes:{
 | 風格 | ✔ 北歐・1900、⛔ 無旗幟無國標 |
 | 十一格美術簡報 | ✔ 寫好了（ver -1162 補上瞭望台與火車站） |
 | 留白 | ⬜ **只剩大教堂** —— 等 Ray 給方向 |
-| 背景圖 | ✔ 11 / 11（ver -1163）＋留白 1（大教堂）；🟡 **有店的 5 格改室內重畫＋新增 2 張，產製中**（ver -1253，見 §四之二） |
+| 背景圖 | ✔ **31 支**：室外 6 格 ×4 ＝ 24（ver -1259/-1261）＋室內 7 張（ver -1256）；⬜ 留白 1（大教堂） |
 | 槍棺小地圖 | 未開始（走 `tools/map_compose.py` 那條，spots 算得出來） |
 | 大地圖平面圖 | ✔ `flight/city/Ravnsdal_topdown.png`（交件單 `flight/city/_ravnsdal_plan.md`） |
 
