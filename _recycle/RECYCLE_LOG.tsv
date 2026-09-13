@@ -143,3 +143,8 @@ when	from	to	reason
 20260913-181606	resources/audio/bgm/Peritune_Portside_Cafe_loop.ogg	_recycle/resources/audio/bgm/Peritune_Portside_Cafe_loop.ogg	誤帶進來的 ogg（BGM 一律 m4a，§6.6）；同一份原檔仍在 ~/Downloads/Peritune_Portside_Cafe/
 20260914-003031	HANDOFF_ver1252-1289.md	_recycle/HANDOFF_ver1252-1289.md	Ray：不用寫交接
 20260914-003425	resources/SI/776a05f2-758d-43f0-a437-2b5bce06f2cc.png	_recycle/resources/SI/776a05f2-758d-43f0-a437-2b5bce06f2cc.png	ver -1290：Sorana_SI_watch.png 的重複交件（位元組完全相同，原檔已在 _originals/SI/）
+20260914-004103	resources/background/Ravn_Firearm.webp	_recycle/resources/background/Ravn_Firearm.webp	有店的改畫店內（ver -1253，Ray：有店的都要在店內，不是在店外）
+20260914-004103	resources/background/Ravn_Guild.webp	_recycle/resources/background/Ravn_Guild.webp	有店的改畫店內（ver -1253，Ray：有店的都要在店內，不是在店外）
+20260914-004103	resources/background/Ravn_Grocerie.webp	_recycle/resources/background/Ravn_Grocerie.webp	有店的改畫店內（ver -1253，Ray：有店的都要在店內，不是在店外）
+20260914-004103	resources/background/Ravn_Hotel.webp	_recycle/resources/background/Ravn_Hotel.webp	有店的改畫店內（ver -1253，Ray：有店的都要在店內，不是在店外）
+20260914-004103	resources/background/Ravn_Bistro.webp	_recycle/resources/background/Ravn_Bistro.webp	有店的改畫店內（ver -1253，Ray：有店的都要在店內，不是在店外）
