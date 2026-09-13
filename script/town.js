@@ -3955,6 +3955,9 @@ export const TOWNS = {
   santasofia: {
     name: '聖索菲亞城',
     entry: 'square',
+    /* BGM（ver -1247，Ray 交件 `Peritune_Moonlit_Dancer_loop.m4a`）。
+       ⚠ 它原本**沒有 `bgm`** ＝ 進城沿用上一個畫面的曲子（走進來像沒換地方）。 */
+    bgm: 'moonlit',
     /* ══ 槍棺地圖（ver -1123，美術交件）══ 座標量自
        `resources/map/_spots_santasofia.json`（同上，不要用眼睛估）。
        ⚠ 第一次上線不掛 `?v=`（新增不是同名覆蓋）。
@@ -4127,6 +4130,8 @@ export const TOWNS = {
   tomb: {
     name: '伊甸古墓',
     entry: 'gate',
+    /* BGM（ver -1247，Ray 交件 `Peritune_Black_Crystal_loop`）。同上：原本沒有。 */
+    bgm: 'blackcrystal',
     visitFlag: 'tomb_seen',            // 同上（ver -1188）
     storyExplore: true,   // 不是城：女角不排外出行程（§6.5.4.2）
     wilderness: true,     // 野外的路沒有門可以關（19:00 全域打烊不罩，ver -862）

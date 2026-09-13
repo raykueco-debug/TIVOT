@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.13-1246';
+export const VERSION = 'ver 2026.09.13-1247';
 
 export const GAME_CONFIG = {
 
@@ -3341,6 +3341,24 @@ export const GAME_CONFIG = {
       peritune_frosylva:1.175,
       /* 鹿主異化～戰鬥（ver -877 同尺實測 −11.2 LUFS → 0.880，峰值 -0.7dB 未觸頂）。 */
       peritunematerial_lost_place4_loop:0.880,
+      /* ══ 兩座地點的 BGM（ver -1247，Ray 交件）══════════════════════════
+         ⚠⚠ **一定要有這兩列**：沒有就是增益 1.0 ＝以母帶的響度播出（§6.6）——
+           那正是 -441 之前「跌倒音永遠不出來」那一族 bug 的成因。
+         量法（本機 BS.1770 K 加權＋閘控，另過一次「手機喇叭模型」600Hz 三階高通，
+         取兩者平均，§6.6），**用 `bgm_battle` 當錨**（表上 0.849）：
+           bgm_battle                       LUFS −8.37／手機 −12.34 → **平均 −10.36**
+           Peritune_Moonlit_Dancer_loop     LUFS −7.90／手機 −14.14 → **平均 −11.02**
+           Peritune_Black_Crystal_loop      LUFS −7.95／手機 −15.40 → **平均 −11.68**
+         gain = 0.849 × 10^((L_battle − L_new)/20)。
+         ⚠ 錨的合理性：用同一把尺回推 -873/-876/-877 那三筆，得到
+           L_battle ≈ −10.9，與我量到的 −10.36 差 0.55 dB —— 同一把尺。
+         ⚠ 峰值檢查（`peakCeilDb` +2 dBFS）：兩支母帶峰值都是 0.00 dBFS，
+           增益 <1 ⇒ 不會觸頂。 */
+      peritune_moonlit_dancer_loop:0.916,     // 聖索菲亞城（−11.02，比錨小聲 0.66dB ⇒ 0.849×10^(0.66/20)）
+      peritune_black_crystal_loop:0.988,      // 伊甸古墓（−11.68，比錨小聲 1.32dB）
+      /* ⚠ 這兩首的「手機喇叭模型」比原始量測低 6.2／7.5 dB（一般曲子約 4~5）——
+         它們的低頻本來就重。增益對的是**兩者的平均**（§6.6：只對其中一邊會讓
+         低頻重的曲子在另一端突出 4~7 dB）。 */
       bgm_piratebattle:1.277,
       /* 湖上甲板三首＋著岸音（ver -744，同一把尺）。 */
       peritune_misty_hollow_loop:0.569,
@@ -3989,6 +4007,8 @@ export const ASSETS = {
   bgm_battlefield4: "resources/audio/bgm/PerituneMaterial_BattleField4.m4a",
   bgm_frosylva:     "resources/audio/bgm/PeriTune_Frosylva.m4a",   // 木雅克神殿（ver -876）
   bgm_lostplace:    "resources/audio/bgm/PerituneMaterial_Lost_place4_loop.m4a",   // 鹿主異化～戰鬥（ver -877）
+  bgm_moonlit:      "resources/audio/bgm/Peritune_Moonlit_Dancer_loop.m4a",        // 聖索菲亞城（ver -1247）
+  bgm_blackcrystal: "resources/audio/bgm/Peritune_Black_Crystal_loop.m4a",         // 伊甸古墓（ver -1247）
   bgm_piratebattle: "resources/audio/bgm/bgm_piratebattle.m4a",
   /* 湖上甲板那一段（ver -744，Ray 的 stage5 稿）。 */
   bgm_misty:        "resources/audio/bgm/Peritune_Misty_Hollow_loop.m4a",
