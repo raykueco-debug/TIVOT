@@ -660,8 +660,22 @@ export function resetWeaponSwitch(){
      ⚠ **只有本篇**（`storyMode()`）：試玩版的出擊整備是玩家在**開打前那一頁**
        直接挑的，把它蓋成一順位等於把那一頁的選擇丟掉（同「本篇與試玩版是兩套」）。
      ⚠ 在上面那一行**記回編成之後**才做：順序是「先把現況存回去，再依編成歸位」。 */
-  if(storyMode() || load.mode()==='fixed'){ const f=load.firstWeapon(); if(f) applyWeapon(f); }
+  resetToFirst();
   renderSwitch();
+}
+/* ══ 歸位一順位（ver -1292 抽出來）══════════════════════════════════════
+   ⚠⚠ 原本這幾行寫在 `resetWeaponSwitch()` 裡（ver -983）—— 那一支掛在
+     `combat.startGame`＝**開一局**。ver -1292 起「換一隻怪」也要歸位
+     （§0.5：場＝1 怪），所以抽成一支，兩個粒度各自呼叫它（鐵律 8）。
+   ⚠ **只做「換回一順位」這一件事**：拉栓冷卻、排隊中的切換、連按計數
+     那幾項是**開一局**才歸零的，留在 `resetWeaponSwitch` 裡不要搬過來。
+   ⚠ 守門照舊：只有本篇（`storyMode()`）與 `fixed` 模式 —— 試玩版的出擊整備是
+     玩家在開打前那一頁直接挑的，蓋成一順位等於把那一頁的選擇丟掉
+     （同「本篇與試玩版是兩套數值」，§6.5.3）。 */
+export function resetToFirst(){
+  if(!(storyMode() || load.mode()==='fixed')) return;
+  const f=load.firstWeapon();
+  if(f) applyWeapon(f);
 }
 
 /* ══ 切換鈕的徽章（ver -549，Ray 交圖）══════════════════════════════════
