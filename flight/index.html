@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1266"></script>
+<script src="../orientation.js?v=1267"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1266');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1267');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1266");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1266");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1267");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1267");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1266");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1266");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1267");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1267");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -585,25 +585,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1266" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1267" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1266" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1266" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1266" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1266" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1266" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1266" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1266" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1266" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1266" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1266" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1267" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1267" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1267" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1267" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1267" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1267" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1267" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1267" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1267" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1267" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1266" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1267" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1266" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1267" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -624,11 +624,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1266"></script>
+<script src="settlement.js?v=1267"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1266"></script>
+<script src="talks.js?v=1267"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -668,7 +668,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1266';
+const FLIGHT_VER = 'ver -1267';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -2375,11 +2375,18 @@ function mapEditPaths(kind){
    緩坡幾乎不花錢，超過 `ROAD_GRADE` 之後代價平方成長。
    ⚠ 這與鐵路是同一個形狀、不同的參數（鐵路更嚴，見 railCost）——
      公路可以爬，只是不喜歡；鐵路幾乎不能爬。 */
-const ROAD_GRADE=2;
+/* ⚠⚠ 係數是**掃出來的**（ver -1267，在還原後的地形上量，五組對照）：
+     0.22／無平方（舊）  p90 13.3%  p99 43.3%  繞路 1.63
+     0.22／g4／0.06      p90  8.2%  p99 20.6%  繞路 1.92
+   → 0.24／g4／0.10      p90  6.7%  p99 18.9%  繞路 1.98   ← 取這組
+     0.26／g3／0.14      p90  5.0%  p99 18.9%  繞路 2.15
+     0.30／g2／0.30      p90  4.7%  p99 20.8%  繞路 2.25
+   再往下壓坡度只換到更長的繞路（p99 甚至回頭變差），這一組是轉折點。 */
+const ROAD_GRADE=4;
 function roadCost(h0,h1,riv){
   const dh=Math.abs(h1-h0);
   const over=dh-ROAD_GRADE;
-  return 1 + dh*0.30 + (over>0?over*over*0.30:0) + (riv?26:0);   // 渡河＝架橋，貴但不是不可能
+  return 1 + dh*0.24 + (over>0?over*over*0.10:0) + (riv?26:0);   // 渡河＝架橋，貴但不是不可能
 }
 /* 鐵路的成本場。⚠ 不是「把 roadCost 的係數調大」那麼簡單 —— 關鍵在**超線性**：
    蒸汽機車的黏著牽引撐不住陡坡，緩坡幾乎不花錢、超過極限就等於過不去。
@@ -2404,7 +2411,10 @@ const RAIL_GRADE=3;
      鑽過去 = RAIL_TUNNEL（固定，跟山多高無關 —— 隧道就是這個性質）
    Dijkstra 會自己挑便宜的那條。6 的意思是「為了少挖一格隧道，最多值得多繞
    六格（720 世界單位）」—— 短的山脊直接鑽過去，長的還是繞路。 */
-/* ⚠⚠ ver -1266 由 6 提高到 **14**（Ray：「鐵路跟公路要走平地」）。
+/* ⚠⚠ ver -1266 由 6 提高到 **24**（Ray：「鐵路跟公路要走平地」）。
+   ⚠ 24 是量出來的（-1267 在還原後的地形上）：T6 → p90 32.5%／繞路 1.59、
+     T14 → 22.5%／1.67、T24 → 22.5%／1.68 —— T24 與 T14 一樣平但 p99 更好
+     （88.3% vs 95%），而繞路只差 0.01。
    6 的意思是「為了少挖一格隧道，最多值得多繞六格」—— 那讓鐵路遇到山就鑽，
    於是**路線本身照樣壓在陡坡上**（實測改之前沿線坡度 p99 高達 108%，
    比公路的 49% 還糟，方向完全反了）。提高之後它會先找平地繞。

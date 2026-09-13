@@ -502,7 +502,17 @@ def main():
     #   的峽谷。正解是「照著河把地形刻出來」：沿流路強制單調下降
     #   elev[i]=min(elev[i-1]-坡降, 地形[i])，再把地形削到那條剖面。
     #   那支演算法還沒寫，先關著，免得地形停在壞狀態。
-    steps = set(a.only.split(',')) if a.only else {'ridges', 'hydro'}
+    # ⚠⚠⚠ **`hydro` 預設關閉**（ver -1267，Ray 退回：「很多很不自然的水文，
+    #   修改痕跡太重了。先把地圖回復到地圖編輯器之前的版本」）。
+    #   程式碼留著當紀錄，要跑得自己 `--only hydro`，而且**跑之前先想清楚**：
+    #   它在數字上是對的（水出不去的陸地 30.23% → 1.96%、北高南低的相關
+    #   −0.06 → −0.17、海岸線 0 px 變動），但**看起來不自然**：
+    #     · 填窪把 28% 的陸地墊高，谷地被抹平成一片片台地
+    #     · 河網是演算法算出來的樹狀，密度均勻、分岔規律 —— 一眼看得出是生成的
+    #     · 保護圓的邊界在地形上留下一圈接縫（Ray 說的「修改痕跡太重」）
+    #   ⇒ 下次要動水文，**先解決「像不像手畫的」而不是「對不對」**：
+    #     少填多刻（breach 而不是 fill）、河網密度隨地區變、保護區的過渡要更長。
+    steps = set(a.only.split(',')) if a.only else {'ridges'}
 
     h = np.asarray(Image.open(BASE_H).convert('L')).astype(np.float32)
     t = np.asarray(Image.open(BASE_T).convert('RGB')).astype(np.float32)
