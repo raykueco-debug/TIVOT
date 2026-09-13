@@ -21,6 +21,7 @@ button.on{background:#2d4a2d;border-color:#5a8f5a}
   <button id="bQ">緩衝 106</button>
   <button id="bSpot">取景 1/4</button>
   <button id="bStep">步進 標準</button>
+  <button id="bObj">物件 開</button>
 </div>
 <script>
 /* ══ GPU 試作（ver -1198）══════════════════════════════════════════════
@@ -41,7 +42,7 @@ const SPOTS=[
   {n:'貝利薩爾', x:1972, y:711,  alt:400, a:0},
   {n:'帝都',     x:1005, y:640,  alt:400, a:0},
 ];
-let spot=0, useGPU=true, BW=106, BH=141, stepMul=1;
+let spot=0, useGPU=true, BW=106, BH=141, stepMul=1, showObj=true;
 
 const cv=document.getElementById('cv'), cv2=document.getElementById('cv2'),
       hud=document.getElementById('hud');
@@ -98,6 +99,12 @@ float hAt(vec2 mf){                       // 地圖座標 → 世界高度（最
   if(mf.x<0.||mf.y<0.||mf.x>=uMap.x||mf.y>=uMap.y) return 0.;
   return texture(uH,uv).r*255.0/255.0*${PEAK_SCALE}.0;
 }
+/* 深度輸出（ver -1199 驗證用）：命中的 z 寫進 gl_FragDepth，
+   之後 3D 物件就能用真正的深度測試被地形擋住 —— ybuf / ZTOP /
+   clipByTerrainDepth 那一整套（八個呼叫者）可以全部刪掉，
+   而且物件數量從此與成本脫鉤（現在一座遺蹟要 950 次 fill）。
+   ⚠ 這段註解在 GLSL 模板字串裡，**不可以用反引號**（會把字串截斷）。 */
+float zToDepth(float z){ return clamp(z/${ZFAR}.0, 0.0, 1.0); }
 void main(){
   float px=gl_FragCoord.x, py=uBuf.y-gl_FragCoord.y;      // 上下翻（canvas 原點在左上）
   float sv=(px+0.5)/uBuf.x*2.0-1.0;
@@ -123,17 +130,19 @@ void main(){
       vec3 c=cloud?vec3(0.82,0.86,0.92):texture(uC,uv).rgb;
       float fog=clamp((z-${FOGS}.0)/(${ZFAR}.0-${FOGS}.0),0.,1.)*${FOG_MAX};
       col=mix(c,vec3(0.72,0.78,0.86),fog);
-      break;
+      gl_FragDepth=zToDepth(z);
+      o=vec4(col,1.0); return;
     }
     z+=dz; dz+=0.011*uStep;
   }
-  if(col.x<0.0) col=vec3(0.70,0.77,0.87);                 // 沒命中＝天空
+  col=vec3(0.70,0.77,0.87);                               // 沒命中＝天空
+  gl_FragDepth=1.0;                                       // 天空在最遠處
   o=vec4(col,1.0);
 }`;
 function sh(t,src){ const s=gl.createShader(t); gl.shaderSource(s,src); gl.compileShader(s);
   if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; }
 function initGL(){
-  const g2=cv.getContext('webgl2',{antialias:false,depth:false,alpha:false,
+  const g2=cv.getContext('webgl2',{antialias:false,depth:true,alpha:false,
                                    powerPreference:'high-performance'});
   if(!g2){ hud.textContent='這台機器沒有 WebGL2 —— 試作到此為止。'; return; }
   gl=g2;
@@ -160,6 +169,70 @@ function initGL(){
   gl.uniform1i(gl.getUniformLocation(prog,'uC'),1);
   for(const n of ['uMap','uBuf','uCam','uDir','uStep']) uni[n]=gl.getUniformLocation(prog,n);
   gl.uniform2f(uni.uMap,MAPW,MAPH);
+  initObj();
+}
+
+/* ══⚠⚠⚠ 深度測試驗證（ver -1199）══════════════════════════════════════
+   一批 instanced 立方體，放在地圖上固定的世界座標。地形 shader 把命中的 z
+   寫進 gl_FragDepth，這裡用同一條 z→depth 的換算 —— 如果深度測試是對的，
+   **躲在山後面的方塊會被擋掉，山前面的會露出來**，而且完全不必 ybuf。
+   這就是「3D 物件與成本脫鉤」的前提：成立的話，遺蹟／量體／火車／怪
+   全部可以變成 instanced 幾何，一次 draw call 畫幾千個。 */
+let objProg=null, objVao=null, objUni={}, OBJ_N=0;
+const OBJ_VS=`#version 300 es
+in vec3 p; in vec3 inst;              // inst＝該方塊的世界座標(x,y,h)
+uniform vec2 uBuf; uniform vec3 uCam; uniform vec2 uDir; uniform float uSize;
+out float vShade; out float vZ;
+void main(){
+  vec3 w=vec3(inst.x+p.x*uSize, inst.y+p.z*uSize, inst.z+p.y*uSize);
+  vec2 d=w.xy-uCam.xy;
+  float sinp=uDir.x, cosp=uDir.y;
+  float z=d.x*(-sinp)+d.y*(-cosp);
+  if(z<1.0){ gl_Position=vec4(2,2,2,1); vZ=1.0; vShade=0.0; return; }
+  float sv=(d.x*cosp+d.y*(-sinp))/z;
+  float scaleH=uBuf.y*0.62, horizon=uBuf.y*${HORIZON_F};
+  float curv=(1.0+sv*sv)/(2.0*${PLANET_R}.0);
+  float sy=((uCam.z-w.z)/z + z*curv)*scaleH+horizon;
+  // 螢幕座標 → NDC（y 要翻，因為 sy 是由上往下算的）
+  gl_Position=vec4(sv, 1.0-2.0*sy/uBuf.y, 0.0, 1.0);
+  vZ=clamp(z/${ZFAR}.0,0.0,1.0);
+  vShade=0.55+0.45*p.y;
+}`;
+const OBJ_FS=`#version 300 es
+precision highp float;
+in float vShade; in float vZ; out vec4 o;
+void main(){ gl_FragDepth=vZ; o=vec4(vec3(0.95,0.25,0.25)*vShade,1.0); }`;
+function initObj(){
+  objProg=gl.createProgram();
+  gl.attachShader(objProg,sh(gl.VERTEX_SHADER,OBJ_VS));
+  gl.attachShader(objProg,sh(gl.FRAGMENT_SHADER,OBJ_FS));
+  gl.linkProgram(objProg);
+  if(!gl.getProgramParameter(objProg,gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(objProg));
+  objVao=gl.createVertexArray(); gl.bindVertexArray(objVao);
+  // 單位立方體（36 頂點，不索引，夠簡單）
+  const c=[[-1,-1,-1],[1,-1,-1],[1,1,-1],[-1,1,-1],[-1,-1,1],[1,-1,1],[1,1,1],[-1,1,1]];
+  const f=[[0,1,2,3],[5,4,7,6],[4,0,3,7],[1,5,6,2],[3,2,6,7],[4,5,1,0]];
+  const V=[]; for(const q of f){ const [a,b,cc,d]=q.map(i=>c[i]);
+    V.push(...a,...b,...cc, ...a,...cc,...d); }
+  const vb=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,vb);
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(V),gl.STATIC_DRAW);
+  const lp=gl.getAttribLocation(objProg,'p');
+  gl.enableVertexAttribArray(lp); gl.vertexAttribPointer(lp,3,gl.FLOAT,false,0,0);
+  // 在東方泊地一帶撒一片方塊（跨過山脊，這樣才看得出誰被擋住）
+  const inst=[];
+  for(let gy=-14; gy<=14; gy++) for(let gx=-14; gx<=14; gx++){
+    const mx=2003+gx*6, my=590+gy*6;
+    if(mx<0||my<0||mx>=MAPW||my>=MAPH) continue;
+    inst.push(mx*MAP_SCALE, my*MAP_SCALE, HGT[my*MAPW+mx]+60);
+  }
+  OBJ_N=inst.length/3;
+  const ib=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,ib);
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(inst),gl.STATIC_DRAW);
+  const li=gl.getAttribLocation(objProg,'inst');
+  gl.enableVertexAttribArray(li); gl.vertexAttribPointer(li,3,gl.FLOAT,false,0,0);
+  gl.vertexAttribDivisor(li,1);
+  for(const n of ['uBuf','uCam','uDir','uSize']) objUni[n]=gl.getUniformLocation(objProg,n);
+  gl.bindVertexArray(null);
 }
 
 /* ══ CPU 參照：同一條投影、同一份資料的 span 版（簡化，只有地形與霧）══ */
@@ -251,7 +324,18 @@ function loop(){
     gl.uniform3f(uni.uCam,cam.x,cam.y,cam.alt);
     gl.uniform2f(uni.uDir,Math.sin(cam.a),Math.cos(cam.a));
     gl.uniform1f(uni.uStep,stepMul);
+    gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LEQUAL);
+    gl.clear(gl.DEPTH_BUFFER_BIT);
     gl.drawArrays(gl.TRIANGLES,0,3);
+    /* 物件：同一顆深度緩衝，被地形擋住的自然不見（驗證用，按鈕可關）。 */
+    if(showObj && objProg){
+      gl.useProgram(objProg); gl.bindVertexArray(objVao);
+      gl.uniform2f(objUni.uBuf,BW,BH);
+      gl.uniform3f(objUni.uCam,cam.x,cam.y,cam.alt);
+      gl.uniform2f(objUni.uDir,Math.sin(cam.a),Math.cos(cam.a));
+      gl.uniform1f(objUni.uSize,26);
+      gl.drawArraysInstanced(gl.TRIANGLES,0,36,OBJ_N);
+    }
     /* ⚠⚠⚠ **這裡刻意不強迫同步** —— 正式渲染本來就不會。
        量 GPU 真正的工作量走下面的 `benchGPU()`（批次量一次），
        每禎的表現則看 rAF 實測 fps。兩個數字的意義不同，都要看。 */
@@ -288,6 +372,8 @@ document.getElementById('bQ').onclick=e=>{ BW=(BW===106)?160:(BW===160)?248:106;
   e.target.textContent='緩衝 '+BW; resize(); };
 document.getElementById('bSpot').onclick=e=>{ spot=(spot+1)%SPOTS.length;
   e.target.textContent='取景 '+(spot+1)+'/'+SPOTS.length+' '+SPOTS[spot].n; };
+document.getElementById('bObj').onclick=e=>{ showObj=!showObj;
+  e.target.textContent='物件 '+(showObj?'開':'關'); };
 document.getElementById('bStep').onclick=e=>{ stepMul=stepMul===1?2:stepMul===2?4:1;
   e.target.textContent='步進 ×'+stepMul; };
 
