@@ -26,6 +26,7 @@ Reference/R1water.png 是疊在 silvermoon_sheet.png 上畫的，兩張同尺寸
 import argparse
 import math
 import os
+import re
 
 import cv2
 import numpy as np
@@ -220,6 +221,277 @@ def apply_rivers(h, t, land0):
     return out.astype(np.float32), t
 
 
+
+# ══════════════════════════════════════════════════════════════════════════
+# 水文重整（ver -1266，Ray：「重整全圖，讓水文山脈走勢合理，水往低處流，
+#   大致北向南流」「不要動到已設置地點的區域」）
+# ──────────────────────────────────────────────────────────────────────────
+# 為什麼要整個重來：實測現況（`hydro_check`）
+#   · 河格**沒有更低的河鄰居**（水流不出去）＝ 63.1%
+#   · 陸地內流窪地（周圍全比自己高）＝ 102248 px（4.0%）
+#   · 南北走勢：中間高、南北低；高度與 y 的相關只有 −0.06 ＝ 沒有走勢
+# 原因很單純：**河是畫上去的**（從地表色反推），不是從地形算出來的。
+# 畫的線不知道地形哪裡高，所以有 6 成的河段在往上爬。
+#
+# 作法（標準的 DEM 水文四步，順序不能換）：
+#   ① 北高南低的區域傾斜 —— 只加在陸地，而且**離岸越近越弱**，海岸線才不會動
+#   ② 填窪（形態學的以侵蝕重建）—— 每一格陸地都要有往海的下坡路
+#   ③ D8 流向 ＋ 匯流面積 —— 河 ＝ 匯流超過門檻的地方，寬度隨流量
+#   ④ 刻河道 ＋ 上水色；填得很深的窪地留成**湖**（填平的水面本來就是平的）
+# ⚠⚠ 已設置地點的區域（城／遺蹟）**一律不動**：①②④ 都乘上 (1-保護)。
+# ══════════════════════════════════════════════════════════════════════════
+TILT_RANGE   = 46.0     # 北到南的總落差（灰階）。⚠ 太大會把南岸壓進海、北岸推成崖
+TILT_EDGE    = 26.0     # 岸邊多少 px 之內不加傾斜（海岸線不准動）
+RIVER_THR    = 320.0    # 匯流面積門檻（格）＝ 這條溪多大才算河
+RIVER_CUT2   = 7.0      # 河道比兩岸低多少（灰階）
+LAKE_FILL    = 40.0     # 填高超過這個就不是「填平」而是**湖**
+PROT_FEATHER = 24.0     # 保護區外緣的羽化寬度（px）
+
+
+def protect_mask(h, w, places):
+    """已設置地點的保護遮罩（1＝完全不動）。
+
+    ⚠ 半徑取城的插畫寬（planW，世界單位 → ÷MAP_SCALE÷2）再放寬 1.8 倍；
+      遺蹟沒有 planW，給 28px 的地板 —— 量體加整地大約就是那個尺度。
+    """
+    prot = np.zeros((h, w), np.float32)
+    yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
+    for o in places:
+        r = max(28.0, o.get('planW', 0) / MAP_SCALE / 2.0 * 1.8)
+        d = np.hypot(xx - o['x'], yy - o['y'])
+        k = np.clip((r + PROT_FEATHER - d) / PROT_FEATHER, 0, 1)
+        prot = np.maximum(prot, k * k * (3 - 2 * k))
+    return prot
+
+
+def regional_tilt(h, land0, prot):
+    """① 北高南低。⚠ 只作用在內陸：岸邊乘 0，海岸線才不會移動。"""
+    H, W = h.shape
+    yy = np.mgrid[0:H, 0:W][0].astype(np.float32)
+    dsea = cv2.distanceTransform(land0.astype(np.uint8), cv2.DIST_L2, 5)
+    edge = np.clip(dsea / TILT_EDGE, 0, 1)
+    ramp = 1.0 - yy / (H - 1)
+    t = (ramp - ramp.mean()) * TILT_RANGE * edge * land0 * (1 - prot)
+    out = h + t
+    out = np.where(land0, np.maximum(out, SEA_GREY + 2), np.minimum(out, SEA_GREY - 1))
+    print('  ① 傾斜：±%.0f 灰階，海岸線變動 %d px'
+          % (np.abs(t).max(), int(((out > SEA_GREY) != land0).sum())))
+    return out.astype(np.float32)
+
+
+def fill_sinks(h, land0):
+    """② 填窪：形態學的「以侵蝕重建」。
+
+    marker 從很高開始、被 h 由下托住，反覆取 3x3 最小值直到收斂 ——
+    結果是「每一格都有往海的下坡路」的高度場。
+    ⚠ 種子是**海與圖框**：沒有種子的話整張圖會被填成一片高原。
+    """
+    marker = np.full_like(h, 1e4)
+    seed = ~land0
+    marker[seed] = h[seed]
+    marker[0, :] = h[0, :]; marker[-1, :] = h[-1, :]
+    marker[:, 0] = h[:, 0]; marker[:, -1] = h[:, -1]
+    k3 = np.ones((3, 3), np.uint8)
+    it = 0
+    while it < 4000:
+        it += 1
+        nm = np.maximum(cv2.erode(marker, k3), h)
+        if np.array_equal(nm, marker):
+            break
+        marker = nm
+    d = marker - h
+    print('  ② 填窪：%d 趟，填高 %d px（中位 %.1f、最深 %.0f 灰階）'
+          % (it, int((d > 0.01).sum()),
+             float(np.median(d[d > 0.01])) if (d > 0.01).any() else 0, d.max()))
+    return marker
+
+
+NB8 = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, -1)]
+NB8 = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)]
+
+
+def flow_acc(filled, land0, h_micro):
+    """③ D8 流向 ＋ 匯流面積。
+
+    ⚠⚠ 被填平的窪地是**完全水平**的，流向會由「鄰居的列舉順序」決定 ——
+      畫出來是一條筆直的線。所以要給一點破平手的依據：
+      **離海距離**（很弱的全域偏置，讓水往海走、流量集中）＋ **原始微地形**
+      （更弱，讓線不要筆直）。
+      ⚠ 反過來（微地形當主）會讓流量在平坦的湖底**散開**，下游的河就斷成一截一截
+        （實測最大匯流由 11790 掉到 7897，河網全是碎片）。
+    """
+    H, W = filled.shape
+    dsea = cv2.distanceTransform(land0.astype(np.uint8), cv2.DIST_L2, 5)
+    route = filled + 1.0e-3 * dsea + 1.0e-5 * h_micro
+    route[~land0] = -1e9
+    best = np.full((H, W), -1, np.int64)
+    bestd = np.zeros((H, W), np.float32)
+    for k, (dy, dx) in enumerate(NB8):
+        sh = np.roll(np.roll(route, -dy, 0), -dx, 1)
+        if dy > 0: sh[-dy:, :] = 1e9
+        if dy < 0: sh[:-dy, :] = 1e9
+        if dx > 0: sh[:, -dx:] = 1e9
+        if dx < 0: sh[:, :-dx] = 1e9
+        drop = (route - sh) / (1.414 if dy and dx else 1.0)
+        m = drop > bestd
+        bestd = np.where(m, drop, bestd)
+        best = np.where(m, k, best)
+    acc = np.ones(H * W, np.float32)
+    rt = route.ravel(); bs = best.ravel(); lm = land0.ravel()
+    for i in np.argsort(-rt):
+        if not lm[i]:
+            continue
+        k = bs[i]
+        if k < 0:
+            continue
+        y, x = divmod(int(i), W)
+        ny, nx = y + NB8[k][0], x + NB8[k][1]
+        if 0 <= ny < H and 0 <= nx < W:
+            acc[ny * W + nx] += acc[i]
+    acc = acc.reshape(H, W)
+    print('  ③ 流向：有下坡的陸地格 %.2f%%，最大匯流 %.0f 格'
+          % (100.0 * ((best >= 0) & land0).sum() / land0.sum(), acc.max()))
+    return acc
+
+
+
+def carve_water(h_fill, h_pre, acc, land0, prot, t):
+    """④ 刻河道、留湖、上水色（並把**舊的畫上去的河**抹掉）。
+
+    ⚠⚠ 河道深度隨流量遞增（`sqrt(acc)`）—— 那不只是好看：深度**沿流向不遞減**，
+      刻完的剖面才保證還是往下走的，不會刻出新的窪地。
+    ⚠⚠ 被填得很深的窪地不要填平，留成**湖**：填平的水面本來就是平的，
+      那正是湖該有的樣子（而且省掉「把整座盆地抬高 110 灰階」那種破壞）。
+    ⚠⚠⚠ **舊的河一定要抹掉**。引擎的河道遮罩是從**地表色**反推的
+      （`b>r+16 && b>g+4 && 70<b<200`）—— 不抹的話新舊兩套河會同時存在，
+      而舊的那一套有六成是往上爬的，等於什麼都沒改。用 `cv2.inpaint` 從
+      周圍的地面色補回去。
+    """
+    H, W = h_fill.shape
+    fill_d = h_fill - h_pre
+    lake = (fill_d > LAKE_FILL) & land0 & (prot < 0.5)
+    riv_c = (acc > RIVER_THR) & land0 & (prot < 0.5) & ~lake
+
+    # 河寬隨流量：主流粗、支流細
+    widf = np.clip(np.sqrt(np.maximum(acc, 1.0) / RIVER_THR), 1, 4.2)
+    Wm = np.zeros((H, W), np.float32)
+    for lo, hi, r in ((0, 1.6, 1), (1.6, 2.4, 2), (2.4, 3.3, 3), (3.3, 99, 4)):
+        m = (riv_c & (widf >= lo) & (widf < hi)).astype(np.uint8)
+        if m.any():
+            Wm = np.maximum(Wm, cv2.dilate(m, np.ones((2 * r + 1, 2 * r + 1), np.uint8)) * float(r))
+    river = (Wm > 0) & land0 & (prot < 0.5) & ~lake
+
+    # 刻：河心最深、往岸收斂（同既有 apply_rivers 的剖面作法）
+    out = h_fill.copy()
+    if river.any():
+        d = cv2.distanceTransform(river.astype(np.uint8), cv2.DIST_L2, 5)
+        prof = np.clip(d / np.maximum(Wm, 1.0), 0, 1)
+        prof = np.sin(prof * math.pi / 2) ** 0.7
+        depth = RIVER_CUT2 * np.clip(np.sqrt(np.maximum(acc, 1.0) / RIVER_THR), 1, 3.0)
+        tgt = h_fill - depth
+        out = np.where(river, h_fill * (1 - prof) + tgt * prof, h_fill)
+        out = np.where(river, np.maximum(out, SEA_GREY + 5), out)     # 不准挖穿到雲海
+
+    # ⚠⚠ **刻完要再填一次**（ver -1266 實測補上）：刻河道會製造新的窪地 ——
+    #   最主要的來源是「不准挖穿到雲海」那個下限：靠海那一段的河床被夾上來，
+    #   就在上游留下一個出不去的坑。實測只做一次填窪，保護區之外還有 5.09% 的
+    #   陸地排不掉水；補這一趟之後降到 0.1% 以下。
+    #   ⚠ 這一趟不會把河道填回去：會被填高的只有**真的排不掉的坑**，
+    #     刻得好的河道本來就有下坡路。
+    out = fill_sinks(out, land0)
+
+    # 保護區：原樣不動（連填窪一起退回去）
+    out = out * (1 - prot) + h_pre * prot
+
+    # ── 地表色 ──────────────────────────────────────────────────────
+    water_new = (river | lake)
+    r0, g0, b0 = t[:, :, 0], t[:, :, 1], t[:, :, 2]
+    water_old = (b0 > r0 + 16) & (b0 > g0 + 4) & (b0 > 70) & (b0 < 200) & land0
+    stale = water_old & ~water_new
+    if stale.any():
+        m8 = cv2.dilate(stale.astype(np.uint8), np.ones((3, 3), np.uint8))
+        t = cv2.inpaint(np.clip(t, 0, 255).astype(np.uint8), m8, 4, cv2.INPAINT_TELEA).astype(np.float32)
+    if water_new.any():
+        d2 = cv2.distanceTransform(water_new.astype(np.uint8), cv2.DIST_L2, 5)
+        wcol = np.clip(d2 / 1.6, 0, 1) * 0.94
+        for c in range(3):
+            t[:, :, c] = t[:, :, c] * (1 - wcol) + RIVER['colour'][c] * wcol
+    print('  ④ 河 %d px（%.2f%%）、湖 %d px；抹掉舊河 %d px'
+          % (int(river.sum()), 100.0 * river.mean(), int(lake.sum()), int(stale.sum())))
+    return out.astype(np.float32), t
+
+
+def load_places():
+    """已設置地點（城與地標）的座標 —— 從 flight/index.html 抽。
+
+    ⚠ 自己數大括號切頂層物件，**不要用 `[^{}]*` 的正規式**：城裡有 `podium:{…}`、
+      地標有 `land:{…}`，一有巢狀就整筆漏掉（實測只抓到 2 座城、漏了貝利薩爾）。
+    """
+    src = open(os.path.join(HERE, 'index.html'), encoding='utf-8').read()
+
+    def arr(start):
+        i = src.index(start); j = src.index('[', i); d = 0; k = j
+        while True:
+            c = src[k]
+            if c == '[': d += 1
+            elif c == ']':
+                d -= 1
+                if d == 0: break
+            k += 1
+        return src[j + 1:k]
+
+    def objs(body):
+        out, d, st, i = [], 0, -1, 0
+        while i < len(body):
+            c = body[i]
+            if c == "'":
+                i += 1
+                while i < len(body) and body[i] != "'":
+                    i += 2 if body[i] == '\\' else 1
+            elif c == '{':
+                if d == 0: st = i
+                d += 1
+            elif c == '}':
+                d -= 1
+                if d == 0 and st >= 0:
+                    out.append(body[st:i + 1]); st = -1
+            i += 1
+        return out
+
+    def num(seg, key, dflt=0.0):
+        m = re.search(r'\b%s:\s*(-?\d+(?:\.\d+)?)' % key, seg)
+        return float(m.group(1)) if m else dflt
+
+    def nm(seg):
+        m = re.search(r"\bn:'([^']+)'", seg) or re.search(r"\bname:'([^']+)'", seg)
+        return m.group(1) if m else '?'
+
+    out, seen = [], set()
+    for seg in objs(arr('const SETTLEMENTS = [')):
+        if 'x:' not in seg or 'y:' not in seg: continue
+        o = dict(n=nm(seg), x=num(seg, 'x'), y=num(seg, 'y'), planW=num(seg, 'planW'))
+        out.append(o); seen.add(o['n'])
+    for seg in objs(arr('const PLACES=[')):
+        if 'x:' not in seg or 'y:' not in seg: continue
+        n = nm(seg)
+        if n in seen: continue
+        out.append(dict(n=n, x=num(seg, 'x'), y=num(seg, 'y'), planW=num(seg, 'planW')))
+    return out
+
+
+def apply_hydro(h, t, land0):
+    places = load_places()
+    print('  保護 %d 個已設置地點：%s' % (len(places), '、'.join(o['n'] for o in places)))
+    prot = protect_mask(h.shape[0], h.shape[1], places)
+    print('  保護區核心 %.2f%%（含羽化 %.2f%%）'
+          % (100 * (prot > 0.99).mean(), 100 * (prot > 0).mean()))
+    h_micro = h.copy()
+    h1 = regional_tilt(h, land0, prot)
+    filled = fill_sinks(h1, land0)
+    acc = flow_acc(filled, land0, h_micro)
+    return carve_water(filled, h1, acc, land0, prot, t)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--only', default='')
@@ -230,7 +502,7 @@ def main():
     #   的峽谷。正解是「照著河把地形刻出來」：沿流路強制單調下降
     #   elev[i]=min(elev[i-1]-坡降, 地形[i])，再把地形削到那條剖面。
     #   那支演算法還沒寫，先關著，免得地形停在壞狀態。
-    steps = set(a.only.split(',')) if a.only else {'ridges'}
+    steps = set(a.only.split(',')) if a.only else {'ridges', 'hydro'}
 
     h = np.asarray(Image.open(BASE_H).convert('L')).astype(np.float32)
     t = np.asarray(Image.open(BASE_T).convert('RGB')).astype(np.float32)
@@ -243,6 +515,9 @@ def main():
         h = carve_valley(h)
     if 'rivers' in steps:
         h, t = apply_rivers(h, t, land0)
+    if 'hydro' in steps:
+        print('水文重整（ver -1266）')
+        h, t = apply_hydro(h, t, land0)
 
     land1 = h > SEA_GREY
     moved = int((land1 != land0).sum())
