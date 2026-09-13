@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1269"></script>
+<script src="../orientation.js?v=1271"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1269');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1271');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1269");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1269");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1271");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1271");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1269");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1269");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1271");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1271");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -604,25 +604,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1269" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1271" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1269" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1269" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1269" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1269" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1269" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1269" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1269" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1269" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1269" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1269" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1271" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1271" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1271" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1271" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1271" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1271" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1271" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1271" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1271" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1271" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1269" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1271" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1269" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1271" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -643,11 +643,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1269"></script>
+<script src="settlement.js?v=1271"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1269"></script>
+<script src="talks.js?v=1271"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -699,7 +699,7 @@ const COLOR_URL  = 'silvermoon_terrain.png'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1269';
+const FLIGHT_VER = 'ver -1271';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -1769,6 +1769,28 @@ const CLIFF_STRAT_H=5.0;
    同樣的 0.30 走，枕木間距只有 3 個螢幕像素，在降取樣的地形緩衝裡會閃 ——
    拉長到 0.60 讓枕木約 6 像素一根。非正方 texel 是**刻意**的。 */
 const RAIL_ALONG=0.60, RAIL_ALONG_INV=1/RAIL_ALONG;
+/* ══ 鐵軌：**用畫的，不用貼圖**（ver -1270，Ray：「火車鐵軌不要用貼圖的，
+   自己畫吧，比較不會有方向問題，反正只有鐵軌跟枕木」）══════════════════
+   貼圖那條路的問題全都來自「要把世界座標轉進軌道座標系再取樣」：
+     · 橫越座標是從距離場反推的，**沒有正負號** ⇒ 圖是以中線鏡射過去的
+     · 沿軌座標要拿 `RAILDIR` 的量化角度投影，角度一階一階地跳
+     · texel 是正方形，枕木間距在螢幕上只有 3px，得刻意沿軌拉長 2 倍才不閃
+   而這張圖的內容其實只有**兩條鋼軌 ＋ 週期性的枕木 ＋ 碎石**——
+   那是三個式子就寫得完的東西，直接算就沒有鏡射、沒有 texel、也沒有拉伸。
+
+   單位一律**世界單位**（1 地圖像素 ＝ MAP_SCALE ＝ 20）：
+   ⚠ `half` 必須等於 `stampPaths(paths, 1.9)` 的 R × MAP_SCALE —— 橫越距離是
+     由那個距離場反推的（`d=(1-w)*half`），兩邊對不上的話軌距會整個跑掉。 */
+const RAILP={
+  half:38,        // 路基半寬（＝ stampPaths 的 R 1.9 × MAP_SCALE），橫越距離由它反推
+  gauge:12,       // 兩條線各離軌道中線多遠
+  minW:1.1,       // 線的半寬下限（世界單位）
+  pxW:0.30,       // 線的半寬：至少這麼多個緩衝像素 ⇒ **遠近看起來一樣粗**
+                  // ⚠ ver -1271 由 0.55 減半（Ray：「細點」）＝ 螢幕上約 0.6 緩衝像素寬。
+                  //   再細就會細到抗鋸齒把它整條淡掉（半寬 < fp*0.5 時永遠到不了滿色）。
+  bed:[139,121,101],       // 路基（碎石）
+  line:[68,70,74],         // 兩條深灰線
+};
 /* ── 地貌貼圖表 ──────────────────────────────────────────────
    索引就是選擇器回傳的類別。全部塞進**一條** Uint8Array（每 texel 3 byte），
    用位移定址 —— 陣列的陣列在內迴圈要多一次間接定址，而這裡每幀跑十七萬次。
@@ -9859,7 +9881,7 @@ const ybuf=new Int32Array(512);
      掛早了而 WebGL2 又開不起來（舊機、driver 黑名單）的話，2D 那張畫布的視窗區
      會被清成透明、而底下的 GL 畫布是空的 ＝ **整片沒有地形**，而且沒有錯誤訊息。 */
 const GLON = !/[?&]gl=0/.test(location.search);
-let glTexBiome=null, glTexMask=null, glTexRail=null, glTexGeo=null, glTexMot=null,
+let glTexBiome=null, glTexMask=null, glTexRail=null, glTexRailW=null, glTexGeo=null, glTexMot=null,
     glTexSnow=null, glGeoUp=false;
 let glSmpPbo=null, glSmpFence=null;
 const glSmpBuf=new Uint8Array(8*8*4);   // 環境光取樣的非同步回讀落點（見 screenSample）
@@ -9911,6 +9933,13 @@ uniform sampler2D uMask;          // r 石橋 g 鐵路 b 道路 a 郊區
    glReady:false → 悄悄退回 CPU（踩到當下唯一的徵兆是「怎麼又變慢了」）。 */
 uniform highp sampler2DArray uGeo;   // 地貌貼圖（每個類別一層 256×256）
 uniform sampler2D uRailDir;       // 軌道方向（降取樣）
+/* ⚠⚠⚠ 軌道的**橫越距離場**要單獨一張、而且是 LINEAR（ver -1271）。
+   走廊只有 3 個地圖像素寬（實測橫切面 w＝0/121/255/121/0）—— 從 uMask 的
+   texelFetch 取，「離中線多遠」就只有 0／20／38 三個值，
+   想在 12 的地方畫一條線**永遠落不到任何一格**（畫面上什麼都沒有）。
+   內插過的距離場才有連續的橫越座標，線才畫得上去。
+   ⚠ 同 uMot／uSnow 的作法：整數或未濾的貼圖濾不了，就另抽一張 R8+LINEAR。 */
+uniform sampler2D uRailW;         // 軌道橫越距離場（0~1，中心 1）
 uniform vec2 uRD;                 // RD_W, RD_H
 uniform float uGeoOn;             // atlas 還沒載到就是 0
 uniform sampler2D uCityA, uCityB;
@@ -10044,23 +10073,46 @@ void main(){
           vec4 mk=texelFetch(uMask,clampT(ti),0);
           if(mk.r*255.0>40.0)        c=mix(c, vec3(138.,128.,114.)/255.0, mk.r*0.94);
           else if(tx==8u||tx==9u)    c=mix(c, (tx==9u? vec3(92.,126.,146.) : vec3(66.,100.,124.))/255.0, 0.72);
-          else if(mk.g*255.0>40.0)   c=mix(c, vec3(139.,121.,101.)/255.0, mk.g*0.90);
+          /* ⚠ ver -1270：鐵軌的底色不再往貼圖均值推 —— 它整格會被下面畫出來的
+             碎石／枕木／鋼軌蓋掉。**留著這一行不會錯但是白做**，而且會讓
+             「為什麼調了顏色沒反應」很難查。橋面（mk.r）照舊。 */
+          else if(mk.g*255.0>40.0 && tx!=13u) c=mix(c, vec3(139.,121.,101.)/255.0, mk.g*0.90);
           else if(tx==5u)            c=mix(c, vec3(135.,109.,72.)/255.0, mk.b*0.82);
           else if(tx>=10u && tx<=12u){
             vec3 rc = tx==10u? vec3(80.,76.,69.) : (tx==11u? vec3(93.,86.,66.) : vec3(102.,91.,61.));
             c=mix(c, rc/255.0, mk.a*0.55+0.30);
           }
-          /* 取樣座標。⚠ 鐵軌要轉進**軌道座標系**：沿軌方向由 RAILDIR 的角度投影，
-             橫越方向由 RAILW 的距離場反推（中心 255、邊緣 0）。 */
-          vec2 gxy;
+          /* ⚠ ver -1270：鐵軌不再取樣貼圖，改成**直接畫**（見 RAILP 的說明）。
+             這裡先算好它的顏色，下面再決定要不要跳過地貌貼圖那一步。
+             ⚠⚠⚠ **這一段在 GLSL 的樣板字串裡：註解不可以出現反引號** ——
+               它會把樣板字串提早結束，而錯誤訊息會落在很遠的地方（憲法記過八次，
+               -1270 是第九次）。所以這裡一律用「」引名字，不用反引號。
+             ⚠⚠ **插註解的時候不要把原本那一段剖成兩半**（-1270 第二次踩）：
+               我把新的幾行插在舊註解的中間，於是舊註解的下半句與它的結束記號
+               掉在註解之外，變成一行裸露的中文 —— GLSL 回報的是
+               「0:187: '?' : syntax error」，位置與原因都對不上，
+               而且它**只會讓 glReady 變 false、悄悄退回 CPU**（畫面照常，
+               只是慢了三倍）。改完一定要真的看一眼 glReady。 */
+          vec2 gxy=(wp+vec2(40960.0))*${'1.0/1.6'};
           float dq = (tx==13u) ? texture(uRailDir, (floor(mf)/${'6.0'})/uRD).r*255.0 : 0.0;
-          if(tx==13u && dq>0.5){
+          bool isRail = (tx==13u && dq>0.5);
+          vec3 railC=vec3(0.0);
+          if(isRail){
             float th=(dq-1.0)/254.0*3.14159265;
-            float along=(wp.x*cos(th)+wp.y*sin(th))*${'1.0/0.60'};
-            float across=128.0+127.0*(1.0-mk.g);
-            gxy=vec2(along+40960.0, across);
-          }else{
-            gxy=(wp+vec2(40960.0))*${'1.0/1.6'};
+            /* ⚠ 用**內插過**的距離場（uRailW），不要用 mk.g —— 見 uRailW 的說明。 */
+            float d  = (1.0-texture(uRailW, mf/uMap).r)*${'38.0'};   // 離中線（無號，世界單位）
+            /* ⚠⚠ **線寬跟著距離走，不是固定的世界寬度**（ver -1271，Ray：
+               「兩條永遠同寬的平行深灰線」）。固定世界寬度的線遠看會縮到
+               次像素 ⇒ 忽隱忽現、一段一段 —— 那正是他說「太醜」的一半原因
+               （另一半是枕木的週期性摩爾紋，整組拿掉了）。
+               fp ＝ 一個緩衝像素在地面上有多寬（世界單位），
+               線的半寬取 max(下限, fp×pxW) ⇒ 螢幕上永遠約 1.1 px。 */
+            float fp = max(2.0*z/uBuf.x, 0.5);
+            float hw = max(${'1.1'}, fp*${'0.30'});
+            vec3 cB=vec3(${'139.0'},${'121.0'},${'101.0'})/255.0;
+            vec3 cL=vec3(${'68.0'},${'70.0'},${'74.0'})/255.0;
+            float line = 1.0-smoothstep(hw-fp*0.5, hw+fp*0.5, abs(d-${'12.0'}));
+            railC = mix(cB, cL, line);
           }
           /* 這個像素在貼圖上的足跡（texel 為單位），兩軸各算一次：
              · 橫向：一欄在這個深度覆蓋 2z/BW 個世界單位
@@ -10080,7 +10132,11 @@ void main(){
              一格一格的亮暗方塊。BIOME 是 R8UI（整數貼圖濾不了），所以把高 4 bit
              抽成單獨一張 R8 + LINEAR。 */
           float mot=1.0+(texture(uMot, mf/uMap).r-0.5)*2.0*${GEO_MOT}*vegAmt;
-          c*=(vec3(1.0)+(k-vec3(1.0))*vegAmt)*mot;
+          /* ⚠ 鐵軌是**畫出來的絕對顏色**，不乘地貌貼圖也不乘底色 ——
+             它是人造物，不該帶著底下那塊地的色相（同屋頂那一族的道理）。
+             低頻亮度起伏 mot 照樣乘：不然整條軌道是死平的一條。 */
+          if(isRail) c=railC*mot;
+          else       c*=(vec3(1.0)+(k-vec3(1.0))*vegAmt)*mot;
         }
         /* 城的手繪地面：蓋掉地貌色，**在光照之前** —— 日夜與霧才會照地形走
            （§6.7.5：插在地貌細節之後、光照之前）。 */
@@ -10295,14 +10351,19 @@ function glInit(){
   g.enableVertexAttribArray(lp); g.vertexAttribPointer(lp,2,g.FLOAT,false,0,0);
   for(const n of ['uH','uHs','uC','uS','uSky','uMap','uBuf','uCam','uDir','uLdir','uLcol','uLi','uFog','uCloudLit','uTime',
                   'uCityA','uCityB','uCityA0','uCityB0','uCityA1','uCityB1','uCityT','uInvS',
-                  'uBiome','uMask','uGeo','uRailDir','uRD','uGeoOn','uMot','uSnow'])
+                  'uBiome','uMask','uGeo','uRailDir','uRD','uGeoOn','uMot','uSnow','uRailW'])
+    /* ⚠⚠⚠ **新增 uniform 一定要同時加進這張名單**（ver -1271 踩過）：
+       漏掉的話 `glU.uRailW` 是 undefined，下面那句 `uniform1i(undefined, 14)`
+       會丟 INVALID_OPERATION（1282），**後面的 uniform 設定整批沒跑完** ——
+       畫面是**全黑**，而且 `glReady` 仍然是 true、主控台也沒有例外。
+       查的時候要問的是 `GLX.getError()`，不是找 JS 的錯誤。 */
     glU[n]=g.getUniformLocation(glProg,n);
   g.uniform1i(glU.uH,0); g.uniform1i(glU.uHs,11); g.uniform1i(glU.uC,1); g.uniform1i(glU.uS,2); g.uniform1i(glU.uSky,3);
   g.uniform1i(glU.uCityA,4); g.uniform1i(glU.uCityB,5);
   g.uniform1f(glU.uInvS, 1/GRADE_SAT);
   g.uniform1i(glU.uBiome,7); g.uniform1i(glU.uMask,8); g.uniform1i(glU.uMot,12);
   g.uniform1i(glU.uSnow,13);
-  g.uniform1i(glU.uGeo,9);   g.uniform1i(glU.uRailDir,10);
+  g.uniform1i(glU.uGeo,9);   g.uniform1i(glU.uRailDir,10); g.uniform1i(glU.uRailW,14);
   return true;
 }
 
@@ -10381,6 +10442,11 @@ function glUploadWorld(){
     g.texImage2D(g.TEXTURE_2D,0,g.RGBA8,MAPW,MAPH,0,g.RGBA,g.UNSIGNED_BYTE,m);
     console.log('[gl] 地貌遮罩 '+(m.byteLength/1048576).toFixed(1)+'MB');
   }
+  if(RAILW){ glTexRailW=mk(14);
+    g.texImage2D(g.TEXTURE_2D,0,g.R8,MAPW,MAPH,0,g.RED,g.UNSIGNED_BYTE,RAILW);
+    /* ⚠ LINEAR：走廊只有 3 px 寬，不內插就沒有連續的橫越座標（見 uRailW 的說明）。 */
+    g.texParameteri(g.TEXTURE_2D,g.TEXTURE_MIN_FILTER,g.LINEAR);
+    g.texParameteri(g.TEXTURE_2D,g.TEXTURE_MAG_FILTER,g.LINEAR); }
   if(RAILDIR){ glTexRail=mk(10);
     g.texImage2D(g.TEXTURE_2D,0,g.R8,RD_W,RD_H,0,g.RED,g.UNSIGNED_BYTE,RAILDIR); }
   glReady=true;
@@ -11171,12 +11237,10 @@ function render(now){
             const deep=(tex===G_WL);
             const wr=deep?92:66, wg=deep?126:100, wb=deep?146:124;
             cr+=(wr-cr)*0.72; cg+=(wg-cg)*0.72; cb+=(wb-cb)*0.72;
-          }else if(RAILW&&RAILW[mi]>40){
-            /* 鐵路：底色推到**貼圖自己的均值**(139,121,101)。細節層是相對均值的
-               倍率，底色對上均值，貼出來才是 Ray 那張軌道本來的顏色。
-               ⚠ 先前沒有專用貼圖時這裡填的是憑感覺的淺灰 (152,150,146)：那一版
-                 借 gravel_dark 當細節，所以底色只能自己湊。有了真貼圖就該對齊它，
-                 否則等於把人家畫好的顏色again 洗掉一次。
+          }else if(tex!==G_RAIL && RAILW && RAILW[mi]>40){
+            /* 鐵路旁的路基（不是軌道本身）：底色推到碎石色。
+               ⚠ ver -1270：**軌道那一格（tex===G_RAIL）跳過這裡** —— 它整格會被
+                 下面畫出來的碎石／枕木／鋼軌蓋掉，先推底色是白做的。
                ⚠ 判 RAILW 而不是判 tex：橋面那幾格的 tex 已經是 G_BRDG，
                  但它在上面那個分支就處理掉了，走不到這裡。 */
             const rw=(RAILW[mi]/255)*0.90;
@@ -11184,13 +11248,19 @@ function render(now){
           }else if(tex===G_GL&&ROADW){
             const rw=(ROADW[mi]/255)*0.82;
             cr+=(135-cr)*rw; cg+=(109-cg)*rw; cb+=(72-cb)*rw;
-          }else if(tex>=G_RH&&SUBW){
+          }else if(tex>=G_RH&&tex<=G_RL&&SUBW){
+            /* ⚠⚠ 上界一定要寫（ver -1270 踩到）：`G_RH` 是 10，而 `G_RAIL` 13、
+               `G_BRDG` 14 也都 `>=10` —— `ROOF_COL` 只有三格，取到 [3] 就是
+               undefined，下一行 `rc[0]` 當場炸掉**整個 render**（畫面全黑、
+               fps 空白）。先前沒事只是因為 13／14 剛好都被前面的分支接走了；
+               -1270 把鐵軌那一支改成不接，這個洞就露出來。
+               ⚠ 這是「靠別人先接住」的典型：條件本身一直是錯的，只是沒被走到。 */
             const rc=ROOF_COL[tex-G_RH], rw2=(SUBW[mi]/255)*0.55+0.30;
             cr+=(rc[0]-cr)*rw2; cg+=(rc[1]-cg)*rw2; cb+=(rc[2]-cb)*rw2;
           }
           /* ⚠ +40960 再取整：世界座標會是負的，而 |0 往零截斷，負數那半邊的
              相位會整個錯開（雲的取樣踩過同一個坑）。40960 是 GT 的倍數。 */
-          let gx, gy;
+          let gx, gy, railRGB=null;
           if(tex===G_RAIL && RAILDIR){
             /* ── 鐵軌：轉到**軌道座標系**再取樣 ──────────────────
                沿軌方向 u：世界座標投影到軌道方向。
@@ -11204,10 +11274,17 @@ function render(now){
                  像素一根枕木正好踩在取樣極限上，會閃。拉長到 6 像素就穩了。 */
             const dq=RAILDIR[(((mi/MAPW)|0)/ROAD_DS|0)*RD_W + (((mi%MAPW)/ROAD_DS)|0)];
             if(dq){
-              const th=(dq-1)/254*Math.PI, cs=Math.cos(th), sn=Math.sin(th);
-              const along=(plx*cs+ply*sn)*RAIL_ALONG_INV;
-              const across=128+127*(1-RAILW[mi]*(1/255));
-              gx=along+40960; gy=across;
+              /* ⚠ ver -1270 改成直接畫、-1271 簡化成兩條線（見 RAILP）。
+                 與 GL 那一支是同一組式子、同一組常數 —— 兩邊各寫一份數字
+                 必然走鐘（鐵律 7，兩邊註解互指）。 */
+              const dAc=(1-RAILW[mi]*(1/255))*RAILP.half;
+              const fp=Math.max(2*z/BW, 0.5);
+              const hw=Math.max(RAILP.minW, fp*RAILP.pxW);
+              const line=1-sstep(hw-fp*0.5, hw+fp*0.5, Math.abs(dAc-RAILP.gauge));
+              railRGB=[RAILP.bed[0]+(RAILP.line[0]-RAILP.bed[0])*line,
+                       RAILP.bed[1]+(RAILP.line[1]-RAILP.bed[1])*line,
+                       RAILP.bed[2]+(RAILP.line[2]-RAILP.bed[2])*line];
+              gx=(plx+40960)*GEO_INV; gy=(ply+40960)*GEO_INV;
             }else{ gx=(plx+40960)*GEO_INV; gy=(ply+40960)*GEO_INV; }
           }else{
             gx=(plx+40960)*GEO_INV; gy=(ply+40960)*GEO_INV;
@@ -11220,9 +11297,13 @@ function render(now){
           /* 雪地壓掉植被貼圖（ver -1220）：底色已經漂白，再乘森林的紋理就會被
              乘回褐綠。⚠ 不要壓到 0 —— 留一成，雪下面的樹梢與地形起伏還看得出來。 */
           const vA = SNOW ? vegAmt*(1-0.88*(SNOW[mi]/255)) : vegAmt;
-          cr*=(1+(k0-1)*vA)*mot;
-          cg*=(1+(k1-1)*vA)*mot;
-          cb*=(1+(k2-1)*vA)*mot;
+          if(railRGB){                 // ⚠ 軌道是絕對色：不乘底色也不乘地貌貼圖
+            cr=railRGB[0]*mot; cg=railRGB[1]*mot; cb=railRGB[2]*mot;
+          }else{
+            cr*=(1+(k0-1)*vA)*mot;
+            cg*=(1+(k1-1)*vA)*mot;
+            cb*=(1+(k2-1)*vA)*mot;
+          }
         }
         /* ── 城的底圖：逐像素取樣（ver -445，A 案的本體）──────────────────
            射線打到城的範圍 → 拿插畫的顏色取代地形色。透視由取樣天生正確
