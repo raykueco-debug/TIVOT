@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1277"></script>
+<script src="../orientation.js?v=1269"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1277');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1269');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1277");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1277");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1269");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1269");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1277");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1277");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1269");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1269");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -604,25 +604,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1277" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1269" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1277" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1277" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1277" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1277" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1277" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1277" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1277" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1277" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1277" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1277" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1269" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1269" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1269" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1269" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1269" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1269" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1269" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1269" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1269" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1269" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1277" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1269" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1277" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1269" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -643,11 +643,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1277"></script>
+<script src="settlement.js?v=1269"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1277"></script>
+<script src="talks.js?v=1269"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -699,7 +699,7 @@ const COLOR_URL  = 'silvermoon_terrain.png'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1277';
+const FLIGHT_VER = 'ver -1269';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -1769,28 +1769,6 @@ const CLIFF_STRAT_H=5.0;
    同樣的 0.30 走，枕木間距只有 3 個螢幕像素，在降取樣的地形緩衝裡會閃 ——
    拉長到 0.60 讓枕木約 6 像素一根。非正方 texel 是**刻意**的。 */
 const RAIL_ALONG=0.60, RAIL_ALONG_INV=1/RAIL_ALONG;
-/* ══ 鐵軌：**用畫的，不用貼圖**（ver -1270，Ray：「火車鐵軌不要用貼圖的，
-   自己畫吧，比較不會有方向問題，反正只有鐵軌跟枕木」）══════════════════
-   貼圖那條路的問題全都來自「要把世界座標轉進軌道座標系再取樣」：
-     · 橫越座標是從距離場反推的，**沒有正負號** ⇒ 圖是以中線鏡射過去的
-     · 沿軌座標要拿 `RAILDIR` 的量化角度投影，角度一階一階地跳
-     · texel 是正方形，枕木間距在螢幕上只有 3px，得刻意沿軌拉長 2 倍才不閃
-   而這張圖的內容其實只有**兩條鋼軌 ＋ 週期性的枕木 ＋ 碎石**——
-   那是三個式子就寫得完的東西，直接算就沒有鏡射、沒有 texel、也沒有拉伸。
-
-   單位一律**世界單位**（1 地圖像素 ＝ MAP_SCALE ＝ 20）：
-   ⚠ `half` 必須等於 `stampPaths(paths, 1.9)` 的 R × MAP_SCALE —— 橫越距離是
-     由那個距離場反推的（`d=(1-w)*half`），兩邊對不上的話軌距會整個跑掉。 */
-const RAILP={
-  half:38,        // 路基半寬（＝ stampPaths 的 R 1.9 × MAP_SCALE），橫越距離由它反推
-  gauge:12,       // 兩條線各離軌道中線多遠
-  minW:1.1,       // 線的半寬下限（世界單位）
-  pxW:0.30,       // 線的半寬：至少這麼多個緩衝像素 ⇒ **遠近看起來一樣粗**
-                  // ⚠ ver -1271 由 0.55 減半（Ray：「細點」）＝ 螢幕上約 0.6 緩衝像素寬。
-                  //   再細就會細到抗鋸齒把它整條淡掉（半寬 < fp*0.5 時永遠到不了滿色）。
-  bed:[139,121,101],       // 路基（碎石）
-  line:[68,70,74],         // 兩條深灰線
-};
 /* ── 地貌貼圖表 ──────────────────────────────────────────────
    索引就是選擇器回傳的類別。全部塞進**一條** Uint8Array（每 texel 3 byte），
    用位移定址 —— 陣列的陣列在內迴圈要多一次間接定址，而這裡每幀跑十七萬次。
@@ -1866,8 +1844,6 @@ let BIOME=null;
 let ROAD_PATHS=[];                            // 折線（地圖座標），地圖畫面也要用
 
 let RAILW=null;                               // Uint8Array：每地圖像素的鐵軌權重
-/* ⚠ ver -1273 的隧道口遮罩（RAILMOUTH）已於 ver -1274 整個移除（Ray：「你山洞
-   都亂放，醜死了」）—— 鐵路現在是繞過山走的，沒有洞口可畫。 */
 let RAILBR=null;                              // Uint8Array：石橋橋面（鐵路跨水的那幾段）
 /* 軌道方向場（粗粒度，ROAD_DS 格）。⚠ 為什麼需要它：地貌貼圖是照**世界座標軸**
    平鋪的，而 Ray 畫的鐵軌貼圖是**有方向的**（鐵軌直的、枕木橫的）。照世界軸貼的
@@ -2458,39 +2434,31 @@ function roadCost(h0,h1,riv){
      山區幹線該有的樣子。
    ⚠ 渡河 90（路是 26）：鐵路橋要能吃住整列車的軸重，比土路的木橋貴得多。 */
 const RAIL_GRADE=3;
-/* ⚠⚠⚠ **沒有隧道了**（ver -1274，Ray：「你山洞都亂放，醜死了，把火車路線做成
-   繞過山走，可以有一點點坡但不可以爬山，把山洞都移除」）。
-   之前這裡有一個 `RAIL_TUNNEL` 上限：一格的代價取「翻過去」與「鑽過去」的小者
-   —— 那正是鐵路敢往山上走的原因（再陡也只要付那個固定價）。上限一拿掉，
-   爬坡的代價就**無上限地平方成長**，Dijkstra 只能去繞。
-   ⚠ 不必擔心繞不出去：代價再大仍然是有限值，真的被山封死時它還是找得到路，
-     只是繞得很遠 —— 那本來就是「不可以爬山」的正確結果。 */
-/* 超過 RAIL_GRADE 之後的平方係數。⚠⚠ **4.0 是掃出來的**（ver -1274，六條幹線、
-   沿線每個尋路格取樣一次；括號內是「坡度超過 20% 的取樣點佔比／最大繞路倍率／
-   沿線最高地面」）：
-     舊（有上限，係數 0.8）… 8.9%／1.98／**520**   ← 520 就是 PEAK_SCALE，山頂
-     0.8（拿掉上限）……… 1.7%／3.82／302
-     **3.0** ……………………… **1.7%／2.36／288**
-     4.0 ………………………… 1.0%／5.78／200
-     6.0 ………………………… 1.5%／5.78／202
-   ⚠⚠ **真正的分水嶺是「有沒有上限」不是係數**：上限一拿掉，最高地面立刻從
-     山頂（520）掉到 300 以下 —— 那是這一版的本體。係數只在 3 與 4 之間決定
-     **一條線**的走法：聖索菲亞城→聖王廳，3.0 是翻過 288 的鞍部（704 長、
-     4.3% 的點超過 20% 坡），4.0 是整個繞過去（2199 長、0.8%）。
-   ⚠⚠⚠ **4.0 被 Ray 退回（ver -1275）**：「點地圖瞬移以後全地圖都是線」——
-     那一條繞路 5.78 倍的線沿著整條北岸畫過去，六條幹線總長 5209→6702，
-     **在大地圖上就是一張網**。所以「不爬山」不是唯一的驗收條件，
-     **這張圖上的鐵路密度也是**：繞得太遠的線，代價是玩家每次打開地圖都看到它。
-   ⚠ 再往上（6.0）不會更好：路線與 4.0 一樣，只是 Dijkstra 探得更遠。 */
-const RAIL_CLIMB=3.0;
+/* 打隧道的代價（每一格）。⚠ 這一項才是「火車不爬山」的關鍵：
+   原本只有爬坡的二次懲罰，於是遇到山只有一個選擇 —— **繞**。繞不掉的時候
+   就只能硬爬（懲罰再大也是有限的），畫面上就是火車在爬山。
+   加了這一項之後，一格的代價變成「翻過去」與「鑽過去」取小的那個：
+     翻過去 = dh*0.9 + 超過極限的二次懲罰
+     鑽過去 = RAIL_TUNNEL（固定，跟山多高無關 —— 隧道就是這個性質）
+   Dijkstra 會自己挑便宜的那條。6 的意思是「為了少挖一格隧道，最多值得多繞
+   六格（720 世界單位）」—— 短的山脊直接鑽過去，長的還是繞路。 */
+/* ⚠⚠ ver -1266 由 6 提高到 **24**（Ray：「鐵路跟公路要走平地」）。
+   ⚠ 24 是量出來的（-1267 在還原後的地形上）：T6 → p90 32.5%／繞路 1.59、
+     T14 → 22.5%／1.67、T24 → 22.5%／1.68 —— T24 與 T14 一樣平但 p99 更好
+     （88.3% vs 95%），而繞路只差 0.01。
+   6 的意思是「為了少挖一格隧道，最多值得多繞六格」—— 那讓鐵路遇到山就鑽，
+   於是**路線本身照樣壓在陡坡上**（實測改之前沿線坡度 p99 高達 108%，
+   比公路的 49% 還糟，方向完全反了）。提高之後它會先找平地繞。
+   ⚠ 不要提到無限大：真的繞不掉的時候還是得鑽，否則兩座城之間可能連不起來。 */
+const RAIL_TUNNEL=24;
 function railCost(h0,h1,riv,ni){
   const dh=Math.abs(h1-h0);
   const over=dh-RAIL_GRADE;
-  const climb=dh*0.9 + (over>0?over*over*RAIL_CLIMB:0);
+  const climb=dh*0.9 + (over>0?over*over*0.8:0);
   /* ⚠ 文物禁區（ver -1252）：`ni` 是**目的格**的索引，由 `gridPath` 傳進來。
      `roadCost` 不看它 —— 同一支尋路、兩種成本，差別只在這一項。 */
   const keep=RAIL_KEEP?RAIL_KEEP[ni]:0;
-  return 1 + climb + (riv?90:0) + keep;
+  return 1 + Math.min(climb, RAIL_TUNNEL) + (riv?90:0) + keep;
 }
 
 /* ── 文物禁區場（ver -1252）──────────────────────────────────────
@@ -2579,10 +2547,11 @@ function railProfile(pts, hgtAt){
   }
   return h;
 }
-/* 設計高程高過地面這麼多就架高架橋。
+/* 地面高過設計高程這麼多就算在山裡（＝隧道）。
    ⚠ 門檻不能太小：地形本來就有幾個單位的雜訊，太小的話整條線會被切成一段一段
-     的假高架。18 世界單位約是一節車廂的高度。
-   ⚠ ver -1274：對稱的那一半（TUNNEL_MIN ＝地面高過設計高程就是隧道）已移除。 */
+     的假隧道。18 世界單位約是一節車廂的高度。 */
+const TUNNEL_MIN=18;
+/* 設計高程高過地面這麼多就架高架橋（與隧道同一個門檻，兩邊對稱）。 */
 const VIADUCT_MIN=18;
 
 /* ── 共用的地形尋路（Dijkstra）───────────────────────────────────────
@@ -2699,11 +2668,13 @@ function stampDisc(out, x, y, R){
     if(w>out[i]) out[i]=w;
   }
 }
-/* ⚠ ver -1274：`skipTun`（隧道段不鋪軌）已移除 —— 沒有隧道了，整條線都鋪。 */
-function stampPaths(paths, R){
+/* skipTun：這條路徑有 tun 標記時，**兩端都在山裡**的那一段不鋪 —— 那段軌道
+   在隧道內，地表看不到。只有一端在山裡的段落照鋪，洞口才不會憑空斷開。 */
+function stampPaths(paths, R, skipTun){
   const out=new Uint8Array(MAPW*MAPH);
   for(const pts of paths){
     for(let k=1;k<pts.length;k++){
+      if(skipTun && pts.tun && pts.tun[k-1] && pts.tun[k]) continue;
       const ax=pts[k-1][0], ay=pts[k-1][1], bx=pts[k][0], by=pts[k][1];
       const n=Math.max(1,Math.ceil(Math.hypot(bx-ax,by-ay)));
       for(let t=0;t<=n;t++) stampDisc(out, ax+(bx-ax)*t/n, ay+(by-ay)*t/n, R);
@@ -2812,21 +2783,7 @@ function townEdgeR(S){
      幹線接樞紐、其餘靠公路接駁，讀起來才像鐵路網而不是第二套公路。
    ⚠ 節點少於兩個就整個不建（RAIL_PATHS 留空），下游全部照 length 判斷，
      不會因此壞掉。 */
-/* ⚠⚠⚠ **鐵路整套暫停**（ver -1276，Ray：「把鐵軌都先拿掉，故事寫完城都做完
-   再一次做」）。這一顆是**唯一的開關**（鐵律 8）：關掉之後軌道、路基、石橋、
-   站場、火車、大地圖上的虛線一起不見 —— 下游全部照 `RAIL_PATHS.length` 與
-   `RAILW` 是不是 null 判斷（那兩條路本來就存在，見下面「少於兩座大城」那一行）。
-   **為什麼是暫停不是刪掉**：幹線是**七座城算出來的最小生成樹** —— 每加一座城
-   整張網就重排一次，現在調的路線與係數之後全部作廢。-1274／-1275 那兩輪
-   （拿掉鑽山上限、係數 4.0→3.0）就是在一張還會變的圖上調參數，
-   Ray 的結論是「城都做完再一次做」。
-   ⚠ 重開的時候要重跑的是**係數**（`RAIL_CLIMB`）與那兩條驗收：
-     ①沿線坡度（不可以爬山）②大地圖上的線密度（不可以變成一張網）。
-   ⚠ Ray 手繪的鐵路筆畫**原封不動留在 `MAP_EDITS` 裡**（localStorage），
-     只是現在不鋪出來 —— 開關打開就回來了。 */
-const RAILS_ON=false;
 function buildRails(){
-  if(!RAILS_ON){ RAIL_PATHS=[]; RAILW=null; RAILBR=null; RAILDIR=null; RAIL_KEEP=null; return; }
   const big=SETTLEMENTS.filter(S=>/^city/.test(S.t||''));
   if(big.length<2){ RAIL_PATHS=[]; RAILW=null; return; }
   const G=PFGRID||buildPathGrid();
@@ -2842,34 +2799,37 @@ function buildRails(){
     paths.push(pts);
   }
   /* 手繪的鐵路（ver -1254）：⚠ 一定要在**縱斷面之前**接進來 —— 那一段會替
-     每一條線算 `prof`／`via`，接晚了手繪那幾條沒有縱斷面，下游讀
-     `pts.via[k]` 就是 undefined（高架橋不會架），而且不會有任何錯誤訊息。
+     每一條線算 `prof`／`tun`／`via`，接晚了手繪那幾條沒有縱斷面，
+     下游讀 `pts.tun[k]` 就是 undefined（隧道判成假、橋也不會架），
+     而且不會有任何錯誤訊息。
      ⚠ 車站（`railStations`）看的是「折線有沒有經過城」，不是 `pts.ends`，
      所以手繪的線不必交代兩端是誰；沒經過城就沒有站場，那是對的。 */
   for(const h of mapEditPaths('rail')) paths.push(h);
   /* 橡皮擦（ver -1257）：⚠⚠ 一定要在**縱斷面之前** —— 那一段會替每一條線算
-     `prof`／`via`，剪晚了剪出來的段沒有縱斷面，下游讀 `pts.via[k]` 是
-     undefined（高架橋不會架），而且不會有任何錯誤訊息。
+     `prof`／`tun`／`via`，剪晚了剪出來的段沒有縱斷面，下游讀 `pts.tun[k]` 是
+     undefined（隧道判成假、橋也不會架），而且不會有任何錯誤訊息。
      ⚠ 在這裡剪，火車也一起對了：`buildTrains` 吃的就是剪過的 `RAIL_PATHS`，
      所以不會有「軌道擦掉了、車還在那條看不見的線上跑」。 */
   paths=mapEditCut(paths);
-  /* ── 縱斷面 ──────────────────────────────────────────────────
-     每條線算出受坡度限制的設計高程。⚠ ver -1274 之前這裡還會判「地面高過它
-     就是在山裡（隧道）」—— 那一整套拿掉了，改由 railCost 讓路線自己繞開山。 */
+  /* ── 縱斷面與隧道 ────────────────────────────────────────────
+     每條線先算出受坡度限制的設計高程；地面高過它 TUNNEL_MIN 以上的那幾段
+     ＝**在山裡**，地表不鋪軌（鋪了會看到鐵軌爬過山頂）。 */
   for(const pts of paths){
     const prof=railProfile(pts, k=>{
       const xi=clamp(pts[k][0]|0,0,MAPW-1), yi=clamp(pts[k][1]|0,0,MAPH-1);
       return HGT[yi*MAPW+xi];
     });
     pts.prof=prof;
-    /* ⚠⚠⚠ **不再有隧道**（ver -1274，Ray：「把山洞都移除」）：`pts.tun` 整個拿掉，
-       路線靠成本場自己繞過山（見 railCost）。留下的只有**高架**（`via`）——
-       那是坡度一被限制就必然出現的另一半：線不跟著地形下到谷底，谷地那幾段
-       是懸空的，不畫高架軌道就浮在半空中。 */
+    pts.tun=new Uint8Array(pts.length);
     pts.via=new Uint8Array(pts.length);
     for(let k=0;k<pts.length;k++){
       const xi=clamp(pts[k][0]|0,0,MAPW-1), yi=clamp(pts[k][1]|0,0,MAPH-1);
       const g=HGT[yi*MAPW+xi];
+      pts.tun[k]=(g > prof[k]+TUNNEL_MIN)?1:0;
+      /* 反過來：設計高程**高於地面**就是填方／高架。
+         ⚠ 這是坡度一被限制就必然出現的另一半 —— 線不再跟著地形下到谷底，
+           所以谷地那幾段它是懸空的。不畫高架的話軌道就浮在半空中。
+           實測 224 個取樣點裡有 48 個高出地面 18 以上，最多 102 個世界單位。 */
       pts.via[k]=(prof[k] > g+VIADUCT_MIN)?1:0;
     }
   }
@@ -2878,8 +2838,7 @@ function buildRails(){
      而且鐵路該讀起來是**一條細而確定的線**，公路才是漫開的。
      ⚠ 不能再窄。1.5 的時候地形取樣（走的是降取樣緩衝）會跨過整條線，
        畫出來是一條虛線 —— 那正是原本的羽化距離場要避免的閃爍。 */
-  RAILW=stampPaths(paths, 1.9);         // ⚠ ver -1274：沒有隧道了，整條都鋪
-
+  RAILW=stampPaths(paths, 1.9, true);   // true＝隧道段不鋪地表軌道
   /* ── 站場：靠城那一端的路基放大一圈 ──────────────────────────
      火車在這裡折返（railStations 同一支），所以這裡本來就該是個站場 ——
      月台、側線、轉車盤都在這一塊，路基自然比正線寬。畫大一圈之後，
@@ -2982,6 +2941,16 @@ function buildRails(){
       for(let t=0;t<=n;t++) stampDisc(RAILBR, ax+(bx-ax)*t/n, ay+(by-ay)*t/n, 2.6);
     }
   }
+  /* 隧道段數只留著當診斷用（洞口本身已於 ver -299 移除，見 drawTrains）。 */
+  let tunnels=0;
+  for(const pts of paths){
+    if(!pts.tun) continue;
+    for(let k=1;k<pts.length;k++){
+      if(pts.tun[k]===pts.tun[k-1]) continue;
+      tunnels+=pts.tun[k]?1:0;
+    }
+  }
+  window.__tunnels=tunnels;
   { let n=0; for(let i=0;i<RAILBR.length;i++) if(RAILBR[i]>40) n++; window.__railBridge=n; }
   window.__rails=paths.length;
 }
@@ -5918,16 +5887,6 @@ async function loadWorld(){
   // 高度：取紅通道（灰階三通道相同）。0＝大陸之外。
   const raw=new Float32Array(N);
   for(let i=0;i<N;i++) raw[i]=hd[i*4]/255;
-  /* ⚠⚠⚠ **「滿畫面的黑線」不是這裡**（ver -1277 的三次誤判，留著當紀錄）。
-     我依序怪過：① 鐵路折線畫在大地圖上 ② 8-bit 高度圖的階梯（在這裡加過一道
-     低通，已拆掉）③ GL 的崖面閘門（改過，已還原）。**三個都不是。**
-     真兇是 `glUploadWorld` 裡的 `uRailW`：沒有鐵路時那個貼圖單元**什麼都沒綁**，
-     取樣不完整貼圖是未定義行為（見那一段的說明）。Ray 一開始就說「是鐵軌」，
-     而且第三次講的時候指名了是「兩條平行灰線那一件」—— 那正是 uRailW 進來的那一版。
-     ⚠⚠ 自檢，下次看到整片規律紋路照這個順序：
-       ① `?gl=0` 分 GL／CPU（這一次 CPU 一直是乾淨的 ⇒ 兇手在著色器）
-       ② **先查那一版新加的 sampler／uniform 有沒有漏綁**，再去懷疑既有的演算法
-       ③ 最後才動資料。我這次是倒著做的，白跑了三輪。 */
   let rivCnt=0;
   for(let i=0;i<N;i++){
     HGT[i]=clamp(Math.round(raw[i]*PEAK_SCALE),0,65535);
@@ -6907,12 +6866,11 @@ async function loadWorld(){
         }else if(subw>18 && roofPickW(subw, VEGSEL[((((syf*4)|0)&VSM)*VS)+((((sxf*4)|0)&VSM))])>=0){
           const g=roofPickW(subw, VEGSEL[((((syf*4)|0)&VSM)*VS)+((((sxf*4)|0)&VSM))]);
           tex=(g===0?G_RH:(g===1?G_RM:G_RL));
-        /* ⚠⚠ ver -1272：**鐵路不再佔一個地貌類別**（Ray：「不要特別畫鐵路的底好了，
-           有夠醜」）。走廊只有 3 個地圖像素寬 —— 在那裡鋪一條專屬的碎石帶，
-           畫面上就是一條一格一格的斷續色塊（Ray 說的「破圖」）。
-           現在那幾格照一般地形分類與上色，軌道只是**最後疊上去的兩條線**
-           （見著色端的 RAILP）。
-           ⚠ 連帶好處：`G_RAIL` 這個槽空出來了 —— BIOME 的低 4 bit 本來只剩 1 格。 */
+        }else if(RAILW&&RAILW[i]>40){
+          /* 鐵軌＋枕木＋道碴，Ray 畫的專用貼圖（取樣要對齊軌道方向，見著色端）。
+             ⚠ 排在公路之前：平交道上兩者重疊，該讀成鐵路（鐵軌是連續的，
+               公路在那裡是被切斷的那一方）。 */
+          tex=G_RAIL;
         }else if(ROADW&&ROADW[i]>40){
           tex=G_GL;
         }else{
@@ -9216,12 +9174,6 @@ function meStrokeBox(E){
 
   for(const b of document.querySelectorAll('#meBar button[data-tool]'))
     b.addEventListener('click', ()=>meSetTool(b.dataset.tool));
-  /* 鐵路整套暫停時（`RAILS_ON`）那支筆也要停 —— 留著會變成「畫了卻什麼都沒出來」，
-     那種沉默的失敗比少一顆鈕糟得多。⚠ 已經畫過的筆畫照樣留著（見 RAILS_ON）。 */
-  if(!RAILS_ON){
-    const rb=document.querySelector('#meBar button[data-tool="rail"]');
-    if(rb){ rb.textContent='＝ 鐵路（暫停）'; rb.disabled=true; rb.style.opacity='.4'; }
-  }
   const sz=document.getElementById('meSize'), am=document.getElementById('meAmp');
   const syncN=()=>{ document.getElementById('meSizeN').textContent=sz.value;
                     document.getElementById('meAmpN').textContent=am.value; meDraw(); };
@@ -9907,7 +9859,7 @@ const ybuf=new Int32Array(512);
      掛早了而 WebGL2 又開不起來（舊機、driver 黑名單）的話，2D 那張畫布的視窗區
      會被清成透明、而底下的 GL 畫布是空的 ＝ **整片沒有地形**，而且沒有錯誤訊息。 */
 const GLON = !/[?&]gl=0/.test(location.search);
-let glTexBiome=null, glTexMask=null, glTexRail=null, glTexRailW=null, glTexGeo=null, glTexMot=null,
+let glTexBiome=null, glTexMask=null, glTexRail=null, glTexGeo=null, glTexMot=null,
     glTexSnow=null, glGeoUp=false;
 let glSmpPbo=null, glSmpFence=null;
 const glSmpBuf=new Uint8Array(8*8*4);   // 環境光取樣的非同步回讀落點（見 screenSample）
@@ -9959,13 +9911,6 @@ uniform sampler2D uMask;          // r 石橋 g 鐵路 b 道路 a 郊區
    glReady:false → 悄悄退回 CPU（踩到當下唯一的徵兆是「怎麼又變慢了」）。 */
 uniform highp sampler2DArray uGeo;   // 地貌貼圖（每個類別一層 256×256）
 uniform sampler2D uRailDir;       // 軌道方向（降取樣）
-/* ⚠⚠⚠ 軌道的**橫越距離場**要單獨一張、而且是 LINEAR（ver -1271）。
-   走廊只有 3 個地圖像素寬（實測橫切面 w＝0/121/255/121/0）—— 從 uMask 的
-   texelFetch 取，「離中線多遠」就只有 0／20／38 三個值，
-   想在 12 的地方畫一條線**永遠落不到任何一格**（畫面上什麼都沒有）。
-   內插過的距離場才有連續的橫越座標，線才畫得上去。
-   ⚠ 同 uMot／uSnow 的作法：整數或未濾的貼圖濾不了，就另抽一張 R8+LINEAR。 */
-uniform sampler2D uRailW;         // 軌道橫越距離場（0~1，中心 1）
 uniform vec2 uRD;                 // RD_W, RD_H
 uniform float uGeoOn;             // atlas 還沒載到就是 0
 uniform sampler2D uCityA, uCityB;
@@ -10099,46 +10044,23 @@ void main(){
           vec4 mk=texelFetch(uMask,clampT(ti),0);
           if(mk.r*255.0>40.0)        c=mix(c, vec3(138.,128.,114.)/255.0, mk.r*0.94);
           else if(tx==8u||tx==9u)    c=mix(c, (tx==9u? vec3(92.,126.,146.) : vec3(66.,100.,124.))/255.0, 0.72);
-          /* ⚠ ver -1270：鐵軌的底色不再往貼圖均值推 —— 它整格會被下面畫出來的
-             碎石／枕木／鋼軌蓋掉。**留著這一行不會錯但是白做**，而且會讓
-             「為什麼調了顏色沒反應」很難查。橋面（mk.r）照舊。 */
-          else if(mk.g*255.0>40.0 && tx!=13u) c=mix(c, vec3(139.,121.,101.)/255.0, mk.g*0.90);
+          else if(mk.g*255.0>40.0)   c=mix(c, vec3(139.,121.,101.)/255.0, mk.g*0.90);
           else if(tx==5u)            c=mix(c, vec3(135.,109.,72.)/255.0, mk.b*0.82);
           else if(tx>=10u && tx<=12u){
             vec3 rc = tx==10u? vec3(80.,76.,69.) : (tx==11u? vec3(93.,86.,66.) : vec3(102.,91.,61.));
             c=mix(c, rc/255.0, mk.a*0.55+0.30);
           }
-          /* ⚠ ver -1270：鐵軌不再取樣貼圖，改成**直接畫**（見 RAILP 的說明）。
-             這裡先算好它的顏色，下面再決定要不要跳過地貌貼圖那一步。
-             ⚠⚠⚠ **這一段在 GLSL 的樣板字串裡：註解不可以出現反引號** ——
-               它會把樣板字串提早結束，而錯誤訊息會落在很遠的地方（憲法記過八次，
-               -1270 是第九次）。所以這裡一律用「」引名字，不用反引號。
-             ⚠⚠ **插註解的時候不要把原本那一段剖成兩半**（-1270 第二次踩）：
-               我把新的幾行插在舊註解的中間，於是舊註解的下半句與它的結束記號
-               掉在註解之外，變成一行裸露的中文 —— GLSL 回報的是
-               「0:187: '?' : syntax error」，位置與原因都對不上，
-               而且它**只會讓 glReady 變 false、悄悄退回 CPU**（畫面照常，
-               只是慢了三倍）。改完一定要真的看一眼 glReady。 */
-          vec2 gxy=(wp+vec2(40960.0))*${'1.0/1.6'};
+          /* 取樣座標。⚠ 鐵軌要轉進**軌道座標系**：沿軌方向由 RAILDIR 的角度投影，
+             橫越方向由 RAILW 的距離場反推（中心 255、邊緣 0）。 */
+          vec2 gxy;
           float dq = (tx==13u) ? texture(uRailDir, (floor(mf)/${'6.0'})/uRD).r*255.0 : 0.0;
-          bool isRail = (tx==13u && dq>0.5);
-          vec3 railC=vec3(0.0);
-          if(isRail){
+          if(tx==13u && dq>0.5){
             float th=(dq-1.0)/254.0*3.14159265;
-            /* ⚠ 用**內插過**的距離場（uRailW），不要用 mk.g —— 見 uRailW 的說明。 */
-            float d  = (1.0-texture(uRailW, mf/uMap).r)*${'38.0'};   // 離中線（無號，世界單位）
-            /* ⚠⚠ **線寬跟著距離走，不是固定的世界寬度**（ver -1271，Ray：
-               「兩條永遠同寬的平行深灰線」）。固定世界寬度的線遠看會縮到
-               次像素 ⇒ 忽隱忽現、一段一段 —— 那正是他說「太醜」的一半原因
-               （另一半是枕木的週期性摩爾紋，整組拿掉了）。
-               fp ＝ 一個緩衝像素在地面上有多寬（世界單位），
-               線的半寬取 max(下限, fp×pxW) ⇒ 螢幕上永遠約 1.1 px。 */
-            float fp = max(2.0*z/uBuf.x, 0.5);
-            float hw = max(${'1.1'}, fp*${'0.30'});
-            vec3 cB=vec3(${'139.0'},${'121.0'},${'101.0'})/255.0;
-            vec3 cL=vec3(${'68.0'},${'70.0'},${'74.0'})/255.0;
-            float line = 1.0-smoothstep(hw-fp*0.5, hw+fp*0.5, abs(d-${'12.0'}));
-            railC = mix(cB, cL, line);
+            float along=(wp.x*cos(th)+wp.y*sin(th))*${'1.0/0.60'};
+            float across=128.0+127.0*(1.0-mk.g);
+            gxy=vec2(along+40960.0, across);
+          }else{
+            gxy=(wp+vec2(40960.0))*${'1.0/1.6'};
           }
           /* 這個像素在貼圖上的足跡（texel 為單位），兩軸各算一次：
              · 橫向：一欄在這個深度覆蓋 2z/BW 個世界單位
@@ -10158,28 +10080,7 @@ void main(){
              一格一格的亮暗方塊。BIOME 是 R8UI（整數貼圖濾不了），所以把高 4 bit
              抽成單獨一張 R8 + LINEAR。 */
           float mot=1.0+(texture(uMot, mf/uMap).r-0.5)*2.0*${GEO_MOT}*vegAmt;
-          /* ⚠ 鐵軌是**畫出來的絕對顏色**，不乘地貌貼圖也不乘底色 ——
-             它是人造物，不該帶著底下那塊地的色相（同屋頂那一族的道理）。
-             低頻亮度起伏 mot 照樣乘：不然整條軌道是死平的一條。 */
           c*=(vec3(1.0)+(k-vec3(1.0))*vegAmt)*mot;
-        }
-        /* ══ 鐵軌：**疊上去的兩條線**（ver -1272）══════════════════════════
-           不換底色、不佔地貌類別 —— 底下是什麼地就照樣是什麼地，軌道只是
-           畫在上面的兩條深灰線。
-           ⚠⚠ 橫越距離要用**內插過**的距離場（uRailW）：走廊只有 3 個地圖像素寬，
-             未內插的話「離中線多遠」只有 0／20／38 三個值，線落不到任何一格。
-           ⚠⚠ 線寬跟著距離走（fp ＝一個緩衝像素在地面上有多寬）⇒ 螢幕上永遠同寬；
-             固定的世界寬度遠看會縮成次像素，變成忽隱忽現的一段一段。
-           ⚠ 放在城的插畫**之前**、光照之前：軌道要吃日夜與霧（同地貌那一層）。 */
-        {
-          float rwv = texture(uRailW, mf/uMap).r;
-          if(rwv>0.02){
-            float d  = (1.0-rwv)*${'38.0'};
-            float fp = max(2.0*z/uBuf.x, 0.5);
-            float hw = max(${'1.1'}, fp*${'0.30'});
-            float line = 1.0-smoothstep(hw-fp*0.5, hw+fp*0.5, abs(d-${'12.0'}));
-            c = mix(c, vec3(${'68.0'},${'70.0'},${'74.0'})/255.0, line);
-          }
         }
         /* 城的手繪地面：蓋掉地貌色，**在光照之前** —— 日夜與霧才會照地形走
            （§6.7.5：插在地貌細節之後、光照之前）。 */
@@ -10394,19 +10295,14 @@ function glInit(){
   g.enableVertexAttribArray(lp); g.vertexAttribPointer(lp,2,g.FLOAT,false,0,0);
   for(const n of ['uH','uHs','uC','uS','uSky','uMap','uBuf','uCam','uDir','uLdir','uLcol','uLi','uFog','uCloudLit','uTime',
                   'uCityA','uCityB','uCityA0','uCityB0','uCityA1','uCityB1','uCityT','uInvS',
-                  'uBiome','uMask','uGeo','uRailDir','uRD','uGeoOn','uMot','uSnow','uRailW'])
-    /* ⚠⚠⚠ **新增 uniform 一定要同時加進這張名單**（ver -1271 踩過）：
-       漏掉的話 `glU.uRailW` 是 undefined，下面那句 `uniform1i(undefined, 14)`
-       會丟 INVALID_OPERATION（1282），**後面的 uniform 設定整批沒跑完** ——
-       畫面是**全黑**，而且 `glReady` 仍然是 true、主控台也沒有例外。
-       查的時候要問的是 `GLX.getError()`，不是找 JS 的錯誤。 */
+                  'uBiome','uMask','uGeo','uRailDir','uRD','uGeoOn','uMot','uSnow'])
     glU[n]=g.getUniformLocation(glProg,n);
   g.uniform1i(glU.uH,0); g.uniform1i(glU.uHs,11); g.uniform1i(glU.uC,1); g.uniform1i(glU.uS,2); g.uniform1i(glU.uSky,3);
   g.uniform1i(glU.uCityA,4); g.uniform1i(glU.uCityB,5);
   g.uniform1f(glU.uInvS, 1/GRADE_SAT);
   g.uniform1i(glU.uBiome,7); g.uniform1i(glU.uMask,8); g.uniform1i(glU.uMot,12);
   g.uniform1i(glU.uSnow,13);
-  g.uniform1i(glU.uGeo,9);   g.uniform1i(glU.uRailDir,10); g.uniform1i(glU.uRailW,14);
+  g.uniform1i(glU.uGeo,9);   g.uniform1i(glU.uRailDir,10);
   return true;
 }
 
@@ -10485,23 +10381,6 @@ function glUploadWorld(){
     g.texImage2D(g.TEXTURE_2D,0,g.RGBA8,MAPW,MAPH,0,g.RGBA,g.UNSIGNED_BYTE,m);
     console.log('[gl] 地貌遮罩 '+(m.byteLength/1048576).toFixed(1)+'MB');
   }
-  /* ⚠⚠⚠ **沒有鐵路也一定要綁一張**（ver -1277，Ray：「是我叫你鐵軌用兩條平行
-     灰線這一件」）：著色器那一段是**無條件取樣** `uRailW` 的（unit 14），
-     而 `RAILS_ON=false`／少於兩座大城時 `RAILW` 是 null —— 舊寫法就直接不建貼圖，
-     於是 **unit 14 上什麼都沒綁**。WebGL2 取樣一個不完整的貼圖是**未定義行為**：
-     驅動可以回 (0,0,0,1)，也可以回 (1,1,1,1)。回 1 的話 `rwv` 恆為 1 →
-     離中線距離恆為 0 → 那一段的 smoothstep 變成「隨螢幕列（也就是距離）起伏」
-     的一個值，整個畫面就會鋪上一層**隨距離變化的橫條**。
-     ⇒ 沒有鐵路就綁一張 1×1、值 0 的 R8：取樣永遠是 0，那一段自己就跳過了。
-     ⚠ 這一條是通則：**任何一個 sampler，只要著色器會取樣它，就一定要有東西綁著** ——
-       「資料還沒好」不可以用「不綁」表示。 */
-  if(RAILW || true){ glTexRailW=mk(14);
-    /* ⚠ ver -1274 由 RG8 改回 R8：G 通道原本裝隧道口，那一整套拿掉了。 */
-    if(RAILW) g.texImage2D(g.TEXTURE_2D,0,g.R8,MAPW,MAPH,0,g.RED,g.UNSIGNED_BYTE,RAILW);
-    else      g.texImage2D(g.TEXTURE_2D,0,g.R8,1,1,0,g.RED,g.UNSIGNED_BYTE,new Uint8Array([0]));
-    /* ⚠ LINEAR：走廊只有 3 px 寬，不內插就沒有連續的橫越座標（見 uRailW 的說明）。 */
-    g.texParameteri(g.TEXTURE_2D,g.TEXTURE_MIN_FILTER,g.LINEAR);
-    g.texParameteri(g.TEXTURE_2D,g.TEXTURE_MAG_FILTER,g.LINEAR); }
   if(RAILDIR){ glTexRail=mk(10);
     g.texImage2D(g.TEXTURE_2D,0,g.R8,RD_W,RD_H,0,g.RED,g.UNSIGNED_BYTE,RAILDIR); }
   glReady=true;
@@ -11292,24 +11171,47 @@ function render(now){
             const deep=(tex===G_WL);
             const wr=deep?92:66, wg=deep?126:100, wb=deep?146:124;
             cr+=(wr-cr)*0.72; cg+=(wg-cg)*0.72; cb+=(wb-cb)*0.72;
-          /* ⚠ ver -1272：**鐵路沒有自己的底色了**（Ray：「不要特別畫鐵路的底」）——
-             那幾格照一般地形上色，軌道只是最後疊上去的兩條線（見下方）。 */
+          }else if(RAILW&&RAILW[mi]>40){
+            /* 鐵路：底色推到**貼圖自己的均值**(139,121,101)。細節層是相對均值的
+               倍率，底色對上均值，貼出來才是 Ray 那張軌道本來的顏色。
+               ⚠ 先前沒有專用貼圖時這裡填的是憑感覺的淺灰 (152,150,146)：那一版
+                 借 gravel_dark 當細節，所以底色只能自己湊。有了真貼圖就該對齊它，
+                 否則等於把人家畫好的顏色again 洗掉一次。
+               ⚠ 判 RAILW 而不是判 tex：橋面那幾格的 tex 已經是 G_BRDG，
+                 但它在上面那個分支就處理掉了，走不到這裡。 */
+            const rw=(RAILW[mi]/255)*0.90;
+            cr+=(139-cr)*rw; cg+=(121-cg)*rw; cb+=(101-cb)*rw;
           }else if(tex===G_GL&&ROADW){
             const rw=(ROADW[mi]/255)*0.82;
             cr+=(135-cr)*rw; cg+=(109-cg)*rw; cb+=(72-cb)*rw;
-          }else if(tex>=G_RH&&tex<=G_RL&&SUBW){
-            /* ⚠⚠ 上界一定要寫（ver -1270 踩到）：`G_RH` 是 10，而 `G_RAIL` 13、
-               `G_BRDG` 14 也都 `>=10` —— `ROOF_COL` 只有三格，取到 [3] 就是
-               undefined，下一行 `rc[0]` 當場炸掉**整個 render**（畫面全黑、
-               fps 空白）。先前沒事只是因為 13／14 剛好都被前面的分支接走了；
-               -1270 把鐵軌那一支改成不接，這個洞就露出來。
-               ⚠ 這是「靠別人先接住」的典型：條件本身一直是錯的，只是沒被走到。 */
+          }else if(tex>=G_RH&&SUBW){
             const rc=ROOF_COL[tex-G_RH], rw2=(SUBW[mi]/255)*0.55+0.30;
             cr+=(rc[0]-cr)*rw2; cg+=(rc[1]-cg)*rw2; cb+=(rc[2]-cb)*rw2;
           }
           /* ⚠ +40960 再取整：世界座標會是負的，而 |0 往零截斷，負數那半邊的
              相位會整個錯開（雲的取樣踩過同一個坑）。40960 是 GT 的倍數。 */
-          let gx=(plx+40960)*GEO_INV, gy=(ply+40960)*GEO_INV;
+          let gx, gy;
+          if(tex===G_RAIL && RAILDIR){
+            /* ── 鐵軌：轉到**軌道座標系**再取樣 ──────────────────
+               沿軌方向 u：世界座標投影到軌道方向。
+               橫越方向 v：直接由 RAILW 反推 —— 它是羽化距離場（中心 255、
+                 邊緣 0），所以 (1−w/255) 就是「離中心線多遠」的 0~1。
+               ⚠ v 是**沒有正負號**的（距離場只有大小），所以貼圖是以中線鏡射
+                 過去的。Ray 這張兩條鐵軌對稱於中線，鏡射後完全還原；換成不對稱
+                 的貼圖就會露餡，屆時得另外烘一個帶號的橫越座標。
+               ⚠ 沿軌方向刻意拉長 2 倍（RAIL_ALONG）：照正方形 texel 算，枕木間距
+                 只有 3 個螢幕像素，而地形是降取樣緩衝畫的（0.6×）—— 1.9 個緩衝
+                 像素一根枕木正好踩在取樣極限上，會閃。拉長到 6 像素就穩了。 */
+            const dq=RAILDIR[(((mi/MAPW)|0)/ROAD_DS|0)*RD_W + (((mi%MAPW)/ROAD_DS)|0)];
+            if(dq){
+              const th=(dq-1)/254*Math.PI, cs=Math.cos(th), sn=Math.sin(th);
+              const along=(plx*cs+ply*sn)*RAIL_ALONG_INV;
+              const across=128+127*(1-RAILW[mi]*(1/255));
+              gx=along+40960; gy=across;
+            }else{ gx=(plx+40960)*GEO_INV; gy=(ply+40960)*GEO_INV; }
+          }else{
+            gx=(plx+40960)*GEO_INV; gy=(ply+40960)*GEO_INV;
+          }
           const q=tex*GEO_STRIDE+((((gy|0)&GTM)*GT+((gx|0)&GTM))*3);
           const k0=GEOK[q]*GEO_K1, k1=GEOK[q+1]*GEO_K1, k2=GEOK[q+2]*GEO_K1;
           /* 低頻亮度起伏：週期與貼圖週期互質得夠遠，兩者的節奏不會對齊，
@@ -11321,25 +11223,6 @@ function render(now){
           cr*=(1+(k0-1)*vA)*mot;
           cg*=(1+(k1-1)*vA)*mot;
           cb*=(1+(k2-1)*vA)*mot;
-          /* ══ 鐵軌：疊上去的兩條線（ver -1272）══ 與 GL 那一支同一組式子與常數
-             （鐵律 7，兩邊註解互指）。⚠ 橫越距離要**雙線性**取 RAILW：
-             走廊只有 3 個地圖像素寬，取整格的話只有 0／20／38 三個值，線落不到。 */
-          if(RAILW && RAILW[mi]>6){
-            const fx=plx/MAP_SCALE, fy=ply/MAP_SCALE;
-            const x0=Math.floor(fx), y0=Math.floor(fy), tx2=fx-x0, ty2=fy-y0;
-            const gw=(a,b)=>RAILW[clamp(b,0,MAPH-1)*MAPW+clamp(a,0,MAPW-1)]*(1/255);
-            const rwv=(gw(x0,y0)*(1-tx2)+gw(x0+1,y0)*tx2)*(1-ty2)
-                     +(gw(x0,y0+1)*(1-tx2)+gw(x0+1,y0+1)*tx2)*ty2;
-            if(rwv>0.02){
-              const dAc=(1-rwv)*RAILP.half;
-              const fp=Math.max(2*z/BW, 0.5);
-              const hw=Math.max(RAILP.minW, fp*RAILP.pxW);
-              const line=1-sstep(hw-fp*0.5, hw+fp*0.5, Math.abs(dAc-RAILP.gauge));
-              cr+=(RAILP.line[0]-cr)*line;
-              cg+=(RAILP.line[1]-cg)*line;
-              cb+=(RAILP.line[2]-cb)*line;
-            }
-          }
         }
         /* ── 城的底圖：逐像素取樣（ver -445，A 案的本體）──────────────────
            射線打到城的範圍 → 拿插畫的顏色取代地形色。透視由取樣天生正確
@@ -12036,19 +11919,11 @@ function buildTrains(){
     const EMBANK=3;
     /* 軌道面直接用 buildRails 算好的**設計高程**（受坡度限制的縱斷面）——
        兩邊用同一條線，車才會跑在自己的軌道上。
-       ⚠ 先前這裡是自己再平滑一次地面。那條線會跟著地形爬上山頂，於是縱斷面
-         與「車在哪」對不起來。
-       ⚠⚠ **但要夾住地面**（ver -1274）：隧道拿掉之後，地面高過設計高程的那幾個
-         點（實測 2.1% 的取樣點）不再是「洞」—— 軌道是 2D 印在地表上的
-         （`RAILW`），玩家看到的那條線就趴在那個小凸起上。車若照著設計高程走
-         就會**鑽進土裡**（然後被逐欄的地形遮擋吃掉，看起來是憑空消失）。
-         取大的那一個＝「軌道鋪在地上，只有谷地才架高架」，與畫面完全一致。 */
+       ⚠ 先前這裡是自己再平滑一次地面。那條線會跟著地形爬上山頂，於是
+         「地表不鋪軌」的隧道段與「車在哪」對不起來。 */
     const hs=new Float64Array(pts.length);
     const src=pts.prof;
-    for(let k=0;k<pts.length;k++){
-      const g=HGT[clamp(pts[k][1]|0,0,MAPH-1)*MAPW+clamp(pts[k][0]|0,0,MAPW-1)];
-      hs[k]=Math.max(src?src[k]:g, g)+EMBANK;
-    }
+    for(let k=0;k<pts.length;k++) hs[k]=(src?src[k]:HGT[clamp(pts[k][1]|0,0,MAPH-1)*MAPW+clamp(pts[k][0]|0,0,MAPW-1)])+EMBANK;
     /* ── 車站：火車跑到市區外緣就停，不開進城裡 ──────────────────
        軌道本身是鋪到城心的（城裡當然有站場），但**車**只跑到市區外緣就折返 ——
        開進城裡的話車會從手繪的屋頂上輾過去，而且那個尺度下整列車會被城蓋掉，
@@ -12092,6 +11967,8 @@ function updateTrains(dt){
     if(T.puffT>=SMOKE_DT){
       T.puffT=0;
       const h=trainAt(T,T.s);
+      if(h&&h.tun){ /* 在隧道裡不留煙：煙會留在世界座標上，山頂會冒出一條煙柱 */ }
+      else
       /* ⚠ 每團記一個抖動值 j。等間距、等速長大的煙團疊起來是一條**均勻的白繩**，
          不是煙 —— 真的蒸汽是一噴一噴、大小不一的。j 決定這一團的大小與橫向偏移，
          用各自的 LCG 生（同時刻表那條理由：重整後要長一樣）。 */
@@ -12113,8 +11990,9 @@ function trainAt(T,s){
   const seg=C[hi]-C[lo];
   const t=seg>1e-6?(s-C[lo])/seg:0;
   const x=P[lo][0]+(P[hi][0]-P[lo][0])*t, y=P[lo][1]+(P[hi][1]-P[lo][1])*t;
+  const tn=P.tun ? (P.tun[lo]||P.tun[hi]) : 0;      // 任一端在山裡就算在隧道內
   return { x, y, h:T.hs[lo]+(T.hs[hi]-T.hs[lo])*t,   // 軌道面，不是腳下的地面
-           dx:P[hi][0]-P[lo][0], dy:P[hi][1]-P[lo][1] };
+           dx:P[hi][0]-P[lo][0], dy:P[hi][1]-P[lo][1], tun:tn };
 }
 
 /* 3D 視窗裡的火車。投影與 drawPlaces 同一套；遮擋走 clipByTerrainDepth
@@ -13182,19 +13060,19 @@ function drawTrains(S,scaleH,horizon,sinp,cosp){
              y:(((cam.alt-h)/z + z*curvAt(sv))*scaleH+horizon)*syk,
              z, k:(W/(2*z)) };                     // k＝1 世界單位有幾個螢幕像素
   };
-  /* ── 隧道：**整套移除**（ver -1274，Ray：「你山洞都亂放，醜死了，把火車路線
-     做成繞過山走，可以有一點點坡但不可以爬山，把山洞都移除」）─────────
-     三代做法都留在這裡當紀錄，因為**每一代都被退回過**：
-       ver -293~-298   拱形黑洞 —— 懸空的平面，貼不到逐欄光柵化的山壁上
-       ver -299~-1272  什麼都不畫：隧道段不鋪軌，火車逐節沒入山體
-       ver -1273       在地貌上畫一個黑拱門（RAILMOUTH 遮罩）→ Ray：「亂放」
-     ⚠⚠ 真正的病從頭到尾不是洞口畫得好不好看，是**鐵路根本不該爬到那裡** ——
-       隧道不是路徑選出來的，是縱斷面受坡度限制、地面高過設計高程就「判定」
-       出來的，所以怎麼畫都只是在幫一條錯的路線收尾。
-     ⚠⚠ 舊註解說「強迫火車繞山走實測不可行」**那個結論是錯的**：當時只調了
-       鑽山的固定價（RAIL_TUNNEL）卻沒有拿掉它 —— 上限還在，爬坡就永遠有一個
-       封頂的價錢。ver -1274 把上限整個移除、讓爬坡代價無上限地平方成長
-       （見 railCost 的 RAIL_CLIMB），路線自己就繞開了。 */
+  /* ── 隧道洞口：**已移除**（ver -299，Ray 指定）───────────────────────
+     曾經有一個站在軌道上、面朝洞外的拱形黑洞。拿掉的理由：它是一個**懸空的
+     平面**，貼不到真正的山壁上 —— 地形是逐欄光柵化的高度場，山壁的位置每欄
+     都不同，而洞口只有一個深度、一個朝向，兩者對不齊，看起來就是浮在山前面
+     的一片黑。要貼準得逐欄去找山壁與軌道的交線，代價遠超過它的價值。
+     ⚠ 也不要退回「在地表蓋一塊石材」那一版：那是貼在地上的，從空中看是一小片
+       灰色補丁，讀不出「這裡有個洞」。兩條路都試過了。
+     現在的行為：隧道段**不鋪地表軌道**（stampPaths），火車逐節沒入山體
+     （見下方進隧道那段）—— 軌道走到山腳自然中斷，車就開進去了。
+     ⚠ 另一條路「強迫火車繞山走」實測過**不可行**：把 RAIL_TUNNEL 由 6 拉到
+       1000，隧道只從 6 段降到 4 段，而幹線長度暴增（1929→2409、9423→12449，
+       +25~32%），山區變成蛇行。原因是隧道**不是路徑選出來的**：縱斷面受坡度
+       限制，地面高過設計高程 TUNNEL_MIN 就判定在山裡，調成本消不掉它。 */
 
   /* ── 「開進市區了沒」──────────────────────────────────────────────
      市區的平面圖是一張貼在地上的盤子，車開進去就該被它蓋住。但盤子是後畫的
@@ -13219,9 +13097,7 @@ function drawTrains(S,scaleH,horizon,sinp,cosp){
     }
     return false;
   };
-  /* ⚠ ver -1274 起只剩「開進市區」一種藏法（隧道整套移除）。留成一支具名函式
-     是因為下面的二分交界要反覆問它 —— 日後要再加一種遮蔽物也只改這裡。 */
-  const hideAt=q => inCity(q.x,q.y);
+  const hideAt=q => !!(q.tun || inCity(q.x,q.y));
 
   for(const T of TRAINS){
     /* 停在站裡就不畫。⚠ 車站在市區外緣、城蓋不住它，所以這是**刻意**讓它消失：
@@ -13250,21 +13126,25 @@ function drawTrains(S,scaleH,horizon,sinp,cosp){
        ⚠ 所以淡出改綁在**投影長度**上，不是綁距離：長度掉到 TRAIN_MIN_PX 就淡完，
          剛好接上不畫的門檻，中間沒有跳變。 */
     if(spanPx<TRAIN_MIN_PX) continue;
-    /* ── 進城：**從車頭逐節消失**（Ray 指定，ver -300）──────────────
-       ⚠ 逐節判而不是判車頭：車頭一進去整列瞬間不見才是破綻，**半列車卡在
-         交界正是它該有的樣子**。
-       ⚠ 整列都藏起來時 seats 會是空的，下面的 `if(!seats.length) continue`
+    /* ── 進隧道：**從車頭逐節消失**（Ray 指定，ver -293）────────────
+       ⚠ 這裡原本判的是**車頭**：`if(head.tun) continue`，車頭一進洞整列瞬間
+         不見。當時的註解說逐節判「會出現半列車卡在洞口」所以不採用 ——
+         那個判斷是錯的：**半列車卡在洞口正是火車進隧道該有的樣子**，
+         整列同時消失才是破綻。
+       ⚠ 整列都在洞裡時 seats 會是空的，下面的 `if(!seats.length) continue`
          自然接住，不必另外判。
-       ⚠ ver -1274 之前這一段同時管「進隧道」—— 隧道整套移除了，只剩進城。 */
+       ⚠ 煙不必跟著擋：噴發端本來就有 `h.tun` 的守衛（在洞裡不留煙），
+         所以車進洞之後只會剩下先前留在洞外的那幾團慢慢淡掉 —— 那是對的。 */
     const seats=[];
     for(let c=0;c<TRAIN_CARS;c++){
       const s1=T.s - T.dir*(c*TRAIN_PITCH), s2=s1 - T.dir*TRAIN_CAR;
       let q1=trainAt(T, s1), q2=trainAt(T, s2);
       if(!q1||!q2) continue;
-      /* 「這一端該不該藏起來」：已經開進市區了沒。
-         ⚠ 先前進城是 `if(T.wait>0) continue` 整列瞬間不見 —— 那與 -293 在
-           隧道上修掉的是同一個病，所以兩者當年收成同一條路徑（ver -300）。
-           隧道那一半於 -1274 移除，這一條照舊。 */
+      /* 「這一端該不該藏起來」：在山肚子裡（隧道）**或**已經開進市區。
+         ⚠ 進城與進隧道走**同一條路徑**（ver -300，Ray 指定「火車進城要逐節
+           消失」）—— 兩者都是「車一節一節沒入某個東西」，寫成兩套只會分岔。
+           先前進城是 `if(T.wait>0) continue` 整列瞬間不見，那正是 -293 在隧道
+           上修掉的同一個病。 */
       const h1=hideAt(q1), h2=hideAt(q2);
       if(h1 && h2) continue;                         // 整節都藏起來了
       if(h1 || h2){
@@ -13272,8 +13152,8 @@ function drawTrains(S,scaleH,horizon,sinp,cosp){
            而不是整節憑空不見。
            ⚠ 二分找交界而不是直接丟掉這一節 —— 一節車 30 世界單位，
              整節丟掉在近處是看得出來的一次跳。
-           ⚠ 解析度的上限是折線的節距，約 20 世界單位，比一節車短，
-             所以收得進去。再細也沒有資料。 */
+           ⚠ 解析度的上限是折線的節距（tun 旗標是逐節點存的，見 trainAt），
+             約 20 世界單位，比一節車短，所以收得進去。再細也沒有資料。 */
         let a = h1 ? s2 : s1;                        // 還看得到的那一端
         let b = h1 ? s1 : s2;                        // 已經沒入的那一端
         for(let it=0; it<6; it++){
