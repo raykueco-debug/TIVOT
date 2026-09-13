@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1212"></script>
+<script src="../orientation.js?v=1213"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -512,11 +512,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1212"></script>
+<script src="settlement.js?v=1213"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1212"></script>
+<script src="talks.js?v=1213"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -556,7 +556,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1212';
+const FLIGHT_VER = 'ver -1213';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -7532,6 +7532,8 @@ void main(){
       float fogS=${ZFAR}.0*${FOG_START};
       float fog=clamp((z-fogS)/(${ZFAR}.0-fogS),0.0,1.0)*${FOG_MAX};
       vec3 c;
+      /* ⚠ below 兩支都要有（雲海的天際線一樣要抗鋸齒）—— 所以提到外面宣告。 */
+      float below=hs-hNeed;
       if(cloud){
         c=vec3(0.82,0.86,0.92)*uCloudLit;
       }else{
@@ -7593,7 +7595,6 @@ void main(){
            ⚠ 落差由「上一個射線步進落在哪一格」反推（多一次 texelFetch，很便宜）
              —— 為什麼一定要是「一步」而不是「一格地圖」，見下面那一段。 */
         bool cliffDone=false;
-        float below=hs-hNeed;
         /* ⚠⚠⚠ 落差要量「相對**上一個射線步進**」（＝CPU 的 hh−prevH），
            不可以量「相對一格地圖」（ver -1211，Ray：「山都變顆粒狀的了」）。
            一格是 20 世界單位，山坡在一格裡本來就有幾十單位的落差 —— 拿它當判準
@@ -7650,6 +7651,36 @@ void main(){
         c=vec3(lum)+(c-vec3(lum))*${GRADE_SAT};   // VP1 分級：往亮度收斂
       }
       c=mix(c,uFog,fog);
+      /* ══ 抗鋸齒 ①：天際線的次像素混色（ver -1213）═══════════════════════
+         CPU 那一支在 z 迴圈跑完之後，拿每一欄的天際線列與 topFrac 往
+         SKYROW 混一次（見「抗鋸齒 ①」那一段）。GPU 這邊沒有逐欄的狀態，
+         但**覆蓋率算得出來**：這一格方塊的頂緣在螢幕上的位置是
+           yf = ((camAlt-hs)/z + z*curv)*scaleH + horizon
+         而本像素的中心是 py，兩者相差 below*scaleH/z —— 所以地形蓋住這個
+         像素的比例就是 clamp(0.5 + below*scaleH/z, 0, 1)。
+         ⚠⚠ **不可以只看覆蓋率就混**（CPU 的註解已經警告過同一件事）：
+           內部的階梯（近的方塊頂緣壓在更遠的山前面）覆蓋率也 <1，往天空混
+           會在每一層階梯上留一條偏天空色的亮邊 ＝ 整片鹽粒雜訊。
+           所以還要確認**上面真的是天**：把這個像素**上緣**那一條射線接著往下走
+           （kUp = k - 0.5/scaleH），走到 ZFAR 都沒撞到才算天際線。
+         ⚠ 成本只落在覆蓋率 <1 的那幾個像素（近景幾乎都是 1，因為門檻
+           0.5*z/scaleH 隨深度才變大），而且那時 z 已經很遠、剩下的步數不多。 */
+      float cov=clamp(0.5+below*scaleH/z, 0.0, 1.0);
+      if(cov<0.995){
+        float kUp=k-0.5/scaleH;
+        float z2=z, dz2=dz; bool blocked=false;
+        for(int j=0;j<900;j++){
+          if(z2>=${ZFAR}.0) break;
+          float hN2=uCam.z-(kUp-z2*curv)*z2;
+          vec2 mf2=(uCam.xy+dir*z2)*${INV_SCALE};
+          bool o2 = mf2.x<0.0||mf2.y<0.0||mf2.x>=uMap.x||mf2.y>=uMap.y;
+          float t2 = o2 ? 0.0 : hRaw(ivec2(floor(mf2)));
+          float s2 = (o2||t2<=${CLOUD_H}.0) ? ${CLOUD_H}.0 : t2;
+          if(s2>=hN2){ blocked=true; break; }
+          z2+=dz2; dz2+=0.011;
+        }
+        if(!blocked) c=mix(texelFetch(uSky, ivec2(0,int(py)),0).rgb, c, cov);
+      }
       int bx=int(px)&3, by=int(py)&3;
       /* 抖色（ver -1209）：8bit 量化在平滑的天空與霧上會出色帶，
          逐像素套 4×4 Bayer 打散 —— 與 CPU 同一張表、同一個幅度。 */
@@ -14325,6 +14356,9 @@ function updateLandBtn(){
      ⚠ 真相來源就是 `sayQueue`（`drawTalk` 用的同一個，鐵律 7）—— 與「對白中收掉
        時間地點那兩塊 HUD」是同一條規矩的另一半（§6.5，ver -385）。 */
   const busy = battleGoing || mapOpen || s9On || talkingNow()
+            /* 升空／降落的過場期間也不給（ver -1213）：那一段 update() 整個被跳過，
+               而鈕就浮在畫面正中央 —— 船正在往下鑽的時候不該還能再按一次降落。 */
+            || (typeof takeoffPlaying!=='undefined' && takeoffPlaying)
             || (typeof booting!=='undefined' && booting);
   const S = busy ? null : nearestTown();
   /* 羽蛇登場演出中不給降落（ver -743）：插圖蓋著、對白在跑，點下去會把整段
@@ -15403,7 +15437,7 @@ let last=performance.now(),acc=0,n=0;
      看一幀就降級的話會在載入途中無緣無故掉到最低畫質再也回不來。
    ⚠ 升級要看更久、門檻更低（7ms），而且升上去之後把計數清掉重新觀察 ——
      升到一半又掉下來會變成每兩秒抖一次，比一直待在低畫質更難看。 */
-const QF=[]; let qCool=0;
+const QF=[]; let qCool=0; let wSm=0;
 function qualityTick(workMs){
   if(qLocked) return;
   QF.push(workMs);
@@ -15483,7 +15517,13 @@ function loop(now){
   edgeNag(now);      // 快飛出圖了 → 蕾娜叫你回頭（軟邊界）
   const wt0=performance.now();
   update(dt,now); updateRegion(now); updateTrains(dt/1000); render(now); updateBgm(dt); updateMapMe();
-  qualityTick(performance.now()-wt0);
+  { const w=performance.now()-wt0; qualityTick(w);
+    /* ⚠ HUD 要同時有「每秒幾張」與「一幀算多久」（ver -1213）。
+       只有 fps 的話分不出兩件完全不同的事：**我們算太慢**（work 接近 16ms），
+       還是**螢幕本來就只給 30Hz**（work 3ms 卻還是 30fps ＝ iOS 低耗電模式、
+       或系統節流）。Ray 回報「fps 穩定在 30」時我手上沒有這個數字，
+       就只能猜 —— 那正是要避免的。 */
+    wSm = wSm ? wSm*0.9+w*0.1 : w; }
   acc+=dt;n++;
   /* HUD 加上**地圖座標與航向** —— 截圖時才知道人在哪。
      先前每次回報都得靠地形猜位置，猜錯就修錯地方。座標用地圖像素
@@ -15503,7 +15543,7 @@ function loop(now){
          Ray 在手機上回報「卡頓更嚴重了」，實際上他跑的是 CPU 路徑 —— 因為
          `?gl=1` 讀的是這一頁自己的網址，而主遊戲是把它當 iframe 內嵌的。
          截圖裡看得到 gpu/cpu，這一整類誤判就不會再發生（同版本號那一條）。 */
-      +(GLON&&glReady?' gpu':' cpu')
+      +(GLON&&glReady?' gpu':' cpu')+' w'+wSm.toFixed(1)
       +'  ('+mx+','+my+') '+deg+'° h'+Math.round(cam.alt);
     acc=0;n=0;
   }
