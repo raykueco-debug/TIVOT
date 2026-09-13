@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1263"></script>
+<script src="../orientation.js?v=1264"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1263');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1264');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1263");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1263");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1264");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1264");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1263");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1263");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1264");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1264");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -542,6 +542,10 @@
          ⚠ 與「水」是兩件事：那是河（跟著地勢走、由整平河面決定水位），這是湖（平的、
             高度自己說了算）。 -->
     <button data-tool="lake">◎ 湖</button>
+    <!-- 河（ver -1264，Ray：「再加一個畫筆河，水道兩邊要有緩接現有地勢的河床」）：
+         中央是水，兩側的河床由水面**緩緩接回原本的地勢**。與「水」不同 ——
+         那支只把旗標與底色塗成水（地形不動），這支是**挖出一條河道**。 -->
+    <button data-tool="river">≈ 河</button>
     <button data-tool="mat">▦ 貼材</button>
     <button data-tool="rail">＝ 鐵路</button>
     <button data-tool="road">— 公路</button>
@@ -581,25 +585,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1263" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1264" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1263" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1263" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1263" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1263" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1263" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1263" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1263" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1263" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1263" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1263" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1264" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1264" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1264" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1264" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1264" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1264" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1264" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1264" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1264" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1264" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1263" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1264" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1263" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1264" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -620,11 +624,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1263"></script>
+<script src="settlement.js?v=1264"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1263"></script>
+<script src="talks.js?v=1264"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -664,7 +668,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1263';
+const FLIGHT_VER = 'ver -1264';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -1864,11 +1868,12 @@ let MAP_EDITS=MAP_EDITS_SRC;   // 實際生效的那一份（管理人有覆寫�
    正解是**不累加**：記下這一筆畫第一次碰到那一格時的原高度（`meBaseH`），
    之後永遠算 `base + amp × 覆蓋率`。順帶把「按住不動不會無限長高」變成
    結構上的保證，而不是靠 max 覆蓋率間接達成。 */
-let meCov=null, meBaseH=null, meCovW=0;
+let meCov=null, meBaseH=null, meLvl=null, meCovW=0;
 function meCovEnsure(){
   if(!meCov || meCovW!==MAPW || meCov.length!==MAPW*MAPH){
     meCov=new Float32Array(MAPW*MAPH);
     meBaseH=new Uint16Array(MAPW*MAPH);      // 高度本來就是整數，不必用 Float32
+    meLvl=new Float32Array(MAPW*MAPH);       // 河：這一格最近的那個中心線取樣點的水位
     meCovW=MAPW;
   }
 }
@@ -1956,6 +1961,23 @@ function lakeMask(){
 }
 /* 滿覆蓋的核心佔半徑多少（見 meStroke 的 `core`）。 */
 const DIG_CORE=0.55, FLAT_CORE=0.70;
+/* 河：水面佔筆刷半徑的多少（其餘是河床），以及水面比兩岸低多少。
+   ⚠ `RIVER_CUT` 與引擎「整平河面」的 `CUT=6` 同一個量級 —— 那是這個世界既有的
+     「水比岸低多少」的尺度，河自己另訂一個數字只會看起來不是同一條河。 */
+const RIVER_CORE=0.42, RIVER_CUT=8;
+/* ⚠⚠ 「平」鏟到的是**帝都那一格的高度**（ver -1264，Ray：「平就是將點到的地方
+   畫成帝都同高度」）—— 不是起筆那一格。帝都是這個世界的**地面基準**：
+   拿它當水準點，畫出來的每一塊平地才會彼此等高、接得起來。
+   ⚠ 值在**起筆時就記進筆畫**（`E.h`）：重放時前面幾筆可能已經改過帝都那一格，
+     現算會得到另一個數字 ⇒ 畫的時候與重整之後不一樣。
+   ⚠ 這一格是整過地的（帝都有 `podium`，在 `step(0.66)` 削平）—— 所以編輯器裡
+     讀到的就是那塊台地的高度，正是「帝都的地面」。 */
+const CAPITAL_XY=[1005,600];        // ⚠ 與 SETTLEMENTS 的帝都同一組座標，改要一起改
+function capitalH(){
+  if(!MAPW) return 0;
+  const x=clamp(CAPITAL_XY[0],0,MAPW-1), y=clamp(CAPITAL_XY[1],0,MAPH-1);
+  return HGT[y*MAPW+x];
+}
 /* ⚠⚠⚠ **門檻式的筆（水／貼材／湖）要 `core:1`＝整個圓都是滿覆蓋**（ver -1260 修）。
    它們的判準是「覆蓋率過半才寫」，而圓頂的覆蓋率要到**半徑的一半**才掉到 0.5 ——
    於是游標畫著半徑 34 的圈，真正變成湖的只有 17（實測：筆刷 34 畫出來的湖只有
@@ -1998,6 +2020,87 @@ function meApply(E, pts, raw, snap){
       M[i]=1;
     }, HARD_CORE);
   }
+  /* ══ 河（ver -1264）══════════════════════════════════════════════
+     Ray：「再加一個畫筆河，水道兩邊要有緩接現有地勢的河床」。
+     ⚠ 與「水」是兩支筆：那支只把 `RIV`／`COL` 塗成水（**地形一動不動**），
+       這支是**真的挖一條河道**出來 —— 中央是水，兩側由水面緩緩爬回原地勢。
+
+     三步：
+     ① **沿中心線取樣**（每 1 地圖像素），讀出原本的地面高度。
+     ② **平滑 ＋ 單調下降**：河不會忽高忽低（那是水窪不是河）。先平滑十幾趟，
+        再從高的那一端往低的那一端壓成不遞增 —— 於是水一定是往下流的。
+        ⚠ 哪一端高是**量出來的**（比兩端的地面），不是假設先畫的那一端在上游。
+     ③ 逐格：離中心線 `u`（0~1，以筆刷半徑為單位）
+        · `u ≤ RIVER_CORE` ＝ 水：高度＝那一段的水位，`RIV`／`COL` 設成水
+        · 其餘 ＝ **河床**：由水位 smoothstep 爬回**那一格原本的地面**（`meBaseH`）
+          —— 這就是「緩接現有地勢」。u=1 那一圈剛好等於原地勢，所以不會有接縫。
+
+     ⚠⚠ **這支筆不走 `meStroke`**：那一支只知道「覆蓋率」，而河要的是
+       **每一格最近的中心線取樣點是哪一個**（水位沿線一路在變）。硬塞進去
+       只會讓那支通用的筆多一堆只有河在用的分支。
+     ⚠ 借 `meCov` 當「最近距離」用（存 `1-d/R`，取 max ＝ 取最近），
+       另開 `meLvl` 存那一點的水位。
+     ⚠⚠ 河與湖一樣要**排除在「整平河面」之外**（`LAKEM`）：水位這裡已經算好而且
+       是單調的，讓那一段再算一次會把它抬平成另一個樣子 ⇒ 畫的時候與重整之後不一樣。 */
+  if(t==='river'){
+    const R=Math.max(2,E.r||14), R2=R*R, M=lakeMask();
+    /* ① 中心線取樣 */
+    const P=[];
+    if(pts.length===1) P.push([pts[0][0],pts[0][1]]);
+    for(let k=1;k<pts.length;k++){
+      const ax=pts[k-1][0],ay=pts[k-1][1],bx=pts[k][0],by=pts[k][1];
+      const L=Math.hypot(bx-ax,by-ay), n=Math.max(1,Math.ceil(L));
+      for(let q=(k===1?0:1);q<=n;q++) P.push([ax+(bx-ax)*q/n, ay+(by-ay)*q/n]);
+    }
+    if(!P.length) return null;
+    /* ② 水位：平滑 → 單調下降 → 再往下切 RIVER_CUT */
+    const g=new Float64Array(P.length);
+    for(let k=0;k<P.length;k++)
+      g[k]=HGT[clamp(P[k][1]|0,0,MAPH-1)*MAPW+clamp(P[k][0]|0,0,MAPW-1)];
+    for(let it=0; it<14 && g.length>2; it++){
+      const t2=g.slice();
+      for(let k=1;k<g.length-1;k++) g[k]=(t2[k-1]+t2[k]*2+t2[k+1])*0.25;
+    }
+    if(g.length>1){
+      if(g[g.length-1]<=g[0]){ for(let k=1;k<g.length;k++) if(g[k]>g[k-1]) g[k]=g[k-1]; }
+      else { for(let k=g.length-2;k>=0;k--) if(g[k]>g[k+1]) g[k]=g[k+1]; }
+    }
+    for(let k=0;k<g.length;k++) g[k]-=RIVER_CUT;
+    /* ③ 蓋圓：記最近距離與該點水位 */
+    meCovEnsure();
+    const cells=[];
+    let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+    for(let k=0;k<P.length;k++){
+      const cx=P[k][0], cy=P[k][1], lv=g[k];
+      const ax=Math.max(0,Math.floor(cx-R)), bx=Math.min(MAPW-1,Math.ceil(cx+R));
+      const ay=Math.max(0,Math.floor(cy-R)), by=Math.min(MAPH-1,Math.ceil(cy+R));
+      for(let y=ay;y<=by;y++){ const dy=y-cy, row=y*MAPW;
+        for(let x=ax;x<=bx;x++){ const dx=x-cx, d2=dx*dx+dy*dy;
+          if(d2>R2) continue;
+          const c=1-Math.sqrt(d2)/R, i=row+x;
+          if(c<=meCov[i]) continue;
+          if(meCov[i]<=0){ meBaseH[i]=HGT[i]; if(snap) snap(i); cells.push(i); }
+          meCov[i]=c; meLvl[i]=lv;
+          if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y;
+        } }
+    }
+    /* ④ 寫回去 */
+    for(const i of cells){
+      const u=1-meCov[i], lv=meLvl[i], b=meBaseH[i];
+      let v;
+      if(u<=RIVER_CORE){
+        v=lv;
+        RIV[i]=1; COL[i]=rgb(RIVER_COL[0],RIVER_COL[1],RIVER_COL[2]); M[i]=1;
+      }else{
+        const q=(u-RIVER_CORE)/(1-RIVER_CORE), kk=q*q*(3-2*q);   // 河床：緩接原地勢
+        v=lv+(b-lv)*kk;
+      }
+      v=clamp(Math.round(v),0,PEAK_SCALE);
+      HGT[i]=v; if(raw) raw[i]=v/PEAK_SCALE;
+    }
+    return x1<x0 ? null : {x0,y0,x1,y1};
+  }
+
   /* ══ 自動修正（ver -1261）══════════════════════════════════════════
      Ray：「畫出來的範圍依臨近地型做合理修正」。
      作法：畫過的每一格取**它周圍一圈的平均高度**（半徑隨筆刷走）當目標，
@@ -2137,7 +2240,7 @@ function meApply(E, pts, raw, snap){
 function applyMapEdits(phase, raw){
   if(!MAP_EDITS||!MAP_EDITS.length||!MAPW) return;
   if(phase==='terrain' && MAP_EDITS.some(e=>e.t==='lake')) lakeMask().fill(0);
-  const want = phase==='mat' ? ['mat'] : ['hill','dig','flat','fix','water','lake','erase'];
+  const want = phase==='mat' ? ['mat'] : ['hill','dig','flat','fix','water','lake','river','erase'];
   for(const E of MAP_EDITS){
     if(want.indexOf(E.t)<0) continue;
     meCovClear(meApply(E, E.pts, raw, null));
@@ -6009,16 +6112,6 @@ async function loadWorld(){
      ⚠ HGT 與 raw 都要改：下面的坡度是從 raw 差分算的，只改 HGT 會讓
        城邊的法線還是舊坡度（同邊緣抬升那段的理由）。
      ⚠ 外圈留一段裙帶平滑過渡，否則城界會是一圈垂直斷崖。 */
-  /* ══ 地圖編輯的地形筆畫（ver -1254）══
-     ⚠⚠ **排在這裡是刻意的**：
-       · 在「整平大陸邊緣」**之後** —— 陸塊的龍骨是結構，畫的山不該把它頂開；
-         反過來說，畫在海岸上的一刀也就不會被邊緣抬升重新填回去。
-       · 在「整平河面」「整平城鎮地基」「坡度」「道路／鐵路」「判地貌」**之前**
-         —— 畫的河會被整平成真的水面、畫的山會長出法線與植被、路與軌會繞開它。
-         換句話說：**畫完的地形與美術交一張新的高度圖是同一種東西**，
-         下游沒有任何一段需要知道它是畫出來的。
-     ⚠ `raw` 要一起改（坡度是從它差分算的）—— 見 applyMapEdits 的註解。 */
-  applyMapEdits('terrain', raw);
 
   /* ── 河面整平 ─────────────────────────────────────────────────
      ⚠ 源頭在上游：terrain_generator.py 把河道刻成一個**固定灰階**（34，
@@ -6589,6 +6682,22 @@ async function loadWorld(){
        一直照常載入。修好之後灰岩 5.4 萬格、褐岩 14.8 萬格（陸地的 7.8%）。
        ⚠ 線索是 `step()` 的進度**倒退**（…0.78 → 0.82 → 0.70 → 0.92）——
          新增任何一段時順手看一眼那串數字是不是遞增的。 */
+  /* ══ 地圖編輯的地形筆畫（ver -1253；**位置 ver -1264 改**）══
+     ⚠⚠⚠ **一定要排在這裡：`loadWorld` 最後一次動 `HGT` 之後、算坡度之前。**
+       -1253~-1263 擺在「整平河面」之前，於是**編輯器看到的地形**（開機全部跑完
+       的結果）與**重放時筆畫讀到的地形**（只跑到一半）是兩回事 ——
+       凡是「依現場地形決定要寫什麼」的筆（`自動修正` 取鄰居平均、`擦除` 補水、
+       `河` 沿線取水位）就會**畫的時候一個樣、重整之後另一個樣**。
+       實測河那一筆最大差 15；`自動修正`／`擦除` 先前測到 0 只是因為那幾塊剛好
+       沒被整平河面／整地碰到 —— **那是運氣不是正確**。
+       搬到這裡之後「編輯器的 HGT」與「重放時的 HGT」是同一個狀態，
+       所有筆一次全部變成決定性的，不必逐支去記快照。
+     ⚠ 必須在 `step(0.70)` 之前：坡度是從 `raw` 差分算的，畫出來的山要長出法線；
+       道路／鐵路（0.78）與地貌（0.82）也都要看得到它。
+     ⚠ 代價：畫的 `水` 不再被「整平河面」整平（那一段已經在它前面跑完）——
+       要一條會流的河請用 `河` 那支筆，它自己就有水位與河床。 */
+  applyMapEdits('terrain', raw);
+
   step(0.70);   // 計算坡度…
   for(let y=0;y<MAPH;y++){
     const ym=y>0?y-1:0, yp=y<MAPH-1?y+1:MAPH-1;
@@ -8636,7 +8745,7 @@ function meUndoLabel(u){
   return meLabel(u.e.t);
 }
 function meLabel(t){ return {hill:'山',dig:'挖',flat:'平',fix:'自動修正',water:'水',lake:'湖',
-  mat:'貼材',rail:'鐵路',road:'公路',erase:'擦除'}[t]||t; }
+  river:'河',mat:'貼材',rail:'鐵路',road:'公路',erase:'擦除'}[t]||t; }
 let meFlashT=0;
 function meFlash(msg){ meFlashT=performance.now(); meEl('meInfo').textContent=msg; }
 
@@ -8717,14 +8826,17 @@ function meStrokeBegin(mx,my){
     return;
   }
   meCur={ t:meTool, r:meBrushR(), pts:[[mx,my]] };
-  /* ⚠⚠ 自動修正**放開才套用一次**（見 meApply 的說明：分段套用會讓
-     「畫的時候」與「重整之後」不一樣）。所以這裡只開帳、不畫。 */
-  if(meTool==='fix'){ meSnapStart(); meDirty=null; return; }
+  /* ⚠⚠ **自動修正與河都是「放開才套用一次」**（見 meApply：兩者的輸入都是
+     「周圍／沿線現在長什麼樣」，分段套用時後面幾段會讀到前面剛改過的結果 ⇒
+     畫的時候與重整之後不一樣）。所以這裡只開帳、不畫。 */
+  if(meTool==='fix'||meTool==='river'){ meSnapStart(); meDirty=null; return; }
   if(meTool==='hill') meCur.a=meBrushA();      // ⚠ 挖不讀力道（固定 DIG_STEP）
   if(meTool==='mat')  meCur.g=meMatG;
-  /* 平與湖：**起筆那一格**的高度就是這一筆的目標／水面（見 meApply 的說明）。 */
-  if(meTool==='flat'||meTool==='lake')
+  /* 湖：**起筆那一格**的高度就是水面（保持高度，見 meApply）。
+     平：**帝都那一格**的高度（Ray 指定的地面基準，見 capitalH）。 */
+  if(meTool==='lake')
     meCur.h=HGT[clamp(my|0,0,MAPH-1)*MAPW+clamp(mx|0,0,MAPW-1)];
+  if(meTool==='flat') meCur.h=capitalH();
   meSnapStart(); meDirty=null;
   meStrokeStep(mx,my,true);
 }
@@ -8738,9 +8850,11 @@ function meStrokeStep(mx,my,first){
     if(Math.hypot(mx-l[0],my-l[1])>=step) meCur.pts.push([mx,my]);
     return;
   }
-  if(meCur.t==='fix'){                    // 只記路徑，放開才算（同上）
+  if(meCur.t==='fix'||meCur.t==='river'){   // 只記路徑，放開才算（同上）
     const l0=meCur.pts[meCur.pts.length-1];
-    if(Math.hypot(mx-l0[0],my-l0[1])>=Math.max(1,(meCur.r||18)/3)) meCur.pts.push([mx,my]);
+    /* ⚠ 河的取樣要密一點：中心線的形狀就是河的形狀，記太疏會變成折線。 */
+    const st = meCur.t==='river' ? 2 : Math.max(1,(meCur.r||18)/3);
+    if(Math.hypot(mx-l0[0],my-l0[1])>=st) meCur.pts.push([mx,my]);
     return;
   }
   const l=meCur.pts[meCur.pts.length-1];
@@ -8764,6 +8878,12 @@ function meStrokeEnd(){
   if(E.t==='erase'){
     /* ① 折線：只是數一數會剪到幾個節點（真的剪是在鋪之前，`mapEditCut`）。
        ⚠ 判斷走**同一支** `meLineNear`（畫面上剪不剪也是它，鐵律 7）。 */
+    /* ⚠⚠⚠ **先簡化再套用**（ver -1264 修）：放開才套用的那幾支筆（擦除／自動修正／
+       河）如果先用**密的**路徑套用、之後才把**簡化過的**存進去，重放讀到的就是
+       另一條線 ⇒ 畫的時候與重整之後不一樣（實測河差 7）。
+       邊拖邊套的那幾支做不到這件事（簡化不了還沒發生的點），那是 -1254 記著的
+       ≤2 單位差；但這三支可以做到**完全一樣**，就該做到。 */
+    E.pts=meSimplify(E.pts, Math.max(0.5,(E.r||14)/6));
     const nLine=meEraseCount(E);
     /* ② 水：這一半會真的改陣列，而且整條一次算完（與重放同一條路，鐵律 8）。 */
     meEraseWet=0;
@@ -8776,7 +8896,6 @@ function meStrokeEnd(){
       meFlash('這一筆沒有擦到任何公路、鐵路或水');
       meDraw(); return;
     }
-    E.pts=meSimplify(E.pts, Math.max(0.5,(E.r||14)/6));
     meAsk({ k:'edit', e:E, i:meSnapI, h:meSnapH, r:meSnapR, c:meSnapC, b:meSnapB,
             d:meStrokeBox(E) },
           '擦除　大小 '+(E.r||14)+
@@ -8801,7 +8920,10 @@ function meStrokeEnd(){
           meLabel(E.t)+'　'+E.pts.length+' 點・全長 '+Math.round(L*MAP_SCALE)+' 單位');
     meDraw(); return;
   }
-  if(E.t==='fix'){
+  if(E.t==='fix'||E.t==='river'){
+    /* ⚠⚠⚠ **先簡化再套用**（見擦除那一段的說明）：存進去的是哪一條線，
+       套用的就要是哪一條線，否則重整之後會變樣。 */
+    E.pts=meSimplify(E.pts, Math.max(0.5,(E.r||18)/8));
     /* 整條一次算完 —— 與 `applyMapEdits` 重放時走的是同一條路（鐵律 8）。 */
     const d=meApply(E, E.pts, null, meSnapPush);
     if(d){ mePaint(d); meDirty=d; }
@@ -8809,12 +8931,13 @@ function meStrokeEnd(){
   meCovClear(meDirty); meDirty=null;
   if(!meSnapI||!meSnapI.length){ meDraw(); return; }
   const box=meStrokeBox(E);                 // ⚠ 要在簡化**之前**量：還原的髒區照原線算才蓋得滿
-  E.pts=meSimplify(E.pts, Math.max(0.5,(E.r||18)/8));
+  if(E.t!=='fix'&&E.t!=='river')            // 那兩支上面已經簡化過了
+    E.pts=meSimplify(E.pts, Math.max(0.5,(E.r||18)/8));
   meAsk({ k:'edit', e:E, i:meSnapI, h:meSnapH, r:meSnapR, c:meSnapC, b:meSnapB, d:box },
         meLabel(E.t)+'　大小 '+(E.r||0)+
         (E.a!=null?('　力道 '+E.a):'')+
         (E.t==='dig'?('　深 '+DIG_STEP):'')+
-        (E.h!=null?((E.t==='lake'?'　水面 ':'　鏟到 ')+E.h):'')+
+        (E.h!=null?((E.t==='lake'?'　水面 ':(E.t==='flat'?'　鏟到帝都高 ':'　鏟到 '))+E.h):'')+
         (E.g!=null?('　'+((MAT_PALETTE.find(m=>m.g===E.g)||{}).n||'')):'')+
         '　'+E.pts.length+' 點　共 '+(meSnapI.length)+' 格');
   meSnapI=null;
