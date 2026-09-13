@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1207"></script>
+<script src="../orientation.js?v=1208"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -512,11 +512,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1207"></script>
+<script src="settlement.js?v=1208"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1207"></script>
+<script src="talks.js?v=1208"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -556,7 +556,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1207';
+const FLIGHT_VER = 'ver -1208';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -7422,6 +7422,7 @@ const ybuf=new Int32Array(512);
    ⚠ 舊路徑**一行都沒改**：`?gl=1` 才走這裡，隨時可以 A/B。 */
 const GLON = /[?&]gl=1/.test(location.search);
 if(GLON) document.body.classList.add('gl-on');
+let glTexBiome=null, glTexMask=null, glTexRail=null, glTexGeo=null, glGeoUp=false;
 let glSmpPbo=null, glSmpFence=null;
 const glSmpBuf=new Uint8Array(8*8*4);   // 環境光取樣的非同步回讀落點（見 screenSample）
 let GLX=null, glProg=null, glVao=null, glU={}, glTexH=null, glTexC=null, glTexS=null,
@@ -7443,6 +7444,12 @@ uniform sampler2D uSky;        // 這一禎的天空漸層（1 x BH）
    ⚠⚠ 這一段在 GLSL 模板字串裡，**不可以用反引號**（會把字串截斷；踩第二次了）。
    ⚠ GL 的 mipmap 直接取代了 CPU 那一整套 CITY_PYR 取樣金字塔
      （§6.7.5 的「逐次減半」與逐深度挑層級全部不需要了）。 */
+uniform highp usampler2D uBiome;  // 低 4 bit＝類別，高 4 bit＝低頻亮度
+uniform sampler2D uMask;          // r 石橋 g 鐵路 b 道路 a 郊區
+uniform sampler2D uGeo;           // 地貌貼圖 atlas（256 寬 × 類別數×256 高）
+uniform sampler2D uRailDir;       // 軌道方向（降取樣）
+uniform vec2 uRD;                 // RD_W, RD_H
+uniform float uGeoOn;             // atlas 還沒載到就是 0
 uniform sampler2D uCityA, uCityB;
 uniform vec4 uCityA0, uCityB0;   // wx, wy, ca, sa
 uniform vec4 uCityA1, uCityB1;   // iw, ih, kv(反分級亮度), 有效
@@ -7510,6 +7517,41 @@ void main(){
           vec3 c10=texelFetch(uC,t10,0).rgb, c01=texelFetch(uC,t01,0).rgb, c11=texelFetch(uC,t11,0).rgb;
           c=mix(mix(c00,c10,f.x), mix(c01,c11,f.x), f.y);
         }else{ c=c00; }
+        /* ══ 地貌貼圖層（ver -1208）══════════════════════════════════════
+           與 CPU 那一支同一條邏輯：先把底色推向人造物的絕對色（石橋／鐵路／
+           道路／屋頂）或水色，再乘上貼圖的「相對均值倍率」與低頻亮度起伏。
+           ⚠ 乘而不換：底色帶著地貌形狀與烘焙好的 hillshade，直接換色會把山攤平。
+           ⚠ 強度隨深度淡出（GEO_FAR 之後歸零）——遠景看不出紋理，省下來。 */
+        float vegAmt=${GEO_AMP}*(z<${GEO_FAR}.0 ? 1.0-(z/${GEO_FAR}.0)*(z/${GEO_FAR}.0) : 0.0);
+        if(uGeoOn>0.5 && vegAmt>0.004){
+          uint bi=texelFetch(uBiome,clampT(ti),0).r;
+          uint tx=bi&15u;
+          vec4 mk=texelFetch(uMask,clampT(ti),0);
+          if(mk.r*255.0>40.0)        c=mix(c, vec3(138.,128.,114.)/255.0, mk.r*0.94);
+          else if(tx==8u||tx==9u)    c=mix(c, (tx==9u? vec3(92.,126.,146.) : vec3(66.,100.,124.))/255.0, 0.72);
+          else if(mk.g*255.0>40.0)   c=mix(c, vec3(139.,121.,101.)/255.0, mk.g*0.90);
+          else if(tx==5u)            c=mix(c, vec3(135.,109.,72.)/255.0, mk.b*0.82);
+          else if(tx>=10u && tx<=12u){
+            vec3 rc = tx==10u? vec3(80.,76.,69.) : (tx==11u? vec3(93.,86.,66.) : vec3(102.,91.,61.));
+            c=mix(c, rc/255.0, mk.a*0.55+0.30);
+          }
+          /* 取樣座標。⚠ 鐵軌要轉進**軌道座標系**：沿軌方向由 RAILDIR 的角度投影，
+             橫越方向由 RAILW 的距離場反推（中心 255、邊緣 0）。 */
+          vec2 gxy;
+          float dq = (tx==13u) ? texture(uRailDir, (floor(mf)/${'6.0'})/uRD).r*255.0 : 0.0;
+          if(tx==13u && dq>0.5){
+            float th=(dq-1.0)/254.0*3.14159265;
+            float along=(wp.x*cos(th)+wp.y*sin(th))*${'1.0/0.60'};
+            float across=128.0+127.0*(1.0-mk.g);
+            gxy=vec2(along+40960.0, across);
+          }else{
+            gxy=(wp+vec2(40960.0))*${'1.0/1.6'};
+          }
+          ivec2 gi=ivec2(int(floor(gxy.x)) & 255, int(floor(gxy.y)) & 255);
+          vec3 k=texelFetch(uGeo, ivec2(gi.x, int(tx)*256+gi.y), 0).rgb*(255.0/128.0);
+          float mot=1.0+((float(bi>>4u)/15.0)-0.5)*2.0*${GEO_MOT}*vegAmt;
+          c*=(vec3(1.0)+(k-vec3(1.0))*vegAmt)*mot;
+        }
         /* 城的手繪地面：蓋掉地貌色，**在光照之前** —— 日夜與霧才會照地形走
            （§6.7.5：插在地貌細節之後、光照之前）。 */
         vec4 ca=citySample(uCityA,uCityA0,uCityA1,wp);
@@ -7557,11 +7599,14 @@ function glInit(){
   const lp=g.getAttribLocation(glProg,'p');
   g.enableVertexAttribArray(lp); g.vertexAttribPointer(lp,2,g.FLOAT,false,0,0);
   for(const n of ['uH','uC','uS','uSky','uMap','uBuf','uCam','uDir','uLdir','uLcol','uLi','uFog','uCloudLit',
-                  'uCityA','uCityB','uCityA0','uCityB0','uCityA1','uCityB1','uInvS'])
+                  'uCityA','uCityB','uCityA0','uCityB0','uCityA1','uCityB1','uInvS',
+                  'uBiome','uMask','uGeo','uRailDir','uRD','uGeoOn'])
     glU[n]=g.getUniformLocation(glProg,n);
   g.uniform1i(glU.uH,0); g.uniform1i(glU.uC,1); g.uniform1i(glU.uS,2); g.uniform1i(glU.uSky,3);
   g.uniform1i(glU.uCityA,4); g.uniform1i(glU.uCityB,5);
   g.uniform1f(glU.uInvS, 1/GRADE_SAT);
+  g.uniform1i(glU.uBiome,7); g.uniform1i(glU.uMask,8);
+  g.uniform1i(glU.uGeo,9);   g.uniform1i(glU.uRailDir,10);
   return true;
 }
 
@@ -7586,6 +7631,24 @@ function glUploadWorld(){
   glTexS=mk(2);
   g.texImage2D(g.TEXTURE_2D,0,g.RG8,MAPW,MAPH,0,g.RG,g.UNSIGNED_BYTE,sl);
   glTexSky=mk(3);
+  /* ══ 地貌貼圖層的資料（ver -1208）══════════════════════════════════════
+     ⚠ 四張遮罩**打包成一張 RGBA8**（railbr / railw / roadw / subw）——
+       分四張要四次 texelFetch，打包只要一次，而且省三份貼圖描述子。 */
+  glTexBiome=mk(7);
+  g.texImage2D(g.TEXTURE_2D,0,g.R8UI,MAPW,MAPH,0,g.RED_INTEGER,g.UNSIGNED_BYTE,BIOME);
+  { const N=MAPW*MAPH, m=new Uint8Array(N*4);
+    for(let i=0;i<N;i++){
+      m[i*4]  = RAILBR?RAILBR[i]:0;
+      m[i*4+1]= RAILW ?RAILW[i] :0;
+      m[i*4+2]= ROADW ?ROADW[i] :0;
+      m[i*4+3]= SUBW  ?SUBW[i]  :0;
+    }
+    glTexMask=mk(8);
+    g.texImage2D(g.TEXTURE_2D,0,g.RGBA8,MAPW,MAPH,0,g.RGBA,g.UNSIGNED_BYTE,m);
+    console.log('[gl] 地貌遮罩 '+(m.byteLength/1048576).toFixed(1)+'MB');
+  }
+  if(RAILDIR){ glTexRail=mk(10);
+    g.texImage2D(g.TEXTURE_2D,0,g.R8,RD_W,RD_H,0,g.RED,g.UNSIGNED_BYTE,RAILDIR); }
   glReady=true;
   console.log('[gl] 世界資料已上傳：'+MAPW+'×'+MAPH+
     '（高度 '+(HGT.byteLength/1048576).toFixed(1)+'MB、色 '+(COL.byteLength/1048576).toFixed(1)+
@@ -7648,6 +7711,20 @@ function glDrawTerrain(S, sinp, cosp, lx, ly, ambI, sunI, lightR, lightG, lightB
     glSkyBuf[y*4]=c&255; glSkyBuf[y*4+1]=(c>>8)&255; glSkyBuf[y*4+2]=(c>>16)&255; glSkyBuf[y*4+3]=255; }
   g.activeTexture(g.TEXTURE3); g.bindTexture(g.TEXTURE_2D,glTexSky);
   g.texImage2D(g.TEXTURE_2D,0,g.RGBA8,1,BH,0,g.RGBA,g.UNSIGNED_BYTE,glSkyBuf);
+  /* GEOK 是非同步載的（`geoReady`），到了才上傳 —— 一次就好。
+     ⚠ 它的記憶體佈局**正好**就是 256 寬 × (類別數×256) 高的 RGB8，
+       不必重新打包（`base=slot*GEO_STRIDE`、索引 `(gy*256+gx)*3`）。 */
+  if(!glGeoUp && geoReady && GEOK){
+    glTexGeo=g.createTexture(); g.activeTexture(g.TEXTURE9);
+    g.bindTexture(g.TEXTURE_2D,glTexGeo);
+    g.texImage2D(g.TEXTURE_2D,0,g.RGB8,GT,GEOK.length/(GT*3),0,g.RGB,g.UNSIGNED_BYTE,GEOK);
+    g.texParameteri(g.TEXTURE_2D,g.TEXTURE_MIN_FILTER,g.NEAREST);
+    g.texParameteri(g.TEXTURE_2D,g.TEXTURE_MAG_FILTER,g.NEAREST);
+    g.texParameteri(g.TEXTURE_2D,g.TEXTURE_WRAP_S,g.CLAMP_TO_EDGE);
+    g.texParameteri(g.TEXTURE_2D,g.TEXTURE_WRAP_T,g.CLAMP_TO_EDGE);
+    glGeoUp=true;
+    console.log('[gl] 地貌貼圖 atlas '+GT+'×'+(GEOK.length/(GT*3)));
+  }
   g.useProgram(glProg); g.bindVertexArray(glVao);
   g.enable(g.DEPTH_TEST); g.depthFunc(g.LEQUAL);
   g.clear(g.COLOR_BUFFER_BIT|g.DEPTH_BUFFER_BIT);
@@ -7660,6 +7737,8 @@ function glDrawTerrain(S, sinp, cosp, lx, ly, ambI, sunI, lightR, lightG, lightB
   g.uniform2f(glU.uLi,ambI,sunI);
   g.uniform3f(glU.uFog,fr/255,fg/255,fb/255);
   g.uniform1f(glU.uCloudLit,cloudLit);
+  g.uniform2f(glU.uRD, RD_W||1, RD_H||1);
+  g.uniform1f(glU.uGeoOn, glGeoUp?1:0);
   /* 城的手繪地面（最多兩座）。kv＝反分級的亮度係數，逐城（`tone` 是逐城的）。 */
   const CC=glPickCities();
   for(let i=0;i<2;i++){
