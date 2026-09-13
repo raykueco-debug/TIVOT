@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1204"></script>
+<script src="../orientation.js?v=1205"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -512,11 +512,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1204"></script>
+<script src="settlement.js?v=1205"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1204"></script>
+<script src="talks.js?v=1205"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -556,7 +556,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1204';
+const FLIGHT_VER = 'ver -1205';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -5341,7 +5341,8 @@ async function loadWorld(){
   try{ buildCityMask(); }catch(e){ console.warn('[city] 遮罩建不出來', e); }
   /* GL 地形（ver -1200，`?gl=1`）：⚠ 一定要在這裡才上傳 —— loadWorld 的邊緣抬升、
      城的整地、河道與水位全部改過 HGT/COL，早一步上傳就會與畫面上的地形對不起來。 */
-  if(GLON){ try{ if(glInit()) glUploadWorld(); }catch(e){ console.warn('[gl] 初始化失敗，維持 CPU 路徑', e); } }
+  if(GLON){ try{ if(glInit()){ glUploadWorld(); glBuildRuins(); } }
+            catch(e){ console.warn('[gl] 初始化失敗，維持 CPU 路徑', e); } }
 
   step(0.94);   // 預熱貼圖…
   /* ⚠ primeArt 是**純優化**（預先解碼貼圖），不是開場的必要條件——用 race 夾 4 秒
@@ -7588,6 +7589,196 @@ function glDrawTerrain(S, sinp, cosp, lx, ly, ambI, sunI, lightR, lightG, lightB
   return true;
 }
 
+
+/* ══════════════════════════════════════════════════════════════════════
+   GL 遺蹟（ver -1205）—— 靜態網格，一次建好，之後每禎只是畫 VBO
+   ══════════════════════════════════════════════════════════════════════
+   Ray：「飛行地圖全部交給 gpu，這是死命令」「以後量體會加 10 倍以上」。
+   CPU 那條路的成本是**逐面**的（貝利薩爾一禎 538~890 次 `fill()`），
+   量體加十倍就是成本加十倍 —— 再怎麼優化都是死的。
+   GPU 上則與數量脫鉤：ver -1199 實測 841 個 instanced 立方體 **−0.095ms（量不到）**。
+
+   ⚠⚠⚠ **幾何沿用 `drawRuins` 自己的產生器**（`RUIN_CAPTURE` 擷取模式）——
+     那幾支是 Ray 從 -1156 調到 -1167 的成果，**絕對不要另寫一份**（鐵律 8）。
+     另寫一份的下場是「GL 的城堡跟 CPU 的城堡長得不一樣」，而且會慢慢走鐘。
+   ⚠ 擷取到的 `loc`／`locTop`／`z0`／`h` 是**遺蹟局部座標**，與相機無關 ⇒ 可以烘成靜態 VBO。
+   ⚠ 明暗用**未旋轉的局部法線**點乘世界光向 —— 那是 CPU 那一支的作法
+     （`const d=nx*LGT.x+ny*LGT.y`，`nx/ny` 來自 `B.loc`）。照抄才會一模一樣。 */
+let glRuinProg=null, glRuinU={}, glRuins=[], glRuinReady=false;
+
+const GL_RUIN_VS=`#version 300 es
+in vec3 p;          // 局部座標 (lx, ly, z)
+in vec2 nrm;        // 側面法線（頂面給 0,0）
+in float kind;      // 0 牆側 1 屋頂側 2 牆頂 3 屋頂面 4 明指顏色
+in vec3 col;        // kind==4 才用
+uniform vec2 uBuf; uniform vec3 uCam; uniform vec2 uDir; uniform vec2 uLdir;
+uniform vec3 uPal[8];   // 0 top 1 side 2 sideLit 3 dark 4 roofTop 5 roofSide 6 roofLit 7 roofDark
+uniform vec3 uOrigin;   // 這座遺蹟的世界落點 (wx0, wy0, gh)
+uniform vec2 uRot;      // ca, sa
+out vec3 vCol; out float vZ;
+void main(){
+  float wx=uOrigin.x+(p.x*uRot.x-p.y*uRot.y);
+  float wy=uOrigin.y+(p.x*uRot.y+p.y*uRot.x);
+  float wz=uOrigin.z+p.z;
+  vec2 d=vec2(wx,wy)-uCam.xy;
+  float sinp=uDir.x, cosp=uDir.y;
+  float z=d.x*(-sinp)+d.y*(-cosp);
+  if(z<8.0){ gl_Position=vec4(2.,2.,2.,1.); vZ=1.0; vCol=vec3(0.); return; }
+  float sv=(d.x*cosp+d.y*(-sinp))/z;
+  float scaleH=uBuf.y*0.62, horizon=uBuf.y*${HORIZON_F};
+  float curv=(1.0+sv*sv)/(2.0*${PLANET_R}.0);
+  float sy=((uCam.z-wz)/z + z*curv)*scaleH+horizon;
+  gl_Position=vec4(sv, 1.0-2.0*sy/uBuf.y, 0.0, 1.0);
+  vZ=clamp(z/${ZFAR}.0,0.0,1.0);
+  vec3 c;
+  if(kind>3.5)      c=col;
+  else if(kind>2.5) c=uPal[4];
+  else if(kind>1.5) c=uPal[0];
+  else{
+    float dl=dot(nrm,uLdir);
+    bool rf=kind>0.5;
+    if(dl>0.30)       c=rf?uPal[6]:uPal[2];
+    else if(dl<-0.30) c=rf?uPal[7]:uPal[3];
+    else              c=rf?uPal[5]:uPal[1];
+  }
+  vCol=c;
+}`;
+const GL_RUIN_FS=`#version 300 es
+precision highp float;
+in vec3 vCol; in float vZ;
+uniform vec3 uAmb; uniform float uAmbA; uniform float uAlpha;
+out vec4 o;
+void main(){
+  /* ⚠⚠ **不要自己套霧**：CPU 那一支也沒有。§6.8.1 的環境光取樣取的是
+     「畫面上旁邊那塊地形的顏色」，而那個顏色**已經把光照、分級、霧、時段
+     全部算進去了** —— 再套一次霧就是把同一件事算兩遍（鐵律 7），
+     遠處的遺蹟會比地形更灰。這裡照 CPU 的作法只做一次環境光疊色
+     （source-atop 等價於 mix）。 */
+  o=vec4(mix(vCol,uAmb,uAmbA), uAlpha);
+  gl_FragDepth=vZ;
+}`;
+
+/* CSS 色字串 → [0..1]×3。⚠ 色票寫的是 '#rrggbb' 與 'rgba(...)' 兩種。 */
+function glCss3(c){
+  if(!c) return [1,1,1];
+  if(c[0]==='#'){
+    let h=c.slice(1);
+    if(h.length===3) h=h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+    return [parseInt(h.slice(0,2),16)/255, parseInt(h.slice(2,4),16)/255, parseInt(h.slice(4,6),16)/255];
+  }
+  const m=/rgba?\(([^)]+)\)/.exec(c);
+  if(m){ const v=m[1].split(',').map(Number); return [v[0]/255, v[1]/255, v[2]/255]; }
+  return [1,1,1];
+}
+
+function glBuildRuins(){
+  if(!GLX || glRuinReady) return;
+  const g=GLX;
+  /* 一次擷取所有遺蹟的幾何（滿細節、不剔除）。 */
+  RUIN_CAPTURE=true; ruinCapOut=[];
+  try{ drawRuins(BH*0.62, BH*HORIZON_F, Math.sin(cam.angle), Math.cos(cam.angle)); }
+  catch(e){ console.warn('[gl] 遺蹟幾何擷取失敗', e); RUIN_CAPTURE=false; return; }
+  RUIN_CAPTURE=false;
+
+  glRuinProg=g.createProgram();
+  g.attachShader(glRuinProg,glSh(g.VERTEX_SHADER,GL_RUIN_VS));
+  g.attachShader(glRuinProg,glSh(g.FRAGMENT_SHADER,GL_RUIN_FS));
+  g.linkProgram(glRuinProg);
+  if(!g.getProgramParameter(glRuinProg,g.LINK_STATUS)){
+    console.warn('[gl] 遺蹟 shader 連結失敗', g.getProgramInfoLog(glRuinProg)); return; }
+  for(const n of ['uBuf','uCam','uDir','uLdir','uPal','uOrigin','uRot','uAmb','uAmbA','uAlpha'])
+    glRuinU[n]=g.getUniformLocation(glRuinProg,n);
+
+  for(const R of ruinCapOut){
+    const V=[];
+    const push=(x,y,z,nx,ny,k,c)=>{ V.push(x,y,z,nx,ny,k,c[0],c[1],c[2]); };
+    const quad=(a,b,c,d,nx,ny,k,col)=>{
+      push(a[0],a[1],a[2],nx,ny,k,col); push(b[0],b[1],b[2],nx,ny,k,col); push(c[0],c[1],c[2],nx,ny,k,col);
+      push(a[0],a[1],a[2],nx,ny,k,col); push(c[0],c[1],c[2],nx,ny,k,col); push(d[0],d[1],d[2],nx,ny,k,col);
+    };
+    for(const B of R.items){
+      const NS=B.loc.length, z0=B.z0||0, z1=z0+(B.h||0);
+      const sideK = B.col ? 4 : (B.mat==='roof'?1:0);
+      const sideC = B.col ? glCss3(B.col) : [0,0,0];
+      for(let k=0;k<NS;k++){
+        const k2=(k+1)%NS;
+        const a=B.loc[k], b=B.loc[k2], c=B.locTop[k2], d=B.locTop[k];
+        let nx=(b[1]-a[1]), ny=-(b[0]-a[0]);
+        const nl=Math.hypot(nx,ny)||1; nx/=nl; ny/=nl;
+        quad([a[0],a[1],z0],[b[0],b[1],z0],[c[0],c[1],z1],[d[0],d[1],z1],nx,ny,sideK,sideC);
+      }
+      if(!B.ridge){
+        const topK = B.colTop ? 4 : (B.mat==='roof'?3:2);
+        const topC = B.colTop ? glCss3(B.colTop) : [0,0,0];
+        for(let k=1;k+1<NS;k++){
+          const a=B.locTop[0], b=B.locTop[k], c=B.locTop[k+1];
+          push(a[0],a[1],z1,0,0,topK,topC); push(b[0],b[1],z1,0,0,topK,topC); push(c[0],c[1],z1,0,0,topK,topC);
+        }
+      }
+    }
+    /* 石地板＋基座側壁（與 CPU 那一支同色：頂面 `C.floor`、側壁 `C.dark`）。 */
+    if(R.shape && R.shape.length>2){
+      const fl=glCss3(R.C.floor), dk=glCss3(R.C.dark), S=R.shape, n=S.length;
+      for(let k=1;k+1<n;k++){
+        push(S[0][0],S[0][1],0,0,0,4,fl); push(S[k][0],S[k][1],0,0,0,4,fl); push(S[k+1][0],S[k+1][1],0,0,0,4,fl);
+      }
+      if(R.lift>0) for(let k=0;k<n;k++){ const k2=(k+1)%n;
+        quad([S[k][0],S[k][1],0],[S[k2][0],S[k2][1],0],
+             [S[k2][0],S[k2][1],-R.lift],[S[k][0],S[k][1],-R.lift],0,0,4,dk); }
+    }
+    if(!V.length) continue;
+    const vao=g.createVertexArray(); g.bindVertexArray(vao);
+    const vb=g.createBuffer(); g.bindBuffer(g.ARRAY_BUFFER,vb);
+    g.bufferData(g.ARRAY_BUFFER,new Float32Array(V),g.STATIC_DRAW);
+    const ST=9*4;
+    const bind=(nm,size,off)=>{ const L=g.getAttribLocation(glRuinProg,nm);
+      if(L<0) return; g.enableVertexAttribArray(L); g.vertexAttribPointer(L,size,g.FLOAT,false,ST,off); };
+    bind('p',3,0); bind('nrm',2,12); bind('kind',1,20); bind('col',3,24);
+    g.bindVertexArray(null);
+    const pal=[R.C.top,R.C.side,R.C.sideLit,R.C.dark,
+               R.C.roofTop,R.C.roofSide,R.C.roofLit,R.C.roofDark].map(glCss3);
+    glRuins.push({ key:R.key, vao, n:V.length/9, pal,
+                   origin:[R.wx0,R.wy0,R.gh], rot:[R.ca,R.sa] });
+  }
+  glRuinReady=glRuins.length>0;
+  console.log('[gl] 遺蹟網格：'+glRuins.map(r=>r.key+' '+r.n+' 頂點').join('、'));
+}
+
+/* 每禎：畫所有在視距內的遺蹟（深度測試與地形同一顆緩衝）。 */
+function glDrawRuins(sinp,cosp,lx,ly,dayK){
+  if(!glRuinReady) return;
+  const g=GLX;
+  /* 環境光：**沿用 CPU 那一支的常數與取樣器**（鐵律 7）——
+     `screenSample` 現在是非同步回讀（ver -1203），不會卡管線。 */
+  const sc=screenSample(0,0,W,VIEWH,true);
+  if(!ruinAmb) ruinAmb=sc.slice();
+  else for(let q=0;q<3;q++) ruinAmb[q]+=(sc[q]-ruinAmb[q])*RUIN_AMB_EASE;
+  const nightK=clamp(1-dayK*1.25,0,1);
+  g.useProgram(glRuinProg);
+  g.enable(g.DEPTH_TEST); g.depthFunc(g.LEQUAL);
+  g.uniform2f(glRuinU.uBuf,BW,BH);
+  g.uniform3f(glRuinU.uCam,cam.x,cam.y,cam.alt);
+  g.uniform2f(glRuinU.uDir,sinp,cosp);
+  g.uniform2f(glRuinU.uLdir,lx,ly);
+  g.uniform3f(glRuinU.uAmb,ruinAmb[0]/255,ruinAmb[1]/255,ruinAmb[2]/255);
+  g.uniform1f(glRuinU.uAmbA,RUIN_AMB+RUIN_AMB_NIGHT*nightK);
+  for(const R of glRuins){
+    const dx=R.origin[0]-cam.x, dy=R.origin[1]-cam.y;
+    const dist=Math.hypot(dx,dy);
+    if(dist>RUIN_FAR) continue;
+    const fk=clamp((RUIN_FAR-dist)/RUIN_FADE,0,1), fade=fk*fk*(3-2*fk);
+    if(fade<=0.02) continue;
+    g.uniform1f(glRuinU.uAlpha,fade);
+    g.uniform3f(glRuinU.uOrigin,R.origin[0],R.origin[1],R.origin[2]);
+    g.uniform2f(glRuinU.uRot,R.rot[0],R.rot[1]);
+    const flat=[]; for(const c of R.pal) flat.push(c[0],c[1],c[2]);
+    g.uniform3fv(glRuinU.uPal,new Float32Array(flat));
+    g.bindVertexArray(R.vao);
+    g.drawArrays(g.TRIANGLES,0,R.n);
+  }
+  g.bindVertexArray(null);
+}
+
 function render(now){
   const S=sky(), SC=skyColors(S);
   const scaleH=BH*0.62;
@@ -8082,6 +8273,9 @@ function render(now){
   if(GLON && glReady){
     glDrawTerrain(S, sinp, cosp, lx, ly, ambI, sunI, lightR, lightG, lightB,
                   fr, fg, fb, cloudLit);
+    /* 遺蹟：與地形**同一顆深度緩衝** ⇒ 遮擋是免費的深度測試，
+       不必 `clipByTerrainDepth`，也與數量脫鉤（ver -1199 驗過 841 個物件量不到）。 */
+    glDrawRuins(sinp, cosp, lx, ly, S.day);
     ctx.clearRect(0,0,W,VIEWH);
   }else{
     bctx.putImageData(buf,0,0);
@@ -8120,7 +8314,10 @@ function render(now){
        重疊只有幾個像素、又是軟的，看不出來。 */
   drawSettlements3D(scaleH,horizon,sinp,cosp);
   drawTrains(S,scaleH,horizon,sinp,cosp);                  // 火車跟城同一層（貼在地上）
-  drawRuins(scaleH,horizon,sinp,cosp);                     // 地表的小型遺蹟（ver -1107，同一層：貼在地上）
+  /* ⚠ GLON：遺蹟改由 GL 畫（`glDrawRuins`），這裡不再跑 —— 那是這一層
+     從 CPU 移走的**全部**成本（貝利薩爾 d15 實測 2.6~4.5ms／禎）。 */
+  if(!(GLON && glRuinReady))
+    drawRuins(scaleH,horizon,sinp,cosp);                   // 地表的小型遺蹟（ver -1107，同一層：貼在地上）
   drawRuinBeams(scaleH,horizon,sinp,cosp,now);             // 掃到的遺蹟射出的光柱（ver -1116）
   drawCitySmoke(S,scaleH,horizon,sinp,cosp,now);           // 炊煙蓋在城上（ver -446）
   drawPuffs(S,scaleH,horizon,sinp,cosp,0,Infinity);        // 雲蓋在城與煙上
@@ -8765,6 +8962,19 @@ function drawCitySmoke(S,scaleH,horizon,sinp,cosp,now){
    ⚠ 畫家演算法：底板 → 由遠而近的方塊。方塊的牆累積成**一條路徑一次 fill**
      （同量體層）：顏色一樣，重疊不影響外觀，省下幾十次 fill。 */
 let ruinFB=null, RFC=null;
+/* ══⚠⚠⚠ 幾何擷取模式（ver -1205）═══════════════════════════════════════
+   遺蹟要搬上 GPU，需要它的**局部世界座標**幾何。而那幾支產生器
+   （`box`／`gable`／`prism`／`crenel`／倒柱）是 Ray 從 -1156 調到 -1167 的成果，
+   **絕對不要另外寫一份**（鐵律 8：一個動作一個實作 —— 兩份必然走鐘，
+   而且是那種「GL 的城堡跟 CPU 的城堡長得不一樣」的走鐘）。
+   ⇒ 改成讓同一支 `drawRuins` 跑一次「只算幾何、不畫」的模式：
+     · `px` 回傳假點（不做視錐剔除）—— 擷取要的是 `loc`／`locTop`／`z0`／`h`，
+       那四樣**與相機無關**，`base`／`top` 擷取時用不到。
+     · `detailK` 給極大值 ⇒ `unreadable`／`tooSmall`／`flatten` 全部不成立、
+       多邊柱拿回作者寫的邊數 ⇒ **擷取到的是滿細節的版本**（GPU 不需要 LOD）。
+     · 三個距離／視角的 `continue` 一律跳過。
+   ⚠ 擷取只在開機跑一次（遺蹟是靜態的），之後每禎只是畫 VBO。 */
+let RUIN_CAPTURE=false, ruinCapOut=null;
 /* 環境光的三個旋鈕（ver -1165）。`AMB`＝白天也吃這麼多（「多吃一點環境光」）；
    `AMB_NIGHT`＝夜裡**額外**吃的份量（實測把夜裡的亮度比由 1.34 拉回 1.16）；
    `EASE`＝逐禎往新取樣逼近的比例（取樣是 0.4 秒一次的，不平滑會跳階）。 */
@@ -8788,13 +8998,13 @@ function drawRuins(scaleH,horizon,sinp,cosp){
     const wx0=P.x*MAP_SCALE, wy0=P.y*MAP_SCALE;
     const ddx=wx0-cam.x, ddy=wy0-cam.y;
     const dist=Math.hypot(ddx,ddy);
-    if(dist>RUIN_FAR) continue;                    // 太遠：小到讀不出形狀，省下來
+    if(!RUIN_CAPTURE && dist>RUIN_FAR) continue;   // 太遠：小到讀不出形狀，省下來
     const zc=ddx*(-sinp)+ddy*(-cosp);
-    if(zc<RUIN_NEAR) continue;                     // 身後／正下方（那個角度本來就看不到）
+    if(!RUIN_CAPTURE && zc<RUIN_NEAR) continue;    // 身後／正下方（那個角度本來就看不到）
     /* 淡入走 smoothstep 不走線性（ver -1155）：線性在剛跨進視距那一格會「啪」地
        出現一層薄影，兩端收平才讀得出是**浮出來**的。 */
     const fk=clamp((RUIN_FAR-dist)/RUIN_FADE,0,1), fade=fk*fk*(3-2*fk);
-    if(fade<=0.02) continue;
+    if(!RUIN_CAPTURE && fade<=0.02) continue;
     /* ══⚠⚠ 墊高（ver -1153，Ray：「底加厚墊高」）══
        整地之後地面與石地板會**完全等高**，而逐欄的深度遮擋在同高時是打平手 ——
        哪一欄被裁掉全看浮點誤差，畫面上就是斑駁的破洞（`PODIUM_CLEAR` 那一段
@@ -8808,6 +9018,10 @@ function drawRuins(scaleH,horizon,sinp,cosp){
     const ca=Math.cos(A.rot||0), sa=Math.sin(A.rot||0);
     /* 局部座標（世界單位、以遺蹟中心為原點）→ 螢幕。回 null＝這一點不能用。 */
     const px=(lx,ly,h)=>{
+      /* ⚠ 擷取模式：回一個固定的假點。擷取要的是 `loc`／`locTop`／`z0`／`h`
+         （與相機無關），`base`／`top` 用不到 —— 但**不能回 null**，
+         不然產生器會判定「這一塊不可見」而整塊丟掉。 */
+      if(RUIN_CAPTURE) return { x:0, y:0, z:1000 };
       const wx=wx0+(lx*ca-ly*sa), wy=wy0+(lx*sa+ly*ca);
       const dx=wx-cam.x, dy=wy-cam.y;
       const z=dx*(-sinp)+dy*(-cosp);
@@ -8985,7 +9199,9 @@ function drawRuins(scaleH,horizon,sinp,cosp){
        這個用途上綽綽有餘 —— 它只回答「這東西還讀得出來嗎」。 */
     /* 世界單位 → **緩衝**像素（高度方向）。`dyk = scaleH×syk` 是螢幕像素，
        再除以 syk 就回到緩衝像素 —— 所以這裡直接用 scaleH（鐵律 7：不要乘了再除）。 */
-    const detailK=scaleH/Math.max(zc,1);
+    /* ⚠ 擷取模式給極大值 ⇒ `unreadable`／`tooSmall`／`flatten` 全部不成立、
+       多邊柱拿回作者寫的邊數 ⇒ 擷取到的是**滿細節**的版本（GPU 不需要距離 LOD）。 */
+    const detailK=RUIN_CAPTURE ? 1e9 : scaleH/Math.max(zc,1);
     const unreadable=h=>(h||0)*detailK<DETAIL_PX;
     /* ══⚠⚠⚠ 主零件也要有距離 LOD（ver -1197）════════════════════════════
        `unreadable` 只擋 `detail:true`，所以**主零件不管多遠都照建**：實測貝利薩爾
@@ -9132,6 +9348,14 @@ function drawRuins(scaleH,horizon,sinp,cosp){
           if(b){ items.push(b); take(b); }
         }
       }
+    }
+    /* ⚠ 擷取模式：幾何算完就收工，不畫。帶出去的是**局部世界座標**
+       （`loc`／`locTop` 已含各零件自己的 rot 與位移；遺蹟自己的 rot 與落點
+       由 `A.rot`／`P.x,P.y`／`gh` 在 GL 那邊套上去）。 */
+    if(RUIN_CAPTURE){
+      ruinCapOut.push({ key:P.ruin, items, shape, C,
+                        wx0, wy0, gh, ca, sa, lift });
+      continue;
     }
     if(!items.length && !slab) continue;
     /* ══⚠⚠⚠ 離屏緩衝要**對齊地形的像素格**（ver -1165，Ray：「移動時閃動」）══
