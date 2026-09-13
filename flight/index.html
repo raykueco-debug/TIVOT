@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1286"></script>
+<script src="../orientation.js?v=1287"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1286');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1287');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1286");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1286");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1287");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1287");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1286");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1286");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1287");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1287");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -604,25 +604,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1286" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1287" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1286" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1286" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1286" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1286" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1286" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1286" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1286" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1286" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1286" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1286" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1287" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1287" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1287" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1287" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1287" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1287" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1287" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1287" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1287" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1287" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1286" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1287" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1286" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1287" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -643,11 +643,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1286"></script>
+<script src="settlement.js?v=1287"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1286"></script>
+<script src="talks.js?v=1287"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -699,7 +699,7 @@ const COLOR_URL  = 'silvermoon_terrain.png'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1286';
+const FLIGHT_VER = 'ver -1287';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -5045,30 +5045,26 @@ Object.assign(PORTRAIT_EXPR.nouvelle, {
 Object.assign(PORTRAIT_EXPR.anya, {
   shy:        { src:'../resources/SI/Anya_SI_shy.webp',         fx:0.472, top:0,  bot:1528 },
 });
-/* ══ 索菈娜的瞭望立繪（ver -1281 交件，-1285 定尺寸）══
-   ⚠⚠⚠ **尺寸照憲法對她指定的那一條：橫向佔比**（§6.5：「兩人同台要挑橫向佔比
-   小的那張圖（例：索拉娜用 side 不用 front，69% vs 78%）」）。實測（alpha>8）：
-     `Sorana_SI_side`  橫向 741/1024 ＝ **72.4%**  ← 她在這一頁的本尊立繪
-     `Sorana_SI_front` 橫向 1016/1024 ＝ 99.2%     ← -752 換過新圖，憲法記的 78% 是舊圖
-     `Sorana_SI_watch` 橫向  991/1024 ＝ 96.8%     ← 與 front 同級寬
-   這張是斜倚、手伸出去、裙襬整片張開 —— 鎖身高之下**橫向佔的畫面是 side 的 1.34 倍**，
-   所以「臉一樣大」但整個人壓迫感差很多（Ray 連退三次：「太大了吧」「還是太大」）。
-   ⇒ 照同一個理由把橫向收到與 side 一致：`cm = 176 × 741/991 ≈ 132`。
-   ⚠⚠⚠ **不可以配 `standCm`**（ver -1285 我配了，Ray：「然後你又讓她站太高，
-     身高呢？？」）。`standCm` 是給**近景／坐姿**用的 —— 那種圖畫面裡根本沒有
-     全身，所以「頭擺多高」必須另外給。**這張是全身圖**：縮小之後她的腳也跟著
-     上來，頭卻被 standCm 釘在 176 的頂線 ⇒ **腳離地平線 300px，人站在空中**。
-     ⇒ 全身圖一律讓 `cm` 同時管大小與站位（§6.5「站位同樣鎖身高：
-       頭頂 y ＝ 頂線 ＋（最高身高 − 自己身高）× 每公分像素」）——
-       實測這樣她的腳落在 1114，與 side（1113）、諾薇兒（1114）同一條地平線。
-   ⚠ `top` 6 ＝她**舉起來遮陽的那隻手**不是頭頂，刻意不改（改了圖會往上推、
-     手被畫面上緣切掉，而 Ray 要的是「下可截」）。
+/* ══ 索菈娜的瞭望立繪（ver -1281 交件；尺寸 -1279~-1287 來回七版的結論）══
+   ⚠⚠⚠ **全身圖不要覆寫 cm**。這一張與 `Sorana_SI_front`／`side` 同類：全身站姿、
+   人物佔滿 1024×1536，所以 `cm` 沿用本尊 176 —— 頭與腳都落在與其他人同一條線上
+   （實測腳線 1113/1114，與 side、諾薇兒一致）。
+   ⚠⚠⚠ **為什麼不能「縮小一點」**（-1279~-1286 試過六種，全被退回）：
+     全身立繪只有兩個錨點，而且被**同一個身高**綁在一起 —— 頭頂由身高讓位定、
+     縮放也由身高定。於是
+       縮小＋頭留頂線（standCm:176）→ **腳離地浮空**（Ray：「站太高」）
+       縮小＋頭跟著降（standCm=cm）  → **頭掉到諾薇兒胸口**（Ray：「你到底在幹什麼」）
+       不縮                          → 頭齊腳齊，但這張構圖寬（Ray：「太大」）
+     三者不可能同時成立。憲法對「這張太搶戲」給的解法**不是縮小**，是
+     **換一張橫向佔比小的**（§6.5 指名的例子正是她的 side 69% vs front 78%）——
+     真要更小，得把這張裁成半身圖（那時 anchorBot 才有意義，見 castGeom）。
+   ⚠ `top` 6 ＝她**舉起來遮陽的那隻手**，不是頭頂；刻意不改（改了圖會往上推、
+     手被畫面上緣切掉）。
    ⚠ `fx` 0.680 用綠瞳算的（兩群在 x=667／726 取中點），脖子上那顆綠寶石要濾掉。
    ⚠ 這一組與 `script/speakers.js` 的 `ART.sorana.expr.watch` 是同一次量測，
      改一邊要改兩邊（§5／§6.10）。 */
 Object.assign(PORTRAIT_EXPR.sorana, {
-  watch:      { src:'../resources/SI/Sorana_SI_watch.webp',     fx:0.680, top:6,  bot:1521,
-                cm:132 },
+  watch:      { src:'../resources/SI/Sorana_SI_watch.webp',     fx:0.680, top:6,  bot:1521 },
 });
 /* `renna/relief` → 本尊 id。⚠ **入隊判定（`inParty`）一定要走這一支**：
    直接拿 `renna/relief` 去問 PARTY 查不到，而 `inParty` 對查不到的人一律放行
