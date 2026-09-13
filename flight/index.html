@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1264"></script>
+<script src="../orientation.js?v=1265"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1264');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1265');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1264");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1264");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1265");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1265");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1264");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1264");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1265");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1265");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -585,25 +585,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1264" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1265" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1264" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1264" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1264" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1264" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1264" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1264" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1264" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1264" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1264" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1264" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1265" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1265" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1265" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1265" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1265" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1265" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1265" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1265" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1265" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1265" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1264" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1265" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1264" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1265" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -624,11 +624,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1264"></script>
+<script src="settlement.js?v=1265"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1264"></script>
+<script src="talks.js?v=1265"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -668,7 +668,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1264';
+const FLIGHT_VER = 'ver -1265';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -2273,21 +2273,70 @@ function meLineNear(E, x, y){       // 這一點在不在擦除筆 E 的筆跡�
   return false;
 }
 /* 把一組折線照擦除筆剪開。`extra` ＝還沒生效的那一筆（編輯器的即時預覽用）。
+
+   ⚠⚠⚠ **要在「段」上剪，不是在「頂點」上剪**（ver -1265 修，Ray：「為何我路
+     又畫不出來了？」）。第一版只檢查折線自己的頂點 —— 而**手繪的線簡化過之後
+     常常只剩 2~3 個頂點**（一條 55 格的路就 3 個點）。於是：
+       · 擦除筆只要碰到中間那一個頂點，剩下的兩截各只有 1 點 → 兩截都被丟掉
+         → **整條路憑空消失**（Ray 那三條就是這樣沒的）
+       · 反過來，擦除筆落在兩個頂點**之間**時什麼事都不會發生
+     兩種錯法都來自同一個原因：拿「頂點」當「線」的代表。
+     現在改成**沿著每一段以 1.5 格取樣**找出「沒被蓋到」的區間，只在區間的
+     兩端補點 —— 剪得準，而且輸出的點距**維持原樣**（不會變成一堆密點，
+     `railProfile` 的縱斷面平滑與 `buildTrains` 的弧長都照原本的尺度）。
    ⚠ 完全沒被碰到的線**原樣回傳同一個物件**：掛在陣列上的 `ends`／`prof`／`hand`
      才不會被複製掉，也省下白做的工。 */
+const CUT_STEP=1.5;                 // 沿線取樣的間距（地圖像素）
 function mapEditCut(paths, extra){
-  const ES=MAP_EDITS.filter(e=>e.t==='erase');
-  if(extra) for(const e of extra) if(e && e.t==='erase' && e.pts && e.pts.length) ES.push(e);
+  /* ⚠⚠⚠ **橡皮擦只擦「它之前就存在的東西」**（ver -1265 修，Ray：「為何我路
+     又畫不出來了？」）。第一版把所有擦除筆套在所有線上、不看先後 —— 於是
+     **在擦過的地方再畫一條新的路，它會當場被舊的擦除吃掉**，畫面上什麼都沒有，
+     也沒有任何錯誤訊息。那正是 Ray 遇到的事。
+     規則與 `MAP_EDITS` 的其餘部分一致：**順序就是時間，後面的蓋前面的**。
+       · 手繪的線帶著自己的序號（`pts.src`，由 `mapEditPaths` 掛上）——
+         只有**序號比它大**的擦除筆吃得到它
+       · 自動產生的路網沒有序號 ＝ 在所有筆畫之前就存在 ⇒ 每一支擦除都吃得到
+       · 正在畫、還沒確認的那一筆（`extra`）排在最後 ⇒ 吃得到所有線 */
+  const ES=[];
+  MAP_EDITS.forEach((e,i)=>{ if(e.t==='erase') ES.push({e, i}); });
+  if(extra) for(const e of extra) if(e && e.t==='erase' && e.pts && e.pts.length)
+    ES.push({ e, i:MAP_EDITS.length+1 });
   if(!ES.length) return paths;
-  const hit=(x,y)=>{ for(const E of ES) if(meLineNear(E,x,y)) return true; return false; };
+  let after=-1;                         // 目前這一條線的序號（只有比它晚的擦除算數）
+  const hit=(x,y)=>{ for(const E of ES) if(E.i>after && meLineNear(E.e,x,y)) return true; return false; };
   const out=[];
+  /* 沿線走一趟，回報有沒有任何一點（含段內取樣）被蓋到。 */
+  const anyHit=(pts)=>{
+    if(pts.length===1) return hit(pts[0][0],pts[0][1]);
+    for(let k=1;k<pts.length;k++){
+      const ax=pts[k-1][0], ay=pts[k-1][1], bx=pts[k][0], by=pts[k][1];
+      const L=Math.hypot(bx-ax,by-ay), n=Math.max(1,Math.ceil(L/CUT_STEP));
+      for(let q=0;q<=n;q++){
+        const t=q/n; if(hit(ax+(bx-ax)*t, ay+(by-ay)*t)) return true;
+      }
+    }
+    return false;
+  };
   for(const pts of paths){
-    let any=false;
-    for(const q of pts) if(hit(q[0],q[1])){ any=true; break; }
-    if(!any){ out.push(pts); continue; }
-    let run=[];
+    after = (pts.src!=null) ? pts.src : -1;               // 自動產生的沒有序號＝最早
+    if(!anyHit(pts)){ out.push(pts); continue; }          // 原樣回傳同一個物件
+    if(pts.length===1) continue;                          // 單點又被蓋到 ＝ 整個沒了
+    let run=[], open=false;
     const flush=()=>{ if(run.length>=2){ if(pts.hand) run.hand=true; out.push(run); } run=[]; };
-    for(const q of pts){ if(hit(q[0],q[1])) flush(); else run.push(q); }
+    for(let k=1;k<pts.length;k++){
+      const ax=pts[k-1][0], ay=pts[k-1][1], bx=pts[k][0], by=pts[k][1];
+      const L=Math.hypot(bx-ax,by-ay), n=Math.max(1,Math.ceil(L/CUT_STEP));
+      for(let q=(k===1?0:1);q<=n;q++){
+        const t=q/n, x=ax+(bx-ax)*t, y=ay+(by-ay)*t;
+        if(hit(x,y)){ if(open){ open=false; flush(); } }
+        else{
+          /* 只在**區間開頭**與**每一段的端點**補點 —— 中間的取樣不進去，
+             輸出才會維持原本的點距（見檔頭）。 */
+          if(!open){ run.push([x,y]); open=true; }
+          else if(q===n) run.push([x,y]);
+        }
+      }
+    }
     flush();
   }
   return out;
@@ -2310,7 +2359,12 @@ function mapEditPaths(kind){
       for(let q=(k===1?0:1);q<=n;q++)
         pts.push([clamp(ax+(bx-ax)*q/n,0,MAPW-1), clamp(ay+(by-ay)*q/n,0,MAPH-1)]);
     }
-    if(pts.length>=2){ pts.hand=true; out.push(pts); }
+    if(pts.length>=2){
+      pts.hand=true;
+      /* ⚠ 帶上它在 `MAP_EDITS` 裡的序號：橡皮擦只擦比它早的東西（見 mapEditCut）。 */
+      pts.src=MAP_EDITS.indexOf(E);
+      out.push(pts);
+    }
   }
   return out;
 }
@@ -8669,12 +8723,14 @@ function meDraw(){
          生效了就跟自動產生的那幾條一樣（公路金、鐵路白虛線），
          **只有待確認的那一條**是亮黃粗虛線。 */
     const pending = mePend && mePend.k==='edit' && mePend.e===E;
+    /* ⚠ 顯示也要帶序號，不然畫面上會比地面多／少一截（`mapEditCut` 靠它判先後）。 */
+    const disp=E.pts.slice(); disp.src=MAP_EDITS.indexOf(E);
     const col = pending ? 'rgba(255,226,110,1)'
                         : (E.t==='rail'?'rgba(226,232,240,.92)':'rgba(214,178,92,.85)');
     const w   = pending ? Math.max(2.4,s*3) : (E.t==='rail'?Math.max(1,s*1.4):Math.max(1,s*1.6));
     const dsh = pending ? [Math.max(4,s*5),Math.max(3,s*3)]
                         : (E.t==='rail'?[Math.max(2,s*3),Math.max(2,s*2.4)]:null);
-    for(const seg of mapEditCut([E.pts], extra)) poly(seg, col, w, dsh);
+    for(const seg of mapEditCut([disp], extra)) poly(seg, col, w, dsh);
   }
   if(meCur&&(meCur.t==='rail'||meCur.t==='road')&&meCur.pts.length>1)
     poly(meCur.pts,'rgba(255,240,140,.95)',Math.max(1.6,s*2));
