@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.13-1247';
+export const VERSION = 'ver 2026.09.13-1248';
 
 export const GAME_CONFIG = {
 
@@ -3356,6 +3356,12 @@ export const GAME_CONFIG = {
            增益 <1 ⇒ 不會觸頂。 */
       peritune_moonlit_dancer_loop:0.916,     // 聖索菲亞城（−11.02，比錨小聲 0.66dB ⇒ 0.849×10^(0.66/20)）
       peritune_black_crystal_loop:0.988,      // 伊甸古墓（−11.68，比錨小聲 1.32dB）
+      /* 拉芬斯達爾城（ver -1248，同一把尺、同一個錨）：
+           PerituneMaterial_TaishoRoman_Theme2_loop  LUFS −8.83／手機 −12.84 → 平均 **−10.84**
+         ⇒ 0.849×10^(0.48/20)＝0.897。峰值 0.00 dBFS × 0.897 ＝ −0.94 dBFS，未觸頂。
+         ⚠ 它的手機模型只低 4.0 dB（前兩首是 6.2／7.5）＝低頻沒那麼重，
+           在手機上不會像那兩首一樣縮一截。 */
+      peritunematerial_taishoroman_theme2_loop:0.897,
       /* ⚠ 這兩首的「手機喇叭模型」比原始量測低 6.2／7.5 dB（一般曲子約 4~5）——
          它們的低頻本來就重。增益對的是**兩者的平均**（§6.6：只對其中一邊會讓
          低頻重的曲子在另一端突出 4~7 dB）。 */
@@ -4009,6 +4015,7 @@ export const ASSETS = {
   bgm_lostplace:    "resources/audio/bgm/PerituneMaterial_Lost_place4_loop.m4a",   // 鹿主異化～戰鬥（ver -877）
   bgm_moonlit:      "resources/audio/bgm/Peritune_Moonlit_Dancer_loop.m4a",        // 聖索菲亞城（ver -1247）
   bgm_blackcrystal: "resources/audio/bgm/Peritune_Black_Crystal_loop.m4a",         // 伊甸古墓（ver -1247）
+  bgm_taisho2:      "resources/audio/bgm/PerituneMaterial_TaishoRoman_Theme2_loop.m4a",   // 拉芬斯達爾城（ver -1248）
   bgm_piratebattle: "resources/audio/bgm/bgm_piratebattle.m4a",
   /* 湖上甲板那一段（ver -744，Ray 的 stage5 稿）。 */
   bgm_misty:        "resources/audio/bgm/Peritune_Misty_Hollow_loop.m4a",

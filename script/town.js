@@ -4044,6 +4044,9 @@ export const TOWNS = {
   ravnsdal: {
     name: '拉芬斯達爾城',
     entry: 'square',
+    /* BGM（ver -1248，Ray 交件 `PerituneMaterial_TaishoRoman_Theme2_loop`）。
+       ⚠ 它原本**沒有 `bgm`** ＝ 進城沿用上一個畫面的曲子（同聖索菲亞／伊甸古墓）。 */
+    bgm: 'taisho2',
     /* 大城市不上迷霧（ver -913）—— ⚠ **要明寫**：沒寫就是有霧。 */
     mist: 0,
     /* 餐飲街：這一格現在只是「碰得到人的地方」。⚠ **不給 `scenes`** —— 四家分店的
