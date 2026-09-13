@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1225"></script>
+<script src="../orientation.js?v=1226"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1225');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1226');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1225");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1225");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1226");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1226");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1225");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1225");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1226");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1226");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -483,25 +483,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1225" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1226" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1225" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1225" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1225" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1225" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1225" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1225" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1225" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1225" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1225" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1225" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1226" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1226" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1226" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1226" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1226" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1226" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1226" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1226" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1226" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1226" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1225" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1226" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1225" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1226" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -522,11 +522,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1225"></script>
+<script src="settlement.js?v=1226"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1225"></script>
+<script src="talks.js?v=1226"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -566,7 +566,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=2';
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1225';
+const FLIGHT_VER = 'ver -1226';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -2426,18 +2426,27 @@ const RUIN_ART = {
        · `noBase:true` ＝ 石板鋪面／外圈的草／基座側壁整組不畫。
        · **沒有 `podium`** ＝ 不整地。地形照原樣起伏，所以量體的下半會被山吃掉 ——
          那正是「嵌在一起」：每一段牆露出多少由它腳下的地形決定，不是我排的。
-       · `lift:96` 只是把**整座的基準面**抬到盆底之上（171+96=267）；
-         每一個零件的 `z0` 從 **−50** 起跳，也就是**往地下長 50 個世界單位** ——
-         所以低處的地形咬不到它、高處的稜線自然把它埋掉，兩邊都對。
+       · `lift:8` ＝基準面壓到**盆底**（171+8=179，footprint 內的地形最低 169）；
+         每一個零件的 `z0` 從 **−40** 起跳（世界高 139，比 footprint 的地形最低點 169
+         還低）—— 所以**沒有任何一塊的底面會露出來**，那就是 Ray 說的「地基」。
+       ⚠⚠⚠ **不要再往下長更多**（-1226 踩過：試過 −200）：這個渲染器的深度存的是
+         **水平距離**，不是真 3D 距離 —— 一根垂直的柱子與它正上方的地面**水平距離相同**，
+         所以「埋在地下」不等於「在後面」，多長出來的那一截會**直接穿過地面畫出來**，
+         整座變成一片細長的白柱。埋，只要埋到地形最低點之下就夠了。
          ⚠ 低於地面的那一截由深度測試吃掉（GL 的 `gl_FragDepth`），不必另外裁。
        ⚠ 這與伊甸古墓的「嵌在壁面」是同一族，差別只在那邊埋的是**背面**、
          這邊埋的是**下半**。 */
     noBase: true,
-    /* ⚠ `lift` 是「**露出多少**」的旋鈕（ver -1222b）：footprint 之內的地形
-       169~336（平均 238），所以基準面設在 275 時，低的那一半露出來、
-       高的那一半被山吃掉 —— 那正是「嵌在一起」。設 241（＝平均）會埋掉一半以上，
-       設 340 以上就整座浮出來變成「蓋在山頂上」，兩邊都不對。 */
-    lift: 104,
+    /* ⚠⚠⚠ `lift` 要壓到**盆底**（ver -1226，Ray：「不要有地基，整個嵌進山裡」）。
+       兩個坑方向相反，必須同時避開：
+       ① `lift` **太高** → 零件的底浮在地形之上，寬牆的**底面露出來就是一塊地基**
+          （-1225 實測：footprint 有 **28%** 的地形低於零件的底 —— 那就是 Ray 說的地基）。
+       ② 底往地下長很多（`z0:-200`）解掉了 ①，但 `lift` 還是高的話，
+          **埋下去的那一截會在低處反而露出來** —— 塔被拉成一根細長的白柱
+          （-1226 實測：基準面 237、盆底 171 ⇒ 多露 66，設計高 89 的塔畫成 155）。
+       ⇒ 正解是**兩件一起**：底埋很深（不會浮）＋基準面壓到地形最低點附近
+         （不會多露）。剩下的交給地形：高的地方埋掉、低的地方露出來。 */
+    lift: 8,
     parts: [
       /* ══ 讀參考圖讀到的三件事（Ray 的兩張圖）══
          ① 它是**建築群**不是一座門樓：一整片高低不齊的塔與柱擠在一起，
@@ -2448,18 +2457,18 @@ const RUIN_ART = {
            「一片廢城」的來源。 */
 
       /* ── 前排：面向 +x（東）的一道連續牆，切成六段、各自不同高 ── */
-      { k:'stump', x:21.3, y:-137.8, w:13.1, l:42.6, h:80.3, z0:-49.5, shrink:0.99,
-        crenel:{ w:5, h:4, gap:9, t:5, broken:0.55 } },
-      { k:'stump', x:21.3, y:-91.8, w:13.1, l:45.9, h:92.4, z0:-49.5, shrink:0.99,
-        crenel:{ w:5, h:4, gap:9, t:5, broken:0.34 } },
-      { k:'stump', x:21.3, y:-42.6, w:13.1, l:47.6, h:86.9, z0:-49.5, shrink:0.99,
-        crenel:{ w:5, h:4, gap:9, t:5, broken:0.42 } },
-      { k:'stump', x:21.3, y:18, w:13.1, l:50.8, h:96.8, z0:-49.5, shrink:0.99,
-        crenel:{ w:5, h:4, gap:9, t:5, broken:0.28 } },
-      { k:'stump', x:21.3, y:75.4, w:13.1, l:47.6, h:82.5, z0:-49.5, shrink:0.99,
-        crenel:{ w:5, h:4, gap:9, t:5, broken:0.50 } },
-      { k:'stump', x:21.3, y:123, w:12.3, l:37.7, h:70.4, z0:-49.5, shrink:0.99,
-        crenel:{ w:5, h:4, gap:9, t:5, broken:0.66 } },
+      { k:'stump', x:21.3, y:-137.8, w:13.1, l:42.6, h:61.6, z0:-40, shrink:0.99,
+        crenel:{ w:5, h:61.6, gap:9, t:5, broken:0.55 } },
+      { k:'stump', x:21.3, y:-91.8, w:13.1, l:45.9, h:70, z0:-40, shrink:0.99,
+        crenel:{ w:5, h:70, gap:9, t:5, broken:0.34 } },
+      { k:'stump', x:21.3, y:-42.6, w:13.1, l:47.6, h:66.2, z0:-40, shrink:0.99,
+        crenel:{ w:5, h:66.2, gap:9, t:5, broken:0.42 } },
+      { k:'stump', x:21.3, y:18, w:13.1, l:50.8, h:73.1, z0:-40, shrink:0.99,
+        crenel:{ w:5, h:73.1, gap:9, t:5, broken:0.28 } },
+      { k:'stump', x:21.3, y:75.4, w:13.1, l:47.6, h:63.1, z0:-40, shrink:0.99,
+        crenel:{ w:5, h:63.1, gap:9, t:5, broken:0.50 } },
+      { k:'stump', x:21.3, y:123, w:12.3, l:37.7, h:54.6, z0:-40, shrink:0.99,
+        crenel:{ w:5, h:54.6, gap:9, t:5, broken:0.66 } },
       /* 牆上的拱：三個大的（門）＋幾個小的（連拱廊）。
          ⚠ z 區間要包在牆裡（-1163 的教訓：窗不可以開得比牆高）。 */
       /* ⚠⚠ 開口的 `z0` 要從**地面**（0）起算，不是從牆的底（−90）—— 牆往地下長，
@@ -2467,69 +2476,69 @@ const RUIN_ART = {
          （自檢抓出來的：五個開口的頂只到 +10~+22）。
          ⚠ 上界仍然要包在那一段牆裡（-1163：窗不可以開得比牆高）——
            那六段牆的頂分別是 56／78／68／86／60／38。 */
-      { k:'col', x:26.2, y:-91.8, w:8.2, l:21.3, h:31.9, z0:2.2 },
-      { k:'col', x:26.2, y:18, w:8.2, l:24.6, h:36.3, z0:2.2 },
-      { k:'col', x:26.2, y:75.4, w:8.2, l:19.7, h:25.3, z0:2.2 },
-      { k:'col', x:26.2, y:-137.8, w:6.6, l:11.5, h:18.7, z0:3.3 },
-      { k:'col', x:26.2, y:-42.6, w:6.6, l:11.5, h:24.2, z0:3.3 },
-      { k:'col', x:26.2, y:123, w:6.6, l:10.7, h:13.2, z0:2.2 },
+      { k:'col', x:26.2, y:-91.8, w:8.2, l:21.3, h:22.3, z0:1.5 },
+      { k:'col', x:26.2, y:18, w:8.2, l:24.6, h:25.4, z0:1.5 },
+      { k:'col', x:26.2, y:75.4, w:8.2, l:19.7, h:17.7, z0:1.5 },
+      { k:'col', x:26.2, y:-137.8, w:6.6, l:11.5, h:13.1, z0:2.3 },
+      { k:'col', x:26.2, y:-42.6, w:6.6, l:11.5, h:16.9, z0:2.3 },
+      { k:'col', x:26.2, y:123, w:6.6, l:10.7, h:9.2, z0:1.5 },
 
       /* ── 前排的塔：夾在牆段之間，高過牆一截（高度全部不一樣） ── */
-      { k:'tower', x:21.3, y:-114.8, r:10.7, rTop:9.3, n:4, h:117.7, z0:-49.5, detail:true,
-        crenel:{ w:4, h:4, gap:4, t:4, broken:0.30 } },
-      { k:'tower', x:21.3, y:-67.2, r:9, rTop:7.9, n:6, h:102.3, z0:-49.5, detail:true,
-        crenel:{ w:4, h:4, gap:4, t:4, broken:0.52 } },
-      { k:'tower', x:21.3, y:-18, r:9.8, rTop:8.5, n:4, h:129.8, z0:-49.5, detail:true,
-        crenel:{ w:4, h:4, gap:4, t:4, broken:0.22 } },
-      { k:'tower', x:21.3, y:45.9, r:9.8, rTop:8.4, n:4, h:112.2, z0:-49.5, detail:true,
-        crenel:{ w:4, h:4, gap:4, t:4, broken:0.44 } },
-      { k:'tower', x:21.3, y:100, r:8.2, rTop:7.1, n:6, h:89.1, z0:-49.5, detail:true,
-        crenel:{ w:4, h:4, gap:4, t:4, broken:0.60 } },
+      { k:'tower', x:21.3, y:-114.8, r:10.7, rTop:9.3, n:4, h:87.7, z0:-40, detail:true,
+        crenel:{ w:4, h:87.7, gap:4, t:4, broken:0.30 } },
+      { k:'tower', x:21.3, y:-67.2, r:9, rTop:7.9, n:6, h:77, z0:-40, detail:true,
+        crenel:{ w:4, h:77, gap:4, t:4, broken:0.52 } },
+      { k:'tower', x:21.3, y:-18, r:9.8, rTop:8.5, n:4, h:96.2, z0:-40, detail:true,
+        crenel:{ w:4, h:96.2, gap:4, t:4, broken:0.22 } },
+      { k:'tower', x:21.3, y:45.9, r:9.8, rTop:8.4, n:4, h:83.9, z0:-40, detail:true,
+        crenel:{ w:4, h:83.9, gap:4, t:4, broken:0.44 } },
+      { k:'tower', x:21.3, y:100, r:8.2, rTop:7.1, n:6, h:67.7, z0:-40, detail:true,
+        crenel:{ w:4, h:67.7, gap:4, t:4, broken:0.60 } },
 
       /* ── 中排：退後一段的高塊與方塔，天際線的第二層 ── */
-      { k:'stump', x:-11.5, y:-78.7, w:32.8, l:54.1, h:107.8, z0:-49.5, shrink:0.965 },
-      { k:'stump', x:-11.5, y:-78.7, w:37.7, l:59, h:4.4, z0:58.3 },                 // 簷口
-      { k:'stump', x:-13.1, y:8.2, w:36.1, l:64, h:123.2, z0:-49.5, shrink:0.965 },
-      { k:'stump', x:-13.1, y:8.2, w:41, l:68.9, h:4.4, z0:73.7 },
-      { k:'stump', x:-13.1, y:8.2, w:31.2, l:50.8, h:5.5, z0:78.1, shrink:0.96,
-        crenel:{ w:5, h:4, gap:8, t:5, broken:0.32 } },
-      { k:'stump', x:-9.8, y:88.6, w:29.5, l:47.6, h:93.5, z0:-49.5, shrink:0.965,
-        crenel:{ w:5, h:4, gap:9, t:5, broken:0.48 } },
-      { k:'tower', x:-11.5, y:-42.6, r:9, rTop:7.7, n:4, h:136.4, z0:-49.5, detail:true,
-        crenel:{ w:4, h:4, gap:4, t:4, broken:0.26 } },
-      { k:'tower', x:-13.1, y:47.6, r:9, rTop:7.5, n:4, h:146.3, z0:-49.5, detail:true,
-        crenel:{ w:4, h:4, gap:4, t:4, broken:0.18 } },
+      { k:'stump', x:-11.5, y:-78.7, w:32.8, l:54.1, h:80.8, z0:-40, shrink:0.965 },
+      { k:'stump', x:-11.5, y:-78.7, w:37.7, l:59, h:3.1, z0:40.8 },                 // 簷口
+      { k:'stump', x:-13.1, y:8.2, w:36.1, l:64, h:91.6, z0:-40, shrink:0.965 },
+      { k:'stump', x:-13.1, y:8.2, w:41, l:68.9, h:3.1, z0:51.6 },
+      { k:'stump', x:-13.1, y:8.2, w:31.2, l:50.8, h:3.8, z0:54.7, shrink:0.96,
+        crenel:{ w:5, h:3.8, gap:8, t:5, broken:0.32 } },
+      { k:'stump', x:-9.8, y:88.6, w:29.5, l:47.6, h:70.8, z0:-40, shrink:0.965,
+        crenel:{ w:5, h:70.8, gap:9, t:5, broken:0.48 } },
+      { k:'tower', x:-11.5, y:-42.6, r:9, rTop:7.7, n:4, h:100.8, z0:-40, detail:true,
+        crenel:{ w:4, h:100.8, gap:4, t:4, broken:0.26 } },
+      { k:'tower', x:-13.1, y:47.6, r:9, rTop:7.5, n:4, h:107.8, z0:-40, detail:true,
+        crenel:{ w:4, h:107.8, gap:4, t:4, broken:0.18 } },
       /* 中排那兩塊高塊上的拱（大殿的正面）。 */
-      { k:'col', x:4.9, y:-78.7, w:8.2, l:19.7, h:34.1, z0:3.3 },
-      { k:'col', x:4.9, y:8.2, w:8.2, l:23, h:39.6, z0:3.3 },
+      { k:'col', x:4.9, y:-78.7, w:8.2, l:19.7, h:23.9, z0:2.3 },
+      { k:'col', x:4.9, y:8.2, w:8.2, l:23, h:27.7, z0:2.3 },
 
       /* ── 後排：最高的一叢細柱（參考圖上那兩三根特別高的） ── */
-      { k:'tower', x:-42.6, y:-55.8, r:6.6, rTop:5.2, n:6, h:165, z0:-49.5, detail:true },
-      { k:'tower', x:-45.9, y:-36.1, r:5.7, rTop:4.6, n:6, h:147.4, z0:-49.5, detail:true },
-      { k:'tower', x:-41, y:-3.3, r:7.4, rTop:5.9, n:8, h:177.1, z0:-49.5, detail:true,
-        crenel:{ w:4, h:4, gap:4, t:4, broken:0.34 } },
-      { k:'tower', x:-47.6, y:27.9, r:5.7, rTop:4.4, n:6, h:138.6, z0:-49.5, detail:true },
-      { k:'tower', x:-42.6, y:70.5, r:6.6, rTop:5.1, n:6, h:117.7, z0:-49.5, detail:true },
+      { k:'tower', x:-42.6, y:-55.8, r:6.6, rTop:5.2, n:6, h:120.9, z0:-40, detail:true },
+      { k:'tower', x:-45.9, y:-36.1, r:5.7, rTop:4.6, n:6, h:108.5, z0:-40, detail:true },
+      { k:'tower', x:-41, y:-3.3, r:7.4, rTop:5.9, n:8, h:129.3, z0:-40, detail:true,
+        crenel:{ w:4, h:129.3, gap:4, t:4, broken:0.34 } },
+      { k:'tower', x:-47.6, y:27.9, r:5.7, rTop:4.4, n:6, h:102.4, z0:-40, detail:true },
+      { k:'tower', x:-42.6, y:70.5, r:6.6, rTop:5.1, n:6, h:87.7, z0:-40, detail:true },
       /* 後排的連牆：把細柱串起來，不然它們讀起來是一排電線桿。 */
-      { k:'stump', x:-44.3, y:-24.6, w:9.8, l:78.7, h:77, z0:-49.5, shrink:0.985,
-        crenel:{ w:5, h:4, gap:8, t:4, broken:0.70 } },
-      { k:'stump', x:-44.3, y:50.8, w:9.8, l:52.5, h:64.9, z0:-49.5, shrink:0.985,
-        crenel:{ w:5, h:4, gap:8, t:4, broken:0.74 } },
+      { k:'stump', x:-44.3, y:-24.6, w:9.8, l:78.7, h:59.2, z0:-40, shrink:0.985,
+        crenel:{ w:5, h:59.2, gap:8, t:4, broken:0.70 } },
+      { k:'stump', x:-44.3, y:50.8, w:9.8, l:52.5, h:50.8, z0:-40, shrink:0.985,
+        crenel:{ w:5, h:50.8, gap:8, t:4, broken:0.74 } },
 
       /* ── 兩端：塌得最兇的一段，高度一路掉下去（收尾不要齊） ── */
-      { k:'stump', x:6.6, y:-160.7, w:27.9, l:24.6, h:61.6, z0:-49.5, shrink:0.985,
-        crenel:{ w:5, h:4, gap:9, t:5, broken:0.72 } },
-      { k:'stump', x:-6.6, y:-175.5, w:21.3, l:16.4, h:52.8, z0:-49.5, shrink:0.98 },
-      { k:'stump', x:4.9, y:150.9, w:24.6, l:21.3, h:57.2, z0:-49.5, shrink:0.985,
-        crenel:{ w:5, h:4, gap:9, t:5, broken:0.78 } },
-      { k:'stump', x:-8.2, y:168.9, w:19.7, l:14.8, h:46.2, z0:-49.5, shrink:0.98 },
-      { k:'stump', x:-24.6, y:183.7, w:16.4, l:11.5, h:38.5, z0:-49.5, shrink:0.98 },
+      { k:'stump', x:6.6, y:-160.7, w:27.9, l:24.6, h:48.5, z0:-40, shrink:0.985,
+        crenel:{ w:5, h:48.5, gap:9, t:5, broken:0.72 } },
+      { k:'stump', x:-6.6, y:-175.5, w:21.3, l:16.4, h:42.3, z0:-40, shrink:0.98 },
+      { k:'stump', x:4.9, y:150.9, w:24.6, l:21.3, h:45.4, z0:-40, shrink:0.985,
+        crenel:{ w:5, h:45.4, gap:9, t:5, broken:0.78 } },
+      { k:'stump', x:-8.2, y:168.9, w:19.7, l:14.8, h:37.7, z0:-40, shrink:0.98 },
+      { k:'stump', x:-24.6, y:183.7, w:16.4, l:11.5, h:32.3, z0:-40, shrink:0.98 },
 
       /* ── 側翼：往 −x 深處再退一層的殘塊（讀起來是「還有後面」） ── */
-      { k:'stump', x:-68.9, y:-11.5, w:18, l:44.3, h:69.3, z0:-49.5, shrink:0.98,
-        crenel:{ w:5, h:4, gap:8, t:4, broken:0.66 } },
-      { k:'stump', x:-70.5, y:60.7, w:16.4, l:29.5, h:57.2, z0:-49.5, shrink:0.98 },
-      { k:'tower', x:-72.2, y:-54.1, r:7.4, rTop:6.1, n:6, h:96.8, z0:-49.5, detail:true },
+      { k:'stump', x:-68.9, y:-11.5, w:18, l:44.3, h:53.9, z0:-40, shrink:0.98,
+        crenel:{ w:5, h:53.9, gap:8, t:4, broken:0.66 } },
+      { k:'stump', x:-70.5, y:60.7, w:16.4, l:29.5, h:45.4, z0:-40, shrink:0.98 },
+      { k:'tower', x:-72.2, y:-54.1, r:7.4, rTop:6.1, n:6, h:73.1, z0:-40, detail:true },
 
       /* ── 散落的斷柱（躺著），壓在量體之間的空隙上 ── */
       { k:'fallen', x:42.6, y:-24.6, rot: 0.55, len:27.9, dia:6.6, seg:2 },
