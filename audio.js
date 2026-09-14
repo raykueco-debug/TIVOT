@@ -408,6 +408,36 @@ export const SFX = {
   // 預載一批 BGM（整首下載成 Blob，切歌即播不再下載）：回傳 Promise
   preloadBgm(srcs){ return Promise.all((srcs || []).filter(Boolean).map(ensureBlob)); },
 
+  /* ══⚠⚠ 放掉上一個場景的音訊（ver -1296，Ray 的讀取分工：「每一個讀取頁都只讀
+     接下來要用的資源，並且清空上一個場景的資源」）══════════════════════════
+     ⚠⚠ **這是全專案唯一會真的把記憶體還回去的一支**（鐵律 8：所有轉場都呼叫它）。
+       `_buffers` 與 `_bgmBlob` 在 -1295 之前**從頭到尾只增不減** ——
+       `revokeObjectURL` 全專案零次呼叫，等於一輪玩下來把碰過的音訊全部留著。
+     ⚠ 音效與圖不同，這裡是**真的**回收：兩張表是我們自己的物件，
+       刪掉參照就沒人指著那塊 PCM 了（圖只能放掉參照，收不收由瀏覽器決定）。
+     ⚠ `keep` ＝**接下來那一段要用的**（已解析路徑的陣列或 Set）；沒給就全清。
+       正在播的那一首 BGM **一定不會被收**（`_bgmPlaying`）——
+       收掉它等於當場斷音，而換曲是 `playBgm` 的事，不是這一支的。
+     ⚠ 清了不等於要重抓：位元組還在 HTTP 快取裡，回頭進同一個場景只是重新解碼。
+     ⚠ 解碼中的（`_pending`）不動：那是還沒完成的請求，刪了也省不到記憶體，
+       而且它完成時會自己寫回 `_buffers`，反而變成收不掉的孤兒。 */
+  releaseAudio(keep){
+    const K = keep instanceof Set ? keep : new Set(keep || []);
+    let sfxN = 0, bgmN = 0;
+    for(const src in _buffers){
+      if(K.has(src) || _pending[src]) continue;
+      delete _buffers[src]; sfxN++;
+    }
+    for(const src in _bgmBlob){
+      if(K.has(src) || src === _bgmPlaying || src === _bgmSrc) continue;
+      try{ URL.revokeObjectURL(_bgmBlob[src]); }catch(e){}
+      delete _bgmBlob[src]; bgmN++;
+    }
+    return { sfx:sfxN, bgm:bgmN };
+  },
+  /* 現在留著多少（除錯用；`releaseAudio` 的驗收看這個）。 */
+  audioHeld(){ return { sfx:Object.keys(_buffers).length, bgm:Object.keys(_bgmBlob).length }; },
+
   // 播放音檔（src＝已解析路徑）。每次 new source → 可自由重疊、不限制、不打斷前一個。
   play(src, vol){ playSrc(src, vol); },
   /* 播一支**可中止**的音效，回傳把手：`.stop(fadeMs)` 收掉它。

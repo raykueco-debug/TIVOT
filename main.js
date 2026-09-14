@@ -856,9 +856,14 @@ window.addEventListener('pagehide', refreshBoot);
          真的無限等只有「請求整個停住」那一種，那時下面那道保底才會動。 */
     const sfxP = wrapCount(SFX.preload(sfx), sfx.length);
     /* ② 圖：立繪最先，其餘同時開。⚠ 圖**可以**設時限 —— 沒載完不會壞
-       （`<img>` 現抓即顯示），而音效沒載完是真的沒聲音。 */
+       （`<img>` 現抓即顯示），而音效沒載完是真的沒聲音。
+       ⚠⚠ **只有讀取頁立繪走 `new Image()`（它現在就要畫出來），其餘一律 `fetch`**
+         （ver -1296）。挑戰那 16 張卡（武器／搭檔／切換）解碼後是 **75 MB**，
+         而它們要到「出擊整備」打開才看得到 —— `fetch` 把位元組放進 HTTP 快取，
+         那一頁一開 `<img>` 現抓即顯示，**而且只解碼真的被畫出來的那幾張**。
+         這就是 -1295 那一課：預載的成本要算解碼後的像素，不是檔案大小。 */
     const imgsP = sfxP.then(()=> cap(loadPortrait().then(()=>Promise.all(
-        imgs.map(src=>new Promise(res=>{ const im=new Image(); im.onload=im.onerror=()=>{ tick(); res(); }; im.src=src; }))
+        imgs.map(src=>fetch(src).catch(()=>{}).then(()=>{ tick(); }))
       )), 6000));
     /* ③ 音樂：**上膛**（armOnly）不出聲；起播一律等 go() 那一下手勢（見下方說明）。 */
     imgsP.then(()=>{
