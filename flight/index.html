@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1309"></script>
+<script src="../orientation.js?v=1310"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1309');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1310');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1309");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1309");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1310");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1310");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1309");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1309");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1310");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1310");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -614,25 +614,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1309" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1310" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1309" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1309" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1309" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1309" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1309" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1309" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1309" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1309" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1309" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1309" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1310" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1310" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1310" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1310" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1310" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1310" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1310" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1310" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1310" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1310" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1309" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1310" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1309" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1310" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -653,11 +653,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1309"></script>
+<script src="settlement.js?v=1310"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1309"></script>
+<script src="talks.js?v=1310"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -709,7 +709,7 @@ const COLOR_URL  = 'silvermoon_terrain.png'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1309';
+const FLIGHT_VER = 'ver -1310';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -10632,6 +10632,11 @@ function glUploadWorld(){
     g.texParameteri(g.TEXTURE_2D,g.TEXTURE_BASE_LEVEL,0);
     g.texParameteri(g.TEXTURE_2D,g.TEXTURE_MAX_LEVEL,TERR_MAXLOD);
     g.useProgram(glProg);
+    /* ⚠⚠⚠ **unit 14 從這一刻起屬於地形，任何人都不准借**（ver -1310 的教訓）：
+       它是「上傳一次、之後每禎都假設它還在那裡」的長期綁定，而 texture unit 是
+       **全域狀態、跨 program 共用** —— 被借走一次，地形的跳空就會拿別人的貼圖
+       當高度用，畫面撕裂而且**沒有任何錯誤訊息**。要臨時綁貼圖請用 6／15
+       （那一族是「畫之前自己綁」的，見 glRuinTexture 的檔頭）。 */
     g.uniform1i(glU.uHmax,14);
     g.uniform1i(glU.uMaxLod,TERR_MAXLOD);
     console.log('[gl] 跳空 max-mipmap '+(TERR_MAXLOD+1)+' 階，最高點 '+TERR_MAXH.toFixed(0));
@@ -11017,7 +11022,22 @@ function glBuildRuins(){
      ⚠ 單位用 **14／15**：0~13 是地形那一支的（uH/uC/uS/uSky/城/biome/mask/geo/
        rail/uHs/uMot/uSnow），綁到那幾個會把地形的貼圖換掉 —— 貼圖單位是全域的。 */
   g.useProgram(glRuinProg);
-  g.uniform1i(glRuinU.uTexW,14); g.uniform1i(glRuinU.uTexR,15);
+  /* ══⚠⚠⚠ **貼材不可以用 unit 14** —— 那是地形跳空 max-mipmap 的（ver -1310）══
+     -1303 把地形的 `uHmax` 綁上 **TEXTURE14**，而遺蹟的石材本來就在 14 ——
+     於是**遺蹟一進視距**，unit 14 就被換成石材貼圖，地形 shader 下一次
+     `texelFetch(uHmax)` 讀到的是石頭的顏色當「這一塊的最高點」⇒ 跳空判斷全錯
+     ⇒ **射線提早結束／跳過地形 ⇒ 畫面撕裂**（Ray：「畫面中一出現 3D 建模物件
+     就會跳」「破碎得一踏糊塗」；同機位實測 GPU 6.7ms → 3.0ms ＝ 少走了一半的步，
+     那就是被騙的指紋）。
+     ⚠⚠ **texture unit 是全域狀態，跨 program 共用** —— 兩支 shader 各自的
+       sampler uniform 指到同一個號碼，就是同一張貼圖。
+     ⚠⚠ **unit 的擁有權分兩種，不可以混**（鐵律 7 的 GPU 版）：
+       · **長期綁著的**（地形那一票：0~5、7~14）—— 上傳一次、之後每禎都靠它還在那裡
+       · **畫之前才綁的**（量體 6、遺蹟 6/15）—— 誰要畫誰自己綁，彼此踩不到
+       長期的那一族**絕對不能**被短期的借走。14 自 -1303 起屬於地形，遺蹟改用 6。
+     ⚠ 6 已經是量體（`glMassU.uTex`）在用的，但那一族都是「畫之前自己綁」，
+       所以共用沒有問題 —— 不要把它讀成「6 是空的」。 */
+  g.uniform1i(glRuinU.uTexW,6); g.uniform1i(glRuinU.uTexR,15);
 
   for(const R of ruinCapOut){
     const V=[];
@@ -11088,7 +11108,8 @@ function glRuinTexture(name){
   const e=(name==='flight_ruins') ? { img:ruinTex } : RUIN_TEX[name];
   if(!e || !e.img || !e.img.width) return null;       // 還沒載到：下一禎再試
   const g=GLX, t=g.createTexture();
-  g.activeTexture(g.TEXTURE0+14); g.bindTexture(g.TEXTURE_2D,t);
+  /* ⚠ unit 6（不是 14）—— 14 是地形的 max-mipmap，借來上傳也會把它踩掉（ver -1310）。 */
+  g.activeTexture(g.TEXTURE0+6); g.bindTexture(g.TEXTURE_2D,t);
   g.texImage2D(g.TEXTURE_2D,0,g.RGBA8,g.RGBA,g.UNSIGNED_BYTE,e.img);
   g.generateMipmap(g.TEXTURE_2D);
   g.texParameteri(g.TEXTURE_2D,g.TEXTURE_MIN_FILTER,g.LINEAR_MIPMAP_LINEAR);
@@ -11129,7 +11150,7 @@ function glDrawRuins(sinp,cosp,lx,ly,dayK){
     /* 逐座綁自己的兩張貼材（沒有就關掉，照舊平塗）。 */
     const tw=glRuinTexture(R.texW), tr=glRuinTexture(R.texR)||tw;
     g.uniform1f(glRuinU.uTexOn, tw?1:0);
-    if(tw){ g.activeTexture(g.TEXTURE0+14); g.bindTexture(g.TEXTURE_2D,tw);
+    if(tw){ g.activeTexture(g.TEXTURE0+6);  g.bindTexture(g.TEXTURE_2D,tw);
             g.activeTexture(g.TEXTURE0+15); g.bindTexture(g.TEXTURE_2D,tr); }
     g.bindVertexArray(R.vao);
     g.drawArrays(g.TRIANGLES,0,R.n);
