@@ -4174,11 +4174,10 @@ export const TOWNS = {
        ⚠⚠ **沒有甜品店（`dessert`）**：安雅那一支在這座城查不到那個鍵 → 不換、
          退回節點原本那一張（＝酒吧）。那是既有行為不是壞掉；要給她一家店就再補一張圖。
        ⚠ 背景檔名寫**完整基底名**不是後綴（ver -578 的教訓：拼出來的名字一定走鐘）。 */
-    dining: { node:'tavern', scenes:{
-      cafe:       { bg:'East_Cafe' },
-      restaurant: { bg:'East_Restaurant' },
-      bar:        { bg:'East_Bistro' },
-    } },
+    /* ⚠⚠ **這座城沒有 `dining`**（ver -1318）：分店機制 -1263 就取消了，
+       四家店改成走得進去的節點（見下面 `tavern` 那一組）。留著 `dining` 的話
+       `dineKey()` 還是會依同行女伴換 `tavern` 的背景 —— 與「走進去的是哪一家」
+       打架，而且玩家會看到自己明明站在酒吧、背景卻變成咖啡廳。 */
     /* ⚠⚠ **每一格都要 `noTime:true`**：這一批 0 張時段差分，不寫的話候選鏈會
        先去試 `_dawn/_day/_dusk/_night` 四個名字，**每一格白吃四個 404**。
        差分交件之後整批拿掉（同聖索菲亞／拉芬斯達爾）。
@@ -4238,8 +4237,23 @@ export const TOWNS = {
       /* ── 三、上城區（四向樞紐） ── 左＝廣場、右＝餐飲街、上＝旅店、下＝雜貨舖 */
       uptown:     { bg:'East_Uptown',     name:'東方泊地　上城區',
         exits:{ left:'square', right:'tavern', up:'inn', down:'grocery' } },
+      /* ══⚠⚠ **餐飲街是樞紐，不是分店**（ver -1318，Ray：「東泊餐飲街接成樞紐也就
+         那三個，隨便排就好」＝ `_eastport_spec.md` §八 的 **(甲) 樞紐＝酒吧**）══
+         §6.5.4.2 的分店機制（同行女伴決定進哪一家）**在這座城取消**（-1263 Ray 定案）：
+         四家店是玩家自己走得進去的節點，那是拓樸不是差分。
+         ⚠ `tavern` 自己就是酒吧（`East_Bistro`），另外三條通餐廳／甜品店／咖啡廳。
+         ⚠ **不寫 `left`**：這一格是從上城區往右走進來的，`back` 現算成 `left`
+           （§6.5.4「回去掛在來時方向的反向」）—— 佔掉 `left` 會把退路擠掉。
+         ⚠ 三家都只寫 `back`（同武器店／公會那一族）：同一條邊的兩端自動相反，
+           不會踩到「一直按同一個方向走不出去」那個坑（憲法 ver -902）。 */
       tavern:     { bg:'East_Bistro',     name:'東方泊地　餐飲街',
-        exits:{ back:'uptown' } },
+        exits:{ back:'uptown', up:'restaurant', right:'cafe', down:'dessert' } },
+      restaurant: { bg:'East_Restaurant', name:'東方泊地　餐廳',
+        exits:{ back:'tavern' } },
+      cafe:       { bg:'East_Cafe',       name:'東方泊地　咖啡廳',
+        exits:{ back:'tavern' } },
+      dessert:    { bg:'East_Dessert',    name:'東方泊地　甜品店',
+        exits:{ back:'tavern' } },
       grocery:    { bg:'East_Grocerie',   name:'東方泊地　雜貨舖',
         exits:{ back:'uptown' } },
       /* ⚠ 這一格**沒有** `inn:true`：旅店大廳與四扇伙伴門這一輪不做（同上）。 */
