@@ -4175,9 +4175,9 @@ export const TOWNS = {
          退回節點原本那一張（＝酒吧）。那是既有行為不是壞掉；要給她一家店就再補一張圖。
        ⚠ 背景檔名寫**完整基底名**不是後綴（ver -578 的教訓：拼出來的名字一定走鐘）。 */
     dining: { node:'tavern', scenes:{
-      cafe:       { bg:'East_Cafe',       noTime:true },
-      restaurant: { bg:'East_Restaurant', noTime:true },
-      bar:        { bg:'East_Bistro',     noTime:true },
+      cafe:       { bg:'East_Cafe' },
+      restaurant: { bg:'East_Restaurant' },
+      bar:        { bg:'East_Bistro' },
     } },
     /* ⚠⚠ **每一格都要 `noTime:true`**：這一批 0 張時段差分，不寫的話候選鏈會
        先去試 `_dawn/_day/_dusk/_night` 四個名字，**每一格白吃四個 404**。
@@ -4193,10 +4193,16 @@ export const TOWNS = {
          ＋室內 7 單張）══
          · **室外八格**（廣場／中心區／大教堂／海關／大學／舊城區／船塢／上城區）
            ＝四差分都在 ⇒ **不寫 `noTime`**。
-         · **室內五格**（武器店／公會／餐飲街／雜貨舖／旅店）＝單張
-           ⇒ **要寫 `noTime:true`**，不寫就白吃四個 404（§5）。
-         ⚠ 室外那八張**沒有無尾綴版**，所以 `noTime` 留著就是空背景（同拉芬斯達爾
-           大教堂那一條）—— 兩件事是一體的，不要只做一半。 */
+       ══⚠⚠⚠ **ver -1317：室內五格與餐飲街三張也交齊四時段了，`noTime` 整批拔掉** ══
+         美術 -1263~-1268 交了 32 張（`East_*_{dawn,day,dusk,night}`），
+         `HANDOFF.md`「程式端要接的三件」第 1 件就是這個。
+         `East_Firearm`／`East_Guild`／`East_Bistro`／`East_Grocerie`／`East_Hotel`
+         ＋ `dining.scenes` 的 `East_Cafe`／`East_Restaurant`／`East_Bistro`
+         —— 八個基底名的 Dawn/Day/Dusk/night **逐一確認過檔案在**才拔。
+         ⚠⚠ 留著 `noTime` 的代價不是白吃 404，是**整天都拿那張無尾綴的舊圖**：
+           那八張無尾綴版還在庫裡（交件時刻意不刪，見 HANDOFF 第 3 件），
+           所以症狀是「時段差分交了卻看不到」，而且**沒有任何錯誤訊息**。
+         ⚠ 那批無尾綴舊檔要等這一版上線、確認四時段都吃得到之後才走 `recycle.sh`。 */
     nodes: {
       /* ══ 港口廣場 ══ 入口；上＝中心區、左＝舊城區、右＝上城區（照帝都）。
          ⚠ 入口那一格**不可以有戰鬥**（§6.5.2：它是遭遇戰的復活點）。
@@ -4222,22 +4228,22 @@ export const TOWNS = {
       /* ── 二、舊城區（四向樞紐） ── 左＝武器店、右＝廣場、上＝倉庫碼頭、下＝公會 */
       oldtown:    { bg:'East_Oldtown',    name:'東方泊地　舊城區',
         exits:{ left:'gunstore', right:'square', up:'dock', down:'guild' } },
-      gunstore:   { bg:'East_Firearm',    name:'東方泊地　武器店',   noTime:true,
+      gunstore:   { bg:'East_Firearm',    name:'東方泊地　武器店',
         exits:{ back:'oldtown' } },
       dock:       { bg:'East_Dock',       name:'東方泊地　倉庫碼頭',
         exits:{ back:'oldtown' } },
-      guild:      { bg:'East_Guild',      name:'東方泊地　賞金獵人公會', noTime:true,
+      guild:      { bg:'East_Guild',      name:'東方泊地　賞金獵人公會',
         exits:{ back:'oldtown' } },
 
       /* ── 三、上城區（四向樞紐） ── 左＝廣場、右＝餐飲街、上＝旅店、下＝雜貨舖 */
       uptown:     { bg:'East_Uptown',     name:'東方泊地　上城區',
         exits:{ left:'square', right:'tavern', up:'inn', down:'grocery' } },
-      tavern:     { bg:'East_Bistro',     name:'東方泊地　餐飲街',   noTime:true,
+      tavern:     { bg:'East_Bistro',     name:'東方泊地　餐飲街',
         exits:{ back:'uptown' } },
-      grocery:    { bg:'East_Grocerie',   name:'東方泊地　雜貨舖',   noTime:true,
+      grocery:    { bg:'East_Grocerie',   name:'東方泊地　雜貨舖',
         exits:{ back:'uptown' } },
       /* ⚠ 這一格**沒有** `inn:true`：旅店大廳與四扇伙伴門這一輪不做（同上）。 */
-      inn:        { bg:'East_Hotel',      name:'東方泊地　旅店',     noTime:true,
+      inn:        { bg:'East_Hotel',      name:'東方泊地　旅店',
         exits:{ back:'uptown' } },
     },
   },
