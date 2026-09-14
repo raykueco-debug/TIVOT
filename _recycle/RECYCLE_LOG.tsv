@@ -164,3 +164,14 @@ when	from	to	reason
 20260914-200514	resources/background/Capital_Square_Dusk.png	_recycle/resources/background/Capital_Square_Dusk.png	ver -1307：background 剩下的 PNG 轉 webp，原檔退役（同名的 .webp 已入庫）
 20260914-200514	resources/background/Capital_Square_midnight.png	_recycle/resources/background/Capital_Square_midnight.png	ver -1307：background 剩下的 PNG 轉 webp，原檔退役（同名的 .webp 已入庫）
 20260914-200516	resources/background/Northport_Hotel_room_Night.png	_recycle/resources/background/Northport_Hotel_room_Night.png	ver -1307：webp 早就在庫裡，這張 PNG 是殘留的原檔，一併退役
+20260914-235731	resources/background/Captal_Guild_night.webp	_recycle/resources/background/Captal_Guild_night.webp	Ray 定案：店類除了酒吧與旅店之外不畫夜景（20:00 前就關門）—— 這張作廢
+20260914-235731	resources/_originals/background/Captal_Guild_night.png	_recycle/resources/_originals/background/Captal_Guild_night.png	Ray 定案：店類除了酒吧與旅店之外不畫夜景（20:00 前就關門）—— 這張作廢
+20260915-000603	resources/background/East_Bistro.webp	_recycle/resources/background/East_Bistro.webp	與 _day／_dusk／_night 位元組完全相同的重複檔（ver -1318 巡查）：候選鏈已走時段尾綴，無尾綴那張只是最後退路
+20260915-000603	resources/background/East_Cafe.webp	_recycle/resources/background/East_Cafe.webp	與 _day／_dusk／_night 位元組完全相同的重複檔（ver -1318 巡查）：候選鏈已走時段尾綴，無尾綴那張只是最後退路
+20260915-000603	resources/background/East_Firearm.webp	_recycle/resources/background/East_Firearm.webp	與 _day／_dusk／_night 位元組完全相同的重複檔（ver -1318 巡查）：候選鏈已走時段尾綴，無尾綴那張只是最後退路
+20260915-000603	resources/background/East_Grocerie.webp	_recycle/resources/background/East_Grocerie.webp	與 _day／_dusk／_night 位元組完全相同的重複檔（ver -1318 巡查）：候選鏈已走時段尾綴，無尾綴那張只是最後退路
+20260915-000603	resources/background/East_Hotel.webp	_recycle/resources/background/East_Hotel.webp	與 _day／_dusk／_night 位元組完全相同的重複檔（ver -1318 巡查）：候選鏈已走時段尾綴，無尾綴那張只是最後退路
+20260915-000603	resources/background/East_Restaurant.webp	_recycle/resources/background/East_Restaurant.webp	與 _day／_dusk／_night 位元組完全相同的重複檔（ver -1318 巡查）：候選鏈已走時段尾綴，無尾綴那張只是最後退路
+20260915-000603	resources/background/Belisar_Exterior.webp	_recycle/resources/background/Belisar_Exterior.webp	與 _day／_dusk／_night 位元組完全相同的重複檔（ver -1318 巡查）：候選鏈已走時段尾綴，無尾綴那張只是最後退路
+20260915-000603	resources/background/Capital_Dock_midnight.webp	_recycle/resources/background/Capital_Dock_midnight.webp	與 _day／_dusk／_night 位元組完全相同的重複檔（ver -1318 巡查）：候選鏈已走時段尾綴，無尾綴那張只是最後退路
+20260915-000612	resources/background/East_Guild.webp	_recycle/resources/background/East_Guild.webp	同上：與 East_Guild_day 位元組相同
