@@ -571,12 +571,33 @@ export function entryNode(){ return entryNodeId; }
      全部解碼是上百 MB（ver -1295 那個坑）。走過去時 `<img>` 現抓即顯示。
    ⚠ 只收**當下時段**的候選（`bgCandsOf` 本來就是照現在幾點算的）。Ray：「四差分的
      時機不重要，因為不是實時的 —— 移動或打完以後剛好切差分，體感也正常。」
-   ⚠ 音效寫在城上（`se:[…]`，名字用 story 的 SE 表，鐵律 1）。**漏寫不會壞**：
-     `playSrc` 查不到 buffer 會自己 load 再播，只是第一次可能晚一拍 ——
-     所以可以先把框架接起來，清單逐城再補。
+   ⚠ 音效**從資料掃出來**（`collectSe`，ver -1298）＋ 程式自己會播的那幾支
+     （`TOWN_SE`）。不手維護清單 —— 見 collectSe 的說明。
+     ⚠ 掃漏了也不會壞：`playSrc` 查不到 buffer 會自己 load 再播，只是第一次晚一拍。
    ⚠ BGM 取城上那一首就好，不問 `townBgm()`：那一支要 `townId` 已經設好，而這裡
      跑在 `open()` **之前**。圍城／重建換的那一首由 `enter()` 的 `ensureBgm` 現抓
      （晚幾百毫秒起播，§6.6 說得很清楚：音樂晚到不會壞）。 */
+/* ══⚠⚠ 這座城會用到哪些音效（ver -1298）══════════════════════════════════
+   ⚠⚠ **不手維護清單**（鐵律 7）：腳本自己就是真相 —— 把這座城的資料整個走一遍，
+     把每一拍寫的 `se:` 收集起來。手抄一份的話，改腳本忘了改清單就走鐘，
+     而走鐘的症狀是「某一句的音效偶爾不出來」，幾乎查不到。
+   ⚠ 城鎮層**自己**會播的那幾支不在腳本裡（走路、翻頁、睡覺、買賣、治療），
+     所以另外列成 `TOWN_SE` —— 那是**程式**播的，不是資料。
+     ⚠ `se_walk` 是每走一步都要響的那一支，沒預載到第一步就是無聲。
+   ⚠ 只收字串：`se:` 偶爾寫成物件（帶延遲那種）時取它的名字欄。
+   ⚠ 深度設上限：資料是人寫的，環狀參照不值得為它冒風險。 */
+const TOWN_SE = ['se_walk', 'se_ui_pageflip', 'se_sleep', 'se_healing', 'se_buy'];
+function collectSe(o, out, depth){
+  if(!o || depth > 10) return out;
+  if(Array.isArray(o)){ for(const v of o) collectSe(v, out, depth+1); return out; }
+  if(typeof o !== 'object') return out;
+  const v = o.se;
+  if(typeof v === 'string') out.add(v);
+  else if(Array.isArray(v)) for(const x of v){ if(typeof x === 'string') out.add(x); }
+  else if(v && typeof v === 'object' && typeof v.name === 'string') out.add(v.name);
+  for(const k in o) if(k !== 'se') collectSe(o[k], out, depth+1);
+  return out;
+}
 /* 把一格的候選鏈**解出來並記住**（ver -1297）：依序 fetch 到第一個 200 為止，
    答案寫進 `bgResolved`（與 `bgFor` 同一張表，鐵律 7）——
    所以進城之後 `bgFor` 直接命中，一個探測都不再發。
@@ -593,16 +614,22 @@ function resolveBgOnce(all, decode, maxTry){
      `bgFor` 會照舊跑完整條鏈，**與沒有暖身時完全一樣**，不會壞。
      ⚠ 入口那一張**不設上限**：它一定要找到，讀取頁就是在等它。 */
   let list = (all || []).filter(Boolean);
-  if(maxTry){
-    /* ⚠⚠ **最後那一個一定要帶上**：候選鏈的排法是「現在這個時段 → 時段的大小寫變體
-       → _Day → **無時段**」，而專案裡有一整批城用的就是無時段那一張
-       （`Northport_west_BF.webp`）—— 只取前幾個的話那些城永遠暖不到。
-       取法：前 (maxTry-1) 個 ＋ 最後一個，去重。 */
-    const w = list.filter(nm=>/\.webp$/i.test(nm));
-    const pick = w.slice(0, Math.max(1, maxTry-1));
-    if(w.length && pick.indexOf(w[w.length-1])<0) pick.push(w[w.length-1]);
-    list = pick;
-  }
+  /* ══⚠⚠ **把最可能的那幾個排到最前面**（ver -1298）══════════════════════
+     完整的候選鏈是「4 個時段 × 大小寫 × 4 種副檔名 ＋ 無時段」≈ 32 個名字，
+     而專案裡實際只有兩種命名：**這個時段的 `.webp`**（`Ravn_Square_Day.webp`）
+     與**無時段的 `.webp`**（`Northport_west_BF.webp`）。照原順序硬跑，
+     後者要探到第 33 個才中 —— 那 32 個 404 每進一次城就白吃一次。
+     ⚠⚠ **最後那一個一定要在前排**：它就是無時段那張，整批城靠它。
+     ⚠ 其餘候選**不是刪掉是排到後面**（`maxTry` 沒給時）：交件先給 PNG、
+       或大小寫不同的情況仍然要找得到（§6.5.4 那條 macOS/靜態空間的差異）。
+     ⚠ 暖身（`maxTry`）就只探前排，沒中就放著 —— 玩家真的走過去時
+       `bgFor` 會跑完整條鏈，與沒暖身時完全一樣。 */
+  const w = list.filter(nm=>/\.webp$/i.test(nm));
+  const head = [];
+  for(const nm of w.slice(0, 2)) if(head.indexOf(nm) < 0) head.push(nm);
+  if(w.length && head.indexOf(w[w.length-1]) < 0) head.push(w[w.length-1]);
+  list = maxTry ? head.slice(0, maxTry)
+                : head.concat(list.filter(nm => head.indexOf(nm) < 0));
   if(!list.length) return Promise.resolve(null);
   const hit = bgResolved.get(list[0]);
   const draw = nm => !decode ? Promise.resolve(nm) : new Promise(res=>{
@@ -658,7 +685,7 @@ export function loadSpec(town, nodeId){
   /* ⚠ 入口圖走 `pre`（一支回 Promise 的函式）不走 `imgs`：候選鏈要**由這裡**解，
      解完的答案才記得回 `bgResolved`（見 resolveBgOnce 的說明）。 */
   return {
-    ses : (T.se || []).slice(),
+    ses : [...collectSe(T, new Set(TOWN_SE), 0)],
     bgms: T.bgm ? [T.bgm] : [],
     pre : n ? (()=> resolveBgOnce(bgCandsOf(n, id), true)) : null,
     warm,
