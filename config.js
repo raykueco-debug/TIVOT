@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.15-1324';
+export const VERSION = 'ver 2026.09.15-1325';
 
 export const GAME_CONFIG = {
 
@@ -4268,6 +4268,22 @@ export const ASSET_VER = {
   'capital_square_dusk':        2,
   'capital_square_night':       2,
   'capital_square_midnight':    2,
+  /* ver -1324：**雪都（拉芬斯達爾）三格重修** —— Ray：「車站不要有火車頭朝外」
+     「城內地面不要有輕軌」「1900 年北歐」。車站拱門下正對鏡頭的蒸汽火車頭與白煙移除、
+     前庭與街上的電車軌道與架空接觸網全部清掉、改成連續石板鋪面。
+     ⚠⚠ 12 張都是**同名覆蓋**；一組差分要一起帶，漏一張那一張就被快取住。 */
+  'ravn_station_dawn':     2,
+  'ravn_station_day':      2,
+  'ravn_station_dusk':     2,
+  'ravn_station_night':    2,
+  'ravn_midtown_dawn':     2,
+  'ravn_midtown_day':      2,
+  'ravn_midtown_dusk':     2,
+  'ravn_midtown_night':    2,
+  'ravn_square_dawn':      2,
+  'ravn_square_day':       2,
+  'ravn_square_dusk':      2,
+  'ravn_square_night':     2,
 };
 export function assetVer(nameOrPath){
   const n = String(nameOrPath||'').split('/').pop().split('?')[0]
