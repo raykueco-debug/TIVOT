@@ -1,21 +1,23 @@
-# HANDOFF — 截至 `ver 2026.09.14-1303`
+# HANDOFF — 截至 `ver 2026.09.14-1306`
 
 > 這一份是**唯一**的交接檔。**下一次交接請直接改這一份，不要再開新檔。**
 >
-> ⚠⚠⚠ **寫進這裡的每一條都要當場驗過**（ver -1291 的教訓，Ray：「我明明有跑到
-> shipcrush」「序章一直都沒有問題」）：上一份交接把**已經被 revert 掉的鐵路暫停**
-> 寫成現況，把 lint 的假警告寫成待辦，於是下一個 session 照著它做了錯的判斷。
-> **沒有 `grep` 過的事實不要寫。**
+> ⚠⚠⚠ **寫進這裡的每一條都要當場驗過**（ver -1291 的教訓）：交接檔曾經把
+> 已經被 revert 掉的東西寫成現況，於是下一個 session 照著它做了錯的判斷。
+> **沒有 `grep` 過、沒有量過的事實不要寫。**
 >
-> ⚠⚠ -1303 這一輪又應驗一次：上一份的「第零節」整節是**舊機器**的數字
-> （`_originals` 2.6 GB、`_recycle` 107 MB、七個未追蹤散檔）——
-> 在這台實測是 **61 MB / 36 KB / 零個**。**繼承舊交接的數字之前先量一次。**
+> ⚠⚠⚠ **-1306 這一輪是「換機器前的最後一版」** —— 下面第零節整節是
+> **舊機器（Windows / GT 1030）**的數字。**新機器一律重量，不要繼承。**
+> （-1303 已經因為繼承舊數字錯過一次：上一份寫 `_originals` 2.6 GB，
+> 實測 61 MB。）
 
 ---
 
-# ⚠⚠⚠ 第零節：這台機器（Windows）的環境
+# ⚠⚠⚠ 第零節：**舊**機器（Windows）的環境 —— 新機器請重量
 
-**換機器已經完成。** 以下全部是 -1303 當場量的。
+⚠⚠ Ray 於 -1306 之後**再次換機器**。以下是舊機那台的實測（-1303/-1306 當場量），
+留著只為了兩件事：① 底下那三個「容易誤導人」的陷阱多半**跨機器成立**
+② 新機器量完可以對照。**數字本身一律作廢。**
 
 | 項目 | 實測 |
 |---|---|
@@ -30,16 +32,26 @@
 
 ### ⚠⚠⚠ 這台機器最容易誤導人的三件事（-1303 這一輪各騙過我一次以上）
 
-1. **Claude 桌面版的內建瀏覽器現在是「軟體算圖」。**
-   實測 `renderer: ANGLE (Microsoft, **Microsoft Basic Render Driver**, D3D11)` ——
-   完全沒碰 GT 1030。原因是驅動當初反覆 TDR 時，Claude 自己把硬體加速關了
-   （`%APPDATA%\Claude\claude_desktop_config.json` 的
-   `isHardwareAccelerationDisabled: true`，Help 選單點過一次**沒有生效**）。
-   ⚠⚠ **所以在那個面板裡量效能全部作廢。** 它一天之內給過我三個假結論：
-   「地形 shader 只要 1.4ms」「跳空沒有差別」「每幀 2.2ms」——
-   真相是 GPU 100%、fps 2~30。
-   ⇒ **要量效能一律用 Ray 的真 Chrome**（`mcp__claude-in-chrome__*` 那組工具），
-     並且**確認 `renderer` 裡有 NVIDIA** 才開始量。
+1. ⚠⚠⚠ **Claude 桌面版的硬體加速會被它自己關掉，而且選單救不回來**（-1306 解決）。
+   症狀：內建瀏覽器的 `renderer` 是
+   `ANGLE (Microsoft, **Microsoft Basic Render Driver**, D3D11)` ＝ **純軟體算圖**，
+   顯卡完全沒碰到。**在那個面板裡量效能全部作廢** —— 它一天之內給過三個假結論
+   （「地形 shader 只要 1.4ms」「跳空沒有差別」「每幀 2.2ms」），真相是 GPU 100%、fps 2~30。
+
+   **成因與解法（-1306 查出來的）**：`%APPDATA%\Claude\claude_desktop_config.json` 有**兩格**：
+
+   | 旗標 | 誰設的 | 選單切得到嗎 |
+   |---|---|---|
+   | `isHardwareAccelerationDisabled` | 使用者 | ✔ |
+   | **`isHardwareAccelerationAutoDisabled`** | **Claude 自己**（驅動反覆 TDR 時） | **✘** |
+
+   ⇒ 這就是 -1303 記的「Help 選單點過一次**沒有生效**」：選單只切前者，
+     Claude 自己關的那一格還立著，下次啟動又把它壓回去。**兩格要一起清。**
+   ⚠ 改設定檔要**先完全結束 Claude**，否則它退出時會寫回舊值。
+   ⇒ 清完實測 `renderer` ＝ `ANGLE (NVIDIA, NVIDIA GeForce GT 1030, D3D11)`，
+     內建面板 fps 由「當掉」變成 **56.5**。
+   ⚠ **新機器要重新確認一次**：這一格是 Claude 自己會設的，換機器不會跟著過去，
+     但新機器也可能自己設上。**量效能之前一律先看 `renderer` 有沒有 NVIDIA／AMD／Intel。**
 
 2. **分頁不在前景時 rAF 被節流**（實測 2.5 秒只跑 1 幀）。
    量到「fps 2.6、CPU 15%、GPU 0%」那種「什麼都不忙卻跑不動」的組合，
@@ -54,20 +66,28 @@
    ⚠ `.claude/launch.json` 已改成讀 `PORT` ＋ `autoPort`（-1303），
      所以預覽伺服器不會再跟手動起的那台搶 8000。
 
-### 還沒做的保命動作（git 帶不走）
+### 換機器要帶什麼（-1306 當場清點，不是沿用舊交接）
 
-- **地圖編輯的筆畫**：大地圖 →「✎ 地圖編輯」→ 右下「⇩ 匯出」→ 貼進
-  `MAP_EDITS_SRC` → commit。同一個坑還有拖城的 `tivot_settle_drag_v1`。
-- **存檔**：整組 `tivot_*` 在瀏覽器裡。匯出：
-  ```js
-  copy(JSON.stringify(Object.fromEntries(Object.entries(localStorage).filter(([k])=>k.startsWith('tivot_')))))
-  ```
-  ⚠ 管理人模式：`localStorage.tivot_admin_v1='1'`（沒有它首頁只剩四顆鈕，§6.9 的白名單）。
-- **`_originals` / `_recycle`** 只在本機，要留就自己複製到外接／雲端。
+| | 實測 | 要不要帶 |
+|---|---|---|
+| `MAP_EDITS_SRC` | 仍是 `[]`，而且**兩個瀏覽器的 localStorage 都沒有地圖編輯的鑰匙** | **不用** —— 沒有待匯出的筆畫 |
+| `tivot_settle_drag_v1`（拖城） | **不存在**（只有 `_purge` 那支旗） | **不用** |
+| localStorage 存檔 | 真 Chrome 8 筆 761 字；`main:null`／`quick:null`，只有 `dev_seed_money`、玩 175 秒 | **不用** —— 是空的開發狀態 |
+| `resources/_originals` | **67 MB**（gitignore） | ⚠⚠ **要**。轉檔前的原 PNG，git 帶不走 |
+| `_recycle` | 36 KB（gitignore；`RECYCLE_LOG.tsv` 本身有進版控） | 要（很小） |
+| 未追蹤散檔 | **零個** | — |
+
+⚠⚠ **「玩家存檔在 localStorage」這件事要分兩個瀏覽器看**：內建面板與 Ray 的真
+Chrome 是不同的設定檔、不同的 localStorage。-1306 兩邊都查過，兩邊都是空的開發狀態。
+匯出法（在該瀏覽器的 console）：
+```js
+copy(JSON.stringify(Object.fromEntries(Object.entries(localStorage).filter(([k])=>k.startsWith('tivot_')))))
+```
+⚠ 管理人模式：`localStorage.tivot_admin_v1='1'`（沒有它首頁只剩四顆鈕，§6.9 的白名單）。
 
 ---
 
-## 這一輪（-1294 ~ -1303）做了什麼
+## 上一輪（-1294 ~ -1303）：讀取分工 ＋ 飛行地圖上 GPU
 
 ⚠ 期間有**另一個 session 並行在做美術**（-1263~-1267 那幾筆，東方泊地室內四時段）。
 編號是兩套計數器，不要混。這一輪程式端**只動過**下面列的那幾支檔案。
@@ -153,13 +173,88 @@ GPU 每條射線快 20~50 倍，但工作多 332 倍 ⇒ 淨值更慢。而且�
 
 ---
 
-## 平台實測（-1303）
+## 這一輪（-1304 ~ -1306）：頓挫結案 ＋ 硬體加速
+
+⚠ 這三版都是**程式端**；期間美術 session 並行在做東方泊地室內差分（-1266~-1268），
+**編號是兩套計數器**。兩邊動的檔案不重疊（美術只動 `resources/`，程式動
+`config.js`／`flight/index.html`／`index.html`／`modules/story.js`）。
+
+### -1304　走遠的城把 GL 貼圖也放掉（VRAM 25.8 MB）
+
+`releaseFarCityArt`（-1195）只放掉 CPU 那一半（`cityPlanArt`／`CITY_PYR`），
+GL 那一份沒有人動；而且 `RELEASE_R`(14400) ≫ `ZFAR`(3600) ⇒ 被放掉的城
+**再也不會被 `glPickCities` 選到** ⇒ 永遠等不到重建。十座城走一遍 25.8 MB
+（拉芬 7.4／卡耶爾 5.7／東泊 5.3）。
+實測 `GLX.isTexture(舊物件)` `true → false`，飛回去重建成全解析、`glGetError()` 0。
+
+### -1305　GL 之下不再白建取樣金字塔 ← **「偶發頓挫」的主犯**
+
+`CITY_PYR` 的 `levels` **只有 CPU 那一大圈在取樣**，而 `GLON && glReady` 時
+那一整段被 `z=ZFAR` 跳過（城的地面自 -1206 起由 shader 讀 `glCityTexture`）。
+-1206 的註解早就寫著「GL 的 mipmap 取代了 CITY_PYR 那一整套」，
+**但沒有人把建構那一端關掉。**
+
+20 秒橫越大陸（帝都 → 東方泊地）：
+
+| | 修前 | 修後 |
+|---|---|---|
+| `buildCityPyramid` | **204ms**（單次最高 **101.5ms**） | **3ms** |
+| `>28ms` 的長幀 | 72 個 | — |
+
+最貴的那一次＝飛近東方泊地 1024×1024 → 7 層，每層一次 `getImageData`（GPU→CPU 回讀）。
+
+作法：分流收在 `buildCityPyramid` 自己身上（鐵律 8，兩個呼叫者一起好），
+GL 之下退成**佔位** `{levels:null, full, src}`，CPU 退路真的要取樣才補建（`pyrLevels`）。
+⚠ **不可以整個不留**：`planCity`／`groundSampled` 兩處在看它**存不存在**
+（＝「這座城有手繪圖」，沒有它程序生成的白色小房子會疊在插畫上，§6.7.5）。
+⚠ `src` 必須是呼叫端傳進來的那一張 —— 抓全解析的話 -1195/-1304 就白放了。
+
+### -1306　城的貼圖改走 ImageBitmap(Blob)
+
+拆開量才知道錢在哪（GT 1030，`g.finish()` 逼它做完）：
+
+| | ms |
+|---|---|
+| `generateMipmap` | **0**（硬體全免費，不是它的錯） |
+| `texImage2D` ← `HTMLImageElement` | 78.5 首次／**36.7 熱快取** |
+| `texImage2D` ← `ImageBitmap` | **2.4** |
+
+貴的是**主執行緒把圖轉成貼圖格式**，而且**每次都要重做**——
+「載過了就便宜」的直覺在這裡是錯的。
+
+⚠⚠⚠ **而且 bitmap 一定要從 Blob 建，不可以從 `<img>` 建**（733×1536 實測）：
+
+| | 同步段（卡幀的那一段） | 總計 |
+|---|---|---|
+| `createImageBitmap(HTMLImageElement)` | **70.2ms**（整段都是同步的！） | 70.2ms |
+| `createImageBitmap(Blob)` | **0.1ms** | 32.3ms（主執行緒外） |
+
+從 `<img>` 那一支回傳的是「已經做完」的 promise —— 看起來非同步，該卡的一分沒少。
+**-1306 的第一版就是這樣寫的，幀 1 反而 57.2ms（比舊路徑還糟）。**
+改 `fetch(img.src).then(r=>r.blob())` 才真的搬得出去（打 HTTP 快取，3.3ms）。
+
+`glCityTexture` 是在畫的迴圈裡**同步**呼叫的，所以不能等 —— 作法是
+「排解碼、這一幀先用手上有的」。一座城從無到有：幀1 12.0ms／幀2 10.0ms／幀3 **0.1ms**。
+⚠ 上傳完 `close()`（ImageBitmap 抱著解碼後的點陣，1024² ＝ 4MB）。
+
+視覺驗收：低空過帝都，手繪地面（放射狀街道、街廓）正常，沒有白色小房子疊上去。
+
+### ⚠⚠ 還沒驗的一件：**fps**
+
+修後的 fps 一直量不到 —— 內建面板每次量到一半就被藏起來，rAF 節流到 30Hz
+（第零節陷阱 2；**形狀是「幾乎每一幀都剛好 33ms」**，看起來像效能爆掉）。
+那幾組整組作廢。**函式耗時不受節流影響**，所以上面那些數字是有效的。
+⇒ **新機器第一件事：在真瀏覽器前景飛一段跨兩三座城的長程，看頓挫還在不在。**
+
+---
+
+## 平台實測（-1303／-1306，**舊機器**）
 
 | | 狀態 |
 |---|---|
 | Windows + Chrome（GT 1030） | ✔ fps 54、GPU 11% |
 | Mac / MacBook / iPhone | ✔ Ray 回報正常 |
-| **Claude 內建瀏覽器** | ✘ 仍卡 —— **軟體算圖**，非程式問題 |
+| **Claude 內建瀏覽器** | ✔ **-1306 修好**：硬體加速那兩格清掉之後 renderer ＝ NVIDIA、fps 56.5（先前的「仍卡」是軟體算圖，非程式問題） |
 
 Ray 定的目標：**以 GPU 為前提優化，最爛的設備也要跑全效**（下限抓
 Intel HD 520 級的內顯），**Android / Win / Mac / iOS 都要跑得動**。
@@ -169,28 +264,31 @@ GT 1030 現在只用 11% GPU，那個餘裕是留給內顯與手機的。
 
 ## 接下來的事項
 
-1. ⚠⚠ **Claude 桌面版的硬體加速還關著** —— `%APPDATA%\Claude\claude_desktop_config.json`
-   的 `isHardwareAccelerationDisabled` 仍是 `true`（Help → Troubleshooting →
-   Disable Hardware Acceleration 是個**核取項**，要取消勾選）。
-   ⚠ 直接改設定檔要**先完全結束 Claude**，否則它退出時會寫回舊值。
-2. **偶發頓挫還在**：Ray 的診斷面板顯示 `最長幀 50ms、long 73ms/5s`。
-   可疑來源：heap 243MB ＋可用記憶體只剩 1.5 GB 的 GC 壓力／飛近時
-   `ensureCityArt` 上傳全解析城圖／畫質換檔時的重建。**還沒查。**
-3. **`glCityTex` 小洩漏**：`releaseFarCityArt` 放掉了 `cityPlanArt` 與 `CITY_PYR`，
-   但**沒有刪 GL 貼圖** —— 每座去過的城都留著一份帶 mipmap 的貼圖。三行可修。
-4. **`belisar_land_ok` 這支旗還沒有人插** ⇒ 貝利薩爾**永遠降不下去**
+> ⚠ **第 0 件（換機器）**：`resources/_originals`（67 MB，gitignore）要自己複製過去 ——
+> git 帶不走。其餘保命項 -1306 清點過，都是空的（見第零節那張表）。
+
+1. ⚠⚠ **新機器要重跑一次「量測前的確認」**：
+   ① `renderer` 有沒有真的顯卡（第零節陷阱 1，硬體加速那兩格）
+   ② 量 fps 時面板／分頁在不在前景（陷阱 2）
+   ③ `py` 還是 `python`／`python3`（舊機只有 `py` 能用）
+   ④ `curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/main.js` 確認伺服器活著
+2. **飛行的 fps 還沒複驗**（見上一節）。-1305/-1306 把兩個最大宗拿掉了，
+   但「修後實際跑幾 fps」缺一個有效的數字。
+3. ~~`glCityTex` 小洩漏~~ → **-1304 修掉了**。
+4. ~~Claude 硬體加速還關著~~ → **-1306 解決**（兩格旗標，見第零節陷阱 1）。
+5. **`belisar_land_ok` 這支旗還沒有人插** ⇒ 貝利薩爾**永遠降不下去**
    （常數在 `flight/index.html` 的 `BELISAR_LAND_OK`）。等 Ray 的稿。
-5. **`Ravn_Church`** 交件 → 改 `bg`、拔 `bgPending`、**補回 `noTime:true`**。
-6. **卡耶爾山谷**：小地圖 `resources/map/map_canyon.webp`；**遭遇戰的敵人卡還沒有**
+6. **`Ravn_Church`** 交件 → 改 `bg`、拔 `bgPending`、**補回 `noTime:true`**。
+7. **卡耶爾山谷**：小地圖 `resources/map/map_canyon.webp`；**遭遇戰的敵人卡還沒有**
    （所以 `wildSpawn` 先沒給）。工單 `resources/background/_canyon_spec.md`。
-7. **瓦努努遺蹟的 Boss 卡**（`script/town.js:3900` 那一拍）。
-8. 兩座新城沒有 `midnight` 差分（午夜退到 `night`，有 `bgResolved` 快取所以一輪只吃一次）。
-9. 鐵路要不要重做是 Ray 的決定。⚠⚠ **鐵路是開著的不是暫停**（-1276 的 `RAILS_ON`
-   已隨 -1269 的 revert 消失，專案裡沒有這個名字）。
+8. **瓦努努遺蹟的 Boss 卡**（`script/town.js:3900` 那一拍）。
+9. 兩座新城沒有 `midnight` 差分（午夜退到 `night`，有 `bgResolved` 快取所以一輪只吃一次）。
+10. 鐵路要不要重做是 Ray 的決定。⚠⚠ **鐵路是開著的不是暫停**（-1276 的 `RAILS_ON`
+    已隨 -1269 的 revert 消失，專案裡沒有這個名字）。
+11. **要不要把「貼圖上傳一律走 ImageBitmap(Blob)」寫進憲法**（§6.7 那一族的通則）——
+    -1306 只寫在程式註解與這裡。日後任何新的 GL 貼圖都會踩同一個坑。**Ray 決定。**
 
----
-
-## 驗收指令（⚠ 這台是 Windows，與舊交接檔不同）
+## 驗收指令（⚠ 以下是**舊機器**Windows 的寫法，新機器要重新確認）
 
 ```bash
 py tools/script_lint.py     # ⚠ 需要 macOS 的 jsc，這台跑不了（見下）
@@ -289,6 +387,7 @@ powershell -c "Start-Process py -ArgumentList '-m','http.server','8000' -Working
 
 ## ⚠ 換機器：這些**不會**跟著走
 
+- ⚠⚠⚠ **這是換機器唯一真的會掉東西的一項**——見第零節「換機器要帶什麼」那張清點表：localStorage 、存檔、地圖筆畫、拖城 **全部是空的**（-1306 兩個瀏覽器都查過），**只有這一項要搬**。
 - `resources/_originals`（**67 MB／31 個檔**，含這一輪 25 張成品的原始 PNG）與 `_recycle`
   —— 都在 `.gitignore` 裡。要留就自己複製。
 - ⚠ 上一次換機器已經掉過一次大的：舊機器的 `_originals` 有 **2.6 GB**，
