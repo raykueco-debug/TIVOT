@@ -194,7 +194,7 @@ def apply_rivers(h, t, land0):
       （b>r+16 && b>g+4 && 70<b<200），只挖不上色的話那條溝不會被認成河，
       loadWorld 的「河面整平」就不會作用，飛過去看到的是一條乾谷。
     ⚠ 深度是相對**當地岸高**，不是絕對值。壓到固定高度會挖出峽谷 ——
-      這條規則在「河面整平」那一輪已經付過學費。
+      這條規則在 HANDOFF 的 D 節（河面整平）已經付過學費。
     """
     _, _, riv = r1_masks()
     riv = (riv > 0) & land0
@@ -208,7 +208,7 @@ def apply_rivers(h, t, land0):
     bank = cv2.medianBlur(h.astype(np.uint8), 31).astype(np.float32)
     target = bank - RIVER['depth']
     out = np.where(riv, h * (1 - prof) + np.minimum(h, target) * prof, h)
-    # ⚠ 不准挖穿到雲海：那會打出直通雲海的洞（＝裂谷不是水，踩過）
+    # ⚠ 不准挖穿到雲海：那會打出直通雲海的洞（＝裂谷不是水，HANDOFF 記過）
     out = np.where(riv, np.maximum(out, SEA_GREY + 5), out)
 
     # 上色：核心整片河色，往外羽化，才不會是一條硬邊的藍帶

@@ -455,7 +455,7 @@
 2. 跑 `python3 tools/script_lint.py`：檢查角色 id、差分、背景／插圖／CI、音效／BGM、
    scene 鏈、空拍沒有 auto…… 缺什麼一次列出來。
 3. 在 390×844 實跑一遍，回報：**哪幾拍缺素材**、**哪幾拍我改了你的寫法以及為什麼**。
-4. commit。
+4. commit，回寫 `HANDOFF.md`。
 
 ---
 

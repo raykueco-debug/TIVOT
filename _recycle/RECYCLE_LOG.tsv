@@ -158,18 +158,3 @@ when	from	to	reason
 20260914-023637	resources/background/Ravn_Uptown.webp	_recycle/resources/background/Ravn_Uptown.webp	室外六格改成四時段差分（ver -1261）：帶尾綴的四張已入庫，無尾綴的這一版退役
 20260914-023637	resources/background/Ravn_Lookout.webp	_recycle/resources/background/Ravn_Lookout.webp	室外六格改成四時段差分（ver -1261）：帶尾綴的四張已入庫，無尾綴的這一版退役
 20260914-023637	resources/background/Ravn_Station.webp	_recycle/resources/background/Ravn_Station.webp	室外六格改成四時段差分（ver -1261）：帶尾綴的四張已入庫，無尾綴的這一版退役
-20260914-203220	HANDOFF.md	_recycle/HANDOFF.md	Ray 指定全刪：交接檔堆積成髒東西（ver -1308）
-20260914-203220	flight/HANDOFF.md	_recycle/flight/HANDOFF.md	Ray 指定全刪：交接檔堆積成髒東西（ver -1308）
-20260914-203220	flight/HANDOFF_deck_layers.md	_recycle/flight/HANDOFF_deck_layers.md	Ray 指定全刪：交接檔堆積成髒東西（ver -1308）
-20260914-203220	resources/SI/_priest_handoff.md	_recycle/resources/SI/_priest_handoff.md	Ray 指定全刪：交接檔堆積成髒東西（ver -1308）
-20260914-203220	resources/_HANDOFF_734.md	_recycle/resources/_HANDOFF_734.md	Ray 指定全刪：交接檔堆積成髒東西（ver -1308）
-20260914-203220	resources/_HANDOFF_ART_20260904.md	_recycle/resources/_HANDOFF_ART_20260904.md	Ray 指定全刪：交接檔堆積成髒東西（ver -1308）
-20260914-203220	resources/background/_dining_handoff.md	_recycle/resources/background/_dining_handoff.md	Ray 指定全刪：交接檔堆積成髒東西（ver -1308）
-20260914-203220	resources/map/HANDOFF_fallen.md	_recycle/resources/map/HANDOFF_fallen.md	Ray 指定全刪：交接檔堆積成髒東西（ver -1308）
-20260914-203220	resources/map/HANDOFF_santasofia.md	_recycle/resources/map/HANDOFF_santasofia.md	Ray 指定全刪：交接檔堆積成髒東西（ver -1308）
-20260914-203248	resources/background/Capital_Square_Dusk.png	_recycle/resources/background/Capital_Square_Dusk.png	轉成 webp（§5 規約，12.6MB→1.4MB）：同名 .webp 已入庫，原 PNG 退役
-20260914-203248	resources/background/Capital_Square_midnight.png	_recycle/resources/background/Capital_Square_midnight.png	轉成 webp（§5 規約，12.6MB→1.4MB）：同名 .webp 已入庫，原 PNG 退役
-20260914-203248	resources/background/Capital_Midtown_Dusk.png	_recycle/resources/background/Capital_Midtown_Dusk.png	轉成 webp（§5 規約，12.6MB→1.4MB）：同名 .webp 已入庫，原 PNG 退役
-20260914-203248	resources/background/Capital_Midtown_midnight.png	_recycle/resources/background/Capital_Midtown_midnight.png	轉成 webp（§5 規約，12.6MB→1.4MB）：同名 .webp 已入庫，原 PNG 退役
-20260914-203248	resources/background/Capital_Midtown_night.png	_recycle/resources/background/Capital_Midtown_night.png	轉成 webp（§5 規約，12.6MB→1.4MB）：同名 .webp 已入庫，原 PNG 退役
-20260914-203248	resources/background/Northport_Hotel_room_Night.png	_recycle/resources/background/Northport_Hotel_room_Night.png	轉成 webp（§5 規約，12.6MB→1.4MB）：同名 .webp 已入庫，原 PNG 退役
