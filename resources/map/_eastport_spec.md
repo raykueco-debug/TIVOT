@@ -391,7 +391,7 @@ Claude in Chrome 沒接上時，內建瀏覽器對 `chatgpt.com` 的實測限制
 | `East_Guild` 公會 | ✔ | ✔ | ✔ | ✔ | 三張 scale 1.00 |
 | `East_Grocerie` 雜貨舖 | ✔ | ✔ | ✔ | ✔ | 三張 scale 1.00 |
 | `East_Dessert` 甜品店 | ✔ | ✔ | ✔ | ✔ | §十 |
-| **`East_Hotel` 旅店** | ✘ | — | ✘ | ✘ | **還沒跑** |
+| `East_Hotel` 旅店 | ✔ | ✔ | ✔ | ✔ | 三張 scale 1.00 |
 
 `_day` 是由無尾綴的那張**複製**來的（同一張圖，只是換個名字）。
 ⚠ 無尾綴的原檔**先留著** —— 等程式端拔掉 `noTime:true` 之後才走 `tools/recycle.sh` 退役。
