@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1313"></script>
+<script src="../orientation.js?v=1314"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1313');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1314');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1313");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1313");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1314");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1314");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1313");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1313");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1314");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1314");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -620,25 +620,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1313" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1314" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1313" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1313" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1313" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1313" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1313" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1313" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1313" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1313" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1313" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1313" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1314" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1314" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1314" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1314" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1314" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1314" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1314" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1314" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1314" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1314" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1313" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1314" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1313" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1314" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -659,11 +659,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1313"></script>
+<script src="settlement.js?v=1314"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1313"></script>
+<script src="talks.js?v=1314"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -715,7 +715,7 @@ const COLOR_URL  = 'silvermoon_terrain.png'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1313';
+const FLIGHT_VER = 'ver -1314';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -7164,6 +7164,18 @@ async function loadWorld(){
   if(GLON){ try{ if(glInit()){ glUploadWorld(); glBuildRuins();
                                document.body.classList.add('gl-on'); } }
             catch(e){ console.warn('[gl] 初始化失敗，維持 CPU 路徑', e); } }
+  /* ══⚠⚠ **軟體算圖：一開始就從最低檔起跑**（ver -1314）══════════════════
+     階梯本來就會降，但它是**從 q0 一路掉下來**的 —— 在軟體算圖上那幾秒是
+     每幀一百多毫秒，玩家看到的是「一進飛行畫面就當掉」。認出來就直接起跑在
+     最低檔，要爬回去交給既有的升級規則（連續 90 幀中位數 <7ms）——
+     真的跑得動它自己會升上來，跑不動就待在這裡。
+     ⚠ `?q=` 有指定就不要動它（網址優先，同 `QUALITY_LOCK` 那條）。
+     ⚠ 只設 `qLevel` 不自己 `applyResize`：開機後面本來就會 resize 一次，
+       在這裡多做一次是同一件事算兩遍（鐵律 7）。 */
+  if(GPU_SOFT && !qLocked){
+    qLevel = QUALITY.length-1;
+    console.warn('[gl] 軟體算圖 → 畫質起跑檔位設為 q'+qLevel);
+  }
 
   step(0.94);   // 預熱貼圖…
   /* ⚠ primeArt 是**純優化**（預先解碼貼圖），不是開場的必要條件——用 race 夾 4 秒
@@ -10189,6 +10201,8 @@ let glTexBiome=null, glTexMask=null, glTexRail=null, glTexGeo=null, glTexMot=nul
 let glSmpPbo=null, glSmpFence=null;
 const glSmpBuf=new Uint8Array(8*8*4);   // 環境光取樣的非同步回讀落點（見 screenSample）
 let TERR_MAXH=9999;   // 地形最高點（glUploadWorld 量出來，shader 的提早結束用）
+/* 這台的 WebGL 是不是軟體算圖（ver -1314）。判定只有 `glInit` 一處，其餘只讀。 */
+let GPU_SOFT=false, GPU_NAME='';
 let glTexHmax=null, TERR_MAXLOD=0;   // 跳空用的 max-mipmap（ver -1303）
 let GLX=null, glProg=null, glVao=null, glU={}, glTexH=null, glTexHs=null, glTexC=null, glTexS=null,
     glTexSky=null, glReady=false, glSkyBuf=null;
@@ -10671,6 +10685,24 @@ function glInit(){
                                powerPreference:'high-performance'});
   if(!GLX){ console.warn('[gl] 這台沒有 WebGL2，維持 CPU 路徑'); return false; }
   const g=GLX;
+  /* ══⚠⚠⚠ **認出「這台在用軟體算圖」**（ver -1314，Ray：「我發布的時候還要叫
+     玩家去 F12 貼這行?」）══════════════════════════════════════════════
+     同一台 4070S、同一份程式：內建瀏覽器 60fps，**Chrome 只有 6~8fps** ——
+     因為那個 Chrome 的 WebGL 掉到 **SwiftShader（CPU 算圖）**。玩家不會知道
+     這件事，也不該被要求去開主控台查 —— **程式自己要認得出來、自己降下來。**
+     ⚠⚠ 判定用 `WEBGL_debug_renderer_info` 的字串，**不要**用「GPU 計時擴充
+       在不在」去猜：那一支在某些正常的硬體驅動上也會缺席（隱私設定、
+       ANGLE 版本），拿它當判準會把好機器一起誤殺。
+     ⚠ 拿不到那個擴充時一律當**硬體**（寧可漏判也不要誤判）——
+       誤判的代價是「好機器被鎖在低畫質」，那比慢更難發現。
+     ⚠ 這是**一個量一個計算點**（鐵律 7）：全頁只有這裡判一次，
+       其他地方一律讀 `GPU_SOFT`。 */
+  try{
+    const dbg=g.getExtension('WEBGL_debug_renderer_info');
+    GPU_NAME = dbg ? String(g.getParameter(dbg.UNMASKED_RENDERER_WEBGL)||'') : '';
+    GPU_SOFT = /swiftshader|llvmpipe|basic render|software|microsoft basic/i.test(GPU_NAME);
+    if(GPU_SOFT) console.warn('[gl] 這台的 WebGL 跑在軟體算圖上（'+GPU_NAME+'）—— 畫質自動降到最低檔');
+  }catch(_){ GPU_SOFT=false; }
   glProg=g.createProgram();
   g.attachShader(glProg,glSh(g.VERTEX_SHADER,GL_VS));
   g.attachShader(glProg,glSh(g.FRAGMENT_SHADER,GL_FS));
@@ -19076,7 +19108,7 @@ function loop(now){
          Ray 在手機上回報「卡頓更嚴重了」，實際上他跑的是 CPU 路徑 —— 因為
          `?gl=1` 讀的是這一頁自己的網址，而主遊戲是把它當 iframe 內嵌的。
          截圖裡看得到 gpu/cpu，這一整類誤判就不會再發生（同版本號那一條）。 */
-      +(GLON&&glReady?' gpu':' cpu')+' w'+wSm.toFixed(1)+gpuTimerText()
+      +(GLON&&glReady?(GPU_SOFT?' gpu(sw)':' gpu'):' cpu')+' w'+wSm.toFixed(1)+gpuTimerText()
       +'  ('+mx+','+my+') '+deg+'° h'+Math.round(cam.alt);
     acc=0;n=0;
   }
