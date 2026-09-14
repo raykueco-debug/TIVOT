@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1302"></script>
+<script src="../orientation.js?v=1303"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1302');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1303');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1302");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1302");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1303");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1303");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1302");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1302");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1303");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1303");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -614,25 +614,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1302" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1303" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1302" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1302" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1302" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1302" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1302" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1302" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1302" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1302" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1302" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1302" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1303" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1303" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1303" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1303" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1303" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1303" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1303" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1303" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1303" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1303" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1302" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1303" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1302" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1303" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -653,11 +653,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1302"></script>
+<script src="settlement.js?v=1303"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1302"></script>
+<script src="talks.js?v=1303"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -709,7 +709,7 @@ const COLOR_URL  = 'silvermoon_terrain.png'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1302';
+const FLIGHT_VER = 'ver -1303';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -7369,9 +7369,24 @@ const Q = () => QUALITY[qLevel];
    ⇒ 下限改成**由階梯自己的最後一階推**（鐵律 7：一個量一個計算點）——
      最低那一階要多少就給多少，另外留一個絕對硬底 96 給極窄的視窗。
    ⚠ 這不會讓高畫質變差：上面幾階本來就高於下限，一個字都沒動。 */
-const BUF_HARD_MIN = 96;
-const bufFloor = w => Math.max(BUF_HARD_MIN,
-                               Math.round(w * QUALITY[QUALITY.length-1].bwf));
+const BUF_HARD_MIN = 96, BUF_MAX = 420;
+/* ⚠⚠⚠ **下限不可以大過上限**（ver -1303）：`applyResize` 算的是
+   `clamp(w*bwf, bufFloor(w), BUF_MAX)`，而視窗寬超過約 1273px 時
+   `w*0.33` 就超過 420 ⇒ **五個畫質檔位全部被夾成同一個 420**，
+   整個階梯在桌機的大視窗上等於不存在（1920 寬實測 q0 與 q4 都是 420）。
+   這與 -1196 修的是同一個病的另一端：那次是下限寫死 160 把下面三階壓平，
+   這次是下限跟著視窗長大、反過來把上面幾階壓平。 */
+const bufFloor = w => Math.min(BUF_MAX,
+                               Math.max(BUF_HARD_MIN,
+                                        Math.round(bufW(w) * QUALITY[QUALITY.length-1].bwf)));
+/* ⚠⚠ **上限要夾在「視窗寬」上，不是夾在算完的緩衝寬上**（ver -1303）。
+   夾在結果上的話，只要 `w*0.33` 就超過 420（視窗寬 ≥1273px），五個檔位會被
+   一起夾成 420 ⇒ **階梯在大視窗上整個消失**，降畫質一個像素都省不到
+   （這正是 Ray 實測「q0 與 q4 一樣卡」的原因之一）。
+   改成先把視窗寬夾到「q0 剛好頂到上限」的那個寬度，再乘各檔的係數 ——
+   於是 q0 仍然是 420，而 q4 是 420×0.33/0.60 ≈ 231，階梯回來了。
+   ⚠ 小視窗（`w` 本來就沒到）行為**一個字都沒變**。 */
+const bufW = w => Math.min(w, BUF_MAX / QUALITY[0].bwf);
 
 /* ── 裝置像素比 ───────────────────────────────────────────────────
    ⚠ 畫布**要開到裝置像素**，不能只開 CSS 像素。地形本來就是低解析度緩衝
@@ -7395,7 +7410,7 @@ function applyResize(){
      ⚠ 一定要**連 BW 一起比**：QUALITY 的第 2、3 級 dpr 同樣是 1，只有 bwf
        不同（0.48 vs 0.40）。只比視窗與 DPR 的話，q2→q3 會被誤判成「沒變」而
        整個跳過，緩衝解析度永遠降不下去 —— 調節器就形同壞掉。 */
-  const nBW=clamp(Math.round(nw*Q().bwf),bufFloor(nw),420);
+  const nBW=clamp(Math.round(bufW(nw)*Q().bwf),bufFloor(nw),BUF_MAX);
   if(nw===W && nh===H && ndpr===DPR && nBW===BW && cv.width===Math.round(nw*ndpr)) return;
   W=nw;H=nh;
   DPR=ndpr;
@@ -7422,7 +7437,7 @@ function applyResize(){
        額度讓出來，效能餘裕留給手機。
      要更銳就調這個值，但**一定要在實機上看 HUD 的 fps**：
      開發用的瀏覽器分頁一離開前景 rAF 就停，量到的數字不可信。 */
-  BW=clamp(Math.round(W*Q().bwf),bufFloor(W),420);
+  BW=clamp(Math.round(bufW(W)*Q().bwf),bufFloor(W),BUF_MAX);
   BH=Math.round(BW*VIEWH/W);          // 緩衝比例對齊「3D 視窗」而非整個畫面
   bcv=document.createElement('canvas');bcv.width=BW;bcv.height=BH;
   bctx=bcv.getContext('2d');
@@ -9969,6 +9984,7 @@ let glTexBiome=null, glTexMask=null, glTexRail=null, glTexGeo=null, glTexMot=nul
 let glSmpPbo=null, glSmpFence=null;
 const glSmpBuf=new Uint8Array(8*8*4);   // 環境光取樣的非同步回讀落點（見 screenSample）
 let TERR_MAXH=9999;   // 地形最高點（glUploadWorld 量出來，shader 的提早結束用）
+let glTexHmax=null, TERR_MAXLOD=0;   // 跳空用的 max-mipmap（ver -1303）
 let GLX=null, glProg=null, glVao=null, glU={}, glTexH=null, glTexHs=null, glTexC=null, glTexS=null,
     glTexSky=null, glReady=false, glSkyBuf=null;
 
@@ -10043,6 +10059,9 @@ float hRaw(ivec2 t){ return float(texelFetch(uH, t, 0).r); }
 /* ══⚠⚠⚠ 地形的最高點（ver -1302）══ 射線一旦高過它、而且還在往上爬，
    就**不可能再打到任何東西** —— 見主迴圈那個提早結束。由 JS 從高度圖量出來。 */
 uniform float uMaxH;
+/* 跳空用的 max-mipmap（ver -1303）：每一階存子格的最大值。NEAREST，走 texelFetch。 */
+uniform sampler2D uHmax;
+uniform int uMaxLod;
 float hSurf(vec2 mf, ivec2 ti, bool outside, out bool cloud){
   if(outside){ cloud=true; return ${CLOUD_H}.0; }
   /* ⚠⚠ 陸海的界線也走**平滑高度**（ver -1219，Ray：「大陸邊緣的立面也用同樣方式處理」）。
@@ -10126,6 +10145,51 @@ void main(){
        ⚠⚠ 這一段在 GLSL 的樣板字串裡，**註解不可以有反引號**（憲法記的第七次，
          我是第八次 —— 寫註解時順手用反引號括變數名就會炸）。 */
     if(hNeed>uMaxH && (2.0*curv*z - k)>0.0) break;
+    /* ══⚠⚠⚠ 階層跳空（ver -1303）════════════════════════════════════════
+       由粗到細問 max-mipmap：這一塊的最高點都在射線之下 ⇒ 整塊跳過。
+
+       ⚠⚠ **跳的距離是「整數個原本的步」**，不是任意距離 —— 這是位元等價的關鍵。
+         原序列是 z+=dz、dz+=0.0062；跳 kk 步之後
+           z  += dz*kk + 0.0031*kk*(kk-1)
+           dz += 0.0062*kk
+         射線因此**永遠落在原本會取樣的那些 z 上**，第一個命中的點一模一樣。
+         跳任意距離的話取樣點會偏移，命中的 z 就變了，畫面不會等價。
+       ⚠⚠ **安全距離用 DDA 算，不要用「一格的寬度」去猜**：dir 沒有正規化
+         （|dir| 最大約 2.6），拿格寬當距離會一口氣跨過兩三格 ⇒ 跳過地形、畫面破洞。
+         這裡算的是「沿著射線還有多遠才離開**這一塊**」，那是精確值。
+       ⚠⚠ **hNeed 在區間內不是單調的**：往下看的射線它先降後升（頂點在
+         z=k/(2*curv)）。所以要取區間內的**最小值**來比 —— 只看起點會漏掉
+         中間那一段比較低的地方。
+       ⚠ 由粗到細：命中前的空曠地帶粗階就過了（一次跳很遠），逼近地形時
+         粗階擋下來、換細階，自然收斂。 */
+    {
+      vec2 dm = dir*${INV_SCALE};                 // 每單位 z 在地圖上走幾格
+      bool jumped=false;
+      for(int L=7; L>=1; L--){
+        if(L>uMaxLod) continue;
+        float cs = exp2(float(L));                // 這一階一格涵蓋幾個地圖格
+        /* 沿射線離開這一塊還有多遠（DDA，取兩軸的較小值）。 */
+        vec2 lo = floor(mf/cs)*cs;
+        /* GLSL 不能用 < 比較向量（那會是編譯錯誤，而編譯錯誤就是悄悄退回 CPU）。 */
+        vec2 sd = vec2(abs(dm.x)<1e-6 ? 1e-6 : dm.x, abs(dm.y)<1e-6 ? 1e-6 : dm.y);
+        vec2 tv = (mix(lo, lo+cs, step(0.0, dm)) - mf) / sd;
+        float adv = min(tv.x, tv.y);
+        if(!(adv>0.0)) continue;
+        /* 換算成「幾個原步」：0.0031*kk^2 + (dz-0.0031)*kk = adv */
+        float bq = dz - 0.0031;
+        float kk = floor((-bq + sqrt(max(bq*bq + 4.0*0.0031*adv, 0.0))) / (2.0*0.0031));
+        if(kk < 1.0) continue;
+        float zAdv = dz*kk + 0.0031*kk*(kk-1.0);
+        float z2 = z + zAdv;
+        /* 區間內 hNeed 的最小值（頂點落在區間內就取頂點）。 */
+        float zv = clamp(k/(2.0*curv), z, z2);
+        float hMin = min(min(uCam.z-(k-z*curv)*z, uCam.z-(k-z2*curv)*z2),
+                         uCam.z-(k-zv*curv)*zv);
+        float blk = texelFetch(uHmax, ivec2(mf)>>L, L).r;
+        if(blk < hMin){ z=z2; dz+=0.0062*kk; jumped=true; break; }
+      }
+      if(jumped) continue;
+    }
     bool cloud; float hs=hSurf(mf, ti, outside, cloud);
     if(hs>=hNeed){
       /* 霧提前算 —— 崖面那一段要用它當閘門（同 CPU 的 fog<0.86）。 */
@@ -10423,7 +10487,7 @@ function glInit(){
   g.enableVertexAttribArray(lp); g.vertexAttribPointer(lp,2,g.FLOAT,false,0,0);
   for(const n of ['uH','uHs','uC','uS','uSky','uMap','uBuf','uCam','uDir','uLdir','uLcol','uLi','uFog','uCloudLit','uTime',
                   'uCityA','uCityB','uCityA0','uCityB0','uCityA1','uCityB1','uCityT','uInvS',
-                  'uBiome','uMask','uGeo','uRailDir','uRD','uGeoOn','uMot','uSnow','uMaxH'])
+                  'uBiome','uMask','uGeo','uRailDir','uRD','uGeoOn','uMot','uSnow','uMaxH','uHmax','uMaxLod'])
     glU[n]=g.getUniformLocation(glProg,n);
   g.uniform1i(glU.uH,0); g.uniform1i(glU.uHs,11); g.uniform1i(glU.uC,1); g.uniform1i(glU.uS,2); g.uniform1i(glU.uSky,3);
   g.uniform1i(glU.uCityA,4); g.uniform1i(glU.uCityB,5);
@@ -10464,6 +10528,63 @@ function glUploadWorld(){
        海的那一半填的是 SEASURF，兩者不同）。留 1% 餘裕給 R16F 的量化誤差。 */
     TERR_MAXH = maxH*1.01 + 1;
     g.uniform1f(glU.uMaxH, TERR_MAXH);
+    /* ══⚠⚠⚠ 跳空用的 max-mipmap（ver -1303）══════════════════════════════
+       每一階存**子格的最大值**（不是平均）。射線行進時先問粗的那一階：
+       整塊的最高點都在射線之下 ⇒ **那一塊不可能被打到，整塊跳過**。
+       ⚠⚠ 這是「不變的輸出、少一個數量級的工作」：跳掉的是**證明打不到**的區間。
+       實測（JS 端用同一份資料模擬，保守版）：每像素讀取 **277 → 35 次**，
+       全畫面 3740 萬 → 471 萬 ⇒ **7.9 倍**。額外貼圖 6.6 MB、建表 135ms（一次性）。
+       ⚠ **一定要 NEAREST**：mipmap 的語意在這裡是「這一塊的最大值」，
+         線性內插會把相鄰塊混進來 ⇒ 混出比真實最大值**低**的數，那就會跳過地形
+         （畫面破洞）。MIN 用 `NEAREST_MIPMAP_NEAREST`，shader 走 `texelFetch` 指定階。
+       ⚠ 逐階自己算、自己上傳，**不要用 `generateMipmap`** —— 那一支做的是
+         「平均」（box filter），在這裡是錯的答案。 */
+    /* ⚠⚠⚠ **底階要先做 3×3 膨脹**（ver -1303，實測抓到的 bug）：
+       `hSurf` 是**雙線性**取樣，它讀的是 `mf-0.5` 周圍那四個 texel ——
+       其中可能有一個落在**隔壁格**裡。只取「這一格的最大值」涵蓋不到那個鄰居，
+       於是偶爾會跳過真的打得到的地形（實測某個機位差 337 個通道、最大 28）。
+       把底階換成「周圍九格的最大值」之後，每一階的方塊就涵蓋了
+       **自己 ＋ 一圈邊界**，雙線性的取樣足跡一定被包住。
+       ⚠ 這只影響**跳空用**的那張貼圖；真正取樣高度的 `uHs` 一個位元都沒動。 */
+    const hd=new Float32Array(MAPW*MAPH);
+    for(let y=0;y<MAPH;y++){
+      const y0=y>0?y-1:0, y1=y<MAPH-1?y+1:MAPH-1;
+      for(let x=0;x<MAPW;x++){
+        const x0=x>0?x-1:0, x1=x<MAPW-1?x+1:MAPW-1;
+        let m=hf[y*MAPW+x];
+        const rows=[y0*MAPW, y*MAPW, y1*MAPW], cols=[x0,x,x1];
+        for(let r=0;r<3;r++) for(let c=0;c<3;c++){ const v=hf[rows[r]+cols[c]]; if(v>m) m=v; }
+        hd[y*MAPW+x]=m;
+      }
+    }
+    let lw=MAPW, lh=MAPH, prev=hd;
+    glTexHmax=g.createTexture(); g.activeTexture(g.TEXTURE0+14);
+    g.bindTexture(g.TEXTURE_2D,glTexHmax);
+    g.texImage2D(g.TEXTURE_2D,0,g.R16F,lw,lh,0,g.RED,g.FLOAT,prev);
+    TERR_MAXLOD=0;
+    for(let L=1; L<=7 && lw>1 && lh>1; L++){
+      const w=Math.max(1,lw>>1), h=Math.max(1,lh>>1), cur=new Float32Array(w*h);
+      for(let y=0;y<h;y++){
+        const y0=y<<1, y1=Math.min(y0+1,lh-1);
+        for(let x=0;x<w;x++){
+          const x0=x<<1, x1=Math.min(x0+1,lw-1);
+          const a=prev[y0*lw+x0], b=prev[y0*lw+x1], c=prev[y1*lw+x0], d=prev[y1*lw+x1];
+          cur[y*w+x] = Math.max(Math.max(a,b), Math.max(c,d));
+        }
+      }
+      g.texImage2D(g.TEXTURE_2D,L,g.R16F,w,h,0,g.RED,g.FLOAT,cur);
+      prev=cur; lw=w; lh=h; TERR_MAXLOD=L;
+    }
+    g.texParameteri(g.TEXTURE_2D,g.TEXTURE_MIN_FILTER,g.NEAREST_MIPMAP_NEAREST);
+    g.texParameteri(g.TEXTURE_2D,g.TEXTURE_MAG_FILTER,g.NEAREST);
+    g.texParameteri(g.TEXTURE_2D,g.TEXTURE_WRAP_S,g.CLAMP_TO_EDGE);
+    g.texParameteri(g.TEXTURE_2D,g.TEXTURE_WRAP_T,g.CLAMP_TO_EDGE);
+    g.texParameteri(g.TEXTURE_2D,g.TEXTURE_BASE_LEVEL,0);
+    g.texParameteri(g.TEXTURE_2D,g.TEXTURE_MAX_LEVEL,TERR_MAXLOD);
+    g.useProgram(glProg);
+    g.uniform1i(glU.uHmax,14);
+    g.uniform1i(glU.uMaxLod,TERR_MAXLOD);
+    console.log('[gl] 跳空 max-mipmap '+(TERR_MAXLOD+1)+' 階，最高點 '+TERR_MAXH.toFixed(0));
     glTexHs=g.createTexture(); g.activeTexture(g.TEXTURE0+11);
     g.bindTexture(g.TEXTURE_2D,glTexHs);
     g.texImage2D(g.TEXTURE_2D,0,g.R16F,MAPW,MAPH,0,g.RED,g.FLOAT,hf);
@@ -18534,11 +18655,32 @@ function gpuTimerEnd(){
 function gpuTimerText(){ return gSm ? ' g'+gSm.toFixed(1) : ''; }
 
 const QF=[]; let qCool=0; let wSm=0;
+/* ⚠⚠⚠ **越卡要降得越快**（ver -1303，效能分配）══════════════════════════
+   舊版的取樣窗與靜置期都是**用幀數算**的（40 幀才第一次評、換檔後靜置 90 幀）。
+   那在 60fps 下是 0.7 秒與 1.5 秒，很合理；**但幀率正是它要修的那個量** ——
+   實測 Ray 的機器（GT 1030，GPU 100%／79°C）掉到 2fps 時，
+   40 幀＝20 秒、90 幀＝45 秒 ⇒ **降一級要一分多鐘，從 q0 降到 q4 要四分鐘以上**。
+   越需要它快的時候它越慢，這就是分配錯誤。
+
+   作法：**嚴重超支就立刻降**，不必等滿窗、也不吃靜置期。
+   · 門檻 `PANIC_MS`（24ms ＝預算的兩倍）：中位數過它就是「這台明顯吃不下」。
+   · 只要 `PANIC_MIN` 幀（8 幀）就足以判定 —— 那不是雜訊，是持續的超支。
+   ⚠ 只放寬**降級**這一邊。升級照舊要看滿 90 幀、而且門檻更低（7ms）——
+     升上去又掉下來會變成每兩秒抖一次，比一直待在低畫質更難看（原本的理由不變）。
+   ⚠ 單幀的尖峰仍然不算數（GC、載入城的貼圖、切歌）：看的是**中位數**，
+     所以連續 8 幀都在 24ms 以上才會動，偶發的一兩幀打不到它。 */
+const PANIC_MS = 24, PANIC_MIN = 8;
 function qualityTick(workMs){
   if(qLocked) return;
   QF.push(workMs);
-  if(QF.length<40) return;
   if(QF.length>90) QF.shift();
+  /* ① 恐慌降級：不等滿窗、不吃靜置期。 */
+  if(QF.length>=PANIC_MIN && qLevel<QUALITY.length-1){
+    const tail=QF.slice(-PANIC_MIN).sort((x,y)=>x-y);
+    if(tail[tail.length>>1] > PANIC_MS){ qLevel++; onQualityChange(); return; }
+  }
+  /* ② 平時的評估（原本那一套，一個字沒改）。 */
+  if(QF.length<40) return;
   if(qCool>0){ qCool--; return; }
   const a=QF.slice().sort((x,y)=>x-y), med=a[a.length>>1];
   if(med>12 && qLevel<QUALITY.length-1){ qLevel++; onQualityChange(); }
