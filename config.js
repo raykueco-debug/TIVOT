@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.15-1322';
+export const VERSION = 'ver 2026.09.15-1323';
 
 export const GAME_CONFIG = {
 
@@ -4257,6 +4257,17 @@ export const ASSET_VER = {
   'ravn_grocerie':              2,
   'ravn_guild':                 2,
   'ravn_hotel':                 2,
+  /* ver -1321：**攝政王廣場五張重畫**（Ray：「人太多、地上莫名其妙的矮柱太多」
+     「燈的位置要合邏輯」）。地上那些莫名其妙的矮石柱清掉、行人收到適當量、
+     街燈改成同規格等距繞圓環一圈；構圖、建築、雕像、花圃沒動。
+     ⚠⚠ 五張都是**同名覆蓋** —— 舊的還在玩家的快取裡，不帶版本就會拿到舊圖，
+       而且畫面上沒有任何錯誤訊息（§5 那條的老坑）。
+     ⚠ **一組差分要一起帶**：漏掉哪一張，哪一張就被快取住。 */
+  'capital_square_dawn':        2,
+  'capital_square_day':         2,
+  'capital_square_dusk':        2,
+  'capital_square_night':       2,
+  'capital_square_midnight':    2,
 };
 export function assetVer(nameOrPath){
   const n = String(nameOrPath||'').split('/').pop().split('?')[0]
