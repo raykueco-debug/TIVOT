@@ -1844,7 +1844,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1298';
+const KERB_V='?v=1300';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -2249,6 +2249,18 @@ const KERB_SFX={ pop:'se_Kerberos_pop', gear:'se_Kerberos_gear',
    ⚠ 改副檔名要三個地方一起改：這裡的預設、下面 `playKerberosClose` 裡那一行
      寫死 `.mp3` 的齒輪音、以及預載清單（1469 行那一段）—— 前兩者以前不一致過。 */
 const KERB_SFX_EXT={};   // 預設 m4a，例外寫這裡
+/* ══⚠⚠ 門的那幾支音效（ver -1299 匯出）══ 進飛行畫面時主頁會把音訊整個放掉
+   （`openFlight`），但**這幾支不能放**：飛行頁交棒進戰鬥時，門是**父頁**直接
+   `playKerberosFromRisen` 演的，那條路上**沒有預載門**（`bootBattleGate` 是
+   獨立飛行頁那一條）。放掉的話撞頂那一聲要現抓現解碼，一定落進
+   `LATE_PLAY_MS`（1.5 秒）的「遲到就不播」規則 —— 也就是門開了沒聲音。
+   ⚠ 只有五支、都很短，留著幾乎沒有成本。 */
+export function kerbSeSources(){
+  const out=[];
+  for(const k in KERB_SFX) if(KERB_SFX[k])
+    out.push(KERB_SE_DIR + KERB_SFX[k] + '.' + (KERB_SFX_EXT[k] || 'm4a'));
+  return out;
+}
 const KERB_SE_T={ popPeak:1002, openTail:1921 };
 const KERB_T={ rise:1000, thud:420, rivet:460, arrow:340, lift:1600, open:900 };
 let kerbTimers=[];

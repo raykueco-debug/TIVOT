@@ -325,6 +325,23 @@ function openFlight(opts){
      ⚠ 收在這裡（唯一的入口）而不是散在各個呼叫點（鐵律 8）：試飛、出航、
        戰鬥打完回來，三條路都經過這一支。 */
   try{ SFX.stopBgm(600); }catch(_){}
+  /* ══⚠⚠ 進飛行畫面＝把主頁這一邊的音訊整個放掉（ver -1299，Ray 的讀取分工）══
+     飛行頁是**另一個 document**，音樂與音效都是它自己那一套（§6.10）——
+     主頁這邊留著的解碼音效與 BGM blob（實測 117 支 ＋ 21 首、31.6 MB）
+     在飛行期間是純粹的死重，而大地圖正是玩家待最久的地方。
+     ⚠ 回來的兩條路都會自己載：降落進城走 `enterTown` 的讀取頁（那一支會載
+       這座城要的），獨立飛行頁交棒走 `bootBattleGate`（§6.6 的三段預載）。
+     ⚠⚠ **門的那五支要留**（`story.kerbSeSources()`）：內嵌交棒那一條路上，門是
+       **父頁**直接 `playKerberosFromRisen` 演的，**沒有經過任何預載門** ——
+       放掉的話撞頂那一聲要現抓現解碼，必然落進 `LATE_PLAY_MS`（1.5 秒）的
+       「遲到就不播」規則，也就是門開了沒聲音。五支都很短，留著幾乎沒成本。
+     ⚠ 曲子上面剛 `stopBgm` 掉了；`releaseAudio` 仍會保住 `_bgmSrc` 指著的那一首，
+       所以就算淡出還沒走完也不會斷音。
+     ⚠ 慢一拍再放：`stopBgm` 的淡出要 600ms，當場抽掉 blob 會讓最後那一段沒聲音。 */
+  setTimeout(()=>{
+    let keep=[]; try{ keep=story.kerbSeSources(); }catch(_){}
+    try{ SFX.releaseAudio(keep); }catch(_){}
+  }, 800);
   const w=flightWin();
   if(!f.getAttribute('src')){
     /* ver -845：交棒時殺掉了 —— 勝負補進回程鑰匙（重載後開機收尾讀），整頁重載。
