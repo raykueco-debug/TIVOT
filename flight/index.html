@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1306"></script>
+<script src="../orientation.js?v=1307"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1306');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1307');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1306");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1306");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1307");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1307");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1306");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1306");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1307");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1307");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -614,25 +614,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1306" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1307" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1306" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1306" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1306" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1306" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1306" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1306" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1306" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1306" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1306" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1306" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1307" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1307" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1307" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1307" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1307" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1307" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1307" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1307" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1307" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1307" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1306" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1307" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1306" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1307" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -653,11 +653,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1306"></script>
+<script src="settlement.js?v=1307"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1306"></script>
+<script src="talks.js?v=1307"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -709,7 +709,7 @@ const COLOR_URL  = 'silvermoon_terrain.png'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1306';
+const FLIGHT_VER = 'ver -1307';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -8167,16 +8167,7 @@ function drawMap(){
 
   /* 自機：同樣坐在地表上 */
   const p=reliefXY(cam.x/MAP_SCALE, cam.y/MAP_SCALE);
-  const px=ox+p.x*sc, py=oy+p.y*sc;
-  mctx.save(); mctx.translate(px,py);
-  mctx.rotate(-cam.angle);                                 // 圖正北朝上，直接套航向
-  mctx.fillStyle='#c9a227';
-  mctx.beginPath(); mctx.moveTo(0,-11); mctx.lineTo(-7,8); mctx.lineTo(0,4); mctx.lineTo(7,8);
-  mctx.closePath(); mctx.fill();
-  mctx.strokeStyle='rgba(8,7,12,.85)'; mctx.lineWidth=1.2; mctx.stroke();
-  mctx.restore();
-  mctx.strokeStyle='rgba(201,162,39,.5)'; mctx.lineWidth=1;
-  mctx.beginPath(); mctx.arc(px,py,15,0,Math.PI*2); mctx.stroke();
+  drawShipMark(mctx, ox+p.x*sc, oy+p.y*sc, cam.angle);
 
   drawMapMark(ox,oy,sc,performance.now());   // 目的地標記（ver -743）：最上層
   drawMapPin(ox,oy,sc);                      // 釘選（ver -1072）：只有一根
@@ -8216,6 +8207,25 @@ function drawMap(){
     if(t3){ ty+=14; mctx.fillStyle='#7fd0a0'; mctx.fillText(t3,15,ty); }
     if(t4){ ty+=14; mctx.fillStyle='#7fd0a0'; mctx.fillText(t4,15,ty); }
   }
+}
+/* ══ 自機的記號（ver -1307）══════════════════════════════════════════
+   ⚠⚠ **大地圖與地圖編輯器共用這一支**（鐵律 8）。兩邊要長得一模一樣 ——
+     玩家（管理人）在編輯器裡看到的那個箭頭，必須一眼認得出就是大地圖上的自己。
+   ⚠ **位置由呼叫端算，不在這裡算**：大地圖是斜角浮雕（`reliefXY` 會依高度位移），
+     編輯器刻意是平面 1:1（Ray：「全地圖平面顯示不要有立體」）—— 那是兩套投影，
+     硬要收進來就會有一邊是錯的。這一支只負責「長什麼樣」。
+   ⚠ 尺寸固定在**螢幕像素**，不隨兩邊各自的縮放變 —— 與聚落（6px 方塊）、
+     地標（r=4 圓）同一個作法，縮到最小也還看得見。 */
+function drawShipMark(g, x, y, angle){
+  g.save(); g.translate(x,y);
+  g.rotate(-angle);                                        // 圖正北朝上，直接套航向
+  g.fillStyle='#c9a227';
+  g.beginPath(); g.moveTo(0,-11); g.lineTo(-7,8); g.lineTo(0,4); g.lineTo(7,8);
+  g.closePath(); g.fill();
+  g.strokeStyle='rgba(8,7,12,.85)'; g.lineWidth=1.2; g.stroke();
+  g.restore();
+  g.strokeStyle='rgba(201,162,39,.5)'; g.lineWidth=1;
+  g.beginPath(); g.arc(x,y,15,0,Math.PI*2); g.stroke();
 }
 /* 目的地標記（ver -743）：畫在最上層（drawMap 的收尾呼叫）。 */
 function drawMapMark(ox,oy,sc,now){
@@ -8261,6 +8271,10 @@ function drawMapPin(ox,oy,sc){
   mctx.beginPath(); mctx.ellipse(x,y,5,2.2,0,0,6.283); mctx.stroke();
   mctx.restore();
 }
+/* ⚠ 地圖編輯器**不必**掛進來（ver -1307 查過）：`loop()` 第一道就是
+   `if(extPaused || mapOpen){ … return; }`（ver -776，開大地圖整幀凍結），
+   而編輯器只能從大地圖進去 ⇒ 它開著的時候 `update()` 連跑都沒跑、船不可能移動。
+   所以 `meDraw` 在開啟與每次互動時畫一次自機就永遠是對的，不需要每禎重畫。 */
 function updateMapMe(){ if(mapOpen) drawMap(); }
 
 /* ══⚠⚠⚠ **輕點船身＝閒聊：先關掉**（ver -1171，Ray：「把點船閒聊這件事先拿掉
@@ -8964,6 +8978,26 @@ function meDraw(){
     g.strokeStyle='#9fd8ff'; g.lineWidth=1.4;
     g.beginPath(); g.arc(q[0],q[1],4,0,7); g.stroke();
     if(s>0.35){ g.fillStyle='rgba(190,225,255,.85)'; g.fillText(pl.name||'', q[0]+7, q[1]); }
+  }
+  /* ── 自機（ver -1307，Ray：「讓地圖編輯器顯示船的目前位置」）──────────
+     ⚠ 記號走**大地圖那一支** `drawShipMark`，不另畫一個（鐵律 8）。
+     ⚠ 位置是**平面 1:1 的地圖像素**（走這裡的 `P`），不套 `reliefXY` ——
+       編輯器整頁刻意沒有立體，套了浮雕位移就會與底下那張底圖對不上。
+     ⚠ 畫在聚落與地標**之後**、筆刷游標之前：自機要蓋在資料層上（找得到自己），
+       但不能蓋住正在畫的那一筆。
+     ⚠ 座標讀數用**地圖像素**，與大地圖的「自機 (x,y)」同一套單位 —— 截圖回報時
+       兩邊的數字可以直接對。
+     ⚠ **畫一次就夠，不會過期**：編輯器只能從大地圖進去，而 `loop()` 第一道
+       `if(extPaused || mapOpen)` 就把整幀凍住了（ver -776）—— 船在這裡不可能移動，
+       所以不必掛進 `updateMapMe` 每禎重畫（那一支的說明有詳細理由）。 */
+  {
+    const mx=cam.x/MAP_SCALE, my=cam.y/MAP_SCALE;
+    const q=P(mx,my);
+    drawShipMark(g, q[0], q[1], cam.angle);
+    const lab='自機 ('+Math.round(mx)+','+Math.round(my)+')';
+    const w=g.measureText(lab).width;
+    g.fillStyle='rgba(8,7,12,.78)'; g.fillRect(q[0]+17, q[1]-8, w+8, 16);
+    g.fillStyle='#ffd98a'; g.fillText(lab, q[0]+21, q[1]);
   }
   /* 筆刷游標 */
   if(meBrushAt && meTool!=='pan' && meTool!=='move' && meTool!=='rail' && meTool!=='road'){
