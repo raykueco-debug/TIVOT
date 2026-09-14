@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1323"></script>
+<script src="../orientation.js?v=1324"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1323');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1324');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1323");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1323");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1324");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1324");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1323");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1323");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1324");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1324");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -620,25 +620,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1323" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1324" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1323" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1323" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1323" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1323" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1323" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1323" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1323" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1323" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1323" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1323" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1324" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1324" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1324" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1324" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1324" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1324" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1324" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1324" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1324" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1324" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1323" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1324" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1323" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1324" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -659,11 +659,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1323"></script>
+<script src="settlement.js?v=1324"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1323"></script>
+<script src="talks.js?v=1324"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -715,7 +715,7 @@ const COLOR_URL  = 'silvermoon_terrain.png'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1323';
+const FLIGHT_VER = 'ver -1324';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -7796,7 +7796,7 @@ addEventListener('blur',clearKeys);
 document.addEventListener('visibilitychange',()=>{ if(document.hidden) clearKeys(); });
 
 /* ══ 時間（ver -435，Ray 定案）══════════════════════════════════════════
-   「第一次進入城鎮的時間是 1908年6月13日 11:00，從這個時間點開始計時。
+   「第一次進入城鎮的時間是 1908年10月11日 11:00，從這個時間點開始計時。（ver -1324 由 6月13日改）
      程式內的活動就用現在的計時方式，大地圖則是**一場戰鬥 1 小時、進入其他城鎮或
      地圖 1 小時**，時間線性往前推進。」
 
@@ -7808,11 +7808,11 @@ document.addEventListener('visibilitychange',()=>{ if(document.hidden) clearKeys
      那正是 Ray 說的「線性往前推進」—— 時間跟著**事件**走，不跟著你繞了多少圈走。
      連帶：晝夜（`sky()` 讀 `clock.minutes`）在飛行途中不再流動，
      過了那一小時才跳一格。這是規則改了之後的結果，不是壞掉。
-   ⚠⚠ `EPOCH` 與 `script/clock.js` 的那一份是**同一組數字**（1908-06-13 11:00）——
+   ⚠⚠ `EPOCH` 與 `script/clock.js` 的那一份是**同一組數字**（1908-10-11 11:00）——
      這一頁是非 module 的獨立文件，import 不到那一份，**改一邊要改另一邊**
      （鐵律 7 的但書）。 */
 const CLOCK_KEY='tivot_clock_v1';
-const CLOCK_EPOCH={ y:1908, mo:6, d:13, h:11, mi:0 };
+const CLOCK_EPOCH={ y:1908, mo:10, d:11, h:11, mi:0 };   // ver -1324：由 6/13 改成 10/11
 const HOUR=60;                       // 大地圖上「一件事」的時間單位（Ray 指定 1 小時）
 function clockElapsed(){
   try{ const n=parseInt(localStorage.getItem(CLOCK_KEY),10); return isFinite(n)&&n>0?n:0; }
@@ -15559,12 +15559,12 @@ const S9_C=[
 /* ══⚠⚠⚠ 任務期限：**這個值的擁有者是劇本，不是這裡**（ver -1182，Ray：
    「走劇情就會有，交給劇情定」）══
    Ray 的稿上寫的是「X月Y日」＝留給劇本填的欄位。下面這一組只是**暫填**
-   （開局是大陸曆 1908-06-13，Stage 9 在那之後幾天 ⇒ 先給 7月1日，約兩週）。
+   （開局是大陸曆 1908-10-11，Stage 9 在那之後幾天 ⇒ 先給 10月25日，約兩週）。
    ⚠⚠ **不要在這裡「決定」期限** —— 劇情走到那裡自然會有一個日期，
      到時候把它搬成劇本給的值（同旗標那一套：答得出誰插、誰能改，鐵律 9）。
    ⚠ 在那之前它只是台詞裡的一個日期：沒有倒數、沒有逾期判定、沒有旗在讀它。
    ⚠ 要改只改這一處。 */
-const S9_DEADLINE={ mo:7, d:1 };
+const S9_DEADLINE={ mo:10, d:25 };   // ver -1324：開局改 10/11，這個暫填值跟著往後兩週
 const s9Deadline=()=>S9_DEADLINE.mo+'月'+S9_DEADLINE.d+'日';
 const S9_D=[
   { who:'anya/point',       text:'在那裡！' },

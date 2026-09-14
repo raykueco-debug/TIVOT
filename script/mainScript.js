@@ -59,7 +59,7 @@ export const MAIN_SCRIPT = {
            有 card 的句子不顯示對話框。 */
       { speaker:'NOUVELLE', text:'',
         bg:'HolyseeDungeonWhole', bgm:'crisis',
-        card:'1908年6月13日\n聖王廳地宮　G2 區',
+        card:'1908年10月11日\n聖王廳地宮　G2 區',   /* ver -1324：跟著開局日期（clock.js 的 EPOCH）改 */
         /* ⚠ 一定要明寫 show:false —— 立繪的預設是 show:true，不寫的話她會先用
            base 立繪站在卡片後面，下一句才換成跑姿，看起來像閃了一下。 */
         portrait:{ char:'NOUVELLE', show:false } },
