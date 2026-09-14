@@ -565,6 +565,105 @@ export function storyBattleAct(){ return storyActNow; }
 /* 這座城的入口那一格（ver -698，見 open()）：遭遇戰打輸把人放回這裡。 */
 let entryNodeId = null;
 export function entryNode(){ return entryNodeId; }
+/* ══⚠⚠ 這一段（這座城）要哪些資源（ver -1297）══ 餵給 `story.loadScene`。
+   Ray 的讀取分工：「先讀 BGM、音效、立繪跟入口圖，然後開始跑其他圖。」
+   ⚠⚠ **入口那一格真的解碼，其餘格子只暖 HTTP 快取**（`warm`）—— 一座城十幾格，
+     全部解碼是上百 MB（ver -1295 那個坑）。走過去時 `<img>` 現抓即顯示。
+   ⚠ 只收**當下時段**的候選（`bgCandsOf` 本來就是照現在幾點算的）。Ray：「四差分的
+     時機不重要，因為不是實時的 —— 移動或打完以後剛好切差分，體感也正常。」
+   ⚠ 音效寫在城上（`se:[…]`，名字用 story 的 SE 表，鐵律 1）。**漏寫不會壞**：
+     `playSrc` 查不到 buffer 會自己 load 再播，只是第一次可能晚一拍 ——
+     所以可以先把框架接起來，清單逐城再補。
+   ⚠ BGM 取城上那一首就好，不問 `townBgm()`：那一支要 `townId` 已經設好，而這裡
+     跑在 `open()` **之前**。圍城／重建換的那一首由 `enter()` 的 `ensureBgm` 現抓
+     （晚幾百毫秒起播，§6.6 說得很清楚：音樂晚到不會壞）。 */
+/* 把一格的候選鏈**解出來並記住**（ver -1297）：依序 fetch 到第一個 200 為止，
+   答案寫進 `bgResolved`（與 `bgFor` 同一張表，鐵律 7）——
+   所以進城之後 `bgFor` 直接命中，一個探測都不再發。
+   ⚠ 為什麼不讓 `loadScene` 自己試：**404 不進 HTTP 快取**，它試完 `bgFor` 還會
+     再試一輪，同一串候選白吃兩遍（實測旅店那一格 35 個 404 ×2）。
+   ⚠ `decode` ＝ 真的解碼那一張：它是入口圖，讀取頁一收就要畫出來。
+   ⚠ 一張都沒有也要 resolve：不能把玩家留在讀取頁裡（同 `bgFor` 的 `fin`）。 */
+function resolveBgOnce(all, decode, maxTry){
+  /* ⚠⚠ `maxTry` ＝**最多探幾個候選**（暖身用）。一條完整的候選鏈是
+     「4 個時段 × 大小寫 × 4 種副檔名 ＋ 無時段」≈ **32 個名字**，對一座 13 格的城
+     全跑一遍就是 **416 個 404**（ver -1297 實測）—— 那正是 -1293「候選鏈少吃
+     429 個 404」在修的東西，不能再種回去。
+     暖身只探**最可能的那幾個**（規約是 WebP，§5），沒中就放著：玩家真的走過去時
+     `bgFor` 會照舊跑完整條鏈，**與沒有暖身時完全一樣**，不會壞。
+     ⚠ 入口那一張**不設上限**：它一定要找到，讀取頁就是在等它。 */
+  let list = (all || []).filter(Boolean);
+  if(maxTry){
+    /* ⚠⚠ **最後那一個一定要帶上**：候選鏈的排法是「現在這個時段 → 時段的大小寫變體
+       → _Day → **無時段**」，而專案裡有一整批城用的就是無時段那一張
+       （`Northport_west_BF.webp`）—— 只取前幾個的話那些城永遠暖不到。
+       取法：前 (maxTry-1) 個 ＋ 最後一個，去重。 */
+    const w = list.filter(nm=>/\.webp$/i.test(nm));
+    const pick = w.slice(0, Math.max(1, maxTry-1));
+    if(w.length && pick.indexOf(w[w.length-1])<0) pick.push(w[w.length-1]);
+    list = pick;
+  }
+  if(!list.length) return Promise.resolve(null);
+  const hit = bgResolved.get(list[0]);
+  const draw = nm => !decode ? Promise.resolve(nm) : new Promise(res=>{
+    const im = new Image();
+    im.onerror = ()=>res(nm);
+    im.onload  = ()=>{ (im.decode ? im.decode() : Promise.resolve()).then(()=>res(nm), ()=>res(nm)); };
+    im.src = story.bgUrl(nm);
+  });
+  if(hit) return draw(hit);
+  let i = 0;
+  const step = ()=>{
+    if(i >= list.length) return Promise.resolve(null);
+    const nm = list[i++];
+    return fetch(story.bgUrl(nm))
+      .then(r => (r && r.ok) ? (bgResolved.set(list[0], nm), draw(nm)) : step())
+      .catch(step);
+  };
+  return step();
+}
+/* 其餘格子的背景：**只暖 HTTP 快取、順便把候選鏈解出來**（ver -1297）。
+   ⚠ 用 `fetch` 不用 `new Image()`：一座城十幾格，解碼後上百 MB（ver -1295 的坑）。
+     走過去時 `<img>` 現抓即顯示，而且只解碼那一張。
+   ⚠ 依序試、中一張就停，並把答案寫進 `bgResolved` —— 與 `bgFor` 同一張表，
+     所以之後走過去是直接命中，不再發任何探測請求。
+   ⚠ 同時只跑 2 格：讀取頁剛收掉、玩家正在操作，這一批不該跟真的要用的圖搶連線。
+   ⚠ 換城就作廢（`warmSeq`）：上一座城的暖身還在跑的話，新的一座要先贏。 */
+/* 暖身每格最多探幾個候選（只探 `.webp`）：現在這個時段的大小寫兩種 ＋ 無時段那一張，
+   涵蓋專案裡實際存在的兩種命名（`Ravn_Square_Day.webp` 與 `Northport_west_BF.webp`）。 */
+const WARM_TRIES = 3;
+let warmSeq = 0;
+function warmRest(T, skipId){
+  const my = ++warmSeq;
+  const ids = Object.keys(T.nodes || {}).filter(k => k !== skipId);
+  let at = 0;
+  const nextNode = ()=>{
+    if(my !== warmSeq || at >= ids.length) return;
+    const k = ids[at++];
+    /* ⚠ 走**同一支** `resolveBgOnce`（鐵律 8）——只差不解碼：這幾格還沒要畫，
+       位元組進了 HTTP 快取、答案進了 `bgResolved` 就夠了。 */
+    resolveBgOnce(bgCandsOf(T.nodes[k], k), false, WARM_TRIES).then(()=>{ if(my===warmSeq) nextNode(); });
+  };
+  for(let c = 0; c < 2; c++) nextNode();
+}
+export function loadSpec(town, nodeId){
+  const T = TOWNS[town || 'capital']; if(!T) return {};
+  const id = nodeId || T.entry;
+  const n  = T.nodes && T.nodes[id];
+  /* 其餘格子：**交給 town 自己跑**（`warm` 給的是一支函式，`loadScene` 讀取頁收掉
+     之後才呼叫）。⚠⚠ 為什麼不由 loadScene 拿一串網址去暖：候選鏈要**依序試**才知道
+     哪一張存在，而試出來的答案要記回 `bgResolved` —— 那張表住在這裡（鐵律 7）。
+     順序試完再記，玩家走過去時 `bgFor` 直接命中，一個探測都不必發。 */
+  const warm = ()=> warmRest(T, id);
+  /* ⚠ 入口圖走 `pre`（一支回 Promise 的函式）不走 `imgs`：候選鏈要**由這裡**解，
+     解完的答案才記得回 `bgResolved`（見 resolveBgOnce 的說明）。 */
+  return {
+    ses : (T.se || []).slice(),
+    bgms: T.bgm ? [T.bgm] : [],
+    pre : n ? (()=> resolveBgOnce(bgCandsOf(n, id), true)) : null,
+    warm,
+  };
+}
 /* `done`＝**這一景的背景真的擺好了**（ver -442）。切景的黑幕要等它才掀 ——
    見 `enter()` 的 `reveal`。⚠ 一定要在**每一條出口**都叫（載到了／候選全部
    404 了），漏掉哪一條，那一次就只剩保底計時器在撐。 */

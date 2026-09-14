@@ -484,7 +484,9 @@ window.__tivotFlight = {
     setTimeout(()=>{ try{ killFlightFrame(); }catch(_){} }, 600);
     closeFlightFrame();
     $('home').classList.remove('on');
-    town.open(id || 'capital', node || undefined);
+    /* ver -1297：飛行地圖 → 探索地圖＝一道讀取頁（Ray 的讀取分工 3-b）。
+       上一段（飛行）的音訊在這裡放掉，這座城的 BGM／音效／入口圖載完才進去。 */
+    enterTown(id || 'capital', node || undefined);
   },
   /* 吊墜＝整備（ver -482，Ray：「飛行畫面吊墜點了沒有整備效果」）：飛行頁的吊墜
      固定在面板左上（ver -481），點它開的是**同一頁整備**（gear.open，鐵律 8）。
@@ -1172,11 +1174,22 @@ story.init(); saveSys.init();
    ⚠ 注入而不是讓 save 去 import town：那是啟動層的畫面編排（同 `setTownOpener`）。
    ⚠ `openTown` 與「章節」跳關走的是**同一組動作**（收首頁 → `town.open`）——
      抽成一支具名函式，兩邊都叫它（鐵律 8）。 */
-function openTownAt(t, n){
+/* ══⚠⚠⚠ 「從別的畫面進一座城」＝一道讀取頁（ver -1297，Ray 的讀取分工）══════
+   「每一個讀取頁都只讀接下來要用的資源，並且清空上一個場景的資源。」
+   ⚠⚠ **所有從外面進城的路徑都走這一支**（鐵律 8）：降落（`land`）、讀檔與章節跳關
+     （`openTownAt`）、被抬回旅店（`carriedToInn`）、戰鬥打完回城。
+     寫成「每條路記得自己叫 loadScene」的話，新增第六條必漏 —— 那正是 ver -370
+     那一課（規矩寫給呼叫端就會被繞過）。
+   ⚠ 城**裡面**走格子不走這裡：那是同一段之內的移動，照舊走 `sceneCut` 的淡出
+     （260ms 足夠現抓一張已經暖過快取的背景）。
+   ⚠ 要載什麼由 `town.loadSpec()` 回答（它才認識 TOWNS 的資料，鐵律 1）。 */
+function enterTown(t, n, opts){
   markBooted();
   $('home').classList.remove('on');
-  town.open(t||'capital', n);
+  const id = t || 'capital';
+  story.loadScene(town.loadSpec(id, n), ()=> town.open(id, n, opts));
 }
+function openTownAt(t, n){ enterTown(t, n); }
 saveSys.setHost({
   townPos:   ()=>town.getPosition(),
   placeName: (pos)=>town.placeName(pos),
@@ -1372,7 +1385,7 @@ function carriedToInn(opts){
   const inn = prog.getLastInn() || { town:'capital', node:'inn' };
   combat.goHome(()=>{
     if(roll) try{ saveSys.loadLatest({ noJump:true }); }catch(_){}
-    town.open(inn.town, inn.node, { carried:true });
+    enterTown(inn.town, inn.node, { carried:true });   // ver -1297：走同一道讀取頁
   }, { noBgm:true });
 }
 /* ══ 戰敗那一頁按了哪一顆（ver -430，Ray 定案）══════════════════════════════
@@ -1537,7 +1550,15 @@ combat.setStoryReturn((res)=>{
   /* ⚠ 走 `story.resumeFrom`（ver -375）：主線與城鎮的臨時段落**續播方式不同**，
      分流在 story 裡做（那裡才知道哪一種）。這裡照舊只負責把首頁收乾淨。 */
   /* ⚠ `keepPages`：這是**續播劇情**不是回首頁 —— 城鎮／劇情舞台的狀態要留給 resumeFrom。 */
-  combat.goHome(()=>{ if(r) story.resumeFrom(r, res); }, { noBgm:true, keepPages:true });
+  /* ⚠⚠ 打完回城也走一道讀取頁（ver -1297，Ray：「要，通常四差分也變了，bgm 大概也會」）
+     —— 一場戰鬥是 1 小時（§6.5.4.0），回來時段常常已經換了一格。
+     ⚠ 城沒開＝劇情插入戰，照舊直接續播（那一段的素材是 runLoadGate 載的）。 */
+  combat.goHome(()=>{
+    if(!r) return;
+    let pos=null; try{ if(town.isOpen()) pos=town.getPosition(); }catch(_){}
+    if(pos && pos.town) story.loadScene(town.loadSpec(pos.town, pos.node), ()=> story.resumeFrom(r, res));
+    else story.resumeFrom(r, res);
+  }, { noBgm:true, keepPages:true });
 });
 /* 戰鬥音樂：**門開始上推那一瞬**就起播（ver -355，Ray 指定）。
    ⚠ 不能等 `setBattleHandler`（那是門開到縫才呼叫的，晚 3 秒多），也不要靠

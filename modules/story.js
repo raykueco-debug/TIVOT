@@ -1477,7 +1477,10 @@ const SE_SRC=(()=>{ const m={};
    ⚠⚠ 修在**這一支**、不要把檔名抄一份進 `SE_FILES`（鐵律 7：那會變成同一個檔案
      兩張表，改檔名只改得到一邊 —— 上面那段註解警告的正是反方向的同一件事）。
    ⚠ 增益不受影響：`fileGain` 的鑰匙是**檔名**，兩條路拿到的都是同一個路徑字串。 */
-function seSrc(n){ const k=String(n||'').toLowerCase();
+/* ⚠ ver -1297 起**匯出**：`town.loadSpec` 要把城上的 `se:[…]`（寫的是名字）
+   換成路徑餵給 `loadScene`。不要在別處再寫一份解析（鐵律 7）——
+   這一支比名字查表多兩層退路（`SE_ALIAS`、ASSETS 的鍵）。 */
+export function seSrc(n){ const k=String(n||'').toLowerCase();
   return SE_SRC[k] || SE_SRC[SE_ALIAS[k]] || asset(n) || asset(SE_ALIAS[k]) || null; }
 /* ⚠⚠ **劇情用的音效要一起進開機預載**（ver -433，Ray：「為什麼不能把 se 放在預載
    第一位？se 永遠都出不來，一開始的 step 跟 fall 在手機從來沒播過」）。
@@ -1841,7 +1844,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1296';
+const KERB_V='?v=1297';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -3429,9 +3432,101 @@ const AL_CLOSE_MS = AL_BLANK_MS + AL_FADE_MS;
    新場景 —— 兩次硬切。黑幕把兩次都藏起來，讀起來是一次剪接。
    ⚠ 新場景的第一拍要在**黑幕還蓋著的時候**演（先 advance 再淡出），否則玩家會看到
      舊畫面殘留一格才換 —— 那正是 -340 換插圖時解過的同一個問題。 */
+/* ══⚠⚠⚠ 場景之間唯一的那道門（ver -1297，Ray 的讀取分工）══════════════════
+   Ray：「每一個讀取頁都只讀接下來要用的資源，**並且清空上一個場景的資源**。」
+
+   ⚠⚠ **所有換場的路徑都要走這一支**（鐵律 8）。寫成「每個轉場記得清」的話，
+     新增第五條路徑必漏 —— 那正是 ver -370 那一課（規矩寫給呼叫端就會被繞過）。
+   ⚠ `spec` 四欄，都可以省略：
+       ses  : 音效**名**（story 的 SE 表）或已解析路徑 —— 這一段真的會用到的那幾支
+       bgms : BGM **短名**（`BGM_ALIAS`）或已解析路徑
+       imgs : **馬上要畫**的圖（城鎮的入口背景／劇情的第一張）→ 真的解碼
+       warm : 這一段其餘的圖 → **只暖 HTTP 快取，不解碼**（見 warmUp）
+   ⚠⚠ 順序照 §6.6：**音效 → 圖 → 音樂**，而且音效那一段**沒有時限**
+     （Ray：「音效不載完不放行」）。總上限只罩後兩段 —— 罩到音效就是那條規矩的破口。
+   ⚠ 清場排在最前面，而且**只留接下來要用的**：`releaseAudio` 會自己保住正在播的
+     那一首 BGM，所以不必在呼叫端記得把它加進 keep。
+   ⚠ `onReady` 是在**黑幕還蓋著**的時候呼叫的（同 `runLoadGate` 的 `advance()`）：
+     新畫面要在讀取頁淡出之前擺好，不然會看到它「長出來」。 */
+export function loadScene(spec, onReady){
+  spec = spec || {};
+  const path = (v, f) => (typeof v === 'string' && v.indexOf('/') < 0) ? f(v) : v;
+  const ses  = (spec.ses  || []).map(v => path(v, seSrc)).filter(Boolean);
+  const bgms = (spec.bgms || []).map(v => path(v, bgmSrc)).filter(Boolean);
+  const imgs = (spec.imgs || []).filter(Boolean);
+  const warm = typeof spec.warm==='function' ? spec.warm : (spec.warm || []).filter(Boolean);
+  try{ SFX.releaseAudio(ses.concat(bgms)); }catch(e){}      // ① 放掉上一個場景
+  const ui = showLoader();
+  const t0 = Date.now();
+  const total = ses.length + imgs.length + bgms.length + (typeof spec.pre==='function'?1:0) + 1;
+  let done = 0;
+  const tick = p => Promise.resolve(p).then(()=>{}, ()=>{})
+                      .then(()=>{ done++; ui.set(Math.min(1, done/total)); });
+  const sfxDone  = tick(SFX.preload(ses).catch(()=>{}));     // ② 音效：無時限
+  /* ③ 圖：入口那一張真的解碼。
+     ⚠⚠ **一筆可以是「候選鏈」**（時段差分那一串，`town.bgCandsOf` 回的就是）——
+       那時要**依序試、中一張就停**（同 `town.bgFor` 的 `tryAt`），
+       不可以整串平行丟出去：北方泊地的廣場一格會生出 **36 個候選**，
+       平行丟＝35 個 404，而那正是 -1293「候選鏈少吃 429 個 404」在修的事。
+     ⚠ 裸名（沒有 `/`）走 `imgSrc()` 補目錄與副檔名 —— `bgCandsOf` 回的是**基底名**，
+       直接當 src 會去要網站根目錄，整串必然 404（ver -1297 實測踩到）。 */
+  const one = src => new Promise(res=>{
+    const im=new Image(); const fin=()=>res();
+    im.onerror=fin;
+    im.onload=()=>{ (im.decode ? im.decode() : Promise.resolve()).then(fin, fin); };
+    im.src = (typeof src==='string' && src.indexOf('/')<0) ? imgSrc(src) : src;
+  });
+  const group = list => new Promise(res=>{
+    let i=0;
+    const next=()=>{
+      if(i>=list.length){ res(); return; }                  // 一個都載不到也放行（同 bgFor）
+      const nm=list[i++];
+      const im=new Image();
+      im.onerror=next;
+      im.onload=()=>{ (im.decode ? im.decode() : Promise.resolve()).then(res, res); };
+      im.src = (typeof nm==='string' && nm.indexOf('/')<0) ? imgSrc(nm) : nm;
+    };
+    next();
+  });
+  /* ⚠⚠ `spec.pre` ＝**由擁有那份資料的那一層自己把圖解出來**（回一個 Promise）。
+     城鎮用它：候選鏈探測一次、答案記回 `bgResolved`，進城後 `bgFor` 直接命中。
+     不給它的話同一串候選會被探兩次（這裡一次、`bgFor` 再一次），而 **404 不進
+     HTTP 快取** —— 實測北方泊地旅店那一格白吃 35 個 404 兩輪（ver -1297）。 */
+  const preJob = typeof spec.pre === 'function' ? Promise.resolve().then(spec.pre) : null;
+  const imgsDone = sfxDone.then(()=> Promise.all(
+    imgs.map(v => tick(Array.isArray(v) ? group(v) : one(v)))
+        .concat(preJob ? [tick(preJob.catch(()=>{}))] : [])));
+  const bgmDone  = imgsDone.then(()=> tick(SFX.preloadBgm(bgms).catch(()=>{})));  // ④ 音樂
+  return sfxDone.then(()=> Promise.race([
+      Promise.all([imgsDone, bgmDone]),
+      new Promise(r=>setTimeout(r, PRELOAD_CAP_MS)),
+    ])).then(()=>{
+      ui.set(1);
+      /* 至少讓讀取頁停 600ms：載得太快的話它只會閃一下，比沒有還糟（同 runLoadGate）。 */
+      setTimeout(()=>{
+        ui.close();
+        try{ if(onReady) onReady(); }catch(e){ console.warn('[loadScene] onReady 爆了：', e); }
+        /* ⚠ `warm` 可以是**一支函式**：候選鏈要依序試、答案要記回擁有它的那一層
+           （城鎮的 `bgResolved`），那一段邏輯不該搬進這裡（鐵律 7/8）。 */
+        try{ if(typeof warm==='function') warm(); else warmUp(warm); }catch(e){}
+      }, Math.max(0, 600-(Date.now()-t0)));
+    });
+}
+/* 這一段其餘的圖：**只暖 HTTP 快取，絕不 `new Image()`**（ver -1295 的坑）——
+   一座城十幾格，解碼後上百 MB。走過去時 `<img>` 現抓即顯示，而且只解碼那一張。
+   ⚠ 同時只開 3 條：讀取頁剛收掉、玩家正在操作，這一批不該跟真的要用的圖搶連線。 */
+function warmUp(list){
+  let i = 0;
+  const next = ()=>{ if(i >= list.length) return; fetch(list[i++]).catch(()=>{}).then(next); };
+  for(let k=0; k<3; k++) next();
+}
+
 function runLoadGate(sceneId){
   const fade=$('storyFade');
   if(fade){ fade.classList.add('on'); fadeOwner='gate'; }   // 這一塊不給 flushCgFade 收
+  /* 上一個場景的音訊放掉（ver -1297，同 `loadScene` 的①）。⚠ `collectAssets` 收的是
+     **這一段**要用的，所以 keep 就是它 —— 正在播的那一首由 releaseAudio 自己保住。 */
+  try{ const A=collectAssets(sceneId); SFX.releaseAudio(A.ses.concat(A.bgms.map(b=>bgmSrc(b)||b))); }catch(e){}
   const ui=showLoader();
   const t0=Date.now();
   preloadStory(sceneId, p=>ui.set(p)).then(()=>{
