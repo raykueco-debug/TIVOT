@@ -201,7 +201,23 @@ SFX.setMenuClick(asset('se_general_click'), sfxGain('se_general_click'));
 /* ⚠ `bgm_battle` 也進第二段（ver -344）：它 836KB，而最快也要**點過出陣**才用得到 ——
      出陣前有選武器／選搭檔／過場櫻花，時間綽綽有餘。playBgm 自己會 ensureBlob，
      真的沒載完頂多晚幾拍起播，不會壞。 */
-const LATE_BGM_PATHS = ['bgm_result','bgm_lose','bgm_boss','bgm_battle','bgm_crisis'].map(k=>ASSETS[k]).filter(Boolean);
+/* ══⚠⚠⚠ **開機只載首頁那一首**（ver -1312，讀取分工的第四刀）══════════════
+   -1295 把**圖**分工過了（132 張 → 17 張），但**音樂那一段從來沒分過** ——
+   開機批照樣把 15 首全揹著，而且 `SFX.preloadBgm` 是**一支一支排隊**下載的。
+   實測（GitHub Pages、桌機有線）：84 秒才下完 9 首，進度圈卡在 89%，
+   Ray 回報「出不了 logo」「跑半天連不上」。合計 31.5 MB，而首頁**只播一首**。
+   ⚠⚠ 這一條之所以拖到現在才發作，是因為平時大家都吃快取 —— 只要版本號一跳
+     （`?v=` 全站作廢），每一台裝置就得重跑一次這 31.5 MB 的冷載入。
+     **版本號連跳三次的那一天就是它現形的那一天。**
+   ⇒ 名單反過來寫：開機**只留** `bgm_home`，其餘**全部**背景補載。
+   ⚠ 不會壞：`playBgm` 自己 `ensureBlob` 隨叫隨載，沒載完頂多晚幾拍起播
+     （這正是 -344 把結算／失敗那幾首移出去時就驗過的行為）。
+   ⚠ 名單用**排除法**（除了 bgm_home 以外都算晚載）不是列舉：日後加一首新曲子，
+     預設會落在「不擋開機」那一邊 —— 同首頁白名單那條的理由（§6.9），
+     漏寫的下場是「多等一下」而不是「開機多揹一首」。 */
+const LATE_BGM_PATHS = Object.keys(ASSETS)
+  .filter(k => k.indexOf('bgm_')===0 && k!=='bgm_home')
+  .map(k => ASSETS[k]).filter(Boolean);
 let _lateBgmKicked = false;
 function preloadLateBgm(){
   if(_lateBgmKicked) return; _lateBgmKicked = true;
