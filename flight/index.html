@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1305"></script>
+<script src="../orientation.js?v=1306"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1305');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1306');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1305");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1305");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1306");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1306");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1305");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1305");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1306");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1306");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -614,25 +614,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1305" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1306" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1305" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1305" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1305" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1305" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1305" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1305" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1305" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1305" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1305" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1305" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1306" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1306" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1306" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1306" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1306" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1306" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1306" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1306" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1306" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1306" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1305" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1306" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1305" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1306" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -653,11 +653,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1305"></script>
+<script src="settlement.js?v=1306"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1305"></script>
+<script src="talks.js?v=1306"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -709,7 +709,7 @@ const COLOR_URL  = 'silvermoon_terrain.png'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1305';
+const FLIGHT_VER = 'ver -1306';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -10685,18 +10685,32 @@ function glUploadWorld(){
    ⚠ 用**全解析**那一張（`cityPlanArt`）；還沒載到就先用 192px 縮圖，
      載到之後換上（同舊路徑「永遠有得取樣、不存在空窗」的保證）。 */
 const glCityTex={}, glCityFull={};
-function glCityTexture(key){
-  if(!GLX) return null;
+/* ══⚠⚠⚠ 上傳一定要走 ImageBitmap，不要直接餵 HTMLImageElement（ver -1306）══
+   實測（東方泊地 1024x1024、GT 1030、`g.finish()` 逼它做完）：
+
+     texImage2D ← HTMLImageElement   78.5ms 首次 / **36.7ms 熱快取**
+     texImage2D ← ImageBitmap        **2.4ms**（15 倍）
+     generateMipmap                  **0ms**（硬體全免費，不是它的錯）
+
+   貴的是**主執行緒把圖轉成貼圖格式**那一段，而且它每次都要做一遍 ——
+   熱快取一樣貴，所以「載過了就便宜」的直覺在這裡是錯的。
+   `createImageBitmap` 把那一段搬去主執行緒外（實測 41ms，但在 await 裡，
+   不卡幀），上傳只剩一次記憶體搬運。
+
+   ⚠ `glCityTexture` 是**在畫的迴圈裡同步呼叫**的，所以不能等 ——
+     作法是「排解碼、這一幀先用手上有的」：
+       已經有貼圖 → 先頂著（多半是縮圖那一版），bitmap 好了下一幀才換上
+       完全沒有   → 同步上傳縮圖（192px 約 1ms）
+     那就是 §6.7.5「永遠有得取樣、不存在空窗」那條保證，只是多了一階。
+   ⚠ 上傳完就 `close()`：ImageBitmap 抱著解碼後的點陣（1024² ＝ 4MB），
+     留著等於 -1195／-1304 白放。要重傳時再解一次就好（那時本來就不趕）。 */
+const glCityBM={}, glCityBMWait={};
+function glCityUpload(key, src, wantFull){
   const g=GLX;
-  const full=cityPlanArt[key], lo=cityPlanLo[key];
-  const img=full||lo;
-  if(!img || !img.width) return null;
-  const wantFull=!!full;
-  if(glCityTex[key] && glCityFull[key]===wantFull) return glCityTex[key];
   let t=glCityTex[key];
   if(!t){ t=g.createTexture(); glCityTex[key]=t; }
   g.activeTexture(g.TEXTURE4); g.bindTexture(g.TEXTURE_2D,t);
-  g.texImage2D(g.TEXTURE_2D,0,g.RGBA8,g.RGBA,g.UNSIGNED_BYTE,img);
+  g.texImage2D(g.TEXTURE_2D,0,g.RGBA8,g.RGBA,g.UNSIGNED_BYTE,src);
   g.generateMipmap(g.TEXTURE_2D);
   g.texParameteri(g.TEXTURE_2D,g.TEXTURE_MIN_FILTER,g.LINEAR_MIPMAP_LINEAR);
   g.texParameteri(g.TEXTURE_2D,g.TEXTURE_MAG_FILTER,g.LINEAR);
@@ -10704,6 +10718,44 @@ function glCityTexture(key){
   g.texParameteri(g.TEXTURE_2D,g.TEXTURE_WRAP_T,g.CLAMP_TO_EDGE);
   glCityFull[key]=wantFull;
   return t;
+}
+function glCityTexture(key){
+  if(!GLX) return null;
+  const full=cityPlanArt[key], lo=cityPlanLo[key];
+  const img=full||lo;
+  if(!img || !img.width) return null;
+  const wantFull=!!full;
+  if(glCityTex[key] && glCityFull[key]===wantFull) return glCityTex[key];
+
+  /* 解碼好了就換上（2.4ms） */
+  const B=glCityBM[key];
+  if(B && B.full===wantFull){
+    delete glCityBM[key];
+    try{ const t=glCityUpload(key, B.bm, wantFull); B.bm.close && B.bm.close(); return t; }
+    catch(_){ B.bm.close && B.bm.close(); }
+  }
+  /* 還沒好 → 排一次解碼（同一張只排一次）。
+     ⚠⚠⚠ **一定要從 Blob 建，不可以從 `<img>` 建**（ver -1306 實測，733x1536）：
+
+       createImageBitmap(HTMLImageElement)   同步段 **70.2ms**（整段都是同步的！）
+       createImageBitmap(Blob)               同步段 **0.1ms**、總計 32.3ms（主執行緒外）
+
+     從 `<img>` 那一支根本沒有非同步可言 —— 它回傳的是一個「已經做完」的
+     promise，主執行緒該卡的一分都沒少。改走 Blob 才真的搬得出去。
+     ⚠ `fetch(img.src)` 打的是 HTTP 快取（圖早就載過了），實測 3.3ms。 */
+  if(!glCityBMWait[key] && typeof createImageBitmap==='function' && img.src){
+    glCityBMWait[key]=true;
+    fetch(img.src).then(r=>r.blob()).then(b=>createImageBitmap(b))
+      .then(bm=>{ if(glCityBM[key]) { try{ glCityBM[key].bm.close(); }catch(_){} }
+                  glCityBM[key]={ bm, full:wantFull }; })
+      .catch(()=>{})
+      .then(()=>{ glCityBMWait[key]=false; });
+  }
+  /* 這一幀先用手上有的 */
+  if(glCityTex[key]) return glCityTex[key];
+  if(typeof createImageBitmap!=='function') return glCityUpload(key, img, wantFull); // 老瀏覽器退路
+  if(lo) return glCityUpload(key, lo, false);        // 192px，約 1ms
+  return null;
 }
 /* ⚠⚠ 走遠了要把貼圖也刪掉（ver -1304）。`releaseFarCityArt` 原本只放掉 CPU 那一半
    （`cityPlanArt`／`CITY_PYR`），而 GL 這一份是**另一塊記憶體（VRAM）**，沒有人動它。
@@ -10717,6 +10769,8 @@ function releaseCityTexture(key){
   const t=glCityTex[key];
   if(t && GLX) { try{ GLX.deleteTexture(t); }catch(_){} }
   delete glCityTex[key]; delete glCityFull[key];
+  const B=glCityBM[key];                      // ⚠ 還沒用掉的 bitmap 也是解碼後的點陣（ver -1306）
+  if(B){ try{ B.bm.close(); }catch(_){} delete glCityBM[key]; }
 }
 /* 這一禎要畫哪兩座城：取最近的兩座（CITYMASK 保證同一點最多屬於一座城，
    而城之間隔得夠遠，兩個槽實務上夠用）。 */
