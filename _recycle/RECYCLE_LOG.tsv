@@ -176,3 +176,4 @@ when	from	to	reason
 20260915-000603	resources/background/Capital_Dock_midnight.webp	_recycle/resources/background/Capital_Dock_midnight.webp	與 _day／_dusk／_night 位元組完全相同的重複檔（ver -1318 巡查）：候選鏈已走時段尾綴，無尾綴那張只是最後退路
 20260915-000612	resources/background/East_Guild.webp	_recycle/resources/background/East_Guild.webp	同上：與 East_Guild_day 位元組相同
 20260915-000948	resources/partner/Luna_SI_01.jpg	_recycle/resources/partner/Luna_SI_01.jpg	Ray：雙槍修女立繪這件事已經取消。它與 Luna_CI_saint.jpg 位元組相同，而 partner_twin 是沒有人讀的死鑰匙（留著會讓開機預載吃一個 404）
+20260915-001125	_recycle/resources/partner/Luna_SI_01.jpg	resources/partner/Luna_SI_01.jpg	restore
