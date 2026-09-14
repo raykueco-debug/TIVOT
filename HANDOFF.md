@@ -1,4 +1,4 @@
-# HANDOFF — 截至 `ver 2026.09.14-1293`
+# HANDOFF — 截至 `ver 2026.09.14-1303`
 
 > 這一份是**唯一**的交接檔。**下一次交接請直接改這一份，不要再開新檔。**
 >
@@ -6,130 +6,222 @@
 > shipcrush」「序章一直都沒有問題」）：上一份交接把**已經被 revert 掉的鐵路暫停**
 > 寫成現況，把 lint 的假警告寫成待辦，於是下一個 session 照著它做了錯的判斷。
 > **沒有 `grep` 過的事實不要寫。**
+>
+> ⚠⚠ -1303 這一輪又應驗一次：上一份的「第零節」整節是**舊機器**的數字
+> （`_originals` 2.6 GB、`_recycle` 107 MB、七個未追蹤散檔）——
+> 在這台實測是 **61 MB / 36 KB / 零個**。**繼承舊交接的數字之前先量一次。**
 
 ---
 
-# ⚠⚠⚠ 第零節：換機器之前一定要做的四件事
+# ⚠⚠⚠ 第零節：這台機器（Windows）的環境
 
-**這四樣東西 git 帶不走。** 不處理就是真的消失，而且多半要等到很久以後才發現。
+**換機器已經完成。** 以下全部是 -1303 當場量的。
 
-### 1. 地圖編輯的筆畫 —— 目前**全部只在這台機器的瀏覽器裡**
+| 項目 | 實測 |
+|---|---|
+| 機器 | Windows 10、**4 核**、**實體 RAM 8 GB** |
+| 顯示卡 | **NVIDIA GeForce GT 1030、2 GB VRAM** |
+| 驅動 | **582.66**（`32.0.15.8266`，2026/6/9）—— 這一輪從 560.94 更新上來 |
+| Python | ⚠⚠ **只有 `py` 能用**。`python`／`python3` 是 Microsoft Store 的空殼，**跑什麼都 exit 49 而且零輸出** |
+| `MAP_EDITS_SRC` | 仍是 `[]`（`flight/index.html:1891`）—— 地圖編輯的筆畫仍然只在瀏覽器裡 |
+| 未追蹤散檔 | **零個**（`git status --untracked-files=all` 乾淨） |
+| `resources/_originals` | **61 MB**（gitignore） |
+| `_recycle` | **36 KB**（gitignore，唯一的刪除出口，永不真的刪） |
 
-`MAP_EDITS_SRC` 現在是**空陣列**（`flight/index.html:1891`，已確認）。
-也就是說 Ray 在地圖編輯器畫過的**每一筆**都只存在 localStorage 的
-`tivot_mapedit_v1`，**沒有一筆進過版控**。換機器＝全部歸零。
+### ⚠⚠⚠ 這台機器最容易誤導人的三件事（-1303 這一輪各騙過我一次以上）
 
-**做法**（程式自己的警語就是這句）：
-1. 大地圖 →「✎ 地圖編輯」→ 右下 **「⇩ 匯出」**
-2. 把匯出的陣列內容貼進 `flight/index.html` 的 `MAP_EDITS_SRC`（**會進版控**）
-3. commit ＋ push，然後在舊機器 `mapEditClear()`（那是**搬進回收區**，不是真的刪）
+1. **Claude 桌面版的內建瀏覽器現在是「軟體算圖」。**
+   實測 `renderer: ANGLE (Microsoft, **Microsoft Basic Render Driver**, D3D11)` ——
+   完全沒碰 GT 1030。原因是驅動當初反覆 TDR 時，Claude 自己把硬體加速關了
+   （`%APPDATA%\Claude\claude_desktop_config.json` 的
+   `isHardwareAccelerationDisabled: true`，Help 選單點過一次**沒有生效**）。
+   ⚠⚠ **所以在那個面板裡量效能全部作廢。** 它一天之內給過我三個假結論：
+   「地形 shader 只要 1.4ms」「跳空沒有差別」「每幀 2.2ms」——
+   真相是 GPU 100%、fps 2~30。
+   ⇒ **要量效能一律用 Ray 的真 Chrome**（`mcp__claude-in-chrome__*` 那組工具），
+     並且**確認 `renderer` 裡有 NVIDIA** 才開始量。
 
-⚠ 同一個坑還有**拖城的位置覆寫**（`tivot_settle_drag_v1`，ver -835）—— 一樣是
-localStorage、一樣 git 看不到。有拖過城就一併定稿。
+2. **分頁不在前景時 rAF 被節流**（實測 2.5 秒只跑 1 幀）。
+   量到「fps 2.6、CPU 15%、GPU 0%」那種「什麼都不忙卻跑不動」的組合，
+   **那是節流不是效能問題**。要量就得請 Ray 把視窗放前景。
 
-### 2. 存檔與遊戲進度
+3. **`py -m http.server` 會被回收**（這一輪死了五次）。症狀是
+   **首頁破圖＋沒有 testmode 鈕**，與程式壞掉一模一樣。分辨法：
+   ```bash
+   curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/main.js
+   ```
+   回 `000` 就是伺服器沒了。
+   ⚠ `.claude/launch.json` 已改成讀 `PORT` ＋ `autoPort`（-1303），
+     所以預覽伺服器不會再跟手動起的那台搶 8000。
 
-整組 `tivot_*` 鑰匙都在瀏覽器裡（存檔 `tivot_save_v1`、旗標 `tivot_flags_v1`、
-時鐘 `tivot_clock_v1`、道具 `tivot_inventory_v1`、金錢、好感、九星、音量…）。
-要帶走就在**遊戲的分頁**的主控台跑這一行，存成檔案帶過去：
+### 還沒做的保命動作（git 帶不走）
 
-```js
-copy(JSON.stringify(Object.fromEntries(Object.entries(localStorage).filter(([k])=>k.startsWith('tivot_')))))
+- **地圖編輯的筆畫**：大地圖 →「✎ 地圖編輯」→ 右下「⇩ 匯出」→ 貼進
+  `MAP_EDITS_SRC` → commit。同一個坑還有拖城的 `tivot_settle_drag_v1`。
+- **存檔**：整組 `tivot_*` 在瀏覽器裡。匯出：
+  ```js
+  copy(JSON.stringify(Object.fromEntries(Object.entries(localStorage).filter(([k])=>k.startsWith('tivot_')))))
+  ```
+  ⚠ 管理人模式：`localStorage.tivot_admin_v1='1'`（沒有它首頁只剩四顆鈕，§6.9 的白名單）。
+- **`_originals` / `_recycle`** 只在本機，要留就自己複製到外接／雲端。
+
+---
+
+## 這一輪（-1294 ~ -1303）做了什麼
+
+⚠ 期間有**另一個 session 並行在做美術**（-1263~-1267 那幾筆，東方泊地室內四時段）。
+編號是兩套計數器，不要混。這一輪程式端**只動過**下面列的那幾支檔案。
+
+### A. 讀取分工（Ray：「每一個讀取頁都只讀接下來要用的資源，並且清空上一個場景的資源」）
+
+| 版 | 內容 | 實測 |
+|---|---|---|
+| -1294 | 四座城的 BGM 接上播放表（`story.js` 的 `BGM_FILES`/`BGM_ALIAS` 少了它們，`bgmSrc()` 回 null ⇒ 延用進城前那一首、不報錯） | 19 個短名全部解析，分大小寫對過磁碟 |
+| -1295 | **開機只載這個畫面要的圖** | DOM 解碼 **738 MB → 19 MB**、圖片請求 132 → 20 |
+| -1296 | `SFX.releaseAudio(keep)`（全專案第一支會把記憶體**真的**還回去的函式）＋ 挑戰卡改 fetch 暖快取 | 117 sfx / 21 bgm → 放掉 116 / 20 |
+| -1297 | `story.loadScene()` —— 換場唯一的那道門（清場 → 讀取頁 → 音效/圖/音樂 → 開演 → 背景暖快取） | 背景請求 432 → 72 |
+| -1298 | 每座城的音效**從資料掃出來**（`collectSe`，不手維護清單）＋ 候選鏈先試最可能的 | 12 座城 28 支、合計 2.41 MB；404 56 → 26 |
+| -1300 | 進飛行畫面把主頁音訊整個放掉 | 117 支 / **121 MB** → 5 支 / 4.8 MB |
+
+⚠⚠⚠ **-1295 與 -1300 是同一課**：**預載的成本要算「解碼後的量」，不是檔案大小。**
+· 圖：`new Image()` 會**解碼成點陣圖**（寬×高×4），WebP 常壓到 1/30~1/50 ——
+  5.3 MB 的 WebP 解開來是 250 MB。
+· 音：Web Audio 存 Float32 PCM，96kbps 的 m4a 解開來約 **32 倍** ——
+  7.2 MB 的檔案是 **121 MB** 的記憶體。
+`SFX.audioHeld()` 現在直接報 `sfxMB`，不要再用檔案大小推。
+
+### B. 飛行地圖的效能（Ray：「這種程度的 2.5D 再怎麼樣也不該卡」——他是對的）
+
+**成因：ver -1198~-1223 把地形搬上 GPU 時，演算法的複雜度等級變了。**
+
+```
+舊（CPU，voxel space 正宗作法）：逐欄   →     406 條射線
+新（GPU，fragment shader）    ：逐像素 → 134,792 條射線     ← 多 332 倍（＝BH）
 ```
 
-新機器貼回來：`Object.entries(JSON.parse(貼上)).forEach(([k,v])=>localStorage.setItem(k,v))`
-
-⚠ **新機器記得重開管理人模式**：`localStorage.tivot_admin_v1='1'` ——
-沒有它首頁只剩「挑戰／教學／原作／Credit」，開始故事、章節、試飛、地圖編輯全部不出現
-（§6.9 的白名單，那是設計不是壞掉）。
-
-### 3. `resources/_originals`（**2.6 GB**）與 `_recycle`（107 MB）
-
-兩個都在 `.gitignore` 裡 —— 憲法 §5 明寫它們是「**可回滾**」不是「異地備份」。
-· `_originals`＝所有被轉成 WebP 的原始 PNG
-· `_recycle`＝所有被「刪掉」的東西（**本專案唯一的刪除出口**，永不真的刪）
-**要留就自己複製到外接／雲端**，git 不會幫忙。⚠ 清空回收區是 Ray 的決定，
-沒有任何 session 被授權清它。
-
-### 4. 還沒進版控的散檔
-
-工作目錄裡這幾個是未追蹤的（換機器就沒了）：
-`地理筆記.docx`／`索菈娜技能.docx`／`resources/audio/vo/vo_sorana_miss4.wav`
-＋`未命名 1.wav`/`.pkf`／`reference/maze.png`／`flight/Reference/ship_topdown.png`
-／根目錄兩張 GUID 檔名的 png。
-
-⚠ **`git status` 乾淨不代表安全** —— 上面那些都是 `??`（未追蹤），`git push` 不會帶走。
-
----
-
-## 這一輪（-1290 ~ -1293）做了什麼
+GPU 每條射線快 20~50 倍，但工作多 332 倍 ⇒ 淨值更慢。而且逐欄版的 `ybuf`
+有免費的遮擋剔除（填滿就收手），逐像素版每條各走各的，沒有人把它補回來。
+⚠ 這不是誰寫壞了：fragment shader 天生逐像素，「一條射線填一整條色帶」在那個
+模型裡做不到。**那幾個 commit 記的「3~11ms → 0.14ms」全是 `workMs`（CPU 送出
+指令的時間）—— 成本沒消失，是搬到了那個指標看不見的地方。**
 
 | 版 | 內容 |
 |---|---|
-| -1290 | 索菈娜 `tired` 差分接上（圖 -772 就交了，一直沒轉檔也沒登記）；lint 的四條假警告 |
-| -1291 | BGM 0.32→**0.42**（Ray：「太小聲，提高音量 10」）；交接檔整併；拉芬斯達爾室內 7 張接上 |
-| -1292 | 副武器輪轉每「場」歸位；索敵收到螢幕上半；地圖編輯鈕搬進大地圖 |
-| -1293 | 東方泊地上線；拉芬斯達爾室外 6 格；候選鏈少吃 429 個 404 |
+| -1301 | 雲團改貼預烘的圖（每幀 141 個 `createRadialGradient` 歸零）。**不是主因**，但是真的浪費 |
+| -1302 | 射線高過地形最高點且還在爬 ⇒ 提早結束（模擬省 37.8%）；HUD 加印 GPU 時間 `g` |
+| **-1303** | **max-mipmap 跳空** ＋ 畫質階梯的兩個 bug |
 
-## 現有進度（逐條驗過）
+**-1303 的實測（Ray 的真 Chrome，前景）**：
 
-| 項目 | 狀態 |
+| | 修前 | 修後 |
+|---|---|---|
+| fps | 2~30 | **54** |
+| GPU（Chrome 程序） | **100%、79°C** | **11%**（全系統 16%） |
+
+⚠⚠⚠ **max-mipmap 的四個坑，每一個都會讓畫面破洞或不等價**：
+1. **跳的必須是「整數個原本的步」**（二次式反解一次 sqrt）—— 射線要永遠落在原本
+   會取樣的那些 z 上，第一個命中點才會一模一樣。跳任意距離 ⇒ 取樣點偏移 ⇒ 不等價。
+2. **安全距離用 DDA 算**（沿射線離開這一塊還有多遠），不要拿格寬去猜：
+   `dir` **沒有正規化**（|dir| 最大 2.6），拿格寬當距離會一口氣跨過兩三格。
+3. **hNeed 在區間內不是單調的**（往下看先降後升，頂點在 `z=k/(2·curv)`）——
+   要取區間內的**最小值**。只看起點會漏掉中間比較低的那一段。
+4. **底階要先做 3×3 膨脹**：`hSurf` 是**雙線性**取樣，它讀的四個 texel 可能有一個
+   落在隔壁格 —— 只取「這一格的最大值」涵蓋不到。**實測就是這樣抓到的**
+   （某個機位差 337 個通道／最大 28），膨脹之後歸零。
+⚠ **不可以用 `generateMipmap`**：那一支做的是平均（box filter），這裡要的是最大值。
+  MIN 濾鏡必須 `NEAREST_MIPMAP_NEAREST`。
+
+**位元等價驗收（這是硬性門檻，不等價就不上）**：固定 `uTime`、**12 幀暖機**、
+每一組都配「同設定跑兩次」的對照組 —— 5 個高度 × 6 組角度高度 × 先前失敗的那一組，
+**全部 0/0**。
+⚠ 暖機不足會出現假陽性（城與遺蹟的貼圖還在載、LOD 遲滯還沒穩），-1303 踩過。
+
+**畫質階梯修好的兩個 bug**：
+1. 反應時間用**幀數**算（40 幀評估、換檔靜置 90 幀）—— 60fps 下是 2 秒，
+   **2fps 下降一級要 65 秒、降到底四分鐘**。越需要它快越慢。
+   加了「中位數 > 24ms 連續 8 幀就立刻降」（只放寬降級，升級照舊）。
+2. `clamp(v, 下限, 上限)` 在**下限 > 上限**時回傳**下限** —— 1920 寬時五個檔位
+   全是 **634**（比上限 420 還大）。改成把上限夾在**視窗寬**上：q0 420 → q4 231。
+   ⚠ 與 -1196 是同一個病的兩端（那次下限寫死 160 壓平下面三階）。
+
+### C. 機器層面（與程式無關，但害我查了很久）
+
+- **驅動在反覆 TDR**：更新前五分鐘內三次
+  `Display driver nvlddmkm stopped responding and has successfully recovered.`
+  → 更新到 582.66 之後**重開機至今 0 次**。
+- Claude 桌面版因此自己關掉硬體加速（見第零節第 1 點，**至今沒開回來**）。
+
+---
+
+## 平台實測（-1303）
+
+| | 狀態 |
 |---|---|
-| **東方泊地** | **上線**。13 格、`bgm:portside`、`entry:square`；15 張背景到齊（室外 8×四時段＋室內 7 單張）；`SETTLEMENTS` 有 `town:'eastport'` ⇒ 降落鈕會亮 |
-| **拉芬斯達爾** | 室內 7 張＋室外 6 格×四時段都接完。**只差 `Ravn_Church`**（`church` 借用 `Ravn_Midtown`，掛 `bgPending`）。⚠⚠ 那一格**現在沒有 `noTime`**，因為它借的那張已只剩四個時段版；`Ravn_Church` 交件時是單張 ⇒ **要把 `noTime:true` 加回來** |
-| **鐵路／火車** | ⚠⚠ **是開著的，不是暫停**。-1276 做過「整套暫停」（`RAILS_ON`），但 ver -1269 那次 `revert(flight): 整串鐵路改動退回`（Ray 指定）把它一起退掉了 —— **專案裡沒有 `RAILS_ON` 這個名字** |
-| **地圖編輯器** | 完成並在用。13 支筆：平移／山／挖／平／自動修正／水／湖／河／貼材／鐵路／公路／擦除／移城。⚠ 入口鈕 -1292 起**在大地圖頁面裡**（`#mapWrap`，「★ 已發現」底下），不再是飛行畫面上的浮鈕 |
-| **地形圖** | 水文重整已退回。來源＝`flight/_src/terrain/heightmap_base.png`（⚠ 在 `flight/` 底下）；上線的是 `flight/silvermoon_heightmap.png`，同名覆蓋走 `TERRAIN_V`（現行 `?v=3`，`build_terrain.py` 自動遞增，不要手改） |
-| **貝利薩爾第一次降落** | 已上線（-1279）。⚠ 見下面待辦第 1 項 |
-| **BGM 音量** | `layer.bgm` **0.42**。⚠ **兩份**：`config.js` 的 `tuning.loudness.layer` 與 `flight/index.html` 的 `LAYER_BASE`（非 module 頁面 import 不到），改一邊要改兩邊 |
-| git | ⚠ 見下面「推送狀態」 |
+| Windows + Chrome（GT 1030） | ✔ fps 54、GPU 11% |
+| Mac / MacBook / iPhone | ✔ Ray 回報正常 |
+| **Claude 內建瀏覽器** | ✘ 仍卡 —— **軟體算圖**，非程式問題 |
+
+Ray 定的目標：**以 GPU 為前提優化，最爛的設備也要跑全效**（下限抓
+Intel HD 520 級的內顯），**Android / Win / Mac / iOS 都要跑得動**。
+GT 1030 現在只用 11% GPU，那個餘裕是留給內顯與手機的。
+
+---
 
 ## 接下來的事項
 
-1. **`belisar_land_ok` 這支旗還沒有人插** ⇒ 貝利薩爾目前**永遠降不下去**。
-   等 Ray 的下一段稿決定由哪一拍插旗（作法同北方泊地的 `sail.hold.until`）。
-   常數在 `flight/index.html` 的 `BELISAR_LAND_OK`，那裡的註解也寫著「現在還沒有人插」。
-2. **`Ravn_Church`** 交件 → 改 `bg`、拔 `bgPending`、**補回 `noTime:true`**。
-3. **卡耶爾山谷**：① 小地圖 `resources/map/map_canyon.webp`（去白背走 alpha，底稿可用
-   `_canyon_map.webp`）② **遭遇戰的敵人卡還沒有**，所以 `wildSpawn` 先沒給；
-   谷底祭場（`altar`）是 Boss 場。工單 `resources/background/_canyon_spec.md`。
-4. **瓦努努遺蹟的 Boss 卡**（`script/town.js:3900` 那一拍，Ray 還沒給）。
-5. **兩座新城都沒有 `midnight` 差分** —— 午夜退到 `night`（每格白吃 8 個 404，
-   有 `bgResolved` 快取所以一輪只吃一次）。要不要補是美術的活。
-6. 鐵路要不要**重做**是 Ray 的決定。重做時要重跑 `RAIL_CLIMB`，並過兩條驗收：
-   ① 沿線坡度（可以有一點點坡，不可以爬山）② 大地圖上的線密度（不可以變成一張網）。
+1. ⚠⚠ **Claude 桌面版的硬體加速還關著** —— `%APPDATA%\Claude\claude_desktop_config.json`
+   的 `isHardwareAccelerationDisabled` 仍是 `true`（Help → Troubleshooting →
+   Disable Hardware Acceleration 是個**核取項**，要取消勾選）。
+   ⚠ 直接改設定檔要**先完全結束 Claude**，否則它退出時會寫回舊值。
+2. **偶發頓挫還在**：Ray 的診斷面板顯示 `最長幀 50ms、long 73ms/5s`。
+   可疑來源：heap 243MB ＋可用記憶體只剩 1.5 GB 的 GC 壓力／飛近時
+   `ensureCityArt` 上傳全解析城圖／畫質換檔時的重建。**還沒查。**
+3. **`glCityTex` 小洩漏**：`releaseFarCityArt` 放掉了 `cityPlanArt` 與 `CITY_PYR`，
+   但**沒有刪 GL 貼圖** —— 每座去過的城都留著一份帶 mipmap 的貼圖。三行可修。
+4. **`belisar_land_ok` 這支旗還沒有人插** ⇒ 貝利薩爾**永遠降不下去**
+   （常數在 `flight/index.html` 的 `BELISAR_LAND_OK`）。等 Ray 的稿。
+5. **`Ravn_Church`** 交件 → 改 `bg`、拔 `bgPending`、**補回 `noTime:true`**。
+6. **卡耶爾山谷**：小地圖 `resources/map/map_canyon.webp`；**遭遇戰的敵人卡還沒有**
+   （所以 `wildSpawn` 先沒給）。工單 `resources/background/_canyon_spec.md`。
+7. **瓦努努遺蹟的 Boss 卡**（`script/town.js:3900` 那一拍）。
+8. 兩座新城沒有 `midnight` 差分（午夜退到 `night`，有 `bgResolved` 快取所以一輪只吃一次）。
+9. 鐵路要不要重做是 Ray 的決定。⚠⚠ **鐵路是開著的不是暫停**（-1276 的 `RAILS_ON`
+   已隨 -1269 的 revert 消失，專案裡沒有這個名字）。
 
-## 驗收指令
+---
+
+## 驗收指令（⚠ 這台是 Windows，與舊交接檔不同）
 
 ```bash
-python3 tools/script_lint.py     # 現況基準：0 個錯誤、17 個提醒
-python3 tools/bust.py            # 改完 config.js 的 VERSION 之後跑
+py tools/script_lint.py     # ⚠ 需要 macOS 的 jsc，這台跑不了（見下）
+py tools/bust.py            # 改完 config.js 的 VERSION 之後跑
 ```
 
-**那 17 個提醒都是什麼**（逐條追過，**沒有一條是 bug**）：
+⚠⚠ **`python`／`python3` 在這台是空殼（exit 49、零輸出），一律用 `py`。**
+⚠ `PYTHONUTF8=1` 前綴：中文輸出在 cp950 下會炸。
 
-| 數量 | 內容 | 判定 |
-|---|---|---|
-| 1 | `bgPending`（拉芬斯達爾 `church`） | 等 `Ravn_Church` |
-| 6 | 「劇情戰之前沒有 checkpoint」 | ✔ **都不會卡死**。回捲點：北方泊地墓地兩場→**教堂**（`church.acts[1][12]`）；`sf_deer_nightmare`→**斷崖邊**（結算怪打完就落點，只差一格）；神殿兩場→**前廳／命之泉**；`man_sorana` 在還沒上線的 `lake_deck` |
-| 2 | 「入口那一格有戰鬥」（northport / shinier） | 已知設計債，§6.5.2 寫明靠「連敗三次抬回旅店」兜底，Ray 未定 |
-| 2 | `prologue_audience／prologue_fall` 走不到 | ⚠ **不是 Ray 在玩的那個序章**。現行序章＝地宮（`MAIN_ENTRY='dungeon_chase'`，`CHAPTERS.stage0` 也走它）。這兩幕是**舊草稿**。要不要退役等 Ray 決定 |
-| 4 | `gentle／stunned／pain／fluster` 沒有差分 | 全部**只出現在上面那兩幕舊草稿裡**，玩得到的內容一張都沒缺 |
-| 2 | `se_cannonslide.mp3`／`Peritune_Mystic_Tides_loop.m4a` 沒人用 | 真的零引用，沒有壞任何事 |
+**語法檢查**：
+```bash
+node --input-type=module --check < modules/story.js
+```
+⚠⚠ **不要用 `node --check`** —— 它把 `.js` 當 CommonJS，**抓不到重複宣告**。
+  -1297 就是因此讓兩個同名函式（`seSrc`／`bgUrl`）上線，首頁整個壞掉才發現。
 
-⚠⚠ **lint 曾經謊報過三類，-1290/-1291 已修**，別再被它騙：
-① 音檔「載不到」原本只認 `SE_FILES` 與 `ASSETS`，漏了**飛行頁自己那組 HTMLAudio**
-（`se_sail`／`se_shipcrush`）與**只用鑰匙引用的**（`se_weapon_cannon`）；
-② 孤兒場景原本只走 `next` 鏈，看不到 `story.open({scene:…})`（`lake_deck`）；
-③ 「空台詞又沒有 auto」漏掉**自己就是畫面**的拍（`cg`／`dayBreak`／`kitchen`／`boon`）。
+**`flight/index.html` 是 HTML**，要抽出最大的 `<script>` 再驗（`node --check` 即可，
+它是非 module）。
+⚠⚠⚠ **JS 語法過了不代表 shader 過**：GLSL 編譯失敗是**悄悄退回 CPU**
+（`glReady:false`、畫面上沒有任何錯誤訊息）。**改完 shader 一定要在瀏覽器確認
+`glReady===true`。**
+⚠⚠ GLSL 在 JS 樣板字串裡，**註解不可以有反引號** —— 憲法記第七次，-1302/-1303
+  我又踩了第八、第九次（順手用反引號括變數名就會炸）。
+⚠⚠ GLSL **不能用 `<` 比較向量**（`abs(dm)<vec2(1e-6)` 是編譯錯誤）—— 要逐分量寫。
 
-**語法檢查**：抽出 `flight/index.html` 最大的 `<script>`，用 macOS 的 `jsc`
-（`/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc`）跑
-`new Function(...)`。⚠ `jsc` 檢不出 GLSL 的錯 —— shader 壞掉是**悄悄退回 CPU**
-（`glReady` 變 false、無錯誤訊息），改完 shader 一定要在瀏覽器確認 `glReady===true`。
-⚠ GLSL 在 JS 樣板字串裡，**註解不可以有反引號**。
+**跑起來**：`.claude/launch.json` 已改成讀 `PORT` ＋ `autoPort`（-1303）。
+手動起一台不會被面板帶走的：
+```bash
+powershell -c "Start-Process py -ArgumentList '-m','http.server','8000' -WorkingDirectory 'C:\Users\Kaede\OneDrive\桌面\TIVOT' -WindowStyle Hidden"
+```
 
-**跑起來**：`.claude/launch.json` 已備好（`python3 -m http.server 8000`）。
-⚠⚠⚠ **背景的大小寫不可以只靠本機驗**：macOS 不分大小寫，本機 server 會把
-`_Day.webp` 當成 `_day.webp` 送出來 —— -1293 實測「13 格全部第 1 次就中」是**假的**。
-真值要用分大小寫的比對（把真正上線的 `bandNames` 丟進 `jsc` 對磁碟清單）。
+⚠⚠⚠ **背景檔名的大小寫不可以只靠本機驗**：Windows 與 macOS 都**不分大小寫**，
+本機 server 會把 `_Day.webp` 當成 `_day.webp` 送出來 —— **靜態空間會分**，
+上線才 404。真值要用分大小寫的比對。
