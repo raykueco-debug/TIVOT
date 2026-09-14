@@ -41,10 +41,16 @@
   （＝各自的 `_day`）、`Belisar_Exterior`（＝`_dusk`）、`Capital_Dock_midnight`
   （＝`Capital_Dock_night`）。回收後 455 格逐格重解，**沒有一格失去圖**。
 
-## 還沒解決、要 Ray 決定的兩件
+## 另外兩組重複檔的定案（ver -1318，Ray）
 
-1. `resources/SI/Renna_SI_intense2.webp` 與 `Renna_SI_lookup.webp` **是同一張圖**
-   （位元組相同，`speakers.js` 兩個差分鍵、連 `top/bot/fx` 都一樣）——
-   是 `intense2` 那張沒交、被人拿 `lookup` 頂著，還是交件重複？
-2. `Luna_SI_01.jpg` ＝ `Luna_CI_saint.jpg`（`config.js` 的 `partner_twin` 註解寫「暫用 cut-in 圖」）
-   —— 等真正的雙槍修女立繪。
+1. ⚠⚠ **`Renna_SI_intense2.webp` ＝ `Renna_SI_lookup.webp`（位元組相同）—— 不要動。**
+   `speakers.js` 兩個差分鍵指著同一張畫、連 `top/bot/fx` 都一樣。
+   Ray：「不要動，免得已寫好的劇情差分迷路」——**腳本裡已經有拍子寫著 `intense2`**，
+   把鍵拔掉或把檔退役，那幾拍當場找不到圖。
+   ⚠ 這是**明寫的例外**，不是漏網之魚：日後巡到重複檔請跳過這一組。
+   真正的 `intense2` 交件之後，直接同名覆蓋那個檔就好（⚠ 同名覆蓋要照 §5 動 `ASSET_VER`）。
+2. ✔ **`Luna_SI_01.jpg` 已回收**（ver -1318）。Ray：「刪了，已經沒這事了」——
+   雙槍修女立繪這件事取消。它與 `Luna_CI_saint.jpg` 位元組相同，而
+   `config.js` 的 `partner_twin` 是**沒有人讀的死鑰匙**（全專案只有它自己那一行），
+   留著只會讓開機預載多吃一個 404 ⇒ 那一行一併拿掉。
+   ⚠ `Luna_CI_saint.jpg`（聖徒化 cut-in 暫代圖）**照舊留著**，那是另一回事。
