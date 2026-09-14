@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1300"></script>
+<script src="../orientation.js?v=1301"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1300');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1301');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1300");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1300");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1301");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1301");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1300");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1300");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1301");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1301");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -614,25 +614,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1300" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1301" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1300" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1300" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1300" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1300" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1300" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1300" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1300" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1300" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1300" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1300" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1301" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1301" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1301" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1301" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1301" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1301" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1301" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1301" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1301" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1301" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1300" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1301" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1300" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1301" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -653,11 +653,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1300"></script>
+<script src="settlement.js?v=1301"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1300"></script>
+<script src="talks.js?v=1301"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -709,7 +709,7 @@ const COLOR_URL  = 'silvermoon_terrain.png'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1300';
+const FLIGHT_VER = 'ver -1301';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -11909,6 +11909,39 @@ function drawSunMoon(S,horizon,sinp,cosp){
    —— 飛在雲上看城時，城的貼圖蓋過本該在它前面的雲團，整座城像浮在雲層之上。
    改成分兩趟：比城遠的雲先畫、比城近的雲在城之後畫。分界取最近那座城的深度
    （城本身橫跨上千單位，單一分界一定有取捨；雲團是軟的大團，取城心最不吃虧）。 */
+/* ══⚠⚠⚠ 雲團的軟邊圓斑：**烘一張，之後只貼**（ver -1301）══════════════════
+   Ray：「iMac／iPhone 跑起來沒問題，Windows 爆 GPU」。實測就是這裡：
+   一幀之內 `createRadialGradient` **141 次**、`ellipse`＋`fill` 各 **140 次**
+   （28 團 × 5 個子斑）—— 每個子斑都**當場 new 一個漸層物件**，Chrome 無從快取，
+   每次都要重新光柵化，再疊上大面積的半透明填色（overdraw）。
+
+   ⚠⚠ **為什麼 Mac 沒事、PC 爆**：蘋果是統一記憶體 ＋ tile-based GPU，這種畫法
+     吃得下；PC 的獨立顯卡（實測 GT 1030）要走 PCIe，大量漸層光柵化＋overdraw
+     把 3D 與 Copy 兩個引擎都吃滿 —— 實測 GPU 持續 **95~135%**，而 **CPU 只有
+     3~12%**（純 GPU 瓶頸，CPU 在等）。**在 Mac 上開發看不到這件事。**
+   ⚠⚠ 這也是為什麼**降畫質完全沒用**（Ray 實測 `?q=0` 與 `?q=4` 一樣卡）：
+     `QUALITY` 只縮地形的取樣緩衝，而雲是畫在 2D 畫布上的，一個像素都沒省。
+
+   ⚠ 顏色隨日夜走，所以拿顏色當快取鑰匙 —— 它一秒才變幾次，同一幀之內是常數。
+   ⚠ 烘圖的長寬比固定 0.62（＝原本橢圓的比例），所以一張就夠；大小交給
+     `drawImage` 縮放 —— 軟邊圓斑放大看不出來。
+   ⚠ 烘 192px 寬：再大沒有意義（它本來就是糊的），再小放大到整片天會有階梯。 */
+const PUFF_W = 192, PUFF_ASPECT = 0.62;
+let _puffCv = null, _puffKey = '';
+function puffSprite(cr, cg, cb){
+  const key = cr + ',' + cg + ',' + cb;
+  if(_puffCv && _puffKey === key) return _puffCv;
+  const w = PUFF_W, h = Math.round(PUFF_W * PUFF_ASPECT);
+  if(!_puffCv){ _puffCv = document.createElement('canvas'); _puffCv.width = w; _puffCv.height = h; }
+  const x = _puffCv.getContext('2d');
+  x.clearRect(0, 0, w, h);
+  const g = x.createRadialGradient(w/2, h/2, 0, w/2, h/2, w/2);
+  g.addColorStop(0, `rgba(${cr},${cg},${cb},.9)`);
+  g.addColorStop(1, `rgba(${cr},${cg},${cb},0)`);
+  x.fillStyle = g; x.fillRect(0, 0, w, h);
+  _puffKey = key;
+  return _puffCv;
+}
 function drawPuffs(S,scaleH,horizon,sinp,cosp,zLo,zHi){
   const sxk=W/BW, syk=VIEWH/BH;
   const fx=-sinp, fy=-cosp;
@@ -11935,16 +11968,18 @@ function drawPuffs(S,scaleH,horizon,sinp,cosp,zLo,zHi){
     const cr=Math.round(lerp(226,255,warm)*lit),
           cg=Math.round(lerp(232,206,warm)*lit),
           cb=Math.round(lerp(244,186,warm)*lit);
+    const spr=puffSprite(cr,cg,cb);
     ctx.save(); ctx.globalAlpha=a;
     for(let k=0;k<5;k++){
       const ang=k/5*Math.PI*2+p.seed*6;
       const ox2=Math.cos(ang)*R*0.42, oy2=Math.sin(ang)*R*0.17;
       const rr=R*(0.52+((k*37)%7)/14);
-      const gg=ctx.createRadialGradient(x+ox2,y+oy2,0,x+ox2,y+oy2,rr);
-      gg.addColorStop(0,`rgba(${cr},${cg},${cb},.9)`);
-      gg.addColorStop(1,`rgba(${cr},${cg},${cb},0)`);
-      ctx.fillStyle=gg;
-      ctx.beginPath(); ctx.ellipse(x+ox2,y+oy2,rr,rr*0.62,0,0,Math.PI*2); ctx.fill();
+      /* ⚠ 貼上去的矩形 ＝ 原本那個橢圓的外接框（寬 2rr、高 2×0.62rr）。
+         結果與原本相同：漸層在半徑 rr 就歸零，外接框四角距中心 1.18rr
+         早已全透明，所以「矩形」與「橢圓裁切」畫出來一樣；唯一被切到的是
+         上下兩端（距中心 0.62rr、alpha 還有 0.34），而那正是烘圖時
+         畫布高度切掉的同一條邊。 */
+      ctx.drawImage(spr, x+ox2-rr, y+oy2-rr*0.62, rr*2, rr*1.24);
     }
     ctx.restore();
   });
