@@ -516,7 +516,9 @@ window.__tivotFlight = {
     /* ver -845：降落＝這一趟航行結束，iframe 殺掉（下一次出航本來就整頁重載）。 */
     setTimeout(()=>{ try{ killFlightFrame(); }catch(_){} }, 600);
     closeFlightFrame();
-    $('home').classList.remove('on');
+    /* ⚠⚠ **這裡不收首頁**（ver -1321）：收首頁只有一處，而且要等讀取頁蓋滿
+       —— 見 `enterTown`。以前這一行是同步收，於是「飛行 → 探索地圖」那一段
+       會露出底下的首頁（Ray 回報）。 */
     /* ver -1297：飛行地圖 → 探索地圖＝一道讀取頁（Ray 的讀取分工 3-b）。
        上一段（飛行）的音訊在這裡放掉，這座城的 BGM／音效／入口圖載完才進去。 */
     enterTown(id || 'capital', node || undefined);
@@ -1218,9 +1220,20 @@ story.init(); saveSys.init();
    ⚠ 要載什麼由 `town.loadSpec()` 回答（它才認識 TOWNS 的資料，鐵律 1）。 */
 function enterTown(t, n, opts){
   markBooted();
-  $('home').classList.remove('on');
   const id = t || 'capital';
-  story.loadScene(town.loadSpec(id, n), ()=> town.open(id, n, opts));
+  /* ══⚠⚠⚠ **收首頁要等讀取頁蓋滿**（ver -1321，Ray：「為什麼我進探索地圖會跳
+     首頁圖? 應該是跳讀取圖啊?」）════════════════════════════════════════════
+     以前這裡是**同步** `home.remove('on')` 再叫 `loadScene` —— 而讀取頁是**淡入**的
+     （實測前 ~96ms 完全透明、之後還有約 240ms 半透明）。那 300 多毫秒露出來的是
+     再底下的東西：首頁（從首頁進來時），或 `#app` ＝ 開機擺好的**挑戰第一戰的
+     敵人立繪**（Ray 的另一句：「偶爾會看到挑戰畫面的地下聖徒在讀取間隙一閃而過」）。
+     ⚠⚠ 這與 -576 `openFlightAt` 那一條**是同一條規矩**：
+       **在新的一頁真的蓋上去之前，不可以先把舊的那一層收掉。**
+       那邊當時只修了自己那一支，這一支漏了。
+     ⚠ 收的動作掛在 `loadScene` 的第三個參數（讀取頁全黑那一刻）。 */
+  story.loadScene(town.loadSpec(id, n),
+                  ()=> town.open(id, n, opts),
+                  ()=> $('home').classList.remove('on'));
 }
 function openTownAt(t, n){ enterTown(t, n); }
 saveSys.setHost({

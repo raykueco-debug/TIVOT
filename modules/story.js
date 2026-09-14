@@ -1844,7 +1844,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1320';
+const KERB_V='?v=1321';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -3390,13 +3390,23 @@ function showLoader(){
        光圈與底色一起淡進來 ＝ 城鎮的畫面與金色光圈半透明地疊在一起，
        那是溶接不是轉場。順序改成「城鎮 → 黑 → 光圈」、出場反過來走。 */
   ov.classList.add('al-fade','al-blank');
+  /* ══⚠⚠⚠ **「已經蓋滿了」要能被等**（ver -1321，Ray：「為什麼我進探索地圖會跳
+     首頁圖? 應該是跳讀取圖啊?」）══════════════════════════════════════════
+     這一層是**淡入**的 —— 實測前 ~96ms 完全透明、之後還有約 240ms 半透明。
+     呼叫端若在那之前就把底下那一層收掉（`enterTown` 以前就是同步 `home.remove('on')`），
+     那 300 多毫秒露出來的就是**再底下的東西**：首頁，或 `#app`（＝挑戰那張敵人立繪）。
+     ⇒ `covered` 在**真的全黑之後**才 resolve，收底下那一層的動作掛在它上面。
+     ⚠ 不要改成「一開始就不透明」：淡入是 -433/-439 Ray 指定的（進出都要黑色淡入
+       淡出），而且在**有東西在底下**的正常情況它是對的 —— 錯的是呼叫端提早收。 */
+  let _cov; const covered=new Promise(r=>{ _cov=r; });
   requestAnimationFrame(()=>requestAnimationFrame(()=>{
-    if(!ov || !ov.parentNode) return;
+    if(!ov || !ov.parentNode){ _cov(); return; }
     ov.classList.remove('al-fade');                       // ① 黑幕淡入
-    setTimeout(()=>{ if(ov && ov.parentNode) ov.classList.remove('al-blank'); },
-               AL_FADE_MS);                               // ② 全黑之後才亮光圈
+    setTimeout(()=>{ if(ov && ov.parentNode) ov.classList.remove('al-blank'); _cov(); },
+               AL_FADE_MS);                               // ② 全黑之後才亮光圈（也是「蓋滿了」）
   }));
   return {
+    covered,
     set(p){
       const pr=document.getElementById('alRingProg'), pc=document.getElementById('assetLoaderPct');
       if(pr) pr.style.strokeDashoffset=(AL_RING_C*(1-p)).toFixed(1);
@@ -3460,7 +3470,10 @@ const AL_CLOSE_MS = AL_BLANK_MS + AL_FADE_MS;
      那一首 BGM，所以不必在呼叫端記得把它加進 keep。
    ⚠ `onReady` 是在**黑幕還蓋著**的時候呼叫的（同 `runLoadGate` 的 `advance()`）：
      新畫面要在讀取頁淡出之前擺好，不然會看到它「長出來」。 */
-export function loadScene(spec, onReady){
+/* ⚠ 第三個參數 `onCovered`（ver -1321）＝**讀取頁已經全黑**那一刻。
+   「把底下那一層收掉」一律掛在它上面，不要在叫 `loadScene` 的當下就收
+   —— 讀取頁是淡入的，提早收就會露出再底下的東西（見 `showLoader` 的說明）。 */
+export function loadScene(spec, onReady, onCovered){
   spec = spec || {};
   const path = (v, f) => (typeof v === 'string' && v.indexOf('/') < 0) ? f(v) : v;
   const ses  = (spec.ses  || []).map(v => path(v, seSrc)).filter(Boolean);
@@ -3469,6 +3482,7 @@ export function loadScene(spec, onReady){
   const warm = typeof spec.warm==='function' ? spec.warm : (spec.warm || []).filter(Boolean);
   try{ SFX.releaseAudio(ses.concat(bgms)); }catch(e){}      // ① 放掉上一個場景
   const ui = showLoader();
+  if(typeof onCovered==='function') ui.covered.then(()=>{ try{ onCovered(); }catch(e){ console.warn('[load] onCovered', e); } });
   const t0 = Date.now();
   const total = ses.length + imgs.length + bgms.length + (typeof spec.pre==='function'?1:0) + 1;
   let done = 0;

@@ -623,7 +623,16 @@ export function displayEnemyName(name){ return String(name==null?'':name).split(
  *    3.2（combat-owned）敵血基準 → state.initEnemyHp() 具名 setter
  *    3.3（大絕大寫參數）        → 直接寫 state.*（CLAUDE.md 3.3 授權）
  *    3.7（enemy-owned）         → currentEnemyKey / curEnemyHitFx 直接寫 */
-export function setEnemy(key){
+/* ⚠⚠⚠ `opts.noArt` ＝**只填資料，不載立繪**（ver -1321，Ray：「不進挑戰就不要
+   跑那張圖」）。唯一的用途是開機那一次（`applyConfigToDOM`）——`bootIdle` 要的是
+   盤面與血條，不是敵人立繪。
+   ⚠⚠ 為什麼這件事會咬人：`#enemyImg` 住在 `#app`，而 `#app` **只靠別的層蓋著**
+     才看不到（`#storyStage.on` 時 `visibility:hidden`）。任何「上一層收掉了、
+     下一層還沒蓋滿」的空窗就會露出它 —— 實測讀取頁是**淡入**的，
+     有 ~96ms 完全透明 ＋ 約 240ms 半透明。Ray 看到的「挑戰畫面的地下聖徒在
+     讀取間隙一閃而過」就是這個。
+   ⚠ 真的要打的時候照舊會載：`combat.startGame` 一定會再 `setEnemy()` 一次。 */
+export function setEnemy(key, opts){
   const en = GAME_CONFIG.enemies[key];
   if(!en) return;
   stopSakura();                                 // 換了一隻怪 → 上一隻的櫻花與 Sturm 一起收（ver -899）
@@ -744,7 +753,10 @@ export function setEnemy(key){
     const nm = state.battleBg || en.bg || '';
     topEl.style.backgroundImage = nm ? ('url("'+story.bgUrl(nm)+'")') : '';
   }
-  loadEnemyPortrait(en);
+  /* ⚠ `noArt`：開機那一次不載圖，而且**把 src 整個拔掉** —— 只是不載的話
+     上一次留下的那張還掛在 `#enemyImg` 上，空窗一樣會露出來。 */
+  if(opts && opts.noArt){ const ei=$('enemyImg'); if(ei) ei.removeAttribute('src'); }
+  else loadEnemyPortrait(en);
   /* 換了一隻怪（ver -693）：讓搭檔的「每隻怪一次」那一類被動重新上膛。
      ⚠ 這裡是那件事的唯一時刻 —— 開場、連戰換敵、Boss 亂入全部經過 setEnemy。 */
   if(api.onEnemySet) api.onEnemySet();
@@ -826,7 +838,7 @@ export function triggerIntruder(){
 /* ---------- 開場：把 GAME_CONFIG 的圖/名稱套到畫面上 ---------- */
 export function applyConfigToDOM(){
   const pn = GAME_CONFIG.partners[GAME_CONFIG.defaultPartner];
-  setEnemy(GAME_CONFIG.currentEnemy);
+  setEnemy(GAME_CONFIG.currentEnemy, { noArt:true });   // ver -1321：開機不載挑戰那張立繪
   const cImg = $('cutinImg');
   if(cImg && pn && pn.cutin) cImg.src = asset(pn.cutin);
   const emb = $('homeEmblem');
