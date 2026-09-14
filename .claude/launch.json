@@ -1,7 +1,15 @@
 {
   "version": "0.0.1",
   "configurations": [
-    { "name": "tivot", "runtimeExecutable": "py",
-      "runtimeArgs": ["-m", "http.server", "8000"], "port": 8000 }
+    {
+      "name": "tivot",
+      "runtimeExecutable": "py",
+      "runtimeArgs": [
+        "-c",
+        "import os,functools,http.server,socketserver\np=int(os.environ.get('PORT','8000'))\nh=functools.partial(http.server.SimpleHTTPRequestHandler, directory=os.getcwd())\nsocketserver.TCPServer.allow_reuse_address=True\nprint('serving on',p,flush=True)\nsocketserver.TCPServer(('',p),h).serve_forever()"
+      ],
+      "port": 8000,
+      "autoPort": true
+    }
   ]
 }
