@@ -158,3 +158,9 @@ when	from	to	reason
 20260914-023637	resources/background/Ravn_Uptown.webp	_recycle/resources/background/Ravn_Uptown.webp	室外六格改成四時段差分（ver -1261）：帶尾綴的四張已入庫，無尾綴的這一版退役
 20260914-023637	resources/background/Ravn_Lookout.webp	_recycle/resources/background/Ravn_Lookout.webp	室外六格改成四時段差分（ver -1261）：帶尾綴的四張已入庫，無尾綴的這一版退役
 20260914-023637	resources/background/Ravn_Station.webp	_recycle/resources/background/Ravn_Station.webp	室外六格改成四時段差分（ver -1261）：帶尾綴的四張已入庫，無尾綴的這一版退役
+20260914-200514	resources/background/Capital_Midtown_Dusk.png	_recycle/resources/background/Capital_Midtown_Dusk.png	ver -1307：background 剩下的 PNG 轉 webp，原檔退役（同名的 .webp 已入庫）
+20260914-200514	resources/background/Capital_Midtown_midnight.png	_recycle/resources/background/Capital_Midtown_midnight.png	ver -1307：background 剩下的 PNG 轉 webp，原檔退役（同名的 .webp 已入庫）
+20260914-200514	resources/background/Capital_Midtown_night.png	_recycle/resources/background/Capital_Midtown_night.png	ver -1307：background 剩下的 PNG 轉 webp，原檔退役（同名的 .webp 已入庫）
+20260914-200514	resources/background/Capital_Square_Dusk.png	_recycle/resources/background/Capital_Square_Dusk.png	ver -1307：background 剩下的 PNG 轉 webp，原檔退役（同名的 .webp 已入庫）
+20260914-200514	resources/background/Capital_Square_midnight.png	_recycle/resources/background/Capital_Square_midnight.png	ver -1307：background 剩下的 PNG 轉 webp，原檔退役（同名的 .webp 已入庫）
+20260914-200516	resources/background/Northport_Hotel_room_Night.png	_recycle/resources/background/Northport_Hotel_room_Night.png	ver -1307：webp 早就在庫裡，這張 PNG 是殘留的原檔，一併退役
