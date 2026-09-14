@@ -1844,7 +1844,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1322';
+const KERB_V='?v=1323';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -2968,6 +2968,9 @@ function renderLine(){
      ⚠ 等待中點畫面要能**跳過等待**而不是直接推到下一句 —— 不然玩家會覺得
        「點了沒反應」然後連點兩下，一次跳掉兩句。 */
   const bub2=$('storyBubble');
+  /* ⚠ 每一句都先拔掉主角那個顏色（ver -1323）：只有下面 `line.blank` 那一拍會加回去。
+     留著的話下一個人的框也會是藍的 —— 那正是「持續狀態忘了收」的老坑。 */
+  if(bub2) bub2.classList.remove('self');
   clearTimeout(waitT); waitT=null;
   clearTimeout(autoT);  autoT=null;
   /* ⚠ **空台詞不出對話框**（ver -327，Ray：「插圖002出來的時候不要先出空白的
@@ -2979,7 +2982,7 @@ function renderLine(){
      ⚠ 與「空台詞」是**兩回事**：空台詞是演出拍（咆哮／掃射），那一拍畫面上不該有框。
        兩者都沒有字，差別在**有沒有人在說話**。 */
   if(line.blank){
-    if(bub2) bub2.style.visibility='';
+    if(bub2){ bub2.style.visibility=''; bub2.classList.add('self'); }   // ver -1323：主角的空白格換色
     stopTyping();                       // ver -1062：不然上一句會接著打進這個空框
     if(tx) tx.textContent='';
     /* ⚠⚠ **空框也是快進／自動播放的對象**（ver -427，Ray：「主角的空白對話框也是

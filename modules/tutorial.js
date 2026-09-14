@@ -1072,7 +1072,7 @@ function showLine(){
      停 `hold`（預設 900ms）自動接下一拍；提前點擊也可以跳過（advance 照常吃）。
      ⚠ 自動接的計時器要驗「還是同一拍」——玩家先點掉的話它不能再推一次。 */
   if(!line.who && !line.text && !line.blank){
-    const b0=$('tutBubble'); if(b0) b0.classList.remove('on','done');
+    const b0=$('tutBubble'); if(b0) b0.classList.remove('on','done','self');
     clearInterval(typeTimer); typeTimer=null;
     clearTimeout(fxTimer);
     fxTimer=setTimeout(()=>{ fxTimer=null;
@@ -1081,7 +1081,8 @@ function showLine(){
     return;
   }
   /* 演出拍之後的第一句：把框請回來（演出拍把 `on` 收掉了）。 */
-  { const b0=$('tutBubble'); if(b0 && !b0.classList.contains('on')) b0.classList.add('on'); }
+  /* ⚠ 每一句都先拔掉主角那個顏色（ver -1323）：只有 `line.blank` 那一拍加回去。 */
+  { const b0=$('tutBubble'); if(b0){ b0.classList.remove('self'); if(!b0.classList.contains('on')) b0.classList.add('on'); } }
   /* 逐拍進場（ver -478，§6.5：接話的人輪到他那一拍才上場）。
      ⚠ 第 0 拍不在這裡叫：openStep 的 30ms 延遲那一發才觸發得了滑入過場。 */
   if(lineIdx>0) syncCast(cur, lineIdx);
@@ -1097,7 +1098,8 @@ function showLine(){
   if(line.blank){
     const nm0=$('tutName'); if(nm0) nm0.textContent = progress.getPlayerNick();
     const lineEl0=$('tutLine'); if(lineEl0) lineEl0.textContent='';
-    const b0=$('tutBubble'); if(b0){ b0.classList.add('done'); }
+    /* ver -1323：主角的空白格換成冷鋼藍（同 story.js，色票在 style.css 的 `--self`）。 */
+    const b0=$('tutBubble'); if(b0){ b0.classList.add('done','self'); }
     clearInterval(typeTimer); typeTimer=null;
     return;
   }

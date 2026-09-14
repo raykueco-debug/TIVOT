@@ -2801,6 +2801,19 @@
     border-radius:10px;padding:9px 14px 12px;box-shadow:0 4px 18px rgba(0,0,0,.55);
     pointer-events:none;}
   #storyBubble .story-name{font-size:11px;letter-spacing:2px;color:var(--gold);margin-bottom:4px;}
+  /* ══⚠⚠ **主角的空白格用另一個顏色**（ver -1323，Ray：「讓主角空白格的顏色跟
+     其他人不一樣好了」）══════════════════════════════════════════════════
+     其他人是金（`--gold`／`--gold-dim`），主角改成**冷鋼藍** —— 他沒有立繪、
+     沒有配音，框裡也沒有字，唯一能讓玩家讀出「這一格是他」的就是顏色。
+     ⚠ 兩套 DOM（劇情 `#storyBubble`／戰鬥對白 `#tutBubble`）共用同一組變數；
+       飛行那一頁是 canvas，另有一份同色的常數（`SELF_LINE`），**改一邊要改另一邊**
+       （鐵律 7 的但書，兩邊註解互指）。
+     ⚠ class 要**每一句都拔**（只在 blank 那一拍加）：留著的話下一個人的框也會變藍。 */
+  :root{ --self:#9cc3e8; --self-dim:#5c7fa6; }
+  #storyBubble.self,#tutBubble.self{ background:rgba(6,10,18,.9); border-color:var(--self-dim); }
+  #storyBubble.self .story-name,#tutBubble.self .tut-name{ color:var(--self); }
+  #storyBubble.self .story-next,#tutBubble.self .tut-next{ color:var(--self); }
+
   #storyBubble .story-text{font-size:13px;letter-spacing:.5px;line-height:1.7;color:var(--ink);
     min-height:3.4em;}
   #storyBubble .story-next{position:absolute;right:10px;bottom:5px;font-size:9px;color:var(--gold);
