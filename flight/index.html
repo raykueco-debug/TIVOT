@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1306"></script>
+<script src="../orientation.js?v=1309"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1306');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1309');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1306");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1306");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1309");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1309");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1306");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1306");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1309");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1309");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -614,25 +614,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1306" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1309" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1306" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1306" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1306" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1306" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1306" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1306" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1306" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1306" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1306" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1306" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1309" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1309" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1309" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1309" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1309" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1309" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1309" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1309" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1309" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1309" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1306" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1309" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1306" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1309" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -653,11 +653,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1306"></script>
+<script src="settlement.js?v=1309"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1306"></script>
+<script src="talks.js?v=1309"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -709,7 +709,7 @@ const COLOR_URL  = 'silvermoon_terrain.png'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1306';
+const FLIGHT_VER = 'ver -1309';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -7375,7 +7375,23 @@ let CITY_ZNEAR = 14, CITY_ZRATIO = 3, CITY_ZCLAMP = 8;
 /* 量體層（街廓稜柱）的近裁面。可從主控台改，用來驗收。 */
 let MASS_ZNEAR = 60, MASS_ZRATIO = 3;
 
-let qLevel = 0, qLocked = false;
+/* ══⚠⚠⚠ **畫質鎖在高檔**（ver -1309，Ray：「鎖高畫質」）══════════════════
+   -1303 把兩件事同時做對了，相乘之後就是 Ray 回報的「一大格一大格組成的地面」：
+     ① **恐慌降級**：連續 8 幀中位數 >24ms 就降一級、不等滿窗也不吃靜置期
+        ⇒ 約 32 幀就從 q0 掉到 q4；而升回去要連續 90 幀中位數 <7ms，
+          跑不動的機器**再也升不回來**，一路卡在最低檔。
+     ② **大視窗的階梯修好了**：-1303 之前 `clamp(下限>上限)` 把 1273px 以上的
+        視窗五個檔位全夾成 420 ⇒ 低畫質根本沒生效。修好之後 q4 真的只有 231，
+        地形緩衝放大到全螢幕就是一格一格的方塊（§6.7：地形是低解析緩衝放大的）。
+   ⇒ 這一版把**自動階梯整個關掉**，固定跑 `QUALITY_LOCK` 那一檔。
+   ⚠⚠ 代價是誠實的：跑不動的機器會**掉幀**，而不是自己降畫質。
+     那正是 Ray 要的 —— 畫面糊掉比慢更難接受。
+   ⚠ 要把自動階梯放回來：`QUALITY_LOCK = null`（`qualityTick` 一個字都沒動，
+     它只是在 `qLocked` 時直接 return）。
+   ⚠ `?q=0..4` 照舊可以覆寫（除錯用，也是低配機臨時降檔的出路）——
+     順序是**網址優先**，所以鎖定不會擋住驗收時鎖別的檔位。 */
+const QUALITY_LOCK = 0;
+let qLevel = (QUALITY_LOCK==null ? 0 : QUALITY_LOCK), qLocked = (QUALITY_LOCK!=null);
 { const m=/[?&]q=([0-4])/.exec(location.search);
   if(m){ qLevel=+m[1]; qLocked=true; } }
 /* ── 除錯：把城的逐格貼圖格線畫出來（?grid=1）──────────────────────────
