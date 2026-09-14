@@ -1125,7 +1125,7 @@ Ray：「角色對話結束需要清除畫面上所有立繪…感覺是馬上�
     ⚠ 兩套 DOM 各有一份實作(`story.castLayout` / `tutorial.placePortraitX`),
       而 `config.tutorial.portraitFrames` 的 `put()` 要把角色層的 `fxShift` 合進來
       —— 它與 `cm` 一樣住在角色那一層,`expr` 只帶 top/bot/fx。
-- `eye` 只在 `CAST_EYE_MIX>0` 時才用得到,但仍建議量著備用。量法見 `flight/HANDOFF.md` F 節(要先拿已知角色校準尺,自動偵測暗像素會把頭髮當眼睛)。
+- `eye` 只在 `CAST_EYE_MIX>0` 時才用得到,但仍建議量著備用。量法見 `tools/measure_si.py`(要先拿已知角色校準尺,自動偵測暗像素會把頭髮當眼睛)。
 
 **畫質**
 - ⚠ 畫布**要開到裝置像素**(`canvas.width = W × DPR`,DPR 上限 2,再 `setTransform(DPR,…)`)。只開 CSS 像素的話立繪與 canvas 文字會被瀏覽器再放大一次 → 糊。

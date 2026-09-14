@@ -117,7 +117,7 @@ export const SPEAKERS = {
 
 /* ══ 立繪素材 ＋ 取景實測值 ══
    ⚠ cm / eye / fx / top / bot 是**量出來的**，不是估的。量法與原委見
-     CLAUDE.md §6.5 與 flight/HANDOFF.md F 節。這份數字與 flight/index.html
+     CLAUDE.md §6.5 與 `tools/measure_si.py`。這份數字與 flight/index.html
      的 PORTRAIT 是**同一組**（同樣的圖、同樣的量測），改一邊要改兩邊。
        cm   角色身高（全域通用，任何畫面的立繪都照這個比例）
        top  圖中人物最上緣（頭頂）的像素 y
@@ -246,7 +246,7 @@ export const ART = {
        所以每一張**各帶自己的 top/bot/fx**（ver -325 量完）。
        ⚠ 沿用 front 那一組的後果實測過：Scared 的臉其實在 0.397，照 0.564 擺會
          把她往左推 77px，人整個貼在畫面左緣（Ray：「立繪太靠畫面邊緣」）。
-       量法（照 CLAUDE.md §6.5 與 HANDOFF F 節，可重跑）：
+       量法（照 CLAUDE.md §6.5，工具是 `tools/measure_si.py`，可重跑）：
          · top/bot＝alpha>24 的上下緣。六張的身高 1519~1533，彼此一致 →
            確認都是全身構圖，alpha 邊界就是頭頂與腳底。
          · fx＝**頭部那一段**（頭頂往下 8% 身高）的 alpha 加權橫向重心 ÷ 圖寬。
@@ -653,7 +653,7 @@ export const ART = {
      ⚠ 真的要讓她在劇情裡站台，top/bot/fx 一定要重量（cut-in 是胸像構圖，
        照 alpha 上下緣量會把人放大好幾倍，見 CLAUDE.md §6.5）。 */
   /* 璐娜莉亞（團長）。⚠ 站**右側** —— 與諾薇兒（左）分邊，兩人同台不會疊。
-     ⚠ 數字是**量出來**的，量法照 CLAUDE.md §6.5 與 HANDOFF F 節：
+     ⚠ 數字是**量出來**的，量法照 CLAUDE.md §6.5（工具 `tools/measure_si.py`）：
        · cm 168（Ray 指定）
        · top/bot＝alpha 上下緣（9 / 1528）。先確認過四角 alpha 是 0、逐列輪廓寬
          由 21% 變到 97% —— 是去背立繪不是滿版插圖，所以 alpha 邊界就是頭頂與腳底。

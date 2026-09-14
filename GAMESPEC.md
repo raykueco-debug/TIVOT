@@ -150,5 +150,5 @@ telemetry.js  遙測(葉節點,讀 config.TELEMETRY)
 main.js       composition root:注入/綁定/開機/PWA 對策/管理員手勢
 modules/      combat(協調者)/defense/weapon/saint/partner/inspector/enemy/transition/sakura
 stats.html    後台統計(獨立頁,建表 SQL 在頁尾註解)
-reference/    唯讀行為基準;SPEC.md=重寫期規格;HANDOFF.md=模組交接
+reference/    唯讀行為基準;SPEC.md=重寫期規格
 ```

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1307"></script>
+<script src="../orientation.js?v=1308"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1307');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1308');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1307");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1307");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1308");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1308");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1307");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1307");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1308");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1308");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -614,25 +614,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1307" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1308" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1307" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1307" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1307" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1307" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1307" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1307" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1307" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1307" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1307" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1307" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1308" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1308" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1308" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1308" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1308" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1308" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1308" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1308" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1308" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1308" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1307" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1308" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1307" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1308" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -653,11 +653,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1307"></script>
+<script src="settlement.js?v=1308"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1307"></script>
+<script src="talks.js?v=1308"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -709,7 +709,7 @@ const COLOR_URL  = 'silvermoon_terrain.png'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1307';
+const FLIGHT_VER = 'ver -1308';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -4522,7 +4522,7 @@ const PORTRAIT = {
                     修正為 0.564。**不校準就直接用是不行的**。
                   ⚠ 不能用「找暗像素當睫毛」那條路：實測眼框內的近黑像素會一路
                     連到頭髮，新舊兩張都量出「寬 70」（＝整個框寬），完全沒有鑑別力。
-                    HANDOFF F 節警告過的就是這件事。
+                    立繪取景那條規矩（CLAUDE.md §6.5）警告過的就是這件事。
        eye 40  —— 由頭寬比例換算（頭頂下 140 列的 alpha 寬 254→282，×1.11）。
                   ⚠ 目視讀數落在 40~47 之間，這個值**沒有量準**；但
                     CAST_EYE_MIX 是 0，它不參與運算 —— 哪天要調回鎖眼寬，
@@ -5462,7 +5462,7 @@ function senseRingCheck(now){
      本來就不能操舵 —— 這時候的航向看不了也用不到，收起來零損失。
    ⚠ 收起後對話框底落在**原本方向計的底部**（Ray 指定）。距離由 compassRect
      推出來（方向計高 ＋ 原本讓開它的 8px），不寫死：實測 y 467 → 505。
-     ⚠ **這不足以露出腿**：要露到大腿得把立繪縮到現在的 77%（見 HANDOFF O 節）。
+     ⚠ **這不足以露出腿**：要露到大腿得把立繪縮到現在的 77%（實測值，改立繪尺寸要重量）。
 
    ⚠⚠ 進度**必須每幀推進，而且不能掛在 drawTalk 裡**。第一版就是掛在那裡，
      結果對白一收掉方向計就再也回不來 —— 因為 drawTalk 第一行是
@@ -6345,7 +6345,7 @@ async function loadWorld(){
          (742,636)  … 288 290 | 69 ×15 | 334 341 …
          (1498,498) … 385 373 | 88 90  | 355 355 …
        兩岸落差 111~332，一格之內掉下去 —— 那是渠不是河。全圖 24.1% 的河道格
-       被切得比岸低 60 單位以上。這正是 HANDOFF C 節列的第一種錯法
+       被切得比岸低 60 單位以上。這正是「地形切得比岸低」的第一種錯法
        「壓到固定高度 → 挖出峽谷」，只是它發生在資料生成階段。
      ⚠ 修在這裡而不是重生高度圖：重生會動到整個世界的地貌。
      ⚠ 只抬**河道格自己**。槽壁是垂直的，所以填滿槽就是一條貼著地面的河，
@@ -8187,7 +8187,7 @@ function drawMap(){
       ? ('×'+MV.zoom.toFixed(2)+'  平面1:1  中心 ('+Math.round(MV.cx)+','+Math.round(MV.cy)+')')
       : ('×'+MV.zoom.toFixed(2)+'  地圖像素');
     /* 點選讀數（開發用）：回報位置問題時直接把這組數字給我，
-       不必再從地形猜 —— HANDOFF A3 那條教訓。 */
+       不必再從地形猜（回報位置問題時就靠這組數字）。 */
     const t3=MV.pick?('點選 ('+MV.pick[0]+','+MV.pick[1]+')'):null;
     /* ⚠ 拖城的狀態列已隨移城搬進地圖編輯器（ver -1254）——
        這一頁不再拿得起任何聚落，讀數也就沒有第四行。 */
@@ -8580,7 +8580,7 @@ if(ADMIN) window.dbgEnemy=()=>enemy&&{state:enemy.state,x:Math.round(enemy.x),y:
      近處的谷底、也可能是遠處的山頂，只有光線行進當下才知道打到哪一格。
      所以走**反查表**：右鍵那一幀配置 PICK3D，讓地形迴圈把每個像素的來源
      地圖索引寫進去，讀完就丟。平常是 null，內迴圈零成本。
-     這與地圖那邊的 buildRelief/PICK 是同一個道理（HANDOFF E）。 */
+     這與地圖那邊的 buildRelief/PICK 是同一個道理（兩邊都是「先解出幾何再取樣」）。 */
 function pick3dAt(cssX,cssY){
   if(!BW||!BH) return null;
   const r=cv.getBoundingClientRect();
@@ -17457,7 +17457,7 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
            這裡用**平坦法線 0.62**（城是貼在地面上的平面）走同一條式子，
            再除掉素材裡已經烘好的 VAL，免得同一份壓暗算兩次。
            ⚠ 只能用 source-atop 疊黑來做乘法：Canvas 的 multiply 走 source-over，
-             會把整張緩衝連透明區一起填成實心色（這個坑 HANDOFF 記過）。
+             會把整張緩衝連透明區一起填成實心色（這個坑踩過）。
              疊黑 alpha=1-k 的結果正好是 c×k，數學上就是乘法。 */
         const shC=(LIT.amb+LIT.sun*0.62)*GRADE_EXPO;
         const kC=clamp(shC/CITY_BAKED_VAL*CITY_TRIM,0,1);
@@ -18322,7 +18322,7 @@ const helmArt={ wheel:null, base:null, pointer:null };
   one('wheel','Wheel.webp'); one('base','Base.webp'); one('pointer','Pointer.webp');
 })();
 /* ══ 甲板背景：兩層（ver -1078；-1082 接上四時段）══
-   交接檔 `flight/HANDOFF_deck_layers.md`、美術規格 `flight/_deck_spec.md`。
+   美術規格 `flight/_deck_spec.md`。
    Ray：「我想把**雲海跟甲板分開**，雲海在船動的時候會**向後跑**」
    · `Sky_<band>.webp`  3072×1024 RGB  —— 雲海全景，**橫向無縫循環**（會動）
    · `Deck_<band>.webp` 1536×1024 RGBA —— 甲板＋圍欄＋繩梯＋船頭，天空是真 alpha（不動）
