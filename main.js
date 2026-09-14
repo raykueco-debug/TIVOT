@@ -8,7 +8,7 @@
  *  聖徒化左右滑、生命歸還上滑、雙槍點計量表、換裝面板等綁定為下一輪。
  * ========================================================================== */
 
-import { GAME_CONFIG, VERSION, asset, ASSETS, bgmVol, sfxGain } from './config.js';
+import { GAME_CONFIG, VERSION, asset, ASSETS, bgmVol, sfxGain, HOME_IMG } from './config.js';
 import { L, LANG, applyToConfig, applyToDom, decorateLine } from './i18n.js';   // 多語言＋台詞關鍵字裝飾
 import { state } from './state.js';
 import { SFX } from './audio.js';
@@ -208,23 +208,18 @@ function preloadLateBgm(){
   SFX.preloadBgm(LATE_BGM_PATHS);   // 背景載，不擋任何流程；ensureBlob 有快取可重複呼叫
 }
 
-/* ══ 圖片分兩段（ver -344，手機讀取太慢）══════════════════════════════
-   ⚠⚠ 原本第一段掃 ASSETS **全部**的圖 —— 實測 29 張、5.3 MB，其中大半是
-     cut-in 與敵人立繪：那些最快也要進戰鬥才看得到，卻擋在「還沒到主選單」前面。
-     加上音效與兩首 BGM，冷啟動要先吞 7.8 MB 才點得下去；手機上就是 12 秒保底
-     一路跑滿還沒好。
-   規則：**第一段只留「讀取畫面與主選單真的看得到的圖」**，其餘一律第二段，
-     進主選單那一刻（go()）背景開載，出陣時再補一次保險（同 preloadLateBgm）。
-   ⚠ 第二段沒載完不會壞：<img> 現抓即顯示，頂多晚一拍。會擋流程的只有音訊
-     （解碼要時間），所以音效**維持**在第一段 —— 27 支加起來只有 0.76 MB。
-   ⚠ 監察官立繪不在這張表裡也沒關係：她由 `loadPortrait()` 直接 new Image 載
-     （排在**圖那一段的最前面**，ver -384），批次段再載一次會吃瀏覽器快取。 */
-const BOOT_IMG_KEYS = ['home_emblem'];
-let _restImgs = [], _restKicked = false;
-function preloadRestImgs(){
-  if(_restKicked) return; _restKicked = true;
-  for(const src of _restImgs){ const im = new Image(); im.src = src; }
-}
+/* ══⚠⚠⚠ 圖只載「這個畫面要的」（ver -1295，讀取分工；說明見 config 的 `HOME_IMG`）══
+   ⚠⚠ ver -344~-1293 是「分兩段」：第一段只留主選單看得到的，**其餘全部**在
+     進主選單那一刻由 `preloadRestImgs()` 用 `new Image()` 灌下去。
+     圖從 50 張長到 132 張之後，那一批解碼後是 **738 MB** —— 實測直接把
+     瀏覽器分頁壓死（Ray：「PC 完全跑不動，一開就爆 RAM，之前不會這樣」）。
+   ⚠⚠ **第二段整個拿掉了，不是改小。** 它做的事其他畫面本來就各自在做
+     （敵人立繪 `loadEnemyPortrait`、搭檔 cut-in `combat` 的 rIC 那一支、
+      城鎮背景 `town.bgFor`、插圖 `resolveCg`）—— 它是**重複**，而且是會爆的那一份。
+   ⚠ 拿掉不會壞：`<img>` 現抓即顯示，頂多晚一拍（-344 自己的註解就這麼寫）。
+   ⚠ 新增畫面時**不要**把它的圖加進 `HOME_IMG` —— 由那個畫面自己載，那就是分工。 */
+const isHomeImg = k =>
+  HOME_IMG.prefixes.some(p => k.indexOf(p) === 0) || HOME_IMG.keys.indexOf(k) >= 0;
 /* 熱啟動旗標（見 preloadAll 內的 WARM_BOOT 說明）。
    ⚠ 冷啟動時是在「點擊繼續」那一刻才記，不是載完就記 —— 讀到一半被中斷重整，
      下次仍該完整跑一次。之後每次進背景都刷新時間戳，長時間遊玩後被切走也算數。 */
@@ -467,7 +462,7 @@ window.__tivotFlight = {
          交棒那一格紋章會忽然變大（鐵律 7）。 */
     story.showKerbGate(req.geom);
     closeFlightFrame();
-    preloadRestImgs(); preloadLateBgm();
+    preloadLateBgm();   // 圖不再整批預載（ver -1295 讀取分工）：敵立繪/cut-in 由戰鬥自己載
     story.setBattleCueId(id);   // 撞頂那一拍的曲子照這一場的卡挑（ver -746：不設就退回 bgm_battle，羽蛇的 EpicBattle 放不出來）
     story.playKerberosFromRisen(
       /* `scripted` 由飛行頁宣告（ver -493：隨機遭遇＝false，劇本遭遇＝true）——
@@ -566,7 +561,6 @@ function bootBattleGate(req){
     document.removeEventListener('pointerdown', open);
     const t=$('gateTip'); if(t && t.parentNode) t.parentNode.removeChild(t);
     SFX.unlock();                         // 這一頁唯一的使用者手勢
-    preloadRestImgs();                    // 其餘的圖背景補載（cut-in／武器圖…）
     preloadLateBgm();                     // 結算／失敗／Boss 那幾首（打完或打輸才用得到）
     story.setBattleCueId(req.battle);     // 同橋接那一條（ver -746）：曲子照這一場的卡挑
     story.playKerberosFromRisen(
@@ -617,7 +611,7 @@ window.addEventListener('pagehide', refreshBoot);
     const v=ASSETS[k]; if(!v) continue;
     // 副檔名判斷容許 ?v=N 版本參數（素材內容更新時升版強制重抓，見 config ASSETS 註解）
     if(/\.(png|jpe?g|webp|gif)(\?|$)/i.test(v)){
-      (BOOT_IMG_KEYS.indexOf(k)>=0 ? imgs : _restImgs).push(v);   // 見 BOOT_IMG_KEYS 的說明
+      if(isHomeImg(k)) imgs.push(v);   // 只收主頁要的；其餘由用到它的畫面自己載（ver -1295）
     }
     else if(/\.(mp3|m4a|ogg|wav)(\?|$)/i.test(v)){
       if(k.indexOf('bgm_')===0){ if(LATE_BGM_PATHS.indexOf(v)<0) bgm.push(v); }
@@ -811,7 +805,6 @@ window.addEventListener('pagehide', refreshBoot);
       SFX.unlock();   // 使用者手勢：解鎖音訊 → 主選單 BGM 開始播
       // 讀取頁揭幕不再播 SE（原 SI_01 撤下；聖徒 stinger 移到出陣鈕）
       preloadLateBgm();   // 第二段：進主選單即背景載 結算/失敗/Boss/戰鬥 BGM
-      preloadRestImgs();  // 第二段：cut-in／敵人立繪／武器圖等「進戰鬥才看得到」的圖
       // 聖光綻放：暖金白光暈自光圈中心緩慢擴張（無光束）→
       //   2.5s 光暈實心蓋滿時撤遮罩 → 1.2s 淡出揭開主選單（總長 ≈3.7s，與 SI_01 等長連動）
       const ring=$('alRing');
@@ -898,7 +891,6 @@ function launchBattle(opts){
        撞擊／齒輪／開門三支音；再疊一聲神楽鈴等於兩套儀式撞在一起。 */
   if(!(opts && opts.instant)) SFX.play(asset('sfx_startbt'), sfxGain('sfx_startbt'));
   preloadLateBgm();   // 保險：若保底提前放行沒經過 go()，出陣（櫻花期間）補載第二段
-  preloadRestImgs();
   SFX.playBgm(asset('bgm_battle'), { fadeOutMs:800, delayMs:1000, volume: bgmVol('bgm_battle') });
   /* 劇情叫起來的那一場（ver -329）：**跳過櫻花過渡禎，直接開戰**。
      ⚠ 因為那一場的轉場是「Kerberos 之門拉開」，門縫裡要露出的是**已經在跑的戰鬥畫面**；
