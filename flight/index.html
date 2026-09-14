@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1301"></script>
+<script src="../orientation.js?v=1302"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1301');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1302');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1301");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1301");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1302");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1302");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1301");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1301");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1302");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1302");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -614,25 +614,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1301" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1302" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1301" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1301" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1301" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1301" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1301" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1301" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1301" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1301" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1301" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1301" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1302" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1302" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1302" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1302" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1302" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1302" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1302" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1302" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1302" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1302" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1301" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1302" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1301" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1302" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -653,11 +653,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1301"></script>
+<script src="settlement.js?v=1302"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1301"></script>
+<script src="talks.js?v=1302"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -709,7 +709,7 @@ const COLOR_URL  = 'silvermoon_terrain.png'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1301';
+const FLIGHT_VER = 'ver -1302';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -9968,6 +9968,7 @@ let glTexBiome=null, glTexMask=null, glTexRail=null, glTexGeo=null, glTexMot=nul
     glTexSnow=null, glGeoUp=false;
 let glSmpPbo=null, glSmpFence=null;
 const glSmpBuf=new Uint8Array(8*8*4);   // 環境光取樣的非同步回讀落點（見 screenSample）
+let TERR_MAXH=9999;   // 地形最高點（glUploadWorld 量出來，shader 的提早結束用）
 let GLX=null, glProg=null, glVao=null, glU={}, glTexH=null, glTexHs=null, glTexC=null, glTexS=null,
     glTexSky=null, glReady=false, glSkyBuf=null;
 
@@ -10039,6 +10040,9 @@ float hRaw(ivec2 t){ return float(texelFetch(uH, t, 0).r); }
 /* 這一點的地表高度：陸海看最近鄰、表面高度看平滑那一張。
    ⚠ uv 用 mf/uMap —— texel 中心在 (i+0.5)，所以 mf=i+0.5 剛好取到整格的值、
      格與格之間才內插（與最近鄰版在格心完全一致，不會整體位移）。 */
+/* ══⚠⚠⚠ 地形的最高點（ver -1302）══ 射線一旦高過它、而且還在往上爬，
+   就**不可能再打到任何東西** —— 見主迴圈那個提早結束。由 JS 從高度圖量出來。 */
+uniform float uMaxH;
 float hSurf(vec2 mf, ivec2 ti, bool outside, out bool cloud){
   if(outside){ cloud=true; return ${CLOUD_H}.0; }
   /* ⚠⚠ 陸海的界線也走**平滑高度**（ver -1219，Ray：「大陸邊緣的立面也用同樣方式處理」）。
@@ -10103,6 +10107,25 @@ void main(){
     vec2 mf=wp*${INV_SCALE};
     ivec2 ti=ivec2(floor(mf));
     bool outside = mf.x<0.0||mf.y<0.0||mf.x>=uMap.x||mf.y>=uMap.y;
+    /* ══⚠⚠⚠ 打不到就別走了（ver -1302，效能分配）════════════════════════
+       hNeed ＝這一步射線所在的高度。地形的最高點是 uMaxH，所以 hNeed 大於它時
+       這一步不可能命中；而 hNeed 對 z 的斜率是 -k + 2*curv*z，
+       **斜率為正就代表它只會越爬越高** ⇒ 往後每一步也都打不到。
+       兩者同時成立就可以直接跳出，最後輸出的天空色與 gl_FragDepth=1.0
+       **與跑完 900 步一模一樣**（位元等價，不是近似）。
+
+       ⚠⚠ **為什麼非修不可**：ZFAR 3600，而步進序列（z=1、dz=0.75、每步 +0.0062）
+         跑滿 **900 步只走到 z 約 3184** —— 迴圈是被**迭代上限**擋掉的，不是被 ZFAR。
+         於是**每一個天空像素都把 900 步跑好跑滿**，每一步取樣一次高度貼圖。
+         實測地形最高 520、巡航高度 700：**任何往上打的射線從第一步就注定
+         打不到，卻照樣走 900 步。**
+       ⚠⚠ 這是「把飛行地圖整個搬上 GPU」（ver -1198~-1223）漏掉的那一塊：
+         CPU 那一版是**逐欄**跑的，ybuf 的地平線追蹤天然就會提早收手；
+         改成**逐像素**之後每條射線各走各的，那個提早結束沒有人補回來。
+       ⚠ 這不是降畫質、也不是改演算法 —— 是把「證明打不到之後還在走」的那一段砍掉。
+       ⚠⚠ 這一段在 GLSL 的樣板字串裡，**註解不可以有反引號**（憲法記的第七次，
+         我是第八次 —— 寫註解時順手用反引號括變數名就會炸）。 */
+    if(hNeed>uMaxH && (2.0*curv*z - k)>0.0) break;
     bool cloud; float hs=hSurf(mf, ti, outside, cloud);
     if(hs>=hNeed){
       /* 霧提前算 —— 崖面那一段要用它當閘門（同 CPU 的 fog<0.86）。 */
@@ -10400,7 +10423,7 @@ function glInit(){
   g.enableVertexAttribArray(lp); g.vertexAttribPointer(lp,2,g.FLOAT,false,0,0);
   for(const n of ['uH','uHs','uC','uS','uSky','uMap','uBuf','uCam','uDir','uLdir','uLcol','uLi','uFog','uCloudLit','uTime',
                   'uCityA','uCityB','uCityA0','uCityB0','uCityA1','uCityB1','uCityT','uInvS',
-                  'uBiome','uMask','uGeo','uRailDir','uRD','uGeoOn','uMot','uSnow'])
+                  'uBiome','uMask','uGeo','uRailDir','uRD','uGeoOn','uMot','uSnow','uMaxH'])
     glU[n]=g.getUniformLocation(glProg,n);
   g.uniform1i(glU.uH,0); g.uniform1i(glU.uHs,11); g.uniform1i(glU.uC,1); g.uniform1i(glU.uS,2); g.uniform1i(glU.uSky,3);
   g.uniform1i(glU.uCityA,4); g.uniform1i(glU.uCityB,5);
@@ -10432,8 +10455,15 @@ function glUploadWorld(){
     /* ⚠⚠ 海那一半填的是**海面高度**不是 0（ver -1239）：`hSurf` 現在直接回這張圖的值
        （不再對海回常數 `CLOUD_H`），靠岸那一圈因此是往下凹的槽 ＝ 大陸的厚度。
        ⚠ 沒有 `SEASURF`（極早期／CPU-only）就退回 `CLOUD_H`，行為與 -1238 相同。 */
-    for(let i=0,n=hf.length;i<n;i++)
-      hf[i]=HGT[i]>CLOUD_H ? HGT[i] : (SEASURF?SEASURF[i]:CLOUD_H);
+    let maxH=0;
+    for(let i=0,n=hf.length;i<n;i++){
+      const v = HGT[i]>CLOUD_H ? HGT[i] : (SEASURF?SEASURF[i]:CLOUD_H);
+      hf[i]=v; if(v>maxH) maxH=v;
+    }
+    /* ⚠ 射線的提早結束要用**這張圖自己的**最大值（鐵律 7：不要另外去量 HGT ——
+       海的那一半填的是 SEASURF，兩者不同）。留 1% 餘裕給 R16F 的量化誤差。 */
+    TERR_MAXH = maxH*1.01 + 1;
+    g.uniform1f(glU.uMaxH, TERR_MAXH);
     glTexHs=g.createTexture(); g.activeTexture(g.TEXTURE0+11);
     g.bindTexture(g.TEXTURE_2D,glTexHs);
     g.texImage2D(g.TEXTURE_2D,0,g.R16F,MAPW,MAPH,0,g.RED,g.FLOAT,hf);
@@ -18451,6 +18481,58 @@ let last=performance.now(),acc=0,n=0;
      看一幀就降級的話會在載入途中無緣無故掉到最低畫質再也回不來。
    ⚠ 升級要看更久、門檻更低（7ms），而且升上去之後把計數清掉重新觀察 ——
      升到一半又掉下來會變成每兩秒抖一次，比一直待在低畫質更難看。 */
+/* ══⚠⚠⚠ GPU 計時器（ver -1302，純量測，不動任何繪圖）══════════════════
+   Ray：「應該要查的是優化跟效能分配問題」。
+
+   ⚠⚠ **效能分配的病根**：HUD 上的 `w`（每幀工作時間）量的是 **CPU 送出指令**
+     的時間，不是那一幀真正花掉的時間。ver -1198~-1223 把地形／量體／遺蹟／
+     地貌貼圖整批搬上 GPU 之後，那些 commit 記的「3~11ms → 0.14ms」「7.7 → 1.5」
+     「120.6 → 3.5」全都是這個指標 —— 成本沒有消失，是**搬到了它看不見的地方**。
+   ⚠⚠ 連帶把畫質調節器一起帶歪：`qualityTick(workMs)` 吃的是同一個數字，
+     於是 `med<7ms → 升畫質` 永遠成立、`med>12ms → 降畫質` 永遠不成立 ——
+     它會一路推到 q0 而且再也不降，但 GPU 早就滿了。
+   ⚠ 所以要先把 **GPU 那一段真的量出來**，才談得上分配。這一支只做量測：
+     `beginQuery` 包住整個 render，讀到的是那一幀所有 GL 指令在 GPU 上的耗時。
+   ⚠ 結果是**非同步**的（要等 GPU 跑完），所以是「這一幀問上一批的答案」——
+     排成佇列輪詢，不要 `finish()` 去等（那會把管線打斷，量到的是被自己干擾的數字）。
+   ⚠ `disjoint` 旗標拉起來代表那一批量測作廢（驅動被搶走／換頻率），要整批丟掉。
+   ⚠ 沒有這個擴充功能（多數行動裝置都沒有）就整支靜靜關掉，HUD 不印那一欄。 */
+let gpuExt=null, gpuQ=[], gpuCur=null, gSm=0, gpuOff=false;
+function gpuTimerBegin(){
+  if(gpuOff || !GLX || !glReady) return;
+  if(gpuExt===null){
+    try{ gpuExt = GLX.getExtension('EXT_disjoint_timer_query_webgl2') || false; }catch(e){ gpuExt=false; }
+    if(!gpuExt){ gpuOff=true; return; }
+  }
+  if(gpuQ.length>=4) return;            // 佇列滿了就跳過這一幀，不要無限堆
+  try{
+    const q=GLX.createQuery();
+    GLX.beginQuery(gpuExt.TIME_ELAPSED_EXT, q);
+    gpuCur=q;
+  }catch(e){ gpuOff=true; gpuCur=null; }
+}
+function gpuTimerEnd(){
+  if(gpuCur){
+    try{ GLX.endQuery(gpuExt.TIME_ELAPSED_EXT); gpuQ.push(gpuCur); }catch(e){ gpuOff=true; }
+    gpuCur=null;
+  }
+  /* ⚠⚠ 輪詢要**無條件**跑，不可以掛在「這一幀有沒有開新的查詢」下面：
+     佇列滿了 `gpuTimerBegin` 會跳過 → `gpuCur` 是空的 → 早期版本在這裡就
+     `return` → **再也不會輪詢**，整支永遠卡在滿佇列（實測就卡住了）。
+     這與「任何可能不會被呼叫的回呼，都不可以是唯一的解鎖點」（§6.5.5）同一族。 */
+  if(gpuOff || !gpuExt || !GLX || !glReady || !gpuQ.length) return;
+  try{
+    const q=gpuQ[0]; if(!q) return;
+    if(GLX.getParameter(gpuExt.GPU_DISJOINT_EXT)){ gpuQ.forEach(x=>GLX.deleteQuery(x)); gpuQ=[]; return; }
+    if(!GLX.getQueryParameter(q, GLX.QUERY_RESULT_AVAILABLE)) return;
+    const ns=GLX.getQueryParameter(q, GLX.QUERY_RESULT);
+    GLX.deleteQuery(q); gpuQ.shift();
+    const ms=ns/1e6;
+    gSm = gSm ? gSm*0.9+ms*0.1 : ms;
+  }catch(e){ gpuOff=true; }
+}
+function gpuTimerText(){ return gSm ? ' g'+gSm.toFixed(1) : ''; }
+
 const QF=[]; let qCool=0; let wSm=0;
 function qualityTick(workMs){
   if(qLocked) return;
@@ -18530,7 +18612,9 @@ function loop(now){
   }
   edgeNag(now);      // 快飛出圖了 → 蕾娜叫你回頭（軟邊界）
   const wt0=performance.now();
+  gpuTimerBegin();
   update(dt,now); updateRegion(now); updateTrains(dt/1000); render(now); updateBgm(dt); updateMapMe();
+  gpuTimerEnd();
   { const w=performance.now()-wt0; qualityTick(w);
     /* ⚠ HUD 要同時有「每秒幾張」與「一幀算多久」（ver -1213）。
        只有 fps 的話分不出兩件完全不同的事：**我們算太慢**（work 接近 16ms），
@@ -18557,7 +18641,7 @@ function loop(now){
          Ray 在手機上回報「卡頓更嚴重了」，實際上他跑的是 CPU 路徑 —— 因為
          `?gl=1` 讀的是這一頁自己的網址，而主遊戲是把它當 iframe 內嵌的。
          截圖裡看得到 gpu/cpu，這一整類誤判就不會再發生（同版本號那一條）。 */
-      +(GLON&&glReady?' gpu':' cpu')+' w'+wSm.toFixed(1)
+      +(GLON&&glReady?' gpu':' cpu')+' w'+wSm.toFixed(1)+gpuTimerText()
       +'  ('+mx+','+my+') '+deg+'° h'+Math.round(cam.alt);
     acc=0;n=0;
   }
