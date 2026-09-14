@@ -594,6 +594,16 @@ const BGM_FILES=[
   'bgm_warhorn.m4a',   // ver -772：夏爾村魔獸來襲（警鐘後緊接，loop）
   'PeriTune_Frosylva.m4a',   // ver -876：木雅克神殿（Ray 指定；Credit 已加）
   'PerituneMaterial_Lost_place4_loop.m4a',   // ver -877：鹿主異化～戰鬥（Ray 指定；Credit 已加）
+  /* ══⚠⚠ 四座城的曲子（ver -1294）══ 音檔、`fileGain`、Credit 早就到齊了，
+     漏的一直是**這張表** —— 於是 `bgmSrc()` 回 null，進城只印一行
+     「沒有這首 BGM」然後**延用進城前那一首**（不報錯、不靜音，所以很難發現）。
+     ⚠⚠ 成因是鐵律 7：「有哪些 BGM」存在**兩個地方** —— `config.js` 的
+       `ASSETS.bgm_*`（預載用）與這裡（播放用）。交件時只補了 config 那一半。
+       **日後加曲子兩邊都要補**，或把這兩張表收斂成一份。 */
+  'Peritune_Moonlit_Dancer_loop.m4a',   // ver -1294：聖索菲亞城（config 的 bgm_moonlit）
+  'Peritune_Black_Crystal_loop.m4a',   // ver -1294：伊甸古墓（bgm_blackcrystal）
+  'PerituneMaterial_TaishoRoman_Theme2_loop.m4a',   // ver -1294：拉芬斯達爾城（bgm_taisho2）
+  'Peritune_Portside_Cafe_loop.m4a',   // ver -1294：東方泊地（bgm_portside）
 ];
 /* 別名：腳本裡慣用的短名 → 實際檔名（去副檔名）。加新別名只動這裡。 */
 const BGM_ALIAS={ crisis:'peritunematerial_crisis_loop', lunaria:'bgm_lunaria',
@@ -609,7 +619,11 @@ const BGM_ALIAS={ crisis:'peritunematerial_crisis_loop', lunaria:'bgm_lunaria',
                   harbor:'peritune_harbor_morning_loop',   // ver -753：stage5 起的北泊
                   warhorn:'bgm_warhorn',   // ver -772：夏爾村魔獸來襲
                   frosylva:'peritune_frosylva',   // ver -876：木雅克神殿
-                  lostplace:'peritunematerial_lost_place4_loop' };   // ver -877：鹿主異化
+                  lostplace:'peritunematerial_lost_place4_loop',   // ver -877：鹿主異化
+                  moonlit:'peritune_moonlit_dancer_loop',   // ver -1294：聖索菲亞城
+                  blackcrystal:'peritune_black_crystal_loop',   // ver -1294：伊甸古墓
+                  taisho2:'peritunematerial_taishoroman_theme2_loop',   // ver -1294：拉芬斯達爾城
+                  portside:'peritune_portside_cafe_loop' };   // ver -1294：東方泊地
 const BGM_SRC=(()=>{ const m={};
   for(const f of BGM_FILES) m[f.replace(/\.[^.]+$/,'').toLowerCase()]='resources/audio/bgm/'+f;
   return m; })();
@@ -1827,7 +1841,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1293';
+const KERB_V='?v=1294';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，

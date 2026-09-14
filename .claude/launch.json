@@ -1,7 +1,7 @@
 {
   "version": "0.0.1",
   "configurations": [
-    { "name": "tivot", "runtimeExecutable": "python3",
+    { "name": "tivot", "runtimeExecutable": "py",
       "runtimeArgs": ["-m", "http.server", "8000"], "port": 8000 }
   ]
 }
