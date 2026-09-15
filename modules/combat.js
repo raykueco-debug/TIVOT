@@ -162,7 +162,7 @@ export function setup(){
     markNext, buildGrid, resetEnergy,
     addEnergy,                                    // 反擊給破防值（ver -880，見 weapon.counterEnergy）
     dualShot,                                     // 破防窗口開火（ver -1330：瞄準點點中時呼叫）
-    brSweepBoard,                                 // 破防收窗 → 殘磚一次性消除（ver -1330）
+    onDualClosed,                                 // 破防收窗 → 掃殘磚／交還 overkill（ver -1336）
     enemyBodyPoint: enemy.randomBodyPoint,        // 瞄準點要落在敵人身上（ver -1332）
     /* 諾薇兒 Lv3「探覓星」（ver -1014）：彈雨傾洩回復主動技次數。
        `partnerActiveUsed` 的擁有者是 combat，跨模組的寫走具名 setter。 */
@@ -522,7 +522,9 @@ function shotHeal(){
 export function dualShot(x, y){
   if(!state.dualWield) return false;
   if(state.over||state.transitioning||state.cutinPlaying) return false;
-  if(state.enemyHp<=0) return false;            // 敵已死 → 交給 overkill 那一套
+  /* ⚠⚠ **敵人死了照樣打得下去**（ver -1336，Ray 指定）：BR 中途擊殺時窗口不收，
+     剩下的額度繼續打 —— 那幾發由 `enemyDamage` 自己 1:1 進 overkill 點數
+     （它的 else 分支），這裡不必也不該再判一次。 */
   if(state.dualShotsLeft<=0) return false;
   state.dualShotsLeft--;
   /* ══⚠⚠ 拋彈殼與槍火：**與普攻同一份特效**（ver -1335，Ray：「破防點擊時一樣要
@@ -565,7 +567,7 @@ export function dualShot(x, y){
    ⚠ 敵人已死（overkill）／戰鬥結束／聖徒化中**不掃**：那幾種情況盤面另有歸屬，
      掃掉會在敵人已清空時憑空推進一盤。
    ⚠ 音效只放**一次**（不是逐格）：九格各放一次會疊成一片白噪。 */
-export function brSweepBoard(){
+function brSweepBoard(){
   if(state.over||state.saintMode||state.niMode||state.enemyHp<=0) return;
   const left=state.cells.filter(c=>!c.classList.contains('done'));
   if(!left.length) return;
@@ -2107,16 +2109,39 @@ function enterOverkillFx(){
   $('grid').classList.add('overkill');            // 數字藍光（見 style.css #grid.overkill）
   try{ SFX.play(asset('se_glasscrack'), sfxGain('se_glasscrack')); }catch(_){}   // 裂紋輻射音（ver -839）
   SFX.play(asset('sfx_startbt'), sfxGain('sfx_startbt'));   // 神楽鈴（StartBT_SE，擊殺這一槍；之後每槍由 enemyDamage 補鈴）
-  // 雙槍窗口與敵同亡：殺敵瞬間收窗（endDual 於敵死不重建盤面），追打統一走 overkill 免順序。
-  //   否則雙槍 4 秒計時器晚點到期會 buildGrid 憑空生出一整盤新 overkill 盤。
-  if(state.dualWield) weapon.endDual();
+  /* ══⚠⚠⚠ **BR 中擊殺：窗口不收，讓玩家把剩下的額度打完**（ver -1336，Ray：
+     「br 時觸發 ovk 也要讓玩家可以在時限內把剩餘格數的量打完，
+      打不完到時限就直接收掉跟之前一樣」）══
+     舊版是「殺敵瞬間 `endDual()`」，理由是**endDual 會 `buildGrid` 憑空生出一整盤新的
+     overkill 盤** —— 那個理由自 ver -1330 起已經不存在（endDual 不再重建盤面）。
+     現在 BR 照自己的節奏跑完：額度用完、或 4 秒到 → `endDual` → 那時才把 overkill
+     的限時接上（見 `onDualClosed`）。
+     ⚠ **overkill 的 3 秒限時要延後起算**：它比 BR 的 4 秒短，現在就起算的話
+       `autoClearOverkill` 會在 BR 還開著的時候把殘格掃掉、直接進下一盤 ——
+       那正是 Ray 要避免的「打不完就被收掉」。 */
   state.cells.forEach(c=>c.classList.remove('next'));   // 免順序（含聖徒化追打）→ 撤下「下一格」高亮
   if(state.saintMode) return;   // 聖徒化：3 秒限時不套（由倒數槽/反應時限施壓），saintTap 走免順序分支
   // 照順序獎勵的起點：擊殺這一槍可能來自雙槍/反擊（免順序清格），游標會停在已消格上
   //   → 先推到下一個還活著的號碼，玩家一進 overkill 就接得回順序鏈。
   advanceExpectPastCleared();
+  if(state.dualWield) return;   // BR 還開著 → 限時等它收窗再起算
+  armOverkillLimit();
+}
+/* overkill 的 3 秒限時 —— 起算只有這一處（鐵律 8）：擊殺那一刻，或 BR 收窗那一刻。 */
+function armOverkillLimit(){
   clearTimeout(overkillTimer);
   overkillTimer=setTimeout(autoClearOverkill, OVERKILL_LIMIT_MS);
+}
+/* ══ BR 窗口關掉的那一刻要做什麼 —— 判定只有這一支（ver -1336）══
+   · 敵人還活著 → 殘磚一次性消除（-1330 那一條）
+   · 敵人已經死了（BR 中途擊殺）→ **交還給 overkill**：盤面解鎖、游標接回順序鏈、
+     這時才起算那 3 秒。⚠ 不可以在這裡掃盤：殘格是 overkill 要追打的東西。 */
+export function onDualClosed(){
+  if(state.over) return;
+  if(state.enemyHp>0){ brSweepBoard(); return; }
+  if(state.saintMode) return;        // 聖徒化的追打不吃 3 秒限時（同 enterOverkillFx）
+  advanceExpectPastCleared();        // BR 期間游標是收起來的，接回來
+  armOverkillLimit();
 }
 function endOverkillFx(){
   clearTimeout(overkillTimer); overkillTimer=null;

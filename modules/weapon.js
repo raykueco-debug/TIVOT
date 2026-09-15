@@ -648,14 +648,14 @@ export function endDual(){
   clearAim();
   clearTimeout(state.dualTimer); state.dualTimer=null;
   $('grid').classList.remove('dualwield');
-  /* ══⚠⚠⚠ **ver -1330：殘磚一次性消除**（Ray：「點完數量或時間到，下方的殘磚
-     一次性消除，跑碎玻特效音效就好」）══ 窗口期間盤面不能點（-1329），所以收窗時
-     盤上一定還留著一批 —— 交給 `combat.brSweepBoard()`（唯一那一支；清盤的記帳
-     照走 `clearBoard`，鐵律 8）。
-     ⚠ 它自己擋掉「敵人已死（overkill）／戰鬥結束／聖徒化中」那幾種情況。
+  /* ══⚠⚠⚠ **收窗要做什麼，由 `combat.onDualClosed()` 一支決定**（唯一那一處）══
+     · 敵人還活著 → **殘磚一次性消除**（ver -1330，Ray：「點完數量或時間到，
+       下方的殘磚一次性消除，跑碎玻特效音效就好」）；清盤的記帳照走 `clearBoard`。
+     · **BR 中途把敵人打死** → 不掃，殘格留給 overkill 追打，那 3 秒限時這時才起算
+       （ver -1336，Ray：「br 時觸發 ovk 也要讓玩家可以在時限內把剩餘格數的量打完」）。
      ⚠ **不再重建盤面**（-1329 的那一條）：舊版「點了一半就 buildGrid」是因為舊制
-       會亂點盤面；現在盤面在窗口期間一格都不動，而且收窗就整盤掃掉了。 */
-  if(api.brSweepBoard) api.brSweepBoard();
+       會亂點盤面；現在盤面在窗口期間一格都不動。 */
+  if(api.onDualClosed) api.onDualClosed();
   /* 掃不成的那幾條路（敵死／結束）盤面還在，游標要標回去 ——
      掃成功時整盤都 done、接著換新盤，這一行自然不會動它。 */
   if(!state.over && !state.saintMode && state.enemyHp>0 &&
