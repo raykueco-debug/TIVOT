@@ -18,7 +18,7 @@ import * as story from './story.js';
 import * as inn from './inn.js';                 // 旅店大廳（伙伴門／獨自坐坐／回房睡覺）
 import { showShop, showBounty, showExchange, showKitchen } from './loot.js';   // showKitchen＝瑪麗亞的廚房（ver -953）
 import * as gear from './gear.js';               // 戰前強制整備（ver -838，onLeave 的 gear 掛鉤）
-import { SPEAKERS } from '../script/speakers.js';
+import { SPEAKERS, faceStyle } from '../script/speakers.js';
 import { SFX } from '../audio.js';
 import { state } from '../state.js';   // 只讀：`battleSession`（擁有者是 combat，見鐵律 3.1）
 
@@ -360,7 +360,11 @@ function datingWho(){ return (escortId && !escortLeftover) ? escortId : null; }
 /* ⚠⚠ 解除約會只有這一支（鐵律 8）：出城鎮（`suspend`／`close`）兩條路叫它。
    ⚠ ver -1097 起**「回到旅店」不再解除**（見 `enter()` 那一段的說明）——
      -576 那一條是帝都測試期的鷹架，那時約會還沒有內容。 */
-function endDate(){ if(escortId && !escortLeftover) escortId=null; }
+/* ⚠⚠ 約會結束（ver -576 的唯一那一支）。ver -1348 起順手收掉同行徽 ——
+   三條解除的路（出城／回主選單／走進旅店）與 `act.endDate`（18:00 她先回去）
+   全部經過這裡，所以徽章只有這一個終點需要記（鐵律 8）。
+   ⚠ `showEscortBadge()` 是冪等的：沒在約會它自己把元素移除。 */
+function endDate(){ if(escortId && !escortLeftover) escortId=null; try{ showEscortBadge(); }catch(_){} }
 
 /* ══ 宵禁（ver -576，Ray：「晚上九點以後女主角就不出門，約不出來…到隔天七點以後
    才恢復」）══ 判定只有這一支（鐵律 8）：外出行程與旅店敲門都問它。
@@ -1597,6 +1601,35 @@ function showMapBtn(){
     host.appendChild(b);
   }
 }
+/* ══⚠⚠⚠ 同行徽（ver -1348，Ray：「約會狀態的女主頭像放到演出畫面左下角，
+   上方顯示『同行』，並給個金框」）══════════════════════════════════════════
+   ⚠⚠ **頭像走 `speakers.faceStyle`**（唯一那一支，旅店的四扇門與破防計量表的
+     月彎都用它）—— 不要另裁一份：那組 `fx` 是逐張量出來的，抄一份必然走鐘（鐵律 7）。
+   ⚠ 住在**舞台**（`story.stageEl()`）不住在導覽層：導覽層在對白期間整層
+     `display:none`，而這是**狀態**不是操作 —— 演出中照樣要看得到自己帶著誰。
+   ⚠ 顯示的條件是 `datingWho()`（正在約會）不是 `escortWho()`（有人同行）：
+     殘留事件帶起來的同行不是約會。
+   ⚠ 這一支是**冪等的**：每次 `enter()` 確認一次（同 `showMapBtn`），
+     `close()` 是它唯一的終點（§6.5.4 的檢查表：換畫面時誰收它）。 */
+function showEscortBadge(){
+  const host = story.stageEl(); if(!host) return;
+  const who = datingWho();
+  let el = document.getElementById('townEscort');
+  if(!who){ if(el) el.remove(); return; }
+  if(el && el.parentElement!==host){ el.remove(); el=null; }
+  if(!el){
+    el=document.createElement('div'); el.id='townEscort';
+    el.innerHTML='<b>同行</b><span class="te-face"></span><i class="te-name"></i>';
+    /* 純狀態顯示，不吃點擊 —— 讓「點畫面推進一句」照樣穿過去（CSS 也寫了
+       `pointer-events:none`，這裡不綁任何 listener 就是第二道保險）。 */
+    host.appendChild(el);
+  }
+  if(el.dataset.who!==who){
+    el.dataset.who=who;
+    el.querySelector('.te-face').style.cssText = faceStyle(who);
+    el.querySelector('.te-name').textContent = (SPEAKERS[who]||{}).name || '';
+  }
+}
 function renderMap(){
   const T=TOWNS[townId]; const M=T && T.map;
   /* 這張圖還沒有手繪地圖（ver -899）：鈕照樣在，用一句話回答。
@@ -2548,6 +2581,7 @@ export function enter(id){
      ⚠ 掛在這裡不掛在 `showNav(true)` 裡 —— 那一支在對白期間根本不會被叫到，
        而 Ray 要的正是「對話期間 icon 也要在」。 */
   showMapBtn();
+  showEscortBadge();   // 同行徽（ver -1348）：冪等，沒在約會就自己移除
   /* ⚠⚠⚠ **提早 return 的路徑要自己把黑幕掀開**（ver -903，「畫面變黑」調查的第三處）：
      切景是「`sceneCut` 淡到全黑 → `enter()` 擺好新的一景 → `enter()` 淡回來」，
      **淡入的擁有者是 `enter()`**（§6.5.4「淡出與淡入的擁有者是分開的」）——
@@ -3050,7 +3084,11 @@ function afterArrive2(n, metDone){
                                    /* 今天已經約過她了（ver -576）：回 `dateDone`，不再出門。 */
                                    dated: datedToday,
                                    data: n.innStage1||{},
-                                   onInvite(who){ escortId=who||'NOUVELLE'; escortLeftover=false; markDated(escortId); },
+                                   /* ⚠ 同行徽（ver -1348）要在**約會成立的那一刻**就出現，
+                                      不是等玩家走一步 —— 它顯示的正是「現在帶著誰」。
+                                      ⚠ 收在這一個唯一的入口（鐵律 8）：`enter()` 那一次是
+                                        「確認它在」，這一次是「它剛剛該出現」。 */
+                                   onInvite(who){ escortId=who||'NOUVELLE'; escortLeftover=false; markDated(escortId); showEscortBadge(); },
                                  } : null,
                                  /* 「還沒六點呢」的那個六點＝傍晚提醒的時刻（ver -405）。
                                     ⚠ 同一個數字只有這一處（鐵律 7）。 */
@@ -3310,6 +3348,7 @@ export function close(){
   heldArrival=null; mapCardArmed=false;
   story.hideTitleCard();
   { const b=document.getElementById('townMapBtn'); if(b) b.remove(); }   // 常駐鈕的唯一終點（ver -899）
+  { const e=document.getElementById('townEscort'); if(e) e.remove(); }   // 同行徽的唯一終點（ver -1348）
   if(clockEl){ clockEl.remove(); clockEl=null; }        // 背景上的鐘的唯一終點（ver -1249）
   /* 外出行程（ver -575）：這裡才歸零 —— `close()` 才是「這一趟城鎮探索結束」
      （回主選單／killAllPages／讀檔換城）。`open()` 不清，見那一支的說明。 */

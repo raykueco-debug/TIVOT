@@ -3380,6 +3380,25 @@
      素材自己的暗底融進棺面，只留柔影讓它浮起一點。 */
   /* ⚠ z-8 ＝與退出／跳段鈕同層：ver -899 起這顆鈕**住在舞台上**（不再住導覽層裡，
      見 modules/town.js 的 showMapBtn），所以要自己壓過楣（`#kerb` z-6）才點得到。 */
+  /* ══⚠⚠ 同行徽（ver -1348，Ray：「約會狀態的女主頭像放到演出畫面左下角，
+     上方顯示『同行』，並給個金框」）══
+     ⚠ 與地圖鈕**對稱**：那一顆在右下、這一個在左下，同一條 `bottom`。
+     ⚠ `pointer-events:none` —— 它是狀態顯示不是鈕，「點畫面推進一句」要穿得過去。
+     ⚠ z-8 ＝壓得過楣（z-6），與地圖鈕同層。
+     ⚠⚠ **槍棺一動就跟著撤出**（同地圖鈕，見下面那一段的理由）—— 門一開始推就
+       不是探索了。判定一樣讀門自己的狀態（`#kerb.rise`），不另掛 class。 */
+  #townEscort{position:absolute;left:10px;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);
+    z-index:8;pointer-events:none;width:64px;text-align:center;
+    display:flex;flex-direction:column;align-items:center;gap:3px;}
+  #townEscort b{font-size:10px;letter-spacing:.22em;color:var(--gold,#d4a94a);
+    text-shadow:0 1px 3px rgba(0,0,0,.9);font-weight:600;padding-left:.22em;}
+  #townEscort .te-face{display:block;width:56px;height:56px;border-radius:50%;
+    background-repeat:no-repeat;
+    border:2px solid var(--gold,#d4a94a);
+    box-shadow:0 0 0 1px rgba(0,0,0,.55), 0 4px 12px rgba(0,0,0,.6),
+               inset 0 0 10px rgba(212,169,74,.28);}
+  #townEscort .te-name{font-style:normal;font-size:10px;color:#e8e2d4;
+    text-shadow:0 1px 3px rgba(0,0,0,.9);}
   #townMapBtn{position:absolute;right:10px;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);
     z-index:8;width:88px;height:59px;padding:0;pointer-events:auto;overflow:hidden;
     background:transparent;border:0;border-radius:6px;
@@ -3401,8 +3420,11 @@
        （`showMapBtn`，冪等），而 `close()` 是它唯一的終點 —— 所以評價結束回到
        城鎮時它自然就在原位（-899 的生死規矩，這裡不必碰）。 */
   #townMapBtn{transition:transform .22s ease-in, opacity .22s ease-in;}
+  #townEscort{transition:transform .22s ease-in, opacity .22s ease-in;}
   #storyStage:has(#kerb.rise) #townMapBtn{
     transform:translate(120%, 120%); opacity:0; pointer-events:none;}
+  #storyStage:has(#kerb.rise) #townEscort{
+    transform:translate(-120%, 120%);opacity:0;}
   /* ⚠ z 與 #townNav 同層（7）＋ DOM 後生（map view 一定比 nav 晚建）＝壓過導覽字格；
      退出/跳段鈕（z-8）仍在其上，地圖開著也點得到。 */
   /* 地圖開著時導覽字格整組收掉（ver -867，Ray：「不用導覽字格」）。 */
