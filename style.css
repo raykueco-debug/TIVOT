@@ -237,6 +237,37 @@
     54%{transform:translate(-5px,-5px) scale(1.02)}
     72%{transform:translate(5px,4px) scale(1.02)}
     86%{transform:translate(-3px,2px) scale(1.02)}}
+  /* ══⚠⚠⚠ 王座徘徊者的主動攻擊：放光（ver -1351，Ray：「攻擊特效是放光，就是首頁
+     點擊的那一個特效，範圍全畫面包括盤面，發動時全螢幕快速抖動」）══════════════
+     ⚠⚠ **光暈的配方就是 `--holy-glow`**（開機那一頁的聖光綻放、安雅啟動祭壇那一拍
+       ver -1185 都是同一份，鐵律 7）—— 不要在這裡另配一份漸層。
+     ⚠⚠ **`position:fixed` 蓋滿全畫面**（Ray：「包括盤面」）—— 與櫻花那一支刻意相反：
+       那一支被關在 `#top` 裡（花瓣蓋到盤面等於攻擊玩家的眼睛），而這一支
+       Ray 指定要蓋到盤面。
+     ⚠ `pointer-events:none`：盤面照樣點得到，被光蓋住只是看不清楚 —— 那正是它的威脅。
+     ⚠ 節奏比開機那一頁快得多（那一頁是 2.5s 的儀式，這裡是一記攻擊）：
+       0.55s 綻放 ＋ 0.75s 淡出。 */
+  #holyBurst{position:fixed;z-index:9000;pointer-events:none;
+    transform:translate(-50%,-50%) scale(.4);opacity:1;
+    transition:transform .55s cubic-bezier(.2,.7,.3,1), opacity .75s ease;}
+  #holyBurst.grow{transform:translate(-50%,-50%) scale(var(--hb-scale,16));}
+  #holyBurst.fade{opacity:0;}
+  #holyBurst .hb-glow{position:absolute;inset:0;border-radius:50%;background:var(--holy-glow);}
+  /* 發動那一下的**全螢幕快速抖動**（同上，Ray 指定）。
+     ⚠ 與 `hitshake`（玩家受擊那一記，260ms 五拍）是**兩件事**：這一支更短更密
+       （180ms 八拍）＝「快速」，而且幅度更大 —— 它是巨龍的吐息不是被揍一拳。
+     ⚠ 一樣要 `scale(1.03)` 過掃描：整個 `#app` 位移，四邊會露出底色。 */
+  #app.beamshake{animation:beamShake .18s steps(1,end) 2;}
+  @keyframes beamShake{
+    0%{transform:translate(-9px,6px) scale(1.03)}
+    12%{transform:translate(8px,-7px) scale(1.03)}
+    25%{transform:translate(-7px,-6px) scale(1.03)}
+    37%{transform:translate(9px,5px) scale(1.03)}
+    50%{transform:translate(-6px,7px) scale(1.03)}
+    62%{transform:translate(7px,-5px) scale(1.03)}
+    75%{transform:translate(-8px,-4px) scale(1.03)}
+    87%{transform:translate(5px,6px) scale(1.03)}
+    100%{transform:translate(0,0) scale(1.03)}}
   #app.death-freeze{filter:grayscale(1) contrast(1.06) brightness(.9);
     transition:filter .18s ease-out;}
 

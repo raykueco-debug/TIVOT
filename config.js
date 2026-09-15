@@ -34,6 +34,10 @@ export const HITFX = {
   bite:   { base:'bite',   se:'em_slash'  },
   blood:  { base:'blood',  se:'em_smack'  },
   blunt:  { base:'blunt',  se:'em_smack'  },
+  /* 放光（ver -1351，王座徘徊者）。⚠ **刻意沒有 `se`**：那一支 6.7 秒、有頭有尾，
+     由 `enemy.spawnHolyBurst` 用 `playCue` 的把手播（收得掉）—— 掛在這裡的話
+     combat 會直接播到底，換敵／離場都停不下來（同 `HITFX.sakura` 的理由）。 */
+  holyburst:{ base:'holyburst' },
   /* 櫻花狂亂（ver -899，鹿主）：⚠⚠ **刻意沒有 `se`** —— 它的聲音是「跟花瓣一起播
      兩秒再淡出」的**演出**，長度只有 `enemy.spawnSakura` 知道（走 `SFX.playCue`
      的把手）。寫在這裡會被 combat 當一次性受擊音直接放到底，變成兩份聲音（鐵律 7）。 */
@@ -65,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.15-1350';
+export const VERSION = 'ver 2026.09.15-1351';
 
 export const GAME_CONFIG = {
 
@@ -3436,6 +3440,11 @@ export const GAME_CONFIG = {
       peritunematerial_numina_loop:0.98,
       peritunematerial_gothic_dark_loop_intro:0.84,
       peritunematerial_irregular_loop:1.00,
+      /* 王座徘徊者的放光音（ver -1351）。⚠ 鑰匙是**檔名**（去副檔名、轉小寫）——
+         它住在 `bgm/` 但那是 SE，鑰匙與資料夾無關。
+         ⚠ `audio_scan` 量到耳機 −10.9／手機 −19.6（差 8.7 dB）＝ 這一支低頻很重，
+           手機上會明顯小聲；照 §6.6 取兩者平均（−15.3）反推，這是規約要的。 */
+      enemy_firebeam:1.18,
       /* 東方泊地（ver -1251，同一把尺、同一個錨）：
            Peritune_Portside_Cafe_loop  LUFS −8.79／手機 −14.73 → 平均 **−11.76**
          ⇒ 0.849×10^(1.40/20)＝0.997。峰值 0.00 dBFS × 0.997 ＝ −0.03 dBFS，未觸頂。
@@ -3805,6 +3814,11 @@ export const ASSETS = {
   enemy_bl_dragon_chase:  "resources/enemy/mon_dragon_v1_shackled.webp",
   enemy_bl_dragon_throne: "resources/enemy/mon_dragon_v1_unsealed.webp",
   enemy_bl_dragon_sky:    "resources/enemy/mon_dragon_v1_ascendant.webp",
+  /* 王座徘徊者的放光音（ver -1351，Ray：「音效用 enemy_firebeam」）。
+     ⚠⚠ 它**放在 `bgm/` 資料夾而且還是 `.mp3`** —— 那是 SE，照 §6.6 應該是
+       `se/se_enemy_firebeam.m4a`。**我沒有搬**（搬檔要走 `tools/audio_reorg.py`，
+       而且那是 Ray 放的位置）—— 已回報；搬了之後只要改這一行。 */
+  em_firebeam:      "resources/audio/bgm/enemy_firebeam.mp3",
 
   /* ══⚠⚠⚠ 聖遺物系 10 隻 —— **先註解著，開峽谷的時候再放**（ver -934，Ray 定案）══
      卡已經備好（`script/enemies.js` 的 `relic_*`，十張數值一樣等逐張調），

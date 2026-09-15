@@ -59,6 +59,7 @@ export function showHitFx(kind){
        ⚠ 與 `bullet`（玻璃碎裂）刻意不同：那一隻獵人是拿槍托招呼你，不是開槍。 */
     case 'blunt': spawnBlunt(fx.scale); break;
     case 'sakura':spawnSakura(); break;
+    case 'holyburst':spawnHolyBurst(); break;   // 王座徘徊者的放光（ver -1351）
     default:      triggerClaw();
   }
   /* 受擊行可加掛**全畫面閃色**（ver -509，空賊船卡：「蓄力攻擊…畫面閃紅」）——
@@ -143,6 +144,68 @@ export function spawnSakura(){
 export function stopSakura(){
   if(sakuraFx){ try{ sakuraFx.stop(); }catch(_){} sakuraFx=null; }
   if(sakuraSe){ try{ sakuraSe.stop(200); }catch(_){} sakuraSe=null; }
+}
+/* ══⚠⚠⚠ 放光（`holyburst`，ver -1351，Ray：「王座徘徊者的攻擊特效是放光，就是首頁
+   點擊的那一個特效，範圍全畫面包括盤面，發動時全螢幕快速抖動」「發動點是頭部的光點」
+   「音效用 enemy_firebeam」）══════════════════════════════════════════════════
+   ⚠⚠ **光暈的配方是 `--holy-glow`**（開機那一頁的聖光綻放、安雅啟動祭壇那一拍
+     ver -1185 都是同一份，鐵律 7）—— CSS 在 `#holyBurst`，這裡只負責圓心與大小。
+   ⚠⚠ **圓心是「頭部的光點」**，逐張圖不同 ⇒ 寫在**敵人卡**上（`beamFrom:{x,y}`，
+     那一張圖的比例，鐵律 1）。沒寫就退回圖框正中偏上（0.5, 0.25）——
+     不要讓漏寫變成「從腳底放光」。
+   ⚠⚠⚠ **要算 `object-fit:contain` 的留白**：`#enemyImg` 的元素框與**圖真正畫出來
+     的那一塊**不一樣（卡上多半是 `fit:{mode:'contain'}`）。拿元素框去乘比例，
+     圖越窄偏得越多 —— 這與 §6.5「立繪的錨是臉不是圖框」是同一族的坑。
+   ⚠ 蓋滿全畫面的倍率照開機那一頁的算法（光暈實心區佔 30%，所以除以 0.30）。
+   ⚠ 音效走 `playCue` 的把手**不是 `HITFX[].se`**：那支 6.7 秒、有頭有尾，
+     而那張表是給一次性受擊音用的（combat 會直接播到底，收不掉）。 */
+const HOLY_GROW_MS = 550;     // 與 CSS 的 transform transition 同一個數字（鐵律 7 的但書）
+const HOLY_LIFE_MS = 1350;    // 綻放 ＋ 淡出
+let holyFx=null, holySe=null;
+export function spawnHolyBurst(){
+  if(holyFx) return;                       // 同一發不疊第二層（同櫻花那一支）
+  const img=$('enemyImg');
+  const card=(GAME_CONFIG.enemies||{})[state.currentEnemyKey]||{};
+  const bf=card.beamFrom||{ x:0.5, y:0.25 };
+  const W=innerWidth, H=innerHeight;
+  let cx=W*0.5, cy=H*0.28;
+  if(img && img.naturalWidth){
+    const r=img.getBoundingClientRect();
+    /* contain 的實際畫面：等比縮到框內，四周留白。 */
+    const k=Math.min(r.width/img.naturalWidth, r.height/img.naturalHeight);
+    const dw=img.naturalWidth*k, dh=img.naturalHeight*k;
+    /* `fit.pos` 多半是 `center bottom`／`center NN%` —— 橫向一律置中，
+       縱向照 CSS 的 object-position 百分比擺（沒寫就當 50%）。 */
+    const pos=(card.fit&&card.fit.pos)||'center bottom';
+    const m=/(\d+(?:\.\d+)?)%/.exec(pos);
+    const py = m ? (+m[1]/100) : (/bottom/.test(pos) ? 1 : /top/.test(pos) ? 0 : 0.5);
+    const ox=r.left+(r.width-dw)/2, oy=r.top+(r.height-dh)*py;
+    cx=ox+dw*bf.x; cy=oy+dh*bf.y;
+  }
+  const d=Math.max(90, Math.min(W,H)*0.22);
+  const need=2*Math.hypot(Math.max(cx,W-cx), Math.max(cy,H-cy));
+  const el=document.createElement('div'); el.id='holyBurst';
+  el.innerHTML='<div class="hb-glow"></div>';
+  el.style.left=cx+'px'; el.style.top=cy+'px'; el.style.width=d+'px'; el.style.height=d+'px';
+  el.style.setProperty('--hb-scale', (need/d/0.30).toFixed(2));
+  document.body.appendChild(el);
+  holyFx=el;
+  requestAnimationFrame(()=>el.classList.add('grow'));
+  setTimeout(()=>{ el.classList.add('fade'); }, HOLY_GROW_MS);
+  setTimeout(()=>{ if(el.parentNode) el.remove(); if(holyFx===el) holyFx=null; }, HOLY_LIFE_MS);
+  /* 發動那一下的全螢幕快速抖動（Ray 指定）。⚠ 與玩家受擊的 `hitshake` 是兩件事，
+     所以另一個 class —— 同時掛的話後宣告的贏，會把這一支吃掉。 */
+  { const app=$('app');
+    if(app){ app.classList.remove('beamshake'); void app.offsetWidth; app.classList.add('beamshake');
+      setTimeout(()=>app.classList.remove('beamshake'), 400); } }
+  const src=asset('em_firebeam');
+  if(src){ try{ holySe = SFX.playCue(src, sfxGain('em_firebeam')); }catch(_){ holySe=null; } }
+}
+/* 收乾淨：換敵／離場（§6.5.4 的檢查表：新增任何蓋在畫面上的層，先回答「誰收它」）。 */
+export function stopHolyBurst(){
+  if(holyFx){ try{ holyFx.remove(); }catch(_){} holyFx=null; }
+  if(holySe){ try{ holySe.stop(200); }catch(_){} holySe=null; }
+  { const app=$('app'); if(app) app.classList.remove('beamshake'); }
 }
 export function hitLayer(){ return $('hitFxLayer'); }
 export function addFx(el, life){ hitLayer().appendChild(el); setTimeout(()=>{ if(el.parentNode) el.remove(); }, life||650); }
@@ -755,6 +818,7 @@ export function setEnemy(key, opts){
   const en = GAME_CONFIG.enemies[key];
   if(!en) return;
   stopSakura();                                 // 換了一隻怪 → 上一隻的櫻花與 Sturm 一起收（ver -899）
+  stopHolyBurst();                              // 同上：放光也是全螢幕的層＋一支還在響的音（ver -1351）
   state.currentEnemyKey = key;                 // 3.7：記住目前怪 key，供 boardGridFor 查每盤格數
   state.enemyHitsTaken = 0;                     // 換了一隻怪 → 「這一隻」的受擊數歸零（九階「方舟」，ver -708）
   /* 這一局的出場帳（ver -921，Ray：「好感度給出場數最多的那一位全拿」）——

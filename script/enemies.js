@@ -1435,6 +1435,9 @@ export const ENEMIES = {
       entrance:null,
       special:[],
       boardGrids:[9,9,9,9,9],
+      /* ══⚠⚠ **追擊戰只有爪擊跟咬擊**（ver -1351，Ray 指定）══ 沒有放光
+         （那是空中戰限定），也不加別的花樣 —— 正好就是從 `sf_tiger` 照抄過來的
+         這三格：延時一道爪、點錯咬一口、主動攻擊三爪。 */
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
       loot:[],
     },
@@ -1487,7 +1490,13 @@ export const ENEMIES = {
       entrance:null,
       special:[],
       boardGrids:[9,9,9,9,9],
-      hitFx:{ delay:'blood', wrong:'slash', assault:'claw' },
+      /* ══⚠⚠ 放光（ver -1351，Ray：「只有空中戰會放光」）══ 所以**只有這一張卡**
+         的主動攻擊是 `holyburst`；追擊與王座那兩張照舊走爪。
+         ⚠ 發動點＝**頭部的光點**（Ray 指定）：神化態就是懸浮冠環正中那一點白熱光。
+           值是**那一張圖**的比例（`object-fit:contain` 的留白由
+           `enemy.spawnHolyBurst` 自己算掉 —— 拿元素框去乘會偏）。 */
+      beamFrom:{ x:0.53, y:0.055 },
+      hitFx:{ delay:'blood', wrong:'slash', assault:'holyburst' },
       loot:[],
     },
 
