@@ -4178,6 +4178,31 @@ export const TOWNS = {
   eastport: {
     name: '東方泊地',
     entry: 'square',
+    /* ══⚠⚠ 「之前去過這座港沒有」（ver -1342）══ 飛行頁那一段（貝利薩爾降不下去 →
+       蕾娜指路）要依它換一句台詞。誰插＝踏進這張圖、誰拔＝沒有人（同 `belisar_seen`
+       ／`fallen_seen`／`tomb_seen` 那一族，鐵律 9）。
+       ⚠ `flight/index.html` 的 `BELISAR_NOLAND_MAP*` 讀同一支旗，兩邊註解互指。 */
+    visitFlag: 'eastport_seen',
+    /* ══⚠⚠ 20:00 強制回旅店（ver -1342，Ray：「自由活動。20：00觸發『該回去看看了。』
+       強制回旅店。」）══ 走城上的 `gates`（§6.5.4.1 的 `clockGate`，與帝都 stage 0
+       的結尾、北方泊地那兩道同一支，鐵律 8）。
+       ⚠⚠ `hourOfDay` 寫成**時段** `[20,24]` 不是 `20` —— 「今天過了 20 點」在**隔天**
+         凌晨照樣成立（ver -664 的教訓：寫成單一時刻會在前一晚就演掉）。迄不含。
+       ⚠ `need:'ep_arrive'` ＝抵達那一段演完才開始算；`flag` 立了就不再觸發。
+       ⚠ `enterAgain` ＝玩家可能**已經站在旅店裡**（18 點就回來了、在大廳坐到 20 點），
+         那時 `goto===nodeId`，不重新 `enter()` 一次的話那一格的 `acts` 沒有人叫得動。
+       ⚠ 「該回去看看了。」是**旁白**（`NARRATION`：沒有立繪、名字欄空著）——
+         同北方泊地那一句，不是某個人在講話。 */
+    gates:[ { flag:'ep_evening', need:'ep_arrive', hourOfDay:[20,24],
+              goto:'inn', enterAgain:true,
+              lines:[ { speaker:'NARRATION', text:'該回去看看了。' } ] } ],
+    /* ⚠⚠ **沒有 `storyExplore`＝這座城是自由探索**（ver -1342，Ray：「把那個時點
+       標記為自由探索」）：女角會排外出行程、餐飲街依同行女伴換店、旅店敲得到門
+       —— 抵達之後那段「自由活動」與四條約會線全部靠這個前提（§6.5.4.2）。
+       ⚠ 這是**預設值不是旗**：`storyExplore` 沒寫就是自由探索，要鎖成劇情探索才寫它
+         （同貝利薩爾那一座）。**不要**為了「明確一點」補一支 `free_explore_eastport`
+         —— 那支旗只有在 `storyExplore:true` 時才有意義，兩個都寫就是一個狀態
+         兩份真相（鐵律 7／9）。 */
     /* BGM（ver -1251 就先接好了，Ray：「Peritune_Portside_Cafe_loop / 東泊放這首」）。
        那一版的註解寫著「等 TOWNS.eastport 建起來只要加這一行」—— 就是這一行。 */
     bgm: 'portside',
@@ -4229,7 +4254,23 @@ export const TOWNS = {
            出不了港）。
            ⚠ 有陸路可以走到的地方（帝都／夏爾村那一族）照舊要旗：那裡「還沒有船」
              是真的成立。 */
-        sail:{} },
+        sail:{},
+        /* ══⚠⚠⚠ 抵達東方泊地（ver -1342，Ray 交稿）══════════════════════════
+           飛行頁那一段（貝利薩爾沒有降落點 → 蕾娜指這裡）演完才有這一段 ——
+           `need` 就是那一支旗（`flight/index.html` 的 `BELISAR_NOLAND_FLAG`，
+           兩邊註解互指）。玩家自己先晃進來的話這一段不演，帶著旗再來才演。
+           ⚠⚠ **`clockToNext:11`** ＝ Ray 的「入口：固定時間為最近的 AM 11:00」。
+             走**下一個** 11:00（`clock.advanceToNextHour`，與城鎮閘門的 `clockTo`
+             同一支，鐵律 8）不是「推到今天的 11:00」—— 後者在下午抵達時會倒轉，
+             而時鐘只能往前（§6.5.4.1）。
+             ⚠ 掛在**第一拍**：HUD 上那一行時刻要印**跳完之後**的時間。
+           ⚠ 蕾娜講完就去大學了。她「不在旅店」是**行程**不是旗（§6.5.4.2 的
+             `OUTING`）—— 16~18 點在大學巧遇那一段是下一批的事。 */
+        acts:[ { flag:'ep_arrive', need:'belisar_noland_talk', sides:{ RENNA:'L' }, lines:[
+          Object.assign(ren('front','我先去大學研究一下貝利薩爾遺蹟的檔案。'),
+                        { clockToNext:11 }),
+          ren('ask','可能會花點時間，忙完就回旅店，你們先隨意逛逛吧。'),
+        ] } ] },
 
       /* ── 一、中心區（**四向**樞紐）── 左＝海關署、右＝主教座堂、上＝大學、下＝廣場 */
       midtown:    { bg:'East_Midtown',    name:'東方泊地　中心區',
