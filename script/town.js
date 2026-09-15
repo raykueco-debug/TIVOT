@@ -4227,12 +4227,31 @@ export const TOWNS = {
       /* ── 二、舊城區（四向樞紐） ── 左＝武器店、右＝廣場、上＝倉庫碼頭、下＝公會 */
       oldtown:    { bg:'East_Oldtown',    name:'東方泊地　舊城區',
         exits:{ left:'gunstore', right:'square', up:'dock', down:'guild' } },
+      /* ══ 武器店（ver -1340，Ray 交件指派店主 `NPC_Gunsmith_SI_v1`）══
+         功能同帝都／北泊（買／賣／改裝），店主與貨單是這座城自己的
+         （`config.shop` 的 `ep_gunstore`）。
+         ⚠ **沒有射擊挑戰**：這座城還沒有打靶那一場。
+         ⚠ **不寫 `kind`**（同聖索菲亞／拉芬斯達爾）：`kind` 會把進場對白的旗標
+           換成跨城共用的 `town_kind_gunstore` —— 這一格還沒有 `lines`，先掛上去
+           的話，日後真的寫了東泊自己的初見戲，會被「帝都那間已經看過了」吃掉。
+           要走 -401 那條「同質店只演一次」時再補。 */
       gunstore:   { bg:'East_Firearm',    name:'東方泊地　武器店',
-        exits:{ back:'oldtown' } },
+        exits:{ back:'oldtown' },
+        shop:'ep_gunstore', keeperWho:'GUNSMITH_EP',
+        hours:[8,20], closed:'鐵捲門拉到底了。門邊的牌子寫著「八點開門」。' },
       dock:       { bg:'East_Dock',       name:'東方泊地　倉庫碼頭',
         exits:{ back:'oldtown' } },
+      /* ══ 賞金獵人公會（ver -1340，Ray 交件指派櫃台 `NPC_GuildCounter_SI_v5`）══
+         ⚠ **不寫 `boardFlag`**（同北泊）：登記是在帝都做的（`guild_registered`），
+           到了別的城不必再登記一次。
+         ⚠⚠ `config.bounties` **目前沒有 `city:'eastport'` 的委託** —— 懸賞榜會
+           照樣開得起來，印「目前沒有委託。」（`showBounty` 的空清單分支）。
+           那比「櫃台在但點不開」誠實；Ray 給了目標之後在 `config.bounties`
+           加一筆、`city` 寫 `eastport` 就會自己出現，這裡一個字都不必改。 */
       guild:      { bg:'East_Guild',      name:'東方泊地　賞金獵人公會',
-        exits:{ back:'oldtown' } },
+        exits:{ back:'oldtown' },
+        board:'eastport', keeperWho:'COUNTER_EP',
+        hours:[8,20], closed:'大門上了閂。委託要等明天早上八點。' },
 
       /* ── 三、上城區（四向樞紐） ── 左＝廣場、右＝餐飲街、上＝旅店、下＝雜貨舖 */
       uptown:     { bg:'East_Uptown',     name:'東方泊地　上城區',
@@ -4254,8 +4273,12 @@ export const TOWNS = {
         exits:{ back:'tavern' } },
       dessert:    { bg:'East_Dessert',    name:'東方泊地　甜品店',
         exits:{ back:'tavern' } },
+      /* ══ 雜貨舖（ver -1340，Ray 交件指派店主 `NPC_Grocer_SI_v1`）══
+         ⚠ 不寫 `kind`，理由同武器店那一格。 */
       grocery:    { bg:'East_Grocerie',   name:'東方泊地　雜貨舖',
-        exits:{ back:'uptown' } },
+        exits:{ back:'uptown' },
+        shop:'ep_grocery', keeperWho:'SHOPKEEP_EP',
+        hours:[8,20], closed:'櫥窗的燈熄了，百葉窗放了下來。' },
       /* ⚠ 這一格**沒有** `inn:true`：旅店大廳與四扇伙伴門這一輪不做（同上）。 */
       inn:        { bg:'East_Hotel',      name:'東方泊地　旅店',
         exits:{ back:'uptown' } },

@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.15-1339';
+export const VERSION = 'ver 2026.09.15-1340';
 
 export const GAME_CONFIG = {
 
@@ -1687,6 +1687,17 @@ export const GAME_CONFIG = {
       np_gunstore: [ { id:'Shotgun_Dragon', n:1 },
                      { id:'MG_Squall_Kai',  n:1 },
                      { id:'Rifle_Shahin',   n:1 } ],
+      /* ══ 東方泊地的兩家店（ver -1340）══ 貨單**分開記帳**（同北泊那一條的理由：
+         `script/shopstock.js` 的鑰匙就是這裡的鍵）。
+         ⚠⚠ 內容先照北泊那一份 —— Ray 還沒指定東泊要賣什麼。這座城是**通商大港**
+           （§_eastport_spec.md），照設定該比北泊豐富，但「豐富成什麼樣」是內容決定，
+           不自己發明（同護符那一批）。要改就改這兩列。 */
+      ep_grocery:  [ { id:'milk',     n:8 },
+                     { id:'cheese',   n:5 },
+                     { id:'lime_rum', n:3 } ],
+      ep_gunstore: [ { id:'Shotgun_Dragon', n:1 },
+                     { id:'MG_Squall_Kai',  n:1 },
+                     { id:'Rifle_Shahin',   n:1 } ],
     },
     /* 每家店的長相（ver -377）。沒登記的店走預設（買／賣兩頁、雜貨舖的店主圖）。
          title  頁首的字
@@ -1725,6 +1736,18 @@ export const GAME_CONFIG = {
          jero 分頁）。不賣不買 —— tabs 沒有 buy/sell，貨帳也就不存在。 */
       sv_workshop: { title:'杰羅的工坊', art:'resources/SI/NPC_shinier_Gunsmith_SI.webp',
                      tabs:['jero'], tabName:{ jero:'改槍' } },
+      /* ══ 東方泊地的兩家店（ver -1340，Ray 交件指派店主）══ 功能同帝都／北泊，
+         差別只有**店主圖**與**貨單的鑰匙**。
+         ⚠ **沒有 `challenge`**：這座城還沒有打靶那一場（帝都 `range_trainee`／
+           北泊 `np_range` 是各自城裡的場次，最佳紀錄也是分開的）。
+         ⚠⚠ `art` 這一格**現在沒有人讀**（ver -387 起買賣視窗不放店主立繪，
+           見 modules/loot.js 的說明）—— 真正畫出來的是節點上的 `keeperWho`。
+           路徑照樣寫對：留一個假路徑等於給下一個人挖坑。 */
+      ep_grocery:  { title:'雜貨舖', art:'resources/SI/NPC/NPC_Grocer_SI_v1.webp',
+                     tabs:['buy','sell'] },
+      ep_gunstore: { title:'武器店', art:'resources/SI/NPC/NPC_Gunsmith_SI_v1.webp',
+                     tabs:['buy','sell','mod'], tabName:{ buy:'買武器', sell:'賣武器', mod:'武器改裝' },
+                     only:'weapon', compare:true },
     },
   },
 

@@ -89,6 +89,14 @@ export const SPEAKERS = {
   COUNTER:  { name:'櫃台',   art:'counter' },
   /* 北泊公會櫃台（ver -858，Ray 交辦「賞金獵人公會」）。 */
   COUNTER_NP:{ name:'櫃台',  art:'counter_np' },
+  /* ══ 東方泊地的三位（ver -1340，Ray 交件：從 `resources/SI/_npc_shopkeeper_pool.md`
+       的立繪池指派 —— 槍匠 `Gunsmith_v1`／雜貨 `Grocer_v1`／公會櫃台 `GuildCounter_v5`）══
+     ⚠ **顯示名與別城一樣，但都是不同的人**（同北泊那兩位的理由）：art 不同就不能
+       共用 id，也不能靠 `keeperOf` 的預設值帶過去（-1062 就是這樣把北泊的櫃台
+       小姐在對白講完之後換成帝都那一位的）。 */
+  GUNSMITH_EP: { name:'店主', art:'gunsmith_ep' },
+  SHOPKEEP_EP: { name:'店主', art:'grocer_ep'   },
+  COUNTER_EP:  { name:'櫃台', art:'counter_ep'  },
   /* 旅店前台（ver -392）。同樣站右（玩家的同伴在左、對面的人在右）。 */
   CLERK:    { name:'前台',   art:'clerk' },
   /* ══ 北方泊地的司祭（ver -582，Ray 交稿）══════════════════════════════
@@ -804,6 +812,30 @@ export const ART = {
      先頂著（?v=2 蓋過快取），待 GPT 正式重製後**換圖要重量**（§5）。身高估 167。 */
   counter_np:{ cm:167, eye:32, fx:0.490, top:24, bot:1522,
            side:'R', alt:null, base:'resources/SI/NPC/NPC_GuildCounter_SI_Northport.webp?v=2', expr:{} },
+  /* ══ 東方泊地的三位（ver -1340，Ray 交件）══════════════════════════════
+     ⚠⚠ **`fx` 不是 `tools/measure_si.py` 印的那個** —— 那支量的是「頭頂往下 8%
+       那一帶的 alpha 重心」，而這三張裡有兩張的頭帶被別的東西佔著（同 `gunsmith_np`
+       扛長槍、`natalia_x` 頭髮飛散的那個坑）。下面的值一律照 §6.5 的定義
+       **兩眼中心的中點 ÷ 圖寬**，逐張放大量的：
+         · `gunsmith_ep` 舉起槍管對光檢視 → 槍管與手套橫過頭帶（工具印 0.380）
+         · `grocer_ep`   長髮往畫面左側散開（工具印 0.399）
+         · `counter_ep`  頭帶乾淨，工具印 0.510、量臉 0.492（差在辮子）
+     ⚠ 身高全是**估的**（同 hunter／gunsmith／北泊那幾筆的作法）：
+       槍匠 172（精壯女性）／櫃台主任 175（池子的敘述就是「高個」）／雜貨 163（20 出頭）。
+       ⚠⚠ **不可以超過 178**（現行最高的獵人）：`CAST_TALL` ＝全體 `cm` 的最大值，
+         每公分像素是拿它算的 —— 一個 NPC 的估身高不該把整個劇組一起縮小。
+     ⚠ 三張都是全身站姿（縱向佔 96.6% / 99.0% / 98.7%），所以 `top`/`bot` 當得了身高。
+     ⚠ 站**右**：玩家的同伴在左、對面的人在右（同所有城鎮 NPC）。
+     ⚠⚠⚠ **槍匠與櫃台那兩張目前是白底、還沒去背**（RGB 無 alpha；雜貨那張已經是
+       RGBA）。取景值去背後仍然成立（去背只改 alpha、不動幾何），但**畫面上會是
+       一塊白板**，要等 §5 那條路（GPT 重製成 alpha）交件才看得對。
+       ⚠ 換圖之後若是**重繪**而不是純去背，`top`/`bot`/`fx` 要重量（§5）。 */
+  gunsmith_ep:{ cm:172, eye:32, fx:0.546, top:22, bot:1506,
+           side:'R', alt:null, base:'resources/SI/NPC/NPC_Gunsmith_SI_v1.webp', expr:{} },
+  grocer_ep:  { cm:163, eye:32, fx:0.442, top:11, bot:1527,
+           side:'R', alt:null, base:'resources/SI/NPC/NPC_Grocer_SI_v1.webp', expr:{} },
+  counter_ep: { cm:175, eye:32, fx:0.492, top:11, bot:1531,
+           side:'R', alt:null, base:'resources/SI/NPC/NPC_GuildCounter_SI_v5.webp', expr:{} },
   /* 旅店前台（ver -392）。⚠ 身高是**估的**（168）；取景值是量的（`tools/measure_si.py`）。
      ⚠ `top:0 / bot:1535` 不是漏量 —— 這張是**滿版取景**：髮髻碰到上緣、靴子碰到下緣
        （實測 row 0 與 row 1535 都有不透明像素）。 */
