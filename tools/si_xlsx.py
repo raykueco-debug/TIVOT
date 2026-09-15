@@ -33,9 +33,11 @@ from PIL import Image
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SI_DIR = os.path.join(ROOT, 'resources', 'SI')
-# ⚠ 放專案根目錄、命名對齊既有的兩張表（`enemies.xlsx`／`girlstars.xlsx`，
-#   工具也是 `enemies_xlsx.py`／`girlstars_xlsx.py`）—— 找表的人只要看根目錄。
-OUT = os.path.join(ROOT, 'si.xlsx')
+# ⚠ **固定放在 SI 資料夾**（ver -1327，Ray 指定）：這張表是給看差分用的，
+#   就該躺在差分旁邊。底線開頭 ＝ 同 `_eastport_spec.md` 那一族，不是素材。
+OUT = os.path.join(SI_DIR, '_SI_差分總表.xlsx')
+# NPC 的立繪住在這個子資料夾 —— 分頁就照它切（見 write_xlsx 的說明）。
+NPC_DIR = 'resources/SI/NPC/'
 IMG_EXT = ('.webp', '.png', '.jpg', '.jpeg')
 
 # 縮圖：邊長（夠看清楚眼睛與嘴角就好，檔案不要肥）
@@ -174,6 +176,11 @@ def scan_files():
     return sorted(out)
 
 
+def is_npc(rel):
+    """這一張算不算 NPC —— **照資料夾判**，不照角色名猜。"""
+    return rel.startswith(NPC_DIR)
+
+
 def char_of_filename(fn):
     """`角色_SI_變體.webp` → 角色（§5 的命名規約）。"""
     base = os.path.basename(fn)
@@ -226,8 +233,9 @@ def build():
 
 def report(rows, unwired, missing):
     wired = len(rows) - len(unwired)
-    print('SI 圖共 %d 張：已接進 speakers.js %d 張、未接線 %d 張'
-          % (len(rows), wired, len(unwired)))
+    npc = sum(1 for r in rows if is_npc(r['rel']))
+    print('SI 圖共 %d 張（主要角色 %d・NPC %d）：已接進 speakers.js %d 張、未接線 %d 張'
+          % (len(rows), len(rows) - npc, npc, wired, len(unwired)))
     est = [r for r in rows if not r['measured'] and r['key']]
     if est:
         print('⚠ 接了線但標著 unmeasured（縮圖走估的）：%d 張' % len(est))
@@ -247,27 +255,57 @@ def write_xlsx(rows, unwired, missing, path):
     from openpyxl.styles import Font, Alignment, PatternFill
     from openpyxl.utils import get_column_letter
 
-    wb = Workbook()
-    ws = wb.active
-    ws.title = 'SI 差分'
     head = ['角色', '縮圖（抓臉）', '檔名', '差分鍵', '已接線', '取景',
             'fx', 'top', 'bot', '尺寸', '路徑']
-    ws.append(head)
-    for c in range(1, len(head) + 1):
-        cell = ws.cell(row=1, column=c)
-        cell.font = Font(bold=True, color='FFFFFF')
-        cell.fill = PatternFill('solid', fgColor='4A4A4A')
-        cell.alignment = Alignment(horizontal='center', vertical='center')
-    ws.freeze_panes = 'C2'
 
-    for i, w in enumerate([14, 21, 34, 16, 10, 7, 8, 7, 7, 12, 42], start=1):
-        ws.column_dimensions[get_column_letter(i)].width = w
+    def new_sheet(wb, title, first=False):
+        ws = wb.active if first else wb.create_sheet(title)
+        ws.title = title
+        ws.append(head)
+        for c in range(1, len(head) + 1):
+            cell = ws.cell(row=1, column=c)
+            cell.font = Font(bold=True, color='FFFFFF')
+            cell.fill = PatternFill('solid', fgColor='4A4A4A')
+            cell.alignment = Alignment(horizontal='center', vertical='center')
+        ws.freeze_panes = 'C2'
+        for i, w in enumerate([14, 21, 34, 16, 10, 7, 8, 7, 7, 12, 42], start=1):
+            ws.column_dimensions[get_column_letter(i)].width = w
+        return ws
+
+    wb = Workbook()
+    # ⚠⚠ 主角與 NPC 分兩張分頁（ver -1327，Ray 指定）。
+    #   分法照**資料夾**（`resources/SI/NPC/` 底下的就是 NPC）—— 那是專案自己
+    #   早就有的分類，客觀、不必猜「誰算 NPC」，而且**日後交件丟進哪個資料夾就自動歸哪邊**。
+    #   ⚠ 用角色名去猜會踩到邊界（司祭、櫃台這種兩邊都有的），而那是素材歸檔的問題，
+    #     不是這支工具該替人決定的。
+    sheets = [('SI 差分', [r for r in rows if not is_npc(r['rel'])], True),
+              ('NPC',     [r for r in rows if is_npc(r['rel'])],     False)]
 
     tmpdir = os.path.join(ROOT, '_recycle', '.si_thumbs')
     os.makedirs(tmpdir, exist_ok=True)
     keep = []
     warn_fill = PatternFill('solid', fgColor='FFF3CD')
+    seq = [0]
 
+    for title, subset, first in sheets:
+        ws = new_sheet(wb, title, first)
+        _fill(ws, subset, tmpdir, keep, warn_fill, seq, XLImage, Alignment, head)
+
+    _todo_sheet(wb, unwired, missing, Font, PatternFill, get_column_letter)
+    wb.save(path)
+    for tp in keep:
+        try:
+            os.remove(tp)
+        except OSError:
+            pass
+    try:
+        os.rmdir(tmpdir)
+    except OSError:
+        pass
+    return {t: len(s) for t, s, _f in sheets}
+
+
+def _fill(ws, rows, tmpdir, keep, warn_fill, seq, XLImage, Alignment, head):
     r = 2
     for row in rows:
         p = os.path.join(ROOT, row['rel'].replace('/', os.sep))
@@ -302,7 +340,10 @@ def write_xlsx(rows, unwired, missing, path):
             # ⚠ 縮圖存 JPEG 不存 PNG：這張表**每次交件都會重生**，而 246 張 PNG 縮圖
             #   會把檔案撐到 7.5 MB（進版控的話每改一次就多一份）。JPEG 品質 88
             #   在這個尺寸看不出差別，檔案小一個量級。透明已經在 thumb() 併白底了。
-            tp = os.path.join(tmpdir, '%04d.jpg' % r)
+            # ⚠ 檔名要**跨分頁唯一**（seq）：兩張分頁各自從第 2 列開始，
+            #   用列號當檔名會讓後一張蓋掉前一張的縮圖檔。
+            seq[0] += 1
+            tp = os.path.join(tmpdir, '%05d.jpg' % seq[0])
             t.save(tp, 'JPEG', quality=88, optimize=True)
             keep.append(tp)
             ws.add_image(XLImage(tp), 'B%d' % r)
@@ -311,7 +352,9 @@ def write_xlsx(rows, unwired, missing, path):
             ws.cell(row=r, column=2, value='縮圖失敗：%s' % e)
         r += 1
 
-    # ── 第二張表：這一次交件之後要做的事 ──────────────────────────────────
+
+def _todo_sheet(wb, unwired, missing, Font, PatternFill, get_column_letter):
+    """這一次交件之後要做的事 —— 表的價值一半在這一頁。"""
     ws2 = wb.create_sheet('待接線・缺檔')
     ws2.append(['類別', '角色／鍵', '檔案', '要做什麼'])
     for c in range(1, 5):
@@ -329,17 +372,6 @@ def write_xlsx(rows, unwired, missing, path):
         ws2.append(['—', '—', '—', '目前沒有待辦'])
     ws2.freeze_panes = 'A2'
 
-    wb.save(path)
-    for tp in keep:
-        try:
-            os.remove(tp)
-        except OSError:
-            pass
-    try:
-        os.rmdir(tmpdir)
-    except OSError:
-        pass
-
 
 def main():
     rows, unwired, missing, _ART = build()
@@ -350,8 +382,10 @@ def main():
     for a in sys.argv[1:]:
         if not a.startswith('--'):
             out = a
-    write_xlsx(rows, unwired, missing, out)
-    print('→ %s（%d 列）' % (out, len(rows)))
+    n = write_xlsx(rows, unwired, missing, out)
+    print('→ %s' % out)
+    for t, c in n.items():
+        print('   分頁「%s」%d 列' % (t, c))
 
 
 if __name__ == '__main__':
