@@ -2821,6 +2821,14 @@ export function enter(id){
                同行，殘留事件帶起來的不受影響。
              ⚠ 排在 `flag` 之後 —— 那一段自己的旗要先記，不然下一次抵達又演一次。 */
           if(act.endDate) endDate();
+          /* ══⚠⚠ `act.goto` ＝這一段演完就**強制移轉**（ver -1353，Ray 的貝利薩爾稿：
+             「（厚重推門聲）→ 大廳祭壇」「中庭場景」「強制移轉回東泊」）══
+             ⚠ 走既有的 `forceGo`（不花時間、不看營業時間、不記來時方向；
+               `@<地圖>:<節點>` 的跨圖語法它本來就吃得下，鐵律 8）。
+             ⚠ 排在**旗標與檢查點之後**：先把「這一段演完了」記下來再走人 ——
+               反過來的話中途被打斷會變成「人到了新的一格、旗卻沒記」。
+             ⚠ 它與 `gates` 的 `goto` 是同一個語意，只是掛在段落上：
+               閘門是「時鐘推到那一刻就發生」，段落是「這一段演完就發生」。 */
           /* ⚠⚠ 演完把旅店大廳重畫一次（ver -1346）：門燈是 `doorState()` 現算的，
              但那一支只在抵達與敲門之後跑 —— 這一段演的期間時鐘可能走了、旗可能立了
              （蕾娜晚上回來那一段就是兩者都有），門會停在進門那一刻的樣子。
@@ -2889,6 +2897,7 @@ export function enter(id){
                常駐句不屬於那條鏈。 */
           const nx=actDue(n);
           if(nx && nx!==act && nx.flag){ story.clearCast(); runArrival(true); return; }
+          if(act.goto){ forceGo(act.goto); return; }   // 段落收尾的強制移轉（ver -1353，見上）
         }
         else if(ev){
           if(ev.flag) prog.addFlags([ev.flag]);                  // 傍晚那一句：只演一次

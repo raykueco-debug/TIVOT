@@ -741,12 +741,41 @@ export function applyRankAffection(grade, partnerKey){
   if(rd2){ addAffection('renna', rd2); got.push('renna'); }
   return got;
 }
+/* ══⚠⚠⚠ 逐人的好感天花板（ver -1353，Ray 的東泊稿）══════════════════════════
+   「蕾娜從此用無髮飾立繪，**好感度再也無法到達 T4，封頂 T3**」
+   「經過此事件才能上 T4，當前沒上 T4 無所謂，**數字將來上得去**」
+   ⚠⚠ **兩支旗、兩個擁有事件**（鐵律 9）：
+     · `renna_hairpin_lost` ＝髮飾被吞掉那一拍插 —— 從此封頂 T3
+     · `renna_t4_ok`        ＝T3 夜襲把髮飾奪回來那一段插 —— 解除封頂
+     沒有第三種狀態；誰插誰拔都答得出來。
+   ⚠⚠ **判定只有這一支**（鐵律 7）：`addAffection` 與 `setAffectionDev` 都夾它 ——
+     少夾一邊的話，管理人工具調出來的狀態與玩家真的玩出來的不一樣。
+   ⚠ 封頂＝**那一段的頂**不是那一段的底：T4 的地板是 60，所以夾在 59.75
+     （對齊 1/4，蕾娜的 +0.25）—— 她在 T3 裡照樣加得上去，只是跨不過去。
+   ⚠⚠ **不動棘輪的地板**：封頂只擋「往上」，已經達到的段位不會被扣回來。
+     真的有人在封頂前就上了 T4（劇本上到不了，但讀檔／管理人工具做得到），
+     那就讓她留在 T4 —— 夾的是新值，不是既有的值（見下面的 `Math.min` 位置）。 */
+const AFF_CAPS = [
+  { who:'renna', need:'renna_hairpin_lost', until:'renna_t4_ok', maxTier:3 },
+];
+export function affCap(who){
+  for(const c of AFF_CAPS){
+    if(c.who!==who) continue;
+    if(c.need && !hasFlag(c.need)) continue;
+    if(c.until && hasFlag(c.until)) continue;
+    return tierFloor(c.maxTier+1) - 0.25;     // T4 地板往下一個 1/4 ＝ T3 的頂
+  }
+  return null;
+}
 export function addAffection(who, delta){
   if(CHARS.indexOf(who)<0) return null;
   const aff=getAffection(), floors=getFloors();
   const q = v => Math.round(v*4)/4;                    // 對齊到 1/4（蕾娜的 +0.25）
   let v = q((typeof aff[who]==='number' ? aff[who] : AFFECTION_DEFAULT) + (+delta||0));
   v = Math.min(AFF_MAX, Math.max(0, v));
+  /* ③ 天花板（ver -1353）：夾在棘輪**之前** —— 兩者方向相反，先夾頂再抬底，
+     已經在頂之上的人（讀檔／管理人工具）才不會被往下扯。 */
+  { const cap=affCap(who); if(cap!=null && v>cap) v=Math.max(cap, aff[who]||0); }
   const floor = floors[who]||0;   // ⚠ `||1` 會把「還沒有地板」當成 1（ver -723 修，見 getFloors）
   if(v < floor) v = floor;                             // ① 棘輪
   aff[who]=v; setAffection(aff);
@@ -768,7 +797,10 @@ export function addAffection(who, delta){
 export function setAffectionDev(who, v){
   if(CHARS.indexOf(who)<0) return null;
   const aff=getAffection(), floors=getFloors();
-  const val = Math.min(AFF_MAX, Math.max(0, Math.round((+v||0)*4)/4));
+  let val = Math.min(AFF_MAX, Math.max(0, Math.round((+v||0)*4)/4));
+  /* 封頂也夾管理人工具（ver -1353，鐵律 7）：不夾的話開發時調出來的狀態
+     與玩家真的玩得出來的不一樣，那比沒有工具更糟。 */
+  { const cap=affCap(who); if(cap!=null && val>cap) val=cap; }
   aff[who]=val; setAffection(aff);
   const nf = tierFloor(tierOf(val));
   floors[who] = (val >= nf) ? nf : 0;

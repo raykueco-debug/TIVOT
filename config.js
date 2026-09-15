@@ -69,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.15-1352';
+export const VERSION = 'ver 2026.09.15-1353';
 
 export const GAME_CONFIG = {
 
@@ -2302,6 +2302,16 @@ export const GAME_CONFIG = {
            —— 戰敗走回檔（§6.5.2 那張表），不是「一次就送旅店」。
        ⚠ 照舊不給聖徒化／搭檔技（同帝都那一場：對手是人類，不是禍魘）。 */
     ep_guild_hunter: { enemy:'guild_hunter', noEval:true, noSaint:true, noPartner:true },
+    /* ══⚠⚠ 貝利薩爾・祭壇的那一場（ver -1353，Ray 的稿：「進入戰鬥，雖是 boss
+       但只是**略弱的中 boss 水準**」）══
+       ⚠ 敵人是 `bl_dragon_chase`（古城裡的龍，拘束態立繪）—— 它的數值是 Ray 指定
+         「先用獨角虎」（hp 500），正好就是「略弱的中 boss」那一級，不另調。
+       ⚠ **打完牠會逃走**（稿：索「喔，逃了！」）⇒ 這一場是這一局的**結算點**：
+         `sessionEnd` 不寫（它本來就不屬於任何 `session`），打完照常閉棺結算。
+       ⚠ **不禁聖徒化／搭檔技**：Ray 沒說要禁（禁了要明寫，同北泊城鎮戰那一條）。
+       ⚠ `bgmAfter` 不寫：追擊戰的 `gothic` 是**那一段**才換（見 3b 的說明），
+         這一場打完接回古城的 `numina`（戰前那一首）。 */
+    ep_belisar_altar: { enemy:'bl_dragon_chase' },
     /* 北方泊地的城鎮戰（ver -583）：每一格走進去打一場，共用這一張佔位卡。
        ⚠ **不禁聖徒化／搭檔技**：Ray 沒說要禁（禁了要明寫 noSaint/noPartner）。
        ⚠ 打輸走一般流程 —— 城鎮插入戰的敗北會被抬回這座城的旅店（§6.5.2 那張表）。

@@ -4980,7 +4980,24 @@ export const TOWNS = {
          ⚠⚠ **所以小地圖的版面要跟著改**：`tools/map_layout.py` 的 belisar 版面
            （還沒建）要把 `courtyard` 畫在 `lamphall` **上方**，不然那支工具的自動
            驗證會報錯，而且小地圖會與畫面上的箭頭矛盾（憲法 ver -907／-909）。 */
-      courtyard: { bg:'Belisar_SunkenCourt', name:'貝利薩爾遺址　下沉中庭', noWild:true, rest:true, exits:{ down:'lamphall' } },
+      /* ══⚠⚠⚠ 中庭場景（ver -1353，Ray 交稿）══ 收尾**強制移轉回東方泊地**。
+         ⚠⚠ `ep_belisar_done` ＝出航的那道 `hold` 的終點（東泊 `square.sail.hold.until`，
+           兩邊註解互指）—— 這一段演完才走得掉。
+         ⚠ `rest:true` 照舊（它是休息處）：那一段演完之後這一格就是安全點。 */
+      courtyard: { bg:'Belisar_SunkenCourt', name:'貝利薩爾遺址　下沉中庭', noWild:true,
+        rest:true, exits:{ down:'lamphall' },
+        acts:[ { flag:'ep_bel_court', need:'ep_bel_altar',
+                 goto:'@eastport:square', sides:{ RENNA:'L' }, lines:[
+          nou('cringe','中庭都淹滿水了……'),
+          ren('lookaway','……'),
+          ren('meltdown','……'),
+          ren('lookawaytalk','任務……完成了，撤離吧。'),
+          nou('Surprise','欸？可是蕾娜小姐的髮飾……'),
+          ren('lookawaytalk','不重要。連我自己都不記得從什麼時候開始戴的。'),
+          ren('meltdown','……'),
+          Object.assign(ren('talkwork','走吧。'), { flags:['ep_belisar_done'] }),
+          sor('confuse','……'),
+        ] } ] },
       rooffall:  { bg:'Belisar_RoofFall', name:'貝利薩爾遺址　崩頂坡', noWild:true, exits:{ right:'muralwalk' } },
       muralwalk: { bg:'Belisar_MuralGallery', name:'貝利薩爾遺址　壁畫長廊', noTime:true, exits:{ left:'rooffall', right:'stairwell', up:'forge' } },
       stairwell: { bg:'Belisar_SpiralWell', name:'貝利薩爾遺址　旋梯井', noTime:true, noWild:true, exits:{ up:'mirrorpool', left:'muralwalk', down:'incense' } },
@@ -5018,8 +5035,68 @@ export const TOWNS = {
              那是美術的檔，由他們走 `tools/recycle.sh` 收（已回報）。
            ⚠ 這是**新增不是同名覆蓋**（四個都是新檔名）⇒ 不必動 `ASSET_VER`。 */
       entrance:  { bg:'Belisar_Exterior', name:'貝利薩爾遺址　外廓', noWild:true,
-        exits:{ up:'foyer' }, sail:{} },
-      altar:     { bg:'Belisar_OldAltar', name:'貝利薩爾遺址　古代祭壇', noTime:true, exits:{ up:'floodway' } },
+        exits:{ up:'foyer' }, sail:{},
+        /* ══⚠⚠⚠ 抵達古城入口（ver -1353，Ray 交稿）══════════════════════════
+           ⚠ `need:'ep_day2'` ＝東泊那個翌日的閘門演完（＝這一趟就是為了來這裡）。
+           ⚠ 收尾**強制移轉到祭壇**（`goto`）：稿上是「（厚重推門聲）→ 大廳祭壇」，
+             玩家不是自己走過 12 格走進去的。
+           ⚠⚠ **「大廳祭壇」＝ `altar`（古代祭壇）**，不是 `greathall`（中央大廳）——
+             這是我的判讀：那一格的名字就是祭壇，而稿上接著要安雅對著**裝置**發動
+             能力（同木雅克的 `deepaltar`／石製遺蹟的 `altar`）。
+             ⚠ 若你要的是中央大廳，改這一行的 `goto` 就好。 */
+        acts:[ { flag:'ep_bel_enter', need:'ep_day2', goto:'altar', sides:{ RENNA:'L' }, lines:[
+          nou('surprise','裡面有燈光！'),
+          ren('watch','跟木雅克遺蹟的時候一樣嗎……'),
+          sor('back','不過倒是挺安靜的。還真的沒什麼魔獸。'),
+          ren('upset','那麼，事不宜遲。'),
+          /* （厚重推門聲）—— 走既有的門音（鐵律 8，不另找一支）。 */
+          Object.assign(ren('ask','打擾囉。'), { se:'se_kerb_open' }),
+        ] } ] },
+      /* ══⚠⚠⚠ 大廳祭壇的那一場戲（ver -1353，Ray 交稿）══════════════════════
+         ⚠⚠ **髮飾脫落那一拍插 `renna_hairpin_lost`** ＝ 從此蕾娜好感封頂 T3
+           （`progress.affCap`；解除的是 T3 夜襲那一段的 `renna_t4_ok`，鐵律 9）。
+           ⚠⚠⚠ **無髮飾的立繪還沒有**（Ray：插圖先空著，差分也還沒交）——
+             旗已經插著了，圖與切換機制到了再接；現在畫面上她仍是有髮飾那一張。
+             稿上「（差分無髮飾）」那幾拍因此先照一般差分演。
+         ⚠ `noWild` ＝這一格不刷野怪：它是這一段戲的舞台。
+         ⚠ 收尾**強制移轉到下沉中庭**（稿：「中庭場景」）。 */
+      altar:     { bg:'Belisar_OldAltar', name:'貝利薩爾遺址　古代祭壇', noTime:true,
+        noWild:true, exits:{ up:'floodway' },
+        acts:[ { flag:'ep_bel_altar', need:'ep_bel_enter', goto:'courtyard',
+                 sides:{ RENNA:'L' }, lines:[
+          ren('curious','竟然這麼快就找到了。'),
+          nou('cringe','好像……已經在半啟動的狀態了。'),
+          ren('think','會是感應到安雅小姐的關係嗎……？'),
+          sor('side','好啦小公主，到妳上場了。'),
+          any('silent',''),
+          { speaker:'PLAYER', blank:true },
+          any('amazed','！！'),
+          any('answer','說好了喔！'),
+          sor('dying','甜品就能搞定了喔！'),
+          /* 安雅發動能力、裝置啟動 —— 走既有的感應演出（同石製遺蹟那一段，鐵律 8）。 */
+          { speaker:'ANYA', text:'', portrait:{ char:'ANYA', show:false },
+            hide:['SORANA','RENNA','NOUVELLE','ANYA'], fx:'sense', auto:4400 },
+          ren('ask','好，這樣就——'),
+          /* 禍魘咆哮、巨龍天降、畫面震動。 */
+          { speaker:'NARRATION', text:'', shake:true, auto:900 },
+          ren('scream','呀！'),
+          /* ⚠ 「蕾娜倒地髮飾脫落插畫」還沒有（插圖先空著）—— 那一拍先不寫 `cg`。
+             ⚠⚠ **旗掛在這一拍**：從此封頂 T3（見上面的說明）。 */
+          Object.assign(ren('shockedopen','啊……'), { flags:['renna_hairpin_lost'] }),
+          sor('battlecry','危險！'),
+          { speaker:'NARRATION', text:'', shake:true, auto:700 },
+          ren('reachcry','不要！'),
+          sor(null,'妳在想什麼啊！差一點被吞掉的就是妳不是那個髮飾了！'),
+          ren('shockedopen','！！'),
+          nou('Scared2','要來了！'),
+          { battle:'ep_belisar_altar' },
+          sor('side','哈，虛有其表！'),
+          sor('think','喔，逃了！'),
+          { speaker:'NARRATION', text:'', shake:true, auto:700 },
+          any('panic','水！淹出來了！'),
+          sor('ready','要出去了！站起來！'),
+          ren('meltdown','……'),
+        ] } ] },
     },
   },
 };
