@@ -1,4 +1,4 @@
-# HANDOFF — 截至 `ver 2026.09.14-1318`
+# HANDOFF — 截至 `ver 2026.09.15-1326`
 
 > 這一份是**唯一**的交接檔。**下一次交接請直接改這一份，不要再開新檔。**
 >
@@ -13,7 +13,110 @@
 
 ---
 
-# 最新這一輪（-1309 ~ -1318）：飛行地圖撕裂、開機量、東泊接線
+# 最新這一輪（-1326）：驗收工具在 Windows 上全部復活
+
+> ⚠ 這一輪**沒有動遊戲程式**，只動 `tools/`（外加 `config.js` 的 `VERSION`
+> 與 bust 產生的三處版本號）。遊戲行為一個字都沒變。
+
+## 動了哪幾支檔（給美術 session 自保用，鐵律 11）
+
+| 版 | 檔案 |
+|---|---|
+| -1326 | `tools/*.py`（28 支各加一行 import）、**新** `tools/_utf8.py`／`_jsrun.py`／`_font.py` |
+| -1326 | `config.js`（VERSION）、`index.html`／`flight/index.html`／`modules/story.js`（bust 產生） |
+| 憲法 | `CLAUDE.md` §6.5.4（「Windows 上跑不了」那一句已作廢） |
+
+## 問題是什麼
+
+**這台機器（Windows）上，`tools/` 幾乎整層跑不動**，而其中好幾支是憲法指定的驗收：
+
+| 病 | 中招 | 代表 |
+|---|---|---|
+| 主控台 cp950，印到第一個 ⚠ 就 `UnicodeEncodeError` | **22 支** | `bust.py --check`（§5 的快取驗收）崩在印訊息那一行，看起來像工具本身壞了 |
+| 寫死 macOS 的 `jsc` | **7 支** | `script_lint.py`（§6.5.1「稿子轉完一定要跑」）、`map_layout.py`（§6.7.5「回給美術的佈局簡圖只能用它產」） |
+| 寫死 macOS 的字型路徑 | **6 支** | 畫圖那一族 `OSError: cannot open resource` |
+
+⚠⚠ 所以 §6.5.1／§6.7.5 那兩道「一定要跑」的驗收，**在唯一會用到它們的機器上一直是空的**。
+
+## 修法（三支共用檔，鐵律 7／8：一件事一個實作）
+
+- **`tools/_utf8.py`** —— 主控台強制 UTF-8。28 支各加一行 import，不是 22 個地方各貼三行。
+- **`tools/_jsrun.py`** —— 把專案裡的 JS 資料真的跑一次再 dump 成 JSON，唯一一支。
+  **有 jsc 用 jsc（macOS），沒有就用 node**（PATH 上有就認得，不必設定）。
+  · jsc 有內建 `print()`、node 沒有 ⇒ node 那條注入一行 shim，**呼叫端照舊寫 `print`**。
+  · ⚠ 一律走暫存檔不用 `-e`：Windows 命令列上限約 32 KB，而餵進去的常常是整支
+    `town.js`／`config.js`（數百 KB）。
+  · ⚠ `file_url()`：node 的 ESM 不吃 `C:\...` 絕對路徑（當成套件名）—— macOS 的
+    `/a/b.js` 剛好長得像相對路徑，所以以前沒露餡。
+  · ⚠ subprocess 要明寫 `encoding='utf-8'`：`text=True` 走 locale 編碼，而 dump 出來
+    整份是中文 —— 不寫的症狀是「讀不到資料」不是編碼錯誤，會害人查錯方向。
+- **`tools/_font.py`** —— 字型候選由上往下取第一個存在的（macOS→Windows→Linux）。
+  **macOS 的行為一個字沒變。** ⚠ `.ttc` 的 index 是字重、逐字型不同
+  （PingFang 的 4 ≠ 微軟正黑的 4）⇒ 收 `weight` 參數，對不到退回 0，不要炸掉。
+
+## 這一輪量到的（都是當場跑的）
+
+| 項 | 結果 |
+|---|---|
+| `script_lint.py` | **0 個錯誤、17 個提醒**（首次在 Windows 上跑得動） |
+| 　└ 負向測試 | 故意寫壞的檔報得出 `script/broken.js:5` —— **行號對得回原檔** |
+| `bust.py --check` | 先前崩潰 → 現在正常回報；順手清掉走鐘（檔案 `?v=1324` vs config -1325） |
+| `map_layout.py` | 三張圖都出得來（shinier_ruins 21 格/20 邊、shinier 13、northport 13），繁體中文正常 |
+| `enemies_xlsx` | 57 張卡／ASSETS 238 筆／HITFX 讀得到 |
+| `ruin_elevation`／`ruin_heightmap` | 跑完，最高 **302 單位**＝§6.8.1 記的那個數字 |
+| `tools/*.py` 語法 | 33 支，0 錯 |
+
+## 這台機器的工具鏈（-1326 當場確認，第零節那張表的 ③）
+
+| 項 | 實測 |
+|---|---|
+| Python | ⚠ **仍然只有 `py`**（`python`／`python3` 不存在）—— 與舊機一樣 |
+| 版本 | Python **3.10.0** |
+| node | **v24.19.0** 在 PATH 上 ⇒ `_jsrun` 走 node 那條 |
+| 主控台 | **cp950**（所以才需要 `_utf8`） |
+| 中文字型 | `C:/Windows/Fonts/msjh.ttc`（微軟正黑，繁體）⇒ `_font.cjk()` 取到它 |
+| 缺的套件 | `openpyxl`（只有出 xlsx 那兩支要） |
+
+⚠ **文件裡的 `python3 tools/xxx.py` 在這台機器要唸成 `py tools/xxx.py`。**
+
+⚠ `enemies_xlsx export` 另缺 **openpyxl**（沒裝，與這一版無關）。要出表先 `py -m pip install openpyxl`。
+
+## 這一輪**沒有**碰的
+
+- 產生的圖檔（`_layout_*.png`／`belisar_*`）跑完都**還原**了 —— 那些是工具隨時重跑得出來的產物。
+- 遊戲程式、資料、素材：一個字都沒動。
+
+## 還沒做（程式端）
+
+1. ~~無尾綴舊檔退役（`East_*.webp`）~~ → **已經做掉了**（-1319 的 `1203f29`
+   「回收 9 個重複檔」，`ls` 確認過那七張不在了）。
+2. **`Ravn_Church`**：圖**還沒交**（`ls resources/background | grep Ravn_Church` 是空的），
+   節點仍是 `bg:'Ravn_Midtown'` ＋ `bgPending:'Ravn_Church'`。圖到了才改 `bg`、
+   拔 `bgPending`、**補回 `noTime:true`**。
+3. **兩支音檔交了但從來沒接上**（`script_lint` 報的，-922 入庫至今）：
+   · `resources/audio/se/se_cannonslide.mp3`（⚠ 還是 `.mp3`，§6.6 規約是 m4a）
+   · `resources/audio/bgm/Peritune_Mystic_Tides_loop.m4a`
+   兩支**全專案零引用**，是木雅克神殿那一批的素材。**要接在哪一拍是 Ray 的決定**，
+   不要自己發明用途；接的時候別忘了補 `tuning.fileGain` 那一列（§6.6）。
+4. 原「接下來的事項」第 5／7／8／11 項**照舊等 Ray**（貝利薩爾降落旗、山谷敵人卡、
+   瓦努努 Boss 卡、ImageBitmap 要不要入憲）。
+
+---
+
+# 上一輪（-1319 ~ -1325）：以下照 commit 訊息整理，**我沒有逐項複驗**
+
+- -1319　標記點進地圖編輯器；教學期間連鍵盤都不給操船
+- -1320　無名遺蹟＝瓦努努（兩筆併一筆、接上地圖內容與地表量體）
+- -1321　讀取間隙不再露出首頁與挑戰立繪／**憲法鐵律 11 改寫**（美術 session 被下 code 指令要**拒絕**）
+- -1322　遺蹟掃到才出現，而且是淡入
+- -1323　攝政王廣場五張重畫；主角的空白格換成冷鋼藍
+- -1324　遊戲起始時間改成 **1908 年 10 月 11 日**
+- -1325　雪都三格重修 12 張（清掉輕軌與架空線）
+- 憲法另加：§5 產圖第五條鐵則（模型會「越塞越多東西」）、銀月大陸只有一輪銀月
+
+---
+
+# 再上一輪（-1309 ~ -1318）：飛行地圖撕裂、開機量、東泊接線
 
 > ⚠ 這一輪跑在**新機器**（RTX 4070 SUPER / 2560×1440）。第零節那些是**舊機器**的數字，
 > 兩者不要混用。
