@@ -6,6 +6,7 @@
   9 以內就全部連成一群 ＝ 那些只是手繪斷點；要 20 以上才收斂 ＝ 真的斷了。
 """
 import sys, json
+import _utf8  # noqa: F401  # 主控台 UTF-8（中文 Windows 的 cp950），見 tools/_utf8.py
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
 

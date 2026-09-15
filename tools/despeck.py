@@ -10,6 +10,7 @@
    獨立塊，把「所有非主體的連通塊」當雜訊清掉會把它們一起殺掉。
 """
 import sys, os
+import _utf8  # noqa: F401  # 主控台 UTF-8（中文 Windows 的 cp950），見 tools/_utf8.py
 from collections import deque
 from PIL import Image
 

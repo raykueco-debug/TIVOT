@@ -16,6 +16,7 @@
     --check    只檢查不寫檔，印出會拿掉多少、保留了幾塊內部白
 """
 import sys, os
+import _utf8  # noqa: F401  # 主控台 UTF-8（中文 Windows 的 cp950），見 tools/_utf8.py
 import numpy as np
 from PIL import Image
 from scipy import ndimage

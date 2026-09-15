@@ -17,6 +17,7 @@
      這種 tile 會被貼在牆與頂面兩個方向，**有上下之分就會穿幫**。
 """
 import sys, numpy as np
+import _utf8  # noqa: F401  # 主控台 UTF-8（中文 Windows 的 cp950），見 tools/_utf8.py
 from PIL import Image
 
 

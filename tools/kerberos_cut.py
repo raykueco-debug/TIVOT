@@ -24,6 +24,7 @@
   它們就一定對稱。改圖只要重跑 align 更新 PLATE_BOX 與 ARROW_TOP。
 """
 from PIL import Image
+import _utf8  # noqa: F401  # 主控台 UTF-8（中文 Windows 的 cp950），見 tools/_utf8.py
 import numpy as np, os, sys, json, math
 
 # ⚠ 原始分層放 _originals（不入版控，同專案慣例）—— 那幾張加起來 8MB 多，

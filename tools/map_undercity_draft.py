@@ -23,6 +23,7 @@ tools/map_undercity_draft.py —— 地宮迷宮的**拓樸提案圖**（ver -10
 輸出：`resources/map/_layout_undercity.png`（底線開頭＝遊戲不載入，是工單附件）
 """
 import os
+import _utf8  # noqa: F401  # 主控台 UTF-8（中文 Windows 的 cp950），見 tools/_utf8.py
 from PIL import Image, ImageDraw, ImageFont
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

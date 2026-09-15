@@ -17,6 +17,7 @@
       python3 tools/bust.py --check  # 只檢查同不同步（CI／lint 用，回傳碼 1＝不同步）
 """
 import os, re, sys, glob
+import _utf8  # noqa: F401  # 主控台 UTF-8（中文 Windows 的 cp950），見 tools/_utf8.py
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 START = '<!-- BUST:START （由 tools/bust.py 產生，不要手改） -->'

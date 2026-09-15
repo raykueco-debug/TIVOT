@@ -7,6 +7,7 @@
   出不去的地方。
 """
 import sys, numpy as np, cv2
+import _utf8  # noqa: F401  # 主控台 UTF-8（中文 Windows 的 cp950），見 tools/_utf8.py
 from PIL import Image
 f = sys.argv[1] if len(sys.argv)>1 else 'flight/silvermoon_heightmap.png'
 ft = sys.argv[2] if len(sys.argv)>2 else 'flight/silvermoon_terrain.png'

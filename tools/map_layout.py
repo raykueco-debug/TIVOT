@@ -17,6 +17,7 @@ tools/map_layout.py —— 畫「給美術看的佈局簡圖」（ver -909）
 輸出：`resources/map/_layout_<地圖id>.png`（底線開頭＝遊戲不載入，是工單附件）。
 """
 import json, os, subprocess, sys, re
+import _utf8  # noqa: F401  # 主控台 UTF-8（中文 Windows 的 cp950），見 tools/_utf8.py
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 JSC  = '/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc'

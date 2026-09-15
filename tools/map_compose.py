@@ -20,6 +20,7 @@
 輸出：`resources/map/map_<id>.webp` ＋ `resources/map/_spots_<id>.json`
 """
 import argparse, json, math, os, sys
+import _utf8  # noqa: F401  # 主控台 UTF-8（中文 Windows 的 cp950），見 tools/_utf8.py
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 

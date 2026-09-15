@@ -11,6 +11,7 @@ Gemini 生不出真 alpha，所以請它畫在**純青綠底**（#00B140）上�
 ⚠ 門檻是對 #00B140 調的；換底色要重調 KEY。
 """
 import sys, os
+import _utf8  # noqa: F401  # 主控台 UTF-8（中文 Windows 的 cp950），見 tools/_utf8.py
 from PIL import Image
 
 KEY = (0x00, 0xB1, 0x40)          # Gemini 那邊指定的青綠

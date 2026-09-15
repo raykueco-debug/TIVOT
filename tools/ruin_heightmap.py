@@ -19,6 +19,7 @@
    等於交了一張黑圖。第二個參數就是給這個用的：取「那一座的最高點再多兩三成」。
 """
 import io, json, os, re, subprocess, sys, math
+import _utf8  # noqa: F401  # 主控台 UTF-8（中文 Windows 的 cp950），見 tools/_utf8.py
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 JSC  = '/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc'

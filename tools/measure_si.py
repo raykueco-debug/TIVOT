@@ -13,6 +13,7 @@
 ⚠ 這些數字是**那一張圖**的，不可沿用別張（差分是不同姿勢，不是換臉）。
 """
 import sys
+import _utf8  # noqa: F401  # 主控台 UTF-8（中文 Windows 的 cp950），見 tools/_utf8.py
 from PIL import Image
 
 TH = 24          # alpha 門檻

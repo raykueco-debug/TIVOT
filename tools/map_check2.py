@@ -18,6 +18,7 @@
 ⚠ 它驗不出「線接對了但接到別格」：那要靠 `_layout_<id>.png` 肉眼對一次。
 """
 import sys, json, os, subprocess, re
+import _utf8  # noqa: F401  # 主控台 UTF-8（中文 Windows 的 cp950），見 tools/_utf8.py
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
 

@@ -9,17 +9,44 @@ script_lint.py — 劇本稿的體檢工具（ver -342）
 
   python3 tools/script_lint.py
 
-⚠ 資料不是用 regex 猜的：借 macOS 內建的 jsc 把 mainScript.js / speakers.js
+⚠ 資料不是用 regex 猜的：借一支 JS 引擎把 mainScript.js / speakers.js
   真的**執行**一次再 dump 成 JSON（兩支都是純資料，沒有 DOM 依賴）。
   regex 版本在巢狀物件與註解裡的假陽性太多，維護成本比這條路高。
+
+⚠⚠ 引擎兩支都吃（ver -1326）：**macOS 用內建的 jsc，其餘（Windows／Linux）用 node**。
+  以前寫死 jsc ⇒ 這支在 Windows 上**從來沒跑過**，而憲法 §6.5.1 要求「稿子轉完一定要跑」
+  —— 那道驗收在唯一會用到它的機器上是空的。node 裝了就會自己認，不必設定。
 
 ⚠ 音效／BGM 表（story.js 的 SE_FILES / BGM_FILES）也一併對照資料夾：
   加了檔案忘了加進表裡，遊戲會靜默找不到，這裡會報。
 """
-import json, os, re, subprocess, sys, tempfile
+import json, os, re, shutil, subprocess, sys, tempfile
+import _utf8  # noqa: F401  # 主控台 UTF-8（中文 Windows 的 cp950），見 tools/_utf8.py
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 JSC  = '/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc'
+NODE = shutil.which('node')
+
+# ⚠⚠ 引擎有兩支，**行為必須一致**（ver -1326）：macOS 有內建的 jsc 就用它，
+#   沒有（Windows／Linux）就用 node。以前只認 jsc ⇒ 這支在 Ray 的 Windows 上
+#   **從來沒跑過**，而憲法 §6.5.1 寫著「稿子轉完一定要跑」——
+#   等於那道驗收在唯一會用到它的機器上是空的。
+#   ⚠ 兩支的差別只有兩處，都收在這裡（鐵律 7）：
+#     ① 語法檢查：jsc `--module-file=`／node `--check`（要 .mjs 副檔名才吃 import）
+#     ② dump 的印法：jsc 是 `print()`／node 是 `console.log()`
+ENGINE = 'jsc' if os.path.exists(JSC) else ('node' if NODE else None)
+
+# ⚠⚠⚠ Windows 一定要明寫 utf-8：`text=True` 走的是 **locale 編碼**（中文 Windows ＝
+#   cp950），而 dump 出來的 JSON 整份是中文 —— 不寫的話 subprocess 當場解碼失敗，
+#   而症狀是「讀不到腳本資料」不是編碼錯誤，會害人查錯方向。
+def run(cmd):
+    return subprocess.run(cmd, capture_output=True, text=True,
+                          encoding='utf-8', errors='replace')
+
+def io_read(path):
+    return open(path, encoding='utf-8').read()
+
+# 輸出端的 UTF-8 由 tools/_utf8.py 統一處理（見上面的 import）。
 
 BG_DIR, CG_DIR, SI_DIR = 'resources/background/', 'resources/illustration/', 'resources/SI/'
 SE_DIR, BGM_DIR        = 'resources/audio/se/', 'resources/audio/bgm/'
@@ -44,17 +71,27 @@ SRC_FILES = ('script/speakers.js', 'script/mainScript.js', 'script/town.js', 'sc
 def check_syntax():
     bad = 0
     for f in SRC_FILES:
-        r = subprocess.run([JSC, '--module-file=' + os.path.join(ROOT, f)],
-                           capture_output=True, text=True)
-        msg = (r.stdout or '') + (r.stderr or '')
+        path = os.path.join(ROOT, f)
+        if ENGINE == 'jsc':
+            r = run([JSC, '--module-file=' + path])
+            msg = (r.stdout or '') + (r.stderr or '')
+        else:
+            # ⚠ node 要副檔名是 .mjs 才把 import/export 當模組解析；內容**逐字複製**
+            #   （不 strip），行號才與原檔一致 —— 那正是逐檔驗的理由。
+            t = tempfile.NamedTemporaryFile('w', suffix='.mjs', delete=False, encoding='utf-8')
+            t.write(io_read(path)); t.close()
+            r = run([NODE, '--check', t.name])
+            msg = ((r.stdout or '') + (r.stderr or '')).replace(t.name, f)
+            os.unlink(t.name)
         if 'SyntaxError' in msg:
             print('❌ %s 語法錯誤：\n%s' % (f, msg.strip())); bad += 1
     if bad:
         print('\n先修語法，其他檢查跳過。'); sys.exit(2)
 
 def load_data():
-    if not os.path.exists(JSC):
-        print('找不到 jsc（%s）——這支工具依賴 macOS 內建的 JavaScriptCore。' % JSC)
+    if not ENGINE:
+        print('找不到可用的引擎：macOS 的 jsc（%s）不在，PATH 上也沒有 node。\n'
+              '裝一個 node 就好（https://nodejs.org），這支會自己認。' % JSC)
         sys.exit(2)
     check_syntax()
     parts = []
@@ -63,12 +100,13 @@ def load_data():
     #   battle 指到不存在的場次，一樣要在這裡就抓到，不要等演到那一句。
     for f in SRC_FILES:
         parts.append(strip_module(open(os.path.join(ROOT, f), encoding='utf-8').read()))
-    parts.append('print(JSON.stringify({script:MAIN_SCRIPT, entry:MAIN_ENTRY,'
+    emit = 'print' if ENGINE == 'jsc' else 'console.log'
+    parts.append(emit + '(JSON.stringify({script:MAIN_SCRIPT, entry:MAIN_ENTRY,'
                  ' speakers:SPEAKERS, art:ART, towns:TOWNS, cfg:GAME_CONFIG,'
                  ' assets:ASSETS}));')
     t = tempfile.NamedTemporaryFile('w', suffix='.js', delete=False, encoding='utf-8')
     t.write('\n'.join(parts)); t.close()
-    r = subprocess.run([JSC, t.name], capture_output=True, text=True)
+    r = run([JSC if ENGINE == 'jsc' else NODE, t.name])
     os.unlink(t.name)
     if r.returncode != 0 or not r.stdout.strip():
         print('讀不到腳本資料：\n' + (r.stderr or r.stdout)); sys.exit(2)

@@ -13,6 +13,7 @@
 ⚠ 判定溢色只看**邊緣**：植物怪本體是綠的也不會被洗掉（內部不碰）。
 """
 import sys, os
+import _utf8  # noqa: F401  # 主控台 UTF-8（中文 Windows 的 cp950），見 tools/_utf8.py
 from PIL import Image
 
 R = 8          # 影響半徑（像素）

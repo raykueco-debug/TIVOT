@@ -17,6 +17,7 @@ Gemini 被要求「畫透明背景」時，會畫出**視覺上的棋盤格**（
     python3 tools/dekey_checker.py <輸入圖> [輸出.png] [--tol 18] [--win 12] [--check]
 """
 import sys, os
+import _utf8  # noqa: F401  # 主控台 UTF-8（中文 Windows 的 cp950），見 tools/_utf8.py
 import numpy as np
 from PIL import Image
 from scipy import ndimage

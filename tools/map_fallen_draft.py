@@ -9,6 +9,7 @@
    **這一支要回收掉** —— 同一個拓樸不留兩份（鐵律 7）。
 """
 import os, sys
+import _utf8  # noqa: F401  # 主控台 UTF-8（中文 Windows 的 cp950），見 tools/_utf8.py
 from PIL import Image, ImageDraw, ImageFont
 
 FONT='/System/Library/Fonts/PingFang.ttc'

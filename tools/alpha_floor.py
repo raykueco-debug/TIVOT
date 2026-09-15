@@ -23,6 +23,7 @@
   它會先把原檔走 tools/recycle.sh 回收（絕不覆蓋掉唯一的一份），再寫新的。
 """
 import os, subprocess, sys
+import _utf8  # noqa: F401  # 主控台 UTF-8（中文 Windows 的 cp950），見 tools/_utf8.py
 from PIL import Image
 import numpy as np
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """把甲板背景依 flight/index.html 的 drawPanel 幾何合成，看上機後真正露出多少。"""
 import sys, os
+import _utf8  # noqa: F401  # 主控台 UTF-8（中文 Windows 的 cp950），見 tools/_utf8.py
 from PIL import Image
 ROOT='/Users/rayku/Desktop/TIVOT'
 W,H = (int(sys.argv[2]), int(sys.argv[3])) if len(sys.argv)>3 else (390,844)

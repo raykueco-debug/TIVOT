@@ -30,6 +30,7 @@
   自己寫 JS 解析器一定會在某個引號或巢狀上翻車。
 """
 import json, os, re, subprocess, sys
+import _utf8  # noqa: F401  # 主控台 UTF-8（中文 Windows 的 cp950），見 tools/_utf8.py
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 JS   = os.path.join(ROOT, 'script', 'enemies.js')

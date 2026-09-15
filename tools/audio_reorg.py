@@ -15,6 +15,7 @@
   當主詞，不用來源或流水號。
 """
 import io, os, re, subprocess, sys
+import _utf8  # noqa: F401  # 主控台 UTF-8（中文 Windows 的 cp950），見 tools/_utf8.py
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DRY  = '--dry' in sys.argv

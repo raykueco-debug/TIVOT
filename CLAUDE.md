@@ -2180,8 +2180,9 @@ Ray：「點擊離開旅店時 安：『……』…」。節點寫 `onLeave:{fl
     ⚠ 一個都載不到就記 `null`（＝這張插圖不存在），下次不必再試一輪。
   ⚠ **腳本寫錯插圖名不會有人吭聲**：ver -433 抓到 `cg:'noue_fall'`（檔頭範例裡的假名字
     被抄進真腳本），六個候選全部 404，畫面上就是沒有插圖。`tools/script_lint.py`
-    驗得出來 —— ⚠ 但**它需要 macOS 的 `jsc`**，在 Windows 上跑不了，
-    只能手動對一次（`grep -o "cg:'[^']*'"` 對 `ls resources/illustration/`）。
+    驗得出來 —— ⚠⚠ **ver -1326 起 Windows 也跑得動了**（引擎改成「有 jsc 用 jsc、
+    沒有就用 node」），所以**不要再手動對**：直接 `py tools/script_lint.py`。
+    ⚠ 舊註解說「需要 macOS 的 jsc、Windows 上跑不了」——那一句已作廢。
   ⚠ 探測**就是**那一次載入（設 `el.src` 看 onload/onerror），不另開一輪 —— 那等於同一張圖抓兩次。
   ⚠ 為什麼要兩種副檔名：規約是 WebP（§5），但交件常常先是 PNG —— 載不到就整個時段沒背景。
   ⚠ 為什麼要大小寫變體：`clock.band()` 出的是 `Dawn/Day/Dusk/night/midnight`，
