@@ -563,8 +563,18 @@ function spawnAim(){
    ⚠ `dualShotsLeft` 的擁有者是 weapon（§3.4），所以改它的入口在這一邊。
    ⚠ 多出來的瞄準點一定要**收掉**：額度變少而點還留著的話，那幾個點按下去
      `dualShot` 回 false ⇒ 點得到卻沒反應，玩家會以為壞了。 */
-export function setDualBudget(n){
+export function setDualBudget(n, ms){
   state.dualShotsLeft = Math.max(0, n|0);
+  /* ══⚠⚠ **BR 中擊殺：改由 BR 自己那一支計時器跑那 3 秒**（ver -1338，Ray：
+     「BR 時優先走 BR，BR 的三秒跑完就結束」）══
+     BR 平時是 `dualSeconds`(6 秒)；進 overkill 時**重設成 overkill 的 3 秒**。
+     ⚠ 這樣全程**只有一支計時器**在跑（鐵律 8）——-1337 是 BR 的 6 秒與 overkill 的
+       3 秒同時在跑，兩支誰先到誰收尾，讀起來就是「有時候 3 秒有時候 6 秒」。
+     ⚠ 教學不設時限（同 `startDualWindow`）：那一段要讓玩家邊讀邊打。 */
+  if(ms>0 && !state.tutorialActive){
+    clearTimeout(state.dualTimer);
+    state.dualTimer=setTimeout(endDual, ms);
+  }
   const layer=aimLayer(); if(!layer) return;
   while(layer.childElementCount > state.dualShotsLeft && layer.lastElementChild)
     layer.lastElementChild.remove();

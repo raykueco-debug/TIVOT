@@ -550,16 +550,12 @@ export function dualShot(x, y){
   enemyDamage(Math.round(dmg), false, false, 'dual');   // 破防窗口的射擊（ver -423：來源別）
   shotHeal();                          // 回血窗（ver -965：BR 的每一發也算）
   updateStatus();
-  /* ══ 額度打完 ══
-     · 敵人還活著 → 收窗（`endDual` → 殘磚一次性消除）。另一條出路是 4 秒到期。
-     · **敵人已經死了（overkill 中）→ 這就是 Ray 的結束條件 ②「br 額點完」**
-       （ver -1337）：直接走 overkill 的收尾，不要等那 3 秒走完。
-       ⚠ 先把 3 秒的計時器關掉再叫，不然它稍後會再跑一次（`autoClearOverkill`
-         自己有守門，但留著兩個未爆彈沒有意義）。 */
-  if(state.dualShotsLeft<=0){
-    if(state.enemyHp<=0 && !state.saintMode){ clearTimeout(overkillTimer); overkillTimer=null; autoClearOverkill(); }
-    else weapon.endDual();
-  }
+  /* ══ 額度打完就收窗（ver -1338）══ 另一條出路是計時器到期。
+     兩條都走 `endDual` → `onDualClosed`，由那一支決定是「掃殘磚」還是
+     「收掉這一段 overkill」—— **收尾只有一條路**（鐵律 8）。
+     ⚠ -1337 曾經在這裡自己分歧（敵死時直接叫 `autoClearOverkill`），
+       於是同一件事有兩個入口；現在一律交給 `onDualClosed`。 */
+  if(state.dualShotsLeft<=0) weapon.endDual();
   return true;
 }
 
@@ -2126,17 +2122,23 @@ function enterOverkillFx(){
      玩家繼續打瞄準點，那幾發由 `enemyDamage` 進 overkill 點數。
      ⚠⚠ **額度重設成「殘磚數」**（不是原本的 ×2）—— 這一段是 overkill 不是破防，
        份量由 Ray 定成一磚一發。
-     ⚠ 兩個結束條件：**3 秒到**（下面 `armOverkillLimit`，與非 BR 的 overkill 同一個）
-       或 **額度打完**（`dualShot` 裡收尾）。兩條都走 `autoClearOverkill`（唯一的收尾）。 */
+     ⚠ 兩個結束條件：**3 秒到**（由 **BR 自己那一支計時器**跑，見 `weapon.setDualBudget`）
+       或 **額度打完**。兩條都是「BR 關窗」，收尾統一在 `onDualClosed`（唯一的收尾）。 */
   state.cells.forEach(c=>c.classList.remove('next'));   // 免順序（含聖徒化追打）→ 撤下「下一格」高亮
   if(state.saintMode) return;   // 聖徒化：3 秒限時不套（由倒數槽/反應時限施壓），saintTap 走免順序分支
   // 照順序獎勵的起點：擊殺這一槍可能來自雙槍/反擊（免順序清格），游標會停在已消格上
   //   → 先推到下一個還活著的號碼，玩家一進 overkill 就接得回順序鏈。
   advanceExpectPastCleared();
-  /* BR 還開著 → 把額度換成殘磚數（瞄準點跟著補／收），盤面維持鎖住。 */
+  /* ══ BR 還開著 → **這一段由 BR 自己跑**（ver -1338，Ray：「BR 時優先走 BR，
+     BR 的三秒跑完就結束」）══ 額度換成殘磚數、BR 的計時器重設成 overkill 的 3 秒，
+     盤面維持鎖住。
+     ⚠ **不要再 `armOverkillLimit()`**：那會變成兩支計時器同時在跑（BR 的與 overkill
+       的），誰先到誰收尾 —— 讀起來就是「有時候 3 秒有時候 6 秒」。收尾統一在
+       BR 關窗那一刻（`onDualClosed`）。 */
   if(state.dualWield){
     const left=state.cells.filter(c=>!c.classList.contains('done')).length;
-    weapon.setDualBudget(left);
+    weapon.setDualBudget(left, OVERKILL_LIMIT_MS);
+    return;
   }
   armOverkillLimit();
 }
@@ -2145,16 +2147,21 @@ function armOverkillLimit(){
   clearTimeout(overkillTimer);
   overkillTimer=setTimeout(autoClearOverkill, OVERKILL_LIMIT_MS);
 }
-/* ══ BR 窗口關掉的那一刻要做什麼 —— 判定只有這一支（ver -1337）══
+/* ══ BR 窗口關掉的那一刻要做什麼 —— 判定只有這一支（ver -1338）══
    · 敵人還活著 → 殘磚一次性消除（-1330 那一條）
-   · 敵人已經死了（BR 中途擊殺）→ **這裡什麼都不做**：那一段的收尾是
-     `autoClearOverkill`（連環碎裂 → 進下一隻），而它本來就會把窗口收掉 ——
-     在這裡再做一次會變成兩條收尾路徑互相打架（鐵律 8）。
-   ⚠ 也**不要**在這裡把盤面交還給玩家點：Ray 定的是「br ovk 時下方磚不可點」，
-     這一段從頭到尾都不給點。 */
+   · 敵人已經死了（BR 中途擊殺）→ **直接收掉這一段 overkill**（連環碎裂 → 進下一隻）。
+     BR 的計時器就是那 3 秒（見 `enterOverkillFx`），所以「BR 關窗」＝「這一段結束」，
+     兩個結束條件（3 秒到／額度打完）都會走到這裡來 —— 收尾只有一條路（鐵律 8）。
+   ⚠⚠ **不要把盤面交還給玩家點**：Ray 定的是「br ovk 時下方磚不可點」「不要解鎖」，
+     這一段從頭到尾都不給點；殘磚由 `autoClearOverkill` 自己碎掉。
+   ⚠ 這裡是在 `endDual` 裡面被叫的（`dualWield` 已經是 false），所以
+     `autoClearOverkill` 內那一行 `if(state.dualWield) weapon.endDual()` 不會再遞迴。 */
 export function onDualClosed(){
   if(state.over) return;
-  if(state.enemyHp>0) brSweepBoard();
+  if(state.enemyHp>0){ brSweepBoard(); return; }
+  if(state.saintMode) return;                    // 聖徒化的追打不吃這一套
+  clearTimeout(overkillTimer); overkillTimer=null;
+  autoClearOverkill();
 }
 function endOverkillFx(){
   clearTimeout(overkillTimer); overkillTimer=null;
