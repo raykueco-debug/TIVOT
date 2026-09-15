@@ -69,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.15-1355';
+export const VERSION = 'ver 2026.09.15-1356';
 
 export const GAME_CONFIG = {
 
@@ -3693,9 +3693,17 @@ export const GAME_CONFIG = {
      搭檔 cut-in `combat` 的 rIC 那一支。開機那一批是**重複**做了它們的事。
    ⚠ 新增畫面時：**它要的圖由它自己載**，不要加進這張表（那就是分工的意思）。 */
 export const HOME_IMG = {
-  /* 主頁／讀取頁／挑戰（出擊整備）真的看得到的圖。實測 17 張、解碼後 75 MB。 */
-  prefixes: ['home_', 'weapon_', 'partner_', 'switch_'],   // logo ＋ 出擊整備的卡
-  keys:     ['inspector_freya'],                           // 讀取頁的立繪
+  /* 主頁／讀取頁／挑戰（出擊整備）真的看得到的圖。
+     ⚠⚠⚠ **`partner_` 前綴太寬**（ver -1356 收窄）：`partners` 現在也裝著**本篇**的
+       搭檔（索拉娜／諾薇兒／安雅），而**挑戰的選人畫面只列 `challengePartners`**
+       （蕾妮／馬季諾，§6.5.2）—— 那三張在首頁與挑戰**都看不到**，卻每次開機都抓
+       （實測 Sorana 215 KB ＋ Nouvelle 138 KB ＋ Anya 201 KB ＝ **554 KB**）。
+     ⇒ 改成**從 `challengePartners` 推**（鐵律 7：名單只有一份，日後改可選搭檔
+       這裡自動跟上）。列死一份的話必然走鐘。 */
+  prefixes: ['home_', 'weapon_', 'switch_'],               // logo ＋ 出擊整備的武器卡與切換 vfx
+  keys: ['inspector_freya']                                // 讀取頁的立繪
+          .concat((GAME_CONFIG.challengePartners || Object.keys(GAME_CONFIG.partners || {}))
+                  .map(k => 'partner_' + k)),              // 挑戰**選得到**的那幾位
 };
 
 /* ══⚠⚠⚠ **音訊也要分工**（ver -1354，Ray：「我每天都要修一次」「檢查首頁是否只讀

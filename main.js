@@ -1065,9 +1065,28 @@ window.addEventListener('pagehide', refreshBoot);
          而它們要到「出擊整備」打開才看得到 —— `fetch` 把位元組放進 HTTP 快取，
          那一頁一開 `<img>` 現抓即顯示，**而且只解碼真的被畫出來的那幾張**。
          這就是 -1295 那一課：預載的成本要算解碼後的像素，不是檔案大小。 */
-    const imgsP = sfxP.then(()=> cap(loadPortrait().then(()=>Promise.all(
-        imgs.map(src=>fetch(src).catch(()=>{}).then(()=>{ tick(); }))
-      )), 6000));
+    /* ⚠⚠⚠ **不要抓 DOM 上已經在抓的那幾張**（ver -1356）：`combat.bootIdle()` 與
+       `loadPortrait()` 在這一段之前就把幾個 `<img>` 的 `src` 設好了（團徽、讀取頁
+       立繪、切換 vfx…），而這裡的 `fetch` 比它們晚約 80ms 發出 ——
+       **第一次的請求還在路上、還沒進 HTTP 快取，所以同一個網址被抓了兩次**。
+       實測開機重複抓 5 張（團徽 542 KB ＋ 立繪 ×2 ＋ 切換 ＋ 武器卡）。
+       ⚠ 這不是「多花一點流量」而已：手機並發只有 6 條，重複的請求會排掉別人。
+       ⚠ 作法是**現讀 DOM**（不是列一張名單）：日後誰在開機多設一個 `src`，
+         這裡自動跳過它 —— 列名單必然走鐘（鐵律 7）。 */
+    const domSrcs = () => {
+      const S = new Set();
+      try{ for(const im of document.images) if(im.src) S.add(im.src); }catch(_){}
+      return S;
+    };
+    const imgsP = sfxP.then(()=> cap(loadPortrait().then(()=>{
+        const have = domSrcs();
+        const todo = imgs.filter(src => !have.has(new URL(src, location.href).href));
+        const skipped = imgs.length - todo.length;
+        if(skipped) console.log('[load] 開機圖：跳過 '+skipped+' 張（DOM 已在抓）');
+        /* 被跳過的那幾張也要記進度 —— 不然進度圈永遠到不了 100%。 */
+        for(let i=0;i<skipped;i++) tick();
+        return Promise.all(todo.map(src=>fetch(src).catch(()=>{}).then(()=>{ tick(); })));
+      }), 6000));
     /* ③ 音樂：**上膛**（armOnly）不出聲；起播一律等 go() 那一下手勢（見下方說明）。 */
     imgsP.then(()=>{
       SFX.playBgm(asset('bgm_home'), { volume: bgmVol('bgm_home'), armOnly:true });

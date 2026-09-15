@@ -1022,8 +1022,15 @@ export function triggerIntruder(){
 export function applyConfigToDOM(){
   const pn = GAME_CONFIG.partners[GAME_CONFIG.defaultPartner];
   setEnemy(GAME_CONFIG.currentEnemy, { noArt:true });   // ver -1321：開機不載挑戰那張立繪
-  const cImg = $('cutinImg');
-  if(cImg && pn && pn.cutin) cImg.src = asset(pn.cutin);
+  /* ⚠⚠⚠ **開機不預先掛 cut-in 的 src**（ver -1356，讀取分工）：`#cutinImg` 是
+     `index.html` 裡本來就在的元素，這裡一設 `src`，**開機就會抓那張 cut-in**
+     （實測 `Luna_CI_saint.jpg` 95 KB，initiator `img`）—— 而它要到**戰鬥裡**
+     聖徒化降臨那一刻才看得到。
+     ⚠ 拿掉不會壞：`saint.playCutin` 每次都自己設 `src`（每一張 CI 不同），
+       而**開打時** `combat.warmPartnerCutins()`（ver -837）已經把這一場搭檔會用到的
+       cut-in 全部抓下來解碼好了 —— 那才是它該被載的時候。
+     ⚠ 同 `#claw` 那一條（§CLAUDE 鐵律 13）：**開機就在 DOM 上的元素，
+       任何在開機那一刻給它的 `src`／CSS 背景，都會變成首頁的流量。** */
   const emb = $('homeEmblem');
   if(emb && !emb.src) emb.src = asset('home_emblem');   // 主畫面徽記
 }
