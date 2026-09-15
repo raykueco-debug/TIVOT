@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.15-1345';
+export const VERSION = 'ver 2026.09.15-1347';
 
 export const GAME_CONFIG = {
 
@@ -2285,6 +2285,16 @@ export const GAME_CONFIG = {
        （-1129 曾在這裡填 `noEvalBeforeStage:2`，那會讓 stage1 也不評，與他的話相反。
          欄位機制留著給日後某一場真的要特例時用，目前沒有卡在用。） */
     guild_hunter: { enemy:'guild_hunter', special:true, noSaint:true, noPartner:true },
+    /* ══⚠⚠ 東方泊地・公會的賞金獵人（ver -1346，Ray 交稿：「先用帝都的賞金獵人圖
+       敵卡也是」「（戰鬥結束）（無評價）」）══
+       ⚠⚠ **另開一張卡、不直接借 `guild_hunter`**：`enemy` 是同一隻沒錯，但這一場
+         的規則不同 ——
+         · `noEval:true` ＝這一場**不評價**（Ray 明寫）。帝都那張沒有這一格，
+           到了本章蕾娜是會評的（§6.5.2「預設就有評價，沒有的是特例」）。
+         · **不寫 `special`** ＝這是約會途中的劇情戰，不是玩家自己走過去挑的特殊戰
+           —— 戰敗走回檔（§6.5.2 那張表），不是「一次就送旅店」。
+       ⚠ 照舊不給聖徒化／搭檔技（同帝都那一場：對手是人類，不是禍魘）。 */
+    ep_guild_hunter: { enemy:'guild_hunter', noEval:true, noSaint:true, noPartner:true },
     /* 北方泊地的城鎮戰（ver -583）：每一格走進去打一場，共用這一張佔位卡。
        ⚠ **不禁聖徒化／搭檔技**：Ray 沒說要禁（禁了要明寫 noSaint/noPartner）。
        ⚠ 打輸走一般流程 —— 城鎮插入戰的敗北會被抬回這座城的旅店（§6.5.2 那張表）。

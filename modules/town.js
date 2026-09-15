@@ -799,6 +799,28 @@ function allSeen(){
 /* 這個節點現在該演哪一段主線戲（`acts`）。⚠ 條件現在只有 `day`（遊戲內第幾天，
    由開局日推出來 —— 時鐘是唯一的真相，不另存「第幾天」的旗標）。
    ⚠ 由上往下取**第一個**沒演過又符合條件的，所以資料的順序就是劇情的順序。 */
+/* ══⚠⚠⚠ 約會宵禁：過了時刻、人又不在旅店 → 她自己先回去（ver -1346，Ray 的東泊稿：
+   「時間超過 18:00，而角色不在旅店　諾：哇，這麼晚了。／蕾娜小姐回來的時候沒人可不行，
+     我先回去囉。」）══════════════════════════════════════════════════════════
+   資料寫在**城**上（鐵律 1）：
+     `dateCurfew:{ hour:18, notNode:'inn', by:{ NOUVELLE:{ flag, lines }, … } }`
+   ⚠⚠ **回傳的是一個合成的 `act`**，不是另一條播放路徑（鐵律 8）——
+     這樣立繪、`sides`、旗標、`endDate`、清場全部走 `enter()` 那一份既有的收尾。
+   ⚠⚠ **名單裡沒有的人就不會自己回去**（索菈娜：Ray「索菈娜不會自主回去」）——
+     那是**資料**說的，程式不為她寫特例。
+   ⚠ `notNode` ＝在旅店裡不觸發（她人都到家了，不必宣告「我先回去」）。
+   ⚠ 排在 `actDue` **之前**：這是時間規則，不是那一格的戲 —— 過了 18:00 才走到
+     甜品店的話，她會先說要回去，那一格的約會戲就留到下次（那正是「太晚了」的意思）。 */
+function dateCurfewAct(n){
+  const T=TOWNS[townId]||{}, D=T.dateCurfew;
+  if(!D || !D.by) return null;
+  const who=datingWho(); if(!who) return null;
+  const e=D.by[who]; if(!e || !e.lines || !e.lines.length) return null;
+  if(D.notNode && nodeId===D.notNode) return null;
+  if(clock.hourF() < (D.hour!=null ? D.hour : 18)) return null;
+  if(e.flag && prog.hasFlag(e.flag)) return null;
+  return { flag:e.flag, lines:e.lines, endDate:true, sides:e.sides||D.sides };
+}
 function actDue(n){
   const muted = mutedTalks();
   for(const a of (n && n.acts) || []){
@@ -2667,7 +2689,7 @@ export function enter(id){
        所以第二趟必定輪到 `actDue`，讀起來就是「打完才講話」。
      ⚠ 一趟進圖同種不重複（`wildDone`），所以不會變成「打完又冒一隻」。
      ⚠ 休息處（`restActDue`）不受影響：那幾格一律 `noWild`，本來就不出怪。 */
-  const act = (immediate ? null : wildActDue(n)) || actDue(n) || restActDue(n);
+  const act = (immediate ? null : wildActDue(n)) || dateCurfewAct(n) || actDue(n) || restActDue(n);
   let ev = act ? null : eveningDue(n);
   /* 這一次抵達**原本**要演的進場對白（打烊、演過了、或段落裡有**回房休息的夥伴**
      （ver -459，見 linesBlockedByRest）就是空的 —— 後者旗標不記，之後照演）。
@@ -2740,6 +2762,17 @@ export function enter(id){
              ⚠ 記的是「自由探索」那一支旗（見 `freeExploreFlag` 的說明）。 */
           if(act.endStoryExplore) prog.addFlags([freeExploreFlag()]);
           if(act.storyExplore)    prog.removeFlags([freeExploreFlag()]);
+          /* ══⚠⚠ `endDate:true` ＝這一段演完，約會結束（ver -1346，Ray 的東泊稿：
+             「時間超過 18:00，而角色不在旅店」那一段 —— 她自己先回旅店了）══
+             ⚠ 走既有的 `endDate()`（唯一那一支，鐵律 8）：它只解除**約會**那一種
+               同行，殘留事件帶起來的不受影響。
+             ⚠ 排在 `flag` 之後 —— 那一段自己的旗要先記，不然下一次抵達又演一次。 */
+          if(act.endDate) endDate();
+          /* ⚠⚠ 演完把旅店大廳重畫一次（ver -1346）：門燈是 `doorState()` 現算的，
+             但那一支只在抵達與敲門之後跑 —— 這一段演的期間時鐘可能走了、旗可能立了
+             （蕾娜晚上回來那一段就是兩者都有），門會停在進門那一刻的樣子。
+             ⚠ 冪等、而且不在旅店時什麼都不做（`refreshDoors` 自己查 DOM）。 */
+          try{ inn.refreshDoors(); }catch(_){}
           /* ⚠⚠ **主線段落演完也要開「下一步」的機會**（ver -664）：`nextFavor`
              以前只掛在**進場對白**那一支上，而第三天那些戲都是 `acts` ——
              於是「應要求直接去教堂 +5」整條不會生效（實測好感是 0）。

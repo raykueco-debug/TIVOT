@@ -756,6 +756,14 @@ function runBranch(arrived, sat){
      一顆定位錯的鈕比晚一拍出現糟得多（同櫃台鈕的作法）。
    ⚠ 背景載完（`bgFor` 的 onload）會再呼叫一次，所以晚到的圖也擺得到。 */
 let wantSit=false, wantSleep=false;
+/* ══⚠⚠ 演完一段之後把大廳重畫一次（ver -1346）══
+   門燈是 `doorState()` **現算**的，但那一支只在 `arrive`／敲門之後跑 ——
+   於是「在旅店演完一段戲，中間時鐘走了、或旗立了」的時候，門還停在抵達那一刻的樣子。
+   實測：蕾娜晚上回來那一段演完，`ep_renna_night` 立了、時鐘也過了 19:00
+   （外出行程結束），但四扇門仍是進門時的狀態，要走出去再走回來才會更新。
+   ⚠ 這一支只重畫，不改任何狀態 —— 呼叫端（town 的 act 收尾）不必知道門的規則。 */
+export function refreshDoors(){ try{ refresh(); }catch(_){} }
+
 export function relayout(){
   if(!layer) return;
   const spots = (node && node.innSpots) || {};

@@ -4193,6 +4193,19 @@ export const TOWNS = {
          那時 `goto===nodeId`，不重新 `enter()` 一次的話那一格的 `acts` 沒有人叫得動。
        ⚠ 「該回去看看了。」是**旁白**（`NARRATION`：沒有立繪、名字欄空著）——
          同北方泊地那一句，不是某個人在講話。 */
+    /* ══⚠⚠ 18:00 之後人不在旅店 → 她自己先回去（ver -1346，Ray 交稿）══
+       判定與播放走 `modules/town.js` 的 `dateCurfewAct`（合成一個 act 交給既有的
+       收尾，鐵律 8）。
+       ⚠⚠ **索菈娜不在這張表裡** —— Ray：「索菈娜不會自主回去」。那是**資料**
+         說的，程式不為她寫特例。 */
+    dateCurfew:{ hour:18, notNode:'inn', by:{
+      NOUVELLE:{ flag:'ep_nou_home', lines:[
+        nou('Shocked2','哇，這麼晚了。'),
+        nou('runserious','蕾娜小姐回來的時候沒人可不行，我先回去囉。') ] },
+      ANYA:{     flag:'ep_anya_home', lines:[
+        any('Silent','……我有點累了。'),
+        any('talk','先回旅店。') ] },
+    } },
     gates:[ { flag:'ep_evening', need:'ep_arrive', hourOfDay:[20,24],
               goto:'inn', enterAgain:true,
               lines:[ { speaker:'NARRATION', text:'該回去看看了。' } ] } ],
@@ -4320,9 +4333,31 @@ export const TOWNS = {
       gunstore:   { bg:'East_Firearm',    name:'東方泊地　武器店',
         exits:{ back:'oldtown' },
         shop:'ep_gunstore', keeperWho:'GUNSMITH_EP',
-        hours:[8,20], closed:'鐵捲門拉到底了。門邊的牌子寫著「八點開門」。' },
+        hours:[8,20], closed:'鐵捲門拉到底了。門邊的牌子寫著「八點開門」。',
+        /* ══⚠⚠⚠ 約會・索菈娜（ver -1346，Ray 交稿）══════════════════════════
+           稿上寫「武器店：**打靶挑戰後**：索：也讓我試試嘛！」—— 所以這一段的前提是
+           玩家在**這座城**打過靶。
+           ⚠⚠⚠ **東方泊地目前沒有打靶場次**（帝都是 `range_trainee`、北方泊地是
+             `np_range`，各自一張戰鬥卡＋`config.shop.shops[].challenge`）——
+             `ep_range_done` **還沒有人插**，所以這一段現在是**到不了的**。
+             那是刻意的：沒有打靶就讓她說「也讓我試試」讀不通。
+             ⇒ 要開的話 Ray 要給一張打靶卡（秒數門檻／獎品），程式端再補
+               `challenge:'ep_range'` 與插旗那一拍。已回報。
+           ⚠ 「索菈娜打靶插圖」還沒有（插圖先空著）；「槍聲」那一拍用既有的
+             `se_weapon_pistol_03`（同公會那一場主角那一發，鐵律 8 —— 不另找一支）。 */
+        acts:[ { flag:'ep_range_sor', withWho:'SORANA', need:'ep_range_done', lines:[
+          sor('hug','也讓我試試嘛！'),
+          { speaker:'PLAYER', text:'', auto:900, se:'se_weapon_pistol_03' },
+          sor('think','比想像中難耶！還是飛刀順手。'),
+        ] } ] },
+      /* ══ 約會・安雅（ver -1346）══ ⚠ 稿上是「尤拉西亞湖」—— 照稿寫，
+         這個湖名目前只出現在台詞裡（沒有地點資料）。 */
       dock:       { bg:'East_Dock',       name:'東方泊地　倉庫碼頭',
-        exits:{ back:'oldtown' } },
+        exits:{ back:'oldtown' },
+        acts:[ { flag:'ep_dock_anya', withWho:'ANYA', lines:[
+          any('curious','這就是……尤拉西亞湖？'),
+          any('amazed','好壯觀……'),
+        ] } ] },
       /* ══ 賞金獵人公會（ver -1340，Ray 交件指派櫃台 `NPC_GuildCounter_SI_v5`）══
          ⚠ **不寫 `boardFlag`**（同北泊）：登記是在帝都做的（`guild_registered`），
            到了別的城不必再登記一次。
@@ -4333,7 +4368,34 @@ export const TOWNS = {
       guild:      { bg:'East_Guild',      name:'東方泊地　賞金獵人公會',
         exits:{ back:'oldtown' },
         board:'eastport', keeperWho:'COUNTER_EP',
-        hours:[8,20], closed:'大門上了閂。委託要等明天早上八點。' },
+        hours:[8,20], closed:'大門上了閂。委託要等明天早上八點。',
+        /* ══⚠⚠⚠ 約會・索菈娜（ver -1346，Ray 交稿）══════════════════════════
+           ⚠ 賞金獵人「先用帝都的賞金獵人圖　敵卡也是」（Ray）—— speaker 用既有的
+             `HUNTER`、戰鬥走 `ep_guild_hunter`（同一隻敵人，但**無評價**、
+             **不是特殊戰**；理由見 config.js 那張卡的說明）。
+           ⚠ 櫃台用這座城自己的 `COUNTER_EP`（不是帝都那一位 —— 顯示名一樣但是
+             不同的人，§6.5.6）。
+           ⚠⚠ 三個人同台要分兩邊（§6.5）：索菈娜本位右、獵人與櫃台也是右 ⇒
+             `sides` 把索菈娜挪到左（她是我方，玩家的同伴在左）。 */
+        acts:[ { flag:'ep_guild_sor', withWho:'SORANA',
+                 sides:{ SORANA:'L' }, lines:[
+          sor('confuse','……這些人幹嘛老盯著我看？'),
+          { speaker:'HUNTER', text:'唷喔！舞孃小姐，是不是走錯地方啦？',
+            portrait:{ char:'HUNTER', show:true } },
+          sor('tired',''),
+          sor('guard',''),
+          { battle:'ep_guild_hunter' },
+          { speaker:'COUNTER_EP', text:'你傻了啊？去挑釁森住民做什麼？',
+            portrait:{ char:'COUNTER_EP', show:true } },
+          sor('tease','哇超弱。'),
+          sor('remind','我們的暴力神父可比你們強多囉。'),
+          { speaker:'HUNTER', text:'那麼厲害去就去討伐貝利薩爾的魔物啊！',
+            portrait:{ char:'HUNTER', show:true } },
+          { speaker:'HUNTER', text:'聖王廳的正事不幹跑來找我們打架幹什麼？' },
+          { speaker:'COUNTER_EP', text:'是你找人家打架吧？',
+            portrait:{ char:'COUNTER_EP', show:true } },
+          { speaker:'HUNTER', text:'呿。', portrait:{ char:'HUNTER', show:true } },
+        ] } ] },
 
       /* ── 三、上城區（四向樞紐） ── 左＝廣場、右＝餐飲街、上＝旅店、下＝雜貨舖 */
       uptown:     { bg:'East_Uptown',     name:'東方泊地　上城區',
@@ -4349,18 +4411,44 @@ export const TOWNS = {
            不會踩到「一直按同一個方向走不出去」那個坑（憲法 ver -902）。 */
       tavern:     { bg:'East_Bistro',     name:'東方泊地　餐飲街',
         exits:{ back:'uptown', up:'restaurant', right:'cafe', down:'dessert' } },
+      /* ══ 約會・諾薇兒（ver -1346，Ray 交稿）══ `withWho` ＝正在跟她約會才演。
+         ⚠ 「用餐插圖」還沒有（Ray：插圖先空著）—— 那一拍先不寫 `cg`，圖到了補一行。
+         ⚠ 「（肚子叫）」是**音效**，稿上沒指定是哪一支 —— 先不接，等 Ray 給鑰匙。 */
       restaurant: { bg:'East_Restaurant', name:'東方泊地　餐廳',
-        exits:{ back:'tavern' } },
+        exits:{ back:'tavern' },
+        acts:[ { flag:'ep_dine_nou', withWho:'NOUVELLE', lines:[
+          nou('happy','東海的料理……'),
+          { speaker:'PLAYER', blank:true },
+          nou('Shocked','沒有啦，我沒有很餓！'),
+          nou('hungry',''),
+          { speaker:'PLAYER', blank:true },
+          nou('concern','嗯……'),
+          Object.assign(nou('bigsmile','好。'), { aff:{ nouvelle:2 } }),
+        ] } ] },
       cafe:       { bg:'East_Cafe',       name:'東方泊地　咖啡廳',
         exits:{ back:'tavern' } },
+      /* ══ 約會・安雅（ver -1346，Ray 交稿）══
+         ⚠ `amazed`／`curious` 這兩張**還沒有圖**：查不到差分會自動退回本尊立繪
+           （§6.10 的 `missingExpr`），台詞照播 —— 圖到了不必改這裡。
+         ⚠ 「趴在櫥窗的插圖」還沒有（插圖先空著）。 */
       dessert:    { bg:'East_Dessert',    name:'東方泊地　甜品店',
-        exits:{ back:'tavern' } },
+        exits:{ back:'tavern' },
+        acts:[ { flag:'ep_sweets_anya', withWho:'ANYA', lines:[
+          any('amazed',''),
+          any('amazed','好可愛……'),
+          Object.assign(any('curious','這真的是可以吃的嗎？'), { aff:{ anya:3 } }),
+        ] } ] },
       /* ══ 雜貨舖（ver -1340，Ray 交件指派店主 `NPC_Grocer_SI_v1`）══
          ⚠ 不寫 `kind`，理由同武器店那一格。 */
       grocery:    { bg:'East_Grocerie',   name:'東方泊地　雜貨舖',
         exits:{ back:'uptown' },
         shop:'ep_grocery', keeperWho:'SHOPKEEP_EP',
-        hours:[8,20], closed:'櫥窗的燈熄了，百葉窗放了下來。' },
+        hours:[8,20], closed:'櫥窗的燈熄了，百葉窗放了下來。',
+        /* ══ 約會・諾薇兒（ver -1346）══ */
+        acts:[ { flag:'ep_shop_nou', withWho:'NOUVELLE', lines:[
+          nou('surprise','哇，這裡東西好多。'),
+          nou('happy','真不愧是港都耶。'),
+        ] } ] },
       /* ══⚠⚠⚠ 旅店（ver -1344，Ray 的東泊稿）══════════════════════════════
          「18:00 前回旅店可與女主角約會，但蕾娜不在。」
          ⚠⚠ **蕾娜不在房裡**（`out:['RENNA']`）—— 她去大學查檔案了（抵達那一段
@@ -4415,7 +4503,7 @@ export const TOWNS = {
                     knock:{
           NOUVELLE:{ low:'要有人在這邊等蕾娜小姐才行。',
                      date:[ nou('surprise','咦？好啊！'),
-                            nou('bigsmile','一起逛逛吧！') ] },
+                            Object.assign(nou('bigsmile','一起逛逛吧！'), { flags:['ep_date_nou'] }) ] },
           ANYA:{     low:'我想一個人待著。',
                      /* ⚠ 稿上這三拍寫的是「諾：」，但立繪檔名全是 `Anya_SI_*`
                         （`answer`／`talkshy`／`smile`）、而且這是**安雅那一條**約會線
@@ -4426,13 +4514,65 @@ export const TOWNS = {
                             { speaker:'PLAYER', blank:true },
                             any('talkshy','東海的甜點街……很有名……'),
                             { speaker:'PLAYER', blank:true },
-                            any('smile','好！') ] },
+                            Object.assign(any('smile','好！'), { flags:['ep_date_anya'] }) ] },
           SORANA:{   absent:true,
                      /* ⚠ `shy` 還沒有圖（同上，會退回本尊）。 */
                      date:[ sor('side','噢！當然要去逛逛呀！'),
                             sor('embarassed','不過我也不知道要去哪就是了！'),
-                            sor('readysmile','隨便走走囉！') ] },
-                    } } },
+                            Object.assign(sor('readysmile','隨便走走囉！'), { flags:['ep_date_sor'] }) ] },
+                    } },
+        /* ══⚠⚠⚠ 回旅店的收尾（ver -1346，Ray 交稿）══════════════════════════
+           「回旅店觸發對話，**不論女主角是否先回去**」—— 所以判的是
+           **今天約過誰**（邀請那一拍插的旗）不是 `withWho`：她可能 18:00 就自己
+           走了（`dateCurfew`），那時同行早就解除；而且走進旅店本來就會 `endDate()`。
+           ⚠ 由上往下取第一個成立的，所以 20:00 的分歧寫成兩段、晚的排前面
+             （`hourOfDay` 單值＝「今天過了這個時刻」）。
+           ⚠ 索菈娜**沒有分歧**（稿上只有一組，依「有沒有觸發賞金獵人戰」分）。
+           ⚠ 這幾段都在 `ep_renna_night` 那一段**之前**取到，所以先演約會收尾、
+             下一次進旅店才輪到蕾娜 —— 稿上的順序就是這樣。 */
+        acts:[
+          /* ── 諾薇兒：20:00 之後 ── */
+          { flag:'ep_end_nou', need:'ep_date_nou', hourOfDay:20, lines:[
+            nou('bigsmileclose','謝謝你陪我，今天很開心。'),
+            nou('think','蕾娜小姐好像回來了呢，不知道有沒有什麼收獲？') ] },
+          /* ── 諾薇兒：20:00 之前 ── */
+          { flag:'ep_end_nou', need:'ep_date_nou', lines:[
+            nou('bigsmileclose','謝謝你陪我，今天很開心。'),
+            nou('think','蕾娜小姐還沒回來呢。真是辛苦。') ] },
+          /* ── 安雅 ── */
+          { flag:'ep_end_anya', need:'ep_date_anya', lines:[
+            any('talkshy','今天……謝謝你。'),
+            any('talkshy','下次……我請你。') ] },
+          /* ── 索菈娜：打過賞金獵人 ── */
+          { flag:'ep_end_sor', need:'ep_guild_sor', lines:[
+            sor('lauaghbig','今天真過癮，哈哈！'),
+            Object.assign(sor('idea','下次也要找我一起玩喔！'), { aff:{ sorana:5 } }) ] },
+          /* ── 索菈娜：沒打 ── */
+          { flag:'ep_end_sor', need:'ep_date_sor', lines:[
+            sor('lauaghbig','這地方也蠻有趣的嘛。'),
+            Object.assign(sor('idea','下次再一起玩吧！'), { aff:{ sorana:5 } }) ] },
+          /* ══⚠⚠ 晚上碰到蕾娜（ver -1346）══ 「不論有無約會，**若沒有觸發巧遇蕾娜**，
+             …回到旅店時就會碰到蕾娜。」
+             ⚠ `skipIf` 不是 `actDue` 的欄位 —— 用 `until:'ep_renna_met'`
+               （那支旗立了就不再演，＝下午已經在大學碰過了）。
+             ⚠ 這一段插 `ep_renna_night` ＝ **睡覺鈕從此跳得出來**
+               （節點的 `noSleepUntil` 讀它），而且四扇門的蕾娜跟著亮回來
+               （`innDoors` 第一列）—— 一支旗三個用途，但它只回答一件事：
+               「她今晚回來了沒」（鐵律 9）。
+             ⚠⚠ **「獨自坐坐等到她」那一版還沒接**（稿上另有三句）：坐坐坐完走的是
+               `inn.js` 的 `runBranch`，不會重跑 `actDue` —— 要接得動那一支。
+               現在走得到的是「進旅店碰到她」這一版；而 20:00 的閘門本來就會把玩家
+               強制抓回旅店（＝一次抵達），所以不會卡死。已回報。 */
+          { flag:'ep_renna_night', need:'ep_arrive', until:'ep_renna_met',
+            hourOfDay:20, sides:{ RENNA:'L' }, lines:[
+            ren('curious','啊，回來了。'),
+            ren('front','有找到一些資料了，明天就出發，早點休息吧。') ] },
+          /* ⚠ 下午已經在大學碰過（`ep_renna_met`）⇒ 上面那一段被 `until` 擋掉，
+             但**睡覺鈕還是要開** —— 所以另給一段只插旗的安靜抵達。
+             稿上沒有台詞，那就沒有台詞（空 `lines` 由 `actDue` 取到之後直接記旗）。 */
+          { flag:'ep_renna_night', need:'ep_renna_met', hourOfDay:20, lines:[
+            ren('front','有找到一些資料了，明天就出發，早點休息吧。') ] },
+        ] },
     },
   },
 
