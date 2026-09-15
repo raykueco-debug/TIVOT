@@ -2527,7 +2527,26 @@ function sailBlocked(sail){
 function setSail(){
   const n=node(), sail=n && n.sail; if(!sail) return;
   const held=sailHeld();
-  if(held){ story.flashLine(held.text||'', ''); chatterOn=true; return; }
+  if(held){
+    /* ══⚠⚠ 不可離港時可以演**一段帶立繪的對白**（`hold.lines`，ver -1352）══
+       Ray 的東泊稿：「若點出航跳出蕾娜　蕾：『時間有限喔，別再亂跑了，
+       先去貝利薩爾遺址吧。』talkwork」—— 那是**她開口**，不是一行浮字。
+       ⚠ 走的是 `sail.blocked` 那一條**既有**的路（同一支 `playAdhoc`、同一套
+         `busy`／`showNav`／第一句等立繪站定），不是第二份實作（鐵律 8）。
+       ⚠ 沒寫 `lines` 就照舊走 `text` 那一行浮字（北方泊地的 `hold` 不必改）。 */
+    if(held.lines && held.lines.length){
+      if(busy) return;
+      busy=true; showNav(false);
+      if(chatterOn){ story.hideBubble(); chatterOn=false; }
+      const n2=node();
+      const play=held.lines.map((l,i)=> (i===0 && l && l.delay==null)
+        ? Object.assign({}, l, { delay:SLIDE_MS }) : l);
+      story.playAdhoc(play, ()=>{ story.clearCast();
+        busy=false; refreshArrows(); showNav(true); }, { sides:held.sides||(n2&&n2.sides) });
+      return;
+    }
+    story.flashLine(held.text||'', ''); chatterOn=true; return;
+  }
   if(!sailBlocked(sail)){
     /* 船已經到手：交給飛行頁。⚠ 城鎮的位置目前不存 —— 飛行頁那邊回來時走的是
        `tivot_flight_ret_v1`（座標），城鎮節點要不要一起存是另一件事（§6.9 的清單）。 */

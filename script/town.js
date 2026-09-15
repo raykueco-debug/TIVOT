@@ -4210,7 +4210,53 @@ export const TOWNS = {
     } },
     gates:[ { flag:'ep_evening', need:'ep_arrive', hourOfDay:[20,24],
               goto:'inn', enterAgain:true,
-              lines:[ { speaker:'NARRATION', text:'該回去看看了。' } ] } ],
+              lines:[ { speaker:'NARRATION', text:'該回去看看了。' } ] },
+      /* ══⚠⚠⚠ 翌日・出發前（ver -1352，Ray 交稿）══════════════════════════════
+         睡醒（旅店把時鐘推到 07:00）之後那一次抵達就演。
+         ⚠⚠ `hourOfDay` 寫成**時段** `[6,12]` 不是 `6` —— 單一時刻在當晚就會成立
+           （ver -664 的教訓：那一幕會在前一晚演掉）。迄不含。
+         ⚠ `need:'ep_renna_night'` ＝晚上碰過蕾娜（那一段才開睡覺鈕），所以這一段
+           必然排在它之後。
+         ⚠ `enterAgain` ＝玩家醒來時**人就在旅店**（`goto===nodeId`），不重新
+           `enter()` 一次的話這一段沒有人叫得動。
+         ⚠⚠ **四人同台要分兩邊**（§6.5）：蕾娜本位左、諾薇兒本位左 ⇒ 兩個人擠左邊。
+           照 §6.5 那張表把蕾娜留在左、諾薇兒也在左…… 不行 —— 所以這裡只覆寫
+           `RENNA:'L'`，其餘吃各自的本位（索菈娜右、安雅右、諾薇兒左），
+           剛好兩邊各兩人（同 `tomb.gate` 那一段的安排）。
+         ⚠⚠⚠ **四個分歧互斥是資料自己保證的**：約會與「巧遇蕾娜」不可能同時成立
+           （巧遇那一段的條件就是 `noDate`），而一天只約得了一個人。
+           所以四拍各掛 `onlyIf` 就夠，不必再寫互斥判斷（鐵律 7）。
+           ⚠ 四個都不成立也可以（既沒約會也沒去大學）—— 那就直接跳到合流，
+             那是對的：沒有那一段互動就沒有那一句玩笑。
+         ⚠ 插圖兩張（「安雅躲在主角身後」「Q版四人坐槍棺」）**還沒有**
+           （Ray：插圖先空著）—— 那兩拍先不寫 `cg`，圖到了補一行。 */
+      { flag:'ep_day2', need:'ep_renna_night', hourOfDay:[6,12],
+        goto:'inn', enterAgain:true, sides:{ RENNA:'L' }, lines:[
+        ren('writting','往南大約半天路程，穿過輝煌平原的古道，繞過溪谷就能到了。'),
+        nou('surprise','感覺好遠喔。'),
+        ren('front','畢竟是舊道，應該還是比上次的山路好走吧。'),
+        ren('tired','『永夜』之後沒有馬車願意載我們往那個方向去……馬匹也不好穿過溪谷呢。'),
+        sor('think','有水的話……沒地方停船嗎？'),
+        ren('think','地形不好，沒地方下錨。'),
+        ren('tired','只能辛苦點囉。'),
+        sor('laugh','我是無所謂啦，但是小公主可以嗎？'),
+        any('answer','我、我可以！'),
+        sor('smirk','走累了撒個嬌，姐姐可以背妳喔？'),
+        /* ── 分支 1：前一天約了安雅 ── */
+        Object.assign(sor('surprised','啊！奸詐！'), { onlyIf:'ep_date_anya' }),
+        Object.assign(any('makeface',''),           { onlyIf:'ep_date_anya' }),
+        /* ── 分支 2：前一天約了索菈娜 ── */
+        Object.assign(sor('confuse','那我累了誰來背我？'),     { onlyIf:'ep_date_sor' }),
+        Object.assign(ren('upsetstare','妳那麼高大誰背得了妳？'), { onlyIf:'ep_date_sor' }),
+        /* ── 分支 3：前一天約了諾薇兒 ── */
+        Object.assign(nou('awkward','不行啦，他還要背槍棺呢。'), { onlyIf:'ep_date_nou' }),
+        /* ── 分支 4：前一天在大學巧遇蕾娜 ── */
+        Object.assign(ren('sighbreath','再怎麼樣也不行吧……'), { onlyIf:'ep_renna_met' }),
+        /* ── 合流 ── */
+        ren('front','玩笑先放一邊，趁早出發吧。'),
+        ren('think','聽說古城裡沒有禍魘，入夜前能到的話會輕鬆很多。'),
+      ] },
+    ],
     /* ⚠⚠ **沒有 `storyExplore`＝這座城是自由探索**（ver -1342，Ray：「把那個時點
        標記為自由探索」）：女角會排外出行程、餐飲街依同行女伴換店、旅店敲得到門
        —— 抵達之後那段「自由活動」與四條約會線全部靠這個前提（§6.5.4.2）。
@@ -4269,7 +4315,16 @@ export const TOWNS = {
            出不了港）。
            ⚠ 有陸路可以走到的地方（帝都／夏爾村那一族）照舊要旗：那裡「還沒有船」
              是真的成立。 */
-        sail:{},
+        /* ══⚠⚠ 翌日出發前**不可離港**（ver -1352，Ray：「城內自由行動，限制出航，
+           若點出航跳出蕾娜」）══ `hold` ＝「這一段劇情裡不准走」的暫時狀態，
+           與 `flag`（船還沒到手，一去不回的前置）是**兩件事**，不要合併。
+           ⚠ `need` ＝翌日那一段演完才開始擋（在那之前隨便走）；
+             `until:'ep_belisar_done'` ＝貝利薩爾那一段收尾才解除。
+           ⚠⚠ **鐵律 9：`ep_belisar_done` 現在還沒有人插**（批次 3b 那一段的收尾
+             才會插它）—— 所以這一版翌日之後是真的走不掉。名字先留好。 */
+        sail:{ hold:{ need:'ep_day2', until:'ep_belisar_done',
+                      sides:{ RENNA:'L' },
+                      lines:[ ren('talkwork','時間有限喔，別再亂跑了，先去貝利薩爾遺址吧。') ] } },
         /* ══⚠⚠⚠ 抵達東方泊地（ver -1342，Ray 交稿）══════════════════════════
            飛行頁那一段（貝利薩爾沒有降落點 → 蕾娜指這裡）演完才有這一段 ——
            `need` 就是那一支旗（`flight/index.html` 的 `BELISAR_NOLAND_FLAG`，
