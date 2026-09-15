@@ -7,6 +7,7 @@
 用法： python3 mkfeed_city.py capital|shinier|northport
 """
 import sys, json
+import _font                # 字型解析的唯一一處（見 tools/_font.py）
 from PIL import Image, ImageDraw, ImageFont
 
 W, H = 1536, 1024
@@ -98,9 +99,8 @@ def pos(k):
 
 img = Image.new('RGB', (W, H), 'white')
 d = ImageDraw.Draw(img)
-FB = '/System/Library/Fonts/Supplemental/Arial Bold.ttf'
-f = ImageFont.truetype(FB, 27)
-fn = ImageFont.truetype(FB, 19)
+f = _font.latin(27)
+fn = _font.latin(19)
 
 for a, b in C['edges']:
     d.line([pos(a), pos(b)], fill='#111111', width=8)

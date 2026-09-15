@@ -6,6 +6,7 @@
   9 以內就全部連成一群 ＝ 那些只是手繪斷點；要 20 以上才收斂 ＝ 真的斷了。
 """
 import sys, json
+import _font                # 字型解析的唯一一處（見 tools/_font.py）
 import _utf8  # noqa: F401  # 主控台 UTF-8（中文 Windows 的 cp950），見 tools/_utf8.py
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
@@ -126,7 +127,7 @@ print('\nspots(%d) = %s' % (len(spots), json.dumps(spots, ensure_ascii=False)))
 ov = im.convert('RGB')
 d = ImageDraw.Draw(ov)
 from PIL import ImageFont
-f = ImageFont.truetype('/System/Library/Fonts/Supplemental/Arial Bold.ttf', 15)
+f = _font.latin(15)
 for a, b in C['edges']:
     d.line([pos[a][0], pos[a][1], pos[b][0], pos[b][1]], fill=(0, 150, 255), width=2)
 for k, (x, y, _) in pos.items():

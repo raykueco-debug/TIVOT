@@ -19,27 +19,22 @@
    等於交了一張黑圖。第二個參數就是給這個用的：取「那一座的最高點再多兩三成」。
 """
 import io, json, os, re, subprocess, sys, math
+import _jsrun               # JS 資料的唯一引擎（jsc／node），見 tools/_jsrun.py
 import _utf8  # noqa: F401  # 主控台 UTF-8（中文 Windows 的 cp950），見 tools/_utf8.py
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-JSC  = '/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc'
 PPU  = 3          # 每個世界單位幾個像素
 HMAX = 320.0      # 白（255）＝這麼高。⚠ 貝利薩爾最高的尖端是 302
 if len(sys.argv) > 2: HMAX = float(sys.argv[2])   # 逐座覆寫（見檔頭）
 PAD  = 8          # 四邊留白（世界單位）
 
 def parts_of(key):
-    """借 jsc 把 RUIN_ART 跑出來（不要用 regex 猜資料，同 script_lint.py）。"""
+    """借 JS 引擎把 RUIN_ART 跑出來（不要用 regex 猜資料，同 script_lint.py）。"""
     s = io.open(os.path.join(ROOT, 'flight/index.html'), encoding='utf-8').read()
     i = s.index('const RUIN_ART')
     j = s.index('\n};\n', s.index("x:-62, y: 92", i)) + 4
     src = s[i:j].replace('const RUIN_ART', 'var RUIN_ART', 1) + '\nprint(JSON.stringify(RUIN_ART));\n'
-    tmp = os.path.join(ROOT, '_recycle', '.ruin_art.js')
-    os.makedirs(os.path.dirname(tmp), exist_ok=True)
-    io.open(tmp, 'w', encoding='utf-8').write(src)
-    out = subprocess.check_output([JSC, tmp]).decode()
-    os.remove(tmp)
-    return json.loads(out)[key]
+    return _jsrun.dump(src, what='RUIN_ART')[key]
 
 def poly_of(p):
     """這一塊在平面上佔的多邊形（局部世界座標）＋ 它的頂高。"""

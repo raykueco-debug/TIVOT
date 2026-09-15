@@ -17,11 +17,11 @@ tools/map_layout.py —— 畫「給美術看的佈局簡圖」（ver -909）
 輸出：`resources/map/_layout_<地圖id>.png`（底線開頭＝遊戲不載入，是工單附件）。
 """
 import json, os, subprocess, sys, re
+import _font                # 字型解析的唯一一處（見 tools/_font.py）
 import _utf8  # noqa: F401  # 主控台 UTF-8（中文 Windows 的 cp950），見 tools/_utf8.py
+import _jsrun               # JS 資料的唯一引擎（jsc／node），見 tools/_jsrun.py
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-JSC  = '/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc'
-FONT = '/System/Library/Fonts/PingFang.ttc'
 
 # ── 版面：每一格畫在第幾欄第幾列（左上為原點）───────────────────────────
 #    ⚠ 只有這一張表是手維護的；連線與名字都從資料讀。
@@ -137,15 +137,12 @@ OUT_POS = {
 }
 
 def load(town):
-    """借 jsc 把 TOWNS 跑出來（同 script_lint.py 的作法，不用 regex 猜資料）。"""
+    """把 TOWNS 真的跑出來（走 tools/_jsrun.py，不用 regex 猜資料）。"""
     src = open(os.path.join(ROOT,'script','town.js'), encoding='utf-8').read()
     src = re.sub(r'^\s*(import|export)\s.*$', lambda m: m.group(0)
                  .replace('export ','').replace('import ','//import '), src, flags=re.M)
     js = src + "\nprint(JSON.stringify(TOWNS[%s]));\n" % json.dumps(town)
-    r = subprocess.run([JSC,'-e',js], capture_output=True, text=True)
-    if r.returncode or not r.stdout.strip():
-        print('讀不到資料：', r.stderr[:400]); sys.exit(1)
-    return json.loads(r.stdout.strip().splitlines()[-1])
+    return _jsrun.dump(js, what='地圖資料')
 
 OPP = {'up':'down','down':'up','left':'right','right':'left'}
 def main():
@@ -182,7 +179,7 @@ def main():
     cx=lambda c:100+(c-c0)*CW; cy=lambda r:96+(r-r0)*CH
     W,H = cx(max(cols))+BW//2+60, cy(max(rows))+BH//2+60
     im=Image.new('RGB',(W,H),(255,255,255)); d=ImageDraw.Draw(im)
-    F=ImageFont.truetype(FONT,27,index=4)
+    F=_font.cjk(27)
 
     def at(k):
         if k in pos: return pos[k]

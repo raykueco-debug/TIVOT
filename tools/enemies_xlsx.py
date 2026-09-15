@@ -30,6 +30,7 @@
   自己寫 JS 解析器一定會在某個引號或巢狀上翻車。
 """
 import json, os, re, subprocess, sys
+import _jsrun               # JS 資料的唯一引擎（jsc／node），見 tools/_jsrun.py
 import _utf8  # noqa: F401  # 主控台 UTF-8（中文 Windows 的 cp950），見 tools/_utf8.py
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -38,7 +39,6 @@ JS   = os.path.join(ROOT, 'script', 'enemies.js')
 #   以前匯出到 tools/、他改的卻是根目錄那份 —— 兩份必然走鐘（鐵律 7），
 #   而症狀是「匯入之後數值又跳回去」，事後看不出是哪一格被換走的。舊的那份已進回收區。
 XLSX = os.path.join(ROOT, 'enemies.xlsx')
-JSC  = '/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc'
 
 # ── 巢狀欄位怎麼攤平成欄 ───────────────────────────────────────────────
 #   ⚠ 只攤「格子裡填得下一個數字」的那幾個；結構複雜的（hitFx／loot／resist…）
@@ -76,12 +76,10 @@ def enemy_files():
     return sorted(f for f in fs
                   if f.lower().startswith('mon_') and f.lower().endswith(('.webp', '.png', '.jpg', '.jpeg')))
 def load_assets():
-    tmp = '/tmp/_tivot_dump_assets.mjs'
-    with open(tmp, 'w', encoding='utf-8') as f:
-        f.write(f"import {{ ASSETS }} from '{os.path.join(ROOT,'config.js')}';\nprint(JSON.stringify(ASSETS));\n")
-    r = subprocess.run([JSC, '-m', tmp], capture_output=True, text=True)
-    try: return json.loads(r.stdout)
-    except Exception: return {}
+    src = (f"import {{ ASSETS }} from '{_jsrun.file_url(os.path.join(ROOT,'config.js'))}';"
+           f"print(JSON.stringify(ASSETS));")
+    try: return _jsrun.dump(src, module=True, what='ASSETS')
+    except SystemExit: return {}
 def file_of(card, assets, files):
     """這張卡用的是哪一個圖檔 —— 回**專案內的相對路徑**。
        ⚠⚠ 不要只回檔名：敵人立繪不是全部住在 `resources/enemy/`（賞金獵人那張在
@@ -181,21 +179,15 @@ def cell(card, col):
     return json.dumps(v, ensure_ascii=False)
 
 def load_js():
-    tmp = '/tmp/_tivot_dump_enemies.mjs'
-    with open(tmp, 'w', encoding='utf-8') as f:
-        f.write(f"import {{ ENEMIES }} from '{JS}';\nprint(JSON.stringify(ENEMIES));\n")
-    r = subprocess.run([JSC, '-m', tmp], capture_output=True, text=True)
-    if r.returncode != 0 or not r.stdout.strip():
-        sys.exit('讀不到 enemies.js：\n' + (r.stderr or '')[:800])
-    return json.loads(r.stdout)
+    src = (f"import {{ ENEMIES }} from '{_jsrun.file_url(JS)}';"
+           f"print(JSON.stringify(ENEMIES));")
+    return _jsrun.dump(src, module=True, what='enemies.js')
 
 def load_named(name, expr):
-    tmp = f'/tmp/_tivot_dump_{name}.mjs'
-    with open(tmp, 'w', encoding='utf-8') as f:
-        f.write(f"import {{ {name} }} from '{os.path.join(ROOT,'config.js')}';\nprint(JSON.stringify({expr}));\n")
-    r = subprocess.run([JSC, '-m', tmp], capture_output=True, text=True)
-    try: return json.loads(r.stdout)
-    except Exception: return None
+    src = (f"import {{ {name} }} from '{_jsrun.file_url(os.path.join(ROOT,'config.js'))}';"
+           f"print(JSON.stringify({expr}));")
+    try: return _jsrun.dump(src, module=True, what=name)
+    except SystemExit: return None
 
 def load_assets(): return load_named('ASSETS', 'ASSETS') or {}
 def item_opts():

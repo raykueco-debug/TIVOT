@@ -9,10 +9,10 @@
    **這一支要回收掉** —— 同一個拓樸不留兩份（鐵律 7）。
 """
 import os, sys
+import _font                # 字型解析的唯一一處（見 tools/_font.py）
 import _utf8  # noqa: F401  # 主控台 UTF-8（中文 Windows 的 cp950），見 tools/_utf8.py
 from PIL import Image, ImageDraw, ImageFont
 
-FONT='/System/Library/Fonts/PingFang.ttc'
 ROOT=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # id → (欄, 列, 中文名, 種類)   kind: end=端末 / pass=通道 / hub=岔口 / gate=跨圖出口
@@ -44,7 +44,7 @@ def main():
     cx=lambda c:110+(c-min(cols))*CW; cy=lambda r:80+(r-min(rows))*CH
     W=cx(max(cols))+BW//2+60; H=cy(max(rows))+BH//2+60
     im=Image.new('RGB',(W,H),(255,255,255)); d=ImageDraw.Draw(im)
-    F=ImageFont.truetype(FONT,24,index=4)
+    F=_font.cjk(24)
 
     for a,b,_ in EDGES:
         (ca,ra),(cb,rb)=NODES[a][:2],NODES[b][:2]

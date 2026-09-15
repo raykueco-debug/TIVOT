@@ -14,31 +14,27 @@
 用法：  python3 tools/ruin_elevation.py muyak [out.png]
 """
 import json, math, os, subprocess, sys
+import _jsrun               # JS 資料的唯一引擎（jsc／node），見 tools/_jsrun.py
 import _utf8  # noqa: F401  # 主控台 UTF-8（中文 Windows 的 cp950），見 tools/_utf8.py
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-JSC  = '/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc'
 PPU  = 4          # 每個世界單位幾個像素
 PAD  = 10
 
 def art_of(key):
-    """從 index.html 抽出 RUIN_ART，用 jsc 求值（同 ruin_heightmap.py 的作法）。"""
+    """從 index.html 抽出 RUIN_ART，用 JS 引擎求值（tools/_jsrun.py）。"""
     src = open(os.path.join(ROOT, 'flight/index.html'), encoding='utf-8').read()
     i = src.index('const RUIN_ART')
     j = src.index('\n};', i) + 3
     js = src[i:j] + '\nprint(JSON.stringify(RUIN_ART[%s]));' % json.dumps(key)
-    out = subprocess.run([JSC, '-e', js], capture_output=True, text=True)
-    if out.returncode: raise SystemExit(out.stderr)
-    return json.loads(out.stdout.strip())
+    return _jsrun.dump(js, what='RUIN_ART')
 
 def place_of(key):
     """PLACES 裡那一筆（要 x/y 才取樣得到地形）。"""
     src = open(os.path.join(ROOT, 'flight/index.html'), encoding='utf-8').read()
     i = src.index('const PLACES'); j = src.index('\n];', i) + 3
     js = src[i:j] + '\nprint(JSON.stringify(PLACES.filter(p=>p.ruin===%s)[0]||null));' % json.dumps(key)
-    out = subprocess.run([JSC, '-e', js], capture_output=True, text=True)
-    if out.returncode: raise SystemExit(out.stderr)
-    return json.loads(out.stdout.strip())
+    return _jsrun.dump(js, what='PLACES')
 
 def main():
     key = sys.argv[1]

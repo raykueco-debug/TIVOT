@@ -20,6 +20,7 @@
 輸出：`resources/map/map_<id>.webp` ＋ `resources/map/_spots_<id>.json`
 """
 import argparse, json, math, os, sys
+import _font                # 字型解析的唯一一處（見 tools/_font.py）
 import _utf8  # noqa: F401  # 主控台 UTF-8（中文 Windows 的 cp950），見 tools/_utf8.py
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
@@ -35,7 +36,6 @@ ICON_PX = 52
 NAME_PX = 26
 DOT_R   = 7                               # 紙的四周留白（比例）
 INK   = (62, 38, 22)
-FONT_CURSIVE = '/System/Library/Fonts/Supplemental/SnellRoundhand.ttc'
 
 def frac_positions(town, nodes=None):
     """把 POS 的格網換算成圖上的比例座標。
@@ -143,7 +143,7 @@ def main():
         d.ellipse([x-DOT_R, y-DOT_R, x+DOT_R, y+DOT_R], fill=INK+(255,))
 
     # 草書英文名（右下）
-    fnt = ImageFont.truetype(FONT_CURSIVE, NAME_PX, index=0)
+    fnt = _font.cursive(NAME_PX)
     EN = {k: k[:1].upper()+k[1:] for k in N}
     for k in N:
         x, y = P[k]

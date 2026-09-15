@@ -7,7 +7,7 @@
 `tools/map_check.py` 是木雅克神殿專用的（GRID／EDGES 寫死在檔裡）。這一支把那兩張表
 換成**從資料算出來的**：
 
-  · **邊** 從 `script/town.js` 讀（借 jsc，同 map_layout.py）—— 圖與遊戲不可能走鐘。
+  · **邊** 從 `script/town.js` 讀（借 JS 引擎，同 map_layout.py）—— 圖與遊戲不可能走鐘。
   · **預期座標** 從 `tools/map_layout.py` 的 `POS` 換算（同一份版面，鐵律 7）。
 
 驗的三件事與舊版相同：
@@ -23,7 +23,6 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-JSC  = '/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc'
 W, H = 1536, 1024
 
 sys.path.insert(0, os.path.join(ROOT, 'tools'))

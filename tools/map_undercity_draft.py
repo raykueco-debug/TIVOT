@@ -23,11 +23,11 @@ tools/map_undercity_draft.py —— 地宮迷宮的**拓樸提案圖**（ver -10
 輸出：`resources/map/_layout_undercity.png`（底線開頭＝遊戲不載入，是工單附件）
 """
 import os
+import _font                # 字型解析的唯一一處（見 tools/_font.py）
 import _utf8  # noqa: F401  # 主控台 UTF-8（中文 Windows 的 cp950），見 tools/_utf8.py
 from PIL import Image, ImageDraw, ImageFont
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-FONT = '/System/Library/Fonts/PingFang.ttc'
 IDX  = 7        # PingFang TC Semibold —— 對齊 reference/maze.png 那種粗黑字
 
 # ── 節點：id → (欄, 列, 名字, 類別) ───────────────────────────────────────
@@ -171,9 +171,9 @@ def main():
 
     im = Image.new('RGB', (W, H), (255, 255, 255))
     d = ImageDraw.Draw(im)
-    FN = ImageFont.truetype(FONT, 31, index=IDX)   # 名字
-    FS = ImageFont.truetype(FONT, 20, index=IDX)   # 副標（向數）
-    FL = ImageFont.truetype(FONT, 22, index=IDX)   # 圖例
+    FN = _font.cjk(31)   # 名字
+    FS = _font.cjk(20)   # 副標（向數）
+    FL = _font.cjk(22)   # 圖例
 
     for a, b in EDGES:
         d.line([cx(NODES[a][0]), cy(NODES[a][1]),

@@ -14,10 +14,11 @@
   自己寫 JS 解析器一定會在某個引號或巢狀上翻車。
 """
 import json, os, re, subprocess, sys, tempfile
+import _jsrun
+NL = chr(10)               # JS 資料的唯一引擎（jsc／node），見 tools/_jsrun.py
 import _utf8  # noqa: F401  # 主控台 UTF-8（中文 Windows 的 cp950），見 tools/_utf8.py
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-JSC  = '/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc'
 XLSX = os.path.join(ROOT, 'girlstars.xlsx')
 # ⚠ speakers.js 要一起載：config.js 的 `tutPortraits` 那一段會讀 `ART`。
 SRC  = ('script/speakers.js', 'script/enemies.js', 'config.js')
@@ -66,8 +67,7 @@ GLOSS = {
 }
 
 def load():
-    if not os.path.exists(JSC):
-        print('找不到 jsc（%s）——這支工具依賴 macOS 內建的 JavaScriptCore。' % JSC); sys.exit(2)
+    _jsrun.require()
     def strip(src):
         src = re.sub(r'^\s*import[^;]*;', '', src, flags=re.M)
         src = re.sub(r'^\s*export\s+(?=(const|let|var|function|class|async))', '', src, flags=re.M)
@@ -75,12 +75,7 @@ def load():
         return src
     parts = [strip(open(os.path.join(ROOT, f), encoding='utf-8').read()) for f in SRC]
     parts.append('print(JSON.stringify({v:VERSION, girls:GAME_CONFIG.girls, partners:GAME_CONFIG.partners}));')
-    t = tempfile.NamedTemporaryFile('w', suffix='.js', delete=False, encoding='utf-8')
-    t.write('\n'.join(parts)); t.close()
-    r = subprocess.run([JSC, t.name], capture_output=True, text=True); os.unlink(t.name)
-    if r.returncode or not r.stdout.strip():
-        print('讀不到 config：\n' + (r.stderr or r.stdout)); sys.exit(2)
-    return json.loads(r.stdout)
+    return _jsrun.dump(NL.join(parts), what='config')
 
 def main():
     from openpyxl import Workbook
