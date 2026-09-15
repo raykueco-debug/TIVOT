@@ -3430,9 +3430,22 @@
      ⚠ z-8 ＝壓得過楣（z-6），與地圖鈕同層。
      ⚠⚠ **槍棺一動就跟著撤出**（同地圖鈕，見下面那一段的理由）—— 門一開始推就
        不是探索了。判定一樣讀門自己的狀態（`#kerb.rise`），不另掛 class。 */
-  #townEscort{position:absolute;left:10px;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);
+  /* ══⚠⚠⚠ **同行徽住在「演出區」（上半），不是控制區**（ver -1357，Ray：
+     「同行是放在上半畫面」）══════════════════════════════════════════════════
+     舞台分兩半（§0.6 用詞）：**上半＝演出區**（背景／立繪／插圖／對話框）、
+     **下半＝控制區**（槍棺與數字面盤）。同行的那位是**跟著你走的人**，
+     那是演出的一部分 —— 擺在控制區等於把她講成一顆按鈕。
+     ⚠ 錨的是**楣的上緣**（與對話框同一條基準線，鐵律 7：那個量由
+       `layoutKerberos` 解出來發佈成 `--kerb-top-h`／`--story-top`，這裡只讀）——
+       不要用 `env(safe-area-inset-bottom)` 去湊（那是控制區的基準）。
+     ⚠ 對白播放中**讓開**：對話框是 `min(92%,360px)` 幾乎滿寬，不讓就被壓在底下。
+       走既有的 `story-talking`（§6.5 的 -385，由演出層宣告）——
+       與地名／時刻同一條規矩，不另寫一套。 */
+  #townEscort{position:absolute;left:10px;
+    bottom:calc(100% - var(--story-top) + var(--kerb-top-h, 0px) + 10px);
     z-index:8;pointer-events:none;width:64px;text-align:center;
     display:flex;flex-direction:column;align-items:center;gap:3px;}
+  body.story-talking #townEscort{opacity:0;}
   #townEscort b{font-size:10px;letter-spacing:.22em;color:var(--gold,#d4a94a);
     text-shadow:0 1px 3px rgba(0,0,0,.9);font-weight:600;padding-left:.22em;}
   #townEscort .te-face{display:block;width:56px;height:56px;border-radius:50%;
@@ -3466,8 +3479,10 @@
   #townEscort{transition:transform .22s ease-in, opacity .22s ease-in;}
   #storyStage:has(#kerb.rise) #townMapBtn{
     transform:translate(120%, 120%); opacity:0; pointer-events:none;}
+  /* ⚠ 撤出方向跟著位置改（ver -1357）：它現在在**上半的左側**，
+     所以往**左上**撤出；原本是 `translate(-120%,120%)`（左下），那是它還在控制區時的。 */
   #storyStage:has(#kerb.rise) #townEscort{
-    transform:translate(-120%, 120%);opacity:0;}
+    transform:translate(-120%, -120%);opacity:0;}
   /* ⚠ z 與 #townNav 同層（7）＋ DOM 後生（map view 一定比 nav 晚建）＝壓過導覽字格；
      退出/跳段鈕（z-8）仍在其上，地圖開著也點得到。 */
   /* 地圖開著時導覽字格整組收掉（ver -867，Ray：「不用導覽字格」）。 */

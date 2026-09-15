@@ -671,7 +671,11 @@ window.__tivotFlight = {
   land(id, node){
     /* ver -845：降落＝這一趟航行結束，iframe 殺掉（下一次出航本來就整頁重載）。 */
     setTimeout(()=>{ try{ killFlightFrame(); }catch(_){} }, 600);
-    closeFlightFrame();
+    /* ⚠⚠⚠ **不在這裡收 iframe**（ver -1357）：收掉它就露出底下那一層（上一座城的
+       背景），而讀取頁還在淡入。改掛在 `enterTown` 的 `onCovered`（讀取頁全黑那一刻）
+       —— 與收首頁同一個地方、同一個理由（鐵律 8）。
+       ⚠ `__flightPause` 也跟著晚一拍：那 300ms 飛行畫面本來就還蓋著，讓它繼續畫
+         比露出舊地圖好；600ms 後的 `killFlightFrame` 照舊把它整個卸載。 */
     /* ⚠⚠ **這裡不收首頁**（ver -1321）：收首頁只有一處，而且要等讀取頁蓋滿
        —— 見 `enterTown`。以前這一行是同步收，於是「飛行 → 探索地圖」那一段
        會露出底下的首頁（Ray 回報）。 */
@@ -1418,7 +1422,16 @@ function enterTown(t, n, opts){
      ⚠ 收的動作掛在 `loadScene` 的第三個參數（讀取頁全黑那一刻）。 */
   story.loadScene(town.loadSpec(id, n),
                   ()=> town.open(id, n, opts),
-                  ()=> $('home').classList.remove('on'));
+                  /* ⚠⚠⚠ **「收掉底下那一層」只有這一處**（ver -1357，鐵律 8）：
+                     讀取頁全黑那一刻才收，收的是**首頁**與**飛行 iframe** 兩層。
+                     -1321 只把首頁那一半搬進來，`land()` 裡的 `closeFlightFrame()`
+                     還是同步的 —— 拔掉 `flight-on` 的那一瞬間 `#storyStage` 就露出來，
+                     而它上面還掛著**上一座城**的背景（出航走 `suspend()`，沒清）。
+                     讀取頁是淡入的（-433，實測前 ~96ms 全透明、之後還有約 240ms 半透明），
+                     那段空窗看到的就是舊地圖 —— Ray：「我從瓦努努起飛，進到東泊
+                     還是先看到瓦努努的圖？不是應該被 kill 掉了嗎？」
+                     ⚠ 冪等：飛行沒開著時 `closeFlightFrame()` 什麼都不做。 */
+                  ()=>{ $('home').classList.remove('on'); closeFlightFrame(); });
 }
 function openTownAt(t, n){ enterTown(t, n); }
 saveSys.setHost({
