@@ -1059,30 +1059,6 @@
     .braim::after{animation:none;}
   }
 
-  /* ══ 破防窗口的「連點」提示（ver -1329，Ray：「畫面提示連點」）══════════════
-     擺在敵人區下緣正中，一圈往外擴的漣漪＋一行字。窗口收掉就跟著消失。
-     ⚠ `pointer-events:none`：它蓋在敵人立繪上，而那一整區正是要拿來點的。
-     ⚠ 不用 `display:none` 而用 opacity＋visibility：要淡進淡出，硬切會閃。 */
-  #brPrompt{position:absolute;left:50%;bottom:14%;transform:translateX(-50%);
-    z-index:6;pointer-events:none;opacity:0;visibility:hidden;
-    transition:opacity .18s ease;display:flex;flex-direction:column;
-    align-items:center;gap:6px;}
-  #brPrompt.on{opacity:1;visibility:visible;}
-  #brPrompt span{font-size:15px;letter-spacing:.22em;font-weight:800;
-    color:var(--holy);text-shadow:0 0 10px rgba(111,179,212,.9),0 2px 6px #000;}
-  /* 漣漪：兩圈錯開的擴散，讀起來就是「一直點」 */
-  #brPrompt i{position:relative;width:34px;height:34px;border-radius:50%;
-    border:2px solid var(--holy);box-shadow:0 0 12px rgba(111,179,212,.8);}
-  #brPrompt i::before,#brPrompt i::after{content:'';position:absolute;inset:-2px;
-    border-radius:50%;border:2px solid var(--holy);opacity:0;
-    animation:brRipple 1.1s ease-out infinite;}
-  #brPrompt i::after{animation-delay:.55s;}
-  @keyframes brRipple{from{transform:scale(1);opacity:.75;}
-                      to{transform:scale(2.1);opacity:0;}}
-  @media (prefers-reduced-motion:reduce){
-    #brPrompt i::before,#brPrompt i::after{animation:none;}
-  }
-
   /* ══⚠⚠⚠ 破防窗口：盤面**玻璃化但不可操作**（ver -1329，Ray 指定）══
      開火改成對著敵人立繪狂點，這一盤只是背景。
      ⚠⚠ **只擋 `.dualwield`，不要連 `.overkill` 一起擋** —— overkill 那一段

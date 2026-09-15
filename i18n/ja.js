@@ -83,9 +83,6 @@ export const STRINGS = {
   },
 
   /* ═══ 5. Cut-in 演出 ═══ */
-  /* 破防窗口的畫面提示（ver -1329，Ray：「畫面提示連點」）——
-     對著敵人立繪狂點就擊發。⚠ 只在窗口開著時出現。 */
-  brTapPrompt: '連打！',
   cutins: {
     saintInstall:      'セイント\nインストール！！',   // \n＝cut-in 斷行點（セイント上／インストール下，不得詞中斷行）
     dualBreak:         '弾雨の嵐',               // ver -750（Ray：「彈雨傾洩」）

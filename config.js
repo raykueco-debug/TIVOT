@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.15-1331';
+export const VERSION = 'ver 2026.09.15-1334';
 
 export const GAME_CONFIG = {
 
@@ -1949,7 +1949,8 @@ export const GAME_CONFIG = {
          對著視野中的敵人傾洩火力吧！畫面提示連點」）—— 舊台詞是
          「敵人無法抵抗，無視順序猛攻吧！」，那是**點盤面**時代的說法，
          現在盤面根本不能點，照唸會把玩家指到錯的地方。
-         ⚠ 「連點」那件事交給畫面上的提示（`#brPrompt`），台詞不重複講一次。 */
+         ⚠ ver -1332 起畫面上那行「連點！」已拿掉（Ray 指定）——要玩家點哪裡，
+         由敵人身上的**瞄準點**自己說明。 */
       dualGo:     [ { who:'partner',   text:'在敵人恢復態勢前，對著視野中的敵人傾洩火力吧！' } ],
       // center:true → 立繪移到畫面正中（左側讓給向右滑的引導箭頭，箭頭不壓立繪）
       saintCall:  { center:true, lines:[ { who:'inspector', text:'沒時間了，立刻聖徒化！' } ] },

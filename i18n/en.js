@@ -72,9 +72,6 @@ export const STRINGS = {
     leave:    'Main Menu',
   },
   /* ═══ 5. Cut-in 演出 ═══ */
-  /* 破防窗口的畫面提示（ver -1329，Ray：「畫面提示連點」）——
-     對著敵人立繪狂點就擊發。⚠ 只在窗口開著時出現。 */
-  brTapPrompt: 'TAP! TAP! TAP!',
   cutins: {
     saintInstall:      'SAINT INSTALL!!',
     dualBreak:         'BULLETS RAIN',           // ver -750（Ray：「彈雨傾洩」）

@@ -496,15 +496,6 @@ export function coopMissKnife(){
 /* 破防語音的輪替旗標（ver -711）。⚠ **不要**放進 `reset()`：跨敵、跨場都要接著輪。 */
 let dualVoFlip = false;
 
-/* 破防窗口的「連點」提示（ver -1329，Ray：「畫面提示連點」）。
-   ⚠ 開關只有這一支（鐵律 8）：開窗、收窗、以及任何收尾路徑都走它 ——
-     散在各個呼叫點的話，只要有一條路沒收，那行字就會留在畫面上。 */
-function showBrPrompt(on){
-  const el=$('brPrompt'); if(!el) return;
-  if(on){ const s=el.querySelector('span'); if(s) s.textContent=L.brTapPrompt||''; }
-  el.classList.toggle('on', !!on);
-}
-
 /* ══⚠⚠⚠ 破防窗口的瞄準點（ver -1330，Ray：「在敵立繪範圍加入隨機的描準點，
    用鎖定的特效看看，一次最多出四個，點掉一個就再出一個」）══════════════════════
    · 位置是**隨機**的，落在敵人立繪那一區（避開上緣的敵名與下緣的血條／提示）。
@@ -527,10 +518,22 @@ function spawnAim(){
   if(state.dualShotsLeft<=layer.childElementCount) return;   // 沒額度就不要再放點
   const used=[...layer.children].map(el=>({l:parseFloat(el.dataset.l), t:parseFloat(el.dataset.t)}));
   const rnd=(a,b)=>a+Math.random()*(b-a);
+  const inBand=(l,t)=>l>=AIM_L[0]&&l<=AIM_L[1]&&t>=AIM_T[0]&&t<=AIM_T[1];
+  const apart=(l,t)=>used.every(u=>Math.hypot(u.l-l,u.t-t)>=AIM_MIN_GAP);
   let l=0,t=0,ok=false;
+  /* ══⚠⚠ 先問「敵人身上哪裡可以放」（ver -1332，Ray：「準心要集中在敵人身上
+     而不是背景」）══ `enemy.randomBodyPoint()` 讀立繪的 alpha，回一個真的落在
+     敵人身上的點；順便還要落在可用帶裡（避開上緣的敵名與下緣的血條）。
+     ⚠ 問不出來就退回原本的隨機矩形：沒去背的圖（jpg）沒有「敵人在哪」這個答案，
+       而**寧可位置普通，也不要整個窗口開不出瞄準點**。 */
+  for(let i=0;i<40 && !ok;i++){
+    const p=api.enemyBodyPoint && api.enemyBodyPoint();
+    if(!p) break;
+    if(inBand(p.l,p.t) && apart(p.l,p.t)){ l=p.l; t=p.t; ok=true; }
+  }
   for(let i=0;i<24 && !ok;i++){
     l=rnd(AIM_L[0],AIM_L[1]); t=rnd(AIM_T[0],AIM_T[1]);
-    ok=used.every(u=>Math.hypot(u.l-l,u.t-t)>=AIM_MIN_GAP);
+    ok=apart(l,t);
   }
   const el=document.createElement('div');
   el.className='braim';
@@ -623,7 +626,6 @@ export function startDualWindow(){
   const left = state.cells.filter(c=>!c.classList.contains('done')).length;
   state.dualShotsLeft = Math.max(1, left * ((GAME_CONFIG.tuning||{}).dualTapsPerCell || 2));
   $('grid').classList.add('dualwield');
-  showBrPrompt(true);
   clearAim(); fillAim();          // ver -1330：瞄準點一次放滿（最多 brAimMax 個）
   /* ⚠ **不要 `markNext()`**：那是「下一格點這裡」的游標，而這一段盤面根本不能點
      —— 指一格反而是在教玩家點錯地方。收窗時再標回來（endDual）。 */
@@ -639,7 +641,6 @@ export function startDualWindow(){
 export function endDual(){
   state.dualWield=false;
   state.dualShotsLeft=0;
-  showBrPrompt(false);
   clearAim();
   clearTimeout(state.dualTimer); state.dualTimer=null;
   $('grid').classList.remove('dualwield');
@@ -1251,7 +1252,6 @@ export function reset(){
   state.dualWield=false;
   state.dualShotsLeft=0;              // ver -1329：額度也要歸零，不然跨場帶著上一場的
   $('grid').classList.remove('dualwield');
-  showBrPrompt(false);                // ver -1329：跨場殘留的話那行字會留在新的一場上
   clearAim();                         // ver -1330：同理，瞄準點也不可以跨場留著
 }
 // 停計時器（combat.stopAll 調度）：清 dualTimer。

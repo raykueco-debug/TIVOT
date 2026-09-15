@@ -632,6 +632,110 @@ export function displayEnemyName(name){ return String(name==null?'':name).split(
      有 ~96ms 完全透明 ＋ 約 240ms 半透明。Ray 看到的「挑戰畫面的地下聖徒在
      讀取間隙一閃而過」就是這個。
    ⚠ 真的要打的時候照舊會載：`combat.startGame` 一定會再 `setEnemy()` 一次。 */
+/* ══⚠⚠⚠ 敵人立繪的「身體遮罩」——破防瞄準點要落在**敵人身上**，不是背景
+   （ver -1332，Ray：「準心要集中在敵人身上而不是背景」）════════════════════════
+   作法：把 `#enemyImg` 縮到 40×40 畫進離屏畫布，讀 alpha —— **alpha 夠高的那些格
+   就是敵人**（那批立繪是去背的）。挑一格、在格內隨機一點，再照 `object-fit` 換算成
+   畫面上的百分比。
+
+   ⚠⚠ **沒有 alpha 的圖（.jpg 那種整張都是畫的）回 null**：那種圖「哪裡是敵人」
+     根本問不出來，硬挑會把點撒得到處都是。呼叫端自己退回中央帶（見 weapon）。
+   ⚠ 遮罩**逐圖快取**（鑰匙＝`currentSrc`）：一場戰鬥會開好幾次窗，每次重畫一次
+     canvas 是白花的；換敵人時 src 一變就自動失效。
+   ⚠ canvas 被跨網域污染就放棄（同 `tone.js` 的作法）—— 不要讓它把整個窗口弄掛。
+   ⚠ 換算要照 `object-fit`／`object-position` 走（現行是 `cover` ＋ `center top`）：
+     圖是被裁切過的，直接拿 0~1 當螢幕比例會整個偏掉。 */
+const BODY_N = 40;                 // 取樣格數（40×40）
+let bodySrc = '', bodyCells = null;
+
+function buildBodyMask(){
+  const img = $('enemyImg');
+  const src = (img && (img.currentSrc || img.src)) || '';
+  if(!img || !src) return null;
+  if(src === bodySrc) return bodyCells;          // 快取命中（含「這張沒 alpha」的 null）
+  if(!img.complete || !img.naturalWidth) return null;   // 還沒載完 → 這一次先不用
+  bodySrc = src; bodyCells = null;
+  try{
+    const c = document.createElement('canvas'); c.width = c.height = BODY_N;
+    const g = c.getContext('2d', { willReadFrequently:true });
+    g.drawImage(img, 0, 0, BODY_N, BODY_N);
+    const d = g.getImageData(0, 0, BODY_N, BODY_N).data;
+    const at = (x,y)=>{ const i=(y*BODY_N+x)*4; return [d[i],d[i+1],d[i+2],d[i+3]]; };
+    const cells = []; let transparent = 0;
+    for(let y=0; y<BODY_N; y++) for(let x=0; x<BODY_N; x++){
+      const a = at(x,y)[3];
+      if(a < 250) transparent++;
+      if(a >= 200) cells.push([x, y]);
+    }
+    if(transparent > BODY_N*BODY_N*0.06 && cells.length > 20){
+      bodyCells = cells;                    // 去背圖：alpha 就是答案（94 張裡有 75 張）
+    }else{
+      /* ══ 沒去背的那 19 張（jpg／船／蜈蚣那一族）══ alpha 問不出東西，改問**顏色**：
+         取最外一圈當「背景色」，離它夠遠的格子就是主體。
+         ⚠ 用「離背景多遠」不是「夠不夠亮」：亮度法只對「白怪配暗背景」成立，
+           反過來（暗怪配亮背景）會把整片背景挑出來。 */
+      let br=0,bg2=0,bb=0,n=0;
+      for(let x=0;x<BODY_N;x++) for(const y of [0,1,BODY_N-2,BODY_N-1]){
+        const p=at(x,y); br+=p[0]; bg2+=p[1]; bb+=p[2]; n++;
+      }
+      for(let y=2;y<BODY_N-2;y++) for(const x of [0,1,BODY_N-2,BODY_N-1]){
+        const p=at(x,y); br+=p[0]; bg2+=p[1]; bb+=p[2]; n++;
+      }
+      br/=n; bg2/=n; bb/=n;
+      /* ⚠⚠ 不是「超過門檻就算」，而是**取差距最大的那一撮**（前 25%）：
+         像 `Saint_UG_CI.jpg` 那種「整幅畫」（地牢背景＋白色聖徒都在同一張 jpg 裡），
+         連牆壁都比邊框亮一點 —— 只看門檻會把牆also挑進來，點就撒得到處都是。
+         排序取頭段會集中在**真的最突出的那一塊**（那張圖就是聖徒本體）。 */
+      const scored=[];
+      for(let y=0;y<BODY_N;y++) for(let x=0;x<BODY_N;x++){
+        const p=at(x,y);
+        const dist=Math.hypot(p[0]-br,p[1]-bg2,p[2]-bb);
+        if(dist > 60) scored.push([x,y,dist]);
+      }
+      scored.sort((a,b)=>b[2]-a[2]);
+      const keep=Math.max(24, Math.round(scored.length*0.25));
+      const far=scored.slice(0, keep).map(v=>[v[0],v[1]]);
+      /* 太少（幾乎沒有主體）或**太多**都不可信 —— 後者的實例是蜈蚣與海盜船那一族：
+         背景是**有雲的天空**，雲跟邊框差很遠，於是整片天都被判成主體（實測佔 59~63%）。
+         上限收在 45%：聖徒 21%／槍之魔女 15％／貝琳達 34% 都留得住，
+         那兩張天空的被擋掉 → 回去用隨機矩形（那種圖本來就是怪佔滿整幅，
+         隨機撒也多半在怪身上）。 */
+      /* ⚠⚠ 這個判斷要看**沒被削過的** `scored.length`（主體佔多大），不是 `far.length`
+         —— `far` 已經是前 25%，拿它去比永遠都會過，天空那兩張就漏回來了。 */
+      const tot=BODY_N*BODY_N;
+      bodyCells = (scored.length > tot*0.04 && scored.length < tot*0.45) ? far : null;
+    }
+  }catch(_){ bodyCells = null; }
+  return bodyCells;
+}
+
+/* 回一個落在敵人身上的點：`{l,t}` ＝ `#top` 的百分比；問不出來就回 null。 */
+export function randomBodyPoint(){
+  const cells = buildBodyMask();
+  const img = $('enemyImg');
+  if(!cells || !cells.length || !img) return null;
+  const W = img.clientWidth, H = img.clientHeight;
+  const iw = img.naturalWidth, ih = img.naturalHeight;
+  if(!W || !H || !iw || !ih) return null;
+  const cs = getComputedStyle(img);
+  const mode = cs.objectFit || 'cover';
+  const scale = (mode === 'contain') ? Math.min(W/iw, H/ih)
+              : (mode === 'none')    ? 1
+              :                        Math.max(W/iw, H/ih);       // cover（預設）
+  const dw = iw*scale, dh = ih*scale;
+  /* object-position：computed 多半已經是百分比（"50% 0%"）；認不得就用 CSS 的預設
+     `center top`（＝50% 0%）。 */
+  const pos = (cs.objectPosition || '50% 0%').split(/\s+/);
+  const pct = (v, d)=>{ const m = /^(-?[\d.]+)%$/.exec(v||''); return m ? +m[1]/100 : d; };
+  const px = pct(pos[0], 0.5), py = pct(pos[1], 0);
+  const offX = (W - dw)*px, offY = (H - dh)*py;
+  const [cx, cy] = cells[(Math.random()*cells.length)|0];
+  const u = (cx + Math.random())/BODY_N, v = (cy + Math.random())/BODY_N;
+  const sx = offX + u*dw, sy = offY + v*dh;
+  if(sx < 0 || sy < 0 || sx > W || sy > H) return null;   // 被裁掉的那一塊 → 這次不算
+  return { l: sx/W*100, t: sy/H*100 };
+}
+
 export function setEnemy(key, opts){
   const en = GAME_CONFIG.enemies[key];
   if(!en) return;

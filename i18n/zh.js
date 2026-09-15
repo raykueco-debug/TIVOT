@@ -88,9 +88,6 @@ export const STRINGS = {
   },
 
   /* ═══ 5. Cut-in 演出（title 大字／sub 副標）═══ */
-  /* 破防窗口的畫面提示（ver -1329，Ray：「畫面提示連點」）——
-     對著敵人立繪狂點就擊發。⚠ 只在窗口開著時出現。 */
-  brTapPrompt: '連點！',
   cutins: {
     saintInstall:      '聖徒降臨！！',          // 副標 SAINT INSTALL!! [EN-STYLE] 不譯
     dualBreak:         '彈雨傾洩',              // ver -750，Ray：「改成 Bullets Rain 彈雨傾洩」（副標在 weapon.js）

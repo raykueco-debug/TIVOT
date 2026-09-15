@@ -163,6 +163,7 @@ export function setup(){
     addEnergy,                                    // 反擊給破防值（ver -880，見 weapon.counterEnergy）
     dualShot,                                     // 破防窗口開火（ver -1330：瞄準點點中時呼叫）
     brSweepBoard,                                 // 破防收窗 → 殘磚一次性消除（ver -1330）
+    enemyBodyPoint: enemy.randomBodyPoint,        // 瞄準點要落在敵人身上（ver -1332）
     /* 諾薇兒 Lv3「探覓星」（ver -1014）：彈雨傾洩回復主動技次數。
        `partnerActiveUsed` 的擁有者是 combat，跨模組的寫走具名 setter。 */
     resetPartnerActive: ()=>{ state.partnerActiveUsed = false; },
