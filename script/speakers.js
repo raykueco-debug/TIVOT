@@ -916,7 +916,11 @@ export function frameOf(id, expr){
    ⚠ 縱向固定貼齊上緣（`top:0`）—— 這幾張立繪的頭頂本來就在圖的最上緣
      （`ART[].top` 都是個位數）。
    ⚠ 收在這裡而不是 inn：旅店的門、破防計量表的月彎（ver -1035）都要用它，
-     兩份必然走鐘。⚠ 參數是 **speaker 的鑰匙**（大寫，如 `NOUVELLE`）。 */
+     兩份必然走鐘。⚠ 參數是 **speaker 的鑰匙**（大寫，如 `NOUVELLE`）。
+   ⚠⚠⚠ **`tools/si_xlsx.py` 有這一支的第二份實作**（ver -1327）——那支是 Python，
+     跑不了 CSS，只能把下面的幾何解成像素來裁縮圖。鐵律 7 的但書：
+     **這裡的錨（`faceFx`／`fx` 的優先序）或 `faceZoomK` 的算法一改，
+     那邊的 `face_box()` 要一起改**，否則 SI 差分總表的縮圖會與遊戲裡看到的不一樣。 */
 export function faceStyle(who, zoom, expr){
   const a = ART[(SPEAKERS[who]||{}).art] || null;
   if(!a || !a.base) return '';
