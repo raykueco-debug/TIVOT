@@ -495,6 +495,15 @@ export function coopMissKnife(){
  * ========================================================================== */
 /* 破防語音的輪替旗標（ver -711）。⚠ **不要**放進 `reset()`：跨敵、跨場都要接著輪。 */
 let dualVoFlip = false;
+
+/* 破防窗口的「連點」提示（ver -1329，Ray：「畫面提示連點」）。
+   ⚠ 開關只有這一支（鐵律 8）：開窗、收窗、以及任何收尾路徑都走它 ——
+     散在各個呼叫點的話，只要有一條路沒收，那行字就會留在畫面上。 */
+function showBrPrompt(on){
+  const el=$('brPrompt'); if(!el) return;
+  if(on){ const s=el.querySelector('span'); if(s) s.textContent=L.brTapPrompt||''; }
+  el.classList.toggle('on', !!on);
+}
 export function activateDual(){
   if(state.over||state.dualWield||state.saintMode||state.cutinPlaying||state.transitioning) return;
   if(state.enemyHp<=0) return;                 // overkill（敵已死）不可發動；雙槍中殺敵觸發 overkill 則照常（見 enterOverkillFx）
@@ -546,8 +555,20 @@ export function startDualWindow(){
   try{ SFX.play(asset('se_glasscrack'), sfxGain('se_glasscrack')); }catch(_){}   // 裂紋輻射音（ver -839，Ray：「破防/ovk…音效 se_glasscrack」）
   if(state.over||state.saintMode||state.dualWield||state.enemyHp<=0) return;   // overkill 中不開窗
   state.dualWield=true;
+  /* ══⚠⚠⚠ **ver -1329：操作方式換了**（Ray：「破防系統改變操作方式，對著敵人立繪
+     狂點就擊發，下方盤面保持玻璃化但不可操作」）══
+     · 盤面**照舊玻璃化**（`.dualwield` 那整套裂紋底圖不動），但**點不動**
+       —— 擋在 `combat.tap` 的分支（唯一那一處）＋ CSS 的 `pointer-events`。
+     · 開火改成點**敵人立繪**：`main.js` 的手勢層 → `combat.dualShot()`。
+     · 可以點幾下 ＝ 發動當下**還沒點掉的格數 × `dualTapsPerCell`**（現行 2）。
+     ⚠ 在這裡算一次就存起來（鐵律 7）：窗口期間盤面不會變，逐發去數格子只會
+       讓「還剩幾發」有兩個答案。 */
+  const left = state.cells.filter(c=>!c.classList.contains('done')).length;
+  state.dualShotsLeft = Math.max(1, left * ((GAME_CONFIG.tuning||{}).dualTapsPerCell || 2));
   $('grid').classList.add('dualwield');
-  api.markNext();
+  showBrPrompt(true);
+  /* ⚠ **不要 `markNext()`**：那是「下一格點這裡」的游標，而這一段盤面根本不能點
+     —— 指一格反而是在教玩家點錯地方。收窗時再標回來（endDual）。 */
   clearTimeout(state.dualTimer);
   // 教學：引導式雙槍破防不限時（清完盤才收窗）——玩家可邊讀提示邊打，不會窗口過期
   if(!state.tutorialActive) state.dualTimer=setTimeout(endDual, DUAL_SECONDS*1000);
@@ -559,16 +580,18 @@ export function startDualWindow(){
 //   憑空冒出一整盤新 overkill 盤面；殘盤保留原樣交給 overkill 免順序追打收尾。
 export function endDual(){
   state.dualWield=false;
+  state.dualShotsLeft=0;
+  showBrPrompt(false);
   clearTimeout(state.dualTimer); state.dualTimer=null;
   $('grid').classList.remove('dualwield');
-  if(!state.over && !state.saintMode && state.enemyHp>0){
-    const cells=state.cells;
-    if(cells.some(c=>c.classList.contains('done')) && !cells.every(c=>c.classList.contains('done'))){
-      api.buildGrid();     // 點了一半 → 重建整盤（回到普攻依序點）
-    }else{
-      api.markNext();      // 全新盤或已清完 → 重標下一格
-    }
-  }
+  /* ══⚠⚠ **ver -1329：不再重建盤面** ══
+     舊版是「點了一半就 `buildGrid()` 重建整盤」—— 那是因為舊制的窗口**會去點盤面**
+     （無視順序亂點），收窗時盤面是一片亂的，不重建沒辦法回到依序點。
+     現在窗口期間盤面**一格都不會動**（開火改點敵人立繪），玩家在窗口之前點到哪裡
+     就還在哪裡 —— 這時重建等於把他清了一半的進度洗掉、還換一組新數字。
+     所以只要把游標標回去就好。
+     ⚠ 這一條與上面「開窗不 markNext」是一組的：游標在窗口期間收起來，收窗時還回去。 */
+  if(!state.over && !state.saintMode && state.enemyHp>0) api.markNext();
 }
 
 /* ============================================================================
@@ -1163,7 +1186,9 @@ function bindWeaponSheet(){
 export function reset(){
   clearTimeout(state.dualTimer); state.dualTimer=null;
   state.dualWield=false;
+  state.dualShotsLeft=0;              // ver -1329：額度也要歸零，不然跨場帶著上一場的
   $('grid').classList.remove('dualwield');
+  showBrPrompt(false);                // ver -1329：跨場殘留的話那行字會留在新的一場上
 }
 // 停計時器（combat.stopAll 調度）：清 dualTimer。
 export function stopTimers(){

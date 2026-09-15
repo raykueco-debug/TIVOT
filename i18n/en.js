@@ -72,6 +72,9 @@ export const STRINGS = {
     leave:    'Main Menu',
   },
   /* ═══ 5. Cut-in 演出 ═══ */
+  /* 破防窗口的畫面提示（ver -1329，Ray：「畫面提示連點」）——
+     對著敵人立繪狂點就擊發。⚠ 只在窗口開著時出現。 */
+  brTapPrompt: 'TAP! TAP! TAP!',
   cutins: {
     saintInstall:      'SAINT INSTALL!!',
     dualBreak:         'BULLETS RAIN',           // ver -750（Ray：「彈雨傾洩」）
@@ -232,7 +235,7 @@ export const STRINGS = {
     },
     script: {
       dualReady:  [ { who:'partner',   text:'The enemy is exposed! Now!' } ],
-      dualGo:     [ { who:'partner',   text:'The enemy cannot resist! Ignore the order and attack with everything you have!' } ],
+      dualGo:     [ { who:'partner',   text:'Before it recovers — pour everything you have into the enemy in your sights!' } ],
       saintCall:  [ { who:'inspector', text:'No time. Activate Saint Install now!' } ],
       saintStart: [ { who:'inspector', text:'You cannot die before Meltdown, but every hit you take will accelerate it!' },
                     { who:'inspector', text:'No mistakes! If you survive this round, you still have a chance to turn this around!' } ],

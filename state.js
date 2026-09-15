@@ -144,6 +144,10 @@ export const state = {
   grenades: T.grenades,
   dualWield: false,
   dualTimer: null,
+  /* 破防窗口還可以點幾下（ver -1329）。發動當下 ＝ 盤面**還沒點掉的格數** ×
+     `tuning.dualTapsPerCell`；對著敵人立繪每點一下扣 1，歸零就收窗。
+     ⚠ 擁有者是 weapon（同 dualWield／dualTimer，§3.4）—— combat 只在開火那一支讀它。 */
+  dualShotsLeft: 0,
 
   /* ── 3.5 聖徒化（擁有者：saint；saintMode 只有 saint.js 能寫） ── */
   saintMode: false,

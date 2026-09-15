@@ -83,6 +83,9 @@ export const STRINGS = {
   },
 
   /* ═══ 5. Cut-in 演出 ═══ */
+  /* 破防窗口的畫面提示（ver -1329，Ray：「畫面提示連點」）——
+     對著敵人立繪狂點就擊發。⚠ 只在窗口開著時出現。 */
+  brTapPrompt: '連打！',
   cutins: {
     saintInstall:      'セイント\nインストール！！',   // \n＝cut-in 斷行點（セイント上／インストール下，不得詞中斷行）
     dualBreak:         '弾雨の嵐',               // ver -750（Ray：「彈雨傾洩」）
@@ -251,7 +254,7 @@ export const STRINGS = {
     },
     script: {
       dualReady:  [ { who:'partner',   text:'敵に隙ができた！　今よ！' } ],
-      dualGo:     [ { who:'partner',   text:'敵は抵抗できないよ、順番無視して猛攻しよう！' } ],
+      dualGo:     [ { who:'partner',   text:'敵が体勢を立て直す前に、視界の敵に火力を叩き込んで！' } ],
       saintCall:  [ { who:'inspector', text:'もうダメ。今すぐ聖徒化しなさい！' } ],
       saintStart: [ { who:'inspector', text:'熔断までは不死身だ！だが、攻撃を受けるほど焼き切れるのが早くなる！' },
                     { who:'inspector', text:'ミスは禁止！　このラウンドを耐え切れば、逆転のチャンス！' } ],

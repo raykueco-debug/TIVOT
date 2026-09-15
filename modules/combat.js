@@ -117,7 +117,7 @@ export function setup(){
                     改由 `counterAtkStep`／`counterHitForced` 兩支分開回答（見上）。 */
                  onThreatEarly: tutorial.onEarlyBlock,
                  /* ══⚠⚠⚠ **破防期間敵人不發動攻擊**（ver -1018，Ray 指定）══
-                    彈雨傾洩是**獎勵射擊窗口**（4 秒無視順序狂點）—— 中間插一顆圈
+                    彈雨傾洩是**獎勵射擊窗口**（4 秒對著敵人立繪狂點，ver -1329）—— 中間插一顆圈
                     等於把獎勵收回去一半，而玩家那時的注意力全在盤面上。
                     ⚠ 包在**注入點**：`dualWield` 的擁有者是 weapon、排程的擁有者是
                       defense，兩邊都不該去讀對方的旗（維持 §2 的依賴方向）。
@@ -507,6 +507,36 @@ function shotHeal(){
   if(gp>0) healPlayer(Math.max(1, Math.round(state.playerMax*gp)));
 }
 
+/* ══⚠⚠⚠ 破防窗口的開火（ver -1329，Ray：「對著敵人立繪狂點就擊發」）══════════
+   舊制是點盤面的格子、一格一發；新制**點敵人立繪**，可以點幾下由
+   `state.dualShotsLeft` 管（發動當下算好＝剩餘格數 × `dualTapsPerCell`）。
+
+   ⚠⚠ 這是 BR 開火的**唯一**那一支（鐵律 8）：手勢層（main.js）只負責把
+     「這是一次點擊」交過來，傷害、音效、震動、回血窗、收窗都在這裡。
+   ⚠ 擁有者是 combat 不是 weapon：傷害計算（`hitDamage`／`enemyDamage`／`shotHeal`）
+     整族都住在 combat，搬去 weapon 會變成跨模組反向依賴（§2）。
+   ⚠ 回傳 true ＝這一下真的打出去了（手勢層據此不要再往下判紅點）。 */
+export function dualShot(){
+  if(!state.dualWield) return false;
+  if(state.over||state.transitioning||state.cutinPlaying) return false;
+  if(state.enemyHp<=0) return false;            // 敵已死 → 交給 overkill 那一套
+  if(state.dualShotsLeft<=0) return false;
+  state.dualShotsLeft--;
+  state.combo++; if(state.combo>state.maxCombo) state.maxCombo=state.combo;
+  resetIntervalDeadline();
+  /* 索菈娜「地弓星」（Lv1，ver -976）：破防彈雨的攻擊力 ×1.2。
+     ⚠ 只有這一支在算（鐵律 7）—— BR 的傷害就這一處。 */
+  const dmg=hitDamage()*DMG_DUAL_MULT*(1+prog.girlBonus(state.pickedPartner,'brDmgMul'));
+  SFX.gunshot(true);
+  hap.shot();                          // 破防窗口：**每一發**都震（ver -398，Ray 指定）
+  enemyDamage(Math.round(dmg), false, false, 'dual');   // 破防窗口的射擊（ver -423：來源別）
+  shotHeal();                          // 回血窗（ver -965：BR 的每一發也算）
+  updateStatus();
+  /* 打完額度就收窗 —— 時間到（DUAL_SECONDS）與敵死是另外兩條出路，三條都走 endDual。 */
+  if(state.dualShotsLeft<=0) weapon.endDual();
+  return true;
+}
+
 /* ============================================================================
  *  點擊判定
  * ========================================================================== */
@@ -522,34 +552,13 @@ function tap(num,cell,e){
   /* 惡夢化（ver -671）：與聖徒化同一個位置分流 —— 兩者不可能同時成立。 */
   if(state.niMode){ saint.nightmareTap(num, cell); updateStatus(); return; }
 
-  // 雙槍破防（獎勵射擊窗口）：無視順序、點掉的格移除不可重點、快速清盤（降攻安全牌，不吃暴擊/atkBuff）。
-  //   注意：雙槍清盤走自己的收尾（不走 clearBoard、不給完美清盤 bonus）。
-  if(state.dualWield){
-    if(cell.classList.contains('done')) return;
-    cell.classList.add('done'); enemy.shatterCell(cell); glassShards(cell);   // 彈雨：玻璃碎片落下（ver -805）
-    state.combo++; if(state.combo>state.maxCombo) state.maxCombo=state.combo;
-    resetIntervalDeadline();
-    /* 索菈娜「地弓星」（Lv1，ver -976）：破防彈雨的攻擊力 ×1.2。
-       ⚠ 只有這一支在算（鐵律 7）—— BR 的傷害就這一處。 */
-    const dmg=hitDamage()*DMG_DUAL_MULT*(1+prog.girlBonus(state.pickedPartner,'brDmgMul'));
-    SFX.gunshot(true);
-    hap.shot();                        // 破防窗口：**每一發**都震（ver -398，Ray 指定）
-    enemyDamage(Math.round(dmg), false, false, 'dual');   // 破防窗口的射擊（ver -423：來源別）
-    shotHeal();                        // 回血窗（ver -965：BR 的每一發也算）
-    if(state.cells.every(c=>c.classList.contains('done'))){
-      /* ⚠⚠ 走**同一支** `clearBoard()`（ver -871，Ray：「索拉娜被動技清盤也要算盤數」
-         —— 她的主動技直接進雙槍破防，BR 清掉整盤以前只記 recordBoardTime，
-         完美清盤（perfectBoards／清盤聖能）與獵手戰吼的連盤計數整條漏掉。
-         鐵律 8：清盤的記帳只有 clearBoard 一份，這裡不再手抄半套。
-         ⚠ 先收破防窗（endDual）再清盤：clearBoard → goNextBoard 會重建盤面，
-           窗開著的話 4 秒計時器到期又蓋一次。 */
-      weapon.endDual();
-      clearBoard();
-      return;
-    }
-    updateStatus();
-    return;
-  }
+  // 雙槍破防（獎勵射擊窗口）：ver -1329 起盤面**不可操作**，開火改點敵人立繪（見 dualShot）。
+  /* ══⚠⚠⚠ **ver -1329：破防窗口期間盤面不可操作**（Ray：「下方盤面保持玻璃化
+     但不可操作」）══ 玻璃化（`.dualwield` 那整套裂紋底圖）照舊，但點它沒有反應
+     —— 開火改成**對著敵人立繪狂點**（`dualShot()`，由 main.js 的手勢層叫）。
+     ⚠ 擋在這裡是**唯一**那一處（鐵律 8）：CSS 的 `pointer-events` 只是不要讓它
+       看起來可以按，真正的判定在這一行。 */
+  if(state.dualWield) return;
 
   // Overkill（敵 HP 已歸零的追加輸出窗口）：不用管數字順序，點到未消格就算命中。
   //   結束只有兩條路：全清（clearBoard→finish）或 3 秒逾時（autoClearOverkill）；

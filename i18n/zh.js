@@ -88,6 +88,9 @@ export const STRINGS = {
   },
 
   /* ═══ 5. Cut-in 演出（title 大字／sub 副標）═══ */
+  /* 破防窗口的畫面提示（ver -1329，Ray：「畫面提示連點」）——
+     對著敵人立繪狂點就擊發。⚠ 只在窗口開著時出現。 */
+  brTapPrompt: '連點！',
   cutins: {
     saintInstall:      '聖徒降臨！！',          // 副標 SAINT INSTALL!! [EN-STYLE] 不譯
     dualBreak:         '彈雨傾洩',              // ver -750，Ray：「改成 Bullets Rain 彈雨傾洩」（副標在 weapon.js）
@@ -298,7 +301,7 @@ export const STRINGS = {
       },
       script: {
         dualReady:  [ { who:'nouvelle', img:'tut_nouvelle_surprise', text:'牠露出破綻了……就是現在！' } ],
-        dualGo:     [ { who:'nouvelle', img:'tut_nouvelle_surprise', text:'牠沒辦法抵抗了！不用管順序，打下去！' } ],
+        dualGo:     [ { who:'nouvelle', img:'tut_nouvelle_surprise', text:'在敵人恢復態勢前，對著視野中的敵人傾洩火力吧！' } ],
         /* ⚠ 這一句配**全畫面 cut-in**（Ray 指定）。cutin 是資產鍵，見 config 的 ASSETS。 */
         saintCall:  [ { who:'nouvelle', img:'tut_nouvelle_saint', cutin:'cutin_nouvelle_saint',
                         text:'SAINT INSTALL......！' } ],
@@ -353,7 +356,7 @@ export const STRINGS = {
     // ── 腳本化段落 ──
     script: {
       dualReady:  [ { who:'partner',   text:'敵人露出破綻了！就是現在！' } ],
-      dualGo:     [ { who:'partner',   text:'敵人無法抵抗，無視順序猛攻吧！' } ],
+      dualGo:     [ { who:'partner',   text:'在敵人恢復態勢前，對著視野中的敵人傾洩火力吧！' } ],
       saintCall:  [ { who:'inspector', text:'沒時間了，立刻聖徒化！' } ],
       saintStart: [ { who:'inspector', text:'在熔斷前你死不了，但承受攻擊會加速熔斷！' },
                     { who:'inspector', text:'別失誤！只要撐過這回合就有機會逆轉！' } ],
