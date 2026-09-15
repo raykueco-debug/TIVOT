@@ -1225,6 +1225,23 @@ function clockGate(){
   /* ⚠ 時鐘在**演台詞之前**推（ver -656）：那一段路不算時間，而下一格的背景
      要用推完之後的時段挑（`bgFor` 在 `enter()` 裡才問時鐘）。 */
   if(g.clockTo!=null) clock.advanceToNextHour(g.clockTo);
+  /* ══⚠⚠ **閘門也開得了／關得掉自由活動**（ver -1360，Ray：「自由活動期間可以約會，
+     而第二天就關閉自由活動，完成任務才開」）══ 欄位與 act 那一邊同名同義
+     （`modules/town.js` 的 act 收尾，§6.5.4 的 -666）—— 一個狀態一組欄位（鐵律 7/9）：
+       · `endStoryExplore:true` ＝開放自由活動（插 `free_explore_<圖>`）
+       · `storyExplore:true`    ＝關閉（拔那支旗）
+     ⚠ 為什麼閘門也要有：東泊「第二天醒來就關掉」是**時間推動**的，那是閘門不是 act。
+     ⚠ 插拔排在演台詞之前：那一段的台詞可能就是在講「該辦正事了」。 */
+  if(g.endStoryExplore) prog.addFlags([freeExploreFlag()]);
+  if(g.storyExplore)    prog.removeFlags([freeExploreFlag()]);
+  /* ══⚠⚠ **`nudge` ＝這幾句只是催你回去**（ver -1360，Ray：「時間到的時候如果人
+     已經在旅店，就不用跑『該回去看看了』」）══
+     ⚠⚠ **不可以做成通則**：翌日那一道（`ep_day2`）也是 `goto:'inn'`＋`enterAgain`，
+       但**它的台詞就是那一幕** —— 人在旅店照樣要演。差別在於這一句是
+       「叫你回去」，那一段是「回去之後發生的事」。所以逐閘門明寫。
+     ⚠ 旗照記、時鐘照推（上面已經做完）——「這道閘門用掉了」與「那句話講不講」
+       是兩件事（鐵律 9：旗只回答一件事）。 */
+  if(g.nudge && g.goto===nodeId) return false;
   if(!g.goto || (g.goto===nodeId && !g.enterAgain)) return false;   // 已經站在那裡：讓原本的流程繼續（acts 會接手）
   /* ⚠⚠ **先講一句再轉場**（ver -438，Ray：「讓蕾娜在旅店先講一句『好囉，該出發囉』
      再淡入淡出轉到下一幕」）。台詞在資料上（`TOWNS[].stage1.lines`，鐵律 1）。
@@ -3107,6 +3124,19 @@ function afterArrive2(n, metDone){
                                    },
                                    /* 這一格現在的門設定（`answerBy` / 逐人的敲門詞）。 */
                                    doors: innDoorSet(n),
+                                   /* ══⚠⚠⚠ **約會只在「自由活動」期間開放**（ver -1360，Ray：
+                                      「可約會這件事應該要做開關門機制，只有開放時間可約，
+                                        不然任務中還約會就很怪」「自由活動期間可以約會，
+                                        而第二天就關閉自由活動，完成任務才開」）══
+                                      ⚠⚠ **不要另立一個開關**：這件事專案裡早就有了 ——
+                                        §6.5.4 的「劇情探索 ⇄ 自由探索」（ver -666）。
+                                        劇情探索＝女角不排外出行程、碰不到她們；
+                                        那樣的期間本來就不該約得出來（鐵律 7：
+                                        一個狀態一份真相）。
+                                      ⚠ 判定只有 `storyExploreOn()` 一支，這裡只問它。
+                                      ⚠ 它排在**人的分支之前**（同宵禁／今天約過了）：
+                                        那是世界的狀態，不是某個人的心情。 */
+                                   dateOpen: ()=> !storyExploreOn(),
                                    /* 宵禁（ver -576）：敲門一律回 `nightRest`，約不出來。 */
                                    night: isCurfew,
                                    /* 今天已經約過她了（ver -576）：回 `dateDone`，不再出門。 */

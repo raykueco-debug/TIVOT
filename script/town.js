@@ -468,7 +468,13 @@ export const OUTING = {
                                  { speaker:'PLAYER', blank:true },
                                  any('shy',''),
                                  any('talkshy','好。', { aff:{ anya:3 } }) ] } } } },
-    SORANA:   { from:5, dine:'bar',        nodes:['grocery','gunstore','guild'],
+    /* ⚠⚠⚠ **索菈娜 S8 才入隊**（ver -1360，Ray：「s8 之前她不論如何不會在，
+       因為還沒入隊」）—— 原本是暫填 5（入隊章節未定時的佔位）。
+       `girlsHere()` 依它濾旅店的四扇門 ⇒ S8 之前那一格根本不存在，
+       不必再用「好感不夠就當她不在」去近似（見下面夏爾村那一段拔掉的 `absent`）。
+       ⚠ `flight/talks.js` 的 `PARTY.sorana` 是**同一件事的另一份**（船上對話），
+         兩邊註解互指 —— 改一邊要改另一邊（鐵律 7 的但書）。 */
+    SORANA:   { from:8, dine:'bar',        nodes:['grocery','gunstore','guild'],
                 nodesBy:{ shinier:['hunter'] },
                 line:'喲。難得看你走這條路啊。',
                 meetBy:{ shinier:{
@@ -2603,7 +2609,15 @@ export const TOWNS = {
              不在的角色頭像空」）。`absent:true` ＝好感未達門檻就當她不在房裡，
              由 `modules/town.js` 併進 `out` 的答案（門的狀態只有 `doorState` 一支在算）。
              ⚠ 所以她**沒有 `low`**：那扇門是空的，根本點不到。 */
-          SORANA:{   absent:true,
+          /* ⚠⚠⚠ **`absent` 拔掉了**（ver -1360，Ray：「改掉好了，s8 之前她不論如何
+             不會在，因為還沒入隊」）。ver -1099 用「好感 < T2 就當她不在」去近似
+             「她還沒入隊」—— 那是**拿好感去表達入隊**，兩個不同的狀態共用一個判斷
+             （鐵律 9：一個狀態一個擁有事件）。正解是 `OUTING.who.SORANA.from = 8`：
+             S8 之前 `girlsHere()` 根本不會給她一扇門。
+             ⚠⚠ 她原本**沒有 `low`**（那扇門是空的、根本點不到），門回來之後就不能
+               「點了沒反應」（§6.5.5）—— 所以補一句。**這一句是我暫代的**
+               （稿上那一格寫的是「（不在）」，沒有台詞），要換說一聲。 */
+          SORANA:{   low:'今天想自己待著，改天吧。',
                      date:[ sor('ready','噢，來得正好！'),
                             sor('readysmile','謝尼要去森林裡打獵呢，一起來吧？') ] },
           RENNA:{    low:'抱歉，我還得規畫路線，你們去吧。',
@@ -4208,8 +4222,12 @@ export const TOWNS = {
         any('Silent','……我有點累了。'),
         any('talk','先回旅店。') ] },
     } },
+    /* ⚠ `nudge:true`（ver -1360，Ray：「時間到的時候如果人已經在旅店，就不用跑
+       『該回去看看了』」）：這一句只是**催你回去** —— 人已經在那裡就不必講。
+       旗照記、時鐘照推（`clockGate` 在它之前就做完了）。
+       ⚠ 翌日那一道**不能**寫它：那一段的台詞就是那一幕，人在旅店照樣要演。 */
     gates:[ { flag:'ep_evening', need:'ep_arrive', hourOfDay:[20,24],
-              goto:'inn', enterAgain:true,
+              goto:'inn', enterAgain:true, nudge:true,
               lines:[ { speaker:'NARRATION', text:'該回去看看了。' } ] },
       /* ══⚠⚠⚠ 翌日・出發前（ver -1352，Ray 交稿）══════════════════════════════
          睡醒（旅店把時鐘推到 07:00）之後那一次抵達就演。
@@ -4230,7 +4248,10 @@ export const TOWNS = {
              那是對的：沒有那一段互動就沒有那一句玩笑。
          ⚠ 插圖兩張（「安雅躲在主角身後」「Q版四人坐槍棺」）**還沒有**
            （Ray：插圖先空著）—— 那兩拍先不寫 `cg`，圖到了補一行。 */
-      { flag:'ep_day2', need:'ep_renna_night', hourOfDay:[6,12],
+      /* ⚠ `storyExplore:true` ＝**關閉自由活動**（Ray：「第二天醒來就要關掉約會」）——
+         從這一刻起敲門約不出來，女角也不再排外出行程。
+         ⚠ 再開在貝利薩爾那一段的收尾（`ep_belisar_done`，還沒寫）—— 見城上的說明。 */
+      { flag:'ep_day2', need:'ep_renna_night', hourOfDay:[6,12], storyExplore:true,
         goto:'inn', enterAgain:true, sides:{ RENNA:'L' }, lines:[
         ren('writting','往南大約半天路程，穿過輝煌平原的古道，繞過溪谷就能到了。'),
         nou('surprise','感覺好遠喔。'),
@@ -4257,13 +4278,22 @@ export const TOWNS = {
         ren('think','聽說古城裡沒有禍魘，入夜前能到的話會輕鬆很多。'),
       ] },
     ],
-    /* ⚠⚠ **沒有 `storyExplore`＝這座城是自由探索**（ver -1342，Ray：「把那個時點
-       標記為自由探索」）：女角會排外出行程、餐飲街依同行女伴換店、旅店敲得到門
-       —— 抵達之後那段「自由活動」與四條約會線全部靠這個前提（§6.5.4.2）。
-       ⚠ 這是**預設值不是旗**：`storyExplore` 沒寫就是自由探索，要鎖成劇情探索才寫它
-         （同貝利薩爾那一座）。**不要**為了「明確一點」補一支 `free_explore_eastport`
-         —— 那支旗只有在 `storyExplore:true` 時才有意義，兩個都寫就是一個狀態
-         兩份真相（鐵律 7／9）。 */
+    /* ══⚠⚠⚠ **自由活動是會開會關的**（ver -1360，Ray：「自由活動期間可以約會，
+       而第二天就關閉自由活動，完成任務才開」「以東泊來說，第二天醒來就要關掉約會」）══
+       ⚠⚠⚠ **這一條推翻 ver -1342 的寫法**（留著當紀錄）：那一版是
+         「沒有 `storyExplore` ＝這座城一直是自由探索」，還特別寫了
+         「**不要**補一支 `free_explore_eastport`」—— 那在當時是對的（沒有人要關它），
+         但現在**要關**，而「一直開著」表達不了「開→關→再開」。
+       ⇒ 改成既有的那一套（§6.5.4 的 -666，鐵律 7：不要為同一個狀態另立開關）：
+         · 城上 `storyExplore:true` ＝**預設劇情探索**（那是資料，不是狀態）
+         · 旗 `free_explore_eastport` ＝**已開放**（插了才算）
+         · 誰插：抵達那一段 act 的 `endStoryExplore:true`（第一天的自由活動）
+         · 誰拔：翌日那道閘門的 `storyExplore:true`（第二天醒來就關）
+         · 誰再插：**貝利薩爾那一段的收尾**（`ep_belisar_done`）—— ⚠⚠ 那一段還沒寫，
+           所以**現在是關了就不會再開**。寫那一段時要記得在它上面補 `endStoryExplore:true`
+           （鐵律 9：每一支旗都要答得出誰插誰拔）。
+       ⚠ 約會跟著這支旗走（`modules/inn.js` 的 `dateOpen`）—— 任務期間敲門會被擋回。 */
+    storyExplore: true,
     /* BGM（ver -1251 就先接好了，Ray：「Peritune_Portside_Cafe_loop / 東泊放這首」）。
        那一版的註解寫著「等 TOWNS.eastport 建起來只要加這一行」—— 就是這一行。 */
     bgm: 'portside',
@@ -4336,7 +4366,10 @@ export const TOWNS = {
              ⚠ 掛在**第一拍**：HUD 上那一行時刻要印**跳完之後**的時間。
            ⚠ 蕾娜講完就去大學了。她「不在旅店」是**行程**不是旗（§6.5.4.2 的
              `OUTING`）—— 16~18 點在大學巧遇那一段是下一批的事。 */
-        acts:[ { flag:'ep_arrive', need:'belisar_noland_talk', sides:{ RENNA:'L' }, lines:[
+        /* ⚠ `endStoryExplore:true` ＝演完開放自由活動（＝可以約會）；
+           第一天的四條約會線全部靠它（見城上那一段的說明）。 */
+        acts:[ { flag:'ep_arrive', need:'belisar_noland_talk', endStoryExplore:true,
+                 sides:{ RENNA:'L' }, lines:[
           Object.assign(ren('front','我先去大學研究一下貝利薩爾遺蹟的檔案。'),
                         { clockToNext:11 }),
           ren('ask','可能會花點時間，忙完就回旅店，你們先隨意逛逛吧。'),
@@ -4365,8 +4398,13 @@ export const TOWNS = {
            圖到了補一行就好。 */
       university: { bg:'East_University', name:'東方泊地　大學',
         exits:{ back:'midtown' },
+        /* ⚠⚠ **演完直接推回旅店**（ver -1360，Ray：「巧遇蕾娜以後直接推移動回旅店，
+           從『有找到一些資料了』開始跑」）：`goto` ＝ act 收尾的強制轉場
+           （與閘門的 `goto` 同一支 `forceGo`，鐵律 8）。
+           ⚠ 落地之後接的是旅店那一格的第二段 `ep_renna_night`（`need:'ep_renna_met'`）
+             —— 它的第一句正是那一句。 */
         acts:[ { flag:'ep_renna_met', need:'ep_arrive', noDate:true, hourOfDay:[16,18],
-                 sides:{ RENNA:'L' }, lines:[
+                 goto:'inn', sides:{ RENNA:'L' }, lines:[
           ren('curious','唉呀，真巧呢。'),
           ren('smile','怎麼一個人晃到這裡？'),
           { speaker:'PLAYER', blank:true },
@@ -4611,7 +4649,18 @@ export const TOWNS = {
                             any('talkshy','東海的甜點街……很有名……'),
                             { speaker:'PLAYER', blank:true },
                             Object.assign(any('smile','好！'), { flags:['ep_date_anya'] }) ] },
-          SORANA:{   absent:true,
+          /* ⚠⚠⚠ **`absent` 拔掉了**（ver -1360，Ray：「好感 < T2 就當她不在，
+             是**夏爾村 s7 的規矩，不是全域**」）。-1352 建東泊時把夏爾村
+             ver -1099 那條（「索拉娜不在的話頭像直接拿掉」）一起抄過來 ——
+             於是**東泊的旅店永遠看不到索菈娜的頭像**（測試進度好感是 0，
+             門檻 20 永遠不過），Ray 回報「旅店裡總是沒有索拉娜頭像」。
+             ⚠⚠ **一座城的特例不要當成通則抄**：那條規矩是寫在夏爾村 s7 的稿上的。
+               抄之前先問「這一句是誰的稿？」
+             ⚠ 改成走 `low`（門上有臉、點得到、會回你一句）—— §6.5.5：
+               「還不能做」不要靠藏起來擋。
+             ⚠⚠ `low` 這一句是**我暫代的**（東泊的稿沒給 T2 以下的詞，
+               同這一格的 `dateBusy`／`dateDone`）—— 要換說一聲。 */
+          SORANA:{   low:'現在還不太熟呢，改天吧？',
                      /* ⚠ `shy` 還沒有圖（同上，會退回本尊）。 */
                      date:[ sor('side','噢！當然要去逛逛呀！'),
                             sor('embarassed','不過我也不知道要去哪就是了！'),
@@ -4666,7 +4715,14 @@ export const TOWNS = {
           /* ⚠ 下午已經在大學碰過（`ep_renna_met`）⇒ 上面那一段被 `until` 擋掉，
              但**睡覺鈕還是要開** —— 所以另給一段只插旗的安靜抵達。
              稿上沒有台詞，那就沒有台詞（空 `lines` 由 `actDue` 取到之後直接記旗）。 */
-          { flag:'ep_renna_night', need:'ep_renna_met', hourOfDay:20, lines:[
+          /* ⚠⚠ **不等 20:00**（ver -1360）：巧遇那一段演完會把人**直接推回這裡**
+             （大學那一格的 `goto:'inn'`），所以這一段就是那一次抵達要演的 ——
+             再掛 `hourOfDay:20` 等於推回來卻什麼都不演，玩家會以為壞了。
+             ⚠ 上面那一段（沒巧遇的那一版）照舊等 20:00：那一條是「回旅店時碰到她」。
+             ⚠⚠ 連帶：`noSleepUntil:'ep_renna_night'` 會在**下午**就解鎖睡覺 ——
+               這是 Ray 這一版指定的節奏（推回旅店＝今天的事辦完了）。 */
+          { flag:'ep_renna_night', need:'ep_renna_met', sides:{ RENNA:'L' }, lines:[
+            ren('curious','啊，回來了。'),
             ren('front','有找到一些資料了，明天就出發，早點休息吧。') ] },
         ] },
     },

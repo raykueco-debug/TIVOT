@@ -387,6 +387,18 @@ function knock(i){
       if(nl && host && host.say) host.say(nl, nm);
       return;
     }
+    /* ══⚠⚠⚠ **任務期間約不出來**（ver -1360，Ray：「只有開放時間可約，不然任務中
+       還約會就很怪」）══ 判定走**既有的**「劇情探索 ⇄ 自由探索」（§6.5.4 的 -666，
+       `town.storyExploreOn()`）—— 劇情探索期間女角本來就不排外出行程、路上碰不到，
+       那樣的期間約得出來才是矛盾（鐵律 7：不要為同一個狀態再開第二個開關）。
+       ⚠ 排在**人的分支之前**（同宵禁／今天約過了）：那是世界的狀態，不是誰的心情。
+       ⚠ 台詞在資料上（`innStage1.dateShut`）；沒寫就回一句旁白 ——
+         §6.5.5：不可以「點了沒反應」，也不可以靠把門藏起來擋。 */
+    if(st1.dateOpen && !st1.dateOpen()){
+      const sl = st1.data.dateShut || '（現在不是約人出門的時候。）';
+      if(host && host.say) host.say(sl, st1.data.dateShut ? nm : '');
+      return;
+    }
     /* ══ 一天內同一個人只能約一次（ver -576，Ray：「一天內同人不能約第二次，
        會拒絕」）══ 同宵禁：排在人的分支之前，好感再高也約不動。
        ⚠ 記帳與判定都在 `modules/town.js`（`datedToday`／`markDated`，鐵律 8），
@@ -424,7 +436,11 @@ function knock(i){
       /* 好感的鑰匙是小寫的角色 id（`progress` 的 CHARS）—— speaker id 轉一下。 */
       const aff=(prog.getAffection()||{})[String(who).toLowerCase()]||0;
       if(aff < (st1.dateAff!=null ? st1.dateAff : 20)){
-        if(KT.low && host && host.say) host.say(KT.low, nm);
+        /* ⚠⚠ **沒寫 `low` 也要回一句**（ver -1360）：靜靜 return ＝「點了沒反應」，
+           那是 §6.5.5 明令要避免的（「還不能做」不要靠藏起來或沒反應擋）。
+           ⚠ 退路是**旁白**（名字欄空著）：那是主角自己的判斷，不是替她編一句話
+             —— 同旅店 `noSleep` 那一句的作法。 */
+        if(host && host.say) host.say(KT.low || '（她好像沒什麼興趣。）', KT.low ? nm : '');
         return;
       }
       const lines=KT.date||[];
