@@ -2327,6 +2327,20 @@ Ray：「點擊離開旅店時 安：『……』…」。節點寫 `onLeave:{fl
     驗得出來 —— ⚠⚠ **ver -1326 起 Windows 也跑得動了**（引擎改成「有 jsc 用 jsc、
     沒有就用 node」），所以**不要再手動對**：直接 `py tools/script_lint.py`。
     ⚠ 舊註解說「需要 macOS 的 jsc、Windows 上跑不了」——那一句已作廢。
+    ⚠⚠⚠ **但它在這台機器上一直是「跑不了」的**（ver -1361 才解決，Ray：「裝」）：
+      -1326 那一版只是讓它**認得** node，**這台根本沒裝 node** ——
+      於是「Windows 跑得動」寫在憲法上，實際上**整類檢查全黑了三十幾版**，
+      HANDOFF 的驗收指令那一段也一直寫著「這台跑不了」。
+      現在裝了 **Node.js 24.19.0 LTS**（`winget install OpenJS.NodeJS.LTS`，
+      `C:\Program Files
+odejs`）。
+      ⚠⚠ **第一次跑就抓到一個真的錯誤**：貝利薩爾抵達那一段的推門聲寫成
+        `se_kerb_open`（正確是 `se_Kerberos_open`）—— 音效名查不到是**靜靜不播**，
+        畫面上沒有任何錯誤訊息，玩到那一拍只會覺得「好像少了個聲音」。
+      ⇒ **教訓：「憲法說某支工具可以跑」與「它在這台真的跑得起來」是兩件事。**
+        工具跑不起來時要當成**缺陷回報**，不是「那就手動對吧」——
+        手動對的那幾次，正是這個錯誤混進去的那幾次。
+    ⚠ **commit 前跑它**（與 `tools/bust.py` 同一個位置）：`py tools/script_lint.py`。
   ⚠ 探測**就是**那一次載入（設 `el.src` 看 onload/onerror），不另開一輪 —— 那等於同一張圖抓兩次。
   ⚠ 為什麼要兩種副檔名：規約是 WebP（§5），但交件常常先是 PNG —— 載不到就整個時段沒背景。
   ⚠ 為什麼要大小寫變體：`clock.band()` 出的是 `Dawn/Day/Dusk/night/midnight`，

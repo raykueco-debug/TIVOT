@@ -5122,7 +5122,10 @@ export const TOWNS = {
           sor('back','不過倒是挺安靜的。還真的沒什麼魔獸。'),
           ren('upset','那麼，事不宜遲。'),
           /* （厚重推門聲）—— 走既有的門音（鐵律 8，不另找一支）。 */
-          Object.assign(ren('ask','打擾囉。'), { se:'se_kerb_open' }),
+          /* ⚠ `se_Kerberos_open` 不是 `se_kerb_open`（ver -1361，`script_lint` 抓到）——
+             音效名查表查不到就**靜靜不播**（只印一行 console），畫面上沒有任何錯誤訊息。
+             這台裝了 node 之後 lint 才跑得動，第一次跑就抓到它。 */
+          Object.assign(ren('ask','打擾囉。'), { se:'se_Kerberos_open' }),
         ] } ] },
       /* ══⚠⚠⚠ 大廳祭壇的那一場戲（ver -1353，Ray 交稿）══════════════════════
          ⚠⚠ **髮飾脫落那一拍插 `renna_hairpin_lost`** ＝ 從此蕾娜好感封頂 T3
