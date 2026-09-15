@@ -340,7 +340,17 @@ function openFlight(opts){
      內嵌之後主選單／城鎮的曲子會**繼續播**，於是兩首疊在一起。
      ⚠ 收在這裡（唯一的入口）而不是散在各個呼叫點（鐵律 8）：試飛、出航、
        戰鬥打完回來，三條路都經過這一支。 */
-  try{ SFX.stopBgm(600); }catch(_){}
+  /* ══⚠⚠⚠ `opts.keepBgm` ＝**這一趟不要停曲子**（ver -1350，Ray：「追擊戰開始以後
+     開始播 Gothic_Dark，到飛行畫面也繼續不要停」）══
+     飛行頁是 iframe，父頁的 WebAudio 在這期間還活著 —— 所以「不停」＝
+     **父頁不收（這裡）＋ 那一頁不開自己的音樂**（`flight/index.html` 的 `updateBgm`
+     讀同一支旗）。兩邊註解互指。
+     ⚠ 旗由這裡負責插與拔（鐵律 9：一個狀態一個擁有事件）：`keepBgm` 為真就插、
+       否則一律拔 —— 上一趟留下來的旗不會害下一趟整頁沒有音樂。
+     ⚠ 連帶**不放音訊**（下面那個 `releaseAudio`）：曲子正在播，抽掉 blob 就是斷音。 */
+  const keepBgm = !!(opts && opts.keepBgm);
+  try{ localStorage.setItem('tivot_keepbgm_v1', keepBgm?'1':'0'); }catch(_){}
+  if(!keepBgm){ try{ SFX.stopBgm(600); }catch(_){} }
   /* ══⚠⚠ 進飛行畫面＝把主頁這一邊的音訊整個放掉（ver -1299，Ray 的讀取分工）══
      飛行頁是**另一個 document**，音樂與音效都是它自己那一套（§6.10）——
      主頁這邊留著的解碼音效與 BGM blob（實測 117 支 ＋ 21 首、31.6 MB）
@@ -354,7 +364,7 @@ function openFlight(opts){
      ⚠ 曲子上面剛 `stopBgm` 掉了；`releaseAudio` 仍會保住 `_bgmSrc` 指著的那一首，
        所以就算淡出還沒走完也不會斷音。
      ⚠ 慢一拍再放：`stopBgm` 的淡出要 600ms，當場抽掉 blob 會讓最後那一段沒聲音。 */
-  setTimeout(()=>{
+  if(!keepBgm) setTimeout(()=>{
     let keep=[]; try{ keep=story.kerbSeSources(); }catch(_){}
     try{ SFX.releaseAudio(keep); }catch(_){}
   }, 800);

@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.15-1349';
+export const VERSION = 'ver 2026.09.15-1350';
 
 export const GAME_CONFIG = {
 
@@ -1747,7 +1747,10 @@ export const GAME_CONFIG = {
                      tabs:['buy','sell'] },
       ep_gunstore: { title:'武器店', art:'resources/SI/NPC/NPC_Gunsmith_SI_v1.webp',
                      tabs:['buy','sell','mod'], tabName:{ buy:'買武器', sell:'賣武器', mod:'武器改裝' },
-                     only:'weapon', compare:true },
+                     only:'weapon', compare:true,
+                     /* 射擊挑戰（ver -1350）：與帝都／北泊同一個機制，場次與最佳紀錄
+                        是這座城自己的（`ep_range`）。 */
+                     challenge:'ep_range', challengeLabel:'射擊挑戰' },
     },
   },
 
@@ -2548,6 +2551,16 @@ export const GAME_CONFIG = {
     /* ══ 蕃茄人11號（ver -858，杰羅的修船打靶）══ 同帝都配置＋兩個新旋鈕：
        `assaultOn` 放行大絕排程（3 秒一發，defense.scheduleAssault 的例外）、
        `hitPenaltySec` 被打中＝碼表 +3 秒（combat.enemyAttack）。par 30 秒。 */
+    /* ══ 東方泊地的打靶（ver -1350，Ray：「打靶卡同帝都就好，台詞改一下」）══
+       ⚠ **逐格照抄 `range_trainee`**（含 `parSec:50`／`prizeSec:30`／`prize`）——
+         「同帝都」就是同帝都，不要順手調數字。
+       ⚠ `record` 分開（`'ep_range'`）：那是各店各自的最佳紀錄，同北泊的作法。
+       ⚠⚠ **獎品也照抄（`Shotgun_Dragon`「龍息」）** —— 已持有就不再發
+         （`inspector.scriptSettle`），所以在帝都拿過的人來這裡只是刷紀錄。
+         要給東泊自己的獎品，換這一格就好。 */
+    ep_range: { enemy:'dart_target', record:'ep_range', noReward:true, noEval:true,
+                timeAttack:{ wrongPenaltySec:3, se:'se_dart_fail', parSec:50,
+                             prizeSec:30, prize:'Shotgun_Dragon' } },
     sv_range: { enemy:'sv_dart', record:'sv_range', noReward:true, noEval:true,
                 timeAttack:{ wrongPenaltySec:3, se:'se_dart_fail', parSec:30,
                              hitPenaltySec:3, assaultOn:true } },
@@ -3417,6 +3430,12 @@ export const GAME_CONFIG = {
          ⚠ 它的手機模型只低 4.0 dB（前兩首是 6.2／7.5）＝低頻沒那麼重，
            在手機上不會像那兩首一樣縮一截。 */
       peritunematerial_taishoroman_theme2_loop:0.897,
+      /* ver -1350：`tools/audio_scan.html` 量的（耳機／手機兩次的平均，§6.6）。
+         ⚠ 同一趟重量既有的兩支當校準點：TaishoRoman 建議 0.90（現值 0.897）、
+           Suspense6 建議 1.40（現值 1.401）—— 方法自洽，所以下面三支直接採用。 */
+      peritunematerial_numina_loop:0.98,
+      peritunematerial_gothic_dark_loop_intro:0.84,
+      peritunematerial_irregular_loop:1.00,
       /* 東方泊地（ver -1251，同一把尺、同一個錨）：
            Peritune_Portside_Cafe_loop  LUFS −8.79／手機 −14.73 → 平均 **−11.76**
          ⇒ 0.849×10^(1.40/20)＝0.997。峰值 0.00 dBFS × 0.997 ＝ −0.03 dBFS，未觸頂。
@@ -4126,6 +4145,15 @@ export const ASSETS = {
      `TOWNS.eastport` 建起來的那一刻只要寫 `bgm:'portside'` 就接上。
      ⚠ 先進來是刻意的：等到要用才補，就是 §6.6 那條「加音檔忘了補 fileGain」的溫床。 */
   bgm_portside:     "resources/audio/bgm/Peritune_Portside_Cafe_loop.m4a",                // 東方泊地（ver -1251，待 TOWNS.eastport）
+  /* ══ 貝利薩爾那一段的三首（ver -1350，Ray 交件）══════════════════════════
+     · `numina`    古城（`TOWNS.belisar.bgm`）
+     · `gothic`    追擊戰開始之後 —— ⚠⚠ **到飛行畫面也要繼續不停**（見下）
+     · `irregular` 飛行戰（空中戰）換成這一首
+     ⚠⚠⚠ **`gothic` 只有 7.7 秒**（檔名就寫著 `loop_intro`，而庫裡沒有對應的
+       loop 本體）—— 整段追擊＋上船都循環這 7.7 秒會很明顯。已回報 Ray。 */
+  bgm_numina:       "resources/audio/bgm/PerituneMaterial_Numina_loop.m4a",                 // 貝利薩爾古城（ver -1350）
+  bgm_gothic:       "resources/audio/bgm/PerituneMaterial_Gothic_Dark_loop_intro.m4a",      // 追擊戰（ver -1350）
+  bgm_irregular:    "resources/audio/bgm/PerituneMaterial_Irregular_loop.m4a",
   bgm_piratebattle: "resources/audio/bgm/bgm_piratebattle.m4a",
   /* 湖上甲板那一段（ver -744，Ray 的 stage5 稿）。 */
   bgm_misty:        "resources/audio/bgm/Peritune_Misty_Hollow_loop.m4a",

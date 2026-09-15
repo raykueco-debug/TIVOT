@@ -75,6 +75,8 @@ const nat = N('NATALIA'), grl = N('GIRL'), anx = N('ANYA_X'), any = N('ANYA');
 /* 北方泊地的兩位店主（ver -655）。⚠ 與帝都那兩位是**不同的人**（不同立繪），
    所以是不同的 speaker id —— 顯示名一樣都是「店主」（見 speakers.js）。 */
 const gunN = N('GUNSMITH_NP'), groN = N('SHOPKEEP_NP');
+/* 東方泊地的三位（ver -1340 交件、-1350 接上台詞）。 */
+const gunE = N('GUNSMITH_EP'), groE = N('SHOPKEEP_EP'), cntE = N('COUNTER_EP');
 /* 北方泊地的送行群眾（ver -741，stage2 碼頭道別）。 */
 const crd = N('CROWD_NP');
 const sor = N('SORANA');   // 夏爾村（ver -772）
@@ -4345,6 +4347,29 @@ export const TOWNS = {
                `challenge:'ep_range'` 與插旗那一拍。已回報。
            ⚠ 「索菈娜打靶插圖」還沒有（插圖先空著）；「槍聲」那一拍用既有的
              `se_weapon_pistol_03`（同公會那一場主角那一發，鐵律 8 —— 不另找一支）。 */
+        /* ══⚠⚠ 射擊挑戰的對白（ver -1350，Ray：「打靶卡同帝都就好，台詞改一下」）══
+           走既有的 `challengeLines`（槍店櫃台的「射擊挑戰」鈕 → 這一段）。
+           ⚠⚠ **卡與帝都完全一樣**（`ep_range`，par 50 秒／30 秒有獎品／獎品是龍息），
+             只有台詞是這位店主自己的 —— 所以「三十秒」那一句仍是
+             `config.battles.ep_range.timeAttack.prizeSec`，**改那個數字要改這一句**
+             （兩邊註解互指，同帝都那一條）。
+           ⚠⚠⚠ **`ep_range_done` 兩支分歧都插** ＝ 索菈娜約會時的武器店那一段從此開得了
+             （見下面那個 act 的 `need`）。稿上寫的是「打靶挑戰**後**」不是「過關後」——
+             她起哄的理由是「你剛剛在打靶」，跟你打得好不好無關。
+             ⚠ 所以**不要**改成只在過關那一支插：打不好的人反而看不到那一段，
+               那與稿意相反。 */
+        challengeLines:[
+          gunE(null,'想試試手？靶在那頭，隨便打。', { portrait:{ char:'GUNSMITH_EP', show:true } }),
+          gunE(null,'先說好，這一區的最佳紀錄是三十秒。'),
+          gunE(null,'破得了的話，架上那支短板霰彈槍「龍息」就歸你。'),
+          { battle:'ep_range', onLose:'ep_retry_lose' },
+          Object.assign(gunE(null,'漂亮。這雙手不是只會拿聖書的嘛。'),
+                        { flags:['ep_range_done'] }),
+          { goto:'ep_retry_end' },
+          Object.assign(gunE(null,'差得遠囉。海風會騙人的，多打幾趟就習慣了。'),
+                        { label:'ep_retry_lose', flags:['ep_range_done'] }),
+          Object.assign(gunE(null,'隨時歡迎。'), { label:'ep_retry_end' }),
+        ],
         acts:[ { flag:'ep_range_sor', withWho:'SORANA', need:'ep_range_done', lines:[
           sor('hug','也讓我試試嘛！'),
           { speaker:'PLAYER', text:'', auto:900, se:'se_weapon_pistol_03' },
@@ -4873,6 +4898,10 @@ export const TOWNS = {
   belisar: {
     name: '貝利薩爾遺址',
     entry: 'entrance',
+    /* 古城的曲子（ver -1350，Ray 交件 `PerituneMaterial_Numina_loop`）。
+       ⚠ 它原本**沒有 `bgm`** ＝ 進去沿用上一個畫面的曲子（同伊甸古墓）。
+       ⚠ 追擊戰開始之後換 `gothic`（戰鬥卡的 `bgmAfter`），那是腳本那一批的事。 */
+    bgm: 'numina',
     /* 「來過這張圖了」（ver -1188）：三座遺蹟的順序是玩家自己挑的，
        「先去了哪一座」是分歧的條件（見 `tomb.gate` 那一段）。誰插＝進圖、誰拔＝沒有人。 */
     visitFlag: 'belisar_seen',
