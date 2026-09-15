@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.15-1342';
+export const VERSION = 'ver 2026.09.15-1343';
 
 export const GAME_CONFIG = {
 
@@ -3764,6 +3764,18 @@ export const ASSETS = {
   enemy_ruins_saint_inspector:   "resources/enemy/mon_saint_inspector.webp",
   enemy_ruins_saint_thug:        "resources/enemy/mon_saint_thug.webp",
   enemy_ruins_saint_temperance:  "resources/enemy/mon_saint_Temperance.webp",
+
+  /* ══⚠⚠⚠ 王座徘徊者（ver -1343，Ray 交件指派）══════════════════════════════
+     貝利薩爾那一段的龍。**三張是同一隻的三個階段**，不是三隻怪 ——
+     古城裡（追逐）`shackled` → 逼進王座廳 `unsealed` → 空中戰 `ascendant`。
+     ⚠⚠ **Ray 指名的是 v1 那一輪的草稿**（原本住 `resources/enemy/_drafts/dragon/`，
+       ver -1343 搬出來變成正式素材；v2／v3 留在草稿區）——**不是** -1118 定案的
+       `mon_dragon_throne_{dormant,awakened,roar}`。那三張仍在庫裡沒有人用。
+       規格與兩輪的來龍去脈見 `resources/enemy/_dragon_spec.md`。
+     ⚠ 這是他說的「**先用**這個」⇒ 日後換圖只要改這三行；卡與腳本不必動。 */
+  enemy_bl_dragon_chase:  "resources/enemy/mon_dragon_v1_shackled.webp",
+  enemy_bl_dragon_throne: "resources/enemy/mon_dragon_v1_unsealed.webp",
+  enemy_bl_dragon_sky:    "resources/enemy/mon_dragon_v1_ascendant.webp",
 
   /* ══⚠⚠⚠ 聖遺物系 10 隻 —— **先註解著，開峽谷的時候再放**（ver -934，Ray 定案）══
      卡已經備好（`script/enemies.js` 的 `relic_*`，十張數值一樣等逐張調），

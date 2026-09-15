@@ -1386,6 +1386,111 @@ export const ENEMIES = {
       loot:[ { id:'saint_bone', n:1 } ],          // 100%
     },
 
+    /* ══════════════════════════════════════════════════════════════════════
+       王座徘徊者（ver -1343，Ray 交件指派）—— 貝利薩爾遺址那一段的龍
+       ──────────────────────────────────────────────────────────────────────
+       ⚠⚠⚠ **三張卡是同一隻的三個階段**，不是三隻怪（同 `_dragon_spec.md` §二）：
+         · `bl_dragon_chase`  古城裡的追逐戰（打完牠就跑，一路換格子）
+         · `bl_dragon_throne` 被逼進王座廳的決戰
+         · `bl_dragon_sky`    衝出王座廳之後的空中戰（船艦戰）
+       **名字三張都一樣**（`王座徘徊者`，ver -1118 Ray 正名）—— 玩家不該讀成三隻。
+
+       ⚠⚠ **數值是 Ray 指定的「先用哪一張既有的卡」**（他的原話：
+         「追逐戰的敵卡數值先用獨角虎／王座戰用節制者／空中戰用鹿主」）：
+           追逐＝`sf_tiger`（獨角虎王）／王座＝`ruins_saint_temperance`（節制者）／
+           空中＝`sf_deer_nightmare`（變異樹靈鹿主）
+         **逐格照抄那三張**，不是「大概差不多」—— 日後他給真正的卡就整張換掉。
+         ⚠ 所以三張的 `weaponMod`／`ult`／`assault`／`hp`／`attack`／`boardGrids`
+           **刻意不一致**：那是來源卡本來的差異，不要順手「統一」掉。
+
+       ⚠⚠ `kind:'aerial'`（飛行敵人自成一類，ver -869）—— 這一格 `_dragon_spec.md`
+         §六原本留給 Ray 決定，**稿子自己回答了**：空中戰那一段安雅說
+         「屍體完全淨化的話就不知道位置了！」⇒ 結算副標「已淨化」、
+         降臨與淨化特效都吃得到（`ENTRANCE_KINDS`／`PURIFY_KINDS` 都含 aerial）。
+         ⚠ 牠是有翅的西方龍，`beast`（已獵殺）在語意上不對。
+
+       ⚠ `bg` 只是**退路**：城鎮插入戰交棒時 `main.js` 會用玩家站的那一格的背景蓋過去
+         （`state.battleBg`，ver -592）—— 追逐戰每一格不同，正是靠那一手。
+       ⚠⚠ **還沒有任何戰鬥卡指到它們**（`config.battles` 一個字都沒動）——
+         那是腳本那一批的事（追逐、王座、空中三段），現在遇不到是刻意的。
+       ══════════════════════════════════════════════════════════════════════ */
+    /* ① 追逐戰 —— 數值＝`sf_tiger`（獨角虎王）逐格照抄。 */
+    bl_dragon_chase: {
+      name:'王座徘徊者',
+      story:1, counterStagger:1, boss:0,
+      Ganymede:0,
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
+      openAssault:[1,2],
+      ult:{ on:1, hp:40, count:2, atk:25, gap:1, cd:4 },
+      assaultEvery:[2,4],
+      assault:{ count:1, gap:0 },
+      kind:'aerial',
+      image:'enemy_bl_dragon_chase',
+      bg:'Belisar_GreatHall',
+      fit:{ mode:'contain', pos:'center bottom' },
+      hp:500,
+      attack:20,
+      atkInterval:null,
+      delayPenalty:{ seconds:5 },
+      entrance:null,
+      special:[],
+      boardGrids:[9,9,9,9,9],
+      hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
+      loot:[],
+    },
+    /* ② 王座廳決戰 —— 數值＝`ruins_saint_temperance`（節制者）逐格照抄。 */
+    bl_dragon_throne: {
+      name:'王座徘徊者',
+      story:1, counterStagger:1, boss:0,
+      Ganymede:0,
+      weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
+      openAssault:[1,2],
+      ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
+      assaultEvery:[2,4],
+      assault:{ count:2, gap:0.35 },
+      kind:'aerial',
+      image:'enemy_bl_dragon_throne',
+      bg:'Belisar_ThroneHall',
+      fit:{ mode:'contain', pos:'center bottom' },
+      hp:900,
+      attack:20,
+      atkInterval:null,
+      delayPenalty:{ seconds:5 },
+      entrance:null,
+      special:[],
+      boardGrids:[9,9,16,9,16],
+      hitFx:{ delay:'blunt', wrong:'slash', assault:'claw' },
+      loot:[],
+    },
+    /* ③ 空中戰 —— 數值＝`sf_deer_nightmare`（變異樹靈鹿主）逐格照抄。
+       ⚠ 連 `hitFx.assault:'sakura'` 都照抄是**錯的**：櫻花狂亂是樹靈的招，
+         龍用它讀不通 —— 這一格改回 `claw`（其餘數值一格未動）。
+         ⚠ 那一招的**三顆一波**（`assault:{count:3}`）是鹿主卡上的東西，
+           鹿主自己寫的是 `{count:1,gap:0.35}`，所以照抄就是 count:1。 */
+    bl_dragon_sky: {
+      name:'王座徘徊者',
+      story:1, counterStagger:1, boss:0,
+      Ganymede:0,
+      weaponMod:{ '重機槍':[0,0.3], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
+      openAssault:[1,2],
+      ult:{ on:1, hp:50, count:4, atk:25, gap:1, cd:4 },
+      assaultEvery:[2,4],
+      assault:{ count:1, gap:0.35 },
+      kind:'aerial',
+      image:'enemy_bl_dragon_sky',
+      bg:'Belisar_Exterior',
+      fit:{ mode:'contain', pos:'center bottom' },
+      hp:700,
+      attack:22,
+      atkInterval:null,
+      delayPenalty:{ seconds:5 },
+      entrance:null,
+      special:[],
+      boardGrids:[9,9,9,9,9],
+      hitFx:{ delay:'blood', wrong:'slash', assault:'claw' },
+      loot:[],
+    },
+
     /* ══⚠⚠⚠ 聖遺物系（`relic_*`）—— **10 張卡已備好，但還沒部署進遊戲**
        （ver -930，Ray：「先做吧，還不要部署到遊戲裡」）══════════════════════
        美術規格與這一族的文法在 `resources/enemy/_relic_spec.md`（人的肢體＋器物、
