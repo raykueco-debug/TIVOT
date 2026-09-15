@@ -558,6 +558,19 @@ function spawnAim(){
   layer.appendChild(el);
 }
 
+/* ══ 重設額度（ver -1337，Ray：「ovk 時 br 配額＝殘磚數」）══
+   BR 中途把敵人打死時由 combat 呼叫：額度換成殘磚數，瞄準點跟著補上或收掉。
+   ⚠ `dualShotsLeft` 的擁有者是 weapon（§3.4），所以改它的入口在這一邊。
+   ⚠ 多出來的瞄準點一定要**收掉**：額度變少而點還留著的話，那幾個點按下去
+     `dualShot` 回 false ⇒ 點得到卻沒反應，玩家會以為壞了。 */
+export function setDualBudget(n){
+  state.dualShotsLeft = Math.max(0, n|0);
+  const layer=aimLayer(); if(!layer) return;
+  while(layer.childElementCount > state.dualShotsLeft && layer.lastElementChild)
+    layer.lastElementChild.remove();
+  fillAim();
+}
+
 /* 補到滿（開窗時一次放好）。 */
 function fillAim(){
   const max=(GAME_CONFIG.tuning||{}).brAimMax || 4;
