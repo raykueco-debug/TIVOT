@@ -238,14 +238,29 @@ export function shatterCell(cell){ cell.classList.add('shatter'); }
    遠近感＝飛出瞬間放大（--spop）再縮小（CSS shellEject）；角度/幅度/轉速全隨機。 */
 export function ejectShell(cell){
   const r=cell.getBoundingClientRect();
-  const s=document.createElement('div'); s.className='shell';
-  s.style.position='fixed'; s.style.left=(r.right-14)+'px'; s.style.top=(r.top+6)+'px';
-  // ver -813（Ray：「主武器拋殼直接斜上低角度往兩邊噴就好」）——不再是高拋物線：
-  // side 由「這一格在盤面的哪一邊」決定（左排往左、右排往右，居中隨機），直線斜上噴出畫面外。
+  // side 由「這一格在盤面的哪一邊」決定（左排往左、右排往右，居中隨機）。
   const grid=cell.closest('#grid')||cell.parentNode;
   const gc=grid.getBoundingClientRect();
   const d=(r.left+r.width/2)-(gc.left+gc.width/2);
   const side=Math.abs(d)<4 ? (Math.random()<0.5?-1:1) : (d<0?-1:1);
+  shellFrom(r.right-14, r.top+6, side);
+}
+
+/* ══ 從**一個點**拋殼（ver -1339，Ray：「BR 的彈殼是要從點擊處飛出，
+   不是在盤面飛出」）══ 破防的開火點在敵人身上，殼就從那裡噴。
+   ⚠ 左右由「這一點在畫面的哪一半」決定 —— 盤面那一支是拿盤心比，這裡沒有盤面可比。 */
+export function ejectShellAt(x, y){
+  const vw=window.innerWidth||390;
+  const d=x-vw/2;
+  shellFrom(x-7, y-7, Math.abs(d)<4 ? (Math.random()<0.5?-1:1) : (d<0?-1:1));
+}
+
+/* 拋殼的**唯一**實作（鐵律 8）：位置與左右由呼叫端決定，飛行的樣子只有這一份。 */
+function shellFrom(left, top, side){
+  const s=document.createElement('div'); s.className='shell';
+  s.style.position='fixed'; s.style.left=left+'px'; s.style.top=top+'px';
+  // ver -813（Ray：「主武器拋殼直接斜上低角度往兩邊噴就好」）——不再是高拋物線：
+  // 直線斜上噴出畫面外。
   const vw=window.innerWidth||390;
   const dx=side*(vw*(0.7+Math.random()*0.5)+150);              // 一定飛出左／右畫面外
   const dy=-(50+Math.random()*140);                            // 斜上「低角度」：只往上一點（相對大 dx）
