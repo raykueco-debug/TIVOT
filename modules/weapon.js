@@ -543,7 +543,11 @@ function spawnAim(){
   const fire=(e)=>{
     e.preventDefault(); e.stopPropagation();       // 不要讓它同時算成「點在敵人區」
     if(el.classList.contains('hit')) return;       // 同一個點只算一次
-    if(!api.dualShot || !api.dualShot()) return;   // 額度用完／窗口已關 → 不收這個點
+    /* 槍火要打在**這個瞄準點**上（ver -1335）—— 把它的螢幕中心交過去。
+       ⚠ 現算不要用 dataset 的百分比：那是相對 `#top` 的，而 `muzzleAtPoint` 吃的是
+         視窗座標，兩者在有瀏海／安全區的機器上差一截。 */
+    const r=el.getBoundingClientRect();
+    if(!api.dualShot || !api.dualShot(r.left+r.width/2, r.top+r.height/2)) return;
     el.classList.add('hit');
     setTimeout(()=>{ el.remove(); if(state.dualWield) spawnAim(); }, 220);
   };

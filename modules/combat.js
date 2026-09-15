@@ -519,12 +519,25 @@ function shotHeal(){
    ⚠ 擁有者是 combat 不是 weapon：傷害計算（`hitDamage`／`enemyDamage`／`shotHeal`）
      整族都住在 combat，搬去 weapon 會變成跨模組反向依賴（§2）。
    ⚠ 回傳 true ＝這一下真的打出去了（手勢層據此不要再往下判紅點）。 */
-export function dualShot(){
+export function dualShot(x, y){
   if(!state.dualWield) return false;
   if(state.over||state.transitioning||state.cutinPlaying) return false;
   if(state.enemyHp<=0) return false;            // 敵已死 → 交給 overkill 那一套
   if(state.dualShotsLeft<=0) return false;
   state.dualShotsLeft--;
+  /* ══⚠⚠ 拋彈殼與槍火：**與普攻同一份特效**（ver -1335，Ray：「破防點擊時一樣要
+     拋彈殼跟槍火特效」）══ 普攻那一支（`tap`）是 `enemy.ejectShell(cell)` ＋
+     `gunHitOnEnemy(cell)`，兩個都以「點到的那一格」為準；破防沒有格子可點，所以：
+     · **彈殼**照舊從**盤面**噴出來 —— 殼是從槍裡拋出來的，不是從敵人身上。
+       隨便挑一格當出膛位置，`ejectShell` 一個字都不用改（鐵律 8），
+       它自己的左右噴射邏輯（看那一格在盤面的哪一邊）也照樣成立。
+     · **槍火**打在**瞄準點**上（`muzzleAtPoint` 吃視窗座標，ver -1055 反擊用的那一支）
+       —— 普攻是把格子映射到敵人身上，而破防的點本來就在敵人身上，直接用。
+       ⚠ 沒帶座標（例如日後從別處呼叫）就退回盤面映射，不要整個不畫。 */
+  const cell=state.cells[(Math.random()*state.cells.length)|0];
+  if(cell) enemy.ejectShell(cell);
+  if(x!=null && y!=null) muzzleAtPoint(x, y);
+  else if(cell) gunHitOnEnemy(cell);
   state.combo++; if(state.combo>state.maxCombo) state.maxCombo=state.combo;
   resetIntervalDeadline();
   /* 索菈娜「地弓星」（Lv1，ver -976）：破防彈雨的攻擊力 ×1.2。
