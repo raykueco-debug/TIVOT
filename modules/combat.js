@@ -161,6 +161,8 @@ export function setup(){
     scheduleAssault: defense.scheduleAssault,
     markNext, buildGrid, resetEnergy,
     addEnergy,                                    // 反擊給破防值（ver -880，見 weapon.counterEnergy）
+    dualShot,                                     // 破防窗口開火（ver -1330：瞄準點點中時呼叫）
+    brSweepBoard,                                 // 破防收窗 → 殘磚一次性消除（ver -1330）
     /* 諾薇兒 Lv3「探覓星」（ver -1014）：彈雨傾洩回復主動技次數。
        `partnerActiveUsed` 的擁有者是 combat，跨模組的寫走具名 setter。 */
     resetPartnerActive: ()=>{ state.partnerActiveUsed = false; },
@@ -536,6 +538,33 @@ export function dualShot(){
   if(state.dualShotsLeft<=0) weapon.endDual();
   return true;
 }
+
+/* ══⚠⚠⚠ 破防窗口收尾：殘磚一次性消除（ver -1330，Ray：「點完數量或時間到，
+   下方的殘磚一次性消除，跑碎玻特效音效就好」）════════════════════════════════
+   窗口期間盤面是不能點的（-1329），所以窗口結束時盤上一定還留著一批格子 ——
+   這一支把它們**一次**敲掉：碎玻音 ＋ 逐格的碎片特效，然後照常走 `clearBoard()`。
+
+   ⚠ 「跑碎玻特效音效就好」＝**只演出，不給傷害**：那一段的輸出已經由瞄準點結算過了，
+     再依格給一次等於同一段打兩次。
+   ⚠⚠ 清盤的記帳只有 `clearBoard()` 一份（鐵律 8）—— 用時、完美清盤、清盤聖能、
+     獵手戰吼的連盤計數都在那裡，這裡不要手抄半套（-1329 之前的 BR 就是走它）。
+   ⚠ 敵人已死（overkill）／戰鬥結束／聖徒化中**不掃**：那幾種情況盤面另有歸屬，
+     掃掉會在敵人已清空時憑空推進一盤。
+   ⚠ 音效只放**一次**（不是逐格）：九格各放一次會疊成一片白噪。 */
+export function brSweepBoard(){
+  if(state.over||state.saintMode||state.niMode||state.enemyHp<=0) return;
+  const left=state.cells.filter(c=>!c.classList.contains('done'));
+  if(!left.length) return;
+  try{ SFX.play(asset('se_glasscrack'), sfxGain('se_glasscrack')); }catch(_){}
+  left.forEach(c=>{
+    c.classList.add('done'); c.classList.remove('next');
+    enemy.shatterCell(c); glassShards(c);
+  });
+  /* 等碎片落完再收盤 —— `clearBoard` 會接著 `goNextBoard` 重建整盤，
+     同一拍做完的話玻璃碎片會被新盤面直接蓋掉，等於沒演。 */
+  setTimeout(()=>{ if(!state.over && state.enemyHp>0) clearBoard(); }, BR_SWEEP_MS);
+}
+const BR_SWEEP_MS=260;
 
 /* ============================================================================
  *  點擊判定

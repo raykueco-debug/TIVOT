@@ -1891,34 +1891,13 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
   window.addEventListener('mouseup',()=>{mDown=false;});
 })();
 
-/* ══⚠⚠⚠ 破防窗口：對著敵人立繪狂點就擊發（ver -1329，Ray 指定）════════════════
- *  舊制是點下面的盤面（一格一發）；現在盤面玻璃化但不可操作，開火改在**敵人那一區**。
- *
- *  ⚠⚠ 綁在 `#top` 自己身上，**不是** `#returnSwipe` —— 那一層只有聖徒化／惡夢化
- *    期間才 `.on`（`saint.setReturnSwipe`），破防窗口根本吃不到它。
- *    （第一版就寫錯在那裡：程式看起來對，實際上一發都打不出去。）
- *  ⚠ **抬手才算一發、而且位移要夠小**：`#top` 上還有三個滑動手勢（左右滑＝聖徒化、
- *    上滑＝主動技、下滑＝換搭檔）。改成按下就開火的話，每一次滑動都會先白白吃掉一發。
- *  ⚠ 紅點**優先**：破防期間敵人不發動攻擊（ver -1018），照理場上沒有圈；真的有殘留的
- *    一顆時那一顆仍該是防禦。紅點自帶 listener，所以這裡只要讓它先收走即可。
- *  ⚠ 判定、傷害、音效、震動、收窗全在 `combat.dualShot()`（鐵律 8）——
- *    這一層只回答「這是一次落在敵人區的點擊」。 */
-(function bindDualBreakTap(){
-  const zone=$('top');
-  if(!zone) return;
-  const SLOP=14;                       // 位移超過這個就當成滑動，不是點擊
-  let sx=0, sy=0, moved=0, live=false;
-  const begin=(x,y)=>{ if(!state.dualWield) return; sx=x; sy=y; moved=0; live=true; };
-  const move=(x,y)=>{ if(live) moved=Math.max(moved, Math.hypot(x-sx, y-sy)); };
-  const end=()=>{ const ok=live && moved<SLOP; live=false; if(ok) combat.dualShot(); };
-  zone.addEventListener('touchstart',e=>{ const t=e.touches[0]; begin(t.clientX,t.clientY); },{passive:true});
-  zone.addEventListener('touchmove', e=>{ const t=e.touches[0]; move(t.clientX,t.clientY); },{passive:true});
-  zone.addEventListener('touchend',  ()=>end(), {passive:true});
-  zone.addEventListener('touchcancel',()=>{ live=false; }, {passive:true});
-  zone.addEventListener('mousedown', e=>begin(e.clientX,e.clientY));
-  zone.addEventListener('mousemove', e=>move(e.clientX,e.clientY));
-  window.addEventListener('mouseup', ()=>end());
-})();
+/* ══⚠⚠ 破防窗口的開火**不在這一層**（ver -1330）════════════════════════════════
+ *  -1329 曾經是「點敵人區任何一處都開火」（這裡一個 `#top` 的點擊層）；
+ *  -1330 起 Ray 改成**打隨機生成的瞄準點**（「在敵立繪範圍加入隨機的描準點」）——
+ *  所以開火綁在**每一個瞄準點自己身上**（`modules/weapon.js` 的 `spawnAim`），
+ *  那一層整個拿掉了。
+ *  ⚠⚠ **不要把它加回來**：瞄準點是 `#top` 的子元素，兩邊都綁的話點一下會開兩發
+ *    （點自己吃一次、冒泡到 `#top` 再吃一次），而額度會無聲地少一半。 */
 
 /* ── 鍵盤方向鍵＝上述滑動手勢的等價入口（桌機無觸控/不便拖曳時可用）──
  *  ←/→ ＝聖徒化左右滑（方向即橫斬方向）；↑ ＝上滑。

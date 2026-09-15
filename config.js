@@ -65,7 +65,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.15-1329';
+export const VERSION = 'ver 2026.09.15-1331';
 
 export const GAME_CONFIG = {
 
@@ -2986,6 +2986,10 @@ export const GAME_CONFIG = {
     /* 破防窗口可以點幾下 ＝ **發動當下盤面上還沒點掉的格數 × 這個數**
        （ver -1329，Ray 指定）。⚠ 它與上面的 `dmgDualMult` 是同一組配方，見那一段。 */
     dualTapsPerCell:     2,
+    /* 破防窗口的瞄準點（ver -1330，Ray：「在敵立繪範圍加入隨機的描準點，用鎖定的
+       特效，一次最多出四個，點掉一個就再出一個」）。
+       ⚠ 這是**畫面上同時存在幾個**，不是總共幾個 —— 總數由 `dualShotsLeft` 管。 */
+    brAimMax:            4,
 
     // 暴擊（普攻）：暴擊率/暴擊加傷皆隨「連擊」成長；連擊於受擊或清盤中斷歸零。雙槍破防期間無暴擊。
     critBaseRate:        0.10,  // 普攻初始暴擊率（連擊 0 時）

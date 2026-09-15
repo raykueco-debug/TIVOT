@@ -504,6 +504,63 @@ function showBrPrompt(on){
   if(on){ const s=el.querySelector('span'); if(s) s.textContent=L.brTapPrompt||''; }
   el.classList.toggle('on', !!on);
 }
+
+/* ══⚠⚠⚠ 破防窗口的瞄準點（ver -1330，Ray：「在敵立繪範圍加入隨機的描準點，
+   用鎖定的特效看看，一次最多出四個，點掉一個就再出一個」）══════════════════════
+   · 位置是**隨機**的，落在敵人立繪那一區（避開上緣的敵名與下緣的血條／提示）。
+   · 同時最多 `tuning.brAimMax` 個；**點掉一個就補一個**，補到額度用完為止。
+   · 點中才開火 —— `combat.dualShot()` 回 true 才把這一個收掉（額度用完時它回 false，
+     那一下不該把點吃掉）。
+   ⚠ 這一段是「這一個窗口的 UI」，所以住在 weapon（窗口的擁有者）；開火那一支住在
+     combat（傷害那一族都在那裡），經注入的 `api.dualShot` 呼叫 —— 不反向 import（§2）。
+   ⚠ 生成範圍用**百分比**不是像素：`#top` 的高度會隨機器與瀏海變，寫死像素在窄機上
+     會把點擺到血條上（同紅點那一套的作法）。 */
+const AIM_L=[16,84], AIM_T=[16,66];      // 左右／上下的百分比範圍
+const AIM_MIN_GAP=17;                    // 兩點之間至少差這麼多（百分比，避免疊在一起）
+
+function aimLayer(){ return $('brAim'); }
+
+function spawnAim(){
+  const layer=aimLayer(); if(!layer) return;
+  const max=(GAME_CONFIG.tuning||{}).brAimMax || 4;
+  if(layer.childElementCount>=max) return;
+  if(state.dualShotsLeft<=layer.childElementCount) return;   // 沒額度就不要再放點
+  const used=[...layer.children].map(el=>({l:parseFloat(el.dataset.l), t:parseFloat(el.dataset.t)}));
+  const rnd=(a,b)=>a+Math.random()*(b-a);
+  let l=0,t=0,ok=false;
+  for(let i=0;i<24 && !ok;i++){
+    l=rnd(AIM_L[0],AIM_L[1]); t=rnd(AIM_T[0],AIM_T[1]);
+    ok=used.every(u=>Math.hypot(u.l-l,u.t-t)>=AIM_MIN_GAP);
+  }
+  const el=document.createElement('div');
+  el.className='braim';
+  el.dataset.l=l; el.dataset.t=t;
+  el.style.left=l+'%'; el.style.top=t+'%';
+  el.innerHTML='<i></i><u></u>';
+  const fire=(e)=>{
+    e.preventDefault(); e.stopPropagation();       // 不要讓它同時算成「點在敵人區」
+    if(el.classList.contains('hit')) return;       // 同一個點只算一次
+    if(!api.dualShot || !api.dualShot()) return;   // 額度用完／窗口已關 → 不收這個點
+    el.classList.add('hit');
+    setTimeout(()=>{ el.remove(); if(state.dualWield) spawnAim(); }, 220);
+  };
+  /* 兩種輸入各綁一次；`touchstart` 要 `passive:false` 才 preventDefault 得了
+     （擋掉之後接著來的那一發合成 click）。 */
+  el.addEventListener('touchstart', fire, {passive:false});
+  el.addEventListener('mousedown',  fire);
+  layer.appendChild(el);
+}
+
+/* 補到滿（開窗時一次放好）。 */
+function fillAim(){
+  const max=(GAME_CONFIG.tuning||{}).brAimMax || 4;
+  for(let i=0;i<max;i++) spawnAim();
+}
+
+/* 收掉所有瞄準點 —— 收窗、跨場、任何收尾路徑都走這一支（鐵律 8）。 */
+function clearAim(){
+  const layer=aimLayer(); if(layer) layer.innerHTML='';
+}
 export function activateDual(){
   if(state.over||state.dualWield||state.saintMode||state.cutinPlaying||state.transitioning) return;
   if(state.enemyHp<=0) return;                 // overkill（敵已死）不可發動；雙槍中殺敵觸發 overkill 則照常（見 enterOverkillFx）
@@ -567,6 +624,7 @@ export function startDualWindow(){
   state.dualShotsLeft = Math.max(1, left * ((GAME_CONFIG.tuning||{}).dualTapsPerCell || 2));
   $('grid').classList.add('dualwield');
   showBrPrompt(true);
+  clearAim(); fillAim();          // ver -1330：瞄準點一次放滿（最多 brAimMax 個）
   /* ⚠ **不要 `markNext()`**：那是「下一格點這裡」的游標，而這一段盤面根本不能點
      —— 指一格反而是在教玩家點錯地方。收窗時再標回來（endDual）。 */
   clearTimeout(state.dualTimer);
@@ -582,16 +640,21 @@ export function endDual(){
   state.dualWield=false;
   state.dualShotsLeft=0;
   showBrPrompt(false);
+  clearAim();
   clearTimeout(state.dualTimer); state.dualTimer=null;
   $('grid').classList.remove('dualwield');
-  /* ══⚠⚠ **ver -1329：不再重建盤面** ══
-     舊版是「點了一半就 `buildGrid()` 重建整盤」—— 那是因為舊制的窗口**會去點盤面**
-     （無視順序亂點），收窗時盤面是一片亂的，不重建沒辦法回到依序點。
-     現在窗口期間盤面**一格都不會動**（開火改點敵人立繪），玩家在窗口之前點到哪裡
-     就還在哪裡 —— 這時重建等於把他清了一半的進度洗掉、還換一組新數字。
-     所以只要把游標標回去就好。
-     ⚠ 這一條與上面「開窗不 markNext」是一組的：游標在窗口期間收起來，收窗時還回去。 */
-  if(!state.over && !state.saintMode && state.enemyHp>0) api.markNext();
+  /* ══⚠⚠⚠ **ver -1330：殘磚一次性消除**（Ray：「點完數量或時間到，下方的殘磚
+     一次性消除，跑碎玻特效音效就好」）══ 窗口期間盤面不能點（-1329），所以收窗時
+     盤上一定還留著一批 —— 交給 `combat.brSweepBoard()`（唯一那一支；清盤的記帳
+     照走 `clearBoard`，鐵律 8）。
+     ⚠ 它自己擋掉「敵人已死（overkill）／戰鬥結束／聖徒化中」那幾種情況。
+     ⚠ **不再重建盤面**（-1329 的那一條）：舊版「點了一半就 buildGrid」是因為舊制
+       會亂點盤面；現在盤面在窗口期間一格都不動，而且收窗就整盤掃掉了。 */
+  if(api.brSweepBoard) api.brSweepBoard();
+  /* 掃不成的那幾條路（敵死／結束）盤面還在，游標要標回去 ——
+     掃成功時整盤都 done、接著換新盤，這一行自然不會動它。 */
+  if(!state.over && !state.saintMode && state.enemyHp>0 &&
+     state.cells.some(c=>!c.classList.contains('done'))) api.markNext();
 }
 
 /* ============================================================================
@@ -1189,6 +1252,7 @@ export function reset(){
   state.dualShotsLeft=0;              // ver -1329：額度也要歸零，不然跨場帶著上一場的
   $('grid').classList.remove('dualwield');
   showBrPrompt(false);                // ver -1329：跨場殘留的話那行字會留在新的一場上
+  clearAim();                         // ver -1330：同理，瞄準點也不可以跨場留著
 }
 // 停計時器（combat.stopAll 調度）：清 dualTimer。
 export function stopTimers(){

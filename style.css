@@ -1016,6 +1016,49 @@
   /* 雙槍模式盤面外框 */
   #grid.dualwield .cell{border-color:var(--holy);}
   #grid.dualwield{filter:drop-shadow(0 0 6px var(--holy));}
+  /* ══ 破防窗口的瞄準點（ver -1330，Ray：「隨機的描準點，用鎖定的特效」）══════════
+     ⚠ 層本身不吃點擊，只有點自己吃 —— 否則會蓋掉紅點防禦與 #top 的三個滑動手勢。
+     ⚠ 用 `--holy`（#6fb3d4 冷藍，＝彈雨玻璃與聖徒那一族的顏色）而不是紅橘：
+     紅橘是**敵人攻擊圈**的顏色，兩者可能同時在畫面上，顏色必須分得開，
+     不然玩家會去點攻擊圈。⚠ 光暈也要跟著是冷藍 —— 寫死金色會變成
+     「藍環配金光」，看起來像沒調好。 */
+  #brAim{position:absolute;inset:0;z-index:5;pointer-events:none;}
+  .braim{position:absolute;width:56px;height:56px;margin:-28px 0 0 -28px;
+    pointer-events:auto;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+  /* 鎖定環：由外往內收（這就是「鎖定」那一下），收到位之後留著慢慢轉 */
+  .braim i{position:absolute;inset:0;border-radius:50%;
+    border:2px solid var(--holy);box-shadow:0 0 10px rgba(111,179,212,.85),
+      inset 0 0 8px rgba(111,179,212,.35);
+    animation:brLockIn .26s cubic-bezier(.2,.8,.25,1) both, brSpin 3.6s linear .26s infinite;}
+  /* 四角括號：用四組漸層畫 L 形，不另外做元素 */
+  .braim u{position:absolute;inset:-7px;
+    background:
+      linear-gradient(var(--holy),var(--holy)) left  top   /13px 2px no-repeat,
+      linear-gradient(var(--holy),var(--holy)) left  top   /2px 13px no-repeat,
+      linear-gradient(var(--holy),var(--holy)) right top   /13px 2px no-repeat,
+      linear-gradient(var(--holy),var(--holy)) right top   /2px 13px no-repeat,
+      linear-gradient(var(--holy),var(--holy)) left  bottom/13px 2px no-repeat,
+      linear-gradient(var(--holy),var(--holy)) left  bottom/2px 13px no-repeat,
+      linear-gradient(var(--holy),var(--holy)) right bottom/13px 2px no-repeat,
+      linear-gradient(var(--holy),var(--holy)) right bottom/2px 13px no-repeat;
+    filter:drop-shadow(0 0 4px rgba(111,179,212,.9));
+    animation:brLockIn .26s cubic-bezier(.2,.8,.25,1) .04s both;}
+  /* 準心：中間一點 */
+  .braim::after{content:'';position:absolute;left:50%;top:50%;width:6px;height:6px;
+    margin:-3px 0 0 -3px;border-radius:50%;background:#fff;
+    box-shadow:0 0 8px var(--holy);animation:brPulse 1s ease-in-out infinite;}
+  /* 打中：整個往外炸開淡掉（由 JS 加上，動畫跑完才移除元素） */
+  .braim.hit{pointer-events:none;animation:brHit .22s ease-out forwards;}
+  .braim.hit i{animation:none;}
+  @keyframes brLockIn{from{transform:scale(2.4);opacity:0;}to{transform:scale(1);opacity:1;}}
+  @keyframes brSpin{to{transform:rotate(360deg);}}
+  @keyframes brPulse{0%,100%{opacity:.55;}50%{opacity:1;}}
+  @keyframes brHit{from{transform:scale(1);opacity:1;}to{transform:scale(1.9);opacity:0;}}
+  @media (prefers-reduced-motion:reduce){
+    .braim i{animation:brLockIn .26s ease-out both;}
+    .braim::after{animation:none;}
+  }
+
   /* ══ 破防窗口的「連點」提示（ver -1329，Ray：「畫面提示連點」）══════════════
      擺在敵人區下緣正中，一圈往外擴的漣漪＋一行字。窗口收掉就跟著消失。
      ⚠ `pointer-events:none`：它蓋在敵人立繪上，而那一整區正是要拿來點的。
@@ -1026,10 +1069,10 @@
     align-items:center;gap:6px;}
   #brPrompt.on{opacity:1;visibility:visible;}
   #brPrompt span{font-size:15px;letter-spacing:.22em;font-weight:800;
-    color:var(--holy);text-shadow:0 0 10px rgba(255,214,120,.85),0 2px 6px #000;}
+    color:var(--holy);text-shadow:0 0 10px rgba(111,179,212,.9),0 2px 6px #000;}
   /* 漣漪：兩圈錯開的擴散，讀起來就是「一直點」 */
   #brPrompt i{position:relative;width:34px;height:34px;border-radius:50%;
-    border:2px solid var(--holy);box-shadow:0 0 12px rgba(255,214,120,.7);}
+    border:2px solid var(--holy);box-shadow:0 0 12px rgba(111,179,212,.8);}
   #brPrompt i::before,#brPrompt i::after{content:'';position:absolute;inset:-2px;
     border-radius:50%;border:2px solid var(--holy);opacity:0;
     animation:brRipple 1.1s ease-out infinite;}
