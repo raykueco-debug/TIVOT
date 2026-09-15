@@ -103,18 +103,61 @@ function ctx(){
   return _ctx;
 }
 
-// 解碼一個音檔成 buffer（冪等；解碼不需 running context，故可於解鎖前預載）
+/* ⚠⚠⚠ **逐支逾時：一支請求停住不可以把整批鎖死**（ver -1354，Ray：
+   「我每天都他媽的要修一次這個是為什麼?」「這跟團徽都跑不出來有個屁關係」）
+
+   **這就是「卡首頁讀取／團徽跑不出來」的成因，而且它是「卡死」不是「慢」。**
+   `SFX.preload` 是 `Promise.all(paths.map(load))`，而這一支以前是**沒有任何逾時**的
+   `fetch()` —— 404 與解碼失敗都被 `catch` 接住了（那兩種會 settle），
+   但**請求整個停住**（連線卡住、手機休眠醒來、基地台切換、連線數排隊排不到）
+   會讓那個 promise **永遠 pending** ⇒ `Promise.all` 永遠不 resolve。
+   而 §6.6 明寫開機的保底計時器**掛在音效那一段之後**（`sfxP.then(()=>setTimeout(…))`）
+   —— 所以音效那一段卡住時**連保底都沒有**：讀取頁就停在那裡，
+   首頁（＝那張團徽）永遠不會出現。
+   ⚠ 憲法 §6.6 自己那行註解早就寫過：「不怕等太久…**真的無限等只有「請求整個停住」
+     那一種**」—— 那個「只有」從來沒有人守。這一版就是去守它。
+
+   ⚠⚠ **為什麼「每天」**：撞到的機率隨批次大小長。ver -1353 那一批是 **117 支**
+     一起發出去，手機的並發連線只有 6 條 —— 排隊越長、越久，停住的機會越大。
+     （ver -1354 的讀取分工已把開機那一批降到 4 支，那是降低機率；
+      這一支是**把無限等這個失敗模式本身拿掉**。兩件事都要做：
+      前者治「為什麼常常撞到」，後者治「撞到為什麼會死」。）
+
+   ⚠⚠ **一定要 `abort()`，不能只是「不等它了」**：停住的請求**還佔著一條連線**，
+     不砍掉的話它會繼續把後面排隊的東西餓死 —— 包含 `<img id="homeEmblem">`
+     那張 555 KB 的團徽（它與音效搶同一個連線池）。
+   ⚠ 逾時的結果是 `null`（**不是 reject**）：呼叫端一律當「這支還沒好」，
+     而 `playSrc` 本來就會回頭 `load()` 一次或退回 HTMLAudio —— 失敗模式是
+     「這一支晚一拍／這一次不響」，不是「整個遊戲開不起來」。
+   ⚠ 逾時**不寫進 `_buffers`**、也把 `_pending` 清掉 → 下次呼叫會重試。
+   ⚠ 這不牴觸 §6.6「音效不載完不放行」：那條要的是「**不要用固定秒數放行整批**」
+     （-354 的坑）。這裡是**逐支**的斷路器 —— 正常的檔案照樣等到好，
+     只有真的死掉的那一支被砍。 */
+const LOAD_TIMEOUT_MS = 15000;
 function load(src){
   if(!src) return Promise.resolve(null);
   if(_buffers[src]) return Promise.resolve(_buffers[src]);
   if(_pending[src]) return _pending[src];
   const c = ctx();
   if(!c) return Promise.resolve(null);
-  _pending[src] = fetch(src)
+  const ac = (typeof AbortController!=='undefined') ? new AbortController() : null;
+  let timer = null, done = false;
+  const bail = () => {
+    if(done) return null;
+    /* 砍掉那條連線 —— 把 socket 還給後面排隊的請求（團徽就在那一排裡）。 */
+    try{ if(ac) ac.abort(); }catch(_){}
+    try{ console.warn('[audio] 逾時，放棄這一支（不擋整批）：', src); }catch(_){}
+    delete _pending[src];
+    return null;
+  };
+  const fin = v => { done = true; if(timer) clearTimeout(timer); return v; };
+  const job = fetch(src, ac ? {signal:ac.signal} : undefined)
     .then(r => r.arrayBuffer())
     .then(ab => new Promise((res, rej) => c.decodeAudioData(ab, res, rej)))
-    .then(buf => { _buffers[src] = buf; delete _pending[src]; return buf; })
-    .catch(() => { delete _pending[src]; return null; });
+    .then(buf => { _buffers[src] = buf; delete _pending[src]; return fin(buf); })
+    .catch(() => { delete _pending[src]; return fin(null); });
+  const guard = new Promise(res => { timer = setTimeout(() => res(bail()), LOAD_TIMEOUT_MS); });
+  _pending[src] = Promise.race([job, guard]);
   return _pending[src];
 }
 

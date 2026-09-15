@@ -8,7 +8,7 @@
  *  聖徒化左右滑、生命歸還上滑、雙槍點計量表、換裝面板等綁定為下一輪。
  * ========================================================================== */
 
-import { GAME_CONFIG, VERSION, asset, ASSETS, bgmVol, sfxGain, HOME_IMG } from './config.js';
+import { GAME_CONFIG, VERSION, asset, ASSETS, bgmVol, sfxGain, HOME_IMG, HOME_SFX, HITFX } from './config.js';
 import { L, LANG, applyToConfig, applyToDom, decorateLine } from './i18n.js';   // 多語言＋台詞關鍵字裝飾
 import { state } from './state.js';
 import { SFX } from './audio.js';
@@ -209,7 +209,11 @@ SFX.setMenuClick(asset('se_general_click'), sfxGain('se_general_click'));
    ⚠⚠ 這一條之所以拖到現在才發作，是因為平時大家都吃快取 —— 只要版本號一跳
      （`?v=` 全站作廢），每一台裝置就得重跑一次這 31.5 MB 的冷載入。
      **版本號連跳三次的那一天就是它現形的那一天。**
-   ⇒ 名單反過來寫：開機**只留** `bgm_home`，其餘**全部**背景補載。
+   ⇒ 名單反過來寫：開機**只留** `bgm_home`。
+   ⚠⚠⚠ **ver -1354 起「其餘全部背景補載」那一半已撤**（Ray：「首頁只讀首頁跟挑戰的
+     資源」）：這張表現在**只當開機的排除名單**，不再有人拿它去背景抓 ——
+     其餘的曲子由用到它的那個畫面自己那道門載（城鎮 `loadSpec`／劇情 `preloadStory`／
+     戰鬥 `enterBattleAudio`）。
    ⚠ 不會壞：`playBgm` 自己 `ensureBlob` 隨叫隨載，沒載完頂多晚幾拍起播
      （這正是 -344 把結算／失敗那幾首移出去時就驗過的行為）。
    ⚠ 名單用**排除法**（除了 bgm_home 以外都算晚載）不是列舉：日後加一首新曲子，
@@ -218,10 +222,137 @@ SFX.setMenuClick(asset('se_general_click'), sfxGain('se_general_click'));
 const LATE_BGM_PATHS = Object.keys(ASSETS)
   .filter(k => k.indexOf('bgm_')===0 && k!=='bgm_home')
   .map(k => ASSETS[k]).filter(Boolean);
-let _lateBgmKicked = false;
-function preloadLateBgm(){
-  if(_lateBgmKicked) return; _lateBgmKicked = true;
-  SFX.preloadBgm(LATE_BGM_PATHS);   // 背景載，不擋任何流程；ensureBlob 有快取可重複呼叫
+
+/* ══⚠⚠⚠ **首頁也要接上「換場那道門」**（ver -1354，Ray：「首頁只讀首頁跟挑戰的
+   資源／探索地圖內只讀該地圖的資源／飛行畫面只讀飛行畫面的資源。**每一次切換就把
+   前面載的 Kill 掉**」）══════════════════════════════════════════════════════
+
+   ⚠⚠⚠ **這不是新機制，是把兩個沒接上的畫面接回去。** 讀取分工（-1295~-1300）
+     已經把架構立完整了：`story.loadScene` ＝換場**唯一**的那道門（先 `releaseAudio`
+     放掉上一段、再只載這一段要的），城鎮走 `town.loadSpec`、劇情走 `preloadStory`、
+     進飛行走 `openFlight` 的 `releaseAudio`。
+   ⚠⚠⚠ **每天犯病是因為有兩個畫面從來沒接上那道門**：
+     · **首頁** —— 走 `startBatch`（-344 時代自己那一套）
+     · **戰鬥** —— **根本沒有門**：戰鬥音效從來沒有自己的載入點，一直靠開機那一批。
+       ⇒ **那就是開機為什麼要掃全庫**：因為戰鬥沒有人替它載。
+     沒接上門的地方，就是每天漏的地方（鐵律 8 的原形：規矩做成一支函式了，
+     但新路徑沒有呼叫它）。
+
+   ⚠⚠⚠ **-1354 一度做錯的那一版，留著當紀錄**：我先加了一支 `preloadLate()`，
+     在**進主選單那一刻**把 117 支 SE/VO ＋ 24 首 BGM 全部背景載下來。
+     那只是把同一批東西從「開機等」搬到「主選單背景載」——
+     **量一點沒少（實測進主選單後音訊累積 49.37 MB），而且永遠不釋放**。
+     Ray 當場退回。**在一個已經正確的架構旁邊再長一條路徑，就是違規本身。**
+     ⇒ 規矩：**看到「要載一批東西」的需求，先問「既有的那道門在哪」，不要新增批次。** */
+
+const isHomeSfx = k =>
+  HOME_SFX.prefixes.some(p => k.indexOf(p) === 0) || HOME_SFX.keys.indexOf(k) >= 0;
+
+/* 首頁（含挑戰）**自己那一段**的音訊 —— 就是開機那一批。
+   ⚠⚠⚠ **音效與音樂要分開回，不可以混成一張表**（ver -1355，我在這裡犯過一次）：
+     `SFX.preload` 是**解碼成 AudioBuffer**，`SFX.preloadBgm` 是**抓成 blob**。
+     把 `bgm_home` 丟進前者＝**一首三分鐘的曲子被當成音效解碼**，
+     實測回首頁後 held 變成「5 支卻佔 **31.3 MB**」——
+     音樂解開來是音效的好幾十倍（§6.6 的 `audioHeld` 註解就寫著 96kbps 約 32 倍）。
+   ⚠ `releaseAudio` 那一邊可以共用一張表（它自己分 `_buffers`／`_bgmBlob`），
+     **載**那一邊不行。 */
+function homeAudioSet(){
+  const sfx=[], bgm=[];
+  for(const k of Object.keys(ASSETS)){
+    const v=ASSETS[k]; if(!v) continue;
+    if(!/\.(mp3|m4a|ogg|wav)(\?|$)/i.test(v)) continue;
+    if(k==='bgm_home') bgm.push(v);
+    else if(k.indexOf('bgm_')!==0 && isHomeSfx(k)) sfx.push(v);
+  }
+  return { sfx, bgm, all: sfx.concat(bgm) };
+}
+/* 除錯：現在留著多少解碼後的音訊（同 `town.outingDebug()`／`talkDebug()` 的作法）。
+   ⚠ 鐵律 13 的自檢就靠它：切一個畫面就問一次「上一個畫面的放掉了嗎？」
+   ⚠ 唯讀，沒有副作用 —— 所以不鎖 testmode（量不到東西就驗不了規矩）。 */
+try{ window.audioDebug = ()=>SFX.audioHeld(); }catch(_){}
+/* ⚠⚠ **回首頁＝把畫面殺掉，音訊也要一起還**（鐵律 10 套用到資源）。
+   `killAllPages` 已經把每一層畫面收掉了，但音訊的 buffer 照樣留著 ——
+   實測一輪玩下來解碼後可以累積上百 MB（-1300 的 `audioHeld` 就是為了量它）。
+   ⚠ 正在播的那一首由 `releaseAudio` 自己保住，呼叫端不必記得。
+   ⚠⚠ **先放「再載」——那道門是兩件事，不是一件**（ver -1355）：
+     首頁那四支 UI 音在進戰鬥時已經被戰鬥那道門放掉了（`battleAudioSet` 只留
+     `se_general_click`），只做釋放的話回到首頁就剩一支 —— 下一次按翻頁／出陣
+     會落進 `LATE_PLAY_MS`（1.5 秒遲到就不播）＝**沒聲音**。
+   ⚠ 自檢：**任何一道門都要問兩句** ——「上一個畫面的放掉了嗎？」
+     「**這個畫面自己要的載回來了嗎？**」只答前一句就是這個洞。 */
+function releaseToHome(){
+  const K = homeAudioSet();
+  try{ const r = SFX.releaseAudio(K.all);
+       if(r && (r.sfx||r.bgm)) console.log('[load] 回首頁，放掉音訊', r, SFX.audioHeld());
+  }catch(_){}
+  try{ SFX.preload(K.sfx).catch(()=>{}); }catch(_){}        // 音效：解碼
+  try{ SFX.preloadBgm(K.bgm).catch(()=>{}); }catch(_){}     // 音樂：抓 blob，不要解碼
+}
+
+
+/* ══⚠⚠⚠ **戰鬥那道門**（ver -1354）══════════════════════════════════════════
+   **戰鬥從來沒有自己的載入點** —— 它一直靠開機那一批，所以開機才會去掃全庫。
+   這一支把它接上讀取分工：**先放掉上一個畫面的，再只載這一場要的**
+   （與 `story.loadScene` 同一個形狀，鐵律 8）。
+
+   ⚠⚠ **集合是從資料掃出來的，不是手寫名單**（鐵律 1/7）：走一次這一場的
+     戰鬥卡 → 敵人卡 → 身上的武器 → 搭檔，把**任何看起來是音效欄位**的字串收起來。
+     手寫名單會腐爛（加一支新受擊音就漏一支，而且沒有錯誤訊息）——
+     那正是 `HOME_SFX` 以外的地方不能用列舉的理由。
+   ⚠ `hitFx` 的值是 `HITFX` 的鍵，要再查一層表才拿得到音效名。
+   ⚠ 解析走 `story.seSrc()`（它已經**兩張表都查**：`SE_FILES` ＋ `ASSETS`，ver -1003）。
+
+   ⚠⚠ **不擋流程**：門的動畫（撞頂→齒輪→開門）約 1.6 秒，本來就是它的掩護；
+     而且真正要在第 0 毫秒響的是門自己那三支，那幾支由劇情層的 `loadScene`／
+     `preloadStory` 早就載好了。開場的第一發主動攻擊排在 1~2 秒後（`openAssault`）。
+   ⚠ 沒載完也不會消音：`playSrc` 查不到 buffer 會自己 `load()`（§6.6 既有行為）。 */
+const AUDIO_KEY = /(^|[a-z])(se|sfx|vo|voice|bgm|cue)([A-Z_]|$)/;
+function scanAudioNames(obj, out, depth){
+  if(!obj || depth>4) return out;
+  if(Array.isArray(obj)){ for(const v of obj) scanAudioNames(v, out, depth+1); return out; }
+  if(typeof obj!=='object') return out;
+  for(const k of Object.keys(obj)){
+    const v = obj[k];
+    /* `hitFx` 的值是 HITFX 的鍵 —— 再查一層才是音效名。 */
+    if(k==='hitFx' && v){
+      const fxs = (typeof v==='string') ? [v] : Object.keys(v).map(x=>v[x]);
+      for(const f of fxs){ const row = HITFX[f]; if(row && row.se) out.push(row.se); }
+      continue;
+    }
+    if(typeof v==='string'){ if(AUDIO_KEY.test(k)) out.push(v); }
+    else if(v && typeof v==='object') scanAudioNames(v, out, depth+1);
+  }
+  return out;
+}
+function battleAudioSet(battleId){
+  const C = GAME_CONFIG, names = [];
+  const B = (C.battles||{})[battleId] || {};
+  scanAudioNames(B, names, 0);
+  const en = (C.enemies||{})[B.enemy]; if(en) scanAudioNames(en, names, 0);
+  /* 身上的武器與搭檔：它們的音效只有這一場用得到。 */
+  /* ⚠ 武器整張表掃（十來把，音效欄位就那幾支）：玩家隨時可以在戰鬥中切換順位，
+     只載「現在裝著的」會在切槍那一刻沒聲音。 */
+  for(const k of Object.keys(C.weapons||{})) scanAudioNames(C.weapons[k], names, 0);
+  for(const k of Object.keys(C.partners||{})) scanAudioNames(C.partners[k], names, 0);
+  /* 戰鬥共用的那幾支（UI／升級／回復／碎裂）＋ 這一場的曲子。 */
+  names.push('se_general_click','se_lvup','se_healing','se_bulletpiece','se_glasscrack','sfx_saint');
+  names.push(B.bgm || 'bgm_battle'); if(B.bgmAfter) names.push(B.bgmAfter);
+  names.push('bgm_result','bgm_missionfailed');   // 結算／失敗：打完馬上要用
+  const out=[], seen={};
+  for(const n of names){
+    if(!n || typeof n!=='string' || seen[n]) continue; seen[n]=1;
+    let src=null; try{ src = story.seSrc(n); }catch(_){}
+    if(!src) src = asset(n);
+    if(src && out.indexOf(src)<0) out.push(src);
+  }
+  return out;
+}
+/* 進戰鬥：放掉上一個畫面的音訊，只留這一場要的，然後把缺的抓進來。 */
+function enterBattleAudio(battleId){
+  let set=[]; try{ set = battleAudioSet(battleId); }catch(e){ console.warn('[load] battleAudioSet', e); return; }
+  try{ const r = SFX.releaseAudio(set);
+       if(r && (r.sfx||r.bgm)) console.log('[load] 進戰鬥，放掉音訊', r, SFX.audioHeld()); }catch(_){}
+  try{ SFX.preload(set).catch(()=>{}); }catch(_){}
 }
 
 /* ══⚠⚠⚠ 圖只載「這個畫面要的」（ver -1295，讀取分工；說明見 config 的 `HOME_IMG`）══
@@ -364,9 +495,19 @@ function openFlight(opts){
      ⚠ 曲子上面剛 `stopBgm` 掉了；`releaseAudio` 仍會保住 `_bgmSrc` 指著的那一首，
        所以就算淡出還沒走完也不會斷音。
      ⚠ 慢一拍再放：`stopBgm` 的淡出要 600ms，當場抽掉 blob 會讓最後那一段沒聲音。 */
-  if(!keepBgm) setTimeout(()=>{
+  /* ⚠⚠⚠ **`keepBgm` 不可以把「釋放」一起關掉**（ver -1354 修 -1350 的錯）。
+     -1350 為了「龍那一段到飛行畫面音樂不要停」，把整個 `setTimeout` 包進
+     `if(!keepBgm)` —— 而這一支是**全專案唯一真的把記憶體還回去的函式**（-1296 立的），
+     一包就等於那一趟進飛行畫面 **31.6 MB 一點都不放**。
+     ⚠⚠ **而且沒必要**：`releaseAudio` 本來就會保住 `_bgmPlaying`／`_bgmSrc` 指著的
+       那一首（它自己的註解就寫著）。要的只是「不要 `stopBgm`」，不是「不要釋放」。
+     ⇒ **音樂繼續播 ＋ 音效照樣放掉**，兩件事本來就分得開。
+     ⚠ 自檢：看到 `if(<某個新旗標>)` 包住既有的收尾／釋放時，先問
+       「我真正想跳過的是哪一件？」—— 多包進去的那幾件就是下一個洩漏。 */
+  setTimeout(()=>{
     let keep=[]; try{ keep=story.kerbSeSources(); }catch(_){}
-    try{ SFX.releaseAudio(keep); }catch(_){}
+    try{ const r=SFX.releaseAudio(keep);
+         if(r&&(r.sfx||r.bgm)) console.log('[load] 進飛行，放掉音訊', r, SFX.audioHeld()); }catch(_){}
   }, 800);
   const w=flightWin();
   if(!f.getAttribute('src')){
@@ -454,6 +595,11 @@ function killFlightFrame(){
   }
 }
 function killAllPages(){
+  /* ⚠⚠⚠ **殺畫面就要把音訊一起還**（ver -1354，Ray：「每一次切換就把前面載的 Kill 掉」）。
+     `killAllPages` 從 -494 起就把每一層畫面收乾淨了，**但音訊的 buffer 照樣留著** ——
+     那是鐵律 10 只做了一半：畫面死了，它載進來的資源沒死。
+     ⚠ 排在最前面（與 `loadScene` 同形狀：先放、再讓下一個畫面載自己的）。 */
+  releaseToHome();
   closeFlightFrame();
   killFlightFrame();
   try{ town.suspend(); }catch(_){}
@@ -505,7 +651,7 @@ window.__tivotFlight = {
          交棒那一格紋章會忽然變大（鐵律 7）。 */
     story.showKerbGate(req.geom);
     closeFlightFrame();
-    preloadLateBgm();   // 圖不再整批預載（ver -1295 讀取分工）：敵立繪/cut-in 由戰鬥自己載
+    enterBattleAudio(id);   // 戰鬥那道門（ver -1354）：放掉上一個畫面的，只留這一場要的
     story.setBattleCueId(id);   // 撞頂那一拍的曲子照這一場的卡挑（ver -746：不設就退回 bgm_battle，羽蛇的 EpicBattle 放不出來）
     story.playKerberosFromRisen(
       /* `scripted` 由飛行頁宣告（ver -493：隨機遭遇＝false，劇本遭遇＝true）——
@@ -608,7 +754,7 @@ function bootBattleGate(req){
     document.removeEventListener('pointerdown', open);
     const t=$('gateTip'); if(t && t.parentNode) t.parentNode.removeChild(t);
     SFX.unlock();                         // 這一頁唯一的使用者手勢
-    preloadLateBgm();                     // 結算／失敗／Boss 那幾首（打完或打輸才用得到）
+    enterBattleAudio(req.battle);         // 戰鬥那道門（ver -1354）
     story.setBattleCueId(req.battle);     // 同橋接那一條（ver -746）：曲子照這一場的卡挑
     story.playKerberosFromRisen(
       ()=>{ $('home').classList.remove('on');
@@ -618,7 +764,14 @@ function bootBattleGate(req){
   };
   document.addEventListener('pointerdown', open);
 }
-/* 音效清單：與 preloadAll 同一條規則（ASSETS 裡非 bgm_ 的音檔）。
+/* 音效清單：**全部**（ASSETS 裡非 bgm_ 的音檔 ＋ 劇情層那張表）。
+   ⚠⚠ **只有 `bootBattleGate` 在用**（ver -1354 起）—— 那是「飛行頁**獨立模式**交棒
+     進戰鬥」的冷開機路徑（§6.10；內嵌 iframe 那條主路不經過它）。它一開機畫面上
+     就是蓋滿螢幕的槍棺、下一秒就要開打，所以**它要的就是全部**：門的三支、
+     受擊音、武器音、搭檔技的語音 —— 這一批對它不是浪費，是它的畫面。
+   ⚠ 這一支**沒有**跟著首頁那一刀收窄，是刻意的：收窄它要再維護一張「戰鬥要哪些」
+     的白名單，而那張表會用同樣的方式腐爛（鐵律 7）。首頁那一刀解決的是
+     「每一版每一台裝置都要付」的成本；這條路是罕見的冷開機，不在那個帳上。
    ⚠ 抽成函式而不是抄一份陣列 —— 兩份清單一定會走鐘（鐵律 7）。 */
 function _sfxPaths(){
   const out=[];
@@ -662,16 +815,18 @@ window.addEventListener('pagehide', refreshBoot);
     }
     else if(/\.(mp3|m4a|ogg|wav)(\?|$)/i.test(v)){
       if(k.indexOf('bgm_')===0){ if(LATE_BGM_PATHS.indexOf(v)<0) bgm.push(v); }
-      else sfx.push(v);
+      /* ⚠⚠ 只收**這個畫面要的**（ver -1354，見上方 `isHomeSfx`）：其餘由
+         用到它的那一個畫面自己那道門去載（城鎮 `loadSpec`／劇情 `preloadStory`／
+         戰鬥 `enterBattleAudio`／飛行是另一個 document）。 */
+      else if(isHomeSfx(k)) sfx.push(v);
     }
   }
-  /* ⚠⚠ **劇情層的音效也要進這一批**（ver -433，Ray：「一開始的 step 跟 fall 在手機
-     從來沒播過」）。`ASSETS` 掃不到它們 —— `se_steps`／`se_Fall` 那 20 幾支只登記在
-     `modules/story.js` 的 `SE_FILES`，所以這一批**從頭到尾就沒有它們**，
-     排不排第一都一樣。以前只有 `preloadStory` 那一道門會抓，慢網下第一次演到
-     就來不及（`LATE_PLAY_MS` 1.5 秒沒等到就乾脆不播）。
-     ⚠ 兩張表不合併成一張（鐵律 7）：跟那邊要清單，不要在這裡抄一份檔名。 */
-  for(const v of story.seSources()) if(sfx.indexOf(v)<0) sfx.push(v);
+  /* ⚠⚠⚠ **ver -1354：`story.seSources()` 整包從這一批移出去了** ——
+     **不是取消等待，是換人等**：每一幕自己的 `ln.se` 由 `preloadStory` 無時限等完
+     （-430 起閘門一律等 `sfxDone`），`se_steps`／`se_Fall` 就在開場那一幕的拍子上；
+     城鎮走 `town.loadSpec` → `loadScene`；戰鬥走 `enterBattleAudio`。
+     ⚠ -433 那段註解（「排第一也沒用，因為那一批根本沒有它們」）講的是**當時**
+       `preloadStory` 還罩著總上限的情況 —— 那個前提 -430 已經拆掉了。 */
   const total = imgs.length + sfx.length + bgm.length;   // 進度圈只算第一段 —— 誠實跑完，不靠保底放行
   /* ── 熱啟動：省掉等待，但**畫面照出** ───────────────────────
      iOS 主畫面 App 切到背景後，系統常把頁面整個丟掉，回前景時是**重新載入**
@@ -851,7 +1006,8 @@ window.addEventListener('pagehide', refreshBoot);
       markBooted();   // 真的進到主畫面了才算「載過一次」（見 WARM_BOOT）
       SFX.unlock();   // 使用者手勢：解鎖音訊 → 主選單 BGM 開始播
       // 讀取頁揭幕不再播 SE（原 SI_01 撤下；聖徒 stinger 移到出陣鈕）
-      preloadLateBgm();   // 第二段：進主選單即背景載 結算/失敗/Boss/戰鬥 BGM
+      /* ⚠ 進主選單**什麼都不補載**（ver -1354，Ray：「首頁只讀首頁跟挑戰的資源」）。
+         -344~-1353 在這裡背景載光結算/失敗/Boss/戰鬥 BGM —— 那不是首頁的資源。 */
       // 聖光綻放：暖金白光暈自光圈中心緩慢擴張（無光束）→
       //   2.5s 光暈實心蓋滿時撤遮罩 → 1.2s 淡出揭開主選單（總長 ≈3.7s，與 SI_01 等長連動）
       const ring=$('alRing');
@@ -942,7 +1098,7 @@ function launchBattle(opts){
      ⚠ 劇情場次**不播**（Ray 指定）：那一場的轉場是 Kerberos 之門，門有自己的
        撞擊／齒輪／開門三支音；再疊一聲神楽鈴等於兩套儀式撞在一起。 */
   if(!(opts && opts.instant)) SFX.play(asset('sfx_startbt'), sfxGain('sfx_startbt'));
-  preloadLateBgm();   // 保險：若保底提前放行沒經過 go()，出陣（櫻花期間）補載第二段
+  enterBattleAudio((opts&&opts.battle)||null);   // 戰鬥那道門（ver -1354）
   SFX.playBgm(asset('bgm_battle'), { fadeOutMs:800, delayMs:1000, volume: bgmVol('bgm_battle') });
   /* 劇情叫起來的那一場（ver -329）：**跳過櫻花過渡禎，直接開戰**。
      ⚠ 因為那一場的轉場是「Kerberos 之門拉開」，門縫裡要露出的是**已經在跑的戰鬥畫面**；

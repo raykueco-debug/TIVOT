@@ -2642,7 +2642,25 @@ function warmPartnerCutins(){
   if(window.requestIdleCallback) requestIdleCallback(run, {timeout:800});
   else setTimeout(run, 300);
 }
+/* 戰鬥特效圖的預熱（ver -1354）：這幾張住在 `style.css` 的 `background-image` 裡，
+   `ASSETS` 掃不到，所以**讀取分工的白名單管不到它們** —— 以前靠「元素開機就在」
+   被動地在開機那一批抓下來（`#claw` 那 304 KB 就是這樣混進首頁的）。
+   現在 CSS 改成只在 `.on`／動態元素上宣告，改由這裡在**開打時**主動抓。
+   ⚠ 清單就是 `style.css` 裡 `resources/effects/` 那幾條 —— 加一張就補一行
+     （這是 CSS 與 JS 各一份的例外，鐵律 7 的但書：兩邊註解互指）。 */
+const BATTLE_FX_IMGS=[
+  'resources/effects/ef_claws.webp',   // #claw.on
+  'resources/effects/ef_slash.webp',   // .fx-slash
+  'resources/effects/ef_bite2.webp',   // .fx-bitei i
+];
+function warmBattleFx(){
+  const run=()=>{ for(const src of BATTLE_FX_IMGS){
+    const im=new Image(); im.src=src; if(im.decode) im.decode().catch(()=>{}); } };
+  if(window.requestIdleCallback) requestIdleCallback(run, {timeout:800});
+  else setTimeout(run, 300);
+}
 export function startGame(){
+  warmBattleFx();
   state.over=false; state.defeated=false; state.combo=0; state.energy=0; state.expect=1; state.boardIndex=0;
   state.atkBuff=false; state.lowHpBuff=false;
   state.partnerActiveUsed=false;   // 搭檔主動技每場次數重置

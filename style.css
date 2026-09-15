@@ -750,9 +750,21 @@
      ⚠ 圖畫在 `#claw` **自己身上**（不另包一層）：`enemy.triggerClaw()` 是在這個
        元素上寫 `transform:rotate(...)` 的 —— 所以 `clawFlash` **只准動 opacity**，
        在 keyframe 裡寫任何 transform 都會把那個旋轉蓋掉。 */
-  #claw{position:absolute;inset:0;pointer-events:none;opacity:0;z-index:8;
-    background:url('resources/effects/ef_claws.webp') center/contain no-repeat;}
-  #claw.on{animation:clawFlash .42s ease-out;}
+  #claw{position:absolute;inset:0;pointer-events:none;opacity:0;z-index:8;}
+  /* ⚠⚠⚠ **背景圖掛在 `.on` 上，不掛在 `#claw` 自己身上**（ver -1354，讀取分工）。
+     `#claw` 是 `index.html` 裡**開機就存在**的元素 —— 瀏覽器在解析 CSS 那一刻就把
+     它的 `background-image` 抓下來（`opacity:0` 一點用都沒有，那只是不畫）。
+     實測開機第一批裡就有 `ef_claws.webp` **304 KB**，initiator 是 `[css]`。
+     ⚠⚠ **CSS 的 `background-image` 會繞過所有讀取分工的白名單**（`HOME_IMG` 管的是
+       `ASSETS`，掃不到 CSS 裡的字串）—— 這是那一刀唯一漏掉的入口，而且**不會有任何
+       錯誤訊息**，只會多吃 300 KB。加任何一張戰鬥／場景圖進 CSS 之前先想這一條。
+     ⚠ 另外兩張（`ef_slash`／`ef_bite2`）掛在**動態生成**的元素上，解析時沒有東西
+       套用到它們，所以不漏 —— 不必改。差別只在「那個元素開機時在不在 DOM 上」。
+     ⚠ 圖仍然畫在 `#claw` **自己身上**（只是換了選擇器）：`enemy.triggerClaw()` 在這個
+       元素上寫 inline 的 `transform:rotate(...)`，所以 `clawFlash` 照舊只准動 opacity。
+     ⚠ 第一次挨爪不會空白：`combat.warmBattleFx()` 在開打時 rIC 預熱它。 */
+  #claw.on{background:url('resources/effects/ef_claws.webp') center/contain no-repeat;
+    animation:clawFlash .42s ease-out;}
   /* 一記劃過：滿亮登場（不淡入，那是「被抓到」不是「浮現」）→ 收得快一點。
      ⚠ 不加 scale 的 keyframe：那會蓋掉 `triggerClaw` 寫在 inline 的整體旋轉。 */
   @keyframes clawFlash{0%{opacity:0}8%{opacity:1}45%{opacity:.9}100%{opacity:0}}
