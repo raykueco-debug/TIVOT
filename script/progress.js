@@ -998,6 +998,52 @@ export const CHAPTERS = [
     enter:'town', town:'shinier', node:'sorahome' },
 ];
 
+/* ══⚠⚠⚠ **試飛的預設進度**（ver -1359，Ray：「試飛默認為 s8 瓦努努開啟後的
+   自由活動期間」）══════════════════════════════════════════════════════════
+   `試飛` 以前是 `openFlight()` 一句話 —— **完全不碰進度**，於是沒跑主線時
+   `getStage()` 掉進 `STAGE_DEFAULT`（暫填 5）、旗標全空：
+     · 瓦努努（`fallen`）的名牌靠 `ruin_a_found` 才出得來 ⇒ **找不到、降不下去**
+     · 那正是試飛最想去的地方（它是隱藏點，要用感應找）
+   ⇒ 給它一組**真的插著的**鑰匙（鐵律 9：不准讓「鑰匙不存在」參與遊戲邏輯，
+     預設值只能當顯示用的假定值）。
+
+   ⚠⚠ **形狀就是一筆 CHAPTERS**（`enter:'flight'`），執行走**同一支** `startChapter`
+     （鐵律 8）—— 補給、名字、旗、stage、時鐘那一整套不必再寫一遍。
+   ⚠ **不放進 `CHAPTERS` 陣列**：那張表是「章節」選單的內容，試飛不是一個章節。
+   ⚠⚠ 它與章節跳關一樣是**破壞性**的（`startChapter` 開頭就 `newRun()`）——
+     那是既有的 dev 梯子語意（§6.5.8），而且只有 `body.testmode` 看得到這顆鈕（§6.9）。
+     玩家的那一份存檔在存檔庫裡，不受 `newRun()` 影響（§6.9）。
+
+   **為什麼是這幾支旗：**
+   · 底稿抄 `stage8`（那一章就是「索菈娜家（正午）→ **自由探索** → 餐廳」）。
+   · 多給 `sv_s8_home` ＝ 索菈娜家那一幕**演完了** ⇒ 人正落在**自由活動期間**，
+     不是還沒開演。（`sv_s8_dine`／`sv_s8_corvin` **不給** —— 那是後面的內容。）
+   · 多給 `ruin_a_found` ＝ **瓦努努開啟**（名牌與降落點出得來）。
+     ⚠ `fallen_seen`／`fallen_named` **不給**：那是「**進去過**」，給了等於把
+       那座遺蹟的內容當成看過 —— 試飛要的是飛得到，不是跳過它。
+   ⚠ `clockHour:12` 同 stage8（正午起飛，看得到白天的地貌）。
+   ⚠ 加速（Sturm）與感應的解鎖是 `FEATURE_FROM`（暫填 5）—— stage 8 ≥ 5，
+     兩個都開著，這正是找隱藏點要用的。 */
+export const FLIGHT_TEST = {
+  id:'flighttest', name:'試飛', sub:'S8・瓦努努開啟後的自由活動期間',
+  stage:8, clockHour:12, named:true,
+  flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open',
+           'set_sail','got_ship','dock_day2','flight_centipede_met',
+           'np_port_arrive','np_clear_church','np_claws_done','safehouse_northport',
+           'np_burial','np_burial_done','np_night','np_night_done','np_day3',
+           'np_day3_done','np_anya_join','np_dock_ask','np_grave_done','np_depart',
+           'sv_arrive','sv_evening','sv_night_done','shinier_siege',
+           'sv_clear_wild','safehouse_shinier','sv_forest_morning',
+           'sv_forest_go','sv_forest_intro','sv_deer_met','sv_deer_harm',
+           'sr_intro','sr_gate_brazier','sr_gate_bridge','sr_brazier','sr_bridge',
+           'sr_mural','ruins_gate_open','ruins_bell_done','ruins_thug_met','sr_altar',
+           'ruins_altar_on','sv_s8_noon',
+
+         'sv_s8_home',      // 索菈娜家那一幕演完 ＝ 自由活動期間
+         'ruin_a_found'],   // 瓦努努開啟（名牌／降落點出得來）
+  enter:'flight',
+};
+
 export function newRun(){
   for(const k of [K.stage, K.flags, K.affection, K.affFloor, K.name, K.nick,
                   K.hp, K.innLast, K.flightLoss, K.rennaS, K.playtime,

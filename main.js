@@ -1385,7 +1385,15 @@ function buildStatRows(){
 }
 // 試飛：大地圖飛行原型（管理人模式限定；鈕本身由 CSS 隱藏，見 style.css）
 // ver -388：內嵌 iframe，不再跳頁；ver -389：「進入」這條路會跑讀取頁（見 openFlight）
-bindBtn('flightBtn', ()=>openFlight());
+/* ══⚠⚠ **試飛有預設進度**（ver -1359，Ray：「試飛默認為 s8 瓦努努開啟後的
+   自由活動期間」）══ 以前這裡是 `openFlight()` 一句話，完全不碰進度 ——
+   沒跑主線時 stage 掉進 `STAGE_DEFAULT`、旗標全空，於是**瓦努努找不到也降不下去**
+   （它的名牌要 `ruin_a_found`），而那正是試飛最想去的地方。
+   ⚠ 內容是資料（`script/progress.js` 的 `FLIGHT_TEST`，鐵律 1），
+     執行走**同一支** `startChapter`（鐵律 8：補給／名字／旗／stage／時鐘不重寫一遍）。
+   ⚠⚠ 它與章節跳關一樣**會 `newRun()`** —— 那是既有 dev 梯子的語意，
+     而這顆鈕本來就只有 `body.testmode` 看得到（§6.9）。 */
+bindBtn('flightBtn', ()=>startChapter(prog.FLIGHT_TEST));
 /* 主線劇情（管理人模式限定）：從 mainScript 的 MAIN_ENTRY 開始跑 scene 鏈。
    ⚠ 不換頁 —— 劇情舞台是蓋在首頁上的一層（#storyStage z-8300），離開就回首頁。
      換頁的話存讀檔要跨頁還原，複雜度沒必要。
@@ -1564,6 +1572,12 @@ function startChapter(c){
   if(c.clockHour!=null) clock.setElapsed(clock.firstHourAt(c.clockHour));
   if(c.enter==='town'){
     openTownAt(c.town, c.node);   // ⚠ 與讀檔走同一支（ver -430，鐵律 8）
+  }else if(c.enter==='flight'){
+    /* 試飛（ver -1359）：進度擺好之後開飛行畫面。
+       ⚠ 走 `openFlight()`（唯一那個入口，鐵律 8）—— 非 resume ＝ iframe 重載，
+         所以飛行頁開機那一刻就讀得到剛插上去的旗（`ruin_a_found` 決定瓦努努的
+         名牌與降落點出不出得來）。 */
+    openFlight();
   }else{
     story.open(null);
   }
