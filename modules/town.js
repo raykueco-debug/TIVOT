@@ -826,6 +826,18 @@ function actDue(n){
          `until` ＝「別人那一段演完了」（別人記的）。 */
     if(a.until && prog.hasFlag(a.until)) continue;
     if(a.day && dayNo() < a.day) continue;
+    /* ══⚠⚠ 「現在是不是跟某人在約會」（ver -1344，Ray 的東泊稿）══════════════
+       約會中走到某一格才演的那幾段（諾薇兒→餐廳／雜貨舖、安雅→甜品店／碼頭、
+       索菈娜→武器店／公會）就靠這兩格：
+         · `withWho:'NOUVELLE'` ＝**正在跟她約會**才演
+         · `noDate:true`        ＝**沒有在約會**才演（大學巧遇蕾娜那一段）
+       ⚠⚠ 問的是 `datingWho()`（正在約會的人）**不是** `escortWho()`（有人同行）——
+         殘留事件帶起來的同行不是約會（`escortLeftover`，ver -567 的諾薇兒），
+         拿後者當判準會讓「沒在約會」那一段在她跟著你走的時候也不演。
+       ⚠ 收在 `actDue` 這唯一一支（鐵律 8）：日後任何一段要掛這個條件都自動吃到，
+         不要在各個節點自己判一次。 */
+    if(a.withWho && datingWho()!==a.withWho) continue;
+    if(a.noDate && datingWho()) continue;
     /* ══⚠⚠ **安全區旗插著就不會有遭遇戰**（ver -634，Ray）══
        「只要插 safehouse flag 就不會有遭遇戰」「flag 跟地圖，一插就是整個北泊」
        「特殊戰就先拔旗，打完再插，如帝都的賞金獵人跟打靶小遊戲」

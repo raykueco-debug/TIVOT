@@ -4283,8 +4283,28 @@ export const TOWNS = {
       /* ⚠⚠ 大學（ver -1255，Ray 指定）。**末端**：一格，與主教座堂／海關署同級。
          要擴成校門→講堂→圖書館那種一串的話再說 —— 那會讓中心區這一支變成一條
          走廊，`up` 的語意（走進畫面裡）照舊成立，只是多幾格。 */
+      /* ══⚠⚠⚠ 16~18 點在大學巧遇蕾娜（ver -1344，Ray 交稿）══════════════════
+         「**沒有在約會狀態**的話，可以在 16:00～18:00 前往大學遇見蕾娜。」
+         ⚠ `noDate:true` ＝沒有人跟著你（`actDue` 的新條件，鐵律 8）。
+         ⚠ `hourOfDay:[16,18]` ＝時段，迄不含（同 gates 的語意）。
+         ⚠ `need:'ep_arrive'` ＝她真的去了大學之後才有這一段。
+         ⚠⚠ 旗 `ep_renna_met` 同時是**兩件事的答案**：這一段演過了、
+           而且「晚上在旅店那一段還要不要演」要讀它（稿：「若沒有觸發巧遇蕾娜，
+           …回到旅店時就會碰到蕾娜」）—— 下一批接。
+         ⚠ 插圖「黃昏與蕾娜的側臉」**還沒有**（Ray：插圖先空著）：那一拍先不寫 `cg`，
+           圖到了補一行就好。 */
       university: { bg:'East_University', name:'東方泊地　大學',
-        exits:{ back:'midtown' } },
+        exits:{ back:'midtown' },
+        acts:[ { flag:'ep_renna_met', need:'ep_arrive', noDate:true, hourOfDay:[16,18],
+                 sides:{ RENNA:'L' }, lines:[
+          ren('curious','唉呀，真巧呢。'),
+          ren('smile','怎麼一個人晃到這裡？'),
+          { speaker:'PLAYER', blank:true },
+          ren('stare','少來——你就是閒得慌吧？'),
+          ren('bow','不過，還是謝謝啦。'),
+          /* 好感 +1（Ray 指定）。⚠ 走 `aff` 欄位，由 modules/town.js 在演到這一拍時記帳。 */
+          Object.assign(ren(null,'雖然是苦差事，但是很開心呢。'), { aff:{ renna:1 } }),
+        ] } ] },
 
       /* ── 二、舊城區（四向樞紐） ── 左＝武器店、右＝廣場、上＝倉庫碼頭、下＝公會 */
       oldtown:    { bg:'East_Oldtown',    name:'東方泊地　舊城區',
@@ -4341,9 +4361,61 @@ export const TOWNS = {
         exits:{ back:'uptown' },
         shop:'ep_grocery', keeperWho:'SHOPKEEP_EP',
         hours:[8,20], closed:'櫥窗的燈熄了，百葉窗放了下來。' },
-      /* ⚠ 這一格**沒有** `inn:true`：旅店大廳與四扇伙伴門這一輪不做（同上）。 */
+      /* ══⚠⚠⚠ 旅店（ver -1344，Ray 的東泊稿）══════════════════════════════
+         「18:00 前回旅店可與女主角約會，但蕾娜不在。」
+         ⚠⚠ **蕾娜不在房裡**（`out:['RENNA']`）—— 她去大學查檔案了（抵達那一段
+           `ep_arrive` 自己說的）。門上的臉照畫、燈不亮（§6.5.5 的三態：
+           `out` ＝不在房裡、`asleep` ＝在裡面睡著了，兩件事不要混）。
+         ⚠ `answerBy` **不寫**：這座城沒有「都由同一個人應門」那個安排。
+         ⚠ `innNoGuide` ＝不跑一次性說明（玩家在帝都的旅店早就學過了）。
+         ⚠⚠ **睡覺鈕擋著**（`noSleepUntil`，Ray：「播完以上任一段，睡覺鈕才跳出」）：
+           那一段＝晚上碰到蕾娜（旗 `ep_renna_night`，下一批接）。
+           ⚠ 鈕**要在**，擋的方式是一句話（§6.5.5 -659：藏起來玩家只會以為壞了）。
+         ⚠ `innSpots` 對著 `East_Hotel` 這張圖擺：坐坐＝左下那組藤椅、睡覺＝櫃台
+           正上方（§6.5.5 -408：睡覺鈕不要擺到伙伴門欄旁邊，會被讀成別的意思）。
+           ⚠ 真正保證不撞的是 inn.js 那個夾（夾回畫面內／不進門欄／不壓對話框）——
+             這兩個座標只負責「看起來對」。 */
       inn:        { bg:'East_Hotel',      name:'東方泊地　旅店',
-        exits:{ back:'uptown' } },
+        exits:{ back:'uptown' },
+        inn:true, innNoGuide:true,
+        innSpots:{ sit:{ x:0.26, y:0.62 }, sleep:{ x:0.42, y:0.34 } },
+        noSleepUntil:'ep_renna_night',
+        noSleep:'……蕾娜還沒回來。',
+        innDoors:[ { roster:['RENNA','NOUVELLE','ANYA','SORANA'], out:['RENNA'] } ],
+        /* ══⚠⚠ 敲門（四扇門一張表，同夏爾村那一份；`inn.js` 只有一條路在走，鐵律 8）══
+             · `low`     ＝好感未達門檻的婉拒（稿上的「T2 以下」那一組）
+             · `date`    ＝約得出來要演的那幾拍，演完就設同行 ＝ 約會開始
+             · `absent`  ＝好感未達門檻時**門上沒有臉**（不是一句台詞）
+           門檻讀 `OUTING.dateAff`（20＝T2，唯一那個數字，鐵律 7）。
+           ⚠⚠ 索菈娜稿上寫「**T1 以下人不在**，T2 以上……」—— 所以她是 `absent`
+             （同夏爾村 ver -1099 的作法），沒有 `low`：那扇門是空的，點不到。
+           ⚠ 蕾娜沒有 `date`：她整個下午都在大學，門上的燈本來就不亮（`out`）。
+           ⚠⚠ `dateBusy` 與 `dateDone` 是**我暫代的**（稿上沒給詞）—— 沒有一句話
+             那顆門就是「點了沒反應」（§6.5.5 明令要避免的）。要換說一聲。 */
+        innStage1:{ dateBusy:'（已經約好人了，等等再說吧。）',
+                    dateDone:'今天已經聊夠多囉，明天再說吧。',
+                    nightRest:'這麼晚了，早點睡吧。',
+                    knock:{
+          NOUVELLE:{ low:'要有人在這邊等蕾娜小姐才行。',
+                     date:[ nou('surprise','咦？好啊！'),
+                            nou('bigsmile','一起逛逛吧！') ] },
+          ANYA:{     low:'我想一個人待著。',
+                     /* ⚠ 稿上這三拍寫的是「諾：」，但立繪檔名全是 `Anya_SI_*`
+                        （`answer`／`talkshy`／`smile`）、而且這是**安雅那一條**約會線
+                        —— 照立繪與段落歸屬判成安雅（打字順手打成諾了）。
+                        ⚠ `smile` 這張**還沒有圖**：查不到差分會自動退回本尊立繪
+                        （§6.10 的 `missingExpr`），台詞照播。 */
+                     date:[ any('answer','我、我有想去的地方！'),
+                            { speaker:'PLAYER', blank:true },
+                            any('talkshy','東海的甜點街……很有名……'),
+                            { speaker:'PLAYER', blank:true },
+                            any('smile','好！') ] },
+          SORANA:{   absent:true,
+                     /* ⚠ `shy` 還沒有圖（同上，會退回本尊）。 */
+                     date:[ sor('side','噢！當然要去逛逛呀！'),
+                            sor('embarassed','不過我也不知道要去哪就是了！'),
+                            sor('readysmile','隨便走走囉！') ] },
+                    } } },
     },
   },
 
