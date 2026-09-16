@@ -2268,8 +2268,13 @@ function maybeMorph(){
   if(m.fx) enemy.showHitFx(m.fx);                    // ⚠ 只放光，不走 enemyAttack
   setTimeout(()=>{
     if(state.over) return;
-    enemy.setEnemy(m.to);                            // 換卡（立繪、數值、大絕參數都跟著換）
-    initEnemyHp();                                   // 新型態自己的血條
+    /* ⚠⚠⚠ **血條由 `setEnemy` 自己設**（ver -1430 修）：那一支裡面就有
+       `initEnemyHp(en.hp)`。-1419 我在這裡又補了一次 `initEnemyHp()`，
+       而它的簽名是 `initEnemyHp(hp)` —— **沒帶參數 ⇒ `enemyMax`／`enemyHp`
+       都變成 `undefined`**，於是 `enemyDamage` 的 `if(state.enemyHp>0)` 永遠不成立
+       ＝ **打不動、血條也是錯的**（Ray：「第四階段以後敵人 HP 錯誤完全鎖血」）。
+       ⚠ 這是鐵律 7 的原形：同一個量兩個設定點，而第二個還設錯了。 */
+    enemy.setEnemy(m.to);                            // 換卡（立繪、數值、大絕參數、血條都跟著換）
     state.transitioning=false;
     state.killTime=0;
     loadBoard(0);                                    // 新型態自己的盤序（loadBoard 內 clockResume）

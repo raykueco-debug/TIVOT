@@ -1546,8 +1546,14 @@ export const ENEMIES = {
       assault:{ count:1, gap:0.35 },
       kind:'multi',
       image:'enemy_bl_dragon_front',
-      bg:'Belisar_Exterior',
-      fit:{ mode:'contain', pos:'center bottom' },
+      /* ⚠⚠ **空中戰的背景在天空**（ver -1430，Ray：「空中戰背景，應該在天空」）：
+         `Belisar_Exterior` 是**古城外觀**（地面）—— 那一場是從**船上**打的，
+         背景該是甲板高速航行那一張（`resources/background/deck/deck_rapidsail.webp`，
+         羽蛇那一段用的也是它）。 */
+      bg:'deck_rapidsail',
+      /* ⚠ `pos` 由 `center bottom` 改成 **`center 18%`**（Ray：「第三階段的圖位置
+         放高一點」）：牠是**正面展翅在飛**，貼著下緣會讀成「站在地上」。 */
+      fit:{ mode:'contain', pos:'center 18%' },
       hp:500,
       attack:22,
       atkInterval:null,
@@ -1571,7 +1577,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0.35 },
       kind:'aerial',
       image:'enemy_bl_dragon_sky',
-      bg:'Belisar_Exterior',
+      bg:'deck_rapidsail',   // ver -1430：空中戰在天空（同第三型態）
       fit:{ mode:'contain', pos:'center bottom' },
       hp:700,
       attack:22,
