@@ -3956,3 +3956,38 @@ export function resumeBgm(){ const T=TOWNS[townId]; if(T) story.ensureBgm(townBg
 /* 這張圖現在該放哪一首（ver -913）：給 `bgmAfter:'@town'` 問的（main 注入給 story）。
    ⚠ 只是把 `townBgm()` 這個唯一的計算點**開一個窗**，不是第二份判斷（鐵律 7）。 */
 export function bgmKey(){ return TOWNS[townId] ? townBgm() : null; }
+
+/* ══⚠⚠⚠ **巡場的地圖名單與「這張圖的劇情旗」**（ver -1410，Ray：「巡場加入選擇
+   探索地圖名單，選擇以後選是否播放劇情」）══════════════════════════════════
+   兩支都是**從 `TOWNS` 算出來的，不列名單**（鐵律 7）—— 日後加一張圖，
+   巡場的清單自己會多一列、跳過清單自己會涵蓋它，沒有人要記得回來補。
+   ⚠ 這是 -1396 那份**手寫的** `SCRIPT_TEST.tourFlags` 的替代品：那一列只涵蓋
+     貝利薩爾，換一張圖測就要手改，而「忘了改」的下場是**劇情把你抓走**
+     （巡場的本意正是不要被抓走），畫面上不會有任何錯誤訊息。 */
+export function explorableMaps(){
+  return Object.keys(TOWNS)
+    .filter(id => TOWNS[id] && TOWNS[id].nodes && TOWNS[id].entry)
+    .map(id => ({ id, name: TOWNS[id].name || id, node: TOWNS[id].entry,
+                  nodes: Object.keys(TOWNS[id].nodes).length }));
+}
+/* 這張圖「演過了」的那一整組旗 —— 段落（`acts`）、閘門（`gates`）、離場
+   （`onLeave`）自己宣告的 `flag`，加上由 `townId` 推得出來的那幾支
+   （來過、圖名卡、走過了沒、旅店初見）。
+   ⚠ **`safehouse_` 不在裡面**：那是「有沒有怪」，與「劇情演過了沒」是兩件事
+     （§6.5.4.3 的安全區旗；巡場兩種模式都要它）。 */
+export function storyFlagsOf(id){
+  const T=TOWNS[id]; if(!T) return [];
+  const out=new Set();
+  const eat=a=>{ if(a && a.flag) out.add(a.flag); };
+  for(const k in (T.nodes||{})){
+    const n=T.nodes[k];
+    (n.acts||[]).forEach(eat); eat(n.onLeave);
+    out.add('seen_'+id+'_'+k);
+    if(n.inn) out.add('inn_seen_'+id+'_'+k);
+  }
+  (T.gates||[]).forEach(eat);
+  if(T.stage1) eat(T.stage1);
+  if(T.visitFlag) out.add(T.visitFlag);
+  out.add('mapcard_'+id);
+  return [...out];
+}

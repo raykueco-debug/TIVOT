@@ -1084,28 +1084,40 @@ export const SCRIPT_TEST = {
               ⚠ `ep_bel_enter` 以後的**一支都不給** —— 那是要測的內容。 */
            'eastport_seen','mapcard_eastport','inn_seen_eastport_inn',
            'ep_arrive','ep_renna_met','ep_renna_night','ep_day2'],
-  enter:'town', town:'belisar', node:'entrance',
-  /* ══⚠⚠⚠ **「巡場」要多插哪幾支旗**（ver -1396，Ray：「開一個沒怪的古城給我，
-     我自己跑個圖」）══════════════════════════════════════════════════════════
-     ＝**這張圖的劇情段落全部當成演過了** ⇒ 走進去不會被任何一段抓走
-     （`ep_bel_enter` 的 `goto:'altar'`、祭壇那一場、撤離那一段、回東泊）。
-     ⚠ **安全區旗不寫在這裡**：它由 `townId` 推（`safehouse_<圖>`，鐵律 7 ——
-       插旗端與查旗端各寫一個字串的話，打錯一個字就是「插了但查不到」）。
-     ⚠ 換一張圖測的時候，這一列跟著 `town` 一起換 —— 它就是那張圖的「跳過清單」。 */
-  tourFlags:['ep_bel_enter','ep_bel_altar','ep_bel_court','ep_belisar_done','ep_bel_back'] };
+  enter:'town', town:'belisar', node:'entrance' };
+/* ⚠ ver -1410：`tourFlags`（-1396 手寫的貝利薩爾跳過清單）**已移除** ——
+   巡場現在用 `town.storyFlagsOf(圖)` 從資料掃，涵蓋每一張圖，換圖不必手改。 */
 
-/* ══⚠⚠⚠ **巡場：同一個落點，沒有怪**（ver -1396）══════════════════════════
-   ＝ `SCRIPT_TEST` ＋ 安全區旗 ＋ 那張圖的跳過清單。
-   ⚠⚠ **落點只有一份**（鐵律 7）：它整個抄 `SCRIPT_TEST`，所以重指那一筆的時候
-     這一顆自己跟著走 —— 不要在這裡另寫一次 `town`／`node`／`clockHour`。
-   ⚠ 安全區旗＝`safehouse_<圖>`（見 `modules/town.js` 的 `safehouseFlag`：
-     那個名字是由 `townId` **推**出來的，兩邊都不寫死）。
-   ⚠ 它擋的是**遭遇戰**；劇情段落是靠 `tourFlags` 當成演過了擋掉的 —— 兩件事。 */
-export function tourSpec(){
-  const t = SCRIPT_TEST;
+/* ══⚠⚠⚠ **巡場**（ver -1396；-1410 由 Ray 改成「選圖 ＋ 選要不要演劇情」）══════
+   Ray：「巡場加入選擇探索地圖名單，選擇以後選是否播放劇情」
+
+   **三件事，各由一個機制負責（不要混在一起）：**
+
+   | 要什麼 | 誰做的 |
+   |---|---|
+   | 進度推到後期（有錢、有槍、主線旗到位） | `SCRIPT_TEST.flags` 當**底**（照抄，鐵律 7：落點只有一份） |
+   | **沒有怪** | `safehouse_<圖>`（由 `townId` 推，見 `town.safehouseFlag`） |
+   | **劇情要不要演** | `town.storyFlagsOf(圖)` —— **加上去＝當成演過了**（不演）、**扣掉＝回到還沒演**（演） |
+
+   ⚠⚠ **「演」是把旗扣掉，不是另外加什麼**：底那一份含著一大票別張圖的劇情旗
+     （`np_*`／`sv_*`／`sr_*`…），要看北泊那一段就得把北泊那幾支**拿掉**，
+     否則走進去只會一片安靜 —— 而那看起來與「劇情壞了」一模一樣。
+   ⚠ `tourFlags` 那一列（-1396 手寫的貝利薩爾跳過清單）**已經不需要了**：
+     `storyFlagsOf` 從資料掃得出來，而且涵蓋每一張圖。
+   ⚠ 這仍是**破壞性**的（`startChapter` 開頭就 `newRun()`），而且只有
+     `body.testmode` 看得到那顆鈕（§6.9 的白名單）。 */
+export function tourSpec(map, opts){
+  const t = SCRIPT_TEST, o = opts||{};
+  const id   = (map && map.id)   || t.town;
+  const node = (map && map.node) || (map && map.id ? null : t.node);
+  const skip = o.storyFlags || [];
+  const base = (t.flags||[]).concat(['safehouse_'+id]);
+  /* 演劇情＝把這張圖的旗從底那一份**扣掉**；不演＝**加上去**。 */
+  const flags = o.story ? base.filter(f=>skip.indexOf(f)<0) : base.concat(skip);
   return Object.assign({}, t, {
-    id:'tour', name:'巡場', sub:(t.sub||'')+'（無怪）',
-    flags: (t.flags||[]).concat(['safehouse_'+t.town], t.tourFlags||[]),
+    id:'tour', name:'巡場',
+    sub:((map&&map.name)||id) + '（無怪・' + (o.story?'演劇情':'不演劇情') + '）',
+    town:id, node, flags,
   });
 }
 

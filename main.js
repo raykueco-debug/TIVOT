@@ -1402,7 +1402,26 @@ bindBtn('flightBtn', ()=>startChapter(prog.FLIGHT_TEST));
      這一顆是「現在正在測哪一張圖」的工作狀態 —— 不要再把測試用的落點塞進 CHAPTERS。 */
 bindBtn('scriptTestBtn', ()=>startChapter(prog.SCRIPT_TEST));
 /* 巡場（ver -1396）：同一個落點、沒有怪、劇情不抓人 —— 說明在 `prog.tourSpec`。 */
-bindBtn('tourBtn', ()=>startChapter(prog.tourSpec()));
+/* ══⚠⚠ 巡場（ver -1396；-1410 Ray：「巡場加入選擇探索地圖名單，選擇以後選
+   是否播放劇情」）══ 兩步：選圖 → 選要不要演劇情。
+   ⚠⚠ **名單是算出來的**（`town.explorableMaps()`，鐵律 7）—— 這裡一個圖名都不寫，
+     日後加一張圖自己會多一列。
+   ⚠ 「演不演」交給 `prog.tourSpec`：它拿 `town.storyFlagsOf(圖)` 去**加或扣**
+     那一整組旗（說明在那一支上面）。 */
+bindBtn('tourBtn', ()=>{
+  const maps=town.explorableMaps();
+  pickSheet('巡　場　·　選圖', maps.map(m=>({ name:m.name, sub:m.nodes+' 格　'+m.id })),
+    (i, close)=>{
+      const m=maps[i];
+      close(()=>pickSheet('巡　場　·　'+m.name,
+        [{ name:'不演劇情', sub:'這張圖的段落全部當成演過了 —— 走到哪都不會被抓走' },
+         { name:'演　劇　情', sub:'把這張圖的劇情旗扣掉，從還沒演過的狀態開始' }],
+        (j, close2)=>{
+          startChapter(prog.tourSpec(m, { story:j===1, storyFlags:town.storyFlagsOf(m.id) }));
+          close2();
+        }));
+    });
+});
 /* 主線劇情（管理人模式限定）：從 mainScript 的 MAIN_ENTRY 開始跑 scene 鏈。
    ⚠ 不換頁 —— 劇情舞台是蓋在首頁上的一層（#storyStage z-8300），離開就回首頁。
      換頁的話存讀檔要跨頁還原，複雜度沒必要。
@@ -1533,24 +1552,42 @@ bindBtn('storyStartBtn', startStoryFresh);
    ⚠ 章節**內容是資料**（`script/progress.js` 的 `CHAPTERS`）—— 這裡只負責演，
      加一章不必動這一段（鐵律 1）。
    ⚠ 入口寫成代號（`story`／`town`）不是函式：資料層不該認識啟動層。 */
-bindBtn('chapterBtn', ()=>{
+/* ══⚠⚠ 挑一樣東西的面板 —— **章節與巡場共用這一支**（ver -1410，鐵律 8）══
+   以前只有章節有這張面板；巡場要選圖、又要選演不演劇情，等於同一張面板要開三種。
+   另寫一份必然走鐘（外框、淡入、關閉鈕、音效各一套）——**收成一支**。
+   ⚠ `rows` 是 `{name, sub}`，`onPick(i, next)` 的 `next(fn)` ＝「**這一張收乾淨了**
+     再做下一件事」：面板是延後 200ms 才移除的，而外層的守門看的是
+     `getElementById` —— 不等它，第二張面板會被自己的守門擋掉（開不出來）。 */
+function pickSheet(title, rows, onPick){
   if(document.getElementById('chapterSheet')) return;
   const ov=document.createElement('div'); ov.id='chapterSheet';
-  ov.innerHTML='<div class="gm-panel"><div class="gm-title">章　節</div>'
-    + prog.CHAPTERS.map((c,i)=>'<button class="ch-row" type="button" data-i="'+i+'">'
-        + '<b>'+c.name+'</b><i>'+(c.sub||'')+'</i></button>').join('')
+  ov.innerHTML='<div class="gm-panel"><div class="gm-title">'+title+'</div>'
+    + rows.map((r,i)=>'<button class="ch-row" type="button" data-i="'+i+'">'
+        + '<b>'+r.name+'</b><i>'+(r.sub||'')+'</i></button>').join('')
     + '<div class="gm-acts"><button class="gm-btn gm-close" type="button">關　閉</button></div></div>';
   document.body.appendChild(ov);
   ov.addEventListener('click', e=>e.stopPropagation());
-  const close=()=>{ ov.classList.remove('on');
-    setTimeout(()=>{ if(ov.parentNode) ov.parentNode.removeChild(ov); }, 200); };
-  ov.querySelector('.gm-close').addEventListener('click', close);
+  const close=(after)=>{ ov.classList.remove('on');
+    setTimeout(()=>{ if(ov.parentNode) ov.parentNode.removeChild(ov); if(after) after(); }, 200); };
+  ov.querySelector('.gm-close').addEventListener('click', ()=>close());
   ov.querySelectorAll('.ch-row').forEach(b=>b.addEventListener('click', ()=>{
     try{ SFX.unlock(); SFX.menuClick(); }catch(_){}
-    startChapter(prog.CHAPTERS[+b.dataset.i]); close();
+    onPick(+b.dataset.i, close);
   }));
   requestAnimationFrame(()=>ov.classList.add('on'));
+}
+
+/* ══ 章節（ver -429，Ray 指定）══════════════════════════════════════════
+   管理人限定的跳關工具：每一章都先 `newRun()`（＝從頭開始的唯一那一支，§6.9），
+   再把「這一章開始時本來就該有的東西」放回去，然後由這裡把入口打開。
+   ⚠ 章節**內容是資料**（`script/progress.js` 的 `CHAPTERS`）—— 這裡只負責演，
+     加一章不必動這一段（鐵律 1）。
+   ⚠ 入口寫成代號（`story`／`town`）不是函式：資料層不該認識啟動層。 */
+bindBtn('chapterBtn', ()=>{
+  pickSheet('章　節', prog.CHAPTERS.map(c=>({ name:c.name, sub:c.sub })),
+    (i, close)=>{ startChapter(prog.CHAPTERS[i]); close(); });
 });
+
 function startChapter(c){
   if(!c) return;
   prog.newRun();                                   // ⚠ 唯一的「從頭開始」（§6.9）
