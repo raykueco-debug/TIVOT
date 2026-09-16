@@ -5239,19 +5239,7 @@ export const TOWNS = {
            兩邊註解互指）—— 這一段演完才走得掉。
          ⚠ `rest:true` 照舊（它是休息處）：那一段演完之後這一格就是安全點。 */
       courtyard: { bg:'Belisar_SunkenCourt', name:'貝利薩爾遺址　下沉中庭', noWild:true,
-        rest:true, exits:{ down:'lamphall' },
-        acts:[ { flag:'ep_bel_court', need:'ep_bel_altar',
-                 goto:'@eastport:square', sides:{ RENNA:'L' }, lines:[
-          nou('cringe','中庭都淹滿水了……'),
-          ren('lookaway','……'),
-          ren('meltdown','……'),
-          ren('lookawaytalk','任務……完成了，撤離吧。'),
-          nou('surprise','欸？可是蕾娜小姐的髮飾……'),
-          ren('lookawaytalk','不重要。連我自己都不記得從什麼時候開始戴的。'),
-          ren('meltdown','……'),
-          Object.assign(ren('talkwork','走吧。'), { flags:['ep_belisar_done'] }),
-          sor('confuse','……'),
-        ] } ] },
+        rest:true, exits:{ down:'lamphall' }, },
       rooffall:  { bg:'Belisar_RoofFall', name:'貝利薩爾遺址　崩頂坡', noWild:true, exits:{ right:'muralwalk' } },
       muralwalk: { bg:'Belisar_MuralGallery', name:'貝利薩爾遺址　壁畫長廊', noTime:true, exits:{ left:'rooffall', right:'stairwell', up:'forge' } },
       stairwell: { bg:'Belisar_SpiralWell', name:'貝利薩爾遺址　旋梯井', noTime:true, noWild:true, exits:{ up:'mirrorpool', left:'muralwalk', down:'incense' } },
@@ -5337,6 +5325,29 @@ export const TOWNS = {
              音效名查表查不到就**靜靜不播**（只印一行 console），畫面上沒有任何錯誤訊息。
              這台裝了 node 之後 lint 才跑得動，第一次跑就抓到它。 */
           Object.assign(ren('ask','打擾囉。'), { se:'se_Kerberos_open' }),
+        ] },
+          /* ══⚠⚠⚠ **撤離**（ver -1385 由 `courtyard` 搬過來，Ray：「把 goto 與那一段
+             搬到 entrance」）══════════════════════════════════════════════════
+             為什麼搬：這一段第一句就是「中庭都淹滿水了……」，而**真的會淹水的是
+             這一格**（`bgWhen` 的 `Belisar_GreatCourt_flood`，ver -1384）——
+             原本它掛在 `courtyard`（下沉中庭，`Belisar_SunkenCourt`），台詞與畫面
+             對不上。而且這一格是**出口**：撤離本來就該演在要走出去的那一格。
+             ⚠ 台詞一個字都沒改，只是換一格演。
+             ⚠ `need:'ep_bel_altar'` ＝祭壇那一段演完（它的 `goto` 現在就指這裡），
+               所以玩家被推回來的那一次抵達就演這一段。
+             ⚠ 收尾 `goto:'@eastport:square'` ＝回東泊；`ep_belisar_done` 掛在
+               倒數第二拍（出航的 `hold` 讀它）。 */
+          { flag:'ep_bel_court', need:'ep_bel_altar',
+            goto:'@eastport:square', sides:{ RENNA:'L' }, lines:[
+          nou('cringe','中庭都淹滿水了……'),
+          ren('lookaway','……'),
+          ren('meltdown','……'),
+          ren('lookawaytalk','任務……完成了，撤離吧。'),
+          nou('surprise','欸？可是蕾娜小姐的髮飾……'),
+          ren('lookawaytalk','不重要。連我自己都不記得從什麼時候開始戴的。'),
+          ren('meltdown','……'),
+          Object.assign(ren('talkwork','走吧。'), { flags:['ep_belisar_done'] }),
+          sor('confuse','……'),
         ] } ] },
       /* ══⚠⚠⚠ 大廳祭壇的那一場戲（ver -1353，Ray 交稿）══════════════════════
          ⚠⚠ **髮飾脫落那一拍插 `renna_hairpin_lost`** ＝ 從此蕾娜好感封頂 T3
@@ -5348,7 +5359,9 @@ export const TOWNS = {
          ⚠ 收尾**強制移轉到下沉中庭**（稿：「中庭場景」）。 */
       altar:     { bg:'Belisar_OldAltar', name:'貝利薩爾遺址　古代祭壇', noTime:true,
         noWild:true, exits:{ up:'floodway' },
-        acts:[ { flag:'ep_bel_altar', need:'ep_bel_enter', goto:'courtyard',
+        /* ⚠ ver -1385：`goto` 由 `courtyard`（下沉中庭）改成 **`entrance`（古城中庭）**
+           —— 撤離那一段演在**出口**、也是真的淹水的那一格（`GreatCourt_flood`）。 */
+        acts:[ { flag:'ep_bel_altar', need:'ep_bel_enter', goto:'entrance',
                  sides:{ RENNA:'L' }, lines:[
           ren('curious','竟然這麼快就找到了。'),
           nou('cringe','好像……已經在半啟動的狀態了。'),
