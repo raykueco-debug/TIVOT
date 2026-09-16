@@ -5546,7 +5546,12 @@ export const TOWNS = {
          那一頁有自己的音樂。 */
     bgmWhen: [
       { need:'bl_night_throne', until:'bl_sky_hunt', bgm:'crisis' },
-      { need:'ep_bel_altar',    until:'bl_night_throne', bgm:'gothic' },
+      /* ⚠⚠ ver -1424（Ray：「進入古城在遇到龍之前都先播古城自己的 bgm」）：
+         門由 `ep_bel_altar`（祭壇首戰）改成 **`bl_chase1`（那一夜第一次撞見牠）**。
+         首戰那一支是**白天那一趟**插的 —— 拿它當門的話，晚上一走進古城就直接是
+         gothic，而 Ray 要的是「**遇到龍之前**」都放古城自己的 `numina`。
+         ⚠ 第一次追擊戰**本身**照樣是 gothic：戰鬥卡自己寫了 `bgm:'bgm_gothic'`。 */
+      { need:'bl_chase1',       until:'bl_night_throne', bgm:'gothic' },
     ],
     /* ══⚠⚠⚠ **初入探索的三段提示**（ver -1397，Ray 交稿）══════════════════════
        「初入探索超過 3 格還沒踩到祭壇，索菈娜會說『這裡太安靜了』；超過 6 格諾薇兒
