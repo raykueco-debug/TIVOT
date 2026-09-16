@@ -34,6 +34,25 @@ POS = {
     'gunstore':(0,6),'oldtown':(2,6), 'square':(5,6), 'uptown':(8,6), 'tavern':(10,6),
     'guild':(2,8),   'grocery':(8,8),
   },
+  # ── 貝利薩爾遺址（ver -1396）：38 格・41 邊・4 環 ────────────────────
+  #   ⚠ 這一張**排不進標準的直角格**（見 BEND）：欄列之間刻意留空，
+  #     版面只保證「方向的正負號」對（left 的鄰居欄號比較小），不保證剛好差 1。
+  'belisar': {
+    'throne':(1,0),
+    'crown':(0,1), 'antecham':(1,1), 'offering':(2,1),
+    'dragstair':(1,2), 'courtyard':(3,2),
+    'starroom':(0,3), 'guardhall':(1,3), 'greathall':(2,3), 'lamphall':(3,3), 'ossuary':(4,3),
+    'mirrorpool':(1,4), 'stairwell':(4,4),
+    'drywell':(4,5), 'forge':(5,5),
+    'rooffall':(3,6), 'muralwalk':(4,6), 'incense':(5,6),
+    'pillars':(2,7), 'dragonrace':(3,7), 'draincliff':(4,7), 'trihall':(6,7), 'wardtomb':(8,7),
+    'bellroom':(3,8), 'culvert':(6,8), 'waterjail':(7,8), 'bonerack':(8,8),
+    'mirrorway':(8,9),
+    'cages':(5,10), 'oldtomb':(6,10), 'capstan':(7,10), 'candlewalk':(8,10),
+    'stelae':(6,11), 'stephall':(7,11), 'floodway':(8,11),
+    'foyer':(7,12), 'altar':(8,12),
+    'entrance':(7,13),
+  },
   # ── 北方泊地（ver -915）──────────────────────────────────────────
   'northport': {
     'cemetery':(5,1),
@@ -144,6 +163,25 @@ def load(town):
     js = src + "\nprint(JSON.stringify(TOWNS[%s]));\n" % json.dumps(town)
     return _jsrun.dump(js, what='地圖資料')
 
+# ══⚠⚠⚠ **彎線的例外清單**（ver -1396）══════════════════════════════════════
+#   有些地圖排不進直角格子：一條邊的兩端方向對、但**環繞一圈的方向和不是零**，
+#   於是無論怎麼擺，總有幾條邊的相對位置與它宣告的方向對不上。
+#   那幾條就列在這裡，畫成**灰色虛線**（＝「這條是繞過去的，不要照它讀方向」）。
+#
+#   ⚠⚠⚠ **這是例外清單，不是關掉驗證** —— 沒列進來的邊照舊硬驗、對不上就不出圖。
+#     （鐵律 13 的同一條：安全的那一側是預設。漏列的下場是「報錯」不是「靜靜畫歪」。）
+#   ⚠ 列進來之前要先確認它**不是 bug**：`script_lint.py` 驗的「兩端相反」與
+#     「一直按同一個方向會不會繞回來」都要先過。過不了就是資料錯，不是版面問題。
+BEND = {
+  # 貝利薩爾遺址（ver -1396 實測）：4 個環裡有 3 個的方向和不是零。
+  # 兩端相反 41/41 通過、38 格 × 4 向都走得出去 ⇒ 玩起來沒問題，只是畫不直。
+  'belisar': {('mirrorpool','stairwell'), ('muralwalk','stairwell'),
+              ('bonerack','mirrorway')},
+}
+def bent(town, a, b):
+    s = BEND.get(town) or set()
+    return (a,b) in s or (b,a) in s
+
 OPP = {'up':'down','down':'up','left':'right','right':'left'}
 def main():
     town = sys.argv[1] if len(sys.argv)>1 else 'shinier_ruins'
@@ -153,7 +191,7 @@ def main():
     if miss: print('POS 少了這幾格：', miss); sys.exit(1)
 
     # ── 邊（去重）＋ 方向驗證 ────────────────────────────────────────
-    edges, err = set(), []
+    edges, err, bends = set(), [], set()
     for nid, n in N.items():
         for d, to in (n.get('exits') or {}).items():
             if d == 'back':                      # 由引擎現算成來時反向，畫線就好
@@ -165,6 +203,8 @@ def main():
             if to not in N: continue
             edges.add(tuple(sorted((nid,to))))
             # 方向＝相對位置：left 的鄰居要畫在左邊，up 的要畫在上面
+            if bent(town, nid, to):          # 明寫的彎線：不驗方向，畫成虛線
+                bends.add(tuple(sorted((nid,to)))); continue
             (c1,r1),(c2,r2) = pos[nid], pos[to]
             ok = {'left': c2<c1, 'right': c2>c1, 'up': r2<r1, 'down': r2>r1}[d]
             if not ok: err.append('%s.%s→%s：資料說在%s，版面卻不是' % (nid,d,to,d))
@@ -184,14 +224,23 @@ def main():
     def at(k):
         if k in pos: return pos[k]
         return outs[k][0], outs[k][1]
+    def seg(x1,y1,x2,y2,col,w,dash):
+        if not dash: d.line([x1,y1,x2,y2],fill=col,width=w); return
+        n=max(1,int(((x2-x1)**2+(y2-y1)**2)**.5//18))    # 虛線：18px 一段
+        for i in range(n):
+            if i%2: continue
+            t1,t2=i/n,(i+1)/n
+            d.line([x1+(x2-x1)*t1, y1+(y2-y1)*t1, x1+(x2-x1)*t2, y1+(y2-y1)*t2], fill=col, width=w)
     for a,b in sorted(edges):
         (ac,ar),(bc,br) = at(a), at(b)
         x1,y1,x2,y2 = cx(ac),cy(ar),cx(bc),cy(br)
-        if ac==bc or ar==br: d.line([x1,y1,x2,y2],fill=(20,20,20),width=5)
+        dash = tuple(sorted((a,b))) in bends
+        col,w = ((150,150,150),4) if dash else ((20,20,20),5)
+        if ac==bc or ar==br: seg(x1,y1,x2,y2,col,w,dash)
         else:                                       # 轉角：垂直→水平→垂直
             my=(y1+y2)//2
-            for seg in ([x1,y1,x1,my],[x1,my,x2,my],[x2,my,x2,y2]):
-                d.line(seg,fill=(20,20,20),width=5)
+            for s4 in ([x1,y1,x1,my],[x1,my,x2,my],[x2,my,x2,y2]):
+                seg(s4[0],s4[1],s4[2],s4[3],col,w,dash)
     # 抉擇點（三向以上）標橘色，同 Ray 的佈局圖
     deg={}
     for a,b in edges: deg[a]=deg.get(a,0)+1; deg[b]=deg.get(b,0)+1
