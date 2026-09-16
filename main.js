@@ -1394,6 +1394,13 @@ function buildStatRows(){
    ⚠⚠ 它與章節跳關一樣**會 `newRun()`** —— 那是既有 dev 梯子的語意，
      而這顆鈕本來就只有 `body.testmode` 看得到（§6.9）。 */
 bindBtn('flightBtn', ()=>startChapter(prog.FLIGHT_TEST));
+/* ══⚠⚠ **腳本測試**（ver -1381，Ray：「在首頁先放一個腳本測試鈕，現在先設在東珀，
+   以後每個探索地圖要測試就設在那」）══ 落點是 `script/progress.js` 的 `SCRIPT_TEST`
+   （鐵律 1：那是資料，要測別張圖只改那一筆），執行走**同一支** `startChapter`
+   （鐵律 8，同試飛與章節）。
+   ⚠ 與「章節」的分野寫在 `SCRIPT_TEST` 的說明上：那張表是遊戲的結構，
+     這一顆是「現在正在測哪一張圖」的工作狀態 —— 不要再把測試用的落點塞進 CHAPTERS。 */
+bindBtn('scriptTestBtn', ()=>startChapter(prog.SCRIPT_TEST));
 /* 主線劇情（管理人模式限定）：從 mainScript 的 MAIN_ENTRY 開始跑 scene 鏈。
    ⚠ 不換頁 —— 劇情舞台是蓋在首頁上的一層（#storyStage z-8300），離開就回首頁。
      換頁的話存讀檔要跨頁還原，複雜度沒必要。

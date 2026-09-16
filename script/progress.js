@@ -1002,37 +1002,45 @@ export const CHAPTERS = [
        幹嘛從餐廳走回去？」）—— 諭令那一幕就演在那裡（正式流程是閘門
        `sv_s8_to_home` 把人從餐廳三秒黑搬回家，章節工具直接落在終點）。 */
     enter:'town', town:'shinier', node:'sorahome' },
-  /* ══ Stage 10（ver -1378，Ray：「把位置開到進東泊　我跑一次看有什麼漏的」）══
-     **東方泊地・抵達那一刻** —— 廣場那一段（`ep_arrive`：蕾娜說要去大學查檔案）
-     還沒演，演完就開放第一天的自由活動。
+];
 
-     ⚠⚠⚠ **`belisar_noland_talk` 一定要給**：它是 `ep_arrive` 的 `need`
-       （飛行頁那一段「貝利薩爾降不下去 → 蕾娜指路東泊」插的旗，
-        `flight/index.html` 的 `BELISAR_NOLAND_FLAG`）。不給的話人進得去、
-       **抵達那一段整個不演**，而且畫面上不會有任何錯誤訊息。
-     ⚠⚠⚠ **`ep_*` 一支都不給** —— 那正是這一章要測的東西：
-       `ep_arrive`（抵達）／`ep_evening`（20:00 催回旅店）／`ep_day2`（翌日）／
-       `ep_renna_night`（夜裡蕾娜）／`ep_renna_met`（16~18 點大學巧遇）／
-       約會那四條線（`ep_date_*`／`ep_end_*`）／`ep_guild_sor`（公會那一場）／
-       `ep_range_done`（打靶）／`ep_nou_home`／`ep_anya_home`（18:00 自己回去）。
-     ⚠⚠ **`eastport_seen`／`mapcard_eastport`／`seen_eastport_*`／
-       `inn_seen_eastport_inn` 也不給**：它們是「**踏進過這張圖**」的記帳
-       （visitFlag／圖名卡／走過了沒／旅店初見）—— 給了就等於他已經逛過一輪，
-       圖名卡不出、旅店的棺材那一幕不演。**第一次抵達要從零開始。**
-     ⚠ `inn_tip_*`（敲門／坐坐／睡覺那三則一次性說明）**要給**：那是他在帝都的
-       旅店早就學過的，再教一次是錯的（`innNoGuide` 是逐節點的，不是全域）。
-     ⚠ `sv_s9_order`／`sv_s9_leave` 要給 ＝ 諭令演完、已經離村出航（索菈娜入隊
-       目前就由 `sv_s9_leave` 代表）。`ruin_a_found` ＝瓦努努已開啟（同 stage8）。
-     ⚠ `stage:8` **不是 10**：章節的編號是**選單上的排序**，不是 `gameStage()`。
-       東泊這一段線上跑的就是 stage 8（Ray 那份存檔實測 `tivot_stage_v1` ＝ 8），
-       而 `FEATURE_FROM`／`PLACE_STAGE_FROM` 那幾道門都對著 8 —— 寫 10 會讓
-       「S8 之後才開」的那幾件事狀態不同（鐵律 9：不要讓假的鑰匙參與遊戲邏輯）。
-     ⚠ `clockHour:9` ＝上午九點抵達；抵達那一拍自己有 `clockToNext:11`
-       （Ray 的「入口：固定時間為最近的 AM 11:00」），所以進去就會跳到當天 11:00。
-     ⚠ `node` **不寫** ＝走城上的 `entry:'square'`（`ep_arrive` 就掛在那一格）。 */
-  { id:'stage10', name:'Stage 10', sub:'東方泊地・抵達（廣場）→ 第一天自由活動 → 翌日',
-    stage:8, clockHour:9, named:true,
-    flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open',
+/* ══⚠⚠⚠ **腳本測試鈕的落點**（ver -1381，Ray：「在首頁先放一個腳本測試鈕，
+   現在先設在東珀，以後每個探索地圖要測試就設在那」）══════════════════════
+   首頁那顆「腳本測試」按下去就跳到**這裡設定的地方**。要測別張圖就**只改這一筆**
+   —— 這是它與「章節」那張表的分野：
+
+     `CHAPTERS`   ＝ 真的章節清單（S0~S9），是**遊戲的結構**，不會為了測試而動。
+     `SCRIPT_TEST` ＝ **現在正在測哪一張探索地圖**，是**工作狀態**，隨時重指。
+
+   ⚠⚠ ver -1378 曾經把東泊做成 `CHAPTERS` 的「Stage 10」——**那是錯的**：
+     東泊不是第十章（它線上跑的是 stage 8），而且下次要測別張圖時，那張表就會
+     長出一排根本不是章節的東西（鐵律 7：一張表一個意思）。
+   ⚠⚠ **形狀就是一筆 CHAPTERS**，執行走**同一支** `startChapter`（鐵律 8，同
+     `FLIGHT_TEST`）—— 補給、名字、旗、stage、時鐘那一整套不必再寫一遍。
+   ⚠ 它與章節跳關一樣是**破壞性**的（`startChapter` 開頭就 `newRun()`），
+     而且只有 `body.testmode` 看得到那顆鈕（§6.9 的白名單：**新鈕預設安全**）。
+
+   ── 現在設在：**東方泊地・抵達那一刻**（`ep_arrive` 還沒演） ──
+
+   ⚠⚠⚠ **`belisar_noland_talk` 一定要給**：它是 `ep_arrive` 的 `need`
+     （飛行頁「貝利薩爾降不下去 → 蕾娜指路東泊」插的那一支，
+      `flight/index.html` 的 `BELISAR_NOLAND_FLAG`）。不給的話人進得去、
+     **抵達那一段整個不演**，而且畫面上不會有任何錯誤訊息。
+   ⚠⚠ **`ep_*` 一支都不給**（那正是要測的）；**`eastport_seen`／`mapcard_eastport`／
+     `seen_eastport_*`／`inn_seen_eastport_inn` 也不給** —— 那些是「踏進過這張圖」的
+     記帳，給了等於已經逛過一輪：圖名卡不出、旅店初見不演。
+   ⚠ `inn_tip_*` 要給：那三則一次性說明在帝都早就學過了。
+   ⚠ `stage:8` —— 東泊這一段線上跑的就是 stage 8，而 `FEATURE_FROM`／
+     `PLACE_STAGE_FROM` 那幾道門都對著它（鐵律 9：不要讓假的鑰匙參與遊戲邏輯）。
+   ⚠ `clockHour:9`；抵達那一拍自己有 `clockToNext:11`（Ray 的「入口固定 AM 11:00」）。
+   ⚠ `node` 不寫 ＝走城上的 `entry:'square'`（`ep_arrive` 就掛在那一格）。
+
+   **要改測別張圖**：換 `town`（＋需要的話 `node`／`clockHour`／`stage`），
+   並把 `flags` 調成「那一段**之前**」的狀態 —— 要測的那幾支旗**不要給**。 */
+export const SCRIPT_TEST = {
+  id:'scripttest', name:'腳本測試', sub:'東方泊地・抵達（廣場）→ 第一天自由活動 → 翌日',
+  stage:8, clockHour:9, named:true,
+  flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open',
            'set_sail','got_ship','dock_day2','flight_centipede_met',
            'np_port_arrive','np_clear_church','np_claws_done','safehouse_northport',
            'np_burial','np_burial_done','np_night','np_night_done','np_day3',
@@ -1052,8 +1060,7 @@ export const CHAPTERS = [
            'inn_tip_knock','inn_tip_sit','inn_tip_sleep',
            /* ⚠⚠⚠ 這一支就是 ep_arrive 的鑰匙，漏了整段抵達不演（見上面的說明） */
            'belisar_noland_talk'],
-    enter:'town', town:'eastport' },
-];
+  enter:'town', town:'eastport' };
 
 /* ══⚠⚠⚠ **試飛的預設進度**（ver -1359，Ray：「試飛默認為 s8 瓦努努開啟後的
    自由活動期間」）══════════════════════════════════════════════════════════
