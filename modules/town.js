@@ -2535,6 +2535,24 @@ function sailHeld(){
    早訪的玩家根本還沒有那條劇情線）。
    ⚠ 為什麼不寫成「插一支旗解鎖」：解鎖旗要有人插，而 stage4 之前那一段根本
      沒有事件可以插它（鐵律 9：答不出誰插的旗就不要加）。章節本來就是既有的量。 */
+/* ══⚠⚠⚠ **店舖裡演完一段之後，要再問一次「這一格現在該演什麼」**（ver -1368，
+     Ray：「索拉娜的武器店打靶劇情未觸發」）══════════════════════════════════
+   東泊武器店那一段的稿是「**打靶挑戰後**：索：也讓我試試嘛！」，程式上掛在
+   `acts`（`withWho:'SORANA'` ＋ `need:'ep_range_done'`）—— 而 `acts` 是**抵達時**
+   才演的。打完靶人還站在店裡，收尾只做了「清場 → 還原導覽 → `shopEnter()`」，
+   **從來沒有再問過一次** ⇒ 旗插了、那一段卻要走出去再走回來才看得到。
+   ⚠⚠ 這與 ver -599（「一段 `acts` 演完就立刻接下一段」）是**同一條規矩漏掉的第二個
+     入口**：那一版把「抵達要演什麼」包成可重入的 `runArrival`，但只有 `acts` 自己的
+     收尾會再叫它 —— **店舖那兩段（打靶／交談）沒有接上**。
+   ⚠ 收成這一支，兩個呼叫端共用（鐵律 8）：日後店舖再多一種會插旗的互動，
+     照樣呼叫它就好，不要各自判一次。
+   ⚠ **只有真的有段落到期才轉場**：沒有就照舊回店裡（`shopEnter`）——
+     不然每次跟店主講完話都會跑一遍抵達流程（旅店招呼會重播，同 `resume()` 的理由）。 */
+let rerunArrival=null;
+function backToShop(n){
+  if(rerunArrival && actDue(n)){ rerunArrival(true); return; }
+  shopEnter();
+}
 function sailBlocked(sail){
   if(!sail) return false;
   if(sail.blockFrom!=null && prog.getStage() < (sail.blockFrom|0)) return false;
@@ -2750,6 +2768,11 @@ export function enter(id){
   /* ⚠⚠ 圖名卡擋在**抵達演出**之前（ver -879，Ray：「點掉之後才會開始對話或
      其他動作」）：卡還在畫面上時什麼都不演，點掉才跑這一段（見 gateArrival）。 */
   gateArrival(()=>runArrival(false));
+  /* ⚠⚠ **把它發佈出去**（ver -1368）：店舖那一段（打靶／與店主交談）演完之後
+     要能再問一次「這一格現在該演什麼」——而 `runArrival` 是 `enter()` 的巢狀函式，
+     那邊拿不到。指過去（不是複製一份，鐵律 8）；離開這一格時由下一次 `enter` 覆寫、
+     離城由 `close()` 清掉。 */
+  rerunArrival = runArrival;
 
   function runArrival(immediate){
   /* ══⚠⚠⚠ **出怪的優先權**（ver -1063，Ray：「有對話的場景如果出怪，默認先戰鬥，
@@ -3202,7 +3225,7 @@ function openShop(){
     story.playAdhoc(n.challengeLines, ()=>{
       story.clearCast();
       busy=false; showNav(true);
-      shopEnter();                       // ⚠ 回到店裡＝把整個店舖畫面擺回來（立繪＋招呼語＋單子）
+      backToShop(n);                     // ⚠ 有新段落到期就接上（ver -1368），否則回店裡
     });
   } : null;
   sheetClose = showShop(n.shop, hasTalk ? [1] : null, ()=>{
@@ -3220,7 +3243,7 @@ function openShop(){
     story.playAdhoc(lines, ()=>{
       story.clearCast();                 // 鐵律 8：離開這一段就清場
       busy=false; showNav(true);
-      shopEnter();                       // 談完回到店裡（立繪＋招呼語＋單子一起回來）
+      backToShop(n);                     // 同上（ver -1368）：談完可能也插了旗
     });
   /* ⚠ **不帶 `dock`＝全畫面**（ver -430）：這張窗現在是「點那顆鈕才開」的，
      開了就該看得清楚。收掉之後把鈕交還給玩家（`openMenu`）—— 兩者是同一個入口的
@@ -3444,6 +3467,7 @@ export function suspend(){
   inn.close();
   story.clearCast();
   story.hideBubble();
+  rerunArrival=null;        // ⚠ 離城就放掉（ver -1368）：它指著上一座城的 enter 閉包
 }
 /* 從飛行頁回到城鎮：把介面接回來。⚠ **不重跑 `afterArrive`** —— 那一支會再叫一次
    `inn.arrive`（旅店的招呼會重播）與 `showTip`。回來只要看得到路與店就好。 */

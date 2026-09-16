@@ -69,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.15-1367';
+export const VERSION = 'ver 2026.09.15-1368';
 
 export const GAME_CONFIG = {
 
@@ -2565,16 +2565,22 @@ export const GAME_CONFIG = {
     /* ══ 蕃茄人11號（ver -858，杰羅的修船打靶）══ 同帝都配置＋兩個新旋鈕：
        `assaultOn` 放行大絕排程（3 秒一發，defense.scheduleAssault 的例外）、
        `hitPenaltySec` 被打中＝碼表 +3 秒（combat.enemyAttack）。par 30 秒。 */
-    /* ══ 東方泊地的打靶（ver -1350，Ray：「打靶卡同帝都就好，台詞改一下」）══
-       ⚠ **逐格照抄 `range_trainee`**（含 `parSec:50`／`prizeSec:30`／`prize`）——
-         「同帝都」就是同帝都，不要順手調數字。
+    /* ══ 東方泊地的打靶（ver -1350；**-1368 由 Ray 改定**：「打靶的台詞不要照帝都，
+       也不會給龍息，**獎勵是吞噬者升一級**」）══════════════════════════════════
+       ⚠⚠⚠ **`prizeSec`／`prize` 已拿掉** —— -1350 是照抄帝都（`Shotgun_Dragon`
+         「龍息」），現在這一場**不發道具**。獎勵改成**主槍的強化**：腳本那一拍寫
+         `gunStar:'albali'`（吞噬者＋1），走 `story` 的 `line.gunStar` 那一支
+         （鐵律 8，與北方泊地打靶同一條路；`timeAttack.prize` 那一欄只發道具）。
+       ⚠ 所以這張卡**只剩一條門檻**（`parSec`），形狀與北方泊地那一場一致 ——
+         「過關但沒獎品」的中間帶在這裡不存在。
+       ⚠⚠ **`parSec:50` 是留著的既有值，不是 Ray 這一版指定的** ——
+         他這次只講了獎勵與台詞。要調門檻再說一聲（同一個數字也印在店主那一句上，
+         兩邊註解互指）。
        ⚠ `record` 分開（`'ep_range'`）：那是各店各自的最佳紀錄，同北泊的作法。
-       ⚠⚠ **獎品也照抄（`Shotgun_Dragon`「龍息」）** —— 已持有就不再發
-         （`inspector.scriptSettle`），所以在帝都拿過的人來這裡只是刷紀錄。
-         要給東泊自己的獎品，換這一格就好。 */
+       ⚠ **吞噬者可以重複點亮**（`config.gunStars` 的 `repeat`），所以在北方泊地
+         拿過的人來這裡再拿一次是對的，不是漏擋。 */
     ep_range: { enemy:'dart_target', record:'ep_range', noReward:true, noEval:true,
-                timeAttack:{ wrongPenaltySec:3, se:'se_dart_fail', parSec:50,
-                             prizeSec:30, prize:'Shotgun_Dragon' } },
+                timeAttack:{ wrongPenaltySec:3, se:'se_dart_fail', parSec:50 } },
     sv_range: { enemy:'sv_dart', record:'sv_range', noReward:true, noEval:true,
                 timeAttack:{ wrongPenaltySec:3, se:'se_dart_fail', parSec:30,
                              hitPenaltySec:3, assaultOn:true } },
