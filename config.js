@@ -69,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.16-1370';
+export const VERSION = 'ver 2026.09.16-1371';
 
 export const GAME_CONFIG = {
 
@@ -1749,7 +1749,7 @@ export const GAME_CONFIG = {
            路徑照樣寫對：留一個假路徑等於給下一個人挖坑。 */
       ep_grocery:  { title:'雜貨舖', art:'resources/SI/NPC/NPC_Grocer_SI_v1.webp',
                      tabs:['buy','sell'] },
-      ep_gunstore: { title:'武器店', art:'resources/SI/NPC/NPC_Gunsmith_SI_v1.webp',
+      ep_gunstore: { title:'武器店', art:'resources/SI/NPC/NPC_Gunsmith_SI_v1.webp?v=2',
                      tabs:['buy','sell','mod'], tabName:{ buy:'買武器', sell:'賣武器', mod:'武器改裝' },
                      only:'weapon', compare:true,
                      /* 射擊挑戰（ver -1350）：與帝都／北泊同一個機制，場次與最佳紀錄
@@ -4443,6 +4443,13 @@ export const ASSET_VER = {
   'ravn_square_day':       2,
   'ravn_square_dusk':      2,
   'ravn_square_night':     2,
+  /* ver -1371：美術 -20260916 那一輪的**同名覆蓋**（`resources/_HANDOFF_ART_20260916.md`
+     §六 第 1 條指名要接）—— 東泊把街上的鐵軌拔掉了，兩張都是覆蓋上去的。
+     ⚠ 這兩格是 `noTime` 之外的一般節點，但美術**只重畫了 day 那一張**，
+       其餘時段沒動 ⇒ 只列 day（同 -905 那一批的作法：沒被覆蓋的不要列，
+       列了等於叫玩家把沒變的圖重抓一遍）。 */
+  'east_midtown_day':      2,
+  'east_square_day':       2,
 };
 export function assetVer(nameOrPath){
   const n = String(nameOrPath||'').split('/').pop().split('?')[0]

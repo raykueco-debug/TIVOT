@@ -1,4 +1,4 @@
-# HANDOFF — 截至 `ver 2026.09.16-1370`
+# HANDOFF — 截至 `ver 2026.09.16-1371`
 
 > 這一份是**唯一**的交接檔。**下一次交接請直接改這一份，不要再開新檔。**
 >
@@ -19,7 +19,7 @@
 
 ---
 
-# 最新這一輪（-1357 ~ -1370）：Ray 的回報清單、S8 那道門、約會的收尾
+# 最新這一輪（-1357 ~ -1371）：Ray 的回報清單、S8 那道門、約會的收尾
 
 > 這一輪的主軸是 Ray 丟過來的兩批回報，開頭那一句是
 > 「**這些都是以前修繕過的問題，為什麼又跑出來？**」——
@@ -43,6 +43,7 @@
 | -1367 | `script/evaluation.js` |
 | -1368 / -1369 | `modules/town.js`、`script/town.js` |
 | -1370 | `modules/town.js`、`modules/inn.js`、`.claude/launch.json` |
+| -1371 | `config.js`（`ASSET_VER`＋店主圖 `?v=2`）、`script/speakers.js`、`HANDOFF.md`、**新** `HANDOFF_localStorage.json` |
 
 ⚠ **`resources/` 一個檔都沒碰。**
 
@@ -278,8 +279,12 @@ curl -s -m 8 -o /dev/null -w "%{http_code}" http://127.0.0.1:8000/main.js   # �
 ## 六、這一台的現況（交出去的那一刻）
 
 - 工作區**乾淨**：`git status --untracked-files=all` 零筆，`master` 與 `origin/main` 同一個 commit。
-- 專案資料夾合計 **725.8 MB／1696 個檔**（含上面那兩個 gitignore 的資料夾）。
+- 專案資料夾合計 **736.4 MB／1757 個檔**（含上面那兩個 gitignore 的資料夾；
+  美術 -20260916 那一輪之後重量過）。
 - `MAP_EDITS_SRC` 仍是 `[]` —— **沒有待匯出的地圖筆畫**（同 -1306）。
+- ⚠ **美術那條線同一天也推了一份交接**（`resources/_HANDOFF_ART_20260916.md`）：
+  四條產線**全部未完成**（蕾娜髮飾 19/57、NPC 去背 3/13、貝利薩爾中庭 2/8、平原古道），
+  而且它 §七 那七條產線的坑**都是靜默失敗**，下一台機器照抄。
 
 ---
 
@@ -301,17 +306,27 @@ curl -s -m 8 -o /dev/null -w "%{http_code}" http://127.0.0.1:8000/main.js   # �
 6. **要不要把「貼圖上傳一律走 ImageBitmap(Blob)」寫進憲法**（-1306 只寫在程式註解）。
 7. **鐵路要不要重做。**
 
+> **⚠⚠ 美術那一條線另有一份交接檔**：`resources/_HANDOFF_ART_20260916.md`
+> （-1371 那一天美術自己推的；**版本號是兩條，不要互相借號**）。它 §六 點名
+> **程式端要接三件**，第 1 件 -1371 已經做掉，另外兩件在下面第 15／16 項。
+
 > **等美術交件的**：
 
-8. **東泊三位店主的立繪**（-1369 實測，`py` + PIL 數 alpha）：
-   `resources/SI/NPC/` 底下 **14 張裡有 13 張是 RGB、沒有 alpha 通道** ——
-   只有 `NPC_Grocer_SI_v1.webp` 是 RGBA（透明 60.5%）。
-   而 `script/speakers.js` 現在指的是 `NPC_Gunsmith_SI_v1`（無 alpha）／
-   `NPC_Grocer_SI_v1`（✔）／`NPC_GuildCounter_SI_v5`（無 alpha）
-   ⇒ **槍匠與公會櫃台在畫面上是兩塊白板。**
-   ⚠ **美術 session 正在處理**（-1369 當下）。交件之後程式端要做的只有一件：
-   若是**重繪**而不是純去背，`top`/`bot`/`fx` 要重量（§5）；純去背的話取景值照舊成立。
-   ⚠ 同名覆蓋記得 `?v=`／`ASSET_VER`（§5）。
+8. **東泊三位店主的立繪 —— 修好一個，還剩一個**（-1371 實測，`py` + PIL 數 alpha）：
+
+   | 線上指到的那張 | 現況 |
+   |---|---|
+   | 槍匠 `NPC_Gunsmith_SI_v1` | **✔ 已去背**（透明 71.7%，美術 -20260916 那一輪）—— 同名覆蓋，所以 -1371 幫它掛了 `?v=2` |
+   | 雜貨 `NPC_Grocer_SI_v1` | ✔ 本來就是 RGBA（透明 60.5%） |
+   | 公會櫃台 `NPC_GuildCounter_SI_v5` | ⚠⚠ **還是 RGB、沒有 alpha ⇒ 畫面上仍是一塊白板** |
+
+   ⚠ 待修清單在 `resources/_HANDOFF_ART_20260916.md` §四（`Gunsmith_v4 v5`／
+   `Grocer_v2~v5`／`GuildCounter_v1 v3 v4 v5`）。**那是美術的活**（鐵律 11）。
+   ⚠ 交件之後程式端只有一件事：若是**重繪**而不是純去背，`top`/`bot`/`fx` 要重量（§5）；
+   純去背的話取景值照舊成立。同名覆蓋一律記得 `?v=`／`ASSET_VER`。
+   ⚠⚠ **那個路徑寫在兩個地方**（`config.js` 的 `shop.shops.ep_gunstore.art` 與
+   `speakers.js` 的 `ART.gunsmith_ep.base`）—— 掛 `?v=` 要兩邊一起掛，漏一邊就是
+   「店裡是新圖、講話時是舊圖」（鐵律 7，還沒收成一支）。
 9. **`Ravn_Church`**：圖**還沒交**（`ls resources/background | grep Ravn_Church` 是空的），
    節點仍是 `bg:'Ravn_Midtown'` ＋ `bgPending:'Ravn_Church'`。
    圖到了才改 `bg`、拔 `bgPending`、**補回 `noTime:true`**。
@@ -325,6 +340,17 @@ curl -s -m 8 -o /dev/null -w "%{http_code}" http://127.0.0.1:8000/main.js   # �
     **⑤ 帝都降落判定範圍** —— 三件都還沒查。
 14. **無尾綴舊檔退役**（`East_{Firearm,Guild,Bistro,Grocerie,Hotel,Cafe,Restaurant}.webp`）：
     -1317 拔掉 `noTime` 之後四時段確認吃得到了才走 `tools/recycle.sh`。
+15. **東泊餐飲街要改成室外街景**（美術 §六 第 2 件）：`tavern` 那一格現在掛的是
+    `East_Bistro`（＝酒吧**室內**），但 -1318 起它在拓樸上是**四向樞紐**。
+    ⚠⚠ **Ray 還沒答**「酒吧要不要另開一格」（A：四條路／B：酒吧退場），
+    兩種讀法寫在 `resources/map/_eastport_spec.md` 末段 —— **等他一句話再動**。
+16. **`Plains_*` 與 `Belisar_GreatCourt*` 是新交的背景**（美術 §六 第 3 件），
+    **還沒接進 `script/town.js`**，所以現在誰都走不到。⚠ 新檔沒有快取問題
+    （`ASSET_VER` 不必動），要的是節點資料。規格在 `resources/background/_plainsroad_spec.md`。
+17. ⚠ **`resources/SI/` 底下有一批 Ray 自己放的 PNG**（美術 §八）——
+    為了換機器不掉檔，美術那一輪**先原樣 commit 進版控**了。
+    照 §5 該轉成 webp、原 PNG 收進 `_originals/`：**那是程式／美術都碰得到的收尾**，
+    但**轉檔之前要先確認沒有腳本在指那些 PNG**。
 
 ---
 

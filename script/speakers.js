@@ -826,12 +826,15 @@ export const ART = {
          每公分像素是拿它算的 —— 一個 NPC 的估身高不該把整個劇組一起縮小。
      ⚠ 三張都是全身站姿（縱向佔 96.6% / 99.0% / 98.7%），所以 `top`/`bot` 當得了身高。
      ⚠ 站**右**：玩家的同伴在左、對面的人在右（同所有城鎮 NPC）。
-     ⚠⚠⚠ **槍匠與櫃台那兩張目前是白底、還沒去背**（RGB 無 alpha；雜貨那張已經是
-       RGBA）。取景值去背後仍然成立（去背只改 alpha、不動幾何），但**畫面上會是
-       一塊白板**，要等 §5 那條路（GPT 重製成 alpha）交件才看得對。
+     ⚠⚠ **ver -1371 現況**：槍匠**已經去背了**（美術 -20260916 那一輪，
+       `NPC_Gunsmith_SI_v1` 透明 71.7%）—— 同名覆蓋，所以路徑掛了 `?v=2`（§5）。
+       ⚠⚠⚠ **公會櫃台（`NPC_GuildCounter_SI_v5`）還是白底沒 alpha**，畫面上仍然
+       是一塊白板；雜貨那張本來就是 RGBA。待修的清單在
+       `resources/_HANDOFF_ART_20260916.md` §四。
+       取景值去背後仍然成立（去背只改 alpha、不動幾何）。
        ⚠ 換圖之後若是**重繪**而不是純去背，`top`/`bot`/`fx` 要重量（§5）。 */
   gunsmith_ep:{ cm:172, eye:32, fx:0.546, top:22, bot:1506,
-           side:'R', alt:null, base:'resources/SI/NPC/NPC_Gunsmith_SI_v1.webp', expr:{} },
+           side:'R', alt:null, base:'resources/SI/NPC/NPC_Gunsmith_SI_v1.webp?v=2', expr:{} },
   grocer_ep:  { cm:163, eye:32, fx:0.442, top:11, bot:1527,
            side:'R', alt:null, base:'resources/SI/NPC/NPC_Grocer_SI_v1.webp', expr:{} },
   counter_ep: { cm:175, eye:32, fx:0.492, top:11, bot:1531,
