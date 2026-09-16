@@ -74,6 +74,9 @@ export const SPEAKERS = {
   /* 賞金獵人公會（ver -375）。⚠ 兩位都站**右**：與店主同一個邏輯 ——
      玩家的同伴在左，對面的人在右。 */
   HUNTER:   { name:'獵人',   art:'hunter'  },
+  /* 東方泊地公會的賞金獵人（ver -1375）。⚠ 顯示名與帝都那位一樣，但**是另一個人**
+     —— art 不同就不能共用一個 id（§6.5.6，同 GUNSMITH_EP／COUNTER_EP 的理由）。 */
+  HUNTER_EP:{ name:'獵人',   art:'hunter_ep' },
   /* 槍店店主（ver -377）。同樣站右。 */
   GUNSMITH: { name:'店主',   art:'gunsmith' },
   /* ══ 北方泊地的兩位店主（ver -655，Ray 交件）══════════════════════════
@@ -811,6 +814,16 @@ export const ART = {
            expr:{ shocked:{ src:'resources/SI/NPC/NPC_GuildHunter_SI_Shocked.webp', top:0, bot:1535, fx:0.453 },
                   attack: { src:'resources/SI/NPC/NPC_GuildHunter_SI_Attack.webp',  top:0, bot:1535, fx:0.546 },
                   lost:   { src:'resources/SI/NPC/NPC_GuildHunter_SI_Lost.webp',    top:6, bot:1529, fx:0.487 } } },
+  /* 東方泊地公會的賞金獵人（ver -1375，Ray 交件 `NPC_ep_SI_bounty`）。
+     ⚠ 身高是**估的**（178，沿用帝都那位獵人那一級的體格）；`top`/`bot`/`fx` 是
+       **量的**（`tools/measure_si.py`）—— 那三個是這張圖的客觀事實，不可沿用別張（§6.5）。
+     ⚠ 全身站姿（人物像素高 1532／1536），所以不必 `cm`／`standCm`／`rescale`
+       那組近景旋鈕。
+     ⚠ 沒有 `mirror`：他站右（NPC 本位），而且沒有要換邊的場合。
+     ⚠⚠ 這張是**對話立繪**；戰鬥那一張是另一張（`man_bounty_EP`，見 config 的
+       `enemy_bounty_ep`）—— 帝都那位是兩邊共用一張，這一位不是。 */
+  hunter_ep:{ cm:178, eye:32, fx:0.565, top:3, bot:1535,
+           side:'R', alt:null, base:'resources/SI/NPC/NPC_ep_SI_bounty.webp', expr:{} },
   /* 槍店店主（ver -377）。⚠ 身高是**估的**（175）；取景值是量的
      （`tools/measure_si.py`）。 */
   gunsmith:{ cm:175, eye:32, fx:0.476, top:6, bot:1531,

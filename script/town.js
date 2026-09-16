@@ -4553,9 +4553,11 @@ export const TOWNS = {
         board:'eastport', keeperWho:'COUNTER_EP',
         hours:[8,20], closed:'大門上了閂。委託要等明天早上八點。',
         /* ══⚠⚠⚠ 約會・索菈娜（ver -1346，Ray 交稿）══════════════════════════
-           ⚠ 賞金獵人「先用帝都的賞金獵人圖　敵卡也是」（Ray）—— speaker 用既有的
-             `HUNTER`、戰鬥走 `ep_guild_hunter`（同一隻敵人，但**無評價**、
-             **不是特殊戰**；理由見 config.js 那張卡的說明）。
+           ⚠⚠ ver -1375：Ray 交了東泊自己的兩張圖（對話立繪 `NPC_ep_SI_bounty`、
+             敵人圖 `man_bounty_EP`）⇒ speaker 由借來的 `HUNTER` 改成 **`HUNTER_EP`**、
+             戰鬥卡 `ep_guild_hunter` 的敵人由 `guild_hunter` 改成 **`bounty_ep`**。
+             -1346 那句「先用帝都的賞金獵人圖　敵卡也是」到此為止。
+           ⚠ 這一場照舊**無評價**、**不是特殊戰**（理由見 config.js 那張卡的說明）。
            ⚠ 櫃台用這座城自己的 `COUNTER_EP`（不是帝都那一位 —— 顯示名一樣但是
              不同的人，§6.5.6）。
            ⚠⚠ 三個人同台要分兩邊（§6.5）：索菈娜本位右、獵人與櫃台也是右 ⇒
@@ -4563,8 +4565,8 @@ export const TOWNS = {
         acts:[ { flag:'ep_guild_sor', withWho:'SORANA',
                  sides:{ SORANA:'L' }, lines:[
           sor('confuse','……這些人幹嘛老盯著我看？'),
-          { speaker:'HUNTER', text:'唷喔！舞孃小姐，是不是走錯地方啦？',
-            portrait:{ char:'HUNTER', show:true } },
+          { speaker:'HUNTER_EP', text:'唷喔！舞孃小姐，是不是走錯地方啦？',
+            portrait:{ char:'HUNTER_EP', show:true } },
           sor('tired',''),
           sor('guard',''),
           { battle:'ep_guild_hunter' },
@@ -4572,12 +4574,12 @@ export const TOWNS = {
             portrait:{ char:'COUNTER_EP', show:true } },
           sor('tease','哇超弱。'),
           sor('remind','我們的暴力神父可比你們強多囉。'),
-          { speaker:'HUNTER', text:'那麼厲害去就去討伐貝利薩爾的魔物啊！',
-            portrait:{ char:'HUNTER', show:true } },
-          { speaker:'HUNTER', text:'聖王廳的正事不幹跑來找我們打架幹什麼？' },
+          { speaker:'HUNTER_EP', text:'那麼厲害去就去討伐貝利薩爾的魔物啊！',
+            portrait:{ char:'HUNTER_EP', show:true } },
+          { speaker:'HUNTER_EP', text:'聖王廳的正事不幹跑來找我們打架幹什麼？' },
           { speaker:'COUNTER_EP', text:'是你找人家打架吧？',
             portrait:{ char:'COUNTER_EP', show:true } },
-          { speaker:'HUNTER', text:'呿。', portrait:{ char:'HUNTER', show:true } },
+          { speaker:'HUNTER_EP', text:'呿。', portrait:{ char:'HUNTER_EP', show:true } },
         ] } ] },
 
       /* ── 三、上城區（四向樞紐） ── 左＝廣場、右＝餐飲街、上＝旅店、下＝雜貨舖 */

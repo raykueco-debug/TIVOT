@@ -69,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.16-1374';
+export const VERSION = 'ver 2026.09.16-1375';
 
 export const GAME_CONFIG = {
 
@@ -2301,7 +2301,9 @@ export const GAME_CONFIG = {
          · **不寫 `special`** ＝這是約會途中的劇情戰，不是玩家自己走過去挑的特殊戰
            —— 戰敗走回檔（§6.5.2 那張表），不是「一次就送旅店」。
        ⚠ 照舊不給聖徒化／搭檔技（同帝都那一場：對手是人類，不是禍魘）。 */
-    ep_guild_hunter: { enemy:'guild_hunter', noEval:true, noSaint:true, noPartner:true },
+    /* ⚠ ver -1375：`enemy` 由借來的 `guild_hunter` 改成東泊自己的 `bounty_ep`
+       （Ray 交了 man_bounty_EP）。-1346 那句「先用帝都的」到此為止。 */
+    ep_guild_hunter: { enemy:'bounty_ep', noEval:true, noSaint:true, noPartner:true },
     /* ══⚠⚠ 貝利薩爾・祭壇的那一場（ver -1353，Ray 的稿：「進入戰鬥，雖是 boss
        但只是**略弱的中 boss 水準**」）══
        ⚠ 敵人是 `bl_dragon_chase`（古城裡的龍，拘束態立繪）—— 它的數值是 Ray 指定
@@ -3804,6 +3806,10 @@ export const ASSETS = {
      ⚠ 自檢法：把 config 裡所有 `"resources/…"` 字串抓出來逐個 `test -f` ——
        這一次全檔只有這一條是壞的。 */
   enemy_guild_hunter: "resources/SI/NPC/NPC_GuildHunter_SI_Attack.webp",
+  /* 東方泊地的賞金獵人（ver -1375 交件）。⚠ 與帝都那一隻不同：那一張是把**對話立繪**
+     借來當戰鬥圖，這一張是**專門畫的敵人圖**，所以它與 `NPC_ep_SI_bounty`（對話用）
+     是兩張不同的圖 —— 不要互相借。 */
+  enemy_bounty_ep: "resources/enemy/man_bounty_EP.webp",
   /* ══⚠⚠ 北方泊地城鎮戰的雜怪（ver -596，Ray 指定四隻隨機出）＋教堂的 Boss（祭壇獸）══
      ⚠⚠ **一定要放在 `resources/enemy/` 底下，不可以留在 `_drafts`**（ver -595，
        Ray 回報「手機端讀不到怪的圖」）：靜態空間（GitHub Pages）跑的是 Jekyll，

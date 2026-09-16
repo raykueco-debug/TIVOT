@@ -728,6 +728,53 @@ export const ENEMIES = {
       /* 金錢：**HP 的 6~8 成隨機**（卡上的寫法）。所以血越厚的怪給越多錢 ——
          這條規則寫在資料裡，程式只負責擲骰（鐵律 1）。 */
     },
+    /* ══⚠⚠ 東方泊地的賞金獵人（ver -1375，Ray 交圖：「東泊賞金獵人敵人圖 man_bounty_EP／
+       東泊賞金獵人立繪 NPC_ep_SI_bounty」）══════════════════════════════════════════
+       ver -1346 是**借帝都那一隻的圖**頂著（Ray 當時：「先用帝都的賞金獵人圖　敵卡也是」）
+       —— 圖交了，換成他自己的。
+
+       ⚠⚠ **為什麼另開一張卡而不是改 `guild_hunter` 的 `image`**：帝都那一場還在用
+         帝都那張圖。而「顯示名一樣、但 art 不同就是兩個人」是既有的規約（§6.5.6，
+         `gunsmith` / `gunsmith_np` / `gunsmith_ep` 三張 ART 就是這樣分的）——
+         對話立繪那一邊已經照它分成 `HUNTER` / `HUNTER_EP`，敵卡跟著分才對得起來。
+
+       ⚠⚠⚠ **數值整組與 `guild_hunter` 相同，改一邊要看另一邊。**
+         那不是「同一個公式抄兩份」（鐵律 7 要消滅的那種），是**兩個角色碰巧一樣強**
+         —— 他們本來就可以各自調。⚠ 但**這句話是會過期的**（憲法鐵律 7 的但書，
+         -1362 實測漏了六百版）：真的要動任何一張的數值時，
+         `grep -n "賞金獵人" script/enemies.js` 會同時列出兩張，**並排看完再改**。
+
+       差別只有三欄：`image`（他自己的圖）／`bg`（東泊公會，不是帝都公會）／註解。 */
+    bounty_ep: {
+      name:'賞金獵人',
+      story:1, counterStagger:1, boss:0,
+      Ganymede:0,
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
+      openAssault:[1,2],
+      ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
+      kind:'human',                      // 結算副標「已擊敗」（ver -432）
+      image:'enemy_bounty_ep',           // ＝ man_bounty_EP（ver -1375 交件；⚠ 與對話立繪是**兩張**）
+      /* ⚠ 立繪是**去背**的（透明 28.6%，-1375 實測）—— 沒有 `bg` 身後會是一片黑，
+         而且有 `bg` 就一定要 `fit.mode:'contain'`（cover 會把頭裁掉）。同 guild_hunter。
+         ⚠ 背景用**東泊公會**那一張：這一場打在東泊，不是帝都。
+           （城鎮插入戰交棒時 `state.battleBg` 會拿玩家站的那一格蓋過去，ver -592 ——
+            這一欄是那條路沒供圖時的底。） */
+      bg:'East_Guild',
+      fit:{ mode:'contain', pos:'center bottom' },
+      hp:200,
+      attack:10,
+      atkInterval:null,
+      assaultEvery:[2,4],
+      assault:{ count:1, gap:0 },
+      entrance:null,
+      special:[],
+      boardGrids:[9,9,9,9,9],
+      boardLoop:true,
+      delayPenalty:{ seconds:5, damage:5 },
+      wrongPenalty:{ damage:5 },
+      hitFx:{ delay:'bullet', wrong:'blunt', assault:'bullet_big' },
+      loot:[ { id:'brass_casing', n:6 } ],
+    },
     /* ══ 巨型蜈蚣（ver -423（-893 前用詞），Ray 的敵人卡）══════════════════════════════
        第一場**船艦戰**的怪。卡上的每一欄都照抄成絕對值（鐵律 1／§6.5.2）。 */
     centipi: {
