@@ -40,18 +40,18 @@ POS = {
   'belisar': {
     'throne':(1,0),
     'crown':(0,1), 'antecham':(1,1), 'offering':(2,1),
-    'dragstair':(1,2), 'courtyard':(3,2),
-    'starroom':(0,3), 'guardhall':(1,3), 'greathall':(2,3), 'lamphall':(3,3), 'ossuary':(4,3),
-    'mirrorpool':(1,4), 'stairwell':(4,4),
-    'drywell':(4,5), 'forge':(5,5),
-    'rooffall':(3,6), 'muralwalk':(4,6), 'incense':(5,6),
-    'pillars':(2,7), 'dragonrace':(3,7), 'draincliff':(4,7), 'trihall':(6,7), 'wardtomb':(8,7),
-    'bellroom':(3,8), 'culvert':(6,8), 'waterjail':(7,8), 'bonerack':(8,8),
-    'mirrorway':(8,9),
-    'cages':(5,10), 'oldtomb':(6,10), 'capstan':(7,10), 'candlewalk':(8,10),
-    'stelae':(6,11), 'stephall':(7,11), 'floodway':(8,11),
-    'foyer':(7,12), 'altar':(8,12),
-    'entrance':(7,13),
+    'dragstair':(1,2), 'guardhall':(5,2),
+    'dragonrace':(1,3), 'courtyard':(2,3), 'greathall':(4,3), 'ossuary':(5,3), 'lamphall':(6,3),
+    'mirrorpool':(2,4),
+    'stairwell':(2,5), 'pillars':(4,5), 'starroom':(5,5), 'draincliff':(6,5),
+    'incense':(2,6), 'bellroom':(5,6),
+    'drywell':(0,7), 'forge':(1,7), 'trihall':(2,7), 'wardtomb':(5,7),
+    'rooffall':(0,8), 'muralwalk':(1,8), 'culvert':(3,8), 'waterjail':(4,8), 'bonerack':(5,8),
+    'mirrorway':(5,9),
+    'cages':(2,10), 'oldtomb':(3,10), 'capstan':(4,10), 'candlewalk':(5,10),
+    'stelae':(3,11), 'stephall':(4,11), 'floodway':(5,11),
+    'foyer':(4,12), 'altar':(5,12),
+    'entrance':(4,13),
   },
   # ── 北方泊地（ver -915）──────────────────────────────────────────
   'northport': {
@@ -175,8 +175,7 @@ def load(town):
 BEND = {
   # 貝利薩爾遺址（ver -1396 實測）：4 個環裡有 3 個的方向和不是零。
   # 兩端相反 41/41 通過、38 格 × 4 向都走得出去 ⇒ 玩起來沒問題，只是畫不直。
-  'belisar': {('mirrorpool','stairwell'), ('muralwalk','stairwell'),
-              ('bonerack','mirrorway')},
+  'belisar': {('bonerack','mirrorway'), ('mirrorpool','stairwell'), ('muralwalk','stairwell')},
 }
 def bent(town, a, b):
     s = BEND.get(town) or set()

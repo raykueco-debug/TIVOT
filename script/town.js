@@ -5432,6 +5432,11 @@ export const TOWNS = {
     storyExplore: true,   // 不是城：女角不排外出行程（§6.5.4.2）
     wilderness: true,     // 野外的路沒有門可以關（19:00 全域打烊不罩）
     stepMin: 10,          // 遺蹟那一級（ver -917）
+    /* ⚠⚠⚠ **王座徘徊者被擊敗之前，這座城一隻野怪都沒有**（ver -1399，Ray 指定）。
+       `bl_night_sky` ＝空中戰打完那一拍插的旗（`DRAGON_LINES.throne` 最後一句）——
+       那才是「牠死了」。⚠ 這座城**現在還沒有 `wildSpawn`**（怪的名單還沒給），
+       所以這一行目前是**先立規矩**：名單一到就自動照這條走，不會有人忘記補。 */
+    wildFrom: 'bl_night_sky',
     /* ══ 小地圖（ver -1395，美術交件）══════════════════════════════════════
        38 格全部有點（38 顆點全部有格，實測對得上）。這張圖是紅點（王座徘徊者）的舞台
        —— ver -1390 那顆點做好的時候這張圖還沒交，所以一直看不到。
@@ -5464,13 +5469,13 @@ export const TOWNS = {
       crown:     { bg:'Belisar_CrownRoom', name:'貝利薩爾遺址　寶冠室', noTime:true, exits:{ right:'antecham' } },
       antecham:  { bg:'Belisar_Antechamber', name:'貝利薩爾遺址　謁見前廳', noTime:true, exits:{ up:'throne', left:'crown', right:'offering', down:'dragstair' } },
       offering:  { bg:'Belisar_RelicRoom', name:'貝利薩爾遺址　聖物室', noTime:true, exits:{ left:'antecham' } },
-      dragstair: { bg:'Belisar_LionStair', name:'貝利薩爾遺址　獅階', noTime:true, noWild:true, exits:{ up:'antecham', down:'guardhall' } },
-      starroom:  { bg:'Belisar_Orrery', name:'貝利薩爾遺址　星象室', noTime:true, exits:{ right:'guardhall' } },
-      guardhall: { bg:'Belisar_ArmourGallery', name:'貝利薩爾遺址　甲冑廊', noTime:true, exits:{ up:'dragstair', left:'starroom', right:'greathall', down:'mirrorpool' } },
-      greathall: { bg:'Belisar_GreatHall', name:'貝利薩爾遺址　中央大廳', noTime:true, exits:{ left:'guardhall', right:'lamphall', down:'pillars' } },
-      lamphall:  { bg:'Belisar_ChandelierHall', name:'貝利薩爾遺址　枝燈長廊', noTime:true, exits:{ up:'courtyard', left:'greathall', right:'ossuary' } },
-      ossuary:   { bg:'Belisar_Ossuary', name:'貝利薩爾遺址　納骨堂', noTime:true, exits:{ left:'lamphall' } },
-      mirrorpool:{ bg:'Belisar_StillPool', name:'貝利薩爾遺址　靜水池', noTime:true, exits:{ up:'guardhall', down:'stairwell' } },
+      dragstair: { bg:'Belisar_LionStair', name:'貝利薩爾遺址　獅階', noTime:true, noWild:true, exits:{ up:'antecham', down:'courtyard' } },
+      starroom:  { bg:'Belisar_Orrery', name:'貝利薩爾遺址　星象室', noTime:true, exits:{ left:'pillars', right:'draincliff', down:'bellroom' } },
+      guardhall: { bg:'Belisar_ArmourGallery', name:'貝利薩爾遺址　甲冑廊', noTime:true, exits:{ down:'ossuary' } },
+      greathall: { bg:'Belisar_GreatHall', name:'貝利薩爾遺址　中央大廳', noTime:true, exits:{ left:'courtyard', right:'ossuary', down:'pillars' } },
+      lamphall:  { bg:'Belisar_ChandelierHall', name:'貝利薩爾遺址　枝燈長廊', noTime:true, exits:{ left:'ossuary' } },
+      ossuary:   { bg:'Belisar_Ossuary', name:'貝利薩爾遺址　納骨堂', noTime:true, exits:{ up:'guardhall', left:'greathall', right:'lamphall' } },
+      mirrorpool:{ bg:'Belisar_StillPool', name:'貝利薩爾遺址　靜水池', noTime:true, exits:{ up:'courtyard', down:'stairwell' } },
       /* ⚠ 枝燈長廊↔下沉中庭是 **`up`／`down`**（ver -1159，Ray：「枝燈長廊往下沉中庭
          應該往上吧」）—— 與佈局圖上的相對位置相反（圖上中庭畫在長廊**下面**）。
          ⚠⚠ **所以小地圖的版面要跟著改**：`tools/map_layout.py` 的 belisar 版面
@@ -5481,15 +5486,15 @@ export const TOWNS = {
            兩邊註解互指）—— 這一段演完才走得掉。
          ⚠ `rest:true` 照舊（它是休息處）：那一段演完之後這一格就是安全點。 */
       courtyard: { bg:'Belisar_SunkenCourt', name:'貝利薩爾遺址　下沉中庭', noWild:true,
-        rest:true, exits:{ down:'lamphall' }, },
+        rest:true, exits:{ up:'dragstair', left:'dragonrace', right:'greathall', down:'mirrorpool' }, },
       rooffall:  { bg:'Belisar_RoofFall', name:'貝利薩爾遺址　崩頂坡', noWild:true, exits:{ right:'muralwalk' } },
       muralwalk: { bg:'Belisar_MuralGallery', name:'貝利薩爾遺址　壁畫長廊', noTime:true, exits:{ left:'rooffall', right:'stairwell', up:'forge' } },
       stairwell: { bg:'Belisar_SpiralWell', name:'貝利薩爾遺址　旋梯井', noTime:true, noWild:true, exits:{ up:'mirrorpool', left:'muralwalk', down:'incense' } },
-      pillars:   { bg:'Belisar_Cistern', name:'貝利薩爾遺址　千柱廳', noTime:true, exits:{ up:'greathall', right:'dragonrace', down:'waterjail' } },
-      dragonrace:{ bg:'Belisar_LionSpout', name:'貝利薩爾遺址　獅口水道', noTime:true, exits:{ left:'pillars', right:'draincliff', down:'bellroom' } },
-      draincliff:{ bg:'Belisar_DrainCliff', name:'貝利薩爾遺址　排水崖口', exits:{ left:'dragonrace' } },
+      pillars:   { bg:'Belisar_Cistern', name:'貝利薩爾遺址　千柱廳', noTime:true, exits:{ up:'greathall', right:'starroom', down:'waterjail' } },
+      dragonrace:{ bg:'Belisar_LionSpout', name:'貝利薩爾遺址　獅口水道', noTime:true, exits:{ right:'courtyard' } },
+      draincliff:{ bg:'Belisar_DrainCliff', name:'貝利薩爾遺址　排水崖口', exits:{ left:'starroom' } },
       incense:   { bg:'Belisar_ChrismRoom', name:'貝利薩爾遺址　聖油室', noTime:true, exits:{ up:'stairwell', down:'trihall' } },
-      bellroom:  { bg:'Belisar_BellRoom', name:'貝利薩爾遺址　鐘室', noTime:true, exits:{ up:'dragonrace' } },
+      bellroom:  { bg:'Belisar_BellRoom', name:'貝利薩爾遺址　鐘室', noTime:true, exits:{ up:'starroom' } },
       drywell:   { bg:'Belisar_DryWell', name:'貝利薩爾遺址　枯井底', noTime:true, noWild:true, exits:{ right:'forge' } },
       /* ⚠ 安全點（ver -1397，Ray：「旋梯井　獅階　武器工坊為安全點　不出怪」）——
          另外兩格（`stairwell`／`dragstair`）本來就寫了 `noWild`。 */
@@ -5719,3 +5724,4 @@ export const TOWNS = {
     },
   },
 };
+

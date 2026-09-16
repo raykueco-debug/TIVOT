@@ -1308,8 +1308,16 @@ function dragonActDue(n){
   return DRAGON_LINES.chase[w];             // 第 w+1 場
 }
 function wildActDue(n){
-  const W=(TOWNS[townId]||{}).wildSpawn; if(!W || !n) return null;
+  const T0=TOWNS[townId]||{};
+  const W=T0.wildSpawn; if(!W || !n) return null;
   if(prog.hasFlag(safehouseFlag())) return null;        // 安全區：遭遇戰整套不動
+  /* ══⚠⚠ **`wildFrom:'<旗>'` ＝這支旗插上去之前，這張圖一隻野怪都沒有**
+     （ver -1399，Ray：「貝利薩爾在王座徘徊者擊敗前沒有野怪」）══
+     ⚠ 它與**安全區旗**是兩件事，不要拿其中一個去湊：
+       · 安全區旗（`safehouse_<圖>`）＝**會開會關**的狀態，特殊戰還會把它拔掉再插回去
+       · `wildFrom` ＝這張圖的**資料**：在那個事件之前它根本還不是一張會出怪的圖
+     ⚠ 寫在城上（鐵律 1）；旗名由那一段劇情自己認領（鐵律 9：誰插得出來）。 */
+  if(T0.wildFrom && !prog.hasFlag(T0.wildFrom)) return null;
   /* ══⚠⚠⚠ **結算怪已取消**（ver -1024，Ray：「取消結算怪的放置，一律以踏入結算點
      為結算條件」）══ ver -895／-898 的那一套（把 `wildSpawn.endBattle` 擺在
      「這一趟沒走進來的那個出口」、那一格拒絕戰鬥就退一格）**整組撤掉**：
