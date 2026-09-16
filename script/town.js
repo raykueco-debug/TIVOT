@@ -1119,6 +1119,14 @@ export const TOWNS = {
       inn: {
         bg:'Capital_Hotel', name:'帝都　旅店', exits:{ back:'uptown' },
         inn:true,
+        /* ⚠⚠ ver -1382：睡覺鈕改成 flag 制（預設不能睡）之後**這一格一定要給旗**，
+           否則 stage 0 的結尾整個走不下去 —— 睡覺正是「推到隔天 07:00 → 船塢 → 出航」
+           的唯一出路。
+           ⚠ 給的是**旅店初見對白演完**那一支（`inn_seen_<城>_<格>`，由
+             `modules/town.js` 的 `innSeenFlag` 產、走進旅店那一刻插）——
+             那正好等於**現行行為**：初入演完就按得到，六點以前再由諾薇兒的
+             `innEarly` 擋回來（§6.5.5）。**這一版不改帝都的手感，只是把它寫明。** */
+        sleepFlag:'inn_seen_capital_inn',
         /* 兩顆行動鈕擺在**背景裡的家具上**（ver -394，Ray：「獨自坐坐按鈕移到茶桌上，
            回房睡覺移到櫃台桌面上方」）。座標是**背景圖上的比例**，同櫃台鈕
            （由 `modules/town.js` 的 `bgPoint` 依 `object-fit:cover` 的裁切換算）。
@@ -2606,7 +2614,15 @@ export const TOWNS = {
         /* ⚠ 旅店功能**村戰打完才開**（ver -827，Ray：「第六章起點已經是戰鬥探索，
            索拉娜家的旅店在當時是關掉的」）：那一夜（S6）＋圍城期間一律關；`safehouse_shinier`
            （＝清完野外、村子安全）立了才開放休息。 */
+        /* ⚠⚠ ver -1382：睡覺鈕改 flag 制之後補上這一支（Ray：「順手替帝都／夏爾村
+           補上開鎖的旗」）。⚠ **這是行為改變，不是原樣搬過來**：舊版是
+           `noSleep` 不帶 `until` ＝**永遠擋著**（理由寫在上面：魔獸戰那一段還沒
+           實裝，睡下去會把它跳過）。現在改成 `safehouse_shinier` —— 那支旗的意思
+           正是「村戰打完、村子安全了」，擋著的理由到那一刻就消失了。
+           ⚠ 它與同一行的 `innFrom` 是**兩件事**：那個管「大廳出不出現」，
+             這個管「睡不睡得著」。 */
         inn:true, innFrom:'safehouse_shinier', innNoGuide:true,
+        sleepFlag:'safehouse_shinier',
         innSpots:{ sit:{ x:0.30, y:0.62 }, sleep:{ x:0.60, y:0.55 } },
         noSleep:'……還是先別睡，總覺得今晚不會太平靜。',
         /* ══⚠⚠ 敲門（ver -1096，Ray 的 Stage9 稿）══════════════════════════
@@ -4561,8 +4577,11 @@ export const TOWNS = {
          ⚠⚠ **那一頭不給陸路入口是對的**（Ray 指定）：`belisar.entrance` 的「下」
            已經是**出航**（`sail:{}`），而 §6.5.4「出航先擺，『下』不能被『回去』
            擠掉」。走路過去、搭船離開 —— 不會卡死（§6.5.2 的防卡死看得到出路）。 */
+      /* ⚠⚠ ver -1382：`up` 由 `@belisar` 改成 **`@plainsroad`** —— 古道那 20 張圖
+         交齊了（Ray：「古道圖齊了　接上」），中間那一段路現在是**真的一張圖**，
+         不再是碼頭直接接到古城。走法：碼頭 → 古道・道口 →（里程碑／草海）→ 溪谷口 → 古城。 */
       dock:       { bg:'East_Dock',       name:'東方泊地　倉庫碼頭',
-        exits:{ back:'oldtown', up:'@belisar' },
+        exits:{ back:'oldtown', up:'@plainsroad' },
         acts:[ { flag:'ep_dock_anya', withWho:'ANYA', lines:[
           any('curious','這就是……尤拉西亞湖？'),
           any('amazed','好壯觀……'),
@@ -4672,7 +4691,7 @@ export const TOWNS = {
            `out` ＝不在房裡、`asleep` ＝在裡面睡著了，兩件事不要混）。
          ⚠ `answerBy` **不寫**：這座城沒有「都由同一個人應門」那個安排。
          ⚠ `innNoGuide` ＝不跑一次性說明（玩家在帝都的旅店早就學過了）。
-         ⚠⚠ **睡覺鈕擋著**（`noSleepUntil`，Ray：「播完以上任一段，睡覺鈕才跳出」）：
+         ⚠⚠ **睡覺鈕擋著**（`sleepFlag`，Ray：「播完以上任一段，睡覺鈕才跳出」）：
            那一段＝晚上碰到蕾娜（旗 `ep_renna_night`，下一批接）。
            ⚠ 鈕**要在**，擋的方式是一句話（§6.5.5 -659：藏起來玩家只會以為壞了）。
          ⚠ `innSpots` 對著 `East_Hotel` 這張圖擺：坐坐＝左下那組藤椅、睡覺＝櫃台
@@ -4683,7 +4702,7 @@ export const TOWNS = {
         exits:{ back:'uptown' },
         inn:true, innNoGuide:true,
         innSpots:{ sit:{ x:0.26, y:0.62 }, sleep:{ x:0.42, y:0.34 } },
-        noSleepUntil:'ep_renna_night',
+        sleepFlag:'ep_renna_night',   // ver -1382：`noSleepUntil` 改名 `sleepFlag`（語意相同）
         noSleep:'……蕾娜還沒回來。',
         /* ══⚠⚠⚠ 門的狀態（由上往下取第一個 `need` 成立的，同 `acts`）══════════
            ⚠⚠ **「初入旅店四人都在、走出去才會排外出」是引擎既有的行為**
@@ -4783,7 +4802,7 @@ export const TOWNS = {
              ⚠ `skipIf` 不是 `actDue` 的欄位 —— 用 `until:'ep_renna_met'`
                （那支旗立了就不再演，＝下午已經在大學碰過了）。
              ⚠ 這一段插 `ep_renna_night` ＝ **睡覺鈕從此跳得出來**
-               （節點的 `noSleepUntil` 讀它），而且四扇門的蕾娜跟著亮回來
+               （節點的 `sleepFlag` 讀它），而且四扇門的蕾娜跟著亮回來
                （`innDoors` 第一列）—— 一支旗三個用途，但它只回答一件事：
                「她今晚回來了沒」（鐵律 9）。
              ⚠⚠ **「獨自坐坐等到她」那一版還沒接**（稿上另有三句）：坐坐坐完走的是
@@ -4801,12 +4820,77 @@ export const TOWNS = {
              （大學那一格的 `goto:'inn'`），所以這一段就是那一次抵達要演的 ——
              再掛 `hourOfDay:20` 等於推回來卻什麼都不演，玩家會以為壞了。
              ⚠ 上面那一段（沒巧遇的那一版）照舊等 20:00：那一條是「回旅店時碰到她」。
-             ⚠⚠ 連帶：`noSleepUntil:'ep_renna_night'` 會在**下午**就解鎖睡覺 ——
+             ⚠⚠ 連帶：`sleepFlag:'ep_renna_night'` 會在**下午**就解鎖睡覺 ——
                這是 Ray 這一版指定的節奏（推回旅店＝今天的事辦完了）。 */
           { flag:'ep_renna_night', need:'ep_renna_met', sides:{ RENNA:'L' }, lines:[
             ren('curious','啊，回來了。'),
             ren('front','有找到一些資料了，明天就出發，早點休息吧。') ] },
         ] },
+    },
+  },
+
+  /* ══════════════════════════════════════════════════════════════════════
+     平原古道（ver -1382；Ray：「古道圖齊了　接上」）
+     ──────────────────────────────────────────────────────────────────────
+     權威規格：`resources/background/_plainsroad_spec.md`（美術交件，含拓樸／向數／
+     色系／逐格畫面要求）；佈局圖 `resources/map/_layout_plainsroad.png`。
+     **這裡照抄，一格都不改**（憲法 ver -907：拓樸是 Ray 的設計，不是我的）。
+
+     **6 格・5 邊・環 0・2 抉擇點・2 末端・連結型**：
+
+              @ 貝利薩爾遺址
+                    |
+              [溪谷口 ravine]      ← 跨圖出口・rest
+                    |
+        [古井驛 well] — [草海 sea]        ← 抉擇點 ②
+                    |
+      [烽燧臺 beacon] — [里程碑 stone]    ← 抉擇點 ①
+                    |
+              [道口 entry]         ← 跨圖出口・入口・rest
+                    |
+              @ 東方泊地
+
+     ⚠⚠ **溪谷口不畫新圖**（Ray 指定）：直接用現有的 `Belisar_Exterior_*`（四時段都在）。
+       它空出來正是因為貝利薩爾的入口 ver -1377 換成了大中庭（`Belisar_GreatCourt_day`）
+       —— 那一步與這一張圖是同一件事的兩半。
+     ⚠ **地名不帶方位**（規格書）：東泊在**東北**、古城在**西南**，寫「東口／西口」
+       會與地理相反。
+     ⚠ `mist` **不寫**＝有霧、走過才亮（規格書：沒人帶路 —— 夏爾森林的 `mist:0`
+       是索菈娜帶路的特例）。
+     ⚠ `wilderness:true`＝野外沒有門可以關（19:00 全域打烊不罩，同貝利薩爾）；
+       `storyExplore:true`＝不是城，女角不排外出行程（§6.5.4.2）。
+     ⚠⚠ 兩端 `rest:true`（休息處，§6.5.4.4 的第四條結算路徑）＝**連結型地圖的頭尾**，
+       而且**入口那一格不可以有戰鬥**（§6.5.2：它是遭遇戰的復活點）。
+     ⚠⚠⚠ **`wildSpawn` 先不給** —— Ray 還沒給這一帶的敵人卡（同卡耶爾山谷那一筆）。
+       沒有它就不出怪，**不會壞**；卡來了再補，`pickEndNode()` 那一套自己會把
+       結算怪擺到「你沒走進來的那個出口」（§6.5.4.3 的 ver -895/-898）。 */
+  plainsroad: {
+    name: '平原古道',
+    entry: 'entry',
+    wilderness: true,
+    storyExplore: true,
+    nodes: {
+      /* 道口：古道自東泊的丘陵下來，遠處右緣看得到海灣。**只有兩條路**。 */
+      entry:  { bg:'Plains_Entry',  name:'平原古道　道口',   rest:true, noWild:true,
+        exits:{ up:'stone',  down:'@eastport:dock' } },
+      /* 里程碑：風化的古代里程碑立在岔口 —— 抉擇點①（正前一條、左邊一條＋身後）。 */
+      stone:  { bg:'Plains_Stone',  name:'平原古道　里程碑',
+        exits:{ up:'sea',    left:'beacon', down:'entry' } },
+      /* 烽燧臺：塌了半邊，站在白灰岩脊上。**盡頭**（只有 `back`，引擎現算成來時的反向）。 */
+      beacon: { bg:'Plains_Beacon', name:'平原古道　烽燧臺',
+        exits:{ back:'stone' } },
+      /* 草海：及腰的草幾乎吞掉路面 —— 抉擇點②（正前一條、右邊一條＋身後）。 */
+      sea:    { bg:'Plains_Sea',    name:'平原古道　草海',
+        exits:{ up:'ravine', right:'well', down:'stone' } },
+      /* 古井驛：廢棄驛站與一口古井。**盡頭**。 */
+      well:   { bg:'Plains_Well',   name:'平原古道　古井驛',
+        exits:{ back:'sea' } },
+      /* 溪谷口：⚠ 借用貝利薩爾原本那張外觀圖（Ray 指定，四時段都在）。
+         ⚠ **那一頭不給陸路回程是對的**（同 -1358 的理由）：`belisar.entrance` 的
+           「下」已經是**出航**（`sail:{}`），而 §6.5.4「出航先擺，『下』不能被
+           『回去』擠掉」。走路過去、搭船離開 —— 不會卡死。 */
+      ravine: { bg:'Belisar_Exterior', name:'平原古道　溪谷口', rest:true,
+        exits:{ up:'@belisar', down:'sea' } },
     },
   },
 

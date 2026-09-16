@@ -3245,7 +3245,7 @@ function afterArrive2(n, metDone){
                                     走的是旅店自己的分支二 —— 那一支演完要**把傍晚的旗標
                                     一起記掉**，否則走出去再回來又會被抓一次。 */
                                  eveningFlag: ((TOWNS[townId]||{}).evening||{}).flag });
-  /* 注：`noSleep` / `noSleepUntil` / `innWake` / `innAsleep` / `innRoster` /
+  /* 注：`noSleep` / `sleepFlag`（ver -1382 由 `noSleepUntil` 改名＋翻面） / `innWake` / `innAsleep` / `innRoster` /
      `innNoGuide` 都是**節點上的欄位**，inn.js 直接讀 `node`（見那一支）。 */
   else inn.close();
   /* ⚠⚠ **教學先、選單後**（ver -430，Ray：「武器店的裝備教學先彈出，裝備完才跳出

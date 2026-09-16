@@ -626,10 +626,23 @@ function sleepHere(){
      ⚠ 排在「太早」之前：那一條看時刻，這一條是「這一段劇情還沒到能睡的時候」，
        與幾點無關。
      ⚠ **旁白**（名字欄空）：那是主角自己的念頭，不是誰在講話。 */
-  /* ⚠ `noSleepUntil`（ver -664）：那支旗立起來就可以睡了 —— 北方泊地是
-     「那一夜演完」（`np_night_done`）之後才睡得著。沒寫＝一直擋。 */
-  if(node && node.noSleep && !(node.noSleepUntil && prog.hasFlag(node.noSleepUntil))){
-    if(host && host.say) host.say(node.noSleep, '');
+  /* ══⚠⚠⚠ **睡覺鈕走 flag 制：預設不能睡，劇情插了旗才開**（ver -1382，Ray 定案：
+     「從現在起睡覺鈕走 flag 制　劇情中有 flag 才開」）══
+     這是**把預設翻過來**：-664 那一版是「預設可以睡，要擋才寫 `noSleep`＋`noSleepUntil`」。
+     現在是 `sleepFlag:'<旗>'` ＝**那支旗立起來才睡得著**，沒寫就是一直擋。
+
+     ⚠⚠⚠ **翻面之後「漏寫」的下場是睡不著，不是隨便睡** —— 與鐵律 13 那條
+       「安全的那一側是預設」方向相反，那是 Ray 這一版刻意要的：睡覺會**跳掉一整段
+       時間**，而劇情要靠它推進；讓它預設開著，等於任何一張新地圖都能被一鍵睡過去。
+       ⚠ 代價是**新開一間旅店時一定要記得給 `sleepFlag`**，否則玩家按下去只會看到
+         一句話。那個失敗模式**看得見、而且有台詞**（不是靜靜壞掉），所以可以接受。
+     ⚠ 鈕**照舊要在**（§6.5.5「還不能做不要靠藏起鈕擋」）：按下去由一句話擋回來。
+     ⚠ 排在「太早」（`innEarly`）之前：那一條看時刻，這一條是劇情狀態，與幾點無關。
+     ⚠ 沒寫 `noSleep` 就用通用那一句（旁白，名字欄空＝主角自己的念頭）。
+     ⚠ 舊欄位 `noSleepUntil` **已經沒有人讀了** —— 資料那邊一併改成 `sleepFlag`，
+       不要留兩個名字（鐵律 7：同一件事兩個開關必然有一個忘了改）。 */
+  if(!(node && node.sleepFlag && prog.hasFlag(node.sleepFlag))){
+    if(host && host.say) host.say((node && node.noSleep) || '現在不是睡覺的時候。', '');
     return;
   }
   if(clock.hourF() < eveningHour){
