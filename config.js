@@ -69,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.16-1402';
+export const VERSION = 'ver 2026.09.16-1404';
 
 export const GAME_CONFIG = {
 
@@ -4412,6 +4412,16 @@ export function asset(key){ return (key && ASSETS[key] != null) ? ASSETS[key] : 
    ⚠ 加在**組 URL 的那一支**（`story.bgUrl`，鐵律 7 的唯一計算點）—— 不要在
      呼叫端各自拼一次。 */
 export const ASSET_VER = {
+  /* ver -1403：貝利薩爾拓樸施工單（`resources/map/_belisar_worklist.md` §六）——
+     這幾張**已交件、同名覆蓋**，而那份施工單（ver -1378 開的）一直沒有人套用，
+     所以版號也一直沒跳 ⇒ 玩家的快取裡可能還是覆蓋前那一版（§5 的老坑：
+     檔名沒變、內容變了，瀏覽器照樣拿舊的，而且畫面上沒有任何錯誤訊息）。 */
+  'belisar_oldaltar':        2,
+  'belisar_ossuary':         2,
+  'belisar_rooffall_dawn':   2,
+  'belisar_rooffall_day':    2,
+  'belisar_rooffall_dusk':   2,
+  'belisar_rooffall_night':  2,
   /* ver -905：美術補跑 Gemini 去顆粒重繪、同名覆蓋（Ray：「顆粒多到刺眼」）。
      ⚠ 只有主圖被覆蓋，dawn/dusk/night 本來就是 Gemini 產物、沒有動 —— 所以不列。 */
   'ruins_shinier_crossway_day': 2,
