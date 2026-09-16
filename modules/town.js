@@ -1142,12 +1142,23 @@ function dragonFlee(){
    · 打滿四場 ⇒ 牠被逼進**王座廳**（死胡同），紅點亮起；走到那一格才是決戰
    ⚠ 台詞由 `DRAGON_LINES` 那張表給（資料歸資料，鐵律 1）—— 這裡只決定「第幾場」。
    ⚠ 旗**演完才記**（`enter()` 那一套統一收尾）＝打輸回頭再走一次還遇得到（§6.5.2）。 */
+/* ⚠⚠ **牠現在在哪一格 —— 只有這一支回答**（鐵律 7）：小地圖的紅點與
+   「走到那一格就開打」問的是同一件事。前四戰回 null ＝ 沒有紅點（瞎找）。 */
+/* ⚠⚠⚠ **紅點畫得出來，但貝利薩爾現在沒有小地圖**（ver -1390 實測）：
+     `TOWNS.belisar` 沒有 `map`／`spots`，`resources/map/` 只有 `_belisar_spec.md`
+     與兩張縮圖提案 —— 圖還沒交。點地圖鈕現在回的是「這一帶還沒有留下地圖。」
+   ⇒ 機制到位，**畫面上要等 `map_belisar.webp` ＋ `_spots_belisar.json` 交件**。
+     那兩件一到就自動亮（這一支不必再改）。 */
+function dragonAtNode(){
+  if(!dragonChaseOn()) return null;
+  return (dragonWins() >= DRAGON_CHASE_MAX) ? 'throne' : null;
+}
 function dragonActDue(n){
   if(!dragonChaseOn() || !n) return null;
   const w = dragonWins();
   if(w >= DRAGON_CHASE_MAX){
-    /* 逼進死胡同：只有王座廳那一格開打。⚠ 那一格是**資料指定**的，不是算出來的。 */
-    if(nodeId !== 'throne') return null;
+    /* 逼進死胡同：只有牠站的那一格開打（＝小地圖紅點那一格，同一支在答）。 */
+    if(nodeId !== dragonAtNode()) return null;
     return DRAGON_LINES.throne;
   }
   if(dragonSteps > 0) return null;          // 還沒走到 —— 走到空格什麼都不發生（Ray）
@@ -1821,13 +1832,28 @@ function renderMap(){
              `.tm-spot` 是 0×0 的錨點，掛在它身上的東西只能用 px 給大小 ——
              實測手機寬（375）時那團 88px 的霧會蓋掉四分之一張地圖。
              直接掛在 `.tm-frame` 底下，大小才寫得成 **% of 地圖**，跟著圖縮放。 */
-        if(fog && !seenNode(id)) return '<i class="tm-fog" style="'+pos+'"></i>';
+        /* ══⚠⚠⚠ **王座徘徊者的紅點**（ver -1390，Ray：「要有一個發光的紅點」）══
+           只有**第四戰之後**才亮（Ray：「四戰前就是瞎找」）—— 那一刻牠已經被逼進
+           王座廳那個死胡同。
+           ⚠ 牠在哪一格問 `dragonAtNode()` 那一支（鐵律 7：紅點與「走到那一格就開打」
+             問的是同一個答案，不要在這裡自己再判一次戰數）。
+           ⚠⚠ **它要蓋在霧上面**：貝利薩爾沒寫 `mist:0` ＝有霧，而王座廳玩家多半
+             還沒走到過 —— 判在霧後面的話那顆紅點**永遠不會亮**，而這顆點的整個用途
+             就是告訴玩家「牠在那裡」。所以霧那一格照樣畫，紅點疊上去。
+           ⚠ 疊上去的那一顆**不給地名**（`nm` 空字串）：霧照樣蓋著那一格的速寫與
+             草書名 —— 玩家看得到「牠在這個方向」，但那一帶長什麼樣還是要自己走。 */
+        const dragon = (id===dragonAtNode());
+        if(fog && !seenNode(id)){
+          return '<i class="tm-fog" style="'+pos+'"></i>'
+               + (dragon ? '<i class="tm-spot dragon" style="'+pos+'"><b></b><span></span></i>' : '');
+        }
         /* ══ 休息處（ver -913，Ray：「探索到以後用筆圈起來，並在中文後方加入
            『（休息處）』」）══ 圈是 CSS 畫的（`.tm-spot.rest`），字在這裡加。
            ⚠ 這一行**只有小地圖在用**：導覽字格那邊是另一支（`nameOfNode`）。 */
         const rest=!!(T.nodes[id]||{}).rest;
         const nm=String((T.nodes[id]||{}).name||'').split('　').pop() + (rest?'（休息處）':'');
         return '<i class="tm-spot'+(id===nodeId?' here':'')+(rest?' rest':'')
+             + (dragon?' dragon':'')
              + '" style="'+pos+'">'
              + '<b></b><span>'+nm+'</span></i>';
       }).join('')
