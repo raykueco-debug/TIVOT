@@ -4554,7 +4554,16 @@ export const TOWNS = {
            （與閘門的 `goto` 同一支 `forceGo`，鐵律 8）。
            ⚠ 落地之後接的是旅店那一格的第二段 `ep_renna_night`（`need:'ep_renna_met'`）
              —— 它的第一句正是那一句。 */
+        /* ⚠⚠ `clockToday:18` ＝這一段演完，時間就是**當天 18:00**（ver -1394，Ray：
+             「巧遇蕾娜後回到旅店的時間是 18:00」）。它也是旅店那兩顆行動鈕的那一條線
+             （`eveningHour` 預設 18）—— 不推的話 16~18 點巧遇完回到旅店，
+             睡覺鈕會被「天還沒黑」擋住。
+           ⚠⚠ `dateSpent:true` ＝**今天的約會額度用掉了**（Ray：「巧遇蕾娜後不能再約
+             其他女孩出去／但是女角的頭像還是會在／改成敲房門」）——
+             頭像照舊都在，敲下去由「今天約過了」那一句擋回來（見 modules/town.js
+             的 `dateSpentToday`：它與「今天約了誰」是兩份狀態）。 */
         acts:[ { flag:'ep_renna_met', need:'ep_arrive', noDate:true, hourOfDay:[16,18],
+                 clockToday:18, dateSpent:true,
                  goto:'inn', sides:{ RENNA:'L' }, lines:[
           ren('curious','唉呀，真巧呢。'),
           ren('smile','怎麼一個人晃到這裡？'),

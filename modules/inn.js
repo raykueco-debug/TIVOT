@@ -652,7 +652,16 @@ function sleepHere(){
       if(host.lock) host.lock(true);
       host.play(lines, ()=>{ story.clearCast(); busy=false;
         if(host.lock) host.lock(false); refresh(); });
+      return;
     }
+    /* ⚠⚠⚠ **沒有 `innEarly` 也要有回應**（ver -1394，Ray：「現在的睡覺鈕是點了無效的」）══
+       這一條原本是「有台詞才演，沒有就 return」—— 於是**沒寫 `innEarly` 的旅店
+       （東方泊地就是）在傍晚之前按睡覺是完全沒有反應的**，而那是 §6.5.5 明令
+       不可以的失敗模式（「還不能做不要靠藏起鈕擋」的同一條：按下去要知道為什麼）。
+       ⚠⚠ 而且它**很難查**：`eveningHour` 的預設是 18（`let eveningHour = 18`），
+         城上沒寫 `evening` 就沿用它 —— 資料上看不出這一格有一條 18:00 的線。
+       ⚠ 旁白（名字欄空）＝主角自己的念頭，同 `noSleep` 那一句的作法。 */
+    if(host && host.say) host.say('……天還沒黑，先做點別的吧。', '');
     return;
   }
   /* ⚠ 蕾娜還沒回來就先去睡 → 記「錯過」（ver -405）：她 20:00 才進門，人睡著了

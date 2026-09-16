@@ -20,7 +20,10 @@ import { showShop, showBounty, showExchange, showKitchen } from './loot.js';   /
 import * as gear from './gear.js';               // 戰前強制整備（ver -838，onLeave 的 gear 掛鉤）
 import { SPEAKERS, faceStyle } from '../script/speakers.js';
 import { SFX } from '../audio.js';
-import { state } from '../state.js';   // 只讀：`battleSession`（擁有者是 combat，見鐵律 3.1）
+import { state, setPickedPartner } from '../state.js';
+/* ⚠ `state` 只讀：`battleSession`／`overkillClean`（擁有者是 combat，見鐵律 3.1）。
+   `setPickedPartner` 是 §3.6 指定的**唯一寫入管道** —— 出城要把約會前那一位放回去，
+   見 `restoreTownPartner`。 */
 /* 追逐的台詞（資料歸資料，鐵律 1；判定在 `dragonActDue`）。 */
 
 const $ = id => document.getElementById(id);
@@ -266,8 +269,37 @@ function storyExploreOn(){
    ⇒ 判準就是既有的 `storyExploreOn()`（旗 `free_explore_<圖>`，§6.5.3）：
      **約得到人的時候才套這條規則**。北泊／夏爾村的劇情探索期一律不受影響。
    ⚠ 也擋掉城鎮戰（`siegeOn()`）：那是「只有走與打」的模式，探索的每一層都不啟動。 */
+/* ══⚠⚠⚠ **什麼算「城鎮」：有旅店的地方**（ver -1394，Ray：「城鎮的判定是
+   有旅店（含索拉娜的家）的地方算城鎮」）══
+   ⚠ **算出來、不列名單**（鐵律 7）：問既有的 `innNodeOf()`（它就是掃 `inn:true`
+     的那一支）—— 夏爾村的索菈娜家正是 `sorahome:{inn:true}`，所以這一條天生就對。
+   ⚠ 荒野／遺蹟／古道沒有旅店 ⇒ 不是城鎮：約會那一套與搭檔快照都不套用。 */
+function isTownMap(t){ return !!innNodeOf(t||townId); }
+/* ══⚠⚠⚠ **出了城，搭檔要回到進城前那一位**（ver -1394，Ray：「從城鎮回到飛行地圖
+   要保留進城前最後一個登記的伙伴，否則從沒有約會的狀態出來的話伙伴槽會是空的」）══
+   成因：`dateParty()` 回 `{who:null}` 時 `combat.startGame` 會
+   `setPickedPartner(null)`（＝無夥伴，`state` 的唯一真相）—— 而那是**寫下去的**，
+   出城之後沒有人把它放回來。⚠ 更糟的是 `isOpen()` 只看 `townId`，而 `suspend()`
+   （出航）**不清 townId** ⇒ 人都到天上了，這條城鎮規則還在生效。
+   作法（鐵律 9：一個狀態一個擁有事件）：
+     · 誰存：進一張**城鎮**地圖的 `open()`（進城前的那一位）
+     · 誰放回去：離開那張地圖 —— `suspend()`（出航）／`close()`（回主選單）／
+       `open()` 換到別張圖。三個呼叫點，**一支實作**。
+   ⚠ `undefined` ＝沒有快照（不是 `null` —— `null` 是合法值「無夥伴」）。 */
+let partnerBeforeTown;
+function restoreTownPartner(){
+  if(partnerBeforeTown===undefined) return;
+  setPickedPartner(partnerBeforeTown);
+  partnerBeforeTown=undefined;
+}
+/* ══⚠⚠⚠ **自由活動期間：誰陪你約會，誰就是這一場的搭檔**（見下方原註）══ */
 export function dateParty(){
-  if(!isOpen() || storyExploreOn() || siegeOn()) return null;   // 這條規則現在不適用
+  /* ⚠⚠ 三道門，缺一不可：
+       · `isOpen()`＋`townLive` ＝**人真的還在城裡**（`suspend()` 不清 `townId`，
+         所以光問 `isOpen()` 會讓這條規則跟著玩家飛到天上，ver -1394 的實測）
+       · `isTownMap()` ＝這張圖是城鎮（有旅店）—— 荒野不套用
+       · 劇情探索／城鎮戰期間不套用（見下面兩條的原因） */
+  if(!isOpen() || !townLive || !isTownMap() || storyExploreOn() || siegeOn()) return null;
   return { who: datingWho() };                                  // null ＝沒約人＝無夥伴
 }
 /* ver -858：`lines` 可以是**函式**（呼叫時現算）—— 獵人的每日兌換那種
@@ -365,12 +397,25 @@ function rollOuting(){
    ⚠ `datedSet` 是**這一天**的狀態，鑰匙是 `dayNo()` —— 日期一變自己歸零，
      所以「出城再進城」還是同一天就約不了第二次（同 `outKey` 的作法）。
    ⚠ 不進存檔：睡覺一定跨到隔天，醒來本來就該重來。 */
+/* `townLive` ＝城鎮的介面現在真的活著。⚠ `townId` **不是**這個答案：`suspend()`
+   （出航）刻意不清它（ver -437：飛行畫面下半還要看得到城鎮的移動選項）。 */
+let townLive=false;
 let dateDay=null, datedSet=new Set();
+let dateSpentDay=null;       // 今天的約會額度被某一段劇情用掉了（ver -1394，見 dateSpentToday）
 /* 這一天已經演過的碰面戲（ver -1102）：鑰匙是 `誰#m`（碰到）／`誰#d`（約會派生）
    —— 同一天走回同一格不重演，好感也就不會被刷（記帳走 `applyAff`，演完才記）。
    ⚠ 與 `datedSet` 共用**同一支換日檢查**（鐵律 7：「換日了沒」只有一個答案）。 */
 let metSet=new Set();
-function dateDayCheck(){ const d=clock.dayNo(); if(dateDay!==d){ dateDay=d; datedSet=new Set(); metSet=new Set(); } }
+function dateDayCheck(){ const d=clock.dayNo();
+  if(dateDay!==d){ dateDay=d; datedSet=new Set(); metSet=new Set(); dateSpentDay=null; } }
+/* ══⚠⚠ **今天的約會額度用掉了，但沒有約任何人**（ver -1394，見 act 的 `dateSpent`）══
+   誰插：`dateSpent:true` 的那一段演完（現在只有大學巧遇蕾娜那一段）。
+   誰拔：換日（上面那一支）／離開地圖（`suspend`）—— 與 `datedSet` **同兩個時機**，
+     那是 -1383 就定好的規矩，跟著它走才不會長出第二套換日規則（鐵律 7）。
+   ⚠ 它**不進 `datedSet`**：進去的話其他人的頭像會跟著消失，而 Ray 要的是
+     「頭像還在，敲門才拒絕」。 */
+function dateSpentToday(){ dateDayCheck(); return dateSpentDay===clock.dayNo(); }
+function markDateSpent(){ dateDayCheck(); dateSpentDay=clock.dayNo(); }
 function datedToday(who){ dateDayCheck(); return datedSet.has(who); }
 function markDated(who){ dateDayCheck(); datedSet.add(who); }
 function metToday(k){ dateDayCheck(); return metSet.has(k); }
@@ -3109,6 +3154,25 @@ export function enter(id){
                同行，殘留事件帶起來的不受影響。
              ⚠ 排在 `flag` 之後 —— 那一段自己的旗要先記，不然下一次抵達又演一次。 */
           if(act.endDate) endDate();
+          /* ══⚠⚠ `act.clockToday:<時>` ＝這一段演完，時鐘推到**今天**的那個時刻
+             （ver -1394，Ray：「巧遇蕾娜後回到旅店的時間是 18:00」）══
+             ⚠ 走 `clock.advanceToHour`（**只往前、已經過了就不動** —— 時間是資源，
+               倒轉就是漏洞）。與傍晚那一格的 `ev.hour` 是**同一支**（鐵律 8）。
+             ⚠⚠ **與閘門的 `clockTo` 不是同一件事**，所以不共用名字：
+               閘門的 `clockTo` 是 `advanceToNextHour`（**推到下一個**這個時刻，
+               過了就跳隔天）；這裡是「今天的那個時刻」。名字不同才不會有人抄錯。
+             ⚠ 排在 `goto` **之前**：那一段路是被跳過去的，時間要先到位 ——
+               新的一格抵達時（進場對白、門燈、外出行程）問到的才是對的時刻。 */
+          if(act.clockToday!=null) clock.advanceToHour(act.clockToday);
+          /* ══⚠⚠⚠ `act.dateSpent:true` ＝這一段**用掉了今天的約會額度**
+             （ver -1394，Ray：「巧遇蕾娜後不能再約其他女孩出去／但是女角的頭像
+               還是會在／改成敲房門」）══
+             ⚠⚠ 它與「今天約了誰」（`datedSet`）是**兩件事**，所以是兩份狀態：
+               · `datedSet`  ＝今天約的是**那個人** ⇒ 其他人的頭像**消失**（-1383）
+               · `dateSpent` ＝額度用掉了、但**沒有約任何人** ⇒ 頭像**照舊都在**，
+                 敲下去由「今天約過了」那一句擋回來（Ray 這一版指定的正是這個差別）
+               合成一份就得在其中一邊寫例外，那正是鐵律 7 要消滅的東西。 */
+          if(act.dateSpent) markDateSpent();
           /* ══⚠⚠ `act.goto` ＝這一段演完就**強制移轉**（ver -1353，Ray 的貝利薩爾稿：
              「（厚重推門聲）→ 大廳祭壇」「中庭場景」「強制移轉回東泊」）══
              ⚠ 走既有的 `forceGo`（不花時間、不看營業時間、不記來時方向；
@@ -3410,8 +3474,11 @@ function afterArrive2(n, metDone){
                                    dateOpen: ()=> !storyExploreOn(),
                                    /* 宵禁（ver -576）：敲門一律回 `nightRest`，約不出來。 */
                                    night: isCurfew,
-                                   /* 今天已經約過她了（ver -576）：回 `dateDone`，不再出門。 */
-                                   dated: datedToday,
+                                   /* 今天已經約過她了（ver -576）：回 `dateDone`，不再出門。
+                                      ⚠⚠ ver -1394：**額度被劇情用掉了也算**（大學巧遇蕾娜）——
+                                        那一種是「今天不會再有人陪你出門」，所以**四扇門都擋**，
+                                        但頭像照舊都在（`inRoom` 不看這一支，見 `dateSpentToday`）。 */
+                                   dated: (who)=> dateSpentToday() || datedToday(who),
                                    data: n.innStage1||{},
                                    /* ⚠ 同行徽（ver -1348）要在**約會成立的那一刻**就出現，
                                       不是等玩家走一步 —— 它顯示的正是「現在帶著誰」。
@@ -3578,9 +3645,14 @@ export function open(town, node, opts){
   if(townId && townId!==(town||'capital') && (TOWNS[townId]||{}).wilderness && sessionCloser){
     try{ sessionCloser(); }catch(_){}
   }
+  /* 換圖之前先把上一張城鎮圖借走的搭檔放回去（ver -1394，見 `restoreTownPartner`）。 */
+  restoreTownPartner();
   townId = town || 'capital';
+  townLive = true;
   gateMoves={};   // 閘門的 afterMoves 計數：這一趟進城重新算（ver -953）
   const T=TOWNS[townId]; if(!T) return;
+  /* 進一張**城鎮**圖：把「進城前的那一位」存起來（約會規則等一下會覆寫它）。 */
+  if(isTownMap(townId) && partnerBeforeTown===undefined) partnerBeforeTown = state.pickedPartner;
   /* 進城就把體力回滿（ver -556，Ray 指定）：城＝安全區，走進來殘血歸零重算。
      收在**入口唯一這一支**（鐵律 8）——正常進城、被抬回旅店（carried）、讀檔
      開在城裡（save.apply → openTown）全部吃到。城內移動與戰後 resume 不經過
@@ -3680,6 +3752,8 @@ export function open(town, node, opts){
   if(checkpoint && !state.battleSession) try{ checkpoint(); }catch(_){}
 }
 export function close(){
+  townLive=false;            // 回主選單（ver -1394）
+  restoreTownPartner();      // 搭檔回到進城前那一位（見 restoreTownPartner）
   const st=story.stageEl(); if(st) st.classList.remove('town-on');
   showNav(false);
   /* 圖名卡也是覆蓋層（ver -879，同 mapClose 的理由）。⚠ ver -899 起卡住在 story
@@ -3695,7 +3769,7 @@ export function close(){
   outKey=null; outPlan=[];
   /* 約會（ver -576）：解除同行、清掉「今天約過誰」。⚠ 出城鎮走的是 `suspend()`
      不是這裡 —— 那一條只解除同行、**不清帳**（Ray：「一天內同人不能約第二次」）。 */
-  endDate(); dateDay=null; datedSet=new Set();
+  endDate(); dateDay=null; datedSet=new Set(); dateSpentDay=null;
   townId=null; nodeId=null;
   document.body.classList.remove('town-nav');
   document.querySelectorAll('.kerb-arrow').forEach(a=>a.classList.remove('avail','holding'));
@@ -3718,12 +3792,14 @@ export function innNodeOf(town){
    ⚠ 收的四樣與換節點那張檢查表同源（§6.5 的新路徑檢查表）：導覽、店舖、旅店、立繪。 */
 export function suspend(){
   clearTimeout(arriveT); arriveT=0;
+  townLive=false;            // 人上船了：約會那條規則不再套用（ver -1394）
+  restoreTownPartner();      // 搭檔回到進城前那一位（同上）
   endDate();                // 出城鎮＝約會結束（ver -576，Ray 指定）
   /* ⚠⚠ ver -1383：**離開地圖也清掉「今天約過誰」**（Ray：「就算回旅店解除約會也要
      到隔天或**離開地圖**才會回來」）。-576 當時刻意只在 `close()`（回主選單）清，
      理由是「出城再進城還是同一天就約不了第二次」—— 那條規則被這一版取代了。
      ⚠ 連帶：其他人的頭像跟著回來（`inRoom` 問的就是它）。 */
-  dateDay=null; datedSet=new Set();
+  dateDay=null; datedSet=new Set(); dateSpentDay=null;
   story.endAdhoc();
   chatterOn=false;
   showNav(false);
@@ -3737,6 +3813,7 @@ export function suspend(){
    `inn.arrive`（旅店的招呼會重播）與 `showTip`。回來只要看得到路與店就好。 */
 export function resume(){
   if(!townId) return;
+  townLive=true;             // 回到城裡（ver -1394）
   bindInput(); refreshArrows(); showNav(true);
   shopEnter();
 }
