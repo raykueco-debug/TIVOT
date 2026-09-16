@@ -1818,6 +1818,10 @@ function fireOneShot(line){
       st.__shakeT = setTimeout(stopShake, line.shakeHold);
     }
   }
+  /* `map:true` ＝這一拍把小地圖攤開（ver -1397，安雅指路那一段）。
+     ⚠ 它是**持續狀態**：攤開之後一直在，收在 `clearCast`（那一段講完了）——
+       與 `shake` 那種一次性的演出不同族，所以不進 `fxTimers`。 */
+  if(line.map) storyMap(true);
   if(line.shake){
     hap.shake();                 // 畫面震動＝手上也震（Ray 指定）
     const st=$('storyStage');
@@ -1866,7 +1870,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1396';
+const KERB_V='?v=1397';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -3674,6 +3678,19 @@ export function setBattleHandler(fn){ battleHandler = fn || null; }
      `resumeFrom` 自己退回「戰前那一首」。 */
 let townBgmFn = null;
 export function setTownBgm(fn){ townBgmFn = fn || null; }
+/* ══⚠⚠⚠ **腳本攤得開小地圖**（`map:true`，ver -1397）══ 由 main 注入
+   （`town.showMapForStory`；story 不 import town，方向不可以反過來）。
+   ⚠⚠ **只收自己開的那一次**（`mapByLine`）：玩家可能是自己按鈕把它攤開的，
+     清場時一起收掉等於幫他關掉他打開的東西（鐵律 9：誰開的誰收）。
+   ⚠ 城裡沒有地圖時 `showMapForStory` 回 false ⇒ 什麼都不記，收尾也不會去動它。 */
+let mapViewFn = null, mapByLine = false;
+export function setMapView(fn){ mapViewFn = fn || null; }
+function storyMap(on){
+  if(on){ if(mapViewFn && mapViewFn(true)) mapByLine = true; return; }
+  if(!mapByLine) return;
+  mapByLine = false;
+  try{ if(mapViewFn) mapViewFn(false); }catch(_){}
+}
 /* ══⚠⚠ **休息處：閉棺結算**（ver -913，Ray：「走進就閉棺，跳結算頁。但若之前
    沒有發生戰鬥就不會作動」）══ 腳本／段落寫 `{ settle:true }` 那一拍。
    ⚠ 它與 `line.battle` 是**同一族**（把畫面交出去、打完接回來），所以續播位置、
@@ -3858,6 +3875,7 @@ export function veilOn(){ const v=$('storyVeil'); return !!(v && v.classList.con
 
 export function clearCast(){
   stopTyping();   // ver -1127：清場＝這一段結束，框裡不可以還有字在跑（同 renderLine）
+  storyMap(false);   // 這一段攤開的小地圖跟著收（ver -1397；只收自己開的那一次）
   kitchenOpen=false;   // 閘門的鎖：清場就一定解掉（不然下一段點不動，ver -956）
   darkWho=null;   // 剪影是「還沒表明身分」的狀態，清場就結束（ver -954）
   slot={L:null,R:null}; slotExpr={L:null,R:null}; shown={};

@@ -1897,6 +1897,8 @@ story.setKitchenHandler(cb => town.openKitchenForStory(cb));
 /* 「這張圖現在該放哪一首」（ver -913）：給戰鬥卡的 `bgmAfter:'@town'` 用 ——
    曲名的真相只有 `TOWNS[].bgm` 一處（town.bgmKey），卡上不抄第二份（鐵律 7）。 */
 story.setTownBgm(()=> town.isOpen() ? town.bgmKey() : null);
+/* 腳本那一拍 `map:true` ＝攤開小地圖（ver -1397）——「怎麼攤」住在城鎮那邊。 */
+story.setMapView(on => { try{ return town.showMapForStory(on); }catch(_){ return false; } });
 story.setGateOpened(()=>combat.releaseEnemyRise());   // 降臨等門開（ver -875）
 story.setBattleHandler((battleId, resume)=>{
   storyResume = resume;

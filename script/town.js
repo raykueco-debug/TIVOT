@@ -5390,6 +5390,36 @@ export const TOWNS = {
        ⚠ 它原本**沒有 `bgm`** ＝ 進去沿用上一個畫面的曲子（同伊甸古墓）。
        ⚠ 追擊戰開始之後換 `gothic`（戰鬥卡的 `bgmAfter`），那是腳本那一批的事。 */
     bgm: 'numina',
+    /* ══⚠⚠⚠ **初入探索的三段提示**（ver -1397，Ray 交稿）══════════════════════
+       「初入探索超過 3 格還沒踩到祭壇，索菈娜會說『這裡太安靜了』；超過 6 格諾薇兒
+         說『這麼空的城，感覺好奇怪』；超過 10 格安雅跳出提示『好像……是在那個
+         方向』然後開小地圖，蕾娜在地圖上說『那就往那邊去看看吧』」
+
+       **做成閘門而不是另一套計步**（鐵律 8）：`afterMoves` 那一整套條件本來就在
+       `stageGate()` 裡 —— 這一版只是讓「沒有 `goto` 的閘門」可以原地講一段
+       （見 `modules/town.js` 的 `clockGate`）。
+       ⚠⚠ **起算點是 `ep_bel_enter`**（走進古城那一段演完）：`afterMoves` 算的是
+         「這個閘門**變成可觸發之後**又走了幾步」，所以 3／6／10 正好是 Ray 說的
+         「初入探索超過 N 格」。
+         ⚠ 計數是**這一趟進圖的記憶體變數**（`gateMoves`），離圖再回來重算 ——
+           那正合「初入」的語意。
+       ⚠⚠ **`skipIf:'ep_bel_altar'` ＝踩到祭壇就全部退休**（同 acts 的 `until`）：
+         不給終點的話，祭壇那一段演完、撤離的路上還會冒出「這裡太安靜了」。
+       ⚠ 三道各有自己的 `flag`（演過就不再演），而且**由上往下取第一個成立的** ——
+         所以一次只會講一段，10 格那一道不會與 6 格那一道疊在一起。
+       ⚠ `map:true` ＝**那一拍攤開小地圖**（演出模式，不吃點擊；見 story.js）。
+         蕾娜那一句就疊在地圖上，段落講完地圖自己收。 */
+    gates:[
+      { flag:'bel_hint1', need:'ep_bel_enter', skipIf:'ep_bel_altar', afterMoves:3,
+        sides:{ RENNA:'L' }, lines:[ sor('ready','這裡太安靜了。') ] },
+      { flag:'bel_hint2', need:'ep_bel_enter', skipIf:'ep_bel_altar', afterMoves:6,
+        sides:{ RENNA:'L' }, lines:[ nou('cringe','這麼空的城，感覺好奇怪。') ] },
+      { flag:'bel_hint3', need:'ep_bel_enter', skipIf:'ep_bel_altar', afterMoves:10,
+        sides:{ RENNA:'L' }, lines:[
+          any('point','好像……是在那個方向。'),
+          Object.assign(ren('talkwork','那就往那邊去看看吧。'), { map:true }),
+        ] },
+    ],
     /* 「來過這張圖了」（ver -1188）：三座遺蹟的順序是玩家自己挑的，
        「先去了哪一座」是分歧的條件（見 `tomb.gate` 那一段）。誰插＝進圖、誰拔＝沒有人。 */
     visitFlag: 'belisar_seen',
@@ -5455,7 +5485,9 @@ export const TOWNS = {
       incense:   { bg:'Belisar_ChrismRoom', name:'貝利薩爾遺址　聖油室', noTime:true, exits:{ up:'stairwell', down:'trihall' } },
       bellroom:  { bg:'Belisar_BellRoom', name:'貝利薩爾遺址　鐘室', noTime:true, exits:{ up:'dragonrace' } },
       drywell:   { bg:'Belisar_DryWell', name:'貝利薩爾遺址　枯井底', noTime:true, noWild:true, exits:{ right:'forge' } },
-      forge:     { bg:'Belisar_Forge', name:'貝利薩爾遺址　兵器工坊', noTime:true, exits:{ down:'muralwalk', left:'drywell', right:'trihall' } },
+      /* ⚠ 安全點（ver -1397，Ray：「旋梯井　獅階　武器工坊為安全點　不出怪」）——
+         另外兩格（`stairwell`／`dragstair`）本來就寫了 `noWild`。 */
+      forge:     { bg:'Belisar_Forge', name:'貝利薩爾遺址　兵器工坊', noTime:true, noWild:true, exits:{ down:'muralwalk', left:'drywell', right:'trihall' } },
       trihall:   { bg:'Belisar_TriArch', name:'貝利薩爾遺址　三拱廳', noTime:true, exits:{ up:'incense', left:'forge', down:'culvert' } },
       waterjail: { bg:'Belisar_WaterJail', name:'貝利薩爾遺址　水牢', noTime:true, exits:{ up:'pillars', right:'bonerack', down:'capstan' } },
       bonerack:  { bg:'Belisar_Sarcophagi', name:'貝利薩爾遺址　石棺廊', noTime:true, exits:{ left:'waterjail', up:'wardtomb', down:'mirrorway' } },
@@ -5646,12 +5678,25 @@ export const TOWNS = {
           { speaker:'NARRATION', text:'', shake:true, auto:900,
             cgBack:'resources/enemy/mon_dragon_throne_dormant.webp' },
           ren('scream','呀！'),
-          /* ⚠ 「蕾娜倒地髮飾脫落插畫」還沒有（插圖先空著）—— 那一拍先不寫 `cg`。
-             ⚠⚠ **旗掛在這一拍**：從此封頂 T3（見上面的說明）。 */
-          Object.assign(ren('shockedopen','啊……'), { flags:['renna_hairpin_lost'] }),
-          sor('battlecry','危險！'),
-          { speaker:'NARRATION', text:'', shake:true, auto:700 },
-          ren('reachcry','不要！'),
+          /* ══⚠⚠⚠ **蕾娜倒地・髮飾脫落**（ver -1397，Ray 交件 `020-rennadrop`）══
+             稿：「龍出現後蕾娜『呀！』之後，接插圖 020 由下往上平移；在插圖背景
+             蕾娜**無立繪**『啊……』；同背景索拉娜『危險！』畫面震動，龍咆音效
+             緊接崩瓦聲；回到原背景；蕾娜『不要！』開始跑劇情」。
+             ⚠⚠ **`hide` 那一行是「無立繪」的作法**：插圖裡已經有她了，台上再站一個
+               就是同一個人出現兩次（同祭壇那一拍感應演出的寫法）。
+             ⚠⚠ **旗還是掛在「啊……」那一拍**：髮飾就是在這一刻掉的（封頂 T3）。
+             ⚠ 兩個音分兩拍：`se` 一拍只有一支 —— 龍咆掛在索菈娜那一句上，
+               崩瓦聲接在它後面那個演出拍（「緊接」就是這個順序）。
+             ⚠ `cgNoTime` ＝這張插圖沒有時段差分（不寫的話每次演到都要先吃幾個 404，
+               §6.5.4 的 -433）。
+             ⚠⚠ 收圖那一拍寫 `cg:null` ＝**回到原背景**（走黑幕，那是「這張插圖
+               結束了」的語氣，§6.5 的 -628）。 */
+          Object.assign(ren(null,'啊……'),
+            { flags:['renna_hairpin_lost'], cg:'020-rennadrop', cgPan:'up', cgNoTime:true,
+              hide:['SORANA','RENNA','NOUVELLE','ANYA'] }),
+          Object.assign(sor(null,'危險！'), { shake:true, se:'se_monsterroardeep' }),
+          { speaker:'NARRATION', text:'', shake:true, se:'se_brickcrush', auto:700 },
+          Object.assign(ren('reachcry','不要！'), { cg:null }),
           /* ⚠ 表情沿用 `battlecry`（ver -1384，Ray 指定）—— 原本寫 null ＝沿用上一張。 */
           sor('battlecry','妳在想什麼啊！差一點被吞掉的就是妳不是那個髮飾了！'),
           ren('shockedopen','！！'),

@@ -1536,7 +1536,26 @@ function clockGate(){
     forceGo(g.goto);
     return true;
   }
-  if(!g.goto || (g.goto===nodeId && !g.enterAgain)) return false;   // 已經站在那裡：讓原本的流程繼續（acts 會接手）
+  /* ══⚠⚠⚠ **沒有 `goto` 的閘門 ＝ 原地講一段**（ver -1397，Ray 的古城探索提示：
+       「初入探索超過 3 格還沒踩到祭壇，索菈娜會說『這裡太安靜了』…」）══
+     閘門那一整套條件（`afterMoves`／`need`／`skipIf`／`fromStage`／`hourOfDay`…）
+     本來就在 `stageGate()` 裡，缺的只是「**不轉場**」這一種收尾 ——
+     另開一份計步的機制必然與它走鐘（鐵律 8：一個動作一個實作）。
+     ⚠ 沒有 `lines` 又沒有 `goto` ＝什麼都不做（照舊 `return false`）。
+     ⚠⚠ **收尾要自己把導覽與鎖放回來**：轉場那一條是靠 `forceGo`→`enter()` 收的，
+       這一條沒有人接 —— 漏了就是「講完話之後箭頭不見、走不動」，而且沒有錯誤訊息。
+     ⚠ 旗與時鐘上面已經處理過了（那是「這道閘門用掉了」，與講不講話是兩件事）。 */
+  if(!g.goto){
+    if(!(g.lines && g.lines.length)) return false;
+    clearTimeout(arriveT); arriveT=0;
+    busy=true; showNav(false);
+    const play0=g.lines.map((l,i)=> (i===0 && l && l.delay==null)
+      ? Object.assign({}, l, { delay:SLIDE_MS }) : l);
+    story.playAdhoc(play0, ()=>{ story.clearCast(); busy=false; showNav(true); },
+                    { sides:g.sides });
+    return true;
+  }
+  if(g.goto===nodeId && !g.enterAgain) return false;   // 已經站在那裡：讓原本的流程繼續（acts 會接手）
   /* ⚠⚠ **先講一句再轉場**（ver -438，Ray：「讓蕾娜在旅店先講一句『好囉，該出發囉』
      再淡入淡出轉到下一幕」）。台詞在資料上（`TOWNS[].stage1.lines`，鐵律 1）。
      ⚠ 睡醒那一刻**黑幕還蓋著**（旅店的睡覺演出留下來的）—— 要先把畫面亮回來，
@@ -1940,6 +1959,29 @@ function showEscortBadge(){
     el.querySelector('.te-face').style.cssText = faceStyle(who);
     el.querySelector('.te-name').textContent = (SPEAKERS[who]||{}).name || '';
   }
+}
+/* ══⚠⚠⚠ **劇情叫得動小地圖**（ver -1397，Ray：「安雅會跳出提示『好像……是在那個
+   方向』然後開小地圖，蕾娜在地圖上說『那就往那邊去看看吧』」）══
+   腳本那一拍寫 `map:true`；`modules/story.js` 只知道「要攤開地圖」，**怎麼攤是
+   城鎮的事** —— 所以由 `main.js` 注入這一支（同 `setTownBgm`／`setGateSkip` 那一族；
+   story 不 import town，依賴方向不可以反過來）。
+   ⚠⚠ **演出模式的地圖不吃點擊**（`.map-story`）：它是**演出**不是互動 ——
+     玩家這一刻要做的事是把對白推下去，而地圖本來的點擊是「點一下收掉」。
+     不擋的話那一點會被地圖吃掉，對白推不動（而且畫面上沒有任何錯誤訊息）。
+   ⚠ 回傳 true ＝真的攤開了；這座城沒有地圖（`renderMap` 走「無資料」那一句）
+     就回 false，story 那邊也就不必記得去收它。 */
+export function showMapForStory(on){
+  if(!on){
+    const v=document.getElementById('townMapView');
+    if(v) v.classList.remove('map-story');
+    mapClose();
+    return false;
+  }
+  if(!mapIsOn()) renderMap();
+  const v=document.getElementById('townMapView');
+  if(!v || !v.classList.contains('on')) return false;
+  v.classList.add('map-story');
+  return true;
 }
 function renderMap(){
   const T=TOWNS[townId]; const M=T && T.map;
