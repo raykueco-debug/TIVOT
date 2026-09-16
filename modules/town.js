@@ -248,6 +248,27 @@ function storyExploreOn(){
   const T=TOWNS[townId]||{};
   return !!T.storyExplore && !prog.hasFlag(freeExploreFlag());
 }
+/* ══⚠⚠⚠ **自由活動期間：誰陪你約會，誰就是這一場的搭檔**（ver -1380，Ray 定案）══
+   > 「約會時誰同行　城鎮內戰鬥　打靶就是誰當夥伴　不可切換」
+   > 「沒有約會的話預設無夥伴」
+   > 「如果約會的對象是蕾娜就算是打靶或賞金獵人都會給評價」
+
+   這一支是那三條規則**唯一的真相**（鐵律 7）：`combat` 與 `inspector` 都只讀它。
+   回 `null` ＝這條規則現在不適用（照舊走章節預設的搭檔）。
+   回 `{who}` ＝規則生效；`who` 是 speaker id 或 `null`（沒約人）。
+
+   ⚠⚠⚠ **範圍是「自由活動開著的時候」，不是「所有城鎮戰鬥」** —— 這不是我縮小
+     Ray 的話，是**照字面做會把前面的章節打壞**：北方泊地的城鎮戰那五格＋教堂 Boss
+     ＋**聖徒化教學戰**都在 `storyExplore`（劇情探索）期間，那時**根本約不到人** ——
+     「沒有約會就無夥伴」照字面套下去，聖徒化教學戰會變成沒有諾薇兒，
+     而那一場的整段教學就是她（§6.5.2 的 -681：沒有夥伴＝什麼技都沒有）。
+   ⇒ 判準就是既有的 `storyExploreOn()`（旗 `free_explore_<圖>`，§6.5.3）：
+     **約得到人的時候才套這條規則**。北泊／夏爾村的劇情探索期一律不受影響。
+   ⚠ 也擋掉城鎮戰（`siegeOn()`）：那是「只有走與打」的模式，探索的每一層都不啟動。 */
+export function dateParty(){
+  if(!isOpen() || storyExploreOn() || siegeOn()) return null;   // 這條規則現在不適用
+  return { who: datingWho() };                                  // null ＝沒約人＝無夥伴
+}
 /* ver -858：`lines` 可以是**函式**（呼叫時現算）—— 獵人的每日兌換那種
    「今天的內容由日序決定」的段落用。同一天內冪等（種子＝dayNo）。 */
 function actLines(a){ if(!a) return null;

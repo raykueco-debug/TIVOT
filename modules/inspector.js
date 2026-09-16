@@ -41,6 +41,19 @@ const $ = id => document.getElementById(id);
  *    triggerIntruder— enemy 擁有：迎擊 → 進 Boss 戰（本輪為 no-op，待第 5 步）。
  * ------------------------------------------------------------------------- */
 let api = { goHome(){}, triggerIntruder(){}, loseKind(){ return 'home'; } };
+/* ══⚠⚠ **現在是不是跟「評價的那個人」在約會**（ver -1380）══
+   `inspector` 不 import `town`（依賴方向），由 `main` 注入 `()=>town.dateParty()`
+   （同 `combat.setDateParty`，而且**兩邊問的是同一支**，鐵律 7）。
+   ⚠ 沒注入／回 null ＝不在城裡或不在自由活動期間 ⇒ 照舊（`noEval` 說了算）。
+   ⚠ 比對的是 `EVALUATOR`（＝`'RENNA'`，那一套評價的設定）**不是寫死「蕾娜」** ——
+     日後換人來評，這一條自動跟著換（同 `script/evaluation.js` 檔頭的說明）。 */
+let dateParty = null;
+export function setDateParty(fn){ dateParty = fn || null; }
+function dateWithEvaluator(){
+  if(!dateParty) return false;
+  const dp = dateParty();
+  return !!(dp && dp.who === EVALUATOR);
+}
 export function init(injected){ api = { ...api, ...injected }; }
 
 /* ============================================================================
@@ -484,7 +497,15 @@ let evalWhyNot='';
 function pickEvaluator(rankKey, battleId){
   const bt = (GAME_CONFIG.battles||{})[battleId] || {};
   evalWhyNot='';                                             // 這一趟的診斷（見 evalWhyNot 的說明）
-  if(bt.noEval){ evalWhyNot='卡上 noEval'; return null; }     // 這一場不評（特例，寫在卡上）
+  /* ══⚠⚠⚠ **約會對象是蕾娜 → `noEval` 也照評**（ver -1380，Ray：「如果約會的對象
+     是蕾娜就算是打靶或賞金獵人都會給評價」）══
+     打靶與賞金獵人的卡上寫著 `noEval:true`（那是「這種場次本來沒人評」）——
+     但**評價的人就在你旁邊**，那一條的前提就不成立了。
+     ⚠ 這不是「多一個開關」：卡上那一格照舊是「這一場的性質」，這裡加的是
+       **現場的事實**（她在不在），兩者不衝突（同 `noEvalBeforeStage` 也是疊在它之後）。
+     ⚠ 真相問 `town.dateParty()`（唯一那一支，鐵律 7）——`inspector` 不 import `town`，
+       由 `main` 注入，查不到就照舊（沒有注入＝不在城裡＝本來就沒有約會）。 */
+  if(bt.noEval && !dateWithEvaluator()){ evalWhyNot='卡上 noEval'; return null; }
   /* 第 N 章之前整段不評（ver -1130，資料在 `evaluation.js` 的 `FROM_STAGE`）。
      ⚠ 排在卡上的特例之後、通用表之前：它是「這一套評價什麼時候開始運作」。 */
   if(prog.getStage() < EVAL_FROM){

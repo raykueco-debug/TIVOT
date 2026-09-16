@@ -2289,6 +2289,19 @@ export function setStoryShut(fn){ storyShut = fn; }
    劇情舞台、整備頁、選單、單子）整個收掉。實作只有 main 那一份（鐵律 8）。 */
 let pageKiller = null;
 export function setPageKiller(fn){ pageKiller = fn; }
+/* ══⚠⚠ **自由活動期間誰陪你打**（ver -1380）══ `combat` 不 import `town`（依賴方向），
+   由 `main` 注入 `()=>town.dateParty()`（同 `setStoryReturn`／`story.setGateSkip` 的作法）。
+   ⚠ 真相在 `town.dateParty()` 那一支，這裡只是把它接過來（鐵律 7：不要在這邊再判一次
+     「現在是不是自由活動」）。 */
+let dateParty = null;
+export function setDateParty(fn){ dateParty = fn || null; }
+/* speaker id（大寫）→ 搭檔卡的鑰匙（小寫）。⚠ **蕾娜沒有搭檔卡** —— 她是監察官，
+   所以「約蕾娜」在這裡查不到 ⇒ 落到無夥伴那一條，而她的在場改成**給評價**
+   （`inspector` 那一邊，Ray 的第三條）。 */
+function partnerKeyOf(who){
+  const k = String(who||'').toLowerCase();
+  return (k && GAME_CONFIG.partners && GAME_CONFIG.partners[k]) ? k : null;
+}
 /* ⚠ ver -358 起**只有戰敗**走這條「不結算直接交還劇情」的路。
    勝利改成照樣上結算頁（Ray：「教學關卡結束後跳出結算畫面…並跳出拾得道具視窗」），
    由結算頁的按鈕再把場子交還劇情（見 inspector.onRematchBtn 的 tutorial-home 分支）。
@@ -2738,6 +2751,18 @@ export function startGame(){
   if(sb && sb.solo) setPickedPartner(null);   // ⚠ 這一場身邊沒有人（見 state.setPickedPartner）
   else if(sb && sb.partner) setPickedPartner(sb.partner);
   else if(state.scriptRun) setPickedPartner(partner.storyPartnerKey());
+  /* ④ ⚠⚠⚠ **自由活動期間：約會對象就是搭檔，沒約人就是無夥伴**（ver -1380，Ray：
+        「約會時誰同行　城鎮內戰鬥　打靶就是誰當夥伴　不可切換」「沒有約會的話預設無夥伴」）。
+     排在**最後**＝它蓋得掉①②③ —— 那正是「**不可切換**」：玩家在整備頁挑的人
+     （`load.partner()` → `storyPartnerKey`）到了這一刻一律被現場的事實覆寫。
+     ⚠ 範圍由 `town.dateParty()` 決定（自由活動開著才回非 null）—— 見那一支的說明：
+       照字面套到所有城鎮戰鬥會把北泊的聖徒化教學戰打成無夥伴。
+     ⚠ 約的是**蕾娜**時 `partnerKeyOf` 查不到（她沒有搭檔卡）⇒ 一樣是無夥伴；
+       她的在場改成「這一場照樣給評價」（inspector 那一邊）。 */
+  if(dateParty){
+    const dp = dateParty();
+    if(dp) setPickedPartner(partnerKeyOf(dp.who));   // null ＝無夥伴
+  }
   if(sb && GAME_CONFIG.enemies[pickBattleEnemy(sb)]){
     enemy.setEnemy(pickBattleEnemy(sb));
     /* ══⚠⚠ 真的開打了才記「這一段出過牠」，**並且把這一抽用掉**（ver -628）══

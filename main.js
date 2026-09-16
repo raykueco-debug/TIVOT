@@ -1599,6 +1599,12 @@ let storyResume = null;
 story.setTownOpener(town.open);   // scene 的 `thenTown` 由 story 呼叫（注入，story 不 import town）
 story.setTownCloser(town.close);  // 「選單」離開劇情層時，城鎮也要一起收（ver -394）
 combat.setPageKiller(killAllPages);   // 返回首頁＝殺光所有頁面（ver -494，見 killAllPages）
+/* ══⚠⚠⚠ **自由活動期間：約會對象＝搭檔；沒約人＝無夥伴；約到評價者＝照樣給評價**
+   （ver -1380，Ray 定案的三條）══ 真相**只有 `town.dateParty()` 一支**（鐵律 7），
+   `combat`（挑搭檔）與 `inspector`（要不要評）都只讀它 —— 兩邊各判一次必然走鐘。
+   ⚠ 走注入是因為依賴方向：那兩支都不 import `town`（同 `setStoryReturn`／`setGateSkip`）。 */
+combat.setDateParty(()=>town.dateParty());
+inspector.setDateParty(()=>town.dateParty());
 /* 「回到主選單」（ver -398（-893 前用詞））：走**唯一那支**回主選單（`combat.goHome`），劇情層在黑幕
    全蓋的那一刻才收 —— 只 `story.close()` 的話，底下露出來的是上一場戰鬥的盤面
    （`#home` 早就被 startGame／openFlight 關掉了）。 */
