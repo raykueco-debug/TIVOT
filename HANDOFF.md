@@ -1,4 +1,41 @@
-# HANDOFF — 截至 `ver 2026.09.17-1428`
+# HANDOFF — 截至 `ver 2026.09.17-1429`
+
+---
+
+# ⚠⚠⚠ -1429：「上船追還是黑畫面」＝**改名漏了一處**
+
+> Ray 連報兩次。
+
+`flight/index.html` 的 `skyHuntHint()` 裡還寫著 **`senseFiredOnce`** ——
+那是 ver -1418 改名成 `skyHeldOnce` 時**漏掉的那一處**。
+
+而 `skyHuntHint()` 是掛在 **`update()`（每幀都跑）**裡的 ⇒
+**第一幀就 ReferenceError、整個算圖迴圈死掉 ＝ 一片黑畫面**，
+畫面上沒有任何訊息，console 之外看不出來。
+
+## 為什麼前面都沒抓到
+
+`flight/index.html` 是**非 module 的單一大腳本**，`node --check` **只驗語法** ——
+**執行期的 ReferenceError 它抓不到**。語法檢查過、`script_lint` 過、commit 推上去，
+**Ray 白測兩次**。
+
+⇒ **改任何識別字的名字，收工前 `grep` 一次舊名字**（全庫，含 `flight/`）。
+  這不是「小心一點」，是**一個可以執行的動作**，一行指令的事。已寫進 CLAUDE.md §6.5。
+
+⚠⚠ 一度想做成工具（`tools/flight_undef.py`：掃「用到卻沒宣告」的識別字）——
+  **寫完當場砍掉**：粗篩的正則抓不到 `const A=1, B=2;` 這類多重宣告，
+  實測**誤報 507 個**。**誤報那麼多的檢查等於沒有**，留著只會讓下一個人學會忽略它。
+  真要做得靠真正的 JS 剖析器，那是另一件事。
+
+## 順手驗過的
+
+`skyHuntHint` 之外，-1416~-1421 我加進 `flight/index.html` 的 **17 個符號逐個對過**
+（`SKY_HUNT_TALK`／`SKY_WIN_TALK`／`skyTargetRect`／`huntLandGate`／`HUNT_*`／
+`battleIdFor`／`skyHeldOnce`／`bldragon`…）—— 全部**宣告剛好一次**，沒有第二個漏網。
+
+---
+
+# 上一輪 — `ver 2026.09.17-1428`
 
 ---
 
