@@ -3862,6 +3862,18 @@
   /* 名字是紅的（走到過的那一格才有字；霧底下那一顆的 `span` 是空的）。 */
   #townMapView .tm-spot.dragon span{color:#8d1a12;}
 
+  /* ── 被指出來的那一格（`mapHint`，ver -1412，Ray：「安雅指出方向以後祭壇要亮起，
+       但不要顯示地名」）──────────────────────────────────────────────────
+     與紅點同一套（浮在霧上、沒有地名），但**顏色不同**：紅點是「牠在那裡」（威脅），
+     這一顆是「往那邊去」（指路）—— 兩顆同時亮著時要一眼分得出來，所以走金色。
+     ⚠ 呼吸比紅點慢一點（2.4s vs 1.6s）：指路不該比威脅還急。 */
+  #townMapView .tm-spot.hint{z-index:3;}
+  #townMapView .tm-spot.hint b{background:var(--gold);border-color:#fff6df;
+    animation:tmHint 2.4s ease-in-out infinite;}
+  @keyframes tmHint{
+    0%,100%{box-shadow:0 0 5px 2px rgba(212,169,74,.55), 0 0 10px 4px rgba(212,169,74,.24);}
+    50%    {box-shadow:0 0 13px 6px rgba(255,214,122,.92), 0 0 24px 11px rgba(212,169,74,.42);}}
+
   /* ── 槍棺的吊墜（ver -411／-412，Ray 指定）──────────────────────────
      掛在槍棺左上方。**吊掛點與槍棺鎖死**（它是 `#kerbDoor` 的子元素），
      擺動是它自己繞著那個點轉。

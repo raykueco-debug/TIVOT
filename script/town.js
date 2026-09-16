@@ -5518,6 +5518,15 @@ export const TOWNS = {
        那才是「牠死了」。⚠ 這座城**現在還沒有 `wildSpawn`**（怪的名單還沒給），
        所以這一行目前是**先立規矩**：名單一到就自動照這條走，不會有人忘記補。 */
     wildFrom: 'bl_night_sky',
+    /* ══⚠⚠ **安雅指完方向，祭壇在小地圖上亮起（但不給地名）**（ver -1412，Ray 交辦）══
+       `bel_hint3` ＝安雅那一段（初入探索走了 10 格還沒踩到祭壇）演完立的旗；
+       `until:'ep_bel_altar'` ＝踩到祭壇就收掉（同三段提示的 `skipIf`：
+       到了目的地還指著它只是髒）。
+       ⚠⚠ **不給地名是刻意的**（Ray 指定，也與紅點同一條規矩）：霧照樣蓋著那一格的
+         速寫與草書名 —— 玩家看得到「在那個方向」，那一帶長什麼樣還是要自己走過去。
+       ⚠ 判定是**一支通用的** `hintNode()`（`modules/town.js`）：這裡只說「指哪一格、
+         什麼時候開始指、什麼時候不指了」，不寫死是貝利薩爾（鐵律 1）。 */
+    mapHint: { node:'altar', need:'bel_hint3', until:'ep_bel_altar' },
     /* ══ 小地圖（ver -1395，美術交件）══════════════════════════════════════
        38 格全部有點（38 顆點全部有格，實測對得上）。這張圖是紅點（王座徘徊者）的舞台
        —— ver -1390 那顆點做好的時候這張圖還沒交，所以一直看不到。
@@ -5746,8 +5755,14 @@ export const TOWNS = {
         noWild:true, exits:{ up:'floodway' },
         /* ⚠ ver -1385：`goto` 由 `courtyard`（下沉中庭）改成 **`entrance`（古城中庭）**
            —— 撤離那一段演在**出口**、也是真的淹水的那一格（`GreatCourt_flood`）。 */
+        /* ⚠⚠⚠ `storyBattle:true`（ver -1412 補）—— **這一段有戰鬥拍，沒宣告的話
+           安全區旗會把整段擋掉**（`actDue`：有戰鬥 ＋ 插著 `safehouse_<圖>` → 不演），
+           而且**畫面上沒有任何錯誤訊息**：走到祭壇什麼都不會發生。
+           憲法 -679 早就寫著「劇情戰不受安全區旗管」—— 漏的是這一格的宣告。
+           ⚠ 它與 `pullSafehouse` 是兩件事：那是特殊戰（開演前拔旗、演完插回去），
+             這是「這是劇本，旗一動都不動」。 */
         acts:[ { flag:'ep_bel_altar', need:'ep_bel_enter', goto:'entrance',
-                 sides:{ RENNA:'L' }, lines:[
+                 storyBattle:true, sides:{ RENNA:'L' }, lines:[
           ren('curious','竟然這麼快就找到了。'),
           nou('cringe','好像……已經在半啟動的狀態了。'),
           ren('thinking','會是感應到安雅小姐的關係嗎……？'),

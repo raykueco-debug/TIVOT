@@ -955,6 +955,18 @@ function fogShroud(M, ids){
 }
 function fogOn(){ const T=TOWNS[townId]; return !!T && T.mist!==0; }
 function seenNode(id){ return id===nodeId || prog.hasFlag('seen_'+townId+'_'+id); }
+/* ══⚠⚠ **被指出來的那一格**（`mapHint`，ver -1412，Ray：「安雅指出方向以後祭壇要
+   亮起，但不要顯示地名」）══ 城上寫 `{node, need, until}`，這裡只負責回答
+   「**現在指的是哪一格**」（鐵律 7：紅點那一支 `dragonAtNode()` 也是這個形狀）。
+   ⚠ `need` 還沒立＝還沒有人指路；`until` 立了＝到了，不必再指。
+   ⚠ 回 null 就是不指 —— 沒寫 `mapHint` 的圖天生就不指（安全的那一側是預設）。 */
+function hintNode(){
+  const h=(TOWNS[townId]||{}).mapHint;
+  if(!h || !h.node) return null;
+  if(h.need && !prog.hasFlag(h.need)) return null;
+  if(h.until && prog.hasFlag(h.until)) return null;
+  return h.node;
+}
 /* 城裡的地點都走過了嗎。⚠ **不算旅店自己** —— 那是「走完之後要去的地方」，
    把它算進去的話玩家永遠等不到那句提醒。 */
 function allSeen(){
@@ -2040,18 +2052,25 @@ function renderMap(){
            ⚠ 疊上去的那一顆**不給地名**：霧照樣蓋著那一格的速寫與草書名 ——
              玩家看得到「牠在這個方向」，但那一帶長什麼樣還是要自己走。 */
         const dragon = (id===dragonAtNode());
+        /* 被指出來的那一格（`mapHint`）：**與紅點同一套做法** —— 浮在霧上、不給地名。 */
+        const hint = (id===hintNode());
         /* 沒走到＝那一格還在霧底下：**什麼都不畫**（霧是整片的一層，見 `fogShroud`）。
            ⚠ 只有紅點例外 —— 它要浮上來。 */
         if(fog && !seenNode(id)){
-          return dragon ? '<i class="tm-spot dragon" style="'+pos+'"><b></b><span></span></i>' : '';
+          if(dragon) return '<i class="tm-spot dragon" style="'+pos+'"><b></b><span></span></i>';
+          if(hint)   return '<i class="tm-spot hint" style="'+pos+'"><b></b><span></span></i>';
+          return '';
         }
         /* ══ 休息處（ver -913，Ray：「探索到以後用筆圈起來，並在中文後方加入
            『（休息處）』」）══ 圈是 CSS 畫的（`.tm-spot.rest`），字在這裡加。
            ⚠ 這一行**只有小地圖在用**：導覽字格那邊是另一支（`nameOfNode`）。 */
         const rest=!!(T.nodes[id]||{}).rest;
-        const nm=String((T.nodes[id]||{}).name||'').split('　').pop() + (rest?'（休息處）':'');
+        /* ⚠ 被指出來但還沒走到的那一格**不給地名**（Ray 指定）——
+             沒有霧的圖（`mist:0`）走這一條，所以名字要在這裡擋，不能只靠上面那一段。 */
+        const nm=(hint && !seenNode(id)) ? ''
+               : String((T.nodes[id]||{}).name||'').split('　').pop() + (rest?'（休息處）':'');
         return '<i class="tm-spot'+(id===nodeId?' here':'')+(rest?' rest':'')
-             + (dragon?' dragon':'')
+             + (dragon?' dragon':'')+(hint&&!seenNode(id)?' hint':'')
              + '" style="'+pos+'">'
              + '<b></b><span>'+nm+'</span></i>';
       }).join('')
