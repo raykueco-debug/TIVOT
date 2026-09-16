@@ -4323,8 +4323,10 @@ export const TOWNS = {
         sor('laugh','我是無所謂啦，但是小公主可以嗎？'),
         any('answer','我、我可以！'),
         sor('smirk','走累了撒個嬌，姐姐可以背妳喔？'),
-        /* 安雅躲到主角身後（無條件：那是對玩笑的反應，不分你前一天約了誰）。 */
-        { speaker:'ANYA', text:'', cg:'018-anyahide', cgNoTime:true },
+        /* 安雅躲到主角身後（無條件：那是對玩笑的反應，不分你前一天約了誰）。
+           ⚠ `cgPan:'up'` ＝**由下而上**平移（ver -1384，Ray 指定；與那兩張約會插圖
+             的 `'down'` 相反）。 */
+        { speaker:'ANYA', text:'', cg:'018-anyahide', cgNoTime:true, cgPan:'up' },
         /* ── 分支 1：前一天約了安雅 ── */
         Object.assign(sor('surprised','啊！奸詐！'), { onlyIf:'ep_date_anya' }),
         Object.assign(any('makeface',''),           { onlyIf:'ep_date_anya' }),
@@ -5303,7 +5305,19 @@ export const TOWNS = {
            ⚠ 不帶時段的 `Belisar_Exterior.webp` 現在**沒有人讀**了，可以退役 ——
              那是美術的檔，由他們走 `tools/recycle.sh` 收（已回報）。
            ⚠ 這是**新增不是同名覆蓋**（四個都是新檔名）⇒ 不必動 `ASSET_VER`。 */
-      entrance:  { bg:'Belisar_GreatCourt_day', noTime:true, name:'貝利薩爾遺址　外廓', noWild:true,
+      /* ══ ver -1384 三件一起 ══
+         ① **四時段交齊了**（`_dawn/_day/_dusk/_night` 都在）⇒ `bg` 回到基底名
+            `Belisar_GreatCourt`、**`noTime` 拿掉** —— 那正是 -1377 註解裡寫的
+            「另外三張交件之後…一行的事」。這一格從此又有日夜變化。
+         ② **改名「古城中庭」**（`_plainsroad_spec.md`：「入口那一格叫『古城中庭』」）
+            —— 圖早就是低窪巨大中庭了，「外廓」那個名字與畫面對不上。
+         ③ ⚠⚠ **淹水版**（ver -1384，Ray：「中庭都淹滿水的 bg 是 flood 系列」）：
+            走 `bgWhen`（旗標換圖，與時段候選鏈是兩件事 —— 那一筆自己也吃時段）。
+            旗用 `ep_bel_altar` ＝**祭壇那一段演完**（水就是在那一段末尾湧出來的：
+            安「水！淹出來了！」）。誰插的＝那一段的 `flag`，答得出來（鐵律 9）。
+            ⚠ flood 四時段也齊了，所以這一筆**不寫 `noTime`**。 */
+      entrance:  { bg:'Belisar_GreatCourt', name:'貝利薩爾遺址　古城中庭', noWild:true,
+        bgWhen:[ { need:'ep_bel_altar', bg:'Belisar_GreatCourt_flood' } ],
         exits:{ up:'foyer' }, sail:{},
         /* ══⚠⚠⚠ 抵達古城入口（ver -1353，Ray 交稿）══════════════════════════
            ⚠ `need:'ep_day2'` ＝東泊那個翌日的閘門演完（＝這一趟就是為了來這裡）。
@@ -5346,11 +5360,23 @@ export const TOWNS = {
           any('answer','說好了喔！'),
           sor('dying','甜品就能搞定了喔！'),
           /* 安雅發動能力、裝置啟動 —— 走既有的感應演出（同石製遺蹟那一段，鐵律 8）。 */
+          /* ⚠ `noSkip:true`（ver -1384，Ray：「安雅在對話中播感應動畫時不可點擊加速」）
+             ＝那 4.4 秒的感應動畫跑完之前，點擊（與自動／加速）都不推進。
+             ⚠ 它只擋點擊，`auto` 照樣把這一拍走完 —— 不會卡死（見 story.js 的說明）。 */
           { speaker:'ANYA', text:'', portrait:{ char:'ANYA', show:false },
-            hide:['SORANA','RENNA','NOUVELLE','ANYA'], fx:'sense', auto:4400 },
+            hide:['SORANA','RENNA','NOUVELLE','ANYA'], fx:'sense', auto:4400, noSkip:true },
           ren('ask','好，這樣就——'),
-          /* 禍魘咆哮、巨龍天降、畫面震動。 */
-          { speaker:'NARRATION', text:'', shake:true, auto:900 },
+          /* ══⚠⚠ **王座徘徊者降臨**（ver -1384，Ray：「感應完蕾娜說『好　這樣就』
+             以後發生震動　背景特效王座徘徊者降臨」）══
+             走**中景層** `cgBack`（ver -870 為樹靈鹿主立的那一層：立繪之下、背景之上
+             的去背圖）—— 那正是「背景特效」該待的地方，不是插圖也不是敵人立繪。
+             ⚠ 圖用戰鬥卡那一張（`enemy_bl_dragon_throne` ＝ 王座那一隻）——
+               同一隻龍在同一段裡先降臨再開打，兩邊用同一張才連得起來（鐵律 7）。
+             ⚠ `cgBack` 一律寫**明確路徑**（不是基底名）：它不走時段候選鏈。
+             ⚠⚠ **要有人收**：這一段打完在下面那一拍 `cgBack:null`（同鹿主那一段
+               的作法）—— 中景層是持續狀態，不收就一路跟到回東泊。 */
+          { speaker:'NARRATION', text:'', shake:true, auto:900,
+            cgBack:'resources/enemy/mon_dragon_v1_unsealed.webp' },
           ren('scream','呀！'),
           /* ⚠ 「蕾娜倒地髮飾脫落插畫」還沒有（插圖先空著）—— 那一拍先不寫 `cg`。
              ⚠⚠ **旗掛在這一拍**：從此封頂 T3（見上面的說明）。 */
@@ -5358,11 +5384,13 @@ export const TOWNS = {
           sor('battlecry','危險！'),
           { speaker:'NARRATION', text:'', shake:true, auto:700 },
           ren('reachcry','不要！'),
-          sor(null,'妳在想什麼啊！差一點被吞掉的就是妳不是那個髮飾了！'),
+          /* ⚠ 表情沿用 `battlecry`（ver -1384，Ray 指定）—— 原本寫 null ＝沿用上一張。 */
+          sor('battlecry','妳在想什麼啊！差一點被吞掉的就是妳不是那個髮飾了！'),
           ren('shockedopen','！！'),
           nou('scared','要來了！'),
           { battle:'ep_belisar_altar' },
-          sor('side','哈，虛有其表！'),
+          /* ⚠ 收掉中景層那隻龍（牠逃了）—— 不收的話牠會一路跟到回東泊。 */
+          Object.assign(sor('side','哈，虛有其表！'), { cgBack:null }),
           sor('think','喔，逃了！'),
           { speaker:'NARRATION', text:'', shake:true, auto:700 },
           any('panic','水！淹出來了！'),

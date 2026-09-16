@@ -77,6 +77,10 @@ const missingExpr = new Set();  // 已回報過的缺圖，避免洗版
    ⚠ 換場（`playScene`）要把兩個模式都關掉：模式是「玩家現在的操作意圖」，
      不是劇本狀態，跨場沿用會變成下一幕自己跑起來。 */
 let fastMode=false, autoPlay=false, autoT2=null;
+/* `noSkip:true` 那一拍的保護期（到這個時刻為止點擊都不推進）。見 `advance()` 的說明。
+   ⚠ 用**時刻**不用布林：那一拍自己的 `auto` 計時器負責往下走，這裡只要「還沒到」就擋，
+     不必再記得把布林關掉（少一個「誰關它」的狀態，鐵律 9）。 */
+let noSkipUntil=0;
 let sceneLog=[];               // 本場已播的台詞（回顧用）：{name, text}
 
 /* ══ 立繪素材解析 ══
@@ -1786,6 +1790,11 @@ function fireOneShot(line){
   const hold = (line.fx==='gunfire') ? GUNFIRE_MS : 0;
   /* 腳本備註「震動」但畫面不抖（ver -398，Ray：「我備註震動時震動」）。
      ⚠ 與 `shake` 分開：有時候要的是「手上感覺到」而不是「畫面在晃」。 */
+  /* `noSkip:true`：這一拍的演出跑完之前點擊不推進（ver -1384，見 `advance()`）。
+     ⚠ 保護期＝這一拍自己的 `auto`（沒寫就給 `BLANK_BEAT` 當底）—— **時間的真相
+       只有 `line.auto` 一份**（鐵律 7），不要在這裡另外寫一個秒數。
+     ⚠ 每一拍都重設（沒寫 `noSkip` 就歸零）：它是**這一拍**的性質，不是跨句狀態。 */
+  noSkipUntil = line.noSkip ? (Date.now() + (line.auto>0 ? line.auto : BLANK_BEAT)) : 0;
   if(line.checkpoint) lineCheckpoint();   // 腳本上的存檔點（ver -653，見 lineCheckpoint）
   if(line.vibrate) hap.shake();
   /* ══⚠⚠ **持續震動**（ver -638，Ray：「蕾娜的！！之前的畫面震動要持續 10 秒，
@@ -1857,7 +1866,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1383';
+const KERB_V='?v=1384';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -3113,6 +3122,18 @@ function advance(){
      ⚠ 實測時就是這樣跳過去的（單子在 z-9600、真的玩點不到底下，但程式化的點擊
        打得到）。同 `kerbPlaying` 的理由：演出／閘門進行中，點擊無效。 */
   if(kitchenOpen) return;
+  /* ══⚠⚠ **`noSkip:true` ＝這一拍的演出跑完之前，點擊不推進**（ver -1384，Ray：
+     「安雅在對話中播感應動畫時不可點擊加速」）══
+     那一拍是**演給人看的**（感應動畫 4.4 秒），而它沒有字可讀 —— 點一下就跳過去
+     等於整段特效白做。
+     ⚠⚠ 它與 `kerbPlaying`／`kitchenOpen` 同一族（演出／閘門進行中，點擊無效），
+       所以擋在**同一個地方**（鐵律 8：不要在手勢、鍵盤各擋一次）。
+     ⚠⚠ **只擋點擊，不擋那一拍自己的 `auto` 計時器** —— 計時器一到照樣往下走，
+       所以**不可能卡死**。這也是為什麼它不需要「出口清單」（同 `shakeHold` 那一條
+       要出口是因為它是跨句狀態；這一條只活在這一拍）。
+     ⚠ **自動播放／加速也擋**：那兩個模式走的是 `scheduleAuto`→`advance()`，
+       從這裡一起擋掉才叫「不可加速」（Ray 的原話就是「不可點擊加速」）。 */
+  if(noSkipUntil && Date.now() < noSkipUntil) return;
   /* 料理的「成品登場」在等點擊（ver -1000）：把它做完，**這一次點擊不推進對白**
      —— 同 `flushReveal` 的規矩（一拍還沒演完，點下去就是把那一拍演完）。 */
   if(cookWaitTap){ const f=cookWaitTap; cookWaitTap=null; try{ f(); }catch(_){} return; }
