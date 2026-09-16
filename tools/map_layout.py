@@ -38,20 +38,18 @@ POS = {
   #   ⚠ 這一張**排不進標準的直角格**（見 BEND）：欄列之間刻意留空，
   #     版面只保證「方向的正負號」對（left 的鄰居欄號比較小），不保證剛好差 1。
   'belisar': {
-    'throne':(1,0),
-    'crown':(0,1), 'antecham':(1,1), 'offering':(2,1),
-    'dragstair':(1,2), 'guardhall':(5,2),
-    'dragonrace':(1,3), 'courtyard':(2,3), 'greathall':(4,3), 'ossuary':(5,3), 'lamphall':(6,3),
-    'mirrorpool':(2,4),
-    'stairwell':(2,5), 'pillars':(4,5), 'starroom':(5,5), 'draincliff':(6,5),
-    'incense':(2,6), 'bellroom':(5,6),
-    'drywell':(0,7), 'forge':(1,7), 'trihall':(2,7), 'wardtomb':(5,7),
-    'rooffall':(0,8), 'muralwalk':(1,8), 'culvert':(3,8), 'waterjail':(4,8), 'bonerack':(5,8),
-    'mirrorway':(5,9),
-    'cages':(2,10), 'oldtomb':(3,10), 'capstan':(4,10), 'candlewalk':(5,10),
-    'stelae':(3,11), 'stephall':(4,11), 'floodway':(5,11),
-    'foyer':(4,12), 'altar':(5,12),
-    'entrance':(4,13),
+    'throne':(3,0),
+    'stairwell':(2,1), 'pillars':(3,1), 'offering':(4,1),
+    'dragstair':(3,2),
+    'dragonrace':(2,3), 'courtyard':(3,3), 'guardhall':(7,3),
+    'drywell':(0,4), 'forge':(1,4), 'crown':(2,4), 'mirrorpool':(3,4), 'stephall':(6,4), 'ossuary':(7,4), 'lamphall':(8,4),
+    'rooffall':(0,5), 'muralwalk':(1,5), 'incense':(2,5), 'antecham':(6,5), 'starroom':(7,5), 'draincliff':(8,5),
+    'trihall':(2,6), 'bellroom':(7,6),
+    'culvert':(3,7), 'waterjail':(5,7), 'mirrorway':(6,7), 'wardtomb':(7,7),
+    'cages':(2,8), 'oldtomb':(3,8), 'capstan':(4,8), 'candlewalk':(5,8), 'altar':(6,8),
+    'stelae':(3,9), 'greathall':(4,9), 'floodway':(5,9),
+    'foyer':(4,10), 'bonerack':(5,10),
+    'entrance':(4,11),
   },
   # ── 北方泊地（ver -915）──────────────────────────────────────────
   'northport': {
@@ -175,7 +173,7 @@ def load(town):
 BEND = {
   # 貝利薩爾遺址（ver -1396 實測）：4 個環裡有 3 個的方向和不是零。
   # 兩端相反 41/41 通過、38 格 × 4 向都走得出去 ⇒ 玩起來沒問題，只是畫不直。
-  'belisar': {('bonerack','mirrorway'), ('mirrorpool','stairwell'), ('muralwalk','stairwell')},
+  'belisar': {('altar','mirrorway'), ('crown','mirrorpool'), ('crown','muralwalk')},
 }
 def bent(town, a, b):
     s = BEND.get(town) or set()

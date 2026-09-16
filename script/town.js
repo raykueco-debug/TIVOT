@@ -5465,17 +5465,17 @@ export const TOWNS = {
       },
     },
     nodes: {
-      throne:    { bg:'Belisar_ThroneHall', name:'貝利薩爾遺址　王座廳', noTime:true, exits:{ down:'antecham' } },
-      crown:     { bg:'Belisar_CrownRoom', name:'貝利薩爾遺址　寶冠室', noTime:true, exits:{ right:'antecham' } },
-      antecham:  { bg:'Belisar_Antechamber', name:'貝利薩爾遺址　謁見前廳', noTime:true, exits:{ up:'throne', left:'crown', right:'offering', down:'dragstair' } },
-      offering:  { bg:'Belisar_RelicRoom', name:'貝利薩爾遺址　聖物室', noTime:true, exits:{ left:'antecham' } },
-      dragstair: { bg:'Belisar_LionStair', name:'貝利薩爾遺址　獅階', noTime:true, noWild:true, exits:{ up:'antecham', down:'courtyard' } },
-      starroom:  { bg:'Belisar_Orrery', name:'貝利薩爾遺址　星象室', noTime:true, exits:{ left:'pillars', right:'draincliff', down:'bellroom' } },
+      throne:    { bg:'Belisar_ThroneHall', name:'貝利薩爾遺址　王座廳', noTime:true, exits:{ down:'pillars' } },
+      crown:     { bg:'Belisar_CrownRoom', name:'貝利薩爾遺址　寶冠室', noTime:true, exits:{ up:'mirrorpool', left:'muralwalk', down:'incense' } },
+      antecham:  { bg:'Belisar_Antechamber', name:'貝利薩爾遺址　謁見前廳', noTime:true, exits:{ up:'stephall', right:'starroom', down:'waterjail' } },
+      offering:  { bg:'Belisar_RelicRoom', name:'貝利薩爾遺址　聖物室', noTime:true, exits:{ left:'pillars' } },
+      dragstair: { bg:'Belisar_LionStair', name:'貝利薩爾遺址　獅階', noTime:true, noWild:true, exits:{ up:'pillars', down:'courtyard' } },
+      starroom:  { bg:'Belisar_Orrery', name:'貝利薩爾遺址　星象室', noTime:true, exits:{ left:'antecham', right:'draincliff', down:'bellroom' } },
       guardhall: { bg:'Belisar_ArmourGallery', name:'貝利薩爾遺址　甲冑廊', noTime:true, exits:{ down:'ossuary' } },
-      greathall: { bg:'Belisar_GreatHall', name:'貝利薩爾遺址　中央大廳', noTime:true, exits:{ left:'courtyard', right:'ossuary', down:'pillars' } },
+      greathall: { bg:'Belisar_GreatHall', name:'貝利薩爾遺址　中央大廳', noTime:true, exits:{ up:'capstan', left:'stelae', right:'floodway', down:'foyer' } },
       lamphall:  { bg:'Belisar_ChandelierHall', name:'貝利薩爾遺址　枝燈長廊', noTime:true, exits:{ left:'ossuary' } },
-      ossuary:   { bg:'Belisar_Ossuary', name:'貝利薩爾遺址　納骨堂', noTime:true, exits:{ up:'guardhall', left:'greathall', right:'lamphall' } },
-      mirrorpool:{ bg:'Belisar_StillPool', name:'貝利薩爾遺址　靜水池', noTime:true, exits:{ up:'courtyard', down:'stairwell' } },
+      ossuary:   { bg:'Belisar_Ossuary', name:'貝利薩爾遺址　納骨堂', noTime:true, exits:{ up:'guardhall', left:'stephall', right:'lamphall' } },
+      mirrorpool:{ bg:'Belisar_StillPool', name:'貝利薩爾遺址　靜水池', noTime:true, exits:{ up:'courtyard', down:'crown' } },
       /* ⚠ 枝燈長廊↔下沉中庭是 **`up`／`down`**（ver -1159，Ray：「枝燈長廊往下沉中庭
          應該往上吧」）—— 與佈局圖上的相對位置相反（圖上中庭畫在長廊**下面**）。
          ⚠⚠ **所以小地圖的版面要跟著改**：`tools/map_layout.py` 的 belisar 版面
@@ -5486,33 +5486,33 @@ export const TOWNS = {
            兩邊註解互指）—— 這一段演完才走得掉。
          ⚠ `rest:true` 照舊（它是休息處）：那一段演完之後這一格就是安全點。 */
       courtyard: { bg:'Belisar_SunkenCourt', name:'貝利薩爾遺址　下沉中庭', noWild:true,
-        rest:true, exits:{ up:'dragstair', left:'dragonrace', right:'greathall', down:'mirrorpool' }, },
+        rest:true, exits:{ up:'dragstair', left:'dragonrace', right:'stephall', down:'mirrorpool' }, },
       rooffall:  { bg:'Belisar_RoofFall', name:'貝利薩爾遺址　崩頂坡', noWild:true, exits:{ right:'muralwalk' } },
-      muralwalk: { bg:'Belisar_MuralGallery', name:'貝利薩爾遺址　壁畫長廊', noTime:true, exits:{ left:'rooffall', right:'stairwell', up:'forge' } },
-      stairwell: { bg:'Belisar_SpiralWell', name:'貝利薩爾遺址　旋梯井', noTime:true, noWild:true, exits:{ up:'mirrorpool', left:'muralwalk', down:'incense' } },
-      pillars:   { bg:'Belisar_Cistern', name:'貝利薩爾遺址　千柱廳', noTime:true, exits:{ up:'greathall', right:'starroom', down:'waterjail' } },
+      muralwalk: { bg:'Belisar_MuralGallery', name:'貝利薩爾遺址　壁畫長廊', noTime:true, exits:{ left:'rooffall', right:'crown', up:'forge' } },
+      stairwell: { bg:'Belisar_SpiralWell', name:'貝利薩爾遺址　旋梯井', noTime:true, noWild:true, exits:{ right:'pillars' } },
+      pillars:   { bg:'Belisar_Cistern', name:'貝利薩爾遺址　千柱廳', noTime:true, exits:{ up:'throne', left:'stairwell', right:'offering', down:'dragstair' } },
       dragonrace:{ bg:'Belisar_LionSpout', name:'貝利薩爾遺址　獅口水道', noTime:true, exits:{ right:'courtyard' } },
       draincliff:{ bg:'Belisar_DrainCliff', name:'貝利薩爾遺址　排水崖口', exits:{ left:'starroom' } },
-      incense:   { bg:'Belisar_ChrismRoom', name:'貝利薩爾遺址　聖油室', noTime:true, exits:{ up:'stairwell', down:'trihall' } },
+      incense:   { bg:'Belisar_ChrismRoom', name:'貝利薩爾遺址　聖油室', noTime:true, exits:{ up:'crown', down:'trihall' } },
       bellroom:  { bg:'Belisar_BellRoom', name:'貝利薩爾遺址　鐘室', noTime:true, exits:{ up:'starroom' } },
       drywell:   { bg:'Belisar_DryWell', name:'貝利薩爾遺址　枯井底', noTime:true, noWild:true, exits:{ right:'forge' } },
       /* ⚠ 安全點（ver -1397，Ray：「旋梯井　獅階　武器工坊為安全點　不出怪」）——
          另外兩格（`stairwell`／`dragstair`）本來就寫了 `noWild`。 */
       forge:     { bg:'Belisar_Forge', name:'貝利薩爾遺址　兵器工坊', noTime:true, noWild:true, exits:{ down:'muralwalk', left:'drywell', right:'trihall' } },
       trihall:   { bg:'Belisar_TriArch', name:'貝利薩爾遺址　三拱廳', noTime:true, exits:{ up:'incense', left:'forge', down:'culvert' } },
-      waterjail: { bg:'Belisar_WaterJail', name:'貝利薩爾遺址　水牢', noTime:true, exits:{ up:'pillars', right:'bonerack', down:'capstan' } },
-      bonerack:  { bg:'Belisar_Sarcophagi', name:'貝利薩爾遺址　石棺廊', noTime:true, exits:{ left:'waterjail', up:'wardtomb', down:'mirrorway' } },
-      wardtomb:  { bg:'Belisar_GuardTomb', name:'貝利薩爾遺址　近衛墓室', noTime:true, exits:{ down:'bonerack' } },
+      waterjail: { bg:'Belisar_WaterJail', name:'貝利薩爾遺址　水牢', noTime:true, exits:{ up:'antecham', right:'altar', down:'capstan' } },
+      bonerack:  { bg:'Belisar_Sarcophagi', name:'貝利薩爾遺址　石棺廊', noTime:true, exits:{ up:'floodway' } },
+      wardtomb:  { bg:'Belisar_GuardTomb', name:'貝利薩爾遺址　近衛墓室', noTime:true, exits:{ down:'altar' } },
       culvert:   { bg:'Belisar_Culvert', name:'貝利薩爾遺址　暗渠', noTime:true, exits:{ up:'trihall', down:'oldtomb' } },
-      mirrorway: { bg:'Belisar_MirrorWalk', name:'貝利薩爾遺址　鏡廊', noTime:true, exits:{ up:'bonerack', down:'candlewalk' } },
+      mirrorway: { bg:'Belisar_MirrorWalk', name:'貝利薩爾遺址　鏡廊', noTime:true, exits:{ up:'altar', down:'candlewalk' } },
       cages:     { bg:'Belisar_Cages', name:'貝利薩爾遺址　獸欄', noTime:true, exits:{ right:'oldtomb' } },
       oldtomb:   { bg:'Belisar_Catacomb', name:'貝利薩爾遺址　地下墓道', noTime:true, exits:{ up:'culvert', left:'cages', right:'capstan', down:'stelae' } },
-      capstan:   { bg:'Belisar_Capstan', name:'貝利薩爾遺址　絞盤室', noTime:true, exits:{ up:'waterjail', left:'oldtomb', down:'stephall' } },
+      capstan:   { bg:'Belisar_Capstan', name:'貝利薩爾遺址　絞盤室', noTime:true, exits:{ up:'waterjail', left:'oldtomb', down:'greathall' } },
       candlewalk:{ bg:'Belisar_CandleWalk', name:'貝利薩爾遺址　燭廊', noTime:true, exits:{ up:'mirrorway', down:'floodway' } },
-      stelae:    { bg:'Belisar_SteleWalk', name:'貝利薩爾遺址　銘碑廊', noTime:true, exits:{ up:'oldtomb', right:'stephall' } },
-      stephall:  { bg:'Belisar_StairHall', name:'貝利薩爾遺址　階梯大廳', noTime:true, exits:{ up:'capstan', left:'stelae', right:'floodway', down:'foyer' } },
-      floodway:  { bg:'Belisar_Floodway', name:'貝利薩爾遺址　積水甬道', noTime:true, exits:{ up:'candlewalk', left:'stephall', down:'altar' } },
-      foyer:     { bg:'Belisar_Foyer', name:'貝利薩爾遺址　前廳', noTime:true, noWild:true, rest:true, exits:{ up:'stephall', down:'entrance' } },
+      stelae:    { bg:'Belisar_SteleWalk', name:'貝利薩爾遺址　銘碑廊', noTime:true, exits:{ up:'oldtomb', right:'greathall' } },
+      stephall:  { bg:'Belisar_StairHall', name:'貝利薩爾遺址　階梯大廳', noTime:true, exits:{ left:'courtyard', right:'ossuary', down:'antecham' } },
+      floodway:  { bg:'Belisar_Floodway', name:'貝利薩爾遺址　積水甬道', noTime:true, exits:{ up:'candlewalk', left:'greathall', down:'bonerack' } },
+      foyer:     { bg:'Belisar_Foyer', name:'貝利薩爾遺址　前廳', noTime:true, noWild:true, rest:true, exits:{ up:'greathall', down:'entrance' } },
       /* ══⚠⚠ **入口改用大中庭那一張**（ver -1377，Ray：「Belisar_GreatCourt_day
            貝利薩爾的入口改成這一張」）══
          ⚠⚠⚠ **一定要配 `noTime:true`**，而且 `bg` 要寫到 `_day` 為止 —— 因為這個地點
@@ -5644,8 +5644,11 @@ export const TOWNS = {
              稿上「（差分無髮飾）」那幾拍因此先照一般差分演。
          ⚠ `noWild` ＝這一格不刷野怪：它是這一段戲的舞台。
          ⚠ 收尾**強制移轉到下沉中庭**（稿：「中庭場景」）。 */
+      /* ⚠⚠ ver -1400：`altar` 與 `bonerack`（石棺廊）**對調位置** —— 石棺廊那張圖
+         兩側是石棺壁龕不是通道（撐不住 3 向），而古代祭壇那張是四面拱廊的廳。
+         拓樸沒動，只是房間換了位置（見下面那一段的說明）。 */
       altar:     { bg:'Belisar_OldAltar', name:'貝利薩爾遺址　古代祭壇', noTime:true,
-        noWild:true, exits:{ up:'floodway' },
+        noWild:true, exits:{ left:'waterjail', up:'wardtomb', down:'mirrorway' },
         /* ⚠ ver -1385：`goto` 由 `courtyard`（下沉中庭）改成 **`entrance`（古城中庭）**
            —— 撤離那一段演在**出口**、也是真的淹水的那一格（`GreatCourt_flood`）。 */
         acts:[ { flag:'ep_bel_altar', need:'ep_bel_enter', goto:'entrance',
@@ -5724,4 +5727,5 @@ export const TOWNS = {
     },
   },
 };
+
 
