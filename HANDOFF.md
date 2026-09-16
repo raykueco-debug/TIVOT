@@ -6,6 +6,11 @@
 > 已經被 revert 掉的東西寫成現況，於是下一個 session 照著它做了錯的判斷。
 > **沒有 `grep` 過、沒有量過的事實不要寫。**
 >
+> ⚠⚠⚠ **這一份是「換機器」那一版**：拉下來之後**先看「⚠⚠⚠ 換機器」那一節** ——
+> `_originals`／`_recycle`／localStorage 那三件 git 帶不走，而 **`_recycle` 與
+> localStorage 這一次真的有東西**（上一次換機器時前者只有 36 KB、後者兩個瀏覽器都是空的，
+> 照舊表走就會掉）。localStorage 我已經匯出成 `HANDOFF_localStorage.json` 進版控。
+>
 > ⚠⚠⚠ **環境數字要標「哪一台機器」**（-1369 新增的教訓）：上一版記著
 > 「node **v24.19.0 在 PATH 上**、Python **3.10.0**」，而這台實測是
 > **Python 3.11.9、node 根本沒裝**（-1361 才 `winget` 裝上）。
@@ -140,8 +145,7 @@ $env:PATH += ';C:\Program Files\nodejs'       # PowerShell
 
 - 分辨法照舊（回 `000` 就是連不上）：
   ```bash
-  curl -s -m 8 -o /dev/null -w "%{http_code}
-" http://127.0.0.1:8000/main.js
+  curl -s -m 8 -o /dev/null -w "%{http_code}" http://127.0.0.1:8000/main.js
   ```
 - ⚠ 這一輪它同時騙過了瀏覽器（分頁卡在 `readyState:loading`、
   `navigate` 回「denied or failed」）—— 很容易誤判成程式壞了。
@@ -187,6 +191,95 @@ node --input-type=module --check < modules/story.js
 
 其餘是既有的舊帳：`Ravn_Church` 借圖、東泊懸賞榜還沒有委託、兩支零引用的音檔、
 入口那一格有戰鬥（北泊／帝都廣場，靠「連敗三次抬回旅店」兜底）、兩個孤兒場景。
+
+---
+
+# ⚠⚠⚠ 換機器（**數字都是交機當天實測的，不要沿用舊的那幾節**）
+
+> 舊的「第零節」與「換機器要帶什麼」那張表是**再上一台**的（-1306）——
+> 那時兩個瀏覽器的 localStorage 都是空的、`_recycle` 只有 36 KB。
+> **這一次兩項都不成立**，照抄會掉東西。
+
+## 一、`git clone` 帶得走的（新機器拉下來就有）
+
+程式、資料、素材、`CLAUDE.md`、`HANDOFF.md`、`.claude/launch.json`（預覽伺服器設定）、
+`_recycle/README.md` 與 `_recycle/RECYCLE_LOG.tsv`（回收**紀錄**）、
+以及 **`HANDOFF_localStorage.json`**（見第三節）。
+
+    git clone <remote> TIVOT        # 分支：本地 master，遠端只有 main
+
+## 二、⚠⚠ git **帶不走**的兩個資料夾（gitignore，要自己複製）
+
+| | 實測 | 為什麼要帶 |
+|---|---|---|
+| `resources/_originals/` | **79.2 MB／36 個檔** | 轉成 webp 之前的原 PNG。**掉了就回不去了**（§5：它是「可回滾」不是「異地備份」） |
+| `_recycle/`（**內容**） | **25.1 MB／45 個檔** | 回收區＝本專案唯一的刪除出口（§5）。⚠ 上一份交接寫「36 KB（很小）」—— **那是舊機器的數字，現在不是**（雪都重修那 12 張、退役的 si.xlsx 都在裡面） |
+
+⚠⚠ **`RECYCLE_LOG.tsv` 進版控、被回收的「檔案本身」不進** —— 所以
+「誰在哪一版拿掉了什麼」查 git 就有，但**要把那個檔案救回來，只有這台機器上有**。
+
+## 三、⚠⚠⚠ localStorage：**這一次真的有東西**（已經匯出進版控）
+
+上一次換機器兩個瀏覽器都是空的；**這一台不是**。內建瀏覽器
+（`http://localhost:8000`）有一份跑到**最新內容**的進度：
+
+| | |
+|---|---|
+| 章節 | **stage 8**、旗標 **72** 支 |
+| 位置 | 東方泊地　旅店（`tivot_save_v1` 的 `main` 格與 `auto` 格都有） |
+| 進度 | 打靶拿到龍息、索菈娜約會與公會那一段、晚上碰到蕾娜、`ep_day2` 已開 |
+| 其他 | 遊玩 990 秒、錢 11180、好感 蕾娜 20.5／索菈娜 25／安雅 2、地圖標記在東方泊地 |
+| 上次開機版本 | `ver 2026.09.15-1366` |
+
+⇒ **已經匯出成 `HANDOFF_localStorage.json`（7 KB，26 支鑰匙，進版控）。**
+
+**新機器還原**（開好遊戲頁面，在那個 origin 的 console 貼這一段）：
+
+```js
+const j = await (await fetch('/HANDOFF_localStorage.json')).json();
+for (const [k, v] of Object.entries(j.data)) localStorage.setItem(k, v);
+location.reload();
+```
+
+- ⚠⚠ **localStorage 是逐 origin 的**：`localhost:8000` 與 `127.0.0.1:8010` 是**兩份**
+  （這一輪的驗證殘留就躺在後者，那一份是測試垃圾，不要還原它）。
+  還原之前先確認自己開的是哪一個。
+- ⚠ **Ray 自己的 Chrome 是另一個設定檔、另一份 localStorage** —— 我這裡讀不到。
+  真的在那邊玩過就自己匯出一份（`F12` → console）：
+  ```js
+  copy(JSON.stringify(Object.fromEntries(Object.entries(localStorage).filter(([k])=>k.startsWith('tivot_')))))
+  ```
+- ⚠ 不想要這一份就把 `HANDOFF_localStorage.json` 刪掉 —— 它只是一張快照，程式不讀它。
+
+## 四、新機器要裝什麼（照這台實測的清單）
+
+| | 這台的狀況 | 新機器 |
+|---|---|---|
+| **Node.js** | v24.19.0，裝在 `C:/Program Files/nodejs`，⚠ **不在這個 shell 的 PATH 上** | `winget install OpenJS.NodeJS.LTS`，**裝完開一個新的終端機**才吃得到 PATH。沒有它 `script_lint.py`／`map_layout.py` 整族是黑的（§6.5.4 的教訓） |
+| **Python** | 3.11.9，⚠ **只有 `py`**（`python`／`python3` 是空殼） | 文件裡的 `python3 tools/xxx.py` 一律唸成 `py tools/xxx.py` |
+| Pillow／numpy／scipy | 11.3.0／2.2.1／1.17.1 ✔ | 量 alpha、量顆粒、量色調那幾支要 |
+| **openpyxl** | ⚠ **沒裝** | 只有 `enemies_xlsx export` 要：`py -m pip install openpyxl` |
+| ffmpeg | 有（gyan full build） | 音檔轉檔要 |
+| cwebp／magick | ⚠ **不在 PATH**（圖都是 Pillow 處理的） | 要跑 §5 那條 `cwebp` 流程就得另外裝 |
+| 主控台 | cp950 ⇒ `tools/_utf8.py` 仍然必要 | 同 |
+
+## 五、到了新機器，**動手之前先跑這四件**
+
+```bash
+export PATH="$PATH:/c/Program Files/nodejs"      # 沒有就先開新終端機
+py tools/script_lint.py      # 應該是 0 個錯誤、31 個提醒
+py tools/bust.py --check     # 應該說「快取版本號同步中 ✔」
+curl -s -m 8 -o /dev/null -w "%{http_code}" http://127.0.0.1:8000/main.js   # 起了伺服器之後
+```
+
+外加**量效能之前**先確認 `renderer` 抓到的是真顯卡（第零節陷阱 1：Claude 桌面版會
+自己關掉硬體加速，而且選單救不回來 —— 那一格是 `isHardwareAccelerationAutoDisabled`）。
+
+## 六、這一台的現況（交出去的那一刻）
+
+- 工作區**乾淨**：`git status --untracked-files=all` 零筆，`master` 與 `origin/main` 同一個 commit。
+- 專案資料夾合計 **725.8 MB／1696 個檔**（含上面那兩個 gitignore 的資料夾）。
+- `MAP_EDITS_SRC` 仍是 `[]` —— **沒有待匯出的地圖筆畫**（同 -1306）。
 
 ---
 
