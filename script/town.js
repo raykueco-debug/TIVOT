@@ -433,7 +433,13 @@ export const DRAGON_LINES = {
   throne: { flag:'bl_night_throne', goto:'entrance', sides:{ RENNA:'L' }, lines:[
     { battle:'bl_throne' },
     { speaker:'NARRATION', text:'', shake:true, auto:800 },
-    ren('intense','小心！要垮了！'),
+    /* ⚠⚠ ver -1416（Ray：「蕾娜的『小心！要垮了！』的時候畫面持續抖動，
+       播放破瓦音直到音檔播完才停」）：`shakeHold:'se'` ＝抖到這一拍的音效播完
+       （長度問音檔，不在這裡寫秒數 —— §6.5.5）。
+       ⚠ `shakeHold` 是**跨句的狀態**，推對話不會收掉；出口是進戰鬥／換場／離場
+         三個，全部走 `stopShake()`（§6.5 的 -638）。 */
+    Object.assign(ren('intense','小心！要垮了！'),
+      { se:'se_brickcrush', shakeHold:'se' }),
     sor('furiousq','跑出去了！'),
     nou('shocked2','讓牠襲擊城鎮就不好了！'),
     ren('command','上船追！'),
@@ -452,6 +458,30 @@ export const DRAGON_LINES = {
     Object.assign(nou('furious','快下降！屍體完全淨化的話就不知道位置了！'),
                   { flags:['bl_night_sky'] }),
   ] },
+};
+
+/* ══⚠⚠⚠ **任務探索：追蕾娜的髮飾**（ver -1416，Ray 交辦）══════════════════════
+   > 「那傢伙比你還急之後任務探索　不能約會　不能睡覺　可以出航
+   >   但不能降落在古城以外的地方　降其他地方就輪跳」
+
+   **一個旗，一支判定**（鐵律 7/9）：誰插＝那一夜演完（`ep_night_raid` 最後一拍）、
+   誰拔＝空中戰打完（`bl_night_sky`）。中間這一段玩家是**自由的**，只是路只有一條。
+
+   ⚠⚠ **這一版把 `ep_night_raid` 的 `goto:'@belisar:greathall'` 拿掉了** ——
+     Ray 說「可以出航」，那就表示**要玩家自己飛過去**；還留著強制轉場的話，
+     那三條限制一條都碰不到（人已經被搬到古城裡了）。
+     連帶：那一拍同時插 `belisar_land_ok` —— 在此之前古城是**降不下去**的
+     （`flight/index.html` 的 `belisarLandGate`，-1279 立好的門，一直等著有人插旗）。
+   ⚠ **降落限制那一份在飛行頁**（`flight/index.html` 的 `HUNT_*`）：那是另一個
+     document，import 不到這裡（§6.10 的跨頁慣例，兩邊註解互指）。台詞也在那邊 ——
+     **不要在這裡抄第二份**。
+   ⚠ 「不能約會／不能睡覺」的那兩句是**旁白**（名字欄空）＝主角自己的念頭，
+     同旅店 `noSleep` 那一句的作法（§6.5.5）。 */
+export const QUEST_LOCK = {
+  flag:  'ep_hairpin_hunt',
+  until: 'bl_night_sky',
+  sleep: '（不是睡覺的時候。得快點追上去。）',
+  date:  '（現在不是約人出門的時候。）',
 };
 
 export const OUTING = {
@@ -4990,7 +5020,11 @@ export const TOWNS = {
              演完就記，`actDue` 下一次就跳過它 ⇒ 之後按睡覺就是正常睡到隔天。 */
         {  flag:'ep_night_raid', need:'ep_bel_back', needTier:{ renna:3 },
                  sleepFirst:{ hours:1 },
-                 goto:'@belisar:greathall', sides:{ RENNA:'L' }, lines:[
+                 /* ⚠⚠⚠ ver -1416：**`goto:'@belisar:greathall'` 已拿掉**（Ray：
+                    「那傢伙比你還急之後任務探索…可以出航」）—— 強制轉場留著的話
+                    人會被直接搬進古城，那三條限制一條都碰不到。改成**插旗**，
+                    由玩家自己出航飛過去（說明在檔頭的 `QUEST_LOCK`）。 */
+                 sides:{ RENNA:'L' }, lines:[
           sor('tease','想去哪啊？'),
           { speaker:'PLAYER', blank:true },
           sor('tired','少來了，大家想的都一樣啦？'),
@@ -5002,7 +5036,8 @@ export const TOWNS = {
           nou('shocked','可是……！'),
           ren('smile','謝謝妳們，有這份心意我很感激。'),
           ren('argue','可是——喂你倒是聽我說話啊！'),
-          { speaker:'PLAYER', blank:true, se:'se_steps' },
+          /* ⚠ ver -1416（Ray：「配的音是 walk」）：這兩拍是主角**走開**，不是跑 —— `se_steps` 是跑步聲。 */
+          { speaker:'PLAYER', blank:true, se:'se_walk' },
           /* 「臉紅。」＝**只有立繪沒有台詞**的演出拍（台上有人 ⇒ 點擊推進，§6.5 -628）。 */
           ren('shockedCalm',''),
           ren('argue','不可以……你去的話，我扣你分喔！'),
@@ -5017,9 +5052,13 @@ export const TOWNS = {
           any('clap',''),                 // 面無表情鼓掌
           nou('awkward',''),
           ren('crying','你們真是……'),
-          { speaker:'PLAYER', blank:true, se:'se_steps' },
+          /* ⚠ ver -1416（Ray：「配的音是 walk」）：這兩拍是主角**走開**，不是跑 —— `se_steps` 是跑步聲。 */
+          { speaker:'PLAYER', blank:true, se:'se_walk' },
           sor('smirk','怎麼那傢伙好像比妳還急呢？'),
-          ren('lookfaropen',''),          // 遠望
+          /* ⚠ 最後一拍插兩支旗（演完才記，同城鎮通則）：
+             `ep_hairpin_hunt` ＝任務探索開始（`QUEST_LOCK`）；
+             `belisar_land_ok` ＝古城從現在起降得下去（-1279 那道門等的就是它）。 */
+          ren('lookfaropen','', { flags:['ep_hairpin_hunt','belisar_land_ok'] }),   // 遠望
           ] },
           /* ── 諾薇兒：20:00 之後 ── */
           { flag:'ep_end_nou', need:'ep_date_nou', hourOfDay:20, lines:[

@@ -1532,7 +1532,17 @@ export const ENEMIES = {
       fit:{ mode:'contain', pos:'center bottom' },
       hp:700,
       attack:22,
-      atkInterval:null,
+      /* ══⚠⚠ 攻擊光圈**放慢一半**（ver -1416，Ray：「第三型態的攻擊光圈效果太快，
+         放慢 50% 看看」）══ 光圈收縮的時間就是**蓄力窗口** `CHARGE_SECONDS`
+         （`defense.js` 拿它算 `ratio`，只有那一處），而卡上沒寫就吃全域預設
+         `tuning.chargeSeconds`＝4 秒。
+         ⚠ 我把「放慢 50%」讀成**速度剩一半 ⇒ 時間加倍**（4 → 8 秒）。
+           若他要的是「時間多 50%」就改成 6 —— **只要動這一個數字**。
+         ⚠ 卡上寫**絕對值**不寫倍率（§6.5.2）：`tuning.chargeSeconds` 一改，
+           寫倍率的怪就會跟著走鐘。
+         ⚠ 只動這一張卡：追擊（`bl_dragon_chase`）與王座（`bl_dragon_throne`）
+           照舊吃預設，Ray 說的是**第三型態**。 */
+      atkInterval:8,
       delayPenalty:{ seconds:5 },
       entrance:null,
       special:[],

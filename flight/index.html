@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1415"></script>
+<script src="../orientation.js?v=1416"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1415edab');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1416edab');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1415edab");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1415edab");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1416edab");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1416edab");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1415edab");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1415edab");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1416edab");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1416edab");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -620,25 +620,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1415edab" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1416edab" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1415edab" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1415edab" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1415edab" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1415edab" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1415edab" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1415edab" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1415edab" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1415edab" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1415edab" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1415edab" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1416edab" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1416edab" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1416edab" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1416edab" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1416edab" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1416edab" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1416edab" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1416edab" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1416edab" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1416edab" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1415edab" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1416edab" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1415edab" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1416edab" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -659,11 +659,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1415"></script>
+<script src="settlement.js?v=1416"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1415"></script>
+<script src="talks.js?v=1416"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -715,7 +715,7 @@ const COLOR_URL  = 'silvermoon_terrain.png'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1415';
+const FLIGHT_VER = 'ver -1416';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -18028,6 +18028,7 @@ function doLand(){
   }
   /* 貝利薩爾第一次降落演不成（ver -1279）—— 擋在收時間與清追兵之前。 */
   if(belisarLandGate(S)) return;
+  if(huntLandGate(S)) return;        // 任務探索：只降得了古城（ver -1416）
   /* ⚠ **進入城鎮＝終止追擊**（ver -478，Ray：「進入城鎮也會終止追擊」）——
      追兵清掉、刷新計時重排；不清的話出城那一刻牠還貼在船尾，等於降落白降。 */
   armEnemySpawn(true);
@@ -18170,6 +18171,36 @@ function belisarLandGate(S){
   return true;
 }
 
+/* ══⚠⚠⚠ **任務探索：追蕾娜的髮飾**（ver -1416，Ray 交稿，台詞一字未改）══════
+   > 「那傢伙比你還急之後任務探索…可以出航，但不能降落在古城以外的地方，
+   >   降其他地方就輪跳」
+
+   `ep_hairpin_hunt` 插著、`bl_night_sky` 還沒立 ⇒ **只降得了貝利薩爾**。
+   ⚠⚠ 兩支旗名與主遊戲那一份是**同一組**（`script/town.js` 的 `QUEST_LOCK`）——
+     這一頁是另一個 document，import 不到，所以各存一份（§6.10 的跨頁慣例，
+     兩邊註解互指）。**改一邊要改另一邊。**
+   ⚠ **「輪跳」＝每擋一次換下一個人講**（Ray 的原話）：同一句連講三次會讀成卡住。
+     ⚠ 計數是**這一趟飛行**的（重載歸零）—— 它不是進度，沒有必要進存檔。
+   ⚠ 正在演別的對白／地圖開著就不插隊（同 `belisarLandGate`），但**這一次仍然不降**。
+   ⚠ 擋在收時間之前（同 `placeLockedNag`：沒進去就不該收時間）。 */
+const HUNT_FLAG  = 'ep_hairpin_hunt';
+const HUNT_UNTIL = 'bl_night_sky';
+const HUNT_NAG = [
+  [{ who:'sorana/confuse',  text:'喂！蕾娜的髮飾不要了嗎？' }],
+  [{ who:'nouvelle/cringe', text:'先去找蕾娜小姐的髮飾啦！' }],
+  [{ who:'anya/upset',      text:'......' }],
+];
+let huntNagAt = 0;
+function huntLandGate(S){
+  if(!flagOn(HUNT_FLAG) || flagOn(HUNT_UNTIL)) return false;
+  if(S && S.town==='belisar') return false;          // 古城照常降
+  if(!sayQueue && !mapOpen){          // 同 belisarLandGate：正在演別的就不插隊
+    say(HUNT_NAG[huntNagAt % HUNT_NAG.length], performance.now());
+    huntNagAt++;
+  }
+  return true;
+}
+
 function stage1Blocked(P){
   /* ver -562 編號重排（進帝都=1、出航=2）：「前往北方泊地」的地圖鎖跟著搬到 S2。 */
   return gameStage()===2 && P && STAGE1_DEST.indexOf(P.name) < 0;
@@ -18196,6 +18227,10 @@ const AFTER_SHIP_TALK = [
 let entering=null;
 function enterPlace(P){
   if(P && placeLockedNag(P.name)) return;   // 章節鎖（ver -844）
+  /* 任務探索（ver -1416）：地標也算「古城以外的地方」。
+     ⚠ `P.town` 是那個地標對應的城鎮鑰匙 —— 貝利薩爾那一筆是 `town:'belisar'`，
+       所以同一支 `huntLandGate` 判得了兩條路（鐵律 8）。 */
+  if(huntLandGate(P)) return;
   if(stage1Blocked(P)){
     /* ⚠ 已經在演別的對白就不插隊（同「對話」鈕的規矩）——兩段搶同一個舞台會疊在一起。 */
     if(!sayQueue) say(STAGE1_NAG, performance.now());

@@ -1860,7 +1860,19 @@ function fireOneShot(line){
      ⚠ 計時器**不進 `fxTimers`**：那一組是給一次性演出用的，每推一句就被清掉。 */
   /* 跨句的染色（ver -664）：只有寫了才動；沒寫的拍不會把它收掉。 */
   if(line.tintHold!==undefined) setTint(line.tintHold||null);
-  if(line.shakeHold>0){
+  /* ⚠⚠ `shakeHold:'se'` ＝**抖到這一拍的音效播完為止**（ver -1416，Ray：「蕾娜的
+     『小心！要垮了！』的時候畫面持續抖動，播放破瓦音直到音檔播完才停」）。
+     ⚠⚠⚠ **長度問音檔，不要在演出這邊寫秒數**（§6.5.5 的 -433 那條：長度的真相在
+       音檔身上，換一支音檔程式不必改）。拿不到（還沒解碼）才退回 1.5 秒 ——
+       依 §6.6「音效不載完不放行」正常情況下走不到那條退路。
+     ⚠ `se` 是陣列時取**最長的那一支**（ver -1413 起一拍可以有兩個聲音）。 */
+  const holdMs = (line.shakeHold==='se')
+    ? (()=>{ const ns=line.se ? (Array.isArray(line.se)?line.se:[line.se]) : [];
+             let m=0; for(const n of ns){
+               try{ const d=SFX.duration && SFX.duration(seSrc(n)); if(d>m) m=d; }catch(_){} }
+             return m || 1500; })()
+    : (+line.shakeHold||0);
+  if(holdMs>0){
     hap.shake();
     const st=$('storyStage');
     if(st){
@@ -1868,7 +1880,7 @@ function fireOneShot(line){
       st.classList.remove('shake','hold'); void st.offsetWidth;
       st.classList.add('shake','hold');
       sustainShake = true;
-      st.__shakeT = setTimeout(stopShake, line.shakeHold);
+      st.__shakeT = setTimeout(stopShake, holdMs);
     }
   }
   /* `map:true` ＝這一拍把小地圖攤開（ver -1397，安雅指路那一段）。
@@ -1923,7 +1935,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1415';
+const KERB_V='?v=1416';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，

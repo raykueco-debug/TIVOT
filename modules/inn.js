@@ -443,6 +443,13 @@ function knock(i){
          所以這一條只會擋到「其他人」。 */
     const KT=(st1.data.knock||{})[who];
     if(KT){
+      /* ⚠ **任務探索中約不出人**（ver -1416）：排在所有人的分支**之前** ——
+         它是世界的狀態（現在有更急的事），不是某一個人的心情
+         （同宵禁那一條排在人的分支前面的理由）。 */
+      if(st1.questLocked && st1.questLocked()){
+        if(host && host.say) host.say(st1.questSay('date') || '現在不是約人出門的時候。', '');
+        return;
+      }
       /* ⚠ 問的是「正在約會嗎」（`dating`）不是「有沒有人同行」—— 殘留事件那一種
          同行不是約會，拿它當判準會把其他三扇門一起鎖住（見 town.js 的說明）。 */
       const esc = st1.dating && st1.dating();
@@ -659,6 +666,14 @@ function sleepHere(){
      ⚠ 沒寫 `noSleep` 就用通用那一句（旁白，名字欄空＝主角自己的念頭）。
      ⚠ 舊欄位 `noSleepUntil` **已經沒有人讀了** —— 資料那邊一併改成 `sleepFlag`，
        不要留兩個名字（鐵律 7：同一件事兩個開關必然有一個忘了改）。 */
+  /* ⚠⚠ **任務探索中不能睡**（ver -1416，Ray：「不能約會　不能睡覺」）——
+     排在 `sleepFlag` **之前**：那一條是「這座旅店開放睡覺了沒」（東泊早就開了），
+     這一條是「現在有更急的事」。兩者都是劇情狀態，但答的不是同一個問題。
+     ⚠ 旁白（名字欄空）＝主角自己的念頭，同下面那一句的作法。 */
+  if(st1 && st1.questLocked && st1.questLocked()){
+    if(host && host.say) host.say(st1.questSay('sleep') || '現在不是睡覺的時候。', '');
+    return;
+  }
   if(!(node && node.sleepFlag && prog.hasFlag(node.sleepFlag))){
     if(host && host.say) host.say((node && node.noSleep) || '現在不是睡覺的時候。', '');
     return;

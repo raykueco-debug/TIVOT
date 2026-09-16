@@ -11,7 +11,7 @@
    ══════════════════════════════════════════════════════════════════════ */
 
 import { GAME_CONFIG, fileGain } from '../config.js';
-import { TOWNS, OUTING, DINE, DRAGON_LINES } from '../script/town.js';
+import { TOWNS, OUTING, DINE, DRAGON_LINES, QUEST_LOCK} from '../script/town.js';
 import * as clock from '../script/clock.js';
 import * as prog from '../script/progress.js';
 import * as story from './story.js';
@@ -106,6 +106,15 @@ let escortId=null;
    三支都是**這一趟探索**的狀態（同 escortNou）：open() 歸零、不進存檔。 */
 let nouTiredArmed=false, nouAsleep=false, escortLeftover=false;
 function st1Active(){ return prog.hasFlag('stage1_open'); }
+/* ══⚠⚠ **任務探索中？**（ver -1416，說明在 `script/town.js` 的 `QUEST_LOCK`）══
+   插了 `flag`、而且 `until` 還沒立 ⇒ 鎖著。**判定只有這一支**（鐵律 7）：
+   約會、睡覺、（飛行頁那一側的）降落限制問的是同一個答案。
+   ⚠ 資料在 `script/town.js`，這裡一個旗名都不寫死（鐵律 1）。 */
+export function questLocked(){
+  const q=QUEST_LOCK; if(!q || !q.flag) return false;
+  return prog.hasFlag(q.flag) && !(q.until && prog.hasFlag(q.until));
+}
+export function questSay(kind){ return (QUEST_LOCK && QUEST_LOCK[kind]) || ''; }
 function leftoverForNou(){
   const T=TOWNS[townId]; if(!T) return false;
   for(const id in T.nodes){
@@ -3614,6 +3623,8 @@ function afterArrive2(n, metDone){
                                       不是等玩家走一步 —— 它顯示的正是「現在帶著誰」。
                                       ⚠ 收在這一個唯一的入口（鐵律 8）：`enter()` 那一次是
                                         「確認它在」，這一次是「它剛剛該出現」。 */
+                                   /* 任務探索中：約會與睡覺一律擋（ver -1416，見 questLocked）。 */
+                                   questLocked, questSay,
                                    onInvite(who){ escortId=who||'NOUVELLE'; escortLeftover=false; markDated(escortId); showEscortBadge(); },
                                  } : null,
                                  /* 「還沒六點呢」的那個六點＝傍晚提醒的時刻（ver -405）。
