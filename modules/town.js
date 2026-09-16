@@ -825,6 +825,32 @@ function dateCurfewAct(n){
   if(e.flag && prog.hasFlag(e.flag)) return null;
   return { flag:e.flag, lines:e.lines, endDate:true, sides:e.sides||D.sides };
 }
+/* ══⚠⚠⚠ 送她回旅店 → 演告別 → 解除同行（ver -1369，Ray：「回旅店女主觸發告別
+   對話後同行就會解除」）══════════════════════════════════════════════════════
+   ⚠⚠ **與 `dateCurfewAct` 是同一個形狀**（回傳一個合成的 `act`，不是另開一條播放
+     路徑，鐵律 8）—— 立繪、`sides`、`endDate`、清場全部走 `enter()` 那一份收尾。
+     兩者是同一件事的兩端：**時間到了她自己回去** ／ **你把她送回來**。
+   ⚠ 台詞由**城的 `dateBye` 覆寫、沒寫就用 `OUTING.dateBye`**（鐵律 1）：
+     `by[誰]` 有專屬的就用它，否則用那一組共用的（同 `nightRestBy` 的作法）。
+   ⚠⚠⚠ **不看旗、每次都演**：那一段是「這一次的約會結束了」。掛旗的話第二次不演
+     ⇒ `endDate` 不跑 ⇒ **同行永遠解除不掉**（這正是 `dateCurfew` 掛旗、它不掛的原因）。
+   ⚠ 排在 `dateCurfewAct` **之後**：兩者同時成立時（過了 18:00 才走回旅店）
+     以「你送她回來」為準 —— 她人都到門口了，再講「我先回去囉」讀不通。
+     ⚠ 但 `dateCurfew` 有 `notNode:'inn'`，所以實際上不會撞；順序寫明只是為了
+       日後有人拿掉那一格時不會變成兩段搶著演。 */
+function dateByeAct(n){
+  const who=datingWho(); if(!who) return null;
+  const T=TOWNS[townId]||{};
+  const D=T.dateBye || OUTING.dateBye;
+  if(!D) return null;
+  /* 「哪一格是旅店」：資料上的 `node` 優先，沒寫就問這一格是不是旅店（`inn:true`）
+     —— 各城的旅店節點 id 不一定一樣，寫死一個名字會漏掉別的城。 */
+  const isInn = D.node ? (nodeId===D.node) : !!(n && n.inn);
+  if(!isInn) return null;
+  const e=(D.by && D.by[who]) || D;
+  if(!e.lines || !e.lines.length) return null;
+  return { lines:e.lines, endDate:true, sides:e.sides||D.sides };
+}
 function actDue(n){
   const muted = mutedTalks();
   for(const a of (n && n.acts) || []){
@@ -2782,7 +2808,7 @@ export function enter(id){
        所以第二趟必定輪到 `actDue`，讀起來就是「打完才講話」。
      ⚠ 一趟進圖同種不重複（`wildDone`），所以不會變成「打完又冒一隻」。
      ⚠ 休息處（`restActDue`）不受影響：那幾格一律 `noWild`，本來就不出怪。 */
-  const act = (immediate ? null : wildActDue(n)) || dateCurfewAct(n) || actDue(n) || restActDue(n);
+  const act = (immediate ? null : wildActDue(n)) || dateCurfewAct(n) || dateByeAct(n) || actDue(n) || restActDue(n);
   let ev = act ? null : eveningDue(n);
   /* 這一次抵達**原本**要演的進場對白（打烊、演過了、或段落裡有**回房休息的夥伴**
      （ver -459，見 linesBlockedByRest）就是空的 —— 後者旗標不記，之後照演）。
