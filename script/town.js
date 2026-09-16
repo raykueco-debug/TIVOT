@@ -5145,7 +5145,24 @@ export const TOWNS = {
       stephall:  { bg:'Belisar_StairHall', name:'貝利薩爾遺址　階梯大廳', noTime:true, exits:{ up:'capstan', left:'stelae', right:'floodway', down:'foyer' } },
       floodway:  { bg:'Belisar_Floodway', name:'貝利薩爾遺址　積水甬道', noTime:true, exits:{ up:'candlewalk', left:'stephall', down:'altar' } },
       foyer:     { bg:'Belisar_Foyer', name:'貝利薩爾遺址　前廳', noTime:true, noWild:true, rest:true, exits:{ up:'stephall', down:'entrance' } },
-      /* ══ 入口：站在堡外抬頭看這座城（ver -1157，Ray 交件 `Belisar_Exterior`）══
+      /* ══⚠⚠ **入口改用大中庭那一張**（ver -1377，Ray：「Belisar_GreatCourt_day
+           貝利薩爾的入口改成這一張」）══
+         ⚠⚠⚠ **一定要配 `noTime:true`**，而且 `bg` 要寫到 `_day` 為止 —— 因為這個地點
+           **只交了一張**（`Belisar_GreatCourt_day.webp`）。不寫的話夜裡是**一片空背景，
+           而且畫面上沒有任何錯誤訊息**：候選鏈的退路是沿明暗軸走的
+           （`BAND_FALL.night = night→midnight→Dusk→DD`，§6.5.4 的 ver -576），
+           **暗的時段不准退回白天** ⇒ 四個候選全部 404，然後連不帶時段的
+           `Belisar_GreatCourt.webp` 也不存在。
+         ⚠ 代價要講明：這一格**因此不再有日夜變化**（上一張 `Belisar_Exterior` 有四張）。
+           另外三張（`_dawn`／`_dusk`／`_night`）交件之後，這裡改回
+           `bg:'Belisar_GreatCourt'` **並拿掉 `noTime`** 就好 —— 一行的事。
+         ⚠ `Belisar_Exterior_*` 那四張**不要退役**：`script/enemies.js` 有一張敵卡的
+           戰鬥背景還在指 `Belisar_Exterior`（-1377 查過）。
+         ⚠ 同批還交了 `Belisar_GreatCourt_flood_day.webp`（淹水版）——**還沒有人用**，
+           那是劇情狀態的差分，等 Ray 說接在哪一拍。
+
+         ── 以下是上一張（`Belisar_Exterior`）的紀錄，留著 ──
+         ══ 入口：站在堡外抬頭看這座城（ver -1157，Ray 交件 `Belisar_Exterior`）══
          ⚠ **只飛得到的地方不掛 `sail.flag`**（ver -1154 那條）：人能站在這裡就表示
            他是飛來的，再要求 `got_ship` 在其他路徑上就是「走得進來、出不去」。
          ⚠ 入口＝遭遇戰的復活點，**不可以有戰鬥**（§6.5.2）⇒ `noWild`。
@@ -5157,7 +5174,7 @@ export const TOWNS = {
            ⚠ 不帶時段的 `Belisar_Exterior.webp` 現在**沒有人讀**了，可以退役 ——
              那是美術的檔，由他們走 `tools/recycle.sh` 收（已回報）。
            ⚠ 這是**新增不是同名覆蓋**（四個都是新檔名）⇒ 不必動 `ASSET_VER`。 */
-      entrance:  { bg:'Belisar_Exterior', name:'貝利薩爾遺址　外廓', noWild:true,
+      entrance:  { bg:'Belisar_GreatCourt_day', noTime:true, name:'貝利薩爾遺址　外廓', noWild:true,
         exits:{ up:'foyer' }, sail:{},
         /* ══⚠⚠⚠ 抵達古城入口（ver -1353，Ray 交稿）══════════════════════════
            ⚠ `need:'ep_day2'` ＝東泊那個翌日的閘門演完（＝這一趟就是為了來這裡）。
