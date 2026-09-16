@@ -37,6 +37,7 @@ import * as settings from './settings.js';   // 選單（音量／自動播放�
 import * as hap from './haptics.js';        // 震動（ver -398）
 import * as clock from '../script/clock.js';   // 時段（插圖／背景的差分候選鏈，ver -427）
 import * as inv from '../script/inventory.js';  // 選項的挑戰費（ver -655）：葉節點，只依賴 config
+import { bgFolder } from '../script/bg_index.js';  // 背景的區域資料夾（自動產生，ver -1376）：純查表，無相依
 
 const $ = id => document.getElementById(id);
 
@@ -571,6 +572,7 @@ function typeFinish(el, text){
      `bg`／`cg`／`ci` 是持續的（沿用到下一次改變）。混在一起寫會很難讀，
      所以分成 applyPersist 與 fireOneShot 兩支。 */
 const BG_DIR='resources/background/', CG_DIR='resources/illustration/', SI_DIR='resources/SI/';
+/* 背景的區域資料夾（自動產生，見 tools/bg_index.py 與 imgSrc 的說明）。 */
 /* ══ BGM 表 ══
    ⚠ **逐支列出實際檔名**（不能拼副檔名）：這個資料夾裡 mp3 與 m4a 都有，
      拼出來的路徑會靜默 404（audio.js 載不到只 resolve(null)，不報錯）。
@@ -740,8 +742,19 @@ export function bandNames(base, noTime){
    所以一直沒出事 —— 但要加 `?v=` 的那一刻就露餡了：只改一邊，探測抓到帶版本的新圖、
    顯示卻抓沒版本的舊快取（或反過來），而且**看起來只是「圖沒換」**。
    現在 town 改叫 `bgUrl()`（就是這一支），版本尾巴自然兩邊一致。 */
+/* ══⚠⚠ **背景依區域分資料夾**（ver -1376，Ray：「把背景按區域整理成資料夾」）══
+   資料上寫的 `bg` 是**基底名**（`bg:'Capital_Square'`），裡面沒有資料夾資訊 ——
+   由 `script/bg_index.js` 的 `bgFolder()` 補上那一段。
+   ⚠⚠⚠ 那張表是 `tools/bg_index.py` **掃出來的**（事實），不是靠前綴推的（規則）：
+     前綴怪的那十幾張（`Captal_Guild_*` 打錯字的帝都、`LunariaOffice`、`_canyon_map`…）
+     不必寫特例，而且**日後新檔前綴打錯也不會變成靜靜的空背景**
+     —— 那正是 §6.5.4 的 ver -910 一次踩到六格的失敗模式（畫面上沒有錯誤訊息）。
+   ⚠⚠⚠ **查不到一律回空字串＝根目錄**（＝搬檔之前的現況）：美術把新檔丟進根目錄
+     照樣跑得動，忘了重跑工具的下場是「照舊」不是「壞掉」（鐵律 13：安全的那一側是預設）。
+   ⚠ 插圖（`CG_DIR`，`^\d{3}_`）**不分資料夾** —— 它們沒有區域可分。 */
 function imgSrc(name){
-  const dir = /^\d{3}_/.test(name) ? CG_DIR : BG_DIR;
+  const cg = /^\d{3}_/.test(name);
+  const dir = cg ? CG_DIR : BG_DIR + bgFolder(name);
   const file = name + (/\.(webp|png|jpe?g)$/i.test(name) ? '' : '.webp');
   return dir + file + assetVer(file);
 }
@@ -1844,7 +1857,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1375';
+const KERB_V='?v=1376';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，

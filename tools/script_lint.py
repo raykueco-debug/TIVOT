@@ -139,6 +139,39 @@ def referenced(fname):
 
 def exists(rel):  return os.path.exists(os.path.join(ROOT, rel))
 
+# ══⚠⚠⚠ 背景自 ver -1376 起**依區域分資料夾**（`resources/background/<區域>/`）══
+#   這一支原本是 `bg_exists(BG_DIR + 名字)` ＝**第二份路徑解析**（鐵律 7）：
+#   遊戲那一邊走 `story.imgSrc()` → `script/bg_index.js` 的 `bgFolder()`，
+#   這一邊自己拼一份，搬檔那一刻當場多出 200 個假錯誤。
+#   ⚠ 修法**不是抄那份索引**（那就變成第三份），是讓它做自己該做的事：
+#     lint 問的是「**這個檔在磁碟上嗎**」—— 那就遞迴找一次，答案永遠是實況。
+#   ⚠ 只掃一層子資料夾（現況就是一層），快取起來避免上千次 listdir。
+_BG_FILES = None
+def _bg_files():
+    global _BG_FILES
+    if _BG_FILES is None:
+        _BG_FILES = set()
+        base = os.path.join(ROOT, 'resources', 'background')
+        for d in ([''] + [x for x in os.listdir(base)
+                          if os.path.isdir(os.path.join(base, x))]):
+            for f in os.listdir(os.path.join(base, d)):
+                if os.path.isfile(os.path.join(base, d, f)): _BG_FILES.add(f.lower())
+    return _BG_FILES
+
+def bg_exists(rel):
+    """`rel` 是 `resources/background/<檔名>`（呼叫端沿用舊寫法）——只比對檔名。
+
+    ⚠⚠ **刻意不分大小寫**：換掉的那一支是 `os.path.exists`，而它在 Windows／macOS
+      上本來就不分 —— 改成分大小寫會當場多出 48 個「錯誤」，而那些**不是 bug**：
+      交件的檔名是 `Capital_Grocerie_day.webp`，節點那一段的檢查只試 `_Day`，
+      但**遊戲的載入器兩種都試**（`modules/story.js` 的 `bandNames` 會生大小寫變體，
+      §6.5.4 的 ver -427）。所以那 48 筆是「這支檢查的寫法比載入器窄」，不是缺檔。
+    ⚠ 代價是**這支驗不出真正的大小寫問題**（§6.5.4：macOS 不分、靜態空間分，
+      本機測不出來、上線才 404）—— 那件事本來就不是這一版要解的，
+      要解的話是讓這裡的檢查也跟著 `bandNames` 生同一組候選（鐵律 7 的正解），
+      而不是讓它用一個比載入器窄的規則去報錯。"""
+    return os.path.basename(rel).lower() in _bg_files()
+
 # ⚠ 「這一拍自己就是畫面」的欄位（ver -1290）——空台詞也不算漏寫。
 #   改 modules/story.js 的 renderLine 時，新增同類的拍要補進這裡。
 SELF_SHOWN = ('cg', 'dayBreak', 'kitchen', 'boon')
@@ -310,14 +343,17 @@ def main():
             # （與節點的 `bg` 同一條規矩：`_Day` 或不帶時段的那一張在不在）。
             if ln.get('bgBand'):
                 b0 = ln['bgBand']
-                if not (exists(BG_DIR + b0 + '_Day.webp') or exists(BG_DIR + b0 + '_day.webp')
-                        or exists(BG_DIR + b0 + '.webp')):
+                if not (bg_exists(BG_DIR + b0 + '_Day.webp') or bg_exists(BG_DIR + b0 + '_day.webp')
+                        or bg_exists(BG_DIR + b0 + '.webp')):
                     err('%s：沒有這張背景 %s（bgBand，找 %s，含 _Day／_day）' % (tag, b0, BG_DIR))
             if ln.get('bg'):
-                d = CG_DIR if re.match(r'^\d{3}_', ln['bg']) else BG_DIR
-                if not exists(d + ln['bg'] + '.webp'):
+                cgq = bool(re.match(r'^\d{3}_', ln['bg']))
+                d = CG_DIR if cgq else BG_DIR
+                # ⚠ 背景走 `bg_exists`（遞迴，區域資料夾，ver -1376）；插圖照舊扁平。
+                ex = exists if cgq else bg_exists
+                if not ex(d + ln['bg'] + '.webp'):
                     # 有 PNG 沒 WebP：載得到（載入器兩個都試），但**沒照 §5 轉檔** → 提醒不是錯
-                    if exists(d + ln['bg'] + '.png'):
+                    if ex(d + ln['bg'] + '.png'):
                         warn('%s：背景 %s 只有 .png，還沒轉成 .webp（§5 的規約）' % (tag, ln['bg']))
                     else:
                         err('%s：沒有這張背景 %s（找 %s）' % (tag, ln['bg'], d))
@@ -447,8 +483,8 @@ def main():
             # ⚠ `noTime` 的節點吃的是**基底檔**（沒有時段尾巴）——不能拿 `_Day` 當通過條件：
             #   ver -400 踩過：Ray 換成 `_day`/`_dusk` 之後基底檔沒了，lint 因為看到 `_Day`
             #   就放行，遊戲卻整片沒有背景（`noTime` 的候選鏈根本不找 `_Day`）。
-            if bg and n.get('noTime') and not (exists(BG_DIR + bg + '.webp')
-                                               or exists(BG_DIR + bg + '.png')):
+            if bg and n.get('noTime') and not (bg_exists(BG_DIR + bg + '.webp')
+                                               or bg_exists(BG_DIR + bg + '.png')):
                 # ⚠ `bgPending`（ver -757 的既有機制）**noTime 這一支也要認**（ver -1134）：
                 #   伊甸古墓是「拓樸先接、背景後畫」的 34 格，而它幾乎整座都是 noTime
                 #   —— 不認的話一次噴 32 個 ❌，把真正的錯誤淹掉、lint 從此恆為失敗。
@@ -457,9 +493,9 @@ def main():
                 else:
                     err('%s：noTime 的節點要有**基底**背景 %s（找 %s，不含時段尾巴）'
                         % (tag, bg, BG_DIR))
-            elif bg and not n.get('noTime') and not (exists(BG_DIR + bg + '_Day.webp') or exists(BG_DIR + bg + '.webp')):
+            elif bg and not n.get('noTime') and not (bg_exists(BG_DIR + bg + '_Day.webp') or bg_exists(BG_DIR + bg + '.webp')):
                 # 同上：有 PNG 只是還沒轉檔（`bgFor` 兩個副檔名都試），不是「缺圖」
-                if exists(BG_DIR + bg + '_Day.png') or exists(BG_DIR + bg + '.png'):
+                if bg_exists(BG_DIR + bg + '_Day.png') or bg_exists(BG_DIR + bg + '.png'):
                     warn('%s：背景 %s 只有 .png，還沒轉成 .webp（§5 的規約）' % (tag, bg))
                 elif n.get('bgPending'):
                     # 骨架先行、美術產圖中（ver -757，夏爾村）：節點明寫 `bgPending:true`
@@ -473,9 +509,9 @@ def main():
             #     （拉芬斯達爾的大教堂：借中心區那張，免得同一格每次長得不一樣）
             pend = n.get('bgPending')
             want = pend if isinstance(pend, str) else bg
-            if pend and (exists(BG_DIR + want + '_Day.webp')
-                         or exists(BG_DIR + want + '_day.webp')
-                         or exists(BG_DIR + want + '.webp')):
+            if pend and (bg_exists(BG_DIR + want + '_Day.webp')
+                         or bg_exists(BG_DIR + want + '_day.webp')
+                         or bg_exists(BG_DIR + want + '.webp')):
                 warn('%s：背景 %s 已交件，bgPending 可以拔了'
                      '%s' % (tag, want, ('（順手把 bg 改成它）' if isinstance(pend, str) else '')))
             elif isinstance(pend, str):
