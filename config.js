@@ -69,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.16-1410';
+export const VERSION = 'ver 2026.09.16-1411';
 
 export const GAME_CONFIG = {
 
@@ -1710,35 +1710,41 @@ export const GAME_CONFIG = {
          only   這家店只收哪一類（賣出頁的過濾）；不填＝什麼都收
          compare 買的時候要不要跟**現有的同類**比數值（武器店要） */
     shops: {
-      grocery:  { title:'雜貨舖', art:'resources/SI/NPC_Grocerie_SI.webp',
+  /* ══⚠⚠⚠ 店主立繪住在 `resources/SI/NPC/`（ver -1411 修）══════════════════
+     ver -953 那次「NPC 路徑修復」把六張圖從 `resources/SI/` 搬進 `NPC/` 子資料夾，
+     **但這張表沒有跟著改** —— 於是六家店的店主立繪從 -953 起就一直是 404，
+     而且**畫面上沒有任何錯誤訊息**（走進店裡只是右邊空著）。
+     ⚠ 這正是 §5 那條「同名覆蓋／搬檔要連引用一起改」的反面案例：搬檔的人
+       只改了檔案系統。**日後搬任何素材，`grep` 一次舊路徑再收工。** */
+      grocery:  { title:'雜貨舖', art:'resources/SI/NPC/NPC_Grocerie_SI.webp',
                   tabs:['buy','sell'] },
       /* ⚠ `challenge` ＝ 這一家店的櫃台可以**再挑戰**哪一場（ver -398（-893 前用詞），Ray：「槍店的選單
          要增加一個射擊挑戰的選項」）。值是 `battles` 的鑰匙 —— 打靶那一場本來只有
          劇情裡打得到一次，而它有最佳紀錄，本來就該能再來（見 script/town.js 的
          `challengeLines`）。 */
-      gunstore: { title:'武器店', art:'resources/SI/NPC_Capital_Gunstore_SI.webp',
+      gunstore: { title:'武器店', art:'resources/SI/NPC/NPC_Capital_Gunstore_SI.webp',
                   tabs:['buy','sell','mod'], tabName:{ buy:'買武器', sell:'賣武器', mod:'武器改裝' },
                   only:'weapon', compare:true,
                   challenge:'range_trainee', challengeLabel:'射擊挑戰' },
       /* ══ 北方泊地的兩家店（ver -655（-893 前用詞））══ 功能與帝都相同，差別只有**店主圖**與
          **貨單的鑰匙**（見上面 stock 的說明）。⚠ 射擊挑戰指的是這座城自己那一場
          （`np_range`，25 秒、要 200G）—— 最佳紀錄與帝都那一場也是分開的。 */
-      np_grocery:  { title:'雜貨舖', art:'resources/SI/NPC_Grocery_SI_Northport.webp',
+      np_grocery:  { title:'雜貨舖', art:'resources/SI/NPC/NPC_Grocery_SI_Northport.webp',
                      tabs:['buy','sell'] },
       /* ══ 夏爾村雜貨街（ver -858，Ray 交稿）══ 退休行商。`sale`＝一起經歷過
          魔獸圍城（safehouse_shinier）之後**商品打 9 折**（loot.js 只在買價乘，
          賣價不動）。 */
-      sv_grocery:  { title:'雜貨街', art:'resources/SI/NPC_shinier_grocery_SI.webp',
+      sv_grocery:  { title:'雜貨街', art:'resources/SI/NPC/NPC_shinier_grocery_SI.webp',
                      tabs:['buy','sell'],
                      sale:{ need:'safehouse_shinier', mul:0.9 } },
-      np_gunstore: { title:'武器店', art:'resources/SI/NPC_Gunsmith_SI_Northport.webp',
+      np_gunstore: { title:'武器店', art:'resources/SI/NPC/NPC_Gunsmith_SI_Northport.webp',
                      tabs:['buy','sell','mod'], tabName:{ buy:'買武器', sell:'賣武器', mod:'武器改裝' },
                      only:'weapon', compare:true,
                      challenge:'np_range', challengeLabel:'射擊挑戰' },
       /* ══ 杰羅的工坊（ver -866，Ray：「杰羅不賣槍，只改槍」「杰羅的工坊就是槍店」）══
          只有一個「改槍」分頁（賭博式改造，規則在 tuning.jeroMod；UI 在 loot.js 的
          jero 分頁）。不賣不買 —— tabs 沒有 buy/sell，貨帳也就不存在。 */
-      sv_workshop: { title:'杰羅的工坊', art:'resources/SI/NPC_shinier_Gunsmith_SI.webp',
+      sv_workshop: { title:'杰羅的工坊', art:'resources/SI/NPC/NPC_shinier_Gunsmith_SI.webp',
                      tabs:['jero'], tabName:{ jero:'改槍' } },
       /* ══ 東方泊地的兩家店（ver -1340，Ray 交件指派店主）══ 功能同帝都／北泊，
          差別只有**店主圖**與**貨單的鑰匙**。
