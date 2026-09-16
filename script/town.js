@@ -443,20 +443,18 @@ export const DRAGON_LINES = {
     sor('furiousq','跑出去了！'),
     nou('shocked2','讓牠襲擊城鎮就不好了！'),
     ren('command','上船追！'),
-    /* 船升空。⚠⚠ **這一拍換 `warhorn`**（ver -1398，Ray：「登船進空中戰前用 warhorn」）
-       —— 王座戰打完那一刻卡上的 `bgmAfter:'crisis'` 已經把曲子換成 `crisis`
-       （「王座戰結束後用 crisis 直到登船」），登船就是 crisis 的終點。 */
-    Object.assign(nou('cringe','一片黑，看不到在哪！'), { bgm:'warhorn' }),
-    sor('guardthinking','諾薇兒，安靜下！'),
-    sor('back','有了！'),                       // 發動獵手之眼
-    any('lookup','往這邊，過來了！'),
-    ren('askserious','現在才要發揮本領的意思嗎……'),
-    Object.assign(nou('runserious','彼此彼此！'), { se:'se_steps' }),
-    { battle:'bl_sky' },
-    sor('excite2','活該！跑不了了吧！'),
-    any('lookup','掉到中庭了！'),
-    Object.assign(nou('furious','快下降！屍體完全淨化的話就不知道位置了！'),
-                  { flags:['bl_night_sky'] }),
+    /* ══⚠⚠⚠ **這一段到此為止，接下來在飛行頁演**（ver -1416，Ray：「蕾娜『上船追！』
+       之後轉景，從古城升空…索『諾薇兒，安靜下』之後，提示長按…發動獵手之眼索敵。
+       索敵後必出王座徘徊者…然後進入空戰」）══
+       搬到 `flight/index.html` 的有三段（都在那邊，**這裡不要留第二份**）：
+         · `SKY_HUNT_TALK`  諾「一片黑」／索「諾薇兒，安靜下！」＋ 索敵的教學閘門
+         · 劇本遭遇 `bl_sky_hunt`（`onSense:true` ＝索敵完成才生）→ 戰鬥卡 `bl_sky`
+         · `SKY_WIN_TALK`   打贏之後那三句
+       ⚠⚠ `bl_night_sky` 由飛行頁的 `settleScriptResult` 依 `done` 記（**打贏才記**）
+         —— 原本掛在最後一句上的 `flags` 拿掉了，兩個插旗點就是鐵律 9 的病。
+       ⚠ `bgm:'warhorn'` 跟著搬不了（飛行頁有自己的一套音樂），改掛在這一拍：
+         「登船進空中戰前用 warhorn」的登船就是**這一刻**。 */
+    Object.assign({ goFlight:true, flags:['bl_sky_hunt'] }, { bgm:'warhorn' }),
   ] },
 };
 
