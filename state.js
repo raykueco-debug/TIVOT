@@ -74,6 +74,12 @@ export const state = {
   enemyHp: _enemy.hp,
   enemyMax: _enemy.hp,
   overkill: 0,
+  /* ══⚠⚠ **這一場的 overkill 有沒有「完全清空殘額」**（ver -1389，Ray 的追逐規則：
+     「ovk 完全清空殘額算 clean」）══ 擁有者 combat，唯一的寫入點是
+     `autoClearOverkill`（那一支是 overkill 收尾的匯流點：3 秒到／BR 關窗兩條路都走它）。
+     ⚠ 語意是「**玩家自己把殘磚點完了**」—— 那一支要替玩家碎掉的格子是 0 個。
+     ⚠ 每一場開頭歸零（`startGame` 那排），不要跨場沿用。 */
+  overkillClean: false,
   over: false,
   defeated: false,       // 戰敗鎖：一旦致死判定確定戰敗即上鎖，win() 一律讓位（見 DECISIONS.md「戰敗優先」）
   flawlessRun: true,

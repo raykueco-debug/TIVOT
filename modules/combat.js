@@ -2173,6 +2173,13 @@ function endOverkillFx(){
 function autoClearOverkill(){
   overkillTimer=null;
   if(state.over||state.transitioning||state.cutinPlaying||state.enemyHp>0||state.saintMode) return;
+  /* ══⚠⚠ **「ovk 完全清空殘額」就在這一刻量**（ver -1389，Ray 的追逐規則）══
+     這一支是 overkill 收尾的**匯流點**（3 秒到／BR 關窗兩條路都走它，鐵律 8）——
+     此刻還沒碎掉的格子有幾個，就是玩家**沒**點完的幾個。0 個＝clean。
+     ⚠ 量在 forEach **之前**：那一圈就是替玩家把剩下的碎掉，量在後面永遠是 0。
+     ⚠ 它是**這一場**的量（`startGame` 歸零），由 `modules/town.js` 的追逐讀 ——
+       那邊只讀不算（鐵律 7）。 */
+  state.overkillClean = state.cells.every(c=>c.classList.contains('done'));
   // 全數字磚破碎：殘留格逐一 done+碎裂，40ms 錯開成連環爆
   let k=0;
   state.cells.forEach(c=>{
@@ -2702,6 +2709,7 @@ export function startGame(){
   state.runStartTime=Date.now(); resetClock();   // 計時碼表歸零（loadBoard 起算）
   state.boardTimes=[]; state.boardsCompleted=0;
   state.flawlessRun=true; state.intruderTriggered=false; state.inIntruderFight=false;
+  state.overkillClean=false;   // 這一場的 ovk 是否完全清空殘額（ver -1389，追逐讀它）
   state.deathGuardUsed=false; state.sRankUnlocked=false; state.resultMode='rematch';
   enemy.startLineup();   // 局：載序列第一隻（lineupIndex=0，含 enemyHp 基準）
   TEL.runStart({ partner:state.pickedPartner, weapon:state.equippedWeapon, boss:false });

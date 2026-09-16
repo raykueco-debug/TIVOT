@@ -11,7 +11,7 @@
    ══════════════════════════════════════════════════════════════════════ */
 
 import { GAME_CONFIG, fileGain } from '../config.js';
-import { TOWNS, OUTING, DINE } from '../script/town.js';
+import { TOWNS, OUTING, DINE, DRAGON_LINES } from '../script/town.js';
 import * as clock from '../script/clock.js';
 import * as prog from '../script/progress.js';
 import * as story from './story.js';
@@ -21,6 +21,7 @@ import * as gear from './gear.js';               // 戰前強制整備（ver -83
 import { SPEAKERS, faceStyle } from '../script/speakers.js';
 import { SFX } from '../audio.js';
 import { state } from '../state.js';   // 只讀：`battleSession`（擁有者是 combat，見鐵律 3.1）
+/* 追逐的台詞（資料歸資料，鐵律 1；判定在 `dragonActDue`）。 */
 
 const $ = id => document.getElementById(id);
 
@@ -1099,6 +1100,58 @@ function leaveMapRitual(done){
     return;
   }
   done();                       // ver -1024：沒帳＝這一趟沒有要結算的東西，直接走
+}
+/* ══════════════════════════════════════════════════════════════════════════
+ *  王座徘徊者的追逐（ver -1389，Ray 交規則）
+ * ──────────────────────────────────────────────────────────────────────────
+ *  > 「追逐的邏輯是他會往主角來向的反方向跑一到兩格　ovk clean 的話兩格 否則一格」
+ *  > 「那段時間走三格內必遭遇　格數隨機」
+ *  > 「左右跑　隨機　撞牆後通常只有一條路」
+ *  > 「紅點…第四戰之後才亮」「走到空格什麼都不發生，不會有提示」
+ *
+ *  ⚠⚠⚠ **「牠跑到哪一格」在前四戰是看不見的** —— 沒有紅點、走到空格也沒有提示
+ *    （Ray 兩條都明講）。所以那一段**唯一觀察得到的行為**就是「再走幾步會遇到」。
+ *    ⇒ 這裡**不做圖上的位置模擬**，只留「還要走幾步」：
+ *         步數 ＝ max(逃跑距離, 隨機 1~3)
+ *       · 逃跑距離 ＝ `state.overkillClean ? 2 : 1`（Ray 的 ovk clean 規則）——
+ *         它是**下限**，所以「打得乾淨牠跑得遠」真的會讓你多走一步。
+ *       · 上限 3 ＝ Ray 的「走三格內必遭遇」。
+ *    ⚠ 這不是偷懶：**做了位置模擬，畫面上也分辨不出來**（同一個可觀察行為兩種實作
+ *      ＝鐵律 7 要消滅的那種第二份真相）。紅點亮起來那一刻牠已經被逼進王座廳
+ *      （死胡同、位置是寫死的），那時才需要真的位置，而那一格由資料指定。
+ *  ⚠ 狀態**不進存檔**：這一段從頭到尾沒有存檔點，而 `open()` 會重置 ——
+ *    最壞情況是重進古堡時步數重擲，那與「格數隨機」本來就一致。
+ * ════════════════════════════════════════════════════════════════════════ */
+const DRAGON_CHASE_MAX = 4;      // 追逐戰打幾場之後逼進王座廳（Ray 的稿：四場）
+let dragonSteps = 0;             // 還要走幾步必遭遇（0＝這一步就遇到）
+function dragonChaseOn(){
+  return townId==='belisar'
+      && prog.hasFlag('ep_night_raid') && !prog.hasFlag('bl_night_throne');
+}
+function dragonWins(){
+  let n=0; for(let i=1;i<=DRAGON_CHASE_MAX;i++) if(prog.hasFlag('bl_chase'+i)) n++;
+  return n;
+}
+/* 打贏一場之後重新擲步數。⚠ `state.overkillClean` 由 combat 發佈（鐵律 7：只讀不算）。 */
+function dragonFlee(){
+  const far = state.overkillClean ? 2 : 1;          // 打得乾淨 → 跑得遠（下限）
+  dragonSteps = Math.max(far, 1 + Math.floor(Math.random()*3));
+}
+/* ══⚠⚠ **這一次抵達要不要開打** ══
+   · 還沒打滿四場 ⇒ 步數歸零那一刻遭遇（走到哪就打在哪 —— 前四戰沒有固定的格子）
+   · 打滿四場 ⇒ 牠被逼進**王座廳**（死胡同），紅點亮起；走到那一格才是決戰
+   ⚠ 台詞由 `DRAGON_LINES` 那張表給（資料歸資料，鐵律 1）—— 這裡只決定「第幾場」。
+   ⚠ 旗**演完才記**（`enter()` 那一套統一收尾）＝打輸回頭再走一次還遇得到（§6.5.2）。 */
+function dragonActDue(n){
+  if(!dragonChaseOn() || !n) return null;
+  const w = dragonWins();
+  if(w >= DRAGON_CHASE_MAX){
+    /* 逼進死胡同：只有王座廳那一格開打。⚠ 那一格是**資料指定**的，不是算出來的。 */
+    if(nodeId !== 'throne') return null;
+    return DRAGON_LINES.throne;
+  }
+  if(dragonSteps > 0) return null;          // 還沒走到 —— 走到空格什麼都不發生（Ray）
+  return DRAGON_LINES.chase[w];             // 第 w+1 場
 }
 function wildActDue(n){
   const W=(TOWNS[townId]||{}).wildSpawn; if(!W || !n) return null;
@@ -2575,6 +2628,8 @@ function go(to, dir){
      「一步 10 分鐘」在城鎮戰一樣記帳 —— 在被禍魘襲擊的城裡跑一趟，時間照樣流逝
      （也讓夏爾村村戰從黃昏 19:00 隨著移動推進到夜景 20:00）。 */
   clock.advance(stepMin());   // 耗時依圖（ver -871；-917 起：森林 60／遺蹟 10／城村 10）
+  /* 追逐中：走一步就逼近一步（ver -1389，見 `dragonChaseOn` 那一段的說明）。 */
+  if(dragonChaseOn() && dragonSteps>0) dragonSteps--;
   bumpGateMoves();   // 閘門的 afterMoves 計數（ver -953）：走一步就 +1
   sceneCut(to);          // 換景走淡入淡出（ver -438，見 sceneCut）
 }
@@ -2876,7 +2931,10 @@ export function enter(id){
        所以第二趟必定輪到 `actDue`，讀起來就是「打完才講話」。
      ⚠ 一趟進圖同種不重複（`wildDone`），所以不會變成「打完又冒一隻」。
      ⚠ 休息處（`restActDue`）不受影響：那幾格一律 `noWild`，本來就不出怪。 */
-  const act = (immediate ? null : wildActDue(n)) || dateCurfewAct(n) || dateByeAct(n) || actDue(n) || restActDue(n);
+  /* 追逐（ver -1389）排在最前：那一段古堡裡只有「走」與「打」，
+     其餘的段落（約會收尾、常駐句）在那一夜都不該插隊。 */
+  const act = dragonActDue(n) || (immediate ? null : wildActDue(n))
+           || dateCurfewAct(n) || dateByeAct(n) || actDue(n) || restActDue(n);
   let ev = act ? null : eveningDue(n);
   /* 這一次抵達**原本**要演的進場對白（打烊、演過了、或段落裡有**回房休息的夥伴**
      （ver -459，見 linesBlockedByRest）就是空的 —— 後者旗標不記，之後照演）。
@@ -2936,6 +2994,11 @@ export function enter(id){
                （分歧內的入帳走 story.js 的逐拍 take/give/money 那一族）。 */
           applyAff(play);
           if(act.flag) prog.addFlags([act.flag]);                 // 主線段落：只演一次
+          /* ══ 追逐：打贏一場之後牠就跑（ver -1389）══ 重擲「還要走幾步」。
+             ⚠ 掛在**旗記下去之後**：`dragonWins()` 數的就是那幾支旗，
+               早一步擲會用到舊的場次數。
+             ⚠ 只有追逐那四場要重擲（王座那一段打完就離開古堡了）。 */
+          if(dragonChaseOn() && /^bl_chase[1-4]$/.test(act.flag||'')) dragonFlee();
           /* 段落自己的章節（ver -742，Ray：「北泊出航插 stage5，插在眾人給諾薇兒
              送行那一段」）—— 與閘門的 `stage` 同一個語意（clockGate 也是直接 set）；
              重播由 `flag` 擋著，不會倒退（讀檔在更後面的章節時 flag 早就立了）。 */

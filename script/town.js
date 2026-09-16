@@ -373,6 +373,81 @@ const NP_GROCER_LINES = [
      定案了就改這兩個數字，其餘什麼都不必動。
    ⚠ `line` 是**佔位稿**（Ray 給了規則、沒給句子）：碰到她時她說的那一句。要換直接改。
    ══════════════════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════════════════════
+ *  王座徘徊者・那一夜的追逐（ver -1389，Ray 交稿）
+ * ──────────────────────────────────────────────────────────────────────────
+ *  `modules/town.js` 的 `dragonActDue` 只決定「第幾場」，台詞在這裡（鐵律 1）。
+ *  ⚠ 每一筆就是一個 act：`flag` 演完才記、`lines` 裡的 `{battle:…}` 是那一場。
+ *  ⚠ 稿上幾處說話者與立繪對不上，**照立繪判**（同 -1346 的作法）：
+ *    「諾：『諾薇兒，安靜下！』」配 `Sorana_*` ⇒ 索菈娜；
+ *    「安：『快下降！…』」配 `Nouvelle_*` ⇒ 諾薇兒。
+ *  ⚠ 稿上還沒有圖的表情用最近的既有差分頂著（Ray：「立繪先沿用」）。
+ * ════════════════════════════════════════════════════════════════════════ */
+export const DRAGON_LINES = {
+  chase: [
+    /* ① 進入主廳 —— 那一夜的第一場。 */
+    { flag:'bl_chase1', sides:{ RENNA:'L' }, lines:[
+      sor('guardtalk','喔！學不乖的傢伙！'),
+      any('argue','小偷龍！'),
+      nou('awkward','叫人家小偷龍實在有點……'),
+      ren('run','小心！要來了！'),
+      { battle:'bl_chase' },
+      nou('cringe','啊！又跑了！'),
+      sor('readysmile','別以為逃得過獵手的追蹤喔！'),
+    ] },
+    /* ② */
+    { flag:'bl_chase2', sides:{ RENNA:'L' }, lines:[
+      { battle:'bl_chase' },
+      nou('surprise','往那邊去了！'),
+      sor('ready','我怎麼覺得這傢伙在挑釁我！'),
+    ] },
+    /* ③ */
+    { flag:'bl_chase3', sides:{ RENNA:'L' }, lines:[
+      { battle:'bl_chase' },
+      sor('furiousq','啊——！我受不了了！'),
+      sor('furiousq','我要把那隻小偷龍烤來吃！'),
+      nou('shocked2','禍魘不能吃啦！'),
+      nou('hungry',''),
+      any('nervous','肚子，餓了？'),
+      nou('lookaway','不是那樣啦——今天實在走太多路了！'),
+    ] },
+    /* ④ 打完這一場就逼進王座廳（紅點從此亮起）。 */
+    { flag:'bl_chase4', sides:{ RENNA:'L' }, lines:[
+      { battle:'bl_chase' },
+      ren('lookup','這樣下去沒完沒了！'),
+      ren('thinking','牠在消耗我們體力。'),
+      nou('cringe','那怎麼辦？'),
+      ren('command','把他往死胡同逼！'),
+      sor('guard','交給我！'),
+      sor('back','那氣味我記住了！'),
+    ] },
+  ],
+  /* ⑤⑥ 王座廳：**第二型態**決戰 → 轉空中 → 索菈娜索敵後出現 → 空中戰
+     （Ray：「逼到王座廳以後第二型態決戰　戰勝後轉空中　索拉娜索敵後出現　展開空中戰」）。
+     ⚠ 兩場在**同一段**裡：中間那幾拍是同一段演出（上船、索敵），拆成兩個 act
+       會多一次「走到某一格」的要求，而船上沒有格子可以走。 */
+  throne: { flag:'bl_night_throne', goto:'entrance', sides:{ RENNA:'L' }, lines:[
+    { battle:'bl_throne' },
+    { speaker:'NARRATION', text:'', shake:true, auto:800 },
+    ren('intense','小心！要垮了！'),
+    sor('furiousq','跑出去了！'),
+    nou('shocked2','讓牠襲擊城鎮就不好了！'),
+    ren('command','上船追！'),
+    /* 船升空。 */
+    nou('cringe','一片黑，看不到在哪！'),
+    sor('guardthinking','諾薇兒，安靜下！'),
+    sor('back','有了！'),                       // 發動獵手之眼
+    any('lookup','往這邊，過來了！'),
+    ren('askserious','現在才要發揮本領的意思嗎……'),
+    Object.assign(nou('runserious','彼此彼此！'), { se:'se_steps' }),
+    { battle:'bl_sky' },
+    sor('excite2','活該！跑不了了吧！'),
+    any('lookup','掉到中庭了！'),
+    Object.assign(nou('furious','快下降！屍體完全淨化的話就不知道位置了！'),
+                  { flags:['bl_night_sky'] }),
+  ] },
+};
+
 export const OUTING = {
   /* ⚠ ver -1102 由 [8,18] 改成 [9,19]（Ray 的 Stage9 稿：「夥伴有可能的出門時間
      是 09：00 到 19：00」）—— 上界與 `backHour` 是同一個鐘點（出了門就待到 19:00）。 */
