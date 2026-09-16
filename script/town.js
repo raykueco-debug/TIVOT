@@ -5691,7 +5691,14 @@ export const TOWNS = {
              稿上「（差分無髮飾）」那幾拍因此先照一般差分演。
          ⚠ `noWild` ＝這一格不刷野怪：它是這一段戲的舞台。
          ⚠ 收尾**強制移轉到下沉中庭**（稿：「中庭場景」）。 */
-      altar:     { bg:'Belisar_OldAltar', name:'貝利薩爾遺址　古代祭壇', noTime:true,
+      /* ⚠⚠⚠ ver -1405：`bg` 由 `Belisar_OldAltar` 改成 **`Belisar_EntryHall`** ——
+         Ray 交的 `belisar_topology.pptx` 每一格上貼著該用的那張圖，這一格貼的是
+         EntryHall（37 格逐張比對過，只有這一格與線上不同；另外三格只是 `_day` 變體）。
+         ⚠ `Belisar_OldAltar` 從此沒有任何節點在用。
+         ⚠⚠ 庫裡還有 `Belisar_EntryHallactive.webp`（點亮版）**還沒有人接** ——
+           安雅感應完裝置啟動那一拍應該要換成它（走 `bgWhen` 或那一拍的 `bg`）。
+           Ray 沒交代，先不接。 */
+      altar:     { bg:'Belisar_EntryHall', name:'貝利薩爾遺址　古代祭壇', noTime:true,
         noWild:true, exits:{ up:'floodway' },
         /* ⚠ ver -1385：`goto` 由 `courtyard`（下沉中庭）改成 **`entrance`（古城中庭）**
            —— 撤離那一段演在**出口**、也是真的淹水的那一格（`GreatCourt_flood`）。 */
