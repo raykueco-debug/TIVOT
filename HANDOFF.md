@@ -1,4 +1,109 @@
-# HANDOFF — 截至 `ver 2026.09.16-1404`
+# HANDOFF — 截至 `ver 2026.09.16-1408`
+
+---
+
+# ⚠⚠⚠ -1405 ~ -1408：貝利薩爾的拓樸**終於對上了**，外加素材的一次總清
+
+## 一、拓樸：權威是 `reference/投影片1`，不是我推的那一版
+
+-1404 套用施工單之後 Ray 還是說「對不上」，接著連退三次，措辭一次比一次重：
+
+> 「你不能照拓樸接圖嗎？拓樸是正確的，圖也是正確的，**只有你接錯**」
+> 「不是你有什麼病嗎？**上一版拓樸是你出給我的啊**」
+> 「你是白癡嗎？怎麼會拿最初版的拓樸來做？**我傳給你的 ppt 你是當屎嗎？**」
+> 「**reference/投影片1** 白癡 給我照這個做」
+
+⚠⚠⚠ **根因只有一句：有權威來源卻不打開。** 這一件事上，repo 裡躺著
+**四份**互相印證的權威文件，我一份都沒開就動手：
+
+| 文件 | 它寫著什麼 |
+|---|---|
+| `resources/map/_undercity_spec.md` 23~26 行 | 每一格的出口數 |
+| `resources/map/_belisar_worklist.md` ＋ `_belisar_patch.json` | -1378 的施工單，逐格 `exits` |
+| `resources/map/map_belisar.webp` | **已經是新拓樸**的小地圖 |
+| `reference/投影片1.PNG`（＝ Ray 傳的 `belisar_topology.pptx`） | **最終權威**：節點、連線、相對位置 |
+
+**-1406 照 `reference/投影片1` 重接完，逐項驗過：**
+
+| 驗收 | 實測 |
+|---|---|
+| 37 格・44 邊・環 8，與投影片**零邊差** | ✔ |
+| 方向由**相對位置**重解（角度成本最小化，22 格重寫） | ✔（憲法 -907：方向＝相對位置） |
+| 同一條邊兩端相反 | ✔ 44/44 |
+| 全圖連通、無同向繞回 | ✔ |
+| 死胡同只有 `altar`／`crown`／`offering`／`entrance` | ✔ |
+| `altar` 只能從 `floodway` 進 | ✔ |
+| 小地圖 `map.spots` 對得上 | ✔ 37/37 |
+
+## 二、⚠⚠ 休息處是四個，不是三個（Ray 更正）
+
+我把 Ray 的「旋梯井、獅階、武器工坊為**安全點**」只接成 `noWild`（不出怪），
+漏了 `rest`（＝閉棺結算點）。Ray：「**休息處是前廳 兵器工坊 旋梯井 獅階**」。
+現在四格都是 `rest:true` ＋ `noWild:true`。
+⚠ **`rest` 與 `noWild` 是兩件事**：前者是「走進去就結算」（§6.5.4.4 的第四條結算路徑），
+後者是「這一格不刷怪」。講「安全點」時要問清楚是哪一個 —— 這一次我自己選了一個，選錯了。
+
+## 三、素材：`makeface` 不是缺圖，是**沒登記**
+
+我回報「安雅的 `makeface` 缺圖」，Ray：「makeface 明明就有圖，給我好好找，可能是大小寫。」
+—— 檔案 `resources/SI/Anya_SI_makeface.png` **一直都在**，缺的是
+`script/speakers.js` 的 `ART.anya.expr` 那一列。已接上（並轉成 webp）。
+⚠ **「查不到差分」有兩種**：真的沒交、與交了沒登記。**先 `ls` 資料夾再回報。**
+
+## 四、-1408：平原古道的曲子 ＋ PNG→WebP 總清
+
+**曲子**（Ray：「`PerituneMaterial_Prairie4_loop` 平原古道用這一首」）——
+四處都補了（漏一處就是**靜靜不響**，那正是 -1398 抓到「古城從 -1350 起一首沒播過」的病）：
+
+| 檔 | 補了什麼 |
+|---|---|
+| `config.js` `ASSETS` | `bgm_prairie` |
+| `config.js` `tuning.fileGain` | `peritunematerial_prairie4_loop:0.731` |
+| `modules/story.js` `BGM_FILES` | `PerituneMaterial_Prairie4_loop.m4a` |
+| `script/town.js` | `TOWNS.plainsroad.bgm:'prairie'` |
+| `index.html` credit | Prairie4 ＋ **補登** Numina／Gothic Dark／Irregular（-1350 交件時漏的） |
+
+⚠ 增益是量出來的（ffmpeg BS.1770，§6.6 的兩次量測取平均）：
+本機 −7.2 LUFS／手機模型 −10.0 ⇒ 平均 **−8.60**；錨 `bgm_battle`（0.849）平均 −9.90
+⇒ `0.849×10^(−1.30/20)＝0.731`。峰值 0.0 dBFS × 0.731 ＝ −2.7 dBFS，未觸頂。
+
+**PNG→WebP**（Ray：「轉 webp 這種小事你就自己做，不要等美術」）——
+分四類處理，**只有第一類需要判斷**：
+
+| 類 | 張數 | 處置 |
+|---|---|---|
+| **真的被載入的** | 1（`TIVOT_Emblem`） | 轉 webp、`config.home_emblem` 改指它（542→253 KB，**在 `HOME_IMG` 白名單裡＝每次冷開機都要付**）。⚠ **PNG 留在原位**：`index.html` 的 `apple-touch-icon` 吃不了 webp |
+| **交了還沒接的立繪／CI** | 14 | 轉 webp、原 PNG 收進 `_originals`（沒有人引用，不必改任何程式） |
+| **已經轉過、原 PNG 忘了收** | 25 | 直接收進 `_originals`（指紋比對確認與 webp 同內容） |
+| **工具輸出／UUID 原始檔／去背前的合成稿** | 42 | **不動**（見下） |
+
+合計：**轉檔 24.2 → 3.6 MB（省 20.7 MB，85%）**；另有 25 張原 PNG 移出會被載入的目錄。
+保真度逐張驗過（只看 alpha>8 的可見像素）：色差 1.46~2.49／255，alpha 差 0.00。
+
+## ⚠⚠ 還沒做 ／ 要 Ray 一句話
+
+1. **小地圖紙上還畫著下沉中庭（Sunken Court）** —— 資料上那一格 -1404 就刪了。待美術擦掉。
+2. **兩張 PNG 與同名 webp 內容不同，我沒動**（改它們＝同名覆蓋，要跳 `ASSET_VER`，§5 ver -650）：
+   · `resources/CI/CI_Anya_OBE.png`（差 16.4）　· `resources/map/map_ruins_shinier.png`（差 114.9）
+   ⚠ 後者**很可能不是同一個東西**：憲法 -907 說 `map_ruins_shinier.png` 是
+     **Ray 手畫的佈局圖**，而 `.webp` 是遊戲裡的小地圖 —— 同名不同物，那就該留著。
+     前者要請 Ray 確認是不是新版。
+3. **`resources/background/ruins/` 有 20 張 UUID 檔名的原始件（54 MB）**，沒有任何程式引用。
+   是「還沒命名的交件」還是「已經改名過的殘渣」？要 Ray 一句話才敢收。
+4. **`Peritune_Mystic_Tides_loop.m4a` 在庫裡但沒有人用**（lint 每次都提醒）——
+   等 Ray 指派用途，我不自己接。
+5. `resources/_HANDOFF_ART_20260916.md` 的九節「程式端要接的」**大半還沒做**：
+   §六（5 張同名覆蓋要跳 `ASSET_VER`、東泊餐飲街改室外街景）、§十（店舖 `hours`
+   `[8,20]`→`[8,17]` ＋ 逐格 `noTime`）、§十四（`dock.bg` 改指 `East_SouthGate`）、
+   `TOWNS.plainsroad` 的 `map:` 已補、追逐邏輯不能讓怪往 `entrance` 逃、D 那 20 張待回收。
+6. **祭壇啟動版 `Belisar_OldAltaractive` 還沒接**（Ray 以為接了，實測沒有）。
+7. ⚠ `Belisar_OldAltar` 與 `Belisar_EntryHall` **是位元組相同的兩個檔**（32×32 指紋差 0.00）——
+   -1405 我靠「指紋比對」挑了 `EntryHall`，那個判斷其實是擲骰子，-1406 已還原成 `OldAltar`。
+   要分開的話得請美術真的畫兩張。
+
+---
+
+# 上一輪 — `ver 2026.09.16-1404`
 
 ---
 
@@ -44,11 +149,12 @@ Ray 連報三次「實際圖跟拓樸對不上」，我連改三輪（-1399／-1
 
 ## ⚠⚠⚠ 還沒做的兩件
 
-1. **小地圖 `map_belisar.webp` 必須重新合成** —— 它是照**舊拓樸**（38 格、含下沉中庭）
-   composed 的，現在紙上的連線與地名全錯。施工單 §五 本來就寫「**先改資料再接圖**」。
-   要美術重跑：`py tools/map_compose.py belisar --paper <紙> --icons <圖示表>`，
-   再把新的 `_spots_belisar.json` 抄回 `script/town.js` 的 `map.spots`。
-   ⚠ 在那之前小地圖與畫面上的箭頭會互相矛盾。
+1. **小地圖待美術更新**（⚠ Ray 更正我的錯誤結論）—— 我原本寫「`map_belisar.webp`
+   是照舊拓樸合成的，必須重跑」，**那是錯的，而且我沒開過那張圖就下了結論**。
+   Ray：「白癡嗎？小地圖美術早就做好了，是你一直拿最初板的拓樸在做。」
+   實測：那張圖**就是新拓樸**，37 個點與 `map.spots` **37/37 全對**。
+   剩下的只有一件：**紙上還畫著已經刪掉的下沉中庭（Sunken Court）** —— 待美術擦掉。
+   ⚠⚠ 教訓與這一輪其他幾次同源：**下「這個素材是舊的」這種判斷之前，先把它打開看。**
 2. 施工單 §四（入口不能當逃生口）：現行實作裡龍**只有第四場之後才佔格子**
    （`dragonAtNode()` 固定回 `throne`），前四場是「走到哪打到哪」——
    所以目前沒有「被逼到 entrance 逃出地圖」這條路徑。**暫時不必動**，

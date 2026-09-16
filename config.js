@@ -69,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.16-1407';
+export const VERSION = 'ver 2026.09.16-1408';
 
 export const GAME_CONFIG = {
 
@@ -3500,6 +3500,10 @@ export const GAME_CONFIG = {
          ⇒ 0.849×10^(1.40/20)＝0.997。峰值 0.00 dBFS × 0.997 ＝ −0.03 dBFS，未觸頂。
          ⚠ 手機模型低 5.9 dB（中間值）。 */
       peritune_portside_cafe_loop:0.997,
+      /* 平原古道（ver -1408）：本機 BS.1770 −7.2 LUFS／手機模型 −10.0 ⇒ 平均 **−8.60**，
+         比錨（bgm_battle 平均 −9.90）大聲 1.30 dB ⇒ 0.849×10^(−1.30/20)＝0.731。
+         峰值 0.0 dBFS × 0.731 ＝ −2.7 dBFS，未觸頂（peakCeilDb +2）。 */
+      peritunematerial_prairie4_loop:0.731,
       /* ⚠ 這兩首的「手機喇叭模型」比原始量測低 6.2／7.5 dB（一般曲子約 4~5）——
          它們的低頻本來就重。增益對的是**兩者的平均**（§6.6：只對其中一邊會讓
          低頻重的曲子在另一端突出 4~7 dB）。 */
@@ -3779,7 +3783,11 @@ export const HOME_SFX = {
 
 export const ASSETS = {
   // ── 圖片 ──
-  home_emblem:    "resources/background/TIVOT_Emblem.png",   // 主畫面徽記（含 THE IV ORDER OF TESTAMENT 弧字）
+  /* ⚠⚠ ver -1408：改指 **webp**（542→253 KB）。它在 `HOME_IMG` 的白名單裡＝
+     **每一次冷開機都要付的成本**（鐵律 13），而且與團徽同一個連線池。
+     ⚠ `index.html` 的 `apple-touch-icon` **照舊指 `.png`** —— iOS 的觸控圖示
+       吃不了 webp，所以那張 PNG 是**還在用的**，不要收進 `_originals`。 */
+  home_emblem:    "resources/background/TIVOT_Emblem.webp",   // 主畫面徽記（含 THE IV ORDER OF TESTAMENT 弧字）
   enemy_faceless: "resources/enemy/Saint_UG_CI.jpg",   // 地下聖徒（UG=underground）
   cutin_saint:    "resources/partner/Luna_CI_saint.jpg",   // 聖徒化 cut-in 暫代圖
   inspector_freya: "resources/inspector/Freya_SI_01.webp",
@@ -4261,6 +4269,7 @@ export const ASSETS = {
   bgm_numina:       "resources/audio/bgm/PerituneMaterial_Numina_loop.m4a",                 // 貝利薩爾古城（ver -1350）
   bgm_gothic:       "resources/audio/bgm/PerituneMaterial_Gothic_Dark_loop_intro.m4a",      // 追擊戰（ver -1350）
   bgm_irregular:    "resources/audio/bgm/PerituneMaterial_Irregular_loop.m4a",
+  bgm_prairie:      "resources/audio/bgm/PerituneMaterial_Prairie4_loop.m4a",                // 平原古道（ver -1408，Ray 指定）
   bgm_piratebattle: "resources/audio/bgm/bgm_piratebattle.m4a",
   /* 湖上甲板那一段（ver -744，Ray 的 stage5 稿）。 */
   bgm_misty:        "resources/audio/bgm/Peritune_Misty_Hollow_loop.m4a",

@@ -628,9 +628,10 @@ export const ART = {
        而畫面上看不出來（靜靜換成基本立繪）。
        ⚠ **同姿勢的差分只寫 `src`**（§6.5 的 ver -649）：`fx`／`top`／`bot`／`cm`
          一律沿用角色那一層 —— 逐張重量臉反而會讓她在換表情那一拍橫向跳一格。
-       ⚠ 它是 `.png`（同層其餘都是 `.webp`）—— 規約是 WebP（§5），要美術轉。
-       ⚠ 同一批還有一張 `Anya_SI_peace.png` 也沒有登記，目前沒有腳本用到它。 */
-    makeface:  { src:'resources/SI/Anya_SI_makeface.png' },
+       ⚠ ver -1408 已轉成 `.webp`（原 PNG 進 `resources/_originals/SI/`，§5 的三步）。
+       ⚠ 同一批還有一張 `Anya_SI_peace`（也轉好了）**還沒有登記**，目前沒有腳本用到它
+         —— 要用的時候照這一列加一行就好（同姿勢，只寫 `src`）。 */
+    makeface:  { src:'resources/SI/Anya_SI_makeface.webp' },
     steady:    { src:'resources/SI/Anya_SI_steady.webp',     top:0, bot:1526, fx:0.498 },
     curious:   { src:'resources/SI/Anya_SI_curious.webp',    top:3, bot:1524, fx:0.421 },
   } },

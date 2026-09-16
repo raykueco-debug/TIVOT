@@ -5077,6 +5077,8 @@ export const TOWNS = {
   plainsroad: {
     name: '平原古道',
     entry: 'entry',
+    /* ⚠ 短名（`bgmSrc` 查不到就回頭問 `ASSETS.bgm_prairie`，ver -1398）。 */
+    bgm: 'prairie',   // ver -1408，Ray：「PerituneMaterial_Prairie4_loop 平原古道用這一首」
     wilderness: true,
     storyExplore: true,
     /* ══ 小地圖（ver -1395，美術交件）══════════════════════════════════════
