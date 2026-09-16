@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1361"></script>
+<script src="../orientation.js?v=1362"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1361');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1362');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1361");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1361");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1362");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1362");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1361");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1361");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1362");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1362");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -620,25 +620,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1361" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1362" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1361" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1361" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1361" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1361" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1361" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1361" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1361" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1361" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1361" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1361" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1362" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1362" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1362" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1362" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1362" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1362" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1362" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1362" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1362" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1362" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1361" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1362" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1361" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1362" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -659,11 +659,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1361"></script>
+<script src="settlement.js?v=1362"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1361"></script>
+<script src="talks.js?v=1362"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -715,7 +715,7 @@ const COLOR_URL  = 'silvermoon_terrain.png'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1361';
+const FLIGHT_VER = 'ver -1362';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -3201,9 +3201,11 @@ const PLACES=[
      · **降落落在哪一格**：`node:'ruins'` ＝ 夏爾森林那張圖的「遺蹟入口」。
        ⚠ `town` 與夏爾森林**是同一張圖**，只是落在不同的格 —— 所以章節鎖不能用
          `PLACE_STAGE_FROM`（那一份的鑰匙是城鎮 id，會把森林一起鎖掉），
-         改成這一列自己的 `stageFrom`（判定在 `doLand`）。
-     · **stage 8 才開放**：`stageFrom:8`。⚠ 鈕照舊會亮、蕾娜開口擋 ——
-       藏起來玩家只會以為壞了（§6.5.5）。
+         改成這一列自己的 `stageFrom`（判定只有 `placeStageLocked` 一支）。
+     · **stage 8 才開放**：`stageFrom:8`。⚠⚠ **ver -1362 起鈕直接不亮**
+       （Ray：「S8 之前不應該顯示古城可進入」）—— -1221 那句「鈕照舊會亮、
+       蕾娜開口擋」已推翻。藏的只有**降落鈕**，名牌照舊在，所以沒有違反
+       §6.5.5（那條防的是藏掉一顆**做得到的**鈕）。
      · **往左＝出航**：寫在 `script/town.js` 那一格的 `sail.dir:'left'`
        （那一格的**下方**已經是回斷崖邊的路）。
      ⚠ 不進 `SETTLEMENTS`（同夏爾森林）：那張表會被道路網與程序建築當成城。
@@ -3243,7 +3245,7 @@ const PLACES=[
          程式端這一版也刪了，所以那筆帳一起清掉就好。 */
   {x:1080,y:676, name:'無名遺蹟', n:'無名遺蹟', type:'遺蹟',
    nameWhen:[{ need:'fallen_named', name:'瓦努努石陣' }],
-   sense:true, flag:'ruin_a_found', ruin:'stone', town:'fallen'},
+   sense:true, flag:'ruin_a_found', ruin:'stone', town:'fallen', stageFrom:8},
   /* ══⚠⚠ 石製遺蹟（ver -1107，Ray：「1125,757 放一個隱藏地點／石製遺蹟，走 B，
      要像素風，倒塌的石柱跟石地板」）══
      `ruin:'stone'` ＝ 地表**真的有東西**（手寫量體，見 `RUIN_ART`／`drawRuins`）。
@@ -3286,7 +3288,7 @@ const PLACES=[
      ⚠ `sense` 不加：它不是隱藏點，遠遠就該看得到名牌（-1134 起就是這樣）。
      ⚠ 這一格與 `export_mapref.py` 的 PLACES **兩邊都要改**（那張參考圖是給美術
        對位置用的，不同步就會標在舊位置）。 */
-  {x:723, y:137, name:'伊甸古墓', n:'伊甸古墓', type:'遺蹟', town:'tomb', ruin:'tomb'},
+  {x:723, y:137, name:'伊甸古墓', n:'伊甸古墓', type:'遺蹟', town:'tomb', ruin:'tomb', stageFrom:8},
   /* ══⚠⚠ 貝利薩爾遺址（ver -1156，Ray：「在 1972,656 放一個崩壞的哥德式的古堡…
      地點為貝利薩爾遺址」「沒有地宮，就是整個哥德古堡」）══
      · 38 格（外廓＋37 格內部；`TOWNS.belisar`，美術交件 `_undercity_spec.md`）。
@@ -3313,7 +3315,7 @@ const PLACES=[
        之前先讀這一段。
      ⚠ 只有這一座需要（其餘遺蹟最高 88，撞不到）；日後再有很高的量體照這個辦法挪。 */
   {x:1972, y:656, name:'貝利薩爾遺址', n:'貝利薩爾遺址', type:'遺蹟',
-   town:'belisar', ruin:'belisar', land:{x:1951, y:651}},
+   town:'belisar', ruin:'belisar', land:{x:1951, y:651}, stageFrom:8},
 ];
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -4680,18 +4682,36 @@ const STAGE_DEFAULT=7;   // ver -742（Ray：「試飛改 stage7」）：S5＝�
    ⚠ 與 `gameStage()` 分開：那一支回的是**可以拿來比大小的數字**（沒有鑰匙就給
      假定值），這一支回的是**有沒有那把鑰匙**（鐵律 9：不准讓「鑰匙不存在」
      混進遊戲邏輯 —— 要用就要問得明白）。 */
+/* ══⚠⚠⚠ **`stage 0` 是合法章節，不是「鑰匙不存在」**（ver -1362 修；
+     `script/progress.js` 早在 **ver -556** 就修好了，這一份**漏掉了六百版**）══
+   兩支都寫 `v>0`，於是**整個 stage 0（主線開場）被當成沒跑主線**：
+     · `hasStageKey()` → false → `featureOn()` 走「試飛全開」那條 ⇒
+       **索敵／探索／加速在 S0 全部打開**，而鐵律 12 那一版（-1132）Ray 的原話是
+       「**stage8 之前根本不應該開啟索敵生怪**」。
+     · `gameStage()` → 回 `STAGE_DEFAULT`（7）⇒ 遺蹟的章節鎖、`ENEMY_KINDS.fromStage`
+       全部照 7 放行。
+   實測（ver -1362，飛行頁獨立模式）：
+     `stage=0 → gameStage 7、sturm/sense/scan 全 true`；stage=1/2/7 全 false。
+   ⚠⚠⚠ **`setGameStage` 的 `Math.max(1,…)` 是同一個錯的另一半**：這一頁永遠寫不出 0。
+   ⚠⚠ **為什麼漏這麼久**：`progress.js` 那一份的註解當時就寫了理由 ——
+     「flight 有自己的一份讀取，**stage 0 時本來就沒有船、進不了飛行頁，不受影響**」。
+     那個**假設**後來被推翻了（首頁的「試飛」就進得去），而**假設寫在另一支檔案的
+     註解裡，沒有人會回來看它**。
+     ⇒ 教訓：鐵律 7 的但書說「兩份要註解互指」——**互指還不夠，指的那一句如果是
+       「所以另一邊不必修」，它就是一張到期不會有人檢查的支票。**
+       兩份真相同時只准有一份是「正確的那一份」，另一份要嘛照抄、要嘛不要存在。 */
 function hasStageKey(){
-  try{ const v=parseInt(localStorage.getItem(STAGE_KEY),10); return isFinite(v) && v>0; }
+  try{ const v=parseInt(localStorage.getItem(STAGE_KEY),10); return isFinite(v) && v>=0; }
   catch(e){ return false; }
 }
 function gameStage(){
   try{
     const v=parseInt(localStorage.getItem(STAGE_KEY),10);
-    return (isFinite(v) && v>0) ? v : STAGE_DEFAULT;
+    return (isFinite(v) && v>=0) ? v : STAGE_DEFAULT;
   }catch(e){ return STAGE_DEFAULT; }
 }
 function setGameStage(n){
-  n=Math.max(1, n|0);
+  n=Math.max(0, n|0);
   try{ localStorage.setItem(STAGE_KEY, String(n)); }catch(e){}
   return n;
 }
@@ -17871,6 +17891,21 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
      那正是「飛到那座城上空」的意思。 */
 const LAND_K = 3.2;           // 判定半徑＝市區外緣的幾倍
 let landTarget=null, landOn=false;
+/* ══⚠⚠⚠ **章節還沒到的地點，降落鈕就不要亮**（ver -1362，Ray：「S8 之前不應該
+     顯示古城可進入，**四大遺跡都應該這樣處理**」）══
+   `stageFrom` 是 ver -1221 立的（木雅克神殿），但那時**只擋在 `doLand()`**
+   —— 鈕照樣亮、字照樣印「降落　貝利薩爾遺址」，按下去才被蕾娜擋回來。
+   Ray 要的是**看不到那個入口**，不是「按了被罵」。
+   ⚠⚠ 這與 §6.5.5「還不能做不要靠藏起鈕擋」**不衝突**，因為藏的只有**降落鈕**：
+     地圖上的**名牌照樣在**（那座遺蹟存在、看得見、飛得過去），少的只是
+     「現在降得下去」這個承諾。藏掉一顆**做得到的**鈕才是那條在防的事。
+   ⚠ 判定只有這一支（鐵律 8）：`nearestTown`（鈕亮不亮）與 `doLand`（真的按下去）
+     都問它 —— 兩邊各寫一次的話，日後補一個條件必然只補到一邊。
+   ⚠ 四大遺蹟＝木雅克神殿／無名遺蹟（瓦努努石陣）／伊甸古墓／貝利薩爾遺址，
+     全部 `stageFrom:8`（資料，鐵律 1）—— 加第五座只要在那一列寫一格。 */
+function placeStageLocked(P){
+  return !!(P && P.stageFrom!=null && gameStage() < (P.stageFrom|0));
+}
 function nearestTown(){
   let best=null, bd=Infinity;
   for(const S of SETTLEMENTS){
@@ -17883,6 +17918,7 @@ function nearestTown(){
   for(const P of PLACES){
     if(!P.town) continue;
     if(P.flag && !flagOn(P.flag)) continue;
+    if(placeStageLocked(P)) continue;          // 章節沒到＝鈕不亮（ver -1362）
     /* ⚠ 降落判定用 `land`（沒寫就用地點本身的座標，ver -1175）——
        「這個地點在哪」與「要飛到哪裡才降得下去」是兩件事：貝利薩爾的城堡
        背著崖，正面那一側才飛得近。判定只有這一處（鐵律 7）。 */
@@ -17930,7 +17966,7 @@ function doLand(){
      用的是同一個 `town`（都是 `shinier_forest`，只是落在不同的格）——
      用城鎮 id 鎖會把森林一起鎖掉。所以逐地點的鎖寫在那一列自己身上。
      ⚠ 台詞借同一組（蕾娜擋回來），不另寫一份。 */
-  if(S.stageFrom!=null && gameStage() < (S.stageFrom|0)){
+  if(placeStageLocked(S)){
     if(!sayQueue) say(PLACE_LOCK_NAG, performance.now());
     return;
   }
