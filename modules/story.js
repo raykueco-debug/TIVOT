@@ -1317,6 +1317,14 @@ function applyPersist(line){
     const first = !stageCgBack;      // 場上還沒有中景圖＝這是「牠出現了」那一拍
     stageCgBack=line.cgBack;
     swapImg($('storyCgBack'), line.cgBack||'', null, { fadeInFirst:first });
+    /* ⚠⚠ `cgBackScale`（ver -1413，Ray：「龍縮 10%」）＝這一層的縮放。
+       **錨在腳底**（`transform-origin:center bottom`）：這一層是 `object-fit:cover`
+       ＋ `object-position:center bottom`，錨中心的話縮小＝整隻往下沉進地面。
+       ⚠⚠ **每次換圖都要重設**（不寫就是 1）：中景層是**持續狀態**，
+         縮放留著會跟到下一張圖上 —— 同「誰收它」那一族的坑（§6.5.4 的檢查表）。 */
+    { const el=$('storyCgBack'), k=+line.cgBackScale||1;
+      if(el){ el.style.transformOrigin='center bottom';
+              el.style.transform = k===1 ? '' : 'scale('+k+')'; } }
   }
   if(line.ci!==undefined){ stageCi=line.ci; setImg($('storyCi'), line.ci?SI_DIR+line.ci+'.webp':''); }
   /* 推時鐘（ver -739，Ray：「這一幕結束轉景後…時間是早上八點」）：拍上寫
@@ -1484,6 +1492,11 @@ const SE_FILES=[
   'se_ginclick.m4a', 'Se_Tummy.m4a', 'se_metalclip.m4a', 'se_SailorShout.mp3',
   /* stage7・木雅克神殿（ver -922，Ray 交件）：古代機械開門的金屬聲、深處的禍魘咆哮。 */
   'se_metalopen.m4a', 'se_monsterroardeep.m4a',
+  /* ⚠⚠ `se_waterfall`（ver -1413，Ray：「逃了以後的震動要播破瓦聲跟流水聲」）——
+     **這一支是我程序合成的暫代品**（粉紅噪音分低頻隆隆＋中高飛濺，各自慢速起伏，
+     0.25 秒湧上來、尾端 0.5 秒收）。要換成真的錄音就**同名覆蓋**，
+     ⚠ 那時記得重量 `fileGain`（§6.6：一支音檔只有一個響度）。 */
+  'se_waterfall.m4a',
   'se_ui_kagurabell.m4a', 'se_ui_pageflip.m4a', 'se_ui_sortie.m4a', 'se_walk.m4a',
   'se_weapon_guard.m4a', 'se_weapon_mg_squall.m4a', 'se_weapon_pistol_01.m4a',
   'se_weapon_pistol_02.m4a', 'se_weapon_pistol_03.m4a', 'se_weapon_reload.m4a',
@@ -1798,7 +1811,11 @@ function senseFx(){
   senseBurstT.push(setTimeout(senseBurst, SENSE_BURST_AT));
 }
 function fireOneShot(line){
-  if(line.se) playSe(line.se);
+  /* ⚠⚠ `se` 可以是**陣列**（ver -1413，Ray：「逃了以後的震動要播破瓦聲跟流水聲」）——
+     一拍兩個聲音以前只能拆成兩拍（見貝利薩爾那一段的舊註解「`se` 一拍只有一支」），
+     而那會把「同時發生」演成「先後發生」。收在這一支（鐵律 8）：所有讀 `line.se`
+     的路徑都吃到，腳本那邊寫 `se:['a','b']` 就好。 */
+  if(line.se) (Array.isArray(line.se) ? line.se : [line.se]).forEach(playSe);
   /* ⚠ 抖動要**跟著演出的長度**（ver -327，Ray：「畫面抖動要連續直到射擊效果停止」）。
      單發 0.42 秒的抖法配上兩秒的掃射，會變成「槍還在打、畫面已經定住」。
      有掃射就抖滿掃射的長度（`.hold`＝無限循環），沒有就照舊抖一下。 */
@@ -1885,7 +1902,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1412';
+const KERB_V='?v=1413';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -2777,6 +2794,7 @@ function renderLine(){
          直接拿掉最乾淨（Ray：「用加載頁洗掉」）。 */
     flushCgFade(); stageCg=null; setImg($('storyCg'), '');
     stageCgBack=null; setImg($('storyCgBack'), '');   // 中景也是持續狀態（ver -870）
+    { const el=$('storyCgBack'); if(el) el.style.transform=''; }   // 連縮放一起收（ver -1413）
     clearCast(); hideBubble();
     if(flightOpener){ endScene(); try{ flightOpener(line.goFlight); }catch(_){} return; }
     console.info('[story] 沒有註冊飛行頁開啟器，跳過 goFlight');

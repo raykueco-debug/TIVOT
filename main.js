@@ -1886,9 +1886,18 @@ combat.setStoryReturn((res)=>{
 /* ⚠ 這一場自己的曲子（ver -614（-893 前用詞））：戰鬥卡寫了 `bgm` 就放它，沒寫才是 `bgm_battle`。
    ⚠ 只有這一支在決定（`battleBgmOf`，鐵律 7）—— 門的 cue 與交棒兩處都問它，
      各寫一份的話會出現「門開的時候放 A、真的開打換成 B」。 */
+/* ══⚠⚠⚠ **優先序（ver -1413，Ray：「有指定音樂的特殊敵人音樂選擇優先於伙伴配樂」）**══
+     ① 戰鬥卡的 `bgm`　② **敵人卡的 `bgm`**　③ 搭檔專屬曲　④ 打靶場　⑤ 船戰禍魘　⑥ 預設
+   ⚠⚠ ①②＝「這一場／這一隻**指定**了曲子」，③＝「這一場剛好誰跟著你」——
+     **指定的一律壓過剛好的**。漏了②的話，某一隻怪的專屬曲會在索菈娜或安雅同行時
+     被換掉，而且**畫面上沒有任何錯誤訊息**（只是「這一場的音樂怎麼變了」）。
+   ⚠ 現在還沒有敵人卡在用②（龍那三場的曲子寫在**戰鬥卡**上，走①）——
+     這一行是**先立規矩**：日後把曲子寫在怪身上就自動照這條走。 */
 function battleBgmOf(id){
   const b = id && GAME_CONFIG.battles && GAME_CONFIG.battles[id];
   if(b && b.bgm) return b.bgm;
+  { const e = b && GAME_CONFIG.enemies && GAME_CONFIG.enemies[b.enemy];
+    if(e && e.bgm) return e.bgm; }
   /* 搭檔專屬戰鬥曲（ver -837（-893 前用詞），Ray：「索拉娜為夥伴時戰鬥音樂換成 Peritune_Whirlwind」）：
      這一場的搭檔＝卡上的 `partner`（sv_* 的強配），否則整備頁選的人
      （partner.storyPartnerKey —— cue 的當下 startGame 還沒跑，state.pickedPartner 未定）。

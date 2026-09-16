@@ -495,7 +495,16 @@ function playEntranceSe(key){
     else                  SFX.play(p, sfxGain(key));
   }catch(_){}
 }
-const ENTRANCE_KINDS = { harm:1, slay:1, ship:1, aerial:1 };
+/* ⚠⚠⚠ `multi`＝**多型態 BOSS 的中間型態**（ver -1413，Ray：「王座徘徊者前兩型態的
+   kind 定為 multi，戰勝後綴為王座徘徊者已擊退」）——
+   **有降臨、沒有淨化**，而且那是刻意的：
+     · **降臨** —— 牠每一型態都是從天而降的（照樣要震、要衝擊波）。
+     · **淨化** —— 淨化是「散成白光消失」＝死了。這兩型態是**被打退**的，腳本下一句
+       就是索菈娜的「喔，逃了！」—— 散白光等於把後面那一場的戲先講完。
+   所以 `multi` 只進這一張表，**不進 `PURIFY_KINDS`**（同 `ship` 的理由：
+   那兩張表分的不是同一刀，不可以合回一份）。
+   ⚠ 最後一型態（`bl_dragon_sky`）仍是 `aerial` —— 那一場才是真的擊墜。 */
+const ENTRANCE_KINDS = { harm:1, slay:1, ship:1, aerial:1, multi:1 };
 function isPurify(){
   const en = GAME_CONFIG.enemies[state.currentEnemyKey];
   /* `purgeFx:1`＝卡上的**明寫例外**（ver -874，Ray：「鹿主被消滅走禍魘拉長特效」）

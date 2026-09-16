@@ -69,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.16-1412';
+export const VERSION = 'ver 2026.09.16-1413';
 
 export const GAME_CONFIG = {
 
@@ -3418,6 +3418,12 @@ export const GAME_CONFIG = {
       se_kerberos_open:1.558, se_kerberos_pop:1.479, se_kerberos_steam:1.301,
       se_kerberos_gear:6.179, se_kerberos_drop:1.550,
       se_brickcrush:1.825,              // ver -624（audio_scan 實測：−19.0 LUFS）
+      /* 流水聲（ver -1413）：與 `se_brickcrush` **同一拍一起播**，所以直接錨它 ——
+         本機 BS.1770 實測 brickcrush −15.7／waterfall −14.5 LUFS，
+         要齊平是 1.59，但峰值 −0.4 dBFS × 1.59 ＝ +3.6 dBFS **超過 `peakCeilDb`(+2)**
+         ⇒ 夾到 **1.32**（＝峰值剛好 +2）。結果是水聲比崩塌低約 1.6 dB —— 那是對的：
+         崩塌是撞擊、水是底下漫上來的，水壓過撞擊會讓那一拍失焦。 */
+      se_waterfall:1.32,
       /* ⚠ **還沒量**（ver -664 新加的音效）：跑一次 tools/audio_scan.html 貼回來（§6.6）。 */
       se_paniccrowd:1.0,
       /* ⚠ 由 `Se_enemy_Saintroar` 升 5 個半音另存（ver -671，Ray 指定）——

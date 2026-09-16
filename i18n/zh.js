@@ -197,7 +197,10 @@ export const STRINGS = {
        ⚠ 沒寫 `kind` 的怪退回 `winSub` 那一句，不會壞。 */
     winSubBy:     { harm:'{name}已淨化', human:'{name}已擊敗', ship:'{name}已擊沉',
                     target:'{name}已擊破', beast:'{name}已獵殺', aerial:'{name}已淨化',
-                    slay:'{name}已擊殺' },
+                    slay:'{name}已擊殺',
+                    /* `multi` ＝多型態 BOSS 的**中間型態**（ver -1413，Ray 指定）：
+                       牠是被**打退**不是被打死的 —— 用「已擊殺／已淨化」會把後面那一場的戲先講完。 */
+                    multi:'{name}已擊退' },
     loseTitle:    '聖光黯滅',
     loseSub:      'HUND 倒下了…',
     gradeCap:     '評價',

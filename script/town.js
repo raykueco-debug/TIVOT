@@ -5799,7 +5799,12 @@ export const TOWNS = {
              ⚠ `cgBack` 一律寫**明確路徑**（不是基底名）：它不走時段候選鏈。
              ⚠⚠ **要有人收**：這一段打完在下面那一拍 `cgBack:null`（同鹿主那一段
                的作法）—— 中景層是持續狀態，不收就一路跟到回東泊。 */
+          /* ⚠ ver -1413（Ray：「龍出現的那一拍沒有播龍犼，龍縮 10%」）：
+             `se` ＝深沉的獸吼（`se_monsterroardeep`，原本掛在索菈娜那一句上，
+             ver -1413 移到這裡 —— **聲音要跟著牠出現的那一刻**）；
+             `cgBackScale:0.9` ＝中景層縮 10%（錨腳底，見 story.js）。 */
           { speaker:'NARRATION', text:'', shake:true, auto:900,
+            se:'se_monsterroardeep', cgBackScale:0.9,
             cgBack:'resources/enemy/mon_dragon_v1_shackled.webp' },
           ren('scream','呀！'),
           /* ══⚠⚠⚠ **蕾娜倒地・髮飾脫落**（ver -1397，Ray 交件 `020-rennadrop`）══
@@ -5818,8 +5823,11 @@ export const TOWNS = {
           Object.assign(ren(null,'啊……'),
             { flags:['renna_hairpin_lost'], cg:'020-rennadrop', cgPan:'up', cgNoTime:true,
               hide:['SORANA','RENNA','NOUVELLE','ANYA'] }),
-          Object.assign(sor(null,'危險！'), { shake:true, se:'se_monsterroardeep' }),
-          { speaker:'NARRATION', text:'', shake:true, se:'se_brickcrush', auto:700 },
+          /* ⚠ ver -1413（Ray：「索：『危險！』的時候播破瓦聲」）——
+             龍咆已經移到牠出現那一拍，這裡改成崩瓦；後面那個演出拍**不再重複**
+             （原本是「龍咆緊接崩瓦」兩拍，現在兩個聲音各自落在自己該在的時刻）。 */
+          Object.assign(sor(null,'危險！'), { shake:true, se:'se_brickcrush' }),
+          { speaker:'NARRATION', text:'', shake:true, auto:700 },
           Object.assign(ren('reachcry','不要！'), { cg:null }),
           /* ⚠ 表情沿用 `battlecry`（ver -1384，Ray 指定）—— 原本寫 null ＝沿用上一張。 */
           sor('battlecry','妳在想什麼啊！差一點被吞掉的就是妳不是那個髮飾了！'),
@@ -5829,7 +5837,14 @@ export const TOWNS = {
           /* ⚠ 收掉中景層那隻龍（牠逃了）—— 不收的話牠會一路跟到回東泊。 */
           Object.assign(sor('side','哈，虛有其表！'), { cgBack:null }),
           sor('think','喔，逃了！'),
-          { speaker:'NARRATION', text:'', shake:true, auto:700 },
+          /* ⚠⚠ ver -1413（Ray：「逃了以後的震動要播破瓦聲跟流水聲 se_waterfall」）——
+             **一拍兩個聲音**（`se` 吃陣列，ver -1413 的引擎改動）：崩塌與湧水是
+             同時發生的，拆成兩拍會演成「先塌、再淹」，而下一句正是安雅喊「淹出來了」。
+             ⚠⚠⚠ **`se_waterfall` 的音檔還沒交**（庫裡只有 `se_Fall`／`se_brickcrush`／
+               `se_shipcrush`）—— 音效名查不到是**靜靜不播**，不會壞，但也不會響。
+               檔案一進 `resources/audio/se/` 並補進 `SE_FILES` 就自動有聲音。 */
+          { speaker:'NARRATION', text:'', shake:true, auto:700,
+            se:['se_brickcrush','se_waterfall'] },
           any('panic','水！淹出來了！'),
           sor('ready','要出去了！站起來！'),
           ren('meltdown','……'),
