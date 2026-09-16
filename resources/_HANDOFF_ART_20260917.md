@@ -62,11 +62,25 @@ document.body.appendChild(a); a.click(); a.remove();
 |---|---|
 | 道口 Entry・里程碑 Stone・烽燧臺 Beacon・草海 Sea・古井驛 Well | dawn/day/dusk/night 各 4 張 ＝ 20 |
 | **石塚群 Cairn** | **day**（ver -1414 照荒蕪梯度重畫，舊版進 `_recycle`） |
+| **碎石坡 Scree・枯木林 Deadwood・風蝕岩 Windrock** | **day**（ver -1415 照荒蕪梯度新畫） |
 
-## ✘ 欠（19）
+實測（地表那一段）：
 
-    日景 4：Plains_Scree ／ Plains_Deadwood ／ Plains_Windrock ／ Plains_Gorge
-    時段 15：上面四格 × dawn/dusk/night ＋ Plains_Cairn 的 dawn/dusk/night
+| 格 | 乾草% | 裸岩% | 彩度 | 天空% |
+|---|---|---|---|---|
+| 石塚群 | 36.7 | 14.2 | 0.294 | 35.4 |
+| 碎石坡 | 8.7 | 30.4 | 0.189 | 14.5 |
+| 枯木林 | 8.3 | 24.2 | 0.228 | 29.2 |
+| 風蝕岩 | **3.8** | 37.7 | **0.157** | 12.7 |
+
+⚠ 「裸岩%」普遍低於我訂的目標（≥35/40/55）——那是**判準偏嚴**：這條路的石頭是
+**暖色淺灰岩**，`S<0.14` 抓不到它。乾草% 與彩度那兩欄才是真的分得開的指標。
+日後調門檻的話，裸岩那一欄要改成「S<0.14 **或** 色相 20~40° 且 S<0.22」再重量一次。
+
+## ✘ 欠（16）
+
+    日景 1：Plains_Gorge（狹窄溪谷，最後一格）
+    時段 15：Cairn／Scree／Deadwood／Windrock／Gorge × dawn/dusk/night
 
 ⚠ 時段差分**由 Gemini 從 day 衍生**（憲法 §5 的分工），要寫死「構圖、視角、景物位置、
 比例完全不變，只換光與色溫」。⚠⚠ **Gemini 那個分頁必須是 Chrome 正在顯示的那一個**
