@@ -276,3 +276,84 @@ Ray：「入口重畫，是一個低窪的巨大中庭。除四差分外還有�
 
 ⚠ 新畫任何祭壇時，**把 `Ruins_shinier_DeepAltaractive.webp` 當參考圖一起上傳** ——
 用文字描述「電路感」做不出來，給圖才準（這一輪實測）。
+
+
+---
+
+# ⚠⚠⚠ 擴成 10 格迷宮（ver -1395，Ray 交辦）
+
+> Ray：「平原古道太小了，**擴成迷宮，大概 10 格**，確保玩家踏入古城前就把時間磨到
+> **至少 17:00**。**倒數最後一格是狹窄溪谷**。」
+
+## 拓樸（10 格・10 邊・環 1）
+
+```
+                    @貝利薩爾
+                        |
+                 [狹窄溪谷 gorge]        ← 最後一格・rest・跨圖
+                        |
+                 [風蝕岩 windrock]       ← 環的出口（3 向）
+                   /                   [碎石坡 scree]   [枯木林 deadwood]
+                   \          /
+                 [石塚群 cairn]          ← 抉擇點③（3 向）
+                        |
+   [古井驛 well] -- [草海 sea]           ← 抉擇點②
+                        |
+  [烽燧臺 beacon] -- [里程碑 stone]      ← 抉擇點①
+                        |
+                  [道口 entry]           ← rest・不出怪・跨圖→東泊
+                        |
+                    @東方泊地
+```
+
+```
+entry     { up:'stone',    down:'@eastport:dock' }   rest noWild
+stone     { up:'sea',      left:'beacon',  down:'entry' }
+beacon    { back:'stone' }
+sea       { up:'cairn',    right:'well',   down:'stone' }
+well      { back:'sea' }
+cairn     { up:null, left:'scree', right:'deadwood', down:'sea' }
+scree     { up:'windrock', down:'cairn' }
+deadwood  { up:'windrock', down:'cairn' }
+windrock  { up:'gorge',    down:'scree',   left:'deadwood' }   ⚠ 見下
+gorge     { up:'@belisar', down:'windrock' }   rest
+```
+
+⚠ `windrock` 的兩條來路要一條 `down`、一條 `left`（同一條邊兩端必須相反，§6.5.4.3）——
+`scree.up→windrock` 配 `windrock.down→scree`；`deadwood.up→windrock` 配
+`windrock.left→deadwood` **則要求 deadwood 在 windrock 的左邊**，排版時照這個擺。
+
+- **環是迷宮感的來源**：石塚群往上分左右兩半，有霧時兩條看起來一樣，走錯要繞回來，
+  但**不會卡死**（兩半等長，都通到風蝕岩）。
+- **死路只有兩條**（烽燧臺、古井驛）—— 再多會變成「試誤」而不是「選路」。
+- `ravine` 溪谷口**由 `gorge` 狹窄溪谷取代**（原本借貝利薩爾外觀圖，Ray 要的是窄谷）。
+
+## ⚠ 時間：靠 `stepMin` 不是靠格數
+
+每步分鐘 × 步數（最短 6 步／迷霧下預期 12 步）：
+
+| `stepMin` | 最短 | 預期 | 11:00 出發預期抵達 |
+|---|---|---|---|
+| 10（城鎮預設） | 1.0h | 2.0h | 13:00 ✘ |
+| 20 | 2.0h | 4.0h | 15:00 ✘ |
+| **30** | 3.0h | **6.0h** | **17:00 ✔** |
+| 40 | 4.0h | 8.0h | 19:00（太晚） |
+
+⇒ **`TOWNS.plainsroad.stepMin = 30`**（欄位引擎已支援：`modules/town.js` 的 `stepMin()`）。
+⚠⚠ **但那是「預期」不是「保證」** —— 直直走只要 6 步＝3 小時。要真的保證 17:00，
+**還要一道時鐘閘門**：進 `@belisar` 那一刻若早於 17:00 就推到 17:00（程式端）。
+
+## 美術工單：5 格新圖 × 4 時段 ＝ 20 張
+
+| 格 | 檔名基底 | 畫面上必須看得見 | 幾條路 |
+|---|---|---|---|
+| 石塚群 | `Plains_Cairn` | 一片矮石堆（古代路標堆），路在此分成左右兩條 | **3**（正前左、正前右＋身後） |
+| 碎石坡 | `Plains_Scree` | 碎石鋪成的緩坡，路沿坡往上 | 2 |
+| 枯木林 | `Plains_Deadwood` | 一小片枯死的樹幹，路從中間穿過 | 2 |
+| 風蝕岩 | `Plains_Windrock` | 被風蝕成蕈狀的孤岩，兩條路在此匯合 | **3** |
+| 狹窄溪谷 | `Plains_Gorge` | **窄**：兩側岩壁夾著一條路，谷底一道細流 | 2 |
+
+**全圖共通**：色系照第二節（橄欖草原／暖灰低地岩／白灰高地岩脊）；
+⛔ **中間四格一滴水都不能有**，只有**狹窄溪谷**可以有溪流（Ray：「最後一張的溪谷也可以有」）；
+⛔ **六格一律不畫月亮本體**（§三，方位算過偏出畫面 61.2°），night 只畫月光；
+⛔ 不要新增原構圖沒有的東西；**廢道要讀得出來**（石板碎裂、草侵入到只剩兩道車轍）。
