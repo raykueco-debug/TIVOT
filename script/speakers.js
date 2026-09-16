@@ -262,6 +262,9 @@ export const ART = {
                      `fx` 0.644／0.608 比她平常那幾張（≈0.52）偏右將近一成的圖寬，
                      沿用舊值會把她整個往左推一大截。 */
                   scream:      { src:'resources/SI/Renna_SI_scream.webp',      top:7,  bot:1527, fx:0.644 },
+                  /* ══ 貝利薩爾之後那一夜（ver -1386，Ray 交稿）══ 逐張量（measure_si.py）。 */
+                  crying:      { src:'resources/SI/Renna_SI_crying.webp',      top:5,  bot:1534, fx:0.585 },
+                  lookfaropen: { src:'resources/SI/Renna_SI_lookfaropen.webp', top:12, bot:1517, fx:0.572 },
                   reachcry:    { src:'resources/SI/Renna_SI_reachcry.webp',    top:2,  bot:1533, fx:0.608 } } },
   /* ⚠⚠ 諾薇兒的表情差分是**不同姿勢**（跑、畏縮、驚恐、絕望、驚訝），不是換臉，
        所以每一張**各帶自己的 top/bot/fx**（ver -325 量完）。
@@ -618,6 +621,9 @@ export const ART = {
          ＝雜訊）⇒ 照量即可，**不加** `cm`／`standCm`／`rescale`
          —— 那三個旋鈕是給近景與坐姿用的（見上面 `sobbing`／`desperate`）。 */
     amazed:    { src:'resources/SI/Anya_SI_amazed.webp',     top:1, bot:1527, fx:0.480 },
+    /* ══ 貝利薩爾之後那一夜（ver -1386，Ray 交稿）══ 逐張量。 */
+    clap:      { src:'resources/SI/Anya_SI_clap.webp',       top:0, bot:1517, fx:0.484 },
+    steady:    { src:'resources/SI/Anya_SI_steady.webp',     top:0, bot:1526, fx:0.498 },
     curious:   { src:'resources/SI/Anya_SI_curious.webp',    top:3, bot:1524, fx:0.421 },
   } },
   /* ══ 娜塔莉（ver -636，Ray 交稿）══ 安雅的侍女，只在北方泊地那一幕出現。
