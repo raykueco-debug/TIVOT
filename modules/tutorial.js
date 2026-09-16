@@ -64,7 +64,7 @@ let cutinLine = -1;            // 已播過 cut-in 的台詞索引（重讀同�
 let soloRun = false;           // 本場全程只有一個人講話（立繪放大；maybeStart 判定）
 let awaitDualEnd = false;      // 劇情版：破防那一盤打完就收尾（等下一盤載入）
 
-/* ── 戰鬥內的短教學／插話（ver -426）─────────────────────────────────────
+/* ── 戰鬥內的短教學／插話（ver -426（-893 前用詞））─────────────────────────────────────
    `config.battles[<場次>].talk` ＝**那一場自己的**幾句話，掛在既有的 trigger 上
    （`battleStart` / `board:N` / `threat` / `defended`）。
    ⚠⚠ **共用同一支對話實作**（openStep 那一條，鐵律 8）：立繪、打字機、真暫停、
@@ -76,7 +76,7 @@ let awaitDualEnd = false;      // 劇情版：破防那一盤打完就收尾（�
      §6.9）。不寫就是每次打都講。 */
 let talkLeft = [];             // 這一場還沒觸發的 talk 步驟（同 stepsLeft，一步只觸發一次）
 let talkTimer = null;          // battleStart 延遲計時器（同 startTimer，兩者不會同時存在）
-/* 這一場的**站位預設**（ver -619，Ray：「諾要永遠站右側」）：
+/* 這一場的**站位預設**（ver -619（-893 前用詞），Ray：「諾要永遠站右側」）：
    戰鬥卡寫 `talkSides:{nouvelle:'right'}`，整場所有段落都吃 ——
    逐段寫一次必然有人漏掉，而站位錯了就是「同一個人一下左一下右」。
    ⚠ 段落自己的 `sides` 仍可覆寫（覆寫贏），但這一場不需要。 */
@@ -101,7 +101,7 @@ export function startBattleTalk(list, opts){
   talkTimer = setTimeout(fireStart, CFG().startDelayMs||700);
 }
 /* 獨腳戲判定同 computeSoloRun：**以整場為單位**，不逐段看台上幾個人 ——
-   逐段判的話同一張立繪會在插話時忽然放大再縮回去（ver -324 定過的規矩）。 */
+   逐段判的話同一張立繪會在插話時忽然放大再縮回去（ver -324（-893 前用詞） 定過的規矩）。 */
 function computeTalkSolo(list){
   const who=new Set();
   (list||[]).forEach(st=>(st.lines||[]).forEach(l=>{ if(l && l.who) who.add(l.who); }));
@@ -459,7 +459,7 @@ export function onEnergyFull(){
   }});
 }
 // saint.saintAdvance 於倒數槽推至臨界（滿-1）時呼叫 → 生命歸還引導（不進 OBE）
-/* ══⚠⚠ **還有人在等「倒數槽推到 99%」那一拍嗎**（ver -619，Ray：「生命歸還在 OBE 後
+/* ══⚠⚠ **還有人在等「倒數槽推到 99%」那一拍嗎**（ver -619（-893 前用詞），Ray：「生命歸還在 OBE 後
    不能用，所以要在生命 99% 時發動」）══
    聖徒化的倒數槽推滿＝OBE，而 OBE 一走生命歸還就沒得用了 —— 所以教學／劇情要在
    **滿 −1** 攔下來。攔截的實作在 `saint.saintAdvance`（唯一那一處），
@@ -473,7 +473,7 @@ export function saintCriticalPending(){
   if(state.tutorialActive) return !saintCritFired;
   return (talkLeft||[]).some(st0 => /^php:/.test(String(st0.trigger||'')));
 }
-/* ══⚠⚠ **還有人在等「自爆」那一拍嗎**（ver -705，Ray：「娜塔莉戰讓主角 hp 到 1 的
+/* ══⚠⚠ **還有人在等「自爆」那一拍嗎**（ver -705（-893 前用詞），Ray：「娜塔莉戰讓主角 hp 到 1 的
    時候再發動 dreambreaker」）══════════════════════════════════════════════════
    惡夢化的倒數槽把血抽到 1 就熔斷 —— 而 Ray 要的是「**到 1 的那一刻**才教玩家自爆」，
    兩件事撞在同一個瞬間。作法與生命歸還那一條完全同型（`saintCriticalPending`，
@@ -613,7 +613,7 @@ function afterCutin(fn){
   const t0 = Date.now();
   let saw = state.cutinPlaying;
   const iv = setInterval(()=>{
-    /* ⚠⚠ **不再要求 `tutorialActive`**（ver -613，Ray：「聖徒化之後的教學對話
+    /* ⚠⚠ **不再要求 `tutorialActive`**（ver -613（-893 前用詞），Ray：「聖徒化之後的教學對話
        沒做進去」）—— 戰鬥卡的 `talk` 也在用它（`gate.then` 要等 cut-in 演完才接），
        而那一場不是教學：舊寫法第一拍就 `clearInterval` **而且不呼叫 `fn`**，
        於是聖徒化演完之後那一段從來沒有機會出現。
@@ -629,7 +629,7 @@ function afterCutin(fn){
  *  對話段：開啟（真暫停+立繪移入）→ 逐句 → 閘門或關閉（立繪退場+續戰）
  * ========================================================================== */
 function castOf(who){ return (CFG().cast||{})[who] || {}; }
-/* ── 劇情版教學的台詞（ver -323）──────────────────────────────────────
+/* ── 劇情版教學的台詞（ver -323（-893 前用詞））──────────────────────────────────────
    ⚠ 兩份台詞是**分開的**（Ray 指定）：劇情帶起來的那一場由諾薇兒帶
    （`config.tutorial.story`），首頁「教學」鈕仍是芙蕾雅／蕾妮。
    ⚠ 只換**台詞**，不換流程 —— 觸發點、節奏、教的東西完全一樣，
@@ -667,7 +667,7 @@ function sideOf(key){
   if(stepSides && stepSides[key]) return stepSides[key];
   return ((CFG().cast||{})[key]||{}).side;
 }
-/* ══⚠⚠ **換到非預設那一側 → 水平翻轉**（ver -619，Ray：「諾在喊準備好了的時候
+/* ══⚠⚠ **換到非預設那一側 → 水平翻轉**（ver -619（-893 前用詞），Ray：「諾在喊準備好了的時候
    要站右側，人物水平翻轉。她的立繪是左右對稱的可以翻」）══
    §6.5 說「立繪朝向是畫死的，換邊要水平翻轉，髮旋與持物會左右顛倒」——所以
    **翻不翻是這張畫的性質**，寫在角色上（`cast[key].mirror`），預設不翻。
@@ -725,7 +725,7 @@ function syncCast(step, uptoIdx){
   }
 }
 
-/* ── 立繪取景（ver -324：獨腳戲放大到「頭到大腿」）────────────────────────
+/* ── 立繪取景（ver -324（-893 前用詞）：獨腳戲放大到「頭到大腿」）────────────────────────
    兩套算法共用同一組 config 值（cast.fit 的 zoom/drop）：
 
      雙人場（原版教學：芙蕾雅＋蕾妮）
@@ -803,14 +803,14 @@ function hasFrame(el){ const f=frameOf(el); return !!(f && f.cm && f.bot > f.top
    ⚠ 頭頂釘在頂線（portraitTopPct），**不是**把腳對齊 —— 教學的框下緣被對話框
      蓋掉一大塊，對腳等於把臉推出畫面。
    ⚠ 查不到取景值（芙蕾雅／蕾妮沒量過）就整段跳過，交給上面的舊算法。 */
-/* ══ 相機快取（ver -346）══════════════════════════════════════════════
+/* ══ 相機快取（ver -346（-893 前用詞））══════════════════════════════════════════════
    ⚠⚠ `pxCm` 由 `#top` 的**當下高度**算出來，而手機瀏覽器的工具列會收合／彈回 ——
      視口一變，`#top`（height:50%）就跟著變幾十像素。立繪是**每一句**重算的，
      於是同一張立繪在相鄰兩句之間大小不同 ＝ Ray 回報的「戰鬥中忽大忽小」。
    規則：寬度沒變、高度變化在 18% 以內 → **沿用上一次的相機**。
      真的轉向（寬度變）或版面大改（>18%）才重量。
    ⚠ 進戰鬥要 `resetCamera()`，不然上一場的相機會跟著跨場沿用。 */
-/* ⚠⚠ **連頂線與頭頂落點一起快取**（ver -350）。ver -346 只快取了 pxCm，Ray 回報
+/* ⚠⚠ **連頂線與頭頂落點一起快取**（ver -350（-893 前用詞））。ver -346 只快取了 pxCm，Ray 回報
    手機上還是忽大忽小 —— 因為 `camTop`／`headTop` 每一句都去量那顆角落鈕的實際位置，
    而 iOS 的 `env(safe-area-inset-top)` 會隨網址列收合而變（47px ↔ 0），`#app` 的
    padding 跟著變、鈕跟著動、頂線就跟著動。**尺寸沒變、整個人上下跳**，讀起來一樣是
@@ -866,7 +866,7 @@ function placePortraitX(el, side){
   const G = GAME_CONFIG.castStage || { topRatio:0.56, btnTop:10, btnH:44 };   // 單一真相（鐵律 7）
   const RATIO = G.topRatio;                 // 與劇情頁同一個數字，來源同一處
   const VH = window.innerHeight || document.documentElement.clientHeight || 0;
-  /* ⚠⚠ **不量鈕的即時 rect，改由 CSS 常數推**（ver -354）。量到的值取決於「第一次排版
+  /* ⚠⚠ **不量鈕的即時 rect，改由 CSS 常數推**（ver -354（-893 前用詞））。量到的值取決於「第一次排版
        剛好發生在哪一刻」：鈕若正好被藏起來（門還在開、結算 banner 開著）或版面還在轉場，
        `br.height` 是 0 → 頂線變成 3% → 整個人放大一成，而這個值又被快取一整場。
        實測同一段教學跑兩次，立繪高度 **665 vs 732**（差 10%）—— Ray 回報的「人物站位
@@ -1244,7 +1244,7 @@ function closeDialog(resume, silent){
   if(resume){
     const finish=()=>{
       api.resumeFromDialog();
-      /* ══⚠⚠ **劇情殺三連擊**（ver -619，Ray：「敵 hp 50% 以下時觸發劇情殺把主角
+      /* ══⚠⚠ **劇情殺三連擊**（ver -619（-893 前用詞），Ray：「敵 hp 50% 以下時觸發劇情殺把主角
          三擊清零，一定要三擊，在三擊發生前讓蕾娜喊『小心！』；主角 hp 被清零後
          發動即死防禦，然後才進聖徒化教學」）══
          段落寫 `strike:true` ＝ 這一段講完就打那三下。走的是**既有的**
@@ -1257,7 +1257,7 @@ function closeDialog(resume, silent){
            那三下的演出會被凍在暫停裡。 */
       if(strikeAfter){
         const st0=strikeAfter; strikeAfter=null;
-        /* ⚠⚠ **一擊到底的版本**（`strikeTo:<剩多少血>`，ver -671，Ray：
+        /* ⚠⚠ **一擊到底的版本**（`strikeTo:<剩多少血>`，ver -671（-893 前用詞），Ray：
            「敵 HP50% 以下觸發劇情殺：玩家受擊，hp1」）—— 這一場要的是**一下**，
            不是三連擊。三連擊那一套（`strike:true`）是聖徒化教學的節奏，
            它會走即死防禦；這一場接的是惡夢化，由安雅接手。
@@ -1308,7 +1308,7 @@ function completeGate(){
   //   完成閘門時，activateSaint/activateDual 會被 transitioning/cutinPlaying 守門「無聲擋掉」
   //   → 閘門已消耗、教學軟鎖（敵血鎖 1 永遠打不完）。改輪詢至可執行為止。
   const fire=()=>{
-    /* ⚠ **不再要求 `tutorialActive`**（ver -599）：閘門現在也給戰鬥卡的 `talk` 用
+    /* ⚠ **不再要求 `tutorialActive`**（ver -599（-893 前用詞））：閘門現在也給戰鬥卡的 `talk` 用
        （聖徒化教學戰），那一場不是教學。門是我們自己開的，收的時候只要確認
        這一場還沒結束。 */
     if(state.over) return;

@@ -190,7 +190,7 @@ SFX.setShots([asset('se_pistol_03')].filter(Boolean), sfxGain('se_pistol_03'));
 SFX.setMenuClick(asset('se_general_click'), sfxGain('se_general_click'));
 
 /* ── 進場預載（第一段）：掃 ASSETS 載「開場就要」的圖＋音，跑完才揭開選單 ──
- *  第一段內的順序（ver -384，Ray 定案）：**音效全部 → 圖（立繪最先）→ 音樂**，
+ *  第一段內的順序（ver -384（-893 前用詞），Ray 定案）：**音效全部 → 圖（立繪最先）→ 音樂**，
  *  見下方 startBatch。
  *  圖 → new Image（瀏覽器快取）；BGM(bgm_*) → Blob 下載；其餘音效 → Web Audio 解碼。
  *  音訊實際播放仍需首次手勢（primeAudio/unlock）。
@@ -386,7 +386,7 @@ const WARM_BOOT=(function(){
 })();
 /* 進背景時刷新時間戳 —— 但**只有真的進過主畫面才算**：讀取途中被切走／重整，
    下一次仍該完整跑一次讀取（素材根本還沒載完）。 */
-/* ══ 飛行頁交棒過來的遭遇戰（ver -382，Ray：「怪碰到船以後進入舒爾特盤」）══
+/* ══ 飛行頁交棒過來的遭遇戰（ver -382（-893 前用詞），Ray：「怪碰到船以後進入舒爾特盤」）══
    飛行頁把「要打誰」寫進 localStorage 再跳過來；讀取頁被點掉之後直接開打，不經主選單。
    ⚠ **讀了就清掉**：不清的話重整一次又會再打一場。
    ⚠ 打贏才跳回飛行頁（`flightBack`）；打輸走一般的失敗流程（Game Over → 主選單，
@@ -519,7 +519,7 @@ function openFlight(opts){
     }
     f.setAttribute('src', FLIGHT_SRC);
   }
-  /* ⚠ **勝負要帶過去**（ver -432）：飛行頁那一邊有「第一場艦戰打完」的一段對白，
+  /* ⚠ **勝負要帶過去**（ver -432（-893 前用詞））：飛行頁那一邊有「第一場艦戰打完」的一段對白，
      輸了聽到「小命保住了」是錯的。活著的舊路保留（萬一哪條路沒殺到）。 */
   else if(opts && opts.resume){ if(w && w.__flightResume) w.__flightResume({ won: !!opts.won }); }
   else { try{ w.location.reload(); }catch(_){ f.setAttribute('src', FLIGHT_SRC); } }
@@ -1034,7 +1034,7 @@ window.addEventListener('pagehide', refreshBoot);
       const req = REQ;                        // 開機時就取走了（見 IIFE 開頭）
       if(req){
         flightBack = true;
-        /* 曲子照這一場的卡挑（ver -741）—— 以前寫死 bgm_battle，船戰的
+        /* 曲子照這一場的卡挑（ver -741（-893 前用詞））—— 以前寫死 bgm_battle，船戰的
            EpicBattle／piratebattle 在「開機直入戰鬥」這條路上會放錯首。 */
         const bk = battleBgmOf(req.battle);
         SFX.playBgm(asset(bk), { fadeOutMs:600, volume: bgmVol(bk) });
@@ -1114,7 +1114,7 @@ window.addEventListener('pagehide', refreshBoot);
 
 // 首頁：開始遊戲 → 主選單先淡出、空一拍（約 1s）Battle 才淡入（避免唐突），同時播「驅逐開始」過渡禎
 function launchBattle(opts){
-  /* ⚠ 這一場不是飛行頁交棒過來的 → 清掉回程旗標（ver -388）。
+  /* ⚠ 這一場不是飛行頁交棒過來的 → 清掉回程旗標（ver -388（-893 前用詞））。
      不清的話「飛行遭遇打輸 → 回主選單 → 再打一場劇情戰打贏」會被錯誤地送去飛行頁。 */
   flightBack = false;
   /* 出陣 stinger（sfx_startbt＝神楽鈴）：列第一梯關鍵預載 → 即點即響。
@@ -1123,7 +1123,7 @@ function launchBattle(opts){
   if(!(opts && opts.instant)) SFX.play(asset('sfx_startbt'), sfxGain('sfx_startbt'));
   enterBattleAudio((opts&&opts.battle)||null);   // 戰鬥那道門（ver -1354）
   SFX.playBgm(asset('bgm_battle'), { fadeOutMs:800, delayMs:1000, volume: bgmVol('bgm_battle') });
-  /* 劇情叫起來的那一場（ver -329）：**跳過櫻花過渡禎，直接開戰**。
+  /* 劇情叫起來的那一場（ver -329（-893 前用詞））：**跳過櫻花過渡禎，直接開戰**。
      ⚠ 因為那一場的轉場是「Kerberos 之門拉開」，門縫裡要露出的是**已經在跑的戰鬥畫面**；
        這裡若還播自己的過渡禎，門一開露出的是櫻花，兩段轉場疊在一起。 */
   if(opts && opts.instant){ combat.startGame(); return; }
@@ -1599,7 +1599,7 @@ let storyResume = null;
 story.setTownOpener(town.open);   // scene 的 `thenTown` 由 story 呼叫（注入，story 不 import town）
 story.setTownCloser(town.close);  // 「選單」離開劇情層時，城鎮也要一起收（ver -394）
 combat.setPageKiller(killAllPages);   // 返回首頁＝殺光所有頁面（ver -494，見 killAllPages）
-/* 「回到主選單」（ver -398）：走**唯一那支**回主選單（`combat.goHome`），劇情層在黑幕
+/* 「回到主選單」（ver -398（-893 前用詞））：走**唯一那支**回主選單（`combat.goHome`），劇情層在黑幕
    全蓋的那一刻才收 —— 只 `story.close()` 的話，底下露出來的是上一場戰鬥的盤面
    （`#home` 早就被 startGame／openFlight 關掉了）。 */
 story.setHomeReturn(()=>{
@@ -1636,7 +1636,7 @@ story.setGateHold({
    ⚠ 沒睡過＝帝都旅店（開局的家）。
    ⚠ 飛行與城鎮兩條路都走這一支（鐵律 8）—— 兩邊各寫一份必然只有一邊會回檔。 */
 /* `opts.rollback`（預設 true）＝要不要順便回捲那一輪。
-   ⚠ **特殊戰傳 false**（ver -698）：那一場「過了就沒了」，回捲會把它變成沒發生過。 */
+   ⚠ **特殊戰傳 false**（ver -698（-893 前用詞））：那一場「過了就沒了」，回捲會把它變成沒發生過。 */
 function carriedToInn(opts){
   prog.setLossStreak(0);
   const roll = !(opts && opts.rollback===false);
@@ -1646,7 +1646,7 @@ function carriedToInn(opts){
     enterTown(inn.town, inn.node, { carried:true });   // ver -1297：走同一道讀取頁
   }, { noBgm:true });
 }
-/* ══ 戰敗那一頁按了哪一顆（ver -430，Ray 定案）══════════════════════════════
+/* ══ 戰敗那一頁按了哪一顆（ver -430（-893 前用詞），Ray 定案）══════════════════════════════
    「船戰死亡點擊繼續回到戰鬥前的飛行畫面進度；其餘戰鬥死亡點再戰回到該幕對話的
      開頭，點放棄回到主畫面。」
    ⚠⚠ 三顆鈕**都走既有的交棒出口**（`setStoryReturn`）—— 那一支本來就知道
@@ -1655,25 +1655,25 @@ function carriedToInn(opts){
      · `retry`    → 一路帶到 `story.resumeFrom`，由它跳回那一幕的第 0 句
      · `giveup`   → 走**唯一那支**「離開這一切」（`story.leaveToHome`）
    ⚠ 這一頁該長什麼樣由 `setLoseKind` 回答 —— 判定點只有這一處（鐵律 7）。 */
-/* `town`（ver -496，Ray：「城鎮中戰鬥死亡就回旅店」）：城鎮開著的插入戰敗北
+/* `town`（ver -496（-893 前用詞），Ray：「城鎮中戰鬥死亡就回旅店」）：城鎮開著的插入戰敗北
    → 一顆「繼續」，按下去被抬回這座城的旅店（見下方 storyReturn 的分流）。
    ⚠ 判 `town.isOpen()` 要在 `flightBack` 之後：從城鎮出航再進的船戰，城鎮也還開著
    （suspend 不 close，§6.10）—— 那一場的敗北要回**飛行畫面**，不是旅店。 */
 combat.setLoseKind(()=> flightBack ? 'flight'
                       : (storyResume ? 'rollback' : 'home'));
 combat.setStoryReturn((res)=>{
-  /* ══ 連敗歸零（ver -697）══ 任何一場打贏都算「沒卡住」，所以歸零收在**入口**
+  /* ══ 連敗歸零（ver -697（-893 前用詞））══ 任何一場打贏都算「沒卡住」，所以歸零收在**入口**
      這唯一的一處（鐵律 8）—— 掛在各條回程分支上必然漏掉其中一條。 */
   if(res && !res.lost) prog.setLossStreak(0);
   /* 「放棄」：回主畫面。⚠ 走 `story.leaveToHome()` 而不是自己 `combat.goHome()` ——
      那一支還會**收掉城鎮**（`townCloser`），漏了的話下一次進城會接在舊節點上。
      `storyResume`／`flightBack` 由它呼叫的 `setHomeReturn` 一併清掉（見上面）。 */
   if(res && res.lose==='giveup'){ story.leaveToHome(); return; }
-  /* 飛行頁交棒過來的那一場：打完跳回去（ver -382）。
+  /* 飛行頁交棒過來的那一場：打完跳回去（ver -382（-893 前用詞））。
      ⚠ ver -430 起**打輸按「繼續」也走這裡**（Ray 指定：回到戰鬥前的飛行畫面進度）——
        iframe 從頭到尾沒卸載過，船就還在遭遇發生的那個座標上，什麼都不必還原。
      ⚠ 退出確認那顆鈕字面上是「回主選單」，所以它會先把 `flightBack` 關掉。 */
-  /* ⚠ 內嵌模式（ver -388）：飛行頁一直活著 —— **不重載**，在黑幕全蓋的那一刻把它顯示回來
+  /* ⚠ 內嵌模式（ver -388（-893 前用詞））：飛行頁一直活著 —— **不重載**，在黑幕全蓋的那一刻把它顯示回來
      就好（沒有第二次讀取頁，船也還在原處，Ray：「戰鬥結束不要另跑預載頁」）。
      ⚠ 戰鬥／結算的曲子要收掉，不然回到飛行畫面還在放（飛行頁自己的曲子由
        `__flightResume` 接回去）。
@@ -1684,7 +1684,7 @@ combat.setStoryReturn((res)=>{
     /* 打贏了沒。⚠ 戰敗頁的「繼續」帶的是 `{lose:'continue'}`（ver -430）——
        飛行頁那一段「小命保住了」的對白只在打贏之後演（ver -432）。 */
     const won = !(res && res.lose);
-    /* ══⚠⚠ 飛行遭遇**連敗三場 → 送回上一次睡覺的旅店**（ver -481，Ray 指定）══
+    /* ══⚠⚠ 飛行遭遇**連敗三場 → 送回上一次睡覺的旅店**（ver -481（-893 前用詞），Ray 指定）══
        贏一場歸零；第三敗不回飛行畫面 —— 追兵清場（closeFlightFrame 已把模擬凍住），
        人直接落在旅店節點（town.open 帶 node）。HP 不在這裡回復：
        他是被抬回旅店的，要**睡一覺**才滿血（睡覺那一支會把連敗一併歸零）。 */
@@ -1823,13 +1823,13 @@ combat.setStoryReturn((res)=>{
      `launchBattle` 裡那一行 —— 它帶 `delayMs:1000`，是給櫻花過渡禎用的節奏。
    ⚠ 同一首重播由 `playBgm` 自己擋掉（同曲播放中直接 return），所以 launchBattle
      那一行照留著不會打架。 */
-/* ⚠ 這一場自己的曲子（ver -614）：戰鬥卡寫了 `bgm` 就放它，沒寫才是 `bgm_battle`。
+/* ⚠ 這一場自己的曲子（ver -614（-893 前用詞））：戰鬥卡寫了 `bgm` 就放它，沒寫才是 `bgm_battle`。
    ⚠ 只有這一支在決定（`battleBgmOf`，鐵律 7）—— 門的 cue 與交棒兩處都問它，
      各寫一份的話會出現「門開的時候放 A、真的開打換成 B」。 */
 function battleBgmOf(id){
   const b = id && GAME_CONFIG.battles && GAME_CONFIG.battles[id];
   if(b && b.bgm) return b.bgm;
-  /* 搭檔專屬戰鬥曲（ver -837，Ray：「索拉娜為夥伴時戰鬥音樂換成 Peritune_Whirlwind」）：
+  /* 搭檔專屬戰鬥曲（ver -837（-893 前用詞），Ray：「索拉娜為夥伴時戰鬥音樂換成 Peritune_Whirlwind」）：
      這一場的搭檔＝卡上的 `partner`（sv_* 的強配），否則整備頁選的人
      （partner.storyPartnerKey —— cue 的當下 startGame 還沒跑，state.pickedPartner 未定）。
      表在 `config.battleBgm.partner`（鐵律 1）；卡上明寫的 `bgm` 仍最優先（上一行）。 */
@@ -1840,7 +1840,7 @@ function battleBgmOf(id){
      資料在 `config.battleBgm`（鐵律 1）。 */
   const t = GAME_CONFIG.battleBgm || {};
   if(b && b.timeAttack && t.timeAttack) return t.timeAttack;
-  /* 船戰的禍魘默認曲（ver -741，Ray：「船戰禍魘默認 EpicBattle」）：
+  /* 船戰的禍魘默認曲（ver -741（-893 前用詞），Ray：「船戰禍魘默認 EpicBattle」）：
      船戰的記號＝卡上有 `weaponSound`（艦載武器音只有船戰有）；
      禍魘看敵人卡的 `kind`。空賊那一場卡上寫了自己的 `bgm`，走上面那一條。 */
   if(b && b.weaponSound && t.shipHarm){
@@ -1879,13 +1879,13 @@ story.setBattleHandler((battleId, resume)=>{
   storyResume = resume;
   flightBack = false;   // 劇情/城鎮的插入戰不是飛行頁交棒過來的（同 launchBattle 的理由）
   combat.holdEnemyRise();   // 走門的場次：降臨（含掛圖）押到門全開（ver -875）
-  /* 劇情插入戰（ver -375）：腳本寫 `{battle:'guild_hunter'}`，查得到 `config.battles`
+  /* 劇情插入戰（ver -375（-893 前用詞））：腳本寫 `{battle:'guild_hunter'}`，查得到 `config.battles`
      就開那一場（單敵、卡上的數值、不能聖徒化／用搭檔技）。
      ⚠ 查不到才退回教學那一場 —— 舊腳本（地宮那一段）寫的就是教學，不能被改掉。 */
   if(GAME_CONFIG.battles && GAME_CONFIG.battles[battleId]){
     { const k=battleBgmOf(battleId);
       SFX.playBgm(asset(k), { fadeOutMs:600, volume: bgmVol(k) }); }
-    /* ⚠⚠ **城鎮插入戰留在原背景**（ver -592，Ray：「打完敵人應該會留在原背景，
+    /* ⚠⚠ **城鎮插入戰留在原背景**（ver -592（-893 前用詞），Ray：「打完敵人應該會留在原背景，
        不要自動切背景」）：把城鎮現在畫面上那一張帶進戰鬥，蓋過敵人卡的 `bg` ——
        不然打完一場上半會從卡上那張跳回節點原本那張，讀起來是換了個地方。
        ⚠ 每次交棒都明確設一次（不在城裡就是 null，走卡上的 `bg`）。 */

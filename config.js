@@ -69,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.15-1365';
+export const VERSION = 'ver 2026.09.15-1366';
 
 export const GAME_CONFIG = {
 
@@ -212,7 +212,7 @@ export const GAME_CONFIG = {
      卡上沒寫 `bgm`、而且是**船戰**（卡上有 `weaponSound`＝艦載武器音，那正是
      船戰的記號）、敵人卡 `kind:'harm'` → 用這一首。判定只有 main.battleBgmOf 一處。 */
   battleBgm: { default:'bgm_battle', timeAttack:'bgm_hopstep', shipHarm:'bgm_epicbattle',
-               /* ver -837（Ray：「索拉娜為夥伴時戰鬥音樂換成 Peritune_Whirlwind」）——
+               /* ver -837（-893 前用詞）（Ray：「索拉娜為夥伴時戰鬥音樂換成 Peritune_Whirlwind」）——
                   這一場的搭檔（卡上的 partner，否則整備頁選的人）在這張表裡就換曲；
                   卡上明寫的 bgm 仍最優先（main.battleBgmOf，鐵律 7）。 */
                /* ver -873（Ray 指定，混亂 session 遺失件補回）：安雅＝BattleField4。 */
@@ -1376,7 +1376,7 @@ export const GAME_CONFIG = {
         lose:{ 0:['......確認HUND {rand3}號機能停止。辛苦了。'] },   // {rand3}＝隨機 3 位數（零補），由 inspector 代入
       },
     },
-    /* ══ 璐娜莉亞（ver -471，Ray 交稿）：**挑戰的 Boss 戰**的結算評價者 ══
+    /* ══ 璐娜莉亞（ver -471（-893 前用詞），Ray 交稿）：**挑戰的 Boss 戰**的結算評價者 ══
        「挑戰的boss戰結算畫面原本是監察官，改成璐娜莉亞」—— 那一場是夢裡的對決，
        醒來評語的是她自己。逐**等第**換立繪差分（portraitsByRank，S/A 共用 smirk）。
        ver -553（Ray 交稿）：**戰敗也是她**（angry＋「討人厭的夢......」）——
@@ -1641,7 +1641,7 @@ export const GAME_CONFIG = {
     moneyName: '金錢',
   },
 
-  /* 戰鬥掉落（ver -368，Ray：「戰鬥有機會掉落」）。
+  /* 戰鬥掉落（ver -368（-893 前用詞），Ray：「戰鬥有機會掉落」）。
      ⚠ 教學戰**不吃這張表**：那一場的掉落是腳本寫死的教材（`tutorial.loot`）。
      ⚠ 機率與範圍都在這裡，程式不寫死（鐵律 1）。 */
   battleLoot: {
@@ -1712,7 +1712,7 @@ export const GAME_CONFIG = {
     shops: {
       grocery:  { title:'雜貨舖', art:'resources/SI/NPC_Grocerie_SI.webp',
                   tabs:['buy','sell'] },
-      /* ⚠ `challenge` ＝ 這一家店的櫃台可以**再挑戰**哪一場（ver -398，Ray：「槍店的選單
+      /* ⚠ `challenge` ＝ 這一家店的櫃台可以**再挑戰**哪一場（ver -398（-893 前用詞），Ray：「槍店的選單
          要增加一個射擊挑戰的選項」）。值是 `battles` 的鑰匙 —— 打靶那一場本來只有
          劇情裡打得到一次，而它有最佳紀錄，本來就該能再來（見 script/town.js 的
          `challengeLines`）。 */
@@ -1720,7 +1720,7 @@ export const GAME_CONFIG = {
                   tabs:['buy','sell','mod'], tabName:{ buy:'買武器', sell:'賣武器', mod:'武器改裝' },
                   only:'weapon', compare:true,
                   challenge:'range_trainee', challengeLabel:'射擊挑戰' },
-      /* ══ 北方泊地的兩家店（ver -655）══ 功能與帝都相同，差別只有**店主圖**與
+      /* ══ 北方泊地的兩家店（ver -655（-893 前用詞））══ 功能與帝都相同，差別只有**店主圖**與
          **貨單的鑰匙**（見上面 stock 的說明）。⚠ 射擊挑戰指的是這座城自己那一場
          （`np_range`，25 秒、要 200G）—— 最佳紀錄與帝都那一場也是分開的。 */
       np_grocery:  { title:'雜貨舖', art:'resources/SI/NPC_Grocery_SI_Northport.webp',
@@ -1905,7 +1905,7 @@ export const GAME_CONFIG = {
       sh_villager: { name:'村民',   image:'tut_sh_villager',  side:'right', fit:{ zoom:0.92, drop:6 } },
       sh_villager2:{ name:'村民',   image:'tut_sh_villager2', side:'right', fit:{ zoom:0.92, drop:6 } },
       sh_chief:    { name:'村長',   image:'tut_sh_chief',     side:'right', fit:{ zoom:0.92, drop:6 } },
-      /* 安雅（ver -671，禍魘娜塔莉戰）。⚠ 站**右**（`speakers.js` 的本位）——
+      /* 安雅（ver -671（-893 前用詞），禍魘娜塔莉戰）。⚠ 站**右**（`speakers.js` 的本位）——
          她與蕾娜同台時蕾娜本來就在右…… 所以這一場**蕾娜讓到左**：
          §6.5 的表「蕾娜原則右，碰到安雅就放左」。 */
       anya:      { name:'安雅',   image:'tut_anya_terrifying', side:'right', fit:{ zoom:0.92, drop:6 } },
@@ -2046,7 +2046,7 @@ export const GAME_CONFIG = {
    *  無傷 gate：hitsTaken===0 → 直接判 S（凌駕分數）。
    * ------------------------------------------------------------------ */
   /* ══════════════════════════════════════════════════════════════════════
-     評價（ver -600 改寫；-604 收斂成**單一係數**）
+     評價（ver -600（-893 前用詞） 改寫；-604 收斂成**單一係數**）
      ──────────────────────────────────────────────────────────────────────
      Ray：「我只要一個單一係數，用來把時間轉換成分數的係數，
            我先從單一係數來調整難度。」
@@ -2100,7 +2100,7 @@ export const GAME_CONFIG = {
     /* ⚠ `execution` ＝以 **EXSECUTIŌ（處刑）** 收尾、`maxBurst` ＝以 **Maximum Burst**
        收尾（沒擊殺那一種）。兩者都是**一次性**折抵，**不乘次數**
        （它們是「這一場有沒有發生過」），而且**互斥**：擊殺的那一次是處決。
-       ⚠ 秒數 ver -675 由 Ray 改定：MB −10、處決 −15（原本處決是 −5）。
+       ⚠ 秒數 ver -675（-893 前用詞） 由 Ray 改定：MB −10、處決 −15（原本處決是 −5）。
        ⚠⚠⚠ **折得重是刻意的，不要「平衡」掉它**（ver -676，Ray：「處決的發生率
          本來就不高，而且聖徒／夢魘既然高風險高回報，那就要在評價上也表現出來」）——
          處決要在倒數槽推滿前清完整盤而且那一擊剛好致死；而聖徒化／惡夢化本身
@@ -2162,7 +2162,7 @@ export const GAME_CONFIG = {
        （同索菈娜搭檔卡上的 `timeKBonus`）。它是這張表裡唯一「用了技能反而變嚴」的項。 */
     penalty: { wrong: 2, assault: 3, block: 1, delay: 1, counter: -0.5,
                overkill: 0, perfectBoard: -1, maxBurst: -10, execution: -15, coop: 20 },
-    /* ══⚠⚠ **整場無傷 ＝ 等第下限**（ver -626，Ray：「無傷基本讓他保證 S」）══
+    /* ══⚠⚠ **整場無傷 ＝ 等第下限**（ver -626（-893 前用詞），Ray：「無傷基本讓他保證 S」）══
        ver -620 是「折 10 秒」，已推翻 —— 定額折秒的份量被**場的大小稀釋**：
        同樣 10 秒在 300 血的場值 16.7 分、在 1500 血的城鎮戰只值 3.3 分（五倍差），
        而「保證 S」是一句**等第**的宣告，用等第表達才不會被場的大小改寫。
@@ -2265,20 +2265,20 @@ export const GAME_CONFIG = {
    *  立繪檔名規約：角色_變體_CI（例 Saint_TR_CI／Saint_UG_CI／Saint_GT_CI／GunWitch_Boss_CI）。
    * ------------------------------------------------------------------ */
   enemies: ENEMIES,
-  /* ══ 劇情插入戰（ver -375）══
+  /* ══ 劇情插入戰（ver -375（-893 前用詞））══
      腳本裡寫 `{ battle:'guild_hunter' }` 時查這張表。**單敵一場**，打完直接交還劇情。
      ⚠ 與「教學戰」不同：教學那一場有台詞、有教到破防為止的閘門；這裡只是一場架。
      ⚠ 欄位只放「這一場」的規則，敵人本身的數值一律在 `enemies` 那張卡上 ——
        同一隻怪之後在別的場次登場時，卡不必抄第二份。
        noSaint / noPartner ＝ 這一場不能用聖徒化與搭檔技（Ray 的稿子指定）。 */
   battles: {
-    /* `allowLose`（ver -376，Ray 定案）：**除標明劇情殺／可戰敗之外，戰敗一律接
+    /* `allowLose`（ver -376（-893 前用詞），Ray 定案）：**除標明劇情殺／可戰敗之外，戰敗一律接
        Game Over 畫面回主選單**。所以這一欄不寫＝打輸就 Game Over；
        只有「劇本要它被打輸」的場次才寫 `allowLose:true`（輸了接著演）。 */
     /* ⚠⚠ `special:true`（ver -698，Ray：「城鎮偶有特殊戰（賞金獵人挑釁、抓賊等
        非戰鬥探索），戰敗就後送旅店。特殊戰原則上不可重覆挑戰、過了就沒了，
        所以沒有劇情 flag 問題」）—— 戰敗**一次就送旅店**（不計連敗、不回檔）。 */
-    /* ⚠⚠ `noEvalBeforeStage:2`（ver -729 原是 noEval:true；**-756 Ray 改**：
+    /* ⚠⚠ `noEvalBeforeStage:2`（ver -729（-893 前用詞） 原是 noEval:true；**-756 Ray 改**：
        「帝都賞金獵人戰如在 stage2 才打，就要放蕾娜評價」）——
        stage 0/1 打＝她還是「監察官」，不評（-729 的理由）；玩家拖到出航之後
        （stage2+）才回頭打，她已經在結算頁講評了，這一場照評。
@@ -2312,12 +2312,12 @@ export const GAME_CONFIG = {
        ⚠ `bgmAfter` 不寫：追擊戰的 `gothic` 是**那一段**才換（見 3b 的說明），
          這一場打完接回古城的 `numina`（戰前那一首）。 */
     ep_belisar_altar: { enemy:'bl_dragon_chase' },
-    /* 北方泊地的城鎮戰（ver -583）：每一格走進去打一場，共用這一張佔位卡。
+    /* 北方泊地的城鎮戰（ver -583（-893 前用詞））：每一格走進去打一場，共用這一張佔位卡。
        ⚠ **不禁聖徒化／搭檔技**：Ray 沒說要禁（禁了要明寫 noSaint/noPartner）。
        ⚠ 打輸走一般流程 —— 城鎮插入戰的敗北會被抬回這座城的旅店（§6.5.2 那張表）。
          ⚠ 北方泊地的旅店還沒掛 `inn:true`，所以現在會退回「上次睡覺的旅店」
            （帝都）。要讓他被抬回這裡的旅店，得先把北方泊地的旅店大廳接起來。 */
-    /* ⚠⚠ `session` ＝**整張戰鬥地圖算同一場**（ver -585，Ray：「城鎮戰內打掉一個怪
+    /* ⚠⚠ `session` ＝**整張戰鬥地圖算同一場**（ver -585（-893 前用詞），Ray：「城鎮戰內打掉一個怪
        不用閉棺，打掉 Boss 才閉，戰鬥地圖中移動期間算同一場，hp／聖徒化次數／
        主動技發動次數／破防值算同一場」）。同一段之內：開棺只演第一次，
        聖徒化／搭檔主動技／破防值不回滿（HP 本來就延續）。
@@ -2325,14 +2325,14 @@ export const GAME_CONFIG = {
          Boss 的卡 Ray 還沒給，所以現在這一段**沒有出口**：五格打完段落仍開著，
          直到回首頁（`goHome`）才收。卡一到就補一張 `{…, session:'np_siege',
          sessionEnd:true }`。 */
-    /* ⚠ `enemy` 是**陣列**＝這一場隨機抽一隻（ver -596）。抽的實作只有
+    /* ⚠ `enemy` 是**陣列**＝這一場隨機抽一隻（ver -596（-893 前用詞））。抽的實作只有
        `combat.startGame` 的 `pickBattleEnemy()` 一支（鐵律 8）。 */
     np_harm: { enemy:['np_candletower','np_candlepenitent','np_coralman','np_reassembled'],
                session:'np_siege' },
-    /* 教堂的 Boss（ver -586）：同一段連續戰鬥的**最後一場** ——
+    /* 教堂的 Boss（ver -586（-893 前用詞））：同一段連續戰鬥的**最後一場** ——
        `sessionEnd` ＝打贏它才閉棺、聖徒化／主動技／破防值回滿。 */
     np_boss: { enemy:'np_boss', session:'np_siege', sessionEnd:true },
-    /* ══ 夏爾村村內戰（ver -802，Ray 交稿）══════════════════════════════════
+    /* ══ 夏爾村村內戰（ver -802（-893 前用詞），Ray 交稿）══════════════════════════════════
        整張圍城算一場（`session:'shinier_siege'`）：格與格之間開棺原地開/關、
        hp／聖徒化／主動技／破防值不回滿。**收尾格＝野外那格**（`sv_wild`，
        `sessionEnd`）——Ray：「夏爾村 seige 無 boss…打到野外為止」，所以沒有一場
@@ -2344,7 +2344,7 @@ export const GAME_CONFIG = {
          玩家，走西側直接到野外可跳過）。 */
     sv_beast: { enemy:['sv_wolf_pack','sv_beast_organ','sv_stag','sv_beast_shackle'],
                 session:'shinier_siege',
-                /* ══ 村民的戰前對白（ver -839，Ray：「進入第一場戰鬥以後才發生，
+                /* ══ 村民的戰前對白（ver -839（-893 前用詞），Ray：「進入第一場戰鬥以後才發生，
                    有背景，有怪才開始對話」）══ 掛 battleStart（§6.5.2 的 talk）——
                    拓撲上第一場一定是東側（索菈娜家唯一的出口）。
                    ⚠⚠ `talkOnce` 是**卡層**的欄位（combat 的勝利收尾與 startBattleTalk
@@ -2362,7 +2362,7 @@ export const GAME_CONFIG = {
                 ]} ] },
     sv_altar: { enemy:'sv_reliquary', session:'shinier_siege' },
     sv_wild:  { enemy:'sv_bear', session:'shinier_siege', sessionEnd:true },
-    /* ══ 夏爾森林野生遭遇（ver -862；-869 掛 session）══
+    /* ══ 夏爾森林野生遭遇（ver -862（-893 前用詞）；-869 掛 session）══
        由 modules/town.js 的 `wildActDue` 依 `shinier_forest.wildSpawn` 派場。
        ⚠⚠ **進野戰地圖＝「一場」**（ver -869，Ray：「進入野戰地圖以後就算一場，
        打到地圖結束才結算——夏爾森林打到斷崖邊的敵人消滅才算結束。戰利品也是
@@ -2403,7 +2403,7 @@ export const GAME_CONFIG = {
     ruins_saint_inspector:{ enemy:'ruins_saint_inspector', session:'ruins_wild', sessionEnd:true },
     /* BOSS。⚠ 曲子還沒指定（Ray 沒說），沒寫＝走 main 的 battleBgmOf 預設。 */
     ruins_saint_temperance:{ enemy:'ruins_saint_temperance', session:'ruins_wild', sessionEnd:true },
-    /* 鹿主變異（ver -870，G 稿的黃昏後分支）：劇情戰、自己一場（斷崖已收段）。 */
+    /* 鹿主變異（ver -870（-893 前用詞），G 稿的黃昏後分支）：劇情戰、自己一場（斷崖已收段）。 */
     sf_deer_nightmare: { enemy:'sf_deer_nightmare',
       /* 與異化那一段**同一首**（ver -877，Ray：「戰鬥用同一首」）——卡上明寫最優先，
          同曲重播由 playBgm 擋掉＝開打不換曲（同 man_sorana/whirlwind 的作法）。 */
@@ -2416,7 +2416,7 @@ export const GAME_CONFIG = {
            森林那一首是暫代的（Ray：「森林曲後換」），寫死就是同一個量兩份真相（鐵律 7）。
          ⚠ 只有打贏才換（`resumeFrom` 那一條規矩）：戰敗要再打一次。 */
       bgmAfter:'@town' },
-    /* ══⚠⚠ 瓦礫中的紫黑之爪 ＝ **聖徒化教學戰**（ver -595，Ray 交稿）══
+    /* ══⚠⚠ 瓦礫中的紫黑之爪 ＝ **聖徒化教學戰**（ver -595（-893 前用詞），Ray 交稿）══
        腳本節奏：BOSS HP ≤30% → 劇情殺（主角 HP 歸零）→ 諾薇兒「我準備好了，現在
        聖徒化！」→ 雪鐵龍教學**右滑**發動聖徒化 → 聖徒化戰鬥 → 血回 99% 自動觸發
        **主動技教學**（上滑生命歸還）→ 諾薇兒倒下 → 打完。
@@ -2435,7 +2435,7 @@ export const GAME_CONFIG = {
          不是 `ASSETS` 的鍵 —— `resumeFrom` 是用 `story.ensureBgm` 播的。
          寫成 `bgm_suspense` 查不到（ver -637 抓到，-631 起一直是啞的）。 */
       bgmAfter:'suspense',
-      /* ⚠⚠ **這一場的整幕站位覆寫**（ver -619，Ray：「諾要永遠站右側」
+      /* ⚠⚠ **這一場的整幕站位覆寫**（ver -619（-893 前用詞），Ray：「諾要永遠站右側」
          ＋「人物要分站兩邊，如果同邊換人要用抽牌輪轉」）。
          寫在**場**上不是逐段寫：逐段寫必然漏掉其中一段，而站位錯了就是
          「同一個人一下左一下右」（§6.5 固定站位）。段落自己的 `sides` 仍可覆寫。
@@ -2510,13 +2510,13 @@ export const GAME_CONFIG = {
           { who:'renna',    img:'tut_renna_shout',        text:'解決祂！不要白費諾薇兒的覺悟！' },
         ]},
       ] },
-    /* 槍店的打靶（ver -377）。⚠ 這一場**可以輸**（`allowLose`）—— Ray 的稿子有
+    /* 槍店的打靶（ver -377（-893 前用詞））。⚠ 這一場**可以輸**（`allowLose`）—— Ray 的稿子有
        「戰敗」與「戰勝」兩支台詞，所以輸了不是 Game Over，是接另一支分歧。
        ⚠ `record` ＝ 這一場自己的最佳紀錄（通關用時），破紀錄時結算頁加 NEW。
        ⚠ 敵人先用**訓練用聖徒**（Ray 指定「先用」）。它是原始數值（HP 500、大絕 45），
          不是教學那一場被鎖過的版本 —— 所以真的會輸，那正是分歧存在的理由。
        ⚠ 沒有禁聖徒化／搭檔技：Ray 沒說要禁。要禁再加 noSaint/noPartner。 */
-    /* ══ 打靶場的計時挑戰（ver -396，Ray 改寫）══════════════════════════
+    /* ══ 打靶場的計時挑戰（ver -396（-893 前用詞），Ray 改寫）══════════════════════════
        「敵 hp 300、**不攻擊**、點錯**加 3 秒**、播 se_dart_fail、
          敵 hp 清零結算時間、記錄玩家個人時間、破紀錄加 New Record 標籤」
        ⚠ `timeAttack` 一開就把**整條攻擊路徑**關掉（大絕排程、延時懲罰、按錯扣血）——
@@ -2548,7 +2548,7 @@ export const GAME_CONFIG = {
     range_trainee: { enemy:'dart_target', record:'range', noReward:true, noEval:true,
                      timeAttack:{ wrongPenaltySec:3, se:'se_dart_fail', parSec:50,
                                   prizeSec:30, prize:'Shotgun_Dragon' } },
-    /* ══ 北方泊地的打靶（ver -655，Ray 交稿）══════════════════════════════
+    /* ══ 北方泊地的打靶（ver -655（-893 前用詞），Ray 交稿）══════════════════════════════
        「咱這一區的記錄可是25秒，破得了的話……現在我也拿不出像樣的東西，
          就免費幫你調校一下那兩把槍吧！」「挑戰費200G喔。」
        ⚠⚠ 這一場**只有一條門檻**（25 秒）：Ray 的稿只有「挑戰成功／挑戰失敗」
@@ -2578,13 +2578,13 @@ export const GAME_CONFIG = {
     sv_range: { enemy:'sv_dart', record:'sv_range', noReward:true, noEval:true,
                 timeAttack:{ wrongPenaltySec:3, se:'se_dart_fail', parSec:30,
                              hitPenaltySec:3, assaultOn:true } },
-    /* ══ 墓地那一場（ver -664，Ray：「教堂那隻中 boss，背景維持墓地」）══
+    /* ══ 墓地那一場（ver -664（-893 前用詞），Ray：「教堂那隻中 boss，背景維持墓地」）══
        ⚠ **另開一張卡**不共用 `np_boss`：那一張是城鎮戰的收段場（`sessionEnd`、
          屬於 `siege` 那一段），這一場是自由探索期的單場遭遇 —— 同一隻怪、
          兩個場合，把場合寫在戰鬥卡上才分得開（鐵律 7）。
        ⚠ **背景不寫**：城鎮插入戰交棒時 `main.js` 會把「你站的那一格」設進
          `state.battleBg`（ver -592），所以自然就是墓地那一張。 */
-    /* ⚠⚠ **這一場身邊沒有任何夥伴**（ver -681，Ray：「主角在沒有任何夥伴的狀況下
+    /* ⚠⚠ **這一場身邊沒有任何夥伴**（ver -681（-893 前用詞），Ray：「主角在沒有任何夥伴的狀況下
        不會有任何主被動技能，也沒有聖徒化，也就是娜塔莉戰的前一場」）——
        諾薇兒去了教堂、安雅還沒介入。所以聖徒化與搭檔技都關掉。
        ⚠ 禁令擋在**唯一的發動點**（`saint.activateSaint` 的 `noSaint`／
@@ -2597,7 +2597,7 @@ export const GAME_CONFIG = {
          （-681 之後墓地第一場仍然會被諾薇兒接住一次，那就是這一版修掉的）。
          兩格都留著：`solo` 已經涵蓋 `noPartner`，但寫出來才讀得出意圖。 */
     np_cemetery: { enemy:'np_boss', solo:true, noSaint:true, noPartner:true },
-    /* ══ 禍魘娜塔莉戰（ver -671，Ray 交稿）══════════════════════════════════
+    /* ══ 禍魘娜塔莉戰（ver -671（-893 前用詞），Ray 交稿）══════════════════════════════════
        敵 HP 50% 以下 → 劇情殺（**一擊**打到剩 1）→ 安雅接手惡夢化。
        ⚠ 與聖徒化教學那一場的三連擊是**兩種劇情殺**：那一套要走即死防禦
          （所以要三下），這一場接的是惡夢化（`strikeTo:1` ＝一下）。
@@ -2605,7 +2605,7 @@ export const GAME_CONFIG = {
     /* ⚠⚠ 這一場**開場也沒有**（同上，Ray：「娜塔莉戰也是，等到安雅干涉才有
        聖徒化跟主動技」）：`noSaint`／`noPartner` 把玩家自己發動的那兩個入口關掉，
        惡夢化與夢境粉碎由**腳本的閘門**帶出來（`gate.action` 直接呼叫，不經過那兩道守門）。 */
-    /* ⚠ `burstVoice`（ver -711，Ray：「vo_anya_dreambreaker2 目前只有娜塔莉戰使用」）
+    /* ⚠ `burstVoice`（ver -711（-893 前用詞），Ray：「vo_anya_dreambreaker2 目前只有娜塔莉戰使用」）
        —— 寫在**卡**上不寫死在程式裡（鐵律 1）：日後別的場次要換一支就加一行。 */
     /* ⚠ BGM 與黑爪戰同一首（ver -720，Ray 指定）：`bgm_crimson`。
        兩場都是這一章的 BOSS 級對決 —— 用同一首把它們讀成同一條線。
@@ -2667,17 +2667,17 @@ export const GAME_CONFIG = {
        ⚠⚠ 三隻怪的**敵人卡 Ray 還沒給**，所以現在**一律先借巨型聖徒**跑流程
          （同打靶先用訓練用聖徒的作法）。卡到位之後只要改 `enemy` 這一欄。
        ⚠ 打輸走一般的失敗流程（Game Over → 主選單），打贏才回飛行頁 —— 見 main.js。 */
-    /* ⚠ 船艦戰的武器音**整組換掉**（ver -423，Ray 指定）：機槍→重機槍音、
+    /* ⚠ 船艦戰的武器音**整組換掉**（ver -423（-893 前用詞），Ray 指定）：機槍→重機槍音、
        霰彈→手槍音同時六聲、步槍→艦砲。`weaponSound` 是「這一場」的覆寫，
        武器卡本身不動（同一把槍在陸戰還是原本的聲音）。 */
-    /* ⚠ `talk` ＝**這一場自己的**戰鬥內對話（ver -426）。走的是教學那一支對話實作
+    /* ⚠ `talk` ＝**這一場自己的**戰鬥內對話（ver -426（-893 前用詞））。走的是教學那一支對話實作
        （`modules/tutorial.js` 的 openStep，鐵律 8），但**不是教學** —— 鎖攻擊力、
        敵人打不死、教學結算那一整套只看 `tutorialActive`，這裡一律不碰。
        ⚠ trigger 沿用既有那幾個節點：`battleStart`／`board:N`／`threat`／`defended`。
        ⚠ `talkOnce` ＝這一輪遊戲只講一次（旗標走 `progress`，所以讀檔會跟著回去，§6.9）。
        ⚠⚠ 反擊短教學由**諾薇兒**帶，就這兩句（Ray 交稿，一字未改）。 */
     flight_centipede: { enemy:'centipi',
-                        /* ⚠⚠ **這一場開啟蕾娜的結算評價**（ver -432，Ray：「第一次艦戰後
+                        /* ⚠⚠ **這一場開啟蕾娜的結算評價**（ver -432（-893 前用詞），Ray：「第一次艦戰後
                            開啟蕾娜評價」）。旗標由 `inspector.pickEvaluator` 在結算那一刻記，
                            所以**這一場自己那一次就評得到**，之後每一場都有（打靶除外）。
                            ⚠ 寫在卡上不寫死是哪一場（鐵律 1）：日後改成別場開啟只動這一欄。 */
@@ -2705,7 +2705,7 @@ export const GAME_CONFIG = {
                            發起端宣告，見 flight 的 toBattle `scripted`）。 */
                         talkOnce:'taught_ship_counter',
                         talk:[
-                          /* ══ 進場（ver -429，Ray 交稿，一字未改；-478 改分鏡）══
+                          /* ══ 進場（ver -429（-893 前用詞），Ray 交稿，一字未改；-478 改分鏡）══
                              ⚠ 分鏡（ver -478，Ray：「先進戰鬥畫面，咆哮震動再彈蕾娜
                                然後再彈諾薇兒 分左右」）：第一拍是**演出拍**（無人無框，
                                只有吼聲＋震動），蕾娜下一拍才滑入、諾薇兒再下一拍 ——
@@ -2758,7 +2758,7 @@ export const GAME_CONFIG = {
        路徑：riseCue 的同曲判斷直接放行＝「戰鬥時不再更換音樂」。 */
     man_sorana:       { enemy:'man_sorana',
                         bgm:'bgm_whirlwind', bgmAfter:'whistling' },
-    /* 羽蛇（ver -500）。艦戰的武器音／連射間隔與蜈蚣那一場同一套（都是船戰）。
+    /* 羽蛇（ver -500（-893 前用詞））。艦戰的武器音／連射間隔與蜈蚣那一場同一套（都是船戰）。
        talk＝卡上的「劇情」：登場特效拍（出場音效＋震動）→ 兩句。
        ⚠ 只有**劇情戰**會播（state.storyBattle）：隨機遭遇共用這張卡不播；
          talkOnce 打贏才記（§6.5.2）。 */
@@ -3564,7 +3564,7 @@ export const GAME_CONFIG = {
       forcedCounterPerDmg: 0.025,
       forcedCounterSec: 1,
       /* ══ 自爆（上滑主動技 · 夢境粉碎）══
-         `burstFloor` ＝自爆**打不死**：敵血最低留這個比例（ver -673，Ray：
+         `burstFloor` ＝自爆**打不死**：敵血最低留這個比例（ver -673（-893 前用詞），Ray：
            「炸不死也沒關係，最後留個 10%」）。
          `burstPct` / `burstFullCells` ＝傷害是**敵人最大 HP 的百分比**（ver -688，Ray：
            「夢境粉碎還是太弱，用百分比好了，滿格 16 可以帶敵最大 hp 25% 傷害走」）：
@@ -3601,7 +3601,7 @@ export const GAME_CONFIG = {
            主動技，只在 NI 期間存在（鐵律 8：一個動作一個入口）。 */
       burstName: '夢境粉碎',
       burstCutin: 'ci_anya_dreambreaker',
-      /* ══⚠⚠ **熔斷就是 OBE**（ver -731，Ray 定案）══════════════════════════
+      /* ══⚠⚠ **熔斷就是 OBE**（ver -731（-893 前用詞），Ray 定案）══════════════════════════
          -692 的註解寫成「對稱的失敗結局，**不是**同一件事」—— 那是錯的，已更正：
          聖徒化推滿與惡夢化抽乾**是同一個結局的兩個方向**，所以行為要一致：
            · 都用那一張 cut-in（`CI_Anya_OBE`）
@@ -3813,7 +3813,7 @@ export const ASSETS = {
      舊檔名一直指著一個不存在的檔案＝北泊教堂 Boss 沒有立繪，而**畫面上不會有錯誤訊息**。
      自檢：把 config 裡所有 resources 路徑抓出來逐個 `test -f`（同 §5 的同名覆蓋自檢）。 */
   enemy_np_boss: "resources/enemy/mon_beast_reliquary.webp",
-  /* 教堂那一場之後的真 BOSS：**瓦礫中生出的紫黑之爪**（ver -595，Ray：「boss 圖為
+  /* 教堂那一場之後的真 BOSS：**瓦礫中生出的紫黑之爪**（ver -595（-893 前用詞），Ray：「boss 圖為
      TheClaws」）。⚠ 這一張是**連背景一起畫的整張戰鬥圖**（規格見
      `resources/background/_boss_claw_spec.md`）—— 所以敵人卡**不給 `bg`、不給
      `fit.contain`**，走預設的 cover 滿版；那兩個是給去背立繪配背景用的。 */
@@ -3910,7 +3910,7 @@ export const ASSETS = {
   partner_nouvelle:"resources/SI/Nouvelle_SI_front.webp",     // 諾薇兒 立繪（暫用對白圖）
   /* 安雅（ver -671）。⚠ 暫用她的對白立繪，同諾薇兒那一張的作法。 */
   partner_anya:   "resources/SI/Anya_SI_front.webp",
-  /* ── 教學（劇情版）的諾薇兒立繪與差分（ver -323）──────────────────────
+  /* ── 教學（劇情版）的諾薇兒立繪與差分（ver -323（-893 前用詞））──────────────────────
      ⚠ 這一組**只給劇情帶起來的教學**用（tutorial.isStoryRun()）。首頁「教學」鈕
        那一場仍是芙蕾雅／蕾妮 —— Ray 指定兩者要分開。 */
   tut_nouvelle:          "resources/SI/Nouvelle_SI_front.webp",
@@ -3919,7 +3919,7 @@ export const ASSETS = {
   tut_nouvelle_desperate:"resources/SI/Nouvelle_SI_Desperate.webp",
   tut_nouvelle_saint:    "resources/SI/Nouvelle_SI_SAINTINSTALL.webp",
   /* ══⚠⚠ **戰鬥內對白（`battles[].talk`）用到的立繪也要在這裡登記**
-     （ver -607，Ray：「聖徒化教學的立繪一直沒讀到」）══
+     （ver -607（-893 前用詞），Ray：「聖徒化教學的立繪一直沒讀到」）══
      `portraitFrames` 給的是**取景值**，圖的**路徑**要在 ASSETS 這一份 ——
      兩份都要有，少一邊就是「有位置沒有圖」。
      ⚠⚠ 船艦戰那一組（ver -429 的 `tut_renna*`／`tut_nouvelle_steady`／`_run`）
@@ -4225,7 +4225,7 @@ export const ASSETS = {
   /* ver -745：Ray 交專用戰鬥圖（man_sorana.jpg → webp，原檔入 _originals）。 */
   enemy_man_sorana: "resources/enemy/man_sorana.webp",
   bgm_crimson:    "resources/audio/bgm/Peritune_Crimson_Moon_loop.m4a",
-  /* 打靶場（計時挑戰）專屬曲（ver -658，Ray：「所有打靶遊戲都用這個音樂」）。
+  /* 打靶場（計時挑戰）專屬曲（ver -658（-893 前用詞），Ray：「所有打靶遊戲都用這個音樂」）。
      ⚠ 哪一場用它**不寫在卡上**而是規則：見下面的 `battleBgm.timeAttack`。 */
   bgm_hopstep:    "resources/audio/bgm/Peritune_Hopstep_Battle_loop.m4a",
   bgm_battle:    "resources/audio/bgm/bgm_battle.m4a",      // 戰鬥（驅逐開始插入瞬間起播）

@@ -39,7 +39,7 @@ export const state = {
   // 評價系統（rating）用的整場統計（combat 擁有；startGame/startIntruderFight 歸零）：
   maxCombo: 0,           // 整場最高連擊
   hitsTaken: 0,          // 整場受擊次數（=0 → 無傷 gate 直判 S）
-  /* **這一隻**敵人打到現在受了幾次擊（ver -708）。與上面那個是**兩件事**：
+  /* **這一隻**敵人打到現在受了幾次擊（ver -708（-893 前用詞））。與上面那個是**兩件事**：
      那個是「整場」（評價、無傷保底），這個是「這一隻」——
      九階「方舟」的無傷擊殺要逐隻算，連戰才有意義（Ray 指定）。
      ⚠ 誰歸零：換敵那一刻（`enemy.setEnemy`，＝「換了一隻怪」的唯一時刻，鐵律 9）。 */
@@ -132,10 +132,10 @@ export const state = {
      combat 的 fxKind 只讀（鐵律 7）。⚠ 不進存檔：它只活到那一擊演完。 */
   lastAssaultUlt: false,
   enemyCounterStagger: 1,   // 反擊硬直（ver -495）：1＝被反擊時延時計時歸零、0＝不歸零。卡上沒寫＝1
-  /* 「這一場」的武器音覆寫（ver -423，船艦戰）：`{武器鑰匙: 'se_key' | {key,times}}`。
+  /* 「這一場」的武器音覆寫（ver -423（-893 前用詞），船艦戰）：`{武器鑰匙: 'se_key' | {key,times}}`。
      ⚠ 覆寫的是**場次**不是武器 —— 同一把槍在陸戰還是原本的聲音（擁有者：combat）。 */
   weaponSound: null,
-  /* 「這一場」的機槍反擊連射間隔覆寫（ms；ver -476，Ray：「船戰的速射砲連射
+  /* 「這一場」的機槍反擊連射間隔覆寫（ms；ver -476（-893 前用詞），Ray：「船戰的速射砲連射
      速度調降50%」＝ 90→180）。同 weaponSound：場次的屬性不是武器卡的，
      卡上寫**絕對值**（counterGapMs），null＝預設 90（擁有者：combat）。 */
   counterGapMs: null,
@@ -221,7 +221,7 @@ export const state = {
        sentou-offer / sentou / intercept    Boss 那條 S 級的兩段式
        tutorial-home / tutorial-leaving     教學結算的離場（leaving 同時是防連點的擋門磚）
        script-continue  劇情插入戰打贏 → 交還劇情
-       lose-continue    ver -430：船艦戰戰敗 → 一顆「繼續」，回飛行畫面
+       lose-continue    ver -430（-893 前用詞）：船艦戰戰敗 → 一顆「繼續」，回飛行畫面
        lose-retry       ver -430：劇情場次戰敗 → 兩顆「放棄／再戰」 */
   resultMode: 'rematch',
   currentFavor: 0,
@@ -234,7 +234,7 @@ export const state = {
   inIntruderFight: false,
   deathGuardUsed: false,
   partnerActiveUsed: false,   // 搭檔主動技「每場一次」旗標（oncePerBattle 技用；擁有者 partner，combat 於開場歸零）
-  /* ══⚠⚠ 連續戰鬥的「同一場」（ver -585，Ray：「戰鬥地圖中移動期間算同一場，
+  /* ══⚠⚠ 連續戰鬥的「同一場」（ver -585（-893 前用詞），Ray：「戰鬥地圖中移動期間算同一場，
      hp／聖徒化次數／主動技發動次數／破防值算同一場」）══
      城鎮戰那張地圖上的每一格是一次 `startScriptBattle`，但對玩家而言**是同一場** ——
      所以「每場一次」的資源不可以在格與格之間回滿。
@@ -242,13 +242,13 @@ export const state = {
      ⚠ 擁有者是 `combat`（開場設、`sessionEnd` 的那一場打完清、goHome 清）；
        其餘模組只讀。`main.js` 的門也讀它決定要不要演開棺（鐵律 7：只有這一份）。 */
   battleSession: null,
-  /* 這一場的戰鬥背景覆寫（ver -592，Ray：「打完敵人應該會留在原背景，
+  /* 這一場的戰鬥背景覆寫（ver -592（-893 前用詞），Ray：「打完敵人應該會留在原背景，
      不要自動切背景」）。城鎮插入戰＝**你站的那一格**那張圖，蓋過敵人卡的 `bg`。
      ⚠ 存的是**檔名**（含副檔名），由 `modules/town.js` 的 `currentBg()` 給。
      ⚠ 擁有者是 combat（`setBattleBg`，每次交棒明確設一次／設 null），
        `enemy.setEnemy` 只讀 —— 不要讓它殘留到下一場（那會把上一格的背景帶過去）。 */
   battleBg: null,
-  /* 連續戰鬥的 EXP／錢記帳（ver -595，Ray：「exp 跟錢都用『整場』來結算」）。
+  /* 連續戰鬥的 EXP／錢記帳（ver -595（-893 前用詞），Ray：「exp 跟錢都用『整場』來結算」）。
      中間幾格不彈結算頁，那幾場的收穫先記在這裡，收段的那一場（Boss）一起入帳。
      ⚠ 擁有者是 inspector（`bankSessionGain`／`clearSessionGain`），
        combat 的 `endSession()` 也會清 —— 半途離場不該把帳留到下一段。 */
@@ -256,7 +256,7 @@ export const state = {
      `penAssault`＝被大絕命中、`penBlock`＝擋下一半、`penDelay`＝延時懲罰；
      點錯格用既有的 `wrongTaps`。 */
   penAssault: 0, penBlock: 0, penDelay: 0,
-  /* ⚠⚠ 連續戰鬥的**戰績累計**（ver -601，Ray：「戰鬥用時也是要用整場的全部戰鬥
+  /* ⚠⚠ 連續戰鬥的**戰績累計**（ver -601（-893 前用詞），Ray：「戰鬥用時也是要用整場的全部戰鬥
      總和時間，不計算移動，只算戰鬥時間」）：中間幾格的用時與失誤累加在這裡，
      到收段那一場（Boss）**一起評一次**。null＝這一段還沒有累計。
      ⚠ 累的是**原始統計**不是分數：分數要在總和上算一次，
@@ -300,7 +300,7 @@ export const state = {
      且結算整段跳過（Ray 指定，見 script/TUTORIAL_LINES_NOUVELLE.md 第八節）。
      ⚠ 與 tutorialRun 同壽命（開場歸零、requestReplay({story:true}) 設回）。 */
   tutorialStoryRun: false,
-  /* ── 劇情插入戰（ver -375；擁有者：combat）────────────────────
+  /* ── 劇情插入戰（ver -375（-893 前用詞）；擁有者：combat）────────────────────
      腳本 `{ battle:'guild_hunter' }` 叫起來的那種**單敵一場**：沒有教學台詞、
      不走連戰序列、打完直接交還劇情（同 tutorialStoryRun 的框架，但沒有教學那一套）。
      ⚠ 為什麼不沿用 `tutorialStoryRun`：那支旗標同時代表「這是教學」——
@@ -309,22 +309,22 @@ export const state = {
        **框**（門開門關、不播櫻花過渡禎、打完交還劇情），那部分才是同一件事。 */
   scriptRun: false,      // 本場是劇情插入戰（存續到結算）
   scriptBattleId: null,  // 是哪一場（查 config.battles）
-  /* 剛打完的那一場是哪一場（ver -698）。⚠ 與上面那個的差別：`scriptBattleId` 在
+  /* 剛打完的那一場是哪一場（ver -698（-893 前用詞））。⚠ 與上面那個的差別：`scriptBattleId` 在
      `lose()` 就被清掉了（結算頁要靠它分流），但**戰敗頁按下鈕之後**才輪到啟動層
      決定「回哪裡」—— 那時它已經是 null。所以另存一份，唯一的寫入點在 `lose()`。 */
   lastBattleId: null,
-  /* 這一場是不是**劇情戰**（ver -493，Ray：「在戰鬥加上一個是否為劇情戰的判定，
+  /* 這一場是不是**劇情戰**（ver -493（-893 前用詞），Ray：「在戰鬥加上一個是否為劇情戰的判定，
      之後就讀那一個」）。由發起端在 startScriptBattle 宣告（飛行的隨機遭遇＝false，
      劇本遭遇／城鎮插入戰＝true），startGame 寫入 —— 開場白要不要播、talkOnce
      打贏要不要記，**一律只讀這一支**，不要再各自從卡或旗標推。 */
   storyBattle: false,
-  /* ══ 計時挑戰（ver -396，打靶場）══
+  /* ══ 計時挑戰（ver -396（-893 前用詞），打靶場）══
      戰鬥卡的 `timeAttack` 直接放這裡（`{wrongPenaltySec, se}`；不是那種場次就是 null）。
      ⚠ 它一開就把**整條攻擊路徑**關掉（`enemyAttack` 與 `defense.scheduleAssault` 各自守門），
        所以大絕紅點、蓄力槽、延時懲罰、按錯扣血通通不會演 —— 畫面上只剩「打靶」。
      ⚠ 唯一的懲罰是**時間**：按錯 → 碼表加 `wrongPenaltySec` 秒（見 combat 的 tap）。 */
   timeAttack: null,
-  /* 這一場的計時挑戰**有沒有超過標準時間**（ver -396）。
+  /* 這一場的計時挑戰**有沒有超過標準時間**（ver -396（-893 前用詞））。
      ⚠ 它借用既有的「打輸了」那條分歧路（`onLose`）—— 對腳本而言「超時」與「戰敗」
        是同一件事：接另一支台詞。由 `combat.win()` 判定、`inspector` 交棒時帶出去。 */
   timeOver: false,
@@ -399,7 +399,7 @@ export function addCounter(dmg){
   state.counterFired += 1;
   state.counterDamage += dmg;
 }
-/* ══ 完美反擊（紅圈）專用的計數與折秒（ver -721）══════════════════════════
+/* ══ 完美反擊（紅圈）專用的計數與折秒（ver -721（-893 前用詞））══════════════════════════
    ⚠ 與上面那一支是**兩件事**：`counterFired`／`counterDamage` 算的是「反擊開火了」
      （-706 之後黃橘圈也會開火，那是對的 —— 傷害本來就要記帳）；
      這一支算的是「**完美**反擊」，只有紅圈。評價折秒讀這一支。

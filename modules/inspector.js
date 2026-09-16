@@ -107,7 +107,7 @@ export function moneyOf(stats, grade){
      三條結算路徑都問它（鐵律 7）。 */
   return Math.max(0, Math.round((stats && stats.totalHP || 0) * pct * bossMul('money')));
 }
-/* ══⚠⚠ 連續戰鬥的中間幾場：把這一場的**戰績**與錢記進帳（ver -595；-601 改）══
+/* ══⚠⚠ 連續戰鬥的中間幾場：把這一場的**戰績**與錢記進帳（ver -595（-893 前用詞）；-601 改）══
    由 combat 的 `win()` 在「不結算」那一支呼叫；到收段那一場由 `settle` 一起領走。
    ⚠⚠ 累的是**原始統計**（用時、失誤次數、血量總和…）不是分數（ver -601，Ray：
      「戰鬥用時也是要用整場的全部戰鬥總和時間」）—— 分數要在**總和**上算一次；
@@ -120,12 +120,12 @@ export function bankSessionGain(stats){
   const acc = state.sessionStats || {};
   for(const k of SUM_KEYS) acc[k] = (acc[k]||0) + (stats[k]||0);
   acc.maxCombo = Math.max(acc.maxCombo||0, stats.maxCombo||0);   // 連擊取最高，不相加
-  /* 處刑是**這一場有沒有發生過**（ver -630）：布林用 OR，不是相加 ——
+  /* 處刑是**這一場有沒有發生過**（ver -630（-893 前用詞））：布林用 OR，不是相加 ——
      一段之內任何一場以 EXSECUTIŌ 收尾，整場就算數。 */
   acc.sawExecution = !!(acc.sawExecution || stats.sawExecution);
   acc.sawMaxBurst  = !!(acc.sawMaxBurst  || stats.sawMaxBurst);
   state.sessionStats = acc;
-  /* ══⚠⚠ **中間場的掉落也記帳**（ver -869，Ray：「戰利品也是到那個時候（收段結算）
+  /* ══⚠⚠ **中間場的掉落也記帳**（ver -869（-893 前用詞），Ray：「戰利品也是到那個時候（收段結算）
      結算」）══ 每殺一隻就擲牠的 loot、堆進 `sessionLoot`，收段那一場的結算頁
      一起發（見 settle 的併帳）。-586 的「拾得只在有結算頁的那一場給」被這一條
      取代 —— 那時中間場的掉落是**整個蒸發**，不是延後。
@@ -378,7 +378,7 @@ function animateExpBars(){
 }
 
 /* ══════════════════════════════════════════════════════════════════════
-   主評分（ver -600 改寫；-604 收斂成**單一係數**，Ray 交辦）
+   主評分（ver -600（-893 前用詞） 改寫；-604 收斂成**單一係數**，Ray 交辦）
    ──────────────────────────────────────────────────────────────────────
        用時 ＝ 實際戰鬥秒數 ＋ 失誤秒 − 獎勵秒（夾在 0 以上）
        分數 ＝ 100 −（用時 ÷ 敵人總血量）× `timeK`
@@ -398,7 +398,7 @@ export function evaluate(stats, cfg = GAME_CONFIG.rating){
                + (stats.blocks        ||0) * (pen.block   ||0)
                + (stats.delays        ||0) * (pen.delay   ||0)
                /* ⚠ 反擊與 overkill 是**負的**（ver -601／-603）：它們是表現不是失誤。 */
-               /* ver -721：折秒已經在**發生的那一刻**依武器卡算好累加（狙擊 −3、
+               /* ver -721（-893 前用詞）：折秒已經在**發生的那一刻**依武器卡算好累加（狙擊 −3、
                   其餘 −0.5），這裡直接取 —— 不再用「次數 × 全域係數」，
                   否則同一場換過槍就算不準（鐵律 7）。 */
                + (stats.counterSec    ||0)
@@ -407,7 +407,7 @@ export function evaluate(stats, cfg = GAME_CONFIG.rating){
                   ⚠ 與 overkill 相反 —— 它**不是隨機的**，是「這一盤打乾淨了」，
                     每一盤都由玩家自己決定，所以折成秒數是公平的。 */
                + (stats.perfectBoards ||0) * (pen.perfectBoard||0)
-               /* ⚠ 以 **EXSECUTIŌ（處刑）** 收尾 → 一次性折抵（ver -630，Ray：
+               /* ⚠ 以 **EXSECUTIŌ（處刑）** 收尾 → 一次性折抵（ver -630（-893 前用詞），Ray：
                   「excute 結束 −5 秒」）。它是**這一場有沒有發生過**，不乘次數。
                   ⚠ 與無傷那條下限是兩件事：這一條仍然走秒數（它是「打得漂亮」的
                     加分，不是「保證等第」的宣告）。 */
@@ -431,7 +431,7 @@ export function evaluate(stats, cfg = GAME_CONFIG.rating){
   let score = Math.max(0, Math.min(100, Math.round(100 - (used/hp) * timeK)));
   let grade = cfg.tiers[cfg.tiers.length-1].grade;
   for(const tier of cfg.tiers){ if(score >= tier.min){ grade = tier.grade; break; } }
-  /* ══⚠⚠ **整場無傷 ＝ 等第下限**（ver -626，Ray：「無傷基本讓他保證 S」）══
+  /* ══⚠⚠ **整場無傷 ＝ 等第下限**（ver -626（-893 前用詞），Ray：「無傷基本讓他保證 S」）══
      說明與理由見 `config.rating.flawlessFloor`。
      ⚠ 是**下限**不是覆寫：本來就更高就不要往下壓（現在 S 是頂，但日後加 SS 就會有差）。
      ⚠ 分數一起抬到那一級的門檻 —— EXP 由分數算，等第與 EXP 不該互相打架（鐵律 7）。
@@ -461,7 +461,7 @@ function getInspector(bossFight){
 }
 
 // 依監察官 + 好感度挑立繪鑰匙（無 portraits 則用單張 image）
-/* ══ 蕾娜的結算評價（ver -432 開始；**-670 改成預設就有**）══════════════════
+/* ══ 蕾娜的結算評價（ver -432（-893 前用詞） 開始；**-670 改成預設就有**）══════════════════
    Ray：「之後的每一場戰鬥都要有蕾娜評價，沒有的是特例。」
    ⚠ **這一支是唯一的判定點**（鐵律 7）：要不要出現、出誰、講哪一句，全在這裡；
      `scriptSettle` 只問一次然後照演。
@@ -494,10 +494,10 @@ function pickEvaluator(rankKey, battleId){
   if(bt.noEvalBeforeStage!=null && prog.getStage() < bt.noEvalBeforeStage){
     evalWhyNot='noEvalBeforeStage '+bt.noEvalBeforeStage+'（現在第 '+prog.getStage()+' 章）'; return null; }
   const who = SPEAKERS[EVALUATOR] || {};
-  /* ⚠ **某一場專屬的台詞優先**（ver -597）：`evaluation.js` 的 `BY_BATTLE`
+  /* ⚠ **某一場專屬的台詞優先**（ver -597（-893 前用詞））：`evaluation.js` 的 `BY_BATTLE`
      查得到這一場就用它，查不到才回去走依章節／好感的通用表。
      那張通用表是「全部場次」的，把某一場的稿寫進去會把所有場次一起換掉。 */
-  /* ══ 某一場的稿也可以分好感段（ver -838，夏爾村戰 Ray 交 T1/T2 兩組）══
+  /* ══ 某一場的稿也可以分好感段（ver -838（-893 前用詞），夏爾村戰 Ray 交 T1/T2 兩組）══
      `byTier:{1:{…},2:{…}}` —— 門檻不是等於（pickByThreshold，同通用表那兩層），
      tier 看**評價者自己**的好感（prog.tierOf）。沒寫 byTier 的照舊平面查。 */
   let bb = EVAL_BY_BATTLE[battleId] || null;
@@ -538,7 +538,7 @@ function pickEvaluator(rankKey, battleId){
              +' stage='+prog.getStage()+' aff='+(((prog.getAffection()||{})[(who.art||'')])|0);
     return null;
   }
-  /* ══⚠⚠ **這一句帶好感**（`aff`，ver -671，Ray：禍魘娜塔莉戰 S 那一句「好感＋5」）══
+  /* ══⚠⚠ **這一句帶好感**（`aff`，ver -671（-893 前用詞），Ray：禍魘娜塔莉戰 S 那一句「好感＋5」）══
      ⚠ 只加一次：旗標記在 progress（進存檔、讀檔跟著回去，§6.9）—— 重看結算頁、
        或這一場再打一次拿到同一個等第，都不會再加。
      ⚠ 旗名由**場次＋等第**推（不寫死在資料裡）：同一場的不同等第是不同的一句話。
@@ -552,7 +552,7 @@ function pickEvaluator(rankKey, battleId){
   }
   const art = ART[who.art] || {};
   const ex  = (art.expr||{})[one.expr];
-  /* ══ 亂入（ver -838，Ray：「評價D/C 蕾娜評價完索拉娜亂入評價畫面」）══
+  /* ══ 亂入（ver -838（-893 前用詞），Ray：「評價D/C 蕾娜評價完索拉娜亂入評價畫面」）══
      `evaluation.js` 的 INTRUDE[場次][等第] → 第一句打完換人再講一句
      （showResultSequence 的 `spk.follow`；portrait 是直接路徑）。 */
   /* ⚠⚠ **亂入是全域通用的**（ver -959，Ray：「不是，是全域通用」）：
@@ -655,7 +655,7 @@ function ratingStatsRowsBody(stats, totalTime){
 const BEST_KEY='saint_best_total_v1';
 const BEST_KEY_BOSS='saint_best_total_boss_v1';   // Boss 戰獨立最佳紀錄
 /* 最佳總用時。`boss` 為 true 走 Boss 那一格；字串則是**那一場自己的紀錄**
-   （ver -377，劇情插入戰的 `record` 欄位，例如打靶場）。 */
+   （ver -377（-893 前用詞），劇情插入戰的 `record` 欄位，例如打靶場）。 */
 function bestKey(boss){
   if(typeof boss === 'string') return 'tivot_best_'+boss+'_v1';
   return boss ? BEST_KEY_BOSS : BEST_KEY;
@@ -722,7 +722,7 @@ export function settle(totalTime, stats, opts={}){
   if(statWhos && stats && !isLose){
     try{ prog.addSessionStat(statWhos, evaluate(stats).score); }catch(_){}
   }
-  /* ══⚠⚠ 名詞定義（ver -755，Ray 定案）：**一次結算為一局、一隻怪 hp 清零為一場、
+  /* ══⚠⚠ 名詞定義（ver -755（-893 前用詞），Ray 定案）：**一次結算為一局、一隻怪 hp 清零為一場、
      一次盤面清空為一盤**。══
      「現在每一局戰鬥 hp 跟破防值都會回到初始值」（Ray）—— 局的終點就是結算，
      所以在這裡歸位：HP 回滿、破防值歸零。之後離場的持久 HP 存檔
@@ -743,7 +743,7 @@ export function settle(totalTime, stats, opts={}){
   }
   /* 劇情版教學（諾薇兒帶的那一場）：結算頁**整個不出**（Ray 指定，見
      script/TUTORIAL_LINES_NOUVELLE.md 第八節）。
-     ⚠ 正常情況下**根本走不到這裡** —— ver -325 起 combat 的 win()/lose() 在
+     ⚠ 正常情況下**根本走不到這裡** —— ver -325（-893 前用詞） 起 combat 的 win()/lose() 在
        第一時間就把場子交還劇情（storyBattleEnd），連「驅逐完成」過渡禎都不播。
        這一道是保險：哪天多開一條通往 settle 的路，也不會突然冒出一頁評價。 */
   /* ── 教學結算（ver -358，Ray 指定）───────────────────────────────
@@ -785,13 +785,13 @@ export function settle(totalTime, stats, opts={}){
   if(stats.overkill>0) sub += ` · OVERKILL ${Math.round(stats.overkill)}`;
 
   // ── 評價系統（rating）：大字等級（顯眼）+ 各數值明細 + EXP／金錢 ──
-  /* ⚠ **整場一起評**（ver -601；-621 起併帳搬到本函式開頭，見那裡）：
+  /* ⚠ **整場一起評**（ver -601（-893 前用詞）；-621 起併帳搬到本函式開頭，見那裡）：
      `stats` 進來就已經是整場的總和了。 */
   const evalResult = evaluate(stats);
   let rows='';
   rows += `<div class="grade-wrap"><b class="grade-badge rank-${evalResult.grade}">${evalResult.grade}</b>`
         + `<span class="grade-meta"><span class="grade-cap">${L.result.gradeCap}</span></span></div>`;
-  /* ══⚠⚠ **畫面上的「戰鬥用時」是實際秒數**（ver -610，Ray：「戰鬥用時不要扣秒，
+  /* ══⚠⚠ **畫面上的「戰鬥用時」是實際秒數**（ver -610（-893 前用詞），Ray：「戰鬥用時不要扣秒，
      要用實際的秒數，扣秒是後台計分算的」）══
      失誤／獎勵折算的那幾秒**只活在 `evaluate()` 裡**（`breakdown.used`），
      不進畫面 —— 玩家看到的必須是他真的打了多久，不然那個數字對不上手感。
@@ -847,7 +847,7 @@ export function settle(totalTime, stats, opts={}){
   }
 }
 
-/* ══ 戰敗那一頁的去向（ver -430，Ray 定案）══════════════════════════════════
+/* ══ 戰敗那一頁的去向（ver -430（-893 前用詞），Ray 定案）══════════════════════════════════
    「船戰死亡點擊繼續回到戰鬥前的飛行畫面進度；其餘戰鬥死亡點再戰回到該幕對話的
      開頭，點放棄回到主畫面。」
    三種場次、三張臉（ver -697 重排，Ray 的戰鬥分級）：
@@ -919,7 +919,7 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose, opts){
   clearTimeout(_resultAutoTimer);
   // 每次結算：按鈕歸位為「再度執槍」模式
   state.resultMode='rematch';
-  /* ⚠ 兩顆鈕的版面也要歸位（ver -430）：上一場戰敗留下的 `.two` 不收的話，
+  /* ⚠ 兩顆鈕的版面也要歸位（ver -430（-893 前用詞））：上一場戰敗留下的 `.two` 不收的話，
      下一場打贏的結算頁會多出一顆「放棄」。同 rbtn 那幾行的理由 —— 開場一律先歸零。 */
   const acts=$('bannerActs'); if(acts) acts.classList.remove('two');
   /* ⚠ 休息處那一頁的**不透明底**每次開場先撤（ver -914，見 restSettle）：
@@ -1157,7 +1157,7 @@ function tutorialSettle(totalTime, stats){
      ⚠ 「回到主畫面」那顆鈕也會先彈道具（見 onRematchBtn）：不能讓玩家一按就走人，
        那樣掉落等於沒發生（道具其實已經入袋，但他不知道拿到什麼）。 */
   const loot=(GAME_CONFIG.tutorial||{}).loot || [];
-  /* ⚠ 錢與 EXP 要**明著歸零**（ver -439）：上一場若沒被點開（玩家直接離場），
+  /* ⚠ 錢與 EXP 要**明著歸零**（ver -439（-893 前用詞））：上一場若沒被點開（玩家直接離場），
      那兩個模組變數還留著上一場的值 —— 教學這一頁不給錢也不給 EXP，
      不歸零的話會把別場的數字端上來。 */
   _lootMoney = 0; _lootExp = 0;
@@ -1224,7 +1224,7 @@ function restSettle(totalTime, stats, sessionLoot, shares, title, expShares){
     document.addEventListener('pointerup', popLootOnce, { capture:true, once:true });
   }
 }
-/* ══ 劇情插入戰的結算（ver -375）══
+/* ══ 劇情插入戰的結算（ver -375（-893 前用詞））══
    Ray 的敵人標準卡上有「掉落物」與「金錢」兩欄 —— **掉落是固定的**（不擲骰），
    金錢是「HP 的 6~8 成隨機」。兩者都在敵人卡上，這裡只負責擲骰與呈現（鐵律 1）。
    ⚠ 沒有監察官、沒有等級：那一場是劇情中間插進來的一場架，不是驅逐任務。
@@ -1240,7 +1240,7 @@ function scriptSettle(totalTime, stats, sessionLoot, shares, expShares){
   const spk = pickEvaluator(ev.grade, state.scriptBattleId);
   evalDiagSet(state.scriptBattleId, ev.grade, spk);   // ver -1128：結論留給診斷 HUD
   if(!spk) warnNoEval(ev.grade, state.scriptBattleId);
-  /* ══⚠⚠ **打靶不給 EXP 也不給錢**（ver -439，Ray：「靶不要給 exp 跟錢」）══════
+  /* ══⚠⚠ **打靶不給 EXP 也不給錢**（ver -439（-893 前用詞），Ray：「靶不要給 exp 跟錢」）══════
      那是一場可以重打到膩的計時挑戰 —— 給獎勵等於開了一台印鈔機，而它的回報本來
      就是**紀錄**與**破紀錄的獎品**（`timeAttack.prize`，龍息），那兩樣照舊。
      ⚠ 判斷寫在**戰鬥卡**上（`noReward`），不是在這裡認 `range_trainee`（鐵律 1）——
@@ -1252,7 +1252,7 @@ function scriptSettle(totalTime, stats, sessionLoot, shares, expShares){
      ⚠ 打靶（noReward）不算：那是可以重打到膩的練習場，刷 S 刷好感等於印鈔機
        （同 EXP/金錢不給的理由）。 */
   if(!noReward) prog.applyRankAffection(ev.grade, shares || state.pickedPartner);   // ver -921
-  /* ══⚠⚠ EXP 與金錢**直接放在結算頁**（ver -453，Ray：「exp 跟 g 直接放結算頁，
+  /* ══⚠⚠ EXP 與金錢**直接放在結算頁**（ver -453（-893 前用詞），Ray：「exp 跟 g 直接放結算頁，
      不要另外跳視窗顯示，有戰利品才跳」）══
      -439 曾把兩者搬去戰利品那一頁 —— 於是**每一場**打完都要多點一頁，
      而大多數場次根本沒有道具。現在：
@@ -1265,7 +1265,7 @@ function scriptSettle(totalTime, stats, sessionLoot, shares, expShares){
   /* 錢＝**整局血量總和 × 評價**（ver -950，見 moneyOf）——連戰算一次，不逐隻算。
      ⚠ `noReward`（打靶那種）照舊不給。 */
   let money = noReward ? 0 : moneyOf(stats, ev.grade);
-  /* 九階強化「銀幣星」：金錢掉落加成（ver -707）。⚠ 在**併完連戰的帳之後**才乘 ——
+  /* 九階強化「銀幣星」：金錢掉落加成（ver -707（-893 前用詞））。⚠ 在**併完連戰的帳之後**才乘 ——
      中間幾格的錢也是這一場打來的，只乘最後一格等於少算一大半。 */
   if(money) money = Math.round(money * (1 + prog.bonus('moneyMul')));
   /* EXP（ver -970）：**逐個收款人各算一次**（索菈娜方向相反）。
@@ -1282,12 +1282,12 @@ function scriptSettle(totalTime, stats, sessionLoot, shares, expShares){
   rows += ratingStatsRows(stats, totalTime);
   if(showExp()) rows += expRows(expGains);
   if(money) rows += '<div class="row"><span>'+inv.moneyName()+'</span><b>＋'+money+'</b></div>';
-  /* ══ 這一場自己的最佳紀錄（ver -377，Ray：「紀錄最佳紀錄，破紀錄時加上 New」）══
+  /* ══ 這一場自己的最佳紀錄（ver -377（-893 前用詞），Ray：「紀錄最佳紀錄，破紀錄時加上 New」）══
      ⚠ 只有卡上寫了 `record` 的場次才記（打靶場那種「一直挑戰」的）；
        一般的劇情插入戰打一次就過去了，記它沒有意義。
      ⚠ 紀錄的是**通關用時**（越短越好），與一般戰鬥的最佳總用時同一把尺。
      ⚠ `bt` 這一份卡在上面（`noReward` 那一段）就取好了，不再取第二次。 */
-  /* ══ 破紀錄的獎品（ver -421，Ray：「30 秒內清完槍店的靶送你一支龍息」）══
+  /* ══ 破紀錄的獎品（ver -421（-893 前用詞），Ray：「30 秒內清完槍店的靶送你一支龍息」）══
      ⚠ 門檻與獎品都在戰鬥卡上（`timeAttack.prizeSec` / `prize`）—— 這裡只負責發，
        不寫死是哪一場、也不寫死是哪把槍（鐵律 1）。
      ⚠ **已經有了就不再給**：那是一把槍不是消耗品，重複拿沒有意義。
@@ -1382,7 +1382,7 @@ function popLootOnce(e){
   document.removeEventListener('pointerup', popLootOnce, { capture:true });
   if(list || money || exp) showLoot(list||[], afterLoot, money, { exp, title:'戰利品' });
 }
-/* ══⚠⚠ 「戰利品確認完點擊後就離開結算頁」（ver -439，Ray 指定）══════════════
+/* ══⚠⚠ 「戰利品確認完點擊後就離開結算頁」（ver -439（-893 前用詞），Ray 指定）══════════════
    以前要按兩次：確認戰利品收掉視窗 → 再按一次「繼續」才走。但戰利品本來就是這一頁
    的最後一件事，看完就沒有別的可看了。
    ⚠ **只有劇情／城鎮那一場（`script-continue`）自動走**：
@@ -1478,7 +1478,7 @@ export function onRematchBtn(){
   const rbtn=$('rematchBtn');
   clearTimeout(_resultAutoTimer);   // 玩家有操作 → 取消自動回首頁
   if(state.resultMode==='tutorial-leaving') return;   // 教學結算離場中：防連點重入
-  /* 戰敗那一頁（ver -430）：右邊那一顆＝「繼續」（船艦戰）或「再戰」（劇情場次）。
+  /* 戰敗那一頁（ver -430（-893 前用詞））：右邊那一顆＝「繼續」（船艦戰）或「再戰」（劇情場次）。
      ⚠ 兩者送出的動作不同、去處也不同，但離場的手續是同一份（見 leaveLose）。 */
   if(state.resultMode==='lose-continue'){ leaveLose('continue'); return; }
   if(state.resultMode==='lose-rollback'){  leaveLose('rollback'); return; }

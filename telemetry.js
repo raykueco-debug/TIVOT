@@ -52,7 +52,7 @@ function send(type, fields){
       body: JSON.stringify(body),
     });
     const body = Object.assign({ type, client_id: cid(), ver: VERSION }, fields || {});
-    /* ⚠⚠ 新欄位的退路（ver -456）：PostgREST 對**不認識的欄位**是整筆 400 拒收 ——
+    /* ⚠⚠ 新欄位的退路（ver -456（-893 前用詞））：PostgREST 對**不認識的欄位**是整筆 400 拒收 ——
        資料庫還沒跑 ALTER 補欄（見 stats.html 尾註）之前，帶著 `grade` 上報等於
        把整場勝負紀錄丟掉。所以 400 就把 `grade` 拿掉重送一次：舊表照樣收得到
        事件，只是少那一欄。日後再加新欄照同一條路。 */

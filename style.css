@@ -1033,7 +1033,7 @@
      defense.updateThreats 依圈的同一條門檻（defDefenseMin）切換——唯一切換點。
      橘光的色相取圈的橘（240,140,40），玩家才讀得出「盤面在預告圈的下一段」。 */
   #grid.alert .cell{border-color:#c87d2e;color:#ffc27e;}
-  /* ⚠⚠ 效能（ver -851，實機探針抓到「戰鬥中累積發熱」的主嫌）：警戒／聖徒／overkill
+  /* ⚠⚠ 效能（ver -851（-893 前用詞），實機探針抓到「戰鬥中累積發熱」的主嫌）：警戒／聖徒／overkill
      的盤面脈動原本全是**逐幀動 filter drop-shadow**的無限動畫 —— #grid 是半個畫面大
      的元素，每幀重算一次模糊＝整場戰鬥的固定發熱源（與 emblemGlow 同族，規模大十倍）。
      改法統一：脈動搬到 `#grid` 的 **::after 光暈層**（靜態 box-shadow 光圈，動的只有
@@ -2230,7 +2230,7 @@
   #tutGuide.g-down  .tg-chevrons i{transform:rotate(135deg);}
   #tutGuide.g-up    .tg-chevrons{flex-direction:column-reverse;}   /* 由下往上依次閃 */
   #tutGuide.g-up    .tg-chevrons i{transform:rotate(-45deg);}
-  /* ══⚠⚠ **紅色的雪鐵龍箭**（`tone:'red'`，ver -686，Ray：「夢魘教學雪鐵龍換成紅色，
+  /* ══⚠⚠ **紅色的雪鐵龍箭**（`tone:'red'`，ver -686（-893 前用詞），Ray：「夢魘教學雪鐵龍換成紅色，
      不然看不見」）══ 惡夢化那一場的畫面本來就是金的（`#grid.saint` 把整盤設成金邊、
      還罩了一層金色 drop-shadow）—— 金箭頭疊在金畫面上讀不出來。
      ⚠ 三個地方都要換：容器的外光、chevron 的邊、標示字的顏色與字光 ——
@@ -2533,7 +2533,7 @@
      尤其✕：那顆會讓玩家從這一拍逃走，但這條路徑背後根本沒有劇情可回。 */
   #storyStage.kerb-gate #storyBubble,
   #storyStage.kerb-gate #storySkip{display:none !important;}
-  /* ⚠⚠ `#storyExit` **不在上面那一列**（ver -416）：它自 ver -413 起就是門上的大齒輪，
+  /* ⚠⚠ `#storyExit` **不在上面那一列**（ver -416（-893 前用詞））：它自 ver -413 起就是門上的大齒輪，
      藏掉的話這條路徑（船戰交棒過來的那一場）**只剩小齒輪在轉**，看起來就像大齒輪
      憑空縮小了（Ray 回報「開棺轉動時會變小齒輪」）。齒輪要留著轉，只是不能按 ——
      這條路徑背後沒有劇情可回，按下去會讓玩家從儀式裡逃走。 */

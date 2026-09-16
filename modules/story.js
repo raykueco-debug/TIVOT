@@ -129,7 +129,7 @@ function measureBounds(img, y0, y1){
    ⚠ 不能各算各的：pxCm（每公分幾像素）是共用的，四個人的腳才會落在同一條
      地平線上（CLAUDE.md §6.5）。而「不可越中線」的縮限也必須套用到全體 ——
      只縮一個人會讓身高比例當場失真。 */
-/* ⚠⚠ 相機**連頂線一起**快取（ver -350）。ver -346 只快取了 pxCm，但頂線
+/* ⚠⚠ 相機**連頂線一起**快取（ver -350（-893 前用詞））。ver -346 只快取了 pxCm，但頂線
    `topLine()` 是每次都去量退出鈕的實際位置 —— 而 iOS 的 `env(safe-area-inset-top)`
    會隨網址列收合而變（47px ↔ 0），鈕跟著動，頂線就跟著動。尺寸沒變、**整個人上下跳**，
    讀起來還是「忽大忽小」（§6.5 早就記過：位移會被讀成縮放）。
@@ -150,7 +150,7 @@ function layout(){
      那條規則會落在錯的地方。 */
   const cast=$('storyCast');
   const W=stage.clientWidth;
-  /* ⚠ 相機的分母用**視口高 × 56%**，不是 `#storyCast` 的即時高度（ver -355，
+  /* ⚠ 相機的分母用**視口高 × 56%**，不是 `#storyCast` 的即時高度（ver -355（-893 前用詞），
      照飛行畫面那一套：一個 rect 都不逐句量）。兩者在靜止時相等，但元素的高度會在
      轉場／網址列收合時被抓到中間值，那一瞬的值又被快取一整場。 */
   const VH = window.innerHeight || document.documentElement.clientHeight || 0;
@@ -309,7 +309,7 @@ function layout(){
    ⚠ 手機上這一條特別有感：`#storyExit` 是 `top: env(safe-area-inset-top) + 10px`，
      瀏海機上鈕的下緣落在 ~101px（桌機 ~58px）—— 夾下緣等於把瀏海高度**再讓一次**。
      要閃開的是瀏海本身，鈕的上緣就是安全線。 */
-/* ⚠⚠ **不要量那顆鈕的即時 rect**（ver -354）。量到的值取決於「第一次排版剛好發生在
+/* ⚠⚠ **不要量那顆鈕的即時 rect**（ver -354（-893 前用詞））。量到的值取決於「第一次排版剛好發生在
      哪一刻」—— 鈕若正好被藏起來（`kerb-open` 期間、結算 banner 開著時）或版面還在轉場，
      `br.height` 是 0，整組取景就被那一瞬決定，而它又被快取一整場。
      實測同一段教學跑兩次，立繪高度 665 vs 732（差 10%）—— Ray 說的「忽高忽低」有一半
@@ -903,7 +903,7 @@ let cgFadeT=[], cgFinish=null, fadeOwner=null;
    ⚠ 實測（快點 12 下、每下 45ms）：修之前一段演完 `#storyCg` 還掛著上一張插圖。 */
 let cgSeq = 0;
 const missingCg=new Set();   // 退回過的插圖：只提示一次，不然每一句都印一行
-/* ══⚠⚠ **場景區的黑幕是持續狀態，換畫面就要收**（ver -881，Ray：「森林入口就會
+/* ══⚠⚠ **場景區的黑幕是持續狀態，換畫面就要收**（ver -881（-893 前用詞），Ray：「森林入口就會
    開始變暗」「不是時間分差」「好像不會每次都發作」）══
    `#storyFade` 是**場景區那半片**黑幕（`top:0; height:--story-top; z-index:4`），
    由三種人掛上去：插圖換場（`cgFade`）／場景讀取閘門（`runLoadGate`）／
@@ -1225,7 +1225,7 @@ function applyPersist(line){
     stageBg=line.bg;
     setBgFlip(false);   // 主線場景不吃翻轉（那是城鎮節點的資料，ver -877）
     /* 立繪的色調跟著背景走一點點（見 modules/tone.js）。
-       ⚠⚠ **在 swapImg 的收尾回呼裡量，不要用固定秒數猜**（ver -880）：
+       ⚠⚠ **在 swapImg 的收尾回呼裡量，不要用固定秒數猜**（ver -880（-893 前用詞））：
          -631 是 `setTimeout(…,420)`，而 swapImg 的長度是「淡出 FADE_MS ＋ 圖自己的
          載入解碼」—— 圖沒進快取時 420ms 根本不夠，於是量到的是**上一個場景**的背景，
          還被寫進上一張的快取，畫面上就成了「這一場的立繪套著上一場的色調」，
@@ -1844,7 +1844,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1365';
+const KERB_V='?v=1366';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -1936,7 +1936,7 @@ let kerbGearWarned=false;    // 齒輪撞鉚釘只警告一次（layout 每次 r
    再與「至少要有畫面那麼寬」取大的。上升距離就是門頂那個值（升完門頂貼齊 y=0）。
    ⚠ 每次開場與 resize 都要重算 —— 面板高吃 safe-area，寫死在瀏海機上會錯位。
    ⚠ 要在舞台已經 `.on` 之後才量，display:none 的元素量出來全是 0。 */
-/* ══ 幾何覆寫（ver -388）══════════════════════════════════════════════
+/* ══ 幾何覆寫（ver -388（-893 前用詞））══════════════════════════════════════════════
    飛行頁交棒過來的那一場：門是**在飛行頁解出來的**（那一頁沒有「下半面板」，
    它的條件是「推到頂要蓋得滿畫面」）。這邊照自己的公式再算一次會得到不同的寬度
    （實測差 8.6%），交棒那一格紋章就會忽然變大 —— 那正是鐵律 7 說的「兩處各算一次」。
@@ -2279,7 +2279,7 @@ let kerbHeld=false;      // 門正押著戰鬥（中止演出時要放行，否�
    回到劇情側的門（playKerberos 非 fromRisen）清。layoutKerberos 讀它決定顯示。 */
 let kerbNoPend=false;
 export function setGateHold(o){ gateHold = o || null; }
-/* ══⚠⚠ 這一場要不要演開棺（ver -585，Ray：「城鎮戰內打掉一個怪不用閉棺，
+/* ══⚠⚠ 這一場要不要演開棺（ver -585（-893 前用詞），Ray：「城鎮戰內打掉一個怪不用閉棺，
    打掉 Boss 才閉」）══ 連續戰鬥（`config.battles[].session`）在段落**開始**時演一次，
    段落之內每一格直接接上去 —— 一格演一次開棺，五格就是五次儀式，那不是同一場戰鬥。
    ⚠ 判定的**真相在 combat**（`state.battleSession`，鐵律 7），這裡只問；
@@ -2390,7 +2390,7 @@ function playKerberos(onGap, onDone, opts){
   at(t,()=>{ gateResume(); onDone&&onDone(); });          // 門全開 → 計時開始（ver -466）
 }
 
-/* ══ 飛行頁交棒過來的那一場：門是**在飛行頁推上來的**（ver -387）══════════
+/* ══ 飛行頁交棒過來的那一場：門是**在飛行頁推上來的**（ver -387（-893 前用詞））══════════
    飛行頁與主遊戲是兩個 HTML，中間隔著一次跳頁 —— 所以上推在那邊演完，這邊接手時
    槍棺已經蓋滿畫面。這兩支就是那個交棒：
      `showKerbGate()`        擺出「已推到頂」的靜止畫面（讀取期間玩家看到的就是它）
@@ -2478,7 +2478,7 @@ function kerbSe(k){
   try{ SFX.play(u, fileGain(u)); }catch(e){}
 }
 
-/* ══⚠⚠ 城鎮戰：**在控制盤高度原地開／關**（ver -587，Ray：「雜怪 hp 清零後槍棺
+/* ══⚠⚠ 城鎮戰：**在控制盤高度原地開／關**（ver -587（-893 前用詞），Ray：「雜怪 hp 清零後槍棺
    在原高度閉棺成為控制板，移動後遭遇下一個怪時直接原高度開棺不上彈，
    露出數字面盤」）══════════════════════════════════════════════════════════
    整張戰鬥地圖是**同一場**（§ 上面那一段），所以格與格之間不該再演一次
@@ -2823,10 +2823,10 @@ function renderLine(){
        與它的收尾回呼一起交棒，由 `resumeFrom` 分流。 */
     /* ⚠ 連**現在在放哪一首**一起交棒（ver -375）：戰鬥有自己的曲子，`close()` 會把
        `stageBgm` 歸零 —— 不帶著回來的話，打完接回劇情時整段都還在放戰鬥曲。 */
-    /* `onLose`（ver -377）：**這一場可以打輸**，輸了跳到帶那個 `label` 的拍。
+    /* `onLose`（ver -377（-893 前用詞））：**這一場可以打輸**，輸了跳到帶那個 `label` 的拍。
        ⚠ 只在戰鬥卡上寫了「可戰敗」（`config.battles[].allowLose`）時才走得到 ——
          其餘場次輸了是 Game Over 回主選單（-376 的規矩），根本不會回到這裡。 */
-    /* ⚠ `battleId` 一起帶著（ver -631）：回程要問那張卡「打完換哪一首」
+    /* ⚠ `battleId` 一起帶著（ver -631（-893 前用詞））：回程要問那張卡「打完換哪一首」
        （`bgmAfter`）—— 不帶的話 `resumeFrom` 認不出剛剛打的是哪一場。 */
     const resume = cur.__adhoc
       ? { adhoc: cur.lines, line: lineIdx+1, done: cur.__done, sides: sideOverride, bgm: stageBgm, onLose: line.onLose, battleId: line.battle }
@@ -3175,7 +3175,7 @@ function endScene(){
   const nx = cur.next;
   if(nx && MAIN_SCRIPT[nx]){ playScene(nx); return; }
   if(nx) console.warn('[story] next 指向不存在的 scene：', nx);
-  /* `endHome:true`（ver -744）：這一幕演完回主選單 —— 走**唯一那一支**
+  /* `endHome:true`（ver -744（-893 前用詞））：這一幕演完回主選單 —— 走**唯一那一支**
      goHomeNow（＝選單「回到主選單」與 leaveToHome 同一條，鐵律 8），
      不能只 close()：底下的 #app 是上一場戰鬥的盤面（§6.5.6 的老坑）。
      給「稿還沒到、故事先收在這裡」的幕用（lake_deck 是第一個）。 */
@@ -3278,7 +3278,7 @@ function collectAssets(startId){
   return { imgs:[...imgs], bgms:[...bgms], ses:[...ses], cgs };
 }
 /* 預載：整條 scene 鏈要用到的圖／音效／音樂，**載完（且解碼完）才開演**。
-   ⚠⚠ 圖要 `decode()` 不能只等 `onload`（ver -327）。`onload` 只代表**下載完**，
+   ⚠⚠ 圖要 `decode()` 不能只等 `onload`（ver -327（-893 前用詞））。`onload` 只代表**下載完**，
      1024×1536 的 webp 真正解碼是在第一次要畫的時候 —— 那一刻剛好是立繪滑入／
      插圖切換，於是第一格會頓一下或空一拍。`decode()` 把解碼也搬到預載頁裡做完。
    ⚠ SE 走 `SFX.preload`（解到 AudioBuffer）、BGM 走 `preloadBgm`（抓成 blob），
@@ -3577,7 +3577,7 @@ function runLoadGate(sceneId){
    的作法（story 不認識存檔系統，單向資料流）。 */
 let checkpointHook = null;
 export function setCheckpointHook(fn){ checkpointHook = fn || null; }
-/* ══⚠⚠ **腳本上的存檔點**：那一拍寫 `checkpoint:true`（ver -653，Ray：「黑爪戰後
+/* ══⚠⚠ **腳本上的存檔點**：那一拍寫 `checkpoint:true`（ver -653（-893 前用詞），Ray：「黑爪戰後
    加一個記錄點」）══
    ⚠ 為什麼需要它：城鎮的 act 是**整段演完**才落點（`town.enter` 的收尾），而一個 act
    可能很長（教堂那一段是「對白 → 打一場 → 戰勝 → 娜塔莉那一幕 → 插圖」）——
@@ -3664,12 +3664,12 @@ export function setGateOpened(fn){ gateOpened = fn || null; }
    ⚠ 由 main.js 注入，story.js 不去認識「戰鬥的曲子叫什麼」——單向資料流。
    ⚠ 為什麼不放在 `battleHandler` 裡：那一支是在門**開到縫**（onGap）才呼叫的，
      距離開始上推有 3 秒多（rise 1000 ＋ 撞頂 ＋ 解鎖 ＋ 紋章浮起 1600）。 */
-/* ⚠ 把**這一場的 id** 交給 cue（ver -614）：戰鬥卡可以指定自己的曲子
+/* ⚠ 把**這一場的 id** 交給 cue（ver -614（-893 前用詞））：戰鬥卡可以指定自己的曲子
    （`config.battles[].bgm`），撞頂那一拍就得放對的那一首 —— 沒有 id 的話
    啟動層只能一律放 `bgm_battle`。 */
 let battleCueId=null;
 /* 飛行頁交棒的兩條路（橋接 battle／開機 bootBattleGate）不經過腳本的 battle 拍，
-   battleCueId 沒人設 → riseCue 一律放回預設 bgm_battle（ver -746 修，Ray：
+   battleCueId 沒人設 → riseCue 一律放回預設 bgm_battle（ver -746（-893 前用詞） 修，Ray：
    「羽蛇戰 bgm 不對」）—— 交棒端用這一支把「這一場是誰」告訴撞頂那一拍。
    曲子仍由 main 的 battleBgmOf 一處決定（鐵律 7），這裡只傳遞 id。 */
 export function setBattleCueId(id){ battleCueId = id || null; }
@@ -3724,7 +3724,7 @@ export function setPrepOpener(fn){ prepOpener=fn; }
 let flightOpener=null;
 export function setFlightOpener(fn){ flightOpener=fn; }
 
-/* ══ 「回到主選單」（ver -398）══════════════════════════════════════════
+/* ══ 「回到主選單」（ver -398（-893 前用詞））══════════════════════════════════════════
    ⚠⚠ **只收劇情層是不夠的**（Ray 回報「回到主選單的畫面一直變成試玩版戰鬥畫面」）：
      劇情層底下是 `#app`，而 `#home` 早就被別的路徑關掉了（`combat.startGame`、
      `openFlight`、飛行頁交棒…都會 `home.classList.remove('on')`）。只 `close()` 的話
@@ -4319,7 +4319,7 @@ export function hideBubble(){
   const b=$('storyBubble'); if(b) b.style.visibility='hidden';
   markTalking(false);
 }
-/* 城鎮用：確保某一首 BGM 在放（ver -375）。
+/* 城鎮用：確保某一首 BGM 在放（ver -375（-893 前用詞））。
    ⚠ 為什麼要有：城鎮中間會插進一場戰鬥，戰鬥有自己的曲子；回到城鎮時要把地方的曲子
      接回來。**同曲重播由 `playBgm` 自己擋掉**，所以每次進節點都呼叫是安全的。
    ⚠ 走 `stageBgm` 記帳與腳本的 `bgm:` 同一份 —— 不然兩邊會各自以為自己在放。 */
@@ -4392,7 +4392,7 @@ export function indexOfLabel(lines, label){
 }
 export function resumeFrom(pos, res){
   if(!pos) return;
-  /* ══⚠⚠ **打完換一首**（ver -631，Ray：「黑爪戰完 bgm 換 Suspense6」）══
+  /* ══⚠⚠ **打完換一首**（ver -631（-893 前用詞），Ray：「黑爪戰完 bgm 換 Suspense6」）══
      戰鬥卡上寫 `bgmAfter:'<鑰匙>'`；沒寫就照舊接回**戰前那一首**（`pos.bgm`）。
      ⚠ **只有打贏才換**：戰敗要再打一次，這一場還沒結束 —— 換了曲子等於幫劇情
        先畫了句點。`res.lost` 為真時走回原本那一首。
@@ -4407,7 +4407,7 @@ export function resumeFrom(pos, res){
      ⚠ 問不到（不在城裡／沒注入）就退回戰前那一首，不會變成一片安靜。 */
   if(_after==='@town') _after = (townBgmFn ? townBgmFn() : null) || null;
   ensureBgm(_after || pos.bgm);             // 戰前那一首（見 renderLine 的 resume）
-  /* ══⚠⚠ ver -430 的「再戰＝回這一幕的第 0 句」**已在 ver -697 推翻**══════════
+  /* ══⚠⚠ ver -430（-893 前用詞） 的「再戰＝回這一幕的第 0 句」**已在 ver -697 推翻**══════════
      那一顆現在叫「繼續」，做的是**回檔**（`save.loadLatest`，分流在 main 的
      `setStoryReturn`）—— 所以敗北根本走不到這一支了。
      為什麼推翻：跳回某一句只還原了「播到哪裡」，旗標／好感／道具／時鐘全部停在
@@ -4415,7 +4415,7 @@ export function resumeFrom(pos, res){
      「安雅的好感還在，也沒有觸發要求去教堂」）。
      ⚠ **回檔＝讀一份完整快照**，所以「這一段對白是初見還是二見」由快照裡的旗標
        回答，不必判斷（鐵律 9）。 */
-  /* 打輸了而且這一場有寫 `onLose` → 從那個 label 接下去（ver -377）。 */
+  /* 打輸了而且這一場有寫 `onLose` → 從那個 label 接下去（ver -377（-893 前用詞））。 */
   if(res && res.lost && pos.onLose){
     const lines = pos.adhoc || ((MAIN_SCRIPT[pos.scene]||{}).lines);
     const at = indexOfLabel(lines, pos.onLose);

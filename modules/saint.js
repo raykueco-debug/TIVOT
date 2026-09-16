@@ -435,7 +435,7 @@ function saintDrainTick(){
 export function saintAdvance(amount){
   if(!state.saintMode) return;
   /* 倒數槽推至臨界（滿-1，即 99）即攔截——不進 OBE，交由教學／劇情引導生命歸還。
-     ⚠⚠ 守門改問 `api.saintCriticalPending()`（ver -619）：原本寫死
+     ⚠⚠ 守門改問 `api.saintCriticalPending()`（ver -619（-893 前用詞））：原本寫死
        `state.tutorialActive`，於是 BOSS 那一場的聖徒化教學（走戰鬥卡的 `talk`，
        **不是教學**）整條吃不到，槽一推滿就 OBE，生命歸還沒機會發動
        （Ray：「生命歸還在 OBE 後不能用，所以要在生命 99% 時發動」）。
@@ -602,7 +602,7 @@ function niDrain(amount){
    ⚠ 沒有 cut-in 圖就直接收（演出不是規則）。 */
 function niMeltdown(){
   if(!state.niMode) return;
-  /* ⚠⚠ **敵已死（overkill 追打中被抽乾）＝處刑沒點完而已，不算熔斷**（ver -862，
+  /* ⚠⚠ **敵已死（overkill 追打中被抽乾）＝處刑沒點完而已，不算熔斷**（ver -862（-893 前用詞），
      Ray 回報「NI 中敵 hp 歸零沒跑 EXECUTE」）—— 鏡射 SI 那邊 `saintAdvance` 推滿的
      敵死分支（ver -498/-499：「人是你殺的」→ triggerMaxBurst）：這裡走 triggerNiBurst，
      它自己的敵死分支會 markExecution ＋ EXSECUTIŌ cut-in ＋ onEnemyDefeated。
@@ -670,7 +670,7 @@ export function nightmareActive(){
        反過來的話玩家會先看到數字再看到她出手。
      ⚠ 沒有圖／沒有名字就直接結算（cut-in 是演出不是規則）。 */
   if(NI_BURST_CUTIN){
-    /* 夢境粉碎的語音（ver -711）：預設 `vo_anya_burst`，**這一場**可以在戰鬥卡上
+    /* 夢境粉碎的語音（ver -711（-893 前用詞））：預設 `vo_anya_burst`，**這一場**可以在戰鬥卡上
        改（`burstVoice`）—— 娜塔莉戰用第二版（Ray 指定）。鐵律 1：寫在卡上。 */
     { const bc = state.scriptBattleId && GAME_CONFIG.battles && GAME_CONFIG.battles[state.scriptBattleId];
       const vk = (bc && bc.burstVoice) || 'vo_anya_burst';
@@ -1106,7 +1106,7 @@ export function playCutin(done, label, imgKey, opts){
 }
 
 // 結局全畫面 cut-in（kind: 'burst' | 'obe' | 'execute' | 'return'）
-/* ══⚠⚠ **處決／MB 就 reload**（ver -892，Ray：「夢魘跟聖徒改成如果打出處決或 mb，
+/* ══⚠⚠ **處決／MB 就 reload**（ver -892（-893 前用詞），Ray：「夢魘跟聖徒改成如果打出處決或 mb，
    就會 reload，並在處決或 mb 的 CI 中顯示 SAINT RELOAD 或 NIGHTMARE RELOAD」）══
    `reload` ＝這一張 CI 要不要多印一行「你賺回一次發動」。誰印由**呼叫端**決定
    （聖徒化那條印 SAINT、惡夢化那條印 NIGHTMARE）—— cut-in 自己分不出這一場是哪一套

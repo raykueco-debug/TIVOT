@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1365"></script>
+<script src="../orientation.js?v=1366"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1365');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1366');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1365");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1365");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1366");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1366");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1365");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1365");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1366");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1366");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -620,25 +620,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1365" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1366" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1365" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1365" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1365" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1365" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1365" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1365" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1365" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1365" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1365" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1365" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1366" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1366" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1366" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1366" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1366" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1366" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1366" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1366" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1366" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1366" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1365" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1366" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1365" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1366" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -659,11 +659,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1365"></script>
+<script src="settlement.js?v=1366"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1365"></script>
+<script src="talks.js?v=1366"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -715,7 +715,7 @@ const COLOR_URL  = 'silvermoon_terrain.png'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1365';
+const FLIGHT_VER = 'ver -1366';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -10227,7 +10227,7 @@ function update(dt,now){
   /* 雲海的擴張跟著**實際位移**走（ver -1080）—— 這裡是船真的移動的唯一一行。 */
   skyZoom += mv/SKY_ZOOM_PER;
   clock.dist+=Math.abs(mv);              // 後退也是航行距離，不該倒扣
-  /* ⚠⚠ **航行本身不再推進時間**（ver -435，Ray 定案）。以前是
+  /* ⚠⚠ **航行本身不再推進時間**（ver -435（-893 前用詞），Ray 定案）。以前是
      `clock.minutes += |mv| * 0.10` —— 時間跟著「走了多少世界單位」跑，
      於是繞圈子也會天黑，而且那個時鐘與主遊戲的完全是兩回事。
      現在時間只在**事件**上走：一場戰鬥 1 小時、進一個地方 1 小時
@@ -14945,7 +14945,7 @@ function updateEnemy(dt,now){
     /* 劇本遭遇**優先於自動刷新**：條件到了就立刻生，不等計時器（Ray：「立刻刷怪」）。 */
     const S=scriptedDue();
     if(S){ spawnScripted(S); return; }
-    /* ⚠⚠ **第一隻劇本蜈蚣打完之前，一隻雜怪都不刷**（ver -483，Ray：「在第一隻
+    /* ⚠⚠ **第一隻劇本蜈蚣打完之前，一隻雜怪都不刷**（ver -483（-893 前用詞），Ray：「在第一隻
        蜈蚣出場前不要有其他怪」；-454 只擋「排隊中」——旗標還沒立的試飛時段、
        打輸重生等待再刷的空檔都漏）。判準是**還有劇本遭遇沒打完**（done 旗標）。
        ⚠ 開發時要怪就按「生怪」鈕（它走 spawnEnemy 直達，不經這裡）。
@@ -15078,7 +15078,7 @@ function updateEnemy(dt,now){
      逼近的那幾秒裡轉了向，牠就從側後方追上：距離到了、畫面上卻沒有牠。
      沒看到就**先不交棒**，牠繼續追著咬（本來就不放棄）；玩家一回頭看到牠，
      下一幀就進戰鬥。⚠ 只管劇本遭遇：平時的怪照舊「不論前後左右」（Ray 舊規）。 */
-  /* ⚠ 掉頭中的那一隻**不交棒**（ver -478）：牠正在讓位給劇本怪，
+  /* ⚠ 掉頭中的那一隻**不交棒**（ver -478（-893 前用詞））：牠正在讓位給劇本怪，
      玩家追上去貼臉也不該把牠打下來 —— 那一場注定是劇本怪的。 */
   /* 錯身而過＝接戰（ver -502，見 ENEMY_CFG.nearMiss）。
      ⚠ 只給平時的怪：劇本遭遇有「看得到才進戰鬥」的硬規（ver -455），
@@ -15108,7 +15108,7 @@ function updateEnemy(dt,now){
   }
 }
 
-/* ══ 遭遇 → 舒爾特盤（ver -382，Ray：「怪碰到船以後進入舒爾特盤」）══
+/* ══ 遭遇 → 舒爾特盤（ver -382（-893 前用詞），Ray：「怪碰到船以後進入舒爾特盤」）══
    飛行頁與主遊戲是**兩個頁面**，所以交棒走 localStorage：
      `tivot_battle_req_v1`  這一場要打誰（`config.battles` 的鍵）
      `tivot_flight_ret_v1`  打完回來要站在哪（座標／航向／高度）
@@ -15360,7 +15360,7 @@ function embedded(){ try{ return window.parent!==window && !!window.parent.__tiv
                      catch(_){ return false; } }
 
 function toBattle(kind){
-  /* ⚠⚠ 劇本遭遇的 done 旗標**打贏才記**（ver -487；-426 曾記在交棒那一刻）——
+  /* ⚠⚠ 劇本遭遇的 done 旗標**打贏才記**（ver -487（-893 前用詞）；-426 曾記在交棒那一刻）——
      憲法 §6.5.2「劇情戰敗北＝回捲到戰前」的正解：與其記了再退（-480/-486 的
      回捲跨兩個文件靠執行期掛鉤，主頁沒重整就版本錯開、整個漏掉——實測就漏了），
      不如**根本不記**：敗北從結構上就等於「這一場還沒發生過」。
@@ -15381,10 +15381,10 @@ function toBattle(kind){
   if(battleGoing) return;
   lastScriptS = SC || null;  // 這一場是哪一條劇本遭遇（打贏記 done／打輸重掛 pending 用）
   /* 這一場是不是**劇本遭遇**（＝第一場船戰）：打贏回來那一段「小命保住了」
-     只掛在它身上（ver -453，Ray：「不要每次船戰都跳…只有第一場船戰結束會跳」）。
+     只掛在它身上（ver -453（-893 前用詞），Ray：「不要每次船戰都跳…只有第一場船戰結束會跳」）。
      見 `__flightResume`。 */
   lastBattleScripted = !!SC;
-  /* ⚠ **一場戰鬥 1 小時**（ver -435，Ray 指定）。記在**真的要打**的這一刻：
+  /* ⚠ **一場戰鬥 1 小時**（ver -435（-893 前用詞），Ray 指定）。記在**真的要打**的這一刻：
      免戰模式與重複觸發都已經在上面 return 掉了，所以不會多算。 */
   clockAdvance(HOUR);
   battleGoing=true;          // 這一刻起船也停住（見 update() 的那一行）
@@ -15410,7 +15410,7 @@ function toBattle(kind){
   setTimeout(()=>{
     if(embedded()){
       flightAudio(false);                          // 進戰鬥：這一頁的音樂與環境音收掉
-      /* ══⚠⚠ 回程鑰匙（ver -845，Ray：「只要不是可以操控的飛行畫面，都應該要把
+      /* ══⚠⚠ 回程鑰匙（ver -845（-893 前用詞），Ray：「只要不是可以操控的飛行畫面，都應該要把
          飛行畫面 kill 掉」）══ 父頁交棒後會把這個 iframe **整個卸載**（發燙與
          「圖讀不出來」的元凶＝上百 MB 的地形/金字塔一直押著記憶體）。
          所以座標＋勝負記帳要的上下文（這一場是不是劇本遭遇、贏了要記哪支 done）
@@ -15420,7 +15420,7 @@ function toBattle(kind){
         { x:cam.x, y:cam.y, angle:cam.angle, alt:cam.alt,
           fromBattle:1, scripted: lastBattleScripted?1:0,
           doneKey: (lastBattleScripted && lastScriptS && lastScriptS.done) || null })); }catch(e){}
-      /* `scripted`＝這一場是不是**劇情戰**（ver -493，Ray：「加上是否為劇情戰的判定，
+      /* `scripted`＝這一場是不是**劇情戰**（ver -493（-893 前用詞），Ray：「加上是否為劇情戰的判定，
          之後就讀那一個」）——由發起端（唯一知道的人）宣告，主遊戲照這個分流
          開場白與 talkOnce。隨機遭遇＝false。 */
       window.parent.__tivotFlight.battle({ battle:'flight_'+kind, geom:fkerbGeom, scripted: lastBattleScripted });
@@ -15879,7 +15879,7 @@ function deckChaosScene(){
 window.__flightResume=function(opts){
   extPaused=false;   // 父頁把畫面還回來（ver -481：extPaused 是「畫面收起」的凍結）
   battleGoing=false;
-  /* ⚠ 時鐘要重讀（ver -435）：這一頁藏著的期間，戰鬥／城鎮那一邊可能推過時間
+  /* ⚠ 時鐘要重讀（ver -435（-893 前用詞））：這一頁藏著的期間，戰鬥／城鎮那一邊可能推過時間
      （一場戰鬥 1 小時就是在 `toBattle` 記的）—— 不同步的話 HUD 與晝夜還停在出發前。 */
   syncClock();
   const kb=document.getElementById('fkerb'); if(kb) kb.classList.remove('rise');
@@ -15940,9 +15940,9 @@ function afterBattleReturn(won, wasScripted, doneKey, scriptS){
   if(!won) return;
   /* ⚠⚠ **只有劇本遭遇打贏才演**（ver -453：隨機遭遇永遠不演首勝那段戲）。 */
   if(!wasScripted) return;
-  /* 羽蛇那一場打贏（ver -741）：接甲板混亂。⚠ 判 done 的鑰匙不判 kind。 */
+  /* 羽蛇那一場打贏（ver -741（-893 前用詞））：接甲板混亂。⚠ 判 done 的鑰匙不判 kind。 */
   if(doneKey==='flight_serpent_met' && !flagOn('np_deck_chaos')){
-    /* 甲板背景**這一刻**就鋪（ver -745）：結算一撤、畫面露出來就是它。
+    /* 甲板背景**這一刻**就鋪（ver -745（-893 前用詞））：結算一撤、畫面露出來就是它。
        地圖上的怪全清（Ray：「包括那隻羽蛇」）—— 牠已經在剛剛那一場被打掉了。 */
     /* 戰後這一段的 bgm ＝ Crisis（ver -747，Ray：「戰後 bgm 用 crisis」）——
        上面的 flightAudio(true) 剛把航行曲接回來，這裡蓋回 Crisis；
@@ -18147,7 +18147,7 @@ function stage1Blocked(P){
   return gameStage()===2 && P && STAGE1_DEST.indexOf(P.name) < 0;
 }
 
-/* ══ 第一場艦戰打完的那一段（ver -432，Ray 交稿，一字未改）══════════════
+/* ══ 第一場艦戰打完的那一段（ver -432（-893 前用詞），Ray 交稿，一字未改）══════════════
    蕾娜說溜嘴、諾薇兒接話。⚠ **只在打贏之後**演（`__flightResume({won:true})`）：
    ver -430 起打輸也會回到這一頁，而這一段的第一句是「小命保住了」。
    ⚠ 一輪只演一次 —— 旗標記在 `progress` 的 flags，所以讀檔會跟著回去（§6.9）。

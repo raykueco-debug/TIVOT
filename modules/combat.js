@@ -246,7 +246,7 @@ export function setup(){
                       因此接不上 `onLose` 那一支分歧，戰敗那三顆鈕也送不出去。 */
                    storyReturn: (res)=>{ killBattleFrame();   // ver -1024：結算頁交還之前清空戰鬥層
                                         if(storyReturn) storyReturn(res); else goHome(); },
-                   /* 戰敗那一頁該給哪幾顆鈕（ver -430）：只有啟動層知道這一場是飛行頁
+                   /* 戰敗那一頁該給哪幾顆鈕（ver -430（-893 前用詞））：只有啟動層知道這一場是飛行頁
                       交棒過來的（船艦戰）、還是劇情插進來的（見 main.js 的 setLoseKind）。 */
                    loseKind: ()=> (loseKind ? loseKind() : 'home') });
   // 敵人：Boss 亂入的戰鬥重置（startIntruderFight，combat 擁有）+ 換敵刷血條（updateBars）注入。
@@ -701,7 +701,7 @@ function tap(num,cell,e){
          但**失誤秒數扣全**」—— 上面那一行照扣，這一刀是她順手替你補的一下。 */
       weapon.coopMissKnife();
     }
-    /* ══ 計時挑戰（ver -396）：唯一的懲罰是**時間**══
+    /* ══ 計時挑戰（ver -396（-893 前用詞））：唯一的懲罰是**時間**══
        按錯 → 碼表直接加秒數（`runElapsedMs` 是碼表的累計，加在那裡就等於「多花了那麼久」），
        並播那一場自己的失手音。⚠ 不走 `enemyAttack` —— 那條路上有扣血、受擊特效、
        致死判定，而這一場的靶子根本不會攻擊。 */
@@ -1132,7 +1132,7 @@ function enemyAttack(dmg, kind, saintAmt){
        只保留**無敵**（不扣血、不記失誤）當保險，不再在攻擊落地時反擊（免得雙重反擊）。 */
     return;                          // 無敵：不扣血、不記失誤
   }
-  /* ══⚠⚠ **失誤計數**（ver -619 補）══ ver -600 定了 `penAssault`／`penBlock`／`penDelay`
+  /* ══⚠⚠ **失誤計數**（ver -619（-893 前用詞） 補）══ ver -600 定了 `penAssault`／`penBlock`／`penDelay`
      這三個欄位、結算也在讀它們，**但從來沒有人 ++** —— 於是新評價的懲罰秒數
      永遠只有「點錯」那一項，挨大絕／格擋／延時全部免費。
      （那就是「用滑鼠點都可以每場 S」的真正原因，timeK 一路被推到 550 也壓不住。）
@@ -1191,7 +1191,7 @@ function enemyAttack(dmg, kind, saintAmt){
   state.hitsTaken++;                 // 評價受擊數（此路徑＝真實掉血；=0 即無傷 gate）
   state.enemyHitsTaken++;            // 這一隻的受擊數（九階「方舟」，ver -708）
   /* 真實受擊 → 整場無傷旗標取消。⚠ **腳本演出的那幾擊不算**（劇情殺三連擊，
-     ver -620，Ray：「如果玩家除此之外無傷的話一樣記無傷」）—— 同 `_scriptedHits`
+     ver -620（-893 前用詞），Ray：「如果玩家除此之外無傷的話一樣記無傷」）—— 同 `_scriptedHits`
      從 `hitsTaken` 扣掉的作法，兩者要一致，不然畫面上標了無傷、旗標卻是假的。 */
   if(!_scriptedAtk) state.flawlessRun=false;
   /* ══ 免傷窗（ver -740，Ray：「免傷仍算受擊，只是不扣血」）══
@@ -1928,7 +1928,7 @@ function ensureDelayRing(){
   return sv;
 }
 function ringTick(){
-  /* 戰鬥結束＝迴圈自滅（ver -853，新探針抓到：bootIdle 建背景盤面時把這條 rAF
+  /* 戰鬥結束＝迴圈自滅（ver -853（-893 前用詞），新探針抓到：bootIdle 建背景盤面時把這條 rAF
      帶起來、之後沒有人收 —— 首頁掛機它每幀空跑到天荒地老，鐵律 10）。
      over=true 只在勝敗定案／bootIdle（overkill 窗口 over 仍是 false，不受影響）；
      下一場 startIntervalTimer 會重新拉起來。 */
@@ -2202,7 +2202,7 @@ function autoClearOverkill(){
 /* ---- 敵死收尾：局內還有下一敵→轉敵、否則→結算 ---- */
 /* 「這是不是最後一名敵人」只有這一支（鐵律 7）。
    教學戰／劇情插入戰＝單敵一場，永遠是最後一名。
-   （ver -499：聖徒化 overkill 的 EXSECUTIŌ 不再看這個 —— Ray：「只要清空敵 hp
+   （ver -499（-893 前用詞）：聖徒化 overkill 的 EXSECUTIŌ 不再看這個 —— Ray：「只要清空敵 hp
    就發生」；這一支現在只剩 finishEnemyOrAdvance 在用。） */
 function isLastEnemy(){
   return !(enemy.hasNextInLineup() && !state.tutorialRun && !state.scriptRun);
@@ -2244,7 +2244,7 @@ function advanceEnemy(){
 // 整場敵人總血量（評價時間預算用）：一般連戰＝lineup 各敵 hp 相加；Boss 亂入＝單敵新場（enemyMax）。
 //   隨敵人 config 血量自動變動，設計新敵人時評價門檻自動跟著調整（見 config.rating 說明）。
 function runTotalHp(){
-  /* ⚠⚠ **劇情／城鎮的插入戰是單敵**（ver -604 修）：那些場次沒有 lineup，
+  /* ⚠⚠ **劇情／城鎮的插入戰是單敵**（ver -604（-893 前用詞） 修）：那些場次沒有 lineup，
      舊寫法會退回 `GAME_CONFIG.lineup`（＝**挑戰模式**那一串怪）去加總 ——
      實測北方泊地那隻 300 血的雜怪，分母被算成 500。
      新評價的分母就是這個數，錯了整條等第跟著錯。
@@ -2270,7 +2270,7 @@ function runTotalHp(){
      那一段是真的會死的 —— 沒接的話會卡在戰敗結算頁，劇情永遠回不來。 */
 let storyReturn = null;
 export function setStoryReturn(fn){ storyReturn = fn; }
-/* 「這一場輸了要給哪幾顆鈕」的判定器（ver -430，由 main.js 注入；轉交給 inspector）。
+/* 「這一場輸了要給哪幾顆鈕」的判定器（ver -430（-893 前用詞），由 main.js 注入；轉交給 inspector）。
    ⚠ combat 不認識 `flightBack`／`storyResume` —— 那兩個是啟動層的交棒狀態。
    ⚠ 只是**轉交**，這裡不加任何判斷：加了就變成第二個判定點（鐵律 7）。 */
 let loseKind = null;
@@ -2311,7 +2311,7 @@ export function devSkipBattle(){
      `tutorialRun`，不要混進來。 */
 function storyFramed(){ return state.tutorialStoryRun || state.scriptRun; }
 
-/* ══⚠⚠ 連續戰鬥：整張戰鬥地圖算「同一場」（ver -585，Ray：「城鎮戰內打掉一個怪
+/* ══⚠⚠ 連續戰鬥：整張戰鬥地圖算「同一場」（ver -585（-893 前用詞），Ray：「城鎮戰內打掉一個怪
    不用閉棺，打掉 Boss 才閉，戰鬥地圖中移動期間算同一場，hp／聖徒化次數／
    主動技發動次數／破防值算同一場」）══════════════════════════════════════
    戰鬥卡寫 `session:'<id>'` ＝這一場屬於那一段連續戰鬥；`sessionEnd:true` ＝
@@ -2339,7 +2339,7 @@ export function endSession(){
   sessionUsedKeys=[];                // 這一段出過哪幾隻（ver -628）：下一次重新洗牌
 
   inspector.clearSessionGain();     // 半途離場：EXP/錢的帳不留到下一段（ver -595）
-  /* ══⚠⚠ **一場結束＝回滿血、破防值歸零**（ver -611，Ray 指定）══
+  /* ══⚠⚠ **一場結束＝回滿血、破防值歸零**（ver -611（-893 前用詞），Ray 指定）══
      「一場」＝**槍棺上彈到蕾娜評價**（Ray 的定義），也就是這一個 session：
      中間走幾格、打幾隻都算同一場，資源（HP／聖徒化／主動技／破防值）連著算；
      收段之後就是新的一場，全部回滿。
@@ -2375,7 +2375,7 @@ export function restSettle(title){
   endSession();
   return true;
 }
-/* 這一場的戰鬥背景覆寫（ver -592）：由 `main.js` 在交棒的那一刻設 ——
+/* 這一場的戰鬥背景覆寫（ver -592（-893 前用詞））：由 `main.js` 在交棒的那一刻設 ——
    城鎮插入戰給「你站的那一格」那張圖，其餘一律 null（走敵人卡的 `bg`）。
    ⚠ **每次交棒都要明確設一次**（含設 null）：靠上一場收乾淨會漏，
      漏了就是把上一格的背景帶進下一場（同 `noSaint` 那條的理由）。 */
@@ -2386,7 +2386,7 @@ export function releaseEnemyRise(){ enemy.releaseRise(); }
 /* 這一場是連續戰鬥的**中間一場**嗎（＝不是收段的那一場）。
    ⚠ 問的是**卡**不是 `state.battleSession`：Boss 打贏時段落已經被 `endSession()`
      收掉了，拿 state 判會把 Boss 也算成中間場（鐵律 9：判定要看得到擁有者的那個值）。 */
-/* ══⚠⚠ 這一場打哪一隻（ver -596，Ray：「城鎮戰由這幾隻怪隨機出，數值都一樣，
+/* ══⚠⚠ 這一場打哪一隻（ver -596（-893 前用詞），Ray：「城鎮戰由這幾隻怪隨機出，數值都一樣，
    但是要各別做敵人卡方便我修改」）══ 戰鬥卡的 `enemy` 可以是**一個鍵**或**一串鍵**；
    是一串就隨機抽一隻。
    ⚠⚠ **一場之內只能抽一次**：`startGame` 會問好幾次（判劇情戰、換敵…），
@@ -2449,13 +2449,13 @@ function storyBattleEnd(lost){
   /* 持久 HP：局內（連戰中間場）才帶，局結束就拔鑰匙 —— 見 `carryHpOrClear`。 */
   carryHpOrClear();
   sessionSave();                      // 連續戰鬥：把「每場一次」的資源帶去下一格（ver -585）
-  /* talkOnce 也在這裡記（ver -493，同 win 的那一段）：allowLose 的「劇本輸」
+  /* talkOnce 也在這裡記（ver -493（-893 前用詞），同 win 的那一段）：allowLose 的「劇本輸」
      與跳關都算「這一場過去了」—— 劇情不再重播。 */
   { const _sb2 = state.scriptBattleId && GAME_CONFIG.battles && GAME_CONFIG.battles[state.scriptBattleId];
     if(state.storyBattle && _sb2 && _sb2.talkOnce) prog.addFlags([_sb2.talkOnce]); }   // 只有劇情戰記（ver -493）
   state.tutorialRun=false; state.tutorialStoryRun=false; state.scriptRun=false;
   state.over=true; clockPause(); stopAll();
-  /* ⚠ 把**勝負**一起交還（ver -377）：可戰敗的場次要靠它決定接哪一支分歧。 */
+  /* ⚠ 把**勝負**一起交還（ver -377（-893 前用詞））：可戰敗的場次要靠它決定接哪一支分歧。 */
   killBattleFrame();                 // ver -1024：交還畫面之前先把戰鬥層清空（鐵律 10）
   if(storyReturn) storyReturn({ lost: !!lost });
   return true;
@@ -2463,7 +2463,7 @@ function storyBattleEnd(lost){
 
 function win(){
   if(state.over || state.defeated) return;   // 戰敗優先：已判定戰敗則勝利結算一律讓位
-  /* ⚠⚠ 持久 HP 寫回（ver -489 修）：-481 誤掛在 storyBattleEnd —— 正常勝利走的是
+  /* ⚠⚠ 持久 HP 寫回（ver -489（-893 前用詞） 修）：-481 誤掛在 storyBattleEnd —— 正常勝利走的是
      **這一支**（win → 結算頁 → 繼續交還），storyBattleEnd 只有 devSkip 與
      allowLose 在用，於是血量從來沒繼承過（Ray：「血量沒有繼承上一場的傷害」）。
      storyBattleEnd 那一份留著（它照顧自己那兩條路）。 */
@@ -2476,7 +2476,7 @@ function win(){
        它會 `clearSessionGain()`，而這一段的統計與錢正是結算頁要報的。
        -595~-620 收在這裡：整段的用時／失誤／受擊／金錢在 `stats` 還沒組出來
        之前就被清光了（無傷與等第因此只算最後一隻）。改掛在 `toResult`。 */
-    /* ⚠⚠ 開場白的 talkOnce **打贏才記**（ver -493，Ray：「敗北重來要跑，
+    /* ⚠⚠ 開場白的 talkOnce **打贏才記**（ver -493（-893 前用詞），Ray：「敗北重來要跑，
        結束以戰鬥勝利為條件」）—— 敗北時根本沒記＝每次重來自動重播；
        記了＝這一場的劇情永久結束（隨機再遇同種怪也不播）。憲法 §6.5.2 原則。 */
     const _wsb = state.scriptBattleId && GAME_CONFIG.battles && GAME_CONFIG.battles[state.scriptBattleId];
@@ -2524,14 +2524,14 @@ function win(){
      公式仍只有一份（鐵律 7），這裡只是再問一次答案。 */
   TEL.runEnd({ partner:state.pickedPartner, weapon:state.equippedWeapon,
                boss:state.inIntruderFight, result:'win', time_ms:Math.round(totalTime*1000),
-               /* ⚠ 上報的等第也要**整場一起算**（ver -621）：`mergeSessionStats`
+               /* ⚠ 上報的等第也要**整場一起算**（ver -621（-893 前用詞））：`mergeSessionStats`
                   是純函式、不清帳，所以這裡先問一次不影響結算頁再問一次。 */
                grade: inspector.evaluate(inspector.mergeSessionStats(stats)).grade });
   /* 勝利 → 先播「驅逐完成」過渡禎；被點掉（done）後才建結算面板並起播結算 BGM。
-     ⚠ **劇情叫起來的教學不播過渡禎**（ver -358）：那一場的進出都由劇情接手，
+     ⚠ **劇情叫起來的教學不播過渡禎**（ver -358（-893 前用詞））：那一場的進出都由劇情接手，
        中間插一張要點的過渡禎會把節奏切斷（同 -329「切乾淨」的理由）。
        結算頁照出 —— Ray 要的是「沒有監察官的戰績頁 ＋ 拾得道具」。 */
-  /* ══⚠⚠ 連續戰鬥的**中間幾場不結算**（ver -586，Ray：「結算也不要留，
+  /* ══⚠⚠ 連續戰鬥的**中間幾場不結算**（ver -586（-893 前用詞），Ray：「結算也不要留，
      一場打完才結算」）══ 對玩家而言整張戰鬥地圖是**同一場** —— 中間每打掉一隻就
      彈一頁戰績，等於把它切成五場。所以中間場：不演閉棺、不上結算，直接交還城鎮
      （＝回到戰鬥地圖），那兩件事留給 `sessionEnd` 的那一場（Boss）。
@@ -2544,7 +2544,7 @@ function win(){
        成為控制板」）：門在控制盤的高度闔上，闔上就是那張控制板 ——
        所以回城鎮那一段**不走 goHome 的淡出**（`inPlace` 讓 main 那邊分流），
        不然玩家會先看到一次黑幕，門的動作就白演了。 */
-    /* EXP 與錢**整場結算**（ver -595）：中間這幾場先記帳，收段那一場一起入。 */
+    /* EXP 與錢**整場結算**（ver -595（-893 前用詞））：中間這幾場先記帳，收段那一場一起入。 */
     inspector.bankSessionGain(stats);
     const back = ()=>{ killBattleFrame();   // ver -1024（同上）
                        if(storyReturn) storyReturn({ lost:false, inPlace:true }); };
@@ -2552,7 +2552,7 @@ function win(){
     return;
   }
   const toResult = ()=>{
-    /* ⚠ **教學戰的結算不放 result BGM**（ver -361，Ray 指定）：那首是「一場驅逐打完」的
+    /* ⚠ **教學戰的結算不放 result BGM**（ver -361（-893 前用詞），Ray 指定）：那首是「一場驅逐打完」的
        收束感，而教學是劇情中間的一段 —— 直接沿用地宮那條線的 crisis，情緒才接得上。
        ⚠ 同曲重播由 playBgm 自己擋掉（劇情本來就在放 crisis 的話這裡是 no-op）。 */
     /* ⚠ 劇情插入戰（scriptRun）**不換曲**：那一場是劇情中間插進來的一段，
@@ -2564,7 +2564,7 @@ function win(){
     }
     inspector.settle(totalTime, stats, { isLose:false });
     /* ⚠ 這一場是段落的最後一場（Boss）→ 收段：下一次進戰鬥重新演開棺、資源回滿。
-       ⚠ **一定要在 `settle` 之後**：它清帳，而 settle 開頭才把那筆帳領走（ver -621）。 */
+       ⚠ **一定要在 `settle` 之後**：它清帳，而 settle 開頭才把那筆帳領走（ver -621（-893 前用詞））。 */
     { const _es = state.scriptBattleId && GAME_CONFIG.battles && GAME_CONFIG.battles[state.scriptBattleId];
       if(_es && _es.sessionEnd) endSession(); }
   };
@@ -2576,7 +2576,7 @@ function win(){
 }
 function lose(){
   if(state.over) return;
-  /* ══ 戰敗的去向（ver -376，Ray 定案）══
+  /* ══ 戰敗的去向（ver -376（-893 前用詞），Ray 定案）══
      「**除標明劇情殺／可戰敗之外，戰敗一律接 Game Over 畫面回主選單**」。
      所以這裡只有一個例外：那一場的卡上明寫 `allowLose`（＝劇本要它被打輸，
      輸了要接著演）。其餘一律往下走一般的失敗流程（死亡定格 → 驅逐失敗 → 結算 → 首頁）。
@@ -2593,7 +2593,7 @@ function lose(){
      （-480 的「敗北退旗標」與 -492 的「取段當下記、永不退」都已推翻。） */
   /* 走一般失敗流程之前，把「這一場是劇情場」的旗標收掉 —— 不收的話結算會走
      教學／插入戰那一頁（那是給打贏用的），玩家輸了卻看到一頁戰績。 */
-  /* 「剛剛那一場是哪一場」交給戰敗頁的去向判定（ver -698，見 state.lastBattleId）——
+  /* 「剛剛那一場是哪一場」交給戰敗頁的去向判定（ver -698（-893 前用詞），見 state.lastBattleId）——
      **要在清掉之前記**。 */
   state.lastBattleId = state.scriptBattleId;
   state.scriptRun=false; state.scriptBattleId=null;
@@ -2627,7 +2627,7 @@ function lose(){
 /* ============================================================================
  *  流程進出
  * ========================================================================== */
-/* 搭檔 cut-in 預熱（ver -837）：把這一場搭檔會用到的所有 cut-in 圖抓下來解碼。
+/* 搭檔 cut-in 預熱（ver -837（-893 前用詞））：把這一場搭檔會用到的所有 cut-in 圖抓下來解碼。
    鑰匙從搭檔卡收（變身／共鬥結束／主動／被動，陣列展開）—— 加新技能自動吃到。 */
 function warmPartnerCutins(){
   const p = GAME_CONFIG.partners && GAME_CONFIG.partners[state.pickedPartner];
@@ -2703,7 +2703,7 @@ export function startGame(){
      開場一律先歸零、再看這一次有沒有指定，才是不會漏的寫法。 */
   state.scriptRun=!!pendingScript; state.scriptBattleId=pendingScript; pendingScript=null;
   state.tutorialRun=false; state.tutorialStoryRun=false;   // 教學場旗標歸零（tutorial 擁有；開場統一歸零、maybeStart 啟動時設回）
-  /* 劇情插入戰（ver -375）：**單敵一場**，換上卡上那隻，且這一場不能聖徒化／不能用搭檔技。
+  /* 劇情插入戰（ver -375（-893 前用詞））：**單敵一場**，換上卡上那隻，且這一場不能聖徒化／不能用搭檔技。
      ⚠ 要在 `stopAll()`/`loadBoard(0)` **之前**換敵 —— 盤面配置（boardGrids/boardLoop）
        是查「目前這隻怪」來的，換晚了第一盤會用到上一隻的格數。 */
   const sb = state.scriptRun && GAME_CONFIG.battles && GAME_CONFIG.battles[state.scriptBattleId];
@@ -2762,14 +2762,14 @@ export function startGame(){
      鈕永遠不出現（實測就是這樣）。同憲法那條「talk 要掛在 stopAll 之後」的坑。
      ⚠ 只在計時挑戰出現；收由 `stopAll()` 負責，這裡不必再管。 */
   document.body.classList.toggle('timeattack', !!state.timeAttack);
-  /* 這一場自己的戰鬥內對話（ver -426，例：船艦戰的反擊短教學）。
+  /* 這一場自己的戰鬥內對話（ver -426（-893 前用詞），例：船艦戰的反擊短教學）。
      ⚠ 要在 `stopAll()` **之後**掛：`stopAll` 會叫 `tutorial.abort()`，那一支會把它收掉。
      ⚠ 也要在 `loadBoard(0)` **之前**：loadBoard 會觸發 `board:0`，晚掛就吃不到那個節點。 */
   /* 開場白只屬於**劇情戰**（ver -493：state.storyBattle 是唯一判定）——
      隨機遭遇共用同一張卡（flight_centipede）也不播。
      已打贏過（talkOnce 旗標立了）也不播（startBattleTalk 自己守門）。 */
   if(state.storyBattle && sb) tutorial.startBattleTalk(sb.talk, { once:sb.talkOnce, sides:sb.talkSides });
-  /* ══⚠⚠ 本篇的 HP 是**延續的**（ver -481；-490 修位置）══
+  /* ══⚠⚠ 本篇的 HP 是**延續的**（ver -481（-893 前用詞）；-490 修位置）══
      讀 progress 的持久 HP；沒有鑰匙＝滿血（開局／睡醒）。挑戰（試玩版）不吃。
      ⚠⚠ 一定要在 `state.scriptRun`（上面 1094）**設好之後**才讀 —— -481 把它放在
        函式開頭，那時 storyFramed() 讀到的是**上一場**的殘值（正常收場後是 false）
@@ -2781,7 +2781,7 @@ export function startGame(){
     const ph=prog.getHp();
     if(ph!=null) state.playerHp=Math.max(1, Math.min(state.playerMax, ph));
   }
-  /* ══ 連續戰鬥：接上一格的資源（ver -585，見 sessionSave 那一段的說明）══
+  /* ══ 連續戰鬥：接上一格的資源（ver -585（-893 前用詞），見 sessionSave 那一段的說明）══
      ⚠ 要在**所有歸零之後**才放回去 —— 這一段是「把上一格的殘值搬回來」，
        不是在開頭挖特例（那會讓「這一場重置了什麼」有兩份答案，鐵律 7）。
      ⚠ 段落是**這一場的卡**宣告的：接得上（同一段）就沿用，接不上就是新的一段。 */
@@ -2802,7 +2802,7 @@ export function startGame(){
     }
   }
   loadBoard(0); updateBars();
-  /* CI 預熱（ver -837，手機戰鬥卡頓調查的收尾）：這一場搭檔會用到的 cut-in
+  /* CI 預熱（ver -837（-893 前用詞），手機戰鬥卡頓調查的收尾）：這一場搭檔會用到的 cut-in
      開場就解碼掉 —— 不預熱的話「第一次發動技能」那一刻才下載＋解碼，
      手機上就是演出開頭卡一拍（playCutin 的 300ms 保底蓋不住大圖）。
      idle 時段做、失敗靜默（純優化，同 primeArt 的理由）。 */
@@ -2830,7 +2830,7 @@ export function startGame(){
 /* 劇情插入戰的入口（ver -375）：main.js 的 battleHandler 查到 `config.battles[id]` 就走這支。
    ⚠ 旗標要在 `startGame()` **之前**設 —— 開場那一段會依它換敵、跳過教學。 */
 let pendingScript = null;   // 下一次 startGame 要開的插入戰 id（交棒用，見 startGame）
-/* 發起端對「這一場是不是劇情戰」的**明確宣告**（ver -493；-495 起卡上也有 `story`）。
+/* 發起端對「這一場是不是劇情戰」的**明確宣告**（ver -493（-893 前用詞）；-495 起卡上也有 `story`）。
    null＝沒宣告（走敵人卡）；true/false＝宣告了（飛行交棒的 `scripted` 走這裡，優先）。
    startGame 寫進 state.storyBattle —— 開場白與 talkOnce 都只讀它分流。 */
 let pendingScriptStory = null;

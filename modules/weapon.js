@@ -260,11 +260,11 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll, grade){
   const rollOne = ()=> Math.round(roll[(Math.random()*roll.length)|0] * modMul * niMul);
   // 反擊武器 SE：反擊（Counter）與完美防禦（散彈 Perfect 反擊）都會出聲——散彈 blast 兩路徑皆觸發。
   //   機槍＝逐發播（搭搭搭搭搭連續感）、散彈＝一發、狙擊＝一發。散彈完防由此 SE 出聲，defense 端不再疊合成重擊。
-  /* ⚠ 「這一場」可以覆寫武器音（ver -423，Ray：船艦戰的機槍／霰彈／步槍各換一支）——
+  /* ⚠ 「這一場」可以覆寫武器音（ver -423（-893 前用詞），Ray：船艦戰的機槍／霰彈／步槍各換一支）——
      覆寫的是**場次**不是武器卡，同一把槍在陸戰還是原本的聲音。
      ⚠ 值可以是 `'se_key'` 或 `{key, times}`（`times`＝同一瞬間疊播幾聲，
        Ray：「霰彈槍換成 se_weapon_pistol_01 **同時播放 6 聲**」）。 */
-  /* 這一場的武器音覆寫（船戰卡）：**id 優先、類別次之**（ver -504，Ray：「數值跟著
+  /* 這一場的武器音覆寫（船戰卡）：**id 優先、類別次之**（ver -504（-893 前用詞），Ray：「數值跟著
      玩家裝備的副武器，音效固定用船戰的」）—— 卡上照類別寫（重機槍/霰彈槍/萊福槍），
      換上任何一把同類的槍都吃得到艦載音；要給特定武器開例外才寫 id。 */
   const shipOv = state.weaponSound &&
@@ -362,7 +362,7 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll, grade){
   }
   addCounter(sum); onCounterFired();
   counterEnergy(sum, roll ? w.hits*Math.max.apply(null, roll) : w.hits*base);
-  /* 連射間隔：預設 90ms；場次可覆寫（ver -476，Ray：「船戰的速射砲連射速度
+  /* 連射間隔：預設 90ms；場次可覆寫（ver -476（-893 前用詞），Ray：「船戰的速射砲連射速度
      調降50%」→ flight 船戰卡 counterGapMs:180）。同 weaponSound 的機制：
      覆寫的是**場次**不是武器卡。震動長度與 setTimeout 都讀這一個變數（鐵律 7）。 */
   const gap = state.counterGapMs || 90;
@@ -795,7 +795,7 @@ export function resetToFirst(){
 /* ══ 切換鈕的徽章（ver -549，Ray 交圖）══════════════════════════════════
    類別 → ASSETS 鑰匙在 config.weaponCatIcons（鐵律 1）；這裡只負責把圖掛上卡面。
    -481 的手繪 SVG 圖示（WS_ICONS）已退場。 */
-/* 卡面：圓鈕＋類別圖示（ver -481；-465 的 Alpha 槍圖已退場 —— Ray 改要圖示）。
+/* 卡面：圓鈕＋類別圖示（ver -481（-893 前用詞）；-465 的 Alpha 槍圖已退場 —— Ray 改要圖示）。
    ⚠ 只有一個類別有槍時整顆藏起來：一顆按了不會變的鈕比沒有還糟。
    ⚠ **試玩版教學戰不出現**：那一場的裝備是**鎖死的**（forceTutorialLoadout 強制換上
      機槍），教學正是在教機槍那一串反擊 —— 中途換槍會讓引導與手上的槍對不上。

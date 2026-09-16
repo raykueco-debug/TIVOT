@@ -53,7 +53,7 @@
 const N = who => (expr, text, extra) => Object.assign(
   { speaker:who, text:text||'', portrait:{ char:who, expr:expr||null, show:true } }, extra||{});
 const nou = N('NOUVELLE'), ren = N('RENNA');
-/* 公會那一場的兩位（ver -375）。⚠ 兩個都站**右**（見 speakers.js）——
+/* 公會那一場的兩位（ver -375（-893 前用詞））。⚠ 兩個都站**右**（見 speakers.js）——
    玩家的同伴在左、對面的人在右，與店主同一個邏輯。 */
 const hun = N('HUNTER'), cnt = N('COUNTER');
 const gun = N('GUNSMITH');   // 槍店店主（ver -377）
@@ -828,7 +828,7 @@ export const TOWNS = {
            ⚠ 與雜貨舖的 `keeper`（一整段對白）不同，所以欄位分開叫 `keeperRandom`。
            ⚠⚠ 這幾句是**我寫的**，Ray 還沒過目 —— 要換掉直接改這裡。
              內容刻意都是「玩得到的知識」：黃圈橘圈、暴擊怎麼擲、改裝的限制。 */
-        /* ══ 再挑戰（ver -398，Ray：「槍店的選單要增加一個射擊挑戰的選項」）══
+        /* ══ 再挑戰（ver -398（-893 前用詞），Ray：「槍店的選單要增加一個射擊挑戰的選項」）══
            櫃台 →「射擊挑戰」→ 走的是**同一場** `range_trainee`（同一份最佳紀錄）。
            ⚠⚠ 這三句是**我寫的**（Ray 只說要加那個選項）—— 要換掉直接改這裡。
            ⚠ 超過標準時間走 `retry_lose`，與劇情那一次共用同一條分歧路。 */
@@ -877,7 +877,7 @@ export const TOWNS = {
           /* 稿上這一拍寫的是 `Nouvelle_SI_front`＝**基本立繪**（沒有表情差分）。 */
           nou(null,'嗯，謝謝。我安心多了。'),
         ],
-        /* ══ 第二日：出航（ver -424，Ray 交稿；-427 換觸發條件）══════════════
+        /* ══ 第二日：出航（ver -424（-893 前用詞），Ray 交稿；-427 換觸發條件）══════════════
            ⚠ `acts` 是**主線段落**（見 modules/town.js 的 `actDue`）：優先於傍晚提醒
              與進場對白，各自帶旗標與條件。
            ⚠⚠ 條件是 **`need:'stage1_open'`** 不是 `day:2`（ver -427，Ray 定案）：
@@ -1056,7 +1056,7 @@ export const TOWNS = {
       },
 
       /* ⚠ 旅店**還沒有內容**（Ray 還沒給稿），連背景都沒有。先留節點讓箭頭指得到。 */
-      /* ══ 三、上街區 ══（ver -376，Ray：「餐廳旅店跟商店放上街區」）
+      /* ══ 三、上街區 ══（ver -376（-893 前用詞），Ray：「餐廳旅店跟商店放上街區」）
          左＝雜貨舖、右＝餐酒館、上＝旅店、下＝廣場。
          ⚠ 這一組本來掛在「西區街道」底下；那個節點被改名成舊街區、換了出口之後，
            三家店就跟著搬到這裡（Ray 定案）。背景也一併還原成 `Capital_Uptown`。
@@ -1088,7 +1088,7 @@ export const TOWNS = {
              只是沒有那一分。 */
         nextFavor:{ to:'tavern', aff:{ nouvelle:2 }, flag:'fav_capital_meal' },   // ver -724：×2
         /* ⚠ 這一段綁著**第一天**（「剛剛才經歷一場死鬥」）—— 夜一過就作廢，
-           不留到隔天重播（ver -460，Ray 指定；expire 的機制見 modules/town.js）。 */
+           不留到隔天重播（ver -460（-893 前用詞），Ray 指定；expire 的機制見 modules/town.js）。 */
         expire:'stage1_open',
       },
       /* ══ 旅店 ══（ver -392，Ray 交稿）
@@ -1275,7 +1275,7 @@ export const TOWNS = {
         inn:[0.740, 0.422],
       },
     },
-    /* ══ 第一次（劇情）降落從**碼頭**進去（ver -582，Ray 指定）══════════════
+    /* ══ 第一次（劇情）降落從**碼頭**進去（ver -582（-893 前用詞），Ray 指定）══════════════
        之後每次進城照舊從 `entry`（中央大道）開始。
        ⚠ 旗標是**那一段主線演完才記**的（`acts` 的收尾）—— 中途離開／打斷重來
          還是從碼頭進，那一場戲不會被跳過（同城鎮所有「演完才記」的旗標）。
@@ -1294,7 +1294,7 @@ export const TOWNS = {
          `free_explore_northport`）；要再鎖回來寫 `storyExplore:true`。
        ⚠ 帝都**不寫**這一欄 ＝ 一直都是自由探索。 */
     storyExplore: true,
-    /* ══⚠⚠ 城鎮戰（ver -583，Ray 交辦）══════════════════════════════════
+    /* ══⚠⚠ 城鎮戰（ver -583（-893 前用詞），Ray 交辦）══════════════════════════════════
        「城鎮戰所以沿用原圖，但是末端只留教堂，其他末端不可進，不用顯示箭頭，
          測試期間每張先放 B2G05 當怪。」
        `from` 那支旗標成立、`until` 還沒成立時，這座城進入**城鎮戰**：
@@ -1316,7 +1316,7 @@ export const TOWNS = {
     /* ⚠ `bgm`（ver -614）：城鎮戰**進行中**換這一首；打完（`until` 成立）
        自動回到城上那一首（Suspense6）—— 正好就是 Ray 說的
        「結束戰鬥，到 boss 登場前用 Suspense6」。 */
-    /* ⚠⚠ **城鎮戰到「黑爪打完」才結束**（ver -633，Ray：「黑爪戰後進入城鎮探索模式，
+    /* ⚠⚠ **城鎮戰到「黑爪打完」才結束**（ver -633（-893 前用詞），Ray：「黑爪戰後進入城鎮探索模式，
        城鎮中不會再遇敵」）。`until` 以前是 `np_clear_church`（＝打贏祭壇獸）——
        那太早了：祭壇獸之後還有一整段戲＋黑爪那一場，中間城裡已經恢復成探索模式
        （店開了、路人講話了、末端解封了），與「禍魘還在城裡」對不起來。
@@ -1454,7 +1454,7 @@ export const TOWNS = {
         sail:{ flag:'got_ship',
                hold:{ need:'np_claws_done', until:'np_leave_ok', text:'不能丟下同伴。' } },
 
-        /* 城鎮戰的一場（ver -583）：走進來就打。⚠ `need` ＝城鎮戰開著、
+        /* 城鎮戰的一場（ver -583（-893 前用詞））：走進來就打。⚠ `need` ＝城鎮戰開著、
            `flag` ＝這一格清掉了（打贏才記，同所有城鎮段落「演完才記」的規矩，
            所以打輸回頭再走一次還會遇到）。 */
         acts:[ { flag:'np_clear_entrance', need:'np_port_arrive', lines:[ { battle:'np_harm' } ] },
@@ -1480,7 +1480,7 @@ export const TOWNS = {
         /* up＝Citymap 的空格 → ver -571 Ray 定案是**碼頭**（原入口圖 port_BF 的家）。 */
         /* ver -788：左進（entrance 左→west）→右出。entrance 挪到 right、guild 移到 down。 */
         exits:{ up:'port', left:'gunstore', right:'entrance', down:'guild' },
-        /* 城鎮戰的一場（ver -583）：走進來就打。⚠ `need` ＝城鎮戰開著、
+        /* 城鎮戰的一場（ver -583（-893 前用詞））：走進來就打。⚠ `need` ＝城鎮戰開著、
            `flag` ＝這一格清掉了（打贏才記，同所有城鎮段落「演完才記」的規矩，
            所以打輸回頭再走一次還會遇到）。 */
         acts:[ { flag:'np_clear_west', need:'np_port_arrive', lines:[ { battle:'np_harm' } ] } ],
@@ -1504,7 +1504,7 @@ export const TOWNS = {
           { side:'left',  shop:'np_grocery',  label:'臨時雜貨店' },
           { side:'right', shop:'np_gunstore', label:'臨時武器店' },
         ],
-        /* ══ 抵達北方泊地（ver -582，Ray 交稿）══════════════════════════════
+        /* ══ 抵達北方泊地（ver -582（-893 前用詞），Ray 交稿）══════════════════════════════
            第一次劇情降落就落在這一格（見城上的 `firstEntry`），演完才記旗標。
            ⚠ 這是**主線段落**（`acts`）不是進場對白：它優先於傍晚提醒與 `lines`，
              而且不受「夥伴回房休息」擋（ver -581）。
@@ -1606,7 +1606,7 @@ export const TOWNS = {
       north: {
         bg:'Northport_north_BF', name:'北方泊地　北側',
         exits:{ left:'cityhall', right:'church', up:'cemetery', down:'entrance' },
-        /* 城鎮戰的一場（ver -583）：走進來就打。⚠ `need` ＝城鎮戰開著、
+        /* 城鎮戰的一場（ver -583（-893 前用詞））：走進來就打。⚠ `need` ＝城鎮戰開著、
            `flag` ＝這一格清掉了（打贏才記，同所有城鎮段落「演完才記」的規矩，
            所以打輸回頭再走一次還會遇到）。 */
         acts:[ { flag:'np_clear_north', need:'np_port_arrive', lines:[ { battle:'np_harm' } ] } ],
@@ -1615,7 +1615,7 @@ export const TOWNS = {
         bg:'Northport_east_BF', name:'北方泊地　東側',
         /* ver -788：右進（entrance 右→east）→左出。entrance 挪到 left、grocery 移到 down。 */
         exits:{ left:'entrance', right:'tavern', up:'inn', down:'grocery' },
-        /* 城鎮戰的一場（ver -583）：走進來就打。⚠ `need` ＝城鎮戰開著、
+        /* 城鎮戰的一場（ver -583（-893 前用詞））：走進來就打。⚠ `need` ＝城鎮戰開著、
            `flag` ＝這一格清掉了（打贏才記，同所有城鎮段落「演完才記」的規矩，
            所以打輸回頭再走一次還會遇到）。 */
         acts:[ { flag:'np_clear_east', need:'np_port_arrive', lines:[ { battle:'np_harm' } ] } ],
@@ -1670,7 +1670,7 @@ export const TOWNS = {
              打贏＝城裡的禍魘清掉了，末端全部開回來。 */
         acts:[
           { flag:'np_clear_church', need:'np_port_arrive', lines:[ { battle:'np_boss' } ] },
-          /* ══ 教堂戰之後（ver -595，Ray 交稿）══════════════════════════════
+          /* ══ 教堂戰之後（ver -595（-893 前用詞），Ray 交稿）══════════════════════════════
              祭壇獸清掉了 → 這一段對白 → 瓦礫中生出紫黑之爪 → **聖徒化教學戰**。
              ⚠ 兩段拆開：`acts` 由上往下取**第一個到期的**，所以打完祭壇獸
                （記了 `np_clear_church`）**下一次抵達**才輪到這一段。
@@ -1683,7 +1683,7 @@ export const TOWNS = {
                右滑發動聖徒化、血回 99% 教主動技、諾薇兒倒下 —— 那一整套的節奏
                還沒接（見 config.battles.np_claws 的 TODO），這裡先把**對白與交棒**
                鋪好。 */
-          /* ⚠⚠ 站位（ver -625，Ray：「蕾娜原則右，碰到安雅就放左」）：
+          /* ⚠⚠ 站位（ver -625（-893 前用詞），Ray：「蕾娜原則右，碰到安雅就放左」）：
              這一幕**安雅在場**（後半），而她的固定側是右 —— 所以蕾娜讓到**左**
              （她的框細，換邊的影響小，而且她本來就是左）。
              前半的諾薇兒也是左，於是把她翻到**右**（`ART.nouvelle.mirror`，
@@ -1725,7 +1725,7 @@ export const TOWNS = {
               ren('shockedCalm','！！'),
               nou('shocked2','有什麼……要來了！'),
               { battle:'np_claws' },
-              /* ══ 戰勝（ver -624，Ray 交稿）══════════════════════════════════
+              /* ══ 戰勝（ver -624（-893 前用詞），Ray 交稿）══════════════════════════════════
                  ⚠ 接在 `{battle}` **後面**（同一段）：這樣打贏就直接接著演，
                    不必走出教堂再回來（`resumeFrom` 會把這一段剩下的拍續播）。
                  ⚠ `checkpoint:true`（ver -653，Ray：「黑爪戰後加一個記錄點」）：
@@ -1860,7 +1860,7 @@ export const TOWNS = {
             pri(null,'辛苦你們了。多虧有你，才沒有更多人死去。'),
             pri(null,'願神庇佑這些無辜的靈魂。'),
           ] },
-          /* ══ 第三天：墓地 → 惡夢 → 戰鬥（ver -664，Ray 交稿）══
+          /* ══ 第三天：墓地 → 惡夢 → 戰鬥（ver -664（-893 前用詞），Ray 交稿）══
              ⚠⚠ `storyBattle:true` ＝**這是劇情戰，安全區旗管不著**（ver -679，Ray：
                「stage4 在北泊的兩場都是劇情戰，不該插戰鬥探索 flag」）。
                ⚠ -671 曾經用 `pullSafehouse:true`（拔旗→打→插回去）——**那會出事**：
@@ -1892,7 +1892,7 @@ export const TOWNS = {
               portrait:{ char:'ANYA', expr:'terrifying', show:true } },
             ren('shocked','禍魘！是從哪裡——'),
             { battle:'np_cemetery' },
-            /* ══ 第一場打完（ver -671，Ray 交稿）══
+            /* ══ 第一場打完（ver -671（-893 前用詞），Ray 交稿）══
                ⚠ 染色**打完就沒了**（進戰鬥時 `stopTint` 收掉）—— 這裡不重新上，
                  因為下一段的緊張是靠聲音與立繪撐的；要再上就寫一次 `tintHold`。 */
             ren('thinking','……憑空生出的禍魘，『永夜』以來第一次發生這種狀況。'),
@@ -2332,7 +2332,7 @@ export const TOWNS = {
           any('silent',''),
           ren('thinking','希望我是錯的吧。'),
         ] },
-        /* 廣場（樞紐）在圍城期間也是一場（ver -802）：`sv_arrive` 早就演過，這時輪到
+        /* 廣場（樞紐）在圍城期間也是一場（ver -802（-893 前用詞））：`sv_arrive` 早就演過，這時輪到
            戰鬥拍。 */
         { flag:'sv_clear_plaza', need:'shinier_siege', lines:[ { battle:'sv_beast' } ] } ],
         /* ══⚠⚠ 離村（ver -1103，Ray 交稿；Ray：「還有，出村時的劇情還沒做嗎？」）══
@@ -2370,7 +2370,7 @@ export const TOWNS = {
             hide:['RENNA','NOUVELLE','ANYA','SORANA'] },
         ] } },
       /* ── 三個支點 ── */
-      /* 三個連接格在圍城期間各一場（`sv_beast` 怪池，抽不重覆的一隻，ver -802）。
+      /* 三個連接格在圍城期間各一場（`sv_beast` 怪池，抽不重覆的一隻，ver -802（-893 前用詞））。
          ⚠ 旗**打贏才記**（同城鎮戰通則）—— 打輸回頭再走一次還會遇到。 */
       north: { bg:'Shinier_North', name:'夏爾村　北側',
         exits:{ up:'lakeside', left:'chief', right:'altar', down:'plaza' },
@@ -2857,7 +2857,7 @@ export const TOWNS = {
            只演一次）。演完才走（§6.5.4.3 onLeave），走到東側時 `siegeOn()` 已成立，
            那一格的戰鬥拍就會發動。⚠ 村民／村長沒有立繪（名字框），索菈娜說話才上場。 */
         onLeave:{ flag:'shinier_siege', need:'sv_night_done',
-          /* ══ ver -839（Ray 改稿）：村民的戰前對白**搬進第一場戰鬥**
+          /* ══ ver -839（-893 前用詞）（Ray 改稿）：村民的戰前對白**搬進第一場戰鬥**
              （config.battles.sv_beast.talk 的 battleStart —— 「有背景，有怪才開始
              對話」），這裡只剩兩件事：插圍城旗＋戰前強制整備。 */
           /* 戰前強制整備（ver -838/-839，Ray：「強制開整備畫面，高光伙伴欄，提示
@@ -3009,7 +3009,7 @@ export const TOWNS = {
         /* ⚠ 鹿骸（結算怪）**不再寫死在斷崖**（ver -895）——見下面的 `endBattle`：
            它要擺在「這一趟沒走進來的那個出口」，寫死一格的話從神殿那頭下來的人
            第一格就撞到它。 */
-        /* ⚠⚠ 遺蹟入口**不刷怪**（ver -878，Ray：「鹿主不變異是不會有戰鬥的」）——
+        /* ⚠⚠ 遺蹟入口**不刷怪**（ver -878（-893 前用詞），Ray：「鹿主不變異是不會有戰鬥的」）——
            樹靈鹿主在這一格是**演出**不是遭遇：白天分支牠看一眼就走，黃昏分支
            變異成禍魘才開打（那一場是 acts 裡的 `sf_deer_nightmare`）。
            -870 這裡曾寫 `ruins:'sf_deer'`，那會讓沒變異的鹿主也被打一場。 */
@@ -3028,7 +3028,7 @@ export const TOWNS = {
         { battle:'sf_lynx',  where:'connector' },                // 非末端限定
         { battle:'sf_crows', where:'connector' },
       ],
-      /* ══ 鹿主的第二次機會（ver -879，Ray）══════════════════════════════
+      /* ══ 鹿主的第二次機會（ver -879（-893 前用詞），Ray）══════════════════════════════
          「鹿主戰劇情只會出現一次，如果鹿主未變異日後則會在黃昏夜晚時段在夏爾森林
            隨機遇到，劇情從諾『牠好像不太歡迎我們』開始跑，進入戰鬥」
          「鹿主打完就沒了，不會出第二次，隨機遇到的機率是 5%」
@@ -3183,7 +3183,7 @@ export const TOWNS = {
             /* 自由行動，可直接進入遺蹟（遺蹟本體地圖未實裝——等 Ray 的規劃）。 */
           ] },
           { flag:'sv_deer_met', need:'sv_forest_intro', storyBattle:true, lines:[
-            /* 出場序同上（ver -874）。
+            /* 出場序同上（ver -874（-893 前用詞））。
                ⚠⚠ **這一段不落回檔點**（ver -879，Ray：「鹿主戰戰敗退回懸崖戰後」）——
                  落在這裡的話讀回來是「站在遺蹟入口、鹿主正要現身」，那條路只有
                  一個方向：再打一次同一場。退回**斷崖那一場打完**才是「能去買藥、
@@ -3225,7 +3225,7 @@ export const TOWNS = {
             { battle:'sf_deer_nightmare' },
             /* ══ 戰後：紮營討論（Ray 稿，台詞一字未改）══
                ⚠ 收圖（cg:null）掛在**戰後第一拍**：battle 拍的分支先 return、
-                 不跑 applyPersist —— 掛在它身上會被整個忽略（ver -870 踩過）。
+                 不跑 applyPersist —— 掛在它身上會被整個忽略（ver -870（-893 前用詞） 踩過）。
                ⚠⚠ `sv_deer_harm`＝**鹿主變異戰打完了**（ver -879，Ray：「鹿主打完就
                  沒了，不會出第二次」）。它與 `sv_deer_met`（見過鹿主）是兩件事：
                  白天分支只插後者，所以那一輪日後還會在黃昏／夜晚隨機遇到（見

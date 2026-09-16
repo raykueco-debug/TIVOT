@@ -299,7 +299,7 @@ export function onMissTap(){
   return guarded;
 }
 export function tryActive(context){
-  /* ⚠ `noPartner`（ver -375）：這一場不准用搭檔技（劇情插入戰）。同 saint 的作法 ——
+  /* ⚠ `noPartner`（ver -375（-893 前用詞））：這一場不准用搭檔技（劇情插入戰）。同 saint 的作法 ——
      擋在唯一的發動點上，不要在每個呼叫端各擋一次。 */
   if(state.noPartner) return false;
   const p = currentPartner();
@@ -471,7 +471,7 @@ export function startBurstBuff(){
   if(api.lucidFlood) api.lucidFlood(sec);
 }
 
-/* ══⚠⚠ **明晰之夢：每隻怪第一次反擊成功時發動**（`firstCounter`，ver -693，Ray：
+/* ══⚠⚠ **明晰之夢：每隻怪第一次反擊成功時發動**（`firstCounter`，ver -693（-893 前用詞），Ray：
    「娜塔莉戰如果先觸發 lucid dream 再進入 NI 劇情會卡住，或者同時，所以我決定改
      luciddream 的發動條件為觸發單怪觸發第一次反擊成功時發動，不算場，
      每隻怪都可以觸發一次，觸發期間 5 秒普攻 2 倍」）══
@@ -481,7 +481,7 @@ export function startBurstBuff(){
    ⚠ **每隻怪一次**（不是每場一次）：連戰換敵要重新上膛 —— 由 `enemy.setEnemy`
      經 combat 呼叫換敵鉤子（那是「換了一隻怪」的唯一時刻）。
    ⚠ 效果與原本同一支（`setLowHpBuff` ＋計時器）：只換觸發條件，不換效果。 */
-/* ══⚠⚠ **改成無限制發動**（ver -886，Ray：「把安雅的被動技改成無限制發動」）══
+/* ══⚠⚠ **改成無限制發動**（ver -886（-893 前用詞），Ray：「把安雅的被動技改成無限制發動」）══
    -693 的「每隻怪一次」（`fcArmed` 那把鑰匙）整個撤掉：現在**每一次完美反擊都發動**。
    ⚠ 但保留一道「**同一段還在跑就不重播**」（`state.lowHpBuff`）——這不是回頭加上限，
      是避免它把自己鎖死：ver -740 起「明晰之夢**發動期間任何反擊都算完美反擊**」，
@@ -509,7 +509,7 @@ export function onEnemySet(){
   if(prog.isGirl(who) && !prog.girlHas(who, 'guardPerEnemy')) return;
   state.deathGuardUsed = false;
 }
-/* ══ 九階強化「方舟」（ver -707，Ray：「無傷使敵 HP 歸零，可回復已使用的被動技」）══
+/* ══ 九階強化「方舟」（ver -707（-893 前用詞），Ray：「無傷使敵 HP 歸零，可回復已使用的被動技」）══
    打倒一隻敵人的那一刻，**這一場全程無傷**就把用掉的一次性被動重新上膛：
    即死防禦（`deathGuardUsed`）。⚠ ver -886 起明晰之夢是無限制發動，不在這裡回復。
    ⚠⚠ 「無傷」是**逐隻**算的（`state.enemyHitsTaken`，ver -708，Ray：「是用逐隻，
@@ -780,7 +780,7 @@ export function checkLowHpBuff(){
  * state.lowHpBuff 本體由 combat 於開場自清；此處只清 partner 自有狀態。 */
 export function reset(){
   /* ver -886：明晰之夢改成無限制發動，沒有「上膛」這回事了（`fcArmed` 已撤）。 */
-  /* ⚠ ver -891：連段**不在這裡清**（Ray：「luciddream 跟獵手的戰吼次數可跨場
+  /* ⚠ ver -891（-893 前用詞）：連段**不在這裡清**（Ray：「luciddream 跟獵手的戰吼次數可跨場
      （怪）累積」）—— 清與搬都由 combat 的 startGame／sessionCarry 決定，
      那裡才知道這一場接不接得上上一格（鐵律 9：一個狀態一個擁有事件）。 */
   clearTimeout(lowHpTimer); lowHpTimer=null;
