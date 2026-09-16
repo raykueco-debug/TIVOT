@@ -1267,7 +1267,20 @@ function clockGate(){
        「叫你回去」，那一段是「回去之後發生的事」。所以逐閘門明寫。
      ⚠ 旗照記、時鐘照推（上面已經做完）——「這道閘門用掉了」與「那句話講不講」
        是兩件事（鐵律 9：旗只回答一件事）。 */
-  if(g.nudge && g.goto===nodeId) return false;
+  /* ⚠⚠⚠ **`nudge` 只吃掉那句話，不可以把整道閘門吃掉**（ver -1370，Ray：「獨自坐坐
+       到時間蕾娜也沒回來啊」）：-1360 這一行原本是 `return false` ——
+       於是人已經在旅店時，旗記了、時鐘推了，**`enterAgain` 卻沒有發生**，
+       那一格的 `acts`（東泊的 `ep_renna_night`，`hourOfDay:20`）就沒有人叫得動。
+       ⚠⚠ 這正是「**為了一個新的局部需求去動一個被共用的守門**」那個形狀：
+         我要跳過的只有 `g.lines`，卻連轉場一起跳過了（同鐵律 13 那條
+         「看到 `if(<新旗標>)` 包住既有的收尾時，先問我真正想跳過的是哪一件」）。
+     ⚠ 沒有 `enterAgain` 的閘門照舊 `return false` —— 那一條的原意就是
+       「已經站在那裡，讓原本的流程接手」。 */
+  if(g.nudge && g.goto===nodeId){
+    if(!g.enterAgain) return false;
+    forceGo(g.goto);
+    return true;
+  }
   if(!g.goto || (g.goto===nodeId && !g.enterAgain)) return false;   // 已經站在那裡：讓原本的流程繼續（acts 會接手）
   /* ⚠⚠ **先講一句再轉場**（ver -438，Ray：「讓蕾娜在旅店先講一句『好囉，該出發囉』
      再淡入淡出轉到下一幕」）。台詞在資料上（`TOWNS[].stage1.lines`，鐵律 1）。
@@ -2575,8 +2588,15 @@ function sailHeld(){
    ⚠ **只有真的有段落到期才轉場**：沒有就照舊回店裡（`shopEnter`）——
      不然每次跟店主講完話都會跑一遍抵達流程（旅店招呼會重播，同 `resume()` 的理由）。 */
 let rerunArrival=null;
+/* 「這一格現在有沒有段落到期」→ 有就原地接上，回 true。⚠ 兩個呼叫端（店舖收尾、
+   旅店的坐坐／睡覺收尾）共用這一支 —— 它們的差別只有「沒有到期時要做什麼」。 */
+function rerunIfDue(n){
+  const nd = n || node();
+  if(rerunArrival && nd && actDue(nd)){ rerunArrival(true); return true; }
+  return false;
+}
 function backToShop(n){
-  if(rerunArrival && actDue(n)){ rerunArrival(true); return; }
+  if(rerunIfDue(n)) return;
   shopEnter();
 }
 function sailBlocked(sail){
@@ -3331,6 +3351,17 @@ inn.setup({
      推時鐘的地方（獨自坐坐／回房睡覺），所以那兩支推完都要叫這一支（鐵律 8）。
      回傳 true ＝已經接手轉場，呼叫端不要再收尾。 */
   onClock(){ return clockGate(); },
+  /* ══⚠⚠⚠ **旅店裡消磨完時間，也要再問一次「這一格現在該演什麼」**（ver -1370，
+       Ray：「獨自坐坐到時間蕾娜也沒回來啊」）══════════════════════════════════
+     `onClock` 只問**強制轉場**的閘門（會把玩家搬去別的地方那一種）；而東泊
+     「晚上回旅店碰到蕾娜」那一段是掛在**這一格自己的 `acts`** 上（`hourOfDay:20`）
+     —— 坐坐把時鐘推過 20:00 之後沒有人再問一次 `actDue`，於是她永遠不會回來。
+     ⚠⚠ 這與 ver -1368（店舖裡演完一段要再問一次）是**同一條規矩漏掉的第三個
+       入口**：`runArrival` 早就做成可重入的了，漏的一直是「誰去叫它」。
+       ⇒ 所以收在同一支 `rerunIfDue`（鐵律 8），不要在旅店那邊另寫一份判斷。
+     ⚠ **旅店自己的分支優先**（`inn.js` 的 `runBranch` 回 true 就不會走到這裡）：
+       帝都 stage 0 的「等蕾娜」是旅店那一套在管的，兩邊搶著演會疊在一起。 */
+  rerun(){ return rerunIfDue(); },
 });
 
 /* `node`（選填，ver -429）＝從哪一格開始，不寫就是城的入口。

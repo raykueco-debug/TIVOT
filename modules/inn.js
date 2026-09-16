@@ -554,7 +554,18 @@ function settle(sat){
   busy=false;
   if(host && host.onClock && host.onClock()) return true;
   if(host && host.lock) host.lock(false);
-  runBranch(false, sat);   // ⚠ 時間變了，「現在該發生什麼」要重問一次（見 runBranch）
+  /* ⚠ 時間變了，「現在該發生什麼」要重問一次（見 runBranch）。回 true ＝它接手演了。 */
+  if(runBranch(false, sat)) return false;
+  /* ══⚠⚠⚠ **旅店那一套沒事做，不代表這一格沒事做**（ver -1370，Ray：「獨自坐坐到
+       時間蕾娜也沒回來啊」）══ `runBranch` 管的是 stage 0 那一晚的分支（等蕾娜、
+       道晚安）；stage 1 起它整支讓位（`if(st1) return`），而東泊「晚上回旅店碰到
+       蕾娜」是掛在**城鎮節點的 `acts`** 上（`hourOfDay:20`）—— 坐坐推完時鐘之後
+       沒有人再問一次 `actDue`，那一段就永遠不會演。
+     ⚠ 走城鎮注入的 `rerun`（＝店舖收尾那一支 `rerunIfDue`，鐵律 8），
+       不要在這裡自己判「有沒有段落到期」—— 那個規則住在 town 那邊。
+     ⚠ 排在 `runBranch` **之後**：兩邊都有戲時以旅店自己的為準（不會疊在一起）。
+     ⚠ 黑幕仍然由呼叫端收（回 false）：演出要在畫面亮回來之後才看得到。 */
+  if(host && host.rerun) host.rerun();
   return false;
 }
 /* 坐完但沒有演出：把鎖放掉、畫面接回來。
@@ -718,14 +729,16 @@ export function arrive(n, ctx){
      ③ 其他            → 只重畫
    ⚠ `arrived` ＝這一次是**走進來**（不是坐完）。分支一（「時間還早，我想去城裡逛逛呢」）
      是**招呼**，只在走進來時講；分支二（「今天有點累了」）是**狀態轉移**，時間到了就講，
-     所以坐完也要判 —— 不分的話每坐兩小時她就把那句招呼再唸一次。 */
+     所以坐完也要判 —— 不分的話每坐兩小時她就把那句招呼再唸一次。
+   ⚠⚠ **回傳 true ＝這一支接手演了**（ver -1370）：呼叫端（`settle`）據此決定
+     要不要再去問城鎮「這一格還有沒有段落到期」—— 兩邊都演就會疊在一起。 */
 function runBranch(arrived, sat){
   /* ══⚠⚠ Stage 1 起，stage 0 的旅店劇本整套讓位（ver -461）══════════════════
      這一支管的是第一晚的分支（「時間還早，我想去城裡逛逛呢」／等蕾娜／道晚安）——
      之後每次回旅店，諾薇兒**在房裡**（或跟著玩家），不可能在大廳招呼你。
      不讓位的話那句招呼會在 stage 1 的旅店卡住整個 arrive（實測就是）。
      大廳照開：門牌走 st1 的 doorState、坐坐與睡覺照常。 */
-  if(st1){ refresh(); return; }
+  if(st1){ refresh(); return false; }
   const b = (node && node.innBranch) || {};
   /* ⚠⚠ **分支二的條件是「走完了」或「時間到了」**（ver -427，Ray 的規則四／五：
        「若3發生而主角已在旅店，走5（諾：『今天有點累了，我先去休息囉。』）」）。
@@ -746,7 +759,7 @@ function runBranch(arrived, sat){
       if(host && host.lock) host.lock(false);
       refresh();
     });
-    return;
+    return true;
   }
   /* ══ 蕾娜回來的那一小時（ver -395／-427）══
        20:00~21:00 → **碰得到她**（好感 +1）：走進來、或坐坐坐到那一刻，都算
@@ -756,10 +769,11 @@ function runBranch(arrived, sat){
      ⚠ 這一段要在**分支二之後**才判：那幾句還沒演完就先讓蕾娜上台會疊在一起。 */
   if(stage()==='wait'){
     const h = clock.hourF();
-    if(h >= RENNA_GONE){ prog.addFlags([F_MISS]); refresh(); return; }
-    if(h >= RENNA_BACK){ refresh(); playRenna(sat); return; }
+    if(h >= RENNA_GONE){ prog.addFlags([F_MISS]); refresh(); return false; }
+    if(h >= RENNA_BACK){ refresh(); playRenna(sat); return true; }
   }
   refresh();
+  return false;
 }
 
 /* 初入對白剛演完 → 大廳開張（`introDone()` 是問旗標的，而旗標是**演完才記**的，
