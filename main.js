@@ -1413,6 +1413,14 @@ bindBtn('scriptTestBtn', ()=>startChapter(prog.SCRIPT_TEST));
      日後加一張圖自己會多一列。
    ⚠ 「演不演」交給 `prog.tourSpec`：它拿 `town.storyFlagsOf(圖)` 去**加或扣**
      那一整組旗（說明在那一支上面）。 */
+/* ══ 管理人工具（ver -1426，Ray：「加一個工具，鎖血以後按清盤＝秒殺」）══
+   說明與實作在 `modules/combat.js`（`setHpLock`／`devKill`）—— 這裡只接鈕。
+   ⚠ 鎖血是**這一次開機**的開關，不進存檔（見那邊的說明）。 */
+bindBtn('devHpLock', ()=>{
+  const on=combat.setHpLock(!combat.hpLocked());
+  const b=$('devHpLock'); if(b) b.classList.toggle('on', on);
+});
+bindBtn('devKill', ()=>{ combat.devKill(); });
 bindBtn('tourBtn', ()=>{
   const maps=town.explorableMaps();
   pickSheet('巡　場　·　選圖', maps.map(m=>({ name:m.name, sub:m.nodes+' 格　'+m.id })),

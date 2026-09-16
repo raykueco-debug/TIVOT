@@ -451,7 +451,16 @@ export const DRAGON_LINES = {
      （上船追），不是走回中庭。留著的話 `endScene` 的收尾會在交棒前一刻
      再推一次強制轉場。⚠ `flag` 照舊記得到：`goFlight` 是先 `endScene()`（跑收尾、
      記旗）才叫開啟器的。 */
-  throne: { flag:'bl_night_throne', sides:{ RENNA:'L' }, lines:[
+  /* ⚠⚠⚠ **出口走 `sailOut:true`，不是劇情層的 `{goFlight:true}`**（ver -1426，
+     Ray：「上船追以後卡住不跑了」）══
+     `{goFlight:true}` 是**主線 scene** 那一層的拍：它會先 `endScene()`，而城鎮段落的
+     `endScene` 會把 **act 的收尾整條跑完** —— 裡面還有「還有下一段就原地接上」與
+     開導覽。於是收尾把畫面要回去、`flightOpener` 又要開飛行頁，**兩邊搶同一個舞台**
+     ⇒ 卡住。
+     ⚠ `sailOut:true` 是城鎮段落**自己的**出航出口（ver -741 就有）：收尾跑到那裡
+       `suspend()` → `flightOpener(sailFrom())` → **`return`**，不會再往下接。
+     ⚠ 旗與曲子改掛在「上船追！」那一句上（`applyPersist` 逐拍套用）—— 那正是登船的那一刻。 */
+  throne: { flag:'bl_night_throne', sailOut:true, sides:{ RENNA:'L' }, lines:[
     { battle:'bl_throne' },
     { speaker:'NARRATION', text:'', shake:true, auto:800 },
     /* ⚠⚠ ver -1416（Ray：「蕾娜的『小心！要垮了！』的時候畫面持續抖動，
@@ -463,7 +472,9 @@ export const DRAGON_LINES = {
       { se:'se_brickcrush', shakeHold:'se' }),
     sor('furiousq','跑出去了！'),
     nou('shocked2','讓牠襲擊城鎮就不好了！'),
-    ren('command','上船追！'),
+    /* ⚠ `bgm:'warhorn'`（-1398：「登船進空中戰前用 warhorn」）與 `bl_sky_hunt`
+       （飛行頁那一段的鑰匙）都掛在**登船的那一刻**。 */
+    Object.assign(ren('command','上船追！'), { bgm:'warhorn', flags:['bl_sky_hunt'] }),
     /* ══⚠⚠⚠ **這一段到此為止，接下來在飛行頁演**（ver -1416，Ray：「蕾娜『上船追！』
        之後轉景，從古城升空…索『諾薇兒，安靜下』之後，提示長按…發動獵手之眼索敵。
        索敵後必出王座徘徊者…然後進入空戰」）══
@@ -475,7 +486,6 @@ export const DRAGON_LINES = {
          —— 原本掛在最後一句上的 `flags` 拿掉了，兩個插旗點就是鐵律 9 的病。
        ⚠ `bgm:'warhorn'` 跟著搬不了（飛行頁有自己的一套音樂），改掛在這一拍：
          「登船進空中戰前用 warhorn」的登船就是**這一刻**。 */
-    Object.assign({ goFlight:true, flags:['bl_sky_hunt'] }, { bgm:'warhorn' }),
   ] },
 };
 

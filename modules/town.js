@@ -1325,7 +1325,7 @@ function leaveMapRitual(done){
      插旗之前 `dragonAtNode()` 回 null ＝小地圖沒有紅點（Ray：「四戰前就是瞎找」）。 */
 const DRAGON_AUTO_AFTER = 5;     // 打超過這麼多場還沒逼進王座之間 → 牠自己走（Ray）
 const DRAGON_THRONE = 'throne';  // 「王座之間」那一格
-const DRAGON_ROLL_P = 0.5;       // 前三場之後「任一移動點」的遭遇機率（Ray：50%）
+const DRAGON_ROLL_P = 0.25;      // 前三場之後「任一移動點」的遭遇機率（ver -1426 由 50% 改 25%，Ray：「讓玩家多開圖」）
 const DRAGON_FIRST_NODE = 'stephall';   // 二番戰必刷的那一格（Ray：階梯大廳）
 let dragonNode = null, dragonFights = 0, dragonAuto = false;
 let dragonRollHit = false;       // 這一步擲到了沒（`go()` 擲、`dragonActDue` 只讀）

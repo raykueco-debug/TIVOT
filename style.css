@@ -247,6 +247,18 @@
      ⚠ `pointer-events:none`：盤面照樣點得到，被光蓋住只是看不清楚 —— 那正是它的威脅。
      ⚠ 節奏比開機那一頁快得多（那一頁是 2.5s 的儀式，這裡是一記攻擊）：
        0.55s 綻放 ＋ 0.75s 淡出。 */
+  /* ══ 管理人工具（ver -1426）══ 只有 `body.testmode` 看得到（明寫的開發梯子）。
+     ⚠ 擺**左下**：右上是暫停鈕、下半是盤面與槍棺，左下那一角戰鬥中是空的。
+     ⚠ z-index 壓在劇情層（8300）之下 —— 它是戰鬥畫面的工具，不該蓋住對白。 */
+  #devTools{display:none;}
+  body.testmode #devTools{display:flex;gap:6px;position:fixed;left:8px;
+    bottom:calc(env(safe-area-inset-bottom,0px) + 8px);z-index:8000;}
+  body.testmode #devTools button{font-family:inherit;font-size:11px;letter-spacing:2px;
+    padding:6px 10px;border-radius:6px;color:var(--gold);
+    background:rgba(10,8,18,.82);border:1px solid rgba(212,169,74,.55);}
+  body.testmode #devTools button:active{background:rgba(212,169,74,.22);}
+  /* 鎖血開著時鈕自己亮起來 —— 這種開關最怕「忘了它還開著」。 */
+  body.testmode #devTools button.on{color:#1a1206;background:var(--gold);border-color:#fff;}
   #holyBurst{position:fixed;z-index:9000;pointer-events:none;
     transform:translate(-50%,-50%) scale(.4);opacity:1;
     /* ⚠ ver -1418：**放慢一半**（Ray：「第三型態的攻擊光圈效果太快，放慢 50%」
