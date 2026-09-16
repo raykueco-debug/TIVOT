@@ -1,4 +1,4 @@
-# HANDOFF — 截至 `ver 2026.09.16-1374`
+# HANDOFF — 截至 `ver 2026.09.16-1376`
 
 > 這一份是**唯一**的交接檔。**下一次交接請直接改這一份，不要再開新檔。**
 >
@@ -120,11 +120,17 @@
 
 ## 動了哪幾支檔（給美術 session 自保用，鐵律 11）
 
+> ⚠⚠⚠ **-1376 搬了 `resources/background/` 底下 525 張圖**（依區域分成 15 個資料夾）。
+> 美術那一邊手上若有還沒交的背景檔，**丟進根目錄照樣跑得動**（索引查不到就退回根目錄）
+> —— 交完之後跑一次 `py tools/bg_index.py` 歸檔就好。
+
 | 版 | 除了 `config.js`（VERSION）＋ `index.html`／`flight/index.html`／`modules/story.js`（bust 產生）之外 |
 |---|---|
 | -1372 | `script/speakers.js`、`script/town.js`、**新** `resources/SI/{Anya_SI_amazed,Anya_SI_curious,Renna_SI_scream,Renna_SI_reachcry,Sorana_SI_battlecry}.webp` |
 | -1373 | `modules/transition.js`、`main.js`、`modules/combat.js` |
 | -1374 | 只有 `flight/index.html`（非 bust 的實質改動） |
+| -1375 | `script/enemies.js`、`script/speakers.js`、`script/town.js`、`resources/SI/_SI_差分總表.xlsx`（重跑） |
+| -1376 | **`resources/background/` 525 張圖搬資料夾**、**新** `tools/bg_index.py`／`script/bg_index.js`、`tools/script_lint.py`、`flight/index.html` |
 
 ⚠⚠ **-1372 那一輪有另一個 session 同時在改 `resources/SI/NPC/`**
 （10:50 覆蓋了 `NPC_Gunsmith_SI_v4.webp`）—— 那一批與 Ray 另外丟進 `resources/SI/` 的
@@ -136,6 +142,8 @@
 |---|---|
 | **-1372** | Ray 交的五張差分接上（PNG→WebP、原 PNG 進 `_originals/SI/`、`measure_si.py` 逐張量）：ANYA `amazed`／`curious`、RENNA `scream`／`reachcry`、SORANA `battlecry`。⚠⚠⚠ 順手抓到 **`ART.nouvelle` 有兩把同名的 `scared` 鑰匙**（物件實字重複鍵**合法**、後面那一把靜靜贏，`node --check` 驗不出來）→ 收成尾巴那唯一的定義（＝維持今天畫面上真正在跑的那一張，不趁機換圖）。另外四個鑰匙是**大小寫／筆誤**（`exprSrc` 是純大小寫敏感查表）：`nou('Shocked')→shocked`、`nou('Surprise')→surprise`、`nou('Scared2')→scared`、`ren('think')→thinking` ×3 —— **圖本來就在、也早就登記好了，只是查不到**。lint 差分提醒 **31 → 18**。 |
 | **-1373** | 九個「收首頁」呼叫點收成 `transition.js` 的 **`hideHome(where)`**（鐵律 8）。它不改時序，做的是①把動作收成一個②**驗收**：收的那一刻沒有任何一層蓋著就記一筆 `console.warn` 並寫出**是哪一個呼叫點**（管理人模式再浮紅字）。順手修好一條順序真的反了的（獨立模式降落：先收首頁再 `town.open`）。 |
+| **-1375** | **東泊賞金獵人接上他自己的兩張圖**（Ray 交件 `man_bounty_EP`／`NPC_ep_SI_bounty`；在那之前 grep 零命中，線上跑的還是 -1346 那句「先用帝都的」）：ASSETS ＋ 新敵卡 `bounty_ep` ＋ 新 speaker `HUNTER_EP`／ART `hunter_ep` ＋ 東泊那一段 7 處 HUNTER→HUNTER_EP。⚠ 這位的**對話立繪與戰鬥圖是兩張不同的圖**（帝都那位是兩邊共用一張）。另：`tools/si_xlsx.py` 重跑，**立繪總表**更新（SI 263・NPC 46；已接進 speakers.js 205→206 張）。 |
+| **-1376** | **背景依區域分成 15 個資料夾**（525 張，git 認出 rename）＋ `tools/bg_index.py` 掃出 `script/bg_index.js`，由 `story.imgSrc()` 查（鐵律 7）。⚠⚠⚠ **查不到退回根目錄**＝搬之前的現況，所以漏歸檔的下場是「照舊」不是「空背景」。⚠ 根目錄刻意留 `Kerberos.png`／`TIVOT_Emblem.png`／`SENTOUINSTALL.webp`（UI 素材、路徑寫死）。順手修掉兩份第二路徑解析：`flight/index.html` 寫死的 `deck_rapidsail`、`tools/script_lint.py` 自己那一份（搬檔當場噴 200 個假錯誤）。 |
 | **-1374** | 降落判定圈：`landRadius()` —— 有手繪底圖就 `max(planW*0.5, 384)`、沒有底圖照舊 `townEdgeR*3.2`。帝都 **1680→625**（＝底圖半徑），瀏覽器實測邊界 624 亮／626 不亮。 |
 
 ## ⚠⚠ Ray 的回報清單：**剩三件**
