@@ -125,9 +125,15 @@ const wr = (k,v) => { try{ localStorage.setItem(k,String(v)); }catch(e){} };
 /* ⚠ **stage 0 是合法章節**（ver -556 修，Ray：「開始故事是從 stage0 開始」）——
    主線開場（拿到船之前）就是 stage 0。舊寫法 setStage 夾下限 1、getStage 只認 v>0，
    0 根本存不進去 → 「開始故事」會吃到 STAGE_DEFAULT(3)。
-   ⚠ STAGE_DEFAULT 仍是 3：那是**鑰匙不存在**（試玩版／沒跑主線）時的測試預設。
-   ⚠ flight/index.html 有自己的一份讀取（非 module），它的預設也是 3 —— stage 0 時
-     本來就沒有船、進不了飛行頁，不受影響。 */
+   ⚠ `STAGE_DEFAULT` ＝**鑰匙不存在**（試玩版／沒跑主線）時的測試預設（現行 7）。
+   ⚠⚠⚠ **`flight/index.html` 有自己的一份，而且它漏了這個修正六百版**（ver -1362 才補）：
+     那一份的 `hasStageKey`／`gameStage` 一直是 `v>0`、`setGameStage` 是 `Math.max(1,…)`
+     ⇒ 整個 stage 0 被判成「沒跑主線」→ 索敵／探索／加速在 S0 全開。
+   ⚠⚠⚠ **這一行原本寫的是**「它的預設也是 3 —— stage 0 時本來就沒有船、進不了飛行頁，
+     **不受影響**」。**兩句都假**：預設早就不是 3，而「進不了飛行頁」被首頁的「試飛」
+     推翻了。那句話就是另一份沒被修的原因 —— **它不是沒幫上忙，它是主動說服人不要修。**
+   ⇒ 所以這裡**不寫「另一邊不必改」**，只寫事實：**兩份都要是 `v>=0`／`Math.max(0,…)`**。
+     真的要保證，就去加一支會執行的檢查（鐵律 7 的但書，ver -1362 入憲）。 */
 export function getStage(){
   const v = parseInt(rd(K.stage),10);
   return (isFinite(v) && v>=0) ? v : STAGE_DEFAULT;
