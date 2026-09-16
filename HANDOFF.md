@@ -1,4 +1,68 @@
-# HANDOFF — 截至 `ver 2026.09.16-1419`
+# HANDOFF — 截至 `ver 2026.09.17-1420`
+
+---
+
+# -1420：Ray 的七件回報（六件修掉，一件是缺素材）
+
+## ⚠⚠⚠ 1. 追擊戰在安全區開打 —— 鐵律 8 的原形
+
+> Ray：「追擊戰要從進到古城內開始，為什麼我設成安全區的前廳會遭遇戰鬥？古城外也是安全區」
+
+`wildActDue` 有整套守門（安全區旗、`noWild`、`wildFrom`），而**追擊戰自己走一條路**
+（`dragonActDue`），**一條都沒問**。加一行 `if(n.noWild) return null;` 一次涵蓋三種：
+古城外（`entrance`）／四個休息處（`foyer`・`forge`・`stairwell`・`dragstair`）／祭壇。
+王座廳不受影響（它沒有 `noWild`），決戰照舊。
+
+⇒ **新增任何「會開打」的路徑時，先把 `wildActDue` 的守門逐條問一遍。**
+
+## ⚠⚠⚠ 2. 換背景不清立繪 —— 規矩只收在段落收尾，**中途換背景那條路沒人收**
+
+> Ray：「切換場景時不要殘留立繪，要講幾次？憲法沒有嗎？每次轉場都要把前面的立繪清掉」
+
+憲法 §6.5 早就有這條，但它收在 `clearCast`／`endScene`（**段落的收尾**）——
+**段落中途換一張背景**從來沒有人收，所以上一個地方的人就站在新背景前面。
+現在收在**唯一的換背景點**（`story.js` 的 `bgChanged`），所有腳本一次吃到。
+· 這一拍自己的立繪不受影響（上台在 renderLine 後段才做）。
+· 真的要跨背景留人就寫 `keepCast:true` —— **明寫的例外**，漏寫的下場是「多清一次」
+  （看得見、無害），不是殘留。
+
+## 3. 追擊戰期間音樂被打回去
+
+真因：**每走一格 `enter()` 都 `ensureBgm(townBgm())`**，而那一支只認城上的 `T.bgm`
+（＝`numina`）—— 腳本那一拍換成 gothic，**下一步就被打回去**。
+新增城上的 `bgmWhen:[{need,until,bgm}]`（由上往下取第一個成立的），
+把 -1398 Ray 交辦的三段真的接成**狀態**：
+
+    { need:'bl_night_throne', until:'bl_sky_hunt',     bgm:'crisis' }   // 王座戰後～登船
+    { need:'ep_bel_altar',    until:'bl_night_throne', bgm:'gothic' }   // 遭遇／追擊戰
+
+⚠ 不拿 `siege` 去湊：那個開關會連末端封鎖／店關門／路人閉嘴一起開。
+
+## 4~6 其餘
+
+| 件 | 修法 |
+|---|---|
+| 龍降臨上半被裁 | 中景層預設 `cover`（為**鹿主**訂的，主體在下半）；龍是滿框展翅 ⇒ 那一拍寫 `cgBackFit:'contain'`。不動預設（動了鹿主會壞） |
+| 蕾娜「呀！」 | 配 `se_Fall` |
+| 追擊戰血量 | `bl_dragon_chase.hp` 500 → **350**（四場共用這張卡） |
+| 祭壇啟動的圖 | 圖 `Belisar_OldAltaractive.webp` **早就交了**，漏的是那一拍與節點的 `bgWhen` —— 補上（同木雅克／瓦努努那兩段的作法），旗 `bel_altar_on` |
+
+⚠ 連帶：throne 段的 `goto:'entrance'` 拿掉了 —— 那一段的出口 -1417 起是 `goFlight`。
+
+## ⛔ 7.「追擊戰的音樂是壞的」＝**素材只有半首**
+
+`PerituneMaterial_Gothic_Dark_loop_intro.m4a` **只有 7.78 秒**（Numina 142s／
+Irregular 196s／Crisis 87s），而且最後一秒還在滿音量（−8.8 dB）**沒有收尾** ——
+它是 intro／loop 成對檔案裡的 **intro 那一半**，主體那一個檔**不在庫裡**。
+所以現在聽到的是一段 8 秒的東西一直重複。
+
+**要 Ray 補 `PerituneMaterial_Gothic_Dark_loop.m4a`**（或指定換一首）。
+檔案一進 `resources/audio/bgm/` 並補進 `BGM_FILES` ＋ `fileGain` 就好，
+`bgm_gothic` 那一格不必動。⚠ 我不替他挑曲子。
+
+---
+
+# 上一輪 — `ver 2026.09.16-1419`
 
 ---
 

@@ -430,7 +430,11 @@ export const DRAGON_LINES = {
      （Ray：「逼到王座廳以後第二型態決戰　戰勝後轉空中　索拉娜索敵後出現　展開空中戰」）。
      ⚠ 兩場在**同一段**裡：中間那幾拍是同一段演出（上船、索敵），拆成兩個 act
        會多一次「走到某一格」的要求，而船上沒有格子可以走。 */
-  throne: { flag:'bl_night_throne', goto:'entrance', sides:{ RENNA:'L' }, lines:[
+  /* ⚠ ver -1420：`goto:'entrance'` **拿掉** —— 這一段的出口 -1417 起是 `goFlight`
+     （上船追），不是走回中庭。留著的話 `endScene` 的收尾會在交棒前一刻
+     再推一次強制轉場。⚠ `flag` 照舊記得到：`goFlight` 是先 `endScene()`（跑收尾、
+     記旗）才叫開啟器的。 */
+  throne: { flag:'bl_night_throne', sides:{ RENNA:'L' }, lines:[
     { battle:'bl_throne' },
     { speaker:'NARRATION', text:'', shake:true, auto:800 },
     /* ⚠⚠ ver -1416（Ray：「蕾娜的『小心！要垮了！』的時候畫面持續抖動，
@@ -5514,6 +5518,19 @@ export const TOWNS = {
        ⚠ 它原本**沒有 `bgm`** ＝ 進去沿用上一個畫面的曲子（同伊甸古墓）。
        ⚠ 追擊戰開始之後換 `gothic`（戰鬥卡的 `bgmAfter`），那是腳本那一批的事。 */
     bgm: 'numina',
+    /* ══⚠⚠ **那一夜的三段曲子**（ver -1398 Ray 交辦、-1420 才真的接上）══
+       Ray：「遭遇／追擊戰 bgm（播到王座戰結束為止）Gothic_Dark／遭遇龍之前
+       古城固有 bgm Numina／王座戰結束後用 crisis 直到登船」。
+       ⚠⚠ -1398 只寫在**腳本的那一拍**上，而走一步就被 `townBgm()` 打回 `numina`
+         —— 那就是 Ray 回報的「追擊戰期間不會換音樂」。現在寫成**狀態**（見 townBgm）。
+       ⚠ **由上往下取第一個成立的**：crisis 那一條要在 gothic 上面，
+         不然王座戰打完之後還是會被 gothic 接住。
+       ⚠ 「直到登船」＝`bl_sky_hunt`（上船追那一拍插的旗）—— 之後人就在飛行頁了，
+         那一頁有自己的音樂。 */
+    bgmWhen: [
+      { need:'bl_night_throne', until:'bl_sky_hunt', bgm:'crisis' },
+      { need:'ep_bel_altar',    until:'bl_night_throne', bgm:'gothic' },
+    ],
     /* ══⚠⚠⚠ **初入探索的三段提示**（ver -1397，Ray 交稿）══════════════════════
        「初入探索超過 3 格還沒踩到祭壇，索菈娜會說『這裡太安靜了』；超過 6 格諾薇兒
          說『這麼空的城，感覺好奇怪』；超過 10 格安雅跳出提示『好像……是在那個
@@ -5797,6 +5814,9 @@ export const TOWNS = {
            Ray 沒交代，先不接。 */
       altar:     { bg:'Belisar_OldAltar', name:'貝利薩爾遺址　古代祭壇', noTime:true,
         noWild:true, exits:{ up:'floodway' },
+        /* ⚠ 啟動之後再走進來就是啟動版（ver -1420）——同木雅克／瓦努努的 `bgWhen`。
+           `noTime:true` ＝這張只有單張，不走時段候選鏈（不寫的話每次進來先吃四個 404）。 */
+        bgWhen:[ { need:'bel_altar_on', bg:'Belisar_OldAltaractive', noTime:true } ],
         /* ⚠ ver -1385：`goto` 由 `courtyard`（下沉中庭）改成 **`entrance`（古城中庭）**
            —— 撤離那一段演在**出口**、也是真的淹水的那一格（`GreatCourt_flood`）。 */
         /* ⚠⚠⚠ `storyBattle:true`（ver -1412 補）—— **這一段有戰鬥拍，沒宣告的話
@@ -5822,6 +5842,19 @@ export const TOWNS = {
              ⚠ 它只擋點擊，`auto` 照樣把這一拍走完 —— 不會卡死（見 story.js 的說明）。 */
           { speaker:'ANYA', text:'', portrait:{ char:'ANYA', show:false },
             hide:['SORANA','RENNA','NOUVELLE','ANYA'], fx:'sense', auto:4400, noSkip:true },
+          /* ══⚠⚠⚠ **祭壇 normal → active**（ver -1420，Ray：「祭壇啟動的圖沒接上」）══
+             圖 `Belisar_OldAltaractive.webp` **早就交了**（`resources/background/belisar/`），
+             漏的是這一拍與節點上的 `bgWhen` —— 同木雅克（`ruins_altar_on`）與
+             瓦努努（`fallen_altar_on`）那兩段一模一樣的作法，這一座沒跟上。
+             ⚠ 換圖落在**白光的中間**（同那兩段）：同一拍又換圖又淡白的話，
+               玩家會看到背景先跳一格再變白（§6.5「換場要在全黑之下換」的同一個道理）。
+             ⚠ `bg:` 不是 `bgBand:`：這張**只有單張、沒有時段差分**（同
+               `Ruins_shinier_DeepAltaractive`），所以硬指定。
+             ⚠ 旗與 act 的 `flag` 是**兩支**（鐵律 9）：`ep_bel_altar` 說「那一段演完了」、
+               `bel_altar_on` 說「祭壇開著」—— 後者是節點 `bgWhen` 讀的那一支。
+             ⚠ `keepCast` 不用寫：台上本來就被上一拍 `hide` 光了。 */
+          { speaker:'NARRATION', text:'', flags:['bel_altar_on'],
+            bg:'Belisar_OldAltaractive', auto:1500 },
           ren('ask','好，這樣就——'),
           /* ══⚠⚠ **王座徘徊者降臨**（ver -1384，Ray：「感應完蕾娜說『好　這樣就』
              以後發生震動　背景特效王座徘徊者降臨」）══
@@ -5853,8 +5886,12 @@ export const TOWNS = {
              ⚠ 聲音與震動就是這一拍自己的 `se`／`shake` —— 不要再播一次登場音。 */
           { speaker:'NARRATION', text:'', shake:true, auto:900,
             se:'se_monsterroardeep', cgBackScale:0.9, cgBackRise:true,
+            /* ⚠ ver -1420（Ray：「龍降臨上半怎麼被裁了？」）：這一層預設 `cover`
+               （為鹿主訂的，主體在下半）—— 龍是滿框展翅，要 `contain` 才不會被切頭。 */
+            cgBackFit:'contain',
             cgBack:'resources/enemy/mon_dragon_v1_shackled.webp' },
-          ren('scream','呀！'),
+          /* ⚠ ver -1420（Ray 指定）：被嚇到那一聲配跌倒音。 */
+          Object.assign(ren('scream','呀！'), { se:'se_Fall' }),
           /* ══⚠⚠⚠ **蕾娜倒地・髮飾脫落**（ver -1397，Ray 交件 `020-rennadrop`）══
              稿：「龍出現後蕾娜『呀！』之後，接插圖 020 由下往上平移；在插圖背景
              蕾娜**無立繪**『啊……』；同背景索拉娜『危險！』畫面震動，龍咆音效

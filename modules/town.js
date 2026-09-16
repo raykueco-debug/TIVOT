@@ -197,6 +197,24 @@ function diningNode(){ return ((TOWNS[townId]||{}).dining||{}).node || null; }
    ⚠ 沒寫 `bgmUntil` ＝ 兩者同一個結束點（其他城照舊）。 */
 function townBgm(){
   const T=TOWNS[townId]; if(!T) return null;
+  /* ══⚠⚠⚠ **某一段劇情期間換一首**（`bgmWhen`，ver -1420，Ray：「追擊戰期間
+     不會換音樂」）══════════════════════════════════════════════════════════
+     真因：**每走一格 `enter()` 都會 `ensureBgm(townBgm())`**，而這一支在此之前
+     只認得城上的 `T.bgm`（貝利薩爾＝`numina`）—— 所以追擊那一拍換成 gothic 之後，
+     **下一步就被打回 numina**。腳本那一拍沒有錯，錯的是沒有人把「這一段期間」
+     這件事告訴這一支。
+     ⚠⚠ **不要拿 `siege` 去湊**：那個開關會連末端封鎖／店關門／路人閉嘴整套一起開。
+       「地圖在戰鬥模式」與「這一段放哪一首」是兩件事（同 `siege.bgmUntil` 當初
+       與 `siege.until` 拆開的理由）。
+     ⚠ 一張表**由上往下取第一個成立的**（同 `acts`／`innDoors`）：
+       所以「王座戰結束後的 crisis」要寫在「追擊戰的 gothic」**上面**。
+     ⚠ `need`／`until` 都是旗：插了 `need`、而且 `until` 還沒插 ⇒ 用這一首。 */
+  if(T.bgmWhen) for(const w of T.bgmWhen){
+    if(!w || !w.bgm) continue;
+    if(w.need && !prog.hasFlag(w.need)) continue;
+    if(w.until && prog.hasFlag(w.until)) continue;
+    return w.bgm;
+  }
   const g=siegeOn();
   /* ══ 城重建之後換曲（ver -753，Ray：「stage5 以後的北泊 bgm 改成
      PeriTune_Harbor_Morning_loop」）══ 鑰匙寫在 `rebuild.bgm`（與 -627 的
@@ -1319,6 +1337,18 @@ function dragonAtNode(){
 }
 function dragonActDue(n){
   if(!dragonChaseOn() || !n) return null;
+  /* ══⚠⚠⚠ **不出怪的格子也不打追擊戰**（ver -1420，Ray：「追擊戰要從進到古城內
+     開始，為什麼我設成安全區的前廳會遭遇戰鬥？古城外也是安全區」）══
+     判準用**節點自己的 `noWild`**（鐵律 1：那是資料，不在這裡列名單）——
+     它一次涵蓋 Ray 講的三種：
+       · **古城外**　　`entrance`（古城中庭）
+       · **休息處**　　`foyer`／`forge`／`stairwell`／`dragstair`（四個都 `noWild`）
+       · **祭壇**　　　`altar`（首戰打完就不該再撞見牠）
+     ⚠⚠ 這正是 -1419 之前漏掉的：`wildActDue` 有這一整套守門（安全區旗、`noWild`、
+       `wildFrom`），而追擊戰**自己走一條路**，一條都沒問 —— 鐵律 8 的原形
+       （規矩做成函式了，新路徑沒有呼叫它）。
+     ⚠ **王座廳那一場不受這條管**：`throne` 沒有 `noWild`，決戰照舊。 */
+  if(n.noWild) return null;
   const w = dragonWins();
   if(w >= DRAGON_CHASE_MAX){
     /* 逼進死胡同：只有牠站的那一格開打（＝小地圖紅點那一格，同一支在答）。 */

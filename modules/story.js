@@ -1268,6 +1268,20 @@ function applyPersist(line){
     swapImg($('storyBg'), line.bg?imgSrc(line.bg):'',
             ()=>matchPortraits(toneSrcEl(), $('storyCast')));
   }
+  /* ══⚠⚠⚠ **換背景＝換場，台上的人先下去**（ver -1420，Ray：「切換場景時不要殘留
+     立繪，要講幾次？憲法沒有嗎？**每次轉場都要把前面的立繪清掉**」）══
+     §6.5 早就有這條規矩（「一段對白演完就清掉畫面上所有立繪」「立繪是持續狀態」），
+     但它只收在**段落的收尾**（`clearCast`／`endScene`）—— **段落中途換一張背景**
+     那一條路從來沒有人收，於是上一個地方的人就站在新的背景前面。
+     ⚠⚠ 這是鐵律 8 的同一種漏接：**規矩做成函式了，新路徑沒有呼叫它**
+       （§6.5 的 -370 原文就是這個）。現在收在**唯一的換背景點**，
+       所有腳本、所有城鎮、所有事件差分一次吃到。
+     ⚠ **這一拍自己的立繪不受影響**：上台是在 renderLine 後段才做的（`line.portrait`），
+       所以「換背景＋這一句是誰講的」照樣會把那個人放上來 —— 清掉的是**上一景**的人。
+     ⚠ 真的要讓人跨背景留著（同一個人走進另一個房間繼續講）就寫 `keepCast:true`。
+       ⚠ 那是**明寫的例外**：預設是清掉 —— 漏寫的下場是「多清一次」（看得見、無害），
+         不是「殘留」（Ray 連報好幾次的那一種）。 */
+  if(bgChanged && !line.keepCast){ leaveSlot('L'); leaveSlot('R'); }
   /* ══⚠⚠ `bgBand:'<基底名>'` ＝ **走時段候選鏈**的換背景（ver -1187）══════════
      `bg:` 是**硬指定**（一個檔名、不吃時段）—— 只有單張的圖用它就好
      （`Ruins_shinier_DeepAltaractive` 就是那一種）。
@@ -1322,8 +1336,15 @@ function applyPersist(line){
        ＋ `object-position:center bottom`，錨中心的話縮小＝整隻往下沉進地面。
        ⚠⚠ **每次換圖都要重設**（不寫就是 1）：中景層是**持續狀態**，
          縮放留著會跟到下一張圖上 —— 同「誰收它」那一族的坑（§6.5.4 的檢查表）。 */
+    /* ══⚠⚠ `cgBackFit:'contain'`（ver -1420，Ray：「龍降臨上半怎麼被裁了？」）══
+       這一層預設是 `object-fit:cover` ＋ `object-position:center bottom`
+       —— 那是為**鹿主**訂的（橫式 1536×1024，主體在下半，`contain` 會縮成一小條）。
+       龍是**滿框的正面展翅**：`cover` 以高補滿，等於把翅膀與頭整個切掉。
+       ⚠ 不改預設（改了鹿主那一段會壞）：**逐拍指定**，寫了才換。 */
     { const el=$('storyCgBack'), k=+line.cgBackScale||1;
       if(el){ el.style.transformOrigin='center bottom';
+              if(line.cgBackFit) el.style.objectFit=line.cgBackFit;
+              else               el.style.removeProperty('object-fit');
               el.style.setProperty('--rise-k', k);   // 降臨那組 keyframes 的收尾尺寸（ver -1414）
               el.style.transform = k===1 ? '' : 'scale('+k+')'; } }
     /* ══⚠⚠⚠ **降臨演在劇情這一側**（ver -1414，Ray：「戰鬥中不播降臨，劇情出場時播」）══
@@ -1935,7 +1956,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1419';
+const KERB_V='?v=1420';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -2829,6 +2850,7 @@ function renderLine(){
     stageCgBack=null; setImg($('storyCgBack'), '');   // 中景也是持續狀態（ver -870）
     { const el=$('storyCgBack');                                   // 連縮放與降臨一起收（-1413／-1414）
       if(el){ el.style.transform=''; el.style.removeProperty('--rise-k');
+              el.style.removeProperty('object-fit');          // 連 fit 一起收（ver -1420）
               el.classList.remove('enemy-rise'); } }
     clearCast(); hideBubble();
     if(flightOpener){ endScene(); try{ flightOpener(line.goFlight); }catch(_){} return; }

@@ -1475,7 +1475,8 @@ export const ENEMIES = {
       image:'enemy_bl_dragon_chase',
       bg:'Belisar_GreatHall',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:500,
+      /* ver -1420，Ray：「追擊戰的龍血量都改到 350」——**四場追擊共用這一張卡**，所以改一次四場都吃到。 */
+      hp:350,
       attack:20,
       atkInterval:null,
       delayPenalty:{ seconds:5 },
