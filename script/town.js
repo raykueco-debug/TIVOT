@@ -4437,7 +4437,14 @@ export const TOWNS = {
              `OUTING`）—— 16~18 點在大學巧遇那一段是下一批的事。 */
         /* ⚠ `endStoryExplore:true` ＝演完開放自由活動（＝可以約會）；
            第一天的四條約會線全部靠它（見城上那一段的說明）。 */
-        acts:[ { flag:'ep_arrive', need:'belisar_noland_talk', endStoryExplore:true,
+        /* ══ 貝利薩爾回來之後（ver -1387，Ray 交稿）══ 強制移轉落在這一格
+           （`ep_bel_court` 的 `goto:'@eastport:square'`），那一次抵達就演這兩句。
+           ⚠ 它是**T2／T3 兩條路的共同起點** —— 分歧在旅店那一格（見 `inn.acts`）。 */
+        acts:[ { flag:'ep_bel_back', need:'ep_belisar_done', sides:{ RENNA:'L' }, lines:[
+          ren('lookawaytalk','那麼下一站，就是北方的伊甸古墓了。'),
+          ren('meltdown','休整一下，明天就出發吧。'),
+        ] },
+        { flag:'ep_arrive', need:'belisar_noland_talk', endStoryExplore:true,
                  sides:{ RENNA:'L' }, lines:[
           Object.assign(ren('front','我先去大學研究一下貝利薩爾遺蹟的檔案。'),
                         { clockToNext:11 }),

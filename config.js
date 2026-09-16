@@ -69,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.16-1386';
+export const VERSION = 'ver 2026.09.16-1387';
 
 export const GAME_CONFIG = {
 
@@ -2314,6 +2314,22 @@ export const GAME_CONFIG = {
        ⚠ `bgmAfter` 不寫：追擊戰的 `gothic` 是**那一段**才換（見 3b 的說明），
          這一場打完接回古城的 `numina`（戰前那一首）。 */
     ep_belisar_altar: { enemy:'bl_dragon_chase' },
+    /* ══⚠⚠⚠ 那一夜的奪回戰（ver -1387，Ray 交稿）══════════════════════════════
+       三張敵卡 ver -1343 就交了，當時的註解寫著「**還沒有任何戰鬥卡指到它們**
+       —— 那是腳本那一批的事」。這一批就是它。
+
+       ⚠⚠ **追逐戰一張卡打四次**（`bl_chase`）：四場是**同一隻怪**、同一組數值
+         （鐵律 7：一張卡一組數值；開四張只會讓它們日後走鐘）。
+         「第幾次」是**腳本的事**（那四拍各自的台詞），不是卡的事。
+       ⚠ 追逐那四場**不結算**（`session` 同一段、只有王座那一場 `sessionEnd`）——
+         照 §6.5.4.3：打掉一隻直接接下去，閉棺與結算留給收段那一場。
+         ⚠ 空中那一場是**另一局**（中間上了船、換了場景），所以它自己收自己。
+       ⚠ `noEval` 都不寫 ＝ 照舊由蕾娜評（§6.5.2「預設就有評價，沒有的是特例」）。
+       ⚠ 聖徒化／搭檔技都不禁：那一夜四個人都在。 */
+    bl_chase:  { enemy:'bl_dragon_chase',  session:'bl_night' },
+    bl_throne: { enemy:'bl_dragon_throne', session:'bl_night', sessionEnd:true },
+    /* ⚠ 空中戰：`kind:'aerial'` 在敵卡上（降臨與淨化特效吃得到，§6.5.4.4）。 */
+    bl_sky:    { enemy:'bl_dragon_sky' },
     /* 北方泊地的城鎮戰（ver -583（-893 前用詞））：每一格走進去打一場，共用這一張佔位卡。
        ⚠ **不禁聖徒化／搭檔技**：Ray 沒說要禁（禁了要明寫 noSaint/noPartner）。
        ⚠ 打輸走一般流程 —— 城鎮插入戰的敗北會被抬回這座城的旅店（§6.5.2 那張表）。

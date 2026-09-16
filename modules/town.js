@@ -913,6 +913,19 @@ function actDue(n){
          `until` ＝「別人那一段演完了」（別人記的）。 */
     if(a.until && prog.hasFlag(a.until)) continue;
     if(a.day && dayNo() < a.day) continue;
+    /* ══⚠⚠ **好感段位的門**（`needTier:{renna:3}`，ver -1387，Ray 的夜襲稿：
+       「若蕾娜 T2 隔日正常探索／**若蕾娜 T3** …」）══
+       段位只有 `prog.tierOf` 一支在算（鐵律 7）—— 這裡只比大小，不自己換算
+       「T3＝40 點」那個數字（段寬改了這裡不必動）。
+       ⚠ 它是**那一刻的快照**：走進來的當下夠不夠。條件不成立就跳過這一段，
+         日後好感上來了再走進來照樣演得到（那正是分歧該有的行為）。
+       ⚠ 可以一次寫好幾個人（and）—— 目前只有蕾娜在用。 */
+    if(a.needTier){
+      let ok=true;
+      for(const who in a.needTier)
+        if(prog.tierOf((prog.getAffection()||{})[who]) < a.needTier[who]){ ok=false; break; }
+      if(!ok) continue;
+    }
     /* ══⚠⚠ 「現在是不是跟某人在約會」（ver -1344，Ray 的東泊稿）══════════════
        約會中走到某一格才演的那幾段（諾薇兒→餐廳／雜貨舖、安雅→甜品店／碼頭、
        索菈娜→武器店／公會）就靠這兩格：
