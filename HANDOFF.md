@@ -1,4 +1,4 @@
-# HANDOFF — 截至 `ver 2026.09.16-1376`
+# HANDOFF — 截至 `ver 2026.09.16-1395`
 
 > 這一份是**唯一**的交接檔。**下一次交接請直接改這一份，不要再開新檔。**
 >
@@ -6,16 +6,96 @@
 > 已經被 revert 掉的東西寫成現況，於是下一個 session 照著它做了錯的判斷。
 > **沒有 `grep` 過、沒有量過的事實不要寫。**
 >
-> ⚠⚠⚠ **這一份是「換機器」那一版**：拉下來之後**先看「⚠⚠⚠ 換機器」那一節** ——
-> `_originals`／`_recycle`／localStorage 那三件 git 帶不走，而 **`_recycle` 與
-> localStorage 這一次真的有東西**（上一次換機器時前者只有 36 KB、後者兩個瀏覽器都是空的，
-> 照舊表走就會掉）。localStorage 我已經匯出成 `HANDOFF_localStorage.json` 進版控。
+> ⚠⚠⚠ **這一份又是「換機器」那一版**（-1395，Ray：「先推上　換機器　寫交接」）：
+> 拉下來之後**先看「⚠⚠⚠ 換機器」那一節**，而且**那一節的第二、三小節是舊機器的數字** ——
+> 以 **§六（-1395 當天實測）** 為準。git 帶不走的三件是 `_originals`（**337 MB**）／
+> `_recycle` 的**內容**（3 MB）／**localStorage**。
+> ⚠⚠⚠ **Ray 的遊玩進度在 `http://localhost:49848` 那個 origin**，不是版控裡那份
+> `HANDOFF_localStorage.json`（那是再上一台 `:8000` 的快照）—— 要帶就從他那一頁匯出（§六）。
 >
-> ⚠⚠⚠ **環境數字要標「哪一台機器」**（-1369 新增的教訓）：上一版記著
-> 「node **v24.19.0 在 PATH 上**、Python **3.10.0**」，而這台實測是
-> **Python 3.11.9、node 根本沒裝**（-1361 才 `winget` 裝上）。
+> ⚠⚠⚠ **環境數字要標「哪一台機器」**（-1369 立、**-1395 又應驗一次**）：
+> 這條教訓上一版寫的是「上一版記著 Python 3.10.0，而這台是 3.11.9」——
+> 而**這一台又是 3.10.0**、`_originals` 由 79 MB 變 337 MB、分支由 `master` 變 `main`。
+> 三台機器的數字混在同一份檔案裡，所以**每一節都要標自己是哪一台量的**。
 > 同一份檔案裡混著兩台機器的數字，讀的人不會知道自己在讀哪一台的。
 > **「某支工具可以跑」與「它在這台真的跑得起來」是兩件事。**
+
+---
+
+# 這一輪（-1390 ~ -1395）：小地圖的霧、東泊的四件回報、兩張新地圖
+
+> ⚠⚠⚠ **先讀這一句：這一台**不是**上一份交接寫的那一台。**
+> `py` 是 **3.10.0**（上一版寫 3.11.9）、`_originals` **337 MB／156 檔**（上一版 79.2 MB／36 檔）、
+> `_recycle` **3 MB／5 檔**（上一版 25.1 MB／45 檔）、專案合計 **1960 MB**（上一版 736 MB）。
+> ⇒ **「⚠⚠⚠ 換機器」那一節的第二、三、六小節整組是舊機器的數字**，已在下面第六小節更新；
+> 其餘小節（要裝什麼、先跑哪幾件）照舊適用。**同一份檔裡混著兩台機器的數字時，
+> 以「這一輪」這一節為準。**
+
+## 動了哪幾支檔（給美術 session 自保用，鐵律 11）
+
+`modules/town.js`／`modules/inn.js`／`script/town.js`／`style.css`／`config.js`／
+`tools/script_lint.py`／`CLAUDE.md`（§0.5 補一條）＋ `bust.py` 蓋版號的那三支。
+**美術的檔一個都沒動。**
+
+## 做掉的（逐條，附驗收）
+
+| 版 | 做了什麼 | 怎麼驗的 |
+|---|---|---|
+| -1390 | **王座徘徊者的紅點**：`dragonAtNode()` ＝「牠在哪一格」的唯一答案（鐵律 7，`dragonActDue` 改讀它）；小地圖那一格加 `.dragon`（偏橙血紅＋光暈，呼吸 1.6s 比所在地那顆慢） | 當時貝利薩爾**還沒有小地圖**，所以借 `shinier_ruins` 驗；-1395 接上真地圖後補驗（見下） |
+| -1391 | 小地圖的霧由米色改**黑霧**（Ray：「世紀帝國那樣」） | 被 -1392 取代 |
+| -1392 | ⚠⚠ **霧改成整片一層**：一張 SVG 蓋滿全圖、走過的格子在它身上**挖洞**（`fogShroud`）。`viewBox 0 0 100 100`＋`preserveAspectRatio="none"` ⇒ 不必量 rect、不理 DPR、不接 resize；洞的邊緣 `feGaussianBlur`；一格三顆錯開的橢圓（形狀用**位置算的假亂數**，不可 `Math.random`）；整片黑用 CSS `mask-image` 夾成紙的形狀（否則是個方框，撕邊全沒了） | `shinier_ruins` 21 格逐步走；`capital`（`mist:0`）無霧 |
+| -1393 | **全部踩過就把霧整片撤掉**（`fog = fogOn() && !ids.every(seenNode)`） | 20/21 → 中間一座黑島；21/21 → shroud 0、整張紙乾淨 |
+| -1394 | 東泊四件（見下面「Ray 的回報」） | 逐條實測，見那一節 |
+| -1395 | **接上貝利薩爾（38 格）與古道（6 格）的小地圖**（美術 `9a9014a` 交件）；`cg:'018-anyahide'`→`019-anyahide`；**補 lint 的 `gates` 洞** | 紅點在真地圖上驗過（見下） |
+
+## ⚠⚠ -1394：Ray 的東泊回報（四件，全部有真因）
+
+1. **睡覺鈕點了無效** —— `inn.sleepHere` 的「太早」那一條原本是「有 `innEarly`
+   台詞才演，沒有就 `return`」。東泊**沒寫 `innEarly`** ⇒ 18:00 之前按下去
+   **完全沒有反應**。⚠ 難查的地方：`eveningHour` 的**預設是 18**（`let eveningHour = 18`），
+   城上沒寫 `evening` 就沿用它 —— **資料上看不出這一格有一條 18:00 的線**。
+   修法：沒有台詞也給一句旁白（§6.5.5）。
+2. **巧遇蕾娜後回旅店＝當天 18:00** —— 新的 act 欄位 **`clockToday:<時>`**
+   （`advanceToHour`，只往前）。⚠ 與閘門的 `clockTo`（`advanceToNextHour`）
+   **不是同一件事，所以不共用名字**。
+3. **巧遇後不能再約人，但頭像照舊都在** —— 新的 act 欄位 **`dateSpent:true`**。
+   ⚠ 它與 `datedSet`（今天約了**誰**）是**兩份狀態**，刻意不合併：前者讓其他人的
+   頭像消失（-1383），後者頭像全留、**敲門才拒絕**。
+4. **出城回飛行地圖搭檔變空** —— 兩層原因：`dateParty()` 回 `{who:null}` 時
+   `combat` 會**真的寫下** `setPickedPartner(null)`；而 **`isOpen()` 只看 `townId`，
+   `suspend()`（出航）不清它** ⇒ 人到天上了城鎮規則還在生效。
+   修法：`townLive` ＋ `isTownMap()`（**有旅店才算城鎮**，Ray 定義，含索菈娜家＝
+   `sorahome:{inn:true}`）＋ 進城快照／出城還原（`restoreTownPartner`）。憲法 §0.5 已補。
+
+**實測（8123，靜音，375×812）**：大學 17:00 巧遇 → 推回旅店**時間 18:00** →
+蕾娜「啊，回來了」「早點休息吧」→ 旗記下 → 長按睡覺**真的睡到隔日 07:00**；
+07:00 再按 → 「……天還沒黑，先做點別的吧。」；敲門 →「今天已經聊夠多囉」；
+19:30 四扇門**頭像全在**；進城 nouvelle → 城裡被寫成無夥伴 → 出航**還原成 nouvelle**；
+貝利薩爾（沒旅店）`dateParty()` 回 null。
+
+## ⚠⚠⚠ -1395：lint 有一個洞，補起來了（這一條值得記住）
+
+`gates`（城上的強制轉場）的 `lines` **從來沒有被驗過** —— -424 加的那一支只掃
+節點的 `acts`。而東泊隔天早上那一整段戲（四人的對白＋安雅躲身後那張插圖）
+就是掛在**城**上的一個 gate ⇒ 美術把 `018-anyahide` 改號成 `019-anyahide` 之後
+**lint 全綠**，要等玩到隔天早上才會發現插圖不出來（§6.5.4 的 ver -433 同一個坑）。
+- 已補 `gates[].lines`（含舊名 `stage1`）與 `goto` 的節點檢查。
+- 驗過：改回舊名 → `❌ 沒有這張插圖 018-anyahide`；改成新名 → 0 錯誤。
+- 順手浮出兩個沒人看過的提醒：**ANYA `makeface`／RENNA `sighbreath` 沒有差分圖**
+  （會回退基本立繪）—— 要給美術。
+
+## ⚠⚠ 還沒解決 ／ 要 Ray 一句話
+
+1. ⚠⚠⚠ **「巧遇之後蕾娜不會說『啊，回來了』」我重現不出來**。乾淨存檔跑：
+   大學 16~18 點巧遇 → `goto:'inn'` → 那一段**每次都播**、旗（`ep_renna_night`）
+   也記得下（`console` 有 `runArrival` 的實測記錄）。-1394 把時間推到 18:00 之後，
+   後面那條鏈（睡覺）確定是通的。
+   ⇒ **下一次再遇到時要問的兩個數字**：當下**幾點**、以及 `ep_renna_night`
+   **這支旗在不在**（`(await import('/script/progress.js')).getFlags().filter(f=>/ep_renna/.test(f))`）。
+2. **ANYA `makeface`／RENNA `sighbreath`** 兩張差分圖沒有（lint 新抓到的）。
+3. 舊的兩件仍然掛著：`East_SouthGate_dusk` 與 `_night` **是同一張圖**（指紋 70.1/70.1/87.4）；
+   `NPC_GuildCounter_SI_v5` 仍是 RGB 沒有 alpha。
+4. 東泊的 `ep_range`（打靶）**還沒有卡**，所以索菈娜武器店那一段到不了（-1346 就記著了）。
 
 ---
 
@@ -353,7 +433,7 @@ location.reload();
 
 ```bash
 export PATH="$PATH:/c/Program Files/nodejs"      # 沒有就先開新終端機
-py tools/script_lint.py      # 應該是 0 個錯誤、31 個提醒
+py tools/script_lint.py      # ver -1395 應該是 0 個錯誤、20 個提醒
 py tools/bust.py --check     # 應該說「快取版本號同步中 ✔」
 curl -s -m 8 -o /dev/null -w "%{http_code}" http://127.0.0.1:8000/main.js   # 起了伺服器之後
 ```
@@ -361,15 +441,33 @@ curl -s -m 8 -o /dev/null -w "%{http_code}" http://127.0.0.1:8000/main.js   # �
 外加**量效能之前**先確認 `renderer` 抓到的是真顯卡（第零節陷阱 1：Claude 桌面版會
 自己關掉硬體加速，而且選單救不回來 —— 那一格是 `isHardwareAccelerationAutoDisabled`）。
 
-## 六、這一台的現況（交出去的那一刻）
+## 六、這一台的現況（**-1395 當天實測，取代上面第二、三小節的數字**）
 
-- 工作區**乾淨**：`git status --untracked-files=all` 零筆，`master` 與 `origin/main` 同一個 commit。
-- 專案資料夾合計 **736.4 MB／1757 個檔**（含上面那兩個 gitignore 的資料夾；
-  美術 -20260916 那一輪之後重量過）。
-- `MAP_EDITS_SRC` 仍是 `[]` —— **沒有待匯出的地圖筆畫**（同 -1306）。
-- ⚠ **美術那條線同一天也推了一份交接**（`resources/_HANDOFF_ART_20260916.md`）：
-  四條產線**全部未完成**（蕾娜髮飾 19/57、NPC 去背 3/13、貝利薩爾中庭 2/8、平原古道），
-  而且它 §七 那七條產線的坑**都是靜默失敗**，下一台機器照抄。
+⚠⚠⚠ **上面第二、三小節（`_originals` 79.2 MB／`_recycle` 25.1 MB／localStorage 那一份）
+是「再上一台」的數字** —— 這一台不是那一台（`py` 也由 3.11.9 變成 3.10.0）。
+以下是這一台交出去那一刻**當場量的**：
+
+| | 這一台（-1395） | 上一版寫的（舊機器） |
+|---|---|---|
+| `resources/_originals/` | **337 MB／156 檔** | 79.2 MB／36 檔 |
+| `_recycle/`（內容） | **3 MB／5 項**（`README.md`／`RECYCLE_LOG.tsv`／`resources/`／`si.xlsx`） | 25.1 MB／45 檔 |
+| 專案合計 | **1960 MB** | 736.4 MB |
+| `py` | **3.10.0** | 3.11.9 |
+| node | v24.19.0，`C:/Program Files/nodejs`，⚠ **不在 shell 的 PATH 上** | 同 |
+| 分支 | **`main`**（`origin/main` 同一個 commit） | 寫「本地 master」—— 這一台不是 |
+
+⚠⚠ **`RECYCLE_LOG.tsv` 裡的紀錄比 `_recycle/` 裡的檔案多很多** ——
+那些被回收的檔案**留在舊機器上**。要救哪一個回來就得去那一台拿。
+
+- 工作區**乾淨**：`git status --untracked-files=all` 零筆；`main` ＝ `origin/main` ＝ `b8775b6`。
+- ⚠⚠⚠ **Ray 自己測的是 `http://localhost:49848`** —— 他的遊玩進度（localStorage）
+  住在**那個 origin**，不是 `:8000`／`:8123`。換機器要帶就從**那一頁**的 console 匯出：
+  ```js
+  copy(JSON.stringify(Object.fromEntries(Object.entries(localStorage).filter(([k])=>k.startsWith('tivot_')))))
+  ```
+  （版控裡那份 `HANDOFF_localStorage.json` 是**舊機器 `:8000`** 的快照，不是他現在在跑的那一份。）
+- ⚠ 我這一輪測試一律開自己的 **8123**（`.claude/launch.json` 的 `tivot-verify`），
+  **沒有碰 49848**，而且整輪靜音 —— 那是 Ray 這一輪明講的規矩。
 
 ---
 
