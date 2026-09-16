@@ -1002,6 +1002,57 @@ export const CHAPTERS = [
        幹嘛從餐廳走回去？」）—— 諭令那一幕就演在那裡（正式流程是閘門
        `sv_s8_to_home` 把人從餐廳三秒黑搬回家，章節工具直接落在終點）。 */
     enter:'town', town:'shinier', node:'sorahome' },
+  /* ══ Stage 10（ver -1378，Ray：「把位置開到進東泊　我跑一次看有什麼漏的」）══
+     **東方泊地・抵達那一刻** —— 廣場那一段（`ep_arrive`：蕾娜說要去大學查檔案）
+     還沒演，演完就開放第一天的自由活動。
+
+     ⚠⚠⚠ **`belisar_noland_talk` 一定要給**：它是 `ep_arrive` 的 `need`
+       （飛行頁那一段「貝利薩爾降不下去 → 蕾娜指路東泊」插的旗，
+        `flight/index.html` 的 `BELISAR_NOLAND_FLAG`）。不給的話人進得去、
+       **抵達那一段整個不演**，而且畫面上不會有任何錯誤訊息。
+     ⚠⚠⚠ **`ep_*` 一支都不給** —— 那正是這一章要測的東西：
+       `ep_arrive`（抵達）／`ep_evening`（20:00 催回旅店）／`ep_day2`（翌日）／
+       `ep_renna_night`（夜裡蕾娜）／`ep_renna_met`（16~18 點大學巧遇）／
+       約會那四條線（`ep_date_*`／`ep_end_*`）／`ep_guild_sor`（公會那一場）／
+       `ep_range_done`（打靶）／`ep_nou_home`／`ep_anya_home`（18:00 自己回去）。
+     ⚠⚠ **`eastport_seen`／`mapcard_eastport`／`seen_eastport_*`／
+       `inn_seen_eastport_inn` 也不給**：它們是「**踏進過這張圖**」的記帳
+       （visitFlag／圖名卡／走過了沒／旅店初見）—— 給了就等於他已經逛過一輪，
+       圖名卡不出、旅店的棺材那一幕不演。**第一次抵達要從零開始。**
+     ⚠ `inn_tip_*`（敲門／坐坐／睡覺那三則一次性說明）**要給**：那是他在帝都的
+       旅店早就學過的，再教一次是錯的（`innNoGuide` 是逐節點的，不是全域）。
+     ⚠ `sv_s9_order`／`sv_s9_leave` 要給 ＝ 諭令演完、已經離村出航（索菈娜入隊
+       目前就由 `sv_s9_leave` 代表）。`ruin_a_found` ＝瓦努努已開啟（同 stage8）。
+     ⚠ `stage:8` **不是 10**：章節的編號是**選單上的排序**，不是 `gameStage()`。
+       東泊這一段線上跑的就是 stage 8（Ray 那份存檔實測 `tivot_stage_v1` ＝ 8），
+       而 `FEATURE_FROM`／`PLACE_STAGE_FROM` 那幾道門都對著 8 —— 寫 10 會讓
+       「S8 之後才開」的那幾件事狀態不同（鐵律 9：不要讓假的鑰匙參與遊戲邏輯）。
+     ⚠ `clockHour:9` ＝上午九點抵達；抵達那一拍自己有 `clockToNext:11`
+       （Ray 的「入口：固定時間為最近的 AM 11:00」），所以進去就會跳到當天 11:00。
+     ⚠ `node` **不寫** ＝走城上的 `entry:'square'`（`ep_arrive` 就掛在那一格）。 */
+  { id:'stage10', name:'Stage 10', sub:'東方泊地・抵達（廣場）→ 第一天自由活動 → 翌日',
+    stage:8, clockHour:9, named:true,
+    flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open',
+           'set_sail','got_ship','dock_day2','flight_centipede_met',
+           'np_port_arrive','np_clear_church','np_claws_done','safehouse_northport',
+           'np_burial','np_burial_done','np_night','np_night_done','np_day3',
+           'np_day3_done','np_anya_join','np_dock_ask','np_grave_done','np_depart',
+           'sv_arrive','sv_evening','sv_night_done','shinier_siege',
+           'sv_clear_wild','safehouse_shinier','sv_forest_morning',
+           'sv_forest_go','sv_forest_intro','sv_deer_met','sv_deer_harm',
+           'sr_intro','sr_gate_brazier','sr_gate_bridge','sr_brazier','sr_bridge',
+           'sr_mural','ruins_gate_open','ruins_bell_done','ruins_thug_met','sr_altar',
+           'ruins_altar_on','sv_s8_noon',
+           'sv_s8_home','sv_s8_hungry','sv_s8_dine','sv_s8_corvin',
+           /* 第 9 章演完：諭令 → 離村出航（索菈娜入隊） */
+           'sv_s9_order','sv_s9_leave',
+           /* 瓦努努已開啟（同 stage8／試飛）＋ 帝都打靶拿過龍息（他一路玩過來本來就有） */
+           'ruin_a_found','got_Shotgun_Dragon',
+           /* 旅店那三則一次性說明在帝都學過了，不要再教一次 */
+           'inn_tip_knock','inn_tip_sit','inn_tip_sleep',
+           /* ⚠⚠⚠ 這一支就是 ep_arrive 的鑰匙，漏了整段抵達不演（見上面的說明） */
+           'belisar_noland_talk'],
+    enter:'town', town:'eastport' },
 ];
 
 /* ══⚠⚠⚠ **試飛的預設進度**（ver -1359，Ray：「試飛默認為 s8 瓦努努開啟後的
