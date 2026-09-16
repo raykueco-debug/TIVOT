@@ -565,6 +565,16 @@ def main():
                          '目前靠「連敗三次抬回旅店」兜底，不會真的卡死，但這違反'
                          '「入口不會有戰鬥」（Ray, ver -698）' % (tid, eid, i))
 
+        # ══⚠⚠⚠ **強制轉場（`gates`）的台詞也要驗**（ver -1395）══
+        #   它掛在**城**上、不在任何節點的 `acts` 裡 —— 所以 -424 加的那一支掃不到它。
+        #   ⚠ 這個洞是實測抓到的：美術把 `018-anyahide` 改號成 `019-anyahide`，
+        #     而 `ep_day2` 那一段（＝一個 gate）還指著舊名 —— **lint 全綠**，
+        #     要等玩到隔天早上那一幕才會發現插圖不出來（§6.5.4 的 ver -433 同一個坑）。
+        #   ⚠ `stage1` 是「只有一項的 gates」（modules/town.js 的舊名），一起驗。
+        for i, g in enumerate((town.get('gates') or []) + ([town['stage1']] if town.get('stage1') else [])):
+            if g.get('lines'): check_lines('%s.gates[%d]' % (tid, i), g['lines'])
+            if g.get('goto') and str(g['goto'])[0] != '@' and g['goto'] not in nodes:
+                err('%s.gates[%d]：goto 指到不存在的節點 %s' % (tid, i, g['goto']))
         # 傍晚那一格有**兩句**（ver -427）：走完了 `bySeen`／時間到了 `byTime`。
         ev = town.get("evening") or {}
         for k in ('bySeen', 'byTime'):

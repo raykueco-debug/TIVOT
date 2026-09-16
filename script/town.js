@@ -4368,7 +4368,9 @@ export const TOWNS = {
            所以四拍各掛 `onlyIf` 就夠，不必再寫互斥判斷（鐵律 7）。
            ⚠ 四個都不成立也可以（既沒約會也沒去大學）—— 那就直接跳到合流，
              那是對的：沒有那一段互動就沒有那一句玩笑。
-         ⚠⚠ **安雅躲在主角身後** `018-anyahide`（ver -1379 交件，Ray：「在索拉娜說
+         ⚠⚠ **安雅躲在主角身後** `019-anyahide`（ver -1379 交件；⚠ 美術 ver -1395
+           把它由 `018-anyahide` **改號**成 019（018 讓給蕾娜的妄想那兩張），Ray：
+           「在索拉娜說
            姐姐可以背你那一拍**後**」）：掛成「姐姐可以背妳喔？」**後面獨立的一拍**，
            而且**不帶 `onlyIf`** —— 它是對那句玩笑的反應，四條分支之前就發生了。
            ⚠ 掛在下一拍上不行：下一拍是分支的第一句（`onlyIf:'ep_date_anya'`），
@@ -4401,7 +4403,7 @@ export const TOWNS = {
         /* 安雅躲到主角身後（無條件：那是對玩笑的反應，不分你前一天約了誰）。
            ⚠ `cgPan:'up'` ＝**由下而上**平移（ver -1384，Ray 指定；與那兩張約會插圖
              的 `'down'` 相反）。 */
-        { speaker:'ANYA', text:'', cg:'018-anyahide', cgNoTime:true, cgPan:'up' },
+        { speaker:'ANYA', text:'', cg:'019-anyahide', cgNoTime:true, cgPan:'up' },
         /* ── 分支 1：前一天約了安雅 ── */
         Object.assign(sor('surprised','啊！奸詐！'), { onlyIf:'ep_date_anya' }),
         Object.assign(any('makeface',''),           { onlyIf:'ep_date_anya' }),
@@ -5023,6 +5025,21 @@ export const TOWNS = {
     entry: 'entry',
     wilderness: true,
     storyExplore: true,
+    /* ══ 小地圖（ver -1395，美術交件）══════════════════════════════════════
+       6 格全部有點。
+       ⚠⚠ 座標**照抄** `resources/map/_spots_plainsroad.json`（`tools/map_layout.py` 從
+         `script/town.js` 的連線算出來的那一份）—— 一個數字都不要用眼睛估：
+         圖上那顆點與這裡的數字是**同一次算出來的**，才不會走鐘（憲法 §6.5.4.4）。
+       ⚠ 這張**有迷霧**（城上沒寫 `mist:0`）：沒走到的格子蓋在整片黑霧底下，
+         走過的地方才化開（ver -1392）；全部踩過霧就整片撤掉（ver -1393）。
+       ⚠ 第一次上線不掛 `?v=`（新增不是同名覆蓋）。 */
+    map: {
+      img: 'resources/map/map_plainsroad.webp',
+      spots: {
+        beacon:[0.3230, 0.5740], entry:[0.4950, 0.7820], ravine:[0.4910, 0.2320],
+        sea:[0.4950, 0.3910], stone:[0.4680, 0.5760], well:[0.7380, 0.4160],
+      },
+    },
     nodes: {
       /* 道口：古道自東泊的丘陵下來，遠處右緣看得到海灣。**只有兩條路**。 */
       entry:  { bg:'Plains_Entry',  name:'平原古道　道口',   rest:true, noWild:true,
@@ -5355,6 +5372,33 @@ export const TOWNS = {
     storyExplore: true,   // 不是城：女角不排外出行程（§6.5.4.2）
     wilderness: true,     // 野外的路沒有門可以關（19:00 全域打烊不罩）
     stepMin: 10,          // 遺蹟那一級（ver -917）
+    /* ══ 小地圖（ver -1395，美術交件）══════════════════════════════════════
+       38 格全部有點（38 顆點全部有格，實測對得上）。這張圖是紅點（王座徘徊者）的舞台
+       —— ver -1390 那顆點做好的時候這張圖還沒交，所以一直看不到。
+       ⚠⚠ 座標**照抄** `resources/map/_spots_belisar.json`（`tools/map_layout.py` 從
+         `script/town.js` 的連線算出來的那一份）—— 一個數字都不要用眼睛估：
+         圖上那顆點與這裡的數字是**同一次算出來的**，才不會走鐘（憲法 §6.5.4.4）。
+       ⚠ 這張**有迷霧**（城上沒寫 `mist:0`）：沒走到的格子蓋在整片黑霧底下，
+         走過的地方才化開（ver -1392）；全部踩過霧就整片撤掉（ver -1393）。
+       ⚠ 第一次上線不掛 `?v=`（新增不是同名覆蓋）。 */
+    map: {
+      img: 'resources/map/map_belisar.webp',
+      spots: {
+        altar:[0.8309, 0.9131], antecham:[0.3728, 0.1359], bellroom:[0.7207, 0.5260],
+        bonerack:[0.8282, 0.6138], cages:[0.3756, 0.6979], candlewalk:[0.8292, 0.7636],
+        capstan:[0.6083, 0.6942], courtyard:[0.0559, 0.3960], crown:[0.2498, 0.0685],
+        culvert:[0.4930, 0.6210], dragonrace:[0.7200, 0.4575], dragstair:[0.3732, 0.2535],
+        draincliff:[0.8237, 0.4571], drywell:[0.1450, 0.2544], entrance:[0.6087, 0.9161],
+        floodway:[0.8301, 0.8377], forge:[0.2572, 0.2559], foyer:[0.6085, 0.8418],
+        greathall:[0.4882, 0.4585], guardhall:[0.3745, 0.3905], incense:[0.2588, 0.4028],
+        lamphall:[0.6076, 0.4580], mirrorpool:[0.3751, 0.6128], mirrorway:[0.8288, 0.6854],
+        muralwalk:[0.2579, 0.3308], offering:[0.4895, 0.0644], oldtomb:[0.4935, 0.6969],
+        ossuary:[0.9290, 0.4562], pillars:[0.6079, 0.5343], rooffall:[0.1448, 0.3318],
+        stairwell:[0.8243, 0.5246], starroom:[0.2574, 0.1888], stelae:[0.4940, 0.7671],
+        stephall:[0.6084, 0.7651], throne:[0.3724, 0.0654], trihall:[0.3747, 0.4759],
+        wardtomb:[0.9297, 0.5277], waterjail:[0.6081, 0.6132],
+      },
+    },
     nodes: {
       throne:    { bg:'Belisar_ThroneHall', name:'貝利薩爾遺址　王座廳', noTime:true, exits:{ down:'antecham' } },
       crown:     { bg:'Belisar_CrownRoom', name:'貝利薩爾遺址　寶冠室', noTime:true, exits:{ right:'antecham' } },
