@@ -411,7 +411,9 @@ export const DRAGON_LINES = {
       sor('furiousq','啊——！我受不了了！'),
       sor('furiousq','我要把那隻小偷龍烤來吃！'),
       nou('shocked2','禍魘不能吃啦！'),
-      nou('hungry',''),
+      /* ⚠ ver -1421（Ray：「諾薇兒說禍魘不能吃的時候，下一個 hungry 要播肚子餓音效」）
+         —— 這一拍**沒有台詞**（只有立繪），聲音就是那句沒說出口的話。 */
+      Object.assign(nou('hungry',''), { se:'Se_Tummy' }),
       any('nervous','肚子，餓了？'),
       nou('lookaway','不是那樣啦——今天實在走太多路了！'),
     ] },
@@ -422,10 +424,25 @@ export const DRAGON_LINES = {
       ren('thinking','牠在消耗我們體力。'),
       nou('cringe','那怎麼辦？'),
       ren('command','把他往死胡同逼！'),
-      sor('guard','交給我！'),
+      /* ══⚠⚠ **「交給我！」以後開小地圖，龍出現在當前格的隔壁任一位置**
+         （ver -1421，Ray 交辦）══
+         · `map:true` ＝這一拍把小地圖攤開（演出模式，不吃點擊；同安雅指路那一段）
+         · `flags:['bl_dragon_seen']` ＝**從這一刻起牠在圖上看得見**
+           —— `dragonAtNode()` 就是看這一支旗（在那之前照 Ray 的原話是「瞎找」）
+         ⚠⚠ 「擺到隔壁」由 `modules/town.js` 的 `dragonPlaceNear(nodeId)` 做
+           （鐵律 7：牠在哪一格只有那一支在答）—— 這裡只負責**讓它看得見**。
+         ⚠ 下一句「那氣味我記住了！」**演在地圖上**（Ray 指定）：地圖是持續狀態，
+           攤開之後一直在，段落講完才自己收（`clearCast`）。 */
+      Object.assign(sor('guard','交給我！'), { map:true, flags:['bl_dragon_seen'] }),
       sor('back','那氣味我記住了！'),
     ] },
   ],
+  /* ══⚠⚠ **第五場以後**（ver -1421，Ray：「從開圖開始起算超過 5 場…」）══
+     前四場是寫好的稿（各有旗、只演一次）；之後每一次追上牠就用這一段。
+     ⚠ **沒有 `flag`** ＝可以重複（`actDue` 只跳過旗立了的段落）。不會無窮迴圈：
+       打完牠就跑掉了（`dragonFleeStep`），玩家得再追上才會再觸發。
+     ⚠ Ray 沒給這幾場的台詞 —— 只有戰鬥拍，不替他編。 */
+  chaseMore: { sides:{ RENNA:'L' }, lines:[ { battle:'bl_chase' } ] },
   /* ⑤⑥ 王座廳：**第二型態**決戰 → 轉空中 → 索菈娜索敵後出現 → 空中戰
      （Ray：「逼到王座廳以後第二型態決戰　戰勝後轉空中　索拉娜索敵後出現　展開空中戰」）。
      ⚠ 兩場在**同一段**裡：中間那幾拍是同一段演出（上船、索敵），拆成兩個 act

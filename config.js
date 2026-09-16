@@ -69,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.17-1420';
+export const VERSION = 'ver 2026.09.17-1421';
 
 export const GAME_CONFIG = {
 
@@ -3503,6 +3503,12 @@ export const GAME_CONFIG = {
          ⚠ 同一趟重量既有的兩支當校準點：TaishoRoman 建議 0.90（現值 0.897）、
            Suspense6 建議 1.40（現值 1.401）—— 方法自洽，所以下面三支直接採用。 */
       peritunematerial_numina_loop:0.98,
+      /* 追擊戰（ver -1421 換成主體檔，重量）：本機 BS.1770 −6.2 LUFS／手機模型 −9.0
+         ⇒ 平均 **−7.60**；錨 `bgm_battle`（平均 −9.90 × 0.849 ⇒ 實效 −11.32）
+         ⇒ 10^((−11.32+7.60)/20) ＝ **0.651**。峰值 0.0 dBFS × 0.651 ＝ −3.7 dBFS，未觸頂。
+         ⚠ `..._loop_intro` 那一列留著：檔案還在庫裡，日後真的要用 intro→loop
+           的接法時它的響度已經量過了。 */
+      peritunematerial_gothic_dark_loop:0.651,
       peritunematerial_gothic_dark_loop_intro:0.84,
       peritunematerial_irregular_loop:1.00,
       /* 王座徘徊者的放光音（ver -1351）。⚠ 鑰匙是**檔名**（去副檔名、轉小寫）——
@@ -4286,7 +4292,11 @@ export const ASSETS = {
      ⚠⚠⚠ **`gothic` 只有 7.7 秒**（檔名就寫著 `loop_intro`，而庫裡沒有對應的
        loop 本體）—— 整段追擊＋上船都循環這 7.7 秒會很明顯。已回報 Ray。 */
   bgm_numina:       "resources/audio/bgm/PerituneMaterial_Numina_loop.m4a",                 // 貝利薩爾古城（ver -1350）
-  bgm_gothic:       "resources/audio/bgm/PerituneMaterial_Gothic_Dark_loop_intro.m4a",      // 追擊戰（ver -1350）
+  /* ⚠⚠ ver -1421（Ray：「追擊戰音樂改用這個 PerituneMaterial_Gothic_Dark_loop」）：
+     原本指的是 `..._loop_intro` —— 那是 intro／loop 成對檔裡的 **intro 那一半**，
+     只有 **7.78 秒**而且末秒仍滿音量沒收尾，所以聽起來是一段八秒的東西一直重播
+     （-1420 Ray 回報「追擊戰的音樂是壞的」）。主體檔到了，改指它。 */
+  bgm_gothic:       "resources/audio/bgm/PerituneMaterial_Gothic_Dark_loop.m4a",            // 追擊戰（-1350；-1421 改指主體檔）
   bgm_irregular:    "resources/audio/bgm/PerituneMaterial_Irregular_loop.m4a",
   bgm_prairie:      "resources/audio/bgm/PerituneMaterial_Prairie4_loop.m4a",                // 平原古道（ver -1408，Ray 指定）
   bgm_piratebattle: "resources/audio/bgm/bgm_piratebattle.m4a",
