@@ -4800,6 +4800,53 @@ export const TOWNS = {
            ⚠ 這幾段都在 `ep_renna_night` 那一段**之前**取到，所以先演約會收尾、
              下一次進旅店才輪到蕾娜 —— 稿上的順序就是這樣。 */
         acts:[
+        /* ══⚠⚠⚠ **那一夜：奪回髮飾**（ver -1388，Ray 交稿）══════════════════════
+           `needTier:{renna:3}` ＝ **蕾娜 T3 才有這一段**（Ray：「若蕾娜 T2 隔日正常
+           探索／若蕾娜 T3 …」）。T2 那一條**什麼都不必寫** —— 睡一覺就是隔天。
+           ⚠⚠ 它掛在**走進旅店**那一次抵達，不掛時刻：`ep_bel_back` 演完玩家本來就
+             要回旅店休整，而**睡覺鈕一按就跳到隔天 07:00**（`sleepFlag` 已經開著）
+             —— 掛 `hourOfDay` 等於讓玩家先睡過去再也演不到。
+           ⚠ 站位沿用 `ep_day2` 那一幕的安排（只覆寫 `RENNA:'L'`，其餘吃本位 ⇒
+             左：蕾娜・諾薇兒／右：索菈娜・安雅，兩邊各兩人，§6.5）。
+           ⚠⚠ **稿上幾處說話者與立繪對不上，照立繪判**（同 -1346 安雅那三拍的作法）：
+             「諾：『諾薇兒，安靜下！』」配 `Sorana_*` ⇒ 索菈娜；「安：『快下降！』」
+             配 `Nouvelle_*` ⇒ 諾薇兒。那兩處在下一段（追逐）裡。
+           ⚠ 四個表情稿上有、線上還沒有圖 ⇒ **用最近的既有差分頂著**（Ray：「立繪先沿用」）：
+             蕾娜 `shock`→`shocked`／`think`→`thinking`、索菈娜 `laughbig`→`laugh`、
+             諾薇兒 `shock2`→`shocked2`。圖交了再換回來。
+           ⚠ `goto:'@belisar:greathall'` ＝停船、進主廳（追逐那一段接在那裡）。 */
+        {  flag:'ep_night_raid', need:'ep_bel_back', needTier:{ renna:3 },
+                 goto:'@belisar:greathall', sides:{ RENNA:'L' }, lines:[
+          sor('tease','想去哪啊？'),
+          { speaker:'PLAYER', blank:true },
+          sor('tired','少來了，大家想的都一樣啦？'),
+          nou('steady','蕾娜小姐重要的髮飾，一定要奪回來！'),
+          any('steady','嗯、嗯！'),
+          ren('tired','……不要鬧了。'),
+          nou('surprise','蕾娜小姐！'),
+          ren('lookawaytalk','不要為了那種東西增加隊伍風險。'),
+          nou('shocked','可是……！'),
+          ren('smile','謝謝妳們，有這份心意我很感激。'),
+          ren('argue','可是——喂你倒是聽我說話啊！'),
+          { speaker:'PLAYER', blank:true, se:'se_steps' },
+          /* 「臉紅。」＝**只有立繪沒有台詞**的演出拍（台上有人 ⇒ 點擊推進，§6.5 -628）。 */
+          ren('shockedCalm',''),
+          ren('argue','不可以……你去的話，我扣你分喔！'),
+          sor('tease','哈，我可沒有分給妳扣喔。'),
+          ren('meltdown','……'),
+          sor('side','坦率點啦，別老端著貴族架子。'),
+          ren('argue','我哪有貴族架子！'),
+          sor('remind','不敢麻煩別人，那也是架子啊。'),
+          sor('idea','再說了，白天那傢伙那麼弱，沒什麼好怕的啦。'),
+          nou('expain2','而且……現在整個中庭水都灌進來了，說不定……'),
+          sor('amazed','就可以停船了？諾薇兒，天才？'),
+          any('clap',''),                 // 面無表情鼓掌
+          nou('awkward',''),
+          ren('crying','你們真是……'),
+          { speaker:'PLAYER', blank:true, se:'se_steps' },
+          sor('smirk','怎麼那傢伙好像比妳還急呢？'),
+          ren('lookfaropen',''),          // 遠望
+          ] },
           /* ── 諾薇兒：20:00 之後 ── */
           { flag:'ep_end_nou', need:'ep_date_nou', hourOfDay:20, lines:[
             nou('bigsmileclose','謝謝你陪我，今天很開心。'),
@@ -5344,6 +5391,30 @@ export const TOWNS = {
                所以玩家被推回來的那一次抵達就演這一段。
              ⚠ 收尾 `goto:'@eastport:square'` ＝回東泊；`ep_belisar_done` 掛在
                倒數第二拍（出航的 `hold` 讀它）。 */
+          /* ══⚠⚠⚠ **那一夜的收尾：髮飾奪回來了**（ver -1388，Ray 交稿）══════════
+             ⚠⚠⚠ **`renna_t4_ok` 就插在這一段的最後** —— 那是 T4 的鎖
+               （`script/progress.js` 的 `{ who:'renna', need:'renna_hairpin_lost',
+                until:'renna_t4_ok', maxTier:3 }`，ver -1343 就寫好了、一直沒有人插）。
+               Ray：「經過此事件才能上 T4，當前沒上 T4 無所謂，數字將來上得去。」
+               ⇒ 這裡**不加好感**，只是**把天花板打開**（鐵律 9：一個狀態一個擁有事件）。
+             ⚠ 稿上「（以下開始回復有髮飾蕾娜立繪）」—— 無髮飾那一組還沒畫
+               （Ray：「立繪先沿用」），所以這一版沒有換圖這件事，整段都是現有的立繪。
+             ⚠ `need:'bl_night_sky'` ＝空中那一場打完（追逐那一段還沒接，見回覆）。
+             ⚠ 排在 `ep_bel_court` **前面**：`actDue` 由上往下取第一個成立的，
+               而這一段的 `need` 更晚才成立 —— 兩者不會互相搶。 */
+          { flag:'bl_night_done', need:'bl_night_sky',
+            goto:'@eastport:square', sides:{ RENNA:'L' }, lines:[
+            ren('stare','真的，非常謝謝你們大家。'),
+            sor('laugh','還是這樣看起來比較習慣。'),      // 稿上 laughbig（還沒有圖）
+            nou('awkward',''),
+            any('smileshy','太好了'),
+            sor('side','不過最辛苦的是這傢伙吧。'),
+            nou('shocked2','全身都濕透了！'),             // 稿上 shock2（還沒有圖）
+            sor('tease','誰要那隻小偷龍偏偏掉水裡呢？'),
+            { speaker:'PLAYER', blank:true },
+            ren('blushed','……'),
+            Object.assign(ren('blushed','嗯，謝謝。'), { flags:['renna_t4_ok'] }),
+          ] },
           { flag:'ep_bel_court', need:'ep_bel_altar',
             goto:'@eastport:square', sides:{ RENNA:'L' }, lines:[
           nou('cringe','中庭都淹滿水了……'),
