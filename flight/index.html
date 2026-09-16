@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1373"></script>
+<script src="../orientation.js?v=1374"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1373');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1374');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1373");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1373");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1374");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1374");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1373");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1373");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1374");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1374");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -620,25 +620,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1373" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1374" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1373" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1373" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1373" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1373" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1373" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1373" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1373" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1373" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1373" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1373" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1374" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1374" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1374" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1374" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1374" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1374" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1374" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1374" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1374" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1374" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1373" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1374" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1373" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1374" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -659,11 +659,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1373"></script>
+<script src="settlement.js?v=1374"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1373"></script>
+<script src="talks.js?v=1374"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -715,7 +715,7 @@ const COLOR_URL  = 'silvermoon_terrain.png'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1373';
+const FLIGHT_VER = 'ver -1374';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -1063,6 +1063,10 @@ let HGT=null, COL=null, SLX=null, SLY=null, RIV=null;
    規格那組比例是給**可縮放的地圖**用的（都市 I 佔畫面一半＝放大到城市視角），
    放到大陸尺度上必須另外定。這裡以「帝都直徑約 44 地圖像素」為準。 */
 const SETTLE_R = { city1:22, city2:15, city3:10, town:6, village:3.5 };
+/* 沒有 `t` 的地點（PLACES 那一族：遺蹟、古墓、森林）用這一個半徑。
+   ⚠ 收成名字是因為**降落半徑的下限也是從它算出來的**（見 landRadius）——
+     以前它是 `townEdgeR` 裡一個裸的 `||6`，抄第二份必然走鐘（鐵律 7）。 */
+const SETTLE_R_DEFAULT = 6;
 /* ⚠ sea：向海方位（弧度）。臨海聚落**必須給**——棧橋固定生在區域 +x 側，
    不給就會指向內陸（實測：漏給的三座棧橋入海數都是 0）。
    值是量出來的：取城區周圍海格的平均方向。改地形就要重量。 */
@@ -2823,7 +2827,7 @@ function buildRoads(){
    ⚠ 取兩者較大：SETTLE_R 是程序生成的城區半徑（郊區、道路都吃它），
      planW*0.42 是手繪平面圖上市區核心的外緣（城核約佔圖寬 3/4）。 */
 function townEdgeR(S){
-  return Math.max((SETTLE_R[S.t]||6)*MAP_SCALE, (S.planW||0)*0.42);
+  return Math.max((SETTLE_R[S.t]||SETTLE_R_DEFAULT)*MAP_SCALE, (S.planW||0)*0.42);
 }
 
 /* ── 鐵路網 ─────────────────────────────────────────────────────────
@@ -17917,7 +17921,27 @@ function drawSettlements3D(scaleH,horizon,sinp,cosp){
    實際玩起來是「一直錯過、繞回來再試一次」。放到 **3.2 倍**＝城的上空一大片都算。
    ⚠ 這個數字是**判定半徑對市區外緣的倍率**，不是絕對距離 —— 城越大範圍越大，
      那正是「飛到那座城上空」的意思。 */
-const LAND_K = 3.2;           // 判定半徑＝市區外緣的幾倍
+const LAND_K = 3.2;           // 判定半徑＝市區外緣的幾倍（**只給沒有手繪底圖的地點**，見 landRadius）
+/* ══⚠⚠ **有手繪底圖的城：判定圈就跟底圖一樣大**（ver -1373，Ray：「帝都降落判定
+     範圍太大，跟底圖一樣大就好」）══
+   `townEdgeR` 對這幾座城取的是 `planW*0.42`，再乘 LAND_K 3.2 ＝ **1.34 個底圖寬**
+   —— 帝都的底圖寬 1250（半徑 625），判定半徑卻是 **1680**：船離城心快一公里、
+   畫面上連城都看不到，降落鈕就亮了（實測 -1373：距離 984 時 nearestTown 已回帝都）。
+   ⚠⚠ **這不是把 ver -597 改回去**：-597（Ray：「可降落座標範圍加大，不要求飛到
+     正上方」）針對的是**沒有底圖的小聚落** —— 它們的 `townEdgeR` 走的是
+     `SETTLE_R*MAP_SCALE` 那一支，**這一版一個字都沒動**，照舊 3.2 倍。
+     手繪底圖那幾座本來就不需要放寬：底圖自己就是一大片。
+   ⚠⚠ 下限 `LAND_R_MIN` 不是新的魔術數字，它就是**沒有底圖的地點現在的半徑**
+     （`SETTLE_R_DEFAULT 6 × MAP_SCALE 20 × LAND_K 3.2` ＝ 384，貝利薩爾用的
+     正是它，§6.8.1 實測可用）。有它，底圖小的村子（夏爾村 planW 360 ⇒ 半徑 180）
+     才不會退回 -597 在抱怨的「一直錯過、繞回來再試一次」。
+   ⚠ 判定半徑只有這一支在算（鐵律 7）：`nearestTown` 的兩個迴圈都問它，
+     `doLand` 吃的是 `landTarget`（＝ nearestTown 的結果），所以不會有第二份。 */
+const LAND_R_MIN = SETTLE_R_DEFAULT*MAP_SCALE*LAND_K;   // 384
+function landRadius(S){
+  return (S && S.planW) ? Math.max(S.planW*0.5, LAND_R_MIN)   // 有底圖：跟底圖一樣大
+                        : townEdgeR(S)*LAND_K;                // 沒底圖：照舊放寬
+}
 let landTarget=null, landOn=false;
 /* ══⚠⚠⚠ **章節還沒到的地點，降落鈕就不要亮**（ver -1362，Ray：「S8 之前不應該
      顯示古城可進入，**四大遺跡都應該這樣處理**」）══
@@ -17939,7 +17963,7 @@ function nearestTown(){
   for(const S of SETTLEMENTS){
     if(!S.town) continue;
     const d=Math.hypot(cam.x-S.x*MAP_SCALE, cam.y-S.y*MAP_SCALE);
-    if(d < townEdgeR(S)*LAND_K && d<bd){ bd=d; best=S; }
+    if(d < landRadius(S) && d<bd){ bd=d; best=S; }
   }
   /* ver -858：帶 `town` 的 PLACES 也是著陸點（夏爾森林 —— 不進 SETTLEMENTS，
      那張表會長出道路與程序建築）。`flag`＝發現了才降得下去。 */
@@ -17952,7 +17976,7 @@ function nearestTown(){
        背著崖，正面那一側才飛得近。判定只有這一處（鐵律 7）。 */
     const L=P.land||P;
     const d=Math.hypot(cam.x-L.x*MAP_SCALE, cam.y-L.y*MAP_SCALE);
-    if(d < townEdgeR(P)*LAND_K && d<bd){ bd=d; best=P; }
+    if(d < landRadius(P) && d<bd){ bd=d; best=P; }
   }
   return best;
 }
