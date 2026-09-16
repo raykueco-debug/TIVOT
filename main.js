@@ -213,7 +213,7 @@ SFX.setMenuClick(asset('se_general_click'), sfxGain('se_general_click'));
    ⚠⚠⚠ **ver -1354 起「其餘全部背景補載」那一半已撤**（Ray：「首頁只讀首頁跟挑戰的
      資源」）：這張表現在**只當開機的排除名單**，不再有人拿它去背景抓 ——
      其餘的曲子由用到它的那個畫面自己那道門載（城鎮 `loadSpec`／劇情 `preloadStory`／
-     戰鬥 `enterBattleAudio`）。
+     戰鬥 `enterBattleAssets`）。
    ⚠ 不會壞：`playBgm` 自己 `ensureBlob` 隨叫隨載，沒載完頂多晚幾拍起播
      （這正是 -344 把結算／失敗那幾首移出去時就驗過的行為）。
    ⚠ 名單用**排除法**（除了 bgm_home 以外都算晚載）不是列舉：日後加一首新曲子，
@@ -348,11 +348,16 @@ function battleAudioSet(battleId){
   return out;
 }
 /* 進戰鬥：放掉上一個畫面的音訊，只留這一場要的，然後把缺的抓進來。 */
-function enterBattleAudio(battleId){
+/* ⚠ ver -1414 由 `enterBattleAudio` 改名成 `enterBattleAssets`：它現在**連圖一起**
+   （見下），名字再叫 Audio 就是說謊。順序照 §6.6：**音效 → 圖 →（音樂隨 BGM 自己來）**。 */
+function enterBattleAssets(battleId){
   let set=[]; try{ set = battleAudioSet(battleId); }catch(e){ console.warn('[load] battleAudioSet', e); return; }
   try{ const r = SFX.releaseAudio(set);
        if(r && (r.sfx||r.bgm)) console.log('[load] 進戰鬥，放掉音訊', r, SFX.audioHeld()); }catch(_){}
   try{ SFX.preload(set).catch(()=>{}); }catch(_){}
+  /* 這一場的敵人立繪（ver -1414）：**推棺之前**就暖起來，門一開牠已經在那裡。
+     說明在 `combat.warmBattleImage`。 */
+  try{ combat.warmBattleImage(battleId); }catch(_){}
 }
 
 /* ══⚠⚠⚠ 圖只載「這個畫面要的」（ver -1295，讀取分工；說明見 config 的 `HOME_IMG`）══
@@ -651,7 +656,7 @@ window.__tivotFlight = {
          交棒那一格紋章會忽然變大（鐵律 7）。 */
     story.showKerbGate(req.geom);
     closeFlightFrame();
-    enterBattleAudio(id);   // 戰鬥那道門（ver -1354）：放掉上一個畫面的，只留這一場要的
+    enterBattleAssets(id);   // 戰鬥那道門（ver -1354；-1414 起連圖一起）：放掉上一個畫面的，只留這一場要的
     story.setBattleCueId(id);   // 撞頂那一拍的曲子照這一場的卡挑（ver -746：不設就退回 bgm_battle，羽蛇的 EpicBattle 放不出來）
     story.playKerberosFromRisen(
       /* `scripted` 由飛行頁宣告（ver -493：隨機遭遇＝false，劇本遭遇＝true）——
@@ -758,7 +763,7 @@ function bootBattleGate(req){
     document.removeEventListener('pointerdown', open);
     const t=$('gateTip'); if(t && t.parentNode) t.parentNode.removeChild(t);
     SFX.unlock();                         // 這一頁唯一的使用者手勢
-    enterBattleAudio(req.battle);         // 戰鬥那道門（ver -1354）
+    enterBattleAssets(req.battle);        // 戰鬥那道門（ver -1354；-1414 起連圖一起）
     story.setBattleCueId(req.battle);     // 同橋接那一條（ver -746）：曲子照這一場的卡挑
     story.playKerberosFromRisen(
       ()=>{ hideHome('bootBattleGate/kerb');
@@ -821,14 +826,14 @@ window.addEventListener('pagehide', refreshBoot);
       if(k.indexOf('bgm_')===0){ if(LATE_BGM_PATHS.indexOf(v)<0) bgm.push(v); }
       /* ⚠⚠ 只收**這個畫面要的**（ver -1354，見上方 `isHomeSfx`）：其餘由
          用到它的那一個畫面自己那道門去載（城鎮 `loadSpec`／劇情 `preloadStory`／
-         戰鬥 `enterBattleAudio`／飛行是另一個 document）。 */
+         戰鬥 `enterBattleAssets`／飛行是另一個 document）。 */
       else if(isHomeSfx(k)) sfx.push(v);
     }
   }
   /* ⚠⚠⚠ **ver -1354：`story.seSources()` 整包從這一批移出去了** ——
      **不是取消等待，是換人等**：每一幕自己的 `ln.se` 由 `preloadStory` 無時限等完
      （-430 起閘門一律等 `sfxDone`），`se_steps`／`se_Fall` 就在開場那一幕的拍子上；
-     城鎮走 `town.loadSpec` → `loadScene`；戰鬥走 `enterBattleAudio`。
+     城鎮走 `town.loadSpec` → `loadScene`；戰鬥走 `enterBattleAssets`。
      ⚠ -433 那段註解（「排第一也沒用，因為那一批根本沒有它們」）講的是**當時**
        `preloadStory` 還罩著總上限的情況 —— 那個前提 -430 已經拆掉了。 */
   const total = imgs.length + sfx.length + bgm.length;   // 進度圈只算第一段 —— 誠實跑完，不靠保底放行
@@ -1121,7 +1126,7 @@ function launchBattle(opts){
      ⚠ 劇情場次**不播**（Ray 指定）：那一場的轉場是 Kerberos 之門，門有自己的
        撞擊／齒輪／開門三支音；再疊一聲神楽鈴等於兩套儀式撞在一起。 */
   if(!(opts && opts.instant)) SFX.play(asset('sfx_startbt'), sfxGain('sfx_startbt'));
-  enterBattleAudio((opts&&opts.battle)||null);   // 戰鬥那道門（ver -1354）
+  enterBattleAssets((opts&&opts.battle)||null);  // 戰鬥那道門（ver -1354；-1414 起連圖一起）
   SFX.playBgm(asset('bgm_battle'), { fadeOutMs:800, delayMs:1000, volume: bgmVol('bgm_battle') });
   /* 劇情叫起來的那一場（ver -329（-893 前用詞））：**跳過櫻花過渡禎，直接開戰**。
      ⚠ 因為那一場的轉場是「Kerberos 之門拉開」，門縫裡要露出的是**已經在跑的戰鬥畫面**；

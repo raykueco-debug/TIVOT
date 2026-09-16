@@ -1324,7 +1324,28 @@ function applyPersist(line){
          縮放留著會跟到下一張圖上 —— 同「誰收它」那一族的坑（§6.5.4 的檢查表）。 */
     { const el=$('storyCgBack'), k=+line.cgBackScale||1;
       if(el){ el.style.transformOrigin='center bottom';
+              el.style.setProperty('--rise-k', k);   // 降臨那組 keyframes 的收尾尺寸（ver -1414）
               el.style.transform = k===1 ? '' : 'scale('+k+')'; } }
+    /* ══⚠⚠⚠ **降臨演在劇情這一側**（ver -1414，Ray：「戰鬥中不播降臨，劇情出場時播」）══
+       `cgBackRise:true` ＝這一拍讓中景層跑**戰鬥那一套** `enemy-rise`
+       （CSS 是同一組 keyframes，鐵律 8）＋ 著地的那一圈聖光。
+       ⚠⚠ **聲音與震動不在這裡**：那一拍自己的 `se`／`shake` 就是（龍犼＋畫面震），
+         在這裡再播一次 `sfx_saint` 會變成兩個登場音疊在一起。
+       ⚠ 著地光環的延遲寫在 CSS（`.702s`），所以這一側**一個時間常數都不抄**。
+       ⚠ 收尾：動畫跑完拔掉 class（`enemy-rise` 帶 `both` 填充，留著會壓住之後的
+         `transform`／`filter`，同 ver -598 在戰鬥那邊踩過的坑），光環自己移除。 */
+    if(line.cgBackRise && line.cgBack){
+      const el=$('storyCgBack'), st=$('storyStage');
+      if(el){ el.classList.remove('enemy-rise'); void el.offsetWidth;
+              el.classList.add('enemy-rise');
+              el.addEventListener('animationend', function off(e){
+                if(e.animationName!=='enemyRise') return;
+                el.removeEventListener('animationend', off);
+                el.classList.remove('enemy-rise'); }); }
+      if(st){ const ring=document.createElement('div');
+              ring.className='enemy-land'; st.appendChild(ring);
+              setTimeout(()=>ring.remove(), 1500); }
+    }
   }
   if(line.ci!==undefined){ stageCi=line.ci; setImg($('storyCi'), line.ci?SI_DIR+line.ci+'.webp':''); }
   /* 推時鐘（ver -739，Ray：「這一幕結束轉景後…時間是早上八點」）：拍上寫
@@ -1492,10 +1513,10 @@ const SE_FILES=[
   'se_ginclick.m4a', 'Se_Tummy.m4a', 'se_metalclip.m4a', 'se_SailorShout.mp3',
   /* stage7・木雅克神殿（ver -922，Ray 交件）：古代機械開門的金屬聲、深處的禍魘咆哮。 */
   'se_metalopen.m4a', 'se_monsterroardeep.m4a',
-  /* ⚠⚠ `se_waterfall`（ver -1413，Ray：「逃了以後的震動要播破瓦聲跟流水聲」）——
-     **這一支是我程序合成的暫代品**（粉紅噪音分低頻隆隆＋中高飛濺，各自慢速起伏，
-     0.25 秒湧上來、尾端 0.5 秒收）。要換成真的錄音就**同名覆蓋**，
-     ⚠ 那時記得重量 `fileGain`（§6.6：一支音檔只有一個響度）。 */
+  /* `se_waterfall`（ver -1413 接線、**-1414 Ray 交了真檔**）——
+     交來的是 256 kbps 的 mp3，照 §6.6 轉成 AAC 96k（167→61 KB），
+     原檔進 `resources/audio/se/_raw/`（底線開頭＝不會被載入）。
+     ⚠ -1413 我程序合成的那支暫代品已走 `tools/recycle.sh` 進回收區。 */
   'se_waterfall.m4a',
   'se_ui_kagurabell.m4a', 'se_ui_pageflip.m4a', 'se_ui_sortie.m4a', 'se_walk.m4a',
   'se_weapon_guard.m4a', 'se_weapon_mg_squall.m4a', 'se_weapon_pistol_01.m4a',
@@ -1902,7 +1923,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1413';
+const KERB_V='?v=1414';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -2794,7 +2815,9 @@ function renderLine(){
          直接拿掉最乾淨（Ray：「用加載頁洗掉」）。 */
     flushCgFade(); stageCg=null; setImg($('storyCg'), '');
     stageCgBack=null; setImg($('storyCgBack'), '');   // 中景也是持續狀態（ver -870）
-    { const el=$('storyCgBack'); if(el) el.style.transform=''; }   // 連縮放一起收（ver -1413）
+    { const el=$('storyCgBack');                                   // 連縮放與降臨一起收（-1413／-1414）
+      if(el){ el.style.transform=''; el.style.removeProperty('--rise-k');
+              el.classList.remove('enemy-rise'); } }
     clearCast(); hideBubble();
     if(flightOpener){ endScene(); try{ flightOpener(line.goFlight); }catch(_){} return; }
     console.info('[story] 沒有註冊飛行頁開啟器，跳過 goFlight');

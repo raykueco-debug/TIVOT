@@ -339,16 +339,27 @@
        ③ **落地那一刻的聖光**：`brightness` 在 78% 衝到 1.45 再收回 1
           （配合 `.enemy-land` 那一圈擴散的光環，見下）。
      ⚠ 失焦與去彩照舊由重到輕 —— 那是「從遠處來」的距離感，不要拿掉。 */
-  #enemyImg.enemy-rise{animation:enemyRise .9s cubic-bezier(.18,.7,.24,1) both;}
+  /* ⚠⚠⚠ **同一套降臨，兩個舞台共用**（ver -1414，Ray：「戰鬥中不播降臨，劇情出場時播」）：
+       · `#enemyImg`    —— 戰鬥上半的敵人立繪（原本的用途）
+       · `#storyCgBack` —— 劇情的中景層（龍在祭壇那一拍降下來）
+     **不要為劇情另寫一份**（鐵律 8）—— 兩份必然走鐘。
+     ⚠⚠ `--rise-k` ＝**落定之後的縮放**（預設 1）。它存在的理由：這組 keyframes 自己
+       寫 `transform`，而 animation 的 transform **蓋過 inline** ＋ `both` 填充
+       ⇒ 沒有它的話，`cgBackScale:0.9`（ver -1413）會在降臨演完那一刻被打回原大小。
+       所有格子都乘上它，收尾才落在該在的尺寸上。 */
+  #enemyImg.enemy-rise,
+  #storyCgBack.enemy-rise{animation:enemyRise .9s cubic-bezier(.18,.7,.24,1) both;}
+  /* ⚠ 中景層的錨點在**腳底**（同 `cgBackScale`）：錨中心的話「落地」會變成往下沉。 */
+  #storyCgBack.enemy-rise{transform-origin:center bottom;}
   @keyframes enemyRise{
-    0%  {opacity:0;   transform:translateY(-7%) scale(1.16);
+    0%  {opacity:0;   transform:translateY(-7%) scale(calc(1.16 * var(--rise-k,1)));
          filter:blur(22px) saturate(.15) brightness(.55);}
     30% {opacity:.85;}
-    62% {opacity:1;   transform:translateY(-1%) scale(1.04);
+    62% {opacity:1;   transform:translateY(-1%) scale(calc(1.04 * var(--rise-k,1)));
          filter:blur(6px)  saturate(.6)  brightness(.9);}
-    78% {opacity:1;   transform:translateY(0)   scale(.985);
+    78% {opacity:1;   transform:translateY(0)   scale(calc(.985 * var(--rise-k,1)));
          filter:blur(0)    saturate(1)   brightness(1.45);}
-    100%{opacity:1;   transform:translateY(0)   scale(1);
+    100%{opacity:1;   transform:translateY(0)   scale(var(--rise-k,1));
          filter:blur(0)    saturate(1)   brightness(1);}}
   /* 著地的光環：由腳底往外擴散的一圈聖光。⚠ 掛在 `#top` 上（要能蓋住整個敵人區），
      `mix-blend-mode:screen` —— 白光疊在暗背景上要用加亮混合，直接畫白色是白貼紙。
@@ -359,6 +370,18 @@
     background:radial-gradient(circle,rgba(255,255,255,0) 58%,rgba(255,247,214,.95) 72%,
                rgba(255,214,120,.35) 84%,rgba(255,214,120,0) 100%);
     animation:enemyLand .62s cubic-bezier(.15,.75,.3,1) both;}
+  /* 劇情舞台那一份（ver -1414）：位置錨**演出區的底**（`--story-top`）而不是 `#top`
+     —— 兩半各用自己的基準（§0.6）。
+     ⚠⚠ **延遲寫在 CSS 不寫在 JS**：`.702s` ＝ `enemyRise` 的 0.9s × 78%（著地那一格），
+       與它**相鄰**才不會走鐘（`modules/enemy.js` 的 `LAND_AT` 是同一個數字，
+       那一邊已經註明「改一邊要改另一邊」）。這樣劇情那一側一個時間常數都不必抄。 */
+  #storyStage .enemy-land{position:absolute;left:50%;
+    top:calc(var(--story-top) * .94);width:10px;height:10px;
+    margin:-5px 0 0 -5px;border-radius:50%;pointer-events:none;z-index:4;
+    mix-blend-mode:screen;
+    background:radial-gradient(circle,rgba(255,255,255,0) 58%,rgba(255,247,214,.95) 72%,
+               rgba(255,214,120,.35) 84%,rgba(255,214,120,0) 100%);
+    animation:enemyLand .62s cubic-bezier(.15,.75,.3,1) .702s both;}
   @keyframes enemyLand{
     0%  {transform:scale(1)  scaleY(.35); opacity:0;}
     18% {opacity:.95;}

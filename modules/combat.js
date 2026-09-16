@@ -2401,6 +2401,23 @@ export function restSettle(title){
      漏了就是把上一格的背景帶進下一場（同 `noSaint` 那條的理由）。 */
 export function setBattleBg(name){ state.battleBg = name || null; }
 /* 降臨等門開（ver -875，見 enemy.holdRise）：combat 只是轉手——main/story 不 import enemy。 */
+/* ══⚠⚠ **推棺之前先把這一場的敵人立繪暖起來**（ver -1414，Ray：「不降臨就是槍棺開
+   的時候就在那裡了，推上前就暖讀圖」）══
+   沒有降臨的怪**不是慢慢浮出來的，是門一開就站在那裡** —— 那就要求圖在門開之前
+   **已經解碼完**。不暖的話它是在 `setEnemy` 那一刻才開始抓，慢網或冷快取下
+   門都開了圖還沒到，玩家看到的是「空的戰場，然後怪啪一聲貼上去」。
+   ⚠ 只 `new Image()` 預熱 HTTP／解碼快取，**不碰 `#enemyImg`** ——
+     誰、什麼時候把圖掛上去，仍然只有 `loadEnemyPortrait` 一支說了算（鐵律 8）。
+   ⚠ 圖是誰問 `enemy.enemyImage`（它會依時段挑 day/night 差分，鐵律 7）——
+     不要在這裡自己拼一次 `asset(en.image)`。 */
+export function warmBattleImage(battleId){
+  try{
+    const B=(GAME_CONFIG.battles||{})[battleId]||{};
+    const en=(GAME_CONFIG.enemies||{})[B.enemy];
+    const u=en && enemy.enemyImage(en);
+    if(u){ const i=new Image(); i.src=u; }
+  }catch(_){}
+}
 export function holdEnemyRise(){ enemy.holdRise(); }
 export function releaseEnemyRise(){ enemy.releaseRise(); }
 /* 這一場是連續戰鬥的**中間一場**嗎（＝不是收段的那一場）。

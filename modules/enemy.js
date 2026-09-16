@@ -501,10 +501,17 @@ function playEntranceSe(key){
      · **降臨** —— 牠每一型態都是從天而降的（照樣要震、要衝擊波）。
      · **淨化** —— 淨化是「散成白光消失」＝死了。這兩型態是**被打退**的，腳本下一句
        就是索菈娜的「喔，逃了！」—— 散白光等於把後面那一場的戲先講完。
-   所以 `multi` 只進這一張表，**不進 `PURIFY_KINDS`**（同 `ship` 的理由：
-   那兩張表分的不是同一刀，不可以合回一份）。
-   ⚠ 最後一型態（`bl_dragon_sky`）仍是 `aerial` —— 那一場才是真的擊墜。 */
-const ENTRANCE_KINDS = { harm:1, slay:1, ship:1, aerial:1, multi:1 };
+   ⚠ 最後一型態（`bl_dragon_sky`）仍是 `aerial` —— 那一場才是真的擊墜。
+
+   ⚠⚠⚠ **ver -1414 更正（Ray：「戰鬥中不播降臨，劇情出場時播」）**：
+     `multi` **兩張表都不進**。-1413 我把它放進登場那一類是錯的 ——
+     牠在劇情裡已經轟轟烈烈降下來過一次了（祭壇那一拍：`cgBackRise` ＋ 龍犼 ＋ 震動），
+     開打再降一次等於同一件事演兩遍，而且第二遍沒有戲劇理由。
+     · **降臨** → 搬到劇情那一側（`story.js` 的 `cgBackRise`，**同一組 CSS keyframes**）
+     · **淨化** → 還是不給（牠是被打退的，不是被打死的）
+   ⚠ 判準因此變成一句話：**「牠是在劇情裡出場的嗎？」**——
+     是的話降臨歸劇情，戰鬥只負責打。野怪沒有劇情出場，照舊在戰鬥裡降。 */
+const ENTRANCE_KINDS = { harm:1, slay:1, ship:1, aerial:1 };
 function isPurify(){
   const en = GAME_CONFIG.enemies[state.currentEnemyKey];
   /* `purgeFx:1`＝卡上的**明寫例外**（ver -874，Ray：「鹿主被消滅走禍魘拉長特效」）
@@ -615,7 +622,15 @@ export function loadEnemyPortrait(en){
     ? (()=>playEntranceSe(en.entrance)) : null;
   /* ⚠ 不在登場類就不演降臨（ver -657；-787 登場類含 ship）：立繪載到就直接在那裡。
      ⚠ 判定用**傳進來的這張卡**不是查 state：`setEnemy` 在寫
-       `state.currentEnemyKey` 之前就可能叫到這裡，問 state 會問到上一隻。 */
+       `state.currentEnemyKey` 之前就可能叫到這裡，問 state 會問到上一隻。
+     ⚠⚠⚠ **「不降臨」的規格（ver -1414，Ray 定案）：「槍棺開的時候就在那裡了，
+       推上前就暖讀圖」** —— 它不是「少播一個動畫」，是**門一開牠已經站好**。
+       兩件事撐起這句話，缺一個都會變成「空戰場，然後怪啪一聲貼上去」：
+         ① **這一支立刻掛 `src`，不受 `riseHeld` 押住**（下面那個 `riseHeld` 分支
+            只罩降臨那一條）—— 而 `holdRise()` 是在 `startGame` 之前叫的，
+            所以掛上去的那一刻門還關著，時機天生就對。
+         ② **圖要先暖好**：`combat.warmBattleImage`，由戰鬥那道門
+            （`main.enterBattleAssets`）在**推棺之前**呼叫。 */
   if(!ENTRANCE_KINDS[en && en.kind]){
     if(playEntranceVo){
       eImg.onload = ()=>{ eImg.onload=null; playEntranceVo(); };

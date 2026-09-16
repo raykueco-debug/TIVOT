@@ -199,3 +199,4 @@ when	from	to	reason
 20260916-123915	resources/background/belisar/Belisar_OldAltaractive.webp	_recycle/resources/background/belisar/Belisar_OldAltaractive.webp	古代祭壇換成新版祭壇（Ray：祭壇用這兩張）—— 舊的巨石祭壇與我誤產的那張啟動版 ver -1378
 20260916-231329	resources/map/map_belisar.webp	_recycle/resources/map/map_belisar.webp	貝利薩爾小地圖重畫（照 reference/B 的拓樸，舊版是 38 格提案版、還畫著 ver -1403 就移除的下沉中庭）
 20260916-231329	resources/map/_spots_belisar.json	_recycle/resources/map/_spots_belisar.json	貝利薩爾小地圖重畫（照 reference/B 的拓樸，舊版是 38 格提案版、還畫著 ver -1403 就移除的下沉中庭）
+20260916-231720	resources/audio/se/se_waterfall.m4a	_recycle/resources/audio/se/se_waterfall.m4a	ver -1413 的程序合成暫代品；Ray 於 -1414 交了真的錄音

@@ -5803,8 +5803,12 @@ export const TOWNS = {
              `se` ＝深沉的獸吼（`se_monsterroardeep`，原本掛在索菈娜那一句上，
              ver -1413 移到這裡 —— **聲音要跟著牠出現的那一刻**）；
              `cgBackScale:0.9` ＝中景層縮 10%（錨腳底，見 story.js）。 */
+          /* ⚠⚠ `cgBackRise:true`（ver -1414，Ray：「戰鬥中不播降臨，劇情出場時播」）
+             ＝**牠在這裡降臨**：走戰鬥那一套 `enemy-rise`（同一組 CSS keyframes）
+             ＋ 著地的那一圈聖光。戰鬥那一側已經不播了（`ENTRANCE_KINDS` 拿掉 `multi`）。
+             ⚠ 聲音與震動就是這一拍自己的 `se`／`shake` —— 不要再播一次登場音。 */
           { speaker:'NARRATION', text:'', shake:true, auto:900,
-            se:'se_monsterroardeep', cgBackScale:0.9,
+            se:'se_monsterroardeep', cgBackScale:0.9, cgBackRise:true,
             cgBack:'resources/enemy/mon_dragon_v1_shackled.webp' },
           ren('scream','呀！'),
           /* ══⚠⚠⚠ **蕾娜倒地・髮飾脫落**（ver -1397，Ray 交件 `020-rennadrop`）══
