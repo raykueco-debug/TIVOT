@@ -1418,6 +1418,10 @@ function dragonActDue(n){
      ⚠⚠ 兩階段是 Ray 前後兩次交代的合體：-1421 的位置制是**追趕**那一段
        （「直到第四戰提示小地圖**開始追趕**」），在那之前是找。 */
   if(!prog.hasFlag('bl_dragon_seen')){
+    /* ⚠⚠ **王座那一區在追趕開始前不刷**（ver -1425，說明在 `script/town.js` 的
+       `dragonKeepOut`）—— 那是最後要把牠逼進去的地方，先撞見就把那一段的意義用掉了。
+       ⚠ 只擋這一段：`bl_dragon_seen` 之後牠本來就要往那裡跑（王座廳還是決戰那一格）。 */
+    if(((TOWNS[townId]||{}).dragonKeepOut||[]).indexOf(nodeId)>=0) return null;
     if(w>=DRAGON_LINES.chase.length) return null;   // 四場都打完了，等那一拍把地圖打開
     if(w===0) return (nodeId===DRAGON_FIRST_NODE) ? DRAGON_LINES.chase[0] : null;
     return dragonRollHit ? DRAGON_LINES.chase[w] : null;
