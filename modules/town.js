@@ -820,6 +820,66 @@ let innFirstVisit=false;
      所以戰鬥地圖裡走過的不算（那一條是 markSeen 自己的規矩）。
    ⚠ **站著的那一格永遠算走到過**：`markSeen` 是 `enter()` 收尾才記的，
      抵達的當下問它會問到「還沒記」（同「不要從畫面反推」那一族的坑）。 */
+/* ══⚠⚠⚠ **黑霧是「一整片」，走過的地方把它化開**（ver -1392，Ray：「黑霧是整片的，
+     不要用一圈一圈貼圖，走到的地方才散去，用特效，覆蓋整個地圖」）══
+
+   -913~-1391 是**一格一團**的貼圖（每個沒走到的節點各放一顆橢圓）。那條路錯在
+   它把「霧」做成了**點的屬性**：
+     · 節點與節點之間的紙面沒有人蓋 ⇒ 換成黑色之後整張圖是**豹紋**，不是未探索區；
+     · 放大到互相接得上又變成一堆疊在一起的圓，邊緣一圈一圈的。
+   正解是反過來做（世紀帝國那一套）：**霧是整張圖的一層**，走過的那幾格在它身上
+   **挖一個洞**。
+
+   ⚠⚠ 作法是 SVG 遮罩，不是 canvas：
+     · 尺寸跟著 `.tm-frame` 走（`viewBox 0 0 100 100` ＋ `preserveAspectRatio="none"`），
+       **不必量任何 rect、不必理 DPR、不必接 resize** —— 量 rect 那條路在這個專案
+       已經踩過太多次（量到 0×0、量到轉場中間值）。
+     · 洞的邊緣是 `feGaussianBlur` 糊出來的，硬邊的洞讀起來是貼紙不是霧。
+   ⚠⚠ **整片黑要被紙的形狀夾住**：地圖是去背 alpha 的（ver -878），撕邊之外是透明。
+     不夾的話黑霧會畫成一個**方框**，蓋掉那圈撕邊。夾法是 CSS 的
+     `mask-image:url(那張圖)`（見 `.tm-shroud`）—— 與 SVG 內部那層挖洞的遮罩
+     是兩件獨立的事，各做各的。
+   ⚠⚠ **形狀要用位置算出來的假亂數，不可以 `Math.random()`**（同 §6.8.1 鐵則 2）：
+     每開一次地圖都重建一次 DOM，真亂數會讓同一格的霧**每開一次就換一個形狀**。 */
+const FOG_RX = 10.5, FOG_RY = 13;      // 洞的半徑（%，x 是圖寬、y 是圖高）
+const FOG_DX = 1.9,  FOG_DY = -0.5;    // 往右下偏一點：圖上的草書地名在墨點右下方
+/* 位置算出來的假亂數（同 `flight/index.html` 的 `hash01`）。 */
+function fogRand(seed){
+  let h=2166136261;
+  for(let i=0;i<seed.length;i++){ h^=seed.charCodeAt(i); h=Math.imul(h,16777619); }
+  return ()=>{ h=Math.imul(h^(h>>>15),2246822507); h^=h>>>13; return ((h>>>0)%1000)/1000; };
+}
+function fogShroud(M, ids){
+  /* 走過的那幾格各挖一個洞 —— 一格三顆稍微錯開的橢圓，邊緣才不是一個正圓。 */
+  const holes = ids.filter(seenNode).map(id=>{
+    const p=M.spots[id]; if(!p) return '';
+    const r=fogRand(id), cx=p[0]*100+FOG_DX, cy=p[1]*100+FOG_DY;
+    let out='';
+    for(let k=0;k<3;k++){
+      const ox=(r()-0.5)*4.4, oy=(r()-0.5)*5.6, sc=0.74+r()*0.26;
+      out += '<ellipse cx="'+(cx+ox).toFixed(2)+'" cy="'+(cy+oy).toFixed(2)
+           + '" rx="'+(FOG_RX*sc).toFixed(2)+'" ry="'+(FOG_RY*sc).toFixed(2)+'" fill="#000"/>';
+    }
+    return out;
+  }).join('');
+  const img=String(M.img).replace(/"/g,'&quot;');
+  return '<svg class="tm-shroud" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"'
+       + ' style="-webkit-mask-image:url(&quot;'+img+'&quot;);mask-image:url(&quot;'+img+'&quot;)">'
+       + '<defs>'
+       + '<filter id="tmFogSoft" x="-40%" y="-40%" width="180%" height="180%">'
+       +   '<feGaussianBlur stdDeviation="1.7 2.2"/></filter>'
+       + '<mask id="tmFogMask">'
+       +   '<rect x="-10" y="-10" width="120" height="120" fill="#fff"/>'
+       +   '<g filter="url(#tmFogSoft)">'+holes+'</g>'
+       + '</mask>'
+       + '</defs>'
+       /* ⚠⚠ **不透明**（實測）：留一點透明想保住紙的紋理，結果是**整張圖的節點與
+            連線照樣讀得出來** —— 那等於沒遮。世紀帝國那一套本來就是實心的。
+          ⚠ 顏色帶一點暖褐（不是純黑 #000）：這是羊皮紙上的暗處，
+            純黑會讀成「紙破了一個洞」。 */
+       + '<rect x="-10" y="-10" width="120" height="120" mask="url(#tmFogMask)" fill="#0e0b09"/>'
+       + '</svg>';
+}
 function fogOn(){ const T=TOWNS[townId]; return !!T && T.mist!==0; }
 function seenNode(id){ return id===nodeId || prog.hasFlag('seen_'+townId+'_'+id); }
 /* 城裡的地點都走過了嗎。⚠ **不算旅店自己** —— 那是「走完之後要去的地方」，
@@ -1824,28 +1884,25 @@ function renderMap(){
   const ids=Object.keys(M.spots||{}).filter(id=>T.nodes[id]);
   v.innerHTML='<div class="tm-frame">'
     + '<img class="tm-img" src="'+M.img+'" alt="">'
+    + (fog ? fogShroud(M, ids) : '')
     + ids.map(id=>{
         const p=M.spots[id];
         const pos='left:'+(p[0]*100).toFixed(1)+'%;top:'+(p[1]*100).toFixed(1)+'%';
-        /* 沒走到＝一團霧（沒有點、沒有名字）—— 連圖上那個手寫地名一起蓋掉。
-           ⚠⚠ 霧是**另一個元素**（`.tm-fog`）不是 `.tm-spot` 的 `::before`：
-             `.tm-spot` 是 0×0 的錨點，掛在它身上的東西只能用 px 給大小 ——
-             實測手機寬（375）時那團 88px 的霧會蓋掉四分之一張地圖。
-             直接掛在 `.tm-frame` 底下，大小才寫得成 **% of 地圖**，跟著圖縮放。 */
         /* ══⚠⚠⚠ **王座徘徊者的紅點**（ver -1390，Ray：「要有一個發光的紅點」）══
            只有**第四戰之後**才亮（Ray：「四戰前就是瞎找」）—— 那一刻牠已經被逼進
            王座廳那個死胡同。
            ⚠ 牠在哪一格問 `dragonAtNode()` 那一支（鐵律 7：紅點與「走到那一格就開打」
              問的是同一個答案，不要在這裡自己再判一次戰數）。
-           ⚠⚠ **它要蓋在霧上面**：貝利薩爾沒寫 `mist:0` ＝有霧，而王座廳玩家多半
-             還沒走到過 —— 判在霧後面的話那顆紅點**永遠不會亮**，而這顆點的整個用途
-             就是告訴玩家「牠在那裡」。所以霧那一格照樣畫，紅點疊上去。
-           ⚠ 疊上去的那一顆**不給地名**（`nm` 空字串）：霧照樣蓋著那一格的速寫與
-             草書名 —— 玩家看得到「牠在這個方向」，但那一帶長什麼樣還是要自己走。 */
+           ⚠⚠ **它要浮在霧上面**：貝利薩爾沒寫 `mist:0` ＝有霧，而王座廳玩家多半
+             還沒走到過 —— 沉在霧底下的話那顆紅點**永遠不會亮**，而這顆點的整個用途
+             就是告訴玩家「牠在那裡」。所以那一格的霧不化開，紅點疊上去（CSS z-3）。
+           ⚠ 疊上去的那一顆**不給地名**：霧照樣蓋著那一格的速寫與草書名 ——
+             玩家看得到「牠在這個方向」，但那一帶長什麼樣還是要自己走。 */
         const dragon = (id===dragonAtNode());
+        /* 沒走到＝那一格還在霧底下：**什麼都不畫**（霧是整片的一層，見 `fogShroud`）。
+           ⚠ 只有紅點例外 —— 它要浮上來。 */
         if(fog && !seenNode(id)){
-          return '<i class="tm-fog" style="'+pos+'"></i>'
-               + (dragon ? '<i class="tm-spot dragon" style="'+pos+'"><b></b><span></span></i>' : '');
+          return dragon ? '<i class="tm-spot dragon" style="'+pos+'"><b></b><span></span></i>' : '';
         }
         /* ══ 休息處（ver -913，Ray：「探索到以後用筆圈起來，並在中文後方加入
            『（休息處）』」）══ 圈是 CSS 畫的（`.tm-spot.rest`），字在這裡加。
@@ -1860,7 +1917,7 @@ function renderMap(){
     + '</div>'
     /* ══ 模擬存檔那一列（ver -936；管理人限定，見 setSimSave）══
        ⚠ 擺在 `.tm-frame` **外面**：框裡是那張羊皮紙，尺寸與座標都是「地圖的百分比」
-         （同 `.tm-fog` 那一條的理由）—— 鈕塞進去會跟著圖縮放，小螢幕上按不到。 */
+         （同 `.tm-shroud` 那一條的理由）—— 鈕塞進去會跟著圖縮放，小螢幕上按不到。 */
     /* （ver -937：`body.testmode` 的守門已拿掉，見 setSimSave） */
     + (simIO
         ? '<div class="tm-save">'
