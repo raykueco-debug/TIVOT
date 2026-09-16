@@ -4277,8 +4277,21 @@ export const TOWNS = {
            所以四拍各掛 `onlyIf` 就夠，不必再寫互斥判斷（鐵律 7）。
            ⚠ 四個都不成立也可以（既沒約會也沒去大學）—— 那就直接跳到合流，
              那是對的：沒有那一段互動就沒有那一句玩笑。
-         ⚠ 插圖兩張（「安雅躲在主角身後」「Q版四人坐槍棺」）**還沒有**
-           （Ray：插圖先空著）—— 那兩拍先不寫 `cg`，圖到了補一行。 */
+         ⚠⚠ **安雅躲在主角身後** `018-anyahide`（ver -1379 交件，Ray：「在索拉娜說
+           姐姐可以背你那一拍**後**」）：掛成「姐姐可以背妳喔？」**後面獨立的一拍**，
+           而且**不帶 `onlyIf`** —— 它是對那句玩笑的反應，四條分支之前就發生了。
+           ⚠ 掛在下一拍上不行：下一拍是分支的第一句（`onlyIf:'ep_date_anya'`），
+             那樣只有約過安雅的人看得到。
+         ⚠⚠⚠ **蕾娜的妄想是兩張、走淡入** `018_rennafantasy` → `018-1_rennafantasy`
+           （Ray：「先放 18 再淡入到 18-1，然後再接『再怎麼樣也不行吧』」）：
+           · 兩拍都帶 `onlyIf:'ep_renna_met'` ＝**只有分支 4** 看得到。
+           · 第二拍寫 **`cgSoft:true`** ＝同一張插圖上的變化**疊上去淡入、不走黑幕**
+             （§6.5 的 ver -628：黑幕是「換一個地方」的語氣，中間插一片黑會把那個
+             變化切斷）。⚠ `cgSoft` 那一拍**不重置平移**，兩張會停在同一個取景。
+           · 台詞那一句**不寫 `cg`** —— 插圖是持續狀態，18-1 一直蓋到她講完。
+         ⚠⚠ **合流那一拍要 `cg:null`**：上面兩條路都會留著插圖（安雅那張是無條件的），
+           不收的話「玩笑先放一邊」是講在插圖上，而且會一路蓋到出發。
+         ⚠ 「Q版四人坐槍棺」那一張**還沒有**，先不寫。 */
       /* ⚠ `storyExplore:true` ＝**關閉自由活動**（Ray：「第二天醒來就要關掉約會」）——
          從這一刻起敲門約不出來，女角也不再排外出行程。
          ⚠ 再開在貝利薩爾那一段的收尾（`ep_belisar_done`，還沒寫）—— 見城上的說明。 */
@@ -4294,6 +4307,8 @@ export const TOWNS = {
         sor('laugh','我是無所謂啦，但是小公主可以嗎？'),
         any('answer','我、我可以！'),
         sor('smirk','走累了撒個嬌，姐姐可以背妳喔？'),
+        /* 安雅躲到主角身後（無條件：那是對玩笑的反應，不分你前一天約了誰）。 */
+        { speaker:'ANYA', text:'', cg:'018-anyahide', cgNoTime:true },
         /* ── 分支 1：前一天約了安雅 ── */
         Object.assign(sor('surprised','啊！奸詐！'), { onlyIf:'ep_date_anya' }),
         Object.assign(any('makeface',''),           { onlyIf:'ep_date_anya' }),
@@ -4303,9 +4318,14 @@ export const TOWNS = {
         /* ── 分支 3：前一天約了諾薇兒 ── */
         Object.assign(nou('awkward','不行啦，他還要背槍棺呢。'), { onlyIf:'ep_date_nou' }),
         /* ── 分支 4：前一天在大學巧遇蕾娜 ── */
+        /* 妄想兩張：先放 18，再**淡入**到 18-1（`cgSoft`），最後才接她那一句。 */
+        { speaker:'RENNA', text:'', cg:'018_rennafantasy',   cgNoTime:true,
+          onlyIf:'ep_renna_met' },
+        { speaker:'RENNA', text:'', cg:'018-1_rennafantasy', cgNoTime:true, cgSoft:true,
+          onlyIf:'ep_renna_met' },
         Object.assign(ren('sighbreath','再怎麼樣也不行吧……'), { onlyIf:'ep_renna_met' }),
-        /* ── 合流 ── */
-        ren('front','玩笑先放一邊，趁早出發吧。'),
+        /* ── 合流 ── ⚠ `cg:null` ＝收圖回背景（上面兩條路都會留著插圖）。 */
+        Object.assign(ren('front','玩笑先放一邊，趁早出發吧。'), { cg:null }),
         ren('thinking','聽說古城裡沒有禍魘，入夜前能到的話會輕鬆很多。'),
       ] },
     ],
@@ -4442,7 +4462,10 @@ export const TOWNS = {
           ren('stare','少來——你就是閒得慌吧？'),
           ren('bow','不過，還是謝謝啦。'),
           /* 好感 +1（Ray 指定）。⚠ 走 `aff` 欄位，由 modules/town.js 在演到這一拍時記帳。 */
-          Object.assign(ren(null,'雖然是苦差事，但是很開心呢。'), { aff:{ renna:1 } }),
+          /* ⚠⚠ 微笑的插圖 `017_rennasmile`（ver -1379 交件）掛在**這一句**：
+             整段的情緒落點就在這裡（也正是給好感的那一拍）。 */
+          Object.assign(ren(null,'雖然是苦差事，但是很開心呢。'),
+                        { aff:{ renna:1 }, cg:'017_rennasmile', cgNoTime:true }),
         ] } ] },
 
       /* ── 二、舊城區（四向樞紐） ── 左＝武器店、右＝廣場、上＝倉庫碼頭、下＝公會 */
@@ -4512,9 +4535,12 @@ export const TOWNS = {
                         { label:'ep_retry_lose', flags:['ep_range_done'] }),
           Object.assign(gunE(null,'隨時歡迎。'), { label:'ep_retry_end' }),
         ],
+        /* ⚠⚠ 瞄準的插圖 `016-soranaaim`（ver -1379 交件）掛在**開槍那一拍**
+           （已經有槍聲了）—— 那一拍本來就沒有台詞，插圖就是它在演的東西。 */
         acts:[ { flag:'ep_range_sor', withWho:'SORANA', need:'ep_range_done', lines:[
           sor('hug','也讓我試試嘛！'),
-          { speaker:'PLAYER', text:'', auto:900, se:'se_weapon_pistol_03' },
+          { speaker:'PLAYER', text:'', auto:900, se:'se_weapon_pistol_03',
+            cg:'016-soranaaim', cgNoTime:true },
           sor('think','比想像中難耶！還是飛刀順手。'),
         ] } ] },
       /* ══ 約會・安雅（ver -1346）══ ⚠ 稿上是「尤拉西亞湖」—— 照稿寫，
@@ -4597,8 +4623,10 @@ export const TOWNS = {
       tavern:     { bg:'East_Bistro',     name:'東方泊地　餐飲街',
         exits:{ back:'uptown', up:'restaurant', right:'cafe', down:'dessert' } },
       /* ══ 約會・諾薇兒（ver -1346，Ray 交稿）══ `withWho` ＝正在跟她約會才演。
-         ⚠ 「用餐插圖」還沒有（Ray：插圖先空著）—— 那一拍先不寫 `cg`，圖到了補一行。
-         ⚠ 「（肚子叫）」是**音效**，稿上沒指定是哪一支 —— 先不接，等 Ray 給鑰匙。 */
+         ⚠ 「（肚子叫）」是**音效**，稿上沒指定是哪一支 —— 先不接，等 Ray 給鑰匙。
+         ⚠⚠ 用餐插圖 `014-nouvelleeat`（ver -1379 交件）掛在**她說「好」之後**那一拍：
+           那一句是「答應了」，吃是接著發生的事 —— 掛在同一拍等於「她一邊說好一邊在吃」。
+         ⚠ 收圖不必寫 `cg:null`：`clearCast()` 會一起撤（ver -643 收在唯一的出口，鐵律 8）。 */
       restaurant: { bg:'East_Restaurant', name:'東方泊地　餐廳',
         exits:{ back:'tavern' },
         acts:[ { flag:'ep_dine_nou', withWho:'NOUVELLE', lines:[
@@ -4609,17 +4637,20 @@ export const TOWNS = {
           { speaker:'PLAYER', blank:true },
           nou('concern','嗯……'),
           Object.assign(nou('bigsmile','好。'), { aff:{ nouvelle:2 } }),
+          { speaker:'NOUVELLE', text:'', cg:'014-nouvelleeat', cgNoTime:true },
         ] } ] },
       cafe:       { bg:'East_Cafe',       name:'東方泊地　咖啡廳',
         exits:{ back:'tavern' } },
       /* ══ 約會・安雅（ver -1346，Ray 交稿）══
          ⚠ `amazed`／`curious` 這兩張**還沒有圖**：查不到差分會自動退回本尊立繪
            （§6.10 的 `missingExpr`），台詞照播 —— 圖到了不必改這裡。
-         ⚠ 「趴在櫥窗的插圖」還沒有（插圖先空著）。 */
+         ⚠⚠ 趴在櫥窗的插圖 `015-anyadessert`（ver -1379 交件）掛在**第一拍**：
+           那一拍本來就是她看到櫥窗、說不出話的那一刻（`any('amazed','')` 沒有台詞），
+           插圖就是那一拍在演的東西。 */
       dessert:    { bg:'East_Dessert',    name:'東方泊地　甜品店',
         exits:{ back:'tavern' },
         acts:[ { flag:'ep_sweets_anya', withWho:'ANYA', lines:[
-          any('amazed',''),
+          Object.assign(any('amazed',''), { cg:'015-anyadessert', cgNoTime:true }),
           any('amazed','好可愛……'),
           Object.assign(any('curious','這真的是可以吃的嗎？'), { aff:{ anya:3 } }),
         ] } ] },
