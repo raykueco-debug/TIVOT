@@ -191,7 +191,7 @@ Chrome 一退到背景，`computer.left_click` 就完全打不進頁面（可以
 |---|---|---|---|
 | 1 | 古城裡（追逐） | `mon_dragon_v1_shackled.webp` | ✔ 既有 |
 | 2 | 逼進王座廳 | `mon_dragon_v1_unsealed.webp` | ✔ 既有 |
-| **3** | **空中戰（開場～HP 50%）** | **`mon_dragon_v1_flight.webp`（正面飛行）** | ⚠ **白底稿已產出，alpha 未完成** |
+| **3** | **空中戰（開場～HP 50%）** | **`mon_dragon_v1_flight.webp`（正面飛行）** | ✔ **已交**（1536×1024、alpha） |
 | **4** | **空中戰・HP ≤ 50%** | `mon_dragon_v1_ascendant.webp`（立姿） | ✔ 既有（**由第三階降為第四階**） |
 
 ## ⚠ 為什麼要新增第三階
@@ -223,3 +223,12 @@ Ray：「正面就可　動態比照羽蛇」⇒ 走**鏈式怪**那一套（`fl
 - 交件到 `resources/Flight_Enemy/FLM_DragonThrone.png`，切圖走 `flight/split_enemy.py`。
 - ⚠ 程式端隨後要在 `flight/index.html` 的敵人表補一筆
   （`plan:'chain'`、`sprite:{dir, dorsal}`、波動與拍翼參數、`rarity`／`fromStage`）。
+
+## ⚠ alpha 交件時要看的一件事（ver -1414 實測）
+
+GPT 去背回來的那一張，**主體的 alpha 是 250~253 不是 255** —— 肉眼在棋盤格上看不出來，
+但貼到地形上整隻會微微透出背景。交件前量一次直方圖，把 **≥248 的壓成 255**
+（248 以下的柔邊一個字都不要動，動了邊緣會變硬）。
+
+    修正前：全透 48.6%　滿不透明 0.9%
+    修正後：全透 48.6%　滿不透明 41.5%　柔邊 10.0%
