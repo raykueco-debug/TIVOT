@@ -1,4 +1,4 @@
-# HANDOFF — 截至 `ver 2026.09.16-1371`
+# HANDOFF — 截至 `ver 2026.09.16-1374`
 
 > 這一份是**唯一**的交接檔。**下一次交接請直接改這一份，不要再開新檔。**
 >
@@ -111,6 +111,83 @@
 - ⚠⚠ **commit 訊息一律走 heredoc**：在 bash 的雙引號字串裡寫反引號會**真的執行**它 ——
   -1361 的 commit body 因此被塞進一行「找不到可用的 JS 引擎」的錯誤輸出，
   **在紀錄裡留下一句假話**（已 `--amend` 修掉）。
+
+---
+
+# 這一輪（-1372 ~ -1374）：立繪差分、hideHome、降落判定圈
+
+> Ray 這一輪指定「1、2、3」＝ ①接他新丟的立繪 ②收首頁那九個呼叫點 ③三件小回報。
+
+## 動了哪幾支檔（給美術 session 自保用，鐵律 11）
+
+| 版 | 除了 `config.js`（VERSION）＋ `index.html`／`flight/index.html`／`modules/story.js`（bust 產生）之外 |
+|---|---|
+| -1372 | `script/speakers.js`、`script/town.js`、**新** `resources/SI/{Anya_SI_amazed,Anya_SI_curious,Renna_SI_scream,Renna_SI_reachcry,Sorana_SI_battlecry}.webp` |
+| -1373 | `modules/transition.js`、`main.js`、`modules/combat.js` |
+| -1374 | 只有 `flight/index.html`（非 bust 的實質改動） |
+
+⚠⚠ **-1372 那一輪有另一個 session 同時在改 `resources/SI/NPC/`**
+（10:50 覆蓋了 `NPC_Gunsmith_SI_v4.webp`）—— 那一批與 Ray 另外丟進 `resources/SI/` 的
+9 張 PNG ＋ 2 張插圖**這三版一個都沒有碰**，還躺在工作區沒進版控。
+
+## 做掉的
+
+| 版 | 內容 |
+|---|---|
+| **-1372** | Ray 交的五張差分接上（PNG→WebP、原 PNG 進 `_originals/SI/`、`measure_si.py` 逐張量）：ANYA `amazed`／`curious`、RENNA `scream`／`reachcry`、SORANA `battlecry`。⚠⚠⚠ 順手抓到 **`ART.nouvelle` 有兩把同名的 `scared` 鑰匙**（物件實字重複鍵**合法**、後面那一把靜靜贏，`node --check` 驗不出來）→ 收成尾巴那唯一的定義（＝維持今天畫面上真正在跑的那一張，不趁機換圖）。另外四個鑰匙是**大小寫／筆誤**（`exprSrc` 是純大小寫敏感查表）：`nou('Shocked')→shocked`、`nou('Surprise')→surprise`、`nou('Scared2')→scared`、`ren('think')→thinking` ×3 —— **圖本來就在、也早就登記好了，只是查不到**。lint 差分提醒 **31 → 18**。 |
+| **-1373** | 九個「收首頁」呼叫點收成 `transition.js` 的 **`hideHome(where)`**（鐵律 8）。它不改時序，做的是①把動作收成一個②**驗收**：收的那一刻沒有任何一層蓋著就記一筆 `console.warn` 並寫出**是哪一個呼叫點**（管理人模式再浮紅字）。順手修好一條順序真的反了的（獨立模式降落：先收首頁再 `town.open`）。 |
+| **-1374** | 降落判定圈：`landRadius()` —— 有手繪底圖就 `max(planW*0.5, 384)`、沒有底圖照舊 `townEdgeR*3.2`。帝都 **1680→625**（＝底圖半徑），瀏覽器實測邊界 624 亮／626 不亮。 |
+
+## ⚠⚠ Ray 的回報清單：**剩三件**
+
+| | 回報 | 現況 |
+|---|---|---|
+| ① | **自動播放時不播畫面震動** | ⚠⚠⚠ **量過了，在自動播放下「有」播** —— 實測（prologue「啊！」那一拍）`#storyStage` 掛著 `story-auto` 時 `.shake` 存活 **471ms**，而 CSS 的 `storyShake` 是 **0.42s**，動畫整段跑完。⇒ **需要 Ray 釐清**，三種讀法見下面那一節。 |
+| ④ | **進飛行地圖要點一下才播音樂** | ⚠ **這台重現不出來**：進飛行地圖後**沒有點過 iframe**，`bgmMain/ambSail/ambIdle/sfxTrain/sfxGull` 五軌 `playing()` 全是 `true`。機制讀出來了（`flight/index.html` 的 `startBgm` IIFE：parse 時先 `kick()` 一次，被自動播放政策擋掉就等 iframe 自己的 `pointerdown`／`keydown`）——**那幾顆監聽掛在飛行 iframe 的 window 上，父頁的手勢不會叫醒它**。桌機 localStorage 的 MEI 高所以直接放行；Ray 的裝置／首次造訪就會被擋。**沒有重現就沒有動它**。 |
+| ⑥ | **飛行畫面的吊飾去背不全** | **美術**的活（鐵律 11）。 |
+
+## ⚠⚠⚠ ① 要 Ray 一句話：你說的是哪一個？
+
+量到的事實：自動播放（`autoPlay`，間隔讀選單的 `settings.autoDelayMs()`，預設 **1100ms**、
+最快 400ms）下震動整段播完。會被砍掉的只有**加速模式**（`fastMode`＝按住下拉／按住空白）——
+`scheduleAuto` 在那個模式下寫死 **120ms**，而 `renderLine` 開頭的 `stopFx()` 會把 `.shake` 拔掉
+⇒ 420ms 的動畫只演了 **29%**，讀起來就是「幾乎沒抖」。
+
+三種讀法，各自要做的事不同：
+- **(a) 你指的是加速模式** → 那就決定加速時震動要「演完」還是「乾脆不演」（現在是演 29%，最糟的那一種）。
+- **(b) 你要的是「自動播放時把震動關掉」**（一句**需求**不是 bug）→ 在 `renderLine` 的兩個 shake 分支加一道 `!autoPlay` 守門即可。
+- **(c) 你是在手機上看到的** → 那要另外查（可能與 `prefers-reduced-motion` 或那台的動畫節流有關）。
+
+## 還沒做（延續上一版，序號沿用）
+
+程式端可以自己做的：
+- **14. 無尾綴舊檔退役**（`East_{Firearm,Guild,Bistro,Grocerie,Hotel,Cafe,Restaurant}.webp`）
+- **15. 東泊餐飲街改室外街景** —— ⚠ 等 Ray 答 A／B（酒吧要不要另開一格）
+- **16. `Plains_*` 與 `Belisar_GreatCourt*` 接進 `script/town.js`**（圖交了，沒有節點資料，誰都走不到）
+- **17. `resources/SI/` 的 PNG 轉檔** —— ⚠⚠ 這一輪只轉了**要用的那五張**。
+  ⚠⚠⚠ **剩下的 29 張裡有 12 張已經有同名 `.webp`**（`Renna_SI_{annoyed,askserious,blushed,callangry,chase2,lookdown,meltdown,meltdowncry,reach,scarejump,upset}`、
+  `Nouvelle_SI_{lookback,reliefbreath,runserious}` 那一族）—— **轉檔之前一定要先量像素指紋**
+  （§5）：是「已經轉過的來源」就直接進 `_originals/`，是「Ray 重交的新版」就是**同名覆蓋**，
+  要掛 `?v=`／`ASSET_VER` 而且**取景值要重量**。兩者從檔案系統看起來一模一樣。
+
+美術／Ray 那一邊：
+- **剩 4 個差分是真的還沒有圖**：NOUVELLE `gentle`／`pain`、OFFICER `stunned`／`fluster`（都在 prologue）。
+- **孤兒素材 `Nouvelle_SI_Scared.webp`**（-1372 把重複鍵收掉之後就沒有人指它了）——
+  要不要走 `tools/recycle.sh` 是 Ray 的決定（§5：回收區是唯一的刪除出口）。
+- 其餘（東泊三位店主的 `GuildCounter` 還是 RGB 沒 alpha、`Ravn_Church`、拉芬斯達爾室內 21 張、
+  `midnight` 差分）照舊，見下一節。
+
+## 這一輪的教訓
+
+- ⚠⚠⚠ **「沒有這張差分」不等於「圖沒交」**：-1372 那 13 個缺件裡，**4 個圖早就在、
+  也早就登記好了**，只是腳本把鑰匙打錯字（大小寫／`think` vs `thinking`）。
+  ⇒ **看到 lint 報缺差分，先去 `ART[x].expr` 把鑰匙列出來比對**，不要直接開美術工單。
+- ⚠⚠⚠ **物件實字的重複鍵是合法的，而且所有語法檢查都驗不出來**（`node --check`、
+  `--input-type=module --check` 都過）。它的症狀是「A 靜靜變成 B、而且沒有人知道 A 已經沒人用」。
+  `speakers.js` 這種一支檔上千行的查表**特別容易中**。
+- ⚠⚠ **回報要先重現再修**：①與④這一輪都**量出來與回報不符**（① 自動播放其實有抖、
+  ④ 五軌都在播）。沒有重現就照實寫進交接，不要憑症狀去猜一個修法 —— 那正是 -1363
+  那一次診斷錯的形狀。
 
 ---
 
