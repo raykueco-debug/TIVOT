@@ -397,12 +397,12 @@ export const OUTING = {
      ⚠⚠⚠ **不掛旗**（與 `dateCurfew` 的差別）：那一段是「這一次的約會結束了」，
        **每一次送她回來都要演**。掛了旗第二次就不演 ⇒ `endDate` 也跟著不跑
        ⇒ **同行永遠解除不掉**。
-     ⚠⚠⚠ **下面這一句是暫代的，等 Ray 的稿**：他這次給的是規則不是台詞。
-       寫成**誰都講得通**的一句（不帶性格、不帶地名），四個人共用 ——
-       有了各自的稿就往城的 `dateBye.by` 加，這裡一個字都不必動。 */
-  dateBye: { node:'inn', lines:[
-    { speaker:'NARRATION', text:'（她在門口停下腳步。）' },
-  ] },
+     ⚠⚠⚠ **ver -1383：那一句暫代的旁白拿掉了**（Ray：「回到旅店不用顯示她停下腳步」）。
+       ⚠⚠ **機制留著、只是沒有台詞**：`lines` 空陣列 ＝ `actDue` 取到之後直接跑收尾
+         （同東泊那一段「安靜抵達」的作法）—— `endDate:true` 照樣會跑，
+         **同行照樣解除得掉**。這一格不可以整個拿掉，拿掉就沒有人解除同行了。
+       ⚠ 有各自的稿就往**城的** `dateBye.by[WHO].lines` 加，這裡一個字都不必動。 */
+  dateBye: { node:'inn', lines:[] },
   /* ══⚠⚠ 約會的好感門檻（ver -1096，Ray：「T3 以上可以約會」→「不過這麼前期，
      還是設成 T2 吧，免得連教學都開不了」）══
      **一個數字一個地方**（鐵律 1/7）：`modules/town.js` 讀它、注入給 `inn.js`，
@@ -4580,7 +4580,17 @@ export const TOWNS = {
       /* ⚠⚠ ver -1382：`up` 由 `@belisar` 改成 **`@plainsroad`** —— 古道那 20 張圖
          交齊了（Ray：「古道圖齊了　接上」），中間那一段路現在是**真的一張圖**，
          不再是碼頭直接接到古城。走法：碼頭 → 古道・道口 →（里程碑／草海）→ 溪谷口 → 古城。 */
-      dock:       { bg:'East_Dock',       name:'東方泊地　倉庫碼頭',
+      /* ⚠⚠ ver -1383 改名：**倉庫碼頭 → 南門驛站**（Ray）。這一格的用途 -1358 起
+         就是「往南走上古道的出口」，「倉庫碼頭」那個名字與它現在做的事對不上。
+         ⚠⚠ 圖**當天就交了**（`East_SouthGate_{dawn,day,dusk,night}`，15:00~15:04）——
+           所以 `bgPending` 那一步直接跳過，`bg` 一次到位。
+         ⚠⚠⚠ **檔名是 `East_SouthGate`（大寫 G）**，照交件抄 —— 寫成 `Southgate`
+           在**本機看不出來**（Windows／macOS 不分大小寫），**靜態空間會整排 404**
+           （§6.5.4 的老坑）。`bandNames` 只試「時段尾綴」的大小寫變體，**不試基底名**。
+         ⚠⚠ 交件的 `_dusk` 與 `_night` **是同一張圖**（8×8 指紋一模一樣：
+           70.1/70.1/87.4）—— 已回報美術。載得到、不會壞，但夜裡與黃昏長一樣。 */
+      dock:       { bg:'East_SouthGate',
+        name:'東方泊地　南門驛站',
         exits:{ back:'oldtown', up:'@plainsroad' },
         acts:[ { flag:'ep_dock_anya', withWho:'ANYA', lines:[
           any('curious','這就是……尤拉西亞湖？'),
@@ -4656,7 +4666,10 @@ export const TOWNS = {
           { speaker:'PLAYER', blank:true },
           nou('concern','嗯……'),
           Object.assign(nou('bigsmile','好。'), { aff:{ nouvelle:2 } }),
-          { speaker:'NOUVELLE', text:'', cg:'014-nouvelleeat', cgNoTime:true },
+          /* ⚠ `cgPan:'down'` ＝**由上而下**平移（Ray 指定；`'up'` 是由下往上，
+             見 story.js 的演出層說明）。台詞也是 Ray 這一版給的。 */
+          Object.assign(nou('happy','東海的料理也別有一番風味呢！'),
+                        { cg:'014-nouvelleeat', cgNoTime:true, cgPan:'down' }),
         ] } ] },
       cafe:       { bg:'East_Cafe',       name:'東方泊地　咖啡廳',
         exits:{ back:'tavern' } },
@@ -4669,7 +4682,8 @@ export const TOWNS = {
       dessert:    { bg:'East_Dessert',    name:'東方泊地　甜品店',
         exits:{ back:'tavern' },
         acts:[ { flag:'ep_sweets_anya', withWho:'ANYA', lines:[
-          Object.assign(any('amazed',''), { cg:'015-anyadessert', cgNoTime:true }),
+          Object.assign(any('amazed',''),
+                        { cg:'015-anyadessert', cgNoTime:true, cgPan:'down' }),   // 由上而下（Ray）
           any('amazed','好可愛……'),
           Object.assign(any('curious','這真的是可以吃的嗎？'), { aff:{ anya:3 } }),
         ] } ] },

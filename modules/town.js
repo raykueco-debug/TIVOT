@@ -417,9 +417,23 @@ function outNow(){
 function isOutNow(who){ return !!outNow()[who]; }
 /* 這一格現在有誰（沒有就 null）。⚠ 排程保證同一格同時只有一個人。 */
 function whoOutAt(id){ const m=outNow(); for(const w in m) if(m[w]===id) return w; return null; }
+/* ══⚠⚠⚠ **一天只能約一個人**（ver -1383，Ray：「一天只能約一個人　如果約了其中
+   一個　其他人的頭像就會消失　就算回旅店解除約會也要到隔天或離開地圖才會回來」）══
+   今天已經約過誰了 ⇒ **其他三個人的門一律當成空房**（頭像不畫，不是「燈熄」——
+   §6.5.5 的三態裡那是 `out`）。
+   ⚠⚠ 它**不看現在還在不在約會中**，看的是 `datedSet`（**今天約過了沒**）——
+     所以「送她回旅店、同行解除了」之後其他人照樣不會回來，那正是 Ray 要的。
+   ⚠ 回來的兩個時機，都是既有的：
+     · **隔天** —— `dateDayCheck()` 換日就把 `datedSet` 倒掉（鑰匙是 `dayNo()`）
+     · **離開地圖** —— ver -1383 起 `suspend()` 也清（見那一支）
+   ⚠ 被約的那一個**自己照舊**：她送回旅店之後就在房裡，門要亮得回來。 */
+function datedSomeoneToday(){ dateDayCheck(); return datedSet.size>0; }
 /* 誰在房裡（＝門要亮頭像）。⚠ 出門與同行都是「不在房裡」——
    `doorState` 只問這一支，Ray：「出門時不顯示頭像」。 */
-function inRoom(who){ return !isOutNow(who) && who!==escortWho(); }
+function inRoom(who){
+  if(datedSomeoneToday() && !datedToday(who)) return false;   // 今天約的是別人（ver -1383）
+  return !isOutNow(who) && who!==escortWho();
+}
 /* 這一格現在的門設定（ver -666）：`innDoors` 由上往下取第一個 `need` 成立的。
    ⚠ 沒寫就回空物件 —— 呼叫端一律 `||` 帶預設，不必判 null。 */
 function innDoorSet(n){
@@ -3538,6 +3552,11 @@ export function innNodeOf(town){
 export function suspend(){
   clearTimeout(arriveT); arriveT=0;
   endDate();                // 出城鎮＝約會結束（ver -576，Ray 指定）
+  /* ⚠⚠ ver -1383：**離開地圖也清掉「今天約過誰」**（Ray：「就算回旅店解除約會也要
+     到隔天或**離開地圖**才會回來」）。-576 當時刻意只在 `close()`（回主選單）清，
+     理由是「出城再進城還是同一天就約不了第二次」—— 那條規則被這一版取代了。
+     ⚠ 連帶：其他人的頭像跟著回來（`inRoom` 問的就是它）。 */
+  dateDay=null; datedSet=new Set();
   story.endAdhoc();
   chatterOn=false;
   showNav(false);
