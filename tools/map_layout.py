@@ -38,14 +38,14 @@ POS = {
   #   ⚠ 這一張**排不進標準的直角格**（見 BEND）：欄列之間刻意留空，
   #     版面只保證「方向的正負號」對（left 的鄰居欄號比較小），不保證剛好差 1。
   'belisar': {
-    'crown':(2,0), 'throne':(3,0), 'offering':(4,0),
-    'rooffall':(0,1), 'muralwalk':(1,1), 'antecham':(3,1),
-    'drywell':(0,2), 'incense':(1,2), 'starroom':(2,2), 'dragstair':(3,2),
-    'forge':(1,3), 'trihall':(2,3), 'guardhall':(3,3), 'greathall':(5,3), 'lamphall':(6,3), 'ossuary':(7,3), 'dragonrace':(8,3), 'draincliff':(9,3),
-    'mirrorpool':(2,4), 'pillars':(6,4), 'wardtomb':(7,4), 'bellroom':(8,4), 'stairwell':(9,4),
-    'cages':(2,5), 'culvert':(3,5), 'mirrorway':(5,5), 'waterjail':(6,5), 'bonerack':(7,5),
-    'oldtomb':(3,6), 'capstan':(4,6), 'candlewalk':(5,6),
-    'stelae':(3,7), 'stephall':(4,7), 'floodway':(5,7),
+    'crown':(0,0), 'throne':(1,0), 'offering':(2,0),
+    'antecham':(1,1),
+    'dragstair':(3,2),
+    'starroom':(1,3), 'guardhall':(3,3), 'greathall':(5,3), 'lamphall':(6,3), 'ossuary':(7,3),
+    'drywell':(0,4), 'forge':(1,4), 'incense':(2,4), 'mirrorpool':(3,4), 'wardtomb':(7,4),
+    'rooffall':(0,5), 'muralwalk':(1,5), 'trihall':(2,5), 'culvert':(3,5), 'pillars':(6,5), 'dragonrace':(8,5), 'draincliff':(9,5),
+    'cages':(2,6), 'oldtomb':(3,6), 'capstan':(4,6), 'waterjail':(6,6), 'bonerack':(7,6), 'bellroom':(8,6), 'stairwell':(9,6),
+    'stelae':(3,7), 'stephall':(4,7), 'floodway':(5,7), 'candlewalk':(6,7), 'mirrorway':(7,7),
     'foyer':(4,8), 'altar':(5,8),
     'entrance':(4,9),
   },
@@ -171,7 +171,7 @@ def load(town):
 BEND = {
   # 貝利薩爾遺址（ver -1396 實測）：4 個環裡有 3 個的方向和不是零。
   # 兩端相反 41/41 通過、38 格 × 4 向都走得出去 ⇒ 玩起來沒問題，只是畫不直。
-  'belisar': {('bonerack','mirrorway'), ('drywell','rooffall'), ('forge','muralwalk'), ('guardhall','mirrorpool'), ('lamphall','ossuary')},
+  'belisar': {('bonerack','mirrorway'), ('greathall','guardhall'), ('incense','muralwalk'), ('lamphall','ossuary')},
 }
 def bent(town, a, b):
     s = BEND.get(town) or set()
