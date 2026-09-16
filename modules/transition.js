@@ -84,3 +84,76 @@ export function playTransition(kind, done, opts){
   }
   return { proceed };   // 外部（櫻花飄完）主動推進
 }
+
+/* ════════════════════════════════════════════════════════════════════════════
+ *  收首頁：**唯一那一支**（ver -1372，鐵律 8）
+ *  ---------------------------------------------------------------------------
+ *  Ray 回報：「讀取畫面的間隙偶爾露出首頁」。
+ *
+ *  ⚠⚠⚠ **規矩早就寫好了，缺的是「只有一個實作」**：§6.10 的 ver -576 已經定案
+ *    ——「**在新的一頁真的蓋上去之前，不可以先把首頁收掉**」，因為 `#home` 底下就是
+ *    `#app`，而 `#app` 上面掛著開機時 `applyConfigToDOM` 擺好的**挑戰第一戰的立繪**
+ *    （或上一場的殘盤）。先收首頁 → 那一格露出來的就是它。
+ *
+ *  ⚠⚠ 為什麼一直復發：這個動作在 -1371 之前有 **9 個實作點**
+ *    （`main.js` 6 處 ＋ `modules/combat.js` 3 處，`grep "\$('home').classList.remove('on')"`
+ *    數得出來），而歷次修的都是**被回報的那一個呼叫點**：
+ *      -576 修 `openFlightAt`／-1321 修 `enterTown`／-1357 修 `land()`。
+ *    每修一個，剩下八個照舊 —— 這正是鐵律 8 那句「一個**動作**只有一個實作」。
+ *
+ *  ⚠ 住在 transition.js 的理由：它是**純輸出葉節點**，而 `main`（開始）與 `combat`
+ *    （出陣／Boss）本來就都 import 它（見檔頭），放這裡不製造反向或循環依賴。
+ *    放 `main.js` 的話 combat 拿不到（main 是組裝根），得多一支注入器。
+ *
+ *  ⚠⚠ 這一支**不改變任何時序**，它做兩件事：
+ *    ① 把「收首頁」收成一個動作（日後要加東西 —— 例如鐵律 10 的「離場即殺」——
+ *       只有這裡要改）；
+ *    ② **驗收**：收的那一刻若沒有任何一層蓋著就記一筆 console（管理人模式再浮紅字）。
+ *    ⚠⚠⚠ 它是**驗收不是規矩**（同 `verifyCastCleared`／`assertNoDarkOverlay`）：
+ *      真的驗到東西就是**上游那個呼叫點的順序錯了**，要去修那一條路徑，
+ *      不是在這裡把警告關掉。靜靜收掉會讓下一個同類 bug 再也查不出來
+ *      —— 而「偶爾露出首頁」正是因為它以前完全沒有聲音。
+ * ══════════════════════════════════════════════════════════════════════════ */
+
+/* 蓋得住首頁的那幾層（**都是不透明的滿版層**）。
+   ⚠ 這張表是「事實」不是「規矩」：新增任何一個滿版不透明層就補一列，
+     不補的下場只是多一行假警告，不會壞掉（安全的那一側是預設）。 */
+const HOME_COVERS = [
+  ['#storyStage.on',                     '劇情／城鎮舞台'],          // 不透明底色
+  ['#expelTransition.show',              '過渡禎'],                  // 出陣的櫻花／驅逐那一張
+  ['#alFlash',                           '開機的聖光'],              // 光暈實心蓋滿才交棒（main 的 2500ms）
+  ['#kerb.rise.full',                    '槍棺（推到頂）'],          // 交棒進戰鬥：門蓋滿畫面
+  ['#transition.on',                     '結算過場'],
+];
+export function homeCoveredBy(){
+  /* 飛行 iframe 沒有自己的 class，看的是 body 那一支（它有不透明底色 #05060c）。 */
+  if(document.body.classList.contains('flight-on')) return '飛行畫面';
+  for(const [sel, name] of HOME_COVERS){
+    if(document.querySelector(sel)) return name;
+  }
+  return null;
+}
+export function hideHome(where){
+  const home = $('home');
+  if(!home || !home.classList.contains('on')) return;   // 冪等：已經收了就什麼都不做
+  const cover = homeCoveredBy();
+  if(!cover){
+    /* ⚠ 這一行就是「偶爾露出首頁」的名字。`where` 是呼叫點的標籤 ——
+         有它才知道要去修哪一條路徑（以前九個呼叫點都是同一行程式，查不出是誰）。 */
+    console.warn('[home] 收首頁時沒有任何一層蓋著：', where,
+                 '—— 這一格會露出底下的 #app（§6.10 ver -576：要等新的那一層真的蓋上去才收）');
+    if(document.body.classList.contains('testmode')) flashHomeWarn(where);
+  }
+  home.classList.remove('on');
+}
+/* 管理人模式的紅字（同 assertNoDarkOverlay 的作法）：只給開發看，玩家看不到。 */
+function flashHomeWarn(where){
+  try{
+    const d=document.createElement('div');
+    d.textContent='⚠ 收首頁時沒有東西蓋著：'+where;
+    d.style.cssText='position:fixed;left:8px;bottom:8px;z-index:99999;background:#a01020;color:#fff;'
+                   +'font:12px/1.5 monospace;padding:4px 8px;border-radius:4px;pointer-events:none';
+    document.body.appendChild(d);
+    setTimeout(()=>{ if(d.parentNode) d.parentNode.removeChild(d); }, 5000);
+  }catch(e){}
+}

@@ -27,7 +27,7 @@ import * as saint from './saint.js';
 import * as partner from './partner.js';
 import * as inspector from './inspector.js';
 import * as tutorial from './tutorial.js';   // 教學關卡（首次出陣穿插對話；暫停走 pauseForDialog）
-import { playTransition } from './transition.js';   // 過渡禎（勝利進結算前的「驅逐完成」）
+import { playTransition, hideHome } from './transition.js';   // 過渡禎（勝利進結算前的「驅逐完成」）＋收首頁（唯一那一支，ver -1372）
 import * as prog from '../script/progress.js';      // 持久 HP／talkOnce 打贏才記（葉節點，無循環）
 import { faceStyle } from '../script/speakers.js';  // 立繪當頭像（月彎中間的搭檔臉，ver -1036；唯一那一支）
 
@@ -2692,7 +2692,7 @@ export function startGame(){
   state.deathGuardUsed=false; state.sRankUnlocked=false; state.resultMode='rematch';
   enemy.startLineup();   // 局：載序列第一隻（lineupIndex=0，含 enemyHp 基準）
   TEL.runStart({ partner:state.pickedPartner, weapon:state.equippedWeapon, boss:false });
-  $('home').classList.remove('on');
+  hideHome('startGame');
   $('banner').classList.remove('on'); $('banner').classList.remove('lose');
   $('transition').classList.remove('on');
   $('grid').classList.remove('saint'); $('grid').classList.remove('buffed'); $('grid').classList.remove('alert','hot');
@@ -2878,7 +2878,7 @@ export function startIntruderFight(){
   state.sRankUnlocked=false; state.resultMode='rematch';
   enemy.setEnemy(GAME_CONFIG.intruder.enemy);   // 載槍之魔女（含 Boss 大絕/懲罰/彈痕 config）
   TEL.runStart({ partner:state.pickedPartner, weapon:state.equippedWeapon, boss:true });
-  $('home').classList.remove('on');
+  hideHome('startBossGame');
   $('banner').classList.remove('on'); $('banner').classList.remove('seq'); $('banner').classList.remove('lose');
   $('transition').classList.remove('on');
   $('grid').classList.remove('saint'); $('grid').classList.remove('buffed'); $('grid').classList.remove('alert','hot');
@@ -2967,7 +2967,7 @@ export function goHome(onCovered, opts){
       setTimeout(()=>{
         const covered = document.querySelector('#storyStage.on')
                      || document.body.classList.contains('flight-on');
-        if(covered) $('home').classList.remove('on');
+        if(covered) hideHome('goHome/keepPages');
       }, 600);   // 黑幕還蓋著的窗內（掀開前）——晚一點檢查，讓慢的開頁路徑也來得及
     }
   }, 1400);

@@ -24,7 +24,7 @@ import * as loot from './modules/loot.js';            // 拾得道具視窗 ＋ 
 import * as town from './modules/town.js';            // 城鎮探索（非線性節點）
 import * as gear from './modules/gear.js';           // 本篇的整備畫面（吊墜叫出來）
 import * as tutorial from './modules/tutorial.js';     // 首頁「教學」鈕：下一場強制進教學
-import { playTransition } from './modules/transition.js';   // 過渡禎（開始/結束淡入淡出）
+import { playTransition, hideHome } from './modules/transition.js';   // 過渡禎（開始/結束淡入淡出）＋收首頁（唯一那一支，ver -1372）
 import { sakuraBurst } from './modules/sakura.js';   // 開始遊戲：全畫面櫻花飛舞（純程式）
 import * as story from './modules/story.js';   // 主線 scene 播放器（首頁 story 鈕）
 import * as saveSys from './modules/save.js';   // 劇情層存讀檔（F4/F7 即時、F5/F8 選欄）
@@ -534,7 +534,7 @@ function openFlight(opts){
      iframe 這一刻已經蓋滿畫面（它有不透明底色 `#05060c`），所以收掉是看不見的
      —— **不要留任何一片「靠別人藏著」的黑幕**（黑幕第六次的預防，不是修復）。 */
   story.veil(false, 0);
-  $('home').classList.remove('on');
+  hideHome('openFlight');
 }
 /* ══ 飛行檢查點（ver -558，Ray：「飛行畫面中斷回原位置、戰鬥中中斷回遭遇位置」
    「以移動距離做檢查點，第一次移動做一個，接下來每適當距離一個」）══════════════
@@ -658,7 +658,7 @@ window.__tivotFlight = {
          沒帶（舊鑰匙）＝沒宣告，combat 會退回敵人卡的 `story`（ver -495）。 */
       /* `ship:true` ＝這一場是**船戰**（ver -947）：BR 窗口期間敵人多吃
          `tuning.shipDualBonus`。飛行頁交棒的兩條路都要帶（見 bootBattleGate）。 */
-      ()=>{ $('home').classList.remove('on'); combat.startScriptBattle(id, { story: req && req.scripted, ship:true }); },
+      ()=>{ hideHome('flightBridge/kerb'); combat.startScriptBattle(id, { story: req && req.scripted, ship:true }); },
       ()=>story.close({ keepBgm:true }));
   },
   /* 降落（ver -416，Ray：「靠近城鎮時加入降落按鈕，點擊進入城鎮預設畫面」）。
@@ -761,7 +761,7 @@ function bootBattleGate(req){
     enterBattleAudio(req.battle);         // 戰鬥那道門（ver -1354）
     story.setBattleCueId(req.battle);     // 同橋接那一條（ver -746）：曲子照這一場的卡挑
     story.playKerberosFromRisen(
-      ()=>{ $('home').classList.remove('on');
+      ()=>{ hideHome('bootBattleGate/kerb');
             combat.holdEnemyRise();   // 降臨押到門全開（ver -875）
             combat.startScriptBattle(req.battle, { story: req.scripted, ship:true }); },   // 明確宣告才算，否則退回敵人卡（ver -495）；ship＝船戰（-947）
       ()=>{ story.close({ keepBgm:true }); combat.releaseEnemyRise(); });
@@ -808,7 +808,7 @@ window.addEventListener('pagehide', refreshBoot);
   try{
     const L=JSON.parse(localStorage.getItem('tivot_land_req_v1')||'null');
     localStorage.removeItem('tivot_land_req_v1');
-    if(L && L.town){ markBooted(); $('home').classList.remove('on'); town.open(L.town, L.node||undefined); return; }
+    if(L && L.town){ markBooted(); town.open(L.town, L.node||undefined); hideHome('landReq/town'); return; }
   }catch(e){}
   const imgs=[], sfx=[], bgm=[];
   for(const k of Object.keys(ASSETS)){
@@ -1038,7 +1038,7 @@ window.addEventListener('pagehide', refreshBoot);
            EpicBattle／piratebattle 在「開機直入戰鬥」這條路上會放錯首。 */
         const bk = battleBgmOf(req.battle);
         SFX.playBgm(asset(bk), { fadeOutMs:600, volume: bgmVol(bk) });
-        setTimeout(()=>{ $('home').classList.remove('on'); combat.startScriptBattle(req.battle, { ship:true }); }, 2500);   // 同上：這條也是飛行交棒（-947）
+        setTimeout(()=>{ hideHome('bootDirectBattle/alFlash'); combat.startScriptBattle(req.battle, { ship:true }); }, 2500);   // 同上：這條也是飛行交棒（-947）
       }
     };
     ov.addEventListener('click', go);
@@ -1439,7 +1439,7 @@ function enterTown(t, n, opts){
                      那段空窗看到的就是舊地圖 —— Ray：「我從瓦努努起飛，進到東泊
                      還是先看到瓦努努的圖？不是應該被 kill 掉了嗎？」
                      ⚠ 冪等：飛行沒開著時 `closeFlightFrame()` 什麼都不做。 */
-                  ()=>{ $('home').classList.remove('on'); closeFlightFrame(); });
+                  ()=>{ hideHome('enterTown/covered'); closeFlightFrame(); });
 }
 function openTownAt(t, n){ enterTown(t, n); }
 saveSys.setHost({
