@@ -386,8 +386,12 @@ const NP_GROCER_LINES = [
 export const DRAGON_LINES = {
   chase: [
     /* ① 進入主廳 —— 那一夜的第一場。 */
+    /* ⚠⚠ **第一拍換曲**（ver -1398，Ray：「遭遇　追擊戰時 bgm…播到王座戰結束為止」）：
+       `bgm` 是**持續狀態**，換一次就一路播下去；四場戰鬥卡自己也寫了 `bgm_gothic`，
+       而且不寫 `bgmAfter` ⇒ 打完接回戰前那一首（還是 gothic），整段不斷曲。
+       ⚠ 這一拍**之前**是古城固有的 `numina`（Ray：「遭遇龍之前」）。 */
     { flag:'bl_chase1', sides:{ RENNA:'L' }, lines:[
-      sor('guardtalk','喔！學不乖的傢伙！'),
+      Object.assign(sor('guardtalk','喔！學不乖的傢伙！'), { bgm:'gothic' }),
       any('argue','小偷龍！'),
       nou('awkward','叫人家小偷龍實在有點……'),
       ren('run','小心！要來了！'),
@@ -433,8 +437,10 @@ export const DRAGON_LINES = {
     sor('furiousq','跑出去了！'),
     nou('shocked2','讓牠襲擊城鎮就不好了！'),
     ren('command','上船追！'),
-    /* 船升空。 */
-    nou('cringe','一片黑，看不到在哪！'),
+    /* 船升空。⚠⚠ **這一拍換 `warhorn`**（ver -1398，Ray：「登船進空中戰前用 warhorn」）
+       —— 王座戰打完那一刻卡上的 `bgmAfter:'crisis'` 已經把曲子換成 `crisis`
+       （「王座戰結束後用 crisis 直到登船」），登船就是 crisis 的終點。 */
+    Object.assign(nou('cringe','一片黑，看不到在哪！'), { bgm:'warhorn' }),
     sor('guardthinking','諾薇兒，安靜下！'),
     sor('back','有了！'),                       // 發動獵手之眼
     any('lookup','往這邊，過來了！'),

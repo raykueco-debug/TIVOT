@@ -69,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.16-1397';
+export const VERSION = 'ver 2026.09.16-1398';
 
 export const GAME_CONFIG = {
 
@@ -2311,8 +2311,9 @@ export const GAME_CONFIG = {
        ⚠ **打完牠會逃走**（稿：索「喔，逃了！」）⇒ 這一場是這一局的**結算點**：
          `sessionEnd` 不寫（它本來就不屬於任何 `session`），打完照常閉棺結算。
        ⚠ **不禁聖徒化／搭檔技**：Ray 沒說要禁（禁了要明寫，同北泊城鎮戰那一條）。
-       ⚠ `bgmAfter` 不寫：追擊戰的 `gothic` 是**那一段**才換（見 3b 的說明），
-         這一場打完接回古城的 `numina`（戰前那一首）。 */
+       ⚠ `bgm`／`bgmAfter` 都不寫：這一場是**遭遇龍之前**，照 Ray 的分法整段都是
+         古城固有的 `numina`（戰前那一首，打完自己接回來）——
+         `gothic` 要到那一夜的追擊才換（見下面那一組的說明）。 */
     ep_belisar_altar: { enemy:'bl_dragon_chase' },
     /* ══⚠⚠⚠ 那一夜的奪回戰（ver -1387，Ray 交稿）══════════════════════════════
        三張敵卡 ver -1343 就交了，當時的註解寫著「**還沒有任何戰鬥卡指到它們**
@@ -2326,10 +2327,25 @@ export const GAME_CONFIG = {
          ⚠ 空中那一場是**另一局**（中間上了船、換了場景），所以它自己收自己。
        ⚠ `noEval` 都不寫 ＝ 照舊由蕾娜評（§6.5.2「預設就有評價，沒有的是特例」）。
        ⚠ 聖徒化／搭檔技都不禁：那一夜四個人都在。 */
-    bl_chase:  { enemy:'bl_dragon_chase',  session:'bl_night' },
-    bl_throne: { enemy:'bl_dragon_throne', session:'bl_night', sessionEnd:true },
-    /* ⚠ 空中戰：`kind:'aerial'` 在敵卡上（降臨與淨化特效吃得到，§6.5.4.4）。 */
-    bl_sky:    { enemy:'bl_dragon_sky' },
+    /* ══⚠⚠⚠ **那一段的四首曲子**（ver -1398，Ray 交辦）══════════════════════
+         遭遇龍**之前**  古城固有的 `numina`（`TOWNS.belisar.bgm`，這裡不抄第二份）
+         遭遇＋追擊      `gothic` —— **一路播到王座戰結束為止**
+         王座戰結束後    `crisis` —— 直到登船
+         登船～空中戰前  `warhorn`（腳本那一拍，`DRAGON_LINES.throne`）
+         對龍空戰        `irregular`
+       ⚠⚠ **卡上的 `bgm` 是 ASSETS 的全名**（`bgm_gothic`）、**`bgmAfter` 是短名**
+         （`crisis`）—— 兩格查的是不同的表，這是既有的慣例（同 `np_nightmare`）。
+       ⚠ 追擊那四場**不寫 `bgmAfter`** ＝ 打完接回**戰前那一首**，而戰前那一首
+         已經被 chase① 的第一拍換成 `gothic` ⇒ 整段追擊不斷曲（§6.5.2）。
+       ⚠⚠ 只有**王座那一場**寫 `bgmAfter:'crisis'`：Ray 的「播到王座戰結束為止」
+         指的就是這一刻換手。⚠ 戰敗不換（`resumeFrom` 本來就只在打贏時吃它）——
+         再打一次當然還是 `gothic`。 */
+    bl_chase:  { enemy:'bl_dragon_chase',  session:'bl_night', bgm:'bgm_gothic' },
+    bl_throne: { enemy:'bl_dragon_throne', session:'bl_night', sessionEnd:true,
+                 bgm:'bgm_gothic', bgmAfter:'crisis' },
+    /* ⚠ 空中戰：`kind:'aerial'` 在敵卡上（降臨與淨化特效吃得到，§6.5.4.4）。
+       ⚠ `bgmAfter` 不寫 ＝ 打完接回戰前那一首（`warhorn`）—— 之後那幾拍還在船上。 */
+    bl_sky:    { enemy:'bl_dragon_sky', bgm:'bgm_irregular' },
     /* 北方泊地的城鎮戰（ver -583（-893 前用詞））：每一格走進去打一場，共用這一張佔位卡。
        ⚠ **不禁聖徒化／搭檔技**：Ray 沒說要禁（禁了要明寫 noSaint/noPartner）。
        ⚠ 打輸走一般流程 —— 城鎮插入戰的敗北會被抬回這座城的旅店（§6.5.2 那張表）。

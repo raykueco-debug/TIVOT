@@ -633,8 +633,22 @@ const BGM_ALIAS={ crisis:'peritunematerial_crisis_loop', lunaria:'bgm_lunaria',
 const BGM_SRC=(()=>{ const m={};
   for(const f of BGM_FILES) m[f.replace(/\.[^.]+$/,'').toLowerCase()]='resources/audio/bgm/'+f;
   return m; })();
+/* ══⚠⚠⚠ **短名查不到就回頭問 `ASSETS.bgm_<短名>`**（ver -1398）══
+   `BGM_ALIAS` 是**手維護的第二張表**，而「這首曲子存在」的真相在 `ASSETS` ——
+   兩張表必然走鐘，而且**漏掉一列是靜靜壞掉的**：`bgmSrc` 回 null 只印一行 console，
+   畫面上什麼事都沒有，曲子就是不響。
+   ⚠⚠ **實測代價：貝利薩爾古城從 ver -1350 交件以來一首都沒播過** ——
+     `TOWNS.belisar.bgm='numina'`，而 `numina` 沒有進 `BGM_ALIAS`
+     （`gothic`／`irregular` 也沒有）。一次測試就印了 156 行「沒有這首 BGM：numina」。
+   ⇒ 這一行把**預設的那一側翻成安全的**（鐵律 13）：以後在 `ASSETS` 加一首
+     `bgm_xxx`，短名 `xxx` 自動就能用，不必記得回來補 `BGM_ALIAS`。
+   ⚠ `BGM_ALIAS` 留著：它處理的是**短名與檔名對不起來**的那幾首
+     （`suspense`→`…Suspense6…`、`battle`→`bgm_battle`），那不是這一條取代得了的。 */
 function bgmSrc(n){ const k=String(n||'').toLowerCase();
-  return BGM_SRC[k] || BGM_SRC[BGM_ALIAS[k]] || null; }
+  if(BGM_SRC[k]) return BGM_SRC[k];
+  if(BGM_ALIAS[k] && BGM_SRC[BGM_ALIAS[k]]) return BGM_SRC[BGM_ALIAS[k]];
+  try{ const a=asset('bgm_'+k); if(a) return a; }catch(_){}
+  return null; }
 /* 離開劇情要**回到主畫面的曲子**（Ray 指定）。⚠ 走 config 的鍵不要寫死路徑：
    主選單換曲時只改 config，這裡自動跟著。音量也用 config 那一份。 */
 const HOME_BGM='resources/audio/bgm/bgm_mainmenu.m4a';   // ⚠ 音量問 fileGain(HOME_BGM)，不要在這裡記第二份（ver -441）
@@ -1870,7 +1884,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1397';
+const KERB_V='?v=1398';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
