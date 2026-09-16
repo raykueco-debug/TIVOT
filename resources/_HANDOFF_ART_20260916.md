@@ -697,7 +697,19 @@ document.body.appendChild(a); a.click(); a.remove();
 → 直接落在 `%USERPROFILE%\Downloads`。**「Chrome 擋自動下載」那一句也過期了**
 （至少對 blob URL 不擋）。⚠ 圖橋還是要開著 —— **進料**那一路（`/grab`，走 `window.name`）沒有變。
 
-## ⚠ 還沒處理的兩件（下一個 session）
+## ✔ 這兩件 Ray 看過了，**決定不修**（原話：「沒關係 照這樣交件」）
+
+⚠⚠ **下一個 session 不要把它們當待辦撿回來** —— 這一節留著是紀錄，不是工單。
+
+1. **草書拼錯**：`stairwell` 那一格印的是 **`Spirad Well`**（正確是 `Spiral Well`）。
+   ⚠ 影響有限 —— 圖上的英文是**裝飾**，玩家看到的地名是程式壓上去的（§`_map_spec.md`）。
+   要修得整張重擲，Ray 判定不值得。
+2. **左下角一大片空白**：`drywell`／`rooffall` 被擠到左緣、而左下四分之一是空紙。
+   那是版面（15×10）在那一區本來就沒有節點造成的，不是模型畫壞。Ray 判定不重排。
+
+⚠ 真的哪天要重擲，ChatGPT 那一串叫「繪製羊皮紙路線圖」—— ⚠⚠ **那個帳號不保存對話**，
+  分頁一關就沒了，屆時要用 `_layoutB_belisar.png` ＋ `_ref_material.jpg` ＋
+  第二十節那份逐格提示詞**從頭餵一次**。
 
 1. **草書拼錯一個**：`stairwell` 那一格印的是 **`Spirad Well`**（正確是 `Spiral Well`）。
    ⚠ 影響有限 —— 圖上的英文是**裝飾**，玩家看到的地名是程式壓上去的（§`_map_spec.md`）。
