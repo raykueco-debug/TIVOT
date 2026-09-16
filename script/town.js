@@ -4289,7 +4289,7 @@ export const TOWNS = {
         ren('front','畢竟是舊道，應該還是比上次的山路好走吧。'),
         ren('tired','『永夜』之後沒有馬車願意載我們往那個方向去……馬匹也不好穿過溪谷呢。'),
         sor('think','有水的話……沒地方停船嗎？'),
-        ren('think','地形不好，沒地方下錨。'),
+        ren('thinking','地形不好，沒地方下錨。'),
         ren('tired','只能辛苦點囉。'),
         sor('laugh','我是無所謂啦，但是小公主可以嗎？'),
         any('answer','我、我可以！'),
@@ -4306,7 +4306,7 @@ export const TOWNS = {
         Object.assign(ren('sighbreath','再怎麼樣也不行吧……'), { onlyIf:'ep_renna_met' }),
         /* ── 合流 ── */
         ren('front','玩笑先放一邊，趁早出發吧。'),
-        ren('think','聽說古城裡沒有禍魘，入夜前能到的話會輕鬆很多。'),
+        ren('thinking','聽說古城裡沒有禍魘，入夜前能到的話會輕鬆很多。'),
       ] },
     ],
     /* ══⚠⚠⚠ **自由活動是會開會關的**（ver -1360，Ray：「自由活動期間可以約會，
@@ -4602,7 +4602,7 @@ export const TOWNS = {
         acts:[ { flag:'ep_dine_nou', withWho:'NOUVELLE', lines:[
           nou('happy','東海的料理……'),
           { speaker:'PLAYER', blank:true },
-          nou('Shocked','沒有啦，我沒有很餓！'),
+          nou('shocked','沒有啦，我沒有很餓！'),
           nou('hungry',''),
           { speaker:'PLAYER', blank:true },
           nou('concern','嗯……'),
@@ -5113,7 +5113,7 @@ export const TOWNS = {
           ren('lookaway','……'),
           ren('meltdown','……'),
           ren('lookawaytalk','任務……完成了，撤離吧。'),
-          nou('Surprise','欸？可是蕾娜小姐的髮飾……'),
+          nou('surprise','欸？可是蕾娜小姐的髮飾……'),
           ren('lookawaytalk','不重要。連我自己都不記得從什麼時候開始戴的。'),
           ren('meltdown','……'),
           Object.assign(ren('talkwork','走吧。'), { flags:['ep_belisar_done'] }),
@@ -5190,7 +5190,7 @@ export const TOWNS = {
                  sides:{ RENNA:'L' }, lines:[
           ren('curious','竟然這麼快就找到了。'),
           nou('cringe','好像……已經在半啟動的狀態了。'),
-          ren('think','會是感應到安雅小姐的關係嗎……？'),
+          ren('thinking','會是感應到安雅小姐的關係嗎……？'),
           sor('side','好啦小公主，到妳上場了。'),
           any('silent',''),
           { speaker:'PLAYER', blank:true },
@@ -5212,7 +5212,7 @@ export const TOWNS = {
           ren('reachcry','不要！'),
           sor(null,'妳在想什麼啊！差一點被吞掉的就是妳不是那個髮飾了！'),
           ren('shockedopen','！！'),
-          nou('Scared2','要來了！'),
+          nou('scared','要來了！'),
           { battle:'ep_belisar_altar' },
           sor('side','哈，虛有其表！'),
           sor('think','喔，逃了！'),

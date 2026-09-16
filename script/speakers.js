@@ -249,7 +249,17 @@ export const ART = {
                   /* ══ 伊甸古墓・墓門那一段（ver -1188，Ray 交稿）══ 交件是 PNG，
                      依 §5 轉 WebP；取景值逐張量（`tools/measure_si.py`）。 */
                   sad:         { src:'resources/SI/Renna_SI_sad.webp',         top:5,  bot:1517, fx:0.520 },
-                  askserious:  { src:'resources/SI/Renna_SI_askserious.webp',  top:3,  bot:1527, fx:0.525 } } },
+                  askserious:  { src:'resources/SI/Renna_SI_askserious.webp',  top:3,  bot:1527, fx:0.525 },
+                  /* ══ 貝利薩爾・祭壇那一段（ver -1372）══ 腳本（-1353）早就在用這兩個名字，
+                     圖是 Ray 這一輪才交的 —— 在那之前 `script_lint.py` 一直報
+                     「沒有這張差分，會回退基本立繪」（**靜靜回退，畫面上沒有錯誤訊息**）。
+                     交件是 PNG，依 §5 轉 WebP、原 PNG 收進 `_originals/SI/`；
+                     取景值逐張量（`tools/measure_si.py`），**不沿用別張**（§6.5）——
+                     這兩張都是大動作的姿勢，臉本來就不在圖的正中：
+                     `fx` 0.644／0.608 比她平常那幾張（≈0.52）偏右將近一成的圖寬，
+                     沿用舊值會把她整個往左推一大截。 */
+                  scream:      { src:'resources/SI/Renna_SI_scream.webp',      top:7,  bot:1527, fx:0.644 },
+                  reachcry:    { src:'resources/SI/Renna_SI_reachcry.webp',    top:2,  bot:1533, fx:0.608 } } },
   /* ⚠⚠ 諾薇兒的表情差分是**不同姿勢**（跑、畏縮、驚恐、絕望、驚訝），不是換臉，
        所以每一張**各帶自己的 top/bot/fx**（ver -325 量完）。
        ⚠ 沿用 front 那一組的後果實測過：Scared 的臉其實在 0.397，照 0.564 擺會
@@ -329,7 +339,18 @@ export const ART = {
                   saintinstall:{src:'resources/SI/Nouvelle_SI_SAINTINSTALL.webp',top:76,bot:1519,fx:0.505, rescale:true },
                   run:      { src:'resources/SI/Nouvelle_SI_Run.webp',       top:13, bot:1533, fx:0.418 },
                   cringe:   { src:'resources/SI/Nouvelle_SI_Cringe.webp',    top:5,  bot:1533, fx:0.459 },
-                  scared:   { src:'resources/SI/Nouvelle_SI_Scared.webp',    top:9,  bot:1530, fx:0.397 },
+                  /* ⚠⚠⚠ 這裡**曾經有第二個 `scared:`**（指向舊的 `Nouvelle_SI_Scared.webp`），
+                     而本區塊尾巴（湖上甲板 ver -744）又寫了一個 `scared:` 指向重畫版
+                     `Nouvelle_SI_Scared2.webp` —— **同一個物件實字裡兩把同名鑰匙，
+                     後面那一把靜靜贏**（鐵律 7：一個量只有一個定義點）。
+                     後果有兩層，**兩層都沒有任何錯誤訊息**：
+                       ① 每一句 `nou('scared')` 其實都拿到重畫版，前面那一行是死碼；
+                       ② 於是誰都不知道舊圖已經沒有人在用了。
+                     ver -1372 收成尾巴那唯一的一個定義（＝**維持今天畫面上真正在跑的那一張**，
+                     不趁機換圖）。⚠ `Nouvelle_SI_Scared.webp` 因此成為**孤兒素材** ——
+                     要不要走 `tools/recycle.sh` 是 Ray 的決定（§5：回收區是唯一的刪除出口）。
+                     ⚠ 自檢：`node --input-type=module --check` **驗不出**重複鍵
+                     （物件實字的重複鍵在非嚴格模式下合法），所以這一類只能靠人看或另外寫檢查。 */
                   desperate:{ src:'resources/SI/Nouvelle_SI_Desperate.webp', top:2,  bot:1532, fx:0.415, faceFx:0.450, faceZoomK:0.79 },
                   surprise: { src:'resources/SI/Nouvelle_SI_Surprise.webp',  top:5,  bot:1524, fx:0.487 },
                   /* 會客廳那一幕的四張（ver -348）。
@@ -480,7 +501,12 @@ export const ART = {
        所以要明寫 `rescale:true` ＝ 這一張用它自己的高（同諾薇兒 SAINT INSTALL 那張）。
        ⚠ 圖若之後補成 1024×1536，這一行的 rescale 與 top/bot 都要重來。 */
     furiousq:     { src:'resources/SI/Sorana_SI_furiousq.webp',      top:5,  bot:1293, fx:0.535, rescale:true },
-    hug:          { src:'resources/SI/Sorana_SI_hug.webp?v=2',       top:11, bot:1485, fx:0.408 } } },  // ver -843：Ray 換新圖＋重量（?v=2 同名覆蓋）
+    hug:          { src:'resources/SI/Sorana_SI_hug.webp?v=2',       top:11, bot:1485, fx:0.408 },  // ver -843：Ray 換新圖＋重量（?v=2 同名覆蓋）
+    /* ══ 貝利薩爾・祭壇那一段（ver -1372）══ 同蕾娜那兩張：腳本 -1353 就在用這個名字，
+       圖這一輪才交。⚠ `fx:0.668` 是舉劍開闊的姿勢量出來的（她平常那幾張 ≈0.5），
+       這是**那一張圖**的事實，不可沿用（§6.5）。人物像素身高 1517，與基本立繪的
+       1522 差 0.3%＝雜訊 ⇒ **不加 `rescale`**（同 `tired` 那一條的判準）。 */
+    battlecry:    { src:'resources/SI/Sorana_SI_battlecry.webp',     top:6,  bot:1523, fx:0.668 } } },
   /* ⚠ 取景值於 ver -624 **重量**：`Anya_SI_front` 換過圖（舊的留成
      `XAnya_SI_front.webp`）—— §5「換圖一定要重量取景值」。
      ⚠ `flight/index.html` 的 `PORTRAIT.anya` 是同一組數字，改一邊要改另一邊。 */
@@ -581,6 +607,15 @@ export const ART = {
     lookup:    { src:'resources/SI/Anya_SI_lookup.webp',     top:5, bot:1525, fx:0.479 },
     nervous:   { src:'resources/SI/Anya_SI_nervous.webp',    top:0, bot:1526, fx:0.459 },
     scared2:   { src:'resources/SI/Anya_SI_scared2.webp',    top:3, bot:1519, fx:0.356 },
+    /* ══ 東方泊地・碼頭／甜品店 ＋ 貝利薩爾祭壇（ver -1372）══
+       腳本（-1318／-1353）一共有 6 拍在用這兩個名字，圖是 Ray 這一輪才交的 ——
+       在那之前一律**靜靜回退成基本立繪**（`script_lint.py` 每次都報，畫面上沒有訊息）。
+       交件是 PNG，依 §5 轉 WebP、原 PNG 收進 `_originals/SI/`；逐張量（measure_si.py）。
+       ⚠ 兩張都是**全身站姿**（人物像素身高 1526／1521，與基本立繪的 1531 差 0.3%
+         ＝雜訊）⇒ 照量即可，**不加** `cm`／`standCm`／`rescale`
+         —— 那三個旋鈕是給近景與坐姿用的（見上面 `sobbing`／`desperate`）。 */
+    amazed:    { src:'resources/SI/Anya_SI_amazed.webp',     top:1, bot:1527, fx:0.480 },
+    curious:   { src:'resources/SI/Anya_SI_curious.webp',    top:3, bot:1524, fx:0.421 },
   } },
   /* ══ 娜塔莉（ver -636，Ray 交稿）══ 安雅的侍女，只在北方泊地那一幕出現。
      ⚠⚠ 兩張圖都是**坐倒在地**的姿勢，不是站姿 —— 所以 `cm` 不是她的真實身高，
