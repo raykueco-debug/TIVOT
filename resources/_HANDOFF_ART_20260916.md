@@ -622,3 +622,85 @@ map: {
 `Kaede` 那台的 repo 在 OneDrive 同步資料夾裡，`.git/` 會被同步。
 **兩台不要同時對同一個 repo 動手** —— 會出現檔案鎖與 `.git/index.lock` 衝突。
 主力搬走之後，那台就只拿來 `git pull` 看，不要再開 session 產圖。
+
+---
+
+# 二十、✔ 貝利薩爾小地圖重畫完成（照 `reference/B.PNG`）
+
+**交件**（`resources/map/`）：
+
+| 檔 | 是什麼 |
+|---|---|
+| `map_belisar.webp` | **同名覆蓋**（1536×1024、alpha、371 KB）。舊版已進 `_recycle/` |
+| `_spots_belisar.json` | **37 格**（舊版 38 格，還帶著 ver -1403 就移除的 `courtyard`）。**量出來的**，不是估的 |
+| `_layoutB_belisar.png` | 這一版的版面規格圖（＝餵給模型的那一張） |
+| `_expect_belisar.json` | 下給模型的那組比例座標（`map_check2.py` 會優先讀它） |
+| `_ref_material.jpg` | 材料參考（紙色／撕邊／串珠墨線／圓墨點／草書）—— 從 `map_shinierforest` 裁的，**不含任何插畫** |
+| `_originals/map/map_belisar_v2.png` | 去背後的原 PNG |
+
+## ⚠ 程式端要接的（兩件）
+
+1. **`script/town.js:5540` 的 `img` 要加 `?v=2`** —— 同名覆蓋，不加的話所有人（含我們自己的瀏覽器）
+   抱著舊快取，而**畫面上完全看不出來**（§5 那個查了四版的坑）。地圖走的是手寫字串，
+   `ASSET_VER` **管不到它**。
+2. **`map.spots` 整份換成新的 `_spots_belisar.json`（37 筆）** —— 不准說「只有幾格變了、其餘沿用」。
+   舊的那一份有 `courtyard`，而那一格已經不存在。
+
+## 版面：不是重排，是把 B 攤平成橫的
+
+- `reference/B.PNG` 與 `reference/投影片1.PNG` **是同一個檔**（md5 `d3ddf1ea…`）——
+  程式端 ver -1406 已經照它接完，所以**拓樸不必重解**。實測 37 格 44 邊、方向全對。
+- ⚠ **B 是直的（0.80），小地圖的框是橫的（1536/1024，寫死在 `style.css` 的 `aspect-ratio`）。**
+  B 攤成整數格是 11 欄 × 15 列，硬塞進 3:2 每列只剩 64px（現行圖是 72px/列、170px/欄）。
+- 作法照 Ray -1378 那句「**調整成不會交錯，房間可最小限度移動，空間邏輯正確就好**」：
+  以 B 為原位、逐軸解硬約束再短程退火 ⇒ **15 欄 × 10 列、方向違規 0、撞格 0、交叉 0、
+  平均位移 0.38 格**。x/y 名次與 B **沒有一格差超過 6** —— 它就是 B。
+- ⚠ 美術這邊**沒有動 `script/town.js`**（鐵律 11）。
+
+## 驗收（量出來的，不是看起來對）
+
+```
+量到墨點 37 / 37
+方向宣告 88 條 ⇒ 違規 0
+```
+
+⚠⚠ **`tools/map_check2.py` 這一張驗不準，不要被它的紅字嚇到**，兩個原因：
+- 它在 `_expect` 的 **±90px** 視窗裡找墨點，而模型自己把構圖擠緊了（最多飄 ~90px）
+  ⇒ 它只找得到 30/37。真正的量法是**全圖抓墨點＋匈牙利指派**（墨點的簽名很乾淨：
+  距離轉換的 `dist` 在 6~9.8 之間，線只有 2~3）。
+- 它的「連通性」對**串珠狀墨線**沒有意義：珠子之間本來就是斷的，膨脹 2px 封不掉，
+  於是它報一堆「沒接上」。**線接對了沒有要靠 `_layout` 肉眼對一次**（那一條它自己也寫了）。
+
+## ⚠ 模型漏畫了 7 顆墨點 —— **自己補，沒有重擲**
+
+`dragstair` `drywell` `rooffall` `incense` `mirrorway` `altar` `entrance` 只有圖示與草書名、
+沒有圓墨點（`foyer` 與 `bonerack` 有畫但小一號）。照 `_map_spec.md` 那條
+（「墨點是幾何不是繪畫，自己補比再擲一次可靠」）：**量既有墨點的半徑中位數（8.0）
+與墨色中位數（68,39,20）→ 4× 超取樣畫圓 → `darken` 合成**。補完 37/37 全部量得到。
+
+## ⚠⚠⚠ 產線的坑（新的一條）：**表單 POST 那條路已經不通了**
+
+`tools/imgbridge.py` 檔頭那段 CSP 實測是 **ver -1264** 記的，其中
+「form-action 未設定 ⇒ 表單 POST 出去可以」**現在不成立**：實測送出去之後
+**橋的 log 連一行 `ERR` 都沒有**（＝請求根本沒離開瀏覽器），chatgpt.com 的 CSP 裡
+也確實沒有 `form-action` ⇒ 是**混合內容**被擋（https 頁面 → http://127.0.0.1）。
+
+**改走這一條（實測可用，而且更短）：**
+
+```js
+const blob = await (await fetch(img.src)).blob();
+const a = document.createElement('a');
+a.href = URL.createObjectURL(blob); a.download = 'xxx.png';
+document.body.appendChild(a); a.click(); a.remove();
+```
+
+→ 直接落在 `%USERPROFILE%\Downloads`。**「Chrome 擋自動下載」那一句也過期了**
+（至少對 blob URL 不擋）。⚠ 圖橋還是要開著 —— **進料**那一路（`/grab`，走 `window.name`）沒有變。
+
+## ⚠ 還沒處理的兩件（下一個 session）
+
+1. **草書拼錯一個**：`stairwell` 那一格印的是 **`Spirad Well`**（正確是 `Spiral Well`）。
+   ⚠ 影響有限 —— 圖上的英文是**裝飾**，玩家看到的地名是程式壓上去的（§`_map_spec.md`）。
+   要修就整張重擲，先記著。
+2. **左下角有一大片空白**：`drywell`／`rooffall` 被擠到左緣、而左下四分之一是空紙。
+   那是版面（15×10）在那一區本來就沒有節點造成的，不是模型畫壞。要不要重排問 Ray。
