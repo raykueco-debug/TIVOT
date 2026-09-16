@@ -210,19 +210,43 @@ Chrome 一退到背景，`computer.left_click` 就完全打不進頁面（可以
    接在哪裡由程式端決定，美術只說「什麼時候該換成哪一張」。
 3. ⚠ **同名覆蓋的沒有**：flight 是新檔名，所以不必動 `ASSET_VER`。
 
-## 飛行地圖（大地圖）的素材 —— **還沒做完**
+## ✔ 飛行地圖（大地圖）的素材 —— 已交（ver -1414）
 
 Ray：「正面就可　動態比照羽蛇」⇒ 走**鏈式怪**那一套（`flight/index.html` 的
 `plan:'chain'`，同羽蛇／蜈蚣）：只吃**一張背視圖**，程式把它切成
-`head／wings／body` 三段，再用波動＋鳥翼拍動演出來。
+`head／wings／body` 三段，再用波動＋拍翼演出來。
 
-- 格式照 `flight/enemy/FLM_Serpent/view_3.webp`：**從正上方俯瞰、頭朝正上、
-  身體沿中軸往下、雙翼左右張開、左右對稱、透明背景、直式**。
-- 帶狀切分（羽蛇的值，新怪要自己量）：`head 0~16.5%／wings 16.5~38%／body 38~100%`。
-- ⚠ **下半要是細長連續的一條**（波動才讀得出來），不要分岔成好幾束。
-- 交件到 `resources/Flight_Enemy/FLM_DragonThrone.png`，切圖走 `flight/split_enemy.py`。
-- ⚠ 程式端隨後要在 `flight/index.html` 的敵人表補一筆
-  （`plan:'chain'`、`sprite:{dir, dorsal}`、波動與拍翼參數、`rarity`／`fromStage`）。
+| 檔 | |
+|---|---|
+| `resources/Flight_Enemy/FLM_DragonThrone.png` | 交件源稿，1024×1536、alpha |
+| `flight/enemy/FLM_DragonThrone/view_0.webp` | **已切好可直接用**，511×768、alpha、144 KB |
+| `_originals/enemy/FLM_DragonThrone_dorsal.png` | 原稿 |
+
+⚠ 只有**一張**（Ray：「正面就可」）—— 不是六視圖，所以**沒有經過 `split_enemy.py`**。
+
+### ⚠⚠ 帶狀切分是**量出來的**，不要照抄羽蛇
+
+    head  [0.000, 0.079]
+    wings [0.079, 0.368]
+    body  [0.368, 1.000]
+
+羽蛇是 `0 / 0.165 / 0.380` —— **牠的頭佔 16.5%，這一隻只佔 7.9%**（蛇有一段長頸，
+這一隻的頭是直接接在肩上的冠）。照抄的話「頭」會把半個翼根切進去，拍翼時頭跟著晃。
+⚠ 量法：逐列的不透明寬度，取 **>最寬 40%** 且包含最寬列的連續區段＝翼帶。
+
+### ⚠ 程式端要接的（美術不動 `flight/index.html`，鐵律 11）
+
+在敵人表補一筆，`sprite:{ dir:'enemy/FLM_DragonThrone/', dorsal:'view_0.webp',
+head:[0,0.079], wings:[0.079,0.368], body:[0.368,1.00] }`。
+
+其餘參數**我只給方向，數值由程式端調**：
+- `plan:'chain'`、`wingSmooth:true`（膜翼，不要蟲翅那個 `|cos|` 的頓挫）
+- **拍翼要比羽蛇更慢**（牠比羽蛇大得多；羽蛇 `wingHz:0.008`）
+- **波動要比羽蛇小而慢**：羽蛇是蛇身（`waveAmp:11.0`），這一隻是硬質的辮狀軀幹，
+  擺太大會讀成軟體動物
+- **`turnRate` 要慢**：大型 BOSS 掉頭要有重量（參考空賊 `0.00055`）
+- ⚠⚠ **不要給 `rarity`／`fromStage`** —— 牠不是隨機刷的野怪。ver -1417 起是
+  「索敵後必出」的劇本遭遇，進隨機池會變成在天上到處都是。
 
 ## ⚠ alpha 交件時要看的一件事（ver -1414 實測）
 
