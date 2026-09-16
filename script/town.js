@@ -5741,7 +5741,7 @@ export const TOWNS = {
              ⚠⚠ **要有人收**：這一段打完在下面那一拍 `cgBack:null`（同鹿主那一段
                的作法）—— 中景層是持續狀態，不收就一路跟到回東泊。 */
           { speaker:'NARRATION', text:'', shake:true, auto:900,
-            cgBack:'resources/enemy/mon_dragon_throne_dormant.webp' },
+            cgBack:'resources/enemy/mon_dragon_v1_shackled.webp' },
           ren('scream','呀！'),
           /* ══⚠⚠⚠ **蕾娜倒地・髮飾脫落**（ver -1397，Ray 交件 `020-rennadrop`）══
              稿：「龍出現後蕾娜『呀！』之後，接插圖 020 由下往上平移；在插圖背景
