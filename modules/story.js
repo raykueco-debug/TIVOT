@@ -454,6 +454,30 @@ function leaveSlot(side){
 }
 
 /* 明暗：說話者原色，其餘壓暗。 */
+/* ══⚠⚠⚠ **轉場就清場 —— 只有這一支**（ver -1422，鐵律 8）══════════════════════
+   > Ray（連報三次）：「切換場景時不要殘留立繪，要講幾次？憲法沒有嗎？
+   >   每次轉場都要把前面的立繪清掉」「轉場立繪還是在，**播插圖也算轉場**」
+
+   §6.5 早就有這條規矩，但它一直只收在**段落的收尾**（`clearCast`／`endScene`）——
+   「段落中途換了個地方」那幾條路從來沒有人收。**現在「什麼算轉場」寫在呼叫端、
+   「轉場要做什麼」寫在這裡**，日後多一條換景的路只要呼叫它。
+
+   **現在有三條路算轉場**（都在 `renderLine` 裡）：
+     ① `bg:`      硬指定換背景
+     ② `bgBand:`  走時段候選鏈換背景（祭壇啟動、城重建都走它）
+     ③ `cg:`      插圖**蓋上或收掉**（兩個方向都算）
+
+   ⚠⚠ **不算轉場的**（刻意）：
+     · `cgSoft` —— 同一張插圖的差分（ver -628）：同一個地方發生了變化，不是換地方
+     · `cgBack` —— 中景層（樹靈鹿主／龍降臨）：那是**有東西出現在這一景裡**
+   ⚠ **這一拍自己的立繪不受影響**：上台在 `reveal()` 裡（走黑幕時還會延後到全亮），
+     跑在這之後。所以「換景＋這一句是誰講的」照樣把那個人放上來 —— 清掉的是上一景的人。
+   ⚠ 要跨景留人寫 `keepCast:true` ——**明寫的例外**：漏寫的下場是「多清一次」
+     （看得見、無害），不是殘留（Ray 連報三次的那一種）。 */
+function cutCastForScene(line){
+  if(line && line.keepCast) return;
+  leaveSlot('L'); leaveSlot('R');
+}
 function highlight(side){
   for(const s of ['L','R']){
     const el=slotEl(s); if(!el) continue;
@@ -1282,7 +1306,7 @@ function applyPersist(line){
      ⚠ 真的要讓人跨背景留著（同一個人走進另一個房間繼續講）就寫 `keepCast:true`。
        ⚠ 那是**明寫的例外**：預設是清掉 —— 漏寫的下場是「多清一次」（看得見、無害），
          不是「殘留」（Ray 連報好幾次的那一種）。 */
-  if(bgChanged && !line.keepCast){ leaveSlot('L'); leaveSlot('R'); }
+  if(bgChanged) cutCastForScene(line);          // ① 換背景＝轉場（見 cutCastForScene）
   /* ══⚠⚠ `bgBand:'<基底名>'` ＝ **走時段候選鏈**的換背景（ver -1187）══════════
      `bg:` 是**硬指定**（一個檔名、不吃時段）—— 只有單張的圖用它就好
      （`Ruins_shinier_DeepAltaractive` 就是那一種）。
@@ -1294,6 +1318,12 @@ function applyPersist(line){
        非同步，但這種拍本來就藏在白光／黑幕底下，有的是時間。
      ⚠ 只認**這一次**的解析結果：解完才動 `stageBg`，中途被下一拍換掉就作廢。 */
   if(line.bgBand){
+    /* ⚠⚠ **`bgBand` 也是換背景**（ver -1422）：-1420 只收了 `bg:` 那一條 ——
+       這一條是走時段候選鏈的同一件事（祭壇啟動、重建後的城都走它）。
+       ⚠⚠⚠ **判斷與清場都要「同步」做**：真正換圖是在 `im.onload` 裡（非同步），
+         把清場放進去的話會跑在**這一拍的立繪上台之後** —— 等於把現在講話的人
+         也一起掃掉。所以在這裡先比一次 `stageBg`，同步決定。 */
+    if(stageBg!==line.bgBand) cutCastForScene(line);   // ② 時段候選鏈換背景也是
     const cands=bandNames(line.bgBand, line.bgNoTime);
     const want=line.bgBand;
     (function tryNext(i){
@@ -1325,6 +1355,19 @@ function applyPersist(line){
       ? !cgCross($('storyCg'), cgCandidates(line.cg, line.cgNoTime))
       : cgFade($('storyCg'), line.cg ? cgCandidates(line.cg, line.cgNoTime) : '');
   }
+  /* ══⚠⚠⚠ **插圖也算轉場，台上的人先下去**（ver -1422，Ray：「轉場立繪還是在，
+     **播插圖也算轉場**」）══ -1420 只收了**換背景**那一條路，而插圖是另一條 ——
+     `cg:'…'`（蓋上插圖）與 `cg:null`（回到原背景）**兩個方向都是轉場**。
+     ⚠⚠ 實例（祭壇那一段）：插圖上索菈娜喊「危險！」→ 下一拍 `cg:null` 回到原背景
+       → 她就**留在原背景前面**。腳本那邊已經寫了 `hide:[…]` 把人清掉，但那是
+       **進插圖**那一拍寫的；**出插圖**沒有人寫，也不該要求腳本每次記得寫
+       （鐵律 8：規矩要做成引擎的一支函式，不是寫給腳本）。
+     ⚠⚠ **`cgSoft` 不清**：那是「同一張插圖的差分」（ver -628 的淡入切換）——
+       同一個地方發生了變化，不是換了個地方。清掉的話 007 那一對會在差分之間
+       把人閃掉一次。
+     ⚠ 這一拍自己的立繪不受影響：上台在 `reveal()` 裡（走黑幕時還會延後到全亮）。
+     ⚠ 要跨插圖留人就寫 `keepCast:true`（同換背景那一條的逃生口）。 */
+  if(cgChanged && !line.cgSoft) cutCastForScene(line);  // ③ 插圖蓋上／收掉都算
   /* 中景層（ver -870，Ray：「角色圖層應該在樹靈鹿主之上」）：`cgBack:'<明確路徑>'`
      疊在背景上、立繪之下；null 收掉。換圖走 swapImg（軟淡入，同背景那一套）——
      差分切換（deer→deerlook→deernightmare）不轉黑。 */
@@ -1957,7 +2000,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1421';
+const KERB_V='?v=1422';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，

@@ -5938,7 +5938,8 @@ export const TOWNS = {
           { battle:'ep_belisar_altar' },
           /* ⚠ 收掉中景層那隻龍（牠逃了）—— 不收的話牠會一路跟到回東泊。 */
           Object.assign(sor('side','哈，虛有其表！'), { cgBack:null }),
-          sor('think','喔，逃了！'),
+          /* ⚠ ver -1422（Ray：「喔，逃了的時候播龍吼」）—— 牠在畫面外吼那一聲。 */
+    Object.assign(sor('think','喔，逃了！'), { se:'se_monsterroardeep' }),
           /* ⚠⚠ ver -1413（Ray：「逃了以後的震動要播破瓦聲跟流水聲 se_waterfall」）——
              **一拍兩個聲音**（`se` 吃陣列，ver -1413 的引擎改動）：崩塌與湧水是
              同時發生的，拆成兩拍會演成「先塌、再淹」，而下一句正是安雅喊「淹出來了」。
