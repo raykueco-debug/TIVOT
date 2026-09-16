@@ -69,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.17-1426';
+export const VERSION = 'ver 2026.09.17-1427';
 
 export const GAME_CONFIG = {
 
@@ -3938,6 +3938,14 @@ export const ASSETS = {
   /* 第三型態（空中戰第一形態，ver -1418 接線、**-1424 圖到了**）：
      美術去背完交的是 `mon_dragon_v1_flight.webp`（1536×1024，真 alpha：
      全透 48.6%／半透 10.0%）—— 這一格改指它。 */
+  /* ══⚠⚠ **空中戰的兩階，對應美術 ver -1414 那張表**（-1427 確認）══
+       階 3　開場 ～ HP 50%　→ `enemy_bl_dragon_front` ＝ `mon_dragon_v1_flight`（正面飛行）
+       階 4　HP ≤ 50%　　　 → `enemy_bl_dragon_sky`　 ＝ `mon_dragon_v1_ascendant`（立姿）
+     ⚠ 美術那張交接單寫「`enemy_bl_dragon_sky` 改指新的那一張」——那是**假設空中戰
+       只有一張卡**。ver -1419 的 `morph` 是**兩張卡**：`bl_sky` 這一場的敵人是
+       `bl_dragon_front`，打到 50% 由卡上的 `morph` 換成 `bl_dragon_sky`。
+       **對應的圖完全一樣，只是鑰匙分兩支** —— 不要照字面把 sky 改指 flight，
+       那會變成兩階都是同一張。 */
   enemy_bl_dragon_front:  "resources/enemy/mon_dragon_v1_flight.webp",
   enemy_bl_dragon_sky:    "resources/enemy/mon_dragon_v1_ascendant.webp",
   /* 王座徘徊者的放光音（ver -1351，Ray：「音效用 enemy_firebeam」）。
