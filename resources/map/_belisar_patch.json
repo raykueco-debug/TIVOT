@@ -1,0 +1,70 @@
+{
+  "_note": "貝利薩爾拓樸提案（ver -1378 美術提出，程式端照 _HANDOFF_ART 施工）。null＝拆掉那個出口。 ／ ver -1378 Ray：「把下沉中庭拿掉」⇒ _remove。",
+  "_ok_dead": [
+    "altar",
+    "throne",
+    "crown",
+    "offering",
+    "entrance"
+  ],
+  "stairwell": {
+    "up": "draincliff",
+    "left": "bellroom",
+    "down": null
+  },
+  "draincliff": {
+    "down": "stairwell"
+  },
+  "bellroom": {
+    "right": "stairwell"
+  },
+  "muralwalk": {
+    "right": null,
+    "down": "incense"
+  },
+  "incense": {
+    "up": "muralwalk"
+  },
+  "mirrorpool": {
+    "down": "cages"
+  },
+  "cages": {
+    "up": "mirrorpool"
+  },
+  "drywell": {
+    "down": "rooffall"
+  },
+  "rooffall": {
+    "up": "drywell",
+    "left": null
+  },
+  "forge": {
+    "up": "starroom"
+  },
+  "starroom": {
+    "down": "forge"
+  },
+  "throne": {
+    "left": "crown",
+    "right": "offering"
+  },
+  "crown": {
+    "right": "throne"
+  },
+  "offering": {
+    "left": "throne"
+  },
+  "antecham": {
+    "left": null,
+    "right": null
+  },
+  "ossuary": {
+    "down": "wardtomb"
+  },
+  "wardtomb": {
+    "up": "ossuary"
+  },
+  "_remove": [
+    "courtyard"
+  ]
+}

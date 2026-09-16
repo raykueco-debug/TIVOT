@@ -13,7 +13,15 @@ cands=[f for f in glob.glob('C:/Users/Kaede/Downloads/gen_%s*.png'%base)
        if re.fullmatch(re.escape(base)+r'(?: \(\d+\))?', os.path.basename(f)[4:-4])]
 assert cands, '找不到 gen_%s*.png'%base
 cands.sort(key=os.path.getmtime); gen=cands[-1]
-dst='resources/background/%s.webp'%base
+# ⚠ ver -1376 起背景分成 15 個子資料夾 —— 先找既有檔在哪，找不到才用第 2 參數指定
+import glob as _g
+_hit=_g.glob('resources/background/**/%s.webp'%base, recursive=True)
+if _hit: dst=_hit[0].replace(chr(92),'/')
+else:
+    sub=sys.argv[2] if len(sys.argv)>2 else ''
+    assert sub, '新檔要指定子資料夾：py tools/bg_finish.py <base> <子資料夾>'
+    os.makedirs('resources/background/'+sub, exist_ok=True)
+    dst='resources/background/%s/%s.webp'%(sub,base)
 ref=os.path.getsize(dst)/1024 if os.path.exists(dst) else 400
 im=Image.open(gen).convert('RGB')
 old=Image.open(dst).size if os.path.exists(dst) else im.size
