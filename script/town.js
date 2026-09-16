@@ -5114,8 +5114,21 @@ export const TOWNS = {
          ⚠ **那一頭不給陸路回程是對的**（同 -1358 的理由）：`belisar.entrance` 的
            「下」已經是**出航**（`sail:{}`），而 §6.5.4「出航先擺，『下』不能被
            『回去』擠掉」。走路過去、搭船離開 —— 不會卡死。 */
+      /* ══⚠⚠⚠ **看見古城裡的燈光**（ver -1402，Ray：「諾薇兒的『裡面有燈光』以下
+         台詞移到古道的最後一格，最後加一個安雅的 lookup 立繪」）══
+         這兩句原本在古城中庭（`ep_bel_enter`）—— 但「裡面有燈光」是**還在外面**
+         才說得出口的話，而這一格用的正是 `Belisar_Exterior`（古堡的外觀）。
+         ⚠ 安雅那一拍**沒有台詞**：台上有人的無台詞拍要點擊才推進（§6.5 的 -628）
+           —— 她抬頭看，那就是這一段的收尾。
+         ⚠ 這一格是 `rest`（休息處），而 `actDue` 排在 `restActDue` 前面，
+           所以這一段會先演；何況這一趟還沒打過架，休息處本來就不作動。 */
       ravine: { bg:'Belisar_Exterior', name:'平原古道　溪谷口', rest:true,
-        exits:{ up:'@belisar', down:'sea' } },
+        exits:{ up:'@belisar', down:'sea' },
+        acts:[ { flag:'ep_bel_sight', need:'ep_day2', sides:{ RENNA:'L' }, lines:[
+          nou('surprise','裡面有燈光！'),
+          ren('watch','跟木雅克遺蹟的時候一樣嗎……'),
+          any('lookup',''),
+        ] } ] },
     },
   },
 
@@ -5588,9 +5601,16 @@ export const TOWNS = {
              這是我的判讀：那一格的名字就是祭壇，而稿上接著要安雅對著**裝置**發動
              能力（同木雅克的 `deepaltar`／石製遺蹟的 `altar`）。
              ⚠ 若你要的是中央大廳，改這一行的 `goto` 就好。 */
-        acts:[ { flag:'ep_bel_enter', need:'ep_day2', goto:'altar', sides:{ RENNA:'L' }, lines:[
-          nou('surprise','裡面有燈光！'),
-          ren('watch','跟木雅克遺蹟的時候一樣嗎……'),
+        /* ══⚠⚠⚠ ver -1402（Ray）：前兩句搬到**古道的最後一格**（溪谷口，見那裡），
+           這一段從「不過倒是挺安靜的」開始；收尾**推到前廳**不是祭壇 ——
+           「蕾娜『打擾了』進去以後是在前廳開始自由探索，不是直接送到祭壇」。
+           ⚠⚠ 所以祭壇那一段（`ep_bel_altar`）現在是**玩家自己走到**才觸發的：
+             它的 `need:'ep_bel_enter'` 不變，只是不再被 `goto` 直接送過去。
+           ⚠⚠⚠ 這一段 **ver -1397 就該改了，但那一批的寫檔被同一支 script 裡
+             後面一個 assert 中斷，整批沒有落地**（-1397 的 commit 訊息因此是錯的）。
+             ⇒ 教訓：**一支 script 改多處時，每一處各自寫檔**；
+               或至少在寫檔之後 `grep` 驗一次，不要憑 script 印的「ok」。 */
+        acts:[ { flag:'ep_bel_enter', need:'ep_day2', goto:'foyer', sides:{ RENNA:'L' }, lines:[
           sor('back','不過倒是挺安靜的。還真的沒什麼魔獸。'),
           ren('upset','那麼，事不宜遲。'),
           /* （厚重推門聲）—— 走既有的門音（鐵律 8，不另找一支）。 */
