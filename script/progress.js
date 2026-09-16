@@ -1084,7 +1084,30 @@ export const SCRIPT_TEST = {
               ⚠ `ep_bel_enter` 以後的**一支都不給** —— 那是要測的內容。 */
            'eastport_seen','mapcard_eastport','inn_seen_eastport_inn',
            'ep_arrive','ep_renna_met','ep_renna_night','ep_day2'],
-  enter:'town', town:'belisar', node:'entrance' };
+  enter:'town', town:'belisar', node:'entrance',
+  /* ══⚠⚠⚠ **「巡場」要多插哪幾支旗**（ver -1396，Ray：「開一個沒怪的古城給我，
+     我自己跑個圖」）══════════════════════════════════════════════════════════
+     ＝**這張圖的劇情段落全部當成演過了** ⇒ 走進去不會被任何一段抓走
+     （`ep_bel_enter` 的 `goto:'altar'`、祭壇那一場、撤離那一段、回東泊）。
+     ⚠ **安全區旗不寫在這裡**：它由 `townId` 推（`safehouse_<圖>`，鐵律 7 ——
+       插旗端與查旗端各寫一個字串的話，打錯一個字就是「插了但查不到」）。
+     ⚠ 換一張圖測的時候，這一列跟著 `town` 一起換 —— 它就是那張圖的「跳過清單」。 */
+  tourFlags:['ep_bel_enter','ep_bel_altar','ep_bel_court','ep_belisar_done','ep_bel_back'] };
+
+/* ══⚠⚠⚠ **巡場：同一個落點，沒有怪**（ver -1396）══════════════════════════
+   ＝ `SCRIPT_TEST` ＋ 安全區旗 ＋ 那張圖的跳過清單。
+   ⚠⚠ **落點只有一份**（鐵律 7）：它整個抄 `SCRIPT_TEST`，所以重指那一筆的時候
+     這一顆自己跟著走 —— 不要在這裡另寫一次 `town`／`node`／`clockHour`。
+   ⚠ 安全區旗＝`safehouse_<圖>`（見 `modules/town.js` 的 `safehouseFlag`：
+     那個名字是由 `townId` **推**出來的，兩邊都不寫死）。
+   ⚠ 它擋的是**遭遇戰**；劇情段落是靠 `tourFlags` 當成演過了擋掉的 —— 兩件事。 */
+export function tourSpec(){
+  const t = SCRIPT_TEST;
+  return Object.assign({}, t, {
+    id:'tour', name:'巡場', sub:(t.sub||'')+'（無怪）',
+    flags: (t.flags||[]).concat(['safehouse_'+t.town], t.tourFlags||[]),
+  });
+}
 
 /* ══⚠⚠⚠ **試飛的預設進度**（ver -1359，Ray：「試飛默認為 s8 瓦努努開啟後的
    自由活動期間」）══════════════════════════════════════════════════════════

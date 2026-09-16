@@ -1401,6 +1401,8 @@ bindBtn('flightBtn', ()=>startChapter(prog.FLIGHT_TEST));
    ⚠ 與「章節」的分野寫在 `SCRIPT_TEST` 的說明上：那張表是遊戲的結構，
      這一顆是「現在正在測哪一張圖」的工作狀態 —— 不要再把測試用的落點塞進 CHAPTERS。 */
 bindBtn('scriptTestBtn', ()=>startChapter(prog.SCRIPT_TEST));
+/* 巡場（ver -1396）：同一個落點、沒有怪、劇情不抓人 —— 說明在 `prog.tourSpec`。 */
+bindBtn('tourBtn', ()=>startChapter(prog.tourSpec()));
 /* 主線劇情（管理人模式限定）：從 mainScript 的 MAIN_ENTRY 開始跑 scene 鏈。
    ⚠ 不換頁 —— 劇情舞台是蓋在首頁上的一層（#storyStage z-8300），離開就回首頁。
      換頁的話存讀檔要跨頁還原，複雜度沒必要。
