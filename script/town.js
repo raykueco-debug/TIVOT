@@ -4410,6 +4410,12 @@ export const TOWNS = {
            ⚠ `cgPan:'up'` ＝**由下而上**平移（ver -1384，Ray 指定；與那兩張約會插圖
              的 `'down'` 相反）。 */
         { speaker:'ANYA', text:'', cg:'019-anyahide', cgNoTime:true, cgPan:'up' },
+        /* ⚠ ver -1401（Ray）：插圖上接一句，然後**回到原背景**再接諾薇兒那一句。
+           ⚠ 這兩拍**不帶 `onlyIf`** —— 同上，那是對玩笑的反應，四條分支之前就發生。
+           ⚠ `cg:null` ＝收圖（走黑幕，「這張插圖結束了」的語氣，§6.5 的 -628）；
+             分支 4 之後會自己再放 018，兩者不衝突。 */
+        ren(null,'唉呀。'),
+        Object.assign(nou('surprise','感情真好呢。'), { cg:null }),
         /* ── 分支 1：前一天約了安雅 ── */
         Object.assign(sor('surprised','啊！奸詐！'), { onlyIf:'ep_date_anya' }),
         Object.assign(any('makeface',''),           { onlyIf:'ep_date_anya' }),
@@ -4417,17 +4423,31 @@ export const TOWNS = {
         Object.assign(sor('confuse','那我累了誰來背我？'),     { onlyIf:'ep_date_sor' }),
         Object.assign(ren('upsetstare','妳那麼高大誰背得了妳？'), { onlyIf:'ep_date_sor' }),
         /* ── 分支 3：前一天約了諾薇兒 ── */
-        Object.assign(nou('awkward','不行啦，他還要背槍棺呢。'), { onlyIf:'ep_date_nou' }),
+        Object.assign(nou('awkward','可是不行喔，他還得背槍棺呢。'), { onlyIf:'ep_date_nou' }),
         /* ── 分支 4：前一天在大學巧遇蕾娜 ── */
-        /* 妄想兩張：先放 18，再**淡入**到 18-1（`cgSoft`），最後才接她那一句。 */
+        /* ⚠⚠ ver -1401（Ray）：**先一拍「……」**再跑插圖，最後那一句**無立繪**。
+           ⚠ 妄想仍是兩張：先放 18、再**淡入**到 18-1（`cgSoft`）—— 18-1 是 18 的差分，
+             -1384 那條「先放 18 再淡入到 18-1」沒有被這一版推翻。
+           ⚠⚠ **無立繪＝把台上清空**（`hide`）：插圖裡已經有她了，台上再站一個
+             就是同一個人出現兩次（同 `020-rennadrop` 那一拍的作法）。
+             連帶：`sighbreath` 那張差分本來就不存在（lint 一直在唸），現在不必了。 */
+        /* ⚠ 稿上寫 `think`，但蕾娜的差分表裡叫 **`thinking`**（沒有 `think`）——
+           用既有的那一張，不要留一個查不到、會靜靜回退基本立繪的名字（lint 會唸）。 */
+        Object.assign(ren('thinking','……'), { onlyIf:'ep_renna_met' }),
         { speaker:'RENNA', text:'', cg:'018_rennafantasy',   cgNoTime:true,
           onlyIf:'ep_renna_met' },
         { speaker:'RENNA', text:'', cg:'018-1_rennafantasy', cgNoTime:true, cgSoft:true,
           onlyIf:'ep_renna_met' },
-        Object.assign(ren('sighbreath','再怎麼樣也不行吧……'), { onlyIf:'ep_renna_met' }),
+        Object.assign(ren(null,'再怎麼樣也不行吧……'),
+          { onlyIf:'ep_renna_met', hide:['SORANA','RENNA','NOUVELLE','ANYA'] }),
         /* ── 合流 ── ⚠ `cg:null` ＝收圖回背景（上面兩條路都會留著插圖）。 */
         Object.assign(ren('front','玩笑先放一邊，趁早出發吧。'), { cg:null }),
         ren('thinking','聽說古城裡沒有禍魘，入夜前能到的話會輕鬆很多。'),
+        /* ⚠ ver -1401（Ray）：最後補一句指路。**地理對得上** ——
+           南門驛站是節點 `dock`（-1383 由「倉庫碼頭」改名），它的 `up` 就是
+           `@plainsroad`（平原古道＝「舊道」），而古道的入口 `entry.down`
+           也正是 `@eastport:dock`（兩端相反）。 */
+        ren(null,'從南門驛站出發，走舊道過去吧。'),
       ] },
     ],
     /* ══⚠⚠⚠ **自由活動是會開會關的**（ver -1360，Ray：「自由活動期間可以約會，
@@ -4571,7 +4591,11 @@ export const TOWNS = {
              其他女孩出去／但是女角的頭像還是會在／改成敲房門」）——
              頭像照舊都在，敲下去由「今天約過了」那一句擋回來（見 modules/town.js
              的 `dateSpentToday`：它與「今天約了誰」是兩份狀態）。 */
-        acts:[ { flag:'ep_renna_met', need:'ep_arrive', noDate:true, hourOfDay:[16,18],
+        /* ⚠ ver -1401：時段由 `[16,18]` 改成 **`[17,19]`**（Ray 指定）——
+             那正好是 `clock.band()` 的**黃昏**（Dusk：17:00~18:59），
+             所以那一幕的背景與她的立繪色調都會是黃昏的（§6.5 的 `matchPortraits`）。
+           ⚠ `clockToday:18` 照舊**只往前**：18:30 巧遇就停在 18:30，不會倒轉。 */
+        acts:[ { flag:'ep_renna_met', need:'ep_arrive', noDate:true, hourOfDay:[17,19],
                  clockToday:18, dateSpent:true,
                  goto:'inn', sides:{ RENNA:'L' }, lines:[
           ren('curious','唉呀，真巧呢。'),
