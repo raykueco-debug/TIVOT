@@ -1,4 +1,59 @@
-# HANDOFF — 截至 `ver 2026.09.16-1418`
+# HANDOFF — 截至 `ver 2026.09.16-1419`
+
+---
+
+# -1419：空中戰改成兩型態 ＋ 放光放慢（Ray 交辦）
+
+> 「空中戰敵人有兩型態，第一形態是美術剛交的 dragonfront，敵 hp 50% 以下放光
+>  （攻擊命中的光圈，**要你降 50% 那個**，只放光不受擊），放光完換第 4 型態（原第三型態）」
+
+## ⚠⚠⚠ 我 -1416 改錯了東西
+
+「攻擊光圈」在這個專案裡**有兩個東西**：
+· **威脅圈**（紅點收縮，`CHARGE_SECONDS`／卡上的 `atkInterval`）
+· **放光**（攻擊命中的那一圈，`holyburst`）
+
+-1416 我把 `bl_dragon_sky.atkInterval` 改成 8（＝蓄力窗口加倍）——
+Ray 這一版澄清指的是**放光**。已**還原 `atkInterval:null`**，改放慢 `holyburst`：
+CSS `.55s/.75s → 1.1s/1.5s`、`HOLY_GROW_MS 550→1100`、`HOLY_LIFE_MS 1350→2700`
+（那三處是同一組數字，鐵律 7 的但書，註解互指）。
+
+## 型態表（四型態）
+
+| 型態 | 卡 | 圖 | 何時 |
+|---|---|---|---|
+| 1 | `bl_dragon_chase` | `mon_dragon_v1_shackled` | 古城追擊（×4） |
+| 2 | `bl_dragon_throne` | `mon_dragon_v1_unsealed` | 王座廳決戰 |
+| **3** | **`bl_dragon_front`（新）** | **`mon_dragon_front`（⚠ 還沒進庫）** | **空中戰開場** |
+| 4 | `bl_dragon_sky` | `mon_dragon_v1_ascendant` | 放光之後 |
+
+## `morph`：同一場打到一半換一張卡（新機制）
+
+卡上寫 `morph:{ hp:50, to:'bl_dragon_sky', fx:'holyburst' }`，
+**判定與執行只有 `modules/combat.js` 的 `maybeMorph()` 一支**（鐵律 8），
+掛在 `hitDamage` 那唯一一個扣血點上。
+
+⚠⚠ **與連戰（`advanceEnemy`）是兩件事**：那個是「這一隻死了換下一隻」（併 overkill、
+併時間、重開盤序）；這個是**同一隻換了個樣子** —— 血條重開、立繪換掉，
+但**局／場的帳一個都不動**（§0.5：換一隻怪才是換一場，而這在敘事上仍是同一隻）。
+⚠⚠ **只放光不受擊**：走 `enemy.showHitFx(fx)` 而**不是** `enemyAttack()` ——
+後者會扣血、記失誤、破無傷、震畫面。這一下是演出不是攻擊。
+⚠ 一場只換一次（`morphed`，`startGame` 兩處歸零）；等光綻放完才換圖
+（`HOLY_SWAP_MS`＝`HOLY_GROW_MS`），光還亮著就抽掉立繪讀起來是「牠消失了」。
+
+## ⚠⚠⚠ 圖還沒進庫
+
+美術 -1418 交的是 `resources/_originals/enemy/mon_dragon_v1_flight_raw.png`
+（**1536×1024 白底 raw，還沒去背**；我開圖確認過是正面展翅那一張）。
+**去背是美術那一段**（§5 明令不要用程式去背 —— 鎖鏈、緞帶、骨刺一定碎）。
+圖一進 `resources/enemy/mon_dragon_front.webp` 就自動接上；
+在那之前第三型態是**空的立繪**（不會壞，但看得出來）。
+
+⚠ **數值是我照第 4 型態抄的**（血量給 500，其餘照抄）—— Ray 還沒給這一張卡。
+
+---
+
+# 上一輪 — `ver 2026.09.16-1418`
 
 ---
 

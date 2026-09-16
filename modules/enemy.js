@@ -159,8 +159,10 @@ export function stopSakura(){
    ⚠ 蓋滿全畫面的倍率照開機那一頁的算法（光暈實心區佔 30%，所以除以 0.30）。
    ⚠ 音效走 `playCue` 的把手**不是 `HITFX[].se`**：那支 6.7 秒、有頭有尾，
      而那張表是給一次性受擊音用的（combat 會直接播到底，收不掉）。 */
-const HOLY_GROW_MS = 550;     // 與 CSS 的 transform transition 同一個數字（鐵律 7 的但書）
-const HOLY_LIFE_MS = 1350;    // 綻放 ＋ 淡出
+/* ⚠ ver -1418 放慢一半（Ray 指定）：550→1100／1350→2700。
+   與 CSS `#holyBurst` 的 transition 是同一組數字（鐵律 7 的但書）—— 改一邊要改另一邊。 */
+const HOLY_GROW_MS = 1100;    // 與 CSS 的 transform transition 同一個數字
+const HOLY_LIFE_MS = 2700;    // 綻放 ＋ 淡出
 let holyFx=null, holySe=null;
 export function spawnHolyBurst(){
   if(holyFx) return;                       // 同一發不疊第二層（同櫻花那一支）

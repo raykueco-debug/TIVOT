@@ -69,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.16-1418';
+export const VERSION = 'ver 2026.09.16-1419';
 
 export const GAME_CONFIG = {
 
@@ -2351,7 +2351,9 @@ export const GAME_CONFIG = {
                  bgm:'bgm_gothic', bgmAfter:'crisis' },
     /* ⚠ 空中戰：`kind:'aerial'` 在敵卡上（降臨與淨化特效吃得到，§6.5.4.4）。
        ⚠ `bgmAfter` 不寫 ＝ 打完接回戰前那一首（`warhorn`）—— 之後那幾拍還在船上。 */
-    bl_sky:    { enemy:'bl_dragon_sky', bgm:'bgm_irregular' },
+    /* ⚠ ver -1418：空中戰從**第三型態**（dragonfront）打起，
+       掉到 50% 放光之後由卡上的 `morph` 換成第 4 型態（`bl_dragon_sky`）。 */
+    bl_sky:    { enemy:'bl_dragon_front', bgm:'bgm_irregular' },
     /* 北方泊地的城鎮戰（ver -583（-893 前用詞））：每一格走進去打一場，共用這一張佔位卡。
        ⚠ **不禁聖徒化／搭檔技**：Ray 沒說要禁（禁了要明寫 noSaint/noPartner）。
        ⚠ 打輸走一般流程 —— 城鎮插入戰的敗北會被抬回這座城的旅店（§6.5.2 那張表）。
@@ -3927,6 +3929,10 @@ export const ASSETS = {
      ⚠ 這是他說的「**先用**這個」⇒ 日後換圖只要改這三行；卡與腳本不必動。 */
   enemy_bl_dragon_chase:  "resources/enemy/mon_dragon_v1_shackled.webp",
   enemy_bl_dragon_throne: "resources/enemy/mon_dragon_v1_unsealed.webp",
+  /* ⚠⚠ 第三型態（空中戰第一形態，ver -1418）：**圖還沒進庫** ——
+     美術交的是 `_originals/enemy/mon_dragon_v1_flight_raw.png`（白底 raw，還沒去背）。
+     去背完丟進這個路徑就自動接上（§5 的三步：出 webp → 指到它 → 原檔進 `_originals`）。 */
+  enemy_bl_dragon_front:  "resources/enemy/mon_dragon_front.webp",
   enemy_bl_dragon_sky:    "resources/enemy/mon_dragon_v1_ascendant.webp",
   /* 王座徘徊者的放光音（ver -1351，Ray：「音效用 enemy_firebeam」）。
      ⚠⚠ 它**放在 `bgm/` 資料夾而且還是 `.mp3`** —— 那是 SE，照 §6.6 應該是

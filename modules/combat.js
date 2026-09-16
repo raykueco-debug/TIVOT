@@ -1352,6 +1352,7 @@ function enemyDamage(dmg,isCrit,silent,src){
       tutorial.onHpChange();          // 血量觸發的 talk 步驟（ver -599）
       updateBars();
       tutorial.onEnemyHp(state.enemyHp/state.enemyMax);   // 教學：削血保底觸發（非教學為 no-op）
+      maybeMorph();                     // 型態切換（ver -1418，王座徘徊者的空中戰）
       if(!silent) floatDmg((isCrit?L.battle.crit:'')+dmg, (30+Math.random()*40)+'%','35%',isCrit);
       if(state.enemyHp<=0){
         if(state.killTime===0) state.killTime=Date.now();   // 敵死標記（OVERKILL 起點）
@@ -2233,6 +2234,48 @@ function finishEnemyOrAdvance(){
  *  延續（不動）：playerHp/combo/energy(聖能)/counter/perfect/sawExecution/flawlessRun/boardTimes。
  *  只動：overkill 歸零（各敵獨立）、killTime 重置、換敵 config、盤序回 0（各敵跑自己的 boardGrids）。
  *  計時：轉敵全程碼表暫停（transitioning），新敵首盤 loadBoard → clockResume。 */
+/* ══⚠⚠⚠ **型態切換**（`morph`，ver -1418，Ray：「空中戰敵人有兩型態…敵 hp 50%
+   以下放光…放光完換第 4 型態」）══════════════════════════════════════════════
+   卡上寫 `morph:{ hp:<百分比>, to:'<下一張卡>', fx:'<受擊特效名>' }`。
+   **判定與執行只有這一支**（鐵律 8）—— 它掛在 `hitDamage` 那唯一一個扣血點上。
+
+   ⚠⚠ **與連戰（`advanceEnemy`）是兩件事**：那個是「這一隻死了，換下一隻」
+     （會併 overkill、併時間、重開盤序）；這個是**同一隻換了個樣子** ——
+     血條重開、立繪換掉，但**局／場的帳一個都不動**（§0.5：換一隻怪才是換一場，
+     而這在敘事上仍是同一隻）。
+   ⚠⚠ **只放光不受擊**（Ray 的原話）：走 `enemy.showHitFx(fx)` 而**不是**
+     `enemyAttack()` —— 後者會扣血、記失誤、破無傷、震畫面。這一下是演出不是攻擊。
+   ⚠ **一場只換一次**：`morphed` 由 `startGame` 歸零（同那一排每場重置的狀態）。
+     不擋的話 50% 以下每挨一發都會再換一次。
+   ⚠ 等放光演完才換圖（`HOLY_SWAP_MS`）：光還在綻放時把立繪抽掉，
+     讀起來是「牠消失了」而不是「牠變了」。
+   ⚠ `transitioning` 期間鎖點擊：換卡的那一瞬盤面還是舊的，讓玩家點下去會打到
+     還沒設定好的新怪（同 `advanceEnemy` 的作法）。 */
+const HOLY_SWAP_MS = 1100;   // ＝ enemy.js 的 HOLY_GROW_MS（光綻放完那一刻）——改一邊要改另一邊
+let morphed=false;
+export function resetMorph(){ morphed=false; }
+function maybeMorph(){
+  if(morphed || state.over) return;
+  const card=(GAME_CONFIG.enemies||{})[state.currentEnemyKey];
+  const m=card && card.morph;
+  if(!m || !m.to || !(GAME_CONFIG.enemies||{})[m.to]) return;
+  if(state.enemyHp<=0) return;                       // 打死了就不換（那是結算的事）
+  if(state.enemyHp > state.enemyMax*((+m.hp||50)/100)) return;
+  morphed=true;
+  state.transitioning=true;                          // 演出期間鎖點擊
+  stopIntervalTimer();
+  defense.resetEnemyTimers();                        // 收掉舊型態的紅點與排程
+  if(m.fx) enemy.showHitFx(m.fx);                    // ⚠ 只放光，不走 enemyAttack
+  setTimeout(()=>{
+    if(state.over) return;
+    enemy.setEnemy(m.to);                            // 換卡（立繪、數值、大絕參數都跟著換）
+    initEnemyHp();                                   // 新型態自己的血條
+    state.transitioning=false;
+    state.killTime=0;
+    loadBoard(0);                                    // 新型態自己的盤序（loadBoard 內 clockResume）
+    updateBars();
+  }, HOLY_SWAP_MS);
+}
 function advanceEnemy(){
   clockPause();                       // 併入前一敵時間（此前已於敵死暫停，冪等）
   state.runOverkill += state.overkill; // 換敵前把本敵 overkill 併入整場累計（評價/EXP 用）
@@ -2726,6 +2769,7 @@ export function startGame(){
   state.runStartTime=Date.now(); resetClock();   // 計時碼表歸零（loadBoard 起算）
   state.boardTimes=[]; state.boardsCompleted=0;
   state.flawlessRun=true; state.intruderTriggered=false; state.inIntruderFight=false;
+  morphed=false;                    // 型態切換一場只做一次（ver -1418，見 maybeMorph）
   state.overkillClean=false;   // 這一場的 ovk 是否完全清空殘額（ver -1389，追逐讀它）
   state.deathGuardUsed=false; state.sRankUnlocked=false; state.resultMode='rematch';
   enemy.startLineup();   // 局：載序列第一隻（lineupIndex=0，含 enemyHp 基準）
@@ -2925,6 +2969,7 @@ export function startIntruderFight(){
   state.runStartTime=Date.now(); resetClock();   // 新場：計時碼表歸零
   state.boardTimes=[]; state.boardsCompleted=0;
   state.flawlessRun=true; state.deathGuardUsed=false;
+  morphed=false;                    // 型態切換一場只做一次（ver -1418，見 maybeMorph）
   state.sRankUnlocked=false; state.resultMode='rematch';
   enemy.setEnemy(GAME_CONFIG.intruder.enemy);   // 載槍之魔女（含 Boss 大絕/懲罰/彈痕 config）
   TEL.runStart({ partner:state.pickedPartner, weapon:state.equippedWeapon, boss:true });

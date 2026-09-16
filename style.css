@@ -249,7 +249,11 @@
        0.55s 綻放 ＋ 0.75s 淡出。 */
   #holyBurst{position:fixed;z-index:9000;pointer-events:none;
     transform:translate(-50%,-50%) scale(.4);opacity:1;
-    transition:transform .55s cubic-bezier(.2,.7,.3,1), opacity .75s ease;}
+    /* ⚠ ver -1418：**放慢一半**（Ray：「第三型態的攻擊光圈效果太快，放慢 50%」
+       → -1418 澄清指的是這個「攻擊命中的光圈」）：.55→1.1s／.75→1.5s。
+       ⚠ 這兩個數字與 `modules/enemy.js` 的 `HOLY_GROW_MS`／`HOLY_LIFE_MS`
+         是同一組（鐵律 7 的但書）—— **改一邊要改另一邊**。 */
+    transition:transform 1.1s cubic-bezier(.2,.7,.3,1), opacity 1.5s ease;}
   #holyBurst.grow{transform:translate(-50%,-50%) scale(var(--hb-scale,16));}
   #holyBurst.fade{opacity:0;}
   #holyBurst .hb-glow{position:absolute;inset:0;border-radius:50%;background:var(--holy-glow);}

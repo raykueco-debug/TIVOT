@@ -1517,6 +1517,48 @@ export const ENEMIES = {
          龍用它讀不通 —— 這一格改回 `claw`（其餘數值一格未動）。
          ⚠ 那一招的**三顆一波**（`assault:{count:3}`）是鹿主卡上的東西，
            鹿主自己寫的是 `{count:1,gap:0.35}`，所以照抄就是 count:1。 */
+    /* ══⚠⚠⚠ **第三型態：空中戰的第一形態**（ver -1418，Ray 交辦）══════════════
+       > 「空中戰敵人有兩型態，第一形態是美術剛交的 dragonfront，
+       >   敵 hp 50% 以下放光（攻擊命中的光圈…只放光不受擊），
+       >   放光完換第 4 型態（原第三型態）」
+
+       ⚠⚠⚠ **`morph` ＝這一場打到一半換一張卡**（不是連戰，也不是死亡）：
+         判定與執行只有 `modules/combat.js` 的 `maybeMorph()` 一支（鐵律 8）。
+         `hp:50` ＝掉到最大值的 50% 以下；`fx:'holyburst'` ＝**只放光、不扣玩家血**
+         （不走 `enemyAttack`，那一支會記失誤、破無傷、震畫面）。
+       ⚠⚠⚠ **`image` 指的圖還沒進庫**：美術 -1418 交的是
+         `resources/_originals/enemy/mon_dragon_v1_flight_raw.png`（**白底 raw，還沒去背**）。
+         去背是美術那一段（§5：不要用程式去背，髮絲／鎖鏈／緞帶一定碎）——
+         圖一進 `resources/enemy/mon_dragon_front.webp` 就自動接上，
+         在那之前這一格會是**空的立繪**（不會壞，但看得出來）。
+       ⚠⚠ **數值是我照第 4 型態抄的，Ray 還沒給卡** —— 血量給 500（比第 4 型態的
+         700 少，因為它只打到一半就換），其餘照抄。要調就動這一張。
+       ⚠ `kind:'multi'` ＝中間型態：**沒有降臨也沒有淨化**（牠不是被打死的，是變身）。 */
+    bl_dragon_front: {
+      name:'王座徘徊者',
+      story:1, counterStagger:1, boss:0,
+      Ganymede:0,
+      weaponMod:{ '重機槍':[0,0.3], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
+      openAssault:[1,2],
+      ult:{ on:1, hp:50, count:4, atk:25, gap:1, cd:4 },
+      assaultEvery:[2,4],
+      assault:{ count:1, gap:0.35 },
+      kind:'multi',
+      image:'enemy_bl_dragon_front',
+      bg:'Belisar_Exterior',
+      fit:{ mode:'contain', pos:'center bottom' },
+      hp:500,
+      attack:22,
+      atkInterval:null,
+      delayPenalty:{ seconds:5 },
+      entrance:null,
+      special:[],
+      boardGrids:[9,9,9,9,9],
+      beamFrom:{ x:0.50, y:0.12 },
+      hitFx:{ delay:'blood', wrong:'slash', assault:'holyburst' },
+      morph:{ hp:50, to:'bl_dragon_sky', fx:'holyburst' },
+      loot:[],
+    },
     bl_dragon_sky: {
       name:'王座徘徊者',
       story:1, counterStagger:1, boss:0,
@@ -1532,17 +1574,12 @@ export const ENEMIES = {
       fit:{ mode:'contain', pos:'center bottom' },
       hp:700,
       attack:22,
-      /* ══⚠⚠ 攻擊光圈**放慢一半**（ver -1416，Ray：「第三型態的攻擊光圈效果太快，
-         放慢 50% 看看」）══ 光圈收縮的時間就是**蓄力窗口** `CHARGE_SECONDS`
-         （`defense.js` 拿它算 `ratio`，只有那一處），而卡上沒寫就吃全域預設
-         `tuning.chargeSeconds`＝4 秒。
-         ⚠ 我把「放慢 50%」讀成**速度剩一半 ⇒ 時間加倍**（4 → 8 秒）。
-           若他要的是「時間多 50%」就改成 6 —— **只要動這一個數字**。
-         ⚠ 卡上寫**絕對值**不寫倍率（§6.5.2）：`tuning.chargeSeconds` 一改，
-           寫倍率的怪就會跟著走鐘。
-         ⚠ 只動這一張卡：追擊（`bl_dragon_chase`）與王座（`bl_dragon_throne`）
-           照舊吃預設，Ray 說的是**第三型態**。 */
-      atkInterval:8,
+      /* ⚠⚠ ver -1416 我把這裡改成 8（＝蓄力窗口加倍），**-1418 還原成 null**：
+         Ray 說的「攻擊光圈」是**攻擊命中的放光**（`holyburst`），不是紅點的蓄力窗口
+         —— 放慢的地方在 `modules/enemy.js` 的 `HOLY_*` 與 CSS 的 `#holyBurst`。
+         ⚠ 教訓：「光圈」在這個專案裡有兩個東西（威脅圈／放光），
+           改之前要先確認是哪一個。 */
+      atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:null,
       special:[],
