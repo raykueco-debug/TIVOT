@@ -1020,7 +1020,25 @@ export const CHAPTERS = [
    ⚠ 它與章節跳關一樣是**破壞性**的（`startChapter` 開頭就 `newRun()`），
      而且只有 `body.testmode` 看得到那顆鈕（§6.9 的白名單：**新鈕預設安全**）。
 
-   ── 現在設在：**東方泊地・抵達那一刻**（`ep_arrive` 還沒演） ──
+   ── 現在設在：**貝利薩爾遺址・古城中庭**（ver -1396，Ray：「開在古城裡面」）──
+
+   ⚠⚠⚠ 落在這裡是為了測**首戰那一條鏈**：走進去 → `ep_bel_enter` →（強制）祭壇
+     → 王座徘徊者降臨 → **首戰 `ep_belisar_altar`** → 撤離 → **強制回東泊（18:00 規則）**
+     → 旅店按睡覺 → **小睡一小時 → 索菈娜** → 那一夜。
+   ⚠⚠ **`ep_bel_enter` 不給**（那正是要測的第一拍）；`ep_day2` **要給** ——
+     它是 `ep_bel_enter` 的 `need`（東泊翌日那道閘門演完的旗）。
+   ⚠⚠ **`ep_renna_night` 要給**：東泊旅店的 `sleepFlag` 就是它 —— 不給的話回到東泊
+     按睡覺只會看到「現在不是睡覺的時候。」，小睡那一段整條測不到。
+   ⚠⚠⚠ **`aff:{renna:40}` ＝ 蕾娜 T3**（`tierOf` 一段 20）：那一夜（`ep_night_raid`）
+     的門是 `needTier:{renna:3}`。`newRun()` 之後好感是 0＝T1 —— 不給的話
+     小睡完什麼都不會發生（而且畫面上不會有任何錯誤訊息）。
+     ⚠ 要測 T2 那一條（睡一覺就是隔天）就把這一行改成 `renna:20`。
+   ⚠ `clockHour:9` ＝早上出發。**要測「超過 15:00 每小時 +1」那條規則**，
+     把它改成 16／17（回到東泊就會是 19:00／20:00）。
+
+   ── 上一筆（東方泊地・抵達）留著當範例 ──
+   `stage:8, clockHour:9, node 不寫（走 entry:'square'）`，旗照下面那一串
+   但**不給任何 `ep_*`**。
 
    ⚠⚠⚠ **`belisar_noland_talk` 一定要給**：它是 `ep_arrive` 的 `need`
      （飛行頁「貝利薩爾降不下去 → 蕾娜指路東泊」插的那一支，
@@ -1038,8 +1056,9 @@ export const CHAPTERS = [
    **要改測別張圖**：換 `town`（＋需要的話 `node`／`clockHour`／`stage`），
    並把 `flags` 調成「那一段**之前**」的狀態 —— 要測的那幾支旗**不要給**。 */
 export const SCRIPT_TEST = {
-  id:'scripttest', name:'腳本測試', sub:'東方泊地・抵達（廣場）→ 第一天自由活動 → 翌日',
-  stage:8, clockHour:9, named:true,
+  id:'scripttest', name:'腳本測試',
+  sub:'貝利薩爾遺址・古城中庭 → 首戰 → 回東泊 → 那一夜',
+  stage:8, clockHour:9, named:true, aff:{ renna:40 },
   flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open',
            'set_sail','got_ship','dock_day2','flight_centipede_met',
            'np_port_arrive','np_clear_church','np_claws_done','safehouse_northport',
@@ -1059,8 +1078,13 @@ export const SCRIPT_TEST = {
            /* 旅店那三則一次性說明在帝都學過了，不要再教一次 */
            'inn_tip_knock','inn_tip_sit','inn_tip_sleep',
            /* ⚠⚠⚠ 這一支就是 ep_arrive 的鑰匙，漏了整段抵達不演（見上面的說明） */
-           'belisar_noland_talk'],
-  enter:'town', town:'eastport' };
+           'belisar_noland_talk',
+           /* ══ 東泊第一天～翌日：**演過了** ══ 要測的是古城那一段，不是東泊那一天。
+              ⚠ `ep_renna_night` ＝東泊旅店的 `sleepFlag`（小睡那一段要靠它）。
+              ⚠ `ep_bel_enter` 以後的**一支都不給** —— 那是要測的內容。 */
+           'eastport_seen','mapcard_eastport','inn_seen_eastport_inn',
+           'ep_arrive','ep_renna_met','ep_renna_night','ep_day2'],
+  enter:'town', town:'belisar', node:'entrance' };
 
 /* ══⚠⚠⚠ **試飛的預設進度**（ver -1359，Ray：「試飛默認為 s8 瓦努努開啟後的
    自由活動期間」）══════════════════════════════════════════════════════════

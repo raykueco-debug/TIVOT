@@ -433,6 +433,34 @@ function datingWho(){ return (escortId && !escortLeftover) ? escortId : null; }
    ⚠ `showEscortBadge()` 是冪等的：沒在約會它自己把元素移除。 */
 function endDate(){ if(escortId && !escortLeftover) escortId=null; try{ showEscortBadge(); }catch(_){} }
 
+/* ══⚠⚠⚠ `act.clockToday` ＝這一段演完，時鐘推到「今天的某一刻」（ver -1394／-1396）══
+   兩種寫法，**判定只有這一支**（鐵律 7／8 —— 呼叫端只有 acts 收尾那一處）：
+
+     clockToday: 18                  ⇒ 推到今天 18:00（過了就不動）
+     clockToday: { hour:18, lateFrom:15 }
+                                     ⇒ 推到 18:00 ＋ max(0, floor(現在 − 15)) 小時
+
+   後者是 Ray 的貝利薩爾首戰回程（ver -1396）：「固定 18:00，若在觸發首戰之前
+   玩家時間已經超過 15:00，則每超過一小時就在 18:00 的基礎上加一小時」。
+   ⚠ 「超過一小時」算的是**整小時**：15:30 不加、16:00 加一。
+   ⚠⚠ `lateFrom` 那一條有可能把目標推出當天（現在 ≥21:00 ⇒ 目標 ≥24）——
+     那時要走 `advanceToNextHour`（＝隔天的那個時刻）。⚠ **不可以直接餵
+     `advanceToHour(目標%24)`**：它只推今天、已經過了就**不動**，時間會憑空少掉
+     一整段，而且畫面上沒有任何錯誤訊息。
+   ⚠ 兩支都不倒轉（時間是資源，§6.5.4.1）。 */
+function applyClockToday(spec){
+  if(spec==null) return;
+  if(typeof spec==='number'){ clock.advanceToHour(spec); return; }
+  const base = +spec.hour;
+  if(!isFinite(base)) return;
+  let target = base;
+  if(spec.lateFrom!=null){
+    target += Math.max(0, Math.floor(clock.hourF() - spec.lateFrom));
+  }
+  if(target >= 24) clock.advanceToNextHour(target % 24);
+  else             clock.advanceToHour(target);
+}
+
 /* ══ 宵禁（ver -576，Ray：「晚上九點以後女主角就不出門，約不出來…到隔天七點以後
    才恢復」）══ 判定只有這一支（鐵律 8）：外出行程與旅店敲門都問它。
    ⚠ 跨午夜，上界不含（同節點的 `hours`）。 */
@@ -992,9 +1020,19 @@ function dateByeAct(n){
   if(!e.lines || !e.lines.length) return null;
   return { lines:e.lines, endDate:true, sides:e.sides||D.sides };
 }
-function actDue(n){
+/* ══⚠⚠⚠ **一段戲是「抵達時演」還是「按睡覺才演」**（`sleepFirst`，ver -1396）══
+   `actDue(n)`        ＝ 走進這一格要演的（預設，**看不到** `sleepFirst` 那幾段）
+   `actDue(n, true)`  ＝ 按下回房睡覺才演的（**只看得到**它們）
+   Ray：「強制回到東泊時的睡覺…點下不會睡到隔天，會在一小時後起來移動到旅店大廳，
+   觸發索菈娜對話」—— 那一段掛在旅店的 `acts` 上，但它的觸發是**躺下去**，不是走進來。
+   ⚠⚠ 一個參數而不是另寫一支 `sleepActDue`：`need`／`needTier`／`until`／`hourOfDay`／
+     安全區那一整套門**只能有一份**（鐵律 8）—— 複製一份出來必然走鐘。
+   ⚠⚠ 兩邊是**互斥**的（`!!a.sleepFirst !== !!sleepOnly`）：漏掉這一行的話，
+     那一段會在走進旅店的那一刻就演掉，玩家根本按不到睡覺鈕。 */
+function actDue(n, sleepOnly){
   const muted = mutedTalks();
   for(const a of (n && n.acts) || []){
+    if(!!a.sleepFirst !== !!sleepOnly) continue;
     /* 舊章節封存（ver -753）：沒標 fromStage 的段落＝舊稿，封存後不再演；
        新章節的段落自己標 `fromStage`（同時也是「還沒到那一章不演」的門）。 */
     if(a.fromStage!=null && prog.getStage() < a.fromStage) continue;
@@ -2827,11 +2865,21 @@ function sailHeld(){
    ⚠ **只有真的有段落到期才轉場**：沒有就照舊回店裡（`shopEnter`）——
      不然每次跟店主講完話都會跑一遍抵達流程（旅店招呼會重播，同 `resume()` 的理由）。 */
 let rerunArrival=null;
+/* ══⚠⚠⚠ **「這一次抵達是小睡醒來的」**（ver -1396）══ 一次性的閂：
+   `napArm()` 插上 → 下一次 `runArrival` 取走並清掉 ⇒ 那一次**只演 `sleepFirst` 那一段**。
+   ⚠ 誰插的：旅店的小睡演完（`inn.sleepHere` 走 `host.napArm`）。
+     誰清的：`runArrival`（取走即清）。兩個都答得出來（鐵律 9）。
+   ⚠ 它**不進存檔**：小睡與那一段戲之間沒有任何可以離開的空檔（黑幕蓋著），
+     真的被打斷（重整）也只是回到「按一次睡覺」那一步，不會卡住。
+   ⚠ 離城要清（`close()`）—— 同 `rerunArrival`，不要把上一座城的狀態帶過去。 */
+let napPending=false;
 /* 「這一格現在有沒有段落到期」→ 有就原地接上，回 true。⚠ 兩個呼叫端（店舖收尾、
    旅店的坐坐／睡覺收尾）共用這一支 —— 它們的差別只有「沒有到期時要做什麼」。 */
 function rerunIfDue(n){
   const nd = n || node();
-  if(rerunArrival && nd && actDue(nd)){ rerunArrival(true); return true; }
+  /* ⚠ 小睡醒來那一次要問的是 `sleepFirst` 那一組（見 `napPending`）。 */
+  if(rerunArrival && nd && (napPending ? actDue(nd, true) : actDue(nd))){
+    rerunArrival(true); return true; }
   return false;
 }
 function backToShop(n){
@@ -3069,7 +3117,12 @@ export function enter(id){
      ⚠ 休息處（`restActDue`）不受影響：那幾格一律 `noWild`，本來就不出怪。 */
   /* 追逐（ver -1389）排在最前：那一段古堡裡只有「走」與「打」，
      其餘的段落（約會收尾、常駐句）在那一夜都不該插隊。 */
-  const act = dragonActDue(n) || (immediate ? null : wildActDue(n))
+  /* ⚠⚠ **小睡醒來那一次只演那一段**（ver -1396）：其餘的（追逐、野怪、約會收尾、
+     常駐句）在那一刻都不該插隊 —— 玩家是「躺下去睡不著爬起來」，不是走進門。
+     ⚠ 閂取走即清（見 `napPending`）：只作用一次。 */
+  let act;
+  if(napPending){ napPending=false; act = actDue(n, true); }
+  else act = dragonActDue(n) || (immediate ? null : wildActDue(n))
            || dateCurfewAct(n) || dateByeAct(n) || actDue(n) || restActDue(n);
   let ev = act ? null : eveningDue(n);
   /* 這一次抵達**原本**要演的進場對白（打烊、演過了、或段落裡有**回房休息的夥伴**
@@ -3162,8 +3215,16 @@ export function enter(id){
                閘門的 `clockTo` 是 `advanceToNextHour`（**推到下一個**這個時刻，
                過了就跳隔天）；這裡是「今天的那個時刻」。名字不同才不會有人抄錯。
              ⚠ 排在 `goto` **之前**：那一段路是被跳過去的，時間要先到位 ——
-               新的一格抵達時（進場對白、門燈、外出行程）問到的才是對的時刻。 */
-          if(act.clockToday!=null) clock.advanceToHour(act.clockToday);
+               新的一格抵達時（進場對白、門燈、外出行程）問到的才是對的時刻。
+             ⚠⚠⚠ **也吃 `{ hour, lateFrom }`**（ver -1396，Ray：「強制回到東泊的時間
+               固定在 18:00，若在觸發首戰之前玩家時間已經超過 15:00，則每超過一小時
+               就在 18:00 的基礎上加一小時」）——
+               目標 ＝ `hour` ＋ max(0, floor(現在時刻 − `lateFrom`))。
+               ⚠ 「每超過一小時」是**整小時**：15:30 還沒滿一小時 ⇒ 不加；16:00 ⇒ +1。
+               ⚠ 溢出當天（`lateFrom` 那一條讓目標 ≥24）改走 `advanceToNextHour`
+                 —— 那才是「隔天的那個時刻」，用 `advanceToHour` 會變成**不動**
+                 （它只推今天、過了就不動），時間憑空少掉三小時。 */
+          if(act.clockToday!=null) applyClockToday(act.clockToday);
           /* ══⚠⚠⚠ `act.dateSpent:true` ＝這一段**用掉了今天的約會額度**
              （ver -1394，Ray：「巧遇蕾娜後不能再約其他女孩出去／但是女角的頭像
                還是會在／改成敲房門」）══
@@ -3631,6 +3692,15 @@ inn.setup({
      ⚠ **旅店自己的分支優先**（`inn.js` 的 `runBranch` 回 true 就不會走到這裡）：
        帝都 stage 0 的「等蕾娜」是旅店那一套在管的，兩邊搶著演會疊在一起。 */
   rerun(){ return rerunIfDue(); },
+  /* ══⚠⚠⚠ **小睡**（`sleepFirst`，ver -1396）══ 旅店按下睡覺時問這兩句：
+       napAct() → 這一格現在有沒有「按睡覺才演」的段落到期（有就回那一筆，
+                  `hours` 在它的 `sleepFirst` 上）
+       napArm() → 小睡演完了，下一次抵達請只演那一段
+     ⚠ 判定留在**城鎮這一邊**（`actDue` 的同一道門，鐵律 8）：旅店不認識
+       `needTier`／`until`／安全區那一整套，自己判一定與它走鐘。
+     ⚠ `node()` ＝玩家現在站的那一格（旅店本來就是其中一格）。 */
+  napAct(){ const nd=node(); return nd ? actDue(nd, true) : null; },
+  napArm(){ napPending = true; },
 });
 
 /* `node`（選填，ver -429）＝從哪一格開始，不寫就是城的入口。
@@ -3808,6 +3878,7 @@ export function suspend(){
   story.clearCast();
   story.hideBubble();
   rerunArrival=null;        // ⚠ 離城就放掉（ver -1368）：它指著上一座城的 enter 閉包
+  napPending=false;         // ⚠ 同上（ver -1396）：不要把「小睡醒來」帶去下一座城
 }
 /* 從飛行頁回到城鎮：把介面接回來。⚠ **不重跑 `afterArrive`** —— 那一支會再叫一次
    `inn.arrive`（旅店的招呼會重播）與 `showTip`。回來只要看得到路與店就好。 */

@@ -4555,7 +4555,8 @@ export const TOWNS = {
            從『有找到一些資料了』開始跑」）：`goto` ＝ act 收尾的強制轉場
            （與閘門的 `goto` 同一支 `forceGo`，鐵律 8）。
            ⚠ 落地之後接的是旅店那一格的第二段 `ep_renna_night`（`need:'ep_renna_met'`）
-             —— 它的第一句正是那一句。 */
+             —— 它就是**從那一句開始**的（ver -1396 拿掉了前面那句招呼語，
+             理由寫在那一段上）。 */
         /* ⚠⚠ `clockToday:18` ＝這一段演完，時間就是**當天 18:00**（ver -1394，Ray：
              「巧遇蕾娜後回到旅店的時間是 18:00」）。它也是旅店那兩顆行動鈕的那一條線
              （`eveningHour` 預設 18）—— 不推的話 16~18 點巧遇完回到旅店，
@@ -4901,7 +4902,22 @@ export const TOWNS = {
              蕾娜 `shock`→`shocked`／`think`→`thinking`、索菈娜 `laughbig`→`laugh`、
              諾薇兒 `shock2`→`shocked2`。圖交了再換回來。
            ⚠ `goto:'@belisar:greathall'` ＝停船、進主廳（追逐那一段接在那裡）。 */
+        /* ══⚠⚠⚠ **改由「回房睡覺」觸發**（ver -1396，Ray：「強制回到東泊時的睡覺
+           要處於可點狀態，但點下不會睡到隔天，會在一小時後起來移動到旅店大廳，
+           觸發索菈娜對話」）══
+           `sleepFirst:{ hours:1 }` ＝ 這一段**不是抵達要演的**，是**按下睡覺鈕**才演的；
+           而且那一覺只睡 `hours` 小時（躺下去睡不著，爬起來想溜出去 ——
+           索菈娜那句「想去哪啊？」正是等在大廳堵他）。
+           ⚠⚠ 掛在**這一段自己身上**，不另開一個節點欄位（鐵律 8）：
+             `actDue` 的那一整套門（`need`／`needTier`／`until`／`hourOfDay`…）
+             就地全部適用 —— 另寫一份「這一晚能不能睡」的判斷必然與它走鐘。
+           ⚠⚠ **`needTier:{renna:3}` 連小睡一起管**：T2 那一條 Ray 的稿是
+             「隔日正常探索」 ⇒ 那一晚**睡得著、直接到隔天**（沒有索菈娜那一段，
+             小睡也不該發生，不然玩家要按兩次睡覺、中間什麼都沒有）。
+           ⚠ 它**不需要**另一支旗來收尾：這一段自己的 `flag`（`ep_night_raid`）
+             演完就記，`actDue` 下一次就跳過它 ⇒ 之後按睡覺就是正常睡到隔天。 */
         {  flag:'ep_night_raid', need:'ep_bel_back', needTier:{ renna:3 },
+                 sleepFirst:{ hours:1 },
                  goto:'@belisar:greathall', sides:{ RENNA:'L' }, lines:[
           sor('tease','想去哪啊？'),
           { speaker:'PLAYER', blank:true },
@@ -4977,9 +4993,17 @@ export const TOWNS = {
              再掛 `hourOfDay:20` 等於推回來卻什麼都不演，玩家會以為壞了。
              ⚠ 上面那一段（沒巧遇的那一版）照舊等 20:00：那一條是「回旅店時碰到她」。
              ⚠⚠ 連帶：`sleepFlag:'ep_renna_night'` 會在**下午**就解鎖睡覺 ——
-               這是 Ray 這一版指定的節奏（推回旅店＝今天的事辦完了）。 */
+               這是 Ray 這一版指定的節奏（推回旅店＝今天的事辦完了）。
+             ⚠⚠⚠ **這一版沒有「啊，回來了。」**（ver -1396，Ray：「巧遇是跟蕾娜
+               一起回來的所以不會講這句話」）—— 那一句是「你自己回來了、她先到了」
+               的招呼，而這條路上兩個人是**一起**走進門的。
+               ⚠ 這正是 ver -1360 那句交代的原意：「從『有找到一些資料了』開始跑」
+                 —— -1360 的註解把它讀成「那一段的第一句」，於是招呼語被留著，
+                 而**上面那一段的第一句剛好也是招呼語**，所以看起來很合理。
+                 ⇒ **『從某一句開始跑』要照字面找那一句，不要換算成「第幾句」。**
+               ⚠ 交接檔 -1395 把「蕾娜不會說『啊，回來了』」列成重現不出來的疑案 ——
+                 那不是 bug，是 Ray 要的行為；現在它由這裡保證。 */
           { flag:'ep_renna_night', need:'ep_renna_met', sides:{ RENNA:'L' }, lines:[
-            ren('curious','啊，回來了。'),
             ren('front','有找到一些資料了，明天就出發，早點休息吧。') ] },
         ] },
     },
@@ -5543,7 +5567,21 @@ export const TOWNS = {
             ren('blushed','……'),
             Object.assign(ren('blushed','嗯，謝謝。'), { flags:['renna_t4_ok'] }),
           ] },
+          /* ══⚠⚠⚠ **回到東泊的時刻**（ver -1396，Ray：「第一次古城首戰發生後強制
+             回到東泊的時間固定在 18:00，若在觸發首戰之前玩家時間已經超過 15:00，
+             則每超過一小時就在 18:00 的基礎上加一小時」）══
+             `clockToday:{ hour:18, lateFrom:15 }` ——
+             目標 ＝ 18 ＋ max(0, floor(現在 − 15))；規則本身在 `modules/town.js`
+             的 `applyClockToday` 一支（鐵律 7／8）。
+             ⚠ 「每超過一小時」是**整小時**：15:30 不加、16:00 加一。
+             ⚠⚠ 它讀的是**這一段演完那一刻**的時鐘 ＝ 首戰觸發時的時鐘：中間那幾步
+               （首戰後的對白、`goto:'entrance'`、這一段的對白）**一步都不推時鐘**
+               —— 城鎮只有「走一步」與旅店在推，而 `forceGo` 明寫不花時間。
+               ⇒ 這不是「假設」，是**這條路上沒有推時鐘的人**。
+             ⚠ 排在 `goto` 之前（見 `applyClockToday` 的說明）：東泊那一次抵達
+               問到的才是對的時刻。 */
           { flag:'ep_bel_court', need:'ep_bel_altar',
+            clockToday:{ hour:18, lateFrom:15 },
             goto:'@eastport:square', sides:{ RENNA:'L' }, lines:[
           nou('cringe','中庭都淹滿水了……'),
           ren('lookaway','……'),
@@ -5589,13 +5627,24 @@ export const TOWNS = {
              以後發生震動　背景特效王座徘徊者降臨」）══
              走**中景層** `cgBack`（ver -870 為樹靈鹿主立的那一層：立繪之下、背景之上
              的去背圖）—— 那正是「背景特效」該待的地方，不是插圖也不是敵人立繪。
-             ⚠ 圖用戰鬥卡那一張（`enemy_bl_dragon_throne` ＝ 王座那一隻）——
-               同一隻龍在同一段裡先降臨再開打，兩邊用同一張才連得起來（鐵律 7）。
+             ⚠⚠⚠ **降臨用「趴著」那一張**（ver -1396，Ray：「龍出場時用的是趴著的
+               立繪」）＝ `mon_dragon_throne_dormant`（-1118 定案那一組的**蟄伏**：
+               「四足伏地、前身壓低、翼收在背後；像一座趴著的山。眼已經亮著」——
+               `_dragon_spec.md` 的原話，全庫只有這一張是趴著的）。
+               ⚠⚠ **-1343 那一句「圖用戰鬥卡那一張」因此作廢**：戰鬥卡指的是
+                 `enemy_bl_dragon_throne` ＝ `mon_dragon_v1_unsealed`（v1 那一輪的
+                 草稿，展翅站姿），沒有一張是趴著的。
+               ⚠⚠⚠ **連帶：現在降臨與開打是兩套設計**（降臨＝ -1118 定案的
+                 `throne_*`，戰鬥立繪還是 `mon_dragon_v1_*` 的三張）——
+                 **這是待決，不是現況正確**：要嘛把 `config.js` 的
+                 `enemy_bl_dragon_{chase,throne,sky}` 三行一起換成
+                 `mon_dragon_throne_{dormant,awakened,roar}`（卡與腳本不必動），
+                 要嘛降臨改回 v1。**等 Ray 一句話**（見 HANDOFF）。
              ⚠ `cgBack` 一律寫**明確路徑**（不是基底名）：它不走時段候選鏈。
              ⚠⚠ **要有人收**：這一段打完在下面那一拍 `cgBack:null`（同鹿主那一段
                的作法）—— 中景層是持續狀態，不收就一路跟到回東泊。 */
           { speaker:'NARRATION', text:'', shake:true, auto:900,
-            cgBack:'resources/enemy/mon_dragon_v1_unsealed.webp' },
+            cgBack:'resources/enemy/mon_dragon_throne_dormant.webp' },
           ren('scream','呀！'),
           /* ⚠ 「蕾娜倒地髮飾脫落插畫」還沒有（插圖先空著）—— 那一拍先不寫 `cg`。
              ⚠⚠ **旗掛在這一拍**：從此封頂 T3（見上面的說明）。 */

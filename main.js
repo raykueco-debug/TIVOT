@@ -1573,6 +1573,14 @@ function startChapter(c){
     } }
   if(c.named){ prog.setPlayerName(''); prog.setPlayerNick(''); }   // 空字串＝套預設（托爾斯坦／托爾）
   if(c.flags && c.flags.length) prog.addFlags(c.flags);
+  /* ══⚠⚠ `c.aff:{ who:值 }` ＝這一章／這一筆測試落點**開場的好感**（ver -1396）══
+     為什麼需要它：`newRun()` 把好感歸零（＝T1），而**有些段落的門是段位**
+     （`needTier`，例如那一夜 `needTier:{renna:3}`）—— 跳關進去等於那一段永遠
+     不成立，而且畫面上不會有任何錯誤訊息（只是「按了睡覺什麼都沒發生」）。
+     ⚠ 走 `setAffectionDev`（唯一那支會連**棘輪地板與封頂**一起處理的，鐵律 8）
+       —— 直接 `setAffection` 會留下「值上去了、地板還在 0」的半套狀態。
+     ⚠ 沒寫就是 0（照舊）：這是**選填**，不是每一章都要標。 */
+  if(c.aff) for(const who in c.aff) prog.setAffectionDev(who, c.aff[who]);
   if(c.stage!=null) prog.setStage(c.stage);
   /* ⚠ 時刻問 `clock.firstHourAt`，不要寫死分鐘數（鐵律 7）——
      開局時刻改了，章節的起點要跟著改。 */

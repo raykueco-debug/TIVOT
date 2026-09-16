@@ -197,6 +197,9 @@ function ensureLayer(){
          `WAKE_HOUR` 就在這一支），不是內容 —— 改常數就要改字，放在一起才不會走鐘。 */
     +   '<button class="inn-btn" data-act="sit" type="button">'
     +     '<b>獨自坐坐</b><i>消磨 '+(SIT_MIN/60)+' 小時</i></button>'
+    /* ⚠⚠⚠ 小睡那一晚，**這一行字要跟著改**（ver -1396）：見 `refreshSleepLabel`。
+       它與「到隔日 N:00・存檔」是同一顆鈕的兩種**結果**，而成本那一行的整個用意
+       就是「按之前就看得到代價」—— 不改的話它在承諾一件不會發生的事。 */
     +   '<button class="inn-btn primary" data-act="sleep" type="button">'
     +     '<b>回房睡覺</b><i>到隔日 '+wakeHour()+':00・存檔</i></button>'
     /* ⚠ 常駐的雪鐵龍箭與說明**都撤掉了**（ver -401 撤說明、-402 撤箭，
@@ -286,8 +289,23 @@ function doorState(who){
   return 'empty';
 }
 
+/* ══⚠⚠⚠ 睡覺鈕上那一行「代價」（ver -1396）══ 兩種結果、兩行字：
+     一般　＝「到隔日 7:00・存檔」
+     小睡　＝「小睡 1 小時」（`sleepFirst` 那一段到期的那一晚，見 `sleepHere`）
+   ⚠⚠ **問的是同一支** `host.napAct()`（＝`actDue(n, true)`，鐵律 7／8）——
+     字與行為若各自判斷一次，必然出現「寫著睡到隔天、按下去只過一小時」。
+   ⚠ 掛在 `refresh()` 裡：時鐘與旗每動一次它就重算，不必記得在別處呼叫。
+   ⚠ 只改那一行小字，`<b>回房睡覺</b>` 不動 —— 動作是同一個，變的是結果。 */
+function refreshSleepLabel(){
+  if(!layer) return;
+  const i = layer.querySelector('.inn-btn[data-act="sleep"] i'); if(!i) return;
+  const nap = (host && host.napAct) ? host.napAct() : null;
+  const h = nap && nap.sleepFirst && nap.sleepFirst.hours;
+  i.textContent = h ? ('小睡 '+h+' 小時') : ('到隔日 '+wakeHour()+':00・存檔');
+}
 function refresh(){
   if(!layer) return;
+  refreshSleepLabel();
   const st = stage();
   layer.querySelectorAll('.inn-door').forEach(b=>{
     const who = DOORS[+b.dataset.i];
@@ -669,6 +687,17 @@ function sleepHere(){
      與「已經過了一夜」對不上（§6.9 那張清單：狀態要推得出來，不要留空窗）。 */
   busy = true;
   if(host && host.lock) host.lock(true);
+  /* ══⚠⚠⚠ **小睡**（ver -1396，Ray：「強制回到東泊時的睡覺要處於可點狀態，
+     但點下不會睡到隔天，會在一小時後起來移動到旅店大廳，觸發索菈娜對話」）══
+     這一格現在有沒有「按睡覺才演」的段落到期？（`sleepFirst`，判定在城鎮那邊的
+     `actDue(n, true)` —— 同一道門，鐵律 8）有就走小睡那一條：
+       **同一套演出**（睡覺音＋淡黑）→ 只推 `hours` 小時 → 醒來演那一段。
+     ⚠⚠ **鈕照舊可點、前面那幾道門照舊要過**（`sleepFlag`／「天還沒黑」）——
+       小睡是「睡覺」的一種結果，不是另一顆鈕、也不是另一條規則。
+     ⚠ 排在**這裡**（真的要睡了那一刻）不是排在函式開頭：擋在前面的那幾句話
+       （還不能睡／天還沒黑）對小睡一樣成立。 */
+  const nap = (host && host.napAct) ? host.napAct() : null;
+  const napH = nap && nap.sleepFirst && nap.sleepFirst.hours;
   /* 睡覺音 ＋ 與它等長的淡出至黑（Ray 指定「配合音檔時間淡出至黑」）。 */
   const src = asset('se_sleep');
   try{ SFX.play(src, sfxGain('se_sleep')); }catch(_){}
@@ -686,6 +715,23 @@ function sleepHere(){
   setTimeout(()=>{ try{ SFX.unduckBgm(900); }catch(_){} }, Math.round(full));
   story.veil(true, ms);
   setTimeout(()=>{
+    /* ══⚠⚠⚠ **小睡那一條**（ver -1396）══ 只推 `hours` 小時就醒，
+       **不記「錯過蕾娜」、不回滿體力、不記「上一次睡覺的旅店」、不存檔**：
+       那四件都是「睡了一夜」的後果，而他只是躺了一個鐘頭爬起來。
+       ⚠⚠ **不存檔**尤其重要：醒來接的是一條**強制鏈**（索菈娜 → `goto` 貝利薩爾），
+         存在這裡等於把記錄點落在鏈子中間 —— §6.5.2 明寫那種記錄點等於沒有。
+       ⚠ `napArm()` 要在**推完時鐘之後、`settle()` 之前**：`settle` 會去問城鎮
+         「這一格現在該演什麼」，那一問就是要它取到 `sleepFirst` 那一段。
+       ⚠ 黑幕照舊由這裡收（`settle()` 回 false 時）—— 與正常睡覺同一個收法。 */
+    if(napH){
+      clock.advance(Math.round(napH*60));
+      if(host && host.refreshBg) host.refreshBg();   // 時段可能跨過去了
+      refresh();
+      if(host && host.napArm) host.napArm();
+      if(settle()) return;
+      story.veil(false, WAKE_FADE_MS);
+      return;
+    }
     /* ⚠ 蕾娜還沒回來就先去睡 → 記「錯過」（ver -405）：她 20:00 才進門，人睡著了
        自然碰不到。不記的話 `stage()` 會卡在 `wait`／`none`，隔天早上大廳的狀態
        與「已經過了一夜」對不上（§6.9 那張清單：狀態要推得出來，不要留空窗）。 */
