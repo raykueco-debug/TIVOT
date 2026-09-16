@@ -1410,6 +1410,15 @@ function applyPersist(line){
       if(st){ const ring=document.createElement('div');
               ring.className='enemy-land'; st.appendChild(ring);
               setTimeout(()=>ring.remove(), 1500); }
+      /* ══⚠⚠ **著地那一刻的降臨音**（ver -1428，Ray：「龍登場時的降臨音沒有出來
+         SE_SAINTINSTALL」）══ 與戰鬥那一側**同一支鐘聲**（`enemy.js` 的
+         `playEntranceSe(… || 'sfx_saint')`，ver -649 的原音）。
+         ⚠⚠ -1414 我刻意沒放，理由寫的是「這一拍自己的 `se` 就是登場音，再播一次
+           會疊在一起」—— **那是錯的**：那一拍的 `se` 是**龍犼**（牠在吼），
+           降臨音是**牠落地**，兩件事。少了它，劇情這一側的降臨就只有畫面沒有重量。
+         ⚠ 時機對齊 CSS 的著地格（`.702s` ＝ 0.9s×78%，與光環同一個延遲）——
+           光環的延遲寫在 CSS，這一支只好在這裡等同一個數字（兩邊註解互指）。 */
+      setTimeout(()=>{ try{ playSe('se_saint_install'); }catch(_){} }, 702);
     }
   }
   if(line.ci!==undefined){ stageCi=line.ci; setImg($('storyCi'), line.ci?SI_DIR+line.ci+'.webp':''); }
@@ -2000,7 +2009,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1427';
+const KERB_V='?v=1428';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，

@@ -1048,31 +1048,7 @@ function hitFxSe(hf, kind){
   const key = (typeof raw === 'string') ? raw : raw.type;
   return (HITFX[key] && HITFX[key].se) || null;
 }
-/* ══⚠⚠⚠ **管理人工具：鎖血 ／ 秒殺**（ver -1426，Ray：「加一個工具，鎖血以後
-   按清盤＝秒殺」）══════════════════════════════════════════════════════════
-   **明寫的開發梯子**（同章節跳關、九星 +1）：只有 `body.testmode` 看得到那兩顆鈕。
-   ⚠⚠ **不進 `state.js`**：那是「一輪遊戲」的狀態（會被存讀檔帶著走）——
-     這兩個是**這一次開機**的工具開關，存進去等於把測試狀態寫進玩家的存檔。
-   ⚠ 鎖血守在 `enemyAttack` **唯一那個入口**（鐵律 8：大絕／延時／點錯／格擋
-     四條扣血路徑都經過它），不要散到各處去擋。
-   ⚠⚠ 惡夢化的抽血（`drainPlayer`）**故意不擋**：那是那個系統自己的代價，
-     不是「被打到」—— 擋了會讓惡夢化永遠不會熔斷，測不到那一段。 */
-let devHpLock=false;
-export function setHpLock(on){ devHpLock=!!on; return devHpLock; }
-export function hpLocked(){ return devHpLock; }
-/* 秒殺：走**與普攻同一條**傷害路徑（`hitDamage`），所以擊殺演出、overkill、
-   連戰換敵、結算全部照舊 —— 不要自己把 `enemyHp` 設成 0（那會繞過上面那一整套）。 */
-export function devKill(){
-  if(state.over || state.enemyHp<=0) return false;
-  /* ⚠ 走 `enemyDamage`（**與普攻同一條**）：`src:'dev'` 讓 `applyEnemyMods` 不套
-     武器倍率；`silent` 不浮傷害數字。擊殺演出／overkill／連戰換敵／結算照舊。 */
-  enemyDamage(state.enemyHp, false, true, 'dev');
-  return true;
-}
 function enemyAttack(dmg, kind, saintAmt){
-  /* 管理人工具：鎖血（ver -1426）。⚠ 擺在最前面 ＝ 連帶不記失誤、不破無傷 ——
-     那正是「鎖血」要的：拿來測流程，不是拿來刷成績。 */
-  if(devHpLock) return;
   saint.resetSaintCombo();   // 受擊／點錯／逾時 → 連擊斷（九階「源泉」，ver -707）
   /* ⚠⚠ **失誤之後指一下正確的格子**（ver -717，Ray 指定）。掛在**這一支**是因為
      大絕／延時／按錯／格擋四條扣血路徑全部經過它 —— 守一次就全吃到（鐵律 8），
@@ -3163,6 +3139,13 @@ function tutorialCapEnemyHp(maxHp){
 }
 
 /* ---- 測試用「清盤」鈕：依當前應點順序逐格模擬點擊，把盤面清空走 clearBoard ---- */
+/* ══⚠⚠ **一鍵清盤 ＝ 秒殺**（ver -1428，Ray：「鎖血以後按清盤＝秒殺」）══
+   ver -463 起這一支是「把這一盤點完」—— 一盤只打掉一盤的傷害，五盤的場次要按五次。
+   Ray 要的是**一按就結束這一場**，所以清完盤之後**把剩下的血補掉**。
+   ⚠ 走 `enemyDamage`（**與普攻同一條**，`src:'dev'` 不套武器倍率）——
+     擊殺演出／overkill／連戰換敵／結算全部照舊。
+     **不要自己把 `enemyHp` 設成 0**：那會繞過上面那一整套。
+   ⚠ 這一支本來就只有 `body.testmode` 的那顆鈕叫得到（`#testClearBtn`）。 */
 export function testClearBoard(){
   if(state.over||state.transitioning||state.cutinPlaying) return;
   let guard=0;
@@ -3182,4 +3165,7 @@ export function testClearBoard(){
       if(fix && fix!==target){ tap(+fix.dataset.num, fix); } else break;
     }
   }
+  /* 清完盤還沒死就補掉剩下的血 ＝ **秒殺**（ver -1428，見上面的說明）。
+     ⚠ 已經死了（或這一場結束了）就不要再打一發 —— 那會變成白白多一段 overkill。 */
+  if(!state.over && state.enemyHp>0) enemyDamage(state.enemyHp, false, true, 'dev');
 }
