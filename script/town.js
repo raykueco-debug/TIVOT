@@ -410,7 +410,9 @@ export const DRAGON_LINES = {
          ⚠ `cgBack` 寫**明確路徑**（它不走時段候選鏈），而且要帶 `?v=2`：
            那張圖是同名覆蓋（-1450 美術重切翅膀），不帶版號會吃到舊快取（§5 的 -650）。
          ⚠ **要有人收**：打完那一場的下一拍寫 `cgBack:null`（同祭壇那一段）。 */
-      { speaker:'NARRATION', text:'', shake:true, auto:900,
+      /* ⚠ ver -1465：`shake` → `roarBlast`（Ray -1443：龍吟是**迎面衝擊的模糊**，
+         不是震動）。兩者不可以一起寫 —— 都動 transform，後掛的會蓋掉前一個。 */
+      { speaker:'NARRATION', text:'', roarBlast:true, auto:900,
         se:'se_monsterroardeep', cgBackScale:0.9, cgBackRise:true, cgBackFit:'contain',
         cgBack:'resources/enemy/mon_dragon_v1_shackled.webp?v=2' },
       sor('guardtalk','喔！學不乖的傢伙！'),
@@ -6254,7 +6256,8 @@ export const TOWNS = {
              ＝**牠在這裡降臨**：走戰鬥那一套 `enemy-rise`（同一組 CSS keyframes）
              ＋ 著地的那一圈聖光。戰鬥那一側已經不播了（`ENTRANCE_KINDS` 拿掉 `multi`）。
              ⚠ 聲音與震動就是這一拍自己的 `se`／`shake` —— 不要再播一次登場音。 */
-          { speaker:'NARRATION', text:'', shake:true, auto:900,
+          /* ⚠ ver -1465：`shake` → `roarBlast`（同追擊二番戰那一拍）。 */
+          { speaker:'NARRATION', text:'', roarBlast:true, auto:900,
             se:'se_monsterroardeep', cgBackScale:0.9, cgBackRise:true,
             /* ⚠ ver -1420（Ray：「龍降臨上半怎麼被裁了？」）：這一層預設 `cover`
                （為鹿主訂的，主體在下半）—— 龍是滿框展翅，要 `contain` 才不會被切頭。 */

@@ -988,6 +988,10 @@ const missingCg=new Set();   // 退回過的插圖：只提示一次，不然每
    ⚠ 這一支**只收「上一個畫面的殘留」**，不碰立繪（那是 `clearCast` 的事）
      與背景（那是 `enter()` 自己要換的）。 */
 export function clearStageLeftovers(){
+  /* ⚠ 龍吟的模糊（ver -1465）：`forwards` 的一次性動畫，換畫面時一起拔
+     —— 同 -1449 `pan-v` 那條教訓（「凡是 forwards 的一次性動畫，每一條收尾的路
+     都要把它拔掉」）。 */
+  { const st0=$('storyStage'); if(st0){ clearTimeout(st0.__blastT); st0.classList.remove('roarblast'); } }
   clearTimeout(cardAutoT); cardAutoT=null;   // 自動播放的卡自收計時器（ver -940）
   clearSceneFade();                    // 場景區黑幕（ver -881）
   closeHint();                         // 一次性提示遮罩（ver -885）
@@ -1959,6 +1963,18 @@ function fireOneShot(line){
      而那會把「同時發生」演成「先後發生」。收在這一支（鐵律 8）：所有讀 `line.se`
      的路徑都吃到，腳本那邊寫 `se:['a','b']` 就好。 */
   if(line.se) (Array.isArray(line.se) ? line.se : [line.se]).forEach(playSe);
+  /* ══⚠⚠ **`roarBlast:true` ＝這一拍來一記迎面衝擊的模糊**（ver -1465）══
+     龍吟的特效（Ray -1443：「不應該是震動，應該是動態模糊，像被迎面衝擊那樣」）。
+     ⚠ 與 `shake` 是**兩件事**，不要一起寫：兩個都動 `transform`，後掛上去的那一個
+       會把前一個整條蓋掉（§6.10 踩過兩次）。龍吟用這一支，別的撞擊照舊用 shake。
+     ⚠ 配方在 CSS 的 `#storyStage.roarblast`，與戰鬥那一半（`#app.roarblast`）
+       是同一組數字。 */
+  if(line.roarBlast){
+    const st0=$('storyStage');
+    if(st0){ clearTimeout(st0.__blastT);
+      st0.classList.remove('roarblast'); void st0.offsetWidth; st0.classList.add('roarblast');
+      st0.__blastT=setTimeout(()=>st0.classList.remove('roarblast'), 520); }
+  }
   /* ⚠ 抖動要**跟著演出的長度**（ver -327，Ray：「畫面抖動要連續直到射擊效果停止」）。
      單發 0.42 秒的抖法配上兩秒的掃射，會變成「槍還在打、畫面已經定住」。
      有掃射就抖滿掃射的長度（`.hold`＝無限循環），沒有就照舊抖一下。 */
@@ -2057,7 +2073,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1464';
+const KERB_V='?v=1465';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
