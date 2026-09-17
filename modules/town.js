@@ -2165,7 +2165,10 @@ function mapIsOn(){
    ⚠⚠ **每次開圖都歸零**（`renderMap` 收尾呼叫 `tmReset`）：Ray 說的是「**開啟時**
      依版面置入畫面」—— 上一次拉到哪裡是上一次的事，帶著走會讓人一開圖就迷路。
    ⚠ 狀態是**這一次攤開**的（模組變數、不進存檔）：同 `eveningHeld` 那一族。 */
-const TM_ZOOM_MIN = 1, TM_ZOOM_MAX = 4;
+/* ⚠ 上限 6×（ver -1451，Ray：「以地圖清楚為優先」）：古城那張是 2400 寬，
+   在 390 寬的手機上 contain 之後只有 0.16 倍 —— 要拉到大約 **6 倍**才接近 1:1，
+   那才是紙上的圖示與草書真的看得清楚的那一刻。上限給 4 等於看不到那一檔。 */
+const TM_ZOOM_MIN = 1, TM_ZOOM_MAX = 6;
 let tmZoom = 1, tmPanX = 0, tmPanY = 0;
 function tmFrameEl(){
   const v=document.getElementById('townMapView');
@@ -2468,18 +2471,24 @@ function renderMap(){
       else               tmReset();
     });
   });
-  /* ══⚠⚠⚠ **長寬比由「那張圖」決定，不是 CSS 抄一份**（ver -1450）══
+  /* ══⚠⚠⚠ **長寬比只有一份真相：那張圖自己**（ver -1450 立、-1451 拿掉 CSS 那份）══
      古城的小地圖由 1536×1024（**橫**）換成 2400×2600（**直**），而 `.tm-frame` 的
-     `aspect-ratio` 以前是寫死的 —— 寫死的那一份一換方向就整個歪掉，
-     而且**畫面上只是「點跟圖對不上」**，看不出原因（鐵律 7：比例的真相是那張圖本身）。
+     `aspect-ratio` 以前是 CSS 裡寫死的 —— 寫死的那一份一換方向就開始說謊，
+     而且**畫面上只是「點跟圖對不上」**，看不出原因（鐵律 7）。
+     Ray（-1451）：「長寬比不用寫死」⇒ **CSS 那一行已經刪掉，不要加回來**。
      ⚠ 圖還沒載完就等 `load`（快取命中走 `complete`），載完再 `tmApply` 重夾一次平移。
-     ⚠ CSS 那一行留著當**退路**（圖載不到時至少版面不會塌）。 */
+     ⚠⚠ **載不到就不要硬撐版面**：沒有比例的話框會塌成 0 高 —— 那時收掉地圖、
+       回那一句「這一帶還沒有留下地圖。」（＝這座城沒有地圖時的**同一句話**，鐵律 8）。
+       看得出來的缺件，好過一個歪掉的版面。 */
   { const f=v.querySelector('.tm-frame'), im=v.querySelector('.tm-img');
     const fit=()=>{ if(f && im && im.naturalWidth){
                       f.style.aspectRatio = im.naturalWidth+' / '+im.naturalHeight; }
                     tmApply(); };
+    const gone=()=>{ console.info('[town] 小地圖載不到：', M.img);
+                     mapClose(); story.flashLine('這一帶還沒有留下地圖。', ''); chatterOn=true; };
     if(im){ if(im.complete && im.naturalWidth) fit();
-            else im.addEventListener('load', fit, { once:true }); } }
+            else { im.addEventListener('load', fit, { once:true });
+                   im.addEventListener('error', gone, { once:true }); } } }
   v.classList.add('on');
   /* ⚠⚠ **開啟時依版面置入畫面**（Ray）＝每次攤開都歸零，不繼承上一次拉到哪裡。
      ⚠ 要在 `.on` **之後**：`display:none` 的元素量到的 `offsetWidth` 是 0，

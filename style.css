@@ -3580,8 +3580,9 @@
   #townNav.map-on .town-dest{display:none !important;}
   /* ══ 小地圖裡的存檔那一列（ver -936；-937 起不再是管理人限定，Ray：「把這條取消」）══ 擺在羊皮紙**下面**、地圖層的底部；
      `.tm-frame` 裡的東西尺寸都是地圖的百分比，鈕放進去會跟著縮到按不到。 */
-  #townMapView .tm-save{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);
-    display:flex;align-items:center;justify-content:center;gap:10px;z-index:2;}
+  /* ⚠ ver -1451：`z-index` 2 → 3（它現在壓在紙上，要在光點之上）。 */
+  #townMapView .tm-save{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);
+    display:flex;align-items:center;justify-content:center;gap:10px;z-index:3;}
   #townMapView .tm-sv{font-family:inherit;font-size:12px;letter-spacing:2px;
     padding:7px 14px;border-radius:8px;color:var(--gold);
     background:rgba(10,8,14,.82);border:1px solid var(--gold-dim);}
@@ -3595,10 +3596,14 @@
      ⚠ `pointer-events:none`：這一層唯一的操作是「點畫面收掉地圖」，
        多一塊會吃點擊的東西就是多一個關不掉的機會（§ 暗罩守望）。
      ⚠ 頂端吃 safe-area：瀏海機上不吃會被動態島壓住。 */
-  #townMapView .tm-pct{position:absolute;left:0;right:0;z-index:2;text-align:center;
-    top:calc(env(safe-area-inset-top,0px) + 12px);
-    font-size:11px;letter-spacing:3px;color:var(--gold-dim);
-    text-shadow:0 1px 4px rgba(0,0,0,.9);pointer-events:none;}
+  /* ⚠ ver -1451：改成**自己帶底色的小藥丸**（見上）—— 它現在壓在紙上，
+     沒有底色的話落在淺色羊皮紙上會讀不出來。 */
+  #townMapView .tm-pct{position:absolute;z-index:3;text-align:center;
+    left:8px; top:calc(env(safe-area-inset-top,0px) + 8px);
+    padding:5px 10px;border-radius:8px;
+    background:rgba(10,8,14,.82);border:1px solid var(--gold-dim);
+    font-size:11px;letter-spacing:2px;color:var(--gold-dim);
+    pointer-events:none;}
   #townMapView .tm-pct b{font-size:16px;letter-spacing:1px;color:var(--gold);margin-left:8px;}
   #townMapView .tm-pct i{display:block;font-style:normal;font-size:10px;letter-spacing:2px;
     color:var(--gold-dim);opacity:.8;margin-top:2px;}
@@ -3613,8 +3618,14 @@
   #townMapView{position:absolute;inset:0;z-index:7;display:none;
     background:rgba(6,5,10,.88);pointer-events:auto;overflow:hidden;
     touch-action:none;-webkit-user-select:none;user-select:none;
-    padding:calc(env(safe-area-inset-top,0px) + 34px) 6px
-            calc(env(safe-area-inset-bottom,0px) + 44px);
+    /* ⚠⚠⚠ **以地圖清楚為優先**（ver -1451，Ray）：-1449 曾經上下各留 34／44px
+       給探索率與存檔列 —— 那兩塊本來就是 `position:absolute` 的**浮層**，
+       留白等於白白把紙縮小。現在只留 safe-area（瀏海／Home 指示條）＋4px，
+       兩塊浮層改成自己帶底色的小藥丸，壓在紙上照樣讀得出來。
+       ⚠ 側邊留白**歸零**：紙直接貼到畫面兩側 —— 這張圖是直式 2400×2600，
+         在直式手機上**寬度才是綁住它的那一邊**，每一個 px 都是解析度。 */
+    padding:calc(env(safe-area-inset-top,0px) + 4px) 0
+            calc(env(safe-area-inset-bottom,0px) + 4px);
     align-items:center;justify-content:center;}
   #townMapView.on{display:flex;}
   /* 縮放鈕（滑鼠與不會捏合的人用；手機主要走兩指捏合與拖曳）。
@@ -3922,13 +3933,19 @@
   /* 「小一級」＝約六成半，與上面那行拉開層級但仍讀得清楚。 */
   #storyTitleCard i{font-style:normal;font-size:clamp(13px,3.1vw,19px);letter-spacing:.12em;
     color:#c8bda0;text-indent:.12em;text-shadow:0 2px 12px rgba(0,0,0,.8);}
-  /* ⚠ ver -1449：`96%/82%` → **滿版 contain**（見上面那一段）。
+  /* ⚠ ver -1449：`96%/82%` → **滿版 contain**。
      ⚠ `transform-origin` 留在正中：`tmZoomTo` 的錨點算式就是照「以中心縮放」推的。
-     ⚠⚠⚠ **這裡的 `aspect-ratio` 只是退路**（ver -1450）：真正的比例由 JS 讀那張圖的
-       `naturalWidth/naturalHeight` 寫成 inline（`renderMap` 收尾那一段，鐵律 7）——
-       古城已經換成 2400×2600 的**直式**，各張圖的方向不再一樣，CSS 猜不到。
-       ⚠ 留著它是為了「圖載不到時版面不要塌」，**不要**回頭把 JS 那一段拿掉。 */
-  #townMapView .tm-frame{position:relative;aspect-ratio:1536/1024;
+     ⚠⚠⚠ **這裡沒有 `aspect-ratio`，而且不要加回來**（ver -1451，Ray：「長寬比不用
+       寫死」）：比例的真相是**那張圖本身**，由 JS 讀 `naturalWidth/naturalHeight`
+       寫成 inline（`renderMap` 那一段）。
+       · -1450 曾經留一行 `aspect-ratio:1536/1024` 當「圖載不到的退路」——
+         那正是鐵律 7 要消滅的**第二份真相**，而且是**會過期**的那一種：
+         古城一換成 2400×2600 的直式，那一行就開始說謊，而症狀只是
+         「點跟圖對不上」，看不出原因。
+       · 圖真的載不到怎麼辦：**不要用假比例撐版面** —— `renderMap` 的 `error`
+         那一支會收掉地圖並回一句「這一帶還沒有留下地圖。」（＝這座城沒有地圖的
+         同一句話，鐵律 8）。**看得出來的缺件，好過一個歪掉的版面。** */
+  #townMapView .tm-frame{position:relative;
     max-width:100%;max-height:100%;width:100%;
     transform-origin:50% 50%;will-change:transform;}
   /* ⚠ 圖是去背 alpha 版（ver -878，Ray：「小地圖要去白背」）——影子要沿**輪廓**
