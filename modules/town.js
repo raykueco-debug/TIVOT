@@ -4434,6 +4434,10 @@ export function close(){
   document.querySelectorAll('.kerb-arrow').forEach(a=>a.classList.remove('avail','holding'));
 }
 export function isOpen(){ return !!townId; }
+/* ⚠⚠ **「人真的還在城裡」要問這一支，不是 `isOpen()`**（ver -1455 匯出）：
+   `suspend()`（出航）刻意不清 `townId`（ver -437：飛行畫面下半還要看得到城鎮的
+   移動選項）⇒ `isOpen()` 在天上照樣是真。憲法 §0.5（ver -1394）就記著這個坑。 */
+export function isLive(){ return !!townLive; }
 /* 這座城的旅店節點（ver -496：城鎮插入戰敗北要被抬去那裡）。沒有旅店回 null。 */
 export function innNodeOf(town){
   const T=TOWNS[town||townId]; if(!T) return null;

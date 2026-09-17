@@ -69,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.17-1454';
+export const VERSION = 'ver 2026.09.17-1455';
 
 export const GAME_CONFIG = {
 
@@ -2389,7 +2389,13 @@ export const GAME_CONFIG = {
        ⚠ `bgmAfter` 不寫 ＝ 打完接回戰前那一首（`warhorn`）—— 之後那幾拍還在船上。 */
     /* ⚠ ver -1418：空中戰從**第三型態**（dragonfront）打起，
        掉到 50% 放光之後由卡上的 `morph` 換成第 4 型態（`bl_dragon_sky`）。 */
-    bl_sky:    { enemy:'bl_dragon_front', bgm:'bgm_irregular' },
+    /* ⚠⚠ `ship:true`（ver -1455，Ray：「三四態是空戰，怎麼不是用船戰重武裝？」）：
+       這一場是**從船上打的** ⇒ BR 窗口期間吃 `tuning.shipDualBonus`（＝「重武裝」）。
+       ⚠ 寫在**卡**上不是只靠發起端宣告：飛行頁交棒那條路本來就會帶 `ship:true`，
+         但章節跳關／巡場／日後任何一條新的入口都不會 —— 卡上寫了就一律算數。
+       ⚠ 第四型態（`bl_dragon_sky`）是同一場裡 `morph` 換卡，`state.shipBattle`
+         在開場就定了、整場不變 ⇒ 兩個型態都吃得到。 */
+    bl_sky:    { enemy:'bl_dragon_front', bgm:'bgm_irregular', ship:true },
     /* 北方泊地的城鎮戰（ver -583（-893 前用詞））：每一格走進去打一場，共用這一張佔位卡。
        ⚠ **不禁聖徒化／搭檔技**：Ray 沒說要禁（禁了要明寫 noSaint/noPartner）。
        ⚠ 打輸走一般流程 —— 城鎮插入戰的敗北會被抬回這座城的旅店（§6.5.2 那張表）。

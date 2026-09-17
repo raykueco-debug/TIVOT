@@ -2316,7 +2316,11 @@ function maybeMorph(){
   state.transitioning=true;                          // 演出期間鎖點擊
   stopIntervalTimer();
   defense.resetEnemyTimers();                        // 收掉舊型態的紅點與排程
-  if(m.fx) enemy.showHitFx(m.fx);                    // ⚠ 只放光，不走 enemyAttack
+  /* ⚠⚠⚠ **走 `playFx`（依名字）不是 `showHitFx`（依受擊種類）**（ver -1455）——
+     `m.fx` 是**特效的名字**（`'holyburst'`）；餵給 `showHitFx` 會被當成受擊種類
+     去查敵人卡的 `hitFx`，查不到就靜靜退回三爪（Ray：「為什麼三轉四型態我會看到
+     爪擊特效？」）。⚠ 只放特效，不走 `enemyAttack` ⇒ 不扣玩家血、不記失誤。 */
+  if(m.fx) enemy.playFx(m.fx);
   setTimeout(()=>{
     if(state.over) return;
     /* ⚠⚠⚠ **血條由 `setEnemy` 自己設**（ver -1430 修）：那一支裡面就有
@@ -2856,7 +2860,17 @@ export function startGame(){
     state.storyBattle = state.scriptRun &&
       (pendingScriptStory!==null ? pendingScriptStory : cardStory);
     pendingScriptStory = null; }
-  state.shipBattle = pendingScriptShip; pendingScriptShip = false;
+  /* ══⚠⚠⚠ **「這一場是船戰」也可以寫在戰鬥卡上**（ver -1455，Ray：「三四態是空戰，
+     怎麼不是用船戰重武裝？」）══
+     -947 只讓**發起端**宣告（飛行頁交棒那條路帶 `ship:true`）—— 而那句註解自己
+     寫著「船戰本來就是**場次**的性質」，而場次 ＝ **戰鬥卡**。
+     ⇒ 卡上寫 `ship:true` 就算數，**不管是哪一條路把它叫起來的**
+       （腳本的 `{battle:…}`、章節跳關、巡場…都一樣）。
+     ⚠ 發起端的宣告**優先**（它知道這一次是不是真的從船上打的）；兩邊都沒說才是 false。
+     ⚠ 這不是把它搬回敵人卡：那三隻怪（蜈蚣／羽蛇／空賊船）靠 `kind` 分不出來，
+       而且同一隻怪在地上打就不是船戰 —— 分野在場次，不在怪。 */
+  state.shipBattle = pendingScriptShip || !!(sb && sb.ship);
+  pendingScriptShip = false;
   state.timeAttack = null; state.timeOver = false;   // 開場先歸零（同 noSaint：不要靠上一場收乾淨）
   state.weaponSound = null;                          // 武器音覆寫也是（ver -423）
   state.counterGapMs = null;                         // 連射間隔覆寫也是（ver -476）

@@ -679,6 +679,16 @@ window.__tivotFlight = {
        門在劇情層（z 8300）＞ iframe（8200），所以蓋得住。
        ⚠ 幾何用飛行頁量好的那一組（`req.geom`）：兩邊各算一次會差 8.6%，
          交棒那一格紋章會忽然變大（鐵律 7）。 */
+    /* ══⚠⚠⚠ **飛行交棒的這一條也要明確設一次 `battleBg`**（ver -1455，Ray：
+       「龍的空中戰沒接上空中背景」）══
+       ⚠⚠ `state.battleBg` 是**持續狀態**：城鎮插入戰設過一次之後就一直留著。
+         那一夜的追擊戰（在貝利薩爾）每一場都把節點背景設進去，接著「上船追」
+         飛上天打空中戰 —— 這一條路**從來沒有人設它** ⇒ 空中戰吃到的是
+         **上一場城鎮戰的背景**（古堡裡那一格），卡上的 `Sky_Towers` 根本用不到。
+       ⚠ 那段註解（`setBattleBg` 那一處）自己寫著「**每次交棒都要明確設一次**（含設
+         null）—— 靠上一場收乾淨會漏」。漏的就是這裡。
+       ⚠ 船戰一律 `null` ＝走敵人卡自己的 `bg`（空中戰＝天空、船戰＝甲板）。 */
+    combat.setBattleBg(null);
     story.showKerbGate(req.geom);
     closeFlightFrame();
     enterBattleAssets(id);   // 戰鬥那道門（ver -1354；-1414 起連圖一起）：放掉上一個畫面的，只留這一場要的
@@ -793,6 +803,7 @@ function bootBattleGate(req){
     story.playKerberosFromRisen(
       ()=>{ hideHome('bootBattleGate/kerb');
             combat.holdEnemyRise();   // 降臨押到門全開（ver -875）
+            combat.setBattleBg(null);   // ver -1455：飛行交棒一律走敵人卡的 bg（見上面那一段）
             combat.startScriptBattle(req.battle, { story: req.scripted, ship:true }); },   // 明確宣告才算，否則退回敵人卡（ver -495）；ship＝船戰（-947）
       ()=>{ story.close({ keepBgm:true }); combat.releaseEnemyRise(); });
   };
@@ -1068,7 +1079,8 @@ window.addEventListener('pagehide', refreshBoot);
            EpicBattle／piratebattle 在「開機直入戰鬥」這條路上會放錯首。 */
         const bk = battleBgmOf(req.battle);
         SFX.playBgm(asset(bk), { fadeOutMs:600, volume: bgmVol(bk) });
-        setTimeout(()=>{ hideHome('bootDirectBattle/alFlash'); combat.startScriptBattle(req.battle, { ship:true }); }, 2500);   // 同上：這條也是飛行交棒（-947）
+        setTimeout(()=>{ hideHome('bootDirectBattle/alFlash'); combat.setBattleBg(null);   // ver -1455：同上
+                         combat.startScriptBattle(req.battle, { ship:true }); }, 2500);   // 同上：這條也是飛行交棒（-947）
       }
     };
     ov.addEventListener('click', go);
@@ -1992,7 +2004,10 @@ story.setBattleHandler((battleId, resume)=>{
        不要自動切背景」）：把城鎮現在畫面上那一張帶進戰鬥，蓋過敵人卡的 `bg` ——
        不然打完一場上半會從卡上那張跳回節點原本那張，讀起來是換了個地方。
        ⚠ 每次交棒都明確設一次（不在城裡就是 null，走卡上的 `bg`）。 */
-    combat.setBattleBg(town.isOpen() ? town.currentBg() : null);
+    /* ⚠⚠ 問的是「城鎮介面**現在真的活著**」不是 `townId`（ver -1455）——
+       `suspend()`（出航）刻意不清 `townId`（ver -437），所以 `isOpen()` 在天上
+       照樣是真（憲法 §0.5 的 ver -1394 就警告過這一點）。 */
+    combat.setBattleBg((town.isOpen() && town.isLive()) ? town.currentBg() : null);
     combat.startScriptBattle(battleId);
     return;
   }

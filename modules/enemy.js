@@ -48,6 +48,25 @@ export function showHitFx(kind){
      ⚠ `angle` 不再看卡：一律 random（Ray：「已經全默認 random 了根本不用再列」）。 */
   const key = (typeof raw === 'string') ? raw : raw.type;
   const fx  = Object.assign({}, HITFX[key] || {}, (typeof raw === 'string') ? {} : raw);
+  spawnFxNamed(key, fx);
+}
+/* ══⚠⚠⚠ **依「特效的名字」直接放一個特效**（ver -1455，Ray：「為什麼三轉四型態
+   我會看到爪擊特效？我不是說要放光特效嗎？」）══
+   ⚠⚠⚠ 真因：`showHitFx(kind)` 吃的是**受擊的種類**（`delay`／`wrong`／`assault`／`ult`）
+     —— 它拿那個字去查**敵人卡的 `hitFx`**。而 `combat.maybeMorph` 傳的是
+     `m.fx`＝**特效的名字**（`'holyburst'`）⇒ `hf['holyburst']` 查不到
+     ⇒ 掉進 `if(!raw){ triggerClaw(); }` 這條退路 ⇒ **變成三爪**。
+     卡上宣告的是放光，畫面上放的是爪 —— 而且**沒有任何錯誤訊息**。
+   ⇒ 換型態那一條改走這一支（同一份 `switch`，鐵律 8：一個動作一個實作）。
+   ⚠ 這兩支的差別要記牢：**`showHitFx` 問「玩家被怎麼打到」，`playFx` 問「放哪一個特效」**。 */
+export function playFx(name){
+  const key=String(name||'');
+  if(!key) return;
+  spawnFxNamed(key, Object.assign({}, HITFX[key] || {}));
+}
+/* 名字打錯只唸一次（同 story.js 的 `missingExpr`：一行 console，不要洗版）。 */
+const warnedFx = new Set();
+function spawnFxNamed(key, fx){
   const base = (HITFX[key] && HITFX[key].base) || key;
   switch(base){
     case 'claw':  triggerClaw(fx.count||3, true); break;
@@ -60,7 +79,12 @@ export function showHitFx(kind){
     case 'blunt': spawnBlunt(fx.scale); break;
     case 'sakura':spawnSakura(); break;
     case 'holyburst':spawnHolyBurst(); break;   // 王座徘徊者的放光（ver -1351）
-    default:      triggerClaw();
+    /* ⚠ 名字打錯時才走到這裡（`HITFX` 沒有它、也不是上面任何一個 base）。
+       ⚠ 留一行 console：靜靜變成爪就是 -1455 那個查了很久的 bug。 */
+    default:
+      if(!warnedFx.has(key)){ warnedFx.add(key);
+        console.info('[enemy] 沒有這個特效名，退回三爪：', key); }
+      triggerClaw();
   }
   /* 受擊行可加掛**全畫面閃色**（ver -509，空賊船卡：「蓄力攻擊…畫面閃紅」）——
      疊在受擊特效之上、300ms 自己退。目前只有 'red' 一種，要新色再加 class。 */
