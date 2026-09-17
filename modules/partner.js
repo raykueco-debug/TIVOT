@@ -305,11 +305,24 @@ export function tryActive(context){
   const p = currentPartner();
   const act = p && p.active;
   if(!act || (act.context !== context && act.context !== 'any')) return false;   // 無主動技 / 情境不符 → 不發
-  if(act.oncePerBattle && state.partnerActiveUsed) return false;   // 每場一次且已用 → 不發
+  /* ══⚠⚠⚠ **沒寫 `oncePerBattle` ＝ 一局一次（不是無限次）**（ver -1463，Ray：
+     「魂之歸所不知為何可以無限使用，沒關好？」）══
+     ⚠⚠⚠ 真因：諾薇兒那張卡的 `active` **漏寫了 `oncePerBattle`**，而這一行以前是
+       `if(act.oncePerBattle && …)` ⇒ **條件永遠是 false ⇒ 守門等於不存在**，
+       而且畫面上完全看不出來（它就是「可以一直用」）。
+       ⚠ 那張卡漏寫並不孤單：試玩版的蕾妮（同一招）也漏了。
+     ⇒ 把**預設翻到安全的那一側**（鐵律 13）：不寫＝一局一次；
+       真的要無限次，**卡上明寫 `oncePerBattle:false`**。
+       漏寫的下場從此是「少用一次」（看得出來），不是「無限用」（看不出來）。
+     ⚠ 這與 §0.5 那張表一致：搭檔主動技的單位是**局**（`partnerActiveUsed`，
+       連戰整段共用一個槽、走 `sessionCarry` 帶過場）。
+     ⚠ 安雅的 `dreamBreakInfo` 不受影響 —— 它沒有 handler，本來就走不到這裡。 */
+  const onceOnly = (act.oncePerBattle !== false);
+  if(onceOnly && state.partnerActiveUsed) return false;   // 一局一次且已用 → 不發
   const handler = ACTIVE_HANDLERS[act.key];
   if(!handler) return false;                            // 尚無對應 handler → 不發
   const ok = handler(api, act) === true;
-  if(ok && act.oncePerBattle) state.partnerActiveUsed = true;
+  if(ok && onceOnly) state.partnerActiveUsed = true;
   return ok;
 }
 

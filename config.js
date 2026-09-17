@@ -69,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.17-1462';
+export const VERSION = 'ver 2026.09.17-1463';
 
 export const GAME_CONFIG = {
 
@@ -497,6 +497,16 @@ export const GAME_CONFIG = {
          出現了蕾妮（同 -454「本篇的搭檔是諾薇兒，演出裡出現蕾妮是錯的人」）。
          ⚠ 蕾妮自己那張卡（`partners.renee`）不動 —— 試玩版照舊。 */
       active:{ key:'lifeReturn', name:'魂之歸所', en:'Soul Return', context:'any',
+               /* ⚠⚠⚠ **ver -1463 補上**（Ray：「魂之歸所不知為何可以無限使用，沒關好？」）
+                  —— 這一格以前**漏寫**，而 `partner.tryActive` 的守門是
+                  `if(act.oncePerBattle && …)` ⇒ 條件永遠 false ⇒ **守門等於不存在**。
+                  ⚠ 那一支同版把**預設翻成安全的那一側**（不寫＝一局一次），
+                    所以這一行是「明寫」不是「必要」—— 但明寫比較讀得出意圖。
+                  ⚠ 單位是**局**不是場（§0.5）：連戰整段共用一個槽。
+                  ⚠ 「彈雨傾洩回復使用次數」那顆星（`roarReloadActive`）靠的正是它
+                    （`partner.js` 把 `partnerActiveUsed` 設回 false）—— 沒有次數上限，
+                    那顆星就沒有意義。 */
+               oncePerBattle:true,
                cutin:'cutin_return_nouvelle', voice:'vo_nou_return',   // ver -711：她自己的語音
                /* ══⚠⚠⚠ **ver -986：基礎不再吸血**（Ray 選 (C)）══ 吸血整組移到
                   Lv5「引路星」（`lifeReturnPct` ＋ `lifeReturnSec`）—— 那顆星 Ray 交卡時
