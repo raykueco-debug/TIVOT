@@ -31,12 +31,14 @@ POS = {
   #   石塚群往上分左右兩條（碎石坡／枯木林），在風蝕岩匯合 ＝ 那一個環。
   #   ⚠ 那四條分岔是 **L 形**（先左／右再上）—— 版面只保證方向的正負號對。
   'plainsroad': {
-    'gorge':(2,0),  'windrock':(2,1),
-    'scree':(1,2),  'deadwood':(3,2),
-    'cairn':(2,3),
-    'sea':(2,4),    'well':(4,4),
-    'stone':(2,5),  'beacon':(0,5),
-    'entry':(2,6),
+    'ravine':(2,0),          # 城外（最後一格・安全區・結算點，ver -1459）
+    'gorge':(2,1),           # 狹窄溪谷（倒數第二）
+    'windrock':(2,2),
+    'scree':(1,3),  'deadwood':(3,3),
+    'cairn':(2,4),
+    'sea':(2,5),    'well':(4,5),
+    'stone':(2,6),  'beacon':(0,6),
+    'entry':(2,7),
   },
   # ── 帝都（ver -915）：廣場為中心，三個街區各帶自己的末端 ──────────────
   'capital': {
@@ -159,7 +161,7 @@ POS = {
 # 跨圖出口畫成一個虛線框（`@<圖>:<格>` → 標題）
 OUT_POS = {
   'plainsroad':    {'@belisar':              (2,-1, '貝利薩爾\n遺址'),
-                    '@eastport:dock':        (2, 7, '東方泊地\n碼頭')},
+                    '@eastport:dock':        (2, 8, '東方泊地\n碼頭')},
   'shinier_ruins': {'@shinier_forest:ruins': (5,9, '遺蹟\n入口')},
   'shinier':       {'@shinier_forest':      (2,2, '夏爾\n森林')},
 }

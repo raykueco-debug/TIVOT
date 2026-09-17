@@ -5277,10 +5277,10 @@ export const TOWNS = {
          ⚠ 主軸維持在 x≈0.495（道口→風蝕岩→狹窄溪谷一條直線），兩條支線
            （烽燧臺 0.300、古井驛 0.740）與分岔（0.330／0.660）掛在兩側。 */
       spots: {
-        entry:[0.4950, 0.9000],  stone:[0.4950, 0.7900], beacon:[0.3000, 0.7900],
-        sea:[0.4950, 0.6800],    well:[0.7400, 0.6800],  cairn:[0.4950, 0.5650],
-        scree:[0.3300, 0.4500],  deadwood:[0.6600, 0.4500],
-        windrock:[0.4950, 0.3350], gorge:[0.4950, 0.2100],
+        entry:[0.4950, 0.9300],  stone:[0.4950, 0.8250], beacon:[0.3000, 0.8250],
+        sea:[0.4950, 0.7200],    well:[0.7400, 0.7200],  cairn:[0.4950, 0.6100],
+        scree:[0.3300, 0.5000],  deadwood:[0.6600, 0.5000],
+        windrock:[0.4950, 0.3900], gorge:[0.4950, 0.2800], ravine:[0.4950, 0.1700],
       },
     },
     /* ══⚠⚠ **一步 30 分鐘**（ver -1447，工單 `_plainsroad_spec.md`「時間：靠 `stepMin`
@@ -5352,11 +5352,11 @@ export const TOWNS = {
          ⚠ **那一頭不給陸路回程是對的**（同 -1358 的理由）：`belisar.entrance` 的
            「下」已經是**出航**（`sail:{}`），而 §6.5.4「出航先擺，『下』不能被
            『回去』擠掉」。走路過去、搭船離開 —— 不會卡死。 */
-      /* ══⚠⚠⚠ **狹窄溪谷那一段**（ver -1448，Ray 交稿；取代 -1402 的「裡面有燈光」）══
-         -1402 那三句是配**古堡外觀圖**寫的（那時這一格借 `Belisar_Exterior`），
-         而 -1447 換成了窄谷 ⇒ 台詞跟著換。⚠⚠ **舊的那三句現在沒有落腳處**
-         （「裡面有燈光！」／「跟木雅克遺蹟的時候一樣嗎……」／安雅 lookup）——
-         要不要搬回古城中庭（`ep_bel_enter`）**等 Ray 決定**，不要自己塞回去。
+      /* ══⚠⚠⚠ **狹窄溪谷那一段：騎術**（ver -1448，Ray 交稿）══
+         ⚠ ver -1459 起這一格是**倒數第二**（最後一格是城外，見下面 `ravine`）——
+           「好窄喔，難怪不能騎馬來！」講的正是這一條窄谷，落在這裡才對。
+         ⚠ 旗由 `ep_bel_sight` 改成 **`ep_bel_gorge`**：那支旗是「看到城裡的燈光」
+           那一段的（現在還給城外那一格了），兩段是兩件事 ⇒ 兩支旗（鐵律 9）。
 
          ⚠⚠ **站位：蕾娜改站右**（`sides:{RENNA:'R'}`）。理由是台上有四個人，
            而諾薇兒是這一段講最多話的（12 拍裡佔 5 拍）：
@@ -5375,9 +5375,9 @@ export const TOWNS = {
            ⚠ 它掛在 `portrait` 上不是掛在 line 上，所以這一拍不用 `ren()` 那個縮寫。
          ⚠ 這一格是 `rest`（休息處），而 `actDue` 排在 `restActDue` 前面，
            所以這一段會先演；何況這一趟還沒打過架，休息處本來就不作動。 */
-      gorge:  { bg:'Plains_Gorge_day', noTime:true, name:'平原古道　狹窄溪谷', rest:true,
-        exits:{ up:'@belisar', down:'windrock' },
-        acts:[ { flag:'ep_bel_sight', need:'ep_day2', sides:{ RENNA:'R' }, lines:[
+      gorge:  { bg:'Plains_Gorge_day', noTime:true, name:'平原古道　狹窄溪谷',
+        exits:{ up:'ravine', down:'windrock' },
+        acts:[ { flag:'ep_bel_gorge', need:'ep_day2', sides:{ RENNA:'R' }, lines:[
           nou('surprise','好窄喔，難怪不能騎馬來！'),
           nou('awkward','是說我也不會騎就是了。'),
           ren('ask','是啊，只有我跟安雅小姐通騎術，人數對不上嘛。'),
@@ -5391,6 +5391,29 @@ export const TOWNS = {
             portrait:{ char:'RENNA', exprByTier:{ 1:'scarejump', 3:'shockedCalm' }, show:true } },
           nou('bigsmileclose','？？'),
           any('nervous',''),
+        ] } ] },
+      /* ══⚠⚠⚠ **最後一格：城外**（ver -1459，Ray：「最後一張應該是城外的圖，
+         諾薇兒說『燈亮著』是那一幕」「之前我說窄河谷是**倒數第二**張，你把它做成
+         第一張了」「城外圖是安全區」）══
+         -1447 我把 `ravine` 整格換成窄谷，等於**把最後一格刪掉了** —— 於是
+         「裡面有燈光！」那一段沒了落腳處（-1448 又拿騎術那一段頂上去），而且
+         窄谷直接接到 `@belisar`，接圖讀起來是「走進一條窄縫就到城裡」。
+         現在是 …→ 風蝕岩 → **狹窄溪谷**（倒數第二）→ **城外**（最後）→ 古城。
+         ⚠ 圖用 `Belisar_Exterior`（古堡外觀，四時段都在）—— 「裡面有燈光」是
+           **還在外面**才說得出口的話，那一格就該是看得到城的地方。
+         ⚠⚠ **安全區**（Ray 指定）＝ `noWild`；同時是這張圖的**結算點**（`rest`）——
+           §6.5.4.4：安全點一律 `noWild`，兩者本來就同進退。
+         ⚠ **那一頭不給陸路回程是對的**（同 -1358 的理由）：`belisar.entrance` 的
+           「下」已經是**出航**（`sail:{}`），而 §6.5.4「出航先擺，『下』不能被
+           『回去』擠掉」。走路過去、搭船離開 —— 不會卡死。
+         ⚠ 安雅那一拍**沒有台詞**：台上有人的無台詞拍要點擊才推進（§6.5 的 -628）
+           —— 她抬頭看，那就是這一段的收尾。 */
+      ravine: { bg:'Belisar_Exterior', name:'平原古道　城外', rest:true, noWild:true,
+        exits:{ up:'@belisar', down:'gorge' },
+        acts:[ { flag:'ep_bel_sight', need:'ep_day2', sides:{ RENNA:'L' }, lines:[
+          nou('surprise','裡面有燈光！'),
+          ren('watch','跟木雅克遺蹟的時候一樣嗎……'),
+          any('lookup',''),
         ] } ] },
     },
   },
