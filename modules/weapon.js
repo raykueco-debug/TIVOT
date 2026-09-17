@@ -175,7 +175,15 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll, grade){
        · 散射型（霰彈 vfx:'burst'）＝只噴一顆、1.5×、紅殼金底火(shotgunshell.webp)；船戰改金色 2×。
        · 爆發型（狙擊 vfx:'single'）＝只噴一顆、1.3×、金色；船戰金色 2.5×。
      ⚠ 船戰（ship）一律 `down:true`＝直接斜下拋、無往上角度（ver -813，Ray）。 */
-  const ship = !!state.weaponSound;
+  /* ══⚠⚠⚠ **「這一場是不是船戰」問 `state.shipBattle`，不要問「卡上有沒有
+     `weaponSound`」**（ver -1456，Ray：「明明是空中遭遇戰　為何會默認成陸戰？」）══
+     -813 這裡寫的是 `!!state.weaponSound` —— 拿**艦載音的覆寫表**當「船戰的記號」。
+     那在當時成立（只有那三張船戰卡寫了它），但它是**第二份真相**（鐵律 7）：
+     空中戰那張卡沒寫 `weaponSound` ⇒ 槍火倍率、彈殼拋法、反擊額外音**整組退回陸戰**，
+     而畫面上只是「看起來小小的」，沒有任何錯誤訊息。
+     ⇒ 真相只有一份：`state.shipBattle`（發起端宣告 ／ 戰鬥卡的 `ship`，見 combat）。
+     ⚠ `weaponSound` 從此**只管聲音**，不再兼職回答「這是不是船戰」。 */
+  const ship = !!state.shipBattle;
   const cp = state.counterPoint ||
              {x:(window.innerWidth||390)*0.5, y:(window.innerHeight||760)*0.4};
   /* ══ 反擊的槍火（ver -1054，Ray：「副武器也要有」「船戰要更大」）══

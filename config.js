@@ -69,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.17-1455';
+export const VERSION = 'ver 2026.09.17-1456';
 
 export const GAME_CONFIG = {
 
@@ -209,8 +209,11 @@ export const GAME_CONFIG = {
      日後多一座城的靶場自動吃到，不必記得補一行（鐵律 1＋8）。
      ⚠ 決定只有 `main.js` 的 `battleBgmOf` 一支（門的 cue 與交棒兩處都問它）。 */
   /* `shipHarm`（ver -741，Ray：「船戰禍魘默認這一首 PerituneMaterial_EpicBattle_loop」）：
-     卡上沒寫 `bgm`、而且是**船戰**（卡上有 `weaponSound`＝艦載武器音，那正是
-     船戰的記號）、敵人卡 `kind:'harm'` → 用這一首。判定只有 main.battleBgmOf 一處。 */
+     卡上沒寫 `bgm`、而且是**船戰**、敵人卡 `kind:'harm'` → 用這一首。
+     判定只有 main.battleBgmOf 一處。
+     ⚠⚠ ver -1456：「是不是船戰」由 `卡上有 weaponSound` 改成 **`卡上的 ship`**
+       —— 拿音效表當記號是第二份真相（鐵律 7，見 `modules/weapon.js` 那一段）。
+       ⚠ 既有那三張船戰卡都已經補上 `ship:true`，行為不變。 */
   battleBgm: { default:'bgm_battle', timeAttack:'bgm_hopstep', shipHarm:'bgm_epicbattle',
                /* ver -837（-893 前用詞）（Ray：「索拉娜為夥伴時戰鬥音樂換成 Peritune_Whirlwind」）——
                   這一場的搭檔（卡上的 partner，否則整備頁選的人）在這張表裡就換曲；
@@ -2395,7 +2398,18 @@ export const GAME_CONFIG = {
          但章節跳關／巡場／日後任何一條新的入口都不會 —— 卡上寫了就一律算數。
        ⚠ 第四型態（`bl_dragon_sky`）是同一場裡 `morph` 換卡，`state.shipBattle`
          在開場就定了、整場不變 ⇒ 兩個型態都吃得到。 */
-    bl_sky:    { enemy:'bl_dragon_front', bgm:'bgm_irregular', ship:true },
+    bl_sky:    { enemy:'bl_dragon_front', bgm:'bgm_irregular', ship:true,
+                 /* ⚠⚠ **艦載武器音**（ver -1456，Ray：「三四態是空戰，怎麼不是用船戰
+                    重武裝？」）—— 逐格照抄既有的船戰卡（同一套艦載音，鐵律 7：
+                    那三張怎麼寫這張就怎麼寫）。數值照舊跟著玩家裝備的副武器，
+                    聲音一律是艦載的那一套（ver -504 的原則）。
+                    ⚠ `ship:true` 管的是**倍率與演出**（BR 加成、槍火 ×1.8、彈殼斜下拋），
+                      `weaponSound` 管的是**聲音** —— 兩件事，兩個欄位（-1456 拆開）。 */
+                 weaponSound:{ '重機槍':'se_ship_heavygun',
+                               '霰彈槍':{ key:'se_spiltcannon', once:'se_weapon_cannonshell' },
+                               '萊福槍':{ key:'se_weapon_cannon', once:'se_weapon_cannonshell' } },
+                 /* 船戰的速射砲連射間隔（ver -476）：90ms → 180ms，同其餘三張船戰卡。 */
+                 counterGapMs:180 },
     /* 北方泊地的城鎮戰（ver -583（-893 前用詞））：每一格走進去打一場，共用這一張佔位卡。
        ⚠ **不禁聖徒化／搭檔技**：Ray 沒說要禁（禁了要明寫 noSaint/noPartner）。
        ⚠ 打輸走一般流程 —— 城鎮插入戰的敗北會被抬回這座城的旅店（§6.5.2 那張表）。
@@ -2766,7 +2780,13 @@ export const GAME_CONFIG = {
        ⚠ trigger 沿用既有那幾個節點：`battleStart`／`board:N`／`threat`／`defended`。
        ⚠ `talkOnce` ＝這一輪遊戲只講一次（旗標走 `progress`，所以讀檔會跟著回去，§6.9）。
        ⚠⚠ 反擊短教學由**諾薇兒**帶，就這兩句（Ray 交稿，一字未改）。 */
-    flight_centipede: { enemy:'centipi',
+    /* ⚠⚠⚠ `ship:true`（ver -1456）＝**這一場是船戰**。以前這件事沒有欄位，
+       是靠「卡上有沒有 `weaponSound`」推的（`modules/weapon.js` 與 `main.battleBgmOf`
+       各推一次）—— 那是第二份真相，而空中戰那張卡沒寫音效表就整組退回陸戰
+       （Ray：「明明是空中遭遇戰　為何會默認成陸戰？」）。
+       ⚠ 這三張的行為**一個字都沒變**：它們本來就由飛行頁交棒宣告 `ship:true`，
+         這裡只是把同一件事寫在它該在的地方（場次的性質寫在場次上，鐵律 1）。 */
+    flight_centipede: { enemy:'centipi', ship:true,
                         /* ⚠⚠ **這一場開啟蕾娜的結算評價**（ver -432（-893 前用詞），Ray：「第一次艦戰後
                            開啟蕾娜評價」）。旗標由 `inspector.pickEvaluator` 在結算那一刻記，
                            所以**這一場自己那一次就評得到**，之後每一場都有（打靶除外）。
@@ -2852,7 +2872,7 @@ export const GAME_CONFIG = {
        talk＝卡上的「劇情」：登場特效拍（出場音效＋震動）→ 兩句。
        ⚠ 只有**劇情戰**會播（state.storyBattle）：隨機遭遇共用這張卡不播；
          talkOnce 打贏才記（§6.5.2）。 */
-    flight_serpent:   { enemy:'serpent',
+    flight_serpent:   { enemy:'serpent', ship:true,
                         /* ⚠⚠ 船戰的武器音**按類別**固定（ver -504，Ray：「船戰武器的
                            數值都跟著玩家現在裝備的副武器，但是音效固定用船戰的」）——
                            換上哪一把（絞肉機改、龍息、遊隼…）數值都是那把槍的，
@@ -2874,7 +2894,7 @@ export const GAME_CONFIG = {
                            （flight 的 runSerpentIntro：插圖＋對白＋換搭檔教學）。 */
     /* 空賊船（ver -509）。船戰的武器音／連射間隔同前兩場（都是船戰）。
        卡上出場音效／特效／背景＝0 ＝ 沒有開場演出、沒有 talk。 */
-    flight_pirate:    { enemy:'pirate_ship',
+    flight_pirate:    { enemy:'pirate_ship', ship:true,
                         /* ver -741（Ray：「船戰的空賊戰定成這一首」）—— Seven Seas
                            （Alexander Nakarada），出處與授權字樣在 credit（index.html）。 */
                         bgm:'bgm_piratebattle',
