@@ -5804,7 +5804,14 @@ export const TOWNS = {
          圖上那顆點與這裡的數字是**同一次算出來的**，才不會走鐘（憲法 §6.5.4.4）。
        ⚠ 這張**有迷霧**（城上沒寫 `mist:0`）：沒走到的格子蓋在整片黑霧底下，
          走過的地方才化開（ver -1392）；全部踩過霧就整片撤掉（ver -1393）。
-       ⚠⚠⚠ **ver -1441 再重畫（美術照 `reference/_topology.pdf` ＝ Ray 自己排的拓樸）**
+       ⚠⚠⚠ **ver -1450：美術改成 2400×2600 的「直式大張」重交**（Ray：「古城圖太小
+         上字以後糊成一團　不用限定橫幅　長幅也可，保持相對關係把間距拉大」）——
+         **37 個點又全部移位**，這一組照新的 `_spots_belisar.json` 抄。
+         ⚠⚠ **長寬比從 1536×1024（橫）變成 2400×2600（直）** ⇒ `.tm-frame` 那個
+           寫死的 `aspect-ratio:1536/1024` **不能再用**：現在由 JS 讀
+           `naturalWidth/naturalHeight` 寫成 inline（鐵律 7：比例的真相是那張圖本身，
+           不是 CSS 裡抄的一份）。日後任何一張地圖換方向都自動對。
+       ⚠⚠ ver -1441 那一版（美術照 `reference/_topology.pdf`）
          —— 整張紙改成**格線版面**（欄距 0.1114、列距 0.1031），**37 個點全部移位**，
          這一組照新的 `resources/map/_spots_belisar.json` 抄（一個數字都沒有用眼睛估）。
        ⚠⚠ **接上去之前驗過一次**（照 §6.5.4.3／憲法 -907 的規矩）：46 條邊裡
@@ -5818,21 +5825,21 @@ export const TOWNS = {
          ⚠ 背景走 `ASSET_VER` 是因為檔名是組出來的；小地圖的路徑是**手寫字串**，
            所以直接把 `?v=` 打進去（同 `sfx_saint` 的作法）。 */
     map: {
-      img: 'resources/map/map_belisar.webp?v=3',
+      img: 'resources/map/map_belisar.webp?v=4',
       spots: {
-        altar:[0.7386, 0.8269], antecham:[0.4043, 0.2081], bellroom:[0.1814, 0.7237],
-        bonerack:[0.5157, 0.4144], cages:[0.7386, 0.4144], candlewalk:[0.2929, 0.6206],
-        capstan:[0.6271, 0.5175], crown:[0.2929, 0.1050], culvert:[0.7386, 0.3112],
-        dragonrace:[0.8500, 0.4144], dragstair:[0.4043, 0.3112], draincliff:[0.8500, 0.3112],
-        drywell:[0.0700, 0.4144], entrance:[0.6271, 0.9300], floodway:[0.7386, 0.7237],
-        forge:[0.1814, 0.4144], foyer:[0.6271, 0.8269], greathall:[0.4043, 0.5175],
-        guardhall:[0.4043, 0.4144], incense:[0.2929, 0.3112], lamphall:[0.2929, 0.5175],
-        mirrorpool:[0.7386, 0.6206], mirrorway:[0.2929, 0.7237], muralwalk:[0.1814, 0.5175],
-        offering:[0.5157, 0.1050], oldtomb:[0.5157, 0.5175], ossuary:[0.6271, 0.3112],
-        pillars:[0.6271, 0.6206], rooffall:[0.0700, 0.5175], stairwell:[0.5157, 0.6206],
-        starroom:[0.2929, 0.2081], stelae:[0.5157, 0.3112], stephall:[0.6271, 0.7237],
-        throne:[0.4043, 0.1050], trihall:[0.2929, 0.4144], wardtomb:[0.5157, 0.2081],
-        waterjail:[0.7386, 0.5175],
+        altar:[0.7407, 0.8431], antecham:[0.3979, 0.1719], bellroom:[0.1693, 0.7312],
+        bonerack:[0.5121, 0.3956], cages:[0.7407, 0.3956], candlewalk:[0.2836, 0.6194],
+        capstan:[0.6264, 0.5075], crown:[0.2836, 0.0600], culvert:[0.7407, 0.2837],
+        dragonrace:[0.8550, 0.3956], dragstair:[0.3979, 0.2837], draincliff:[0.8550, 0.2837],
+        drywell:[0.0550, 0.3956], entrance:[0.6264, 0.9550], floodway:[0.7407, 0.7312],
+        forge:[0.1693, 0.3956], foyer:[0.6264, 0.8431], greathall:[0.3979, 0.5075],
+        guardhall:[0.3979, 0.3956], incense:[0.2836, 0.2837], lamphall:[0.2836, 0.5075],
+        mirrorpool:[0.7407, 0.6194], mirrorway:[0.2836, 0.7312], muralwalk:[0.1693, 0.5075],
+        offering:[0.5121, 0.0600], oldtomb:[0.5121, 0.5075], ossuary:[0.6264, 0.2837],
+        pillars:[0.6264, 0.6194], rooffall:[0.0550, 0.5075], stairwell:[0.5121, 0.6194],
+        starroom:[0.2836, 0.1719], stelae:[0.5121, 0.2837], stephall:[0.6264, 0.7312],
+        throne:[0.3979, 0.0600], trihall:[0.2836, 0.3956], wardtomb:[0.5121, 0.1719],
+        waterjail:[0.7407, 0.5075],
       },
     },
     nodes: {

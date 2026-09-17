@@ -2468,6 +2468,18 @@ function renderMap(){
       else               tmReset();
     });
   });
+  /* ══⚠⚠⚠ **長寬比由「那張圖」決定，不是 CSS 抄一份**（ver -1450）══
+     古城的小地圖由 1536×1024（**橫**）換成 2400×2600（**直**），而 `.tm-frame` 的
+     `aspect-ratio` 以前是寫死的 —— 寫死的那一份一換方向就整個歪掉，
+     而且**畫面上只是「點跟圖對不上」**，看不出原因（鐵律 7：比例的真相是那張圖本身）。
+     ⚠ 圖還沒載完就等 `load`（快取命中走 `complete`），載完再 `tmApply` 重夾一次平移。
+     ⚠ CSS 那一行留著當**退路**（圖載不到時至少版面不會塌）。 */
+  { const f=v.querySelector('.tm-frame'), im=v.querySelector('.tm-img');
+    const fit=()=>{ if(f && im && im.naturalWidth){
+                      f.style.aspectRatio = im.naturalWidth+' / '+im.naturalHeight; }
+                    tmApply(); };
+    if(im){ if(im.complete && im.naturalWidth) fit();
+            else im.addEventListener('load', fit, { once:true }); } }
   v.classList.add('on');
   /* ⚠⚠ **開啟時依版面置入畫面**（Ray）＝每次攤開都歸零，不繼承上一次拉到哪裡。
      ⚠ 要在 `.on` **之後**：`display:none` 的元素量到的 `offsetWidth` 是 0，

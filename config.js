@@ -69,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.17-1449';
+export const VERSION = 'ver 2026.09.17-1450';
 
 export const GAME_CONFIG = {
 
@@ -3981,7 +3981,11 @@ export const ASSETS = {
        `mon_dragon_throne_{dormant,awakened,roar}`。那三張仍在庫裡沒有人用。
        規格與兩輪的來龍去脈見 `resources/enemy/_dragon_spec.md`。
      ⚠ 這是他說的「**先用**這個」⇒ 日後換圖只要改這三行；卡與腳本不必動。 */
-  enemy_bl_dragon_chase:  "resources/enemy/mon_dragon_v1_shackled.webp",
+  /* ⚠⚠⚠ `?v=2`（ver -1450，§5 的 -650）：這兩張是**同名覆蓋**（美術重切，
+     Ray：「未封印形態的龍立繪翅膀被裁掉」）—— 不掛版號的話瀏覽器照樣拿舊的那一份，
+     而**畫面上不會有任何錯誤訊息**，症狀只是「翅膀還是被切掉的」。
+     ⚠ 立繪這條路的路徑是**手寫字串**，所以直接把 `?v=` 打進去（背景才走 ASSET_VER）。 */
+  enemy_bl_dragon_chase:  "resources/enemy/mon_dragon_v1_shackled.webp?v=2",
   enemy_bl_dragon_throne: "resources/enemy/mon_dragon_v1_unsealed.webp",
   /* 第三型態（空中戰第一形態，ver -1418 接線、**-1424 圖到了**）：
      美術去背完交的是 `mon_dragon_v1_flight.webp`（1536×1024，真 alpha：
@@ -3995,7 +3999,7 @@ export const ASSETS = {
        **對應的圖完全一樣，只是鑰匙分兩支** —— 不要照字面把 sky 改指 flight，
        那會變成兩階都是同一張。 */
   enemy_bl_dragon_front:  "resources/enemy/mon_dragon_v1_flight.webp",
-  enemy_bl_dragon_sky:    "resources/enemy/mon_dragon_v1_ascendant.webp",
+  enemy_bl_dragon_sky:    "resources/enemy/mon_dragon_v1_ascendant.webp?v=2",
   /* 王座徘徊者的放光音（ver -1351，Ray：「音效用 enemy_firebeam」）。
      ⚠⚠ 它**放在 `bgm/` 資料夾而且還是 `.mp3`** —— 那是 SE，照 §6.6 應該是
        `se/se_enemy_firebeam.m4a`。**我沒有搬**（搬檔要走 `tools/audio_reorg.py`，
