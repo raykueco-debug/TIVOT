@@ -402,12 +402,24 @@ export const DRAGON_LINES = {
          `bl_chase1` 這支旗記下去之間，`resumeFrom` 會把曲子接回**戰前那一首**
          （＝numina），不補的話那兩句對白會snap回古城的曲子。 */
     { flag:'bl_chase1', sides:{ RENNA:'L' }, lines:[
+      /* ══⚠⚠ **先降臨，再跑台詞**（ver -1462，Ray：「下一格遭遇龍時先降臨，
+         再跑台詞」）══ 牠是**在這一拍出現的** —— 那幾句是對「牠出現了」的反應，
+         順序反過來就變成「大家先喊完，牠才來」。
+         ⚠ 走**中景層**的降臨（`cgBack` ＋ `cgBackRise`，ver -1414：「戰鬥中不播降臨，
+           劇情出場時播」）—— 與祭壇那一段同一套（鐵律 8），不要另寫一個。
+         ⚠ `cgBack` 寫**明確路徑**（它不走時段候選鏈），而且要帶 `?v=2`：
+           那張圖是同名覆蓋（-1450 美術重切翅膀），不帶版號會吃到舊快取（§5 的 -650）。
+         ⚠ **要有人收**：打完那一場的下一拍寫 `cgBack:null`（同祭壇那一段）。 */
+      { speaker:'NARRATION', text:'', shake:true, auto:900,
+        se:'se_monsterroardeep', cgBackScale:0.9, cgBackRise:true, cgBackFit:'contain',
+        cgBack:'resources/enemy/mon_dragon_v1_shackled.webp?v=2' },
       sor('guardtalk','喔！學不乖的傢伙！'),
       any('argue','小偷龍！'),
       nou('awkward','叫人家小偷龍實在有點……'),
       ren('run','小心！要來了！'),
       { battle:'bl_chase' },
-      nou('cringe','啊！又跑了！'),
+      /* ⚠ 收掉中景層那隻龍（牠跑了）—— 不收的話牠會一路跟著你逛古堡（同祭壇那一段）。 */
+      Object.assign(nou('cringe','啊！又跑了！'), { cgBack:null }),
       sor('readysmile','別以為逃得過獵手的追蹤喔！'),
     ] },
     /* ② */
@@ -5988,6 +6000,12 @@ export const TOWNS = {
         ] },
           { flag:'bl_night_foyer', need:QUEST_LOCK.flag, until:QUEST_LOCK.until,
                  sides:{ RENNA:'L' }, lines:[
+          /* ⚠⚠ **先停一拍**（ver -1462，Ray：「二進古城前廳先停一拍再讓索拉娜說話」）
+             —— 走進來先給一段安靜，她那句「牠在。」才是**打破安靜**的那一句；
+             一進門就開口讀起來是搶拍。
+             ⚠ `NARRATION` ＋ 空字串 ＝不出對話框的純演出拍；台上這時還沒有人，
+               所以照吃 `auto`（§6.5 的 -628：台上有人的無台詞拍才要點擊）。 */
+          { speaker:'NARRATION', text:'', auto:1200 },
           sor('guardthinking','牠在。'),
           nou('surprise','妳怎麼知道？'),
           sor('guardthinking','氣味、聲音、溼度、痕跡……很多東西。'),
