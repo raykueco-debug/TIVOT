@@ -7,9 +7,10 @@
 import sys, os, glob, re, shutil
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _utf8  # noqa
+from _dl import dl
 from PIL import Image
 base=sys.argv[1]
-cands=[f for f in glob.glob('C:/Users/Kaede/Downloads/gen_%s*.png'%base)
+cands=[f for f in glob.glob(dl('gen_%s*.png'%base))
        if re.fullmatch(re.escape(base)+r'(?: \(\d+\))?', os.path.basename(f)[4:-4])]
 assert cands, '找不到 gen_%s*.png'%base
 cands.sort(key=os.path.getmtime); gen=cands[-1]

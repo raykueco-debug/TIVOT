@@ -5,11 +5,12 @@
 import sys, os, shutil, colorsys
 sys.path.insert(0, os.path.join(os.getcwd(), 'tools'))
 import _utf8  # noqa
+from _dl import dl
 from PIL import Image, ImageChops
 base=sys.argv[1]
 import glob, re
 # ⚠ Chrome 檔名重複不覆蓋，會存成 "xxx (1).png" —— 一律取「最新的那一個」
-cands=[f for f in glob.glob('C:/Users/Kaede/Downloads/gen_%s*.png'%base)
+cands=[f for f in glob.glob(dl('gen_%s*.png'%base))
        if re.fullmatch(re.escape(base)+r'(?: \(\d+\))?', os.path.basename(f)[4:-4])]
 cands.sort(key=os.path.getmtime)
 assert cands, '找不到 gen_%s*.png'%base

@@ -4,10 +4,11 @@
 import sys, os, glob, re
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _utf8  # noqa
+from _dl import dl
 from PIL import Image
 p=sys.argv[1]
 if not os.path.exists(p):
-    c=sorted(glob.glob('C:/Users/Kaede/Downloads/gen_%s*.png'%p), key=os.path.getmtime); p=c[-1]
+    c=sorted(glob.glob(dl('gen_%s*.png'%p)), key=os.path.getmtime); p=c[-1]
 im=Image.open(p).convert('RGB'); W,H=im.size
 r=im.crop((0,int(H*0.5),W,H)).resize((160,80))
 V=S=0; n=0
