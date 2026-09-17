@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1472"></script>
+<script src="../orientation.js?v=1473"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1472edab');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1473edab');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1472edab");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1472edab");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1473edab");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1473edab");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1472edab");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1472edab");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1473edab");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1473edab");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -620,25 +620,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1472edab" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1473edab" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1472edab" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1472edab" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1472edab" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1472edab" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1472edab" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1472edab" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1472edab" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1472edab" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1472edab" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1472edab" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1473edab" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1473edab" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1473edab" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1473edab" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1473edab" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1473edab" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1473edab" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1473edab" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1473edab" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1473edab" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1472edab" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1473edab" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1472edab" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1473edab" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -659,11 +659,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1472"></script>
+<script src="settlement.js?v=1473"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1472"></script>
+<script src="talks.js?v=1473"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -715,7 +715,7 @@ const COLOR_URL  = 'silvermoon_terrain.png'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1472';
+const FLIGHT_VER = 'ver -1473';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -17012,12 +17012,41 @@ function drawEnemy3D(scaleH,horizon,sinp,cosp,now){
          ⇒ 尺照舊問 body 帶（三帶的數字即使不切也還在描述比例）。 */
       const wppW=K.bodyLen/((SP.body[1]-SP.body[0])*art.height);
       const hh=art.height*wppW*sc;
-      const ww=art.width*wppW*sc*(0.45+flap*0.55);     // 拍翅：整張橫縮（同舊版的幅度）
-      if(ww>1.5){
+      /* ══⚠⚠⚠ **拍翅：沿翼展切三欄，逐欄壓不同的量**（ver -1473，Ray：「我剛剛不是
+         要你把單翅分兩到三節振翅嗎？你剛剛也做了啊？怎麼又毀了？」）══
+         ⚠⚠ **-1471 我把兩種「切」混為一談，那是錯的**（判斷錯，不是實作錯）：
+           · **橫向的三帶切**（head／wings／body）會裂，是因為它切在實心上，
+             而且三塊**貼在不同節點、不同角度** —— 對不起來就是那兩條橫切。
+           · **翅的分節是縱向切**，而且每一欄**同一個節點、同一個角度、首尾相接**
+             —— 那不會有接縫，它只是一個「越往外壓得越多」的**非等比橫縮**。
+         ⇒ 兩件事不互斥。整張貼**照樣可以**分節拍翅。
+         ⚠ `kk=k/(N-1)` ⇒ **最內那一欄完全不壓**（身體在中線上，形狀不動），
+           越往翼端壓得越多 —— 那正是「翼根幾乎不動、翼端行程最大」。
+         ⚠ 後掠只給**外側欄**、而且量很小（拿翅帶的高去算，不是整張圖高）：
+           只收不掠像伸縮天線，掠太多相鄰欄之間會看得出錯位。 */
+      const hw=art.width/2;
+      const CUT=[0,0.38,0.70,1.00];                    // 沿翼展的切點（半幅比例）
+      const span=(0.45+flap*0.55);                     // 整體展幅（與舊版同幅度）
+      const swK=(SP.wings[1]-SP.wings[0])*art.height*wppW*sc*0.22;   // 後掠的尺度
+      if(art.width*wppW*sc>1.5){
         EC.save();
         EC.translate(P[0]+Math.cos(ang)*hh*0.5, P[1]+Math.sin(ang)*hh*0.5);  // 頭落在 pts[0]
         EC.rotate(ang-Math.PI/2);
-        EC.drawImage(art,-ww/2,-hh/2,ww,hh);
+        for(const side of [-1,1]){
+          let dx=0;
+          for(let k=0;k<CUT.length-1;k++){
+            const sA=hw+side*CUT[k]*hw, sB=hw+side*CUT[k+1]*hw;
+            const sxa=Math.min(sA,sB), sw=Math.abs(sB-sA);
+            if(sw<1) continue;
+            const kk=k/(CUT.length-2);                 // 0＝最內（不壓）、1＝翼端（壓最多）
+            const shrink=1-(1-span)*kk;
+            const dw=sw*wppW*sc*shrink;
+            const sweep=(1-shrink)*swK;                // 收起來就往後帶一點
+            EC.drawImage(art, sxa, 0, sw, art.height,
+                         side<0 ? -(dx+dw) : dx, -hh/2+sweep, dw, hh);
+            dx+=dw;
+          }
+        }
         EC.restore();
       }
       EC.restore();                                    // 對應這一段開頭的 EC.save()
