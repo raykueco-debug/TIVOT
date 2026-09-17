@@ -1334,7 +1334,15 @@ function leaveMapRitual(done){
      不要單獨把其中一條改回去。
    ⚠ 「把牠逼到最深處」現在真的是玩家的事：牠只在**打完一場**才往玩家來的方向跑一格。 */
 const DRAGON_THRONE = 'throne';  // 「王座之間」那一格
-const DRAGON_ROLL_P = 0.25;      // 前三場之後「任一移動點」的遭遇機率（ver -1426 由 50% 改 25%，Ray：「讓玩家多開圖」）
+/* ══⚠⚠⚠ **開圖之前的遭遇機率 ＝ 探索率的一半**（ver -1464，Ray：「索拉娜開小地圖
+   之前的龍是在地圖上隨機出，每次移動都有機率出，出現的機率為**地圖探索率的 1/2**」）══
+   -1424~-1463 是固定值（50% → -1426 改 25%）。換成跟著探索率走之後：
+     · 剛進圖（走過幾格）機率很低 —— 那一段本來就是「瞎找」
+     · 圖走得越開越容易撞上 —— 而那正是玩家自己換來的
+   ⚠ 探索率只有 `exploreRate()` 一支在算（鐵律 7）：小地圖上那個「探索率 NN%」
+     讀的是**同一支** —— 兩邊各算一次的話，畫面上寫 40%、骰子用的卻是別的數字，
+     而那種錯**永遠不會有人發現**。 */
+const DRAGON_ROLL_K = 0.5;       // 探索率 × 這個 ＝ 每走一步的遭遇機率
 const DRAGON_FIRST_NODE = 'stephall';   // 二番戰必刷的那一格（Ray：階梯大廳）
 let dragonNode = null, dragonFights = 0;
 /* 開圖（`bl_dragon_seen`）之後打了幾場 —— `DRAGON_LINES.afterThree` 那一段的門檻
@@ -2248,6 +2256,20 @@ function tmZoomTo(z, ax, ay){
   tmZoom = nz; tmApply();
 }
 function tmReset(){ tmZoom=1; tmPanX=0; tmPanY=0; tmApply(); }
+/* ══⚠⚠ **探索率：唯一的計算點**（ver -1464；-1441 的小地圖那一行搬出來）══
+   ＝ **這張紙上有墨點、而且走過了的格數 ÷ 有墨點的格數**。
+   ⚠ 分母用「有墨點的那幾格」不是 `nodes` 全部：城裡若有節點沒畫進地圖，
+     算進去會讓探索率**永遠到不了 100%**，而那一刻霧卻已經撤了（兩個數字互相打臉）。
+   ⚠ 現在有兩個人讀它：小地圖上那一行、以及**開圖前的遭遇骰**（`DRAGON_ROLL_K`）。
+     日後再多一個也問這一支 —— 不要在呼叫端自己再除一次。
+   ⚠ 沒有地圖的城回 1（＝當成走完了）：那時「探索率」這個概念本來就不成立，
+     而回 0 會讓遭遇骰永遠擲不中。 */
+function exploreRate(){
+  const T=TOWNS[townId], M=T && T.map;
+  const ids=(M && M.spots) ? Object.keys(M.spots).filter(id=>T.nodes[id]) : [];
+  if(!ids.length) return 1;
+  return ids.filter(seenNode).length / ids.length;
+}
 function mapFlip(){ try{ story.playSe('se_ui_pageflip'); }catch(_){} }
 function mapClose(){
   const v=document.getElementById('townMapView'); if(!v || !v.classList.contains('on')) return;
@@ -2432,7 +2454,7 @@ function renderMap(){
      ⚠ 沒有霧的圖（`mist:0` 的大城）照樣顯示：探索率講的是「我走過幾格」，
        與「看不看得到」是兩件事。 */
   const seenN = ids.filter(seenNode).length;
-  const pct   = ids.length ? Math.round(seenN/ids.length*100) : 100;
+  const pct   = Math.round(exploreRate()*100);
   const fog = fogOn() && seenN < ids.length;
   v.innerHTML='<div class="tm-frame">'
     + '<img class="tm-img" src="'+M.img+'" alt="">'
@@ -3340,12 +3362,14 @@ function go(to, dir){
   if(dragonChaseOn()){
     /* ⚠ ver -1433：`dragonAutoStep()` 已取消（Ray：「取消龍自己往王座廳跑」）——
        牠只在**打完一場**才動，見 `dragonFleeStep`。 */
-    /* ══⚠⚠ **前三場的刷新是「走一步擲一次」**（ver -1424，Ray：「二番戰階梯大廳
-       必刷一次龍，接下來隨機 50% 在任一移動點，直到第四戰提示小地圖開始追趕」）══
+    /* ══⚠⚠ **開圖之前的刷新是「走一步擲一次」**（ver -1424，Ray：「二番戰階梯大廳
+       必刷一次龍，接下來隨機在任一移動點，直到第四戰提示小地圖開始追趕」）══
        ⚠⚠ **擲在移動的那一刻，不要擲在 `dragonActDue` 裡**：那一支在一次抵達裡
          可能被問到不只一次（`actDue` 的接續、重繪），每次擲一顆骰子＝同一格
-         時有時無，那不是機率是閃爍（鐵律 7：一個量一個計算點）。 */
-    dragonRollHit = (Math.random() < DRAGON_ROLL_P);
+         時有時無，那不是機率是閃爍（鐵律 7：一個量一個計算點）。
+       ⚠⚠ ver -1464：機率由固定值改成 **探索率 × `DRAGON_ROLL_K`（0.5）**
+         （Ray 指定）—— 見那個常數的說明。 */
+    dragonRollHit = (Math.random() < exploreRate() * DRAGON_ROLL_K);
   }
   bumpGateMoves();   // 閘門的 afterMoves 計數（ver -953）：走一步就 +1
   sceneCut(to);          // 換景走淡入淡出（ver -438，見 sceneCut）
