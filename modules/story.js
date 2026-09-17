@@ -1184,8 +1184,12 @@ export function clearCg(){
   stageCg=null;
   const top=$('storyCg2'); if(top){ top.classList.remove('on'); setImg(top,''); }
   const cg=$('storyCg');
-  if(cg){ cg.classList.remove('pan-up','pan-down','zoom-in');
+  /* ⚠⚠⚠ **`pan-v` 一定要一起拔**（ver -1449，Ray：「蕾娜跌倒插圖不知道為什麼
+     連播了三次」）—— 見下面 `startMove` 那一段的完整說明。 */
+  if(cg){ cg.classList.remove('pan-up','pan-down','pan-v','zoom-in');
           cg.style.objectPosition=''; cg.style.transform=''; cg.style.transformOrigin='';
+          cg.style.removeProperty('--cg-pan-k'); cg.style.removeProperty('--cg-pan-a');
+          cg.style.removeProperty('--cg-pan-b');
           setImg(cg,''); }
 }
 function cgFade(el, src){
@@ -1499,6 +1503,18 @@ function applyPersist(line){
       cg.style.objectPosition='';                // 上一次交棒留下的 inline 取景（見 cgCross）
       cg.classList.remove('pan-up','pan-down','pan-v','zoom-in');
       cg.style.transform=''; 
+      /* ══⚠⚠⚠ **「跌倒插圖連播三次」的真因**（ver -1449，Ray 回報）══════════════
+         `.pan-v` 的 animation 帶 `forwards`，而 **-1441 加它的時候只在這一支裡拔**
+         —— 收圖那一支（`clearCg`）與「沒寫 cgPan」的那一支都只拔
+         `pan-up/pan-down/zoom-in`，**漏了它**。於是那一拍演完之後 `.pan-v`
+         就一直掛在 `#storyCg` 上。
+         ⚠⚠ 而 `setImg` 是用 **`.on`（display:none/block）** 在開關這個元素的 ——
+           **CSS animation 在 display 由 none 變回 block 的那一刻會從頭重播**。
+           所以之後每出現一張插圖，那個平移就再跑一次（而且是跑在**別張圖**上）。
+           -1441 之前 `cgPan` 走的是 `object-position`，在這種寬扁圖上**推不動**
+           ⇒ 同一個漏拔一直都在，只是看不出來。
+         ⇒ 規矩：**凡是 `forwards` 的一次性動畫，每一條收尾的路都要把它拔掉**
+           —— 與 §「暗罩守望」是同一族的問題（「換畫面時誰收它？」）。 */
       /* ══⚠⚠ **橫圖在直框裡沒有垂直餘裕 → 改走 transform 版**（ver -1441，說明在
          `style.css` 的 `.pan-v`）══ `cover` 以較大的那一軸對齊：圖比框「寬扁」時
          上下就是滿版，`object-position` 的 Y 推不動它（畫面上看起來就是沒有平移）。
@@ -1525,7 +1541,7 @@ function applyPersist(line){
       /* 以臉為中心緩慢推近。cgZoom 給的是**臉在圖上**的位置（0~1）——
          要換成**元素座標**的 transform-origin，因為 object-fit:cover 會把圖裁掉一圈，
          圖上的 0.09 不等於框上的 0.09。 */
-      cg.classList.remove('pan-up','pan-down','zoom-in');
+      cg.classList.remove('pan-up','pan-down','pan-v','zoom-in');
       const go=()=>{ cg.style.transformOrigin = coverOrigin(cg, line.cgZoom);
                      void cg.offsetWidth; cg.classList.add('zoom-in'); };
       if(cg.complete && cg.naturalWidth) go(); else cg.addEventListener('load', go, {once:true});
@@ -1535,7 +1551,8 @@ function applyPersist(line){
          停在那裡的取景，重置等於把畫面「啪」一聲拉回原位，那正是這條要避免的。
          ⚠ 所以 `cgCross` 也要把第二層擺到**同一個** object-position（見那裡）。 */
       cg.style.objectPosition='';                // 同上：回到預設取景
-      cg.classList.remove('pan-up','pan-down','zoom-in');
+      cg.classList.remove('pan-up','pan-down','pan-v','zoom-in');
+      cg.style.transform='';
     }
   };
   if(cg){
@@ -2040,7 +2057,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1448';
+const KERB_V='?v=1449';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，

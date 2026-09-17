@@ -1545,7 +1545,10 @@ export const ENEMIES = {
          判定在 `combat.maybeMorph`，它會把那一下從死亡流程接走。
          ⚠ `fx:'holyburst'` ＝全蓋的那一圈光（同第四型態的變身）：換圖就發生在
            光蓋滿畫面的那一刻，光散去之後站在那裡的已經是第二型態。 */
-      morph:{ onDeath:true, to:'bl_dragon_throne2', fx:'holyburst' },
+      /* ══⚠⚠⚠ **ver -1449：`morph` 拿掉了**（Ray：「王座戰第二型態不應該有兩個血條，
+         一次就要結束」）══ -1433 那一版是 `morph:{onDeath:true, to:'bl_dragon_throne2'}`
+         ＝血歸零那一刻接上第二條血條；Ray 現在要**一條打完就收**。
+         ⚠ `bl_dragon_throne2` 那張卡因此**沒有人指到它了**（留著沒刪，見那一張的說明）。 */
       loot:[],
     },
     /* ══⚠⚠⚠ **王座徘徊者・第二型態**（ver -1433，Ray 交辦）══════════════════════
@@ -1561,6 +1564,10 @@ export const ENEMIES = {
          **一波由兩顆改成一顆**（`assault.count` 2→1）。
        ⚠ 立繪與背景**不換**（Ray 沒說要換圖）：同一隻怪的第二口氣，不是另一隻。
        ⚠ `kind:'multi'` ⇒ 沒有淨化（牠是被打退的，不是被打死的，見 enemy.js 那條）。 */
+    /* ⚠⚠⚠ **ver -1449 起這一張沒有人指到它**（Ray：「王座戰第二型態不應該有兩個
+       血條，一次就要結束」）—— 留著不刪是因為那組「鹿主節奏」的數值是抄過來的，
+       日後要恢復兩段式只要把 `bl_dragon_throne` 的 `morph` 加回去。
+       ⚠ **不要以為它還在用**：改王座戰的數值請改 `bl_dragon_throne`。 */
     bl_dragon_throne2: {
       name:'王座徘徊者',
       story:1, counterStagger:1, boss:0,
@@ -1616,8 +1623,18 @@ export const ENEMIES = {
          ⚠ 牠是 `kind:'multi'` ⇒ **不走降臨**（ver -1414，Ray：「戰鬥中不播降臨，
            劇情出場時播」）—— 所以震動要自己宣告，那一條路上沒有人震。 */
       entrance:'se_enemy_roardeer', entranceBlast:true,
+      /* ══⚠⚠⚠ **ver -1449：攻擊模式改走「鹿主前段」**（Ray：「空中戰始於第三型態，
+         hp500 模式用鹿主前段」）══
+         ⚠⚠ **「前段／後段」＝鹿主自己那張卡的兩半**，不是兩張卡：
+           `sf_deer_nightmare` 寫的是 `ult:{on:1, hp:50, …}` ＝**血掉到 50% 以下**
+           才開始發門檻波。所以牠的
+             · **前段**（>50%）＝ 只有一般主動攻擊（`openAssault`／`assaultEvery`／`assault`）
+             · **後段**（≤50%）＝ 再加上那一波四顆的門檻波
+           ⇒ 第三型態照前段：**`ult:{on:0}`**（其餘節奏逐格照抄鹿主）。
+         ⚠ `on:0` ＝這隻沒有門檻波（判斷看 `on` 不看有沒有寫 `hp`，見 enemy.js 的說明）
+           —— 欄位留著寫 0，不要整格刪掉。 */
       openAssault:[1,2],
-      ult:{ on:1, hp:50, count:4, atk:25, gap:1, cd:4 },
+      ult:{ on:0, hp:50, count:4, atk:25, gap:1, cd:4 },
       assaultEvery:[2,4],
       assault:{ count:1, gap:0.35 },
       kind:'multi',
@@ -1654,7 +1671,12 @@ export const ENEMIES = {
       boardGrids:[9,9,9,9,9],
       beamFrom:{ x:0.50, y:0.12 },
       hitFx:{ delay:'blood', wrong:'slash', assault:'holyburst' },
-      morph:{ hp:50, to:'bl_dragon_sky', fx:'holyburst' },
+      /* ══⚠⚠⚠ **ver -1449：由「掉到 50%」改成「血打空那一刻」**（Ray：「空中戰 hp500
+         被打空，放光動畫，但是不給與玩家損傷，光退去後第四型態，hp500」）══
+         `onDeath:true` ＝血歸零那一刻換卡（`combat.maybeMorph` 把那一下從死亡流程
+         接走），不是百分比門檻。⚠ `fx:'holyburst'` 是**純演出**：不走 `enemyAttack`
+         ⇒ 不扣玩家血、不記失誤、不破無傷 —— 那正是 Ray 說的「不給與玩家損傷」。 */
+      morph:{ onDeath:true, to:'bl_dragon_sky', fx:'holyburst' },
       loot:[],
     },
     bl_dragon_sky: {
@@ -1668,15 +1690,21 @@ export const ENEMIES = {
            不然同一隻龍會**兩個形態兩種特效**（追擊與王座是模糊、空中戰是震動）。
            接法見 `modules/enemy.js` 的著地那一段：宣告了就**改演**模糊，不是兩個都演。 */
       entrance:'se_enemy_roardeer', entranceBlast:true,
+      /* ══⚠⚠⚠ **ver -1449：攻擊模式＝鹿主「後段」**（Ray：「光退去後第四型態，
+         hp500，攻擊模式用鹿主後段」）══ 後段＝鹿主血掉到 50% 以下的那一半
+         ＝**門檻波開著**。這一型態是**從頭就開著**，所以門檻寫 `hp:100`
+         （＝任何血量都成立），不是 50 —— 寫 50 的話前半場又變回前段了。
+         ⚠ 其餘節奏逐格照抄鹿主（`openAssault`／`assaultEvery`／`assault`／count/gap/cd）。 */
       openAssault:[1,2],
-      ult:{ on:1, hp:50, count:4, atk:25, gap:1, cd:4 },
+      ult:{ on:1, hp:100, count:4, atk:25, gap:1, cd:4 },
       assaultEvery:[2,4],
       assault:{ count:1, gap:0.35 },
       kind:'aerial',
       image:'enemy_bl_dragon_sky',
       bg:'Sky_Towers',       // ver -1441：夜空交件（同第三型態，兩張必須一致）
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:700,
+      /* ⚠ ver -1449：700 → **500**（Ray：「光退去後第四型態，hp500」）。 */
+      hp:500,
       attack:22,
       /* ⚠⚠ ver -1416 我把這裡改成 8（＝蓄力窗口加倍），**-1418 還原成 null**：
          Ray 說的「攻擊光圈」是**攻擊命中的放光**（`holyburst`），不是紅點的蓄力窗口

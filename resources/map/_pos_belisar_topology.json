@@ -1,0 +1,355 @@
+{
+ "source": "reference/_topology.001.png",
+ "pos": {
+  "crown": [
+   2,
+   0
+  ],
+  "throne": [
+   3,
+   0
+  ],
+  "offering": [
+   4,
+   0
+  ],
+  "starroom": [
+   2,
+   1
+  ],
+  "antecham": [
+   3,
+   1
+  ],
+  "wardtomb": [
+   4,
+   1
+  ],
+  "incense": [
+   2,
+   2
+  ],
+  "dragstair": [
+   3,
+   2
+  ],
+  "stelae": [
+   4,
+   2
+  ],
+  "ossuary": [
+   5,
+   2
+  ],
+  "culvert": [
+   6,
+   2
+  ],
+  "draincliff": [
+   7,
+   2
+  ],
+  "drywell": [
+   0,
+   3
+  ],
+  "forge": [
+   1,
+   3
+  ],
+  "trihall": [
+   2,
+   3
+  ],
+  "guardhall": [
+   3,
+   3
+  ],
+  "bonerack": [
+   4,
+   3
+  ],
+  "cages": [
+   6,
+   3
+  ],
+  "dragonrace": [
+   7,
+   3
+  ],
+  "rooffall": [
+   0,
+   4
+  ],
+  "muralwalk": [
+   1,
+   4
+  ],
+  "lamphall": [
+   2,
+   4
+  ],
+  "greathall": [
+   3,
+   4
+  ],
+  "oldtomb": [
+   4,
+   4
+  ],
+  "capstan": [
+   5,
+   4
+  ],
+  "waterjail": [
+   6,
+   4
+  ],
+  "candlewalk": [
+   2,
+   5
+  ],
+  "stairwell": [
+   4,
+   5
+  ],
+  "pillars": [
+   5,
+   5
+  ],
+  "mirrorpool": [
+   6,
+   5
+  ],
+  "bellroom": [
+   1,
+   6
+  ],
+  "mirrorway": [
+   2,
+   6
+  ],
+  "stephall": [
+   5,
+   6
+  ],
+  "floodway": [
+   6,
+   6
+  ],
+  "foyer": [
+   5,
+   7
+  ],
+  "altar": [
+   6,
+   7
+  ],
+  "entrance": [
+   5,
+   8
+  ]
+ },
+ "edges": [
+  [
+   "altar",
+   "floodway"
+  ],
+  [
+   "antecham",
+   "dragstair"
+  ],
+  [
+   "antecham",
+   "throne"
+  ],
+  [
+   "antecham",
+   "wardtomb"
+  ],
+  [
+   "bellroom",
+   "mirrorway"
+  ],
+  [
+   "bellroom",
+   "muralwalk"
+  ],
+  [
+   "bonerack",
+   "guardhall"
+  ],
+  [
+   "bonerack",
+   "stelae"
+  ],
+  [
+   "cages",
+   "culvert"
+  ],
+  [
+   "cages",
+   "dragonrace"
+  ],
+  [
+   "cages",
+   "waterjail"
+  ],
+  [
+   "candlewalk",
+   "lamphall"
+  ],
+  [
+   "candlewalk",
+   "mirrorway"
+  ],
+  [
+   "candlewalk",
+   "stairwell"
+  ],
+  [
+   "capstan",
+   "oldtomb"
+  ],
+  [
+   "capstan",
+   "pillars"
+  ],
+  [
+   "capstan",
+   "waterjail"
+  ],
+  [
+   "crown",
+   "throne"
+  ],
+  [
+   "culvert",
+   "draincliff"
+  ],
+  [
+   "culvert",
+   "ossuary"
+  ],
+  [
+   "dragonrace",
+   "draincliff"
+  ],
+  [
+   "dragonrace",
+   "waterjail"
+  ],
+  [
+   "dragstair",
+   "guardhall"
+  ],
+  [
+   "drywell",
+   "forge"
+  ],
+  [
+   "drywell",
+   "rooffall"
+  ],
+  [
+   "entrance",
+   "foyer"
+  ],
+  [
+   "floodway",
+   "mirrorpool"
+  ],
+  [
+   "floodway",
+   "stephall"
+  ],
+  [
+   "forge",
+   "muralwalk"
+  ],
+  [
+   "forge",
+   "starroom"
+  ],
+  [
+   "forge",
+   "trihall"
+  ],
+  [
+   "foyer",
+   "stephall"
+  ],
+  [
+   "greathall",
+   "guardhall"
+  ],
+  [
+   "greathall",
+   "lamphall"
+  ],
+  [
+   "greathall",
+   "oldtomb"
+  ],
+  [
+   "guardhall",
+   "trihall"
+  ],
+  [
+   "incense",
+   "starroom"
+  ],
+  [
+   "incense",
+   "trihall"
+  ],
+  [
+   "lamphall",
+   "trihall"
+  ],
+  [
+   "mirrorpool",
+   "pillars"
+  ],
+  [
+   "mirrorpool",
+   "waterjail"
+  ],
+  [
+   "muralwalk",
+   "rooffall"
+  ],
+  [
+   "offering",
+   "throne"
+  ],
+  [
+   "offering",
+   "wardtomb"
+  ],
+  [
+   "oldtomb",
+   "stairwell"
+  ],
+  [
+   "ossuary",
+   "stelae"
+  ],
+  [
+   "pillars",
+   "stairwell"
+  ],
+  [
+   "pillars",
+   "stephall"
+  ],
+  [
+   "stairwell",
+   "stephall"
+  ],
+  [
+   "stelae",
+   "wardtomb"
+  ]
+ ]
+}

@@ -2158,6 +2158,43 @@ function mapIsOn(){
    ⚠ 走 `story.playSe`（劇情層那張 `SE_FILES`，同一支會帶上 `fileGain`）——
      town 這邊沒有 `asset()`，而 `se_ui_pageflip` 早就登記在那張表裡了，
      不必再抄一份路徑（鐵律 7）。整備頁換卡（weapon.js）用的是同一支音檔。 */
+/* ══⚠⚠⚠ **小地圖的縮放與平移**（ver -1449，Ray：「小地圖提供縮放功能，開啟時依
+   版面置入畫面，不限於演出區，也可覆於控制區」）══
+   ⚠ 「覆於控制區」是 CSS 那一半（`#townMapView` 本來就吃滿整個舞台、壓過楣）；
+     這裡管的是**縮放**。
+   ⚠⚠ **每次開圖都歸零**（`renderMap` 收尾呼叫 `tmReset`）：Ray 說的是「**開啟時**
+     依版面置入畫面」—— 上一次拉到哪裡是上一次的事，帶著走會讓人一開圖就迷路。
+   ⚠ 狀態是**這一次攤開**的（模組變數、不進存檔）：同 `eveningHeld` 那一族。 */
+const TM_ZOOM_MIN = 1, TM_ZOOM_MAX = 4;
+let tmZoom = 1, tmPanX = 0, tmPanY = 0;
+function tmFrameEl(){
+  const v=document.getElementById('townMapView');
+  return v ? v.querySelector('.tm-frame') : null;
+}
+function tmApply(){
+  const f=tmFrameEl(); if(!f) return;
+  /* ⚠⚠ 平移要夾在「放大之後多出來的那一圈」之內 —— 不夾的話紙可以被拖出畫面，
+     而那時畫面上什麼都沒有，玩家只會以為壞了（同 §6.5.5 那條「鈕要夾回畫面內」）。 */
+  const w=f.offsetWidth*tmZoom, h=f.offsetHeight*tmZoom;
+  const mx=Math.max(0,(w-innerWidth)/2), my=Math.max(0,(h-innerHeight)/2);
+  tmPanX=Math.max(-mx,Math.min(mx,tmPanX));
+  tmPanY=Math.max(-my,Math.min(my,tmPanY));
+  f.style.transform='translate('+tmPanX.toFixed(1)+'px,'+tmPanY.toFixed(1)+'px) scale('+tmZoom.toFixed(3)+')';
+}
+/* 以 `(ax,ay)`（手指／滑鼠那一點）為錨縮放：那一點在紙上的位置縮放前後不變。
+   ⚠ 推導（`transform-origin` 在正中 C）：螢幕點 P 對應的紙上點滿足
+     `P = C + T + s·(p−C)`；縮到 s′ 要讓 P 不動 ⇒ `T′ = (P−C) − (s′/s)·((P−C) − T)`。
+   ⚠ 不給錨點就以畫面中心縮（鈕那一條走這一支）。 */
+function tmZoomTo(z, ax, ay){
+  const nz=Math.max(TM_ZOOM_MIN,Math.min(TM_ZOOM_MAX,z));
+  if(Math.abs(nz-tmZoom)<1e-4) return;
+  const cx=innerWidth/2, cy=innerHeight/2;
+  const px=(ax==null?cx:ax)-cx, py=(ay==null?cy:ay)-cy, k=nz/tmZoom;
+  tmPanX = px - (px - tmPanX)*k;
+  tmPanY = py - (py - tmPanY)*k;
+  tmZoom = nz; tmApply();
+}
+function tmReset(){ tmZoom=1; tmPanX=0; tmPanY=0; tmApply(); }
 function mapFlip(){ try{ story.playSe('se_ui_pageflip'); }catch(_){} }
 function mapClose(){
   const v=document.getElementById('townMapView'); if(!v || !v.classList.contains('on')) return;
@@ -2269,8 +2306,52 @@ function renderMap(){
   let v=document.getElementById('townMapView');
   if(!v){
     v=document.createElement('div'); v.id='townMapView';
-    v.addEventListener('pointerdown', e=>e.stopPropagation());
-    v.addEventListener('pointerup', e=>{ e.stopPropagation(); mapClose(); });
+    /* ══⚠⚠ **手勢：一指拖曳平移／兩指捏合縮放／單擊收掉**（ver -1449）══
+       ⚠⚠⚠ 「點一下就收掉」與「拖曳／捏合」共用同一層 ⇒ **收掉的條件要收窄成
+         「真的只是點了一下」**：沒有位移（≤10px）、而且這一輪沒有捏過。
+         不收窄的話每一次拖曳結束都會把地圖關掉，縮放等於不能用。
+       ⚠ 位移量算**從按下那一點起的總位移**，不是逐次的 delta —— 慢慢拖的話
+         每一次 delta 都很小，用 delta 判會永遠判成「沒動」。
+       ⚠ `setPointerCapture`：手指滑出這一層時 move/up 還要收得到，
+         不然拖到一半放開會變成「永遠沒有 pointerup」＝ 下一次點擊被當成拖曳。 */
+    { const pts=new Map();
+      let sx=0, sy=0, moved=false, pinched=false, pinch0=0, zoom0=1;
+      const two=()=>{ const a=[...pts.values()]; return a.length>=2 ? a : null; };
+      const dist=a=>Math.hypot(a[0].x-a[1].x, a[0].y-a[1].y);
+      const mid =a=>({ x:(a[0].x+a[1].x)/2, y:(a[0].y+a[1].y)/2 });
+      v.addEventListener('pointerdown', e=>{
+        e.stopPropagation();
+        pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+        if(pts.size===1){ sx=e.clientX; sy=e.clientY; moved=false; pinched=false; }
+        const a=two();
+        if(a){ pinched=true; moved=true; pinch0=dist(a)||1; zoom0=tmZoom; }
+        try{ v.setPointerCapture(e.pointerId); }catch(_){}
+      });
+      v.addEventListener('pointermove', e=>{
+        const p=pts.get(e.pointerId); if(!p) return;
+        const dx=e.clientX-p.x, dy=e.clientY-p.y;
+        pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+        const a=two();
+        if(a){ const m=mid(a); tmZoomTo(zoom0*(dist(a)/pinch0), m.x, m.y); return; }
+        if(Math.hypot(e.clientX-sx, e.clientY-sy) > 10) moved=true;
+        if(tmZoom>1){ tmPanX+=dx; tmPanY+=dy; tmApply(); }
+      });
+      const end=e=>{
+        e.stopPropagation();
+        pts.delete(e.pointerId);
+        try{ v.releasePointerCapture(e.pointerId); }catch(_){}
+        if(pts.size){ pinch0=dist(two()||[{x:0,y:0},{x:0,y:0}])||1; zoom0=tmZoom; return; }
+        if(!moved && !pinched) mapClose();
+        moved=false; pinched=false;
+      };
+      v.addEventListener('pointerup', end);
+      v.addEventListener('pointercancel', e=>{ pts.delete(e.pointerId); moved=false; pinched=false; });
+      /* 滑鼠滾輪縮放（桌機沒有捏合）。⚠ `passive:false` 才擋得掉頁面捲動。 */
+      v.addEventListener('wheel', e=>{
+        e.preventDefault();
+        tmZoomTo(tmZoom*(e.deltaY<0 ? 1.15 : 1/1.15), e.clientX, e.clientY);
+      }, { passive:false });
+    }
     st.appendChild(v);
   }
   /* ══ 迷霧 `mist`（ver -877；-913 改預設與畫法）══
@@ -2343,6 +2424,13 @@ function renderMap(){
     /* ⚠ 探索率擺在 `.tm-frame` **外面**（同 `.tm-save` 那一條的理由）：框裡的尺寸
        都是「地圖的百分比」，字塞進去會跟著圖縮放，小螢幕上讀不出來。 */
     + '<div class="tm-pct">探索率<b>'+pct+'%</b><i>'+seenN+' ／ '+ids.length+' 處</i></div>'
+    /* 縮放鈕（ver -1449）：手機主要走兩指捏合，這三顆是給滑鼠與不捏合的人用的。
+       ⚠ 演出模式（`.map-story`）整層不吃點擊，所以它們那時自然是死的 —— 那是對的。 */
+    + '<div class="tm-zoom">'
+      + '<button class="tm-zb" type="button" data-z="out">－</button>'
+      + '<button class="tm-zb" type="button" data-z="fit">⤢</button>'
+      + '<button class="tm-zb" type="button" data-z="in">＋</button>'
+      + '</div>'
     /* ══ 模擬存檔那一列（ver -936；管理人限定，見 setSimSave）══
        ⚠ 擺在 `.tm-frame` **外面**：框裡是那張羊皮紙，尺寸與座標都是「地圖的百分比」
          （同 `.tm-shroud` 那一條的理由）—— 鈕塞進去會跟著圖縮放，小螢幕上按不到。 */
@@ -2368,7 +2456,23 @@ function renderMap(){
       else { mapClose(); if(simIO.load) simIO.load(); }   // 讀檔會換場：先收地圖
     });
   });
+  /* 縮放鈕：與存檔那一列同一套寫法（`stopPropagation` 擋掉「點一下收地圖」）。 */
+  v.querySelectorAll('.tm-zb').forEach(b=>{
+    b.addEventListener('pointerdown', e=>e.stopPropagation());
+    b.addEventListener('pointerup', e=>{
+      e.stopPropagation();
+      try{ SFX.menuClick(); }catch(_){}
+      const a=b.dataset.z;
+      if(a==='in')       tmZoomTo(tmZoom*1.5);
+      else if(a==='out') tmZoomTo(tmZoom/1.5);
+      else               tmReset();
+    });
+  });
   v.classList.add('on');
+  /* ⚠⚠ **開啟時依版面置入畫面**（Ray）＝每次攤開都歸零，不繼承上一次拉到哪裡。
+     ⚠ 要在 `.on` **之後**：`display:none` 的元素量到的 `offsetWidth` 是 0，
+       `tmApply` 的夾就會把平移夾成 0（這一次是無害，但那是碰巧）。 */
+  tmReset();
   mapFlip();                        // 翻開旅誌（ver -915）
   /* 地圖開著＝導覽字格收掉（ver -867，Ray：「不用導覽字格」）——
      那幾片目的地字格會壓在羊皮紙上；看地圖的時候不需要它們。 */

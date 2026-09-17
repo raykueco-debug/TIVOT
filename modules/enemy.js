@@ -159,14 +159,17 @@ export function stopSakura(){
    ⚠ 蓋滿全畫面的倍率照開機那一頁的算法（光暈實心區佔 30%，所以除以 0.30）。
    ⚠ 音效走 `playCue` 的把手**不是 `HITFX[].se`**：那支 6.7 秒、有頭有尾，
      而那張表是給一次性受擊音用的（combat 會直接播到底，收不掉）。 */
-/* ⚠ ver -1418 放慢一半（Ray 指定）：550→1100／1350→2700。
-   ⚠⚠ **ver -1433 再放慢一半**（Ray：「龍的攻擊光圈太快，再放慢 50%」）：
-     1100→2200／2700→5400。
+/* ⚠ ver -1418 放慢一半（550→1100／1350→2700）、-1433 再放慢一半（→2200／5400）。
+   ⚠⚠⚠ **ver -1449：節奏直接抄首頁那一顆**（Ray：「放光特效速度完全與首頁放光一樣，
+     但一滿畫面就要快速淡出」）—— 首頁是 `#alFlash`：
+       `transition: transform 2.5s cubic-bezier(.3,.35,.25,1), opacity …`，起始 `scale(.85)`。
+     ⇒ 綻放 **2500ms**（連曲線與起始倍率一起照抄，不然「速度一樣」只是數字一樣）；
+       淡出**不照首頁的 1.2s**，Ray 要的是「一滿畫面就**快速**淡出」⇒ **400ms**。
    與 CSS `#holyBurst` 的 transition 是同一組數字（鐵律 7 的但書）—— 改一邊要改另一邊。
    ⚠⚠ `modules/combat.js` 的 `HOLY_SWAP_MS`（型態切換等多久才換圖）**也是同一個數字**
      （＝綻放完、光蓋滿畫面的那一刻），三處要一起動。 */
-const HOLY_GROW_MS = 2200;    // 與 CSS 的 transform transition 同一個數字
-const HOLY_LIFE_MS = 5400;    // 綻放 ＋ 淡出
+const HOLY_GROW_MS = 2500;    // 與 CSS 的 transform transition 同一個數字（＝首頁那一顆）
+const HOLY_LIFE_MS = 2900;    // 綻放 2500 ＋ 快速淡出 400
 let holyFx=null, holySe=null;
 export function spawnHolyBurst(){
   if(holyFx) return;                       // 同一發不疊第二層（同櫻花那一支）
@@ -204,8 +207,17 @@ export function spawnHolyBurst(){
   { const app=$('app');
     if(app){ app.classList.remove('beamshake'); void app.offsetWidth; app.classList.add('beamshake');
       setTimeout(()=>app.classList.remove('beamshake'), 400); } }
-  const src=asset('em_firebeam');
-  if(src){ try{ holySe = SFX.playCue(src, sfxGain('em_firebeam')); }catch(_){ holySe=null; } }
+  /* ⚠⚠⚠ **發動就清空攻擊圈**（ver -1449，Ray：「戰鬥中一旦發動就清空攻擊圈」）——
+     那一圈光蓋滿整個畫面（連盤面一起），底下還亮著的紅點玩家根本看不見，
+     留著等於「看不到卻還在扣血」。
+     ⚠ 走 `api.clearThreat`（＝`defense.clearThreat`，由 combat 轉交，鐵律 8）——
+       enemy 不 import defense。
+     ⚠ 這一支**只在戰鬥中有東西可清**：劇情裡放光時 `state.threats` 本來就是空的。 */
+  if(api.clearThreat){ try{ api.clearThreat(); }catch(_){} }
+  /* 音效（ver -1449，Ray 指定 `se_enemy_holyburst`；-1351~-1448 是 `em_firebeam`）。
+     ⚠ 走 `playCue` 的把手：它有頭有尾，換型態／換敵時要收得掉（見 stopHolyBurst）。 */
+  const src=asset('se_enemy_holyburst') || asset('em_firebeam');
+  if(src){ try{ holySe = SFX.playCue(src, sfxGain(src)); }catch(_){ holySe=null; } }
 }
 /* 收乾淨：換敵／離場（§6.5.4 的檢查表：新增任何蓋在畫面上的層，先回答「誰收它」）。 */
 export function stopHolyBurst(){

@@ -255,6 +255,8 @@ export function setup(){
   /* ⚠ `screenShake` 給「降臨」的著地那一拍用（ver -640）——
      震動的實作只有 combat 這一支（鐵律 8），enemy 不自己加 class。 */
   enemy.init({ startIntruderFight, updateBars, screenShake, roarBlast,
+    /* 放光發動就清空攻擊圈（ver -1449）：實作在 defense（鐵律 8），這裡只轉交。 */
+    clearThreat: defense.clearThreat,
     /* 換了一隻怪 → 明晰之夢重新上膛（ver -693，Ray：「不算場，每隻怪都可以觸發一次」）。
        ⚠ 掛在 `setEnemy` 是因為那是**「換了一隻怪」的唯一時刻**（開場、連戰換敵、
          Boss 亂入都經過它）—— 在別的地方各補一次一定會漏（鐵律 8）。 */
@@ -2279,7 +2281,7 @@ function finishEnemyOrAdvance(){
    改一邊要改另一邊。ver -1433 隨光圈再放慢一半：1100→2200。
    ⚠ 換圖就是要發生在**光最亮、蓋住整個畫面**的那一刻（Ray：「先用光圈特效全蓋，
      光圈散去以後進入第四型態」）—— 等光真的散完才換，玩家會先看到舊型態還站著。 */
-const HOLY_SWAP_MS = 2200;
+const HOLY_SWAP_MS = 2500;   // ver -1449：與 enemy.js 的 HOLY_GROW_MS 同一個數字（＝首頁那一顆的 2.5s）
 let morphed=false;
 export function resetMorph(){ morphed=false; }
 /* ══⚠⚠⚠ **`onDeath:true` ＝「第一條血打完才變」**（ver -1433，Ray：「龍把第一條血
