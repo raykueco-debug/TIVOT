@@ -1,4 +1,4 @@
-# HANDOFF — 截至 `ver 2026.09.17-1442`
+# HANDOFF — 截至 `ver 2026.09.17-1447`
 
 ---
 
@@ -106,6 +106,23 @@
 （基底名；時段交給既有的候選鏈）。交件單：`resources/background/_skybattle_spec.md`。
 - 現有 3 張：`Sky_Towers_night`（本體）／`Sky_Towers_dusk`／`Sky_Towers`（**無時段
   萬用退路**，內容＝夜空；md5 與 night 相同是**刻意的**，不是交件失誤）。
+
+---
+
+# ⚠⚠ 美術還欠的（程式端已經接好，等圖）
+
+1. **平原古道的小地圖要重畫**（`resources/map/map_plainsroad.webp`）：ver -1447 由
+   6 格擴成 **10 格**，而那張羊皮紙還是 6 格那一版。新版面的參考圖已經產好：
+   `resources/map/_layout_plainsroad.png`（`py tools/map_layout.py plainsroad`）。
+   · 新增：石塚群 cairn／碎石坡 scree／枯木林 deadwood／風蝕岩 windrock
+   · 改名：溪谷口 ravine → **狹窄溪谷 gorge**
+   · 座標抄 `script/town.js` 的 `TOWNS.plainsroad.map.spots`（已是新版面）。
+   ⚠ 同名覆蓋 ⇒ 交件時**要跳 `?v=`**（§5 ver -650）。
+2. **古道五格的 dawn／dusk／night ＝ 15 張**：現在只有 `_day`。程式端暫時把那五格的
+   `bg` 指到帶尾綴的檔名 ＋ `noTime:true`（四個時段都命中同一張、零 404）——
+   **圖交齊就改回基底名並拿掉 `noTime`**，忘了改的症狀是「走一整天天色都不會變」。
+3. **空戰的另兩組雲景**：`Sky_Cumulus`／`Sky_Cirrus` 各 4 張（`_skybattle_spec.md`）。
+4. 未封印形態的龍立繪**翅膀被裁掉**，要重切。
 
 ---
 

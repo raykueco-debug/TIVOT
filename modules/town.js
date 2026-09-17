@@ -4148,6 +4148,12 @@ export function open(town, node, opts){
      ⚠ 名字寫在資料上（鐵律 1），不由 `townId` 推：日後有圖不需要這支旗，
        不寫就是沒有。 */
   if(T.visitFlag && !prog.hasFlag(T.visitFlag)) prog.addFlags([T.visitFlag]);
+  /* ══⚠⚠ **`arriveNotBefore:<時>` ＝踏進這張圖不會早於那個時刻**（ver -1447，Ray：
+     「確保玩家踏入古城前就把時間磨到至少 17:00」）══
+     ⚠ 走 `advanceToHour`（只往前推、已經過了就不動）—— **時鐘不倒轉**，
+       所以夜裡搭船來的那一趟是 no-op（§6.5.4.1 那條「時鐘只能往前」）。
+     ⚠ 判定只有這一處（鐵律 8）：日後任何一條進圖的路都自動吃到。 */
+  if(T.arriveNotBefore!=null) clock.advanceToHour(T.arriveNotBefore);
   /* 進帝都＝諾薇兒好感初始化為 5（ver -560，Ray：「預設是全 0，進帝都後諾才 5」）——
      一輪一次（旗標擋重複），直接寫值不走棘輪（這是入隊的起始值，不是獎勵）；
      已經比 5 高就不動（讀檔回城不能倒扣）。 */
