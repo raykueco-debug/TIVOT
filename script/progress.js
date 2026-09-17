@@ -1076,7 +1076,17 @@ export const CHAPTERS = [
        `openFlight()` 非 resume ⇒ iframe 重載 ⇒ 開機那一刻就讀得到剛插上的
        `bl_sky_hunt`，升空過場跑完才輪諾薇兒那句「一片黑」（ver -1462／-1455）。
        ⚠ **不要插 `bl_night_sky`**：那是空中戰打完的旗，插了 `skyHuntHint` 就不演了。 */
-    enter:'flight' },
+    enter:'flight',
+    /* ══⚠⚠⚠ **`enter:'flight'` 一定要給起飛位置**（ver -1472，Ray：「為什麼我讀 11B
+       會出現在帝都？莫名其妙」）══
+       飛行頁開機的 `restoreFlightPos` 讀 `tivot_flight_ret_v1`，**讀不到就停在 `cam`
+       的初始值 ＝ `SAIL_FROM_CAPITAL`（帝都東南的出港位）**。而章節跳關的第一件事
+       就是 `newRun()`，它正好把那把鑰匙清掉 ⇒ **必然落在帝都**，而且畫面上不會有
+       任何錯誤訊息（看起來就是「莫名其妙跑到帝都」）。
+       ⚠ 只寫 `town` 不寫座標：`restoreFlightPos` 會用 `townMapXY()` 去查
+         （SETTLEMENTS／PLACES 兩張表都掃）—— 座標的真相留在飛行頁那一份（鐵律 7）。
+       ⚠ 這一幕是「上船追」：人是從**貝利薩爾古堡**上空起飛的。 */
+    flight:{ town:'belisar' } },
 ];
 
 /* ══⚠⚠⚠ **腳本測試鈕的落點**（ver -1381，Ray：「在首頁先放一個腳本測試鈕，

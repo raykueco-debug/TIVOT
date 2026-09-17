@@ -1706,6 +1706,12 @@ function startChapter(c){
   if(c.enter==='town'){
     openTownAt(c.town, c.node);   // ⚠ 與讀檔走同一支（ver -430，鐵律 8）
   }else if(c.enter==='flight'){
+    /* ⚠⚠⚠ **起飛位置**（ver -1472）：飛行頁開機讀 `tivot_flight_ret_v1`，讀不到就
+       停在帝都出港位（`SAIL_FROM_CAPITAL`）—— 而 `newRun()` 剛把那把鑰匙清掉。
+       ⇒ 章節上寫 `flight:{town:…}`（或帶 x/y）就在這裡塞回去。
+       ⚠ 走**同一把鑰匙**（出航、讀檔接回飛行、打完回程都是它，鐵律 8）——
+         不要為章節另開一條還原路。 */
+    if(c.flight){ try{ localStorage.setItem('tivot_flight_ret_v1', JSON.stringify(c.flight)); }catch(_){} }
     /* 試飛（ver -1359）：進度擺好之後開飛行畫面。
        ⚠ 走 `openFlight()`（唯一那個入口，鐵律 8）—— 非 resume ＝ iframe 重載，
          所以飛行頁開機那一刻就讀得到剛插上去的旗（`ruin_a_found` 決定瓦努努的
