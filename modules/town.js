@@ -1428,35 +1428,26 @@ function dragonPickExit(from, cameDir, pool, all){
   const nx = stepToward(from, DRAGON_THRONE);             // 判不出來 → 往王座廳
   return (nx && pool.find(e=>e.to===nx)) || pool[0];
 }
-/* 從 `from` 往 `dir` 走一格；落點不能停就**繼續往前滑**（同方向優先，其次交給
-   `dragonPickExit` 挑）。回傳能停的那一格；真的滑不出去就回 null（呼叫端留在
-   原地 —— 留在原地至少玩家踩得到，那比躲進安全屋好）。 */
-const DRAGON_SLIDE_MAX = 6;      // 保險絲：貝利薩爾最長的一串 noWild 只有 2 格
-function dragonSlide(from, dir){
-  let cur=from, d=dir, seen={ [from]:true };
-  for(let i=0;i<DRAGON_SLIDE_MAX;i++){
-    const ns=nodeNeighbors(cur); if(!ns.length) return null;
-    const back = d ? OPPOSITE[d] : null;
-    const straight = d && ns.find(e=>e.dir===d && !seen[e.to]);
-    const pool = straight ? [straight]
-               : ns.filter(e=>e.dir!==back && !seen[e.to]);
-    const list = pool.length ? pool : ns.filter(e=>!seen[e.to]);
-    if(!list.length) return null;
-    const e = dragonPickExit(cur, d, list, ns);     // ⚠ 兩階段同一支（見上）
-    cur=e.to; d=e.dir; seen[cur]=true;
-    if(dragonCanStop(cur)) return cur;
-  }
-  return null;
-}
+/* ⚠⚠⚠ **ver -1444 拿掉了 `dragonSlide`（落點停不住就沿同方向再滑一格）** ——
+   Ray：「碰到休息處他會直接跳下一格」。
+   那一支是 -1432 為了「不要停在打不起來的格子上」加的，作法是**繼續往前滑**，
+   於是一場戰鬥牠會走**兩格以上** —— 直接違反 Ray 剛確認過的
+   「每次只移一格就在原地等玩家」。而貝利薩爾 5 個休息處**全部是 `noWild`**，
+   所以那條路踩得非常頻繁。
+   ⇒ 正解是**先把停不住的鄰格濾掉，再挑方向**（見 `dragonFleeStep`）：
+     「停不住」就當成那個方向沒有路，於是自動落進 Ray 那條
+     「無相反方向 ⇒ 一律往王座廳」的規則，而且永遠只走一格。
+   ⚠ 驗過不會卡死：全圖只有 `drywell`／`entrance` 四周沒有可停的鄰格，
+     而那兩格自己就是 `noWild` ⇒ 龍根本站不上去。 */
 /* 把牠擺到某一格的**隔壁任一位置**（Ray：「顯示龍在當前格的隔壁任一位置」）。
-   ⚠ 隔壁那幾格裡先挑**停得住**的（見 `dragonCanStop`）；全部停不住才滑出去。 */
+   ⚠ 隔壁那幾格裡先挑**停得住**的（見 `dragonCanStop`）；全部停不住才隨便挑一個
+     （ver -1444：不再往前滑，理由見上面那一段）。 */
 function dragonPlaceNear(id){
   const ns=nodeNeighbors(id);
   if(!ns.length){ dragonNode=id; return; }
   const ok = ns.filter(e=>dragonCanStop(e.to));
-  if(ok.length){ dragonNode = ok[Math.floor(Math.random()*ok.length)].to; return; }
-  const e = ns[Math.floor(Math.random()*ns.length)];
-  dragonNode = dragonSlide(id, e.dir) || e.to;
+  const pool = ok.length ? ok : ns;   // ⚠ 一個可停的鄰格都沒有才退而求其次（實測到不了）
+  dragonNode = pool[Math.floor(Math.random()*pool.length)].to;
 }
 /* ══ 打完一場：**往玩家進入房間的反方向**移動一格 ══
    `pendingDir` ＝玩家按的那個方向（`backDir` 是它的反向＝回頭路）——
@@ -1475,23 +1466,19 @@ function dragonFleeStep(cameDir){
   const ns=nodeNeighbors(dragonNode);
   if(!ns.length) return;
   const back = cameDir ? OPPOSITE[cameDir] : null;
-  /* ⚠⚠ **挑方向走 `dragonPickExit`**（ver -1442，兩階段，見上）——
-     回頭路先排除，只剩回頭路（死胡同）才往回走。
-     ⚠ 落點停不住就沿**那個方向**滑出去（ver -1432，見 `dragonCanStop`）——
-       「往反方向跑」這件事不變，變的只是它不會停在打不起來的格子上。 */
-  const others = ns.filter(e=>e.dir!==back);
-  const pick = dragonPickExit(dragonNode, cameDir, others.length?others:ns, ns);
-  /* ⚠ 那個方向整條都停不住（前廳→古城中庭、祭壇那幾條 `noWild` 的死路）
-     ⇒ **改挑別的方向**，不要留在原地：「打完就跑一格」是這一段的手感，
-       原地不動會讀成「牠沒反應」。真的一個可停的鄰格都沒有才留在原地
-       （那時留著至少玩家踩得到，比躲進安全屋好）。 */
-  dragonNode = dragonCanStop(pick.to) ? pick.to
-             : (dragonSlide(dragonNode, pick.dir) || (()=>{
-                 const ok = ns.filter(e=>e.dir!==back && dragonCanStop(e.to));
-                 const pool = ok.length ? ok : ns.filter(e=>dragonCanStop(e.to));
-                 return pool.length
-                   ? dragonPickExit(dragonNode, cameDir, pool, ns).to : dragonNode;
-               })());
+  /* ══⚠⚠⚠ **順序是「先濾停不住的，再挑方向」**（ver -1444，Ray：「碰到休息處他會
+     直接跳下一格」）══ -1432~-1443 是反過來的（先挑方向、落點停不住就往前滑），
+     那會讓一場戰鬥走**兩格以上**。
+     ⇒ **「停不住」就當成那個方向沒有路** —— 於是它自動落進 `dragonPickExit` 那條
+       「無相反方向 ⇒ 一律往王座廳」的規則，而且**永遠只走一格**。
+     ⚠ 回頭路一樣先排除；濾完全空（死胡同）才把回頭路放回來。
+     ⚠ 真的一個可停的鄰格都沒有才留在原地（實測到不了：全圖只有 `drywell`／
+       `entrance` 是那樣，而那兩格自己就是 `noWild`，龍站不上去）。 */
+  const canStop = ns.filter(e=>dragonCanStop(e.to));
+  if(!canStop.length) return;                       // 原地不動（到不了的情況）
+  const others = canStop.filter(e=>e.dir!==back);
+  dragonNode = dragonPickExit(dragonNode, cameDir,
+                              others.length?others:canStop, ns).to;
 }
 /* ══ 超過 5 場之後：自己往王座之間走一格（玩家每動一步牠就動一步）══ */
 /* ══⚠⚠ **開圖三戰之後的那一段**（ver -1433，台詞在 `DRAGON_LINES.afterThree`）══
