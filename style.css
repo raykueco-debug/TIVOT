@@ -2885,6 +2885,48 @@
   #storyStage.shake.hold #storyCard,
   #storyStage.shake.hold #storyBoard,
   #storyStage.shake.hold #kerb{animation-iteration-count:infinite;}
+
+  /* ══⚠⚠⚠ **震動不可以把「正在平移／推近」的那一層的動畫吃掉**（ver -1453，
+     Ray：「蕾娜插圖還是播三次」→「應該是播一個音效就被重置一次」）══
+     ⚠⚠⚠ 真因：上面那條 `#storyStage.shake #storyCg`（id ＋ class ＋ id）**權重高於**
+       `#storyCg.pan-v`（id ＋ class）⇒ 震動那幾拍把 `animation` 整條換成 `storyShake`，
+       **平移被當場取消**；`.shake` 一拿掉，`#storyCg.pan-v` 又回來
+       ⇒ `storyPanV` **從第 0 毫秒重跑一次**。
+       那一段正好有三拍帶音效／震動（`se_Fall`／`se_dragonbite`／`se_brickcrush`），
+       所以看起來就是「插圖播了三次」。Ray 的「播一個音效就被重置一次」完全命中。
+     ⚠⚠ 為什麼不能只把震動從這幾層拿掉：上面那條註解寫得很清楚 ——
+       **畫面會分成「抖的」與「不抖的」兩半，比不抖還糟**。
+     ⇒ 作法是**把兩個動畫寫成同一份清單**（平移排第 0 位）：依 CSS 規格，
+       動畫是**照名字＋位置**配對的，`storyPanV` 留在同一個位置就**繼續跑、不重來**；
+       `.shake` 拿掉之後清單只剩它，位置不變，一樣不重來。
+     ⚠ `animation-iteration-count` 也要給兩份（平移 1 次、震動無限）——
+       `.hold` 那一條只寫一個值會連平移一起變成無限循環。
+     ⚠⚠ **新增任何「會佔住 animation」的演出 class 時，這裡要跟著加一行** ——
+       漏掉的症狀就是「那個演出在震動之後重播一次」，而且畫面上沒有任何錯誤訊息。 */
+  #storyStage.shake #storyCg.pan-v{
+    animation:storyPanV var(--cg-pan-ms,2.6s) ease-out forwards,
+              storyShake .42s cubic-bezier(.36,.07,.19,.97);}
+  #storyStage.shake #storyCg.pan-up{
+    animation:storyPanUp 2.6s ease-out forwards,
+              storyShake .42s cubic-bezier(.36,.07,.19,.97);}
+  #storyStage.shake #storyCg.pan-down{
+    animation:storyPanDown 2.6s ease-out forwards,
+              storyShake .42s cubic-bezier(.36,.07,.19,.97);}
+  #storyStage.shake #storyCg.zoom-in{
+    animation:storyCgZoom 6s cubic-bezier(.25,.6,.3,1) forwards,
+              storyShake .42s cubic-bezier(.36,.07,.19,.97);}
+  #storyStage.shake #storyBg.pan-up{
+    animation:storyPanUp 2.6s ease-out forwards,
+              storyShake .42s cubic-bezier(.36,.07,.19,.97);}
+  #storyStage.shake #storyBg.pan-down{
+    animation:storyPanDown 2.6s ease-out forwards,
+              storyShake .42s cubic-bezier(.36,.07,.19,.97);}
+  #storyStage.shake.hold #storyCg.pan-v,
+  #storyStage.shake.hold #storyCg.pan-up,
+  #storyStage.shake.hold #storyCg.pan-down,
+  #storyStage.shake.hold #storyCg.zoom-in,
+  #storyStage.shake.hold #storyBg.pan-up,
+  #storyStage.shake.hold #storyBg.pan-down{animation-iteration-count:1, infinite;}
   @keyframes storyShake{
     10%{transform:translate(-4px,2px);}  20%{transform:translate(5px,-3px);}
     30%{transform:translate(-6px,-2px);} 40%{transform:translate(4px,3px);}
