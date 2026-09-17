@@ -2174,8 +2174,46 @@ function tmFrameEl(){
   const v=document.getElementById('townMapView');
   return v ? v.querySelector('.tm-frame') : null;
 }
+/* ══⚠⚠⚠ **地名不跟著紙一起放大**（ver -1452，Ray：「以地圖清楚為優先」）══
+   實測（貝利薩爾、375 寬）：同一列最窄的間距只有 **42px**，而「近衛墓室（休息處）」
+   那一條字有 **90px** —— 兩個名字疊在一起，就是 Ray 說的「上字以後糊成一團」。
+   ⚠⚠⚠ **而且放大救不了**：字與紙在同一個 `transform` 底下，一起放大 ⇒
+     **重疊的比例是常數**，捏到 6 倍也一樣疊。
+   ⇒ 兩件事一起做：
+     ① 字**反向縮放**（`--tm-inv` ＝ 1/zoom）＝ 螢幕上的字級固定不變 ⇒
+        放大時間距真的變寬，字就分開了（一般地圖介面都是這樣）。
+     ② 還沒放到分得開之前（`tmNameZoom`），**先把名字藏起來**只留所在地 ——
+        那時畫面是「乾淨的圖示地圖 ＋ 你在這裡」，比一團糊字好讀。
+   ⚠ `tmNameZoom` 是**量出來的**不是猜的（`tmMeasureNames`，每次攤開量一次）：
+     逐列比對相鄰兩個名字的實際寬度與間距。字短的地圖（帝都那種）量出來就是 1，
+     於是它們的行為一個字都沒變 —— 這一條只對真的會疊的圖生效。 */
+let tmNameZoom = 1;
+function tmMeasureNames(){
+  tmNameZoom = 1;
+  const f=tmFrameEl(); if(!f) return;
+  const rows={};
+  f.querySelectorAll('.tm-spot').forEach(el=>{
+    const sp=el.querySelector('span'); if(!sp || !sp.textContent) return;
+    const k=Math.round(el.offsetTop/4);            // 同一列（容 4px 誤差）
+    (rows[k]=rows[k]||[]).push({ x:el.offsetLeft, w:sp.offsetWidth });
+  });
+  for(const k in rows){
+    const a=rows[k].sort((p,q)=>p.x-q.x);
+    for(let i=1;i<a.length;i++){
+      const gap=a[i].x-a[i-1].x; if(gap<=0) continue;
+      /* 字是螢幕尺寸（反向縮放）⇒ 放到 z 倍時間距是 gap×z，字寬不變。
+         要不疊：gap×z ≥ 兩邊各半 ＋ 8px 的空隙。 */
+      const need=((a[i].w+a[i-1].w)/2+8)/gap;
+      if(need>tmNameZoom) tmNameZoom=need;
+    }
+  }
+  if(tmNameZoom>6) tmNameZoom=6;                   // 與 TM_ZOOM_MAX 同一個上限
+}
 function tmApply(){
   const f=tmFrameEl(); if(!f) return;
+  f.style.setProperty('--tm-inv', (1/tmZoom).toFixed(4));
+  /* ⚠ 留 1% 的餘裕：捏合出來的倍率是浮點數，剛好等於門檻時不要在那裡閃。 */
+  f.classList.toggle('tm-names-off', tmZoom < tmNameZoom*0.99);
   /* ⚠⚠ 平移要夾在「放大之後多出來的那一圈」之內 —— 不夾的話紙可以被拖出畫面，
      而那時畫面上什麼都沒有，玩家只會以為壞了（同 §6.5.5 那條「鈕要夾回畫面內」）。 */
   const w=f.offsetWidth*tmZoom, h=f.offsetHeight*tmZoom;
@@ -2483,7 +2521,9 @@ function renderMap(){
   { const f=v.querySelector('.tm-frame'), im=v.querySelector('.tm-img');
     const fit=()=>{ if(f && im && im.naturalWidth){
                       f.style.aspectRatio = im.naturalWidth+' / '+im.naturalHeight; }
-                    tmApply(); };
+                    /* ⚠ 量字**要在比例定了之後**：框的寬高還沒定，`offsetLeft` 全是 0，
+                       量出來的間距會是 0 ⇒ 需要的倍率變成無限大（名字永遠不出現）。 */
+                    tmMeasureNames(); tmApply(); };
     const gone=()=>{ console.info('[town] 小地圖載不到：', M.img);
                      mapClose(); story.flashLine('這一帶還沒有留下地圖。', ''); chatterOn=true; };
     if(im){ if(im.complete && im.naturalWidth) fit();
