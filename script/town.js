@@ -386,12 +386,23 @@ const NP_GROCER_LINES = [
 export const DRAGON_LINES = {
   chase: [
     /* ① 進入主廳 —— 那一夜的第一場。 */
-    /* ⚠⚠ **第一拍換曲**（ver -1398，Ray：「遭遇　追擊戰時 bgm…播到王座戰結束為止」）：
-       `bgm` 是**持續狀態**，換一次就一路播下去；四場戰鬥卡自己也寫了 `bgm_gothic`，
-       而且不寫 `bgmAfter` ⇒ 打完接回戰前那一首（還是 gothic），整段不斷曲。
-       ⚠ 這一拍**之前**是古城固有的 `numina`（Ray：「遭遇龍之前」）。 */
+    /* ══⚠⚠⚠ **這一拍以前會換曲，ver -1444 拿掉了**（Ray 第三次回報：「追擊音樂從
+       槍棺推上才開始播，要講幾次」）══
+       ⚠⚠⚠ **真因是「同一首曲子有兩個播放點，而早的那個先贏」**（鐵律 7）：
+         · -1398 在**這一拍**寫了 `bgm:'gothic'` —— 於是音樂在索菈娜這句台詞就起來了，
+           距離槍棺上推還有四拍。
+         · -1433 依 Ray 的指示加了戰鬥卡的 `bgmOnRise:true`（門一推就進）——
+           但那時**沒有把上面那一行拿掉**。門推上去時 `gothic` 早就在播，
+           `playBgm` 判成同曲直接 return ⇒ **那個旗從頭到尾沒有作用過**，
+           而畫面上什麼錯誤訊息都沒有。
+         · 而「整段追擊不斷曲」**-1420 起早就由城上的 `bgmWhen` 負責**
+           （`need:'bl_chase1'` → gothic），這一行留著純粹是 -1398 的遺物。
+       ⇒ 拿掉它。這一拍到門推上去之前照舊是古城固有的 `numina`（Ray：「遭遇龍之前」）。
+       ⚠⚠ 連帶：`bl_chase` 卡上補了 **`bgmAfter:'gothic'`** —— 打完第一場到
+         `bl_chase1` 這支旗記下去之間，`resumeFrom` 會把曲子接回**戰前那一首**
+         （＝numina），不補的話那兩句對白會snap回古城的曲子。 */
     { flag:'bl_chase1', sides:{ RENNA:'L' }, lines:[
-      Object.assign(sor('guardtalk','喔！學不乖的傢伙！'), { bgm:'gothic' }),
+      sor('guardtalk','喔！學不乖的傢伙！'),
       any('argue','小偷龍！'),
       nou('awkward','叫人家小偷龍實在有點……'),
       ren('run','小心！要來了！'),

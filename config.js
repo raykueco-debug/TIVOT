@@ -69,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.17-1443';
+export const VERSION = 'ver 2026.09.17-1444';
 
 export const GAME_CONFIG = {
 
@@ -2362,15 +2362,27 @@ export const GAME_CONFIG = {
          對龍空戰        `irregular`
        ⚠⚠ **卡上的 `bgm` 是 ASSETS 的全名**（`bgm_gothic`）、**`bgmAfter` 是短名**
          （`crisis`）—— 兩格查的是不同的表，這是既有的慣例（同 `np_nightmare`）。
-       ⚠ 追擊那四場**不寫 `bgmAfter`** ＝ 打完接回**戰前那一首**，而戰前那一首
-         已經被 chase① 的第一拍換成 `gothic` ⇒ 整段追擊不斷曲（§6.5.2）。
+       ⚠⚠ **ver -1444 更正**：上面那句「chase① 的第一拍換成 gothic」**已經不成立** ——
+         那一行是 -1398 的遺物，-1444 拿掉了（它讓音樂比槍棺早四拍起來，Ray 連報三次）。
+         整段追擊不斷曲現在由**兩件事**接住：① 城上的 `bgmWhen`（`need:'bl_chase1'`，
+         -1420 立）② 這張卡的 `bgmAfter:'gothic'`（補 ① 生效之前的那個空窗）。
        ⚠⚠ 只有**王座那一場**寫 `bgmAfter:'crisis'`：Ray 的「播到王座戰結束為止」
          指的就是這一刻換手。⚠ 戰敗不換（`resumeFrom` 本來就只在打贏時吃它）——
          再打一次當然還是 `gothic`。 */
     /* ⚠ `bgmOnRise:true`（ver -1433，Ray：「追擊戰 bgm 從槍棺推上開播，初戰也是」）——
        曲子在門**推上去**那一瞬就進，不等撞頂（預設值見 `story.playKerberos` 的 ②）。 */
+    /* ⚠⚠ `bgmAfter:'gothic'`（ver -1444）＝打完**繼續**放追擊曲，不要接回戰前那一首。
+       沒有它的話：第一場打完 → `resumeFrom` 接回 `pos.bgm`（＝古城的 `numina`，
+       因為 `bl_chase1` 那支旗要**整段演完**才記，城上的 `bgmWhen` 還沒生效）
+       ⇒ 打完那兩句對白會 snap 回古城的曲子。
+       ⚠ 第二場之後城上的 `bgmWhen` 已經是 gothic，這一格就是同曲 no-op —— 無害。
+       ⚠ **`bgmAfter` 要用短名**（`gothic`）不是 ASSETS 全名：它走 `story.bgmSrc`，
+         而那一支查的是「檔名／別名／`ASSETS.bgm_<短名>`」三層 —— 寫 `bgm_gothic`
+         會變成找 `ASSETS.bgm_bgm_gothic` ⇒ 查不到、**靜靜不換曲**。
+         同一張卡上面那一格 `bgm` 反而是全名（它走 main 的 `asset()`）——
+         兩格查的是不同的表，這是既有的慣例（見上面的說明）。 */
     bl_chase:  { enemy:'bl_dragon_chase',  session:'bl_night', bgm:'bgm_gothic',
-                 bgmOnRise:true },
+                 bgmOnRise:true, bgmAfter:'gothic' },
     bl_throne: { enemy:'bl_dragon_throne', session:'bl_night', sessionEnd:true,
                  bgm:'bgm_gothic', bgmAfter:'crisis' },
     /* ⚠ 空中戰：`kind:'aerial'` 在敵卡上（降臨與淨化特效吃得到，§6.5.4.4）。
