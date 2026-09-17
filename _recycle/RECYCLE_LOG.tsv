@@ -230,3 +230,4 @@ when	from	to	reason
 20260917-233304	resources/SI/NPC/NPC_GuildCounter_SI_v4.webp	_recycle/resources/SI/NPC/NPC_GuildCounter_SI_v4.webp	GuildCounter_v4/v5 去背版覆蓋（白底 RGB → alpha RGBA），ver -1486 美術
 20260917-233304	resources/SI/NPC/NPC_GuildCounter_SI_v5.webp	_recycle/resources/SI/NPC/NPC_GuildCounter_SI_v5.webp	GuildCounter_v4/v5 去背版覆蓋（白底 RGB → alpha RGBA），ver -1486 美術
 20260917-233537	resources/SI/NPC/NPC_Grocer_SI_v5.webp	_recycle/resources/SI/NPC/NPC_Grocer_SI_v5.webp	Grocer_v5 去背版覆蓋（白底 RGB → alpha RGBA），ver -1486 美術
+20260917-234424	resources/map/map_plainsroad.webp	_recycle/resources/map/map_plainsroad.webp	平原古道小地圖重畫：舊版只有 6 格，現行拓樸是 11 格（ver -1461 改成樹狀）
