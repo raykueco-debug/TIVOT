@@ -218,3 +218,5 @@ when	from	to	reason
 20260917-202621	flight/enemy/FLM_Serpent/view_2.webp	_recycle/flight/enemy/FLM_Serpent/view_2.webp	ver -1463：plan:'chain' 的怪只讀 sprite.dorsal 一張（flight/index.html:14587），view_1~5 從 split_enemy.py 時代起就沒有任何程式讀 —— 規格單 resources/enemy/_flight_sprite_handoff.md 確認。空賊船那一族不動。
 20260917-202621	flight/enemy/FLM_Serpent/view_4.webp	_recycle/flight/enemy/FLM_Serpent/view_4.webp	ver -1463：plan:'chain' 的怪只讀 sprite.dorsal 一張（flight/index.html:14587），view_1~5 從 split_enemy.py 時代起就沒有任何程式讀 —— 規格單 resources/enemy/_flight_sprite_handoff.md 確認。空賊船那一族不動。
 20260917-202621	flight/enemy/FLM_Serpent/view_5.webp	_recycle/flight/enemy/FLM_Serpent/view_5.webp	ver -1463：plan:'chain' 的怪只讀 sprite.dorsal 一張（flight/index.html:14587），view_1~5 從 split_enemy.py 時代起就沒有任何程式讀 —— 規格單 resources/enemy/_flight_sprite_handoff.md 確認。空賊船那一族不動。
+20260917-210149	_boot_probe.mjs	_recycle/_boot_probe.mjs	一次性的預載自檢腳本
+20260917-212145	flight/enemy/FLM_DragonThrone/view_0.webp	_recycle/flight/enemy/FLM_DragonThrone/view_0.webp	王座徘徊者飛行 sprite 換成美術優化版（ver -1468）
