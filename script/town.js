@@ -5277,10 +5277,11 @@ export const TOWNS = {
          ⚠ 主軸維持在 x≈0.495（道口→風蝕岩→狹窄溪谷一條直線），兩條支線
            （烽燧臺 0.300、古井驛 0.740）與分岔（0.330／0.660）掛在兩側。 */
       spots: {
-        entry:[0.4950, 0.9300],  stone:[0.4950, 0.8250], beacon:[0.3000, 0.8250],
-        sea:[0.4950, 0.7200],    well:[0.7400, 0.7200],  cairn:[0.4950, 0.6100],
-        scree:[0.3300, 0.5000],  deadwood:[0.6600, 0.5000],
-        windrock:[0.4950, 0.3900], gorge:[0.4950, 0.2800], ravine:[0.4950, 0.1700],
+        ravine:[0.5000, 0.0900], gorge:[0.5000, 0.2300], windrock:[0.5000, 0.3700],
+        scree:[0.3300, 0.5100],  deadwood:[0.6700, 0.5100],
+        sea:[0.3300, 0.6500],    cairn:[0.6700, 0.6500],  well:[0.8500, 0.6500],
+        beacon:[0.1300, 0.7900], stone:[0.3300, 0.7900],
+        entry:[0.3300, 0.9300],
       },
     },
     /* ══⚠⚠ **一步 30 分鐘**（ver -1447，工單 `_plainsroad_spec.md`「時間：靠 `stepMin`
@@ -5300,11 +5301,14 @@ export const TOWNS = {
       beacon: { bg:'Plains_Beacon', name:'平原古道　烽燧臺',
         exits:{ back:'stone' } },
       /* 草海：及腰的草幾乎吞掉路面 —— 抉擇點②（正前一條、右邊一條＋身後）。 */
+      /* ⚠⚠ **抉擇點②：長路還是短路**（ver -1460 重排）—— 上＝碎石坡（短，2 步到
+         風蝕岩）、右＝石塚群（長，3 步，但路上有古井驛）。兩條不等長才是抉擇。 */
       sea:    { bg:'Plains_Sea',    name:'平原古道　草海',
-        exits:{ up:'cairn', right:'well', down:'stone' } },
+        exits:{ up:'scree', right:'cairn', down:'stone' } },
       /* 古井驛：廢棄驛站與一口古井。**盡頭**。 */
+      /* ⚠ 古井驛掛在**長路**上（石塚群）：繞遠路的人才拿得到 —— 那就是它的報酬。 */
       well:   { bg:'Plains_Well',   name:'平原古道　古井驛',
-        exits:{ back:'sea' } },
+        exits:{ back:'cairn' } },
       /* ══⚠⚠⚠ **ver -1447：6 格 → 10 格**（Ray：「平原古道太小了，擴成迷宮，
          大概 10 格，確保玩家踏入古城前就把時間磨到至少 17:00。倒數最後一格是
          狹窄溪谷」；工單與地形／色系規格在 `resources/background/_plainsroad_spec.md`）══
@@ -5331,10 +5335,10 @@ export const TOWNS = {
       /* 石塚群：一片矮石堆（古代路標堆），路在此分成左右兩條 —— 抉擇點③。
          ⚠ 荒蕪梯度的轉折點（工單 §荒蕪梯度）：它原本是全線最綠的一張，已重畫。 */
       cairn:  { bg:'Plains_Cairn_day', noTime:true, name:'平原古道　石塚群',
-        exits:{ left:'scree', right:'deadwood', down:'sea' } },
+        exits:{ up:'deadwood', right:'well', left:'sea' } },
       /* 碎石坡：碎石鋪成的緩坡，路沿坡往上。 */
       scree:  { bg:'Plains_Scree_day', noTime:true, name:'平原古道　碎石坡',
-        exits:{ up:'windrock', down:'cairn' } },
+        exits:{ up:'windrock', down:'sea' } },
       /* 枯木林：一小片枯死的樹幹，路從中間穿過。 */
       deadwood:{ bg:'Plains_Deadwood_day', noTime:true, name:'平原古道　枯木林',
         exits:{ up:'windrock', down:'cairn' } },
@@ -5346,7 +5350,7 @@ export const TOWNS = {
            工單那一行假設的是另一種版面，**版面是這裡定的，所以以這裡為準**。
            ⚠ `script_lint.py` 會對 L 形邊發提醒 —— 那是預期中的，不要「修」掉。 */
       windrock:{ bg:'Plains_Windrock_day', noTime:true, name:'平原古道　風蝕岩',
-        exits:{ up:'gorge', down:'scree', right:'deadwood' } },
+        exits:{ up:'gorge', left:'scree', right:'deadwood' } },
       /* 狹窄溪谷：兩側岩壁夾著一條路，谷底一道細流 —— **倒數最後一格**（Ray 指定）。
          ⚠ ver -1447 由 `ravine`（借貝利薩爾外觀圖）換成這一格，見上面那一段的說明。
          ⚠ **那一頭不給陸路回程是對的**（同 -1358 的理由）：`belisar.entrance` 的
