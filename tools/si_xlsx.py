@@ -5,9 +5,20 @@
     py tools/si_xlsx.py                  # 出表到 resources/SI/_SI_差分總表.xlsx
     py tools/si_xlsx.py --check          # 只印統計與待辦清單，不出表
 
-做什麼：把 `resources/SI/` 底下**每一張**立繪列成一列 —— 分角色、帶檔名、**帶一張
+做什麼：把 `resources/SI/` 底下的立繪列成表 —— 分角色、帶檔名、**帶一張
 抓臉的縮圖**（縮圖以「看得出表情」為準，不是看得出全身）。
 **美術每次交檔重跑一次就更新**，不必手動維護。
+
+⚠⚠ **一個差分一列，不是一個檔案一列**（ver -1487，Ray：「不要列重覆的」）。
+  兩種東西以前會各自佔一列，現在都收掉了：
+    · **底線開頭的**（`_ornament_master2.png`／`_ref_*.png`）—— 那是母版與參考圖，
+      §5 說得很明白，遊戲根本不會載它們。**整個不列**。
+    · **同一個差分的第二張圖** —— 同檔名不同夾（`renna_newhair/`）或 `_vN` 候選
+      （`NPC_Grocer_SI_v1…v5`）。留**線上跑的那一張**（speakers.js 指到的），
+      其餘寫進那一列的「另有版本」欄 ＋「待接線・缺檔」那一頁。
+  ⚠ 資訊一個都沒少，只是換了位子 —— 「還有另一張圖等著換上去」是**待辦**，
+    不是另一個差分（鐵律 7：一個差分一份真相）。
+  實測 294 檔 → **236 個差分**（去掉 5 張母版／參考圖、53 張重覆版本）。
 
 ⚠⚠ 臉的位置**不做自動偵測**（§6.5：臉的自動偵測會被頭髮吃掉），也**不自己發明取景**
   —— 沿用專案既有的那一支頭像取景 `speakers.faceStyle()`（破防計量表的月彎、
@@ -166,14 +177,34 @@ def thumb(path, f, measured):
 
 
 def scan_files():
-    """SI 底下所有圖（含子資料夾，例如 NPC/）—— 回專案相對路徑。"""
+    """SI 底下所有圖（含子資料夾，例如 NPC/）—— 回專案相對路徑。
+       ⚠⚠ **底線開頭的不列**（ver -1487）：`_ornament_master2.png`、`_ref_*.png`
+         那一族是**母版與參考圖**，不是立繪 —— §5 說得很明白，底線開頭的東西
+         遊戲根本不會載。把它們列進差分表等於拿五張沒有臉的圖去佔五列。"""
     out = []
     for dirpath, _dirs, files in os.walk(SI_DIR):
         for fn in files:
+            if fn.startswith('_'):
+                continue
             if fn.lower().endswith(IMG_EXT):
                 p = os.path.join(dirpath, fn)
                 out.append(os.path.relpath(p, ROOT).replace(os.sep, '/'))
     return sorted(out)
+
+
+def dedup_key(rel):
+    """同一個「差分」的鑰匙（ver -1487，Ray：「不要列重覆的」）。
+
+       這張表是**一個差分一列**（鐵律 7 的同一個道理：一件事一份真相）。
+       實際重覆的只有兩種長相，兩種都收在這一支：
+         · **同一個檔名、不同資料夾** —— `renna_newhair/Renna_SI_smile.webp`
+           與 `Renna_SI_smile.webp`（髮飾換裝那條線，Ray 指示擱置中）
+         · **尾碼 `_vN` 的候選版** —— `NPC_Grocer_SI_v1…v5`（同一個店主的五次迭代）
+       ⚠ 只剝**結尾**的 `_v<數字>`：`Renna_SI_intense2` 是差分名的一部分，不是版本。
+       ⚠ 實測 45 組重覆裡，**每一組都剛好有一張接了線** —— 所以「留哪一張」不必猜，
+         留線上跑的那一張就是唯一解（見 build 的說明）。"""
+    b = os.path.splitext(os.path.basename(rel))[0].lower()
+    return re.sub(r'_v\d+$', '', b)
 
 
 def is_npc(rel):
@@ -218,7 +249,31 @@ def build():
             measured = False
             who = who_of_file(rel)
             unwired.append(rel)
-        rows.append(dict(who=who, key=key, expr=en, rel=rel, f=f, measured=measured))
+        rows.append(dict(who=who, key=key, expr=en, rel=rel, f=f,
+                         measured=measured, alts=[]))
+
+    # ⚠⚠ 去重（ver -1487，Ray：「不要列重覆的」）——
+    #   **留線上跑的那一張**（speakers.js 指到的）：它才是這個差分現在的樣子。
+    #   被擠下來的沒有消失，只是不佔一列：留在那一列的「另有版本」欄，
+    #   並且整批列進「待接線・缺檔」那一頁 —— 那是它們真正的身分（**待處理**），
+    #   不是「另一個差分」。
+    #   ⚠ 一組全部都沒接線時（日後可能發生）留**路徑最短**的那一張，其餘照樣當候選。
+    groups = {}
+    for r in rows:
+        groups.setdefault(dedup_key(r['rel']), []).append(r)
+    kept, dropped = [], []
+    for _k, grp in groups.items():
+        if len(grp) == 1:
+            kept.append(grp[0])
+            continue
+        wired_in = [r for r in grp if r['key']]
+        keep = wired_in[0] if wired_in else min(grp, key=lambda r: (len(r['rel']), r['rel']))
+        keep['alts'] = [r['rel'] for r in grp if r is not keep]
+        kept.append(keep)
+        dropped += [r['rel'] for r in grp if r is not keep]
+    rows = kept
+    unwired = [r['rel'] for r in rows if not r['key']]
+    dropped.sort()
 
     for p, (key, en, f) in by_path.items():
         if not p:
@@ -228,14 +283,18 @@ def build():
 
     rows.sort(key=lambda r: (str(r['who']), r['rel'].lower()))
     missing.sort()
-    return rows, unwired, missing, ART
+    return rows, unwired, missing, dropped, ART
 
 
-def report(rows, unwired, missing):
+def report(rows, unwired, missing, dropped):
     wired = len(rows) - len(unwired)
     npc = sum(1 for r in rows if is_npc(r['rel']))
-    print('SI 圖共 %d 張（主要角色 %d・NPC %d）：已接進 speakers.js %d 張、未接線 %d 張'
+    print('差分共 %d 個（主要角色 %d・NPC %d）：已接進 speakers.js %d 個、未接線 %d 個'
           % (len(rows), len(rows) - npc, npc, wired, len(unwired)))
+    if dropped:
+        grp = sum(1 for r in rows if r['alts'])
+        print('· 去重：%d 個差分另有 %d 張版本（同檔名不同夾／`_vN` 候選），'
+              '**不佔列**，列在「待接線・缺檔」那一頁' % (grp, len(dropped)))
     est = [r for r in rows if not r['measured'] and r['key']]
     if est:
         print('⚠ 接了線但標著 unmeasured（縮圖走估的）：%d 張' % len(est))
@@ -249,13 +308,15 @@ def report(rows, unwired, missing):
             print('     %-12s %-16s %s' % (key, en, p))
 
 
-def write_xlsx(rows, unwired, missing, path):
+def write_xlsx(rows, unwired, missing, dropped, path):
     from openpyxl import Workbook
     from openpyxl.drawing.image import Image as XLImage
     from openpyxl.styles import Font, Alignment, PatternFill
     from openpyxl.utils import get_column_letter
 
-    head = ['角色', '縮圖（抓臉）', '檔名', '差分鍵', '已接線', '取景',
+    # ⚠ 「另有版本」插在「已接線」後面（ver -1487）：一個差分一列，
+    #   重覆的那幾張寫在這一欄 —— 資訊不掉，但不再各自佔一列。
+    head = ['角色', '縮圖（抓臉）', '檔名', '差分鍵', '已接線', '另有版本', '取景',
             'fx', 'top', 'bot', '尺寸', '路徑']
 
     def new_sheet(wb, title, first=False):
@@ -268,7 +329,7 @@ def write_xlsx(rows, unwired, missing, path):
             cell.fill = PatternFill('solid', fgColor='4A4A4A')
             cell.alignment = Alignment(horizontal='center', vertical='center')
         ws.freeze_panes = 'C2'
-        for i, w in enumerate([14, 21, 34, 16, 10, 7, 8, 7, 7, 12, 42], start=1):
+        for i, w in enumerate([14, 21, 34, 16, 10, 26, 7, 8, 7, 7, 12, 42], start=1):
             ws.column_dimensions[get_column_letter(i)].width = w
         return ws
 
@@ -291,7 +352,10 @@ def write_xlsx(rows, unwired, missing, path):
         ws = new_sheet(wb, title, first)
         _fill(ws, subset, tmpdir, keep, warn_fill, seq, XLImage, Alignment, head)
 
-    _todo_sheet(wb, unwired, missing, Font, PatternFill, get_column_letter)
+    # 被擠下來的那幾張 → 它現在讓位給誰（待辦頁要印得出來）
+    keeper = {a: r['rel'] for r in rows for a in (r.get('alts') or [])}
+    _todo_sheet(wb, unwired, missing, dropped, keeper, Font, PatternFill,
+                get_column_letter)
     wb.save(path)
     for tp in keep:
         try:
@@ -303,6 +367,25 @@ def write_xlsx(rows, unwired, missing, path):
     except OSError:
         pass
     return {t: len(s) for t, s, _f in sheets}
+
+
+def alt_text(row):
+    """「另有版本」欄：同一個差分還有哪幾張（ver -1487）。
+       ⚠ 印**看得出差別的那一段**：換了資料夾就印資料夾（`renna_newhair/`），
+         同一夾就印檔名（`NPC_Grocer_SI_v2.webp`）—— 印全路徑會把欄位撐爆，
+         印張數又看不出是哪一批。"""
+    alts = row.get('alts') or []
+    if not alts:
+        return None
+    here = os.path.dirname(row['rel'])
+    seen, out = set(), []
+    for a in alts:
+        tag = (os.path.dirname(a).split('/')[-1] + '/') if os.path.dirname(a) != here \
+              else os.path.basename(a)
+        if tag not in seen:
+            seen.add(tag)
+            out.append(tag)
+    return '%d 張：%s' % (len(alts), '、'.join(out[:3]) + ('…' if len(out) > 3 else ''))
 
 
 def _fill(ws, rows, tmpdir, keep, warn_fill, seq, XLImage, Alignment, head):
@@ -319,18 +402,19 @@ def _fill(ws, rows, tmpdir, keep, warn_fill, seq, XLImage, Alignment, head):
         ws.cell(row=r, column=3, value=os.path.basename(row['rel']))
         ws.cell(row=r, column=4, value=row['expr'] or '—')
         ws.cell(row=r, column=5, value='✔' if row['key'] else '✘ 未接線')
-        ws.cell(row=r, column=6, value='量' if row['measured'] else '估')
+        ws.cell(row=r, column=6, value=alt_text(row))
+        ws.cell(row=r, column=7, value='量' if row['measured'] else '估')
         if row['measured']:
-            ws.cell(row=r, column=7, value=f.get('fx'))
-            ws.cell(row=r, column=8, value=f.get('top'))
-            ws.cell(row=r, column=9, value=f.get('bot'))
-        ws.cell(row=r, column=10, value=size)
-        ws.cell(row=r, column=11, value=row['rel'])
-        for c in (1, 4, 5, 6, 7, 8, 9, 10):
+            ws.cell(row=r, column=8, value=f.get('fx'))
+            ws.cell(row=r, column=9, value=f.get('top'))
+            ws.cell(row=r, column=10, value=f.get('bot'))
+        ws.cell(row=r, column=11, value=size)
+        ws.cell(row=r, column=12, value=row['rel'])
+        for c in (1, 4, 5, 7, 8, 9, 10, 11):
             ws.cell(row=r, column=c).alignment = Alignment(horizontal='center',
                                                            vertical='center')
-        ws.cell(row=r, column=3).alignment = Alignment(vertical='center')
-        ws.cell(row=r, column=11).alignment = Alignment(vertical='center')
+        for c in (3, 6, 12):
+            ws.cell(row=r, column=c).alignment = Alignment(vertical='center')
         if not row['key']:
             for c in range(1, len(head) + 1):
                 ws.cell(row=r, column=c).fill = warn_fill
@@ -353,7 +437,8 @@ def _fill(ws, rows, tmpdir, keep, warn_fill, seq, XLImage, Alignment, head):
         r += 1
 
 
-def _todo_sheet(wb, unwired, missing, Font, PatternFill, get_column_letter):
+def _todo_sheet(wb, unwired, missing, dropped, keeper, Font, PatternFill,
+                get_column_letter):
     """這一次交件之後要做的事 —— 表的價值一半在這一頁。"""
     ws2 = wb.create_sheet('待接線・缺檔')
     ws2.append(['類別', '角色／鍵', '檔案', '要做什麼'])
@@ -368,21 +453,28 @@ def _todo_sheet(wb, unwired, missing, Font, PatternFill, get_column_letter):
     for key, en, p in missing:
         ws2.append(['指到但檔案不在', '%s / %s' % (key, en), p,
                     '路徑打錯，或美術還沒交 —— 演到那一句會回退基本立繪'])
-    if not unwired and not missing:
+    # ⚠ 這一類**不是**「另一個差分」，是同一個差分的另一張圖（ver -1487）：
+    #   所以它不佔差分頁的列，而是站在這裡等人決定要不要換上去。
+    for p in dropped:
+        ws2.append(['同差分的另一個版本', char_of_filename(p), p,
+                    '線上跑的是 %s —— 要換上去就改 speakers.js 的 src，'
+                    '並**重量** fx／top／bot（§5：換圖一定要重量取景）'
+                    % os.path.basename(keeper.get(p, ''))])
+    if not unwired and not missing and not dropped:
         ws2.append(['—', '—', '—', '目前沒有待辦'])
     ws2.freeze_panes = 'A2'
 
 
 def main():
-    rows, unwired, missing, _ART = build()
-    report(rows, unwired, missing)
+    rows, unwired, missing, dropped, _ART = build()
+    report(rows, unwired, missing, dropped)
     if '--check' in sys.argv:
         return
     out = OUT
     for a in sys.argv[1:]:
         if not a.startswith('--'):
             out = a
-    n = write_xlsx(rows, unwired, missing, out)
+    n = write_xlsx(rows, unwired, missing, dropped, out)
     print('→ %s' % out)
     for t, c in n.items():
         print('   分頁「%s」%d 列' % (t, c))
