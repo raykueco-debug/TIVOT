@@ -16,7 +16,7 @@
       python3 tools/bust.py          # 寫回去
       python3 tools/bust.py --check  # 只檢查同不同步（CI／lint 用，回傳碼 1＝不同步）
 """
-import os, re, sys, glob
+import os, re, sys, glob, subprocess
 import _utf8  # noqa: F401  # 主控台 UTF-8（中文 Windows 的 cp950），見 tools/_utf8.py
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -96,5 +96,65 @@ def run(check=False):
     print('v=' + v + '　模組 ' + str(len(modules())) + ' 支')
     return 0
 
+
+# ══⚠⚠⚠ **版本號沒動 ＝ 這一版根本送不到玩家手上**（ver -1461）══════════════
+#   憲法 §6（ver -626）：「版本號不動就等於沒有版本號」。這一支把那句話變成**會擋**。
+#
+#   實際踩到（-1458～-1460 三個 commit）：我用 `sed s/<舊版號>/<新版號>/ config.js`
+#   手動 bump，而**號碼猜錯時 sed 靜靜地什麼都沒做** —— 於是 `VERSION` 卡在 1457，
+#   `bust.py` 照樣把 `?v=1457` 蓋上去，模組網址與**真正的 1457 那一版一模一樣**
+#   ⇒ 玩家的瀏覽器直接拿快取，**後面三版的修改一個字都沒送出去**，
+#   而 HUD 上還是顯示 1457，看不出哪裡不對（Ray：「還是播三次」）。
+#
+#   ⇒ 規矩：**tracked 的程式碼有改動，`VERSION` 就必須與 HEAD 不同**，否則報錯。
+#   ⇒ 而且提供 `--bump`：由工具自己把尾碼 +1，**沒有人需要再打舊號碼**。
+CODE_EXT = ('.js', '.html', '.css', '.json')
+def _head_ver():
+    try:
+        out = subprocess.run(['git','show','HEAD:config.js'], cwd=ROOT,
+                             capture_output=True, text=True, encoding='utf-8')
+        m = re.search(r"export const VERSION = 'ver ([^']+)'", out.stdout or '')
+        return m.group(1).split('-')[-1] if m else None
+    except Exception:
+        return None
+def _dirty_code():
+    try:
+        out = subprocess.run(['git','status','--porcelain'], cwd=ROOT,
+                             capture_output=True, text=True, encoding='utf-8').stdout or ''
+    except Exception:
+        return []
+    names = []
+    for ln in out.splitlines():
+        if ln[:2] == '??': continue                   # 未追蹤的不算
+        f = ln[3:].split(' -> ')[-1].strip().strip('"')
+        if f.endswith(CODE_EXT) and not f.startswith('tools/'): names.append(f)
+    return names
+def bump():
+    """把 config.js 的尾碼 +1（工具自己讀現值，不必有人打舊號碼）。"""
+    path = os.path.join(ROOT, 'config.js')
+    s = open(path, encoding='utf-8').read()
+    m = re.search(r"(export const VERSION = 'ver )([^']+)(')", s)
+    if not m: sys.exit('config.js 裡找不到 VERSION')
+    head, n = m.group(2).rsplit('-', 1)
+    new = '%s-%d' % (head, int(n) + 1)
+    open(path, 'w', encoding='utf-8').write(s[:m.start(2)] + new + s[m.end(2):])
+    print('VERSION %s → %s' % (m.group(2), new))
+def guard():
+    cur, head = ver(), _head_ver()
+    if head is None or cur != head: return
+    dirty = _dirty_code()
+    if not dirty: return
+    print('')
+    print('❌ VERSION 還是 %s，與 HEAD 一樣，但這些程式碼已經改了：' % cur)
+    for f in dirty[:12]: print('     ' + f)
+    if len(dirty) > 12: print('     …共 %d 支' % len(dirty))
+    print('   ⇒ 模組網址會與上一版**完全相同** ⇒ 玩家的瀏覽器直接吃快取，')
+    print('     這一版的修改一個字都送不出去，而 HUD 上看不出哪裡不對（憲法 §6 的 -626）。')
+    print('   ⇒ 跑 `python3 tools/bust.py --bump`（工具自己 +1，不要用 sed 打舊號碼）。')
+    sys.exit(1)
+
 if __name__ == '__main__':
+
+    if '--bump' in sys.argv: bump()
+    else: guard()
     sys.exit(run('--check' in sys.argv))
