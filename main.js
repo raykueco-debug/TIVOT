@@ -595,10 +595,27 @@ setInterval(()=>{
 /* 整備／設定窗蓋在飛行畫面上時暫停底下的模擬（ver -481）。掛在 window 給葉模組
    （gear/settings）用 —— 它們構不到 iframe（同 __tivotFlight 掛 window 的理由）。 */
 window.__flightHoldToggle = on => { const w=flightWin(); if(w && w.__flightHold) w.__flightHold(!!on); };
+/* ══⚠⚠⚠ **離開飛行地圖 ＝ 殺掉。不論如何，沒有例外。**（ver -1457，Ray 定案：
+   「只要離開飛行地圖就 kill，不論如何，不管什麼情況，世界末日還是外星人入侵，
+     只要離開飛行地圖就 kill」）══════════════════════════════════════════════
+   ⚠⚠⚠ **所以這裡不再分「藏」與「殺」兩支** —— 那正是出事的形狀：
+     -845 立了 `killFlightFrame`，但把「哪幾條路要殺」寫成一份**清單**
+     （交棒進戰鬥／降落進城／回首頁），於是漏掉的那幾條（飛行頁的「返回」、
+     湖上甲板、讀檔／章節跳關／被抬回旅店進探索地圖）就只有暫停＋藏起來 ——
+     地形陣列、城的取樣金字塔、離屏畫布（上百 MB）與 GL 資源整包押著不放
+     ⇒ 手機記憶體吃緊、降頻**發燙**（Ray 回報）。
+   ⇒ 規矩改寫成**動作**（鐵律 8）：**收飛行畫面只有這一支，而它一定殺。**
+     呼叫端不必知道「這一次要不要殺」—— 沒有那個選項了。
+   ⚠ 殺了不會少東西：進飛行畫面本來就一律整頁重載（`openFlight` 的
+     `location.reload()`），座標與勝負上下文走回程鑰匙（`toBattle` 寫、
+     `restoreFlightPos` 讀）—— 留著它一點用都沒有，只有記憶體與發熱的代價。
+   ⚠ 先 `__flightPause`（停 rAF）再拿掉 `.on`（藏）再卸載：順序是「別讓最後一幀
+     停在一半」→「別露出底下那一層」→「還記憶體」。 */
 function closeFlightFrame(){
-  const w=flightWin(); if(w && w.__flightPause) w.__flightPause();
+  const w=flightWin(); if(w && w.__flightPause) try{ w.__flightPause(); }catch(_){}
   const f=$('flightFrame'); if(f) f.classList.remove('on');
   document.body.classList.remove('flight-on');
+  killFlightFrame();                 // ⚠⚠ 不論如何（見上）—— 冪等，重複叫沒事
 }
 /* ⚠⚠ **「返回首頁＝殺光所有頁面」只有這一支**（ver -494，Ray：「返回首頁就要
    kill 所有的 page 再回去」；鐵律 8）。由 `combat.setPageKiller` 注入，goHome 在
@@ -636,8 +653,7 @@ function killAllPages(){
      那是鐵律 10 只做了一半：畫面死了，它載進來的資源沒死。
      ⚠ 排在最前面（與 `loadScene` 同形狀：先放、再讓下一個畫面載自己的）。 */
   releaseToHome();
-  closeFlightFrame();
-  killFlightFrame();
+  closeFlightFrame();   // ⚠ 它自己就會殺（ver -1457）
   try{ town.suspend(); }catch(_){}
   try{ town.close(); }catch(_){}
   try{ story.close(); }catch(_){}
@@ -667,9 +683,6 @@ window.__tivotFlight = {
        （鐵律 7），而那正是「空戰殘血」補不完的原因。真相在 `combat.carryHpOrClear`。 */
     try{ town.close(); }catch(_){}
     closeFlightFrame();
-    /* ⚠ ver -1457：上面那段註解寫的是「**iframe 收掉**」，但 `closeFlightFrame`
-       只是藏起來 —— 這一趟航行真的結束了，整個卸載（同 `close()`／`enterTown`）。 */
-    try{ killFlightFrame(); }catch(_){}
     story.open({ scene:'lake_deck' });
   },
   /* 遭遇 → 進戰鬥。門已經在飛行頁推到頂了，這裡**接著演**（撞頂 → 解鎖 → 圓盤 → 開門）。 */
@@ -678,7 +691,10 @@ window.__tivotFlight = {
        幾何（geom）與 scripted 都在 req 裡、座標在回程鑰匙（toBattle 剛寫的），
        這個 iframe 沒有再留著的理由。⚠ 檢查點要先落（要問活著的 __flightPos）。 */
     try{ flightCheckpointNow(); }catch(_){}
-    setTimeout(()=>{ try{ killFlightFrame(); }catch(_){} }, 300);
+    /* ⚠ ver -1457：改叫 `closeFlightFrame`（它自己就會殺）—— 單叫 `killFlightFrame`
+       會在畫面**還看得見**的時候把 iframe 拔掉，那一格是空白的。下面那一行
+       （擺完門之後）本來就會收，這個計時器只是保險。 */
+    setTimeout(()=>{ try{ closeFlightFrame(); }catch(_){} }, 300);
     const id = req && req.battle;
     if(!id || !GAME_CONFIG.battles || !GAME_CONFIG.battles[id]){ closeFlightFrame(); return; }
     flightBack = true;                    // 打完回飛行頁（見 setStoryReturn）
@@ -719,7 +735,9 @@ window.__tivotFlight = {
      那一格不是 `shinier_forest` 的 entry。不給就照舊走入口。 */
   land(id, node){
     /* ver -845：降落＝這一趟航行結束，iframe 殺掉（下一次出航本來就整頁重載）。 */
-    setTimeout(()=>{ try{ killFlightFrame(); }catch(_){} }, 600);
+    /* ⚠ ver -1457：同上 —— 正規的收場在 `enterTown` 的 onCovered（讀取頁全黑那一刻），
+       這個計時器是保險；用 `closeFlightFrame` 才不會在還看得見時拔掉 src。 */
+    setTimeout(()=>{ try{ closeFlightFrame(); }catch(_){} }, 600);
     /* ⚠⚠⚠ **不在這裡收 iframe**（ver -1357）：收掉它就露出底下那一層（上一座城的
        背景），而讀取頁還在淡入。改掛在 `enterTown` 的 `onCovered`（讀取頁全黑那一刻）
        —— 與收首頁同一個地方、同一個理由（鐵律 8）。
@@ -746,11 +764,6 @@ window.__tivotFlight = {
      從城鎮出航的話，城鎮的舞台一直在 iframe 底下開著，收掉 iframe 就回到城鎮了。 */
   close(){
     closeFlightFrame();
-    /* ⚠⚠⚠ **返回也要殺**（ver -1457）：-845 只接了「交棒進戰鬥／降落進城／回首頁」
-       三條，**這一條（返回底下那一層）從來沒接** —— 於是「出航 → 返回 → 在城裡逛」
-       時整個飛行 iframe 還活著（暫停歸暫停，記憶體與 GL 資源沒還）。
-       ⚠ 殺了不會少東西：再出航時 `openFlight` 本來就是整頁重載。 */
-    try{ killFlightFrame(); }catch(_){}
     /* ⚠ 底下是誰，就把誰的曲子接回來（ver -391）—— 進飛行頁時主遊戲的 BGM 被收掉了，
        不接回來的話回到城鎮／首頁是一片安靜。 */
     const st=$('storyStage');
@@ -1533,8 +1546,7 @@ function enterTown(t, n, opts){
                        （冪等），它是獨立模式那條路的保險。
                      ⚠ 殺了不會少東西：進飛行畫面本來就一律重載（`openFlight` 的
                        `location.reload()`），座標走回程鑰匙 —— 留著它一點用都沒有。 */
-                  ()=>{ hideHome('enterTown/covered'); closeFlightFrame();
-                        try{ killFlightFrame(); }catch(_){} });
+                  ()=>{ hideHome('enterTown/covered'); closeFlightFrame(); });
 }
 function openTownAt(t, n){ enterTown(t, n); }
 saveSys.setHost({
