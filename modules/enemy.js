@@ -610,6 +610,17 @@ export function loadEnemyPortrait(en){
   risePending=null;
   eImg.onload = null;
   eImg.classList.remove('enemy-rise','enemy-purge');
+  /* ⚠⚠⚠ **換怪的第一件事是把上一張拔掉**（ver -1467）：`<img>` 在**新圖解碼完成
+     之前不會重繪** —— 只設 `src` 的話，慢網下整段空窗畫面上站著的是**上一隻怪**，
+     而且沒有任何錯誤訊息（Ray 在空戰看到地下聖徒的那一半就是這個）。
+     ⚠ 這與 `setEnemy` 的 `noArt` 是**同一條規矩**（那裡的註解早就寫著「只是不載的話
+       上一次留下的那張還掛在 `#enemyImg` 上」）—— 現在收成一處，每一條換怪的路
+       都吃得到（鐵律 8）。
+     ⚠ 只在**真的要換一張**時拔：同一張圖（重播降臨、同一隻怪再 setEnemy 一次）
+       拔了會多一次空白閃爍。 */
+  { const next = enemyImage(en);
+    if(next && eImg.getAttribute('src') && eImg.getAttribute('src') !== next)
+      eImg.removeAttribute('src'); }
   /* ⚠⚠ **演完要把 class 拿掉**（ver -598 修）：`enemy-rise` 帶 `both` 填充，
      留在身上等於 `#enemyImg` 永遠掛著 `animation:enemyRise`；而它與命中反應
      （`#enemyImg.hit`）specificity 相同、宣告在後面 —— **後面的贏**，
@@ -1041,9 +1052,15 @@ export function setEnemy(key, opts){
 /* ---------- 連戰序列（局＝同場多敵）----------
  *  lineupIndex 為序列游標（§3.7 enemy 擁有）。開場載 lineup[0]、換敵時游標 +1 載下一隻。
  *  Boss 亂入（inIntruderFight）為單敵新場,不走 lineup → hasNextInLineup 恆 false。 */
-export function startLineup(){
+/* ⚠⚠⚠ **`key` ＝這一場的怪由呼叫端指定**（ver -1467）——劇情插入戰走這一條。
+   以前這一支**只認挑戰那一串**，而 `startGame` 又無條件叫它 ⇒ 每一場劇情戰都先把
+   `GAME_CONFIG.currentEnemy`（挑戰的第一隻＝**地下聖徒**）整隻載上去，
+   七十行之後才換成卡上真正的那一隻。網路慢的時候玩家就看著地下聖徒
+   （`#enemyImg` 在新圖解碼完成前不會重繪）。見 combat.startGame 那一段的說明。
+   ⚠ `lineupIndex` 照舊一律歸零 —— 那是「新的一局」的游標，與載哪一隻無關。 */
+export function startLineup(key){
   state.lineupIndex = 0;
-  const first = (GAME_CONFIG.lineup && GAME_CONFIG.lineup[0]) || GAME_CONFIG.currentEnemy;
+  const first = key || (GAME_CONFIG.lineup && GAME_CONFIG.lineup[0]) || GAME_CONFIG.currentEnemy;
   setEnemy(first);
 }
 // 局內還有沒有下一隻（Boss 戰不算）

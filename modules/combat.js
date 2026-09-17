@@ -2833,7 +2833,6 @@ export function startGame(){
   morphed=false;                    // 型態切換一場只做一次（ver -1418，見 maybeMorph）
   state.overkillClean=false;   // 這一場的 ovk 是否完全清空殘額（ver -1389，追逐讀它）
   state.deathGuardUsed=false; state.sRankUnlocked=false; state.resultMode='rematch';
-  enemy.startLineup();   // 局：載序列第一隻（lineupIndex=0，含 enemyHp 基準）
   TEL.runStart({ partner:state.pickedPartner, weapon:state.equippedWeapon, boss:false });
   hideHome('startGame');
   $('banner').classList.remove('on'); $('banner').classList.remove('lose');
@@ -2903,8 +2902,26 @@ export function startGame(){
     const dp = dateParty();
     if(dp) setPickedPartner(partnerKeyOf(dp.who));   // null ＝無夥伴
   }
-  if(sb && GAME_CONFIG.enemies[pickBattleEnemy(sb)]){
-    enemy.setEnemy(pickBattleEnemy(sb));
+  /* ══⚠⚠⚠ **這一場的怪，只在這裡上場一次**（ver -1467，Ray：「打空戰怪的圖竟然是
+     出地下聖徒？？？？這個東西改過好幾次了怎麼還是會出？？？？」）══
+     這一行以前是 `startGame` 最上面那一句無條件的 `enemy.startLineup()` ——
+     它載的是 `GAME_CONFIG.lineup[0] || GAME_CONFIG.currentEnemy`，而後者是
+     **挑戰模式的第一隻＝地下聖徒**。於是**每一場劇情插入戰都先把地下聖徒整隻載上去**
+     （立繪、血條、大絕參數全套），七十行之後才換成戰鬥卡上真正的那一隻。
+     · 網路快 ＝ 只是白抓一張 95 KB 的圖，看不出來；
+     · 網路慢 ＝ `#enemyImg` 在新圖解碼完成之前**不會重繪**，玩家就看著**地下聖徒**
+       站在空戰背景前面。
+     ⚠⚠ **-1321 修過的是「開機」那一次**（`applyConfigToDOM` 的 `noArt`：開機不掛
+       挑戰那張立繪）—— 那一條沒有錯，它只是**管不到「每一場戰鬥的開頭」這一條路**。
+       這就是鐵律 8 的原形：規矩做成了函式，新的路徑沒有人呼叫它。
+     ⚠ 搬下來順手修對了第二件事：`setEnemy` 會 `addPartnerFight(state.pickedPartner)`
+       （這一場的出場帳，好感度要用）—— 而**搭檔是上面那幾行才決定的**，
+       原本那個位置記到的是**上一場**的搭檔。
+     ⚠ 位置仍在 `stopAll()`／`loadBoard(0)` **之前**：盤面配置（boardGrids）
+       要查「目前這隻怪」，換晚了第一盤會用到上一隻的格數。 */
+  const sbKey = (sb && GAME_CONFIG.enemies[pickBattleEnemy(sb)]) ? pickBattleEnemy(sb) : null;
+  enemy.startLineup(sbKey);   // 局：載這一場的怪（沒指定＝挑戰那一串的第一隻），lineupIndex=0
+  if(sbKey){
     /* ══⚠⚠ 真的開打了才記「這一段出過牠」，**並且把這一抽用掉**（ver -628）══
        `pendingPick` 是為了讓 `startGame` 裡那兩次呼叫拿到同一隻（立繪與數值要對得起來）
        —— 但它從來沒有人清掉，於是**整輪都黏著第一次抽到的那一隻**
