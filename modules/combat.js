@@ -850,6 +850,13 @@ function clearBoard(){
     state.energy = Math.max(state.energy, 100 - ENERGY_PER_HIT);
     updateEnergyClasp();
   }
+  /* ══⚠⚠⚠ **正在換型態的那 2.5 秒不算「敵死」**（ver -1486，Ray：「第四型態的
+     空中戰怎麼不見了？」）══ 這是第二條會吃掉它的路：擊殺落在**最後一格**時，
+     `enemyDamage` 那一邊已經被 `maybeMorph` 接走了，但 `tap()` 會接著清盤 ⇒
+     這一行看到血是 0 就直接收場。
+     ⚠ 空窗結束時 `maybeMorph` 的收尾自己會 `loadBoard(0)` 給新型態一副新盤，
+       所以這裡**什麼都不做**就對了。 */
+  if(morphSwapping) return;
   if(state.enemyHp<=0){ finishEnemyOrAdvance(); return; }   // 敵死 → 轉下一敵 or（最後一敵）結算
   defense.resetEnemyTimers();   // 清盤瞬間即重置敵大絕與延遲懲罰（間隔懲罰由 loadBoard 重置）
   goNextBoard();
@@ -1358,6 +1365,15 @@ function applyEnemyMods(dmg, src){
   return Math.max(1, Math.round(dmg * Math.max(0, k)));
 }
 function enemyDamage(dmg,isCrit,silent,src){
+  /* ══⚠⚠⚠ **換型態的空窗裡不吃傷害**（ver -1486，Ray：「我剛剛好像是用反擊殺的」）══
+     這是**最常踩到**的那一條：反擊是**連發**的 —— 第一發把血打到 0、`maybeMorph`
+     接走；**同一串的後續幾發**再進來時 `morphed` 已經是 true ⇒ 不再攔，
+     而血是 0 ⇒ 直接走死亡流程 ⇒ **第四型態整個被吃掉**，畫面上沒有任何錯誤訊息。
+     （機槍那一串、雙槍破防窗口、聖徒化追打都是同一個形狀。）
+     ⚠ 空窗裡「牠」其實不存在（舊卡的血歸零、新卡還沒掛上），
+       所以正解是**這一段時間的傷害整個不計**，而不是「再攔一次死亡」。
+     ⚠ 擋在**唯一的入口**（鐵律 8）：所有傷害來源都經過這一支。 */
+  if(morphSwapping) return;
   dmg = applyEnemyMods(dmg, src||'basic');
   // 教學：段落未播完前（tutorialActive）敵不可被打死——致死傷害夾到留 1 HP。
   //   防 EXSECUTIŌ／聖徒化中擊殺跳過最後一段教學（finishMB/LR 播完 endTutorial 後才解鎖擊殺）。
@@ -2242,6 +2258,15 @@ function isLastEnemy(){
   return !(enemy.hasNextInLineup() && !state.tutorialRun && !state.scriptRun);
 }
 function finishEnemyOrAdvance(){
+  /* ══⚠⚠⚠ **不論血是怎麼歸零的，型態切換一定要發生**（ver -1486，Ray 定案：
+     「應該要讓它不論怎麼歸零都會開第四型態」）══
+     這一支是**「一隻怪倒下」的唯一匯流點**（自然清盤／按錯／逾時／聖徒化擊殺
+     ——它自己的註解就這麼寫著）⇒ **守門放這裡，日後多出任何一條路都自動吃到**
+     （鐵律 8：規矩做成一道門，不是一份清單）。
+     ⚠ 換型態的那 2.5 秒裡「牠」其實不存在：舊卡的血歸零、新卡還沒掛上 ——
+       這段時間任何人問「牠死了嗎」，答案都是**還沒**。
+     ⚠ 空窗結束時 `maybeMorph` 的收尾自己會換卡＋`loadBoard(0)`，不必這裡接手。 */
+  if(morphSwapping) return;
   endOverkillFx();   // overkill 藍光/限時統一在此清理（所有結束路徑的匯流點，冪等）
   /* ══ 總擊場數 +1（ver -1023，Ray：「統計…總擊場數」）══ 「場」＝一隻怪（§0.5），
      而**這裡是「一隻怪倒下」的唯一匯流點**（自然清盤／按錯／逾時／聖徒化擊殺
@@ -2283,7 +2308,12 @@ function finishEnemyOrAdvance(){
      光圈散去以後進入第四型態」）—— 等光真的散完才換，玩家會先看到舊型態還站著。 */
 const HOLY_SWAP_MS = 2500;   // ver -1449：與 enemy.js 的 HOLY_GROW_MS 同一個數字（＝首頁那一顆的 2.5s）
 let morphed=false;
-export function resetMorph(){ morphed=false; }
+/* ⚠⚠⚠ **「正在換型態」與「換過了」是兩件事**（ver -1486）：
+   `morphed` ＝這一場換過了（一場只換一次）；`morphSwapping` ＝**換卡的那 2.5 秒空窗**
+   （血已經是 0、新卡還沒掛上）。少了後者，空窗裡任何一條「看到血是 0 就收場」的路
+   都會把下一個型態吃掉 —— 見 `enemyDamage` 與 `clearBoard` 的兩道守門。 */
+let morphSwapping=false;
+export function resetMorph(){ morphed=false; morphSwapping=false; }
 /* ══⚠⚠⚠ **`onDeath:true` ＝「第一條血打完才變」**（ver -1433，Ray：「龍把第一條血
    打完進入第二型態，第二型態血 500」）══
    與百分比門檻是**兩種**，卡上選一種：
@@ -2313,6 +2343,7 @@ function maybeMorph(){
     if(state.enemyHp > state.enemyMax*((+m.hp||50)/100)) return false;
   }
   morphed=true;
+  morphSwapping=true;                                // ver -1486：換卡的那 2.5 秒
   state.transitioning=true;                          // 演出期間鎖點擊
   stopIntervalTimer();
   defense.resetEnemyTimers();                        // 收掉舊型態的紅點與排程
@@ -2330,6 +2361,7 @@ function maybeMorph(){
        ＝ **打不動、血條也是錯的**（Ray：「第四階段以後敵人 HP 錯誤完全鎖血」）。
        ⚠ 這是鐵律 7 的原形：同一個量兩個設定點，而第二個還設錯了。 */
     enemy.setEnemy(m.to);                            // 換卡（立繪、數值、大絕參數、血條都跟著換）
+    morphSwapping=false;
     state.transitioning=false;
     state.killTime=0;
     loadBoard(0);                                    // 新型態自己的盤序（loadBoard 內 clockResume）
@@ -2830,7 +2862,7 @@ export function startGame(){
   state.runStartTime=Date.now(); resetClock();   // 計時碼表歸零（loadBoard 起算）
   state.boardTimes=[]; state.boardsCompleted=0;
   state.flawlessRun=true; state.intruderTriggered=false; state.inIntruderFight=false;
-  morphed=false;                    // 型態切換一場只做一次（ver -1418，見 maybeMorph）
+  morphed=false; morphSwapping=false;   // 型態切換一場只做一次（ver -1418）；-1486 加上「換卡中」
   state.overkillClean=false;   // 這一場的 ovk 是否完全清空殘額（ver -1389，追逐讀它）
   state.deathGuardUsed=false; state.sRankUnlocked=false; state.resultMode='rematch';
   TEL.runStart({ partner:state.pickedPartner, weapon:state.equippedWeapon, boss:false });
@@ -3057,7 +3089,7 @@ export function startIntruderFight(){
   state.runStartTime=Date.now(); resetClock();   // 新場：計時碼表歸零
   state.boardTimes=[]; state.boardsCompleted=0;
   state.flawlessRun=true; state.deathGuardUsed=false;
-  morphed=false;                    // 型態切換一場只做一次（ver -1418，見 maybeMorph）
+  morphed=false; morphSwapping=false;   // 型態切換一場只做一次（ver -1418）；-1486 加上「換卡中」
   state.sRankUnlocked=false; state.resultMode='rematch';
   enemy.setEnemy(GAME_CONFIG.intruder.enemy);   // 載槍之魔女（含 Boss 大絕/懲罰/彈痕 config）
   TEL.runStart({ partner:state.pickedPartner, weapon:state.equippedWeapon, boss:true });
