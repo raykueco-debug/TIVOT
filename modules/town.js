@@ -1487,12 +1487,24 @@ function dragonPlaceNear(id){
 function dragonFleeStep(cameDir){
   if(!dragonNode) return;
   /* ══⚠⚠ **漏斗：站在那一格就直接往目標跑**（ver -1437，Ray：「龍的移動行為
-     只要踩到謁見前廳就會往王座廳跑」）══ 表在城上（`dragonFunnel`，鐵律 1）。
+     只要踩到謁見前廳就會往王座廳跑」；-1454 加上「踩到甲冑廊就必往獅階走」）══
+     表在城上（`dragonFunnel`，鐵律 1）。
      ⚠ 排在所有規則**之前**：它講的是「這一格的下一步是定死的」，
-       不受「往玩家來的方向跑」與 `dragonCanStop` 的挑選影響（目標那一格是決戰格，
-       本來就停得住）。 */
-  { const f=((TOWNS[townId]||{}).dragonFunnel||{})[dragonNode];
-    if(f && ((TOWNS[townId]||{}).nodes||{})[f]){ dragonNode=f; return; } }
+       不受「往玩家來的方向跑」與挑方向那一套影響。
+     ⚠⚠⚠ **但它還是要守「停得住」那一條**（ver -1454）：獅階是 `noWild` 的休息處
+       ⇒ 龍停在那裡**玩家踩不到**（`dragonActDue` 對 `noWild` 的格子直接回 null）
+       而牠又只在打完一場才動 ⇒ **整段追擊當場卡死**。
+       所以漏斗的目標停不住時，照 -1446 那條「**經過了不停留**」沿著同一個方向滑出去。
+       實例：甲冑廊 →（獅階，穿過）→ 謁見前廳 —— 而謁見前廳本來就有
+       `antecham:'throne'` 這一條漏斗 ⇒ 下一場打完就被逼進王座廳。
+     ⚠ 真的滑不出去（整條都停不住）才停在目標上 —— 那時至少牠還在圖上。 */
+  { const T=TOWNS[townId]||{}, f=(T.dragonFunnel||{})[dragonNode];
+    if(f && (T.nodes||{})[f]){
+      if(dragonCanStop(f)){ dragonNode=f; return; }
+      const e=nodeNeighbors(dragonNode).find(x=>x.to===f);
+      dragonNode = (e && dragonSlide(dragonNode, e.dir)) || f;
+      return;
+    } }
   const ns=nodeNeighbors(dragonNode);
   if(!ns.length) return;
   const back = cameDir ? OPPOSITE[cameDir] : null;
