@@ -1319,7 +1319,8 @@ function leaveMapRitual(done){
    **三個狀態，都是「這一趟進圖」的**（同上一版；`open()` 歸零、不進存檔）：
      · `dragonNode`   牠站在哪一格
      · `dragonFights` 這一趟打了幾場（Ray 的「從開圖開始起算」）
-     · `dragonSeenFights` 開圖之後打了幾場（`afterThree` 那一段的門檻，ver -1433）
+     · `dragonSeenFights` 開圖之後打了幾場（`afterThree` 那一段的門檻，ver -1433；
+       門檻由 `DRAGON_TALK_AFTER` 決定 —— -1485 起是 **1**（開圖後第一戰））
      ⚠ 原本還有一個 `dragonAuto`（超過 5 場自己往王座之間走）—— **ver -1433 取消**，
        見下面那一段的說明。
 
@@ -1533,14 +1534,20 @@ function dragonFleeStep(cameDir){
   }
 }
 /* ══ 超過 5 場之後：自己往王座之間走一格（玩家每動一步牠就動一步）══ */
-/* ══⚠⚠ **開圖三戰之後的那一段**（ver -1433，台詞在 `DRAGON_LINES.afterThree`）══
-   ⚠ 它**不必踩到牠**：走到哪一格都會演（同閘門的語氣）——所以判定在這裡，
-     不在 `dragonActDue`（那一支的前提就是「踩到牠」）。
-   ⚠ 只演一次（段落自己的 `flag`，演完由 act 的收尾記）。 */
+/* ══⚠⚠ **開圖之後第一戰的那一段**（ver -1433 原本是「三戰之後」；
+   **-1485 Ray 改成第一戰**：「他一直往反方向跑那一段，移到開小地圖以後的第一戰」）══
+   台詞在 `DRAGON_LINES.afterThree`。
+   ⚠ 它**不必踩到牠**：打完那一場之後走到哪一格都會演（同閘門的語氣）——
+     所以判定在這裡，不在 `dragonActDue`（那一支的前提就是「踩到牠」）。
+   ⚠ 只演一次（段落自己的 `flag`，演完由 act 的收尾記）。
+   ⚠ 門檻寫成具名常數：那是**唯一**的計算點（鐵律 7）；鑰匙名還叫
+     `bl_chase_talk3` 是刻意的 —— 它已經寫進 `CHAPTERS`（Stage 11-B）與存檔，
+     改名等於把那些打斷，而**旗標的名字不是規格**。 */
+const DRAGON_TALK_AFTER = 1;   // 開圖之後打了幾場就演（-1433：3；-1485 Ray 改成 1）
 function dragonTalkDue(){
   if(!dragonChaseOn() || !prog.hasFlag('bl_dragon_seen')) return null;
   const a=DRAGON_LINES.afterThree;
-  if(!a || dragonSeenFights < 3 || prog.hasFlag(a.flag)) return null;
+  if(!a || dragonSeenFights < DRAGON_TALK_AFTER || prog.hasFlag(a.flag)) return null;
   return a;
 }
 /* ⚠⚠ **牠現在在哪一格 —— 只有這一支回答**（鐵律 7）：小地圖的紅點與

@@ -484,11 +484,14 @@ export const DRAGON_LINES = {
        打完牠就跑掉了（`dragonFleeStep`），玩家得再追上才會再觸發。
      ⚠ Ray 沒給這幾場的台詞 —— 只有戰鬥拍，不替他編。 */
   chaseMore: { sides:{ RENNA:'L' }, lines:[ { battle:'bl_chase' } ] },
-  /* ══⚠⚠⚠ **開圖三戰之後**（ver -1433，Ray 交稿）══════════════════════════════
-     「開圖」＝索菈娜「交給我！」那一拍（`bl_dragon_seen`）；之後**又打了三場**
-     就跳這一段 —— 它不必踩到牠，走一步就會演（判定在 `modules/town.js` 的
-     `dragonTalkDue`，計數也在那邊，鐵律 7：這裡只有台詞）。
-     ⚠ 只演一次（`flag`）。⚠ 沒有戰鬥拍：這是打完之後的一段喘息，不是一場架。 */
+  /* ══⚠⚠⚠ **開圖之後的第一戰**（ver -1433 交稿；**-1485 Ray 改時機**：
+     「他一直往反方向跑那一段，移到開小地圖以後的第一戰」）══
+     「開圖」＝索菈娜「交給我！」那一拍（`bl_dragon_seen`）；之後**打完第一場**
+     就跳這一段 —— 它不必踩到牠，走一步就會演（判定與計數都在 `modules/town.js` 的
+     `dragonTalkDue`／`DRAGON_TALK_AFTER`，鐵律 7：這裡只有台詞）。
+     ⚠ 只演一次（`flag`）。⚠ 沒有戰鬥拍：這是打完之後的一段喘息，不是一場架。
+     ⚠ 鍵名與旗名還是 `afterThree`／`bl_chase_talk3` —— 那兩個已經寫進 `CHAPTERS`
+       與玩家的存檔，改名等於把它們打斷（旗標的名字不是規格）。 */
   afterThree: { flag:'bl_chase_talk3', sides:{ RENNA:'L' }, lines:[
     nou('cringe','牠一直往我們的反方向跑！'),
     sor('battlecry','這樣反而好預測！'),
