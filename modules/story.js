@@ -1595,14 +1595,16 @@ const SE_FILES=[
   'se_flight_heartbeat.m4a', 'se_flight_idle_loop.mp3', 'se_flight_sail_loop.mp3',
   'se_flight_seagull.m4a', 'se_flight_train.mp3', 'vo_lunaMG.m4a', 'se_punch.m4a',
   'se_brickcrush.m4a',                                       // 瓦礫崩落（北方泊地教堂，ver -624）
-  /* ══ 王座徘徊者那一段（ver -1433，Ray 交辦）══
-     · `se_enemy_throneattack` 牠咬下去（吞掉髮飾那一拍）
+  /* ══ 王座徘徊者那一段（ver -1433，Ray 交辦；-1443 補 `se_dragonbite`）══
+     · **`se_dragonbite`**      牠咬下去（蕾娜「啊……」＝吞掉髮飾那一拍，ver -1443 Ray 指定）
      · `se_rockimpact`         落石砸下（蕾娜「小心！要垮了！」與崩瓦聲同一拍）
-     ⚠⚠ 兩支都是 **.mp3**（規約是 m4a，§6.6）—— 轉檔時**檔名別改**，
-       改了這兩行與 `tuning.fileGain` 都要跟著動。
+     · `se_enemy_throneattack` ⚠ **現在沒有人播它** —— -1433 原本掛在「啊……」那一拍，
+       -1443 由 Ray 換成 `se_dragonbite`。留著當備用，不要以為它還在用。
+     ⚠⚠ 三支都是 **.mp3**（規約是 m4a，§6.6）—— 轉檔時**檔名別改**，
+       改了這幾行與 `tuning.fileGain` 都要跟著動。
      ⚠⚠ **`fileGain` 還沒量**：沒有那一列＝增益 1 ＝以母帶的響度播出，
        正是 -441 抓到「跌倒音永遠不出來」的成因。要 Ray 用 `tools/audio_scan.html` 量。 */
-  'se_enemy_throneattack.mp3', 'se_rockimpact.mp3',
+  'se_dragonbite.mp3', 'se_enemy_throneattack.mp3', 'se_rockimpact.mp3',
   'se_earthquake.m4a',                                       // 地鳴（教堂那一拍的震動，ver -636）
   'se_paniccrowd.mp3',                                       // 人群尖叫（墓地那一幕，ver -664）
   /* 高音版的怪物吼叫（ver -671，Ray：「pitch 高 5 個半音，另存為 se_nightmare_hp」）。
@@ -2038,7 +2040,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1442';
+const KERB_V='?v=1443';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，

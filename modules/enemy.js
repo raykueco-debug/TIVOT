@@ -584,6 +584,11 @@ export function loadEnemyPortrait(en){
        落到定位的那一刻補兩件事：**一圈擴散的聖光**與**鏡頭一震**。
        ⚠ 鏡頭震動走 `api.screenShake`（combat 擁有的那一支，鐵律 8）——
          不要在這裡自己加 class，那會變成第二份實作。
+       ⚠⚠ **卡上宣告了 `entranceBlast` 就改演迎面衝擊的模糊**（ver -1443，
+         Ray：「龍吟的特效不應該是震動，應該是動態模糊，像被迎面衝擊那樣」）——
+         空中戰那一張龍卡走的是降臨這一條，而牠照樣會龍吟；不接的話同一隻龍
+         **兩個形態兩種特效**。⚠ 是「**改演**」不是「兩個都演」：兩個一起跑的話
+         `transform` 會互相蓋掉（一個元素只有一份 transform）。
        ⚠ 時間點寫成 `LAND_AT`：它必須對上 CSS 那一格（0.9s × 78%），
          改一邊要改另一邊（鐵律 7 的但書，兩邊註解互指）。 */
     clearTimeout(landT);
@@ -601,7 +606,8 @@ export function loadEnemyPortrait(en){
              **拿掉那個 fallback**：船戰各自的登場音一律寫成卡上的 `entrance`（資料驅動，
              鐵律 1），陸戰一律鐘聲。 */
         playEntranceSe(state.curEnemyEntranceSe || 'sfx_saint'); }
-      if(api.screenShake) api.screenShake();
+      if(en && en.entranceBlast && api.roarBlast) api.roarBlast();
+      else if(api.screenShake) api.screenShake();
       const top=$('top');
       if(top){
         const ring=document.createElement('div');
@@ -638,18 +644,22 @@ export function loadEnemyPortrait(en){
          ② **圖要先暖好**：`combat.warmBattleImage`，由戰鬥那道門
             （`main.enterBattleAssets`）在**推棺之前**呼叫。 */
   if(!ENTRANCE_KINDS[en && en.kind]){
-    /* ⚠⚠ **`entranceShake:true` ＝牠一出現就震一下畫面**（ver -1433，Ray：「（龍）
-       每次出現都要有龍吟跟畫面震動」）—— 龍是 `kind:'multi'`（不走降臨），
-       而降臨那一條的著地震動掛在 `landT` 裡，這條路上沒有人震。
-       ⚠ 震動走**同一支** `api.screenShake`（鐵律 8）：與降臨的著地、玩家受擊
-         是同一個鏡頭震動，不另外寫一個。
+    /* ⚠⚠ **`entranceBlast:true` ＝牠一出現就來一記迎面衝擊**（ver -1433 立、
+       **-1443 由震動改成動態模糊**，Ray：「龍吟的特效不應該是震動，應該是動態模糊，
+       像被迎面衝擊那樣」）—— 龍是 `kind:'multi'`（不走降臨），而降臨那一條的
+       著地演出掛在 `landT` 裡，這條路上沒有人演。
+       ⚠⚠ 欄位跟著改名（`entranceShake` → `entranceBlast`）：**名字要說實話** ——
+         留著舊名字的話，下一個人會以為它還是在震（同 `counterCount`→`counterFired`
+         那次改名的理由，§「完美反擊」）。
+       ⚠ 走 `api.roarBlast`（combat 擁有的那一支，鐵律 8）—— **不要**退回
+         `screenShake`：那是「你被打到了」，這是「衝擊波撞上來」，兩件事。
        ⚠ 龍吟就是卡上的 `entrance`（登場音那一格）—— 不另開欄位。 */
     const arrive=()=>{
       if(playEntranceVo) playEntranceVo();
-      if(en && en.entranceShake && api.screenShake) api.screenShake();
+      if(en && en.entranceBlast && api.roarBlast) api.roarBlast();
     };
     /* ══⚠⚠⚠ **音與震要等門開**（ver -1441，Ray：「龍每次出場畫面都要震動，
-       為什麼播了音就不震，震了就不播？」）══
+       為什麼播了音就不震，震了就不播？」；-1443 起「震」改成迎面衝擊的模糊）══
        兩件事**一直都是一起發的**（就在上面那一支裡）—— 看不到震動的原因是**時機**：
        這一支跑在 `startGame` 那一刻，而那時 `#storyStage.on` 還蓋著，
        **`#app` 整層 `visibility:hidden`**（鐵律 10）—— 震動照樣跑完了，

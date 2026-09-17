@@ -237,6 +237,26 @@
     54%{transform:translate(-5px,-5px) scale(1.02)}
     72%{transform:translate(5px,4px) scale(1.02)}
     86%{transform:translate(-3px,2px) scale(1.02)}}
+  /* ══⚠⚠⚠ **龍吟＝迎面衝擊的動態模糊，不是震動**（ver -1443，Ray：「龍吟的特效
+     不應該是震動，應該是動態模糊，像被迎面衝擊那樣」）══
+     ⚠⚠ 震動與這一支講的是**兩件不同的事**，所以不共用（也不要把它做成 `hitshake`
+       的參數）：
+       · `hitshake` ＝**你被打到了**（鏡頭被撞歪）—— 位移、無模糊。
+       · `roarblast` ＝**一道衝擊波迎面撞上來**（鏡頭被推得往後縮、畫面糊掉）
+         —— 所以是 `scale` 猛然放大 ＋ `blur`，**一點位移都沒有**。
+         有位移就會讀成「又在震」，那正是 Ray 要換掉的東西。
+     ⚠ 曲線是**前段猛、後段長**（12% 就到頂，其餘七成時間在收）：衝擊本來就是
+       瞬間到頂再擴散開；等速的話讀起來是「鏡頭失焦」不是「被撞」。
+     ⚠⚠ 手機成本（鐵律 12）：`filter:blur` 罩整層 `#app` 很貴 —— 所以
+       **模糊量壓在 9px、整段 480ms 一次性**，而且與 `hitshake` 一樣是 one-shot，
+       不做成常駐狀態。
+     ⚠ `scale` 也要收在同一個 `transform` 裡（transform 不疊加，§6.10 踩過兩次）。 */
+  #app.roarblast{animation:appRoarBlast .48s cubic-bezier(.16,.9,.3,1) forwards;}
+  @keyframes appRoarBlast{
+    0%  {transform:scale(1);    filter:blur(0px);}
+    12% {transform:scale(1.14); filter:blur(9px);}
+    34% {transform:scale(1.07); filter:blur(4.5px);}
+    100%{transform:scale(1);    filter:blur(0px);}}
   /* ══⚠⚠⚠ 王座徘徊者的主動攻擊：放光（ver -1351，Ray：「攻擊特效是放光，就是首頁
      點擊的那一個特效，範圍全畫面包括盤面，發動時全螢幕快速抖動」）══════════════
      ⚠⚠ **光暈的配方就是 `--holy-glow`**（開機那一頁的聖光綻放、安雅啟動祭壇那一拍

@@ -254,7 +254,7 @@ export function setup(){
   // 敵人：Boss 亂入的戰鬥重置（startIntruderFight，combat 擁有）+ 換敵刷血條（updateBars）注入。
   /* ⚠ `screenShake` 給「降臨」的著地那一拍用（ver -640）——
      震動的實作只有 combat 這一支（鐵律 8），enemy 不自己加 class。 */
-  enemy.init({ startIntruderFight, updateBars, screenShake,
+  enemy.init({ startIntruderFight, updateBars, screenShake, roarBlast,
     /* 換了一隻怪 → 明晰之夢重新上膛（ver -693，Ray：「不算場，每隻怪都可以觸發一次」）。
        ⚠ 掛在 `setEnemy` 是因為那是**「換了一隻怪」的唯一時刻**（開場、連戰換敵、
          Boss 亂入都經過它）—— 在別的地方各補一次一定會漏（鐵律 8）。 */
@@ -1042,6 +1042,20 @@ function screenShake(){
   el.classList.remove('hitshake'); void el.offsetWidth; el.classList.add('hitshake');
   clearTimeout(screenShake._t);
   screenShake._t=setTimeout(()=>el.classList.remove('hitshake'), 300);
+}
+/* ══⚠⚠⚠ **龍吟：迎面衝擊的動態模糊**（ver -1443，Ray：「龍吟的特效不應該是震動，
+   應該是動態模糊，像被迎面衝擊那樣」）══ 配方在 CSS 的 `#app.roarblast`。
+   ⚠ 與 `screenShake` 是**兩件事**，不要合併成一支帶參數的：一個是「你被打到」、
+     一個是「衝擊波撞上來」（見 CSS 那一段的說明）。
+   ⚠ 掛在 `#app`（＝鏡頭）：背景與怪一起糊掉才是「整個世界被撞了一下」。
+   ⚠ 收尾要把 class 拔掉 —— `forwards` 讓 `filter`／`transform` 停在最後一格，
+     不拔的話 `#app` 會**永遠掛著一個 transform**，而那會建立一個新的
+     containing block，`position:fixed` 的子元素（結算頁、面板）會整個跑位。 */
+function roarBlast(){
+  const el=$('app'); if(!el) return;
+  el.classList.remove('roarblast'); void el.offsetWidth; el.classList.add('roarblast');
+  clearTimeout(roarBlast._t);
+  roarBlast._t=setTimeout(()=>el.classList.remove('roarblast'), 520);
 }
 /* 受擊那一格的音效鑰匙（ver -951）：卡上寫的是**一個名字**（字串），
    也仍吃得下舊的物件寫法 —— 兩種都收在這一支（鐵律 7/8：查表只有一處）。

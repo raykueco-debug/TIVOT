@@ -1468,10 +1468,10 @@ export const ENEMIES = {
       Ganymede:0,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       /* ⚠⚠ **每次出現都要有龍吟＋畫面震動**（ver -1433，Ray 指定）——
-         `entrance` ＝登場音那一格（ver -948 併成一格），`entranceShake` ＝登場就震一下。
+         `entrance` ＝登場音那一格（ver -948 併成一格），`entranceBlast` ＝登場來一記迎面衝擊（-1443 由震動改成動態模糊）。
          ⚠ 牠是 `kind:'multi'` ⇒ **不走降臨**（ver -1414，Ray：「戰鬥中不播降臨，
            劇情出場時播」）—— 所以震動要自己宣告，那一條路上沒有人震。 */
-      entrance:'se_enemy_roardeer', entranceShake:true,
+      entrance:'se_enemy_roardeer', entranceBlast:true,
       openAssault:[1,2],
       ult:{ on:1, hp:40, count:2, atk:25, gap:1, cd:4 },
       assaultEvery:[2,4],
@@ -1504,10 +1504,10 @@ export const ENEMIES = {
       Ganymede:0,
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
       /* ⚠⚠ **每次出現都要有龍吟＋畫面震動**（ver -1433，Ray 指定）——
-         `entrance` ＝登場音那一格（ver -948 併成一格），`entranceShake` ＝登場就震一下。
+         `entrance` ＝登場音那一格（ver -948 併成一格），`entranceBlast` ＝登場來一記迎面衝擊（-1443 由震動改成動態模糊）。
          ⚠ 牠是 `kind:'multi'` ⇒ **不走降臨**（ver -1414，Ray：「戰鬥中不播降臨，
            劇情出場時播」）—— 所以震動要自己宣告，那一條路上沒有人震。 */
-      entrance:'se_enemy_roardeer', entranceShake:true,
+      entrance:'se_enemy_roardeer', entranceBlast:true,
       openAssault:[1,2],
       ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       assaultEvery:[2,4],
@@ -1566,7 +1566,7 @@ export const ENEMIES = {
       story:1, counterStagger:1, boss:0,
       Ganymede:0,
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
-      entrance:'se_enemy_roardeer', entranceShake:true,
+      entrance:'se_enemy_roardeer', entranceBlast:true,
       openAssault:[1,2],
       ult:{ on:1, hp:50, count:4, atk:20, gap:1, cd:4 },
       assaultEvery:[2,4],
@@ -1612,10 +1612,10 @@ export const ENEMIES = {
       Ganymede:0,
       weaponMod:{ '重機槍':[0,0.3], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
       /* ⚠⚠ **每次出現都要有龍吟＋畫面震動**（ver -1433，Ray 指定）——
-         `entrance` ＝登場音那一格（ver -948 併成一格），`entranceShake` ＝登場就震一下。
+         `entrance` ＝登場音那一格（ver -948 併成一格），`entranceBlast` ＝登場來一記迎面衝擊（-1443 由震動改成動態模糊）。
          ⚠ 牠是 `kind:'multi'` ⇒ **不走降臨**（ver -1414，Ray：「戰鬥中不播降臨，
            劇情出場時播」）—— 所以震動要自己宣告，那一條路上沒有人震。 */
-      entrance:'se_enemy_roardeer', entranceShake:true,
+      entrance:'se_enemy_roardeer', entranceBlast:true,
       openAssault:[1,2],
       ult:{ on:1, hp:50, count:4, atk:25, gap:1, cd:4 },
       assaultEvery:[2,4],
@@ -1662,9 +1662,12 @@ export const ENEMIES = {
       story:1, counterStagger:1, boss:0,
       Ganymede:0,
       weaponMod:{ '重機槍':[0,0.3], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
-      /* ⚠ 登場音（ver -1433，同族）：這一張是 `aerial` ⇒ **走降臨**，
-         著地那一刻本來就會震（`landT`），所以不必宣告 `entranceShake`。 */
-      entrance:'se_enemy_roardeer',
+      /* ⚠ 登場音（ver -1433，同族）：這一張是 `aerial` ⇒ **走降臨**。
+         ⚠⚠ ver -1443：降臨那一條原本一律「著地震一下」，而 Ray 要的是
+           **迎面衝擊的模糊**（龍吟的特效）—— 所以這一張也要宣告 `entranceBlast`，
+           不然同一隻龍會**兩個形態兩種特效**（追擊與王座是模糊、空中戰是震動）。
+           接法見 `modules/enemy.js` 的著地那一段：宣告了就**改演**模糊，不是兩個都演。 */
+      entrance:'se_enemy_roardeer', entranceBlast:true,
       openAssault:[1,2],
       ult:{ on:1, hp:50, count:4, atk:25, gap:1, cd:4 },
       assaultEvery:[2,4],
