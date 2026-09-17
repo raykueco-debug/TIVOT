@@ -227,3 +227,6 @@ when	from	to	reason
 20260917-231003	resources/SI/NPC/NPC_GuildCounter_SI_v3.webp	_recycle/resources/SI/NPC/NPC_GuildCounter_SI_v3.webp	GuildCounter_v3 去背版覆蓋（白底 RGB → alpha RGBA），ver -1443 美術
 20260917-231733	resources/background/belisar/Belisar_Foyer_night.webp	_recycle/resources/background/belisar/Belisar_Foyer_night.webp	前廳 night v1 破頂缺口畫了月亮本體，違反 _plainsroad_spec §三／憲法 §5（朝向未定只畫月光）；v2 重畫無月
 20260917-231733	resources/_originals/background/belisar/Belisar_Foyer_night.png	_recycle/resources/_originals/background/belisar/Belisar_Foyer_night.png	前廳 night v1 破頂缺口畫了月亮本體，違反 _plainsroad_spec §三／憲法 §5（朝向未定只畫月光）；v2 重畫無月
+20260917-233304	resources/SI/NPC/NPC_GuildCounter_SI_v4.webp	_recycle/resources/SI/NPC/NPC_GuildCounter_SI_v4.webp	GuildCounter_v4/v5 去背版覆蓋（白底 RGB → alpha RGBA），ver -1486 美術
+20260917-233304	resources/SI/NPC/NPC_GuildCounter_SI_v5.webp	_recycle/resources/SI/NPC/NPC_GuildCounter_SI_v5.webp	GuildCounter_v4/v5 去背版覆蓋（白底 RGB → alpha RGBA），ver -1486 美術
+20260917-233537	resources/SI/NPC/NPC_Grocer_SI_v5.webp	_recycle/resources/SI/NPC/NPC_Grocer_SI_v5.webp	Grocer_v5 去背版覆蓋（白底 RGB → alpha RGBA），ver -1486 美術
