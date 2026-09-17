@@ -160,9 +160,13 @@ export function stopSakura(){
    ⚠ 音效走 `playCue` 的把手**不是 `HITFX[].se`**：那支 6.7 秒、有頭有尾，
      而那張表是給一次性受擊音用的（combat 會直接播到底，收不掉）。 */
 /* ⚠ ver -1418 放慢一半（Ray 指定）：550→1100／1350→2700。
-   與 CSS `#holyBurst` 的 transition 是同一組數字（鐵律 7 的但書）—— 改一邊要改另一邊。 */
-const HOLY_GROW_MS = 1100;    // 與 CSS 的 transform transition 同一個數字
-const HOLY_LIFE_MS = 2700;    // 綻放 ＋ 淡出
+   ⚠⚠ **ver -1433 再放慢一半**（Ray：「龍的攻擊光圈太快，再放慢 50%」）：
+     1100→2200／2700→5400。
+   與 CSS `#holyBurst` 的 transition 是同一組數字（鐵律 7 的但書）—— 改一邊要改另一邊。
+   ⚠⚠ `modules/combat.js` 的 `HOLY_SWAP_MS`（型態切換等多久才換圖）**也是同一個數字**
+     （＝綻放完、光蓋滿畫面的那一刻），三處要一起動。 */
+const HOLY_GROW_MS = 2200;    // 與 CSS 的 transform transition 同一個數字
+const HOLY_LIFE_MS = 5400;    // 綻放 ＋ 淡出
 let holyFx=null, holySe=null;
 export function spawnHolyBurst(){
   if(holyFx) return;                       // 同一發不疊第二層（同櫻花那一支）
@@ -634,13 +638,30 @@ export function loadEnemyPortrait(en){
          ② **圖要先暖好**：`combat.warmBattleImage`，由戰鬥那道門
             （`main.enterBattleAssets`）在**推棺之前**呼叫。 */
   if(!ENTRANCE_KINDS[en && en.kind]){
-    if(playEntranceVo){
-      eImg.onload = ()=>{ eImg.onload=null; playEntranceVo(); };
-      eImg.src = enemyImage(en);
-      if(eImg.complete && eImg.naturalWidth){ eImg.onload=null; playEntranceVo(); }
-    }else{
-      eImg.src = enemyImage(en);
-    }
+    /* ⚠⚠ **`entranceShake:true` ＝牠一出現就震一下畫面**（ver -1433，Ray：「（龍）
+       每次出現都要有龍吟跟畫面震動」）—— 龍是 `kind:'multi'`（不走降臨），
+       而降臨那一條的著地震動掛在 `landT` 裡，這條路上沒有人震。
+       ⚠ 震動走**同一支** `api.screenShake`（鐵律 8）：與降臨的著地、玩家受擊
+         是同一個鏡頭震動，不另外寫一個。
+       ⚠ 龍吟就是卡上的 `entrance`（登場音那一格）—— 不另開欄位。 */
+    const arrive=()=>{
+      if(playEntranceVo) playEntranceVo();
+      if(en && en.entranceShake && api.screenShake) api.screenShake();
+    };
+    /* ══⚠⚠⚠ **音與震要等門開**（ver -1441，Ray：「龍每次出場畫面都要震動，
+       為什麼播了音就不震，震了就不播？」）══
+       兩件事**一直都是一起發的**（就在上面那一支裡）—— 看不到震動的原因是**時機**：
+       這一支跑在 `startGame` 那一刻，而那時 `#storyStage.on` 還蓋著，
+       **`#app` 整層 `visibility:hidden`**（鐵律 10）—— 震動照樣跑完了，
+       只是沒有人看得到；聲音不受 `visibility` 影響，所以「只聽得到聲音」。
+       ⇒ 掛進既有的 `risePending`（＝門全開才放行的那一支，`releaseRise`）：
+         **圖照舊立刻掛**（-1414 的「槍棺開的時候就在那裡了」不變），
+         只有音與震延到門開的那一刻。
+       ⚠ 已經放行了（`riseHeld` 是 false，例如不走門的路徑）就當場發，行為不變。 */
+    const fire=()=>{ if(riseHeld) risePending=arrive; else arrive(); };
+    eImg.onload = ()=>{ eImg.onload=null; fire(); };
+    eImg.src = enemyImage(en);
+    if(eImg.complete && eImg.naturalWidth){ eImg.onload=null; fire(); }
     return;
   }
   const arm=()=>{ eImg.onload=null; clearTimeout(riseT); riseT=setTimeout(rise, RISE_DELAY_MS);

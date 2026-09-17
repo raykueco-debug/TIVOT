@@ -1497,9 +1497,30 @@ function applyPersist(line){
     }else if(cgChanged){ cg.style.transform=''; setCgScale(0); }   // 新圖不繼承舊圖的放大
     if(line.cgPan==='up' || line.cgPan==='down'){
       cg.style.objectPosition='';                // 上一次交棒留下的 inline 取景（見 cgCross）
-      cg.classList.remove('pan-up','pan-down','zoom-in');
-      void cg.offsetWidth;                       // 不重設 class，animation 不會重播
-      cg.classList.add(line.cgPan==='up'?'pan-up':'pan-down');
+      cg.classList.remove('pan-up','pan-down','pan-v','zoom-in');
+      cg.style.transform=''; 
+      /* ══⚠⚠ **橫圖在直框裡沒有垂直餘裕 → 改走 transform 版**（ver -1441，說明在
+         `style.css` 的 `.pan-v`）══ `cover` 以較大的那一軸對齊：圖比框「寬扁」時
+         上下就是滿版，`object-position` 的 Y 推不動它（畫面上看起來就是沒有平移）。
+         ⚠ 判斷用**圖與框的長寬比**，不是寫死哪一張圖 —— 換一張圖自己會對。
+         ⚠ 起訖與放大倍率由那一拍給（`cgPanA`／`cgPanB`／`cgPanK`）：
+           「結尾不要把臉移出畫面」是**那一張圖**的事，引擎不知道臉在哪。 */
+      const go=()=>{
+        const iw=cg.naturalWidth||0, ih=cg.naturalHeight||1;
+        const bw=cg.clientWidth||1, bh=cg.clientHeight||1;
+        const noRoom = iw/ih > bw/bh + 0.01;     // 圖更寬扁 ⇒ cover 之下垂直滿版
+        if(noRoom){
+          if(line.cgPanK) cg.style.setProperty('--cg-pan-k', line.cgPanK);
+          const a=line.cgPanA, b=line.cgPanB;
+          if(a!=null) cg.style.setProperty('--cg-pan-a', line.cgPan==='down'?a:b??a);
+          if(b!=null) cg.style.setProperty('--cg-pan-b', line.cgPan==='down'?b:a??b);
+          void cg.offsetWidth; cg.classList.add('pan-v');
+        }else{
+          void cg.offsetWidth;
+          cg.classList.add(line.cgPan==='up'?'pan-up':'pan-down');
+        }
+      };
+      if(cg.complete && cg.naturalWidth) go(); else cg.addEventListener('load', go, {once:true});
     }else if(line.cgZoom){
       /* 以臉為中心緩慢推近。cgZoom 給的是**臉在圖上**的位置（0~1）——
          要換成**元素座標**的 transform-origin，因為 object-fit:cover 會把圖裁掉一圈，
@@ -1574,6 +1595,14 @@ const SE_FILES=[
   'se_flight_heartbeat.m4a', 'se_flight_idle_loop.mp3', 'se_flight_sail_loop.mp3',
   'se_flight_seagull.m4a', 'se_flight_train.mp3', 'vo_lunaMG.m4a', 'se_punch.m4a',
   'se_brickcrush.m4a',                                       // 瓦礫崩落（北方泊地教堂，ver -624）
+  /* ══ 王座徘徊者那一段（ver -1433，Ray 交辦）══
+     · `se_enemy_throneattack` 牠咬下去（吞掉髮飾那一拍）
+     · `se_rockimpact`         落石砸下（蕾娜「小心！要垮了！」與崩瓦聲同一拍）
+     ⚠⚠ 兩支都是 **.mp3**（規約是 m4a，§6.6）—— 轉檔時**檔名別改**，
+       改了這兩行與 `tuning.fileGain` 都要跟著動。
+     ⚠⚠ **`fileGain` 還沒量**：沒有那一列＝增益 1 ＝以母帶的響度播出，
+       正是 -441 抓到「跌倒音永遠不出來」的成因。要 Ray 用 `tools/audio_scan.html` 量。 */
+  'se_enemy_throneattack.mp3', 'se_rockimpact.mp3',
   'se_earthquake.m4a',                                       // 地鳴（教堂那一拍的震動，ver -636）
   'se_paniccrowd.mp3',                                       // 人群尖叫（墓地那一幕，ver -664）
   /* 高音版的怪物吼叫（ver -671，Ray：「pitch 高 5 個半音，另存為 se_nightmare_hp」）。
@@ -2009,7 +2038,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1431';
+const KERB_V='?v=1442';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -2507,6 +2536,8 @@ function playKerberos(onGap, onDone, opts){
     /* ① 撞擊音：立刻播，撞擊峰值（1002ms）正好落在門撞頂那一瞬（rise 也是 1000ms）。 */
     se('pop');
     kb.classList.add('rise','full');                     // ① 槍棺上推（楣跟著走）
+    /* ⚠ ver -1433：這一場宣告了 `bgmOnRise` ＝曲子**從這一刻**起（見 `riseEarly`）。 */
+    if(riseEarly()) riseCue();
     /* 吊墜：門往上竄，它因為慣性落後 → 先往外盪（ver -411）。起步這一下最輕。 */
     kerbPendSwing(9, 2.0);
     t+=KERB_T.rise;
@@ -2514,8 +2545,10 @@ function playKerberos(onGap, onDone, opts){
   at(t,()=>{                                             // ② 撞頂：震動＋門縫透出十字亮光
     /* ⚠ 戰鬥音樂在**撞頂之後**才進（ver -356，Ray 指定；-355 曾放在「開始上推」那一瞬）。
        上推那一秒還是劇情的餘韻，音樂壓在撞擊上等於把那一下的重量分掉；
-       撞頂＝門被頂開的那一刻，音樂從這裡起來才是「戰鬥開始」。 */
-    riseCue();
+       撞頂＝門被頂開的那一刻，音樂從這裡起來才是「戰鬥開始」。
+       ⚠ ver -1433：卡上寫 `bgmOnRise` 的那幾場**已經在上推那一瞬播過**，這裡跳過
+         （再叫一次是同一首，`playBgm` 會當成同曲 —— 但那就有兩個播放點了，鐵律 7）。 */
+    if(!riseEarly()) riseCue();
     hap.kerbThud();              // 撞頂：全場最重的一下（ver -398，Ray 指定）
     kerbPendSwing(22, 2.6);      // 吊墜也是：撞頂＝甩得最兇的那一下（ver -411）
     st.classList.remove('shake','hold'); void st.offsetWidth; st.classList.add('shake');
@@ -3870,6 +3903,19 @@ export function setBattleCueId(id){ battleCueId = id || null; }
 function riseCue(){ if(battleCue) try{ battleCue(battleCueId); }catch(e){} }
 let battleCue = null;
 export function setBattleCue(fn){ battleCue = fn || null; }
+/* ══⚠⚠ **這一場的曲子要在「門推上去」那一瞬就進**（ver -1433，Ray：「追擊戰 bgm
+   從槍棺推上開播，初戰也是」）══
+   預設是**撞頂**才進（ver -356，說明在 `playKerberos` 的 ②）—— 那是通則，
+   這是**逐場的宣告**：戰鬥卡寫 `bgmOnRise:true`。
+   ⚠ 為什麼是卡上的旗不是全域改：-356 那條「上推那一秒還是劇情的餘韻」
+     對一般戰鬥仍然成立；追擊戰不一樣 —— 它整段都在追，門一動音樂就該起來。
+   ⚠ 判斷由 main 注入（story 不 import config，同 `battleCue` 的理由）。 */
+let battleEarly = null;
+export function setBattleEarly(fn){ battleEarly = fn || null; }
+function riseEarly(){
+  if(!battleEarly) return false;
+  try{ return !!battleEarly(battleCueId); }catch(e){ return false; }
+}
 /* scene 的 `thenTown:'capital'`：這一段演完就進城鎮探索（ver -369）。
    ⚠ 注入而不是 import —— 城鎮不在劇情的依賴圖裡（同 battleHandler 的作法）。 */
 let townOpener = null;

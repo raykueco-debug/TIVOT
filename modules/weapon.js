@@ -40,7 +40,9 @@ import * as prog from '../script/progress.js';   // 副武器的改裝等級（v
 
 const $ = id => document.getElementById(id);
 const WEAPONS = GAME_CONFIG.weapons;
-const DUAL_SECONDS = GAME_CONFIG.tuning.dualSeconds;   // 雙槍破防窗口時長（秒）
+/* ⚠ ver -1434：BR 的窗口改成**閒置逾時**（`tuning.idleEndMs`，見 config 那一段）——
+   `dualSeconds`（6 秒的固定窗口）已退役，留在 config 當紀錄。 */
+const IDLE_END_MS = (GAME_CONFIG.tuning||{}).idleEndMs || 2000;
 const COUNTER_CRIT_RATE = GAME_CONFIG.tuning.counterCritRate;  // 反擊武器固定暴擊率（每 hit 獨立擲骰）
 const COUNTER_CRIT_DMG  = GAME_CONFIG.tuning.counterCritDmg;   // 反擊武器暴擊加傷（+10%）
 /* 反擊單發暴擊：回傳 { dmg, crit }。crit → 該發傷害 ×(1+加傷)。
@@ -581,6 +583,15 @@ export function setDualBudget(n, ms){
   fillAim();
 }
 
+/* ══ **還在打就不要收窗**（ver -1434，Ray：「兩秒內不點下一格就結束」）══
+   `combat.dualShot` 每打出一發就叫一次；重設點只有這一支（鐵律 8）。
+   ⚠ 教學不設時限，所以那一段也不必推（沒有計時器可推）。 */
+export function pokeDual(){
+  if(!state.dualWield || state.tutorialActive) return;
+  clearTimeout(state.dualTimer);
+  state.dualTimer=setTimeout(endDual, IDLE_END_MS);
+}
+
 /* 補到滿（開窗時一次放好）。 */
 function fillAim(){
   const max=(GAME_CONFIG.tuning||{}).brAimMax || 4;
@@ -658,7 +669,7 @@ export function startDualWindow(){
      —— 指一格反而是在教玩家點錯地方。收窗時再標回來（endDual）。 */
   clearTimeout(state.dualTimer);
   // 教學：引導式雙槍破防不限時（清完盤才收窗）——玩家可邊讀提示邊打，不會窗口過期
-  if(!state.tutorialActive) state.dualTimer=setTimeout(endDual, DUAL_SECONDS*1000);
+  if(!state.tutorialActive) state.dualTimer=setTimeout(endDual, IDLE_END_MS);
 }
 
 // 窗口收尾（4 秒到期、清盤結束或敵死瞬間呼叫）：清旗標/計時器、移 class；

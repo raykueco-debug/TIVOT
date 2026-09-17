@@ -476,9 +476,21 @@ def main():
                     err('%s.%s：%s → %s 是**單向**的（%s 沒有回得來的出口）'
                         % (tid, nid, d, to, to))
                     continue
-                if OPP.get(d) not in back:
-                    err('%s.%s：%s → %s，但 %s 是用 `%s` 回來的 —— 同一條邊兩端要相反'
-                        '（一直按 %s 會在兩格之間彈）' % (tid, nid, d, to, to, back[0], d))
+                # ══⚠⚠ **會彈的只有「兩端同名」那一種**（ver -1437 分級）══
+                #   `A.up→B` 而 `B.up→A` ⇒ 一直按 up 會在兩格之間彈（Ray -902 踩到的）。
+                #   而 `A.left→B` 配 `B.up→A`（**L 形折線**）不會彈：left 的反向是
+                #   right，按 left 走過去、再按 left 不會走回來。
+                #   ⚠ 後者是**小地圖上轉了個彎**的邊（版面排不成同一欄／同一列時的
+                #     正常結果，貝利薩爾 ver -1437 就有三條）—— 它仍然值得看一眼
+                #     （`back` 會多給一個反向出口，那一格會有兩個箭頭指向同一個地方），
+                #     所以降成提醒，不是錯誤。
+                if d in back:
+                    err('%s.%s：%s → %s，而 %s 也是用 `%s` 回來的 —— 一直按 %s '
+                        '會在兩格之間彈（同一條邊兩端要相反）' % (tid, nid, d, to, to, d, d))
+                elif OPP.get(d) not in back:
+                    warn('%s.%s：%s → %s，但 %s 是用 `%s` 回來的（L 形的邊）—— 不會彈，'
+                         '但那一格會多一個 `back` 出口指向同一個地方，確認是刻意的'
+                         % (tid, nid, d, to, to, back[0]))
             bg = n.get('bg')
             # ⚠ `noTime` 的節點吃的是**基底檔**（沒有時段尾巴）——不能拿 `_Day` 當通過條件：
             #   ver -400 踩過：Ray 換成 `_day`/`_dusk` 之後基底檔沒了，lint 因為看到 `_Day`
@@ -564,6 +576,31 @@ def main():
                          '復活點，打輸回到這裡會再打一次同一場。'
                          '目前靠「連敗三次抬回旅店」兜底，不會真的卡死，但這違反'
                          '「入口不會有戰鬥」（Ray, ver -698）' % (tid, eid, i))
+
+        # ══⚠⚠⚠ **每一格都要走得到**（ver -1437 加；憲法 §6.5.4 的「圖論驗收」那一條）══
+        #   從入口 BFS，走不到的格＝**玩家永遠到不了的地方**，而畫面上沒有任何
+        #   錯誤訊息（背景、對白、戰鬥都在資料裡好好的，只是沒有路）。
+        #   ⚠ 這一條是實測抓到的：貝利薩爾照 Ray 的新佈局重接之後，
+        #     `ossuary` 完全沒有線、`cages`／`dragonrace` 連成一對孤島（-1437）。
+        #   ⚠ 走的是**資料上的 `exits`**（含 `back`，不含跨圖 `@`）：
+        #     `back` 由 `exitsOf` 現算，靜態掃不到，所以這裡只認寫死的那幾個方向 ——
+        #     漏報比誤報好（真的只靠 `back` 進出的格子極少）。
+        nodes_all = town.get('nodes') or {}
+        start = town.get('firstEntry') or town.get('entry')
+        if isinstance(start, dict): start = start.get('node') or town.get('entry')
+        if isinstance(start, str) and start in nodes_all:
+            seen = {start}; stack = [start]
+            while stack:
+                cur = stack.pop()
+                for d, to in ((nodes_all.get(cur) or {}).get('exits') or {}).items():
+                    if not isinstance(to, str) or to.startswith('@'): continue
+                    if to in nodes_all and to not in seen:
+                        seen.add(to); stack.append(to)
+            lost = sorted(set(nodes_all) - seen)
+            if lost:
+                err('%s：從入口（%s）走不到這幾格 —— %s'
+                    '（玩家永遠到不了，而且畫面上沒有任何錯誤訊息）'
+                    % (tid, start, '／'.join(lost)))
 
         # ══⚠⚠⚠ **強制轉場（`gates`）的台詞也要驗**（ver -1395）══
         #   它掛在**城**上、不在任何節點的 `acts` 裡 —— 所以 -424 加的那一支掃不到它。

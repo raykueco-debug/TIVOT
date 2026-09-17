@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1431"></script>
+<script src="../orientation.js?v=1442"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1431edab');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1442edab');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1431edab");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1431edab");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1442edab");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1442edab");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1431edab");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1431edab");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1442edab");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1442edab");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -620,25 +620,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1431edab" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1442edab" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1431edab" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1431edab" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1431edab" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1431edab" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1431edab" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1431edab" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1431edab" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1431edab" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1431edab" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1431edab" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1442edab" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1442edab" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1442edab" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1442edab" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1442edab" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1442edab" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1442edab" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1442edab" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1442edab" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1442edab" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1431edab" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1442edab" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1431edab" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1442edab" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -659,11 +659,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1431"></script>
+<script src="settlement.js?v=1442"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1431"></script>
+<script src="talks.js?v=1442"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -715,7 +715,7 @@ const COLOR_URL  = 'silvermoon_terrain.png'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1431';
+const FLIGHT_VER = 'ver -1442';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -732,6 +732,9 @@ const CRUISE_ALT = 700;   // 巡航高度（定高，不隨地形起伏）
     視距 3600 下缺口約 31px（含曲率下沉），故 0.22 → 天空約 32%、陸地 68%。 */
 const HORIZON_F  = 0.22;
 const ZFAR       = 3600;  // 可視距離（世界單位）＝ 360 個地圖像素
+/* 出怪的淡入長度（ver -1433，Ray：「出怪要淡入」）。⚠ 給得比一般 UI 的淡入長：
+   牠是從遠處的霧裡浮現，淡太快就又變成「啪一聲出現」。 */
+const ENEMY_FADE_MS = 1400;
 
 /* ── 版面：下方切給操作面板 ──────────────────────────────────────
    直屏把 90° 水平視角塞進窄畫面，角解析度水平/垂直差 2.5 倍，
@@ -12224,7 +12227,15 @@ function render(now){
   drawPuffs(S,scaleH,horizon,sinp,cosp,0,Infinity);        // 雲蓋在城與煙上
   drawPlaces(scaleH,horizon,sinp,cosp);
   drawFlock(scaleH,horizon,sinp,cosp,now);
-  drawEnemy3D(scaleH,horizon,sinp,cosp,now);
+  /* ══⚠⚠ **出怪要淡入**（ver -1433，Ray：「現在看起來是突然出現，出怪要淡入」）══
+     包在呼叫端而不是 `drawEnemy3D` 裡面：那一支有好幾個 early return
+     （在身後／太遠／貼圖還沒解碼），在裡面 `save()` 要每一條 return 都配一個
+     `restore()` —— 漏一個就是**整個畫面從此半透明**，而且很難查。
+     ⚠ `enemy.t0` 是生成時戳（本來就有）。⚠ 只在淡入期間才 save/restore，
+       之後一幀都不多花。 */
+  { const fd = enemy ? Math.min(1, (now-(enemy.t0||0))/ENEMY_FADE_MS) : 1;
+    if(fd<1){ ctx.save(); ctx.globalAlpha=fd; drawEnemy3D(scaleH,horizon,sinp,cosp,now); ctx.restore(); }
+    else drawEnemy3D(scaleH,horizon,sinp,cosp,now); }
   /* 遭遇提示：**正常遭遇不再顯示**（ver -389，Ray：「這個對話框可以完全移除了」）——
      現在一撞到遭遇距離槍棺就立刻彈上來蓋滿畫面，那一格字只會被門壓在底下閃一眼。
      ⚠ **免戰模式留著**（那是開發用的狀態）：開著免戰時不會進戰鬥，沒有這一格就完全
@@ -14620,8 +14631,13 @@ const SCRIPTED_ENCOUNTERS = [
        -1416 我接成船身那一條是**錯的**，已改。
      ⚠ `battle:'bl_sky'` 覆寫掉 `'flight_'+kind` 的預設命名（見 `toBattle`）。
      ⚠ 不寫 `outOf`／`intoRegion`：牠在哪一國上空都算 —— 這是追著牠飛出來的。 */
+  /* ⚠⚠ `dist` 由 1800 拉到 **3200**（ver -1433，Ray：「生敵之後讓敵飛行穿過雲霧
+     遠距飛近，現在看起來是突然出現」）—— 1800 落在視野的清楚段，牠等於**貼著臉**
+     冒出來。3200 已經在 `ZFAR`(3600) 的霧裡，玩家先看到霧中一個影子，
+     再看著牠壓過來。⚠ 不要超過 `ZFAR*0.95`（3420）：那之外 `drawEnemy3D` 直接不畫。
+     ⚠ 牠是 `speedMul:1.6` 的正面撲擊，多出來的 1400 距離只是多幾秒的壓迫感。 */
   { flag:'bl_sky_hunt', done:'bl_night_sky', onSkyHold:true,
-    kind:'bldragon', battle:'bl_sky', speedMul:1.6, dist:1800 },
+    kind:'bldragon', battle:'bl_sky', speedMul:1.6, dist:3200 },
 ];
 /* 這一趟有沒有長按過天空（ver -1416／-1418，`onSkyHold` 用）。
    ⚠ **這一趟**的狀態，不進存檔：重載＝要再按一次，那正合「索敵後必出」的語意。 */
@@ -15016,7 +15032,11 @@ function spawnEnemy(opt){
      ⚠⚠ **ver -1363 起長按生怪不再是管理人限定**（Ray 定案），所以她這一段
        **一般玩家真的看得到** —— -1362 收窄時留下的那個疑慮（「CI 與兩組語音
        會不會變成開發限定」）已經自己解掉了。 */
-  if(opt.byHold) spotFire();
+  /* ⚠⚠⚠ ver -1433：`spotFire()` 已**移到 `spawnByHold()`**（Ray：「教學的獵手之眼
+     要跑索敵動畫跟語音」）—— 那一段走的是**劇本遭遇**（`spawnScripted`），
+     根本不經過這一支，所以索敵的 CI 與語音整個沒演。
+     ⇒ 落點改成「長按天空真的撐滿了」那一刻：**兩條生成路徑（劇本／隨機）都演**，
+       而那正是「玩家按著畫面，她回報找到了」的定義（鐵律 8）。 */
 }
 
 function updateEnemy(dt,now){
@@ -16240,11 +16260,14 @@ function spawnByHold(){
      （或中途動了）就會被 clearTimeout 掉，不算「索敵完成」。 */
   skyHeldOnce=true;
   s9GateHit('skyhold');          // 這一段的教學閘門（ver -1418）：做到了就收掉聚光燈
+  /* ⚠⚠ **索敵的 CI 與語音在這裡演**（ver -1433，見 `spawnEnemy` 那一段的說明）——
+     它是「長按天空」這個手勢的回饋，與「生出來的是哪一隻」無關。 */
+  spotFire();
   /* 追那一段：這一按就是要牠出來 —— 讓劇本遭遇搶在隨機刷怪之前（鐵律 7：
      「這一趟該生誰」只有 `scriptedDue` 一支在答）。 */
   const SC=scriptedDue();
   if(SC && SC.onSkyHold){ spawnScripted(SC); return; }
-  spawnEnemy({ byHold:true });   // ⚠ byHold ＝索菈娜那一段 CI 的唯一觸發（ver -1362）
+  spawnEnemy();
 }
 
 /* 程序翅（drawWingsProc）已內聯進 drawEnemy3D（蟲翅/鳥翼兩個分支）——
@@ -18384,8 +18407,11 @@ const AFTER_SHIP_TALK = [
    ⚠ 走**既有的** `s9Gate`（鐵律 8）：它是**閘門**不是提示 —— 點畫面不放行，
      一定要真的索敵一次（Ray 的稿就是「索敵後必出」，帶過去等於把這一段跳掉）。
    ⚠ 一趟只掛一次（`skyHuntArmed`）；已經索過就不必再教。 */
+/* ⚠ ver -1433（Ray：「諾薇兒的『一片黑』用 shock2」「索拉娜的『安靜下』用 guardthink」）
+   —— 索菈娜那一句 -1418 就已經是 `guardthinking` 了；換的是諾薇兒這一張。
+   ⚠ 稿上寫 `shock2`，`ART.nouvelle` 那一族的鍵是 **`shocked2`**（`shock` 是另一張）。 */
 const SKY_HUNT_TALK = [
-  { who:'nouvelle/cringe',       text:'一片黑，看不到在哪！' },
+  { who:'nouvelle/shocked2',     text:'一片黑，看不到在哪！' },
   { who:'sorana/guardthinking',  text:'諾薇兒，安靜下！' },
 ];
 let skyHuntArmed=false;

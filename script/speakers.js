@@ -261,7 +261,13 @@ export const ART = {
                      這兩張都是大動作的姿勢，臉本來就不在圖的正中：
                      `fx` 0.644／0.608 比她平常那幾張（≈0.52）偏右將近一成的圖寬，
                      沿用舊值會把她整個往左推一大截。 */
-                  scream:      { src:'resources/SI/Renna_SI_scream.webp',      top:7,  bot:1527, fx:0.644 },
+                  /* ⚠ ver -1439：Ray 交了新版（同名覆蓋）⇒ **路徑要帶 `?v=`**，
+                     不然瀏覽器抱著舊的那一份不放（§5 的老坑，而症狀只是「圖沒換」）。
+                     ⚠ `top`／`bot` 已重量（7→8／1527→1535，那是那一張圖的客觀事實）。
+                     ⚠⚠ `fx` **沿用 0.644**：臉的位置沒有可靠的自動量法（§6.5），
+                       而新圖的輪廓重心只往左移了約 1% —— 畫面上她若偏了就調這一個數字，
+                       **不要去動 `top`／`bot`**。 */
+                  scream:      { src:'resources/SI/Renna_SI_scream.webp?v=2', top:8,  bot:1535, fx:0.644 },
                   /* ══ 貝利薩爾之後那一夜（ver -1386，Ray 交稿）══ 逐張量（measure_si.py）。 */
                   crying:      { src:'resources/SI/Renna_SI_crying.webp',      top:5,  bot:1534, fx:0.585 },
                   lookfaropen: { src:'resources/SI/Renna_SI_lookfaropen.webp', top:12, bot:1517, fx:0.572 },

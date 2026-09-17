@@ -1467,6 +1467,11 @@ export const ENEMIES = {
       story:1, counterStagger:1, boss:0,
       Ganymede:0,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
+      /* ⚠⚠ **每次出現都要有龍吟＋畫面震動**（ver -1433，Ray 指定）——
+         `entrance` ＝登場音那一格（ver -948 併成一格），`entranceShake` ＝登場就震一下。
+         ⚠ 牠是 `kind:'multi'` ⇒ **不走降臨**（ver -1414，Ray：「戰鬥中不播降臨，
+           劇情出場時播」）—— 所以震動要自己宣告，那一條路上沒有人震。 */
+      entrance:'se_enemy_roardeer', entranceShake:true,
       openAssault:[1,2],
       ult:{ on:1, hp:40, count:2, atk:25, gap:1, cd:4 },
       assaultEvery:[2,4],
@@ -1480,7 +1485,10 @@ export const ENEMIES = {
       attack:20,
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      entrance:null,
+      /* ⚠⚠⚠ ver -1434：這裡原本是 `entrance:null` —— 它在**同一個物件字面量裡
+         排在上面那一行 `entrance:` 的後面**，於是把龍吟整個蓋掉了（同名鍵後者勝），
+         而且**沒有任何錯誤訊息**：卡上看起來兩行都在，實際上只有 null 生效。
+         ⚠ 自檢：插欄位進既有的卡之前，先 grep 那張卡裡有沒有同名的那一格。 */
       special:[],
       boardGrids:[9,9,9,9,9],
       /* ══⚠⚠ **追擊戰只有爪擊跟咬擊**（ver -1351，Ray 指定）══ 沒有放光
@@ -1495,6 +1503,11 @@ export const ENEMIES = {
       story:1, counterStagger:1, boss:0,
       Ganymede:0,
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
+      /* ⚠⚠ **每次出現都要有龍吟＋畫面震動**（ver -1433，Ray 指定）——
+         `entrance` ＝登場音那一格（ver -948 併成一格），`entranceShake` ＝登場就震一下。
+         ⚠ 牠是 `kind:'multi'` ⇒ **不走降臨**（ver -1414，Ray：「戰鬥中不播降臨，
+           劇情出場時播」）—— 所以震動要自己宣告，那一條路上沒有人震。 */
+      entrance:'se_enemy_roardeer', entranceShake:true,
       openAssault:[1,2],
       ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       assaultEvery:[2,4],
@@ -1502,12 +1515,70 @@ export const ENEMIES = {
       kind:'multi',
       image:'enemy_bl_dragon_throne',
       bg:'Belisar_ThroneHall',
-      fit:{ mode:'contain', pos:'center bottom' },
+      /* ══⚠⚠⚠ **`cover` 不是 `contain`**（ver -1433，Ray：「第二型態的左右好像被裁了，
+         修好它」）══
+         ⚠⚠ **根因是素材**：`mon_dragon_v1_unsealed` 那張**圖本身就裁掉了翅膀** ——
+           實測左邊 18.95%、右邊 21.48% 的像素**貼著圖的邊緣**（另外三張龍都在 2% 以下，
+           `_originals` 裡的原 PNG 也一樣，v2／v3 更嚴重）。補不回來的東西程式端修不了，
+           **真正的修法是請美術重交一張翅膀完整的**。
+         ⚠ 程式端能做的是**換一種讀法**：`contain` 會在框裡留白，於是那兩道切口
+           落在畫面中間、清清楚楚是「被裁掉」；`cover` 讓牠**填滿整個框**，
+           切口被推到畫面邊緣之外 —— 讀起來就成了「翅膀展出畫面」。
+         ⚠ `center top` ＝切下緣（腳與尾）不切上緣：這一張的重心在頭與雙翼。
+         ⚠ 這一格是**明寫的例外**，不要改成通則：去背立繪的預設仍是 `contain`
+           （ver -375），其餘三張龍照舊。 */
+      fit:{ mode:'cover', pos:'center top' },
       hp:900,
       attack:20,
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      entrance:null,
+      /* ⚠⚠⚠ ver -1434：這裡原本是 `entrance:null` —— 它在**同一個物件字面量裡
+         排在上面那一行 `entrance:` 的後面**，於是把龍吟整個蓋掉了（同名鍵後者勝），
+         而且**沒有任何錯誤訊息**：卡上看起來兩行都在，實際上只有 null 生效。
+         ⚠ 自檢：插欄位進既有的卡之前，先 grep 那張卡裡有沒有同名的那一格。 */
+      special:[],
+      boardGrids:[9,9,16,9,16],
+      hitFx:{ delay:'blunt', wrong:'slash', assault:'claw' },
+      /* ══⚠⚠⚠ **兩條血**（ver -1433，Ray：「龍把第一條血打完進入第二型態，
+         第二型態血 500，但是攻擊節奏走鹿主」）══
+         `onDeath:true` ＝**血歸零那一刻**換型態（不是百分比門檻，也不是死亡結算）——
+         判定在 `combat.maybeMorph`，它會把那一下從死亡流程接走。
+         ⚠ `fx:'holyburst'` ＝全蓋的那一圈光（同第四型態的變身）：換圖就發生在
+           光蓋滿畫面的那一刻，光散去之後站在那裡的已經是第二型態。 */
+      morph:{ onDeath:true, to:'bl_dragon_throne2', fx:'holyburst' },
+      loot:[],
+    },
+    /* ══⚠⚠⚠ **王座徘徊者・第二型態**（ver -1433，Ray 交辦）══════════════════════
+       > 「龍把第一條血打完進入第二型態，第二型態血 500，但是攻擊節奏走鹿主」
+
+       ⚠⚠ **「節奏」照抄鹿主，「威力」留著龍自己的** —— 這是我的判讀：
+         Ray 說的是**節奏**（時序），所以逐格照抄 `sf_deer_nightmare` 的
+         `openAssault`／`assaultEvery`／`assault`／`ult` 的 **on/hp/count/gap/cd**；
+         而 `attack`（20）與 `ult.atk`（20）沿用第一型態 —— 那是這隻怪的威力，
+         換成鹿主的 22／25 等於順手把難度也改了。要連威力一起走鹿主就改這兩個數字。
+       ⚠⚠ 與第一型態的差別因此只有三處：**血量 900→500**、
+         **大絕改成有門檻波**（`ult.on` 0→1、`hp` 40→50、`gap` 0.4→1）、
+         **一波由兩顆改成一顆**（`assault.count` 2→1）。
+       ⚠ 立繪與背景**不換**（Ray 沒說要換圖）：同一隻怪的第二口氣，不是另一隻。
+       ⚠ `kind:'multi'` ⇒ 沒有淨化（牠是被打退的，不是被打死的，見 enemy.js 那條）。 */
+    bl_dragon_throne2: {
+      name:'王座徘徊者',
+      story:1, counterStagger:1, boss:0,
+      Ganymede:0,
+      weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
+      entrance:'se_enemy_roardeer', entranceShake:true,
+      openAssault:[1,2],
+      ult:{ on:1, hp:50, count:4, atk:20, gap:1, cd:4 },
+      assaultEvery:[2,4],
+      assault:{ count:1, gap:0.35 },
+      kind:'multi',
+      image:'enemy_bl_dragon_throne',
+      bg:'Belisar_ThroneHall',
+      fit:{ mode:'cover', pos:'center top' },   // 同第一型態：那張圖的翅膀被裁掉了（見上）
+      hp:500,
+      attack:20,
+      atkInterval:null,
+      delayPenalty:{ seconds:5 },
       special:[],
       boardGrids:[9,9,16,9,16],
       hitFx:{ delay:'blunt', wrong:'slash', assault:'claw' },
@@ -1540,6 +1611,11 @@ export const ENEMIES = {
       story:1, counterStagger:1, boss:0,
       Ganymede:0,
       weaponMod:{ '重機槍':[0,0.3], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
+      /* ⚠⚠ **每次出現都要有龍吟＋畫面震動**（ver -1433，Ray 指定）——
+         `entrance` ＝登場音那一格（ver -948 併成一格），`entranceShake` ＝登場就震一下。
+         ⚠ 牠是 `kind:'multi'` ⇒ **不走降臨**（ver -1414，Ray：「戰鬥中不播降臨，
+           劇情出場時播」）—— 所以震動要自己宣告，那一條路上沒有人震。 */
+      entrance:'se_enemy_roardeer', entranceShake:true,
       openAssault:[1,2],
       ult:{ on:1, hp:50, count:4, atk:25, gap:1, cd:4 },
       assaultEvery:[2,4],
@@ -1550,7 +1626,19 @@ export const ENEMIES = {
          `Belisar_Exterior` 是**古城外觀**（地面）—— 那一場是從**船上**打的，
          背景該是甲板高速航行那一張（`resources/background/deck/deck_rapidsail.webp`，
          羽蛇那一段用的也是它）。 */
-      bg:'deck_rapidsail',
+      /* ⚠⚠⚠ **ver -1441：夜空交件了，接上**（`Sky_Towers_night` ＋無時段的
+         `Sky_Towers`，交件單見 `resources/background/_skybattle_spec.md`）。
+         ⚠ 寫**基底名**不寫時段：時段由既有的候選鏈（`story.bgUrl`→`bandNames`）挑，
+           自己拼時段就是第二個計算點（鐵律 7）。無時段那一張是每一條退路的最後一個，
+           所以白天也不會變成空背景（那正是美術一起交它的理由）。
+         ⚠⚠ **兩張卡要一致**（`bl_dragon_front`／`bl_dragon_sky`）——
+           morph 那一刻換卡，背景不一致會當場跳一下。
+         ⚠⚠ **三個雲景的輪播還沒接**（spec §六之一）：現在只交了「雲塔」一組，
+           `Sky_Cumulus`／`Sky_Cirrus` 一張都還沒有 —— 先寫進池子的話挑中它們
+           就是**整片空背景，而且沒有任何錯誤訊息**（鐵律 13：漏寫要落在安全那一側）。
+           12 張交齊再接，那時要一併處理「**一局之內不可以換**」（連戰換怪、morph
+           換卡都算同一局）。 */
+      bg:'Sky_Towers',
       /* ⚠ `pos` 由 `center bottom` 改成 **`center 18%`**（Ray：「第三階段的圖位置
          放高一點」）：牠是**正面展翅在飛**，貼著下緣會讀成「站在地上」。 */
       fit:{ mode:'contain', pos:'center 18%' },
@@ -1558,7 +1646,10 @@ export const ENEMIES = {
       attack:22,
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      entrance:null,
+      /* ⚠⚠⚠ ver -1434：這裡原本是 `entrance:null` —— 它在**同一個物件字面量裡
+         排在上面那一行 `entrance:` 的後面**，於是把龍吟整個蓋掉了（同名鍵後者勝），
+         而且**沒有任何錯誤訊息**：卡上看起來兩行都在，實際上只有 null 生效。
+         ⚠ 自檢：插欄位進既有的卡之前，先 grep 那張卡裡有沒有同名的那一格。 */
       special:[],
       boardGrids:[9,9,9,9,9],
       beamFrom:{ x:0.50, y:0.12 },
@@ -1571,13 +1662,16 @@ export const ENEMIES = {
       story:1, counterStagger:1, boss:0,
       Ganymede:0,
       weaponMod:{ '重機槍':[0,0.3], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
+      /* ⚠ 登場音（ver -1433，同族）：這一張是 `aerial` ⇒ **走降臨**，
+         著地那一刻本來就會震（`landT`），所以不必宣告 `entranceShake`。 */
+      entrance:'se_enemy_roardeer',
       openAssault:[1,2],
       ult:{ on:1, hp:50, count:4, atk:25, gap:1, cd:4 },
       assaultEvery:[2,4],
       assault:{ count:1, gap:0.35 },
       kind:'aerial',
       image:'enemy_bl_dragon_sky',
-      bg:'deck_rapidsail',   // ver -1430：空中戰在天空（同第三型態）
+      bg:'Sky_Towers',       // ver -1441：夜空交件（同第三型態，兩張必須一致）
       fit:{ mode:'contain', pos:'center bottom' },
       hp:700,
       attack:22,
@@ -1588,7 +1682,10 @@ export const ENEMIES = {
            改之前要先確認是哪一個。 */
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      entrance:null,
+      /* ⚠⚠⚠ ver -1434：這裡原本是 `entrance:null` —— 它在**同一個物件字面量裡
+         排在上面那一行 `entrance:` 的後面**，於是把龍吟整個蓋掉了（同名鍵後者勝），
+         而且**沒有任何錯誤訊息**：卡上看起來兩行都在，實際上只有 null 生效。
+         ⚠ 自檢：插欄位進既有的卡之前，先 grep 那張卡裡有沒有同名的那一格。 */
       special:[],
       boardGrids:[9,9,9,9,9],
       /* ══⚠⚠ 放光（ver -1351，Ray：「只有空中戰會放光」）══ 所以**只有這一張卡**

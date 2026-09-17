@@ -459,6 +459,18 @@ const FLIGHT_SRC = 'flight/index.html?v=' + encodeURIComponent(VERSION.replace(/
    ⚠ 打完戰鬥回飛行頁（`opts.resume`）**不走這一段**：那時畫面上是結算頁不是城鎮，
      劇情舞台是關著的 —— 黑幕看不見，只會白等 280ms。 */
 const FLIGHT_VEIL_MS = 280;
+/* 飛行畫面的曲子：`config.flightBgmWhen` 由上往下取第一個成立的（ver -1433）。
+   ⚠ 這是**唯一**在答這個問題的地方（鐵律 7）—— 腳本那一拍不再寫 `bgm:'warhorn'`。 */
+function flightBgmKey(){
+  const list = (GAME_CONFIG && GAME_CONFIG.flightBgmWhen) || [];
+  for(const o of list){
+    if(!o || !o.bgm) continue;
+    if(o.need  && !prog.hasFlag(o.need))  continue;
+    if(o.until &&  prog.hasFlag(o.until)) continue;
+    return o.bgm;
+  }
+  return null;
+}
 function openFlight(opts){
   if(!(opts && opts.resume) && !openFlight.__veiling){
     openFlight.__veiling = true;
@@ -484,9 +496,22 @@ function openFlight(opts){
      ⚠ 旗由這裡負責插與拔（鐵律 9：一個狀態一個擁有事件）：`keepBgm` 為真就插、
        否則一律拔 —— 上一趟留下來的旗不會害下一趟整頁沒有音樂。
      ⚠ 連帶**不放音訊**（下面那個 `releaseAudio`）：曲子正在播，抽掉 blob 就是斷音。 */
-  const keepBgm = !!(opts && opts.keepBgm);
+  /* ══⚠⚠ **這一趟飛行畫面該放哪一首**（ver -1433）══ 表在 `config.flightBgmWhen`
+     （鐵律 1）、判定只有 `flightBgmKey()` 一支（鐵律 7）。
+     ⚠ 命中就等於 `keepBgm`：曲子由**父頁**放著，飛行頁讀 `tivot_keepbgm_v1`
+       自己讓位（它沒有多首曲子的機制，§6.10）。
+     ⚠ **每一趟都重算**（`resume` 那一條也會經過這裡）—— 空中戰打完回到天上的
+       那一刻 `bl_night_sky` 剛插上，crisis 就是在那一次重算換過去的。 */
+  const fk = flightBgmKey();
+  const keepBgm = !!(opts && opts.keepBgm) || !!fk;
   try{ localStorage.setItem('tivot_keepbgm_v1', keepBgm?'1':'0'); }catch(_){}
-  if(!keepBgm){ try{ SFX.stopBgm(600); }catch(_){} }
+  /* ⚠⚠⚠ **走 `story.ensureBgm`，不要自己 `asset('bgm_'+key)`**（鐵律 8）：
+     「這個短名是哪一首」只有 `story.bgmSrc` 一支在答（`BGM_FILES` → `BGM_ALIAS`
+     → 回頭問 `ASSETS.bgm_<短名>`）。實測 `warhorn` **不在 `ASSETS` 裡**（只有
+     `fileGain` 有那一列）—— 自己拼鍵就會查不到，而那是**靜靜壞掉**的：
+     只印一行 console，畫面上什麼事都沒有，曲子就是不響（-1398 踩過同一個坑）。 */
+  if(fk){ try{ story.ensureBgm(fk); }catch(_){} }
+  else if(!keepBgm){ try{ SFX.stopBgm(600); }catch(_){} }
   /* ══⚠⚠ 進飛行畫面＝把主頁這一邊的音訊整個放掉（ver -1299，Ray 的讀取分工）══
      飛行頁是**另一個 document**，音樂與音效都是它自己那一套（§6.10）——
      主頁這邊留著的解碼音效與 BGM blob（實測 117 支 ＋ 21 首、31.6 MB）
@@ -1399,13 +1424,9 @@ function buildStatRows(){
    ⚠⚠ 它與章節跳關一樣**會 `newRun()`** —— 那是既有 dev 梯子的語意，
      而這顆鈕本來就只有 `body.testmode` 看得到（§6.9）。 */
 bindBtn('flightBtn', ()=>startChapter(prog.FLIGHT_TEST));
-/* ══⚠⚠ **腳本測試**（ver -1381，Ray：「在首頁先放一個腳本測試鈕，現在先設在東珀，
-   以後每個探索地圖要測試就設在那」）══ 落點是 `script/progress.js` 的 `SCRIPT_TEST`
-   （鐵律 1：那是資料，要測別張圖只改那一筆），執行走**同一支** `startChapter`
-   （鐵律 8，同試飛與章節）。
-   ⚠ 與「章節」的分野寫在 `SCRIPT_TEST` 的說明上：那張表是遊戲的結構，
-     這一顆是「現在正在測哪一張圖」的工作狀態 —— 不要再把測試用的落點塞進 CHAPTERS。 */
-bindBtn('scriptTestBtn', ()=>startChapter(prog.SCRIPT_TEST));
+/* ⚠ **「腳本測試」那一顆已於 ver -1435 移除**（Ray 指定）：「巡場」做的是同一件事
+   —— 同一個落點（`SCRIPT_TEST`），而且多了「選哪一張圖」與「要不要演劇情」兩步。
+   ⚠ `prog.SCRIPT_TEST` **不要跟著刪**：`tourSpec` 拿它當底（鐵律 7：落點只有一份）。 */
 /* 巡場（ver -1396）：同一個落點、沒有怪、劇情不抓人 —— 說明在 `prog.tourSpec`。 */
 /* ══⚠⚠ 巡場（ver -1396；-1410 Ray：「巡場加入選擇探索地圖名單，選擇以後選
    是否播放劇情」）══ 兩步：選圖 → 選要不要演劇情。
@@ -1926,6 +1947,12 @@ function battleBgmOf(id){
 story.setBattleCue((id)=>{
   const k = battleBgmOf(id);
   SFX.playBgm(asset(k), { fadeOutMs:600, volume: bgmVol(k) });
+});
+/* 這一場的曲子要不要在「門推上去」那一瞬就進（ver -1433）—— 卡上的 `bgmOnRise`。
+   ⚠ 只有這一支在答（鐵律 7）：story 那邊只問「要不要早播」，不認得 config。 */
+story.setBattleEarly((id)=>{
+  const b = id && GAME_CONFIG.battles && GAME_CONFIG.battles[id];
+  return !!(b && b.bgmOnRise);
 });
 /* 連續戰鬥的開棺判定（ver -585）：真相在 combat 的 `state.battleSession`，
    story 只問（它不 import combat，所以由這裡注入 —— 同 setGateHold 的理由）。 */

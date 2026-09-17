@@ -69,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.17-1431';
+export const VERSION = 'ver 2026.09.17-1442';
 
 export const GAME_CONFIG = {
 
@@ -217,6 +217,27 @@ export const GAME_CONFIG = {
                   卡上明寫的 bgm 仍最優先（main.battleBgmOf，鐵律 7）。 */
                /* ver -873（Ray 指定，混亂 session 遺失件補回）：安雅＝BattleField4。 */
                partner:{ sorana:'bgm_whirlwind', anya:'bgm_battlefield4' } },
+
+  /* ══⚠⚠⚠ **飛行畫面的曲子由旗決定**（ver -1433，Ray 兩條）══════════════════
+     > 「上船追換 warhorn 是**進到飛行畫面以後**換」
+     > 「空中戰以後飛行畫面 bgm 走 crisis **直到切換到探索地圖**」
+
+     形狀同城的 `TOWNS[].bgmWhen`：**由上往下取第一個成立的**（`need` 立了、
+     `until` 還沒立）。判定與播放只有 `main.js` 的 `flightBgmKey()`／`openFlight` 一處
+     （鐵律 7/8）；查不到＝`null` ⇒ 照舊由飛行頁放它自己那一首 `bgm_flight`。
+
+     ⚠⚠ **為什麼不寫在腳本那一拍上**：飛行頁是**另一個 document**、有自己的一套
+       HTMLAudio —— 父頁要「繼續放著」得靠 `tivot_keepbgm_v1` 那支旗讓那一頁讓位
+       （§6.10）。曲子因此是**進那一頁時**決定的狀態，不是某一句台詞的效果。
+       `bgm:'warhorn'` 原本掛在「上船追！」那一句上 ＝ **還在古城裡就換了**，
+       而 Ray 要的是「進到飛行畫面以後」。
+     ⚠ crisis 那一條**不寫 `until`**：「直到切換到探索地圖」是自然發生的 ——
+       降落進城時 `town` 自己的 `bgm`／`bgmWhen` 會接手（鐵律 8，不必再記一支旗）。
+     ⚠ crisis 要排在 warhorn **上面**：空中戰打完之後兩條的 `need` 都成立。 */
+  flightBgmWhen: [
+    { need:'bl_night_sky',                        bgm:'crisis' },
+    { need:'bl_sky_hunt', until:'bl_night_sky',   bgm:'warhorn' },
+  ],
 
   /* ══⚠⚠ 主武器：迦尼米德雙槍（ver -699，Ray 交卡）══════════════════════════
      Ray：「裝備欄加入雙槍　迦尼米德α「王之運」／迦尼米德β「運之王」。
@@ -2346,7 +2367,10 @@ export const GAME_CONFIG = {
        ⚠⚠ 只有**王座那一場**寫 `bgmAfter:'crisis'`：Ray 的「播到王座戰結束為止」
          指的就是這一刻換手。⚠ 戰敗不換（`resumeFrom` 本來就只在打贏時吃它）——
          再打一次當然還是 `gothic`。 */
-    bl_chase:  { enemy:'bl_dragon_chase',  session:'bl_night', bgm:'bgm_gothic' },
+    /* ⚠ `bgmOnRise:true`（ver -1433，Ray：「追擊戰 bgm 從槍棺推上開播，初戰也是」）——
+       曲子在門**推上去**那一瞬就進，不等撞頂（預設值見 `story.playKerberos` 的 ②）。 */
+    bl_chase:  { enemy:'bl_dragon_chase',  session:'bl_night', bgm:'bgm_gothic',
+                 bgmOnRise:true },
     bl_throne: { enemy:'bl_dragon_throne', session:'bl_night', sessionEnd:true,
                  bgm:'bgm_gothic', bgmAfter:'crisis' },
     /* ⚠ 空中戰：`kind:'aerial'` 在敵卡上（降臨與淨化特效吃得到，§6.5.4.4）。
@@ -3122,8 +3146,20 @@ export const GAME_CONFIG = {
     counterEnergyMul:    2,
     chargeSeconds:       4,     // 敵人大絕蓄力窗口（秒）
 
+    /* ══⚠⚠⚠ **OVK 與 BR 都改成「閒置逾時」**（ver -1434，Ray：「把 ovk 跟 br 的時限
+       拿掉，改成**兩秒內不點下一格就結束**」）══
+       以前是**固定的總長**（OVK 3 秒／BR 6 秒）—— 那會懲罰「打得好但打得久」的人：
+       盤面還剩十幾格時，時間到就是到，玩家手上的節奏被一刀切斷。
+       改成**距離上一次點擊**兩秒：只要還在打就一直開著，停手兩秒才收。
+       ⚠⚠ **一個數字管兩邊**（鐵律 7）：兩段的結束條件現在是同一件事，
+         分兩個常數必然走鐘（-1338 就踩過「有時候 3 秒有時候 6 秒」）。
+       ⚠ 重設點只有兩處：OVK 走 `combat.armOverkillLimit()`（那一段的點擊分支），
+         BR 走 `weapon.pokeDual()`（`combat.dualShot` 每打出一發就叫一次）。
+       ⚠ 教學照舊**完全不設時限**（要讓玩家邊讀邊打）。 */
+    idleEndMs:           2000,
     // Overkill 限時（敵死後的追加輸出窗口）
-    overkillLimitMs:     3000,  // 3 秒內沒清完 → 全數字磚破碎自動清盤
+    /* ⚠ ver -1434 起**沒有人讀它**（改走 `idleEndMs` 的閒置逾時）—— 留著當紀錄。 */
+    overkillLimitMs:     3000,  // （已退役）3 秒內沒清完 → 全數字磚破碎自動清盤
     overkillNextDelayMs: 0,     // 自動清盤後直接插入下一盤（原 1000ms 防連點誤觸，手感太拖已取消）
     // 照順序點的獎勵倍率：overkill 本身免順序（點到未消格就算命中），但若仍照數字順序
     //   接下去點，該擊傷害（＝overkill 點數，敵已死時傷害 1:1 進 overkill）×此值。
@@ -4115,6 +4151,13 @@ export const ASSETS = {
   se_ship_heavygun:  "resources/audio/se/se_weapon_heavygun.m4a",       // 船戰的機槍
   se_enemy_centipi:  "resources/audio/se/Se_enemy_centipi.m4a",         // 巨型蜈蚣（登場／攻擊）
   se_enemy_serpent:  "resources/audio/se/Se_enemy_serpent.m4a",   // 羽蛇出場（ver -500）
+  /* ⚠⚠⚠ 王座徘徊者的龍吟（ver -1434，Ray：「龍的追擊戰每一場出場都要有龍吟，
+     同攻擊音效 `se_enemy_roardeer`」）—— 四張龍卡的 `entrance` 都指它。
+     ⚠⚠ **登場音走 `asset(key)` 查的是這張表，不是 `SE_FILES`**：那一支
+     （鹿主的吼）本來只登記在 `story.js` 的 `SE_FILES` ＋ `fileGain`，於是
+     `playEntranceSe` 拿到空字串就**靜靜不播** —— 卡上寫了音效名、畫面上卻沒有聲音，
+     而且沒有任何錯誤訊息。⚠ 自檢：卡上要用的音效，先確認它在 `ASSETS` 裡。 */
+  se_enemy_roardeer: "resources/audio/se/se_enemy_roardeer.m4a",   // 龍吟／鹿主的吼
   se_mg_squall:      "resources/audio/se/se_weapon_mg_squall.m4a",       // 重機槍 反擊（連續感：整支播一次）
   se_shotgun_blast:  "resources/audio/se/se_weapon_shotgun_blast.m4a",   // 散彈槍 反擊（一次一發）
   se_sniper_falcon:  "resources/audio/se/se_weapon_sniper_falcon.m4a",   // 狙擊槍 反擊（單發）
@@ -4464,6 +4507,15 @@ export const ASSET_VER = {
      檔名沒變、內容變了，瀏覽器照樣拿舊的，而且畫面上沒有任何錯誤訊息）。 */
   'belisar_oldaltar':        2,
   'belisar_ossuary':         2,
+  /* ⚠⚠⚠ ver -1432 補：同一批（commit `9a9014a`「補通道 6 —— 七條拓樸改動掛在原本是
+     死路的房間上，那些圖畫不出那麼多門」）裡**還有五間也是同名覆蓋**，而版號只跳了
+     納骨堂那一個。漏掉的那五格會讓玩家看到「牆上沒有那道門」的舊圖，
+     然後按著一個畫面上不存在的方向走出去。 */
+  'belisar_orrery':          2,
+  'belisar_bellroom':        2,
+  'belisar_cages':           2,
+  'belisar_drywell':         2,
+  'belisar_forge':           2,
   'belisar_rooffall_dawn':   2,
   'belisar_rooffall_day':    2,
   'belisar_rooffall_dusk':   2,
@@ -4539,11 +4591,22 @@ export const ASSET_VER = {
   'ravn_square_night':     2,
   /* ver -1371：美術 -20260916 那一輪的**同名覆蓋**（`resources/_HANDOFF_ART_20260916.md`
      §六 第 1 條指名要接）—— 東泊把街上的鐵軌拔掉了，兩張都是覆蓋上去的。
-     ⚠ 這兩格是 `noTime` 之外的一般節點，但美術**只重畫了 day 那一張**，
-       其餘時段沒動 ⇒ 只列 day（同 -905 那一批的作法：沒被覆蓋的不要列，
-       列了等於叫玩家把沒變的圖重抓一遍）。 */
+     ⚠ 這兩格是 `noTime` 之外的一般節點。-1371 當時**只有 day 被重畫**，所以只列 day。
+     ⚠⚠⚠ **ver -1432 補上其餘三個時段**：美術在 commit `9a9014a` 又交了
+       「鐵軌 6（Midtown／Square 的 dawn/dusk/night 是舊檔，鐵軌還在）」——
+       那六張也是**同名覆蓋**，而版號一直停在只有 day ⇒ 玩家白天看到拔掉鐵軌的新圖、
+       其餘時段還是舊圖（**而且沒有任何錯誤訊息**，§5 那個老坑）。
+       這正是那條「**一組差分要一起帶**」的規矩：漏掉哪一張，哪一張就被快取住。 */
+  /* ver -1432：石塚群照荒蕪梯度重畫（commit `24ce484`），**同名覆蓋**。 */
+  'plains_cairn_day':      2,
   'east_midtown_day':      2,
+  'east_midtown_dawn':     2,
+  'east_midtown_dusk':     2,
+  'east_midtown_night':    2,
   'east_square_day':       2,
+  'east_square_dawn':      2,
+  'east_square_dusk':      2,
+  'east_square_night':     2,
 };
 export function assetVer(nameOrPath){
   const n = String(nameOrPath||'').split('/').pop().split('?')[0]

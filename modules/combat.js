@@ -43,7 +43,9 @@ const CRIT_DMG_BASE=T.critDmgBase, CRIT_DMG_PER_COMBO=T.critDmgPerCombo; // 普�
 const DMG_WRONG=T.dmgWrong, DMG_HEAVY=T.dmgHeavy, DMG_DELAY=T.dmgDelay;
 const DMG_DUAL_MULT=T.dmgDualMult;                   // 雙槍破防窗口點擊傷害倍率（<1＝安全牌）
 const ATK_BUFF_SECONDS=T.atkBuffSeconds;
-const OVERKILL_LIMIT_MS=T.overkillLimitMs, OVERKILL_NEXT_DELAY_MS=T.overkillNextDelayMs;   // overkill 限時/收尾延遲
+/* ⚠ ver -1434：OVK／BR 的結束條件改成**閒置逾時**（`idleEndMs`，見 config 那一段）
+   —— `overkillLimitMs` 已退役，這裡不再讀它。 */
+const IDLE_END_MS=(T.idleEndMs||2000), OVERKILL_NEXT_DELAY_MS=T.overkillNextDelayMs;
 const OVERKILL_ORDER_MULT=T.overkillOrderMult!=null ? T.overkillOrderMult : 1;   // overkill 照順序點的獎勵倍率
 const SAINT_ADVANCE_DIVISOR=T.saintAdvanceDivisor;   // 聖徒化一次「受擊」推進量＝playerMax/此值
 /* 聖徒化倒數槽的被動速度（滿槽需要幾秒）。⚠ 惡夢化把「受擊值多少秒」換算回來時要用
@@ -527,6 +529,7 @@ export function dualShot(x, y){
      （它的 else 分支），這裡不必也不該再判一次。 */
   if(state.dualShotsLeft<=0) return false;
   state.dualShotsLeft--;
+  weapon.pokeDual();          // 閒置逾時往後推（ver -1434）：還在打就不收窗
   /* ══⚠⚠ 拋彈殼與槍火：**與普攻同一份特效**（ver -1335）══ 普攻那一支（`tap`）是
      `enemy.ejectShell(cell)` ＋ `gunHitOnEnemy(cell)`，兩個都以「點到的那一格」為準；
      破防沒有格子可點，所以兩個都**以點擊處為準**：
@@ -619,6 +622,8 @@ function tap(num,cell,e){
   //     順序斷掉不罰（仍算命中，只是 1 倍），之後接回順序即可再拿獎勵。
   if(state.enemyHp<=0){
     if(cell.classList.contains('done')) return;
+    /* ⚠ 打到了就把逾時往後推（ver -1434 的閒置逾時）——**停手兩秒才收**。 */
+    armOverkillLimit();
     SFX.gunshot(false);
     const inOrder = (num===state.expect);
     cell.classList.add('done'); cell.classList.remove('next'); enemy.shatterCell(cell); glassShards(cell);   // overkill：玻璃碎片落下（ver -805）
@@ -1352,8 +1357,11 @@ function enemyDamage(dmg,isCrit,silent,src){
       tutorial.onHpChange();          // 血量觸發的 talk 步驟（ver -599）
       updateBars();
       tutorial.onEnemyHp(state.enemyHp/state.enemyMax);   // 教學：削血保底觸發（非教學為 no-op）
-      maybeMorph();                     // 型態切換（ver -1418，王座徘徊者的空中戰）
+      const morphing = maybeMorph();    // 型態切換（ver -1418 空中戰；-1433 起也吃 onDeath）
       if(!silent) floatDmg((isCrit?L.battle.crit:'')+dmg, (30+Math.random()*40)+'%','35%',isCrit);
+      /* ⚠⚠ ver -1433：`onDeath` 的型態切換把這一下接走了 ⇒ **不走死亡流程**
+         （牠還有第二條血）。傷害數字照樣浮出來 —— 那一下真的打中了。 */
+      if(morphing) return;
       if(state.enemyHp<=0){
         if(state.killTime===0) state.killTime=Date.now();   // 敵死標記（OVERKILL 起點）
         /* ⚠⚠ **overkill 現在照樣計時**（ver -611，Ray：「那 ovk 改計時，一格減 0.1 秒」）。
@@ -2141,15 +2149,17 @@ function enterOverkillFx(){
        BR 關窗那一刻（`onDualClosed`）。 */
   if(state.dualWield){
     const left=state.cells.filter(c=>!c.classList.contains('done')).length;
-    weapon.setDualBudget(left, OVERKILL_LIMIT_MS);
+    weapon.setDualBudget(left, IDLE_END_MS);
     return;
   }
   armOverkillLimit();
 }
-/* overkill 的 3 秒限時 —— 起算只有這一處（鐵律 8）：擊殺那一刻，或 BR 收窗那一刻。 */
+/* ══ overkill 的**閒置逾時**（ver -1434，Ray：「兩秒內不點下一格就結束」）══
+   起算／重設只有這一支（鐵律 8）：擊殺那一刻、BR 收窗那一刻、**以及每一次點到格子**。
+   ⚠ 它現在是「距離上一次點擊」不是「這一段的總長」—— 還在打就一直開著。 */
 function armOverkillLimit(){
   clearTimeout(overkillTimer);
-  overkillTimer=setTimeout(autoClearOverkill, OVERKILL_LIMIT_MS);
+  overkillTimer=setTimeout(autoClearOverkill, IDLE_END_MS);
 }
 /* ══ BR 窗口關掉的那一刻要做什麼 —— 判定只有這一支（ver -1338）══
    · 敵人還活著 → 殘磚一次性消除（-1330 那一條）
@@ -2251,16 +2261,41 @@ function finishEnemyOrAdvance(){
      讀起來是「牠消失了」而不是「牠變了」。
    ⚠ `transitioning` 期間鎖點擊：換卡的那一瞬盤面還是舊的，讓玩家點下去會打到
      還沒設定好的新怪（同 `advanceEnemy` 的作法）。 */
-const HOLY_SWAP_MS = 1100;   // ＝ enemy.js 的 HOLY_GROW_MS（光綻放完那一刻）——改一邊要改另一邊
+/* ⚠⚠ ＝ `enemy.js` 的 `HOLY_GROW_MS`（光**綻放完、蓋滿畫面**的那一刻）——
+   改一邊要改另一邊。ver -1433 隨光圈再放慢一半：1100→2200。
+   ⚠ 換圖就是要發生在**光最亮、蓋住整個畫面**的那一刻（Ray：「先用光圈特效全蓋，
+     光圈散去以後進入第四型態」）—— 等光真的散完才換，玩家會先看到舊型態還站著。 */
+const HOLY_SWAP_MS = 2200;
 let morphed=false;
 export function resetMorph(){ morphed=false; }
+/* ══⚠⚠⚠ **`onDeath:true` ＝「第一條血打完才變」**（ver -1433，Ray：「龍把第一條血
+   打完進入第二型態，第二型態血 500」）══
+   與百分比門檻是**兩種**，卡上選一種：
+     · `morph:{ hp:50, to:… }`        血掉到 50% 就變（-1418 的空中戰）
+     · `morph:{ onDeath:true, to:… }` 血**歸零**那一刻變（兩條血的 BOSS）
+   ⚠⚠ 它必須攔在「敵人死了」那一整套演出**之前** —— 所以這一支現在**回傳 true**
+     ＝「這一下被型態切換接走了」，呼叫端看到就不要再走死亡流程
+     （同惡夢化自爆下限那條的教訓：先攔住，不要打完再把牠救回來）。 */
 function maybeMorph(){
-  if(morphed || state.over) return;
+  if(morphed || state.over) return false;
   const card=(GAME_CONFIG.enemies||{})[state.currentEnemyKey];
   const m=card && card.morph;
-  if(!m || !m.to || !(GAME_CONFIG.enemies||{})[m.to]) return;
-  if(state.enemyHp<=0) return;                       // 打死了就不換（那是結算的事）
-  if(state.enemyHp > state.enemyMax*((+m.hp||50)/100)) return;
+  if(!m || !m.to || !(GAME_CONFIG.enemies||{})[m.to]) return false;
+  if(m.onDeath){
+    if(state.enemyHp>0) return false;                // 還有血＝還沒到那一刻
+  }else{
+    /* ⚠⚠⚠ **一擊跨過門檻、順手把血打到 0 的那一下也要變**（ver -1434，Ray：
+       「第三形態怎麼打完 hp 就結算了？第四型態呢？」）══
+       -1418 這裡寫的是 `if(state.enemyHp<=0) return false;`（「打死了就不換」）——
+       於是**一擊從門檻之上直接打到 0** 就直接走死亡結算，第四型態整個跳過。
+       空中戰特別容易：第三型態 500 血、門檻 250，而那時玩家已經是全裝
+       （反擊／破防／聖徒化追打一下就是幾百）。
+       ⚠⚠ **卡上說的是「掉到 50% 就換型態」，那條血本來就還沒打完** ——
+         「牠死了」與「牠變了」在這一擊上只有一個是對的，而卡宣告的是後者。
+       ⚠ 換型態時 `setEnemy` 會把血重設成新卡的 `hp`，所以這一擊溢出多少都不必管。
+       ⚠ 沒有 `morph` 的那一張（第四型態）照舊會死 —— 這一條只影響宣告過要變的卡。 */
+    if(state.enemyHp > state.enemyMax*((+m.hp||50)/100)) return false;
+  }
   morphed=true;
   state.transitioning=true;                          // 演出期間鎖點擊
   stopIntervalTimer();
@@ -2280,6 +2315,7 @@ function maybeMorph(){
     loadBoard(0);                                    // 新型態自己的盤序（loadBoard 內 clockResume）
     updateBars();
   }, HOLY_SWAP_MS);
+  return true;
 }
 function advanceEnemy(){
   clockPause();                       // 併入前一敵時間（此前已於敵死暫停，冪等）

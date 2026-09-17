@@ -443,6 +443,18 @@ export const DRAGON_LINES = {
        打完牠就跑掉了（`dragonFleeStep`），玩家得再追上才會再觸發。
      ⚠ Ray 沒給這幾場的台詞 —— 只有戰鬥拍，不替他編。 */
   chaseMore: { sides:{ RENNA:'L' }, lines:[ { battle:'bl_chase' } ] },
+  /* ══⚠⚠⚠ **開圖三戰之後**（ver -1433，Ray 交稿）══════════════════════════════
+     「開圖」＝索菈娜「交給我！」那一拍（`bl_dragon_seen`）；之後**又打了三場**
+     就跳這一段 —— 它不必踩到牠，走一步就會演（判定在 `modules/town.js` 的
+     `dragonTalkDue`，計數也在那邊，鐵律 7：這裡只有台詞）。
+     ⚠ 只演一次（`flag`）。⚠ 沒有戰鬥拍：這是打完之後的一段喘息，不是一場架。 */
+  afterThree: { flag:'bl_chase_talk3', sides:{ RENNA:'L' }, lines:[
+    nou('cringe','牠一直往我們的反方向跑！'),
+    sor('battlecry','這樣反而好預測！'),
+    ren('command','把牠逼到最深處就無路可跑了！'),
+    any('steady','小偷龍！'),
+    nou('awkward','還在講那個……'),
+  ] },
   /* ⑤⑥ 王座廳：**第二型態**決戰 → 轉空中 → 索菈娜索敵後出現 → 空中戰
      （Ray：「逼到王座廳以後第二型態決戰　戰勝後轉空中　索拉娜索敵後出現　展開空中戰」）。
      ⚠ 兩場在**同一段**裡：中間那幾拍是同一段演出（上船、索敵），拆成兩個 act
@@ -468,13 +480,19 @@ export const DRAGON_LINES = {
        （長度問音檔，不在這裡寫秒數 —— §6.5.5）。
        ⚠ `shakeHold` 是**跨句的狀態**，推對話不會收掉；出口是進戰鬥／換場／離場
          三個，全部走 `stopShake()`（§6.5 的 -638）。 */
+    /* ⚠ ver -1433（Ray：「『小心！要垮了！』同時播 `se_rockimpact`」）——
+       **一拍兩個聲音**（`se` 吃陣列）：崩瓦是碎、落石是砸，兩個一起才是「垮」。
+       ⚠ `shakeHold:'se'` 的長度問的是**第一支**音檔（`se_brickcrush`）。 */
     Object.assign(ren('intense','小心！要垮了！'),
-      { se:'se_brickcrush', shakeHold:'se' }),
+      { se:['se_brickcrush','se_rockimpact'], shakeHold:'se' }),
     sor('furiousq','跑出去了！'),
     nou('shocked2','讓牠襲擊城鎮就不好了！'),
-    /* ⚠ `bgm:'warhorn'`（-1398：「登船進空中戰前用 warhorn」）與 `bl_sky_hunt`
-       （飛行頁那一段的鑰匙）都掛在**登船的那一刻**。 */
-    Object.assign(ren('command','上船追！'), { bgm:'warhorn', flags:['bl_sky_hunt'] }),
+    /* ⚠⚠⚠ ver -1433（Ray：「上船追換 warhorn 是**進到飛行畫面以後**換」）——
+       `bgm:'warhorn'` 從這一拍**拿掉**了：這一刻人還站在王座廳裡（-1398 的
+       「登船前用 warhorn」被讀成了「說這句話的時候」）。曲子改由
+       `config.flightBgmWhen` 在**進飛行畫面那一刻**決定（鐵律 7：只有一個地方在答）。
+       ⚠ `bl_sky_hunt` 照舊掛在這裡 —— 那正是「上船」這個事件本身（鐵律 9）。 */
+    Object.assign(ren('command','上船追！'), { flags:['bl_sky_hunt'] }),
     /* ══⚠⚠⚠ **這一段到此為止，接下來在飛行頁演**（ver -1416，Ray：「蕾娜『上船追！』
        之後轉景，從古城升空…索『諾薇兒，安靜下』之後，提示長按…發動獵手之眼索敵。
        索敵後必出王座徘徊者…然後進入空戰」）══
@@ -980,7 +998,20 @@ export const TOWNS = {
         bg:'Capital_Firearm', name:'帝都　武器店', kind:'gunstore',
         exits:{ back:'oldtown' },
         shop:'gunstore', keeperWho:'GUNSMITH',
-        hours:[8,20], closed:'鐵門拉下來了。門邊的牌子寫著「八點開門」。',
+        /* ══⚠⚠ **店舖是 08:00–17:00**（ver -1432 接上 Ray 於 -1378 的交辦：「餐廳
+           公會 槍店 雜貨店這些**早上 8 點開下午 5 點關**，所以只有 day 不用四差分」）══
+           ⚠ 上界不含（判定只有 `isOpenNow()` 一支，§6.5.4）。**四座城的槍店／公會／
+             雜貨舖共 10 格一起改** —— 只改一座就會變成「同一種店在不同的城關門時間不同」。
+           ⛔ 不在這一條裡的：酒吧 `[8,24]`（`lateNight`）／旅店（全天）／教堂 `[8,19]`／
+              行政廳・市鎮中心 `[8,17]`（本來就對）／工坊 `[8,19]`。
+           ⚠ 連帶：那幾格的 `_Dawn`／`_Dusk`／`_Night` 差分照新規格該回收（美術的活，
+             見 `resources/_HANDOFF_ART_20260916.md` 第十節第 3 點）—— 回收之前候選鏈
+             自己會退回 `_Day`，不會變空背景。
+           ⚠⚠ **`noTime:true` 現在還補不了**：那一條的語意是「只試不帶時段的那一張」
+             （`bandNames`），而這 10 格的檔名全部帶尾綴（`Capital_Firearm_Day.webp`…），
+             補下去就是**整格空背景**。要等美術把 `_Day` 那張改名成不帶尾綴的基底名，
+             程式端才補得上去。 */
+        hours:[8,17], closed:'鐵門拉下來了。門邊的牌子寫著「八點開門」。',
         lines:[
           gun(null,'噢，客人，你腰上那把槍，我有否榮幸……'),
           /* 空畫面：主角把槍遞過去的那一拍（稿上寫「（空畫面）」）。 */
@@ -1145,7 +1176,7 @@ export const TOWNS = {
         exits:{ back:'oldtown' },
         /* 登記完才開得了懸賞榜（旗標由 `modules/town.js` 在這段對白播完時記）。 */
         board:'capital', boardFlag:'guild_registered',
-        hours:[8,20], closed:'大門上了閂。委託要等明天早上八點。',
+        hours:[8,17], closed:'大門上了閂。委託要等明天早上八點。',
         /* 櫃台接待員（ver -404，站右邊）。⚠ 沒登記過整個店舖畫面都不出現
            （`boardFlag`，旗標由下面那一段對白演完才記）。 */
         keeperWho:'COUNTER',
@@ -1226,7 +1257,7 @@ export const TOWNS = {
         bg:'Capital_Grocerie', name:'帝都　雜貨舖', kind:'grocery',
         exits:{ back:'uptown' },
         shop:'grocery', keeperWho:'SHOPKEEP',
-        hours:[8,20], closed:'櫥窗裡的燈熄了，門板上掛著「已打烊」。',
+        hours:[8,17], closed:'櫥窗裡的燈熄了，門板上掛著「已打烊」。',
         once:true,
         lines:[
             nou('surprise', '好多東西！連衣服都有！'),
@@ -1841,7 +1872,7 @@ export const TOWNS = {
            閘門的三旗之一。act 演完 afterArrive 照開店。 */
         acts:[ { flag:'np_gunstore_seen', need:'np_burial_done', lines:[
           gunN(null,'找槍嗎？物資都被徵調啦，能修的我幫你看看。') ] } ],
-        hours:[8,20], closed:'鐵門拉下來了。門邊的牌子寫著「八點開門」。',
+        hours:[8,17], closed:'鐵門拉下來了。門邊的牌子寫著「八點開門」。',
         lines:[ gunN(null,'武器都被徵調啦，沒什麼好東西。槍我倒是能幫你看看。') ]
                  .concat(NP_RANGE_SEQ),
         /* 「射擊挑戰」鈕 → **同一份**（見 NP_RANGE_SEQ 的說明）。 */
@@ -1850,7 +1881,7 @@ export const TOWNS = {
          ⚠ 懸賞內容在 `config.bounties`（鐵律 1），這裡只指哪一座城。
          ⚠ 不寫 `keeperWho`＝沒有店主立繪，正合「沒有人」。 */
       guild:    { bg:'Northport_guild_BF', name:'北方泊地　賞金獵人公會', exits:{ back:'west' },
-        hours:[8,20], closed:'大門上了閂。委託要等明天早上八點。',   // ver -864，Ray 確認（同帝都公會）
+        hours:[8,17], closed:'大門上了閂。委託要等明天早上八點。',   // ver -864，Ray 確認（同帝都公會）
         board:'northport',
         /* ⚠ ver -1062（Ray：「北泊的賞金獵人公會，原 npc 講完台詞以後就被換成帝都的
            npc 了」）：`keeperOf` 看到 `board` 就退回帝都的 `COUNTER` —— 那一段對白
@@ -2203,7 +2234,7 @@ export const TOWNS = {
       grocery:  { bg:'Northport_grocery_BF', name:'北方泊地　雜貨街', kind:'grocery',
         exits:{ back:'east' },
         shop:'np_grocery', keeperWho:'SHOPKEEP_NP',
-        hours:[8,20], closed:'櫥窗裡的燈熄了，門板上掛著「已打烊」。',
+        hours:[8,17], closed:'櫥窗裡的燈熄了，門板上掛著「已打烊」。',
         lines: NP_GROCER_LINES, keeper: NP_GROCER_LINES,
         /* ══ 退燒藥＋蕾娜（ver -858，Ray 交稿）══ 安葬（np_burial_done）之後的
            自由探索：18:00 前走進雜貨店會撞見來買退燒藥的蕾娜（諾薇兒發燒——
@@ -3091,7 +3122,7 @@ export const TOWNS = {
       grocery:  { bg:'Shinier_Grocery', name:'夏爾村　雜貨街', kind:'grocery',
         exits:{ back:'east' },
         shop:'sv_grocery', keeperWho:'GROCER_SV',
-        hours:[8,20], closed:'門板上掛著小木牌：「明早見」。',
+        hours:[8,17], closed:'門板上掛著小木牌：「明早見」。',
         lines:[
           Object.assign(grcS(null,'哎呀，稀客稀客。看看有沒有需要的吧。'), { skipIf:'safehouse_shinier' }),
           Object.assign(grcS(null,'那一晚多虧了你們。村子還在，生意就還能做，哈哈！'), { onlyIf:'safehouse_shinier' }),
@@ -4725,7 +4756,7 @@ export const TOWNS = {
       gunstore:   { bg:'East_Firearm',    name:'東方泊地　武器店',
         exits:{ back:'oldtown' },
         shop:'ep_gunstore', keeperWho:'GUNSMITH_EP',
-        hours:[8,20], closed:'鐵捲門拉到底了。門邊的牌子寫著「八點開門」。',
+        hours:[8,17], closed:'鐵捲門拉到底了。門邊的牌子寫著「八點開門」。',
         /* ══⚠⚠⚠ 約會・索菈娜（ver -1346，Ray 交稿）══════════════════════════
            稿上寫「武器店：**打靶挑戰後**：索：也讓我試試嘛！」—— 所以這一段的前提是
            玩家在**這座城**打過靶。
@@ -4816,9 +4847,19 @@ export const TOWNS = {
            （§6.5.4 的老坑）。`bandNames` 只試「時段尾綴」的大小寫變體，**不試基底名**。
          ⚠⚠ 交件的 `_dusk` 與 `_night` **是同一張圖**（8×8 指紋一模一樣：
            70.1/70.1/87.4）—— 已回報美術。載得到、不會壞，但夜裡與黃昏長一樣。 */
+      /* ══⚠⚠⚠ **任務探索期間走不了陸路**（ver -1433，Ray：「全員決定去奪回髮飾的
+         時候，把南門驛站出口封起來：索『喂！開船去比較快啦！』confused」）══
+         走 `lock` 那一套（ver -786 的既有機制，擋在 `go()` 不在 `exitsOf`）——
+         **箭頭照樣在**，按下去由索菈娜擋回來，玩家才讀得出「不是壞了，是她不讓」。
+         ⚠⚠ 旗名**讀 `QUEST_LOCK`**（同一支檔案上面那一組，鐵律 7）：插旗的是
+           那一夜演完、拔旗的是空中戰打完 —— 抄一份旗名在這裡，哪天改名就走鐘。
+         ⚠ 鎖的是 `up`（往古道），**不是這一格本身**：南門驛站進得去（安雅那一段
+           約會戲在這裡），走不出城而已。開船比走路快，那正是她那句話的意思。 */
       dock:       { bg:'East_SouthGate',
         name:'東方泊地　南門驛站',
         exits:{ back:'oldtown', up:'@plainsroad' },
+        lock:{ up:{ need:QUEST_LOCK.flag, until:QUEST_LOCK.until,
+                    lines:[ sor('confuse','喂！開船去比較快啦！') ] } },
         acts:[ { flag:'ep_dock_anya', withWho:'ANYA', lines:[
           any('curious','這就是……尤拉西亞湖？'),
           any('amazed','好壯觀……'),
@@ -4833,7 +4874,7 @@ export const TOWNS = {
       guild:      { bg:'East_Guild',      name:'東方泊地　賞金獵人公會',
         exits:{ back:'oldtown' },
         board:'eastport', keeperWho:'COUNTER_EP',
-        hours:[8,20], closed:'大門上了閂。委託要等明天早上八點。',
+        hours:[8,17], closed:'大門上了閂。委託要等明天早上八點。',
         /* ══⚠⚠⚠ 約會・索菈娜（ver -1346，Ray 交稿）══════════════════════════
            ⚠⚠ ver -1375：Ray 交了東泊自己的兩張圖（對話立繪 `NPC_ep_SI_bounty`、
              敵人圖 `man_bounty_EP`）⇒ speaker 由借來的 `HUNTER` 改成 **`HUNTER_EP`**、
@@ -4871,12 +4912,20 @@ export const TOWNS = {
          那三個，隨便排就好」＝ `_eastport_spec.md` §八 的 **(甲) 樞紐＝酒吧**）══
          §6.5.4.2 的分店機制（同行女伴決定進哪一家）**在這座城取消**（-1263 Ray 定案）：
          四家店是玩家自己走得進去的節點，那是拓樸不是差分。
-         ⚠ `tavern` 自己就是酒吧（`East_Bistro`），另外三條通餐廳／甜品店／咖啡廳。
+         ⚠⚠⚠ **`tavern` 那一格的背景是「街」不是「酒吧的室內」**（ver -1432，Ray 於
+           -1378 回報「餐飲街現在看起來還是室內」）：它在拓樸上是四向樞紐 ——
+           站在樞紐上卻看到某一家店的室內，讀起來就是「我已經進去了」，而旁邊
+           三條路又通向另外三家店。圖是 `East_Dining_{dawn,day,dusk,night}`（-1378 交件）。
+           ⚠⚠ 連帶：**`East_Bistro`（酒吧室內）從此沒有節點在用** —— 酒吧要不要
+             另開一格是 Ray 未決的那一題（`_eastport_spec.md` §八 的 A／B）。
+             ⛔ 那四張**先不要回收**：真的另開一格就立刻用得到。
+             ⚠ 這一格四個方向已經滿了（`back` 現算成 `left`，見下一條），
+               所以「另開一格」不是加一行 —— 要動拓樸。
          ⚠ **不寫 `left`**：這一格是從上城區往右走進來的，`back` 現算成 `left`
            （§6.5.4「回去掛在來時方向的反向」）—— 佔掉 `left` 會把退路擠掉。
          ⚠ 三家都只寫 `back`（同武器店／公會那一族）：同一條邊的兩端自動相反，
            不會踩到「一直按同一個方向走不出去」那個坑（憲法 ver -902）。 */
-      tavern:     { bg:'East_Bistro',     name:'東方泊地　餐飲街',
+      tavern:     { bg:'East_Dining',     name:'東方泊地　餐飲街',
         exits:{ back:'uptown', up:'restaurant', right:'cafe', down:'dessert' } },
       /* ══ 約會・諾薇兒（ver -1346，Ray 交稿）══ `withWho` ＝正在跟她約會才演。
          ⚠ 「（肚子叫）」是**音效**，稿上沒指定是哪一支 —— 先不接，等 Ray 給鑰匙。
@@ -4919,7 +4968,7 @@ export const TOWNS = {
       grocery:    { bg:'East_Grocerie',   name:'東方泊地　雜貨舖',
         exits:{ back:'uptown' },
         shop:'ep_grocery', keeperWho:'SHOPKEEP_EP',
-        hours:[8,20], closed:'櫥窗的燈熄了，百葉窗放了下來。',
+        hours:[8,17], closed:'櫥窗的燈熄了，百葉窗放了下來。',
         /* ══ 約會・諾薇兒（ver -1346）══ */
         acts:[ { flag:'ep_shop_nou', withWho:'NOUVELLE', lines:[
           nou('surprise','哇，這裡東西好多。'),
@@ -5064,9 +5113,13 @@ export const TOWNS = {
           ren('lookawaytalk','不要為了那種東西增加隊伍風險。'),
           nou('shocked','可是……！'),
           ren('smile','謝謝妳們，有這份心意我很感激。'),
-          ren('argue','可是——喂你倒是聽我說話啊！'),
-          /* ⚠ ver -1416（Ray：「配的音是 walk」）：這兩拍是主角**走開**，不是跑 —— `se_steps` 是跑步聲。 */
-          { speaker:'PLAYER', blank:true, se:'se_walk' },
+          /* ⚠⚠ ver -1433（Ray：「`walk` 在『喂你倒是聽我說話啊』的時候就播」）——
+             聲音要**壓在她那一句上**：他是在她還在講的時候就走掉的，那個時間差
+             正是這一句的笑點。-1416 原本掛在下一拍（主角的空白框），那就變成
+             「她講完了，他才動」。
+             ⚠ 這兩拍都是主角**走開**不是跑（`se_steps` 是跑步聲）。 */
+          Object.assign(ren('argue','可是——喂你倒是聽我說話啊！'), { se:'se_walk' }),
+          { speaker:'PLAYER', blank:true },
           /* 「臉紅。」＝**只有立繪沒有台詞**的演出拍（台上有人 ⇒ 點擊推進，§6.5 -628）。 */
           ren('shockedCalm',''),
           ren('argue','不可以……你去的話，我扣你分喔！'),
@@ -5583,10 +5636,16 @@ export const TOWNS = {
        ⚠ `map:true` ＝**那一拍攤開小地圖**（演出模式，不吃點擊；見 story.js）。
          蕾娜那一句就疊在地圖上，段落講完地圖自己收。 */
     gates:[
-      { flag:'bel_hint1', need:'ep_bel_enter', skipIf:'ep_bel_altar', afterMoves:3,
-        sides:{ RENNA:'L' }, lines:[ sor('ready','這裡太安靜了。') ] },
+      /* ⚠⚠ ver -1434：**3 格那一道（索「這裡太安靜了」）已整段移到「初入前廳」那一拍**
+         （Ray 指定）—— 它是走進去的第一印象，不是走了三格之後才想起來的事。
+         ⚠ 移走的是**那一句**，不是那個機制：6／10 格那兩道照舊。 */
       { flag:'bel_hint2', need:'ep_bel_enter', skipIf:'ep_bel_altar', afterMoves:6,
-        sides:{ RENNA:'L' }, lines:[ nou('cringe','這麼空的城，感覺好奇怪。') ] },
+        sides:{ RENNA:'L' }, lines:[
+          nou('cringe','這麼空的城，感覺好奇怪。'),
+          /* ⚠ 稿上寫 `think`，蕾娜那一族的鍵是 **`thinking`**（同一張圖）。 */
+          ren('thinking','確實……永夜之後這種地方最容易聚集禍魘，為什麼……'),
+          sor('tired','啊——真無聊。'),
+        ] },
       { flag:'bel_hint3', need:'ep_bel_enter', skipIf:'ep_bel_altar', afterMoves:10,
         sides:{ RENNA:'L' }, lines:[
           any('point','好像……是在那個方向。'),
@@ -5614,6 +5673,14 @@ export const TOWNS = {
        ⚠ 獅階本來就被 `noWild` 擋著（它是休息處），列在這裡是**把 Ray 的話寫全**：
          日後那一格的 `noWild` 若因別的理由拿掉，這一條仍然守得住。 */
     dragonKeepOut: ['dragstair','antecham','throne','crown','offering'],
+    /* ══⚠⚠ **龍踩到謁見前廳就往王座廳跑**（ver -1437，Ray 指定）══
+       `dragonFunnel:{ <那一格>: <下一格> }` —— 牠**停在**那一格之後，
+       下一次移動不再照「往玩家來的方向跑」，而是直接進目標那一格。
+       ⚠ 這是**漏斗不是自動追蹤**：-1433 取消的是「超過五場就自己一路走向王座之間」
+         （Ray：「讓玩家把他往那個方向趕」）—— 這一條只管**最後一步**：
+         被逼到謁見前廳＝已經到死胡同口，再跑就是進王座廳。兩者不衝突。
+       ⚠ 資料寫在城上（鐵律 1）：程式端一個格名都不寫死。 */
+    dragonFunnel: { antecham:'throne' },
     /* ══⚠⚠ **安雅指完方向，祭壇在小地圖上亮起（但不給地名）**（ver -1412，Ray 交辦）══
        `bel_hint3` ＝安雅那一段（初入探索走了 10 格還沒踩到祭壇）演完立的旗；
        `until:'ep_bel_altar'` ＝踩到祭壇就收掉（同三段提示的 `skipIf`：
@@ -5631,44 +5698,64 @@ export const TOWNS = {
          圖上那顆點與這裡的數字是**同一次算出來的**，才不會走鐘（憲法 §6.5.4.4）。
        ⚠ 這張**有迷霧**（城上沒寫 `mist:0`）：沒走到的格子蓋在整片黑霧底下，
          走過的地方才化開（ver -1392）；全部踩過霧就整片撤掉（ver -1393）。
-       ⚠⚠⚠ **ver -1414 重畫（美術交件 `8d8ebe3`：照 `reference/B` 37 格、方向 88 條全對）**
-         —— 整張紙的佈局換了，**37 個點全部移位**，這一組是照新的
-         `resources/map/_spots_belisar.json` 抄的（一個數字都沒有用眼睛估）。
-       ⚠⚠⚠ **`?v=2` 是必要的，不是裝飾**（§5 ver -650）：這是**同名覆蓋** ——
+       ⚠⚠⚠ **ver -1441 再重畫（美術照 `reference/_topology.pdf` ＝ Ray 自己排的拓樸）**
+         —— 整張紙改成**格線版面**（欄距 0.1114、列距 0.1031），**37 個點全部移位**，
+         這一組照新的 `resources/map/_spots_belisar.json` 抄（一個數字都沒有用眼睛估）。
+       ⚠⚠ **接上去之前驗過一次**（照 §6.5.4.3／憲法 -907 的規矩）：46 條邊裡
+         **43 條的方向與版面完全一致**（`left` 的鄰居真的畫在左邊），
+         剩下 3 條是 Ray 圖上**刻意轉折的 L 形**，兩端各走轉折的第一段 ——
+         `starroom.left↔forge.up`／`stairwell.down↔stephall.left`／
+         `dragonrace.down↔waterjail.right`。**那不是斜線，是兩段正交線。**
+       ⚠⚠⚠ **`?v=` 是必要的，不是裝飾**（§5 ver -650）：這是**同名覆蓋** ——
          不跳版的話瀏覽器照樣拿舊的那一張，而**畫面上不會有任何錯誤訊息**，
          症狀只是「點跟圖對不上」（下沉中庭還畫在紙上的那一版）。
          ⚠ 背景走 `ASSET_VER` 是因為檔名是組出來的；小地圖的路徑是**手寫字串**，
            所以直接把 `?v=` 打進去（同 `sfx_saint` 的作法）。 */
     map: {
-      img: 'resources/map/map_belisar.webp?v=2',
+      img: 'resources/map/map_belisar.webp?v=3',
       spots: {
-        altar:[0.7132, 0.8247], antecham:[0.4319, 0.1917], bellroom:[0.7394, 0.4885],
-        bonerack:[0.9277, 0.5881], cages:[0.4311, 0.5890], candlewalk:[0.8459, 0.7573],
-        capstan:[0.5602, 0.6673], crown:[0.4121, 0.0677], culvert:[0.3200, 0.5682],
-        dragonrace:[0.7375, 0.3827], dragstair:[0.4279, 0.3024], draincliff:[0.8546, 0.3829],
-        drywell:[0.0544, 0.3745], entrance:[0.4840, 0.8862], floodway:[0.7134, 0.7568],
-        forge:[0.1093, 0.2845], foyer:[0.4933, 0.8475], greathall:[0.6615, 0.2754],
-        guardhall:[0.4298, 0.3813], incense:[0.1162, 0.5047], lamphall:[0.8542, 0.2718],
-        mirrorpool:[0.4305, 0.4861], mirrorway:[0.9270, 0.6829], muralwalk:[0.1118, 0.3912],
-        offering:[0.5800, 0.0671], oldtomb:[0.4809, 0.6676], ossuary:[0.9421, 0.2751],
-        pillars:[0.6631, 0.3862], rooffall:[0.0537, 0.5024], stairwell:[0.8619, 0.4859],
-        starroom:[0.2282, 0.1792], stelae:[0.4777, 0.7560], stephall:[0.5562, 0.7559],
-        throne:[0.4964, 0.0685], trihall:[0.2345, 0.5677], wardtomb:[0.9425, 0.3854],
-        waterjail:[0.6659, 0.5936],
+        altar:[0.7386, 0.8269], antecham:[0.4043, 0.2081], bellroom:[0.1814, 0.7237],
+        bonerack:[0.5157, 0.4144], cages:[0.7386, 0.4144], candlewalk:[0.2929, 0.6206],
+        capstan:[0.6271, 0.5175], crown:[0.2929, 0.1050], culvert:[0.7386, 0.3112],
+        dragonrace:[0.8500, 0.4144], dragstair:[0.4043, 0.3112], draincliff:[0.8500, 0.3112],
+        drywell:[0.0700, 0.4144], entrance:[0.6271, 0.9300], floodway:[0.7386, 0.7237],
+        forge:[0.1814, 0.4144], foyer:[0.6271, 0.8269], greathall:[0.4043, 0.5175],
+        guardhall:[0.4043, 0.4144], incense:[0.2929, 0.3112], lamphall:[0.2929, 0.5175],
+        mirrorpool:[0.7386, 0.6206], mirrorway:[0.2929, 0.7237], muralwalk:[0.1814, 0.5175],
+        offering:[0.5157, 0.1050], oldtomb:[0.5157, 0.5175], ossuary:[0.6271, 0.3112],
+        pillars:[0.6271, 0.6206], rooffall:[0.0700, 0.5175], stairwell:[0.5157, 0.6206],
+        starroom:[0.2929, 0.2081], stelae:[0.5157, 0.3112], stephall:[0.6271, 0.7237],
+        throne:[0.4043, 0.1050], trihall:[0.2929, 0.4144], wardtomb:[0.5157, 0.2081],
+        waterjail:[0.7386, 0.5175],
       },
     },
     nodes: {
-      throne:    { bg:'Belisar_ThroneHall', name:'貝利薩爾遺址　王座廳', noTime:true, exits:{ left:'crown', right:'offering', down:'antecham' } },
+      throne:    { bg:'Belisar_ThroneHall', name:'貝利薩爾遺址　王座廳', noTime:true, exits:{ right:'offering', down:'antecham', left:'crown' } },
       crown:     { bg:'Belisar_CrownRoom', name:'貝利薩爾遺址　寶冠室', noTime:true, exits:{ right:'throne' } },
-      antecham:  { bg:'Belisar_Antechamber', name:'貝利薩爾遺址　謁見前廳', noTime:true, exits:{ down:'dragstair', up:'throne' } },
+      antecham:  { bg:'Belisar_Antechamber', name:'貝利薩爾遺址　謁見前廳', noTime:true, exits:{ up:'throne', right:'wardtomb', down:'dragstair' } },
       offering:  { bg:'Belisar_RelicRoom', name:'貝利薩爾遺址　聖物室', noTime:true, exits:{ left:'throne' } },
-      dragstair: { bg:'Belisar_LionStair', name:'貝利薩爾遺址　獅階', noTime:true, noWild:true, rest:true, exits:{ up:'antecham', down:'guardhall' } },
-      starroom:  { bg:'Belisar_Orrery', name:'貝利薩爾遺址　星象室', noTime:true, exits:{ right:'guardhall', down:'forge' } },
-      guardhall: { bg:'Belisar_ArmourGallery', name:'貝利薩爾遺址　甲冑廊', noTime:true, exits:{ up:'dragstair', right:'greathall', down:'mirrorpool', left:'starroom' } },
-      greathall: { bg:'Belisar_GreatHall', name:'貝利薩爾遺址　中央大廳', noTime:true, exits:{ left:'guardhall', right:'lamphall', down:'pillars' } },
-      lamphall:  { bg:'Belisar_ChandelierHall', name:'貝利薩爾遺址　枝燈長廊', noTime:true, exits:{ left:'greathall', right:'ossuary' } },
-      ossuary:   { bg:'Belisar_Ossuary', name:'貝利薩爾遺址　納骨堂', noTime:true, exits:{ left:'lamphall', down:'wardtomb' } },
-      mirrorpool:{ bg:'Belisar_StillPool', name:'貝利薩爾遺址　靜水池', noTime:true, exits:{ down:'cages', up:'guardhall' }, acts:[BEL_WATER_FIRST] },
+      /* ══⚠⚠⚠ **初踩獅階：把牠往這個方向逼**（ver -1433，Ray：「玩家只要初踩到
+         獅階，就會觸發對話，**若觸發結算，結算完再跑對話**」）══
+         獅階是**休息處**（`rest:true`）⇒ 帶著帳走進來會先閉棺結算。
+         ⚠⚠ `afterSettle:true` ＝**這一格要結算的話，結算完再演我**
+           （見 `modules/town.js` 的 `runArrival`）。它是**逐段宣告**不是全域換順序：
+           其餘六個「休息處＋acts」的格子（夏爾森林兩格、木雅克兩格、古道溪谷口）
+           照舊是先講話 —— 那幾段是劇情，先被一頁戰績打斷讀起來是斷的。
+         ⚠ `need:'bl_dragon_seen'` ＝**開圖之後**（索菈娜「交給我！」那一拍插的旗）。
+           這是我的判讀：那兩句講的是「往這個方向逼」，而「往哪裡逼」要看得見牠
+           才成立。白天那一趟踩過獅階不會用掉這一次（`need` 不成立＝不演也不記）。 */
+      dragstair: { bg:'Belisar_LionStair', name:'貝利薩爾遺址　獅階', noTime:true, noWild:true, rest:true, exits:{ up:'antecham', down:'guardhall' },
+        acts:[ { flag:'bl_night_lionstair', need:'bl_dragon_seen', afterSettle:true,
+                 sides:{ RENNA:'L' }, lines:[
+          ren('command','把牠往這個方向逼！'),
+          sor('battlecry','瞭解！'),
+        ] } ] },
+      starroom:  { bg:'Belisar_Orrery', name:'貝利薩爾遺址　星象室', noTime:true, exits:{ down:'incense', left:'forge' } },
+      guardhall: { bg:'Belisar_ArmourGallery', name:'貝利薩爾遺址　甲冑廊', noTime:true, exits:{ up:'dragstair', right:'bonerack', down:'greathall', left:'trihall' } },
+      greathall: { bg:'Belisar_GreatHall', name:'貝利薩爾遺址　中央大廳', noTime:true, exits:{ up:'guardhall', right:'oldtomb', left:'lamphall' } },
+      lamphall:  { bg:'Belisar_ChandelierHall', name:'貝利薩爾遺址　枝燈長廊', noTime:true, exits:{ right:'greathall', down:'candlewalk' } },
+      ossuary:   { bg:'Belisar_Ossuary', name:'貝利薩爾遺址　納骨堂', noTime:true, exits:{ right:'culvert', left:'stelae' } },
+      mirrorpool:{ bg:'Belisar_StillPool', name:'貝利薩爾遺址　靜水池', noTime:true, exits:{ up:'waterjail', left:'pillars' }, acts:[BEL_WATER_FIRST] },
       /* ⚠ 枝燈長廊↔下沉中庭是 **`up`／`down`**（ver -1159，Ray：「枝燈長廊往下沉中庭
          應該往上吧」）—— 與佈局圖上的相對位置相反（圖上中庭畫在長廊**下面**）。
          ⚠⚠ **所以小地圖的版面要跟著改**：`tools/map_layout.py` 的 belisar 版面
@@ -5684,31 +5771,76 @@ export const TOWNS = {
          ⚠ `Belisar_SunkenCourt` 那組圖從此沒有人用（美術**先不回收**，等確定不放回來）。
          ⚠⚠ **這座城的休息處因此只剩 `foyer` 前廳一個** —— 那是施工單的設計，不是漏掉。 */
       rooffall:  { bg:'Belisar_RoofFall', name:'貝利薩爾遺址　崩頂坡', noWild:true, exits:{ up:'drywell', right:'muralwalk' } },
-      muralwalk: { bg:'Belisar_MuralGallery', name:'貝利薩爾遺址　壁畫長廊', noTime:true, exits:{ up:'forge', down:'incense', left:'rooffall' } },
-      stairwell: { bg:'Belisar_SpiralWell', name:'貝利薩爾遺址　旋梯井', noTime:true, noWild:true, rest:true, exits:{ up:'draincliff', left:'bellroom' } },
-      pillars:   { bg:'Belisar_Cistern', name:'貝利薩爾遺址　千柱廳', noTime:true, exits:{ right:'dragonrace', up:'greathall', down:'waterjail' }, acts:[BEL_WATER_FIRST] },
-      dragonrace:{ bg:'Belisar_LionSpout', name:'貝利薩爾遺址　獅口水道', noTime:true, exits:{ down:'bellroom', right:'draincliff', left:'pillars' }, acts:[BEL_WATER_FIRST] },
-      draincliff:{ bg:'Belisar_DrainCliff', name:'貝利薩爾遺址　排水崖口', exits:{ left:'dragonrace', down:'stairwell' } },
-      incense:   { bg:'Belisar_ChrismRoom', name:'貝利薩爾遺址　聖油室', noTime:true, exits:{ up:'muralwalk', down:'trihall' } },
-      bellroom:  { bg:'Belisar_BellRoom', name:'貝利薩爾遺址　鐘室', noTime:true, exits:{ up:'dragonrace', right:'stairwell' } },
-      drywell:   { bg:'Belisar_DryWell', name:'貝利薩爾遺址　枯井底', noTime:true, noWild:true, exits:{ down:'rooffall', right:'forge' } },
+      muralwalk: { bg:'Belisar_MuralGallery', name:'貝利薩爾遺址　壁畫長廊', noTime:true, exits:{ up:'forge', down:'bellroom', left:'rooffall' } },
+      stairwell: { bg:'Belisar_SpiralWell', name:'貝利薩爾遺址　旋梯井', noTime:true, noWild:true, rest:true, exits:{ up:'oldtomb', right:'pillars', down:'stephall', left:'candlewalk' } },
+      pillars:   { bg:'Belisar_Cistern', name:'貝利薩爾遺址　千柱廳', noTime:true, exits:{ right:'mirrorpool', down:'stephall', left:'stairwell' }, acts:[BEL_WATER_FIRST] },
+      dragonrace:{ bg:'Belisar_LionSpout', name:'貝利薩爾遺址　獅口水道', noTime:true, exits:{ up:'draincliff', down:'waterjail', left:'cages' }, acts:[BEL_WATER_FIRST] },
+      draincliff:{ bg:'Belisar_DrainCliff', name:'貝利薩爾遺址　排水崖口', exits:{ down:'dragonrace', left:'culvert' } },
+      incense:   { bg:'Belisar_ChrismRoom', name:'貝利薩爾遺址　聖油室', noTime:true, exits:{ up:'starroom', down:'trihall' } },
+      bellroom:  { bg:'Belisar_BellRoom', name:'貝利薩爾遺址　鐘室', noTime:true, exits:{ up:'muralwalk', right:'mirrorway' } },
+      drywell:   { bg:'Belisar_DryWell', name:'貝利薩爾遺址　枯井底', noTime:true, noWild:true, exits:{ right:'forge', down:'rooffall' } },
       /* ⚠ 安全點（ver -1397，Ray：「旋梯井　獅階　武器工坊為安全點　不出怪」）——
          另外兩格（`stairwell`／`dragstair`）本來就寫了 `noWild`。 */
-      forge:     { bg:'Belisar_Forge', name:'貝利薩爾遺址　兵器工坊', noTime:true, noWild:true, rest:true, exits:{ down:'muralwalk', right:'trihall', up:'starroom', left:'drywell' } },
-      trihall:   { bg:'Belisar_TriArch', name:'貝利薩爾遺址　三拱廳', noTime:true, exits:{ left:'forge', right:'culvert', up:'incense' } },
-      waterjail: { bg:'Belisar_WaterJail', name:'貝利薩爾遺址　水牢', noTime:true, exits:{ right:'bonerack', up:'pillars', left:'capstan' }, acts:[BEL_WATER_FIRST] },
-      bonerack:  { bg:'Belisar_Sarcophagi', name:'貝利薩爾遺址　石棺廊', noTime:true, exits:{ down:'mirrorway', up:'wardtomb', left:'waterjail' } },
-      wardtomb:  { bg:'Belisar_GuardTomb', name:'貝利薩爾遺址　近衛墓室', noTime:true, exits:{ down:'bonerack', up:'ossuary' } },
-      culvert:   { bg:'Belisar_Culvert', name:'貝利薩爾遺址　暗渠', noTime:true, exits:{ left:'trihall', down:'oldtomb' }, acts:[BEL_WATER_FIRST] },
-      mirrorway: { bg:'Belisar_MirrorWalk', name:'貝利薩爾遺址　鏡廊', noTime:true, exits:{ up:'bonerack', left:'candlewalk' } },
-      cages:     { bg:'Belisar_Cages', name:'貝利薩爾遺址　獸欄', noTime:true, exits:{ up:'mirrorpool', right:'oldtomb' } },
-      oldtomb:   { bg:'Belisar_Catacomb', name:'貝利薩爾遺址　地下墓道', noTime:true, exits:{ right:'capstan', down:'stelae', left:'cages', up:'culvert' } },
-      capstan:   { bg:'Belisar_Capstan', name:'貝利薩爾遺址　絞盤室', noTime:true, exits:{ left:'oldtomb', down:'stephall', right:'waterjail' } },
-      candlewalk:{ bg:'Belisar_CandleWalk', name:'貝利薩爾遺址　燭廊', noTime:true, exits:{ right:'mirrorway', left:'floodway' } },
-      stelae:    { bg:'Belisar_SteleWalk', name:'貝利薩爾遺址　銘碑廊', noTime:true, exits:{ up:'oldtomb', right:'stephall' } },
-      stephall:  { bg:'Belisar_StairHall', name:'貝利薩爾遺址　階梯大廳', noTime:true, exits:{ up:'capstan', right:'floodway', left:'stelae', down:'foyer' } },
-      floodway:  { bg:'Belisar_Floodway', name:'貝利薩爾遺址　積水甬道', noTime:true, exits:{ down:'altar', left:'stephall', right:'candlewalk' }, acts:[BEL_WATER_FIRST] },
-      foyer:     { bg:'Belisar_Foyer', name:'貝利薩爾遺址　前廳', noTime:true, noWild:true, rest:true, exits:{ down:'entrance', up:'stephall' } },
+      forge:     { bg:'Belisar_Forge', name:'貝利薩爾遺址　兵器工坊', noTime:true, noWild:true, rest:true, exits:{ up:'starroom', right:'trihall', down:'muralwalk', left:'drywell' } },
+      trihall:   { bg:'Belisar_TriArch', name:'貝利薩爾遺址　三拱廳', noTime:true, exits:{ up:'incense', right:'guardhall', left:'forge' } },
+      waterjail: { bg:'Belisar_WaterJail', name:'貝利薩爾遺址　水牢', noTime:true, exits:{ up:'cages', right:'dragonrace', down:'mirrorpool', left:'capstan' }, acts:[BEL_WATER_FIRST] },
+      bonerack:  { bg:'Belisar_Sarcophagi', name:'貝利薩爾遺址　石棺廊', noTime:true, exits:{ up:'stelae', left:'guardhall' } },
+      /* ⚠ ver -1437（Ray：「近衛墓室設為安全點」）：`rest:true` ＝走進去就閉棺結算
+         （§6.5.4.3 的第四條結算路徑，小地圖上會多一個墨圈＋「（休息處）」）。
+         ⚠ 安全點一律 `noWild`：它是這一局的收尾點，在收尾點刷怪等於「先打一場再結算」。 */
+      /* ══⚠⚠⚠ **ver -1438：整張圖的 `exits` 照 Ray 的新佈局重接**
+         （`reference/_topology.pdf`，Ray：「用這張圖重接古城地圖」）══
+         · 方向是從那份 PDF 的**向量**讀出來的（43 段線 → 串成 40 條折線 →
+           兩端各自的走向），不是用眼睛judge的 —— 960px 的點陣圖判讀過，錯到不能用。
+         · 40 條邊、37 格、4 個環；四向樞紐＝兵器工坊／甲冑廊／旋梯井／階梯大廳。
+         · **三條是 L 形**（`starroom↔forge`／`stairwell↔stephall`／`draincliff↔waterjail`）
+           —— 兩端不相反但也不同名，不會「一直按同方向在兩格之間彈」。
+         ⚠⚠⚠ **判讀的坑（-1438 第一版錯在這裡，Ray 連指三處）**：一條線常常
+           **橫跨好幾格**（他把格子排成一排，線就從第一格畫到最後一格）——
+           把它當成「一條邊」就會**跳過中間那幾格**，於是納骨堂變成沒有線、
+           獸欄與獅口水道成了孤島。
+           ⇒ 正解是**逐對判定**：兩格在網格上相鄰（同欄鄰列／同列鄰欄）、
+             而且**它們之間那段空隙被線覆蓋**，才算一條邊。
+           ⚠ 折線（線在空白處轉彎）另外處理：它連的是**沿途碰到的第一個格子**，
+             `dragonrace↔waterjail` 就是這樣（那條垂直線同時是排水崖口→獅口水道
+             那一段，再往下轉左接到水牢）。 */
+      wardtomb:  { bg:'Belisar_GuardTomb', name:'貝利薩爾遺址　近衛墓室', noTime:true,
+        rest:true, noWild:true, exits:{ down:'stelae', left:'antecham' } },
+      culvert:   { bg:'Belisar_Culvert', name:'貝利薩爾遺址　暗渠', noTime:true, exits:{ right:'draincliff', down:'cages', left:'ossuary' }, acts:[BEL_WATER_FIRST] },
+      mirrorway: { bg:'Belisar_MirrorWalk', name:'貝利薩爾遺址　鏡廊', noTime:true, exits:{ up:'candlewalk', left:'bellroom' } },
+      cages:     { bg:'Belisar_Cages', name:'貝利薩爾遺址　獸欄', noTime:true, exits:{ up:'culvert', right:'dragonrace', down:'waterjail' } },
+      oldtomb:   { bg:'Belisar_Catacomb', name:'貝利薩爾遺址　地下墓道', noTime:true, exits:{ right:'capstan', down:'stairwell', left:'greathall' } },
+      capstan:   { bg:'Belisar_Capstan', name:'貝利薩爾遺址　絞盤室', noTime:true, exits:{ right:'waterjail', left:'oldtomb' } },
+      candlewalk:{ bg:'Belisar_CandleWalk', name:'貝利薩爾遺址　燭廊', noTime:true, exits:{ up:'lamphall', right:'stairwell', down:'mirrorway' } },
+      stelae:    { bg:'Belisar_SteleWalk', name:'貝利薩爾遺址　銘碑廊', noTime:true, exits:{ up:'wardtomb', right:'ossuary', down:'bonerack' } },
+      stephall:  { bg:'Belisar_StairHall', name:'貝利薩爾遺址　階梯大廳', noTime:true, exits:{ up:'pillars', right:'floodway', down:'foyer', left:'stairwell' } },
+      floodway:  { bg:'Belisar_Floodway', name:'貝利薩爾遺址　積水甬道', noTime:true, exits:{ down:'altar', left:'stephall' }, acts:[BEL_WATER_FIRST] },
+      /* ══⚠⚠ **那一夜：走進前廳**（ver -1433，Ray 交稿）══ 索菈娜聞出牠還在。
+         ⚠ `need` ＝任務探索開著（同中庭那一段，旗名讀 `QUEST_LOCK`）——
+           白天那一趟走進前廳不演這一段。
+         ⚠ 這一格是**休息處**（`rest:true`）：帶著帳走進來會先結算 —— 那一段
+           `afterSettle` 只有獅階要（Ray 指定），這裡照舊「先講話」。 */
+      foyer:     { bg:'Belisar_Foyer', name:'貝利薩爾遺址　前廳', noTime:true, noWild:true, rest:true, exits:{ up:'stephall', down:'entrance' },
+        /* ══⚠⚠ **初入前廳**（ver -1434，Ray 交稿）══ `ep_bel_enter` 那一段的 `goto`
+           就是這一格，所以白天走進古城的那一次抵達必定演到它。
+           ⚠ 安雅與諾薇兒那兩拍**只有立繪沒有台詞**（稿上就是「安：lookup／諾：shock」）
+             —— 台上有人 ⇒ 點擊推進（§6.5 的 -628）。
+           ⚠ 索菈娜那一句是從 `gates` 的 3 格閘門搬過來的（見那邊的說明）。
+           ⚠ 排在夜襲那一段**前面**：兩段的 `need` 不同（這一段是 `ep_bel_enter`），
+             而白天一定先演完，不會互相插隊。 */
+        acts:[ { flag:'bl_foyer_first', need:'ep_bel_enter', sides:{ RENNA:'L' }, lines:[
+          any('lookup',''),
+          nou('shock',''),
+          sor('ready','這裡太安靜了。'),
+        ] },
+          { flag:'bl_night_foyer', need:QUEST_LOCK.flag, until:QUEST_LOCK.until,
+                 sides:{ RENNA:'L' }, lines:[
+          sor('guardthinking','牠在。'),
+          nou('surprise','妳怎麼知道？'),
+          sor('guardthinking','氣味、聲音、溼度、痕跡……很多東西。'),
+          any('smilesneaky','小狗？'),
+          sor('smile','妳呀……'),
+        ] } ] },
       /* ══⚠⚠ **入口改用大中庭那一張**（ver -1377，Ray：「Belisar_GreatCourt_day
            貝利薩爾的入口改成這一張」）══
          ⚠⚠⚠ **一定要配 `noTime:true`**，而且 `bg` 要寫到 `_day` 為止 —— 因為這個地點
@@ -5838,6 +5970,31 @@ export const TOWNS = {
           ren('meltdown','……'),
           Object.assign(ren('talkwork','走吧。'), { flags:['ep_belisar_done'] }),
           sor('confuse','……'),
+        ] },
+          /* ══⚠⚠⚠ **那一夜：降落古城中庭**（ver -1433，Ray 交稿）══════════════
+             `need` ＝任務探索開著（`QUEST_LOCK.flag`，那一夜演完插的）⇒ 這一段
+             只在**重返**那一趟演；白天那兩段的旗早就立了，不會互相插隊。
+             ⚠ 旗名讀 `QUEST_LOCK`（鐵律 7）—— 不抄第二份字串。
+             ⚠ **不寫 `goto`**：降下來之後玩家是自由的（那正是 -1416 把強制轉場
+               拿掉的理由），這一段只是抵達的戲。
+             ⚠ 「(主角空白)se_walk」那一拍 —— 他往前走了一步，她伸手；
+               下一拍 `reach` 的「啊……」就是伸出去的那隻手。
+             ⚠ 稿上寫 smile，而諾薇兒**沒有 `smile` 這張差分** ——
+               **ver -1434 Ray 指定用 `Nouvelle_SI_bigsmileclose.webp`**（＝`bigsmileclose`）。
+               -1433 我先用最接近的 `happy` 頂著，已換掉。
+             ⚠ 安雅那一拍**只有立繪沒有台詞**（稿上就是「安：steady」）——
+               台上有人 ⇒ 點擊推進（§6.5 的 -628）。 */
+          { flag:'bl_night_land', need:QUEST_LOCK.flag, until:QUEST_LOCK.until,
+            sides:{ RENNA:'L' }, lines:[
+          sor('tired','呼，還真的能降落！'),
+          nou('cringe','不知道那隻龍還在不在……'),
+          ren('meltdown','……'),
+          ren('crying','我覺得還是……'),
+          { speaker:'PLAYER', blank:true, se:'se_walk' },
+          ren('reach','啊……'),
+          nou('bigsmileclose','我們走吧。'),
+          any('steady',''),
+          ren('blushed','好……'),
         ] } ] },
       /* ══⚠⚠⚠ 大廳祭壇的那一場戲（ver -1353，Ray 交稿）══════════════════════
          ⚠⚠ **髮飾脫落那一拍插 `renna_hairpin_lost`** ＝ 從此蕾娜好感封頂 T3
@@ -5947,8 +6104,23 @@ export const TOWNS = {
                §6.5.4 的 -433）。
              ⚠⚠ 收圖那一拍寫 `cg:null` ＝**回到原背景**（走黑幕，那是「這張插圖
                結束了」的語氣，§6.5 的 -628）。 */
+          /* ⚠ ver -1433（Ray：「龍吃了髮飾的那拍播 `se_enemy_throneattack`」）——
+             這一拍就是牠**咬下去**的那一刻（髮飾也是在這裡掉的，旗掛在同一拍）。 */
+          /* ⚠⚠ ver -1441（Ray：「蕾娜跌倒插畫**由上到下**平移，**停下後才出對話框**，
+             平移結尾**不要把蕾娜的臉移出畫面**」）：
+             · `cgPan:'down'` ＝由上往下（-1397 寫的是 `up`）。
+             · ⚠⚠ 這張是**橫圖**（1536×1024）擺在直框裡 —— `object-position` 的 Y
+               在 `cover` 之下推不動它（上下本來就滿版），所以走 transform 版
+               （`style.css` 的 `.pan-v`），三個參數是**這一張圖**的：
+                 `cgPanK` 放大倍率／`cgPanA` 起點／`cgPanB` 終點。
+             · **18%→8% 是量過的**（離線把兩端的畫面合成出來看）：起點再往上一點
+               （26%）圖就會脫出框、上緣露黑邊；終點再往下一點（<8%）她的頭頂會被切掉。
+               結尾同時看得到掉在地上的髮飾 —— 那正是這一拍要講的事。
+             · `delay` ＝**平移跑完才出對話框**（2.6 秒的動畫 ＋ 一點餘裕）。 */
           Object.assign(ren(null,'啊……'),
-            { flags:['renna_hairpin_lost'], cg:'020-rennadrop', cgPan:'up', cgNoTime:true,
+            { flags:['renna_hairpin_lost'], cg:'020-rennadrop', cgNoTime:true,
+              cgPan:'down', cgPanK:1.55, cgPanA:'18%', cgPanB:'8%', delay:2750,
+              se:'se_enemy_throneattack',
               hide:['SORANA','RENNA','NOUVELLE','ANYA'] }),
           /* ⚠ ver -1413（Ray：「索：『危險！』的時候播破瓦聲」）——
              龍咆已經移到牠出現那一拍，這裡改成崩瓦；後面那個演出拍**不再重複**

@@ -3,7 +3,7 @@
   "configurations": [
     {
       "name": "tivot-ray",
-      "runtimeExecutable": "py",
+      "runtimeExecutable": "python3",
       "runtimeArgs": [
         "-c",
         "import os,functools,http.server\np=int(os.environ.get('PORT','8000'))\nh=functools.partial(http.server.SimpleHTTPRequestHandler, directory=os.getcwd())\n# ThreadingHTTPServer：單執行緒版會被一條 keep-alive 連線卡住，backlog 填滿之後\n# 新連線一律 connection refused —— 症狀與「伺服器被回收」一模一樣（ver -1370 實測）。\nhttp.server.ThreadingHTTPServer.allow_reuse_address=True\nsrv=http.server.ThreadingHTTPServer(('',p),h)\nsrv.daemon_threads=True\nprint('serving on',p,flush=True)\nsrv.serve_forever()"
@@ -13,7 +13,7 @@
     },
     {
       "name": "tivot",
-      "runtimeExecutable": "py",
+      "runtimeExecutable": "python3",
       "runtimeArgs": [
         "-c",
         "import os,functools,http.server\np=int(os.environ.get('PORT','8000'))\nh=functools.partial(http.server.SimpleHTTPRequestHandler, directory=os.getcwd())\n# ThreadingHTTPServer：單執行緒版會被一條 keep-alive 連線卡住，backlog 填滿之後\n# 新連線一律 connection refused —— 症狀與「伺服器被回收」一模一樣（ver -1370 實測）。\nhttp.server.ThreadingHTTPServer.allow_reuse_address=True\nsrv=http.server.ThreadingHTTPServer(('',p),h)\nsrv.daemon_threads=True\nprint('serving on',p,flush=True)\nsrv.serve_forever()"
@@ -23,7 +23,7 @@
     },
     {
       "name": "tivot-verify",
-      "runtimeExecutable": "py",
+      "runtimeExecutable": "python3",
       "runtimeArgs": [
         "-c",
         "import os,functools,http.server\np=int(os.environ.get('PORT','8000'))\nh=functools.partial(http.server.SimpleHTTPRequestHandler, directory=os.getcwd())\n# ThreadingHTTPServer：單執行緒版會被一條 keep-alive 連線卡住，backlog 填滿之後\n# 新連線一律 connection refused —— 症狀與「伺服器被回收」一模一樣（ver -1370 實測）。\nhttp.server.ThreadingHTTPServer.allow_reuse_address=True\nsrv=http.server.ThreadingHTTPServer(('',p),h)\nsrv.daemon_threads=True\nprint('serving on',p,flush=True)\nsrv.serve_forever()"

@@ -201,3 +201,5 @@ when	from	to	reason
 20260916-231329	resources/map/_spots_belisar.json	_recycle/resources/map/_spots_belisar.json	貝利薩爾小地圖重畫（照 reference/B 的拓樸，舊版是 38 格提案版、還畫著 ver -1403 就移除的下沉中庭）
 20260916-231720	resources/audio/se/se_waterfall.m4a	_recycle/resources/audio/se/se_waterfall.m4a	ver -1413 的程序合成暫代品；Ray 於 -1414 交了真的錄音
 20260916-235329	resources/background/plains/Plains_Cairn_day.webp	_recycle/resources/background/plains/Plains_Cairn_day.webp	石塚群照荒蕪梯度重畫（ver -1414，Ray：越靠近終點越荒蕪）
+20260917-162830	resources/map/map_belisar.webp	_recycle/resources/map/map_belisar.webp	貝利薩爾小地圖照 Ray 的 _topology.pdf 重排重畫（ver -1435）：舊版有斜線、版面是模型自己排的
+20260917-162830	resources/map/_spots_belisar.json	_recycle/resources/map/_spots_belisar.json	貝利薩爾小地圖照 Ray 的 _topology.pdf 重排重畫（ver -1435）：舊版有斜線、版面是模型自己排的

@@ -1319,15 +1319,28 @@ function leaveMapRitual(done){
    **三個狀態，都是「這一趟進圖」的**（同上一版；`open()` 歸零、不進存檔）：
      · `dragonNode`   牠站在哪一格
      · `dragonFights` 這一趟打了幾場（Ray 的「從開圖開始起算」）
-     · `dragonAuto`   超過 5 場之後：不再管玩家來向，自己往王座之間走
+     · `dragonSeenFights` 開圖之後打了幾場（`afterThree` 那一段的門檻，ver -1433）
+     ⚠ 原本還有一個 `dragonAuto`（超過 5 場自己往王座之間走）—— **ver -1433 取消**，
+       見下面那一段的說明。
 
    ⚠ **看得見是另一件事**：`bl_dragon_seen`（「交給我！」那一拍插的旗）——
      插旗之前 `dragonAtNode()` 回 null ＝小地圖沒有紅點（Ray：「四戰前就是瞎找」）。 */
-const DRAGON_AUTO_AFTER = 5;     // 打超過這麼多場還沒逼進王座之間 → 牠自己走（Ray）
+/* ⚠⚠⚠ **ver -1433：「牠自己往王座之間走」整條取消**（Ray：「取消龍自己往王座廳跑，
+   讓玩家把他往那個方向趕」）—— -1421 的 `DRAGON_AUTO_AFTER`(5)／`dragonAuto`／
+   `dragonAutoStep()` 全部退役。
+   ⚠⚠ **那條路原本兼著當「卡住了的保險絲」**：牠躲進打不起來的格子時，五場之後
+     自動模式會把牠帶出來。拿掉之後那個保險沒有了 ⇒ **-1432 的 `dragonCanStop`
+     是這一條成立的前提**（牠永遠停在踩得到的格子上）。兩條要一起看，
+     不要單獨把其中一條改回去。
+   ⚠ 「把牠逼到最深處」現在真的是玩家的事：牠只在**打完一場**才往玩家來的方向跑一格。 */
 const DRAGON_THRONE = 'throne';  // 「王座之間」那一格
 const DRAGON_ROLL_P = 0.25;      // 前三場之後「任一移動點」的遭遇機率（ver -1426 由 50% 改 25%，Ray：「讓玩家多開圖」）
 const DRAGON_FIRST_NODE = 'stephall';   // 二番戰必刷的那一格（Ray：階梯大廳）
-let dragonNode = null, dragonFights = 0, dragonAuto = false;
+let dragonNode = null, dragonFights = 0;
+/* 開圖（`bl_dragon_seen`）之後打了幾場 —— `DRAGON_LINES.afterThree` 那一段的門檻
+   （ver -1433）。⚠ 與 `dragonFights` 一樣是**這一趟進圖**的狀態（`open()` 歸零、
+   不進存檔）：離圖再回來重算，而那一夜本來就走不開（`QUEST_LOCK` 只准降古城）。 */
+let dragonSeenFights = 0;
 let dragonRollHit = false;       // 這一步擲到了沒（`go()` 擲、`dragonActDue` 只讀）
 /* 「這一場牠已經移動過了」—— 攤開地圖那一下先移了，段落收尾就不要再移一次。 */
 let dragonJustPlaced = false;
@@ -1364,33 +1377,132 @@ function stepToward(from, goal){
   }
   return null;
 }
-/* 把牠擺到某一格的**隔壁任一位置**（Ray：「顯示龍在當前格的隔壁任一位置」）。 */
+/* ══⚠⚠⚠ **牠不可以停在「打不起來」的格子上**（ver -1432）══════════════════════
+   `dragonActDue` 的第一行就是 `if(n.noWild) return null`（ver -1420，Ray：「追擊戰要
+   從進到古城內開始，為什麼我設成安全區的前廳會遭遇戰鬥？古城外也是安全區」）——
+   **所以牠一旦停在那種格子上，玩家踩上去什麼都不會發生**；而「打完一場才移動一格」
+   是位置制的規則（-1421）⇒ 打不到就不會動，**牠永遠躲在那裡，追逐當場死鎖**，
+   而且畫面上沒有任何錯誤訊息（自動模式要 `dragonFights>5` 才開，卡住就湊不到場數）。
+   `resources/map/_belisar_worklist.md` §四「入口不能當逃生口」講的就是這件事 ——
+   古城中庭（`entrance`）正是 `noWild` 的其中一格。
+
+   ⚠⚠ **判準只有 `n.noWild` 一個**（鐵律 7）：與那一行 `dragonActDue` 讀的是同一個真相。
+     不要另外列一張「牠不准去的格子」名單 —— 兩份必然走鐘（日後某一格改成安全區，
+     名單那一份不會有人記得更新）。
+   ⚠⚠⚠ **不可以改成「完全不准進 noWild 的格子」**：實測貝利薩爾 37 格裡 8 格是
+     `noWild`，而它們正好是**關節** —— 把它們整個拿掉，剩下 29 格會裂成好幾塊，
+     從王座之間只走得到 4 格，牠連自動模式都走不回去。
+   ⇒ 作法是**穿過去、不停下**：落點不能停就沿著同一個方向再滑一格，直到落在
+     打得起來的格子上。 */
+function dragonCanStop(id){
+  const n=((TOWNS[townId]||{}).nodes||{})[id];
+  return !!n && !n.noWild;
+}
+/* ══⚠⚠⚠ **追擊分兩階段**（ver -1442，Ray 定案：「追擊戰有兩階段／第一階段是隨機
+   亂跑／第二階段是索拉娜開圖以後，玩家從左側進房，他就從右側出，從下方進他就從
+   上方出／只有一條路的話就往唯一的反方向走／有兩條沒有辦法判斷該走哪條（無相反
+   方向）一率往靠近王座廳的方向走」）══
+
+   | | 何時 | 牠怎麼動 |
+   |---|---|---|
+   | **第一階段** | 索菈娜還沒開圖（`bl_dragon_seen` 沒插） | **隨機**（玩家手上沒有地圖，本來就讀不出動向） |
+   | **第二階段** | 開圖之後 | **穿過去**：你從左側進房牠就從右側出 ＝ 照你按的那個方向直走 |
+
+   第二階段判不出來時的兩條退路（**照這個順序**）：
+     ① 只有一條路 → 走它（死胡同就是原路折回）
+     ② 有兩條以上、而且沒有「正對面」那一條 → **一律往王座廳的方向**（`stepToward`）
+   ⚠⚠ 第二階段整段**沒有亂數** —— 玩家看得見小地圖，牠的每一步都要能被預測；
+     -1421~-1441 的寫法是「直走那一條不存在就隨機挑」，而貝利薩爾 37 格裡直走
+     多半不存在（46 條邊、平均度數 2.5）⇒ 實際跑起來大半落進隨機分支，
+     讀起來就是「打一場牠就亂跳一格」（Ray -1442 回報）。 */
+function dragonRandom(list){ return list[Math.floor(Math.random()*list.length)]; }
+function dragonHerdOn(){ return !!prog.hasFlag('bl_dragon_seen'); }
+/* `from` ＝牠站的那一格、`cameDir` ＝玩家按的那個方向、`pool` ＝可挑的出口
+   （已經濾掉回頭路，濾完是空的才把回頭路放回來）、`all` ＝這一格全部的出口。 */
+function dragonPickExit(from, cameDir, pool, all){
+  if(!dragonHerdOn()) return dragonRandom(pool);          // 第一階段：隨機亂跑
+  const straight = cameDir && pool.find(e=>e.dir===cameDir);
+  if(straight) return straight;                           // 穿過去（你從左進、牠從右出）
+  if(all.length===1) return all[0];                       // 只有一條路
+  if(pool.length===1) return pool[0];
+  const nx = stepToward(from, DRAGON_THRONE);             // 判不出來 → 往王座廳
+  return (nx && pool.find(e=>e.to===nx)) || pool[0];
+}
+/* 從 `from` 往 `dir` 走一格；落點不能停就**繼續往前滑**（同方向優先，其次交給
+   `dragonPickExit` 挑）。回傳能停的那一格；真的滑不出去就回 null（呼叫端留在
+   原地 —— 留在原地至少玩家踩得到，那比躲進安全屋好）。 */
+const DRAGON_SLIDE_MAX = 6;      // 保險絲：貝利薩爾最長的一串 noWild 只有 2 格
+function dragonSlide(from, dir){
+  let cur=from, d=dir, seen={ [from]:true };
+  for(let i=0;i<DRAGON_SLIDE_MAX;i++){
+    const ns=nodeNeighbors(cur); if(!ns.length) return null;
+    const back = d ? OPPOSITE[d] : null;
+    const straight = d && ns.find(e=>e.dir===d && !seen[e.to]);
+    const pool = straight ? [straight]
+               : ns.filter(e=>e.dir!==back && !seen[e.to]);
+    const list = pool.length ? pool : ns.filter(e=>!seen[e.to]);
+    if(!list.length) return null;
+    const e = dragonPickExit(cur, d, list, ns);     // ⚠ 兩階段同一支（見上）
+    cur=e.to; d=e.dir; seen[cur]=true;
+    if(dragonCanStop(cur)) return cur;
+  }
+  return null;
+}
+/* 把牠擺到某一格的**隔壁任一位置**（Ray：「顯示龍在當前格的隔壁任一位置」）。
+   ⚠ 隔壁那幾格裡先挑**停得住**的（見 `dragonCanStop`）；全部停不住才滑出去。 */
 function dragonPlaceNear(id){
   const ns=nodeNeighbors(id);
   if(!ns.length){ dragonNode=id; return; }
-  dragonNode = ns[Math.floor(Math.random()*ns.length)].to;
+  const ok = ns.filter(e=>dragonCanStop(e.to));
+  if(ok.length){ dragonNode = ok[Math.floor(Math.random()*ok.length)].to; return; }
+  const e = ns[Math.floor(Math.random()*ns.length)];
+  dragonNode = dragonSlide(id, e.dir) || e.to;
 }
 /* ══ 打完一場：**往玩家進入房間的反方向**移動一格 ══
    `pendingDir` ＝玩家按的那個方向（`backDir` 是它的反向＝回頭路）——
    所以「進入房間的反方向」＝**繼續往玩家來的方向前進**，也就是 `pendingDir`。
-   ⚠ 那個方向沒有路就退而求其次：**任何一個不是回頭路的出口**（隨機挑）；
-     真的只剩回頭路（死胡同）就往回走 —— 那正是「撞牆後通常只有一條路」。 */
+   ⚠ 那個方向沒有路時怎麼辦，看 `dragonPickExit`（ver -1442 的兩階段）：
+     第一階段隨機、第二階段「唯一那條路 → 往王座廳」，**不是隨機**。 */
 function dragonFleeStep(cameDir){
   if(!dragonNode) return;
+  /* ══⚠⚠ **漏斗：站在那一格就直接往目標跑**（ver -1437，Ray：「龍的移動行為
+     只要踩到謁見前廳就會往王座廳跑」）══ 表在城上（`dragonFunnel`，鐵律 1）。
+     ⚠ 排在所有規則**之前**：它講的是「這一格的下一步是定死的」，
+       不受「往玩家來的方向跑」與 `dragonCanStop` 的挑選影響（目標那一格是決戰格，
+       本來就停得住）。 */
+  { const f=((TOWNS[townId]||{}).dragonFunnel||{})[dragonNode];
+    if(f && ((TOWNS[townId]||{}).nodes||{})[f]){ dragonNode=f; return; } }
   const ns=nodeNeighbors(dragonNode);
   if(!ns.length) return;
-  const straight = cameDir && ns.find(e=>e.dir===cameDir);
-  if(straight){ dragonNode=straight.to; return; }
   const back = cameDir ? OPPOSITE[cameDir] : null;
+  /* ⚠⚠ **挑方向走 `dragonPickExit`**（ver -1442，兩階段，見上）——
+     回頭路先排除，只剩回頭路（死胡同）才往回走。
+     ⚠ 落點停不住就沿**那個方向**滑出去（ver -1432，見 `dragonCanStop`）——
+       「往反方向跑」這件事不變，變的只是它不會停在打不起來的格子上。 */
   const others = ns.filter(e=>e.dir!==back);
-  const pick = (others.length?others:ns)[Math.floor(Math.random()*(others.length||ns.length))];
-  dragonNode = pick.to;
+  const pick = dragonPickExit(dragonNode, cameDir, others.length?others:ns, ns);
+  /* ⚠ 那個方向整條都停不住（前廳→古城中庭、祭壇那幾條 `noWild` 的死路）
+     ⇒ **改挑別的方向**，不要留在原地：「打完就跑一格」是這一段的手感，
+       原地不動會讀成「牠沒反應」。真的一個可停的鄰格都沒有才留在原地
+       （那時留著至少玩家踩得到，比躲進安全屋好）。 */
+  dragonNode = dragonCanStop(pick.to) ? pick.to
+             : (dragonSlide(dragonNode, pick.dir) || (()=>{
+                 const ok = ns.filter(e=>e.dir!==back && dragonCanStop(e.to));
+                 const pool = ok.length ? ok : ns.filter(e=>dragonCanStop(e.to));
+                 return pool.length
+                   ? dragonPickExit(dragonNode, cameDir, pool, ns).to : dragonNode;
+               })());
 }
 /* ══ 超過 5 場之後：自己往王座之間走一格（玩家每動一步牠就動一步）══ */
-function dragonAutoStep(){
-  if(!dragonAuto || !dragonNode || dragonNode===DRAGON_THRONE) return;
-  const nx=stepToward(dragonNode, DRAGON_THRONE);
-  if(nx) dragonNode=nx;
+/* ══⚠⚠ **開圖三戰之後的那一段**（ver -1433，台詞在 `DRAGON_LINES.afterThree`）══
+   ⚠ 它**不必踩到牠**：走到哪一格都會演（同閘門的語氣）——所以判定在這裡，
+     不在 `dragonActDue`（那一支的前提就是「踩到牠」）。
+   ⚠ 只演一次（段落自己的 `flag`，演完由 act 的收尾記）。 */
+function dragonTalkDue(){
+  if(!dragonChaseOn() || !prog.hasFlag('bl_dragon_seen')) return null;
+  const a=DRAGON_LINES.afterThree;
+  if(!a || dragonSeenFights < 3 || prog.hasFlag(a.flag)) return null;
+  return a;
 }
 /* ⚠⚠ **牠現在在哪一格 —— 只有這一支回答**（鐵律 7）：小地圖的紅點與
    「走到那一格就開打」問的是同一件事。
@@ -2159,7 +2271,16 @@ function renderMap(){
        不會出現在這張紙上，拿它當條件會讓霧永遠撤不掉。
      ⚠⚠ 收成**一個旗標**（鐵律 7）：這一支同時管「畫不畫整片霧」與「沒走過的格子
        畫不畫點與名字」—— 全部踩過時後者本來就不成立，兩者不會打架。 */
-  const fog = fogOn() && !ids.every(seenNode);
+  /* ══ 探索率（ver -1441，Ray：「小地圖顯示地圖探索率」）══
+     ⚠⚠ 分母是**這張紙上有墨點的那幾格**（`ids`），與下面「全部踩過就撤霧」用的是
+       **同一個數**（鐵律 7：算一次，兩個人讀）—— 城裡若有節點沒畫進地圖，它本來
+       就不會出現在這張紙上，算進分母會讓探索率**永遠到不了 100%**，
+       而那一刻霧卻已經撤了，兩個數字互相打臉。
+     ⚠ 沒有霧的圖（`mist:0` 的大城）照樣顯示：探索率講的是「我走過幾格」，
+       與「看不看得到」是兩件事。 */
+  const seenN = ids.filter(seenNode).length;
+  const pct   = ids.length ? Math.round(seenN/ids.length*100) : 100;
+  const fog = fogOn() && seenN < ids.length;
   v.innerHTML='<div class="tm-frame">'
     + '<img class="tm-img" src="'+M.img+'" alt="">'
     + (fog ? fogShroud(M, ids) : '')
@@ -2200,6 +2321,9 @@ function renderMap(){
              + '<b></b><span>'+nm+'</span></i>';
       }).join('')
     + '</div>'
+    /* ⚠ 探索率擺在 `.tm-frame` **外面**（同 `.tm-save` 那一條的理由）：框裡的尺寸
+       都是「地圖的百分比」，字塞進去會跟著圖縮放，小螢幕上讀不出來。 */
+    + '<div class="tm-pct">探索率<b>'+pct+'%</b><i>'+seenN+' ／ '+ids.length+' 處</i></div>'
     /* ══ 模擬存檔那一列（ver -936；管理人限定，見 setSimSave）══
        ⚠ 擺在 `.tm-frame` **外面**：框裡是那張羊皮紙，尺寸與座標都是「地圖的百分比」
          （同 `.tm-shroud` 那一條的理由）—— 鈕塞進去會跟著圖縮放，小螢幕上按不到。 */
@@ -2930,6 +3054,22 @@ function go(to, dir){
   if(dir && nlk && nlk.lock && nlk.lock[dir]){
     const L=nlk.lock[dir];
     if((!L.need || prog.hasFlag(L.need)) && !(L.until && prog.hasFlag(L.until))){
+      /* ⚠⚠ **擋下來的時候可以演一段**（ver -1433，Ray：「把南門驛站出口封起來：
+         索：『喂！開船去比較快啦！』confused」）—— 帶 `lines` 就走**同一支**
+         `playAdhoc`（立繪取景、明暗、打字機全部沿用，鐵律 8）；沒帶就照舊
+         浮一句路人單句。
+         ⚠ 第一拍補 `delay:SLIDE_MS`（框要等立繪站定，§6.5 檢查表第 5 條）。
+         ⚠ 收尾一定要 `clearCast()` ＋ 把導覽開回來 —— 這一條路**沒有移動**，
+           沒有人會替它重開（§6.5.4 那張檢查表）。 */
+      if(L.lines && L.lines.length){
+        busy=true; showNav(false);
+        if(chatterOn){ story.hideBubble(); chatterOn=false; }
+        const play=L.lines.map((l,i)=> (i===0 && l && l.delay==null)
+          ? Object.assign({}, l, { delay:SLIDE_MS }) : l);
+        story.playAdhoc(play, ()=>{ story.clearCast(); busy=false; showNav(true); },
+                        { sides:L.sides });
+        return;
+      }
       story.flashLine(L.text||'', ''); chatterOn=true; return;
     }
   }
@@ -3002,7 +3142,8 @@ function go(to, dir){
        「有沒有踩到牠」，先讓牠走掉的話玩家永遠追不上。
      ⚠ 沒進自動模式之前牠**不動** —— Ray：「等到玩家再次踩同一格才會再動」。 */
   if(dragonChaseOn()){
-    dragonAutoStep();
+    /* ⚠ ver -1433：`dragonAutoStep()` 已取消（Ray：「取消龍自己往王座廳跑」）——
+       牠只在**打完一場**才動，見 `dragonFleeStep`。 */
     /* ══⚠⚠ **前三場的刷新是「走一步擲一次」**（ver -1424，Ray：「二番戰階梯大廳
        必刷一次龍，接下來隨機 50% 在任一移動點，直到第四戰提示小地圖開始追趕」）══
        ⚠⚠ **擲在移動的那一刻，不要擲在 `dragonActDue` 裡**：那一支在一次抵達裡
@@ -3328,8 +3469,18 @@ export function enter(id){
      ⚠ 閂取走即清（見 `napPending`）：只作用一次。 */
   let act;
   if(napPending){ napPending=false; act = actDue(n, true); }
-  else act = dragonActDue(n) || (immediate ? null : wildActDue(n))
-           || dateCurfewAct(n) || dateByeAct(n) || actDue(n) || restActDue(n);
+  else{
+    act = dragonActDue(n) || dragonTalkDue() || (immediate ? null : wildActDue(n))
+        || dateCurfewAct(n) || dateByeAct(n) || actDue(n) || restActDue(n);
+    /* ══⚠⚠ **`afterSettle:true` ＝這一格要結算的話，結算完再演我**（ver -1433，
+       Ray：「玩家只要初踩到獅階…若觸發結算，結算完再跑對話」）══
+       ⚠ **逐段宣告，不是全域換順序**：其餘六個「休息處＋acts」的格子照舊先講話
+         —— 那幾段是劇情，先被一頁戰績打斷讀起來是斷的。
+       ⚠ 結算那一段沒有 `flag`，所以它演完之後段落收尾的接續
+         （`const nx=actDue(n)` → `runArrival(true)`）會**再回來演這一段**；
+         那一趟 `restActDue` 已經沒有帳可報，於是輪到它。 */
+    if(act && act.afterSettle){ const r=restActDue(n); if(r) act=r; }
+  }
   let ev = act ? null : eveningDue(n);
   /* 這一次抵達**原本**要演的進場對白（打烊、演過了、或段落裡有**回房休息的夥伴**
      （ver -459，見 linesBlockedByRest）就是空的 —— 後者旗標不記，之後照演）。
@@ -3391,12 +3542,15 @@ export function enter(id){
           if(act.flag) prog.addFlags([act.flag]);                 // 主線段落：只演一次
           /* ══ 追逐：打完一場，牠往**玩家進入房間的反方向**跑一格（ver -1421）══
              ⚠ `backDir` 是「回頭路」，**牠要跑的是它的反向**（＝玩家原本前進的方向）。
-             ⚠ 場數到了就切自動模式（Ray：「從開圖開始起算超過 5 場…就會開始自己
-               往那個方向移動」）—— 計數與切換都在這裡，`dragonAutoStep` 只負責走。
+             ⚠ ver -1433：自動模式（-1421 的「超過 5 場自己往王座之間走」）**已取消**
+               —— 這裡只剩計數：`dragonFights` 這一趟打了幾場、`dragonSeenFights`
+               開圖之後打了幾場（`afterThree` 那一段的門檻）。
              ⚠ **王座那一段打完就不必再跑**（人已經離開古堡了）。 */
-          if(dragonChaseOn() && act!==DRAGON_LINES.throne){
+          if(dragonChaseOn() && act!==DRAGON_LINES.throne && act!==DRAGON_LINES.afterThree){
             dragonFights++;
-            if(dragonFights > DRAGON_AUTO_AFTER) dragonAuto=true;
+            /* ⚠ ver -1433：開圖之後的場次另外數（`afterThree` 那一段的門檻）——
+               自動模式那一條已取消。 */
+            if(prog.hasFlag('bl_dragon_seen')) dragonSeenFights++;
             /* ⚠ 攤開地圖那一下已經把牠挪到隔壁了（見 showMapForStory）⇒ 不再挪第二次：
                一場戰鬥只移動一格。 */
             if(dragonJustPlaced) dragonJustPlaced=false;
@@ -3995,7 +4149,7 @@ export function open(town, node, opts){
   /* 追逐的三個狀態也是**這一趟**的（ver -1421，同 eveningHeld／wildDone）：
      離圖再回來牠重新擺位。⚠ 不進存檔 —— 最壞情況是多走幾步，而位置本來就是
      瞎找出來的（`bl_dragon_seen` 之前連紅點都沒有）。 */
-  dragonNode=null; dragonFights=0; dragonAuto=false; dragonJustPlaced=false; dragonRollHit=false;
+  dragonNode=null; dragonFights=0; dragonSeenFights=0; dragonJustPlaced=false; dragonRollHit=false;
   wildDone=new Set();         // 野生刷怪的「這一趟出過誰」也是（ver -862）
   wildCleared=new Set();      // 「這一趟哪幾格出過」（ver -924，重刷率用）
   pendingFavor=null;          // 「下一步去哪」也是（ver -440，見 armFavor）
