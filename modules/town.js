@@ -1396,7 +1396,15 @@ function stepToward(from, goal){
      打得起來的格子上。 */
 function dragonCanStop(id){
   const n=((TOWNS[townId]||{}).nodes||{})[id];
-  return !!n && !n.noWild;
+  if(!n || n.noWild) return false;
+  /* ══⚠⚠⚠ **只停在三岔以上的房間**（ver -1446，Ray：「如果龍的停留格只有一進一出
+     的話，也讓他往下一格跑，也就是龍只出現在三岔以上的房間」）══
+     ⚠ 一進一出的過道停不住 —— 停在那裡玩家只有兩個方向可以逼，整段追擊就沒有
+       「把牠往哪邊趕」的餘地了；三岔以上才有選擇，才是一個「房間」。
+     ⚠ 度數問 `nodeNeighbors`（＝資料上的 `exits`，鐵律 7）不問畫面上的箭頭。
+     ⚠ 實測貝利薩爾 37 格：度數 1×4／2×16／3×12／4×5 ⇒ **可停的有 15 格**，
+       而且每一格至少有一個方向滑得出去（不會卡死）。 */
+  return nodeNeighbors(id).length >= 3;
 }
 /* ══⚠⚠⚠ **追擊分兩階段**（ver -1442，Ray 定案：「追擊戰有兩階段／第一階段是隨機
    亂跑／第二階段是索拉娜開圖以後，玩家從左側進房，他就從右側出，從下方進他就從
@@ -1428,26 +1436,48 @@ function dragonPickExit(from, cameDir, pool, all){
   const nx = stepToward(from, DRAGON_THRONE);             // 判不出來 → 往王座廳
   return (nx && pool.find(e=>e.to===nx)) || pool[0];
 }
-/* ⚠⚠⚠ **ver -1444 拿掉了 `dragonSlide`（落點停不住就沿同方向再滑一格）** ——
-   Ray：「碰到休息處他會直接跳下一格」。
-   那一支是 -1432 為了「不要停在打不起來的格子上」加的，作法是**繼續往前滑**，
-   於是一場戰鬥牠會走**兩格以上** —— 直接違反 Ray 剛確認過的
-   「每次只移一格就在原地等玩家」。而貝利薩爾 5 個休息處**全部是 `noWild`**，
-   所以那條路踩得非常頻繁。
-   ⇒ 正解是**先把停不住的鄰格濾掉，再挑方向**（見 `dragonFleeStep`）：
-     「停不住」就當成那個方向沒有路，於是自動落進 Ray 那條
-     「無相反方向 ⇒ 一律往王座廳」的規則，而且永遠只走一格。
-   ⚠ 驗過不會卡死：全圖只有 `drywell`／`entrance` 四周沒有可停的鄰格，
-     而那兩格自己就是 `noWild` ⇒ 龍根本站不上去。 */
+/* ══⚠⚠⚠ **休息處／過道是「經過不停留」，不是「沒有路」**（ver -1446，Ray 更正：
+   「跳過休息處往下一格，不是等於沒路　是經過了不停留」）══
+   ⚠⚠ -1445 我把「停不住」讀成「那個方向沒有路」（於是龍會轉彎、或改往王座廳）——
+     **那是錯的**。正確的語意是：牠**照原方向穿過去**，只是不在那裡停下來。
+   ⚠ 所以 -1444 拿掉的 `dragonSlide` 這一版**回來了**，但判準換了：
+     以前是「`noWild` 就滑過去」，現在是「**不是三岔以上就滑過去**」（見 `dragonCanStop`）。
+   ⚠ 滑的時候**同方向優先**；真的遇到岔路才交給 `dragonPickExit`（兩階段那一支）。
+   ⚠ 走過的格子記下來不重複踩（`seen`），免得在兩格之間來回滑。
+   ⚠ 滑到盡頭（死路）回 null ⇒ 呼叫端**換一個方向再試**（實測只有 6 個方向是死路：
+     王座廳→寶冠室／聖物室、階梯大廳→古代祭壇／古城中庭、積水甬道→古代祭壇、
+     前廳→古城中庭）。 */
+const DRAGON_SLIDE_MAX = 8;      // 保險絲：實測最長要滑 6 格
+function dragonSlide(from, dir){
+  let cur=from, d=dir, seen={ [from]:true };
+  for(let i=0;i<DRAGON_SLIDE_MAX;i++){
+    const ns=nodeNeighbors(cur); if(!ns.length) return null;
+    const fresh = ns.filter(e=>!seen[e.to]); if(!fresh.length) return null;
+    const back = d ? OPPOSITE[d] : null;
+    const straight = d && fresh.find(e=>e.dir===d);
+    const notBack = fresh.filter(e=>e.dir!==back);
+    const pool = straight ? [straight] : (notBack.length ? notBack : fresh);
+    const e = dragonPickExit(cur, d, pool, ns);
+    cur=e.to; d=e.dir; seen[cur]=true;
+    if(dragonCanStop(cur)) return cur;
+  }
+  return null;
+}
 /* 把牠擺到某一格的**隔壁任一位置**（Ray：「顯示龍在當前格的隔壁任一位置」）。
    ⚠ 隔壁那幾格裡先挑**停得住**的（見 `dragonCanStop`）；全部停不住才隨便挑一個
      （ver -1444：不再往前滑，理由見上面那一段）。 */
 function dragonPlaceNear(id){
   const ns=nodeNeighbors(id);
   if(!ns.length){ dragonNode=id; return; }
-  const ok = ns.filter(e=>dragonCanStop(e.to));
-  const pool = ok.length ? ok : ns;   // ⚠ 一個可停的鄰格都沒有才退而求其次（實測到不了）
-  dragonNode = pool[Math.floor(Math.random()*pool.length)].to;
+  /* ⚠ 隔壁那一格停不住（過道／休息處）就**沿那個方向滑出去**（ver -1446，同
+     `dragonFleeStep`）—— 牠的位置永遠落在三岔以上的房間。
+     ⚠ 方向隨機（Ray：「顯示龍在**當前格的隔壁任一位置**」），滑到死路就換一個。 */
+  const order = ns.slice().sort(()=>Math.random()-0.5);
+  for(const e of order){
+    const dest = dragonCanStop(e.to) ? e.to : dragonSlide(id, e.dir);
+    if(dest){ dragonNode=dest; return; }
+  }
+  dragonNode = order[0].to;   // 退無可退（實測到不了）
 }
 /* ══ 打完一場：**往玩家進入房間的反方向**移動一格 ══
    `pendingDir` ＝玩家按的那個方向（`backDir` 是它的反向＝回頭路）——
@@ -1466,19 +1496,21 @@ function dragonFleeStep(cameDir){
   const ns=nodeNeighbors(dragonNode);
   if(!ns.length) return;
   const back = cameDir ? OPPOSITE[cameDir] : null;
-  /* ══⚠⚠⚠ **順序是「先濾停不住的，再挑方向」**（ver -1444，Ray：「碰到休息處他會
-     直接跳下一格」）══ -1432~-1443 是反過來的（先挑方向、落點停不住就往前滑），
-     那會讓一場戰鬥走**兩格以上**。
-     ⇒ **「停不住」就當成那個方向沒有路** —— 於是它自動落進 `dragonPickExit` 那條
-       「無相反方向 ⇒ 一律往王座廳」的規則，而且**永遠只走一格**。
-     ⚠ 回頭路一樣先排除；濾完全空（死胡同）才把回頭路放回來。
-     ⚠ 真的一個可停的鄰格都沒有才留在原地（實測到不了：全圖只有 `drywell`／
-       `entrance` 是那樣，而那兩格自己就是 `noWild`，龍站不上去）。 */
-  const canStop = ns.filter(e=>dragonCanStop(e.to));
-  if(!canStop.length) return;                       // 原地不動（到不了的情況）
-  const others = canStop.filter(e=>e.dir!==back);
-  dragonNode = dragonPickExit(dragonNode, cameDir,
-                              others.length?others:canStop, ns).to;
+  /* ══⚠⚠ **先挑方向（兩階段），再沿那個方向滑到停得住的房間**（ver -1446）══
+     ⚠⚠ -1445 我把順序寫反了（先濾掉停不住的鄰格＝當成沒有路），Ray 更正：
+       休息處／過道是「**經過了不停留**」，方向不該因此改變。
+     ⚠ 回頭路先排除；濾完全空（死胡同）才把回頭路放回來。
+     ⚠ 那個方向整條滑到死路 ⇒ **換一個方向再試**（實測只有 6 個方向是死路）；
+       全部滑不出去才留在原地。 */
+  const others = ns.filter(e=>e.dir!==back);
+  const order  = others.length ? others : ns;
+  const first  = dragonPickExit(dragonNode, cameDir, order, ns);
+  const tries  = [first].concat(order.filter(e=>e!==first),
+                                others.length ? ns.filter(e=>e.dir===back) : []);
+  for(const e of tries){
+    const dest = dragonCanStop(e.to) ? e.to : dragonSlide(dragonNode, e.dir);
+    if(dest && dest!==dragonNode){ dragonNode=dest; return; }
+  }
 }
 /* ══ 超過 5 場之後：自己往王座之間走一格（玩家每動一步牠就動一步）══ */
 /* ══⚠⚠ **開圖三戰之後的那一段**（ver -1433，台詞在 `DRAGON_LINES.afterThree`）══
@@ -3532,8 +3564,21 @@ export function enter(id){
              ⚠ ver -1433：自動模式（-1421 的「超過 5 場自己往王座之間走」）**已取消**
                —— 這裡只剩計數：`dragonFights` 這一趟打了幾場、`dragonSeenFights`
                開圖之後打了幾場（`afterThree` 那一段的門檻）。
-             ⚠ **王座那一段打完就不必再跑**（人已經離開古堡了）。 */
-          if(dragonChaseOn() && act!==DRAGON_LINES.throne && act!==DRAGON_LINES.afterThree){
+             ⚠⚠⚠ **ver -1446：條件由「不是王座／afterThree」改成「這一段真的是一場
+               追擊戰」**（Ray：「為什麼一結算龍的位置就重置了？」）——
+               舊寫法是**排除法**，於是那一夜在古堡裡演完的**任何**段落都會算一場：
+               休息處的結算（`restActDue` 那一段）、獅階的「把牠往這個方向逼！」、
+               降落中庭與進前廳那幾段…… 每一段都 `dragonFights++` **而且叫一次
+               `dragonFleeStep`** ⇒ 玩家看到的就是「我只是踩到休息處結算了一下，
+               牠的位置就變了」，而且 `afterThree` 那一段的門檻也被灌水。
+               ⇒ 改成**白名單**：只有 `DRAGON_LINES.chase[*]` 與 `chaseMore`
+                 （＝真的有 `{battle:'bl_chase'}` 那一拍的段落）才算。
+                 王座（`throne`）與 `afterThree` 自然不在名單裡，不必再排除。
+               ⚠ 這與鐵律 13「名單一律寫成安全的那一側是預設」是同一件事：
+                 白名單漏寫的下場是「少動一次」，排除法漏寫的下場是「亂動」。 */
+          const isChaseFight = dragonChaseOn() &&
+            (act===DRAGON_LINES.chaseMore || DRAGON_LINES.chase.indexOf(act)>=0);
+          if(isChaseFight){
             dragonFights++;
             /* ⚠ ver -1433：開圖之後的場次另外數（`afterThree` 那一段的門檻）——
                自動模式那一條已取消。 */
