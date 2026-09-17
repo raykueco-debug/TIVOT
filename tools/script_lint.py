@@ -184,8 +184,54 @@ def hint_targets():
     return set(re.findall(r'(\w+)\s*:', m.group(1))) if m else set()
 HINT_TARGETS = hint_targets()
 
+# ══⚠⚠⚠ **「一支輕的 ＋ 一支重的，呼叫端自己挑」的守望**（ver -1458）══════════
+#   憲法鐵律 10 底下那一條（-1457 Ray 定案：「只要離開飛行地圖就 kill，不論如何」）
+#   —— 那一條之所以失效整整幾百版，是因為它被寫成**註解裡的一份路徑清單**，
+#   而同時存在一支「只藏不殺」的函式讓呼叫端挑。憲法自己說過：
+#   **理由要寫成會執行的東西（一個 assert、一支自檢），不要寫成註解。**
+#   這一支就是那個自檢。
+#
+#   規約：**重的那一支只准有一個呼叫者 —— 就是輕的那一支**。
+#   多出來的呼叫者＝有人又在「自己挑力道」了，那條路遲早會挑錯，而且不會報錯。
+HEAVY_PAIRS = [
+    # (檔案, 重的那一支, 唯一准許的呼叫者)
+    ('main.js', 'killFlightFrame', 'closeFlightFrame'),
+]
+def check_heavy_pairs():
+    for fn, heavy, owner in HEAVY_PAIRS:
+        path = os.path.join(ROOT, fn)
+        if not os.path.exists(path): continue
+        src = open(path, encoding='utf-8').read()
+        # 去掉註解與字串，免得說明文字被算成呼叫
+        code = re.sub(r'/\*.*?\*/', '', src, flags=re.S)
+        code = re.sub(r'//[^\n]*', '', code)
+        code = re.sub(r"'[^'\n]*'|\"[^\"\n]*\"|`[^`]*`", "''", code)
+        calls = [m.start() for m in re.finditer(re.escape(heavy) + r'\s*\(', code)]
+        decl  = re.search(r'function\s+' + re.escape(heavy) + r'\s*\(', code)
+        if decl: calls = [i for i in calls if i != decl.start() + len('function ')]
+        if len(calls) != 1:
+            err('%s：`%s()` 有 %d 個呼叫點 —— 它只准由 `%s()` 叫（憲法鐵律 10 的'
+                '「一支輕的＋一支重的，呼叫端自己挑」自檢）。'
+                '要嘛把新的那一處改成叫 `%s()`，要嘛先去改憲法。'
+                % (fn, heavy, len(calls), owner, owner))
+            continue
+        # 唯一那一個呼叫點必須落在 owner 的函式體裡
+        o = re.search(r'function\s+' + re.escape(owner) + r'\s*\([^)]*\)\s*\{', code)
+        if not o:
+            err('%s：找不到 `%s()` —— `%s()` 的擁有者不見了？' % (fn, owner, heavy)); continue
+        depth, end = 0, None
+        for i in range(o.end() - 1, len(code)):
+            if code[i] == '{': depth += 1
+            elif code[i] == '}':
+                depth -= 1
+                if depth == 0: end = i; break
+        if end is None or not (o.end() <= calls[0] <= end):
+            err('%s：`%s()` 的唯一呼叫點不在 `%s()` 裡面（憲法鐵律 10 的自檢）。'
+                % (fn, heavy, owner))
+
 def main():
     D = load_data()
+    check_heavy_pairs()
     script, entry, speakers, art = D['script'], D['entry'], D['speakers'], D['art']
 
     # ⚠ ver -1015：先把 ASSETS 裡的音檔名收起來 —— 開機預載那一批是
