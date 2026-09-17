@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1476"></script>
+<script src="../orientation.js?v=1479"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1476edab');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1479edab');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1476edab");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1476edab");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1479edab");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1479edab");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1476edab");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1476edab");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1479edab");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1479edab");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -620,25 +620,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1476edab" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1479edab" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1476edab" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1476edab" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1476edab" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1476edab" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1476edab" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1476edab" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1476edab" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1476edab" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1476edab" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1476edab" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1479edab" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1479edab" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1479edab" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1479edab" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1479edab" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1479edab" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1479edab" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1479edab" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1479edab" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1479edab" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1476edab" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1479edab" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1476edab" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1479edab" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -659,11 +659,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1476"></script>
+<script src="settlement.js?v=1479"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1476"></script>
+<script src="talks.js?v=1479"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -715,7 +715,7 @@ const COLOR_URL  = 'silvermoon_terrain.png'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1476';
+const FLIGHT_VER = 'ver -1479';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -14492,8 +14492,15 @@ const ENEMY_KINDS = {
     /* ⚠ **不要掛 `?v=`**：戰鬥那一邊（`ASSETS.enemy_bl_dragon_front`）是不帶版號的
        同一個檔 —— 掛了就變成兩個網址、抓兩次，共用不到 HTTP 快取。
        這張不是同名覆蓋進來的，本來就不需要破快取（§5）。 */
-    sprite:{ dir:'../resources/enemy/', dorsal:'mon_dragon_v1_flight.webp',
-             whole:true, faceCam:true, spanW:980, trailBack:0.45,
+    /* ⚠⚠⚠ **頂視圖用 `top_dorsal.webp`，不要用 `view_0.webp`**（ver -1478）：
+       `view_0` 是**美術正在動的那一格** —— 22:06 那一次覆蓋換上去的是**另一張正面圖**
+       （1536×1596），頂視圖當場消失、飛離時畫不出東西。
+       這一張是從 `resources/_originals/flight/FLM_DragonThrone_view0_v2.png`
+       （-1468 交件時照規矩備份的原 PNG）轉回來的，**檔名獨立**就不會再被蓋掉。
+       ⚠ 日後美術要換頂視圖，請他交 `top_dorsal`，不要覆蓋 `view_0`。 */
+    sprite:{ dir:'enemy/FLM_DragonThrone/', dorsal:'top_dorsal.webp',
+             front:'../resources/enemy/mon_dragon_v1_flight.webp', frontSpanW:980,
+             whole:true, trailBack:0.62,
              /* ⚠ `whole:true` ＝**整張貼、一刀都不切**（ver -1471）——
                 這張是展翅的完整插畫，橫著切會切在實心上（見 drawEnemy 那一段的實測）。
                 ⚠ 三帶留著當紀錄、現在沒有人讀：哪天換成細頸長尾的素材，
@@ -14628,6 +14635,9 @@ let enemyFB=null, EC=null;                        // 低解析繪製緩衝（見
    ⚠ 背景載，不擋開場：怪最快也要 17 秒後才刷新（gapMin*0.35），
      來得及；擋在 loadWorld 裡只會把開場拖長。 */
 const enemyArt={};
+/* 正面視的素材（ver -1478）：鑰匙同 `enemyArt`，只有宣告了 `sprite.front` 的怪才有。
+   ⚠ 宣告要在載入那一支**之前**（`const` 有 TDZ）。 */
+const enemyArtFront={};
 (function loadEnemyArt(){
   for(const k of Object.keys(ENEMY_KINDS)){
     const sp=ENEMY_KINDS[k].sprite; if(!sp) continue;
@@ -14646,6 +14656,19 @@ const enemyArt={};
       const im=new Image();
       im.onload=()=>{ enemyArt[k]=im; };
       im.src=sp.dir+sp.dorsal;
+      /* ══⚠⚠ **正面那一張另外載一份**（ver -1478，Ray：「飛離用頂視圖轉 90 度，
+         一樣振翅」）══ 一隻怪現在可以有**兩個視角**，各自有自己的用處：
+           · `front`（正面視）—— 牠**迎面飛來**時用，永遠正立（-1477）。
+           · `dorsal`（頂視）—— 牠**飛離**時用，照既有的規則跟著航向轉。
+         ⚠ 存成**另一個表**而不是把 `enemyArt[k]` 換成物件：那一格被好幾條路
+           讀著（外框、尺、程序繪製的退路），換型別會牽動一整片（鐵律 8：
+           要加東西就加一道，不要改既有那一道的形狀）。
+         ⚠ 沒宣告 `front` 的怪一切照舊 —— 蜈蚣與羽蛇不受影響。 */
+      if(sp.front){
+        const imf=new Image();
+        imf.onload=()=>{ enemyArtFront[k]=imf; };
+        imf.src=sp.front;
+      }
     }
   }
 })();
@@ -16962,6 +16985,29 @@ function drawEnemy3D(scaleH,horizon,sinp,cosp,now){
      ⚠ 翅仍走程序：它要獨立振動，在俯視圖裡又跟身體重疊，切不開。 */
   const art=enemyArt[enemy.kind], SP=K.sprite;
   if(art && SP){
+    /* ══⚠⚠⚠ **兩個視角，看牠是迎面來還是飛離**（ver -1478，Ray：「飛離用頂視圖
+       轉 90 度，一樣振翅」）══
+       · **迎面**（heading 指向鏡頭）→ 正面視那張，**永遠正立**（-1477 的結論：
+         正面圖在地圖上沒有朝向可言，拿航向去轉它一半的時間是錯的）。
+       · **飛離** → **頂視圖**，照既有規則跟著航向轉（`rotate(ang−π/2)`，
+         那就是 Ray 說的「轉 90 度」）—— 頂視圖轉得動，因為圖上真的看得到頭尾軸。
+       ⚠⚠ **換圖要有遲滯**：判準是 heading 與「鏡頭→牠」的內積，牠橫越視野時
+         那個值會在 0 附近來回 —— 沒有遲滯就會**每幀換一次圖**（閃爍）。
+         記在 `enemy.__view` 上（逐隻），門檻 ±0.15。
+       ⚠ 尺也要跟著換：正面視量的是**翼展**（`frontSpanW÷圖寬`），
+         頂視圖量的是 **body 帶**（既有那一把）。 */
+    const artF=enemyArtFront[enemy.kind];
+    let useFront=false;
+    if(artF){
+      const dx=cam.x-enemy.x, dy=cam.y-enemy.y, dl=Math.hypot(dx,dy)||1;
+      const toward=(enemy.hx*dx+enemy.hy*dy)/dl;     // >0＝朝鏡頭來
+      const prev=(enemy.__view!==undefined)?enemy.__view:(toward>0);
+      useFront = (toward>0.15) ? true : (toward<-0.15 ? false : prev);
+      enemy.__view=useFront;
+    }
+    const A   = useFront ? artF : art;
+    const wppA= useFront ? (SP.frontSpanW||SP.spanW||980)/A.width : _wpp;
+    const swS = useFront ? -1 : 1;                   // 「往後」在圖空間的方向
     /* ══⚠⚠ **四條凝結尾**（ver -1469，Ray：「加上拖尾的不透明白束，就用船的尾流，
        但不透明就好，給個四條」）══
        形狀照抄船的 `drawWake`（分段折線＋尾端亂流擺動＋寬度遞減），差別兩處：
@@ -16974,9 +17020,8 @@ function drawEnemy3D(scaleH,horizon,sinp,cosp,now){
        ⚠ 方向用 `segAng(1)`（＝往後），與身體同一支：拿別的角度算會在轉彎時分家。 */
     {
       const P0=pts[1]||pts[0], sc=P0[3], ang=segAng(1);
-      const wppT=_wpp;   // 同一把尺（ver -1472；-1475 起由上面那一處算）
       const span=(0.45+flap*0.55);
-      const half=art.width*wppT*sc*0.5*span;                  // 現在的半展幅（螢幕 px）
+      const half=A.width*wppA*sc*0.5*span;                  // 現在的半展幅（螢幕 px）
       /* ⚠⚠ **錨在翅的後緣**（ver -1474）：原本錨在 `pts[1]`（頭後面一節），
          而素材從頭往後鋪了好幾百個世界單位 ⇒ **整條尾跡都被身體蓋住，看不到**
          （拖尾畫在素材之下）。往後退到翅帶的下緣才露得出來。
@@ -16984,13 +17029,18 @@ function drawEnemy3D(scaleH,horizon,sinp,cosp,now){
       /* 錨點：素材的**後緣**在圖高的第幾成（`trailBack`）。正俯視的圖預設取翅帶的
          下緣；正面視的圖沒有翅帶可用，要自己宣告（ver -1475）。 */
       const backF=(SP.trailBack!=null) ? SP.trailBack : (SP.wings ? SP.wings[1] : 0);
-      const back=backF*art.height*wppT*sc*(SP.squash||1);
+      const back=backF*A.height*wppA*sc;
+      /* ⚠ 正面視是以 pts[0] 為中心畫的（不是「頭落在 pts[0]」）—— 錨點要從
+         中心往後退，退到圖的上半緣才露得出來（ver -1477）。 */
       const P=[P0[0]+Math.cos(ang)*back, P0[1]+Math.sin(ang)*back, P0[2], sc];
       /* ⚠ 長度是**世界單位 → 螢幕**：`sc`（P[3]）就是那個換算，不要再乘 `wpp`
          —— `wpp` 是「來源像素 → 世界」，乘上去等於把單位算兩次。 */
       const len=K.bodyLen*1.40*sc;                           // 拖尾長度（ver -1474 由 0.85 拉長）
-      const ca=Math.cos(ang), sa=Math.sin(ang);              // 往後
-      const nx=-sa, ny=ca;                                   // 側向
+      /* ⚠ 正面視（`faceCam`）走**螢幕座標**：牠永遠正立，所以「往後」就是
+         **往畫面上方**（這個投影裡越遠越高），側向就是水平 —— 與航向無關。
+         正俯視照舊跟著航向走（ver -1477）。 */
+      const ca=useFront? 0 : Math.cos(ang), sa=useFront? -1 : Math.sin(ang);   // 往後
+      const nx=useFront? 1 : -sa, ny=useFront? 0 : ca;                          // 側向
       const SEG=14;
       if(len>3 && half>1){
         EC.save(); EC.lineCap='round'; EC.globalAlpha=1; EC.strokeStyle='#eef2f8';
@@ -17044,7 +17094,6 @@ function drawEnemy3D(scaleH,horizon,sinp,cosp,now){
          連帶拍翅的展幅變化由 436→968 掉到 156→346 世界單位 ⇒ 在飛行距離上只剩
          幾個像素，看起來就是**不會振翅了**。
          ⇒ 尺照舊問 body 帶（三帶的數字即使不切也還在描述比例）。 */
-      const wppW=_wpp;   // ver -1475：尺算在上面那一處（正面視走 spanW）
       /* ══⚠⚠ **沿身體軸壓扁 ＝ 正面飛來的透視縮短**（ver -1474，Ray：「把他上下
          壓扁，正面飛來」）══
          這張是**正俯視**的素材：牠朝鏡頭飛過來時，身體的視長會被透視壓掉，
@@ -17053,7 +17102,6 @@ function drawEnemy3D(scaleH,horizon,sinp,cosp,now){
          ⚠ 壓的是**圖高（身體軸）**，不是整張等比縮 —— 等比縮只是變小，不會變成正面。
          ⚠ 數字在資料上（`sprite.squash`，鐵律 1）：要更扁就改那一個數。
          ⚠ 與拍翅的橫縮是**兩件事**：那個管翼展、這個管身長，各走各的。 */
-      const hh=art.height*wppW*sc*(SP.squash||1);
       /* ══⚠⚠⚠ **拍翅：沿翼展切三欄，逐欄壓不同的量**（ver -1473，Ray：「我剛剛不是
          要你把單翅分兩到三節振翅嗎？你剛剛也做了啊？怎麼又毀了？」）══
          ⚠⚠ **-1471 我把兩種「切」混為一談，那是錯的**（判斷錯，不是實作錯）：
@@ -17066,10 +17114,10 @@ function drawEnemy3D(scaleH,horizon,sinp,cosp,now){
            越往翼端壓得越多 —— 那正是「翼根幾乎不動、翼端行程最大」。
          ⚠ 後掠只給**外側欄**、而且量很小（拿翅帶的高去算，不是整張圖高）：
            只收不掠像伸縮天線，掠太多相鄰欄之間會看得出錯位。 */
-      const hw=art.width/2;
+      const hA=A.height*wppA*sc, hwA=A.width/2;
       const CUT=[0,0.38,0.70,1.00];                    // 沿翼展的切點（半幅比例）
       const span=(0.45+flap*0.55);                     // 整體展幅（與舊版同幅度）
-      const swK=(SP.wings[1]-SP.wings[0])*art.height*wppW*sc*0.22;   // 後掠的尺度
+      const swK=(SP.wings[1]-SP.wings[0])*A.height*wppA*sc*0.22;     // 後掠的尺度
       /* ══⚠⚠⚠ **素材的視角決定朝向規則**（ver -1476，Ray：「這版可以，但是為什麼
          又上下顛倒？」）══
          引擎原本的規則是**正俯視**素材寫死的：「圖的**下方** ＝ 身體往後的方向」
@@ -17084,25 +17132,36 @@ function drawEnemy3D(scaleH,horizon,sinp,cosp,now){
            · **後掠**：收翅時翼端要往**後**帶，而「後」在圖空間裡由 +y 變成 −y。
          ⚠ 代價（-1440 的既定取捨）：牠**飛離**鏡頭時這張圖會看起來顛倒 ——
            只有一張正面圖本來就是這樣，而追擊那一段牠一直是迎面來的。 */
-      const faceCam=!!SP.faceCam;
-      const swS=faceCam? -1 : 1;                       // 「往後」在圖空間的方向
-      if(art.width*wppW*sc>1.5){
+      /* ⚠⚠⚠ **ver -1477 修 -1476：正面視的圖「永遠正立」，不吃航向。**
+         -1476 只把轉向差了 180°（`ang+π/2`）—— 那還是拿**航向**在轉它，於是
+         **牠飛離鏡頭時又是頭下腳上**（我當時把這個寫成「既定取捨」，錯了：
+         Ray 回報的就是它）。
+         ⚠⚠ 真正的原因：**一張正面視的插畫沒有「地圖上的朝向」可言**。
+           正俯視圖轉得動，是因為圖上真的看得到頭尾軸；正面圖上那個軸是**深度**，
+           投影到螢幕就是一個點 —— 拿航向去轉它，一半的時間必然是錯的。
+         ⇒ 正面圖一律**螢幕正立**（`rotate(0)`）：牠本來就是「迎面飛來」的姿態，
+           立著就對；轉了才錯。
+         ⚠ 代價是**橫越視野時牠不會跟著轉** —— 那是對的：轉了會變成一張
+           側躺的正面圖，比不轉更糟（§5「只做正面一張」的既定範圍）。
+         ⚠ 後掠與拖尾跟著改成**螢幕座標**：「往後」＝往畫面上方（這個投影裡
+           越遠越高），與航向無關。 */
+      if(A.width*wppA*sc>1.5){
         EC.save();
-        if(faceCam) EC.translate(P[0],P[1]);
-        else EC.translate(P[0]+Math.cos(ang)*hh*0.5, P[1]+Math.sin(ang)*hh*0.5);  // 頭落在 pts[0]
-        EC.rotate(ang+(faceCam? Math.PI/2 : -Math.PI/2));
+        if(useFront) EC.translate(P[0],P[1]);
+        else EC.translate(P[0]+Math.cos(ang)*hA*0.5, P[1]+Math.sin(ang)*hA*0.5);  // 頭落在 pts[0]
+        EC.rotate(useFront? 0 : ang-Math.PI/2);
         for(const side of [-1,1]){
           let dx=0;
           for(let k=0;k<CUT.length-1;k++){
-            const sA=hw+side*CUT[k]*hw, sB=hw+side*CUT[k+1]*hw;
+            const sA=hwA+side*CUT[k]*hwA, sB=hwA+side*CUT[k+1]*hwA;
             const sxa=Math.min(sA,sB), sw=Math.abs(sB-sA);
             if(sw<1) continue;
             const kk=k/(CUT.length-2);                 // 0＝最內（不壓）、1＝翼端（壓最多）
             const shrink=1-(1-span)*kk;
-            const dw=sw*wppW*sc*shrink;
+            const dw=sw*wppA*sc*shrink;
             const sweep=(1-shrink)*swK*swS;            // 收起來就往後帶（方向看視角）
-            EC.drawImage(art, sxa, 0, sw, art.height,
-                         side<0 ? -(dx+dw) : dx, -hh/2+sweep, dw, hh);
+            EC.drawImage(A, sxa, 0, sw, A.height,
+                         side<0 ? -(dx+dw) : dx, -hA/2+sweep, dw, hA);
             dx+=dw;
           }
         }
