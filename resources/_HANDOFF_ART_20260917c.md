@@ -1,0 +1,247 @@
+# 2026-09-17（深夜）美術產線交接（接 `_HANDOFF_ART_20260917b.md`）
+
+> ⚠⚠ 這一份只講美術。程式那邊的進度看 `HANDOFF.md`。
+> ⚠ 前面幾份**不要刪**：規格與來龍去脈在那裡，這一份只接續進度。
+> 本輪 commit：`042c3e0` → `0f1ff97`（ver -1486，六個 commit）。
+
+---
+
+# 一、⚠⚠⚠ 上一份那張欠件表：**①②③④⑥ 全部清空，⑤ 做掉一張**
+
+| # | 線 | 上一份欠 | 現在欠 | 備註 |
+|---|---|---|---|---|
+| ① | 平原古道背景 | 13 | **0** ✔ | 5 格 × 4 時段 20 張到齊 |
+| ② | 空戰天空 | 8 | **0** ✔ | 3 雲景 × 4 時段 12 張到齊 |
+| ③ | 貝利薩爾差分 | 5 | **0** ✔ | 前廳與枯井底各四差分 |
+| ④ | NPC 去背 | 4 | **0** ✔ | GuildCounter v3/v4/v5 ＋ Grocer v5 |
+| ⑤ | 槍棺小地圖 | 3 | **2** | 平原古道 ✔／東泊與拉芬**卡在程式端**（見第四節） |
+| ⑥ | 怪 | 1 | **0** ✔ | `mon_pall_bearers` 抬棺列 |
+
+**這一輪交了 28 張圖**（背景 23、NPC 去背 4、怪 1）＋ 小地圖 1 張 ＋ 圖示表 2 張。
+驗收：`py tools/band_audit.py` 一路跑到「時段不齊」清單全空，**沒有一張被判為改動過**。
+
+---
+
+# 二、⚠⚠⚠ 這一輪學到的六件事（**不讀會重犯**）
+
+## 1. 收圖前**一定要先捲到底** —— 不然「有圖」看起來像「沒圖」
+
+上一份第一節那段收圖 JS 是對的，但**少了一步**：ChatGPT 的虛擬清單會把捲出畫面的圖
+**卸載**（`_tomb_mon_spec.md` §七早就記過這件事，我又踩一次）。
+開工時我連查四條串全部回 `n=0`，判成「沒出圖」—— **圖其實都在**。
+
+```js
+window.scrollTo(0, document.body.scrollHeight);
+const m = document.querySelector('main');
+if (m) { const sc = m.querySelector('[class*=overflow]') || m; sc.scrollTop = sc.scrollHeight; }
+await new Promise(r => setTimeout(r, 2500));      // ← 等它 render
+const g = [...document.querySelectorAll('img')].filter(i => i.src.includes('estuary/content'));
+```
+
+⚠ **濾 `estuary/content` 比濾 `naturalWidth>=900` 可靠**：剛 render 的圖
+`naturalWidth` 還是 0（lazy），用寬度濾會整批漏掉。
+⚠ 判「哪一張是新的」一律比對 **blob.size**（同一張重抓 size 一樣）。
+
+## 2. 時段差分：**「以一開始上傳的那張日景為底」比接龍穩**
+
+`_skybattle_spec.md` §五寫的是接龍（「以**剛剛那一張**為底」）。這一輪 23 張背景
+全部改用「**以一開始上傳的那張日景為底（不是剛剛那張黃昏）**」——
+`band_audit` 34 張**全部乾淨**，沒有誤差累積。
+
+- ⚠ 措辭的關鍵是指**附件**，不是指第幾則：「一開始上傳的那張」模型找得到，
+  「第 N 張」在長對話裡無效（那一條仍然成立）。
+- 一條串可以接連要 dusk → night → dawn，**但一次只送一則、等圖出來再送下一則**。
+  （上一份第 3 條「一條串只送一個提示詞」指的是**不要連著丟**，不是「不能再問」。）
+
+## 3. ⚠⚠ **下載的 PNG 會截斷，而檔案大小看不出來**
+
+風蝕岩夜景踩到：`blob.size` 2030892、下載檔也是 2030892、兩次抓一模一樣 ——
+但 PIL 報 `image file is truncated`，**圖的下面四分之一是純黑**。
+
+⇒ **交件前一定要開圖量一次底部亮度**，不要只看檔案大小：
+
+```python
+im.load()                       # 會丟 OSError 就是截斷
+bot = im.crop((0, im.height-30, im.width, im.height))   # 底部一條的平均亮度
+```
+
+那一張只能**重生成**（來源就是壞的，重下載沒用）。
+
+## 4. 「太多要求」的速率限制**不代表沒出圖**
+
+四條並行 ＋ 高頻輪詢會跳出「你的要求過於頻繁…已暫時限制你的對話存取權限」，
+但**那幾張圖照樣產出來了**。判準仍然是憲法 §5 那一句：**看有沒有多一張圖**，
+不要看那段文字。
+
+⚠ 但它是真的警告：出現之後要**把並行數降到 2~3 條、輪詢間隔拉到 20 秒以上**。
+
+## 5. ChatGPT 現在會**先出草圖再出完稿**
+
+怪那一串有**兩張**圖（`先畫草圖` → 完稿）。⇒ **收最後一張**，
+而且下載前先看 `sizes` 有幾個不同值。
+
+## 6. GPT 生怪**現在自帶 alpha**，不必再走 `tools/mon_dekey.py`
+
+抬棺列一趟就給了 `alpha0 60.0%`、四邊不透明率全 0%。
+⚠ 但仍要量（`_tomb_mon_spec.md` §六那套驗收照跑）—— 不是每一張都會這樣。
+
+---
+
+# 三、⚠ 小地圖：平原古道那一張怎麼做的（其餘兩張照抄）
+
+**分工照 §5（ver -1437／-1438）：拓樸與座標是資料／幾何由程式算／畫法交給模型。**
+
+| 件 | 怎麼來 |
+|---|---|
+| **圖示** | 跟模型要**貼紙表**（純白底、N 欄×M 列、每格一個符號、**約 5 筆**），亮度鍵成 alpha、顏色統一成墨色 `(62,38,22)` |
+| **紙** | 合成：舊紙中位色（平原 207/167/114、東泊 203/169/121）＋三層噪聲（σ7 blur22／σ3 blur5／σ1.6 blur0.8，RGB 權重 1/0.93/0.80）＋ 斑點 90 顆＋摺痕 7 條 ＋ 邊緣壓深 ＋ **把舊圖的 alpha 當撕邊貼回來**（只取四周 6% 那一圈） |
+| **線／墨點／草書名** | 程式畫（`tools/map_layout.POS` ＋ `load()` 讀 `script/town.js`，`_font.cursive`） |
+
+**這一輪踩出來的三條**（上一份沒有，照抄）：
+
+1. ⚠⚠ **出頭只給「末端」那一頭**。憲法 §5 說線的兩端要出頭 6~18px ——
+   但**三條線在同一個墨點各出頭一次，會疊成一個粗結**（第一版在草海那一格很明顯）。
+   判準：那一端的節點**度數 ==1** 才出頭。
+2. ⚠⚠ **圖示要擺在「這一格沒有路的那一側」**。擺在墨點正上方的話，
+   垂直主軸上的每一格都會被線穿過去。作法：取 24 個候選角度，
+   選「與所有出口方向夾角最小值最大」的那一個（再偏好左上，因為名字排右）。
+3. ⚠⚠ **名字永遠緊貼墨點**，圖示再去避開名字 —— 反過來做的話，
+   末端那幾格的名字會被擠到墨點的另一邊，讀起來像在標隔壁那一格（第二版踩到）。
+
+⚠ 尺寸維持 **1536×1024 橫式**（＝現行 `style.css` 的 `aspect-ratio:1536/1024`）。
+  古城那張是 2400×2600 直式，**那是要程式端改 CSS 的**（上一份第六節第 1 項）——
+  ⚠⚠ 而 CSS 只有一份、所有小地圖共用，**改成直式會把帝都／北方泊地／夏爾那幾張橫式的壓扁**。
+  那一條要 Ray 決定（全部改直式重畫？還是讓每張自帶比例？），美術不自己挑。
+
+⚠ **這幾支合成腳本在 scratchpad，session 一結束就沒了**（同上一份）。參數全在上面。
+  `tools/map_compose.py`（版控裡那一支）**不能直接用**：它的 `cut_icons` 寫死 6×6，
+  而新的貼紙表是 4×3／4×4；而且它的線是舊的 `wobble`，不是 -1437 那套手繪線。
+  要不要把新版收成 `tools/map_compose2.py` **由 Ray 決定**（那是 `.py`，鐵律 11 我不自己加）。
+
+⚠⚠ **新舊小地圖的畫風不一致**：帝都與北方泊地那兩張是 -1437 之前的**精緻插畫風**
+（有屋頂細節、窗、門把），平原這張是 -1438 的**約 5 筆極簡**。
+兩張擺在一起看得出來 —— **要不要回頭重畫那兩張，Ray 決定**（圖示表重下一次就好，紙與線照抄）。
+
+---
+
+# 四、⚠⚠⚠ 程式端要接的（美術不動，鐵律 11）
+
+## 上一份第六節那四條**都還沒接**，照舊有效：
+
+1. 古城小地圖（`_belisar_topology_worklist.md` §八）：CSS 直式／`?v=2`／`map.spots` 37 筆／**`exits` 換成那 50 條邊**
+2. 王座徘徊者的三帶 `head:[0,0.330] wings:[0.330,0.588] body:[0.588,1.00]`
+3. `foyer` 與 `drywell` 的 `noTime:true` 要拔掉 —— **這一輪差分交齊了，不拔就吃不到**
+4. `script/bg_index.js` 重跑一次
+
+## 這一輪新增的五條：
+
+5. **平原古道小地圖**：`resources/map/_spots_plainsroad.json` 那 **11 筆照抄**進
+   `script/town.js` 的 `TOWNS.plainsroad.map.spots`；那張 img 要加 **`?v=`**（同名覆蓋）。
+6. ⚠⚠⚠ **`tools/map_layout.py` 的 `POS` 過期／缺兩座城 —— 小地圖卡在這裡：**
+   · **東方泊地**：`town.js` 有 **16 格**，POS 只有 13 —— 缺 `restaurant`／`cafe`／`dessert`
+     （ver -1263 Ray 定案的餐飲街樞紐，後來加的）。建議版面（方向已驗過）：
+     `restaurant (10,5)` ← tavern 的 `up`／`cafe (11,6)` ← `right`／`dessert (10,7)` ← `down`
+     （`tavern` 現在是 `(10,6)`）
+   · **拉芬斯達爾**：POS **整座城都沒有**。12 格的建議版面（相對位置與出口方向全對過）：
+
+     ```
+     station (2,4)   lookout (3,4)   midtown (5,4)   church (7,4)   inn (8,4)
+     gunstore (0,6)  oldtown (2,6)   square  (5,6)   uptown (8,6)   tavern (10,6)
+                     guild   (2,8)                   grocery (8,8)
+     ```
+
+   ⇒ **POS 補完，美術這邊兩張小地圖就做得了**（東泊的圖示表已經交了，見第五節）。
+7. **空戰天空可以接輪播了**（`_skybattle_spec.md` §六第 1 項）：
+   三個基底名 `Sky_Cumulus`／`Sky_Towers`／`Sky_Cirrus` 隨機挑一個當那一場的 `bg`，
+   **時段交給既有的候選鏈**，⚠⚠ **一局之內不可以換**（連戰換怪、morph 換卡都算同一局）。
+   · 順便：`bl_dragon_front`／`bl_dragon_sky` 兩張卡現在指著 `Sky_Towers`，
+     四張交齊了，**寫基底名就好**（不要帶 `_night`）。
+   · `Sky_Towers.webp`（無時段的萬用退路）四張齊了之後**可以回收** ——
+     spec §七說那是**程式端**決定的，美術不自己刪。
+8. **NPC 去背四張是同名覆蓋**（`NPC_GuildCounter_SI_v3/v4/v5`、`NPC_Grocer_SI_v5`）。
+   `_npc_shopkeeper_pool.md` 說它們**還沒接進任何節點**，所以目前沒有快取問題 ——
+   ⚠ 但**接上去的那一刻要記得加 `?v=`**（憲法 §5 ver -650）。
+9. `resources/enemy/mon_pall_bearers.webp` 是**新檔**（不是覆蓋），要接進哪一場由 Ray 決定。
+
+---
+
+# 五、交件清單（這一輪）
+
+## 背景（23 張，全部 1536×1024 WebP q85）
+
+```
+平原古道 resources/background/plains/
+  Plains_Cairn_dawn                       ← 石塚群四差分到齊
+  Plains_Deadwood_dusk,night,dawn         ← 枯木林
+  Plains_Scree_dusk,night,dawn            ← 碎石坡
+  Plains_Windrock_dusk,night,dawn         ← 風蝕岩
+  Plains_Gorge_dusk,night,dawn            ← 狹窄溪谷
+  ⇒ 5 格 × 4 時段 20 張到齊（`_plainsroad_spec.md` §四的進度表已更新）
+
+貝利薩爾 resources/background/belisar/
+  Belisar_Foyer_night（重畫）, Belisar_Foyer_dawn
+  Belisar_DryWell_dusk, _night, _dawn
+
+空戰天空 resources/background/（**根目錄，不進子資料夾**）
+  Sky_Towers_dawn                         ← 雲塔到齊（朝西，四張都有銀色滿月）
+  Sky_Cumulus_dusk,night,dawn             ← 雲海到齊（朝東，四張都沒有月亮本體）
+  Sky_Cirrus_day,dusk,night,dawn          ← 卷雲**新雲景**（朝北，沒有月亮本體）
+```
+
+⚠⚠ **`Belisar_Foyer_night` 的 v1 已回收**：破頂缺口畫了**月亮本體**，違反
+`_plainsroad_spec.md` §三與憲法 §5（**朝向未定 ⇒ 只畫月光、不畫本體**）。
+v2 在提示詞裡明寫「破頂缺口外的夜空裡絕對不要畫出月亮本體，光源在畫面之外」，一次就對。
+⇒ **教訓：室內從破口看出去的那一小塊天空，也要寫那一句** —— 模型會順手補一輪月上去。
+
+## NPC 去背（4 張，1024×1536 RGBA）
+
+`resources/SI/NPC/NPC_GuildCounter_SI_v3/v4/v5`、`NPC_Grocer_SI_v5`
+—— 白底 RGB → 真 alpha。`alpha0 58.7~70.8%`／**亮像素平均 alpha 241~253**
+（＝白襯衫沒被鍵掉，憲法 §5 的驗法）。提示詞就一句：
+**「重繪此角色，100%保留原角色細節，alpha背景」**（短的那一版，一次都沒被擋）。
+
+## 怪（1 張）
+
+`resources/enemy/mon_pall_bearers.webp` 抬棺列 —— 伊甸古墓那一族**26 隻到齊**。
+
+## 小地圖與中間素材
+
+```
+resources/map/map_plainsroad.webp      ← 重畫，11 格（舊版只有 6 格，已回收）
+resources/map/_spots_plainsroad.json   ← 程式端照抄的 11 筆座標
+resources/map/_icons_plainsroad.png    ← 圖示表（4×3，11 個符號）
+resources/map/_icons_eastport.png      ← **東泊圖示表（4×4，13 個符號）已備妥**
+                                          等 POS 補完就能合成（第四節第 6 項）
+```
+
+⚠ 東泊的 16 格裡，**餐廳／咖啡廳／甜品店那三格還沒有圖示** ——
+POS 補完之後要再跟模型要三個符號（提示詞照 `_icons_eastport.png` 那一則的格式）。
+
+---
+
+# 六、⚠ 交接當下**沒有還在跑的東西**
+
+這一輪的每一條串都收乾淨了。四個 ChatGPT 分頁留在那裡（帳號有保存對話，回得去）：
+
+| 串 | URL |
+|---|---|
+| 卷雲天空（四時段都在裡面） | https://chatgpt.com/c/6aac079e-001c-83e8-ad43-482bb9b27f5a |
+| 雲海天空 | https://chatgpt.com/c/6aac0610-b164-83e8-986f-754db713f27d |
+| NPC 去背（GuildCounter v4 ＋ Grocer v5） | https://chatgpt.com/c/6aac0767-e41c-83ee-8451-8bfea629f98e |
+| 東泊圖示表 | https://chatgpt.com/c/6aac0b1b-73b4-83e9-bdd0-98745894e61d |
+
+⚠⚠ **這個帳號跟 `HANDOFF.md` 寫的不一樣，它會保存對話**（那一段是舊機器的別的帳號）。
+  對話網址回得去、圖也還在 —— 但**虛擬清單會卸載捲出畫面的圖**（第二節第 1 條），
+  所以還是「生完盡快收」比較安全。
+
+---
+
+# 七、其他
+
+- **蕾娜髮飾**：Ray 指示**擱置**，不要自己續跑。
+- **貝利薩爾量體高度圖**：卡在 Ray 還沒核可平面配置，不動。
+- Ray 的雜檔（`ART_HANDOVER.md`、兩個 docx、`reference/maze.png`、
+  `flight/Reference/ship_topdown.png`、幾支語音 wav/pkf、`enemy_lowroar.mp3`、
+  根目錄兩張 png）**沒有動** —— 要歸位要問過他。
+- `~/Downloads/gen_*.png` 這一輪又多了二十幾張（原稿都已經進 `resources/_originals/`）
+  —— 要不要清由 Ray 決定。
