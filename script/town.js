@@ -460,6 +460,22 @@ export const DRAGON_LINES = {
            攤開之後一直在，段落講完才自己收（`clearCast`）。 */
       Object.assign(sor('guard','交給我！'), { map:true, flags:['bl_dragon_seen'] }),
       sor('back','那氣味我記住了！'),
+      /* ══⚠⚠⚠ **開圖這一刻，她知不知道王座那一區在哪**（ver -1484，Ray 交辦）══
+         > 「若在開小地圖前就已經踩過獅階／謁見／王座任一個 → 蕾：『把牠往王座之間
+         >   趕就無處可逃了！』並移除獅階的那段趕龍對白；沒踩過 → 蕾：『得找一個
+         >   能困住牠的地方！』，獅階那一段照舊。」
+         ⚠⚠⚠ **一定要在這一刻把答案latch起來**（`bl_throne_known`）：
+           判準是「**開圖之前**踩過沒」，而開圖之後玩家一定會再踩到更多格 ——
+           獅階那一段又是**走進獅階時**才演的，那時 `seen_belisar_dragstair`
+           早就被 `markSeen` 記上了（抵達就記）⇒ 現算的話**永遠成立**，
+           那一段會被錯誤地砍掉。所以由上面這一句順手插旗，下面兩處都只讀旗。
+         ⚠ `onlyIf`／`skipIf` 寫成**陣列 ＝ 任一支成立**（-1484 的新寫法，見 story.js）。
+         ⚠ 三格的鑰匙是 `seen_<圖>_<節點>`（`town.markSeen`，抵達就記）。 */
+      Object.assign(ren('command','把牠往王座之間趕就無處可逃了！'),
+        { onlyIf:['seen_belisar_dragstair','seen_belisar_antecham','seen_belisar_throne'],
+          flags:['bl_throne_known'] }),
+      Object.assign(ren('thinking','得找一個能困住牠的地方！'),
+        { skipIf:['seen_belisar_dragstair','seen_belisar_antecham','seen_belisar_throne'] }),
     ] },
   ],
   /* ══⚠⚠ **第五場以後**（ver -1421，Ray：「從開圖開始起算超過 5 場…」）══
@@ -5912,8 +5928,13 @@ export const TOWNS = {
            這是我的判讀：那兩句講的是「往這個方向逼」，而「往哪裡逼」要看得見牠
            才成立。白天那一趟踩過獅階不會用掉這一次（`need` 不成立＝不演也不記）。 */
       dragstair: { bg:'Belisar_LionStair', name:'貝利薩爾遺址　獅階', noTime:true, noWild:true, rest:true, exits:{ up:'antecham', down:'guardhall' },
-        acts:[ { flag:'bl_night_lionstair', need:'bl_dragon_seen', afterSettle:true,
-                 sides:{ RENNA:'L' }, lines:[
+        /* ⚠ `until:'bl_throne_known'`（ver -1484）＝**開圖那一刻她就已經知道王座
+           那一區在哪**（踩過獅階／謁見／王座任一格）⇒ 這一段「把牠往這個方向逼」
+           的指路就不必再演了（Ray 指定）。旗是開圖那一拍插的，見 `chase` ④。
+           ⚠ `until` 與 `flag` 是兩件事：`flag` ＝這一段演過了（自己記），
+             `until` ＝別的條件成立了（別人記）—— 兩個都會讓這一段不演。 */
+        acts:[ { flag:'bl_night_lionstair', need:'bl_dragon_seen', until:'bl_throne_known',
+                 afterSettle:true, sides:{ RENNA:'L' }, lines:[
           ren('command','把牠往這個方向逼！'),
           sor('battlecry','瞭解！'),
         ] } ] },
