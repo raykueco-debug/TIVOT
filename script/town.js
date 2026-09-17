@@ -5352,20 +5352,45 @@ export const TOWNS = {
          ⚠ **那一頭不給陸路回程是對的**（同 -1358 的理由）：`belisar.entrance` 的
            「下」已經是**出航**（`sail:{}`），而 §6.5.4「出航先擺，『下』不能被
            『回去』擠掉」。走路過去、搭船離開 —— 不會卡死。 */
-      /* ══⚠⚠⚠ **看見古城裡的燈光**（ver -1402，Ray：「諾薇兒的『裡面有燈光』以下
-         台詞移到古道的最後一格，最後加一個安雅的 lookup 立繪」）══
-         這兩句原本在古城中庭（`ep_bel_enter`）—— 但「裡面有燈光」是**還在外面**
-         才說得出口的話，而這一格用的正是 `Belisar_Exterior`（古堡的外觀）。
-         ⚠ 安雅那一拍**沒有台詞**：台上有人的無台詞拍要點擊才推進（§6.5 的 -628）
-           —— 她抬頭看，那就是這一段的收尾。
+      /* ══⚠⚠⚠ **狹窄溪谷那一段**（ver -1448，Ray 交稿；取代 -1402 的「裡面有燈光」）══
+         -1402 那三句是配**古堡外觀圖**寫的（那時這一格借 `Belisar_Exterior`），
+         而 -1447 換成了窄谷 ⇒ 台詞跟著換。⚠⚠ **舊的那三句現在沒有落腳處**
+         （「裡面有燈光！」／「跟木雅克遺蹟的時候一樣嗎……」／安雅 lookup）——
+         要不要搬回古城中庭（`ep_bel_enter`）**等 Ray 決定**，不要自己塞回去。
+
+         ⚠⚠ **站位：蕾娜改站右**（`sides:{RENNA:'R'}`）。理由是台上有四個人，
+           而諾薇兒是這一段講最多話的（12 拍裡佔 5 拍）：
+           · 她的本位是左，`ART.renna.side` 也是左 ⇒ 不覆寫的話兩個人擠同一側，
+             第 2→3→4 拍會「諾→蕾→諾」連換兩次卡（§6.5：那是閃爍不是演出）。
+           · 改成**左邊只有諾薇兒、右邊蕾／安／索輪轉**：輪轉 4 次，而且最常講話的
+             那一位從頭到尾不動。反過來把諾薇兒翻到右邊是 5 次、而且她自己一直被換掉。
+           ⚠ §6.5 那條「蕾娜碰到安雅就放左」講的是**兩人同台**；四個人同台時
+             上位規則是「同邊換人一律走抽牌輪轉」，這裡照它走。
+           ⚠ 蕾娜 `mirror:false` ＝換邊就是換邊，不翻（§6.5 明文：分兩邊優先於站位原則）。
+         ⚠ 最後兩拍（蕾娜的表情、安雅 nervous）**沒有台詞**：台上有人的無台詞拍
+           要點擊才推進（§6.5 的 -628）—— 那兩個表情就是這一段的收尾。
+         ⚠⚠ 蕾娜那一拍**依好感段位換表情**（Ray：「T2 以下 scarejump／T3 以上
+           shockedCalm」）⇒ 走 `portrait.exprByTier`（**門檻不是等於**，§6.5 的 -772）：
+           `{1:'scarejump', 3:'shockedCalm'}` ＝ T1/T2 嚇一跳、T3 以上只是無言。
+           ⚠ 它掛在 `portrait` 上不是掛在 line 上，所以這一拍不用 `ren()` 那個縮寫。
          ⚠ 這一格是 `rest`（休息處），而 `actDue` 排在 `restActDue` 前面，
            所以這一段會先演；何況這一趟還沒打過架，休息處本來就不作動。 */
       gorge:  { bg:'Plains_Gorge_day', noTime:true, name:'平原古道　狹窄溪谷', rest:true,
         exits:{ up:'@belisar', down:'windrock' },
-        acts:[ { flag:'ep_bel_sight', need:'ep_day2', sides:{ RENNA:'L' }, lines:[
-          nou('surprise','裡面有燈光！'),
-          ren('watch','跟木雅克遺蹟的時候一樣嗎……'),
-          any('lookup',''),
+        acts:[ { flag:'ep_bel_sight', need:'ep_day2', sides:{ RENNA:'R' }, lines:[
+          nou('surprise','好窄喔，難怪不能騎馬來！'),
+          nou('awkward','是說我也不會騎就是了。'),
+          ren('ask','是啊，只有我跟安雅小姐通騎術，人數對不上嘛。'),
+          nou('surprise','咦？安雅也會嗎？'),
+          any('curious','會。'),
+          nou('bigsmileclose','好厲害！'),
+          sor('idea','我的話什麼都能騎喔！'),
+          { speaker:'PLAYER', blank:true },
+          sor('tease','……不相信？給我鞭子我連你都能騎。'),
+          { speaker:'RENNA', text:'',
+            portrait:{ char:'RENNA', exprByTier:{ 1:'scarejump', 3:'shockedCalm' }, show:true } },
+          nou('bigsmileclose','？？'),
+          any('nervous',''),
         ] } ] },
     },
   },
