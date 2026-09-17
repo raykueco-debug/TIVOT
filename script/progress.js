@@ -1002,6 +1002,81 @@ export const CHAPTERS = [
        幹嘛從餐廳走回去？」）—— 諭令那一幕就演在那裡（正式流程是閘門
        `sv_s8_to_home` 把人從餐廳三秒黑搬回家，章節工具直接落在終點）。 */
     enter:'town', town:'shinier', node:'sorahome' },
+
+  /* ══⚠⚠⚠ **Stage 10-B ／ 11-B**（ver -1466，Ray：「把二次進入古城設成 Stage10-B，
+     把升空追擊那一幕設成 Stage11-B，列入章節選擇」）══════════════════════════
+     ⚠⚠ **`-B` 只在 `name` 上，`stage` 仍然是整數**（10／11）：`stage` 是**遊戲邏輯
+       的鑰匙**（`getStage()` 的門檻、地圖鎖、`FEATURE_FROM`），它必須比得大小；
+       `-B` 是「這一段叫什麼」，那是顯示。兩件事不要合成一個欄位（鐵律 7）。
+     ⚠⚠ **主線目前沒有任何一段會 `setStage(10/11)`** —— 東泊那一整段線上跑的還是
+       stage 9（同 -1378 那條：「東泊不是第十章」）。所以這兩筆現在是**章節工具的
+       落點**，不是「主線已經升到十章」。哪一段負責升章由 Ray 定，定了再把
+       `stage:` 寫到那一段的 act 上（同 `sv_s9_order` 的作法）。
+     ⚠ 好感給 `renna:40`：那一夜那幾段的門是**段位**（`needTier:{renna:3}`，
+       而 tier 3 的下限正是 40）—— `newRun()` 把好感歸零，不補的話跳關進去
+       那幾段永遠不成立，而且畫面上不會有任何錯誤訊息（ver -1396 的教訓）。 */
+  { id:'stage10b', name:'Stage 10-B', sub:'那一夜・二次進入古城（夜襲）→ 追擊王座徘徊者',
+    stage:10, clockHour:21, named:true, aff:{ renna:40 },
+    /* ⚠ `bl_night_land` **不插** —— 降落中庭那一段正是這一章要演的第一拍。 */
+    flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open',
+           'set_sail','got_ship','dock_day2','flight_centipede_met',
+           'np_port_arrive','np_clear_church','np_claws_done','safehouse_northport',
+           'np_burial','np_burial_done','np_night','np_night_done','np_day3',
+           'np_day3_done','np_anya_join','np_dock_ask','np_grave_done','np_depart',
+           'sv_arrive','sv_evening','sv_night_done','shinier_siege',
+           'sv_clear_wild','safehouse_shinier','sv_forest_morning',
+           'sv_forest_go','sv_forest_intro','sv_deer_met','sv_deer_harm',
+           'sr_intro','sr_gate_brazier','sr_gate_bridge','sr_brazier','sr_bridge',
+           'sr_mural','ruins_gate_open','ruins_bell_done','ruins_thug_met','sr_altar',
+           'ruins_altar_on','sv_s8_noon',
+           'sv_s8_home','sv_s8_hungry','sv_s8_dine','sv_s8_corvin',
+           /* S9 → 東泊：諭令演完 → 飛到古城降不下去 → 轉降東泊 */
+           'sv_s9_order','belisar_noland_talk','ep_arrive',
+           /* 東泊第一天：大學遇蕾娜 → 夜話 → 傍晚 → 翌日 */
+           'ep_renna_met','ep_renna_night','ep_evening','ep_day2',
+           /* 第二天：走古道 → 進古城 → 祭壇（髮飾被吞）→ 中庭 → 回東泊 */
+           'ep_bel_gorge','ep_bel_sight','ep_bel_enter','bl_foyer_first',
+           'bel_hint2','bel_hint3','bel_water','ep_bel_altar','renna_hairpin_lost',
+           'ep_bel_court','ep_belisar_done','ep_bel_back',
+           /* 那一夜：旅店決定夜襲（插 `ep_hairpin_hunt` ＝任務鎖、
+              `belisar_land_ok` ＝古城從此降得下去） */
+           'ep_night_raid','ep_hairpin_hunt','belisar_land_ok'],
+    enter:'town', town:'belisar', node:'entrance' },
+
+  { id:'stage11b', name:'Stage 11-B', sub:'升空追擊（上船追）→ 空中戰',
+    stage:11, clockHour:23, named:true, aff:{ renna:40 },
+    flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open',
+           'set_sail','got_ship','dock_day2','flight_centipede_met',
+           'np_port_arrive','np_clear_church','np_claws_done','safehouse_northport',
+           'np_burial','np_burial_done','np_night','np_night_done','np_day3',
+           'np_day3_done','np_anya_join','np_dock_ask','np_grave_done','np_depart',
+           'sv_arrive','sv_evening','sv_night_done','shinier_siege',
+           'sv_clear_wild','safehouse_shinier','sv_forest_morning',
+           'sv_forest_go','sv_forest_intro','sv_deer_met','sv_deer_harm',
+           'sr_intro','sr_gate_brazier','sr_gate_bridge','sr_brazier','sr_bridge',
+           'sr_mural','ruins_gate_open','ruins_bell_done','ruins_thug_met','sr_altar',
+           'ruins_altar_on','sv_s8_noon',
+           'sv_s8_home','sv_s8_hungry','sv_s8_dine','sv_s8_corvin',
+           /* S9 → 東泊：諭令演完 → 飛到古城降不下去 → 轉降東泊 */
+           'sv_s9_order','belisar_noland_talk','ep_arrive',
+           /* 東泊第一天：大學遇蕾娜 → 夜話 → 傍晚 → 翌日 */
+           'ep_renna_met','ep_renna_night','ep_evening','ep_day2',
+           /* 第二天：走古道 → 進古城 → 祭壇（髮飾被吞）→ 中庭 → 回東泊 */
+           'ep_bel_gorge','ep_bel_sight','ep_bel_enter','bl_foyer_first',
+           'bel_hint2','bel_hint3','bel_water','ep_bel_altar','renna_hairpin_lost',
+           'ep_bel_court','ep_belisar_done','ep_bel_back',
+           /* 那一夜：旅店決定夜襲（插 `ep_hairpin_hunt` ＝任務鎖、
+              `belisar_land_ok` ＝古城從此降得下去） */
+           'ep_night_raid','ep_hairpin_hunt','belisar_land_ok',
+           /* 那一夜的古城：降落 → 前廳 → 四場追擊 → 開圖 → 王座戰打完 → 上船追 */
+           'bl_night_land','bl_night_foyer','bl_chase1','bl_chase2','bl_chase3',
+           'bl_chase4','bl_dragon_seen','bl_night_lionstair','bl_chase_talk3',
+           'bl_night_throne','bl_sky_hunt'],
+    /* ⚠ `enter:'flight'` ＝進度擺好之後開飛行畫面（同「試飛」那一筆）——
+       `openFlight()` 非 resume ⇒ iframe 重載 ⇒ 開機那一刻就讀得到剛插上的
+       `bl_sky_hunt`，升空過場跑完才輪諾薇兒那句「一片黑」（ver -1462／-1455）。
+       ⚠ **不要插 `bl_night_sky`**：那是空中戰打完的旗，插了 `skyHuntHint` 就不演了。 */
+    enter:'flight' },
 ];
 
 /* ══⚠⚠⚠ **腳本測試鈕的落點**（ver -1381，Ray：「在首頁先放一個腳本測試鈕，
