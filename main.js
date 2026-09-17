@@ -615,7 +615,13 @@ function closeFlightFrame(){
    Ray：「只要不是可以操控的飛行畫面，都應該要把飛行畫面 kill 掉」——
    extPaused 只是空轉凍結（CPU 近零），但整包記憶體（地形陣列/取樣金字塔/畫布，
    上百 MB）一直押著：手機記憶體吃緊 → 圖解不出來、系統降頻發燙。
-   交棒進戰鬥／降落進城／回首頁三條路都走這一支；座標與勝負上下文在回程鑰匙
+   ⚠⚠⚠ **ver -1457：路徑清單補齊**（Ray：「飛行畫面入探索地圖必 kill 有確實執行嗎？」）
+     —— 舊註解寫「三條路都走這一支」，而**實際上漏了兩條**：飛行頁的「返回」
+     （回到底下的城鎮）與湖上甲板那一幕，兩條都只叫了 `closeFlightFrame`（藏）。
+     現在是：交棒進戰鬥／**進探索地圖（`enterTown` 的 onCovered，唯一那道門）**／
+     回首頁／**返回**／**湖上甲板**。
+   ⚠ 這種「清單型」的規矩一定會漏（鐵律 8）—— 所以主力掛在 `enterTown` 那**一道門**上，
+     其餘幾條是各自的收場。座標與勝負上下文在回程鑰匙
    （toBattle 寫、restoreFlightPos 讀），下次開飛行頁重載照樣站在原地。 */
 function killFlightFrame(){
   const f=$('flightFrame'); if(!f) return;
@@ -661,6 +667,9 @@ window.__tivotFlight = {
        （鐵律 7），而那正是「空戰殘血」補不完的原因。真相在 `combat.carryHpOrClear`。 */
     try{ town.close(); }catch(_){}
     closeFlightFrame();
+    /* ⚠ ver -1457：上面那段註解寫的是「**iframe 收掉**」，但 `closeFlightFrame`
+       只是藏起來 —— 這一趟航行真的結束了，整個卸載（同 `close()`／`enterTown`）。 */
+    try{ killFlightFrame(); }catch(_){}
     story.open({ scene:'lake_deck' });
   },
   /* 遭遇 → 進戰鬥。門已經在飛行頁推到頂了，這裡**接著演**（撞頂 → 解鎖 → 圓盤 → 開門）。 */
@@ -737,6 +746,11 @@ window.__tivotFlight = {
      從城鎮出航的話，城鎮的舞台一直在 iframe 底下開著，收掉 iframe 就回到城鎮了。 */
   close(){
     closeFlightFrame();
+    /* ⚠⚠⚠ **返回也要殺**（ver -1457）：-845 只接了「交棒進戰鬥／降落進城／回首頁」
+       三條，**這一條（返回底下那一層）從來沒接** —— 於是「出航 → 返回 → 在城裡逛」
+       時整個飛行 iframe 還活著（暫停歸暫停，記憶體與 GL 資源沒還）。
+       ⚠ 殺了不會少東西：再出航時 `openFlight` 本來就是整頁重載。 */
+    try{ killFlightFrame(); }catch(_){}
     /* ⚠ 底下是誰，就把誰的曲子接回來（ver -391）—— 進飛行頁時主遊戲的 BGM 被收掉了，
        不接回來的話回到城鎮／首頁是一片安靜。 */
     const st=$('storyStage');
@@ -1505,7 +1519,22 @@ function enterTown(t, n, opts){
                      那段空窗看到的就是舊地圖 —— Ray：「我從瓦努努起飛，進到東泊
                      還是先看到瓦努努的圖？不是應該被 kill 掉了嗎？」
                      ⚠ 冪等：飛行沒開著時 `closeFlightFrame()` 什麼都不做。 */
-                  ()=>{ hideHome('enterTown/covered'); closeFlightFrame(); });
+                  /* ══⚠⚠⚠ **進探索地圖就把飛行畫面 kill 掉**（ver -1457，Ray：
+                     「憲法裡飛行畫面入探索地圖必 kill 有確實執行嗎？」——**沒有**）══
+                     鐵律 10／13 要的是「**殺掉**，不是藏起來」，而 `closeFlightFrame()`
+                     只做了暫停＋拿掉 `.on`（藏）：地形陣列、城的取樣金字塔、那幾張
+                     離屏畫布（上百 MB）與 GL 資源**整包押著不放** ⇒ 手機記憶體吃緊、
+                     降頻發燙（那正是 -845 立 `killFlightFrame` 的理由）。
+                     ⚠⚠ kill 掛在**這裡**而不是各個呼叫點：`enterTown` 是進城鎮／
+                       探索地圖**唯一**那道門（降落、讀檔、章節跳關、被抬回旅店都走它）
+                       —— 掛在呼叫點一定會漏，而這正是 -845 漏掉的原因（鐵律 8）。
+                     ⚠ 時機是**讀取頁全黑那一刻**（onCovered）：那時 iframe 已經被
+                       蓋住，卸載是看不見的。`land()` 裡那個 600ms 的 kill 留著不刪
+                       （冪等），它是獨立模式那條路的保險。
+                     ⚠ 殺了不會少東西：進飛行畫面本來就一律重載（`openFlight` 的
+                       `location.reload()`），座標走回程鑰匙 —— 留著它一點用都沒有。 */
+                  ()=>{ hideHome('enterTown/covered'); closeFlightFrame();
+                        try{ killFlightFrame(); }catch(_){} });
 }
 function openTownAt(t, n){ enterTown(t, n); }
 saveSys.setHost({
