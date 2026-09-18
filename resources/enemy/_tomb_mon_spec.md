@@ -236,3 +236,56 @@ ChatGPT 的虛擬清單會把捲出畫面的圖**卸載**（實測：這一串�
 
 **敵人卡（數值）等 Ray** —— 同前面 26 隻，我不自己發明。
 另外：這四版是**同一隻 BOSS 的四個設計**，要不要全部上線、還是當成三階段的差分，Ray 說「四個都採用」。
+
+---
+
+## 九、⚠⚠⚠ 程式端要接：**守墓者的敵人卡**（ver -1501，Ray 交數值）
+
+> Ray：「數值照鹿主，hp 減半」
+
+⚠ **這一段是交接，不是我改的** —— 美術 session 不動 `.js`（憲法鐵律 11）。
+請程式 session 讀完這一節，自己去 `script/enemies.js` 加卡。
+
+**基準**＝`sf_deer_nightmare`（變異樹靈鹿主，`script/enemies.js` ~1070 行）：`hp:700 / attack:22`。
+⇒ **hp 減半 ＝ 350**，其餘數值照抄。
+
+### 照抄鹿主的（一個字不改）
+
+```
+story:1, counterStagger:1, boss:0,
+Ganymede:0,
+weaponMod:{ '重機槍':[0,0.3], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
+openAssault:[1,2],
+ult:{ on:1, hp:50, count:4, atk:25, gap:1, cd:4 },
+assaultEvery:[2,4],
+assault:{ count:1, gap:0.35 },
+attack:22,
+atkInterval:null,
+delayPenalty:{ seconds:5 },
+entrance:null,
+special:[],
+boardGrids:[9,9,9,9,9],
+fit:{ mode:'contain', pos:'center bottom' },
+```
+
+### 一定要改掉的四格（鹿主是樹靈，這一隻是骨龍）
+
+| 欄位 | 鹿主 | 守墓者要改成 | 為什麼 |
+|---|---|---|---|
+| `hp` | 700 | **350** | Ray：hp 減半 |
+| `kind` | `harm` | **`harm`**（不變） | 禍魘 ⇒ 吃降臨／淨化特效，這一隻正好要（§6.5.4.4） |
+| `image` | `enemy_sf_deer_nightmare` | **要新增 ASSETS 鍵**，指向 `resources/enemy/mon_gravekeeper_*.webp` | 四張圖已交件 |
+| `bg` | `ruins_shinier_entrance` | **古墓的某一格**（建議 `Tomb_Crypt` 或 `Tomb_Rotunda`） | 戰鬥背景要是這座墓 |
+| `hitFx.assault` | `sakura`（櫻花狂亂） | **不可沿用** —— 骨龍不會撒櫻花 | 建議 `claws` 或另給 |
+| `loot` | `elf_antler`（精靈鹿角） | **不可沿用** | 等 Ray 給掉落 |
+
+### ⚠ 四張圖 ＝ 幾張卡？**Ray 說「四個都採用」，但沒說是四隻怪還是一隻的四個階段。**
+
+腳本的上下文是「打贏 → 沒有淨化反應 → 再次降臨」⇒ **看起來像同一隻的階段差分**，
+那樣的話是**一張卡換圖**（或一張卡＋`sessionEnd` 串起來），不是四張卡。
+⚠ **這一題要問 Ray，不要自己決定** —— 兩種做法的 `session`／`sessionEnd`／回檔點完全不同（§6.5.2）。
+
+### ⚠ 別忘了
+
+· `ASSETS` 要加四個鍵（`enemy_gravekeeper_*`），不然戰鬥載不到圖。
+· 這四張是**新檔名、不是同名覆蓋**，所以 `ASSET_VER` 不用動（§5：新增比覆蓋安全）。
