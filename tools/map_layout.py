@@ -147,12 +147,29 @@ POS = {
   # ── 東方泊地（ver -1255）：拓樸＝帝都 **＋ 大學一格**（Ray：「在中央區加一個
   #    大學分支」）。大學掛在中心區的 `up`，所以版面上它必須畫在中心區**正上方**
   #    —— 出口的方向就是相對位置，畫錯這支工具會直接報錯不出圖。
+  # ── 東方泊地（ver -1487 補三格）：餐飲街底下的三家分店 ──────────────────
+  #   `tavern` ＝**街**（室外），三家店是**走得進去的節點**（-1263 起分店機制取消）：
+  #     tavern: { back:'uptown', up:'restaurant', right:'cafe', down:'dessert' }
+  #   ⚠ 這三格 -1318 就進資料了，POS 一直沒補 ⇒ `_layout_eastport.png` 停在 9/13
+  #     的 13 格版（跑起來會報「POS 少了這幾格」而**不出圖**，所以那張是舊檔不是壞檔）。
   'eastport': {
     'university':(5,1),
     'midtown':(5,3), 'cityhall':(3,3), 'church':(7,3),
-    'dock':(2,4),    'inn':(8,4),
+    'dock':(2,4),    'inn':(8,4),                     'restaurant':(10,4),
     'gunstore':(0,6),'oldtown':(2,6), 'square':(5,6), 'uptown':(8,6), 'tavern':(10,6),
-    'guild':(2,8),   'grocery':(8,8),
+                                                                      'cafe':(11,6),
+    'guild':(2,8),   'grocery':(8,8),                 'dessert':(10,8),
+  },
+  # ── 雪都瓦恩霍姆（ver -1487）：17 格・16 邊・環 0 ──────────────────────
+  #   原 12 格 ＋ 圖書館（`midtown` 的 up）＋ 餐飲街底下三家（酒／咖啡／甜點）。
+  #   ⚠ 版面抄 `resources/map/_ravnsdal_spec.md` §三（美術排的），方向逐條驗過。
+  'ravnsdal': {
+                                     'library':(5,2),
+    'station':(2,4), 'lookout':(3,4), 'midtown':(5,4), 'church':(7,4), 'inn':(8,4),
+                                                                       'bar':(10,4),
+    'gunstore':(0,6),'oldtown':(2,6), 'square':(5,6),  'uptown':(8,6), 'tavern':(10,6),
+                                                                       'cafe':(11,6),
+                     'guild':(2,8),                    'grocery':(8,8),'dessert':(10,8),
   },
   # ── 聖索菲亞城（ver -1123）：拓樸＝帝都，所以版面直接沿用 capital 那一組 ──
   'santasofia': {

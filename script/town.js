@@ -4369,26 +4369,19 @@ export const TOWNS = {
        槍棺上那顆地圖鈕會回一句「這一帶還沒有留下地圖。」（§6.5.4 的既有行為）。
      ══════════════════════════════════════════════════════════════════════ */
   ravnsdal: {
-    name: '拉芬斯達爾城',
+    name: '雪都瓦恩霍姆',
     entry: 'square',
     /* BGM（ver -1248，Ray 交件 `PerituneMaterial_TaishoRoman_Theme2_loop`）。
        ⚠ 它原本**沒有 `bgm`** ＝ 進城沿用上一個畫面的曲子（同聖索菲亞／伊甸古墓）。 */
     bgm: 'taisho2',
     /* 大城市不上迷霧（ver -913）—— ⚠ **要明寫**：沒寫就是有霧。 */
     mist: 0,
-    /* ══ 餐飲街：一格三張圖（ver -1291，美術 commit 69a52a3 交件）══
-       ⚠ **沒有甜品店**（`dessert`）—— 安雅那一支在這座城不存在，`scenes` 查不到
-         那個鍵就**不換、退回節點原本那張**（＝酒吧）。那是 §6.5.4.2 的既有行為，
-         不是壞掉，所以不必為它補一張圖。
-       ⚠ `bar` 的圖與節點的 `bg` 是同一張（`Ravn_Bistro`）—— `DINE.fallback` 就是
-         `bar`，兩邊一致才不會「預設那一家反而換了圖」。
-       ⚠ **不給 `chatter`**：分店的路人語是內容（Ray 還沒給），而 §6.5.4.2 寫明
-         沒寫就回去用節點那一組 —— 不要自己編（鐵律 1）。東方泊地目前也是這樣。 */
-    dining: { node:'tavern', scenes:{
-      cafe:      { bg:'Ravn_Cafe',       noTime:true },
-      restaurant:{ bg:'Ravn_Restaurant', noTime:true },
-      bar:       { bg:'Ravn_Bistro',     noTime:true },
-    } },
+    /* ══⚠⚠ **`dining` 整段拿掉了**（ver -1487，Ray：「加入餐飲街三分支同東泊」）══
+       -1291 的分店機制（`dining.scenes`：一格三張圖、同行女伴決定換哪一張）
+       與新的三個節點是**同一件事的兩個真相**（鐵律 7）—— 留著的話 `dineKey()`
+       還會依同行女伴去換 `tavern` 那一格的背景，而那一格現在是**室外街景**
+       （`Ravn_Dining`），換成某一家店的室內就變成「站在街上卻看到店裡」。
+       ⚠ 東方泊地 -1263 就走完同一條路（那邊的註解寫著同樣的理由）。 */
     /* ══⚠⚠ **`noTime` 逐格看，不是整批**（ver -1293，室外六格的四時段差分到齊）══
        · **室外六格**（廣場／中心區／瞭望台／舊街區／火車站／上街區）＝四差分都在
          ⇒ **不寫 `noTime`**，讓候選鏈照 `BAND_FALL` 挑時段。
@@ -4401,7 +4394,7 @@ export const TOWNS = {
        ⚠ 室內為什麼不做四差分：§5「有室外光才有差分」，同貝利薩爾那一把尺。 */
     nodes: {
       /* ══ 港口廣場 ══ 入口；上＝中心區、左＝舊街區、右＝上街區（照帝都）。 */
-      square:   { bg:'Ravn_Square',   name:'拉芬斯達爾　港口廣場',
+      square:   { bg:'Ravn_Square',   name:'雪都瓦恩霍姆　港口廣場',
         exits:{ up:'midtown', left:'oldtown', right:'uptown' },
         /* ⚠⚠ **不掛 `flag`**（ver -1341，同石製遺蹟 -1154 的理由）：這座城在大地圖上
            是**獨立的一點**，沒有任何跨圖陸路出口 —— 人能站在這裡，就表示他是飛來的。
@@ -4413,8 +4406,12 @@ export const TOWNS = {
         sail:{} },
 
       /* ── 一、中心區 ── 左＝瞭望台、右＝大教堂、下＝廣場 */
-      midtown:  { bg:'Ravn_Midtown',  name:'拉芬斯達爾　中心區',  
-        exits:{ left:'lookout', right:'church', down:'square' } },
+      midtown:  { bg:'Ravn_Midtown',  name:'雪都瓦恩霍姆　中心區',  
+        exits:{ left:'lookout', right:'church', down:'square', up:'library' } },
+      /* ══ 圖書館（ver -1487 交件 `Ravn_Library`）══ 中心區的 `up` 本來就空著。
+         ⚠ `noTime:true` ＝室內單張（§5：不寫就白吃四個 404）。 */
+      library:  { bg:'Ravn_Library',  name:'雪都瓦恩霍姆　圖書館',  noTime:true,
+        exits:{ back:'midtown' } },
       /* ⚠⚠ **大教堂是規格上唯一留白的一格**（`_ravnsdal_spec.md` §三：宗教建築的
          形制是世界觀的事，Ray 還沒給方向）。`Ravn_Church` 這張圖**還不存在**。
          ⚠⚠ 所以 `bg` **暫時指中心區那一張**，不是指一個不存在的檔名 ——
@@ -4424,40 +4421,65 @@ export const TOWNS = {
            借中心區也讀得通：那條側街本來就是從中心區往深處沒入海霧的那一條。
          ⚠ `bgPending` 寫成**還缺哪一張的檔名**（`script_lint.py` 會提醒）——
            圖交進來就只要把 `bg` 改成 `Ravn_Church`、拔掉 `bgPending`，其餘不動。 */
-      church:   { bg:'Ravn_Midtown',   name:'拉芬斯達爾　大教堂',  
+      church:   { bg:'Ravn_Midtown',   name:'雪都瓦恩霍姆　大教堂',  
         bgPending:'Ravn_Church', exits:{ back:'midtown' } },
-      lookout:  { bg:'Ravn_Lookout',  name:'拉芬斯達爾　瞭望台',  
+      lookout:  { bg:'Ravn_Lookout',  name:'雪都瓦恩霍姆　瞭望台',  
         exits:{ back:'midtown' } },
 
       /* ── 二、舊街區（四向樞紐） ── 左＝武器店、右＝廣場、上＝火車站、下＝公會 */
-      oldtown:  { bg:'Ravn_Oldtown',  name:'拉芬斯達爾　舊街區',  
+      oldtown:  { bg:'Ravn_Oldtown',  name:'雪都瓦恩霍姆　舊街區',  
         exits:{ left:'gunstore', right:'square', up:'station', down:'guild' } },
-      gunstore: { bg:'Ravn_Firearm',  name:'拉芬斯達爾　武器店',   noTime:true,
+      gunstore: { bg:'Ravn_Firearm',  name:'雪都瓦恩霍姆　武器店',   noTime:true,
         exits:{ back:'oldtown' } },
       /* ⚠⚠ 站房上那面大鐘的指針**由遊戲時間擺**（ver -1249，Ray：「不然背景的時間
          跟遊戲時間永遠對不上，對我來說那算 bug」）。座標是**量出來的**（圖 1536×1024）：
          錶心 (767,170) ⇒ (0.4993, 0.1660)；`r` 是盤面半徑 50px ÷ 圖寬 1536 ＝ 0.0326。
          引擎會先用盤面色蓋掉畫上去的那兩根（盤面是平的，見 `syncBgClock` 的說明），
          再擺上時針分針 —— **不轉動、進場抓一次**。 */
-      station:  { bg:'Ravn_Station',  name:'拉芬斯達爾　火車站',  
+      station:  { bg:'Ravn_Station',  name:'雪都瓦恩霍姆　火車站',  
         /* `wipe`＝畫上去的分針伸出盤面圓之外的那一截（實測到 r≈56，補丁只到 50）
            —— 不抹的話三點鐘方向會留一小截黑。一項＝[角度°, r0, r1, 半寬]，
            後三個以盤面半徑為單位。 */
         clock:{ x:0.4993, y:0.1660, r:0.0326, wipe:[[100.5, 0.94, 1.20, 0.11]] },
         exits:{ back:'oldtown' } },
-      guild:    { bg:'Ravn_Guild',    name:'拉芬斯達爾　賞金獵人公會', noTime:true,
+      guild:    { bg:'Ravn_Guild',    name:'雪都瓦恩霍姆　賞金獵人公會', noTime:true,
         exits:{ back:'oldtown' } },
 
       /* ── 三、上街區（四向樞紐） ── 左＝廣場、右＝餐飲街、上＝旅店、下＝雜貨舖 */
-      uptown:   { bg:'Ravn_Uptown',   name:'拉芬斯達爾　上街區',  
+      uptown:   { bg:'Ravn_Uptown',   name:'雪都瓦恩霍姆　上街區',  
         exits:{ left:'square', right:'tavern', up:'inn', down:'grocery' } },
-      tavern:   { bg:'Ravn_Bistro',   name:'拉芬斯達爾　餐飲街',   noTime:true,
-        exits:{ back:'uptown' } },
-      grocery:  { bg:'Ravn_Grocerie', name:'拉芬斯達爾　雜貨舖',   noTime:true,
+      /* ══⚠⚠ **餐飲街是樞紐，不是分店**（ver -1487，Ray：「加入餐飲街三分支同東泊」）══
+         照東方泊地 -1318 那一套：三家店是玩家自己走得進去的節點，那是拓樸不是差分。
+         ⚠⚠⚠ **這一格的背景是「街」不是某一家店的室內**（同東泊 -1432 的教訓）：
+           站在樞紐上卻看到店裡，讀起來是「我已經進去了」，而旁邊三條路又通向
+           另外三家店。圖是 `Ravn_Dining_{dawn,day,dusk,night}`（-1487 交件，
+           **室外＝四差分到齊 ⇒ 不寫 `noTime`**）。
+         ⚠⚠ 連帶：**`Ravn_Restaurant.webp` 從此沒有節點在用** —— Ray 這一次點名的
+           三家是甜品店／餐酒館／咖啡廳（東泊那邊的第三家是**餐廳**不是餐酒館，
+           所以兩座城的三分支不完全一樣）。⛔ **那張先不要回收**：真的要開第四格
+           或換掉餐酒館就立刻用得到。
+         ⚠ **不寫 `left`**：這一格是從上街區往右走進來的，`back` 現算成 `left`
+           （§6.5.4「回去掛在來時方向的反向」）—— 佔掉 `left` 會把退路擠掉。
+         ⚠ 三家都只寫 `back`（同武器店／公會那一族）：同一條邊的兩端自動相反，
+           不會踩到「一直按同一個方向走不出去」那個坑（憲法 ver -902）。
+         ⚠ **不給 `chatter`**：分店的路人語是內容（Ray 還沒給），§6.5.4.2 寫明
+           沒寫就回去用節點那一組 —— 不要自己編（鐵律 1）。東泊目前也是這樣。
+         ⚠⚠ **`hours` 沒設**（同東泊那三格）：憲法 ver -1378 那張表（酒吧三差分
+           `[8,24]`、餐廳只有 day）的前提是「那幾格的 `hours` 真的是表上那一組」，
+           而這座城從來沒設過營業時間 —— 要設是 Ray 的決定，設了美術才知道要交幾張。 */
+      tavern:   { bg:'Ravn_Dining',   name:'雪都瓦恩霍姆　餐飲街',
+        exits:{ back:'uptown', up:'bar', right:'cafe', down:'dessert' } },
+      bar:      { bg:'Ravn_Bistro',   name:'雪都瓦恩霍姆　餐酒館',   noTime:true,
+        exits:{ back:'tavern' } },
+      cafe:     { bg:'Ravn_Cafe',     name:'雪都瓦恩霍姆　咖啡廳',   noTime:true,
+        exits:{ back:'tavern' } },
+      dessert:  { bg:'Ravn_Dessert',  name:'雪都瓦恩霍姆　甜品店',   noTime:true,
+        exits:{ back:'tavern' } },
+      grocery:  { bg:'Ravn_Grocerie', name:'雪都瓦恩霍姆　雜貨舖',   noTime:true,
         exits:{ back:'uptown' } },
       /* ⚠ 這一格**沒有** `inn:true`：旅店大廳與四扇伙伴門這一輪不做（同聖索菲亞）
          —— 只寫 `inn:true` 而沒有人應門的話，玩家會敲到一排空門（§6.5.5）。 */
-      inn:      { bg:'Ravn_Hotel',    name:'拉芬斯達爾　旅店',     noTime:true,
+      inn:      { bg:'Ravn_Hotel',    name:'雪都瓦恩霍姆　旅店',     noTime:true,
         exits:{ back:'uptown' } },
     },
   },
