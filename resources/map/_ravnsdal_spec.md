@@ -1,7 +1,7 @@
 # 拉芬斯達爾 Ravnsdal — 城市設計（北歐・1900）
 
 > **城名（Ray 2026-09-12 交辦「取個 19 世紀北歐內陸風的名，不要跟現實城市撞名」）**
-> **Ravnsdal ／ 拉芬斯達爾** —— 地圖 id `ravnsdal`、檔名前綴 `Ravn_`。
+> **Ravnsdal ／ 拉芬斯達爾** —— 地圖 id `ravnsdal`、檔名前綴 `Varn_`。
 > · `ravn` ＝ 北歐語（丹麥／挪威）的**渡鴉**；`dal` ＝**谷** ⇒「渡鴉谷」。
 > · `-dal` 是**內陸**地名的後綴（海邊會用 `-vik`／`-havn`／`-nes`）——
 >   照 Ray 要的「內陸風」。⚠ 這座城其實是**港市**：名字留著它從谷地聚落長成港口的來歷，
@@ -23,22 +23,22 @@
 
 | 節點 id | 向數 | 出口 | 中文名 | `bg` |
 |---|---|---|---|---|
-| `square` | 3 | `{ up:'midtown', left:'oldtown', right:'uptown' }` ＋ `sail`（下方＝出航） | 拉芬斯達爾　港口廣場 | `Ravn_Square` |
-| `midtown` | 3 | `{ left:'lookout', right:'church', down:'square' }` | 拉芬斯達爾　中心區 | `Ravn_Midtown` |
-| `church` | 末 | `{ back:'midtown' }` | 拉芬斯達爾　大教堂 | `Ravn_Church` ⬜ |
-| `lookout` | 末 | `{ back:'midtown' }` | 拉芬斯達爾　瞭望台 | `Ravn_Lookout` |
-| `oldtown` | **4** | `{ left:'gunstore', right:'square', up:'station', down:'guild' }` | 拉芬斯達爾　舊街區 | `Ravn_Oldtown` |
-| `gunstore` | 末 | `{ back:'oldtown' }` | 拉芬斯達爾　武器店 | `Ravn_Firearm` |
-| `station` | 末 | `{ back:'oldtown' }` | 拉芬斯達爾　火車站 | `Ravn_Station` |
-| `guild` | 末 | `{ back:'oldtown' }` | 拉芬斯達爾　賞金獵人公會 | `Ravn_Guild` |
-| `uptown` | **4** | `{ left:'square', right:'tavern', up:'inn', down:'grocery' }` | 拉芬斯達爾　上街區 | `Ravn_Uptown` |
-| `tavern` | 末 | `{ back:'uptown' }` | 拉芬斯達爾　餐飲街 | `Ravn_Bistro` |
-| `grocery` | 末 | `{ back:'uptown' }` | 拉芬斯達爾　雜貨舖 | `Ravn_Grocerie` |
-| `inn` | 末 | `{ back:'uptown' }` | 拉芬斯達爾　旅店 | `Ravn_Hotel` |
+| `square` | 3 | `{ up:'midtown', left:'oldtown', right:'uptown' }` ＋ `sail`（下方＝出航） | 拉芬斯達爾　港口廣場 | `Varn_Square` |
+| `midtown` | 3 | `{ left:'lookout', right:'church', down:'square' }` | 拉芬斯達爾　中心區 | `Varn_Midtown` |
+| `church` | 末 | `{ back:'midtown' }` | 拉芬斯達爾　大教堂 | `Varn_Church` ⬜ |
+| `lookout` | 末 | `{ back:'midtown' }` | 拉芬斯達爾　瞭望台 | `Varn_Lookout` |
+| `oldtown` | **4** | `{ left:'gunstore', right:'square', up:'station', down:'guild' }` | 拉芬斯達爾　舊街區 | `Varn_Oldtown` |
+| `gunstore` | 末 | `{ back:'oldtown' }` | 拉芬斯達爾　武器店 | `Varn_Firearm` |
+| `station` | 末 | `{ back:'oldtown' }` | 拉芬斯達爾　火車站 | `Varn_Station` |
+| `guild` | 末 | `{ back:'oldtown' }` | 拉芬斯達爾　賞金獵人公會 | `Varn_Guild` |
+| `uptown` | **4** | `{ left:'square', right:'tavern', up:'inn', down:'grocery' }` | 拉芬斯達爾　上街區 | `Varn_Uptown` |
+| `tavern` | 末 | `{ back:'uptown' }` | 拉芬斯達爾　餐飲街 | `Varn_Bistro` |
+| `grocery` | 末 | `{ back:'uptown' }` | 拉芬斯達爾　雜貨舖 | `Varn_Grocerie` |
+| `inn` | 末 | `{ back:'uptown' }` | 拉芬斯達爾　旅店 | `Varn_Hotel` |
 
 ⬜ ＝ **Ray 指定先留白**（見 §三）。
 
-- ⚠ **節點 id 是 `oldtown`，背景檔名是 `Ravn_Oldtown`** —— 帝都那一格的 id 也是 `oldtown`，
+- ⚠ **節點 id 是 `oldtown`，背景檔名是 `Varn_Oldtown`** —— 帝都那一格的 id 也是 `oldtown`，
   但它的 bg 叫 `Capital_Downtown`。**id 與檔名本來就不同名**，這裡我讓它們一致，
   但**不要**回頭把帝都那邊「順手統一」。
 - ⚠ **入口是 `square`，不可以有戰鬥**（§6.5.2：它是遭遇戰的復活點）。出航掛在它的下方。
@@ -102,7 +102,7 @@
   程式端量過全圖，**有出航的城都靠著水**（東方泊地 2／聖索菲亞 2／夏爾村 5／
   薇拉馮德港 12／北方泊地 14／帝都出港位 12）。
 
-⚠ **`Ravn_Square_day` 實測已經合規**（第一張就畫對了）：船浮在水面上、沿岸壁並排繫著，
+⚠ **`Varn_Square_day` 實測已經合規**（第一張就畫對了）：船浮在水面上、沿岸壁並排繫著，
 有吃水線與倒影，沒有懸停也沒有繫留桅 —— **不必重跑**。
 
 ### 色調
@@ -170,13 +170,13 @@
 
 | 檔名 | 改成 | 同名覆蓋？ |
 |---|---|---|
-| `Ravn_Firearm` | 槍店**店內**：左側長木櫃台（綠呢、清槍工具、銅殼子彈）；後牆一排直立槍架；地上木箱與火藥桶；深處**結霜的小窗**透冷白天光，櫃台一盞煤油燈是暖的 | ✔ 覆蓋 |
-| `Ravn_Guild` | 公會**室內**：半地下、**低天花板**與粗木樑；左側整面木製懸賞板（貼滿手寫紙，⛔ 不要看得懂的字）；厚重長木桌（地圖、空酒杯、插在桌面的短刀）；鑄鐵柴爐透橘紅火光；深處**貼近天花板的一排小窗** | ✔ 覆蓋 |
-| `Ravn_Grocerie` | 雜貨舖**店內**：左側木櫃台（黃銅盤秤、牛皮紙與麻繩、錢盒）；後牆整面木格層架；地上敞口麻袋、鹹魚桶、麻繩；天花板垂下**魚乾與洋蔥**；深處大玻璃窗透冷白天光 | ✔ 覆蓋 |
-| `Ravn_Hotel` | 旅店**大廳**：**中央偏左的木製接待櫃台**，⚠ 櫃台**上方留一塊乾淨牆面**；後牆一排掛黃銅鑰匙的小木格；矮桌與扶手椅、鑄鐵柴爐（全圖最暖）；⚠ **右側空出來**（只畫往上的木樓梯與走廊牆）；左後方大窗外是冷灰的街與飄雪 | ✔ 覆蓋 |
-| `Ravn_Bistro` | **酒吧店內**（＝餐飲街的預設）：地下室、低矮磚拱；左側長吧台（深色木、黃銅扶杆、倒掛玻璃杯、橫躺酒桶）；高腳凳與長桌長凳；**整間暖橘燈光，只有深處樓梯口漏下一道冷白天光** | ✔ 覆蓋 |
-| `Ravn_Cafe` | **咖啡廳店內**：左側大理石小吧台（**黃銅咖啡壺與磨豆機**、白瓷杯盤）；小圓桌與曲木椅；淺灰泥牆配深色木護牆板、新藝術曲線燈具；**左後方一整片大玻璃窗**，天光整片灑進來 —— **這張最亮** | 🆕 新增 |
-| `Ravn_Restaurant` | **餐廳店內**：⚠⚠ **19 世紀的一般餐廳，不是高檔餐廳**（憲法 §5 的全域規矩）：左側木頭出餐檯（白瓷厚盤、大湯鍋與長柄杓、記菜小黑板）；中段素木長桌配長凳、桌面擦得發白；淺灰泥牆＋**素木護牆板**（有磨損與釘孔）；樸素的鑄鐵煤油吊燈；深處通廚房的門透出暖光與蒸氣 | 🆕 新增 |
+| `Varn_Firearm` | 槍店**店內**：左側長木櫃台（綠呢、清槍工具、銅殼子彈）；後牆一排直立槍架；地上木箱與火藥桶；深處**結霜的小窗**透冷白天光，櫃台一盞煤油燈是暖的 | ✔ 覆蓋 |
+| `Varn_Guild` | 公會**室內**：半地下、**低天花板**與粗木樑；左側整面木製懸賞板（貼滿手寫紙，⛔ 不要看得懂的字）；厚重長木桌（地圖、空酒杯、插在桌面的短刀）；鑄鐵柴爐透橘紅火光；深處**貼近天花板的一排小窗** | ✔ 覆蓋 |
+| `Varn_Grocerie` | 雜貨舖**店內**：左側木櫃台（黃銅盤秤、牛皮紙與麻繩、錢盒）；後牆整面木格層架；地上敞口麻袋、鹹魚桶、麻繩；天花板垂下**魚乾與洋蔥**；深處大玻璃窗透冷白天光 | ✔ 覆蓋 |
+| `Varn_Hotel` | 旅店**大廳**：**中央偏左的木製接待櫃台**，⚠ 櫃台**上方留一塊乾淨牆面**；後牆一排掛黃銅鑰匙的小木格；矮桌與扶手椅、鑄鐵柴爐（全圖最暖）；⚠ **右側空出來**（只畫往上的木樓梯與走廊牆）；左後方大窗外是冷灰的街與飄雪 | ✔ 覆蓋 |
+| `Varn_Bistro` | **酒吧店內**（＝餐飲街的預設）：地下室、低矮磚拱；左側長吧台（深色木、黃銅扶杆、倒掛玻璃杯、橫躺酒桶）；高腳凳與長桌長凳；**整間暖橘燈光，只有深處樓梯口漏下一道冷白天光** | ✔ 覆蓋 |
+| `Varn_Cafe` | **咖啡廳店內**：左側大理石小吧台（**黃銅咖啡壺與磨豆機**、白瓷杯盤）；小圓桌與曲木椅；淺灰泥牆配深色木護牆板、新藝術曲線燈具；**左後方一整片大玻璃窗**，天光整片灑進來 —— **這張最亮** | 🆕 新增 |
+| `Varn_Restaurant` | **餐廳店內**：⚠⚠ **19 世紀的一般餐廳，不是高檔餐廳**（憲法 §5 的全域規矩）：左側木頭出餐檯（白瓷厚盤、大湯鍋與長柄杓、記菜小黑板）；中段素木長桌配長凳、桌面擦得發白；淺灰泥牆＋**素木護牆板**（有磨損與釘孔）；樸素的鑄鐵煤油吊燈；深處通廚房的門透出暖光與蒸氣 | 🆕 新增 |
 
 ### ⚠⚠ 餐飲街是一格三張圖
 
@@ -184,9 +184,9 @@
 
 ```js
 dining:{ node:'tavern', scenes:{
-  cafe:      { bg:'Ravn_Cafe',       noTime:true, chatter:[…] },
-  restaurant:{ bg:'Ravn_Restaurant', noTime:true, chatter:[…] },
-  bar:       { bg:'Ravn_Bistro',     noTime:true, chatter:[…] },
+  cafe:      { bg:'Varn_Cafe',       noTime:true, chatter:[…] },
+  restaurant:{ bg:'Varn_Restaurant', noTime:true, chatter:[…] },
+  bar:       { bg:'Varn_Bistro',     noTime:true, chatter:[…] },
 } },
 ```
 
@@ -229,7 +229,7 @@ dining:{ node:'tavern', scenes:{
 
 ⚠⚠ **程式端要改兩件事**：
 1. **那六格拿掉 `noTime:true`**（四張都在了，留著等於只吃不帶時段的那一張 ⇒ 404）。
-2. 舊的**無尾綴** `Ravn_<X>.webp` 已走回收區 —— 不要再引用。
+2. 舊的**無尾綴** `Varn_<X>.webp` 已走回收區 —— 不要再引用。
 
 ### 室內七格**維持單張、維持 `noTime:true`**
 
@@ -246,7 +246,7 @@ dining:{ node:'tavern', scenes:{
 
 | 段 | 狀態 |
 |---|---|
-| 城名 | ✔ **Ravnsdal 拉芬斯達爾**（id `ravnsdal`／前綴 `Ravn_`） |
+| 城名 | ✔ **Ravnsdal 拉芬斯達爾**（id `ravnsdal`／前綴 `Varn_`） |
 | 拓樸 | ✔ 照抄 `capital`，12 格・11 邊・環 0 |
 | 風格 | ✔ 北歐・1900、⛔ 無旗幟無國標 |
 | 十一格美術簡報 | ✔ 寫好了（ver -1162 補上瞭望台與火車站） |
@@ -258,7 +258,7 @@ dining:{ node:'tavern', scenes:{
 
 ### 交件清單（ver -1163）
 
-`resources/background/Ravn_<X>.webp` —— 1536×1024 原生、webp q85、**11 支**：
+`resources/background/Varn_<X>.webp` —— 1536×1024 原生、webp q85、**11 支**：
 
     Square  Midtown  Oldtown  Uptown  Firearm  Guild  Bistro  Grocerie  Hotel  Lookout  Station
 
@@ -266,7 +266,7 @@ dining:{ node:'tavern', scenes:{
 而 `noTime` ＝**只試不帶時段的那一個名字** —— 帶了 `_day` 就整排 404
 （同聖索菲亞那 12 張的作法）。時段差分交件時再一起拿掉 `noTime`、改成帶尾綴的四張。
 
-⚠ `Ravn_Church` **還沒有**（留白）—— 程式端掛 `bgPending:true`。
+⚠ `Varn_Church` **還沒有**（留白）—— 程式端掛 `bgPending:true`。
 
 ### 顆粒量測（平坦區高頻，相鄰差分 RMS）
 
@@ -294,10 +294,10 @@ dining:{ node:'tavern', scenes:{
 
 | | V | S | 雪 |
 |---|---|---|---|
-| `Ravn_Square`（入口） | 0.556 | 0.270 | **6.1%** |
-| `Ravn_Lookout`（俯瞰全城） | 0.524 | 0.220 | **6.3%** |
-| `Ravn_Uptown` | 0.547 | 0.259 | **5.0%** |
-| `Ravn_Midtown` | 0.539 | 0.288 | 2.7% |
+| `Varn_Square`（入口） | 0.556 | 0.270 | **6.1%** |
+| `Varn_Lookout`（俯瞰全城） | 0.524 | 0.220 | **6.3%** |
+| `Varn_Uptown` | 0.547 | 0.259 | **5.0%** |
+| `Varn_Midtown` | 0.539 | 0.288 | 2.7% |
 | 其餘七格 | 0.31~0.45 | 0.17~0.23 | 0.5~4.3% |
 | **`flight/city/ravnsdal_plan.webp`（成品）** | 0.489 | 0.236 | **0.0%** |
 
@@ -340,7 +340,7 @@ dining:{ node:'tavern', scenes:{
 | 顯示名（`TOWNS.ravnsdal.name`） | 拉芬斯達爾城 | **雪都瓦恩霍姆** |
 | 各節點的 `name` 前綴 | `拉芬斯達爾　…` | **`雪都瓦恩霍姆　…`**（12 格全部） |
 
-⚠⚠ **地圖 id（`ravnsdal`）與檔名前綴（`Ravn_`）建議不動** —— 這是**美術的建議，Ray 決定**：
+⚠⚠ **地圖 id（`ravnsdal`）與檔名前綴（`Varn_`）建議不動** —— 這是**美術的建議，Ray 決定**：
 · 改 id 要一起動：旗標（`safehouse_ravnsdal` 那一族）、腳本裡的節點指向、
   31 張背景檔名、`ASSET_VER` 的鑰匙、`script/bg_index.js`、`tools/map_layout.py` 的 POS ——
   而**其中任何一處漏掉的症狀都是「那一格整個空白，畫面上沒有錯誤訊息」**（§6.5.4 的 -910）。
@@ -362,11 +362,11 @@ dining:{ node:'tavern', scenes:{
 
 | 節點 id | 掛在哪 | 中文名 | `bg` | 圖 |
 |---|---|---|---|---|
-| `library` | **`midtown` 的 `up`**（它現在空著） | 雪都瓦恩霍姆　圖書館 | `Ravn_Library` | ✔ **本輪交件** |
-| `tavern`（改） | `uptown` 的 `right`（原樣） | 雪都瓦恩霍姆　餐飲街 | **`Ravn_Dining`**（室外街景） | ✔ **本輪交件・四差分到齊** |
-| `bar` | `tavern` 的 `up` | 雪都瓦恩霍姆　餐酒館 | `Ravn_Bistro` | ✔ 已有（原本是 tavern 的 bg） |
-| `cafe` | `tavern` 的 `right` | 雪都瓦恩霍姆　咖啡廳 | `Ravn_Cafe` | ✔ 已有 |
-| `dessert` | `tavern` 的 `down` | 雪都瓦恩霍姆　甜品店 | `Ravn_Dessert` | ✔ **本輪交件** |
+| `library` | **`midtown` 的 `up`**（它現在空著） | 雪都瓦恩霍姆　圖書館 | `Varn_Library` | ✔ **本輪交件** |
+| `tavern`（改） | `uptown` 的 `right`（原樣） | 雪都瓦恩霍姆　餐飲街 | **`Varn_Dining`**（室外街景） | ✔ **本輪交件・四差分到齊** |
+| `bar` | `tavern` 的 `up` | 雪都瓦恩霍姆　餐酒館 | `Varn_Bistro` | ✔ 已有（原本是 tavern 的 bg） |
+| `cafe` | `tavern` 的 `right` | 雪都瓦恩霍姆　咖啡廳 | `Varn_Cafe` | ✔ 已有 |
+| `dessert` | `tavern` 的 `down` | 雪都瓦恩霍姆　甜品店 | `Varn_Dessert` | ✔ **本輪交件** |
 
 ```
 tavern:  { back:'uptown', up:'bar', right:'cafe', down:'dessert' }
@@ -378,12 +378,12 @@ library: { back:'midtown' }
 ⚠⚠ **`dining:{...}` 那一段要整個拿掉** —— 它與新的節點是**同一件事的兩個真相**（鐵律 7）：
 留著的話「誰在店裡」還會去換 `tavern` 那一格的背景，而那一格現在是室外街景。
 
-⚠ **`Ravn_Restaurant.webp` 已經有，但 Ray 這一次沒點名餐廳** ——
+⚠ **`Varn_Restaurant.webp` 已經有，但 Ray 這一次沒點名餐廳** ——
   要不要也開一格（東泊有），**問 Ray**。不開的話那張圖就閒置（不必回收，日後可能用得上）。
 
 ⚠⚠ **`noTime` 逐格看**（同上面 -1293 那一段）：
-  · `Ravn_Dining` 是**室外**＝四差分 ⇒ **不要寫 `noTime`**
-  · `Ravn_Library`／`Ravn_Dessert`／`Ravn_Bistro`／`Ravn_Cafe` 是**室內單張** ⇒ **要寫 `noTime:true`**
+  · `Varn_Dining` 是**室外**＝四差分 ⇒ **不要寫 `noTime`**
+  · `Varn_Library`／`Varn_Dessert`／`Varn_Bistro`／`Varn_Cafe` 是**室內單張** ⇒ **要寫 `noTime:true`**
 
 ## 三、⚠ `tools/map_layout.py` 的 `POS`：**這座城整個沒有** ⇒ 小地圖做不了
 
@@ -405,12 +405,12 @@ gunstore(0,6)  oldtown (2,6)  square  (5,6)  uptown (8,6)   tavern(10,6) cafe(11
 
 ```
 resources/background/ravnsdal/
-  Ravn_Dining_{day,dusk,night,dawn}.webp   ← 餐飲街（室外街景・雪）**四差分到齊**
-  Ravn_Dessert.webp        ← 甜品店（玻璃展示櫃・塔式蛋糕・白桌巾小圓桌・窗外雪景）
-  Ravn_Library.webp        ← 圖書館（頂天書架・鑄鐵螺旋梯・綠罩台燈・高拱窗・鑄鐵火爐）
+  Varn_Dining_{day,dusk,night,dawn}.webp   ← 餐飲街（室外街景・雪）**四差分到齊**
+  Varn_Dessert.webp        ← 甜品店（玻璃展示櫃・塔式蛋糕・白桌巾小圓桌・窗外雪景）
+  Varn_Library.webp        ← 圖書館（頂天書架・鑄鐵螺旋梯・綠罩台燈・高拱窗・鑄鐵火爐）
 ```
 
-⚠ 畫風底圖：餐飲街用 `Ravn_Uptown_day`、甜品店用 `Ravn_Cafe`、圖書館用 `Ravn_Restaurant`
+⚠ 畫風底圖：餐飲街用 `Varn_Uptown_day`、甜品店用 `Varn_Cafe`、圖書館用 `Varn_Restaurant`
 —— 都是**同一座城**的圖，所以筆觸、雪的畫法、燈光色溫一致。
 ⚠ 三張都明寫了「**不要任何旗幟與國標**」（這座城的硬規定）與「不要文字」。
 
@@ -418,7 +418,69 @@ resources/background/ravnsdal/
 
 | 件 | 狀況 |
 |---|---|
-| `Ravn_Church` 大教堂 | 上面那一節就標 ⬜ **Ray 指定先留白**，這一輪沒動 |
-| `Ravn_Bistro` 的 dusk／night | 憲法 ver -1378：**酒吧是三差分**（`[8,24]`）。現在只有單張 —— 但那一條也說「**營業時間是資料，美術先確認資料再決定交幾張**」，而這座城的 `hours` 還沒設 ⇒ **等程式端設好 `hours` 再補** |
+| `Varn_Church` 大教堂 | 上面那一節就標 ⬜ **Ray 指定先留白**，這一輪沒動 |
+| `Varn_Bistro` 的 dusk／night | 憲法 ver -1378：**酒吧是三差分**（`[8,24]`）。現在只有單張 —— 但那一條也說「**營業時間是資料，美術先確認資料再決定交幾張**」，而這座城的 `hours` 還沒設 ⇒ **等程式端設好 `hours` 再補** |
 | 甜品店／圖書館的差分張數 | 同上：憲法 -1378 **沒有點名**這兩類（只點名餐廳／公會／槍店／雜貨店＝只有 day，酒吧＝三張，旅店＝四張）⇒ 先交單張，`hours` 定了再說 |
 | 三家分店的路人語 `chatter` | 內容，Ray 還沒給（§6.5.4.2：沒寫就回去用節點那一組，**不要自己編**） |
+
+
+---
+
+# ⚠⚠⚠ ver -1488：**前綴改成 `Varn_`** ／ 餐酒館不差分（Ray 定案）
+
+> Ray（2026-09-18）：「**前綴改掉**，**bistro 完全室內不差分**」
+
+## 一、檔名前綴 `Ravn_` → **`Varn_`**（37 張）
+
+⚠ 上一節美術建議「前綴不動」，**Ray 否決了** —— 以他的決定為準。
+拼法取 **Varnholm**（`varn` ＋ `-holm`，Stockholm／Bornholm 那一族的後綴）。
+⚠ **撞名檢查仍然沒做**，要用在畫面上之前補做。
+
+⚠⚠ **地圖 id（`ravnsdal`）與資料夾名沒有一起改** —— Ray 說的是「前綴」。
+  id 是內部的鑰匙（旗標、腳本、POS 都指著它），改它是另一件事，**要改請明講**。
+
+### ⚠⚠⚠ 過渡期：**舊檔名先留著，不要立刻回收**
+
+照 `HANDOFF.md`「東泊那三件」的第 3 項：
+> 「**無尾綴的舊檔先留著**，等 1 做完才走 `tools/recycle.sh` 退役 ——
+>   先退會讓那幾格當場變空背景。」
+
+所以這一版 `resources/background/ravnsdal/` 裡**兩套檔名並存**（`Ravn_*` 37 張
+＋ `Varn_*` 37 張）。**程式端把下面三處的字串改完之後**，再走 recycle 退役 `Ravn_*`。
+
+### ⚠ 程式端要改的三處（**美術不動，鐵律 11**）
+
+| 檔 | 處數 | 改什麼 |
+|---|---|---|
+| `script/town.js` | **27** | `TOWNS.ravnsdal` 各節點的 `bg`：`Ravn_…` → `Varn_…` |
+| `tools/bg_index.py` | **1** | 第 38 行的對照表 `('Ravn_', 'ravnsdal')` → `('Varn_', 'ravnsdal')`，**改完重跑一次**產出 `script/bg_index.js` |
+| `modules/town.js` | 4 | **只是註解舉例**（`Ravn_Square_Day.webp`／`Ravn_Station.webp`），不影響功能；順手改比較不會誤導 |
+
+⚠⚠ 漏掉任何一處的症狀是**那一格整個空白，畫面上沒有任何錯誤訊息**（§6.5.4 的 -910）
+—— 所以才要留過渡期的舊檔：**兩套並存時漏改只是「還在吃舊圖」，不是空背景。**
+
+## 二、餐酒館 `bar`：**完全室內，不差分**（Ray 定案）
+
+`Varn_Bistro.webp` **一張就是全部**，不補 dusk／night。
+⚠ 這**推翻**憲法 §5 ver -1378 對酒吧那一條（`[8,24]` ⇒ 三差分）**在這座城的適用** ——
+Ray 的理由是「完全室內」（那間酒館沒有對外的窗，光不隨時段變）。
+⇒ 節點要寫 **`noTime:true`**，不寫就白吃 dusk／night 的 404。
+⚠ 同理，`cafe`／`dessert`／`library`／`gunstore`／`guild`／`grocery` 也都是單張 ⇒ 全部要 `noTime:true`。
+⚠ **`tavern`（餐飲街）是室外街景、四差分 ⇒ 千萬不要寫 `noTime`。**
+
+## 三、⚠ 這座城**還欠的只剩兩件**（ver -1488 實測盤點，不是憑印象）
+
+掃 `script/town.js` 的 16 格 × 目錄裡實際有的檔案：
+
+| 件 | 狀況 |
+|---|---|
+| ~~旅店 `Varn_Hotel` 的四差分~~ | ✔ **本輪補齊**（`_dawn` `_day` `_dusk` `_night`）。⚠ **四張全畫、不是補三張** —— `Day` 的退路是 `Dawn`（`BAND_FALL`），少了 day 那張白天會吃到清晨那一張。無尾綴那張留著當萬用退路 |
+| **大教堂 `Varn_Church`** | ⬜ Ray 早先指定**先留白**，現在借 `Varn_Midtown`（節點的 `bg` 就是它）。要畫再說 |
+
+**⇒ 現在只剩大教堂一件。** 其餘 15 格全齊：室外六格＋餐飲街各四差分／**旅店四差分**／
+室內七格各一張（武器店・公會・雜貨舖・餐酒館・咖啡廳・甜品店・圖書館）。
+
+⚠ `band_audit` 對 `Varn_Hotel_dawn` 報「細節被抹平 0.52」—— **肉眼複核過是誤報**：
+  構圖相關度 0.994（很高），清晨那張本來就是**無硬影的漫射光**，梯度弱、分數自然低。
+  書架／鑰匙櫃／地毯花紋一項都沒少。⚠ 同一支對 `night`（更暗）沒報 ——
+  **差別在對比不在亮度**，這是那支工具的已知性質（憲法 §5：數字只用來挑可疑的，肉眼下判斷）。
