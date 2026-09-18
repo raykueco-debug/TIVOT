@@ -254,3 +254,4 @@ when	from	to	reason
 20260918-222353	resources/background/lake/Lake_Boathouse_day.webp	_recycle/resources/background/lake/Lake_Boathouse_day.webp	ver -1498：鏡湖 10 格改走 Gemini 平塗重繪（去顆粒・加動畫感），同名覆蓋前先回收舊版
 20260918-222353	resources/background/lake/Lake_Causeway_day.webp	_recycle/resources/background/lake/Lake_Causeway_day.webp.20260918-222353	ver -1498：鏡湖 10 格改走 Gemini 平塗重繪（去顆粒・加動畫感），同名覆蓋前先回收舊版
 20260918-222637	resources/background/lake/Lake_Grove_glow_day.webp	_recycle/resources/background/lake/Lake_Grove_glow_day.webp.20260918-222637	ver -1498：石碑林發光差分跟著新版底圖重做
+20260918-232525	resources/background/lake/Lake_Grove_glow_night.webp	_recycle/resources/background/lake/Lake_Grove_glow_night.webp	ver -1500：石碑林 glow_night 走針（把刻痕重畫成一串不相連的漂浮符號），重跑
