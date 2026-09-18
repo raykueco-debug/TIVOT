@@ -5622,7 +5622,20 @@ export const TOWNS = {
         exits:{ back:'fallbase', up:'grove' } },
       /* ⚠⚠ 終點：山谷盡頭的高地台地，一片十幾公尺高的黑色石碑林（規格 §三）。
          這一格**沒有湖**是刻意的（Ray -1493：末端點不必有湖）。 */
+      /* ══⚠⚠ **符文在探知石碑之後就亮著**（ver -1502，Ray 指定）══
+         走既有的 `bgWhen`（同石橋 `ruins_gate_open`／深部祭壇 `ruins_altar_on`）——
+         旗就是大地圖那一筆自己的 `lakestele_found`（感應掃到那一刻插，鐵律 9：
+         沒有人拔）。**不要另立第二支旗** —— 「探知石碑」與「碑林的符文亮了」
+         是同一件事。
+         ⚠ `noTime` 不寫：`Lake_Grove_glow` 四個時段都交齊了（規格 §二之四）。
+         ⚠⚠ **熄滅那一組（`Lake_Grove_*`）現在是退路，不是「前一個階段」**：
+           `nearestTown` 有 `if(P.flag && !flagOn(P.flag)) continue` ⇒
+           **旗沒插根本降不下去**，所以正常流程進得來時符文一定是亮的。
+           熄滅版會被看到的只有兩種情形：章節跳關／`town.open('lake')` 這種
+           開發入口。⛔ **不要因為「看不到」就回收那四張** —— 日後真的開出
+           「還沒感應就先走進來」的路（陸路、劇情強制），它立刻就對。 */
       grove:      { bg:'Lake_Grove',      name:'鏡湖　石碑林',
+        bgWhen:[ { need:'lakestele_found', bg:'Lake_Grove_glow' } ],
         exits:{ back:'cave' } },
       /* ── 三向樞紐：沿湖的路 ＋ 右側水邊一條岔路 ── */
       eastshore:  { bg:'Lake_Eastshore',  name:'鏡湖　東岸',

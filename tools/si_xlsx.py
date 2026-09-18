@@ -213,11 +213,21 @@ def is_npc(rel):
 
 
 def char_of_filename(fn):
-    """`角色_SI_變體.webp` → 角色（§5 的命名規約）。"""
+    """`角色_SI_變體.webp` → 角色（§5 的命名規約）。
+
+       ⚠⚠ **`_SI_` 的比對不分大小寫**（ver -1502）：交件偶爾會是小寫的
+         `cecilie_si_front.png`，而大小寫敏感的比對抓不到 ⇒ 整段檔名被當成
+         「角色」⇒ **同一個人的七張圖變成七個角色**（表上就是七列各一張，
+         看起來像七個只畫了一張圖的人）。
+       ⚠ 不用改交件的檔名：**macOS 不分大小寫、靜態空間分**（§6.5.4 的老坑），
+         這張表只是讀，寬鬆一點比要求對方改名可靠。
+       ⚠ 首字母轉大寫只影響**顯示**：接了線的那些顯示名是從 `speakers.js` 查的，
+         查不到才會走到這裡（`who_of_file`），而那一支本來就用小寫去查。"""
     base = os.path.basename(fn)
-    m = re.match(r'^(.+?)_SI(?:_|\.)', base)
+    m = re.match(r'^(.+?)_SI(?:_|\.)', base, re.I)
     if m:
-        return m.group(1)
+        c = m.group(1)
+        return c[:1].upper() + c[1:] if c[:1].islower() else c
     return os.path.splitext(base)[0]
 
 
