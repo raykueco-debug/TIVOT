@@ -2908,10 +2908,21 @@
      ⇒ 作法是**把兩個動畫寫成同一份清單**（平移排第 0 位）：依 CSS 規格，
        動畫是**照名字＋位置**配對的，`storyPanV` 留在同一個位置就**繼續跑、不重來**；
        `.shake` 拿掉之後清單只剩它，位置不變，一樣不重來。
+     ⚠⚠⚠ **-1487 補**：這一段只解決了「**動畫有沒有被取消**」，沒解決
+       「**兩個動畫搶同一個 property**」—— 清單裡排後面的 `storyShake` 照樣把
+       `transform` 整條蓋掉，畫面上一樣是「跳回原取景 0.42 秒再跳回來」，
+       而 Ray 讀到的就是「又重播一次」。那一半修在下面 `@keyframes storyShake`
+       （改動 `translate` 不動 `transform`）。
+       ⚠ 兩件事要分開記：**清單**管動畫的生死、**property** 管畫面上的值。
+         只修其中一件，症狀看起來完全一樣。
      ⚠ `animation-iteration-count` 也要給兩份（平移 1 次、震動無限）——
        `.hold` 那一條只寫一個值會連平移一起變成無限循環。
      ⚠⚠ **新增任何「會佔住 animation」的演出 class 時，這裡要跟著加一行** ——
-       漏掉的症狀就是「那個演出在震動之後重播一次」，而且畫面上沒有任何錯誤訊息。 */
+       漏掉的症狀就是「那個演出在震動之後重播一次」，而且畫面上沒有任何錯誤訊息。
+     ⚠ 這份清單是**鐵律 8 說的那種清單**（會過期、而且過期不會有人回頭看）。
+       真正要的是「震動與演出各用各的層」，但那要動 DOM（這幾層的 z-index、
+       `--story-top` 幾何、楣的 clip 全部掛在現在這個結構上）—— 沒把握之前
+       不動它，先讓兩個 property 不打架（下面那段）把症狀消掉。 */
   #storyStage.shake #storyCg.pan-v{
     animation:storyPanV var(--cg-pan-ms,2.6s) ease-out forwards,
               storyShake .42s cubic-bezier(.36,.07,.19,.97);}
@@ -2936,12 +2947,35 @@
   #storyStage.shake.hold #storyCg.zoom-in,
   #storyStage.shake.hold #storyBg.pan-up,
   #storyStage.shake.hold #storyBg.pan-down{animation-iteration-count:1, infinite;}
+  /* ══⚠⚠⚠ **震動動的是 `translate`，不是 `transform`**（ver -1487，Ray：「蕾娜的
+     內褲還是點一下重播一次，每一句對話就重置」）══════════════════════════════
+     ⚠⚠⚠ -1453 修對了一半：它把平移留在動畫清單裡（實測 `storyPanV` 的
+       `currentTime` 全程停在 2600 ＝ **真的沒有重來**），但**兩個動畫都在動
+       `transform`，而震動排在清單後面 ⇒ 它整條蓋掉平移的 transform**。
+       實測（真 CSS ＋ 真的那張圖，390×473 的框）：
+         平移跑完 `matrix(1.25,0,0,1.25, 0,-94.6)` ← Ray 要的取景
+         震動中   `matrix(1,0,0,1, -5.8,-2.0)`     ← **scale 掉回 1、位移歸零**
+         震動收掉 `matrix(1.25,0,0,1.25, 0,-94.6)` ← 又跳回去
+       ⇒ 每一個 `shake:true` 的拍，插圖就「啪」一聲跳回沒平移過的取景 0.42 秒
+         再跳回來。那一段接著兩拍震動（索菈娜「危險！」＋演出拍），
+         讀起來就是 Ray 說的「點一下重播一次」。
+     ⇒ 改用 **`translate` 這個獨立的變換屬性**（CSS Transforms 2）：它與 `transform`
+       是**兩個屬性**，最終矩陣是 `translate × rotate × scale × transform` ——
+       兩者**相乘合成**，誰都蓋不掉誰。震動照舊、平移照舊，同時成立。
+     ⚠ 合成順序讓震動落在**外層**：它是「鏡頭晃了一下」，不該被那一層自己的
+       `scale(1.25)` 放大 —— 這正是我們要的（以前被放大 1.25 倍）。
+     ⚠ 沒有 `0%` 那一格是刻意的（原本就沒有）：隱含的 0% ＝底下的 `translate`
+       ＝ `none` ⇒ 從 0 起跳，不會有第一格的跳動。
+     ⚠⚠ **新增任何「會動 `transform` 的演出」時不必再管這裡** —— 震動已經不碰
+       `transform` 了。要管的只剩「**動畫清單**」那一條（見上面 -1453 那段）。
+     ⚠ 支援度：`translate` 屬性 Safari 14.1＋／Chrome 104＋（手機第一，鐵律 12 ——
+       iOS 14.1 是 2021 年的事，涵蓋得到）。 */
   @keyframes storyShake{
-    10%{transform:translate(-4px,2px);}  20%{transform:translate(5px,-3px);}
-    30%{transform:translate(-6px,-2px);} 40%{transform:translate(4px,3px);}
-    50%{transform:translate(-3px,2px);}  60%{transform:translate(4px,-2px);}
-    70%{transform:translate(-2px,1px);}  80%{transform:translate(2px,-1px);}
-    100%{transform:translate(0,0);} }
+    10%{translate:-4px 2px;}  20%{translate:5px -3px;}
+    30%{translate:-6px -2px;} 40%{translate:4px 3px;}
+    50%{translate:-3px 2px;}  60%{translate:4px -2px;}
+    70%{translate:-2px 1px;}  80%{translate:2px -1px;}
+    100%{translate:0 0;} }
   /* 全畫面推進層：點任何一處推一句（退出鈕除外，它自己 stopPropagation）。 */
   #storyTouch{position:absolute;inset:0;z-index:3;background:transparent;touch-action:none;}
   /* ── 齒輪＝「選單」鈕（ver -413，Ray：「把選單鈕改成 Kerberos_Gear，置於槍棺右上角，
