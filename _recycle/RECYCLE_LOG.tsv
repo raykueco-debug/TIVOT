@@ -233,3 +233,7 @@ when	from	to	reason
 20260917-234424	resources/map/map_plainsroad.webp	_recycle/resources/map/map_plainsroad.webp	平原古道小地圖重畫：舊版只有 6 格，現行拓樸是 11 格（ver -1461 改成樹狀）
 20260918-095049	resources/map/map_capital.webp	_recycle/resources/map/map_capital.webp	帝都／北方泊地小地圖重畫成 -1438 的極簡手繪風（舊版是 -1437 之前的精緻插畫風，與平原那張不一致）
 20260918-095049	resources/map/map_northport.webp	_recycle/resources/map/map_northport.webp	帝都／北方泊地小地圖重畫成 -1438 的極簡手繪風（舊版是 -1437 之前的精緻插畫風，與平原那張不一致）
+20260918-194918	resources/background/lake/Lake_Monolith_day.webp	_recycle/resources/background/lake/Lake_Monolith_day.webp	終點那一格由「一座黑石碑」改成「石碑林」（Ray ver -1492），單碑版退役
+20260918-194918	resources/background/lake/Lake_Monolith_glow_day.webp	_recycle/resources/background/lake/Lake_Monolith_glow_day.webp	終點那一格由「一座黑石碑」改成「石碑林」（Ray ver -1492），單碑版退役
+20260918-194918	resources/_originals/background/lake/Lake_Monolith_day.png	_recycle/resources/_originals/background/lake/Lake_Monolith_day.png	終點那一格由「一座黑石碑」改成「石碑林」（Ray ver -1492），單碑版退役
+20260918-194918	resources/_originals/background/lake/Lake_Monolith_glow_day.png	_recycle/resources/_originals/background/lake/Lake_Monolith_glow_day.png	終點那一格由「一座黑石碑」改成「石碑林」（Ray ver -1492），單碑版退役
