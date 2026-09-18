@@ -276,8 +276,17 @@ fit:{ mode:'contain', pos:'center bottom' },
 | `kind` | `harm` | **`harm`**（不變） | 禍魘 ⇒ 吃降臨／淨化特效，這一隻正好要（§6.5.4.4） |
 | `image` | `enemy_sf_deer_nightmare` | **要新增 ASSETS 鍵**，指向 `resources/enemy/mon_gravekeeper_*.webp` | 四張圖已交件 |
 | `bg` | `ruins_shinier_entrance` | **古墓的某一格**（建議 `Tomb_Crypt` 或 `Tomb_Rotunda`） | 戰鬥背景要是這座墓 |
-| `hitFx.assault` | `sakura`（櫻花狂亂） | **不可沿用** —— 骨龍不會撒櫻花 | 建議 `claws` 或另給 |
-| `loot` | `elf_antler`（精靈鹿角） | **不可沿用** | 等 Ray 給掉落 |
+| `hitFx.assault` | `sakura`（櫻花狂亂） | **`'bite'`** ← Ray 定（ver -1501，「櫻花先用 bite」） | 骨龍不會撒櫻花 |
+| `loot` | `elf_antler`（精靈鹿角） | **`loot:[]`** ← Ray 定（「不要掉落物」） | —— |
+
+### ⚠ `sakura → bite` 是**兩件事一起解掉**（換的時候別漏看）
+
+`bite` 是現成的（`config.HITFX.bite = { base:'bite', se:'em_slash' }`），而且**它有 `se`**。
+`sakura` 與 `holyburst` 是**刻意沒有 `se`** 的那一族 —— 它們的聲音是有頭有尾的**演出**，
+走 `SFX.playCue` 的把手，而且 `spawnSakura` 會開一張**全螢幕畫布**，要靠
+`enemy.stopSakura()` 在換敵／`combat.stopAll` 時收掉（§6.5.4.4）。
+⇒ 換成 `bite` 之後這一隻**不再需要那一套收尾**，也不會有「兩份聲音」的風險（鐵律 7）。
+⚠ 但 `stopSakura` 那一支**不要刪** —— 鹿主還在用。
 
 ### ⚠ 四張圖 ＝ 幾張卡？**Ray 說「四個都採用」，但沒說是四隻怪還是一隻的四個階段。**
 
