@@ -243,3 +243,14 @@ when	from	to	reason
 20260918-195718	resources/_originals/background/lake/Lake_Grove_glow_day.png	_recycle/resources/_originals/background/lake/Lake_Grove_glow_day.png	碑林改成「不在湖畔的山谷盡頭台地」＋放大氣勢（Ray ver -1493：小家子氣、不一定要有湖）
 20260918-201718	resources/background/lake/Lake_Causeway_day.webp	_recycle/resources/background/lake/Lake_Causeway_day.webp	湖心石堤改成斷堤（Ray ver -1495：路走到湖心就沒有了，讀起來像沒畫完）
 20260918-201718	resources/_originals/background/lake/Lake_Causeway_day.png	_recycle/resources/_originals/background/lake/Lake_Causeway_day.png	湖心石堤改成斷堤（Ray ver -1495：路走到湖心就沒有了，讀起來像沒畫完）
+20260918-222353	resources/background/lake/Lake_Inlet_day.webp	_recycle/resources/background/lake/Lake_Inlet_day.webp	ver -1498：鏡湖 10 格改走 Gemini 平塗重繪（去顆粒・加動畫感），同名覆蓋前先回收舊版
+20260918-222353	resources/background/lake/Lake_Shingle_day.webp	_recycle/resources/background/lake/Lake_Shingle_day.webp	ver -1498：鏡湖 10 格改走 Gemini 平塗重繪（去顆粒・加動畫感），同名覆蓋前先回收舊版
+20260918-222353	resources/background/lake/Lake_Fallbase_day.webp	_recycle/resources/background/lake/Lake_Fallbase_day.webp	ver -1498：鏡湖 10 格改走 Gemini 平塗重繪（去顆粒・加動畫感），同名覆蓋前先回收舊版
+20260918-222353	resources/background/lake/Lake_Cave_day.webp	_recycle/resources/background/lake/Lake_Cave_day.webp	ver -1498：鏡湖 10 格改走 Gemini 平塗重繪（去顆粒・加動畫感），同名覆蓋前先回收舊版
+20260918-222353	resources/background/lake/Lake_Grove_day.webp	_recycle/resources/background/lake/Lake_Grove_day.webp.20260918-222353	ver -1498：鏡湖 10 格改走 Gemini 平塗重繪（去顆粒・加動畫感），同名覆蓋前先回收舊版
+20260918-222353	resources/background/lake/Lake_Eastshore_day.webp	_recycle/resources/background/lake/Lake_Eastshore_day.webp	ver -1498：鏡湖 10 格改走 Gemini 平塗重繪（去顆粒・加動畫感），同名覆蓋前先回收舊版
+20260918-222353	resources/background/lake/Lake_Deadfall_day.webp	_recycle/resources/background/lake/Lake_Deadfall_day.webp	ver -1498：鏡湖 10 格改走 Gemini 平塗重繪（去顆粒・加動畫感），同名覆蓋前先回收舊版
+20260918-222353	resources/background/lake/Lake_Northshore_day.webp	_recycle/resources/background/lake/Lake_Northshore_day.webp	ver -1498：鏡湖 10 格改走 Gemini 平塗重繪（去顆粒・加動畫感），同名覆蓋前先回收舊版
+20260918-222353	resources/background/lake/Lake_Boathouse_day.webp	_recycle/resources/background/lake/Lake_Boathouse_day.webp	ver -1498：鏡湖 10 格改走 Gemini 平塗重繪（去顆粒・加動畫感），同名覆蓋前先回收舊版
+20260918-222353	resources/background/lake/Lake_Causeway_day.webp	_recycle/resources/background/lake/Lake_Causeway_day.webp.20260918-222353	ver -1498：鏡湖 10 格改走 Gemini 平塗重繪（去顆粒・加動畫感），同名覆蓋前先回收舊版
+20260918-222637	resources/background/lake/Lake_Grove_glow_day.webp	_recycle/resources/background/lake/Lake_Grove_glow_day.webp.20260918-222637	ver -1498：石碑林發光差分跟著新版底圖重做
