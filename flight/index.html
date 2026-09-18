@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1497"></script>
+<script src="../orientation.js?v=1500"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1497edab');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1500edab');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1497edab");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1497edab");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1500edab");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1500edab");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1497edab");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1497edab");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1500edab");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1500edab");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -620,25 +620,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1497edab" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1500edab" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1497edab" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1497edab" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1497edab" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1497edab" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1497edab" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1497edab" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1497edab" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1497edab" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1497edab" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1497edab" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1500edab" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1500edab" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1500edab" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1500edab" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1500edab" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1500edab" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1500edab" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1500edab" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1500edab" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1500edab" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1497edab" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1500edab" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1497edab" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1500edab" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -659,11 +659,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1497"></script>
+<script src="settlement.js?v=1500"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1497"></script>
+<script src="talks.js?v=1500"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -715,7 +715,7 @@ const COLOR_URL  = 'silvermoon_terrain.png'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1497';
+const FLIGHT_VER = 'ver -1500';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -1937,6 +1937,52 @@ let RAIL_KEEP=null;
 const MAPEDIT_KEY='tivot_mapedit_v1';
 const MAP_EDITS_SRC=[];        // ← 定稿後把匯出的陣列內容貼進這裡（會進版控）
 let MAP_EDITS=MAP_EDITS_SRC;   // 實際生效的那一份（管理人有覆寫就換成覆寫）
+/* ══⚠⚠⚠ **地形筆畫的真相是「檔案」，不是 localStorage**（ver -1498，Ray：
+     「換 port 不該不見，寫進去就寫進去了，我每次重開都要再重畫一次不是很蠢嗎？」）══
+   以前只有 localStorage 那一份，而 localStorage 是**綁 origin 的（含 port）**：
+     · 8123 畫的東西 8200 看不到（Ray 兩個 port 都在用 ⇒ 看起來就是「不見了」）
+     · 清一次網站資料／換瀏覽器／無痕視窗 ⇒ 全沒（連那 12 份備份一起，
+       它們住在同一個 localStorage 裡）
+     · **玩家的瀏覽器裡根本沒有那份資料** ⇒ 他們看到的一直是原始地形
+   ⇒ 真相搬到 `flight/map_edits.json`（由 `tools/devserver.py` 的
+     `POST /__save/…` 寫回去）。它進得了版控、換 port 照樣在、玩家也吃得到。
+
+   優先序（**由上往下取第一個有東西的**）：
+     ① `map_edits.json`（檔案）—— 正常情況下就是它
+     ② `localStorage`    —— 伺服器存不進去時的備援（見 `meSave`）
+     ③ `MAP_EDITS_SRC`   —— 寫死在程式裡的那一份（目前是空的）
+   ⚠⚠ **檔案有東西時就不再讀 localStorage**（鐵律 7：一份真相）——
+     兩邊都讀的話，A port 的舊 localStorage 會蓋掉 B port 剛存進檔案的新版，
+     而那是**靜靜的**（畫面上只是「怎麼變回舊的了」）。
+   ⚠⚠⚠ **一次性搬家**：檔案是空的、而這台機器的 localStorage 有東西
+     ⇒ 用 localStorage 那一份，並**立刻寫進檔案** —— 既有的地形就是這樣自動
+     進檔的，不必重畫、也不必手動匯出貼上。
+   ⚠ **一定要在世界烘出來之前跑完**（`applyMapEdits` 讀的就是 `MAP_EDITS`）——
+     所以它由 `loadWorld` 開頭 `await`，不是在某個 top-level 區塊裡放著跑。 */
+async function loadMapEdits(){
+  let fileEdits=null;
+  try{
+    /* ⚠ 帶 cache-buster：這個檔會被 POST 改寫，吃到快取就是「存了卻沒生效」。 */
+    const r=await fetch('map_edits.json?t='+Date.now(), {cache:'no-store'});
+    if(r.ok){ const a=await r.json(); if(Array.isArray(a)) fileEdits=a; }
+  }catch(_){}
+  let localEdits=null;
+  try{ const raw=localStorage.getItem(MAPEDIT_KEY);
+       if(raw){ const a=JSON.parse(raw); if(Array.isArray(a)&&a.length) localEdits=a; } }catch(_){}
+
+  if(fileEdits && fileEdits.length){
+    MAP_EDITS=fileEdits;
+    console.log('地圖編輯：'+fileEdits.length+' 筆（來自 flight/map_edits.json）');
+    if(localEdits && JSON.stringify(localEdits)!==JSON.stringify(fileEdits))
+      console.warn('⚠ 這個瀏覽器的 localStorage 還留著另一份 '+localEdits.length
+                 +' 筆的舊資料，**沒有生效**（檔案優先）。確定不要了就 mapEditClear()');
+  }else if(localEdits){
+    MAP_EDITS=localEdits;
+    console.warn('⚠ 地圖編輯：'+localEdits.length+' 筆還只在這個瀏覽器裡（檔案是空的）'
+               +' —— 正在搬進 flight/map_edits.json…');
+    mapEditPush('一次性搬家');
+  }
+}
 
 /* ── 筆畫的光柵化（唯一一支，鐵律 8）───────────────────────────────
    編輯器的即時預覽與開機重放**走同一支** —— 兩份必然走鐘，而「畫的時候好好的、
@@ -6195,6 +6241,9 @@ function loadImg(url){
   });
 }
 async function loadWorld(){
+  /* ⚠ 先決定「這一趟用哪一份地形筆畫」——`applyMapEdits` 讀的就是 `MAP_EDITS`，
+     晚一步跑就是「世界烘完了才換資料」＝畫面與資料對不上（見 loadMapEdits）。 */
+  await loadMapEdits();
   const step=p=>{ loadWorld._p=p; bootUI.set(p); };
   /* `PLACES` 上的平面圖（地形用）：這時 PLACES 已經初始化好了（見 `cityPlates`）。
      ⚠ 一定要在下面那句 `await Promise.all(cityPlansReady)` **之前**排進去。 */
@@ -9199,9 +9248,43 @@ function meBakPush(why){
   for(const e of a){ tot+=e.d.length; if(tot>MAPEDIT_BAK_MAX) break; keep.push(e); }
   try{ localStorage.setItem(MAPEDIT_BAK, JSON.stringify(keep)); }catch(_){}
 }
+/* ══⚠⚠⚠ 把筆畫寫回**檔案**（ver -1498）══════════════════════════════════
+   `POST /__save/flight/map_edits.json` —— 收得下它的是 `tools/devserver.py`
+   （`.claude/launch.json` 那三個 config 現在都指到它）。
+   ⚠⚠ **存不進去要喊**：靜靜失敗的下場就是 Ray 這一次踩到的
+     「我每次重開都要再重畫一次」—— 而且畫面上完全看不出來。
+     兩種存不進去的情形都會在 console 講清楚：
+       · 跑的是 `python3 -m http.server`（沒有那個端點）⇒ 404
+       · 靜態空間／玩家端 ⇒ 405/403，那是**對的**（玩家不該寫檔）
+   ⚠ 不擋 `ADMIN`：地圖編輯器本來就只有管理人開得起來（`meBtn` 是 ADMIN 限定），
+     到得了這一支就代表已經過那道門了（鐵律 7：不要再判一次）。 */
+let mapEditPushT=0, mapEditPushWarned=false;
+function mapEditPush(why){
+  const body=JSON.stringify(MAP_EDITS);
+  /* ⚠ 位址由**這一頁的位置**推（這一頁是 `<根>/flight/index.html`，所以 `../`
+     就是專案根）—— 寫成相對的 `'__save/…'` 會變成 `/flight/__save/…`（實測 404），
+     寫死 `'/__save/…'` 則在「專案不是放在網域根目錄」時會錯。 */
+  const url=new URL('../__save/flight/map_edits.json', location.href).pathname;
+  fetch(url, { method:'POST', body })
+    .then(r=>{
+      if(r.ok){ console.log('地圖編輯已寫進 flight/map_edits.json（'+MAP_EDITS.length
+                          +' 筆'+(why?'，'+why:'')+'）—— 換 port／換瀏覽器都還在'); return; }
+      if(!mapEditPushWarned){ mapEditPushWarned=true;
+        console.warn('⚠⚠ 存不進 flight/map_edits.json（HTTP '+r.status+'）——'
+          +'這一版只會留在這個瀏覽器（換 port 就看不到）。\n'
+          +'　　要存進檔案請用 tools/devserver.py 起伺服器：PORT=8200 python3 tools/devserver.py'); }
+    })
+    .catch(e=>{ if(!mapEditPushWarned){ mapEditPushWarned=true;
+      console.warn('⚠⚠ 存不進 flight/map_edits.json（'+e+'）—— 這一版只留在這個瀏覽器'); } });
+}
 function meSave(){
   meBakPush('存檔前');                                  // ⚠ 先留上一版，再覆蓋
+  /* ⚠ localStorage 仍然寫（備援＋那一環回收區都靠它）—— 只是**讀的時候**
+     檔案優先（見 loadWorld 那一段）。 */
   try{ localStorage.setItem(MAPEDIT_KEY, JSON.stringify(MAP_EDITS)); }catch(_){}
+  /* ⚠ 合併一下再送：一筆畫確認一次就 POST 一次，連著畫十筆就是十個請求。 */
+  clearTimeout(mapEditPushT);
+  mapEditPushT=setTimeout(()=>{ mapEditPushT=0; mapEditPush(''); }, 400);
 }
 /* ⚠ 它**不是**刪除，是「搬進回收區」。要真的清空備份得自己動手改 localStorage ——
    同「清空回收區是 Ray 的決定，沒有任何 session 被授權清它」。 */
@@ -10028,14 +10111,9 @@ if(ADMIN){
   if(b){ b.hidden=false;
          b.addEventListener('click', e=>{ e.stopPropagation(); closeMapView(); openMapEdit(); }); }
   meBuildMatPalette();
-  /* 覆寫：管理人畫過的那一份優先（同拖城，ver -835）。
-     ⚠ 讀在這裡而不是宣告處 —— `ADMIN` 在檔案下方才宣告，早讀會撞 TDZ。 */
-  try{
-    const raw=localStorage.getItem(MAPEDIT_KEY);
-    if(raw){ const a=JSON.parse(raw);
-      if(Array.isArray(a)&&a.length){ MAP_EDITS=a;
-        console.warn('⚠ 地圖編輯覆寫生效：'+a.length+' 筆筆畫　定稿請按「匯出」貼進 MAP_EDITS_SRC，再 mapEditClear()'); } }
-  }catch(_){}
+  /* ⚠ 地圖編輯的筆畫**在 `loadMapEdits()` 決定要用哪一份**（ver -1498）——
+     這裡是 top-level 的 `if(ADMIN){…}`（不是函式），`await` 不合法，
+     而讀檔案是非同步的。那一支由 `loadWorld` 開頭 await（世界烘出來之前）。 */
 }
 
 function mapPick(cssX,cssY){
