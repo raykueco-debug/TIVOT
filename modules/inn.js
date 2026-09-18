@@ -197,9 +197,10 @@ function ensureLayer(){
          `WAKE_HOUR` 就在這一支），不是內容 —— 改常數就要改字，放在一起才不會走鐘。 */
     +   '<button class="inn-btn" data-act="sit" type="button">'
     +     '<b>獨自坐坐</b><i>消磨 '+(SIT_MIN/60)+' 小時</i></button>'
-    /* ⚠⚠⚠ 小睡那一晚，**這一行字要跟著改**（ver -1396）：見 `refreshSleepLabel`。
-       它與「到隔日 N:00・存檔」是同一顆鈕的兩種**結果**，而成本那一行的整個用意
-       就是「按之前就看得到代價」—— 不改的話它在承諾一件不會發生的事。 */
+    /* ⚠⚠⚠ 小睡那一晚，**這兩行字都要跟著改**（ver -1396 小字／**-1490 連大字**）：
+       見 `refreshSleepLabel`。它與「到隔日 N:00・存檔」是同一顆鈕的兩種**結果**，
+       而成本那一行的整個用意就是「按之前就看得到代價」—— 不改的話它在承諾一件
+       不會發生的事。⚠ 這裡寫的是**一般版**（初值），小睡版由 `refresh()` 換上去。 */
     +   '<button class="inn-btn primary" data-act="sleep" type="button">'
     +     '<b>回房睡覺</b><i>到隔日 '+wakeHour()+':00・存檔</i></button>'
     /* ⚠ 常駐的雪鐵龍箭與說明**都撤掉了**（ver -401 撤說明、-402 撤箭，
@@ -289,18 +290,27 @@ function doorState(who){
   return 'empty';
 }
 
-/* ══⚠⚠⚠ 睡覺鈕上那一行「代價」（ver -1396）══ 兩種結果、兩行字：
-     一般　＝「到隔日 7:00・存檔」
-     小睡　＝「小睡 1 小時」（`sleepFirst` 那一段到期的那一晚，見 `sleepHere`）
+/* ══⚠⚠⚠ 睡覺鈕上的字（ver -1396；**ver -1490 連大字一起換**）══ 兩種結果、兩組字：
+     一般　＝「回房睡覺」　　　＋「到隔日 7:00・存檔」
+     小睡　＝「回房睡覺……？」＋「小睡 1 小時」
+   ⚠⚠ **ver -1490（Ray：「髮飾事件的回房睡覺改成『回房睡覺……？』，只有那一次改」）**：
+     -1396 這裡原本寫著「**只改那一行小字，`<b>回房睡覺</b>` 不動** —— 動作是同一個，
+     變的是結果」。那句話**已經作廢**：那一晚他根本睡不著（躺下去一小時就爬起來想溜
+     出去），大字照舊寫「回房睡覺」等於在陳述一件不會發生的事。那個刪節號與問號
+     就是「真的要睡嗎……？」那一下的猶豫 —— 它是**這一晚**的語氣，不是那顆鈕的常態。
    ⚠⚠ **問的是同一支** `host.napAct()`（＝`actDue(n, true)`，鐵律 7／8）——
      字與行為若各自判斷一次，必然出現「寫著睡到隔天、按下去只過一小時」。
+     大字與小字現在也是**同一個判斷**，不要拆成兩支。
    ⚠ 掛在 `refresh()` 裡：時鐘與旗每動一次它就重算，不必記得在別處呼叫。
-   ⚠ 只改那一行小字，`<b>回房睡覺</b>` 不動 —— 動作是同一個，變的是結果。 */
+   ⚠ **只有那一次**：`ep_night_raid` 演完就記旗，`actDue` 下一次跳過它 ⇒
+     `napAct()` 回 null ⇒ 兩行字自己變回一般版。不必另外收。 */
 function refreshSleepLabel(){
   if(!layer) return;
-  const i = layer.querySelector('.inn-btn[data-act="sleep"] i'); if(!i) return;
+  const btn = layer.querySelector('.inn-btn[data-act="sleep"]'); if(!btn) return;
+  const b = btn.querySelector('b'), i = btn.querySelector('i'); if(!b || !i) return;
   const nap = (host && host.napAct) ? host.napAct() : null;
   const h = nap && nap.sleepFirst && nap.sleepFirst.hours;
+  b.textContent = h ? '回房睡覺……？' : '回房睡覺';
   i.textContent = h ? ('小睡 '+h+' 小時') : ('到隔日 '+wakeHour()+':00・存檔');
 }
 function refresh(){
