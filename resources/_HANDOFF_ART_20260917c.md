@@ -363,3 +363,54 @@ resources/map/_icons_plainsroad.png 4×3，11 個 —— 平原古道那一套�
 ## 4. ⇒ 雪都現在只剩**大教堂**一件（Ray 早先指定留白）
 
 其餘 15 格全齊：室外六格＋餐飲街各四差分／旅店四差分／室內七格各一張。
+
+---
+
+# 十、ver -1489：木雅克神殿的 `noTime` ／ 森林遺蹟入口的三張差分
+
+> Ray：「**神殿那19格補noTime，森林遺蹟入口補三張差分**」
+
+## 1. ⚠⚠⚠ 神殿的 `noTime` 是**程式端**的（`script/town.js` 的資料，鐵律 11）
+
+美術這邊不動 `.js`。清單列到可以照抄的程度（**實測掃出來的，不是憑印象**）：
+
+### ⚠⚠⚠ **是 14 格不是 19 格** —— 而且有 5 格**絕對不能加**
+
+我上一輪口頭報的「19 格」**是錯的**（掃描把有差分的也算進去了）。實際：
+
+| | 節點 | 怎麼處理 |
+|---|---|---|
+| **要補 `noTime:true`** | `well, stairup, brazier, mural, colossus, machine, stairdeep, catacomb, hollow, prison, mosschamber, deepspring, rift, darkbridge` | **14 格**，都只有單張圖（地下不見天光） |
+| ⛔ **不要碰** | `antechamber, corridora, crossway, collapsed, corridorb` | **這 5 格有完整的 dawn/day/dusk/night** —— 加了 `noTime` 會讓它們永遠吃無尾綴那張，**時段差分整個失效** |
+| 已經有了 | `bridge, deepaltar` | 原本就寫了 |
+
+⚠ 對照組：**伊甸古墓 34 格裡寫了 32 格**，做法是對的；神殿是漏的那一個。
+⚠ 沒寫 `noTime` 的代價：每次進那一格**先吃 4 個 404**（`_dawn`/`_day`/`_dusk`/`_night`）
+才退回無尾綴那張 —— 畫面上看不出來，只有網路面板看得到。
+
+## 2. 森林遺蹟入口 ✔ **四差分到齊**（美術做完了）
+
+```
+resources/background/ruins/
+  ruins_shinier_entrance_dawn.webp    晨霧、漫射青灰、無硬影
+  ruins_shinier_entrance_dusk.webp    橙金橫光從樹幹之間穿進來
+  ruins_shinier_entrance_night.webp   銀藍月光從樹冠漏下（無月亮本體）
+  ruins_shinier_entrance_day.webp     ← ⚠ **原本那張無尾綴的複本**，見下
+  ruins_shinier_entrance.webp         無尾綴，留著當萬用退路
+```
+
+⚠⚠⚠ **一定要補一張 `_day`** —— 這是同一個坑的第二次（雪都旅店那次也是）：
+`BAND_FALL` 的白天退路是 **`Day → Dawn → Dusk`**，所以只交 dawn/dusk/night 的話
+**白天會吃到清晨那一張**（暗的當亮的用），而畫面上不會有任何錯誤訊息。
+現有那張無尾綴的就是白天圖 ⇒ 直接複製一份成 `_day` 就好。
+
+⚠ 交件之後那一格**不要**加 `noTime`（它有四差分了）。
+
+## 3. ⚠ 順手抓到一張**既有的壞圖**（不是本輪交的，要 Ray 決定）
+
+`Ruins_shinier_Crossway_dawn` —— `band_audit` 報 **corr 0.510**（校準：無關的兩張
+才 0.889），肉眼並排確認**是真的**：那張清晨版**罩了一層厚霧**，
+**中央的拱門通道整個被霧吃掉**、地板的石縫紋理也消失了。
+那不是「只換光」，是加了一層原圖沒有的東西（§5 第五條鐵則：模型會越塞越多）。
+
+⇒ **要不要重畫由 Ray 決定** —— 產線還開著，重跑一張約五分鐘。
