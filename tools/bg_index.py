@@ -45,6 +45,7 @@ PREFIX = [
     ('Tomb_',      'tomb'),       ('Forest_',    'forest'),
     ('Fallen_',    'fallen'),     ('Canyon_',    'canyon'),      ('_canyon_', 'canyon'),
     ('Plains_',    'plains'),     ('Deck_',      'deck'),        ('deck_',    'deck'),
+    ('Lake_',      'lake'),       # 鏡湖（ver -1501）
     ('HolyseeDungeon', 'holysee'),('LunariaOffice', 'holysee'),
 ]
 # ⚠⚠ **留在根目錄的**：它們不是「某個區域的背景」，是 UI 素材，而且**路徑是寫死的**

@@ -171,6 +171,19 @@ POS = {
                                                                        'cafe':(11,6),
                      'guild':(2,8),                    'grocery':(8,8),'dessert':(10,8),
   },
+  # ── 鏡湖（ver -1501）：10 格・9 邊・樹狀（環 0）——拓樸是 Ray 排的
+  #    （`reference/lake_topology.pdf`，美術規格 `resources/map/_lake_spec.md`）。
+  #    主軸 inlet→shingle→eastshore→northshore→causeway；
+  #    側鏈 shingle→fallbase→cave→grove（穿過瀑布的洞，終點是石碑林）。
+  #    主軸是一條**垂直**的：inlet 在最下面，一路往上到湖心石堤；
+  #    側鏈往左（碎石灘 → 瀑布底 → 水蝕洞 → 石碑林），兩條死路往右。
+  'lake': {
+                              'causeway':(2,0),
+    'grove':(0,2),            'northshore':(2,2), 'boathouse':(4,2),
+    'cave':(0,4),             'eastshore':(2,4),  'deadfall':(4,4),
+    'fallbase':(0,6),         'shingle':(2,6),
+                              'inlet':(2,8),
+  },
   # ── 聖索菲亞城（ver -1123）：拓樸＝帝都，所以版面直接沿用 capital 那一組 ──
   'santasofia': {
     'midtown':(5,3), 'cityhall':(3,3), 'church':(7,3),

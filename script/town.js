@@ -5564,6 +5564,83 @@ export const TOWNS = {
        見下方 `map:`。
      ⚠ `bgm` 待定（Ray 還沒給）：不寫＝沿用進來之前那一首，不會變成一片安靜。
      ══════════════════════════════════════════════════════════════════════ */
+  /* ══════════════════════════════════════════════════════════════════════
+     鏡湖（ver -1501 接上；美術規格 `resources/map/_lake_spec.md`）
+     ──────────────────────────────────────────────────────────────────────
+     Ray：「畫一組背景，被山圍起來的小湖，拓樸終點是一個黑色石碑」
+     **10 格・9 邊・樹狀（環 0）**，拓樸是 Ray 自己排的（`reference/lake_topology.pdf`）
+     —— 憲法 -907：拓樸是他的設計，照抄，不要自己「優化」。
+
+         causeway 湖心石堤（斷堤・末端）
+              ↑up
+     grove   northshore 北岸 ─right→ boathouse 廢船屋（死路）
+      ↑up         ↑up
+     cave    eastshore 東岸 ─right→ deadfall 倒木灣（死路）
+      ↑up         ↑up
+     fallbase ←left─ shingle 碎石灘
+                    ↑up
+                 inlet 山口（入口）
+
+     ⚠⚠ **主軸走到湖心石堤，真正的終點藏在側鏈的底**（Ray -1494）：
+       瀑布底 →（穿過水簾的）水蝕洞 → 石碑林。所以「走到最裡面忽然沒有湖了」
+       是 `cave` 那一格在解釋的，不是 bug。
+     ⚠ 節點 id 用 `grove` 不是 `monolith`（規格 §三：名字要說實話，是一片碑林）。
+     ⚠⚠ **中間幾格要明寫 `back`**（規格那張表上標的「＋back」就是這個）：
+       `exitsOf` 雖然會把「來時方向的反向」現算成 back，但那只在**真的走過來**
+       的那一次成立 —— 讀檔／跳關／戰鬥交棒回來時沒有來時方向，沒寫就**出不去**。
+       `script_lint.py` 的「單向邊」那一項抓的正是這個（實測一次抓出 5 條）。
+     ⚠⚠ **一格都不寫 `noTime`**：10 格 ×4 時段 44 檔全部交齊（規格 §二之四）。
+     ⚠ **迷霧是預設**（ver -913）—— 不要寫 `mist:0`：這是探索圖，走過才亮。
+     ⚠ **入口（`inlet`）不可以有戰鬥**（§6.5.2：它是遭遇戰的復活點）——
+       現在整張圖都還沒有怪，這一條先記著。
+     ⚠⚠ **還沒給、所以沒有寫的**（鐵律 1：不要自己發明）：
+       · `bgm` —— Ray 沒指定，不寫＝沿用進來之前那一首（同聖索菲亞／伊甸古墓）
+       · 怪與劇情（`wildSpawn`／`acts`）—— 一個字都還沒有
+       · **`Lake_Grove_glow_*`（符文發光差分，4 張）目前沒有人指到** ——
+         「什麼時候亮」是劇本的事，等 Ray 一句話。⛔ 不要回收那四張。
+     ⚠ 小地圖未做 ⇒ **不寫 `map:`**，槍棺那顆地圖鈕會回「這一帶還沒有留下地圖。」
+     ⚠ 地名與 `Lake_` 前綴都還是**暫名**（規格 §一）—— 要改趁早，現在有 44 個檔名綁著。
+     ══════════════════════════════════════════════════════════════════════ */
+  lake: {
+    name: '鏡湖',
+    entry: 'inlet',
+    storyExplore: true,   // 不是城：女角不排外出行程（§6.5.4.2）
+    wilderness: true,     // 野外的路沒有門可以關（19:00 全域打烊不罩，ver -862）
+    stepMin: 10,          // 遺蹟／野外那一級（ver -917）
+    nodes: {
+      /* ── 入口：隘口，前方第一次看到湖 ── */
+      inlet:      { bg:'Lake_Inlet',      name:'鏡湖　山口',
+        exits:{ up:'shingle' } },
+      /* ── 三向樞紐：正前方沿湖，左邊一條岔路往岩壁下 ── */
+      shingle:    { bg:'Lake_Shingle',    name:'鏡湖　碎石灘',
+        exits:{ back:'inlet', up:'eastshore', left:'fallbase' } },
+      /* ⚠ 瀑布底**不是死路**：水簾後面看得到黑色洞口，路往裡面繼續。 */
+      fallbase:   { bg:'Lake_Fallbase',   name:'鏡湖　瀑布底',
+        exits:{ back:'shingle', up:'cave' } },
+      /* ⚠ 水蝕洞＝**穿過瀑布的洞**（左側水簾是來路、深處透出天光是去路）。 */
+      cave:       { bg:'Lake_Cave',       name:'鏡湖　水蝕洞',
+        exits:{ back:'fallbase', up:'grove' } },
+      /* ⚠⚠ 終點：山谷盡頭的高地台地，一片十幾公尺高的黑色石碑林（規格 §三）。
+         這一格**沒有湖**是刻意的（Ray -1493：末端點不必有湖）。 */
+      grove:      { bg:'Lake_Grove',      name:'鏡湖　石碑林',
+        exits:{ back:'cave' } },
+      /* ── 三向樞紐：沿湖的路 ＋ 右側水邊一條岔路 ── */
+      eastshore:  { bg:'Lake_Eastshore',  name:'鏡湖　東岸',
+        exits:{ back:'shingle', up:'northshore', right:'deadfall' } },
+      deadfall:   { bg:'Lake_Deadfall',   name:'鏡湖　倒木灣',
+        exits:{ back:'eastshore' } },
+      /* ── 三向樞紐：正前方石堤伸進湖心 ＋ 右側半沉的船屋 ── */
+      northshore: { bg:'Lake_Northshore', name:'鏡湖　北岸',
+        exits:{ back:'eastshore', up:'causeway', right:'boathouse' } },
+      boathouse:  { bg:'Lake_Boathouse',  name:'鏡湖　廢船屋',
+        exits:{ back:'northshore' } },
+      /* ⚠⚠ **斷堤**（Ray -1495）：末端要有「為什麼到此為止」的交代 ——
+         斷口前的淺水下看得到沉沒的堤石，更遠處浮著走不到的殘台。 */
+      causeway:   { bg:'Lake_Causeway',   name:'鏡湖　湖心石堤',
+        exits:{ back:'northshore' } },
+    },
+  },
+
   tomb: {
     name: '伊甸古墓',
     entry: 'gate',
