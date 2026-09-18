@@ -363,7 +363,7 @@ dining:{ node:'tavern', scenes:{
 | 節點 id | 掛在哪 | 中文名 | `bg` | 圖 |
 |---|---|---|---|---|
 | `library` | **`midtown` 的 `up`**（它現在空著） | 雪都瓦恩霍姆　圖書館 | `Ravn_Library` | ✔ **本輪交件** |
-| `tavern`（改） | `uptown` 的 `right`（原樣） | 雪都瓦恩霍姆　餐飲街 | **`Ravn_Dining`**（室外街景，四差分） | ✔ **本輪交件**（day 已交，dusk/night/dawn 跑完就交） |
+| `tavern`（改） | `uptown` 的 `right`（原樣） | 雪都瓦恩霍姆　餐飲街 | **`Ravn_Dining`**（室外街景） | ✔ **本輪交件・四差分到齊** |
 | `bar` | `tavern` 的 `up` | 雪都瓦恩霍姆　餐酒館 | `Ravn_Bistro` | ✔ 已有（原本是 tavern 的 bg） |
 | `cafe` | `tavern` 的 `right` | 雪都瓦恩霍姆　咖啡廳 | `Ravn_Cafe` | ✔ 已有 |
 | `dessert` | `tavern` 的 `down` | 雪都瓦恩霍姆　甜品店 | `Ravn_Dessert` | ✔ **本輪交件** |
@@ -405,7 +405,7 @@ gunstore(0,6)  oldtown (2,6)  square  (5,6)  uptown (8,6)   tavern(10,6) cafe(11
 
 ```
 resources/background/ravnsdal/
-  Ravn_Dining_day.webp     ← 餐飲街（室外街景・雪）；dusk/night/dawn 跑完接著交
+  Ravn_Dining_{day,dusk,night,dawn}.webp   ← 餐飲街（室外街景・雪）**四差分到齊**
   Ravn_Dessert.webp        ← 甜品店（玻璃展示櫃・塔式蛋糕・白桌巾小圓桌・窗外雪景）
   Ravn_Library.webp        ← 圖書館（頂天書架・鑄鐵螺旋梯・綠罩台燈・高拱窗・鑄鐵火爐）
 ```
