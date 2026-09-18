@@ -67,7 +67,24 @@
 | `eastshore` 東岸 | ✔ **已交**（ver -1496） |
 | `fallbase` 瀑布底 | ✔ **已交**（ver -1496）—— 水簾後面看得到黑色洞口 |
 | `cave` 水蝕洞 | ✔ **已交**（ver -1496）—— 左側水簾（來路）＋深處透出天光（去路） |
-| `deadfall`／`boathouse` | ⬜ 還沒畫（2 格，都是死路） |
+| `deadfall` 倒木灣 | ✔ **已交**（ver -1497） |
+| `boathouse` 廢船屋 | ✔ **已交**（ver -1497） |
+
+## ⇒ **10 格 day 全部交齊**（ver -1497）
+
+```
+resources/background/lake/
+  Lake_Inlet_day  Lake_Shingle_day   Lake_Eastshore_day  Lake_Northshore_day
+  Lake_Causeway_day（斷堤）           Lake_Deadfall_day   Lake_Boathouse_day
+  Lake_Fallbase_day  Lake_Cave_day
+  Lake_Grove_day ＋ Lake_Grove_glow_day（終點・符文發光差分）
+```
+
+⚠ **還沒做的**：`dawn`／`dusk`／`night` 三個時段（10 格 ×3 ＝ 30 張，
+加上碑林的 `_glow` 還要 ×2 ⇒ 33 張）。
+⚠ 產法照這一批：**以 day 那張為底、一次一則、只換光**（交接單第二節第 2 條）；
+碑林的發光版**每個時段都要重跑一次本機合成**（參數見 §四，`石 g<92` 那一組門檻
+在暗的時段要重量 —— 夜景的石面本來就暗，`g<92` 會把整張圖都算進去）。
 
 ⚠⚠⚠ **「末端」不可以畫成「路走到一半就沒有了」**（Ray ver -1495：「有條路走到湖心
 就沒有了，**不能用**」）—— 那讀起來是**畫沒畫完**，不是「這裡是終點」。
