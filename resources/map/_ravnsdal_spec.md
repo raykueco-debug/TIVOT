@@ -326,3 +326,99 @@ dining:{ node:'tavern', scenes:{
 - ⚠ `build_city.py` 的 JOB 有 `sat`／`val` 兩個旋鈕，`SETTLEMENTS` 還有 `tone` ——
   **不要用它們去「兜」出雪**：那只會把整張圖洗白，屋頂的受雪面與背陽面還是同一個色。
   雪是**畫上去的**，不是調出來的。
+
+---
+
+# ⚠⚠⚠ ver -1487：**改名「雪都瓦恩霍姆」＋ 擴建五格**（Ray 交辦）
+
+> Ray（2026-09-18）：「**拉芬改名雪都瓦恩霍姆，加入圖書館 餐飲街 甜品店 餐酒館 咖啡廳**」
+
+## 一、改名
+
+| | 舊 | 新 |
+|---|---|---|
+| 顯示名（`TOWNS.ravnsdal.name`） | 拉芬斯達爾城 | **雪都瓦恩霍姆** |
+| 各節點的 `name` 前綴 | `拉芬斯達爾　…` | **`雪都瓦恩霍姆　…`**（12 格全部） |
+
+⚠⚠ **地圖 id（`ravnsdal`）與檔名前綴（`Ravn_`）建議不動** —— 這是**美術的建議，Ray 決定**：
+· 改 id 要一起動：旗標（`safehouse_ravnsdal` 那一族）、腳本裡的節點指向、
+  31 張背景檔名、`ASSET_VER` 的鑰匙、`script/bg_index.js`、`tools/map_layout.py` 的 POS ——
+  而**其中任何一處漏掉的症狀都是「那一格整個空白，畫面上沒有錯誤訊息」**（§6.5.4 的 -910）。
+· 前例就在憲法 §6.5.4.2：帝都的餐酒館改名成「餐飲街」時，
+  **「節點 id 仍是 `tavern`…只有 `name` 改」** —— 理由一模一樣。
+· 代價只有一個：檔名前綴與新名對不上，下一個人會困惑 ⇒ **這一段就是給他看的**。
+
+⚠ **西文拼法還沒定**：美術建議 **`Varnholm`**（`-holm` ＝北歐語的「小島／河洲」，
+  Stockholm／Bornholm 那一族的後綴，與「雪都」的港市設定合得上）。
+  ⚠ **撞名檢查還沒做**（上面那一節對 Ravnsdal 做過一次）—— 要用在畫面上之前補做。
+  ⚠ 只有**畫面上會出現中文**（`name`），所以西文拼法目前只影響文件與日後的檔名。
+
+## 二、擴建：餐飲街**改成走得進去的節點**（東方泊地那一套）
+
+現在是 **ver -1263 之前的舊分店機制**（`dining.scenes`：一格三張圖，
+誰在店裡就換哪一張）。東泊已經照 Ray 的「進去多加三條路線」改成節點了，這一座還沒。
+
+**新的 17 格**（原 12 ＋ 圖書館 ＋ 餐飲街底下三家）：
+
+| 節點 id | 掛在哪 | 中文名 | `bg` | 圖 |
+|---|---|---|---|---|
+| `library` | **`midtown` 的 `up`**（它現在空著） | 雪都瓦恩霍姆　圖書館 | `Ravn_Library` | ✔ **本輪交件** |
+| `tavern`（改） | `uptown` 的 `right`（原樣） | 雪都瓦恩霍姆　餐飲街 | **`Ravn_Dining`**（室外街景，四差分） | ✔ **本輪交件**（day 已交，dusk/night/dawn 跑完就交） |
+| `bar` | `tavern` 的 `up` | 雪都瓦恩霍姆　餐酒館 | `Ravn_Bistro` | ✔ 已有（原本是 tavern 的 bg） |
+| `cafe` | `tavern` 的 `right` | 雪都瓦恩霍姆　咖啡廳 | `Ravn_Cafe` | ✔ 已有 |
+| `dessert` | `tavern` 的 `down` | 雪都瓦恩霍姆　甜品店 | `Ravn_Dessert` | ✔ **本輪交件** |
+
+```
+tavern:  { back:'uptown', up:'bar', right:'cafe', down:'dessert' }
+bar / cafe / dessert:  { back:'tavern' }
+midtown: { left:'lookout', right:'church', down:'square', up:'library' }
+library: { back:'midtown' }
+```
+
+⚠⚠ **`dining:{...}` 那一段要整個拿掉** —— 它與新的節點是**同一件事的兩個真相**（鐵律 7）：
+留著的話「誰在店裡」還會去換 `tavern` 那一格的背景，而那一格現在是室外街景。
+
+⚠ **`Ravn_Restaurant.webp` 已經有，但 Ray 這一次沒點名餐廳** ——
+  要不要也開一格（東泊有），**問 Ray**。不開的話那張圖就閒置（不必回收，日後可能用得上）。
+
+⚠⚠ **`noTime` 逐格看**（同上面 -1293 那一段）：
+  · `Ravn_Dining` 是**室外**＝四差分 ⇒ **不要寫 `noTime`**
+  · `Ravn_Library`／`Ravn_Dessert`／`Ravn_Bistro`／`Ravn_Cafe` 是**室內單張** ⇒ **要寫 `noTime:true`**
+
+## 三、⚠ `tools/map_layout.py` 的 `POS`：**這座城整個沒有** ⇒ 小地圖做不了
+
+美術這一邊已經備好圖示表（`resources/map/_icons_eastport.png` ＋ `_icons_extra.png`
+有圖書館／餐酒館／餐廳的符號），**POS 補上就能合成**。17 格的建議版面
+（相對位置＝出口方向，已逐條驗過）：
+
+```
+                 library (5,2)
+station (2,4)  lookout (3,4)  midtown (5,4)  church (7,4)   inn (8,4)   bar (10,4)
+gunstore(0,6)  oldtown (2,6)  square  (5,6)  uptown (8,6)   tavern(10,6) cafe(11,6)
+               guild   (2,8)                 grocery(8,8)   dessert(10,8)
+```
+
+驗算：`midtown.up→library` 在上 ✔／`tavern.up→bar` 在上、`right→cafe` 在右、
+`down→dessert` 在下 ✔／其餘 12 格照舊。
+
+## 四、本輪交件（ver -1487）
+
+```
+resources/background/ravnsdal/
+  Ravn_Dining_day.webp     ← 餐飲街（室外街景・雪）；dusk/night/dawn 跑完接著交
+  Ravn_Dessert.webp        ← 甜品店（玻璃展示櫃・塔式蛋糕・白桌巾小圓桌・窗外雪景）
+  Ravn_Library.webp        ← 圖書館（頂天書架・鑄鐵螺旋梯・綠罩台燈・高拱窗・鑄鐵火爐）
+```
+
+⚠ 畫風底圖：餐飲街用 `Ravn_Uptown_day`、甜品店用 `Ravn_Cafe`、圖書館用 `Ravn_Restaurant`
+—— 都是**同一座城**的圖，所以筆觸、雪的畫法、燈光色溫一致。
+⚠ 三張都明寫了「**不要任何旗幟與國標**」（這座城的硬規定）與「不要文字」。
+
+## 五、還缺的（**要 Ray 定才動**）
+
+| 件 | 狀況 |
+|---|---|
+| `Ravn_Church` 大教堂 | 上面那一節就標 ⬜ **Ray 指定先留白**，這一輪沒動 |
+| `Ravn_Bistro` 的 dusk／night | 憲法 ver -1378：**酒吧是三差分**（`[8,24]`）。現在只有單張 —— 但那一條也說「**營業時間是資料，美術先確認資料再決定交幾張**」，而這座城的 `hours` 還沒設 ⇒ **等程式端設好 `hours` 再補** |
+| 甜品店／圖書館的差分張數 | 同上：憲法 -1378 **沒有點名**這兩類（只點名餐廳／公會／槍店／雜貨店＝只有 day，酒吧＝三張，旅店＝四張）⇒ 先交單張，`hours` 定了再說 |
+| 三家分店的路人語 `chatter` | 內容，Ray 還沒給（§6.5.4.2：沒寫就回去用節點那一組，**不要自己編**） |
