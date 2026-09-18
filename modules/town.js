@@ -756,7 +756,7 @@ function resolveBgOnce(all, decode, maxTry){
   let list = (all || []).filter(Boolean);
   /* ══⚠⚠ **把最可能的那幾個排到最前面**（ver -1298）══════════════════════
      完整的候選鏈是「4 個時段 × 大小寫 × 4 種副檔名 ＋ 無時段」≈ 32 個名字，
-     而專案裡實際只有兩種命名：**這個時段的 `.webp`**（`Ravn_Square_Day.webp`）
+     而專案裡實際只有兩種命名：**這個時段的 `.webp`**（`Varn_Square_Day.webp`）
      與**無時段的 `.webp`**（`Northport_west_BF.webp`）。照原順序硬跑，
      後者要探到第 33 個才中 —— 那 32 個 404 每進一次城就白吃一次。
      ⚠⚠ **最後那一個一定要在前排**：它就是無時段那張，整批城靠它。
@@ -797,7 +797,7 @@ function resolveBgOnce(all, decode, maxTry){
    ⚠ 同時只跑 2 格：讀取頁剛收掉、玩家正在操作，這一批不該跟真的要用的圖搶連線。
    ⚠ 換城就作廢（`warmSeq`）：上一座城的暖身還在跑的話，新的一座要先贏。 */
 /* 暖身每格最多探幾個候選（只探 `.webp`）：現在這個時段的大小寫兩種 ＋ 無時段那一張，
-   涵蓋專案裡實際存在的兩種命名（`Ravn_Square_Day.webp` 與 `Northport_west_BF.webp`）。 */
+   涵蓋專案裡實際存在的兩種命名（`Varn_Square_Day.webp` 與 `Northport_west_BF.webp`）。 */
 const WARM_TRIES = 3;
 let warmSeq = 0;
 function warmRest(T, skipId){
@@ -2721,7 +2721,7 @@ function infoText(n){
    `r` 是盤面半徑，單位是**圖寬**）。可選：`face`／`hand`（顏色）。
 
    ── 為什麼不用重畫背景 ──────────────────────────────────────────
-   畫上去的那兩根指針**用程式蓋掉**就好：那面盤是平的 —— 實測 `Ravn_Station.webp`
+   畫上去的那兩根指針**用程式蓋掉**就好：那面盤是平的 —— 實測 `Varn_Station.webp`
    半徑 12~46 的盤面是 **(142,141,146)，標準差只有 1.9~3.4** ⇒ 填一塊同色的圓
    看不出接縫。半徑 `r`(50px) 只切掉刻度最內側 1~2 個**原圖**像素，
    在 390 寬的手機上是 0.03 px。**不必動美術、不必跳 `ASSET_VER`。**
@@ -2757,7 +2757,7 @@ function syncBgClock(){
   const [hx,hy]=tip(R*0.78, degH), [mx,my]=tip(R*1.06, degM);
   const face=C.face||'142,141,146', hand=C.hand||'62,63,70';
   /* ⚠ `wipe`＝**畫上去的指針伸出盤面圓之外的那一截**要另外抹掉
-     （`Ravn_Station` 的分針畫到 r≈56，而盤面補丁只到 50 —— 不抹的話
+     （`Varn_Station` 的分針畫到 r≈56，而盤面補丁只到 50 —— 不抹的話
      三點鐘方向會留一小截黑，那正是「對不上」的另一種長相）。
      一項＝`[角度°, r0, r1, 半寬]`，後三個的單位都是**盤面半徑**。
      ⚠ 把補丁整個放大到 56 不行：刻度就從 r≈48 開始，會被吃掉一半。 */

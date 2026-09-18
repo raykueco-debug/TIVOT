@@ -35,7 +35,12 @@ PREFIX = [
     ('Capital_',   'capital'),    ('Captal_',    'capital'),    # ⚠ Captal 是交件時打錯的帝都，照樣歸帝都
     ('Northport_', 'northport'),  ('East_',      'eastport'),
     ('Belisar_',   'belisar'),    ('Shinier_',   'shinier'),
-    ('Ravn_',      'ravnsdal'),   ('Sofia_',     'sofia'),
+    # Varn_ ＝雪都瓦恩霍姆改名後的前綴（ver -1488 美術交件）。
+    # ⚠ `Ravn_` 先留著 —— 舊的 37 張還沒退役；兩套並存時程式端漏改只是
+    #   「還在吃舊圖」，先把對照拿掉就會變成整格空白而且沒有錯誤訊息。
+    #   走 recycle 退役 Ravn_* 的那一版再把它刪掉。
+    ('Varn_',      'ravnsdal'),   ('Ravn_',      'ravnsdal'),
+    ('Sofia_',     'sofia'),
     ('Ruins_',     'ruins'),      ('ruins_',     'ruins'),
     ('Tomb_',      'tomb'),       ('Forest_',    'forest'),
     ('Fallen_',    'fallen'),     ('Canyon_',    'canyon'),      ('_canyon_', 'canyon'),

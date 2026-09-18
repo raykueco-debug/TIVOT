@@ -4380,21 +4380,40 @@ export const TOWNS = {
        -1291 的分店機制（`dining.scenes`：一格三張圖、同行女伴決定換哪一張）
        與新的三個節點是**同一件事的兩個真相**（鐵律 7）—— 留著的話 `dineKey()`
        還會依同行女伴去換 `tavern` 那一格的背景，而那一格現在是**室外街景**
-       （`Ravn_Dining`），換成某一家店的室內就變成「站在街上卻看到店裡」。
+       （`Varn_Dining`），換成某一家店的室內就變成「站在街上卻看到店裡」。
        ⚠ 東方泊地 -1263 就走完同一條路（那邊的註解寫著同樣的理由）。 */
     /* ══⚠⚠ **`noTime` 逐格看，不是整批**（ver -1293，室外六格的四時段差分到齊）══
        · **室外六格**（廣場／中心區／瞭望台／舊街區／火車站／上街區）＝四差分都在
          ⇒ **不寫 `noTime`**，讓候選鏈照 `BAND_FALL` 挑時段。
        · **室內六格**（武器店／公會／餐飲街／雜貨舖／旅店＋大教堂）＝單張
          ⇒ **要寫 `noTime:true`**，不寫就白吃四個 404（§5）。
-       ⚠⚠⚠ **大教堂也拿掉了 `noTime`**，雖然它是室內 —— 它借用的是 `Ravn_Midtown`，
+       ⚠⚠⚠ **大教堂也拿掉了 `noTime`**，雖然它是室內 —— 它借用的是 `Varn_Midtown`，
          而**那張的無尾綴檔已經被回收**（美術只留四個時段版）。留著 `noTime` ＝
-         只試 `Ravn_Midtown.webp` ＝ 那一格整個空白，**而且畫面上沒有任何錯誤訊息**。
-         `Ravn_Church` 交件之後要把 `noTime:true` 加回來（它會是單張）。
+         只試 `Varn_Midtown.webp` ＝ 那一格整個空白，**而且畫面上沒有任何錯誤訊息**。
+         `Varn_Church` 交件之後要把 `noTime:true` 加回來（它會是單張）。
        ⚠ 室內為什麼不做四差分：§5「有室外光才有差分」，同貝利薩爾那一把尺。 */
+    /* ══ 槍棺小地圖（ver -1492 接上；美術 ver -1490 交件）══════════════════════
+       ⚠⚠⚠ **`spots` 是 `tools/map_compose.py` 算出來的，不是量出來的**
+         —— 它與地圖上的墨點來自同一份 `POS`（`tools/map_layout.py`），
+         而 `POS` 又是照 `script/town.js` 的 `exits` 驗過方向的（鐵律 7）。
+         所以**不要手調這幾個數字**：要動位置就去動 `POS` 再重跑那一支，
+         兩邊一起變。手調的下場是「墨點在這裡、光點在那裡」，而且沒有錯誤訊息。
+       ⚠ 原始檔在 `resources/map/_spots_ravnsdal.json`（交件時一起產的）——
+         這裡是照抄，重跑之後要再抄一次。 */
+    map: {
+      img: 'resources/map/map_ravnsdal.webp',
+      spots: {
+        square:[0.4532, 0.6317], midtown:[0.4532, 0.3783], library:[0.4532, 0.125],
+        church:[0.6005, 0.3783], lookout:[0.3059, 0.3783], oldtown:[0.2323, 0.6317],
+        gunstore:[0.085, 0.6317], station:[0.2323, 0.3783], guild:[0.2323, 0.885],
+        uptown:[0.6741, 0.6317], tavern:[0.8214, 0.6317], bar:[0.8214, 0.3783],
+        cafe:[0.895, 0.6317], dessert:[0.8214, 0.885], grocery:[0.6741, 0.885],
+        inn:[0.6741, 0.3783],
+      },
+    },
     nodes: {
       /* ══ 港口廣場 ══ 入口；上＝中心區、左＝舊街區、右＝上街區（照帝都）。 */
-      square:   { bg:'Ravn_Square',   name:'雪都瓦恩霍姆　港口廣場',
+      square:   { bg:'Varn_Square',   name:'雪都瓦恩霍姆　港口廣場',
         exits:{ up:'midtown', left:'oldtown', right:'uptown' },
         /* ⚠⚠ **不掛 `flag`**（ver -1341，同石製遺蹟 -1154 的理由）：這座城在大地圖上
            是**獨立的一點**，沒有任何跨圖陸路出口 —— 人能站在這裡，就表示他是飛來的。
@@ -4406,55 +4425,55 @@ export const TOWNS = {
         sail:{} },
 
       /* ── 一、中心區 ── 左＝瞭望台、右＝大教堂、下＝廣場 */
-      midtown:  { bg:'Ravn_Midtown',  name:'雪都瓦恩霍姆　中心區',  
+      midtown:  { bg:'Varn_Midtown',  name:'雪都瓦恩霍姆　中心區',  
         exits:{ left:'lookout', right:'church', down:'square', up:'library' } },
-      /* ══ 圖書館（ver -1487 交件 `Ravn_Library`）══ 中心區的 `up` 本來就空著。
+      /* ══ 圖書館（ver -1487 交件 `Varn_Library`）══ 中心區的 `up` 本來就空著。
          ⚠ `noTime:true` ＝室內單張（§5：不寫就白吃四個 404）。 */
-      library:  { bg:'Ravn_Library',  name:'雪都瓦恩霍姆　圖書館',  noTime:true,
+      library:  { bg:'Varn_Library',  name:'雪都瓦恩霍姆　圖書館',  noTime:true,
         exits:{ back:'midtown' } },
       /* ⚠⚠ **大教堂是規格上唯一留白的一格**（`_ravnsdal_spec.md` §三：宗教建築的
-         形制是世界觀的事，Ray 還沒給方向）。`Ravn_Church` 這張圖**還不存在**。
+         形制是世界觀的事，Ray 還沒給方向）。`Varn_Church` 這張圖**還不存在**。
          ⚠⚠ 所以 `bg` **暫時指中心區那一張**，不是指一個不存在的檔名 ——
            候選鏈一張都載不到時 `bgFor` 是「照樣放行」，畫面會**停在前一格**，
            於是從瞭望台繞過來會看到瞭望台、從廣場上來會看到中心區：
            **同一格每次長得不一樣**，那比「暫時借一張」更糟（實測確認過）。
            借中心區也讀得通：那條側街本來就是從中心區往深處沒入海霧的那一條。
          ⚠ `bgPending` 寫成**還缺哪一張的檔名**（`script_lint.py` 會提醒）——
-           圖交進來就只要把 `bg` 改成 `Ravn_Church`、拔掉 `bgPending`，其餘不動。 */
-      church:   { bg:'Ravn_Midtown',   name:'雪都瓦恩霍姆　大教堂',  
-        bgPending:'Ravn_Church', exits:{ back:'midtown' } },
-      lookout:  { bg:'Ravn_Lookout',  name:'雪都瓦恩霍姆　瞭望台',  
+           圖交進來就只要把 `bg` 改成 `Varn_Church`、拔掉 `bgPending`，其餘不動。 */
+      church:   { bg:'Varn_Midtown',   name:'雪都瓦恩霍姆　大教堂',  
+        bgPending:'Varn_Church', exits:{ back:'midtown' } },
+      lookout:  { bg:'Varn_Lookout',  name:'雪都瓦恩霍姆　瞭望台',  
         exits:{ back:'midtown' } },
 
       /* ── 二、舊街區（四向樞紐） ── 左＝武器店、右＝廣場、上＝火車站、下＝公會 */
-      oldtown:  { bg:'Ravn_Oldtown',  name:'雪都瓦恩霍姆　舊街區',  
+      oldtown:  { bg:'Varn_Oldtown',  name:'雪都瓦恩霍姆　舊街區',  
         exits:{ left:'gunstore', right:'square', up:'station', down:'guild' } },
-      gunstore: { bg:'Ravn_Firearm',  name:'雪都瓦恩霍姆　武器店',   noTime:true,
+      gunstore: { bg:'Varn_Firearm',  name:'雪都瓦恩霍姆　武器店',   noTime:true,
         exits:{ back:'oldtown' } },
       /* ⚠⚠ 站房上那面大鐘的指針**由遊戲時間擺**（ver -1249，Ray：「不然背景的時間
          跟遊戲時間永遠對不上，對我來說那算 bug」）。座標是**量出來的**（圖 1536×1024）：
          錶心 (767,170) ⇒ (0.4993, 0.1660)；`r` 是盤面半徑 50px ÷ 圖寬 1536 ＝ 0.0326。
          引擎會先用盤面色蓋掉畫上去的那兩根（盤面是平的，見 `syncBgClock` 的說明），
          再擺上時針分針 —— **不轉動、進場抓一次**。 */
-      station:  { bg:'Ravn_Station',  name:'雪都瓦恩霍姆　火車站',  
+      station:  { bg:'Varn_Station',  name:'雪都瓦恩霍姆　火車站',  
         /* `wipe`＝畫上去的分針伸出盤面圓之外的那一截（實測到 r≈56，補丁只到 50）
            —— 不抹的話三點鐘方向會留一小截黑。一項＝[角度°, r0, r1, 半寬]，
            後三個以盤面半徑為單位。 */
         clock:{ x:0.4993, y:0.1660, r:0.0326, wipe:[[100.5, 0.94, 1.20, 0.11]] },
         exits:{ back:'oldtown' } },
-      guild:    { bg:'Ravn_Guild',    name:'雪都瓦恩霍姆　賞金獵人公會', noTime:true,
+      guild:    { bg:'Varn_Guild',    name:'雪都瓦恩霍姆　賞金獵人公會', noTime:true,
         exits:{ back:'oldtown' } },
 
       /* ── 三、上街區（四向樞紐） ── 左＝廣場、右＝餐飲街、上＝旅店、下＝雜貨舖 */
-      uptown:   { bg:'Ravn_Uptown',   name:'雪都瓦恩霍姆　上街區',  
+      uptown:   { bg:'Varn_Uptown',   name:'雪都瓦恩霍姆　上街區',  
         exits:{ left:'square', right:'tavern', up:'inn', down:'grocery' } },
       /* ══⚠⚠ **餐飲街是樞紐，不是分店**（ver -1487，Ray：「加入餐飲街三分支同東泊」）══
          照東方泊地 -1318 那一套：三家店是玩家自己走得進去的節點，那是拓樸不是差分。
          ⚠⚠⚠ **這一格的背景是「街」不是某一家店的室內**（同東泊 -1432 的教訓）：
            站在樞紐上卻看到店裡，讀起來是「我已經進去了」，而旁邊三條路又通向
-           另外三家店。圖是 `Ravn_Dining_{dawn,day,dusk,night}`（-1487 交件，
+           另外三家店。圖是 `Varn_Dining_{dawn,day,dusk,night}`（-1487 交件，
            **室外＝四差分到齊 ⇒ 不寫 `noTime`**）。
-         ⚠⚠ 連帶：**`Ravn_Restaurant.webp` 從此沒有節點在用** —— Ray 這一次點名的
+         ⚠⚠ 連帶：**`Varn_Restaurant.webp` 從此沒有節點在用** —— Ray 這一次點名的
            三家是甜品店／餐酒館／咖啡廳（東泊那邊的第三家是**餐廳**不是餐酒館，
            所以兩座城的三分支不完全一樣）。⛔ **那張先不要回收**：真的要開第四格
            或換掉餐酒館就立刻用得到。
@@ -4467,19 +4486,23 @@ export const TOWNS = {
          ⚠⚠ **`hours` 沒設**（同東泊那三格）：憲法 ver -1378 那張表（酒吧三差分
            `[8,24]`、餐廳只有 day）的前提是「那幾格的 `hours` 真的是表上那一組」，
            而這座城從來沒設過營業時間 —— 要設是 Ray 的決定，設了美術才知道要交幾張。 */
-      tavern:   { bg:'Ravn_Dining',   name:'雪都瓦恩霍姆　餐飲街',
+      tavern:   { bg:'Varn_Dining',   name:'雪都瓦恩霍姆　餐飲街',
         exits:{ back:'uptown', up:'bar', right:'cafe', down:'dessert' } },
-      bar:      { bg:'Ravn_Bistro',   name:'雪都瓦恩霍姆　餐酒館',   noTime:true,
+      bar:      { bg:'Varn_Bistro',   name:'雪都瓦恩霍姆　餐酒館',   noTime:true,
         exits:{ back:'tavern' } },
-      cafe:     { bg:'Ravn_Cafe',     name:'雪都瓦恩霍姆　咖啡廳',   noTime:true,
+      cafe:     { bg:'Varn_Cafe',     name:'雪都瓦恩霍姆　咖啡廳',   noTime:true,
         exits:{ back:'tavern' } },
-      dessert:  { bg:'Ravn_Dessert',  name:'雪都瓦恩霍姆　甜品店',   noTime:true,
+      dessert:  { bg:'Varn_Dessert',  name:'雪都瓦恩霍姆　甜品店',   noTime:true,
         exits:{ back:'tavern' } },
-      grocery:  { bg:'Ravn_Grocerie', name:'雪都瓦恩霍姆　雜貨舖',   noTime:true,
+      grocery:  { bg:'Varn_Grocerie', name:'雪都瓦恩霍姆　雜貨舖',   noTime:true,
         exits:{ back:'uptown' } },
       /* ⚠ 這一格**沒有** `inn:true`：旅店大廳與四扇伙伴門這一輪不做（同聖索菲亞）
          —— 只寫 `inn:true` 而沒有人應門的話，玩家會敲到一排空門（§6.5.5）。 */
-      inn:      { bg:'Ravn_Hotel',    name:'雪都瓦恩霍姆　旅店',     noTime:true,
+      /* ⚠⚠ **旅店拔掉 `noTime`**（ver -1492；美術 -1488 補齊 `Varn_Hotel_{dawn,day,
+         dusk,night}`）：憲法 -1378「旅店是全專案唯一的四差分」，這座城以前只有一張。
+         ⚠ 留著 `noTime` ＝只試不帶時段的那一個名字 ⇒ 四張新圖**一張都不會被用到**，
+           而畫面上看起來完全正常（一直是同一張），沒有任何錯誤訊息。 */
+      inn:      { bg:'Varn_Hotel',    name:'雪都瓦恩霍姆　旅店',
         exits:{ back:'uptown' } },
     },
   },
@@ -4685,7 +4708,7 @@ export const TOWNS = {
          與 -1134 伊甸古墓用的同一支旗）：`script_lint.py` 於是把「背景不存在」
          從**錯誤**降成**提醒**，而且**交件之後會自己反過來叫你拔掉它**
          （「背景 X 已交件，bgPending 可以拔了」）。
-       ⚠ 這與拉芬斯達爾大教堂那種 `bgPending:'Ravn_Church'`（字串形）是兩回事：
+       ⚠ 這與拉芬斯達爾大教堂那種 `bgPending:'Varn_Church'`（字串形）是兩回事：
          那是「`bg` 先借別張、真正要的是這一張」；這裡 `bg` 寫的就是真正要的檔名，
          只是還沒到 —— 所以**圖一進來，這裡只要整批拔掉 `bgPending` 就好**。
        ══⚠⚠ **ver -1293：15 張全部交件，`bgPending` 已整批拔掉**（室外 8×4＝32
@@ -4702,6 +4725,25 @@ export const TOWNS = {
            那八張無尾綴版還在庫裡（交件時刻意不刪，見 HANDOFF 第 3 件），
            所以症狀是「時段差分交了卻看不到」，而且**沒有任何錯誤訊息**。
          ⚠ 那批無尾綴舊檔要等這一版上線、確認四時段都吃得到之後才走 `recycle.sh`。 */
+    /* ══ 槍棺小地圖（ver -1492 接上；美術 ver -1490 交件）══════════════════════
+       ⚠⚠⚠ **`spots` 是 `tools/map_compose.py` 算出來的，不是量出來的**
+         —— 它與地圖上的墨點來自同一份 `POS`（`tools/map_layout.py`），
+         而 `POS` 又是照 `script/town.js` 的 `exits` 驗過方向的（鐵律 7）。
+         所以**不要手調這幾個數字**：要動位置就去動 `POS` 再重跑那一支，
+         兩邊一起變。手調的下場是「墨點在這裡、光點在那裡」，而且沒有錯誤訊息。
+       ⚠ 原始檔在 `resources/map/_spots_eastport.json`（交件時一起產的）——
+         這裡是照抄，重跑之後要再抄一次。 */
+    map: {
+      img: 'resources/map/map_eastport.webp',
+      spots: {
+        square:[0.4532, 0.6679], midtown:[0.4532, 0.3421], church:[0.6005, 0.3421],
+        cityhall:[0.3059, 0.3421], university:[0.4532, 0.125],
+        oldtown:[0.2323, 0.6679], gunstore:[0.085, 0.6679], dock:[0.2323, 0.4507],
+        guild:[0.2323, 0.885], uptown:[0.6741, 0.6679], tavern:[0.8214, 0.6679],
+        restaurant:[0.8214, 0.4507], cafe:[0.895, 0.6679], dessert:[0.8214, 0.885],
+        grocery:[0.6741, 0.885], inn:[0.6741, 0.4507],
+      },
+    },
     nodes: {
       /* ══ 港口廣場 ══ 入口；上＝中心區、左＝舊城區、右＝上城區（照帝都）。
          ⚠ 入口那一格**不可以有戰鬥**（§6.5.2：它是遭遇戰的復活點）。
