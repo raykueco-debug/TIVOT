@@ -57,6 +57,9 @@ const nou = N('NOUVELLE'), ren = N('RENNA');
    玩家的同伴在左、對面的人在右，與店主同一個邏輯。 */
 const hun = N('HUNTER'), cnt = N('COUNTER');
 const gun = N('GUNSMITH');   // 槍店店主（ver -377）
+/* 阿瑞尼斯（ver -1522，Ray 的 Stage10-A 稿；立繪 -1504／-1509 已接）。
+   ⚠ 稿上沒給他表情 ⇒ 一律 `null`（不動立繪，用底圖那一張）。 */
+const arh = N('ARRHENIUS');
 /* Stage8（ver -953）：科爾文（第五騎士團作戰課副團長）與夏爾村餐廳的瑪麗亞。
    ⚠ 科爾文報上名字之前是 `CORVIN_Q`（顯示「？？？」）＋暗調剪影（稿上的「陰影立繪」）
      —— 同索菈娜／司祭的作法：顯示名不同就是兩個 id，art 同指（見 speakers.js）。 */
@@ -4396,6 +4399,36 @@ export const TOWNS = {
     /* BGM（ver -1248，Ray 交件 `PerituneMaterial_TaishoRoman_Theme2_loop`）。
        ⚠ 它原本**沒有 `bgm`** ＝ 進城沿用上一個畫面的曲子（同聖索菲亞／伊甸古墓）。 */
     bgm: 'taisho2',
+    /* ══⚠⚠⚠ **六點回旅店**（ver -1522，Ray 的 Stage10-A 稿：「六點回到旅店」）══
+       走城上的 `gates`（§6.5.4.1 的 `clockGate`，與帝都 stage 0 的結尾、北泊那兩道
+       同一支，鐵律 8）。
+       ⚠⚠ `hourOfDay` 寫成**時段** `[18,24]` 不是 `18` —— 「今天過了 18 點」在**隔天**
+         凌晨照樣成立（ver -664 的教訓）。迄不含。
+       ⚠ `enterAgain` ＝玩家可能**已經站在旅店裡**，那時 `goto===nodeId`，
+         不重新 `enter()` 一次的話那一格的 `acts` 沒有人叫得動。
+       ⚠⚠ **M1／M2 的分歧寫成「M1 才演 A、其餘演 B」**（不是兩個 `onlyIf`）：
+         A route 與 B route 是**非線性**的 —— 先跑古墓的人兩支旗都沒有，
+         兩個 `onlyIf` 會讓這一段**什麼都不演就結束**。
+         鐵律 13：漏掉的那一側要落在安全的地方。 */
+    gates:[
+      { flag:'vn_evening', need:'vn_arrive', hourOfDay:[18,24],
+        goto:'inn', enterAgain:true, lines:[
+        nou('cringe','蕾娜小姐還沒回來……有點擔心。'),
+        sor('tired','沒事吧，這地方看起來挺安全的。'),
+        nou('decoding','可是……'),
+        any('answer','那、我們去找她！',            { onlyIf:'ep_m1_route' }),
+        /* ⚠ 稿上寫 `smilebig`，索菈娜沒有那張 —— 用她的 `smile`。 */
+        sor('smile','噢，小公主很有幹勁呢。',        { onlyIf:'ep_m1_route' }),
+        nou('run','嗯，走吧。',                      { onlyIf:'ep_m1_route' }),
+        sor(null,'真那麼不放心的話，我們去圖書館找她吧？', { skipIf:'ep_m1_route' }),
+        nou('lookback','嗯，走吧。',                 { skipIf:'ep_m1_route' }),
+        any('silent','',                             { skipIf:'ep_m1_route' }),
+        sor('smirk','小公主，累了？',                { skipIf:'ep_m1_route' }),
+        sor('tease','要不要姐姐背妳？',              { skipIf:'ep_m1_route' }),
+        any('silent','', { se:'se_walk', skipIf:'ep_m1_route' }),
+        sor('amazed','她這是怎麼啦？',               { skipIf:'ep_m1_route' }),
+      ] },
+    ],
     /* 大城市不上迷霧（ver -913）—— ⚠ **要明寫**：沒寫就是有霧。 */
     mist: 0,
     /* ══⚠⚠ **`dining` 整段拿掉了**（ver -1487，Ray：「加入餐飲街三分支同東泊」）══
@@ -4444,15 +4477,172 @@ export const TOWNS = {
            出不了港）。
            ⚠ 有陸路可以走到的地方（帝都／夏爾村那一族）照舊要旗：那裡「還沒有船」
              是真的成立。 */
-        sail:{} },
+        /* ══⚠⚠⚠ **禁止出航：不能丟下夥伴**（ver -1522，Ray 的 Stage10-A 稿）══
+           `hold` ＝「這一段劇情裡不准走」的**暫時**狀態，與 `flag`（船還沒到手，
+           一去不回的前置）是兩件事，不要合併（同北泊 -655 那一條）。
+           ⚠⚠ **鐵律 9：`vn_depart` 現在還沒有人插** —— 那是「隔日上船」那一段
+             （Ray 的稿還沒做到，見 HANDOFF 第三節第 4 塊）的收尾要插的。
+             名字先留好；在那之前這座城是真的走不掉。
+           ⚠ 台詞是**旁白**（名字欄空＝主角自己的念頭，同旅店 `noSleep` 那一句）——
+             ⚠⚠ **這一句是我暫代的**：Ray 只寫了「插禁止出航旗：不能丟下夥伴」，
+               沒給句子。要換說一聲。 */
+        sail:{ hold:{ need:'vn_arrive', until:'vn_depart',
+                      lines:[ { speaker:'NARRATION', text:'（大家都還在城裡。不能丟下夥伴。）' } ] } },
+        /* ══⚠⚠⚠ **抵達雪都**（ver -1522，Ray 的 Stage10-A 稿）══════════════════
+           ⚠ `need:'tomb_gate'` ＝墓門那一段演完（蕾娜就是在那裡說「先到瓦恩霍姆城
+             休整一下吧」）。**stage7 以前那一趟插的是 `tomb_gate_early`**，
+             所以自己飛來看過古墓的人不會提前觸發這一段。
+           ⚠ `endStoryExplore:true` ＝演完開放自由活動（＝可以約會，§6.5.4.2）——
+             稿上那一行「（自由探索）」就是它。
+           ⚠ 四人同台 ⇒ `sides:{ RENNA:'L' }`（§6.5 的站位表：碰到安雅蕾娜放左）。 */
+        acts:[ { flag:'vn_arrive', need:'tomb_gate', endStoryExplore:true,
+                 sides:{ RENNA:'L' }, lines:[
+          nou('surprise','哇，下雪了。'),
+          sor('think','有點冷。'),
+          ren('upsetstare','妳穿那樣當然會冷。'),
+          nou('front','安雅，會冷嗎？'),
+          any('curious','？'),
+          any('curious','蠻暖和的。'),
+          ren('front','不愧是紫月出身的人，這點雪不算什麼呢。'),
+          ren('smile','那麼，我去圖書館找些資料，大家先回旅店休息一會吧。'),
+        ] } ] },
 
       /* ── 一、中心區 ── 左＝瞭望台、右＝大教堂、下＝廣場 */
       midtown:  { bg:'Varn_Midtown',  name:'雪都瓦恩霍姆　中心區',  
-        exits:{ left:'lookout', right:'church', down:'square', up:'library' } },
+        exits:{ left:'lookout', right:'church', down:'square', up:'library' },
+        /* ══⚠⚠⚠ **圖書館那一段的後半**（ver -1522）══ 稿上「轉景中央區：」——
+           圖書館那一段收尾 `goto:'midtown'`，這一次抵達由這一段接手（鐵律 8：
+           接戲的門只有「抵達那一格」，同 -1517／-1519 那兩件）。
+           ⚠ 收尾插 `vn_night_done` ＝**旅店的 `sleepFlag`**：在這之前按睡覺會被
+             諾薇兒那句擋回來（§6.5.5「還不能做不要靠藏起鈕擋」）。 */
+        acts:[ { flag:'vn_night_done', need:'vn_lib_done', sides:{ RENNA:'L' }, lines:[
+          nou('run','等一下！等等我！'),
+          nou('shocked','吶，這一定是有什麼誤會，聽聽蕾娜小姐怎麼說嘛！'),
+          { speaker:'PLAYER', blank:true },
+          /* 好感分歧：稿上是「諾T2以下」與「諾T3以下（＝T3 以上）」兩條。
+             ⚠ `tierMin`／`tierMax` 是**一拍**的屬性（§6.5.4 的 -1515 那一課：
+               `needTier` 是 `actDue` 在判的，寫在一拍上完全沒作用而且不報錯）。
+             ⚠ 看的是**說話者自己**的段位，所以不必寫 `tierWho`。 */
+          nou('sadsmilenoeye','我知道啦……',                                { tierMax:2 }),
+          nou('decoding','對不起……我沒有賽西莉學姐那麼優秀……但是！',        { tierMax:2 }),
+          nou('shocked','咦？',                                              { tierMin:3 }),
+          nou('shy','我、我沒關係啦！',                                      { tierMin:3 }),
+          nou('furious','一起努力吧！我一定會幫你把評價……',                  { tierMin:3 }),
+          sor(null,'喂——'),
+          { speaker:'NARRATION', text:'', se:'se_walk', auto:1400 },
+          sor('worry','都是我不好啦，要怪就怪我，好嗎？'),
+          /* M1／M2 的分歧（安雅站在誰那一邊）。⚠ 兩條都寫，靠旗互斥。 */
+          any('argue','對。',   { onlyIf:'ep_m1_route' }),
+          any('upset','',       { onlyIf:'ep_m2_route' }),
+          sor('cringe','連小公主都生我的氣……'),
+          { speaker:'NARRATION', text:'', se:'se_walk', auto:1400 },
+          ren('lookdown','時間也不早了，早點休息吧。'),
+          ren('lookaway','關於古墓的大門我有點眉目了，明天一早動身。'),
+          nou('awkwerd','蕾娜小姐，關於那個評價……'),
+          ren('lookawaytalk','我不打算道歉，也不會修正。'),
+          ren('invite','我只是盡我的職守而已，沒有理由被任何人非難。'),
+          { speaker:'PLAYER', blank:true },
+          { speaker:'NARRATION', text:'', se:'se_walk', auto:1400 },
+          ren('reach',''),
+          /* 稿上「T3以上派生」—— 她走了之後那一張。 */
+          ren('meltdown','', { tierMin:3 }),
+        ] } ] },
       /* ══ 圖書館（ver -1487 交件 `Varn_Library`）══ 中心區的 `up` 本來就空著。
          ⚠ `noTime:true` ＝室內單張（§5：不寫就白吃四個 404）。 */
       library:  { bg:'Varn_Library',  name:'雪都瓦恩霍姆　圖書館',  noTime:true,
-        exits:{ back:'midtown' } },
+        exits:{ back:'midtown' },
+        /* ══⚠⚠⚠ **評鑑報告**（ver -1522，Ray 的 Stage10-A 稿）══════════════════
+           六點那一段演完（`vn_evening`）之後走進來才演；收尾 `goto:'midtown'`，
+           後半由中心區那一段接手（鐵律 8）。
+           ⚠⚠⚠ **四條記事的日期時刻是我暫代的** —— 稿上寫的是
+             「X月Y日Z時（首戰蜈蚣的日期時間）」那種**佔位**，而真正的時刻
+             **每一輪都不一樣**（玩家走幾格、睡幾次都會變）。
+             · 現在填的是照開局（`clock.EPOCH` ＝ 1908/10/11 11:00）推出來的
+               **合理值**，不是量出來的。⚠ **它會說謊**，只是說得不離譜。
+             · 要真的對，得在那四段戲各記一個時戳（`clock` 寫一支鑰匙、這裡讀它）
+               —— 那是引擎的活，而且**舊存檔沒有那幾支戳**，要有退路。
+             ⇒ **Ray 給數字、或說一聲要做時戳，兩條路都行。在那之前這四行是佔位。**
+           ⚠ 插圖三張還沒有（蕾娜趴睡、以及約會那兩張）——**不寫 `cg:`**：
+             寫了就是六個候選全 404（§6.5.4 的 -433 那一課）。圖到了補。
+           ⚠ 翻頁音走既有的 `se_ui_pageflip`（§6.6：音效表只有一份，不要為了
+             `se_page1/2/3` 三個名字另外加三支檔案）。⚠ 稿上的 `Se_pickup`
+             **庫裡沒有對得上的**，這一版先空著（少一個聲音，不會壞）。 */
+        acts:[ { flag:'vn_lib_done', need:'vn_evening', goto:'midtown',
+                 sides:{ RENNA:'L' }, lines:[
+          sor('talk','啊，有了。'),
+          sor(null,'哇，睡到不省人事了。'),
+          nou(null,'她一定很累吧，我們在城裡閒逛的時候只有她一個人在忙……'),
+          any('silent','……'),
+          sor('amazed','喔。這是什麼？'),
+          nou('reach','那是我們的評價紀錄。不要拿啦！'),
+          Object.assign(sor(null,'有什麼關係——喔？'), { se:'se_ui_pageflip' }),
+          Object.assign(sor(null,'嗯——哈！真有意思！'), { se:'se_ui_pageflip' }),
+          nou('shocked','……'),
+          { speaker:'PLAYER', blank:true },
+          sor('tease','少來，你也很想知道她怎麼看你吧？'),
+          nou('shocked2','我們不能看啦！'),
+          sor('salute','不要看啊，我唸不就好了？'),
+          nou('explain','哪有這種道理……'),
+          sor('whisper','想知道嗎？'),
+          { speaker:'PLAYER', blank:true, shake:true },
+          sor('smile','喔——原來是這麼評價的呀？'),
+          Object.assign(sor('talk','嘿——'), { se:'se_ui_pageflip' }),
+          nou('shock','……'),
+          nou('shy','好啦！妳就唸吧！'),
+          nou('lookaway','搞得我都跟著緊張了！'),
+          sor('nod','咳哼。'),
+          Object.assign(sor(null,'『10月12日14時，評測對象展現高超戰鬥技術，適性初步判斷：良好。』'),
+                        { se:'se_ui_pageflip' }),
+          Object.assign(sor(null,'『10月13日16時，與隊友連攜狀況良好，適性判斷維持。』'),
+                        { se:'se_ui_pageflip' }),
+          nou('nod','嘿嘿……'),
+          Object.assign(sor(null,'『10月14日23時，疑似聖徒之力的不明力量輸入，初判仍能保持神經完整，適性判斷修正：極佳。』'),
+                        { se:'se_ui_pageflip' }),
+          any(null,'是在說……我？'),
+          Object.assign(sor(null,'喔！講到我了！『10月16日20時，與一般人連攜戰鬥無阻滯誤傷。註記：此記事應比照現第四席戰鬥紀錄，著重評估。』'),
+                        { se:'se_ui_pageflip' }),
+          sor(null,'看不懂。'),
+          /* ⚠ 稿上這一句標的立繪是 `Nouvelle_SI_expain2`，但講話的是**安雅**
+             （「是在說第四課的團長璐娜大人」）—— 判斷是抄稿時的欄位錯位，
+             照說話者改用她自己的差分。若原意真是諾薇兒，說一聲改回去。 */
+          any('talk','是在說第四課的團長璐娜大人……情緒上來基本就不分敵我了。'),
+          sor(null,'什麼啊，好可怕。'),
+          Object.assign(sor(null,'後面大概都一個勁誇……'), { se:'se_ui_pageflip' }),
+          Object.assign(sor('surprised','！！'), { se:'se_ui_pageflip' }),
+          sor(null,'……'),
+          nou('lookback','怎麼了？'),
+          sor('embarassed','沒、沒事啦！看來修女小姐對你們的評價很高呢！'),
+          nou('shocked','……後面寫了什麼嗎？'),
+          sor('sad','……'),
+          nou('worry','索拉娜小姐！'),
+          sor('idea','只是些評價而已，沒那麼重要啦！'),
+          nou('furious','很重要！'),
+          sor('cringe',''),
+          nou('decoding','對他……很重要……'),
+          sor('sad','……'),
+          Object.assign(sor(null,'『適性無可挑剔，但有沉溺戰鬥傾向，且多次無視聖王廳法度，亦未表現對神之敬畏。考量其品性，應維持原判決……』'),
+                        { se:'se_ui_pageflip' }),
+          sor(null,'『剔除候選資格……』'),
+          nou('covermouth','怎麼會……！'),
+          nou('cry','我們……這麼努力！'),
+          { speaker:'PLAYER', text:'……' },
+          { speaker:'NARRATION', text:'（敲桌聲）', auto:1200 },
+          ren('scream','啊！'),
+          ren('shockedCalm','咦？怎麼大家都來了？'),
+          nou('sad','……'),
+          any('scared',''),
+          sor('worry',''),
+          ren('shout','我的評鑑報告！'),
+          { speaker:'NARRATION', text:'（搶奪音）', auto:1200 },
+          ren('shockedopen','你們……都看了？'),
+          sor('sad','抱歉，是我……'),
+          { speaker:'NARRATION', text:'', se:'se_walk', auto:1400 },
+          ren('reach','啊！'),
+          nou('sad','……'),
+          nou('sad','蕾娜小姐，真的是那樣看他的嗎？'),
+          ren('sad','我……'),
+          { speaker:'NARRATION', text:'', se:'se_walk', auto:1400 },
+        ] } ] },
       /* ⚠⚠ **大教堂是規格上唯一留白的一格**（`_ravnsdal_spec.md` §三：宗教建築的
          形制是世界觀的事，Ray 還沒給方向）。`Varn_Church` 這張圖**還不存在**。
          ⚠⚠ 所以 `bg` **暫時指中心區那一張**，不是指一個不存在的檔名 ——
@@ -4463,9 +4653,53 @@ export const TOWNS = {
          ⚠ `bgPending` 寫成**還缺哪一張的檔名**（`script_lint.py` 會提醒）——
            圖交進來就只要把 `bg` 改成 `Varn_Church`、拔掉 `bgPending`，其餘不動。 */
       church:   { bg:'Varn_Midtown',   name:'雪都瓦恩霍姆　大教堂',  
-        bgPending:'Varn_Church', exits:{ back:'midtown' } },
+        bgPending:'Varn_Church', exits:{ back:'midtown' },
+        /* ══ 約會・諾薇兒（ver -1522）══ 阿瑞尼斯神父那一段。
+           ⚠ 他的 speaker id 是 `ARRHENIUS`（`speakers.js` -1504 建、-1509 接了六張差分）
+             —— 稿上沒給表情，所以一律用底圖那一張。
+           ⚠ 收尾分歧：稿上「諾T3以上」多三拍、「諾T2以下」另一句收尾。
+             走 `tierMin`／`tierMax`（一拍的屬性），不是 `needTier`（那是擋整段的）。 */
+        acts:[ { flag:'vn_church_nou', withWho:'NOUVELLE', lines:[
+          arh(null,'喔！喔喔！這不是小諾微兒嗎？'),
+          nou('happy','神父！'),
+          { speaker:'PLAYER', blank:true },
+          arh(null,'好久不見。你也長好大了呢。'),
+          arh(null,'賽西莉呢？沒有一起來嗎？'),
+          nou('explain','啊……學姐她現在……'),
+          { speaker:'PLAYER', blank:true },
+          arh(null,'是嗎……抱歉。'),
+          arh(null,'傻小子，你難不難受我會不知道嗎？'),
+          arh(null,'老愛逞強，反而會一步都踏不出去。'),
+          { speaker:'PLAYER', blank:true, shake:true },
+          arh(null,'試著邁開步伐吧。那是讓你比昨天的自己更強的唯一道路。'),
+          nou('smug','神父又開始說教了。'),
+          arh(null,'他要是好好聽進去的話，下次來就能帶著賽西莉一起了吧。'),
+          nou('sad','……'),
+          { speaker:'PLAYER', blank:true, tierMin:3 },
+          nou('surprise','！！',                    { tierMin:3 }),
+          arh(null,'是嗎？你已經向前走了啊？',      { tierMin:3 }),
+          arh(null,'真的長大了呢。',                { tierMin:3 }),
+          nou('bigsmileclose','',                   { tierMin:3 }),
+          arh(null,'坐下聊聊吧。說說這幾年都發生了什麼事。', { tierMax:2 }),
+        ] } ] },
       lookout:  { bg:'Varn_Lookout',  name:'雪都瓦恩霍姆　瞭望台',  
-        exits:{ back:'midtown' } },
+        exits:{ back:'midtown' },
+        /* ══ 約會・安雅（ver -1522）══ `withWho` ＝正在跟她約會才演。
+           ⚠⚠ 兩套：`[已發生米夏事件，蕾娜不知]` ＝ **M2**（`ep_m2_route`），其餘走另一套
+             —— 寫成「M2 才演 A、其餘演 B」（A route 先跑的人兩支旗都沒有）。
+           ⚠ M2 那一條收尾**好感 +5**（稿上指定）：掛在**最後一拍**，演完才給。 */
+        acts:[ { flag:'vn_lookout_anya', withWho:'ANYA', lines:[
+          any('watch','……'),
+          { speaker:'PLAYER', blank:true },
+          any('silent','一點點。',                        { skipIf:'ep_m2_route' }),
+          any('lookup','但是……我的家鄉，比這裡還要大。', { skipIf:'ep_m2_route' }),
+          any('lookup','一望無際。',                      { skipIf:'ep_m2_route' }),
+          any('talk','因為米夏對帝國來說，是戰犯。',      { onlyIf:'ep_m2_route' }),
+          any('talk','他、只是想保護我……',               { onlyIf:'ep_m2_route' }),
+          any('talk','對不起，要你瞞著大家……',           { onlyIf:'ep_m2_route' }),
+          { speaker:'PLAYER', blank:true, onlyIf:'ep_m2_route' },
+          any('talkshy','好……', { onlyIf:'ep_m2_route', aff:{ anya:5 } }),
+        ] } ] },
 
       /* ── 二、舊街區（四向樞紐） ── 左＝武器店、右＝廣場、上＝火車站、下＝公會 */
       oldtown:  { bg:'Varn_Oldtown',  name:'雪都瓦恩霍姆　舊街區',  
@@ -4482,7 +4716,23 @@ export const TOWNS = {
            —— 不抹的話三點鐘方向會留一小截黑。一項＝[角度°, r0, r1, 半寬]，
            後三個以盤面半徑為單位。 */
         clock:{ x:0.4993, y:0.1660, r:0.0326, wipe:[[100.5, 0.94, 1.20, 0.11]] },
-        exits:{ back:'oldtown' } },
+        exits:{ back:'oldtown' },
+        /* ══ 約會・索菈娜（ver -1522）══ 稿上兩套，差別只在**先去過酒吧沒有**
+           （`vn_bar_sor`）：去過的多一句「嚇得我酒都退了」。
+           ⚠ 稿上第一拍是「汽笛」—— **庫裡沒有對得上的音效**（`se_flight_train`
+             是飛行頁自己的環境音、`se_Kerberos_steam` 是槍棺的蒸氣），
+             這一版寫成旁白、不掛 `se`（§6.6：音效名查不到是**靜靜不播**，
+             掛一支對不上的比不掛更糟）。音效到了補 `se:` 在這一拍。 */
+        acts:[ { flag:'vn_station_sor', withWho:'SORANA', lines:[
+          { speaker:'NARRATION', text:'（汽笛。）', auto:1200 },
+          sor('surprised','嗚哇！'),
+          sor('lauaghbig','好大聲，嚇得我酒都退了。', { onlyIf:'vn_bar_sor' }),
+          sor('watch','那就是火車喔？',               { onlyIf:'vn_bar_sor' }),
+          sor('lauaghbig','好大聲，那就是火車喔？',   { skipIf:'vn_bar_sor' }),
+          sor('lauaghbig','真想搭一次看看呢。'),
+          { speaker:'PLAYER', blank:true },
+          sor('relief','全身藏滿飛刀的森住民和軍火庫神父……多麼悲哀的組合啊……'),
+        ] } ] },
       guild:    { bg:'Varn_Guild',    name:'雪都瓦恩霍姆　賞金獵人公會', noTime:true,
         exits:{ back:'oldtown' } },
 
@@ -4511,21 +4761,115 @@ export const TOWNS = {
       tavern:   { bg:'Varn_Dining',   name:'雪都瓦恩霍姆　餐飲街',
         exits:{ back:'uptown', up:'bar', right:'cafe', down:'dessert' } },
       bar:      { bg:'Varn_Bistro',   name:'雪都瓦恩霍姆　餐酒館',   noTime:true,
-        exits:{ back:'tavern' } },
+        exits:{ back:'tavern' },
+        /* ══ 約會・索菈娜（ver -1522）══
+           ⚠⚠ 稿上的 `drink`／`shy` **索菈娜沒有這兩張差分** —— 照樣寫上去：
+             查不到會自動退回本尊立繪、台詞照播（§6.10 的 `missingExpr`，
+             同東泊 -1346 那一格的作法），而且**留在稿上就是交給美術的工單**。
+           ⚠ 微醺插圖 `021-soranadrunk` 還沒有 ⇒ **不寫 `cg:`**（寫了就是六個候選
+             全 404）。圖到了把 `cg:'021-soranadrunk'` 補在「……」那一拍、
+             並在「哪有那麼了不起啦！」那一拍 `cg:null` 收掉（§6.5：插圖是持續狀態）。
+           ⚠ T3 以上多一句 ⇒ `tierMin:3`（一拍的屬性）。 */
+        acts:[ { flag:'vn_bar_sor', withWho:'SORANA', lines:[
+          sor('drink','噗哈——'),
+          sor('drink','這比夏爾村自釀的酒還烈！'),
+          sor('shy','身體好像暖起來了。'),
+          { speaker:'PLAYER', blank:true },
+          sor('drink','不用啦，外套你自己穿著。'),
+          sor(null,'……'),
+          sor(null,'其實我也知道穿這身走在城裡很奇怪啦。'),
+          sor(null,'這是我奶奶留下來的衣服。'),
+          sor(null,'是用傳統森住民服飾改的舞姬服喔。'),
+          { speaker:'PLAYER', blank:true },
+          sor('shy','哪有那麼了不起啦！貴族養的舞妓罷了。'),
+          sor('shy','後來跟我爺爺逃到了夏爾村，就變成這樣囉。'),
+          sor('drink','也沒什麼特別的原因啦，我就喜歡這一件。活動方便料子也舒服。'),
+          sor('tease','你也喜歡吧？獵手對視線很敏感的喔。', { tierMin:3 }),
+          sor('drink','哈哈哈！不要囉唆了！再來一杯！'),
+        ] } ] },
       cafe:     { bg:'Varn_Cafe',     name:'雪都瓦恩霍姆　咖啡廳',   noTime:true,
         exits:{ back:'tavern' } },
       dessert:  { bg:'Varn_Dessert',  name:'雪都瓦恩霍姆　甜品店',   noTime:true,
-        exits:{ back:'tavern' } },
+        exits:{ back:'tavern' },
+        /* ══ 約會・諾薇兒（ver -1522）══ 收尾兩句依 M1／M2 分。
+           ⚠ 寫成「M2 才演保密那一句、其餘演帶一份回去」——
+             A route 先跑的人兩支旗都沒有，兩個 `onlyIf` 會讓這一段少一句收尾。 */
+        acts:[ { flag:'vn_dessert_nou', withWho:'NOUVELLE', lines:[
+          nou('eat','北國的甜點都暖烘烘的呢，真棒。'),
+          nou('lookaway','要對安雅保密喔。',            { onlyIf:'ep_m2_route' }),
+          nou('eat','要不要帶一份回去給安雅呢？',        { skipIf:'ep_m2_route' }),
+        ] } ] },
       grocery:  { bg:'Varn_Grocerie', name:'雪都瓦恩霍姆　雜貨舖',   noTime:true,
-        exits:{ back:'uptown' } },
+        exits:{ back:'uptown' },
+        /* ══ 約會・安雅（ver -1522）══ 棉花糖。
+           ⚠ 稿上「安雅棉花糖插圖」還沒有檔案 ⇒ **不寫 `cg:`**（同酒吧那一格）。
+             圖到了補在「真的……跟雲朵一樣。」那一拍、下一拍 `cg:null` 收掉。 */
+        acts:[ { flag:'vn_shop_anya', withWho:'ANYA', lines:[
+          any('amazed','真的……跟雲朵一樣。'),
+          any('smileshy','好甜。'),
+        ] } ] },
       /* ⚠ 這一格**沒有** `inn:true`：旅店大廳與四扇伙伴門這一輪不做（同聖索菲亞）
          —— 只寫 `inn:true` 而沒有人應門的話，玩家會敲到一排空門（§6.5.5）。 */
       /* ⚠⚠ **旅店拔掉 `noTime`**（ver -1492；美術 -1488 補齊 `Varn_Hotel_{dawn,day,
          dusk,night}`）：憲法 -1378「旅店是全專案唯一的四差分」，這座城以前只有一張。
          ⚠ 留著 `noTime` ＝只試不帶時段的那一個名字 ⇒ 四張新圖**一張都不會被用到**，
            而畫面上看起來完全正常（一直是同一張），沒有任何錯誤訊息。 */
+      /* ══⚠⚠⚠ **這一格 ver -1522 起是真的旅店**（Ray 的 Stage10-A 稿要約會）══
+         上面那一條「不做旅店大廳」的但書寫著理由：**只寫 `inn:true` 而沒有人應門，
+         玩家會敲到一排空門**。現在四扇門與邀約詞都有了，所以開。
+         ⚠ `innNoGuide:true` ＝不跑一次性說明（玩家在帝都學過了）。
+         ⚠ `innSpots` 是**看著 `Varn_Hotel_day` 擺的**：坐坐＝壁爐邊那組扶手椅、
+           睡覺＝右側上樓的階梯。位置只負責「看起來對」，不撞是由引擎那道夾保證的
+           （§6.5.5：三套座標系，鈕擺好之後要夾回畫面內、不進門欄、不壓對話框）。
+         ⚠⚠ `sleepFlag:'vn_night_done'` ＝**圖書館那一整段演完**才睡得著；
+           在那之前按睡覺由 `noSleep` 那一句擋回來（§6.5.5：「還不能做」要開口擋，
+           不要靠藏起鈕）。⚠ 那一句是**旁白**，而且是我暫代的（稿上沒給）。 */
       inn:      { bg:'Varn_Hotel',    name:'雪都瓦恩霍姆　旅店',
-        exits:{ back:'uptown' } },
+        exits:{ back:'uptown' },
+        inn:true, innNoGuide:true,
+        innSpots:{ sit:{ x:0.22, y:0.68 }, sleep:{ x:0.86, y:0.55 } },
+        sleepFlag:'vn_night_done',
+        noSleep:'……蕾娜還沒回來。',
+        innDoors:[
+          { need:'vn_lib_done', roster:['RENNA','NOUVELLE','ANYA','SORANA'] },
+          { roster:['RENNA','NOUVELLE','ANYA','SORANA'], out:['RENNA'] },
+        ],
+        /* ══⚠⚠ 敲門（四扇門一張表，同東泊那一份；`inn.js` 只有一條路在走，鐵律 8）══
+           門檻讀 `OUTING.dateAff`（20＝T2，唯一那個數字，鐵律 7）——
+           ⚠ 稿上只在安雅那一條標了「T2以上」，但**那道門是全域的**，三個人都吃。
+           ⚠⚠ `low`／`dateBusy`／`dateDone`／`nightRest` 這幾句**全是我暫代的**
+             （稿上沒給）—— 沒有一句話那顆門就是「點了沒反應」。要換說一聲。 */
+        innStage1:{ dateBusy:'（已經約好人了，等等再說吧。）',
+                    dateDone:'今天已經聊夠多囉，明天再說吧。',
+                    nightRest:'這麼晚了，早點睡吧。',
+                    knock:{
+          NOUVELLE:{ low:'我想在房裡整理一下行李呢。',
+                     date:[ nou('surprise','啊，我要去大教堂呢。'),
+                            nou('think','阿瑞尼斯神父好像還在這裡喔。'),
+                            nou('bigsmileclose','一起走吧？', { flags:['vn_date_nou'] }) ] },
+          /* ⚠⚠⚠ **安雅有兩套邀約**（稿上的兩個中括號）：
+             · `[發生米夏事件，主角知，蕾娜不知]` ＝ **M2**（`ep_m2_route`）——
+               她把哥哥的事瞞著大家，所以不想出門。
+             · `[尚未發生米夏事件，或已發生，蕾娜知]` ＝ **其餘**（沒跑過東泊、或 M1）。
+             ⚠ 寫成「M2 才演 A、其餘演 B」（不是兩個 `onlyIf`）—— 同上面那一條：
+               A route 先跑的人兩支旗都沒有，兩個 `onlyIf` 會讓她一句話都不說。 */
+          ANYA:{     low:'我想一個人待著。',
+                     date:[ any('answer','我、聽說雪都有一種糖！',  { skipIf:'ep_m2_route' }),
+                            any('talkshy','像雲朵一樣！',            { skipIf:'ep_m2_route' }),
+                            any('answer','我想試試看！',            { skipIf:'ep_m2_route' }),
+                            any('silent','我想在房間裡待著就好……', { onlyIf:'ep_m2_route' }),
+                            { speaker:'PLAYER', blank:true },
+                            any('shy','棉花……糖？',                { onlyIf:'ep_m2_route' }),
+                            any('silent','……',                      { onlyIf:'ep_m2_route' }),
+                            any('talkshy','就……一下下。',           { onlyIf:'ep_m2_route', flags:['vn_date_anya'] }),
+                            any('smileshy','嗯！',                   { skipIf:'ep_m2_route', flags:['vn_date_anya'] }) ] },
+          SORANA:{   low:'現在還不太熟呢，改天吧？',
+                     date:[ sor('front','喔！正好我想去酒吧喝一杯！'),
+                            sor('tired','這裡實在是太冷啦！不過……'),
+                            sor('tease','你這個神職人員能喝嗎？'),
+                            { speaker:'PLAYER', blank:true },
+                            sor('readysmile','那就走吧！', { flags:['vn_date_sor'] }) ] },
+                    } } },
     },
   },
 
