@@ -92,7 +92,13 @@ export const STRINGS = {
     saintInstall:      '聖徒降臨！！',          // 副標 SAINT INSTALL!! [EN-STYLE] 不譯
     dualBreak:         '彈雨傾洩',              // ver -750，Ray：「改成 Bullets Rain 彈雨傾洩」（副標在 weapon.js）
     deathGuard:        '即死防禦',              // 副標的**退路**（ver -985：改讀卡上的 passive.name/en）
-    mbSub:             '追加聖裁 · HP 50%',     // MAXIMUM BURST 副標
+    /* ⚠⚠ 這個數字是 `modules/saint.js` 的**第二份真相**（鐵律 7 的但書）：
+       `triggerMaxBurst` 的 `setPlayerHpRatio(1)` 是實際回多少，這裡只是印出來。
+       **改一邊要改另一邊**（三個語言都要）。 */
+    mbSub:             '追加聖裁 · HP 全回復',   // 聖徒化 MB 副標（ver -1506 由 50% 改回滿）
+    /* 惡夢化的 MB（ver -1506 從 `mbSub` 拆出來）：它回的是**發動夢魘時的血量**
+       （ver -974 Ray 定案）—— 與聖徒化的 MB 不同，所以不能共用一句話。 */
+    nmbSub:            '追加聖裁 · HP 返還',
     executeSub:        '{name} · 消滅',        // EXSECUTIŌ 副標（{name}=敵名）
     lifeReturnSub:     '生命歸還 · 血量保留',    // 副標的**退路**（ver -985：改讀卡上的 active.name）
     obeSub:            'O.B.E. · HP 1',        // [EN-STYLE] OVERWRITE BREAKER 副標

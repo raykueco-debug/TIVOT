@@ -657,7 +657,7 @@ function triggerNiBurst(){
        不是憑空送一條命（而「前引星」把起點灌滿，所以那顆星的人才會回滿）。
      ⚠ 先抄成區域變數：`finishNightmare` 之後 `state.niFrom` 不保證還在。 */
   { const back = state.niFrom || state.playerHp;
-    playSaintCutin('burst', ()=>{
+    playSaintCutin('niburst', ()=>{
       finishNightmare(()=>api.setPlayerHpRatio(back / (state.playerMax||1)));
     }, rlNMB); }
 }
@@ -912,7 +912,7 @@ function restoreAssaultRate(){
   if(state.saintPrevAssault){ api.setAssaultRate(state.saintPrevAssault.min, state.saintPrevAssault.max); state.saintPrevAssault=null; }
 }
 
-// Maximum Burst（EXSECUTIŌ）：推滿前把 16 格點完 → 追加期間總傷 20%；未擊殺則回血 50%（D2）。
+// Maximum Burst（EXSECUTIŌ）：推滿前把 16 格點完 → 追加期間總傷 20%；未擊殺則**回滿**（ver -1506）。
 function triggerMaxBurst(){
   if(!state.saintMode) return;
   exitSaint();
@@ -949,10 +949,16 @@ function triggerMaxBurst(){
        而它就藏在一個只有特定收尾方式才走得到的分支裡。 */
   const rlMB = state.saintUsedThisBattle ? 'SAINT RELOAD' : null;   // 空槍才 reload（ver -896）
   if(rlMB) resetInstallSlot();
-  // 敵人未死 → Maximum Burst 演出後回盤面。回血規則（2026-08-13 定案）：
-  //   EXSECUTIŌ（MB 擊殺）→ 回滿；MaxBurst（未擊殺）→ 回 50%，並自然延續到同場下一敵。
+  /* 敵人未死 → Maximum Burst 演出後回盤面。
+     ══⚠⚠ **回血改成回滿**（ver -1506，Ray：「MB 的回血效果改成回滿」）══
+     推翻 2026-08-13 的「擊殺回滿／未擊殺回 50%」—— 兩條路現在一樣是回滿。
+     ⚠⚠ **副標那個數字是第二份真相**（鐵律 7 的但書）：`i18n/*.js` 的 `mbSub`
+       印給玩家看，改這一行就要改那三份（zh／en／ja），兩邊註解互指。
+     ⚠ **惡夢化那一支不吃這一條**：它回到「發動夢魘時的血量」（ver -974 Ray 定案，
+       見 triggerNiBurst）—— 兩支的回血規則不同，所以 -1506 起**副標也分開**
+       （`mbSub` ／ `nmbSub`）。 */
   playSaintCutin('burst', ()=>{
-    finishSaintMode(()=>api.setPlayerHpRatio(0.5));
+    finishSaintMode(()=>api.setPlayerHpRatio(1));
   }, rlMB);
   if(api.onSaintEnded) api.onSaintEnded('mb');   // 教學終盤掛鉤（cut-in 結束後收尾台詞；非教學 no-op）
 }
@@ -1119,7 +1125,11 @@ function playSaintCutin(kind, done, reload){
   const c=$('saintCutin');
   let title, sub;
   const enName=(($('enemyName')&&$('enemyName').textContent)||'目標');
-  if(kind==='burst'){ title='MAXIMUM BURST'; sub=L.cutins.mbSub; }       // MB 未擊殺＝回 50%（D2）
+  /* ⚠⚠ **兩種 MB 的副標分開**（ver -1506）：聖徒化的 MB 回滿、惡夢化的 MB 回到
+     「發動夢魘時的血量」（-974）—— 規則不同就不能共用一句話。共用到 -1505 為止，
+     那句話從 -974 起對惡夢化就是錯的（印「HP 50%」，實際回的是 niFrom）。 */
+  if(kind==='burst'){ title='MAXIMUM BURST'; sub=L.cutins.mbSub; }       // SI 的 MB：回滿（ver -1506）
+  else if(kind==='niburst'){ title='MAXIMUM BURST'; sub=L.cutins.nmbSub; }  // NI 的 MB：回到發動時的血量（-974）
   else if(kind==='execute'){ title='EXSECUTIŌ'; sub=fmt(L.cutins.executeSub,{name:enName}); }
   else if(kind==='return'){
     /* ══⚠⚠ 名字讀**搭檔卡**（ver -985，同 partner 的即死防禦那一段）══

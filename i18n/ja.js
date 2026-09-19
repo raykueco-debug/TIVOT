@@ -88,7 +88,9 @@ export const STRINGS = {
     dualBreak:         '弾雨の嵐',               // ver -750（Ray：「彈雨傾洩」）
 
     deathGuard:        '即死防御',
-    mbSub:             '追加聖裁 · HP 50%リカバー',
+    /* ⚠⚠ 這個數字是 saint.js 的第二份真相（鐵律 7 的但書）—— 改一邊要改另一邊。 */
+    mbSub:             '追加聖裁 · HP フルリカバー',
+    nmbSub:            '追加聖裁 · HP リストア',
     executeSub:        '{name} · 消滅',
     lifeReturnSub:     'ライフリターン · HP維持',
     obeSub:            'O.B.E. · HP 1',
