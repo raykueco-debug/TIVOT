@@ -1036,6 +1036,14 @@ export const CHAPTERS = [
            /* 東泊第一天：大學遇蕾娜 → 夜話 → 傍晚 → 翌日 */
            'ep_renna_met','ep_renna_night','ep_evening','ep_day2',
            /* 第二天：走古道 → 進古城 → 祭壇（髮飾被吞）→ 中庭 → 回東泊 */
+           /* ⚠ `belisar_seen` ＝古城的 `visitFlag`（`TOWNS.belisar`，進圖就插）。
+              ver -1527 補上：漏了它的話，從這幾章跳關直接飛去伊甸古墓會多演
+              一句「為什麼偏偏先來這裡……」—— 那是**沒去過古城**才有的分歧
+              （`tomb_gate` 的 `skipIf:'belisar_seen'`），而這幾章明明都已經
+              走完整條古城線。章節表漏一支旗，分歧就走錯邊，而且**畫面上沒有
+              任何錯誤訊息**。⚠ 新增章節時：凡是劇情上「去過某張圖」的，
+              那張圖的 `visitFlag` 也要一起給。 */
+           'belisar_seen',
            'ep_bel_gorge','ep_bel_sight','ep_bel_enter','bl_foyer_first',
            'bel_hint2','bel_hint3','bel_water','ep_bel_altar','renna_hairpin_lost',
            'ep_bel_court','ep_belisar_done','ep_bel_back',
@@ -1063,6 +1071,7 @@ export const CHAPTERS = [
            /* 東泊第一天：大學遇蕾娜 → 夜話 → 傍晚 → 翌日 */
            'ep_renna_met','ep_renna_night','ep_evening','ep_day2',
            /* 第二天：走古道 → 進古城 → 祭壇（髮飾被吞）→ 中庭 → 回東泊 */
+           'belisar_seen',
            'ep_bel_gorge','ep_bel_sight','ep_bel_enter','bl_foyer_first',
            'bel_hint2','bel_hint3','bel_water','ep_bel_altar','renna_hairpin_lost',
            'ep_bel_court','ep_belisar_done','ep_bel_back',
@@ -1128,6 +1137,7 @@ export const CHAPTERS = [
            /* 東泊第一天：大學遇蕾娜 → 夜話 → 傍晚 → 翌日 */
            'ep_renna_met','ep_renna_night','ep_evening','ep_day2',
            /* 第二天：走古道 → 進古城 → 祭壇（髮飾被吞）→ 中庭 → 回東泊 */
+           'belisar_seen',
            'ep_bel_gorge','ep_bel_sight','ep_bel_enter','bl_foyer_first',
            'bel_hint2','bel_hint3','bel_water','ep_bel_altar','renna_hairpin_lost',
            'ep_bel_court','ep_belisar_done','ep_bel_back',

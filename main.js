@@ -926,6 +926,23 @@ window.addEventListener('pagehide', refreshBoot);
    *    那一點是解鎖音訊的使用者手勢，非有不可 —— 拿掉提示字又不給替代訊號的話，
    *    玩家會卡在一個看起來已經好了、卻沒反應的畫面上。 */
   const RING_C = 301.59;   // SVG 進度圓周長（r=48, viewBox 100）
+  const RING_SVG_R = 0.96; // SVG 圓 r=48/viewBox 100 → 畫出來的圓直徑是 #alRing 外框的 96%
+  /* 首頁紋章「外圓」的實測幾何（ver -1527）。
+   *  ⚠⚠ 這兩個數字是**量出來的**，不是設計值：對 `TIVOT_Emblem.webp`（900×900）
+   *    的不透明外緣做最小平方圓擬合（避開上下尖飾與左右側翼各 ±20°），
+   *    得 圓心 (450.1, 442.0)、半徑 332.1 —— **殘差中位 0.70px / 最大 3.44px**，
+   *    所以它真的是一個圓，不是估的。
+   *  · d  ＝ 外圓直徑 ÷ 圖寬        = 664.3/900 = 0.7381
+   *  · cy ＝ 圓心比圖框中心高多少 ÷ 圖高 = (442.0−450)/900 = −0.00889
+   *    （圓心 x 是 450.1，等於圖框正中，所以沒有 cx 這一格）
+   *  ⚠ −1526 以前寫的是「圈徑≈紋章圖寬的 0.8」—— 那是估的，換算成畫出來的圓是
+   *    0.8×0.96 = 0.768，**比真正的外圓大 4.1%**；而圓心用圖框正中，又比外圓
+   *    **低 0.0089 圖高**。症狀就是「上緣貼齊、下緣空一截」（Ray, ver -1527）。
+   *  ⚠⚠ **換紋章圖就要重量這兩個數字**（同 §6.5「換圖一定要重量取景值」）——
+   *    沿用舊值一定歪，而且畫面上不會有任何錯誤訊息。
+   *  ⚠ 聖光綻放（`#alFlash`）讀的是 `#alRing` 的 rect，所以它**自動跟著對**，
+   *    不要在那邊再算一次圓心（鐵律 7）。 */
+  const EM_RING = { d:0.7381, cy:-0.00889 };
   const ov=document.createElement('div'); ov.id='assetLoader';
   ov.innerHTML=
      '<div id="alRing">'
@@ -949,10 +966,11 @@ window.addEventListener('pagehide', refreshBoot);
     // ⚠ 須等紋章「圖片本體」載完才量（naturalWidth>0）：載入中高度是佔位值，
     //   圈會定錨在錯誤中心且不再修正。視窗變化（旋轉/工具列收合）亦重貼。
     if(r && r.width>10 && r.height>10 && em.complete && em.naturalWidth>0){
-      const d=Math.round(r.width*0.8);
+      // 外框要放大成 外圓直徑 ÷ RING_SVG_R —— 畫出來的那個圓才會與紋章外圓重合
+      const d=Math.round(r.width*EM_RING.d/RING_SVG_R);
       ring.style.width=d+'px'; ring.style.height=d+'px';
       ring.style.left=Math.round(r.left+r.width/2)+'px';
-      ring.style.top =Math.round(r.top +r.height/2)+'px';
+      ring.style.top =Math.round(r.top +r.height/2 + r.height*EM_RING.cy)+'px';
       fitCap();
     } else setTimeout(placeRing, 120);
   }
@@ -969,7 +987,7 @@ window.addEventListener('pagehide', refreshBoot);
   function fitCap(){
     const ring=$('alRing'), cap=$('alRingCap');
     if(!ring || !cap) return;
-    const D=ring.getBoundingClientRect().width*0.96;   // SVG 圓 r=48/100 → 直徑是外框的 96%
+    const D=ring.getBoundingClientRect().width*RING_SVG_R;   // 畫出來的圓直徑（鐵律 7：與 placeRing 同一個常數）
     if(D<10) return;
     cap.style.fontSize=''; cap.style.letterSpacing=''; cap.style.marginRight='';
     const cs=getComputedStyle(cap);

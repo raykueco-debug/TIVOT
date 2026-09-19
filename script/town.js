@@ -5128,13 +5128,19 @@ export const TOWNS = {
        ⚠⚠ **由上往下取第一個成立的**（同 `acts`／`innDoors`）：晚的排前面 ——
          `ep_night_mi_done` 成立時底下兩條也都成立，排錯就永遠取不到它。
        ⚠ `need`／`until` 都是旗：插了 `need`、而且 `until` 還沒插 ⇒ 用這一首。
-       ⚠⚠ **第一條沒有 `until`** ＝「第二天開始」之後就一直是它。Ray 只說了起點、
-         **沒說終點** —— 要收在哪一段等他定，定了補一個 `until` 就好。
-         ⚠ 不要自己猜一個終點：猜錯的下場是某一段戲的曲子憑空變回 portside，
-           而那不會有任何錯誤訊息。 */
+       ⚠⚠⚠ **終點 ver -1527 由 Ray 定了**（「result bgm 在東泊**只有審訊時**播放，
+         劇情結束要回到城鎮預設 bgm」）⇒ `until:'ep_interrogate'`。
+         · 在此之前它**沒有終點** —— 於是第二天整座城、之後的每一次回東泊，
+           放的都是結算曲（Ray 回報的就是這個）。
+         · 旗是**演完**才插的，所以 `until` 指自己這一段的旗**剛好**把範圍圈成
+           「審訊開演 → 審訊演完」：演的時候旗還沒插（這一條成立＝result），
+           演完插了（這一條失效＝退回 `portside`）。
+         ⚠ 換曲落在**演完之後的第一次 `enter()`**（走出旅店那一格）——
+           這一支就是每進一格問一次的（見上面那段說明），不是演完當場換。 */
     bgmWhen: [
-      /* 第二天（M1／M2 的收尾都插 `ep_night_mi_done`）起：結算曲。 */
-      { need:'ep_night_mi_done',                            bgm:'result' },
+      /* 第二天的審訊（M1／M2 的收尾都插 `ep_night_mi_done`）：結算曲。
+         ⚠ `until` ＝審訊演完（ver -1527，Ray 定的終點）。 */
+      { need:'ep_night_mi_done', until:'ep_interrogate',     bgm:'result' },
       /* 守夜：獨自坐坐兩小時之後（安雅溜出房間那一段）。 */
       { need:'ep_night_anya_out', until:'ep_night_mi_done',  bgm:'echoedart' },
       /* 旅店長談的米夏注視那一拍之後，到坐滿兩小時為止。 */
@@ -5861,7 +5867,22 @@ export const TOWNS = {
              （Ray：「蕾娜的拷問宣言之後直接接第二天劇情」），`clockToday:8` 又排在
              `goto` 之前 ⇒ 抵達旅店那一刻就是早上八點，這一段當場成立。
              **這一段本身一個字都沒改** —— 接戲的門是「抵達那一格」，不是這裡。 */
+        /* ⚠⚠⚠ **`endStoryExplore:true` ＝這一段演完就把自由活動開回來**（ver -1527）。
+           城上那一段的說明早就寫著這件事在等人接：「誰拔：翌日那道閘門的
+           `storyExplore:true`（第二天醒來就關）…… **所以現在是關了就不會再開**。
+           寫那一段時要記得在它上面補 `endStoryExplore:true`」——
+           **這一段就是那一段**（稿上的 `[非線性Stage 10 B route結束]`）。
+           · 不補的下場：審訊演完之後東泊**永遠**是劇情探索 —— 敲門約不出人、
+             女角不排外出行程、餐飲街不換店。玩家讀到的就是「劇情斷在這裡」
+             （Ray, ver -1527：「半夜敲淑女的門……之後沒有接上劇情」）。
+           ⚠ 它與 §6.5.4.2 的旗是同一支（`free_explore_eastport`），誰插＝這一段，
+             誰拔＝沒有人（鐵律 9）。
+           ⚠⚠ **Stage 10-A 的入口是玩家自己飛過去的**（Ray 的稿：
+             `[非線性Stage 10 A route開始]` 就掛在伊甸古墓的墓門那一段上）——
+             所以這裡**不掛 `goto`**，也不該有人在這裡指路。實測：審訊演完
+             → 出航 → 降落伊甸古墓 ⇒ `tomb_gate` 那一整段正常演出。 */
         { flag:'ep_interrogate', need:'ep_m1_route', hourOfDay:[8,18],
+          endStoryExplore:true,
           sides:{ RENNA:'L' }, lines:[
           /* ⚠⚠ **ver -1520：第二天開始用 `bgm_result`**（Ray 原話）——
              掛在這一段的第一拍（＝第二天的第一段戲）；那一整天由城上的
