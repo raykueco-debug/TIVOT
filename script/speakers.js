@@ -915,9 +915,19 @@ export const ART = {
            side:'R', alt:null, base:'resources/SI/NPC/NPC_Hotel_Capital.webp', expr:{} },
   luna:   { cm:160, eye:30, fx:0.500, top:0, bot:1000,
            side:'L', alt:null, base:'resources/partner/Luna_CI_exc.webp', expr:{}, unmeasured:true },
-  /* 北方泊地的司祭（ver -582，Ray 交件 `Priest_SI_front`）。
-     ⚠ 取景值是 `tools/measure_si.py` 量的（縱向佔 99.2%＝全身圖，可以當身高用）。
+  /* 北方泊地的司祭。ver -582 首次交件（`Priest_SI_front`），
+     **ver -1503 換成 Ray 畫的光頭老祭司 `NPC_NP_Priest`**（Ray：「我記得我畫過一個
+     光頭老祭司的 NPC，把北泊的祭司換成他」）—— 那張自 -1408 就躺在 `resources/SI/`
+     裡沒有任何人指著它。
+     ⚠⚠ **取景值整組重量過，一個都沒有沿用上一版**（§5「換圖一定要重量取景值」）：
+       舊 `top:7 bot:1531 fx:0.536` → 新 `top:5 bot:1527 fx:0.460`。
+       `fx` 差 0.076 ＝ 圖上 78px —— 沿用的話他的臉會橫向歪掉一大截。
+       量法 `tools/measure_si.py`（縱向佔 99.1%＝全身圖，可以當身高用）。
+     ⚠ 這是**換檔名**不是同名覆蓋，所以不必掛 `?v=`（§5：新增比覆蓋安全）。
+     ⚠ 舊圖 `Priest_SI_front.webp` **留在原地沒有回收**：現在沒有人指著它，
+       日後別的教區要用得再量一次取景值。
      ⚠ 身高 172 是**估的**（中老年男性神職），同 hunter／gunsmith 那幾筆的作法 ——
+       ⚠ 沒有跟著換圖改：`cm` 是**這個角色多高**，不是這張畫多大（那是 top/bot 的事）。
        日後有設定改 cm 即可，取景值不必重量。
      ⚠ 站**右**：玩家的同伴在左、對面的人在右（同所有城鎮 NPC）。 */
   /* ══ 夏爾村的臉（ver -838，Ray 交件）══ 身高是**估的**（≤178 那條紅線），
@@ -944,8 +954,8 @@ export const ART = {
      ⚠ 翻轉之後臉的錨點會跟著鏡射（`fx → 1-fx`），錨的永遠是臉不是圖框。 */
   sv_cook: { cm:163, eye:32, fx:0.463, top:8, bot:1522, side:'R', alt:null, flip:true,
              base:'resources/SI/NPC/NPC_shinier_cook_SI.webp', expr:{} },
-  priest: { cm:172, eye:32, fx:0.536, top:7, bot:1531,
-           side:'R', alt:null, base:'resources/SI/Priest_SI_front.webp', expr:{} },
+  priest: { cm:172, eye:32, fx:0.460, top:5, bot:1527,
+           side:'R', alt:null, base:'resources/SI/NPC_NP_Priest.webp', expr:{} },
   /* ══ 科爾文（第五騎士團・作戰課副團長，ver -953，Ray 的 Stage8 稿）══
      ⚠ `cm:176` ＝ **Ray 指定「與索菈娜同高」**。不是隨手填的：`CAST_TALL` 取全體
        `cm` 的最大值來算每公分像素，填 180（他原本說的）會讓**全體立繪縮小約 1.1%**
