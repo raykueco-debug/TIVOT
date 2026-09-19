@@ -5226,7 +5226,9 @@ export const TOWNS = {
              開啟這一夜的條件同時把它擋死。實作見 `modules/inn.js` 的 `knock`。 */
           { need:'ep_night_anya_out', roster:['RENNA','NOUVELLE','ANYA','SORANA'],
             out:['ANYA'], anytime:true,
-            say:{ NOUVELLE:'（好像睡熟了。）',
+            /* ⚠ 諾薇兒那一句是**旁白**（稿上沒有說話者，與「索：…」不同）——
+               門外的人看到的事，不是睡著的人自己說的。索拉娜那句才是她在講話。 */
+            say:{ NOUVELLE:{ text:'（好像睡熟了。）', narrate:true },
                   SORANA:'可能只是夢遊吧。去抓回來啦。' } },
           { need:'ep_renna_night', roster:['RENNA','NOUVELLE','ANYA','SORANA'] },
           { roster:['RENNA','NOUVELLE','ANYA','SORANA'], out:['RENNA'] },

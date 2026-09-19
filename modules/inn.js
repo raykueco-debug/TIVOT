@@ -390,6 +390,20 @@ function maybeGuide(){
   for(const k of q){ showGuide(k); if(guideKey) return; }
 }
 
+/* ══⚠⚠ 逐人的敲門詞（`innDoors[].say`）怎麼印（ver -1511）══
+   值可以是**字串**（她本人說的，名字欄印她的名字）或 **`{text, narrate:true}`**
+   （**旁白** —— 主角自己的觀察，名字欄留空）。
+   ⚠ 為什麼要分：稿上「索：『可能只是夢遊吧。』」是她在講話，而
+     「敲諾薇兒房門：『好像睡熟了。』」**沒有說話者** —— 那是門外的人看到的事。
+     印成「諾薇兒：好像睡熟了」等於讓睡著的人自己報告她睡著了。
+   ⚠ 這與 `nouAsleep`（ver -567，「敲門的時候沒有回應，大概睡著了」）是同一個
+     慣例：那一句本來就寫成旁白（名字欄空）。這裡只是讓 `say` 也寫得出來。 */
+function sayDoor(v, nm){
+  if(!host || !host.say || !v) return;
+  if(typeof v === 'string'){ host.say(v, nm); return; }
+  host.say(v.text || '', v.narrate ? '' : nm);
+}
+
 /* ══⚠⚠ `rennaAlt`（ver -664）：某支旗立起來之後，敲蕾娜的門改演另一段（可多句）。
      北方泊地第三天出發前是「先去吧，我等等去找你們」；Stage10-B 那一夜是
      「……悄悄跟上去吧」（那一段還會插旗＋加好感，走腳本自己的 `flags`／`aff`）。
@@ -462,9 +476,7 @@ function knock(i){
          （安全的那一側是預設，同 §鐵律 13 的白名單）。
        ⚠ `rennaAlt` 只有一支實作（`playRennaAlt`，鐵律 8）：這裡與下面的正常路徑
          叫的是同一支，差別只在要不要求 `anytime`。 */
-    if(dset.anytime && dset.say && dset.say[who]){
-      if(host && host.say) host.say(dset.say[who], nm); return;
-    }
+    if(dset.anytime && dset.say && dset.say[who]){ sayDoor(dset.say[who], nm); return; }
     if(who==='RENNA' && playRennaAlt(true)) return;
     if(st1.night && st1.night()){
       /* ⚠ 專屬台詞優先（ver -576）：蕾娜是「那麼晚了你還不睡嗎？」，
@@ -495,7 +507,7 @@ function knock(i){
     }
     /* ⚠ 逐人的敲門詞（`innDoors[].say`，ver -666）：安雅隔天只回「……」。
        排在所有分支之前（換完 `answerBy` 之後）—— 它就是「這個人現在會說什麼」。 */
-    if(dset.say && dset.say[who]){ if(host && host.say) host.say(dset.say[who], nm); return; }
+    if(dset.say && dset.say[who]){ sayDoor(dset.say[who], nm); return; }
     /* ══⚠⚠ 四個人共用的一張表（ver -1096，Ray 的 Stage9 稿）══════════════
        `innStage1.knock[WHO] = { low, date:[…] }`：
          · `low`  ＝好感不足時的婉拒（稿上的「T3 以下敲門」那一組）
