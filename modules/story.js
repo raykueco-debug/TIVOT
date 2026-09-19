@@ -636,6 +636,7 @@ const BGM_FILES=[
   'Peritune_Portside_Cafe_loop.m4a',   // ver -1294：東方泊地（bgm_portside）
   'PerituneMaterial_Prairie4_loop.m4a',   // ver -1408：平原古道（bgm_prairie）
   'PerituneMaterial_Gothic_Dark_loop.m4a',   // ver -1421：追擊戰的**主體檔**（-1350 一直只有 7.8 秒的 intro）
+  'PerituneMaterial_Prairie5_loop.m4a',   // ver -1508：尼莫戰（bgm_nemo）
 ];
 /* 別名：腳本裡慣用的短名 → 實際檔名（去副檔名）。加新別名只動這裡。 */
 const BGM_ALIAS={ crisis:'peritunematerial_crisis_loop', lunaria:'bgm_lunaria',
@@ -2073,7 +2074,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1507';
+const KERB_V='?v=1508';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，

@@ -69,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.17-1507';
+export const VERSION = 'ver 2026.09.17-1508';
 
 export const GAME_CONFIG = {
 
@@ -3609,6 +3609,13 @@ export const GAME_CONFIG = {
          比錨（bgm_battle 平均 −9.90）大聲 1.30 dB ⇒ 0.849×10^(−1.30/20)＝0.731。
          峰值 0.0 dBFS × 0.731 ＝ −2.7 dBFS，未觸頂（peakCeilDb +2）。 */
       peritunematerial_prairie4_loop:0.731,
+      /* 尼莫戰（ver -1508）：走 `tools/audio_scan.html` **自己那份** BS.1770 量測
+         （耳機 −11.61／手機模型 −11.99 ⇒ 平均 **−11.80**），
+         gain = 10^((−20 −(−11.80))/20) ÷ masterVolume(0.49) = **0.794**。
+         峰值 0.73 dBFS，乘上去仍在 peakCeilDb(+2) 之下，沒有被夾。
+         ⚠ 校準點：同一支程式量 Prairie4 得 0.754，而表上記載 0.731（差 0.26 dB）
+           —— 量法對得上，沒有走鐘（§5：量化要有校準點）。 */
+      peritunematerial_prairie5_loop:0.794,
       /* ⚠ 這兩首的「手機喇叭模型」比原始量測低 6.2／7.5 dB（一般曲子約 4~5）——
          它們的低頻本來就重。增益對的是**兩者的平均**（§6.6：只對其中一邊會讓
          低頻重的曲子在另一端突出 4~7 dB）。 */
@@ -4407,6 +4414,10 @@ export const ASSETS = {
   bgm_gothic:       "resources/audio/bgm/PerituneMaterial_Gothic_Dark_loop.m4a",            // 追擊戰（-1350；-1421 改指主體檔）
   bgm_irregular:    "resources/audio/bgm/PerituneMaterial_Irregular_loop.m4a",
   bgm_prairie:      "resources/audio/bgm/PerituneMaterial_Prairie4_loop.m4a",                // 平原古道（ver -1408，Ray 指定）
+  /* 尼莫戰的預設曲（ver -1508，Ray：「PerituneMaterial_Prairie5_loop　Nemo 尼莫戰預設 bgm」）。
+     ⚠ **尼莫那一場的戰鬥卡還不存在** —— 這一筆先把曲子接進管線（預載、音量、Credit），
+       卡寫好之後在卡上寫 `bgm:'nemo'` 就會吃到它（`bgmSrc` 會退回 `asset('bgm_'+名字)`）。 */
+  bgm_nemo:         "resources/audio/bgm/PerituneMaterial_Prairie5_loop.m4a",                // 尼莫戰（ver -1508，Ray 指定）
   bgm_piratebattle: "resources/audio/bgm/bgm_piratebattle.m4a",
   /* 湖上甲板那一段（ver -744，Ray 的 stage5 稿）。 */
   bgm_misty:        "resources/audio/bgm/Peritune_Misty_Hollow_loop.m4a",
