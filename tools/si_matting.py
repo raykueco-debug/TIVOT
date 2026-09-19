@@ -102,15 +102,44 @@ def predict_alpha(model, rgb, size, device, fp16=True):
     return a
 
 
+ALPHA_GAMMA = 1.50   # 見 calibrate_alpha()
+
+
+def calibrate_alpha(alpha):
+    """把 BiRefNet 的 α 校正到 GT 的尺度（ver -1516，Ray：「還是有點糊」）。
+
+    拿 Ray 交的 22 張當正確答案，量「我的 α」對「GT 的 α」的關係，
+    發現**整條曲線我都偏高** —— 也就是在真正的輪廓外面多鋪了一層半透明，
+    那就是「毛邊」：
+
+        我的 α   0.05  0.15  0.25  0.35  0.45  0.55  0.65  0.75  0.85  0.95
+        GT 平均  0.022 0.081 0.157 0.243 0.339 0.435 0.537 0.644 0.768 0.924
+
+    ⇒ 是個 gamma 曲線。**11 張擬合、另外 11 張驗證**（交錯切，同角色不會全落同一邊）：
+      γ=1.50，holdout 上 αMAE 1.17→1.09、斜坡寬 3.39→3.07（GT 3.45）。
+
+    ⚠ 這是**校正，不是銳化** —— 判準是「離 GT 更近」，不是「看起來更利」。
+      擬合與驗證分開正是為了這件事；要動這個數字，重跑那個切半實驗，不要憑印象調。
+    """
+    return np.clip(alpha, 0, 1) ** ALPHA_GAMMA
+
+
 def solve_foreground(rgb, alpha):
     """解真正的前景色 F —— 白霧的解法，整支工具的重點。
 
     ⚠ 不要換成 unpremultiply：那條在 α→0 的地方會炸，而髮絲邊緣全是 α→0
-      （ver -1503 實測 35.3% → 6.3%，仍然不及格）。
+      （ver -1503 實測 35.3% → 6.3%，仍然不及格；ver -1516 再量一次，
+       解析解的偏差雖然只有 −4.1，但絕對色差 44.0 遠差於 ml 的 27.4 —— 太雜）。
+
+    ⚠⚠ **迭代次數要拉高**（ver -1516）：預設的 10/2 在過渡帶解出來的 F
+      **比 GT 亮 +16.6/255** —— 顏色沒從白裡拉夠，那就是「白邊」。
+      拉到 40/6 之後偏白降到 **+7.7**。代價是慢一些（每張 0.6s → 約 1.5s），值得。
+      ⚠ 殘差平滑（把解析解與 ml 的差平滑後加回）試過，沒用（28.1／27.4／27.3）。
     """
     from pymatting import estimate_foreground_ml
     img = rgb.astype(np.float64) / 255.0
-    return estimate_foreground_ml(img, alpha.astype(np.float64))
+    return estimate_foreground_ml(img, alpha.astype(np.float64),
+                                  n_small_iterations=40, n_big_iterations=6)
 
 
 def refine_cf(rgb, alpha, band=12):
@@ -141,6 +170,8 @@ def main():
                     help='模型輸入邊長；0＝原生解析度（預設，不要改，見 predict_alpha 的註解）')
     ap.add_argument('--refine', default='none', choices=['none', 'cf'])
     ap.add_argument('--fp32', action='store_true', help='關掉 fp16（對不上時拿來排除）')
+    ap.add_argument('--raw-alpha', action='store_true',
+                    help='跳過 GT 校正（重跑 calibrate_alpha 的切半實驗時才用）')
     a = ap.parse_args()
 
     import torch
@@ -164,6 +195,8 @@ def main():
         alpha = predict_alpha(model, rgb, a.size, device, fp16=not a.fp32)
         if a.refine == 'cf':
             alpha = refine_cf(rgb, alpha)
+        if not a.raw_alpha:
+            alpha = calibrate_alpha(alpha)     # ⚠ 對齊 GT 的尺度，見 calibrate_alpha()
         fg = solve_foreground(rgb, alpha)          # ⚠ 不可省
         rgba = np.concatenate([np.clip(fg * 255, 0, 255),
                                np.clip(alpha[:, :, None] * 255, 0, 255)], axis=2)
