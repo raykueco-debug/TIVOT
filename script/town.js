@@ -5309,6 +5309,16 @@ export const TOWNS = {
            髮飾拿回來、從古城回到東泊之後的那一段長談。
            ⚠ 排在**最前面**：`actDue` 由上往下取第一個成立的，而它的 `need`
              （`bl_night_done` ＝中庭那一段演完）比底下每一段都晚成立。
+           ⚠⚠⚠ **ver -1517：它現在是直接接上來的** —— 古城那一段收尾的 `goto`
+             改指 `@eastport:inn`（見 `belisar.entrance` 的 `bl_night_done`），
+             所以撿完髮飾演完就落在這一格，這一次抵達由這一段接手。
+             **這一段本身一個字都沒改**：接戲的門是「抵達那一格」，不是這裡（鐵律 8）。
+           ⚠⚠ **章節選單上它是 `Stage 12-B`**（ver -1517，Ray：「旅店對話定為
+             stage 12B，列入章節選擇」）—— 落點就是這一格，`CHAPTERS` 的那一筆
+             插到 `bl_night_done` 為止（`script/progress.js` 的 `stage12b`）。
+             ⚠ `-B` 只在章節的 `name` 上，**這一段不掛 `stage:`** ——
+               主線目前沒有任何一段會 `setStage(12)`（同 10-B／11-B 那兩筆的但書），
+               哪一段負責升章由 Ray 定。
            ⚠⚠ 收尾插 `ep_hairpin_talk` ＝ **`QUEST_LOCK` 的第二扇窗**（守夜）：
              從這一刻起睡不著、約不了人（台詞在檔頭那一組，不在這裡寫第二份）。
            ⚠ 稿上「（以下開始回復有髮飾蕾娜立繪）」—— **無髮飾那一組還沒畫**
@@ -6600,9 +6610,19 @@ export const TOWNS = {
                （Ray：「立繪先沿用」），所以這一版沒有換圖這件事，整段都是現有的立繪。
              ⚠ `need:'bl_night_sky'` ＝空中那一場打完（追逐那一段還沒接，見回覆）。
              ⚠ 排在 `ep_bel_court` **前面**：`actDue` 由上往下取第一個成立的，
-               而這一段的 `need` 更晚才成立 —— 兩者不會互相搶。 */
+               而這一段的 `need` 更晚才成立 —— 兩者不會互相搶。
+             ⚠⚠⚠ **ver -1517：收尾的 `goto` 由 `@eastport:square` 改成 `@eastport:inn`**
+               （Ray：「把撿完髮飾後的劇情直接接到旅店對話」）——
+               旅店那一段長談（`ep_hairpin_talk`，`need:'bl_night_done'`）本來就在
+               等這一支旗，只是玩家得自己從廣場走兩格（廣場→上城區→旅店）過去。
+               落在旅店那一格，那一次抵達就由 `inn.acts` 接手直接演（同
+               `ep_bel_court` 落在廣場的作法，鐵律 8：接戲只有「抵達那一格」這一道門）。
+               ⚠ 廣場那兩段（`ep_bel_back`／`ep_arrive`）**不會因此漏掉** ——
+                 它們的 `need` 在白天那一趟就成立過了，這時候早就演完插旗了。
+               ⚠ **不寫 `enterAgain`**：那是給「人已經站在那一格」用的，而這一段
+                 演在古城入口（跨城 `goto`），必然是真的走進旅店。 */
           { flag:'bl_night_done', need:'bl_night_sky',
-            goto:'@eastport:square', sides:{ RENNA:'L' }, lines:[
+            goto:'@eastport:inn', sides:{ RENNA:'L' }, lines:[
             ren('stare','真的，非常謝謝你們大家。'),
             sor('laugh','還是這樣看起來比較習慣。'),      // 稿上 laughbig（還沒有圖）
             nou('awkward',''),

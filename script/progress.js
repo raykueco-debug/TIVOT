@@ -1088,6 +1088,60 @@ export const CHAPTERS = [
          （SETTLEMENTS／PLACES 兩張表都掃）—— 座標的真相留在飛行頁那一份（鐵律 7）。
        ⚠ 這一幕是「上船追」：人是從**貝利薩爾古堡**上空起飛的。 */
     flight:{ town:'belisar' } },
+
+  /* ══⚠⚠⚠ **Stage 12-B**（ver -1517，Ray：「旅店對話定為 stage 12B，
+     列入章節選擇」）══════════════════════════════════════════════════════
+     ＝ 空中戰打完、髮飾拿回來之後，回東泊旅店的那一段長談（`ep_hairpin_talk`）。
+     ⚠⚠ **落點是旅店那一格**，不是廣場 —— 同一版把古城那一段收尾的 `goto`
+       改成 `@eastport:inn`（Ray：「把撿完髮飾後的劇情直接接到旅店對話」），
+       章節的落點就跟著它走：**跳關與正常流程走到的是同一格**，
+       不然這一筆測到的路跟玩家跑的路不一樣（那正是章節工具最沒有用的時候）。
+     ⚠⚠ 同 10-B／11-B：**`-B` 只在 `name` 上，`stage` 是整數 12**
+       —— `stage` 是遊戲邏輯的鑰匙（要比大小），`-B` 是顯示。
+       ⚠ 主線目前一樣**沒有任何一段會 `setStage(12)`**（東泊線上跑的還是 stage 9）
+         ⇒ 這一筆現在是**章節工具的落點**，不是「主線已經升到十二章」。
+     ⚠ `clockHour:23` ＝那一夜打完回到旅店的深夜。**不可以給 0~6 點** ——
+       下一段（安雅溜出房間，`ep_night_anya_out`）的門就是 `hourOfDay:[0,6]`，
+       起點若已經過了午夜，長談與那一段會在同一次抵達連著演完，
+       中間「守夜・坐兩小時跨過午夜」那一段就整個測不到。
+     ⚠ 旗比 11-B 多**三支**，就是空中那一場與它的收尾：
+       `bl_night_sky`（空中戰打完）／`bl_night_done`（髮飾奪回來那一段演完，
+       ＝這一章的 `need`）／`renna_t4_ok`（那一段最後插的 T4 解鎖，鐵律 9：
+       它是那個事件的產物，不給的話蕾娜會莫名其妙封頂在 T3）。
+     ⚠⚠ **`ep_hairpin_talk` 不給** —— 那正是這一章要演的第一拍。 */
+  { id:'stage12b', name:'Stage 12-B', sub:'那一夜之後・東泊旅店：長談 →（守夜）安雅溜出房間',
+    stage:12, clockHour:23, named:true, aff:{ renna:40 },
+    flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open',
+           'set_sail','got_ship','dock_day2','flight_centipede_met',
+           'np_port_arrive','np_clear_church','np_claws_done','safehouse_northport',
+           'np_burial','np_burial_done','np_night','np_night_done','np_day3',
+           'np_day3_done','np_anya_join','np_dock_ask','np_grave_done','np_depart',
+           'sv_arrive','sv_evening','sv_night_done','shinier_siege',
+           'sv_clear_wild','safehouse_shinier','sv_forest_morning',
+           'sv_forest_go','sv_forest_intro','sv_deer_met','sv_deer_harm',
+           'sr_intro','sr_gate_brazier','sr_gate_bridge','sr_brazier','sr_bridge',
+           'sr_mural','ruins_gate_open','ruins_bell_done','ruins_thug_met','sr_altar',
+           'ruins_altar_on','sv_s8_noon',
+           'sv_s8_home','sv_s8_hungry','sv_s8_dine','sv_s8_corvin',
+           /* S9 → 東泊：諭令演完 → 飛到古城降不下去 → 轉降東泊 */
+           'sv_s9_order','belisar_noland_talk','ep_arrive',
+           /* 東泊第一天：大學遇蕾娜 → 夜話 → 傍晚 → 翌日 */
+           'ep_renna_met','ep_renna_night','ep_evening','ep_day2',
+           /* 第二天：走古道 → 進古城 → 祭壇（髮飾被吞）→ 中庭 → 回東泊 */
+           'ep_bel_gorge','ep_bel_sight','ep_bel_enter','bl_foyer_first',
+           'bel_hint2','bel_hint3','bel_water','ep_bel_altar','renna_hairpin_lost',
+           'ep_bel_court','ep_belisar_done','ep_bel_back',
+           /* 那一夜：旅店決定夜襲（插 `ep_hairpin_hunt` ＝任務鎖、
+              `belisar_land_ok` ＝古城從此降得下去） */
+           'ep_night_raid','ep_hairpin_hunt','belisar_land_ok',
+           /* 那一夜的古城：降落 → 前廳 → 四場追擊 → 開圖 → 王座戰打完 → 上船追 */
+           'bl_night_land','bl_night_foyer','bl_chase1','bl_chase2','bl_chase3',
+           'bl_chase4','bl_dragon_seen','bl_night_lionstair','bl_chase_talk3',
+           'bl_night_throne','bl_sky_hunt',
+           /* 空中戰打完（`bl_night_sky`）→ 古城入口的收尾（`bl_night_done`，
+              它的 `goto` 就是這一章的落點）→ 那一段最後插的 T4 解鎖 */
+           'bl_night_sky','bl_night_done','renna_t4_ok'],
+    enter:'town', town:'eastport', node:'inn' },
 ];
 
 /* ══⚠⚠⚠ **腳本測試鈕的落點**（ver -1381，Ray：「在首頁先放一個腳本測試鈕，

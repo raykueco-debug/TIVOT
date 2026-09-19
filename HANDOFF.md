@@ -1,4 +1,78 @@
-# HANDOFF — 截至 `ver 2026.09.17-1515`
+# HANDOFF — 截至 `ver 2026.09.17-1517`
+
+---
+
+# 本輪 — `-1517`（撿完髮飾直接接旅店長談／旅店對話列為 Stage 12-B）
+
+> 這一輪在 **Windows 那台**跑的，只動了三支檔（`script/town.js`／`script/progress.js`／
+> `config.js`）＋ `bust.py` 的三處版號。**沒有碰 `resources/`**（見下面第四節）。
+
+## 一、Ray 這一輪交辦的兩件
+
+> 「將撿完髮飾後的劇情直接接到旅店對話」「旅店對話定為 stage 12B，列入章節選擇」
+
+### 1. 撿完髮飾 → 旅店長談：改的是**一個 `goto`**
+
+`script/town.js` 的 `belisar.entrance`：`bl_night_done`（髮飾奪回來那一段）
+收尾的 `goto` 由 `@eastport:square` 改成 **`@eastport:inn`**。
+
+· 為什麼這樣就夠：旅店那一段長談（`ep_hairpin_talk`）的 `need` **本來就是**
+  `bl_night_done`，只是玩家得自己從廣場走兩格（廣場→上城區→旅店）過去。
+  接戲的門是「**抵達那一格**」（`open()` → `enter()` → `actDue`），跨圖 `goto`
+  走的正是同一支 `open()`（`modules/town.js` 的 `@` 分支）⇒ 落在旅店那一格，
+  那一次抵達就自己接上了。**兩段對白一個字都沒改。**
+· ⚠ 廣場那兩段（`ep_bel_back`／`ep_arrive`）**不會因此漏掉** —— 它們的 `need`
+  在白天那一趟就成立過、旗早就插了。
+· ⚠ **不寫 `enterAgain`**：那是給「人已經站在那一格」用的，而這一段演在古城入口。
+
+### 2. Stage 12-B ＝ 旅店那一段長談
+
+`script/progress.js` 的 `CHAPTERS` 新增一筆 `stage12b`（`main.js` 一個字都不必動，
+章節選單是從這張表長出來的）。
+
+| 欄 | 值 | 理由 |
+|---|---|---|
+| `name` | `Stage 12-B` | ⚠ **`-B` 只在 `name` 上**，`stage` 是整數 **12**（同 10-B／11-B：`stage` 要比大小，`-B` 是顯示） |
+| 落點 | `eastport:inn` | ⚠ **跟著上面那個 `goto` 走** —— 跳關與正常流程要落在同一格，不然這一筆測到的路跟玩家跑的路不一樣 |
+| `clockHour` | **23** | ⚠⚠ **不可以給 0~6 點**：下一段（安雅溜出房間）的門是 `hourOfDay:[0,6]`，起點若已過午夜，長談與那一段會在同一次抵達連著演完 ⇒ 中間「守夜・坐兩小時跨過午夜」整段測不到 |
+| `aff` | `renna:40`（T3） | 同 10-B／11-B；`tierMin:3` 那句「我很相信你喔。」要 T3 才多講 |
+| 旗 | 11-B 那一串 ＋ **三支** | `bl_night_sky`（空中戰打完）／`bl_night_done`（這一章的 `need`）／`renna_t4_ok`（那一段最後插的 T4 解鎖 —— 不給的話蕾娜會莫名其妙封頂在 T3） |
+
+⚠ **`ep_hairpin_talk` 不給** —— 那正是這一章要演的第一拍。
+⚠ 主線目前一樣**沒有任何一段會 `setStage(12)`**（東泊線上跑的還是 stage 9）：
+  這一筆是**章節工具的落點**，不是「主線升到十二章」。哪一段負責升章由 Ray 定。
+
+## 二、驗過的
+
+· 章節選單第 13 列出現 **Stage 12-B**，按下去：東方泊地・旅店、**1908/10/11 23:00**、
+  HUD 印 `stage 12｜ver -1517｜蕾40`，長談第一句（索菈娜「折騰一晚上，呼啊——」）
+  自己接上，往下點四句正常，**console 零錯誤**。
+· `goto` 那一半沒有從頭跑一次空中戰 —— 但它與章節落點**走的是同一支 `open()`**
+  （跨圖 `goto` 的 `@` 分支就是它），而且形狀與既有的
+  `ep_bel_court → @eastport:square → ep_bel_back` 完全一樣（那一條線上一直是好的）。
+
+## 三、⚠⚠ 這台機器（Windows）與交接寫的 Mac **不一樣**
+
+| 件 | 狀況 |
+|---|---|
+| `node` | **沒有** ⇒ `tools/script_lint.py` **跑不動**（它要 node 或 macOS 的 jsc，兩個都沒有）。這一輪的語法驗證是**靠瀏覽器真的載一次**（模組載得起來＝沒有 SyntaxError） |
+| `python3` | 是 WindowsApps 的殼；**可用的是 `python`**（3.11.9） |
+| `tools/devserver.py` | ⚠ 要 `PYTHONIOENCODING=utf-8`，不然開機那行中文會 `UnicodeEncodeError` 直接退出（cp1252）。指令：`PYTHONIOENCODING=utf-8 PORT=8145 python tools/devserver.py` |
+| `tools/bust.py` | 正常（已跑，v=1517，模組 40 支） |
+| port | 這一輪用 **8145**，收工已關。Ray 的 8123／8200 沒碰 |
+
+## 四、⚠⚠⚠ 同一個 repo 裡**還有一個美術 session 在跑**
+
+開工時 HEAD 是 `e3c48dd1`（-1515），做到一半變成 `1be18bea`
+（「tools(去背): 本機 matting 建制 ver -1516」），而且 working tree 裡有一大批
+`resources/SI/*.webp` 是**改了還沒 commit 的**。
+
+· ⇒ 這一輪**只 commit 自己動的那幾支檔**（`git add <path>` 逐支，**不准 `git add -A`**）——
+  不然會把美術那邊做到一半的東西一起推上去。
+· ⇒ 版號跳過 -1516（那一支被美術那邊的 commit 用掉了），這一輪是 **-1517**。
+  ⚠ `config.js` 在 -1516 那次**沒有被 bump**（純工具改動），所以 HUD 上不會有 -1516 這一版。
+· ⚠ 這正是鐵律 11 在講的那個風險：**另一個 session 手上的檔案是舊讀值**。
+  動任何共用檔（`config.js`／`CLAUDE.md`／這一份）之前先 `git log -1` 看一眼。
 
 ---
 
