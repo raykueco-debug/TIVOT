@@ -1109,6 +1109,80 @@ Gemini 的下載會週期性被 Chrome 擋（就算站台權限已開），重�
   ⚠ `tools/mon_dekey.py` 的適用範圍**不變**（白底怪圖的粗胚，前提逐條可驗），
     但**人物立繪一律不走它**。ver -1503 那支 `si_dekey.py` 的判準**留在工單裡當紀錄**，
     **不要拿它交件**。
+- ⭐⭐⭐ **ver -1516：Ray 核准了本機 alpha —— 但只准走 `tools/si_matting.py` 這一條**
+  （Ray：「這個入憲，因為有其他機器也會需要這個工具」）。
+
+  ⚠⚠⚠ **上面 -1503 那一條沒有被撤銷，它被「加了一個出口」** —— 分辨清楚：
+  · **被禁的是**「自己憑判準寫一支去背腳本，然後用自己的眼睛放行」。那條禁令**繼續有效**。
+  · **被准的是**「跑一個訓練過的模型 ＋ 解前景色 ＋ **對著 Ray 自己交的圖量四個數字**」。
+  ⇒ 差別不在「本機」兩個字，在**驗收有沒有一個不是自己說了算的基準**。
+
+  **工具**（都在版控裡，換機器照下面重建）：
+
+  | | |
+  |---|---|
+  | `tools/si_matting.py` | ToonOut（動漫微調的 BiRefNet）出 α → `pymatting` 解前景色 F |
+  | `tools/matting_eval.py` | `prep`／`score`（四項）／`crops`（深色棋盤 100% 裁切） |
+
+  **驗收門檻（跑之前就寫死，不准事後調）**：GT ＝ Ray 自己交的 22 張
+  （`Cecilie_SI_*` 9／`Laurie_SI_*` 5／`Nemo_SI_*` 6／`Sorana_SI_drink`／`Sorana_SI_shy`）。
+
+      近白比例      ≤ 1%          半透明像素中 min(RGB)≥235 的比例
+      α 平均絕對誤差 ≤ 3
+      髮絲區 IoU    ≥ 0.97
+      alpha 斜坡寬   ≤ GT 的 1.15 倍   ← 第四項，見下
+
+  ⚠⚠⚠ **第四項是用血換來的**：ver -1516 第一版**前三項全過**、我判定通過、蓋了上去，
+    Ray 進遊戲一看就退（「白邊 毛邊 模糊 尤其頭髮」）。病灶是模型輸入被縮成正方形、
+    alpha 再垂直放大 1.5 倍塞回去 —— 而 1~2px 的軟斜坡在整張圖裡佔比極小，
+    **αMAE 只差 0.14、IoU 幾乎不動**。⇒ **新指標要拿「已知壞」的樣本驗證它會叫**，
+    只拿「已知好」訂門檻，訂出來的指標只抓得到明顯的壞。
+
+  ⚠⚠ **四個數字全過也還不算過** —— 一定要 `crops` 出 100% 裁切用眼睛看，
+    而且**是 Ray 進遊戲看**。ver -1516 前後交了四版，v1/v2 都是他一眼退掉的。
+    ⚠ **不准看縮圖**（-1503 就是縮成 220px 放行 78 張的）。
+
+  ⚠ **推論一律用原生解析度**，不要縮成正方形（`--size 0`，預設）。
+    銳利度是**推論解析度**決定的，後處理救不回來 —— closed-form 精修、窄 trimap、
+    導引濾波三種都試過，全部更糟（6.39／雜訊／7.49）。
+
+  ⚠ **校正係數逐模型，不可共用**：`ALPHA_GAMMA` 是一張表。v3 的 γ=1.50 是為
+    `birefnet-matting` 擬合的（11 張擬合、11 張驗證），套到 ToonOut 上
+    IoU 從 0.9955 掉到 0.9884。換模型就重跑那個切半實驗，不要憑印象調。
+
+  ⚠ **近白這條門檻對白髮白衣角色天生偏嚴**（GT 那 22 張裡沒有白袍）。
+    看比例之前**先看像素數**：`Cecilie_SI_upset` 的 3.85% 是 **164 個像素**、
+    一個 10×31 的小區塊，那是白布幔的邊，不是霧。
+
+  **換另一台機器要做的**（這就是 Ray 要它入憲的理由）：
+
+      python -m venv --system-site-packages .venv-matting   # 沿用系統的 torch
+      .venv-matting/Scripts/python.exe -m pip install "transformers==4.44.2" pymatting
+      # ⚠ 整個 venv 要與 torch 的 numpy 世代對齊（numpy 1 vs 2 在 C 層不相容）
+      # ⚠ Windows 要 HF_HUB_DISABLE_SYMLINKS=1（沒開開發者模式時 hf 建 symlink 會被擋）
+      # ⚠ 主控台要 PYTHONIOENCODING=utf-8（中文 Windows 的 cp950/cp1252 會讓中文輸出炸掉）
+      .venv-matting/Scripts/python.exe tools/si_matting.py "白底圖*.png" --out <目錄>
+      python tools/matting_eval.py prep && python tools/matting_eval.py score <目錄>
+
+  ⚠ 為什麼要獨立 venv：系統 python 的 `transformers` 5.x 要 torch≥2.4，
+    而 BiRefNet 這條線是跑在 torch 2.3.1 上的。**不要去動系統那一份**（SD／ComfyUI 共用它）。
+
+  **授權**（鐵律 12：這遊戲要上架）：ToonOut 權重 **MIT** ✔／BiRefNet **MIT** ✔／
+  `pymatting` **MIT** ✔。⛔ RMBG-2.0 是 non-commercial，效果再好都不准用。
+
+  ⛔ **測過、輸掉的，不要再花時間**（數字在 `resources/SI/_alpha_matting_eval.md`）：
+  · **anime-segmentation（isnetis）** —— ONNX 輸入寫死 1024×1024，改不掉，糊兩倍
+  · **BEN2** —— 拿真實照片訓練的通用模型，對動漫線稿不對題
+  · **SD inpaint 重畫髮尾** —— ⚠ SDXL 會把髮尾**畫得更白**，而 matting 靠的正是
+    「離純白多遠」⇒ 畫面上更清楚，alpha 反而更糟。**它在幫倒忙。**
+  · **LayerDiffuse** —— 原理完全對題（`bgble2fg` 就是這個題目）、授權也可商用，
+    但 **ComfyUI 與 Forge 兩個宿主都靜默失效**：連「純文字生成透明圖」都出 alpha 全 255。
+    它是 2024 年初的東西，宿主的後端早就重寫過。要救只剩釘舊版宿主，**不建議**。
+
+  ⇒ **這一條沒有取代 GPT**：ToonOut 比 GT 還銳利、沒有霧，但**極細的飄髮**仍然是
+    GPT 重製比較好。**「這一張特別重要」的立繪還是走 GPT。** 本機這條拿掉的是
+    **整批**的去背成本 —— 尤其是「SD 修完臉之後」那一趟（Ray：「gpt 回來修臉以後
+    不用再回 gpt alpha 一次」）。
 - ⚠ **怪圖不會觸發內容判定，人物圖才會**（Ray：「人物圖優先，怪圖不會觸發」）。
   人物那幾張要**優先排**，趁沒被擋的時候做完。
 - ⚠⚠ **被擋的時候：提示詞與 session 要一起換**（Ray：「gpt 擋就換 prompt 換 session
