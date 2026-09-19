@@ -5066,7 +5066,22 @@ export const TOWNS = {
                必然還在前面 —— 語意剛好對。 */
         acts:[
           /* ── 分支 1：與蕾娜同行（M1） ── */
-          { flag:'ep_m1_route', need:'ep_night_renna', clockToday:8,
+          /* ══⚠⚠⚠ **ver -1519：收尾直接接隔日的審訊**（Ray：「蕾娜的拷問宣言之後
+             直接接第二天劇情」）══ 宣言就是下面那句「就在這極東之境，用最殘酷的
+             方式拷問妳吧。」，而「第二天劇情」＝旅店的 `ep_interrogate`。
+             · `clockToday:8` 本來就把時鐘推到早上八點了（`ep_interrogate` 的
+               `hourOfDay:[8,18]` 正好接得住），**缺的只是那段路** —— 玩家還得自己
+               從上城區往上走一格回旅店。`goto:'inn'` 就是把那一步收掉。
+             ⚠ 引擎的順序是**旗 → `clockToday` → `goto`**（`modules/town.js` 的
+               `applyClockToday` 那一段就是為這件事排的）⇒ 抵達旅店那一刻時鐘已經是
+               八點，審訊那一段當場成立（同 `bl_night_done → @eastport:inn` 的作法，
+               鐵律 8：接戲只有「抵達那一格」這一道門）。
+             ⚠ **同城不必寫 `@eastport:`**，`goto:'inn'` 就好（跨圖語法是另一件事）。
+             ⚠ **不寫 `enterAgain`**：這一段演在上城區，人必然不在旅店裡。
+             ⚠⚠ **M2（獨自跟上）不加** —— `ep_interrogate` 的 `need` 是 `ep_m1_route`，
+               那一條本來就沒有隔日那一段（蕾娜沒跟去就沒看到米夏）。
+               給它一個 `goto` 只會把玩家搬回旅店然後什麼都不演。 */
+          { flag:'ep_m1_route', need:'ep_night_renna', clockToday:8, goto:'inn',
             sides:{ RENNA:'L' }, lines:[
             { speaker:'ANYA', text:'Мне кажется, я научилась владеть этой силой!',
               portrait:{ char:'ANYA', expr:'argue', show:true }, tiny:true },
@@ -5401,7 +5416,11 @@ export const TOWNS = {
         ] },
         /* ══⚠⚠⚠ **隔日：審訊**（ver -1511）══ 只有 M1（與蕾娜同行）那一條走得到：
            蕾娜是在上城區親眼看到米夏才說破安雅身分的，沒跟去就沒有這一段。
-           ⚠ `hourOfDay:[8,18]` ＝隔天白天（那一夜的 `clockTo` 之後）。 */
+           ⚠ `hourOfDay:[8,18]` ＝隔天白天（那一夜的 `clockTo` 之後）。
+           ⚠⚠ **ver -1519 起它是直接接上來的**：M1 那一段收尾加了 `goto:'inn'`
+             （Ray：「蕾娜的拷問宣言之後直接接第二天劇情」），`clockToday:8` 又排在
+             `goto` 之前 ⇒ 抵達旅店那一刻就是早上八點，這一段當場成立。
+             **這一段本身一個字都沒改** —— 接戲的門是「抵達那一格」，不是這裡。 */
         { flag:'ep_interrogate', need:'ep_m1_route', hourOfDay:[8,18],
           sides:{ RENNA:'L' }, lines:[
           ren('holdfile','好的，安雅小姐。'),
